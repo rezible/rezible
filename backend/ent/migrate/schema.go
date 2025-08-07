@@ -42,6 +42,7 @@ var (
 		{Name: "actionable", Type: field.TypeBool},
 		{Name: "accurate", Type: field.TypeEnum, Enums: []string{"yes", "no", "unknown"}},
 		{Name: "documentation_available", Type: field.TypeEnum, Enums: []string{"yes", "needs_update", "no"}},
+		{Name: "alert_id", Type: field.TypeUUID},
 		{Name: "tenant_id", Type: field.TypeInt},
 		{Name: "annotation_id", Type: field.TypeUUID, Unique: true},
 	}
@@ -52,14 +53,20 @@ var (
 		PrimaryKey: []*schema.Column{AlertFeedbacksColumns[0]},
 		ForeignKeys: []*schema.ForeignKey{
 			{
-				Symbol:     "alert_feedbacks_tenants_tenant",
+				Symbol:     "alert_feedbacks_alerts_feedback",
 				Columns:    []*schema.Column{AlertFeedbacksColumns[4]},
+				RefColumns: []*schema.Column{AlertsColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+			{
+				Symbol:     "alert_feedbacks_tenants_tenant",
+				Columns:    []*schema.Column{AlertFeedbacksColumns[5]},
 				RefColumns: []*schema.Column{TenantsColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
 			{
 				Symbol:     "alert_feedbacks_oncall_annotations_alert_feedback",
-				Columns:    []*schema.Column{AlertFeedbacksColumns[5]},
+				Columns:    []*schema.Column{AlertFeedbacksColumns[6]},
 				RefColumns: []*schema.Column{OncallAnnotationsColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
@@ -68,40 +75,7 @@ var (
 			{
 				Name:    "alertfeedback_tenant_id",
 				Unique:  false,
-				Columns: []*schema.Column{AlertFeedbacksColumns[4]},
-			},
-		},
-	}
-	// AlertMetricsColumns holds the columns for the "alert_metrics" table.
-	AlertMetricsColumns = []*schema.Column{
-		{Name: "id", Type: field.TypeUUID},
-		{Name: "tenant_id", Type: field.TypeInt},
-		{Name: "alert_id", Type: field.TypeUUID},
-	}
-	// AlertMetricsTable holds the schema information for the "alert_metrics" table.
-	AlertMetricsTable = &schema.Table{
-		Name:       "alert_metrics",
-		Columns:    AlertMetricsColumns,
-		PrimaryKey: []*schema.Column{AlertMetricsColumns[0]},
-		ForeignKeys: []*schema.ForeignKey{
-			{
-				Symbol:     "alert_metrics_tenants_tenant",
-				Columns:    []*schema.Column{AlertMetricsColumns[1]},
-				RefColumns: []*schema.Column{TenantsColumns[0]},
-				OnDelete:   schema.NoAction,
-			},
-			{
-				Symbol:     "alert_metrics_alerts_alert",
-				Columns:    []*schema.Column{AlertMetricsColumns[2]},
-				RefColumns: []*schema.Column{AlertsColumns[0]},
-				OnDelete:   schema.NoAction,
-			},
-		},
-		Indexes: []*schema.Index{
-			{
-				Name:    "alertmetrics_tenant_id",
-				Unique:  false,
-				Columns: []*schema.Column{AlertMetricsColumns[1]},
+				Columns: []*schema.Column{AlertFeedbacksColumns[5]},
 			},
 		},
 	}
@@ -962,7 +936,7 @@ var (
 		{Name: "id", Type: field.TypeUUID},
 		{Name: "provider_id", Type: field.TypeString},
 		{Name: "timestamp", Type: field.TypeTime},
-		{Name: "kind", Type: field.TypeEnum, Enums: []string{"alert", "page", "message", "other"}},
+		{Name: "kind", Type: field.TypeEnum, Enums: []string{"alert", "interrupt", "message", "other"}},
 		{Name: "title", Type: field.TypeString},
 		{Name: "description", Type: field.TypeString},
 		{Name: "source", Type: field.TypeString},
@@ -2648,7 +2622,6 @@ var (
 	Tables = []*schema.Table{
 		AlertsTable,
 		AlertFeedbacksTable,
-		AlertMetricsTable,
 		IncidentsTable,
 		IncidentDebriefsTable,
 		IncidentDebriefMessagesTable,
@@ -2727,10 +2700,9 @@ var (
 
 func init() {
 	AlertsTable.ForeignKeys[0].RefTable = TenantsTable
-	AlertFeedbacksTable.ForeignKeys[0].RefTable = TenantsTable
-	AlertFeedbacksTable.ForeignKeys[1].RefTable = OncallAnnotationsTable
-	AlertMetricsTable.ForeignKeys[0].RefTable = TenantsTable
-	AlertMetricsTable.ForeignKeys[1].RefTable = AlertsTable
+	AlertFeedbacksTable.ForeignKeys[0].RefTable = AlertsTable
+	AlertFeedbacksTable.ForeignKeys[1].RefTable = TenantsTable
+	AlertFeedbacksTable.ForeignKeys[2].RefTable = OncallAnnotationsTable
 	IncidentsTable.ForeignKeys[0].RefTable = TenantsTable
 	IncidentsTable.ForeignKeys[1].RefTable = IncidentSeveritiesTable
 	IncidentsTable.ForeignKeys[2].RefTable = IncidentTypesTable

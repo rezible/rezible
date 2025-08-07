@@ -18,7 +18,6 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"github.com/rezible/rezible/ent/alert"
 	"github.com/rezible/rezible/ent/alertfeedback"
-	"github.com/rezible/rezible/ent/alertmetrics"
 	"github.com/rezible/rezible/ent/incident"
 	"github.com/rezible/rezible/ent/incidentdebrief"
 	"github.com/rezible/rezible/ent/incidentdebriefmessage"
@@ -85,8 +84,6 @@ type Client struct {
 	Alert *AlertClient
 	// AlertFeedback is the client for interacting with the AlertFeedback builders.
 	AlertFeedback *AlertFeedbackClient
-	// AlertMetrics is the client for interacting with the AlertMetrics builders.
-	AlertMetrics *AlertMetricsClient
 	// Incident is the client for interacting with the Incident builders.
 	Incident *IncidentClient
 	// IncidentDebrief is the client for interacting with the IncidentDebrief builders.
@@ -210,7 +207,6 @@ func (c *Client) init() {
 	c.Schema = migrate.NewSchema(c.driver)
 	c.Alert = NewAlertClient(c.config)
 	c.AlertFeedback = NewAlertFeedbackClient(c.config)
-	c.AlertMetrics = NewAlertMetricsClient(c.config)
 	c.Incident = NewIncidentClient(c.config)
 	c.IncidentDebrief = NewIncidentDebriefClient(c.config)
 	c.IncidentDebriefMessage = NewIncidentDebriefMessageClient(c.config)
@@ -360,7 +356,6 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 		config:                           cfg,
 		Alert:                            NewAlertClient(cfg),
 		AlertFeedback:                    NewAlertFeedbackClient(cfg),
-		AlertMetrics:                     NewAlertMetricsClient(cfg),
 		Incident:                         NewIncidentClient(cfg),
 		IncidentDebrief:                  NewIncidentDebriefClient(cfg),
 		IncidentDebriefMessage:           NewIncidentDebriefMessageClient(cfg),
@@ -437,7 +432,6 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 		config:                           cfg,
 		Alert:                            NewAlertClient(cfg),
 		AlertFeedback:                    NewAlertFeedbackClient(cfg),
-		AlertMetrics:                     NewAlertMetricsClient(cfg),
 		Incident:                         NewIncidentClient(cfg),
 		IncidentDebrief:                  NewIncidentDebriefClient(cfg),
 		IncidentDebriefMessage:           NewIncidentDebriefMessageClient(cfg),
@@ -522,7 +516,7 @@ func (c *Client) Close() error {
 // In order to add hooks to a specific client, call: `client.Node.Use(...)`.
 func (c *Client) Use(hooks ...Hook) {
 	for _, n := range []interface{ Use(...Hook) }{
-		c.Alert, c.AlertFeedback, c.AlertMetrics, c.Incident, c.IncidentDebrief,
+		c.Alert, c.AlertFeedback, c.Incident, c.IncidentDebrief,
 		c.IncidentDebriefMessage, c.IncidentDebriefQuestion,
 		c.IncidentDebriefSuggestion, c.IncidentEvent, c.IncidentEventContext,
 		c.IncidentEventContributingFactor, c.IncidentEventEvidence,
@@ -548,7 +542,7 @@ func (c *Client) Use(hooks ...Hook) {
 // In order to add interceptors to a specific client, call: `client.Node.Intercept(...)`.
 func (c *Client) Intercept(interceptors ...Interceptor) {
 	for _, n := range []interface{ Intercept(...Interceptor) }{
-		c.Alert, c.AlertFeedback, c.AlertMetrics, c.Incident, c.IncidentDebrief,
+		c.Alert, c.AlertFeedback, c.Incident, c.IncidentDebrief,
 		c.IncidentDebriefMessage, c.IncidentDebriefQuestion,
 		c.IncidentDebriefSuggestion, c.IncidentEvent, c.IncidentEventContext,
 		c.IncidentEventContributingFactor, c.IncidentEventEvidence,
@@ -577,8 +571,6 @@ func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 		return c.Alert.mutate(ctx, m)
 	case *AlertFeedbackMutation:
 		return c.AlertFeedback.mutate(ctx, m)
-	case *AlertMetricsMutation:
-		return c.AlertMetrics.mutate(ctx, m)
 	case *IncidentMutation:
 		return c.Incident.mutate(ctx, m)
 	case *IncidentDebriefMutation:
@@ -818,22 +810,6 @@ func (c *AlertClient) QueryTenant(a *Alert) *TenantQuery {
 	return query
 }
 
-// QueryMetrics queries the metrics edge of a Alert.
-func (c *AlertClient) QueryMetrics(a *Alert) *AlertMetricsQuery {
-	query := (&AlertMetricsClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := a.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(alert.Table, alert.FieldID, id),
-			sqlgraph.To(alertmetrics.Table, alertmetrics.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, true, alert.MetricsTable, alert.MetricsColumn),
-		)
-		fromV = sqlgraph.Neighbors(a.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
 // QueryPlaybooks queries the playbooks edge of a Alert.
 func (c *AlertClient) QueryPlaybooks(a *Alert) *PlaybookQuery {
 	query := (&PlaybookClient{config: c.config}).Query()
@@ -850,15 +826,31 @@ func (c *AlertClient) QueryPlaybooks(a *Alert) *PlaybookQuery {
 	return query
 }
 
-// QueryInstances queries the instances edge of a Alert.
-func (c *AlertClient) QueryInstances(a *Alert) *OncallEventQuery {
+// QueryEvents queries the events edge of a Alert.
+func (c *AlertClient) QueryEvents(a *Alert) *OncallEventQuery {
 	query := (&OncallEventClient{config: c.config}).Query()
 	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
 		id := a.ID
 		step := sqlgraph.NewStep(
 			sqlgraph.From(alert.Table, alert.FieldID, id),
 			sqlgraph.To(oncallevent.Table, oncallevent.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, true, alert.InstancesTable, alert.InstancesColumn),
+			sqlgraph.Edge(sqlgraph.O2M, true, alert.EventsTable, alert.EventsColumn),
+		)
+		fromV = sqlgraph.Neighbors(a.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryFeedback queries the feedback edge of a Alert.
+func (c *AlertClient) QueryFeedback(a *Alert) *AlertFeedbackQuery {
+	query := (&AlertFeedbackClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := a.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(alert.Table, alert.FieldID, id),
+			sqlgraph.To(alertfeedback.Table, alertfeedback.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, alert.FeedbackTable, alert.FeedbackColumn),
 		)
 		fromV = sqlgraph.Neighbors(a.driver.Dialect(), step)
 		return fromV, nil
@@ -1016,6 +1008,22 @@ func (c *AlertFeedbackClient) QueryTenant(af *AlertFeedback) *TenantQuery {
 	return query
 }
 
+// QueryAlert queries the alert edge of a AlertFeedback.
+func (c *AlertFeedbackClient) QueryAlert(af *AlertFeedback) *AlertQuery {
+	query := (&AlertClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := af.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(alertfeedback.Table, alertfeedback.FieldID, id),
+			sqlgraph.To(alert.Table, alert.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, alertfeedback.AlertTable, alertfeedback.AlertColumn),
+		)
+		fromV = sqlgraph.Neighbors(af.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
 // QueryAnnotation queries the annotation edge of a AlertFeedback.
 func (c *AlertFeedbackClient) QueryAnnotation(af *AlertFeedback) *OncallAnnotationQuery {
 	query := (&OncallAnnotationClient{config: c.config}).Query()
@@ -1055,172 +1063,6 @@ func (c *AlertFeedbackClient) mutate(ctx context.Context, m *AlertFeedbackMutati
 		return (&AlertFeedbackDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
 	default:
 		return nil, fmt.Errorf("ent: unknown AlertFeedback mutation op: %q", m.Op())
-	}
-}
-
-// AlertMetricsClient is a client for the AlertMetrics schema.
-type AlertMetricsClient struct {
-	config
-}
-
-// NewAlertMetricsClient returns a client for the AlertMetrics from the given config.
-func NewAlertMetricsClient(c config) *AlertMetricsClient {
-	return &AlertMetricsClient{config: c}
-}
-
-// Use adds a list of mutation hooks to the hooks stack.
-// A call to `Use(f, g, h)` equals to `alertmetrics.Hooks(f(g(h())))`.
-func (c *AlertMetricsClient) Use(hooks ...Hook) {
-	c.hooks.AlertMetrics = append(c.hooks.AlertMetrics, hooks...)
-}
-
-// Intercept adds a list of query interceptors to the interceptors stack.
-// A call to `Intercept(f, g, h)` equals to `alertmetrics.Intercept(f(g(h())))`.
-func (c *AlertMetricsClient) Intercept(interceptors ...Interceptor) {
-	c.inters.AlertMetrics = append(c.inters.AlertMetrics, interceptors...)
-}
-
-// Create returns a builder for creating a AlertMetrics entity.
-func (c *AlertMetricsClient) Create() *AlertMetricsCreate {
-	mutation := newAlertMetricsMutation(c.config, OpCreate)
-	return &AlertMetricsCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// CreateBulk returns a builder for creating a bulk of AlertMetrics entities.
-func (c *AlertMetricsClient) CreateBulk(builders ...*AlertMetricsCreate) *AlertMetricsCreateBulk {
-	return &AlertMetricsCreateBulk{config: c.config, builders: builders}
-}
-
-// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
-// a builder and applies setFunc on it.
-func (c *AlertMetricsClient) MapCreateBulk(slice any, setFunc func(*AlertMetricsCreate, int)) *AlertMetricsCreateBulk {
-	rv := reflect.ValueOf(slice)
-	if rv.Kind() != reflect.Slice {
-		return &AlertMetricsCreateBulk{err: fmt.Errorf("calling to AlertMetricsClient.MapCreateBulk with wrong type %T, need slice", slice)}
-	}
-	builders := make([]*AlertMetricsCreate, rv.Len())
-	for i := 0; i < rv.Len(); i++ {
-		builders[i] = c.Create()
-		setFunc(builders[i], i)
-	}
-	return &AlertMetricsCreateBulk{config: c.config, builders: builders}
-}
-
-// Update returns an update builder for AlertMetrics.
-func (c *AlertMetricsClient) Update() *AlertMetricsUpdate {
-	mutation := newAlertMetricsMutation(c.config, OpUpdate)
-	return &AlertMetricsUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// UpdateOne returns an update builder for the given entity.
-func (c *AlertMetricsClient) UpdateOne(am *AlertMetrics) *AlertMetricsUpdateOne {
-	mutation := newAlertMetricsMutation(c.config, OpUpdateOne, withAlertMetrics(am))
-	return &AlertMetricsUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// UpdateOneID returns an update builder for the given id.
-func (c *AlertMetricsClient) UpdateOneID(id uuid.UUID) *AlertMetricsUpdateOne {
-	mutation := newAlertMetricsMutation(c.config, OpUpdateOne, withAlertMetricsID(id))
-	return &AlertMetricsUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// Delete returns a delete builder for AlertMetrics.
-func (c *AlertMetricsClient) Delete() *AlertMetricsDelete {
-	mutation := newAlertMetricsMutation(c.config, OpDelete)
-	return &AlertMetricsDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// DeleteOne returns a builder for deleting the given entity.
-func (c *AlertMetricsClient) DeleteOne(am *AlertMetrics) *AlertMetricsDeleteOne {
-	return c.DeleteOneID(am.ID)
-}
-
-// DeleteOneID returns a builder for deleting the given entity by its id.
-func (c *AlertMetricsClient) DeleteOneID(id uuid.UUID) *AlertMetricsDeleteOne {
-	builder := c.Delete().Where(alertmetrics.ID(id))
-	builder.mutation.id = &id
-	builder.mutation.op = OpDeleteOne
-	return &AlertMetricsDeleteOne{builder}
-}
-
-// Query returns a query builder for AlertMetrics.
-func (c *AlertMetricsClient) Query() *AlertMetricsQuery {
-	return &AlertMetricsQuery{
-		config: c.config,
-		ctx:    &QueryContext{Type: TypeAlertMetrics},
-		inters: c.Interceptors(),
-	}
-}
-
-// Get returns a AlertMetrics entity by its id.
-func (c *AlertMetricsClient) Get(ctx context.Context, id uuid.UUID) (*AlertMetrics, error) {
-	return c.Query().Where(alertmetrics.ID(id)).Only(ctx)
-}
-
-// GetX is like Get, but panics if an error occurs.
-func (c *AlertMetricsClient) GetX(ctx context.Context, id uuid.UUID) *AlertMetrics {
-	obj, err := c.Get(ctx, id)
-	if err != nil {
-		panic(err)
-	}
-	return obj
-}
-
-// QueryTenant queries the tenant edge of a AlertMetrics.
-func (c *AlertMetricsClient) QueryTenant(am *AlertMetrics) *TenantQuery {
-	query := (&TenantClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := am.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(alertmetrics.Table, alertmetrics.FieldID, id),
-			sqlgraph.To(tenant.Table, tenant.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, alertmetrics.TenantTable, alertmetrics.TenantColumn),
-		)
-		fromV = sqlgraph.Neighbors(am.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// QueryAlert queries the alert edge of a AlertMetrics.
-func (c *AlertMetricsClient) QueryAlert(am *AlertMetrics) *AlertQuery {
-	query := (&AlertClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := am.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(alertmetrics.Table, alertmetrics.FieldID, id),
-			sqlgraph.To(alert.Table, alert.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, alertmetrics.AlertTable, alertmetrics.AlertColumn),
-		)
-		fromV = sqlgraph.Neighbors(am.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// Hooks returns the client hooks.
-func (c *AlertMetricsClient) Hooks() []Hook {
-	hooks := c.hooks.AlertMetrics
-	return append(hooks[:len(hooks):len(hooks)], alertmetrics.Hooks[:]...)
-}
-
-// Interceptors returns the client interceptors.
-func (c *AlertMetricsClient) Interceptors() []Interceptor {
-	return c.inters.AlertMetrics
-}
-
-func (c *AlertMetricsClient) mutate(ctx context.Context, m *AlertMetricsMutation) (Value, error) {
-	switch m.Op() {
-	case OpCreate:
-		return (&AlertMetricsCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
-	case OpUpdate:
-		return (&AlertMetricsUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
-	case OpUpdateOne:
-		return (&AlertMetricsUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
-	case OpDelete, OpDeleteOne:
-		return (&AlertMetricsDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
-	default:
-		return nil, fmt.Errorf("ent: unknown AlertMetrics mutation op: %q", m.Op())
 	}
 }
 
@@ -12158,15 +12000,14 @@ func (c *UserClient) mutate(ctx context.Context, m *UserMutation) (Value, error)
 // hooks and interceptors per client, for fast access.
 type (
 	hooks struct {
-		Alert, AlertFeedback, AlertMetrics, Incident, IncidentDebrief,
-		IncidentDebriefMessage, IncidentDebriefQuestion, IncidentDebriefSuggestion,
-		IncidentEvent, IncidentEventContext, IncidentEventContributingFactor,
-		IncidentEventEvidence, IncidentEventSystemComponent, IncidentField,
-		IncidentFieldOption, IncidentLink, IncidentMilestone, IncidentRole,
-		IncidentRoleAssignment, IncidentSeverity, IncidentTag, IncidentType,
-		MeetingSchedule, MeetingSession, OncallAnnotation, OncallEvent,
-		OncallHandoverTemplate, OncallRoster, OncallRosterMetrics, OncallSchedule,
-		OncallScheduleParticipant, OncallShift, OncallShiftHandover,
+		Alert, AlertFeedback, Incident, IncidentDebrief, IncidentDebriefMessage,
+		IncidentDebriefQuestion, IncidentDebriefSuggestion, IncidentEvent,
+		IncidentEventContext, IncidentEventContributingFactor, IncidentEventEvidence,
+		IncidentEventSystemComponent, IncidentField, IncidentFieldOption, IncidentLink,
+		IncidentMilestone, IncidentRole, IncidentRoleAssignment, IncidentSeverity,
+		IncidentTag, IncidentType, MeetingSchedule, MeetingSession, OncallAnnotation,
+		OncallEvent, OncallHandoverTemplate, OncallRoster, OncallRosterMetrics,
+		OncallSchedule, OncallScheduleParticipant, OncallShift, OncallShiftHandover,
 		OncallShiftMetrics, Playbook, ProviderConfig, ProviderSyncHistory,
 		Retrospective, RetrospectiveDiscussion, RetrospectiveDiscussionReply,
 		RetrospectiveReview, SystemAnalysis, SystemAnalysisComponent,
@@ -12176,15 +12017,14 @@ type (
 		SystemRelationshipFeedbackSignal, Task, Team, Tenant, Ticket, User []ent.Hook
 	}
 	inters struct {
-		Alert, AlertFeedback, AlertMetrics, Incident, IncidentDebrief,
-		IncidentDebriefMessage, IncidentDebriefQuestion, IncidentDebriefSuggestion,
-		IncidentEvent, IncidentEventContext, IncidentEventContributingFactor,
-		IncidentEventEvidence, IncidentEventSystemComponent, IncidentField,
-		IncidentFieldOption, IncidentLink, IncidentMilestone, IncidentRole,
-		IncidentRoleAssignment, IncidentSeverity, IncidentTag, IncidentType,
-		MeetingSchedule, MeetingSession, OncallAnnotation, OncallEvent,
-		OncallHandoverTemplate, OncallRoster, OncallRosterMetrics, OncallSchedule,
-		OncallScheduleParticipant, OncallShift, OncallShiftHandover,
+		Alert, AlertFeedback, Incident, IncidentDebrief, IncidentDebriefMessage,
+		IncidentDebriefQuestion, IncidentDebriefSuggestion, IncidentEvent,
+		IncidentEventContext, IncidentEventContributingFactor, IncidentEventEvidence,
+		IncidentEventSystemComponent, IncidentField, IncidentFieldOption, IncidentLink,
+		IncidentMilestone, IncidentRole, IncidentRoleAssignment, IncidentSeverity,
+		IncidentTag, IncidentType, MeetingSchedule, MeetingSession, OncallAnnotation,
+		OncallEvent, OncallHandoverTemplate, OncallRoster, OncallRosterMetrics,
+		OncallSchedule, OncallScheduleParticipant, OncallShift, OncallShiftHandover,
 		OncallShiftMetrics, Playbook, ProviderConfig, ProviderSyncHistory,
 		Retrospective, RetrospectiveDiscussion, RetrospectiveDiscussionReply,
 		RetrospectiveReview, SystemAnalysis, SystemAnalysisComponent,

@@ -2,19 +2,21 @@ package api
 
 import (
 	"context"
+
 	rez "github.com/rezible/rezible"
 	oapi "github.com/rezible/rezible/openapi"
 )
 
 type alertsHandler struct {
 	alerts rez.AlertService
+	events rez.OncallEventsService
 }
 
-func newAlertsHandler(alerts rez.AlertService) *alertsHandler {
-	return &alertsHandler{alerts: alerts}
+func newAlertsHandler(alerts rez.AlertService, events rez.OncallEventsService) *alertsHandler {
+	return &alertsHandler{alerts: alerts, events: events}
 }
 
-func (h *alertsHandler) ListAlerts(ctx context.Context, request *oapi.ListAlertsRequest) (*oapi.ListAlertsResponse, error) {
+func (h *alertsHandler) ListAlerts(ctx context.Context, req *oapi.ListAlertsRequest) (*oapi.ListAlertsResponse, error) {
 	var resp oapi.ListAlertsResponse
 
 	alerts, count, alertsErr := h.alerts.ListAlerts(ctx, rez.ListAlertsParams{})
@@ -33,10 +35,10 @@ func (h *alertsHandler) ListAlerts(ctx context.Context, request *oapi.ListAlerts
 	return &resp, nil
 }
 
-func (h *alertsHandler) GetAlert(ctx context.Context, request *oapi.GetAlertRequest) (*oapi.GetAlertResponse, error) {
+func (h *alertsHandler) GetAlert(ctx context.Context, req *oapi.GetAlertRequest) (*oapi.GetAlertResponse, error) {
 	var resp oapi.GetAlertResponse
 
-	alert, getErr := h.alerts.GetAlert(ctx, request.Id)
+	alert, getErr := h.alerts.GetAlert(ctx, req.Id)
 	if getErr != nil {
 		return nil, detailError("get alert", getErr)
 	}

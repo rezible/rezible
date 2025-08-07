@@ -12,6 +12,7 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
+	"github.com/rezible/rezible/ent/alert"
 	"github.com/rezible/rezible/ent/alertfeedback"
 	"github.com/rezible/rezible/ent/oncallannotation"
 	"github.com/rezible/rezible/ent/tenant"
@@ -28,6 +29,12 @@ type AlertFeedbackCreate struct {
 // SetTenantID sets the "tenant_id" field.
 func (afc *AlertFeedbackCreate) SetTenantID(i int) *AlertFeedbackCreate {
 	afc.mutation.SetTenantID(i)
+	return afc
+}
+
+// SetAlertID sets the "alert_id" field.
+func (afc *AlertFeedbackCreate) SetAlertID(u uuid.UUID) *AlertFeedbackCreate {
+	afc.mutation.SetAlertID(u)
 	return afc
 }
 
@@ -72,6 +79,11 @@ func (afc *AlertFeedbackCreate) SetNillableID(u *uuid.UUID) *AlertFeedbackCreate
 // SetTenant sets the "tenant" edge to the Tenant entity.
 func (afc *AlertFeedbackCreate) SetTenant(t *Tenant) *AlertFeedbackCreate {
 	return afc.SetTenantID(t.ID)
+}
+
+// SetAlert sets the "alert" edge to the Alert entity.
+func (afc *AlertFeedbackCreate) SetAlert(a *Alert) *AlertFeedbackCreate {
+	return afc.SetAlertID(a.ID)
 }
 
 // SetAnnotation sets the "annotation" edge to the OncallAnnotation entity.
@@ -131,6 +143,9 @@ func (afc *AlertFeedbackCreate) check() error {
 	if _, ok := afc.mutation.TenantID(); !ok {
 		return &ValidationError{Name: "tenant_id", err: errors.New(`ent: missing required field "AlertFeedback.tenant_id"`)}
 	}
+	if _, ok := afc.mutation.AlertID(); !ok {
+		return &ValidationError{Name: "alert_id", err: errors.New(`ent: missing required field "AlertFeedback.alert_id"`)}
+	}
 	if _, ok := afc.mutation.AnnotationID(); !ok {
 		return &ValidationError{Name: "annotation_id", err: errors.New(`ent: missing required field "AlertFeedback.annotation_id"`)}
 	}
@@ -155,6 +170,9 @@ func (afc *AlertFeedbackCreate) check() error {
 	}
 	if len(afc.mutation.TenantIDs()) == 0 {
 		return &ValidationError{Name: "tenant", err: errors.New(`ent: missing required edge "AlertFeedback.tenant"`)}
+	}
+	if len(afc.mutation.AlertIDs()) == 0 {
+		return &ValidationError{Name: "alert", err: errors.New(`ent: missing required edge "AlertFeedback.alert"`)}
 	}
 	if len(afc.mutation.AnnotationIDs()) == 0 {
 		return &ValidationError{Name: "annotation", err: errors.New(`ent: missing required edge "AlertFeedback.annotation"`)}
@@ -222,6 +240,23 @@ func (afc *AlertFeedbackCreate) createSpec() (*AlertFeedback, *sqlgraph.CreateSp
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		_node.TenantID = nodes[0]
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := afc.mutation.AlertIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   alertfeedback.AlertTable,
+			Columns: []string{alertfeedback.AlertColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(alert.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_node.AlertID = nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	if nodes := afc.mutation.AnnotationIDs(); len(nodes) > 0 {
@@ -292,6 +327,18 @@ type (
 		*sql.UpdateSet
 	}
 )
+
+// SetAlertID sets the "alert_id" field.
+func (u *AlertFeedbackUpsert) SetAlertID(v uuid.UUID) *AlertFeedbackUpsert {
+	u.Set(alertfeedback.FieldAlertID, v)
+	return u
+}
+
+// UpdateAlertID sets the "alert_id" field to the value that was provided on create.
+func (u *AlertFeedbackUpsert) UpdateAlertID() *AlertFeedbackUpsert {
+	u.SetExcluded(alertfeedback.FieldAlertID)
+	return u
+}
 
 // SetAnnotationID sets the "annotation_id" field.
 func (u *AlertFeedbackUpsert) SetAnnotationID(v uuid.UUID) *AlertFeedbackUpsert {
@@ -390,6 +437,20 @@ func (u *AlertFeedbackUpsertOne) Update(set func(*AlertFeedbackUpsert)) *AlertFe
 		set(&AlertFeedbackUpsert{UpdateSet: update})
 	}))
 	return u
+}
+
+// SetAlertID sets the "alert_id" field.
+func (u *AlertFeedbackUpsertOne) SetAlertID(v uuid.UUID) *AlertFeedbackUpsertOne {
+	return u.Update(func(s *AlertFeedbackUpsert) {
+		s.SetAlertID(v)
+	})
+}
+
+// UpdateAlertID sets the "alert_id" field to the value that was provided on create.
+func (u *AlertFeedbackUpsertOne) UpdateAlertID() *AlertFeedbackUpsertOne {
+	return u.Update(func(s *AlertFeedbackUpsert) {
+		s.UpdateAlertID()
+	})
 }
 
 // SetAnnotationID sets the "annotation_id" field.
@@ -664,6 +725,20 @@ func (u *AlertFeedbackUpsertBulk) Update(set func(*AlertFeedbackUpsert)) *AlertF
 		set(&AlertFeedbackUpsert{UpdateSet: update})
 	}))
 	return u
+}
+
+// SetAlertID sets the "alert_id" field.
+func (u *AlertFeedbackUpsertBulk) SetAlertID(v uuid.UUID) *AlertFeedbackUpsertBulk {
+	return u.Update(func(s *AlertFeedbackUpsert) {
+		s.SetAlertID(v)
+	})
+}
+
+// UpdateAlertID sets the "alert_id" field to the value that was provided on create.
+func (u *AlertFeedbackUpsertBulk) UpdateAlertID() *AlertFeedbackUpsertBulk {
+	return u.Update(func(s *AlertFeedbackUpsert) {
+		s.UpdateAlertID()
+	})
 }
 
 // SetAnnotationID sets the "annotation_id" field.

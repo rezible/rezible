@@ -11,6 +11,7 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
+	"github.com/rezible/rezible/ent/alert"
 	"github.com/rezible/rezible/ent/alertfeedback"
 	"github.com/rezible/rezible/ent/oncallannotation"
 	"github.com/rezible/rezible/ent/predicate"
@@ -27,6 +28,20 @@ type AlertFeedbackUpdate struct {
 // Where appends a list predicates to the AlertFeedbackUpdate builder.
 func (afu *AlertFeedbackUpdate) Where(ps ...predicate.AlertFeedback) *AlertFeedbackUpdate {
 	afu.mutation.Where(ps...)
+	return afu
+}
+
+// SetAlertID sets the "alert_id" field.
+func (afu *AlertFeedbackUpdate) SetAlertID(u uuid.UUID) *AlertFeedbackUpdate {
+	afu.mutation.SetAlertID(u)
+	return afu
+}
+
+// SetNillableAlertID sets the "alert_id" field if the given value is not nil.
+func (afu *AlertFeedbackUpdate) SetNillableAlertID(u *uuid.UUID) *AlertFeedbackUpdate {
+	if u != nil {
+		afu.SetAlertID(*u)
+	}
 	return afu
 }
 
@@ -86,6 +101,11 @@ func (afu *AlertFeedbackUpdate) SetNillableDocumentationAvailable(aa *alertfeedb
 	return afu
 }
 
+// SetAlert sets the "alert" edge to the Alert entity.
+func (afu *AlertFeedbackUpdate) SetAlert(a *Alert) *AlertFeedbackUpdate {
+	return afu.SetAlertID(a.ID)
+}
+
 // SetAnnotation sets the "annotation" edge to the OncallAnnotation entity.
 func (afu *AlertFeedbackUpdate) SetAnnotation(o *OncallAnnotation) *AlertFeedbackUpdate {
 	return afu.SetAnnotationID(o.ID)
@@ -94,6 +114,12 @@ func (afu *AlertFeedbackUpdate) SetAnnotation(o *OncallAnnotation) *AlertFeedbac
 // Mutation returns the AlertFeedbackMutation object of the builder.
 func (afu *AlertFeedbackUpdate) Mutation() *AlertFeedbackMutation {
 	return afu.mutation
+}
+
+// ClearAlert clears the "alert" edge to the Alert entity.
+func (afu *AlertFeedbackUpdate) ClearAlert() *AlertFeedbackUpdate {
+	afu.mutation.ClearAlert()
+	return afu
 }
 
 // ClearAnnotation clears the "annotation" edge to the OncallAnnotation entity.
@@ -144,6 +170,9 @@ func (afu *AlertFeedbackUpdate) check() error {
 	if afu.mutation.TenantCleared() && len(afu.mutation.TenantIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "AlertFeedback.tenant"`)
 	}
+	if afu.mutation.AlertCleared() && len(afu.mutation.AlertIDs()) > 0 {
+		return errors.New(`ent: clearing a required unique edge "AlertFeedback.alert"`)
+	}
 	if afu.mutation.AnnotationCleared() && len(afu.mutation.AnnotationIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "AlertFeedback.annotation"`)
 	}
@@ -176,6 +205,35 @@ func (afu *AlertFeedbackUpdate) sqlSave(ctx context.Context) (n int, err error) 
 	}
 	if value, ok := afu.mutation.DocumentationAvailable(); ok {
 		_spec.SetField(alertfeedback.FieldDocumentationAvailable, field.TypeEnum, value)
+	}
+	if afu.mutation.AlertCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   alertfeedback.AlertTable,
+			Columns: []string{alertfeedback.AlertColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(alert.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := afu.mutation.AlertIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   alertfeedback.AlertTable,
+			Columns: []string{alertfeedback.AlertColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(alert.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
 	if afu.mutation.AnnotationCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -226,6 +284,20 @@ type AlertFeedbackUpdateOne struct {
 	hooks     []Hook
 	mutation  *AlertFeedbackMutation
 	modifiers []func(*sql.UpdateBuilder)
+}
+
+// SetAlertID sets the "alert_id" field.
+func (afuo *AlertFeedbackUpdateOne) SetAlertID(u uuid.UUID) *AlertFeedbackUpdateOne {
+	afuo.mutation.SetAlertID(u)
+	return afuo
+}
+
+// SetNillableAlertID sets the "alert_id" field if the given value is not nil.
+func (afuo *AlertFeedbackUpdateOne) SetNillableAlertID(u *uuid.UUID) *AlertFeedbackUpdateOne {
+	if u != nil {
+		afuo.SetAlertID(*u)
+	}
+	return afuo
 }
 
 // SetAnnotationID sets the "annotation_id" field.
@@ -284,6 +356,11 @@ func (afuo *AlertFeedbackUpdateOne) SetNillableDocumentationAvailable(aa *alertf
 	return afuo
 }
 
+// SetAlert sets the "alert" edge to the Alert entity.
+func (afuo *AlertFeedbackUpdateOne) SetAlert(a *Alert) *AlertFeedbackUpdateOne {
+	return afuo.SetAlertID(a.ID)
+}
+
 // SetAnnotation sets the "annotation" edge to the OncallAnnotation entity.
 func (afuo *AlertFeedbackUpdateOne) SetAnnotation(o *OncallAnnotation) *AlertFeedbackUpdateOne {
 	return afuo.SetAnnotationID(o.ID)
@@ -292,6 +369,12 @@ func (afuo *AlertFeedbackUpdateOne) SetAnnotation(o *OncallAnnotation) *AlertFee
 // Mutation returns the AlertFeedbackMutation object of the builder.
 func (afuo *AlertFeedbackUpdateOne) Mutation() *AlertFeedbackMutation {
 	return afuo.mutation
+}
+
+// ClearAlert clears the "alert" edge to the Alert entity.
+func (afuo *AlertFeedbackUpdateOne) ClearAlert() *AlertFeedbackUpdateOne {
+	afuo.mutation.ClearAlert()
+	return afuo
 }
 
 // ClearAnnotation clears the "annotation" edge to the OncallAnnotation entity.
@@ -355,6 +438,9 @@ func (afuo *AlertFeedbackUpdateOne) check() error {
 	if afuo.mutation.TenantCleared() && len(afuo.mutation.TenantIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "AlertFeedback.tenant"`)
 	}
+	if afuo.mutation.AlertCleared() && len(afuo.mutation.AlertIDs()) > 0 {
+		return errors.New(`ent: clearing a required unique edge "AlertFeedback.alert"`)
+	}
 	if afuo.mutation.AnnotationCleared() && len(afuo.mutation.AnnotationIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "AlertFeedback.annotation"`)
 	}
@@ -404,6 +490,35 @@ func (afuo *AlertFeedbackUpdateOne) sqlSave(ctx context.Context) (_node *AlertFe
 	}
 	if value, ok := afuo.mutation.DocumentationAvailable(); ok {
 		_spec.SetField(alertfeedback.FieldDocumentationAvailable, field.TypeEnum, value)
+	}
+	if afuo.mutation.AlertCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   alertfeedback.AlertTable,
+			Columns: []string{alertfeedback.AlertColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(alert.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := afuo.mutation.AlertIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   alertfeedback.AlertTable,
+			Columns: []string{alertfeedback.AlertColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(alert.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
 	if afuo.mutation.AnnotationCleared() {
 		edge := &sqlgraph.EdgeSpec{

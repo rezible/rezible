@@ -14,7 +14,6 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"github.com/rezible/rezible/ent/alert"
 	"github.com/rezible/rezible/ent/alertfeedback"
-	"github.com/rezible/rezible/ent/alertmetrics"
 	"github.com/rezible/rezible/ent/incident"
 	"github.com/rezible/rezible/ent/incidentdebrief"
 	"github.com/rezible/rezible/ent/incidentdebriefmessage"
@@ -132,7 +131,6 @@ func checkColumn(table, column string) error {
 		columnCheck = sql.NewColumnCheck(map[string]func(string) bool{
 			alert.Table:                            alert.ValidColumn,
 			alertfeedback.Table:                    alertfeedback.ValidColumn,
-			alertmetrics.Table:                     alertmetrics.ValidColumn,
 			incident.Table:                         incident.ValidColumn,
 			incidentdebrief.Table:                  incidentdebrief.ValidColumn,
 			incidentdebriefmessage.Table:           incidentdebriefmessage.ValidColumn,

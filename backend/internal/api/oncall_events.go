@@ -2,6 +2,7 @@ package api
 
 import (
 	"context"
+
 	"github.com/google/uuid"
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
@@ -36,11 +37,15 @@ func (h *oncallEventsHandler) ListOncallEvents(ctx context.Context, req *oapi.Li
 	var resp oapi.ListOncallEventsResponse
 
 	params := rez.ListOncallEventsParams{
-		ListParams:      req.ListParams(),
-		From:            req.From,
-		To:              req.To,
-		RosterID:        req.RosterId,
-		WithAnnotations: req.WithAnnotations,
+		ListParams:         req.ListParams(),
+		From:               req.From,
+		To:                 req.To,
+		RosterID:           req.RosterID,
+		AnnotationRosterID: req.AnnotationRosterId,
+	}
+
+	if req.WithAnnotations {
+		params.WithAnnotations = &rez.ExpandAnnotationsParams{}
 	}
 
 	if req.ShiftId != uuid.Nil {
@@ -80,7 +85,9 @@ func (h *oncallEventsHandler) ListOncallAnnotations(ctx context.Context, request
 	params := rez.ListOncallAnnotationsParams{
 		ListParams: request.ListParams(),
 		RosterID:   request.RosterId,
-		WithEvent:  request.WithEvents,
+		Expand: rez.ExpandAnnotationsParams{
+			WithEvent: request.WithEvents,
+		},
 	}
 	if request.ShiftId != uuid.Nil {
 		shift, shiftErr := h.oncall.GetShiftByID(ctx, request.ShiftId)

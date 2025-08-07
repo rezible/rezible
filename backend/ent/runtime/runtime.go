@@ -9,7 +9,6 @@ import (
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/alert"
 	"github.com/rezible/rezible/ent/alertfeedback"
-	"github.com/rezible/rezible/ent/alertmetrics"
 	"github.com/rezible/rezible/ent/incident"
 	"github.com/rezible/rezible/ent/incidentdebrief"
 	"github.com/rezible/rezible/ent/incidentdebriefmessage"
@@ -107,22 +106,6 @@ func init() {
 	alertfeedbackDescID := alertfeedbackFields[0].Descriptor()
 	// alertfeedback.DefaultID holds the default value on creation for the id field.
 	alertfeedback.DefaultID = alertfeedbackDescID.Default.(func() uuid.UUID)
-	alertmetricsMixin := schema.AlertMetrics{}.Mixin()
-	alertmetrics.Policy = privacy.NewPolicies(alertmetricsMixin[0], alertmetricsMixin[1], schema.AlertMetrics{})
-	alertmetrics.Hooks[0] = func(next ent.Mutator) ent.Mutator {
-		return ent.MutateFunc(func(ctx context.Context, m ent.Mutation) (ent.Value, error) {
-			if err := alertmetrics.Policy.EvalMutation(ctx, m); err != nil {
-				return nil, err
-			}
-			return next.Mutate(ctx, m)
-		})
-	}
-	alertmetricsFields := schema.AlertMetrics{}.Fields()
-	_ = alertmetricsFields
-	// alertmetricsDescID is the schema descriptor for id field.
-	alertmetricsDescID := alertmetricsFields[0].Descriptor()
-	// alertmetrics.DefaultID holds the default value on creation for the id field.
-	alertmetrics.DefaultID = alertmetricsDescID.Default.(func() uuid.UUID)
 	incidentMixin := schema.Incident{}.Mixin()
 	incident.Policy = privacy.NewPolicies(incidentMixin[0], incidentMixin[1], schema.Incident{})
 	incident.Hooks[0] = func(next ent.Mutator) ent.Mutator {

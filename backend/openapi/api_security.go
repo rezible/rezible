@@ -154,6 +154,7 @@ func MakeSecurityMiddleware(auth rez.AuthSessionService) Middleware {
 
 func writeAuthSessionError(w http.ResponseWriter, authErr error) {
 	var resp StatusError
+	log.Debug().AnErr("authErr", authErr).Msg("auth session error")
 	if errors.Is(authErr, rez.ErrNoAuthSession) {
 		resp = ErrorUnauthorized("no_session")
 	} else if errors.Is(authErr, rez.ErrAuthSessionExpired) {

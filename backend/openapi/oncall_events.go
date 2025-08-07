@@ -59,13 +59,20 @@ type (
 		Notes           string                             `json:"notes"`
 		Tags            []string                           `json:"tags"`
 		MinutesOccupied int                                `json:"minutesOccupied"`
-		AlertFeedback   *AlertFeedback                     `json:"alertFeedback,omitempty"`
+		AlertFeedback   *AlertFeedbackInstance             `json:"alertFeedback,omitempty"`
 	}
 
-	AlertFeedback struct {
+	AlertFeedbackInstance struct {
 		Actionable             bool   `json:"actionable"`
 		Accurate               string `json:"accurate" enum:"yes,no,unknown"`
 		DocumentationAvailable string `json:"documentationAvailable" enum:"yes,no,needs_update"`
+	}
+
+	ExpandAnnotationFields struct {
+		Creator       bool `json:"creator"`
+		Roster        bool `json:"roster"`
+		Event         bool `json:"event"`
+		AlertFeedback bool `json:"alertFeedback"`
 	}
 )
 
@@ -92,41 +99,41 @@ func OncallEventFromEnt(e *ent.OncallEvent) OncallEvent {
 	}
 }
 
-func OncallAnnotationFromEnt(e *ent.OncallAnnotation) OncallAnnotation {
+func OncallAnnotationFromEnt(an *ent.OncallAnnotation) OncallAnnotation {
 	attr := OncallAnnotationAttributes{
-		Notes:           e.Notes,
+		Notes:           an.Notes,
 		Tags:            nil,
-		MinutesOccupied: e.MinutesOccupied,
-		Roster:          Expandable[OncallRosterAttributes]{Id: e.RosterID},
-		Creator:         Expandable[UserAttributes]{Id: e.CreatorID},
-		Event:           Expandable[OncallEventAttributes]{Id: e.EventID},
+		MinutesOccupied: an.MinutesOccupied,
+		Roster:          Expandable[OncallRosterAttributes]{Id: an.RosterID},
+		Creator:         Expandable[UserAttributes]{Id: an.CreatorID},
+		Event:           Expandable[OncallEventAttributes]{Id: an.EventID},
 	}
 
-	if e.Edges.Roster != nil {
-		roster := OncallRosterFromEnt(e.Edges.Roster)
+	if an.Edges.Roster != nil {
+		roster := OncallRosterFromEnt(an.Edges.Roster)
 		attr.Roster.Attributes = &roster.Attributes
 	}
 
-	if e.Edges.Creator != nil {
-		usr := UserFromEnt(e.Edges.Creator)
+	if an.Edges.Creator != nil {
+		usr := UserFromEnt(an.Edges.Creator)
 		attr.Creator.Attributes = &usr.Attributes
 	}
 
-	if e.Edges.AlertFeedback != nil {
-		attr.AlertFeedback = &AlertFeedback{
-			Accurate:               e.Edges.AlertFeedback.Accurate.String(),
-			Actionable:             e.Edges.AlertFeedback.Actionable,
-			DocumentationAvailable: e.Edges.AlertFeedback.DocumentationAvailable.String(),
+	if an.Edges.AlertFeedback != nil {
+		attr.AlertFeedback = &AlertFeedbackInstance{
+			Accurate:               an.Edges.AlertFeedback.Accurate.String(),
+			Actionable:             an.Edges.AlertFeedback.Actionable,
+			DocumentationAvailable: an.Edges.AlertFeedback.DocumentationAvailable.String(),
 		}
 	}
 
-	if e.Edges.Event != nil {
-		ev := OncallEventFromEnt(e.Edges.Event)
+	if an.Edges.Event != nil {
+		ev := OncallEventFromEnt(an.Edges.Event)
 		attr.Event.Attributes = &ev.Attributes
 	}
 
 	return OncallAnnotation{
-		Id:         e.ID,
+		Id:         an.ID,
 		Attributes: attr,
 	}
 }
@@ -144,7 +151,9 @@ var GetOncallEvent = huma.Operation{
 	Errors:      errorCodes(),
 }
 
-type GetOncallEventRequest GetIdRequest
+type GetOncallEventRequest struct {
+	GetIdRequest
+}
 type GetOncallEventResponse ItemResponse[OncallEvent]
 
 var ListOncallEvents = huma.Operation{
@@ -158,11 +167,13 @@ var ListOncallEvents = huma.Operation{
 
 type ListOncallEventsRequest struct {
 	ListRequest
-	From            time.Time `query:"from"`
-	To              time.Time `query:"to"`
-	ShiftId         uuid.UUID `query:"shiftId"`
-	RosterId        uuid.UUID `query:"rosterId"`
-	WithAnnotations bool      `query:"withAnnotations"`
+	From               time.Time `query:"from"`
+	To                 time.Time `query:"to"`
+	ShiftId            uuid.UUID `query:"shiftId"`
+	AlertId            uuid.UUID `query:"alertId"`
+	RosterID           uuid.UUID `query:"rosterId"`
+	AnnotationRosterId uuid.UUID `query:"annotationRosterId"`
+	WithAnnotations    bool      `query:"withAnnotations"`
 }
 type ListOncallEventsResponse PaginatedResponse[OncallEvent]
 
@@ -195,12 +206,12 @@ var CreateOncallAnnotation = huma.Operation{
 }
 
 type CreateOncallAnnotationRequestAttributes struct {
-	EventId         uuid.UUID      `json:"eventId"`
-	RosterId        uuid.UUID      `json:"rosterId"`
-	Notes           string         `json:"notes"`
-	MinutesOccupied int            `json:"minutesOccupied"`
-	Tags            []string       `json:"tags"`
-	AlertFeedback   *AlertFeedback `json:"alertFeedback,omitempty"`
+	EventId         uuid.UUID              `json:"eventId"`
+	RosterId        uuid.UUID              `json:"rosterId"`
+	Notes           string                 `json:"notes"`
+	MinutesOccupied int                    `json:"minutesOccupied"`
+	Tags            []string               `json:"tags"`
+	AlertFeedback   *AlertFeedbackInstance `json:"alertFeedback,omitempty"`
 }
 type CreateOncallAnnotationRequest RequestWithBodyAttributes[CreateOncallAnnotationRequestAttributes]
 type CreateOncallAnnotationResponse ItemResponse[OncallAnnotation]
@@ -215,10 +226,10 @@ var UpdateOncallAnnotation = huma.Operation{
 }
 
 type UpdateOncallAnnotationRequestAttributes struct {
-	Notes           *string        `json:"notes,omitempty"`
-	MinutesOccupied *int           `json:"minutesOccupied,omitempty"`
-	Tags            *[]string      `json:"tags,omitempty"`
-	AlertFeedback   *AlertFeedback `json:"alertFeedback,omitempty"`
+	Notes           *string                `json:"notes,omitempty"`
+	MinutesOccupied *int                   `json:"minutesOccupied,omitempty"`
+	Tags            *[]string              `json:"tags,omitempty"`
+	AlertFeedback   *AlertFeedbackInstance `json:"alertFeedback,omitempty"`
 }
 type UpdateOncallAnnotationRequest UpdateIdRequest[UpdateOncallAnnotationRequestAttributes]
 type UpdateOncallAnnotationResponse ItemResponse[OncallAnnotation]

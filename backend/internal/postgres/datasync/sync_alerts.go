@@ -3,11 +3,11 @@ package datasync
 import (
 	"context"
 	"fmt"
-	"github.com/rezible/rezible/ent/alert"
 	"iter"
 
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
+	"github.com/rezible/rezible/ent/alert"
 )
 
 func syncAlerts(ctx context.Context, db *ent.Client, prov rez.AlertDataProvider) error {

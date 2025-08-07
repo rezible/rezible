@@ -16,15 +16,14 @@ import (
 )
 
 var (
-	ErrNoAuthSession          = errors.New("no auth session")
-	ErrAuthSessionExpired     = errors.New("auth session expired")
-	ErrAuthSessionUserMissing = errors.New("missing auth session user")
-
-	ErrUnauthorized = errors.New("unauthorized")
-
 	BackendUrl  = "http://localhost:8888"
 	FrontendUrl = "http://localhost:5173"
 	DebugMode   = true
+
+	ErrNoAuthSession          = errors.New("no auth session")
+	ErrAuthSessionExpired     = errors.New("auth session expired")
+	ErrAuthSessionUserMissing = errors.New("missing auth session user")
+	ErrUnauthorized           = errors.New("unauthorized")
 )
 
 type ListParams = ent.ListParams
@@ -233,6 +232,25 @@ type (
 		ListParams
 	}
 
+	//GetAlertEventsParams struct {
+	//	AlertId  uuid.UUID
+	//	RosterId uuid.UUID
+	//	From     time.Time
+	//	To       time.Time
+	//}
+
+	//AlertMetrics struct {
+	//	TriggerCount                     int `json:"triggerCount"`
+	//	NightCount                       int `json:"triggersNight"`
+	//	IncidentLinkCount                int `json:"incidentLinks"`
+	//	FeedbackCount                    int `json:"feedbackCount"`
+	//	FeedbackActionable               int `json:"actionable"`
+	//	FeedbackAccurate                 int `json:"accurate"`
+	//	FeedbackAccurateUnknown          int `json:"accurateUnknown"`
+	//	FeedbackDocumentationAvailable   int `json:"docsAvailable"`
+	//	FeedbackDocumentationNeedsUpdate int `json:"docsNeedsUpdate"`
+	//}
+
 	AlertService interface {
 		ListAlerts(context.Context, ListAlertsParams) ([]*ent.Alert, int, error)
 		GetAlert(context.Context, uuid.UUID) (*ent.Alert, error)
@@ -331,24 +349,30 @@ type (
 )
 
 type (
-	ListOncallEventsParams struct {
-		ListParams
-		From            time.Time
-		To              time.Time
-		RosterID        uuid.UUID
-		WithAnnotations bool
-	}
-
-	ListOncallAnnotationsParams struct {
-		ListParams
-		From              time.Time
-		To                time.Time
-		RosterID          uuid.UUID
-		Shift             *ent.OncallShift
+	ExpandAnnotationsParams struct {
 		WithCreator       bool
 		WithRoster        bool
 		WithAlertFeedback bool
 		WithEvent         bool
+	}
+
+	ListOncallEventsParams struct {
+		ListParams
+		From               time.Time
+		To                 time.Time
+		RosterID           uuid.UUID
+		AnnotationRosterID uuid.UUID
+		AlertID            uuid.UUID
+		WithAnnotations    *ExpandAnnotationsParams
+	}
+
+	ListOncallAnnotationsParams struct {
+		ListParams
+		From     time.Time
+		To       time.Time
+		RosterID uuid.UUID
+		Shift    *ent.OncallShift
+		Expand   ExpandAnnotationsParams
 	}
 
 	LookupOncallProviderEventFn func(ctx context.Context, id string) (*ent.OncallEvent, error)

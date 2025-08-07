@@ -6,12 +6,12 @@ import (
 
 	"entgo.io/ent/dialect/sql"
 	"github.com/google/uuid"
-	
+
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
 	"github.com/rezible/rezible/ent/alertfeedback"
 	"github.com/rezible/rezible/ent/oncallannotation"
-	"github.com/rezible/rezible/ent/oncallevent"
+	oe "github.com/rezible/rezible/ent/oncallevent"
 )
 
 type OncallEventsService struct {
@@ -36,24 +36,43 @@ func (s *OncallEventsService) GetEvent(ctx context.Context, id uuid.UUID) (*ent.
 	return s.db.OncallEvent.Get(ctx, id)
 }
 
+func setAnnotationsQueryParams(q *ent.OncallAnnotationQuery, p rez.ExpandAnnotationsParams) {
+	if p.WithCreator {
+		q.WithCreator()
+	}
+	if p.WithRoster {
+		q.WithRoster()
+	}
+	if p.WithAlertFeedback {
+		q.WithAlertFeedback()
+	}
+	if p.WithEvent {
+		q.WithEvent()
+	}
+}
+
 func (s *OncallEventsService) ListEvents(ctx context.Context, params rez.ListOncallEventsParams) ([]*ent.OncallEvent, int, error) {
 	query := s.db.OncallEvent.Query().
-		Where(oncallevent.And(oncallevent.TimestampGT(params.From), oncallevent.TimestampLT(params.To)))
+		Where(oe.And(oe.TimestampGT(params.From), oe.TimestampLT(params.To)))
 	if params.RosterID != uuid.Nil {
-		query.Where(oncallevent.RosterID(params.RosterID))
+		query.Where(oe.RosterID(params.RosterID))
+	}
+	if params.AlertID != uuid.Nil {
+		query.Where(oe.AlertID(params.AlertID))
 	}
 	order := sql.OrderDesc()
 	if params.OrderAsc {
 		order = sql.OrderAsc()
 	}
-	query.Order(oncallevent.ByTimestamp(order))
+	query.Order(oe.ByTimestamp(order))
 	query.Offset(params.Offset)
 	query.Limit(params.GetLimit())
-	if params.WithAnnotations {
+	if ap := params.WithAnnotations; ap != nil {
 		query.WithAnnotations(func(q *ent.OncallAnnotationQuery) {
-			if params.RosterID != uuid.Nil {
-				q.Where(oncallannotation.RosterID(params.RosterID))
+			if params.AnnotationRosterID != uuid.Nil {
+				q.Where(oncallannotation.RosterID(params.AnnotationRosterID))
 			}
+			setAnnotationsQueryParams(q, *ap)
 		})
 	}
 
@@ -61,26 +80,14 @@ func (s *OncallEventsService) ListEvents(ctx context.Context, params rez.ListOnc
 }
 
 func (s *OncallEventsService) GetProviderEvent(ctx context.Context, providerId string) (*ent.OncallEvent, error) {
-	return s.db.OncallEvent.Query().Where(oncallevent.ProviderID(providerId)).First(ctx)
+	return s.db.OncallEvent.Query().Where(oe.ProviderID(providerId)).First(ctx)
 }
 
 func (s *OncallEventsService) ListAnnotations(ctx context.Context, params rez.ListOncallAnnotationsParams) ([]*ent.OncallAnnotation, int, error) {
 	query := s.db.OncallAnnotation.Query().
 		Limit(params.GetLimit()).
 		Offset(params.Offset)
-
-	if params.WithCreator {
-		query.WithCreator()
-	}
-	if params.WithRoster {
-		query.WithRoster()
-	}
-	if params.WithAlertFeedback {
-		query.WithAlertFeedback()
-	}
-	if params.WithEvent {
-		query.WithEvent()
-	}
+	setAnnotationsQueryParams(query, params.Expand)
 
 	rosterId := params.RosterID
 	if params.Shift != nil {
@@ -115,7 +122,7 @@ func (s *OncallEventsService) createAnnotation(ctx context.Context, anno *ent.On
 	eventId := anno.EventID
 	if eventId == uuid.Nil && anno.Edges.Event != nil {
 		e := anno.Edges.Event
-		pred := oncallevent.And(oncallevent.ProviderID(e.ProviderID))
+		pred := oe.And(oe.ProviderID(e.ProviderID))
 		existingId, eventErr := s.db.OncallEvent.Query().Where(pred).OnlyID(ctx)
 		if eventErr != nil && !ent.IsNotFound(eventErr) {
 			return nil, fmt.Errorf("failed to check for existing oncall event: %w", eventErr)

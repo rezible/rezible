@@ -73,7 +73,7 @@ export class OncallEventsTableState {
 		limit: this.paginator.limit,
 		offset: this.paginator.offset,
 		withAnnotations: true,
-	})
+	});
 	private listEventsQueryOptions = $derived(listOncallEventsOptions({ query: this.listEventsQueryData }));
 
 	private listEventsQuery = createQuery(() => ({

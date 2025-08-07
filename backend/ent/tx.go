@@ -16,8 +16,6 @@ type Tx struct {
 	Alert *AlertClient
 	// AlertFeedback is the client for interacting with the AlertFeedback builders.
 	AlertFeedback *AlertFeedbackClient
-	// AlertMetrics is the client for interacting with the AlertMetrics builders.
-	AlertMetrics *AlertMetricsClient
 	// Incident is the client for interacting with the Incident builders.
 	Incident *IncidentClient
 	// IncidentDebrief is the client for interacting with the IncidentDebrief builders.
@@ -261,7 +259,6 @@ func (tx *Tx) Client() *Client {
 func (tx *Tx) init() {
 	tx.Alert = NewAlertClient(tx.config)
 	tx.AlertFeedback = NewAlertFeedbackClient(tx.config)
-	tx.AlertMetrics = NewAlertMetricsClient(tx.config)
 	tx.Incident = NewIncidentClient(tx.config)
 	tx.IncidentDebrief = NewIncidentDebriefClient(tx.config)
 	tx.IncidentDebriefMessage = NewIncidentDebriefMessageClient(tx.config)

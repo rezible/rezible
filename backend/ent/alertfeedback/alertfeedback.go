@@ -18,6 +18,8 @@ const (
 	FieldID = "id"
 	// FieldTenantID holds the string denoting the tenant_id field in the database.
 	FieldTenantID = "tenant_id"
+	// FieldAlertID holds the string denoting the alert_id field in the database.
+	FieldAlertID = "alert_id"
 	// FieldAnnotationID holds the string denoting the annotation_id field in the database.
 	FieldAnnotationID = "annotation_id"
 	// FieldActionable holds the string denoting the actionable field in the database.
@@ -28,6 +30,8 @@ const (
 	FieldDocumentationAvailable = "documentation_available"
 	// EdgeTenant holds the string denoting the tenant edge name in mutations.
 	EdgeTenant = "tenant"
+	// EdgeAlert holds the string denoting the alert edge name in mutations.
+	EdgeAlert = "alert"
 	// EdgeAnnotation holds the string denoting the annotation edge name in mutations.
 	EdgeAnnotation = "annotation"
 	// Table holds the table name of the alertfeedback in the database.
@@ -39,6 +43,13 @@ const (
 	TenantInverseTable = "tenants"
 	// TenantColumn is the table column denoting the tenant relation/edge.
 	TenantColumn = "tenant_id"
+	// AlertTable is the table that holds the alert relation/edge.
+	AlertTable = "alert_feedbacks"
+	// AlertInverseTable is the table name for the Alert entity.
+	// It exists in this package in order to avoid circular dependency with the "alert" package.
+	AlertInverseTable = "alerts"
+	// AlertColumn is the table column denoting the alert relation/edge.
+	AlertColumn = "alert_id"
 	// AnnotationTable is the table that holds the annotation relation/edge.
 	AnnotationTable = "alert_feedbacks"
 	// AnnotationInverseTable is the table name for the OncallAnnotation entity.
@@ -52,6 +63,7 @@ const (
 var Columns = []string{
 	FieldID,
 	FieldTenantID,
+	FieldAlertID,
 	FieldAnnotationID,
 	FieldActionable,
 	FieldAccurate,
@@ -141,6 +153,11 @@ func ByTenantID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldTenantID, opts...).ToFunc()
 }
 
+// ByAlertID orders the results by the alert_id field.
+func ByAlertID(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldAlertID, opts...).ToFunc()
+}
+
 // ByAnnotationID orders the results by the annotation_id field.
 func ByAnnotationID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldAnnotationID, opts...).ToFunc()
@@ -168,6 +185,13 @@ func ByTenantField(field string, opts ...sql.OrderTermOption) OrderOption {
 	}
 }
 
+// ByAlertField orders the results by alert field.
+func ByAlertField(field string, opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newAlertStep(), sql.OrderByField(field, opts...))
+	}
+}
+
 // ByAnnotationField orders the results by annotation field.
 func ByAnnotationField(field string, opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
@@ -179,6 +203,13 @@ func newTenantStep() *sqlgraph.Step {
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(TenantInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.M2O, false, TenantTable, TenantColumn),
+	)
+}
+func newAlertStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(AlertInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.M2O, true, AlertTable, AlertColumn),
 	)
 }
 func newAnnotationStep() *sqlgraph.Step {

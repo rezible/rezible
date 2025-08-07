@@ -13,6 +13,7 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
+	"github.com/rezible/rezible/ent/alert"
 	"github.com/rezible/rezible/ent/alertfeedback"
 	"github.com/rezible/rezible/ent/oncallannotation"
 	"github.com/rezible/rezible/ent/predicate"
@@ -27,6 +28,7 @@ type AlertFeedbackQuery struct {
 	inters         []Interceptor
 	predicates     []predicate.AlertFeedback
 	withTenant     *TenantQuery
+	withAlert      *AlertQuery
 	withAnnotation *OncallAnnotationQuery
 	modifiers      []func(*sql.Selector)
 	// intermediate query (i.e. traversal path).
@@ -80,6 +82,28 @@ func (afq *AlertFeedbackQuery) QueryTenant() *TenantQuery {
 			sqlgraph.From(alertfeedback.Table, alertfeedback.FieldID, selector),
 			sqlgraph.To(tenant.Table, tenant.FieldID),
 			sqlgraph.Edge(sqlgraph.M2O, false, alertfeedback.TenantTable, alertfeedback.TenantColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(afq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryAlert chains the current query on the "alert" edge.
+func (afq *AlertFeedbackQuery) QueryAlert() *AlertQuery {
+	query := (&AlertClient{config: afq.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := afq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := afq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(alertfeedback.Table, alertfeedback.FieldID, selector),
+			sqlgraph.To(alert.Table, alert.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, alertfeedback.AlertTable, alertfeedback.AlertColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(afq.driver.Dialect(), step)
 		return fromU, nil
@@ -302,6 +326,7 @@ func (afq *AlertFeedbackQuery) Clone() *AlertFeedbackQuery {
 		inters:         append([]Interceptor{}, afq.inters...),
 		predicates:     append([]predicate.AlertFeedback{}, afq.predicates...),
 		withTenant:     afq.withTenant.Clone(),
+		withAlert:      afq.withAlert.Clone(),
 		withAnnotation: afq.withAnnotation.Clone(),
 		// clone intermediate query.
 		sql:       afq.sql.Clone(),
@@ -318,6 +343,17 @@ func (afq *AlertFeedbackQuery) WithTenant(opts ...func(*TenantQuery)) *AlertFeed
 		opt(query)
 	}
 	afq.withTenant = query
+	return afq
+}
+
+// WithAlert tells the query-builder to eager-load the nodes that are connected to
+// the "alert" edge. The optional arguments are used to configure the query builder of the edge.
+func (afq *AlertFeedbackQuery) WithAlert(opts ...func(*AlertQuery)) *AlertFeedbackQuery {
+	query := (&AlertClient{config: afq.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	afq.withAlert = query
 	return afq
 }
 
@@ -416,8 +452,9 @@ func (afq *AlertFeedbackQuery) sqlAll(ctx context.Context, hooks ...queryHook) (
 	var (
 		nodes       = []*AlertFeedback{}
 		_spec       = afq.querySpec()
-		loadedTypes = [2]bool{
+		loadedTypes = [3]bool{
 			afq.withTenant != nil,
+			afq.withAlert != nil,
 			afq.withAnnotation != nil,
 		}
 	)
@@ -445,6 +482,12 @@ func (afq *AlertFeedbackQuery) sqlAll(ctx context.Context, hooks ...queryHook) (
 	if query := afq.withTenant; query != nil {
 		if err := afq.loadTenant(ctx, query, nodes, nil,
 			func(n *AlertFeedback, e *Tenant) { n.Edges.Tenant = e }); err != nil {
+			return nil, err
+		}
+	}
+	if query := afq.withAlert; query != nil {
+		if err := afq.loadAlert(ctx, query, nodes, nil,
+			func(n *AlertFeedback, e *Alert) { n.Edges.Alert = e }); err != nil {
 			return nil, err
 		}
 	}
@@ -479,6 +522,35 @@ func (afq *AlertFeedbackQuery) loadTenant(ctx context.Context, query *TenantQuer
 		nodes, ok := nodeids[n.ID]
 		if !ok {
 			return fmt.Errorf(`unexpected foreign-key "tenant_id" returned %v`, n.ID)
+		}
+		for i := range nodes {
+			assign(nodes[i], n)
+		}
+	}
+	return nil
+}
+func (afq *AlertFeedbackQuery) loadAlert(ctx context.Context, query *AlertQuery, nodes []*AlertFeedback, init func(*AlertFeedback), assign func(*AlertFeedback, *Alert)) error {
+	ids := make([]uuid.UUID, 0, len(nodes))
+	nodeids := make(map[uuid.UUID][]*AlertFeedback)
+	for i := range nodes {
+		fk := nodes[i].AlertID
+		if _, ok := nodeids[fk]; !ok {
+			ids = append(ids, fk)
+		}
+		nodeids[fk] = append(nodeids[fk], nodes[i])
+	}
+	if len(ids) == 0 {
+		return nil
+	}
+	query.Where(alert.IDIn(ids...))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		nodes, ok := nodeids[n.ID]
+		if !ok {
+			return fmt.Errorf(`unexpected foreign-key "alert_id" returned %v`, n.ID)
 		}
 		for i := range nodes {
 			assign(nodes[i], n)
@@ -546,6 +618,9 @@ func (afq *AlertFeedbackQuery) querySpec() *sqlgraph.QuerySpec {
 		}
 		if afq.withTenant != nil {
 			_spec.Node.AddColumnOnce(alertfeedback.FieldTenantID)
+		}
+		if afq.withAlert != nil {
+			_spec.Node.AddColumnOnce(alertfeedback.FieldAlertID)
 		}
 		if afq.withAnnotation != nil {
 			_spec.Node.AddColumnOnce(alertfeedback.FieldAnnotationID)

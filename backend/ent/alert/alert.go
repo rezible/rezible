@@ -22,12 +22,12 @@ const (
 	FieldProviderID = "provider_id"
 	// EdgeTenant holds the string denoting the tenant edge name in mutations.
 	EdgeTenant = "tenant"
-	// EdgeMetrics holds the string denoting the metrics edge name in mutations.
-	EdgeMetrics = "metrics"
 	// EdgePlaybooks holds the string denoting the playbooks edge name in mutations.
 	EdgePlaybooks = "playbooks"
-	// EdgeInstances holds the string denoting the instances edge name in mutations.
-	EdgeInstances = "instances"
+	// EdgeEvents holds the string denoting the events edge name in mutations.
+	EdgeEvents = "events"
+	// EdgeFeedback holds the string denoting the feedback edge name in mutations.
+	EdgeFeedback = "feedback"
 	// Table holds the table name of the alert in the database.
 	Table = "alerts"
 	// TenantTable is the table that holds the tenant relation/edge.
@@ -37,25 +37,25 @@ const (
 	TenantInverseTable = "tenants"
 	// TenantColumn is the table column denoting the tenant relation/edge.
 	TenantColumn = "tenant_id"
-	// MetricsTable is the table that holds the metrics relation/edge.
-	MetricsTable = "alert_metrics"
-	// MetricsInverseTable is the table name for the AlertMetrics entity.
-	// It exists in this package in order to avoid circular dependency with the "alertmetrics" package.
-	MetricsInverseTable = "alert_metrics"
-	// MetricsColumn is the table column denoting the metrics relation/edge.
-	MetricsColumn = "alert_id"
 	// PlaybooksTable is the table that holds the playbooks relation/edge. The primary key declared below.
 	PlaybooksTable = "playbook_alerts"
 	// PlaybooksInverseTable is the table name for the Playbook entity.
 	// It exists in this package in order to avoid circular dependency with the "playbook" package.
 	PlaybooksInverseTable = "playbooks"
-	// InstancesTable is the table that holds the instances relation/edge.
-	InstancesTable = "oncall_events"
-	// InstancesInverseTable is the table name for the OncallEvent entity.
+	// EventsTable is the table that holds the events relation/edge.
+	EventsTable = "oncall_events"
+	// EventsInverseTable is the table name for the OncallEvent entity.
 	// It exists in this package in order to avoid circular dependency with the "oncallevent" package.
-	InstancesInverseTable = "oncall_events"
-	// InstancesColumn is the table column denoting the instances relation/edge.
-	InstancesColumn = "alert_id"
+	EventsInverseTable = "oncall_events"
+	// EventsColumn is the table column denoting the events relation/edge.
+	EventsColumn = "alert_id"
+	// FeedbackTable is the table that holds the feedback relation/edge.
+	FeedbackTable = "alert_feedbacks"
+	// FeedbackInverseTable is the table name for the AlertFeedback entity.
+	// It exists in this package in order to avoid circular dependency with the "alertfeedback" package.
+	FeedbackInverseTable = "alert_feedbacks"
+	// FeedbackColumn is the table column denoting the feedback relation/edge.
+	FeedbackColumn = "alert_id"
 )
 
 // Columns holds all SQL columns for alert fields.
@@ -124,20 +124,6 @@ func ByTenantField(field string, opts ...sql.OrderTermOption) OrderOption {
 	}
 }
 
-// ByMetricsCount orders the results by metrics count.
-func ByMetricsCount(opts ...sql.OrderTermOption) OrderOption {
-	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborsCount(s, newMetricsStep(), opts...)
-	}
-}
-
-// ByMetrics orders the results by metrics terms.
-func ByMetrics(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
-	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborTerms(s, newMetricsStep(), append([]sql.OrderTerm{term}, terms...)...)
-	}
-}
-
 // ByPlaybooksCount orders the results by playbooks count.
 func ByPlaybooksCount(opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
@@ -152,17 +138,31 @@ func ByPlaybooks(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 	}
 }
 
-// ByInstancesCount orders the results by instances count.
-func ByInstancesCount(opts ...sql.OrderTermOption) OrderOption {
+// ByEventsCount orders the results by events count.
+func ByEventsCount(opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborsCount(s, newInstancesStep(), opts...)
+		sqlgraph.OrderByNeighborsCount(s, newEventsStep(), opts...)
 	}
 }
 
-// ByInstances orders the results by instances terms.
-func ByInstances(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+// ByEvents orders the results by events terms.
+func ByEvents(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborTerms(s, newInstancesStep(), append([]sql.OrderTerm{term}, terms...)...)
+		sqlgraph.OrderByNeighborTerms(s, newEventsStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
+
+// ByFeedbackCount orders the results by feedback count.
+func ByFeedbackCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newFeedbackStep(), opts...)
+	}
+}
+
+// ByFeedback orders the results by feedback terms.
+func ByFeedback(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newFeedbackStep(), append([]sql.OrderTerm{term}, terms...)...)
 	}
 }
 func newTenantStep() *sqlgraph.Step {
@@ -172,13 +172,6 @@ func newTenantStep() *sqlgraph.Step {
 		sqlgraph.Edge(sqlgraph.M2O, false, TenantTable, TenantColumn),
 	)
 }
-func newMetricsStep() *sqlgraph.Step {
-	return sqlgraph.NewStep(
-		sqlgraph.From(Table, FieldID),
-		sqlgraph.To(MetricsInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.O2M, true, MetricsTable, MetricsColumn),
-	)
-}
 func newPlaybooksStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
@@ -186,10 +179,17 @@ func newPlaybooksStep() *sqlgraph.Step {
 		sqlgraph.Edge(sqlgraph.M2M, true, PlaybooksTable, PlaybooksPrimaryKey...),
 	)
 }
-func newInstancesStep() *sqlgraph.Step {
+func newEventsStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
-		sqlgraph.To(InstancesInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.O2M, true, InstancesTable, InstancesColumn),
+		sqlgraph.To(EventsInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, true, EventsTable, EventsColumn),
+	)
+}
+func newFeedbackStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(FeedbackInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, false, FeedbackTable, FeedbackColumn),
 	)
 }

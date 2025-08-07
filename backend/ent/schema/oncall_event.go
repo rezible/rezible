@@ -18,7 +18,7 @@ func (OncallEvent) Mixin() []ent.Mixin {
 	}
 }
 
-var oncallEventKind = []string{"alert", "page", "message", "other"}
+var oncallEventKind = []string{"alert", "interrupt", "message", "other"}
 
 func (OncallEvent) Fields() []ent.Field {
 	return []ent.Field{

@@ -242,29 +242,6 @@ func HasTenantWith(preds ...predicate.Tenant) predicate.Alert {
 	})
 }
 
-// HasMetrics applies the HasEdge predicate on the "metrics" edge.
-func HasMetrics() predicate.Alert {
-	return predicate.Alert(func(s *sql.Selector) {
-		step := sqlgraph.NewStep(
-			sqlgraph.From(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, true, MetricsTable, MetricsColumn),
-		)
-		sqlgraph.HasNeighbors(s, step)
-	})
-}
-
-// HasMetricsWith applies the HasEdge predicate on the "metrics" edge with a given conditions (other predicates).
-func HasMetricsWith(preds ...predicate.AlertMetrics) predicate.Alert {
-	return predicate.Alert(func(s *sql.Selector) {
-		step := newMetricsStep()
-		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
-			for _, p := range preds {
-				p(s)
-			}
-		})
-	})
-}
-
 // HasPlaybooks applies the HasEdge predicate on the "playbooks" edge.
 func HasPlaybooks() predicate.Alert {
 	return predicate.Alert(func(s *sql.Selector) {
@@ -288,21 +265,44 @@ func HasPlaybooksWith(preds ...predicate.Playbook) predicate.Alert {
 	})
 }
 
-// HasInstances applies the HasEdge predicate on the "instances" edge.
-func HasInstances() predicate.Alert {
+// HasEvents applies the HasEdge predicate on the "events" edge.
+func HasEvents() predicate.Alert {
 	return predicate.Alert(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, true, InstancesTable, InstancesColumn),
+			sqlgraph.Edge(sqlgraph.O2M, true, EventsTable, EventsColumn),
 		)
 		sqlgraph.HasNeighbors(s, step)
 	})
 }
 
-// HasInstancesWith applies the HasEdge predicate on the "instances" edge with a given conditions (other predicates).
-func HasInstancesWith(preds ...predicate.OncallEvent) predicate.Alert {
+// HasEventsWith applies the HasEdge predicate on the "events" edge with a given conditions (other predicates).
+func HasEventsWith(preds ...predicate.OncallEvent) predicate.Alert {
 	return predicate.Alert(func(s *sql.Selector) {
-		step := newInstancesStep()
+		step := newEventsStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasFeedback applies the HasEdge predicate on the "feedback" edge.
+func HasFeedback() predicate.Alert {
+	return predicate.Alert(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, FeedbackTable, FeedbackColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasFeedbackWith applies the HasEdge predicate on the "feedback" edge with a given conditions (other predicates).
+func HasFeedbackWith(preds ...predicate.AlertFeedback) predicate.Alert {
+	return predicate.Alert(func(s *sql.Selector) {
+		step := newFeedbackStep()
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)

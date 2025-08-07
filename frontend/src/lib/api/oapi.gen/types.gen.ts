@@ -77,10 +77,11 @@ export type Alert = {
 
 export type AlertAttributes = {
     description: string;
+    linkedPlaybooks: Array<Playbook>;
     title: string;
 };
 
-export type AlertFeedback = {
+export type AlertFeedbackInstance = {
     accurate: 'yes' | 'no' | 'unknown';
     actionable: boolean;
     documentationAvailable: 'yes' | 'no' | 'needs_update';
@@ -357,7 +358,7 @@ export type CreateMeetingSessionResponseBody = {
 };
 
 export type CreateOncallAnnotationRequestAttributes = {
-    alertFeedback?: AlertFeedback;
+    alertFeedback?: AlertFeedbackInstance;
     eventId: string;
     minutesOccupied: number;
     notes: string;
@@ -1703,7 +1704,7 @@ export type OncallAnnotation = {
 };
 
 export type OncallAnnotationAttributes = {
-    alertFeedback?: AlertFeedback;
+    alertFeedback?: AlertFeedbackInstance;
     creator: ExpandableUserAttributes;
     event: ExpandableOncallEventAttributes;
     minutesOccupied: number;
@@ -2396,7 +2397,7 @@ export type UpdateMeetingSessionResponseBody = {
 };
 
 export type UpdateOncallAnnotationRequestAttributes = {
-    alertFeedback?: AlertFeedback;
+    alertFeedback?: AlertFeedbackInstance;
     minutesOccupied?: number;
     notes?: string;
     tags?: Array<string>;
@@ -2792,7 +2793,7 @@ export type ListAlertsData = {
         offset?: number;
         search?: string;
         archived?: boolean;
-        teamId?: string;
+        rosterId?: string;
     };
     url: '/alerts';
 };
@@ -2840,7 +2841,9 @@ export type GetAlertData = {
     path: {
         id: string;
     };
-    query?: never;
+    query?: {
+        includeAnnotations?: boolean;
+    };
     url: '/alerts/{id}';
 };
 
@@ -6445,7 +6448,9 @@ export type ListOncallEventsData = {
         from?: string;
         to?: string;
         shiftId?: string;
+        alertId?: string;
         rosterId?: string;
+        annotationRosterId?: string;
         withAnnotations?: boolean;
     };
     url: '/oncall/events';

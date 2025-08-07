@@ -1,7 +1,11 @@
-import { getAlertOptions } from "$lib/api";
+import { getAlertOptions, listOncallEventsOptions, type ListOncallEventsData } from "$lib/api";
 import type { Getter } from "$lib/utils.svelte";
+import { getLocalTimeZone, now } from "@internationalized/date";
 import { createQuery } from "@tanstack/svelte-query";
 import { Context, watch } from "runed";
+
+const to = now(getLocalTimeZone()).toAbsoluteString();
+const from = now(getLocalTimeZone()).subtract({ days: 7 }).toAbsoluteString();
 
 export class AlertViewState {
 	alertId = $state<string>(null!);
@@ -14,6 +18,10 @@ export class AlertViewState {
 		this.alertId = idFn();
 		watch(idFn, id => {this.alertId = id});
 	}
+
+	private eventsQueryData = $derived<ListOncallEventsData["query"]>({ from, to, alertId: this.alertId })
+	private eventsQuery = createQuery(() => listOncallEventsOptions({ query: this.eventsQueryData }));
+	events = $derived(this.eventsQuery.data?.data);
 }
 
 const alertViewStateCtx = new Context<AlertViewState>("alertView");

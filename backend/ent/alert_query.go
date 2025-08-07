@@ -15,7 +15,7 @@ import (
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/alert"
-	"github.com/rezible/rezible/ent/alertmetrics"
+	"github.com/rezible/rezible/ent/alertfeedback"
 	"github.com/rezible/rezible/ent/oncallevent"
 	"github.com/rezible/rezible/ent/playbook"
 	"github.com/rezible/rezible/ent/predicate"
@@ -30,9 +30,9 @@ type AlertQuery struct {
 	inters        []Interceptor
 	predicates    []predicate.Alert
 	withTenant    *TenantQuery
-	withMetrics   *AlertMetricsQuery
 	withPlaybooks *PlaybookQuery
-	withInstances *OncallEventQuery
+	withEvents    *OncallEventQuery
+	withFeedback  *AlertFeedbackQuery
 	modifiers     []func(*sql.Selector)
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
@@ -92,28 +92,6 @@ func (aq *AlertQuery) QueryTenant() *TenantQuery {
 	return query
 }
 
-// QueryMetrics chains the current query on the "metrics" edge.
-func (aq *AlertQuery) QueryMetrics() *AlertMetricsQuery {
-	query := (&AlertMetricsClient{config: aq.config}).Query()
-	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
-		if err := aq.prepareQuery(ctx); err != nil {
-			return nil, err
-		}
-		selector := aq.sqlQuery(ctx)
-		if err := selector.Err(); err != nil {
-			return nil, err
-		}
-		step := sqlgraph.NewStep(
-			sqlgraph.From(alert.Table, alert.FieldID, selector),
-			sqlgraph.To(alertmetrics.Table, alertmetrics.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, true, alert.MetricsTable, alert.MetricsColumn),
-		)
-		fromU = sqlgraph.SetNeighbors(aq.driver.Dialect(), step)
-		return fromU, nil
-	}
-	return query
-}
-
 // QueryPlaybooks chains the current query on the "playbooks" edge.
 func (aq *AlertQuery) QueryPlaybooks() *PlaybookQuery {
 	query := (&PlaybookClient{config: aq.config}).Query()
@@ -136,8 +114,8 @@ func (aq *AlertQuery) QueryPlaybooks() *PlaybookQuery {
 	return query
 }
 
-// QueryInstances chains the current query on the "instances" edge.
-func (aq *AlertQuery) QueryInstances() *OncallEventQuery {
+// QueryEvents chains the current query on the "events" edge.
+func (aq *AlertQuery) QueryEvents() *OncallEventQuery {
 	query := (&OncallEventClient{config: aq.config}).Query()
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
 		if err := aq.prepareQuery(ctx); err != nil {
@@ -150,7 +128,29 @@ func (aq *AlertQuery) QueryInstances() *OncallEventQuery {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(alert.Table, alert.FieldID, selector),
 			sqlgraph.To(oncallevent.Table, oncallevent.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, true, alert.InstancesTable, alert.InstancesColumn),
+			sqlgraph.Edge(sqlgraph.O2M, true, alert.EventsTable, alert.EventsColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(aq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryFeedback chains the current query on the "feedback" edge.
+func (aq *AlertQuery) QueryFeedback() *AlertFeedbackQuery {
+	query := (&AlertFeedbackClient{config: aq.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := aq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := aq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(alert.Table, alert.FieldID, selector),
+			sqlgraph.To(alertfeedback.Table, alertfeedback.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, alert.FeedbackTable, alert.FeedbackColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(aq.driver.Dialect(), step)
 		return fromU, nil
@@ -351,9 +351,9 @@ func (aq *AlertQuery) Clone() *AlertQuery {
 		inters:        append([]Interceptor{}, aq.inters...),
 		predicates:    append([]predicate.Alert{}, aq.predicates...),
 		withTenant:    aq.withTenant.Clone(),
-		withMetrics:   aq.withMetrics.Clone(),
 		withPlaybooks: aq.withPlaybooks.Clone(),
-		withInstances: aq.withInstances.Clone(),
+		withEvents:    aq.withEvents.Clone(),
+		withFeedback:  aq.withFeedback.Clone(),
 		// clone intermediate query.
 		sql:       aq.sql.Clone(),
 		path:      aq.path,
@@ -372,17 +372,6 @@ func (aq *AlertQuery) WithTenant(opts ...func(*TenantQuery)) *AlertQuery {
 	return aq
 }
 
-// WithMetrics tells the query-builder to eager-load the nodes that are connected to
-// the "metrics" edge. The optional arguments are used to configure the query builder of the edge.
-func (aq *AlertQuery) WithMetrics(opts ...func(*AlertMetricsQuery)) *AlertQuery {
-	query := (&AlertMetricsClient{config: aq.config}).Query()
-	for _, opt := range opts {
-		opt(query)
-	}
-	aq.withMetrics = query
-	return aq
-}
-
 // WithPlaybooks tells the query-builder to eager-load the nodes that are connected to
 // the "playbooks" edge. The optional arguments are used to configure the query builder of the edge.
 func (aq *AlertQuery) WithPlaybooks(opts ...func(*PlaybookQuery)) *AlertQuery {
@@ -394,14 +383,25 @@ func (aq *AlertQuery) WithPlaybooks(opts ...func(*PlaybookQuery)) *AlertQuery {
 	return aq
 }
 
-// WithInstances tells the query-builder to eager-load the nodes that are connected to
-// the "instances" edge. The optional arguments are used to configure the query builder of the edge.
-func (aq *AlertQuery) WithInstances(opts ...func(*OncallEventQuery)) *AlertQuery {
+// WithEvents tells the query-builder to eager-load the nodes that are connected to
+// the "events" edge. The optional arguments are used to configure the query builder of the edge.
+func (aq *AlertQuery) WithEvents(opts ...func(*OncallEventQuery)) *AlertQuery {
 	query := (&OncallEventClient{config: aq.config}).Query()
 	for _, opt := range opts {
 		opt(query)
 	}
-	aq.withInstances = query
+	aq.withEvents = query
+	return aq
+}
+
+// WithFeedback tells the query-builder to eager-load the nodes that are connected to
+// the "feedback" edge. The optional arguments are used to configure the query builder of the edge.
+func (aq *AlertQuery) WithFeedback(opts ...func(*AlertFeedbackQuery)) *AlertQuery {
+	query := (&AlertFeedbackClient{config: aq.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	aq.withFeedback = query
 	return aq
 }
 
@@ -491,9 +491,9 @@ func (aq *AlertQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Alert,
 		_spec       = aq.querySpec()
 		loadedTypes = [4]bool{
 			aq.withTenant != nil,
-			aq.withMetrics != nil,
 			aq.withPlaybooks != nil,
-			aq.withInstances != nil,
+			aq.withEvents != nil,
+			aq.withFeedback != nil,
 		}
 	)
 	_spec.ScanValues = func(columns []string) ([]any, error) {
@@ -523,13 +523,6 @@ func (aq *AlertQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Alert,
 			return nil, err
 		}
 	}
-	if query := aq.withMetrics; query != nil {
-		if err := aq.loadMetrics(ctx, query, nodes,
-			func(n *Alert) { n.Edges.Metrics = []*AlertMetrics{} },
-			func(n *Alert, e *AlertMetrics) { n.Edges.Metrics = append(n.Edges.Metrics, e) }); err != nil {
-			return nil, err
-		}
-	}
 	if query := aq.withPlaybooks; query != nil {
 		if err := aq.loadPlaybooks(ctx, query, nodes,
 			func(n *Alert) { n.Edges.Playbooks = []*Playbook{} },
@@ -537,10 +530,17 @@ func (aq *AlertQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Alert,
 			return nil, err
 		}
 	}
-	if query := aq.withInstances; query != nil {
-		if err := aq.loadInstances(ctx, query, nodes,
-			func(n *Alert) { n.Edges.Instances = []*OncallEvent{} },
-			func(n *Alert, e *OncallEvent) { n.Edges.Instances = append(n.Edges.Instances, e) }); err != nil {
+	if query := aq.withEvents; query != nil {
+		if err := aq.loadEvents(ctx, query, nodes,
+			func(n *Alert) { n.Edges.Events = []*OncallEvent{} },
+			func(n *Alert, e *OncallEvent) { n.Edges.Events = append(n.Edges.Events, e) }); err != nil {
+			return nil, err
+		}
+	}
+	if query := aq.withFeedback; query != nil {
+		if err := aq.loadFeedback(ctx, query, nodes,
+			func(n *Alert) { n.Edges.Feedback = []*AlertFeedback{} },
+			func(n *Alert, e *AlertFeedback) { n.Edges.Feedback = append(n.Edges.Feedback, e) }); err != nil {
 			return nil, err
 		}
 	}
@@ -573,36 +573,6 @@ func (aq *AlertQuery) loadTenant(ctx context.Context, query *TenantQuery, nodes 
 		for i := range nodes {
 			assign(nodes[i], n)
 		}
-	}
-	return nil
-}
-func (aq *AlertQuery) loadMetrics(ctx context.Context, query *AlertMetricsQuery, nodes []*Alert, init func(*Alert), assign func(*Alert, *AlertMetrics)) error {
-	fks := make([]driver.Value, 0, len(nodes))
-	nodeids := make(map[uuid.UUID]*Alert)
-	for i := range nodes {
-		fks = append(fks, nodes[i].ID)
-		nodeids[nodes[i].ID] = nodes[i]
-		if init != nil {
-			init(nodes[i])
-		}
-	}
-	if len(query.ctx.Fields) > 0 {
-		query.ctx.AppendFieldOnce(alertmetrics.FieldAlertID)
-	}
-	query.Where(predicate.AlertMetrics(func(s *sql.Selector) {
-		s.Where(sql.InValues(s.C(alert.MetricsColumn), fks...))
-	}))
-	neighbors, err := query.All(ctx)
-	if err != nil {
-		return err
-	}
-	for _, n := range neighbors {
-		fk := n.AlertID
-		node, ok := nodeids[fk]
-		if !ok {
-			return fmt.Errorf(`unexpected referenced foreign-key "alert_id" returned %v for node %v`, fk, n.ID)
-		}
-		assign(node, n)
 	}
 	return nil
 }
@@ -667,7 +637,7 @@ func (aq *AlertQuery) loadPlaybooks(ctx context.Context, query *PlaybookQuery, n
 	}
 	return nil
 }
-func (aq *AlertQuery) loadInstances(ctx context.Context, query *OncallEventQuery, nodes []*Alert, init func(*Alert), assign func(*Alert, *OncallEvent)) error {
+func (aq *AlertQuery) loadEvents(ctx context.Context, query *OncallEventQuery, nodes []*Alert, init func(*Alert), assign func(*Alert, *OncallEvent)) error {
 	fks := make([]driver.Value, 0, len(nodes))
 	nodeids := make(map[uuid.UUID]*Alert)
 	for i := range nodes {
@@ -681,7 +651,37 @@ func (aq *AlertQuery) loadInstances(ctx context.Context, query *OncallEventQuery
 		query.ctx.AppendFieldOnce(oncallevent.FieldAlertID)
 	}
 	query.Where(predicate.OncallEvent(func(s *sql.Selector) {
-		s.Where(sql.InValues(s.C(alert.InstancesColumn), fks...))
+		s.Where(sql.InValues(s.C(alert.EventsColumn), fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.AlertID
+		node, ok := nodeids[fk]
+		if !ok {
+			return fmt.Errorf(`unexpected referenced foreign-key "alert_id" returned %v for node %v`, fk, n.ID)
+		}
+		assign(node, n)
+	}
+	return nil
+}
+func (aq *AlertQuery) loadFeedback(ctx context.Context, query *AlertFeedbackQuery, nodes []*Alert, init func(*Alert), assign func(*Alert, *AlertFeedback)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[uuid.UUID]*Alert)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+		if init != nil {
+			init(nodes[i])
+		}
+	}
+	if len(query.ctx.Fields) > 0 {
+		query.ctx.AppendFieldOnce(alertfeedback.FieldAlertID)
+	}
+	query.Where(predicate.AlertFeedback(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(alert.FeedbackColumn), fks...))
 	}))
 	neighbors, err := query.All(ctx)
 	if err != nil {

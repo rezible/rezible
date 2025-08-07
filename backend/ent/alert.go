@@ -34,12 +34,12 @@ type Alert struct {
 type AlertEdges struct {
 	// Tenant holds the value of the tenant edge.
 	Tenant *Tenant `json:"tenant,omitempty"`
-	// Metrics holds the value of the metrics edge.
-	Metrics []*AlertMetrics `json:"metrics,omitempty"`
 	// Playbooks holds the value of the playbooks edge.
 	Playbooks []*Playbook `json:"playbooks,omitempty"`
-	// Instances holds the value of the instances edge.
-	Instances []*OncallEvent `json:"instances,omitempty"`
+	// Events holds the value of the events edge.
+	Events []*OncallEvent `json:"events,omitempty"`
+	// Feedback holds the value of the feedback edge.
+	Feedback []*AlertFeedback `json:"feedback,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
 	loadedTypes [4]bool
@@ -56,31 +56,31 @@ func (e AlertEdges) TenantOrErr() (*Tenant, error) {
 	return nil, &NotLoadedError{edge: "tenant"}
 }
 
-// MetricsOrErr returns the Metrics value or an error if the edge
-// was not loaded in eager-loading.
-func (e AlertEdges) MetricsOrErr() ([]*AlertMetrics, error) {
-	if e.loadedTypes[1] {
-		return e.Metrics, nil
-	}
-	return nil, &NotLoadedError{edge: "metrics"}
-}
-
 // PlaybooksOrErr returns the Playbooks value or an error if the edge
 // was not loaded in eager-loading.
 func (e AlertEdges) PlaybooksOrErr() ([]*Playbook, error) {
-	if e.loadedTypes[2] {
+	if e.loadedTypes[1] {
 		return e.Playbooks, nil
 	}
 	return nil, &NotLoadedError{edge: "playbooks"}
 }
 
-// InstancesOrErr returns the Instances value or an error if the edge
+// EventsOrErr returns the Events value or an error if the edge
 // was not loaded in eager-loading.
-func (e AlertEdges) InstancesOrErr() ([]*OncallEvent, error) {
-	if e.loadedTypes[3] {
-		return e.Instances, nil
+func (e AlertEdges) EventsOrErr() ([]*OncallEvent, error) {
+	if e.loadedTypes[2] {
+		return e.Events, nil
 	}
-	return nil, &NotLoadedError{edge: "instances"}
+	return nil, &NotLoadedError{edge: "events"}
+}
+
+// FeedbackOrErr returns the Feedback value or an error if the edge
+// was not loaded in eager-loading.
+func (e AlertEdges) FeedbackOrErr() ([]*AlertFeedback, error) {
+	if e.loadedTypes[3] {
+		return e.Feedback, nil
+	}
+	return nil, &NotLoadedError{edge: "feedback"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -151,19 +151,19 @@ func (a *Alert) QueryTenant() *TenantQuery {
 	return NewAlertClient(a.config).QueryTenant(a)
 }
 
-// QueryMetrics queries the "metrics" edge of the Alert entity.
-func (a *Alert) QueryMetrics() *AlertMetricsQuery {
-	return NewAlertClient(a.config).QueryMetrics(a)
-}
-
 // QueryPlaybooks queries the "playbooks" edge of the Alert entity.
 func (a *Alert) QueryPlaybooks() *PlaybookQuery {
 	return NewAlertClient(a.config).QueryPlaybooks(a)
 }
 
-// QueryInstances queries the "instances" edge of the Alert entity.
-func (a *Alert) QueryInstances() *OncallEventQuery {
-	return NewAlertClient(a.config).QueryInstances(a)
+// QueryEvents queries the "events" edge of the Alert entity.
+func (a *Alert) QueryEvents() *OncallEventQuery {
+	return NewAlertClient(a.config).QueryEvents(a)
+}
+
+// QueryFeedback queries the "feedback" edge of the Alert entity.
+func (a *Alert) QueryFeedback() *AlertFeedbackQuery {
+	return NewAlertClient(a.config).QueryFeedback(a)
 }
 
 // Update returns a builder for updating this Alert.

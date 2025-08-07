@@ -2,8 +2,9 @@ package api
 
 import (
 	"context"
-	"github.com/google/uuid"
 	"regexp"
+
+	"github.com/google/uuid"
 
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
@@ -56,7 +57,7 @@ func NewHandler(
 	playbooks rez.PlaybookService,
 ) *Handler {
 	return &Handler{
-		alertsHandler:             newAlertsHandler(alerts),
+		alertsHandler:             newAlertsHandler(alerts, oncallEvents),
 		oncallMetricsHandler:      newOncallMetricsHandler(),
 		authSessionsHandler:       newAuthSessionsHandler(auth, users),
 		documentsHandler:          newDocumentsHandler(documents, auth, users),

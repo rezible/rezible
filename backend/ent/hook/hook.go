@@ -33,18 +33,6 @@ func (f AlertFeedbackFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Valu
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.AlertFeedbackMutation", m)
 }
 
-// The AlertMetricsFunc type is an adapter to allow the use of ordinary
-// function as AlertMetrics mutator.
-type AlertMetricsFunc func(context.Context, *ent.AlertMetricsMutation) (ent.Value, error)
-
-// Mutate calls f(ctx, m).
-func (f AlertMetricsFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
-	if mv, ok := m.(*ent.AlertMetricsMutation); ok {
-		return f(ctx, mv)
-	}
-	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.AlertMetricsMutation", m)
-}
-
 // The IncidentFunc type is an adapter to allow the use of ordinary
 // function as Incident mutator.
 type IncidentFunc func(context.Context, *ent.IncidentMutation) (ent.Value, error)

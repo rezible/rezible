@@ -57,7 +57,10 @@ func newUserAuthSession(userId uuid.UUID, expiresAt time.Time) *rez.UserAuthSess
 func (s *AuthSessionService) CreateUserAuthContext(ctx context.Context, sess *rez.UserAuthSession) (context.Context, error) {
 	user, userErr := s.users.GetById(privacy.DecisionContext(ctx, privacy.Allow), sess.UserId)
 	if userErr != nil {
-		return ctx, fmt.Errorf("get user by id: %w", userErr)
+		if ent.IsNotFound(userErr) {
+			return nil, rez.ErrAuthSessionUserMissing
+		}
+		return nil, fmt.Errorf("get user by id: %w", userErr)
 	}
 	ctx = access.TenantContext(ctx, access.RoleUser, user.TenantID)
 	ctx = context.WithValue(ctx, authUserSessionContextKey{}, sess)

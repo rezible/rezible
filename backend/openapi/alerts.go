@@ -27,8 +27,9 @@ type (
 	}
 
 	AlertAttributes struct {
-		Title       string `json:"title"`
-		Description string `json:"description"`
+		Title           string     `json:"title"`
+		Description     string     `json:"description"`
+		LinkedPlaybooks []Playbook `json:"linkedPlaybooks"`
 	}
 )
 
@@ -37,6 +38,12 @@ func AlertFromEnt(a *ent.Alert) Alert {
 		Title:       a.Title,
 		Description: "",
 	}
+
+	attrs.LinkedPlaybooks = make([]Playbook, len(a.Edges.Playbooks))
+	for i, playbook := range a.Edges.Playbooks {
+		attrs.LinkedPlaybooks[i] = PlaybookFromEnt(playbook)
+	}
+
 	return Alert{
 		Id:         a.ID,
 		Attributes: attrs,
@@ -58,7 +65,7 @@ var ListAlerts = huma.Operation{
 
 type ListAlertsRequest struct {
 	ListRequest
-	TeamId uuid.UUID `query:"teamId" required:"false"`
+	RosterId uuid.UUID `query:"rosterId" required:"false"`
 }
 type ListAlertsResponse PaginatedResponse[Alert]
 
@@ -71,5 +78,8 @@ var GetAlert = huma.Operation{
 	Errors:      errorCodes(),
 }
 
-type GetAlertRequest GetIdRequest
+type GetAlertRequest struct {
+	GetIdRequest
+	IncludeAnnotations bool `query:"includeAnnotations" default:"true"`
+}
 type GetAlertResponse ItemResponse[Alert]

@@ -59,6 +59,11 @@ func TenantID(v int) predicate.AlertFeedback {
 	return predicate.AlertFeedback(sql.FieldEQ(FieldTenantID, v))
 }
 
+// AlertID applies equality check predicate on the "alert_id" field. It's identical to AlertIDEQ.
+func AlertID(v uuid.UUID) predicate.AlertFeedback {
+	return predicate.AlertFeedback(sql.FieldEQ(FieldAlertID, v))
+}
+
 // AnnotationID applies equality check predicate on the "annotation_id" field. It's identical to AnnotationIDEQ.
 func AnnotationID(v uuid.UUID) predicate.AlertFeedback {
 	return predicate.AlertFeedback(sql.FieldEQ(FieldAnnotationID, v))
@@ -87,6 +92,26 @@ func TenantIDIn(vs ...int) predicate.AlertFeedback {
 // TenantIDNotIn applies the NotIn predicate on the "tenant_id" field.
 func TenantIDNotIn(vs ...int) predicate.AlertFeedback {
 	return predicate.AlertFeedback(sql.FieldNotIn(FieldTenantID, vs...))
+}
+
+// AlertIDEQ applies the EQ predicate on the "alert_id" field.
+func AlertIDEQ(v uuid.UUID) predicate.AlertFeedback {
+	return predicate.AlertFeedback(sql.FieldEQ(FieldAlertID, v))
+}
+
+// AlertIDNEQ applies the NEQ predicate on the "alert_id" field.
+func AlertIDNEQ(v uuid.UUID) predicate.AlertFeedback {
+	return predicate.AlertFeedback(sql.FieldNEQ(FieldAlertID, v))
+}
+
+// AlertIDIn applies the In predicate on the "alert_id" field.
+func AlertIDIn(vs ...uuid.UUID) predicate.AlertFeedback {
+	return predicate.AlertFeedback(sql.FieldIn(FieldAlertID, vs...))
+}
+
+// AlertIDNotIn applies the NotIn predicate on the "alert_id" field.
+func AlertIDNotIn(vs ...uuid.UUID) predicate.AlertFeedback {
+	return predicate.AlertFeedback(sql.FieldNotIn(FieldAlertID, vs...))
 }
 
 // AnnotationIDEQ applies the EQ predicate on the "annotation_id" field.
@@ -174,6 +199,29 @@ func HasTenant() predicate.AlertFeedback {
 func HasTenantWith(preds ...predicate.Tenant) predicate.AlertFeedback {
 	return predicate.AlertFeedback(func(s *sql.Selector) {
 		step := newTenantStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasAlert applies the HasEdge predicate on the "alert" edge.
+func HasAlert() predicate.AlertFeedback {
+	return predicate.AlertFeedback(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, AlertTable, AlertColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasAlertWith applies the HasEdge predicate on the "alert" edge with a given conditions (other predicates).
+func HasAlertWith(preds ...predicate.Alert) predicate.AlertFeedback {
+	return predicate.AlertFeedback(func(s *sql.Selector) {
+		step := newAlertStep()
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)

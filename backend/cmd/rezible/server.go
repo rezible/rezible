@@ -142,7 +142,7 @@ func (s *rezServer) setup() error {
 		return fmt.Errorf("postgres.NewSystemComponentsService: %w", componentsErr)
 	}
 
-	alerts, alertsErr := postgres.NewAlertService(dbc, pl)
+	alerts, alertsErr := postgres.NewAlertService(dbc)
 	if alertsErr != nil {
 		return fmt.Errorf("postgres.NewAlertService: %w", alertsErr)
 	}
