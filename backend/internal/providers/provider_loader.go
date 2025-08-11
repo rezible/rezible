@@ -17,7 +17,6 @@ import (
 	"github.com/rezible/rezible/ent"
 	"github.com/rezible/rezible/ent/providerconfig"
 	"github.com/rezible/rezible/ent/tenant"
-	"github.com/rezible/rezible/internal/providers/anthropic"
 	"github.com/rezible/rezible/internal/providers/fake"
 	"github.com/rezible/rezible/internal/providers/grafana"
 	"github.com/rezible/rezible/internal/providers/jira"
@@ -191,18 +190,6 @@ func (l *ProviderLoader) loadConfig(ctx context.Context, t providerconfig.Provid
 	}
 
 	return cfg, nil
-}
-
-func (l *ProviderLoader) GetLanguageModelProvider(ctx context.Context) (rez.LanguageModelProvider, error) {
-	cfg, cfgErr := l.loadConfig(ctx, providerconfig.ProviderTypeAi)
-	if cfgErr != nil {
-		return nil, cfgErr
-	}
-	switch cfg.Name {
-	case "anthropic":
-		return loadProviderCtx(ctx, anthropic.NewClaudeLanguageModelProvider, cfg)
-	}
-	return nil, fmt.Errorf("invalid ai model provider config: %s", cfg.Name)
 }
 
 func (l *ProviderLoader) GetOncallDataProvider(ctx context.Context) (rez.OncallDataProvider, error) {

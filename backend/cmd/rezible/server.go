@@ -102,7 +102,7 @@ func (s *rezServer) setup() error {
 		return fmt.Errorf("postgres.NewTeamService: %w", teamsErr)
 	}
 
-	lms, lmsErr := eino.NewLanguageModelService(pl)
+	lms, lmsErr := eino.NewLanguageModelService(ctx)
 	if lmsErr != nil {
 		return fmt.Errorf("eino.NewLanguageModelService: %w", lmsErr)
 	}

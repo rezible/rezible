@@ -14,10 +14,6 @@ func NewCachedProviderLoader(pl rez.ProviderLoader) *ProviderLoader {
 	return &ProviderLoader{pl: pl}
 }
 
-func (p ProviderLoader) GetLanguageModelProvider(ctx context.Context) (rez.LanguageModelProvider, error) {
-	return p.pl.GetLanguageModelProvider(ctx)
-}
-
 func (p ProviderLoader) GetIncidentDataProvider(ctx context.Context) (rez.IncidentDataProvider, error) {
 	return p.pl.GetIncidentDataProvider(ctx)
 }

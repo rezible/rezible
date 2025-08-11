@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/cloudwego/eino/components/model"
 	"github.com/rs/zerolog/log"
 
 	"github.com/cloudwego/eino/schema"
@@ -15,11 +16,15 @@ import (
 )
 
 type LanguageModelService struct {
-	pl rez.ProviderLoader
+	llm model.ToolCallingChatModel
 }
 
-func NewLanguageModelService(pl rez.ProviderLoader) (*LanguageModelService, error) {
-	return &LanguageModelService{pl: pl}, nil
+func NewLanguageModelService(ctx context.Context) (*LanguageModelService, error) {
+	m, mErr := newClaudeLanguageModelProvider(ctx)
+	if mErr != nil {
+		return nil, mErr
+	}
+	return &LanguageModelService{llm: m}, nil
 }
 
 var (
@@ -43,12 +48,7 @@ func (s *LanguageModelService) GenerateDebriefResponse(ctx context.Context, debr
 		return nil, msgErr
 	}
 
-	prov, provErr := s.pl.GetLanguageModelProvider(ctx)
-	if provErr != nil {
-		return nil, fmt.Errorf("getting language model provider: %w", provErr)
-	}
-	model := prov.Model()
-	resp, genErr := model.Generate(ctx, createDebriefThread(debriefMessages))
+	resp, genErr := s.llm.Generate(ctx, createDebriefThread(debriefMessages))
 	if genErr != nil {
 		return nil, fmt.Errorf("generate content: %w", genErr)
 	}

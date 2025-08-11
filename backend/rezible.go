@@ -7,7 +7,6 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/cloudwego/eino/components/model"
 	"github.com/google/uuid"
 	"github.com/texm/prosemirror-go"
 
@@ -30,7 +29,6 @@ type ListParams = ent.ListParams
 
 type (
 	ProviderLoader interface {
-		GetLanguageModelProvider(context.Context) (LanguageModelProvider, error)
 		GetIncidentDataProvider(context.Context) (IncidentDataProvider, error)
 		GetOncallDataProvider(context.Context) (OncallDataProvider, error)
 		GetSystemComponentsDataProvider(context.Context) (SystemComponentsDataProvider, error)
@@ -194,12 +192,6 @@ type (
 )
 
 type (
-	AiLanguageModel = model.ToolCallingChatModel
-
-	LanguageModelProvider interface {
-		Model() AiLanguageModel
-	}
-
 	LanguageModelService interface {
 		GenerateDebriefResponse(context.Context, *ent.IncidentDebrief) (*ent.IncidentDebriefMessage, error)
 	}
