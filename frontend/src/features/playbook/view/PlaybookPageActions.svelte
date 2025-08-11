@@ -3,18 +3,18 @@
 	import type { PlaybookViewState } from "../lib/viewState.svelte";
 
 	type Props = {
-		viewState: PlaybookViewState;
+		view: PlaybookViewState;
 	};
-	const { viewState }: Props = $props();
+	const { view }: Props = $props();
 
-	const disabled = $derived(viewState.loading);
+	const disabled = $derived(view.loading);
 </script>
 
 <div class="self-end">
-	{#if viewState.editing}
-		<Button on:click={() => {viewState.cancelEditing()}} {disabled}>Cancel</Button>
-		<Button on:click={() => {viewState.saveEdit()}} {disabled} loading={viewState.loading} variant="fill" color="primary">Save</Button>
+	{#if view.editing}
+		<Button onclick={() => {view.cancelEditing()}} {disabled}>Cancel</Button>
+		<Button onclick={() => {view.saveEdit()}} {disabled} loading={view.loading} variant="fill" color="primary">Save</Button>
 	{:else}
-		<Button on:click={() => {viewState.editing = true}} {disabled} variant="fill" color="primary">Edit</Button>
+		<Button onclick={() => {view.editing = true}} {disabled} variant="fill" color="primary">Edit</Button>
 	{/if}
 </div>

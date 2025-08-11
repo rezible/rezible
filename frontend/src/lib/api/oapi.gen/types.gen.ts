@@ -7515,6 +7515,7 @@ export type ListPlaybooksData = {
         search?: string;
         archived?: boolean;
         teamId?: string;
+        alertId?: string;
     };
     url: '/playbooks';
 };

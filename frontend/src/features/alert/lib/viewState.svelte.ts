@@ -17,10 +17,6 @@ export class AlertViewState {
 		watch(idFn, id => {this.alertId = id});
 	}
 
-	eventsQueryPagination = new QueryPaginatorState();
-	private eventsQuery = createQuery(() => listOncallEventsOptions({ query: { alertId: this.alertId } }));
-	events = $derived(this.eventsQuery.data?.data);
-
 	metricsFrom = $state<ZonedDateTime>(now(getLocalTimeZone()).subtract({ days: 7 }));
 	metricsTo = $state<ZonedDateTime>(now(getLocalTimeZone()));
 	private metricsQueryData = $derived<GetAlertMetricsData["query"]>({
