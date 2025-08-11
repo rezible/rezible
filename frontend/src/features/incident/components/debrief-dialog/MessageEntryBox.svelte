@@ -51,7 +51,7 @@
 		disabled={disabled || !value}
 		icon={mdiArrowRight}
 		class="flex-row-reverse"
-		on:click={sendMessage}
+		onclick={sendMessage}
 	>
 		Send
 	</Button>

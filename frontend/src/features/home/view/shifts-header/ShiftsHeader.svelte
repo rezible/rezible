@@ -46,7 +46,7 @@
 		{/each}
 	</div>
 	<div class="grid place-items-center">
-		<Button icon={mdiPlus} rounded classes={{root: "h-20 opacity-70 hover:opacity-100"}} on:click={() => (rosterDialogOpen = true)}>
+		<Button icon={mdiPlus} rounded classes={{root: "h-20 opacity-70 hover:opacity-100"}} onclick={() => (rosterDialogOpen = true)}>
 			<span>Watch Roster</span>
 		</Button>
 	</div>

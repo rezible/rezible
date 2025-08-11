@@ -28,7 +28,7 @@
 		<div class="">filters</div>
 
 		{#if components.length > 0}
-			<Button on:click={() => dialog.setCreating()} color="secondary">
+			<Button onclick={() => dialog.setCreating()} color="secondary">
 				Create New
 				<Icon data={mdiPlus} />
 			</Button>
@@ -42,7 +42,7 @@
 	{#if components.length === 0}
 		<div class="flex flex-col gap-2 py-4 rounded w-fit mx-auto">
 			<span>No Components Found</span>
-			<Button on:click={() => dialog.setCreating()} color="secondary">
+			<Button onclick={() => dialog.setCreating()} color="secondary">
 				Create Component
 				<Icon data={mdiPlus} />
 			</Button>
@@ -55,7 +55,7 @@
 				<ListItem
 					title={cmp.attributes.name}
 					subheading={cmp.attributes.description}
-					on:click={() => {dialog.setSelectedAddComponent(cmp)}}
+					onclick={() => {dialog.setSelectedAddComponent(cmp)}}
 					class={cls(
 						"px-8 py-4",
 						"cursor-pointer transition-shadow duration-100",

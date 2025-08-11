@@ -65,7 +65,7 @@
 <Button
 	icon={mdiMagnify}
 	iconOnly={!$smScreen}
-	on:click={onSearchClicked}
+	onclick={onSearchClicked}
 	class={cls(
 		"sm:bg-surface-100/60 sm:hover:bg-surface-100/80 text-surface-content/80 hover:text-surface-content rounded h-10 w-full max-w-xl mx-auto justify-start"
 	)}

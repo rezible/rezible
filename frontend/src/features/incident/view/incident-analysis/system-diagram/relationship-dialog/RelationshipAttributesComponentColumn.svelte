@@ -66,7 +66,7 @@
 
 						{#if excludedSignals.length === 0}
 							<span>No Signals</span>
-							<!--Button on:click={() => setEditingSignal()}>Create Signal</Button-->
+							<!--Button onclick={() => setEditingSignal()}>Create Signal</Button-->
 						{/if}
 					</div>
 				{/if}
@@ -77,7 +77,7 @@
 			<Header title="Controls">
 				<!--svelte:fragment slot="actions">
 					{#if excludedControls.length > 0 && !editingControl}
-						<Button size="sm" on:click={() => setEditingControl()}>Create New</Button>
+						<Button size="sm" onclick={() => setEditingControl()}>Create New</Button>
 					{/if}
 				</svelte:fragment-->
 			</Header>
@@ -98,7 +98,7 @@
 
 						{#if excludedControls.length === 0}
 							<span>No Controls</span>
-							<!--Button on:click={() => setEditingControl()}>Create Control</Button-->
+							<!--Button onclick={() => setEditingControl()}>Create Control</Button-->
 						{/if}
 					</div>
 				{/if}
@@ -125,7 +125,7 @@
 					size="sm"
 					iconOnly
 					icon={mdiPencil}
-					on:click={() => {
+					onclick={() => {
 						editFunc(item);
 					}}
 				/-->
@@ -133,7 +133,7 @@
 					size="sm"
 					iconOnly
 					icon={mdiPlus}
-					on:click={() => {
+					onclick={() => {
 						includeFunc(item.id);
 					}}
 				/>

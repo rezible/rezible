@@ -129,7 +129,7 @@
 			<Button
 				icon={mdiChevronLeft}
 				class="p-2"
-				on:click={onStepLeftClicked}
+				onclick={onStepLeftClicked}
 			/>
 		{/if}
 	</span>
@@ -151,7 +151,7 @@
 			<Button
 				icon={mdiClose}
 				class="text-surface-content/50 p-1"
-				on:click={onClearClicked}
+				onclick={onClearClicked}
 			/>
 		{/if}
 
@@ -161,7 +161,7 @@
 			<Button
 				icon={mdiChevronRight}
 				class="p-2"
-				on:click={onStepRightClicked}
+				onclick={onStepRightClicked}
 			/>
 		{/if}
 	</div>
@@ -196,14 +196,14 @@
 	<div slot="actions" class="flex items-center gap-2">
 		<Button
 			icon={mdiCheck}
-			on:click={onConfirmClicked}
+			onclick={onConfirmClicked}
 			color="primary"
 			variant="fill"
 		>
 			{$localeSettings.dictionary.Ok}
 		</Button>
 
-		<Button on:click={onCancelClicked}>
+		<Button onclick={onCancelClicked}>
 			{$localeSettings.dictionary.Cancel}
 		</Button>
 	</div>

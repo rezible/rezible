@@ -10,7 +10,7 @@
 		classes={{ root: "w-fit h-fit" }}
 		variant="fill"
 		color="primary"
-		on:click={() => {createOpen = true}}
+		onclick={() => {createOpen = true}}
 	>
 		Create New Report
 		<Icon data={mdiPlus} />

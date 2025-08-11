@@ -147,8 +147,8 @@
 	<div class="border p-2">
 		<Header title={label} subheading={description}>
 			{#snippet actions()}
-				<Button size="sm" iconOnly icon={mdiPencil} on:click={onEdit} />
-				<Button size="sm" iconOnly icon={mdiMinus} on:click={onRemove} />
+				<Button size="sm" iconOnly icon={mdiPencil} onclick={onEdit} />
+				<Button size="sm" iconOnly icon={mdiMinus} onclick={onRemove} />
 			{/snippet}
 		</Header>
 	</div>

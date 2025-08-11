@@ -70,7 +70,7 @@
 						size="sm"
 						icon={mdiClose}
 						iconOnly
-						on:click={() => {
+						onclick={() => {
 							dialog.attributes.removeTag(tag);
 						}}
 					/>
@@ -88,7 +88,7 @@
 					iconOnly
 					disabled={addTagButtonDisabled}
 					class="text-surface-content/50 p-2"
-					on:click={() => {
+					onclick={() => {
 						dialog.attributes.addDraftTag();
 					}}
 				/>

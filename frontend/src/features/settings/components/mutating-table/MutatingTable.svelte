@@ -248,18 +248,18 @@
 			<Button
 				icon={mdiArchiveMinus}
 				{disabled}
-				on:click={() => {
+				onclick={() => {
 					archiveItem = data;
 				}}
 			>
 				Restore
 			</Button>
 		{:else}
-			<Button icon={mdiPencil} {disabled} on:click={() => setEditItem(data)}>Edit</Button>
+			<Button icon={mdiPencil} {disabled} onclick={() => setEditItem(data)}>Edit</Button>
 			<Button
 				icon={mdiArchive}
 				{disabled}
-				on:click={() => {
+				onclick={() => {
 					archiveItem = data;
 				}}
 			>
@@ -300,7 +300,7 @@
 					icon={mdiPlus}
 					color="accent"
 					variant="fill-outline"
-					on:click={() => setCreating(true)}
+					onclick={() => setCreating(true)}
 				>
 					Create New
 				</Button>

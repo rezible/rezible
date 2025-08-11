@@ -34,6 +34,6 @@
 		<EventTimeDate timestamp={event.attributes.timestamp} />
 	</div>
 	<div class="">
-		<Button on:click={close} iconOnly icon={mdiClose} />
+		<Button onclick={close} iconOnly icon={mdiClose} />
 	</div>
 </div>

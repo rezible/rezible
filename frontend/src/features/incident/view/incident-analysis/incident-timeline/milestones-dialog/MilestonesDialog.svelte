@@ -19,7 +19,7 @@
 >
 	<div slot="header" class="border-b p-2 flex justify-between items-center">
 		<span class="text-xl flex-1">{title}</span>
-		<Button size="sm" icon={mdiClose} iconOnly on:click={() => milestonesDialog.close()} />
+		<Button size="sm" icon={mdiClose} iconOnly onclick={() => milestonesDialog.close()} />
 	</div>
 
 	<div class="flex-1 min-h-0 overflow-y-auto flex overflow-x-hidden">

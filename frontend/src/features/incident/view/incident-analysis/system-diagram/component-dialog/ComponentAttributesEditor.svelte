@@ -86,7 +86,7 @@
 		classes={{ root: "border first:border-t rounded elevation-0" }}
 	>
 		<div slot="actions">
-			<Button iconOnly icon={mdiPencil} on:click={onClick} />
+			<Button iconOnly icon={mdiPencil} onclick={onClick} />
 		</div>
 	</ListItem>
 {/snippet}
@@ -100,7 +100,7 @@
 				{@render attributeListItem(label, description, () => componentTraits.editConstraint(c))}
 			{/each}
 
-			<Button on:click={() => componentTraits.editConstraint()}>Add Constraint</Button>
+			<Button onclick={() => componentTraits.editConstraint()}>Add Constraint</Button>
 		</div>
 	{:else}
 		<div class="w-full flex flex-col border rounded-lg p-2 gap-2">
@@ -134,7 +134,7 @@
 				)}
 			{/each}
 
-			<Button on:click={() => componentTraits.editSignal()}>Add Signal</Button>
+			<Button onclick={() => componentTraits.editSignal()}>Add Signal</Button>
 		</div>
 	{:else}
 		<div class="w-full flex flex-col border rounded-lg p-2 gap-2">
@@ -168,7 +168,7 @@
 				)}
 			{/each}
 
-			<Button on:click={() => componentTraits.editControl()}>Add Control</Button>
+			<Button onclick={() => componentTraits.editControl()}>Add Control</Button>
 		</div>
 	{:else}
 		<div class="w-full flex flex-col border rounded-lg p-2 gap-2">

@@ -19,7 +19,7 @@
 	<div class="h-fit pt-2 flex flex-col gap-2">
 		<Header title="Shift Events" subheading="Showing All" classes={{root: "px-2"}}>
 			{#snippet actions()}
-				<Button icon={mdiFilter} iconOnly on:click={() => (showFilters = !showFilters)} />
+				<Button icon={mdiFilter} iconOnly onclick={() => (showFilters = !showFilters)} />
 			{/snippet}
 		</Header>
 

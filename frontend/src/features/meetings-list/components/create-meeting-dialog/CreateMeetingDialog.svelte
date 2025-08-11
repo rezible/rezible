@@ -177,7 +177,7 @@
 					<Button
 						color={daySelected[i] ? "primary" : "default"}
 						variant={daySelected[i] ? "fill" : "fill-light"}
-						on:click={() => toggleWeekday(day.value)}
+						onclick={() => toggleWeekday(day.value)}
 					>
 						{day.value}
 					</Button>

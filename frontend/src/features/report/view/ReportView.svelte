@@ -24,7 +24,7 @@
 	<Header title={report.attributes.title} subheading="" classes={{ title: "text-2xl", root: "h-11" }}>
 		{#snippet actions()}
 			<ButtonGroup variant="fill-light">
-				<Button icon={starred ? mdiStar : mdiStarOutline} on:click={() => {starred = !starred}}>
+				<Button icon={starred ? mdiStar : mdiStarOutline} onclick={() => {starred = !starred}}>
 					{starred ? "Unstar" : "Star"}
 				</Button>
 				<Button icon={mdiContentDuplicate}>Duplicate</Button>

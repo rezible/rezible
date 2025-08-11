@@ -48,7 +48,7 @@
 				<Button icon={mdiFilter} iconOnly 
 					variant={filtersVisible ? "fill-light" : "default"}
 					color={filtersVisible ? "accent" : "default"}
-					on:click={() => {filtersVisible = !filtersVisible}} 
+					onclick={() => {filtersVisible = !filtersVisible}} 
 				/>
 			</div>
 		{/snippet}

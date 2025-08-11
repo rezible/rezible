@@ -98,8 +98,8 @@
 				noShadow
 			>
 				<div slot="actions">
-					<Button icon={mdiPencil} iconOnly on:click={() => setEditing(ev)} />
-					<Button icon={mdiTrashCan} iconOnly on:click={() => confirmDelete(ev)} />
+					<Button icon={mdiPencil} iconOnly onclick={() => setEditing(ev)} />
+					<Button icon={mdiTrashCan} iconOnly onclick={() => confirmDelete(ev)} />
 				</div>
 			</ListItem>
 		{/each}
@@ -108,7 +108,7 @@
 			class="text-surface-content/50 p-2"
 			color="primary"
 			variant="fill-light"
-			on:click={setAddingNew}
+			onclick={setAddingNew}
 		>
 			<span class="flex items-center gap-2 text-primary-content">
 				Add Evidence

@@ -36,7 +36,7 @@
 	{#if components.length === 0}
 		<div class="flex flex-col gap-2 py-4 rounded w-fit mx-auto">
 			<span>No Components Found</span>
-			<Button on:click={setCreating} color="secondary">
+			<Button onclick={setCreating} color="secondary">
 				Create Component
 				<Icon data={mdiPlus} />
 			</Button>

@@ -58,7 +58,7 @@
 			<Button
 				icon={mdiPlus}
 				disabled={!newVal}
-				on:click={addNewItem}
+				onclick={addNewItem}
 				classes={{ root: "align-bottom" }}
 			/>
 		</span>

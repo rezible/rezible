@@ -55,7 +55,7 @@
 				on:clear={() => {clearEditing()}}
 			>
 				<span slot="append">
-					<Button icon={mdiCheck} on:click={confirmEdit} />
+					<Button icon={mdiCheck} onclick={confirmEdit} />
 				</span>
 			</TextField>
 		{:else}
@@ -66,8 +66,8 @@
 				noShadow
 			>
 				<div slot="actions">
-					<Button icon={mdiPencil} iconOnly on:click={() => {setEditing(i)}} />
-					<Button icon={mdiTrashCan} iconOnly on:click={() => {confirmDelete(i)}} />
+					<Button icon={mdiPencil} iconOnly onclick={() => {setEditing(i)}} />
+					<Button icon={mdiTrashCan} iconOnly onclick={() => {confirmDelete(i)}} />
 				</div>
 			</ListItem>
 		{/if}
@@ -81,7 +81,7 @@
 			<Button
 				icon={mdiPlus}
 				class="text-surface-content/50 p-2"
-				on:click={confirmAdd}
+				onclick={confirmAdd}
 				disabled={!newValue}
 			/>
 		</span>

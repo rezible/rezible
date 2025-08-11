@@ -49,5 +49,5 @@
 		{/if}
 	</div>
 
-	<Button on:click={(e) => e.stopPropagation()}>Add Reply</Button>
+	<Button onclick={(e) => e.stopPropagation()}>Add Reply</Button>
 </div>

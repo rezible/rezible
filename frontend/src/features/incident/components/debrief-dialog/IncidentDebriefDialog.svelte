@@ -25,7 +25,7 @@
 	<div slot="header" class="border-b p-2" let:close>
 		<Header title="Debrief">
 			{#snippet actions()}
-				<Button on:click={() => close({ force: true })} iconOnly icon={mdiClose} />
+				<Button onclick={() => close({ force: true })} iconOnly icon={mdiClose} />
 			{/snippet}
 		</Header>
 	</div>

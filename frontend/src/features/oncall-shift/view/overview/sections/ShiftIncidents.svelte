@@ -53,7 +53,7 @@
 	<div class="h-fit flex flex-col gap-2">
 		<Header title="Incidents" subheading="Incidents opened during shift">
 			{#snippet actions()}
-				<Button icon={mdiFilter} iconOnly on:click={() => (showFilters = !showFilters)} />
+				<Button icon={mdiFilter} iconOnly onclick={() => (showFilters = !showFilters)} />
 			{/snippet}
 		</Header>
 

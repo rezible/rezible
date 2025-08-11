@@ -171,7 +171,7 @@
 					<Button
 						icon={mdiShapeSquareRoundedPlus}
 						iconOnly
-						on:click={() => (selectedComponent = $state.snapshot(c))}
+						onclick={() => (selectedComponent = $state.snapshot(c))}
 					/>
 				</div>
 			</ListItem>
@@ -214,8 +214,8 @@
 					<span>{cx.attributes.status}</span>
 				</div>
 				<div slot="actions">
-					<Button icon={mdiPencil} iconOnly on:click={() => setEditing(cx)} />
-					<Button icon={mdiTrashCan} iconOnly on:click={() => confirmDelete(cx)} />
+					<Button icon={mdiPencil} iconOnly onclick={() => setEditing(cx)} />
+					<Button icon={mdiTrashCan} iconOnly onclick={() => confirmDelete(cx)} />
 				</div>
 			</ListItem>
 		{/each}
@@ -224,7 +224,7 @@
 			class="text-surface-content/50 p-2"
 			color="primary"
 			variant="fill-light"
-			on:click={() => (selecting = true)}
+			onclick={() => (selecting = true)}
 		>
 			<span class="flex items-center gap-2 text-primary-content">
 				Add Component

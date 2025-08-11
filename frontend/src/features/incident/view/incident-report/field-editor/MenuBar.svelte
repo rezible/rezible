@@ -37,7 +37,7 @@
 
 <div class="flex items-center w-full divide-x divide-surface-100 h-8">
 	{#snippet formatMenuItem(name: string, active: boolean, icon: string, cmd: VoidFunction)}
-		<MenuItem {icon} on:click={() => cmd()} selected={active}>
+		<MenuItem {icon} onclick={() => cmd()} selected={active}>
 			{name}
 		</MenuItem>
 	{/snippet}
@@ -45,7 +45,7 @@
 	<Toggle let:on={open} let:toggle let:toggleOff>
 		<Button
 			icon={formatIcon}
-			on:click={toggle}
+			onclick={toggle}
 			classes={{ root: "px-2 h-8" }}
 			variant={open ? "fill-light" : "text"}
 			rounded={false}
@@ -83,7 +83,7 @@
 				rounded={false}
 				color={active ? "secondary" : "default"}
 				variant={active ? "fill-light" : "text"}
-				on:click={() => cmd()}
+				onclick={() => cmd()}
 			/>
 		</Tooltip>
 	{/snippet}
@@ -148,7 +148,7 @@
 	<!--Button
 		icon={mdiBug}
 		rounded={false}
-		on:click={() => {
+		onclick={() => {
 			if (activeEditor.editor) console.log(activeEditor.editor.getJSON());
 		}}
 	/-->

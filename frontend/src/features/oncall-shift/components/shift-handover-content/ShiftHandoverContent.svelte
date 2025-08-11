@@ -78,7 +78,7 @@
 					size="sm"
 					disabled={!isActive}
 					variant={isActive && section.activeStatus?.get("bold") ? "fill" : "fill-light"}
-					on:click={runEditorCmd((c) => c.toggleBold())}
+					onclick={runEditorCmd((c) => c.toggleBold())}
 				/>
 
 				<Button
@@ -87,7 +87,7 @@
 					size="sm"
 					disabled={!isActive}
 					variant={isActive && section.activeStatus?.get("bulletList") ? "fill" : "fill-light"}
-					on:click={runEditorCmd((c) => c.toggleBulletList())}
+					onclick={runEditorCmd((c) => c.toggleBulletList())}
 				/>
 			</div>
 

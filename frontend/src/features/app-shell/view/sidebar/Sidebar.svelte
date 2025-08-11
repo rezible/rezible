@@ -82,7 +82,7 @@
 		</a>
 
 		<!-- <Button icon={mdiDockLeft} iconOnly size="sm" classes={{root: "ml-2 text-surface-content/40"}} 
-			on:click={() => {expanded = !expanded}} 
+			onclick={() => {expanded = !expanded}} 
 		/> -->
 	</div>
 

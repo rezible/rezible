@@ -21,7 +21,7 @@
 </script>
 
 {#snippet filterActions()}
-	<Button icon={mdiFilter} iconOnly on:click={() => {showFilters = !showFilters}} />
+	<Button icon={mdiFilter} iconOnly onclick={() => {showFilters = !showFilters}} />
 {/snippet}
 
 <div class="flex flex-col">

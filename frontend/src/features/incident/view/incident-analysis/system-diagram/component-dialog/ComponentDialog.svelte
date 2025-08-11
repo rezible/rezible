@@ -35,7 +35,7 @@
 	<div slot="header" class="border-b p-2" let:close>
 		<Header title="{labels.action} System Component">
 			{#snippet actions()}
-				<Button on:click={() => close({ force: true })} iconOnly icon={mdiClose} />
+				<Button onclick={() => close({ force: true })} iconOnly icon={mdiClose} />
 			{/snippet}
 		</Header>
 	</div>

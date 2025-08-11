@@ -10,7 +10,7 @@
 <div
 	class="w-fit group flex flex-col gap-2 justify-center mx-auto p-1 rounded-lg border border-surface bg-surface-100/20"
 >
-	<Button color="primary" variant="fill" on:click={() => componentDialog.setAdding()}>
+	<Button color="primary" variant="fill" onclick={() => componentDialog.setAdding()}>
 		<span class="flex items-center gap-2">
 			<span class="group-hover:inline hidden">Add Component</span>
 			<Icon data={mdiShapeSquareRoundedPlus} />

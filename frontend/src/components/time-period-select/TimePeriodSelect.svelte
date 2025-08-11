@@ -27,7 +27,7 @@
 </script>
 
 <Toggle let:on={open} let:toggle let:toggleOff>
-	<Button on:click={toggle} classes={{root: "flex gap-2 items-center"}}>
+	<Button onclick={toggle} classes={{root: "flex gap-2 items-center"}}>
 		{selectedOption.label}
 		<Menu {open} on:close={toggleOff}>
 			{#each periodOptions as period, idx}

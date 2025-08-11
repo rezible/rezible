@@ -44,12 +44,12 @@
 		role="presentation"
 	>
 		{#if event}
-			<Button variant="fill-light" icon={mdiPencilCircle} rounded={false} classes={{root: "w-full gap-2"}} on:click={onEditEventClick}>
+			<Button variant="fill-light" icon={mdiPencilCircle} rounded={false} classes={{root: "w-full gap-2"}} onclick={onEditEventClick}>
 				Edit Event
 			</Button>
 		{/if}
 		
-		<Button variant="fill-light" icon={mdiPlusCircle} rounded={false} classes={{root: "w-full gap-2"}} on:click={onAddEventClick}>
+		<Button variant="fill-light" icon={mdiPlusCircle} rounded={false} classes={{root: "w-full gap-2"}} onclick={onAddEventClick}>
 			Add New Event
 		</Button>
 	</div>

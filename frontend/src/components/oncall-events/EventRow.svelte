@@ -63,7 +63,7 @@
 
 			{#if canCreate}
 				<div class="hidden group-hover:inline w-fit h-full">
-					<Button classes={{root: "w-full h-full items-center"}} {disabled} {loading} on:click={() => annoDialog.setOpen(event)}>
+					<Button classes={{root: "w-full h-full items-center"}} {disabled} {loading} onclick={() => annoDialog.setOpen(event)}>
 						Annotate
 						<Icon data={mdiChatPlus} />
 					</Button>
@@ -73,7 +73,7 @@
 
 		{#if !!togglePinned}
 			<Tooltip title="Toggle Pinned">
-				<Button iconOnly icon={pinned ? mdiPin : mdiPinOutline} {disabled} {loading} on:click={togglePinned} />
+				<Button iconOnly icon={pinned ? mdiPin : mdiPinOutline} {disabled} {loading} onclick={togglePinned} />
 			</Tooltip>
 		{/if}
 	</div>

@@ -139,8 +139,8 @@
 				noShadow
 			>
 				<div slot="actions" class="flex gap-2 items-center">
-					<Button icon={mdiTrashCan} iconOnly on:click={() => confirmRemoveFactor(f)} />
-					<Button icon={mdiPencil} iconOnly on:click={() => setEditing(f)} />
+					<Button icon={mdiTrashCan} iconOnly onclick={() => confirmRemoveFactor(f)} />
+					<Button icon={mdiPencil} iconOnly onclick={() => setEditing(f)} />
 				</div>
 			</ListItem>
 		{/each}
@@ -149,7 +149,7 @@
 			class="text-surface-content/50 p-2"
 			color="primary"
 			variant="fill-light"
-			on:click={() => setEditing()}
+			onclick={() => setEditing()}
 		>
 			<span class="flex items-center gap-2 text-primary-content">
 				Add Factor

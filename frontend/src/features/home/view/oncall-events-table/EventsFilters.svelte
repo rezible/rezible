@@ -66,7 +66,7 @@
 		classes={{ root: "gap-0", container: "px-0 h-8 flex items-center", input: "my-0" }}
 		let:id
 	>
-		<Button {id} on:click={toggleKindMenu} classes={{ root: "h-8" }}>
+		<Button {id} onclick={toggleKindMenu} classes={{ root: "h-8" }}>
 			<div class="flex gap-2">
 				{#each (tableState.filters.eventKinds ?? []) as v}
 					<span class="flex items-center gap-1">

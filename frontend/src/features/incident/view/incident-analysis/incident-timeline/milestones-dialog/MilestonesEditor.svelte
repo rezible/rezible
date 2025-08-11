@@ -84,14 +84,14 @@
 							<Button
 								iconOnly
 								icon={mdiPencil}
-								on:click={() => {
+								onclick={() => {
 									onEditClick(ms);
 								}}
 							/>
 							<Button
 								iconOnly
 								icon={mdiTrashCan}
-								on:click={() => {
+								onclick={() => {
 									onDeleteClick(ms);
 								}}
 							/>
@@ -99,7 +99,7 @@
 					</ListItem>
 				{/each}
 		
-				<Button variant="fill-light" on:click={onAddClick}>
+				<Button variant="fill-light" onclick={onAddClick}>
 					<span class="flex gap-2 items-center">
 						Add Milestone
 						<Icon data={mdiFlagPlus} />

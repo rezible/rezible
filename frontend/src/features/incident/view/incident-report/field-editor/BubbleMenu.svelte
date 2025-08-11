@@ -110,14 +110,14 @@
 			iconOnly
 			icon={mdiComment}
 			classes={{ root: "bg-surface-200 hover:bg-primary" }}
-			on:click={onCommentButtonClicked}
+			onclick={onCommentButtonClicked}
 		/>
 
 		<Button
 			iconOnly
 			icon={mdiMarker}
 			classes={{ root: "bg-surface-200 hover:bg-primary" }}
-			on:click={onAnnotateButtonClicked}
+			onclick={onAnnotateButtonClicked}
 		/>
 	</div>
 </div>

@@ -43,7 +43,7 @@
 				onConfirm={() => dialog.onConfirm()}
 			/>
 		{:else}
-			<Button on:click={() => dialog.onClose()}>Close</Button>
+			<Button onclick={() => dialog.onClose()}>Close</Button>
 		{/if}
 	</svelte:fragment>
 </Dialog>

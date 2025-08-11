@@ -61,8 +61,8 @@
 				class="pointer-events-auto absolute border rounded-lg bg-surface-100 p-1 z-[1001]"
 				style:transform
 			>
-				<Button on:click={openEditDialog} icon={mdiPencil}></Button>
-				<Button on:click={confirmDelete} icon={mdiTrashCan}></Button>
+				<Button onclick={openEditDialog} icon={mdiPencil}></Button>
+				<Button onclick={confirmDelete} icon={mdiTrashCan}></Button>
 			</div>
 		{/if}
 	</ViewportPortal>

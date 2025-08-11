@@ -71,7 +71,7 @@
 		variant="fill"
 		color="primary"
 		disabled={start.isPending}
-		on:click={startDebrief}
+		onclick={startDebrief}
 		loading={start.isPending}
 	>
 		Start Debrief

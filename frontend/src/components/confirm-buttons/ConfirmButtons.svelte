@@ -30,9 +30,7 @@
 
 <div class="flex flex-row gap-2" class:justify-end={alignRight}>
 	<Button
-		on:click={() => {
-			onClose();
-		}}
+		onclick={onClose}
 		disabled={disabled || loading}
 	>
 		{#if closeButtonContent}
@@ -45,9 +43,7 @@
 		{loading}
 		variant="fill"
 		color="warning"
-		on:click={() => {
-			onConfirm();
-		}}
+		onclick={onConfirm}
 		disabled={!saveEnabled || disabled}
 	>
 		{#if confirmButtonContent}

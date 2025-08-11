@@ -35,13 +35,13 @@
 
 <AnalysisContextMenu title="Diagram Actions" {containerRect} {clickPos}>
 	{#if nodeId}
-		<Button variant="fill-light" icon={mdiTrashCan} rounded={false} classes={{root: "w-full gap-2"}} on:click={() => {deleteNode(nodeId)}}>
+		<Button variant="fill-light" icon={mdiTrashCan} rounded={false} classes={{root: "w-full gap-2"}} onclick={() => {deleteNode(nodeId)}}>
 			Delete Component
 		</Button>
 	{:else if edgeId}
 		<span>relationship</span>
 	{:else}
-		<Button variant="fill-light" icon={mdiPlusCircle} rounded={false} classes={{root: "w-full gap-2"}} on:click={addComponent}>
+		<Button variant="fill-light" icon={mdiPlusCircle} rounded={false} classes={{root: "w-full gap-2"}} onclick={addComponent}>
 			Add Component
 		</Button>
 	{/if}
