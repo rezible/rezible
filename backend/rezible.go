@@ -59,7 +59,7 @@ type (
 )
 
 type (
-	AuthSessionCreatedFn = func(*ent.User, time.Time, string)
+	AuthSessionCreatedFn = func(user *ent.User, expiresAt time.Time, redirectUri string)
 
 	AuthSessionProvider interface {
 		Name() string
@@ -158,6 +158,12 @@ type (
 type (
 	ContentNode        = prosemirror.Node
 	DocumentSchemaSpec = prosemirror.SchemaSpec
+
+	OncallShiftHandoverSection struct {
+		Header  string            `json:"header"`
+		Kind    string            `json:"kind"`
+		Content *prosemirror.Node `json:"jsonContent,omitempty"`
+	}
 
 	DocumentsService interface {
 		GetWebsocketAddress() string
@@ -381,12 +387,15 @@ type (
 		FetchOncallersForRoster(ctx context.Context, rosterId string) ([]*ent.User, error)
 	}
 
-	ListUserOncallParams = struct {
+	ListOncallRostersParams = struct {
 		ListParams
 		UserID uuid.UUID
 	}
-	ListOncallRostersParams   = ListUserOncallParams
-	ListOncallSchedulesParams = ListUserOncallParams
+
+	ListOncallSchedulesParams = struct {
+		ListParams
+		UserID uuid.UUID
+	}
 
 	ListOncallShiftsParams struct {
 		ListParams
@@ -395,15 +404,12 @@ type (
 		Window time.Duration
 	}
 
-	OncallShiftHandoverSection struct {
-		Header  string            `json:"header"`
-		Kind    string            `json:"kind"`
-		Content *prosemirror.Node `json:"jsonContent,omitempty"`
-	}
-
 	OncallService interface {
-		MakeScanShiftsPeriodicJob(context.Context) (*jobs.PeriodicJob, error)
+		MakeScanShiftsPeriodicJob() jobs.PeriodicJob
 		HandlePeriodicScanShifts(context.Context, jobs.ScanOncallShifts) error
+		HandleEnsureShiftHandoverSent(context.Context, jobs.EnsureShiftHandoverSent) error
+		HandleEnsureShiftHandoverReminderSent(context.Context, jobs.EnsureShiftHandoverReminderSent) error
+		HandleGenerateShiftMetrics(context.Context, jobs.GenerateShiftMetrics) error
 
 		ListRosters(context.Context, ListOncallRostersParams) ([]*ent.OncallRoster, error)
 		GetRosterByID(ctx context.Context, id uuid.UUID) (*ent.OncallRoster, error)
@@ -415,14 +421,12 @@ type (
 		ListShifts(ctx context.Context, params ListOncallShiftsParams) ([]*ent.OncallShift, error)
 		GetShiftByID(ctx context.Context, id uuid.UUID) (*ent.OncallShift, error)
 		GetAdjacentShifts(ctx context.Context, id uuid.UUID) (*ent.OncallShift, *ent.OncallShift, error)
+		GetShiftMetrics(ctx context.Context, id uuid.UUID) (*ent.OncallShiftMetrics, error)
+		GetComparisonShiftMetrics(ctx context.Context, from, to time.Time) (*ent.OncallShiftMetrics, error)
 
-		GetHandoverForShift(ctx context.Context, shiftId uuid.UUID, create bool) (*ent.OncallShiftHandover, error)
 		GetShiftHandover(ctx context.Context, id uuid.UUID) (*ent.OncallShiftHandover, error)
+		GetHandoverForShift(ctx context.Context, shiftId uuid.UUID) (*ent.OncallShiftHandover, error)
 		UpdateShiftHandover(ctx context.Context, handover *ent.OncallShiftHandover) (*ent.OncallShiftHandover, error)
 		SendShiftHandover(ctx context.Context, id uuid.UUID) (*ent.OncallShiftHandover, error)
-
-		HandleEnsureShiftHandoverSent(context.Context, jobs.EnsureShiftHandoverSent) error
-		HandleEnsureShiftHandoverReminderSent(context.Context, jobs.EnsureShiftHandoverReminderSent) error
-		HandleGenerateShiftMetrics(context.Context, jobs.GenerateShiftMetrics) error
 	}
 )

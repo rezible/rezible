@@ -1831,20 +1831,9 @@ export type OncallShiftHandoverTemplateAttributes = {
 };
 
 export type OncallShiftMetrics = {
-    alerts: OncallShiftMetricsAlerts;
     burden: OncallShiftMetricsBurden;
     incidents: OncallShiftMetricsIncidents;
-};
-
-export type OncallShiftMetricsAlerts = {
-    accuracyFeedback: number;
-    actionabilityFeedback: number;
-    countNight: number;
-    countOffHours: number;
-    documentationFeedback: number;
-    incidentRate: number;
-    total: number;
-    totalWithFeedback: number;
+    interrupts: OncallShiftMetricsInterrupts;
 };
 
 export type OncallShiftMetricsBurden = {
@@ -1859,6 +1848,18 @@ export type OncallShiftMetricsBurden = {
 export type OncallShiftMetricsIncidents = {
     responseTimeMinutes: number;
     total: number;
+};
+
+export type OncallShiftMetricsInterrupts = {
+    accuracyFeedback: number;
+    actionabilityFeedback: number;
+    countNight: number;
+    countOffHours: number;
+    documentationFeedback: number;
+    incidentRate: number;
+    total: number;
+    totalAlerts: number;
+    totalWithFeedback: number;
 };
 
 export type OncallShiftsAdjacent = {

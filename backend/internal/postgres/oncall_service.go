@@ -10,16 +10,17 @@ import (
 	mapset "github.com/deckarep/golang-set/v2"
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/oncallshifthandover"
+	"github.com/rezible/rezible/ent/oncallshiftmetrics"
 	"github.com/rs/zerolog/log"
 	"github.com/texm/prosemirror-go"
 
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
-	"github.com/rezible/rezible/ent/oncallhandovertemplate"
+	ohot "github.com/rezible/rezible/ent/oncallhandovertemplate"
 	"github.com/rezible/rezible/ent/oncallroster"
 	"github.com/rezible/rezible/ent/oncallschedule"
-	"github.com/rezible/rezible/ent/oncallscheduleparticipant"
-	"github.com/rezible/rezible/ent/oncallshift"
+	ocsp "github.com/rezible/rezible/ent/oncallscheduleparticipant"
+	ocs "github.com/rezible/rezible/ent/oncallshift"
 	"github.com/rezible/rezible/ent/predicate"
 	"github.com/rezible/rezible/jobs"
 )
@@ -71,7 +72,7 @@ func (s *OncallService) ListSchedules(ctx context.Context, params rez.ListOncall
 	var query *ent.OncallScheduleQuery
 	if params.UserID != uuid.Nil {
 		query = s.db.OncallScheduleParticipant.Query().
-			Where(oncallscheduleparticipant.UserID(params.UserID)).
+			Where(ocsp.UserID(params.UserID)).
 			QuerySchedule()
 	} else {
 		query = s.db.OncallSchedule.Query()
@@ -141,7 +142,7 @@ func (s *OncallService) ListRosters(ctx context.Context, params rez.ListOncallRo
 
 func (s *OncallService) GetShiftByID(ctx context.Context, id uuid.UUID) (*ent.OncallShift, error) {
 	query := s.db.OncallShift.Query().
-		Where(oncallshift.ID(id)).
+		Where(ocs.ID(id)).
 		WithRoster().
 		WithUser()
 	return query.Only(ctx)
@@ -149,10 +150,10 @@ func (s *OncallService) GetShiftByID(ctx context.Context, id uuid.UUID) (*ent.On
 
 func (s *OncallService) getNextShift(ctx context.Context, shift *ent.OncallShift) (*ent.OncallShift, error) {
 	return s.db.OncallShift.Query().
-		Where(oncallshift.RosterID(shift.RosterID)).
-		Where(oncallshift.IDNEQ(shift.ID)).
-		Where(oncallshift.StartAtGTE(shift.StartAt)).
-		Order(oncallshift.ByStartAt(sql.OrderAsc())).
+		Where(ocs.RosterID(shift.RosterID)).
+		Where(ocs.IDNEQ(shift.ID)).
+		Where(ocs.StartAtGTE(shift.StartAt)).
+		Order(ocs.ByStartAt(sql.OrderAsc())).
 		WithUser().
 		WithRoster().
 		First(ctx)
@@ -160,10 +161,10 @@ func (s *OncallService) getNextShift(ctx context.Context, shift *ent.OncallShift
 
 func (s *OncallService) getPreviousShift(ctx context.Context, shift *ent.OncallShift) (*ent.OncallShift, error) {
 	return s.db.OncallShift.Query().
-		Where(oncallshift.RosterID(shift.RosterID)).
-		Where(oncallshift.IDNEQ(shift.ID)).
-		Where(oncallshift.EndAtLTE(shift.StartAt)).
-		Order(oncallshift.ByEndAt(sql.OrderDesc())).
+		Where(ocs.RosterID(shift.RosterID)).
+		Where(ocs.IDNEQ(shift.ID)).
+		Where(ocs.EndAtLTE(shift.StartAt)).
+		Order(ocs.ByEndAt(sql.OrderDesc())).
 		WithUser().
 		WithRoster().
 		First(ctx)
@@ -190,7 +191,7 @@ func (s *OncallService) GetAdjacentShifts(ctx context.Context, id uuid.UUID) (*e
 
 func (s *OncallService) ListShifts(ctx context.Context, params rez.ListOncallShiftsParams) ([]*ent.OncallShift, error) {
 	query := s.db.OncallShift.Query().
-		Order(oncallshift.ByEndAt(sql.OrderDesc())).
+		Order(ocs.ByEndAt(sql.OrderDesc())).
 		Limit(params.GetLimit()).
 		Offset(params.Offset).
 		WithRoster().
@@ -200,11 +201,11 @@ func (s *OncallService) ListShifts(ctx context.Context, params rez.ListOncallShi
 	if !params.Anchor.IsZero() && !(params.Window.Milliseconds() == 0) {
 		from := params.Anchor.Add(-params.Window)
 		to := params.Anchor.Add(params.Window)
-		withinWindow := oncallshift.And(oncallshift.EndAtGTE(from), oncallshift.StartAtLTE(to))
+		withinWindow := ocs.And(ocs.EndAtGTE(from), ocs.StartAtLTE(to))
 		predicates = append(predicates, withinWindow)
 	}
 	if params.UserID != uuid.Nil {
-		predicates = append(predicates, oncallshift.UserID(params.UserID))
+		predicates = append(predicates, ocs.UserID(params.UserID))
 	}
 	if len(predicates) > 0 {
 		query = query.Where(predicates...)
@@ -214,9 +215,9 @@ func (s *OncallService) ListShifts(ctx context.Context, params rez.ListOncallShi
 }
 
 func (s *OncallService) queryShiftsEndingWithinWindow(ctx context.Context, window time.Duration) ([]*ent.OncallShift, error) {
-	shiftEndingWithinWindow := oncallshift.And(
-		oncallshift.EndAtGT(time.Now().Add(-window)),
-		oncallshift.EndAtLT(time.Now().Add(window)))
+	windowStart := time.Now().Add(-window)
+	windowEnd := time.Now().Add(window)
+	shiftEndingWithinWindow := ocs.And(ocs.EndAtGTE(windowStart), ocs.EndAtLTE(windowEnd))
 
 	query := s.db.OncallShift.Query().
 		Where(shiftEndingWithinWindow).
@@ -230,23 +231,18 @@ func (s *OncallService) queryShiftsEndingWithinWindow(ctx context.Context, windo
 	return shifts, nil
 }
 
-func (s *OncallService) MakeScanShiftsPeriodicJob(ctx context.Context) (*jobs.PeriodicJob, error) {
-	// TODO: check shift schedule duration, make interval less than it
+func (s *OncallService) MakeScanShiftsPeriodicJob() jobs.PeriodicJob {
 	interval := time.Hour
-	job := &jobs.PeriodicJob{
+	return jobs.PeriodicJob{
 		ConstructorFunc: func() jobs.InsertJobParams {
 			return jobs.InsertJobParams{Args: &jobs.ScanOncallShifts{}}
 		},
 		Interval: interval,
-		Opts: &jobs.PeriodicJobOpts{
-			RunOnStart: true,
-		},
+		Opts:     &jobs.PeriodicJobOpts{RunOnStart: true},
 	}
-	return job, nil
 }
 
 func (s *OncallService) HandlePeriodicScanShifts(ctx context.Context, _ jobs.ScanOncallShifts) error {
-	// check for shifts ending within window, that don't have reminder sent
 	shifts, shiftsErr := s.queryShiftsEndingWithinWindow(ctx, time.Hour)
 	if shiftsErr != nil {
 		return fmt.Errorf("failed to get shifts: %w", shiftsErr)
@@ -298,7 +294,7 @@ func (s *OncallService) HandlePeriodicScanShifts(ctx context.Context, _ jobs.Sca
 func (s *OncallService) HandleEnsureShiftHandoverSent(ctx context.Context, args jobs.EnsureShiftHandoverSent) error {
 	shiftId := args.ShiftId
 
-	ho, hoErr := s.GetHandoverForShift(ctx, shiftId, true)
+	ho, hoErr := s.GetHandoverForShift(ctx, shiftId)
 	if hoErr != nil {
 		return fmt.Errorf("failed to get or create shift handover: %w", hoErr)
 	}
@@ -315,7 +311,7 @@ func (s *OncallService) HandleEnsureShiftHandoverReminderSent(ctx context.Contex
 		return fmt.Errorf("querying shift: %w", shiftErr)
 	}
 
-	ho, hoErr := s.GetHandoverForShift(ctx, shiftId, true)
+	ho, hoErr := s.GetHandoverForShift(ctx, shiftId)
 	if hoErr != nil {
 		return fmt.Errorf("failed to get or create shift handover: %w", hoErr)
 	}
@@ -344,12 +340,10 @@ var defaultHandoverTemplate = []byte(`[
 ]`)
 
 func (s *OncallService) getRosterHandoverTemplateContents(ctx context.Context, rosterId uuid.UUID) ([]byte, error) {
-	isRosterOrDefault := oncallhandovertemplate.Or(
-		oncallhandovertemplate.HasRosterWith(oncallroster.ID(rosterId)),
-		oncallhandovertemplate.IsDefault(true))
+	isRosterOrDefault := ohot.Or(ohot.IsDefault(true), ohot.HasRosterWith(oncallroster.ID(rosterId)))
 	tmpl, tmplErr := s.db.OncallHandoverTemplate.Query().
 		Where(isRosterOrDefault).
-		Order(oncallhandovertemplate.ByUpdatedAt()).
+		Order(ohot.ByUpdatedAt()).
 		First(ctx)
 	if tmplErr != nil {
 		if ent.IsNotFound(tmplErr) {
@@ -367,34 +361,39 @@ func (s *OncallService) GetShiftHandover(ctx context.Context, id uuid.UUID) (*en
 		Only(ctx)
 }
 
-func (s *OncallService) GetHandoverForShift(ctx context.Context, shiftId uuid.UUID, create bool) (*ent.OncallShiftHandover, error) {
+func (s *OncallService) getRosterForShift(ctx context.Context, id uuid.UUID) (*ent.OncallRoster, error) {
+	return s.db.OncallShift.Query().
+		Where(ocs.ID(id)).
+		QueryRoster().
+		Only(ctx)
+}
+
+func (s *OncallService) GetHandoverForShift(ctx context.Context, shiftId uuid.UUID) (*ent.OncallShiftHandover, error) {
 	handover, queryErr := s.db.OncallShiftHandover.Query().
 		Where(oncallshifthandover.ShiftID(shiftId)).
 		WithPinnedAnnotations().
 		Only(ctx)
-	if queryErr != nil {
-		if !create || !ent.IsNotFound(queryErr) {
-			return nil, fmt.Errorf("failed to query shift handover: %w", queryErr)
-		}
+	if queryErr != nil && !ent.IsNotFound(queryErr) {
+		return nil, fmt.Errorf("failed to query shift handover: %w", queryErr)
 	}
 	if handover != nil {
 		return handover, nil
 	}
 
-	shift, shiftErr := s.db.OncallShift.Get(ctx, shiftId)
-	if shiftErr != nil {
-		return nil, fmt.Errorf("failed to get shift: %w", shiftErr)
+	return s.createShiftHandover(ctx, shiftId)
+}
+
+func (s *OncallService) createShiftHandover(ctx context.Context, shiftId uuid.UUID) (*ent.OncallShiftHandover, error) {
+	roster, rosterErr := s.getRosterForShift(ctx, shiftId)
+	if rosterErr != nil {
+		return nil, fmt.Errorf("failed to get roster: %w", rosterErr)
 	}
 
-	contents, contentsErr := s.getRosterHandoverTemplateContents(ctx, shift.RosterID)
+	contents, contentsErr := s.getRosterHandoverTemplateContents(ctx, roster.ID)
 	if contentsErr != nil {
 		return nil, fmt.Errorf("failed to get roster handover template contents: %w", contentsErr)
 	}
 
-	return s.createShiftHandover(ctx, shift.ID, contents)
-}
-
-func (s *OncallService) createShiftHandover(ctx context.Context, shiftId uuid.UUID, contents []byte) (*ent.OncallShiftHandover, error) {
 	return s.db.OncallShiftHandover.Create().
 		SetShiftID(shiftId).
 		SetContents(contents).
@@ -501,7 +500,105 @@ func (s *OncallService) sendShiftHandover(ctx context.Context, ho *ent.OncallShi
 	return updated, nil
 }
 
+func (s *OncallService) queryShiftMetrics(ctx context.Context, shiftId uuid.UUID) (*ent.OncallShiftMetrics, error) {
+	return s.db.OncallShiftMetrics.Query().Where(oncallshiftmetrics.ShiftID(shiftId)).Only(ctx)
+}
+
+/*
+	shiftMetrics := oapi.OncallShiftMetrics{
+		Burden: oapi.OncallShiftMetricsBurden{
+			FinalScore:           6.4,
+			EventFrequency:       4.8,
+			LifeImpact:           7.8,
+			TimeImpact:           6.4,
+			ResponseRequirements: 7.2,
+			Isolation:            4.4,
+		},
+		Incidents: oapi.OncallShiftMetricsIncidents{
+			Total:               4,
+			ResponseTimeMinutes: 168,
+		},
+		Alerts: oapi.OncallShiftMetricsAlerts{
+			Total:                 24,
+			CountOffHours:         5,
+			CountNight:            3,
+			IncidentRate:          .1,
+			TotalWithFeedback:     15,
+			ActionabilityFeedback: .4,
+			AccuracyFeedback:      .6,
+			DocumentationFeedback: .6,
+		},
+	}
+*/
+
+func (s *OncallService) generateMetricsForShift(ctx context.Context, id uuid.UUID) (*ent.OncallShiftMetrics, error) {
+	m := &ent.OncallShiftMetrics{
+		ShiftID:                 id,
+		BurdenScore:             0,
+		EventFrequency:          0,
+		LifeImpact:              0,
+		TimeImpact:              0,
+		ResponseRequirements:    0,
+		Isolation:               0,
+		IncidentsTotal:          0,
+		IncidentResponseTime:    0,
+		InterruptsTotal:         0,
+		InterruptsAlerts:        0,
+		InterruptsNight:         0,
+		InterruptsBusinessHours: 0,
+	}
+
+	create := s.db.OncallShiftMetrics.Create().
+		SetShiftID(id).
+		SetBurdenScore(m.BurdenScore)
+
+	upsert := create.OnConflict().UpdateNewValues()
+
+	metricsId, upsertErr := upsert.ID(ctx)
+	if upsertErr != nil {
+		return nil, fmt.Errorf("create or update shift metrics: %w", upsertErr)
+	}
+	m.ID = metricsId
+
+	return m, nil
+}
+
+func (s *OncallService) GetShiftMetrics(ctx context.Context, shiftId uuid.UUID) (*ent.OncallShiftMetrics, error) {
+	metrics, metErr := s.queryShiftMetrics(ctx, shiftId)
+	if metErr == nil {
+		return metrics, nil
+	}
+	if !ent.IsNotFound(metErr) {
+		return nil, fmt.Errorf("querying metrics: %w", metErr)
+	}
+	generated, genErr := s.generateMetricsForShift(ctx, shiftId)
+	if genErr != nil {
+		return nil, fmt.Errorf("generating metrics: %w", genErr)
+	}
+	return generated, nil
+}
+
+func (s *OncallService) GetComparisonShiftMetrics(ctx context.Context, from, to time.Time) (*ent.OncallShiftMetrics, error) {
+	// TODO
+	return &ent.OncallShiftMetrics{
+		BurdenScore:          5.9,
+		EventFrequency:       4.3,
+		LifeImpact:           4.5,
+		TimeImpact:           4.2,
+		ResponseRequirements: 3.0,
+		Isolation:            3.4,
+
+		IncidentsTotal:       1.1,
+		IncidentResponseTime: 33,
+
+		InterruptsTotal:         19,
+		InterruptsAlerts:        15,
+		InterruptsNight:         4,
+		InterruptsBusinessHours: 8,
+	}, nil
+}
+
 func (s *OncallService) HandleGenerateShiftMetrics(ctx context.Context, args jobs.GenerateShiftMetrics) error {
-	log.Debug().Msg("generate shift metrics")
-	return nil
+	_, genErr := s.generateMetricsForShift(ctx, args.ShiftId)
+	return genErr
 }

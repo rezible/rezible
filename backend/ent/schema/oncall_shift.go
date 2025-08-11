@@ -105,6 +105,22 @@ func (OncallShiftMetrics) Fields() []ent.Field {
 	return []ent.Field{
 		field.UUID("id", uuid.UUID{}).Default(uuid.New),
 		field.UUID("shift_id", uuid.UUID{}),
+		field.Time("updated_at").Default(time.Now),
+		// Burden
+		field.Float32("burden_score"),
+		field.Float32("event_frequency"),
+		field.Float32("life_impact"),
+		field.Float32("time_impact"),
+		field.Float32("response_requirements"),
+		field.Float32("isolation"),
+		// Incidents
+		field.Float32("incidents_total"),
+		field.Float32("incident_response_time"),
+		// Interrupts
+		field.Float32("interrupts_total"),
+		field.Float32("interrupts_alerts"),
+		field.Float32("interrupts_night"),
+		field.Float32("interrupts_business_hours"),
 	}
 }
 

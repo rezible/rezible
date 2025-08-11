@@ -28771,17 +28771,42 @@ func (m *OncallShiftHandoverMutation) ResetEdge(name string) error {
 // OncallShiftMetricsMutation represents an operation that mutates the OncallShiftMetrics nodes in the graph.
 type OncallShiftMetricsMutation struct {
 	config
-	op            Op
-	typ           string
-	id            *uuid.UUID
-	clearedFields map[string]struct{}
-	tenant        *int
-	clearedtenant bool
-	shift         *uuid.UUID
-	clearedshift  bool
-	done          bool
-	oldValue      func(context.Context) (*OncallShiftMetrics, error)
-	predicates    []predicate.OncallShiftMetrics
+	op                           Op
+	typ                          string
+	id                           *uuid.UUID
+	updated_at                   *time.Time
+	burden_score                 *float32
+	addburden_score              *float32
+	event_frequency              *float32
+	addevent_frequency           *float32
+	life_impact                  *float32
+	addlife_impact               *float32
+	time_impact                  *float32
+	addtime_impact               *float32
+	response_requirements        *float32
+	addresponse_requirements     *float32
+	isolation                    *float32
+	addisolation                 *float32
+	incidents_total              *float32
+	addincidents_total           *float32
+	incident_response_time       *float32
+	addincident_response_time    *float32
+	interrupts_total             *float32
+	addinterrupts_total          *float32
+	interrupts_alerts            *float32
+	addinterrupts_alerts         *float32
+	interrupts_night             *float32
+	addinterrupts_night          *float32
+	interrupts_business_hours    *float32
+	addinterrupts_business_hours *float32
+	clearedFields                map[string]struct{}
+	tenant                       *int
+	clearedtenant                bool
+	shift                        *uuid.UUID
+	clearedshift                 bool
+	done                         bool
+	oldValue                     func(context.Context) (*OncallShiftMetrics, error)
+	predicates                   []predicate.OncallShiftMetrics
 }
 
 var _ ent.Mutation = (*OncallShiftMetricsMutation)(nil)
@@ -28960,6 +28985,714 @@ func (m *OncallShiftMetricsMutation) ResetShiftID() {
 	m.shift = nil
 }
 
+// SetUpdatedAt sets the "updated_at" field.
+func (m *OncallShiftMetricsMutation) SetUpdatedAt(t time.Time) {
+	m.updated_at = &t
+}
+
+// UpdatedAt returns the value of the "updated_at" field in the mutation.
+func (m *OncallShiftMetricsMutation) UpdatedAt() (r time.Time, exists bool) {
+	v := m.updated_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldUpdatedAt returns the old "updated_at" field's value of the OncallShiftMetrics entity.
+// If the OncallShiftMetrics object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *OncallShiftMetricsMutation) OldUpdatedAt(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldUpdatedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldUpdatedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldUpdatedAt: %w", err)
+	}
+	return oldValue.UpdatedAt, nil
+}
+
+// ResetUpdatedAt resets all changes to the "updated_at" field.
+func (m *OncallShiftMetricsMutation) ResetUpdatedAt() {
+	m.updated_at = nil
+}
+
+// SetBurdenScore sets the "burden_score" field.
+func (m *OncallShiftMetricsMutation) SetBurdenScore(f float32) {
+	m.burden_score = &f
+	m.addburden_score = nil
+}
+
+// BurdenScore returns the value of the "burden_score" field in the mutation.
+func (m *OncallShiftMetricsMutation) BurdenScore() (r float32, exists bool) {
+	v := m.burden_score
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldBurdenScore returns the old "burden_score" field's value of the OncallShiftMetrics entity.
+// If the OncallShiftMetrics object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *OncallShiftMetricsMutation) OldBurdenScore(ctx context.Context) (v float32, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldBurdenScore is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldBurdenScore requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldBurdenScore: %w", err)
+	}
+	return oldValue.BurdenScore, nil
+}
+
+// AddBurdenScore adds f to the "burden_score" field.
+func (m *OncallShiftMetricsMutation) AddBurdenScore(f float32) {
+	if m.addburden_score != nil {
+		*m.addburden_score += f
+	} else {
+		m.addburden_score = &f
+	}
+}
+
+// AddedBurdenScore returns the value that was added to the "burden_score" field in this mutation.
+func (m *OncallShiftMetricsMutation) AddedBurdenScore() (r float32, exists bool) {
+	v := m.addburden_score
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetBurdenScore resets all changes to the "burden_score" field.
+func (m *OncallShiftMetricsMutation) ResetBurdenScore() {
+	m.burden_score = nil
+	m.addburden_score = nil
+}
+
+// SetEventFrequency sets the "event_frequency" field.
+func (m *OncallShiftMetricsMutation) SetEventFrequency(f float32) {
+	m.event_frequency = &f
+	m.addevent_frequency = nil
+}
+
+// EventFrequency returns the value of the "event_frequency" field in the mutation.
+func (m *OncallShiftMetricsMutation) EventFrequency() (r float32, exists bool) {
+	v := m.event_frequency
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldEventFrequency returns the old "event_frequency" field's value of the OncallShiftMetrics entity.
+// If the OncallShiftMetrics object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *OncallShiftMetricsMutation) OldEventFrequency(ctx context.Context) (v float32, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldEventFrequency is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldEventFrequency requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldEventFrequency: %w", err)
+	}
+	return oldValue.EventFrequency, nil
+}
+
+// AddEventFrequency adds f to the "event_frequency" field.
+func (m *OncallShiftMetricsMutation) AddEventFrequency(f float32) {
+	if m.addevent_frequency != nil {
+		*m.addevent_frequency += f
+	} else {
+		m.addevent_frequency = &f
+	}
+}
+
+// AddedEventFrequency returns the value that was added to the "event_frequency" field in this mutation.
+func (m *OncallShiftMetricsMutation) AddedEventFrequency() (r float32, exists bool) {
+	v := m.addevent_frequency
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetEventFrequency resets all changes to the "event_frequency" field.
+func (m *OncallShiftMetricsMutation) ResetEventFrequency() {
+	m.event_frequency = nil
+	m.addevent_frequency = nil
+}
+
+// SetLifeImpact sets the "life_impact" field.
+func (m *OncallShiftMetricsMutation) SetLifeImpact(f float32) {
+	m.life_impact = &f
+	m.addlife_impact = nil
+}
+
+// LifeImpact returns the value of the "life_impact" field in the mutation.
+func (m *OncallShiftMetricsMutation) LifeImpact() (r float32, exists bool) {
+	v := m.life_impact
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldLifeImpact returns the old "life_impact" field's value of the OncallShiftMetrics entity.
+// If the OncallShiftMetrics object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *OncallShiftMetricsMutation) OldLifeImpact(ctx context.Context) (v float32, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldLifeImpact is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldLifeImpact requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldLifeImpact: %w", err)
+	}
+	return oldValue.LifeImpact, nil
+}
+
+// AddLifeImpact adds f to the "life_impact" field.
+func (m *OncallShiftMetricsMutation) AddLifeImpact(f float32) {
+	if m.addlife_impact != nil {
+		*m.addlife_impact += f
+	} else {
+		m.addlife_impact = &f
+	}
+}
+
+// AddedLifeImpact returns the value that was added to the "life_impact" field in this mutation.
+func (m *OncallShiftMetricsMutation) AddedLifeImpact() (r float32, exists bool) {
+	v := m.addlife_impact
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetLifeImpact resets all changes to the "life_impact" field.
+func (m *OncallShiftMetricsMutation) ResetLifeImpact() {
+	m.life_impact = nil
+	m.addlife_impact = nil
+}
+
+// SetTimeImpact sets the "time_impact" field.
+func (m *OncallShiftMetricsMutation) SetTimeImpact(f float32) {
+	m.time_impact = &f
+	m.addtime_impact = nil
+}
+
+// TimeImpact returns the value of the "time_impact" field in the mutation.
+func (m *OncallShiftMetricsMutation) TimeImpact() (r float32, exists bool) {
+	v := m.time_impact
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldTimeImpact returns the old "time_impact" field's value of the OncallShiftMetrics entity.
+// If the OncallShiftMetrics object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *OncallShiftMetricsMutation) OldTimeImpact(ctx context.Context) (v float32, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldTimeImpact is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldTimeImpact requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldTimeImpact: %w", err)
+	}
+	return oldValue.TimeImpact, nil
+}
+
+// AddTimeImpact adds f to the "time_impact" field.
+func (m *OncallShiftMetricsMutation) AddTimeImpact(f float32) {
+	if m.addtime_impact != nil {
+		*m.addtime_impact += f
+	} else {
+		m.addtime_impact = &f
+	}
+}
+
+// AddedTimeImpact returns the value that was added to the "time_impact" field in this mutation.
+func (m *OncallShiftMetricsMutation) AddedTimeImpact() (r float32, exists bool) {
+	v := m.addtime_impact
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetTimeImpact resets all changes to the "time_impact" field.
+func (m *OncallShiftMetricsMutation) ResetTimeImpact() {
+	m.time_impact = nil
+	m.addtime_impact = nil
+}
+
+// SetResponseRequirements sets the "response_requirements" field.
+func (m *OncallShiftMetricsMutation) SetResponseRequirements(f float32) {
+	m.response_requirements = &f
+	m.addresponse_requirements = nil
+}
+
+// ResponseRequirements returns the value of the "response_requirements" field in the mutation.
+func (m *OncallShiftMetricsMutation) ResponseRequirements() (r float32, exists bool) {
+	v := m.response_requirements
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldResponseRequirements returns the old "response_requirements" field's value of the OncallShiftMetrics entity.
+// If the OncallShiftMetrics object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *OncallShiftMetricsMutation) OldResponseRequirements(ctx context.Context) (v float32, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldResponseRequirements is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldResponseRequirements requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldResponseRequirements: %w", err)
+	}
+	return oldValue.ResponseRequirements, nil
+}
+
+// AddResponseRequirements adds f to the "response_requirements" field.
+func (m *OncallShiftMetricsMutation) AddResponseRequirements(f float32) {
+	if m.addresponse_requirements != nil {
+		*m.addresponse_requirements += f
+	} else {
+		m.addresponse_requirements = &f
+	}
+}
+
+// AddedResponseRequirements returns the value that was added to the "response_requirements" field in this mutation.
+func (m *OncallShiftMetricsMutation) AddedResponseRequirements() (r float32, exists bool) {
+	v := m.addresponse_requirements
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetResponseRequirements resets all changes to the "response_requirements" field.
+func (m *OncallShiftMetricsMutation) ResetResponseRequirements() {
+	m.response_requirements = nil
+	m.addresponse_requirements = nil
+}
+
+// SetIsolation sets the "isolation" field.
+func (m *OncallShiftMetricsMutation) SetIsolation(f float32) {
+	m.isolation = &f
+	m.addisolation = nil
+}
+
+// Isolation returns the value of the "isolation" field in the mutation.
+func (m *OncallShiftMetricsMutation) Isolation() (r float32, exists bool) {
+	v := m.isolation
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldIsolation returns the old "isolation" field's value of the OncallShiftMetrics entity.
+// If the OncallShiftMetrics object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *OncallShiftMetricsMutation) OldIsolation(ctx context.Context) (v float32, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldIsolation is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldIsolation requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldIsolation: %w", err)
+	}
+	return oldValue.Isolation, nil
+}
+
+// AddIsolation adds f to the "isolation" field.
+func (m *OncallShiftMetricsMutation) AddIsolation(f float32) {
+	if m.addisolation != nil {
+		*m.addisolation += f
+	} else {
+		m.addisolation = &f
+	}
+}
+
+// AddedIsolation returns the value that was added to the "isolation" field in this mutation.
+func (m *OncallShiftMetricsMutation) AddedIsolation() (r float32, exists bool) {
+	v := m.addisolation
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetIsolation resets all changes to the "isolation" field.
+func (m *OncallShiftMetricsMutation) ResetIsolation() {
+	m.isolation = nil
+	m.addisolation = nil
+}
+
+// SetIncidentsTotal sets the "incidents_total" field.
+func (m *OncallShiftMetricsMutation) SetIncidentsTotal(f float32) {
+	m.incidents_total = &f
+	m.addincidents_total = nil
+}
+
+// IncidentsTotal returns the value of the "incidents_total" field in the mutation.
+func (m *OncallShiftMetricsMutation) IncidentsTotal() (r float32, exists bool) {
+	v := m.incidents_total
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldIncidentsTotal returns the old "incidents_total" field's value of the OncallShiftMetrics entity.
+// If the OncallShiftMetrics object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *OncallShiftMetricsMutation) OldIncidentsTotal(ctx context.Context) (v float32, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldIncidentsTotal is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldIncidentsTotal requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldIncidentsTotal: %w", err)
+	}
+	return oldValue.IncidentsTotal, nil
+}
+
+// AddIncidentsTotal adds f to the "incidents_total" field.
+func (m *OncallShiftMetricsMutation) AddIncidentsTotal(f float32) {
+	if m.addincidents_total != nil {
+		*m.addincidents_total += f
+	} else {
+		m.addincidents_total = &f
+	}
+}
+
+// AddedIncidentsTotal returns the value that was added to the "incidents_total" field in this mutation.
+func (m *OncallShiftMetricsMutation) AddedIncidentsTotal() (r float32, exists bool) {
+	v := m.addincidents_total
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetIncidentsTotal resets all changes to the "incidents_total" field.
+func (m *OncallShiftMetricsMutation) ResetIncidentsTotal() {
+	m.incidents_total = nil
+	m.addincidents_total = nil
+}
+
+// SetIncidentResponseTime sets the "incident_response_time" field.
+func (m *OncallShiftMetricsMutation) SetIncidentResponseTime(f float32) {
+	m.incident_response_time = &f
+	m.addincident_response_time = nil
+}
+
+// IncidentResponseTime returns the value of the "incident_response_time" field in the mutation.
+func (m *OncallShiftMetricsMutation) IncidentResponseTime() (r float32, exists bool) {
+	v := m.incident_response_time
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldIncidentResponseTime returns the old "incident_response_time" field's value of the OncallShiftMetrics entity.
+// If the OncallShiftMetrics object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *OncallShiftMetricsMutation) OldIncidentResponseTime(ctx context.Context) (v float32, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldIncidentResponseTime is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldIncidentResponseTime requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldIncidentResponseTime: %w", err)
+	}
+	return oldValue.IncidentResponseTime, nil
+}
+
+// AddIncidentResponseTime adds f to the "incident_response_time" field.
+func (m *OncallShiftMetricsMutation) AddIncidentResponseTime(f float32) {
+	if m.addincident_response_time != nil {
+		*m.addincident_response_time += f
+	} else {
+		m.addincident_response_time = &f
+	}
+}
+
+// AddedIncidentResponseTime returns the value that was added to the "incident_response_time" field in this mutation.
+func (m *OncallShiftMetricsMutation) AddedIncidentResponseTime() (r float32, exists bool) {
+	v := m.addincident_response_time
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetIncidentResponseTime resets all changes to the "incident_response_time" field.
+func (m *OncallShiftMetricsMutation) ResetIncidentResponseTime() {
+	m.incident_response_time = nil
+	m.addincident_response_time = nil
+}
+
+// SetInterruptsTotal sets the "interrupts_total" field.
+func (m *OncallShiftMetricsMutation) SetInterruptsTotal(f float32) {
+	m.interrupts_total = &f
+	m.addinterrupts_total = nil
+}
+
+// InterruptsTotal returns the value of the "interrupts_total" field in the mutation.
+func (m *OncallShiftMetricsMutation) InterruptsTotal() (r float32, exists bool) {
+	v := m.interrupts_total
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldInterruptsTotal returns the old "interrupts_total" field's value of the OncallShiftMetrics entity.
+// If the OncallShiftMetrics object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *OncallShiftMetricsMutation) OldInterruptsTotal(ctx context.Context) (v float32, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldInterruptsTotal is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldInterruptsTotal requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldInterruptsTotal: %w", err)
+	}
+	return oldValue.InterruptsTotal, nil
+}
+
+// AddInterruptsTotal adds f to the "interrupts_total" field.
+func (m *OncallShiftMetricsMutation) AddInterruptsTotal(f float32) {
+	if m.addinterrupts_total != nil {
+		*m.addinterrupts_total += f
+	} else {
+		m.addinterrupts_total = &f
+	}
+}
+
+// AddedInterruptsTotal returns the value that was added to the "interrupts_total" field in this mutation.
+func (m *OncallShiftMetricsMutation) AddedInterruptsTotal() (r float32, exists bool) {
+	v := m.addinterrupts_total
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetInterruptsTotal resets all changes to the "interrupts_total" field.
+func (m *OncallShiftMetricsMutation) ResetInterruptsTotal() {
+	m.interrupts_total = nil
+	m.addinterrupts_total = nil
+}
+
+// SetInterruptsAlerts sets the "interrupts_alerts" field.
+func (m *OncallShiftMetricsMutation) SetInterruptsAlerts(f float32) {
+	m.interrupts_alerts = &f
+	m.addinterrupts_alerts = nil
+}
+
+// InterruptsAlerts returns the value of the "interrupts_alerts" field in the mutation.
+func (m *OncallShiftMetricsMutation) InterruptsAlerts() (r float32, exists bool) {
+	v := m.interrupts_alerts
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldInterruptsAlerts returns the old "interrupts_alerts" field's value of the OncallShiftMetrics entity.
+// If the OncallShiftMetrics object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *OncallShiftMetricsMutation) OldInterruptsAlerts(ctx context.Context) (v float32, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldInterruptsAlerts is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldInterruptsAlerts requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldInterruptsAlerts: %w", err)
+	}
+	return oldValue.InterruptsAlerts, nil
+}
+
+// AddInterruptsAlerts adds f to the "interrupts_alerts" field.
+func (m *OncallShiftMetricsMutation) AddInterruptsAlerts(f float32) {
+	if m.addinterrupts_alerts != nil {
+		*m.addinterrupts_alerts += f
+	} else {
+		m.addinterrupts_alerts = &f
+	}
+}
+
+// AddedInterruptsAlerts returns the value that was added to the "interrupts_alerts" field in this mutation.
+func (m *OncallShiftMetricsMutation) AddedInterruptsAlerts() (r float32, exists bool) {
+	v := m.addinterrupts_alerts
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetInterruptsAlerts resets all changes to the "interrupts_alerts" field.
+func (m *OncallShiftMetricsMutation) ResetInterruptsAlerts() {
+	m.interrupts_alerts = nil
+	m.addinterrupts_alerts = nil
+}
+
+// SetInterruptsNight sets the "interrupts_night" field.
+func (m *OncallShiftMetricsMutation) SetInterruptsNight(f float32) {
+	m.interrupts_night = &f
+	m.addinterrupts_night = nil
+}
+
+// InterruptsNight returns the value of the "interrupts_night" field in the mutation.
+func (m *OncallShiftMetricsMutation) InterruptsNight() (r float32, exists bool) {
+	v := m.interrupts_night
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldInterruptsNight returns the old "interrupts_night" field's value of the OncallShiftMetrics entity.
+// If the OncallShiftMetrics object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *OncallShiftMetricsMutation) OldInterruptsNight(ctx context.Context) (v float32, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldInterruptsNight is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldInterruptsNight requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldInterruptsNight: %w", err)
+	}
+	return oldValue.InterruptsNight, nil
+}
+
+// AddInterruptsNight adds f to the "interrupts_night" field.
+func (m *OncallShiftMetricsMutation) AddInterruptsNight(f float32) {
+	if m.addinterrupts_night != nil {
+		*m.addinterrupts_night += f
+	} else {
+		m.addinterrupts_night = &f
+	}
+}
+
+// AddedInterruptsNight returns the value that was added to the "interrupts_night" field in this mutation.
+func (m *OncallShiftMetricsMutation) AddedInterruptsNight() (r float32, exists bool) {
+	v := m.addinterrupts_night
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetInterruptsNight resets all changes to the "interrupts_night" field.
+func (m *OncallShiftMetricsMutation) ResetInterruptsNight() {
+	m.interrupts_night = nil
+	m.addinterrupts_night = nil
+}
+
+// SetInterruptsBusinessHours sets the "interrupts_business_hours" field.
+func (m *OncallShiftMetricsMutation) SetInterruptsBusinessHours(f float32) {
+	m.interrupts_business_hours = &f
+	m.addinterrupts_business_hours = nil
+}
+
+// InterruptsBusinessHours returns the value of the "interrupts_business_hours" field in the mutation.
+func (m *OncallShiftMetricsMutation) InterruptsBusinessHours() (r float32, exists bool) {
+	v := m.interrupts_business_hours
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldInterruptsBusinessHours returns the old "interrupts_business_hours" field's value of the OncallShiftMetrics entity.
+// If the OncallShiftMetrics object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *OncallShiftMetricsMutation) OldInterruptsBusinessHours(ctx context.Context) (v float32, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldInterruptsBusinessHours is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldInterruptsBusinessHours requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldInterruptsBusinessHours: %w", err)
+	}
+	return oldValue.InterruptsBusinessHours, nil
+}
+
+// AddInterruptsBusinessHours adds f to the "interrupts_business_hours" field.
+func (m *OncallShiftMetricsMutation) AddInterruptsBusinessHours(f float32) {
+	if m.addinterrupts_business_hours != nil {
+		*m.addinterrupts_business_hours += f
+	} else {
+		m.addinterrupts_business_hours = &f
+	}
+}
+
+// AddedInterruptsBusinessHours returns the value that was added to the "interrupts_business_hours" field in this mutation.
+func (m *OncallShiftMetricsMutation) AddedInterruptsBusinessHours() (r float32, exists bool) {
+	v := m.addinterrupts_business_hours
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetInterruptsBusinessHours resets all changes to the "interrupts_business_hours" field.
+func (m *OncallShiftMetricsMutation) ResetInterruptsBusinessHours() {
+	m.interrupts_business_hours = nil
+	m.addinterrupts_business_hours = nil
+}
+
 // ClearTenant clears the "tenant" edge to the Tenant entity.
 func (m *OncallShiftMetricsMutation) ClearTenant() {
 	m.clearedtenant = true
@@ -29048,12 +29781,51 @@ func (m *OncallShiftMetricsMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *OncallShiftMetricsMutation) Fields() []string {
-	fields := make([]string, 0, 2)
+	fields := make([]string, 0, 15)
 	if m.tenant != nil {
 		fields = append(fields, oncallshiftmetrics.FieldTenantID)
 	}
 	if m.shift != nil {
 		fields = append(fields, oncallshiftmetrics.FieldShiftID)
+	}
+	if m.updated_at != nil {
+		fields = append(fields, oncallshiftmetrics.FieldUpdatedAt)
+	}
+	if m.burden_score != nil {
+		fields = append(fields, oncallshiftmetrics.FieldBurdenScore)
+	}
+	if m.event_frequency != nil {
+		fields = append(fields, oncallshiftmetrics.FieldEventFrequency)
+	}
+	if m.life_impact != nil {
+		fields = append(fields, oncallshiftmetrics.FieldLifeImpact)
+	}
+	if m.time_impact != nil {
+		fields = append(fields, oncallshiftmetrics.FieldTimeImpact)
+	}
+	if m.response_requirements != nil {
+		fields = append(fields, oncallshiftmetrics.FieldResponseRequirements)
+	}
+	if m.isolation != nil {
+		fields = append(fields, oncallshiftmetrics.FieldIsolation)
+	}
+	if m.incidents_total != nil {
+		fields = append(fields, oncallshiftmetrics.FieldIncidentsTotal)
+	}
+	if m.incident_response_time != nil {
+		fields = append(fields, oncallshiftmetrics.FieldIncidentResponseTime)
+	}
+	if m.interrupts_total != nil {
+		fields = append(fields, oncallshiftmetrics.FieldInterruptsTotal)
+	}
+	if m.interrupts_alerts != nil {
+		fields = append(fields, oncallshiftmetrics.FieldInterruptsAlerts)
+	}
+	if m.interrupts_night != nil {
+		fields = append(fields, oncallshiftmetrics.FieldInterruptsNight)
+	}
+	if m.interrupts_business_hours != nil {
+		fields = append(fields, oncallshiftmetrics.FieldInterruptsBusinessHours)
 	}
 	return fields
 }
@@ -29067,6 +29839,32 @@ func (m *OncallShiftMetricsMutation) Field(name string) (ent.Value, bool) {
 		return m.TenantID()
 	case oncallshiftmetrics.FieldShiftID:
 		return m.ShiftID()
+	case oncallshiftmetrics.FieldUpdatedAt:
+		return m.UpdatedAt()
+	case oncallshiftmetrics.FieldBurdenScore:
+		return m.BurdenScore()
+	case oncallshiftmetrics.FieldEventFrequency:
+		return m.EventFrequency()
+	case oncallshiftmetrics.FieldLifeImpact:
+		return m.LifeImpact()
+	case oncallshiftmetrics.FieldTimeImpact:
+		return m.TimeImpact()
+	case oncallshiftmetrics.FieldResponseRequirements:
+		return m.ResponseRequirements()
+	case oncallshiftmetrics.FieldIsolation:
+		return m.Isolation()
+	case oncallshiftmetrics.FieldIncidentsTotal:
+		return m.IncidentsTotal()
+	case oncallshiftmetrics.FieldIncidentResponseTime:
+		return m.IncidentResponseTime()
+	case oncallshiftmetrics.FieldInterruptsTotal:
+		return m.InterruptsTotal()
+	case oncallshiftmetrics.FieldInterruptsAlerts:
+		return m.InterruptsAlerts()
+	case oncallshiftmetrics.FieldInterruptsNight:
+		return m.InterruptsNight()
+	case oncallshiftmetrics.FieldInterruptsBusinessHours:
+		return m.InterruptsBusinessHours()
 	}
 	return nil, false
 }
@@ -29080,6 +29878,32 @@ func (m *OncallShiftMetricsMutation) OldField(ctx context.Context, name string) 
 		return m.OldTenantID(ctx)
 	case oncallshiftmetrics.FieldShiftID:
 		return m.OldShiftID(ctx)
+	case oncallshiftmetrics.FieldUpdatedAt:
+		return m.OldUpdatedAt(ctx)
+	case oncallshiftmetrics.FieldBurdenScore:
+		return m.OldBurdenScore(ctx)
+	case oncallshiftmetrics.FieldEventFrequency:
+		return m.OldEventFrequency(ctx)
+	case oncallshiftmetrics.FieldLifeImpact:
+		return m.OldLifeImpact(ctx)
+	case oncallshiftmetrics.FieldTimeImpact:
+		return m.OldTimeImpact(ctx)
+	case oncallshiftmetrics.FieldResponseRequirements:
+		return m.OldResponseRequirements(ctx)
+	case oncallshiftmetrics.FieldIsolation:
+		return m.OldIsolation(ctx)
+	case oncallshiftmetrics.FieldIncidentsTotal:
+		return m.OldIncidentsTotal(ctx)
+	case oncallshiftmetrics.FieldIncidentResponseTime:
+		return m.OldIncidentResponseTime(ctx)
+	case oncallshiftmetrics.FieldInterruptsTotal:
+		return m.OldInterruptsTotal(ctx)
+	case oncallshiftmetrics.FieldInterruptsAlerts:
+		return m.OldInterruptsAlerts(ctx)
+	case oncallshiftmetrics.FieldInterruptsNight:
+		return m.OldInterruptsNight(ctx)
+	case oncallshiftmetrics.FieldInterruptsBusinessHours:
+		return m.OldInterruptsBusinessHours(ctx)
 	}
 	return nil, fmt.Errorf("unknown OncallShiftMetrics field %s", name)
 }
@@ -29103,6 +29927,97 @@ func (m *OncallShiftMetricsMutation) SetField(name string, value ent.Value) erro
 		}
 		m.SetShiftID(v)
 		return nil
+	case oncallshiftmetrics.FieldUpdatedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetUpdatedAt(v)
+		return nil
+	case oncallshiftmetrics.FieldBurdenScore:
+		v, ok := value.(float32)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetBurdenScore(v)
+		return nil
+	case oncallshiftmetrics.FieldEventFrequency:
+		v, ok := value.(float32)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetEventFrequency(v)
+		return nil
+	case oncallshiftmetrics.FieldLifeImpact:
+		v, ok := value.(float32)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetLifeImpact(v)
+		return nil
+	case oncallshiftmetrics.FieldTimeImpact:
+		v, ok := value.(float32)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetTimeImpact(v)
+		return nil
+	case oncallshiftmetrics.FieldResponseRequirements:
+		v, ok := value.(float32)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetResponseRequirements(v)
+		return nil
+	case oncallshiftmetrics.FieldIsolation:
+		v, ok := value.(float32)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetIsolation(v)
+		return nil
+	case oncallshiftmetrics.FieldIncidentsTotal:
+		v, ok := value.(float32)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetIncidentsTotal(v)
+		return nil
+	case oncallshiftmetrics.FieldIncidentResponseTime:
+		v, ok := value.(float32)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetIncidentResponseTime(v)
+		return nil
+	case oncallshiftmetrics.FieldInterruptsTotal:
+		v, ok := value.(float32)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetInterruptsTotal(v)
+		return nil
+	case oncallshiftmetrics.FieldInterruptsAlerts:
+		v, ok := value.(float32)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetInterruptsAlerts(v)
+		return nil
+	case oncallshiftmetrics.FieldInterruptsNight:
+		v, ok := value.(float32)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetInterruptsNight(v)
+		return nil
+	case oncallshiftmetrics.FieldInterruptsBusinessHours:
+		v, ok := value.(float32)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetInterruptsBusinessHours(v)
+		return nil
 	}
 	return fmt.Errorf("unknown OncallShiftMetrics field %s", name)
 }
@@ -29111,6 +30026,42 @@ func (m *OncallShiftMetricsMutation) SetField(name string, value ent.Value) erro
 // this mutation.
 func (m *OncallShiftMetricsMutation) AddedFields() []string {
 	var fields []string
+	if m.addburden_score != nil {
+		fields = append(fields, oncallshiftmetrics.FieldBurdenScore)
+	}
+	if m.addevent_frequency != nil {
+		fields = append(fields, oncallshiftmetrics.FieldEventFrequency)
+	}
+	if m.addlife_impact != nil {
+		fields = append(fields, oncallshiftmetrics.FieldLifeImpact)
+	}
+	if m.addtime_impact != nil {
+		fields = append(fields, oncallshiftmetrics.FieldTimeImpact)
+	}
+	if m.addresponse_requirements != nil {
+		fields = append(fields, oncallshiftmetrics.FieldResponseRequirements)
+	}
+	if m.addisolation != nil {
+		fields = append(fields, oncallshiftmetrics.FieldIsolation)
+	}
+	if m.addincidents_total != nil {
+		fields = append(fields, oncallshiftmetrics.FieldIncidentsTotal)
+	}
+	if m.addincident_response_time != nil {
+		fields = append(fields, oncallshiftmetrics.FieldIncidentResponseTime)
+	}
+	if m.addinterrupts_total != nil {
+		fields = append(fields, oncallshiftmetrics.FieldInterruptsTotal)
+	}
+	if m.addinterrupts_alerts != nil {
+		fields = append(fields, oncallshiftmetrics.FieldInterruptsAlerts)
+	}
+	if m.addinterrupts_night != nil {
+		fields = append(fields, oncallshiftmetrics.FieldInterruptsNight)
+	}
+	if m.addinterrupts_business_hours != nil {
+		fields = append(fields, oncallshiftmetrics.FieldInterruptsBusinessHours)
+	}
 	return fields
 }
 
@@ -29119,6 +30070,30 @@ func (m *OncallShiftMetricsMutation) AddedFields() []string {
 // was not set, or was not defined in the schema.
 func (m *OncallShiftMetricsMutation) AddedField(name string) (ent.Value, bool) {
 	switch name {
+	case oncallshiftmetrics.FieldBurdenScore:
+		return m.AddedBurdenScore()
+	case oncallshiftmetrics.FieldEventFrequency:
+		return m.AddedEventFrequency()
+	case oncallshiftmetrics.FieldLifeImpact:
+		return m.AddedLifeImpact()
+	case oncallshiftmetrics.FieldTimeImpact:
+		return m.AddedTimeImpact()
+	case oncallshiftmetrics.FieldResponseRequirements:
+		return m.AddedResponseRequirements()
+	case oncallshiftmetrics.FieldIsolation:
+		return m.AddedIsolation()
+	case oncallshiftmetrics.FieldIncidentsTotal:
+		return m.AddedIncidentsTotal()
+	case oncallshiftmetrics.FieldIncidentResponseTime:
+		return m.AddedIncidentResponseTime()
+	case oncallshiftmetrics.FieldInterruptsTotal:
+		return m.AddedInterruptsTotal()
+	case oncallshiftmetrics.FieldInterruptsAlerts:
+		return m.AddedInterruptsAlerts()
+	case oncallshiftmetrics.FieldInterruptsNight:
+		return m.AddedInterruptsNight()
+	case oncallshiftmetrics.FieldInterruptsBusinessHours:
+		return m.AddedInterruptsBusinessHours()
 	}
 	return nil, false
 }
@@ -29128,6 +30103,90 @@ func (m *OncallShiftMetricsMutation) AddedField(name string) (ent.Value, bool) {
 // type.
 func (m *OncallShiftMetricsMutation) AddField(name string, value ent.Value) error {
 	switch name {
+	case oncallshiftmetrics.FieldBurdenScore:
+		v, ok := value.(float32)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddBurdenScore(v)
+		return nil
+	case oncallshiftmetrics.FieldEventFrequency:
+		v, ok := value.(float32)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddEventFrequency(v)
+		return nil
+	case oncallshiftmetrics.FieldLifeImpact:
+		v, ok := value.(float32)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddLifeImpact(v)
+		return nil
+	case oncallshiftmetrics.FieldTimeImpact:
+		v, ok := value.(float32)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddTimeImpact(v)
+		return nil
+	case oncallshiftmetrics.FieldResponseRequirements:
+		v, ok := value.(float32)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddResponseRequirements(v)
+		return nil
+	case oncallshiftmetrics.FieldIsolation:
+		v, ok := value.(float32)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddIsolation(v)
+		return nil
+	case oncallshiftmetrics.FieldIncidentsTotal:
+		v, ok := value.(float32)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddIncidentsTotal(v)
+		return nil
+	case oncallshiftmetrics.FieldIncidentResponseTime:
+		v, ok := value.(float32)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddIncidentResponseTime(v)
+		return nil
+	case oncallshiftmetrics.FieldInterruptsTotal:
+		v, ok := value.(float32)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddInterruptsTotal(v)
+		return nil
+	case oncallshiftmetrics.FieldInterruptsAlerts:
+		v, ok := value.(float32)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddInterruptsAlerts(v)
+		return nil
+	case oncallshiftmetrics.FieldInterruptsNight:
+		v, ok := value.(float32)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddInterruptsNight(v)
+		return nil
+	case oncallshiftmetrics.FieldInterruptsBusinessHours:
+		v, ok := value.(float32)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddInterruptsBusinessHours(v)
+		return nil
 	}
 	return fmt.Errorf("unknown OncallShiftMetrics numeric field %s", name)
 }
@@ -29160,6 +30219,45 @@ func (m *OncallShiftMetricsMutation) ResetField(name string) error {
 		return nil
 	case oncallshiftmetrics.FieldShiftID:
 		m.ResetShiftID()
+		return nil
+	case oncallshiftmetrics.FieldUpdatedAt:
+		m.ResetUpdatedAt()
+		return nil
+	case oncallshiftmetrics.FieldBurdenScore:
+		m.ResetBurdenScore()
+		return nil
+	case oncallshiftmetrics.FieldEventFrequency:
+		m.ResetEventFrequency()
+		return nil
+	case oncallshiftmetrics.FieldLifeImpact:
+		m.ResetLifeImpact()
+		return nil
+	case oncallshiftmetrics.FieldTimeImpact:
+		m.ResetTimeImpact()
+		return nil
+	case oncallshiftmetrics.FieldResponseRequirements:
+		m.ResetResponseRequirements()
+		return nil
+	case oncallshiftmetrics.FieldIsolation:
+		m.ResetIsolation()
+		return nil
+	case oncallshiftmetrics.FieldIncidentsTotal:
+		m.ResetIncidentsTotal()
+		return nil
+	case oncallshiftmetrics.FieldIncidentResponseTime:
+		m.ResetIncidentResponseTime()
+		return nil
+	case oncallshiftmetrics.FieldInterruptsTotal:
+		m.ResetInterruptsTotal()
+		return nil
+	case oncallshiftmetrics.FieldInterruptsAlerts:
+		m.ResetInterruptsAlerts()
+		return nil
+	case oncallshiftmetrics.FieldInterruptsNight:
+		m.ResetInterruptsNight()
+		return nil
+	case oncallshiftmetrics.FieldInterruptsBusinessHours:
+		m.ResetInterruptsBusinessHours()
 		return nil
 	}
 	return fmt.Errorf("unknown OncallShiftMetrics field %s", name)

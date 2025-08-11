@@ -1251,6 +1251,19 @@ var (
 	// OncallShiftMetricsColumns holds the columns for the "oncall_shift_metrics" table.
 	OncallShiftMetricsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID},
+		{Name: "updated_at", Type: field.TypeTime},
+		{Name: "burden_score", Type: field.TypeFloat32},
+		{Name: "event_frequency", Type: field.TypeFloat32},
+		{Name: "life_impact", Type: field.TypeFloat32},
+		{Name: "time_impact", Type: field.TypeFloat32},
+		{Name: "response_requirements", Type: field.TypeFloat32},
+		{Name: "isolation", Type: field.TypeFloat32},
+		{Name: "incidents_total", Type: field.TypeFloat32},
+		{Name: "incident_response_time", Type: field.TypeFloat32},
+		{Name: "interrupts_total", Type: field.TypeFloat32},
+		{Name: "interrupts_alerts", Type: field.TypeFloat32},
+		{Name: "interrupts_night", Type: field.TypeFloat32},
+		{Name: "interrupts_business_hours", Type: field.TypeFloat32},
 		{Name: "shift_id", Type: field.TypeUUID, Unique: true},
 		{Name: "tenant_id", Type: field.TypeInt},
 	}
@@ -1262,13 +1275,13 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "oncall_shift_metrics_oncall_shifts_metrics",
-				Columns:    []*schema.Column{OncallShiftMetricsColumns[1]},
+				Columns:    []*schema.Column{OncallShiftMetricsColumns[14]},
 				RefColumns: []*schema.Column{OncallShiftsColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
 			{
 				Symbol:     "oncall_shift_metrics_tenants_tenant",
-				Columns:    []*schema.Column{OncallShiftMetricsColumns[2]},
+				Columns:    []*schema.Column{OncallShiftMetricsColumns[15]},
 				RefColumns: []*schema.Column{TenantsColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
@@ -1277,7 +1290,7 @@ var (
 			{
 				Name:    "oncallshiftmetrics_tenant_id",
 				Unique:  false,
-				Columns: []*schema.Column{OncallShiftMetricsColumns[2]},
+				Columns: []*schema.Column{OncallShiftMetricsColumns[15]},
 			},
 		},
 	}

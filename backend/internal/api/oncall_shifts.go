@@ -3,10 +3,11 @@ package api
 import (
 	"context"
 	"encoding/json"
+	"time"
+
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent"
 	"github.com/rs/zerolog/log"
-	"time"
 
 	rez "github.com/rezible/rezible"
 	oapi "github.com/rezible/rezible/openapi"
@@ -137,10 +138,7 @@ func (h *oncallShiftsHandler) ArchiveOncallShiftHandoverTemplate(ctx context.Con
 func (h *oncallShiftsHandler) GetOncallShiftHandover(ctx context.Context, request *oapi.GetOncallShiftHandoverRequest) (*oapi.GetOncallShiftHandoverResponse, error) {
 	var resp oapi.GetOncallShiftHandoverResponse
 
-	// TODO: check if should create?
-	const shouldCreate = true
-
-	handover, handoverErr := h.oncall.GetHandoverForShift(ctx, request.Id, shouldCreate)
+	handover, handoverErr := h.oncall.GetHandoverForShift(ctx, request.Id)
 	if handoverErr != nil && !ent.IsNotFound(handoverErr) {
 		return nil, detailError("failed to get handover", handoverErr)
 	}

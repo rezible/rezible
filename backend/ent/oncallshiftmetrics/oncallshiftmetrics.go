@@ -3,6 +3,8 @@
 package oncallshiftmetrics
 
 import (
+	"time"
+
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
@@ -18,6 +20,32 @@ const (
 	FieldTenantID = "tenant_id"
 	// FieldShiftID holds the string denoting the shift_id field in the database.
 	FieldShiftID = "shift_id"
+	// FieldUpdatedAt holds the string denoting the updated_at field in the database.
+	FieldUpdatedAt = "updated_at"
+	// FieldBurdenScore holds the string denoting the burden_score field in the database.
+	FieldBurdenScore = "burden_score"
+	// FieldEventFrequency holds the string denoting the event_frequency field in the database.
+	FieldEventFrequency = "event_frequency"
+	// FieldLifeImpact holds the string denoting the life_impact field in the database.
+	FieldLifeImpact = "life_impact"
+	// FieldTimeImpact holds the string denoting the time_impact field in the database.
+	FieldTimeImpact = "time_impact"
+	// FieldResponseRequirements holds the string denoting the response_requirements field in the database.
+	FieldResponseRequirements = "response_requirements"
+	// FieldIsolation holds the string denoting the isolation field in the database.
+	FieldIsolation = "isolation"
+	// FieldIncidentsTotal holds the string denoting the incidents_total field in the database.
+	FieldIncidentsTotal = "incidents_total"
+	// FieldIncidentResponseTime holds the string denoting the incident_response_time field in the database.
+	FieldIncidentResponseTime = "incident_response_time"
+	// FieldInterruptsTotal holds the string denoting the interrupts_total field in the database.
+	FieldInterruptsTotal = "interrupts_total"
+	// FieldInterruptsAlerts holds the string denoting the interrupts_alerts field in the database.
+	FieldInterruptsAlerts = "interrupts_alerts"
+	// FieldInterruptsNight holds the string denoting the interrupts_night field in the database.
+	FieldInterruptsNight = "interrupts_night"
+	// FieldInterruptsBusinessHours holds the string denoting the interrupts_business_hours field in the database.
+	FieldInterruptsBusinessHours = "interrupts_business_hours"
 	// EdgeTenant holds the string denoting the tenant edge name in mutations.
 	EdgeTenant = "tenant"
 	// EdgeShift holds the string denoting the shift edge name in mutations.
@@ -45,6 +73,19 @@ var Columns = []string{
 	FieldID,
 	FieldTenantID,
 	FieldShiftID,
+	FieldUpdatedAt,
+	FieldBurdenScore,
+	FieldEventFrequency,
+	FieldLifeImpact,
+	FieldTimeImpact,
+	FieldResponseRequirements,
+	FieldIsolation,
+	FieldIncidentsTotal,
+	FieldIncidentResponseTime,
+	FieldInterruptsTotal,
+	FieldInterruptsAlerts,
+	FieldInterruptsNight,
+	FieldInterruptsBusinessHours,
 }
 
 // ValidColumn reports if the column name is valid (part of the table columns).
@@ -65,6 +106,8 @@ func ValidColumn(column string) bool {
 var (
 	Hooks  [1]ent.Hook
 	Policy ent.Policy
+	// DefaultUpdatedAt holds the default value on creation for the "updated_at" field.
+	DefaultUpdatedAt func() time.Time
 	// DefaultID holds the default value on creation for the "id" field.
 	DefaultID func() uuid.UUID
 )
@@ -85,6 +128,71 @@ func ByTenantID(opts ...sql.OrderTermOption) OrderOption {
 // ByShiftID orders the results by the shift_id field.
 func ByShiftID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldShiftID, opts...).ToFunc()
+}
+
+// ByUpdatedAt orders the results by the updated_at field.
+func ByUpdatedAt(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldUpdatedAt, opts...).ToFunc()
+}
+
+// ByBurdenScore orders the results by the burden_score field.
+func ByBurdenScore(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldBurdenScore, opts...).ToFunc()
+}
+
+// ByEventFrequency orders the results by the event_frequency field.
+func ByEventFrequency(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldEventFrequency, opts...).ToFunc()
+}
+
+// ByLifeImpact orders the results by the life_impact field.
+func ByLifeImpact(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldLifeImpact, opts...).ToFunc()
+}
+
+// ByTimeImpact orders the results by the time_impact field.
+func ByTimeImpact(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldTimeImpact, opts...).ToFunc()
+}
+
+// ByResponseRequirements orders the results by the response_requirements field.
+func ByResponseRequirements(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldResponseRequirements, opts...).ToFunc()
+}
+
+// ByIsolation orders the results by the isolation field.
+func ByIsolation(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldIsolation, opts...).ToFunc()
+}
+
+// ByIncidentsTotal orders the results by the incidents_total field.
+func ByIncidentsTotal(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldIncidentsTotal, opts...).ToFunc()
+}
+
+// ByIncidentResponseTime orders the results by the incident_response_time field.
+func ByIncidentResponseTime(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldIncidentResponseTime, opts...).ToFunc()
+}
+
+// ByInterruptsTotal orders the results by the interrupts_total field.
+func ByInterruptsTotal(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldInterruptsTotal, opts...).ToFunc()
+}
+
+// ByInterruptsAlerts orders the results by the interrupts_alerts field.
+func ByInterruptsAlerts(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldInterruptsAlerts, opts...).ToFunc()
+}
+
+// ByInterruptsNight orders the results by the interrupts_night field.
+func ByInterruptsNight(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldInterruptsNight, opts...).ToFunc()
+}
+
+// ByInterruptsBusinessHours orders the results by the interrupts_business_hours field.
+func ByInterruptsBusinessHours(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldInterruptsBusinessHours, opts...).ToFunc()
 }
 
 // ByTenantField orders the results by tenant field.

@@ -5,6 +5,7 @@ package ent
 import (
 	"fmt"
 	"strings"
+	"time"
 
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
@@ -23,6 +24,32 @@ type OncallShiftMetrics struct {
 	TenantID int `json:"tenant_id,omitempty"`
 	// ShiftID holds the value of the "shift_id" field.
 	ShiftID uuid.UUID `json:"shift_id,omitempty"`
+	// UpdatedAt holds the value of the "updated_at" field.
+	UpdatedAt time.Time `json:"updated_at,omitempty"`
+	// BurdenScore holds the value of the "burden_score" field.
+	BurdenScore float32 `json:"burden_score,omitempty"`
+	// EventFrequency holds the value of the "event_frequency" field.
+	EventFrequency float32 `json:"event_frequency,omitempty"`
+	// LifeImpact holds the value of the "life_impact" field.
+	LifeImpact float32 `json:"life_impact,omitempty"`
+	// TimeImpact holds the value of the "time_impact" field.
+	TimeImpact float32 `json:"time_impact,omitempty"`
+	// ResponseRequirements holds the value of the "response_requirements" field.
+	ResponseRequirements float32 `json:"response_requirements,omitempty"`
+	// Isolation holds the value of the "isolation" field.
+	Isolation float32 `json:"isolation,omitempty"`
+	// IncidentsTotal holds the value of the "incidents_total" field.
+	IncidentsTotal float32 `json:"incidents_total,omitempty"`
+	// IncidentResponseTime holds the value of the "incident_response_time" field.
+	IncidentResponseTime float32 `json:"incident_response_time,omitempty"`
+	// InterruptsTotal holds the value of the "interrupts_total" field.
+	InterruptsTotal float32 `json:"interrupts_total,omitempty"`
+	// InterruptsAlerts holds the value of the "interrupts_alerts" field.
+	InterruptsAlerts float32 `json:"interrupts_alerts,omitempty"`
+	// InterruptsNight holds the value of the "interrupts_night" field.
+	InterruptsNight float32 `json:"interrupts_night,omitempty"`
+	// InterruptsBusinessHours holds the value of the "interrupts_business_hours" field.
+	InterruptsBusinessHours float32 `json:"interrupts_business_hours,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the OncallShiftMetricsQuery when eager-loading is set.
 	Edges        OncallShiftMetricsEdges `json:"edges"`
@@ -67,8 +94,12 @@ func (*OncallShiftMetrics) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
+		case oncallshiftmetrics.FieldBurdenScore, oncallshiftmetrics.FieldEventFrequency, oncallshiftmetrics.FieldLifeImpact, oncallshiftmetrics.FieldTimeImpact, oncallshiftmetrics.FieldResponseRequirements, oncallshiftmetrics.FieldIsolation, oncallshiftmetrics.FieldIncidentsTotal, oncallshiftmetrics.FieldIncidentResponseTime, oncallshiftmetrics.FieldInterruptsTotal, oncallshiftmetrics.FieldInterruptsAlerts, oncallshiftmetrics.FieldInterruptsNight, oncallshiftmetrics.FieldInterruptsBusinessHours:
+			values[i] = new(sql.NullFloat64)
 		case oncallshiftmetrics.FieldTenantID:
 			values[i] = new(sql.NullInt64)
+		case oncallshiftmetrics.FieldUpdatedAt:
+			values[i] = new(sql.NullTime)
 		case oncallshiftmetrics.FieldID, oncallshiftmetrics.FieldShiftID:
 			values[i] = new(uuid.UUID)
 		default:
@@ -103,6 +134,84 @@ func (osm *OncallShiftMetrics) assignValues(columns []string, values []any) erro
 				return fmt.Errorf("unexpected type %T for field shift_id", values[i])
 			} else if value != nil {
 				osm.ShiftID = *value
+			}
+		case oncallshiftmetrics.FieldUpdatedAt:
+			if value, ok := values[i].(*sql.NullTime); !ok {
+				return fmt.Errorf("unexpected type %T for field updated_at", values[i])
+			} else if value.Valid {
+				osm.UpdatedAt = value.Time
+			}
+		case oncallshiftmetrics.FieldBurdenScore:
+			if value, ok := values[i].(*sql.NullFloat64); !ok {
+				return fmt.Errorf("unexpected type %T for field burden_score", values[i])
+			} else if value.Valid {
+				osm.BurdenScore = float32(value.Float64)
+			}
+		case oncallshiftmetrics.FieldEventFrequency:
+			if value, ok := values[i].(*sql.NullFloat64); !ok {
+				return fmt.Errorf("unexpected type %T for field event_frequency", values[i])
+			} else if value.Valid {
+				osm.EventFrequency = float32(value.Float64)
+			}
+		case oncallshiftmetrics.FieldLifeImpact:
+			if value, ok := values[i].(*sql.NullFloat64); !ok {
+				return fmt.Errorf("unexpected type %T for field life_impact", values[i])
+			} else if value.Valid {
+				osm.LifeImpact = float32(value.Float64)
+			}
+		case oncallshiftmetrics.FieldTimeImpact:
+			if value, ok := values[i].(*sql.NullFloat64); !ok {
+				return fmt.Errorf("unexpected type %T for field time_impact", values[i])
+			} else if value.Valid {
+				osm.TimeImpact = float32(value.Float64)
+			}
+		case oncallshiftmetrics.FieldResponseRequirements:
+			if value, ok := values[i].(*sql.NullFloat64); !ok {
+				return fmt.Errorf("unexpected type %T for field response_requirements", values[i])
+			} else if value.Valid {
+				osm.ResponseRequirements = float32(value.Float64)
+			}
+		case oncallshiftmetrics.FieldIsolation:
+			if value, ok := values[i].(*sql.NullFloat64); !ok {
+				return fmt.Errorf("unexpected type %T for field isolation", values[i])
+			} else if value.Valid {
+				osm.Isolation = float32(value.Float64)
+			}
+		case oncallshiftmetrics.FieldIncidentsTotal:
+			if value, ok := values[i].(*sql.NullFloat64); !ok {
+				return fmt.Errorf("unexpected type %T for field incidents_total", values[i])
+			} else if value.Valid {
+				osm.IncidentsTotal = float32(value.Float64)
+			}
+		case oncallshiftmetrics.FieldIncidentResponseTime:
+			if value, ok := values[i].(*sql.NullFloat64); !ok {
+				return fmt.Errorf("unexpected type %T for field incident_response_time", values[i])
+			} else if value.Valid {
+				osm.IncidentResponseTime = float32(value.Float64)
+			}
+		case oncallshiftmetrics.FieldInterruptsTotal:
+			if value, ok := values[i].(*sql.NullFloat64); !ok {
+				return fmt.Errorf("unexpected type %T for field interrupts_total", values[i])
+			} else if value.Valid {
+				osm.InterruptsTotal = float32(value.Float64)
+			}
+		case oncallshiftmetrics.FieldInterruptsAlerts:
+			if value, ok := values[i].(*sql.NullFloat64); !ok {
+				return fmt.Errorf("unexpected type %T for field interrupts_alerts", values[i])
+			} else if value.Valid {
+				osm.InterruptsAlerts = float32(value.Float64)
+			}
+		case oncallshiftmetrics.FieldInterruptsNight:
+			if value, ok := values[i].(*sql.NullFloat64); !ok {
+				return fmt.Errorf("unexpected type %T for field interrupts_night", values[i])
+			} else if value.Valid {
+				osm.InterruptsNight = float32(value.Float64)
+			}
+		case oncallshiftmetrics.FieldInterruptsBusinessHours:
+			if value, ok := values[i].(*sql.NullFloat64); !ok {
+				return fmt.Errorf("unexpected type %T for field interrupts_business_hours", values[i])
+			} else if value.Valid {
+				osm.InterruptsBusinessHours = float32(value.Float64)
 			}
 		default:
 			osm.selectValues.Set(columns[i], values[i])
@@ -155,6 +264,45 @@ func (osm *OncallShiftMetrics) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("shift_id=")
 	builder.WriteString(fmt.Sprintf("%v", osm.ShiftID))
+	builder.WriteString(", ")
+	builder.WriteString("updated_at=")
+	builder.WriteString(osm.UpdatedAt.Format(time.ANSIC))
+	builder.WriteString(", ")
+	builder.WriteString("burden_score=")
+	builder.WriteString(fmt.Sprintf("%v", osm.BurdenScore))
+	builder.WriteString(", ")
+	builder.WriteString("event_frequency=")
+	builder.WriteString(fmt.Sprintf("%v", osm.EventFrequency))
+	builder.WriteString(", ")
+	builder.WriteString("life_impact=")
+	builder.WriteString(fmt.Sprintf("%v", osm.LifeImpact))
+	builder.WriteString(", ")
+	builder.WriteString("time_impact=")
+	builder.WriteString(fmt.Sprintf("%v", osm.TimeImpact))
+	builder.WriteString(", ")
+	builder.WriteString("response_requirements=")
+	builder.WriteString(fmt.Sprintf("%v", osm.ResponseRequirements))
+	builder.WriteString(", ")
+	builder.WriteString("isolation=")
+	builder.WriteString(fmt.Sprintf("%v", osm.Isolation))
+	builder.WriteString(", ")
+	builder.WriteString("incidents_total=")
+	builder.WriteString(fmt.Sprintf("%v", osm.IncidentsTotal))
+	builder.WriteString(", ")
+	builder.WriteString("incident_response_time=")
+	builder.WriteString(fmt.Sprintf("%v", osm.IncidentResponseTime))
+	builder.WriteString(", ")
+	builder.WriteString("interrupts_total=")
+	builder.WriteString(fmt.Sprintf("%v", osm.InterruptsTotal))
+	builder.WriteString(", ")
+	builder.WriteString("interrupts_alerts=")
+	builder.WriteString(fmt.Sprintf("%v", osm.InterruptsAlerts))
+	builder.WriteString(", ")
+	builder.WriteString("interrupts_night=")
+	builder.WriteString(fmt.Sprintf("%v", osm.InterruptsNight))
+	builder.WriteString(", ")
+	builder.WriteString("interrupts_business_hours=")
+	builder.WriteString(fmt.Sprintf("%v", osm.InterruptsBusinessHours))
 	builder.WriteByte(')')
 	return builder.String()
 }

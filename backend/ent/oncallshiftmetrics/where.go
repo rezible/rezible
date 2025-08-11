@@ -3,6 +3,8 @@
 package oncallshiftmetrics
 
 import (
+	"time"
+
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"github.com/google/uuid"
@@ -64,6 +66,71 @@ func ShiftID(v uuid.UUID) predicate.OncallShiftMetrics {
 	return predicate.OncallShiftMetrics(sql.FieldEQ(FieldShiftID, v))
 }
 
+// UpdatedAt applies equality check predicate on the "updated_at" field. It's identical to UpdatedAtEQ.
+func UpdatedAt(v time.Time) predicate.OncallShiftMetrics {
+	return predicate.OncallShiftMetrics(sql.FieldEQ(FieldUpdatedAt, v))
+}
+
+// BurdenScore applies equality check predicate on the "burden_score" field. It's identical to BurdenScoreEQ.
+func BurdenScore(v float32) predicate.OncallShiftMetrics {
+	return predicate.OncallShiftMetrics(sql.FieldEQ(FieldBurdenScore, v))
+}
+
+// EventFrequency applies equality check predicate on the "event_frequency" field. It's identical to EventFrequencyEQ.
+func EventFrequency(v float32) predicate.OncallShiftMetrics {
+	return predicate.OncallShiftMetrics(sql.FieldEQ(FieldEventFrequency, v))
+}
+
+// LifeImpact applies equality check predicate on the "life_impact" field. It's identical to LifeImpactEQ.
+func LifeImpact(v float32) predicate.OncallShiftMetrics {
+	return predicate.OncallShiftMetrics(sql.FieldEQ(FieldLifeImpact, v))
+}
+
+// TimeImpact applies equality check predicate on the "time_impact" field. It's identical to TimeImpactEQ.
+func TimeImpact(v float32) predicate.OncallShiftMetrics {
+	return predicate.OncallShiftMetrics(sql.FieldEQ(FieldTimeImpact, v))
+}
+
+// ResponseRequirements applies equality check predicate on the "response_requirements" field. It's identical to ResponseRequirementsEQ.
+func ResponseRequirements(v float32) predicate.OncallShiftMetrics {
+	return predicate.OncallShiftMetrics(sql.FieldEQ(FieldResponseRequirements, v))
+}
+
+// Isolation applies equality check predicate on the "isolation" field. It's identical to IsolationEQ.
+func Isolation(v float32) predicate.OncallShiftMetrics {
+	return predicate.OncallShiftMetrics(sql.FieldEQ(FieldIsolation, v))
+}
+
+// IncidentsTotal applies equality check predicate on the "incidents_total" field. It's identical to IncidentsTotalEQ.
+func IncidentsTotal(v float32) predicate.OncallShiftMetrics {
+	return predicate.OncallShiftMetrics(sql.FieldEQ(FieldIncidentsTotal, v))
+}
+
+// IncidentResponseTime applies equality check predicate on the "incident_response_time" field. It's identical to IncidentResponseTimeEQ.
+func IncidentResponseTime(v float32) predicate.OncallShiftMetrics {
+	return predicate.OncallShiftMetrics(sql.FieldEQ(FieldIncidentResponseTime, v))
+}
+
+// InterruptsTotal applies equality check predicate on the "interrupts_total" field. It's identical to InterruptsTotalEQ.
+func InterruptsTotal(v float32) predicate.OncallShiftMetrics {
+	return predicate.OncallShiftMetrics(sql.FieldEQ(FieldInterruptsTotal, v))
+}
+
+// InterruptsAlerts applies equality check predicate on the "interrupts_alerts" field. It's identical to InterruptsAlertsEQ.
+func InterruptsAlerts(v float32) predicate.OncallShiftMetrics {
+	return predicate.OncallShiftMetrics(sql.FieldEQ(FieldInterruptsAlerts, v))
+}
+
+// InterruptsNight applies equality check predicate on the "interrupts_night" field. It's identical to InterruptsNightEQ.
+func InterruptsNight(v float32) predicate.OncallShiftMetrics {
+	return predicate.OncallShiftMetrics(sql.FieldEQ(FieldInterruptsNight, v))
+}
+
+// InterruptsBusinessHours applies equality check predicate on the "interrupts_business_hours" field. It's identical to InterruptsBusinessHoursEQ.
+func InterruptsBusinessHours(v float32) predicate.OncallShiftMetrics {
+	return predicate.OncallShiftMetrics(sql.FieldEQ(FieldInterruptsBusinessHours, v))
+}
+
 // TenantIDEQ applies the EQ predicate on the "tenant_id" field.
 func TenantIDEQ(v int) predicate.OncallShiftMetrics {
 	return predicate.OncallShiftMetrics(sql.FieldEQ(FieldTenantID, v))
@@ -102,6 +169,526 @@ func ShiftIDIn(vs ...uuid.UUID) predicate.OncallShiftMetrics {
 // ShiftIDNotIn applies the NotIn predicate on the "shift_id" field.
 func ShiftIDNotIn(vs ...uuid.UUID) predicate.OncallShiftMetrics {
 	return predicate.OncallShiftMetrics(sql.FieldNotIn(FieldShiftID, vs...))
+}
+
+// UpdatedAtEQ applies the EQ predicate on the "updated_at" field.
+func UpdatedAtEQ(v time.Time) predicate.OncallShiftMetrics {
+	return predicate.OncallShiftMetrics(sql.FieldEQ(FieldUpdatedAt, v))
+}
+
+// UpdatedAtNEQ applies the NEQ predicate on the "updated_at" field.
+func UpdatedAtNEQ(v time.Time) predicate.OncallShiftMetrics {
+	return predicate.OncallShiftMetrics(sql.FieldNEQ(FieldUpdatedAt, v))
+}
+
+// UpdatedAtIn applies the In predicate on the "updated_at" field.
+func UpdatedAtIn(vs ...time.Time) predicate.OncallShiftMetrics {
+	return predicate.OncallShiftMetrics(sql.FieldIn(FieldUpdatedAt, vs...))
+}
+
+// UpdatedAtNotIn applies the NotIn predicate on the "updated_at" field.
+func UpdatedAtNotIn(vs ...time.Time) predicate.OncallShiftMetrics {
+	return predicate.OncallShiftMetrics(sql.FieldNotIn(FieldUpdatedAt, vs...))
+}
+
+// UpdatedAtGT applies the GT predicate on the "updated_at" field.
+func UpdatedAtGT(v time.Time) predicate.OncallShiftMetrics {
+	return predicate.OncallShiftMetrics(sql.FieldGT(FieldUpdatedAt, v))
+}
+
+// UpdatedAtGTE applies the GTE predicate on the "updated_at" field.
+func UpdatedAtGTE(v time.Time) predicate.OncallShiftMetrics {
+	return predicate.OncallShiftMetrics(sql.FieldGTE(FieldUpdatedAt, v))
+}
+
+// UpdatedAtLT applies the LT predicate on the "updated_at" field.
+func UpdatedAtLT(v time.Time) predicate.OncallShiftMetrics {
+	return predicate.OncallShiftMetrics(sql.FieldLT(FieldUpdatedAt, v))
+}
+
+// UpdatedAtLTE applies the LTE predicate on the "updated_at" field.
+func UpdatedAtLTE(v time.Time) predicate.OncallShiftMetrics {
+	return predicate.OncallShiftMetrics(sql.FieldLTE(FieldUpdatedAt, v))
+}
+
+// BurdenScoreEQ applies the EQ predicate on the "burden_score" field.
+func BurdenScoreEQ(v float32) predicate.OncallShiftMetrics {
+	return predicate.OncallShiftMetrics(sql.FieldEQ(FieldBurdenScore, v))
+}
+
+// BurdenScoreNEQ applies the NEQ predicate on the "burden_score" field.
+func BurdenScoreNEQ(v float32) predicate.OncallShiftMetrics {
+	return predicate.OncallShiftMetrics(sql.FieldNEQ(FieldBurdenScore, v))
+}
+
+// BurdenScoreIn applies the In predicate on the "burden_score" field.
+func BurdenScoreIn(vs ...float32) predicate.OncallShiftMetrics {
+	return predicate.OncallShiftMetrics(sql.FieldIn(FieldBurdenScore, vs...))
+}
+
+// BurdenScoreNotIn applies the NotIn predicate on the "burden_score" field.
+func BurdenScoreNotIn(vs ...float32) predicate.OncallShiftMetrics {
+	return predicate.OncallShiftMetrics(sql.FieldNotIn(FieldBurdenScore, vs...))
+}
+
+// BurdenScoreGT applies the GT predicate on the "burden_score" field.
+func BurdenScoreGT(v float32) predicate.OncallShiftMetrics {
+	return predicate.OncallShiftMetrics(sql.FieldGT(FieldBurdenScore, v))
+}
+
+// BurdenScoreGTE applies the GTE predicate on the "burden_score" field.
+func BurdenScoreGTE(v float32) predicate.OncallShiftMetrics {
+	return predicate.OncallShiftMetrics(sql.FieldGTE(FieldBurdenScore, v))
+}
+
+// BurdenScoreLT applies the LT predicate on the "burden_score" field.
+func BurdenScoreLT(v float32) predicate.OncallShiftMetrics {
+	return predicate.OncallShiftMetrics(sql.FieldLT(FieldBurdenScore, v))
+}
+
+// BurdenScoreLTE applies the LTE predicate on the "burden_score" field.
+func BurdenScoreLTE(v float32) predicate.OncallShiftMetrics {
+	return predicate.OncallShiftMetrics(sql.FieldLTE(FieldBurdenScore, v))
+}
+
+// EventFrequencyEQ applies the EQ predicate on the "event_frequency" field.
+func EventFrequencyEQ(v float32) predicate.OncallShiftMetrics {
+	return predicate.OncallShiftMetrics(sql.FieldEQ(FieldEventFrequency, v))
+}
+
+// EventFrequencyNEQ applies the NEQ predicate on the "event_frequency" field.
+func EventFrequencyNEQ(v float32) predicate.OncallShiftMetrics {
+	return predicate.OncallShiftMetrics(sql.FieldNEQ(FieldEventFrequency, v))
+}
+
+// EventFrequencyIn applies the In predicate on the "event_frequency" field.
+func EventFrequencyIn(vs ...float32) predicate.OncallShiftMetrics {
+	return predicate.OncallShiftMetrics(sql.FieldIn(FieldEventFrequency, vs...))
+}
+
+// EventFrequencyNotIn applies the NotIn predicate on the "event_frequency" field.
+func EventFrequencyNotIn(vs ...float32) predicate.OncallShiftMetrics {
+	return predicate.OncallShiftMetrics(sql.FieldNotIn(FieldEventFrequency, vs...))
+}
+
+// EventFrequencyGT applies the GT predicate on the "event_frequency" field.
+func EventFrequencyGT(v float32) predicate.OncallShiftMetrics {
+	return predicate.OncallShiftMetrics(sql.FieldGT(FieldEventFrequency, v))
+}
+
+// EventFrequencyGTE applies the GTE predicate on the "event_frequency" field.
+func EventFrequencyGTE(v float32) predicate.OncallShiftMetrics {
+	return predicate.OncallShiftMetrics(sql.FieldGTE(FieldEventFrequency, v))
+}
+
+// EventFrequencyLT applies the LT predicate on the "event_frequency" field.
+func EventFrequencyLT(v float32) predicate.OncallShiftMetrics {
+	return predicate.OncallShiftMetrics(sql.FieldLT(FieldEventFrequency, v))
+}
+
+// EventFrequencyLTE applies the LTE predicate on the "event_frequency" field.
+func EventFrequencyLTE(v float32) predicate.OncallShiftMetrics {
+	return predicate.OncallShiftMetrics(sql.FieldLTE(FieldEventFrequency, v))
+}
+
+// LifeImpactEQ applies the EQ predicate on the "life_impact" field.
+func LifeImpactEQ(v float32) predicate.OncallShiftMetrics {
+	return predicate.OncallShiftMetrics(sql.FieldEQ(FieldLifeImpact, v))
+}
+
+// LifeImpactNEQ applies the NEQ predicate on the "life_impact" field.
+func LifeImpactNEQ(v float32) predicate.OncallShiftMetrics {
+	return predicate.OncallShiftMetrics(sql.FieldNEQ(FieldLifeImpact, v))
+}
+
+// LifeImpactIn applies the In predicate on the "life_impact" field.
+func LifeImpactIn(vs ...float32) predicate.OncallShiftMetrics {
+	return predicate.OncallShiftMetrics(sql.FieldIn(FieldLifeImpact, vs...))
+}
+
+// LifeImpactNotIn applies the NotIn predicate on the "life_impact" field.
+func LifeImpactNotIn(vs ...float32) predicate.OncallShiftMetrics {
+	return predicate.OncallShiftMetrics(sql.FieldNotIn(FieldLifeImpact, vs...))
+}
+
+// LifeImpactGT applies the GT predicate on the "life_impact" field.
+func LifeImpactGT(v float32) predicate.OncallShiftMetrics {
+	return predicate.OncallShiftMetrics(sql.FieldGT(FieldLifeImpact, v))
+}
+
+// LifeImpactGTE applies the GTE predicate on the "life_impact" field.
+func LifeImpactGTE(v float32) predicate.OncallShiftMetrics {
+	return predicate.OncallShiftMetrics(sql.FieldGTE(FieldLifeImpact, v))
+}
+
+// LifeImpactLT applies the LT predicate on the "life_impact" field.
+func LifeImpactLT(v float32) predicate.OncallShiftMetrics {
+	return predicate.OncallShiftMetrics(sql.FieldLT(FieldLifeImpact, v))
+}
+
+// LifeImpactLTE applies the LTE predicate on the "life_impact" field.
+func LifeImpactLTE(v float32) predicate.OncallShiftMetrics {
+	return predicate.OncallShiftMetrics(sql.FieldLTE(FieldLifeImpact, v))
+}
+
+// TimeImpactEQ applies the EQ predicate on the "time_impact" field.
+func TimeImpactEQ(v float32) predicate.OncallShiftMetrics {
+	return predicate.OncallShiftMetrics(sql.FieldEQ(FieldTimeImpact, v))
+}
+
+// TimeImpactNEQ applies the NEQ predicate on the "time_impact" field.
+func TimeImpactNEQ(v float32) predicate.OncallShiftMetrics {
+	return predicate.OncallShiftMetrics(sql.FieldNEQ(FieldTimeImpact, v))
+}
+
+// TimeImpactIn applies the In predicate on the "time_impact" field.
+func TimeImpactIn(vs ...float32) predicate.OncallShiftMetrics {
+	return predicate.OncallShiftMetrics(sql.FieldIn(FieldTimeImpact, vs...))
+}
+
+// TimeImpactNotIn applies the NotIn predicate on the "time_impact" field.
+func TimeImpactNotIn(vs ...float32) predicate.OncallShiftMetrics {
+	return predicate.OncallShiftMetrics(sql.FieldNotIn(FieldTimeImpact, vs...))
+}
+
+// TimeImpactGT applies the GT predicate on the "time_impact" field.
+func TimeImpactGT(v float32) predicate.OncallShiftMetrics {
+	return predicate.OncallShiftMetrics(sql.FieldGT(FieldTimeImpact, v))
+}
+
+// TimeImpactGTE applies the GTE predicate on the "time_impact" field.
+func TimeImpactGTE(v float32) predicate.OncallShiftMetrics {
+	return predicate.OncallShiftMetrics(sql.FieldGTE(FieldTimeImpact, v))
+}
+
+// TimeImpactLT applies the LT predicate on the "time_impact" field.
+func TimeImpactLT(v float32) predicate.OncallShiftMetrics {
+	return predicate.OncallShiftMetrics(sql.FieldLT(FieldTimeImpact, v))
+}
+
+// TimeImpactLTE applies the LTE predicate on the "time_impact" field.
+func TimeImpactLTE(v float32) predicate.OncallShiftMetrics {
+	return predicate.OncallShiftMetrics(sql.FieldLTE(FieldTimeImpact, v))
+}
+
+// ResponseRequirementsEQ applies the EQ predicate on the "response_requirements" field.
+func ResponseRequirementsEQ(v float32) predicate.OncallShiftMetrics {
+	return predicate.OncallShiftMetrics(sql.FieldEQ(FieldResponseRequirements, v))
+}
+
+// ResponseRequirementsNEQ applies the NEQ predicate on the "response_requirements" field.
+func ResponseRequirementsNEQ(v float32) predicate.OncallShiftMetrics {
+	return predicate.OncallShiftMetrics(sql.FieldNEQ(FieldResponseRequirements, v))
+}
+
+// ResponseRequirementsIn applies the In predicate on the "response_requirements" field.
+func ResponseRequirementsIn(vs ...float32) predicate.OncallShiftMetrics {
+	return predicate.OncallShiftMetrics(sql.FieldIn(FieldResponseRequirements, vs...))
+}
+
+// ResponseRequirementsNotIn applies the NotIn predicate on the "response_requirements" field.
+func ResponseRequirementsNotIn(vs ...float32) predicate.OncallShiftMetrics {
+	return predicate.OncallShiftMetrics(sql.FieldNotIn(FieldResponseRequirements, vs...))
+}
+
+// ResponseRequirementsGT applies the GT predicate on the "response_requirements" field.
+func ResponseRequirementsGT(v float32) predicate.OncallShiftMetrics {
+	return predicate.OncallShiftMetrics(sql.FieldGT(FieldResponseRequirements, v))
+}
+
+// ResponseRequirementsGTE applies the GTE predicate on the "response_requirements" field.
+func ResponseRequirementsGTE(v float32) predicate.OncallShiftMetrics {
+	return predicate.OncallShiftMetrics(sql.FieldGTE(FieldResponseRequirements, v))
+}
+
+// ResponseRequirementsLT applies the LT predicate on the "response_requirements" field.
+func ResponseRequirementsLT(v float32) predicate.OncallShiftMetrics {
+	return predicate.OncallShiftMetrics(sql.FieldLT(FieldResponseRequirements, v))
+}
+
+// ResponseRequirementsLTE applies the LTE predicate on the "response_requirements" field.
+func ResponseRequirementsLTE(v float32) predicate.OncallShiftMetrics {
+	return predicate.OncallShiftMetrics(sql.FieldLTE(FieldResponseRequirements, v))
+}
+
+// IsolationEQ applies the EQ predicate on the "isolation" field.
+func IsolationEQ(v float32) predicate.OncallShiftMetrics {
+	return predicate.OncallShiftMetrics(sql.FieldEQ(FieldIsolation, v))
+}
+
+// IsolationNEQ applies the NEQ predicate on the "isolation" field.
+func IsolationNEQ(v float32) predicate.OncallShiftMetrics {
+	return predicate.OncallShiftMetrics(sql.FieldNEQ(FieldIsolation, v))
+}
+
+// IsolationIn applies the In predicate on the "isolation" field.
+func IsolationIn(vs ...float32) predicate.OncallShiftMetrics {
+	return predicate.OncallShiftMetrics(sql.FieldIn(FieldIsolation, vs...))
+}
+
+// IsolationNotIn applies the NotIn predicate on the "isolation" field.
+func IsolationNotIn(vs ...float32) predicate.OncallShiftMetrics {
+	return predicate.OncallShiftMetrics(sql.FieldNotIn(FieldIsolation, vs...))
+}
+
+// IsolationGT applies the GT predicate on the "isolation" field.
+func IsolationGT(v float32) predicate.OncallShiftMetrics {
+	return predicate.OncallShiftMetrics(sql.FieldGT(FieldIsolation, v))
+}
+
+// IsolationGTE applies the GTE predicate on the "isolation" field.
+func IsolationGTE(v float32) predicate.OncallShiftMetrics {
+	return predicate.OncallShiftMetrics(sql.FieldGTE(FieldIsolation, v))
+}
+
+// IsolationLT applies the LT predicate on the "isolation" field.
+func IsolationLT(v float32) predicate.OncallShiftMetrics {
+	return predicate.OncallShiftMetrics(sql.FieldLT(FieldIsolation, v))
+}
+
+// IsolationLTE applies the LTE predicate on the "isolation" field.
+func IsolationLTE(v float32) predicate.OncallShiftMetrics {
+	return predicate.OncallShiftMetrics(sql.FieldLTE(FieldIsolation, v))
+}
+
+// IncidentsTotalEQ applies the EQ predicate on the "incidents_total" field.
+func IncidentsTotalEQ(v float32) predicate.OncallShiftMetrics {
+	return predicate.OncallShiftMetrics(sql.FieldEQ(FieldIncidentsTotal, v))
+}
+
+// IncidentsTotalNEQ applies the NEQ predicate on the "incidents_total" field.
+func IncidentsTotalNEQ(v float32) predicate.OncallShiftMetrics {
+	return predicate.OncallShiftMetrics(sql.FieldNEQ(FieldIncidentsTotal, v))
+}
+
+// IncidentsTotalIn applies the In predicate on the "incidents_total" field.
+func IncidentsTotalIn(vs ...float32) predicate.OncallShiftMetrics {
+	return predicate.OncallShiftMetrics(sql.FieldIn(FieldIncidentsTotal, vs...))
+}
+
+// IncidentsTotalNotIn applies the NotIn predicate on the "incidents_total" field.
+func IncidentsTotalNotIn(vs ...float32) predicate.OncallShiftMetrics {
+	return predicate.OncallShiftMetrics(sql.FieldNotIn(FieldIncidentsTotal, vs...))
+}
+
+// IncidentsTotalGT applies the GT predicate on the "incidents_total" field.
+func IncidentsTotalGT(v float32) predicate.OncallShiftMetrics {
+	return predicate.OncallShiftMetrics(sql.FieldGT(FieldIncidentsTotal, v))
+}
+
+// IncidentsTotalGTE applies the GTE predicate on the "incidents_total" field.
+func IncidentsTotalGTE(v float32) predicate.OncallShiftMetrics {
+	return predicate.OncallShiftMetrics(sql.FieldGTE(FieldIncidentsTotal, v))
+}
+
+// IncidentsTotalLT applies the LT predicate on the "incidents_total" field.
+func IncidentsTotalLT(v float32) predicate.OncallShiftMetrics {
+	return predicate.OncallShiftMetrics(sql.FieldLT(FieldIncidentsTotal, v))
+}
+
+// IncidentsTotalLTE applies the LTE predicate on the "incidents_total" field.
+func IncidentsTotalLTE(v float32) predicate.OncallShiftMetrics {
+	return predicate.OncallShiftMetrics(sql.FieldLTE(FieldIncidentsTotal, v))
+}
+
+// IncidentResponseTimeEQ applies the EQ predicate on the "incident_response_time" field.
+func IncidentResponseTimeEQ(v float32) predicate.OncallShiftMetrics {
+	return predicate.OncallShiftMetrics(sql.FieldEQ(FieldIncidentResponseTime, v))
+}
+
+// IncidentResponseTimeNEQ applies the NEQ predicate on the "incident_response_time" field.
+func IncidentResponseTimeNEQ(v float32) predicate.OncallShiftMetrics {
+	return predicate.OncallShiftMetrics(sql.FieldNEQ(FieldIncidentResponseTime, v))
+}
+
+// IncidentResponseTimeIn applies the In predicate on the "incident_response_time" field.
+func IncidentResponseTimeIn(vs ...float32) predicate.OncallShiftMetrics {
+	return predicate.OncallShiftMetrics(sql.FieldIn(FieldIncidentResponseTime, vs...))
+}
+
+// IncidentResponseTimeNotIn applies the NotIn predicate on the "incident_response_time" field.
+func IncidentResponseTimeNotIn(vs ...float32) predicate.OncallShiftMetrics {
+	return predicate.OncallShiftMetrics(sql.FieldNotIn(FieldIncidentResponseTime, vs...))
+}
+
+// IncidentResponseTimeGT applies the GT predicate on the "incident_response_time" field.
+func IncidentResponseTimeGT(v float32) predicate.OncallShiftMetrics {
+	return predicate.OncallShiftMetrics(sql.FieldGT(FieldIncidentResponseTime, v))
+}
+
+// IncidentResponseTimeGTE applies the GTE predicate on the "incident_response_time" field.
+func IncidentResponseTimeGTE(v float32) predicate.OncallShiftMetrics {
+	return predicate.OncallShiftMetrics(sql.FieldGTE(FieldIncidentResponseTime, v))
+}
+
+// IncidentResponseTimeLT applies the LT predicate on the "incident_response_time" field.
+func IncidentResponseTimeLT(v float32) predicate.OncallShiftMetrics {
+	return predicate.OncallShiftMetrics(sql.FieldLT(FieldIncidentResponseTime, v))
+}
+
+// IncidentResponseTimeLTE applies the LTE predicate on the "incident_response_time" field.
+func IncidentResponseTimeLTE(v float32) predicate.OncallShiftMetrics {
+	return predicate.OncallShiftMetrics(sql.FieldLTE(FieldIncidentResponseTime, v))
+}
+
+// InterruptsTotalEQ applies the EQ predicate on the "interrupts_total" field.
+func InterruptsTotalEQ(v float32) predicate.OncallShiftMetrics {
+	return predicate.OncallShiftMetrics(sql.FieldEQ(FieldInterruptsTotal, v))
+}
+
+// InterruptsTotalNEQ applies the NEQ predicate on the "interrupts_total" field.
+func InterruptsTotalNEQ(v float32) predicate.OncallShiftMetrics {
+	return predicate.OncallShiftMetrics(sql.FieldNEQ(FieldInterruptsTotal, v))
+}
+
+// InterruptsTotalIn applies the In predicate on the "interrupts_total" field.
+func InterruptsTotalIn(vs ...float32) predicate.OncallShiftMetrics {
+	return predicate.OncallShiftMetrics(sql.FieldIn(FieldInterruptsTotal, vs...))
+}
+
+// InterruptsTotalNotIn applies the NotIn predicate on the "interrupts_total" field.
+func InterruptsTotalNotIn(vs ...float32) predicate.OncallShiftMetrics {
+	return predicate.OncallShiftMetrics(sql.FieldNotIn(FieldInterruptsTotal, vs...))
+}
+
+// InterruptsTotalGT applies the GT predicate on the "interrupts_total" field.
+func InterruptsTotalGT(v float32) predicate.OncallShiftMetrics {
+	return predicate.OncallShiftMetrics(sql.FieldGT(FieldInterruptsTotal, v))
+}
+
+// InterruptsTotalGTE applies the GTE predicate on the "interrupts_total" field.
+func InterruptsTotalGTE(v float32) predicate.OncallShiftMetrics {
+	return predicate.OncallShiftMetrics(sql.FieldGTE(FieldInterruptsTotal, v))
+}
+
+// InterruptsTotalLT applies the LT predicate on the "interrupts_total" field.
+func InterruptsTotalLT(v float32) predicate.OncallShiftMetrics {
+	return predicate.OncallShiftMetrics(sql.FieldLT(FieldInterruptsTotal, v))
+}
+
+// InterruptsTotalLTE applies the LTE predicate on the "interrupts_total" field.
+func InterruptsTotalLTE(v float32) predicate.OncallShiftMetrics {
+	return predicate.OncallShiftMetrics(sql.FieldLTE(FieldInterruptsTotal, v))
+}
+
+// InterruptsAlertsEQ applies the EQ predicate on the "interrupts_alerts" field.
+func InterruptsAlertsEQ(v float32) predicate.OncallShiftMetrics {
+	return predicate.OncallShiftMetrics(sql.FieldEQ(FieldInterruptsAlerts, v))
+}
+
+// InterruptsAlertsNEQ applies the NEQ predicate on the "interrupts_alerts" field.
+func InterruptsAlertsNEQ(v float32) predicate.OncallShiftMetrics {
+	return predicate.OncallShiftMetrics(sql.FieldNEQ(FieldInterruptsAlerts, v))
+}
+
+// InterruptsAlertsIn applies the In predicate on the "interrupts_alerts" field.
+func InterruptsAlertsIn(vs ...float32) predicate.OncallShiftMetrics {
+	return predicate.OncallShiftMetrics(sql.FieldIn(FieldInterruptsAlerts, vs...))
+}
+
+// InterruptsAlertsNotIn applies the NotIn predicate on the "interrupts_alerts" field.
+func InterruptsAlertsNotIn(vs ...float32) predicate.OncallShiftMetrics {
+	return predicate.OncallShiftMetrics(sql.FieldNotIn(FieldInterruptsAlerts, vs...))
+}
+
+// InterruptsAlertsGT applies the GT predicate on the "interrupts_alerts" field.
+func InterruptsAlertsGT(v float32) predicate.OncallShiftMetrics {
+	return predicate.OncallShiftMetrics(sql.FieldGT(FieldInterruptsAlerts, v))
+}
+
+// InterruptsAlertsGTE applies the GTE predicate on the "interrupts_alerts" field.
+func InterruptsAlertsGTE(v float32) predicate.OncallShiftMetrics {
+	return predicate.OncallShiftMetrics(sql.FieldGTE(FieldInterruptsAlerts, v))
+}
+
+// InterruptsAlertsLT applies the LT predicate on the "interrupts_alerts" field.
+func InterruptsAlertsLT(v float32) predicate.OncallShiftMetrics {
+	return predicate.OncallShiftMetrics(sql.FieldLT(FieldInterruptsAlerts, v))
+}
+
+// InterruptsAlertsLTE applies the LTE predicate on the "interrupts_alerts" field.
+func InterruptsAlertsLTE(v float32) predicate.OncallShiftMetrics {
+	return predicate.OncallShiftMetrics(sql.FieldLTE(FieldInterruptsAlerts, v))
+}
+
+// InterruptsNightEQ applies the EQ predicate on the "interrupts_night" field.
+func InterruptsNightEQ(v float32) predicate.OncallShiftMetrics {
+	return predicate.OncallShiftMetrics(sql.FieldEQ(FieldInterruptsNight, v))
+}
+
+// InterruptsNightNEQ applies the NEQ predicate on the "interrupts_night" field.
+func InterruptsNightNEQ(v float32) predicate.OncallShiftMetrics {
+	return predicate.OncallShiftMetrics(sql.FieldNEQ(FieldInterruptsNight, v))
+}
+
+// InterruptsNightIn applies the In predicate on the "interrupts_night" field.
+func InterruptsNightIn(vs ...float32) predicate.OncallShiftMetrics {
+	return predicate.OncallShiftMetrics(sql.FieldIn(FieldInterruptsNight, vs...))
+}
+
+// InterruptsNightNotIn applies the NotIn predicate on the "interrupts_night" field.
+func InterruptsNightNotIn(vs ...float32) predicate.OncallShiftMetrics {
+	return predicate.OncallShiftMetrics(sql.FieldNotIn(FieldInterruptsNight, vs...))
+}
+
+// InterruptsNightGT applies the GT predicate on the "interrupts_night" field.
+func InterruptsNightGT(v float32) predicate.OncallShiftMetrics {
+	return predicate.OncallShiftMetrics(sql.FieldGT(FieldInterruptsNight, v))
+}
+
+// InterruptsNightGTE applies the GTE predicate on the "interrupts_night" field.
+func InterruptsNightGTE(v float32) predicate.OncallShiftMetrics {
+	return predicate.OncallShiftMetrics(sql.FieldGTE(FieldInterruptsNight, v))
+}
+
+// InterruptsNightLT applies the LT predicate on the "interrupts_night" field.
+func InterruptsNightLT(v float32) predicate.OncallShiftMetrics {
+	return predicate.OncallShiftMetrics(sql.FieldLT(FieldInterruptsNight, v))
+}
+
+// InterruptsNightLTE applies the LTE predicate on the "interrupts_night" field.
+func InterruptsNightLTE(v float32) predicate.OncallShiftMetrics {
+	return predicate.OncallShiftMetrics(sql.FieldLTE(FieldInterruptsNight, v))
+}
+
+// InterruptsBusinessHoursEQ applies the EQ predicate on the "interrupts_business_hours" field.
+func InterruptsBusinessHoursEQ(v float32) predicate.OncallShiftMetrics {
+	return predicate.OncallShiftMetrics(sql.FieldEQ(FieldInterruptsBusinessHours, v))
+}
+
+// InterruptsBusinessHoursNEQ applies the NEQ predicate on the "interrupts_business_hours" field.
+func InterruptsBusinessHoursNEQ(v float32) predicate.OncallShiftMetrics {
+	return predicate.OncallShiftMetrics(sql.FieldNEQ(FieldInterruptsBusinessHours, v))
+}
+
+// InterruptsBusinessHoursIn applies the In predicate on the "interrupts_business_hours" field.
+func InterruptsBusinessHoursIn(vs ...float32) predicate.OncallShiftMetrics {
+	return predicate.OncallShiftMetrics(sql.FieldIn(FieldInterruptsBusinessHours, vs...))
+}
+
+// InterruptsBusinessHoursNotIn applies the NotIn predicate on the "interrupts_business_hours" field.
+func InterruptsBusinessHoursNotIn(vs ...float32) predicate.OncallShiftMetrics {
+	return predicate.OncallShiftMetrics(sql.FieldNotIn(FieldInterruptsBusinessHours, vs...))
+}
+
+// InterruptsBusinessHoursGT applies the GT predicate on the "interrupts_business_hours" field.
+func InterruptsBusinessHoursGT(v float32) predicate.OncallShiftMetrics {
+	return predicate.OncallShiftMetrics(sql.FieldGT(FieldInterruptsBusinessHours, v))
+}
+
+// InterruptsBusinessHoursGTE applies the GTE predicate on the "interrupts_business_hours" field.
+func InterruptsBusinessHoursGTE(v float32) predicate.OncallShiftMetrics {
+	return predicate.OncallShiftMetrics(sql.FieldGTE(FieldInterruptsBusinessHours, v))
+}
+
+// InterruptsBusinessHoursLT applies the LT predicate on the "interrupts_business_hours" field.
+func InterruptsBusinessHoursLT(v float32) predicate.OncallShiftMetrics {
+	return predicate.OncallShiftMetrics(sql.FieldLT(FieldInterruptsBusinessHours, v))
+}
+
+// InterruptsBusinessHoursLTE applies the LTE predicate on the "interrupts_business_hours" field.
+func InterruptsBusinessHoursLTE(v float32) predicate.OncallShiftMetrics {
+	return predicate.OncallShiftMetrics(sql.FieldLTE(FieldInterruptsBusinessHours, v))
 }
 
 // HasTenant applies the HasEdge predicate on the "tenant" edge.

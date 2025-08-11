@@ -739,6 +739,10 @@ func init() {
 	}
 	oncallshiftmetricsFields := schema.OncallShiftMetrics{}.Fields()
 	_ = oncallshiftmetricsFields
+	// oncallshiftmetricsDescUpdatedAt is the schema descriptor for updated_at field.
+	oncallshiftmetricsDescUpdatedAt := oncallshiftmetricsFields[2].Descriptor()
+	// oncallshiftmetrics.DefaultUpdatedAt holds the default value on creation for the updated_at field.
+	oncallshiftmetrics.DefaultUpdatedAt = oncallshiftmetricsDescUpdatedAt.Default.(func() time.Time)
 	// oncallshiftmetricsDescID is the schema descriptor for id field.
 	oncallshiftmetricsDescID := oncallshiftmetricsFields[0].Descriptor()
 	// oncallshiftmetrics.DefaultID holds the default value on creation for the id field.

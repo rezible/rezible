@@ -7,6 +7,7 @@ import (
 
 	"github.com/danielgtaylor/huma/v2"
 	"github.com/google/uuid"
+	"github.com/rezible/rezible/ent"
 )
 
 type OncallMetricsHandler interface {
@@ -32,9 +33,9 @@ type (
 	}
 
 	OncallShiftMetrics struct {
-		Burden    OncallShiftMetricsBurden    `json:"burden"`
-		Incidents OncallShiftMetricsIncidents `json:"incidents"`
-		Alerts    OncallShiftMetricsAlerts    `json:"alerts"`
+		Burden     OncallShiftMetricsBurden     `json:"burden"`
+		Incidents  OncallShiftMetricsIncidents  `json:"incidents"`
+		Interrupts OncallShiftMetricsInterrupts `json:"interrupts"`
 	}
 
 	OncallShiftMetricsBurden struct {
@@ -51,8 +52,9 @@ type (
 		ResponseTimeMinutes float32 `json:"responseTimeMinutes"`
 	}
 
-	OncallShiftMetricsAlerts struct {
+	OncallShiftMetricsInterrupts struct {
 		Total                 float32 `json:"total"`
+		TotalAlerts           float32 `json:"totalAlerts"`
 		CountOffHours         float32 `json:"countOffHours"`
 		CountNight            float32 `json:"countNight"`
 		IncidentRate          float32 `json:"incidentRate"`
@@ -70,6 +72,31 @@ type (
 		Feedback         *AlertFeedbackInstance `json:"feedback"`
 	}
 )
+
+func OncallShiftMetricsFromEnt(m *ent.OncallShiftMetrics) OncallShiftMetrics {
+	offHoursInterrupts := m.InterruptsTotal - m.InterruptsBusinessHours - m.InterruptsNight
+
+	return OncallShiftMetrics{
+		Burden: OncallShiftMetricsBurden{
+			FinalScore:           m.BurdenScore,
+			EventFrequency:       m.EventFrequency,
+			LifeImpact:           m.LifeImpact,
+			TimeImpact:           m.TimeImpact,
+			ResponseRequirements: m.ResponseRequirements,
+			Isolation:            m.Isolation,
+		},
+		Incidents: OncallShiftMetricsIncidents{
+			Total:               m.IncidentsTotal,
+			ResponseTimeMinutes: m.IncidentResponseTime,
+		},
+		Interrupts: OncallShiftMetricsInterrupts{
+			Total:         m.InterruptsTotal,
+			TotalAlerts:   m.InterruptsAlerts,
+			CountOffHours: offHoursInterrupts,
+			CountNight:    m.InterruptsNight,
+		},
+	}
+}
 
 var oncallMetricsTags = []string{"Oncall Metrics"}
 

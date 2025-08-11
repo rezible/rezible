@@ -58,7 +58,7 @@ func NewHandler(
 ) *Handler {
 	return &Handler{
 		alertsHandler:             newAlertsHandler(alerts, oncallEvents),
-		oncallMetricsHandler:      newOncallMetricsHandler(),
+		oncallMetricsHandler:      newOncallMetricsHandler(oncall),
 		authSessionsHandler:       newAuthSessionsHandler(auth, users),
 		documentsHandler:          newDocumentsHandler(documents, auth, users),
 		incidentDebriefsHandler:   newIncidentDebriefsHandler(db.IncidentDebriefQuestion, auth, users, debriefs),

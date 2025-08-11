@@ -707,8 +707,21 @@ var schemaGraph = func() *sqlgraph.Schema {
 		},
 		Type: "OncallShiftMetrics",
 		Fields: map[string]*sqlgraph.FieldSpec{
-			oncallshiftmetrics.FieldTenantID: {Type: field.TypeInt, Column: oncallshiftmetrics.FieldTenantID},
-			oncallshiftmetrics.FieldShiftID:  {Type: field.TypeUUID, Column: oncallshiftmetrics.FieldShiftID},
+			oncallshiftmetrics.FieldTenantID:                {Type: field.TypeInt, Column: oncallshiftmetrics.FieldTenantID},
+			oncallshiftmetrics.FieldShiftID:                 {Type: field.TypeUUID, Column: oncallshiftmetrics.FieldShiftID},
+			oncallshiftmetrics.FieldUpdatedAt:               {Type: field.TypeTime, Column: oncallshiftmetrics.FieldUpdatedAt},
+			oncallshiftmetrics.FieldBurdenScore:             {Type: field.TypeFloat32, Column: oncallshiftmetrics.FieldBurdenScore},
+			oncallshiftmetrics.FieldEventFrequency:          {Type: field.TypeFloat32, Column: oncallshiftmetrics.FieldEventFrequency},
+			oncallshiftmetrics.FieldLifeImpact:              {Type: field.TypeFloat32, Column: oncallshiftmetrics.FieldLifeImpact},
+			oncallshiftmetrics.FieldTimeImpact:              {Type: field.TypeFloat32, Column: oncallshiftmetrics.FieldTimeImpact},
+			oncallshiftmetrics.FieldResponseRequirements:    {Type: field.TypeFloat32, Column: oncallshiftmetrics.FieldResponseRequirements},
+			oncallshiftmetrics.FieldIsolation:               {Type: field.TypeFloat32, Column: oncallshiftmetrics.FieldIsolation},
+			oncallshiftmetrics.FieldIncidentsTotal:          {Type: field.TypeFloat32, Column: oncallshiftmetrics.FieldIncidentsTotal},
+			oncallshiftmetrics.FieldIncidentResponseTime:    {Type: field.TypeFloat32, Column: oncallshiftmetrics.FieldIncidentResponseTime},
+			oncallshiftmetrics.FieldInterruptsTotal:         {Type: field.TypeFloat32, Column: oncallshiftmetrics.FieldInterruptsTotal},
+			oncallshiftmetrics.FieldInterruptsAlerts:        {Type: field.TypeFloat32, Column: oncallshiftmetrics.FieldInterruptsAlerts},
+			oncallshiftmetrics.FieldInterruptsNight:         {Type: field.TypeFloat32, Column: oncallshiftmetrics.FieldInterruptsNight},
+			oncallshiftmetrics.FieldInterruptsBusinessHours: {Type: field.TypeFloat32, Column: oncallshiftmetrics.FieldInterruptsBusinessHours},
 		},
 	}
 	graph.Nodes[34] = &sqlgraph.Node{
@@ -8020,6 +8033,71 @@ func (f *OncallShiftMetricsFilter) WhereTenantID(p entql.IntP) {
 // WhereShiftID applies the entql [16]byte predicate on the shift_id field.
 func (f *OncallShiftMetricsFilter) WhereShiftID(p entql.ValueP) {
 	f.Where(p.Field(oncallshiftmetrics.FieldShiftID))
+}
+
+// WhereUpdatedAt applies the entql time.Time predicate on the updated_at field.
+func (f *OncallShiftMetricsFilter) WhereUpdatedAt(p entql.TimeP) {
+	f.Where(p.Field(oncallshiftmetrics.FieldUpdatedAt))
+}
+
+// WhereBurdenScore applies the entql float32 predicate on the burden_score field.
+func (f *OncallShiftMetricsFilter) WhereBurdenScore(p entql.Float32P) {
+	f.Where(p.Field(oncallshiftmetrics.FieldBurdenScore))
+}
+
+// WhereEventFrequency applies the entql float32 predicate on the event_frequency field.
+func (f *OncallShiftMetricsFilter) WhereEventFrequency(p entql.Float32P) {
+	f.Where(p.Field(oncallshiftmetrics.FieldEventFrequency))
+}
+
+// WhereLifeImpact applies the entql float32 predicate on the life_impact field.
+func (f *OncallShiftMetricsFilter) WhereLifeImpact(p entql.Float32P) {
+	f.Where(p.Field(oncallshiftmetrics.FieldLifeImpact))
+}
+
+// WhereTimeImpact applies the entql float32 predicate on the time_impact field.
+func (f *OncallShiftMetricsFilter) WhereTimeImpact(p entql.Float32P) {
+	f.Where(p.Field(oncallshiftmetrics.FieldTimeImpact))
+}
+
+// WhereResponseRequirements applies the entql float32 predicate on the response_requirements field.
+func (f *OncallShiftMetricsFilter) WhereResponseRequirements(p entql.Float32P) {
+	f.Where(p.Field(oncallshiftmetrics.FieldResponseRequirements))
+}
+
+// WhereIsolation applies the entql float32 predicate on the isolation field.
+func (f *OncallShiftMetricsFilter) WhereIsolation(p entql.Float32P) {
+	f.Where(p.Field(oncallshiftmetrics.FieldIsolation))
+}
+
+// WhereIncidentsTotal applies the entql float32 predicate on the incidents_total field.
+func (f *OncallShiftMetricsFilter) WhereIncidentsTotal(p entql.Float32P) {
+	f.Where(p.Field(oncallshiftmetrics.FieldIncidentsTotal))
+}
+
+// WhereIncidentResponseTime applies the entql float32 predicate on the incident_response_time field.
+func (f *OncallShiftMetricsFilter) WhereIncidentResponseTime(p entql.Float32P) {
+	f.Where(p.Field(oncallshiftmetrics.FieldIncidentResponseTime))
+}
+
+// WhereInterruptsTotal applies the entql float32 predicate on the interrupts_total field.
+func (f *OncallShiftMetricsFilter) WhereInterruptsTotal(p entql.Float32P) {
+	f.Where(p.Field(oncallshiftmetrics.FieldInterruptsTotal))
+}
+
+// WhereInterruptsAlerts applies the entql float32 predicate on the interrupts_alerts field.
+func (f *OncallShiftMetricsFilter) WhereInterruptsAlerts(p entql.Float32P) {
+	f.Where(p.Field(oncallshiftmetrics.FieldInterruptsAlerts))
+}
+
+// WhereInterruptsNight applies the entql float32 predicate on the interrupts_night field.
+func (f *OncallShiftMetricsFilter) WhereInterruptsNight(p entql.Float32P) {
+	f.Where(p.Field(oncallshiftmetrics.FieldInterruptsNight))
+}
+
+// WhereInterruptsBusinessHours applies the entql float32 predicate on the interrupts_business_hours field.
+func (f *OncallShiftMetricsFilter) WhereInterruptsBusinessHours(p entql.Float32P) {
+	f.Where(p.Field(oncallshiftmetrics.FieldInterruptsBusinessHours))
 }
 
 // WhereHasTenant applies a predicate to check if query has an edge tenant.

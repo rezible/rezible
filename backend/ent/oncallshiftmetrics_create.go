@@ -6,6 +6,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"time"
 
 	"entgo.io/ent/dialect"
 	"entgo.io/ent/dialect/sql"
@@ -34,6 +35,92 @@ func (osmc *OncallShiftMetricsCreate) SetTenantID(i int) *OncallShiftMetricsCrea
 // SetShiftID sets the "shift_id" field.
 func (osmc *OncallShiftMetricsCreate) SetShiftID(u uuid.UUID) *OncallShiftMetricsCreate {
 	osmc.mutation.SetShiftID(u)
+	return osmc
+}
+
+// SetUpdatedAt sets the "updated_at" field.
+func (osmc *OncallShiftMetricsCreate) SetUpdatedAt(t time.Time) *OncallShiftMetricsCreate {
+	osmc.mutation.SetUpdatedAt(t)
+	return osmc
+}
+
+// SetNillableUpdatedAt sets the "updated_at" field if the given value is not nil.
+func (osmc *OncallShiftMetricsCreate) SetNillableUpdatedAt(t *time.Time) *OncallShiftMetricsCreate {
+	if t != nil {
+		osmc.SetUpdatedAt(*t)
+	}
+	return osmc
+}
+
+// SetBurdenScore sets the "burden_score" field.
+func (osmc *OncallShiftMetricsCreate) SetBurdenScore(f float32) *OncallShiftMetricsCreate {
+	osmc.mutation.SetBurdenScore(f)
+	return osmc
+}
+
+// SetEventFrequency sets the "event_frequency" field.
+func (osmc *OncallShiftMetricsCreate) SetEventFrequency(f float32) *OncallShiftMetricsCreate {
+	osmc.mutation.SetEventFrequency(f)
+	return osmc
+}
+
+// SetLifeImpact sets the "life_impact" field.
+func (osmc *OncallShiftMetricsCreate) SetLifeImpact(f float32) *OncallShiftMetricsCreate {
+	osmc.mutation.SetLifeImpact(f)
+	return osmc
+}
+
+// SetTimeImpact sets the "time_impact" field.
+func (osmc *OncallShiftMetricsCreate) SetTimeImpact(f float32) *OncallShiftMetricsCreate {
+	osmc.mutation.SetTimeImpact(f)
+	return osmc
+}
+
+// SetResponseRequirements sets the "response_requirements" field.
+func (osmc *OncallShiftMetricsCreate) SetResponseRequirements(f float32) *OncallShiftMetricsCreate {
+	osmc.mutation.SetResponseRequirements(f)
+	return osmc
+}
+
+// SetIsolation sets the "isolation" field.
+func (osmc *OncallShiftMetricsCreate) SetIsolation(f float32) *OncallShiftMetricsCreate {
+	osmc.mutation.SetIsolation(f)
+	return osmc
+}
+
+// SetIncidentsTotal sets the "incidents_total" field.
+func (osmc *OncallShiftMetricsCreate) SetIncidentsTotal(f float32) *OncallShiftMetricsCreate {
+	osmc.mutation.SetIncidentsTotal(f)
+	return osmc
+}
+
+// SetIncidentResponseTime sets the "incident_response_time" field.
+func (osmc *OncallShiftMetricsCreate) SetIncidentResponseTime(f float32) *OncallShiftMetricsCreate {
+	osmc.mutation.SetIncidentResponseTime(f)
+	return osmc
+}
+
+// SetInterruptsTotal sets the "interrupts_total" field.
+func (osmc *OncallShiftMetricsCreate) SetInterruptsTotal(f float32) *OncallShiftMetricsCreate {
+	osmc.mutation.SetInterruptsTotal(f)
+	return osmc
+}
+
+// SetInterruptsAlerts sets the "interrupts_alerts" field.
+func (osmc *OncallShiftMetricsCreate) SetInterruptsAlerts(f float32) *OncallShiftMetricsCreate {
+	osmc.mutation.SetInterruptsAlerts(f)
+	return osmc
+}
+
+// SetInterruptsNight sets the "interrupts_night" field.
+func (osmc *OncallShiftMetricsCreate) SetInterruptsNight(f float32) *OncallShiftMetricsCreate {
+	osmc.mutation.SetInterruptsNight(f)
+	return osmc
+}
+
+// SetInterruptsBusinessHours sets the "interrupts_business_hours" field.
+func (osmc *OncallShiftMetricsCreate) SetInterruptsBusinessHours(f float32) *OncallShiftMetricsCreate {
+	osmc.mutation.SetInterruptsBusinessHours(f)
 	return osmc
 }
 
@@ -98,6 +185,13 @@ func (osmc *OncallShiftMetricsCreate) ExecX(ctx context.Context) {
 
 // defaults sets the default values of the builder before save.
 func (osmc *OncallShiftMetricsCreate) defaults() error {
+	if _, ok := osmc.mutation.UpdatedAt(); !ok {
+		if oncallshiftmetrics.DefaultUpdatedAt == nil {
+			return fmt.Errorf("ent: uninitialized oncallshiftmetrics.DefaultUpdatedAt (forgotten import ent/runtime?)")
+		}
+		v := oncallshiftmetrics.DefaultUpdatedAt()
+		osmc.mutation.SetUpdatedAt(v)
+	}
 	if _, ok := osmc.mutation.ID(); !ok {
 		if oncallshiftmetrics.DefaultID == nil {
 			return fmt.Errorf("ent: uninitialized oncallshiftmetrics.DefaultID (forgotten import ent/runtime?)")
@@ -115,6 +209,45 @@ func (osmc *OncallShiftMetricsCreate) check() error {
 	}
 	if _, ok := osmc.mutation.ShiftID(); !ok {
 		return &ValidationError{Name: "shift_id", err: errors.New(`ent: missing required field "OncallShiftMetrics.shift_id"`)}
+	}
+	if _, ok := osmc.mutation.UpdatedAt(); !ok {
+		return &ValidationError{Name: "updated_at", err: errors.New(`ent: missing required field "OncallShiftMetrics.updated_at"`)}
+	}
+	if _, ok := osmc.mutation.BurdenScore(); !ok {
+		return &ValidationError{Name: "burden_score", err: errors.New(`ent: missing required field "OncallShiftMetrics.burden_score"`)}
+	}
+	if _, ok := osmc.mutation.EventFrequency(); !ok {
+		return &ValidationError{Name: "event_frequency", err: errors.New(`ent: missing required field "OncallShiftMetrics.event_frequency"`)}
+	}
+	if _, ok := osmc.mutation.LifeImpact(); !ok {
+		return &ValidationError{Name: "life_impact", err: errors.New(`ent: missing required field "OncallShiftMetrics.life_impact"`)}
+	}
+	if _, ok := osmc.mutation.TimeImpact(); !ok {
+		return &ValidationError{Name: "time_impact", err: errors.New(`ent: missing required field "OncallShiftMetrics.time_impact"`)}
+	}
+	if _, ok := osmc.mutation.ResponseRequirements(); !ok {
+		return &ValidationError{Name: "response_requirements", err: errors.New(`ent: missing required field "OncallShiftMetrics.response_requirements"`)}
+	}
+	if _, ok := osmc.mutation.Isolation(); !ok {
+		return &ValidationError{Name: "isolation", err: errors.New(`ent: missing required field "OncallShiftMetrics.isolation"`)}
+	}
+	if _, ok := osmc.mutation.IncidentsTotal(); !ok {
+		return &ValidationError{Name: "incidents_total", err: errors.New(`ent: missing required field "OncallShiftMetrics.incidents_total"`)}
+	}
+	if _, ok := osmc.mutation.IncidentResponseTime(); !ok {
+		return &ValidationError{Name: "incident_response_time", err: errors.New(`ent: missing required field "OncallShiftMetrics.incident_response_time"`)}
+	}
+	if _, ok := osmc.mutation.InterruptsTotal(); !ok {
+		return &ValidationError{Name: "interrupts_total", err: errors.New(`ent: missing required field "OncallShiftMetrics.interrupts_total"`)}
+	}
+	if _, ok := osmc.mutation.InterruptsAlerts(); !ok {
+		return &ValidationError{Name: "interrupts_alerts", err: errors.New(`ent: missing required field "OncallShiftMetrics.interrupts_alerts"`)}
+	}
+	if _, ok := osmc.mutation.InterruptsNight(); !ok {
+		return &ValidationError{Name: "interrupts_night", err: errors.New(`ent: missing required field "OncallShiftMetrics.interrupts_night"`)}
+	}
+	if _, ok := osmc.mutation.InterruptsBusinessHours(); !ok {
+		return &ValidationError{Name: "interrupts_business_hours", err: errors.New(`ent: missing required field "OncallShiftMetrics.interrupts_business_hours"`)}
 	}
 	if len(osmc.mutation.TenantIDs()) == 0 {
 		return &ValidationError{Name: "tenant", err: errors.New(`ent: missing required edge "OncallShiftMetrics.tenant"`)}
@@ -157,6 +290,58 @@ func (osmc *OncallShiftMetricsCreate) createSpec() (*OncallShiftMetrics, *sqlgra
 	if id, ok := osmc.mutation.ID(); ok {
 		_node.ID = id
 		_spec.ID.Value = &id
+	}
+	if value, ok := osmc.mutation.UpdatedAt(); ok {
+		_spec.SetField(oncallshiftmetrics.FieldUpdatedAt, field.TypeTime, value)
+		_node.UpdatedAt = value
+	}
+	if value, ok := osmc.mutation.BurdenScore(); ok {
+		_spec.SetField(oncallshiftmetrics.FieldBurdenScore, field.TypeFloat32, value)
+		_node.BurdenScore = value
+	}
+	if value, ok := osmc.mutation.EventFrequency(); ok {
+		_spec.SetField(oncallshiftmetrics.FieldEventFrequency, field.TypeFloat32, value)
+		_node.EventFrequency = value
+	}
+	if value, ok := osmc.mutation.LifeImpact(); ok {
+		_spec.SetField(oncallshiftmetrics.FieldLifeImpact, field.TypeFloat32, value)
+		_node.LifeImpact = value
+	}
+	if value, ok := osmc.mutation.TimeImpact(); ok {
+		_spec.SetField(oncallshiftmetrics.FieldTimeImpact, field.TypeFloat32, value)
+		_node.TimeImpact = value
+	}
+	if value, ok := osmc.mutation.ResponseRequirements(); ok {
+		_spec.SetField(oncallshiftmetrics.FieldResponseRequirements, field.TypeFloat32, value)
+		_node.ResponseRequirements = value
+	}
+	if value, ok := osmc.mutation.Isolation(); ok {
+		_spec.SetField(oncallshiftmetrics.FieldIsolation, field.TypeFloat32, value)
+		_node.Isolation = value
+	}
+	if value, ok := osmc.mutation.IncidentsTotal(); ok {
+		_spec.SetField(oncallshiftmetrics.FieldIncidentsTotal, field.TypeFloat32, value)
+		_node.IncidentsTotal = value
+	}
+	if value, ok := osmc.mutation.IncidentResponseTime(); ok {
+		_spec.SetField(oncallshiftmetrics.FieldIncidentResponseTime, field.TypeFloat32, value)
+		_node.IncidentResponseTime = value
+	}
+	if value, ok := osmc.mutation.InterruptsTotal(); ok {
+		_spec.SetField(oncallshiftmetrics.FieldInterruptsTotal, field.TypeFloat32, value)
+		_node.InterruptsTotal = value
+	}
+	if value, ok := osmc.mutation.InterruptsAlerts(); ok {
+		_spec.SetField(oncallshiftmetrics.FieldInterruptsAlerts, field.TypeFloat32, value)
+		_node.InterruptsAlerts = value
+	}
+	if value, ok := osmc.mutation.InterruptsNight(); ok {
+		_spec.SetField(oncallshiftmetrics.FieldInterruptsNight, field.TypeFloat32, value)
+		_node.InterruptsNight = value
+	}
+	if value, ok := osmc.mutation.InterruptsBusinessHours(); ok {
+		_spec.SetField(oncallshiftmetrics.FieldInterruptsBusinessHours, field.TypeFloat32, value)
+		_node.InterruptsBusinessHours = value
 	}
 	if nodes := osmc.mutation.TenantIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
@@ -256,6 +441,234 @@ func (u *OncallShiftMetricsUpsert) UpdateShiftID() *OncallShiftMetricsUpsert {
 	return u
 }
 
+// SetUpdatedAt sets the "updated_at" field.
+func (u *OncallShiftMetricsUpsert) SetUpdatedAt(v time.Time) *OncallShiftMetricsUpsert {
+	u.Set(oncallshiftmetrics.FieldUpdatedAt, v)
+	return u
+}
+
+// UpdateUpdatedAt sets the "updated_at" field to the value that was provided on create.
+func (u *OncallShiftMetricsUpsert) UpdateUpdatedAt() *OncallShiftMetricsUpsert {
+	u.SetExcluded(oncallshiftmetrics.FieldUpdatedAt)
+	return u
+}
+
+// SetBurdenScore sets the "burden_score" field.
+func (u *OncallShiftMetricsUpsert) SetBurdenScore(v float32) *OncallShiftMetricsUpsert {
+	u.Set(oncallshiftmetrics.FieldBurdenScore, v)
+	return u
+}
+
+// UpdateBurdenScore sets the "burden_score" field to the value that was provided on create.
+func (u *OncallShiftMetricsUpsert) UpdateBurdenScore() *OncallShiftMetricsUpsert {
+	u.SetExcluded(oncallshiftmetrics.FieldBurdenScore)
+	return u
+}
+
+// AddBurdenScore adds v to the "burden_score" field.
+func (u *OncallShiftMetricsUpsert) AddBurdenScore(v float32) *OncallShiftMetricsUpsert {
+	u.Add(oncallshiftmetrics.FieldBurdenScore, v)
+	return u
+}
+
+// SetEventFrequency sets the "event_frequency" field.
+func (u *OncallShiftMetricsUpsert) SetEventFrequency(v float32) *OncallShiftMetricsUpsert {
+	u.Set(oncallshiftmetrics.FieldEventFrequency, v)
+	return u
+}
+
+// UpdateEventFrequency sets the "event_frequency" field to the value that was provided on create.
+func (u *OncallShiftMetricsUpsert) UpdateEventFrequency() *OncallShiftMetricsUpsert {
+	u.SetExcluded(oncallshiftmetrics.FieldEventFrequency)
+	return u
+}
+
+// AddEventFrequency adds v to the "event_frequency" field.
+func (u *OncallShiftMetricsUpsert) AddEventFrequency(v float32) *OncallShiftMetricsUpsert {
+	u.Add(oncallshiftmetrics.FieldEventFrequency, v)
+	return u
+}
+
+// SetLifeImpact sets the "life_impact" field.
+func (u *OncallShiftMetricsUpsert) SetLifeImpact(v float32) *OncallShiftMetricsUpsert {
+	u.Set(oncallshiftmetrics.FieldLifeImpact, v)
+	return u
+}
+
+// UpdateLifeImpact sets the "life_impact" field to the value that was provided on create.
+func (u *OncallShiftMetricsUpsert) UpdateLifeImpact() *OncallShiftMetricsUpsert {
+	u.SetExcluded(oncallshiftmetrics.FieldLifeImpact)
+	return u
+}
+
+// AddLifeImpact adds v to the "life_impact" field.
+func (u *OncallShiftMetricsUpsert) AddLifeImpact(v float32) *OncallShiftMetricsUpsert {
+	u.Add(oncallshiftmetrics.FieldLifeImpact, v)
+	return u
+}
+
+// SetTimeImpact sets the "time_impact" field.
+func (u *OncallShiftMetricsUpsert) SetTimeImpact(v float32) *OncallShiftMetricsUpsert {
+	u.Set(oncallshiftmetrics.FieldTimeImpact, v)
+	return u
+}
+
+// UpdateTimeImpact sets the "time_impact" field to the value that was provided on create.
+func (u *OncallShiftMetricsUpsert) UpdateTimeImpact() *OncallShiftMetricsUpsert {
+	u.SetExcluded(oncallshiftmetrics.FieldTimeImpact)
+	return u
+}
+
+// AddTimeImpact adds v to the "time_impact" field.
+func (u *OncallShiftMetricsUpsert) AddTimeImpact(v float32) *OncallShiftMetricsUpsert {
+	u.Add(oncallshiftmetrics.FieldTimeImpact, v)
+	return u
+}
+
+// SetResponseRequirements sets the "response_requirements" field.
+func (u *OncallShiftMetricsUpsert) SetResponseRequirements(v float32) *OncallShiftMetricsUpsert {
+	u.Set(oncallshiftmetrics.FieldResponseRequirements, v)
+	return u
+}
+
+// UpdateResponseRequirements sets the "response_requirements" field to the value that was provided on create.
+func (u *OncallShiftMetricsUpsert) UpdateResponseRequirements() *OncallShiftMetricsUpsert {
+	u.SetExcluded(oncallshiftmetrics.FieldResponseRequirements)
+	return u
+}
+
+// AddResponseRequirements adds v to the "response_requirements" field.
+func (u *OncallShiftMetricsUpsert) AddResponseRequirements(v float32) *OncallShiftMetricsUpsert {
+	u.Add(oncallshiftmetrics.FieldResponseRequirements, v)
+	return u
+}
+
+// SetIsolation sets the "isolation" field.
+func (u *OncallShiftMetricsUpsert) SetIsolation(v float32) *OncallShiftMetricsUpsert {
+	u.Set(oncallshiftmetrics.FieldIsolation, v)
+	return u
+}
+
+// UpdateIsolation sets the "isolation" field to the value that was provided on create.
+func (u *OncallShiftMetricsUpsert) UpdateIsolation() *OncallShiftMetricsUpsert {
+	u.SetExcluded(oncallshiftmetrics.FieldIsolation)
+	return u
+}
+
+// AddIsolation adds v to the "isolation" field.
+func (u *OncallShiftMetricsUpsert) AddIsolation(v float32) *OncallShiftMetricsUpsert {
+	u.Add(oncallshiftmetrics.FieldIsolation, v)
+	return u
+}
+
+// SetIncidentsTotal sets the "incidents_total" field.
+func (u *OncallShiftMetricsUpsert) SetIncidentsTotal(v float32) *OncallShiftMetricsUpsert {
+	u.Set(oncallshiftmetrics.FieldIncidentsTotal, v)
+	return u
+}
+
+// UpdateIncidentsTotal sets the "incidents_total" field to the value that was provided on create.
+func (u *OncallShiftMetricsUpsert) UpdateIncidentsTotal() *OncallShiftMetricsUpsert {
+	u.SetExcluded(oncallshiftmetrics.FieldIncidentsTotal)
+	return u
+}
+
+// AddIncidentsTotal adds v to the "incidents_total" field.
+func (u *OncallShiftMetricsUpsert) AddIncidentsTotal(v float32) *OncallShiftMetricsUpsert {
+	u.Add(oncallshiftmetrics.FieldIncidentsTotal, v)
+	return u
+}
+
+// SetIncidentResponseTime sets the "incident_response_time" field.
+func (u *OncallShiftMetricsUpsert) SetIncidentResponseTime(v float32) *OncallShiftMetricsUpsert {
+	u.Set(oncallshiftmetrics.FieldIncidentResponseTime, v)
+	return u
+}
+
+// UpdateIncidentResponseTime sets the "incident_response_time" field to the value that was provided on create.
+func (u *OncallShiftMetricsUpsert) UpdateIncidentResponseTime() *OncallShiftMetricsUpsert {
+	u.SetExcluded(oncallshiftmetrics.FieldIncidentResponseTime)
+	return u
+}
+
+// AddIncidentResponseTime adds v to the "incident_response_time" field.
+func (u *OncallShiftMetricsUpsert) AddIncidentResponseTime(v float32) *OncallShiftMetricsUpsert {
+	u.Add(oncallshiftmetrics.FieldIncidentResponseTime, v)
+	return u
+}
+
+// SetInterruptsTotal sets the "interrupts_total" field.
+func (u *OncallShiftMetricsUpsert) SetInterruptsTotal(v float32) *OncallShiftMetricsUpsert {
+	u.Set(oncallshiftmetrics.FieldInterruptsTotal, v)
+	return u
+}
+
+// UpdateInterruptsTotal sets the "interrupts_total" field to the value that was provided on create.
+func (u *OncallShiftMetricsUpsert) UpdateInterruptsTotal() *OncallShiftMetricsUpsert {
+	u.SetExcluded(oncallshiftmetrics.FieldInterruptsTotal)
+	return u
+}
+
+// AddInterruptsTotal adds v to the "interrupts_total" field.
+func (u *OncallShiftMetricsUpsert) AddInterruptsTotal(v float32) *OncallShiftMetricsUpsert {
+	u.Add(oncallshiftmetrics.FieldInterruptsTotal, v)
+	return u
+}
+
+// SetInterruptsAlerts sets the "interrupts_alerts" field.
+func (u *OncallShiftMetricsUpsert) SetInterruptsAlerts(v float32) *OncallShiftMetricsUpsert {
+	u.Set(oncallshiftmetrics.FieldInterruptsAlerts, v)
+	return u
+}
+
+// UpdateInterruptsAlerts sets the "interrupts_alerts" field to the value that was provided on create.
+func (u *OncallShiftMetricsUpsert) UpdateInterruptsAlerts() *OncallShiftMetricsUpsert {
+	u.SetExcluded(oncallshiftmetrics.FieldInterruptsAlerts)
+	return u
+}
+
+// AddInterruptsAlerts adds v to the "interrupts_alerts" field.
+func (u *OncallShiftMetricsUpsert) AddInterruptsAlerts(v float32) *OncallShiftMetricsUpsert {
+	u.Add(oncallshiftmetrics.FieldInterruptsAlerts, v)
+	return u
+}
+
+// SetInterruptsNight sets the "interrupts_night" field.
+func (u *OncallShiftMetricsUpsert) SetInterruptsNight(v float32) *OncallShiftMetricsUpsert {
+	u.Set(oncallshiftmetrics.FieldInterruptsNight, v)
+	return u
+}
+
+// UpdateInterruptsNight sets the "interrupts_night" field to the value that was provided on create.
+func (u *OncallShiftMetricsUpsert) UpdateInterruptsNight() *OncallShiftMetricsUpsert {
+	u.SetExcluded(oncallshiftmetrics.FieldInterruptsNight)
+	return u
+}
+
+// AddInterruptsNight adds v to the "interrupts_night" field.
+func (u *OncallShiftMetricsUpsert) AddInterruptsNight(v float32) *OncallShiftMetricsUpsert {
+	u.Add(oncallshiftmetrics.FieldInterruptsNight, v)
+	return u
+}
+
+// SetInterruptsBusinessHours sets the "interrupts_business_hours" field.
+func (u *OncallShiftMetricsUpsert) SetInterruptsBusinessHours(v float32) *OncallShiftMetricsUpsert {
+	u.Set(oncallshiftmetrics.FieldInterruptsBusinessHours, v)
+	return u
+}
+
+// UpdateInterruptsBusinessHours sets the "interrupts_business_hours" field to the value that was provided on create.
+func (u *OncallShiftMetricsUpsert) UpdateInterruptsBusinessHours() *OncallShiftMetricsUpsert {
+	u.SetExcluded(oncallshiftmetrics.FieldInterruptsBusinessHours)
+	return u
+}
+
+// AddInterruptsBusinessHours adds v to the "interrupts_business_hours" field.
+func (u *OncallShiftMetricsUpsert) AddInterruptsBusinessHours(v float32) *OncallShiftMetricsUpsert {
+	u.Add(oncallshiftmetrics.FieldInterruptsBusinessHours, v)
+	return u
+}
+
 // UpdateNewValues updates the mutable fields using the new values that were set on create except the ID field.
 // Using this option is equivalent to using:
 //
@@ -318,6 +731,272 @@ func (u *OncallShiftMetricsUpsertOne) SetShiftID(v uuid.UUID) *OncallShiftMetric
 func (u *OncallShiftMetricsUpsertOne) UpdateShiftID() *OncallShiftMetricsUpsertOne {
 	return u.Update(func(s *OncallShiftMetricsUpsert) {
 		s.UpdateShiftID()
+	})
+}
+
+// SetUpdatedAt sets the "updated_at" field.
+func (u *OncallShiftMetricsUpsertOne) SetUpdatedAt(v time.Time) *OncallShiftMetricsUpsertOne {
+	return u.Update(func(s *OncallShiftMetricsUpsert) {
+		s.SetUpdatedAt(v)
+	})
+}
+
+// UpdateUpdatedAt sets the "updated_at" field to the value that was provided on create.
+func (u *OncallShiftMetricsUpsertOne) UpdateUpdatedAt() *OncallShiftMetricsUpsertOne {
+	return u.Update(func(s *OncallShiftMetricsUpsert) {
+		s.UpdateUpdatedAt()
+	})
+}
+
+// SetBurdenScore sets the "burden_score" field.
+func (u *OncallShiftMetricsUpsertOne) SetBurdenScore(v float32) *OncallShiftMetricsUpsertOne {
+	return u.Update(func(s *OncallShiftMetricsUpsert) {
+		s.SetBurdenScore(v)
+	})
+}
+
+// AddBurdenScore adds v to the "burden_score" field.
+func (u *OncallShiftMetricsUpsertOne) AddBurdenScore(v float32) *OncallShiftMetricsUpsertOne {
+	return u.Update(func(s *OncallShiftMetricsUpsert) {
+		s.AddBurdenScore(v)
+	})
+}
+
+// UpdateBurdenScore sets the "burden_score" field to the value that was provided on create.
+func (u *OncallShiftMetricsUpsertOne) UpdateBurdenScore() *OncallShiftMetricsUpsertOne {
+	return u.Update(func(s *OncallShiftMetricsUpsert) {
+		s.UpdateBurdenScore()
+	})
+}
+
+// SetEventFrequency sets the "event_frequency" field.
+func (u *OncallShiftMetricsUpsertOne) SetEventFrequency(v float32) *OncallShiftMetricsUpsertOne {
+	return u.Update(func(s *OncallShiftMetricsUpsert) {
+		s.SetEventFrequency(v)
+	})
+}
+
+// AddEventFrequency adds v to the "event_frequency" field.
+func (u *OncallShiftMetricsUpsertOne) AddEventFrequency(v float32) *OncallShiftMetricsUpsertOne {
+	return u.Update(func(s *OncallShiftMetricsUpsert) {
+		s.AddEventFrequency(v)
+	})
+}
+
+// UpdateEventFrequency sets the "event_frequency" field to the value that was provided on create.
+func (u *OncallShiftMetricsUpsertOne) UpdateEventFrequency() *OncallShiftMetricsUpsertOne {
+	return u.Update(func(s *OncallShiftMetricsUpsert) {
+		s.UpdateEventFrequency()
+	})
+}
+
+// SetLifeImpact sets the "life_impact" field.
+func (u *OncallShiftMetricsUpsertOne) SetLifeImpact(v float32) *OncallShiftMetricsUpsertOne {
+	return u.Update(func(s *OncallShiftMetricsUpsert) {
+		s.SetLifeImpact(v)
+	})
+}
+
+// AddLifeImpact adds v to the "life_impact" field.
+func (u *OncallShiftMetricsUpsertOne) AddLifeImpact(v float32) *OncallShiftMetricsUpsertOne {
+	return u.Update(func(s *OncallShiftMetricsUpsert) {
+		s.AddLifeImpact(v)
+	})
+}
+
+// UpdateLifeImpact sets the "life_impact" field to the value that was provided on create.
+func (u *OncallShiftMetricsUpsertOne) UpdateLifeImpact() *OncallShiftMetricsUpsertOne {
+	return u.Update(func(s *OncallShiftMetricsUpsert) {
+		s.UpdateLifeImpact()
+	})
+}
+
+// SetTimeImpact sets the "time_impact" field.
+func (u *OncallShiftMetricsUpsertOne) SetTimeImpact(v float32) *OncallShiftMetricsUpsertOne {
+	return u.Update(func(s *OncallShiftMetricsUpsert) {
+		s.SetTimeImpact(v)
+	})
+}
+
+// AddTimeImpact adds v to the "time_impact" field.
+func (u *OncallShiftMetricsUpsertOne) AddTimeImpact(v float32) *OncallShiftMetricsUpsertOne {
+	return u.Update(func(s *OncallShiftMetricsUpsert) {
+		s.AddTimeImpact(v)
+	})
+}
+
+// UpdateTimeImpact sets the "time_impact" field to the value that was provided on create.
+func (u *OncallShiftMetricsUpsertOne) UpdateTimeImpact() *OncallShiftMetricsUpsertOne {
+	return u.Update(func(s *OncallShiftMetricsUpsert) {
+		s.UpdateTimeImpact()
+	})
+}
+
+// SetResponseRequirements sets the "response_requirements" field.
+func (u *OncallShiftMetricsUpsertOne) SetResponseRequirements(v float32) *OncallShiftMetricsUpsertOne {
+	return u.Update(func(s *OncallShiftMetricsUpsert) {
+		s.SetResponseRequirements(v)
+	})
+}
+
+// AddResponseRequirements adds v to the "response_requirements" field.
+func (u *OncallShiftMetricsUpsertOne) AddResponseRequirements(v float32) *OncallShiftMetricsUpsertOne {
+	return u.Update(func(s *OncallShiftMetricsUpsert) {
+		s.AddResponseRequirements(v)
+	})
+}
+
+// UpdateResponseRequirements sets the "response_requirements" field to the value that was provided on create.
+func (u *OncallShiftMetricsUpsertOne) UpdateResponseRequirements() *OncallShiftMetricsUpsertOne {
+	return u.Update(func(s *OncallShiftMetricsUpsert) {
+		s.UpdateResponseRequirements()
+	})
+}
+
+// SetIsolation sets the "isolation" field.
+func (u *OncallShiftMetricsUpsertOne) SetIsolation(v float32) *OncallShiftMetricsUpsertOne {
+	return u.Update(func(s *OncallShiftMetricsUpsert) {
+		s.SetIsolation(v)
+	})
+}
+
+// AddIsolation adds v to the "isolation" field.
+func (u *OncallShiftMetricsUpsertOne) AddIsolation(v float32) *OncallShiftMetricsUpsertOne {
+	return u.Update(func(s *OncallShiftMetricsUpsert) {
+		s.AddIsolation(v)
+	})
+}
+
+// UpdateIsolation sets the "isolation" field to the value that was provided on create.
+func (u *OncallShiftMetricsUpsertOne) UpdateIsolation() *OncallShiftMetricsUpsertOne {
+	return u.Update(func(s *OncallShiftMetricsUpsert) {
+		s.UpdateIsolation()
+	})
+}
+
+// SetIncidentsTotal sets the "incidents_total" field.
+func (u *OncallShiftMetricsUpsertOne) SetIncidentsTotal(v float32) *OncallShiftMetricsUpsertOne {
+	return u.Update(func(s *OncallShiftMetricsUpsert) {
+		s.SetIncidentsTotal(v)
+	})
+}
+
+// AddIncidentsTotal adds v to the "incidents_total" field.
+func (u *OncallShiftMetricsUpsertOne) AddIncidentsTotal(v float32) *OncallShiftMetricsUpsertOne {
+	return u.Update(func(s *OncallShiftMetricsUpsert) {
+		s.AddIncidentsTotal(v)
+	})
+}
+
+// UpdateIncidentsTotal sets the "incidents_total" field to the value that was provided on create.
+func (u *OncallShiftMetricsUpsertOne) UpdateIncidentsTotal() *OncallShiftMetricsUpsertOne {
+	return u.Update(func(s *OncallShiftMetricsUpsert) {
+		s.UpdateIncidentsTotal()
+	})
+}
+
+// SetIncidentResponseTime sets the "incident_response_time" field.
+func (u *OncallShiftMetricsUpsertOne) SetIncidentResponseTime(v float32) *OncallShiftMetricsUpsertOne {
+	return u.Update(func(s *OncallShiftMetricsUpsert) {
+		s.SetIncidentResponseTime(v)
+	})
+}
+
+// AddIncidentResponseTime adds v to the "incident_response_time" field.
+func (u *OncallShiftMetricsUpsertOne) AddIncidentResponseTime(v float32) *OncallShiftMetricsUpsertOne {
+	return u.Update(func(s *OncallShiftMetricsUpsert) {
+		s.AddIncidentResponseTime(v)
+	})
+}
+
+// UpdateIncidentResponseTime sets the "incident_response_time" field to the value that was provided on create.
+func (u *OncallShiftMetricsUpsertOne) UpdateIncidentResponseTime() *OncallShiftMetricsUpsertOne {
+	return u.Update(func(s *OncallShiftMetricsUpsert) {
+		s.UpdateIncidentResponseTime()
+	})
+}
+
+// SetInterruptsTotal sets the "interrupts_total" field.
+func (u *OncallShiftMetricsUpsertOne) SetInterruptsTotal(v float32) *OncallShiftMetricsUpsertOne {
+	return u.Update(func(s *OncallShiftMetricsUpsert) {
+		s.SetInterruptsTotal(v)
+	})
+}
+
+// AddInterruptsTotal adds v to the "interrupts_total" field.
+func (u *OncallShiftMetricsUpsertOne) AddInterruptsTotal(v float32) *OncallShiftMetricsUpsertOne {
+	return u.Update(func(s *OncallShiftMetricsUpsert) {
+		s.AddInterruptsTotal(v)
+	})
+}
+
+// UpdateInterruptsTotal sets the "interrupts_total" field to the value that was provided on create.
+func (u *OncallShiftMetricsUpsertOne) UpdateInterruptsTotal() *OncallShiftMetricsUpsertOne {
+	return u.Update(func(s *OncallShiftMetricsUpsert) {
+		s.UpdateInterruptsTotal()
+	})
+}
+
+// SetInterruptsAlerts sets the "interrupts_alerts" field.
+func (u *OncallShiftMetricsUpsertOne) SetInterruptsAlerts(v float32) *OncallShiftMetricsUpsertOne {
+	return u.Update(func(s *OncallShiftMetricsUpsert) {
+		s.SetInterruptsAlerts(v)
+	})
+}
+
+// AddInterruptsAlerts adds v to the "interrupts_alerts" field.
+func (u *OncallShiftMetricsUpsertOne) AddInterruptsAlerts(v float32) *OncallShiftMetricsUpsertOne {
+	return u.Update(func(s *OncallShiftMetricsUpsert) {
+		s.AddInterruptsAlerts(v)
+	})
+}
+
+// UpdateInterruptsAlerts sets the "interrupts_alerts" field to the value that was provided on create.
+func (u *OncallShiftMetricsUpsertOne) UpdateInterruptsAlerts() *OncallShiftMetricsUpsertOne {
+	return u.Update(func(s *OncallShiftMetricsUpsert) {
+		s.UpdateInterruptsAlerts()
+	})
+}
+
+// SetInterruptsNight sets the "interrupts_night" field.
+func (u *OncallShiftMetricsUpsertOne) SetInterruptsNight(v float32) *OncallShiftMetricsUpsertOne {
+	return u.Update(func(s *OncallShiftMetricsUpsert) {
+		s.SetInterruptsNight(v)
+	})
+}
+
+// AddInterruptsNight adds v to the "interrupts_night" field.
+func (u *OncallShiftMetricsUpsertOne) AddInterruptsNight(v float32) *OncallShiftMetricsUpsertOne {
+	return u.Update(func(s *OncallShiftMetricsUpsert) {
+		s.AddInterruptsNight(v)
+	})
+}
+
+// UpdateInterruptsNight sets the "interrupts_night" field to the value that was provided on create.
+func (u *OncallShiftMetricsUpsertOne) UpdateInterruptsNight() *OncallShiftMetricsUpsertOne {
+	return u.Update(func(s *OncallShiftMetricsUpsert) {
+		s.UpdateInterruptsNight()
+	})
+}
+
+// SetInterruptsBusinessHours sets the "interrupts_business_hours" field.
+func (u *OncallShiftMetricsUpsertOne) SetInterruptsBusinessHours(v float32) *OncallShiftMetricsUpsertOne {
+	return u.Update(func(s *OncallShiftMetricsUpsert) {
+		s.SetInterruptsBusinessHours(v)
+	})
+}
+
+// AddInterruptsBusinessHours adds v to the "interrupts_business_hours" field.
+func (u *OncallShiftMetricsUpsertOne) AddInterruptsBusinessHours(v float32) *OncallShiftMetricsUpsertOne {
+	return u.Update(func(s *OncallShiftMetricsUpsert) {
+		s.AddInterruptsBusinessHours(v)
+	})
+}
+
+// UpdateInterruptsBusinessHours sets the "interrupts_business_hours" field to the value that was provided on create.
+func (u *OncallShiftMetricsUpsertOne) UpdateInterruptsBusinessHours() *OncallShiftMetricsUpsertOne {
+	return u.Update(func(s *OncallShiftMetricsUpsert) {
+		s.UpdateInterruptsBusinessHours()
 	})
 }
 
@@ -550,6 +1229,272 @@ func (u *OncallShiftMetricsUpsertBulk) SetShiftID(v uuid.UUID) *OncallShiftMetri
 func (u *OncallShiftMetricsUpsertBulk) UpdateShiftID() *OncallShiftMetricsUpsertBulk {
 	return u.Update(func(s *OncallShiftMetricsUpsert) {
 		s.UpdateShiftID()
+	})
+}
+
+// SetUpdatedAt sets the "updated_at" field.
+func (u *OncallShiftMetricsUpsertBulk) SetUpdatedAt(v time.Time) *OncallShiftMetricsUpsertBulk {
+	return u.Update(func(s *OncallShiftMetricsUpsert) {
+		s.SetUpdatedAt(v)
+	})
+}
+
+// UpdateUpdatedAt sets the "updated_at" field to the value that was provided on create.
+func (u *OncallShiftMetricsUpsertBulk) UpdateUpdatedAt() *OncallShiftMetricsUpsertBulk {
+	return u.Update(func(s *OncallShiftMetricsUpsert) {
+		s.UpdateUpdatedAt()
+	})
+}
+
+// SetBurdenScore sets the "burden_score" field.
+func (u *OncallShiftMetricsUpsertBulk) SetBurdenScore(v float32) *OncallShiftMetricsUpsertBulk {
+	return u.Update(func(s *OncallShiftMetricsUpsert) {
+		s.SetBurdenScore(v)
+	})
+}
+
+// AddBurdenScore adds v to the "burden_score" field.
+func (u *OncallShiftMetricsUpsertBulk) AddBurdenScore(v float32) *OncallShiftMetricsUpsertBulk {
+	return u.Update(func(s *OncallShiftMetricsUpsert) {
+		s.AddBurdenScore(v)
+	})
+}
+
+// UpdateBurdenScore sets the "burden_score" field to the value that was provided on create.
+func (u *OncallShiftMetricsUpsertBulk) UpdateBurdenScore() *OncallShiftMetricsUpsertBulk {
+	return u.Update(func(s *OncallShiftMetricsUpsert) {
+		s.UpdateBurdenScore()
+	})
+}
+
+// SetEventFrequency sets the "event_frequency" field.
+func (u *OncallShiftMetricsUpsertBulk) SetEventFrequency(v float32) *OncallShiftMetricsUpsertBulk {
+	return u.Update(func(s *OncallShiftMetricsUpsert) {
+		s.SetEventFrequency(v)
+	})
+}
+
+// AddEventFrequency adds v to the "event_frequency" field.
+func (u *OncallShiftMetricsUpsertBulk) AddEventFrequency(v float32) *OncallShiftMetricsUpsertBulk {
+	return u.Update(func(s *OncallShiftMetricsUpsert) {
+		s.AddEventFrequency(v)
+	})
+}
+
+// UpdateEventFrequency sets the "event_frequency" field to the value that was provided on create.
+func (u *OncallShiftMetricsUpsertBulk) UpdateEventFrequency() *OncallShiftMetricsUpsertBulk {
+	return u.Update(func(s *OncallShiftMetricsUpsert) {
+		s.UpdateEventFrequency()
+	})
+}
+
+// SetLifeImpact sets the "life_impact" field.
+func (u *OncallShiftMetricsUpsertBulk) SetLifeImpact(v float32) *OncallShiftMetricsUpsertBulk {
+	return u.Update(func(s *OncallShiftMetricsUpsert) {
+		s.SetLifeImpact(v)
+	})
+}
+
+// AddLifeImpact adds v to the "life_impact" field.
+func (u *OncallShiftMetricsUpsertBulk) AddLifeImpact(v float32) *OncallShiftMetricsUpsertBulk {
+	return u.Update(func(s *OncallShiftMetricsUpsert) {
+		s.AddLifeImpact(v)
+	})
+}
+
+// UpdateLifeImpact sets the "life_impact" field to the value that was provided on create.
+func (u *OncallShiftMetricsUpsertBulk) UpdateLifeImpact() *OncallShiftMetricsUpsertBulk {
+	return u.Update(func(s *OncallShiftMetricsUpsert) {
+		s.UpdateLifeImpact()
+	})
+}
+
+// SetTimeImpact sets the "time_impact" field.
+func (u *OncallShiftMetricsUpsertBulk) SetTimeImpact(v float32) *OncallShiftMetricsUpsertBulk {
+	return u.Update(func(s *OncallShiftMetricsUpsert) {
+		s.SetTimeImpact(v)
+	})
+}
+
+// AddTimeImpact adds v to the "time_impact" field.
+func (u *OncallShiftMetricsUpsertBulk) AddTimeImpact(v float32) *OncallShiftMetricsUpsertBulk {
+	return u.Update(func(s *OncallShiftMetricsUpsert) {
+		s.AddTimeImpact(v)
+	})
+}
+
+// UpdateTimeImpact sets the "time_impact" field to the value that was provided on create.
+func (u *OncallShiftMetricsUpsertBulk) UpdateTimeImpact() *OncallShiftMetricsUpsertBulk {
+	return u.Update(func(s *OncallShiftMetricsUpsert) {
+		s.UpdateTimeImpact()
+	})
+}
+
+// SetResponseRequirements sets the "response_requirements" field.
+func (u *OncallShiftMetricsUpsertBulk) SetResponseRequirements(v float32) *OncallShiftMetricsUpsertBulk {
+	return u.Update(func(s *OncallShiftMetricsUpsert) {
+		s.SetResponseRequirements(v)
+	})
+}
+
+// AddResponseRequirements adds v to the "response_requirements" field.
+func (u *OncallShiftMetricsUpsertBulk) AddResponseRequirements(v float32) *OncallShiftMetricsUpsertBulk {
+	return u.Update(func(s *OncallShiftMetricsUpsert) {
+		s.AddResponseRequirements(v)
+	})
+}
+
+// UpdateResponseRequirements sets the "response_requirements" field to the value that was provided on create.
+func (u *OncallShiftMetricsUpsertBulk) UpdateResponseRequirements() *OncallShiftMetricsUpsertBulk {
+	return u.Update(func(s *OncallShiftMetricsUpsert) {
+		s.UpdateResponseRequirements()
+	})
+}
+
+// SetIsolation sets the "isolation" field.
+func (u *OncallShiftMetricsUpsertBulk) SetIsolation(v float32) *OncallShiftMetricsUpsertBulk {
+	return u.Update(func(s *OncallShiftMetricsUpsert) {
+		s.SetIsolation(v)
+	})
+}
+
+// AddIsolation adds v to the "isolation" field.
+func (u *OncallShiftMetricsUpsertBulk) AddIsolation(v float32) *OncallShiftMetricsUpsertBulk {
+	return u.Update(func(s *OncallShiftMetricsUpsert) {
+		s.AddIsolation(v)
+	})
+}
+
+// UpdateIsolation sets the "isolation" field to the value that was provided on create.
+func (u *OncallShiftMetricsUpsertBulk) UpdateIsolation() *OncallShiftMetricsUpsertBulk {
+	return u.Update(func(s *OncallShiftMetricsUpsert) {
+		s.UpdateIsolation()
+	})
+}
+
+// SetIncidentsTotal sets the "incidents_total" field.
+func (u *OncallShiftMetricsUpsertBulk) SetIncidentsTotal(v float32) *OncallShiftMetricsUpsertBulk {
+	return u.Update(func(s *OncallShiftMetricsUpsert) {
+		s.SetIncidentsTotal(v)
+	})
+}
+
+// AddIncidentsTotal adds v to the "incidents_total" field.
+func (u *OncallShiftMetricsUpsertBulk) AddIncidentsTotal(v float32) *OncallShiftMetricsUpsertBulk {
+	return u.Update(func(s *OncallShiftMetricsUpsert) {
+		s.AddIncidentsTotal(v)
+	})
+}
+
+// UpdateIncidentsTotal sets the "incidents_total" field to the value that was provided on create.
+func (u *OncallShiftMetricsUpsertBulk) UpdateIncidentsTotal() *OncallShiftMetricsUpsertBulk {
+	return u.Update(func(s *OncallShiftMetricsUpsert) {
+		s.UpdateIncidentsTotal()
+	})
+}
+
+// SetIncidentResponseTime sets the "incident_response_time" field.
+func (u *OncallShiftMetricsUpsertBulk) SetIncidentResponseTime(v float32) *OncallShiftMetricsUpsertBulk {
+	return u.Update(func(s *OncallShiftMetricsUpsert) {
+		s.SetIncidentResponseTime(v)
+	})
+}
+
+// AddIncidentResponseTime adds v to the "incident_response_time" field.
+func (u *OncallShiftMetricsUpsertBulk) AddIncidentResponseTime(v float32) *OncallShiftMetricsUpsertBulk {
+	return u.Update(func(s *OncallShiftMetricsUpsert) {
+		s.AddIncidentResponseTime(v)
+	})
+}
+
+// UpdateIncidentResponseTime sets the "incident_response_time" field to the value that was provided on create.
+func (u *OncallShiftMetricsUpsertBulk) UpdateIncidentResponseTime() *OncallShiftMetricsUpsertBulk {
+	return u.Update(func(s *OncallShiftMetricsUpsert) {
+		s.UpdateIncidentResponseTime()
+	})
+}
+
+// SetInterruptsTotal sets the "interrupts_total" field.
+func (u *OncallShiftMetricsUpsertBulk) SetInterruptsTotal(v float32) *OncallShiftMetricsUpsertBulk {
+	return u.Update(func(s *OncallShiftMetricsUpsert) {
+		s.SetInterruptsTotal(v)
+	})
+}
+
+// AddInterruptsTotal adds v to the "interrupts_total" field.
+func (u *OncallShiftMetricsUpsertBulk) AddInterruptsTotal(v float32) *OncallShiftMetricsUpsertBulk {
+	return u.Update(func(s *OncallShiftMetricsUpsert) {
+		s.AddInterruptsTotal(v)
+	})
+}
+
+// UpdateInterruptsTotal sets the "interrupts_total" field to the value that was provided on create.
+func (u *OncallShiftMetricsUpsertBulk) UpdateInterruptsTotal() *OncallShiftMetricsUpsertBulk {
+	return u.Update(func(s *OncallShiftMetricsUpsert) {
+		s.UpdateInterruptsTotal()
+	})
+}
+
+// SetInterruptsAlerts sets the "interrupts_alerts" field.
+func (u *OncallShiftMetricsUpsertBulk) SetInterruptsAlerts(v float32) *OncallShiftMetricsUpsertBulk {
+	return u.Update(func(s *OncallShiftMetricsUpsert) {
+		s.SetInterruptsAlerts(v)
+	})
+}
+
+// AddInterruptsAlerts adds v to the "interrupts_alerts" field.
+func (u *OncallShiftMetricsUpsertBulk) AddInterruptsAlerts(v float32) *OncallShiftMetricsUpsertBulk {
+	return u.Update(func(s *OncallShiftMetricsUpsert) {
+		s.AddInterruptsAlerts(v)
+	})
+}
+
+// UpdateInterruptsAlerts sets the "interrupts_alerts" field to the value that was provided on create.
+func (u *OncallShiftMetricsUpsertBulk) UpdateInterruptsAlerts() *OncallShiftMetricsUpsertBulk {
+	return u.Update(func(s *OncallShiftMetricsUpsert) {
+		s.UpdateInterruptsAlerts()
+	})
+}
+
+// SetInterruptsNight sets the "interrupts_night" field.
+func (u *OncallShiftMetricsUpsertBulk) SetInterruptsNight(v float32) *OncallShiftMetricsUpsertBulk {
+	return u.Update(func(s *OncallShiftMetricsUpsert) {
+		s.SetInterruptsNight(v)
+	})
+}
+
+// AddInterruptsNight adds v to the "interrupts_night" field.
+func (u *OncallShiftMetricsUpsertBulk) AddInterruptsNight(v float32) *OncallShiftMetricsUpsertBulk {
+	return u.Update(func(s *OncallShiftMetricsUpsert) {
+		s.AddInterruptsNight(v)
+	})
+}
+
+// UpdateInterruptsNight sets the "interrupts_night" field to the value that was provided on create.
+func (u *OncallShiftMetricsUpsertBulk) UpdateInterruptsNight() *OncallShiftMetricsUpsertBulk {
+	return u.Update(func(s *OncallShiftMetricsUpsert) {
+		s.UpdateInterruptsNight()
+	})
+}
+
+// SetInterruptsBusinessHours sets the "interrupts_business_hours" field.
+func (u *OncallShiftMetricsUpsertBulk) SetInterruptsBusinessHours(v float32) *OncallShiftMetricsUpsertBulk {
+	return u.Update(func(s *OncallShiftMetricsUpsert) {
+		s.SetInterruptsBusinessHours(v)
+	})
+}
+
+// AddInterruptsBusinessHours adds v to the "interrupts_business_hours" field.
+func (u *OncallShiftMetricsUpsertBulk) AddInterruptsBusinessHours(v float32) *OncallShiftMetricsUpsertBulk {
+	return u.Update(func(s *OncallShiftMetricsUpsert) {
+		s.AddInterruptsBusinessHours(v)
+	})
+}
+
+// UpdateInterruptsBusinessHours sets the "interrupts_business_hours" field to the value that was provided on create.
+func (u *OncallShiftMetricsUpsertBulk) UpdateInterruptsBusinessHours() *OncallShiftMetricsUpsertBulk {
+	return u.Update(func(s *OncallShiftMetricsUpsert) {
+		s.UpdateInterruptsBusinessHours()
 	})
 }
 

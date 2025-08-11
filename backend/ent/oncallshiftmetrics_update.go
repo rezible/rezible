@@ -6,6 +6,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"time"
 
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
@@ -41,6 +42,272 @@ func (osmu *OncallShiftMetricsUpdate) SetNillableShiftID(u *uuid.UUID) *OncallSh
 	if u != nil {
 		osmu.SetShiftID(*u)
 	}
+	return osmu
+}
+
+// SetUpdatedAt sets the "updated_at" field.
+func (osmu *OncallShiftMetricsUpdate) SetUpdatedAt(t time.Time) *OncallShiftMetricsUpdate {
+	osmu.mutation.SetUpdatedAt(t)
+	return osmu
+}
+
+// SetNillableUpdatedAt sets the "updated_at" field if the given value is not nil.
+func (osmu *OncallShiftMetricsUpdate) SetNillableUpdatedAt(t *time.Time) *OncallShiftMetricsUpdate {
+	if t != nil {
+		osmu.SetUpdatedAt(*t)
+	}
+	return osmu
+}
+
+// SetBurdenScore sets the "burden_score" field.
+func (osmu *OncallShiftMetricsUpdate) SetBurdenScore(f float32) *OncallShiftMetricsUpdate {
+	osmu.mutation.ResetBurdenScore()
+	osmu.mutation.SetBurdenScore(f)
+	return osmu
+}
+
+// SetNillableBurdenScore sets the "burden_score" field if the given value is not nil.
+func (osmu *OncallShiftMetricsUpdate) SetNillableBurdenScore(f *float32) *OncallShiftMetricsUpdate {
+	if f != nil {
+		osmu.SetBurdenScore(*f)
+	}
+	return osmu
+}
+
+// AddBurdenScore adds f to the "burden_score" field.
+func (osmu *OncallShiftMetricsUpdate) AddBurdenScore(f float32) *OncallShiftMetricsUpdate {
+	osmu.mutation.AddBurdenScore(f)
+	return osmu
+}
+
+// SetEventFrequency sets the "event_frequency" field.
+func (osmu *OncallShiftMetricsUpdate) SetEventFrequency(f float32) *OncallShiftMetricsUpdate {
+	osmu.mutation.ResetEventFrequency()
+	osmu.mutation.SetEventFrequency(f)
+	return osmu
+}
+
+// SetNillableEventFrequency sets the "event_frequency" field if the given value is not nil.
+func (osmu *OncallShiftMetricsUpdate) SetNillableEventFrequency(f *float32) *OncallShiftMetricsUpdate {
+	if f != nil {
+		osmu.SetEventFrequency(*f)
+	}
+	return osmu
+}
+
+// AddEventFrequency adds f to the "event_frequency" field.
+func (osmu *OncallShiftMetricsUpdate) AddEventFrequency(f float32) *OncallShiftMetricsUpdate {
+	osmu.mutation.AddEventFrequency(f)
+	return osmu
+}
+
+// SetLifeImpact sets the "life_impact" field.
+func (osmu *OncallShiftMetricsUpdate) SetLifeImpact(f float32) *OncallShiftMetricsUpdate {
+	osmu.mutation.ResetLifeImpact()
+	osmu.mutation.SetLifeImpact(f)
+	return osmu
+}
+
+// SetNillableLifeImpact sets the "life_impact" field if the given value is not nil.
+func (osmu *OncallShiftMetricsUpdate) SetNillableLifeImpact(f *float32) *OncallShiftMetricsUpdate {
+	if f != nil {
+		osmu.SetLifeImpact(*f)
+	}
+	return osmu
+}
+
+// AddLifeImpact adds f to the "life_impact" field.
+func (osmu *OncallShiftMetricsUpdate) AddLifeImpact(f float32) *OncallShiftMetricsUpdate {
+	osmu.mutation.AddLifeImpact(f)
+	return osmu
+}
+
+// SetTimeImpact sets the "time_impact" field.
+func (osmu *OncallShiftMetricsUpdate) SetTimeImpact(f float32) *OncallShiftMetricsUpdate {
+	osmu.mutation.ResetTimeImpact()
+	osmu.mutation.SetTimeImpact(f)
+	return osmu
+}
+
+// SetNillableTimeImpact sets the "time_impact" field if the given value is not nil.
+func (osmu *OncallShiftMetricsUpdate) SetNillableTimeImpact(f *float32) *OncallShiftMetricsUpdate {
+	if f != nil {
+		osmu.SetTimeImpact(*f)
+	}
+	return osmu
+}
+
+// AddTimeImpact adds f to the "time_impact" field.
+func (osmu *OncallShiftMetricsUpdate) AddTimeImpact(f float32) *OncallShiftMetricsUpdate {
+	osmu.mutation.AddTimeImpact(f)
+	return osmu
+}
+
+// SetResponseRequirements sets the "response_requirements" field.
+func (osmu *OncallShiftMetricsUpdate) SetResponseRequirements(f float32) *OncallShiftMetricsUpdate {
+	osmu.mutation.ResetResponseRequirements()
+	osmu.mutation.SetResponseRequirements(f)
+	return osmu
+}
+
+// SetNillableResponseRequirements sets the "response_requirements" field if the given value is not nil.
+func (osmu *OncallShiftMetricsUpdate) SetNillableResponseRequirements(f *float32) *OncallShiftMetricsUpdate {
+	if f != nil {
+		osmu.SetResponseRequirements(*f)
+	}
+	return osmu
+}
+
+// AddResponseRequirements adds f to the "response_requirements" field.
+func (osmu *OncallShiftMetricsUpdate) AddResponseRequirements(f float32) *OncallShiftMetricsUpdate {
+	osmu.mutation.AddResponseRequirements(f)
+	return osmu
+}
+
+// SetIsolation sets the "isolation" field.
+func (osmu *OncallShiftMetricsUpdate) SetIsolation(f float32) *OncallShiftMetricsUpdate {
+	osmu.mutation.ResetIsolation()
+	osmu.mutation.SetIsolation(f)
+	return osmu
+}
+
+// SetNillableIsolation sets the "isolation" field if the given value is not nil.
+func (osmu *OncallShiftMetricsUpdate) SetNillableIsolation(f *float32) *OncallShiftMetricsUpdate {
+	if f != nil {
+		osmu.SetIsolation(*f)
+	}
+	return osmu
+}
+
+// AddIsolation adds f to the "isolation" field.
+func (osmu *OncallShiftMetricsUpdate) AddIsolation(f float32) *OncallShiftMetricsUpdate {
+	osmu.mutation.AddIsolation(f)
+	return osmu
+}
+
+// SetIncidentsTotal sets the "incidents_total" field.
+func (osmu *OncallShiftMetricsUpdate) SetIncidentsTotal(f float32) *OncallShiftMetricsUpdate {
+	osmu.mutation.ResetIncidentsTotal()
+	osmu.mutation.SetIncidentsTotal(f)
+	return osmu
+}
+
+// SetNillableIncidentsTotal sets the "incidents_total" field if the given value is not nil.
+func (osmu *OncallShiftMetricsUpdate) SetNillableIncidentsTotal(f *float32) *OncallShiftMetricsUpdate {
+	if f != nil {
+		osmu.SetIncidentsTotal(*f)
+	}
+	return osmu
+}
+
+// AddIncidentsTotal adds f to the "incidents_total" field.
+func (osmu *OncallShiftMetricsUpdate) AddIncidentsTotal(f float32) *OncallShiftMetricsUpdate {
+	osmu.mutation.AddIncidentsTotal(f)
+	return osmu
+}
+
+// SetIncidentResponseTime sets the "incident_response_time" field.
+func (osmu *OncallShiftMetricsUpdate) SetIncidentResponseTime(f float32) *OncallShiftMetricsUpdate {
+	osmu.mutation.ResetIncidentResponseTime()
+	osmu.mutation.SetIncidentResponseTime(f)
+	return osmu
+}
+
+// SetNillableIncidentResponseTime sets the "incident_response_time" field if the given value is not nil.
+func (osmu *OncallShiftMetricsUpdate) SetNillableIncidentResponseTime(f *float32) *OncallShiftMetricsUpdate {
+	if f != nil {
+		osmu.SetIncidentResponseTime(*f)
+	}
+	return osmu
+}
+
+// AddIncidentResponseTime adds f to the "incident_response_time" field.
+func (osmu *OncallShiftMetricsUpdate) AddIncidentResponseTime(f float32) *OncallShiftMetricsUpdate {
+	osmu.mutation.AddIncidentResponseTime(f)
+	return osmu
+}
+
+// SetInterruptsTotal sets the "interrupts_total" field.
+func (osmu *OncallShiftMetricsUpdate) SetInterruptsTotal(f float32) *OncallShiftMetricsUpdate {
+	osmu.mutation.ResetInterruptsTotal()
+	osmu.mutation.SetInterruptsTotal(f)
+	return osmu
+}
+
+// SetNillableInterruptsTotal sets the "interrupts_total" field if the given value is not nil.
+func (osmu *OncallShiftMetricsUpdate) SetNillableInterruptsTotal(f *float32) *OncallShiftMetricsUpdate {
+	if f != nil {
+		osmu.SetInterruptsTotal(*f)
+	}
+	return osmu
+}
+
+// AddInterruptsTotal adds f to the "interrupts_total" field.
+func (osmu *OncallShiftMetricsUpdate) AddInterruptsTotal(f float32) *OncallShiftMetricsUpdate {
+	osmu.mutation.AddInterruptsTotal(f)
+	return osmu
+}
+
+// SetInterruptsAlerts sets the "interrupts_alerts" field.
+func (osmu *OncallShiftMetricsUpdate) SetInterruptsAlerts(f float32) *OncallShiftMetricsUpdate {
+	osmu.mutation.ResetInterruptsAlerts()
+	osmu.mutation.SetInterruptsAlerts(f)
+	return osmu
+}
+
+// SetNillableInterruptsAlerts sets the "interrupts_alerts" field if the given value is not nil.
+func (osmu *OncallShiftMetricsUpdate) SetNillableInterruptsAlerts(f *float32) *OncallShiftMetricsUpdate {
+	if f != nil {
+		osmu.SetInterruptsAlerts(*f)
+	}
+	return osmu
+}
+
+// AddInterruptsAlerts adds f to the "interrupts_alerts" field.
+func (osmu *OncallShiftMetricsUpdate) AddInterruptsAlerts(f float32) *OncallShiftMetricsUpdate {
+	osmu.mutation.AddInterruptsAlerts(f)
+	return osmu
+}
+
+// SetInterruptsNight sets the "interrupts_night" field.
+func (osmu *OncallShiftMetricsUpdate) SetInterruptsNight(f float32) *OncallShiftMetricsUpdate {
+	osmu.mutation.ResetInterruptsNight()
+	osmu.mutation.SetInterruptsNight(f)
+	return osmu
+}
+
+// SetNillableInterruptsNight sets the "interrupts_night" field if the given value is not nil.
+func (osmu *OncallShiftMetricsUpdate) SetNillableInterruptsNight(f *float32) *OncallShiftMetricsUpdate {
+	if f != nil {
+		osmu.SetInterruptsNight(*f)
+	}
+	return osmu
+}
+
+// AddInterruptsNight adds f to the "interrupts_night" field.
+func (osmu *OncallShiftMetricsUpdate) AddInterruptsNight(f float32) *OncallShiftMetricsUpdate {
+	osmu.mutation.AddInterruptsNight(f)
+	return osmu
+}
+
+// SetInterruptsBusinessHours sets the "interrupts_business_hours" field.
+func (osmu *OncallShiftMetricsUpdate) SetInterruptsBusinessHours(f float32) *OncallShiftMetricsUpdate {
+	osmu.mutation.ResetInterruptsBusinessHours()
+	osmu.mutation.SetInterruptsBusinessHours(f)
+	return osmu
+}
+
+// SetNillableInterruptsBusinessHours sets the "interrupts_business_hours" field if the given value is not nil.
+func (osmu *OncallShiftMetricsUpdate) SetNillableInterruptsBusinessHours(f *float32) *OncallShiftMetricsUpdate {
+	if f != nil {
+		osmu.SetInterruptsBusinessHours(*f)
+	}
+	return osmu
+}
+
+// AddInterruptsBusinessHours adds f to the "interrupts_business_hours" field.
+func (osmu *OncallShiftMetricsUpdate) AddInterruptsBusinessHours(f float32) *OncallShiftMetricsUpdate {
+	osmu.mutation.AddInterruptsBusinessHours(f)
 	return osmu
 }
 
@@ -116,6 +383,81 @@ func (osmu *OncallShiftMetricsUpdate) sqlSave(ctx context.Context) (n int, err e
 			}
 		}
 	}
+	if value, ok := osmu.mutation.UpdatedAt(); ok {
+		_spec.SetField(oncallshiftmetrics.FieldUpdatedAt, field.TypeTime, value)
+	}
+	if value, ok := osmu.mutation.BurdenScore(); ok {
+		_spec.SetField(oncallshiftmetrics.FieldBurdenScore, field.TypeFloat32, value)
+	}
+	if value, ok := osmu.mutation.AddedBurdenScore(); ok {
+		_spec.AddField(oncallshiftmetrics.FieldBurdenScore, field.TypeFloat32, value)
+	}
+	if value, ok := osmu.mutation.EventFrequency(); ok {
+		_spec.SetField(oncallshiftmetrics.FieldEventFrequency, field.TypeFloat32, value)
+	}
+	if value, ok := osmu.mutation.AddedEventFrequency(); ok {
+		_spec.AddField(oncallshiftmetrics.FieldEventFrequency, field.TypeFloat32, value)
+	}
+	if value, ok := osmu.mutation.LifeImpact(); ok {
+		_spec.SetField(oncallshiftmetrics.FieldLifeImpact, field.TypeFloat32, value)
+	}
+	if value, ok := osmu.mutation.AddedLifeImpact(); ok {
+		_spec.AddField(oncallshiftmetrics.FieldLifeImpact, field.TypeFloat32, value)
+	}
+	if value, ok := osmu.mutation.TimeImpact(); ok {
+		_spec.SetField(oncallshiftmetrics.FieldTimeImpact, field.TypeFloat32, value)
+	}
+	if value, ok := osmu.mutation.AddedTimeImpact(); ok {
+		_spec.AddField(oncallshiftmetrics.FieldTimeImpact, field.TypeFloat32, value)
+	}
+	if value, ok := osmu.mutation.ResponseRequirements(); ok {
+		_spec.SetField(oncallshiftmetrics.FieldResponseRequirements, field.TypeFloat32, value)
+	}
+	if value, ok := osmu.mutation.AddedResponseRequirements(); ok {
+		_spec.AddField(oncallshiftmetrics.FieldResponseRequirements, field.TypeFloat32, value)
+	}
+	if value, ok := osmu.mutation.Isolation(); ok {
+		_spec.SetField(oncallshiftmetrics.FieldIsolation, field.TypeFloat32, value)
+	}
+	if value, ok := osmu.mutation.AddedIsolation(); ok {
+		_spec.AddField(oncallshiftmetrics.FieldIsolation, field.TypeFloat32, value)
+	}
+	if value, ok := osmu.mutation.IncidentsTotal(); ok {
+		_spec.SetField(oncallshiftmetrics.FieldIncidentsTotal, field.TypeFloat32, value)
+	}
+	if value, ok := osmu.mutation.AddedIncidentsTotal(); ok {
+		_spec.AddField(oncallshiftmetrics.FieldIncidentsTotal, field.TypeFloat32, value)
+	}
+	if value, ok := osmu.mutation.IncidentResponseTime(); ok {
+		_spec.SetField(oncallshiftmetrics.FieldIncidentResponseTime, field.TypeFloat32, value)
+	}
+	if value, ok := osmu.mutation.AddedIncidentResponseTime(); ok {
+		_spec.AddField(oncallshiftmetrics.FieldIncidentResponseTime, field.TypeFloat32, value)
+	}
+	if value, ok := osmu.mutation.InterruptsTotal(); ok {
+		_spec.SetField(oncallshiftmetrics.FieldInterruptsTotal, field.TypeFloat32, value)
+	}
+	if value, ok := osmu.mutation.AddedInterruptsTotal(); ok {
+		_spec.AddField(oncallshiftmetrics.FieldInterruptsTotal, field.TypeFloat32, value)
+	}
+	if value, ok := osmu.mutation.InterruptsAlerts(); ok {
+		_spec.SetField(oncallshiftmetrics.FieldInterruptsAlerts, field.TypeFloat32, value)
+	}
+	if value, ok := osmu.mutation.AddedInterruptsAlerts(); ok {
+		_spec.AddField(oncallshiftmetrics.FieldInterruptsAlerts, field.TypeFloat32, value)
+	}
+	if value, ok := osmu.mutation.InterruptsNight(); ok {
+		_spec.SetField(oncallshiftmetrics.FieldInterruptsNight, field.TypeFloat32, value)
+	}
+	if value, ok := osmu.mutation.AddedInterruptsNight(); ok {
+		_spec.AddField(oncallshiftmetrics.FieldInterruptsNight, field.TypeFloat32, value)
+	}
+	if value, ok := osmu.mutation.InterruptsBusinessHours(); ok {
+		_spec.SetField(oncallshiftmetrics.FieldInterruptsBusinessHours, field.TypeFloat32, value)
+	}
+	if value, ok := osmu.mutation.AddedInterruptsBusinessHours(); ok {
+		_spec.AddField(oncallshiftmetrics.FieldInterruptsBusinessHours, field.TypeFloat32, value)
+	}
 	if osmu.mutation.ShiftCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2O,
@@ -178,6 +520,272 @@ func (osmuo *OncallShiftMetricsUpdateOne) SetNillableShiftID(u *uuid.UUID) *Onca
 	if u != nil {
 		osmuo.SetShiftID(*u)
 	}
+	return osmuo
+}
+
+// SetUpdatedAt sets the "updated_at" field.
+func (osmuo *OncallShiftMetricsUpdateOne) SetUpdatedAt(t time.Time) *OncallShiftMetricsUpdateOne {
+	osmuo.mutation.SetUpdatedAt(t)
+	return osmuo
+}
+
+// SetNillableUpdatedAt sets the "updated_at" field if the given value is not nil.
+func (osmuo *OncallShiftMetricsUpdateOne) SetNillableUpdatedAt(t *time.Time) *OncallShiftMetricsUpdateOne {
+	if t != nil {
+		osmuo.SetUpdatedAt(*t)
+	}
+	return osmuo
+}
+
+// SetBurdenScore sets the "burden_score" field.
+func (osmuo *OncallShiftMetricsUpdateOne) SetBurdenScore(f float32) *OncallShiftMetricsUpdateOne {
+	osmuo.mutation.ResetBurdenScore()
+	osmuo.mutation.SetBurdenScore(f)
+	return osmuo
+}
+
+// SetNillableBurdenScore sets the "burden_score" field if the given value is not nil.
+func (osmuo *OncallShiftMetricsUpdateOne) SetNillableBurdenScore(f *float32) *OncallShiftMetricsUpdateOne {
+	if f != nil {
+		osmuo.SetBurdenScore(*f)
+	}
+	return osmuo
+}
+
+// AddBurdenScore adds f to the "burden_score" field.
+func (osmuo *OncallShiftMetricsUpdateOne) AddBurdenScore(f float32) *OncallShiftMetricsUpdateOne {
+	osmuo.mutation.AddBurdenScore(f)
+	return osmuo
+}
+
+// SetEventFrequency sets the "event_frequency" field.
+func (osmuo *OncallShiftMetricsUpdateOne) SetEventFrequency(f float32) *OncallShiftMetricsUpdateOne {
+	osmuo.mutation.ResetEventFrequency()
+	osmuo.mutation.SetEventFrequency(f)
+	return osmuo
+}
+
+// SetNillableEventFrequency sets the "event_frequency" field if the given value is not nil.
+func (osmuo *OncallShiftMetricsUpdateOne) SetNillableEventFrequency(f *float32) *OncallShiftMetricsUpdateOne {
+	if f != nil {
+		osmuo.SetEventFrequency(*f)
+	}
+	return osmuo
+}
+
+// AddEventFrequency adds f to the "event_frequency" field.
+func (osmuo *OncallShiftMetricsUpdateOne) AddEventFrequency(f float32) *OncallShiftMetricsUpdateOne {
+	osmuo.mutation.AddEventFrequency(f)
+	return osmuo
+}
+
+// SetLifeImpact sets the "life_impact" field.
+func (osmuo *OncallShiftMetricsUpdateOne) SetLifeImpact(f float32) *OncallShiftMetricsUpdateOne {
+	osmuo.mutation.ResetLifeImpact()
+	osmuo.mutation.SetLifeImpact(f)
+	return osmuo
+}
+
+// SetNillableLifeImpact sets the "life_impact" field if the given value is not nil.
+func (osmuo *OncallShiftMetricsUpdateOne) SetNillableLifeImpact(f *float32) *OncallShiftMetricsUpdateOne {
+	if f != nil {
+		osmuo.SetLifeImpact(*f)
+	}
+	return osmuo
+}
+
+// AddLifeImpact adds f to the "life_impact" field.
+func (osmuo *OncallShiftMetricsUpdateOne) AddLifeImpact(f float32) *OncallShiftMetricsUpdateOne {
+	osmuo.mutation.AddLifeImpact(f)
+	return osmuo
+}
+
+// SetTimeImpact sets the "time_impact" field.
+func (osmuo *OncallShiftMetricsUpdateOne) SetTimeImpact(f float32) *OncallShiftMetricsUpdateOne {
+	osmuo.mutation.ResetTimeImpact()
+	osmuo.mutation.SetTimeImpact(f)
+	return osmuo
+}
+
+// SetNillableTimeImpact sets the "time_impact" field if the given value is not nil.
+func (osmuo *OncallShiftMetricsUpdateOne) SetNillableTimeImpact(f *float32) *OncallShiftMetricsUpdateOne {
+	if f != nil {
+		osmuo.SetTimeImpact(*f)
+	}
+	return osmuo
+}
+
+// AddTimeImpact adds f to the "time_impact" field.
+func (osmuo *OncallShiftMetricsUpdateOne) AddTimeImpact(f float32) *OncallShiftMetricsUpdateOne {
+	osmuo.mutation.AddTimeImpact(f)
+	return osmuo
+}
+
+// SetResponseRequirements sets the "response_requirements" field.
+func (osmuo *OncallShiftMetricsUpdateOne) SetResponseRequirements(f float32) *OncallShiftMetricsUpdateOne {
+	osmuo.mutation.ResetResponseRequirements()
+	osmuo.mutation.SetResponseRequirements(f)
+	return osmuo
+}
+
+// SetNillableResponseRequirements sets the "response_requirements" field if the given value is not nil.
+func (osmuo *OncallShiftMetricsUpdateOne) SetNillableResponseRequirements(f *float32) *OncallShiftMetricsUpdateOne {
+	if f != nil {
+		osmuo.SetResponseRequirements(*f)
+	}
+	return osmuo
+}
+
+// AddResponseRequirements adds f to the "response_requirements" field.
+func (osmuo *OncallShiftMetricsUpdateOne) AddResponseRequirements(f float32) *OncallShiftMetricsUpdateOne {
+	osmuo.mutation.AddResponseRequirements(f)
+	return osmuo
+}
+
+// SetIsolation sets the "isolation" field.
+func (osmuo *OncallShiftMetricsUpdateOne) SetIsolation(f float32) *OncallShiftMetricsUpdateOne {
+	osmuo.mutation.ResetIsolation()
+	osmuo.mutation.SetIsolation(f)
+	return osmuo
+}
+
+// SetNillableIsolation sets the "isolation" field if the given value is not nil.
+func (osmuo *OncallShiftMetricsUpdateOne) SetNillableIsolation(f *float32) *OncallShiftMetricsUpdateOne {
+	if f != nil {
+		osmuo.SetIsolation(*f)
+	}
+	return osmuo
+}
+
+// AddIsolation adds f to the "isolation" field.
+func (osmuo *OncallShiftMetricsUpdateOne) AddIsolation(f float32) *OncallShiftMetricsUpdateOne {
+	osmuo.mutation.AddIsolation(f)
+	return osmuo
+}
+
+// SetIncidentsTotal sets the "incidents_total" field.
+func (osmuo *OncallShiftMetricsUpdateOne) SetIncidentsTotal(f float32) *OncallShiftMetricsUpdateOne {
+	osmuo.mutation.ResetIncidentsTotal()
+	osmuo.mutation.SetIncidentsTotal(f)
+	return osmuo
+}
+
+// SetNillableIncidentsTotal sets the "incidents_total" field if the given value is not nil.
+func (osmuo *OncallShiftMetricsUpdateOne) SetNillableIncidentsTotal(f *float32) *OncallShiftMetricsUpdateOne {
+	if f != nil {
+		osmuo.SetIncidentsTotal(*f)
+	}
+	return osmuo
+}
+
+// AddIncidentsTotal adds f to the "incidents_total" field.
+func (osmuo *OncallShiftMetricsUpdateOne) AddIncidentsTotal(f float32) *OncallShiftMetricsUpdateOne {
+	osmuo.mutation.AddIncidentsTotal(f)
+	return osmuo
+}
+
+// SetIncidentResponseTime sets the "incident_response_time" field.
+func (osmuo *OncallShiftMetricsUpdateOne) SetIncidentResponseTime(f float32) *OncallShiftMetricsUpdateOne {
+	osmuo.mutation.ResetIncidentResponseTime()
+	osmuo.mutation.SetIncidentResponseTime(f)
+	return osmuo
+}
+
+// SetNillableIncidentResponseTime sets the "incident_response_time" field if the given value is not nil.
+func (osmuo *OncallShiftMetricsUpdateOne) SetNillableIncidentResponseTime(f *float32) *OncallShiftMetricsUpdateOne {
+	if f != nil {
+		osmuo.SetIncidentResponseTime(*f)
+	}
+	return osmuo
+}
+
+// AddIncidentResponseTime adds f to the "incident_response_time" field.
+func (osmuo *OncallShiftMetricsUpdateOne) AddIncidentResponseTime(f float32) *OncallShiftMetricsUpdateOne {
+	osmuo.mutation.AddIncidentResponseTime(f)
+	return osmuo
+}
+
+// SetInterruptsTotal sets the "interrupts_total" field.
+func (osmuo *OncallShiftMetricsUpdateOne) SetInterruptsTotal(f float32) *OncallShiftMetricsUpdateOne {
+	osmuo.mutation.ResetInterruptsTotal()
+	osmuo.mutation.SetInterruptsTotal(f)
+	return osmuo
+}
+
+// SetNillableInterruptsTotal sets the "interrupts_total" field if the given value is not nil.
+func (osmuo *OncallShiftMetricsUpdateOne) SetNillableInterruptsTotal(f *float32) *OncallShiftMetricsUpdateOne {
+	if f != nil {
+		osmuo.SetInterruptsTotal(*f)
+	}
+	return osmuo
+}
+
+// AddInterruptsTotal adds f to the "interrupts_total" field.
+func (osmuo *OncallShiftMetricsUpdateOne) AddInterruptsTotal(f float32) *OncallShiftMetricsUpdateOne {
+	osmuo.mutation.AddInterruptsTotal(f)
+	return osmuo
+}
+
+// SetInterruptsAlerts sets the "interrupts_alerts" field.
+func (osmuo *OncallShiftMetricsUpdateOne) SetInterruptsAlerts(f float32) *OncallShiftMetricsUpdateOne {
+	osmuo.mutation.ResetInterruptsAlerts()
+	osmuo.mutation.SetInterruptsAlerts(f)
+	return osmuo
+}
+
+// SetNillableInterruptsAlerts sets the "interrupts_alerts" field if the given value is not nil.
+func (osmuo *OncallShiftMetricsUpdateOne) SetNillableInterruptsAlerts(f *float32) *OncallShiftMetricsUpdateOne {
+	if f != nil {
+		osmuo.SetInterruptsAlerts(*f)
+	}
+	return osmuo
+}
+
+// AddInterruptsAlerts adds f to the "interrupts_alerts" field.
+func (osmuo *OncallShiftMetricsUpdateOne) AddInterruptsAlerts(f float32) *OncallShiftMetricsUpdateOne {
+	osmuo.mutation.AddInterruptsAlerts(f)
+	return osmuo
+}
+
+// SetInterruptsNight sets the "interrupts_night" field.
+func (osmuo *OncallShiftMetricsUpdateOne) SetInterruptsNight(f float32) *OncallShiftMetricsUpdateOne {
+	osmuo.mutation.ResetInterruptsNight()
+	osmuo.mutation.SetInterruptsNight(f)
+	return osmuo
+}
+
+// SetNillableInterruptsNight sets the "interrupts_night" field if the given value is not nil.
+func (osmuo *OncallShiftMetricsUpdateOne) SetNillableInterruptsNight(f *float32) *OncallShiftMetricsUpdateOne {
+	if f != nil {
+		osmuo.SetInterruptsNight(*f)
+	}
+	return osmuo
+}
+
+// AddInterruptsNight adds f to the "interrupts_night" field.
+func (osmuo *OncallShiftMetricsUpdateOne) AddInterruptsNight(f float32) *OncallShiftMetricsUpdateOne {
+	osmuo.mutation.AddInterruptsNight(f)
+	return osmuo
+}
+
+// SetInterruptsBusinessHours sets the "interrupts_business_hours" field.
+func (osmuo *OncallShiftMetricsUpdateOne) SetInterruptsBusinessHours(f float32) *OncallShiftMetricsUpdateOne {
+	osmuo.mutation.ResetInterruptsBusinessHours()
+	osmuo.mutation.SetInterruptsBusinessHours(f)
+	return osmuo
+}
+
+// SetNillableInterruptsBusinessHours sets the "interrupts_business_hours" field if the given value is not nil.
+func (osmuo *OncallShiftMetricsUpdateOne) SetNillableInterruptsBusinessHours(f *float32) *OncallShiftMetricsUpdateOne {
+	if f != nil {
+		osmuo.SetInterruptsBusinessHours(*f)
+	}
+	return osmuo
+}
+
+// AddInterruptsBusinessHours adds f to the "interrupts_business_hours" field.
+func (osmuo *OncallShiftMetricsUpdateOne) AddInterruptsBusinessHours(f float32) *OncallShiftMetricsUpdateOne {
+	osmuo.mutation.AddInterruptsBusinessHours(f)
 	return osmuo
 }
 
@@ -282,6 +890,81 @@ func (osmuo *OncallShiftMetricsUpdateOne) sqlSave(ctx context.Context) (_node *O
 				ps[i](selector)
 			}
 		}
+	}
+	if value, ok := osmuo.mutation.UpdatedAt(); ok {
+		_spec.SetField(oncallshiftmetrics.FieldUpdatedAt, field.TypeTime, value)
+	}
+	if value, ok := osmuo.mutation.BurdenScore(); ok {
+		_spec.SetField(oncallshiftmetrics.FieldBurdenScore, field.TypeFloat32, value)
+	}
+	if value, ok := osmuo.mutation.AddedBurdenScore(); ok {
+		_spec.AddField(oncallshiftmetrics.FieldBurdenScore, field.TypeFloat32, value)
+	}
+	if value, ok := osmuo.mutation.EventFrequency(); ok {
+		_spec.SetField(oncallshiftmetrics.FieldEventFrequency, field.TypeFloat32, value)
+	}
+	if value, ok := osmuo.mutation.AddedEventFrequency(); ok {
+		_spec.AddField(oncallshiftmetrics.FieldEventFrequency, field.TypeFloat32, value)
+	}
+	if value, ok := osmuo.mutation.LifeImpact(); ok {
+		_spec.SetField(oncallshiftmetrics.FieldLifeImpact, field.TypeFloat32, value)
+	}
+	if value, ok := osmuo.mutation.AddedLifeImpact(); ok {
+		_spec.AddField(oncallshiftmetrics.FieldLifeImpact, field.TypeFloat32, value)
+	}
+	if value, ok := osmuo.mutation.TimeImpact(); ok {
+		_spec.SetField(oncallshiftmetrics.FieldTimeImpact, field.TypeFloat32, value)
+	}
+	if value, ok := osmuo.mutation.AddedTimeImpact(); ok {
+		_spec.AddField(oncallshiftmetrics.FieldTimeImpact, field.TypeFloat32, value)
+	}
+	if value, ok := osmuo.mutation.ResponseRequirements(); ok {
+		_spec.SetField(oncallshiftmetrics.FieldResponseRequirements, field.TypeFloat32, value)
+	}
+	if value, ok := osmuo.mutation.AddedResponseRequirements(); ok {
+		_spec.AddField(oncallshiftmetrics.FieldResponseRequirements, field.TypeFloat32, value)
+	}
+	if value, ok := osmuo.mutation.Isolation(); ok {
+		_spec.SetField(oncallshiftmetrics.FieldIsolation, field.TypeFloat32, value)
+	}
+	if value, ok := osmuo.mutation.AddedIsolation(); ok {
+		_spec.AddField(oncallshiftmetrics.FieldIsolation, field.TypeFloat32, value)
+	}
+	if value, ok := osmuo.mutation.IncidentsTotal(); ok {
+		_spec.SetField(oncallshiftmetrics.FieldIncidentsTotal, field.TypeFloat32, value)
+	}
+	if value, ok := osmuo.mutation.AddedIncidentsTotal(); ok {
+		_spec.AddField(oncallshiftmetrics.FieldIncidentsTotal, field.TypeFloat32, value)
+	}
+	if value, ok := osmuo.mutation.IncidentResponseTime(); ok {
+		_spec.SetField(oncallshiftmetrics.FieldIncidentResponseTime, field.TypeFloat32, value)
+	}
+	if value, ok := osmuo.mutation.AddedIncidentResponseTime(); ok {
+		_spec.AddField(oncallshiftmetrics.FieldIncidentResponseTime, field.TypeFloat32, value)
+	}
+	if value, ok := osmuo.mutation.InterruptsTotal(); ok {
+		_spec.SetField(oncallshiftmetrics.FieldInterruptsTotal, field.TypeFloat32, value)
+	}
+	if value, ok := osmuo.mutation.AddedInterruptsTotal(); ok {
+		_spec.AddField(oncallshiftmetrics.FieldInterruptsTotal, field.TypeFloat32, value)
+	}
+	if value, ok := osmuo.mutation.InterruptsAlerts(); ok {
+		_spec.SetField(oncallshiftmetrics.FieldInterruptsAlerts, field.TypeFloat32, value)
+	}
+	if value, ok := osmuo.mutation.AddedInterruptsAlerts(); ok {
+		_spec.AddField(oncallshiftmetrics.FieldInterruptsAlerts, field.TypeFloat32, value)
+	}
+	if value, ok := osmuo.mutation.InterruptsNight(); ok {
+		_spec.SetField(oncallshiftmetrics.FieldInterruptsNight, field.TypeFloat32, value)
+	}
+	if value, ok := osmuo.mutation.AddedInterruptsNight(); ok {
+		_spec.AddField(oncallshiftmetrics.FieldInterruptsNight, field.TypeFloat32, value)
+	}
+	if value, ok := osmuo.mutation.InterruptsBusinessHours(); ok {
+		_spec.SetField(oncallshiftmetrics.FieldInterruptsBusinessHours, field.TypeFloat32, value)
+	}
+	if value, ok := osmuo.mutation.AddedInterruptsBusinessHours(); ok {
+		_spec.AddField(oncallshiftmetrics.FieldInterruptsBusinessHours, field.TypeFloat32, value)
 	}
 	if osmuo.mutation.ShiftCleared() {
 		edge := &sqlgraph.EdgeSpec{

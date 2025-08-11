@@ -177,11 +177,7 @@ func (s *rezServer) registerJobs(
 ) error {
 	river.RegisterPeriodicJob(sync.MakeSyncProviderDataPeriodicJob(), sync.SyncProviderData)
 
-	scanShiftsJob, scanJobErr := oncall.MakeScanShiftsPeriodicJob(ctx)
-	if scanJobErr != nil || scanShiftsJob == nil {
-		return fmt.Errorf("oncall.MakeScanShiftsPeriodicJob: %w", scanJobErr)
-	}
-	river.RegisterPeriodicJob(*scanShiftsJob, oncall.HandlePeriodicScanShifts)
+	river.RegisterPeriodicJob(oncall.MakeScanShiftsPeriodicJob(), oncall.HandlePeriodicScanShifts)
 	river.RegisterWorkerFunc(oncall.HandleEnsureShiftHandoverReminderSent)
 	river.RegisterWorkerFunc(oncall.HandleEnsureShiftHandoverSent)
 	river.RegisterWorkerFunc(oncall.HandleGenerateShiftMetrics)
