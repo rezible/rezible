@@ -42,10 +42,12 @@ type OncallShiftMetrics struct {
 	IncidentsTotal float32 `json:"incidents_total,omitempty"`
 	// IncidentResponseTime holds the value of the "incident_response_time" field.
 	IncidentResponseTime float32 `json:"incident_response_time,omitempty"`
+	// EventsTotal holds the value of the "events_total" field.
+	EventsTotal float32 `json:"events_total,omitempty"`
+	// AlertsTotal holds the value of the "alerts_total" field.
+	AlertsTotal float32 `json:"alerts_total,omitempty"`
 	// InterruptsTotal holds the value of the "interrupts_total" field.
 	InterruptsTotal float32 `json:"interrupts_total,omitempty"`
-	// InterruptsAlerts holds the value of the "interrupts_alerts" field.
-	InterruptsAlerts float32 `json:"interrupts_alerts,omitempty"`
 	// InterruptsNight holds the value of the "interrupts_night" field.
 	InterruptsNight float32 `json:"interrupts_night,omitempty"`
 	// InterruptsBusinessHours holds the value of the "interrupts_business_hours" field.
@@ -94,7 +96,7 @@ func (*OncallShiftMetrics) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case oncallshiftmetrics.FieldBurdenScore, oncallshiftmetrics.FieldEventFrequency, oncallshiftmetrics.FieldLifeImpact, oncallshiftmetrics.FieldTimeImpact, oncallshiftmetrics.FieldResponseRequirements, oncallshiftmetrics.FieldIsolation, oncallshiftmetrics.FieldIncidentsTotal, oncallshiftmetrics.FieldIncidentResponseTime, oncallshiftmetrics.FieldInterruptsTotal, oncallshiftmetrics.FieldInterruptsAlerts, oncallshiftmetrics.FieldInterruptsNight, oncallshiftmetrics.FieldInterruptsBusinessHours:
+		case oncallshiftmetrics.FieldBurdenScore, oncallshiftmetrics.FieldEventFrequency, oncallshiftmetrics.FieldLifeImpact, oncallshiftmetrics.FieldTimeImpact, oncallshiftmetrics.FieldResponseRequirements, oncallshiftmetrics.FieldIsolation, oncallshiftmetrics.FieldIncidentsTotal, oncallshiftmetrics.FieldIncidentResponseTime, oncallshiftmetrics.FieldEventsTotal, oncallshiftmetrics.FieldAlertsTotal, oncallshiftmetrics.FieldInterruptsTotal, oncallshiftmetrics.FieldInterruptsNight, oncallshiftmetrics.FieldInterruptsBusinessHours:
 			values[i] = new(sql.NullFloat64)
 		case oncallshiftmetrics.FieldTenantID:
 			values[i] = new(sql.NullInt64)
@@ -189,17 +191,23 @@ func (osm *OncallShiftMetrics) assignValues(columns []string, values []any) erro
 			} else if value.Valid {
 				osm.IncidentResponseTime = float32(value.Float64)
 			}
+		case oncallshiftmetrics.FieldEventsTotal:
+			if value, ok := values[i].(*sql.NullFloat64); !ok {
+				return fmt.Errorf("unexpected type %T for field events_total", values[i])
+			} else if value.Valid {
+				osm.EventsTotal = float32(value.Float64)
+			}
+		case oncallshiftmetrics.FieldAlertsTotal:
+			if value, ok := values[i].(*sql.NullFloat64); !ok {
+				return fmt.Errorf("unexpected type %T for field alerts_total", values[i])
+			} else if value.Valid {
+				osm.AlertsTotal = float32(value.Float64)
+			}
 		case oncallshiftmetrics.FieldInterruptsTotal:
 			if value, ok := values[i].(*sql.NullFloat64); !ok {
 				return fmt.Errorf("unexpected type %T for field interrupts_total", values[i])
 			} else if value.Valid {
 				osm.InterruptsTotal = float32(value.Float64)
-			}
-		case oncallshiftmetrics.FieldInterruptsAlerts:
-			if value, ok := values[i].(*sql.NullFloat64); !ok {
-				return fmt.Errorf("unexpected type %T for field interrupts_alerts", values[i])
-			} else if value.Valid {
-				osm.InterruptsAlerts = float32(value.Float64)
 			}
 		case oncallshiftmetrics.FieldInterruptsNight:
 			if value, ok := values[i].(*sql.NullFloat64); !ok {
@@ -292,11 +300,14 @@ func (osm *OncallShiftMetrics) String() string {
 	builder.WriteString("incident_response_time=")
 	builder.WriteString(fmt.Sprintf("%v", osm.IncidentResponseTime))
 	builder.WriteString(", ")
+	builder.WriteString("events_total=")
+	builder.WriteString(fmt.Sprintf("%v", osm.EventsTotal))
+	builder.WriteString(", ")
+	builder.WriteString("alerts_total=")
+	builder.WriteString(fmt.Sprintf("%v", osm.AlertsTotal))
+	builder.WriteString(", ")
 	builder.WriteString("interrupts_total=")
 	builder.WriteString(fmt.Sprintf("%v", osm.InterruptsTotal))
-	builder.WriteString(", ")
-	builder.WriteString("interrupts_alerts=")
-	builder.WriteString(fmt.Sprintf("%v", osm.InterruptsAlerts))
 	builder.WriteString(", ")
 	builder.WriteString("interrupts_night=")
 	builder.WriteString(fmt.Sprintf("%v", osm.InterruptsNight))

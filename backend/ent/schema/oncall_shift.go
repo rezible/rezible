@@ -117,8 +117,9 @@ func (OncallShiftMetrics) Fields() []ent.Field {
 		field.Float32("incidents_total"),
 		field.Float32("incident_response_time"),
 		// Interrupts
+		field.Float32("events_total"),
+		field.Float32("alerts_total"),
 		field.Float32("interrupts_total"),
-		field.Float32("interrupts_alerts"),
 		field.Float32("interrupts_night"),
 		field.Float32("interrupts_business_hours"),
 	}

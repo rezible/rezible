@@ -718,8 +718,9 @@ var schemaGraph = func() *sqlgraph.Schema {
 			oncallshiftmetrics.FieldIsolation:               {Type: field.TypeFloat32, Column: oncallshiftmetrics.FieldIsolation},
 			oncallshiftmetrics.FieldIncidentsTotal:          {Type: field.TypeFloat32, Column: oncallshiftmetrics.FieldIncidentsTotal},
 			oncallshiftmetrics.FieldIncidentResponseTime:    {Type: field.TypeFloat32, Column: oncallshiftmetrics.FieldIncidentResponseTime},
+			oncallshiftmetrics.FieldEventsTotal:             {Type: field.TypeFloat32, Column: oncallshiftmetrics.FieldEventsTotal},
+			oncallshiftmetrics.FieldAlertsTotal:             {Type: field.TypeFloat32, Column: oncallshiftmetrics.FieldAlertsTotal},
 			oncallshiftmetrics.FieldInterruptsTotal:         {Type: field.TypeFloat32, Column: oncallshiftmetrics.FieldInterruptsTotal},
-			oncallshiftmetrics.FieldInterruptsAlerts:        {Type: field.TypeFloat32, Column: oncallshiftmetrics.FieldInterruptsAlerts},
 			oncallshiftmetrics.FieldInterruptsNight:         {Type: field.TypeFloat32, Column: oncallshiftmetrics.FieldInterruptsNight},
 			oncallshiftmetrics.FieldInterruptsBusinessHours: {Type: field.TypeFloat32, Column: oncallshiftmetrics.FieldInterruptsBusinessHours},
 		},
@@ -8080,14 +8081,19 @@ func (f *OncallShiftMetricsFilter) WhereIncidentResponseTime(p entql.Float32P) {
 	f.Where(p.Field(oncallshiftmetrics.FieldIncidentResponseTime))
 }
 
+// WhereEventsTotal applies the entql float32 predicate on the events_total field.
+func (f *OncallShiftMetricsFilter) WhereEventsTotal(p entql.Float32P) {
+	f.Where(p.Field(oncallshiftmetrics.FieldEventsTotal))
+}
+
+// WhereAlertsTotal applies the entql float32 predicate on the alerts_total field.
+func (f *OncallShiftMetricsFilter) WhereAlertsTotal(p entql.Float32P) {
+	f.Where(p.Field(oncallshiftmetrics.FieldAlertsTotal))
+}
+
 // WhereInterruptsTotal applies the entql float32 predicate on the interrupts_total field.
 func (f *OncallShiftMetricsFilter) WhereInterruptsTotal(p entql.Float32P) {
 	f.Where(p.Field(oncallshiftmetrics.FieldInterruptsTotal))
-}
-
-// WhereInterruptsAlerts applies the entql float32 predicate on the interrupts_alerts field.
-func (f *OncallShiftMetricsFilter) WhereInterruptsAlerts(p entql.Float32P) {
-	f.Where(p.Field(oncallshiftmetrics.FieldInterruptsAlerts))
 }
 
 // WhereInterruptsNight applies the entql float32 predicate on the interrupts_night field.

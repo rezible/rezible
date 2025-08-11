@@ -33,9 +33,8 @@ type (
 	}
 
 	OncallShiftMetrics struct {
-		Burden     OncallShiftMetricsBurden     `json:"burden"`
-		Incidents  OncallShiftMetricsIncidents  `json:"incidents"`
-		Interrupts OncallShiftMetricsInterrupts `json:"interrupts"`
+		Burden OncallShiftMetricsBurden `json:"burden"`
+		Events OncallShiftMetricsEvents `json:"events"`
 	}
 
 	OncallShiftMetricsBurden struct {
@@ -47,21 +46,23 @@ type (
 		Isolation            float32 `json:"isolation"`
 	}
 
-	OncallShiftMetricsIncidents struct {
-		Total               float32 `json:"total"`
-		ResponseTimeMinutes float32 `json:"responseTimeMinutes"`
-	}
+	OncallShiftMetricsEvents struct {
+		Total float32 `json:"total"`
 
-	OncallShiftMetricsInterrupts struct {
-		Total                 float32 `json:"total"`
+		TotalInterrupts         float32 `json:"totalInterrupts"`
+		InterruptsBusinessHours float32 `json:"interruptsBusinessHours"`
+		InterruptsNight         float32 `json:"interruptsNight"`
+		InterruptResponseTime   float32 `json:"interruptResponseTime"`
+
+		TotalIncidents float32 `json:"totalIncidents"`
+		IncidentTime   float32 `json:"incidentTime"`
+
 		TotalAlerts           float32 `json:"totalAlerts"`
-		CountOffHours         float32 `json:"countOffHours"`
-		CountNight            float32 `json:"countNight"`
-		IncidentRate          float32 `json:"incidentRate"`
-		TotalWithFeedback     float32 `json:"totalWithFeedback"`
-		ActionabilityFeedback float32 `json:"actionabilityFeedback"`
-		AccuracyFeedback      float32 `json:"accuracyFeedback"`
-		DocumentationFeedback float32 `json:"documentationFeedback"`
+		AlertIncidentRate     float32 `json:"alertIncidentRate"`
+		AlertFeedback         float32 `json:"alertFeedbackCount"`
+		ActionabilityFeedback float32 `json:"alertActionability"`
+		AccuracyFeedback      float32 `json:"alertAccuracy"`
+		DocumentationFeedback float32 `json:"alertDocumentation"`
 	}
 
 	OncallShiftMetricsAlertInstance struct {
@@ -74,8 +75,6 @@ type (
 )
 
 func OncallShiftMetricsFromEnt(m *ent.OncallShiftMetrics) OncallShiftMetrics {
-	offHoursInterrupts := m.InterruptsTotal - m.InterruptsBusinessHours - m.InterruptsNight
-
 	return OncallShiftMetrics{
 		Burden: OncallShiftMetricsBurden{
 			FinalScore:           m.BurdenScore,
@@ -85,15 +84,20 @@ func OncallShiftMetricsFromEnt(m *ent.OncallShiftMetrics) OncallShiftMetrics {
 			ResponseRequirements: m.ResponseRequirements,
 			Isolation:            m.Isolation,
 		},
-		Incidents: OncallShiftMetricsIncidents{
-			Total:               m.IncidentsTotal,
-			ResponseTimeMinutes: m.IncidentResponseTime,
-		},
-		Interrupts: OncallShiftMetricsInterrupts{
-			Total:         m.InterruptsTotal,
-			TotalAlerts:   m.InterruptsAlerts,
-			CountOffHours: offHoursInterrupts,
-			CountNight:    m.InterruptsNight,
+		Events: OncallShiftMetricsEvents{
+			Total:                   m.EventsTotal,
+			TotalInterrupts:         m.InterruptsTotal,
+			InterruptsBusinessHours: m.InterruptsBusinessHours,
+			InterruptsNight:         m.InterruptsNight,
+			InterruptResponseTime:   0,
+			TotalIncidents:          m.IncidentsTotal,
+			IncidentTime:            m.IncidentResponseTime,
+			TotalAlerts:             m.AlertsTotal,
+			AlertIncidentRate:       0,
+			AlertFeedback:           0,
+			ActionabilityFeedback:   0,
+			AccuracyFeedback:        0,
+			DocumentationFeedback:   0,
 		},
 	}
 }

@@ -1260,8 +1260,9 @@ var (
 		{Name: "isolation", Type: field.TypeFloat32},
 		{Name: "incidents_total", Type: field.TypeFloat32},
 		{Name: "incident_response_time", Type: field.TypeFloat32},
+		{Name: "events_total", Type: field.TypeFloat32},
+		{Name: "alerts_total", Type: field.TypeFloat32},
 		{Name: "interrupts_total", Type: field.TypeFloat32},
-		{Name: "interrupts_alerts", Type: field.TypeFloat32},
 		{Name: "interrupts_night", Type: field.TypeFloat32},
 		{Name: "interrupts_business_hours", Type: field.TypeFloat32},
 		{Name: "shift_id", Type: field.TypeUUID, Unique: true},
@@ -1275,13 +1276,13 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "oncall_shift_metrics_oncall_shifts_metrics",
-				Columns:    []*schema.Column{OncallShiftMetricsColumns[14]},
+				Columns:    []*schema.Column{OncallShiftMetricsColumns[15]},
 				RefColumns: []*schema.Column{OncallShiftsColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
 			{
 				Symbol:     "oncall_shift_metrics_tenants_tenant",
-				Columns:    []*schema.Column{OncallShiftMetricsColumns[15]},
+				Columns:    []*schema.Column{OncallShiftMetricsColumns[16]},
 				RefColumns: []*schema.Column{TenantsColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
@@ -1290,7 +1291,7 @@ var (
 			{
 				Name:    "oncallshiftmetrics_tenant_id",
 				Unique:  false,
-				Columns: []*schema.Column{OncallShiftMetricsColumns[15]},
+				Columns: []*schema.Column{OncallShiftMetricsColumns[16]},
 			},
 		},
 	}

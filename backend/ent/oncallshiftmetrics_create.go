@@ -100,15 +100,21 @@ func (osmc *OncallShiftMetricsCreate) SetIncidentResponseTime(f float32) *Oncall
 	return osmc
 }
 
-// SetInterruptsTotal sets the "interrupts_total" field.
-func (osmc *OncallShiftMetricsCreate) SetInterruptsTotal(f float32) *OncallShiftMetricsCreate {
-	osmc.mutation.SetInterruptsTotal(f)
+// SetEventsTotal sets the "events_total" field.
+func (osmc *OncallShiftMetricsCreate) SetEventsTotal(f float32) *OncallShiftMetricsCreate {
+	osmc.mutation.SetEventsTotal(f)
 	return osmc
 }
 
-// SetInterruptsAlerts sets the "interrupts_alerts" field.
-func (osmc *OncallShiftMetricsCreate) SetInterruptsAlerts(f float32) *OncallShiftMetricsCreate {
-	osmc.mutation.SetInterruptsAlerts(f)
+// SetAlertsTotal sets the "alerts_total" field.
+func (osmc *OncallShiftMetricsCreate) SetAlertsTotal(f float32) *OncallShiftMetricsCreate {
+	osmc.mutation.SetAlertsTotal(f)
+	return osmc
+}
+
+// SetInterruptsTotal sets the "interrupts_total" field.
+func (osmc *OncallShiftMetricsCreate) SetInterruptsTotal(f float32) *OncallShiftMetricsCreate {
+	osmc.mutation.SetInterruptsTotal(f)
 	return osmc
 }
 
@@ -237,11 +243,14 @@ func (osmc *OncallShiftMetricsCreate) check() error {
 	if _, ok := osmc.mutation.IncidentResponseTime(); !ok {
 		return &ValidationError{Name: "incident_response_time", err: errors.New(`ent: missing required field "OncallShiftMetrics.incident_response_time"`)}
 	}
+	if _, ok := osmc.mutation.EventsTotal(); !ok {
+		return &ValidationError{Name: "events_total", err: errors.New(`ent: missing required field "OncallShiftMetrics.events_total"`)}
+	}
+	if _, ok := osmc.mutation.AlertsTotal(); !ok {
+		return &ValidationError{Name: "alerts_total", err: errors.New(`ent: missing required field "OncallShiftMetrics.alerts_total"`)}
+	}
 	if _, ok := osmc.mutation.InterruptsTotal(); !ok {
 		return &ValidationError{Name: "interrupts_total", err: errors.New(`ent: missing required field "OncallShiftMetrics.interrupts_total"`)}
-	}
-	if _, ok := osmc.mutation.InterruptsAlerts(); !ok {
-		return &ValidationError{Name: "interrupts_alerts", err: errors.New(`ent: missing required field "OncallShiftMetrics.interrupts_alerts"`)}
 	}
 	if _, ok := osmc.mutation.InterruptsNight(); !ok {
 		return &ValidationError{Name: "interrupts_night", err: errors.New(`ent: missing required field "OncallShiftMetrics.interrupts_night"`)}
@@ -327,13 +336,17 @@ func (osmc *OncallShiftMetricsCreate) createSpec() (*OncallShiftMetrics, *sqlgra
 		_spec.SetField(oncallshiftmetrics.FieldIncidentResponseTime, field.TypeFloat32, value)
 		_node.IncidentResponseTime = value
 	}
+	if value, ok := osmc.mutation.EventsTotal(); ok {
+		_spec.SetField(oncallshiftmetrics.FieldEventsTotal, field.TypeFloat32, value)
+		_node.EventsTotal = value
+	}
+	if value, ok := osmc.mutation.AlertsTotal(); ok {
+		_spec.SetField(oncallshiftmetrics.FieldAlertsTotal, field.TypeFloat32, value)
+		_node.AlertsTotal = value
+	}
 	if value, ok := osmc.mutation.InterruptsTotal(); ok {
 		_spec.SetField(oncallshiftmetrics.FieldInterruptsTotal, field.TypeFloat32, value)
 		_node.InterruptsTotal = value
-	}
-	if value, ok := osmc.mutation.InterruptsAlerts(); ok {
-		_spec.SetField(oncallshiftmetrics.FieldInterruptsAlerts, field.TypeFloat32, value)
-		_node.InterruptsAlerts = value
 	}
 	if value, ok := osmc.mutation.InterruptsNight(); ok {
 		_spec.SetField(oncallshiftmetrics.FieldInterruptsNight, field.TypeFloat32, value)
@@ -597,6 +610,42 @@ func (u *OncallShiftMetricsUpsert) AddIncidentResponseTime(v float32) *OncallShi
 	return u
 }
 
+// SetEventsTotal sets the "events_total" field.
+func (u *OncallShiftMetricsUpsert) SetEventsTotal(v float32) *OncallShiftMetricsUpsert {
+	u.Set(oncallshiftmetrics.FieldEventsTotal, v)
+	return u
+}
+
+// UpdateEventsTotal sets the "events_total" field to the value that was provided on create.
+func (u *OncallShiftMetricsUpsert) UpdateEventsTotal() *OncallShiftMetricsUpsert {
+	u.SetExcluded(oncallshiftmetrics.FieldEventsTotal)
+	return u
+}
+
+// AddEventsTotal adds v to the "events_total" field.
+func (u *OncallShiftMetricsUpsert) AddEventsTotal(v float32) *OncallShiftMetricsUpsert {
+	u.Add(oncallshiftmetrics.FieldEventsTotal, v)
+	return u
+}
+
+// SetAlertsTotal sets the "alerts_total" field.
+func (u *OncallShiftMetricsUpsert) SetAlertsTotal(v float32) *OncallShiftMetricsUpsert {
+	u.Set(oncallshiftmetrics.FieldAlertsTotal, v)
+	return u
+}
+
+// UpdateAlertsTotal sets the "alerts_total" field to the value that was provided on create.
+func (u *OncallShiftMetricsUpsert) UpdateAlertsTotal() *OncallShiftMetricsUpsert {
+	u.SetExcluded(oncallshiftmetrics.FieldAlertsTotal)
+	return u
+}
+
+// AddAlertsTotal adds v to the "alerts_total" field.
+func (u *OncallShiftMetricsUpsert) AddAlertsTotal(v float32) *OncallShiftMetricsUpsert {
+	u.Add(oncallshiftmetrics.FieldAlertsTotal, v)
+	return u
+}
+
 // SetInterruptsTotal sets the "interrupts_total" field.
 func (u *OncallShiftMetricsUpsert) SetInterruptsTotal(v float32) *OncallShiftMetricsUpsert {
 	u.Set(oncallshiftmetrics.FieldInterruptsTotal, v)
@@ -612,24 +661,6 @@ func (u *OncallShiftMetricsUpsert) UpdateInterruptsTotal() *OncallShiftMetricsUp
 // AddInterruptsTotal adds v to the "interrupts_total" field.
 func (u *OncallShiftMetricsUpsert) AddInterruptsTotal(v float32) *OncallShiftMetricsUpsert {
 	u.Add(oncallshiftmetrics.FieldInterruptsTotal, v)
-	return u
-}
-
-// SetInterruptsAlerts sets the "interrupts_alerts" field.
-func (u *OncallShiftMetricsUpsert) SetInterruptsAlerts(v float32) *OncallShiftMetricsUpsert {
-	u.Set(oncallshiftmetrics.FieldInterruptsAlerts, v)
-	return u
-}
-
-// UpdateInterruptsAlerts sets the "interrupts_alerts" field to the value that was provided on create.
-func (u *OncallShiftMetricsUpsert) UpdateInterruptsAlerts() *OncallShiftMetricsUpsert {
-	u.SetExcluded(oncallshiftmetrics.FieldInterruptsAlerts)
-	return u
-}
-
-// AddInterruptsAlerts adds v to the "interrupts_alerts" field.
-func (u *OncallShiftMetricsUpsert) AddInterruptsAlerts(v float32) *OncallShiftMetricsUpsert {
-	u.Add(oncallshiftmetrics.FieldInterruptsAlerts, v)
 	return u
 }
 
@@ -916,6 +947,48 @@ func (u *OncallShiftMetricsUpsertOne) UpdateIncidentResponseTime() *OncallShiftM
 	})
 }
 
+// SetEventsTotal sets the "events_total" field.
+func (u *OncallShiftMetricsUpsertOne) SetEventsTotal(v float32) *OncallShiftMetricsUpsertOne {
+	return u.Update(func(s *OncallShiftMetricsUpsert) {
+		s.SetEventsTotal(v)
+	})
+}
+
+// AddEventsTotal adds v to the "events_total" field.
+func (u *OncallShiftMetricsUpsertOne) AddEventsTotal(v float32) *OncallShiftMetricsUpsertOne {
+	return u.Update(func(s *OncallShiftMetricsUpsert) {
+		s.AddEventsTotal(v)
+	})
+}
+
+// UpdateEventsTotal sets the "events_total" field to the value that was provided on create.
+func (u *OncallShiftMetricsUpsertOne) UpdateEventsTotal() *OncallShiftMetricsUpsertOne {
+	return u.Update(func(s *OncallShiftMetricsUpsert) {
+		s.UpdateEventsTotal()
+	})
+}
+
+// SetAlertsTotal sets the "alerts_total" field.
+func (u *OncallShiftMetricsUpsertOne) SetAlertsTotal(v float32) *OncallShiftMetricsUpsertOne {
+	return u.Update(func(s *OncallShiftMetricsUpsert) {
+		s.SetAlertsTotal(v)
+	})
+}
+
+// AddAlertsTotal adds v to the "alerts_total" field.
+func (u *OncallShiftMetricsUpsertOne) AddAlertsTotal(v float32) *OncallShiftMetricsUpsertOne {
+	return u.Update(func(s *OncallShiftMetricsUpsert) {
+		s.AddAlertsTotal(v)
+	})
+}
+
+// UpdateAlertsTotal sets the "alerts_total" field to the value that was provided on create.
+func (u *OncallShiftMetricsUpsertOne) UpdateAlertsTotal() *OncallShiftMetricsUpsertOne {
+	return u.Update(func(s *OncallShiftMetricsUpsert) {
+		s.UpdateAlertsTotal()
+	})
+}
+
 // SetInterruptsTotal sets the "interrupts_total" field.
 func (u *OncallShiftMetricsUpsertOne) SetInterruptsTotal(v float32) *OncallShiftMetricsUpsertOne {
 	return u.Update(func(s *OncallShiftMetricsUpsert) {
@@ -934,27 +1007,6 @@ func (u *OncallShiftMetricsUpsertOne) AddInterruptsTotal(v float32) *OncallShift
 func (u *OncallShiftMetricsUpsertOne) UpdateInterruptsTotal() *OncallShiftMetricsUpsertOne {
 	return u.Update(func(s *OncallShiftMetricsUpsert) {
 		s.UpdateInterruptsTotal()
-	})
-}
-
-// SetInterruptsAlerts sets the "interrupts_alerts" field.
-func (u *OncallShiftMetricsUpsertOne) SetInterruptsAlerts(v float32) *OncallShiftMetricsUpsertOne {
-	return u.Update(func(s *OncallShiftMetricsUpsert) {
-		s.SetInterruptsAlerts(v)
-	})
-}
-
-// AddInterruptsAlerts adds v to the "interrupts_alerts" field.
-func (u *OncallShiftMetricsUpsertOne) AddInterruptsAlerts(v float32) *OncallShiftMetricsUpsertOne {
-	return u.Update(func(s *OncallShiftMetricsUpsert) {
-		s.AddInterruptsAlerts(v)
-	})
-}
-
-// UpdateInterruptsAlerts sets the "interrupts_alerts" field to the value that was provided on create.
-func (u *OncallShiftMetricsUpsertOne) UpdateInterruptsAlerts() *OncallShiftMetricsUpsertOne {
-	return u.Update(func(s *OncallShiftMetricsUpsert) {
-		s.UpdateInterruptsAlerts()
 	})
 }
 
@@ -1414,6 +1466,48 @@ func (u *OncallShiftMetricsUpsertBulk) UpdateIncidentResponseTime() *OncallShift
 	})
 }
 
+// SetEventsTotal sets the "events_total" field.
+func (u *OncallShiftMetricsUpsertBulk) SetEventsTotal(v float32) *OncallShiftMetricsUpsertBulk {
+	return u.Update(func(s *OncallShiftMetricsUpsert) {
+		s.SetEventsTotal(v)
+	})
+}
+
+// AddEventsTotal adds v to the "events_total" field.
+func (u *OncallShiftMetricsUpsertBulk) AddEventsTotal(v float32) *OncallShiftMetricsUpsertBulk {
+	return u.Update(func(s *OncallShiftMetricsUpsert) {
+		s.AddEventsTotal(v)
+	})
+}
+
+// UpdateEventsTotal sets the "events_total" field to the value that was provided on create.
+func (u *OncallShiftMetricsUpsertBulk) UpdateEventsTotal() *OncallShiftMetricsUpsertBulk {
+	return u.Update(func(s *OncallShiftMetricsUpsert) {
+		s.UpdateEventsTotal()
+	})
+}
+
+// SetAlertsTotal sets the "alerts_total" field.
+func (u *OncallShiftMetricsUpsertBulk) SetAlertsTotal(v float32) *OncallShiftMetricsUpsertBulk {
+	return u.Update(func(s *OncallShiftMetricsUpsert) {
+		s.SetAlertsTotal(v)
+	})
+}
+
+// AddAlertsTotal adds v to the "alerts_total" field.
+func (u *OncallShiftMetricsUpsertBulk) AddAlertsTotal(v float32) *OncallShiftMetricsUpsertBulk {
+	return u.Update(func(s *OncallShiftMetricsUpsert) {
+		s.AddAlertsTotal(v)
+	})
+}
+
+// UpdateAlertsTotal sets the "alerts_total" field to the value that was provided on create.
+func (u *OncallShiftMetricsUpsertBulk) UpdateAlertsTotal() *OncallShiftMetricsUpsertBulk {
+	return u.Update(func(s *OncallShiftMetricsUpsert) {
+		s.UpdateAlertsTotal()
+	})
+}
+
 // SetInterruptsTotal sets the "interrupts_total" field.
 func (u *OncallShiftMetricsUpsertBulk) SetInterruptsTotal(v float32) *OncallShiftMetricsUpsertBulk {
 	return u.Update(func(s *OncallShiftMetricsUpsert) {
@@ -1432,27 +1526,6 @@ func (u *OncallShiftMetricsUpsertBulk) AddInterruptsTotal(v float32) *OncallShif
 func (u *OncallShiftMetricsUpsertBulk) UpdateInterruptsTotal() *OncallShiftMetricsUpsertBulk {
 	return u.Update(func(s *OncallShiftMetricsUpsert) {
 		s.UpdateInterruptsTotal()
-	})
-}
-
-// SetInterruptsAlerts sets the "interrupts_alerts" field.
-func (u *OncallShiftMetricsUpsertBulk) SetInterruptsAlerts(v float32) *OncallShiftMetricsUpsertBulk {
-	return u.Update(func(s *OncallShiftMetricsUpsert) {
-		s.SetInterruptsAlerts(v)
-	})
-}
-
-// AddInterruptsAlerts adds v to the "interrupts_alerts" field.
-func (u *OncallShiftMetricsUpsertBulk) AddInterruptsAlerts(v float32) *OncallShiftMetricsUpsertBulk {
-	return u.Update(func(s *OncallShiftMetricsUpsert) {
-		s.AddInterruptsAlerts(v)
-	})
-}
-
-// UpdateInterruptsAlerts sets the "interrupts_alerts" field to the value that was provided on create.
-func (u *OncallShiftMetricsUpsertBulk) UpdateInterruptsAlerts() *OncallShiftMetricsUpsertBulk {
-	return u.Update(func(s *OncallShiftMetricsUpsert) {
-		s.UpdateInterruptsAlerts()
 	})
 }
 

@@ -37,8 +37,8 @@
 		{
 			title: "Alert to Incident Rate",
 			subheading: `Alerts that became incidents`,
-			value: metrics?.alerts.incidentRate || 0,
-			comparison: {value: comparison?.alerts.incidentRate || 0, positive: true}
+			value: metrics?.events.alertIncidentRate || 0,
+			comparison: {value: comparison?.events.alertIncidentRate || 0, positive: true}
 		},
 		{
 			title: "Incidents Reviewed",

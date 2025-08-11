@@ -24,26 +24,26 @@
 	<MetricCard
 		title="Incidents"
 		icon={mdiFire}
-		metric={metrics?.incidents.total || 0}
-		comparison={{value: comparison?.incidents.total || 0}}
+		metric={metrics?.events.totalIncidents || 0}
+		comparison={{value: comparison?.events.totalIncidents || 0}}
 	/>
 	<MetricCard
-		title="Time in Incidents"
+		title="Time Responding to Interrupts"
 		icon={mdiClockTimeFive}
 		format="duration"
-		metric={metrics?.incidents.responseTimeMinutes || 0}
-		comparison={{value: comparison?.incidents.responseTimeMinutes || 0}}
+		metric={metrics?.events.interruptResponseTime || 0}
+		comparison={{value: comparison?.events.interruptResponseTime || 0}}
 	/>
 	<MetricCard
 		title="Alerts"
 		icon={mdiBellAlert}
-		metric={metrics?.alerts.total || 0}
-		comparison={{value: comparison?.alerts.total || 0}}
+		metric={metrics?.events.totalAlerts || 0}
+		comparison={{value: comparison?.events.totalAlerts || 0}}
 	/>
 	<MetricCard
-		title="Night Alerts"
+		title="Night Interrupts"
 		icon={mdiBellSleep}
-		metric={metrics?.alerts.countNight || 0}
-		comparison={{value: comparison?.alerts.countNight || 0}}
+		metric={metrics?.events.interruptsNight || 0}
+		comparison={{value: comparison?.events.interruptsNight || 0}}
 	/>
 </div>

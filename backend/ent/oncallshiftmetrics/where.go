@@ -111,14 +111,19 @@ func IncidentResponseTime(v float32) predicate.OncallShiftMetrics {
 	return predicate.OncallShiftMetrics(sql.FieldEQ(FieldIncidentResponseTime, v))
 }
 
+// EventsTotal applies equality check predicate on the "events_total" field. It's identical to EventsTotalEQ.
+func EventsTotal(v float32) predicate.OncallShiftMetrics {
+	return predicate.OncallShiftMetrics(sql.FieldEQ(FieldEventsTotal, v))
+}
+
+// AlertsTotal applies equality check predicate on the "alerts_total" field. It's identical to AlertsTotalEQ.
+func AlertsTotal(v float32) predicate.OncallShiftMetrics {
+	return predicate.OncallShiftMetrics(sql.FieldEQ(FieldAlertsTotal, v))
+}
+
 // InterruptsTotal applies equality check predicate on the "interrupts_total" field. It's identical to InterruptsTotalEQ.
 func InterruptsTotal(v float32) predicate.OncallShiftMetrics {
 	return predicate.OncallShiftMetrics(sql.FieldEQ(FieldInterruptsTotal, v))
-}
-
-// InterruptsAlerts applies equality check predicate on the "interrupts_alerts" field. It's identical to InterruptsAlertsEQ.
-func InterruptsAlerts(v float32) predicate.OncallShiftMetrics {
-	return predicate.OncallShiftMetrics(sql.FieldEQ(FieldInterruptsAlerts, v))
 }
 
 // InterruptsNight applies equality check predicate on the "interrupts_night" field. It's identical to InterruptsNightEQ.
@@ -531,6 +536,86 @@ func IncidentResponseTimeLTE(v float32) predicate.OncallShiftMetrics {
 	return predicate.OncallShiftMetrics(sql.FieldLTE(FieldIncidentResponseTime, v))
 }
 
+// EventsTotalEQ applies the EQ predicate on the "events_total" field.
+func EventsTotalEQ(v float32) predicate.OncallShiftMetrics {
+	return predicate.OncallShiftMetrics(sql.FieldEQ(FieldEventsTotal, v))
+}
+
+// EventsTotalNEQ applies the NEQ predicate on the "events_total" field.
+func EventsTotalNEQ(v float32) predicate.OncallShiftMetrics {
+	return predicate.OncallShiftMetrics(sql.FieldNEQ(FieldEventsTotal, v))
+}
+
+// EventsTotalIn applies the In predicate on the "events_total" field.
+func EventsTotalIn(vs ...float32) predicate.OncallShiftMetrics {
+	return predicate.OncallShiftMetrics(sql.FieldIn(FieldEventsTotal, vs...))
+}
+
+// EventsTotalNotIn applies the NotIn predicate on the "events_total" field.
+func EventsTotalNotIn(vs ...float32) predicate.OncallShiftMetrics {
+	return predicate.OncallShiftMetrics(sql.FieldNotIn(FieldEventsTotal, vs...))
+}
+
+// EventsTotalGT applies the GT predicate on the "events_total" field.
+func EventsTotalGT(v float32) predicate.OncallShiftMetrics {
+	return predicate.OncallShiftMetrics(sql.FieldGT(FieldEventsTotal, v))
+}
+
+// EventsTotalGTE applies the GTE predicate on the "events_total" field.
+func EventsTotalGTE(v float32) predicate.OncallShiftMetrics {
+	return predicate.OncallShiftMetrics(sql.FieldGTE(FieldEventsTotal, v))
+}
+
+// EventsTotalLT applies the LT predicate on the "events_total" field.
+func EventsTotalLT(v float32) predicate.OncallShiftMetrics {
+	return predicate.OncallShiftMetrics(sql.FieldLT(FieldEventsTotal, v))
+}
+
+// EventsTotalLTE applies the LTE predicate on the "events_total" field.
+func EventsTotalLTE(v float32) predicate.OncallShiftMetrics {
+	return predicate.OncallShiftMetrics(sql.FieldLTE(FieldEventsTotal, v))
+}
+
+// AlertsTotalEQ applies the EQ predicate on the "alerts_total" field.
+func AlertsTotalEQ(v float32) predicate.OncallShiftMetrics {
+	return predicate.OncallShiftMetrics(sql.FieldEQ(FieldAlertsTotal, v))
+}
+
+// AlertsTotalNEQ applies the NEQ predicate on the "alerts_total" field.
+func AlertsTotalNEQ(v float32) predicate.OncallShiftMetrics {
+	return predicate.OncallShiftMetrics(sql.FieldNEQ(FieldAlertsTotal, v))
+}
+
+// AlertsTotalIn applies the In predicate on the "alerts_total" field.
+func AlertsTotalIn(vs ...float32) predicate.OncallShiftMetrics {
+	return predicate.OncallShiftMetrics(sql.FieldIn(FieldAlertsTotal, vs...))
+}
+
+// AlertsTotalNotIn applies the NotIn predicate on the "alerts_total" field.
+func AlertsTotalNotIn(vs ...float32) predicate.OncallShiftMetrics {
+	return predicate.OncallShiftMetrics(sql.FieldNotIn(FieldAlertsTotal, vs...))
+}
+
+// AlertsTotalGT applies the GT predicate on the "alerts_total" field.
+func AlertsTotalGT(v float32) predicate.OncallShiftMetrics {
+	return predicate.OncallShiftMetrics(sql.FieldGT(FieldAlertsTotal, v))
+}
+
+// AlertsTotalGTE applies the GTE predicate on the "alerts_total" field.
+func AlertsTotalGTE(v float32) predicate.OncallShiftMetrics {
+	return predicate.OncallShiftMetrics(sql.FieldGTE(FieldAlertsTotal, v))
+}
+
+// AlertsTotalLT applies the LT predicate on the "alerts_total" field.
+func AlertsTotalLT(v float32) predicate.OncallShiftMetrics {
+	return predicate.OncallShiftMetrics(sql.FieldLT(FieldAlertsTotal, v))
+}
+
+// AlertsTotalLTE applies the LTE predicate on the "alerts_total" field.
+func AlertsTotalLTE(v float32) predicate.OncallShiftMetrics {
+	return predicate.OncallShiftMetrics(sql.FieldLTE(FieldAlertsTotal, v))
+}
+
 // InterruptsTotalEQ applies the EQ predicate on the "interrupts_total" field.
 func InterruptsTotalEQ(v float32) predicate.OncallShiftMetrics {
 	return predicate.OncallShiftMetrics(sql.FieldEQ(FieldInterruptsTotal, v))
@@ -569,46 +654,6 @@ func InterruptsTotalLT(v float32) predicate.OncallShiftMetrics {
 // InterruptsTotalLTE applies the LTE predicate on the "interrupts_total" field.
 func InterruptsTotalLTE(v float32) predicate.OncallShiftMetrics {
 	return predicate.OncallShiftMetrics(sql.FieldLTE(FieldInterruptsTotal, v))
-}
-
-// InterruptsAlertsEQ applies the EQ predicate on the "interrupts_alerts" field.
-func InterruptsAlertsEQ(v float32) predicate.OncallShiftMetrics {
-	return predicate.OncallShiftMetrics(sql.FieldEQ(FieldInterruptsAlerts, v))
-}
-
-// InterruptsAlertsNEQ applies the NEQ predicate on the "interrupts_alerts" field.
-func InterruptsAlertsNEQ(v float32) predicate.OncallShiftMetrics {
-	return predicate.OncallShiftMetrics(sql.FieldNEQ(FieldInterruptsAlerts, v))
-}
-
-// InterruptsAlertsIn applies the In predicate on the "interrupts_alerts" field.
-func InterruptsAlertsIn(vs ...float32) predicate.OncallShiftMetrics {
-	return predicate.OncallShiftMetrics(sql.FieldIn(FieldInterruptsAlerts, vs...))
-}
-
-// InterruptsAlertsNotIn applies the NotIn predicate on the "interrupts_alerts" field.
-func InterruptsAlertsNotIn(vs ...float32) predicate.OncallShiftMetrics {
-	return predicate.OncallShiftMetrics(sql.FieldNotIn(FieldInterruptsAlerts, vs...))
-}
-
-// InterruptsAlertsGT applies the GT predicate on the "interrupts_alerts" field.
-func InterruptsAlertsGT(v float32) predicate.OncallShiftMetrics {
-	return predicate.OncallShiftMetrics(sql.FieldGT(FieldInterruptsAlerts, v))
-}
-
-// InterruptsAlertsGTE applies the GTE predicate on the "interrupts_alerts" field.
-func InterruptsAlertsGTE(v float32) predicate.OncallShiftMetrics {
-	return predicate.OncallShiftMetrics(sql.FieldGTE(FieldInterruptsAlerts, v))
-}
-
-// InterruptsAlertsLT applies the LT predicate on the "interrupts_alerts" field.
-func InterruptsAlertsLT(v float32) predicate.OncallShiftMetrics {
-	return predicate.OncallShiftMetrics(sql.FieldLT(FieldInterruptsAlerts, v))
-}
-
-// InterruptsAlertsLTE applies the LTE predicate on the "interrupts_alerts" field.
-func InterruptsAlertsLTE(v float32) predicate.OncallShiftMetrics {
-	return predicate.OncallShiftMetrics(sql.FieldLTE(FieldInterruptsAlerts, v))
 }
 
 // InterruptsNightEQ applies the EQ predicate on the "interrupts_night" field.

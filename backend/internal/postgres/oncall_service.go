@@ -504,63 +504,69 @@ func (s *OncallService) queryShiftMetrics(ctx context.Context, shiftId uuid.UUID
 	return s.db.OncallShiftMetrics.Query().Where(oncallshiftmetrics.ShiftID(shiftId)).Only(ctx)
 }
 
-/*
-	shiftMetrics := oapi.OncallShiftMetrics{
-		Burden: oapi.OncallShiftMetricsBurden{
-			FinalScore:           6.4,
-			EventFrequency:       4.8,
-			LifeImpact:           7.8,
-			TimeImpact:           6.4,
-			ResponseRequirements: 7.2,
-			Isolation:            4.4,
-		},
-		Incidents: oapi.OncallShiftMetricsIncidents{
-			Total:               4,
-			ResponseTimeMinutes: 168,
-		},
-		Alerts: oapi.OncallShiftMetricsAlerts{
-			Total:                 24,
-			CountOffHours:         5,
-			CountNight:            3,
-			IncidentRate:          .1,
-			TotalWithFeedback:     15,
-			ActionabilityFeedback: .4,
-			AccuracyFeedback:      .6,
-			DocumentationFeedback: .6,
-		},
-	}
-*/
+func (s *OncallService) getShiftIncidents(ctx context.Context, shift *ent.OncallShift) ([]*ent.Incident, error) {
+	return nil, nil
+}
 
-func (s *OncallService) generateMetricsForShift(ctx context.Context, id uuid.UUID) (*ent.OncallShiftMetrics, error) {
-	m := &ent.OncallShiftMetrics{
-		ShiftID:                 id,
-		BurdenScore:             0,
-		EventFrequency:          0,
-		LifeImpact:              0,
-		TimeImpact:              0,
-		ResponseRequirements:    0,
-		Isolation:               0,
-		IncidentsTotal:          0,
-		IncidentResponseTime:    0,
-		InterruptsTotal:         0,
-		InterruptsAlerts:        0,
-		InterruptsNight:         0,
-		InterruptsBusinessHours: 0,
-	}
-
+func (s *OncallService) upsertShiftMetrics(ctx context.Context, m *ent.OncallShiftMetrics) (*ent.OncallShiftMetrics, error) {
 	create := s.db.OncallShiftMetrics.Create().
-		SetShiftID(id).
-		SetBurdenScore(m.BurdenScore)
+		SetShiftID(m.ShiftID).
+		SetBurdenScore(m.BurdenScore).
+		SetEventFrequency(m.EventFrequency).
+		SetLifeImpact(m.LifeImpact).
+		SetTimeImpact(m.TimeImpact).
+		SetResponseRequirements(m.ResponseRequirements).
+		SetIsolation(m.Isolation).
+		SetEventsTotal(m.EventsTotal).
+		SetIncidentsTotal(m.IncidentsTotal).
+		SetIncidentResponseTime(m.IncidentResponseTime).
+		SetAlertsTotal(m.AlertsTotal).
+		SetInterruptsTotal(m.InterruptsTotal).
+		SetInterruptsBusinessHours(m.InterruptsBusinessHours).
+		SetInterruptsNight(m.InterruptsNight)
 
-	upsert := create.OnConflict().UpdateNewValues()
+	upsert := create.OnConflict(sql.ConflictColumns(oncallshiftmetrics.ShiftColumn)).
+		UpdateNewValues()
 
 	metricsId, upsertErr := upsert.ID(ctx)
 	if upsertErr != nil {
 		return nil, fmt.Errorf("create or update shift metrics: %w", upsertErr)
 	}
 	m.ID = metricsId
-
 	return m, nil
+}
+
+func (s *OncallService) generateMetricsForShift(ctx context.Context, id uuid.UUID) (*ent.OncallShiftMetrics, error) {
+	shift, shiftErr := s.GetShiftByID(ctx, id)
+	if shiftErr != nil {
+		return nil, shiftErr
+	}
+
+	incidents, incErr := s.getShiftIncidents(ctx, shift)
+	if incErr != nil {
+		return nil, fmt.Errorf("shift incidents: %w", incErr)
+	}
+
+	m := &ent.OncallShiftMetrics{
+		ShiftID: id,
+
+		BurdenScore:          0,
+		EventFrequency:       0,
+		LifeImpact:           0,
+		TimeImpact:           0,
+		ResponseRequirements: 0,
+		Isolation:            0,
+
+		EventsTotal:          0,
+		IncidentsTotal:       float32(len(incidents)),
+		IncidentResponseTime: 0,
+
+		AlertsTotal:             0,
+		InterruptsTotal:         0,
+		InterruptsNight:         0,
+		InterruptsBusinessHours: 0,
+	}
+	return s.upsertShiftMetrics(ctx, m)
 }
 
 func (s *OncallService) GetShiftMetrics(ctx context.Context, shiftId uuid.UUID) (*ent.OncallShiftMetrics, error) {
@@ -592,7 +598,7 @@ func (s *OncallService) GetComparisonShiftMetrics(ctx context.Context, from, to 
 		IncidentResponseTime: 33,
 
 		InterruptsTotal:         19,
-		InterruptsAlerts:        15,
+		AlertsTotal:             15,
 		InterruptsNight:         4,
 		InterruptsBusinessHours: 8,
 	}, nil

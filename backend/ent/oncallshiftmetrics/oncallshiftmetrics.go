@@ -38,10 +38,12 @@ const (
 	FieldIncidentsTotal = "incidents_total"
 	// FieldIncidentResponseTime holds the string denoting the incident_response_time field in the database.
 	FieldIncidentResponseTime = "incident_response_time"
+	// FieldEventsTotal holds the string denoting the events_total field in the database.
+	FieldEventsTotal = "events_total"
+	// FieldAlertsTotal holds the string denoting the alerts_total field in the database.
+	FieldAlertsTotal = "alerts_total"
 	// FieldInterruptsTotal holds the string denoting the interrupts_total field in the database.
 	FieldInterruptsTotal = "interrupts_total"
-	// FieldInterruptsAlerts holds the string denoting the interrupts_alerts field in the database.
-	FieldInterruptsAlerts = "interrupts_alerts"
 	// FieldInterruptsNight holds the string denoting the interrupts_night field in the database.
 	FieldInterruptsNight = "interrupts_night"
 	// FieldInterruptsBusinessHours holds the string denoting the interrupts_business_hours field in the database.
@@ -82,8 +84,9 @@ var Columns = []string{
 	FieldIsolation,
 	FieldIncidentsTotal,
 	FieldIncidentResponseTime,
+	FieldEventsTotal,
+	FieldAlertsTotal,
 	FieldInterruptsTotal,
-	FieldInterruptsAlerts,
 	FieldInterruptsNight,
 	FieldInterruptsBusinessHours,
 }
@@ -175,14 +178,19 @@ func ByIncidentResponseTime(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldIncidentResponseTime, opts...).ToFunc()
 }
 
+// ByEventsTotal orders the results by the events_total field.
+func ByEventsTotal(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldEventsTotal, opts...).ToFunc()
+}
+
+// ByAlertsTotal orders the results by the alerts_total field.
+func ByAlertsTotal(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldAlertsTotal, opts...).ToFunc()
+}
+
 // ByInterruptsTotal orders the results by the interrupts_total field.
 func ByInterruptsTotal(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldInterruptsTotal, opts...).ToFunc()
-}
-
-// ByInterruptsAlerts orders the results by the interrupts_alerts field.
-func ByInterruptsAlerts(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldInterruptsAlerts, opts...).ToFunc()
 }
 
 // ByInterruptsNight orders the results by the interrupts_night field.

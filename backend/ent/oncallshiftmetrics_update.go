@@ -227,6 +227,48 @@ func (osmu *OncallShiftMetricsUpdate) AddIncidentResponseTime(f float32) *Oncall
 	return osmu
 }
 
+// SetEventsTotal sets the "events_total" field.
+func (osmu *OncallShiftMetricsUpdate) SetEventsTotal(f float32) *OncallShiftMetricsUpdate {
+	osmu.mutation.ResetEventsTotal()
+	osmu.mutation.SetEventsTotal(f)
+	return osmu
+}
+
+// SetNillableEventsTotal sets the "events_total" field if the given value is not nil.
+func (osmu *OncallShiftMetricsUpdate) SetNillableEventsTotal(f *float32) *OncallShiftMetricsUpdate {
+	if f != nil {
+		osmu.SetEventsTotal(*f)
+	}
+	return osmu
+}
+
+// AddEventsTotal adds f to the "events_total" field.
+func (osmu *OncallShiftMetricsUpdate) AddEventsTotal(f float32) *OncallShiftMetricsUpdate {
+	osmu.mutation.AddEventsTotal(f)
+	return osmu
+}
+
+// SetAlertsTotal sets the "alerts_total" field.
+func (osmu *OncallShiftMetricsUpdate) SetAlertsTotal(f float32) *OncallShiftMetricsUpdate {
+	osmu.mutation.ResetAlertsTotal()
+	osmu.mutation.SetAlertsTotal(f)
+	return osmu
+}
+
+// SetNillableAlertsTotal sets the "alerts_total" field if the given value is not nil.
+func (osmu *OncallShiftMetricsUpdate) SetNillableAlertsTotal(f *float32) *OncallShiftMetricsUpdate {
+	if f != nil {
+		osmu.SetAlertsTotal(*f)
+	}
+	return osmu
+}
+
+// AddAlertsTotal adds f to the "alerts_total" field.
+func (osmu *OncallShiftMetricsUpdate) AddAlertsTotal(f float32) *OncallShiftMetricsUpdate {
+	osmu.mutation.AddAlertsTotal(f)
+	return osmu
+}
+
 // SetInterruptsTotal sets the "interrupts_total" field.
 func (osmu *OncallShiftMetricsUpdate) SetInterruptsTotal(f float32) *OncallShiftMetricsUpdate {
 	osmu.mutation.ResetInterruptsTotal()
@@ -245,27 +287,6 @@ func (osmu *OncallShiftMetricsUpdate) SetNillableInterruptsTotal(f *float32) *On
 // AddInterruptsTotal adds f to the "interrupts_total" field.
 func (osmu *OncallShiftMetricsUpdate) AddInterruptsTotal(f float32) *OncallShiftMetricsUpdate {
 	osmu.mutation.AddInterruptsTotal(f)
-	return osmu
-}
-
-// SetInterruptsAlerts sets the "interrupts_alerts" field.
-func (osmu *OncallShiftMetricsUpdate) SetInterruptsAlerts(f float32) *OncallShiftMetricsUpdate {
-	osmu.mutation.ResetInterruptsAlerts()
-	osmu.mutation.SetInterruptsAlerts(f)
-	return osmu
-}
-
-// SetNillableInterruptsAlerts sets the "interrupts_alerts" field if the given value is not nil.
-func (osmu *OncallShiftMetricsUpdate) SetNillableInterruptsAlerts(f *float32) *OncallShiftMetricsUpdate {
-	if f != nil {
-		osmu.SetInterruptsAlerts(*f)
-	}
-	return osmu
-}
-
-// AddInterruptsAlerts adds f to the "interrupts_alerts" field.
-func (osmu *OncallShiftMetricsUpdate) AddInterruptsAlerts(f float32) *OncallShiftMetricsUpdate {
-	osmu.mutation.AddInterruptsAlerts(f)
 	return osmu
 }
 
@@ -434,17 +455,23 @@ func (osmu *OncallShiftMetricsUpdate) sqlSave(ctx context.Context) (n int, err e
 	if value, ok := osmu.mutation.AddedIncidentResponseTime(); ok {
 		_spec.AddField(oncallshiftmetrics.FieldIncidentResponseTime, field.TypeFloat32, value)
 	}
+	if value, ok := osmu.mutation.EventsTotal(); ok {
+		_spec.SetField(oncallshiftmetrics.FieldEventsTotal, field.TypeFloat32, value)
+	}
+	if value, ok := osmu.mutation.AddedEventsTotal(); ok {
+		_spec.AddField(oncallshiftmetrics.FieldEventsTotal, field.TypeFloat32, value)
+	}
+	if value, ok := osmu.mutation.AlertsTotal(); ok {
+		_spec.SetField(oncallshiftmetrics.FieldAlertsTotal, field.TypeFloat32, value)
+	}
+	if value, ok := osmu.mutation.AddedAlertsTotal(); ok {
+		_spec.AddField(oncallshiftmetrics.FieldAlertsTotal, field.TypeFloat32, value)
+	}
 	if value, ok := osmu.mutation.InterruptsTotal(); ok {
 		_spec.SetField(oncallshiftmetrics.FieldInterruptsTotal, field.TypeFloat32, value)
 	}
 	if value, ok := osmu.mutation.AddedInterruptsTotal(); ok {
 		_spec.AddField(oncallshiftmetrics.FieldInterruptsTotal, field.TypeFloat32, value)
-	}
-	if value, ok := osmu.mutation.InterruptsAlerts(); ok {
-		_spec.SetField(oncallshiftmetrics.FieldInterruptsAlerts, field.TypeFloat32, value)
-	}
-	if value, ok := osmu.mutation.AddedInterruptsAlerts(); ok {
-		_spec.AddField(oncallshiftmetrics.FieldInterruptsAlerts, field.TypeFloat32, value)
 	}
 	if value, ok := osmu.mutation.InterruptsNight(); ok {
 		_spec.SetField(oncallshiftmetrics.FieldInterruptsNight, field.TypeFloat32, value)
@@ -705,6 +732,48 @@ func (osmuo *OncallShiftMetricsUpdateOne) AddIncidentResponseTime(f float32) *On
 	return osmuo
 }
 
+// SetEventsTotal sets the "events_total" field.
+func (osmuo *OncallShiftMetricsUpdateOne) SetEventsTotal(f float32) *OncallShiftMetricsUpdateOne {
+	osmuo.mutation.ResetEventsTotal()
+	osmuo.mutation.SetEventsTotal(f)
+	return osmuo
+}
+
+// SetNillableEventsTotal sets the "events_total" field if the given value is not nil.
+func (osmuo *OncallShiftMetricsUpdateOne) SetNillableEventsTotal(f *float32) *OncallShiftMetricsUpdateOne {
+	if f != nil {
+		osmuo.SetEventsTotal(*f)
+	}
+	return osmuo
+}
+
+// AddEventsTotal adds f to the "events_total" field.
+func (osmuo *OncallShiftMetricsUpdateOne) AddEventsTotal(f float32) *OncallShiftMetricsUpdateOne {
+	osmuo.mutation.AddEventsTotal(f)
+	return osmuo
+}
+
+// SetAlertsTotal sets the "alerts_total" field.
+func (osmuo *OncallShiftMetricsUpdateOne) SetAlertsTotal(f float32) *OncallShiftMetricsUpdateOne {
+	osmuo.mutation.ResetAlertsTotal()
+	osmuo.mutation.SetAlertsTotal(f)
+	return osmuo
+}
+
+// SetNillableAlertsTotal sets the "alerts_total" field if the given value is not nil.
+func (osmuo *OncallShiftMetricsUpdateOne) SetNillableAlertsTotal(f *float32) *OncallShiftMetricsUpdateOne {
+	if f != nil {
+		osmuo.SetAlertsTotal(*f)
+	}
+	return osmuo
+}
+
+// AddAlertsTotal adds f to the "alerts_total" field.
+func (osmuo *OncallShiftMetricsUpdateOne) AddAlertsTotal(f float32) *OncallShiftMetricsUpdateOne {
+	osmuo.mutation.AddAlertsTotal(f)
+	return osmuo
+}
+
 // SetInterruptsTotal sets the "interrupts_total" field.
 func (osmuo *OncallShiftMetricsUpdateOne) SetInterruptsTotal(f float32) *OncallShiftMetricsUpdateOne {
 	osmuo.mutation.ResetInterruptsTotal()
@@ -723,27 +792,6 @@ func (osmuo *OncallShiftMetricsUpdateOne) SetNillableInterruptsTotal(f *float32)
 // AddInterruptsTotal adds f to the "interrupts_total" field.
 func (osmuo *OncallShiftMetricsUpdateOne) AddInterruptsTotal(f float32) *OncallShiftMetricsUpdateOne {
 	osmuo.mutation.AddInterruptsTotal(f)
-	return osmuo
-}
-
-// SetInterruptsAlerts sets the "interrupts_alerts" field.
-func (osmuo *OncallShiftMetricsUpdateOne) SetInterruptsAlerts(f float32) *OncallShiftMetricsUpdateOne {
-	osmuo.mutation.ResetInterruptsAlerts()
-	osmuo.mutation.SetInterruptsAlerts(f)
-	return osmuo
-}
-
-// SetNillableInterruptsAlerts sets the "interrupts_alerts" field if the given value is not nil.
-func (osmuo *OncallShiftMetricsUpdateOne) SetNillableInterruptsAlerts(f *float32) *OncallShiftMetricsUpdateOne {
-	if f != nil {
-		osmuo.SetInterruptsAlerts(*f)
-	}
-	return osmuo
-}
-
-// AddInterruptsAlerts adds f to the "interrupts_alerts" field.
-func (osmuo *OncallShiftMetricsUpdateOne) AddInterruptsAlerts(f float32) *OncallShiftMetricsUpdateOne {
-	osmuo.mutation.AddInterruptsAlerts(f)
 	return osmuo
 }
 
@@ -942,17 +990,23 @@ func (osmuo *OncallShiftMetricsUpdateOne) sqlSave(ctx context.Context) (_node *O
 	if value, ok := osmuo.mutation.AddedIncidentResponseTime(); ok {
 		_spec.AddField(oncallshiftmetrics.FieldIncidentResponseTime, field.TypeFloat32, value)
 	}
+	if value, ok := osmuo.mutation.EventsTotal(); ok {
+		_spec.SetField(oncallshiftmetrics.FieldEventsTotal, field.TypeFloat32, value)
+	}
+	if value, ok := osmuo.mutation.AddedEventsTotal(); ok {
+		_spec.AddField(oncallshiftmetrics.FieldEventsTotal, field.TypeFloat32, value)
+	}
+	if value, ok := osmuo.mutation.AlertsTotal(); ok {
+		_spec.SetField(oncallshiftmetrics.FieldAlertsTotal, field.TypeFloat32, value)
+	}
+	if value, ok := osmuo.mutation.AddedAlertsTotal(); ok {
+		_spec.AddField(oncallshiftmetrics.FieldAlertsTotal, field.TypeFloat32, value)
+	}
 	if value, ok := osmuo.mutation.InterruptsTotal(); ok {
 		_spec.SetField(oncallshiftmetrics.FieldInterruptsTotal, field.TypeFloat32, value)
 	}
 	if value, ok := osmuo.mutation.AddedInterruptsTotal(); ok {
 		_spec.AddField(oncallshiftmetrics.FieldInterruptsTotal, field.TypeFloat32, value)
-	}
-	if value, ok := osmuo.mutation.InterruptsAlerts(); ok {
-		_spec.SetField(oncallshiftmetrics.FieldInterruptsAlerts, field.TypeFloat32, value)
-	}
-	if value, ok := osmuo.mutation.AddedInterruptsAlerts(); ok {
-		_spec.AddField(oncallshiftmetrics.FieldInterruptsAlerts, field.TypeFloat32, value)
 	}
 	if value, ok := osmuo.mutation.InterruptsNight(); ok {
 		_spec.SetField(oncallshiftmetrics.FieldInterruptsNight, field.TypeFloat32, value)
