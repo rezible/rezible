@@ -1,7 +1,8 @@
 <script lang="ts">
-	import { Button, Collapse, ListItem, SelectField, TextField } from "svelte-ux";
+	import { Collapse, ListItem, SelectField, TextField } from "svelte-ux";
+	import Button from "$components/button/Button.svelte";
 	import Icon from "$components/icon/Icon.svelte";
-	import { type Snippet } from "svelte";
+	import type { Snippet } from "svelte";
 	import { mdiBroadcast, mdiCheck, mdiClose, mdiPencil, mdiStateMachine, mdiTune } from "@mdi/js";
 	import { createQuery } from "@tanstack/svelte-query";
 	import { listSystemComponentKindsOptions } from "$lib/api";

@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { mdiChevronRight, mdiFilter, mdiChevronDown } from "@mdi/js";
-	import { Button, ListItem } from "svelte-ux";
+	import { ListItem } from "svelte-ux";
+	import Button from "$components/button/Button.svelte";
 	import Icon from "$components/icon/Icon.svelte";
 	import { appShell } from "$features/app-shell/lib/appShellState.svelte";
 	import ReportsListPageActions from "./ReportsListPageActions.svelte";

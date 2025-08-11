@@ -8,7 +8,8 @@
 
 <script lang="ts">
 	import { mdiArchive, mdiArchiveMinus, mdiPlus, mdiTrashCan } from "@mdi/js";
-	import { Button, TextField } from "svelte-ux";
+	import { TextField } from "svelte-ux";
+	import Button from "$components/button/Button.svelte";
 
 	type Props = {
 		id: string;
@@ -46,9 +47,7 @@
 					iconOnly
 					color="warning"
 					icon={getItemIcon(item.archived)}
-					on:click={() => {
-						toggleArchiveItem(index);
-					}}
+					onclick={() => (toggleArchiveItem(index))}
 				></Button>
 			</div>
 		{/each}

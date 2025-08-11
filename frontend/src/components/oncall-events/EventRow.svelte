@@ -1,9 +1,10 @@
 <script lang="ts">
 	import type { OncallAnnotation, OncallEvent } from "$lib/api";
 	import { mdiPin, mdiPinOutline, mdiChatPlus, mdiMenuDown } from "@mdi/js";
-	import { Button, Lazy, Tooltip } from "svelte-ux";
+	import { Lazy, Tooltip } from "svelte-ux";
+	import Button from "$components/button/Button.svelte";
 	import Icon from "$components/icon/Icon.svelte";
-	import Avatar from "../avatar/Avatar.svelte";
+	import Avatar from "$components/avatar/Avatar.svelte";
 	import { useAnnotationDialogState } from "./annotation-dialog/dialogState.svelte";
 	import { getEventKindIcon } from "./events";
 	import EventTimeDate from "./EventTimeDate.svelte";

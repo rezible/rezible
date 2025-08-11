@@ -1,5 +1,6 @@
 <script lang="ts">
-	import { Button, TextField } from "svelte-ux";
+	import { TextField } from "svelte-ux";
+	import Button from "$components/button/Button.svelte";
 	import { mdiLink, mdiPlus } from "@mdi/js";
 	import Icon from "$components/icon/Icon.svelte";
 

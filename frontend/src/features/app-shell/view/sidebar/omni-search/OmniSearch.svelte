@@ -1,13 +1,12 @@
 <script lang="ts">
 	import { mdiMagnify } from "@mdi/js";
-
 	import {
 		type MenuOption,
-		Button,
 		Kbd,
 		Dialog,
 		SelectField,
 	} from "svelte-ux";
+	import Button from "$components/button/Button.svelte";
 	import { autoFocus, selectOnFocus } from '@layerstack/svelte-actions';
 	import { smScreen } from '@layerstack/svelte-stores';
 	import { cls } from '@layerstack/tailwind';

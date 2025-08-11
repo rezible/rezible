@@ -1,5 +1,6 @@
 <script lang="ts">
-	import { Button, Dialog } from "svelte-ux";
+	import { Dialog } from "svelte-ux";
+	import Button from "$components/button/Button.svelte";
 	import ConfirmButtons from "$components/confirm-buttons/ConfirmButtons.svelte";
 	import EventAnnotationForm from "./EventAnnotationForm.svelte";
 	import { useAnnotationDialogState } from "./dialogState.svelte";

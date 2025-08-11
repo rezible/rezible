@@ -1,5 +1,6 @@
 <script lang="ts">
-	import { Button, ListItem } from "svelte-ux";
+	import { ListItem } from "svelte-ux";
+	import Button from "$components/button/Button.svelte";
 	import { mdiPlus } from "@mdi/js";
 	import type { SystemComponent, SystemComponentSignal, SystemComponentControl } from "$lib/api";
 	import LabelDescriptionEditor from "./LabelDescriptionEditor.svelte";

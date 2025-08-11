@@ -1,6 +1,7 @@
 <script lang="ts">
-	import { Button, Dialog } from "svelte-ux";
+	import { Dialog } from "svelte-ux";
 	import { mdiMagicStaff } from "@mdi/js";
+	import Button from "$components/button/Button.svelte";
 	import Icon from "$components/icon/Icon.svelte";
 	import ConfirmButtons from "$components/confirm-buttons/ConfirmButtons.svelte";
 	import EventAttributesEditor from "./EventAttributesEditor.svelte";

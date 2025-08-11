@@ -2,7 +2,8 @@
 	import Avatar from "$components/avatar/Avatar.svelte";
 	import type { OncallRoster } from "$lib/api";
 	import { mdiChevronRight } from "@mdi/js";
-	import { Button, ListItem } from "svelte-ux";
+	import { ListItem } from "svelte-ux";
+	import Button from "$components/button/Button.svelte";
 
 	type Props = {
 		roster: OncallRoster;

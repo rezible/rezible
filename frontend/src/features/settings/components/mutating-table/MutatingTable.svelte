@@ -16,7 +16,8 @@
 		type MutationOptions,
 	} from "@tanstack/svelte-query";
 	import { type ColumnDef } from "@layerstack/svelte-table";
-	import { Button, Pagination, Table } from "svelte-ux";
+	import { Pagination, Table } from "svelte-ux";
+	import Button from "$components/button/Button.svelte";
 	import { paginationStore } from "@layerstack/svelte-stores";
 	import type { PaginatedResponse, ErrorModel, ListQueryOptionsFunc, ListFuncQueryOptions } from "$lib/api";
 	import { mdiArchive, mdiArchiveMinus, mdiPencil, mdiPlus } from "@mdi/js";

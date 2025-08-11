@@ -2,7 +2,6 @@
 	import { createMutation } from "@tanstack/svelte-query";
 	import { mdiArrowRight } from "@mdi/js";
 	import {
-		Button,
 		Dialog,
 		Field,
 		NumberStepper,
@@ -11,6 +10,7 @@
 		ToggleOption,
 		DatePickerField,
 	} from "svelte-ux";
+	import Button from "$components/button/Button.svelte";
 	import Icon from "$components/icon/Icon.svelte";
 	import { createMeetingScheduleMutation, createMeetingSessionMutation, type ErrorModel } from "$lib/api";
 	import Header from "$components/header/Header.svelte";

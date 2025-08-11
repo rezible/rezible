@@ -1,7 +1,8 @@
 <script lang="ts">
 	import { mdiClose } from "@mdi/js";
-	import { Button, Dialog } from "svelte-ux";
+	import { Dialog } from "svelte-ux";
 	import type { IncidentDebrief } from "$lib/api";
+	import Button from "$components/button/Button.svelte";
 	import IncidentDebriefView from "./IncidentDebriefView.svelte";
 	import Header from "$components/header/Header.svelte";
 

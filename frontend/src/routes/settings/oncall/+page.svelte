@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { isBefore, isSameDay } from "date-fns";
-	import { Button, Field, Month, NumberStepper, ToggleGroup, ToggleOption } from "svelte-ux";
+	import { Field, Month, NumberStepper, ToggleGroup, ToggleOption } from "svelte-ux";
+	import Button from "$components/button/Button.svelte";
 	import { Weekdays, type Weekday } from "$lib/scheduling";
 	import Header from "$components/header/Header.svelte";
 	import Card from "$components/card/Card.svelte";

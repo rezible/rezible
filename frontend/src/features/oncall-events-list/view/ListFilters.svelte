@@ -1,7 +1,6 @@
 <script lang="ts">
 	import { mdiCalendarRange, mdiChevronDown } from "@mdi/js";
 	import {
-		Button,
 		DateRangeField,
 		Field,
 		MultiSelectMenu,
@@ -11,6 +10,7 @@
 		type MenuOption,
 	} from "svelte-ux";
 	import { PeriodType } from "@layerstack/utils";
+	import Button from "$components/button/Button.svelte";
 	import type { DateRangeOption, EventKind, EventsListFiltersState } from "./filters.svelte";
 	import RosterSelectField from "$components/roster-select-field/RosterSelectField.svelte";
 	import Icon from "$components/icon/Icon.svelte";

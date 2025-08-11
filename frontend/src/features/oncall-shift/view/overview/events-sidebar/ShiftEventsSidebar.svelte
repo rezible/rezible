@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { mdiFilter } from "@mdi/js";
-	import { Button, ToggleGroup, ToggleOption } from "svelte-ux";
+	import { ToggleGroup, ToggleOption } from "svelte-ux";
+	import Button from "$components/button/Button.svelte";
 	import ShiftEventsHeatmap from "./ShiftEventsHeatmap.svelte";
 	import ShiftEventsList from "./ShiftEventsList.svelte";
 	import Header from "$components/header/Header.svelte";

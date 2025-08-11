@@ -2,10 +2,10 @@
 	import type { Component } from "svelte";
 	import { v4 as uuidv4 } from "uuid";
 	import type { IncidentEventEvidence, IncidentEventEvidenceAttributes } from "$lib/api";
-
 	import { mdiPencil, mdiPlus, mdiSlack, mdiTrashCan, mdiWeb } from "@mdi/js";
 	import Icon from "$components/icon/Icon.svelte";
-	import { Button, ListItem, SelectField, type MenuOption } from "svelte-ux";
+	import { ListItem, SelectField, type MenuOption } from "svelte-ux";
+	import Button from "$components/button/Button.svelte";
 	import ConfirmButtons from "$components/confirm-buttons/ConfirmButtons.svelte";
 	import Slack from "./data-sources/Slack.svelte";
 	import Url from "./data-sources/Url.svelte";

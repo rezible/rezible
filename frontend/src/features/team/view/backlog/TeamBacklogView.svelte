@@ -2,7 +2,8 @@
 	import { createQuery } from "@tanstack/svelte-query";
 	import { listTasksOptions, type ListTasksData, type Task } from "$lib/api";
 	import { mdiChevronRight } from "@mdi/js";
-	import { Button, ListItem } from "svelte-ux";
+	import { ListItem } from "svelte-ux";
+	import Button from "$components/button/Button.svelte";
 	import LoadingQueryWrapper from "$components/loader/LoadingQueryWrapper.svelte";
 	import { useTeamViewState } from "$features/team";
 	import { QueryPaginatorState } from "$lib/paginator.svelte";

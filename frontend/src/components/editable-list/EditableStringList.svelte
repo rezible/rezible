@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { mdiCheck, mdiPencil, mdiPlus, mdiTrashCan } from "@mdi/js";
-	import { Button, TextField, ListItem } from "svelte-ux";
-	import { derived } from "svelte/store";
+	import { TextField, ListItem } from "svelte-ux";
+	import Button from "$components/button/Button.svelte";
 
 	type Props = {
 		title: string;

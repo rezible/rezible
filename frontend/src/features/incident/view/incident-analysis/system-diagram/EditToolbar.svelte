@@ -1,7 +1,6 @@
 <script lang="ts">
-	import type { SystemAnalysisComponent, SystemAnalysisRelationship } from "$lib/api";
 	import { useSvelteFlow, ViewportPortal } from "@xyflow/svelte";
-	import { Button, ButtonGroup } from "svelte-ux";
+	import Button from "$components/button/Button.svelte";
 	import { useSystemDiagram, type SystemComponentNodeData, type SystemRelationshipEdgeData } from "./diagramState.svelte";
 	import { IsMounted } from "runed";
 	import { mdiPencil, mdiTrashCan } from "@mdi/js";

@@ -1,5 +1,6 @@
 <script lang="ts">
-	import { Button, ButtonGroup } from "svelte-ux";
+	import { ButtonGroup } from "svelte-ux";
+	import Button from "$components/button/Button.svelte";
 	import Icon from "$components/icon/Icon.svelte";
 	import { mdiContentDuplicate, mdiPlus, mdiStar, mdiStarOutline, mdiTrashCan } from "@mdi/js";
 	import { appShell } from "$features/app-shell/lib/appShellState.svelte";

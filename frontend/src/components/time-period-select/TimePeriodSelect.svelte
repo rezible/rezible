@@ -1,7 +1,8 @@
 <script lang="ts">
 	import { mdiCalendar } from "@mdi/js";
 	import Icon from "$components/icon/Icon.svelte";
-	import { Button, Menu, MenuItem, Toggle, type MenuOption } from "svelte-ux";
+	import Button from "$components/button/Button.svelte";
+	import { Menu, MenuItem, Toggle, type MenuOption } from "svelte-ux";
 
 	const defaultPeriods = [
 		{ value: 7, label: "Last 7 Days" },

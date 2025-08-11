@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { mdiClose } from "@mdi/js";
-	import { Button, Dialog } from "svelte-ux";
+	import { Dialog } from "svelte-ux";
+	import Button from "$components/button/Button.svelte";
 	import ConfirmButtons from "$components/confirm-buttons/ConfirmButtons.svelte";
 	import ComponentAttributesEditor from "./ComponentAttributesEditor.svelte";
 	import ComponentSelector from "./ComponentSelector.svelte";

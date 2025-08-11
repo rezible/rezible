@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { Button, Tooltip, Menu, MenuItem, Toggle } from "svelte-ux";
+	import { Tooltip, Menu, MenuItem, Toggle } from "svelte-ux";
 	import {
 		mdiCodeBlockTags,
 		mdiCodeTags,
@@ -15,6 +15,7 @@
 		mdiFormatListCheckbox,
 	} from "@mdi/js";
 	import Icon from "$components/icon/Icon.svelte";
+	import Button from "$components/button/Button.svelte";
 	import { activeEditor, activeStatus } from "$features/incident/lib/activeEditor.svelte";
 
 	const getIconForStatus = () => {

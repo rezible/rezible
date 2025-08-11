@@ -1,5 +1,6 @@
 <script lang="ts">
-	import { Button, Dialog } from "svelte-ux";
+	import { Dialog } from "svelte-ux";
+	import Button from "$components/button/Button.svelte";
 	import { useMilestonesDialog } from "./dialogState.svelte";
 	import MilestonesEditor from "./MilestonesEditor.svelte";
 	import { mdiClose } from "@mdi/js";

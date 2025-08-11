@@ -1,5 +1,6 @@
 <script lang="ts">
-	import { Button, Tooltip } from "svelte-ux";
+	import { Tooltip } from "svelte-ux";
+	import Button from "$components/button/Button.svelte";
 	import { onMount } from "svelte";
 	import type { RetrospectiveDiscussion } from "$lib/api";
 	import type { JSONContent } from "@tiptap/core";

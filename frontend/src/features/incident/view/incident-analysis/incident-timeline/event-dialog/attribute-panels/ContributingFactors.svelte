@@ -2,12 +2,12 @@
 	import { mdiPencil, mdiPlus, mdiTrashCan } from "@mdi/js";
 	import {
 		TextField,
-		Button,
 		type MenuOption,
 		SelectField,
 		MenuItem,
 		ListItem,
 	} from "svelte-ux";
+	import Button from "$components/button/Button.svelte";
 	import Icon from "$components/icon/Icon.svelte";
 	import { cls } from '@layerstack/tailwind';
 	import { v4 as uuidv4 } from "uuid";

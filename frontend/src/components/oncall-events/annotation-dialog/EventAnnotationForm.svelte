@@ -1,7 +1,8 @@
 <script lang="ts">
 	import type { OncallAnnotation, OncallEvent } from "$lib/api";
-	import { Button, Checkbox, Field, TextField, ToggleGroup, ToggleOption } from "svelte-ux";
-	import { mdiCalendar, mdiClose, mdiPlus } from "@mdi/js";
+	import { Checkbox, Field, TextField, ToggleGroup, ToggleOption } from "svelte-ux";
+	import Button from "$components/button/Button.svelte";
+	import { mdiClose, mdiPlus } from "@mdi/js";
 	import { useAnnotationDialogState } from "./dialogState.svelte";
 
 	type Props = {

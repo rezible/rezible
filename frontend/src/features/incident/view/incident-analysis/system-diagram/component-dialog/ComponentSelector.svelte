@@ -1,12 +1,12 @@
 <script lang="ts">
-	import { Button, Checkbox, ListItem } from "svelte-ux";
+	import { Checkbox, ListItem } from "svelte-ux";
+	import Button from "$components/button/Button.svelte";
 	import { cls } from '@layerstack/tailwind';
 	import Icon from "$components/icon/Icon.svelte";
 	import { listSystemComponentsOptions, type SystemComponent } from "$lib/api";
 	import { createQuery } from "@tanstack/svelte-query";
 	import { mdiPlus } from "@mdi/js";
 	import LoadingQueryWrapper from "$components/loader/LoadingQueryWrapper.svelte";
-	import { useSystemDiagram } from "../diagramState.svelte";
 	import { useComponentDialog } from "./dialogState.svelte";
 
 	const dialog = useComponentDialog();

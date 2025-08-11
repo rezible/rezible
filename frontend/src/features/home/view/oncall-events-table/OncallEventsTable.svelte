@@ -1,5 +1,6 @@
 <script lang="ts">
-	import { Field, ToggleGroup, ToggleOption, Button, Pagination } from "svelte-ux";
+	import { Field, ToggleGroup, ToggleOption, Pagination } from "svelte-ux";
+	import Button from "$components/button/Button.svelte";
 	import Header from "$components/header/Header.svelte";
 	import EventAnnotationDialog from "$components/oncall-events/annotation-dialog/EventAnnotationDialog.svelte";
 	import EventRow from "$components/oncall-events/EventRow.svelte";
