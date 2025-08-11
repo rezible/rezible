@@ -11,7 +11,7 @@
 </script>
 
 <script lang="ts">
-	import { Button } from "svelte-ux";
+	import Button from "$components/button/Button.svelte";
 	import type {
 		SystemAnalysisRelationshipControlAction,
 		SystemAnalysisRelationshipFeedbackSignal,

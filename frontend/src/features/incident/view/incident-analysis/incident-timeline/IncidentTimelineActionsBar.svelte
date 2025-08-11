@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { mdiFlagPlus, mdiTimelinePlus } from "@mdi/js";
-	import { Button } from "svelte-ux";
+	import Button from "$components/button/Button.svelte";
 	import Icon from "$components/icon/Icon.svelte";
 
 	import { useMilestonesDialog } from "./milestones-dialog/dialogState.svelte";

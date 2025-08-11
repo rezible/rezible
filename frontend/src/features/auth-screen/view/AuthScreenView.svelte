@@ -3,7 +3,7 @@
 	import { dev } from "$app/environment";
 	import { getAuthSessionConfigOptions } from "$lib/api";
 	import { session, type SessionErrorCategory } from "$lib/auth.svelte";
-	import { Button } from "svelte-ux";
+	import Button from "$components/button/Button.svelte";
 	import Header from "$components/header/Header.svelte";
 
 	// TODO: load this

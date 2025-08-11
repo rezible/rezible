@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { createMutation } from "@tanstack/svelte-query";
-	import { Button } from "svelte-ux";
+	import Button from "$components/button/Button.svelte";
 	import { mdiSend, mdiPhoneForward } from "@mdi/js";
 	import { sendOncallShiftHandoverMutation } from "$lib/api";
 	import { useToastState } from "$lib/toasts.svelte";

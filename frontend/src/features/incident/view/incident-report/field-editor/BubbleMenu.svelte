@@ -4,7 +4,7 @@
 
 <script lang="ts">
 	import { Editor } from "$components/tiptap-editor/TiptapEditor.svelte";
-	import { Button } from "svelte-ux";
+	import Button from "$components/button/Button.svelte";
 	import { mdiComment, mdiMarker } from "@mdi/js";
 	import { PluginKey, type Selection } from "@tiptap/pm/state";
 	import { BubbleMenuPlugin } from "@tiptap/extension-bubble-menu";

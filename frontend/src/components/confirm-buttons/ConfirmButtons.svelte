@@ -1,6 +1,6 @@
 <script lang="ts">
 	import type { Snippet } from "svelte";
-	import { Button } from "svelte-ux";
+	import Button from "$components/button/Button.svelte";
 
 	type Props = {
 		onClose: VoidFunction;

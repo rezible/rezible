@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { Button } from "svelte-ux";
+	import Button from "$components/button/Button.svelte";
 	import type { PlaybookViewState } from "../lib/viewState.svelte";
 
 	type Props = {

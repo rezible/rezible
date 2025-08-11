@@ -8,7 +8,7 @@
 		mdiAlertCircle,
 		mdiArrowRight,
 	} from "@mdi/js";
-	import { Button } from "svelte-ux";
+	import Button from "$components/button/Button.svelte";
 	import Header from "$components/header/Header.svelte";
 	import Icon from "$components/icon/Icon.svelte";
 	import type { User } from "$lib/api";

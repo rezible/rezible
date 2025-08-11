@@ -1,7 +1,7 @@
 <script lang="ts">
 	import Header from "$components/header/Header.svelte";
 	import { mdiChevronRight, mdiPencil } from "@mdi/js";
-	import { Button } from "svelte-ux";
+	import Button from "$components/button/Button.svelte";
 
 </script>
 

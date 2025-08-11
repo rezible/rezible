@@ -6,7 +6,7 @@
 	} from "$lib/api";
 	import { mdiArrowRight } from "@mdi/js";
 	import { useQueryClient, createMutation } from "@tanstack/svelte-query";
-	import { Button } from "svelte-ux";
+	import Button from "$components/button/Button.svelte";
 
 	type Props = {
 		debrief: IncidentDebrief;

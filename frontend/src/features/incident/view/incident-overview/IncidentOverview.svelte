@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { mdiPencil } from "@mdi/js";
-	import { Button } from "svelte-ux";
+	import Button from "$components/button/Button.svelte";
 	import Icon from "$components/icon/Icon.svelte";
 	import Avatar from "$components/avatar/Avatar.svelte";
 	import Header from "$components/header/Header.svelte";

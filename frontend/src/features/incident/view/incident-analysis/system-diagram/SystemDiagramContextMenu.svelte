@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { useEdges, useNodes, useSvelteFlow } from "@xyflow/svelte";
-	import { Button } from "svelte-ux";
+	import Button from "$components/button/Button.svelte";
 	import { mdiPlusCircle, mdiTrashCan } from "@mdi/js";
 	
 	import { useSystemDiagram } from "./diagramState.svelte";

@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { createQuery } from "@tanstack/svelte-query";
 	import { mdiPlus } from "@mdi/js";
-	import { Button } from "svelte-ux";
+	import Button from "$components/button/Button.svelte";
 	import { getUserOncallInformationOptions, type OncallShift } from "$lib/api";
 	import { session } from "$lib/auth.svelte";
 	import ActiveShiftCard from "./ActiveShiftCard.svelte";

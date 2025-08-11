@@ -2,7 +2,7 @@
 	import type { OncallShiftMetrics } from "$lib/api";
 	import { hour12, hour12Label } from "$lib/format.svelte";
 
-	import { Button } from "svelte-ux";
+	import Button from "$components/button/Button.svelte";
 
 	import { isBusinessHours } from "$features/oncall-shift/lib/utils";
 	import { type InlineStatProps } from "$components/viz/InlineStat.svelte";

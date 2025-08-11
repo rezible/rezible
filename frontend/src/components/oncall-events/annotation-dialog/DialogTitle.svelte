@@ -5,7 +5,7 @@
 	import { settings } from "$lib/settings.svelte";
 	import { PeriodType } from "@layerstack/utils";
 	import { useAnnotationDialogState } from "./dialogState.svelte";
-	import { Button } from "svelte-ux";
+	import Button from "$components/button/Button.svelte";
 	import { getEventKindIcon, getEventTimeIcon } from "../events";
 	import EventTimeDate from "../EventTimeDate.svelte";
 

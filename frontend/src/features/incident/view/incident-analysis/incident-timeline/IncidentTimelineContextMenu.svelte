@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { ElementSize } from "runed";
-	import { Button } from "svelte-ux";
+	import Button from "$components/button/Button.svelte";
 	import { useEventDialog } from "./event-dialog/dialogState.svelte";
 	import { ZonedDateTime } from "@internationalized/date";
 	import type { TimelineItem } from "vis-timeline";

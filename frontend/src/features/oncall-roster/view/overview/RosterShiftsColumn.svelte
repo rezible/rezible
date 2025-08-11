@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { Button } from "svelte-ux";
+	import Button from "$components/button/Button.svelte";
 	import Icon from "$components/icon/Icon.svelte";
 	import { listOncallShiftsOptions } from "$lib/api";
 	import { createQuery } from "@tanstack/svelte-query";

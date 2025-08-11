@@ -3,7 +3,7 @@
 	import Avatar from "$components/avatar/Avatar.svelte";
 	import ScheduleSessions from "./ScheduleSessions.svelte";
 	import Header from "$components/header/Header.svelte";
-	import { Button } from "svelte-ux";
+	import Button from "$components/button/Button.svelte";
 
 	type Props = { schedule: MeetingSchedule };
 	const { schedule }: Props = $props();

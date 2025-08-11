@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { Button } from "svelte-ux";
+	import Button from "$components/button/Button.svelte";
 	import Avatar from "$components/avatar/Avatar.svelte";
 	import { getLocalTimeZone } from "@internationalized/date";
 	import { createQuery } from "@tanstack/svelte-query";

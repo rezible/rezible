@@ -10,7 +10,7 @@
 	import { cls } from "@layerstack/tailwind";
 	import { settings } from "$lib/settings.svelte";
 	import { PeriodType } from "@layerstack/utils";
-	import { Button } from "svelte-ux";
+	import Button from "$components/button/Button.svelte";
 
 	type Props = {
 		shift: OncallShift;

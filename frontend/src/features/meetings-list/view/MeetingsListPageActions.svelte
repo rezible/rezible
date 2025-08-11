@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { mdiChevronDown } from "@mdi/js";
-	import { Button } from "svelte-ux";
+	import Button from "$components/button/Button.svelte";
 	import Icon from "$components/icon/Icon.svelte";
 	import CreateMeetingDialog from "$features/meetings-list/components/create-meeting-dialog/CreateMeetingDialog.svelte";
 

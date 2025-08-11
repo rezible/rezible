@@ -61,7 +61,7 @@
 		"js-cookie": "^3.0.5",
 		"runed": "^0.23.4",
 		"svelte-boring-avatars": "^1.2.6",
-		"svelte-ux": "^1.0.6",
+		"svelte-ux": "^1.0.8",
 		"uuid": "^11.1.0",
 		"vis-timeline": "^7.7.4",
 		"yjs": "^13.6.27",
