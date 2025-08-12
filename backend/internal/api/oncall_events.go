@@ -26,7 +26,7 @@ func (h *oncallEventsHandler) GetOncallEvent(ctx context.Context, req *oapi.GetO
 
 	event, eventErr := h.events.GetEvent(ctx, req.Id)
 	if eventErr != nil {
-		return nil, detailError("failed to get oncall event", eventErr)
+		return nil, apiError("failed to get oncall event", eventErr)
 	}
 	resp.Body.Data = oapi.OncallEventFromEnt(event)
 
@@ -49,7 +49,7 @@ func (h *oncallEventsHandler) ListOncallEvents(ctx context.Context, req *oapi.Li
 	if req.ShiftId != uuid.Nil {
 		shift, shiftErr := h.oncall.GetShiftByID(ctx, req.ShiftId)
 		if shiftErr != nil {
-			return nil, detailError("failed to query shift", shiftErr)
+			return nil, apiError("failed to query shift", shiftErr)
 		}
 		params.From = shift.StartAt
 		params.To = shift.EndAt
@@ -62,7 +62,7 @@ func (h *oncallEventsHandler) ListOncallEvents(ctx context.Context, req *oapi.Li
 
 	events, count, eventsErr := h.events.ListEvents(ctx, params)
 	if eventsErr != nil {
-		return nil, detailError("failed to query events", eventsErr)
+		return nil, apiError("failed to query events", eventsErr)
 	}
 	resp.Body.Data = make([]oapi.OncallEvent, len(events))
 	for i, event := range events {
@@ -90,14 +90,14 @@ func (h *oncallEventsHandler) ListOncallAnnotations(ctx context.Context, request
 	if request.ShiftId != uuid.Nil {
 		shift, shiftErr := h.oncall.GetShiftByID(ctx, request.ShiftId)
 		if shiftErr != nil {
-			return nil, detailError("failed to query shift", shiftErr)
+			return nil, apiError("failed to query shift", shiftErr)
 		}
 		params.Shift = shift
 	}
 
 	annos, count, annosErr := h.events.ListAnnotations(ctx, params)
 	if annosErr != nil {
-		return nil, detailError("query shift annotations", annosErr)
+		return nil, apiError("query shift annotations", annosErr)
 	}
 
 	resp.Body.Data = make([]oapi.OncallAnnotation, len(annos))
@@ -117,7 +117,7 @@ func (h *oncallEventsHandler) ListOncallAnnotations(ctx context.Context, request
 func (h *oncallEventsHandler) CreateOncallAnnotation(ctx context.Context, request *oapi.CreateOncallAnnotationRequest) (*oapi.CreateOncallAnnotationResponse, error) {
 	var resp oapi.CreateOncallAnnotationResponse
 
-	user := requestUserAuthSession(ctx, h.auth)
+	user := getRequestAuthSession(ctx, h.auth)
 
 	attr := request.Body.Attributes
 
@@ -133,7 +133,7 @@ func (h *oncallEventsHandler) CreateOncallAnnotation(ctx context.Context, reques
 	var createErr error
 	anno, createErr = h.events.UpdateAnnotation(ctx, anno)
 	if createErr != nil {
-		return nil, detailError("failed to create annotation", createErr)
+		return nil, apiError("failed to create annotation", createErr)
 	}
 	resp.Body.Data = oapi.OncallAnnotationFromEnt(anno)
 
@@ -146,7 +146,7 @@ func (h *oncallEventsHandler) UpdateOncallAnnotation(ctx context.Context, reques
 	attr := request.Body.Attributes
 	anno, annoErr := h.events.GetAnnotation(ctx, request.Id)
 	if annoErr != nil {
-		return nil, detailError("failed to get annotation", annoErr)
+		return nil, apiError("failed to get annotation", annoErr)
 	}
 
 	update := anno.Update().
@@ -163,7 +163,7 @@ func (h *oncallEventsHandler) UpdateOncallAnnotation(ctx context.Context, reques
 
 	updated, updateErr := update.Save(ctx)
 	if updateErr != nil {
-		return nil, detailError("failed to update annotation", updateErr)
+		return nil, apiError("failed to update annotation", updateErr)
 	}
 	resp.Body.Data = oapi.OncallAnnotationFromEnt(updated)
 
@@ -174,7 +174,7 @@ func (h *oncallEventsHandler) DeleteOncallAnnotation(ctx context.Context, reques
 	var resp oapi.DeleteOncallAnnotationResponse
 
 	if err := h.events.DeleteAnnotation(ctx, request.Id); err != nil {
-		return nil, detailError("failed to archive annotation", err)
+		return nil, apiError("failed to archive annotation", err)
 	}
 
 	return &resp, nil

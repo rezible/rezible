@@ -21,7 +21,7 @@ func (h *alertsHandler) ListAlerts(ctx context.Context, req *oapi.ListAlertsRequ
 
 	alerts, count, alertsErr := h.alerts.ListAlerts(ctx, rez.ListAlertsParams{})
 	if alertsErr != nil {
-		return nil, detailError("failed to list alerts", alertsErr)
+		return nil, apiError("failed to list alerts", alertsErr)
 	}
 
 	resp.Body.Data = make([]oapi.Alert, len(alerts))
@@ -40,7 +40,7 @@ func (h *alertsHandler) GetAlert(ctx context.Context, req *oapi.GetAlertRequest)
 
 	alert, getErr := h.alerts.GetAlert(ctx, req.Id)
 	if getErr != nil {
-		return nil, detailError("get alert", getErr)
+		return nil, apiError("get alert", getErr)
 	}
 	resp.Body.Data = oapi.AlertFromEnt(alert)
 
@@ -58,7 +58,7 @@ func (h *alertsHandler) GetAlertMetrics(ctx context.Context, req *oapi.GetAlertM
 	}
 	metrics, getErr := h.alerts.GetAlertMetrics(ctx, params)
 	if getErr != nil {
-		return nil, detailError("get alert metrics", getErr)
+		return nil, apiError("get alert metrics", getErr)
 	}
 	resp.Body.Data = oapi.AlertMetricsFromEnt(metrics)
 

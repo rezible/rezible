@@ -20,7 +20,7 @@ func (h *playbooksHandler) ListPlaybooks(ctx context.Context, request *oapi.List
 
 	playbooks, count, playbooksErr := h.playbooks.ListPlaybooks(ctx, rez.ListPlaybooksParams{})
 	if playbooksErr != nil {
-		return nil, detailError("failed to list playbooks", playbooksErr)
+		return nil, apiError("failed to list playbooks", playbooksErr)
 	}
 
 	resp.Body.Data = make([]oapi.Playbook, len(playbooks))
@@ -44,7 +44,7 @@ func (h *playbooksHandler) CreatePlaybook(ctx context.Context, request *oapi.Cre
 	}
 	pb, createErr := h.playbooks.UpdatePlaybook(ctx, reqPb)
 	if createErr != nil {
-		return nil, detailError("failed to create", createErr)
+		return nil, apiError("failed to create", createErr)
 	}
 	resp.Body.Data = oapi.PlaybookFromEnt(pb)
 
@@ -56,7 +56,7 @@ func (h *playbooksHandler) GetPlaybook(ctx context.Context, request *oapi.GetPla
 
 	pb, getErr := h.playbooks.GetPlaybook(ctx, request.Id)
 	if getErr != nil {
-		return nil, detailError("get playbook", getErr)
+		return nil, apiError("get playbook", getErr)
 	}
 
 	resp.Body.Data = oapi.PlaybookFromEnt(pb)
@@ -69,7 +69,7 @@ func (h *playbooksHandler) UpdatePlaybook(ctx context.Context, request *oapi.Upd
 
 	pb, pbErr := h.playbooks.GetPlaybook(ctx, request.Id)
 	if pbErr != nil {
-		return nil, detailError("failed to get playbook", pbErr)
+		return nil, apiError("failed to get playbook", pbErr)
 	}
 
 	attr := request.Body.Attributes
@@ -82,7 +82,7 @@ func (h *playbooksHandler) UpdatePlaybook(ctx context.Context, request *oapi.Upd
 
 	updated, updateErr := h.playbooks.UpdatePlaybook(ctx, pb)
 	if updateErr != nil {
-		return nil, detailError("failed to update", updateErr)
+		return nil, apiError("failed to update", updateErr)
 	}
 	resp.Body.Data = oapi.PlaybookFromEnt(updated)
 

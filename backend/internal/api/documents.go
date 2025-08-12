@@ -20,17 +20,17 @@ func newDocumentsHandler(documents rez.DocumentsService, auth rez.AuthSessionSer
 func (h *documentsHandler) RequestDocumentEditorSession(ctx context.Context, request *oapi.RequestDocumentEditorSessionRequest) (*oapi.RequestDocumentEditorSessionResponse, error) {
 	var resp oapi.RequestDocumentEditorSessionResponse
 
-	sess := requestUserAuthSession(ctx, h.auth)
+	sess := getRequestAuthSession(ctx, h.auth)
 
 	documentName := request.Body.Attributes.DocumentName
 	_, accessErr := h.documents.CheckUserDocumentAccess(ctx, sess.UserId, documentName)
 	if accessErr != nil {
-		return nil, detailError("no document access", accessErr)
+		return nil, apiError("no document access", accessErr)
 	}
 
-	token, tokenErr := h.auth.IssueUserAuthSessionToken(sess)
+	token, tokenErr := h.auth.IssueAuthSessionToken(sess)
 	if tokenErr != nil {
-		return nil, detailError("failed to create auth token", tokenErr)
+		return nil, apiError("failed to create auth token", tokenErr)
 	}
 
 	resp.Body.Data = oapi.DocumentEditorSession{
@@ -49,7 +49,7 @@ func (h *documentsHandler) VerifyDocumentEditorSession(ctx context.Context, requ
 
 	user, userErr := h.users.GetById(ctx, userId)
 	if userErr != nil {
-		return nil, detailError("failed to get user", userErr)
+		return nil, apiError("failed to get user", userErr)
 	}
 
 	documentName := request.Body.Attributes.DocumentName
@@ -59,7 +59,7 @@ func (h *documentsHandler) VerifyDocumentEditorSession(ctx context.Context, requ
 		if errors.Is(accessErr, rez.ErrUnauthorized) {
 			return nil, oapi.ErrorUnauthorized("no access to document")
 		}
-		return nil, detailError("check user document access", accessErr)
+		return nil, apiError("check user document access", accessErr)
 	}
 
 	resp.Body.Data = oapi.DocumentEditorSessionAuth{

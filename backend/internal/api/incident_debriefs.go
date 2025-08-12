@@ -31,11 +31,11 @@ func (h *incidentDebriefsHandler) GetIncidentUserDebrief(ctx context.Context, re
 	debrief, debriefErr := h.debriefs.GetUserDebrief(ctx, request.Id, userId)
 	if debriefErr != nil {
 		if !ent.IsNotFound(debriefErr) {
-			return nil, detailError("failed to get incident debrief", debriefErr)
+			return nil, apiError("failed to get incident debrief", debriefErr)
 		}
 		created, createErr := h.debriefs.CreateDebrief(ctx, request.Id, userId)
 		if createErr != nil {
-			return nil, detailError("failed to create debrief", createErr)
+			return nil, apiError("failed to create debrief", createErr)
 		}
 		debrief = created
 	}
@@ -52,7 +52,7 @@ func (h *incidentDebriefsHandler) GetIncidentDebrief(ctx context.Context, reques
 
 	debrief, debriefErr := h.debriefs.GetDebrief(ctx, request.Id)
 	if debriefErr != nil {
-		return nil, detailError("failed to get incident debrief", debriefErr)
+		return nil, apiError("failed to get incident debrief", debriefErr)
 	}
 	resp.Body.Data = oapi.IncidentDebriefFromEnt(debrief)
 
@@ -74,7 +74,7 @@ func (h *incidentDebriefsHandler) UpdateIncidentDebrief(ctx context.Context, req
 	}
 
 	if debrief == nil || err != nil {
-		return nil, detailError("update failed", err)
+		return nil, apiError("update failed", err)
 	}
 
 	resp.Body.Data = oapi.IncidentDebriefFromEnt(debrief)
@@ -87,14 +87,14 @@ func (h *incidentDebriefsHandler) ListIncidentDebriefMessages(ctx context.Contex
 
 	debrief, debriefErr := h.debriefs.GetDebrief(ctx, request.Id)
 	if debriefErr != nil {
-		return nil, detailError("failed to get debrief", debriefErr)
+		return nil, apiError("failed to get debrief", debriefErr)
 	}
 
 	msgs, msgsErr := debrief.QueryMessages().
 		Order(incidentdebriefmessage.ByCreatedAt()).
 		All(ctx)
 	if msgsErr != nil {
-		return nil, detailError("failed to query debrief messages", msgsErr)
+		return nil, apiError("failed to query debrief messages", msgsErr)
 	}
 
 	resp.Body.Data = make([]oapi.IncidentDebriefMessage, len(msgs))
@@ -110,7 +110,7 @@ func (h *incidentDebriefsHandler) AddIncidentDebriefUserMessage(ctx context.Cont
 
 	msg, msgErr := h.debriefs.AddDebriefMessage(ctx, request.Id, request.Body.Attributes.MessageContent)
 	if msgErr != nil {
-		return nil, detailError("failed to add user message", msgErr)
+		return nil, apiError("failed to add user message", msgErr)
 	}
 
 	resp.Body.Data = oapi.IncidentDebriefMessageFromEnt(msg)
@@ -123,12 +123,12 @@ func (h *incidentDebriefsHandler) ListIncidentDebriefSuggestions(ctx context.Con
 
 	debrief, debriefErr := h.debriefs.GetDebrief(ctx, request.Id)
 	if debriefErr != nil {
-		return nil, detailError("failed to get debrief", debriefErr)
+		return nil, apiError("failed to get debrief", debriefErr)
 	}
 
 	sugs, sugsErr := debrief.QuerySuggestions().All(ctx)
 	if sugsErr != nil {
-		return nil, detailError("failed to query suggestions", sugsErr)
+		return nil, apiError("failed to query suggestions", sugsErr)
 	}
 
 	resp.Body.Data = make([]oapi.IncidentDebriefSuggestion, len(sugs))
@@ -149,7 +149,7 @@ func (h *incidentDebriefsHandler) ListIncidentDebriefQuestions(ctx context.Conte
 
 	questions, queryErr := query.All(ctx)
 	if queryErr != nil {
-		return nil, detailError("Failed to query debrief questions", queryErr)
+		return nil, apiError("Failed to query debrief questions", queryErr)
 	}
 
 	resp.Body.Data = make([]oapi.IncidentDebriefQuestion, len(questions))
@@ -170,7 +170,7 @@ func (h *incidentDebriefsHandler) CreateIncidentDebriefQuestion(ctx context.Cont
 
 	question, createErr := query.Save(ctx)
 	if createErr != nil {
-		return nil, detailError("Failed to create incident debrief question", createErr)
+		return nil, apiError("Failed to create incident debrief question", createErr)
 	}
 	resp.Body.Data = oapi.IncidentDebriefQuestionFromEnt(question)
 
@@ -182,7 +182,7 @@ func (h *incidentDebriefsHandler) GetIncidentDebriefQuestion(ctx context.Context
 
 	question, queryErr := h.questions.Get(ctx, request.Id)
 	if queryErr != nil {
-		return nil, detailError("Failed to query debrief question", queryErr)
+		return nil, apiError("Failed to query debrief question", queryErr)
 	}
 
 	resp.Body.Data = oapi.IncidentDebriefQuestionFromEnt(question)
@@ -200,7 +200,7 @@ func (h *incidentDebriefsHandler) UpdateIncidentDebriefQuestion(ctx context.Cont
 
 	question, createErr := query.Save(ctx)
 	if createErr != nil {
-		return nil, detailError("Failed to create incident debrief question", createErr)
+		return nil, apiError("Failed to create incident debrief question", createErr)
 	}
 	resp.Body.Data = oapi.IncidentDebriefQuestionFromEnt(question)
 
@@ -212,7 +212,7 @@ func (h *incidentDebriefsHandler) ArchiveIncidentDebriefQuestion(ctx context.Con
 
 	delErr := h.questions.DeleteOneID(request.Id).Exec(ctx)
 	if delErr != nil {
-		return nil, detailError("Failed to archive incident debrief question", delErr)
+		return nil, apiError("Failed to archive incident debrief question", delErr)
 	}
 
 	return &resp, nil

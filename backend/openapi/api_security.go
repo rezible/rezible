@@ -27,6 +27,14 @@ const (
 )
 
 var (
+	ErrNoSession      = ErrorUnauthorized("no_session")
+	ErrSessionExpired = ErrorUnauthorized("session_expired")
+	ErrMissingUser    = ErrorUnauthorized("missing_user")
+	ErrUnauthorized   = ErrorUnauthorized("unauthorized")
+	ErrUnknown        = ErrorUnauthorized("unknown")
+)
+
+var (
 	DefaultSecuritySchemes = map[string]*huma.SecurityScheme{
 		SecurityMethodSessionCookie: {
 			Type: "apiKey",
@@ -128,24 +136,13 @@ func MakeSecurityMiddleware(auth rez.AuthSessionService) Middleware {
 			r, w := humago.Unwrap(c)
 
 			token, requiredScopes := getRequestSecurityTokenAndScopes(security, r)
-
-			sess, verifyErr := auth.VerifyUserAuthSessionToken(token)
-			if verifyErr != nil {
-				log.Debug().Err(verifyErr).Msg("failed to verify session token")
-				writeAuthSessionError(w, verifyErr)
-				return
-			}
-
-			if scopesErr := auth.CheckUserRequestScopes(ctx, sess.UserId, requiredScopes); scopesErr != nil {
-				writeAuthSessionError(w, scopesErr)
-				return
-			}
-
-			authCtx, authErr := auth.CreateUserAuthContext(ctx, sess)
+			authCtx, authErr := auth.CreateVerifiedRequestAuthSessionContext(ctx, token, requiredScopes)
 			if authErr != nil {
-				writeAuthSessionError(w, authErr)
+				log.Debug().AnErr("authErr", authErr).Msg("auth session error")
+				writeStatusError(w, authErr)
 				return
 			}
+
 			ctx = authCtx
 		}
 
@@ -153,20 +150,20 @@ func MakeSecurityMiddleware(auth rez.AuthSessionService) Middleware {
 	}
 }
 
-func writeAuthSessionError(w http.ResponseWriter, authErr error) {
+func writeStatusError(w http.ResponseWriter, err error) {
 	var resp StatusError
-	log.Debug().AnErr("authErr", authErr).Msg("auth session error")
-	if errors.Is(authErr, rez.ErrNoAuthSession) {
-		resp = ErrorUnauthorized("no_session")
-	} else if errors.Is(authErr, rez.ErrAuthSessionExpired) {
-		resp = ErrorUnauthorized("session_expired")
-	} else if errors.Is(authErr, rez.ErrAuthSessionUserMissing) {
-		resp = ErrorUnauthorized("missing_user")
-	} else if errors.Is(authErr, rez.ErrUnauthorized) {
-		resp = ErrorUnauthorized("unauthorized")
+	if errors.Is(err, rez.ErrNoAuthSession) {
+		resp = ErrNoSession
+	} else if errors.Is(err, rez.ErrAuthSessionExpired) {
+		resp = ErrSessionExpired
+	} else if errors.Is(err, rez.ErrAuthSessionUserMissing) {
+		resp = ErrMissingUser
+	} else if errors.Is(err, rez.ErrUnauthorized) {
+		resp = ErrUnauthorized
 	} else {
-		resp = ErrorUnauthorized("unknown")
+		resp = ErrUnknown
 	}
+
 	respBody, jsonErr := json.Marshal(resp)
 	if jsonErr != nil {
 		http.Error(w, jsonErr.Error(), http.StatusInternalServerError)

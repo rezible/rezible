@@ -50,76 +50,37 @@ func (s *AuthSessionService) ProviderName(ctx context.Context) (string, error) {
 
 type authUserSessionContextKey struct{}
 
-func newUserAuthSession(userId uuid.UUID, expiresAt time.Time) *rez.UserAuthSession {
-	return &rez.UserAuthSession{UserId: userId, ExpiresAt: expiresAt}
+func newUserAuthSession(userId uuid.UUID, expiresAt time.Time) *rez.AuthSession {
+	return &rez.AuthSession{UserId: userId, ExpiresAt: expiresAt}
 }
 
-func (s *AuthSessionService) CreateUserAuthContext(ctx context.Context, sess *rez.UserAuthSession) (context.Context, error) {
-	user, userErr := s.users.GetById(privacy.DecisionContext(ctx, privacy.Allow), sess.UserId)
+func setAuthSessionContext(ctx context.Context, sess *rez.AuthSession) context.Context {
+	return context.WithValue(ctx, authUserSessionContextKey{}, sess)
+}
+
+func (s *AuthSessionService) createUserAuthContext(ctx context.Context, sess *rez.AuthSession) (context.Context, error) {
+	// TODO: revise usage of this
+	userLookupCtx := privacy.DecisionContext(ctx, privacy.Allow)
+	user, userErr := s.users.GetById(userLookupCtx, sess.UserId)
 	if userErr != nil {
 		if ent.IsNotFound(userErr) {
 			return nil, rez.ErrAuthSessionUserMissing
 		}
 		return nil, fmt.Errorf("get user by id: %w", userErr)
 	}
-	ctx = access.UserContext(ctx, user)
-	ctx = context.WithValue(ctx, authUserSessionContextKey{}, sess)
-	return ctx, nil
+	return setAuthSessionContext(access.UserContext(ctx, user), sess), nil
 }
 
-func (s *AuthSessionService) GetUserAuthSession(ctx context.Context) (*rez.UserAuthSession, error) {
-	sess, ok := ctx.Value(authUserSessionContextKey{}).(*rez.UserAuthSession)
+func (s *AuthSessionService) GetAuthSession(ctx context.Context) (*rez.AuthSession, error) {
+	sess, ok := ctx.Value(authUserSessionContextKey{}).(*rez.AuthSession)
 	if !ok || sess == nil {
 		return nil, rez.ErrNoAuthSession
 	}
 	return sess, nil
 }
 
-func (s *AuthSessionService) CheckUserRequestScopes(ctx context.Context, userId uuid.UUID, requiredScopes []string) error {
-	// TODO: check scopes
-	for _, scope := range requiredScopes {
-		log.Warn().Str("scope", scope).Msg("TODO: verify request security scopes")
-	}
-
-	return nil
-}
-
 func isRedirectableError(err error) bool {
 	return errors.Is(err, rez.ErrAuthSessionExpired) || errors.Is(err, rez.ErrNoAuthSession)
-}
-
-func (s *AuthSessionService) wrapUserAuthRequest(r *http.Request, sess *rez.UserAuthSession) *http.Request {
-	return r.WithContext(context.WithValue(r.Context(), authUserSessionContextKey{}, sess))
-}
-
-func (s *AuthSessionService) FrontendMiddleware() func(http.Handler) http.Handler {
-	return func(next http.Handler) http.Handler {
-		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			if r.URL.Path == "/favicon.ico" {
-				next.ServeHTTP(w, r)
-				return
-			}
-
-			/*
-				asp, aspErr := s.pl.GetAuthSessionProvider(r.Context())
-				if aspErr != nil {
-					http.Error(w, aspErr.Error(), http.StatusInternalServerError)
-					return
-				}
-
-				_, sessErr := s.getVerifiedUserAuthSession(r)
-				if sessErr != nil {
-					if isRedirectableError(sessErr) {
-						s.sessProvider.StartAuthFlow(w, r)
-					} else {
-						http.Error(w, sessErr.Error(), http.StatusInternalServerError)
-					}
-					return
-				}
-			*/
-			next.ServeHTTP(w, r) //s.wrapUserAuthRequest(r, sess))
-		})
-	}
 }
 
 func (s *AuthSessionService) MCPServerMiddleware() func(http.Handler) http.Handler {
@@ -131,9 +92,21 @@ func (s *AuthSessionService) MCPServerMiddleware() func(http.Handler) http.Handl
 				http.Error(w, http.StatusText(http.StatusUnauthorized), http.StatusUnauthorized)
 				return
 			}
-			next.ServeHTTP(w, s.wrapUserAuthRequest(r, sess))
+
+			next.ServeHTTP(w, r.WithContext(setAuthSessionContext(r.Context(), sess)))
 		})
 	}
+}
+
+func (s *AuthSessionService) getMCPUserSession(r *http.Request) (*rez.AuthSession, error) {
+	bearerToken, tokenErr := oapi.GetRequestApiBearerToken(r)
+	if tokenErr != nil {
+		return nil, tokenErr
+	}
+	// TODO: a lot
+	// return s.VerifyUserSessionToken(bearerToken)
+	log.Debug().Str("bearer", bearerToken).Msg("skipping mcp auth verification")
+	return newUserAuthSession(uuid.New(), time.Now().Add(time.Hour)), nil
 }
 
 func (s *AuthSessionService) AuthHandler() http.Handler {
@@ -145,20 +118,26 @@ func (s *AuthSessionService) AuthHandler() http.Handler {
 			return
 		}
 
-		if providerHandled := s.providerAuthFlow(w, r); providerHandled {
+		if s.delegateAuthFlowToProvider(w, r) {
 			return
 		}
 
-		_, sessErr := s.getVerifiedUserAuthSession(r)
-		if sessErr != nil && isRedirectableError(sessErr) {
-			s.prov.StartAuthFlow(w, r)
+		token, cookieErr := oapi.GetRequestSessionCookieToken(r)
+		if cookieErr != nil {
+			http.Error(w, http.StatusText(http.StatusUnauthorized), http.StatusUnauthorized)
+			return
 		} else {
-			http.Redirect(w, r, rez.FrontendUrl, http.StatusFound)
+			_, sessErr := s.verifyUserAuthSessionToken(token)
+			if sessErr != nil && isRedirectableError(sessErr) {
+				s.prov.StartAuthFlow(w, r)
+				return
+			}
 		}
+		http.Redirect(w, r, rez.FrontendUrl, http.StatusFound)
 	})
 }
 
-func (s *AuthSessionService) providerAuthFlow(w http.ResponseWriter, r *http.Request) bool {
+func (s *AuthSessionService) delegateAuthFlowToProvider(w http.ResponseWriter, r *http.Request) bool {
 	return s.prov.HandleAuthFlowRequest(w, r, func(prov *ent.User, expiresAt time.Time, redirect string) {
 		ctx := r.Context()
 
@@ -176,7 +155,12 @@ func (s *AuthSessionService) providerAuthFlow(w http.ResponseWriter, r *http.Req
 			if usr != nil {
 				userId = usr.ID
 			}
-			sessErr = s.setAuthSessionTokenCookie(w, r, newUserAuthSession(userId, expiresAt))
+			token, tokenErr := s.IssueAuthSessionToken(newUserAuthSession(userId, expiresAt))
+			if tokenErr != nil {
+				sessErr = fmt.Errorf("failed to issue user session token: %w", tokenErr)
+			} else {
+				http.SetCookie(w, oapi.MakeSessionCookie(r, token, expiresAt, 0))
+			}
 		}
 
 		if sessErr != nil {
@@ -188,61 +172,39 @@ func (s *AuthSessionService) providerAuthFlow(w http.ResponseWriter, r *http.Req
 	})
 }
 
-func (s *AuthSessionService) setAuthSessionTokenCookie(w http.ResponseWriter, r *http.Request, sess *rez.UserAuthSession) error {
-	token, tokenErr := s.IssueUserAuthSessionToken(sess)
-	if tokenErr != nil {
-		return fmt.Errorf("failed to issue user session token: %w", tokenErr)
-	}
-	http.SetCookie(w, oapi.MakeSessionCookie(r, token, sess.ExpiresAt, 0))
-	return nil
-}
-
-func (s *AuthSessionService) getMCPUserSession(r *http.Request) (*rez.UserAuthSession, error) {
-	bearerToken, tokenErr := oapi.GetRequestApiBearerToken(r)
-	if tokenErr != nil {
-		return nil, tokenErr
-	}
-	// TODO: a lot
-	// return s.VerifyUserSessionToken(bearerToken)
-	log.Debug().Str("bearer", bearerToken).Msg("skipping mcp auth verification")
-	return newUserAuthSession(uuid.New(), time.Now().Add(time.Hour)), nil
-}
-
-func (s *AuthSessionService) getVerifiedUserAuthSession(r *http.Request) (*rez.UserAuthSession, error) {
-	cookieToken, cookieErr := oapi.GetRequestSessionCookieToken(r)
-	if cookieErr != nil {
-		return nil, fmt.Errorf("getting token from cookie: %w", cookieErr)
-	}
-	return s.VerifyUserAuthSessionToken(cookieToken)
-}
-
 type authSessionTokenClaims struct {
 	jwt.RegisteredClaims
 	UserId uuid.UUID `json:"userId"`
 }
 
-func (s *AuthSessionService) IssueUserAuthSessionToken(sess *rez.UserAuthSession) (string, error) {
+func (s *AuthSessionService) IssueAuthSessionToken(sess *rez.AuthSession) (string, error) {
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
 		"userId": sess.UserId,
 		"exp":    jwt.NewNumericDate(sess.ExpiresAt),
 	})
-
-	signedToken, signErr := token.SignedString(s.sessionSecret)
-	if signErr != nil {
-		return "", fmt.Errorf("failed to sign token: %w", signErr)
-	}
-
-	return signedToken, nil
+	return token.SignedString(s.sessionSecret)
 }
 
-func (s *AuthSessionService) VerifyUserAuthSessionToken(tokenStr string) (*rez.UserAuthSession, error) {
-	if tokenStr == "" {
+func (s *AuthSessionService) verifyUserAuthSessionToken(token string) (*rez.AuthSession, error) {
+	if token == "" {
 		return nil, rez.ErrNoAuthSession
 	}
 
-	claims, parseErr := s.parseSessionTokenClaims(tokenStr)
+	keyFunc := func(token *jwt.Token) (any, error) {
+		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
+		}
+		return s.sessionSecret, nil
+	}
+
+	parsed, parseErr := jwt.ParseWithClaims(token, &authSessionTokenClaims{}, keyFunc)
 	if parseErr != nil {
-		return nil, fmt.Errorf("failed to parse token: %w", parseErr)
+		return nil, fmt.Errorf("parse: %w", parseErr)
+	}
+
+	claims, claimsOk := parsed.Claims.(*authSessionTokenClaims)
+	if !claimsOk {
+		return nil, fmt.Errorf("invalid claims")
 	}
 
 	if claims.UserId == uuid.Nil {
@@ -257,22 +219,30 @@ func (s *AuthSessionService) VerifyUserAuthSessionToken(tokenStr string) (*rez.U
 	return newUserAuthSession(claims.UserId, exp.Time), nil
 }
 
-func (s *AuthSessionService) parseSessionTokenClaims(tokenStr string) (*authSessionTokenClaims, error) {
-	keyFunc := func(token *jwt.Token) (any, error) {
-		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
-			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
-		}
-		return s.sessionSecret, nil
+func (s *AuthSessionService) CreateVerifiedRequestAuthSessionContext(ctx context.Context, token string, scopes []string) (context.Context, error) {
+	sess, verifyErr := s.verifyUserAuthSessionToken(token)
+	if verifyErr != nil {
+		log.Debug().Err(verifyErr).Msg("failed to verify session token")
+		return nil, verifyErr
 	}
 
-	token, parseErr := jwt.ParseWithClaims(tokenStr, &authSessionTokenClaims{}, keyFunc)
-	if parseErr != nil {
-		return nil, fmt.Errorf("parse: %w", parseErr)
+	if scopesErr := s.checkUserRequestScopes(ctx, sess.UserId, scopes); scopesErr != nil {
+		return nil, scopesErr
 	}
 
-	claims, claimsOk := token.Claims.(*authSessionTokenClaims)
-	if !claimsOk {
-		return nil, fmt.Errorf("invalid claims")
+	authCtx, authErr := s.createUserAuthContext(ctx, sess)
+	if authErr != nil {
+		return nil, authErr
 	}
-	return claims, nil
+
+	return authCtx, nil
+}
+
+func (s *AuthSessionService) checkUserRequestScopes(ctx context.Context, userId uuid.UUID, requiredScopes []string) error {
+	// TODO: check scopes
+	for _, scope := range requiredScopes {
+		log.Warn().Str("scope", scope).Msg("TODO: verify request security scopes")
+	}
+
+	return nil
 }

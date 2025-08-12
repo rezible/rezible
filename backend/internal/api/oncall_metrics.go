@@ -39,7 +39,7 @@ func (h *oncallMetricsHandler) GetOncallShiftMetrics(ctx context.Context, reques
 		metrics, metricsErr = h.oncall.GetComparisonShiftMetrics(ctx, from, to)
 	}
 	if metricsErr != nil {
-		return nil, detailError("failed to get oncall shift metrics", metricsErr)
+		return nil, apiError("failed to get oncall shift metrics", metricsErr)
 	}
 	resp.Body.Data = oapi.OncallShiftMetricsFromEnt(metrics)
 

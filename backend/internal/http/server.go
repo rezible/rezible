@@ -39,8 +39,7 @@ func NewServer(
 		oapi.MakeSecurityMiddleware(auth),
 	}
 	oapiServer := oapi.MakeApi(oapiHandler, "/api/v1", oapiMw...)
-	apiV1Router := chi.
-		Chain(middleware.Logger).
+	apiV1Router := chi.Chain(middleware.Logger).
 		Handler(oapiServer.Adapter())
 	router.Mount("/api/v1", apiV1Router)
 
@@ -48,16 +47,14 @@ func NewServer(
 
 	router.Mount("/api/webhooks", http.StripPrefix("/api/webhooks", webhooksHandler))
 
-	mcpRouter := chi.
-		Chain(auth.MCPServerMiddleware()).
+	mcpRouter := chi.Chain(auth.MCPServerMiddleware()).
 		Handler(mcp.NewHTTPServer(mcpHandler, "/mcp"))
 	router.Mount("/mcp", mcpRouter)
 
 	router.Mount("/auth", auth.AuthHandler())
 	router.Get("/health", makeHealthCheckHandler())
 
-	frontendRouter := chi.
-		Chain(auth.FrontendMiddleware()).
+	frontendRouter := chi.Chain().
 		Handler(makeEmbeddedFrontendFilesServer(feFiles))
 	router.Handle("/*", frontendRouter)
 

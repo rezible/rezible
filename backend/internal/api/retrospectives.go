@@ -40,7 +40,7 @@ func (h *retrospectivesHandler) CreateRetrospective(ctx context.Context, request
 
 	retro, createErr := h.retros.Create(ctx, params)
 	if createErr != nil {
-		return nil, detailError("failed to create retro", createErr)
+		return nil, apiError("failed to create retro", createErr)
 	}
 	resp.Body.Data = oapi.RetrospectiveFromEnt(retro)
 
@@ -52,7 +52,7 @@ func (h *retrospectivesHandler) GetRetrospective(ctx context.Context, input *oap
 
 	retro, retroErr := h.retros.GetById(ctx, input.Id)
 	if retroErr != nil {
-		return nil, detailError("failed to get retrospective", retroErr)
+		return nil, apiError("failed to get retrospective", retroErr)
 	}
 	resp.Body.Data = oapi.RetrospectiveFromEnt(retro)
 
@@ -70,12 +70,12 @@ func (h *retrospectivesHandler) GetRetrospectiveForIncident(ctx context.Context,
 		inc, incErr = h.incidents.GetByID(ctx, input.Id.UUID)
 	}
 	if incErr != nil {
-		return nil, detailError("failed to get incident", incErr)
+		return nil, apiError("failed to get incident", incErr)
 	}
 
 	retro, retroErr := h.retros.GetForIncident(ctx, inc)
 	if retroErr != nil {
-		return nil, detailError("failed to get retrospective", retroErr)
+		return nil, apiError("failed to get retrospective", retroErr)
 	}
 	resp.Body.Data = oapi.RetrospectiveFromEnt(retro)
 
@@ -136,7 +136,7 @@ func (h *retrospectivesHandler) ListRetrospectiveDiscussions(ctx context.Context
 		ListParams:      request.ListParams(),
 	})
 	if discErr != nil {
-		return nil, detailError("failed to list discussions", discErr)
+		return nil, apiError("failed to list discussions", discErr)
 	}
 
 	resp.Body.Data = make([]oapi.RetrospectiveDiscussion, len(discussions))
@@ -158,7 +158,7 @@ func (h *retrospectivesHandler) CreateRetrospectiveDiscussion(ctx context.Contex
 		Content:         request.Body.Attributes.Content,
 	})
 	if createErr != nil {
-		return nil, detailError("failed to create retrospective discussion", createErr)
+		return nil, apiError("failed to create retrospective discussion", createErr)
 	}
 	resp.Body.Data = oapi.RetrospectiveDiscussionFromEnt(discussion)
 
@@ -170,7 +170,7 @@ func (h *retrospectivesHandler) GetRetrospectiveDiscussion(ctx context.Context, 
 
 	discussion, discErr := h.retros.GetDiscussionByID(ctx, request.DiscussionId)
 	if discErr != nil {
-		return nil, detailError("failed to get retrospective discussion", discErr)
+		return nil, apiError("failed to get retrospective discussion", discErr)
 	}
 	resp.Body.Data = oapi.RetrospectiveDiscussionFromEnt(discussion)
 
@@ -182,7 +182,7 @@ func (h *retrospectivesHandler) UpdateRetrospectiveDiscussion(ctx context.Contex
 
 	discussion, discErr := h.retros.GetDiscussionByID(ctx, request.DiscussionId)
 	if discErr != nil {
-		return nil, detailError("failed to get retrospective discussion", discErr)
+		return nil, apiError("failed to get retrospective discussion", discErr)
 	}
 
 	update := discussion.Update()
@@ -190,7 +190,7 @@ func (h *retrospectivesHandler) UpdateRetrospectiveDiscussion(ctx context.Contex
 	//.SetNillableResolved(request.Body.Attributes.Resolved)
 	updated, saveErr := update.Save(ctx)
 	if saveErr != nil {
-		return nil, detailError("failed to update retrospective discussion", saveErr)
+		return nil, apiError("failed to update retrospective discussion", saveErr)
 	}
 
 	resp.Body.Data = oapi.RetrospectiveDiscussionFromEnt(updated)
@@ -205,7 +205,7 @@ func (h *retrospectivesHandler) AddRetrospectiveDiscussionReply(ctx context.Cont
 
 	discussion, discussionErr := h.retros.GetDiscussionByID(ctx, request.DiscussionId)
 	if discussionErr != nil {
-		return nil, detailError("failed to get existing discussion", discussionErr)
+		return nil, apiError("failed to get existing discussion", discussionErr)
 	}
 
 	attr := request.Body.Attributes
@@ -216,7 +216,7 @@ func (h *retrospectivesHandler) AddRetrospectiveDiscussionReply(ctx context.Cont
 		Content:      attr.Content,
 	})
 	if replyErr != nil {
-		return nil, detailError("failed to add retrospective discussion reply", replyErr)
+		return nil, apiError("failed to add retrospective discussion reply", replyErr)
 	}
 	discussion.Edges.Replies = append(discussion.Edges.Replies, reply)
 

@@ -39,7 +39,7 @@ func (h *oncallShiftsHandler) ListOncallShifts(ctx context.Context, request *oap
 
 	shifts, shiftsErr := h.oncall.ListShifts(ctx, listParams)
 	if shiftsErr != nil {
-		return nil, detailError("failed to list oncall shifts", shiftsErr)
+		return nil, apiError("failed to list oncall shifts", shiftsErr)
 	}
 
 	numShifts := len(shifts)
@@ -56,7 +56,7 @@ func (h *oncallShiftsHandler) GetOncallShift(ctx context.Context, request *oapi.
 
 	shift, shiftErr := h.oncall.GetShiftByID(ctx, request.Id)
 	if shiftErr != nil {
-		return nil, detailError("failed to query shift", shiftErr)
+		return nil, apiError("failed to query shift", shiftErr)
 	}
 	resp.Body.Data = oapi.OncallShiftFromEnt(shift)
 
@@ -69,7 +69,7 @@ func (h *oncallShiftsHandler) GetAdjacentOncallShifts(ctx context.Context, reque
 	prev, next, shiftErr := h.oncall.GetAdjacentShifts(ctx, request.Id)
 	if shiftErr != nil {
 		log.Debug().Err(shiftErr).Msg("GetAdjacentOncallShifts")
-		return nil, detailError("failed to query adjacent shifts", shiftErr)
+		return nil, apiError("failed to query adjacent shifts", shiftErr)
 	}
 	var adj oapi.OncallShiftsAdjacent
 	if prev != nil {
@@ -140,7 +140,7 @@ func (h *oncallShiftsHandler) GetOncallShiftHandover(ctx context.Context, reques
 
 	handover, handoverErr := h.oncall.GetHandoverForShift(ctx, request.Id)
 	if handoverErr != nil && !ent.IsNotFound(handoverErr) {
-		return nil, detailError("failed to get handover", handoverErr)
+		return nil, apiError("failed to get handover", handoverErr)
 	}
 	resp.Body.Data = oapi.OncallShiftHandoverFromEnt(handover)
 
@@ -157,7 +157,7 @@ func (h *oncallShiftsHandler) UpdateOncallShiftHandover(ctx context.Context, req
 	if attr.Content != nil {
 		contentJson, jsonErr := json.Marshal(attr.Content)
 		if jsonErr != nil {
-			return nil, detailError("failed to marshal content", jsonErr)
+			return nil, apiError("failed to marshal content", jsonErr)
 		}
 		ho.Contents = contentJson
 	}
@@ -170,7 +170,7 @@ func (h *oncallShiftsHandler) UpdateOncallShiftHandover(ctx context.Context, req
 
 	updated, updateErr := h.oncall.UpdateShiftHandover(ctx, ho)
 	if updateErr != nil {
-		return nil, detailError("failed to update handover", updateErr)
+		return nil, apiError("failed to update handover", updateErr)
 	}
 	resp.Body.Data = oapi.OncallShiftHandoverFromEnt(updated)
 
@@ -205,7 +205,7 @@ func (h *oncallShiftsHandler) SendOncallShiftHandover(ctx context.Context, reque
 
 	handover, sendErr := h.oncall.SendShiftHandover(ctx, request.Id)
 	if sendErr != nil {
-		return nil, detailError("failed to send handover", sendErr)
+		return nil, apiError("failed to send handover", sendErr)
 	}
 	resp.Body.Data = oapi.OncallShiftHandoverFromEnt(handover)
 

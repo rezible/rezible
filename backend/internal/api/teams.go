@@ -36,7 +36,7 @@ func (h *teamsHandler) ListTeams(ctx context.Context, request *oapi.ListTeamsReq
 
 	res, queryErr := limitedQuery.All(ctx)
 	if queryErr != nil {
-		return nil, detailError("Failed to query teams", queryErr)
+		return nil, apiError("Failed to query teams", queryErr)
 	}
 
 	resp.Body.Data = make([]oapi.Team, len(res))
@@ -46,7 +46,7 @@ func (h *teamsHandler) ListTeams(ctx context.Context, request *oapi.ListTeamsReq
 
 	count, countErr := query.Count(ctx)
 	if countErr != nil {
-		return nil, detailError("Failed to query teams count", countErr)
+		return nil, apiError("Failed to query teams count", countErr)
 	}
 	resp.Body.Pagination.Total = count
 
@@ -62,7 +62,7 @@ func (h *teamsHandler) CreateTeam(ctx context.Context, request *oapi.CreateTeamR
 
 	team, err := query.Save(ctx)
 	if err != nil {
-		return nil, detailError("failed to create team", err)
+		return nil, apiError("failed to create team", err)
 	}
 	resp.Body.Data = oapi.TeamFromEnt(team)
 
@@ -78,7 +78,7 @@ func (h *teamsHandler) GetTeam(ctx context.Context, request *oapi.GetTeamRequest
 	}
 	team, queryErr := h.teams.Query().Where(pred).Only(ctx)
 	if queryErr != nil {
-		return nil, detailError("failed to get team", queryErr)
+		return nil, apiError("failed to get team", queryErr)
 	}
 	resp.Body.Data = oapi.TeamFromEnt(team)
 
@@ -94,7 +94,7 @@ func (h *teamsHandler) UpdateTeam(ctx context.Context, request *oapi.UpdateTeamR
 
 	team, err := query.Save(ctx)
 	if err != nil {
-		return nil, detailError("failed to update team", err)
+		return nil, apiError("failed to update team", err)
 	}
 	resp.Body.Data = oapi.TeamFromEnt(team)
 
@@ -106,7 +106,7 @@ func (h *teamsHandler) ArchiveTeam(ctx context.Context, request *oapi.ArchiveTea
 
 	err := h.teams.DeleteOneID(request.Id).Exec(ctx)
 	if err != nil {
-		return nil, detailError("failed to archive team", err)
+		return nil, apiError("failed to archive team", err)
 	}
 
 	return &resp, nil

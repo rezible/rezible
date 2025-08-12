@@ -36,7 +36,7 @@ func (h *incidentsHandler) CreateIncident(ctx context.Context, input *oapi.Creat
 
 	inc, err := query.Save(ctx)
 	if err != nil {
-		return nil, detailError("failed to create incident", err)
+		return nil, apiError("failed to create incident", err)
 	}
 	resp.Body.Data = oapi.IncidentFromEnt(inc)
 
@@ -51,7 +51,7 @@ func (h *incidentsHandler) ListIncidents(ctx context.Context, input *oapi.ListIn
 
 	incidents, err := query.All(ctx)
 	if err != nil {
-		return nil, detailError("failed to list incidents", err)
+		return nil, apiError("failed to list incidents", err)
 	}
 
 	resp.Body.Data = make([]oapi.Incident, len(incidents))
@@ -80,7 +80,7 @@ func (h *incidentsHandler) GetIncident(ctx context.Context, input *oapi.GetIncid
 
 	inc, queryErr := query.Only(ctx)
 	if queryErr != nil {
-		return nil, detailError("failed to get incident", queryErr)
+		return nil, apiError("failed to get incident", queryErr)
 	}
 
 	resp.Body.Data = oapi.IncidentFromEnt(inc)
@@ -93,7 +93,7 @@ func (h *incidentsHandler) ArchiveIncident(ctx context.Context, input *oapi.Arch
 
 	err := h.incidents.DeleteOneID(input.Id).Exec(ctx)
 	if err != nil {
-		return nil, detailError("failed to archive incident", err)
+		return nil, apiError("failed to archive incident", err)
 	}
 
 	return &resp, nil
@@ -106,7 +106,7 @@ func (h *incidentsHandler) UpdateIncident(ctx context.Context, request *oapi.Upd
 		Where(incident.ID(request.Id)).
 		Only(ctx)
 	if getErr != nil {
-		return nil, detailError("failed to get incident", getErr)
+		return nil, apiError("failed to get incident", getErr)
 	}
 
 	updateIncidentTxFn := func(tx *ent.Tx) error {
@@ -119,7 +119,7 @@ func (h *incidentsHandler) UpdateIncident(ctx context.Context, request *oapi.Upd
 	}
 
 	if txErr := ent.WithTx(ctx, h.db, updateIncidentTxFn); txErr != nil {
-		return nil, detailError("failed to update incident", txErr)
+		return nil, apiError("failed to update incident", txErr)
 	}
 
 	return &resp, nil

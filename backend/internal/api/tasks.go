@@ -28,7 +28,7 @@ func (h *tasksHandler) ListTasks(ctx context.Context, request *oapi.ListTasksReq
 
 	tasks, queryErr := query.All(ctx)
 	if queryErr != nil {
-		return nil, detailError("failed to fetch tasks", queryErr)
+		return nil, apiError("failed to fetch tasks", queryErr)
 	}
 
 	resp.Body.Data = make([]oapi.Task, len(tasks))
@@ -50,7 +50,7 @@ func (h *tasksHandler) GetTask(ctx context.Context, request *oapi.GetTaskRequest
 
 	task, queryErr := h.db.Task.Get(ctx, request.Id)
 	if queryErr != nil {
-		return nil, detailError("failed to fetch task", queryErr)
+		return nil, apiError("failed to fetch task", queryErr)
 	}
 	resp.Body.Data = oapi.TaskFromEnt(task)
 
@@ -68,7 +68,7 @@ func (h *tasksHandler) ArchiveTask(ctx context.Context, request *oapi.ArchiveTas
 
 	archiveErr := h.db.Task.DeleteOneID(request.Id).Exec(ctx)
 	if archiveErr != nil {
-		return nil, detailError("failed to archive task", archiveErr)
+		return nil, apiError("failed to archive task", archiveErr)
 	}
 
 	return &resp, nil

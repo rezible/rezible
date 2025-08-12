@@ -26,7 +26,7 @@ func (h *incidentRolesHandler) ListIncidentRoles(ctx context.Context, request *o
 
 	res, queryErr := query.All(ctx)
 	if queryErr != nil {
-		return nil, detailError("Failed to query incident roles", queryErr)
+		return nil, apiError("Failed to query incident roles", queryErr)
 	}
 
 	resp.Body.Data = make([]oapi.IncidentRole, len(res))
@@ -48,7 +48,7 @@ func (h *incidentRolesHandler) CreateIncidentRole(ctx context.Context, request *
 
 	role, createErr := query.Save(ctx)
 	if createErr != nil {
-		return nil, detailError("Failed to create incident role", createErr)
+		return nil, apiError("Failed to create incident role", createErr)
 	}
 	resp.Body.Data = oapi.IncidentRoleFromEnt(role)
 
@@ -61,7 +61,7 @@ func (h *incidentRolesHandler) GetIncidentRole(ctx context.Context, request *oap
 	ctx = schema.IncludeArchived(ctx)
 	role, queryErr := h.roles.Get(ctx, request.Id)
 	if queryErr != nil {
-		return nil, detailError("Failed to get incident role", queryErr)
+		return nil, apiError("Failed to get incident role", queryErr)
 	}
 	resp.Body.Data = oapi.IncidentRoleFromEnt(role)
 
@@ -82,7 +82,7 @@ func (h *incidentRolesHandler) UpdateIncidentRole(ctx context.Context, request *
 
 	role, saveErr := query.Save(ctx)
 	if saveErr != nil {
-		return nil, detailError("Failed to update incident role", saveErr)
+		return nil, apiError("Failed to update incident role", saveErr)
 	}
 	resp.Body.Data = oapi.IncidentRoleFromEnt(role)
 
@@ -94,7 +94,7 @@ func (h *incidentRolesHandler) ArchiveIncidentRole(ctx context.Context, request 
 
 	delErr := h.roles.DeleteOneID(request.Id).Exec(ctx)
 	if delErr != nil {
-		return nil, detailError("Failed to archive incident role", delErr)
+		return nil, apiError("Failed to archive incident role", delErr)
 	}
 
 	return &resp, nil

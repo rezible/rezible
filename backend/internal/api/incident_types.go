@@ -34,7 +34,7 @@ func (h *incidentTypesHandler) ListIncidentTypes(ctx context.Context, request *o
 
 	res, queryErr := limitedQuery.All(ctx)
 	if queryErr != nil {
-		return nil, detailError("Failed to query incident types", queryErr)
+		return nil, apiError("Failed to query incident types", queryErr)
 	}
 
 	resp.Body.Data = make([]oapi.IncidentType, len(res))
@@ -44,7 +44,7 @@ func (h *incidentTypesHandler) ListIncidentTypes(ctx context.Context, request *o
 
 	count, countErr := query.Count(ctx)
 	if countErr != nil {
-		return nil, detailError("Failed to query incident type count", countErr)
+		return nil, apiError("Failed to query incident type count", countErr)
 	}
 	resp.Body.Pagination.Total = count
 
@@ -58,7 +58,7 @@ func (h *incidentTypesHandler) CreateIncidentType(ctx context.Context, request *
 	query := h.types.Create().SetName(attr.Name)
 	t, createErr := query.Save(ctx)
 	if createErr != nil {
-		return nil, detailError("Failed to create incident type", createErr)
+		return nil, apiError("Failed to create incident type", createErr)
 	}
 	resp.Body.Data = oapi.IncidentTypeFromEnt(t)
 
@@ -70,7 +70,7 @@ func (h *incidentTypesHandler) GetIncidentType(ctx context.Context, request *oap
 
 	t, queryErr := h.types.Get(ctx, request.Id)
 	if queryErr != nil {
-		return nil, detailError("Failed to get incident type", queryErr)
+		return nil, apiError("Failed to get incident type", queryErr)
 	}
 	resp.Body.Data = oapi.IncidentTypeFromEnt(t)
 
@@ -90,7 +90,7 @@ func (h *incidentTypesHandler) UpdateIncidentType(ctx context.Context, request *
 
 	t, updateErr := query.Save(ctx)
 	if updateErr != nil {
-		return nil, detailError("Failed to update incident type", updateErr)
+		return nil, apiError("Failed to update incident type", updateErr)
 	}
 	resp.Body.Data = oapi.IncidentTypeFromEnt(t)
 
@@ -102,7 +102,7 @@ func (h *incidentTypesHandler) ArchiveIncidentType(ctx context.Context, request 
 
 	delErr := h.types.DeleteOneID(request.Id).Exec(ctx)
 	if delErr != nil {
-		return nil, detailError("Failed to archive incident type", delErr)
+		return nil, apiError("Failed to archive incident type", delErr)
 	}
 
 	return &resp, nil

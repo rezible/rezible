@@ -21,7 +21,7 @@ func (h *usersHandler) ListUsers(ctx context.Context, request *oapi.ListUsersReq
 		ListParams: request.ListParams(),
 	})
 	if usersErr != nil {
-		return nil, detailError("failed to list users", usersErr)
+		return nil, apiError("failed to list users", usersErr)
 	}
 
 	resp.Body.Data = make([]oapi.User, len(users))
@@ -37,7 +37,7 @@ func (h *usersHandler) GetUser(ctx context.Context, input *oapi.GetUserRequest) 
 
 	user, getErr := h.users.GetById(ctx, input.Id)
 	if getErr != nil {
-		return nil, detailError("Failed to get user", getErr)
+		return nil, apiError("Failed to get user", getErr)
 	}
 	resp.Body.Data = oapi.UserFromEnt(user)
 

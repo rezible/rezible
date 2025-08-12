@@ -36,7 +36,7 @@ func (h *incidentFieldsHandler) ListIncidentFields(ctx context.Context, request 
 
 	res, queryErr := query.All(ctx)
 	if queryErr != nil {
-		return nil, detailError("Failed to query incident fields", queryErr)
+		return nil, apiError("Failed to query incident fields", queryErr)
 	}
 	log.Debug().Interface("res", res).Msg("ListIncidentFields")
 
@@ -81,7 +81,7 @@ func (h *incidentFieldsHandler) CreateIncidentField(ctx context.Context, request
 	}
 
 	if txErr := ent.WithTx(ctx, h.db, createFieldOptionsTx); txErr != nil {
-		return nil, detailError("Failed to create incident field", txErr)
+		return nil, apiError("Failed to create incident field", txErr)
 	}
 
 	return &resp, nil
@@ -96,7 +96,7 @@ func (h *incidentFieldsHandler) GetIncidentField(ctx context.Context, request *o
 		WithOptions().
 		Only(ctx)
 	if queryErr != nil {
-		return nil, detailError("Failed to get incident field", queryErr)
+		return nil, apiError("Failed to get incident field", queryErr)
 	}
 	resp.Body.Data = oapi.IncidentFieldFromEnt(field)
 
@@ -108,7 +108,7 @@ func (h *incidentFieldsHandler) updateIncidentFieldOptions(tx *ent.Tx, ctx conte
 		Where(incidentfieldoption.IncidentFieldID(fieldId)).
 		All(ctx)
 	if optionsErr != nil {
-		return detailError("Failed to get incident field options", optionsErr)
+		return apiError("Failed to get incident field options", optionsErr)
 	}
 
 	options := make(map[string]*ent.IncidentFieldOption)
@@ -122,7 +122,7 @@ func (h *incidentFieldsHandler) updateIncidentFieldOptions(tx *ent.Tx, ctx conte
 	for _, o := range reqOptions {
 		t := incidentfieldoption.Type(o.FieldOptionType)
 		if len(reqType) > 0 && t != reqType {
-			return detailError("multiple field option types", nil)
+			return apiError("multiple field option types", nil)
 		}
 		reqType = t
 	}
@@ -134,7 +134,7 @@ func (h *incidentFieldsHandler) updateIncidentFieldOptions(tx *ent.Tx, ctx conte
 				incidentfieldoption.IncidentFieldID(fieldId),
 				incidentfieldoption.TypeNEQ(reqType)))
 		if _, err := deleteOthers.Exec(ctx); err != nil {
-			return detailError("Failed to delete existing options", err)
+			return apiError("Failed to delete existing options", err)
 		}
 	}
 
@@ -153,7 +153,7 @@ func (h *incidentFieldsHandler) updateIncidentFieldOptions(tx *ent.Tx, ctx conte
 		cur, exists := options[*option.Id]
 		if !exists {
 			err := fmt.Errorf("cannot update non-existant option id: %s", *option.Id)
-			return detailError("failed to update field option", err)
+			return apiError("failed to update field option", err)
 		}
 		archiveTime := cur.ArchiveTime
 		if o.Archived && archiveTime.IsZero() {
@@ -170,7 +170,7 @@ func (h *incidentFieldsHandler) updateIncidentFieldOptions(tx *ent.Tx, ctx conte
 				update.ClearArchiveTime()
 			}
 			if updateErr := update.Exec(ctx); updateErr != nil {
-				return detailError("failed to update field option", updateErr)
+				return apiError("failed to update field option", updateErr)
 			}
 		}
 	}
@@ -181,7 +181,7 @@ func (h *incidentFieldsHandler) updateIncidentFieldOptions(tx *ent.Tx, ctx conte
 			SetIncidentFieldID(opt.IncidentFieldID)
 	})
 	if createErr := create.Exec(ctx); createErr != nil {
-		return detailError("failed to create new field options", createErr)
+		return apiError("failed to create new field options", createErr)
 	}
 	return nil
 }
@@ -193,7 +193,7 @@ func (h *incidentFieldsHandler) UpdateIncidentField(ctx context.Context, request
 
 	tx, txErr := h.db.BeginTx(ctx, nil)
 	if txErr != nil {
-		return nil, detailError("Failed to start db transaction", txErr)
+		return nil, apiError("Failed to start db transaction", txErr)
 	}
 	defer tx.Rollback()
 
@@ -217,11 +217,11 @@ func (h *incidentFieldsHandler) UpdateIncidentField(ctx context.Context, request
 
 	field, saveErr := query.Save(ctx)
 	if saveErr != nil {
-		return nil, detailError("Failed to update incident field", saveErr)
+		return nil, apiError("Failed to update incident field", saveErr)
 	}
 
 	if commitErr := tx.Commit(); commitErr != nil {
-		return nil, detailError("Failed to create field", commitErr)
+		return nil, apiError("Failed to create field", commitErr)
 	}
 
 	resp.Body.Data = oapi.IncidentFieldFromEnt(field)
@@ -234,7 +234,7 @@ func (h *incidentFieldsHandler) ArchiveIncidentField(ctx context.Context, reques
 
 	delErr := h.db.IncidentField.DeleteOneID(request.Id).Exec(ctx)
 	if delErr != nil {
-		return nil, detailError("Failed to archive incident field", delErr)
+		return nil, apiError("Failed to archive incident field", delErr)
 	}
 
 	return &resp, nil

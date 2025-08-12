@@ -36,15 +36,15 @@ func (h *authSessionsHandler) GetAuthSessionsConfig(ctx context.Context, req *oa
 func (h *authSessionsHandler) GetCurrentUserAuthSession(ctx context.Context, input *oapi.GetCurrentUserAuthSessionRequest) (*oapi.GetCurrentUserAuthSessionResponse, error) {
 	var resp oapi.GetCurrentUserAuthSessionResponse
 
-	sess := requestUserAuthSession(ctx, h.auth)
+	sess := getRequestAuthSession(ctx, h.auth)
 	user, userErr := h.users.GetById(ctx, sess.UserId)
 	if userErr != nil {
-		return nil, detailError("failed to get user", userErr)
+		return nil, apiError("failed to get user", userErr)
 	}
 
 	tenant, tenantErr := user.QueryTenant().First(ctx)
 	if tenantErr != nil {
-		return nil, detailError("failed to get tenant", tenantErr)
+		return nil, apiError("failed to get tenant", tenantErr)
 	}
 
 	resp.Body.Data = oapi.UserAuthSession{

@@ -69,7 +69,7 @@ type (
 		ClearSession(w http.ResponseWriter, r *http.Request)
 	}
 
-	UserAuthSession struct {
+	AuthSession struct {
 		UserId    uuid.UUID
 		ExpiresAt time.Time
 	}
@@ -78,15 +78,11 @@ type (
 		ProviderName(context.Context) (string, error)
 
 		AuthHandler() http.Handler
-		FrontendMiddleware() func(http.Handler) http.Handler
 		MCPServerMiddleware() func(http.Handler) http.Handler
 
-		CreateUserAuthContext(context.Context, *UserAuthSession) (context.Context, error)
-		GetUserAuthSession(context.Context) (*UserAuthSession, error)
-		IssueUserAuthSessionToken(*UserAuthSession) (string, error)
-		VerifyUserAuthSessionToken(tokenStr string) (*UserAuthSession, error)
-
-		CheckUserRequestScopes(context.Context, uuid.UUID, []string) error // TODO: move to new service
+		GetAuthSession(context.Context) (*AuthSession, error)
+		IssueAuthSessionToken(*AuthSession) (string, error)
+		CreateVerifiedRequestAuthSessionContext(ctx context.Context, token string, scopes []string) (context.Context, error)
 	}
 )
 
