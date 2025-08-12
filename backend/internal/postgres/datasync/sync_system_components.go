@@ -3,13 +3,13 @@ package datasync
 import (
 	"context"
 	"fmt"
-	"github.com/rezible/rezible/ent/systemcomponent"
 	"iter"
 
 	"github.com/google/uuid"
 
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
+	"github.com/rezible/rezible/ent/systemcomponent"
 )
 
 func syncSystemComponents(ctx context.Context, db *ent.Client, prov rez.SystemComponentsDataProvider) error {
@@ -71,7 +71,7 @@ func (b *systemComponentsBatcher) syncComponent(db, prov *ent.SystemComponent) [
 	var mutations []ent.Mutation
 
 	var m *ent.SystemComponentMutation
-	var needsSync bool
+	needsSync := true
 	if db == nil {
 		m = b.db.SystemComponent.Create().Mutation()
 	} else {

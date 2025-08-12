@@ -2,10 +2,12 @@ package fakeprovider
 
 import (
 	"context"
+	"iter"
+
 	"github.com/google/uuid"
+
 	"github.com/rezible/rezible/ent"
 	oapi "github.com/rezible/rezible/openapi"
-	"iter"
 )
 
 type SystemComponentsDataProvider struct {

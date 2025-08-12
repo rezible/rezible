@@ -2,10 +2,11 @@ package openapi
 
 import (
 	"context"
+	"net/http"
+
 	"github.com/danielgtaylor/huma/v2"
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent"
-	"net/http"
 )
 
 type SystemComponentsHandler interface {
@@ -232,7 +233,9 @@ var ListSystemComponents = huma.Operation{
 	Errors:      errorCodes(),
 }
 
-type ListSystemComponentsRequest ListRequest
+type ListSystemComponentsRequest struct {
+	ListRequest
+}
 type ListSystemComponentsResponse PaginatedResponse[SystemComponent]
 
 var GetSystemComponent = huma.Operation{

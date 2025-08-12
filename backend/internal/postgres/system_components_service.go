@@ -3,11 +3,12 @@ package postgres
 import (
 	"context"
 	"fmt"
+
 	"github.com/google/uuid"
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
 	"github.com/rezible/rezible/ent/systemanalysis"
-	"github.com/rezible/rezible/ent/systemcomponentrelationship"
+	scr "github.com/rezible/rezible/ent/systemcomponentrelationship"
 )
 
 type SystemComponentsService struct {
@@ -92,22 +93,36 @@ func (s *SystemComponentsService) Create(ctx context.Context, cmp ent.SystemComp
 	return created, nil
 }
 
-func (*SystemComponentsService) ListSystemComponents(ctx context.Context, p rez.ListSystemComponentsParams) ([]*ent.SystemComponent, int, error) {
-	components := make([]*ent.SystemComponent, 0)
-	count := 0
+func (s *SystemComponentsService) ListSystemComponents(ctx context.Context, params rez.ListSystemComponentsParams) ([]*ent.SystemComponent, int, error) {
+	query := s.db.SystemComponent.Query().
+		Where().
+		Limit(params.Limit).
+		Offset(params.Offset)
+
+	ctx = params.GetQueryContext(ctx)
+	count, queryErr := query.Count(ctx)
+	if queryErr != nil {
+		return nil, 0, fmt.Errorf("count: %w", queryErr)
+	}
+
+	var components []*ent.SystemComponent
+	if count > 0 {
+		components, queryErr = query.All(ctx)
+	} else {
+		components = make([]*ent.SystemComponent, 0)
+	}
+	if queryErr != nil {
+		return nil, 0, fmt.Errorf("query: %w", queryErr)
+	}
 	return components, count, nil
 }
 
 func (s *SystemComponentsService) GetRelationship(ctx context.Context, id1 uuid.UUID, id2 uuid.UUID) (*ent.SystemComponentRelationship, error) {
-	pred1 := systemcomponentrelationship.And(
-		systemcomponentrelationship.SourceID(id1),
-		systemcomponentrelationship.TargetID(id2))
-	pred2 := systemcomponentrelationship.And(
-		systemcomponentrelationship.SourceID(id2),
-		systemcomponentrelationship.TargetID(id1))
+	pred1 := scr.And(scr.SourceID(id1), scr.TargetID(id2))
+	pred2 := scr.And(scr.SourceID(id2), scr.TargetID(id1))
 
 	query := s.db.SystemComponentRelationship.Query().
-		Where(systemcomponentrelationship.Or(pred1, pred2))
+		Where(scr.Or(pred1, pred2))
 
 	return query.Only(ctx)
 }

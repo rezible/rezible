@@ -2,6 +2,7 @@ package api
 
 import (
 	"context"
+
 	"github.com/google/uuid"
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
@@ -21,12 +22,11 @@ func newSystemComponentsHandler(db *ent.Client, components rez.SystemComponentsS
 func (s *systemComponentsHandler) ListSystemComponents(ctx context.Context, request *oapi.ListSystemComponentsRequest) (*oapi.ListSystemComponentsResponse, error) {
 	var resp oapi.ListSystemComponentsResponse
 
-	query := s.db.SystemComponent.Query().
-		Limit(request.Limit).
-		Offset(request.Offset)
-	// TODO ListParams Search & Archived
+	params := rez.ListSystemComponentsParams{
+		ListParams: request.ListParams(),
+	}
 
-	cmps, queryErr := query.All(ctx)
+	cmps, count, queryErr := s.components.ListSystemComponents(ctx, params)
 	if queryErr != nil {
 		return nil, apiError("failed to query system components", queryErr)
 	}
@@ -34,6 +34,7 @@ func (s *systemComponentsHandler) ListSystemComponents(ctx context.Context, requ
 	for i, cmp := range cmps {
 		resp.Body.Data[i] = oapi.SystemComponentFromEnt(cmp)
 	}
+	resp.Body.Pagination = oapi.ResponsePagination{Total: count}
 
 	return &resp, nil
 }
