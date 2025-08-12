@@ -2,8 +2,9 @@ package openapi
 
 import (
 	"errors"
-	"github.com/danielgtaylor/huma/v2"
 	"net/http"
+
+	"github.com/danielgtaylor/huma/v2"
 )
 
 var defaultErrorCodes = []int{

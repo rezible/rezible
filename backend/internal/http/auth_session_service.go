@@ -44,8 +44,8 @@ func NewAuthSessionService(users rez.UserService, prov rez.AuthSessionProvider) 
 	}, nil
 }
 
-func (s *AuthSessionService) ProviderName(ctx context.Context) (string, error) {
-	return s.prov.Name(), nil
+func (s *AuthSessionService) Provider() rez.AuthSessionProvider {
+	return s.prov
 }
 
 type authUserSessionContextKey struct{}

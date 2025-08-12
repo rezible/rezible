@@ -75,7 +75,7 @@ type (
 	}
 
 	AuthSessionService interface {
-		ProviderName(context.Context) (string, error)
+		Provider() AuthSessionProvider
 
 		AuthHandler() http.Handler
 		MCPServerMiddleware() func(http.Handler) http.Handler
@@ -174,6 +174,13 @@ type (
 )
 
 type (
+	SendOncallHandoverParams struct {
+		Content           []OncallShiftHandoverSection
+		EndingShift       *ent.OncallShift
+		StartingShift     *ent.OncallShift
+		PinnedAnnotations []*ent.OncallAnnotation
+	}
+
 	ChatService interface {
 		GetWebhooksHandler() http.Handler
 
@@ -186,13 +193,6 @@ type (
 		// TODO: this should just be converted to *ContentNode by DocumentService
 		SendOncallHandover(ctx context.Context, params SendOncallHandoverParams) error
 		SendOncallHandoverReminder(context.Context, *ent.OncallShift) error
-	}
-
-	SendOncallHandoverParams struct {
-		Content           []OncallShiftHandoverSection
-		EndingShift       *ent.OncallShift
-		StartingShift     *ent.OncallShift
-		PinnedAnnotations []*ent.OncallAnnotation
 	}
 )
 

@@ -11,9 +11,7 @@ import (
 )
 
 /*
-	TODO: eventually this should be handled by the chat service,
-		and all the provider should do is convert rez.ContentNode
-		to []slack.Block and send it
+	TODO: eventually this should be handled by the document service - converted to *rez.ContentNode
 */
 
 func buildHandoverMessage(params rez.SendOncallHandoverParams) (string, slack.MsgOption, error) {
@@ -113,7 +111,7 @@ func (b *handoverMessageBuilder) build(content []rez.OncallShiftHandoverSection)
 		b.addBlocks(slack.NewHeaderBlock(plainTextBlock(s.Header)))
 
 		if s.Kind == "annotations" {
-			annoBlocks, annosErr := createPinnedAnnotationsBlocks(b.pinnedAnnotations)
+			annoBlocks, annosErr := b.createPinnedAnnotationsBlocks()
 			if annosErr != nil {
 				return fmt.Errorf("failed to create annotations block: %w", annosErr)
 			}
@@ -135,15 +133,15 @@ func (b *handoverMessageBuilder) build(content []rez.OncallShiftHandoverSection)
 	return nil
 }
 
-func createPinnedAnnotationsBlocks(annos []*ent.OncallAnnotation) ([]slack.Block, error) {
-	if len(annos) == 0 {
+func (b *handoverMessageBuilder) createPinnedAnnotationsBlocks() ([]slack.Block, error) {
+	if len(b.pinnedAnnotations) == 0 {
 		sectionBlock := slack.NewSectionBlock(plainTextBlock("No Pinned Annotations"), nil, nil)
 		return []slack.Block{sectionBlock}, nil
 	}
 
 	var blocks []slack.Block
 
-	for idx, a := range annos {
+	for idx, a := range b.pinnedAnnotations {
 		blockId := fmt.Sprintf("pinned_annotation_%d", idx)
 
 		ev, evErr := a.Edges.EventOrErr()

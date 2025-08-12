@@ -21,13 +21,8 @@ func newAuthSessionsHandler(auth rez.AuthSessionService, users rez.UserService) 
 func (h *authSessionsHandler) GetAuthSessionsConfig(ctx context.Context, req *oapi.GetAuthSessionsConfigRequest) (*oapi.GetAuthSessionsConfigResponse, error) {
 	var resp oapi.GetAuthSessionsConfigResponse
 
-	providerName, provErr := h.auth.ProviderName(ctx)
-	if provErr != nil {
-		return &resp, provErr
-	}
-
 	resp.Body.Data = oapi.AuthSessionsConfig{
-		ProviderName: providerName,
+		ProviderName: h.auth.Provider().Name(),
 	}
 
 	return &resp, nil
@@ -42,7 +37,7 @@ func (h *authSessionsHandler) GetCurrentUserAuthSession(ctx context.Context, inp
 		return nil, apiError("failed to get user", userErr)
 	}
 
-	tenant, tenantErr := user.QueryTenant().First(ctx)
+	tenant, tenantErr := user.QueryTenant().Only(ctx)
 	if tenantErr != nil {
 		return nil, apiError("failed to get tenant", tenantErr)
 	}
