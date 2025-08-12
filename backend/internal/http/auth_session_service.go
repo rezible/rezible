@@ -168,14 +168,12 @@ func (s *AuthSessionService) providerAuthFlow(w http.ResponseWriter, r *http.Req
 
 		var sessErr error
 		usr, provUserErr := s.users.LookupProviderUser(ctx, prov)
-		if provUserErr != nil {
+		if provUserErr != nil && !ent.IsNotFound(provUserErr) {
 			sessErr = fmt.Errorf("failed to match user from provider details: %w", provUserErr)
 		} else {
+			// we create a session with nil user id to indicate a mismatch between provider users and db users
 			userId := uuid.Nil
-			if usr == nil {
-				// TODO: handle this
-				log.Debug().Msg("no internal user exists for auth provider supplied details")
-			} else {
+			if usr != nil {
 				userId = usr.ID
 			}
 			sessErr = s.setAuthSessionTokenCookie(w, r, newUserAuthSession(userId, expiresAt))
