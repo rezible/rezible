@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { AuthScreenView } from "$src/features/auth-screen";
+	import { AuthScreenView } from "$features/auth-screen";
 </script>
 
 <AuthScreenView />

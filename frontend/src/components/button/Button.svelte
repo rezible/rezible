@@ -10,11 +10,8 @@
 
 	const dispatch = createEventDispatcher();
 	const onClicked = (e: MouseEvent) => {
-		if (!props.onclick) {
-			alert("button using legacy event handler");
-			dispatch("click", e);
-		}
 		props.onclick?.(e);
+		dispatch("click", e);
 	}
 </script>
 

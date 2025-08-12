@@ -62,7 +62,7 @@ func (s *AuthSessionService) CreateUserAuthContext(ctx context.Context, sess *re
 		}
 		return nil, fmt.Errorf("get user by id: %w", userErr)
 	}
-	ctx = access.TenantContext(ctx, access.RoleUser, user.TenantID)
+	ctx = access.UserContext(ctx, user)
 	ctx = context.WithValue(ctx, authUserSessionContextKey{}, sess)
 	return ctx, nil
 }
@@ -73,6 +73,15 @@ func (s *AuthSessionService) GetUserAuthSession(ctx context.Context) (*rez.UserA
 		return nil, rez.ErrNoAuthSession
 	}
 	return sess, nil
+}
+
+func (s *AuthSessionService) CheckUserRequestScopes(ctx context.Context, userId uuid.UUID, requiredScopes []string) error {
+	// TODO: check scopes
+	for _, scope := range requiredScopes {
+		log.Warn().Str("scope", scope).Msg("TODO: verify request security scopes")
+	}
+
+	return nil
 }
 
 func isRedirectableError(err error) bool {
@@ -150,65 +159,44 @@ func (s *AuthSessionService) AuthHandler() http.Handler {
 }
 
 func (s *AuthSessionService) providerAuthFlow(w http.ResponseWriter, r *http.Request) bool {
-	var redirectUrl string
-	var createSessionErr error
+	return s.prov.HandleAuthFlowRequest(w, r, func(prov *ent.User, expiresAt time.Time, redirect string) {
+		ctx := r.Context()
 
-	ctx := r.Context()
-	onUserSessionCreated := func(provUser *ent.User, expiresAt time.Time, redirect string) {
-		redirectUrl = redirect
 		if expiresAt.IsZero() {
 			expiresAt = time.Now().Add(defaultSessionDuration)
 		}
 
-		userId, matchIdErr := s.lookupProviderUser(ctx, provUser)
-		if matchIdErr != nil {
-			createSessionErr = fmt.Errorf("failed to match user id from provider details: %w", matchIdErr)
-			return
-		}
-		if userId == uuid.Nil {
-			// TODO: handle this
-			log.Debug().Msg("no internal user exists for auth provider supplied details")
-		}
-		token, tokenErr := s.IssueUserAuthSessionToken(newUserAuthSession(userId, expiresAt))
-		if tokenErr != nil {
-			createSessionErr = fmt.Errorf("failed to issue user session token: %w", tokenErr)
+		var sessErr error
+		usr, provUserErr := s.users.LookupProviderUser(ctx, prov)
+		if provUserErr != nil {
+			sessErr = fmt.Errorf("failed to match user from provider details: %w", provUserErr)
 		} else {
-			http.SetCookie(w, oapi.MakeSessionCookie(r, token, expiresAt, 0))
+			userId := uuid.Nil
+			if usr == nil {
+				// TODO: handle this
+				log.Debug().Msg("no internal user exists for auth provider supplied details")
+			} else {
+				userId = usr.ID
+			}
+			sessErr = s.setAuthSessionTokenCookie(w, r, newUserAuthSession(userId, expiresAt))
 		}
-	}
 
-	providerHandled := s.prov.HandleAuthFlowRequest(w, r, onUserSessionCreated)
-	if !providerHandled {
-		return false
-	}
-
-	if createSessionErr != nil {
-		log.Error().Err(createSessionErr).Msg("failed to create session")
-		http.Error(w, createSessionErr.Error(), http.StatusInternalServerError)
-	} else if redirectUrl != "" {
-		http.Redirect(w, r, redirectUrl, http.StatusFound)
-	}
-
-	return true
+		if sessErr != nil {
+			log.Error().Err(sessErr).Msg("failed to create session")
+			http.Error(w, sessErr.Error(), http.StatusInternalServerError)
+		} else if redirect != "" {
+			http.Redirect(w, r, redirect, http.StatusFound)
+		}
+	})
 }
 
-func (s *AuthSessionService) lookupProviderUser(ctx context.Context, provUser *ent.User) (uuid.UUID, error) {
-	// TODO: use provider mapping to match user details, not just by email
-	email := provUser.Email
-	if rez.DebugMode && os.Getenv("REZ_DEBUG_DEFAULT_USER_EMAIL") != "" {
-		email = os.Getenv("REZ_DEBUG_DEFAULT_USER_EMAIL")
-		log.Debug().Str("email", email).Msg("using debug auth email")
+func (s *AuthSessionService) setAuthSessionTokenCookie(w http.ResponseWriter, r *http.Request, sess *rez.UserAuthSession) error {
+	token, tokenErr := s.IssueUserAuthSessionToken(sess)
+	if tokenErr != nil {
+		return fmt.Errorf("failed to issue user session token: %w", tokenErr)
 	}
-
-	allowQueryCtx := privacy.DecisionContext(ctx, privacy.Allow)
-	user, lookupErr := s.users.GetByEmail(allowQueryCtx, email)
-	if lookupErr != nil {
-		if ent.IsNotFound(lookupErr) {
-			return uuid.Nil, nil
-		}
-		return uuid.Nil, fmt.Errorf("users.GetByEmail: %w", lookupErr)
-	}
-	return user.ID, nil
+	http.SetCookie(w, oapi.MakeSessionCookie(r, token, sess.ExpiresAt, 0))
+	return nil
 }
 
 func (s *AuthSessionService) getMCPUserSession(r *http.Request) (*rez.UserAuthSession, error) {

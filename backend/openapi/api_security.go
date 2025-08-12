@@ -11,7 +11,6 @@ import (
 
 	"github.com/danielgtaylor/huma/v2"
 	"github.com/danielgtaylor/huma/v2/adapters/humago"
-
 	"github.com/rs/zerolog/log"
 
 	rez "github.com/rezible/rezible"
@@ -118,34 +117,36 @@ func getRequestSecurityTokenAndScopes(sec oapiSecurity, r *http.Request) (string
 
 func MakeSecurityMiddleware(auth rez.AuthSessionService) Middleware {
 	return func(c Context, next func(Context)) {
-		r, w := humago.Unwrap(c)
-
 		security := c.Operation().Security
 		explicitNoAuth := security != nil && len(security) == 0
 		if security == nil {
 			security = DefaultSecurity
 		}
 
-		ctx := r.Context()
+		ctx := c.Context()
 		if !explicitNoAuth {
+			r, w := humago.Unwrap(c)
+
 			token, requiredScopes := getRequestSecurityTokenAndScopes(security, r)
-			userSess, verifyErr := auth.VerifyUserAuthSessionToken(token)
+
+			sess, verifyErr := auth.VerifyUserAuthSessionToken(token)
 			if verifyErr != nil {
 				log.Debug().Err(verifyErr).Msg("failed to verify session token")
 				writeAuthSessionError(w, verifyErr)
 				return
 			}
 
-			// TODO: check scopes
-			for _, scope := range requiredScopes {
-				log.Warn().Str("scope", scope).Msg("TODO: verify request security scopes")
+			if scopesErr := auth.CheckUserRequestScopes(ctx, sess.UserId, requiredScopes); scopesErr != nil {
+				writeAuthSessionError(w, scopesErr)
+				return
 			}
-			userAuthCtx, authErr := auth.CreateUserAuthContext(r.Context(), userSess)
+
+			authCtx, authErr := auth.CreateUserAuthContext(ctx, sess)
 			if authErr != nil {
 				writeAuthSessionError(w, authErr)
 				return
 			}
-			ctx = userAuthCtx
+			ctx = authCtx
 		}
 
 		next(huma.WithContext(c, ctx))
@@ -161,6 +162,8 @@ func writeAuthSessionError(w http.ResponseWriter, authErr error) {
 		resp = ErrorUnauthorized("session_expired")
 	} else if errors.Is(authErr, rez.ErrAuthSessionUserMissing) {
 		resp = ErrorUnauthorized("missing_user")
+	} else if errors.Is(authErr, rez.ErrUnauthorized) {
+		resp = ErrorUnauthorized("unauthorized")
 	} else {
 		resp = ErrorUnauthorized("unknown")
 	}

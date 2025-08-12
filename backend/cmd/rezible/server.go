@@ -162,7 +162,7 @@ func (s *rezServer) setup() error {
 	s.httpServer = http.NewServer(listenAddr, auth, frontendFiles, apiHandler, webhookHandler, mcpHandler)
 
 	syncSvc := datasync.NewProviderSyncService(dbc, pl)
-	if jobsErr := s.registerJobs(ctx, syncSvc, oncall, debriefs); jobsErr != nil {
+	if jobsErr := s.registerJobs(syncSvc, oncall, debriefs); jobsErr != nil {
 		return fmt.Errorf("registering jobs: %w", jobsErr)
 	}
 
@@ -170,7 +170,6 @@ func (s *rezServer) setup() error {
 }
 
 func (s *rezServer) registerJobs(
-	ctx context.Context,
 	sync rez.ProviderSyncService,
 	oncall rez.OncallService,
 	debriefs rez.DebriefService,
@@ -190,13 +189,13 @@ func (s *rezServer) registerJobs(
 }
 
 func (s *rezServer) start() error {
-	ctx := access.SystemContext(context.Background())
+	ctx := context.Background()
 
-	if jobsErr := s.jobs.Start(ctx); jobsErr != nil {
+	if jobsErr := s.jobs.Start(access.SystemContext(ctx)); jobsErr != nil {
 		return fmt.Errorf("failed to start background jobs client: %w", jobsErr)
 	}
 
-	if serverErr := s.httpServer.Start(ctx); serverErr != nil {
+	if serverErr := s.httpServer.Start(access.AnonymousContext(ctx)); serverErr != nil {
 		return fmt.Errorf("http Server error: %w", serverErr)
 	}
 

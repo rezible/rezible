@@ -85,6 +85,8 @@ type (
 		GetUserAuthSession(context.Context) (*UserAuthSession, error)
 		IssueUserAuthSessionToken(*UserAuthSession) (string, error)
 		VerifyUserAuthSessionToken(tokenStr string) (*UserAuthSession, error)
+
+		CheckUserRequestScopes(context.Context, uuid.UUID, []string) error // TODO: move to new service
 	}
 )
 
@@ -152,6 +154,7 @@ type (
 		GetById(context.Context, uuid.UUID) (*ent.User, error)
 		GetByEmail(context.Context, string) (*ent.User, error)
 		GetByChatId(context.Context, string) (*ent.User, error)
+		LookupProviderUser(ctx context.Context, provUser *ent.User) (*ent.User, error)
 	}
 )
 

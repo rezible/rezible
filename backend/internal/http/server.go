@@ -69,9 +69,9 @@ func NewServer(
 	return &s
 }
 
-func (s *Server) Start(ctx context.Context) error {
+func (s *Server) Start(baseCtx context.Context) error {
 	s.httpServer.BaseContext = func(l net.Listener) context.Context {
-		return ctx
+		return baseCtx
 	}
 
 	log.Info().Msgf("Serving on %s", s.httpServer.Addr)

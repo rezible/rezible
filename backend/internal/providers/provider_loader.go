@@ -79,7 +79,7 @@ func readProviderConfigFile(filename string) (*configFile, error) {
 	return &cfg, nil
 }
 
-func getOrCreateTenantContext(ctx context.Context, client *ent.Client, tenantName string) (context.Context, error) {
+func createTenantContext(ctx context.Context, client *ent.Client, tenantName string) (context.Context, error) {
 	tnt, tenantErr := client.Tenant.Query().Where(tenant.Name(tenantName)).Only(ctx)
 	if ent.IsNotFound(tenantErr) {
 		tnt, tenantErr = client.Tenant.Create().SetName(tenantName).Save(ctx)
@@ -87,7 +87,7 @@ func getOrCreateTenantContext(ctx context.Context, client *ent.Client, tenantNam
 	if tenantErr != nil {
 		return nil, fmt.Errorf("querying tenant %q: %w", tenantName, tenantErr)
 	}
-	return access.TenantContext(ctx, access.RoleSystem, tnt.ID), nil
+	return access.TenantSystemContext(ctx, tnt.ID), nil
 }
 
 func LoadConfigFile(ctx context.Context, client *ent.Client, fileName string) error {
@@ -95,7 +95,8 @@ func LoadConfigFile(ctx context.Context, client *ent.Client, fileName string) er
 	if cfgErr != nil {
 		return cfgErr
 	}
-	tenantCtx, ctxErr := getOrCreateTenantContext(ctx, client, cfg.TenantName)
+
+	tenantCtx, ctxErr := createTenantContext(ctx, client, cfg.TenantName)
 	if ctxErr != nil {
 		return ctxErr
 	}

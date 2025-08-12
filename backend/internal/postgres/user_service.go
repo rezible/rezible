@@ -3,8 +3,11 @@ package postgres
 import (
 	"context"
 	"fmt"
+	"os"
 
 	"github.com/google/uuid"
+	"github.com/rezible/rezible/ent/privacy"
+	"github.com/rs/zerolog/log"
 
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
@@ -50,6 +53,25 @@ func (s *UserService) GetByEmail(ctx context.Context, email string) (*ent.User, 
 
 func (s *UserService) GetByChatId(ctx context.Context, chatId string) (*ent.User, error) {
 	return s.getOneWhere(ctx, user.ChatID(chatId))
+}
+
+func (s *UserService) LookupProviderUser(ctx context.Context, provUser *ent.User) (*ent.User, error) {
+	// TODO: use provider mapping to match user details, not just by email
+	email := provUser.Email
+	if rez.DebugMode && os.Getenv("REZ_DEBUG_DEFAULT_USER_EMAIL") != "" {
+		email = os.Getenv("REZ_DEBUG_DEFAULT_USER_EMAIL")
+		log.Debug().Str("email", email).Msg("using debug auth email")
+	}
+
+	allowQueryCtx := privacy.DecisionContext(ctx, privacy.Allow)
+	u, lookupErr := s.GetByEmail(allowQueryCtx, email)
+	if lookupErr != nil {
+		if ent.IsNotFound(lookupErr) {
+			return nil, nil
+		}
+		return nil, fmt.Errorf("users.GetByEmail: %w", lookupErr)
+	}
+	return u, nil
 }
 
 func (s *UserService) ListUsers(ctx context.Context, params rez.ListUsersParams) ([]*ent.User, error) {

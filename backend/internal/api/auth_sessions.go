@@ -2,7 +2,9 @@ package api
 
 import (
 	"context"
+
 	"github.com/google/uuid"
+
 	rez "github.com/rezible/rezible"
 	oapi "github.com/rezible/rezible/openapi"
 )
