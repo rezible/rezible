@@ -38,6 +38,8 @@ const (
 	EdgeSchedules = "schedules"
 	// EdgeHandoverTemplate holds the string denoting the handover_template edge name in mutations.
 	EdgeHandoverTemplate = "handover_template"
+	// EdgeAlerts holds the string denoting the alerts edge name in mutations.
+	EdgeAlerts = "alerts"
 	// EdgeEvents holds the string denoting the events edge name in mutations.
 	EdgeEvents = "events"
 	// EdgeAnnotations holds the string denoting the annotations edge name in mutations.
@@ -73,6 +75,13 @@ const (
 	HandoverTemplateInverseTable = "oncall_handover_templates"
 	// HandoverTemplateColumn is the table column denoting the handover_template relation/edge.
 	HandoverTemplateColumn = "handover_template_id"
+	// AlertsTable is the table that holds the alerts relation/edge.
+	AlertsTable = "alerts"
+	// AlertsInverseTable is the table name for the Alert entity.
+	// It exists in this package in order to avoid circular dependency with the "alert" package.
+	AlertsInverseTable = "alerts"
+	// AlertsColumn is the table column denoting the alerts relation/edge.
+	AlertsColumn = "roster_id"
 	// EventsTable is the table that holds the events relation/edge.
 	EventsTable = "oncall_events"
 	// EventsInverseTable is the table name for the OncallEvent entity.
@@ -240,6 +249,20 @@ func ByHandoverTemplateField(field string, opts ...sql.OrderTermOption) OrderOpt
 	}
 }
 
+// ByAlertsCount orders the results by alerts count.
+func ByAlertsCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newAlertsStep(), opts...)
+	}
+}
+
+// ByAlerts orders the results by alerts terms.
+func ByAlerts(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newAlertsStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
+
 // ByEventsCount orders the results by events count.
 func ByEventsCount(opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
@@ -342,6 +365,13 @@ func newHandoverTemplateStep() *sqlgraph.Step {
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(HandoverTemplateInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.M2O, true, HandoverTemplateTable, HandoverTemplateColumn),
+	)
+}
+func newAlertsStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(AlertsInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, false, AlertsTable, AlertsColumn),
 	)
 }
 func newEventsStep() *sqlgraph.Step {

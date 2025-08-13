@@ -823,6 +823,22 @@ func (c *AlertClient) QueryPlaybooks(a *Alert) *PlaybookQuery {
 	return query
 }
 
+// QueryRoster queries the roster edge of a Alert.
+func (c *AlertClient) QueryRoster(a *Alert) *OncallRosterQuery {
+	query := (&OncallRosterClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := a.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(alert.Table, alert.FieldID, id),
+			sqlgraph.To(oncallroster.Table, oncallroster.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, alert.RosterTable, alert.RosterColumn),
+		)
+		fromV = sqlgraph.Neighbors(a.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
 // QueryEvents queries the events edge of a Alert.
 func (c *AlertClient) QueryEvents(a *Alert) *OncallEventQuery {
 	query := (&OncallEventClient{config: c.config}).Query()
@@ -5969,6 +5985,22 @@ func (c *OncallRosterClient) QueryHandoverTemplate(or *OncallRoster) *OncallHand
 			sqlgraph.From(oncallroster.Table, oncallroster.FieldID, id),
 			sqlgraph.To(oncallhandovertemplate.Table, oncallhandovertemplate.FieldID),
 			sqlgraph.Edge(sqlgraph.M2O, true, oncallroster.HandoverTemplateTable, oncallroster.HandoverTemplateColumn),
+		)
+		fromV = sqlgraph.Neighbors(or.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryAlerts queries the alerts edge of a OncallRoster.
+func (c *OncallRosterClient) QueryAlerts(or *OncallRoster) *AlertQuery {
+	query := (&AlertClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := or.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(oncallroster.Table, oncallroster.FieldID, id),
+			sqlgraph.To(alert.Table, alert.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, oncallroster.AlertsTable, oncallroster.AlertsColumn),
 		)
 		fromV = sqlgraph.Neighbors(or.driver.Dialect(), step)
 		return fromV, nil

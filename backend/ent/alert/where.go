@@ -59,14 +59,29 @@ func TenantID(v int) predicate.Alert {
 	return predicate.Alert(sql.FieldEQ(FieldTenantID, v))
 }
 
+// ProviderID applies equality check predicate on the "provider_id" field. It's identical to ProviderIDEQ.
+func ProviderID(v string) predicate.Alert {
+	return predicate.Alert(sql.FieldEQ(FieldProviderID, v))
+}
+
 // Title applies equality check predicate on the "title" field. It's identical to TitleEQ.
 func Title(v string) predicate.Alert {
 	return predicate.Alert(sql.FieldEQ(FieldTitle, v))
 }
 
-// ProviderID applies equality check predicate on the "provider_id" field. It's identical to ProviderIDEQ.
-func ProviderID(v string) predicate.Alert {
-	return predicate.Alert(sql.FieldEQ(FieldProviderID, v))
+// Description applies equality check predicate on the "description" field. It's identical to DescriptionEQ.
+func Description(v string) predicate.Alert {
+	return predicate.Alert(sql.FieldEQ(FieldDescription, v))
+}
+
+// Definition applies equality check predicate on the "definition" field. It's identical to DefinitionEQ.
+func Definition(v string) predicate.Alert {
+	return predicate.Alert(sql.FieldEQ(FieldDefinition, v))
+}
+
+// RosterID applies equality check predicate on the "roster_id" field. It's identical to RosterIDEQ.
+func RosterID(v uuid.UUID) predicate.Alert {
+	return predicate.Alert(sql.FieldEQ(FieldRosterID, v))
 }
 
 // TenantIDEQ applies the EQ predicate on the "tenant_id" field.
@@ -87,71 +102,6 @@ func TenantIDIn(vs ...int) predicate.Alert {
 // TenantIDNotIn applies the NotIn predicate on the "tenant_id" field.
 func TenantIDNotIn(vs ...int) predicate.Alert {
 	return predicate.Alert(sql.FieldNotIn(FieldTenantID, vs...))
-}
-
-// TitleEQ applies the EQ predicate on the "title" field.
-func TitleEQ(v string) predicate.Alert {
-	return predicate.Alert(sql.FieldEQ(FieldTitle, v))
-}
-
-// TitleNEQ applies the NEQ predicate on the "title" field.
-func TitleNEQ(v string) predicate.Alert {
-	return predicate.Alert(sql.FieldNEQ(FieldTitle, v))
-}
-
-// TitleIn applies the In predicate on the "title" field.
-func TitleIn(vs ...string) predicate.Alert {
-	return predicate.Alert(sql.FieldIn(FieldTitle, vs...))
-}
-
-// TitleNotIn applies the NotIn predicate on the "title" field.
-func TitleNotIn(vs ...string) predicate.Alert {
-	return predicate.Alert(sql.FieldNotIn(FieldTitle, vs...))
-}
-
-// TitleGT applies the GT predicate on the "title" field.
-func TitleGT(v string) predicate.Alert {
-	return predicate.Alert(sql.FieldGT(FieldTitle, v))
-}
-
-// TitleGTE applies the GTE predicate on the "title" field.
-func TitleGTE(v string) predicate.Alert {
-	return predicate.Alert(sql.FieldGTE(FieldTitle, v))
-}
-
-// TitleLT applies the LT predicate on the "title" field.
-func TitleLT(v string) predicate.Alert {
-	return predicate.Alert(sql.FieldLT(FieldTitle, v))
-}
-
-// TitleLTE applies the LTE predicate on the "title" field.
-func TitleLTE(v string) predicate.Alert {
-	return predicate.Alert(sql.FieldLTE(FieldTitle, v))
-}
-
-// TitleContains applies the Contains predicate on the "title" field.
-func TitleContains(v string) predicate.Alert {
-	return predicate.Alert(sql.FieldContains(FieldTitle, v))
-}
-
-// TitleHasPrefix applies the HasPrefix predicate on the "title" field.
-func TitleHasPrefix(v string) predicate.Alert {
-	return predicate.Alert(sql.FieldHasPrefix(FieldTitle, v))
-}
-
-// TitleHasSuffix applies the HasSuffix predicate on the "title" field.
-func TitleHasSuffix(v string) predicate.Alert {
-	return predicate.Alert(sql.FieldHasSuffix(FieldTitle, v))
-}
-
-// TitleEqualFold applies the EqualFold predicate on the "title" field.
-func TitleEqualFold(v string) predicate.Alert {
-	return predicate.Alert(sql.FieldEqualFold(FieldTitle, v))
-}
-
-// TitleContainsFold applies the ContainsFold predicate on the "title" field.
-func TitleContainsFold(v string) predicate.Alert {
-	return predicate.Alert(sql.FieldContainsFold(FieldTitle, v))
 }
 
 // ProviderIDEQ applies the EQ predicate on the "provider_id" field.
@@ -219,6 +169,251 @@ func ProviderIDContainsFold(v string) predicate.Alert {
 	return predicate.Alert(sql.FieldContainsFold(FieldProviderID, v))
 }
 
+// TitleEQ applies the EQ predicate on the "title" field.
+func TitleEQ(v string) predicate.Alert {
+	return predicate.Alert(sql.FieldEQ(FieldTitle, v))
+}
+
+// TitleNEQ applies the NEQ predicate on the "title" field.
+func TitleNEQ(v string) predicate.Alert {
+	return predicate.Alert(sql.FieldNEQ(FieldTitle, v))
+}
+
+// TitleIn applies the In predicate on the "title" field.
+func TitleIn(vs ...string) predicate.Alert {
+	return predicate.Alert(sql.FieldIn(FieldTitle, vs...))
+}
+
+// TitleNotIn applies the NotIn predicate on the "title" field.
+func TitleNotIn(vs ...string) predicate.Alert {
+	return predicate.Alert(sql.FieldNotIn(FieldTitle, vs...))
+}
+
+// TitleGT applies the GT predicate on the "title" field.
+func TitleGT(v string) predicate.Alert {
+	return predicate.Alert(sql.FieldGT(FieldTitle, v))
+}
+
+// TitleGTE applies the GTE predicate on the "title" field.
+func TitleGTE(v string) predicate.Alert {
+	return predicate.Alert(sql.FieldGTE(FieldTitle, v))
+}
+
+// TitleLT applies the LT predicate on the "title" field.
+func TitleLT(v string) predicate.Alert {
+	return predicate.Alert(sql.FieldLT(FieldTitle, v))
+}
+
+// TitleLTE applies the LTE predicate on the "title" field.
+func TitleLTE(v string) predicate.Alert {
+	return predicate.Alert(sql.FieldLTE(FieldTitle, v))
+}
+
+// TitleContains applies the Contains predicate on the "title" field.
+func TitleContains(v string) predicate.Alert {
+	return predicate.Alert(sql.FieldContains(FieldTitle, v))
+}
+
+// TitleHasPrefix applies the HasPrefix predicate on the "title" field.
+func TitleHasPrefix(v string) predicate.Alert {
+	return predicate.Alert(sql.FieldHasPrefix(FieldTitle, v))
+}
+
+// TitleHasSuffix applies the HasSuffix predicate on the "title" field.
+func TitleHasSuffix(v string) predicate.Alert {
+	return predicate.Alert(sql.FieldHasSuffix(FieldTitle, v))
+}
+
+// TitleEqualFold applies the EqualFold predicate on the "title" field.
+func TitleEqualFold(v string) predicate.Alert {
+	return predicate.Alert(sql.FieldEqualFold(FieldTitle, v))
+}
+
+// TitleContainsFold applies the ContainsFold predicate on the "title" field.
+func TitleContainsFold(v string) predicate.Alert {
+	return predicate.Alert(sql.FieldContainsFold(FieldTitle, v))
+}
+
+// DescriptionEQ applies the EQ predicate on the "description" field.
+func DescriptionEQ(v string) predicate.Alert {
+	return predicate.Alert(sql.FieldEQ(FieldDescription, v))
+}
+
+// DescriptionNEQ applies the NEQ predicate on the "description" field.
+func DescriptionNEQ(v string) predicate.Alert {
+	return predicate.Alert(sql.FieldNEQ(FieldDescription, v))
+}
+
+// DescriptionIn applies the In predicate on the "description" field.
+func DescriptionIn(vs ...string) predicate.Alert {
+	return predicate.Alert(sql.FieldIn(FieldDescription, vs...))
+}
+
+// DescriptionNotIn applies the NotIn predicate on the "description" field.
+func DescriptionNotIn(vs ...string) predicate.Alert {
+	return predicate.Alert(sql.FieldNotIn(FieldDescription, vs...))
+}
+
+// DescriptionGT applies the GT predicate on the "description" field.
+func DescriptionGT(v string) predicate.Alert {
+	return predicate.Alert(sql.FieldGT(FieldDescription, v))
+}
+
+// DescriptionGTE applies the GTE predicate on the "description" field.
+func DescriptionGTE(v string) predicate.Alert {
+	return predicate.Alert(sql.FieldGTE(FieldDescription, v))
+}
+
+// DescriptionLT applies the LT predicate on the "description" field.
+func DescriptionLT(v string) predicate.Alert {
+	return predicate.Alert(sql.FieldLT(FieldDescription, v))
+}
+
+// DescriptionLTE applies the LTE predicate on the "description" field.
+func DescriptionLTE(v string) predicate.Alert {
+	return predicate.Alert(sql.FieldLTE(FieldDescription, v))
+}
+
+// DescriptionContains applies the Contains predicate on the "description" field.
+func DescriptionContains(v string) predicate.Alert {
+	return predicate.Alert(sql.FieldContains(FieldDescription, v))
+}
+
+// DescriptionHasPrefix applies the HasPrefix predicate on the "description" field.
+func DescriptionHasPrefix(v string) predicate.Alert {
+	return predicate.Alert(sql.FieldHasPrefix(FieldDescription, v))
+}
+
+// DescriptionHasSuffix applies the HasSuffix predicate on the "description" field.
+func DescriptionHasSuffix(v string) predicate.Alert {
+	return predicate.Alert(sql.FieldHasSuffix(FieldDescription, v))
+}
+
+// DescriptionIsNil applies the IsNil predicate on the "description" field.
+func DescriptionIsNil() predicate.Alert {
+	return predicate.Alert(sql.FieldIsNull(FieldDescription))
+}
+
+// DescriptionNotNil applies the NotNil predicate on the "description" field.
+func DescriptionNotNil() predicate.Alert {
+	return predicate.Alert(sql.FieldNotNull(FieldDescription))
+}
+
+// DescriptionEqualFold applies the EqualFold predicate on the "description" field.
+func DescriptionEqualFold(v string) predicate.Alert {
+	return predicate.Alert(sql.FieldEqualFold(FieldDescription, v))
+}
+
+// DescriptionContainsFold applies the ContainsFold predicate on the "description" field.
+func DescriptionContainsFold(v string) predicate.Alert {
+	return predicate.Alert(sql.FieldContainsFold(FieldDescription, v))
+}
+
+// DefinitionEQ applies the EQ predicate on the "definition" field.
+func DefinitionEQ(v string) predicate.Alert {
+	return predicate.Alert(sql.FieldEQ(FieldDefinition, v))
+}
+
+// DefinitionNEQ applies the NEQ predicate on the "definition" field.
+func DefinitionNEQ(v string) predicate.Alert {
+	return predicate.Alert(sql.FieldNEQ(FieldDefinition, v))
+}
+
+// DefinitionIn applies the In predicate on the "definition" field.
+func DefinitionIn(vs ...string) predicate.Alert {
+	return predicate.Alert(sql.FieldIn(FieldDefinition, vs...))
+}
+
+// DefinitionNotIn applies the NotIn predicate on the "definition" field.
+func DefinitionNotIn(vs ...string) predicate.Alert {
+	return predicate.Alert(sql.FieldNotIn(FieldDefinition, vs...))
+}
+
+// DefinitionGT applies the GT predicate on the "definition" field.
+func DefinitionGT(v string) predicate.Alert {
+	return predicate.Alert(sql.FieldGT(FieldDefinition, v))
+}
+
+// DefinitionGTE applies the GTE predicate on the "definition" field.
+func DefinitionGTE(v string) predicate.Alert {
+	return predicate.Alert(sql.FieldGTE(FieldDefinition, v))
+}
+
+// DefinitionLT applies the LT predicate on the "definition" field.
+func DefinitionLT(v string) predicate.Alert {
+	return predicate.Alert(sql.FieldLT(FieldDefinition, v))
+}
+
+// DefinitionLTE applies the LTE predicate on the "definition" field.
+func DefinitionLTE(v string) predicate.Alert {
+	return predicate.Alert(sql.FieldLTE(FieldDefinition, v))
+}
+
+// DefinitionContains applies the Contains predicate on the "definition" field.
+func DefinitionContains(v string) predicate.Alert {
+	return predicate.Alert(sql.FieldContains(FieldDefinition, v))
+}
+
+// DefinitionHasPrefix applies the HasPrefix predicate on the "definition" field.
+func DefinitionHasPrefix(v string) predicate.Alert {
+	return predicate.Alert(sql.FieldHasPrefix(FieldDefinition, v))
+}
+
+// DefinitionHasSuffix applies the HasSuffix predicate on the "definition" field.
+func DefinitionHasSuffix(v string) predicate.Alert {
+	return predicate.Alert(sql.FieldHasSuffix(FieldDefinition, v))
+}
+
+// DefinitionIsNil applies the IsNil predicate on the "definition" field.
+func DefinitionIsNil() predicate.Alert {
+	return predicate.Alert(sql.FieldIsNull(FieldDefinition))
+}
+
+// DefinitionNotNil applies the NotNil predicate on the "definition" field.
+func DefinitionNotNil() predicate.Alert {
+	return predicate.Alert(sql.FieldNotNull(FieldDefinition))
+}
+
+// DefinitionEqualFold applies the EqualFold predicate on the "definition" field.
+func DefinitionEqualFold(v string) predicate.Alert {
+	return predicate.Alert(sql.FieldEqualFold(FieldDefinition, v))
+}
+
+// DefinitionContainsFold applies the ContainsFold predicate on the "definition" field.
+func DefinitionContainsFold(v string) predicate.Alert {
+	return predicate.Alert(sql.FieldContainsFold(FieldDefinition, v))
+}
+
+// RosterIDEQ applies the EQ predicate on the "roster_id" field.
+func RosterIDEQ(v uuid.UUID) predicate.Alert {
+	return predicate.Alert(sql.FieldEQ(FieldRosterID, v))
+}
+
+// RosterIDNEQ applies the NEQ predicate on the "roster_id" field.
+func RosterIDNEQ(v uuid.UUID) predicate.Alert {
+	return predicate.Alert(sql.FieldNEQ(FieldRosterID, v))
+}
+
+// RosterIDIn applies the In predicate on the "roster_id" field.
+func RosterIDIn(vs ...uuid.UUID) predicate.Alert {
+	return predicate.Alert(sql.FieldIn(FieldRosterID, vs...))
+}
+
+// RosterIDNotIn applies the NotIn predicate on the "roster_id" field.
+func RosterIDNotIn(vs ...uuid.UUID) predicate.Alert {
+	return predicate.Alert(sql.FieldNotIn(FieldRosterID, vs...))
+}
+
+// RosterIDIsNil applies the IsNil predicate on the "roster_id" field.
+func RosterIDIsNil() predicate.Alert {
+	return predicate.Alert(sql.FieldIsNull(FieldRosterID))
+}
+
+// RosterIDNotNil applies the NotNil predicate on the "roster_id" field.
+func RosterIDNotNil() predicate.Alert {
+	return predicate.Alert(sql.FieldNotNull(FieldRosterID))
+}
+
 // HasTenant applies the HasEdge predicate on the "tenant" edge.
 func HasTenant() predicate.Alert {
 	return predicate.Alert(func(s *sql.Selector) {
@@ -257,6 +452,29 @@ func HasPlaybooks() predicate.Alert {
 func HasPlaybooksWith(preds ...predicate.Playbook) predicate.Alert {
 	return predicate.Alert(func(s *sql.Selector) {
 		step := newPlaybooksStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasRoster applies the HasEdge predicate on the "roster" edge.
+func HasRoster() predicate.Alert {
+	return predicate.Alert(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, RosterTable, RosterColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasRosterWith applies the HasEdge predicate on the "roster" edge with a given conditions (other predicates).
+func HasRosterWith(preds ...predicate.OncallRoster) predicate.Alert {
+	return predicate.Alert(func(s *sql.Selector) {
+		step := newRosterStep()
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)

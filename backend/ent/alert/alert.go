@@ -16,14 +16,22 @@ const (
 	FieldID = "id"
 	// FieldTenantID holds the string denoting the tenant_id field in the database.
 	FieldTenantID = "tenant_id"
-	// FieldTitle holds the string denoting the title field in the database.
-	FieldTitle = "title"
 	// FieldProviderID holds the string denoting the provider_id field in the database.
 	FieldProviderID = "provider_id"
+	// FieldTitle holds the string denoting the title field in the database.
+	FieldTitle = "title"
+	// FieldDescription holds the string denoting the description field in the database.
+	FieldDescription = "description"
+	// FieldDefinition holds the string denoting the definition field in the database.
+	FieldDefinition = "definition"
+	// FieldRosterID holds the string denoting the roster_id field in the database.
+	FieldRosterID = "roster_id"
 	// EdgeTenant holds the string denoting the tenant edge name in mutations.
 	EdgeTenant = "tenant"
 	// EdgePlaybooks holds the string denoting the playbooks edge name in mutations.
 	EdgePlaybooks = "playbooks"
+	// EdgeRoster holds the string denoting the roster edge name in mutations.
+	EdgeRoster = "roster"
 	// EdgeEvents holds the string denoting the events edge name in mutations.
 	EdgeEvents = "events"
 	// EdgeFeedback holds the string denoting the feedback edge name in mutations.
@@ -42,6 +50,13 @@ const (
 	// PlaybooksInverseTable is the table name for the Playbook entity.
 	// It exists in this package in order to avoid circular dependency with the "playbook" package.
 	PlaybooksInverseTable = "playbooks"
+	// RosterTable is the table that holds the roster relation/edge.
+	RosterTable = "alerts"
+	// RosterInverseTable is the table name for the OncallRoster entity.
+	// It exists in this package in order to avoid circular dependency with the "oncallroster" package.
+	RosterInverseTable = "oncall_rosters"
+	// RosterColumn is the table column denoting the roster relation/edge.
+	RosterColumn = "roster_id"
 	// EventsTable is the table that holds the events relation/edge.
 	EventsTable = "oncall_events"
 	// EventsInverseTable is the table name for the OncallEvent entity.
@@ -62,8 +77,11 @@ const (
 var Columns = []string{
 	FieldID,
 	FieldTenantID,
-	FieldTitle,
 	FieldProviderID,
+	FieldTitle,
+	FieldDescription,
+	FieldDefinition,
+	FieldRosterID,
 }
 
 var (
@@ -107,14 +125,29 @@ func ByTenantID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldTenantID, opts...).ToFunc()
 }
 
+// ByProviderID orders the results by the provider_id field.
+func ByProviderID(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldProviderID, opts...).ToFunc()
+}
+
 // ByTitle orders the results by the title field.
 func ByTitle(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldTitle, opts...).ToFunc()
 }
 
-// ByProviderID orders the results by the provider_id field.
-func ByProviderID(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldProviderID, opts...).ToFunc()
+// ByDescription orders the results by the description field.
+func ByDescription(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldDescription, opts...).ToFunc()
+}
+
+// ByDefinition orders the results by the definition field.
+func ByDefinition(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldDefinition, opts...).ToFunc()
+}
+
+// ByRosterID orders the results by the roster_id field.
+func ByRosterID(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldRosterID, opts...).ToFunc()
 }
 
 // ByTenantField orders the results by tenant field.
@@ -135,6 +168,13 @@ func ByPlaybooksCount(opts ...sql.OrderTermOption) OrderOption {
 func ByPlaybooks(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 	return func(s *sql.Selector) {
 		sqlgraph.OrderByNeighborTerms(s, newPlaybooksStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
+
+// ByRosterField orders the results by roster field.
+func ByRosterField(field string, opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newRosterStep(), sql.OrderByField(field, opts...))
 	}
 }
 
@@ -177,6 +217,13 @@ func newPlaybooksStep() *sqlgraph.Step {
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(PlaybooksInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.M2M, true, PlaybooksTable, PlaybooksPrimaryKey...),
+	)
+}
+func newRosterStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(RosterInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.M2O, true, RosterTable, RosterColumn),
 	)
 }
 func newEventsStep() *sqlgraph.Step {

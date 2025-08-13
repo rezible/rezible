@@ -3,8 +3,11 @@
 	import { appShell } from "$features/app-shell/lib/appShellState.svelte";
 	import Avatar from "$components/avatar/Avatar.svelte";
 
-	type Props = {children: Snippet};
-	const { children }: Props = $props();
+	type Props = {
+		children: Snippet;
+		hideNavBar?: boolean;
+	};
+	const { children, hideNavBar }: Props = $props();
 
 	const pageBreadcrumbs = $derived(appShell.breadcrumbs);
 	const pageActions = $derived(appShell.pageActions);
@@ -31,7 +34,7 @@
 {/snippet}
 
 <div class="w-full max-w-full h-full max-h-full min-h-0 flex flex-col text-surface-content">
-	<div class="flex justify-between items-center h-11 rounded-md bg-surface-200/80">
+	<div class="flex justify-between items-center h-11 rounded-md bg-surface-200/80" class:hidden={hideNavBar}>
 		<div class="flex items-center gap-2 px-2">
 			{@render breadcrumbs()}
 		</div>

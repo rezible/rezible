@@ -48,6 +48,8 @@ func (OncallRoster) Edges() []ent.Edge {
 		edge.From("handover_template", OncallHandoverTemplate.Type).
 			Ref("roster").Unique().Field("handover_template_id"),
 
+		edge.To("alerts", Alert.Type),
+
 		edge.From("events", OncallEvent.Type).Ref("roster"),
 		edge.From("annotations", OncallAnnotation.Type).Ref("roster"),
 

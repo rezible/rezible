@@ -82,9 +82,12 @@ var schemaGraph = func() *sqlgraph.Schema {
 		},
 		Type: "Alert",
 		Fields: map[string]*sqlgraph.FieldSpec{
-			alert.FieldTenantID:   {Type: field.TypeInt, Column: alert.FieldTenantID},
-			alert.FieldTitle:      {Type: field.TypeString, Column: alert.FieldTitle},
-			alert.FieldProviderID: {Type: field.TypeString, Column: alert.FieldProviderID},
+			alert.FieldTenantID:    {Type: field.TypeInt, Column: alert.FieldTenantID},
+			alert.FieldProviderID:  {Type: field.TypeString, Column: alert.FieldProviderID},
+			alert.FieldTitle:       {Type: field.TypeString, Column: alert.FieldTitle},
+			alert.FieldDescription: {Type: field.TypeString, Column: alert.FieldDescription},
+			alert.FieldDefinition:  {Type: field.TypeString, Column: alert.FieldDefinition},
+			alert.FieldRosterID:    {Type: field.TypeUUID, Column: alert.FieldRosterID},
 		},
 	}
 	graph.Nodes[1] = &sqlgraph.Node{
@@ -1167,6 +1170,18 @@ var schemaGraph = func() *sqlgraph.Schema {
 		},
 		"Alert",
 		"Playbook",
+	)
+	graph.MustAddE(
+		"roster",
+		&sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   alert.RosterTable,
+			Columns: []string{alert.RosterColumn},
+			Bidi:    false,
+		},
+		"Alert",
+		"OncallRoster",
 	)
 	graph.MustAddE(
 		"events",
@@ -2391,6 +2406,18 @@ var schemaGraph = func() *sqlgraph.Schema {
 		},
 		"OncallRoster",
 		"OncallHandoverTemplate",
+	)
+	graph.MustAddE(
+		"alerts",
+		&sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   oncallroster.AlertsTable,
+			Columns: []string{oncallroster.AlertsColumn},
+			Bidi:    false,
+		},
+		"OncallRoster",
+		"Alert",
 	)
 	graph.MustAddE(
 		"events",
@@ -3934,14 +3961,29 @@ func (f *AlertFilter) WhereTenantID(p entql.IntP) {
 	f.Where(p.Field(alert.FieldTenantID))
 }
 
+// WhereProviderID applies the entql string predicate on the provider_id field.
+func (f *AlertFilter) WhereProviderID(p entql.StringP) {
+	f.Where(p.Field(alert.FieldProviderID))
+}
+
 // WhereTitle applies the entql string predicate on the title field.
 func (f *AlertFilter) WhereTitle(p entql.StringP) {
 	f.Where(p.Field(alert.FieldTitle))
 }
 
-// WhereProviderID applies the entql string predicate on the provider_id field.
-func (f *AlertFilter) WhereProviderID(p entql.StringP) {
-	f.Where(p.Field(alert.FieldProviderID))
+// WhereDescription applies the entql string predicate on the description field.
+func (f *AlertFilter) WhereDescription(p entql.StringP) {
+	f.Where(p.Field(alert.FieldDescription))
+}
+
+// WhereDefinition applies the entql string predicate on the definition field.
+func (f *AlertFilter) WhereDefinition(p entql.StringP) {
+	f.Where(p.Field(alert.FieldDefinition))
+}
+
+// WhereRosterID applies the entql [16]byte predicate on the roster_id field.
+func (f *AlertFilter) WhereRosterID(p entql.ValueP) {
+	f.Where(p.Field(alert.FieldRosterID))
 }
 
 // WhereHasTenant applies a predicate to check if query has an edge tenant.
@@ -3966,6 +4008,20 @@ func (f *AlertFilter) WhereHasPlaybooks() {
 // WhereHasPlaybooksWith applies a predicate to check if query has an edge playbooks with a given conditions (other predicates).
 func (f *AlertFilter) WhereHasPlaybooksWith(preds ...predicate.Playbook) {
 	f.Where(entql.HasEdgeWith("playbooks", sqlgraph.WrapFunc(func(s *sql.Selector) {
+		for _, p := range preds {
+			p(s)
+		}
+	})))
+}
+
+// WhereHasRoster applies a predicate to check if query has an edge roster.
+func (f *AlertFilter) WhereHasRoster() {
+	f.Where(entql.HasEdge("roster"))
+}
+
+// WhereHasRosterWith applies a predicate to check if query has an edge roster with a given conditions (other predicates).
+func (f *AlertFilter) WhereHasRosterWith(preds ...predicate.OncallRoster) {
+	f.Where(entql.HasEdgeWith("roster", sqlgraph.WrapFunc(func(s *sql.Selector) {
 		for _, p := range preds {
 			p(s)
 		}
@@ -7299,6 +7355,20 @@ func (f *OncallRosterFilter) WhereHasHandoverTemplate() {
 // WhereHasHandoverTemplateWith applies a predicate to check if query has an edge handover_template with a given conditions (other predicates).
 func (f *OncallRosterFilter) WhereHasHandoverTemplateWith(preds ...predicate.OncallHandoverTemplate) {
 	f.Where(entql.HasEdgeWith("handover_template", sqlgraph.WrapFunc(func(s *sql.Selector) {
+		for _, p := range preds {
+			p(s)
+		}
+	})))
+}
+
+// WhereHasAlerts applies a predicate to check if query has an edge alerts.
+func (f *OncallRosterFilter) WhereHasAlerts() {
+	f.Where(entql.HasEdge("alerts"))
+}
+
+// WhereHasAlertsWith applies a predicate to check if query has an edge alerts with a given conditions (other predicates).
+func (f *OncallRosterFilter) WhereHasAlertsWith(preds ...predicate.Alert) {
+	f.Where(entql.HasEdgeWith("alerts", sqlgraph.WrapFunc(func(s *sql.Selector) {
 		for _, p := range preds {
 			p(s)
 		}

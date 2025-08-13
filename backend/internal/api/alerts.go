@@ -2,6 +2,7 @@ package api
 
 import (
 	"context"
+	"errors"
 
 	rez "github.com/rezible/rezible"
 	oapi "github.com/rezible/rezible/openapi"
@@ -50,11 +51,17 @@ func (h *alertsHandler) GetAlert(ctx context.Context, req *oapi.GetAlertRequest)
 func (h *alertsHandler) GetAlertMetrics(ctx context.Context, req *oapi.GetAlertMetricsRequest) (*oapi.GetAlertMetricsResponse, error) {
 	var resp oapi.GetAlertMetricsResponse
 
+	dateFrom, fromErr := req.From.GetTime()
+	dateTo, toErr := req.To.GetTime()
+	if windowErr := errors.Join(fromErr, toErr); windowErr != nil {
+		return nil, apiError("invalid date window", windowErr)
+	}
+
 	params := rez.GetAlertMetricsParams{
 		AlertId:  req.Id,
 		RosterId: req.RosterId,
-		From:     req.From,
-		To:       req.To,
+		From:     dateFrom,
+		To:       dateTo,
 	}
 	metrics, getErr := h.alerts.GetAlertMetrics(ctx, params)
 	if getErr != nil {

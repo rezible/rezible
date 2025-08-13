@@ -17,6 +17,7 @@ import (
 	"github.com/rezible/rezible/ent/alert"
 	"github.com/rezible/rezible/ent/alertfeedback"
 	"github.com/rezible/rezible/ent/oncallevent"
+	"github.com/rezible/rezible/ent/oncallroster"
 	"github.com/rezible/rezible/ent/playbook"
 	"github.com/rezible/rezible/ent/predicate"
 	"github.com/rezible/rezible/ent/tenant"
@@ -31,6 +32,7 @@ type AlertQuery struct {
 	predicates    []predicate.Alert
 	withTenant    *TenantQuery
 	withPlaybooks *PlaybookQuery
+	withRoster    *OncallRosterQuery
 	withEvents    *OncallEventQuery
 	withFeedback  *AlertFeedbackQuery
 	modifiers     []func(*sql.Selector)
@@ -107,6 +109,28 @@ func (aq *AlertQuery) QueryPlaybooks() *PlaybookQuery {
 			sqlgraph.From(alert.Table, alert.FieldID, selector),
 			sqlgraph.To(playbook.Table, playbook.FieldID),
 			sqlgraph.Edge(sqlgraph.M2M, true, alert.PlaybooksTable, alert.PlaybooksPrimaryKey...),
+		)
+		fromU = sqlgraph.SetNeighbors(aq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryRoster chains the current query on the "roster" edge.
+func (aq *AlertQuery) QueryRoster() *OncallRosterQuery {
+	query := (&OncallRosterClient{config: aq.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := aq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := aq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(alert.Table, alert.FieldID, selector),
+			sqlgraph.To(oncallroster.Table, oncallroster.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, alert.RosterTable, alert.RosterColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(aq.driver.Dialect(), step)
 		return fromU, nil
@@ -352,6 +376,7 @@ func (aq *AlertQuery) Clone() *AlertQuery {
 		predicates:    append([]predicate.Alert{}, aq.predicates...),
 		withTenant:    aq.withTenant.Clone(),
 		withPlaybooks: aq.withPlaybooks.Clone(),
+		withRoster:    aq.withRoster.Clone(),
 		withEvents:    aq.withEvents.Clone(),
 		withFeedback:  aq.withFeedback.Clone(),
 		// clone intermediate query.
@@ -380,6 +405,17 @@ func (aq *AlertQuery) WithPlaybooks(opts ...func(*PlaybookQuery)) *AlertQuery {
 		opt(query)
 	}
 	aq.withPlaybooks = query
+	return aq
+}
+
+// WithRoster tells the query-builder to eager-load the nodes that are connected to
+// the "roster" edge. The optional arguments are used to configure the query builder of the edge.
+func (aq *AlertQuery) WithRoster(opts ...func(*OncallRosterQuery)) *AlertQuery {
+	query := (&OncallRosterClient{config: aq.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	aq.withRoster = query
 	return aq
 }
 
@@ -489,9 +525,10 @@ func (aq *AlertQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Alert,
 	var (
 		nodes       = []*Alert{}
 		_spec       = aq.querySpec()
-		loadedTypes = [4]bool{
+		loadedTypes = [5]bool{
 			aq.withTenant != nil,
 			aq.withPlaybooks != nil,
+			aq.withRoster != nil,
 			aq.withEvents != nil,
 			aq.withFeedback != nil,
 		}
@@ -527,6 +564,12 @@ func (aq *AlertQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Alert,
 		if err := aq.loadPlaybooks(ctx, query, nodes,
 			func(n *Alert) { n.Edges.Playbooks = []*Playbook{} },
 			func(n *Alert, e *Playbook) { n.Edges.Playbooks = append(n.Edges.Playbooks, e) }); err != nil {
+			return nil, err
+		}
+	}
+	if query := aq.withRoster; query != nil {
+		if err := aq.loadRoster(ctx, query, nodes, nil,
+			func(n *Alert, e *OncallRoster) { n.Edges.Roster = e }); err != nil {
 			return nil, err
 		}
 	}
@@ -637,6 +680,35 @@ func (aq *AlertQuery) loadPlaybooks(ctx context.Context, query *PlaybookQuery, n
 	}
 	return nil
 }
+func (aq *AlertQuery) loadRoster(ctx context.Context, query *OncallRosterQuery, nodes []*Alert, init func(*Alert), assign func(*Alert, *OncallRoster)) error {
+	ids := make([]uuid.UUID, 0, len(nodes))
+	nodeids := make(map[uuid.UUID][]*Alert)
+	for i := range nodes {
+		fk := nodes[i].RosterID
+		if _, ok := nodeids[fk]; !ok {
+			ids = append(ids, fk)
+		}
+		nodeids[fk] = append(nodeids[fk], nodes[i])
+	}
+	if len(ids) == 0 {
+		return nil
+	}
+	query.Where(oncallroster.IDIn(ids...))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		nodes, ok := nodeids[n.ID]
+		if !ok {
+			return fmt.Errorf(`unexpected foreign-key "roster_id" returned %v`, n.ID)
+		}
+		for i := range nodes {
+			assign(nodes[i], n)
+		}
+	}
+	return nil
+}
 func (aq *AlertQuery) loadEvents(ctx context.Context, query *OncallEventQuery, nodes []*Alert, init func(*Alert), assign func(*Alert, *OncallEvent)) error {
 	fks := make([]driver.Value, 0, len(nodes))
 	nodeids := make(map[uuid.UUID]*Alert)
@@ -728,6 +800,9 @@ func (aq *AlertQuery) querySpec() *sqlgraph.QuerySpec {
 		}
 		if aq.withTenant != nil {
 			_spec.Node.AddColumnOnce(alert.FieldTenantID)
+		}
+		if aq.withRoster != nil {
+			_spec.Node.AddColumnOnce(alert.FieldRosterID)
 		}
 	}
 	if ps := aq.predicates; len(ps) > 0 {

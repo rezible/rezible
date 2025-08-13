@@ -14,6 +14,7 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
+	"github.com/rezible/rezible/ent/alert"
 	"github.com/rezible/rezible/ent/oncallannotation"
 	"github.com/rezible/rezible/ent/oncallevent"
 	"github.com/rezible/rezible/ent/oncallhandovertemplate"
@@ -37,6 +38,7 @@ type OncallRosterQuery struct {
 	withTenant           *TenantQuery
 	withSchedules        *OncallScheduleQuery
 	withHandoverTemplate *OncallHandoverTemplateQuery
+	withAlerts           *AlertQuery
 	withEvents           *OncallEventQuery
 	withAnnotations      *OncallAnnotationQuery
 	withTeams            *TeamQuery
@@ -139,6 +141,28 @@ func (orq *OncallRosterQuery) QueryHandoverTemplate() *OncallHandoverTemplateQue
 			sqlgraph.From(oncallroster.Table, oncallroster.FieldID, selector),
 			sqlgraph.To(oncallhandovertemplate.Table, oncallhandovertemplate.FieldID),
 			sqlgraph.Edge(sqlgraph.M2O, true, oncallroster.HandoverTemplateTable, oncallroster.HandoverTemplateColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(orq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryAlerts chains the current query on the "alerts" edge.
+func (orq *OncallRosterQuery) QueryAlerts() *AlertQuery {
+	query := (&AlertClient{config: orq.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := orq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := orq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(oncallroster.Table, oncallroster.FieldID, selector),
+			sqlgraph.To(alert.Table, alert.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, oncallroster.AlertsTable, oncallroster.AlertsColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(orq.driver.Dialect(), step)
 		return fromU, nil
@@ -473,6 +497,7 @@ func (orq *OncallRosterQuery) Clone() *OncallRosterQuery {
 		withTenant:           orq.withTenant.Clone(),
 		withSchedules:        orq.withSchedules.Clone(),
 		withHandoverTemplate: orq.withHandoverTemplate.Clone(),
+		withAlerts:           orq.withAlerts.Clone(),
 		withEvents:           orq.withEvents.Clone(),
 		withAnnotations:      orq.withAnnotations.Clone(),
 		withTeams:            orq.withTeams.Clone(),
@@ -516,6 +541,17 @@ func (orq *OncallRosterQuery) WithHandoverTemplate(opts ...func(*OncallHandoverT
 		opt(query)
 	}
 	orq.withHandoverTemplate = query
+	return orq
+}
+
+// WithAlerts tells the query-builder to eager-load the nodes that are connected to
+// the "alerts" edge. The optional arguments are used to configure the query builder of the edge.
+func (orq *OncallRosterQuery) WithAlerts(opts ...func(*AlertQuery)) *OncallRosterQuery {
+	query := (&AlertClient{config: orq.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	orq.withAlerts = query
 	return orq
 }
 
@@ -669,10 +705,11 @@ func (orq *OncallRosterQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([
 	var (
 		nodes       = []*OncallRoster{}
 		_spec       = orq.querySpec()
-		loadedTypes = [9]bool{
+		loadedTypes = [10]bool{
 			orq.withTenant != nil,
 			orq.withSchedules != nil,
 			orq.withHandoverTemplate != nil,
+			orq.withAlerts != nil,
 			orq.withEvents != nil,
 			orq.withAnnotations != nil,
 			orq.withTeams != nil,
@@ -718,6 +755,13 @@ func (orq *OncallRosterQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([
 	if query := orq.withHandoverTemplate; query != nil {
 		if err := orq.loadHandoverTemplate(ctx, query, nodes, nil,
 			func(n *OncallRoster, e *OncallHandoverTemplate) { n.Edges.HandoverTemplate = e }); err != nil {
+			return nil, err
+		}
+	}
+	if query := orq.withAlerts; query != nil {
+		if err := orq.loadAlerts(ctx, query, nodes,
+			func(n *OncallRoster) { n.Edges.Alerts = []*Alert{} },
+			func(n *OncallRoster, e *Alert) { n.Edges.Alerts = append(n.Edges.Alerts, e) }); err != nil {
 			return nil, err
 		}
 	}
@@ -851,6 +895,36 @@ func (orq *OncallRosterQuery) loadHandoverTemplate(ctx context.Context, query *O
 		for i := range nodes {
 			assign(nodes[i], n)
 		}
+	}
+	return nil
+}
+func (orq *OncallRosterQuery) loadAlerts(ctx context.Context, query *AlertQuery, nodes []*OncallRoster, init func(*OncallRoster), assign func(*OncallRoster, *Alert)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[uuid.UUID]*OncallRoster)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+		if init != nil {
+			init(nodes[i])
+		}
+	}
+	if len(query.ctx.Fields) > 0 {
+		query.ctx.AppendFieldOnce(alert.FieldRosterID)
+	}
+	query.Where(predicate.Alert(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(oncallroster.AlertsColumn), fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.RosterID
+		node, ok := nodeids[fk]
+		if !ok {
+			return fmt.Errorf(`unexpected referenced foreign-key "roster_id" returned %v for node %v`, fk, n.ID)
+		}
+		assign(node, n)
 	}
 	return nil
 }

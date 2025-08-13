@@ -16,15 +16,6 @@ export class AlertViewState {
 		this.alertId = idFn();
 		watch(idFn, id => {this.alertId = id});
 	}
-
-	metricsFrom = $state<ZonedDateTime>(now(getLocalTimeZone()).subtract({ days: 7 }));
-	metricsTo = $state<ZonedDateTime>(now(getLocalTimeZone()));
-	private metricsQueryData = $derived<GetAlertMetricsData["query"]>({
-		from: this.metricsFrom.toAbsoluteString(),
-		to: this.metricsTo.toAbsoluteString(),
-	})
-	private metricsQuery = createQuery(() => getAlertMetricsOptions({ path: { id: this.alertId }, query: this.metricsQueryData }));
-	metrics = $derived(this.metricsQuery.data?.data);
 }
 
 const alertViewStateCtx = new Context<AlertViewState>("alertView");

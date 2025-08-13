@@ -25,7 +25,6 @@
 	<DateRangeField
 		label="Date Range"
 		periodTypes={[PeriodType.Day]}
-		getPeriodTypePresets={() => []}
 		classes={{
 			field: { root: "gap-0", container: "pl-0 flex items-center h-full", prepend: "[&>span]:mr-2" },
 		}}

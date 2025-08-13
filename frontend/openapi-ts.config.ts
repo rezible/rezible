@@ -22,4 +22,9 @@ export default defineConfig({
 	logs: {
 		file: false,
 	},
+	parser: {
+		transforms: {
+			readWrite: false,
+		}
+	}
 });

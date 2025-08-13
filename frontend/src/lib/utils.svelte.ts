@@ -7,8 +7,11 @@ import {
 	type QueryObserverResult,
 	type UndefinedInitialDataOptions,
 } from "@tanstack/svelte-query";
+import type { DateRange as DateRangeType } from '@layerstack/utils/dateRange';
 import { tryUnwrapApiError, type ErrorModel } from "./api";
 import { z } from "zod";
+import { CalendarDate, getLocalTimeZone, now, type DateTimeDuration } from "@internationalized/date";
+import { PeriodType } from "@layerstack/utils";
 
 export type Getter<T> = () => T;
 
@@ -74,3 +77,15 @@ export const DayHours = [
 	'12pm', '1pm', '2pm', '3pm', '4pm', '5pm',
 	'6pm', '7pm', '8pm', '9pm', '10pm', '11pm'
 ];
+
+export const makeDateRangeWindow = (duration: DateTimeDuration) => {
+	return { 
+		from: now(getLocalTimeZone()).subtract(duration).toDate(),
+		to: now(getLocalTimeZone()).toDate(),
+		periodType: PeriodType.Day,
+	}
+}
+
+export const makeCalendarDateString = (d: Date) => {
+	return new CalendarDate(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate()).toString()
+}

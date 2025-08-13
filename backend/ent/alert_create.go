@@ -15,6 +15,7 @@ import (
 	"github.com/rezible/rezible/ent/alert"
 	"github.com/rezible/rezible/ent/alertfeedback"
 	"github.com/rezible/rezible/ent/oncallevent"
+	"github.com/rezible/rezible/ent/oncallroster"
 	"github.com/rezible/rezible/ent/playbook"
 	"github.com/rezible/rezible/ent/tenant"
 )
@@ -33,15 +34,57 @@ func (ac *AlertCreate) SetTenantID(i int) *AlertCreate {
 	return ac
 }
 
+// SetProviderID sets the "provider_id" field.
+func (ac *AlertCreate) SetProviderID(s string) *AlertCreate {
+	ac.mutation.SetProviderID(s)
+	return ac
+}
+
 // SetTitle sets the "title" field.
 func (ac *AlertCreate) SetTitle(s string) *AlertCreate {
 	ac.mutation.SetTitle(s)
 	return ac
 }
 
-// SetProviderID sets the "provider_id" field.
-func (ac *AlertCreate) SetProviderID(s string) *AlertCreate {
-	ac.mutation.SetProviderID(s)
+// SetDescription sets the "description" field.
+func (ac *AlertCreate) SetDescription(s string) *AlertCreate {
+	ac.mutation.SetDescription(s)
+	return ac
+}
+
+// SetNillableDescription sets the "description" field if the given value is not nil.
+func (ac *AlertCreate) SetNillableDescription(s *string) *AlertCreate {
+	if s != nil {
+		ac.SetDescription(*s)
+	}
+	return ac
+}
+
+// SetDefinition sets the "definition" field.
+func (ac *AlertCreate) SetDefinition(s string) *AlertCreate {
+	ac.mutation.SetDefinition(s)
+	return ac
+}
+
+// SetNillableDefinition sets the "definition" field if the given value is not nil.
+func (ac *AlertCreate) SetNillableDefinition(s *string) *AlertCreate {
+	if s != nil {
+		ac.SetDefinition(*s)
+	}
+	return ac
+}
+
+// SetRosterID sets the "roster_id" field.
+func (ac *AlertCreate) SetRosterID(u uuid.UUID) *AlertCreate {
+	ac.mutation.SetRosterID(u)
+	return ac
+}
+
+// SetNillableRosterID sets the "roster_id" field if the given value is not nil.
+func (ac *AlertCreate) SetNillableRosterID(u *uuid.UUID) *AlertCreate {
+	if u != nil {
+		ac.SetRosterID(*u)
+	}
 	return ac
 }
 
@@ -77,6 +120,11 @@ func (ac *AlertCreate) AddPlaybooks(p ...*Playbook) *AlertCreate {
 		ids[i] = p[i].ID
 	}
 	return ac.AddPlaybookIDs(ids...)
+}
+
+// SetRoster sets the "roster" edge to the OncallRoster entity.
+func (ac *AlertCreate) SetRoster(o *OncallRoster) *AlertCreate {
+	return ac.SetRosterID(o.ID)
 }
 
 // AddEventIDs adds the "events" edge to the OncallEvent entity by IDs.
@@ -161,11 +209,11 @@ func (ac *AlertCreate) check() error {
 	if _, ok := ac.mutation.TenantID(); !ok {
 		return &ValidationError{Name: "tenant_id", err: errors.New(`ent: missing required field "Alert.tenant_id"`)}
 	}
-	if _, ok := ac.mutation.Title(); !ok {
-		return &ValidationError{Name: "title", err: errors.New(`ent: missing required field "Alert.title"`)}
-	}
 	if _, ok := ac.mutation.ProviderID(); !ok {
 		return &ValidationError{Name: "provider_id", err: errors.New(`ent: missing required field "Alert.provider_id"`)}
+	}
+	if _, ok := ac.mutation.Title(); !ok {
+		return &ValidationError{Name: "title", err: errors.New(`ent: missing required field "Alert.title"`)}
 	}
 	if len(ac.mutation.TenantIDs()) == 0 {
 		return &ValidationError{Name: "tenant", err: errors.New(`ent: missing required edge "Alert.tenant"`)}
@@ -206,13 +254,21 @@ func (ac *AlertCreate) createSpec() (*Alert, *sqlgraph.CreateSpec) {
 		_node.ID = id
 		_spec.ID.Value = &id
 	}
+	if value, ok := ac.mutation.ProviderID(); ok {
+		_spec.SetField(alert.FieldProviderID, field.TypeString, value)
+		_node.ProviderID = value
+	}
 	if value, ok := ac.mutation.Title(); ok {
 		_spec.SetField(alert.FieldTitle, field.TypeString, value)
 		_node.Title = value
 	}
-	if value, ok := ac.mutation.ProviderID(); ok {
-		_spec.SetField(alert.FieldProviderID, field.TypeString, value)
-		_node.ProviderID = value
+	if value, ok := ac.mutation.Description(); ok {
+		_spec.SetField(alert.FieldDescription, field.TypeString, value)
+		_node.Description = value
+	}
+	if value, ok := ac.mutation.Definition(); ok {
+		_spec.SetField(alert.FieldDefinition, field.TypeString, value)
+		_node.Definition = value
 	}
 	if nodes := ac.mutation.TenantIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
@@ -245,6 +301,23 @@ func (ac *AlertCreate) createSpec() (*Alert, *sqlgraph.CreateSpec) {
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := ac.mutation.RosterIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   alert.RosterTable,
+			Columns: []string{alert.RosterColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(oncallroster.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_node.RosterID = nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	if nodes := ac.mutation.EventsIDs(); len(nodes) > 0 {
@@ -331,6 +404,18 @@ type (
 	}
 )
 
+// SetProviderID sets the "provider_id" field.
+func (u *AlertUpsert) SetProviderID(v string) *AlertUpsert {
+	u.Set(alert.FieldProviderID, v)
+	return u
+}
+
+// UpdateProviderID sets the "provider_id" field to the value that was provided on create.
+func (u *AlertUpsert) UpdateProviderID() *AlertUpsert {
+	u.SetExcluded(alert.FieldProviderID)
+	return u
+}
+
 // SetTitle sets the "title" field.
 func (u *AlertUpsert) SetTitle(v string) *AlertUpsert {
 	u.Set(alert.FieldTitle, v)
@@ -343,15 +428,57 @@ func (u *AlertUpsert) UpdateTitle() *AlertUpsert {
 	return u
 }
 
-// SetProviderID sets the "provider_id" field.
-func (u *AlertUpsert) SetProviderID(v string) *AlertUpsert {
-	u.Set(alert.FieldProviderID, v)
+// SetDescription sets the "description" field.
+func (u *AlertUpsert) SetDescription(v string) *AlertUpsert {
+	u.Set(alert.FieldDescription, v)
 	return u
 }
 
-// UpdateProviderID sets the "provider_id" field to the value that was provided on create.
-func (u *AlertUpsert) UpdateProviderID() *AlertUpsert {
-	u.SetExcluded(alert.FieldProviderID)
+// UpdateDescription sets the "description" field to the value that was provided on create.
+func (u *AlertUpsert) UpdateDescription() *AlertUpsert {
+	u.SetExcluded(alert.FieldDescription)
+	return u
+}
+
+// ClearDescription clears the value of the "description" field.
+func (u *AlertUpsert) ClearDescription() *AlertUpsert {
+	u.SetNull(alert.FieldDescription)
+	return u
+}
+
+// SetDefinition sets the "definition" field.
+func (u *AlertUpsert) SetDefinition(v string) *AlertUpsert {
+	u.Set(alert.FieldDefinition, v)
+	return u
+}
+
+// UpdateDefinition sets the "definition" field to the value that was provided on create.
+func (u *AlertUpsert) UpdateDefinition() *AlertUpsert {
+	u.SetExcluded(alert.FieldDefinition)
+	return u
+}
+
+// ClearDefinition clears the value of the "definition" field.
+func (u *AlertUpsert) ClearDefinition() *AlertUpsert {
+	u.SetNull(alert.FieldDefinition)
+	return u
+}
+
+// SetRosterID sets the "roster_id" field.
+func (u *AlertUpsert) SetRosterID(v uuid.UUID) *AlertUpsert {
+	u.Set(alert.FieldRosterID, v)
+	return u
+}
+
+// UpdateRosterID sets the "roster_id" field to the value that was provided on create.
+func (u *AlertUpsert) UpdateRosterID() *AlertUpsert {
+	u.SetExcluded(alert.FieldRosterID)
+	return u
+}
+
+// ClearRosterID clears the value of the "roster_id" field.
+func (u *AlertUpsert) ClearRosterID() *AlertUpsert {
+	u.SetNull(alert.FieldRosterID)
 	return u
 }
 
@@ -406,6 +533,20 @@ func (u *AlertUpsertOne) Update(set func(*AlertUpsert)) *AlertUpsertOne {
 	return u
 }
 
+// SetProviderID sets the "provider_id" field.
+func (u *AlertUpsertOne) SetProviderID(v string) *AlertUpsertOne {
+	return u.Update(func(s *AlertUpsert) {
+		s.SetProviderID(v)
+	})
+}
+
+// UpdateProviderID sets the "provider_id" field to the value that was provided on create.
+func (u *AlertUpsertOne) UpdateProviderID() *AlertUpsertOne {
+	return u.Update(func(s *AlertUpsert) {
+		s.UpdateProviderID()
+	})
+}
+
 // SetTitle sets the "title" field.
 func (u *AlertUpsertOne) SetTitle(v string) *AlertUpsertOne {
 	return u.Update(func(s *AlertUpsert) {
@@ -420,17 +561,66 @@ func (u *AlertUpsertOne) UpdateTitle() *AlertUpsertOne {
 	})
 }
 
-// SetProviderID sets the "provider_id" field.
-func (u *AlertUpsertOne) SetProviderID(v string) *AlertUpsertOne {
+// SetDescription sets the "description" field.
+func (u *AlertUpsertOne) SetDescription(v string) *AlertUpsertOne {
 	return u.Update(func(s *AlertUpsert) {
-		s.SetProviderID(v)
+		s.SetDescription(v)
 	})
 }
 
-// UpdateProviderID sets the "provider_id" field to the value that was provided on create.
-func (u *AlertUpsertOne) UpdateProviderID() *AlertUpsertOne {
+// UpdateDescription sets the "description" field to the value that was provided on create.
+func (u *AlertUpsertOne) UpdateDescription() *AlertUpsertOne {
 	return u.Update(func(s *AlertUpsert) {
-		s.UpdateProviderID()
+		s.UpdateDescription()
+	})
+}
+
+// ClearDescription clears the value of the "description" field.
+func (u *AlertUpsertOne) ClearDescription() *AlertUpsertOne {
+	return u.Update(func(s *AlertUpsert) {
+		s.ClearDescription()
+	})
+}
+
+// SetDefinition sets the "definition" field.
+func (u *AlertUpsertOne) SetDefinition(v string) *AlertUpsertOne {
+	return u.Update(func(s *AlertUpsert) {
+		s.SetDefinition(v)
+	})
+}
+
+// UpdateDefinition sets the "definition" field to the value that was provided on create.
+func (u *AlertUpsertOne) UpdateDefinition() *AlertUpsertOne {
+	return u.Update(func(s *AlertUpsert) {
+		s.UpdateDefinition()
+	})
+}
+
+// ClearDefinition clears the value of the "definition" field.
+func (u *AlertUpsertOne) ClearDefinition() *AlertUpsertOne {
+	return u.Update(func(s *AlertUpsert) {
+		s.ClearDefinition()
+	})
+}
+
+// SetRosterID sets the "roster_id" field.
+func (u *AlertUpsertOne) SetRosterID(v uuid.UUID) *AlertUpsertOne {
+	return u.Update(func(s *AlertUpsert) {
+		s.SetRosterID(v)
+	})
+}
+
+// UpdateRosterID sets the "roster_id" field to the value that was provided on create.
+func (u *AlertUpsertOne) UpdateRosterID() *AlertUpsertOne {
+	return u.Update(func(s *AlertUpsert) {
+		s.UpdateRosterID()
+	})
+}
+
+// ClearRosterID clears the value of the "roster_id" field.
+func (u *AlertUpsertOne) ClearRosterID() *AlertUpsertOne {
+	return u.Update(func(s *AlertUpsert) {
+		s.ClearRosterID()
 	})
 }
 
@@ -652,6 +842,20 @@ func (u *AlertUpsertBulk) Update(set func(*AlertUpsert)) *AlertUpsertBulk {
 	return u
 }
 
+// SetProviderID sets the "provider_id" field.
+func (u *AlertUpsertBulk) SetProviderID(v string) *AlertUpsertBulk {
+	return u.Update(func(s *AlertUpsert) {
+		s.SetProviderID(v)
+	})
+}
+
+// UpdateProviderID sets the "provider_id" field to the value that was provided on create.
+func (u *AlertUpsertBulk) UpdateProviderID() *AlertUpsertBulk {
+	return u.Update(func(s *AlertUpsert) {
+		s.UpdateProviderID()
+	})
+}
+
 // SetTitle sets the "title" field.
 func (u *AlertUpsertBulk) SetTitle(v string) *AlertUpsertBulk {
 	return u.Update(func(s *AlertUpsert) {
@@ -666,17 +870,66 @@ func (u *AlertUpsertBulk) UpdateTitle() *AlertUpsertBulk {
 	})
 }
 
-// SetProviderID sets the "provider_id" field.
-func (u *AlertUpsertBulk) SetProviderID(v string) *AlertUpsertBulk {
+// SetDescription sets the "description" field.
+func (u *AlertUpsertBulk) SetDescription(v string) *AlertUpsertBulk {
 	return u.Update(func(s *AlertUpsert) {
-		s.SetProviderID(v)
+		s.SetDescription(v)
 	})
 }
 
-// UpdateProviderID sets the "provider_id" field to the value that was provided on create.
-func (u *AlertUpsertBulk) UpdateProviderID() *AlertUpsertBulk {
+// UpdateDescription sets the "description" field to the value that was provided on create.
+func (u *AlertUpsertBulk) UpdateDescription() *AlertUpsertBulk {
 	return u.Update(func(s *AlertUpsert) {
-		s.UpdateProviderID()
+		s.UpdateDescription()
+	})
+}
+
+// ClearDescription clears the value of the "description" field.
+func (u *AlertUpsertBulk) ClearDescription() *AlertUpsertBulk {
+	return u.Update(func(s *AlertUpsert) {
+		s.ClearDescription()
+	})
+}
+
+// SetDefinition sets the "definition" field.
+func (u *AlertUpsertBulk) SetDefinition(v string) *AlertUpsertBulk {
+	return u.Update(func(s *AlertUpsert) {
+		s.SetDefinition(v)
+	})
+}
+
+// UpdateDefinition sets the "definition" field to the value that was provided on create.
+func (u *AlertUpsertBulk) UpdateDefinition() *AlertUpsertBulk {
+	return u.Update(func(s *AlertUpsert) {
+		s.UpdateDefinition()
+	})
+}
+
+// ClearDefinition clears the value of the "definition" field.
+func (u *AlertUpsertBulk) ClearDefinition() *AlertUpsertBulk {
+	return u.Update(func(s *AlertUpsert) {
+		s.ClearDefinition()
+	})
+}
+
+// SetRosterID sets the "roster_id" field.
+func (u *AlertUpsertBulk) SetRosterID(v uuid.UUID) *AlertUpsertBulk {
+	return u.Update(func(s *AlertUpsert) {
+		s.SetRosterID(v)
+	})
+}
+
+// UpdateRosterID sets the "roster_id" field to the value that was provided on create.
+func (u *AlertUpsertBulk) UpdateRosterID() *AlertUpsertBulk {
+	return u.Update(func(s *AlertUpsert) {
+		s.UpdateRosterID()
+	})
+}
+
+// ClearRosterID clears the value of the "roster_id" field.
+func (u *AlertUpsertBulk) ClearRosterID() *AlertUpsertBulk {
+	return u.Update(func(s *AlertUpsert) {
+		s.ClearRosterID()
 	})
 }
 

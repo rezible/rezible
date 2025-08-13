@@ -3,7 +3,6 @@ package openapi
 import (
 	"context"
 	"net/http"
-	"time"
 
 	"github.com/danielgtaylor/huma/v2"
 	"github.com/google/uuid"
@@ -30,9 +29,10 @@ type (
 	}
 
 	AlertAttributes struct {
-		Title           string     `json:"title"`
-		Description     string     `json:"description"`
-		LinkedPlaybooks []Playbook `json:"linkedPlaybooks"`
+		Title       string                              `json:"title"`
+		Description string                              `json:"description"`
+		Definition  string                              `json:"definition"`
+		Roster      *Expandable[OncallRosterAttributes] `json:"roster,omitempty"`
 	}
 
 	AlertMetrics struct {
@@ -52,12 +52,16 @@ type (
 func AlertFromEnt(a *ent.Alert) Alert {
 	attrs := AlertAttributes{
 		Title:       a.Title,
-		Description: "",
+		Description: a.Description,
+		Definition:  a.Definition,
 	}
 
-	attrs.LinkedPlaybooks = make([]Playbook, len(a.Edges.Playbooks))
-	for i, playbook := range a.Edges.Playbooks {
-		attrs.LinkedPlaybooks[i] = PlaybookFromEnt(playbook)
+	if a.Edges.Roster != nil {
+		r := OncallRosterFromEnt(a.Edges.Roster)
+		attrs.Roster = &Expandable[OncallRosterAttributes]{
+			Id:         a.RosterID,
+			Attributes: &r.Attributes,
+		}
 	}
 
 	return Alert{
@@ -111,7 +115,6 @@ var GetAlert = huma.Operation{
 
 type GetAlertRequest struct {
 	GetIdRequest
-	IncludeAnnotations bool `query:"includeAnnotations" default:"true"`
 }
 type GetAlertResponse ItemResponse[Alert]
 
@@ -126,8 +129,8 @@ var GetAlertMetrics = huma.Operation{
 
 type GetAlertMetricsRequest struct {
 	GetIdRequest
-	RosterId uuid.UUID `query:"rosterId"`
-	From     time.Time `query:"from" required:"true"`
-	To       time.Time `query:"to" required:"true"`
+	RosterId uuid.UUID    `query:"rosterId"`
+	From     CalendarDate `query:"from" format:"date" required:"true"`
+	To       CalendarDate `query:"to" format:"date" required:"true"`
 }
 type GetAlertMetricsResponse ItemResponse[AlertMetrics]

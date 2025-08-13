@@ -15,15 +15,17 @@
 
 	setToastState();
 	setUserOncallInformationState();
+
+	const isAuthenticated = $derived(!!session.user);
 </script>
 
 <div class="antialiased flex h-dvh min-h-dvh w-dvw bg-surface-300 text-surface-content">
-	{#if session.user}
+	{#if isAuthenticated}
 		<Sidebar />
 	{/if}
 
 	<main class="w-full h-full p-2">
-		<PageContainer>
+		<PageContainer hideNavBar={!isAuthenticated}>
 			{@render children()}
 		</PageContainer>
 	</main>

@@ -7,6 +7,7 @@ import (
 	"github.com/google/uuid"
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
+	"github.com/rezible/rezible/ent/alert"
 	afb "github.com/rezible/rezible/ent/alertfeedback"
 	oe "github.com/rezible/rezible/ent/oncallevent"
 )
@@ -42,7 +43,7 @@ func (s *AlertService) ListAlerts(ctx context.Context, params rez.ListAlertsPara
 }
 
 func (s *AlertService) GetAlert(ctx context.Context, id uuid.UUID) (*ent.Alert, error) {
-	return s.db.Alert.Get(ctx, id)
+	return s.db.Alert.Query().Where(alert.ID(id)).WithRoster().Only(ctx)
 }
 
 func (s *AlertService) GetAlertMetrics(ctx context.Context, params rez.GetAlertMetricsParams) (*ent.AlertMetrics, error) {

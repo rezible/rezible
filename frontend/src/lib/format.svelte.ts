@@ -1,3 +1,4 @@
+import type { ZonedDateTime } from "@internationalized/date";
 
 export const formatPercentage = (value: number) => (`${Math.round(value)}%`);
 

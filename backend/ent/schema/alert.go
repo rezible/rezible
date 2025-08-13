@@ -16,8 +16,11 @@ type Alert struct {
 func (Alert) Fields() []ent.Field {
 	return []ent.Field{
 		field.UUID("id", uuid.New()).Default(uuid.New),
-		field.String("title"),
 		field.String("provider_id"),
+		field.String("title"),
+		field.String("description").Optional(),
+		field.String("definition").Optional(),
+		field.UUID("roster_id", uuid.UUID{}).Optional(),
 	}
 }
 
@@ -32,6 +35,7 @@ func (Alert) Mixin() []ent.Mixin {
 func (Alert) Edges() []ent.Edge {
 	return []ent.Edge{
 		edge.From("playbooks", Playbook.Type).Ref("alerts"),
+		edge.From("roster", OncallRoster.Type).Ref("alerts").Unique().Field("roster_id"),
 		edge.From("events", OncallEvent.Type).Ref("alert"),
 		edge.To("feedback", AlertFeedback.Type),
 	}

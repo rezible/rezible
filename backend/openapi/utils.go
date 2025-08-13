@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 	"reflect"
+	"time"
 
 	"github.com/danielgtaylor/huma/v2"
 	"github.com/google/uuid"
@@ -101,6 +102,14 @@ type (
 		Total    int     `json:"total"`
 	}
 )
+
+type CalendarDate string
+
+const calendarDateLayout = "2006-01-02"
+
+func (r CalendarDate) GetTime() (time.Time, error) {
+	return time.Parse(calendarDateLayout, string(r))
+}
 
 // FlexibleId is a field which can be either a uuid or a slug
 type FlexibleId struct {

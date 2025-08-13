@@ -11,9 +11,12 @@ var (
 	// AlertsColumns holds the columns for the "alerts" table.
 	AlertsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID},
-		{Name: "title", Type: field.TypeString},
 		{Name: "provider_id", Type: field.TypeString},
+		{Name: "title", Type: field.TypeString},
+		{Name: "description", Type: field.TypeString, Nullable: true},
+		{Name: "definition", Type: field.TypeString, Nullable: true},
 		{Name: "tenant_id", Type: field.TypeInt},
+		{Name: "roster_id", Type: field.TypeUUID, Nullable: true},
 	}
 	// AlertsTable holds the schema information for the "alerts" table.
 	AlertsTable = &schema.Table{
@@ -23,16 +26,22 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "alerts_tenants_tenant",
-				Columns:    []*schema.Column{AlertsColumns[3]},
+				Columns:    []*schema.Column{AlertsColumns[5]},
 				RefColumns: []*schema.Column{TenantsColumns[0]},
 				OnDelete:   schema.NoAction,
+			},
+			{
+				Symbol:     "alerts_oncall_rosters_alerts",
+				Columns:    []*schema.Column{AlertsColumns[6]},
+				RefColumns: []*schema.Column{OncallRostersColumns[0]},
+				OnDelete:   schema.SetNull,
 			},
 		},
 		Indexes: []*schema.Index{
 			{
 				Name:    "alert_tenant_id",
 				Unique:  false,
-				Columns: []*schema.Column{AlertsColumns[3]},
+				Columns: []*schema.Column{AlertsColumns[5]},
 			},
 		},
 	}
@@ -2694,6 +2703,7 @@ var (
 
 func init() {
 	AlertsTable.ForeignKeys[0].RefTable = TenantsTable
+	AlertsTable.ForeignKeys[1].RefTable = OncallRostersTable
 	AlertFeedbacksTable.ForeignKeys[0].RefTable = AlertsTable
 	AlertFeedbacksTable.ForeignKeys[1].RefTable = TenantsTable
 	AlertFeedbacksTable.ForeignKeys[2].RefTable = OncallAnnotationsTable

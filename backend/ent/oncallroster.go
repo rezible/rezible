@@ -52,6 +52,8 @@ type OncallRosterEdges struct {
 	Schedules []*OncallSchedule `json:"schedules,omitempty"`
 	// HandoverTemplate holds the value of the handover_template edge.
 	HandoverTemplate *OncallHandoverTemplate `json:"handover_template,omitempty"`
+	// Alerts holds the value of the alerts edge.
+	Alerts []*Alert `json:"alerts,omitempty"`
 	// Events holds the value of the events edge.
 	Events []*OncallEvent `json:"events,omitempty"`
 	// Annotations holds the value of the annotations edge.
@@ -66,7 +68,7 @@ type OncallRosterEdges struct {
 	Metrics []*OncallRosterMetrics `json:"metrics,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [9]bool
+	loadedTypes [10]bool
 }
 
 // TenantOrErr returns the Tenant value or an error if the edge
@@ -100,10 +102,19 @@ func (e OncallRosterEdges) HandoverTemplateOrErr() (*OncallHandoverTemplate, err
 	return nil, &NotLoadedError{edge: "handover_template"}
 }
 
+// AlertsOrErr returns the Alerts value or an error if the edge
+// was not loaded in eager-loading.
+func (e OncallRosterEdges) AlertsOrErr() ([]*Alert, error) {
+	if e.loadedTypes[3] {
+		return e.Alerts, nil
+	}
+	return nil, &NotLoadedError{edge: "alerts"}
+}
+
 // EventsOrErr returns the Events value or an error if the edge
 // was not loaded in eager-loading.
 func (e OncallRosterEdges) EventsOrErr() ([]*OncallEvent, error) {
-	if e.loadedTypes[3] {
+	if e.loadedTypes[4] {
 		return e.Events, nil
 	}
 	return nil, &NotLoadedError{edge: "events"}
@@ -112,7 +123,7 @@ func (e OncallRosterEdges) EventsOrErr() ([]*OncallEvent, error) {
 // AnnotationsOrErr returns the Annotations value or an error if the edge
 // was not loaded in eager-loading.
 func (e OncallRosterEdges) AnnotationsOrErr() ([]*OncallAnnotation, error) {
-	if e.loadedTypes[4] {
+	if e.loadedTypes[5] {
 		return e.Annotations, nil
 	}
 	return nil, &NotLoadedError{edge: "annotations"}
@@ -121,7 +132,7 @@ func (e OncallRosterEdges) AnnotationsOrErr() ([]*OncallAnnotation, error) {
 // TeamsOrErr returns the Teams value or an error if the edge
 // was not loaded in eager-loading.
 func (e OncallRosterEdges) TeamsOrErr() ([]*Team, error) {
-	if e.loadedTypes[5] {
+	if e.loadedTypes[6] {
 		return e.Teams, nil
 	}
 	return nil, &NotLoadedError{edge: "teams"}
@@ -130,7 +141,7 @@ func (e OncallRosterEdges) TeamsOrErr() ([]*Team, error) {
 // ShiftsOrErr returns the Shifts value or an error if the edge
 // was not loaded in eager-loading.
 func (e OncallRosterEdges) ShiftsOrErr() ([]*OncallShift, error) {
-	if e.loadedTypes[6] {
+	if e.loadedTypes[7] {
 		return e.Shifts, nil
 	}
 	return nil, &NotLoadedError{edge: "shifts"}
@@ -139,7 +150,7 @@ func (e OncallRosterEdges) ShiftsOrErr() ([]*OncallShift, error) {
 // UserWatchersOrErr returns the UserWatchers value or an error if the edge
 // was not loaded in eager-loading.
 func (e OncallRosterEdges) UserWatchersOrErr() ([]*User, error) {
-	if e.loadedTypes[7] {
+	if e.loadedTypes[8] {
 		return e.UserWatchers, nil
 	}
 	return nil, &NotLoadedError{edge: "user_watchers"}
@@ -148,7 +159,7 @@ func (e OncallRosterEdges) UserWatchersOrErr() ([]*User, error) {
 // MetricsOrErr returns the Metrics value or an error if the edge
 // was not loaded in eager-loading.
 func (e OncallRosterEdges) MetricsOrErr() ([]*OncallRosterMetrics, error) {
-	if e.loadedTypes[8] {
+	if e.loadedTypes[9] {
 		return e.Metrics, nil
 	}
 	return nil, &NotLoadedError{edge: "metrics"}
@@ -268,6 +279,11 @@ func (or *OncallRoster) QuerySchedules() *OncallScheduleQuery {
 // QueryHandoverTemplate queries the "handover_template" edge of the OncallRoster entity.
 func (or *OncallRoster) QueryHandoverTemplate() *OncallHandoverTemplateQuery {
 	return NewOncallRosterClient(or.config).QueryHandoverTemplate(or)
+}
+
+// QueryAlerts queries the "alerts" edge of the OncallRoster entity.
+func (or *OncallRoster) QueryAlerts() *AlertQuery {
+	return NewOncallRosterClient(or.config).QueryAlerts(or)
 }
 
 // QueryEvents queries the "events" edge of the OncallRoster entity.

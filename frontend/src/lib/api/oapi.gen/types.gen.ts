@@ -55,8 +55,9 @@ export type Alert = {
 };
 
 export type AlertAttributes = {
+    definition: string;
     description: string;
-    linkedPlaybooks: Array<Playbook>;
+    roster?: ExpandableOncallRosterAttributes;
     title: string;
 };
 
@@ -2843,9 +2844,7 @@ export type GetAlertData = {
     path: {
         id: string;
     };
-    query?: {
-        includeAnnotations?: boolean;
-    };
+    query?: never;
     url: '/alerts/{id}';
 };
 

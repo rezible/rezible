@@ -14,6 +14,7 @@ import (
 	"github.com/rezible/rezible/ent/alert"
 	"github.com/rezible/rezible/ent/alertfeedback"
 	"github.com/rezible/rezible/ent/oncallevent"
+	"github.com/rezible/rezible/ent/oncallroster"
 	"github.com/rezible/rezible/ent/playbook"
 	"github.com/rezible/rezible/ent/predicate"
 )
@@ -32,6 +33,20 @@ func (au *AlertUpdate) Where(ps ...predicate.Alert) *AlertUpdate {
 	return au
 }
 
+// SetProviderID sets the "provider_id" field.
+func (au *AlertUpdate) SetProviderID(s string) *AlertUpdate {
+	au.mutation.SetProviderID(s)
+	return au
+}
+
+// SetNillableProviderID sets the "provider_id" field if the given value is not nil.
+func (au *AlertUpdate) SetNillableProviderID(s *string) *AlertUpdate {
+	if s != nil {
+		au.SetProviderID(*s)
+	}
+	return au
+}
+
 // SetTitle sets the "title" field.
 func (au *AlertUpdate) SetTitle(s string) *AlertUpdate {
 	au.mutation.SetTitle(s)
@@ -46,17 +61,63 @@ func (au *AlertUpdate) SetNillableTitle(s *string) *AlertUpdate {
 	return au
 }
 
-// SetProviderID sets the "provider_id" field.
-func (au *AlertUpdate) SetProviderID(s string) *AlertUpdate {
-	au.mutation.SetProviderID(s)
+// SetDescription sets the "description" field.
+func (au *AlertUpdate) SetDescription(s string) *AlertUpdate {
+	au.mutation.SetDescription(s)
 	return au
 }
 
-// SetNillableProviderID sets the "provider_id" field if the given value is not nil.
-func (au *AlertUpdate) SetNillableProviderID(s *string) *AlertUpdate {
+// SetNillableDescription sets the "description" field if the given value is not nil.
+func (au *AlertUpdate) SetNillableDescription(s *string) *AlertUpdate {
 	if s != nil {
-		au.SetProviderID(*s)
+		au.SetDescription(*s)
 	}
+	return au
+}
+
+// ClearDescription clears the value of the "description" field.
+func (au *AlertUpdate) ClearDescription() *AlertUpdate {
+	au.mutation.ClearDescription()
+	return au
+}
+
+// SetDefinition sets the "definition" field.
+func (au *AlertUpdate) SetDefinition(s string) *AlertUpdate {
+	au.mutation.SetDefinition(s)
+	return au
+}
+
+// SetNillableDefinition sets the "definition" field if the given value is not nil.
+func (au *AlertUpdate) SetNillableDefinition(s *string) *AlertUpdate {
+	if s != nil {
+		au.SetDefinition(*s)
+	}
+	return au
+}
+
+// ClearDefinition clears the value of the "definition" field.
+func (au *AlertUpdate) ClearDefinition() *AlertUpdate {
+	au.mutation.ClearDefinition()
+	return au
+}
+
+// SetRosterID sets the "roster_id" field.
+func (au *AlertUpdate) SetRosterID(u uuid.UUID) *AlertUpdate {
+	au.mutation.SetRosterID(u)
+	return au
+}
+
+// SetNillableRosterID sets the "roster_id" field if the given value is not nil.
+func (au *AlertUpdate) SetNillableRosterID(u *uuid.UUID) *AlertUpdate {
+	if u != nil {
+		au.SetRosterID(*u)
+	}
+	return au
+}
+
+// ClearRosterID clears the value of the "roster_id" field.
+func (au *AlertUpdate) ClearRosterID() *AlertUpdate {
+	au.mutation.ClearRosterID()
 	return au
 }
 
@@ -73,6 +134,11 @@ func (au *AlertUpdate) AddPlaybooks(p ...*Playbook) *AlertUpdate {
 		ids[i] = p[i].ID
 	}
 	return au.AddPlaybookIDs(ids...)
+}
+
+// SetRoster sets the "roster" edge to the OncallRoster entity.
+func (au *AlertUpdate) SetRoster(o *OncallRoster) *AlertUpdate {
+	return au.SetRosterID(o.ID)
 }
 
 // AddEventIDs adds the "events" edge to the OncallEvent entity by IDs.
@@ -129,6 +195,12 @@ func (au *AlertUpdate) RemovePlaybooks(p ...*Playbook) *AlertUpdate {
 		ids[i] = p[i].ID
 	}
 	return au.RemovePlaybookIDs(ids...)
+}
+
+// ClearRoster clears the "roster" edge to the OncallRoster entity.
+func (au *AlertUpdate) ClearRoster() *AlertUpdate {
+	au.mutation.ClearRoster()
+	return au
 }
 
 // ClearEvents clears all "events" edges to the OncallEvent entity.
@@ -226,11 +298,23 @@ func (au *AlertUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			}
 		}
 	}
+	if value, ok := au.mutation.ProviderID(); ok {
+		_spec.SetField(alert.FieldProviderID, field.TypeString, value)
+	}
 	if value, ok := au.mutation.Title(); ok {
 		_spec.SetField(alert.FieldTitle, field.TypeString, value)
 	}
-	if value, ok := au.mutation.ProviderID(); ok {
-		_spec.SetField(alert.FieldProviderID, field.TypeString, value)
+	if value, ok := au.mutation.Description(); ok {
+		_spec.SetField(alert.FieldDescription, field.TypeString, value)
+	}
+	if au.mutation.DescriptionCleared() {
+		_spec.ClearField(alert.FieldDescription, field.TypeString)
+	}
+	if value, ok := au.mutation.Definition(); ok {
+		_spec.SetField(alert.FieldDefinition, field.TypeString, value)
+	}
+	if au.mutation.DefinitionCleared() {
+		_spec.ClearField(alert.FieldDefinition, field.TypeString)
 	}
 	if au.mutation.PlaybooksCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -270,6 +354,35 @@ func (au *AlertUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(playbook.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if au.mutation.RosterCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   alert.RosterTable,
+			Columns: []string{alert.RosterColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(oncallroster.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := au.mutation.RosterIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   alert.RosterTable,
+			Columns: []string{alert.RosterColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(oncallroster.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {
@@ -389,6 +502,20 @@ type AlertUpdateOne struct {
 	modifiers []func(*sql.UpdateBuilder)
 }
 
+// SetProviderID sets the "provider_id" field.
+func (auo *AlertUpdateOne) SetProviderID(s string) *AlertUpdateOne {
+	auo.mutation.SetProviderID(s)
+	return auo
+}
+
+// SetNillableProviderID sets the "provider_id" field if the given value is not nil.
+func (auo *AlertUpdateOne) SetNillableProviderID(s *string) *AlertUpdateOne {
+	if s != nil {
+		auo.SetProviderID(*s)
+	}
+	return auo
+}
+
 // SetTitle sets the "title" field.
 func (auo *AlertUpdateOne) SetTitle(s string) *AlertUpdateOne {
 	auo.mutation.SetTitle(s)
@@ -403,17 +530,63 @@ func (auo *AlertUpdateOne) SetNillableTitle(s *string) *AlertUpdateOne {
 	return auo
 }
 
-// SetProviderID sets the "provider_id" field.
-func (auo *AlertUpdateOne) SetProviderID(s string) *AlertUpdateOne {
-	auo.mutation.SetProviderID(s)
+// SetDescription sets the "description" field.
+func (auo *AlertUpdateOne) SetDescription(s string) *AlertUpdateOne {
+	auo.mutation.SetDescription(s)
 	return auo
 }
 
-// SetNillableProviderID sets the "provider_id" field if the given value is not nil.
-func (auo *AlertUpdateOne) SetNillableProviderID(s *string) *AlertUpdateOne {
+// SetNillableDescription sets the "description" field if the given value is not nil.
+func (auo *AlertUpdateOne) SetNillableDescription(s *string) *AlertUpdateOne {
 	if s != nil {
-		auo.SetProviderID(*s)
+		auo.SetDescription(*s)
 	}
+	return auo
+}
+
+// ClearDescription clears the value of the "description" field.
+func (auo *AlertUpdateOne) ClearDescription() *AlertUpdateOne {
+	auo.mutation.ClearDescription()
+	return auo
+}
+
+// SetDefinition sets the "definition" field.
+func (auo *AlertUpdateOne) SetDefinition(s string) *AlertUpdateOne {
+	auo.mutation.SetDefinition(s)
+	return auo
+}
+
+// SetNillableDefinition sets the "definition" field if the given value is not nil.
+func (auo *AlertUpdateOne) SetNillableDefinition(s *string) *AlertUpdateOne {
+	if s != nil {
+		auo.SetDefinition(*s)
+	}
+	return auo
+}
+
+// ClearDefinition clears the value of the "definition" field.
+func (auo *AlertUpdateOne) ClearDefinition() *AlertUpdateOne {
+	auo.mutation.ClearDefinition()
+	return auo
+}
+
+// SetRosterID sets the "roster_id" field.
+func (auo *AlertUpdateOne) SetRosterID(u uuid.UUID) *AlertUpdateOne {
+	auo.mutation.SetRosterID(u)
+	return auo
+}
+
+// SetNillableRosterID sets the "roster_id" field if the given value is not nil.
+func (auo *AlertUpdateOne) SetNillableRosterID(u *uuid.UUID) *AlertUpdateOne {
+	if u != nil {
+		auo.SetRosterID(*u)
+	}
+	return auo
+}
+
+// ClearRosterID clears the value of the "roster_id" field.
+func (auo *AlertUpdateOne) ClearRosterID() *AlertUpdateOne {
+	auo.mutation.ClearRosterID()
 	return auo
 }
 
@@ -430,6 +603,11 @@ func (auo *AlertUpdateOne) AddPlaybooks(p ...*Playbook) *AlertUpdateOne {
 		ids[i] = p[i].ID
 	}
 	return auo.AddPlaybookIDs(ids...)
+}
+
+// SetRoster sets the "roster" edge to the OncallRoster entity.
+func (auo *AlertUpdateOne) SetRoster(o *OncallRoster) *AlertUpdateOne {
+	return auo.SetRosterID(o.ID)
 }
 
 // AddEventIDs adds the "events" edge to the OncallEvent entity by IDs.
@@ -486,6 +664,12 @@ func (auo *AlertUpdateOne) RemovePlaybooks(p ...*Playbook) *AlertUpdateOne {
 		ids[i] = p[i].ID
 	}
 	return auo.RemovePlaybookIDs(ids...)
+}
+
+// ClearRoster clears the "roster" edge to the OncallRoster entity.
+func (auo *AlertUpdateOne) ClearRoster() *AlertUpdateOne {
+	auo.mutation.ClearRoster()
+	return auo
 }
 
 // ClearEvents clears all "events" edges to the OncallEvent entity.
@@ -613,11 +797,23 @@ func (auo *AlertUpdateOne) sqlSave(ctx context.Context) (_node *Alert, err error
 			}
 		}
 	}
+	if value, ok := auo.mutation.ProviderID(); ok {
+		_spec.SetField(alert.FieldProviderID, field.TypeString, value)
+	}
 	if value, ok := auo.mutation.Title(); ok {
 		_spec.SetField(alert.FieldTitle, field.TypeString, value)
 	}
-	if value, ok := auo.mutation.ProviderID(); ok {
-		_spec.SetField(alert.FieldProviderID, field.TypeString, value)
+	if value, ok := auo.mutation.Description(); ok {
+		_spec.SetField(alert.FieldDescription, field.TypeString, value)
+	}
+	if auo.mutation.DescriptionCleared() {
+		_spec.ClearField(alert.FieldDescription, field.TypeString)
+	}
+	if value, ok := auo.mutation.Definition(); ok {
+		_spec.SetField(alert.FieldDefinition, field.TypeString, value)
+	}
+	if auo.mutation.DefinitionCleared() {
+		_spec.ClearField(alert.FieldDefinition, field.TypeString)
 	}
 	if auo.mutation.PlaybooksCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -657,6 +853,35 @@ func (auo *AlertUpdateOne) sqlSave(ctx context.Context) (_node *Alert, err error
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(playbook.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if auo.mutation.RosterCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   alert.RosterTable,
+			Columns: []string{alert.RosterColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(oncallroster.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := auo.mutation.RosterIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   alert.RosterTable,
+			Columns: []string{alert.RosterColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(oncallroster.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {

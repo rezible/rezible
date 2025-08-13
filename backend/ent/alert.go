@@ -10,6 +10,7 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/alert"
+	"github.com/rezible/rezible/ent/oncallroster"
 	"github.com/rezible/rezible/ent/tenant"
 )
 
@@ -20,10 +21,16 @@ type Alert struct {
 	ID uuid.UUID `json:"id,omitempty"`
 	// TenantID holds the value of the "tenant_id" field.
 	TenantID int `json:"tenant_id,omitempty"`
-	// Title holds the value of the "title" field.
-	Title string `json:"title,omitempty"`
 	// ProviderID holds the value of the "provider_id" field.
 	ProviderID string `json:"provider_id,omitempty"`
+	// Title holds the value of the "title" field.
+	Title string `json:"title,omitempty"`
+	// Description holds the value of the "description" field.
+	Description string `json:"description,omitempty"`
+	// Definition holds the value of the "definition" field.
+	Definition string `json:"definition,omitempty"`
+	// RosterID holds the value of the "roster_id" field.
+	RosterID uuid.UUID `json:"roster_id,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the AlertQuery when eager-loading is set.
 	Edges        AlertEdges `json:"edges"`
@@ -36,13 +43,15 @@ type AlertEdges struct {
 	Tenant *Tenant `json:"tenant,omitempty"`
 	// Playbooks holds the value of the playbooks edge.
 	Playbooks []*Playbook `json:"playbooks,omitempty"`
+	// Roster holds the value of the roster edge.
+	Roster *OncallRoster `json:"roster,omitempty"`
 	// Events holds the value of the events edge.
 	Events []*OncallEvent `json:"events,omitempty"`
 	// Feedback holds the value of the feedback edge.
 	Feedback []*AlertFeedback `json:"feedback,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [4]bool
+	loadedTypes [5]bool
 }
 
 // TenantOrErr returns the Tenant value or an error if the edge
@@ -65,10 +74,21 @@ func (e AlertEdges) PlaybooksOrErr() ([]*Playbook, error) {
 	return nil, &NotLoadedError{edge: "playbooks"}
 }
 
+// RosterOrErr returns the Roster value or an error if the edge
+// was not loaded in eager-loading, or loaded but was not found.
+func (e AlertEdges) RosterOrErr() (*OncallRoster, error) {
+	if e.Roster != nil {
+		return e.Roster, nil
+	} else if e.loadedTypes[2] {
+		return nil, &NotFoundError{label: oncallroster.Label}
+	}
+	return nil, &NotLoadedError{edge: "roster"}
+}
+
 // EventsOrErr returns the Events value or an error if the edge
 // was not loaded in eager-loading.
 func (e AlertEdges) EventsOrErr() ([]*OncallEvent, error) {
-	if e.loadedTypes[2] {
+	if e.loadedTypes[3] {
 		return e.Events, nil
 	}
 	return nil, &NotLoadedError{edge: "events"}
@@ -77,7 +97,7 @@ func (e AlertEdges) EventsOrErr() ([]*OncallEvent, error) {
 // FeedbackOrErr returns the Feedback value or an error if the edge
 // was not loaded in eager-loading.
 func (e AlertEdges) FeedbackOrErr() ([]*AlertFeedback, error) {
-	if e.loadedTypes[3] {
+	if e.loadedTypes[4] {
 		return e.Feedback, nil
 	}
 	return nil, &NotLoadedError{edge: "feedback"}
@@ -90,9 +110,9 @@ func (*Alert) scanValues(columns []string) ([]any, error) {
 		switch columns[i] {
 		case alert.FieldTenantID:
 			values[i] = new(sql.NullInt64)
-		case alert.FieldTitle, alert.FieldProviderID:
+		case alert.FieldProviderID, alert.FieldTitle, alert.FieldDescription, alert.FieldDefinition:
 			values[i] = new(sql.NullString)
-		case alert.FieldID:
+		case alert.FieldID, alert.FieldRosterID:
 			values[i] = new(uuid.UUID)
 		default:
 			values[i] = new(sql.UnknownType)
@@ -121,17 +141,35 @@ func (a *Alert) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				a.TenantID = int(value.Int64)
 			}
+		case alert.FieldProviderID:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field provider_id", values[i])
+			} else if value.Valid {
+				a.ProviderID = value.String
+			}
 		case alert.FieldTitle:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field title", values[i])
 			} else if value.Valid {
 				a.Title = value.String
 			}
-		case alert.FieldProviderID:
+		case alert.FieldDescription:
 			if value, ok := values[i].(*sql.NullString); !ok {
-				return fmt.Errorf("unexpected type %T for field provider_id", values[i])
+				return fmt.Errorf("unexpected type %T for field description", values[i])
 			} else if value.Valid {
-				a.ProviderID = value.String
+				a.Description = value.String
+			}
+		case alert.FieldDefinition:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field definition", values[i])
+			} else if value.Valid {
+				a.Definition = value.String
+			}
+		case alert.FieldRosterID:
+			if value, ok := values[i].(*uuid.UUID); !ok {
+				return fmt.Errorf("unexpected type %T for field roster_id", values[i])
+			} else if value != nil {
+				a.RosterID = *value
 			}
 		default:
 			a.selectValues.Set(columns[i], values[i])
@@ -154,6 +192,11 @@ func (a *Alert) QueryTenant() *TenantQuery {
 // QueryPlaybooks queries the "playbooks" edge of the Alert entity.
 func (a *Alert) QueryPlaybooks() *PlaybookQuery {
 	return NewAlertClient(a.config).QueryPlaybooks(a)
+}
+
+// QueryRoster queries the "roster" edge of the Alert entity.
+func (a *Alert) QueryRoster() *OncallRosterQuery {
+	return NewAlertClient(a.config).QueryRoster(a)
 }
 
 // QueryEvents queries the "events" edge of the Alert entity.
@@ -192,11 +235,20 @@ func (a *Alert) String() string {
 	builder.WriteString("tenant_id=")
 	builder.WriteString(fmt.Sprintf("%v", a.TenantID))
 	builder.WriteString(", ")
+	builder.WriteString("provider_id=")
+	builder.WriteString(a.ProviderID)
+	builder.WriteString(", ")
 	builder.WriteString("title=")
 	builder.WriteString(a.Title)
 	builder.WriteString(", ")
-	builder.WriteString("provider_id=")
-	builder.WriteString(a.ProviderID)
+	builder.WriteString("description=")
+	builder.WriteString(a.Description)
+	builder.WriteString(", ")
+	builder.WriteString("definition=")
+	builder.WriteString(a.Definition)
+	builder.WriteString(", ")
+	builder.WriteString("roster_id=")
+	builder.WriteString(fmt.Sprintf("%v", a.RosterID))
 	builder.WriteByte(')')
 	return builder.String()
 }
