@@ -64,7 +64,7 @@ func NewHandler(
 		incidentTagsHandler:       newIncidentTagsHandler(db.IncidentTag),
 		tasksHandler:              newTasksHandler(db),
 		incidentTypesHandler:      newIncidentTypesHandler(db.IncidentType),
-		incidentsHandler:          newIncidentsHandler(db),
+		incidentsHandler:          newIncidentsHandler(db, incidents),
 		integrationsHandler:       newIntegrationsHandler(),
 		meetingsHandler:           newMeetingsHandler(),
 		oncallEventsHandler:       newOncallEventsHandler(auth, users, oncall, incidents, oncallEvents),

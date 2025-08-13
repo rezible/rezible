@@ -5,20 +5,21 @@ import (
 	"fmt"
 
 	"github.com/google/uuid"
+	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
 	"github.com/rezible/rezible/ent/incident"
 	oapi "github.com/rezible/rezible/openapi"
 )
 
 type incidentsHandler struct {
-	incidents *ent.IncidentClient
+	incidents rez.IncidentService
 	db        *ent.Client
 }
 
-func newIncidentsHandler(db *ent.Client) *incidentsHandler {
+func newIncidentsHandler(db *ent.Client, incidents rez.IncidentService) *incidentsHandler {
 	return &incidentsHandler{
-		db.Incident,
-		db,
+		incidents: incidents,
+		db:        db,
 	}
 }
 
@@ -29,7 +30,7 @@ func (h *incidentsHandler) CreateIncident(ctx context.Context, input *oapi.Creat
 
 	slug := "foo-incident" // TODO
 
-	query := h.incidents.Create().
+	query := h.db.Incident.Create().
 		SetTitle(attr.Title).
 		SetSlug(slug).
 		SetSummary(attr.Summary)
@@ -43,20 +44,21 @@ func (h *incidentsHandler) CreateIncident(ctx context.Context, input *oapi.Creat
 	return &resp, nil
 }
 
-func (h *incidentsHandler) ListIncidents(ctx context.Context, input *oapi.ListIncidentsRequest) (*oapi.ListIncidentsResponse, error) {
+func (h *incidentsHandler) ListIncidents(ctx context.Context, req *oapi.ListIncidentsRequest) (*oapi.ListIncidentsResponse, error) {
 	var resp oapi.ListIncidentsResponse
 
-	query := h.incidents.Query()
+	incidents, count, listErr := h.incidents.ListIncidents(ctx, rez.ListIncidentsParams{})
 	// etc
-
-	incidents, err := query.All(ctx)
-	if err != nil {
-		return nil, apiError("failed to list incidents", err)
+	if listErr != nil {
+		return nil, apiError("failed to list incidents", listErr)
 	}
 
 	resp.Body.Data = make([]oapi.Incident, len(incidents))
 	for i, inc := range incidents {
 		resp.Body.Data[i] = oapi.IncidentFromEnt(inc)
+	}
+	resp.Body.Pagination = oapi.ResponsePagination{
+		Total: count,
 	}
 
 	return &resp, nil
@@ -68,7 +70,7 @@ func (h *incidentsHandler) GetIncident(ctx context.Context, input *oapi.GetIncid
 	idPredicate := oapi.GetEntPredicate(input.Id, incident.ID, incident.Slug)
 
 	// TODO: use a view for this
-	query := h.incidents.Query().
+	query := h.db.Incident.Query().
 		Where(idPredicate).
 		WithRetrospective().
 		WithSeverity().
@@ -91,7 +93,7 @@ func (h *incidentsHandler) GetIncident(ctx context.Context, input *oapi.GetIncid
 func (h *incidentsHandler) ArchiveIncident(ctx context.Context, input *oapi.ArchiveIncidentRequest) (*oapi.ArchiveIncidentResponse, error) {
 	var resp oapi.ArchiveIncidentResponse
 
-	err := h.incidents.DeleteOneID(input.Id).Exec(ctx)
+	err := h.db.Incident.DeleteOneID(input.Id).Exec(ctx)
 	if err != nil {
 		return nil, apiError("failed to archive incident", err)
 	}
@@ -102,7 +104,7 @@ func (h *incidentsHandler) ArchiveIncident(ctx context.Context, input *oapi.Arch
 func (h *incidentsHandler) UpdateIncident(ctx context.Context, request *oapi.UpdateIncidentRequest) (*oapi.UpdateIncidentResponse, error) {
 	var resp oapi.UpdateIncidentResponse
 
-	inc, getErr := h.incidents.Query().
+	inc, getErr := h.db.Incident.Query().
 		Where(incident.ID(request.Id)).
 		Only(ctx)
 	if getErr != nil {

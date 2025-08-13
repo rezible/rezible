@@ -1,43 +1,33 @@
 <script lang="ts">
-	import { useAlertViewState } from "$features/alert";
 	import { AnnotationDialogState, setAnnotationDialogState } from "$src/components/oncall-events/annotation-dialog/dialogState.svelte";
 	import EventRow from "$src/components/oncall-events/EventRow.svelte";
-	import PaginatedListBox from "$src/components/paginated-listbox/PaginatedListBox.svelte";
-	import { listOncallEventsOptions, type ListOncallEventsData, type OncallEvent } from "$src/lib/api";
-	import { QueryPaginatorState } from "$src/lib/paginator.svelte";
-	import { createQuery } from "@tanstack/svelte-query";
-	import FilterPage from "$src/components/filter-page/FilterPage.svelte";
 	import LoadingQueryWrapper from "$src/components/loader/LoadingQueryWrapper.svelte";
+	import AlertEventsFilters from "./AlertEventsFilters.svelte";
+	import { Pagination } from "svelte-ux";
+	import { AlertEventsState } from "./alertEventsState.svelte";
+	import type { OncallEvent } from "$src/lib/api";
 
-	const viewState = useAlertViewState();
-
-	const paginator = new QueryPaginatorState();
-
-	const queryParams = $derived<ListOncallEventsData["query"]>({
-		alertId: viewState.alertId,
-		...paginator.queryParams,
-	});
-	const query = createQuery(() => listOncallEventsOptions({ query: queryParams }));
-	paginator.watchQuery(query);
+	const eventsState = new AlertEventsState();
 
 	setAnnotationDialogState(new AnnotationDialogState({}));
 </script>
 
-{#snippet filters()}
-	<span>roster</span>
-{/snippet}
+<div class="w-full h-full flex flex-col gap-2">
+	<AlertEventsFilters bind:rosterId={eventsState.rosterId} bind:dateRange={eventsState.dateRange} />
 
-<FilterPage {filters}>
-	<PaginatedListBox pagination={paginator.pagination}>
-		<LoadingQueryWrapper {query}>
+	<div class="flex-1 flex flex-col gap-1 border">
+		<LoadingQueryWrapper query={eventsState.query}>
 			{#snippet view(events: OncallEvent[])}
 				{#each events as ev}
 					<EventRow event={ev} />
 				{:else}
-					<span>No results</span>
+					<div class="p-2">
+						<span>No results</span>
+					</div>
 				{/each}
 			{/snippet}
 		</LoadingQueryWrapper>
-	</PaginatedListBox>
-</FilterPage>
+	</div>
 
+	<Pagination {...eventsState.paginator.paginationProps} />
+</div>

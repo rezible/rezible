@@ -1,16 +1,18 @@
 <script lang="ts">
 	import { useAlertViewState } from "$features/alert";
-	import PaginatedListBox from "$src/components/paginated-listbox/PaginatedListBox.svelte";
 	import { listPlaybooksOptions, type ListPlaybooksData, type Playbook } from "$src/lib/api";
 	import { QueryPaginatorState } from "$src/lib/paginator.svelte";
 	import { createQuery } from "@tanstack/svelte-query";
-	import FilterPage from "$src/components/filter-page/FilterPage.svelte";
 	import LoadingQueryWrapper from "$src/components/loader/LoadingQueryWrapper.svelte";
-	import { ListItem } from "svelte-ux";
+	import { ListItem, Pagination } from "svelte-ux";
+	import RosterSelectField from "$src/components/roster-select-field/RosterSelectField.svelte";
 
 	const viewState = useAlertViewState();
 
 	const paginator = new QueryPaginatorState();
+
+	let rosterId = $state<string>();
+	const onRosterSelected = (id?: string) => (rosterId = id);
 
 	const queryParams = $derived<ListPlaybooksData["query"]>({
 		alertId: viewState.alertId,
@@ -20,18 +22,18 @@
 	paginator.watchQuery(query);
 </script>
 
-{#snippet filters()}
-	<span>roster</span>
-{/snippet}
-
 {#snippet playbookListItem(pb: Playbook)}
 	<a href="/playbooks/{pb.id}">
 		<ListItem title={pb.attributes.title} />
 	</a>
 {/snippet}
 
-<FilterPage {filters}>
-	<PaginatedListBox pagination={paginator.pagination}>
+<div class="w-full h-full flex flex-col gap-2">
+	<div class="flex gap-2">
+		<RosterSelectField onSelected={onRosterSelected} selectedId={rosterId} classes={{ root: "w-64" }} />
+	</div>
+
+	<div class="flex-1 flex flex-col gap-1 border">
 		<LoadingQueryWrapper {query}>
 			{#snippet view(playbooks: Playbook[])}
 				{#each playbooks as pb}
@@ -41,6 +43,8 @@
 				{/each}
 			{/snippet}
 		</LoadingQueryWrapper>
-	</PaginatedListBox>
-</FilterPage>
+	</div>
+
+	<Pagination {...paginator.paginationProps} />
+</div>
 

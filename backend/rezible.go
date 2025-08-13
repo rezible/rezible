@@ -281,7 +281,7 @@ type (
 		GetByID(context.Context, uuid.UUID) (*ent.Incident, error)
 		GetIdForSlug(context.Context, string) (uuid.UUID, error)
 		GetBySlug(context.Context, string) (*ent.Incident, error)
-		ListIncidents(context.Context, ListIncidentsParams) ([]*ent.Incident, error)
+		ListIncidents(context.Context, ListIncidentsParams) ([]*ent.Incident, int, error)
 	}
 )
 

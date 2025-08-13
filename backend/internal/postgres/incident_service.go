@@ -2,6 +2,7 @@ package postgres
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	"github.com/google/uuid"
@@ -67,7 +68,7 @@ func (s *IncidentService) GetByProviderId(ctx context.Context, id string) (*ent.
 	return s.db.Incident.Query().Where(incident.ProviderID(id)).Only(ctx)
 }
 
-func (s *IncidentService) ListIncidents(ctx context.Context, params rez.ListIncidentsParams) ([]*ent.Incident, error) {
+func (s *IncidentService) ListIncidents(ctx context.Context, params rez.ListIncidentsParams) ([]*ent.Incident, int, error) {
 	var predicates []predicate.Incident
 	if !params.OpenedAfter.IsZero() {
 		predicates = append(predicates, incident.OpenedAtGT(params.OpenedAfter))
@@ -83,12 +84,26 @@ func (s *IncidentService) ListIncidents(ctx context.Context, params rez.ListInci
 	if len(predicates) > 0 {
 		query.Where(incident.And(predicates...))
 	}
+
 	if params.UserId != uuid.Nil {
 		query.WithRoleAssignments(func(q *ent.IncidentRoleAssignmentQuery) {
 			q.Where(incidentroleassignment.UserIDEQ(params.UserId))
 		})
 	}
-	return query.All(params.GetQueryContext(ctx))
+
+	count, queryErr := query.Count(ctx)
+	if queryErr != nil {
+		return nil, 0, fmt.Errorf("count: %w", queryErr)
+	}
+
+	incidents := make([]*ent.Incident, 0)
+	if count > 0 {
+		incidents, queryErr = query.All(params.GetQueryContext(ctx))
+		if queryErr != nil {
+			return nil, 0, fmt.Errorf("listing incidents: %w", queryErr)
+		}
+	}
+	return incidents, count, nil
 }
 
 func (s *IncidentService) ListIncidentRoles(ctx context.Context) ([]*ent.IncidentRole, error) {
