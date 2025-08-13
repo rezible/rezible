@@ -28,6 +28,7 @@ func (RetrospectiveReview) Fields() []ent.Field {
 	return []ent.Field{
 		field.UUID("id", uuid.New()).Default(uuid.New),
 		field.UUID("retrospective_id", uuid.UUID{}),
+		field.UUID("comment_id", uuid.UUID{}),
 		field.UUID("requester_id", uuid.UUID{}),
 		field.UUID("reviewer_id", uuid.UUID{}),
 		field.Enum("state").Values(retroReviewStates...),
@@ -49,7 +50,9 @@ func (RetrospectiveReview) Edges() []ent.Edge {
 			Field("reviewer_id").
 			Required().
 			Unique(),
-		edge.To("discussion", RetrospectiveDiscussion.Type).
-			Unique(),
+		edge.To("comment", RetrospectiveComment.Type).
+			Field("comment_id").
+			Unique().
+			Required(),
 	}
 }

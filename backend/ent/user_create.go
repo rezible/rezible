@@ -19,6 +19,7 @@ import (
 	"github.com/rezible/rezible/ent/oncallroster"
 	"github.com/rezible/rezible/ent/oncallscheduleparticipant"
 	"github.com/rezible/rezible/ent/oncallshift"
+	"github.com/rezible/rezible/ent/retrospectivecomment"
 	"github.com/rezible/rezible/ent/retrospectivereview"
 	"github.com/rezible/rezible/ent/task"
 	"github.com/rezible/rezible/ent/team"
@@ -262,6 +263,21 @@ func (uc *UserCreate) AddRetrospectiveReviewResponses(r ...*RetrospectiveReview)
 		ids[i] = r[i].ID
 	}
 	return uc.AddRetrospectiveReviewResponseIDs(ids...)
+}
+
+// AddRetrospectiveCommentIDs adds the "retrospective_comments" edge to the RetrospectiveComment entity by IDs.
+func (uc *UserCreate) AddRetrospectiveCommentIDs(ids ...uuid.UUID) *UserCreate {
+	uc.mutation.AddRetrospectiveCommentIDs(ids...)
+	return uc
+}
+
+// AddRetrospectiveComments adds the "retrospective_comments" edges to the RetrospectiveComment entity.
+func (uc *UserCreate) AddRetrospectiveComments(r ...*RetrospectiveComment) *UserCreate {
+	ids := make([]uuid.UUID, len(r))
+	for i := range r {
+		ids[i] = r[i].ID
+	}
+	return uc.AddRetrospectiveCommentIDs(ids...)
 }
 
 // AddRoleAssignmentIDs adds the "role_assignments" edge to the IncidentRoleAssignment entity by IDs.
@@ -585,6 +601,22 @@ func (uc *UserCreate) createSpec() (*User, *sqlgraph.CreateSpec) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(retrospectivereview.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := uc.mutation.RetrospectiveCommentsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   user.RetrospectiveCommentsTable,
+			Columns: []string{user.RetrospectiveCommentsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(retrospectivecomment.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {

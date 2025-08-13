@@ -42,8 +42,7 @@ import (
 	"github.com/rezible/rezible/ent/providerconfig"
 	"github.com/rezible/rezible/ent/providersynchistory"
 	"github.com/rezible/rezible/ent/retrospective"
-	"github.com/rezible/rezible/ent/retrospectivediscussion"
-	"github.com/rezible/rezible/ent/retrospectivediscussionreply"
+	"github.com/rezible/rezible/ent/retrospectivecomment"
 	"github.com/rezible/rezible/ent/retrospectivereview"
 	"github.com/rezible/rezible/ent/systemanalysis"
 	"github.com/rezible/rezible/ent/systemanalysiscomponent"
@@ -71,7 +70,7 @@ import (
 
 // schemaGraph holds a representation of ent/schema at runtime.
 var schemaGraph = func() *sqlgraph.Schema {
-	graph := &sqlgraph.Schema{Nodes: make([]*sqlgraph.Node, 58)}
+	graph := &sqlgraph.Schema{Nodes: make([]*sqlgraph.Node, 57)}
 	graph.Nodes[0] = &sqlgraph.Node{
 		NodeSpec: sqlgraph.NodeSpec{
 			Table:   alert.Table,
@@ -800,36 +799,24 @@ var schemaGraph = func() *sqlgraph.Schema {
 	}
 	graph.Nodes[38] = &sqlgraph.Node{
 		NodeSpec: sqlgraph.NodeSpec{
-			Table:   retrospectivediscussion.Table,
-			Columns: retrospectivediscussion.Columns,
+			Table:   retrospectivecomment.Table,
+			Columns: retrospectivecomment.Columns,
 			ID: &sqlgraph.FieldSpec{
 				Type:   field.TypeUUID,
-				Column: retrospectivediscussion.FieldID,
+				Column: retrospectivecomment.FieldID,
 			},
 		},
-		Type: "RetrospectiveDiscussion",
+		Type: "RetrospectiveComment",
 		Fields: map[string]*sqlgraph.FieldSpec{
-			retrospectivediscussion.FieldTenantID:        {Type: field.TypeInt, Column: retrospectivediscussion.FieldTenantID},
-			retrospectivediscussion.FieldRetrospectiveID: {Type: field.TypeUUID, Column: retrospectivediscussion.FieldRetrospectiveID},
-			retrospectivediscussion.FieldContent:         {Type: field.TypeBytes, Column: retrospectivediscussion.FieldContent},
+			retrospectivecomment.FieldTenantID:              {Type: field.TypeInt, Column: retrospectivecomment.FieldTenantID},
+			retrospectivecomment.FieldRetrospectiveID:       {Type: field.TypeUUID, Column: retrospectivecomment.FieldRetrospectiveID},
+			retrospectivecomment.FieldUserID:                {Type: field.TypeUUID, Column: retrospectivecomment.FieldUserID},
+			retrospectivecomment.FieldRetrospectiveReviewID: {Type: field.TypeUUID, Column: retrospectivecomment.FieldRetrospectiveReviewID},
+			retrospectivecomment.FieldParentReplyID:         {Type: field.TypeUUID, Column: retrospectivecomment.FieldParentReplyID},
+			retrospectivecomment.FieldContent:               {Type: field.TypeBytes, Column: retrospectivecomment.FieldContent},
 		},
 	}
 	graph.Nodes[39] = &sqlgraph.Node{
-		NodeSpec: sqlgraph.NodeSpec{
-			Table:   retrospectivediscussionreply.Table,
-			Columns: retrospectivediscussionreply.Columns,
-			ID: &sqlgraph.FieldSpec{
-				Type:   field.TypeUUID,
-				Column: retrospectivediscussionreply.FieldID,
-			},
-		},
-		Type: "RetrospectiveDiscussionReply",
-		Fields: map[string]*sqlgraph.FieldSpec{
-			retrospectivediscussionreply.FieldTenantID: {Type: field.TypeInt, Column: retrospectivediscussionreply.FieldTenantID},
-			retrospectivediscussionreply.FieldContent:  {Type: field.TypeBytes, Column: retrospectivediscussionreply.FieldContent},
-		},
-	}
-	graph.Nodes[40] = &sqlgraph.Node{
 		NodeSpec: sqlgraph.NodeSpec{
 			Table:   retrospectivereview.Table,
 			Columns: retrospectivereview.Columns,
@@ -842,12 +829,13 @@ var schemaGraph = func() *sqlgraph.Schema {
 		Fields: map[string]*sqlgraph.FieldSpec{
 			retrospectivereview.FieldTenantID:        {Type: field.TypeInt, Column: retrospectivereview.FieldTenantID},
 			retrospectivereview.FieldRetrospectiveID: {Type: field.TypeUUID, Column: retrospectivereview.FieldRetrospectiveID},
+			retrospectivereview.FieldCommentID:       {Type: field.TypeUUID, Column: retrospectivereview.FieldCommentID},
 			retrospectivereview.FieldRequesterID:     {Type: field.TypeUUID, Column: retrospectivereview.FieldRequesterID},
 			retrospectivereview.FieldReviewerID:      {Type: field.TypeUUID, Column: retrospectivereview.FieldReviewerID},
 			retrospectivereview.FieldState:           {Type: field.TypeEnum, Column: retrospectivereview.FieldState},
 		},
 	}
-	graph.Nodes[41] = &sqlgraph.Node{
+	graph.Nodes[40] = &sqlgraph.Node{
 		NodeSpec: sqlgraph.NodeSpec{
 			Table:   systemanalysis.Table,
 			Columns: systemanalysis.Columns,
@@ -863,7 +851,7 @@ var schemaGraph = func() *sqlgraph.Schema {
 			systemanalysis.FieldUpdatedAt: {Type: field.TypeTime, Column: systemanalysis.FieldUpdatedAt},
 		},
 	}
-	graph.Nodes[42] = &sqlgraph.Node{
+	graph.Nodes[41] = &sqlgraph.Node{
 		NodeSpec: sqlgraph.NodeSpec{
 			Table:   systemanalysiscomponent.Table,
 			Columns: systemanalysiscomponent.Columns,
@@ -883,7 +871,7 @@ var schemaGraph = func() *sqlgraph.Schema {
 			systemanalysiscomponent.FieldCreatedAt:   {Type: field.TypeTime, Column: systemanalysiscomponent.FieldCreatedAt},
 		},
 	}
-	graph.Nodes[43] = &sqlgraph.Node{
+	graph.Nodes[42] = &sqlgraph.Node{
 		NodeSpec: sqlgraph.NodeSpec{
 			Table:   systemanalysisrelationship.Table,
 			Columns: systemanalysisrelationship.Columns,
@@ -901,7 +889,7 @@ var schemaGraph = func() *sqlgraph.Schema {
 			systemanalysisrelationship.FieldCreatedAt:               {Type: field.TypeTime, Column: systemanalysisrelationship.FieldCreatedAt},
 		},
 	}
-	graph.Nodes[44] = &sqlgraph.Node{
+	graph.Nodes[43] = &sqlgraph.Node{
 		NodeSpec: sqlgraph.NodeSpec{
 			Table:   systemcomponent.Table,
 			Columns: systemcomponent.Columns,
@@ -922,7 +910,7 @@ var schemaGraph = func() *sqlgraph.Schema {
 			systemcomponent.FieldUpdatedAt:   {Type: field.TypeTime, Column: systemcomponent.FieldUpdatedAt},
 		},
 	}
-	graph.Nodes[45] = &sqlgraph.Node{
+	graph.Nodes[44] = &sqlgraph.Node{
 		NodeSpec: sqlgraph.NodeSpec{
 			Table:   systemcomponentconstraint.Table,
 			Columns: systemcomponentconstraint.Columns,
@@ -940,7 +928,7 @@ var schemaGraph = func() *sqlgraph.Schema {
 			systemcomponentconstraint.FieldCreatedAt:   {Type: field.TypeTime, Column: systemcomponentconstraint.FieldCreatedAt},
 		},
 	}
-	graph.Nodes[46] = &sqlgraph.Node{
+	graph.Nodes[45] = &sqlgraph.Node{
 		NodeSpec: sqlgraph.NodeSpec{
 			Table:   systemcomponentcontrol.Table,
 			Columns: systemcomponentcontrol.Columns,
@@ -958,7 +946,7 @@ var schemaGraph = func() *sqlgraph.Schema {
 			systemcomponentcontrol.FieldCreatedAt:   {Type: field.TypeTime, Column: systemcomponentcontrol.FieldCreatedAt},
 		},
 	}
-	graph.Nodes[47] = &sqlgraph.Node{
+	graph.Nodes[46] = &sqlgraph.Node{
 		NodeSpec: sqlgraph.NodeSpec{
 			Table:   systemcomponentkind.Table,
 			Columns: systemcomponentkind.Columns,
@@ -976,7 +964,7 @@ var schemaGraph = func() *sqlgraph.Schema {
 			systemcomponentkind.FieldCreatedAt:   {Type: field.TypeTime, Column: systemcomponentkind.FieldCreatedAt},
 		},
 	}
-	graph.Nodes[48] = &sqlgraph.Node{
+	graph.Nodes[47] = &sqlgraph.Node{
 		NodeSpec: sqlgraph.NodeSpec{
 			Table:   systemcomponentrelationship.Table,
 			Columns: systemcomponentrelationship.Columns,
@@ -995,7 +983,7 @@ var schemaGraph = func() *sqlgraph.Schema {
 			systemcomponentrelationship.FieldCreatedAt:   {Type: field.TypeTime, Column: systemcomponentrelationship.FieldCreatedAt},
 		},
 	}
-	graph.Nodes[49] = &sqlgraph.Node{
+	graph.Nodes[48] = &sqlgraph.Node{
 		NodeSpec: sqlgraph.NodeSpec{
 			Table:   systemcomponentsignal.Table,
 			Columns: systemcomponentsignal.Columns,
@@ -1013,7 +1001,7 @@ var schemaGraph = func() *sqlgraph.Schema {
 			systemcomponentsignal.FieldCreatedAt:   {Type: field.TypeTime, Column: systemcomponentsignal.FieldCreatedAt},
 		},
 	}
-	graph.Nodes[50] = &sqlgraph.Node{
+	graph.Nodes[49] = &sqlgraph.Node{
 		NodeSpec: sqlgraph.NodeSpec{
 			Table:   systemhazard.Table,
 			Columns: systemhazard.Columns,
@@ -1031,7 +1019,7 @@ var schemaGraph = func() *sqlgraph.Schema {
 			systemhazard.FieldUpdatedAt:   {Type: field.TypeTime, Column: systemhazard.FieldUpdatedAt},
 		},
 	}
-	graph.Nodes[51] = &sqlgraph.Node{
+	graph.Nodes[50] = &sqlgraph.Node{
 		NodeSpec: sqlgraph.NodeSpec{
 			Table:   systemrelationshipcontrolaction.Table,
 			Columns: systemrelationshipcontrolaction.Columns,
@@ -1050,7 +1038,7 @@ var schemaGraph = func() *sqlgraph.Schema {
 			systemrelationshipcontrolaction.FieldCreatedAt:      {Type: field.TypeTime, Column: systemrelationshipcontrolaction.FieldCreatedAt},
 		},
 	}
-	graph.Nodes[52] = &sqlgraph.Node{
+	graph.Nodes[51] = &sqlgraph.Node{
 		NodeSpec: sqlgraph.NodeSpec{
 			Table:   systemrelationshipfeedbacksignal.Table,
 			Columns: systemrelationshipfeedbacksignal.Columns,
@@ -1069,7 +1057,7 @@ var schemaGraph = func() *sqlgraph.Schema {
 			systemrelationshipfeedbacksignal.FieldCreatedAt:      {Type: field.TypeTime, Column: systemrelationshipfeedbacksignal.FieldCreatedAt},
 		},
 	}
-	graph.Nodes[53] = &sqlgraph.Node{
+	graph.Nodes[52] = &sqlgraph.Node{
 		NodeSpec: sqlgraph.NodeSpec{
 			Table:   task.Table,
 			Columns: task.Columns,
@@ -1088,7 +1076,7 @@ var schemaGraph = func() *sqlgraph.Schema {
 			task.FieldCreatorID:  {Type: field.TypeUUID, Column: task.FieldCreatorID},
 		},
 	}
-	graph.Nodes[54] = &sqlgraph.Node{
+	graph.Nodes[53] = &sqlgraph.Node{
 		NodeSpec: sqlgraph.NodeSpec{
 			Table:   team.Table,
 			Columns: team.Columns,
@@ -1107,7 +1095,7 @@ var schemaGraph = func() *sqlgraph.Schema {
 			team.FieldTimezone:      {Type: field.TypeString, Column: team.FieldTimezone},
 		},
 	}
-	graph.Nodes[55] = &sqlgraph.Node{
+	graph.Nodes[54] = &sqlgraph.Node{
 		NodeSpec: sqlgraph.NodeSpec{
 			Table:   tenant.Table,
 			Columns: tenant.Columns,
@@ -1122,7 +1110,7 @@ var schemaGraph = func() *sqlgraph.Schema {
 			tenant.FieldPublicID: {Type: field.TypeUUID, Column: tenant.FieldPublicID},
 		},
 	}
-	graph.Nodes[56] = &sqlgraph.Node{
+	graph.Nodes[55] = &sqlgraph.Node{
 		NodeSpec: sqlgraph.NodeSpec{
 			Table:   ticket.Table,
 			Columns: ticket.Columns,
@@ -1138,7 +1126,7 @@ var schemaGraph = func() *sqlgraph.Schema {
 			ticket.FieldTitle:      {Type: field.TypeString, Column: ticket.FieldTitle},
 		},
 	}
-	graph.Nodes[57] = &sqlgraph.Node{
+	graph.Nodes[56] = &sqlgraph.Node{
 		NodeSpec: sqlgraph.NodeSpec{
 			Table:   user.Table,
 			Columns: user.Columns,
@@ -2777,16 +2765,16 @@ var schemaGraph = func() *sqlgraph.Schema {
 		"Incident",
 	)
 	graph.MustAddE(
-		"discussions",
+		"comments",
 		&sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: true,
-			Table:   retrospective.DiscussionsTable,
-			Columns: []string{retrospective.DiscussionsColumn},
+			Table:   retrospective.CommentsTable,
+			Columns: []string{retrospective.CommentsColumn},
 			Bidi:    false,
 		},
 		"Retrospective",
-		"RetrospectiveDiscussion",
+		"RetrospectiveComment",
 	)
 	graph.MustAddE(
 		"system_analysis",
@@ -2805,11 +2793,11 @@ var schemaGraph = func() *sqlgraph.Schema {
 		&sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
-			Table:   retrospectivediscussion.TenantTable,
-			Columns: []string{retrospectivediscussion.TenantColumn},
+			Table:   retrospectivecomment.TenantTable,
+			Columns: []string{retrospectivecomment.TenantColumn},
 			Bidi:    false,
 		},
-		"RetrospectiveDiscussion",
+		"RetrospectiveComment",
 		"Tenant",
 	)
 	graph.MustAddE(
@@ -2817,84 +2805,60 @@ var schemaGraph = func() *sqlgraph.Schema {
 		&sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
-			Table:   retrospectivediscussion.RetrospectiveTable,
-			Columns: []string{retrospectivediscussion.RetrospectiveColumn},
+			Table:   retrospectivecomment.RetrospectiveTable,
+			Columns: []string{retrospectivecomment.RetrospectiveColumn},
 			Bidi:    false,
 		},
-		"RetrospectiveDiscussion",
+		"RetrospectiveComment",
 		"Retrospective",
 	)
 	graph.MustAddE(
-		"replies",
+		"user",
 		&sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   retrospectivediscussion.RepliesTable,
-			Columns: []string{retrospectivediscussion.RepliesColumn},
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   retrospectivecomment.UserTable,
+			Columns: []string{retrospectivecomment.UserColumn},
 			Bidi:    false,
 		},
-		"RetrospectiveDiscussion",
-		"RetrospectiveDiscussionReply",
+		"RetrospectiveComment",
+		"User",
 	)
 	graph.MustAddE(
 		"review",
 		&sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   retrospectivediscussion.ReviewTable,
-			Columns: []string{retrospectivediscussion.ReviewColumn},
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   retrospectivecomment.ReviewTable,
+			Columns: []string{retrospectivecomment.ReviewColumn},
 			Bidi:    false,
 		},
-		"RetrospectiveDiscussion",
+		"RetrospectiveComment",
 		"RetrospectiveReview",
 	)
 	graph.MustAddE(
-		"tenant",
-		&sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: false,
-			Table:   retrospectivediscussionreply.TenantTable,
-			Columns: []string{retrospectivediscussionreply.TenantColumn},
-			Bidi:    false,
-		},
-		"RetrospectiveDiscussionReply",
-		"Tenant",
-	)
-	graph.MustAddE(
-		"discussion",
-		&sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: false,
-			Table:   retrospectivediscussionreply.DiscussionTable,
-			Columns: []string{retrospectivediscussionreply.DiscussionColumn},
-			Bidi:    false,
-		},
-		"RetrospectiveDiscussionReply",
-		"RetrospectiveDiscussion",
-	)
-	graph.MustAddE(
-		"parent_reply",
+		"parent",
 		&sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: true,
-			Table:   retrospectivediscussionreply.ParentReplyTable,
-			Columns: []string{retrospectivediscussionreply.ParentReplyColumn},
+			Table:   retrospectivecomment.ParentTable,
+			Columns: []string{retrospectivecomment.ParentColumn},
 			Bidi:    false,
 		},
-		"RetrospectiveDiscussionReply",
-		"RetrospectiveDiscussionReply",
+		"RetrospectiveComment",
+		"RetrospectiveComment",
 	)
 	graph.MustAddE(
 		"replies",
 		&sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   retrospectivediscussionreply.RepliesTable,
-			Columns: []string{retrospectivediscussionreply.RepliesColumn},
+			Table:   retrospectivecomment.RepliesTable,
+			Columns: []string{retrospectivecomment.RepliesColumn},
 			Bidi:    false,
 		},
-		"RetrospectiveDiscussionReply",
-		"RetrospectiveDiscussionReply",
+		"RetrospectiveComment",
+		"RetrospectiveComment",
 	)
 	graph.MustAddE(
 		"tenant",
@@ -2945,16 +2909,16 @@ var schemaGraph = func() *sqlgraph.Schema {
 		"User",
 	)
 	graph.MustAddE(
-		"discussion",
+		"comment",
 		&sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
-			Table:   retrospectivereview.DiscussionTable,
-			Columns: []string{retrospectivereview.DiscussionColumn},
+			Table:   retrospectivereview.CommentTable,
+			Columns: []string{retrospectivereview.CommentColumn},
 			Bidi:    false,
 		},
 		"RetrospectiveReview",
-		"RetrospectiveDiscussion",
+		"RetrospectiveComment",
 	)
 	graph.MustAddE(
 		"tenant",
@@ -3891,6 +3855,18 @@ var schemaGraph = func() *sqlgraph.Schema {
 		},
 		"User",
 		"RetrospectiveReview",
+	)
+	graph.MustAddE(
+		"retrospective_comments",
+		&sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   user.RetrospectiveCommentsTable,
+			Columns: []string{user.RetrospectiveCommentsColumn},
+			Bidi:    false,
+		},
+		"User",
+		"RetrospectiveComment",
 	)
 	graph.MustAddE(
 		"role_assignments",
@@ -8483,14 +8459,14 @@ func (f *RetrospectiveFilter) WhereHasIncidentWith(preds ...predicate.Incident) 
 	})))
 }
 
-// WhereHasDiscussions applies a predicate to check if query has an edge discussions.
-func (f *RetrospectiveFilter) WhereHasDiscussions() {
-	f.Where(entql.HasEdge("discussions"))
+// WhereHasComments applies a predicate to check if query has an edge comments.
+func (f *RetrospectiveFilter) WhereHasComments() {
+	f.Where(entql.HasEdge("comments"))
 }
 
-// WhereHasDiscussionsWith applies a predicate to check if query has an edge discussions with a given conditions (other predicates).
-func (f *RetrospectiveFilter) WhereHasDiscussionsWith(preds ...predicate.RetrospectiveDiscussion) {
-	f.Where(entql.HasEdgeWith("discussions", sqlgraph.WrapFunc(func(s *sql.Selector) {
+// WhereHasCommentsWith applies a predicate to check if query has an edge comments with a given conditions (other predicates).
+func (f *RetrospectiveFilter) WhereHasCommentsWith(preds ...predicate.RetrospectiveComment) {
+	f.Where(entql.HasEdgeWith("comments", sqlgraph.WrapFunc(func(s *sql.Selector) {
 		for _, p := range preds {
 			p(s)
 		}
@@ -8512,33 +8488,33 @@ func (f *RetrospectiveFilter) WhereHasSystemAnalysisWith(preds ...predicate.Syst
 }
 
 // addPredicate implements the predicateAdder interface.
-func (rdq *RetrospectiveDiscussionQuery) addPredicate(pred func(s *sql.Selector)) {
-	rdq.predicates = append(rdq.predicates, pred)
+func (rcq *RetrospectiveCommentQuery) addPredicate(pred func(s *sql.Selector)) {
+	rcq.predicates = append(rcq.predicates, pred)
 }
 
-// Filter returns a Filter implementation to apply filters on the RetrospectiveDiscussionQuery builder.
-func (rdq *RetrospectiveDiscussionQuery) Filter() *RetrospectiveDiscussionFilter {
-	return &RetrospectiveDiscussionFilter{config: rdq.config, predicateAdder: rdq}
+// Filter returns a Filter implementation to apply filters on the RetrospectiveCommentQuery builder.
+func (rcq *RetrospectiveCommentQuery) Filter() *RetrospectiveCommentFilter {
+	return &RetrospectiveCommentFilter{config: rcq.config, predicateAdder: rcq}
 }
 
 // addPredicate implements the predicateAdder interface.
-func (m *RetrospectiveDiscussionMutation) addPredicate(pred func(s *sql.Selector)) {
+func (m *RetrospectiveCommentMutation) addPredicate(pred func(s *sql.Selector)) {
 	m.predicates = append(m.predicates, pred)
 }
 
-// Filter returns an entql.Where implementation to apply filters on the RetrospectiveDiscussionMutation builder.
-func (m *RetrospectiveDiscussionMutation) Filter() *RetrospectiveDiscussionFilter {
-	return &RetrospectiveDiscussionFilter{config: m.config, predicateAdder: m}
+// Filter returns an entql.Where implementation to apply filters on the RetrospectiveCommentMutation builder.
+func (m *RetrospectiveCommentMutation) Filter() *RetrospectiveCommentFilter {
+	return &RetrospectiveCommentFilter{config: m.config, predicateAdder: m}
 }
 
-// RetrospectiveDiscussionFilter provides a generic filtering capability at runtime for RetrospectiveDiscussionQuery.
-type RetrospectiveDiscussionFilter struct {
+// RetrospectiveCommentFilter provides a generic filtering capability at runtime for RetrospectiveCommentQuery.
+type RetrospectiveCommentFilter struct {
 	predicateAdder
 	config
 }
 
 // Where applies the entql predicate on the query filter.
-func (f *RetrospectiveDiscussionFilter) Where(p entql.P) {
+func (f *RetrospectiveCommentFilter) Where(p entql.P) {
 	f.addPredicate(func(s *sql.Selector) {
 		if err := schemaGraph.EvalP(schemaGraph.Nodes[38].Type, p, s); err != nil {
 			s.AddError(err)
@@ -8547,32 +8523,47 @@ func (f *RetrospectiveDiscussionFilter) Where(p entql.P) {
 }
 
 // WhereID applies the entql [16]byte predicate on the id field.
-func (f *RetrospectiveDiscussionFilter) WhereID(p entql.ValueP) {
-	f.Where(p.Field(retrospectivediscussion.FieldID))
+func (f *RetrospectiveCommentFilter) WhereID(p entql.ValueP) {
+	f.Where(p.Field(retrospectivecomment.FieldID))
 }
 
 // WhereTenantID applies the entql int predicate on the tenant_id field.
-func (f *RetrospectiveDiscussionFilter) WhereTenantID(p entql.IntP) {
-	f.Where(p.Field(retrospectivediscussion.FieldTenantID))
+func (f *RetrospectiveCommentFilter) WhereTenantID(p entql.IntP) {
+	f.Where(p.Field(retrospectivecomment.FieldTenantID))
 }
 
 // WhereRetrospectiveID applies the entql [16]byte predicate on the retrospective_id field.
-func (f *RetrospectiveDiscussionFilter) WhereRetrospectiveID(p entql.ValueP) {
-	f.Where(p.Field(retrospectivediscussion.FieldRetrospectiveID))
+func (f *RetrospectiveCommentFilter) WhereRetrospectiveID(p entql.ValueP) {
+	f.Where(p.Field(retrospectivecomment.FieldRetrospectiveID))
+}
+
+// WhereUserID applies the entql [16]byte predicate on the user_id field.
+func (f *RetrospectiveCommentFilter) WhereUserID(p entql.ValueP) {
+	f.Where(p.Field(retrospectivecomment.FieldUserID))
+}
+
+// WhereRetrospectiveReviewID applies the entql [16]byte predicate on the retrospective_review_id field.
+func (f *RetrospectiveCommentFilter) WhereRetrospectiveReviewID(p entql.ValueP) {
+	f.Where(p.Field(retrospectivecomment.FieldRetrospectiveReviewID))
+}
+
+// WhereParentReplyID applies the entql [16]byte predicate on the parent_reply_id field.
+func (f *RetrospectiveCommentFilter) WhereParentReplyID(p entql.ValueP) {
+	f.Where(p.Field(retrospectivecomment.FieldParentReplyID))
 }
 
 // WhereContent applies the entql []byte predicate on the content field.
-func (f *RetrospectiveDiscussionFilter) WhereContent(p entql.BytesP) {
-	f.Where(p.Field(retrospectivediscussion.FieldContent))
+func (f *RetrospectiveCommentFilter) WhereContent(p entql.BytesP) {
+	f.Where(p.Field(retrospectivecomment.FieldContent))
 }
 
 // WhereHasTenant applies a predicate to check if query has an edge tenant.
-func (f *RetrospectiveDiscussionFilter) WhereHasTenant() {
+func (f *RetrospectiveCommentFilter) WhereHasTenant() {
 	f.Where(entql.HasEdge("tenant"))
 }
 
 // WhereHasTenantWith applies a predicate to check if query has an edge tenant with a given conditions (other predicates).
-func (f *RetrospectiveDiscussionFilter) WhereHasTenantWith(preds ...predicate.Tenant) {
+func (f *RetrospectiveCommentFilter) WhereHasTenantWith(preds ...predicate.Tenant) {
 	f.Where(entql.HasEdgeWith("tenant", sqlgraph.WrapFunc(func(s *sql.Selector) {
 		for _, p := range preds {
 			p(s)
@@ -8581,12 +8572,12 @@ func (f *RetrospectiveDiscussionFilter) WhereHasTenantWith(preds ...predicate.Te
 }
 
 // WhereHasRetrospective applies a predicate to check if query has an edge retrospective.
-func (f *RetrospectiveDiscussionFilter) WhereHasRetrospective() {
+func (f *RetrospectiveCommentFilter) WhereHasRetrospective() {
 	f.Where(entql.HasEdge("retrospective"))
 }
 
 // WhereHasRetrospectiveWith applies a predicate to check if query has an edge retrospective with a given conditions (other predicates).
-func (f *RetrospectiveDiscussionFilter) WhereHasRetrospectiveWith(preds ...predicate.Retrospective) {
+func (f *RetrospectiveCommentFilter) WhereHasRetrospectiveWith(preds ...predicate.Retrospective) {
 	f.Where(entql.HasEdgeWith("retrospective", sqlgraph.WrapFunc(func(s *sql.Selector) {
 		for _, p := range preds {
 			p(s)
@@ -8594,14 +8585,14 @@ func (f *RetrospectiveDiscussionFilter) WhereHasRetrospectiveWith(preds ...predi
 	})))
 }
 
-// WhereHasReplies applies a predicate to check if query has an edge replies.
-func (f *RetrospectiveDiscussionFilter) WhereHasReplies() {
-	f.Where(entql.HasEdge("replies"))
+// WhereHasUser applies a predicate to check if query has an edge user.
+func (f *RetrospectiveCommentFilter) WhereHasUser() {
+	f.Where(entql.HasEdge("user"))
 }
 
-// WhereHasRepliesWith applies a predicate to check if query has an edge replies with a given conditions (other predicates).
-func (f *RetrospectiveDiscussionFilter) WhereHasRepliesWith(preds ...predicate.RetrospectiveDiscussionReply) {
-	f.Where(entql.HasEdgeWith("replies", sqlgraph.WrapFunc(func(s *sql.Selector) {
+// WhereHasUserWith applies a predicate to check if query has an edge user with a given conditions (other predicates).
+func (f *RetrospectiveCommentFilter) WhereHasUserWith(preds ...predicate.User) {
+	f.Where(entql.HasEdgeWith("user", sqlgraph.WrapFunc(func(s *sql.Selector) {
 		for _, p := range preds {
 			p(s)
 		}
@@ -8609,12 +8600,12 @@ func (f *RetrospectiveDiscussionFilter) WhereHasRepliesWith(preds ...predicate.R
 }
 
 // WhereHasReview applies a predicate to check if query has an edge review.
-func (f *RetrospectiveDiscussionFilter) WhereHasReview() {
+func (f *RetrospectiveCommentFilter) WhereHasReview() {
 	f.Where(entql.HasEdge("review"))
 }
 
 // WhereHasReviewWith applies a predicate to check if query has an edge review with a given conditions (other predicates).
-func (f *RetrospectiveDiscussionFilter) WhereHasReviewWith(preds ...predicate.RetrospectiveReview) {
+func (f *RetrospectiveCommentFilter) WhereHasReviewWith(preds ...predicate.RetrospectiveReview) {
 	f.Where(entql.HasEdgeWith("review", sqlgraph.WrapFunc(func(s *sql.Selector) {
 		for _, p := range preds {
 			p(s)
@@ -8622,92 +8613,14 @@ func (f *RetrospectiveDiscussionFilter) WhereHasReviewWith(preds ...predicate.Re
 	})))
 }
 
-// addPredicate implements the predicateAdder interface.
-func (rdrq *RetrospectiveDiscussionReplyQuery) addPredicate(pred func(s *sql.Selector)) {
-	rdrq.predicates = append(rdrq.predicates, pred)
+// WhereHasParent applies a predicate to check if query has an edge parent.
+func (f *RetrospectiveCommentFilter) WhereHasParent() {
+	f.Where(entql.HasEdge("parent"))
 }
 
-// Filter returns a Filter implementation to apply filters on the RetrospectiveDiscussionReplyQuery builder.
-func (rdrq *RetrospectiveDiscussionReplyQuery) Filter() *RetrospectiveDiscussionReplyFilter {
-	return &RetrospectiveDiscussionReplyFilter{config: rdrq.config, predicateAdder: rdrq}
-}
-
-// addPredicate implements the predicateAdder interface.
-func (m *RetrospectiveDiscussionReplyMutation) addPredicate(pred func(s *sql.Selector)) {
-	m.predicates = append(m.predicates, pred)
-}
-
-// Filter returns an entql.Where implementation to apply filters on the RetrospectiveDiscussionReplyMutation builder.
-func (m *RetrospectiveDiscussionReplyMutation) Filter() *RetrospectiveDiscussionReplyFilter {
-	return &RetrospectiveDiscussionReplyFilter{config: m.config, predicateAdder: m}
-}
-
-// RetrospectiveDiscussionReplyFilter provides a generic filtering capability at runtime for RetrospectiveDiscussionReplyQuery.
-type RetrospectiveDiscussionReplyFilter struct {
-	predicateAdder
-	config
-}
-
-// Where applies the entql predicate on the query filter.
-func (f *RetrospectiveDiscussionReplyFilter) Where(p entql.P) {
-	f.addPredicate(func(s *sql.Selector) {
-		if err := schemaGraph.EvalP(schemaGraph.Nodes[39].Type, p, s); err != nil {
-			s.AddError(err)
-		}
-	})
-}
-
-// WhereID applies the entql [16]byte predicate on the id field.
-func (f *RetrospectiveDiscussionReplyFilter) WhereID(p entql.ValueP) {
-	f.Where(p.Field(retrospectivediscussionreply.FieldID))
-}
-
-// WhereTenantID applies the entql int predicate on the tenant_id field.
-func (f *RetrospectiveDiscussionReplyFilter) WhereTenantID(p entql.IntP) {
-	f.Where(p.Field(retrospectivediscussionreply.FieldTenantID))
-}
-
-// WhereContent applies the entql []byte predicate on the content field.
-func (f *RetrospectiveDiscussionReplyFilter) WhereContent(p entql.BytesP) {
-	f.Where(p.Field(retrospectivediscussionreply.FieldContent))
-}
-
-// WhereHasTenant applies a predicate to check if query has an edge tenant.
-func (f *RetrospectiveDiscussionReplyFilter) WhereHasTenant() {
-	f.Where(entql.HasEdge("tenant"))
-}
-
-// WhereHasTenantWith applies a predicate to check if query has an edge tenant with a given conditions (other predicates).
-func (f *RetrospectiveDiscussionReplyFilter) WhereHasTenantWith(preds ...predicate.Tenant) {
-	f.Where(entql.HasEdgeWith("tenant", sqlgraph.WrapFunc(func(s *sql.Selector) {
-		for _, p := range preds {
-			p(s)
-		}
-	})))
-}
-
-// WhereHasDiscussion applies a predicate to check if query has an edge discussion.
-func (f *RetrospectiveDiscussionReplyFilter) WhereHasDiscussion() {
-	f.Where(entql.HasEdge("discussion"))
-}
-
-// WhereHasDiscussionWith applies a predicate to check if query has an edge discussion with a given conditions (other predicates).
-func (f *RetrospectiveDiscussionReplyFilter) WhereHasDiscussionWith(preds ...predicate.RetrospectiveDiscussion) {
-	f.Where(entql.HasEdgeWith("discussion", sqlgraph.WrapFunc(func(s *sql.Selector) {
-		for _, p := range preds {
-			p(s)
-		}
-	})))
-}
-
-// WhereHasParentReply applies a predicate to check if query has an edge parent_reply.
-func (f *RetrospectiveDiscussionReplyFilter) WhereHasParentReply() {
-	f.Where(entql.HasEdge("parent_reply"))
-}
-
-// WhereHasParentReplyWith applies a predicate to check if query has an edge parent_reply with a given conditions (other predicates).
-func (f *RetrospectiveDiscussionReplyFilter) WhereHasParentReplyWith(preds ...predicate.RetrospectiveDiscussionReply) {
-	f.Where(entql.HasEdgeWith("parent_reply", sqlgraph.WrapFunc(func(s *sql.Selector) {
+// WhereHasParentWith applies a predicate to check if query has an edge parent with a given conditions (other predicates).
+func (f *RetrospectiveCommentFilter) WhereHasParentWith(preds ...predicate.RetrospectiveComment) {
+	f.Where(entql.HasEdgeWith("parent", sqlgraph.WrapFunc(func(s *sql.Selector) {
 		for _, p := range preds {
 			p(s)
 		}
@@ -8715,12 +8628,12 @@ func (f *RetrospectiveDiscussionReplyFilter) WhereHasParentReplyWith(preds ...pr
 }
 
 // WhereHasReplies applies a predicate to check if query has an edge replies.
-func (f *RetrospectiveDiscussionReplyFilter) WhereHasReplies() {
+func (f *RetrospectiveCommentFilter) WhereHasReplies() {
 	f.Where(entql.HasEdge("replies"))
 }
 
 // WhereHasRepliesWith applies a predicate to check if query has an edge replies with a given conditions (other predicates).
-func (f *RetrospectiveDiscussionReplyFilter) WhereHasRepliesWith(preds ...predicate.RetrospectiveDiscussionReply) {
+func (f *RetrospectiveCommentFilter) WhereHasRepliesWith(preds ...predicate.RetrospectiveComment) {
 	f.Where(entql.HasEdgeWith("replies", sqlgraph.WrapFunc(func(s *sql.Selector) {
 		for _, p := range preds {
 			p(s)
@@ -8757,7 +8670,7 @@ type RetrospectiveReviewFilter struct {
 // Where applies the entql predicate on the query filter.
 func (f *RetrospectiveReviewFilter) Where(p entql.P) {
 	f.addPredicate(func(s *sql.Selector) {
-		if err := schemaGraph.EvalP(schemaGraph.Nodes[40].Type, p, s); err != nil {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[39].Type, p, s); err != nil {
 			s.AddError(err)
 		}
 	})
@@ -8776,6 +8689,11 @@ func (f *RetrospectiveReviewFilter) WhereTenantID(p entql.IntP) {
 // WhereRetrospectiveID applies the entql [16]byte predicate on the retrospective_id field.
 func (f *RetrospectiveReviewFilter) WhereRetrospectiveID(p entql.ValueP) {
 	f.Where(p.Field(retrospectivereview.FieldRetrospectiveID))
+}
+
+// WhereCommentID applies the entql [16]byte predicate on the comment_id field.
+func (f *RetrospectiveReviewFilter) WhereCommentID(p entql.ValueP) {
+	f.Where(p.Field(retrospectivereview.FieldCommentID))
 }
 
 // WhereRequesterID applies the entql [16]byte predicate on the requester_id field.
@@ -8849,14 +8767,14 @@ func (f *RetrospectiveReviewFilter) WhereHasReviewerWith(preds ...predicate.User
 	})))
 }
 
-// WhereHasDiscussion applies a predicate to check if query has an edge discussion.
-func (f *RetrospectiveReviewFilter) WhereHasDiscussion() {
-	f.Where(entql.HasEdge("discussion"))
+// WhereHasComment applies a predicate to check if query has an edge comment.
+func (f *RetrospectiveReviewFilter) WhereHasComment() {
+	f.Where(entql.HasEdge("comment"))
 }
 
-// WhereHasDiscussionWith applies a predicate to check if query has an edge discussion with a given conditions (other predicates).
-func (f *RetrospectiveReviewFilter) WhereHasDiscussionWith(preds ...predicate.RetrospectiveDiscussion) {
-	f.Where(entql.HasEdgeWith("discussion", sqlgraph.WrapFunc(func(s *sql.Selector) {
+// WhereHasCommentWith applies a predicate to check if query has an edge comment with a given conditions (other predicates).
+func (f *RetrospectiveReviewFilter) WhereHasCommentWith(preds ...predicate.RetrospectiveComment) {
+	f.Where(entql.HasEdgeWith("comment", sqlgraph.WrapFunc(func(s *sql.Selector) {
 		for _, p := range preds {
 			p(s)
 		}
@@ -8892,7 +8810,7 @@ type SystemAnalysisFilter struct {
 // Where applies the entql predicate on the query filter.
 func (f *SystemAnalysisFilter) Where(p entql.P) {
 	f.addPredicate(func(s *sql.Selector) {
-		if err := schemaGraph.EvalP(schemaGraph.Nodes[41].Type, p, s); err != nil {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[40].Type, p, s); err != nil {
 			s.AddError(err)
 		}
 	})
@@ -9017,7 +8935,7 @@ type SystemAnalysisComponentFilter struct {
 // Where applies the entql predicate on the query filter.
 func (f *SystemAnalysisComponentFilter) Where(p entql.P) {
 	f.addPredicate(func(s *sql.Selector) {
-		if err := schemaGraph.EvalP(schemaGraph.Nodes[42].Type, p, s); err != nil {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[41].Type, p, s); err != nil {
 			s.AddError(err)
 		}
 	})
@@ -9134,7 +9052,7 @@ type SystemAnalysisRelationshipFilter struct {
 // Where applies the entql predicate on the query filter.
 func (f *SystemAnalysisRelationshipFilter) Where(p entql.P) {
 	f.addPredicate(func(s *sql.Selector) {
-		if err := schemaGraph.EvalP(schemaGraph.Nodes[43].Type, p, s); err != nil {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[42].Type, p, s); err != nil {
 			s.AddError(err)
 		}
 	})
@@ -9297,7 +9215,7 @@ type SystemComponentFilter struct {
 // Where applies the entql predicate on the query filter.
 func (f *SystemComponentFilter) Where(p entql.P) {
 	f.addPredicate(func(s *sql.Selector) {
-		if err := schemaGraph.EvalP(schemaGraph.Nodes[44].Type, p, s); err != nil {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[43].Type, p, s); err != nil {
 			s.AddError(err)
 		}
 	})
@@ -9545,7 +9463,7 @@ type SystemComponentConstraintFilter struct {
 // Where applies the entql predicate on the query filter.
 func (f *SystemComponentConstraintFilter) Where(p entql.P) {
 	f.addPredicate(func(s *sql.Selector) {
-		if err := schemaGraph.EvalP(schemaGraph.Nodes[45].Type, p, s); err != nil {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[44].Type, p, s); err != nil {
 			s.AddError(err)
 		}
 	})
@@ -9652,7 +9570,7 @@ type SystemComponentControlFilter struct {
 // Where applies the entql predicate on the query filter.
 func (f *SystemComponentControlFilter) Where(p entql.P) {
 	f.addPredicate(func(s *sql.Selector) {
-		if err := schemaGraph.EvalP(schemaGraph.Nodes[46].Type, p, s); err != nil {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[45].Type, p, s); err != nil {
 			s.AddError(err)
 		}
 	})
@@ -9773,7 +9691,7 @@ type SystemComponentKindFilter struct {
 // Where applies the entql predicate on the query filter.
 func (f *SystemComponentKindFilter) Where(p entql.P) {
 	f.addPredicate(func(s *sql.Selector) {
-		if err := schemaGraph.EvalP(schemaGraph.Nodes[47].Type, p, s); err != nil {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[46].Type, p, s); err != nil {
 			s.AddError(err)
 		}
 	})
@@ -9866,7 +9784,7 @@ type SystemComponentRelationshipFilter struct {
 // Where applies the entql predicate on the query filter.
 func (f *SystemComponentRelationshipFilter) Where(p entql.P) {
 	f.addPredicate(func(s *sql.Selector) {
-		if err := schemaGraph.EvalP(schemaGraph.Nodes[48].Type, p, s); err != nil {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[47].Type, p, s); err != nil {
 			s.AddError(err)
 		}
 	})
@@ -10006,7 +9924,7 @@ type SystemComponentSignalFilter struct {
 // Where applies the entql predicate on the query filter.
 func (f *SystemComponentSignalFilter) Where(p entql.P) {
 	f.addPredicate(func(s *sql.Selector) {
-		if err := schemaGraph.EvalP(schemaGraph.Nodes[49].Type, p, s); err != nil {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[48].Type, p, s); err != nil {
 			s.AddError(err)
 		}
 	})
@@ -10127,7 +10045,7 @@ type SystemHazardFilter struct {
 // Where applies the entql predicate on the query filter.
 func (f *SystemHazardFilter) Where(p entql.P) {
 	f.addPredicate(func(s *sql.Selector) {
-		if err := schemaGraph.EvalP(schemaGraph.Nodes[50].Type, p, s); err != nil {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[49].Type, p, s); err != nil {
 			s.AddError(err)
 		}
 	})
@@ -10248,7 +10166,7 @@ type SystemRelationshipControlActionFilter struct {
 // Where applies the entql predicate on the query filter.
 func (f *SystemRelationshipControlActionFilter) Where(p entql.P) {
 	f.addPredicate(func(s *sql.Selector) {
-		if err := schemaGraph.EvalP(schemaGraph.Nodes[51].Type, p, s); err != nil {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[50].Type, p, s); err != nil {
 			s.AddError(err)
 		}
 	})
@@ -10360,7 +10278,7 @@ type SystemRelationshipFeedbackSignalFilter struct {
 // Where applies the entql predicate on the query filter.
 func (f *SystemRelationshipFeedbackSignalFilter) Where(p entql.P) {
 	f.addPredicate(func(s *sql.Selector) {
-		if err := schemaGraph.EvalP(schemaGraph.Nodes[52].Type, p, s); err != nil {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[51].Type, p, s); err != nil {
 			s.AddError(err)
 		}
 	})
@@ -10472,7 +10390,7 @@ type TaskFilter struct {
 // Where applies the entql predicate on the query filter.
 func (f *TaskFilter) Where(p entql.P) {
 	f.addPredicate(func(s *sql.Selector) {
-		if err := schemaGraph.EvalP(schemaGraph.Nodes[53].Type, p, s); err != nil {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[52].Type, p, s); err != nil {
 			s.AddError(err)
 		}
 	})
@@ -10612,7 +10530,7 @@ type TeamFilter struct {
 // Where applies the entql predicate on the query filter.
 func (f *TeamFilter) Where(p entql.P) {
 	f.addPredicate(func(s *sql.Selector) {
-		if err := schemaGraph.EvalP(schemaGraph.Nodes[54].Type, p, s); err != nil {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[53].Type, p, s); err != nil {
 			s.AddError(err)
 		}
 	})
@@ -10738,7 +10656,7 @@ type TenantFilter struct {
 // Where applies the entql predicate on the query filter.
 func (f *TenantFilter) Where(p entql.P) {
 	f.addPredicate(func(s *sql.Selector) {
-		if err := schemaGraph.EvalP(schemaGraph.Nodes[55].Type, p, s); err != nil {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[54].Type, p, s); err != nil {
 			s.AddError(err)
 		}
 	})
@@ -10788,7 +10706,7 @@ type TicketFilter struct {
 // Where applies the entql predicate on the query filter.
 func (f *TicketFilter) Where(p entql.P) {
 	f.addPredicate(func(s *sql.Selector) {
-		if err := schemaGraph.EvalP(schemaGraph.Nodes[56].Type, p, s); err != nil {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[55].Type, p, s); err != nil {
 			s.AddError(err)
 		}
 	})
@@ -10871,7 +10789,7 @@ type UserFilter struct {
 // Where applies the entql predicate on the query filter.
 func (f *UserFilter) Where(p entql.P) {
 	f.addPredicate(func(s *sql.Selector) {
-		if err := schemaGraph.EvalP(schemaGraph.Nodes[57].Type, p, s); err != nil {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[56].Type, p, s); err != nil {
 			s.AddError(err)
 		}
 	})
@@ -11069,6 +10987,20 @@ func (f *UserFilter) WhereHasRetrospectiveReviewResponses() {
 // WhereHasRetrospectiveReviewResponsesWith applies a predicate to check if query has an edge retrospective_review_responses with a given conditions (other predicates).
 func (f *UserFilter) WhereHasRetrospectiveReviewResponsesWith(preds ...predicate.RetrospectiveReview) {
 	f.Where(entql.HasEdgeWith("retrospective_review_responses", sqlgraph.WrapFunc(func(s *sql.Selector) {
+		for _, p := range preds {
+			p(s)
+		}
+	})))
+}
+
+// WhereHasRetrospectiveComments applies a predicate to check if query has an edge retrospective_comments.
+func (f *UserFilter) WhereHasRetrospectiveComments() {
+	f.Where(entql.HasEdge("retrospective_comments"))
+}
+
+// WhereHasRetrospectiveCommentsWith applies a predicate to check if query has an edge retrospective_comments with a given conditions (other predicates).
+func (f *UserFilter) WhereHasRetrospectiveCommentsWith(preds ...predicate.RetrospectiveComment) {
+	f.Where(entql.HasEdgeWith("retrospective_comments", sqlgraph.WrapFunc(func(s *sql.Selector) {
 		for _, p := range preds {
 			p(s)
 		}

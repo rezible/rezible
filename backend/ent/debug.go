@@ -308,20 +308,12 @@ func (c *RetrospectiveClient) Debug() *RetrospectiveClient {
 	return &RetrospectiveClient{config: cfg}
 }
 
-func (c *RetrospectiveDiscussionClient) Debug() *RetrospectiveDiscussionClient {
+func (c *RetrospectiveCommentClient) Debug() *RetrospectiveCommentClient {
 	if c.debug {
 		return c
 	}
 	cfg := config{driver: dialect.Debug(c.driver, c.log), log: c.log, debug: true, hooks: c.hooks, inters: c.inters}
-	return &RetrospectiveDiscussionClient{config: cfg}
-}
-
-func (c *RetrospectiveDiscussionReplyClient) Debug() *RetrospectiveDiscussionReplyClient {
-	if c.debug {
-		return c
-	}
-	cfg := config{driver: dialect.Debug(c.driver, c.log), log: c.log, debug: true, hooks: c.hooks, inters: c.inters}
-	return &RetrospectiveDiscussionReplyClient{config: cfg}
+	return &RetrospectiveCommentClient{config: cfg}
 }
 
 func (c *RetrospectiveReviewClient) Debug() *RetrospectiveReviewClient {

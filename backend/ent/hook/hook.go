@@ -453,28 +453,16 @@ func (f RetrospectiveFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Valu
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.RetrospectiveMutation", m)
 }
 
-// The RetrospectiveDiscussionFunc type is an adapter to allow the use of ordinary
-// function as RetrospectiveDiscussion mutator.
-type RetrospectiveDiscussionFunc func(context.Context, *ent.RetrospectiveDiscussionMutation) (ent.Value, error)
+// The RetrospectiveCommentFunc type is an adapter to allow the use of ordinary
+// function as RetrospectiveComment mutator.
+type RetrospectiveCommentFunc func(context.Context, *ent.RetrospectiveCommentMutation) (ent.Value, error)
 
 // Mutate calls f(ctx, m).
-func (f RetrospectiveDiscussionFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
-	if mv, ok := m.(*ent.RetrospectiveDiscussionMutation); ok {
+func (f RetrospectiveCommentFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.RetrospectiveCommentMutation); ok {
 		return f(ctx, mv)
 	}
-	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.RetrospectiveDiscussionMutation", m)
-}
-
-// The RetrospectiveDiscussionReplyFunc type is an adapter to allow the use of ordinary
-// function as RetrospectiveDiscussionReply mutator.
-type RetrospectiveDiscussionReplyFunc func(context.Context, *ent.RetrospectiveDiscussionReplyMutation) (ent.Value, error)
-
-// Mutate calls f(ctx, m).
-func (f RetrospectiveDiscussionReplyFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
-	if mv, ok := m.(*ent.RetrospectiveDiscussionReplyMutation); ok {
-		return f(ctx, mv)
-	}
-	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.RetrospectiveDiscussionReplyMutation", m)
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.RetrospectiveCommentMutation", m)
 }
 
 // The RetrospectiveReviewFunc type is an adapter to allow the use of ordinary

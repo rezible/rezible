@@ -60,11 +60,13 @@ type UserEdges struct {
 	RetrospectiveReviewRequests []*RetrospectiveReview `json:"retrospective_review_requests,omitempty"`
 	// RetrospectiveReviewResponses holds the value of the retrospective_review_responses edge.
 	RetrospectiveReviewResponses []*RetrospectiveReview `json:"retrospective_review_responses,omitempty"`
+	// RetrospectiveComments holds the value of the retrospective_comments edge.
+	RetrospectiveComments []*RetrospectiveComment `json:"retrospective_comments,omitempty"`
 	// RoleAssignments holds the value of the role_assignments edge.
 	RoleAssignments []*IncidentRoleAssignment `json:"role_assignments,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [13]bool
+	loadedTypes [14]bool
 }
 
 // TenantOrErr returns the Tenant value or an error if the edge
@@ -177,10 +179,19 @@ func (e UserEdges) RetrospectiveReviewResponsesOrErr() ([]*RetrospectiveReview, 
 	return nil, &NotLoadedError{edge: "retrospective_review_responses"}
 }
 
+// RetrospectiveCommentsOrErr returns the RetrospectiveComments value or an error if the edge
+// was not loaded in eager-loading.
+func (e UserEdges) RetrospectiveCommentsOrErr() ([]*RetrospectiveComment, error) {
+	if e.loadedTypes[12] {
+		return e.RetrospectiveComments, nil
+	}
+	return nil, &NotLoadedError{edge: "retrospective_comments"}
+}
+
 // RoleAssignmentsOrErr returns the RoleAssignments value or an error if the edge
 // was not loaded in eager-loading.
 func (e UserEdges) RoleAssignmentsOrErr() ([]*IncidentRoleAssignment, error) {
-	if e.loadedTypes[12] {
+	if e.loadedTypes[13] {
 		return e.RoleAssignments, nil
 	}
 	return nil, &NotLoadedError{edge: "role_assignments"}
@@ -319,6 +330,11 @@ func (u *User) QueryRetrospectiveReviewRequests() *RetrospectiveReviewQuery {
 // QueryRetrospectiveReviewResponses queries the "retrospective_review_responses" edge of the User entity.
 func (u *User) QueryRetrospectiveReviewResponses() *RetrospectiveReviewQuery {
 	return NewUserClient(u.config).QueryRetrospectiveReviewResponses(u)
+}
+
+// QueryRetrospectiveComments queries the "retrospective_comments" edge of the User entity.
+func (u *User) QueryRetrospectiveComments() *RetrospectiveCommentQuery {
+	return NewUserClient(u.config).QueryRetrospectiveComments(u)
 }
 
 // QueryRoleAssignments queries the "role_assignments" edge of the User entity.

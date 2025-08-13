@@ -9,7 +9,7 @@ import (
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
 	"github.com/rezible/rezible/ent/retrospective"
-	"github.com/rezible/rezible/ent/retrospectivediscussion"
+	"github.com/rezible/rezible/ent/retrospectivecomment"
 )
 
 type RetrospectiveService struct {
@@ -97,30 +97,31 @@ func (s *RetrospectiveService) GetForIncident(ctx context.Context, inc *ent.Inci
 	return retro, nil
 }
 
-func (s *RetrospectiveService) CreateDiscussion(ctx context.Context, params rez.CreateRetrospectiveDiscussionParams) (*ent.RetrospectiveDiscussion, error) {
-	return s.db.RetrospectiveDiscussion.Create().
-		SetRetrospectiveID(params.RetrospectiveID).
-		SetContent(params.Content).
-		//SetUserID(params.UserID).
-		Save(ctx)
+func (s *RetrospectiveService) GetComment(ctx context.Context, id uuid.UUID) (*ent.RetrospectiveComment, error) {
+	return s.db.RetrospectiveComment.Get(ctx, id)
 }
 
-func (s *RetrospectiveService) GetDiscussionByID(ctx context.Context, id uuid.UUID) (*ent.RetrospectiveDiscussion, error) {
-	return s.db.RetrospectiveDiscussion.Get(ctx, id)
+func (s *RetrospectiveService) SetComment(ctx context.Context, cmt *ent.RetrospectiveComment) (*ent.RetrospectiveComment, error) {
+	var m *ent.RetrospectiveCommentMutation
+	if cmt.ID != uuid.Nil {
+		m = s.db.RetrospectiveComment.UpdateOneID(cmt.ID).Mutation()
+	} else {
+		m = s.db.RetrospectiveComment.Create().Mutation()
+	}
+	v, setErr := s.db.Mutate(ctx, m)
+	if setErr != nil {
+		return nil, fmt.Errorf("failed to %s comment: %w", m.Op(), setErr)
+	}
+	updated, ok := v.(*ent.RetrospectiveComment)
+	if !ok {
+		return nil, fmt.Errorf("invalid ")
+	}
+	return updated, nil
 }
 
-func (s *RetrospectiveService) AddDiscussionReply(ctx context.Context, params rez.AddRetrospectiveDiscussionReplyParams) (*ent.RetrospectiveDiscussionReply, error) {
-	return s.db.RetrospectiveDiscussionReply.Create().
-		SetDiscussionID(params.DiscussionId).
-		SetContent(params.Content).
-		SetNillableParentReplyID(params.ParentID).
-		//SetUserID(params.UserID).
-		Save(ctx)
-}
-
-func (s *RetrospectiveService) ListDiscussions(ctx context.Context, params rez.ListRetrospectiveDiscussionsParams) ([]*ent.RetrospectiveDiscussion, error) {
-	query := s.db.RetrospectiveDiscussion.Query().
-		Where(retrospectivediscussion.RetrospectiveID(params.RetrospectiveID))
+func (s *RetrospectiveService) ListComments(ctx context.Context, params rez.ListRetrospectiveCommentsParams) ([]*ent.RetrospectiveComment, error) {
+	query := s.db.RetrospectiveComment.Query().
+		Where(retrospectivecomment.RetrospectiveID(params.RetrospectiveID))
 
 	if params.WithReplies {
 		query = query.WithReplies()

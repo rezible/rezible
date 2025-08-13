@@ -20,27 +20,6 @@ export type AddIncidentDebriefUserMessageResponseBody = {
     data: IncidentDebriefMessage;
 };
 
-export type AddRetrospectiveDiscussionReplyRequestAttributes = {
-    content: unknown;
-    parentReplyId?: string;
-};
-
-export type AddRetrospectiveDiscussionReplyRequestBody = {
-    /**
-     * A URL to the JSON Schema for this object.
-     */
-    readonly $schema?: string;
-    attributes: AddRetrospectiveDiscussionReplyRequestAttributes;
-};
-
-export type AddRetrospectiveDiscussionReplyResponseBody = {
-    /**
-     * A URL to the JSON Schema for this object.
-     */
-    readonly $schema?: string;
-    data: RetrospectiveDiscussion;
-};
-
 export type AddSystemAnalysisComponentAttributes = {
     componentId: string;
     position: SystemAnalysisDiagramPosition;
@@ -442,24 +421,24 @@ export type CreateRetrospectiveAttributes = {
     systemAnalysis: boolean;
 };
 
-export type CreateRetrospectiveDiscussionAttributes = {
+export type CreateRetrospectiveCommentAttributes = {
     content: unknown;
 };
 
-export type CreateRetrospectiveDiscussionRequestBody = {
+export type CreateRetrospectiveCommentRequestBody = {
     /**
      * A URL to the JSON Schema for this object.
      */
     readonly $schema?: string;
-    attributes: CreateRetrospectiveDiscussionAttributes;
+    attributes: CreateRetrospectiveCommentAttributes;
 };
 
-export type CreateRetrospectiveDiscussionResponseBody = {
+export type CreateRetrospectiveCommentResponseBody = {
     /**
      * A URL to the JSON Schema for this object.
      */
     readonly $schema?: string;
-    data: RetrospectiveDiscussion;
+    data: RetrospectiveComment;
 };
 
 export type CreateRetrospectiveRequestBody = {
@@ -764,6 +743,16 @@ export type ExpandableOncallRosterAttributes = {
     id: string;
 };
 
+export type ExpandableRetrospectiveCommentAttributes = {
+    attributes?: RetrospectiveCommentAttributes;
+    id: string;
+};
+
+export type ExpandableUser = {
+    attributes?: User;
+    id: string;
+};
+
 export type ExpandableUserAttributes = {
     attributes?: UserAttributes;
     id: string;
@@ -981,12 +970,12 @@ export type GetPlaybookResponseBody = {
     data: Playbook;
 };
 
-export type GetRetrospectiveDiscussionResponseBody = {
+export type GetRetrospectiveCommentResponseBody = {
     /**
      * A URL to the JSON Schema for this object.
      */
     readonly $schema?: string;
-    data: RetrospectiveDiscussion;
+    data: RetrospectiveComment;
 };
 
 export type GetRetrospectiveForIncidentResponseBody = {
@@ -1568,12 +1557,12 @@ export type ListPlaybooksResponseBody = {
     pagination: ResponsePagination;
 };
 
-export type ListRetrospectiveDiscussionsResponseBody = {
+export type ListRetrospectiveCommentsResponseBody = {
     /**
      * A URL to the JSON Schema for this object.
      */
     readonly $schema?: string;
-    data: Array<RetrospectiveDiscussion>;
+    data: Array<RetrospectiveComment>;
     pagination: ResponsePagination;
 };
 
@@ -1926,26 +1915,15 @@ export type RetrospectiveAttributes = {
     type: 'simple' | 'full';
 };
 
-export type RetrospectiveDiscussion = {
-    attributes: RetrospectiveDiscussionAttributes;
+export type RetrospectiveComment = {
+    attributes: RetrospectiveCommentAttributes;
     id: string;
 };
 
-export type RetrospectiveDiscussionAttributes = {
-    annotationId?: string;
+export type RetrospectiveCommentAttributes = {
     content: string;
-    replies: Array<RetrospectiveDiscussionReply>;
-    resolved: boolean;
-};
-
-export type RetrospectiveDiscussionReply = {
-    attributes: RetrospectiveDiscussionReplyAttributes;
-    id: string;
-};
-
-export type RetrospectiveDiscussionReplyAttributes = {
-    content: string;
-    replies: Array<RetrospectiveDiscussionReply>;
+    replies: Array<RetrospectiveComment>;
+    user: User;
 };
 
 export type RetrospectiveReportSection = {
@@ -1961,7 +1939,9 @@ export type RetrospectiveReview = {
 };
 
 export type RetrospectiveReviewAttributes = {
-    [key: string]: never;
+    comment: ExpandableRetrospectiveCommentAttributes;
+    requester: ExpandableUser;
+    reviewer: ExpandableUser;
 };
 
 export type SendOncallShiftHandoverAttributes = {
@@ -2502,24 +2482,25 @@ export type UpdatePlaybookResponseBody = {
     data: Playbook;
 };
 
-export type UpdateRetrospectiveDiscussionAttributes = {
+export type UpdateRetrospectiveCommentAttributes = {
+    content?: string;
     resolved?: boolean;
 };
 
-export type UpdateRetrospectiveDiscussionRequestBody = {
+export type UpdateRetrospectiveCommentRequestBody = {
     /**
      * A URL to the JSON Schema for this object.
      */
     readonly $schema?: string;
-    attributes: UpdateRetrospectiveDiscussionAttributes;
+    attributes: UpdateRetrospectiveCommentAttributes;
 };
 
-export type UpdateRetrospectiveDiscussionResponseBody = {
+export type UpdateRetrospectiveCommentResponseBody = {
     /**
      * A URL to the JSON Schema for this object.
      */
     readonly $schema?: string;
-    data: RetrospectiveDiscussion;
+    data: RetrospectiveComment;
 };
 
 export type UpdateRetrospectiveReviewRequestAttributes = {
@@ -7744,6 +7725,105 @@ export type UpdatePlaybookResponses = {
 
 export type UpdatePlaybookResponse = UpdatePlaybookResponses[keyof UpdatePlaybookResponses];
 
+export type GetRetrospectiveCommentData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: {
+        limit?: number;
+        offset?: number;
+        search?: string;
+        archived?: boolean;
+    };
+    url: '/retrospective_comments/{id}';
+};
+
+export type GetRetrospectiveCommentErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
+
+export type GetRetrospectiveCommentError = GetRetrospectiveCommentErrors[keyof GetRetrospectiveCommentErrors];
+
+export type GetRetrospectiveCommentResponses = {
+    /**
+     * OK
+     */
+    200: GetRetrospectiveCommentResponseBody;
+};
+
+export type GetRetrospectiveCommentResponse = GetRetrospectiveCommentResponses[keyof GetRetrospectiveCommentResponses];
+
+export type UpdateRetrospectiveCommentData = {
+    body: UpdateRetrospectiveCommentRequestBody;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/retrospective_comments/{id}';
+};
+
+export type UpdateRetrospectiveCommentErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
+
+export type UpdateRetrospectiveCommentError = UpdateRetrospectiveCommentErrors[keyof UpdateRetrospectiveCommentErrors];
+
+export type UpdateRetrospectiveCommentResponses = {
+    /**
+     * OK
+     */
+    200: UpdateRetrospectiveCommentResponseBody;
+};
+
+export type UpdateRetrospectiveCommentResponse = UpdateRetrospectiveCommentResponses[keyof UpdateRetrospectiveCommentResponses];
+
 export type ArchiveRetrospectiveReviewData = {
     body?: never;
     path: {
@@ -7980,7 +8060,7 @@ export type GetRetrospectiveResponses = {
 
 export type GetRetrospectiveResponse = GetRetrospectiveResponses[keyof GetRetrospectiveResponses];
 
-export type ListRetrospectiveDiscussionsData = {
+export type ListRetrospectiveCommentsData = {
     body?: never;
     path: {
         id: string;
@@ -7991,10 +8071,10 @@ export type ListRetrospectiveDiscussionsData = {
         search?: string;
         archived?: boolean;
     };
-    url: '/retrospectives/{id}/discussions';
+    url: '/retrospectives/{id}/comments';
 };
 
-export type ListRetrospectiveDiscussionsErrors = {
+export type ListRetrospectiveCommentsErrors = {
     /**
      * Bad Request
      */
@@ -8021,24 +8101,24 @@ export type ListRetrospectiveDiscussionsErrors = {
     500: ErrorModel;
 };
 
-export type ListRetrospectiveDiscussionsError = ListRetrospectiveDiscussionsErrors[keyof ListRetrospectiveDiscussionsErrors];
+export type ListRetrospectiveCommentsError = ListRetrospectiveCommentsErrors[keyof ListRetrospectiveCommentsErrors];
 
-export type ListRetrospectiveDiscussionsResponses = {
+export type ListRetrospectiveCommentsResponses = {
     /**
      * OK
      */
-    200: ListRetrospectiveDiscussionsResponseBody;
+    200: ListRetrospectiveCommentsResponseBody;
 };
 
-export type ListRetrospectiveDiscussionsResponse = ListRetrospectiveDiscussionsResponses[keyof ListRetrospectiveDiscussionsResponses];
+export type ListRetrospectiveCommentsResponse = ListRetrospectiveCommentsResponses[keyof ListRetrospectiveCommentsResponses];
 
 export type CreateRetrospectiveDiscussionData = {
-    body: CreateRetrospectiveDiscussionRequestBody;
+    body: CreateRetrospectiveCommentRequestBody;
     path: {
         id: string;
     };
     query?: never;
-    url: '/retrospectives/{id}/discussions';
+    url: '/retrospectives/{id}/comments';
 };
 
 export type CreateRetrospectiveDiscussionErrors = {
@@ -8074,148 +8154,10 @@ export type CreateRetrospectiveDiscussionResponses = {
     /**
      * OK
      */
-    200: CreateRetrospectiveDiscussionResponseBody;
+    200: CreateRetrospectiveCommentResponseBody;
 };
 
 export type CreateRetrospectiveDiscussionResponse = CreateRetrospectiveDiscussionResponses[keyof CreateRetrospectiveDiscussionResponses];
-
-export type GetRetrospectiveDiscussionData = {
-    body?: never;
-    path: {
-        id: string;
-        discussionId: string;
-    };
-    query?: never;
-    url: '/retrospectives/{id}/discussions/{discussionId}';
-};
-
-export type GetRetrospectiveDiscussionErrors = {
-    /**
-     * Bad Request
-     */
-    400: ErrorModel;
-    /**
-     * Unauthorized
-     */
-    401: ErrorModel;
-    /**
-     * Forbidden
-     */
-    403: ErrorModel;
-    /**
-     * Not Found
-     */
-    404: ErrorModel;
-    /**
-     * Unprocessable Entity
-     */
-    422: ErrorModel;
-    /**
-     * Internal Server Error
-     */
-    500: ErrorModel;
-};
-
-export type GetRetrospectiveDiscussionError = GetRetrospectiveDiscussionErrors[keyof GetRetrospectiveDiscussionErrors];
-
-export type GetRetrospectiveDiscussionResponses = {
-    /**
-     * OK
-     */
-    200: GetRetrospectiveDiscussionResponseBody;
-};
-
-export type GetRetrospectiveDiscussionResponse = GetRetrospectiveDiscussionResponses[keyof GetRetrospectiveDiscussionResponses];
-
-export type UpdateRetrospectiveDiscussionData = {
-    body: UpdateRetrospectiveDiscussionRequestBody;
-    path?: never;
-    query?: never;
-    url: '/retrospectives/{id}/discussions/{discussionId}';
-};
-
-export type UpdateRetrospectiveDiscussionErrors = {
-    /**
-     * Bad Request
-     */
-    400: ErrorModel;
-    /**
-     * Unauthorized
-     */
-    401: ErrorModel;
-    /**
-     * Forbidden
-     */
-    403: ErrorModel;
-    /**
-     * Not Found
-     */
-    404: ErrorModel;
-    /**
-     * Unprocessable Entity
-     */
-    422: ErrorModel;
-    /**
-     * Internal Server Error
-     */
-    500: ErrorModel;
-};
-
-export type UpdateRetrospectiveDiscussionError = UpdateRetrospectiveDiscussionErrors[keyof UpdateRetrospectiveDiscussionErrors];
-
-export type UpdateRetrospectiveDiscussionResponses = {
-    /**
-     * OK
-     */
-    200: UpdateRetrospectiveDiscussionResponseBody;
-};
-
-export type UpdateRetrospectiveDiscussionResponse = UpdateRetrospectiveDiscussionResponses[keyof UpdateRetrospectiveDiscussionResponses];
-
-export type AddRetrospectiveDiscussionReplyData = {
-    body: AddRetrospectiveDiscussionReplyRequestBody;
-    path?: never;
-    query?: never;
-    url: '/retrospectives/{id}/discussions/{discussionId}';
-};
-
-export type AddRetrospectiveDiscussionReplyErrors = {
-    /**
-     * Bad Request
-     */
-    400: ErrorModel;
-    /**
-     * Unauthorized
-     */
-    401: ErrorModel;
-    /**
-     * Forbidden
-     */
-    403: ErrorModel;
-    /**
-     * Not Found
-     */
-    404: ErrorModel;
-    /**
-     * Unprocessable Entity
-     */
-    422: ErrorModel;
-    /**
-     * Internal Server Error
-     */
-    500: ErrorModel;
-};
-
-export type AddRetrospectiveDiscussionReplyError = AddRetrospectiveDiscussionReplyErrors[keyof AddRetrospectiveDiscussionReplyErrors];
-
-export type AddRetrospectiveDiscussionReplyResponses = {
-    /**
-     * OK
-     */
-    200: AddRetrospectiveDiscussionReplyResponseBody;
-};
-
-export type AddRetrospectiveDiscussionReplyResponse = AddRetrospectiveDiscussionReplyResponses[keyof AddRetrospectiveDiscussionReplyResponses];
 
 export type ListRetrospectiveReviewsData = {
     body?: never;

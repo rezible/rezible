@@ -2,6 +2,7 @@ package api
 
 import (
 	"context"
+
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
 	"github.com/rezible/rezible/ent/retrospective"
@@ -106,121 +107,75 @@ func (h *retrospectivesHandler) ArchiveRetrospectiveReview(ctx context.Context, 
 	return &resp, nil
 }
 
-//func (h *retrospectivesHandler) ListRetrospectiveTemplates(ctx context.Context, request *oapi.ListRetrospectiveTemplatesRequest) (*oapi.ListRetrospectiveTemplatesResponse, error) {
-//	var resp oapi.ListRetrospectiveTemplatesResponse
-//	// TODO
-//	return &resp, nil
-//}
-//func (h *retrospectivesHandler) CreateRetrospectiveTemplate(ctx context.Context, request *oapi.CreateRetrospectiveTemplateRequest) (*oapi.CreateRetrospectiveTemplateResponse, error) {
-//	var resp oapi.CreateRetrospectiveTemplateResponse
-//	// TODO
-//	return &resp, nil
-//}
-//func (h *retrospectivesHandler) UpdateRetrospectiveTemplate(ctx context.Context, request *oapi.UpdateRetrospectiveTemplateRequest) (*oapi.UpdateRetrospectiveTemplateResponse, error) {
-//	var resp oapi.UpdateRetrospectiveTemplateResponse
-//	// TODO
-//	return &resp, nil
-//}
-//func (h *retrospectivesHandler) ArchiveRetrospectiveTemplate(ctx context.Context, request *oapi.ArchiveRetrospectiveTemplateRequest) (*oapi.ArchiveRetrospectiveTemplateResponse, error) {
-//	var resp oapi.ArchiveRetrospectiveTemplateResponse
-//	// TODO
-//	return &resp, nil
-//}
+func (h *retrospectivesHandler) ListRetrospectiveComments(ctx context.Context, request *oapi.ListRetrospectiveCommentsRequest) (*oapi.ListRetrospectiveCommentsResponse, error) {
+	var resp oapi.ListRetrospectiveCommentsResponse
 
-func (h *retrospectivesHandler) ListRetrospectiveDiscussions(ctx context.Context, request *oapi.ListRetrospectiveDiscussionsRequest) (*oapi.ListRetrospectiveDiscussionsResponse, error) {
-	var resp oapi.ListRetrospectiveDiscussionsResponse
-
-	discussions, discErr := h.retros.ListDiscussions(ctx, rez.ListRetrospectiveDiscussionsParams{
+	comments, listErr := h.retros.ListComments(ctx, rez.ListRetrospectiveCommentsParams{
+		ListParams:      request.ListParams(),
 		RetrospectiveID: request.Id,
 		WithReplies:     true,
-		ListParams:      request.ListParams(),
 	})
-	if discErr != nil {
-		return nil, apiError("failed to list discussions", discErr)
+	if listErr != nil {
+		return nil, apiError("failed to list comments", listErr)
 	}
 
-	resp.Body.Data = make([]oapi.RetrospectiveDiscussion, len(discussions))
-	for i, disc := range discussions {
-		resp.Body.Data[i] = oapi.RetrospectiveDiscussionFromEnt(disc)
+	resp.Body.Data = make([]oapi.RetrospectiveComment, len(comments))
+	for i, disc := range comments {
+		resp.Body.Data[i] = oapi.RetrospectiveCommentFromEnt(disc)
 	}
 
 	return &resp, nil
 }
 
-func (h *retrospectivesHandler) CreateRetrospectiveDiscussion(ctx context.Context, request *oapi.CreateRetrospectiveDiscussionRequest) (*oapi.CreateRetrospectiveDiscussionResponse, error) {
-	var resp oapi.CreateRetrospectiveDiscussionResponse
+func (h *retrospectivesHandler) CreateRetrospectiveComment(ctx context.Context, request *oapi.CreateRetrospectiveCommentRequest) (*oapi.CreateRetrospectiveCommentResponse, error) {
+	var resp oapi.CreateRetrospectiveCommentResponse
 
 	userId := requestUserId(ctx, h.auth)
 
-	discussion, createErr := h.retros.CreateDiscussion(ctx, rez.CreateRetrospectiveDiscussionParams{
+	comment, createErr := h.retros.SetComment(ctx, &ent.RetrospectiveComment{
 		RetrospectiveID: request.Id,
 		UserID:          userId,
 		Content:         request.Body.Attributes.Content,
 	})
 	if createErr != nil {
-		return nil, apiError("failed to create retrospective discussion", createErr)
+		return nil, apiError("failed to create retrospective comment", createErr)
 	}
-	resp.Body.Data = oapi.RetrospectiveDiscussionFromEnt(discussion)
+	resp.Body.Data = oapi.RetrospectiveCommentFromEnt(comment)
 
 	return &resp, nil
 }
 
-func (h *retrospectivesHandler) GetRetrospectiveDiscussion(ctx context.Context, request *oapi.GetRetrospectiveDiscussionRequest) (*oapi.GetRetrospectiveDiscussionResponse, error) {
-	var resp oapi.GetRetrospectiveDiscussionResponse
+func (h *retrospectivesHandler) GetRetrospectiveComment(ctx context.Context, request *oapi.GetRetrospectiveCommentRequest) (*oapi.GetRetrospectiveCommentResponse, error) {
+	var resp oapi.GetRetrospectiveCommentResponse
 
-	discussion, discErr := h.retros.GetDiscussionByID(ctx, request.DiscussionId)
-	if discErr != nil {
-		return nil, apiError("failed to get retrospective discussion", discErr)
+	comment, getErr := h.retros.GetComment(ctx, request.Id)
+	if getErr != nil {
+		return nil, apiError("get comment", getErr)
 	}
-	resp.Body.Data = oapi.RetrospectiveDiscussionFromEnt(discussion)
+	resp.Body.Data = oapi.RetrospectiveCommentFromEnt(comment)
 
 	return &resp, nil
 }
 
-func (h *retrospectivesHandler) UpdateRetrospectiveDiscussion(ctx context.Context, request *oapi.UpdateRetrospectiveDiscussionRequest) (*oapi.UpdateRetrospectiveDiscussionResponse, error) {
-	var resp oapi.UpdateRetrospectiveDiscussionResponse
+func (h *retrospectivesHandler) UpdateRetrospectiveComment(ctx context.Context, request *oapi.UpdateRetrospectiveCommentRequest) (*oapi.UpdateRetrospectiveCommentResponse, error) {
+	var resp oapi.UpdateRetrospectiveCommentResponse
 
-	discussion, discErr := h.retros.GetDiscussionByID(ctx, request.DiscussionId)
-	if discErr != nil {
-		return nil, apiError("failed to get retrospective discussion", discErr)
-	}
-
-	update := discussion.Update()
-	// TODO: update stuff
-	//.SetNillableResolved(request.Body.Attributes.Resolved)
-	updated, saveErr := update.Save(ctx)
-	if saveErr != nil {
-		return nil, apiError("failed to update retrospective discussion", saveErr)
-	}
-
-	resp.Body.Data = oapi.RetrospectiveDiscussionFromEnt(updated)
-
-	return &resp, nil
-}
-
-func (h *retrospectivesHandler) AddRetrospectiveDiscussionReply(ctx context.Context, request *oapi.AddRetrospectiveDiscussionReplyRequest) (*oapi.AddRetrospectiveDiscussionReplyResponse, error) {
-	var resp oapi.AddRetrospectiveDiscussionReplyResponse
-
-	userId := requestUserId(ctx, h.auth)
-
-	discussion, discussionErr := h.retros.GetDiscussionByID(ctx, request.DiscussionId)
-	if discussionErr != nil {
-		return nil, apiError("failed to get existing discussion", discussionErr)
+	comment, getErr := h.retros.GetComment(ctx, request.Id)
+	if getErr != nil {
+		return nil, apiError("get comment", getErr)
 	}
 
 	attr := request.Body.Attributes
-	reply, replyErr := h.retros.AddDiscussionReply(ctx, rez.AddRetrospectiveDiscussionReplyParams{
-		DiscussionId: discussion.ID,
-		UserID:       userId,
-		ParentID:     attr.ParentReplyId,
-		Content:      attr.Content,
-	})
-	if replyErr != nil {
-		return nil, apiError("failed to add retrospective discussion reply", replyErr)
+	// TODO: set fields to update
+	if attr.Content != nil {
+		comment.Content = []byte(*attr.Content)
 	}
-	discussion.Edges.Replies = append(discussion.Edges.Replies, reply)
 
-	resp.Body.Data = oapi.RetrospectiveDiscussionFromEnt(discussion)
+	updated, saveErr := h.retros.SetComment(ctx, comment)
+	if saveErr != nil {
+		return nil, apiError("update comment", saveErr)
+	}
+	resp.Body.Data = oapi.RetrospectiveCommentFromEnt(updated)
 
 	return &resp, nil
 }

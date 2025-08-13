@@ -48,6 +48,8 @@ const (
 	EdgeRetrospectiveReviewRequests = "retrospective_review_requests"
 	// EdgeRetrospectiveReviewResponses holds the string denoting the retrospective_review_responses edge name in mutations.
 	EdgeRetrospectiveReviewResponses = "retrospective_review_responses"
+	// EdgeRetrospectiveComments holds the string denoting the retrospective_comments edge name in mutations.
+	EdgeRetrospectiveComments = "retrospective_comments"
 	// EdgeRoleAssignments holds the string denoting the role_assignments edge name in mutations.
 	EdgeRoleAssignments = "role_assignments"
 	// Table holds the table name of the user in the database.
@@ -130,6 +132,13 @@ const (
 	RetrospectiveReviewResponsesInverseTable = "retrospective_reviews"
 	// RetrospectiveReviewResponsesColumn is the table column denoting the retrospective_review_responses relation/edge.
 	RetrospectiveReviewResponsesColumn = "reviewer_id"
+	// RetrospectiveCommentsTable is the table that holds the retrospective_comments relation/edge.
+	RetrospectiveCommentsTable = "retrospective_comments"
+	// RetrospectiveCommentsInverseTable is the table name for the RetrospectiveComment entity.
+	// It exists in this package in order to avoid circular dependency with the "retrospectivecomment" package.
+	RetrospectiveCommentsInverseTable = "retrospective_comments"
+	// RetrospectiveCommentsColumn is the table column denoting the retrospective_comments relation/edge.
+	RetrospectiveCommentsColumn = "user_id"
 	// RoleAssignmentsTable is the table that holds the role_assignments relation/edge.
 	RoleAssignmentsTable = "incident_role_assignments"
 	// RoleAssignmentsInverseTable is the table name for the IncidentRoleAssignment entity.
@@ -377,6 +386,20 @@ func ByRetrospectiveReviewResponses(term sql.OrderTerm, terms ...sql.OrderTerm) 
 	}
 }
 
+// ByRetrospectiveCommentsCount orders the results by retrospective_comments count.
+func ByRetrospectiveCommentsCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newRetrospectiveCommentsStep(), opts...)
+	}
+}
+
+// ByRetrospectiveComments orders the results by retrospective_comments terms.
+func ByRetrospectiveComments(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newRetrospectiveCommentsStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
+
 // ByRoleAssignmentsCount orders the results by role_assignments count.
 func ByRoleAssignmentsCount(opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
@@ -472,6 +495,13 @@ func newRetrospectiveReviewResponsesStep() *sqlgraph.Step {
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(RetrospectiveReviewResponsesInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.O2M, true, RetrospectiveReviewResponsesTable, RetrospectiveReviewResponsesColumn),
+	)
+}
+func newRetrospectiveCommentsStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(RetrospectiveCommentsInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, true, RetrospectiveCommentsTable, RetrospectiveCommentsColumn),
 	)
 }
 func newRoleAssignmentsStep() *sqlgraph.Step {

@@ -47,8 +47,7 @@ import (
 	"github.com/rezible/rezible/ent/providerconfig"
 	"github.com/rezible/rezible/ent/providersynchistory"
 	"github.com/rezible/rezible/ent/retrospective"
-	"github.com/rezible/rezible/ent/retrospectivediscussion"
-	"github.com/rezible/rezible/ent/retrospectivediscussionreply"
+	"github.com/rezible/rezible/ent/retrospectivecomment"
 	"github.com/rezible/rezible/ent/retrospectivereview"
 	"github.com/rezible/rezible/ent/systemanalysis"
 	"github.com/rezible/rezible/ent/systemanalysiscomponent"
@@ -1151,58 +1150,31 @@ func (f TraverseRetrospective) Traverse(ctx context.Context, q ent.Query) error 
 	return fmt.Errorf("unexpected query type %T. expect *ent.RetrospectiveQuery", q)
 }
 
-// The RetrospectiveDiscussionFunc type is an adapter to allow the use of ordinary function as a Querier.
-type RetrospectiveDiscussionFunc func(context.Context, *ent.RetrospectiveDiscussionQuery) (ent.Value, error)
+// The RetrospectiveCommentFunc type is an adapter to allow the use of ordinary function as a Querier.
+type RetrospectiveCommentFunc func(context.Context, *ent.RetrospectiveCommentQuery) (ent.Value, error)
 
 // Query calls f(ctx, q).
-func (f RetrospectiveDiscussionFunc) Query(ctx context.Context, q ent.Query) (ent.Value, error) {
-	if q, ok := q.(*ent.RetrospectiveDiscussionQuery); ok {
+func (f RetrospectiveCommentFunc) Query(ctx context.Context, q ent.Query) (ent.Value, error) {
+	if q, ok := q.(*ent.RetrospectiveCommentQuery); ok {
 		return f(ctx, q)
 	}
-	return nil, fmt.Errorf("unexpected query type %T. expect *ent.RetrospectiveDiscussionQuery", q)
+	return nil, fmt.Errorf("unexpected query type %T. expect *ent.RetrospectiveCommentQuery", q)
 }
 
-// The TraverseRetrospectiveDiscussion type is an adapter to allow the use of ordinary function as Traverser.
-type TraverseRetrospectiveDiscussion func(context.Context, *ent.RetrospectiveDiscussionQuery) error
+// The TraverseRetrospectiveComment type is an adapter to allow the use of ordinary function as Traverser.
+type TraverseRetrospectiveComment func(context.Context, *ent.RetrospectiveCommentQuery) error
 
 // Intercept is a dummy implementation of Intercept that returns the next Querier in the pipeline.
-func (f TraverseRetrospectiveDiscussion) Intercept(next ent.Querier) ent.Querier {
+func (f TraverseRetrospectiveComment) Intercept(next ent.Querier) ent.Querier {
 	return next
 }
 
 // Traverse calls f(ctx, q).
-func (f TraverseRetrospectiveDiscussion) Traverse(ctx context.Context, q ent.Query) error {
-	if q, ok := q.(*ent.RetrospectiveDiscussionQuery); ok {
+func (f TraverseRetrospectiveComment) Traverse(ctx context.Context, q ent.Query) error {
+	if q, ok := q.(*ent.RetrospectiveCommentQuery); ok {
 		return f(ctx, q)
 	}
-	return fmt.Errorf("unexpected query type %T. expect *ent.RetrospectiveDiscussionQuery", q)
-}
-
-// The RetrospectiveDiscussionReplyFunc type is an adapter to allow the use of ordinary function as a Querier.
-type RetrospectiveDiscussionReplyFunc func(context.Context, *ent.RetrospectiveDiscussionReplyQuery) (ent.Value, error)
-
-// Query calls f(ctx, q).
-func (f RetrospectiveDiscussionReplyFunc) Query(ctx context.Context, q ent.Query) (ent.Value, error) {
-	if q, ok := q.(*ent.RetrospectiveDiscussionReplyQuery); ok {
-		return f(ctx, q)
-	}
-	return nil, fmt.Errorf("unexpected query type %T. expect *ent.RetrospectiveDiscussionReplyQuery", q)
-}
-
-// The TraverseRetrospectiveDiscussionReply type is an adapter to allow the use of ordinary function as Traverser.
-type TraverseRetrospectiveDiscussionReply func(context.Context, *ent.RetrospectiveDiscussionReplyQuery) error
-
-// Intercept is a dummy implementation of Intercept that returns the next Querier in the pipeline.
-func (f TraverseRetrospectiveDiscussionReply) Intercept(next ent.Querier) ent.Querier {
-	return next
-}
-
-// Traverse calls f(ctx, q).
-func (f TraverseRetrospectiveDiscussionReply) Traverse(ctx context.Context, q ent.Query) error {
-	if q, ok := q.(*ent.RetrospectiveDiscussionReplyQuery); ok {
-		return f(ctx, q)
-	}
-	return fmt.Errorf("unexpected query type %T. expect *ent.RetrospectiveDiscussionReplyQuery", q)
+	return fmt.Errorf("unexpected query type %T. expect *ent.RetrospectiveCommentQuery", q)
 }
 
 // The RetrospectiveReviewFunc type is an adapter to allow the use of ordinary function as a Querier.
@@ -1770,10 +1742,8 @@ func NewQuery(q ent.Query) (Query, error) {
 		return &query[*ent.ProviderSyncHistoryQuery, predicate.ProviderSyncHistory, providersynchistory.OrderOption]{typ: ent.TypeProviderSyncHistory, tq: q}, nil
 	case *ent.RetrospectiveQuery:
 		return &query[*ent.RetrospectiveQuery, predicate.Retrospective, retrospective.OrderOption]{typ: ent.TypeRetrospective, tq: q}, nil
-	case *ent.RetrospectiveDiscussionQuery:
-		return &query[*ent.RetrospectiveDiscussionQuery, predicate.RetrospectiveDiscussion, retrospectivediscussion.OrderOption]{typ: ent.TypeRetrospectiveDiscussion, tq: q}, nil
-	case *ent.RetrospectiveDiscussionReplyQuery:
-		return &query[*ent.RetrospectiveDiscussionReplyQuery, predicate.RetrospectiveDiscussionReply, retrospectivediscussionreply.OrderOption]{typ: ent.TypeRetrospectiveDiscussionReply, tq: q}, nil
+	case *ent.RetrospectiveCommentQuery:
+		return &query[*ent.RetrospectiveCommentQuery, predicate.RetrospectiveComment, retrospectivecomment.OrderOption]{typ: ent.TypeRetrospectiveComment, tq: q}, nil
 	case *ent.RetrospectiveReviewQuery:
 		return &query[*ent.RetrospectiveReviewQuery, predicate.RetrospectiveReview, retrospectivereview.OrderOption]{typ: ent.TypeRetrospectiveReview, tq: q}, nil
 	case *ent.SystemAnalysisQuery:

@@ -13,7 +13,7 @@ import (
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/retrospective"
-	"github.com/rezible/rezible/ent/retrospectivediscussion"
+	"github.com/rezible/rezible/ent/retrospectivecomment"
 	"github.com/rezible/rezible/ent/retrospectivereview"
 	"github.com/rezible/rezible/ent/tenant"
 	"github.com/rezible/rezible/ent/user"
@@ -36,6 +36,12 @@ func (rrc *RetrospectiveReviewCreate) SetTenantID(i int) *RetrospectiveReviewCre
 // SetRetrospectiveID sets the "retrospective_id" field.
 func (rrc *RetrospectiveReviewCreate) SetRetrospectiveID(u uuid.UUID) *RetrospectiveReviewCreate {
 	rrc.mutation.SetRetrospectiveID(u)
+	return rrc
+}
+
+// SetCommentID sets the "comment_id" field.
+func (rrc *RetrospectiveReviewCreate) SetCommentID(u uuid.UUID) *RetrospectiveReviewCreate {
+	rrc.mutation.SetCommentID(u)
 	return rrc
 }
 
@@ -91,23 +97,9 @@ func (rrc *RetrospectiveReviewCreate) SetReviewer(u *User) *RetrospectiveReviewC
 	return rrc.SetReviewerID(u.ID)
 }
 
-// SetDiscussionID sets the "discussion" edge to the RetrospectiveDiscussion entity by ID.
-func (rrc *RetrospectiveReviewCreate) SetDiscussionID(id uuid.UUID) *RetrospectiveReviewCreate {
-	rrc.mutation.SetDiscussionID(id)
-	return rrc
-}
-
-// SetNillableDiscussionID sets the "discussion" edge to the RetrospectiveDiscussion entity by ID if the given value is not nil.
-func (rrc *RetrospectiveReviewCreate) SetNillableDiscussionID(id *uuid.UUID) *RetrospectiveReviewCreate {
-	if id != nil {
-		rrc = rrc.SetDiscussionID(*id)
-	}
-	return rrc
-}
-
-// SetDiscussion sets the "discussion" edge to the RetrospectiveDiscussion entity.
-func (rrc *RetrospectiveReviewCreate) SetDiscussion(r *RetrospectiveDiscussion) *RetrospectiveReviewCreate {
-	return rrc.SetDiscussionID(r.ID)
+// SetComment sets the "comment" edge to the RetrospectiveComment entity.
+func (rrc *RetrospectiveReviewCreate) SetComment(r *RetrospectiveComment) *RetrospectiveReviewCreate {
+	return rrc.SetCommentID(r.ID)
 }
 
 // Mutation returns the RetrospectiveReviewMutation object of the builder.
@@ -165,6 +157,9 @@ func (rrc *RetrospectiveReviewCreate) check() error {
 	if _, ok := rrc.mutation.RetrospectiveID(); !ok {
 		return &ValidationError{Name: "retrospective_id", err: errors.New(`ent: missing required field "RetrospectiveReview.retrospective_id"`)}
 	}
+	if _, ok := rrc.mutation.CommentID(); !ok {
+		return &ValidationError{Name: "comment_id", err: errors.New(`ent: missing required field "RetrospectiveReview.comment_id"`)}
+	}
 	if _, ok := rrc.mutation.RequesterID(); !ok {
 		return &ValidationError{Name: "requester_id", err: errors.New(`ent: missing required field "RetrospectiveReview.requester_id"`)}
 	}
@@ -190,6 +185,9 @@ func (rrc *RetrospectiveReviewCreate) check() error {
 	}
 	if len(rrc.mutation.ReviewerIDs()) == 0 {
 		return &ValidationError{Name: "reviewer", err: errors.New(`ent: missing required edge "RetrospectiveReview.reviewer"`)}
+	}
+	if len(rrc.mutation.CommentIDs()) == 0 {
+		return &ValidationError{Name: "comment", err: errors.New(`ent: missing required edge "RetrospectiveReview.comment"`)}
 	}
 	return nil
 }
@@ -299,21 +297,21 @@ func (rrc *RetrospectiveReviewCreate) createSpec() (*RetrospectiveReview, *sqlgr
 		_node.ReviewerID = nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
-	if nodes := rrc.mutation.DiscussionIDs(); len(nodes) > 0 {
+	if nodes := rrc.mutation.CommentIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
-			Table:   retrospectivereview.DiscussionTable,
-			Columns: []string{retrospectivereview.DiscussionColumn},
+			Table:   retrospectivereview.CommentTable,
+			Columns: []string{retrospectivereview.CommentColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(retrospectivediscussion.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(retrospectivecomment.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
-		_node.retrospective_review_discussion = &nodes[0]
+		_node.CommentID = nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	return _node, _spec
@@ -377,6 +375,18 @@ func (u *RetrospectiveReviewUpsert) SetRetrospectiveID(v uuid.UUID) *Retrospecti
 // UpdateRetrospectiveID sets the "retrospective_id" field to the value that was provided on create.
 func (u *RetrospectiveReviewUpsert) UpdateRetrospectiveID() *RetrospectiveReviewUpsert {
 	u.SetExcluded(retrospectivereview.FieldRetrospectiveID)
+	return u
+}
+
+// SetCommentID sets the "comment_id" field.
+func (u *RetrospectiveReviewUpsert) SetCommentID(v uuid.UUID) *RetrospectiveReviewUpsert {
+	u.Set(retrospectivereview.FieldCommentID, v)
+	return u
+}
+
+// UpdateCommentID sets the "comment_id" field to the value that was provided on create.
+func (u *RetrospectiveReviewUpsert) UpdateCommentID() *RetrospectiveReviewUpsert {
+	u.SetExcluded(retrospectivereview.FieldCommentID)
 	return u
 }
 
@@ -478,6 +488,20 @@ func (u *RetrospectiveReviewUpsertOne) SetRetrospectiveID(v uuid.UUID) *Retrospe
 func (u *RetrospectiveReviewUpsertOne) UpdateRetrospectiveID() *RetrospectiveReviewUpsertOne {
 	return u.Update(func(s *RetrospectiveReviewUpsert) {
 		s.UpdateRetrospectiveID()
+	})
+}
+
+// SetCommentID sets the "comment_id" field.
+func (u *RetrospectiveReviewUpsertOne) SetCommentID(v uuid.UUID) *RetrospectiveReviewUpsertOne {
+	return u.Update(func(s *RetrospectiveReviewUpsert) {
+		s.SetCommentID(v)
+	})
+}
+
+// UpdateCommentID sets the "comment_id" field to the value that was provided on create.
+func (u *RetrospectiveReviewUpsertOne) UpdateCommentID() *RetrospectiveReviewUpsertOne {
+	return u.Update(func(s *RetrospectiveReviewUpsert) {
+		s.UpdateCommentID()
 	})
 }
 
@@ -752,6 +776,20 @@ func (u *RetrospectiveReviewUpsertBulk) SetRetrospectiveID(v uuid.UUID) *Retrosp
 func (u *RetrospectiveReviewUpsertBulk) UpdateRetrospectiveID() *RetrospectiveReviewUpsertBulk {
 	return u.Update(func(s *RetrospectiveReviewUpsert) {
 		s.UpdateRetrospectiveID()
+	})
+}
+
+// SetCommentID sets the "comment_id" field.
+func (u *RetrospectiveReviewUpsertBulk) SetCommentID(v uuid.UUID) *RetrospectiveReviewUpsertBulk {
+	return u.Update(func(s *RetrospectiveReviewUpsert) {
+		s.SetCommentID(v)
+	})
+}
+
+// UpdateCommentID sets the "comment_id" field to the value that was provided on create.
+func (u *RetrospectiveReviewUpsertBulk) UpdateCommentID() *RetrospectiveReviewUpsertBulk {
+	return u.Update(func(s *RetrospectiveReviewUpsert) {
+		s.UpdateCommentID()
 	})
 }
 

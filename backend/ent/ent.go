@@ -50,8 +50,7 @@ import (
 	"github.com/rezible/rezible/ent/providerconfig"
 	"github.com/rezible/rezible/ent/providersynchistory"
 	"github.com/rezible/rezible/ent/retrospective"
-	"github.com/rezible/rezible/ent/retrospectivediscussion"
-	"github.com/rezible/rezible/ent/retrospectivediscussionreply"
+	"github.com/rezible/rezible/ent/retrospectivecomment"
 	"github.com/rezible/rezible/ent/retrospectivereview"
 	"github.com/rezible/rezible/ent/systemanalysis"
 	"github.com/rezible/rezible/ent/systemanalysiscomponent"
@@ -168,8 +167,7 @@ func checkColumn(table, column string) error {
 			providerconfig.Table:                   providerconfig.ValidColumn,
 			providersynchistory.Table:              providersynchistory.ValidColumn,
 			retrospective.Table:                    retrospective.ValidColumn,
-			retrospectivediscussion.Table:          retrospectivediscussion.ValidColumn,
-			retrospectivediscussionreply.Table:     retrospectivediscussionreply.ValidColumn,
+			retrospectivecomment.Table:             retrospectivecomment.ValidColumn,
 			retrospectivereview.Table:              retrospectivereview.ValidColumn,
 			systemanalysis.Table:                   systemanalysis.ValidColumn,
 			systemanalysiscomponent.Table:          systemanalysiscomponent.ValidColumn,

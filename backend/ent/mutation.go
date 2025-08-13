@@ -50,8 +50,7 @@ import (
 	"github.com/rezible/rezible/ent/providerconfig"
 	"github.com/rezible/rezible/ent/providersynchistory"
 	"github.com/rezible/rezible/ent/retrospective"
-	"github.com/rezible/rezible/ent/retrospectivediscussion"
-	"github.com/rezible/rezible/ent/retrospectivediscussionreply"
+	"github.com/rezible/rezible/ent/retrospectivecomment"
 	"github.com/rezible/rezible/ent/retrospectivereview"
 	"github.com/rezible/rezible/ent/systemanalysis"
 	"github.com/rezible/rezible/ent/systemanalysiscomponent"
@@ -119,8 +118,7 @@ const (
 	TypeProviderConfig                   = "ProviderConfig"
 	TypeProviderSyncHistory              = "ProviderSyncHistory"
 	TypeRetrospective                    = "Retrospective"
-	TypeRetrospectiveDiscussion          = "RetrospectiveDiscussion"
-	TypeRetrospectiveDiscussionReply     = "RetrospectiveDiscussionReply"
+	TypeRetrospectiveComment             = "RetrospectiveComment"
 	TypeRetrospectiveReview              = "RetrospectiveReview"
 	TypeSystemAnalysis                   = "SystemAnalysis"
 	TypeSystemAnalysisComponent          = "SystemAnalysisComponent"
@@ -32389,9 +32387,9 @@ type RetrospectiveMutation struct {
 	clearedtenant          bool
 	incident               *uuid.UUID
 	clearedincident        bool
-	discussions            map[uuid.UUID]struct{}
-	removeddiscussions     map[uuid.UUID]struct{}
-	cleareddiscussions     bool
+	comments               map[uuid.UUID]struct{}
+	removedcomments        map[uuid.UUID]struct{}
+	clearedcomments        bool
 	system_analysis        *uuid.UUID
 	clearedsystem_analysis bool
 	done                   bool
@@ -32786,58 +32784,58 @@ func (m *RetrospectiveMutation) ResetIncident() {
 	m.clearedincident = false
 }
 
-// AddDiscussionIDs adds the "discussions" edge to the RetrospectiveDiscussion entity by ids.
-func (m *RetrospectiveMutation) AddDiscussionIDs(ids ...uuid.UUID) {
-	if m.discussions == nil {
-		m.discussions = make(map[uuid.UUID]struct{})
+// AddCommentIDs adds the "comments" edge to the RetrospectiveComment entity by ids.
+func (m *RetrospectiveMutation) AddCommentIDs(ids ...uuid.UUID) {
+	if m.comments == nil {
+		m.comments = make(map[uuid.UUID]struct{})
 	}
 	for i := range ids {
-		m.discussions[ids[i]] = struct{}{}
+		m.comments[ids[i]] = struct{}{}
 	}
 }
 
-// ClearDiscussions clears the "discussions" edge to the RetrospectiveDiscussion entity.
-func (m *RetrospectiveMutation) ClearDiscussions() {
-	m.cleareddiscussions = true
+// ClearComments clears the "comments" edge to the RetrospectiveComment entity.
+func (m *RetrospectiveMutation) ClearComments() {
+	m.clearedcomments = true
 }
 
-// DiscussionsCleared reports if the "discussions" edge to the RetrospectiveDiscussion entity was cleared.
-func (m *RetrospectiveMutation) DiscussionsCleared() bool {
-	return m.cleareddiscussions
+// CommentsCleared reports if the "comments" edge to the RetrospectiveComment entity was cleared.
+func (m *RetrospectiveMutation) CommentsCleared() bool {
+	return m.clearedcomments
 }
 
-// RemoveDiscussionIDs removes the "discussions" edge to the RetrospectiveDiscussion entity by IDs.
-func (m *RetrospectiveMutation) RemoveDiscussionIDs(ids ...uuid.UUID) {
-	if m.removeddiscussions == nil {
-		m.removeddiscussions = make(map[uuid.UUID]struct{})
+// RemoveCommentIDs removes the "comments" edge to the RetrospectiveComment entity by IDs.
+func (m *RetrospectiveMutation) RemoveCommentIDs(ids ...uuid.UUID) {
+	if m.removedcomments == nil {
+		m.removedcomments = make(map[uuid.UUID]struct{})
 	}
 	for i := range ids {
-		delete(m.discussions, ids[i])
-		m.removeddiscussions[ids[i]] = struct{}{}
+		delete(m.comments, ids[i])
+		m.removedcomments[ids[i]] = struct{}{}
 	}
 }
 
-// RemovedDiscussions returns the removed IDs of the "discussions" edge to the RetrospectiveDiscussion entity.
-func (m *RetrospectiveMutation) RemovedDiscussionsIDs() (ids []uuid.UUID) {
-	for id := range m.removeddiscussions {
+// RemovedComments returns the removed IDs of the "comments" edge to the RetrospectiveComment entity.
+func (m *RetrospectiveMutation) RemovedCommentsIDs() (ids []uuid.UUID) {
+	for id := range m.removedcomments {
 		ids = append(ids, id)
 	}
 	return
 }
 
-// DiscussionsIDs returns the "discussions" edge IDs in the mutation.
-func (m *RetrospectiveMutation) DiscussionsIDs() (ids []uuid.UUID) {
-	for id := range m.discussions {
+// CommentsIDs returns the "comments" edge IDs in the mutation.
+func (m *RetrospectiveMutation) CommentsIDs() (ids []uuid.UUID) {
+	for id := range m.comments {
 		ids = append(ids, id)
 	}
 	return
 }
 
-// ResetDiscussions resets all changes to the "discussions" edge.
-func (m *RetrospectiveMutation) ResetDiscussions() {
-	m.discussions = nil
-	m.cleareddiscussions = false
-	m.removeddiscussions = nil
+// ResetComments resets all changes to the "comments" edge.
+func (m *RetrospectiveMutation) ResetComments() {
+	m.comments = nil
+	m.clearedcomments = false
+	m.removedcomments = nil
 }
 
 // ClearSystemAnalysis clears the "system_analysis" edge to the SystemAnalysis entity.
@@ -33104,8 +33102,8 @@ func (m *RetrospectiveMutation) AddedEdges() []string {
 	if m.incident != nil {
 		edges = append(edges, retrospective.EdgeIncident)
 	}
-	if m.discussions != nil {
-		edges = append(edges, retrospective.EdgeDiscussions)
+	if m.comments != nil {
+		edges = append(edges, retrospective.EdgeComments)
 	}
 	if m.system_analysis != nil {
 		edges = append(edges, retrospective.EdgeSystemAnalysis)
@@ -33125,9 +33123,9 @@ func (m *RetrospectiveMutation) AddedIDs(name string) []ent.Value {
 		if id := m.incident; id != nil {
 			return []ent.Value{*id}
 		}
-	case retrospective.EdgeDiscussions:
-		ids := make([]ent.Value, 0, len(m.discussions))
-		for id := range m.discussions {
+	case retrospective.EdgeComments:
+		ids := make([]ent.Value, 0, len(m.comments))
+		for id := range m.comments {
 			ids = append(ids, id)
 		}
 		return ids
@@ -33142,8 +33140,8 @@ func (m *RetrospectiveMutation) AddedIDs(name string) []ent.Value {
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *RetrospectiveMutation) RemovedEdges() []string {
 	edges := make([]string, 0, 4)
-	if m.removeddiscussions != nil {
-		edges = append(edges, retrospective.EdgeDiscussions)
+	if m.removedcomments != nil {
+		edges = append(edges, retrospective.EdgeComments)
 	}
 	return edges
 }
@@ -33152,9 +33150,9 @@ func (m *RetrospectiveMutation) RemovedEdges() []string {
 // the given name in this mutation.
 func (m *RetrospectiveMutation) RemovedIDs(name string) []ent.Value {
 	switch name {
-	case retrospective.EdgeDiscussions:
-		ids := make([]ent.Value, 0, len(m.removeddiscussions))
-		for id := range m.removeddiscussions {
+	case retrospective.EdgeComments:
+		ids := make([]ent.Value, 0, len(m.removedcomments))
+		for id := range m.removedcomments {
 			ids = append(ids, id)
 		}
 		return ids
@@ -33171,8 +33169,8 @@ func (m *RetrospectiveMutation) ClearedEdges() []string {
 	if m.clearedincident {
 		edges = append(edges, retrospective.EdgeIncident)
 	}
-	if m.cleareddiscussions {
-		edges = append(edges, retrospective.EdgeDiscussions)
+	if m.clearedcomments {
+		edges = append(edges, retrospective.EdgeComments)
 	}
 	if m.clearedsystem_analysis {
 		edges = append(edges, retrospective.EdgeSystemAnalysis)
@@ -33188,8 +33186,8 @@ func (m *RetrospectiveMutation) EdgeCleared(name string) bool {
 		return m.clearedtenant
 	case retrospective.EdgeIncident:
 		return m.clearedincident
-	case retrospective.EdgeDiscussions:
-		return m.cleareddiscussions
+	case retrospective.EdgeComments:
+		return m.clearedcomments
 	case retrospective.EdgeSystemAnalysis:
 		return m.clearedsystem_analysis
 	}
@@ -33223,8 +33221,8 @@ func (m *RetrospectiveMutation) ResetEdge(name string) error {
 	case retrospective.EdgeIncident:
 		m.ResetIncident()
 		return nil
-	case retrospective.EdgeDiscussions:
-		m.ResetDiscussions()
+	case retrospective.EdgeComments:
+		m.ResetComments()
 		return nil
 	case retrospective.EdgeSystemAnalysis:
 		m.ResetSystemAnalysis()
@@ -33233,8 +33231,8 @@ func (m *RetrospectiveMutation) ResetEdge(name string) error {
 	return fmt.Errorf("unknown Retrospective edge %s", name)
 }
 
-// RetrospectiveDiscussionMutation represents an operation that mutates the RetrospectiveDiscussion nodes in the graph.
-type RetrospectiveDiscussionMutation struct {
+// RetrospectiveCommentMutation represents an operation that mutates the RetrospectiveComment nodes in the graph.
+type RetrospectiveCommentMutation struct {
 	config
 	op                   Op
 	typ                  string
@@ -33245,28 +33243,31 @@ type RetrospectiveDiscussionMutation struct {
 	clearedtenant        bool
 	retrospective        *uuid.UUID
 	clearedretrospective bool
+	user                 *uuid.UUID
+	cleareduser          bool
+	review               *uuid.UUID
+	clearedreview        bool
+	parent               *uuid.UUID
+	clearedparent        bool
 	replies              map[uuid.UUID]struct{}
 	removedreplies       map[uuid.UUID]struct{}
 	clearedreplies       bool
-	review               map[uuid.UUID]struct{}
-	removedreview        map[uuid.UUID]struct{}
-	clearedreview        bool
 	done                 bool
-	oldValue             func(context.Context) (*RetrospectiveDiscussion, error)
-	predicates           []predicate.RetrospectiveDiscussion
+	oldValue             func(context.Context) (*RetrospectiveComment, error)
+	predicates           []predicate.RetrospectiveComment
 }
 
-var _ ent.Mutation = (*RetrospectiveDiscussionMutation)(nil)
+var _ ent.Mutation = (*RetrospectiveCommentMutation)(nil)
 
-// retrospectivediscussionOption allows management of the mutation configuration using functional options.
-type retrospectivediscussionOption func(*RetrospectiveDiscussionMutation)
+// retrospectivecommentOption allows management of the mutation configuration using functional options.
+type retrospectivecommentOption func(*RetrospectiveCommentMutation)
 
-// newRetrospectiveDiscussionMutation creates new mutation for the RetrospectiveDiscussion entity.
-func newRetrospectiveDiscussionMutation(c config, op Op, opts ...retrospectivediscussionOption) *RetrospectiveDiscussionMutation {
-	m := &RetrospectiveDiscussionMutation{
+// newRetrospectiveCommentMutation creates new mutation for the RetrospectiveComment entity.
+func newRetrospectiveCommentMutation(c config, op Op, opts ...retrospectivecommentOption) *RetrospectiveCommentMutation {
+	m := &RetrospectiveCommentMutation{
 		config:        c,
 		op:            op,
-		typ:           TypeRetrospectiveDiscussion,
+		typ:           TypeRetrospectiveComment,
 		clearedFields: make(map[string]struct{}),
 	}
 	for _, opt := range opts {
@@ -33275,20 +33276,20 @@ func newRetrospectiveDiscussionMutation(c config, op Op, opts ...retrospectivedi
 	return m
 }
 
-// withRetrospectiveDiscussionID sets the ID field of the mutation.
-func withRetrospectiveDiscussionID(id uuid.UUID) retrospectivediscussionOption {
-	return func(m *RetrospectiveDiscussionMutation) {
+// withRetrospectiveCommentID sets the ID field of the mutation.
+func withRetrospectiveCommentID(id uuid.UUID) retrospectivecommentOption {
+	return func(m *RetrospectiveCommentMutation) {
 		var (
 			err   error
 			once  sync.Once
-			value *RetrospectiveDiscussion
+			value *RetrospectiveComment
 		)
-		m.oldValue = func(ctx context.Context) (*RetrospectiveDiscussion, error) {
+		m.oldValue = func(ctx context.Context) (*RetrospectiveComment, error) {
 			once.Do(func() {
 				if m.done {
 					err = errors.New("querying old values post mutation is not allowed")
 				} else {
-					value, err = m.Client().RetrospectiveDiscussion.Get(ctx, id)
+					value, err = m.Client().RetrospectiveComment.Get(ctx, id)
 				}
 			})
 			return value, err
@@ -33297,10 +33298,10 @@ func withRetrospectiveDiscussionID(id uuid.UUID) retrospectivediscussionOption {
 	}
 }
 
-// withRetrospectiveDiscussion sets the old RetrospectiveDiscussion of the mutation.
-func withRetrospectiveDiscussion(node *RetrospectiveDiscussion) retrospectivediscussionOption {
-	return func(m *RetrospectiveDiscussionMutation) {
-		m.oldValue = func(context.Context) (*RetrospectiveDiscussion, error) {
+// withRetrospectiveComment sets the old RetrospectiveComment of the mutation.
+func withRetrospectiveComment(node *RetrospectiveComment) retrospectivecommentOption {
+	return func(m *RetrospectiveCommentMutation) {
+		m.oldValue = func(context.Context) (*RetrospectiveComment, error) {
 			return node, nil
 		}
 		m.id = &node.ID
@@ -33309,7 +33310,7 @@ func withRetrospectiveDiscussion(node *RetrospectiveDiscussion) retrospectivedis
 
 // Client returns a new `ent.Client` from the mutation. If the mutation was
 // executed in a transaction (ent.Tx), a transactional client is returned.
-func (m RetrospectiveDiscussionMutation) Client() *Client {
+func (m RetrospectiveCommentMutation) Client() *Client {
 	client := &Client{config: m.config}
 	client.init()
 	return client
@@ -33317,7 +33318,7 @@ func (m RetrospectiveDiscussionMutation) Client() *Client {
 
 // Tx returns an `ent.Tx` for mutations that were executed in transactions;
 // it returns an error otherwise.
-func (m RetrospectiveDiscussionMutation) Tx() (*Tx, error) {
+func (m RetrospectiveCommentMutation) Tx() (*Tx, error) {
 	if _, ok := m.driver.(*txDriver); !ok {
 		return nil, errors.New("ent: mutation is not running in a transaction")
 	}
@@ -33327,14 +33328,14 @@ func (m RetrospectiveDiscussionMutation) Tx() (*Tx, error) {
 }
 
 // SetID sets the value of the id field. Note that this
-// operation is only accepted on creation of RetrospectiveDiscussion entities.
-func (m *RetrospectiveDiscussionMutation) SetID(id uuid.UUID) {
+// operation is only accepted on creation of RetrospectiveComment entities.
+func (m *RetrospectiveCommentMutation) SetID(id uuid.UUID) {
 	m.id = &id
 }
 
 // ID returns the ID value in the mutation. Note that the ID is only available
 // if it was provided to the builder or after it was returned from the database.
-func (m *RetrospectiveDiscussionMutation) ID() (id uuid.UUID, exists bool) {
+func (m *RetrospectiveCommentMutation) ID() (id uuid.UUID, exists bool) {
 	if m.id == nil {
 		return
 	}
@@ -33345,7 +33346,7 @@ func (m *RetrospectiveDiscussionMutation) ID() (id uuid.UUID, exists bool) {
 // That means, if the mutation is applied within a transaction with an isolation level such
 // as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
 // or updated by the mutation.
-func (m *RetrospectiveDiscussionMutation) IDs(ctx context.Context) ([]uuid.UUID, error) {
+func (m *RetrospectiveCommentMutation) IDs(ctx context.Context) ([]uuid.UUID, error) {
 	switch {
 	case m.op.Is(OpUpdateOne | OpDeleteOne):
 		id, exists := m.ID()
@@ -33354,19 +33355,19 @@ func (m *RetrospectiveDiscussionMutation) IDs(ctx context.Context) ([]uuid.UUID,
 		}
 		fallthrough
 	case m.op.Is(OpUpdate | OpDelete):
-		return m.Client().RetrospectiveDiscussion.Query().Where(m.predicates...).IDs(ctx)
+		return m.Client().RetrospectiveComment.Query().Where(m.predicates...).IDs(ctx)
 	default:
 		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
 	}
 }
 
 // SetTenantID sets the "tenant_id" field.
-func (m *RetrospectiveDiscussionMutation) SetTenantID(i int) {
+func (m *RetrospectiveCommentMutation) SetTenantID(i int) {
 	m.tenant = &i
 }
 
 // TenantID returns the value of the "tenant_id" field in the mutation.
-func (m *RetrospectiveDiscussionMutation) TenantID() (r int, exists bool) {
+func (m *RetrospectiveCommentMutation) TenantID() (r int, exists bool) {
 	v := m.tenant
 	if v == nil {
 		return
@@ -33374,10 +33375,10 @@ func (m *RetrospectiveDiscussionMutation) TenantID() (r int, exists bool) {
 	return *v, true
 }
 
-// OldTenantID returns the old "tenant_id" field's value of the RetrospectiveDiscussion entity.
-// If the RetrospectiveDiscussion object wasn't provided to the builder, the object is fetched from the database.
+// OldTenantID returns the old "tenant_id" field's value of the RetrospectiveComment entity.
+// If the RetrospectiveComment object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *RetrospectiveDiscussionMutation) OldTenantID(ctx context.Context) (v int, err error) {
+func (m *RetrospectiveCommentMutation) OldTenantID(ctx context.Context) (v int, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldTenantID is only allowed on UpdateOne operations")
 	}
@@ -33392,17 +33393,17 @@ func (m *RetrospectiveDiscussionMutation) OldTenantID(ctx context.Context) (v in
 }
 
 // ResetTenantID resets all changes to the "tenant_id" field.
-func (m *RetrospectiveDiscussionMutation) ResetTenantID() {
+func (m *RetrospectiveCommentMutation) ResetTenantID() {
 	m.tenant = nil
 }
 
 // SetRetrospectiveID sets the "retrospective_id" field.
-func (m *RetrospectiveDiscussionMutation) SetRetrospectiveID(u uuid.UUID) {
+func (m *RetrospectiveCommentMutation) SetRetrospectiveID(u uuid.UUID) {
 	m.retrospective = &u
 }
 
 // RetrospectiveID returns the value of the "retrospective_id" field in the mutation.
-func (m *RetrospectiveDiscussionMutation) RetrospectiveID() (r uuid.UUID, exists bool) {
+func (m *RetrospectiveCommentMutation) RetrospectiveID() (r uuid.UUID, exists bool) {
 	v := m.retrospective
 	if v == nil {
 		return
@@ -33410,10 +33411,10 @@ func (m *RetrospectiveDiscussionMutation) RetrospectiveID() (r uuid.UUID, exists
 	return *v, true
 }
 
-// OldRetrospectiveID returns the old "retrospective_id" field's value of the RetrospectiveDiscussion entity.
-// If the RetrospectiveDiscussion object wasn't provided to the builder, the object is fetched from the database.
+// OldRetrospectiveID returns the old "retrospective_id" field's value of the RetrospectiveComment entity.
+// If the RetrospectiveComment object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *RetrospectiveDiscussionMutation) OldRetrospectiveID(ctx context.Context) (v uuid.UUID, err error) {
+func (m *RetrospectiveCommentMutation) OldRetrospectiveID(ctx context.Context) (v uuid.UUID, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldRetrospectiveID is only allowed on UpdateOne operations")
 	}
@@ -33428,17 +33429,151 @@ func (m *RetrospectiveDiscussionMutation) OldRetrospectiveID(ctx context.Context
 }
 
 // ResetRetrospectiveID resets all changes to the "retrospective_id" field.
-func (m *RetrospectiveDiscussionMutation) ResetRetrospectiveID() {
+func (m *RetrospectiveCommentMutation) ResetRetrospectiveID() {
 	m.retrospective = nil
 }
 
+// SetUserID sets the "user_id" field.
+func (m *RetrospectiveCommentMutation) SetUserID(u uuid.UUID) {
+	m.user = &u
+}
+
+// UserID returns the value of the "user_id" field in the mutation.
+func (m *RetrospectiveCommentMutation) UserID() (r uuid.UUID, exists bool) {
+	v := m.user
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldUserID returns the old "user_id" field's value of the RetrospectiveComment entity.
+// If the RetrospectiveComment object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *RetrospectiveCommentMutation) OldUserID(ctx context.Context) (v uuid.UUID, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldUserID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldUserID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldUserID: %w", err)
+	}
+	return oldValue.UserID, nil
+}
+
+// ResetUserID resets all changes to the "user_id" field.
+func (m *RetrospectiveCommentMutation) ResetUserID() {
+	m.user = nil
+}
+
+// SetRetrospectiveReviewID sets the "retrospective_review_id" field.
+func (m *RetrospectiveCommentMutation) SetRetrospectiveReviewID(u uuid.UUID) {
+	m.review = &u
+}
+
+// RetrospectiveReviewID returns the value of the "retrospective_review_id" field in the mutation.
+func (m *RetrospectiveCommentMutation) RetrospectiveReviewID() (r uuid.UUID, exists bool) {
+	v := m.review
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldRetrospectiveReviewID returns the old "retrospective_review_id" field's value of the RetrospectiveComment entity.
+// If the RetrospectiveComment object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *RetrospectiveCommentMutation) OldRetrospectiveReviewID(ctx context.Context) (v uuid.UUID, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldRetrospectiveReviewID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldRetrospectiveReviewID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldRetrospectiveReviewID: %w", err)
+	}
+	return oldValue.RetrospectiveReviewID, nil
+}
+
+// ClearRetrospectiveReviewID clears the value of the "retrospective_review_id" field.
+func (m *RetrospectiveCommentMutation) ClearRetrospectiveReviewID() {
+	m.review = nil
+	m.clearedFields[retrospectivecomment.FieldRetrospectiveReviewID] = struct{}{}
+}
+
+// RetrospectiveReviewIDCleared returns if the "retrospective_review_id" field was cleared in this mutation.
+func (m *RetrospectiveCommentMutation) RetrospectiveReviewIDCleared() bool {
+	_, ok := m.clearedFields[retrospectivecomment.FieldRetrospectiveReviewID]
+	return ok
+}
+
+// ResetRetrospectiveReviewID resets all changes to the "retrospective_review_id" field.
+func (m *RetrospectiveCommentMutation) ResetRetrospectiveReviewID() {
+	m.review = nil
+	delete(m.clearedFields, retrospectivecomment.FieldRetrospectiveReviewID)
+}
+
+// SetParentReplyID sets the "parent_reply_id" field.
+func (m *RetrospectiveCommentMutation) SetParentReplyID(u uuid.UUID) {
+	m.parent = &u
+}
+
+// ParentReplyID returns the value of the "parent_reply_id" field in the mutation.
+func (m *RetrospectiveCommentMutation) ParentReplyID() (r uuid.UUID, exists bool) {
+	v := m.parent
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldParentReplyID returns the old "parent_reply_id" field's value of the RetrospectiveComment entity.
+// If the RetrospectiveComment object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *RetrospectiveCommentMutation) OldParentReplyID(ctx context.Context) (v uuid.UUID, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldParentReplyID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldParentReplyID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldParentReplyID: %w", err)
+	}
+	return oldValue.ParentReplyID, nil
+}
+
+// ClearParentReplyID clears the value of the "parent_reply_id" field.
+func (m *RetrospectiveCommentMutation) ClearParentReplyID() {
+	m.parent = nil
+	m.clearedFields[retrospectivecomment.FieldParentReplyID] = struct{}{}
+}
+
+// ParentReplyIDCleared returns if the "parent_reply_id" field was cleared in this mutation.
+func (m *RetrospectiveCommentMutation) ParentReplyIDCleared() bool {
+	_, ok := m.clearedFields[retrospectivecomment.FieldParentReplyID]
+	return ok
+}
+
+// ResetParentReplyID resets all changes to the "parent_reply_id" field.
+func (m *RetrospectiveCommentMutation) ResetParentReplyID() {
+	m.parent = nil
+	delete(m.clearedFields, retrospectivecomment.FieldParentReplyID)
+}
+
 // SetContent sets the "content" field.
-func (m *RetrospectiveDiscussionMutation) SetContent(b []byte) {
+func (m *RetrospectiveCommentMutation) SetContent(b []byte) {
 	m.content = &b
 }
 
 // Content returns the value of the "content" field in the mutation.
-func (m *RetrospectiveDiscussionMutation) Content() (r []byte, exists bool) {
+func (m *RetrospectiveCommentMutation) Content() (r []byte, exists bool) {
 	v := m.content
 	if v == nil {
 		return
@@ -33446,10 +33581,10 @@ func (m *RetrospectiveDiscussionMutation) Content() (r []byte, exists bool) {
 	return *v, true
 }
 
-// OldContent returns the old "content" field's value of the RetrospectiveDiscussion entity.
-// If the RetrospectiveDiscussion object wasn't provided to the builder, the object is fetched from the database.
+// OldContent returns the old "content" field's value of the RetrospectiveComment entity.
+// If the RetrospectiveComment object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *RetrospectiveDiscussionMutation) OldContent(ctx context.Context) (v []byte, err error) {
+func (m *RetrospectiveCommentMutation) OldContent(ctx context.Context) (v []byte, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldContent is only allowed on UpdateOne operations")
 	}
@@ -33464,25 +33599,25 @@ func (m *RetrospectiveDiscussionMutation) OldContent(ctx context.Context) (v []b
 }
 
 // ResetContent resets all changes to the "content" field.
-func (m *RetrospectiveDiscussionMutation) ResetContent() {
+func (m *RetrospectiveCommentMutation) ResetContent() {
 	m.content = nil
 }
 
 // ClearTenant clears the "tenant" edge to the Tenant entity.
-func (m *RetrospectiveDiscussionMutation) ClearTenant() {
+func (m *RetrospectiveCommentMutation) ClearTenant() {
 	m.clearedtenant = true
-	m.clearedFields[retrospectivediscussion.FieldTenantID] = struct{}{}
+	m.clearedFields[retrospectivecomment.FieldTenantID] = struct{}{}
 }
 
 // TenantCleared reports if the "tenant" edge to the Tenant entity was cleared.
-func (m *RetrospectiveDiscussionMutation) TenantCleared() bool {
+func (m *RetrospectiveCommentMutation) TenantCleared() bool {
 	return m.clearedtenant
 }
 
 // TenantIDs returns the "tenant" edge IDs in the mutation.
 // Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
 // TenantID instead. It exists only for internal usage by the builders.
-func (m *RetrospectiveDiscussionMutation) TenantIDs() (ids []int) {
+func (m *RetrospectiveCommentMutation) TenantIDs() (ids []int) {
 	if id := m.tenant; id != nil {
 		ids = append(ids, *id)
 	}
@@ -33490,26 +33625,26 @@ func (m *RetrospectiveDiscussionMutation) TenantIDs() (ids []int) {
 }
 
 // ResetTenant resets all changes to the "tenant" edge.
-func (m *RetrospectiveDiscussionMutation) ResetTenant() {
+func (m *RetrospectiveCommentMutation) ResetTenant() {
 	m.tenant = nil
 	m.clearedtenant = false
 }
 
 // ClearRetrospective clears the "retrospective" edge to the Retrospective entity.
-func (m *RetrospectiveDiscussionMutation) ClearRetrospective() {
+func (m *RetrospectiveCommentMutation) ClearRetrospective() {
 	m.clearedretrospective = true
-	m.clearedFields[retrospectivediscussion.FieldRetrospectiveID] = struct{}{}
+	m.clearedFields[retrospectivecomment.FieldRetrospectiveID] = struct{}{}
 }
 
 // RetrospectiveCleared reports if the "retrospective" edge to the Retrospective entity was cleared.
-func (m *RetrospectiveDiscussionMutation) RetrospectiveCleared() bool {
+func (m *RetrospectiveCommentMutation) RetrospectiveCleared() bool {
 	return m.clearedretrospective
 }
 
 // RetrospectiveIDs returns the "retrospective" edge IDs in the mutation.
 // Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
 // RetrospectiveID instead. It exists only for internal usage by the builders.
-func (m *RetrospectiveDiscussionMutation) RetrospectiveIDs() (ids []uuid.UUID) {
+func (m *RetrospectiveCommentMutation) RetrospectiveIDs() (ids []uuid.UUID) {
 	if id := m.retrospective; id != nil {
 		ids = append(ids, *id)
 	}
@@ -33517,13 +33652,120 @@ func (m *RetrospectiveDiscussionMutation) RetrospectiveIDs() (ids []uuid.UUID) {
 }
 
 // ResetRetrospective resets all changes to the "retrospective" edge.
-func (m *RetrospectiveDiscussionMutation) ResetRetrospective() {
+func (m *RetrospectiveCommentMutation) ResetRetrospective() {
 	m.retrospective = nil
 	m.clearedretrospective = false
 }
 
-// AddReplyIDs adds the "replies" edge to the RetrospectiveDiscussionReply entity by ids.
-func (m *RetrospectiveDiscussionMutation) AddReplyIDs(ids ...uuid.UUID) {
+// ClearUser clears the "user" edge to the User entity.
+func (m *RetrospectiveCommentMutation) ClearUser() {
+	m.cleareduser = true
+	m.clearedFields[retrospectivecomment.FieldUserID] = struct{}{}
+}
+
+// UserCleared reports if the "user" edge to the User entity was cleared.
+func (m *RetrospectiveCommentMutation) UserCleared() bool {
+	return m.cleareduser
+}
+
+// UserIDs returns the "user" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// UserID instead. It exists only for internal usage by the builders.
+func (m *RetrospectiveCommentMutation) UserIDs() (ids []uuid.UUID) {
+	if id := m.user; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetUser resets all changes to the "user" edge.
+func (m *RetrospectiveCommentMutation) ResetUser() {
+	m.user = nil
+	m.cleareduser = false
+}
+
+// SetReviewID sets the "review" edge to the RetrospectiveReview entity by id.
+func (m *RetrospectiveCommentMutation) SetReviewID(id uuid.UUID) {
+	m.review = &id
+}
+
+// ClearReview clears the "review" edge to the RetrospectiveReview entity.
+func (m *RetrospectiveCommentMutation) ClearReview() {
+	m.clearedreview = true
+	m.clearedFields[retrospectivecomment.FieldRetrospectiveReviewID] = struct{}{}
+}
+
+// ReviewCleared reports if the "review" edge to the RetrospectiveReview entity was cleared.
+func (m *RetrospectiveCommentMutation) ReviewCleared() bool {
+	return m.RetrospectiveReviewIDCleared() || m.clearedreview
+}
+
+// ReviewID returns the "review" edge ID in the mutation.
+func (m *RetrospectiveCommentMutation) ReviewID() (id uuid.UUID, exists bool) {
+	if m.review != nil {
+		return *m.review, true
+	}
+	return
+}
+
+// ReviewIDs returns the "review" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// ReviewID instead. It exists only for internal usage by the builders.
+func (m *RetrospectiveCommentMutation) ReviewIDs() (ids []uuid.UUID) {
+	if id := m.review; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetReview resets all changes to the "review" edge.
+func (m *RetrospectiveCommentMutation) ResetReview() {
+	m.review = nil
+	m.clearedreview = false
+}
+
+// SetParentID sets the "parent" edge to the RetrospectiveComment entity by id.
+func (m *RetrospectiveCommentMutation) SetParentID(id uuid.UUID) {
+	m.parent = &id
+}
+
+// ClearParent clears the "parent" edge to the RetrospectiveComment entity.
+func (m *RetrospectiveCommentMutation) ClearParent() {
+	m.clearedparent = true
+	m.clearedFields[retrospectivecomment.FieldParentReplyID] = struct{}{}
+}
+
+// ParentCleared reports if the "parent" edge to the RetrospectiveComment entity was cleared.
+func (m *RetrospectiveCommentMutation) ParentCleared() bool {
+	return m.ParentReplyIDCleared() || m.clearedparent
+}
+
+// ParentID returns the "parent" edge ID in the mutation.
+func (m *RetrospectiveCommentMutation) ParentID() (id uuid.UUID, exists bool) {
+	if m.parent != nil {
+		return *m.parent, true
+	}
+	return
+}
+
+// ParentIDs returns the "parent" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// ParentID instead. It exists only for internal usage by the builders.
+func (m *RetrospectiveCommentMutation) ParentIDs() (ids []uuid.UUID) {
+	if id := m.parent; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetParent resets all changes to the "parent" edge.
+func (m *RetrospectiveCommentMutation) ResetParent() {
+	m.parent = nil
+	m.clearedparent = false
+}
+
+// AddReplyIDs adds the "replies" edge to the RetrospectiveComment entity by ids.
+func (m *RetrospectiveCommentMutation) AddReplyIDs(ids ...uuid.UUID) {
 	if m.replies == nil {
 		m.replies = make(map[uuid.UUID]struct{})
 	}
@@ -33532,18 +33774,18 @@ func (m *RetrospectiveDiscussionMutation) AddReplyIDs(ids ...uuid.UUID) {
 	}
 }
 
-// ClearReplies clears the "replies" edge to the RetrospectiveDiscussionReply entity.
-func (m *RetrospectiveDiscussionMutation) ClearReplies() {
+// ClearReplies clears the "replies" edge to the RetrospectiveComment entity.
+func (m *RetrospectiveCommentMutation) ClearReplies() {
 	m.clearedreplies = true
 }
 
-// RepliesCleared reports if the "replies" edge to the RetrospectiveDiscussionReply entity was cleared.
-func (m *RetrospectiveDiscussionMutation) RepliesCleared() bool {
+// RepliesCleared reports if the "replies" edge to the RetrospectiveComment entity was cleared.
+func (m *RetrospectiveCommentMutation) RepliesCleared() bool {
 	return m.clearedreplies
 }
 
-// RemoveReplyIDs removes the "replies" edge to the RetrospectiveDiscussionReply entity by IDs.
-func (m *RetrospectiveDiscussionMutation) RemoveReplyIDs(ids ...uuid.UUID) {
+// RemoveReplyIDs removes the "replies" edge to the RetrospectiveComment entity by IDs.
+func (m *RetrospectiveCommentMutation) RemoveReplyIDs(ids ...uuid.UUID) {
 	if m.removedreplies == nil {
 		m.removedreplies = make(map[uuid.UUID]struct{})
 	}
@@ -33553,8 +33795,8 @@ func (m *RetrospectiveDiscussionMutation) RemoveReplyIDs(ids ...uuid.UUID) {
 	}
 }
 
-// RemovedReplies returns the removed IDs of the "replies" edge to the RetrospectiveDiscussionReply entity.
-func (m *RetrospectiveDiscussionMutation) RemovedRepliesIDs() (ids []uuid.UUID) {
+// RemovedReplies returns the removed IDs of the "replies" edge to the RetrospectiveComment entity.
+func (m *RetrospectiveCommentMutation) RemovedRepliesIDs() (ids []uuid.UUID) {
 	for id := range m.removedreplies {
 		ids = append(ids, id)
 	}
@@ -33562,7 +33804,7 @@ func (m *RetrospectiveDiscussionMutation) RemovedRepliesIDs() (ids []uuid.UUID) 
 }
 
 // RepliesIDs returns the "replies" edge IDs in the mutation.
-func (m *RetrospectiveDiscussionMutation) RepliesIDs() (ids []uuid.UUID) {
+func (m *RetrospectiveCommentMutation) RepliesIDs() (ids []uuid.UUID) {
 	for id := range m.replies {
 		ids = append(ids, id)
 	}
@@ -33570,75 +33812,21 @@ func (m *RetrospectiveDiscussionMutation) RepliesIDs() (ids []uuid.UUID) {
 }
 
 // ResetReplies resets all changes to the "replies" edge.
-func (m *RetrospectiveDiscussionMutation) ResetReplies() {
+func (m *RetrospectiveCommentMutation) ResetReplies() {
 	m.replies = nil
 	m.clearedreplies = false
 	m.removedreplies = nil
 }
 
-// AddReviewIDs adds the "review" edge to the RetrospectiveReview entity by ids.
-func (m *RetrospectiveDiscussionMutation) AddReviewIDs(ids ...uuid.UUID) {
-	if m.review == nil {
-		m.review = make(map[uuid.UUID]struct{})
-	}
-	for i := range ids {
-		m.review[ids[i]] = struct{}{}
-	}
-}
-
-// ClearReview clears the "review" edge to the RetrospectiveReview entity.
-func (m *RetrospectiveDiscussionMutation) ClearReview() {
-	m.clearedreview = true
-}
-
-// ReviewCleared reports if the "review" edge to the RetrospectiveReview entity was cleared.
-func (m *RetrospectiveDiscussionMutation) ReviewCleared() bool {
-	return m.clearedreview
-}
-
-// RemoveReviewIDs removes the "review" edge to the RetrospectiveReview entity by IDs.
-func (m *RetrospectiveDiscussionMutation) RemoveReviewIDs(ids ...uuid.UUID) {
-	if m.removedreview == nil {
-		m.removedreview = make(map[uuid.UUID]struct{})
-	}
-	for i := range ids {
-		delete(m.review, ids[i])
-		m.removedreview[ids[i]] = struct{}{}
-	}
-}
-
-// RemovedReview returns the removed IDs of the "review" edge to the RetrospectiveReview entity.
-func (m *RetrospectiveDiscussionMutation) RemovedReviewIDs() (ids []uuid.UUID) {
-	for id := range m.removedreview {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// ReviewIDs returns the "review" edge IDs in the mutation.
-func (m *RetrospectiveDiscussionMutation) ReviewIDs() (ids []uuid.UUID) {
-	for id := range m.review {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// ResetReview resets all changes to the "review" edge.
-func (m *RetrospectiveDiscussionMutation) ResetReview() {
-	m.review = nil
-	m.clearedreview = false
-	m.removedreview = nil
-}
-
-// Where appends a list predicates to the RetrospectiveDiscussionMutation builder.
-func (m *RetrospectiveDiscussionMutation) Where(ps ...predicate.RetrospectiveDiscussion) {
+// Where appends a list predicates to the RetrospectiveCommentMutation builder.
+func (m *RetrospectiveCommentMutation) Where(ps ...predicate.RetrospectiveComment) {
 	m.predicates = append(m.predicates, ps...)
 }
 
-// WhereP appends storage-level predicates to the RetrospectiveDiscussionMutation builder. Using this method,
+// WhereP appends storage-level predicates to the RetrospectiveCommentMutation builder. Using this method,
 // users can use type-assertion to append predicates that do not depend on any generated package.
-func (m *RetrospectiveDiscussionMutation) WhereP(ps ...func(*sql.Selector)) {
-	p := make([]predicate.RetrospectiveDiscussion, len(ps))
+func (m *RetrospectiveCommentMutation) WhereP(ps ...func(*sql.Selector)) {
+	p := make([]predicate.RetrospectiveComment, len(ps))
 	for i := range ps {
 		p[i] = ps[i]
 	}
@@ -33646,33 +33834,42 @@ func (m *RetrospectiveDiscussionMutation) WhereP(ps ...func(*sql.Selector)) {
 }
 
 // Op returns the operation name.
-func (m *RetrospectiveDiscussionMutation) Op() Op {
+func (m *RetrospectiveCommentMutation) Op() Op {
 	return m.op
 }
 
 // SetOp allows setting the mutation operation.
-func (m *RetrospectiveDiscussionMutation) SetOp(op Op) {
+func (m *RetrospectiveCommentMutation) SetOp(op Op) {
 	m.op = op
 }
 
-// Type returns the node type of this mutation (RetrospectiveDiscussion).
-func (m *RetrospectiveDiscussionMutation) Type() string {
+// Type returns the node type of this mutation (RetrospectiveComment).
+func (m *RetrospectiveCommentMutation) Type() string {
 	return m.typ
 }
 
 // Fields returns all fields that were changed during this mutation. Note that in
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
-func (m *RetrospectiveDiscussionMutation) Fields() []string {
-	fields := make([]string, 0, 3)
+func (m *RetrospectiveCommentMutation) Fields() []string {
+	fields := make([]string, 0, 6)
 	if m.tenant != nil {
-		fields = append(fields, retrospectivediscussion.FieldTenantID)
+		fields = append(fields, retrospectivecomment.FieldTenantID)
 	}
 	if m.retrospective != nil {
-		fields = append(fields, retrospectivediscussion.FieldRetrospectiveID)
+		fields = append(fields, retrospectivecomment.FieldRetrospectiveID)
+	}
+	if m.user != nil {
+		fields = append(fields, retrospectivecomment.FieldUserID)
+	}
+	if m.review != nil {
+		fields = append(fields, retrospectivecomment.FieldRetrospectiveReviewID)
+	}
+	if m.parent != nil {
+		fields = append(fields, retrospectivecomment.FieldParentReplyID)
 	}
 	if m.content != nil {
-		fields = append(fields, retrospectivediscussion.FieldContent)
+		fields = append(fields, retrospectivecomment.FieldContent)
 	}
 	return fields
 }
@@ -33680,13 +33877,19 @@ func (m *RetrospectiveDiscussionMutation) Fields() []string {
 // Field returns the value of a field with the given name. The second boolean
 // return value indicates that this field was not set, or was not defined in the
 // schema.
-func (m *RetrospectiveDiscussionMutation) Field(name string) (ent.Value, bool) {
+func (m *RetrospectiveCommentMutation) Field(name string) (ent.Value, bool) {
 	switch name {
-	case retrospectivediscussion.FieldTenantID:
+	case retrospectivecomment.FieldTenantID:
 		return m.TenantID()
-	case retrospectivediscussion.FieldRetrospectiveID:
+	case retrospectivecomment.FieldRetrospectiveID:
 		return m.RetrospectiveID()
-	case retrospectivediscussion.FieldContent:
+	case retrospectivecomment.FieldUserID:
+		return m.UserID()
+	case retrospectivecomment.FieldRetrospectiveReviewID:
+		return m.RetrospectiveReviewID()
+	case retrospectivecomment.FieldParentReplyID:
+		return m.ParentReplyID()
+	case retrospectivecomment.FieldContent:
 		return m.Content()
 	}
 	return nil, false
@@ -33695,38 +33898,65 @@ func (m *RetrospectiveDiscussionMutation) Field(name string) (ent.Value, bool) {
 // OldField returns the old value of the field from the database. An error is
 // returned if the mutation operation is not UpdateOne, or the query to the
 // database failed.
-func (m *RetrospectiveDiscussionMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
+func (m *RetrospectiveCommentMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
 	switch name {
-	case retrospectivediscussion.FieldTenantID:
+	case retrospectivecomment.FieldTenantID:
 		return m.OldTenantID(ctx)
-	case retrospectivediscussion.FieldRetrospectiveID:
+	case retrospectivecomment.FieldRetrospectiveID:
 		return m.OldRetrospectiveID(ctx)
-	case retrospectivediscussion.FieldContent:
+	case retrospectivecomment.FieldUserID:
+		return m.OldUserID(ctx)
+	case retrospectivecomment.FieldRetrospectiveReviewID:
+		return m.OldRetrospectiveReviewID(ctx)
+	case retrospectivecomment.FieldParentReplyID:
+		return m.OldParentReplyID(ctx)
+	case retrospectivecomment.FieldContent:
 		return m.OldContent(ctx)
 	}
-	return nil, fmt.Errorf("unknown RetrospectiveDiscussion field %s", name)
+	return nil, fmt.Errorf("unknown RetrospectiveComment field %s", name)
 }
 
 // SetField sets the value of a field with the given name. It returns an error if
 // the field is not defined in the schema, or if the type mismatched the field
 // type.
-func (m *RetrospectiveDiscussionMutation) SetField(name string, value ent.Value) error {
+func (m *RetrospectiveCommentMutation) SetField(name string, value ent.Value) error {
 	switch name {
-	case retrospectivediscussion.FieldTenantID:
+	case retrospectivecomment.FieldTenantID:
 		v, ok := value.(int)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetTenantID(v)
 		return nil
-	case retrospectivediscussion.FieldRetrospectiveID:
+	case retrospectivecomment.FieldRetrospectiveID:
 		v, ok := value.(uuid.UUID)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetRetrospectiveID(v)
 		return nil
-	case retrospectivediscussion.FieldContent:
+	case retrospectivecomment.FieldUserID:
+		v, ok := value.(uuid.UUID)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetUserID(v)
+		return nil
+	case retrospectivecomment.FieldRetrospectiveReviewID:
+		v, ok := value.(uuid.UUID)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetRetrospectiveReviewID(v)
+		return nil
+	case retrospectivecomment.FieldParentReplyID:
+		v, ok := value.(uuid.UUID)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetParentReplyID(v)
+		return nil
+	case retrospectivecomment.FieldContent:
 		v, ok := value.([]byte)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
@@ -33734,12 +33964,12 @@ func (m *RetrospectiveDiscussionMutation) SetField(name string, value ent.Value)
 		m.SetContent(v)
 		return nil
 	}
-	return fmt.Errorf("unknown RetrospectiveDiscussion field %s", name)
+	return fmt.Errorf("unknown RetrospectiveComment field %s", name)
 }
 
 // AddedFields returns all numeric fields that were incremented/decremented during
 // this mutation.
-func (m *RetrospectiveDiscussionMutation) AddedFields() []string {
+func (m *RetrospectiveCommentMutation) AddedFields() []string {
 	var fields []string
 	return fields
 }
@@ -33747,7 +33977,7 @@ func (m *RetrospectiveDiscussionMutation) AddedFields() []string {
 // AddedField returns the numeric value that was incremented/decremented on a field
 // with the given name. The second boolean return value indicates that this field
 // was not set, or was not defined in the schema.
-func (m *RetrospectiveDiscussionMutation) AddedField(name string) (ent.Value, bool) {
+func (m *RetrospectiveCommentMutation) AddedField(name string) (ent.Value, bool) {
 	switch name {
 	}
 	return nil, false
@@ -33756,87 +33986,123 @@ func (m *RetrospectiveDiscussionMutation) AddedField(name string) (ent.Value, bo
 // AddField adds the value to the field with the given name. It returns an error if
 // the field is not defined in the schema, or if the type mismatched the field
 // type.
-func (m *RetrospectiveDiscussionMutation) AddField(name string, value ent.Value) error {
+func (m *RetrospectiveCommentMutation) AddField(name string, value ent.Value) error {
 	switch name {
 	}
-	return fmt.Errorf("unknown RetrospectiveDiscussion numeric field %s", name)
+	return fmt.Errorf("unknown RetrospectiveComment numeric field %s", name)
 }
 
 // ClearedFields returns all nullable fields that were cleared during this
 // mutation.
-func (m *RetrospectiveDiscussionMutation) ClearedFields() []string {
-	return nil
+func (m *RetrospectiveCommentMutation) ClearedFields() []string {
+	var fields []string
+	if m.FieldCleared(retrospectivecomment.FieldRetrospectiveReviewID) {
+		fields = append(fields, retrospectivecomment.FieldRetrospectiveReviewID)
+	}
+	if m.FieldCleared(retrospectivecomment.FieldParentReplyID) {
+		fields = append(fields, retrospectivecomment.FieldParentReplyID)
+	}
+	return fields
 }
 
 // FieldCleared returns a boolean indicating if a field with the given name was
 // cleared in this mutation.
-func (m *RetrospectiveDiscussionMutation) FieldCleared(name string) bool {
+func (m *RetrospectiveCommentMutation) FieldCleared(name string) bool {
 	_, ok := m.clearedFields[name]
 	return ok
 }
 
 // ClearField clears the value of the field with the given name. It returns an
 // error if the field is not defined in the schema.
-func (m *RetrospectiveDiscussionMutation) ClearField(name string) error {
-	return fmt.Errorf("unknown RetrospectiveDiscussion nullable field %s", name)
+func (m *RetrospectiveCommentMutation) ClearField(name string) error {
+	switch name {
+	case retrospectivecomment.FieldRetrospectiveReviewID:
+		m.ClearRetrospectiveReviewID()
+		return nil
+	case retrospectivecomment.FieldParentReplyID:
+		m.ClearParentReplyID()
+		return nil
+	}
+	return fmt.Errorf("unknown RetrospectiveComment nullable field %s", name)
 }
 
 // ResetField resets all changes in the mutation for the field with the given name.
 // It returns an error if the field is not defined in the schema.
-func (m *RetrospectiveDiscussionMutation) ResetField(name string) error {
+func (m *RetrospectiveCommentMutation) ResetField(name string) error {
 	switch name {
-	case retrospectivediscussion.FieldTenantID:
+	case retrospectivecomment.FieldTenantID:
 		m.ResetTenantID()
 		return nil
-	case retrospectivediscussion.FieldRetrospectiveID:
+	case retrospectivecomment.FieldRetrospectiveID:
 		m.ResetRetrospectiveID()
 		return nil
-	case retrospectivediscussion.FieldContent:
+	case retrospectivecomment.FieldUserID:
+		m.ResetUserID()
+		return nil
+	case retrospectivecomment.FieldRetrospectiveReviewID:
+		m.ResetRetrospectiveReviewID()
+		return nil
+	case retrospectivecomment.FieldParentReplyID:
+		m.ResetParentReplyID()
+		return nil
+	case retrospectivecomment.FieldContent:
 		m.ResetContent()
 		return nil
 	}
-	return fmt.Errorf("unknown RetrospectiveDiscussion field %s", name)
+	return fmt.Errorf("unknown RetrospectiveComment field %s", name)
 }
 
 // AddedEdges returns all edge names that were set/added in this mutation.
-func (m *RetrospectiveDiscussionMutation) AddedEdges() []string {
-	edges := make([]string, 0, 4)
+func (m *RetrospectiveCommentMutation) AddedEdges() []string {
+	edges := make([]string, 0, 6)
 	if m.tenant != nil {
-		edges = append(edges, retrospectivediscussion.EdgeTenant)
+		edges = append(edges, retrospectivecomment.EdgeTenant)
 	}
 	if m.retrospective != nil {
-		edges = append(edges, retrospectivediscussion.EdgeRetrospective)
+		edges = append(edges, retrospectivecomment.EdgeRetrospective)
 	}
-	if m.replies != nil {
-		edges = append(edges, retrospectivediscussion.EdgeReplies)
+	if m.user != nil {
+		edges = append(edges, retrospectivecomment.EdgeUser)
 	}
 	if m.review != nil {
-		edges = append(edges, retrospectivediscussion.EdgeReview)
+		edges = append(edges, retrospectivecomment.EdgeReview)
+	}
+	if m.parent != nil {
+		edges = append(edges, retrospectivecomment.EdgeParent)
+	}
+	if m.replies != nil {
+		edges = append(edges, retrospectivecomment.EdgeReplies)
 	}
 	return edges
 }
 
 // AddedIDs returns all IDs (to other nodes) that were added for the given edge
 // name in this mutation.
-func (m *RetrospectiveDiscussionMutation) AddedIDs(name string) []ent.Value {
+func (m *RetrospectiveCommentMutation) AddedIDs(name string) []ent.Value {
 	switch name {
-	case retrospectivediscussion.EdgeTenant:
+	case retrospectivecomment.EdgeTenant:
 		if id := m.tenant; id != nil {
 			return []ent.Value{*id}
 		}
-	case retrospectivediscussion.EdgeRetrospective:
+	case retrospectivecomment.EdgeRetrospective:
 		if id := m.retrospective; id != nil {
 			return []ent.Value{*id}
 		}
-	case retrospectivediscussion.EdgeReplies:
+	case retrospectivecomment.EdgeUser:
+		if id := m.user; id != nil {
+			return []ent.Value{*id}
+		}
+	case retrospectivecomment.EdgeReview:
+		if id := m.review; id != nil {
+			return []ent.Value{*id}
+		}
+	case retrospectivecomment.EdgeParent:
+		if id := m.parent; id != nil {
+			return []ent.Value{*id}
+		}
+	case retrospectivecomment.EdgeReplies:
 		ids := make([]ent.Value, 0, len(m.replies))
 		for id := range m.replies {
-			ids = append(ids, id)
-		}
-		return ids
-	case retrospectivediscussion.EdgeReview:
-		ids := make([]ent.Value, 0, len(m.review))
-		for id := range m.review {
 			ids = append(ids, id)
 		}
 		return ids
@@ -33845,30 +34111,21 @@ func (m *RetrospectiveDiscussionMutation) AddedIDs(name string) []ent.Value {
 }
 
 // RemovedEdges returns all edge names that were removed in this mutation.
-func (m *RetrospectiveDiscussionMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 4)
+func (m *RetrospectiveCommentMutation) RemovedEdges() []string {
+	edges := make([]string, 0, 6)
 	if m.removedreplies != nil {
-		edges = append(edges, retrospectivediscussion.EdgeReplies)
-	}
-	if m.removedreview != nil {
-		edges = append(edges, retrospectivediscussion.EdgeReview)
+		edges = append(edges, retrospectivecomment.EdgeReplies)
 	}
 	return edges
 }
 
 // RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
 // the given name in this mutation.
-func (m *RetrospectiveDiscussionMutation) RemovedIDs(name string) []ent.Value {
+func (m *RetrospectiveCommentMutation) RemovedIDs(name string) []ent.Value {
 	switch name {
-	case retrospectivediscussion.EdgeReplies:
+	case retrospectivecomment.EdgeReplies:
 		ids := make([]ent.Value, 0, len(m.removedreplies))
 		for id := range m.removedreplies {
-			ids = append(ids, id)
-		}
-		return ids
-	case retrospectivediscussion.EdgeReview:
-		ids := make([]ent.Value, 0, len(m.removedreview))
-		for id := range m.removedreview {
 			ids = append(ids, id)
 		}
 		return ids
@@ -33877,677 +34134,44 @@ func (m *RetrospectiveDiscussionMutation) RemovedIDs(name string) []ent.Value {
 }
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
-func (m *RetrospectiveDiscussionMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 4)
+func (m *RetrospectiveCommentMutation) ClearedEdges() []string {
+	edges := make([]string, 0, 6)
 	if m.clearedtenant {
-		edges = append(edges, retrospectivediscussion.EdgeTenant)
+		edges = append(edges, retrospectivecomment.EdgeTenant)
 	}
 	if m.clearedretrospective {
-		edges = append(edges, retrospectivediscussion.EdgeRetrospective)
+		edges = append(edges, retrospectivecomment.EdgeRetrospective)
 	}
-	if m.clearedreplies {
-		edges = append(edges, retrospectivediscussion.EdgeReplies)
+	if m.cleareduser {
+		edges = append(edges, retrospectivecomment.EdgeUser)
 	}
 	if m.clearedreview {
-		edges = append(edges, retrospectivediscussion.EdgeReview)
+		edges = append(edges, retrospectivecomment.EdgeReview)
 	}
-	return edges
-}
-
-// EdgeCleared returns a boolean which indicates if the edge with the given name
-// was cleared in this mutation.
-func (m *RetrospectiveDiscussionMutation) EdgeCleared(name string) bool {
-	switch name {
-	case retrospectivediscussion.EdgeTenant:
-		return m.clearedtenant
-	case retrospectivediscussion.EdgeRetrospective:
-		return m.clearedretrospective
-	case retrospectivediscussion.EdgeReplies:
-		return m.clearedreplies
-	case retrospectivediscussion.EdgeReview:
-		return m.clearedreview
-	}
-	return false
-}
-
-// ClearEdge clears the value of the edge with the given name. It returns an error
-// if that edge is not defined in the schema.
-func (m *RetrospectiveDiscussionMutation) ClearEdge(name string) error {
-	switch name {
-	case retrospectivediscussion.EdgeTenant:
-		m.ClearTenant()
-		return nil
-	case retrospectivediscussion.EdgeRetrospective:
-		m.ClearRetrospective()
-		return nil
-	}
-	return fmt.Errorf("unknown RetrospectiveDiscussion unique edge %s", name)
-}
-
-// ResetEdge resets all changes to the edge with the given name in this mutation.
-// It returns an error if the edge is not defined in the schema.
-func (m *RetrospectiveDiscussionMutation) ResetEdge(name string) error {
-	switch name {
-	case retrospectivediscussion.EdgeTenant:
-		m.ResetTenant()
-		return nil
-	case retrospectivediscussion.EdgeRetrospective:
-		m.ResetRetrospective()
-		return nil
-	case retrospectivediscussion.EdgeReplies:
-		m.ResetReplies()
-		return nil
-	case retrospectivediscussion.EdgeReview:
-		m.ResetReview()
-		return nil
-	}
-	return fmt.Errorf("unknown RetrospectiveDiscussion edge %s", name)
-}
-
-// RetrospectiveDiscussionReplyMutation represents an operation that mutates the RetrospectiveDiscussionReply nodes in the graph.
-type RetrospectiveDiscussionReplyMutation struct {
-	config
-	op                  Op
-	typ                 string
-	id                  *uuid.UUID
-	content             *[]byte
-	clearedFields       map[string]struct{}
-	tenant              *int
-	clearedtenant       bool
-	discussion          *uuid.UUID
-	cleareddiscussion   bool
-	parent_reply        *uuid.UUID
-	clearedparent_reply bool
-	replies             map[uuid.UUID]struct{}
-	removedreplies      map[uuid.UUID]struct{}
-	clearedreplies      bool
-	done                bool
-	oldValue            func(context.Context) (*RetrospectiveDiscussionReply, error)
-	predicates          []predicate.RetrospectiveDiscussionReply
-}
-
-var _ ent.Mutation = (*RetrospectiveDiscussionReplyMutation)(nil)
-
-// retrospectivediscussionreplyOption allows management of the mutation configuration using functional options.
-type retrospectivediscussionreplyOption func(*RetrospectiveDiscussionReplyMutation)
-
-// newRetrospectiveDiscussionReplyMutation creates new mutation for the RetrospectiveDiscussionReply entity.
-func newRetrospectiveDiscussionReplyMutation(c config, op Op, opts ...retrospectivediscussionreplyOption) *RetrospectiveDiscussionReplyMutation {
-	m := &RetrospectiveDiscussionReplyMutation{
-		config:        c,
-		op:            op,
-		typ:           TypeRetrospectiveDiscussionReply,
-		clearedFields: make(map[string]struct{}),
-	}
-	for _, opt := range opts {
-		opt(m)
-	}
-	return m
-}
-
-// withRetrospectiveDiscussionReplyID sets the ID field of the mutation.
-func withRetrospectiveDiscussionReplyID(id uuid.UUID) retrospectivediscussionreplyOption {
-	return func(m *RetrospectiveDiscussionReplyMutation) {
-		var (
-			err   error
-			once  sync.Once
-			value *RetrospectiveDiscussionReply
-		)
-		m.oldValue = func(ctx context.Context) (*RetrospectiveDiscussionReply, error) {
-			once.Do(func() {
-				if m.done {
-					err = errors.New("querying old values post mutation is not allowed")
-				} else {
-					value, err = m.Client().RetrospectiveDiscussionReply.Get(ctx, id)
-				}
-			})
-			return value, err
-		}
-		m.id = &id
-	}
-}
-
-// withRetrospectiveDiscussionReply sets the old RetrospectiveDiscussionReply of the mutation.
-func withRetrospectiveDiscussionReply(node *RetrospectiveDiscussionReply) retrospectivediscussionreplyOption {
-	return func(m *RetrospectiveDiscussionReplyMutation) {
-		m.oldValue = func(context.Context) (*RetrospectiveDiscussionReply, error) {
-			return node, nil
-		}
-		m.id = &node.ID
-	}
-}
-
-// Client returns a new `ent.Client` from the mutation. If the mutation was
-// executed in a transaction (ent.Tx), a transactional client is returned.
-func (m RetrospectiveDiscussionReplyMutation) Client() *Client {
-	client := &Client{config: m.config}
-	client.init()
-	return client
-}
-
-// Tx returns an `ent.Tx` for mutations that were executed in transactions;
-// it returns an error otherwise.
-func (m RetrospectiveDiscussionReplyMutation) Tx() (*Tx, error) {
-	if _, ok := m.driver.(*txDriver); !ok {
-		return nil, errors.New("ent: mutation is not running in a transaction")
-	}
-	tx := &Tx{config: m.config}
-	tx.init()
-	return tx, nil
-}
-
-// SetID sets the value of the id field. Note that this
-// operation is only accepted on creation of RetrospectiveDiscussionReply entities.
-func (m *RetrospectiveDiscussionReplyMutation) SetID(id uuid.UUID) {
-	m.id = &id
-}
-
-// ID returns the ID value in the mutation. Note that the ID is only available
-// if it was provided to the builder or after it was returned from the database.
-func (m *RetrospectiveDiscussionReplyMutation) ID() (id uuid.UUID, exists bool) {
-	if m.id == nil {
-		return
-	}
-	return *m.id, true
-}
-
-// IDs queries the database and returns the entity ids that match the mutation's predicate.
-// That means, if the mutation is applied within a transaction with an isolation level such
-// as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
-// or updated by the mutation.
-func (m *RetrospectiveDiscussionReplyMutation) IDs(ctx context.Context) ([]uuid.UUID, error) {
-	switch {
-	case m.op.Is(OpUpdateOne | OpDeleteOne):
-		id, exists := m.ID()
-		if exists {
-			return []uuid.UUID{id}, nil
-		}
-		fallthrough
-	case m.op.Is(OpUpdate | OpDelete):
-		return m.Client().RetrospectiveDiscussionReply.Query().Where(m.predicates...).IDs(ctx)
-	default:
-		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
-	}
-}
-
-// SetTenantID sets the "tenant_id" field.
-func (m *RetrospectiveDiscussionReplyMutation) SetTenantID(i int) {
-	m.tenant = &i
-}
-
-// TenantID returns the value of the "tenant_id" field in the mutation.
-func (m *RetrospectiveDiscussionReplyMutation) TenantID() (r int, exists bool) {
-	v := m.tenant
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldTenantID returns the old "tenant_id" field's value of the RetrospectiveDiscussionReply entity.
-// If the RetrospectiveDiscussionReply object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *RetrospectiveDiscussionReplyMutation) OldTenantID(ctx context.Context) (v int, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldTenantID is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldTenantID requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldTenantID: %w", err)
-	}
-	return oldValue.TenantID, nil
-}
-
-// ResetTenantID resets all changes to the "tenant_id" field.
-func (m *RetrospectiveDiscussionReplyMutation) ResetTenantID() {
-	m.tenant = nil
-}
-
-// SetContent sets the "content" field.
-func (m *RetrospectiveDiscussionReplyMutation) SetContent(b []byte) {
-	m.content = &b
-}
-
-// Content returns the value of the "content" field in the mutation.
-func (m *RetrospectiveDiscussionReplyMutation) Content() (r []byte, exists bool) {
-	v := m.content
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldContent returns the old "content" field's value of the RetrospectiveDiscussionReply entity.
-// If the RetrospectiveDiscussionReply object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *RetrospectiveDiscussionReplyMutation) OldContent(ctx context.Context) (v []byte, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldContent is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldContent requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldContent: %w", err)
-	}
-	return oldValue.Content, nil
-}
-
-// ResetContent resets all changes to the "content" field.
-func (m *RetrospectiveDiscussionReplyMutation) ResetContent() {
-	m.content = nil
-}
-
-// ClearTenant clears the "tenant" edge to the Tenant entity.
-func (m *RetrospectiveDiscussionReplyMutation) ClearTenant() {
-	m.clearedtenant = true
-	m.clearedFields[retrospectivediscussionreply.FieldTenantID] = struct{}{}
-}
-
-// TenantCleared reports if the "tenant" edge to the Tenant entity was cleared.
-func (m *RetrospectiveDiscussionReplyMutation) TenantCleared() bool {
-	return m.clearedtenant
-}
-
-// TenantIDs returns the "tenant" edge IDs in the mutation.
-// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
-// TenantID instead. It exists only for internal usage by the builders.
-func (m *RetrospectiveDiscussionReplyMutation) TenantIDs() (ids []int) {
-	if id := m.tenant; id != nil {
-		ids = append(ids, *id)
-	}
-	return
-}
-
-// ResetTenant resets all changes to the "tenant" edge.
-func (m *RetrospectiveDiscussionReplyMutation) ResetTenant() {
-	m.tenant = nil
-	m.clearedtenant = false
-}
-
-// SetDiscussionID sets the "discussion" edge to the RetrospectiveDiscussion entity by id.
-func (m *RetrospectiveDiscussionReplyMutation) SetDiscussionID(id uuid.UUID) {
-	m.discussion = &id
-}
-
-// ClearDiscussion clears the "discussion" edge to the RetrospectiveDiscussion entity.
-func (m *RetrospectiveDiscussionReplyMutation) ClearDiscussion() {
-	m.cleareddiscussion = true
-}
-
-// DiscussionCleared reports if the "discussion" edge to the RetrospectiveDiscussion entity was cleared.
-func (m *RetrospectiveDiscussionReplyMutation) DiscussionCleared() bool {
-	return m.cleareddiscussion
-}
-
-// DiscussionID returns the "discussion" edge ID in the mutation.
-func (m *RetrospectiveDiscussionReplyMutation) DiscussionID() (id uuid.UUID, exists bool) {
-	if m.discussion != nil {
-		return *m.discussion, true
-	}
-	return
-}
-
-// DiscussionIDs returns the "discussion" edge IDs in the mutation.
-// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
-// DiscussionID instead. It exists only for internal usage by the builders.
-func (m *RetrospectiveDiscussionReplyMutation) DiscussionIDs() (ids []uuid.UUID) {
-	if id := m.discussion; id != nil {
-		ids = append(ids, *id)
-	}
-	return
-}
-
-// ResetDiscussion resets all changes to the "discussion" edge.
-func (m *RetrospectiveDiscussionReplyMutation) ResetDiscussion() {
-	m.discussion = nil
-	m.cleareddiscussion = false
-}
-
-// SetParentReplyID sets the "parent_reply" edge to the RetrospectiveDiscussionReply entity by id.
-func (m *RetrospectiveDiscussionReplyMutation) SetParentReplyID(id uuid.UUID) {
-	m.parent_reply = &id
-}
-
-// ClearParentReply clears the "parent_reply" edge to the RetrospectiveDiscussionReply entity.
-func (m *RetrospectiveDiscussionReplyMutation) ClearParentReply() {
-	m.clearedparent_reply = true
-}
-
-// ParentReplyCleared reports if the "parent_reply" edge to the RetrospectiveDiscussionReply entity was cleared.
-func (m *RetrospectiveDiscussionReplyMutation) ParentReplyCleared() bool {
-	return m.clearedparent_reply
-}
-
-// ParentReplyID returns the "parent_reply" edge ID in the mutation.
-func (m *RetrospectiveDiscussionReplyMutation) ParentReplyID() (id uuid.UUID, exists bool) {
-	if m.parent_reply != nil {
-		return *m.parent_reply, true
-	}
-	return
-}
-
-// ParentReplyIDs returns the "parent_reply" edge IDs in the mutation.
-// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
-// ParentReplyID instead. It exists only for internal usage by the builders.
-func (m *RetrospectiveDiscussionReplyMutation) ParentReplyIDs() (ids []uuid.UUID) {
-	if id := m.parent_reply; id != nil {
-		ids = append(ids, *id)
-	}
-	return
-}
-
-// ResetParentReply resets all changes to the "parent_reply" edge.
-func (m *RetrospectiveDiscussionReplyMutation) ResetParentReply() {
-	m.parent_reply = nil
-	m.clearedparent_reply = false
-}
-
-// AddReplyIDs adds the "replies" edge to the RetrospectiveDiscussionReply entity by ids.
-func (m *RetrospectiveDiscussionReplyMutation) AddReplyIDs(ids ...uuid.UUID) {
-	if m.replies == nil {
-		m.replies = make(map[uuid.UUID]struct{})
-	}
-	for i := range ids {
-		m.replies[ids[i]] = struct{}{}
-	}
-}
-
-// ClearReplies clears the "replies" edge to the RetrospectiveDiscussionReply entity.
-func (m *RetrospectiveDiscussionReplyMutation) ClearReplies() {
-	m.clearedreplies = true
-}
-
-// RepliesCleared reports if the "replies" edge to the RetrospectiveDiscussionReply entity was cleared.
-func (m *RetrospectiveDiscussionReplyMutation) RepliesCleared() bool {
-	return m.clearedreplies
-}
-
-// RemoveReplyIDs removes the "replies" edge to the RetrospectiveDiscussionReply entity by IDs.
-func (m *RetrospectiveDiscussionReplyMutation) RemoveReplyIDs(ids ...uuid.UUID) {
-	if m.removedreplies == nil {
-		m.removedreplies = make(map[uuid.UUID]struct{})
-	}
-	for i := range ids {
-		delete(m.replies, ids[i])
-		m.removedreplies[ids[i]] = struct{}{}
-	}
-}
-
-// RemovedReplies returns the removed IDs of the "replies" edge to the RetrospectiveDiscussionReply entity.
-func (m *RetrospectiveDiscussionReplyMutation) RemovedRepliesIDs() (ids []uuid.UUID) {
-	for id := range m.removedreplies {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// RepliesIDs returns the "replies" edge IDs in the mutation.
-func (m *RetrospectiveDiscussionReplyMutation) RepliesIDs() (ids []uuid.UUID) {
-	for id := range m.replies {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// ResetReplies resets all changes to the "replies" edge.
-func (m *RetrospectiveDiscussionReplyMutation) ResetReplies() {
-	m.replies = nil
-	m.clearedreplies = false
-	m.removedreplies = nil
-}
-
-// Where appends a list predicates to the RetrospectiveDiscussionReplyMutation builder.
-func (m *RetrospectiveDiscussionReplyMutation) Where(ps ...predicate.RetrospectiveDiscussionReply) {
-	m.predicates = append(m.predicates, ps...)
-}
-
-// WhereP appends storage-level predicates to the RetrospectiveDiscussionReplyMutation builder. Using this method,
-// users can use type-assertion to append predicates that do not depend on any generated package.
-func (m *RetrospectiveDiscussionReplyMutation) WhereP(ps ...func(*sql.Selector)) {
-	p := make([]predicate.RetrospectiveDiscussionReply, len(ps))
-	for i := range ps {
-		p[i] = ps[i]
-	}
-	m.Where(p...)
-}
-
-// Op returns the operation name.
-func (m *RetrospectiveDiscussionReplyMutation) Op() Op {
-	return m.op
-}
-
-// SetOp allows setting the mutation operation.
-func (m *RetrospectiveDiscussionReplyMutation) SetOp(op Op) {
-	m.op = op
-}
-
-// Type returns the node type of this mutation (RetrospectiveDiscussionReply).
-func (m *RetrospectiveDiscussionReplyMutation) Type() string {
-	return m.typ
-}
-
-// Fields returns all fields that were changed during this mutation. Note that in
-// order to get all numeric fields that were incremented/decremented, call
-// AddedFields().
-func (m *RetrospectiveDiscussionReplyMutation) Fields() []string {
-	fields := make([]string, 0, 2)
-	if m.tenant != nil {
-		fields = append(fields, retrospectivediscussionreply.FieldTenantID)
-	}
-	if m.content != nil {
-		fields = append(fields, retrospectivediscussionreply.FieldContent)
-	}
-	return fields
-}
-
-// Field returns the value of a field with the given name. The second boolean
-// return value indicates that this field was not set, or was not defined in the
-// schema.
-func (m *RetrospectiveDiscussionReplyMutation) Field(name string) (ent.Value, bool) {
-	switch name {
-	case retrospectivediscussionreply.FieldTenantID:
-		return m.TenantID()
-	case retrospectivediscussionreply.FieldContent:
-		return m.Content()
-	}
-	return nil, false
-}
-
-// OldField returns the old value of the field from the database. An error is
-// returned if the mutation operation is not UpdateOne, or the query to the
-// database failed.
-func (m *RetrospectiveDiscussionReplyMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
-	switch name {
-	case retrospectivediscussionreply.FieldTenantID:
-		return m.OldTenantID(ctx)
-	case retrospectivediscussionreply.FieldContent:
-		return m.OldContent(ctx)
-	}
-	return nil, fmt.Errorf("unknown RetrospectiveDiscussionReply field %s", name)
-}
-
-// SetField sets the value of a field with the given name. It returns an error if
-// the field is not defined in the schema, or if the type mismatched the field
-// type.
-func (m *RetrospectiveDiscussionReplyMutation) SetField(name string, value ent.Value) error {
-	switch name {
-	case retrospectivediscussionreply.FieldTenantID:
-		v, ok := value.(int)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetTenantID(v)
-		return nil
-	case retrospectivediscussionreply.FieldContent:
-		v, ok := value.([]byte)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetContent(v)
-		return nil
-	}
-	return fmt.Errorf("unknown RetrospectiveDiscussionReply field %s", name)
-}
-
-// AddedFields returns all numeric fields that were incremented/decremented during
-// this mutation.
-func (m *RetrospectiveDiscussionReplyMutation) AddedFields() []string {
-	var fields []string
-	return fields
-}
-
-// AddedField returns the numeric value that was incremented/decremented on a field
-// with the given name. The second boolean return value indicates that this field
-// was not set, or was not defined in the schema.
-func (m *RetrospectiveDiscussionReplyMutation) AddedField(name string) (ent.Value, bool) {
-	switch name {
-	}
-	return nil, false
-}
-
-// AddField adds the value to the field with the given name. It returns an error if
-// the field is not defined in the schema, or if the type mismatched the field
-// type.
-func (m *RetrospectiveDiscussionReplyMutation) AddField(name string, value ent.Value) error {
-	switch name {
-	}
-	return fmt.Errorf("unknown RetrospectiveDiscussionReply numeric field %s", name)
-}
-
-// ClearedFields returns all nullable fields that were cleared during this
-// mutation.
-func (m *RetrospectiveDiscussionReplyMutation) ClearedFields() []string {
-	return nil
-}
-
-// FieldCleared returns a boolean indicating if a field with the given name was
-// cleared in this mutation.
-func (m *RetrospectiveDiscussionReplyMutation) FieldCleared(name string) bool {
-	_, ok := m.clearedFields[name]
-	return ok
-}
-
-// ClearField clears the value of the field with the given name. It returns an
-// error if the field is not defined in the schema.
-func (m *RetrospectiveDiscussionReplyMutation) ClearField(name string) error {
-	return fmt.Errorf("unknown RetrospectiveDiscussionReply nullable field %s", name)
-}
-
-// ResetField resets all changes in the mutation for the field with the given name.
-// It returns an error if the field is not defined in the schema.
-func (m *RetrospectiveDiscussionReplyMutation) ResetField(name string) error {
-	switch name {
-	case retrospectivediscussionreply.FieldTenantID:
-		m.ResetTenantID()
-		return nil
-	case retrospectivediscussionreply.FieldContent:
-		m.ResetContent()
-		return nil
-	}
-	return fmt.Errorf("unknown RetrospectiveDiscussionReply field %s", name)
-}
-
-// AddedEdges returns all edge names that were set/added in this mutation.
-func (m *RetrospectiveDiscussionReplyMutation) AddedEdges() []string {
-	edges := make([]string, 0, 4)
-	if m.tenant != nil {
-		edges = append(edges, retrospectivediscussionreply.EdgeTenant)
-	}
-	if m.discussion != nil {
-		edges = append(edges, retrospectivediscussionreply.EdgeDiscussion)
-	}
-	if m.parent_reply != nil {
-		edges = append(edges, retrospectivediscussionreply.EdgeParentReply)
-	}
-	if m.replies != nil {
-		edges = append(edges, retrospectivediscussionreply.EdgeReplies)
-	}
-	return edges
-}
-
-// AddedIDs returns all IDs (to other nodes) that were added for the given edge
-// name in this mutation.
-func (m *RetrospectiveDiscussionReplyMutation) AddedIDs(name string) []ent.Value {
-	switch name {
-	case retrospectivediscussionreply.EdgeTenant:
-		if id := m.tenant; id != nil {
-			return []ent.Value{*id}
-		}
-	case retrospectivediscussionreply.EdgeDiscussion:
-		if id := m.discussion; id != nil {
-			return []ent.Value{*id}
-		}
-	case retrospectivediscussionreply.EdgeParentReply:
-		if id := m.parent_reply; id != nil {
-			return []ent.Value{*id}
-		}
-	case retrospectivediscussionreply.EdgeReplies:
-		ids := make([]ent.Value, 0, len(m.replies))
-		for id := range m.replies {
-			ids = append(ids, id)
-		}
-		return ids
-	}
-	return nil
-}
-
-// RemovedEdges returns all edge names that were removed in this mutation.
-func (m *RetrospectiveDiscussionReplyMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 4)
-	if m.removedreplies != nil {
-		edges = append(edges, retrospectivediscussionreply.EdgeReplies)
-	}
-	return edges
-}
-
-// RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
-// the given name in this mutation.
-func (m *RetrospectiveDiscussionReplyMutation) RemovedIDs(name string) []ent.Value {
-	switch name {
-	case retrospectivediscussionreply.EdgeReplies:
-		ids := make([]ent.Value, 0, len(m.removedreplies))
-		for id := range m.removedreplies {
-			ids = append(ids, id)
-		}
-		return ids
-	}
-	return nil
-}
-
-// ClearedEdges returns all edge names that were cleared in this mutation.
-func (m *RetrospectiveDiscussionReplyMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 4)
-	if m.clearedtenant {
-		edges = append(edges, retrospectivediscussionreply.EdgeTenant)
-	}
-	if m.cleareddiscussion {
-		edges = append(edges, retrospectivediscussionreply.EdgeDiscussion)
-	}
-	if m.clearedparent_reply {
-		edges = append(edges, retrospectivediscussionreply.EdgeParentReply)
+	if m.clearedparent {
+		edges = append(edges, retrospectivecomment.EdgeParent)
 	}
 	if m.clearedreplies {
-		edges = append(edges, retrospectivediscussionreply.EdgeReplies)
+		edges = append(edges, retrospectivecomment.EdgeReplies)
 	}
 	return edges
 }
 
 // EdgeCleared returns a boolean which indicates if the edge with the given name
 // was cleared in this mutation.
-func (m *RetrospectiveDiscussionReplyMutation) EdgeCleared(name string) bool {
+func (m *RetrospectiveCommentMutation) EdgeCleared(name string) bool {
 	switch name {
-	case retrospectivediscussionreply.EdgeTenant:
+	case retrospectivecomment.EdgeTenant:
 		return m.clearedtenant
-	case retrospectivediscussionreply.EdgeDiscussion:
-		return m.cleareddiscussion
-	case retrospectivediscussionreply.EdgeParentReply:
-		return m.clearedparent_reply
-	case retrospectivediscussionreply.EdgeReplies:
+	case retrospectivecomment.EdgeRetrospective:
+		return m.clearedretrospective
+	case retrospectivecomment.EdgeUser:
+		return m.cleareduser
+	case retrospectivecomment.EdgeReview:
+		return m.clearedreview
+	case retrospectivecomment.EdgeParent:
+		return m.clearedparent
+	case retrospectivecomment.EdgeReplies:
 		return m.clearedreplies
 	}
 	return false
@@ -34555,39 +34179,51 @@ func (m *RetrospectiveDiscussionReplyMutation) EdgeCleared(name string) bool {
 
 // ClearEdge clears the value of the edge with the given name. It returns an error
 // if that edge is not defined in the schema.
-func (m *RetrospectiveDiscussionReplyMutation) ClearEdge(name string) error {
+func (m *RetrospectiveCommentMutation) ClearEdge(name string) error {
 	switch name {
-	case retrospectivediscussionreply.EdgeTenant:
+	case retrospectivecomment.EdgeTenant:
 		m.ClearTenant()
 		return nil
-	case retrospectivediscussionreply.EdgeDiscussion:
-		m.ClearDiscussion()
+	case retrospectivecomment.EdgeRetrospective:
+		m.ClearRetrospective()
 		return nil
-	case retrospectivediscussionreply.EdgeParentReply:
-		m.ClearParentReply()
+	case retrospectivecomment.EdgeUser:
+		m.ClearUser()
+		return nil
+	case retrospectivecomment.EdgeReview:
+		m.ClearReview()
+		return nil
+	case retrospectivecomment.EdgeParent:
+		m.ClearParent()
 		return nil
 	}
-	return fmt.Errorf("unknown RetrospectiveDiscussionReply unique edge %s", name)
+	return fmt.Errorf("unknown RetrospectiveComment unique edge %s", name)
 }
 
 // ResetEdge resets all changes to the edge with the given name in this mutation.
 // It returns an error if the edge is not defined in the schema.
-func (m *RetrospectiveDiscussionReplyMutation) ResetEdge(name string) error {
+func (m *RetrospectiveCommentMutation) ResetEdge(name string) error {
 	switch name {
-	case retrospectivediscussionreply.EdgeTenant:
+	case retrospectivecomment.EdgeTenant:
 		m.ResetTenant()
 		return nil
-	case retrospectivediscussionreply.EdgeDiscussion:
-		m.ResetDiscussion()
+	case retrospectivecomment.EdgeRetrospective:
+		m.ResetRetrospective()
 		return nil
-	case retrospectivediscussionreply.EdgeParentReply:
-		m.ResetParentReply()
+	case retrospectivecomment.EdgeUser:
+		m.ResetUser()
 		return nil
-	case retrospectivediscussionreply.EdgeReplies:
+	case retrospectivecomment.EdgeReview:
+		m.ResetReview()
+		return nil
+	case retrospectivecomment.EdgeParent:
+		m.ResetParent()
+		return nil
+	case retrospectivecomment.EdgeReplies:
 		m.ResetReplies()
 		return nil
 	}
-	return fmt.Errorf("unknown RetrospectiveDiscussionReply edge %s", name)
+	return fmt.Errorf("unknown RetrospectiveComment edge %s", name)
 }
 
 // RetrospectiveReviewMutation represents an operation that mutates the RetrospectiveReview nodes in the graph.
@@ -34606,8 +34242,8 @@ type RetrospectiveReviewMutation struct {
 	clearedrequester     bool
 	reviewer             *uuid.UUID
 	clearedreviewer      bool
-	discussion           *uuid.UUID
-	cleareddiscussion    bool
+	comment              *uuid.UUID
+	clearedcomment       bool
 	done                 bool
 	oldValue             func(context.Context) (*RetrospectiveReview, error)
 	predicates           []predicate.RetrospectiveReview
@@ -34787,6 +34423,42 @@ func (m *RetrospectiveReviewMutation) OldRetrospectiveID(ctx context.Context) (v
 // ResetRetrospectiveID resets all changes to the "retrospective_id" field.
 func (m *RetrospectiveReviewMutation) ResetRetrospectiveID() {
 	m.retrospective = nil
+}
+
+// SetCommentID sets the "comment_id" field.
+func (m *RetrospectiveReviewMutation) SetCommentID(u uuid.UUID) {
+	m.comment = &u
+}
+
+// CommentID returns the value of the "comment_id" field in the mutation.
+func (m *RetrospectiveReviewMutation) CommentID() (r uuid.UUID, exists bool) {
+	v := m.comment
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCommentID returns the old "comment_id" field's value of the RetrospectiveReview entity.
+// If the RetrospectiveReview object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *RetrospectiveReviewMutation) OldCommentID(ctx context.Context) (v uuid.UUID, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCommentID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCommentID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCommentID: %w", err)
+	}
+	return oldValue.CommentID, nil
+}
+
+// ResetCommentID resets all changes to the "comment_id" field.
+func (m *RetrospectiveReviewMutation) ResetCommentID() {
+	m.comment = nil
 }
 
 // SetRequesterID sets the "requester_id" field.
@@ -35005,43 +34677,31 @@ func (m *RetrospectiveReviewMutation) ResetReviewer() {
 	m.clearedreviewer = false
 }
 
-// SetDiscussionID sets the "discussion" edge to the RetrospectiveDiscussion entity by id.
-func (m *RetrospectiveReviewMutation) SetDiscussionID(id uuid.UUID) {
-	m.discussion = &id
+// ClearComment clears the "comment" edge to the RetrospectiveComment entity.
+func (m *RetrospectiveReviewMutation) ClearComment() {
+	m.clearedcomment = true
+	m.clearedFields[retrospectivereview.FieldCommentID] = struct{}{}
 }
 
-// ClearDiscussion clears the "discussion" edge to the RetrospectiveDiscussion entity.
-func (m *RetrospectiveReviewMutation) ClearDiscussion() {
-	m.cleareddiscussion = true
+// CommentCleared reports if the "comment" edge to the RetrospectiveComment entity was cleared.
+func (m *RetrospectiveReviewMutation) CommentCleared() bool {
+	return m.clearedcomment
 }
 
-// DiscussionCleared reports if the "discussion" edge to the RetrospectiveDiscussion entity was cleared.
-func (m *RetrospectiveReviewMutation) DiscussionCleared() bool {
-	return m.cleareddiscussion
-}
-
-// DiscussionID returns the "discussion" edge ID in the mutation.
-func (m *RetrospectiveReviewMutation) DiscussionID() (id uuid.UUID, exists bool) {
-	if m.discussion != nil {
-		return *m.discussion, true
-	}
-	return
-}
-
-// DiscussionIDs returns the "discussion" edge IDs in the mutation.
+// CommentIDs returns the "comment" edge IDs in the mutation.
 // Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
-// DiscussionID instead. It exists only for internal usage by the builders.
-func (m *RetrospectiveReviewMutation) DiscussionIDs() (ids []uuid.UUID) {
-	if id := m.discussion; id != nil {
+// CommentID instead. It exists only for internal usage by the builders.
+func (m *RetrospectiveReviewMutation) CommentIDs() (ids []uuid.UUID) {
+	if id := m.comment; id != nil {
 		ids = append(ids, *id)
 	}
 	return
 }
 
-// ResetDiscussion resets all changes to the "discussion" edge.
-func (m *RetrospectiveReviewMutation) ResetDiscussion() {
-	m.discussion = nil
-	m.cleareddiscussion = false
+// ResetComment resets all changes to the "comment" edge.
+func (m *RetrospectiveReviewMutation) ResetComment() {
+	m.comment = nil
+	m.clearedcomment = false
 }
 
 // Where appends a list predicates to the RetrospectiveReviewMutation builder.
@@ -35078,12 +34738,15 @@ func (m *RetrospectiveReviewMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *RetrospectiveReviewMutation) Fields() []string {
-	fields := make([]string, 0, 5)
+	fields := make([]string, 0, 6)
 	if m.tenant != nil {
 		fields = append(fields, retrospectivereview.FieldTenantID)
 	}
 	if m.retrospective != nil {
 		fields = append(fields, retrospectivereview.FieldRetrospectiveID)
+	}
+	if m.comment != nil {
+		fields = append(fields, retrospectivereview.FieldCommentID)
 	}
 	if m.requester != nil {
 		fields = append(fields, retrospectivereview.FieldRequesterID)
@@ -35106,6 +34769,8 @@ func (m *RetrospectiveReviewMutation) Field(name string) (ent.Value, bool) {
 		return m.TenantID()
 	case retrospectivereview.FieldRetrospectiveID:
 		return m.RetrospectiveID()
+	case retrospectivereview.FieldCommentID:
+		return m.CommentID()
 	case retrospectivereview.FieldRequesterID:
 		return m.RequesterID()
 	case retrospectivereview.FieldReviewerID:
@@ -35125,6 +34790,8 @@ func (m *RetrospectiveReviewMutation) OldField(ctx context.Context, name string)
 		return m.OldTenantID(ctx)
 	case retrospectivereview.FieldRetrospectiveID:
 		return m.OldRetrospectiveID(ctx)
+	case retrospectivereview.FieldCommentID:
+		return m.OldCommentID(ctx)
 	case retrospectivereview.FieldRequesterID:
 		return m.OldRequesterID(ctx)
 	case retrospectivereview.FieldReviewerID:
@@ -35153,6 +34820,13 @@ func (m *RetrospectiveReviewMutation) SetField(name string, value ent.Value) err
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetRetrospectiveID(v)
+		return nil
+	case retrospectivereview.FieldCommentID:
+		v, ok := value.(uuid.UUID)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCommentID(v)
 		return nil
 	case retrospectivereview.FieldRequesterID:
 		v, ok := value.(uuid.UUID)
@@ -35233,6 +34907,9 @@ func (m *RetrospectiveReviewMutation) ResetField(name string) error {
 	case retrospectivereview.FieldRetrospectiveID:
 		m.ResetRetrospectiveID()
 		return nil
+	case retrospectivereview.FieldCommentID:
+		m.ResetCommentID()
+		return nil
 	case retrospectivereview.FieldRequesterID:
 		m.ResetRequesterID()
 		return nil
@@ -35261,8 +34938,8 @@ func (m *RetrospectiveReviewMutation) AddedEdges() []string {
 	if m.reviewer != nil {
 		edges = append(edges, retrospectivereview.EdgeReviewer)
 	}
-	if m.discussion != nil {
-		edges = append(edges, retrospectivereview.EdgeDiscussion)
+	if m.comment != nil {
+		edges = append(edges, retrospectivereview.EdgeComment)
 	}
 	return edges
 }
@@ -35287,8 +34964,8 @@ func (m *RetrospectiveReviewMutation) AddedIDs(name string) []ent.Value {
 		if id := m.reviewer; id != nil {
 			return []ent.Value{*id}
 		}
-	case retrospectivereview.EdgeDiscussion:
-		if id := m.discussion; id != nil {
+	case retrospectivereview.EdgeComment:
+		if id := m.comment; id != nil {
 			return []ent.Value{*id}
 		}
 	}
@@ -35322,8 +34999,8 @@ func (m *RetrospectiveReviewMutation) ClearedEdges() []string {
 	if m.clearedreviewer {
 		edges = append(edges, retrospectivereview.EdgeReviewer)
 	}
-	if m.cleareddiscussion {
-		edges = append(edges, retrospectivereview.EdgeDiscussion)
+	if m.clearedcomment {
+		edges = append(edges, retrospectivereview.EdgeComment)
 	}
 	return edges
 }
@@ -35340,8 +35017,8 @@ func (m *RetrospectiveReviewMutation) EdgeCleared(name string) bool {
 		return m.clearedrequester
 	case retrospectivereview.EdgeReviewer:
 		return m.clearedreviewer
-	case retrospectivereview.EdgeDiscussion:
-		return m.cleareddiscussion
+	case retrospectivereview.EdgeComment:
+		return m.clearedcomment
 	}
 	return false
 }
@@ -35362,8 +35039,8 @@ func (m *RetrospectiveReviewMutation) ClearEdge(name string) error {
 	case retrospectivereview.EdgeReviewer:
 		m.ClearReviewer()
 		return nil
-	case retrospectivereview.EdgeDiscussion:
-		m.ClearDiscussion()
+	case retrospectivereview.EdgeComment:
+		m.ClearComment()
 		return nil
 	}
 	return fmt.Errorf("unknown RetrospectiveReview unique edge %s", name)
@@ -35385,8 +35062,8 @@ func (m *RetrospectiveReviewMutation) ResetEdge(name string) error {
 	case retrospectivereview.EdgeReviewer:
 		m.ResetReviewer()
 		return nil
-	case retrospectivereview.EdgeDiscussion:
-		m.ResetDiscussion()
+	case retrospectivereview.EdgeComment:
+		m.ResetComment()
 		return nil
 	}
 	return fmt.Errorf("unknown RetrospectiveReview edge %s", name)
@@ -49335,6 +49012,9 @@ type UserMutation struct {
 	retrospective_review_responses        map[uuid.UUID]struct{}
 	removedretrospective_review_responses map[uuid.UUID]struct{}
 	clearedretrospective_review_responses bool
+	retrospective_comments                map[uuid.UUID]struct{}
+	removedretrospective_comments         map[uuid.UUID]struct{}
+	clearedretrospective_comments         bool
 	role_assignments                      map[uuid.UUID]struct{}
 	removedrole_assignments               map[uuid.UUID]struct{}
 	clearedrole_assignments               bool
@@ -50274,6 +49954,60 @@ func (m *UserMutation) ResetRetrospectiveReviewResponses() {
 	m.removedretrospective_review_responses = nil
 }
 
+// AddRetrospectiveCommentIDs adds the "retrospective_comments" edge to the RetrospectiveComment entity by ids.
+func (m *UserMutation) AddRetrospectiveCommentIDs(ids ...uuid.UUID) {
+	if m.retrospective_comments == nil {
+		m.retrospective_comments = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		m.retrospective_comments[ids[i]] = struct{}{}
+	}
+}
+
+// ClearRetrospectiveComments clears the "retrospective_comments" edge to the RetrospectiveComment entity.
+func (m *UserMutation) ClearRetrospectiveComments() {
+	m.clearedretrospective_comments = true
+}
+
+// RetrospectiveCommentsCleared reports if the "retrospective_comments" edge to the RetrospectiveComment entity was cleared.
+func (m *UserMutation) RetrospectiveCommentsCleared() bool {
+	return m.clearedretrospective_comments
+}
+
+// RemoveRetrospectiveCommentIDs removes the "retrospective_comments" edge to the RetrospectiveComment entity by IDs.
+func (m *UserMutation) RemoveRetrospectiveCommentIDs(ids ...uuid.UUID) {
+	if m.removedretrospective_comments == nil {
+		m.removedretrospective_comments = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		delete(m.retrospective_comments, ids[i])
+		m.removedretrospective_comments[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedRetrospectiveComments returns the removed IDs of the "retrospective_comments" edge to the RetrospectiveComment entity.
+func (m *UserMutation) RemovedRetrospectiveCommentsIDs() (ids []uuid.UUID) {
+	for id := range m.removedretrospective_comments {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// RetrospectiveCommentsIDs returns the "retrospective_comments" edge IDs in the mutation.
+func (m *UserMutation) RetrospectiveCommentsIDs() (ids []uuid.UUID) {
+	for id := range m.retrospective_comments {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetRetrospectiveComments resets all changes to the "retrospective_comments" edge.
+func (m *UserMutation) ResetRetrospectiveComments() {
+	m.retrospective_comments = nil
+	m.clearedretrospective_comments = false
+	m.removedretrospective_comments = nil
+}
+
 // AddRoleAssignmentIDs adds the "role_assignments" edge to the IncidentRoleAssignment entity by ids.
 func (m *UserMutation) AddRoleAssignmentIDs(ids ...uuid.UUID) {
 	if m.role_assignments == nil {
@@ -50547,7 +50281,7 @@ func (m *UserMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *UserMutation) AddedEdges() []string {
-	edges := make([]string, 0, 13)
+	edges := make([]string, 0, 14)
 	if m.tenant != nil {
 		edges = append(edges, user.EdgeTenant)
 	}
@@ -50583,6 +50317,9 @@ func (m *UserMutation) AddedEdges() []string {
 	}
 	if m.retrospective_review_responses != nil {
 		edges = append(edges, user.EdgeRetrospectiveReviewResponses)
+	}
+	if m.retrospective_comments != nil {
+		edges = append(edges, user.EdgeRetrospectiveComments)
 	}
 	if m.role_assignments != nil {
 		edges = append(edges, user.EdgeRoleAssignments)
@@ -50664,6 +50401,12 @@ func (m *UserMutation) AddedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case user.EdgeRetrospectiveComments:
+		ids := make([]ent.Value, 0, len(m.retrospective_comments))
+		for id := range m.retrospective_comments {
+			ids = append(ids, id)
+		}
+		return ids
 	case user.EdgeRoleAssignments:
 		ids := make([]ent.Value, 0, len(m.role_assignments))
 		for id := range m.role_assignments {
@@ -50676,7 +50419,7 @@ func (m *UserMutation) AddedIDs(name string) []ent.Value {
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *UserMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 13)
+	edges := make([]string, 0, 14)
 	if m.removedteams != nil {
 		edges = append(edges, user.EdgeTeams)
 	}
@@ -50709,6 +50452,9 @@ func (m *UserMutation) RemovedEdges() []string {
 	}
 	if m.removedretrospective_review_responses != nil {
 		edges = append(edges, user.EdgeRetrospectiveReviewResponses)
+	}
+	if m.removedretrospective_comments != nil {
+		edges = append(edges, user.EdgeRetrospectiveComments)
 	}
 	if m.removedrole_assignments != nil {
 		edges = append(edges, user.EdgeRoleAssignments)
@@ -50786,6 +50532,12 @@ func (m *UserMutation) RemovedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case user.EdgeRetrospectiveComments:
+		ids := make([]ent.Value, 0, len(m.removedretrospective_comments))
+		for id := range m.removedretrospective_comments {
+			ids = append(ids, id)
+		}
+		return ids
 	case user.EdgeRoleAssignments:
 		ids := make([]ent.Value, 0, len(m.removedrole_assignments))
 		for id := range m.removedrole_assignments {
@@ -50798,7 +50550,7 @@ func (m *UserMutation) RemovedIDs(name string) []ent.Value {
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *UserMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 13)
+	edges := make([]string, 0, 14)
 	if m.clearedtenant {
 		edges = append(edges, user.EdgeTenant)
 	}
@@ -50835,6 +50587,9 @@ func (m *UserMutation) ClearedEdges() []string {
 	if m.clearedretrospective_review_responses {
 		edges = append(edges, user.EdgeRetrospectiveReviewResponses)
 	}
+	if m.clearedretrospective_comments {
+		edges = append(edges, user.EdgeRetrospectiveComments)
+	}
 	if m.clearedrole_assignments {
 		edges = append(edges, user.EdgeRoleAssignments)
 	}
@@ -50869,6 +50624,8 @@ func (m *UserMutation) EdgeCleared(name string) bool {
 		return m.clearedretrospective_review_requests
 	case user.EdgeRetrospectiveReviewResponses:
 		return m.clearedretrospective_review_responses
+	case user.EdgeRetrospectiveComments:
+		return m.clearedretrospective_comments
 	case user.EdgeRoleAssignments:
 		return m.clearedrole_assignments
 	}
@@ -50925,6 +50682,9 @@ func (m *UserMutation) ResetEdge(name string) error {
 		return nil
 	case user.EdgeRetrospectiveReviewResponses:
 		m.ResetRetrospectiveReviewResponses()
+		return nil
+	case user.EdgeRetrospectiveComments:
+		m.ResetRetrospectiveComments()
 		return nil
 	case user.EdgeRoleAssignments:
 		m.ResetRoleAssignments()

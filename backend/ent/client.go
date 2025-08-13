@@ -53,8 +53,7 @@ import (
 	"github.com/rezible/rezible/ent/providerconfig"
 	"github.com/rezible/rezible/ent/providersynchistory"
 	"github.com/rezible/rezible/ent/retrospective"
-	"github.com/rezible/rezible/ent/retrospectivediscussion"
-	"github.com/rezible/rezible/ent/retrospectivediscussionreply"
+	"github.com/rezible/rezible/ent/retrospectivecomment"
 	"github.com/rezible/rezible/ent/retrospectivereview"
 	"github.com/rezible/rezible/ent/systemanalysis"
 	"github.com/rezible/rezible/ent/systemanalysiscomponent"
@@ -156,10 +155,8 @@ type Client struct {
 	ProviderSyncHistory *ProviderSyncHistoryClient
 	// Retrospective is the client for interacting with the Retrospective builders.
 	Retrospective *RetrospectiveClient
-	// RetrospectiveDiscussion is the client for interacting with the RetrospectiveDiscussion builders.
-	RetrospectiveDiscussion *RetrospectiveDiscussionClient
-	// RetrospectiveDiscussionReply is the client for interacting with the RetrospectiveDiscussionReply builders.
-	RetrospectiveDiscussionReply *RetrospectiveDiscussionReplyClient
+	// RetrospectiveComment is the client for interacting with the RetrospectiveComment builders.
+	RetrospectiveComment *RetrospectiveCommentClient
 	// RetrospectiveReview is the client for interacting with the RetrospectiveReview builders.
 	RetrospectiveReview *RetrospectiveReviewClient
 	// SystemAnalysis is the client for interacting with the SystemAnalysis builders.
@@ -245,8 +242,7 @@ func (c *Client) init() {
 	c.ProviderConfig = NewProviderConfigClient(c.config)
 	c.ProviderSyncHistory = NewProviderSyncHistoryClient(c.config)
 	c.Retrospective = NewRetrospectiveClient(c.config)
-	c.RetrospectiveDiscussion = NewRetrospectiveDiscussionClient(c.config)
-	c.RetrospectiveDiscussionReply = NewRetrospectiveDiscussionReplyClient(c.config)
+	c.RetrospectiveComment = NewRetrospectiveCommentClient(c.config)
 	c.RetrospectiveReview = NewRetrospectiveReviewClient(c.config)
 	c.SystemAnalysis = NewSystemAnalysisClient(c.config)
 	c.SystemAnalysisComponent = NewSystemAnalysisComponentClient(c.config)
@@ -395,8 +391,7 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 		ProviderConfig:                   NewProviderConfigClient(cfg),
 		ProviderSyncHistory:              NewProviderSyncHistoryClient(cfg),
 		Retrospective:                    NewRetrospectiveClient(cfg),
-		RetrospectiveDiscussion:          NewRetrospectiveDiscussionClient(cfg),
-		RetrospectiveDiscussionReply:     NewRetrospectiveDiscussionReplyClient(cfg),
+		RetrospectiveComment:             NewRetrospectiveCommentClient(cfg),
 		RetrospectiveReview:              NewRetrospectiveReviewClient(cfg),
 		SystemAnalysis:                   NewSystemAnalysisClient(cfg),
 		SystemAnalysisComponent:          NewSystemAnalysisComponentClient(cfg),
@@ -472,8 +467,7 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 		ProviderConfig:                   NewProviderConfigClient(cfg),
 		ProviderSyncHistory:              NewProviderSyncHistoryClient(cfg),
 		Retrospective:                    NewRetrospectiveClient(cfg),
-		RetrospectiveDiscussion:          NewRetrospectiveDiscussionClient(cfg),
-		RetrospectiveDiscussionReply:     NewRetrospectiveDiscussionReplyClient(cfg),
+		RetrospectiveComment:             NewRetrospectiveCommentClient(cfg),
 		RetrospectiveReview:              NewRetrospectiveReviewClient(cfg),
 		SystemAnalysis:                   NewSystemAnalysisClient(cfg),
 		SystemAnalysisComponent:          NewSystemAnalysisComponentClient(cfg),
@@ -532,11 +526,11 @@ func (c *Client) Use(hooks ...Hook) {
 		c.OncallRoster, c.OncallRosterMetrics, c.OncallSchedule,
 		c.OncallScheduleParticipant, c.OncallShift, c.OncallShiftHandover,
 		c.OncallShiftMetrics, c.Playbook, c.ProviderConfig, c.ProviderSyncHistory,
-		c.Retrospective, c.RetrospectiveDiscussion, c.RetrospectiveDiscussionReply,
-		c.RetrospectiveReview, c.SystemAnalysis, c.SystemAnalysisComponent,
-		c.SystemAnalysisRelationship, c.SystemComponent, c.SystemComponentConstraint,
-		c.SystemComponentControl, c.SystemComponentKind, c.SystemComponentRelationship,
-		c.SystemComponentSignal, c.SystemHazard, c.SystemRelationshipControlAction,
+		c.Retrospective, c.RetrospectiveComment, c.RetrospectiveReview,
+		c.SystemAnalysis, c.SystemAnalysisComponent, c.SystemAnalysisRelationship,
+		c.SystemComponent, c.SystemComponentConstraint, c.SystemComponentControl,
+		c.SystemComponentKind, c.SystemComponentRelationship, c.SystemComponentSignal,
+		c.SystemHazard, c.SystemRelationshipControlAction,
 		c.SystemRelationshipFeedbackSignal, c.Task, c.Team, c.Tenant, c.Ticket, c.User,
 	} {
 		n.Use(hooks...)
@@ -558,11 +552,11 @@ func (c *Client) Intercept(interceptors ...Interceptor) {
 		c.OncallRoster, c.OncallRosterMetrics, c.OncallSchedule,
 		c.OncallScheduleParticipant, c.OncallShift, c.OncallShiftHandover,
 		c.OncallShiftMetrics, c.Playbook, c.ProviderConfig, c.ProviderSyncHistory,
-		c.Retrospective, c.RetrospectiveDiscussion, c.RetrospectiveDiscussionReply,
-		c.RetrospectiveReview, c.SystemAnalysis, c.SystemAnalysisComponent,
-		c.SystemAnalysisRelationship, c.SystemComponent, c.SystemComponentConstraint,
-		c.SystemComponentControl, c.SystemComponentKind, c.SystemComponentRelationship,
-		c.SystemComponentSignal, c.SystemHazard, c.SystemRelationshipControlAction,
+		c.Retrospective, c.RetrospectiveComment, c.RetrospectiveReview,
+		c.SystemAnalysis, c.SystemAnalysisComponent, c.SystemAnalysisRelationship,
+		c.SystemComponent, c.SystemComponentConstraint, c.SystemComponentControl,
+		c.SystemComponentKind, c.SystemComponentRelationship, c.SystemComponentSignal,
+		c.SystemHazard, c.SystemRelationshipControlAction,
 		c.SystemRelationshipFeedbackSignal, c.Task, c.Team, c.Tenant, c.Ticket, c.User,
 	} {
 		n.Intercept(interceptors...)
@@ -646,10 +640,8 @@ func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 		return c.ProviderSyncHistory.mutate(ctx, m)
 	case *RetrospectiveMutation:
 		return c.Retrospective.mutate(ctx, m)
-	case *RetrospectiveDiscussionMutation:
-		return c.RetrospectiveDiscussion.mutate(ctx, m)
-	case *RetrospectiveDiscussionReplyMutation:
-		return c.RetrospectiveDiscussionReply.mutate(ctx, m)
+	case *RetrospectiveCommentMutation:
+		return c.RetrospectiveComment.mutate(ctx, m)
 	case *RetrospectiveReviewMutation:
 		return c.RetrospectiveReview.mutate(ctx, m)
 	case *SystemAnalysisMutation:
@@ -7822,15 +7814,15 @@ func (c *RetrospectiveClient) QueryIncident(r *Retrospective) *IncidentQuery {
 	return query
 }
 
-// QueryDiscussions queries the discussions edge of a Retrospective.
-func (c *RetrospectiveClient) QueryDiscussions(r *Retrospective) *RetrospectiveDiscussionQuery {
-	query := (&RetrospectiveDiscussionClient{config: c.config}).Query()
+// QueryComments queries the comments edge of a Retrospective.
+func (c *RetrospectiveClient) QueryComments(r *Retrospective) *RetrospectiveCommentQuery {
+	query := (&RetrospectiveCommentClient{config: c.config}).Query()
 	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
 		id := r.ID
 		step := sqlgraph.NewStep(
 			sqlgraph.From(retrospective.Table, retrospective.FieldID, id),
-			sqlgraph.To(retrospectivediscussion.Table, retrospectivediscussion.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, true, retrospective.DiscussionsTable, retrospective.DiscussionsColumn),
+			sqlgraph.To(retrospectivecomment.Table, retrospectivecomment.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, true, retrospective.CommentsTable, retrospective.CommentsColumn),
 		)
 		fromV = sqlgraph.Neighbors(r.driver.Dialect(), step)
 		return fromV, nil
@@ -7880,107 +7872,107 @@ func (c *RetrospectiveClient) mutate(ctx context.Context, m *RetrospectiveMutati
 	}
 }
 
-// RetrospectiveDiscussionClient is a client for the RetrospectiveDiscussion schema.
-type RetrospectiveDiscussionClient struct {
+// RetrospectiveCommentClient is a client for the RetrospectiveComment schema.
+type RetrospectiveCommentClient struct {
 	config
 }
 
-// NewRetrospectiveDiscussionClient returns a client for the RetrospectiveDiscussion from the given config.
-func NewRetrospectiveDiscussionClient(c config) *RetrospectiveDiscussionClient {
-	return &RetrospectiveDiscussionClient{config: c}
+// NewRetrospectiveCommentClient returns a client for the RetrospectiveComment from the given config.
+func NewRetrospectiveCommentClient(c config) *RetrospectiveCommentClient {
+	return &RetrospectiveCommentClient{config: c}
 }
 
 // Use adds a list of mutation hooks to the hooks stack.
-// A call to `Use(f, g, h)` equals to `retrospectivediscussion.Hooks(f(g(h())))`.
-func (c *RetrospectiveDiscussionClient) Use(hooks ...Hook) {
-	c.hooks.RetrospectiveDiscussion = append(c.hooks.RetrospectiveDiscussion, hooks...)
+// A call to `Use(f, g, h)` equals to `retrospectivecomment.Hooks(f(g(h())))`.
+func (c *RetrospectiveCommentClient) Use(hooks ...Hook) {
+	c.hooks.RetrospectiveComment = append(c.hooks.RetrospectiveComment, hooks...)
 }
 
 // Intercept adds a list of query interceptors to the interceptors stack.
-// A call to `Intercept(f, g, h)` equals to `retrospectivediscussion.Intercept(f(g(h())))`.
-func (c *RetrospectiveDiscussionClient) Intercept(interceptors ...Interceptor) {
-	c.inters.RetrospectiveDiscussion = append(c.inters.RetrospectiveDiscussion, interceptors...)
+// A call to `Intercept(f, g, h)` equals to `retrospectivecomment.Intercept(f(g(h())))`.
+func (c *RetrospectiveCommentClient) Intercept(interceptors ...Interceptor) {
+	c.inters.RetrospectiveComment = append(c.inters.RetrospectiveComment, interceptors...)
 }
 
-// Create returns a builder for creating a RetrospectiveDiscussion entity.
-func (c *RetrospectiveDiscussionClient) Create() *RetrospectiveDiscussionCreate {
-	mutation := newRetrospectiveDiscussionMutation(c.config, OpCreate)
-	return &RetrospectiveDiscussionCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+// Create returns a builder for creating a RetrospectiveComment entity.
+func (c *RetrospectiveCommentClient) Create() *RetrospectiveCommentCreate {
+	mutation := newRetrospectiveCommentMutation(c.config, OpCreate)
+	return &RetrospectiveCommentCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
 
-// CreateBulk returns a builder for creating a bulk of RetrospectiveDiscussion entities.
-func (c *RetrospectiveDiscussionClient) CreateBulk(builders ...*RetrospectiveDiscussionCreate) *RetrospectiveDiscussionCreateBulk {
-	return &RetrospectiveDiscussionCreateBulk{config: c.config, builders: builders}
+// CreateBulk returns a builder for creating a bulk of RetrospectiveComment entities.
+func (c *RetrospectiveCommentClient) CreateBulk(builders ...*RetrospectiveCommentCreate) *RetrospectiveCommentCreateBulk {
+	return &RetrospectiveCommentCreateBulk{config: c.config, builders: builders}
 }
 
 // MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
 // a builder and applies setFunc on it.
-func (c *RetrospectiveDiscussionClient) MapCreateBulk(slice any, setFunc func(*RetrospectiveDiscussionCreate, int)) *RetrospectiveDiscussionCreateBulk {
+func (c *RetrospectiveCommentClient) MapCreateBulk(slice any, setFunc func(*RetrospectiveCommentCreate, int)) *RetrospectiveCommentCreateBulk {
 	rv := reflect.ValueOf(slice)
 	if rv.Kind() != reflect.Slice {
-		return &RetrospectiveDiscussionCreateBulk{err: fmt.Errorf("calling to RetrospectiveDiscussionClient.MapCreateBulk with wrong type %T, need slice", slice)}
+		return &RetrospectiveCommentCreateBulk{err: fmt.Errorf("calling to RetrospectiveCommentClient.MapCreateBulk with wrong type %T, need slice", slice)}
 	}
-	builders := make([]*RetrospectiveDiscussionCreate, rv.Len())
+	builders := make([]*RetrospectiveCommentCreate, rv.Len())
 	for i := 0; i < rv.Len(); i++ {
 		builders[i] = c.Create()
 		setFunc(builders[i], i)
 	}
-	return &RetrospectiveDiscussionCreateBulk{config: c.config, builders: builders}
+	return &RetrospectiveCommentCreateBulk{config: c.config, builders: builders}
 }
 
-// Update returns an update builder for RetrospectiveDiscussion.
-func (c *RetrospectiveDiscussionClient) Update() *RetrospectiveDiscussionUpdate {
-	mutation := newRetrospectiveDiscussionMutation(c.config, OpUpdate)
-	return &RetrospectiveDiscussionUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+// Update returns an update builder for RetrospectiveComment.
+func (c *RetrospectiveCommentClient) Update() *RetrospectiveCommentUpdate {
+	mutation := newRetrospectiveCommentMutation(c.config, OpUpdate)
+	return &RetrospectiveCommentUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
 
 // UpdateOne returns an update builder for the given entity.
-func (c *RetrospectiveDiscussionClient) UpdateOne(rd *RetrospectiveDiscussion) *RetrospectiveDiscussionUpdateOne {
-	mutation := newRetrospectiveDiscussionMutation(c.config, OpUpdateOne, withRetrospectiveDiscussion(rd))
-	return &RetrospectiveDiscussionUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+func (c *RetrospectiveCommentClient) UpdateOne(rc *RetrospectiveComment) *RetrospectiveCommentUpdateOne {
+	mutation := newRetrospectiveCommentMutation(c.config, OpUpdateOne, withRetrospectiveComment(rc))
+	return &RetrospectiveCommentUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
 
 // UpdateOneID returns an update builder for the given id.
-func (c *RetrospectiveDiscussionClient) UpdateOneID(id uuid.UUID) *RetrospectiveDiscussionUpdateOne {
-	mutation := newRetrospectiveDiscussionMutation(c.config, OpUpdateOne, withRetrospectiveDiscussionID(id))
-	return &RetrospectiveDiscussionUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+func (c *RetrospectiveCommentClient) UpdateOneID(id uuid.UUID) *RetrospectiveCommentUpdateOne {
+	mutation := newRetrospectiveCommentMutation(c.config, OpUpdateOne, withRetrospectiveCommentID(id))
+	return &RetrospectiveCommentUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
 
-// Delete returns a delete builder for RetrospectiveDiscussion.
-func (c *RetrospectiveDiscussionClient) Delete() *RetrospectiveDiscussionDelete {
-	mutation := newRetrospectiveDiscussionMutation(c.config, OpDelete)
-	return &RetrospectiveDiscussionDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+// Delete returns a delete builder for RetrospectiveComment.
+func (c *RetrospectiveCommentClient) Delete() *RetrospectiveCommentDelete {
+	mutation := newRetrospectiveCommentMutation(c.config, OpDelete)
+	return &RetrospectiveCommentDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
 
 // DeleteOne returns a builder for deleting the given entity.
-func (c *RetrospectiveDiscussionClient) DeleteOne(rd *RetrospectiveDiscussion) *RetrospectiveDiscussionDeleteOne {
-	return c.DeleteOneID(rd.ID)
+func (c *RetrospectiveCommentClient) DeleteOne(rc *RetrospectiveComment) *RetrospectiveCommentDeleteOne {
+	return c.DeleteOneID(rc.ID)
 }
 
 // DeleteOneID returns a builder for deleting the given entity by its id.
-func (c *RetrospectiveDiscussionClient) DeleteOneID(id uuid.UUID) *RetrospectiveDiscussionDeleteOne {
-	builder := c.Delete().Where(retrospectivediscussion.ID(id))
+func (c *RetrospectiveCommentClient) DeleteOneID(id uuid.UUID) *RetrospectiveCommentDeleteOne {
+	builder := c.Delete().Where(retrospectivecomment.ID(id))
 	builder.mutation.id = &id
 	builder.mutation.op = OpDeleteOne
-	return &RetrospectiveDiscussionDeleteOne{builder}
+	return &RetrospectiveCommentDeleteOne{builder}
 }
 
-// Query returns a query builder for RetrospectiveDiscussion.
-func (c *RetrospectiveDiscussionClient) Query() *RetrospectiveDiscussionQuery {
-	return &RetrospectiveDiscussionQuery{
+// Query returns a query builder for RetrospectiveComment.
+func (c *RetrospectiveCommentClient) Query() *RetrospectiveCommentQuery {
+	return &RetrospectiveCommentQuery{
 		config: c.config,
-		ctx:    &QueryContext{Type: TypeRetrospectiveDiscussion},
+		ctx:    &QueryContext{Type: TypeRetrospectiveComment},
 		inters: c.Interceptors(),
 	}
 }
 
-// Get returns a RetrospectiveDiscussion entity by its id.
-func (c *RetrospectiveDiscussionClient) Get(ctx context.Context, id uuid.UUID) (*RetrospectiveDiscussion, error) {
-	return c.Query().Where(retrospectivediscussion.ID(id)).Only(ctx)
+// Get returns a RetrospectiveComment entity by its id.
+func (c *RetrospectiveCommentClient) Get(ctx context.Context, id uuid.UUID) (*RetrospectiveComment, error) {
+	return c.Query().Where(retrospectivecomment.ID(id)).Only(ctx)
 }
 
 // GetX is like Get, but panics if an error occurs.
-func (c *RetrospectiveDiscussionClient) GetX(ctx context.Context, id uuid.UUID) *RetrospectiveDiscussion {
+func (c *RetrospectiveCommentClient) GetX(ctx context.Context, id uuid.UUID) *RetrospectiveComment {
 	obj, err := c.Get(ctx, id)
 	if err != nil {
 		panic(err)
@@ -7988,291 +7980,125 @@ func (c *RetrospectiveDiscussionClient) GetX(ctx context.Context, id uuid.UUID) 
 	return obj
 }
 
-// QueryTenant queries the tenant edge of a RetrospectiveDiscussion.
-func (c *RetrospectiveDiscussionClient) QueryTenant(rd *RetrospectiveDiscussion) *TenantQuery {
+// QueryTenant queries the tenant edge of a RetrospectiveComment.
+func (c *RetrospectiveCommentClient) QueryTenant(rc *RetrospectiveComment) *TenantQuery {
 	query := (&TenantClient{config: c.config}).Query()
 	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := rd.ID
+		id := rc.ID
 		step := sqlgraph.NewStep(
-			sqlgraph.From(retrospectivediscussion.Table, retrospectivediscussion.FieldID, id),
+			sqlgraph.From(retrospectivecomment.Table, retrospectivecomment.FieldID, id),
 			sqlgraph.To(tenant.Table, tenant.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, retrospectivediscussion.TenantTable, retrospectivediscussion.TenantColumn),
+			sqlgraph.Edge(sqlgraph.M2O, false, retrospectivecomment.TenantTable, retrospectivecomment.TenantColumn),
 		)
-		fromV = sqlgraph.Neighbors(rd.driver.Dialect(), step)
+		fromV = sqlgraph.Neighbors(rc.driver.Dialect(), step)
 		return fromV, nil
 	}
 	return query
 }
 
-// QueryRetrospective queries the retrospective edge of a RetrospectiveDiscussion.
-func (c *RetrospectiveDiscussionClient) QueryRetrospective(rd *RetrospectiveDiscussion) *RetrospectiveQuery {
+// QueryRetrospective queries the retrospective edge of a RetrospectiveComment.
+func (c *RetrospectiveCommentClient) QueryRetrospective(rc *RetrospectiveComment) *RetrospectiveQuery {
 	query := (&RetrospectiveClient{config: c.config}).Query()
 	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := rd.ID
+		id := rc.ID
 		step := sqlgraph.NewStep(
-			sqlgraph.From(retrospectivediscussion.Table, retrospectivediscussion.FieldID, id),
+			sqlgraph.From(retrospectivecomment.Table, retrospectivecomment.FieldID, id),
 			sqlgraph.To(retrospective.Table, retrospective.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, retrospectivediscussion.RetrospectiveTable, retrospectivediscussion.RetrospectiveColumn),
+			sqlgraph.Edge(sqlgraph.M2O, false, retrospectivecomment.RetrospectiveTable, retrospectivecomment.RetrospectiveColumn),
 		)
-		fromV = sqlgraph.Neighbors(rd.driver.Dialect(), step)
+		fromV = sqlgraph.Neighbors(rc.driver.Dialect(), step)
 		return fromV, nil
 	}
 	return query
 }
 
-// QueryReplies queries the replies edge of a RetrospectiveDiscussion.
-func (c *RetrospectiveDiscussionClient) QueryReplies(rd *RetrospectiveDiscussion) *RetrospectiveDiscussionReplyQuery {
-	query := (&RetrospectiveDiscussionReplyClient{config: c.config}).Query()
+// QueryUser queries the user edge of a RetrospectiveComment.
+func (c *RetrospectiveCommentClient) QueryUser(rc *RetrospectiveComment) *UserQuery {
+	query := (&UserClient{config: c.config}).Query()
 	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := rd.ID
+		id := rc.ID
 		step := sqlgraph.NewStep(
-			sqlgraph.From(retrospectivediscussion.Table, retrospectivediscussion.FieldID, id),
-			sqlgraph.To(retrospectivediscussionreply.Table, retrospectivediscussionreply.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, true, retrospectivediscussion.RepliesTable, retrospectivediscussion.RepliesColumn),
+			sqlgraph.From(retrospectivecomment.Table, retrospectivecomment.FieldID, id),
+			sqlgraph.To(user.Table, user.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, retrospectivecomment.UserTable, retrospectivecomment.UserColumn),
 		)
-		fromV = sqlgraph.Neighbors(rd.driver.Dialect(), step)
+		fromV = sqlgraph.Neighbors(rc.driver.Dialect(), step)
 		return fromV, nil
 	}
 	return query
 }
 
-// QueryReview queries the review edge of a RetrospectiveDiscussion.
-func (c *RetrospectiveDiscussionClient) QueryReview(rd *RetrospectiveDiscussion) *RetrospectiveReviewQuery {
+// QueryReview queries the review edge of a RetrospectiveComment.
+func (c *RetrospectiveCommentClient) QueryReview(rc *RetrospectiveComment) *RetrospectiveReviewQuery {
 	query := (&RetrospectiveReviewClient{config: c.config}).Query()
 	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := rd.ID
+		id := rc.ID
 		step := sqlgraph.NewStep(
-			sqlgraph.From(retrospectivediscussion.Table, retrospectivediscussion.FieldID, id),
+			sqlgraph.From(retrospectivecomment.Table, retrospectivecomment.FieldID, id),
 			sqlgraph.To(retrospectivereview.Table, retrospectivereview.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, true, retrospectivediscussion.ReviewTable, retrospectivediscussion.ReviewColumn),
+			sqlgraph.Edge(sqlgraph.M2O, false, retrospectivecomment.ReviewTable, retrospectivecomment.ReviewColumn),
 		)
-		fromV = sqlgraph.Neighbors(rd.driver.Dialect(), step)
+		fromV = sqlgraph.Neighbors(rc.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryParent queries the parent edge of a RetrospectiveComment.
+func (c *RetrospectiveCommentClient) QueryParent(rc *RetrospectiveComment) *RetrospectiveCommentQuery {
+	query := (&RetrospectiveCommentClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := rc.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(retrospectivecomment.Table, retrospectivecomment.FieldID, id),
+			sqlgraph.To(retrospectivecomment.Table, retrospectivecomment.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, retrospectivecomment.ParentTable, retrospectivecomment.ParentColumn),
+		)
+		fromV = sqlgraph.Neighbors(rc.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryReplies queries the replies edge of a RetrospectiveComment.
+func (c *RetrospectiveCommentClient) QueryReplies(rc *RetrospectiveComment) *RetrospectiveCommentQuery {
+	query := (&RetrospectiveCommentClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := rc.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(retrospectivecomment.Table, retrospectivecomment.FieldID, id),
+			sqlgraph.To(retrospectivecomment.Table, retrospectivecomment.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, retrospectivecomment.RepliesTable, retrospectivecomment.RepliesColumn),
+		)
+		fromV = sqlgraph.Neighbors(rc.driver.Dialect(), step)
 		return fromV, nil
 	}
 	return query
 }
 
 // Hooks returns the client hooks.
-func (c *RetrospectiveDiscussionClient) Hooks() []Hook {
-	hooks := c.hooks.RetrospectiveDiscussion
-	return append(hooks[:len(hooks):len(hooks)], retrospectivediscussion.Hooks[:]...)
+func (c *RetrospectiveCommentClient) Hooks() []Hook {
+	hooks := c.hooks.RetrospectiveComment
+	return append(hooks[:len(hooks):len(hooks)], retrospectivecomment.Hooks[:]...)
 }
 
 // Interceptors returns the client interceptors.
-func (c *RetrospectiveDiscussionClient) Interceptors() []Interceptor {
-	return c.inters.RetrospectiveDiscussion
+func (c *RetrospectiveCommentClient) Interceptors() []Interceptor {
+	return c.inters.RetrospectiveComment
 }
 
-func (c *RetrospectiveDiscussionClient) mutate(ctx context.Context, m *RetrospectiveDiscussionMutation) (Value, error) {
+func (c *RetrospectiveCommentClient) mutate(ctx context.Context, m *RetrospectiveCommentMutation) (Value, error) {
 	switch m.Op() {
 	case OpCreate:
-		return (&RetrospectiveDiscussionCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+		return (&RetrospectiveCommentCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
 	case OpUpdate:
-		return (&RetrospectiveDiscussionUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+		return (&RetrospectiveCommentUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
 	case OpUpdateOne:
-		return (&RetrospectiveDiscussionUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+		return (&RetrospectiveCommentUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
 	case OpDelete, OpDeleteOne:
-		return (&RetrospectiveDiscussionDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+		return (&RetrospectiveCommentDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
 	default:
-		return nil, fmt.Errorf("ent: unknown RetrospectiveDiscussion mutation op: %q", m.Op())
-	}
-}
-
-// RetrospectiveDiscussionReplyClient is a client for the RetrospectiveDiscussionReply schema.
-type RetrospectiveDiscussionReplyClient struct {
-	config
-}
-
-// NewRetrospectiveDiscussionReplyClient returns a client for the RetrospectiveDiscussionReply from the given config.
-func NewRetrospectiveDiscussionReplyClient(c config) *RetrospectiveDiscussionReplyClient {
-	return &RetrospectiveDiscussionReplyClient{config: c}
-}
-
-// Use adds a list of mutation hooks to the hooks stack.
-// A call to `Use(f, g, h)` equals to `retrospectivediscussionreply.Hooks(f(g(h())))`.
-func (c *RetrospectiveDiscussionReplyClient) Use(hooks ...Hook) {
-	c.hooks.RetrospectiveDiscussionReply = append(c.hooks.RetrospectiveDiscussionReply, hooks...)
-}
-
-// Intercept adds a list of query interceptors to the interceptors stack.
-// A call to `Intercept(f, g, h)` equals to `retrospectivediscussionreply.Intercept(f(g(h())))`.
-func (c *RetrospectiveDiscussionReplyClient) Intercept(interceptors ...Interceptor) {
-	c.inters.RetrospectiveDiscussionReply = append(c.inters.RetrospectiveDiscussionReply, interceptors...)
-}
-
-// Create returns a builder for creating a RetrospectiveDiscussionReply entity.
-func (c *RetrospectiveDiscussionReplyClient) Create() *RetrospectiveDiscussionReplyCreate {
-	mutation := newRetrospectiveDiscussionReplyMutation(c.config, OpCreate)
-	return &RetrospectiveDiscussionReplyCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// CreateBulk returns a builder for creating a bulk of RetrospectiveDiscussionReply entities.
-func (c *RetrospectiveDiscussionReplyClient) CreateBulk(builders ...*RetrospectiveDiscussionReplyCreate) *RetrospectiveDiscussionReplyCreateBulk {
-	return &RetrospectiveDiscussionReplyCreateBulk{config: c.config, builders: builders}
-}
-
-// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
-// a builder and applies setFunc on it.
-func (c *RetrospectiveDiscussionReplyClient) MapCreateBulk(slice any, setFunc func(*RetrospectiveDiscussionReplyCreate, int)) *RetrospectiveDiscussionReplyCreateBulk {
-	rv := reflect.ValueOf(slice)
-	if rv.Kind() != reflect.Slice {
-		return &RetrospectiveDiscussionReplyCreateBulk{err: fmt.Errorf("calling to RetrospectiveDiscussionReplyClient.MapCreateBulk with wrong type %T, need slice", slice)}
-	}
-	builders := make([]*RetrospectiveDiscussionReplyCreate, rv.Len())
-	for i := 0; i < rv.Len(); i++ {
-		builders[i] = c.Create()
-		setFunc(builders[i], i)
-	}
-	return &RetrospectiveDiscussionReplyCreateBulk{config: c.config, builders: builders}
-}
-
-// Update returns an update builder for RetrospectiveDiscussionReply.
-func (c *RetrospectiveDiscussionReplyClient) Update() *RetrospectiveDiscussionReplyUpdate {
-	mutation := newRetrospectiveDiscussionReplyMutation(c.config, OpUpdate)
-	return &RetrospectiveDiscussionReplyUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// UpdateOne returns an update builder for the given entity.
-func (c *RetrospectiveDiscussionReplyClient) UpdateOne(rdr *RetrospectiveDiscussionReply) *RetrospectiveDiscussionReplyUpdateOne {
-	mutation := newRetrospectiveDiscussionReplyMutation(c.config, OpUpdateOne, withRetrospectiveDiscussionReply(rdr))
-	return &RetrospectiveDiscussionReplyUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// UpdateOneID returns an update builder for the given id.
-func (c *RetrospectiveDiscussionReplyClient) UpdateOneID(id uuid.UUID) *RetrospectiveDiscussionReplyUpdateOne {
-	mutation := newRetrospectiveDiscussionReplyMutation(c.config, OpUpdateOne, withRetrospectiveDiscussionReplyID(id))
-	return &RetrospectiveDiscussionReplyUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// Delete returns a delete builder for RetrospectiveDiscussionReply.
-func (c *RetrospectiveDiscussionReplyClient) Delete() *RetrospectiveDiscussionReplyDelete {
-	mutation := newRetrospectiveDiscussionReplyMutation(c.config, OpDelete)
-	return &RetrospectiveDiscussionReplyDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// DeleteOne returns a builder for deleting the given entity.
-func (c *RetrospectiveDiscussionReplyClient) DeleteOne(rdr *RetrospectiveDiscussionReply) *RetrospectiveDiscussionReplyDeleteOne {
-	return c.DeleteOneID(rdr.ID)
-}
-
-// DeleteOneID returns a builder for deleting the given entity by its id.
-func (c *RetrospectiveDiscussionReplyClient) DeleteOneID(id uuid.UUID) *RetrospectiveDiscussionReplyDeleteOne {
-	builder := c.Delete().Where(retrospectivediscussionreply.ID(id))
-	builder.mutation.id = &id
-	builder.mutation.op = OpDeleteOne
-	return &RetrospectiveDiscussionReplyDeleteOne{builder}
-}
-
-// Query returns a query builder for RetrospectiveDiscussionReply.
-func (c *RetrospectiveDiscussionReplyClient) Query() *RetrospectiveDiscussionReplyQuery {
-	return &RetrospectiveDiscussionReplyQuery{
-		config: c.config,
-		ctx:    &QueryContext{Type: TypeRetrospectiveDiscussionReply},
-		inters: c.Interceptors(),
-	}
-}
-
-// Get returns a RetrospectiveDiscussionReply entity by its id.
-func (c *RetrospectiveDiscussionReplyClient) Get(ctx context.Context, id uuid.UUID) (*RetrospectiveDiscussionReply, error) {
-	return c.Query().Where(retrospectivediscussionreply.ID(id)).Only(ctx)
-}
-
-// GetX is like Get, but panics if an error occurs.
-func (c *RetrospectiveDiscussionReplyClient) GetX(ctx context.Context, id uuid.UUID) *RetrospectiveDiscussionReply {
-	obj, err := c.Get(ctx, id)
-	if err != nil {
-		panic(err)
-	}
-	return obj
-}
-
-// QueryTenant queries the tenant edge of a RetrospectiveDiscussionReply.
-func (c *RetrospectiveDiscussionReplyClient) QueryTenant(rdr *RetrospectiveDiscussionReply) *TenantQuery {
-	query := (&TenantClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := rdr.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(retrospectivediscussionreply.Table, retrospectivediscussionreply.FieldID, id),
-			sqlgraph.To(tenant.Table, tenant.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, retrospectivediscussionreply.TenantTable, retrospectivediscussionreply.TenantColumn),
-		)
-		fromV = sqlgraph.Neighbors(rdr.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// QueryDiscussion queries the discussion edge of a RetrospectiveDiscussionReply.
-func (c *RetrospectiveDiscussionReplyClient) QueryDiscussion(rdr *RetrospectiveDiscussionReply) *RetrospectiveDiscussionQuery {
-	query := (&RetrospectiveDiscussionClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := rdr.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(retrospectivediscussionreply.Table, retrospectivediscussionreply.FieldID, id),
-			sqlgraph.To(retrospectivediscussion.Table, retrospectivediscussion.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, retrospectivediscussionreply.DiscussionTable, retrospectivediscussionreply.DiscussionColumn),
-		)
-		fromV = sqlgraph.Neighbors(rdr.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// QueryParentReply queries the parent_reply edge of a RetrospectiveDiscussionReply.
-func (c *RetrospectiveDiscussionReplyClient) QueryParentReply(rdr *RetrospectiveDiscussionReply) *RetrospectiveDiscussionReplyQuery {
-	query := (&RetrospectiveDiscussionReplyClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := rdr.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(retrospectivediscussionreply.Table, retrospectivediscussionreply.FieldID, id),
-			sqlgraph.To(retrospectivediscussionreply.Table, retrospectivediscussionreply.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, true, retrospectivediscussionreply.ParentReplyTable, retrospectivediscussionreply.ParentReplyColumn),
-		)
-		fromV = sqlgraph.Neighbors(rdr.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// QueryReplies queries the replies edge of a RetrospectiveDiscussionReply.
-func (c *RetrospectiveDiscussionReplyClient) QueryReplies(rdr *RetrospectiveDiscussionReply) *RetrospectiveDiscussionReplyQuery {
-	query := (&RetrospectiveDiscussionReplyClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := rdr.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(retrospectivediscussionreply.Table, retrospectivediscussionreply.FieldID, id),
-			sqlgraph.To(retrospectivediscussionreply.Table, retrospectivediscussionreply.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, retrospectivediscussionreply.RepliesTable, retrospectivediscussionreply.RepliesColumn),
-		)
-		fromV = sqlgraph.Neighbors(rdr.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// Hooks returns the client hooks.
-func (c *RetrospectiveDiscussionReplyClient) Hooks() []Hook {
-	hooks := c.hooks.RetrospectiveDiscussionReply
-	return append(hooks[:len(hooks):len(hooks)], retrospectivediscussionreply.Hooks[:]...)
-}
-
-// Interceptors returns the client interceptors.
-func (c *RetrospectiveDiscussionReplyClient) Interceptors() []Interceptor {
-	return c.inters.RetrospectiveDiscussionReply
-}
-
-func (c *RetrospectiveDiscussionReplyClient) mutate(ctx context.Context, m *RetrospectiveDiscussionReplyMutation) (Value, error) {
-	switch m.Op() {
-	case OpCreate:
-		return (&RetrospectiveDiscussionReplyCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
-	case OpUpdate:
-		return (&RetrospectiveDiscussionReplyUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
-	case OpUpdateOne:
-		return (&RetrospectiveDiscussionReplyUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
-	case OpDelete, OpDeleteOne:
-		return (&RetrospectiveDiscussionReplyDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
-	default:
-		return nil, fmt.Errorf("ent: unknown RetrospectiveDiscussionReply mutation op: %q", m.Op())
+		return nil, fmt.Errorf("ent: unknown RetrospectiveComment mutation op: %q", m.Op())
 	}
 }
 
@@ -8448,15 +8274,15 @@ func (c *RetrospectiveReviewClient) QueryReviewer(rr *RetrospectiveReview) *User
 	return query
 }
 
-// QueryDiscussion queries the discussion edge of a RetrospectiveReview.
-func (c *RetrospectiveReviewClient) QueryDiscussion(rr *RetrospectiveReview) *RetrospectiveDiscussionQuery {
-	query := (&RetrospectiveDiscussionClient{config: c.config}).Query()
+// QueryComment queries the comment edge of a RetrospectiveReview.
+func (c *RetrospectiveReviewClient) QueryComment(rr *RetrospectiveReview) *RetrospectiveCommentQuery {
+	query := (&RetrospectiveCommentClient{config: c.config}).Query()
 	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
 		id := rr.ID
 		step := sqlgraph.NewStep(
 			sqlgraph.From(retrospectivereview.Table, retrospectivereview.FieldID, id),
-			sqlgraph.To(retrospectivediscussion.Table, retrospectivediscussion.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, retrospectivereview.DiscussionTable, retrospectivereview.DiscussionColumn),
+			sqlgraph.To(retrospectivecomment.Table, retrospectivecomment.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, retrospectivereview.CommentTable, retrospectivereview.CommentColumn),
 		)
 		fromV = sqlgraph.Neighbors(rr.driver.Dialect(), step)
 		return fromV, nil
@@ -11990,6 +11816,22 @@ func (c *UserClient) QueryRetrospectiveReviewResponses(u *User) *RetrospectiveRe
 	return query
 }
 
+// QueryRetrospectiveComments queries the retrospective_comments edge of a User.
+func (c *UserClient) QueryRetrospectiveComments(u *User) *RetrospectiveCommentQuery {
+	query := (&RetrospectiveCommentClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := u.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(user.Table, user.FieldID, id),
+			sqlgraph.To(retrospectivecomment.Table, retrospectivecomment.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, true, user.RetrospectiveCommentsTable, user.RetrospectiveCommentsColumn),
+		)
+		fromV = sqlgraph.Neighbors(u.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
 // QueryRoleAssignments queries the role_assignments edge of a User.
 func (c *UserClient) QueryRoleAssignments(u *User) *IncidentRoleAssignmentQuery {
 	query := (&IncidentRoleAssignmentClient{config: c.config}).Query()
@@ -12044,12 +11886,12 @@ type (
 		OncallEvent, OncallHandoverTemplate, OncallRoster, OncallRosterMetrics,
 		OncallSchedule, OncallScheduleParticipant, OncallShift, OncallShiftHandover,
 		OncallShiftMetrics, Playbook, ProviderConfig, ProviderSyncHistory,
-		Retrospective, RetrospectiveDiscussion, RetrospectiveDiscussionReply,
-		RetrospectiveReview, SystemAnalysis, SystemAnalysisComponent,
-		SystemAnalysisRelationship, SystemComponent, SystemComponentConstraint,
-		SystemComponentControl, SystemComponentKind, SystemComponentRelationship,
-		SystemComponentSignal, SystemHazard, SystemRelationshipControlAction,
-		SystemRelationshipFeedbackSignal, Task, Team, Tenant, Ticket, User []ent.Hook
+		Retrospective, RetrospectiveComment, RetrospectiveReview, SystemAnalysis,
+		SystemAnalysisComponent, SystemAnalysisRelationship, SystemComponent,
+		SystemComponentConstraint, SystemComponentControl, SystemComponentKind,
+		SystemComponentRelationship, SystemComponentSignal, SystemHazard,
+		SystemRelationshipControlAction, SystemRelationshipFeedbackSignal, Task, Team,
+		Tenant, Ticket, User []ent.Hook
 	}
 	inters struct {
 		Alert, AlertFeedback, AlertMetrics, Incident, IncidentDebrief,
@@ -12062,12 +11904,11 @@ type (
 		OncallHandoverTemplate, OncallRoster, OncallRosterMetrics, OncallSchedule,
 		OncallScheduleParticipant, OncallShift, OncallShiftHandover,
 		OncallShiftMetrics, Playbook, ProviderConfig, ProviderSyncHistory,
-		Retrospective, RetrospectiveDiscussion, RetrospectiveDiscussionReply,
-		RetrospectiveReview, SystemAnalysis, SystemAnalysisComponent,
-		SystemAnalysisRelationship, SystemComponent, SystemComponentConstraint,
-		SystemComponentControl, SystemComponentKind, SystemComponentRelationship,
-		SystemComponentSignal, SystemHazard, SystemRelationshipControlAction,
-		SystemRelationshipFeedbackSignal, Task, Team, Tenant, Ticket,
-		User []ent.Interceptor
+		Retrospective, RetrospectiveComment, RetrospectiveReview, SystemAnalysis,
+		SystemAnalysisComponent, SystemAnalysisRelationship, SystemComponent,
+		SystemComponentConstraint, SystemComponentControl, SystemComponentKind,
+		SystemComponentRelationship, SystemComponentSignal, SystemHazard,
+		SystemRelationshipControlAction, SystemRelationshipFeedbackSignal, Task, Team,
+		Tenant, Ticket, User []ent.Interceptor
 	}
 )

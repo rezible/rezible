@@ -19,6 +19,7 @@ import (
 	"github.com/rezible/rezible/ent/oncallscheduleparticipant"
 	"github.com/rezible/rezible/ent/oncallshift"
 	"github.com/rezible/rezible/ent/predicate"
+	"github.com/rezible/rezible/ent/retrospectivecomment"
 	"github.com/rezible/rezible/ent/retrospectivereview"
 	"github.com/rezible/rezible/ent/task"
 	"github.com/rezible/rezible/ent/team"
@@ -272,6 +273,21 @@ func (uu *UserUpdate) AddRetrospectiveReviewResponses(r ...*RetrospectiveReview)
 	return uu.AddRetrospectiveReviewResponseIDs(ids...)
 }
 
+// AddRetrospectiveCommentIDs adds the "retrospective_comments" edge to the RetrospectiveComment entity by IDs.
+func (uu *UserUpdate) AddRetrospectiveCommentIDs(ids ...uuid.UUID) *UserUpdate {
+	uu.mutation.AddRetrospectiveCommentIDs(ids...)
+	return uu
+}
+
+// AddRetrospectiveComments adds the "retrospective_comments" edges to the RetrospectiveComment entity.
+func (uu *UserUpdate) AddRetrospectiveComments(r ...*RetrospectiveComment) *UserUpdate {
+	ids := make([]uuid.UUID, len(r))
+	for i := range r {
+		ids[i] = r[i].ID
+	}
+	return uu.AddRetrospectiveCommentIDs(ids...)
+}
+
 // AddRoleAssignmentIDs adds the "role_assignments" edge to the IncidentRoleAssignment entity by IDs.
 func (uu *UserUpdate) AddRoleAssignmentIDs(ids ...uuid.UUID) *UserUpdate {
 	uu.mutation.AddRoleAssignmentIDs(ids...)
@@ -521,6 +537,27 @@ func (uu *UserUpdate) RemoveRetrospectiveReviewResponses(r ...*RetrospectiveRevi
 		ids[i] = r[i].ID
 	}
 	return uu.RemoveRetrospectiveReviewResponseIDs(ids...)
+}
+
+// ClearRetrospectiveComments clears all "retrospective_comments" edges to the RetrospectiveComment entity.
+func (uu *UserUpdate) ClearRetrospectiveComments() *UserUpdate {
+	uu.mutation.ClearRetrospectiveComments()
+	return uu
+}
+
+// RemoveRetrospectiveCommentIDs removes the "retrospective_comments" edge to RetrospectiveComment entities by IDs.
+func (uu *UserUpdate) RemoveRetrospectiveCommentIDs(ids ...uuid.UUID) *UserUpdate {
+	uu.mutation.RemoveRetrospectiveCommentIDs(ids...)
+	return uu
+}
+
+// RemoveRetrospectiveComments removes "retrospective_comments" edges to RetrospectiveComment entities.
+func (uu *UserUpdate) RemoveRetrospectiveComments(r ...*RetrospectiveComment) *UserUpdate {
+	ids := make([]uuid.UUID, len(r))
+	for i := range r {
+		ids[i] = r[i].ID
+	}
+	return uu.RemoveRetrospectiveCommentIDs(ids...)
 }
 
 // ClearRoleAssignments clears all "role_assignments" edges to the IncidentRoleAssignment entity.
@@ -1131,6 +1168,51 @@ func (uu *UserUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	if uu.mutation.RetrospectiveCommentsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   user.RetrospectiveCommentsTable,
+			Columns: []string{user.RetrospectiveCommentsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(retrospectivecomment.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := uu.mutation.RemovedRetrospectiveCommentsIDs(); len(nodes) > 0 && !uu.mutation.RetrospectiveCommentsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   user.RetrospectiveCommentsTable,
+			Columns: []string{user.RetrospectiveCommentsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(retrospectivecomment.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := uu.mutation.RetrospectiveCommentsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   user.RetrospectiveCommentsTable,
+			Columns: []string{user.RetrospectiveCommentsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(retrospectivecomment.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
 	if uu.mutation.RoleAssignmentsCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
@@ -1431,6 +1513,21 @@ func (uuo *UserUpdateOne) AddRetrospectiveReviewResponses(r ...*RetrospectiveRev
 	return uuo.AddRetrospectiveReviewResponseIDs(ids...)
 }
 
+// AddRetrospectiveCommentIDs adds the "retrospective_comments" edge to the RetrospectiveComment entity by IDs.
+func (uuo *UserUpdateOne) AddRetrospectiveCommentIDs(ids ...uuid.UUID) *UserUpdateOne {
+	uuo.mutation.AddRetrospectiveCommentIDs(ids...)
+	return uuo
+}
+
+// AddRetrospectiveComments adds the "retrospective_comments" edges to the RetrospectiveComment entity.
+func (uuo *UserUpdateOne) AddRetrospectiveComments(r ...*RetrospectiveComment) *UserUpdateOne {
+	ids := make([]uuid.UUID, len(r))
+	for i := range r {
+		ids[i] = r[i].ID
+	}
+	return uuo.AddRetrospectiveCommentIDs(ids...)
+}
+
 // AddRoleAssignmentIDs adds the "role_assignments" edge to the IncidentRoleAssignment entity by IDs.
 func (uuo *UserUpdateOne) AddRoleAssignmentIDs(ids ...uuid.UUID) *UserUpdateOne {
 	uuo.mutation.AddRoleAssignmentIDs(ids...)
@@ -1680,6 +1777,27 @@ func (uuo *UserUpdateOne) RemoveRetrospectiveReviewResponses(r ...*Retrospective
 		ids[i] = r[i].ID
 	}
 	return uuo.RemoveRetrospectiveReviewResponseIDs(ids...)
+}
+
+// ClearRetrospectiveComments clears all "retrospective_comments" edges to the RetrospectiveComment entity.
+func (uuo *UserUpdateOne) ClearRetrospectiveComments() *UserUpdateOne {
+	uuo.mutation.ClearRetrospectiveComments()
+	return uuo
+}
+
+// RemoveRetrospectiveCommentIDs removes the "retrospective_comments" edge to RetrospectiveComment entities by IDs.
+func (uuo *UserUpdateOne) RemoveRetrospectiveCommentIDs(ids ...uuid.UUID) *UserUpdateOne {
+	uuo.mutation.RemoveRetrospectiveCommentIDs(ids...)
+	return uuo
+}
+
+// RemoveRetrospectiveComments removes "retrospective_comments" edges to RetrospectiveComment entities.
+func (uuo *UserUpdateOne) RemoveRetrospectiveComments(r ...*RetrospectiveComment) *UserUpdateOne {
+	ids := make([]uuid.UUID, len(r))
+	for i := range r {
+		ids[i] = r[i].ID
+	}
+	return uuo.RemoveRetrospectiveCommentIDs(ids...)
 }
 
 // ClearRoleAssignments clears all "role_assignments" edges to the IncidentRoleAssignment entity.
@@ -2313,6 +2431,51 @@ func (uuo *UserUpdateOne) sqlSave(ctx context.Context) (_node *User, err error) 
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(retrospectivereview.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if uuo.mutation.RetrospectiveCommentsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   user.RetrospectiveCommentsTable,
+			Columns: []string{user.RetrospectiveCommentsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(retrospectivecomment.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := uuo.mutation.RemovedRetrospectiveCommentsIDs(); len(nodes) > 0 && !uuo.mutation.RetrospectiveCommentsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   user.RetrospectiveCommentsTable,
+			Columns: []string{user.RetrospectiveCommentsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(retrospectivecomment.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := uuo.mutation.RetrospectiveCommentsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   user.RetrospectiveCommentsTable,
+			Columns: []string{user.RetrospectiveCommentsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(retrospectivecomment.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {

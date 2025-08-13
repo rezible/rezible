@@ -1433,78 +1433,58 @@ var (
 			},
 		},
 	}
-	// RetrospectiveDiscussionsColumns holds the columns for the "retrospective_discussions" table.
-	RetrospectiveDiscussionsColumns = []*schema.Column{
+	// RetrospectiveCommentsColumns holds the columns for the "retrospective_comments" table.
+	RetrospectiveCommentsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID},
 		{Name: "content", Type: field.TypeBytes},
 		{Name: "tenant_id", Type: field.TypeInt},
 		{Name: "retrospective_id", Type: field.TypeUUID},
+		{Name: "user_id", Type: field.TypeUUID},
+		{Name: "retrospective_review_id", Type: field.TypeUUID, Nullable: true},
+		{Name: "parent_reply_id", Type: field.TypeUUID, Nullable: true},
 	}
-	// RetrospectiveDiscussionsTable holds the schema information for the "retrospective_discussions" table.
-	RetrospectiveDiscussionsTable = &schema.Table{
-		Name:       "retrospective_discussions",
-		Columns:    RetrospectiveDiscussionsColumns,
-		PrimaryKey: []*schema.Column{RetrospectiveDiscussionsColumns[0]},
+	// RetrospectiveCommentsTable holds the schema information for the "retrospective_comments" table.
+	RetrospectiveCommentsTable = &schema.Table{
+		Name:       "retrospective_comments",
+		Columns:    RetrospectiveCommentsColumns,
+		PrimaryKey: []*schema.Column{RetrospectiveCommentsColumns[0]},
 		ForeignKeys: []*schema.ForeignKey{
 			{
-				Symbol:     "retrospective_discussions_tenants_tenant",
-				Columns:    []*schema.Column{RetrospectiveDiscussionsColumns[2]},
+				Symbol:     "retrospective_comments_tenants_tenant",
+				Columns:    []*schema.Column{RetrospectiveCommentsColumns[2]},
 				RefColumns: []*schema.Column{TenantsColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
 			{
-				Symbol:     "retrospective_discussions_retrospectives_retrospective",
-				Columns:    []*schema.Column{RetrospectiveDiscussionsColumns[3]},
+				Symbol:     "retrospective_comments_retrospectives_retrospective",
+				Columns:    []*schema.Column{RetrospectiveCommentsColumns[3]},
 				RefColumns: []*schema.Column{RetrospectivesColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
-		},
-		Indexes: []*schema.Index{
 			{
-				Name:    "retrospectivediscussion_tenant_id",
-				Unique:  false,
-				Columns: []*schema.Column{RetrospectiveDiscussionsColumns[2]},
-			},
-		},
-	}
-	// RetrospectiveDiscussionRepliesColumns holds the columns for the "retrospective_discussion_replies" table.
-	RetrospectiveDiscussionRepliesColumns = []*schema.Column{
-		{Name: "id", Type: field.TypeUUID},
-		{Name: "content", Type: field.TypeBytes},
-		{Name: "tenant_id", Type: field.TypeInt},
-		{Name: "retrospective_discussion_reply_discussion", Type: field.TypeUUID},
-		{Name: "retrospective_discussion_reply_replies", Type: field.TypeUUID, Nullable: true},
-	}
-	// RetrospectiveDiscussionRepliesTable holds the schema information for the "retrospective_discussion_replies" table.
-	RetrospectiveDiscussionRepliesTable = &schema.Table{
-		Name:       "retrospective_discussion_replies",
-		Columns:    RetrospectiveDiscussionRepliesColumns,
-		PrimaryKey: []*schema.Column{RetrospectiveDiscussionRepliesColumns[0]},
-		ForeignKeys: []*schema.ForeignKey{
-			{
-				Symbol:     "retrospective_discussion_replies_tenants_tenant",
-				Columns:    []*schema.Column{RetrospectiveDiscussionRepliesColumns[2]},
-				RefColumns: []*schema.Column{TenantsColumns[0]},
+				Symbol:     "retrospective_comments_users_user",
+				Columns:    []*schema.Column{RetrospectiveCommentsColumns[4]},
+				RefColumns: []*schema.Column{UsersColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
 			{
-				Symbol:     "retrospective_discussion_replies_retrospective_discussions_discussion",
-				Columns:    []*schema.Column{RetrospectiveDiscussionRepliesColumns[3]},
-				RefColumns: []*schema.Column{RetrospectiveDiscussionsColumns[0]},
-				OnDelete:   schema.NoAction,
+				Symbol:     "retrospective_comments_retrospective_reviews_review",
+				Columns:    []*schema.Column{RetrospectiveCommentsColumns[5]},
+				RefColumns: []*schema.Column{RetrospectiveReviewsColumns[0]},
+				OnDelete:   schema.SetNull,
 			},
 			{
-				Symbol:     "retrospective_discussion_replies_retrospective_discussion_replies_replies",
-				Columns:    []*schema.Column{RetrospectiveDiscussionRepliesColumns[4]},
-				RefColumns: []*schema.Column{RetrospectiveDiscussionRepliesColumns[0]},
+				Symbol:     "retrospective_comments_retrospective_comments_replies",
+				Columns:    []*schema.Column{RetrospectiveCommentsColumns[6]},
+				RefColumns: []*schema.Column{RetrospectiveCommentsColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
 		},
 		Indexes: []*schema.Index{
 			{
-				Name:    "retrospectivediscussionreply_tenant_id",
+				Name:    "retrospectivecomment_tenant_id",
 				Unique:  false,
-				Columns: []*schema.Column{RetrospectiveDiscussionRepliesColumns[2]},
+				Columns: []*schema.Column{RetrospectiveCommentsColumns[2]},
 			},
 		},
 	}
@@ -1516,7 +1496,7 @@ var (
 		{Name: "retrospective_id", Type: field.TypeUUID},
 		{Name: "requester_id", Type: field.TypeUUID},
 		{Name: "reviewer_id", Type: field.TypeUUID},
-		{Name: "retrospective_review_discussion", Type: field.TypeUUID, Nullable: true},
+		{Name: "comment_id", Type: field.TypeUUID},
 	}
 	// RetrospectiveReviewsTable holds the schema information for the "retrospective_reviews" table.
 	RetrospectiveReviewsTable = &schema.Table{
@@ -1549,10 +1529,10 @@ var (
 				OnDelete:   schema.NoAction,
 			},
 			{
-				Symbol:     "retrospective_reviews_retrospective_discussions_discussion",
+				Symbol:     "retrospective_reviews_retrospective_comments_comment",
 				Columns:    []*schema.Column{RetrospectiveReviewsColumns[6]},
-				RefColumns: []*schema.Column{RetrospectiveDiscussionsColumns[0]},
-				OnDelete:   schema.SetNull,
+				RefColumns: []*schema.Column{RetrospectiveCommentsColumns[0]},
+				OnDelete:   schema.NoAction,
 			},
 		},
 		Indexes: []*schema.Index{
@@ -2672,8 +2652,7 @@ var (
 		ProviderConfigsTable,
 		ProviderSyncHistoriesTable,
 		RetrospectivesTable,
-		RetrospectiveDiscussionsTable,
-		RetrospectiveDiscussionRepliesTable,
+		RetrospectiveCommentsTable,
 		RetrospectiveReviewsTable,
 		SystemAnalysesTable,
 		SystemAnalysisComponentsTable,
@@ -2791,16 +2770,16 @@ func init() {
 	RetrospectivesTable.ForeignKeys[0].RefTable = TenantsTable
 	RetrospectivesTable.ForeignKeys[1].RefTable = IncidentsTable
 	RetrospectivesTable.ForeignKeys[2].RefTable = SystemAnalysesTable
-	RetrospectiveDiscussionsTable.ForeignKeys[0].RefTable = TenantsTable
-	RetrospectiveDiscussionsTable.ForeignKeys[1].RefTable = RetrospectivesTable
-	RetrospectiveDiscussionRepliesTable.ForeignKeys[0].RefTable = TenantsTable
-	RetrospectiveDiscussionRepliesTable.ForeignKeys[1].RefTable = RetrospectiveDiscussionsTable
-	RetrospectiveDiscussionRepliesTable.ForeignKeys[2].RefTable = RetrospectiveDiscussionRepliesTable
+	RetrospectiveCommentsTable.ForeignKeys[0].RefTable = TenantsTable
+	RetrospectiveCommentsTable.ForeignKeys[1].RefTable = RetrospectivesTable
+	RetrospectiveCommentsTable.ForeignKeys[2].RefTable = UsersTable
+	RetrospectiveCommentsTable.ForeignKeys[3].RefTable = RetrospectiveReviewsTable
+	RetrospectiveCommentsTable.ForeignKeys[4].RefTable = RetrospectiveCommentsTable
 	RetrospectiveReviewsTable.ForeignKeys[0].RefTable = TenantsTable
 	RetrospectiveReviewsTable.ForeignKeys[1].RefTable = RetrospectivesTable
 	RetrospectiveReviewsTable.ForeignKeys[2].RefTable = UsersTable
 	RetrospectiveReviewsTable.ForeignKeys[3].RefTable = UsersTable
-	RetrospectiveReviewsTable.ForeignKeys[4].RefTable = RetrospectiveDiscussionsTable
+	RetrospectiveReviewsTable.ForeignKeys[4].RefTable = RetrospectiveCommentsTable
 	SystemAnalysesTable.ForeignKeys[0].RefTable = TenantsTable
 	SystemAnalysisComponentsTable.ForeignKeys[0].RefTable = TenantsTable
 	SystemAnalysisComponentsTable.ForeignKeys[1].RefTable = SystemAnalysesTable

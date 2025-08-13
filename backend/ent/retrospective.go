@@ -44,8 +44,8 @@ type RetrospectiveEdges struct {
 	Tenant *Tenant `json:"tenant,omitempty"`
 	// Incident holds the value of the incident edge.
 	Incident *Incident `json:"incident,omitempty"`
-	// Discussions holds the value of the discussions edge.
-	Discussions []*RetrospectiveDiscussion `json:"discussions,omitempty"`
+	// Comments holds the value of the comments edge.
+	Comments []*RetrospectiveComment `json:"comments,omitempty"`
 	// SystemAnalysis holds the value of the system_analysis edge.
 	SystemAnalysis *SystemAnalysis `json:"system_analysis,omitempty"`
 	// loadedTypes holds the information for reporting if a
@@ -75,13 +75,13 @@ func (e RetrospectiveEdges) IncidentOrErr() (*Incident, error) {
 	return nil, &NotLoadedError{edge: "incident"}
 }
 
-// DiscussionsOrErr returns the Discussions value or an error if the edge
+// CommentsOrErr returns the Comments value or an error if the edge
 // was not loaded in eager-loading.
-func (e RetrospectiveEdges) DiscussionsOrErr() ([]*RetrospectiveDiscussion, error) {
+func (e RetrospectiveEdges) CommentsOrErr() ([]*RetrospectiveComment, error) {
 	if e.loadedTypes[2] {
-		return e.Discussions, nil
+		return e.Comments, nil
 	}
-	return nil, &NotLoadedError{edge: "discussions"}
+	return nil, &NotLoadedError{edge: "comments"}
 }
 
 // SystemAnalysisOrErr returns the SystemAnalysis value or an error if the edge
@@ -186,9 +186,9 @@ func (r *Retrospective) QueryIncident() *IncidentQuery {
 	return NewRetrospectiveClient(r.config).QueryIncident(r)
 }
 
-// QueryDiscussions queries the "discussions" edge of the Retrospective entity.
-func (r *Retrospective) QueryDiscussions() *RetrospectiveDiscussionQuery {
-	return NewRetrospectiveClient(r.config).QueryDiscussions(r)
+// QueryComments queries the "comments" edge of the Retrospective entity.
+func (r *Retrospective) QueryComments() *RetrospectiveCommentQuery {
+	return NewRetrospectiveClient(r.config).QueryComments(r)
 }
 
 // QuerySystemAnalysis queries the "system_analysis" edge of the Retrospective entity.

@@ -32,8 +32,8 @@ const (
 	EdgeTenant = "tenant"
 	// EdgeIncident holds the string denoting the incident edge name in mutations.
 	EdgeIncident = "incident"
-	// EdgeDiscussions holds the string denoting the discussions edge name in mutations.
-	EdgeDiscussions = "discussions"
+	// EdgeComments holds the string denoting the comments edge name in mutations.
+	EdgeComments = "comments"
 	// EdgeSystemAnalysis holds the string denoting the system_analysis edge name in mutations.
 	EdgeSystemAnalysis = "system_analysis"
 	// Table holds the table name of the retrospective in the database.
@@ -52,13 +52,13 @@ const (
 	IncidentInverseTable = "incidents"
 	// IncidentColumn is the table column denoting the incident relation/edge.
 	IncidentColumn = "incident_id"
-	// DiscussionsTable is the table that holds the discussions relation/edge.
-	DiscussionsTable = "retrospective_discussions"
-	// DiscussionsInverseTable is the table name for the RetrospectiveDiscussion entity.
-	// It exists in this package in order to avoid circular dependency with the "retrospectivediscussion" package.
-	DiscussionsInverseTable = "retrospective_discussions"
-	// DiscussionsColumn is the table column denoting the discussions relation/edge.
-	DiscussionsColumn = "retrospective_id"
+	// CommentsTable is the table that holds the comments relation/edge.
+	CommentsTable = "retrospective_comments"
+	// CommentsInverseTable is the table name for the RetrospectiveComment entity.
+	// It exists in this package in order to avoid circular dependency with the "retrospectivecomment" package.
+	CommentsInverseTable = "retrospective_comments"
+	// CommentsColumn is the table column denoting the comments relation/edge.
+	CommentsColumn = "retrospective_id"
 	// SystemAnalysisTable is the table that holds the system_analysis relation/edge.
 	SystemAnalysisTable = "retrospectives"
 	// SystemAnalysisInverseTable is the table name for the SystemAnalysis entity.
@@ -201,17 +201,17 @@ func ByIncidentField(field string, opts ...sql.OrderTermOption) OrderOption {
 	}
 }
 
-// ByDiscussionsCount orders the results by discussions count.
-func ByDiscussionsCount(opts ...sql.OrderTermOption) OrderOption {
+// ByCommentsCount orders the results by comments count.
+func ByCommentsCount(opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborsCount(s, newDiscussionsStep(), opts...)
+		sqlgraph.OrderByNeighborsCount(s, newCommentsStep(), opts...)
 	}
 }
 
-// ByDiscussions orders the results by discussions terms.
-func ByDiscussions(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+// ByComments orders the results by comments terms.
+func ByComments(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborTerms(s, newDiscussionsStep(), append([]sql.OrderTerm{term}, terms...)...)
+		sqlgraph.OrderByNeighborTerms(s, newCommentsStep(), append([]sql.OrderTerm{term}, terms...)...)
 	}
 }
 
@@ -235,11 +235,11 @@ func newIncidentStep() *sqlgraph.Step {
 		sqlgraph.Edge(sqlgraph.M2O, false, IncidentTable, IncidentColumn),
 	)
 }
-func newDiscussionsStep() *sqlgraph.Step {
+func newCommentsStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
-		sqlgraph.To(DiscussionsInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.O2M, true, DiscussionsTable, DiscussionsColumn),
+		sqlgraph.To(CommentsInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, true, CommentsTable, CommentsColumn),
 	)
 }
 func newSystemAnalysisStep() *sqlgraph.Step {

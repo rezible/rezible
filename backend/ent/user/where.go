@@ -655,6 +655,29 @@ func HasRetrospectiveReviewResponsesWith(preds ...predicate.RetrospectiveReview)
 	})
 }
 
+// HasRetrospectiveComments applies the HasEdge predicate on the "retrospective_comments" edge.
+func HasRetrospectiveComments() predicate.User {
+	return predicate.User(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, true, RetrospectiveCommentsTable, RetrospectiveCommentsColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasRetrospectiveCommentsWith applies the HasEdge predicate on the "retrospective_comments" edge with a given conditions (other predicates).
+func HasRetrospectiveCommentsWith(preds ...predicate.RetrospectiveComment) predicate.User {
+	return predicate.User(func(s *sql.Selector) {
+		step := newRetrospectiveCommentsStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
 // HasRoleAssignments applies the HasEdge predicate on the "role_assignments" edge.
 func HasRoleAssignments() predicate.User {
 	return predicate.User(func(s *sql.Selector) {

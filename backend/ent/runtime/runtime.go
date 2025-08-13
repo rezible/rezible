@@ -44,8 +44,7 @@ import (
 	"github.com/rezible/rezible/ent/providerconfig"
 	"github.com/rezible/rezible/ent/providersynchistory"
 	"github.com/rezible/rezible/ent/retrospective"
-	"github.com/rezible/rezible/ent/retrospectivediscussion"
-	"github.com/rezible/rezible/ent/retrospectivediscussionreply"
+	"github.com/rezible/rezible/ent/retrospectivecomment"
 	"github.com/rezible/rezible/ent/retrospectivereview"
 	"github.com/rezible/rezible/ent/schema"
 	"github.com/rezible/rezible/ent/systemanalysis"
@@ -827,38 +826,22 @@ func init() {
 	retrospectiveDescID := retrospectiveFields[0].Descriptor()
 	// retrospective.DefaultID holds the default value on creation for the id field.
 	retrospective.DefaultID = retrospectiveDescID.Default.(func() uuid.UUID)
-	retrospectivediscussionMixin := schema.RetrospectiveDiscussion{}.Mixin()
-	retrospectivediscussion.Policy = privacy.NewPolicies(retrospectivediscussionMixin[0], retrospectivediscussionMixin[1], schema.RetrospectiveDiscussion{})
-	retrospectivediscussion.Hooks[0] = func(next ent.Mutator) ent.Mutator {
+	retrospectivecommentMixin := schema.RetrospectiveComment{}.Mixin()
+	retrospectivecomment.Policy = privacy.NewPolicies(retrospectivecommentMixin[0], retrospectivecommentMixin[1], schema.RetrospectiveComment{})
+	retrospectivecomment.Hooks[0] = func(next ent.Mutator) ent.Mutator {
 		return ent.MutateFunc(func(ctx context.Context, m ent.Mutation) (ent.Value, error) {
-			if err := retrospectivediscussion.Policy.EvalMutation(ctx, m); err != nil {
+			if err := retrospectivecomment.Policy.EvalMutation(ctx, m); err != nil {
 				return nil, err
 			}
 			return next.Mutate(ctx, m)
 		})
 	}
-	retrospectivediscussionFields := schema.RetrospectiveDiscussion{}.Fields()
-	_ = retrospectivediscussionFields
-	// retrospectivediscussionDescID is the schema descriptor for id field.
-	retrospectivediscussionDescID := retrospectivediscussionFields[0].Descriptor()
-	// retrospectivediscussion.DefaultID holds the default value on creation for the id field.
-	retrospectivediscussion.DefaultID = retrospectivediscussionDescID.Default.(func() uuid.UUID)
-	retrospectivediscussionreplyMixin := schema.RetrospectiveDiscussionReply{}.Mixin()
-	retrospectivediscussionreply.Policy = privacy.NewPolicies(retrospectivediscussionreplyMixin[0], retrospectivediscussionreplyMixin[1], schema.RetrospectiveDiscussionReply{})
-	retrospectivediscussionreply.Hooks[0] = func(next ent.Mutator) ent.Mutator {
-		return ent.MutateFunc(func(ctx context.Context, m ent.Mutation) (ent.Value, error) {
-			if err := retrospectivediscussionreply.Policy.EvalMutation(ctx, m); err != nil {
-				return nil, err
-			}
-			return next.Mutate(ctx, m)
-		})
-	}
-	retrospectivediscussionreplyFields := schema.RetrospectiveDiscussionReply{}.Fields()
-	_ = retrospectivediscussionreplyFields
-	// retrospectivediscussionreplyDescID is the schema descriptor for id field.
-	retrospectivediscussionreplyDescID := retrospectivediscussionreplyFields[0].Descriptor()
-	// retrospectivediscussionreply.DefaultID holds the default value on creation for the id field.
-	retrospectivediscussionreply.DefaultID = retrospectivediscussionreplyDescID.Default.(func() uuid.UUID)
+	retrospectivecommentFields := schema.RetrospectiveComment{}.Fields()
+	_ = retrospectivecommentFields
+	// retrospectivecommentDescID is the schema descriptor for id field.
+	retrospectivecommentDescID := retrospectivecommentFields[0].Descriptor()
+	// retrospectivecomment.DefaultID holds the default value on creation for the id field.
+	retrospectivecomment.DefaultID = retrospectivecommentDescID.Default.(func() uuid.UUID)
 	retrospectivereviewMixin := schema.RetrospectiveReview{}.Mixin()
 	retrospectivereview.Policy = privacy.NewPolicies(retrospectivereviewMixin[0], retrospectivereviewMixin[1], schema.RetrospectiveReview{})
 	retrospectivereview.Hooks[0] = func(next ent.Mutator) ent.Mutator {

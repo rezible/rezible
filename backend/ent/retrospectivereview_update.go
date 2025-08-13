@@ -13,7 +13,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/predicate"
 	"github.com/rezible/rezible/ent/retrospective"
-	"github.com/rezible/rezible/ent/retrospectivediscussion"
+	"github.com/rezible/rezible/ent/retrospectivecomment"
 	"github.com/rezible/rezible/ent/retrospectivereview"
 	"github.com/rezible/rezible/ent/user"
 )
@@ -42,6 +42,20 @@ func (rru *RetrospectiveReviewUpdate) SetRetrospectiveID(u uuid.UUID) *Retrospec
 func (rru *RetrospectiveReviewUpdate) SetNillableRetrospectiveID(u *uuid.UUID) *RetrospectiveReviewUpdate {
 	if u != nil {
 		rru.SetRetrospectiveID(*u)
+	}
+	return rru
+}
+
+// SetCommentID sets the "comment_id" field.
+func (rru *RetrospectiveReviewUpdate) SetCommentID(u uuid.UUID) *RetrospectiveReviewUpdate {
+	rru.mutation.SetCommentID(u)
+	return rru
+}
+
+// SetNillableCommentID sets the "comment_id" field if the given value is not nil.
+func (rru *RetrospectiveReviewUpdate) SetNillableCommentID(u *uuid.UUID) *RetrospectiveReviewUpdate {
+	if u != nil {
+		rru.SetCommentID(*u)
 	}
 	return rru
 }
@@ -103,23 +117,9 @@ func (rru *RetrospectiveReviewUpdate) SetReviewer(u *User) *RetrospectiveReviewU
 	return rru.SetReviewerID(u.ID)
 }
 
-// SetDiscussionID sets the "discussion" edge to the RetrospectiveDiscussion entity by ID.
-func (rru *RetrospectiveReviewUpdate) SetDiscussionID(id uuid.UUID) *RetrospectiveReviewUpdate {
-	rru.mutation.SetDiscussionID(id)
-	return rru
-}
-
-// SetNillableDiscussionID sets the "discussion" edge to the RetrospectiveDiscussion entity by ID if the given value is not nil.
-func (rru *RetrospectiveReviewUpdate) SetNillableDiscussionID(id *uuid.UUID) *RetrospectiveReviewUpdate {
-	if id != nil {
-		rru = rru.SetDiscussionID(*id)
-	}
-	return rru
-}
-
-// SetDiscussion sets the "discussion" edge to the RetrospectiveDiscussion entity.
-func (rru *RetrospectiveReviewUpdate) SetDiscussion(r *RetrospectiveDiscussion) *RetrospectiveReviewUpdate {
-	return rru.SetDiscussionID(r.ID)
+// SetComment sets the "comment" edge to the RetrospectiveComment entity.
+func (rru *RetrospectiveReviewUpdate) SetComment(r *RetrospectiveComment) *RetrospectiveReviewUpdate {
+	return rru.SetCommentID(r.ID)
 }
 
 // Mutation returns the RetrospectiveReviewMutation object of the builder.
@@ -145,9 +145,9 @@ func (rru *RetrospectiveReviewUpdate) ClearReviewer() *RetrospectiveReviewUpdate
 	return rru
 }
 
-// ClearDiscussion clears the "discussion" edge to the RetrospectiveDiscussion entity.
-func (rru *RetrospectiveReviewUpdate) ClearDiscussion() *RetrospectiveReviewUpdate {
-	rru.mutation.ClearDiscussion()
+// ClearComment clears the "comment" edge to the RetrospectiveComment entity.
+func (rru *RetrospectiveReviewUpdate) ClearComment() *RetrospectiveReviewUpdate {
+	rru.mutation.ClearComment()
 	return rru
 }
 
@@ -196,6 +196,9 @@ func (rru *RetrospectiveReviewUpdate) check() error {
 	}
 	if rru.mutation.ReviewerCleared() && len(rru.mutation.ReviewerIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "RetrospectiveReview.reviewer"`)
+	}
+	if rru.mutation.CommentCleared() && len(rru.mutation.CommentIDs()) > 0 {
+		return errors.New(`ent: clearing a required unique edge "RetrospectiveReview.comment"`)
 	}
 	return nil
 }
@@ -308,28 +311,28 @@ func (rru *RetrospectiveReviewUpdate) sqlSave(ctx context.Context) (n int, err e
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if rru.mutation.DiscussionCleared() {
+	if rru.mutation.CommentCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
-			Table:   retrospectivereview.DiscussionTable,
-			Columns: []string{retrospectivereview.DiscussionColumn},
+			Table:   retrospectivereview.CommentTable,
+			Columns: []string{retrospectivereview.CommentColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(retrospectivediscussion.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(retrospectivecomment.FieldID, field.TypeUUID),
 			},
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := rru.mutation.DiscussionIDs(); len(nodes) > 0 {
+	if nodes := rru.mutation.CommentIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
-			Table:   retrospectivereview.DiscussionTable,
-			Columns: []string{retrospectivereview.DiscussionColumn},
+			Table:   retrospectivereview.CommentTable,
+			Columns: []string{retrospectivereview.CommentColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(retrospectivediscussion.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(retrospectivecomment.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {
@@ -369,6 +372,20 @@ func (rruo *RetrospectiveReviewUpdateOne) SetRetrospectiveID(u uuid.UUID) *Retro
 func (rruo *RetrospectiveReviewUpdateOne) SetNillableRetrospectiveID(u *uuid.UUID) *RetrospectiveReviewUpdateOne {
 	if u != nil {
 		rruo.SetRetrospectiveID(*u)
+	}
+	return rruo
+}
+
+// SetCommentID sets the "comment_id" field.
+func (rruo *RetrospectiveReviewUpdateOne) SetCommentID(u uuid.UUID) *RetrospectiveReviewUpdateOne {
+	rruo.mutation.SetCommentID(u)
+	return rruo
+}
+
+// SetNillableCommentID sets the "comment_id" field if the given value is not nil.
+func (rruo *RetrospectiveReviewUpdateOne) SetNillableCommentID(u *uuid.UUID) *RetrospectiveReviewUpdateOne {
+	if u != nil {
+		rruo.SetCommentID(*u)
 	}
 	return rruo
 }
@@ -430,23 +447,9 @@ func (rruo *RetrospectiveReviewUpdateOne) SetReviewer(u *User) *RetrospectiveRev
 	return rruo.SetReviewerID(u.ID)
 }
 
-// SetDiscussionID sets the "discussion" edge to the RetrospectiveDiscussion entity by ID.
-func (rruo *RetrospectiveReviewUpdateOne) SetDiscussionID(id uuid.UUID) *RetrospectiveReviewUpdateOne {
-	rruo.mutation.SetDiscussionID(id)
-	return rruo
-}
-
-// SetNillableDiscussionID sets the "discussion" edge to the RetrospectiveDiscussion entity by ID if the given value is not nil.
-func (rruo *RetrospectiveReviewUpdateOne) SetNillableDiscussionID(id *uuid.UUID) *RetrospectiveReviewUpdateOne {
-	if id != nil {
-		rruo = rruo.SetDiscussionID(*id)
-	}
-	return rruo
-}
-
-// SetDiscussion sets the "discussion" edge to the RetrospectiveDiscussion entity.
-func (rruo *RetrospectiveReviewUpdateOne) SetDiscussion(r *RetrospectiveDiscussion) *RetrospectiveReviewUpdateOne {
-	return rruo.SetDiscussionID(r.ID)
+// SetComment sets the "comment" edge to the RetrospectiveComment entity.
+func (rruo *RetrospectiveReviewUpdateOne) SetComment(r *RetrospectiveComment) *RetrospectiveReviewUpdateOne {
+	return rruo.SetCommentID(r.ID)
 }
 
 // Mutation returns the RetrospectiveReviewMutation object of the builder.
@@ -472,9 +475,9 @@ func (rruo *RetrospectiveReviewUpdateOne) ClearReviewer() *RetrospectiveReviewUp
 	return rruo
 }
 
-// ClearDiscussion clears the "discussion" edge to the RetrospectiveDiscussion entity.
-func (rruo *RetrospectiveReviewUpdateOne) ClearDiscussion() *RetrospectiveReviewUpdateOne {
-	rruo.mutation.ClearDiscussion()
+// ClearComment clears the "comment" edge to the RetrospectiveComment entity.
+func (rruo *RetrospectiveReviewUpdateOne) ClearComment() *RetrospectiveReviewUpdateOne {
+	rruo.mutation.ClearComment()
 	return rruo
 }
 
@@ -536,6 +539,9 @@ func (rruo *RetrospectiveReviewUpdateOne) check() error {
 	}
 	if rruo.mutation.ReviewerCleared() && len(rruo.mutation.ReviewerIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "RetrospectiveReview.reviewer"`)
+	}
+	if rruo.mutation.CommentCleared() && len(rruo.mutation.CommentIDs()) > 0 {
+		return errors.New(`ent: clearing a required unique edge "RetrospectiveReview.comment"`)
 	}
 	return nil
 }
@@ -665,28 +671,28 @@ func (rruo *RetrospectiveReviewUpdateOne) sqlSave(ctx context.Context) (_node *R
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if rruo.mutation.DiscussionCleared() {
+	if rruo.mutation.CommentCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
-			Table:   retrospectivereview.DiscussionTable,
-			Columns: []string{retrospectivereview.DiscussionColumn},
+			Table:   retrospectivereview.CommentTable,
+			Columns: []string{retrospectivereview.CommentColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(retrospectivediscussion.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(retrospectivecomment.FieldID, field.TypeUUID),
 			},
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := rruo.mutation.DiscussionIDs(); len(nodes) > 0 {
+	if nodes := rruo.mutation.CommentIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
-			Table:   retrospectivereview.DiscussionTable,
-			Columns: []string{retrospectivereview.DiscussionColumn},
+			Table:   retrospectivereview.CommentTable,
+			Columns: []string{retrospectivereview.CommentColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(retrospectivediscussion.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(retrospectivecomment.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {

@@ -1011,52 +1011,28 @@ func (f RetrospectiveMutationRuleFunc) EvalMutation(ctx context.Context, m ent.M
 	return Denyf("ent/privacy: unexpected mutation type %T, expect *ent.RetrospectiveMutation", m)
 }
 
-// The RetrospectiveDiscussionQueryRuleFunc type is an adapter to allow the use of ordinary
+// The RetrospectiveCommentQueryRuleFunc type is an adapter to allow the use of ordinary
 // functions as a query rule.
-type RetrospectiveDiscussionQueryRuleFunc func(context.Context, *ent.RetrospectiveDiscussionQuery) error
+type RetrospectiveCommentQueryRuleFunc func(context.Context, *ent.RetrospectiveCommentQuery) error
 
 // EvalQuery return f(ctx, q).
-func (f RetrospectiveDiscussionQueryRuleFunc) EvalQuery(ctx context.Context, q ent.Query) error {
-	if q, ok := q.(*ent.RetrospectiveDiscussionQuery); ok {
+func (f RetrospectiveCommentQueryRuleFunc) EvalQuery(ctx context.Context, q ent.Query) error {
+	if q, ok := q.(*ent.RetrospectiveCommentQuery); ok {
 		return f(ctx, q)
 	}
-	return Denyf("ent/privacy: unexpected query type %T, expect *ent.RetrospectiveDiscussionQuery", q)
+	return Denyf("ent/privacy: unexpected query type %T, expect *ent.RetrospectiveCommentQuery", q)
 }
 
-// The RetrospectiveDiscussionMutationRuleFunc type is an adapter to allow the use of ordinary
+// The RetrospectiveCommentMutationRuleFunc type is an adapter to allow the use of ordinary
 // functions as a mutation rule.
-type RetrospectiveDiscussionMutationRuleFunc func(context.Context, *ent.RetrospectiveDiscussionMutation) error
+type RetrospectiveCommentMutationRuleFunc func(context.Context, *ent.RetrospectiveCommentMutation) error
 
 // EvalMutation calls f(ctx, m).
-func (f RetrospectiveDiscussionMutationRuleFunc) EvalMutation(ctx context.Context, m ent.Mutation) error {
-	if m, ok := m.(*ent.RetrospectiveDiscussionMutation); ok {
+func (f RetrospectiveCommentMutationRuleFunc) EvalMutation(ctx context.Context, m ent.Mutation) error {
+	if m, ok := m.(*ent.RetrospectiveCommentMutation); ok {
 		return f(ctx, m)
 	}
-	return Denyf("ent/privacy: unexpected mutation type %T, expect *ent.RetrospectiveDiscussionMutation", m)
-}
-
-// The RetrospectiveDiscussionReplyQueryRuleFunc type is an adapter to allow the use of ordinary
-// functions as a query rule.
-type RetrospectiveDiscussionReplyQueryRuleFunc func(context.Context, *ent.RetrospectiveDiscussionReplyQuery) error
-
-// EvalQuery return f(ctx, q).
-func (f RetrospectiveDiscussionReplyQueryRuleFunc) EvalQuery(ctx context.Context, q ent.Query) error {
-	if q, ok := q.(*ent.RetrospectiveDiscussionReplyQuery); ok {
-		return f(ctx, q)
-	}
-	return Denyf("ent/privacy: unexpected query type %T, expect *ent.RetrospectiveDiscussionReplyQuery", q)
-}
-
-// The RetrospectiveDiscussionReplyMutationRuleFunc type is an adapter to allow the use of ordinary
-// functions as a mutation rule.
-type RetrospectiveDiscussionReplyMutationRuleFunc func(context.Context, *ent.RetrospectiveDiscussionReplyMutation) error
-
-// EvalMutation calls f(ctx, m).
-func (f RetrospectiveDiscussionReplyMutationRuleFunc) EvalMutation(ctx context.Context, m ent.Mutation) error {
-	if m, ok := m.(*ent.RetrospectiveDiscussionReplyMutation); ok {
-		return f(ctx, m)
-	}
-	return Denyf("ent/privacy: unexpected mutation type %T, expect *ent.RetrospectiveDiscussionReplyMutation", m)
+	return Denyf("ent/privacy: unexpected mutation type %T, expect *ent.RetrospectiveCommentMutation", m)
 }
 
 // The RetrospectiveReviewQueryRuleFunc type is an adapter to allow the use of ordinary
@@ -1602,9 +1578,7 @@ func queryFilter(q ent.Query) (Filter, error) {
 		return q.Filter(), nil
 	case *ent.RetrospectiveQuery:
 		return q.Filter(), nil
-	case *ent.RetrospectiveDiscussionQuery:
-		return q.Filter(), nil
-	case *ent.RetrospectiveDiscussionReplyQuery:
+	case *ent.RetrospectiveCommentQuery:
 		return q.Filter(), nil
 	case *ent.RetrospectiveReviewQuery:
 		return q.Filter(), nil
@@ -1723,9 +1697,7 @@ func mutationFilter(m ent.Mutation) (Filter, error) {
 		return m.Filter(), nil
 	case *ent.RetrospectiveMutation:
 		return m.Filter(), nil
-	case *ent.RetrospectiveDiscussionMutation:
-		return m.Filter(), nil
-	case *ent.RetrospectiveDiscussionReplyMutation:
+	case *ent.RetrospectiveCommentMutation:
 		return m.Filter(), nil
 	case *ent.RetrospectiveReviewMutation:
 		return m.Filter(), nil

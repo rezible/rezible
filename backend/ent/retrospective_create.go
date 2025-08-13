@@ -14,7 +14,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/incident"
 	"github.com/rezible/rezible/ent/retrospective"
-	"github.com/rezible/rezible/ent/retrospectivediscussion"
+	"github.com/rezible/rezible/ent/retrospectivecomment"
 	"github.com/rezible/rezible/ent/systemanalysis"
 	"github.com/rezible/rezible/ent/tenant"
 )
@@ -95,19 +95,19 @@ func (rc *RetrospectiveCreate) SetIncident(i *Incident) *RetrospectiveCreate {
 	return rc.SetIncidentID(i.ID)
 }
 
-// AddDiscussionIDs adds the "discussions" edge to the RetrospectiveDiscussion entity by IDs.
-func (rc *RetrospectiveCreate) AddDiscussionIDs(ids ...uuid.UUID) *RetrospectiveCreate {
-	rc.mutation.AddDiscussionIDs(ids...)
+// AddCommentIDs adds the "comments" edge to the RetrospectiveComment entity by IDs.
+func (rc *RetrospectiveCreate) AddCommentIDs(ids ...uuid.UUID) *RetrospectiveCreate {
+	rc.mutation.AddCommentIDs(ids...)
 	return rc
 }
 
-// AddDiscussions adds the "discussions" edges to the RetrospectiveDiscussion entity.
-func (rc *RetrospectiveCreate) AddDiscussions(r ...*RetrospectiveDiscussion) *RetrospectiveCreate {
+// AddComments adds the "comments" edges to the RetrospectiveComment entity.
+func (rc *RetrospectiveCreate) AddComments(r ...*RetrospectiveComment) *RetrospectiveCreate {
 	ids := make([]uuid.UUID, len(r))
 	for i := range r {
 		ids[i] = r[i].ID
 	}
-	return rc.AddDiscussionIDs(ids...)
+	return rc.AddCommentIDs(ids...)
 }
 
 // SetSystemAnalysis sets the "system_analysis" edge to the SystemAnalysis entity.
@@ -277,15 +277,15 @@ func (rc *RetrospectiveCreate) createSpec() (*Retrospective, *sqlgraph.CreateSpe
 		_node.IncidentID = nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
-	if nodes := rc.mutation.DiscussionsIDs(); len(nodes) > 0 {
+	if nodes := rc.mutation.CommentsIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: true,
-			Table:   retrospective.DiscussionsTable,
-			Columns: []string{retrospective.DiscussionsColumn},
+			Table:   retrospective.CommentsTable,
+			Columns: []string{retrospective.CommentsColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(retrospectivediscussion.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(retrospectivecomment.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {

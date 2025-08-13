@@ -88,10 +88,8 @@ type Tx struct {
 	ProviderSyncHistory *ProviderSyncHistoryClient
 	// Retrospective is the client for interacting with the Retrospective builders.
 	Retrospective *RetrospectiveClient
-	// RetrospectiveDiscussion is the client for interacting with the RetrospectiveDiscussion builders.
-	RetrospectiveDiscussion *RetrospectiveDiscussionClient
-	// RetrospectiveDiscussionReply is the client for interacting with the RetrospectiveDiscussionReply builders.
-	RetrospectiveDiscussionReply *RetrospectiveDiscussionReplyClient
+	// RetrospectiveComment is the client for interacting with the RetrospectiveComment builders.
+	RetrospectiveComment *RetrospectiveCommentClient
 	// RetrospectiveReview is the client for interacting with the RetrospectiveReview builders.
 	RetrospectiveReview *RetrospectiveReviewClient
 	// SystemAnalysis is the client for interacting with the SystemAnalysis builders.
@@ -297,8 +295,7 @@ func (tx *Tx) init() {
 	tx.ProviderConfig = NewProviderConfigClient(tx.config)
 	tx.ProviderSyncHistory = NewProviderSyncHistoryClient(tx.config)
 	tx.Retrospective = NewRetrospectiveClient(tx.config)
-	tx.RetrospectiveDiscussion = NewRetrospectiveDiscussionClient(tx.config)
-	tx.RetrospectiveDiscussionReply = NewRetrospectiveDiscussionReplyClient(tx.config)
+	tx.RetrospectiveComment = NewRetrospectiveCommentClient(tx.config)
 	tx.RetrospectiveReview = NewRetrospectiveReviewClient(tx.config)
 	tx.SystemAnalysis = NewSystemAnalysisClient(tx.config)
 	tx.SystemAnalysisComponent = NewSystemAnalysisComponentClient(tx.config)

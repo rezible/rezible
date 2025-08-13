@@ -10,7 +10,7 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/retrospective"
-	"github.com/rezible/rezible/ent/retrospectivediscussion"
+	"github.com/rezible/rezible/ent/retrospectivecomment"
 	"github.com/rezible/rezible/ent/retrospectivereview"
 	"github.com/rezible/rezible/ent/tenant"
 	"github.com/rezible/rezible/ent/user"
@@ -25,6 +25,8 @@ type RetrospectiveReview struct {
 	TenantID int `json:"tenant_id,omitempty"`
 	// RetrospectiveID holds the value of the "retrospective_id" field.
 	RetrospectiveID uuid.UUID `json:"retrospective_id,omitempty"`
+	// CommentID holds the value of the "comment_id" field.
+	CommentID uuid.UUID `json:"comment_id,omitempty"`
 	// RequesterID holds the value of the "requester_id" field.
 	RequesterID uuid.UUID `json:"requester_id,omitempty"`
 	// ReviewerID holds the value of the "reviewer_id" field.
@@ -33,9 +35,8 @@ type RetrospectiveReview struct {
 	State retrospectivereview.State `json:"state,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the RetrospectiveReviewQuery when eager-loading is set.
-	Edges                           RetrospectiveReviewEdges `json:"edges"`
-	retrospective_review_discussion *uuid.UUID
-	selectValues                    sql.SelectValues
+	Edges        RetrospectiveReviewEdges `json:"edges"`
+	selectValues sql.SelectValues
 }
 
 // RetrospectiveReviewEdges holds the relations/edges for other nodes in the graph.
@@ -48,8 +49,8 @@ type RetrospectiveReviewEdges struct {
 	Requester *User `json:"requester,omitempty"`
 	// Reviewer holds the value of the reviewer edge.
 	Reviewer *User `json:"reviewer,omitempty"`
-	// Discussion holds the value of the discussion edge.
-	Discussion *RetrospectiveDiscussion `json:"discussion,omitempty"`
+	// Comment holds the value of the comment edge.
+	Comment *RetrospectiveComment `json:"comment,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
 	loadedTypes [5]bool
@@ -99,15 +100,15 @@ func (e RetrospectiveReviewEdges) ReviewerOrErr() (*User, error) {
 	return nil, &NotLoadedError{edge: "reviewer"}
 }
 
-// DiscussionOrErr returns the Discussion value or an error if the edge
+// CommentOrErr returns the Comment value or an error if the edge
 // was not loaded in eager-loading, or loaded but was not found.
-func (e RetrospectiveReviewEdges) DiscussionOrErr() (*RetrospectiveDiscussion, error) {
-	if e.Discussion != nil {
-		return e.Discussion, nil
+func (e RetrospectiveReviewEdges) CommentOrErr() (*RetrospectiveComment, error) {
+	if e.Comment != nil {
+		return e.Comment, nil
 	} else if e.loadedTypes[4] {
-		return nil, &NotFoundError{label: retrospectivediscussion.Label}
+		return nil, &NotFoundError{label: retrospectivecomment.Label}
 	}
-	return nil, &NotLoadedError{edge: "discussion"}
+	return nil, &NotLoadedError{edge: "comment"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -119,10 +120,8 @@ func (*RetrospectiveReview) scanValues(columns []string) ([]any, error) {
 			values[i] = new(sql.NullInt64)
 		case retrospectivereview.FieldState:
 			values[i] = new(sql.NullString)
-		case retrospectivereview.FieldID, retrospectivereview.FieldRetrospectiveID, retrospectivereview.FieldRequesterID, retrospectivereview.FieldReviewerID:
+		case retrospectivereview.FieldID, retrospectivereview.FieldRetrospectiveID, retrospectivereview.FieldCommentID, retrospectivereview.FieldRequesterID, retrospectivereview.FieldReviewerID:
 			values[i] = new(uuid.UUID)
-		case retrospectivereview.ForeignKeys[0]: // retrospective_review_discussion
-			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
 		default:
 			values[i] = new(sql.UnknownType)
 		}
@@ -156,6 +155,12 @@ func (rr *RetrospectiveReview) assignValues(columns []string, values []any) erro
 			} else if value != nil {
 				rr.RetrospectiveID = *value
 			}
+		case retrospectivereview.FieldCommentID:
+			if value, ok := values[i].(*uuid.UUID); !ok {
+				return fmt.Errorf("unexpected type %T for field comment_id", values[i])
+			} else if value != nil {
+				rr.CommentID = *value
+			}
 		case retrospectivereview.FieldRequesterID:
 			if value, ok := values[i].(*uuid.UUID); !ok {
 				return fmt.Errorf("unexpected type %T for field requester_id", values[i])
@@ -173,13 +178,6 @@ func (rr *RetrospectiveReview) assignValues(columns []string, values []any) erro
 				return fmt.Errorf("unexpected type %T for field state", values[i])
 			} else if value.Valid {
 				rr.State = retrospectivereview.State(value.String)
-			}
-		case retrospectivereview.ForeignKeys[0]:
-			if value, ok := values[i].(*sql.NullScanner); !ok {
-				return fmt.Errorf("unexpected type %T for field retrospective_review_discussion", values[i])
-			} else if value.Valid {
-				rr.retrospective_review_discussion = new(uuid.UUID)
-				*rr.retrospective_review_discussion = *value.S.(*uuid.UUID)
 			}
 		default:
 			rr.selectValues.Set(columns[i], values[i])
@@ -214,9 +212,9 @@ func (rr *RetrospectiveReview) QueryReviewer() *UserQuery {
 	return NewRetrospectiveReviewClient(rr.config).QueryReviewer(rr)
 }
 
-// QueryDiscussion queries the "discussion" edge of the RetrospectiveReview entity.
-func (rr *RetrospectiveReview) QueryDiscussion() *RetrospectiveDiscussionQuery {
-	return NewRetrospectiveReviewClient(rr.config).QueryDiscussion(rr)
+// QueryComment queries the "comment" edge of the RetrospectiveReview entity.
+func (rr *RetrospectiveReview) QueryComment() *RetrospectiveCommentQuery {
+	return NewRetrospectiveReviewClient(rr.config).QueryComment(rr)
 }
 
 // Update returns a builder for updating this RetrospectiveReview.
@@ -247,6 +245,9 @@ func (rr *RetrospectiveReview) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("retrospective_id=")
 	builder.WriteString(fmt.Sprintf("%v", rr.RetrospectiveID))
+	builder.WriteString(", ")
+	builder.WriteString("comment_id=")
+	builder.WriteString(fmt.Sprintf("%v", rr.CommentID))
 	builder.WriteString(", ")
 	builder.WriteString("requester_id=")
 	builder.WriteString(fmt.Sprintf("%v", rr.RequesterID))

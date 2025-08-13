@@ -22,6 +22,7 @@ import (
 	"github.com/rezible/rezible/ent/oncallscheduleparticipant"
 	"github.com/rezible/rezible/ent/oncallshift"
 	"github.com/rezible/rezible/ent/predicate"
+	"github.com/rezible/rezible/ent/retrospectivecomment"
 	"github.com/rezible/rezible/ent/retrospectivereview"
 	"github.com/rezible/rezible/ent/task"
 	"github.com/rezible/rezible/ent/team"
@@ -48,6 +49,7 @@ type UserQuery struct {
 	withCreatedTasks                 *TaskQuery
 	withRetrospectiveReviewRequests  *RetrospectiveReviewQuery
 	withRetrospectiveReviewResponses *RetrospectiveReviewQuery
+	withRetrospectiveComments        *RetrospectiveCommentQuery
 	withRoleAssignments              *IncidentRoleAssignmentQuery
 	modifiers                        []func(*sql.Selector)
 	// intermediate query (i.e. traversal path).
@@ -350,6 +352,28 @@ func (uq *UserQuery) QueryRetrospectiveReviewResponses() *RetrospectiveReviewQue
 	return query
 }
 
+// QueryRetrospectiveComments chains the current query on the "retrospective_comments" edge.
+func (uq *UserQuery) QueryRetrospectiveComments() *RetrospectiveCommentQuery {
+	query := (&RetrospectiveCommentClient{config: uq.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := uq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := uq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(user.Table, user.FieldID, selector),
+			sqlgraph.To(retrospectivecomment.Table, retrospectivecomment.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, true, user.RetrospectiveCommentsTable, user.RetrospectiveCommentsColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(uq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
 // QueryRoleAssignments chains the current query on the "role_assignments" edge.
 func (uq *UserQuery) QueryRoleAssignments() *IncidentRoleAssignmentQuery {
 	query := (&IncidentRoleAssignmentClient{config: uq.config}).Query()
@@ -576,6 +600,7 @@ func (uq *UserQuery) Clone() *UserQuery {
 		withCreatedTasks:                 uq.withCreatedTasks.Clone(),
 		withRetrospectiveReviewRequests:  uq.withRetrospectiveReviewRequests.Clone(),
 		withRetrospectiveReviewResponses: uq.withRetrospectiveReviewResponses.Clone(),
+		withRetrospectiveComments:        uq.withRetrospectiveComments.Clone(),
 		withRoleAssignments:              uq.withRoleAssignments.Clone(),
 		// clone intermediate query.
 		sql:       uq.sql.Clone(),
@@ -716,6 +741,17 @@ func (uq *UserQuery) WithRetrospectiveReviewResponses(opts ...func(*Retrospectiv
 	return uq
 }
 
+// WithRetrospectiveComments tells the query-builder to eager-load the nodes that are connected to
+// the "retrospective_comments" edge. The optional arguments are used to configure the query builder of the edge.
+func (uq *UserQuery) WithRetrospectiveComments(opts ...func(*RetrospectiveCommentQuery)) *UserQuery {
+	query := (&RetrospectiveCommentClient{config: uq.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	uq.withRetrospectiveComments = query
+	return uq
+}
+
 // WithRoleAssignments tells the query-builder to eager-load the nodes that are connected to
 // the "role_assignments" edge. The optional arguments are used to configure the query builder of the edge.
 func (uq *UserQuery) WithRoleAssignments(opts ...func(*IncidentRoleAssignmentQuery)) *UserQuery {
@@ -811,7 +847,7 @@ func (uq *UserQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*User, e
 	var (
 		nodes       = []*User{}
 		_spec       = uq.querySpec()
-		loadedTypes = [13]bool{
+		loadedTypes = [14]bool{
 			uq.withTenant != nil,
 			uq.withTeams != nil,
 			uq.withWatchedOncallRosters != nil,
@@ -824,6 +860,7 @@ func (uq *UserQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*User, e
 			uq.withCreatedTasks != nil,
 			uq.withRetrospectiveReviewRequests != nil,
 			uq.withRetrospectiveReviewResponses != nil,
+			uq.withRetrospectiveComments != nil,
 			uq.withRoleAssignments != nil,
 		}
 	)
@@ -933,6 +970,15 @@ func (uq *UserQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*User, e
 			func(n *User) { n.Edges.RetrospectiveReviewResponses = []*RetrospectiveReview{} },
 			func(n *User, e *RetrospectiveReview) {
 				n.Edges.RetrospectiveReviewResponses = append(n.Edges.RetrospectiveReviewResponses, e)
+			}); err != nil {
+			return nil, err
+		}
+	}
+	if query := uq.withRetrospectiveComments; query != nil {
+		if err := uq.loadRetrospectiveComments(ctx, query, nodes,
+			func(n *User) { n.Edges.RetrospectiveComments = []*RetrospectiveComment{} },
+			func(n *User, e *RetrospectiveComment) {
+				n.Edges.RetrospectiveComments = append(n.Edges.RetrospectiveComments, e)
 			}); err != nil {
 			return nil, err
 		}
@@ -1349,7 +1395,6 @@ func (uq *UserQuery) loadRetrospectiveReviewRequests(ctx context.Context, query 
 			init(nodes[i])
 		}
 	}
-	query.withFKs = true
 	if len(query.ctx.Fields) > 0 {
 		query.ctx.AppendFieldOnce(retrospectivereview.FieldRequesterID)
 	}
@@ -1380,7 +1425,6 @@ func (uq *UserQuery) loadRetrospectiveReviewResponses(ctx context.Context, query
 			init(nodes[i])
 		}
 	}
-	query.withFKs = true
 	if len(query.ctx.Fields) > 0 {
 		query.ctx.AppendFieldOnce(retrospectivereview.FieldReviewerID)
 	}
@@ -1396,6 +1440,36 @@ func (uq *UserQuery) loadRetrospectiveReviewResponses(ctx context.Context, query
 		node, ok := nodeids[fk]
 		if !ok {
 			return fmt.Errorf(`unexpected referenced foreign-key "reviewer_id" returned %v for node %v`, fk, n.ID)
+		}
+		assign(node, n)
+	}
+	return nil
+}
+func (uq *UserQuery) loadRetrospectiveComments(ctx context.Context, query *RetrospectiveCommentQuery, nodes []*User, init func(*User), assign func(*User, *RetrospectiveComment)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[uuid.UUID]*User)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+		if init != nil {
+			init(nodes[i])
+		}
+	}
+	if len(query.ctx.Fields) > 0 {
+		query.ctx.AppendFieldOnce(retrospectivecomment.FieldUserID)
+	}
+	query.Where(predicate.RetrospectiveComment(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(user.RetrospectiveCommentsColumn), fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.UserID
+		node, ok := nodeids[fk]
+		if !ok {
+			return fmt.Errorf(`unexpected referenced foreign-key "user_id" returned %v for node %v`, fk, n.ID)
 		}
 		assign(node, n)
 	}

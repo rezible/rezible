@@ -20,6 +20,8 @@ const (
 	FieldTenantID = "tenant_id"
 	// FieldRetrospectiveID holds the string denoting the retrospective_id field in the database.
 	FieldRetrospectiveID = "retrospective_id"
+	// FieldCommentID holds the string denoting the comment_id field in the database.
+	FieldCommentID = "comment_id"
 	// FieldRequesterID holds the string denoting the requester_id field in the database.
 	FieldRequesterID = "requester_id"
 	// FieldReviewerID holds the string denoting the reviewer_id field in the database.
@@ -34,8 +36,8 @@ const (
 	EdgeRequester = "requester"
 	// EdgeReviewer holds the string denoting the reviewer edge name in mutations.
 	EdgeReviewer = "reviewer"
-	// EdgeDiscussion holds the string denoting the discussion edge name in mutations.
-	EdgeDiscussion = "discussion"
+	// EdgeComment holds the string denoting the comment edge name in mutations.
+	EdgeComment = "comment"
 	// Table holds the table name of the retrospectivereview in the database.
 	Table = "retrospective_reviews"
 	// TenantTable is the table that holds the tenant relation/edge.
@@ -66,13 +68,13 @@ const (
 	ReviewerInverseTable = "users"
 	// ReviewerColumn is the table column denoting the reviewer relation/edge.
 	ReviewerColumn = "reviewer_id"
-	// DiscussionTable is the table that holds the discussion relation/edge.
-	DiscussionTable = "retrospective_reviews"
-	// DiscussionInverseTable is the table name for the RetrospectiveDiscussion entity.
-	// It exists in this package in order to avoid circular dependency with the "retrospectivediscussion" package.
-	DiscussionInverseTable = "retrospective_discussions"
-	// DiscussionColumn is the table column denoting the discussion relation/edge.
-	DiscussionColumn = "retrospective_review_discussion"
+	// CommentTable is the table that holds the comment relation/edge.
+	CommentTable = "retrospective_reviews"
+	// CommentInverseTable is the table name for the RetrospectiveComment entity.
+	// It exists in this package in order to avoid circular dependency with the "retrospectivecomment" package.
+	CommentInverseTable = "retrospective_comments"
+	// CommentColumn is the table column denoting the comment relation/edge.
+	CommentColumn = "comment_id"
 )
 
 // Columns holds all SQL columns for retrospectivereview fields.
@@ -80,26 +82,16 @@ var Columns = []string{
 	FieldID,
 	FieldTenantID,
 	FieldRetrospectiveID,
+	FieldCommentID,
 	FieldRequesterID,
 	FieldReviewerID,
 	FieldState,
-}
-
-// ForeignKeys holds the SQL foreign-keys that are owned by the "retrospective_reviews"
-// table and are not defined as standalone fields in the schema.
-var ForeignKeys = []string{
-	"retrospective_review_discussion",
 }
 
 // ValidColumn reports if the column name is valid (part of the table columns).
 func ValidColumn(column string) bool {
 	for i := range Columns {
 		if column == Columns[i] {
-			return true
-		}
-	}
-	for i := range ForeignKeys {
-		if column == ForeignKeys[i] {
 			return true
 		}
 	}
@@ -160,6 +152,11 @@ func ByRetrospectiveID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldRetrospectiveID, opts...).ToFunc()
 }
 
+// ByCommentID orders the results by the comment_id field.
+func ByCommentID(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldCommentID, opts...).ToFunc()
+}
+
 // ByRequesterID orders the results by the requester_id field.
 func ByRequesterID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldRequesterID, opts...).ToFunc()
@@ -203,10 +200,10 @@ func ByReviewerField(field string, opts ...sql.OrderTermOption) OrderOption {
 	}
 }
 
-// ByDiscussionField orders the results by discussion field.
-func ByDiscussionField(field string, opts ...sql.OrderTermOption) OrderOption {
+// ByCommentField orders the results by comment field.
+func ByCommentField(field string, opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborTerms(s, newDiscussionStep(), sql.OrderByField(field, opts...))
+		sqlgraph.OrderByNeighborTerms(s, newCommentStep(), sql.OrderByField(field, opts...))
 	}
 }
 func newTenantStep() *sqlgraph.Step {
@@ -237,10 +234,10 @@ func newReviewerStep() *sqlgraph.Step {
 		sqlgraph.Edge(sqlgraph.M2O, false, ReviewerTable, ReviewerColumn),
 	)
 }
-func newDiscussionStep() *sqlgraph.Step {
+func newCommentStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
-		sqlgraph.To(DiscussionInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.M2O, false, DiscussionTable, DiscussionColumn),
+		sqlgraph.To(CommentInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.M2O, false, CommentTable, CommentColumn),
 	)
 }

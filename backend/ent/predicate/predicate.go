@@ -120,11 +120,8 @@ type ProviderSyncHistory func(*sql.Selector)
 // Retrospective is the predicate function for retrospective builders.
 type Retrospective func(*sql.Selector)
 
-// RetrospectiveDiscussion is the predicate function for retrospectivediscussion builders.
-type RetrospectiveDiscussion func(*sql.Selector)
-
-// RetrospectiveDiscussionReply is the predicate function for retrospectivediscussionreply builders.
-type RetrospectiveDiscussionReply func(*sql.Selector)
+// RetrospectiveComment is the predicate function for retrospectivecomment builders.
+type RetrospectiveComment func(*sql.Selector)
 
 // RetrospectiveReview is the predicate function for retrospectivereview builders.
 type RetrospectiveReview func(*sql.Selector)

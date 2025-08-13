@@ -64,6 +64,11 @@ func RetrospectiveID(v uuid.UUID) predicate.RetrospectiveReview {
 	return predicate.RetrospectiveReview(sql.FieldEQ(FieldRetrospectiveID, v))
 }
 
+// CommentID applies equality check predicate on the "comment_id" field. It's identical to CommentIDEQ.
+func CommentID(v uuid.UUID) predicate.RetrospectiveReview {
+	return predicate.RetrospectiveReview(sql.FieldEQ(FieldCommentID, v))
+}
+
 // RequesterID applies equality check predicate on the "requester_id" field. It's identical to RequesterIDEQ.
 func RequesterID(v uuid.UUID) predicate.RetrospectiveReview {
 	return predicate.RetrospectiveReview(sql.FieldEQ(FieldRequesterID, v))
@@ -112,6 +117,26 @@ func RetrospectiveIDIn(vs ...uuid.UUID) predicate.RetrospectiveReview {
 // RetrospectiveIDNotIn applies the NotIn predicate on the "retrospective_id" field.
 func RetrospectiveIDNotIn(vs ...uuid.UUID) predicate.RetrospectiveReview {
 	return predicate.RetrospectiveReview(sql.FieldNotIn(FieldRetrospectiveID, vs...))
+}
+
+// CommentIDEQ applies the EQ predicate on the "comment_id" field.
+func CommentIDEQ(v uuid.UUID) predicate.RetrospectiveReview {
+	return predicate.RetrospectiveReview(sql.FieldEQ(FieldCommentID, v))
+}
+
+// CommentIDNEQ applies the NEQ predicate on the "comment_id" field.
+func CommentIDNEQ(v uuid.UUID) predicate.RetrospectiveReview {
+	return predicate.RetrospectiveReview(sql.FieldNEQ(FieldCommentID, v))
+}
+
+// CommentIDIn applies the In predicate on the "comment_id" field.
+func CommentIDIn(vs ...uuid.UUID) predicate.RetrospectiveReview {
+	return predicate.RetrospectiveReview(sql.FieldIn(FieldCommentID, vs...))
+}
+
+// CommentIDNotIn applies the NotIn predicate on the "comment_id" field.
+func CommentIDNotIn(vs ...uuid.UUID) predicate.RetrospectiveReview {
+	return predicate.RetrospectiveReview(sql.FieldNotIn(FieldCommentID, vs...))
 }
 
 // RequesterIDEQ applies the EQ predicate on the "requester_id" field.
@@ -266,21 +291,21 @@ func HasReviewerWith(preds ...predicate.User) predicate.RetrospectiveReview {
 	})
 }
 
-// HasDiscussion applies the HasEdge predicate on the "discussion" edge.
-func HasDiscussion() predicate.RetrospectiveReview {
+// HasComment applies the HasEdge predicate on the "comment" edge.
+func HasComment() predicate.RetrospectiveReview {
 	return predicate.RetrospectiveReview(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, DiscussionTable, DiscussionColumn),
+			sqlgraph.Edge(sqlgraph.M2O, false, CommentTable, CommentColumn),
 		)
 		sqlgraph.HasNeighbors(s, step)
 	})
 }
 
-// HasDiscussionWith applies the HasEdge predicate on the "discussion" edge with a given conditions (other predicates).
-func HasDiscussionWith(preds ...predicate.RetrospectiveDiscussion) predicate.RetrospectiveReview {
+// HasCommentWith applies the HasEdge predicate on the "comment" edge with a given conditions (other predicates).
+func HasCommentWith(preds ...predicate.RetrospectiveComment) predicate.RetrospectiveReview {
 	return predicate.RetrospectiveReview(func(s *sql.Selector) {
-		step := newDiscussionStep()
+		step := newCommentStep()
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)

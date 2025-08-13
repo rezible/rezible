@@ -21,16 +21,10 @@ type RetrospectivesHandler interface {
 	UpdateRetrospectiveReview(context.Context, *UpdateRetrospectiveReviewRequest) (*UpdateRetrospectiveReviewResponse, error)
 	ArchiveRetrospectiveReview(context.Context, *ArchiveRetrospectiveReviewRequest) (*ArchiveRetrospectiveReviewResponse, error)
 
-	//ListRetrospectiveTemplates(context.Context, *ListRetrospectiveTemplatesRequest) (*ListRetrospectiveTemplatesResponse, error)
-	//CreateRetrospectiveTemplate(context.Context, *CreateRetrospectiveTemplateRequest) (*CreateRetrospectiveTemplateResponse, error)
-	//UpdateRetrospectiveTemplate(context.Context, *UpdateRetrospectiveTemplateRequest) (*UpdateRetrospectiveTemplateResponse, error)
-	//ArchiveRetrospectiveTemplate(context.Context, *ArchiveRetrospectiveTemplateRequest) (*ArchiveRetrospectiveTemplateResponse, error)
-
-	ListRetrospectiveDiscussions(context.Context, *ListRetrospectiveDiscussionsRequest) (*ListRetrospectiveDiscussionsResponse, error)
-	CreateRetrospectiveDiscussion(context.Context, *CreateRetrospectiveDiscussionRequest) (*CreateRetrospectiveDiscussionResponse, error)
-	GetRetrospectiveDiscussion(context.Context, *GetRetrospectiveDiscussionRequest) (*GetRetrospectiveDiscussionResponse, error)
-	UpdateRetrospectiveDiscussion(context.Context, *UpdateRetrospectiveDiscussionRequest) (*UpdateRetrospectiveDiscussionResponse, error)
-	AddRetrospectiveDiscussionReply(context.Context, *AddRetrospectiveDiscussionReplyRequest) (*AddRetrospectiveDiscussionReplyResponse, error)
+	ListRetrospectiveComments(context.Context, *ListRetrospectiveCommentsRequest) (*ListRetrospectiveCommentsResponse, error)
+	CreateRetrospectiveComment(context.Context, *CreateRetrospectiveCommentRequest) (*CreateRetrospectiveCommentResponse, error)
+	GetRetrospectiveComment(context.Context, *GetRetrospectiveCommentRequest) (*GetRetrospectiveCommentResponse, error)
+	UpdateRetrospectiveComment(context.Context, *UpdateRetrospectiveCommentRequest) (*UpdateRetrospectiveCommentResponse, error)
 }
 
 func (o operations) RegisterRetrospectives(api huma.API) {
@@ -44,16 +38,10 @@ func (o operations) RegisterRetrospectives(api huma.API) {
 	huma.Register(api, UpdateRetrospectiveReview, o.UpdateRetrospectiveReview)
 	huma.Register(api, ArchiveRetrospectiveReview, o.ArchiveRetrospectiveReview)
 
-	//huma.Register(api, ListRetrospectiveTemplates, o.ListRetrospectiveTemplates)
-	//huma.Register(api, CreateRetrospectiveTemplate, o.CreateRetrospectiveTemplate)
-	//huma.Register(api, UpdateRetrospectiveTemplate, o.UpdateRetrospectiveTemplate)
-	//huma.Register(api, ArchiveRetrospectiveTemplate, o.ArchiveRetrospectiveTemplate)
-
-	huma.Register(api, ListRetrospectiveDiscussions, o.ListRetrospectiveDiscussions)
-	huma.Register(api, CreateRetrospectiveDiscussion, o.CreateRetrospectiveDiscussion)
-	huma.Register(api, GetRetrospectiveDiscussion, o.GetRetrospectiveDiscussion)
-	huma.Register(api, UpdateRetrospectiveDiscussion, o.UpdateRetrospectiveDiscussion)
-	huma.Register(api, AddRetrospectiveDiscussionReply, o.AddRetrospectiveDiscussionReply)
+	huma.Register(api, ListRetrospectiveComments, o.ListRetrospectiveComments)
+	huma.Register(api, CreateRetrospectiveComment, o.CreateRetrospectiveComment)
+	huma.Register(api, GetRetrospectiveComment, o.GetRetrospectiveComment)
+	huma.Register(api, UpdateRetrospectiveComment, o.UpdateRetrospectiveComment)
 }
 
 type (
@@ -78,15 +66,9 @@ type (
 	}
 
 	RetrospectiveReviewAttributes struct {
-	}
-
-	RetrospectiveReportTemplate struct {
-		Id         uuid.UUID                             `json:"id"`
-		Attributes RetrospectiveReportTemplateAttributes `json:"attributes"`
-	}
-
-	RetrospectiveReportTemplateAttributes struct {
-		Sections []RetrospectiveReportSection `json:"sections"`
+		Requester Expandable[User]                           `json:"requester"`
+		Reviewer  Expandable[User]                           `json:"reviewer"`
+		Comment   Expandable[RetrospectiveCommentAttributes] `json:"comment"`
 	}
 
 	RetrospectiveReportSection struct {
@@ -96,26 +78,15 @@ type (
 		Description string `json:"description"`
 	}
 
-	RetrospectiveDiscussion struct {
-		Id         uuid.UUID                         `json:"id"`
-		Attributes RetrospectiveDiscussionAttributes `json:"attributes"`
+	RetrospectiveComment struct {
+		Id         uuid.UUID                      `json:"id"`
+		Attributes RetrospectiveCommentAttributes `json:"attributes"`
 	}
 
-	RetrospectiveDiscussionAttributes struct {
-		DocumentAnnotationId *uuid.UUID                     `json:"annotationId,omitempty"`
-		Resolved             bool                           `json:"resolved"`
-		Content              string                         `json:"content"`
-		Replies              []RetrospectiveDiscussionReply `json:"replies"`
-	}
-
-	RetrospectiveDiscussionReply struct {
-		Id         uuid.UUID                              `json:"id"`
-		Attributes RetrospectiveDiscussionReplyAttributes `json:"attributes"`
-	}
-
-	RetrospectiveDiscussionReplyAttributes struct {
-		Content string                         `json:"content"`
-		Replies []RetrospectiveDiscussionReply `json:"replies"`
+	RetrospectiveCommentAttributes struct {
+		User    User                   `json:"user"`
+		Content string                 `json:"content"`
+		Replies []RetrospectiveComment `json:"replies"`
 	}
 )
 
@@ -147,31 +118,15 @@ func RetrospectiveFromEnt(r *ent.Retrospective) Retrospective {
 	return Retrospective{Id: r.ID, Attributes: attr}
 }
 
-func RetrospectiveDiscussionFromEnt(d *ent.RetrospectiveDiscussion) RetrospectiveDiscussion {
-	replies := make([]RetrospectiveDiscussionReply, len(d.Edges.Replies))
-	for i, r := range d.Edges.Replies {
-		replies[i] = RetrospectiveDiscussionReplyFromEnt(r)
-	}
-
-	return RetrospectiveDiscussion{
-		Id: d.ID,
-		Attributes: RetrospectiveDiscussionAttributes{
-			Resolved: false,
-			Content:  string(d.Content),
-			Replies:  replies,
-		},
-	}
-}
-
-func RetrospectiveDiscussionReplyFromEnt(r *ent.RetrospectiveDiscussionReply) RetrospectiveDiscussionReply {
-	replies := make([]RetrospectiveDiscussionReply, len(r.Edges.Replies))
+func RetrospectiveCommentFromEnt(r *ent.RetrospectiveComment) RetrospectiveComment {
+	replies := make([]RetrospectiveComment, len(r.Edges.Replies))
 	for i, rr := range r.Edges.Replies {
-		replies[i] = RetrospectiveDiscussionReplyFromEnt(rr)
+		replies[i] = RetrospectiveCommentFromEnt(rr)
 	}
 
-	return RetrospectiveDiscussionReply{
+	return RetrospectiveComment{
 		Id: r.ID,
-		Attributes: RetrospectiveDiscussionReplyAttributes{
+		Attributes: RetrospectiveCommentAttributes{
 			Content: string(r.Content),
 			Replies: replies,
 		},
@@ -181,7 +136,6 @@ func RetrospectiveDiscussionReplyFromEnt(r *ent.RetrospectiveDiscussionReply) Re
 // Operations
 
 var retrospectivesTags = []string{"Retrospectives"}
-var retrospectiveDiscussionTags = []string{"Retrospective Discussions"}
 
 var ListRetrospectives = huma.Operation{
 	OperationID: "list-retrospectives",
@@ -287,139 +241,57 @@ var ArchiveRetrospectiveReview = huma.Operation{
 type ArchiveRetrospectiveReviewRequest ArchiveIdRequest
 type ArchiveRetrospectiveReviewResponse EmptyResponse
 
-/*
-var ListRetrospectiveTemplates = huma.Operation{
-	OperationID: "list-retrospective-templates",
+var ListRetrospectiveComments = huma.Operation{
+	OperationID: "list-retrospective-comments",
 	Method:      http.MethodGet,
-	Path:        "/retrospective_templates",
-	Summary:     "Get a Retrospective Template",
+	Path:        "/retrospectives/{id}/comments",
+	Summary:     "List Comments For a Retrospective",
 	Tags:        retrospectivesTags,
 	Errors:      errorCodes(),
 }
 
-type ListRetrospectiveTemplatesRequest ListRequest
-type ListRetrospectiveTemplatesResponse PaginatedResponse[RetrospectiveTemplate]
+type ListRetrospectiveCommentsRequest ListIdRequest
+type ListRetrospectiveCommentsResponse PaginatedResponse[RetrospectiveComment]
 
-var CreateRetrospectiveTemplate = huma.Operation{
-	OperationID: "create-retrospective-template",
-	Method:      http.MethodPost,
-	Path:        "/retrospective_templates",
-	Summary:     "Create a Retrospective Template",
-	Tags:        retrospectivesTags,
-	Errors:      errorCodes(),
-}
-
-type CreateRetrospectiveTemplateAttributes struct {
-	Sections *[]RetrospectiveSection `json:"sections,omitempty"`
-}
-type CreateRetrospectiveTemplateRequest RequestWithBodyAttributes[CreateRetrospectiveTemplateAttributes]
-type CreateRetrospectiveTemplateResponse ItemResponse[RetrospectiveTemplate]
-
-var UpdateRetrospectiveTemplate = huma.Operation{
-	OperationID: "update-retrospective-template",
-	Method:      http.MethodPatch,
-	Path:        "/retrospective_templates/{id}",
-	Summary:     "Update a Retrospective Template",
-	Tags:        retrospectivesTags,
-	Errors:      errorCodes(),
-}
-
-type UpdateRetrospectiveTemplateAttributes struct {
-	Sections *[]RetrospectiveSection `json:"sections,omitempty"`
-}
-type UpdateRetrospectiveTemplateRequest UpdateIdRequest[UpdateRetrospectiveTemplateAttributes]
-type UpdateRetrospectiveTemplateResponse ItemResponse[RetrospectiveTemplate]
-
-var ArchiveRetrospectiveTemplate = huma.Operation{
-	OperationID: "archive-retrospective-template",
-	Method:      http.MethodDelete,
-	Path:        "/retrospective_templates/{id}",
-	Summary:     "Archive a Retrospective Template",
-	Tags:        retrospectivesTags,
-	Errors:      errorCodes(),
-}
-
-type ArchiveRetrospectiveTemplateRequest ArchiveIdRequest
-type ArchiveRetrospectiveTemplateResponse EmptyResponse
-*/
-
-var ListRetrospectiveDiscussions = huma.Operation{
-	OperationID: "list-retrospective-discussions",
-	Method:      http.MethodGet,
-	Path:        "/retrospectives/{id}/discussions",
-	Summary:     "List Discussions For a Retrospective",
-	Tags:        retrospectiveDiscussionTags,
-	Errors:      errorCodes(),
-}
-
-type ListRetrospectiveDiscussionsRequest ListIdRequest
-type ListRetrospectiveDiscussionsResponse PaginatedResponse[RetrospectiveDiscussion]
-
-type retrospectiveDiscussionRequest struct {
-	RetrospectiveId uuid.UUID `path:"id"`
-	DiscussionId    uuid.UUID `path:"discussionId"`
-}
-
-var GetRetrospectiveDiscussion = huma.Operation{
-	OperationID: "get-retrospective-discussion",
-	Method:      http.MethodGet,
-	Path:        "/retrospectives/{id}/discussions/{discussionId}",
-	Summary:     "Get a Retrospective Discussion",
-	Tags:        retrospectiveDiscussionTags,
-	Errors:      errorCodes(),
-}
-
-type GetRetrospectiveDiscussionRequest retrospectiveDiscussionRequest
-type GetRetrospectiveDiscussionResponse ItemResponse[RetrospectiveDiscussion]
-
-var CreateRetrospectiveDiscussion = huma.Operation{
+var CreateRetrospectiveComment = huma.Operation{
 	OperationID: "create-retrospective-discussion",
 	Method:      http.MethodPost,
-	Path:        "/retrospectives/{id}/discussions",
-	Summary:     "Create a Retrospective Discussion",
-	Tags:        retrospectiveDiscussionTags,
+	Path:        "/retrospectives/{id}/comments",
+	Summary:     "Create a Retrospective Comment",
+	Tags:        retrospectivesTags,
 	Errors:      errorCodes(),
 }
 
-type CreateRetrospectiveDiscussionAttributes struct {
+type CreateRetrospectiveCommentAttributes struct {
 	Content json.RawMessage `json:"content"`
 }
-type CreateRetrospectiveDiscussionRequest CreateIdRequest[CreateRetrospectiveDiscussionAttributes]
-type CreateRetrospectiveDiscussionResponse ItemResponse[RetrospectiveDiscussion]
+type CreateRetrospectiveCommentRequest CreateIdRequest[CreateRetrospectiveCommentAttributes]
+type CreateRetrospectiveCommentResponse ItemResponse[RetrospectiveComment]
 
-var UpdateRetrospectiveDiscussion = huma.Operation{
-	OperationID: "update-retrospective-discussion",
+var GetRetrospectiveComment = huma.Operation{
+	OperationID: "get-retrospective-comment",
+	Method:      http.MethodGet,
+	Path:        "/retrospective_comments/{id}",
+	Summary:     "Get a Retrospective Comment",
+	Tags:        retrospectivesTags,
+	Errors:      errorCodes(),
+}
+
+type GetRetrospectiveCommentRequest ListIdRequest
+type GetRetrospectiveCommentResponse ItemResponse[RetrospectiveComment]
+
+var UpdateRetrospectiveComment = huma.Operation{
+	OperationID: "update-retrospective-comment",
 	Method:      http.MethodPatch,
-	Path:        "/retrospectives/{id}/discussions/{discussionId}",
-	Summary:     "Update a Retrospective Discussion",
-	Tags:        retrospectiveDiscussionTags,
+	Path:        "/retrospective_comments/{id}",
+	Summary:     "Update a Retrospective Comment",
+	Tags:        retrospectivesTags,
 	Errors:      errorCodes(),
 }
 
-type UpdateRetrospectiveDiscussionAttributes struct {
-	Resolved *bool `json:"resolved,omitempty"`
+type UpdateRetrospectiveCommentAttributes struct {
+	Resolved *bool   `json:"resolved,omitempty"`
+	Content  *string `json:"content,omitempty"`
 }
-type UpdateRetrospectiveDiscussionRequest struct {
-	retrospectiveDiscussionRequest
-	RequestWithBodyAttributes[UpdateRetrospectiveDiscussionAttributes]
-}
-type UpdateRetrospectiveDiscussionResponse ItemResponse[RetrospectiveDiscussion]
-
-var AddRetrospectiveDiscussionReply = huma.Operation{
-	OperationID: "add-retrospective-discussion-reply",
-	Method:      http.MethodPost,
-	Path:        "/retrospectives/{id}/discussions/{discussionId}",
-	Summary:     "Add a Reply to a Retrospective Discussion",
-	Tags:        retrospectiveDiscussionTags,
-	Errors:      errorCodes(),
-}
-
-type AddRetrospectiveDiscussionReplyRequestAttributes struct {
-	ParentReplyId *uuid.UUID      `json:"parentReplyId,omitempty"`
-	Content       json.RawMessage `json:"content"`
-}
-type AddRetrospectiveDiscussionReplyRequest struct {
-	retrospectiveDiscussionRequest
-	RequestWithBodyAttributes[AddRetrospectiveDiscussionReplyRequestAttributes]
-}
-type AddRetrospectiveDiscussionReplyResponse ItemResponse[RetrospectiveDiscussion]
+type UpdateRetrospectiveCommentRequest UpdateIdRequest[UpdateRetrospectiveCommentAttributes]
+type UpdateRetrospectiveCommentResponse ItemResponse[RetrospectiveComment]

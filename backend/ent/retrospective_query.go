@@ -17,7 +17,7 @@ import (
 	"github.com/rezible/rezible/ent/incident"
 	"github.com/rezible/rezible/ent/predicate"
 	"github.com/rezible/rezible/ent/retrospective"
-	"github.com/rezible/rezible/ent/retrospectivediscussion"
+	"github.com/rezible/rezible/ent/retrospectivecomment"
 	"github.com/rezible/rezible/ent/systemanalysis"
 	"github.com/rezible/rezible/ent/tenant"
 )
@@ -31,7 +31,7 @@ type RetrospectiveQuery struct {
 	predicates         []predicate.Retrospective
 	withTenant         *TenantQuery
 	withIncident       *IncidentQuery
-	withDiscussions    *RetrospectiveDiscussionQuery
+	withComments       *RetrospectiveCommentQuery
 	withSystemAnalysis *SystemAnalysisQuery
 	modifiers          []func(*sql.Selector)
 	// intermediate query (i.e. traversal path).
@@ -114,9 +114,9 @@ func (rq *RetrospectiveQuery) QueryIncident() *IncidentQuery {
 	return query
 }
 
-// QueryDiscussions chains the current query on the "discussions" edge.
-func (rq *RetrospectiveQuery) QueryDiscussions() *RetrospectiveDiscussionQuery {
-	query := (&RetrospectiveDiscussionClient{config: rq.config}).Query()
+// QueryComments chains the current query on the "comments" edge.
+func (rq *RetrospectiveQuery) QueryComments() *RetrospectiveCommentQuery {
+	query := (&RetrospectiveCommentClient{config: rq.config}).Query()
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
 		if err := rq.prepareQuery(ctx); err != nil {
 			return nil, err
@@ -127,8 +127,8 @@ func (rq *RetrospectiveQuery) QueryDiscussions() *RetrospectiveDiscussionQuery {
 		}
 		step := sqlgraph.NewStep(
 			sqlgraph.From(retrospective.Table, retrospective.FieldID, selector),
-			sqlgraph.To(retrospectivediscussion.Table, retrospectivediscussion.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, true, retrospective.DiscussionsTable, retrospective.DiscussionsColumn),
+			sqlgraph.To(retrospectivecomment.Table, retrospectivecomment.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, true, retrospective.CommentsTable, retrospective.CommentsColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(rq.driver.Dialect(), step)
 		return fromU, nil
@@ -352,7 +352,7 @@ func (rq *RetrospectiveQuery) Clone() *RetrospectiveQuery {
 		predicates:         append([]predicate.Retrospective{}, rq.predicates...),
 		withTenant:         rq.withTenant.Clone(),
 		withIncident:       rq.withIncident.Clone(),
-		withDiscussions:    rq.withDiscussions.Clone(),
+		withComments:       rq.withComments.Clone(),
 		withSystemAnalysis: rq.withSystemAnalysis.Clone(),
 		// clone intermediate query.
 		sql:       rq.sql.Clone(),
@@ -383,14 +383,14 @@ func (rq *RetrospectiveQuery) WithIncident(opts ...func(*IncidentQuery)) *Retros
 	return rq
 }
 
-// WithDiscussions tells the query-builder to eager-load the nodes that are connected to
-// the "discussions" edge. The optional arguments are used to configure the query builder of the edge.
-func (rq *RetrospectiveQuery) WithDiscussions(opts ...func(*RetrospectiveDiscussionQuery)) *RetrospectiveQuery {
-	query := (&RetrospectiveDiscussionClient{config: rq.config}).Query()
+// WithComments tells the query-builder to eager-load the nodes that are connected to
+// the "comments" edge. The optional arguments are used to configure the query builder of the edge.
+func (rq *RetrospectiveQuery) WithComments(opts ...func(*RetrospectiveCommentQuery)) *RetrospectiveQuery {
+	query := (&RetrospectiveCommentClient{config: rq.config}).Query()
 	for _, opt := range opts {
 		opt(query)
 	}
-	rq.withDiscussions = query
+	rq.withComments = query
 	return rq
 }
 
@@ -492,7 +492,7 @@ func (rq *RetrospectiveQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([
 		loadedTypes = [4]bool{
 			rq.withTenant != nil,
 			rq.withIncident != nil,
-			rq.withDiscussions != nil,
+			rq.withComments != nil,
 			rq.withSystemAnalysis != nil,
 		}
 	)
@@ -529,12 +529,10 @@ func (rq *RetrospectiveQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([
 			return nil, err
 		}
 	}
-	if query := rq.withDiscussions; query != nil {
-		if err := rq.loadDiscussions(ctx, query, nodes,
-			func(n *Retrospective) { n.Edges.Discussions = []*RetrospectiveDiscussion{} },
-			func(n *Retrospective, e *RetrospectiveDiscussion) {
-				n.Edges.Discussions = append(n.Edges.Discussions, e)
-			}); err != nil {
+	if query := rq.withComments; query != nil {
+		if err := rq.loadComments(ctx, query, nodes,
+			func(n *Retrospective) { n.Edges.Comments = []*RetrospectiveComment{} },
+			func(n *Retrospective, e *RetrospectiveComment) { n.Edges.Comments = append(n.Edges.Comments, e) }); err != nil {
 			return nil, err
 		}
 	}
@@ -605,7 +603,7 @@ func (rq *RetrospectiveQuery) loadIncident(ctx context.Context, query *IncidentQ
 	}
 	return nil
 }
-func (rq *RetrospectiveQuery) loadDiscussions(ctx context.Context, query *RetrospectiveDiscussionQuery, nodes []*Retrospective, init func(*Retrospective), assign func(*Retrospective, *RetrospectiveDiscussion)) error {
+func (rq *RetrospectiveQuery) loadComments(ctx context.Context, query *RetrospectiveCommentQuery, nodes []*Retrospective, init func(*Retrospective), assign func(*Retrospective, *RetrospectiveComment)) error {
 	fks := make([]driver.Value, 0, len(nodes))
 	nodeids := make(map[uuid.UUID]*Retrospective)
 	for i := range nodes {
@@ -616,10 +614,10 @@ func (rq *RetrospectiveQuery) loadDiscussions(ctx context.Context, query *Retros
 		}
 	}
 	if len(query.ctx.Fields) > 0 {
-		query.ctx.AppendFieldOnce(retrospectivediscussion.FieldRetrospectiveID)
+		query.ctx.AppendFieldOnce(retrospectivecomment.FieldRetrospectiveID)
 	}
-	query.Where(predicate.RetrospectiveDiscussion(func(s *sql.Selector) {
-		s.Where(sql.InValues(s.C(retrospective.DiscussionsColumn), fks...))
+	query.Where(predicate.RetrospectiveComment(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(retrospective.CommentsColumn), fks...))
 	}))
 	neighbors, err := query.All(ctx)
 	if err != nil {

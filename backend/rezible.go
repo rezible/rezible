@@ -302,23 +302,16 @@ type (
 )
 
 type (
-	ListRetrospectiveDiscussionsParams struct {
+	ListRetrospectiveCommentsParams struct {
 		ListParams
 		RetrospectiveID uuid.UUID
 		WithReplies     bool
 	}
 
-	CreateRetrospectiveDiscussionParams struct {
+	ListRetrospectiveReviewsParams struct {
+		ListParams
 		RetrospectiveID uuid.UUID
-		UserID          uuid.UUID
-		Content         []byte
-	}
-
-	AddRetrospectiveDiscussionReplyParams struct {
-		DiscussionId uuid.UUID
-		UserID       uuid.UUID
-		ParentID     *uuid.UUID
-		Content      []byte
+		WithReplies     bool
 	}
 
 	RetrospectiveService interface {
@@ -326,11 +319,13 @@ type (
 		GetById(context.Context, uuid.UUID) (*ent.Retrospective, error)
 		GetForIncident(context.Context, *ent.Incident) (*ent.Retrospective, error)
 
-		CreateDiscussion(context.Context, CreateRetrospectiveDiscussionParams) (*ent.RetrospectiveDiscussion, error)
-		ListDiscussions(context.Context, ListRetrospectiveDiscussionsParams) ([]*ent.RetrospectiveDiscussion, error)
-		GetDiscussionByID(context.Context, uuid.UUID) (*ent.RetrospectiveDiscussion, error)
-		// TODO: just pass a *ent.RetrospectiveDiscussionReply
-		AddDiscussionReply(context.Context, AddRetrospectiveDiscussionReplyParams) (*ent.RetrospectiveDiscussionReply, error)
+		//ListReviews(context.Context, ListRetrospectiveReviewsParams) ([]*ent.RetrospectiveReview, error)
+		//GetReview(context.Context, uuid.UUID) (*ent.RetrospectiveReview, error)
+		//SetReview(context.Context, *ent.RetrospectiveReview) (*ent.RetrospectiveReview, error)
+
+		ListComments(context.Context, ListRetrospectiveCommentsParams) ([]*ent.RetrospectiveComment, error)
+		GetComment(context.Context, uuid.UUID) (*ent.RetrospectiveComment, error)
+		SetComment(context.Context, *ent.RetrospectiveComment) (*ent.RetrospectiveComment, error)
 	}
 )
 
