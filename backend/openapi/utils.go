@@ -105,10 +105,26 @@ type (
 
 type CalendarDate string
 
-const calendarDateLayout = "2006-01-02"
+func (r CalendarDate) Parse() (time.Time, error) {
+	return time.Parse("2006-01-02", string(r))
+}
 
-func (r CalendarDate) GetTime() (time.Time, error) {
-	return time.Parse(calendarDateLayout, string(r))
+type CalendarDateTime string
+
+func (r CalendarDateTime) Parse() (time.Time, error) {
+	return time.Parse("2006-01-02", string(r))
+}
+
+func GetCalendarDateWindow(from, to CalendarDate) (time.Time, time.Time, error) {
+	parsedFrom, fromErr := from.Parse()
+	parsedTo, toErr := to.Parse()
+	return parsedFrom, parsedTo, errors.Join(fromErr, toErr)
+}
+
+func GetCalendarDateTimeWindow(from, to CalendarDateTime) (time.Time, time.Time, error) {
+	parsedFrom, fromErr := from.Parse()
+	parsedTo, toErr := to.Parse()
+	return parsedFrom, parsedTo, errors.Join(fromErr, toErr)
 }
 
 // FlexibleId is a field which can be either a uuid or a slug
