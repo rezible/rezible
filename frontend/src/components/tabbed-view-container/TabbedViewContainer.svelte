@@ -1,28 +1,29 @@
 <script lang="ts" module>
-	export type Tab = {
+	export type Tab<View> = {
 		label: string;
-		path: string;
+		view: View;
 		component: Component;
 	}
 
 </script>
 
-<script lang="ts">
+<script lang="ts" generics="TabView">
 	import { page } from "$app/state";
 
 	import { cls } from "@layerstack/tailwind";
 	import type { Component, Snippet } from "svelte";
 
 	type Props = { 
-		tabs: Tab[];
-		pathBase: string;
+		tabs: Tab<TabView>[];
+		path: string;
 		infoBar?: Component;
 		tabSidebar?: Snippet;
 	};
 	const props: Props = $props();
 
-	const activePath = $derived(page.url.pathname.replaceAll(props.pathBase, "").replace("/", ""));
-	const activeIdx = $derived(Math.max(props.tabs.findIndex(t => activePath === t.path), 0));
+	const activeViewPath = $derived(page.url.pathname.replaceAll(props.path, "").replace("/", ""));
+	const activeView = $derived(activeViewPath === "" ? undefined : activeViewPath);
+	const activeIdx = $derived(Math.max(props.tabs.findIndex(t => (activeView === t.view)), 0));
 	const activeTab = $derived(props.tabs[activeIdx]);
 </script>
 
@@ -31,7 +32,7 @@
 		<div class="flex gap-1 self-end">
 			{#each props.tabs as tab, i}
 				{@const active = i === activeIdx}
-				<a href="{props.pathBase}/{tab.path}" 
+				<a href="{props.path}/{tab.view}" 
 					class={cls(
 						"inline-flex self-end h-12 p-4 py-3 text-lg border border-surface-100 border-b-0 rounded-t-lg relative", 
 						active && "bg-surface-200 text-secondary",
