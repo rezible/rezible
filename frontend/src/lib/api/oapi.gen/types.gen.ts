@@ -68,6 +68,17 @@ export type AlertFeedbackInstance = {
     documentationNeedsUpdate: boolean;
 };
 
+export type AlertIncidentLink = {
+    attributes: AlertIncidentLinkAttributes;
+    id: string;
+};
+
+export type AlertIncidentLinkAttributes = {
+    alertId: string;
+    description: string;
+    incidentId: string;
+};
+
 export type AlertMetrics = {
     accurate: number;
     accurateUnknown: number;
@@ -1360,6 +1371,15 @@ export type IncidentTypeAttributes = {
 
 export type Integration = {
     [key: string]: never;
+};
+
+export type ListAlertIncidentLinksResponseBody = {
+    /**
+     * A URL to the JSON Schema for this object.
+     */
+    readonly $schema?: string;
+    data: Array<AlertIncidentLink>;
+    pagination: ResponsePagination;
 };
 
 export type ListAlertsResponseBody = {
@@ -2885,6 +2905,58 @@ export type GetAlertResponses = {
 };
 
 export type GetAlertResponse = GetAlertResponses[keyof GetAlertResponses];
+
+export type ListAlertIncidentLinksData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: {
+        limit?: number;
+        offset?: number;
+        search?: string;
+        archived?: boolean;
+    };
+    url: '/alerts/{id}/incident_links';
+};
+
+export type ListAlertIncidentLinksErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
+
+export type ListAlertIncidentLinksError = ListAlertIncidentLinksErrors[keyof ListAlertIncidentLinksErrors];
+
+export type ListAlertIncidentLinksResponses = {
+    /**
+     * OK
+     */
+    200: ListAlertIncidentLinksResponseBody;
+};
+
+export type ListAlertIncidentLinksResponse = ListAlertIncidentLinksResponses[keyof ListAlertIncidentLinksResponses];
 
 export type GetAlertMetricsData = {
     body?: never;

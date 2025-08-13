@@ -69,3 +69,11 @@ func (h *alertsHandler) GetAlertMetrics(ctx context.Context, req *oapi.GetAlertM
 
 	return &resp, nil
 }
+
+func (h *alertsHandler) ListAlertIncidentLinks(context.Context, *oapi.ListAlertIncidentLinksRequest) (*oapi.ListAlertIncidentLinksResponse, error) {
+	var resp oapi.ListAlertIncidentLinksResponse
+
+	resp.Body.Data = make([]oapi.AlertIncidentLink, 0)
+
+	return &resp, nil
+}

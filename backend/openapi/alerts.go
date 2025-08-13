@@ -14,12 +14,14 @@ type AlertsHandler interface {
 	ListAlerts(context.Context, *ListAlertsRequest) (*ListAlertsResponse, error)
 	GetAlert(context.Context, *GetAlertRequest) (*GetAlertResponse, error)
 	GetAlertMetrics(context.Context, *GetAlertMetricsRequest) (*GetAlertMetricsResponse, error)
+	ListAlertIncidentLinks(context.Context, *ListAlertIncidentLinksRequest) (*ListAlertIncidentLinksResponse, error)
 }
 
 func (o operations) RegisterAlerts(api huma.API) {
 	huma.Register(api, ListAlerts, o.ListAlerts)
 	huma.Register(api, GetAlert, o.GetAlert)
 	huma.Register(api, GetAlertMetrics, o.GetAlertMetrics)
+	huma.Register(api, ListAlertIncidentLinks, o.ListAlertIncidentLinks)
 }
 
 type (
@@ -46,6 +48,17 @@ type (
 		FeedbackAccurateUnknown          int `json:"accurateUnknown"`
 		FeedbackDocumentationAvailable   int `json:"docsAvailable"`
 		FeedbackDocumentationNeedsUpdate int `json:"docsNeedsUpdate"`
+	}
+
+	AlertIncidentLink struct {
+		Id         uuid.UUID                   `json:"id"`
+		Attributes AlertIncidentLinkAttributes `json:"attributes"`
+	}
+
+	AlertIncidentLinkAttributes struct {
+		AlertId     uuid.UUID `json:"alertId"`
+		IncidentId  uuid.UUID `json:"incidentId"`
+		Description string    `json:"description"`
 	}
 )
 
@@ -134,3 +147,17 @@ type GetAlertMetricsRequest struct {
 	To       CalendarDate `query:"to" format:"date" required:"true"`
 }
 type GetAlertMetricsResponse ItemResponse[AlertMetrics]
+
+var ListAlertIncidentLinks = huma.Operation{
+	OperationID: "list-alert-incident-links",
+	Method:      http.MethodGet,
+	Path:        "/alerts/{id}/incident_links",
+	Summary:     "List Incident Links for an Alert",
+	Tags:        alertsTags,
+	Errors:      errorCodes(),
+}
+
+type ListAlertIncidentLinksRequest struct {
+	ListIdRequest
+}
+type ListAlertIncidentLinksResponse PaginatedResponse[AlertIncidentLink]
