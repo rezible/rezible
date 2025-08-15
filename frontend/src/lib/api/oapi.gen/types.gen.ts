@@ -685,18 +685,8 @@ export type CreateTeamResponseBody = {
 
 export type DocumentEditorSession = {
     connectionUrl: string;
-    documentName: string;
+    documentId: string;
     token: string;
-};
-
-export type DocumentEditorSessionAuth = {
-    readOnly: boolean;
-    user: DocumentEditorSessionUser;
-};
-
-export type DocumentEditorSessionUser = {
-    id: string;
-    username: string;
 };
 
 export type ErrorDetail = {
@@ -1899,18 +1889,6 @@ export type RemoveWatchedOncallRosterResponseBody = {
     data: Array<OncallRoster>;
 };
 
-export type RequestDocumentEditorSessionAttributes = {
-    documentName: string;
-};
-
-export type RequestDocumentEditorSessionRequestBody = {
-    /**
-     * A URL to the JSON Schema for this object.
-     */
-    readonly $schema?: string;
-    attributes: RequestDocumentEditorSessionAttributes;
-};
-
 export type RequestDocumentEditorSessionResponseBody = {
     /**
      * A URL to the JSON Schema for this object.
@@ -2790,26 +2768,6 @@ export type UserOncallInformation = {
     watchingRosters: Array<OncallRoster>;
 };
 
-export type VerifyDocumentEditorSessionRequestAttributes = {
-    documentName: string;
-};
-
-export type VerifyDocumentEditorSessionRequestBody = {
-    /**
-     * A URL to the JSON Schema for this object.
-     */
-    readonly $schema?: string;
-    attributes: VerifyDocumentEditorSessionRequestAttributes;
-};
-
-export type VerifyDocumentEditorSessionResponseBody = {
-    /**
-     * A URL to the JSON Schema for this object.
-     */
-    readonly $schema?: string;
-    data: DocumentEditorSessionAuth;
-};
-
 export type ListAlertsData = {
     body?: never;
     path?: never;
@@ -3380,10 +3338,12 @@ export type UpdateDebriefQuestionResponses = {
 export type UpdateDebriefQuestionResponse = UpdateDebriefQuestionResponses[keyof UpdateDebriefQuestionResponses];
 
 export type RequestDocumentEditorSessionData = {
-    body: RequestDocumentEditorSessionRequestBody;
-    path?: never;
+    body?: never;
+    path: {
+        id: string;
+    };
     query?: never;
-    url: '/documents/session/new';
+    url: '/documents/{id}/session';
 };
 
 export type RequestDocumentEditorSessionErrors = {
@@ -3423,51 +3383,6 @@ export type RequestDocumentEditorSessionResponses = {
 };
 
 export type RequestDocumentEditorSessionResponse = RequestDocumentEditorSessionResponses[keyof RequestDocumentEditorSessionResponses];
-
-export type VerifyDocumentEditorSessionData = {
-    body: VerifyDocumentEditorSessionRequestBody;
-    path?: never;
-    query?: never;
-    url: '/documents/session/verify';
-};
-
-export type VerifyDocumentEditorSessionErrors = {
-    /**
-     * Bad Request
-     */
-    400: ErrorModel;
-    /**
-     * Unauthorized
-     */
-    401: ErrorModel;
-    /**
-     * Forbidden
-     */
-    403: ErrorModel;
-    /**
-     * Not Found
-     */
-    404: ErrorModel;
-    /**
-     * Unprocessable Entity
-     */
-    422: ErrorModel;
-    /**
-     * Internal Server Error
-     */
-    500: ErrorModel;
-};
-
-export type VerifyDocumentEditorSessionError = VerifyDocumentEditorSessionErrors[keyof VerifyDocumentEditorSessionErrors];
-
-export type VerifyDocumentEditorSessionResponses = {
-    /**
-     * OK
-     */
-    200: VerifyDocumentEditorSessionResponseBody;
-};
-
-export type VerifyDocumentEditorSessionResponse = VerifyDocumentEditorSessionResponses[keyof VerifyDocumentEditorSessionResponses];
 
 export type GetIncidentDebriefData = {
     body?: never;

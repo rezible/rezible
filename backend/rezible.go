@@ -19,10 +19,11 @@ var (
 	FrontendUrl = "http://localhost:5173"
 	DebugMode   = true
 
-	ErrNoAuthSession          = errors.New("no auth session")
-	ErrAuthSessionExpired     = errors.New("auth session expired")
-	ErrAuthSessionUserMissing = errors.New("missing auth session user")
-	ErrUnauthorized           = errors.New("unauthorized")
+	ErrNoAuthSession           = errors.New("no auth session")
+	ErrAuthSessionExpired      = errors.New("auth session expired")
+	ErrAuthSessionUserMissing  = errors.New("missing auth session user")
+	ErrAuthSessionInvalidScope = errors.New("invalid session token scope")
+	ErrUnauthorized            = errors.New("unauthorized")
 )
 
 type ListParams = ent.ListParams
@@ -80,9 +81,8 @@ type (
 		AuthHandler() http.Handler
 		MCPServerMiddleware() func(http.Handler) http.Handler
 
-		IssueAuthSessionToken(*AuthSession) (string, error)
-		VerifyAuthSessionToken(string) (*AuthSession, error)
-
+		IssueAuthSessionToken(sess *AuthSession, scope map[string]string) (string, error)
+		VerifyAuthSessionToken(token string, scope map[string]string) (*AuthSession, error)
 		SetAuthSessionContext(context.Context, *AuthSession) context.Context
 		GetAuthSession(context.Context) (*AuthSession, error)
 	}
@@ -172,9 +172,7 @@ type (
 	DocumentsService interface {
 		GetServerWebsocketAddress() string
 		Handler() http.Handler
-
-		//GetDocumentSchemaSpec(ctx context.Context, schemaName string) (*DocumentSchemaSpec, error)
-
+		CreateEditorSessionToken(sess *AuthSession, docId uuid.UUID) (string, error)
 		CreateOncallShiftHandoverMessage(sections []OncallShiftHandoverSection, annotations []*ent.OncallAnnotation, roster *ent.OncallRoster, endingShift *ent.OncallShift, startingShift *ent.OncallShift) (*ContentNode, error)
 	}
 )

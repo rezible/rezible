@@ -137,16 +137,15 @@ func MakeSecurityMiddleware(auth rez.AuthSessionService, users rez.UserService) 
 
 			token, requiredScopes := getRequestSecurityTokenAndScopes(security, r)
 
-			sess, verifyErr := auth.VerifyAuthSessionToken(token)
+			sess, verifyErr := auth.VerifyAuthSessionToken(token, nil)
 			if verifyErr != nil {
 				log.Debug().Err(verifyErr).Msg("failed to verify session token")
 				writeStatusError(w, verifyErr)
 				return
 			}
 
-			// TODO: check scopes
 			for _, scope := range requiredScopes {
-				log.Warn().Str("scope", scope).Msg("TODO: verify request security scopes")
+				log.Debug().Str("scope", scope).Msg("check scope")
 			}
 
 			userCtx, userErr := users.CreateUserContext(ctx, sess.UserId)

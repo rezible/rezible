@@ -61,6 +61,16 @@ func (s *DocumentsService) Handler() http.Handler {
 	return r
 }
 
+func makeDocumentSessionTokenScopes(docId uuid.UUID) map[string]string {
+	return map[string]string{
+		"document": docId.String(),
+	}
+}
+
+func (s *DocumentsService) CreateEditorSessionToken(sess *rez.AuthSession, docId uuid.UUID) (string, error) {
+	return s.auth.IssueAuthSessionToken(sess, makeDocumentSessionTokenScopes(docId))
+}
+
 func (s *DocumentsService) verifyRequestSignature(signature []byte, body []byte) bool {
 	h := hmac.New(sha256.New, s.webhookSecret)
 	h.Write(body)
@@ -70,32 +80,41 @@ func (s *DocumentsService) verifyRequestSignature(signature []byte, body []byte)
 
 const maxRequestBodyBytes = int64(1024 * 1024)
 
-func (s *DocumentsService) verifyRequest(w http.ResponseWriter, r *http.Request, reqBody any) context.Context {
+func (s *DocumentsService) verifyRequestBody(w http.ResponseWriter, r *http.Request, reqBody any) bool {
 	if r.Method != http.MethodPost {
 		http.Error(w, http.StatusText(http.StatusMethodNotAllowed), http.StatusMethodNotAllowed)
-		return nil
+		return false
 	}
 
 	body, readErr := io.ReadAll(http.MaxBytesReader(w, r.Body, maxRequestBodyBytes))
 	if readErr != nil {
 		log.Error().Err(readErr).Msg("failed to read document request body")
 		http.Error(w, readErr.Error(), http.StatusBadRequest)
-		return nil
+		return false
 	}
 
 	sigHdr := r.Header.Get("X-Rez-Signature-256")
 	if sigHdr == "" || !s.verifyRequestSignature([]byte(sigHdr), body) {
 		http.Error(w, http.StatusText(http.StatusUnauthorized), http.StatusUnauthorized)
-		return nil
+		return false
 	}
 
+	if err := json.Unmarshal(body, reqBody); err != nil {
+		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+		return false
+	}
+
+	return true
+}
+
+func (s *DocumentsService) verifyRequestAuth(w http.ResponseWriter, r *http.Request, docId uuid.UUID) context.Context {
 	bearerToken, bearerErr := oapi.GetRequestApiBearerToken(r)
 	if bearerErr != nil {
 		http.Error(w, bearerErr.Error(), http.StatusUnauthorized)
 		return nil
 	}
 
-	sess, verifyErr := s.auth.VerifyAuthSessionToken(bearerToken)
+	sess, verifyErr := s.auth.VerifyAuthSessionToken(bearerToken, makeDocumentSessionTokenScopes(docId))
 	if verifyErr != nil {
 		http.Error(w, verifyErr.Error(), http.StatusUnauthorized)
 		return nil
@@ -104,11 +123,6 @@ func (s *DocumentsService) verifyRequest(w http.ResponseWriter, r *http.Request,
 	userCtx, userErr := s.users.CreateUserContext(r.Context(), sess.UserId)
 	if userErr != nil {
 		http.Error(w, userErr.Error(), http.StatusBadRequest)
-		return nil
-	}
-
-	if err := json.Unmarshal(body, reqBody); err != nil {
-		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 		return nil
 	}
 
@@ -122,7 +136,7 @@ type documentAuthSessionUser struct {
 
 type (
 	documentAuthRequest struct {
-		DocumentName string `json:"documentName"`
+		DocumentId uuid.UUID `json:"documentId"`
 	}
 	documentAuthResponse struct {
 		User     documentAuthSessionUser `json:"user"`
@@ -132,8 +146,11 @@ type (
 
 func (s *DocumentsService) handleAuthRequest(w http.ResponseWriter, r *http.Request) {
 	var body documentAuthRequest
-	ctx := s.verifyRequest(w, r, &body)
-	if r == nil {
+	if !s.verifyRequestBody(w, r, &body) {
+		return
+	}
+	ctx := s.verifyRequestAuth(w, r, body.DocumentId)
+	if ctx == nil {
 		return
 	}
 
@@ -155,18 +172,21 @@ func (s *DocumentsService) handleAuthRequest(w http.ResponseWriter, r *http.Requ
 	w.Write(respBytes)
 }
 
-type loadRequest struct {
+type loadRequestBody struct {
 	DocumentId uuid.UUID `json:"documentId"`
 }
 
 func (s *DocumentsService) handleLoadRequest(w http.ResponseWriter, r *http.Request) {
-	var req loadRequest
-	ctx := s.verifyRequest(w, r, &req)
-	if r == nil {
+	var body loadRequestBody
+	if !s.verifyRequestBody(w, r, &body) {
+		return
+	}
+	ctx := s.verifyRequestAuth(w, r, body.DocumentId)
+	if ctx == nil {
 		return
 	}
 
-	doc, docErr := s.db.Document.Get(ctx, req.DocumentId)
+	doc, docErr := s.db.Document.Get(ctx, body.DocumentId)
 	if docErr != nil {
 		if ent.IsNotFound(docErr) {
 			http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
@@ -181,19 +201,22 @@ func (s *DocumentsService) handleLoadRequest(w http.ResponseWriter, r *http.Requ
 	w.Write(doc.Content)
 }
 
-type updateRequest struct {
+type updateRequestBody struct {
 	DocumentId uuid.UUID       `json:"documentId"`
 	State      json.RawMessage `json:"state"`
 }
 
 func (s *DocumentsService) handleUpdateRequest(w http.ResponseWriter, r *http.Request) {
-	var req updateRequest
-	ctx := s.verifyRequest(w, r, &req)
-	if r == nil {
+	var body updateRequestBody
+	if !s.verifyRequestBody(w, r, &body) {
+		return
+	}
+	ctx := s.verifyRequestAuth(w, r, body.DocumentId)
+	if ctx == nil {
 		return
 	}
 
-	update := s.db.Document.UpdateOneID(req.DocumentId).SetContent(req.State)
+	update := s.db.Document.UpdateOneID(body.DocumentId).SetContent(body.State)
 	saveErr := update.Exec(ctx)
 	if saveErr != nil {
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)

@@ -59,9 +59,8 @@ export class RezibleServerProxy implements Extension {
 	}
 
 	async onAuthenticate(data: onAuthenticatePayload): Promise<AuthContext> {
-        const res = await this.apiRequest("auth", data.token, {
-            documentId: data.documentName,
-        });
+        const documentId = data.documentName;
+        const res = await this.apiRequest("auth", data.token, { documentId });
         if (!res.ok || res.status != 200) throw new Error("Authentication Failed");
 
         const { readOnly, user } = await res.json();
@@ -70,9 +69,10 @@ export class RezibleServerProxy implements Extension {
 	}
 
     async onLoadDocument(data: onLoadDocumentPayload): Promise<any> {
-        const res = await this.apiRequest("load", data.context.token, {
-            documentId: data.documentName,
-        });
+        if (!data.context.token) throw new Forbidden("no token");
+
+        const documentId = data.documentName;
+        const res = await this.apiRequest("load", data.context.token, { documentId });
 
         if (res.status !== 200) throw new Error("failed to load");
 
@@ -82,6 +82,8 @@ export class RezibleServerProxy implements Extension {
 	}
 
 	async onStoreDocument(data: onChangePayload) {
+        if (!data.context.token) throw new Forbidden("no token");
+
         const documentId = data.documentName;
         const state = Buffer.from(Y.encodeStateAsUpdate(data.document));
         await this.apiRequest("update", data.context.token, { state, documentId });

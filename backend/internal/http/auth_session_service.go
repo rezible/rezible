@@ -111,7 +111,7 @@ func (s *AuthSessionService) AuthHandler() http.Handler {
 			http.Error(w, http.StatusText(http.StatusUnauthorized), http.StatusUnauthorized)
 			return
 		} else {
-			_, sessErr := s.VerifyAuthSessionToken(token)
+			_, sessErr := s.VerifyAuthSessionToken(token, nil)
 			if sessErr != nil && isRedirectableError(sessErr) {
 				s.prov.StartAuthFlow(w, r)
 				return
@@ -139,7 +139,7 @@ func (s *AuthSessionService) delegateAuthFlowToProvider(w http.ResponseWriter, r
 			if usr != nil {
 				userId = usr.ID
 			}
-			token, tokenErr := s.IssueAuthSessionToken(newUserAuthSession(userId, expiresAt))
+			token, tokenErr := s.IssueAuthSessionToken(newUserAuthSession(userId, expiresAt), nil)
 			if tokenErr != nil {
 				sessErr = fmt.Errorf("failed to issue user session token: %w", tokenErr)
 			} else {
@@ -158,18 +158,21 @@ func (s *AuthSessionService) delegateAuthFlowToProvider(w http.ResponseWriter, r
 
 type authSessionTokenClaims struct {
 	jwt.RegisteredClaims
-	UserId uuid.UUID `json:"userId"`
+	Scope  map[string]string `json:"scope"`
+	UserId uuid.UUID         `json:"userId"`
 }
 
-func (s *AuthSessionService) IssueAuthSessionToken(sess *rez.AuthSession) (string, error) {
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
+func (s *AuthSessionService) IssueAuthSessionToken(sess *rez.AuthSession, scope map[string]string) (string, error) {
+	claims := jwt.MapClaims{
 		"userId": sess.UserId,
+		"scope":  scope,
 		"exp":    jwt.NewNumericDate(sess.ExpiresAt),
-	})
+	}
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 	return token.SignedString(s.sessionSecret)
 }
 
-func (s *AuthSessionService) VerifyAuthSessionToken(token string) (*rez.AuthSession, error) {
+func (s *AuthSessionService) VerifyAuthSessionToken(token string, scope map[string]string) (*rez.AuthSession, error) {
 	if token == "" {
 		return nil, rez.ErrNoAuthSession
 	}
@@ -195,20 +198,17 @@ func (s *AuthSessionService) VerifyAuthSessionToken(token string) (*rez.AuthSess
 		return nil, rez.ErrAuthSessionUserMissing
 	}
 
+	for name, v := range claims.Scope {
+		cv, ok := scope[name]
+		if !ok || cv != v {
+			return nil, rez.ErrAuthSessionInvalidScope
+		}
+	}
+
 	exp, expErr := claims.GetExpirationTime()
 	if expErr != nil || exp.Before(time.Now()) {
 		return nil, rez.ErrAuthSessionExpired
 	}
-
-	// TODO: revise usage of this
-	//userLookupCtx := privacy.DecisionContext(ctx, privacy.Allow)
-	//user, userErr := s.users.GetById(userLookupCtx, claims.UserId)
-	//if userErr != nil {
-	//	if ent.IsNotFound(userErr) {
-	//		return nil, rez.ErrAuthSessionUserMissing
-	//	}
-	//	return nil, fmt.Errorf("failed to look up user: %w", userErr)
-	//}
 
 	return newUserAuthSession(claims.UserId, exp.Time), nil
 }

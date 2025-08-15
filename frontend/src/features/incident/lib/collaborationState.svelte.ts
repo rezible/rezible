@@ -13,7 +13,7 @@ import { watch } from "runed";
 import type { Getter } from "$src/lib/utils.svelte";
 
 export class RetrospectiveCollaborationState {
-	documentName = $state<string>();
+	documentId = $state<string>();
 	provider = $state<HocuspocusProvider>();
 	awareness = $state<StatesArray>([]);
 	connectionStatus = $state<WebSocketStatus>(WebSocketStatus.Disconnected);
@@ -35,7 +35,7 @@ export class RetrospectiveCollaborationState {
 				console.error("failed to disconnect collaboration provider ", e);
 			}
 		}
-		this.documentName = undefined;
+		this.documentId = undefined;
 		this.awareness = [];
 		this.connectionStatus = WebSocketStatus.Disconnected;
 		this.error = undefined;
@@ -46,6 +46,7 @@ export class RetrospectiveCollaborationState {
 	}
 
 	private onConnectionStatusChange({ status }: onStatusParameters) {
+		console.log("status", status);
 		this.connectionStatus = status;
 	}
 
@@ -57,16 +58,16 @@ export class RetrospectiveCollaborationState {
 		this.error = new Error(reason);
 	}
 
-	async connect(documentName?: string) {
-		if (this.documentName === documentName) return;
+	async connect(id?: string) {
+		if (this.documentId === id) return;
 
 		this.cleanup();
 
-		if (!documentName) return;
-		this.documentName = documentName;
+		if (!id) return;
+		this.documentId = id;
 
 		const { data: body, error: reqErr } = await requestDocumentEditorSession({
-			body: { attributes: { documentName } },
+			path: { id },
 			throwOnError: false,
 		});
 
@@ -81,7 +82,7 @@ export class RetrospectiveCollaborationState {
 		const config: HocuspocusProviderConfiguration = {
 			url: sess.connectionUrl,
 			token: sess.token,
-			name: sess.documentName,
+			name: sess.documentId,
 			preserveConnection: false,
 			onAwarenessChange: (e) => this.onAwarenessChange(e),
 			onStatus: (e) => this.onConnectionStatusChange(e),
