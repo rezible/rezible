@@ -11,10 +11,10 @@ import (
 	"github.com/rezible/rezible/access"
 	"github.com/rezible/rezible/internal/api"
 	"github.com/rezible/rezible/internal/eino"
+	"github.com/rezible/rezible/internal/hocuspocus"
 	"github.com/rezible/rezible/internal/http"
 	"github.com/rezible/rezible/internal/postgres"
 	"github.com/rezible/rezible/internal/postgres/datasync"
-	"github.com/rezible/rezible/internal/prosemirror"
 	"github.com/rezible/rezible/internal/providers"
 	"github.com/rezible/rezible/internal/river"
 	"github.com/rezible/rezible/internal/saml"
@@ -106,7 +106,7 @@ func (s *rezServer) setup() error {
 		return fmt.Errorf("eino.NewLanguageModelService: %w", lmsErr)
 	}
 
-	docs, docsErr := prosemirror.NewDocumentsService(s.opts.DocumentServerAddress, users)
+	docs, docsErr := hocuspocus.NewDocumentsService(s.opts.DocumentServerAddress, dbc, auth, users)
 	if docsErr != nil {
 		return fmt.Errorf("prosemirror.NewDocumentsService: %w", docsErr)
 	}
@@ -153,12 +153,13 @@ func (s *rezServer) setup() error {
 
 	chat.SetOncallEventsService(oncallEvents)
 
-	webhookHandler := http.NewWebhooksHandler(chat)
 	apiHandler := api.NewHandler(dbc, auth, users, incidents, debriefs, oncall, oncallEvents, docs, retros, components, alerts, playbooks)
+	documentsHandler := docs.Handler()
+	webhookHandler := http.NewWebhooksHandler(chat)
 	mcpHandler := eino.NewMCPHandler(auth)
 
 	listenAddr := net.JoinHostPort(s.opts.Host, s.opts.Port)
-	s.httpServer = http.NewServer(listenAddr, auth, frontendFiles, apiHandler, webhookHandler, mcpHandler)
+	s.httpServer = http.NewServer(listenAddr, auth, users, frontendFiles, apiHandler, documentsHandler, webhookHandler, mcpHandler)
 
 	syncSvc := datasync.NewProviderSyncService(dbc, pl)
 	if jobsErr := s.registerJobs(syncSvc, oncall, debriefs); jobsErr != nil {

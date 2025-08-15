@@ -15,6 +15,7 @@ import (
 	"github.com/rezible/rezible/ent/alert"
 	"github.com/rezible/rezible/ent/alertfeedback"
 	"github.com/rezible/rezible/ent/alertmetrics"
+	"github.com/rezible/rezible/ent/document"
 	"github.com/rezible/rezible/ent/incident"
 	"github.com/rezible/rezible/ent/incidentdebrief"
 	"github.com/rezible/rezible/ent/incidentdebriefmessage"
@@ -132,6 +133,7 @@ func checkColumn(table, column string) error {
 			alert.Table:                            alert.ValidColumn,
 			alertfeedback.Table:                    alertfeedback.ValidColumn,
 			alertmetrics.Table:                     alertmetrics.ValidColumn,
+			document.Table:                         document.ValidColumn,
 			incident.Table:                         incident.ValidColumn,
 			incidentdebrief.Table:                  incidentdebrief.ValidColumn,
 			incidentdebriefmessage.Table:           incidentdebriefmessage.ValidColumn,

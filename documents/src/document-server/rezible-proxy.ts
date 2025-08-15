@@ -1,0 +1,89 @@
+import type {
+	Extension,
+	onAuthenticatePayload,
+	onConnectPayload,
+	onChangePayload,
+	onLoadDocumentPayload,
+	onDisconnectPayload,
+} from "@hocuspocus/server";
+import { Forbidden } from "@hocuspocus/common";
+import type { Doc } from "yjs";
+import * as Y from "yjs";
+import { createHmac } from "crypto";
+import { documentTransformer } from "./transformer";
+
+type SessionUser = {
+	id: string;
+	username: string;
+}
+
+export type AuthContext = {
+	user: SessionUser;
+	token: string;
+}
+
+type VerifyAuthSessionResponseData = {
+	user: SessionUser;
+	readOnly: boolean;
+}
+
+export class RezibleServerProxy implements Extension {
+	extensionName: string;
+    apiUrl: string;
+    apiSecret: string;
+
+	constructor(apiUrl: string, apiSecret: string) {
+		this.extensionName = "Rezible Proxy";
+		this.apiUrl = apiUrl;
+		this.apiSecret = apiSecret;
+
+		if (!apiUrl || !apiSecret) throw new Error("missing proxy config");
+	}
+
+    createRequestSignature(body: string): string {
+		const hmac = createHmac("sha256", this.apiSecret);
+		return `sha256=${hmac.update(body).digest("hex")}`;
+	}
+
+    async apiRequest(endpoint: string, token: string, reqBody: any) {
+		const body = JSON.stringify(reqBody);
+		return fetch(`${this.apiUrl}/${endpoint}`, {
+            method: "POST",
+            headers: [
+				["Content-Type", "application/json"],
+                ["X-Rez-Signature-256", this.createRequestSignature(body)],
+                ["Authorization", "Bearer " + token],
+            ],
+            body,
+        });
+	}
+
+	async onAuthenticate(data: onAuthenticatePayload): Promise<AuthContext> {
+        const res = await this.apiRequest("auth", data.token, {
+            documentId: data.documentName,
+        });
+        if (!res.ok || res.status != 200) throw new Error("Authentication Failed");
+
+        const { readOnly, user } = await res.json();
+		data.connection.readOnly = !!readOnly;
+		return { user, token: data.token } as AuthContext;
+	}
+
+    async onLoadDocument(data: onLoadDocumentPayload): Promise<any> {
+        const res = await this.apiRequest("load", data.context.token, {
+            documentId: data.documentName,
+        });
+
+        if (res.status !== 200) throw new Error("failed to load");
+
+        const state = await res.json();
+        const update = new Uint8Array(state.data);
+        if (update) Y.applyUpdate(data.document, update);
+	}
+
+	async onStoreDocument(data: onChangePayload) {
+        const documentId = data.documentName;
+        const state = Buffer.from(Y.encodeStateAsUpdate(data.document));
+        await this.apiRequest("update", data.context.token, { state, documentId });
+	}
+}

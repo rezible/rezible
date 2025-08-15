@@ -1,4 +1,4 @@
-package prosemirror
+package hocuspocus
 
 /*
 var (

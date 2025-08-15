@@ -14,6 +14,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/alert"
 	"github.com/rezible/rezible/ent/alertfeedback"
+	"github.com/rezible/rezible/ent/document"
 	"github.com/rezible/rezible/ent/incident"
 	"github.com/rezible/rezible/ent/incidentdebrief"
 	"github.com/rezible/rezible/ent/incidentdebriefmessage"
@@ -83,6 +84,7 @@ const (
 	TypeAlert                            = "Alert"
 	TypeAlertFeedback                    = "AlertFeedback"
 	TypeAlertMetrics                     = "AlertMetrics"
+	TypeDocument                         = "Document"
 	TypeIncident                         = "Incident"
 	TypeIncidentDebrief                  = "IncidentDebrief"
 	TypeIncidentDebriefMessage           = "IncidentDebriefMessage"
@@ -1958,6 +1960,508 @@ func (m *AlertFeedbackMutation) ResetEdge(name string) error {
 		return nil
 	}
 	return fmt.Errorf("unknown AlertFeedback edge %s", name)
+}
+
+// DocumentMutation represents an operation that mutates the Document nodes in the graph.
+type DocumentMutation struct {
+	config
+	op                   Op
+	typ                  string
+	id                   *uuid.UUID
+	content              *[]byte
+	clearedFields        map[string]struct{}
+	tenant               *int
+	clearedtenant        bool
+	retrospective        *uuid.UUID
+	clearedretrospective bool
+	done                 bool
+	oldValue             func(context.Context) (*Document, error)
+	predicates           []predicate.Document
+}
+
+var _ ent.Mutation = (*DocumentMutation)(nil)
+
+// documentOption allows management of the mutation configuration using functional options.
+type documentOption func(*DocumentMutation)
+
+// newDocumentMutation creates new mutation for the Document entity.
+func newDocumentMutation(c config, op Op, opts ...documentOption) *DocumentMutation {
+	m := &DocumentMutation{
+		config:        c,
+		op:            op,
+		typ:           TypeDocument,
+		clearedFields: make(map[string]struct{}),
+	}
+	for _, opt := range opts {
+		opt(m)
+	}
+	return m
+}
+
+// withDocumentID sets the ID field of the mutation.
+func withDocumentID(id uuid.UUID) documentOption {
+	return func(m *DocumentMutation) {
+		var (
+			err   error
+			once  sync.Once
+			value *Document
+		)
+		m.oldValue = func(ctx context.Context) (*Document, error) {
+			once.Do(func() {
+				if m.done {
+					err = errors.New("querying old values post mutation is not allowed")
+				} else {
+					value, err = m.Client().Document.Get(ctx, id)
+				}
+			})
+			return value, err
+		}
+		m.id = &id
+	}
+}
+
+// withDocument sets the old Document of the mutation.
+func withDocument(node *Document) documentOption {
+	return func(m *DocumentMutation) {
+		m.oldValue = func(context.Context) (*Document, error) {
+			return node, nil
+		}
+		m.id = &node.ID
+	}
+}
+
+// Client returns a new `ent.Client` from the mutation. If the mutation was
+// executed in a transaction (ent.Tx), a transactional client is returned.
+func (m DocumentMutation) Client() *Client {
+	client := &Client{config: m.config}
+	client.init()
+	return client
+}
+
+// Tx returns an `ent.Tx` for mutations that were executed in transactions;
+// it returns an error otherwise.
+func (m DocumentMutation) Tx() (*Tx, error) {
+	if _, ok := m.driver.(*txDriver); !ok {
+		return nil, errors.New("ent: mutation is not running in a transaction")
+	}
+	tx := &Tx{config: m.config}
+	tx.init()
+	return tx, nil
+}
+
+// SetID sets the value of the id field. Note that this
+// operation is only accepted on creation of Document entities.
+func (m *DocumentMutation) SetID(id uuid.UUID) {
+	m.id = &id
+}
+
+// ID returns the ID value in the mutation. Note that the ID is only available
+// if it was provided to the builder or after it was returned from the database.
+func (m *DocumentMutation) ID() (id uuid.UUID, exists bool) {
+	if m.id == nil {
+		return
+	}
+	return *m.id, true
+}
+
+// IDs queries the database and returns the entity ids that match the mutation's predicate.
+// That means, if the mutation is applied within a transaction with an isolation level such
+// as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
+// or updated by the mutation.
+func (m *DocumentMutation) IDs(ctx context.Context) ([]uuid.UUID, error) {
+	switch {
+	case m.op.Is(OpUpdateOne | OpDeleteOne):
+		id, exists := m.ID()
+		if exists {
+			return []uuid.UUID{id}, nil
+		}
+		fallthrough
+	case m.op.Is(OpUpdate | OpDelete):
+		return m.Client().Document.Query().Where(m.predicates...).IDs(ctx)
+	default:
+		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
+	}
+}
+
+// SetTenantID sets the "tenant_id" field.
+func (m *DocumentMutation) SetTenantID(i int) {
+	m.tenant = &i
+}
+
+// TenantID returns the value of the "tenant_id" field in the mutation.
+func (m *DocumentMutation) TenantID() (r int, exists bool) {
+	v := m.tenant
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldTenantID returns the old "tenant_id" field's value of the Document entity.
+// If the Document object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *DocumentMutation) OldTenantID(ctx context.Context) (v int, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldTenantID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldTenantID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldTenantID: %w", err)
+	}
+	return oldValue.TenantID, nil
+}
+
+// ResetTenantID resets all changes to the "tenant_id" field.
+func (m *DocumentMutation) ResetTenantID() {
+	m.tenant = nil
+}
+
+// SetContent sets the "content" field.
+func (m *DocumentMutation) SetContent(b []byte) {
+	m.content = &b
+}
+
+// Content returns the value of the "content" field in the mutation.
+func (m *DocumentMutation) Content() (r []byte, exists bool) {
+	v := m.content
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldContent returns the old "content" field's value of the Document entity.
+// If the Document object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *DocumentMutation) OldContent(ctx context.Context) (v []byte, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldContent is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldContent requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldContent: %w", err)
+	}
+	return oldValue.Content, nil
+}
+
+// ResetContent resets all changes to the "content" field.
+func (m *DocumentMutation) ResetContent() {
+	m.content = nil
+}
+
+// ClearTenant clears the "tenant" edge to the Tenant entity.
+func (m *DocumentMutation) ClearTenant() {
+	m.clearedtenant = true
+	m.clearedFields[document.FieldTenantID] = struct{}{}
+}
+
+// TenantCleared reports if the "tenant" edge to the Tenant entity was cleared.
+func (m *DocumentMutation) TenantCleared() bool {
+	return m.clearedtenant
+}
+
+// TenantIDs returns the "tenant" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// TenantID instead. It exists only for internal usage by the builders.
+func (m *DocumentMutation) TenantIDs() (ids []int) {
+	if id := m.tenant; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetTenant resets all changes to the "tenant" edge.
+func (m *DocumentMutation) ResetTenant() {
+	m.tenant = nil
+	m.clearedtenant = false
+}
+
+// SetRetrospectiveID sets the "retrospective" edge to the Retrospective entity by id.
+func (m *DocumentMutation) SetRetrospectiveID(id uuid.UUID) {
+	m.retrospective = &id
+}
+
+// ClearRetrospective clears the "retrospective" edge to the Retrospective entity.
+func (m *DocumentMutation) ClearRetrospective() {
+	m.clearedretrospective = true
+}
+
+// RetrospectiveCleared reports if the "retrospective" edge to the Retrospective entity was cleared.
+func (m *DocumentMutation) RetrospectiveCleared() bool {
+	return m.clearedretrospective
+}
+
+// RetrospectiveID returns the "retrospective" edge ID in the mutation.
+func (m *DocumentMutation) RetrospectiveID() (id uuid.UUID, exists bool) {
+	if m.retrospective != nil {
+		return *m.retrospective, true
+	}
+	return
+}
+
+// RetrospectiveIDs returns the "retrospective" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// RetrospectiveID instead. It exists only for internal usage by the builders.
+func (m *DocumentMutation) RetrospectiveIDs() (ids []uuid.UUID) {
+	if id := m.retrospective; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetRetrospective resets all changes to the "retrospective" edge.
+func (m *DocumentMutation) ResetRetrospective() {
+	m.retrospective = nil
+	m.clearedretrospective = false
+}
+
+// Where appends a list predicates to the DocumentMutation builder.
+func (m *DocumentMutation) Where(ps ...predicate.Document) {
+	m.predicates = append(m.predicates, ps...)
+}
+
+// WhereP appends storage-level predicates to the DocumentMutation builder. Using this method,
+// users can use type-assertion to append predicates that do not depend on any generated package.
+func (m *DocumentMutation) WhereP(ps ...func(*sql.Selector)) {
+	p := make([]predicate.Document, len(ps))
+	for i := range ps {
+		p[i] = ps[i]
+	}
+	m.Where(p...)
+}
+
+// Op returns the operation name.
+func (m *DocumentMutation) Op() Op {
+	return m.op
+}
+
+// SetOp allows setting the mutation operation.
+func (m *DocumentMutation) SetOp(op Op) {
+	m.op = op
+}
+
+// Type returns the node type of this mutation (Document).
+func (m *DocumentMutation) Type() string {
+	return m.typ
+}
+
+// Fields returns all fields that were changed during this mutation. Note that in
+// order to get all numeric fields that were incremented/decremented, call
+// AddedFields().
+func (m *DocumentMutation) Fields() []string {
+	fields := make([]string, 0, 2)
+	if m.tenant != nil {
+		fields = append(fields, document.FieldTenantID)
+	}
+	if m.content != nil {
+		fields = append(fields, document.FieldContent)
+	}
+	return fields
+}
+
+// Field returns the value of a field with the given name. The second boolean
+// return value indicates that this field was not set, or was not defined in the
+// schema.
+func (m *DocumentMutation) Field(name string) (ent.Value, bool) {
+	switch name {
+	case document.FieldTenantID:
+		return m.TenantID()
+	case document.FieldContent:
+		return m.Content()
+	}
+	return nil, false
+}
+
+// OldField returns the old value of the field from the database. An error is
+// returned if the mutation operation is not UpdateOne, or the query to the
+// database failed.
+func (m *DocumentMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
+	switch name {
+	case document.FieldTenantID:
+		return m.OldTenantID(ctx)
+	case document.FieldContent:
+		return m.OldContent(ctx)
+	}
+	return nil, fmt.Errorf("unknown Document field %s", name)
+}
+
+// SetField sets the value of a field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *DocumentMutation) SetField(name string, value ent.Value) error {
+	switch name {
+	case document.FieldTenantID:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetTenantID(v)
+		return nil
+	case document.FieldContent:
+		v, ok := value.([]byte)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetContent(v)
+		return nil
+	}
+	return fmt.Errorf("unknown Document field %s", name)
+}
+
+// AddedFields returns all numeric fields that were incremented/decremented during
+// this mutation.
+func (m *DocumentMutation) AddedFields() []string {
+	var fields []string
+	return fields
+}
+
+// AddedField returns the numeric value that was incremented/decremented on a field
+// with the given name. The second boolean return value indicates that this field
+// was not set, or was not defined in the schema.
+func (m *DocumentMutation) AddedField(name string) (ent.Value, bool) {
+	switch name {
+	}
+	return nil, false
+}
+
+// AddField adds the value to the field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *DocumentMutation) AddField(name string, value ent.Value) error {
+	switch name {
+	}
+	return fmt.Errorf("unknown Document numeric field %s", name)
+}
+
+// ClearedFields returns all nullable fields that were cleared during this
+// mutation.
+func (m *DocumentMutation) ClearedFields() []string {
+	return nil
+}
+
+// FieldCleared returns a boolean indicating if a field with the given name was
+// cleared in this mutation.
+func (m *DocumentMutation) FieldCleared(name string) bool {
+	_, ok := m.clearedFields[name]
+	return ok
+}
+
+// ClearField clears the value of the field with the given name. It returns an
+// error if the field is not defined in the schema.
+func (m *DocumentMutation) ClearField(name string) error {
+	return fmt.Errorf("unknown Document nullable field %s", name)
+}
+
+// ResetField resets all changes in the mutation for the field with the given name.
+// It returns an error if the field is not defined in the schema.
+func (m *DocumentMutation) ResetField(name string) error {
+	switch name {
+	case document.FieldTenantID:
+		m.ResetTenantID()
+		return nil
+	case document.FieldContent:
+		m.ResetContent()
+		return nil
+	}
+	return fmt.Errorf("unknown Document field %s", name)
+}
+
+// AddedEdges returns all edge names that were set/added in this mutation.
+func (m *DocumentMutation) AddedEdges() []string {
+	edges := make([]string, 0, 2)
+	if m.tenant != nil {
+		edges = append(edges, document.EdgeTenant)
+	}
+	if m.retrospective != nil {
+		edges = append(edges, document.EdgeRetrospective)
+	}
+	return edges
+}
+
+// AddedIDs returns all IDs (to other nodes) that were added for the given edge
+// name in this mutation.
+func (m *DocumentMutation) AddedIDs(name string) []ent.Value {
+	switch name {
+	case document.EdgeTenant:
+		if id := m.tenant; id != nil {
+			return []ent.Value{*id}
+		}
+	case document.EdgeRetrospective:
+		if id := m.retrospective; id != nil {
+			return []ent.Value{*id}
+		}
+	}
+	return nil
+}
+
+// RemovedEdges returns all edge names that were removed in this mutation.
+func (m *DocumentMutation) RemovedEdges() []string {
+	edges := make([]string, 0, 2)
+	return edges
+}
+
+// RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
+// the given name in this mutation.
+func (m *DocumentMutation) RemovedIDs(name string) []ent.Value {
+	return nil
+}
+
+// ClearedEdges returns all edge names that were cleared in this mutation.
+func (m *DocumentMutation) ClearedEdges() []string {
+	edges := make([]string, 0, 2)
+	if m.clearedtenant {
+		edges = append(edges, document.EdgeTenant)
+	}
+	if m.clearedretrospective {
+		edges = append(edges, document.EdgeRetrospective)
+	}
+	return edges
+}
+
+// EdgeCleared returns a boolean which indicates if the edge with the given name
+// was cleared in this mutation.
+func (m *DocumentMutation) EdgeCleared(name string) bool {
+	switch name {
+	case document.EdgeTenant:
+		return m.clearedtenant
+	case document.EdgeRetrospective:
+		return m.clearedretrospective
+	}
+	return false
+}
+
+// ClearEdge clears the value of the edge with the given name. It returns an error
+// if that edge is not defined in the schema.
+func (m *DocumentMutation) ClearEdge(name string) error {
+	switch name {
+	case document.EdgeTenant:
+		m.ClearTenant()
+		return nil
+	case document.EdgeRetrospective:
+		m.ClearRetrospective()
+		return nil
+	}
+	return fmt.Errorf("unknown Document unique edge %s", name)
+}
+
+// ResetEdge resets all changes to the edge with the given name in this mutation.
+// It returns an error if the edge is not defined in the schema.
+func (m *DocumentMutation) ResetEdge(name string) error {
+	switch name {
+	case document.EdgeTenant:
+		m.ResetTenant()
+		return nil
+	case document.EdgeRetrospective:
+		m.ResetRetrospective()
+		return nil
+	}
+	return fmt.Errorf("unknown Document edge %s", name)
 }
 
 // IncidentMutation represents an operation that mutates the Incident nodes in the graph.
@@ -32713,6 +33217,8 @@ type RetrospectiveMutation struct {
 	clearedtenant          bool
 	incident               *uuid.UUID
 	clearedincident        bool
+	document               *uuid.UUID
+	cleareddocument        bool
 	comments               map[uuid.UUID]struct{}
 	removedcomments        map[uuid.UUID]struct{}
 	clearedcomments        bool
@@ -32899,6 +33405,42 @@ func (m *RetrospectiveMutation) ResetIncidentID() {
 	m.incident = nil
 }
 
+// SetDocumentID sets the "document_id" field.
+func (m *RetrospectiveMutation) SetDocumentID(u uuid.UUID) {
+	m.document = &u
+}
+
+// DocumentID returns the value of the "document_id" field in the mutation.
+func (m *RetrospectiveMutation) DocumentID() (r uuid.UUID, exists bool) {
+	v := m.document
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldDocumentID returns the old "document_id" field's value of the Retrospective entity.
+// If the Retrospective object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *RetrospectiveMutation) OldDocumentID(ctx context.Context) (v uuid.UUID, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldDocumentID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldDocumentID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldDocumentID: %w", err)
+	}
+	return oldValue.DocumentID, nil
+}
+
+// ResetDocumentID resets all changes to the "document_id" field.
+func (m *RetrospectiveMutation) ResetDocumentID() {
+	m.document = nil
+}
+
 // SetSystemAnalysisID sets the "system_analysis_id" field.
 func (m *RetrospectiveMutation) SetSystemAnalysisID(u uuid.UUID) {
 	m.system_analysis = &u
@@ -33074,6 +33616,33 @@ func (m *RetrospectiveMutation) ResetIncident() {
 	m.clearedincident = false
 }
 
+// ClearDocument clears the "document" edge to the Document entity.
+func (m *RetrospectiveMutation) ClearDocument() {
+	m.cleareddocument = true
+	m.clearedFields[retrospective.FieldDocumentID] = struct{}{}
+}
+
+// DocumentCleared reports if the "document" edge to the Document entity was cleared.
+func (m *RetrospectiveMutation) DocumentCleared() bool {
+	return m.cleareddocument
+}
+
+// DocumentIDs returns the "document" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// DocumentID instead. It exists only for internal usage by the builders.
+func (m *RetrospectiveMutation) DocumentIDs() (ids []uuid.UUID) {
+	if id := m.document; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetDocument resets all changes to the "document" edge.
+func (m *RetrospectiveMutation) ResetDocument() {
+	m.document = nil
+	m.cleareddocument = false
+}
+
 // AddCommentIDs adds the "comments" edge to the RetrospectiveComment entity by ids.
 func (m *RetrospectiveMutation) AddCommentIDs(ids ...uuid.UUID) {
 	if m.comments == nil {
@@ -33189,12 +33758,15 @@ func (m *RetrospectiveMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *RetrospectiveMutation) Fields() []string {
-	fields := make([]string, 0, 5)
+	fields := make([]string, 0, 6)
 	if m.tenant != nil {
 		fields = append(fields, retrospective.FieldTenantID)
 	}
 	if m.incident != nil {
 		fields = append(fields, retrospective.FieldIncidentID)
+	}
+	if m.document != nil {
+		fields = append(fields, retrospective.FieldDocumentID)
 	}
 	if m.system_analysis != nil {
 		fields = append(fields, retrospective.FieldSystemAnalysisID)
@@ -33217,6 +33789,8 @@ func (m *RetrospectiveMutation) Field(name string) (ent.Value, bool) {
 		return m.TenantID()
 	case retrospective.FieldIncidentID:
 		return m.IncidentID()
+	case retrospective.FieldDocumentID:
+		return m.DocumentID()
 	case retrospective.FieldSystemAnalysisID:
 		return m.SystemAnalysisID()
 	case retrospective.FieldType:
@@ -33236,6 +33810,8 @@ func (m *RetrospectiveMutation) OldField(ctx context.Context, name string) (ent.
 		return m.OldTenantID(ctx)
 	case retrospective.FieldIncidentID:
 		return m.OldIncidentID(ctx)
+	case retrospective.FieldDocumentID:
+		return m.OldDocumentID(ctx)
 	case retrospective.FieldSystemAnalysisID:
 		return m.OldSystemAnalysisID(ctx)
 	case retrospective.FieldType:
@@ -33264,6 +33840,13 @@ func (m *RetrospectiveMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetIncidentID(v)
+		return nil
+	case retrospective.FieldDocumentID:
+		v, ok := value.(uuid.UUID)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetDocumentID(v)
 		return nil
 	case retrospective.FieldSystemAnalysisID:
 		v, ok := value.(uuid.UUID)
@@ -33353,6 +33936,9 @@ func (m *RetrospectiveMutation) ResetField(name string) error {
 	case retrospective.FieldIncidentID:
 		m.ResetIncidentID()
 		return nil
+	case retrospective.FieldDocumentID:
+		m.ResetDocumentID()
+		return nil
 	case retrospective.FieldSystemAnalysisID:
 		m.ResetSystemAnalysisID()
 		return nil
@@ -33368,12 +33954,15 @@ func (m *RetrospectiveMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *RetrospectiveMutation) AddedEdges() []string {
-	edges := make([]string, 0, 4)
+	edges := make([]string, 0, 5)
 	if m.tenant != nil {
 		edges = append(edges, retrospective.EdgeTenant)
 	}
 	if m.incident != nil {
 		edges = append(edges, retrospective.EdgeIncident)
+	}
+	if m.document != nil {
+		edges = append(edges, retrospective.EdgeDocument)
 	}
 	if m.comments != nil {
 		edges = append(edges, retrospective.EdgeComments)
@@ -33396,6 +33985,10 @@ func (m *RetrospectiveMutation) AddedIDs(name string) []ent.Value {
 		if id := m.incident; id != nil {
 			return []ent.Value{*id}
 		}
+	case retrospective.EdgeDocument:
+		if id := m.document; id != nil {
+			return []ent.Value{*id}
+		}
 	case retrospective.EdgeComments:
 		ids := make([]ent.Value, 0, len(m.comments))
 		for id := range m.comments {
@@ -33412,7 +34005,7 @@ func (m *RetrospectiveMutation) AddedIDs(name string) []ent.Value {
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *RetrospectiveMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 4)
+	edges := make([]string, 0, 5)
 	if m.removedcomments != nil {
 		edges = append(edges, retrospective.EdgeComments)
 	}
@@ -33435,12 +34028,15 @@ func (m *RetrospectiveMutation) RemovedIDs(name string) []ent.Value {
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *RetrospectiveMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 4)
+	edges := make([]string, 0, 5)
 	if m.clearedtenant {
 		edges = append(edges, retrospective.EdgeTenant)
 	}
 	if m.clearedincident {
 		edges = append(edges, retrospective.EdgeIncident)
+	}
+	if m.cleareddocument {
+		edges = append(edges, retrospective.EdgeDocument)
 	}
 	if m.clearedcomments {
 		edges = append(edges, retrospective.EdgeComments)
@@ -33459,6 +34055,8 @@ func (m *RetrospectiveMutation) EdgeCleared(name string) bool {
 		return m.clearedtenant
 	case retrospective.EdgeIncident:
 		return m.clearedincident
+	case retrospective.EdgeDocument:
+		return m.cleareddocument
 	case retrospective.EdgeComments:
 		return m.clearedcomments
 	case retrospective.EdgeSystemAnalysis:
@@ -33477,6 +34075,9 @@ func (m *RetrospectiveMutation) ClearEdge(name string) error {
 	case retrospective.EdgeIncident:
 		m.ClearIncident()
 		return nil
+	case retrospective.EdgeDocument:
+		m.ClearDocument()
+		return nil
 	case retrospective.EdgeSystemAnalysis:
 		m.ClearSystemAnalysis()
 		return nil
@@ -33493,6 +34094,9 @@ func (m *RetrospectiveMutation) ResetEdge(name string) error {
 		return nil
 	case retrospective.EdgeIncident:
 		m.ResetIncident()
+		return nil
+	case retrospective.EdgeDocument:
+		m.ResetDocument()
 		return nil
 	case retrospective.EdgeComments:
 		m.ResetComments()

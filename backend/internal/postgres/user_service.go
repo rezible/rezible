@@ -6,6 +6,7 @@ import (
 	"os"
 
 	"github.com/google/uuid"
+	"github.com/rezible/rezible/access"
 	"github.com/rezible/rezible/ent/privacy"
 	"github.com/rs/zerolog/log"
 
@@ -26,6 +27,25 @@ func NewUserService(db *ent.Client) (*UserService, error) {
 	}
 
 	return s, nil
+}
+
+type userCtxKey struct{}
+
+func (s *UserService) CreateUserContext(ctx context.Context, userId uuid.UUID) (context.Context, error) {
+	// TODO: revise usage of this
+	userLookupCtx := privacy.DecisionContext(ctx, privacy.Allow)
+	usr, userErr := s.GetById(userLookupCtx, userId)
+	if userErr != nil {
+		if ent.IsNotFound(userErr) {
+			return nil, rez.ErrAuthSessionUserMissing
+		}
+		return nil, fmt.Errorf("get user by id: %w", userErr)
+	}
+	return context.WithValue(access.UserContext(ctx, usr), userCtxKey{}, usr), nil
+}
+
+func (s *UserService) GetUserContext(ctx context.Context) *ent.User {
+	return ctx.Value(userCtxKey{}).(*ent.User)
 }
 
 func (s *UserService) Create(ctx context.Context, user ent.User) (*ent.User, error) {

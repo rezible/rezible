@@ -13,7 +13,6 @@ import { watch } from "runed";
 import type { Getter } from "$src/lib/utils.svelte";
 
 export class RetrospectiveCollaborationState {
-	retrospectiveId = $state<string>();
 	documentName = $state<string>();
 	provider = $state<HocuspocusProvider>();
 	awareness = $state<StatesArray>([]);

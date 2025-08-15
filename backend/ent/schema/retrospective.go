@@ -25,6 +25,7 @@ func (Retrospective) Fields() []ent.Field {
 	return []ent.Field{
 		field.UUID("id", uuid.New()).Default(uuid.New),
 		field.UUID("incident_id", uuid.UUID{}),
+		field.UUID("document_id", uuid.UUID{}),
 		field.UUID("system_analysis_id", uuid.UUID{}).Optional(),
 		field.Enum("type").Values("simple", "full"),
 		field.Enum("state").Values("draft", "in_review", "meeting", "closed"),
@@ -39,6 +40,11 @@ func (Retrospective) Edges() []ent.Edge {
 			Field("incident_id").
 			Required().
 			Unique(),
+		edge.From("document", Document.Type).
+			Ref("retrospective").
+			Field("document_id").
+			Unique().
+			Required(),
 		edge.From("comments", RetrospectiveComment.Type).
 			Ref("retrospective"),
 		edge.From("system_analysis", SystemAnalysis.Type).

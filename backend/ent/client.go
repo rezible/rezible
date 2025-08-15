@@ -18,6 +18,7 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"github.com/rezible/rezible/ent/alert"
 	"github.com/rezible/rezible/ent/alertfeedback"
+	"github.com/rezible/rezible/ent/document"
 	"github.com/rezible/rezible/ent/incident"
 	"github.com/rezible/rezible/ent/incidentdebrief"
 	"github.com/rezible/rezible/ent/incidentdebriefmessage"
@@ -85,6 +86,8 @@ type Client struct {
 	AlertFeedback *AlertFeedbackClient
 	// AlertMetrics is the client for interacting with the AlertMetrics builders.
 	AlertMetrics *AlertMetricsClient
+	// Document is the client for interacting with the Document builders.
+	Document *DocumentClient
 	// Incident is the client for interacting with the Incident builders.
 	Incident *IncidentClient
 	// IncidentDebrief is the client for interacting with the IncidentDebrief builders.
@@ -207,6 +210,7 @@ func (c *Client) init() {
 	c.Alert = NewAlertClient(c.config)
 	c.AlertFeedback = NewAlertFeedbackClient(c.config)
 	c.AlertMetrics = NewAlertMetricsClient(c.config)
+	c.Document = NewDocumentClient(c.config)
 	c.Incident = NewIncidentClient(c.config)
 	c.IncidentDebrief = NewIncidentDebriefClient(c.config)
 	c.IncidentDebriefMessage = NewIncidentDebriefMessageClient(c.config)
@@ -356,6 +360,7 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 		Alert:                            NewAlertClient(cfg),
 		AlertFeedback:                    NewAlertFeedbackClient(cfg),
 		AlertMetrics:                     NewAlertMetricsClient(cfg),
+		Document:                         NewDocumentClient(cfg),
 		Incident:                         NewIncidentClient(cfg),
 		IncidentDebrief:                  NewIncidentDebriefClient(cfg),
 		IncidentDebriefMessage:           NewIncidentDebriefMessageClient(cfg),
@@ -432,6 +437,7 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 		Alert:                            NewAlertClient(cfg),
 		AlertFeedback:                    NewAlertFeedbackClient(cfg),
 		AlertMetrics:                     NewAlertMetricsClient(cfg),
+		Document:                         NewDocumentClient(cfg),
 		Incident:                         NewIncidentClient(cfg),
 		IncidentDebrief:                  NewIncidentDebriefClient(cfg),
 		IncidentDebriefMessage:           NewIncidentDebriefMessageClient(cfg),
@@ -515,7 +521,7 @@ func (c *Client) Close() error {
 // In order to add hooks to a specific client, call: `client.Node.Use(...)`.
 func (c *Client) Use(hooks ...Hook) {
 	for _, n := range []interface{ Use(...Hook) }{
-		c.Alert, c.AlertFeedback, c.Incident, c.IncidentDebrief,
+		c.Alert, c.AlertFeedback, c.Document, c.Incident, c.IncidentDebrief,
 		c.IncidentDebriefMessage, c.IncidentDebriefQuestion,
 		c.IncidentDebriefSuggestion, c.IncidentEvent, c.IncidentEventContext,
 		c.IncidentEventContributingFactor, c.IncidentEventEvidence,
@@ -541,8 +547,8 @@ func (c *Client) Use(hooks ...Hook) {
 // In order to add interceptors to a specific client, call: `client.Node.Intercept(...)`.
 func (c *Client) Intercept(interceptors ...Interceptor) {
 	for _, n := range []interface{ Intercept(...Interceptor) }{
-		c.Alert, c.AlertFeedback, c.AlertMetrics, c.Incident, c.IncidentDebrief,
-		c.IncidentDebriefMessage, c.IncidentDebriefQuestion,
+		c.Alert, c.AlertFeedback, c.AlertMetrics, c.Document, c.Incident,
+		c.IncidentDebrief, c.IncidentDebriefMessage, c.IncidentDebriefQuestion,
 		c.IncidentDebriefSuggestion, c.IncidentEvent, c.IncidentEventContext,
 		c.IncidentEventContributingFactor, c.IncidentEventEvidence,
 		c.IncidentEventSystemComponent, c.IncidentField, c.IncidentFieldOption,
@@ -570,6 +576,8 @@ func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 		return c.Alert.mutate(ctx, m)
 	case *AlertFeedbackMutation:
 		return c.AlertFeedback.mutate(ctx, m)
+	case *DocumentMutation:
+		return c.Document.mutate(ctx, m)
 	case *IncidentMutation:
 		return c.Incident.mutate(ctx, m)
 	case *IncidentDebriefMutation:
@@ -1107,6 +1115,172 @@ func (c *AlertMetricsClient) Query() *AlertMetricsQuery {
 // Interceptors returns the client interceptors.
 func (c *AlertMetricsClient) Interceptors() []Interceptor {
 	return c.inters.AlertMetrics
+}
+
+// DocumentClient is a client for the Document schema.
+type DocumentClient struct {
+	config
+}
+
+// NewDocumentClient returns a client for the Document from the given config.
+func NewDocumentClient(c config) *DocumentClient {
+	return &DocumentClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `document.Hooks(f(g(h())))`.
+func (c *DocumentClient) Use(hooks ...Hook) {
+	c.hooks.Document = append(c.hooks.Document, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `document.Intercept(f(g(h())))`.
+func (c *DocumentClient) Intercept(interceptors ...Interceptor) {
+	c.inters.Document = append(c.inters.Document, interceptors...)
+}
+
+// Create returns a builder for creating a Document entity.
+func (c *DocumentClient) Create() *DocumentCreate {
+	mutation := newDocumentMutation(c.config, OpCreate)
+	return &DocumentCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of Document entities.
+func (c *DocumentClient) CreateBulk(builders ...*DocumentCreate) *DocumentCreateBulk {
+	return &DocumentCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *DocumentClient) MapCreateBulk(slice any, setFunc func(*DocumentCreate, int)) *DocumentCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &DocumentCreateBulk{err: fmt.Errorf("calling to DocumentClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*DocumentCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &DocumentCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for Document.
+func (c *DocumentClient) Update() *DocumentUpdate {
+	mutation := newDocumentMutation(c.config, OpUpdate)
+	return &DocumentUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *DocumentClient) UpdateOne(d *Document) *DocumentUpdateOne {
+	mutation := newDocumentMutation(c.config, OpUpdateOne, withDocument(d))
+	return &DocumentUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *DocumentClient) UpdateOneID(id uuid.UUID) *DocumentUpdateOne {
+	mutation := newDocumentMutation(c.config, OpUpdateOne, withDocumentID(id))
+	return &DocumentUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for Document.
+func (c *DocumentClient) Delete() *DocumentDelete {
+	mutation := newDocumentMutation(c.config, OpDelete)
+	return &DocumentDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *DocumentClient) DeleteOne(d *Document) *DocumentDeleteOne {
+	return c.DeleteOneID(d.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *DocumentClient) DeleteOneID(id uuid.UUID) *DocumentDeleteOne {
+	builder := c.Delete().Where(document.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &DocumentDeleteOne{builder}
+}
+
+// Query returns a query builder for Document.
+func (c *DocumentClient) Query() *DocumentQuery {
+	return &DocumentQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeDocument},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a Document entity by its id.
+func (c *DocumentClient) Get(ctx context.Context, id uuid.UUID) (*Document, error) {
+	return c.Query().Where(document.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *DocumentClient) GetX(ctx context.Context, id uuid.UUID) *Document {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QueryTenant queries the tenant edge of a Document.
+func (c *DocumentClient) QueryTenant(d *Document) *TenantQuery {
+	query := (&TenantClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := d.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(document.Table, document.FieldID, id),
+			sqlgraph.To(tenant.Table, tenant.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, document.TenantTable, document.TenantColumn),
+		)
+		fromV = sqlgraph.Neighbors(d.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryRetrospective queries the retrospective edge of a Document.
+func (c *DocumentClient) QueryRetrospective(d *Document) *RetrospectiveQuery {
+	query := (&RetrospectiveClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := d.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(document.Table, document.FieldID, id),
+			sqlgraph.To(retrospective.Table, retrospective.FieldID),
+			sqlgraph.Edge(sqlgraph.O2O, false, document.RetrospectiveTable, document.RetrospectiveColumn),
+		)
+		fromV = sqlgraph.Neighbors(d.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *DocumentClient) Hooks() []Hook {
+	hooks := c.hooks.Document
+	return append(hooks[:len(hooks):len(hooks)], document.Hooks[:]...)
+}
+
+// Interceptors returns the client interceptors.
+func (c *DocumentClient) Interceptors() []Interceptor {
+	return c.inters.Document
+}
+
+func (c *DocumentClient) mutate(ctx context.Context, m *DocumentMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&DocumentCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&DocumentUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&DocumentUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&DocumentDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown Document mutation op: %q", m.Op())
+	}
 }
 
 // IncidentClient is a client for the Incident schema.
@@ -7846,6 +8020,22 @@ func (c *RetrospectiveClient) QueryIncident(r *Retrospective) *IncidentQuery {
 	return query
 }
 
+// QueryDocument queries the document edge of a Retrospective.
+func (c *RetrospectiveClient) QueryDocument(r *Retrospective) *DocumentQuery {
+	query := (&DocumentClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := r.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(retrospective.Table, retrospective.FieldID, id),
+			sqlgraph.To(document.Table, document.FieldID),
+			sqlgraph.Edge(sqlgraph.O2O, true, retrospective.DocumentTable, retrospective.DocumentColumn),
+		)
+		fromV = sqlgraph.Neighbors(r.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
 // QueryComments queries the comments edge of a Retrospective.
 func (c *RetrospectiveClient) QueryComments(r *Retrospective) *RetrospectiveCommentQuery {
 	query := (&RetrospectiveCommentClient{config: c.config}).Query()
@@ -11909,14 +12099,15 @@ func (c *UserClient) mutate(ctx context.Context, m *UserMutation) (Value, error)
 // hooks and interceptors per client, for fast access.
 type (
 	hooks struct {
-		Alert, AlertFeedback, Incident, IncidentDebrief, IncidentDebriefMessage,
-		IncidentDebriefQuestion, IncidentDebriefSuggestion, IncidentEvent,
-		IncidentEventContext, IncidentEventContributingFactor, IncidentEventEvidence,
-		IncidentEventSystemComponent, IncidentField, IncidentFieldOption, IncidentLink,
-		IncidentMilestone, IncidentRole, IncidentRoleAssignment, IncidentSeverity,
-		IncidentTag, IncidentType, MeetingSchedule, MeetingSession, OncallAnnotation,
-		OncallEvent, OncallHandoverTemplate, OncallRoster, OncallRosterMetrics,
-		OncallSchedule, OncallScheduleParticipant, OncallShift, OncallShiftHandover,
+		Alert, AlertFeedback, Document, Incident, IncidentDebrief,
+		IncidentDebriefMessage, IncidentDebriefQuestion, IncidentDebriefSuggestion,
+		IncidentEvent, IncidentEventContext, IncidentEventContributingFactor,
+		IncidentEventEvidence, IncidentEventSystemComponent, IncidentField,
+		IncidentFieldOption, IncidentLink, IncidentMilestone, IncidentRole,
+		IncidentRoleAssignment, IncidentSeverity, IncidentTag, IncidentType,
+		MeetingSchedule, MeetingSession, OncallAnnotation, OncallEvent,
+		OncallHandoverTemplate, OncallRoster, OncallRosterMetrics, OncallSchedule,
+		OncallScheduleParticipant, OncallShift, OncallShiftHandover,
 		OncallShiftMetrics, Playbook, ProviderConfig, ProviderSyncHistory,
 		Retrospective, RetrospectiveComment, RetrospectiveReview, SystemAnalysis,
 		SystemAnalysisComponent, SystemAnalysisRelationship, SystemComponent,
@@ -11926,7 +12117,7 @@ type (
 		Tenant, Ticket, User []ent.Hook
 	}
 	inters struct {
-		Alert, AlertFeedback, AlertMetrics, Incident, IncidentDebrief,
+		Alert, AlertFeedback, AlertMetrics, Document, Incident, IncidentDebrief,
 		IncidentDebriefMessage, IncidentDebriefQuestion, IncidentDebriefSuggestion,
 		IncidentEvent, IncidentEventContext, IncidentEventContributingFactor,
 		IncidentEventEvidence, IncidentEventSystemComponent, IncidentField,

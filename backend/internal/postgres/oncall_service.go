@@ -9,11 +9,6 @@ import (
 	"entgo.io/ent/dialect/sql"
 	mapset "github.com/deckarep/golang-set/v2"
 	"github.com/google/uuid"
-	"github.com/rezible/rezible/ent/oncallshifthandover"
-	"github.com/rezible/rezible/ent/oncallshiftmetrics"
-	"github.com/rs/zerolog/log"
-	"github.com/texm/prosemirror-go"
-
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
 	ohot "github.com/rezible/rezible/ent/oncallhandovertemplate"
@@ -21,6 +16,8 @@ import (
 	"github.com/rezible/rezible/ent/oncallschedule"
 	ocsp "github.com/rezible/rezible/ent/oncallscheduleparticipant"
 	ocs "github.com/rezible/rezible/ent/oncallshift"
+	"github.com/rezible/rezible/ent/oncallshifthandover"
+	"github.com/rezible/rezible/ent/oncallshiftmetrics"
 	"github.com/rezible/rezible/ent/predicate"
 	"github.com/rezible/rezible/jobs"
 )
@@ -44,28 +41,7 @@ func NewOncallService(db *ent.Client, jobs rez.JobsService, docs rez.DocumentsSe
 		incidents: incidents,
 	}
 
-	//go s.registerHandoverSchema()
-
 	return s, nil
-}
-
-func (s *OncallService) registerHandoverSchema() {
-	if s.docs == nil {
-		log.Warn().Msg("no docs service for oncall service, not registering schema")
-		return
-	}
-	ctx := context.Background()
-	spec, specErr := s.docs.GetDocumentSchemaSpec(ctx, "handover")
-	if specErr != nil || spec == nil {
-		log.Error().Err(specErr).Msg("Failed to get handover schema spec")
-		return
-	}
-	schema, schemaErr := prosemirror.NewSchema(*spec)
-	if schemaErr != nil {
-		log.Error().Err(schemaErr).Msg("Failed to create handover schema")
-		return
-	}
-	prosemirror.RegisterSchema(schema)
 }
 
 func (s *OncallService) ListSchedules(ctx context.Context, params rez.ListOncallSchedulesParams) ([]*ent.OncallSchedule, error) {

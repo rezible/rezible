@@ -2,7 +2,8 @@ package api
 
 import (
 	"context"
-	"errors"
+
+	"github.com/google/uuid"
 	rez "github.com/rezible/rezible"
 	oapi "github.com/rezible/rezible/openapi"
 )
@@ -17,13 +18,19 @@ func newDocumentsHandler(documents rez.DocumentsService, auth rez.AuthSessionSer
 	return &documentsHandler{documents, auth, users}
 }
 
+func (h *documentsHandler) verifyUserDocumentAccess(ctx context.Context, userId uuid.UUID, document string) (bool, error) {
+	// TODO: lookup document using ent, check tenant
+	const readOnly = false
+	return readOnly, nil
+}
+
 func (h *documentsHandler) RequestDocumentEditorSession(ctx context.Context, request *oapi.RequestDocumentEditorSessionRequest) (*oapi.RequestDocumentEditorSessionResponse, error) {
 	var resp oapi.RequestDocumentEditorSessionResponse
 
 	sess := getRequestAuthSession(ctx, h.auth)
 
 	documentName := request.Body.Attributes.DocumentName
-	_, accessErr := h.documents.CheckUserDocumentAccess(ctx, sess.UserId, documentName)
+	_, accessErr := h.verifyUserDocumentAccess(ctx, sess.UserId, documentName)
 	if accessErr != nil {
 		return nil, apiError("no document access", accessErr)
 	}
@@ -36,7 +43,7 @@ func (h *documentsHandler) RequestDocumentEditorSession(ctx context.Context, req
 	resp.Body.Data = oapi.DocumentEditorSession{
 		DocumentName:  documentName,
 		Token:         token,
-		ConnectionUrl: h.documents.GetWebsocketAddress(),
+		ConnectionUrl: h.documents.GetServerWebsocketAddress(),
 	}
 
 	return &resp, nil
@@ -54,12 +61,9 @@ func (h *documentsHandler) VerifyDocumentEditorSession(ctx context.Context, requ
 
 	documentName := request.Body.Attributes.DocumentName
 
-	readOnly, accessErr := h.documents.CheckUserDocumentAccess(ctx, userId, documentName)
+	readOnly, accessErr := h.verifyUserDocumentAccess(ctx, userId, documentName)
 	if accessErr != nil {
-		if errors.Is(accessErr, rez.ErrUnauthorized) {
-			return nil, oapi.ErrorUnauthorized("no access to document")
-		}
-		return nil, apiError("check user document access", accessErr)
+		return nil, apiError("no document access", accessErr)
 	}
 
 	resp.Body.Data = oapi.DocumentEditorSessionAuth{

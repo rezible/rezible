@@ -39,8 +39,14 @@ func (s *RetrospectiveService) Create(ctx context.Context, params ent.Retrospect
 
 	createTxFn := func(tx *ent.Tx) error {
 		var createErr error
+		createdDoc, createErr := s.db.Document.Create().SetContent([]byte("")).Save(ctx)
+		if createErr != nil {
+			return fmt.Errorf("create doc: %w", createErr)
+		}
+
 		createdRetro, createErr = tx.Retrospective.Create().
 			SetIncidentID(params.IncidentID).
+			SetDocumentID(createdDoc.ID).
 			SetType(params.Type).
 			SetState(retrospective.StateDraft).
 			Save(ctx)

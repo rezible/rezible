@@ -12,6 +12,7 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
+	"github.com/rezible/rezible/ent/document"
 	"github.com/rezible/rezible/ent/incident"
 	"github.com/rezible/rezible/ent/retrospective"
 	"github.com/rezible/rezible/ent/retrospectivecomment"
@@ -36,6 +37,12 @@ func (rc *RetrospectiveCreate) SetTenantID(i int) *RetrospectiveCreate {
 // SetIncidentID sets the "incident_id" field.
 func (rc *RetrospectiveCreate) SetIncidentID(u uuid.UUID) *RetrospectiveCreate {
 	rc.mutation.SetIncidentID(u)
+	return rc
+}
+
+// SetDocumentID sets the "document_id" field.
+func (rc *RetrospectiveCreate) SetDocumentID(u uuid.UUID) *RetrospectiveCreate {
+	rc.mutation.SetDocumentID(u)
 	return rc
 }
 
@@ -87,6 +94,11 @@ func (rc *RetrospectiveCreate) SetTenant(t *Tenant) *RetrospectiveCreate {
 // SetIncident sets the "incident" edge to the Incident entity.
 func (rc *RetrospectiveCreate) SetIncident(i *Incident) *RetrospectiveCreate {
 	return rc.SetIncidentID(i.ID)
+}
+
+// SetDocument sets the "document" edge to the Document entity.
+func (rc *RetrospectiveCreate) SetDocument(d *Document) *RetrospectiveCreate {
+	return rc.SetDocumentID(d.ID)
 }
 
 // AddCommentIDs adds the "comments" edge to the RetrospectiveComment entity by IDs.
@@ -164,6 +176,9 @@ func (rc *RetrospectiveCreate) check() error {
 	if _, ok := rc.mutation.IncidentID(); !ok {
 		return &ValidationError{Name: "incident_id", err: errors.New(`ent: missing required field "Retrospective.incident_id"`)}
 	}
+	if _, ok := rc.mutation.DocumentID(); !ok {
+		return &ValidationError{Name: "document_id", err: errors.New(`ent: missing required field "Retrospective.document_id"`)}
+	}
 	if _, ok := rc.mutation.GetType(); !ok {
 		return &ValidationError{Name: "type", err: errors.New(`ent: missing required field "Retrospective.type"`)}
 	}
@@ -185,6 +200,9 @@ func (rc *RetrospectiveCreate) check() error {
 	}
 	if len(rc.mutation.IncidentIDs()) == 0 {
 		return &ValidationError{Name: "incident", err: errors.New(`ent: missing required edge "Retrospective.incident"`)}
+	}
+	if len(rc.mutation.DocumentIDs()) == 0 {
+		return &ValidationError{Name: "document", err: errors.New(`ent: missing required edge "Retrospective.document"`)}
 	}
 	return nil
 }
@@ -262,6 +280,23 @@ func (rc *RetrospectiveCreate) createSpec() (*Retrospective, *sqlgraph.CreateSpe
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		_node.IncidentID = nodes[0]
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := rc.mutation.DocumentIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2O,
+			Inverse: true,
+			Table:   retrospective.DocumentTable,
+			Columns: []string{retrospective.DocumentColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(document.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_node.DocumentID = nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	if nodes := rc.mutation.CommentsIDs(); len(nodes) > 0 {
@@ -358,6 +393,18 @@ func (u *RetrospectiveUpsert) SetIncidentID(v uuid.UUID) *RetrospectiveUpsert {
 // UpdateIncidentID sets the "incident_id" field to the value that was provided on create.
 func (u *RetrospectiveUpsert) UpdateIncidentID() *RetrospectiveUpsert {
 	u.SetExcluded(retrospective.FieldIncidentID)
+	return u
+}
+
+// SetDocumentID sets the "document_id" field.
+func (u *RetrospectiveUpsert) SetDocumentID(v uuid.UUID) *RetrospectiveUpsert {
+	u.Set(retrospective.FieldDocumentID, v)
+	return u
+}
+
+// UpdateDocumentID sets the "document_id" field to the value that was provided on create.
+func (u *RetrospectiveUpsert) UpdateDocumentID() *RetrospectiveUpsert {
+	u.SetExcluded(retrospective.FieldDocumentID)
 	return u
 }
 
@@ -465,6 +512,20 @@ func (u *RetrospectiveUpsertOne) SetIncidentID(v uuid.UUID) *RetrospectiveUpsert
 func (u *RetrospectiveUpsertOne) UpdateIncidentID() *RetrospectiveUpsertOne {
 	return u.Update(func(s *RetrospectiveUpsert) {
 		s.UpdateIncidentID()
+	})
+}
+
+// SetDocumentID sets the "document_id" field.
+func (u *RetrospectiveUpsertOne) SetDocumentID(v uuid.UUID) *RetrospectiveUpsertOne {
+	return u.Update(func(s *RetrospectiveUpsert) {
+		s.SetDocumentID(v)
+	})
+}
+
+// UpdateDocumentID sets the "document_id" field to the value that was provided on create.
+func (u *RetrospectiveUpsertOne) UpdateDocumentID() *RetrospectiveUpsertOne {
+	return u.Update(func(s *RetrospectiveUpsert) {
+		s.UpdateDocumentID()
 	})
 }
 
@@ -746,6 +807,20 @@ func (u *RetrospectiveUpsertBulk) SetIncidentID(v uuid.UUID) *RetrospectiveUpser
 func (u *RetrospectiveUpsertBulk) UpdateIncidentID() *RetrospectiveUpsertBulk {
 	return u.Update(func(s *RetrospectiveUpsert) {
 		s.UpdateIncidentID()
+	})
+}
+
+// SetDocumentID sets the "document_id" field.
+func (u *RetrospectiveUpsertBulk) SetDocumentID(v uuid.UUID) *RetrospectiveUpsertBulk {
+	return u.Update(func(s *RetrospectiveUpsert) {
+		s.SetDocumentID(v)
+	})
+}
+
+// UpdateDocumentID sets the "document_id" field to the value that was provided on create.
+func (u *RetrospectiveUpsertBulk) UpdateDocumentID() *RetrospectiveUpsertBulk {
+	return u.Update(func(s *RetrospectiveUpsert) {
+		s.UpdateDocumentID()
 	})
 }
 

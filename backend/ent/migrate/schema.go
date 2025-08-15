@@ -89,6 +89,33 @@ var (
 			},
 		},
 	}
+	// DocumentsColumns holds the columns for the "documents" table.
+	DocumentsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUUID},
+		{Name: "content", Type: field.TypeBytes},
+		{Name: "tenant_id", Type: field.TypeInt},
+	}
+	// DocumentsTable holds the schema information for the "documents" table.
+	DocumentsTable = &schema.Table{
+		Name:       "documents",
+		Columns:    DocumentsColumns,
+		PrimaryKey: []*schema.Column{DocumentsColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "documents_tenants_tenant",
+				Columns:    []*schema.Column{DocumentsColumns[2]},
+				RefColumns: []*schema.Column{TenantsColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+		},
+		Indexes: []*schema.Index{
+			{
+				Name:    "document_tenant_id",
+				Unique:  false,
+				Columns: []*schema.Column{DocumentsColumns[2]},
+			},
+		},
+	}
 	// IncidentsColumns holds the columns for the "incidents" table.
 	IncidentsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID},
@@ -1404,6 +1431,7 @@ var (
 		{Name: "id", Type: field.TypeUUID},
 		{Name: "type", Type: field.TypeEnum, Enums: []string{"simple", "full"}},
 		{Name: "state", Type: field.TypeEnum, Enums: []string{"draft", "in_review", "meeting", "closed"}},
+		{Name: "document_id", Type: field.TypeUUID, Unique: true},
 		{Name: "incident_id", Type: field.TypeUUID, Unique: true},
 		{Name: "tenant_id", Type: field.TypeInt},
 		{Name: "system_analysis_id", Type: field.TypeUUID, Unique: true, Nullable: true},
@@ -1415,20 +1443,26 @@ var (
 		PrimaryKey: []*schema.Column{RetrospectivesColumns[0]},
 		ForeignKeys: []*schema.ForeignKey{
 			{
-				Symbol:     "retrospectives_incidents_retrospective",
+				Symbol:     "retrospectives_documents_retrospective",
 				Columns:    []*schema.Column{RetrospectivesColumns[3]},
+				RefColumns: []*schema.Column{DocumentsColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+			{
+				Symbol:     "retrospectives_incidents_retrospective",
+				Columns:    []*schema.Column{RetrospectivesColumns[4]},
 				RefColumns: []*schema.Column{IncidentsColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
 			{
 				Symbol:     "retrospectives_tenants_tenant",
-				Columns:    []*schema.Column{RetrospectivesColumns[4]},
+				Columns:    []*schema.Column{RetrospectivesColumns[5]},
 				RefColumns: []*schema.Column{TenantsColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
 			{
 				Symbol:     "retrospectives_system_analyses_retrospective",
-				Columns:    []*schema.Column{RetrospectivesColumns[5]},
+				Columns:    []*schema.Column{RetrospectivesColumns[6]},
 				RefColumns: []*schema.Column{SystemAnalysesColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
@@ -1437,7 +1471,7 @@ var (
 			{
 				Name:    "retrospective_tenant_id",
 				Unique:  false,
-				Columns: []*schema.Column{RetrospectivesColumns[4]},
+				Columns: []*schema.Column{RetrospectivesColumns[5]},
 			},
 		},
 	}
@@ -2625,6 +2659,7 @@ var (
 	Tables = []*schema.Table{
 		AlertsTable,
 		AlertFeedbacksTable,
+		DocumentsTable,
 		IncidentsTable,
 		IncidentDebriefsTable,
 		IncidentDebriefMessagesTable,
@@ -2706,6 +2741,7 @@ func init() {
 	AlertFeedbacksTable.ForeignKeys[0].RefTable = AlertsTable
 	AlertFeedbacksTable.ForeignKeys[1].RefTable = TenantsTable
 	AlertFeedbacksTable.ForeignKeys[2].RefTable = OncallAnnotationsTable
+	DocumentsTable.ForeignKeys[0].RefTable = TenantsTable
 	IncidentsTable.ForeignKeys[0].RefTable = TenantsTable
 	IncidentsTable.ForeignKeys[1].RefTable = IncidentSeveritiesTable
 	IncidentsTable.ForeignKeys[2].RefTable = IncidentTypesTable
@@ -2776,9 +2812,10 @@ func init() {
 	PlaybooksTable.ForeignKeys[0].RefTable = TenantsTable
 	ProviderConfigsTable.ForeignKeys[0].RefTable = TenantsTable
 	ProviderSyncHistoriesTable.ForeignKeys[0].RefTable = TenantsTable
-	RetrospectivesTable.ForeignKeys[0].RefTable = IncidentsTable
-	RetrospectivesTable.ForeignKeys[1].RefTable = TenantsTable
-	RetrospectivesTable.ForeignKeys[2].RefTable = SystemAnalysesTable
+	RetrospectivesTable.ForeignKeys[0].RefTable = DocumentsTable
+	RetrospectivesTable.ForeignKeys[1].RefTable = IncidentsTable
+	RetrospectivesTable.ForeignKeys[2].RefTable = TenantsTable
+	RetrospectivesTable.ForeignKeys[3].RefTable = SystemAnalysesTable
 	RetrospectiveCommentsTable.ForeignKeys[0].RefTable = TenantsTable
 	RetrospectiveCommentsTable.ForeignKeys[1].RefTable = RetrospectivesTable
 	RetrospectiveCommentsTable.ForeignKeys[2].RefTable = UsersTable

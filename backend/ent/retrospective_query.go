@@ -14,6 +14,7 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
+	"github.com/rezible/rezible/ent/document"
 	"github.com/rezible/rezible/ent/incident"
 	"github.com/rezible/rezible/ent/predicate"
 	"github.com/rezible/rezible/ent/retrospective"
@@ -31,6 +32,7 @@ type RetrospectiveQuery struct {
 	predicates         []predicate.Retrospective
 	withTenant         *TenantQuery
 	withIncident       *IncidentQuery
+	withDocument       *DocumentQuery
 	withComments       *RetrospectiveCommentQuery
 	withSystemAnalysis *SystemAnalysisQuery
 	modifiers          []func(*sql.Selector)
@@ -107,6 +109,28 @@ func (rq *RetrospectiveQuery) QueryIncident() *IncidentQuery {
 			sqlgraph.From(retrospective.Table, retrospective.FieldID, selector),
 			sqlgraph.To(incident.Table, incident.FieldID),
 			sqlgraph.Edge(sqlgraph.O2O, true, retrospective.IncidentTable, retrospective.IncidentColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(rq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryDocument chains the current query on the "document" edge.
+func (rq *RetrospectiveQuery) QueryDocument() *DocumentQuery {
+	query := (&DocumentClient{config: rq.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := rq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := rq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(retrospective.Table, retrospective.FieldID, selector),
+			sqlgraph.To(document.Table, document.FieldID),
+			sqlgraph.Edge(sqlgraph.O2O, true, retrospective.DocumentTable, retrospective.DocumentColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(rq.driver.Dialect(), step)
 		return fromU, nil
@@ -352,6 +376,7 @@ func (rq *RetrospectiveQuery) Clone() *RetrospectiveQuery {
 		predicates:         append([]predicate.Retrospective{}, rq.predicates...),
 		withTenant:         rq.withTenant.Clone(),
 		withIncident:       rq.withIncident.Clone(),
+		withDocument:       rq.withDocument.Clone(),
 		withComments:       rq.withComments.Clone(),
 		withSystemAnalysis: rq.withSystemAnalysis.Clone(),
 		// clone intermediate query.
@@ -380,6 +405,17 @@ func (rq *RetrospectiveQuery) WithIncident(opts ...func(*IncidentQuery)) *Retros
 		opt(query)
 	}
 	rq.withIncident = query
+	return rq
+}
+
+// WithDocument tells the query-builder to eager-load the nodes that are connected to
+// the "document" edge. The optional arguments are used to configure the query builder of the edge.
+func (rq *RetrospectiveQuery) WithDocument(opts ...func(*DocumentQuery)) *RetrospectiveQuery {
+	query := (&DocumentClient{config: rq.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	rq.withDocument = query
 	return rq
 }
 
@@ -489,9 +525,10 @@ func (rq *RetrospectiveQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([
 	var (
 		nodes       = []*Retrospective{}
 		_spec       = rq.querySpec()
-		loadedTypes = [4]bool{
+		loadedTypes = [5]bool{
 			rq.withTenant != nil,
 			rq.withIncident != nil,
+			rq.withDocument != nil,
 			rq.withComments != nil,
 			rq.withSystemAnalysis != nil,
 		}
@@ -526,6 +563,12 @@ func (rq *RetrospectiveQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([
 	if query := rq.withIncident; query != nil {
 		if err := rq.loadIncident(ctx, query, nodes, nil,
 			func(n *Retrospective, e *Incident) { n.Edges.Incident = e }); err != nil {
+			return nil, err
+		}
+	}
+	if query := rq.withDocument; query != nil {
+		if err := rq.loadDocument(ctx, query, nodes, nil,
+			func(n *Retrospective, e *Document) { n.Edges.Document = e }); err != nil {
 			return nil, err
 		}
 	}
@@ -596,6 +639,35 @@ func (rq *RetrospectiveQuery) loadIncident(ctx context.Context, query *IncidentQ
 		nodes, ok := nodeids[n.ID]
 		if !ok {
 			return fmt.Errorf(`unexpected foreign-key "incident_id" returned %v`, n.ID)
+		}
+		for i := range nodes {
+			assign(nodes[i], n)
+		}
+	}
+	return nil
+}
+func (rq *RetrospectiveQuery) loadDocument(ctx context.Context, query *DocumentQuery, nodes []*Retrospective, init func(*Retrospective), assign func(*Retrospective, *Document)) error {
+	ids := make([]uuid.UUID, 0, len(nodes))
+	nodeids := make(map[uuid.UUID][]*Retrospective)
+	for i := range nodes {
+		fk := nodes[i].DocumentID
+		if _, ok := nodeids[fk]; !ok {
+			ids = append(ids, fk)
+		}
+		nodeids[fk] = append(nodeids[fk], nodes[i])
+	}
+	if len(ids) == 0 {
+		return nil
+	}
+	query.Where(document.IDIn(ids...))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		nodes, ok := nodeids[n.ID]
+		if !ok {
+			return fmt.Errorf(`unexpected foreign-key "document_id" returned %v`, n.ID)
 		}
 		for i := range nodes {
 			assign(nodes[i], n)
@@ -696,6 +768,9 @@ func (rq *RetrospectiveQuery) querySpec() *sqlgraph.QuerySpec {
 		}
 		if rq.withIncident != nil {
 			_spec.Node.AddColumnOnce(retrospective.FieldIncidentID)
+		}
+		if rq.withDocument != nil {
+			_spec.Node.AddColumnOnce(retrospective.FieldDocumentID)
 		}
 		if rq.withSystemAnalysis != nil {
 			_spec.Node.AddColumnOnce(retrospective.FieldSystemAnalysisID)

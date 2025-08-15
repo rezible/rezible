@@ -1931,6 +1931,7 @@ export type Retrospective = {
 };
 
 export type RetrospectiveAttributes = {
+    documentId: string;
     reportSections: Array<RetrospectiveReportSection>;
     state: 'draft' | 'in_review' | 'meeting_scheduled' | 'completed';
     systemAnalysisId?: string;

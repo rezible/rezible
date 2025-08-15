@@ -171,6 +171,30 @@ func (f AlertMetricsQueryRuleFunc) EvalQuery(ctx context.Context, q ent.Query) e
 	return Denyf("ent/privacy: unexpected query type %T, expect *ent.AlertMetricsQuery", q)
 }
 
+// The DocumentQueryRuleFunc type is an adapter to allow the use of ordinary
+// functions as a query rule.
+type DocumentQueryRuleFunc func(context.Context, *ent.DocumentQuery) error
+
+// EvalQuery return f(ctx, q).
+func (f DocumentQueryRuleFunc) EvalQuery(ctx context.Context, q ent.Query) error {
+	if q, ok := q.(*ent.DocumentQuery); ok {
+		return f(ctx, q)
+	}
+	return Denyf("ent/privacy: unexpected query type %T, expect *ent.DocumentQuery", q)
+}
+
+// The DocumentMutationRuleFunc type is an adapter to allow the use of ordinary
+// functions as a mutation rule.
+type DocumentMutationRuleFunc func(context.Context, *ent.DocumentMutation) error
+
+// EvalMutation calls f(ctx, m).
+func (f DocumentMutationRuleFunc) EvalMutation(ctx context.Context, m ent.Mutation) error {
+	if m, ok := m.(*ent.DocumentMutation); ok {
+		return f(ctx, m)
+	}
+	return Denyf("ent/privacy: unexpected mutation type %T, expect *ent.DocumentMutation", m)
+}
+
 // The IncidentQueryRuleFunc type is an adapter to allow the use of ordinary
 // functions as a query rule.
 type IncidentQueryRuleFunc func(context.Context, *ent.IncidentQuery) error
@@ -1508,6 +1532,8 @@ func queryFilter(q ent.Query) (Filter, error) {
 		return q.Filter(), nil
 	case *ent.AlertMetricsQuery:
 		return q.Filter(), nil
+	case *ent.DocumentQuery:
+		return q.Filter(), nil
 	case *ent.IncidentQuery:
 		return q.Filter(), nil
 	case *ent.IncidentDebriefQuery:
@@ -1626,6 +1652,8 @@ func mutationFilter(m ent.Mutation) (Filter, error) {
 	case *ent.AlertMutation:
 		return m.Filter(), nil
 	case *ent.AlertFeedbackMutation:
+		return m.Filter(), nil
+	case *ent.DocumentMutation:
 		return m.Filter(), nil
 	case *ent.IncidentMutation:
 		return m.Filter(), nil

@@ -1,20 +1,14 @@
-import {Server} from "@hocuspocus/server";
-import { Events, Webhook } from "@hocuspocus/extension-webhook";
+import { Server } from "@hocuspocus/server";
 import { Logger } from "@hocuspocus/extension-logger";
-import { createDatabase } from "./database";
-import { documentTransformer } from "./transformer";
-import { SessionAuthentication } from "./auth";
-import { RezibleDocumentsApi } from "./documents-api";
+import { RezibleServerProxy } from "./rezible-proxy";
 
 type Config = {
 	name: string;
 	host: string;
 	port: number;
 
-	dbUrl: string;
-
 	apiUrl: string;
-	apiWebhookSecret: string;
+	apiSecret: string;
 }
 
 const loadConfig = (): Config => {
@@ -24,38 +18,16 @@ const loadConfig = (): Config => {
 	let port = Number.parseInt(process.env.PORT ?? "8889", 10);
 	if (port < 1024) port = 8889;
 
-	const apiUrl = process.env.API_URL ?? "http://localhost:8888/api";
+	const apiUrl = process.env.DOCUMENTS_API_URL ?? "http://localhost:8888/api/documents";
+	const apiSecret = process.env.DOCUMENTS_API_SECRET;
 
-	const apiWebhookSecret = process.env.API_WEBHOOK_SECRET ?? "foo-bar-baz";
-
-	const dbUrl = process.env.DB_URL;
-	if (!dbUrl) {
-		throw new Error("DB_URL env variable not supplied")
-	}
-
-	return { name, host, port, dbUrl, apiUrl, apiWebhookSecret };
+	return { name, host, port, apiUrl, apiSecret };
 }
 
 const createServer = async (cfg: Config) => {
 	const logger = new Logger();
-	const database = await createDatabase(cfg.dbUrl);
 
-	const webhooks = new Webhook({
-		url: `${cfg.apiUrl}/webhooks/documents`,
-		secret: cfg.apiWebhookSecret,
-		transformer: documentTransformer,
-		events: [Events.onChange],
-		debounce: 5000,
-		debounceMaxWait: 10000,
-	});
-
-	const sessionAuth = new SessionAuthentication({
-		verifySessionUrl: `${cfg.apiUrl}/v1/documents/session/verify`,
-	});
-
-	const docsApi = new RezibleDocumentsApi({
-
-	})
+    const rezProxy = new RezibleServerProxy(cfg.apiUrl, cfg.apiSecret);
 	
 	const server = Server.configure({
 		name: cfg.name,
@@ -67,10 +39,7 @@ const createServer = async (cfg: Config) => {
 		quiet: false,
 		extensions: [
 			logger,
-			sessionAuth,
-			database,
-			docsApi,
-			// webhooks
+            rezProxy,
 		],
 	});
 

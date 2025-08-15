@@ -80,9 +80,11 @@ type (
 		AuthHandler() http.Handler
 		MCPServerMiddleware() func(http.Handler) http.Handler
 
-		GetAuthSession(context.Context) (*AuthSession, error)
 		IssueAuthSessionToken(*AuthSession) (string, error)
-		CreateVerifiedRequestAuthSessionContext(ctx context.Context, token string, scopes []string) (context.Context, error)
+		VerifyAuthSessionToken(string) (*AuthSession, error)
+
+		SetAuthSessionContext(context.Context, *AuthSession) context.Context
+		GetAuthSession(context.Context) (*AuthSession, error)
 	}
 )
 
@@ -145,6 +147,9 @@ type (
 	}
 
 	UserService interface {
+		CreateUserContext(ctx context.Context, userId uuid.UUID) (context.Context, error)
+		GetUserContext(ctx context.Context) *ent.User
+
 		Create(context.Context, ent.User) (*ent.User, error)
 		ListUsers(context.Context, ListUsersParams) ([]*ent.User, error)
 		GetById(context.Context, uuid.UUID) (*ent.User, error)
@@ -165,9 +170,10 @@ type (
 	}
 
 	DocumentsService interface {
-		GetWebsocketAddress() string
-		CheckUserDocumentAccess(ctx context.Context, userId uuid.UUID, documentName string) (readOnly bool, err error)
-		GetDocumentSchemaSpec(ctx context.Context, schemaName string) (*DocumentSchemaSpec, error)
+		GetServerWebsocketAddress() string
+		Handler() http.Handler
+
+		//GetDocumentSchemaSpec(ctx context.Context, schemaName string) (*DocumentSchemaSpec, error)
 
 		CreateOncallShiftHandoverMessage(sections []OncallShiftHandoverSection, annotations []*ent.OncallAnnotation, roster *ent.OncallRoster, endingShift *ent.OncallShift, startingShift *ent.OncallShift) (*ContentNode, error)
 	}

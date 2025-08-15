@@ -64,6 +64,11 @@ func IncidentID(v uuid.UUID) predicate.Retrospective {
 	return predicate.Retrospective(sql.FieldEQ(FieldIncidentID, v))
 }
 
+// DocumentID applies equality check predicate on the "document_id" field. It's identical to DocumentIDEQ.
+func DocumentID(v uuid.UUID) predicate.Retrospective {
+	return predicate.Retrospective(sql.FieldEQ(FieldDocumentID, v))
+}
+
 // SystemAnalysisID applies equality check predicate on the "system_analysis_id" field. It's identical to SystemAnalysisIDEQ.
 func SystemAnalysisID(v uuid.UUID) predicate.Retrospective {
 	return predicate.Retrospective(sql.FieldEQ(FieldSystemAnalysisID, v))
@@ -107,6 +112,26 @@ func IncidentIDIn(vs ...uuid.UUID) predicate.Retrospective {
 // IncidentIDNotIn applies the NotIn predicate on the "incident_id" field.
 func IncidentIDNotIn(vs ...uuid.UUID) predicate.Retrospective {
 	return predicate.Retrospective(sql.FieldNotIn(FieldIncidentID, vs...))
+}
+
+// DocumentIDEQ applies the EQ predicate on the "document_id" field.
+func DocumentIDEQ(v uuid.UUID) predicate.Retrospective {
+	return predicate.Retrospective(sql.FieldEQ(FieldDocumentID, v))
+}
+
+// DocumentIDNEQ applies the NEQ predicate on the "document_id" field.
+func DocumentIDNEQ(v uuid.UUID) predicate.Retrospective {
+	return predicate.Retrospective(sql.FieldNEQ(FieldDocumentID, v))
+}
+
+// DocumentIDIn applies the In predicate on the "document_id" field.
+func DocumentIDIn(vs ...uuid.UUID) predicate.Retrospective {
+	return predicate.Retrospective(sql.FieldIn(FieldDocumentID, vs...))
+}
+
+// DocumentIDNotIn applies the NotIn predicate on the "document_id" field.
+func DocumentIDNotIn(vs ...uuid.UUID) predicate.Retrospective {
+	return predicate.Retrospective(sql.FieldNotIn(FieldDocumentID, vs...))
 }
 
 // SystemAnalysisIDEQ applies the EQ predicate on the "system_analysis_id" field.
@@ -217,6 +242,29 @@ func HasIncident() predicate.Retrospective {
 func HasIncidentWith(preds ...predicate.Incident) predicate.Retrospective {
 	return predicate.Retrospective(func(s *sql.Selector) {
 		step := newIncidentStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasDocument applies the HasEdge predicate on the "document" edge.
+func HasDocument() predicate.Retrospective {
+	return predicate.Retrospective(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.O2O, true, DocumentTable, DocumentColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasDocumentWith applies the HasEdge predicate on the "document" edge with a given conditions (other predicates).
+func HasDocumentWith(preds ...predicate.Document) predicate.Retrospective {
+	return predicate.Retrospective(func(s *sql.Selector) {
+		step := newDocumentStep()
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)

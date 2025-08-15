@@ -11,6 +11,7 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
+	"github.com/rezible/rezible/ent/document"
 	"github.com/rezible/rezible/ent/incident"
 	"github.com/rezible/rezible/ent/predicate"
 	"github.com/rezible/rezible/ent/retrospective"
@@ -42,6 +43,20 @@ func (ru *RetrospectiveUpdate) SetIncidentID(u uuid.UUID) *RetrospectiveUpdate {
 func (ru *RetrospectiveUpdate) SetNillableIncidentID(u *uuid.UUID) *RetrospectiveUpdate {
 	if u != nil {
 		ru.SetIncidentID(*u)
+	}
+	return ru
+}
+
+// SetDocumentID sets the "document_id" field.
+func (ru *RetrospectiveUpdate) SetDocumentID(u uuid.UUID) *RetrospectiveUpdate {
+	ru.mutation.SetDocumentID(u)
+	return ru
+}
+
+// SetNillableDocumentID sets the "document_id" field if the given value is not nil.
+func (ru *RetrospectiveUpdate) SetNillableDocumentID(u *uuid.UUID) *RetrospectiveUpdate {
+	if u != nil {
+		ru.SetDocumentID(*u)
 	}
 	return ru
 }
@@ -99,6 +114,11 @@ func (ru *RetrospectiveUpdate) SetIncident(i *Incident) *RetrospectiveUpdate {
 	return ru.SetIncidentID(i.ID)
 }
 
+// SetDocument sets the "document" edge to the Document entity.
+func (ru *RetrospectiveUpdate) SetDocument(d *Document) *RetrospectiveUpdate {
+	return ru.SetDocumentID(d.ID)
+}
+
 // AddCommentIDs adds the "comments" edge to the RetrospectiveComment entity by IDs.
 func (ru *RetrospectiveUpdate) AddCommentIDs(ids ...uuid.UUID) *RetrospectiveUpdate {
 	ru.mutation.AddCommentIDs(ids...)
@@ -127,6 +147,12 @@ func (ru *RetrospectiveUpdate) Mutation() *RetrospectiveMutation {
 // ClearIncident clears the "incident" edge to the Incident entity.
 func (ru *RetrospectiveUpdate) ClearIncident() *RetrospectiveUpdate {
 	ru.mutation.ClearIncident()
+	return ru
+}
+
+// ClearDocument clears the "document" edge to the Document entity.
+func (ru *RetrospectiveUpdate) ClearDocument() *RetrospectiveUpdate {
+	ru.mutation.ClearDocument()
 	return ru
 }
 
@@ -202,6 +228,9 @@ func (ru *RetrospectiveUpdate) check() error {
 	if ru.mutation.IncidentCleared() && len(ru.mutation.IncidentIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "Retrospective.incident"`)
 	}
+	if ru.mutation.DocumentCleared() && len(ru.mutation.DocumentIDs()) > 0 {
+		return errors.New(`ent: clearing a required unique edge "Retrospective.document"`)
+	}
 	return nil
 }
 
@@ -251,6 +280,35 @@ func (ru *RetrospectiveUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(incident.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if ru.mutation.DocumentCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2O,
+			Inverse: true,
+			Table:   retrospective.DocumentTable,
+			Columns: []string{retrospective.DocumentColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(document.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := ru.mutation.DocumentIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2O,
+			Inverse: true,
+			Table:   retrospective.DocumentTable,
+			Columns: []string{retrospective.DocumentColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(document.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {
@@ -368,6 +426,20 @@ func (ruo *RetrospectiveUpdateOne) SetNillableIncidentID(u *uuid.UUID) *Retrospe
 	return ruo
 }
 
+// SetDocumentID sets the "document_id" field.
+func (ruo *RetrospectiveUpdateOne) SetDocumentID(u uuid.UUID) *RetrospectiveUpdateOne {
+	ruo.mutation.SetDocumentID(u)
+	return ruo
+}
+
+// SetNillableDocumentID sets the "document_id" field if the given value is not nil.
+func (ruo *RetrospectiveUpdateOne) SetNillableDocumentID(u *uuid.UUID) *RetrospectiveUpdateOne {
+	if u != nil {
+		ruo.SetDocumentID(*u)
+	}
+	return ruo
+}
+
 // SetSystemAnalysisID sets the "system_analysis_id" field.
 func (ruo *RetrospectiveUpdateOne) SetSystemAnalysisID(u uuid.UUID) *RetrospectiveUpdateOne {
 	ruo.mutation.SetSystemAnalysisID(u)
@@ -421,6 +493,11 @@ func (ruo *RetrospectiveUpdateOne) SetIncident(i *Incident) *RetrospectiveUpdate
 	return ruo.SetIncidentID(i.ID)
 }
 
+// SetDocument sets the "document" edge to the Document entity.
+func (ruo *RetrospectiveUpdateOne) SetDocument(d *Document) *RetrospectiveUpdateOne {
+	return ruo.SetDocumentID(d.ID)
+}
+
 // AddCommentIDs adds the "comments" edge to the RetrospectiveComment entity by IDs.
 func (ruo *RetrospectiveUpdateOne) AddCommentIDs(ids ...uuid.UUID) *RetrospectiveUpdateOne {
 	ruo.mutation.AddCommentIDs(ids...)
@@ -449,6 +526,12 @@ func (ruo *RetrospectiveUpdateOne) Mutation() *RetrospectiveMutation {
 // ClearIncident clears the "incident" edge to the Incident entity.
 func (ruo *RetrospectiveUpdateOne) ClearIncident() *RetrospectiveUpdateOne {
 	ruo.mutation.ClearIncident()
+	return ruo
+}
+
+// ClearDocument clears the "document" edge to the Document entity.
+func (ruo *RetrospectiveUpdateOne) ClearDocument() *RetrospectiveUpdateOne {
+	ruo.mutation.ClearDocument()
 	return ruo
 }
 
@@ -537,6 +620,9 @@ func (ruo *RetrospectiveUpdateOne) check() error {
 	if ruo.mutation.IncidentCleared() && len(ruo.mutation.IncidentIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "Retrospective.incident"`)
 	}
+	if ruo.mutation.DocumentCleared() && len(ruo.mutation.DocumentIDs()) > 0 {
+		return errors.New(`ent: clearing a required unique edge "Retrospective.document"`)
+	}
 	return nil
 }
 
@@ -603,6 +689,35 @@ func (ruo *RetrospectiveUpdateOne) sqlSave(ctx context.Context) (_node *Retrospe
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(incident.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if ruo.mutation.DocumentCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2O,
+			Inverse: true,
+			Table:   retrospective.DocumentTable,
+			Columns: []string{retrospective.DocumentColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(document.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := ruo.mutation.DocumentIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2O,
+			Inverse: true,
+			Table:   retrospective.DocumentTable,
+			Columns: []string{retrospective.DocumentColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(document.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {

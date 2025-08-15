@@ -123,7 +123,7 @@ func getRequestSecurityTokenAndScopes(sec oapiSecurity, r *http.Request) (string
 	return "", nil
 }
 
-func MakeSecurityMiddleware(auth rez.AuthSessionService) Middleware {
+func MakeSecurityMiddleware(auth rez.AuthSessionService, users rez.UserService) Middleware {
 	return func(c Context, next func(Context)) {
 		security := c.Operation().Security
 		explicitNoAuth := security != nil && len(security) == 0
@@ -136,14 +136,26 @@ func MakeSecurityMiddleware(auth rez.AuthSessionService) Middleware {
 			r, w := humago.Unwrap(c)
 
 			token, requiredScopes := getRequestSecurityTokenAndScopes(security, r)
-			authCtx, authErr := auth.CreateVerifiedRequestAuthSessionContext(ctx, token, requiredScopes)
-			if authErr != nil {
-				log.Debug().AnErr("authErr", authErr).Msg("auth session error")
-				writeStatusError(w, authErr)
+
+			sess, verifyErr := auth.VerifyAuthSessionToken(token)
+			if verifyErr != nil {
+				log.Debug().Err(verifyErr).Msg("failed to verify session token")
+				writeStatusError(w, verifyErr)
 				return
 			}
 
-			ctx = authCtx
+			// TODO: check scopes
+			for _, scope := range requiredScopes {
+				log.Warn().Str("scope", scope).Msg("TODO: verify request security scopes")
+			}
+
+			userCtx, userErr := users.CreateUserContext(ctx, sess.UserId)
+			if userErr != nil {
+				log.Debug().Err(userErr).Msg("failed to create user auth context")
+				writeStatusError(w, userErr)
+				return
+			}
+			ctx = auth.SetAuthSessionContext(userCtx, sess)
 		}
 
 		next(huma.WithContext(c, ctx))

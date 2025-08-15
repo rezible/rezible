@@ -8,9 +8,6 @@ import (
 	"os"
 	"time"
 
-	"github.com/rezible/rezible/access"
-	"github.com/rezible/rezible/ent/privacy"
-
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/google/uuid"
 	"github.com/rs/zerolog/log"
@@ -54,21 +51,8 @@ func newUserAuthSession(userId uuid.UUID, expiresAt time.Time) *rez.AuthSession 
 	return &rez.AuthSession{UserId: userId, ExpiresAt: expiresAt}
 }
 
-func setAuthSessionContext(ctx context.Context, sess *rez.AuthSession) context.Context {
+func (s *AuthSessionService) SetAuthSessionContext(ctx context.Context, sess *rez.AuthSession) context.Context {
 	return context.WithValue(ctx, authUserSessionContextKey{}, sess)
-}
-
-func (s *AuthSessionService) createUserAuthContext(ctx context.Context, sess *rez.AuthSession) (context.Context, error) {
-	// TODO: revise usage of this
-	userLookupCtx := privacy.DecisionContext(ctx, privacy.Allow)
-	user, userErr := s.users.GetById(userLookupCtx, sess.UserId)
-	if userErr != nil {
-		if ent.IsNotFound(userErr) {
-			return nil, rez.ErrAuthSessionUserMissing
-		}
-		return nil, fmt.Errorf("get user by id: %w", userErr)
-	}
-	return setAuthSessionContext(access.UserContext(ctx, user), sess), nil
 }
 
 func (s *AuthSessionService) GetAuthSession(ctx context.Context) (*rez.AuthSession, error) {
@@ -93,7 +77,7 @@ func (s *AuthSessionService) MCPServerMiddleware() func(http.Handler) http.Handl
 				return
 			}
 
-			next.ServeHTTP(w, r.WithContext(setAuthSessionContext(r.Context(), sess)))
+			next.ServeHTTP(w, r.WithContext(s.SetAuthSessionContext(r.Context(), sess)))
 		})
 	}
 }
@@ -127,7 +111,7 @@ func (s *AuthSessionService) AuthHandler() http.Handler {
 			http.Error(w, http.StatusText(http.StatusUnauthorized), http.StatusUnauthorized)
 			return
 		} else {
-			_, sessErr := s.verifyUserAuthSessionToken(token)
+			_, sessErr := s.VerifyAuthSessionToken(token)
 			if sessErr != nil && isRedirectableError(sessErr) {
 				s.prov.StartAuthFlow(w, r)
 				return
@@ -185,7 +169,7 @@ func (s *AuthSessionService) IssueAuthSessionToken(sess *rez.AuthSession) (strin
 	return token.SignedString(s.sessionSecret)
 }
 
-func (s *AuthSessionService) verifyUserAuthSessionToken(token string) (*rez.AuthSession, error) {
+func (s *AuthSessionService) VerifyAuthSessionToken(token string) (*rez.AuthSession, error) {
 	if token == "" {
 		return nil, rez.ErrNoAuthSession
 	}
@@ -216,33 +200,15 @@ func (s *AuthSessionService) verifyUserAuthSessionToken(token string) (*rez.Auth
 		return nil, rez.ErrAuthSessionExpired
 	}
 
+	// TODO: revise usage of this
+	//userLookupCtx := privacy.DecisionContext(ctx, privacy.Allow)
+	//user, userErr := s.users.GetById(userLookupCtx, claims.UserId)
+	//if userErr != nil {
+	//	if ent.IsNotFound(userErr) {
+	//		return nil, rez.ErrAuthSessionUserMissing
+	//	}
+	//	return nil, fmt.Errorf("failed to look up user: %w", userErr)
+	//}
+
 	return newUserAuthSession(claims.UserId, exp.Time), nil
-}
-
-func (s *AuthSessionService) CreateVerifiedRequestAuthSessionContext(ctx context.Context, token string, scopes []string) (context.Context, error) {
-	sess, verifyErr := s.verifyUserAuthSessionToken(token)
-	if verifyErr != nil {
-		log.Debug().Err(verifyErr).Msg("failed to verify session token")
-		return nil, verifyErr
-	}
-
-	if scopesErr := s.checkUserRequestScopes(ctx, sess.UserId, scopes); scopesErr != nil {
-		return nil, scopesErr
-	}
-
-	authCtx, authErr := s.createUserAuthContext(ctx, sess)
-	if authErr != nil {
-		return nil, authErr
-	}
-
-	return authCtx, nil
-}
-
-func (s *AuthSessionService) checkUserRequestScopes(ctx context.Context, userId uuid.UUID, requiredScopes []string) error {
-	// TODO: check scopes
-	for _, scope := range requiredScopes {
-		log.Warn().Str("scope", scope).Msg("TODO: verify request security scopes")
-	}
-
-	return nil
 }

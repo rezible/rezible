@@ -35,9 +35,10 @@ export class IncidentViewState {
 	}));
 	retrospective = $derived(this.retroQuery.data?.data);
 	retrospectiveId = $derived(this.retrospective?.id);
+	documentId = $derived(this.retrospective?.attributes.documentId);
 	systemAnalysisId = $derived(this.retrospective?.attributes.systemAnalysisId);
 
-	collaboration = new RetrospectiveCollaborationState(() => (this.retrospectiveId));
+	collaboration = new RetrospectiveCollaborationState(() => (this.documentId));
 
 	onRetrospectiveCreated(resp: CreateRetrospectiveResponseBody) {
 		const id = resp.data.id;

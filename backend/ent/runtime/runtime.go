@@ -9,6 +9,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/alert"
 	"github.com/rezible/rezible/ent/alertfeedback"
+	"github.com/rezible/rezible/ent/document"
 	"github.com/rezible/rezible/ent/incident"
 	"github.com/rezible/rezible/ent/incidentdebrief"
 	"github.com/rezible/rezible/ent/incidentdebriefmessage"
@@ -105,6 +106,22 @@ func init() {
 	alertfeedbackDescID := alertfeedbackFields[0].Descriptor()
 	// alertfeedback.DefaultID holds the default value on creation for the id field.
 	alertfeedback.DefaultID = alertfeedbackDescID.Default.(func() uuid.UUID)
+	documentMixin := schema.Document{}.Mixin()
+	document.Policy = privacy.NewPolicies(documentMixin[0], documentMixin[1], schema.Document{})
+	document.Hooks[0] = func(next ent.Mutator) ent.Mutator {
+		return ent.MutateFunc(func(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+			if err := document.Policy.EvalMutation(ctx, m); err != nil {
+				return nil, err
+			}
+			return next.Mutate(ctx, m)
+		})
+	}
+	documentFields := schema.Document{}.Fields()
+	_ = documentFields
+	// documentDescID is the schema descriptor for id field.
+	documentDescID := documentFields[0].Descriptor()
+	// document.DefaultID holds the default value on creation for the id field.
+	document.DefaultID = documentDescID.Default.(func() uuid.UUID)
 	incidentMixin := schema.Incident{}.Mixin()
 	incident.Policy = privacy.NewPolicies(incidentMixin[0], incidentMixin[1], schema.Incident{})
 	incident.Hooks[0] = func(next ent.Mutator) ent.Mutator {

@@ -20,6 +20,8 @@ const (
 	FieldTenantID = "tenant_id"
 	// FieldIncidentID holds the string denoting the incident_id field in the database.
 	FieldIncidentID = "incident_id"
+	// FieldDocumentID holds the string denoting the document_id field in the database.
+	FieldDocumentID = "document_id"
 	// FieldSystemAnalysisID holds the string denoting the system_analysis_id field in the database.
 	FieldSystemAnalysisID = "system_analysis_id"
 	// FieldType holds the string denoting the type field in the database.
@@ -30,6 +32,8 @@ const (
 	EdgeTenant = "tenant"
 	// EdgeIncident holds the string denoting the incident edge name in mutations.
 	EdgeIncident = "incident"
+	// EdgeDocument holds the string denoting the document edge name in mutations.
+	EdgeDocument = "document"
 	// EdgeComments holds the string denoting the comments edge name in mutations.
 	EdgeComments = "comments"
 	// EdgeSystemAnalysis holds the string denoting the system_analysis edge name in mutations.
@@ -50,6 +54,13 @@ const (
 	IncidentInverseTable = "incidents"
 	// IncidentColumn is the table column denoting the incident relation/edge.
 	IncidentColumn = "incident_id"
+	// DocumentTable is the table that holds the document relation/edge.
+	DocumentTable = "retrospectives"
+	// DocumentInverseTable is the table name for the Document entity.
+	// It exists in this package in order to avoid circular dependency with the "document" package.
+	DocumentInverseTable = "documents"
+	// DocumentColumn is the table column denoting the document relation/edge.
+	DocumentColumn = "document_id"
 	// CommentsTable is the table that holds the comments relation/edge.
 	CommentsTable = "retrospective_comments"
 	// CommentsInverseTable is the table name for the RetrospectiveComment entity.
@@ -71,6 +82,7 @@ var Columns = []string{
 	FieldID,
 	FieldTenantID,
 	FieldIncidentID,
+	FieldDocumentID,
 	FieldSystemAnalysisID,
 	FieldType,
 	FieldState,
@@ -164,6 +176,11 @@ func ByIncidentID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldIncidentID, opts...).ToFunc()
 }
 
+// ByDocumentID orders the results by the document_id field.
+func ByDocumentID(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldDocumentID, opts...).ToFunc()
+}
+
 // BySystemAnalysisID orders the results by the system_analysis_id field.
 func BySystemAnalysisID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldSystemAnalysisID, opts...).ToFunc()
@@ -190,6 +207,13 @@ func ByTenantField(field string, opts ...sql.OrderTermOption) OrderOption {
 func ByIncidentField(field string, opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
 		sqlgraph.OrderByNeighborTerms(s, newIncidentStep(), sql.OrderByField(field, opts...))
+	}
+}
+
+// ByDocumentField orders the results by document field.
+func ByDocumentField(field string, opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newDocumentStep(), sql.OrderByField(field, opts...))
 	}
 }
 
@@ -225,6 +249,13 @@ func newIncidentStep() *sqlgraph.Step {
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(IncidentInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.O2O, true, IncidentTable, IncidentColumn),
+	)
+}
+func newDocumentStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(DocumentInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2O, true, DocumentTable, DocumentColumn),
 	)
 }
 func newCommentsStep() *sqlgraph.Step {

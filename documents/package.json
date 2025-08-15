@@ -26,10 +26,7 @@
     }
   },
   "dependencies": {
-    "@hocuspocus/extension-database": "^2.15.2",
     "@hocuspocus/extension-logger": "^2.15.2",
-    "@hocuspocus/extension-sqlite": "^2.15.2",
-    "@hocuspocus/extension-webhook": "^2.15.2",
     "@hocuspocus/server": "^2.15.2",
     "@hocuspocus/transformer": "^2.15.2",
     "@tiptap/core": "^2.14.0",

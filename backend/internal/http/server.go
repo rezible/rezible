@@ -25,8 +25,10 @@ type Server struct {
 func NewServer(
 	addr string,
 	auth rez.AuthSessionService,
+	users rez.UserService,
 	feFiles fs.FS,
 	oapiHandler oapi.Handler,
+	documentsHandler http.Handler,
 	webhooksHandler http.Handler,
 	mcpHandler mcp.Handler,
 ) *Server {
@@ -36,12 +38,14 @@ func NewServer(
 	router.Use(middleware.Recoverer)
 
 	oapiMw := []oapi.Middleware{
-		oapi.MakeSecurityMiddleware(auth),
+		oapi.MakeSecurityMiddleware(auth, users),
 	}
 	oapiServer := oapi.MakeApi(oapiHandler, "/api/v1", oapiMw...)
 	apiV1Router := chi.Chain(middleware.Logger).
 		Handler(oapiServer.Adapter())
 	router.Mount("/api/v1", apiV1Router)
+
+	router.Mount("/api/documents", documentsHandler)
 
 	router.Get("/api/docs", serveApiDocs)
 

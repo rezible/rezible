@@ -15,6 +15,9 @@ type AlertFeedback func(*sql.Selector)
 // AlertMetrics is the predicate function for alertmetrics builders.
 type AlertMetrics func(*sql.Selector)
 
+// Document is the predicate function for document builders.
+type Document func(*sql.Selector)
+
 // Incident is the predicate function for incident builders.
 type Incident func(*sql.Selector)
 

@@ -11,6 +11,7 @@ import (
 	"github.com/rezible/rezible/ent/alert"
 	"github.com/rezible/rezible/ent/alertfeedback"
 	"github.com/rezible/rezible/ent/alertmetrics"
+	"github.com/rezible/rezible/ent/document"
 	"github.com/rezible/rezible/ent/incident"
 	"github.com/rezible/rezible/ent/incidentdebrief"
 	"github.com/rezible/rezible/ent/incidentdebriefmessage"
@@ -203,6 +204,33 @@ func (f TraverseAlertMetrics) Traverse(ctx context.Context, q ent.Query) error {
 		return f(ctx, q)
 	}
 	return fmt.Errorf("unexpected query type %T. expect *ent.AlertMetricsQuery", q)
+}
+
+// The DocumentFunc type is an adapter to allow the use of ordinary function as a Querier.
+type DocumentFunc func(context.Context, *ent.DocumentQuery) (ent.Value, error)
+
+// Query calls f(ctx, q).
+func (f DocumentFunc) Query(ctx context.Context, q ent.Query) (ent.Value, error) {
+	if q, ok := q.(*ent.DocumentQuery); ok {
+		return f(ctx, q)
+	}
+	return nil, fmt.Errorf("unexpected query type %T. expect *ent.DocumentQuery", q)
+}
+
+// The TraverseDocument type is an adapter to allow the use of ordinary function as Traverser.
+type TraverseDocument func(context.Context, *ent.DocumentQuery) error
+
+// Intercept is a dummy implementation of Intercept that returns the next Querier in the pipeline.
+func (f TraverseDocument) Intercept(next ent.Querier) ent.Querier {
+	return next
+}
+
+// Traverse calls f(ctx, q).
+func (f TraverseDocument) Traverse(ctx context.Context, q ent.Query) error {
+	if q, ok := q.(*ent.DocumentQuery); ok {
+		return f(ctx, q)
+	}
+	return fmt.Errorf("unexpected query type %T. expect *ent.DocumentQuery", q)
 }
 
 // The IncidentFunc type is an adapter to allow the use of ordinary function as a Querier.
@@ -1672,6 +1700,8 @@ func NewQuery(q ent.Query) (Query, error) {
 		return &query[*ent.AlertFeedbackQuery, predicate.AlertFeedback, alertfeedback.OrderOption]{typ: ent.TypeAlertFeedback, tq: q}, nil
 	case *ent.AlertMetricsQuery:
 		return &query[*ent.AlertMetricsQuery, predicate.AlertMetrics, alertmetrics.OrderOption]{typ: ent.TypeAlertMetrics, tq: q}, nil
+	case *ent.DocumentQuery:
+		return &query[*ent.DocumentQuery, predicate.Document, document.OrderOption]{typ: ent.TypeDocument, tq: q}, nil
 	case *ent.IncidentQuery:
 		return &query[*ent.IncidentQuery, predicate.Incident, incident.OrderOption]{typ: ent.TypeIncident, tq: q}, nil
 	case *ent.IncidentDebriefQuery:

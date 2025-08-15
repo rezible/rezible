@@ -1,0 +1,296 @@
+package hocuspocus
+
+import (
+	"bytes"
+	"context"
+	"crypto/hmac"
+	"crypto/sha256"
+	"crypto/subtle"
+	"encoding/json"
+	"fmt"
+	"io"
+	"net/http"
+	"os"
+
+	"github.com/go-chi/chi/v5"
+	"github.com/go-chi/chi/v5/middleware"
+	"github.com/google/uuid"
+	rez "github.com/rezible/rezible"
+	"github.com/rezible/rezible/ent"
+	oapi "github.com/rezible/rezible/openapi"
+	"github.com/rs/zerolog/log"
+)
+
+type DocumentsService struct {
+	serverAddress string
+	webhookSecret []byte
+
+	db    *ent.Client
+	auth  rez.AuthSessionService
+	users rez.UserService
+}
+
+const webhookSecretEnvVar = "DOCUMENTS_API_SECRET"
+
+func NewDocumentsService(serverAddress string, db *ent.Client, auth rez.AuthSessionService, users rez.UserService) (*DocumentsService, error) {
+	webhookSecret := os.Getenv(webhookSecretEnvVar)
+	if webhookSecret == "" {
+		return nil, fmt.Errorf("%s not set", webhookSecretEnvVar)
+	}
+	svc := &DocumentsService{
+		serverAddress: serverAddress,
+		webhookSecret: []byte(webhookSecret),
+		db:            db,
+		auth:          auth,
+		users:         users,
+	}
+
+	return svc, nil
+}
+
+func (s *DocumentsService) GetServerWebsocketAddress() string {
+	return fmt.Sprintf("ws://%s", s.serverAddress)
+}
+
+func (s *DocumentsService) Handler() http.Handler {
+	r := chi.NewRouter()
+	r.Use(middleware.Logger)
+	r.Post("/auth", s.handleAuthRequest)
+	r.Post("/load", s.handleLoadRequest)
+	r.Post("/update", s.handleUpdateRequest)
+	return r
+}
+
+func (s *DocumentsService) verifyRequestSignature(signature []byte, body []byte) bool {
+	h := hmac.New(sha256.New, s.webhookSecret)
+	h.Write(body)
+	digest := []byte(fmt.Sprintf("sha256=%x", h.Sum(nil)))
+	return len(signature) == len(digest) && subtle.ConstantTimeCompare(digest, signature) == 1
+}
+
+const maxRequestBodyBytes = int64(1024 * 1024)
+
+func (s *DocumentsService) verifyRequest(w http.ResponseWriter, r *http.Request, reqBody any) context.Context {
+	if r.Method != http.MethodPost {
+		http.Error(w, http.StatusText(http.StatusMethodNotAllowed), http.StatusMethodNotAllowed)
+		return nil
+	}
+
+	body, readErr := io.ReadAll(http.MaxBytesReader(w, r.Body, maxRequestBodyBytes))
+	if readErr != nil {
+		log.Error().Err(readErr).Msg("failed to read document request body")
+		http.Error(w, readErr.Error(), http.StatusBadRequest)
+		return nil
+	}
+
+	sigHdr := r.Header.Get("X-Rez-Signature-256")
+	if sigHdr == "" || !s.verifyRequestSignature([]byte(sigHdr), body) {
+		http.Error(w, http.StatusText(http.StatusUnauthorized), http.StatusUnauthorized)
+		return nil
+	}
+
+	bearerToken, bearerErr := oapi.GetRequestApiBearerToken(r)
+	if bearerErr != nil {
+		http.Error(w, bearerErr.Error(), http.StatusUnauthorized)
+		return nil
+	}
+
+	sess, verifyErr := s.auth.VerifyAuthSessionToken(bearerToken)
+	if verifyErr != nil {
+		http.Error(w, verifyErr.Error(), http.StatusUnauthorized)
+		return nil
+	}
+
+	userCtx, userErr := s.users.CreateUserContext(r.Context(), sess.UserId)
+	if userErr != nil {
+		http.Error(w, userErr.Error(), http.StatusBadRequest)
+		return nil
+	}
+
+	if err := json.Unmarshal(body, reqBody); err != nil {
+		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+		return nil
+	}
+
+	return s.auth.SetAuthSessionContext(userCtx, sess)
+}
+
+type documentAuthSessionUser struct {
+	Id       string `json:"id"`
+	Username string `json:"username"`
+}
+
+type (
+	documentAuthRequest struct {
+		DocumentName string `json:"documentName"`
+	}
+	documentAuthResponse struct {
+		User     documentAuthSessionUser `json:"user"`
+		ReadOnly bool                    `json:"readOnly"`
+	}
+)
+
+func (s *DocumentsService) handleAuthRequest(w http.ResponseWriter, r *http.Request) {
+	var body documentAuthRequest
+	ctx := s.verifyRequest(w, r, &body)
+	if r == nil {
+		return
+	}
+
+	usr := s.users.GetUserContext(ctx)
+
+	resp := documentAuthResponse{
+		User: documentAuthSessionUser{
+			Id:       usr.ID.String(),
+			Username: usr.Email,
+		},
+		ReadOnly: false,
+	}
+	respBytes, respErr := json.Marshal(resp)
+	if respErr != nil {
+		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		return
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.Write(respBytes)
+}
+
+type loadRequest struct {
+	DocumentId uuid.UUID `json:"documentId"`
+}
+
+func (s *DocumentsService) handleLoadRequest(w http.ResponseWriter, r *http.Request) {
+	var req loadRequest
+	ctx := s.verifyRequest(w, r, &req)
+	if r == nil {
+		return
+	}
+
+	doc, docErr := s.db.Document.Get(ctx, req.DocumentId)
+	if docErr != nil {
+		if ent.IsNotFound(docErr) {
+			http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
+		} else {
+			log.Error().Err(docErr).Msg("failed to load document")
+			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		}
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.Write(doc.Content)
+}
+
+type updateRequest struct {
+	DocumentId uuid.UUID       `json:"documentId"`
+	State      json.RawMessage `json:"state"`
+}
+
+func (s *DocumentsService) handleUpdateRequest(w http.ResponseWriter, r *http.Request) {
+	var req updateRequest
+	ctx := s.verifyRequest(w, r, &req)
+	if r == nil {
+		return
+	}
+
+	update := s.db.Document.UpdateOneID(req.DocumentId).SetContent(req.State)
+	saveErr := update.Exec(ctx)
+	if saveErr != nil {
+		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		return
+	}
+	w.WriteHeader(http.StatusOK)
+}
+
+type pmMark struct {
+	Type       string         `json:"type"`
+	Attributes map[string]any `json:"attributes"`
+}
+
+type pmContent struct {
+	Type       string         `json:"type"`
+	Attributes map[string]any `json:"attributes"`
+	Content    []pmContent    `json:"content"`
+	Marks      []pmMark       `json:"marks"`
+	Text       string         `json:"text"`
+}
+
+func (s *DocumentsService) parseDocument(raw []byte) (*pmContent, error) {
+	var content pmContent
+	if jsonErr := json.Unmarshal(raw, &content); jsonErr != nil {
+		return nil, fmt.Errorf("unmarshal json: %w", jsonErr)
+	}
+	return &content, nil
+}
+
+type apiTransformRequest struct {
+	Format  string `json:"format"`
+	Content string `json:"content"`
+}
+
+type apiTransformResponse struct {
+	Content string `json:"content"`
+}
+
+func (s *DocumentsService) ConvertToHTML(ctx context.Context, rawDoc string) (string, error) {
+	reqBody, bodyErr := json.Marshal(apiTransformRequest{Format: "html", Content: rawDoc})
+	if bodyErr != nil {
+		return "", fmt.Errorf("marshal request: %w", bodyErr)
+	}
+	resp, respErr := s.apiRequest(ctx, "transform", http.MethodPost, reqBody)
+	if respErr != nil {
+		return "", fmt.Errorf("transform request: %w", respErr)
+	}
+	var response apiTransformResponse
+	if jsonErr := json.Unmarshal(resp, &response); jsonErr != nil {
+		return "", fmt.Errorf("unmarshal response: %w", respErr)
+	}
+	return response.Content, nil
+}
+
+type apiSchemaSpecRequest struct {
+	Name string `json:"name"`
+}
+
+type apiSchemaSpecResponse struct {
+	Spec *rez.DocumentSchemaSpec `json:"spec"`
+}
+
+func (s *DocumentsService) GetDocumentSchemaSpec(ctx context.Context, schemaName string) (*rez.DocumentSchemaSpec, error) {
+	reqBody, bodyErr := json.Marshal(apiSchemaSpecRequest{Name: schemaName})
+	if bodyErr != nil {
+		return nil, fmt.Errorf("marshal request: %w", bodyErr)
+	}
+	resp, respErr := s.apiRequest(ctx, "schema-spec", http.MethodPost, reqBody)
+	if respErr != nil {
+		return nil, fmt.Errorf("schema request: %w", respErr)
+	}
+	var response apiSchemaSpecResponse
+	if jsonErr := json.Unmarshal(resp, &response); jsonErr != nil {
+		return nil, fmt.Errorf("unmarshal response: %w", respErr)
+	}
+	return response.Spec, nil
+}
+
+func (s *DocumentsService) apiRequest(ctx context.Context, endpoint string, method string, body []byte) ([]byte, error) {
+	url := fmt.Sprintf("http://%s/api/%s", s.serverAddress, endpoint)
+	req, reqErr := http.NewRequestWithContext(ctx, method, url, bytes.NewReader(body))
+	if reqErr != nil {
+		return nil, fmt.Errorf("create request: %w", reqErr)
+	}
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Authorization", "Bearer foobar")
+	resp, doErr := http.DefaultClient.Do(req)
+	if doErr != nil {
+		return nil, fmt.Errorf("request: %w", doErr)
+	}
+	defer func(b io.ReadCloser) {
+		if err := b.Close(); err != nil {
+			log.Error().Err(err).Msg("failed to close response body")
+		}
+	}(resp.Body)
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("response code not 200 %d", resp.StatusCode)
+	}
+	return io.ReadAll(resp.Body)
+}

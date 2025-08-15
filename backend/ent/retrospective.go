@@ -9,6 +9,7 @@ import (
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
 	"github.com/google/uuid"
+	"github.com/rezible/rezible/ent/document"
 	"github.com/rezible/rezible/ent/incident"
 	"github.com/rezible/rezible/ent/retrospective"
 	"github.com/rezible/rezible/ent/systemanalysis"
@@ -24,6 +25,8 @@ type Retrospective struct {
 	TenantID int `json:"tenant_id,omitempty"`
 	// IncidentID holds the value of the "incident_id" field.
 	IncidentID uuid.UUID `json:"incident_id,omitempty"`
+	// DocumentID holds the value of the "document_id" field.
+	DocumentID uuid.UUID `json:"document_id,omitempty"`
 	// SystemAnalysisID holds the value of the "system_analysis_id" field.
 	SystemAnalysisID uuid.UUID `json:"system_analysis_id,omitempty"`
 	// Type holds the value of the "type" field.
@@ -42,13 +45,15 @@ type RetrospectiveEdges struct {
 	Tenant *Tenant `json:"tenant,omitempty"`
 	// Incident holds the value of the incident edge.
 	Incident *Incident `json:"incident,omitempty"`
+	// Document holds the value of the document edge.
+	Document *Document `json:"document,omitempty"`
 	// Comments holds the value of the comments edge.
 	Comments []*RetrospectiveComment `json:"comments,omitempty"`
 	// SystemAnalysis holds the value of the system_analysis edge.
 	SystemAnalysis *SystemAnalysis `json:"system_analysis,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [4]bool
+	loadedTypes [5]bool
 }
 
 // TenantOrErr returns the Tenant value or an error if the edge
@@ -73,10 +78,21 @@ func (e RetrospectiveEdges) IncidentOrErr() (*Incident, error) {
 	return nil, &NotLoadedError{edge: "incident"}
 }
 
+// DocumentOrErr returns the Document value or an error if the edge
+// was not loaded in eager-loading, or loaded but was not found.
+func (e RetrospectiveEdges) DocumentOrErr() (*Document, error) {
+	if e.Document != nil {
+		return e.Document, nil
+	} else if e.loadedTypes[2] {
+		return nil, &NotFoundError{label: document.Label}
+	}
+	return nil, &NotLoadedError{edge: "document"}
+}
+
 // CommentsOrErr returns the Comments value or an error if the edge
 // was not loaded in eager-loading.
 func (e RetrospectiveEdges) CommentsOrErr() ([]*RetrospectiveComment, error) {
-	if e.loadedTypes[2] {
+	if e.loadedTypes[3] {
 		return e.Comments, nil
 	}
 	return nil, &NotLoadedError{edge: "comments"}
@@ -87,7 +103,7 @@ func (e RetrospectiveEdges) CommentsOrErr() ([]*RetrospectiveComment, error) {
 func (e RetrospectiveEdges) SystemAnalysisOrErr() (*SystemAnalysis, error) {
 	if e.SystemAnalysis != nil {
 		return e.SystemAnalysis, nil
-	} else if e.loadedTypes[3] {
+	} else if e.loadedTypes[4] {
 		return nil, &NotFoundError{label: systemanalysis.Label}
 	}
 	return nil, &NotLoadedError{edge: "system_analysis"}
@@ -102,7 +118,7 @@ func (*Retrospective) scanValues(columns []string) ([]any, error) {
 			values[i] = new(sql.NullInt64)
 		case retrospective.FieldType, retrospective.FieldState:
 			values[i] = new(sql.NullString)
-		case retrospective.FieldID, retrospective.FieldIncidentID, retrospective.FieldSystemAnalysisID:
+		case retrospective.FieldID, retrospective.FieldIncidentID, retrospective.FieldDocumentID, retrospective.FieldSystemAnalysisID:
 			values[i] = new(uuid.UUID)
 		default:
 			values[i] = new(sql.UnknownType)
@@ -136,6 +152,12 @@ func (r *Retrospective) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field incident_id", values[i])
 			} else if value != nil {
 				r.IncidentID = *value
+			}
+		case retrospective.FieldDocumentID:
+			if value, ok := values[i].(*uuid.UUID); !ok {
+				return fmt.Errorf("unexpected type %T for field document_id", values[i])
+			} else if value != nil {
+				r.DocumentID = *value
 			}
 		case retrospective.FieldSystemAnalysisID:
 			if value, ok := values[i].(*uuid.UUID); !ok {
@@ -178,6 +200,11 @@ func (r *Retrospective) QueryIncident() *IncidentQuery {
 	return NewRetrospectiveClient(r.config).QueryIncident(r)
 }
 
+// QueryDocument queries the "document" edge of the Retrospective entity.
+func (r *Retrospective) QueryDocument() *DocumentQuery {
+	return NewRetrospectiveClient(r.config).QueryDocument(r)
+}
+
 // QueryComments queries the "comments" edge of the Retrospective entity.
 func (r *Retrospective) QueryComments() *RetrospectiveCommentQuery {
 	return NewRetrospectiveClient(r.config).QueryComments(r)
@@ -216,6 +243,9 @@ func (r *Retrospective) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("incident_id=")
 	builder.WriteString(fmt.Sprintf("%v", r.IncidentID))
+	builder.WriteString(", ")
+	builder.WriteString("document_id=")
+	builder.WriteString(fmt.Sprintf("%v", r.DocumentID))
 	builder.WriteString(", ")
 	builder.WriteString("system_analysis_id=")
 	builder.WriteString(fmt.Sprintf("%v", r.SystemAnalysisID))
