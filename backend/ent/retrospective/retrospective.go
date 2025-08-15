@@ -22,8 +22,6 @@ const (
 	FieldIncidentID = "incident_id"
 	// FieldSystemAnalysisID holds the string denoting the system_analysis_id field in the database.
 	FieldSystemAnalysisID = "system_analysis_id"
-	// FieldDocumentName holds the string denoting the document_name field in the database.
-	FieldDocumentName = "document_name"
 	// FieldType holds the string denoting the type field in the database.
 	FieldType = "type"
 	// FieldState holds the string denoting the state field in the database.
@@ -74,7 +72,6 @@ var Columns = []string{
 	FieldTenantID,
 	FieldIncidentID,
 	FieldSystemAnalysisID,
-	FieldDocumentName,
 	FieldType,
 	FieldState,
 }
@@ -172,11 +169,6 @@ func BySystemAnalysisID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldSystemAnalysisID, opts...).ToFunc()
 }
 
-// ByDocumentName orders the results by the document_name field.
-func ByDocumentName(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldDocumentName, opts...).ToFunc()
-}
-
 // ByType orders the results by the type field.
 func ByType(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldType, opts...).ToFunc()
@@ -232,7 +224,7 @@ func newIncidentStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(IncidentInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.M2O, false, IncidentTable, IncidentColumn),
+		sqlgraph.Edge(sqlgraph.O2O, true, IncidentTable, IncidentColumn),
 	)
 }
 func newCommentsStep() *sqlgraph.Step {

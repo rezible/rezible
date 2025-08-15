@@ -50,8 +50,8 @@ func (Incident) Edges() []ent.Edge {
 		edge.To("milestones", IncidentMilestone.Type),
 		edge.To("events", IncidentEvent.Type),
 
-		edge.From("retrospective", Retrospective.Type).
-			Ref("incident"),
+		edge.To("retrospective", Retrospective.Type).
+			Unique(),
 
 		edge.From("users", User.Type).
 			Ref("incidents").

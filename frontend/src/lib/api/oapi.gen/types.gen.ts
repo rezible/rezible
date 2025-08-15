@@ -1122,6 +1122,7 @@ export type IncidentAttributes = {
     linkedIncidents: Array<IncidentLink>;
     openedAt: string;
     private: boolean;
+    retrospectiveId?: string;
     roles: Array<IncidentRoleAssignment>;
     severity: IncidentSeverity;
     slug: string;

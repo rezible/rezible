@@ -201,19 +201,23 @@ func (ic *IncidentCreate) AddEvents(i ...*IncidentEvent) *IncidentCreate {
 	return ic.AddEventIDs(ids...)
 }
 
-// AddRetrospectiveIDs adds the "retrospective" edge to the Retrospective entity by IDs.
-func (ic *IncidentCreate) AddRetrospectiveIDs(ids ...uuid.UUID) *IncidentCreate {
-	ic.mutation.AddRetrospectiveIDs(ids...)
+// SetRetrospectiveID sets the "retrospective" edge to the Retrospective entity by ID.
+func (ic *IncidentCreate) SetRetrospectiveID(id uuid.UUID) *IncidentCreate {
+	ic.mutation.SetRetrospectiveID(id)
 	return ic
 }
 
-// AddRetrospective adds the "retrospective" edges to the Retrospective entity.
-func (ic *IncidentCreate) AddRetrospective(r ...*Retrospective) *IncidentCreate {
-	ids := make([]uuid.UUID, len(r))
-	for i := range r {
-		ids[i] = r[i].ID
+// SetNillableRetrospectiveID sets the "retrospective" edge to the Retrospective entity by ID if the given value is not nil.
+func (ic *IncidentCreate) SetNillableRetrospectiveID(id *uuid.UUID) *IncidentCreate {
+	if id != nil {
+		ic = ic.SetRetrospectiveID(*id)
 	}
-	return ic.AddRetrospectiveIDs(ids...)
+	return ic
+}
+
+// SetRetrospective sets the "retrospective" edge to the Retrospective entity.
+func (ic *IncidentCreate) SetRetrospective(r *Retrospective) *IncidentCreate {
+	return ic.SetRetrospectiveID(r.ID)
 }
 
 // AddUserIDs adds the "users" edge to the User entity by IDs.
@@ -606,8 +610,8 @@ func (ic *IncidentCreate) createSpec() (*Incident, *sqlgraph.CreateSpec) {
 	}
 	if nodes := ic.mutation.RetrospectiveIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
+			Rel:     sqlgraph.O2O,
+			Inverse: false,
 			Table:   incident.RetrospectiveTable,
 			Columns: []string{incident.RetrospectiveColumn},
 			Bidi:    false,

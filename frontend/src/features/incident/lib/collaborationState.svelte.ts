@@ -9,20 +9,19 @@ import {
 } from "@hocuspocus/provider";
 import { requestDocumentEditorSession } from "$lib/api/oapi.gen";
 import { onMount } from "svelte";
-import { Context, watch } from "runed";
-import { useIncidentViewState } from "./incidentViewState.svelte";
+import { watch } from "runed";
+import type { Getter } from "$src/lib/utils.svelte";
 
-class IncidentCollaborationState {
-	viewState = useIncidentViewState();
-	retrospectiveId = $derived(this.viewState.retrospectiveId);
+export class RetrospectiveCollaborationState {
+	retrospectiveId = $state<string>();
 	documentName = $state<string>();
 	provider = $state<HocuspocusProvider>();
 	awareness = $state<StatesArray>([]);
 	connectionStatus = $state<WebSocketStatus>(WebSocketStatus.Disconnected);
 	error = $state<Error>();
 
-	constructor() {
-		watch(() => this.retrospectiveId, id => { this.connect(id) });
+	constructor(idFn: Getter<string | undefined>) {
+		watch(idFn, id => { this.connect(id) });
 		onMount(() => (() => { this.cleanup() }));
 	};
 
@@ -59,16 +58,16 @@ class IncidentCollaborationState {
 		this.error = new Error(reason);
 	}
 
-	async connect(retrospectiveId?: string) {
-		if (this.documentName === retrospectiveId) return;
+	async connect(documentName?: string) {
+		if (this.documentName === documentName) return;
 
 		this.cleanup();
 
-		if (!retrospectiveId) return;
-		this.documentName = retrospectiveId;
+		if (!documentName) return;
+		this.documentName = documentName;
 
 		const { data: body, error: reqErr } = await requestDocumentEditorSession({
-			body: { attributes: { documentName: retrospectiveId } },
+			body: { attributes: { documentName } },
 			throwOnError: false,
 		});
 
@@ -94,6 +93,3 @@ class IncidentCollaborationState {
 	};
 }
 
-const ctx = new Context<IncidentCollaborationState>("incidentCollaboration");
-export const setIncidentCollaborationState = () => ctx.set(new IncidentCollaborationState());
-export const useIncidentCollaborationState = () => ctx.get();

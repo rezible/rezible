@@ -795,7 +795,6 @@ var schemaGraph = func() *sqlgraph.Schema {
 			retrospective.FieldTenantID:         {Type: field.TypeInt, Column: retrospective.FieldTenantID},
 			retrospective.FieldIncidentID:       {Type: field.TypeUUID, Column: retrospective.FieldIncidentID},
 			retrospective.FieldSystemAnalysisID: {Type: field.TypeUUID, Column: retrospective.FieldSystemAnalysisID},
-			retrospective.FieldDocumentName:     {Type: field.TypeString, Column: retrospective.FieldDocumentName},
 			retrospective.FieldType:             {Type: field.TypeEnum, Column: retrospective.FieldType},
 			retrospective.FieldState:            {Type: field.TypeEnum, Column: retrospective.FieldState},
 		},
@@ -1306,8 +1305,8 @@ var schemaGraph = func() *sqlgraph.Schema {
 	graph.MustAddE(
 		"retrospective",
 		&sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
+			Rel:     sqlgraph.O2O,
+			Inverse: false,
 			Table:   incident.RetrospectiveTable,
 			Columns: []string{incident.RetrospectiveColumn},
 			Bidi:    false,
@@ -2782,8 +2781,8 @@ var schemaGraph = func() *sqlgraph.Schema {
 	graph.MustAddE(
 		"incident",
 		&sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: false,
+			Rel:     sqlgraph.O2O,
+			Inverse: true,
 			Table:   retrospective.IncidentTable,
 			Columns: []string{retrospective.IncidentColumn},
 			Bidi:    false,
@@ -8484,11 +8483,6 @@ func (f *RetrospectiveFilter) WhereIncidentID(p entql.ValueP) {
 // WhereSystemAnalysisID applies the entql [16]byte predicate on the system_analysis_id field.
 func (f *RetrospectiveFilter) WhereSystemAnalysisID(p entql.ValueP) {
 	f.Where(p.Field(retrospective.FieldSystemAnalysisID))
-}
-
-// WhereDocumentName applies the entql string predicate on the document_name field.
-func (f *RetrospectiveFilter) WhereDocumentName(p entql.StringP) {
-	f.Where(p.Field(retrospective.FieldDocumentName))
 }
 
 // WhereType applies the entql string predicate on the type field.

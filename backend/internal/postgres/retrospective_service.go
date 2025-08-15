@@ -34,36 +34,26 @@ func (s *RetrospectiveService) getIncidentRetrospectiveType(ctx context.Context,
 }
 
 func (s *RetrospectiveService) Create(ctx context.Context, params ent.Retrospective) (*ent.Retrospective, error) {
-	inc, incErr := params.Edges.IncidentOrErr()
-	if incErr != nil {
-		inc, incErr = s.db.Incident.Get(ctx, params.IncidentID)
-		if incErr != nil {
-			return nil, fmt.Errorf("get incident: %w", incErr)
-		}
-	}
-
 	var createdRetro *ent.Retrospective
 	var createdAnalysis *ent.SystemAnalysis
 
 	createTxFn := func(tx *ent.Tx) error {
 		var createErr error
 		createdRetro, createErr = tx.Retrospective.Create().
-			SetIncidentID(inc.ID).
-			SetDocumentName(inc.Slug + "-retrospective").
+			SetIncidentID(params.IncidentID).
 			SetType(params.Type).
 			SetState(retrospective.StateDraft).
 			Save(ctx)
 		if createErr != nil {
-			return createErr
+			return fmt.Errorf("create retrospective: %w", createErr)
 		}
-		if params.Type == retrospective.TypeSimple {
-			return nil
-		}
-		createdAnalysis, createErr = tx.SystemAnalysis.Create().
-			SetRetrospectiveID(createdRetro.ID).
-			Save(ctx)
-		if createErr != nil {
-			return createErr
+		if params.Type == retrospective.TypeFull {
+			createdAnalysis, createErr = tx.SystemAnalysis.Create().
+				SetRetrospectiveID(createdRetro.ID).
+				Save(ctx)
+			if createErr != nil {
+				return fmt.Errorf("create analysis: %w", createErr)
+			}
 		}
 		return nil
 	}
@@ -79,22 +69,7 @@ func (s *RetrospectiveService) Create(ctx context.Context, params ent.Retrospect
 }
 
 func (s *RetrospectiveService) GetForIncident(ctx context.Context, inc *ent.Incident) (*ent.Retrospective, error) {
-	retro, retroErr := s.db.Retrospective.Query().Where(retrospective.IncidentID(inc.ID)).Only(ctx)
-	if retroErr == nil {
-		return retro, nil
-	} else if !ent.IsNotFound(retroErr) {
-		return nil, fmt.Errorf("querying retrospective: %w", retroErr)
-	}
-	// TODO: query based on incident severity?
-	retroType := retrospective.TypeFull
-	retro, retroErr = s.Create(ctx, ent.Retrospective{
-		Type:  retroType,
-		Edges: ent.RetrospectiveEdges{Incident: inc},
-	})
-	if retroErr != nil {
-		return nil, fmt.Errorf("creating retro: %w", retroErr)
-	}
-	return retro, nil
+	return s.db.Retrospective.Query().Where(retrospective.IncidentID(inc.ID)).Only(ctx)
 }
 
 func (s *RetrospectiveService) GetComment(ctx context.Context, id uuid.UUID) (*ent.RetrospectiveComment, error) {

@@ -5,8 +5,6 @@ import (
 	"encoding/base64"
 	"errors"
 	"fmt"
-	"github.com/rezible/rezible/ent"
-	"github.com/rs/zerolog/log"
 	"io"
 	"net/http"
 	"net/url"
@@ -16,8 +14,10 @@ import (
 	"github.com/markbates/goth"
 	"github.com/markbates/goth/gothic"
 	"github.com/markbates/goth/providers/github"
+	"github.com/rs/zerolog/log"
 
 	rez "github.com/rezible/rezible"
+	"github.com/rezible/rezible/ent"
 )
 
 // TODO: implement this properly

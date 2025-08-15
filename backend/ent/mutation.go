@@ -1988,8 +1988,7 @@ type IncidentMutation struct {
 	events                  map[uuid.UUID]struct{}
 	removedevents           map[uuid.UUID]struct{}
 	clearedevents           bool
-	retrospective           map[uuid.UUID]struct{}
-	removedretrospective    map[uuid.UUID]struct{}
+	retrospective           *uuid.UUID
 	clearedretrospective    bool
 	users                   map[uuid.UUID]struct{}
 	removedusers            map[uuid.UUID]struct{}
@@ -2790,14 +2789,9 @@ func (m *IncidentMutation) ResetEvents() {
 	m.removedevents = nil
 }
 
-// AddRetrospectiveIDs adds the "retrospective" edge to the Retrospective entity by ids.
-func (m *IncidentMutation) AddRetrospectiveIDs(ids ...uuid.UUID) {
-	if m.retrospective == nil {
-		m.retrospective = make(map[uuid.UUID]struct{})
-	}
-	for i := range ids {
-		m.retrospective[ids[i]] = struct{}{}
-	}
+// SetRetrospectiveID sets the "retrospective" edge to the Retrospective entity by id.
+func (m *IncidentMutation) SetRetrospectiveID(id uuid.UUID) {
+	m.retrospective = &id
 }
 
 // ClearRetrospective clears the "retrospective" edge to the Retrospective entity.
@@ -2810,29 +2804,20 @@ func (m *IncidentMutation) RetrospectiveCleared() bool {
 	return m.clearedretrospective
 }
 
-// RemoveRetrospectiveIDs removes the "retrospective" edge to the Retrospective entity by IDs.
-func (m *IncidentMutation) RemoveRetrospectiveIDs(ids ...uuid.UUID) {
-	if m.removedretrospective == nil {
-		m.removedretrospective = make(map[uuid.UUID]struct{})
-	}
-	for i := range ids {
-		delete(m.retrospective, ids[i])
-		m.removedretrospective[ids[i]] = struct{}{}
-	}
-}
-
-// RemovedRetrospective returns the removed IDs of the "retrospective" edge to the Retrospective entity.
-func (m *IncidentMutation) RemovedRetrospectiveIDs() (ids []uuid.UUID) {
-	for id := range m.removedretrospective {
-		ids = append(ids, id)
+// RetrospectiveID returns the "retrospective" edge ID in the mutation.
+func (m *IncidentMutation) RetrospectiveID() (id uuid.UUID, exists bool) {
+	if m.retrospective != nil {
+		return *m.retrospective, true
 	}
 	return
 }
 
 // RetrospectiveIDs returns the "retrospective" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// RetrospectiveID instead. It exists only for internal usage by the builders.
 func (m *IncidentMutation) RetrospectiveIDs() (ids []uuid.UUID) {
-	for id := range m.retrospective {
-		ids = append(ids, id)
+	if id := m.retrospective; id != nil {
+		ids = append(ids, *id)
 	}
 	return
 }
@@ -2841,7 +2826,6 @@ func (m *IncidentMutation) RetrospectiveIDs() (ids []uuid.UUID) {
 func (m *IncidentMutation) ResetRetrospective() {
 	m.retrospective = nil
 	m.clearedretrospective = false
-	m.removedretrospective = nil
 }
 
 // AddUserIDs adds the "users" edge to the User entity by ids.
@@ -3809,11 +3793,9 @@ func (m *IncidentMutation) AddedIDs(name string) []ent.Value {
 		}
 		return ids
 	case incident.EdgeRetrospective:
-		ids := make([]ent.Value, 0, len(m.retrospective))
-		for id := range m.retrospective {
-			ids = append(ids, id)
+		if id := m.retrospective; id != nil {
+			return []ent.Value{*id}
 		}
-		return ids
 	case incident.EdgeUsers:
 		ids := make([]ent.Value, 0, len(m.users))
 		for id := range m.users {
@@ -3887,9 +3869,6 @@ func (m *IncidentMutation) RemovedEdges() []string {
 	if m.removedevents != nil {
 		edges = append(edges, incident.EdgeEvents)
 	}
-	if m.removedretrospective != nil {
-		edges = append(edges, incident.EdgeRetrospective)
-	}
 	if m.removedusers != nil {
 		edges = append(edges, incident.EdgeUsers)
 	}
@@ -3936,12 +3915,6 @@ func (m *IncidentMutation) RemovedIDs(name string) []ent.Value {
 	case incident.EdgeEvents:
 		ids := make([]ent.Value, 0, len(m.removedevents))
 		for id := range m.removedevents {
-			ids = append(ids, id)
-		}
-		return ids
-	case incident.EdgeRetrospective:
-		ids := make([]ent.Value, 0, len(m.removedretrospective))
-		for id := range m.removedretrospective {
 			ids = append(ids, id)
 		}
 		return ids
@@ -4115,6 +4088,9 @@ func (m *IncidentMutation) ClearEdge(name string) error {
 		return nil
 	case incident.EdgeType:
 		m.ClearType()
+		return nil
+	case incident.EdgeRetrospective:
+		m.ClearRetrospective()
 		return nil
 	}
 	return fmt.Errorf("unknown Incident unique edge %s", name)
@@ -32730,7 +32706,6 @@ type RetrospectiveMutation struct {
 	op                     Op
 	typ                    string
 	id                     *uuid.UUID
-	document_name          *string
 	_type                  *retrospective.Type
 	state                  *retrospective.State
 	clearedFields          map[string]struct{}
@@ -32971,42 +32946,6 @@ func (m *RetrospectiveMutation) SystemAnalysisIDCleared() bool {
 func (m *RetrospectiveMutation) ResetSystemAnalysisID() {
 	m.system_analysis = nil
 	delete(m.clearedFields, retrospective.FieldSystemAnalysisID)
-}
-
-// SetDocumentName sets the "document_name" field.
-func (m *RetrospectiveMutation) SetDocumentName(s string) {
-	m.document_name = &s
-}
-
-// DocumentName returns the value of the "document_name" field in the mutation.
-func (m *RetrospectiveMutation) DocumentName() (r string, exists bool) {
-	v := m.document_name
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldDocumentName returns the old "document_name" field's value of the Retrospective entity.
-// If the Retrospective object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *RetrospectiveMutation) OldDocumentName(ctx context.Context) (v string, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldDocumentName is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldDocumentName requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldDocumentName: %w", err)
-	}
-	return oldValue.DocumentName, nil
-}
-
-// ResetDocumentName resets all changes to the "document_name" field.
-func (m *RetrospectiveMutation) ResetDocumentName() {
-	m.document_name = nil
 }
 
 // SetType sets the "type" field.
@@ -33250,7 +33189,7 @@ func (m *RetrospectiveMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *RetrospectiveMutation) Fields() []string {
-	fields := make([]string, 0, 6)
+	fields := make([]string, 0, 5)
 	if m.tenant != nil {
 		fields = append(fields, retrospective.FieldTenantID)
 	}
@@ -33259,9 +33198,6 @@ func (m *RetrospectiveMutation) Fields() []string {
 	}
 	if m.system_analysis != nil {
 		fields = append(fields, retrospective.FieldSystemAnalysisID)
-	}
-	if m.document_name != nil {
-		fields = append(fields, retrospective.FieldDocumentName)
 	}
 	if m._type != nil {
 		fields = append(fields, retrospective.FieldType)
@@ -33283,8 +33219,6 @@ func (m *RetrospectiveMutation) Field(name string) (ent.Value, bool) {
 		return m.IncidentID()
 	case retrospective.FieldSystemAnalysisID:
 		return m.SystemAnalysisID()
-	case retrospective.FieldDocumentName:
-		return m.DocumentName()
 	case retrospective.FieldType:
 		return m.GetType()
 	case retrospective.FieldState:
@@ -33304,8 +33238,6 @@ func (m *RetrospectiveMutation) OldField(ctx context.Context, name string) (ent.
 		return m.OldIncidentID(ctx)
 	case retrospective.FieldSystemAnalysisID:
 		return m.OldSystemAnalysisID(ctx)
-	case retrospective.FieldDocumentName:
-		return m.OldDocumentName(ctx)
 	case retrospective.FieldType:
 		return m.OldType(ctx)
 	case retrospective.FieldState:
@@ -33339,13 +33271,6 @@ func (m *RetrospectiveMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetSystemAnalysisID(v)
-		return nil
-	case retrospective.FieldDocumentName:
-		v, ok := value.(string)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetDocumentName(v)
 		return nil
 	case retrospective.FieldType:
 		v, ok := value.(retrospective.Type)
@@ -33430,9 +33355,6 @@ func (m *RetrospectiveMutation) ResetField(name string) error {
 		return nil
 	case retrospective.FieldSystemAnalysisID:
 		m.ResetSystemAnalysisID()
-		return nil
-	case retrospective.FieldDocumentName:
-		m.ResetDocumentName()
 		return nil
 	case retrospective.FieldType:
 		m.ResetType()

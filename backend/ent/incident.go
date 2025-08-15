@@ -13,6 +13,7 @@ import (
 	"github.com/rezible/rezible/ent/incident"
 	"github.com/rezible/rezible/ent/incidentseverity"
 	"github.com/rezible/rezible/ent/incidenttype"
+	"github.com/rezible/rezible/ent/retrospective"
 	"github.com/rezible/rezible/ent/tenant"
 )
 
@@ -64,7 +65,7 @@ type IncidentEdges struct {
 	// Events holds the value of the events edge.
 	Events []*IncidentEvent `json:"events,omitempty"`
 	// Retrospective holds the value of the retrospective edge.
-	Retrospective []*Retrospective `json:"retrospective,omitempty"`
+	Retrospective *Retrospective `json:"retrospective,omitempty"`
 	// Users holds the value of the users edge.
 	Users []*User `json:"users,omitempty"`
 	// RoleAssignments holds the value of the role_assignments edge.
@@ -142,10 +143,12 @@ func (e IncidentEdges) EventsOrErr() ([]*IncidentEvent, error) {
 }
 
 // RetrospectiveOrErr returns the Retrospective value or an error if the edge
-// was not loaded in eager-loading.
-func (e IncidentEdges) RetrospectiveOrErr() ([]*Retrospective, error) {
-	if e.loadedTypes[5] {
+// was not loaded in eager-loading, or loaded but was not found.
+func (e IncidentEdges) RetrospectiveOrErr() (*Retrospective, error) {
+	if e.Retrospective != nil {
 		return e.Retrospective, nil
+	} else if e.loadedTypes[5] {
+		return nil, &NotFoundError{label: retrospective.Label}
 	}
 	return nil, &NotLoadedError{edge: "retrospective"}
 }

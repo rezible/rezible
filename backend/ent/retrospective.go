@@ -26,8 +26,6 @@ type Retrospective struct {
 	IncidentID uuid.UUID `json:"incident_id,omitempty"`
 	// SystemAnalysisID holds the value of the "system_analysis_id" field.
 	SystemAnalysisID uuid.UUID `json:"system_analysis_id,omitempty"`
-	// DocumentName holds the value of the "document_name" field.
-	DocumentName string `json:"document_name,omitempty"`
 	// Type holds the value of the "type" field.
 	Type retrospective.Type `json:"type,omitempty"`
 	// State holds the value of the "state" field.
@@ -102,7 +100,7 @@ func (*Retrospective) scanValues(columns []string) ([]any, error) {
 		switch columns[i] {
 		case retrospective.FieldTenantID:
 			values[i] = new(sql.NullInt64)
-		case retrospective.FieldDocumentName, retrospective.FieldType, retrospective.FieldState:
+		case retrospective.FieldType, retrospective.FieldState:
 			values[i] = new(sql.NullString)
 		case retrospective.FieldID, retrospective.FieldIncidentID, retrospective.FieldSystemAnalysisID:
 			values[i] = new(uuid.UUID)
@@ -144,12 +142,6 @@ func (r *Retrospective) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field system_analysis_id", values[i])
 			} else if value != nil {
 				r.SystemAnalysisID = *value
-			}
-		case retrospective.FieldDocumentName:
-			if value, ok := values[i].(*sql.NullString); !ok {
-				return fmt.Errorf("unexpected type %T for field document_name", values[i])
-			} else if value.Valid {
-				r.DocumentName = value.String
 			}
 		case retrospective.FieldType:
 			if value, ok := values[i].(*sql.NullString); !ok {
@@ -227,9 +219,6 @@ func (r *Retrospective) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("system_analysis_id=")
 	builder.WriteString(fmt.Sprintf("%v", r.SystemAnalysisID))
-	builder.WriteString(", ")
-	builder.WriteString("document_name=")
-	builder.WriteString(r.DocumentName)
 	builder.WriteString(", ")
 	builder.WriteString("type=")
 	builder.WriteString(fmt.Sprintf("%v", r.Type))

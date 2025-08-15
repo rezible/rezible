@@ -41,6 +41,7 @@ type (
 		CurrentStatus   string                   `json:"currentStatus" enum:"started,mitigated,resolved,closed"`
 		OpenedAt        time.Time                `json:"openedAt"`
 		ClosedAt        time.Time                `json:"closedAt"`
+		RetrospectiveId *uuid.UUID               `json:"retrospectiveId,omitempty"`
 		Severity        IncidentSeverity         `json:"severity"`
 		Type            IncidentType             `json:"type"`
 		Tags            []IncidentTag            `json:"tags"`
@@ -92,7 +93,7 @@ type (
 )
 
 func IncidentFromEnt(inc *ent.Incident) Incident {
-	attributes := IncidentAttributes{
+	attr := IncidentAttributes{
 		Slug:     inc.Slug,
 		Title:    inc.Title,
 		Summary:  inc.Summary,
@@ -101,22 +102,26 @@ func IncidentFromEnt(inc *ent.Incident) Incident {
 		ClosedAt: inc.ClosedAt,
 	}
 
+	if inc.Edges.Retrospective != nil {
+		attr.RetrospectiveId = &inc.Edges.Retrospective.ID
+	}
+
 	if sev, sevErr := inc.Edges.SeverityOrErr(); sevErr == nil {
-		attributes.Severity = IncidentSeverityFromEnt(sev)
+		attr.Severity = IncidentSeverityFromEnt(sev)
 	}
 
 	if assns, rolesErr := inc.Edges.RoleAssignmentsOrErr(); rolesErr == nil {
-		attributes.RoleAssignments = make([]IncidentRoleAssignment, len(assns))
+		attr.RoleAssignments = make([]IncidentRoleAssignment, len(assns))
 		for i, assignment := range assns {
-			attributes.RoleAssignments[i] = IncidentRoleAssignmentFromEnt(assignment)
+			attr.RoleAssignments[i] = IncidentRoleAssignmentFromEnt(assignment)
 		}
 	}
 
-	attributes.LinkedIncidents = make([]IncidentLink, 0)
+	attr.LinkedIncidents = make([]IncidentLink, 0)
 
 	return Incident{
 		Id:         inc.ID,
-		Attributes: attributes,
+		Attributes: attr,
 	}
 }
 

@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/rezible/rezible/ent/retrospective"
 	"github.com/rs/zerolog/log"
 
 	rez "github.com/rezible/rezible"
@@ -52,20 +53,37 @@ func (s *IncidentService) onProviderIncidentUpdated(providerId string, updatedAt
 	// check resolved, send debrief requests
 }
 
+func (s *IncidentService) incidentQuery(pred predicate.Incident, edges bool) *ent.IncidentQuery {
+	// TODO: use a view for this
+	q := s.db.Incident.Query().Where(pred)
+	if edges {
+		q.WithRetrospective(func(rq *ent.RetrospectiveQuery) {
+			rq.Select(retrospective.FieldID)
+		})
+		q.WithSeverity()
+		q.WithType()
+		q.WithFieldSelections()
+		q.WithRoleAssignments(func(raq *ent.IncidentRoleAssignmentQuery) {
+			raq.WithRole().WithUser()
+		})
+	}
+	return q
+}
+
 func (s *IncidentService) GetByID(ctx context.Context, id uuid.UUID) (*ent.Incident, error) {
-	return s.db.Incident.Get(ctx, id)
+	return s.incidentQuery(incident.ID(id), true).Only(ctx)
 }
 
 func (s *IncidentService) GetIdForSlug(ctx context.Context, slug string) (uuid.UUID, error) {
-	return s.db.Incident.Query().Where(incident.Slug(slug)).OnlyID(ctx)
+	return s.incidentQuery(incident.Slug(slug), false).OnlyID(ctx)
 }
 
 func (s *IncidentService) GetBySlug(ctx context.Context, slug string) (*ent.Incident, error) {
-	return s.db.Incident.Query().Where(incident.Slug(slug)).Only(ctx)
+	return s.incidentQuery(incident.Slug(slug), true).Only(ctx)
 }
 
-func (s *IncidentService) GetByProviderId(ctx context.Context, id string) (*ent.Incident, error) {
-	return s.db.Incident.Query().Where(incident.ProviderID(id)).Only(ctx)
+func (s *IncidentService) GetByProviderId(ctx context.Context, pid string) (*ent.Incident, error) {
+	return s.incidentQuery(incident.ProviderID(pid), true).Only(ctx)
 }
 
 func (s *IncidentService) ListIncidents(ctx context.Context, params rez.ListIncidentsParams) ([]*ent.Incident, int, error) {
@@ -85,6 +103,7 @@ func (s *IncidentService) ListIncidents(ctx context.Context, params rez.ListInci
 		query.Where(incident.And(predicates...))
 	}
 
+	// TODO: this is probably incorrect, should lookup role assignments first
 	if params.UserId != uuid.Nil {
 		query.WithRoleAssignments(func(q *ent.IncidentRoleAssignmentQuery) {
 			q.Where(incidentroleassignment.UserIDEQ(params.UserId))

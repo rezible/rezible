@@ -67,22 +67,15 @@ func (h *incidentsHandler) ListIncidents(ctx context.Context, req *oapi.ListInci
 func (h *incidentsHandler) GetIncident(ctx context.Context, input *oapi.GetIncidentRequest) (*oapi.GetIncidentResponse, error) {
 	var resp oapi.GetIncidentResponse
 
-	idPredicate := oapi.GetEntPredicate(input.Id, incident.ID, incident.Slug)
-
-	// TODO: use a view for this
-	query := h.db.Incident.Query().
-		Where(idPredicate).
-		WithRetrospective().
-		WithSeverity().
-		WithType().
-		WithFieldSelections().
-		WithRoleAssignments(func(q *ent.IncidentRoleAssignmentQuery) {
-			q.WithRole().WithUser()
-		})
-
-	inc, queryErr := query.Only(ctx)
-	if queryErr != nil {
-		return nil, apiError("failed to get incident", queryErr)
+	var inc *ent.Incident
+	var incErr error
+	if input.Id.IsSlug {
+		inc, incErr = h.incidents.GetBySlug(ctx, input.Id.Slug)
+	} else {
+		inc, incErr = h.incidents.GetByID(ctx, input.Id.UUID)
+	}
+	if incErr != nil {
+		return nil, apiError("failed to get incident", incErr)
 	}
 
 	resp.Body.Data = oapi.IncidentFromEnt(inc)

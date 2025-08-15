@@ -53,12 +53,6 @@ func (rc *RetrospectiveCreate) SetNillableSystemAnalysisID(u *uuid.UUID) *Retros
 	return rc
 }
 
-// SetDocumentName sets the "document_name" field.
-func (rc *RetrospectiveCreate) SetDocumentName(s string) *RetrospectiveCreate {
-	rc.mutation.SetDocumentName(s)
-	return rc
-}
-
 // SetType sets the "type" field.
 func (rc *RetrospectiveCreate) SetType(r retrospective.Type) *RetrospectiveCreate {
 	rc.mutation.SetType(r)
@@ -170,9 +164,6 @@ func (rc *RetrospectiveCreate) check() error {
 	if _, ok := rc.mutation.IncidentID(); !ok {
 		return &ValidationError{Name: "incident_id", err: errors.New(`ent: missing required field "Retrospective.incident_id"`)}
 	}
-	if _, ok := rc.mutation.DocumentName(); !ok {
-		return &ValidationError{Name: "document_name", err: errors.New(`ent: missing required field "Retrospective.document_name"`)}
-	}
 	if _, ok := rc.mutation.GetType(); !ok {
 		return &ValidationError{Name: "type", err: errors.New(`ent: missing required field "Retrospective.type"`)}
 	}
@@ -231,10 +222,6 @@ func (rc *RetrospectiveCreate) createSpec() (*Retrospective, *sqlgraph.CreateSpe
 		_node.ID = id
 		_spec.ID.Value = &id
 	}
-	if value, ok := rc.mutation.DocumentName(); ok {
-		_spec.SetField(retrospective.FieldDocumentName, field.TypeString, value)
-		_node.DocumentName = value
-	}
 	if value, ok := rc.mutation.GetType(); ok {
 		_spec.SetField(retrospective.FieldType, field.TypeEnum, value)
 		_node.Type = value
@@ -262,8 +249,8 @@ func (rc *RetrospectiveCreate) createSpec() (*Retrospective, *sqlgraph.CreateSpe
 	}
 	if nodes := rc.mutation.IncidentIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: false,
+			Rel:     sqlgraph.O2O,
+			Inverse: true,
 			Table:   retrospective.IncidentTable,
 			Columns: []string{retrospective.IncidentColumn},
 			Bidi:    false,
@@ -392,18 +379,6 @@ func (u *RetrospectiveUpsert) ClearSystemAnalysisID() *RetrospectiveUpsert {
 	return u
 }
 
-// SetDocumentName sets the "document_name" field.
-func (u *RetrospectiveUpsert) SetDocumentName(v string) *RetrospectiveUpsert {
-	u.Set(retrospective.FieldDocumentName, v)
-	return u
-}
-
-// UpdateDocumentName sets the "document_name" field to the value that was provided on create.
-func (u *RetrospectiveUpsert) UpdateDocumentName() *RetrospectiveUpsert {
-	u.SetExcluded(retrospective.FieldDocumentName)
-	return u
-}
-
 // SetType sets the "type" field.
 func (u *RetrospectiveUpsert) SetType(v retrospective.Type) *RetrospectiveUpsert {
 	u.Set(retrospective.FieldType, v)
@@ -511,20 +486,6 @@ func (u *RetrospectiveUpsertOne) UpdateSystemAnalysisID() *RetrospectiveUpsertOn
 func (u *RetrospectiveUpsertOne) ClearSystemAnalysisID() *RetrospectiveUpsertOne {
 	return u.Update(func(s *RetrospectiveUpsert) {
 		s.ClearSystemAnalysisID()
-	})
-}
-
-// SetDocumentName sets the "document_name" field.
-func (u *RetrospectiveUpsertOne) SetDocumentName(v string) *RetrospectiveUpsertOne {
-	return u.Update(func(s *RetrospectiveUpsert) {
-		s.SetDocumentName(v)
-	})
-}
-
-// UpdateDocumentName sets the "document_name" field to the value that was provided on create.
-func (u *RetrospectiveUpsertOne) UpdateDocumentName() *RetrospectiveUpsertOne {
-	return u.Update(func(s *RetrospectiveUpsert) {
-		s.UpdateDocumentName()
 	})
 }
 
@@ -806,20 +767,6 @@ func (u *RetrospectiveUpsertBulk) UpdateSystemAnalysisID() *RetrospectiveUpsertB
 func (u *RetrospectiveUpsertBulk) ClearSystemAnalysisID() *RetrospectiveUpsertBulk {
 	return u.Update(func(s *RetrospectiveUpsert) {
 		s.ClearSystemAnalysisID()
-	})
-}
-
-// SetDocumentName sets the "document_name" field.
-func (u *RetrospectiveUpsertBulk) SetDocumentName(v string) *RetrospectiveUpsertBulk {
-	return u.Update(func(s *RetrospectiveUpsert) {
-		s.SetDocumentName(v)
-	})
-}
-
-// UpdateDocumentName sets the "document_name" field to the value that was provided on create.
-func (u *RetrospectiveUpsertBulk) UpdateDocumentName() *RetrospectiveUpsertBulk {
-	return u.Update(func(s *RetrospectiveUpsert) {
-		s.UpdateDocumentName()
 	})
 }
 

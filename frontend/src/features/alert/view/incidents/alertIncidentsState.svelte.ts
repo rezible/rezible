@@ -1,5 +1,5 @@
 import { useAlertViewState } from "$features/alert";
-import { listAlertIncidentLinksOptions, listIncidentsOptions, type ListIncidentsData } from "$lib/api";
+import { listAlertIncidentLinksOptions, type ListIncidentsData } from "$lib/api";
 import { QueryPaginatorState } from "$lib/paginator.svelte";
 import { createQuery } from "@tanstack/svelte-query";
 import { type DateRange as DateRangeType } from '@layerstack/utils/dateRange';

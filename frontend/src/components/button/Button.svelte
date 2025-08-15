@@ -3,15 +3,18 @@
 	import { Button } from "svelte-ux";
 
 	type Props = ComponentProps<Button> & {
-		onclick?: (e: MouseEvent) => void;
+		// onclick?: (e: MouseEvent) => void;
 		children?: Snippet;
 	};
 	const props: Props = $props();
 
 	const dispatch = createEventDispatcher();
 	const onClicked = (e: MouseEvent) => {
-		props.onclick?.(e);
-		dispatch("click", e);
+		// if (props.onclick) {
+		// 	props.onclick(e);
+		// } else {
+			dispatch("click", e);
+		// }
 	}
 </script>
 

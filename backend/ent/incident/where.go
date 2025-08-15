@@ -781,7 +781,7 @@ func HasRetrospective() predicate.Incident {
 	return predicate.Incident(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, true, RetrospectiveTable, RetrospectiveColumn),
+			sqlgraph.Edge(sqlgraph.O2O, false, RetrospectiveTable, RetrospectiveColumn),
 		)
 		sqlgraph.HasNeighbors(s, step)
 	})

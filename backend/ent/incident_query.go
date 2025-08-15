@@ -216,7 +216,7 @@ func (iq *IncidentQuery) QueryRetrospective() *RetrospectiveQuery {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(incident.Table, incident.FieldID, selector),
 			sqlgraph.To(retrospective.Table, retrospective.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, true, incident.RetrospectiveTable, incident.RetrospectiveColumn),
+			sqlgraph.Edge(sqlgraph.O2O, false, incident.RetrospectiveTable, incident.RetrospectiveColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(iq.driver.Dialect(), step)
 		return fromU, nil
@@ -992,9 +992,8 @@ func (iq *IncidentQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Inc
 		}
 	}
 	if query := iq.withRetrospective; query != nil {
-		if err := iq.loadRetrospective(ctx, query, nodes,
-			func(n *Incident) { n.Edges.Retrospective = []*Retrospective{} },
-			func(n *Incident, e *Retrospective) { n.Edges.Retrospective = append(n.Edges.Retrospective, e) }); err != nil {
+		if err := iq.loadRetrospective(ctx, query, nodes, nil,
+			func(n *Incident, e *Retrospective) { n.Edges.Retrospective = e }); err != nil {
 			return nil, err
 		}
 	}
@@ -1228,9 +1227,6 @@ func (iq *IncidentQuery) loadRetrospective(ctx context.Context, query *Retrospec
 	for i := range nodes {
 		fks = append(fks, nodes[i].ID)
 		nodeids[nodes[i].ID] = nodes[i]
-		if init != nil {
-			init(nodes[i])
-		}
 	}
 	if len(query.ctx.Fields) > 0 {
 		query.ctx.AppendFieldOnce(retrospective.FieldIncidentID)

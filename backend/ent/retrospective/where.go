@@ -69,11 +69,6 @@ func SystemAnalysisID(v uuid.UUID) predicate.Retrospective {
 	return predicate.Retrospective(sql.FieldEQ(FieldSystemAnalysisID, v))
 }
 
-// DocumentName applies equality check predicate on the "document_name" field. It's identical to DocumentNameEQ.
-func DocumentName(v string) predicate.Retrospective {
-	return predicate.Retrospective(sql.FieldEQ(FieldDocumentName, v))
-}
-
 // TenantIDEQ applies the EQ predicate on the "tenant_id" field.
 func TenantIDEQ(v int) predicate.Retrospective {
 	return predicate.Retrospective(sql.FieldEQ(FieldTenantID, v))
@@ -144,71 +139,6 @@ func SystemAnalysisIDNotNil() predicate.Retrospective {
 	return predicate.Retrospective(sql.FieldNotNull(FieldSystemAnalysisID))
 }
 
-// DocumentNameEQ applies the EQ predicate on the "document_name" field.
-func DocumentNameEQ(v string) predicate.Retrospective {
-	return predicate.Retrospective(sql.FieldEQ(FieldDocumentName, v))
-}
-
-// DocumentNameNEQ applies the NEQ predicate on the "document_name" field.
-func DocumentNameNEQ(v string) predicate.Retrospective {
-	return predicate.Retrospective(sql.FieldNEQ(FieldDocumentName, v))
-}
-
-// DocumentNameIn applies the In predicate on the "document_name" field.
-func DocumentNameIn(vs ...string) predicate.Retrospective {
-	return predicate.Retrospective(sql.FieldIn(FieldDocumentName, vs...))
-}
-
-// DocumentNameNotIn applies the NotIn predicate on the "document_name" field.
-func DocumentNameNotIn(vs ...string) predicate.Retrospective {
-	return predicate.Retrospective(sql.FieldNotIn(FieldDocumentName, vs...))
-}
-
-// DocumentNameGT applies the GT predicate on the "document_name" field.
-func DocumentNameGT(v string) predicate.Retrospective {
-	return predicate.Retrospective(sql.FieldGT(FieldDocumentName, v))
-}
-
-// DocumentNameGTE applies the GTE predicate on the "document_name" field.
-func DocumentNameGTE(v string) predicate.Retrospective {
-	return predicate.Retrospective(sql.FieldGTE(FieldDocumentName, v))
-}
-
-// DocumentNameLT applies the LT predicate on the "document_name" field.
-func DocumentNameLT(v string) predicate.Retrospective {
-	return predicate.Retrospective(sql.FieldLT(FieldDocumentName, v))
-}
-
-// DocumentNameLTE applies the LTE predicate on the "document_name" field.
-func DocumentNameLTE(v string) predicate.Retrospective {
-	return predicate.Retrospective(sql.FieldLTE(FieldDocumentName, v))
-}
-
-// DocumentNameContains applies the Contains predicate on the "document_name" field.
-func DocumentNameContains(v string) predicate.Retrospective {
-	return predicate.Retrospective(sql.FieldContains(FieldDocumentName, v))
-}
-
-// DocumentNameHasPrefix applies the HasPrefix predicate on the "document_name" field.
-func DocumentNameHasPrefix(v string) predicate.Retrospective {
-	return predicate.Retrospective(sql.FieldHasPrefix(FieldDocumentName, v))
-}
-
-// DocumentNameHasSuffix applies the HasSuffix predicate on the "document_name" field.
-func DocumentNameHasSuffix(v string) predicate.Retrospective {
-	return predicate.Retrospective(sql.FieldHasSuffix(FieldDocumentName, v))
-}
-
-// DocumentNameEqualFold applies the EqualFold predicate on the "document_name" field.
-func DocumentNameEqualFold(v string) predicate.Retrospective {
-	return predicate.Retrospective(sql.FieldEqualFold(FieldDocumentName, v))
-}
-
-// DocumentNameContainsFold applies the ContainsFold predicate on the "document_name" field.
-func DocumentNameContainsFold(v string) predicate.Retrospective {
-	return predicate.Retrospective(sql.FieldContainsFold(FieldDocumentName, v))
-}
-
 // TypeEQ applies the EQ predicate on the "type" field.
 func TypeEQ(v Type) predicate.Retrospective {
 	return predicate.Retrospective(sql.FieldEQ(FieldType, v))
@@ -277,7 +207,7 @@ func HasIncident() predicate.Retrospective {
 	return predicate.Retrospective(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, IncidentTable, IncidentColumn),
+			sqlgraph.Edge(sqlgraph.O2O, true, IncidentTable, IncidentColumn),
 		)
 		sqlgraph.HasNeighbors(s, step)
 	})

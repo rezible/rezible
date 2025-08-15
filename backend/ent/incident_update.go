@@ -255,19 +255,23 @@ func (iu *IncidentUpdate) AddEvents(i ...*IncidentEvent) *IncidentUpdate {
 	return iu.AddEventIDs(ids...)
 }
 
-// AddRetrospectiveIDs adds the "retrospective" edge to the Retrospective entity by IDs.
-func (iu *IncidentUpdate) AddRetrospectiveIDs(ids ...uuid.UUID) *IncidentUpdate {
-	iu.mutation.AddRetrospectiveIDs(ids...)
+// SetRetrospectiveID sets the "retrospective" edge to the Retrospective entity by ID.
+func (iu *IncidentUpdate) SetRetrospectiveID(id uuid.UUID) *IncidentUpdate {
+	iu.mutation.SetRetrospectiveID(id)
 	return iu
 }
 
-// AddRetrospective adds the "retrospective" edges to the Retrospective entity.
-func (iu *IncidentUpdate) AddRetrospective(r ...*Retrospective) *IncidentUpdate {
-	ids := make([]uuid.UUID, len(r))
-	for i := range r {
-		ids[i] = r[i].ID
+// SetNillableRetrospectiveID sets the "retrospective" edge to the Retrospective entity by ID if the given value is not nil.
+func (iu *IncidentUpdate) SetNillableRetrospectiveID(id *uuid.UUID) *IncidentUpdate {
+	if id != nil {
+		iu = iu.SetRetrospectiveID(*id)
 	}
-	return iu.AddRetrospectiveIDs(ids...)
+	return iu
+}
+
+// SetRetrospective sets the "retrospective" edge to the Retrospective entity.
+func (iu *IncidentUpdate) SetRetrospective(r *Retrospective) *IncidentUpdate {
+	return iu.SetRetrospectiveID(r.ID)
 }
 
 // AddUserIDs adds the "users" edge to the User entity by IDs.
@@ -479,25 +483,10 @@ func (iu *IncidentUpdate) RemoveEvents(i ...*IncidentEvent) *IncidentUpdate {
 	return iu.RemoveEventIDs(ids...)
 }
 
-// ClearRetrospective clears all "retrospective" edges to the Retrospective entity.
+// ClearRetrospective clears the "retrospective" edge to the Retrospective entity.
 func (iu *IncidentUpdate) ClearRetrospective() *IncidentUpdate {
 	iu.mutation.ClearRetrospective()
 	return iu
-}
-
-// RemoveRetrospectiveIDs removes the "retrospective" edge to Retrospective entities by IDs.
-func (iu *IncidentUpdate) RemoveRetrospectiveIDs(ids ...uuid.UUID) *IncidentUpdate {
-	iu.mutation.RemoveRetrospectiveIDs(ids...)
-	return iu
-}
-
-// RemoveRetrospective removes "retrospective" edges to Retrospective entities.
-func (iu *IncidentUpdate) RemoveRetrospective(r ...*Retrospective) *IncidentUpdate {
-	ids := make([]uuid.UUID, len(r))
-	for i := range r {
-		ids[i] = r[i].ID
-	}
-	return iu.RemoveRetrospectiveIDs(ids...)
 }
 
 // ClearUsers clears all "users" edges to the User entity.
@@ -943,37 +932,21 @@ func (iu *IncidentUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if iu.mutation.RetrospectiveCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
+			Rel:     sqlgraph.O2O,
+			Inverse: false,
 			Table:   incident.RetrospectiveTable,
 			Columns: []string{incident.RetrospectiveColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(retrospective.FieldID, field.TypeUUID),
 			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := iu.mutation.RemovedRetrospectiveIDs(); len(nodes) > 0 && !iu.mutation.RetrospectiveCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   incident.RetrospectiveTable,
-			Columns: []string{incident.RetrospectiveColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(retrospective.FieldID, field.TypeUUID),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
 	if nodes := iu.mutation.RetrospectiveIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
+			Rel:     sqlgraph.O2O,
+			Inverse: false,
 			Table:   incident.RetrospectiveTable,
 			Columns: []string{incident.RetrospectiveColumn},
 			Bidi:    false,
@@ -1691,19 +1664,23 @@ func (iuo *IncidentUpdateOne) AddEvents(i ...*IncidentEvent) *IncidentUpdateOne 
 	return iuo.AddEventIDs(ids...)
 }
 
-// AddRetrospectiveIDs adds the "retrospective" edge to the Retrospective entity by IDs.
-func (iuo *IncidentUpdateOne) AddRetrospectiveIDs(ids ...uuid.UUID) *IncidentUpdateOne {
-	iuo.mutation.AddRetrospectiveIDs(ids...)
+// SetRetrospectiveID sets the "retrospective" edge to the Retrospective entity by ID.
+func (iuo *IncidentUpdateOne) SetRetrospectiveID(id uuid.UUID) *IncidentUpdateOne {
+	iuo.mutation.SetRetrospectiveID(id)
 	return iuo
 }
 
-// AddRetrospective adds the "retrospective" edges to the Retrospective entity.
-func (iuo *IncidentUpdateOne) AddRetrospective(r ...*Retrospective) *IncidentUpdateOne {
-	ids := make([]uuid.UUID, len(r))
-	for i := range r {
-		ids[i] = r[i].ID
+// SetNillableRetrospectiveID sets the "retrospective" edge to the Retrospective entity by ID if the given value is not nil.
+func (iuo *IncidentUpdateOne) SetNillableRetrospectiveID(id *uuid.UUID) *IncidentUpdateOne {
+	if id != nil {
+		iuo = iuo.SetRetrospectiveID(*id)
 	}
-	return iuo.AddRetrospectiveIDs(ids...)
+	return iuo
+}
+
+// SetRetrospective sets the "retrospective" edge to the Retrospective entity.
+func (iuo *IncidentUpdateOne) SetRetrospective(r *Retrospective) *IncidentUpdateOne {
+	return iuo.SetRetrospectiveID(r.ID)
 }
 
 // AddUserIDs adds the "users" edge to the User entity by IDs.
@@ -1915,25 +1892,10 @@ func (iuo *IncidentUpdateOne) RemoveEvents(i ...*IncidentEvent) *IncidentUpdateO
 	return iuo.RemoveEventIDs(ids...)
 }
 
-// ClearRetrospective clears all "retrospective" edges to the Retrospective entity.
+// ClearRetrospective clears the "retrospective" edge to the Retrospective entity.
 func (iuo *IncidentUpdateOne) ClearRetrospective() *IncidentUpdateOne {
 	iuo.mutation.ClearRetrospective()
 	return iuo
-}
-
-// RemoveRetrospectiveIDs removes the "retrospective" edge to Retrospective entities by IDs.
-func (iuo *IncidentUpdateOne) RemoveRetrospectiveIDs(ids ...uuid.UUID) *IncidentUpdateOne {
-	iuo.mutation.RemoveRetrospectiveIDs(ids...)
-	return iuo
-}
-
-// RemoveRetrospective removes "retrospective" edges to Retrospective entities.
-func (iuo *IncidentUpdateOne) RemoveRetrospective(r ...*Retrospective) *IncidentUpdateOne {
-	ids := make([]uuid.UUID, len(r))
-	for i := range r {
-		ids[i] = r[i].ID
-	}
-	return iuo.RemoveRetrospectiveIDs(ids...)
 }
 
 // ClearUsers clears all "users" edges to the User entity.
@@ -2409,37 +2371,21 @@ func (iuo *IncidentUpdateOne) sqlSave(ctx context.Context) (_node *Incident, err
 	}
 	if iuo.mutation.RetrospectiveCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
+			Rel:     sqlgraph.O2O,
+			Inverse: false,
 			Table:   incident.RetrospectiveTable,
 			Columns: []string{incident.RetrospectiveColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(retrospective.FieldID, field.TypeUUID),
 			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := iuo.mutation.RemovedRetrospectiveIDs(); len(nodes) > 0 && !iuo.mutation.RetrospectiveCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   incident.RetrospectiveTable,
-			Columns: []string{incident.RetrospectiveColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(retrospective.FieldID, field.TypeUUID),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
 	if nodes := iuo.mutation.RetrospectiveIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
+			Rel:     sqlgraph.O2O,
+			Inverse: false,
 			Table:   incident.RetrospectiveTable,
 			Columns: []string{incident.RetrospectiveColumn},
 			Bidi:    false,

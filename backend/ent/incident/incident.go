@@ -349,17 +349,10 @@ func ByEvents(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 	}
 }
 
-// ByRetrospectiveCount orders the results by retrospective count.
-func ByRetrospectiveCount(opts ...sql.OrderTermOption) OrderOption {
+// ByRetrospectiveField orders the results by retrospective field.
+func ByRetrospectiveField(field string, opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborsCount(s, newRetrospectiveStep(), opts...)
-	}
-}
-
-// ByRetrospective orders the results by retrospective terms.
-func ByRetrospective(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
-	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborTerms(s, newRetrospectiveStep(), append([]sql.OrderTerm{term}, terms...)...)
+		sqlgraph.OrderByNeighborTerms(s, newRetrospectiveStep(), sql.OrderByField(field, opts...))
 	}
 }
 
@@ -541,7 +534,7 @@ func newRetrospectiveStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(RetrospectiveInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.O2M, true, RetrospectiveTable, RetrospectiveColumn),
+		sqlgraph.Edge(sqlgraph.O2O, false, RetrospectiveTable, RetrospectiveColumn),
 	)
 }
 func newUsersStep() *sqlgraph.Step {

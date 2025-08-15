@@ -1402,11 +1402,10 @@ var (
 	// RetrospectivesColumns holds the columns for the "retrospectives" table.
 	RetrospectivesColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID},
-		{Name: "document_name", Type: field.TypeString},
 		{Name: "type", Type: field.TypeEnum, Enums: []string{"simple", "full"}},
 		{Name: "state", Type: field.TypeEnum, Enums: []string{"draft", "in_review", "meeting", "closed"}},
+		{Name: "incident_id", Type: field.TypeUUID, Unique: true},
 		{Name: "tenant_id", Type: field.TypeInt},
-		{Name: "incident_id", Type: field.TypeUUID},
 		{Name: "system_analysis_id", Type: field.TypeUUID, Unique: true, Nullable: true},
 	}
 	// RetrospectivesTable holds the schema information for the "retrospectives" table.
@@ -1416,20 +1415,20 @@ var (
 		PrimaryKey: []*schema.Column{RetrospectivesColumns[0]},
 		ForeignKeys: []*schema.ForeignKey{
 			{
+				Symbol:     "retrospectives_incidents_retrospective",
+				Columns:    []*schema.Column{RetrospectivesColumns[3]},
+				RefColumns: []*schema.Column{IncidentsColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+			{
 				Symbol:     "retrospectives_tenants_tenant",
 				Columns:    []*schema.Column{RetrospectivesColumns[4]},
 				RefColumns: []*schema.Column{TenantsColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
 			{
-				Symbol:     "retrospectives_incidents_incident",
-				Columns:    []*schema.Column{RetrospectivesColumns[5]},
-				RefColumns: []*schema.Column{IncidentsColumns[0]},
-				OnDelete:   schema.NoAction,
-			},
-			{
 				Symbol:     "retrospectives_system_analyses_retrospective",
-				Columns:    []*schema.Column{RetrospectivesColumns[6]},
+				Columns:    []*schema.Column{RetrospectivesColumns[5]},
 				RefColumns: []*schema.Column{SystemAnalysesColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
@@ -2777,8 +2776,8 @@ func init() {
 	PlaybooksTable.ForeignKeys[0].RefTable = TenantsTable
 	ProviderConfigsTable.ForeignKeys[0].RefTable = TenantsTable
 	ProviderSyncHistoriesTable.ForeignKeys[0].RefTable = TenantsTable
-	RetrospectivesTable.ForeignKeys[0].RefTable = TenantsTable
-	RetrospectivesTable.ForeignKeys[1].RefTable = IncidentsTable
+	RetrospectivesTable.ForeignKeys[0].RefTable = IncidentsTable
+	RetrospectivesTable.ForeignKeys[1].RefTable = TenantsTable
 	RetrospectivesTable.ForeignKeys[2].RefTable = SystemAnalysesTable
 	RetrospectiveCommentsTable.ForeignKeys[0].RefTable = TenantsTable
 	RetrospectiveCommentsTable.ForeignKeys[1].RefTable = RetrospectivesTable

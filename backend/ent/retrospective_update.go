@@ -66,20 +66,6 @@ func (ru *RetrospectiveUpdate) ClearSystemAnalysisID() *RetrospectiveUpdate {
 	return ru
 }
 
-// SetDocumentName sets the "document_name" field.
-func (ru *RetrospectiveUpdate) SetDocumentName(s string) *RetrospectiveUpdate {
-	ru.mutation.SetDocumentName(s)
-	return ru
-}
-
-// SetNillableDocumentName sets the "document_name" field if the given value is not nil.
-func (ru *RetrospectiveUpdate) SetNillableDocumentName(s *string) *RetrospectiveUpdate {
-	if s != nil {
-		ru.SetDocumentName(*s)
-	}
-	return ru
-}
-
 // SetType sets the "type" field.
 func (ru *RetrospectiveUpdate) SetType(r retrospective.Type) *RetrospectiveUpdate {
 	ru.mutation.SetType(r)
@@ -237,9 +223,6 @@ func (ru *RetrospectiveUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			}
 		}
 	}
-	if value, ok := ru.mutation.DocumentName(); ok {
-		_spec.SetField(retrospective.FieldDocumentName, field.TypeString, value)
-	}
 	if value, ok := ru.mutation.GetType(); ok {
 		_spec.SetField(retrospective.FieldType, field.TypeEnum, value)
 	}
@@ -248,8 +231,8 @@ func (ru *RetrospectiveUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if ru.mutation.IncidentCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: false,
+			Rel:     sqlgraph.O2O,
+			Inverse: true,
 			Table:   retrospective.IncidentTable,
 			Columns: []string{retrospective.IncidentColumn},
 			Bidi:    false,
@@ -261,8 +244,8 @@ func (ru *RetrospectiveUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if nodes := ru.mutation.IncidentIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: false,
+			Rel:     sqlgraph.O2O,
+			Inverse: true,
 			Table:   retrospective.IncidentTable,
 			Columns: []string{retrospective.IncidentColumn},
 			Bidi:    false,
@@ -402,20 +385,6 @@ func (ruo *RetrospectiveUpdateOne) SetNillableSystemAnalysisID(u *uuid.UUID) *Re
 // ClearSystemAnalysisID clears the value of the "system_analysis_id" field.
 func (ruo *RetrospectiveUpdateOne) ClearSystemAnalysisID() *RetrospectiveUpdateOne {
 	ruo.mutation.ClearSystemAnalysisID()
-	return ruo
-}
-
-// SetDocumentName sets the "document_name" field.
-func (ruo *RetrospectiveUpdateOne) SetDocumentName(s string) *RetrospectiveUpdateOne {
-	ruo.mutation.SetDocumentName(s)
-	return ruo
-}
-
-// SetNillableDocumentName sets the "document_name" field if the given value is not nil.
-func (ruo *RetrospectiveUpdateOne) SetNillableDocumentName(s *string) *RetrospectiveUpdateOne {
-	if s != nil {
-		ruo.SetDocumentName(*s)
-	}
 	return ruo
 }
 
@@ -606,9 +575,6 @@ func (ruo *RetrospectiveUpdateOne) sqlSave(ctx context.Context) (_node *Retrospe
 			}
 		}
 	}
-	if value, ok := ruo.mutation.DocumentName(); ok {
-		_spec.SetField(retrospective.FieldDocumentName, field.TypeString, value)
-	}
 	if value, ok := ruo.mutation.GetType(); ok {
 		_spec.SetField(retrospective.FieldType, field.TypeEnum, value)
 	}
@@ -617,8 +583,8 @@ func (ruo *RetrospectiveUpdateOne) sqlSave(ctx context.Context) (_node *Retrospe
 	}
 	if ruo.mutation.IncidentCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: false,
+			Rel:     sqlgraph.O2O,
+			Inverse: true,
 			Table:   retrospective.IncidentTable,
 			Columns: []string{retrospective.IncidentColumn},
 			Bidi:    false,
@@ -630,8 +596,8 @@ func (ruo *RetrospectiveUpdateOne) sqlSave(ctx context.Context) (_node *Retrospe
 	}
 	if nodes := ruo.mutation.IncidentIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: false,
+			Rel:     sqlgraph.O2O,
+			Inverse: true,
 			Table:   retrospective.IncidentTable,
 			Columns: []string{retrospective.IncidentColumn},
 			Bidi:    false,
