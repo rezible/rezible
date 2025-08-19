@@ -2,11 +2,10 @@ package http
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"net"
 	"net/http"
-	"os"
+	"strings"
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
@@ -30,11 +29,7 @@ type AuthService struct {
 
 var _ rez.AuthService = (*AuthService)(nil)
 
-func NewAuthService(users rez.UserService, providers []rez.AuthSessionProvider) (*AuthService, error) {
-	secretKey := os.Getenv("AUTH_SESSION_SECRET_KEY")
-	if secretKey == "" {
-		return nil, errors.New("AUTH_SESSION_SECRET_KEY must be set")
-	}
+func NewAuthService(secretKey string, users rez.UserService, providers []rez.AuthSessionProvider) (*AuthService, error) {
 	return &AuthService{
 		users:         users,
 		providers:     providers,
@@ -102,7 +97,7 @@ func (s *AuthService) UserAuthHandler() http.Handler {
 			return
 		}
 
-		if s.delegateAuthHandlerToProvider(w, r) {
+		if s.delegateAuthFlowToProvider(w, r) {
 			return
 		}
 
@@ -110,22 +105,30 @@ func (s *AuthService) UserAuthHandler() http.Handler {
 		if cookieErr != nil {
 			http.Error(w, http.StatusText(http.StatusUnauthorized), http.StatusUnauthorized)
 			return
-		} else {
-			_, sessErr := s.VerifyAuthSessionToken(token, nil)
-			if sessErr != nil {
-				isRedirectable := errors.Is(sessErr, rez.ErrAuthSessionExpired) || errors.Is(sessErr, rez.ErrNoAuthSession)
-				if isRedirectable {
-					// TODO: dont redirect or check which provider used
-					s.providers[0].StartAuthFlow(w, r)
-					return
-				}
-			}
+		}
+		_, sessErr := s.VerifyAuthSessionToken(token, nil)
+		if sessErr != nil {
+			http.Error(w, "failed to verify session", http.StatusUnauthorized)
+			return
+			//isRedirectable := errors.Is(sessErr, rez.ErrAuthSessionExpired) || errors.Is(sessErr, rez.ErrNoAuthSession)
+			//if isRedirectable {
+			//	// TODO: dont redirect or check which provider used
+			//	s.providers[0].StartAuthFlow(w, r)
+			//	return
+			//}
 		}
 		http.Redirect(w, r, rez.FrontendUrl, http.StatusFound)
 	})
 }
 
-func (s *AuthService) delegateAuthHandlerToProvider(w http.ResponseWriter, r *http.Request) bool {
+func (s *AuthService) delegateAuthFlowToProvider(w http.ResponseWriter, r *http.Request) bool {
+	for _, prov := range s.providers {
+		if r.URL.Path == "/auth/"+strings.ToLower(prov.Name()) {
+			prov.StartAuthFlow(w, r)
+			return true
+		}
+	}
+
 	ctx := r.Context()
 
 	onSessionCreatedCallback := func(provUser *ent.User, expiresAt time.Time, redirect string) {
@@ -139,7 +142,8 @@ func (s *AuthService) delegateAuthHandlerToProvider(w http.ResponseWriter, r *ht
 			http.Error(w, "failed to match user", http.StatusInternalServerError)
 			return
 		}
-		// nil user id indicates a mismatch between provider users and db users
+
+		// nil user id indicates provider user not found in db
 		userId := uuid.Nil
 		if dbUser != nil {
 			userId = dbUser.ID
@@ -168,19 +172,20 @@ func (s *AuthService) delegateAuthHandlerToProvider(w http.ResponseWriter, r *ht
 }
 
 func (s *AuthService) makeSessionCookie(r *http.Request, value string, expires time.Time, maxAge int) *http.Cookie {
+	domain := r.Host
+	if host, _, splitErr := net.SplitHostPort(r.Host); splitErr == nil {
+		domain = host
+	}
 	cookie := &http.Cookie{
 		Name:     oapi.SessionCookieName,
 		Value:    value,
-		Domain:   r.Host,
+		Domain:   domain,
 		Path:     "/",
 		Expires:  expires,
-		Secure:   r.URL.Scheme == "https",
+		Secure:   !rez.DebugMode, // r.URL.Scheme == "https",
 		HttpOnly: true,
 		MaxAge:   maxAge,
 		// SameSite: http.SameSiteLaxMode,
-	}
-	if domain, _, splitErr := net.SplitHostPort(r.Host); splitErr == nil {
-		cookie.Domain = domain
 	}
 	return cookie
 }

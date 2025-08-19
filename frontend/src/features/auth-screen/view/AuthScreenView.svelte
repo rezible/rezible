@@ -25,12 +25,6 @@
 		no_user: "You signed in successfully, but Rezible does not have your details.",
 		no_session: "",
 	};
-
-	const buttonText = $derived.by(() => {
-		if (session.error?.category === "no_user") return "Logout";
-		if (!config) return "Continue";
-		return `Continue with ${config.providerName}`;
-	});
 </script>
 
 <div class="grid h-full w-full place-items-center">
@@ -47,6 +41,11 @@
 			</div>
 		{/if}
 
-		<Button href={authUrl} loading={configQuery.isLoading} color="primary" variant="fill">{buttonText}</Button>
+		{#if errorCategory === "no_user"}
+			<Button href="{AUTH_URL_BASE}/logout" loading={configQuery.isLoading} color="primary" variant="fill">Logout</Button>
+		{:else}
+			<Button href="{AUTH_URL_BASE}/saml" loading={configQuery.isLoading} color="primary" variant="fill">Continue with SAML</Button>
+			<Button href="{AUTH_URL_BASE}/github" loading={configQuery.isLoading} color="primary" variant="fill">Continue with Github</Button>
+		{/if}
 	</div>
 </div>

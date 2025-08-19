@@ -8,6 +8,7 @@ import (
 	"io"
 	"net/http"
 	"net/url"
+	"os"
 	"strings"
 
 	"github.com/gorilla/sessions"
@@ -26,9 +27,9 @@ func ConfigureSessionStore(secretKey string) {
 
 	store := sessions.NewCookieStore([]byte(secretKey))
 	store.MaxAge(maxAge)
-	// store.Options.Domain = rez.BackendUrl
 	store.Options.Path = "/"
 	store.Options.HttpOnly = true
+	store.Options.SameSite = http.SameSiteLaxMode
 	store.Options.Secure = !rez.DebugMode
 
 	gothic.Store = store
@@ -40,16 +41,27 @@ type AuthSessionProvider struct {
 }
 
 type Config struct {
-	PathBase string
-
 	Provider     string `json:"provider"`
 	ClientKey    string `json:"client_key"`
 	ClientSecret string `json:"client_secret"`
 	DiscoveryUrl string `json:"oidc_discovery_url,omitempty"`
 }
 
+func NewGithubProvider() (*AuthSessionProvider, error) {
+	clientKey := os.Getenv("GITHUB_CLIENT_KEY")
+	clientSecret := os.Getenv("GITHUB_CLIENT_SECRET")
+	if clientKey == "" {
+		return nil, fmt.Errorf("client key/secret env vars not set")
+	}
+	return NewAuthSessionProvider(Config{
+		Provider:     "github",
+		ClientKey:    clientKey,
+		ClientSecret: clientSecret,
+	})
+}
+
 func NewAuthSessionProvider(cfg Config) (*AuthSessionProvider, error) {
-	callbackPath := fmt.Sprintf("%s/%s", cfg.PathBase, "callback")
+	callbackPath := fmt.Sprintf("/auth/%s/%s", strings.ToLower(cfg.Provider), "callback")
 	p, provErr := registerProvider(cfg, callbackPath)
 	if provErr != nil {
 		return nil, provErr
@@ -150,7 +162,7 @@ func (s *AuthSessionProvider) HandleAuthFlowRequest(w http.ResponseWriter, r *ht
 			return true
 		}
 		s.ClearSession(w, r)
-		log.Error().Err(cbErr).Msg("could not handle oauth2 callback")
+		log.Error().Err(cbErr).Msg("could not handle callback")
 		return false
 	}
 	return false

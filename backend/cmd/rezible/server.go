@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net"
 	"os"
@@ -11,6 +12,7 @@ import (
 	"github.com/rezible/rezible/access"
 	"github.com/rezible/rezible/internal/api"
 	"github.com/rezible/rezible/internal/eino"
+	"github.com/rezible/rezible/internal/goth"
 	"github.com/rezible/rezible/internal/hocuspocus"
 	"github.com/rezible/rezible/internal/http"
 	"github.com/rezible/rezible/internal/postgres"
@@ -81,12 +83,7 @@ func (s *rezServer) setup() error {
 		return fmt.Errorf("postgres.NewUserService: %w", usersErr)
 	}
 
-	authProviders, authProvidersErr := s.getAuthProviders(ctx)
-	if authProvidersErr != nil {
-		return fmt.Errorf("getAuthProviders: %w", authProvidersErr)
-	}
-
-	auth, authErr := http.NewAuthService(users, authProviders)
+	auth, authErr := s.makeAuthService(ctx, users)
 	if authErr != nil {
 		return fmt.Errorf("http.NewAuthService: %w", authErr)
 	}
@@ -169,12 +166,29 @@ func (s *rezServer) setup() error {
 	return nil
 }
 
-func (s *rezServer) getAuthProviders(ctx context.Context) ([]rez.AuthSessionProvider, error) {
-	sp, spErr := saml.NewAuthSessionProvider(ctx)
+func (s *rezServer) makeAuthService(ctx context.Context, users rez.UserService) (rez.AuthService, error) {
+	secretKey := os.Getenv("AUTH_SESSION_SECRET_KEY")
+	if secretKey == "" {
+		return nil, errors.New("AUTH_SESSION_SECRET_KEY must be set")
+	}
+
+	samlProv, spErr := saml.NewAuthSessionProvider(ctx)
 	if spErr != nil {
 		return nil, fmt.Errorf("saml.NewAuthSessionProvider: %w", spErr)
 	}
-	return []rez.AuthSessionProvider{sp}, nil
+
+	goth.ConfigureSessionStore(secretKey)
+
+	provs := []rez.AuthSessionProvider{samlProv}
+
+	ghProv, ghErr := goth.NewGithubProvider()
+	if ghErr != nil {
+		log.Error().Err(ghErr).Msg("failed to load github provider")
+	} else {
+		provs = append(provs, ghProv)
+	}
+
+	return http.NewAuthService(secretKey, users, provs)
 }
 
 func (s *rezServer) registerJobs(
