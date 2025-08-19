@@ -11,7 +11,7 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
-func getRequestAuthSession(ctx context.Context, auth rez.AuthSessionService) *rez.AuthSession {
+func getRequestAuthSession(ctx context.Context, auth rez.AuthService) *rez.AuthSession {
 	sess, sessErr := auth.GetAuthSession(ctx)
 	if sessErr != nil {
 		panic("getRequestAuthSession: " + sessErr.Error())
@@ -19,7 +19,7 @@ func getRequestAuthSession(ctx context.Context, auth rez.AuthSessionService) *re
 	return sess
 }
 
-func requestUserId(ctx context.Context, auth rez.AuthSessionService) uuid.UUID {
+func requestUserId(ctx context.Context, auth rez.AuthService) uuid.UUID {
 	return getRequestAuthSession(ctx, auth).UserId
 }
 

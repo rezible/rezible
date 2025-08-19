@@ -13,10 +13,10 @@ import (
 
 type incidentEventsHandler struct {
 	db   *ent.Client
-	auth rez.AuthSessionService
+	auth rez.AuthService
 }
 
-func newIncidentEventsHandler(db *ent.Client, auth rez.AuthSessionService) *incidentEventsHandler {
+func newIncidentEventsHandler(db *ent.Client, auth rez.AuthService) *incidentEventsHandler {
 	return &incidentEventsHandler{db, auth}
 }
 

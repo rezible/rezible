@@ -10,12 +10,12 @@ import (
 )
 
 type MCPHandler struct {
-	auth rez.AuthSessionService
+	auth rez.AuthService
 }
 
 var _ mcp.Handler = &MCPHandler{}
 
-func NewMCPHandler(auth rez.AuthSessionService) *MCPHandler {
+func NewMCPHandler(auth rez.AuthService) *MCPHandler {
 	return &MCPHandler{auth: auth}
 }
 

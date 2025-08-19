@@ -26,13 +26,13 @@ type DocumentsService struct {
 	webhookSecret []byte
 
 	db    *ent.Client
-	auth  rez.AuthSessionService
+	auth  rez.AuthService
 	users rez.UserService
 }
 
 const webhookSecretEnvVar = "DOCUMENTS_API_SECRET"
 
-func NewDocumentsService(serverAddress string, db *ent.Client, auth rez.AuthSessionService, users rez.UserService) (*DocumentsService, error) {
+func NewDocumentsService(serverAddress string, db *ent.Client, auth rez.AuthService, users rez.UserService) (*DocumentsService, error) {
 	webhookSecret := os.Getenv(webhookSecretEnvVar)
 	if webhookSecret == "" {
 		return nil, fmt.Errorf("%s not set", webhookSecretEnvVar)
@@ -108,7 +108,7 @@ func (s *DocumentsService) verifyRequestBody(w http.ResponseWriter, r *http.Requ
 }
 
 func (s *DocumentsService) verifyRequestAuth(w http.ResponseWriter, r *http.Request, docId uuid.UUID) context.Context {
-	bearerToken, bearerErr := oapi.GetRequestApiBearerToken(r)
+	bearerToken, bearerErr := oapi.GetRequestBearerToken(r)
 	if bearerErr != nil {
 		http.Error(w, bearerErr.Error(), http.StatusUnauthorized)
 		return nil
@@ -126,7 +126,7 @@ func (s *DocumentsService) verifyRequestAuth(w http.ResponseWriter, r *http.Requ
 		return nil
 	}
 
-	return s.auth.SetAuthSessionContext(userCtx, sess)
+	return s.auth.SetAuthSession(userCtx, sess)
 }
 
 type documentAuthSessionUser struct {

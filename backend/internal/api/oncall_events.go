@@ -10,14 +10,14 @@ import (
 )
 
 type oncallEventsHandler struct {
-	auth      rez.AuthSessionService
+	auth      rez.AuthService
 	users     rez.UserService
 	oncall    rez.OncallService
 	incidents rez.IncidentService
 	events    rez.OncallEventsService
 }
 
-func newOncallEventsHandler(auth rez.AuthSessionService, users rez.UserService, oncall rez.OncallService, inc rez.IncidentService, events rez.OncallEventsService) *oncallEventsHandler {
+func newOncallEventsHandler(auth rez.AuthService, users rez.UserService, oncall rez.OncallService, inc rez.IncidentService, events rez.OncallEventsService) *oncallEventsHandler {
 	return &oncallEventsHandler{auth: auth, users: users, oncall: oncall, incidents: inc, events: events}
 }
 

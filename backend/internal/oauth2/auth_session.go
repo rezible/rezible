@@ -11,27 +11,19 @@ import (
 	"strings"
 
 	"github.com/go-chi/chi/v5"
+	"github.com/rs/zerolog/log"
+
 	"github.com/markbates/goth"
 	"github.com/markbates/goth/gothic"
 	"github.com/markbates/goth/providers/github"
-	"github.com/rs/zerolog/log"
 
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
 )
 
-// TODO: implement this properly
-
-var (
-	userMapping = &ent.User{
-		Name:  "y",
-		Email: "y",
-	}
-)
-
 type AuthSessionProvider struct {
-	provider goth.Provider
 	handler  *chi.Mux
+	provider goth.Provider
 }
 
 type Config struct {
@@ -70,58 +62,49 @@ func (s *AuthSessionProvider) Name() string {
 	return s.provider.Name()
 }
 
+func (s *AuthSessionProvider) GetSession(r *http.Request) (goth.Session, error) {
+	// TODO: dont use gothic, manage session store internally
+	marshalledSess, getErr := gothic.GetFromSession(s.provider.Name(), r)
+	if getErr != nil {
+		return nil, fmt.Errorf("get from session: %w", getErr)
+	}
+
+	sess, unmarshalErr := s.provider.UnmarshalSession(marshalledSess)
+	if unmarshalErr != nil {
+		return nil, fmt.Errorf("unmarshalling session: %w", unmarshalErr)
+	}
+
+	return sess, nil
+}
+
+func (s *AuthSessionProvider) StoreSession(w http.ResponseWriter, r *http.Request, sess goth.Session) error {
+	// TODO: dont use gothic, manage session store internally
+	return gothic.StoreInSession(s.provider.Name(), sess.Marshal(), r, w)
+}
+
+func (s *AuthSessionProvider) ClearSession(w http.ResponseWriter, r *http.Request) {
+	if logoutErr := gothic.Logout(w, r); logoutErr != nil {
+		log.Error().Err(logoutErr).Msg("logout failed")
+	}
+}
+
+var userMapping = &ent.User{
+	Name:  "y",
+	Email: "y",
+}
+
 func (s *AuthSessionProvider) GetUserMapping() *ent.User {
 	return userMapping
 }
 
-func (s *AuthSessionProvider) HandleAuthFlowRequest(w http.ResponseWriter, r *http.Request, cs rez.AuthSessionCreatedFn) bool {
-	if r.URL.Path == "/auth/callback" {
-		cbErr := s.handleFlowCallback(w, r, cs)
-		if cbErr == nil {
-			return true
-		}
-		s.ClearSession(w, r)
-		log.Error().Err(cbErr).Msg("could not handle oauth2 callback")
-		return false
-	}
-	return false
-}
-
 func (s *AuthSessionProvider) StartAuthFlow(w http.ResponseWriter, r *http.Request) {
-	redirectUrl, redirectErr := s.createProviderSessionRedirect(w, r)
+	redirect, redirectErr := s.createProviderSessionRedirect(w, r)
 	if redirectErr != nil {
 		log.Error().Err(redirectErr).Msg("could not create provider session redirect")
 		http.Error(w, redirectErr.Error(), http.StatusBadRequest)
 		return
 	}
-	http.Redirect(w, r, redirectUrl, http.StatusTemporaryRedirect)
-}
-
-func (s *AuthSessionProvider) handleFlowCallback(w http.ResponseWriter, r *http.Request, onCreated rez.AuthSessionCreatedFn) error {
-	sess, sessErr := s.getProviderSession(r)
-	if sessErr != nil {
-		return fmt.Errorf("getting provider session: %w", sessErr)
-	}
-
-	if validateErr := validateRequestSessionState(r, sess); validateErr != nil {
-		return fmt.Errorf("validating request session: %w", validateErr)
-	}
-
-	sessUser, fetchErr := s.fetchSessionUser(w, r, sess)
-	if fetchErr != nil {
-		return fmt.Errorf("fetching user: %w", fetchErr)
-	}
-
-	if sessUser.Email == "" {
-		return errors.New("missing email")
-	}
-
-	user := &ent.User{
-		Email: sessUser.Email,
-	}
-
-	onCreated(user, sessUser.ExpiresAt, rez.FrontendUrl)
-	return nil
+	http.Redirect(w, r, redirect, http.StatusTemporaryRedirect)
 }
 
 func (s *AuthSessionProvider) createProviderSessionRedirect(w http.ResponseWriter, r *http.Request) (string, error) {
@@ -143,33 +126,55 @@ func (s *AuthSessionProvider) createProviderSessionRedirect(w http.ResponseWrite
 	if urlErr != nil {
 		return "", fmt.Errorf("getting auth url: %w", urlErr)
 	}
-	if storeErr := s.storeProviderSession(w, r, sess); storeErr != nil {
+	if storeErr := s.StoreSession(w, r, sess); storeErr != nil {
 		return "", fmt.Errorf("storing provider session: %w", storeErr)
 	}
 	return authUrl, nil
 }
 
-func (s *AuthSessionProvider) storeProviderSession(w http.ResponseWriter, r *http.Request, sess goth.Session) error {
-	// TODO: dont use gothic, manage session store internally
-	return gothic.StoreInSession(s.provider.Name(), sess.Marshal(), r, w)
+func (s *AuthSessionProvider) HandleAuthFlowRequest(w http.ResponseWriter, r *http.Request, cs rez.AuthSessionCreatedFn) bool {
+	if r.URL.Path == "/auth/callback" {
+		cbErr := s.handleFlowCallback(w, r, cs)
+		if cbErr == nil {
+			return true
+		}
+		s.ClearSession(w, r)
+		log.Error().Err(cbErr).Msg("could not handle oauth2 callback")
+		return false
+	}
+	return false
 }
 
-func (s *AuthSessionProvider) getProviderSession(r *http.Request) (goth.Session, error) {
-	// TODO: dont use gothic, manage session store internally
-	marshalledSess, getErr := gothic.GetFromSession(s.provider.Name(), r)
-	if getErr != nil {
-		return nil, fmt.Errorf("get from session: %w", getErr)
+func (s *AuthSessionProvider) handleFlowCallback(w http.ResponseWriter, r *http.Request, onCreated rez.AuthSessionCreatedFn) error {
+	sess, sessErr := s.GetSession(r)
+	if sessErr != nil {
+		return fmt.Errorf("getting provider session: %w", sessErr)
 	}
 
-	sess, unmarshalErr := s.provider.UnmarshalSession(marshalledSess)
-	if unmarshalErr != nil {
-		return nil, fmt.Errorf("unmarshalling session: %w", unmarshalErr)
+	if validateErr := s.validateRequestSessionState(r, sess); validateErr != nil {
+		return fmt.Errorf("validating request session: %w", validateErr)
 	}
 
-	return sess, nil
+	sessUser, fetchErr := s.fetchSessionUser(w, r, sess)
+	if fetchErr != nil {
+		return fmt.Errorf("fetching user: %w", fetchErr)
+	}
+
+	if sessUser.Email == "" {
+		return errors.New("missing email")
+	}
+
+	user := &ent.User{
+		Name:  sessUser.Name,
+		Email: sessUser.Email,
+	}
+
+	onCreated(user, sessUser.ExpiresAt, rez.FrontendUrl)
+
+	return nil
 }
 
-func validateRequestSessionState(r *http.Request, sess goth.Session) error {
+func (s *AuthSessionProvider) validateRequestSessionState(r *http.Request, sess goth.Session) error {
 	rawAuthURL, urlErr := sess.GetAuthURL()
 	if urlErr != nil {
 		return fmt.Errorf("get auth url: %w", urlErr)
@@ -179,8 +184,9 @@ func validateRequestSessionState(r *http.Request, sess goth.Session) error {
 	if authUrlErr != nil {
 		return fmt.Errorf("parse auth url: %w", authUrlErr)
 	}
-	originalState := authURL.Query().Get("state")
-	if originalState == "" {
+
+	urlState := authURL.Query().Get("state")
+	if urlState == "" {
 		return fmt.Errorf("missing state parameter")
 	}
 
@@ -190,7 +196,7 @@ func validateRequestSessionState(r *http.Request, sess goth.Session) error {
 		reqState = r.FormValue("state")
 	}
 
-	if originalState != reqState {
+	if urlState != reqState {
 		return errors.New("state mismatch")
 	}
 	return nil
@@ -199,12 +205,22 @@ func validateRequestSessionState(r *http.Request, sess goth.Session) error {
 func (s *AuthSessionProvider) fetchSessionUser(w http.ResponseWriter, r *http.Request, sess goth.Session) (*goth.User, error) {
 	user, fetchErr := s.provider.FetchUser(sess)
 	if fetchErr == nil {
-		// user can be found with existing session data
+		// user found with existing session data
 		return &user, nil
 	}
 
-	if updateErr := s.updateSessionAuth(w, r, sess); updateErr != nil {
-		return nil, fmt.Errorf("updating session authz: %w", updateErr)
+	params, paramsErr := getRequestParams(r)
+	if paramsErr != nil {
+		return nil, fmt.Errorf("getting request params: %w", paramsErr)
+	}
+
+	_, authErr := sess.Authorize(s.provider, params)
+	if authErr != nil {
+		return nil, fmt.Errorf("authorizing session: %w", authErr)
+	}
+
+	if storeErr := s.StoreSession(w, r, sess); storeErr != nil {
+		return nil, fmt.Errorf("failed to store provider session: %w", storeErr)
 	}
 
 	user, fetchErr = s.provider.FetchUser(sess)
@@ -214,29 +230,13 @@ func (s *AuthSessionProvider) fetchSessionUser(w http.ResponseWriter, r *http.Re
 	return &user, nil
 }
 
-func (s *AuthSessionProvider) updateSessionAuth(w http.ResponseWriter, r *http.Request, sess goth.Session) error {
+func getRequestParams(r *http.Request) (url.Values, error) {
 	params := r.URL.Query()
 	if params.Encode() == "" && r.Method == http.MethodPost {
 		if parseErr := r.ParseForm(); parseErr != nil {
-			return fmt.Errorf("could not parse request form: %w", parseErr)
+			return nil, fmt.Errorf("parsing request form: %w", parseErr)
 		}
 		params = r.Form
 	}
-
-	_, authErr := sess.Authorize(s.provider, params)
-	if authErr != nil {
-		return fmt.Errorf("failed to authorize: %w", authErr)
-	}
-
-	if storeErr := s.storeProviderSession(w, r, sess); storeErr != nil {
-		return fmt.Errorf("failed to store provider session: %w", storeErr)
-	}
-
-	return nil
-}
-
-func (s *AuthSessionProvider) ClearSession(w http.ResponseWriter, r *http.Request) {
-	if logoutErr := gothic.Logout(w, r); logoutErr != nil {
-		log.Error().Err(logoutErr).Msg("logout failed")
-	}
+	return params, nil
 }

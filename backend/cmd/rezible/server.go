@@ -37,7 +37,7 @@ func newRezibleServer(opts *Options) *rezServer {
 	if opts.DebugMode {
 		log.Logger = log.Level(zerolog.DebugLevel).Output(zerolog.ConsoleWriter{Out: os.Stderr})
 	}
-	
+
 	return &rezServer{opts: opts}
 }
 
@@ -81,14 +81,14 @@ func (s *rezServer) setup() error {
 		return fmt.Errorf("postgres.NewUserService: %w", usersErr)
 	}
 
-	sp, spErr := saml.NewAuthSessionProvider(ctx)
-	if spErr != nil {
-		return fmt.Errorf("saml.NewAuthSessionProvider: %w", spErr)
+	authProviders, authProvidersErr := s.getAuthProviders(ctx)
+	if authProvidersErr != nil {
+		return fmt.Errorf("getAuthProviders: %w", authProvidersErr)
 	}
 
-	auth, authErr := http.NewAuthSessionService(users, sp)
+	auth, authErr := http.NewAuthService(users, authProviders)
 	if authErr != nil {
-		return fmt.Errorf("http.NewAuthSessionService: %w", authErr)
+		return fmt.Errorf("http.NewAuthService: %w", authErr)
 	}
 
 	chat, chatErr := slack.NewChatService(users)
@@ -167,6 +167,14 @@ func (s *rezServer) setup() error {
 	}
 
 	return nil
+}
+
+func (s *rezServer) getAuthProviders(ctx context.Context) ([]rez.AuthSessionProvider, error) {
+	sp, spErr := saml.NewAuthSessionProvider(ctx)
+	if spErr != nil {
+		return nil, fmt.Errorf("saml.NewAuthSessionProvider: %w", spErr)
+	}
+	return []rez.AuthSessionProvider{sp}, nil
 }
 
 func (s *rezServer) registerJobs(

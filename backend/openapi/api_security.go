@@ -4,10 +4,8 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"net"
 	"net/http"
 	"strings"
-	"time"
 
 	"github.com/danielgtaylor/huma/v2"
 	"github.com/danielgtaylor/huma/v2/adapters/humago"
@@ -23,7 +21,7 @@ const (
 	SecurityMethodApiToken         = "api-token"
 	SecurityMethodAuthSessionToken = "session-token"
 
-	sessionCookieName = "rez_session"
+	SessionCookieName = "rez_session"
 )
 
 var (
@@ -39,7 +37,7 @@ var (
 		SecurityMethodSessionCookie: {
 			Type: "apiKey",
 			In:   "cookie",
-			Name: sessionCookieName,
+			Name: SessionCookieName,
 		},
 		SecurityMethodApiToken: {
 			Type:         "http",
@@ -58,26 +56,8 @@ var (
 	}
 )
 
-func MakeSessionCookie(r *http.Request, value string, expires time.Time, maxAge int) *http.Cookie {
-	cookie := &http.Cookie{
-		Name:     sessionCookieName,
-		Value:    value,
-		Domain:   r.Host,
-		Path:     "/",
-		Expires:  expires,
-		Secure:   r.URL.Scheme == "https",
-		HttpOnly: true,
-		MaxAge:   maxAge,
-		// SameSite: http.SameSiteLaxMode,
-	}
-	if domain, _, splitErr := net.SplitHostPort(r.Host); splitErr == nil {
-		cookie.Domain = domain
-	}
-	return cookie
-}
-
 func GetRequestSessionCookieToken(r *http.Request) (string, error) {
-	authCookie, cookieErr := r.Cookie(sessionCookieName)
+	authCookie, cookieErr := r.Cookie(SessionCookieName)
 	if cookieErr != nil {
 		if errors.Is(cookieErr, http.ErrNoCookie) {
 			return "", nil
@@ -87,7 +67,7 @@ func GetRequestSessionCookieToken(r *http.Request) (string, error) {
 	return authCookie.Value, nil
 }
 
-func GetRequestApiBearerToken(r *http.Request) (string, error) {
+func GetRequestBearerToken(r *http.Request) (string, error) {
 	authHeader := r.Header.Get("Authorization")
 	if authHeader == "" {
 		return "", nil
@@ -106,8 +86,8 @@ func GetRequestApiBearerToken(r *http.Request) (string, error) {
 
 var securityMethodTokenFuncs = map[string]func(r *http.Request) (string, error){
 	SecurityMethodSessionCookie:    GetRequestSessionCookieToken,
-	SecurityMethodApiToken:         GetRequestApiBearerToken,
-	SecurityMethodAuthSessionToken: GetRequestApiBearerToken,
+	SecurityMethodApiToken:         GetRequestBearerToken,
+	SecurityMethodAuthSessionToken: GetRequestBearerToken,
 }
 
 func getRequestSecurityTokenAndScopes(sec oapiSecurity, r *http.Request) (string, []string) {
@@ -123,41 +103,23 @@ func getRequestSecurityTokenAndScopes(sec oapiSecurity, r *http.Request) (string
 	return "", nil
 }
 
-func MakeSecurityMiddleware(auth rez.AuthSessionService, users rez.UserService) Middleware {
+func MakeSecurityMiddleware(auth rez.AuthService) Middleware {
 	return func(c Context, next func(Context)) {
+		r, w := humago.Unwrap(c)
+
 		security := c.Operation().Security
-		explicitNoAuth := security != nil && len(security) == 0
 		if security == nil {
 			security = DefaultSecurity
 		}
+		token, requiredScopes := getRequestSecurityTokenAndScopes(security, r)
 
-		ctx := c.Context()
-		if !explicitNoAuth {
-			r, w := humago.Unwrap(c)
-
-			token, requiredScopes := getRequestSecurityTokenAndScopes(security, r)
-
-			sess, verifyErr := auth.VerifyAuthSessionToken(token, nil)
-			if verifyErr != nil {
-				log.Debug().Err(verifyErr).Msg("failed to verify session token")
-				writeStatusError(w, verifyErr)
-				return
-			}
-
-			for _, scope := range requiredScopes {
-				log.Debug().Str("scope", scope).Msg("check scope")
-			}
-
-			userCtx, userErr := users.CreateUserContext(ctx, sess.UserId)
-			if userErr != nil {
-				log.Debug().Err(userErr).Msg("failed to create user auth context")
-				writeStatusError(w, userErr)
-				return
-			}
-			ctx = auth.SetAuthSessionContext(userCtx, sess)
+		authCtx, authErr := auth.CreateVerifiedApiAuthContext(c.Context(), token, requiredScopes)
+		if authErr != nil {
+			log.Debug().Err(authErr).Msg("failed to verify auth")
+			writeStatusError(w, authErr)
+			return
 		}
-
-		next(huma.WithContext(c, ctx))
+		next(huma.WithContext(c, authCtx))
 	}
 }
 

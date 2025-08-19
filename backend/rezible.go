@@ -75,15 +75,18 @@ type (
 		ExpiresAt time.Time
 	}
 
-	AuthSessionService interface {
+	AuthService interface {
 		Provider() AuthSessionProvider
 
-		AuthHandler() http.Handler
+		UserAuthHandler() http.Handler
 		MCPServerMiddleware() func(http.Handler) http.Handler
+
+		CreateVerifiedApiAuthContext(ctx context.Context, token string, requiredScopes []string) (context.Context, error)
 
 		IssueAuthSessionToken(sess *AuthSession, scope map[string]string) (string, error)
 		VerifyAuthSessionToken(token string, scope map[string]string) (*AuthSession, error)
-		SetAuthSessionContext(context.Context, *AuthSession) context.Context
+
+		SetAuthSession(context.Context, *AuthSession) context.Context
 		GetAuthSession(context.Context) (*AuthSession, error)
 	}
 )
