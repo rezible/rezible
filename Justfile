@@ -2,7 +2,7 @@ set shell := ["bash", "-uc"]
 set dotenv-load
 
 frontend_dist_dir := "./backend/internal/http/frontend-dist"
-saml_cert_dir := "./backend/internal/providers/saml/testdata"
+saml_cert_dir := "./backend/internal/saml/testdata"
 
 _default:
   @just --list
@@ -27,7 +27,7 @@ _default:
     bun update
 
 @run-backend *ARGS:
-    cd backend && SERVICE_DB_URL="$DB_URL" go run ./cmd/rezible {{ARGS}}
+    cd backend && SERVICE_DB_URL="$DB_URL" SERVICE_DEBUG=true go run ./cmd/rezible {{ARGS}}
 
 # [group('Code Generation')]
 
@@ -68,7 +68,7 @@ _default:
     just start-db
     createdb rezible
     just run-migrations
-    just run-backend load-configs
+    just run-backend load-fake-config
 
 @run-migrations:
     just run-backend migrate

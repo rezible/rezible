@@ -2,11 +2,15 @@ package main
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
+	"io"
+	"os"
 
 	"github.com/danielgtaylor/huma/v2/humacli"
 	_ "github.com/jackc/pgx/v5/stdlib"
 	"github.com/rezible/rezible/access"
+	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 	"github.com/spf13/cobra"
 	"gopkg.in/yaml.v3"
@@ -25,6 +29,7 @@ func makeCommand(name string, desc string, cmdFn func(ctx context.Context, opts 
 		Use:   name,
 		Short: desc,
 		Run: humacli.WithOptions(func(cmd *cobra.Command, args []string, o *Options) {
+			log.Logger = log.Level(zerolog.DebugLevel).Output(zerolog.ConsoleWriter{Out: os.Stderr})
 			ctx := access.SystemContext(cmd.Context())
 			if cmdErr := cmdFn(ctx, o); cmdErr != nil {
 				log.Fatal().Err(cmdErr).Str("cmd", name).Msg("command failed")
@@ -75,9 +80,31 @@ func syncCmd(ctx context.Context, opts *Options) error {
 	})
 }
 
-func loadConfigCmd(ctx context.Context, opts *Options) error {
+func loadTenantConfigCmd(ctx context.Context, opts *Options) error {
 	return withDatabase(ctx, opts, func(db *postgres.Database) error {
-		return providers.LoadConfigFile(ctx, db.Client(), ".dev_provider_configs.json")
+		// TODO: allow specifying file name
+		f, openErr := os.Open(".dev_provider_configs.json")
+		if openErr != nil {
+			return fmt.Errorf("opening file: %w", openErr)
+		}
+		defer f.Close()
+		fileContents, readErr := io.ReadAll(f)
+		if readErr != nil {
+			return fmt.Errorf("reading file: %w", readErr)
+		}
+
+		var cfg providers.TenantConfig
+		if cfgErr := json.Unmarshal(fileContents, &cfg); cfgErr != nil {
+			return fmt.Errorf("unmarshalling file: %w", cfgErr)
+		}
+
+		return providers.LoadTenantConfig(ctx, db.Client(), &cfg)
+	})
+}
+
+func loadFakeConfigCmd(ctx context.Context, opts *Options) error {
+	return withDatabase(ctx, opts, func(db *postgres.Database) error {
+		return providers.LoadDevConfig(ctx, db.Client())
 	})
 }
 

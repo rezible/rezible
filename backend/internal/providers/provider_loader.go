@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"io"
 	"os"
 	"strings"
 	"time"
@@ -41,12 +40,12 @@ type (
 		cfgCache providerConfigCache
 	}
 
-	configFile struct {
-		TenantName    string            `json:"tenant_name"`
-		ConfigEntries []configFileEntry `json:"configs"`
+	TenantConfig struct {
+		TenantName    string              `json:"tenant_name"`
+		ConfigEntries []TenantConfigEntry `json:"configs"`
 	}
 
-	configFileEntry struct {
+	TenantConfigEntry struct {
 		Type         providerconfig.ProviderType `json:"type"`
 		ProviderName string                      `json:"provider_name"`
 		Disabled     bool                        `json:"disabled"`
@@ -61,22 +60,41 @@ func NewProviderLoader(client *ent.ProviderConfigClient) *ProviderLoader {
 	}
 }
 
-func readProviderConfigFile(filename string) (*configFile, error) {
-	f, openErr := os.Open(filename)
-	if openErr != nil {
-		return nil, fmt.Errorf("opening file: %w", openErr)
-	}
-	defer f.Close()
-	fileContents, readErr := io.ReadAll(f)
-	if readErr != nil {
-		return nil, fmt.Errorf("reading file: %w", readErr)
-	}
+func fakeProviderConfigEntry(t providerconfig.ProviderType) TenantConfigEntry {
+	return TenantConfigEntry{Type: t, ProviderName: "fake", Config: []byte("{}")}
+}
 
-	var cfg configFile
-	if cfgErr := json.Unmarshal(fileContents, &cfg); cfgErr != nil {
-		return nil, fmt.Errorf("unmarshalling file: %w", cfgErr)
+func LoadDevConfig(ctx context.Context, client *ent.Client) error {
+	// TODO: use fake oncall provider
+	grafanaOncallRawConfig := fmt.Sprintf(`{"api_endpoint":"%s","api_token":"%s"}`,
+		os.Getenv("GRAFANA_ONCALL_API_ENDPOINT"),
+		os.Getenv("GRAFANA_ONCALL_API_TOKEN"))
+	cfg := &TenantConfig{
+		TenantName: "Rezible Test",
+		ConfigEntries: []TenantConfigEntry{
+			{
+				Type:         providerconfig.ProviderTypeUsers,
+				ProviderName: "slack",
+				Config:       []byte("{}"),
+			},
+			{
+				Type:         providerconfig.ProviderTypeTeams,
+				ProviderName: "slack",
+				Config:       []byte("{}"),
+			},
+			{
+				Type:         providerconfig.ProviderTypeOncall,
+				ProviderName: "grafana",
+				Config:       []byte(grafanaOncallRawConfig),
+			},
+			fakeProviderConfigEntry(providerconfig.ProviderTypeIncidents),
+			fakeProviderConfigEntry(providerconfig.ProviderTypeAlerts),
+			fakeProviderConfigEntry(providerconfig.ProviderTypeTickets),
+			fakeProviderConfigEntry(providerconfig.ProviderTypePlaybooks),
+			fakeProviderConfigEntry(providerconfig.ProviderTypeSystemComponents),
+		},
 	}
-	return &cfg, nil
+	return LoadTenantConfig(ctx, client, cfg)
 }
 
 func createTenantContext(ctx context.Context, client *ent.Client, tenantName string) (context.Context, error) {
@@ -90,12 +108,7 @@ func createTenantContext(ctx context.Context, client *ent.Client, tenantName str
 	return access.TenantSystemContext(ctx, tnt.ID), nil
 }
 
-func LoadConfigFile(ctx context.Context, client *ent.Client, fileName string) error {
-	cfg, cfgErr := readProviderConfigFile(fileName)
-	if cfgErr != nil {
-		return cfgErr
-	}
-
+func LoadTenantConfig(ctx context.Context, client *ent.Client, cfg *TenantConfig) error {
 	tenantCtx, ctxErr := createTenantContext(ctx, client, cfg.TenantName)
 	if ctxErr != nil {
 		return ctxErr

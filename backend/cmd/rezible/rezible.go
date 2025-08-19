@@ -2,11 +2,12 @@ package main
 
 import (
 	"context"
+
 	"github.com/danielgtaylor/huma/v2/humacli"
 )
 
 type Options struct {
-	Mode                  string `doc:"App Mode" default:"debug"`
+	DebugMode             bool   `doc:"App Debug Mode" name:"debug" default:"false"`
 	Host                  string `doc:"Hostname to listen on." default:"localhost"`
 	Port                  string `doc:"Port to listen on." short:"p" default:"8888"`
 	StopTimeoutSeconds    int    `doc:"Timeout in seconds to wait before stopping" default:"30"`
@@ -28,7 +29,8 @@ func main() {
 	addCliCommand("openapi", "Print the OpenAPI spec", printSpecCmd)
 	addCliCommand("migrate", "Run database migrations", migrateCmd)
 	addCliCommand("seed", "Seed the database", seedCmd)
-	addCliCommand("load-configs", "Load provider configs file into database", loadConfigCmd)
+	addCliCommand("load-fake-config", "Load fake provider config", loadFakeConfigCmd)
+	addCliCommand("load-tenant-config", "Load a tenant data provider config file into database", loadTenantConfigCmd)
 	addCliCommand("sync", "Sync the data providers", syncCmd)
 
 	cli.Run()

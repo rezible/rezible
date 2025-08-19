@@ -19,8 +19,8 @@ import (
 	"github.com/rezible/rezible/internal/river"
 	"github.com/rezible/rezible/internal/saml"
 	"github.com/rezible/rezible/internal/slack"
-
 	"github.com/rs/zerolog"
+
 	"github.com/rs/zerolog/log"
 )
 
@@ -33,12 +33,11 @@ type rezServer struct {
 }
 
 func newRezibleServer(opts *Options) *rezServer {
-	if opts.Mode == "PROD" {
-		rez.DebugMode = false
-	} else {
+	rez.DebugMode = opts.DebugMode
+	if opts.DebugMode {
 		log.Logger = log.Level(zerolog.DebugLevel).Output(zerolog.ConsoleWriter{Out: os.Stderr})
 	}
-
+	
 	return &rezServer{opts: opts}
 }
 
