@@ -1,4 +1,4 @@
-package oauth2
+package goth
 
 import (
 	"crypto/rand"
@@ -10,7 +10,7 @@ import (
 	"net/url"
 	"strings"
 
-	"github.com/go-chi/chi/v5"
+	"github.com/gorilla/sessions"
 	"github.com/rs/zerolog/log"
 
 	"github.com/markbates/goth"
@@ -21,12 +21,27 @@ import (
 	"github.com/rezible/rezible/ent"
 )
 
+func ConfigureSessionStore(secretKey string) {
+	maxAge := 86400 * 30 // 30 days
+
+	store := sessions.NewCookieStore([]byte(secretKey))
+	store.MaxAge(maxAge)
+	// store.Options.Domain = rez.BackendUrl
+	store.Options.Path = "/"
+	store.Options.HttpOnly = true
+	store.Options.Secure = !rez.DebugMode
+
+	gothic.Store = store
+}
+
 type AuthSessionProvider struct {
-	handler  *chi.Mux
-	provider goth.Provider
+	callbackPath string
+	provider     goth.Provider
 }
 
 type Config struct {
+	PathBase string
+
 	Provider     string `json:"provider"`
 	ClientKey    string `json:"client_key"`
 	ClientSecret string `json:"client_secret"`
@@ -34,51 +49,47 @@ type Config struct {
 }
 
 func NewAuthSessionProvider(cfg Config) (*AuthSessionProvider, error) {
-	p, provErr := registerProvider(cfg)
+	callbackPath := fmt.Sprintf("%s/%s", cfg.PathBase, "callback")
+	p, provErr := registerProvider(cfg, callbackPath)
 	if provErr != nil {
 		return nil, provErr
 	}
 
 	return &AuthSessionProvider{
-		provider: p,
+		callbackPath: callbackPath,
+		provider:     p,
 	}, nil
 }
 
-func registerProvider(cfg Config) (goth.Provider, error) {
+func registerProvider(cfg Config, callbackPath string) (goth.Provider, error) {
 	provName := strings.ToLower(cfg.Provider)
-	callbackUrl := fmt.Sprintf("%s/auth/callback", rez.BackendUrl)
-	var provider goth.Provider
+	callbackUrl, urlErr := url.JoinPath(rez.BackendUrl, callbackPath)
+	if urlErr != nil {
+		return nil, fmt.Errorf("creating callback url: %w", urlErr)
+	}
+
 	scopes := []string{"user:email"}
 	switch provName {
 	case "github":
-		provider = github.New(cfg.ClientKey, cfg.ClientSecret, callbackUrl, scopes...)
-	default:
-		return nil, fmt.Errorf("unknown provider: %s", provName)
+		return github.New(cfg.ClientKey, cfg.ClientSecret, callbackUrl, scopes...), nil
 	}
-	return provider, nil
+	return nil, fmt.Errorf("unknown provider: %s", provName)
 }
 
 func (s *AuthSessionProvider) Name() string {
 	return s.provider.Name()
 }
 
-func (s *AuthSessionProvider) GetSession(r *http.Request) (goth.Session, error) {
-	// TODO: dont use gothic, manage session store internally
+func (s *AuthSessionProvider) getProviderSession(r *http.Request) (goth.Session, error) {
 	marshalledSess, getErr := gothic.GetFromSession(s.provider.Name(), r)
 	if getErr != nil {
-		return nil, fmt.Errorf("get from session: %w", getErr)
+		return nil, fmt.Errorf("gothic.GetFromSession: %w", getErr)
 	}
 
-	sess, unmarshalErr := s.provider.UnmarshalSession(marshalledSess)
-	if unmarshalErr != nil {
-		return nil, fmt.Errorf("unmarshalling session: %w", unmarshalErr)
-	}
-
-	return sess, nil
+	return s.provider.UnmarshalSession(marshalledSess)
 }
 
-func (s *AuthSessionProvider) StoreSession(w http.ResponseWriter, r *http.Request, sess goth.Session) error {
-	// TODO: dont use gothic, manage session store internally
+func (s *AuthSessionProvider) setProviderSession(w http.ResponseWriter, r *http.Request, sess goth.Session) error {
 	return gothic.StoreInSession(s.provider.Name(), sess.Marshal(), r, w)
 }
 
@@ -126,14 +137,14 @@ func (s *AuthSessionProvider) createProviderSessionRedirect(w http.ResponseWrite
 	if urlErr != nil {
 		return "", fmt.Errorf("getting auth url: %w", urlErr)
 	}
-	if storeErr := s.StoreSession(w, r, sess); storeErr != nil {
+	if storeErr := s.setProviderSession(w, r, sess); storeErr != nil {
 		return "", fmt.Errorf("storing provider session: %w", storeErr)
 	}
 	return authUrl, nil
 }
 
 func (s *AuthSessionProvider) HandleAuthFlowRequest(w http.ResponseWriter, r *http.Request, cs rez.AuthSessionCreatedFn) bool {
-	if r.URL.Path == "/auth/callback" {
+	if r.URL.Path == s.callbackPath {
 		cbErr := s.handleFlowCallback(w, r, cs)
 		if cbErr == nil {
 			return true
@@ -146,7 +157,7 @@ func (s *AuthSessionProvider) HandleAuthFlowRequest(w http.ResponseWriter, r *ht
 }
 
 func (s *AuthSessionProvider) handleFlowCallback(w http.ResponseWriter, r *http.Request, onCreated rez.AuthSessionCreatedFn) error {
-	sess, sessErr := s.GetSession(r)
+	sess, sessErr := s.getProviderSession(r)
 	if sessErr != nil {
 		return fmt.Errorf("getting provider session: %w", sessErr)
 	}
@@ -219,7 +230,7 @@ func (s *AuthSessionProvider) fetchSessionUser(w http.ResponseWriter, r *http.Re
 		return nil, fmt.Errorf("authorizing session: %w", authErr)
 	}
 
-	if storeErr := s.StoreSession(w, r, sess); storeErr != nil {
+	if storeErr := s.setProviderSession(w, r, sess); storeErr != nil {
 		return nil, fmt.Errorf("failed to store provider session: %w", storeErr)
 	}
 

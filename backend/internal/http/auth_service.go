@@ -102,7 +102,7 @@ func (s *AuthService) UserAuthHandler() http.Handler {
 			return
 		}
 
-		if s.delegateAuthFlowToProvider(w, r) {
+		if s.delegateAuthHandlerToProvider(w, r) {
 			return
 		}
 
@@ -125,7 +125,7 @@ func (s *AuthService) UserAuthHandler() http.Handler {
 	})
 }
 
-func (s *AuthService) delegateAuthFlowToProvider(w http.ResponseWriter, r *http.Request) bool {
+func (s *AuthService) delegateAuthHandlerToProvider(w http.ResponseWriter, r *http.Request) bool {
 	ctx := r.Context()
 
 	onSessionCreatedCallback := func(provUser *ent.User, expiresAt time.Time, redirect string) {
@@ -153,6 +153,7 @@ func (s *AuthService) delegateAuthFlowToProvider(w http.ResponseWriter, r *http.
 		}
 
 		http.SetCookie(w, s.makeSessionCookie(r, token, expiresAt, 0))
+
 		if redirect != "" {
 			http.Redirect(w, r, redirect, http.StatusFound)
 		}

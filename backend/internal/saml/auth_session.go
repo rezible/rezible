@@ -42,18 +42,13 @@ type Config struct {
 }
 
 type AuthSessionProvider struct {
-	appUrl *url.URL
-	mw     *samlsp.Middleware
+	pathBase string
+	mw       *samlsp.Middleware
 }
 
 func NewAuthSessionProvider(ctx context.Context) (*AuthSessionProvider, error) {
-	appUrl, appUrlErr := url.Parse(rez.BackendUrl)
-	if appUrlErr != nil {
-		return nil, fmt.Errorf("bad app url: %w", appUrlErr)
-	}
-
 	p := &AuthSessionProvider{
-		appUrl: appUrl,
+		pathBase: "/auth/saml/",
 	}
 
 	cfg, cfgErr := loadConfig()
@@ -61,14 +56,11 @@ func NewAuthSessionProvider(ctx context.Context) (*AuthSessionProvider, error) {
 		return nil, fmt.Errorf("config error: %w", cfgErr)
 	}
 
-	mw, mwErr := p.createSamlMiddleware(ctx, cfg)
-	if mwErr != nil {
+	if mwErr := p.createSamlMiddleware(ctx, cfg); mwErr != nil {
 		return nil, fmt.Errorf("failed to create saml middleware: %w", mwErr)
 	}
 
-	return &AuthSessionProvider{
-		mw: mw,
-	}, nil
+	return p, nil
 }
 
 func loadConfig() (Config, error) {
@@ -88,34 +80,44 @@ func loadConfig() (Config, error) {
 }
 
 func (p *AuthSessionProvider) Name() string {
-	return "SAML"
+	return "saml"
 }
 
-func (p *AuthSessionProvider) createSamlMiddleware(ctx context.Context, cfg Config) (*samlsp.Middleware, error) {
-	cert, kpErr := loadCert(cfg.CertFile, cfg.CertKeyFile)
-	if kpErr != nil {
-		return nil, fmt.Errorf("cert error: %w", kpErr)
+func (p *AuthSessionProvider) createSamlMiddleware(ctx context.Context, cfg Config) error {
+	appUrl, appUrlErr := url.Parse(rez.BackendUrl)
+	if appUrlErr != nil {
+		return fmt.Errorf("bad app url: %w", appUrlErr)
 	}
 
-	privateKey, ok := cert.PrivateKey.(*rsa.PrivateKey)
+	keyPair, pairErr := tls.LoadX509KeyPair(cfg.CertFile, cfg.CertKeyFile)
+	if pairErr != nil {
+		return fmt.Errorf("failed to load keypair: %w", pairErr)
+	}
+	cert, certErr := x509.ParseCertificate(keyPair.Certificate[0])
+	if certErr != nil {
+		return fmt.Errorf("failed to parse keypair cert: %w", certErr)
+	}
+	keyPair.Leaf = cert
+
+	privateKey, ok := keyPair.PrivateKey.(*rsa.PrivateKey)
 	if !ok {
-		return nil, fmt.Errorf("failed to cast *rsa.PrivateKey")
+		return fmt.Errorf("failed to cast *rsa.PrivateKey")
 	}
 
 	idpMetadataURL, idpUrlErr := url.Parse(cfg.IdPMetadataUrl)
 	if idpUrlErr != nil {
-		return nil, fmt.Errorf("bad idp url: %w", idpUrlErr)
+		return fmt.Errorf("bad idp url: %w", idpUrlErr)
 	}
 
 	idpMetadata, metadataErr := samlsp.FetchMetadata(ctx, http.DefaultClient, *idpMetadataURL)
 	if metadataErr != nil {
-		return nil, fmt.Errorf("fetching idp metadata: %w", metadataErr)
+		return fmt.Errorf("fetching idp metadata: %w", metadataErr)
 	}
 
 	opts := samlsp.Options{
-		URL:                *p.appUrl,
+		URL:                *appUrl,
 		Key:                privateKey,
-		Certificate:        cert.Leaf,
+		Certificate:        cert,
 		CookieName:         sessionCookieName,
 		IDPMetadata:        idpMetadata,
 		SignRequest:        true,
@@ -124,40 +126,35 @@ func (p *AuthSessionProvider) createSamlMiddleware(ctx context.Context, cfg Conf
 
 	mw, mwErr := samlsp.New(opts)
 	if mwErr != nil {
-		return nil, fmt.Errorf("samlsp.New: %w", mwErr)
+		return fmt.Errorf("samlsp.New: %w", mwErr)
 	}
+
+	mw.OnError = p.handleSamlError
 
 	// fix redirect urls
 	resolveMountedPath := func(path string) url.URL {
-		return *(p.appUrl.ResolveReference(&url.URL{Path: "/auth" + path}))
+		return *appUrl.ResolveReference(&url.URL{Path: p.pathBase + path})
 	}
-	mw.ServiceProvider.SloURL = resolveMountedPath("/saml/slo")
-	mw.ServiceProvider.AcsURL = resolveMountedPath("/saml/acs")
-	mw.ServiceProvider.AcsURL = resolveMountedPath("/saml/metadata")
+	mw.ServiceProvider.SloURL = resolveMountedPath("slo")
+	mw.ServiceProvider.AcsURL = resolveMountedPath("acs")
+	mw.ServiceProvider.AcsURL = resolveMountedPath("metadata")
 
-	mw.OnError = func(w http.ResponseWriter, _ *http.Request, err error) {
-		var parseErr *saml.InvalidResponseError
-		if errors.As(err, &parseErr) {
-			log.Printf("WARNING: received invalid saml response: %s (now: %s) %s",
-				parseErr.Response, parseErr.Now, parseErr.PrivateErr)
-		}
-		http.Error(w, http.StatusText(http.StatusForbidden), http.StatusForbidden)
-	}
+	p.mw = mw
 
-	return mw, nil
+	return nil
 }
 
-func loadCert(certFile, keyFile string) (*tls.Certificate, error) {
-	keyPair, pairErr := tls.LoadX509KeyPair(certFile, keyFile)
-	if pairErr != nil {
-		return nil, fmt.Errorf("failed to load keypair: %w", pairErr)
+func (p *AuthSessionProvider) handleSamlError(w http.ResponseWriter, _ *http.Request, err error) {
+	var parseErr *saml.InvalidResponseError
+	if errors.As(err, &parseErr) {
+		log.Printf("WARNING: received invalid saml response: %s (now: %s) %s",
+			parseErr.Response, parseErr.Now, parseErr.PrivateErr)
 	}
-	parsedCert, parseErr := x509.ParseCertificate(keyPair.Certificate[0])
-	if parseErr != nil {
-		return nil, fmt.Errorf("failed to parse keypair cert: %w", parseErr)
-	}
-	keyPair.Leaf = parsedCert
-	return &keyPair, nil
+	http.Error(w, http.StatusText(http.StatusForbidden), http.StatusForbidden)
+}
+
+func (p *AuthSessionProvider) StartAuthFlow(w http.ResponseWriter, r *http.Request) {
+	p.mw.HandleStartAuthFlow(w, r)
 }
 
 func (p *AuthSessionProvider) HandleAuthFlowRequest(w http.ResponseWriter, r *http.Request, onCreated rez.AuthSessionCreatedFn) bool {
@@ -178,7 +175,9 @@ func (p *AuthSessionProvider) HandleAuthFlowRequest(w http.ResponseWriter, r *ht
 }
 
 func (p *AuthSessionProvider) ClearSession(w http.ResponseWriter, r *http.Request) {
-	// TODO: logout
+	if delErr := p.mw.Session.DeleteSession(w, r); delErr != nil {
+		log.Error().Err(delErr).Msgf("failed to delete saml session")
+	}
 }
 
 // mostly taken from samlsp
@@ -228,40 +227,34 @@ func (p *AuthSessionProvider) handleServeACS(w http.ResponseWriter, r *http.Requ
 		return fmt.Errorf("failed to create session: %w", createErr)
 	}
 
-	user, expiresAt, sessErr := p.createSessionFromAssertion(assertion)
+	sessErr := p.createSession(assertion, redirectUri, onCreated)
 	if sessErr != nil {
 		return fmt.Errorf("failed to convert assertion to auth session: %w", sessErr)
 	}
 
-	onCreated(user, expiresAt, redirectUri)
-
 	return nil
 }
 
-func (p *AuthSessionProvider) StartAuthFlow(w http.ResponseWriter, r *http.Request) {
-	p.mw.HandleStartAuthFlow(w, r)
-}
-
-func (p *AuthSessionProvider) createSessionFromAssertion(a *saml.Assertion) (*ent.User, time.Time, error) {
+func (p *AuthSessionProvider) createSession(a *saml.Assertion, redirectUri string, onCreated rez.AuthSessionCreatedFn) error {
 	var expiresAt time.Time
-	sp, ok := p.mw.Session.(samlsp.CookieSessionProvider)
-	if !ok {
-		return nil, expiresAt, fmt.Errorf("failed to get cookie session provider")
+	sp, spOk := p.mw.Session.(samlsp.CookieSessionProvider)
+	if !spOk {
+		return fmt.Errorf("failed to get cookie session provider")
 	}
 
 	sess, sessErr := sp.Codec.New(a)
 	if sessErr != nil {
-		return nil, expiresAt, fmt.Errorf("failed to create session: %w", sessErr)
+		return fmt.Errorf("failed to create session: %w", sessErr)
 	}
 
-	sa, ok := sess.(samlsp.SessionWithAttributes)
-	if !ok {
-		return nil, expiresAt, fmt.Errorf("saml: session does not implement samlsp.SessionWithAttributes")
+	sa, saOk := sess.(samlsp.SessionWithAttributes)
+	if !saOk {
+		return fmt.Errorf("saml: session does not implement samlsp.SessionWithAttributes")
 	}
 
 	claims, claimsOk := sess.(samlsp.JWTSessionClaims)
 	if !claimsOk {
-		return nil, expiresAt, fmt.Errorf("session does not implement samlsp.JWTSessionClaims")
+		return fmt.Errorf("session does not implement samlsp.JWTSessionClaims")
 	}
 
 	attr := sa.GetAttributes()
@@ -271,7 +264,9 @@ func (p *AuthSessionProvider) createSessionFromAssertion(a *saml.Assertion) (*en
 	}
 	expiresAt = time.Unix(claims.ExpiresAt, 0)
 
-	return user, expiresAt, nil
+	onCreated(user, expiresAt, redirectUri)
+
+	return nil
 }
 
 func (p *AuthSessionProvider) GetUserMapping() *ent.User {
