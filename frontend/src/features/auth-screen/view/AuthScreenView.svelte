@@ -45,6 +45,7 @@
 			<Button href="{AUTH_URL_BASE}/logout" loading={configQuery.isLoading} color="primary" variant="fill">Logout</Button>
 		{:else}
 			<Button href="{AUTH_URL_BASE}/saml" loading={configQuery.isLoading} color="primary" variant="fill">Continue with SAML</Button>
+			<Button href="{AUTH_URL_BASE}/openid-connect" loading={configQuery.isLoading} color="primary" variant="fill">Continue with Open ID Connect</Button>
 			<Button href="{AUTH_URL_BASE}/github" loading={configQuery.isLoading} color="primary" variant="fill">Continue with Github</Button>
 		{/if}
 	</div>

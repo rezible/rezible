@@ -188,6 +188,13 @@ func (s *rezServer) makeAuthService(ctx context.Context, users rez.UserService) 
 		provs = append(provs, ghProv)
 	}
 
+	oidcProv, oidcErr := goth.NewOIDCProvider()
+	if oidcErr != nil {
+		log.Error().Err(oidcErr).Msg("failed to load OIDC provider")
+	} else {
+		provs = append(provs, oidcProv)
+	}
+
 	return http.NewAuthService(secretKey, users, provs)
 }
 

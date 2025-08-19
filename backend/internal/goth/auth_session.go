@@ -12,6 +12,7 @@ import (
 	"strings"
 
 	"github.com/gorilla/sessions"
+	"github.com/markbates/goth/providers/openidConnect"
 	"github.com/rs/zerolog/log"
 
 	"github.com/markbates/goth"
@@ -41,10 +42,11 @@ type AuthSessionProvider struct {
 }
 
 type Config struct {
-	Provider     string `json:"provider"`
-	ClientKey    string `json:"client_key"`
-	ClientSecret string `json:"client_secret"`
-	DiscoveryUrl string `json:"oidc_discovery_url,omitempty"`
+	Provider     string   `json:"provider"`
+	ClientKey    string   `json:"client_key"`
+	ClientSecret string   `json:"client_secret"`
+	DiscoveryUrl string   `json:"oidc_discovery_url,omitempty"`
+	Scopes       []string `json:"scopes"`
 }
 
 func NewGithubProvider() (*AuthSessionProvider, error) {
@@ -57,6 +59,23 @@ func NewGithubProvider() (*AuthSessionProvider, error) {
 		Provider:     "github",
 		ClientKey:    clientKey,
 		ClientSecret: clientSecret,
+		Scopes:       []string{"user:email"},
+	})
+}
+
+func NewOIDCProvider() (*AuthSessionProvider, error) {
+	clientKey := os.Getenv("OIDC_CLIENT_KEY")
+	clientSecret := os.Getenv("OIDC_CLIENT_SECRET")
+	discoveryUrl := os.Getenv("OIDC_DISCOVERY_URL")
+	if clientKey == "" {
+		return nil, fmt.Errorf("client key/secret env vars not set")
+	}
+	return NewAuthSessionProvider(Config{
+		Provider:     "openid-connect",
+		ClientKey:    clientKey,
+		ClientSecret: clientSecret,
+		DiscoveryUrl: discoveryUrl,
+		Scopes:       []string{"openid", "profile", "email"},
 	})
 }
 
@@ -80,10 +99,11 @@ func registerProvider(cfg Config, callbackPath string) (goth.Provider, error) {
 		return nil, fmt.Errorf("creating callback url: %w", urlErr)
 	}
 
-	scopes := []string{"user:email"}
 	switch provName {
 	case "github":
-		return github.New(cfg.ClientKey, cfg.ClientSecret, callbackUrl, scopes...), nil
+		return github.New(cfg.ClientKey, cfg.ClientSecret, callbackUrl, cfg.Scopes...), nil
+	case "openid-connect":
+		return openidConnect.New(cfg.ClientKey, cfg.ClientSecret, callbackUrl, cfg.DiscoveryUrl, cfg.Scopes...)
 	}
 	return nil, fmt.Errorf("unknown provider: %s", provName)
 }
