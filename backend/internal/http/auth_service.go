@@ -101,22 +101,17 @@ func (s *AuthService) UserAuthHandler() http.Handler {
 			return
 		}
 
-		token, cookieErr := oapi.GetRequestSessionCookieToken(r)
-		if cookieErr != nil {
-			http.Error(w, http.StatusText(http.StatusUnauthorized), http.StatusUnauthorized)
-			return
-		}
-		_, sessErr := s.VerifyAuthSessionToken(token, nil)
-		if sessErr != nil {
-			http.Error(w, "failed to verify session", http.StatusUnauthorized)
-			return
-			//isRedirectable := errors.Is(sessErr, rez.ErrAuthSessionExpired) || errors.Is(sessErr, rez.ErrNoAuthSession)
-			//if isRedirectable {
-			//	// TODO: dont redirect or check which provider used
-			//	s.providers[0].StartAuthFlow(w, r)
-			//	return
-			//}
-		}
+		//token, cookieErr := oapi.GetRequestSessionCookieToken(r)
+		//if cookieErr != nil {
+		//	http.Error(w, http.StatusText(http.StatusUnauthorized), http.StatusUnauthorized)
+		//	return
+		//}
+		//
+		//_, sessErr := s.VerifyAuthSessionToken(token, nil)
+		//if sessErr != nil {
+		//	http.Error(w, http.StatusText(http.StatusUnauthorized), http.StatusUnauthorized)
+		//	return
+		//}
 		http.Redirect(w, r, rez.FrontendUrl, http.StatusFound)
 	})
 }

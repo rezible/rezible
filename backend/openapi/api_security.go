@@ -9,10 +9,8 @@ import (
 
 	"github.com/danielgtaylor/huma/v2"
 	"github.com/danielgtaylor/huma/v2/adapters/humago"
-	"github.com/rezible/rezible/access"
-	"github.com/rs/zerolog/log"
-
 	rez "github.com/rezible/rezible"
+	"github.com/rezible/rezible/access"
 )
 
 type oapiSecurity = []map[string][]string
@@ -127,7 +125,6 @@ func MakeSecurityMiddleware(auth rez.AuthService) Middleware {
 			var authErr error
 			authCtx, authErr = auth.CreateVerifiedApiAuthContext(c.Context(), token, requiredScopes)
 			if authErr != nil {
-				log.Debug().Err(authErr).Msg("failed to verify auth")
 				writeStatusError(w, authErr)
 				return
 			}
