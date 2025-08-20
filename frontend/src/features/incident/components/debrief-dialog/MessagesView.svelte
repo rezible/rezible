@@ -2,16 +2,18 @@
 	import { Avatar as UxAvatar } from "svelte-ux";
 	import { mdiAbacus } from "@mdi/js";
 	import type { IncidentDebriefMessage } from "$lib/api";
-	import { session } from "$lib/auth.svelte";
+	import { useAuthSessionState } from "$lib/auth.svelte";
 	import Avatar from "$components/avatar/Avatar.svelte";
 	import PulseLoader from "$components/loader/PulseLoader.svelte";
 	import { onMount } from "svelte";
 
-	interface Props {
+	type Props = {
 		messages: IncidentDebriefMessage[];
 		waitingForResponse: boolean;
 	}
 	let { messages, waitingForResponse }: Props = $props();
+
+	const session = useAuthSessionState();
 
 	let container = $state<HTMLElement>();
 	const scrollToLatestMessage = () => {

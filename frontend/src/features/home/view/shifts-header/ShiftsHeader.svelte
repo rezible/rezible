@@ -1,14 +1,14 @@
 <script lang="ts">
-	import { createQuery } from "@tanstack/svelte-query";
 	import { mdiPlus } from "@mdi/js";
 	import Button from "$components/button/Button.svelte";
-	import { getUserOncallInformationOptions, type OncallShift } from "$lib/api";
-	import { session } from "$lib/auth.svelte";
+	import { type OncallShift } from "$lib/api";
+	import { useAuthSessionState } from "$lib/auth.svelte";
 	import ActiveShiftCard from "./ActiveShiftCard.svelte";
 	import WatchRosterDialog from "./WatchRosterDialog.svelte";
 	import { useUserOncallInformation } from "$lib/userOncall.svelte";
 
-	const userId = $derived(session.userId);
+	const session = useAuthSessionState();
+	const userId = $derived(session.user?.id);
 	const oncallInfo = useUserOncallInformation();
 
 	const watchedRosterIds = $derived(oncallInfo.current?.watchingRosters.map(r => r.id) ?? []);

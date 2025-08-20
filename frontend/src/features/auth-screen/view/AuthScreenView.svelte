@@ -1,22 +1,27 @@
 <script lang="ts">
 	import { createQuery } from "@tanstack/svelte-query";
-	import { dev } from "$app/environment";
-	import { getAuthSessionConfigOptions } from "$lib/api";
-	import { session, type SessionErrorCategory } from "$lib/auth.svelte";
+	import { BACKEND_URL, getAuthSessionConfigOptions } from "$lib/api";
+	import { useAuthSessionState, type SessionErrorCategory } from "$lib/auth.svelte";
 	import Button from "$components/button/Button.svelte";
 	import Header from "$components/header/Header.svelte";
+	import { mdiAccountGroup, mdiGithub } from "@mdi/js";
+	import Icon from "$src/components/icon/Icon.svelte";
 
-	// TODO: load this
-	const AUTH_URL_BASE = dev ? "http://localhost:8888/auth" : "/auth";
+	const session = useAuthSessionState();
 
 	const configQuery = createQuery(() => getAuthSessionConfigOptions());
 	const config = $derived(configQuery.data?.data);
 
+	const providers = $derived(config?.providers.filter(p => p.enabled));
+
 	const errorCategory = $derived(session.error?.category);
 
-	// redirect to logout if user is not found
-	const authPath = $derived(errorCategory === "no_user" ? "/logout" : "");
-	const authUrl = $derived(`${AUTH_URL_BASE}${authPath}`);
+	type ProviderDisplay = {label: string; icon?: string};
+	const providerDisplay: Record<string, ProviderDisplay> = {
+		"saml": {label: "SSO"},
+		"openid-connect": {label: "SSO"},
+		"github": {label: "Github", icon: mdiGithub},
+	};
 
 	const errorDisplayText: Record<SessionErrorCategory, string> = {
 		unknown: "An unknown error occurred",
@@ -42,11 +47,19 @@
 		{/if}
 
 		{#if errorCategory === "no_user"}
-			<Button href="{AUTH_URL_BASE}/logout" loading={configQuery.isLoading} color="primary" variant="fill">Logout</Button>
-		{:else}
-			<Button href="{AUTH_URL_BASE}/saml" loading={configQuery.isLoading} color="primary" variant="fill">Continue with SAML</Button>
-			<Button href="{AUTH_URL_BASE}/openid-connect" loading={configQuery.isLoading} color="primary" variant="fill">Continue with Open ID Connect</Button>
-			<Button href="{AUTH_URL_BASE}/github" loading={configQuery.isLoading} color="primary" variant="fill">Continue with Github</Button>
+			<Button href="{BACKEND_URL}/logout" loading={configQuery.isLoading} color="primary" variant="fill">Logout</Button>
+		{:else if !!providers}
+			{#each providers as p}
+				{@const display = providerDisplay[p.name]}
+				<Button href="{BACKEND_URL}{p.startFlowEndpoint}" color="primary" variant="fill">
+					<span class="flex items-center gap-2">
+					Continue with {display.label ?? p.name}
+					{#if display?.icon}
+						<Icon data={display.icon} />
+					{/if}
+					</span>
+				</Button>
+			{/each}
 		{/if}
 	</div>
 </div>

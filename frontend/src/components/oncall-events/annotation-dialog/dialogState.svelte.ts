@@ -1,5 +1,5 @@
 import { createOncallAnnotationMutation, type OncallEvent, updateOncallAnnotationMutation, type OncallAnnotation, type AlertFeedbackInstance, type OncallRoster, getUserOncallInformationOptions } from "$lib/api";
-import { session } from "$lib/auth.svelte";
+import { useAuthSessionState } from "$lib/auth.svelte";
 import { useUserOncallInformation } from "$src/lib/userOncall.svelte";
 import { createMutation, createQuery } from "@tanstack/svelte-query";
 import { Context } from "runed";
@@ -49,6 +49,8 @@ type DialogOptions = {
 	onClosed?: OnCloseFn;
 }
 export class AnnotationDialogState {
+	private session = useAuthSessionState();
+
 	event = $state<OncallEvent>();
 	annotation = $state<OncallAnnotation>();
 
@@ -71,7 +73,7 @@ export class AnnotationDialogState {
 
 	view = $derived.by(() => {
 		if (!this.event) return false;
-		if (this.annotation?.attributes.creator.id === session.userId) return "edit";
+		if (this.annotation?.attributes.creator.id === this.session.user?.id) return "edit";
 		if (!this.annotation && this.allowCreating) {
 			if (this.userActiveShifts.length > 0) return "create";
 			return false; // shouldn't happen??

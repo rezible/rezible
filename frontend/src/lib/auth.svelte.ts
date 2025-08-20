@@ -1,16 +1,21 @@
+import { goto, onNavigate } from "$app/navigation";
+import { page } from "$app/state";
 import {
-	client,
 	type UserNotification,
 	type GetCurrentUserAuthSessionResponse,
 	type User,
+	getCurrentUserAuthSessionOptions,
+	type ErrorModel,
 } from "$lib/api";
 import { parseAbsoluteToLocal } from "@internationalized/date";
-import { getCurrentUserAuthSession } from "./api/oapi.gen";
-import { QueryClient } from "@tanstack/svelte-query";
+import { redirect } from "@sveltejs/kit";
+import { createQuery, QueryClient } from "@tanstack/svelte-query";
+import { Context, watch } from "runed";
+import { onMount } from "svelte";
 
 export type SessionErrorCategory = "unknown" | "invalid" | "expired" | "no_session" | "no_user";
 
-type SessionError = {
+export type SessionError = {
 	category: SessionErrorCategory;
 	code?: string;
 };
@@ -20,59 +25,29 @@ type AuthSession = {
 	user: User;
 };
 
-const parseUserAuthSessionResponse = ({ data }: GetCurrentUserAuthSessionResponse): AuthSession => {
+const parseUserAuthSessionResponse = (resp: GetCurrentUserAuthSessionResponse): AuthSession => {
 	return {
-		user: data.user,
-		expiresAt: parseAbsoluteToLocal(data.expiresAt).toDate(),
+		user: resp.data.user,
+		expiresAt: parseAbsoluteToLocal(resp.data.expiresAt).toDate(),
 	};
 };
 
-const createAuthSessionState = () => {
-	let session = $state<AuthSession>();
-	let loaded = $state(false);
-	let error = $state<SessionError>();
+export class AuthSessionState {
+	private query = createQuery(() => getCurrentUserAuthSessionOptions());
 
-	const set = (s: AuthSession) => {
-		session = s;
-
-		if (s.expiresAt < new Date(Date.now())) {
-			error = {category: "expired"};
-		} else {
-			error = undefined;
+	session = $derived(this.query.data ? parseUserAuthSessionResponse(this.query.data) : null);
+	loaded = $derived(this.query.isFetched);
+	user = $derived(this.session?.user);
+	
+	error = $derived.by<SessionError | undefined>(() => {
+		if (this.session && this.session.expiresAt < new Date(Date.now())) {
+			return {category: "expired"};
 		}
-	};
-
-	const clear = () => {
-		session = undefined;
-		error = undefined;
-		loaded = false;
-	};
-
-	const load = async (_fetch?: typeof fetch) => {
-		if (loaded) return !!session;
-
-		const {
-			data,
-			error: respError,
-			response,
-		} = await getCurrentUserAuthSession({
-			client,
-			fetch: _fetch,
-			throwOnError: false,
-		});
-
-		loaded = true;
-
-		if (data) {
-			set(parseUserAuthSessionResponse(data));
-			return true;
-		}
-
-		clear();
-
+		if (!this.query.error) return;
+		const err = this.query.error as ErrorModel;
 		let errCategory: SessionErrorCategory = "unknown";
-		const status = response.status;
-		const errCode = respError.detail;
+		const status = err.status ?? 503;
+		const errCode = err.detail;
 		if (status === 401) {
 			if (errCode === "session_expired") {
 				errCategory = "expired";
@@ -85,40 +60,15 @@ const createAuthSessionState = () => {
 			errCategory = "no_user";
 		} else if (status >= 500) {
 			// TODO
-			console.error("failed to get auth session", status, respError);
+			console.error("failed to get auth session", status, err);
 		}
-
-		error = {category: errCategory, code: errCode};
-
-		return false;
-	};
-
-	return {
-		load,
-		get user() {
-			return session?.user;
-		},
-		get userId() {
-			return session?.user.id;
-		},
-		get username() {
-			return session?.user.attributes.name || "<username>";
-		},
-		get email() {
-			return session?.user.attributes.email || "<email>";
-		},
-		get accentColor() {
-			return "#a33333";
-		},
-		get error() {
-			return error;
-		},
-		get expiresAt() {
-			return session?.expiresAt;
-		},
-	};
+		return {category: errCategory, code: errCode} as SessionError;
+	});
 };
-export const session = createAuthSessionState();
+
+const sessionCtx = new Context<AuthSessionState>("authSession");
+export const setAuthSessionState = (s: AuthSessionState) => sessionCtx.set(s);
+export const useAuthSessionState = () => sessionCtx.get();
 
 /*
 const refreshWindowSecs = 60 * 3;

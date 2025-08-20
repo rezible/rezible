@@ -5,7 +5,6 @@ import Paragraph from "@tiptap/extension-paragraph";
 import Text from "@tiptap/extension-text";
 import Bold from "@tiptap/extension-bold";
 import Italic from "@tiptap/extension-italic";
-import { session } from "$lib/auth.svelte";
 
 import { RezUserSuggestion } from "$components/tiptap-editor/user-suggestions/user-suggestion.svelte";
 import { configureUserMentionExtension } from "@rezible/documents/tiptap-extensions";
@@ -58,7 +57,6 @@ const createDraft = () => {
 	};
 
 	const create = (editor: Editor) => {
-		if (!session.user) return;
 		clear(false);
 		set({ editor });
 		editor.commands.draftDiscussion();

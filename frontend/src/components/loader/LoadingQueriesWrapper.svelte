@@ -1,8 +1,8 @@
 <script lang="ts" generics="CombinedQueryResultData">
-	import { createQueries, type QueriesResults } from "@tanstack/svelte-query";
+	import { createQueries } from "@tanstack/svelte-query";
 	import LoadingIndicator from "./LoadingIndicator.svelte";
 	import type { Snippet } from "svelte";
-	import { tryUnwrapApiError, type ErrorModel } from "$lib/api";
+	import type { ErrorModel } from "$lib/api";
 	import Card from "$components/card/Card.svelte";
 	import Header from "$components/header/Header.svelte";
 
@@ -18,7 +18,7 @@
 
 	const isLoading = $derived(!!queries.find((q) => q.isLoading));
 	const isError = $derived(!!queries.find((q) => q.isError));
-	const errors = $derived(queries.map((q) => (q.isError ? tryUnwrapApiError(q.error) : null)));
+	const errors = $derived(queries.map((q) => (!!q.error ? (q.error as ErrorModel) : null)));
 	const data = $derived(queries.map((q) => q.data ?? null));
 </script>
 

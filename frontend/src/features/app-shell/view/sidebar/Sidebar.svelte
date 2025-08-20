@@ -14,9 +14,11 @@
 	} from "@mdi/js";
 	import { cls } from '@layerstack/tailwind';
 	import Icon from "$components/icon/Icon.svelte";
-	import { session } from "$lib/auth.svelte";
+	import { useAuthSessionState } from "$lib/auth.svelte";
 	import OmniSearch from "./omni-search/OmniSearch.svelte";
 	import UserProfileMenu from "./UserProfileMenu.svelte";
+
+	const session = useAuthSessionState();
 
 	type SidebarRoute = {
 		path: string;

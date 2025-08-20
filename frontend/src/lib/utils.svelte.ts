@@ -1,14 +1,3 @@
-import {
-	QueryObserver,
-	useQueryClient,
-	type FetchStatus,
-	type FunctionedParams,
-	type QueryKey,
-	type QueryObserverResult,
-	type UndefinedInitialDataOptions,
-} from "@tanstack/svelte-query";
-import type { DateRange as DateRangeType } from '@layerstack/utils/dateRange';
-import { tryUnwrapApiError, type ErrorModel } from "./api";
 import { z } from "zod";
 import { CalendarDate, getLocalTimeZone, now, type DateTimeDuration } from "@internationalized/date";
 import { PeriodType } from "@layerstack/utils";
@@ -23,37 +12,6 @@ export function debounce<T extends Function>(cb: T, wait = 100) {
 	};
 	return <T>(<any>callable);
 }
-
-export const onQueryUpdate = <D, E extends Error, K extends QueryKey>(
-	optsFn: FunctionedParams<UndefinedInitialDataOptions<any, E, D, K>>,
-	onData: (data: D) => void,
-	onError?: (error: ErrorModel) => void
-) => {
-	let lastStatus = $state<FetchStatus>();
-	const onChange = (res: QueryObserverResult<D, Error>) => {
-		if (res.fetchStatus === lastStatus) return;
-		lastStatus = res.fetchStatus;
-		if (res.isError && onError) {
-			const queryErr = tryUnwrapApiError(new Error("foo"));
-			onError(queryErr);
-		}
-		if (res.isSuccess) onData(res.data);
-	};
-
-	const queryKey = $derived(optsFn().queryKey);
-	const client = useQueryClient();
-	$effect(() => {
-		if (!queryKey) return;
-		const observer = new QueryObserver<any, Error, D, K>(client, {
-			queryKey,
-		});
-		observer.subscribe(onChange);
-		return () => {
-			observer.destroy();
-			lastStatus = undefined;
-		};
-	});
-};
 
 const refineZonedDateTimeString = (dateStr: string) => {
 	try {

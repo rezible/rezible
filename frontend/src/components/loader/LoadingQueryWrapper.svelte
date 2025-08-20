@@ -1,7 +1,7 @@
 <script lang="ts" generics="QueryResultData">
 	import type { Snippet } from "svelte";
 	import type { CreateQueryResult } from "@tanstack/svelte-query";
-	import { tryUnwrapApiError, type ErrorModel } from "$lib/api";
+	import type { ErrorModel } from "$lib/api";
 	import LoadingIndicator from "./LoadingIndicator.svelte";
 	import Card from "$components/card/Card.svelte";
 	import Header from "$components/header/Header.svelte";
@@ -13,6 +13,8 @@
 		error?: Snippet<[ErrorModel]>;
 	};
 	const { query, view, loading, error }: Props = $props();
+
+	const queryError = $derived<ErrorModel | undefined>(!!query.error ? (query.error as ErrorModel) : undefined);
 </script>
 
 {#snippet defaultErrorView(err: ErrorModel)}
@@ -44,12 +46,11 @@
 	{:else}
 		<LoadingIndicator />
 	{/if}
-{:else if query.isError}
-	{@const err = tryUnwrapApiError(query.error)}
+{:else if queryError}
 	{#if error}
-		{@render error(err)}
+		{@render error(queryError)}
 	{:else}
-		{@render defaultErrorView(err)}
+		{@render defaultErrorView(queryError)}
 	{/if}
 {/if}
 

@@ -1,10 +1,22 @@
 <script lang="ts">
 	import "$src/app.postcss";
-	import { QueryClientProvider } from "@tanstack/svelte-query";
+	import { browser, dev } from "$app/environment";
+	import { QueryClient, QueryClientProvider } from "@tanstack/svelte-query";
 	import { ThemeInit } from "svelte-ux";
 	import AppShell from "$features/app-shell/view/AppShellView.svelte";
 
-	const { data, children } = $props();
+	const { children } = $props();
+
+	const queryClient = new QueryClient({
+		defaultOptions: {
+			queries: {
+				enabled: browser,
+				retry: false,
+				refetchOnWindowFocus: dev,
+				staleTime: 5000,
+			},
+		},
+	});
 </script>
 
 <svelte:head>
@@ -13,6 +25,6 @@
 
 <ThemeInit />
 
-<QueryClientProvider client={data.queryClient}>
+<QueryClientProvider client={queryClient}>
 	<AppShell>{@render children()}</AppShell>
 </QueryClientProvider>

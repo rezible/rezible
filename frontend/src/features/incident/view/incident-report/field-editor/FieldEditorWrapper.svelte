@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { onMount } from "svelte";
 	import { type RetrospectiveReportSection } from "$lib/api";
-	import { session } from "$lib/auth.svelte";
+	import { useAuthSessionState } from "$lib/auth.svelte";
 
 	import { activeAnnotation, activeEditor } from "$features/incident/lib/activeEditor.svelte";
 	import TiptapEditor, { Editor as SvelteEditor } from "$components/tiptap-editor/TiptapEditor.svelte";
@@ -28,8 +28,13 @@
 	};
 	let { section, provider, setIsActive, onCreateAnnotation, focusEditor = $bindable() }: Props = $props();
 
+	const session = useAuthSessionState();
+
+	// TODO: load this
+	const userAccentColor = "#a33333";
+
 	const configureEditorExtensions = (field: string, provider: HocuspocusProvider) => {
-		const user = { name: session.username, color: session.accentColor };
+		const user = { name: session.user?.attributes.name, color: userAccentColor };
 		const extensions: Extensions = [
 			...configureBaseExtensions(false),
 			configureUserMentionExtension(RezUserSuggestion),
