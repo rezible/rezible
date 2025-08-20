@@ -190,12 +190,13 @@ func (s *rezServer) makeAuthService(ctx context.Context, users rez.UserService) 
 		provs = append(provs, ghProv)
 	}
 
-	if authProviderEnabled("oidc") {
-		oidcProv, oidcErr := goth.NewOIDCProvider()
-		if oidcErr != nil {
-			return nil, fmt.Errorf("goth.NewOIDCProvider: %w", oidcErr)
+	if authProviderEnabled("google_oidc") {
+		log.Debug().Msg("using google oidc")
+		googleProv, googleErr := goth.NewGoogleOIDCProvider()
+		if googleErr != nil {
+			return nil, fmt.Errorf("goth.NewGoogleOIDCProvider: %w", googleErr)
 		}
-		provs = append(provs, oidcProv)
+		provs = append(provs, googleProv)
 	}
 
 	secretKey := os.Getenv("AUTH_SESSION_SECRET_KEY")

@@ -4,7 +4,7 @@
 	import { useAuthSessionState, type SessionErrorCategory } from "$lib/auth.svelte";
 	import Button from "$components/button/Button.svelte";
 	import Header from "$components/header/Header.svelte";
-	import { mdiAccountGroup, mdiGithub } from "@mdi/js";
+	import { mdiAccountGroup, mdiGithub, mdiGoogle } from "@mdi/js";
 	import Icon from "$src/components/icon/Icon.svelte";
 
 	const session = useAuthSessionState();
@@ -17,11 +17,12 @@
 	const errorCategory = $derived(session.error?.category);
 
 	type ProviderDisplay = {label: string; icon?: string};
-	const providerDisplay: Record<string, ProviderDisplay> = {
-		"saml": {label: "SSO"},
-		"openid-connect": {label: "SSO"},
-		"github": {label: "Github", icon: mdiGithub},
-	};
+	const providerDisplay = new Map<string, ProviderDisplay>([
+		["saml", {label: "SSO"}],
+		["google", {label: "Google", icon: mdiGoogle}],
+		["github", {label: "Github", icon: mdiGithub}],
+	]);
+	console.log(providerDisplay);
 
 	const errorDisplayText: Record<SessionErrorCategory, string> = {
 		unknown: "An unknown error occurred",
@@ -50,10 +51,10 @@
 			<Button href="{BACKEND_URL}/logout" loading={configQuery.isLoading} color="primary" variant="fill">Logout</Button>
 		{:else if !!providers}
 			{#each providers as p}
-				{@const display = providerDisplay[p.name]}
+				{@const display = providerDisplay.get(p.name.toLowerCase())}
 				<Button href="{BACKEND_URL}{p.startFlowEndpoint}" color="primary" variant="fill">
 					<span class="flex items-center gap-2">
-					Continue with {display.label ?? p.name}
+					Continue with {display?.label ?? p.name}
 					{#if display?.icon}
 						<Icon data={display.icon} />
 					{/if}

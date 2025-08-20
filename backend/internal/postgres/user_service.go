@@ -6,13 +6,11 @@ import (
 	"os"
 
 	"github.com/google/uuid"
-	"github.com/rezible/rezible/access"
-	"github.com/rezible/rezible/ent/privacy"
-	"github.com/rs/zerolog/log"
-
 	rez "github.com/rezible/rezible"
+	"github.com/rezible/rezible/access"
 	"github.com/rezible/rezible/ent"
 	"github.com/rezible/rezible/ent/predicate"
+	"github.com/rezible/rezible/ent/privacy"
 	"github.com/rezible/rezible/ent/team"
 	"github.com/rezible/rezible/ent/user"
 )
@@ -80,7 +78,7 @@ func (s *UserService) LookupProviderUser(ctx context.Context, provUser *ent.User
 	email := provUser.Email
 	if rez.DebugMode && os.Getenv("REZ_DEBUG_DEFAULT_USER_EMAIL") != "" {
 		email = os.Getenv("REZ_DEBUG_DEFAULT_USER_EMAIL")
-		log.Debug().Str("email", email).Msg("using debug auth email")
+		//log.Debug().Str("email", email).Msg("using debug auth email")
 	}
 
 	allowQueryCtx := privacy.DecisionContext(ctx, privacy.Allow)

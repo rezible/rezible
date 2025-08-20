@@ -39,10 +39,12 @@ func ConfigureSessionStore(secretKey string) {
 type AuthSessionProvider struct {
 	callbackPath string
 	provider     goth.Provider
+	displayName  string
 }
 
 type Config struct {
-	Provider     string   `json:"provider"`
+	ProviderName string   `json:"provider_name"`
+	ProviderType string   `json:"provider_type"`
 	ClientKey    string   `json:"client_key"`
 	ClientSecret string   `json:"client_secret"`
 	DiscoveryUrl string   `json:"oidc_discovery_url,omitempty"`
@@ -52,35 +54,52 @@ type Config struct {
 func NewGithubProvider() (*AuthSessionProvider, error) {
 	clientKey := os.Getenv("GITHUB_CLIENT_KEY")
 	clientSecret := os.Getenv("GITHUB_CLIENT_SECRET")
-	if clientKey == "" {
+	if clientKey == "" || clientSecret == "" {
 		return nil, fmt.Errorf("client key/secret env vars not set")
 	}
 	return NewAuthSessionProvider(Config{
-		Provider:     "github",
+		ProviderName: "Github",
+		ProviderType: "github",
 		ClientKey:    clientKey,
 		ClientSecret: clientSecret,
 		Scopes:       []string{"user:email"},
 	})
 }
 
-func NewOIDCProvider() (*AuthSessionProvider, error) {
-	clientKey := os.Getenv("OIDC_CLIENT_KEY")
-	clientSecret := os.Getenv("OIDC_CLIENT_SECRET")
-	discoveryUrl := os.Getenv("OIDC_DISCOVERY_URL")
-	if clientKey == "" {
+//func NewGenericOIDCProvider() (*AuthSessionProvider, error) {
+//	clientKey := os.Getenv("OIDC_CLIENT_KEY")
+//	clientSecret := os.Getenv("OIDC_CLIENT_SECRET")
+//	discoveryUrl := os.Getenv("OIDC_DISCOVERY_URL")
+//	if clientKey == "" || clientSecret == "" || discoveryUrl == "" {
+//		return nil, fmt.Errorf("client key/secret env vars not set")
+//	}
+//	return NewAuthSessionProvider(Config{
+//		Provider:     "openid-connect",
+//		ClientKey:    clientKey,
+//		ClientSecret: clientSecret,
+//		DiscoveryUrl: discoveryUrl,
+//		Scopes:       []string{"openid", "profile", "email"},
+//	})
+//}
+
+func NewGoogleOIDCProvider() (*AuthSessionProvider, error) {
+	clientKey := os.Getenv("GOOGLE_OIDC_CLIENT_ID")
+	clientSecret := os.Getenv("GOOGLE_OIDC_CLIENT_SECRET")
+	if clientKey == "" || clientSecret == "" {
 		return nil, fmt.Errorf("client key/secret env vars not set")
 	}
 	return NewAuthSessionProvider(Config{
-		Provider:     "openid-connect",
+		ProviderName: "Google",
+		ProviderType: "openid-connect",
 		ClientKey:    clientKey,
 		ClientSecret: clientSecret,
-		DiscoveryUrl: discoveryUrl,
+		DiscoveryUrl: "https://accounts.google.com/.well-known/openid-configuration",
 		Scopes:       []string{"openid", "profile", "email"},
 	})
 }
 
 func NewAuthSessionProvider(cfg Config) (*AuthSessionProvider, error) {
-	callbackPath := fmt.Sprintf("/auth/%s/%s", strings.ToLower(cfg.Provider), "callback")
+	callbackPath := fmt.Sprintf("/auth/%s/%s", strings.ToLower(cfg.ProviderName), "callback")
 	p, provErr := registerProvider(cfg, callbackPath)
 	if provErr != nil {
 		return nil, provErr
@@ -88,28 +107,29 @@ func NewAuthSessionProvider(cfg Config) (*AuthSessionProvider, error) {
 
 	return &AuthSessionProvider{
 		callbackPath: callbackPath,
+		displayName:  cfg.ProviderName,
 		provider:     p,
 	}, nil
 }
 
 func registerProvider(cfg Config, callbackPath string) (goth.Provider, error) {
-	provName := strings.ToLower(cfg.Provider)
+	provType := strings.ToLower(cfg.ProviderType)
 	callbackUrl, urlErr := url.JoinPath(rez.BackendUrl, callbackPath)
 	if urlErr != nil {
 		return nil, fmt.Errorf("creating callback url: %w", urlErr)
 	}
 
-	switch provName {
+	switch provType {
 	case "github":
 		return github.New(cfg.ClientKey, cfg.ClientSecret, callbackUrl, cfg.Scopes...), nil
 	case "openid-connect":
 		return openidConnect.New(cfg.ClientKey, cfg.ClientSecret, callbackUrl, cfg.DiscoveryUrl, cfg.Scopes...)
 	}
-	return nil, fmt.Errorf("unknown provider: %s", provName)
+	return nil, fmt.Errorf("unknown provider type: %s", provType)
 }
 
 func (s *AuthSessionProvider) Name() string {
-	return s.provider.Name()
+	return s.displayName
 }
 
 func (s *AuthSessionProvider) getProviderSession(r *http.Request) (goth.Session, error) {
