@@ -2,6 +2,7 @@ package api
 
 import (
 	"context"
+	"strings"
 
 	"github.com/google/uuid"
 
@@ -21,8 +22,18 @@ func newAuthSessionsHandler(auth rez.AuthService, users rez.UserService) *authSe
 func (h *authSessionsHandler) GetAuthSessionsConfig(ctx context.Context, req *oapi.GetAuthSessionsConfigRequest) (*oapi.GetAuthSessionsConfigResponse, error) {
 	var resp oapi.GetAuthSessionsConfigResponse
 
+	providers := h.auth.Providers()
+	configs := make([]oapi.AuthSessionProviderConfig, len(providers))
+	for i, prov := range providers {
+		configs[i] = oapi.AuthSessionProviderConfig{
+			Name:              prov.Name(),
+			Enabled:           true,
+			StartFlowEndpoint: "/auth/" + strings.ToLower(prov.Name()),
+		}
+	}
+
 	resp.Body.Data = oapi.AuthSessionsConfig{
-		ProviderName: h.auth.Provider().Name(),
+		Providers: configs,
 	}
 
 	return &resp, nil

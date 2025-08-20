@@ -92,8 +92,14 @@ export type AlertMetrics = {
     triggers: number;
 };
 
+export type AuthSessionProviderConfig = {
+    enabled: boolean;
+    name: string;
+    startFlowEndpoint: string;
+};
+
 export type AuthSessionsConfig = {
-    providerName: string;
+    providers: Array<AuthSessionProviderConfig>;
 };
 
 export type CreateIncidentAttributes = {

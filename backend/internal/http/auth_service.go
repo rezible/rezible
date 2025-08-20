@@ -37,8 +37,8 @@ func NewAuthService(secretKey string, users rez.UserService, providers []rez.Aut
 	}, nil
 }
 
-func (s *AuthService) Provider() rez.AuthSessionProvider {
-	return s.providers[0]
+func (s *AuthService) Providers() []rez.AuthSessionProvider {
+	return s.providers
 }
 
 type authUserSessionContextKey struct{}
@@ -122,49 +122,49 @@ func (s *AuthService) UserAuthHandler() http.Handler {
 }
 
 func (s *AuthService) delegateAuthFlowToProvider(w http.ResponseWriter, r *http.Request) bool {
+	ctx := r.Context()
+
 	for _, prov := range s.providers {
-		if r.URL.Path == "/auth/"+strings.ToLower(prov.Name()) {
+		provAuthRoute := "/auth/" + strings.ToLower(prov.Name())
+		if r.URL.Path == provAuthRoute {
 			prov.StartAuthFlow(w, r)
 			return true
 		}
-	}
 
-	ctx := r.Context()
+		onSessionCreated := func(provUser *ent.User, expiresAt time.Time, redirect string) {
+			if expiresAt.IsZero() {
+				expiresAt = time.Now().Add(defaultSessionDuration)
+			}
 
-	onSessionCreatedCallback := func(provUser *ent.User, expiresAt time.Time, redirect string) {
-		if expiresAt.IsZero() {
-			expiresAt = time.Now().Add(defaultSessionDuration)
-		}
+			dbUser, provUserErr := s.users.LookupProviderUser(ctx, provUser)
+			if provUserErr != nil && !ent.IsNotFound(provUserErr) {
+				log.Error().Err(provUserErr).Msg("failed to match user from provider details")
+				http.Error(w, "failed to match user", http.StatusInternalServerError)
+				return
+			}
 
-		dbUser, provUserErr := s.users.LookupProviderUser(ctx, provUser)
-		if provUserErr != nil && !ent.IsNotFound(provUserErr) {
-			log.Error().Err(provUserErr).Msg("failed to match user from provider details")
-			http.Error(w, "failed to match user", http.StatusInternalServerError)
-			return
-		}
+			// nil user id indicates provider user not found in db
+			userId := uuid.Nil
+			if dbUser != nil {
+				userId = dbUser.ID
+			}
 
-		// nil user id indicates provider user not found in db
-		userId := uuid.Nil
-		if dbUser != nil {
-			userId = dbUser.ID
-		}
+			token, tokenErr := s.IssueAuthSessionToken(newUserAuthSession(userId, expiresAt), nil)
+			if tokenErr != nil {
+				log.Error().Err(tokenErr).Msg("failed to issue user session token")
+				http.Error(w, "failed to issue session token", http.StatusInternalServerError)
+				return
+			}
 
-		token, tokenErr := s.IssueAuthSessionToken(newUserAuthSession(userId, expiresAt), nil)
-		if tokenErr != nil {
-			log.Error().Err(tokenErr).Msg("failed to issue user session token")
-			http.Error(w, "failed to issue session token", http.StatusInternalServerError)
-			return
-		}
+			http.SetCookie(w, s.makeSessionCookie(r, token, expiresAt, 0))
 
-		http.SetCookie(w, s.makeSessionCookie(r, token, expiresAt, 0))
-
-		if redirect != "" {
+			if redirect == "" || redirect == provAuthRoute {
+				redirect = rez.FrontendUrl
+			}
 			http.Redirect(w, r, redirect, http.StatusFound)
 		}
-	}
 
-	for _, prov := range s.providers {
-		if prov.HandleAuthFlowRequest(w, r, onSessionCreatedCallback) {
+		if prov.HandleAuthFlowRequest(w, r, onSessionCreated) {
 			return true
 		}
 	}

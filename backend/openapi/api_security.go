@@ -9,12 +9,17 @@ import (
 
 	"github.com/danielgtaylor/huma/v2"
 	"github.com/danielgtaylor/huma/v2/adapters/humago"
+	"github.com/rezible/rezible/access"
 	"github.com/rs/zerolog/log"
 
 	rez "github.com/rezible/rezible"
 )
 
 type oapiSecurity = []map[string][]string
+
+func isExplicitNoSecurity(s oapiSecurity) bool {
+	return s != nil && len(s) == 0
+}
 
 const (
 	SecurityMethodSessionCookie    = "session-cookie"
@@ -54,6 +59,7 @@ var (
 		{SecurityMethodSessionCookie: {}},
 		{SecurityMethodApiToken: {}},
 	}
+	ExplicitNoSecurity = oapiSecurity{}
 )
 
 func GetRequestSessionCookieToken(r *http.Request) (string, error) {
@@ -108,16 +114,23 @@ func MakeSecurityMiddleware(auth rez.AuthService) Middleware {
 		r, w := humago.Unwrap(c)
 
 		security := c.Operation().Security
-		if security == nil {
-			security = DefaultSecurity
-		}
-		token, requiredScopes := getRequestSecurityTokenAndScopes(security, r)
 
-		authCtx, authErr := auth.CreateVerifiedApiAuthContext(c.Context(), token, requiredScopes)
-		if authErr != nil {
-			log.Debug().Err(authErr).Msg("failed to verify auth")
-			writeStatusError(w, authErr)
-			return
+		authCtx := c.Context()
+		if isExplicitNoSecurity(security) {
+			authCtx = access.AnonymousContext(authCtx)
+		} else {
+			if security == nil {
+				security = DefaultSecurity
+			}
+			token, requiredScopes := getRequestSecurityTokenAndScopes(security, r)
+
+			var authErr error
+			authCtx, authErr = auth.CreateVerifiedApiAuthContext(c.Context(), token, requiredScopes)
+			if authErr != nil {
+				log.Debug().Err(authErr).Msg("failed to verify auth")
+				writeStatusError(w, authErr)
+				return
+			}
 		}
 		next(huma.WithContext(c, authCtx))
 	}

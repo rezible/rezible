@@ -29,7 +29,13 @@ func (o operations) RegisterAuthSessions(api huma.API) {
 
 type (
 	AuthSessionsConfig struct {
-		ProviderName string `json:"providerName"`
+		Providers []AuthSessionProviderConfig `json:"providers"`
+	}
+
+	AuthSessionProviderConfig struct {
+		Name              string `json:"name"`
+		Enabled           bool   `json:"enabled"`
+		StartFlowEndpoint string `json:"startFlowEndpoint"`
 	}
 
 	UserAuthSession struct {
@@ -72,7 +78,7 @@ var GetAuthSessionsConfig = huma.Operation{
 	Summary:     "Get the Auth Session config",
 	Tags:        authSessionsTags,
 	Errors:      errorCodes(),
-	Security:    []map[string][]string{},
+	Security:    ExplicitNoSecurity,
 }
 
 type GetAuthSessionsConfigRequest EmptyRequest

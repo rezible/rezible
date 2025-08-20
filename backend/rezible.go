@@ -76,7 +76,7 @@ type (
 	}
 
 	AuthService interface {
-		Provider() AuthSessionProvider
+		Providers() []AuthSessionProvider
 
 		UserAuthHandler() http.Handler
 		MCPServerMiddleware() func(http.Handler) http.Handler

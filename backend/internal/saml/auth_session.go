@@ -227,46 +227,52 @@ func (p *AuthSessionProvider) handleServeACS(w http.ResponseWriter, r *http.Requ
 		return fmt.Errorf("failed to create session: %w", createErr)
 	}
 
-	sessErr := p.createSession(assertion, redirectUri, onCreated)
+	cs, sessErr := p.createSession(assertion)
 	if sessErr != nil {
 		return fmt.Errorf("failed to convert assertion to auth session: %w", sessErr)
 	}
 
+	onCreated(cs.user, cs.expiresAt, redirectUri)
+
 	return nil
 }
 
-func (p *AuthSessionProvider) createSession(a *saml.Assertion, redirectUri string, onCreated rez.AuthSessionCreatedFn) error {
-	var expiresAt time.Time
+type createdSession struct {
+	user      *ent.User
+	expiresAt time.Time
+}
+
+func (p *AuthSessionProvider) createSession(a *saml.Assertion) (*createdSession, error) {
 	sp, spOk := p.mw.Session.(samlsp.CookieSessionProvider)
 	if !spOk {
-		return fmt.Errorf("failed to get cookie session provider")
+		return nil, fmt.Errorf("failed to get cookie session provider")
 	}
 
 	sess, sessErr := sp.Codec.New(a)
 	if sessErr != nil {
-		return fmt.Errorf("failed to create session: %w", sessErr)
+		return nil, fmt.Errorf("failed to create session: %w", sessErr)
 	}
 
 	sa, saOk := sess.(samlsp.SessionWithAttributes)
 	if !saOk {
-		return fmt.Errorf("saml: session does not implement samlsp.SessionWithAttributes")
+		return nil, fmt.Errorf("saml: session does not implement samlsp.SessionWithAttributes")
 	}
 
 	claims, claimsOk := sess.(samlsp.JWTSessionClaims)
 	if !claimsOk {
-		return fmt.Errorf("session does not implement samlsp.JWTSessionClaims")
+		return nil, fmt.Errorf("session does not implement samlsp.JWTSessionClaims")
 	}
 
 	attr := sa.GetAttributes()
-	user := &ent.User{
-		Name:  attr.Get("firstName"),
-		Email: attr.Get("email"),
+	cs := &createdSession{
+		user: &ent.User{
+			Name:  attr.Get("firstName"),
+			Email: attr.Get("email"),
+		},
+		expiresAt: time.Unix(claims.ExpiresAt, 0),
 	}
-	expiresAt = time.Unix(claims.ExpiresAt, 0)
 
-	onCreated(user, expiresAt, redirectUri)
-
-	return nil
+	return cs, nil
 }
 
 func (p *AuthSessionProvider) GetUserMapping() *ent.User {

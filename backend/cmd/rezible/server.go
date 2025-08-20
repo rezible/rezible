@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"net"
 	"os"
+	"strings"
 	"time"
 
 	rez "github.com/rezible/rezible"
@@ -166,34 +167,42 @@ func (s *rezServer) setup() error {
 	return nil
 }
 
+func authProviderEnabled(name string) bool {
+	return strings.ToLower(os.Getenv("AUTH_ENABLE_"+strings.ToUpper(name))) == "true"
+}
+
 func (s *rezServer) makeAuthService(ctx context.Context, users rez.UserService) (rez.AuthService, error) {
+	var provs []rez.AuthSessionProvider
+
+	if authProviderEnabled("saml") {
+		samlProv, spErr := saml.NewAuthSessionProvider(ctx)
+		if spErr != nil {
+			return nil, fmt.Errorf("saml.NewAuthSessionProvider: %w", spErr)
+		}
+		provs = append(provs, samlProv)
+	}
+
+	if authProviderEnabled("github") {
+		ghProv, ghErr := goth.NewGithubProvider()
+		if ghErr != nil {
+			return nil, fmt.Errorf("goth.NewGithubProvider: %w", ghErr)
+		}
+		provs = append(provs, ghProv)
+	}
+
+	if authProviderEnabled("oidc") {
+		oidcProv, oidcErr := goth.NewOIDCProvider()
+		if oidcErr != nil {
+			return nil, fmt.Errorf("goth.NewOIDCProvider: %w", oidcErr)
+		}
+		provs = append(provs, oidcProv)
+	}
+
 	secretKey := os.Getenv("AUTH_SESSION_SECRET_KEY")
 	if secretKey == "" {
 		return nil, errors.New("AUTH_SESSION_SECRET_KEY must be set")
 	}
-
-	samlProv, spErr := saml.NewAuthSessionProvider(ctx)
-	if spErr != nil {
-		return nil, fmt.Errorf("saml.NewAuthSessionProvider: %w", spErr)
-	}
-
 	goth.ConfigureSessionStore(secretKey)
-
-	provs := []rez.AuthSessionProvider{samlProv}
-
-	ghProv, ghErr := goth.NewGithubProvider()
-	if ghErr != nil {
-		log.Error().Err(ghErr).Msg("failed to load github provider")
-	} else {
-		provs = append(provs, ghProv)
-	}
-
-	oidcProv, oidcErr := goth.NewOIDCProvider()
-	if oidcErr != nil {
-		log.Error().Err(oidcErr).Msg("failed to load OIDC provider")
-	} else {
-		provs = append(provs, oidcProv)
-	}
 
 	return http.NewAuthService(secretKey, users, provs)
 }
