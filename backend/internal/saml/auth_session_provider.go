@@ -123,6 +123,9 @@ func (p *AuthSessionProvider) createSamlMiddleware(ctx context.Context, cfg Conf
 		SignRequest:        true,
 		DefaultRedirectURI: rez.FrontendUrl,
 	}
+	if !rez.DebugMode {
+		opts.CookieSameSite = http.SameSiteLaxMode
+	}
 
 	mw, mwErr := samlsp.New(opts)
 	if mwErr != nil {

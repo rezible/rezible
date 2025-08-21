@@ -4,7 +4,7 @@
 	import { useAuthSessionState, type SessionErrorCategory } from "$lib/auth.svelte";
 	import Button from "$components/button/Button.svelte";
 	import Header from "$components/header/Header.svelte";
-	import { mdiAccountGroup, mdiGithub, mdiGoogle } from "@mdi/js";
+	import { mdiGithub, mdiGoogle } from "@mdi/js";
 	import Icon from "$src/components/icon/Icon.svelte";
 
 	const session = useAuthSessionState();
@@ -22,7 +22,6 @@
 		["google", {label: "Google", icon: mdiGoogle}],
 		["github", {label: "Github", icon: mdiGithub}],
 	]);
-	console.log(providerDisplay);
 
 	const errorDisplayText: Record<SessionErrorCategory, string> = {
 		unknown: "An unknown error occurred",

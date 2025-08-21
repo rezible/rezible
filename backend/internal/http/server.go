@@ -25,7 +25,6 @@ type Server struct {
 func NewServer(
 	addr string,
 	auth rez.AuthService,
-	users rez.UserService,
 	feFiles fs.FS,
 	oapiHandler oapi.Handler,
 	documentsHandler http.Handler,
@@ -38,21 +37,26 @@ func NewServer(
 	router.Use(middleware.Recoverer)
 
 	oapiServer := oapi.MakeApi(oapiHandler, "/api/v1", oapi.MakeSecurityMiddleware(auth))
-	apiV1Router := chi.Chain(middleware.Logger).
+	oapiV1Router := chi.Chain(middleware.Logger).
 		Handler(oapiServer.Adapter())
-	router.Mount("/api/v1", apiV1Router)
+	router.Mount("/api/v1", oapiV1Router)
 
-	router.Mount("/api/documents", documentsHandler)
+	docsApiRouter := chi.Chain(middleware.Logger).
+		Handler(documentsHandler)
+	router.Mount("/api/documents", docsApiRouter)
 
-	router.Get("/api/docs", serveApiDocs)
+	// router.Get("/api/docs", serveApiDocs)
 
-	router.Mount("/api/webhooks", http.StripPrefix("/api/webhooks", webhooksHandler))
+	webhooksRouter := chi.Chain(middleware.Logger).
+		Handler(http.StripPrefix("/api/webhooks", webhooksHandler))
+	router.Mount("/api/webhooks", webhooksRouter)
 
 	mcpRouter := chi.Chain(auth.MCPServerMiddleware()).
 		Handler(mcp.NewHTTPServer(mcpHandler, "/mcp"))
 	router.Mount("/mcp", mcpRouter)
 
 	router.Mount("/auth", auth.UserAuthHandler())
+
 	router.Get("/health", makeHealthCheckHandler())
 
 	frontendRouter := chi.Chain().

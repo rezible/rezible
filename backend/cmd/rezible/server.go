@@ -157,7 +157,7 @@ func (s *rezServer) setup() error {
 	mcpHandler := eino.NewMCPHandler(auth)
 
 	listenAddr := net.JoinHostPort(s.opts.Host, s.opts.Port)
-	s.httpServer = http.NewServer(listenAddr, auth, users, frontendFiles, apiHandler, documentsHandler, webhookHandler, mcpHandler)
+	s.httpServer = http.NewServer(listenAddr, auth, frontendFiles, apiHandler, documentsHandler, webhookHandler, mcpHandler)
 
 	syncSvc := datasync.NewProviderSyncService(dbc, pl)
 	if jobsErr := s.registerJobs(syncSvc, oncall, debriefs); jobsErr != nil {

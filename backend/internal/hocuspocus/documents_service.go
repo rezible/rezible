@@ -13,7 +13,6 @@ import (
 	"os"
 
 	"github.com/go-chi/chi/v5"
-	"github.com/go-chi/chi/v5/middleware"
 	"github.com/google/uuid"
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
@@ -54,7 +53,6 @@ func (s *DocumentsService) GetServerWebsocketAddress() string {
 
 func (s *DocumentsService) Handler() http.Handler {
 	r := chi.NewRouter()
-	r.Use(middleware.Logger)
 	r.Post("/auth", s.handleAuthRequest)
 	r.Post("/load", s.handleLoadRequest)
 	r.Post("/update", s.handleUpdateRequest)
@@ -108,9 +106,9 @@ func (s *DocumentsService) verifyRequestBody(w http.ResponseWriter, r *http.Requ
 }
 
 func (s *DocumentsService) verifyRequestAuth(w http.ResponseWriter, r *http.Request, docId uuid.UUID) context.Context {
-	bearerToken, bearerErr := oapi.GetRequestBearerToken(r)
-	if bearerErr != nil {
-		http.Error(w, bearerErr.Error(), http.StatusUnauthorized)
+	bearerToken := oapi.GetRequestBearerToken(r)
+	if bearerToken == "" {
+		http.Error(w, http.StatusText(http.StatusUnauthorized), http.StatusUnauthorized)
 		return nil
 	}
 

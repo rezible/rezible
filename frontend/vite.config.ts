@@ -13,7 +13,6 @@ export default defineConfig({
 				changeOrigin: true,
 				rewrite: (path) => path.replace(/^\/api/, ""),
 			},
-			// '^/auth': 'http://localhost:8888/auth',
 		},
 	},
 });

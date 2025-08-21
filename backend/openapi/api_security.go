@@ -3,7 +3,6 @@ package openapi
 import (
 	"encoding/json"
 	"errors"
-	"fmt"
 	"net/http"
 	"strings"
 
@@ -20,9 +19,8 @@ func isExplicitNoSecurity(s oapiSecurity) bool {
 }
 
 const (
-	SecurityMethodSessionCookie    = "session-cookie"
-	SecurityMethodApiToken         = "api-token"
-	SecurityMethodAuthSessionToken = "session-token"
+	SecurityMethodSessionCookie = "session-cookie"
+	SecurityMethodApiToken      = "api-token"
 
 	SessionCookieName = "rez_session"
 )
@@ -38,16 +36,11 @@ var (
 var (
 	DefaultSecuritySchemes = map[string]*huma.SecurityScheme{
 		SecurityMethodSessionCookie: {
+			Name: SessionCookieName,
 			Type: "apiKey",
 			In:   "cookie",
-			Name: SessionCookieName,
 		},
 		SecurityMethodApiToken: {
-			Type:         "http",
-			Scheme:       "bearer",
-			BearerFormat: "JWT",
-		},
-		SecurityMethodAuthSessionToken: {
 			Type:         "http",
 			Scheme:       "bearer",
 			BearerFormat: "JWT",
@@ -60,48 +53,42 @@ var (
 	ExplicitNoSecurity = oapiSecurity{}
 )
 
-func GetRequestSessionCookieToken(r *http.Request) (string, error) {
+func GetRequestSessionCookieToken(r *http.Request) string {
 	authCookie, cookieErr := r.Cookie(SessionCookieName)
 	if cookieErr != nil {
-		if errors.Is(cookieErr, http.ErrNoCookie) {
-			return "", nil
-		}
-		return "", cookieErr
+		return ""
 	}
-	return authCookie.Value, nil
+	return authCookie.Value
 }
 
-func GetRequestBearerToken(r *http.Request) (string, error) {
+func GetRequestBearerToken(r *http.Request) string {
 	authHeader := r.Header.Get("Authorization")
 	if authHeader == "" {
-		return "", nil
+		return ""
 	}
 	split := strings.Split(authHeader, " ")
 	if len(split) != 2 {
-		return "", nil
+		return ""
 	}
 	authType := split[0]
 	token := split[1]
 	if authType != "Bearer" {
-		return "", fmt.Errorf("invalid Authorization type %s", authType)
+		return ""
 	}
-	return token, nil
+	return token
 }
 
-var securityMethodTokenFuncs = map[string]func(r *http.Request) (string, error){
-	SecurityMethodSessionCookie:    GetRequestSessionCookieToken,
-	SecurityMethodApiToken:         GetRequestBearerToken,
-	SecurityMethodAuthSessionToken: GetRequestBearerToken,
-}
-
-func getRequestSecurityTokenAndScopes(sec oapiSecurity, r *http.Request) (string, []string) {
-	for _, methods := range sec {
-		for method, reqScopes := range methods {
-			if tokenFn, ok := securityMethodTokenFuncs[method]; ok {
-				if token, tokenErr := tokenFn(r); tokenErr == nil && token != "" {
-					return token, reqScopes
-				}
-			}
+func extractRequestTokenAndScopes(r *http.Request, opSecurity oapiSecurity) (string, []string) {
+	apiToken := GetRequestBearerToken(r)
+	cookieToken := GetRequestSessionCookieToken(r)
+	for _, methodScopes := range opSecurity {
+		apiTokenScopes, apiTokenAllowed := methodScopes[SecurityMethodApiToken]
+		if apiTokenAllowed && apiToken != "" {
+			return apiToken, apiTokenScopes
+		}
+		cookieTokenScopes, cookieTokenAllowed := methodScopes[SecurityMethodSessionCookie]
+		if cookieTokenAllowed && cookieToken != "" {
+			return cookieToken, cookieTokenScopes
 		}
 	}
 	return "", nil
@@ -111,25 +98,27 @@ func MakeSecurityMiddleware(auth rez.AuthService) Middleware {
 	return func(c Context, next func(Context)) {
 		r, w := humago.Unwrap(c)
 
-		security := c.Operation().Security
+		opSecurity := c.Operation().Security
 
-		authCtx := c.Context()
-		if isExplicitNoSecurity(security) {
-			authCtx = access.AnonymousContext(authCtx)
-		} else {
-			if security == nil {
-				security = DefaultSecurity
+		ctx := access.AnonymousContext(c.Context())
+		if !isExplicitNoSecurity(opSecurity) {
+			if opSecurity == nil {
+				opSecurity = DefaultSecurity
 			}
-			token, requiredScopes := getRequestSecurityTokenAndScopes(security, r)
 
 			var authErr error
-			authCtx, authErr = auth.CreateVerifiedApiAuthContext(c.Context(), token, requiredScopes)
+			token, scopes := extractRequestTokenAndScopes(r, opSecurity)
+			if token == "" {
+				authErr = rez.ErrNoAuthSession
+			} else {
+				ctx, authErr = auth.CreateVerifiedApiAuthContext(ctx, token, scopes)
+			}
 			if authErr != nil {
 				writeStatusError(w, authErr)
 				return
 			}
 		}
-		next(huma.WithContext(c, authCtx))
+		next(huma.WithContext(c, ctx))
 	}
 }
 

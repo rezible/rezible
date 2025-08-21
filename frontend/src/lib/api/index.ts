@@ -1,13 +1,18 @@
 import { dev } from "$app/environment";
+import { createConfig, type ClientOptions } from "./oapi.gen/client";
 import { client } from "./oapi.gen/client.gen";
 import type { ErrorModel, ResponsePagination } from "./oapi.gen/types.gen";
 
-import { createConfig, type Options } from "@hey-api/client-fetch";
+import { type Options } from "@hey-api/client-fetch";
 import type { CreateQueryOptions } from "@tanstack/svelte-query";
 
 export const BACKEND_URL = dev ? "http://localhost:8888" : "";
 
-const clientConfig = createConfig({ baseUrl: dev ? "/api" : undefined });
+const clientConfig = createConfig<ClientOptions>({ 
+	baseUrl: "/api",
+	// baseUrl: BACKEND_URL + "/api/v1",
+	// credentials: "include",
+});
 client.setConfig(clientConfig);
 
 client.interceptors.error.use(async (err, resp, req, opts) => {

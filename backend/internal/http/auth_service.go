@@ -3,7 +3,6 @@ package http
 import (
 	"context"
 	"fmt"
-	"net"
 	"net/http"
 	"strings"
 	"time"
@@ -74,9 +73,9 @@ func (s *AuthService) MCPServerMiddleware() func(http.Handler) http.Handler {
 }
 
 func (s *AuthService) getMCPUserSession(r *http.Request) (*rez.AuthSession, error) {
-	bearerToken, tokenErr := oapi.GetRequestBearerToken(r)
-	if tokenErr != nil {
-		return nil, tokenErr
+	bearerToken := oapi.GetRequestBearerToken(r)
+	if bearerToken == "" {
+		return nil, rez.ErrNoAuthSession
 	}
 
 	// TODO: actually verify stuff
@@ -167,20 +166,20 @@ func (s *AuthService) delegateAuthFlowToProvider(w http.ResponseWriter, r *http.
 }
 
 func (s *AuthService) makeSessionCookie(r *http.Request, value string, expires time.Time, maxAge int) *http.Cookie {
-	domain := r.Host
-	if host, _, splitErr := net.SplitHostPort(r.Host); splitErr == nil {
-		domain = host
-	}
+	//domain := r.Host
+	//if host, _, splitErr := net.SplitHostPort(r.Host); splitErr == nil {
+	//	domain = host
+	//}
 	cookie := &http.Cookie{
-		Name:     oapi.SessionCookieName,
-		Value:    value,
-		Domain:   domain,
+		Name:  oapi.SessionCookieName,
+		Value: value,
+		//Domain:   domain,
 		Path:     "/",
 		Expires:  expires,
-		Secure:   !rez.DebugMode, // r.URL.Scheme == "https",
+		Secure:   true,
 		HttpOnly: true,
+		SameSite: http.SameSiteStrictMode,
 		MaxAge:   maxAge,
-		// SameSite: http.SameSiteLaxMode,
 	}
 	return cookie
 }

@@ -30,8 +30,8 @@ func ConfigureSessionStore(secretKey string) {
 	store.MaxAge(maxAge)
 	store.Options.Path = "/"
 	store.Options.HttpOnly = true
-	store.Options.SameSite = http.SameSiteLaxMode
-	store.Options.Secure = !rez.DebugMode
+	store.Options.SameSite = http.SameSiteStrictMode
+	store.Options.Secure = true
 
 	gothic.Store = store
 }
