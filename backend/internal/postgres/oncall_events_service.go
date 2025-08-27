@@ -51,7 +51,7 @@ func setAnnotationsQueryParams(q *ent.OncallAnnotationQuery, p rez.ExpandAnnotat
 }
 
 func (s *OncallEventsService) ListEvents(ctx context.Context, params rez.ListOncallEventsParams) (ent.ListResult[ent.OncallEvent], error) {
-	query := s.db.Debug().OncallEvent.Query()
+	query := s.db.OncallEvent.Query()
 
 	query.Order(oe.ByTimestamp(params.GetOrder()))
 	query.Where(oe.And(oe.TimestampGT(params.From), oe.TimestampLT(params.To)))
