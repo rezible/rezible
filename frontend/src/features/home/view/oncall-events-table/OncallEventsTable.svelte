@@ -4,7 +4,7 @@
 	import Header from "$components/header/Header.svelte";
 	import EventAnnotationDialog from "$components/oncall-events/annotation-dialog/EventAnnotationDialog.svelte";
 	import EventRow from "$components/oncall-events/EventRow.svelte";
-	import LoadingIndicator from "$components/loader/LoadingIndicator.svelte";
+	import LoadingIndicator from "$components/loading-indicator/LoadingIndicator.svelte";
 	import { mdiFilter } from "@mdi/js";
 	import { AnnotationDialogState, setAnnotationDialogState } from "$components/oncall-events/annotation-dialog/dialogState.svelte";
 	import { dateRangeOptions, OncallEventsTableState } from "./eventsTableState.svelte";
@@ -24,7 +24,7 @@
 
 	watch(() => tableState.dateRangeOption, opt => {
 		if (opt === "custom" && !filtersVisible) filtersVisible = true;
-	})
+	});
 </script>
 
 <EventAnnotationDialog />

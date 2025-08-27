@@ -14,10 +14,10 @@ type PaginatedQuery<PData extends PaginatedData> = CreateQueryResult<PData, Erro
 
 export class QueryPaginatorState {
 	pagination = createPaginationStore({ page: 1, perPage: 10, total: 0 });
-	private pagState = $derived(fromStore(this.pagination));
+	paginationState = fromStore(this.pagination);
 
-	page = $derived(this.pagState.current.page as number);
-	limit = $derived(this.pagState.current.perPage);
+	page = $derived(this.paginationState.current.page as number);
+	limit = $derived(this.paginationState.current.perPage);
 	offset = $derived(Math.max(0, (this.page - 1) * this.limit));
 
 	queryParams = $derived({limit: this.limit, offset: this.offset});

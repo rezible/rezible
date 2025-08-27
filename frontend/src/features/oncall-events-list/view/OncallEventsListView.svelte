@@ -4,14 +4,13 @@
 	import ListFilters from "./ListFilters.svelte";
 	import PaginatedListBox from "$components/paginated-listbox/PaginatedListBox.svelte";
 	import EventRow from "$components/oncall-events/EventRow.svelte";
-	import LoadingIndicator from "$components/loader/LoadingIndicator.svelte";
+	import LoadingIndicator from "$components/loading-indicator/LoadingIndicator.svelte";
 	import { AnnotationDialogState, setAnnotationDialogState } from "$components/oncall-events/annotation-dialog/dialogState.svelte";
 	import EventAnnotationDialog from "$components/oncall-events/annotation-dialog/EventAnnotationDialog.svelte";
 	import { createQuery, useQueryClient } from "@tanstack/svelte-query";
 	import { QueryPaginatorState } from "$lib/paginator.svelte";
 	import { listOncallEventsOptions } from "$lib/api";
 	import { EventsListFiltersState } from "./filters.svelte";
-	import { useUserOncallInformation } from "$lib/userOncall.svelte";
 
 	const filtersState = new EventsListFiltersState();
 

@@ -1,18 +1,16 @@
 <script lang="ts">
 	import Button from "$components/button/Button.svelte";
-	import LoadingIndicator from "$components/loader/LoadingIndicator.svelte";
+	import LoadingIndicator from "$components/loading-indicator/LoadingIndicator.svelte";
 	import {
-		getIncidentDebriefOptions,
 		getIncidentUserDebriefOptions,
 		updateIncidentDebriefMutation,
-		type Incident,
 		type IncidentDebrief,
 	} from "$lib/api";
 	import { useQueryClient, createMutation } from "@tanstack/svelte-query";
 
-	interface Props {
+	type Props = {
 		debrief: IncidentDebrief;
-	}
+	};
 
 	let { debrief }: Props = $props();
 

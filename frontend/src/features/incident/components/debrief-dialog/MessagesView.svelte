@@ -4,7 +4,7 @@
 	import type { IncidentDebriefMessage } from "$lib/api";
 	import { useAuthSessionState } from "$lib/auth.svelte";
 	import Avatar from "$components/avatar/Avatar.svelte";
-	import PulseLoader from "$components/loader/PulseLoader.svelte";
+	import PulseLoader from "$components/loading-indicator/PulseLoader.svelte";
 	import { onMount } from "svelte";
 
 	type Props = {
