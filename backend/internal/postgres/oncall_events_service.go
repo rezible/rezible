@@ -50,7 +50,7 @@ func setAnnotationsQueryParams(q *ent.OncallAnnotationQuery, p rez.ExpandAnnotat
 	}
 }
 
-func (s *OncallEventsService) ListEvents(ctx context.Context, params rez.ListOncallEventsParams) (ent.ListResult[*ent.OncallEvent], error) {
+func (s *OncallEventsService) ListEvents(ctx context.Context, params rez.ListOncallEventsParams) (*ent.ListResult[*ent.OncallEvent], error) {
 	query := s.db.OncallEvent.Query()
 
 	query.Order(oe.ByTimestamp(params.GetOrder()))
@@ -77,7 +77,7 @@ func (s *OncallEventsService) GetProviderEvent(ctx context.Context, providerId s
 	return s.db.OncallEvent.Query().Where(oe.ProviderID(providerId)).First(ctx)
 }
 
-func (s *OncallEventsService) ListAnnotations(ctx context.Context, params rez.ListOncallAnnotationsParams) (ent.ListResult[*ent.OncallAnnotation], error) {
+func (s *OncallEventsService) ListAnnotations(ctx context.Context, params rez.ListOncallAnnotationsParams) (*ent.ListResult[*ent.OncallAnnotation], error) {
 	query := s.db.OncallAnnotation.Query()
 
 	setAnnotationsQueryParams(query, params.Expand)

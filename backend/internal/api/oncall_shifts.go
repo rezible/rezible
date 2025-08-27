@@ -37,15 +37,17 @@ func (h *oncallShiftsHandler) ListOncallShifts(ctx context.Context, request *oap
 		listParams.Window = time.Minute
 	}
 
-	shifts, shiftsErr := h.oncall.ListShifts(ctx, listParams)
+	listRes, shiftsErr := h.oncall.ListShifts(ctx, listParams)
 	if shiftsErr != nil {
 		return nil, apiError("failed to list oncall shifts", shiftsErr)
 	}
 
-	numShifts := len(shifts)
-	resp.Body.Data = make([]oapi.OncallShift, numShifts)
-	for i, s := range shifts {
-		resp.Body.Data[numShifts-i-1] = oapi.OncallShiftFromEnt(s)
+	resp.Body.Data = make([]oapi.OncallShift, len(listRes.Data))
+	for i, s := range listRes.Data {
+		resp.Body.Data[i] = oapi.OncallShiftFromEnt(s)
+	}
+	resp.Body.Pagination = oapi.ResponsePagination{
+		Total: listRes.Count,
 	}
 
 	return &resp, nil

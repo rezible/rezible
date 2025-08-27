@@ -5,24 +5,22 @@
 	import LoadingQueryWrapper from "$components/loader/LoadingQueryWrapper.svelte";
 	import FilterPage from "$components/filter-page/FilterPage.svelte";
 	import SearchInput from "$components/search-input/SearchInput.svelte";
-	import { paginationStore as createPaginationStore } from "@layerstack/svelte-stores";
 	import PaginatedListBox from "$components/paginated-listbox/PaginatedListBox.svelte";
 	import RosterCard from "$features/oncall-rosters-list/components/roster-card/RosterCard.svelte";
+	import { QueryPaginatorState } from "$src/lib/paginator.svelte";
 
 	appShell.setPageBreadcrumbs(() => [
 		{ label: "Oncall Rosters", href: "/rosters" },
 	]);
 
-	const pagination = createPaginationStore();
-
+	const paginator = new QueryPaginatorState();
 	let searchValue = $state<string>();
-
-	let queryParams = $derived<ListOncallRostersData["query"]>({});
-	const allQuery = createQuery(() => listOncallRostersOptions({query: queryParams}));
-
-	const updateSearch = (value: any) => {
-		console.log(value);
-	};
+	const params = $derived<ListOncallRostersData["query"]>({
+		search: searchValue,
+		...paginator.queryParams,
+	});
+	const query = createQuery(() => listOncallRostersOptions({ query: params }));
+	paginator.watchQuery(query);
 </script>
 
 {#snippet filters()}
@@ -30,8 +28,8 @@
 {/snippet}
 
 <FilterPage {filters}>
-	<PaginatedListBox {pagination}>
-		<LoadingQueryWrapper query={allQuery}>
+	<PaginatedListBox pagination={paginator.pagination}>
+		<LoadingQueryWrapper {query}>
 			{#snippet view(rosters: OncallRoster[])}
 				{#each rosters as roster}
 					<RosterCard {roster} />

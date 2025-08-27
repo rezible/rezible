@@ -44,7 +44,7 @@ func NewOncallService(db *ent.Client, jobs rez.JobsService, docs rez.DocumentsSe
 	return s, nil
 }
 
-func (s *OncallService) ListSchedules(ctx context.Context, params rez.ListOncallSchedulesParams) ([]*ent.OncallSchedule, error) {
+func (s *OncallService) ListSchedules(ctx context.Context, params rez.ListOncallSchedulesParams) (*ent.ListResult[*ent.OncallSchedule], error) {
 	var query *ent.OncallScheduleQuery
 	if params.UserID != uuid.Nil {
 		query = s.db.OncallScheduleParticipant.Query().
@@ -53,13 +53,8 @@ func (s *OncallService) ListSchedules(ctx context.Context, params rez.ListOncall
 	} else {
 		query = s.db.OncallSchedule.Query()
 	}
-	query = query.Limit(params.GetLimit()).Offset(params.Offset)
 
-	userSchedules, schedulesErr := query.All(params.GetQueryContext(ctx))
-	if schedulesErr != nil {
-		return nil, fmt.Errorf("failed to query oncall schedules: %w", schedulesErr)
-	}
-	return userSchedules, nil
+	return ent.DoListQuery[*ent.OncallSchedule, *ent.OncallScheduleQuery](ctx, query, params.ListParams)
 }
 
 func (s *OncallService) GetRosterByID(ctx context.Context, id uuid.UUID) (*ent.OncallRoster, error) {
@@ -88,32 +83,24 @@ func (s *OncallService) GetRosterBySlug(ctx context.Context, slug string) (*ent.
 	return roster, nil
 }
 
-func (s *OncallService) ListRosters(ctx context.Context, params rez.ListOncallRostersParams) ([]*ent.OncallRoster, error) {
-	query := s.db.OncallRoster.Query().
-		Limit(params.GetLimit()).
-		Offset(params.Offset)
+func (s *OncallService) ListRosters(ctx context.Context, params rez.ListOncallRostersParams) (*ent.ListResult[*ent.OncallRoster], error) {
+	query := s.db.OncallRoster.Query()
 
 	if params.UserID != uuid.Nil {
-		schedules, schedulesErr := s.ListSchedules(ctx, rez.ListOncallSchedulesParams{
+		schedList, schedulesErr := s.ListSchedules(ctx, rez.ListOncallSchedulesParams{
 			UserID: params.UserID,
 		})
 		if schedulesErr != nil {
 			return nil, fmt.Errorf("failed to list oncall schedules: %w", schedulesErr)
 		}
 		var rosterIds []uuid.UUID
-		for _, schedule := range schedules {
-			sch := schedule
-			rosterIds = append(rosterIds, sch.RosterID)
+		for _, sched := range schedList.Data {
+			rosterIds = append(rosterIds, sched.RosterID)
 		}
 		query = query.Where(oncallroster.IDIn(rosterIds...))
 	}
 
-	rosters, queryErr := query.All(params.GetQueryContext(ctx))
-	if queryErr != nil {
-		return nil, fmt.Errorf("failed to query rosters: %w", queryErr)
-	}
-
-	return rosters, queryErr
+	return ent.DoListQuery[*ent.OncallRoster, *ent.OncallRosterQuery](ctx, query, params.ListParams)
 }
 
 func (s *OncallService) GetShiftByID(ctx context.Context, id uuid.UUID) (*ent.OncallShift, error) {
@@ -165,11 +152,9 @@ func (s *OncallService) GetAdjacentShifts(ctx context.Context, id uuid.UUID) (*e
 	return prevShift, nextShift, nil
 }
 
-func (s *OncallService) ListShifts(ctx context.Context, params rez.ListOncallShiftsParams) ([]*ent.OncallShift, error) {
+func (s *OncallService) ListShifts(ctx context.Context, params rez.ListOncallShiftsParams) (*ent.ListResult[*ent.OncallShift], error) {
 	query := s.db.OncallShift.Query().
 		Order(ocs.ByEndAt(sql.OrderDesc())).
-		Limit(params.GetLimit()).
-		Offset(params.Offset).
 		WithRoster().
 		WithUser()
 
@@ -187,7 +172,7 @@ func (s *OncallService) ListShifts(ctx context.Context, params rez.ListOncallShi
 		query = query.Where(predicates...)
 	}
 
-	return query.All(params.GetQueryContext(ctx))
+	return ent.DoListQuery[*ent.OncallShift, *ent.OncallShiftQuery](ctx, query, params.ListParams)
 }
 
 func (s *OncallService) queryShiftsEndingWithinWindow(ctx context.Context, window time.Duration) ([]*ent.OncallShift, error) {

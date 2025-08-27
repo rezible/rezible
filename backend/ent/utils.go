@@ -89,8 +89,8 @@ type listQuery[T any, Q any] interface {
 	Offset(offset int) Q
 }
 
-func DoListQuery[T any, Q any](ctx context.Context, query listQuery[T, Q], p ListParams) (ListResult[T], error) {
-	res := ListResult[T]{
+func DoListQuery[T any, Q any](ctx context.Context, query listQuery[T, Q], p ListParams) (*ListResult[T], error) {
+	res := &ListResult[T]{
 		Data:  make([]T, 0),
 		Count: 0,
 	}
@@ -98,7 +98,7 @@ func DoListQuery[T any, Q any](ctx context.Context, query listQuery[T, Q], p Lis
 	if p.Count {
 		count, queryErr := query.Count(ctx)
 		if queryErr != nil && !errors.Is(queryErr, sql.ErrNoRows) {
-			return res, fmt.Errorf("count: %w", queryErr)
+			return nil, fmt.Errorf("count: %w", queryErr)
 		}
 		res.Count = count
 	}
@@ -107,7 +107,7 @@ func DoListQuery[T any, Q any](ctx context.Context, query listQuery[T, Q], p Lis
 		query.Limit(p.GetLimit())
 		results, queryErr := query.All(ctx)
 		if queryErr != nil && !errors.Is(queryErr, sql.ErrNoRows) {
-			return res, fmt.Errorf("list: %w", queryErr)
+			return nil, fmt.Errorf("list: %w", queryErr)
 		}
 		res.Data = results
 	}

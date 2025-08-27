@@ -2,7 +2,6 @@ package postgres
 
 import (
 	"context"
-	"fmt"
 	"time"
 
 	"github.com/google/uuid"
@@ -86,21 +85,14 @@ func (s *IncidentService) GetByProviderId(ctx context.Context, pid string) (*ent
 	return s.incidentQuery(incident.ProviderID(pid), true).Only(ctx)
 }
 
-func (s *IncidentService) ListIncidents(ctx context.Context, params rez.ListIncidentsParams) ([]*ent.Incident, int, error) {
-	var predicates []predicate.Incident
+func (s *IncidentService) ListIncidents(ctx context.Context, params rez.ListIncidentsParams) (*ent.ListResult[*ent.Incident], error) {
+	query := s.db.Incident.Query()
+	query.Order(incident.ByOpenedAt(params.GetOrder()))
 	if !params.OpenedAfter.IsZero() {
-		predicates = append(predicates, incident.OpenedAtGT(params.OpenedAfter))
+		query.Where(incident.OpenedAtGT(params.OpenedAfter))
 	}
 	if !params.OpenedBefore.IsZero() {
-		predicates = append(predicates, incident.OpenedAtLT(params.OpenedBefore))
-	}
-
-	query := s.db.Incident.Query().
-		Limit(params.GetLimit()).
-		Offset(params.Offset)
-
-	if len(predicates) > 0 {
-		query.Where(incident.And(predicates...))
+		query.Where(incident.OpenedAtLT(params.OpenedBefore))
 	}
 
 	// TODO: this is probably incorrect, should lookup role assignments first
@@ -110,19 +102,7 @@ func (s *IncidentService) ListIncidents(ctx context.Context, params rez.ListInci
 		})
 	}
 
-	count, queryErr := query.Count(ctx)
-	if queryErr != nil {
-		return nil, 0, fmt.Errorf("count: %w", queryErr)
-	}
-
-	incidents := make([]*ent.Incident, 0)
-	if count > 0 {
-		incidents, queryErr = query.All(params.GetQueryContext(ctx))
-		if queryErr != nil {
-			return nil, 0, fmt.Errorf("listing incidents: %w", queryErr)
-		}
-	}
-	return incidents, count, nil
+	return ent.DoListQuery[*ent.Incident, *ent.IncidentQuery](ctx, query, params.ListParams)
 }
 
 func (s *IncidentService) ListIncidentRoles(ctx context.Context) ([]*ent.IncidentRole, error) {

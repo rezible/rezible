@@ -47,18 +47,20 @@ func (h *incidentsHandler) CreateIncident(ctx context.Context, input *oapi.Creat
 func (h *incidentsHandler) ListIncidents(ctx context.Context, req *oapi.ListIncidentsRequest) (*oapi.ListIncidentsResponse, error) {
 	var resp oapi.ListIncidentsResponse
 
-	incidents, count, listErr := h.incidents.ListIncidents(ctx, rez.ListIncidentsParams{})
+	params := rez.ListIncidentsParams{
+		ListParams: req.ListParams(),
+	}
+	listRes, listErr := h.incidents.ListIncidents(ctx, params)
 	// etc
 	if listErr != nil {
 		return nil, apiError("failed to list incidents", listErr)
 	}
-
-	resp.Body.Data = make([]oapi.Incident, len(incidents))
-	for i, inc := range incidents {
+	resp.Body.Data = make([]oapi.Incident, len(listRes.Data))
+	for i, inc := range listRes.Data {
 		resp.Body.Data[i] = oapi.IncidentFromEnt(inc)
 	}
 	resp.Body.Pagination = oapi.ResponsePagination{
-		Total: count,
+		Total: listRes.Count,
 	}
 
 	return &resp, nil

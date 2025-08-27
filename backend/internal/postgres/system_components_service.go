@@ -93,7 +93,7 @@ func (s *SystemComponentsService) Create(ctx context.Context, cmp ent.SystemComp
 	return created, nil
 }
 
-func (s *SystemComponentsService) ListSystemComponents(ctx context.Context, params rez.ListSystemComponentsParams) (ent.ListResult[*ent.SystemComponent], error) {
+func (s *SystemComponentsService) ListSystemComponents(ctx context.Context, params rez.ListSystemComponentsParams) (*ent.ListResult[*ent.SystemComponent], error) {
 	query := s.db.SystemComponent.Query()
 	return ent.DoListQuery[*ent.SystemComponent, *ent.SystemComponentQuery](ctx, query, params.ListParams)
 }

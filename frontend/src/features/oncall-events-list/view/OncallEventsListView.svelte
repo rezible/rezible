@@ -27,12 +27,9 @@
 		...queryOptions,
 		enabled: filtersState.queryEnabled,
 	}));
-	const events = $derived(query.data?.data ?? []);
+	paginator.watchQuery(query);
 
-	const queryClient = useQueryClient();
-	const invalidateQuery = () => {
-		queryClient.invalidateQueries(queryOptions);
-	}
+	const events = $derived(query.data?.data ?? []);
 
 	appShell.setPageBreadcrumbs(() => [{ label: "Events" }]);
 

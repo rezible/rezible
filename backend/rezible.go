@@ -27,8 +27,7 @@ var (
 )
 
 type (
-	ListParams        = ent.ListParams
-	ListResult[T any] = ent.ListResult[T]
+	ListParams = ent.ListParams
 )
 
 type (
@@ -121,7 +120,7 @@ type (
 	SystemComponentsService interface {
 		Create(context.Context, ent.SystemComponent) (*ent.SystemComponent, error)
 
-		ListSystemComponents(context.Context, ListSystemComponentsParams) (ListResult[*ent.SystemComponent], error)
+		ListSystemComponents(context.Context, ListSystemComponentsParams) (*ent.ListResult[*ent.SystemComponent], error)
 
 		GetRelationship(context.Context, uuid.UUID, uuid.UUID) (*ent.SystemComponentRelationship, error)
 		CreateRelationship(context.Context, ent.SystemComponentRelationship) (*ent.SystemComponentRelationship, error)
@@ -291,7 +290,7 @@ type (
 		GetByID(context.Context, uuid.UUID) (*ent.Incident, error)
 		GetIdForSlug(context.Context, string) (uuid.UUID, error)
 		GetBySlug(context.Context, string) (*ent.Incident, error)
-		ListIncidents(context.Context, ListIncidentsParams) ([]*ent.Incident, int, error)
+		ListIncidents(context.Context, ListIncidentsParams) (*ent.ListResult[*ent.Incident], error)
 	}
 )
 
@@ -370,10 +369,10 @@ type (
 
 	OncallEventsService interface {
 		GetEvent(ctx context.Context, id uuid.UUID) (*ent.OncallEvent, error)
-		ListEvents(ctx context.Context, params ListOncallEventsParams) (ent.ListResult[*ent.OncallEvent], error)
+		ListEvents(ctx context.Context, params ListOncallEventsParams) (*ent.ListResult[*ent.OncallEvent], error)
 		GetProviderEvent(ctx context.Context, providerId string) (*ent.OncallEvent, error)
 
-		ListAnnotations(ctx context.Context, params ListOncallAnnotationsParams) (ent.ListResult[*ent.OncallAnnotation], error)
+		ListAnnotations(ctx context.Context, params ListOncallAnnotationsParams) (*ent.ListResult[*ent.OncallAnnotation], error)
 
 		GetAnnotation(ctx context.Context, id uuid.UUID) (*ent.OncallAnnotation, error)
 		UpdateAnnotation(ctx context.Context, anno *ent.OncallAnnotation) (*ent.OncallAnnotation, error)
@@ -415,14 +414,14 @@ type (
 		HandleEnsureShiftHandoverReminderSent(context.Context, jobs.EnsureShiftHandoverReminderSent) error
 		HandleGenerateShiftMetrics(context.Context, jobs.GenerateShiftMetrics) error
 
-		ListRosters(context.Context, ListOncallRostersParams) ([]*ent.OncallRoster, error)
+		ListRosters(context.Context, ListOncallRostersParams) (*ent.ListResult[*ent.OncallRoster], error)
 		GetRosterByID(ctx context.Context, id uuid.UUID) (*ent.OncallRoster, error)
 		GetRosterBySlug(ctx context.Context, slug string) (*ent.OncallRoster, error)
 		GetRosterByScheduleId(ctx context.Context, scheduleId uuid.UUID) (*ent.OncallRoster, error)
 
-		ListSchedules(ctx context.Context, params ListOncallSchedulesParams) ([]*ent.OncallSchedule, error)
+		ListSchedules(ctx context.Context, params ListOncallSchedulesParams) (*ent.ListResult[*ent.OncallSchedule], error)
 
-		ListShifts(ctx context.Context, params ListOncallShiftsParams) ([]*ent.OncallShift, error)
+		ListShifts(ctx context.Context, params ListOncallShiftsParams) (*ent.ListResult[*ent.OncallShift], error)
 		GetShiftByID(ctx context.Context, id uuid.UUID) (*ent.OncallShift, error)
 		GetAdjacentShifts(ctx context.Context, id uuid.UUID) (*ent.OncallShift, *ent.OncallShift, error)
 		GetShiftMetrics(ctx context.Context, id uuid.UUID) (*ent.OncallShiftMetrics, error)

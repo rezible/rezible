@@ -2,9 +2,10 @@ package api
 
 import (
 	"context"
+	"time"
+
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent"
-	"time"
 
 	rez "github.com/rezible/rezible"
 	oapi "github.com/rezible/rezible/openapi"
@@ -24,7 +25,7 @@ func newOncallRostersHandler(auth rez.AuthService, users rez.UserService, inc re
 func (h *oncallRostersHandler) ListOncallRosters(ctx context.Context, request *oapi.ListOncallRostersRequest) (*oapi.ListOncallRostersResponse, error) {
 	var resp oapi.ListOncallRostersResponse
 
-	rosters, rostersErr := h.oncall.ListRosters(ctx, rez.ListOncallRostersParams{
+	listRes, rostersErr := h.oncall.ListRosters(ctx, rez.ListOncallRostersParams{
 		ListParams: request.ListParams(),
 		UserID:     request.UserId,
 	})
@@ -32,9 +33,12 @@ func (h *oncallRostersHandler) ListOncallRosters(ctx context.Context, request *o
 		return nil, apiError("failed to list rosters", rostersErr)
 	}
 
-	resp.Body.Data = make([]oapi.OncallRoster, len(rosters))
-	for i, r := range rosters {
+	resp.Body.Data = make([]oapi.OncallRoster, len(listRes.Data))
+	for i, r := range listRes.Data {
 		resp.Body.Data[i] = oapi.OncallRosterFromEnt(r)
+	}
+	resp.Body.Pagination = oapi.ResponsePagination{
+		Total: listRes.Count,
 	}
 
 	return &resp, nil
@@ -177,11 +181,11 @@ func (h *oncallRostersHandler) GetUserOncallInformation(ctx context.Context, req
 		ActiveShifts:    make([]oapi.OncallShift, 0),
 		UpcomingShifts:  make([]oapi.OncallShift, 0),
 		PastShifts:      make([]oapi.OncallShift, 0),
-		MemberRosters:   make([]oapi.OncallRoster, len(memberRosters)),
+		MemberRosters:   make([]oapi.OncallRoster, len(memberRosters.Data)),
 		WatchingRosters: make([]oapi.OncallRoster, len(watchedRosters)),
 	}
 
-	for i, r := range memberRosters {
+	for i, r := range memberRosters.Data {
 		details.MemberRosters[i] = oapi.OncallRosterFromEnt(r)
 	}
 
@@ -189,7 +193,7 @@ func (h *oncallRostersHandler) GetUserOncallInformation(ctx context.Context, req
 		details.WatchingRosters[i] = oapi.OncallRosterFromEnt(r)
 	}
 
-	for _, s := range userShifts {
+	for _, s := range userShifts.Data {
 		shift := oapi.OncallShiftFromEnt(s)
 		if s.EndAt.Before(time.Now()) {
 			details.PastShifts = append(details.PastShifts, shift)
