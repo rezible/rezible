@@ -191,7 +191,6 @@ func (s *rezServer) makeAuthService(ctx context.Context, users rez.UserService) 
 	}
 
 	if authProviderEnabled("google_oidc") {
-		log.Debug().Msg("using google oidc")
 		googleProv, googleErr := goth.NewGoogleOIDCProvider()
 		if googleErr != nil {
 			return nil, fmt.Errorf("goth.NewGoogleOIDCProvider: %w", googleErr)
