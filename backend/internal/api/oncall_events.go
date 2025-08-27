@@ -41,9 +41,9 @@ func (h *oncallEventsHandler) ListOncallEvents(ctx context.Context, req *oapi.Li
 		From:               req.From,
 		To:                 req.To,
 		RosterID:           req.RosterId,
+		AlertID:            req.AlertId,
 		AnnotationRosterID: req.AnnotationRosterId,
 		WithAnnotations:    req.WithAnnotations,
-		AlertID:            req.AlertId,
 	}
 
 	if req.ShiftId != uuid.Nil {
@@ -60,18 +60,17 @@ func (h *oncallEventsHandler) ListOncallEvents(ctx context.Context, req *oapi.Li
 		params.RosterID = uuid.Nil
 	}
 
-	events, count, eventsErr := h.events.ListEvents(ctx, params)
+	listRes, eventsErr := h.events.ListEvents(ctx, params)
 	if eventsErr != nil {
 		return nil, apiError("failed to query events", eventsErr)
 	}
-	resp.Body.Data = make([]oapi.OncallEvent, len(events))
-	for i, event := range events {
+
+	resp.Body.Data = make([]oapi.OncallEvent, len(listRes.Data))
+	for i, event := range listRes.Data {
 		resp.Body.Data[i] = oapi.OncallEventFromEnt(event)
 	}
 	resp.Body.Pagination = oapi.ResponsePagination{
-		Next:     nil,
-		Previous: nil,
-		Total:    count,
+		Total: listRes.Count,
 	}
 
 	return &resp, nil
@@ -95,20 +94,18 @@ func (h *oncallEventsHandler) ListOncallAnnotations(ctx context.Context, request
 		params.Shift = shift
 	}
 
-	annos, count, annosErr := h.events.ListAnnotations(ctx, params)
+	listRes, annosErr := h.events.ListAnnotations(ctx, params)
 	if annosErr != nil {
 		return nil, apiError("query shift annotations", annosErr)
 	}
 
-	resp.Body.Data = make([]oapi.OncallAnnotation, len(annos))
-	for i, anno := range annos {
+	resp.Body.Data = make([]oapi.OncallAnnotation, len(listRes.Data))
+	for i, anno := range listRes.Data {
 		resp.Body.Data[i] = oapi.OncallAnnotationFromEnt(anno)
 	}
 
 	resp.Body.Pagination = oapi.ResponsePagination{
-		Next:     nil,
-		Previous: nil,
-		Total:    count,
+		Total: listRes.Count,
 	}
 
 	return &resp, nil

@@ -5,8 +5,11 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+
+	entsql "entgo.io/ent/dialect/sql"
 	"github.com/jackc/pgx/v5"
 	"github.com/rezible/rezible/ent/entpgx"
+	"github.com/rs/zerolog/log"
 )
 
 type ListParams struct {
@@ -23,6 +26,13 @@ func (p ListParams) GetLimit() int {
 		return 10
 	}
 	return p.Limit
+}
+
+func (p ListParams) GetOrder() entsql.OrderTermOption {
+	if p.OrderAsc {
+		return entsql.OrderAsc()
+	}
+	return entsql.OrderDesc()
 }
 
 func (p ListParams) GetQueryContext(parent context.Context) context.Context {
@@ -68,26 +78,46 @@ func ExtractPgxTx(txClient *Tx) (pgx.Tx, error) {
 	return pgxDrvTx.PGXTransaction(), nil
 }
 
-type CountableQuery[T any] interface {
+type ListResult[T any] struct {
+	Data  []*T
+	Count int
+}
+
+type countableQuery[T any] interface {
 	All(ctx context.Context) ([]T, error)
 	Count(ctx context.Context) (int, error)
 }
 
-func RunCountableQuery[T any](ctx context.Context, q CountableQuery[T], doCount bool) ([]T, int, error) {
-	var count int
-	var queryErr error
-	results := make([]T, 0)
-	if doCount {
-		count, queryErr = q.Count(ctx)
-		if queryErr != nil && !errors.Is(queryErr, sql.ErrNoRows) {
-			return nil, 0, fmt.Errorf("count: %w", queryErr)
-		}
+type modifiableQuery[Q any] interface {
+	Limit(limit int) *Q
+	Offset(offset int) *Q
+}
+
+func DoListQuery[Q any, T any](ctx context.Context, query countableQuery[*T], p ListParams) (ListResult[T], error) {
+	res := ListResult[T]{
+		Data:  make([]*T, 0),
+		Count: 0,
 	}
-	if !doCount || count > 0 {
-		results, queryErr = q.All(ctx)
+	ctx = p.GetQueryContext(ctx)
+	if p.Count {
+		count, queryErr := query.Count(ctx)
 		if queryErr != nil && !errors.Is(queryErr, sql.ErrNoRows) {
-			return nil, 0, fmt.Errorf("list: %w", queryErr)
+			return res, fmt.Errorf("count: %w", queryErr)
 		}
+		res.Count = count
 	}
-	return results, count, nil
+	if !p.Count || res.Count > 0 {
+		if mq, ok := query.(modifiableQuery[Q]); ok {
+			mq.Offset(p.Offset)
+			mq.Limit(p.GetLimit())
+		} else {
+			log.Warn().Msg("failed to set offset/limit for query")
+		}
+		results, queryErr := query.All(ctx)
+		if queryErr != nil && !errors.Is(queryErr, sql.ErrNoRows) {
+			return res, fmt.Errorf("list: %w", queryErr)
+		}
+		res.Data = results
+	}
+	return res, nil
 }

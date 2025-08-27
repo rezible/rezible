@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 
-	"entgo.io/ent/dialect/sql"
 	"github.com/google/uuid"
 
 	rez "github.com/rezible/rezible"
@@ -51,22 +50,18 @@ func setAnnotationsQueryParams(q *ent.OncallAnnotationQuery, p rez.ExpandAnnotat
 	}
 }
 
-func (s *OncallEventsService) ListEvents(ctx context.Context, params rez.ListOncallEventsParams) ([]*ent.OncallEvent, int, error) {
-	query := s.db.OncallEvent.Query().
-		Where(oe.And(oe.TimestampGT(params.From), oe.TimestampLT(params.To)))
+func (s *OncallEventsService) ListEvents(ctx context.Context, params rez.ListOncallEventsParams) (ent.ListResult[ent.OncallEvent], error) {
+	query := s.db.Debug().OncallEvent.Query()
+
+	query.Order(oe.ByTimestamp(params.GetOrder()))
+	query.Where(oe.And(oe.TimestampGT(params.From), oe.TimestampLT(params.To)))
+
 	if params.RosterID != uuid.Nil {
 		query.Where(oe.RosterID(params.RosterID))
 	}
 	if params.AlertID != uuid.Nil {
 		query.Where(oe.AlertID(params.AlertID))
 	}
-	order := sql.OrderDesc()
-	if params.OrderAsc {
-		order = sql.OrderAsc()
-	}
-	query.Order(oe.ByTimestamp(order))
-	query.Offset(params.Offset)
-	query.Limit(params.GetLimit())
 	if params.WithAnnotations {
 		query.WithAnnotations(func(q *ent.OncallAnnotationQuery) {
 			if params.AnnotationRosterID != uuid.Nil {
@@ -75,17 +70,16 @@ func (s *OncallEventsService) ListEvents(ctx context.Context, params rez.ListOnc
 		})
 	}
 
-	return ent.RunCountableQuery[*ent.OncallEvent](params.GetQueryContext(ctx), query, params.Count)
+	return ent.DoListQuery[ent.OncallEventQuery, ent.OncallEvent](ctx, query, params.ListParams)
 }
 
 func (s *OncallEventsService) GetProviderEvent(ctx context.Context, providerId string) (*ent.OncallEvent, error) {
 	return s.db.OncallEvent.Query().Where(oe.ProviderID(providerId)).First(ctx)
 }
 
-func (s *OncallEventsService) ListAnnotations(ctx context.Context, params rez.ListOncallAnnotationsParams) ([]*ent.OncallAnnotation, int, error) {
-	query := s.db.OncallAnnotation.Query().
-		Limit(params.GetLimit()).
-		Offset(params.Offset)
+func (s *OncallEventsService) ListAnnotations(ctx context.Context, params rez.ListOncallAnnotationsParams) (ent.ListResult[ent.OncallAnnotation], error) {
+	query := s.db.OncallAnnotation.Query()
+
 	setAnnotationsQueryParams(query, params.Expand)
 
 	rosterId := params.RosterID
@@ -106,7 +100,7 @@ func (s *OncallEventsService) ListAnnotations(ctx context.Context, params rez.Li
 		query.Where(oncallannotation.RosterID(rosterId))
 	}
 
-	return ent.RunCountableQuery[*ent.OncallAnnotation](params.GetQueryContext(ctx), query, params.Count)
+	return ent.DoListQuery[ent.OncallAnnotationQuery, ent.OncallAnnotation](ctx, query, params.ListParams)
 }
 
 func (s *OncallEventsService) GetAnnotation(ctx context.Context, id uuid.UUID) (*ent.OncallAnnotation, error) {

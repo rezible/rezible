@@ -26,7 +26,10 @@ var (
 	ErrUnauthorized            = errors.New("unauthorized")
 )
 
-type ListParams = ent.ListParams
+type (
+	ListParams        = ent.ListParams
+	ListResult[T any] = ent.ListResult[T]
+)
 
 type (
 	ProviderLoader interface {
@@ -367,10 +370,10 @@ type (
 
 	OncallEventsService interface {
 		GetEvent(ctx context.Context, id uuid.UUID) (*ent.OncallEvent, error)
-		ListEvents(ctx context.Context, params ListOncallEventsParams) ([]*ent.OncallEvent, int, error)
+		ListEvents(ctx context.Context, params ListOncallEventsParams) (ent.ListResult[ent.OncallEvent], error)
 		GetProviderEvent(ctx context.Context, providerId string) (*ent.OncallEvent, error)
 
-		ListAnnotations(ctx context.Context, params ListOncallAnnotationsParams) ([]*ent.OncallAnnotation, int, error)
+		ListAnnotations(ctx context.Context, params ListOncallAnnotationsParams) (ent.ListResult[ent.OncallAnnotation], error)
 
 		GetAnnotation(ctx context.Context, id uuid.UUID) (*ent.OncallAnnotation, error)
 		UpdateAnnotation(ctx context.Context, anno *ent.OncallAnnotation) (*ent.OncallAnnotation, error)
