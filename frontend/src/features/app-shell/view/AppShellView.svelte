@@ -22,7 +22,6 @@
 	setToastState();
 	setUserOncallInformationState();
 
-	const isAuthenticated = $derived(!!session.user);
 	const isAuthError = $derived(!!session.error);
 	const isAuthRoute = $derived(!!page.route.id?.startsWith("/auth"));
 
@@ -43,12 +42,12 @@
 </script>
 
 <div class="antialiased flex h-dvh min-h-dvh w-dvw bg-surface-300 text-surface-content">
-	{#if isAuthenticated}
+	{#if session.isAuthenticated}
 		<Sidebar />
 	{/if}
 
 	<main class="w-full h-full p-2">
-		<PageContainer hideNavBar={!isAuthenticated}>
+		<PageContainer hideNavBar={!session.isAuthenticated}>
 			{#if showPage}
 				{@render children()}
 			{/if}

@@ -1,5 +1,3 @@
-import { goto, onNavigate } from "$app/navigation";
-import { page } from "$app/state";
 import {
 	type UserNotification,
 	type GetCurrentUserAuthSessionResponse,
@@ -8,9 +6,8 @@ import {
 	type ErrorModel,
 } from "$lib/api";
 import { parseAbsoluteToLocal } from "@internationalized/date";
-import { redirect } from "@sveltejs/kit";
 import { createQuery, QueryClient } from "@tanstack/svelte-query";
-import { Context, watch } from "runed";
+import { Context } from "runed";
 import { onMount } from "svelte";
 
 export type SessionErrorCategory = "unknown" | "invalid" | "expired" | "no_session" | "no_user";
@@ -31,6 +28,8 @@ const parseUserAuthSessionResponse = (resp: GetCurrentUserAuthSessionResponse): 
 		expiresAt: parseAbsoluteToLocal(resp.data.expiresAt).toDate(),
 	};
 };
+
+const SessionExpiryCheckIntervalMs = 10_000;
 
 export class AuthSessionState {
 	private query = createQuery(() => getCurrentUserAuthSessionOptions());
@@ -64,44 +63,29 @@ export class AuthSessionState {
 		}
 		return {category: errCategory, code: errCode} as SessionError;
 	});
+
+	isAuthenticated = $derived(!!this.session && !this.error);
+
+	constructor() {
+		onMount(() => {
+			const i = setInterval(() => {
+				if (!this || !this.session) return;
+				const timeLeft = this.session.expiresAt.valueOf() - new Date(Date.now()).valueOf();
+				if (timeLeft <= 0) this.error = {category: "expired"};
+				if (timeLeft <= SessionExpiryCheckIntervalMs * 100) {
+					console.log("auth session expiring soon", timeLeft);	
+				}
+			}, SessionExpiryCheckIntervalMs);
+			return () => {
+				clearInterval(i);
+			}
+		})
+	}
 };
 
 const sessionCtx = new Context<AuthSessionState>("authSession");
 export const setAuthSessionState = (s: AuthSessionState) => sessionCtx.set(s);
 export const useAuthSessionState = () => sessionCtx.get();
-
-/*
-const refreshWindowSecs = 60 * 3;
-
-const startRefetchQuery = (client: QueryClient) => {
-	const refetchInterval = 1000 * 60; // 1 minute
-	const opts = queryOptions({
-		...getCurrentUserAuthSessionOptions(),
-		refetchInterval,
-	});
-	const observer = new QueryObserver(client, opts);
-	observer.subscribe((status) => {
-		if (status.isFetching) return;
-
-		if (status.isError) {
-			console.log("auth error", status.error);
-			return;
-		}
-
-		if (status.isSuccess) {
-			const sess = parseUserSessionResponse(status.data);
-			const now = new Date(Date.now());
-			if (sess.expiresAt && differenceInSeconds(sess.expiresAt, now) < refreshWindowSecs) {
-				console.log(`less than ${refreshWindowSecs / 60} minutes left until auth expires`);
-			}
-		}
-	});
-
-	return () => {
-		if (observer) observer.destroy();
-	};
-};
-*/
 
 const createNotifications = () => {
 	const notifications = $state<UserNotification[]>([]);
