@@ -50,7 +50,7 @@ func setAnnotationsQueryParams(q *ent.OncallAnnotationQuery, p rez.ExpandAnnotat
 	}
 }
 
-func (s *OncallEventsService) ListEvents(ctx context.Context, params rez.ListOncallEventsParams) (ent.ListResult[ent.OncallEvent], error) {
+func (s *OncallEventsService) ListEvents(ctx context.Context, params rez.ListOncallEventsParams) (ent.ListResult[*ent.OncallEvent], error) {
 	query := s.db.OncallEvent.Query()
 
 	query.Order(oe.ByTimestamp(params.GetOrder()))
@@ -70,14 +70,14 @@ func (s *OncallEventsService) ListEvents(ctx context.Context, params rez.ListOnc
 		})
 	}
 
-	return ent.DoListQuery[ent.OncallEventQuery, ent.OncallEvent](ctx, query, params.ListParams)
+	return ent.DoListQuery[*ent.OncallEvent, *ent.OncallEventQuery](ctx, query, params.ListParams)
 }
 
 func (s *OncallEventsService) GetProviderEvent(ctx context.Context, providerId string) (*ent.OncallEvent, error) {
 	return s.db.OncallEvent.Query().Where(oe.ProviderID(providerId)).First(ctx)
 }
 
-func (s *OncallEventsService) ListAnnotations(ctx context.Context, params rez.ListOncallAnnotationsParams) (ent.ListResult[ent.OncallAnnotation], error) {
+func (s *OncallEventsService) ListAnnotations(ctx context.Context, params rez.ListOncallAnnotationsParams) (ent.ListResult[*ent.OncallAnnotation], error) {
 	query := s.db.OncallAnnotation.Query()
 
 	setAnnotationsQueryParams(query, params.Expand)
@@ -100,7 +100,7 @@ func (s *OncallEventsService) ListAnnotations(ctx context.Context, params rez.Li
 		query.Where(oncallannotation.RosterID(rosterId))
 	}
 
-	return ent.DoListQuery[ent.OncallAnnotationQuery, ent.OncallAnnotation](ctx, query, params.ListParams)
+	return ent.DoListQuery[*ent.OncallAnnotation, *ent.OncallAnnotationQuery](ctx, query, params.ListParams)
 }
 
 func (s *OncallEventsService) GetAnnotation(ctx context.Context, id uuid.UUID) (*ent.OncallAnnotation, error) {

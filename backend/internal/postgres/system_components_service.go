@@ -93,28 +93,9 @@ func (s *SystemComponentsService) Create(ctx context.Context, cmp ent.SystemComp
 	return created, nil
 }
 
-func (s *SystemComponentsService) ListSystemComponents(ctx context.Context, params rez.ListSystemComponentsParams) ([]*ent.SystemComponent, int, error) {
-	query := s.db.SystemComponent.Query().
-		Where().
-		Limit(params.Limit).
-		Offset(params.Offset)
-
-	ctx = params.GetQueryContext(ctx)
-	count, queryErr := query.Count(ctx)
-	if queryErr != nil {
-		return nil, 0, fmt.Errorf("count: %w", queryErr)
-	}
-
-	var components []*ent.SystemComponent
-	if count > 0 {
-		components, queryErr = query.All(ctx)
-	} else {
-		components = make([]*ent.SystemComponent, 0)
-	}
-	if queryErr != nil {
-		return nil, 0, fmt.Errorf("query: %w", queryErr)
-	}
-	return components, count, nil
+func (s *SystemComponentsService) ListSystemComponents(ctx context.Context, params rez.ListSystemComponentsParams) (ent.ListResult[*ent.SystemComponent], error) {
+	query := s.db.SystemComponent.Query()
+	return ent.DoListQuery[*ent.SystemComponent, *ent.SystemComponentQuery](ctx, query, params.ListParams)
 }
 
 func (s *SystemComponentsService) GetRelationship(ctx context.Context, id1 uuid.UUID, id2 uuid.UUID) (*ent.SystemComponentRelationship, error) {

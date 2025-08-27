@@ -26,15 +26,15 @@ func (s *systemComponentsHandler) ListSystemComponents(ctx context.Context, requ
 		ListParams: request.ListParams(),
 	}
 
-	cmps, count, queryErr := s.components.ListSystemComponents(ctx, params)
+	listRes, queryErr := s.components.ListSystemComponents(ctx, params)
 	if queryErr != nil {
 		return nil, apiError("failed to query system components", queryErr)
 	}
-	resp.Body.Data = make([]oapi.SystemComponent, len(cmps))
-	for i, cmp := range cmps {
+	resp.Body.Data = make([]oapi.SystemComponent, len(listRes.Data))
+	for i, cmp := range listRes.Data {
 		resp.Body.Data[i] = oapi.SystemComponentFromEnt(cmp)
 	}
-	resp.Body.Pagination = oapi.ResponsePagination{Total: count}
+	resp.Body.Pagination = oapi.ResponsePagination{Total: listRes.Count}
 
 	return &resp, nil
 }

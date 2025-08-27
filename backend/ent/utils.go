@@ -9,7 +9,6 @@ import (
 	entsql "entgo.io/ent/dialect/sql"
 	"github.com/jackc/pgx/v5"
 	"github.com/rezible/rezible/ent/entpgx"
-	"github.com/rs/zerolog/log"
 )
 
 type ListParams struct {
@@ -79,23 +78,20 @@ func ExtractPgxTx(txClient *Tx) (pgx.Tx, error) {
 }
 
 type ListResult[T any] struct {
-	Data  []*T
+	Data  []T
 	Count int
 }
 
-type countableQuery[T any] interface {
+type listQuery[T any, Q any] interface {
 	All(ctx context.Context) ([]T, error)
 	Count(ctx context.Context) (int, error)
+	Limit(limit int) Q
+	Offset(offset int) Q
 }
 
-type modifiableQuery[Q any] interface {
-	Limit(limit int) *Q
-	Offset(offset int) *Q
-}
-
-func DoListQuery[Q any, T any](ctx context.Context, query countableQuery[*T], p ListParams) (ListResult[T], error) {
+func DoListQuery[T any, Q any](ctx context.Context, query listQuery[T, Q], p ListParams) (ListResult[T], error) {
 	res := ListResult[T]{
-		Data:  make([]*T, 0),
+		Data:  make([]T, 0),
 		Count: 0,
 	}
 	ctx = p.GetQueryContext(ctx)
@@ -107,12 +103,8 @@ func DoListQuery[Q any, T any](ctx context.Context, query countableQuery[*T], p 
 		res.Count = count
 	}
 	if !p.Count || res.Count > 0 {
-		if mq, ok := query.(modifiableQuery[Q]); ok {
-			mq.Offset(p.Offset)
-			mq.Limit(p.GetLimit())
-		} else {
-			log.Warn().Msg("failed to set offset/limit for query")
-		}
+		query.Offset(p.Offset)
+		query.Limit(p.GetLimit())
 		results, queryErr := query.All(ctx)
 		if queryErr != nil && !errors.Is(queryErr, sql.ErrNoRows) {
 			return res, fmt.Errorf("list: %w", queryErr)

@@ -121,7 +121,7 @@ type (
 	SystemComponentsService interface {
 		Create(context.Context, ent.SystemComponent) (*ent.SystemComponent, error)
 
-		ListSystemComponents(context.Context, ListSystemComponentsParams) ([]*ent.SystemComponent, int, error)
+		ListSystemComponents(context.Context, ListSystemComponentsParams) (ListResult[*ent.SystemComponent], error)
 
 		GetRelationship(context.Context, uuid.UUID, uuid.UUID) (*ent.SystemComponentRelationship, error)
 		CreateRelationship(context.Context, ent.SystemComponentRelationship) (*ent.SystemComponentRelationship, error)
@@ -370,10 +370,10 @@ type (
 
 	OncallEventsService interface {
 		GetEvent(ctx context.Context, id uuid.UUID) (*ent.OncallEvent, error)
-		ListEvents(ctx context.Context, params ListOncallEventsParams) (ent.ListResult[ent.OncallEvent], error)
+		ListEvents(ctx context.Context, params ListOncallEventsParams) (ent.ListResult[*ent.OncallEvent], error)
 		GetProviderEvent(ctx context.Context, providerId string) (*ent.OncallEvent, error)
 
-		ListAnnotations(ctx context.Context, params ListOncallAnnotationsParams) (ent.ListResult[ent.OncallAnnotation], error)
+		ListAnnotations(ctx context.Context, params ListOncallAnnotationsParams) (ent.ListResult[*ent.OncallAnnotation], error)
 
 		GetAnnotation(ctx context.Context, id uuid.UUID) (*ent.OncallAnnotation, error)
 		UpdateAnnotation(ctx context.Context, anno *ent.OncallAnnotation) (*ent.OncallAnnotation, error)
