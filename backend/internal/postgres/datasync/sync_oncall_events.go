@@ -16,6 +16,7 @@ import (
 func syncOncallEvents(ctx context.Context, db *ent.Client, alerts rez.AlertDataProvider) error {
 	b := &oncallEventsBatcher{db: db, alerts: alerts}
 	s := newBatchedDataSyncer[*ent.OncallEvent](db, "oncall_events", b)
+	s.setSyncInterval(time.Hour * 12)
 	return s.Sync(ctx)
 }
 

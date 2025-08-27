@@ -21,17 +21,23 @@ type dataBatcher[T any] interface {
 }
 
 type batchedDataSyncer[T any] struct {
-	db       *ent.Client
-	dataType string
-	batcher  dataBatcher[T]
+	db           *ent.Client
+	dataType     string
+	batcher      dataBatcher[T]
+	syncInterval time.Duration
 }
 
 func newBatchedDataSyncer[T any](db *ent.Client, dataType string, batcher dataBatcher[T]) *batchedDataSyncer[T] {
 	return &batchedDataSyncer[T]{
-		db:       db,
-		dataType: dataType,
-		batcher:  batcher,
+		db:           db,
+		dataType:     dataType,
+		batcher:      batcher,
+		syncInterval: time.Minute * 30,
 	}
+}
+
+func (ds *batchedDataSyncer[T]) setSyncInterval(duration time.Duration) {
+	ds.syncInterval = duration
 }
 
 func (ds *batchedDataSyncer[T]) Sync(ctx context.Context) error {
@@ -42,7 +48,7 @@ func (ds *batchedDataSyncer[T]) Sync(ctx context.Context) error {
 	}
 
 	lastSync := ds.getLastSyncTime(ctx)
-	if lastSync.Add(time.Minute * 30).After(start) {
+	if lastSync.Add(ds.syncInterval).After(start) {
 		return nil
 	}
 
