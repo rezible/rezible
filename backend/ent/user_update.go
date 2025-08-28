@@ -40,6 +40,26 @@ func (uu *UserUpdate) Where(ps ...predicate.User) *UserUpdate {
 	return uu
 }
 
+// SetAuthProviderID sets the "auth_provider_id" field.
+func (uu *UserUpdate) SetAuthProviderID(s string) *UserUpdate {
+	uu.mutation.SetAuthProviderID(s)
+	return uu
+}
+
+// SetNillableAuthProviderID sets the "auth_provider_id" field if the given value is not nil.
+func (uu *UserUpdate) SetNillableAuthProviderID(s *string) *UserUpdate {
+	if s != nil {
+		uu.SetAuthProviderID(*s)
+	}
+	return uu
+}
+
+// ClearAuthProviderID clears the value of the "auth_provider_id" field.
+func (uu *UserUpdate) ClearAuthProviderID() *UserUpdate {
+	uu.mutation.ClearAuthProviderID()
+	return uu
+}
+
 // SetEmail sets the "email" field.
 func (uu *UserUpdate) SetEmail(s string) *UserUpdate {
 	uu.mutation.SetEmail(s)
@@ -653,6 +673,12 @@ func (uu *UserUpdate) sqlSave(ctx context.Context) (n int, err error) {
 				ps[i](selector)
 			}
 		}
+	}
+	if value, ok := uu.mutation.AuthProviderID(); ok {
+		_spec.SetField(user.FieldAuthProviderID, field.TypeString, value)
+	}
+	if uu.mutation.AuthProviderIDCleared() {
+		_spec.ClearField(user.FieldAuthProviderID, field.TypeString)
 	}
 	if value, ok := uu.mutation.Email(); ok {
 		_spec.SetField(user.FieldEmail, field.TypeString, value)
@@ -1306,6 +1332,26 @@ type UserUpdateOne struct {
 	modifiers []func(*sql.UpdateBuilder)
 }
 
+// SetAuthProviderID sets the "auth_provider_id" field.
+func (uuo *UserUpdateOne) SetAuthProviderID(s string) *UserUpdateOne {
+	uuo.mutation.SetAuthProviderID(s)
+	return uuo
+}
+
+// SetNillableAuthProviderID sets the "auth_provider_id" field if the given value is not nil.
+func (uuo *UserUpdateOne) SetNillableAuthProviderID(s *string) *UserUpdateOne {
+	if s != nil {
+		uuo.SetAuthProviderID(*s)
+	}
+	return uuo
+}
+
+// ClearAuthProviderID clears the value of the "auth_provider_id" field.
+func (uuo *UserUpdateOne) ClearAuthProviderID() *UserUpdateOne {
+	uuo.mutation.ClearAuthProviderID()
+	return uuo
+}
+
 // SetEmail sets the "email" field.
 func (uuo *UserUpdateOne) SetEmail(s string) *UserUpdateOne {
 	uuo.mutation.SetEmail(s)
@@ -1949,6 +1995,12 @@ func (uuo *UserUpdateOne) sqlSave(ctx context.Context) (_node *User, err error) 
 				ps[i](selector)
 			}
 		}
+	}
+	if value, ok := uuo.mutation.AuthProviderID(); ok {
+		_spec.SetField(user.FieldAuthProviderID, field.TypeString, value)
+	}
+	if uuo.mutation.AuthProviderIDCleared() {
+		_spec.ClearField(user.FieldAuthProviderID, field.TypeString)
 	}
 	if value, ok := uuo.mutation.Email(); ok {
 		_spec.SetField(user.FieldEmail, field.TypeString, value)

@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"os"
+	"strings"
 
 	"github.com/google/uuid"
 	rez "github.com/rezible/rezible"
@@ -12,6 +13,7 @@ import (
 	"github.com/rezible/rezible/ent/predicate"
 	"github.com/rezible/rezible/ent/privacy"
 	"github.com/rezible/rezible/ent/team"
+	"github.com/rezible/rezible/ent/tenant"
 	"github.com/rezible/rezible/ent/user"
 )
 
@@ -39,11 +41,96 @@ func (s *UserService) CreateUserContext(ctx context.Context, userId uuid.UUID) (
 		}
 		return nil, fmt.Errorf("get user by id: %w", userErr)
 	}
-	return context.WithValue(access.UserContext(ctx, usr), userCtxKey{}, usr), nil
+	return context.WithValue(access.TenantUserContext(ctx, usr.TenantID), userCtxKey{}, usr), nil
 }
 
 func (s *UserService) GetUserContext(ctx context.Context) *ent.User {
 	return ctx.Value(userCtxKey{}).(*ent.User)
+}
+
+func getEmailDomain(email string) (string, error) {
+	emailParts := strings.SplitN(email, "@", 2)
+	if len(emailParts) != 2 {
+		return "", fmt.Errorf("invalid user email domain")
+	}
+	return emailParts[1], nil
+}
+
+func nilEmptyString(s string) *string {
+	if s == "" {
+		return nil
+	}
+	return &s
+}
+
+func (s *UserService) getUserByAuthProviderID(ctx context.Context, authProviderID string) (*ent.User, error) {
+	userQuery := s.db.User.Query().Where(user.AuthProviderID(authProviderID))
+	return userQuery.Only(ctx)
+}
+
+func (s *UserService) FindOrCreateAuthProviderUser(ctx context.Context, provUser *ent.User, tenantAuthId string) (*ent.User, error) {
+	tnt, tenantErr := s.db.Tenant.Query().Where(tenant.AuthID(tenantAuthId)).Only(ctx)
+	if tenantErr != nil {
+		if !ent.IsNotFound(tenantErr) {
+			return nil, fmt.Errorf("failed to query tenant: %w", tenantErr)
+		}
+		// TODO: allow returning error here (tenant does not exist, don't create new tenant)
+	}
+
+	if tnt != nil {
+		ctx = access.TenantSystemContext(ctx, tnt.ID)
+		usr, usrErr := s.getUserByAuthProviderID(ctx, provUser.AuthProviderID)
+		if usrErr != nil {
+			if !ent.IsNotFound(usrErr) {
+				return nil, fmt.Errorf("failed to query user: %w", usrErr)
+			}
+			// TODO: allow returning error here (tenant exists, don't create new user)
+		} else if usr != nil {
+			return usr, nil
+		}
+	}
+
+	// tenant and user do not exist
+
+	ctx = access.SystemContext(ctx)
+
+	var createdUser *ent.User
+
+	createUserTenantFn := func(tx *ent.Tx) error {
+		if tnt == nil {
+			createTenant := tx.Tenant.Create().
+				SetAuthID(tenantAuthId).
+				SetName(tenantAuthId)
+
+			tnt, tenantErr = createTenant.Save(ctx)
+			if tenantErr != nil {
+				return fmt.Errorf("create tenant: %w", tenantErr)
+			}
+			ctx = access.TenantSystemContext(ctx, tnt.ID)
+		}
+
+		createUser := tx.User.Create().
+			SetTenantID(tnt.ID).
+			SetAuthProviderID(provUser.AuthProviderID).
+			SetEmail(provUser.Email).
+			SetConfirmed(provUser.Confirmed).
+			SetNillableName(nilEmptyString(provUser.Name)).
+			SetNillableTimezone(nilEmptyString(provUser.Timezone))
+
+		created, createErr := createUser.Save(ctx)
+		if createErr != nil {
+			return fmt.Errorf("create user: %w", createErr)
+		}
+		createdUser = created
+
+		return nil
+	}
+
+	if txErr := ent.WithTx(ctx, s.db, createUserTenantFn); txErr != nil {
+		return nil, txErr
+	}
+
+	return createdUser, nil
 }
 
 func (s *UserService) Create(ctx context.Context, user ent.User) (*ent.User, error) {

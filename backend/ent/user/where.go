@@ -59,6 +59,11 @@ func TenantID(v int) predicate.User {
 	return predicate.User(sql.FieldEQ(FieldTenantID, v))
 }
 
+// AuthProviderID applies equality check predicate on the "auth_provider_id" field. It's identical to AuthProviderIDEQ.
+func AuthProviderID(v string) predicate.User {
+	return predicate.User(sql.FieldEQ(FieldAuthProviderID, v))
+}
+
 // Email applies equality check predicate on the "email" field. It's identical to EmailEQ.
 func Email(v string) predicate.User {
 	return predicate.User(sql.FieldEQ(FieldEmail, v))
@@ -102,6 +107,81 @@ func TenantIDIn(vs ...int) predicate.User {
 // TenantIDNotIn applies the NotIn predicate on the "tenant_id" field.
 func TenantIDNotIn(vs ...int) predicate.User {
 	return predicate.User(sql.FieldNotIn(FieldTenantID, vs...))
+}
+
+// AuthProviderIDEQ applies the EQ predicate on the "auth_provider_id" field.
+func AuthProviderIDEQ(v string) predicate.User {
+	return predicate.User(sql.FieldEQ(FieldAuthProviderID, v))
+}
+
+// AuthProviderIDNEQ applies the NEQ predicate on the "auth_provider_id" field.
+func AuthProviderIDNEQ(v string) predicate.User {
+	return predicate.User(sql.FieldNEQ(FieldAuthProviderID, v))
+}
+
+// AuthProviderIDIn applies the In predicate on the "auth_provider_id" field.
+func AuthProviderIDIn(vs ...string) predicate.User {
+	return predicate.User(sql.FieldIn(FieldAuthProviderID, vs...))
+}
+
+// AuthProviderIDNotIn applies the NotIn predicate on the "auth_provider_id" field.
+func AuthProviderIDNotIn(vs ...string) predicate.User {
+	return predicate.User(sql.FieldNotIn(FieldAuthProviderID, vs...))
+}
+
+// AuthProviderIDGT applies the GT predicate on the "auth_provider_id" field.
+func AuthProviderIDGT(v string) predicate.User {
+	return predicate.User(sql.FieldGT(FieldAuthProviderID, v))
+}
+
+// AuthProviderIDGTE applies the GTE predicate on the "auth_provider_id" field.
+func AuthProviderIDGTE(v string) predicate.User {
+	return predicate.User(sql.FieldGTE(FieldAuthProviderID, v))
+}
+
+// AuthProviderIDLT applies the LT predicate on the "auth_provider_id" field.
+func AuthProviderIDLT(v string) predicate.User {
+	return predicate.User(sql.FieldLT(FieldAuthProviderID, v))
+}
+
+// AuthProviderIDLTE applies the LTE predicate on the "auth_provider_id" field.
+func AuthProviderIDLTE(v string) predicate.User {
+	return predicate.User(sql.FieldLTE(FieldAuthProviderID, v))
+}
+
+// AuthProviderIDContains applies the Contains predicate on the "auth_provider_id" field.
+func AuthProviderIDContains(v string) predicate.User {
+	return predicate.User(sql.FieldContains(FieldAuthProviderID, v))
+}
+
+// AuthProviderIDHasPrefix applies the HasPrefix predicate on the "auth_provider_id" field.
+func AuthProviderIDHasPrefix(v string) predicate.User {
+	return predicate.User(sql.FieldHasPrefix(FieldAuthProviderID, v))
+}
+
+// AuthProviderIDHasSuffix applies the HasSuffix predicate on the "auth_provider_id" field.
+func AuthProviderIDHasSuffix(v string) predicate.User {
+	return predicate.User(sql.FieldHasSuffix(FieldAuthProviderID, v))
+}
+
+// AuthProviderIDIsNil applies the IsNil predicate on the "auth_provider_id" field.
+func AuthProviderIDIsNil() predicate.User {
+	return predicate.User(sql.FieldIsNull(FieldAuthProviderID))
+}
+
+// AuthProviderIDNotNil applies the NotNil predicate on the "auth_provider_id" field.
+func AuthProviderIDNotNil() predicate.User {
+	return predicate.User(sql.FieldNotNull(FieldAuthProviderID))
+}
+
+// AuthProviderIDEqualFold applies the EqualFold predicate on the "auth_provider_id" field.
+func AuthProviderIDEqualFold(v string) predicate.User {
+	return predicate.User(sql.FieldEqualFold(FieldAuthProviderID, v))
+}
+
+// AuthProviderIDContainsFold applies the ContainsFold predicate on the "auth_provider_id" field.
+func AuthProviderIDContainsFold(v string) predicate.User {
+	return predicate.User(sql.FieldContainsFold(FieldAuthProviderID, v))
 }
 
 // EmailEQ applies the EQ predicate on the "email" field.

@@ -16,6 +16,8 @@ const (
 	FieldID = "id"
 	// FieldTenantID holds the string denoting the tenant_id field in the database.
 	FieldTenantID = "tenant_id"
+	// FieldAuthProviderID holds the string denoting the auth_provider_id field in the database.
+	FieldAuthProviderID = "auth_provider_id"
 	// FieldEmail holds the string denoting the email field in the database.
 	FieldEmail = "email"
 	// FieldName holds the string denoting the name field in the database.
@@ -154,6 +156,7 @@ const (
 var Columns = []string{
 	FieldID,
 	FieldTenantID,
+	FieldAuthProviderID,
 	FieldEmail,
 	FieldName,
 	FieldChatID,
@@ -210,6 +213,11 @@ func ByID(opts ...sql.OrderTermOption) OrderOption {
 // ByTenantID orders the results by the tenant_id field.
 func ByTenantID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldTenantID, opts...).ToFunc()
+}
+
+// ByAuthProviderID orders the results by the auth_provider_id field.
+func ByAuthProviderID(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldAuthProviderID, opts...).ToFunc()
 }
 
 // ByEmail orders the results by the email field.

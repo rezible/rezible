@@ -12,7 +12,6 @@ import (
 	"github.com/rs/zerolog/log"
 
 	rez "github.com/rezible/rezible"
-	"github.com/rezible/rezible/ent"
 	oapi "github.com/rezible/rezible/openapi"
 )
 
@@ -100,75 +99,63 @@ func (s *AuthService) UserAuthHandler() http.Handler {
 			return
 		}
 
-		//token, cookieErr := oapi.GetRequestSessionCookieToken(r)
-		//if cookieErr != nil {
-		//	http.Error(w, http.StatusText(http.StatusUnauthorized), http.StatusUnauthorized)
-		//	return
-		//}
-		//
-		//_, sessErr := s.VerifyAuthSessionToken(token, nil)
-		//if sessErr != nil {
-		//	http.Error(w, http.StatusText(http.StatusUnauthorized), http.StatusUnauthorized)
-		//	return
-		//}
 		http.Redirect(w, r, rez.FrontendUrl, http.StatusFound)
 	})
 }
 
-func (s *AuthService) delegateAuthFlowToProvider(w http.ResponseWriter, r *http.Request) bool {
+func (s *AuthService) makeUserSessionCreatedCallback(w http.ResponseWriter, r *http.Request, provFlowRoute string) func(ps rez.AuthProviderSession) {
 	ctx := r.Context()
 
+	return func(ps rez.AuthProviderSession) {
+		redirect := ps.RedirectUrl
+		if redirect == "" || redirect == provFlowRoute {
+			redirect = rez.FrontendUrl
+		}
+
+		expiry := ps.ExpiresAt
+		if expiry.IsZero() {
+			expiry = time.Now().Add(defaultSessionDuration)
+		}
+
+		usr, usrErr := s.users.FindOrCreateAuthProviderUser(ctx, ps.User, ps.TenantId)
+		if usrErr != nil {
+			log.Error().Err(usrErr).Msg("FindOrCreateAuthProviderUser")
+			http.Error(w, "session error", http.StatusInternalServerError)
+			return
+		}
+
+		token, tokenErr := s.IssueAuthSessionToken(newUserAuthSession(usr.ID, ps.ExpiresAt), nil)
+		if tokenErr != nil {
+			log.Error().Err(tokenErr).Msg("failed to issue session token")
+			http.Error(w, "session error", http.StatusInternalServerError)
+			return
+		}
+
+		http.SetCookie(w, s.makeSessionCookie(r, token, ps.ExpiresAt, 0))
+		http.Redirect(w, r, redirect, http.StatusFound)
+	}
+}
+
+func (s *AuthService) delegateAuthFlowToProvider(w http.ResponseWriter, r *http.Request) bool {
 	for _, prov := range s.providers {
-		provAuthRoute := "/auth/" + strings.ToLower(prov.Name())
-		if r.URL.Path == provAuthRoute {
+		provFlowRoute := "/auth/" + strings.ToLower(prov.Name())
+		if r.URL.Path == provFlowRoute {
 			prov.StartAuthFlow(w, r)
 			return true
 		}
 
-		onSessionCreated := func(provUser *ent.User, expiresAt time.Time, redirect string) {
-			if expiresAt.IsZero() {
-				expiresAt = time.Now().Add(defaultSessionDuration)
-			}
-
-			dbUser, provUserErr := s.users.LookupProviderUser(ctx, provUser)
-			if provUserErr != nil && !ent.IsNotFound(provUserErr) {
-				log.Error().Err(provUserErr).Msg("failed to match user from provider details")
-				http.Error(w, "failed to match user", http.StatusInternalServerError)
-				return
-			}
-
-			// nil user id indicates provider user not found in db
-			userId := uuid.Nil
-			if dbUser != nil {
-				userId = dbUser.ID
-			}
-
-			token, tokenErr := s.IssueAuthSessionToken(newUserAuthSession(userId, expiresAt), nil)
-			if tokenErr != nil {
-				log.Error().Err(tokenErr).Msg("failed to issue user session token")
-				http.Error(w, "failed to issue session token", http.StatusInternalServerError)
-				return
-			}
-
-			http.SetCookie(w, s.makeSessionCookie(r, token, expiresAt, 0))
-
-			if redirect == "" || redirect == provAuthRoute {
-				redirect = rez.FrontendUrl
-			}
-			http.Redirect(w, r, redirect, http.StatusFound)
-		}
-
-		if prov.HandleAuthFlowRequest(w, r, onSessionCreated) {
+		onSessionCreatedCallback := s.makeUserSessionCreatedCallback(w, r, provFlowRoute)
+		if prov.HandleAuthFlowRequest(w, r, onSessionCreatedCallback) {
 			return true
 		}
 	}
 	return false
 }
 
-func (s *AuthService) makeSessionCookie(r *http.Request, value string, expires time.Time, maxAge int) *http.Cookie {
+func (s *AuthService) makeSessionCookie(r *http.Request, token string, expires time.Time, maxAge int) *http.Cookie {
 	cookie := &http.Cookie{
 		Name:     oapi.SessionCookieName,
-		Value:    value,
+		Value:    token,
 		Path:     "/",
 		Expires:  expires,
 		Secure:   true,

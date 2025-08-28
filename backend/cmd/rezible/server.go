@@ -9,22 +9,22 @@ import (
 	"strings"
 	"time"
 
+	"github.com/rs/zerolog"
+	"github.com/rs/zerolog/log"
+
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/access"
 	"github.com/rezible/rezible/internal/api"
 	"github.com/rezible/rezible/internal/eino"
-	"github.com/rezible/rezible/internal/goth"
 	"github.com/rezible/rezible/internal/hocuspocus"
 	"github.com/rezible/rezible/internal/http"
+	"github.com/rezible/rezible/internal/oidc"
 	"github.com/rezible/rezible/internal/postgres"
 	"github.com/rezible/rezible/internal/postgres/datasync"
 	"github.com/rezible/rezible/internal/providers"
 	"github.com/rezible/rezible/internal/river"
 	"github.com/rezible/rezible/internal/saml"
 	"github.com/rezible/rezible/internal/slack"
-	"github.com/rs/zerolog"
-
-	"github.com/rs/zerolog/log"
 )
 
 type rezServer struct {
@@ -182,18 +182,10 @@ func (s *rezServer) makeAuthService(ctx context.Context, users rez.UserService) 
 		provs = append(provs, samlProv)
 	}
 
-	if authProviderEnabled("github") {
-		ghProv, ghErr := goth.NewGithubProvider()
-		if ghErr != nil {
-			return nil, fmt.Errorf("goth.NewGithubProvider: %w", ghErr)
-		}
-		provs = append(provs, ghProv)
-	}
-
 	if authProviderEnabled("google_oidc") {
-		googleProv, googleErr := goth.NewGoogleOIDCProvider()
+		googleProv, googleErr := oidc.NewGoogleProvider(ctx)
 		if googleErr != nil {
-			return nil, fmt.Errorf("goth.NewGoogleOIDCProvider: %w", googleErr)
+			return nil, fmt.Errorf("oidc.NewGoogleProvider: %w", googleErr)
 		}
 		provs = append(provs, googleProv)
 	}
@@ -202,7 +194,7 @@ func (s *rezServer) makeAuthService(ctx context.Context, users rez.UserService) 
 	if secretKey == "" {
 		return nil, errors.New("AUTH_SESSION_SECRET_KEY must be set")
 	}
-	goth.ConfigureSessionStore(secretKey)
+	//oidc.ConfigureSessionStore(secretKey)
 
 	return http.NewAuthService(secretKey, users, provs)
 }

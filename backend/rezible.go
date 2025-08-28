@@ -62,13 +62,44 @@ type (
 )
 
 type (
-	AuthSessionCreatedFn = func(user *ent.User, expiresAt time.Time, redirectUri string)
+	UserDataProvider interface {
+		UserDataMapping() *ent.User
+		PullUsers(ctx context.Context) iter.Seq2[*ent.User, error]
+	}
+	ListUsersParams = struct {
+		ListParams
+		TeamID uuid.UUID
+	}
+
+	UserService interface {
+		CreateUserContext(ctx context.Context, userId uuid.UUID) (context.Context, error)
+		GetUserContext(ctx context.Context) *ent.User
+
+		FindOrCreateAuthProviderUser(ctx context.Context, user *ent.User, tenantId string) (*ent.User, error)
+
+		ListUsers(context.Context, ListUsersParams) ([]*ent.User, error)
+
+		GetById(context.Context, uuid.UUID) (*ent.User, error)
+		GetByEmail(context.Context, string) (*ent.User, error)
+		GetByChatId(context.Context, string) (*ent.User, error)
+
+		LookupProviderUser(ctx context.Context, provUser *ent.User) (*ent.User, error)
+	}
+)
+
+type (
+	AuthProviderSession struct {
+		User        *ent.User
+		TenantId    string
+		ExpiresAt   time.Time
+		RedirectUrl string
+	}
 
 	AuthSessionProvider interface {
 		Name() string
 		GetUserMapping() *ent.User
 		StartAuthFlow(w http.ResponseWriter, r *http.Request)
-		HandleAuthFlowRequest(w http.ResponseWriter, r *http.Request, onCreated AuthSessionCreatedFn) (handled bool)
+		HandleAuthFlowRequest(w http.ResponseWriter, r *http.Request, onCreated func(AuthProviderSession)) bool
 		ClearSession(w http.ResponseWriter, r *http.Request)
 	}
 
@@ -138,29 +169,6 @@ type (
 
 	TeamService interface {
 		GetById(context.Context, uuid.UUID) (*ent.Team, error)
-	}
-)
-
-type (
-	UserDataProvider interface {
-		UserDataMapping() *ent.User
-		PullUsers(ctx context.Context) iter.Seq2[*ent.User, error]
-	}
-	ListUsersParams = struct {
-		ListParams
-		TeamID uuid.UUID
-	}
-
-	UserService interface {
-		CreateUserContext(ctx context.Context, userId uuid.UUID) (context.Context, error)
-		GetUserContext(ctx context.Context) *ent.User
-
-		Create(context.Context, ent.User) (*ent.User, error)
-		ListUsers(context.Context, ListUsersParams) ([]*ent.User, error)
-		GetById(context.Context, uuid.UUID) (*ent.User, error)
-		GetByEmail(context.Context, string) (*ent.User, error)
-		GetByChatId(context.Context, string) (*ent.User, error)
-		LookupProviderUser(ctx context.Context, provUser *ent.User) (*ent.User, error)
 	}
 )
 

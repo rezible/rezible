@@ -1242,11 +1242,11 @@ func init() {
 	userFields := schema.User{}.Fields()
 	_ = userFields
 	// userDescName is the schema descriptor for name field.
-	userDescName := userFields[2].Descriptor()
+	userDescName := userFields[3].Descriptor()
 	// user.DefaultName holds the default value on creation for the name field.
 	user.DefaultName = userDescName.Default.(string)
 	// userDescConfirmed is the schema descriptor for confirmed field.
-	userDescConfirmed := userFields[5].Descriptor()
+	userDescConfirmed := userFields[6].Descriptor()
 	// user.DefaultConfirmed holds the default value on creation for the confirmed field.
 	user.DefaultConfirmed = userDescConfirmed.Default.(bool)
 	// userDescID is the schema descriptor for id field.

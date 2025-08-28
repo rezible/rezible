@@ -109,6 +109,7 @@ func (p *AuthSessionProvider) createSamlMiddleware(ctx context.Context, cfg Conf
 		return fmt.Errorf("bad idp url: %w", idpUrlErr)
 	}
 
+	// TODO: use samlsp.ParseMetadata with a cache
 	idpMetadata, metadataErr := samlsp.FetchMetadata(ctx, http.DefaultClient, *idpMetadataURL)
 	if metadataErr != nil {
 		return fmt.Errorf("fetching idp metadata: %w", metadataErr)
@@ -132,7 +133,7 @@ func (p *AuthSessionProvider) createSamlMiddleware(ctx context.Context, cfg Conf
 		return fmt.Errorf("samlsp.New: %w", mwErr)
 	}
 
-	mw.OnError = p.handleSamlError
+	mw.OnError = p.onError
 
 	// fix redirect urls
 	resolveMountedPath := func(path string) url.URL {
@@ -147,7 +148,7 @@ func (p *AuthSessionProvider) createSamlMiddleware(ctx context.Context, cfg Conf
 	return nil
 }
 
-func (p *AuthSessionProvider) handleSamlError(w http.ResponseWriter, _ *http.Request, err error) {
+func (p *AuthSessionProvider) onError(w http.ResponseWriter, _ *http.Request, err error) {
 	var parseErr *saml.InvalidResponseError
 	if errors.As(err, &parseErr) {
 		log.Printf("WARNING: received invalid saml response: %s (now: %s) %s",
@@ -160,16 +161,15 @@ func (p *AuthSessionProvider) StartAuthFlow(w http.ResponseWriter, r *http.Reque
 	p.mw.HandleStartAuthFlow(w, r)
 }
 
-func (p *AuthSessionProvider) HandleAuthFlowRequest(w http.ResponseWriter, r *http.Request, onCreated rez.AuthSessionCreatedFn) bool {
+func (p *AuthSessionProvider) HandleAuthFlowRequest(w http.ResponseWriter, r *http.Request, onCreated func(session rez.AuthProviderSession)) bool {
 	if r.URL.Path == p.mw.ServiceProvider.MetadataURL.Path {
 		p.mw.ServeMetadata(w, r)
 		return true
 	}
 
 	if r.URL.Path == p.mw.ServiceProvider.AcsURL.Path {
-		if acsErr := p.handleServeACS(w, r, onCreated); acsErr != nil {
-			log.Error().Err(acsErr).Msgf("failed to handle serve acs")
-			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		if sessErr := p.handleServeACS(w, r, onCreated); sessErr != nil {
+			p.onError(w, r, sessErr)
 		}
 		return true
 	}
@@ -184,7 +184,7 @@ func (p *AuthSessionProvider) ClearSession(w http.ResponseWriter, r *http.Reques
 }
 
 // mostly taken from samlsp
-func (p *AuthSessionProvider) handleServeACS(w http.ResponseWriter, r *http.Request, onCreated rez.AuthSessionCreatedFn) error {
+func (p *AuthSessionProvider) handleServeACS(w http.ResponseWriter, r *http.Request, onCreated func(session rez.AuthProviderSession)) error {
 	if parseErr := r.ParseForm(); parseErr != nil {
 		return fmt.Errorf("parse form: %w", parseErr)
 	}
@@ -230,22 +230,17 @@ func (p *AuthSessionProvider) handleServeACS(w http.ResponseWriter, r *http.Requ
 		return fmt.Errorf("failed to create session: %w", createErr)
 	}
 
-	cs, sessErr := p.createSession(assertion)
+	cs, sessErr := p.createSession(assertion, redirectUri)
 	if sessErr != nil {
 		return fmt.Errorf("failed to convert assertion to auth session: %w", sessErr)
 	}
 
-	onCreated(cs.user, cs.expiresAt, redirectUri)
+	onCreated(*cs)
 
 	return nil
 }
 
-type createdSession struct {
-	user      *ent.User
-	expiresAt time.Time
-}
-
-func (p *AuthSessionProvider) createSession(a *saml.Assertion) (*createdSession, error) {
+func (p *AuthSessionProvider) createSession(a *saml.Assertion, redirectUrl string) (*rez.AuthProviderSession, error) {
 	sp, spOk := p.mw.Session.(samlsp.CookieSessionProvider)
 	if !spOk {
 		return nil, fmt.Errorf("failed to get cookie session provider")
@@ -267,15 +262,18 @@ func (p *AuthSessionProvider) createSession(a *saml.Assertion) (*createdSession,
 	}
 
 	attr := sa.GetAttributes()
-	cs := &createdSession{
-		user: &ent.User{
+
+	ps := &rez.AuthProviderSession{
+		User: &ent.User{
 			Name:  attr.Get("firstName"),
 			Email: attr.Get("email"),
 		},
-		expiresAt: time.Unix(claims.ExpiresAt, 0),
+		ExpiresAt:   time.Unix(claims.ExpiresAt, 0),
+		RedirectUrl: redirectUrl,
+		TenantId:    claims.Subject,
 	}
 
-	return cs, nil
+	return ps, nil
 }
 
 func (p *AuthSessionProvider) GetUserMapping() *ent.User {

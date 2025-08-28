@@ -60,7 +60,8 @@ func newProviderUserTracker(users *ent.UserClient) *providerUserTracker {
 }
 
 func (ut *providerUserTracker) lookupOrCreate(ctx context.Context, provUser *ent.User, provMapping *ent.User) (uuid.UUID, *ent.UserMutation, error) {
-	// TODO: cache?
+	// TODO: this should use UserService.LookupProviderUser
+
 	email := provUser.Email
 	if email != "" {
 		if createdId, ok := ut.created[email]; ok {

@@ -2,8 +2,6 @@ package access
 
 import (
 	"context"
-
-	"github.com/rezible/rezible/ent"
 )
 
 type (
@@ -70,8 +68,8 @@ func TenantSystemContext(ctx context.Context, tenantId int) context.Context {
 	return storeContext(ctx, newContext(tenantId, MakeRoles(RoleSystem)))
 }
 
-func UserContext(ctx context.Context, user *ent.User) context.Context {
-	return storeContext(ctx, newContext(user.TenantID, MakeRoles(RoleUser)))
+func TenantUserContext(ctx context.Context, tenantId int) context.Context {
+	return storeContext(ctx, newContext(tenantId, MakeRoles(RoleUser)))
 }
 
 func GetContext(ctx context.Context) *Context {

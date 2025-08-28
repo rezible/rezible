@@ -1157,12 +1157,13 @@ var schemaGraph = func() *sqlgraph.Schema {
 		},
 		Type: "User",
 		Fields: map[string]*sqlgraph.FieldSpec{
-			user.FieldTenantID:  {Type: field.TypeInt, Column: user.FieldTenantID},
-			user.FieldEmail:     {Type: field.TypeString, Column: user.FieldEmail},
-			user.FieldName:      {Type: field.TypeString, Column: user.FieldName},
-			user.FieldChatID:    {Type: field.TypeString, Column: user.FieldChatID},
-			user.FieldTimezone:  {Type: field.TypeString, Column: user.FieldTimezone},
-			user.FieldConfirmed: {Type: field.TypeBool, Column: user.FieldConfirmed},
+			user.FieldTenantID:       {Type: field.TypeInt, Column: user.FieldTenantID},
+			user.FieldAuthProviderID: {Type: field.TypeString, Column: user.FieldAuthProviderID},
+			user.FieldEmail:          {Type: field.TypeString, Column: user.FieldEmail},
+			user.FieldName:           {Type: field.TypeString, Column: user.FieldName},
+			user.FieldChatID:         {Type: field.TypeString, Column: user.FieldChatID},
+			user.FieldTimezone:       {Type: field.TypeString, Column: user.FieldTimezone},
+			user.FieldConfirmed:      {Type: field.TypeBool, Column: user.FieldConfirmed},
 		},
 	}
 	graph.MustAddE(
@@ -11024,6 +11025,11 @@ func (f *UserFilter) WhereID(p entql.ValueP) {
 // WhereTenantID applies the entql int predicate on the tenant_id field.
 func (f *UserFilter) WhereTenantID(p entql.IntP) {
 	f.Where(p.Field(user.FieldTenantID))
+}
+
+// WhereAuthProviderID applies the entql string predicate on the auth_provider_id field.
+func (f *UserFilter) WhereAuthProviderID(p entql.StringP) {
+	f.Where(p.Field(user.FieldAuthProviderID))
 }
 
 // WhereEmail applies the entql string predicate on the email field.
