@@ -41,15 +41,23 @@ func (uc *UserCreate) SetTenantID(i int) *UserCreate {
 	return uc
 }
 
+// SetEmail sets the "email" field.
+func (uc *UserCreate) SetEmail(s string) *UserCreate {
+	uc.mutation.SetEmail(s)
+	return uc
+}
+
 // SetName sets the "name" field.
 func (uc *UserCreate) SetName(s string) *UserCreate {
 	uc.mutation.SetName(s)
 	return uc
 }
 
-// SetEmail sets the "email" field.
-func (uc *UserCreate) SetEmail(s string) *UserCreate {
-	uc.mutation.SetEmail(s)
+// SetNillableName sets the "name" field if the given value is not nil.
+func (uc *UserCreate) SetNillableName(s *string) *UserCreate {
+	if s != nil {
+		uc.SetName(*s)
+	}
 	return uc
 }
 
@@ -77,6 +85,20 @@ func (uc *UserCreate) SetTimezone(s string) *UserCreate {
 func (uc *UserCreate) SetNillableTimezone(s *string) *UserCreate {
 	if s != nil {
 		uc.SetTimezone(*s)
+	}
+	return uc
+}
+
+// SetConfirmed sets the "confirmed" field.
+func (uc *UserCreate) SetConfirmed(b bool) *UserCreate {
+	uc.mutation.SetConfirmed(b)
+	return uc
+}
+
+// SetNillableConfirmed sets the "confirmed" field if the given value is not nil.
+func (uc *UserCreate) SetNillableConfirmed(b *bool) *UserCreate {
+	if b != nil {
+		uc.SetConfirmed(*b)
 	}
 	return uc
 }
@@ -332,6 +354,14 @@ func (uc *UserCreate) ExecX(ctx context.Context) {
 
 // defaults sets the default values of the builder before save.
 func (uc *UserCreate) defaults() error {
+	if _, ok := uc.mutation.Name(); !ok {
+		v := user.DefaultName
+		uc.mutation.SetName(v)
+	}
+	if _, ok := uc.mutation.Confirmed(); !ok {
+		v := user.DefaultConfirmed
+		uc.mutation.SetConfirmed(v)
+	}
 	if _, ok := uc.mutation.ID(); !ok {
 		if user.DefaultID == nil {
 			return fmt.Errorf("ent: uninitialized user.DefaultID (forgotten import ent/runtime?)")
@@ -347,11 +377,11 @@ func (uc *UserCreate) check() error {
 	if _, ok := uc.mutation.TenantID(); !ok {
 		return &ValidationError{Name: "tenant_id", err: errors.New(`ent: missing required field "User.tenant_id"`)}
 	}
-	if _, ok := uc.mutation.Name(); !ok {
-		return &ValidationError{Name: "name", err: errors.New(`ent: missing required field "User.name"`)}
-	}
 	if _, ok := uc.mutation.Email(); !ok {
 		return &ValidationError{Name: "email", err: errors.New(`ent: missing required field "User.email"`)}
+	}
+	if _, ok := uc.mutation.Confirmed(); !ok {
+		return &ValidationError{Name: "confirmed", err: errors.New(`ent: missing required field "User.confirmed"`)}
 	}
 	if len(uc.mutation.TenantIDs()) == 0 {
 		return &ValidationError{Name: "tenant", err: errors.New(`ent: missing required edge "User.tenant"`)}
@@ -392,13 +422,13 @@ func (uc *UserCreate) createSpec() (*User, *sqlgraph.CreateSpec) {
 		_node.ID = id
 		_spec.ID.Value = &id
 	}
-	if value, ok := uc.mutation.Name(); ok {
-		_spec.SetField(user.FieldName, field.TypeString, value)
-		_node.Name = value
-	}
 	if value, ok := uc.mutation.Email(); ok {
 		_spec.SetField(user.FieldEmail, field.TypeString, value)
 		_node.Email = value
+	}
+	if value, ok := uc.mutation.Name(); ok {
+		_spec.SetField(user.FieldName, field.TypeString, value)
+		_node.Name = value
 	}
 	if value, ok := uc.mutation.ChatID(); ok {
 		_spec.SetField(user.FieldChatID, field.TypeString, value)
@@ -407,6 +437,10 @@ func (uc *UserCreate) createSpec() (*User, *sqlgraph.CreateSpec) {
 	if value, ok := uc.mutation.Timezone(); ok {
 		_spec.SetField(user.FieldTimezone, field.TypeString, value)
 		_node.Timezone = value
+	}
+	if value, ok := uc.mutation.Confirmed(); ok {
+		_spec.SetField(user.FieldConfirmed, field.TypeBool, value)
+		_node.Confirmed = value
 	}
 	if nodes := uc.mutation.TenantIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
@@ -692,6 +726,18 @@ type (
 	}
 )
 
+// SetEmail sets the "email" field.
+func (u *UserUpsert) SetEmail(v string) *UserUpsert {
+	u.Set(user.FieldEmail, v)
+	return u
+}
+
+// UpdateEmail sets the "email" field to the value that was provided on create.
+func (u *UserUpsert) UpdateEmail() *UserUpsert {
+	u.SetExcluded(user.FieldEmail)
+	return u
+}
+
 // SetName sets the "name" field.
 func (u *UserUpsert) SetName(v string) *UserUpsert {
 	u.Set(user.FieldName, v)
@@ -704,15 +750,9 @@ func (u *UserUpsert) UpdateName() *UserUpsert {
 	return u
 }
 
-// SetEmail sets the "email" field.
-func (u *UserUpsert) SetEmail(v string) *UserUpsert {
-	u.Set(user.FieldEmail, v)
-	return u
-}
-
-// UpdateEmail sets the "email" field to the value that was provided on create.
-func (u *UserUpsert) UpdateEmail() *UserUpsert {
-	u.SetExcluded(user.FieldEmail)
+// ClearName clears the value of the "name" field.
+func (u *UserUpsert) ClearName() *UserUpsert {
+	u.SetNull(user.FieldName)
 	return u
 }
 
@@ -749,6 +789,18 @@ func (u *UserUpsert) UpdateTimezone() *UserUpsert {
 // ClearTimezone clears the value of the "timezone" field.
 func (u *UserUpsert) ClearTimezone() *UserUpsert {
 	u.SetNull(user.FieldTimezone)
+	return u
+}
+
+// SetConfirmed sets the "confirmed" field.
+func (u *UserUpsert) SetConfirmed(v bool) *UserUpsert {
+	u.Set(user.FieldConfirmed, v)
+	return u
+}
+
+// UpdateConfirmed sets the "confirmed" field to the value that was provided on create.
+func (u *UserUpsert) UpdateConfirmed() *UserUpsert {
+	u.SetExcluded(user.FieldConfirmed)
 	return u
 }
 
@@ -803,6 +855,20 @@ func (u *UserUpsertOne) Update(set func(*UserUpsert)) *UserUpsertOne {
 	return u
 }
 
+// SetEmail sets the "email" field.
+func (u *UserUpsertOne) SetEmail(v string) *UserUpsertOne {
+	return u.Update(func(s *UserUpsert) {
+		s.SetEmail(v)
+	})
+}
+
+// UpdateEmail sets the "email" field to the value that was provided on create.
+func (u *UserUpsertOne) UpdateEmail() *UserUpsertOne {
+	return u.Update(func(s *UserUpsert) {
+		s.UpdateEmail()
+	})
+}
+
 // SetName sets the "name" field.
 func (u *UserUpsertOne) SetName(v string) *UserUpsertOne {
 	return u.Update(func(s *UserUpsert) {
@@ -817,17 +883,10 @@ func (u *UserUpsertOne) UpdateName() *UserUpsertOne {
 	})
 }
 
-// SetEmail sets the "email" field.
-func (u *UserUpsertOne) SetEmail(v string) *UserUpsertOne {
+// ClearName clears the value of the "name" field.
+func (u *UserUpsertOne) ClearName() *UserUpsertOne {
 	return u.Update(func(s *UserUpsert) {
-		s.SetEmail(v)
-	})
-}
-
-// UpdateEmail sets the "email" field to the value that was provided on create.
-func (u *UserUpsertOne) UpdateEmail() *UserUpsertOne {
-	return u.Update(func(s *UserUpsert) {
-		s.UpdateEmail()
+		s.ClearName()
 	})
 }
 
@@ -870,6 +929,20 @@ func (u *UserUpsertOne) UpdateTimezone() *UserUpsertOne {
 func (u *UserUpsertOne) ClearTimezone() *UserUpsertOne {
 	return u.Update(func(s *UserUpsert) {
 		s.ClearTimezone()
+	})
+}
+
+// SetConfirmed sets the "confirmed" field.
+func (u *UserUpsertOne) SetConfirmed(v bool) *UserUpsertOne {
+	return u.Update(func(s *UserUpsert) {
+		s.SetConfirmed(v)
+	})
+}
+
+// UpdateConfirmed sets the "confirmed" field to the value that was provided on create.
+func (u *UserUpsertOne) UpdateConfirmed() *UserUpsertOne {
+	return u.Update(func(s *UserUpsert) {
+		s.UpdateConfirmed()
 	})
 }
 
@@ -1091,6 +1164,20 @@ func (u *UserUpsertBulk) Update(set func(*UserUpsert)) *UserUpsertBulk {
 	return u
 }
 
+// SetEmail sets the "email" field.
+func (u *UserUpsertBulk) SetEmail(v string) *UserUpsertBulk {
+	return u.Update(func(s *UserUpsert) {
+		s.SetEmail(v)
+	})
+}
+
+// UpdateEmail sets the "email" field to the value that was provided on create.
+func (u *UserUpsertBulk) UpdateEmail() *UserUpsertBulk {
+	return u.Update(func(s *UserUpsert) {
+		s.UpdateEmail()
+	})
+}
+
 // SetName sets the "name" field.
 func (u *UserUpsertBulk) SetName(v string) *UserUpsertBulk {
 	return u.Update(func(s *UserUpsert) {
@@ -1105,17 +1192,10 @@ func (u *UserUpsertBulk) UpdateName() *UserUpsertBulk {
 	})
 }
 
-// SetEmail sets the "email" field.
-func (u *UserUpsertBulk) SetEmail(v string) *UserUpsertBulk {
+// ClearName clears the value of the "name" field.
+func (u *UserUpsertBulk) ClearName() *UserUpsertBulk {
 	return u.Update(func(s *UserUpsert) {
-		s.SetEmail(v)
-	})
-}
-
-// UpdateEmail sets the "email" field to the value that was provided on create.
-func (u *UserUpsertBulk) UpdateEmail() *UserUpsertBulk {
-	return u.Update(func(s *UserUpsert) {
-		s.UpdateEmail()
+		s.ClearName()
 	})
 }
 
@@ -1158,6 +1238,20 @@ func (u *UserUpsertBulk) UpdateTimezone() *UserUpsertBulk {
 func (u *UserUpsertBulk) ClearTimezone() *UserUpsertBulk {
 	return u.Update(func(s *UserUpsert) {
 		s.ClearTimezone()
+	})
+}
+
+// SetConfirmed sets the "confirmed" field.
+func (u *UserUpsertBulk) SetConfirmed(v bool) *UserUpsertBulk {
+	return u.Update(func(s *UserUpsert) {
+		s.SetConfirmed(v)
+	})
+}
+
+// UpdateConfirmed sets the "confirmed" field to the value that was provided on create.
+func (u *UserUpsertBulk) UpdateConfirmed() *UserUpsertBulk {
+	return u.Update(func(s *UserUpsert) {
+		s.UpdateConfirmed()
 	})
 }
 

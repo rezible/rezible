@@ -57,6 +57,20 @@ func (tu *TenantUpdate) SetNillablePublicID(u *uuid.UUID) *TenantUpdate {
 	return tu
 }
 
+// SetAuthID sets the "auth_id" field.
+func (tu *TenantUpdate) SetAuthID(s string) *TenantUpdate {
+	tu.mutation.SetAuthID(s)
+	return tu
+}
+
+// SetNillableAuthID sets the "auth_id" field if the given value is not nil.
+func (tu *TenantUpdate) SetNillableAuthID(s *string) *TenantUpdate {
+	if s != nil {
+		tu.SetAuthID(*s)
+	}
+	return tu
+}
+
 // Mutation returns the TenantMutation object of the builder.
 func (tu *TenantUpdate) Mutation() *TenantMutation {
 	return tu.mutation
@@ -96,6 +110,11 @@ func (tu *TenantUpdate) check() error {
 			return &ValidationError{Name: "name", err: fmt.Errorf(`ent: validator failed for field "Tenant.name": %w`, err)}
 		}
 	}
+	if v, ok := tu.mutation.AuthID(); ok {
+		if err := tenant.AuthIDValidator(v); err != nil {
+			return &ValidationError{Name: "auth_id", err: fmt.Errorf(`ent: validator failed for field "Tenant.auth_id": %w`, err)}
+		}
+	}
 	return nil
 }
 
@@ -122,6 +141,9 @@ func (tu *TenantUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if value, ok := tu.mutation.PublicID(); ok {
 		_spec.SetField(tenant.FieldPublicID, field.TypeUUID, value)
+	}
+	if value, ok := tu.mutation.AuthID(); ok {
+		_spec.SetField(tenant.FieldAuthID, field.TypeString, value)
 	}
 	_spec.AddModifiers(tu.modifiers...)
 	if n, err = sqlgraph.UpdateNodes(ctx, tu.driver, _spec); err != nil {
@@ -169,6 +191,20 @@ func (tuo *TenantUpdateOne) SetPublicID(u uuid.UUID) *TenantUpdateOne {
 func (tuo *TenantUpdateOne) SetNillablePublicID(u *uuid.UUID) *TenantUpdateOne {
 	if u != nil {
 		tuo.SetPublicID(*u)
+	}
+	return tuo
+}
+
+// SetAuthID sets the "auth_id" field.
+func (tuo *TenantUpdateOne) SetAuthID(s string) *TenantUpdateOne {
+	tuo.mutation.SetAuthID(s)
+	return tuo
+}
+
+// SetNillableAuthID sets the "auth_id" field if the given value is not nil.
+func (tuo *TenantUpdateOne) SetNillableAuthID(s *string) *TenantUpdateOne {
+	if s != nil {
+		tuo.SetAuthID(*s)
 	}
 	return tuo
 }
@@ -225,6 +261,11 @@ func (tuo *TenantUpdateOne) check() error {
 			return &ValidationError{Name: "name", err: fmt.Errorf(`ent: validator failed for field "Tenant.name": %w`, err)}
 		}
 	}
+	if v, ok := tuo.mutation.AuthID(); ok {
+		if err := tenant.AuthIDValidator(v); err != nil {
+			return &ValidationError{Name: "auth_id", err: fmt.Errorf(`ent: validator failed for field "Tenant.auth_id": %w`, err)}
+		}
+	}
 	return nil
 }
 
@@ -268,6 +309,9 @@ func (tuo *TenantUpdateOne) sqlSave(ctx context.Context) (_node *Tenant, err err
 	}
 	if value, ok := tuo.mutation.PublicID(); ok {
 		_spec.SetField(tenant.FieldPublicID, field.TypeUUID, value)
+	}
+	if value, ok := tuo.mutation.AuthID(); ok {
+		_spec.SetField(tenant.FieldAuthID, field.TypeString, value)
 	}
 	_spec.AddModifiers(tuo.modifiers...)
 	_node = &Tenant{config: tuo.config}

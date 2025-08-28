@@ -16,14 +16,16 @@ const (
 	FieldID = "id"
 	// FieldTenantID holds the string denoting the tenant_id field in the database.
 	FieldTenantID = "tenant_id"
-	// FieldName holds the string denoting the name field in the database.
-	FieldName = "name"
 	// FieldEmail holds the string denoting the email field in the database.
 	FieldEmail = "email"
+	// FieldName holds the string denoting the name field in the database.
+	FieldName = "name"
 	// FieldChatID holds the string denoting the chat_id field in the database.
 	FieldChatID = "chat_id"
 	// FieldTimezone holds the string denoting the timezone field in the database.
 	FieldTimezone = "timezone"
+	// FieldConfirmed holds the string denoting the confirmed field in the database.
+	FieldConfirmed = "confirmed"
 	// EdgeTenant holds the string denoting the tenant edge name in mutations.
 	EdgeTenant = "tenant"
 	// EdgeTeams holds the string denoting the teams edge name in mutations.
@@ -152,10 +154,11 @@ const (
 var Columns = []string{
 	FieldID,
 	FieldTenantID,
-	FieldName,
 	FieldEmail,
+	FieldName,
 	FieldChatID,
 	FieldTimezone,
+	FieldConfirmed,
 }
 
 var (
@@ -188,6 +191,10 @@ func ValidColumn(column string) bool {
 var (
 	Hooks  [1]ent.Hook
 	Policy ent.Policy
+	// DefaultName holds the default value on creation for the "name" field.
+	DefaultName string
+	// DefaultConfirmed holds the default value on creation for the "confirmed" field.
+	DefaultConfirmed bool
 	// DefaultID holds the default value on creation for the "id" field.
 	DefaultID func() uuid.UUID
 )
@@ -205,14 +212,14 @@ func ByTenantID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldTenantID, opts...).ToFunc()
 }
 
-// ByName orders the results by the name field.
-func ByName(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldName, opts...).ToFunc()
-}
-
 // ByEmail orders the results by the email field.
 func ByEmail(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldEmail, opts...).ToFunc()
+}
+
+// ByName orders the results by the name field.
+func ByName(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldName, opts...).ToFunc()
 }
 
 // ByChatID orders the results by the chat_id field.
@@ -223,6 +230,11 @@ func ByChatID(opts ...sql.OrderTermOption) OrderOption {
 // ByTimezone orders the results by the timezone field.
 func ByTimezone(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldTimezone, opts...).ToFunc()
+}
+
+// ByConfirmed orders the results by the confirmed field.
+func ByConfirmed(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldConfirmed, opts...).ToFunc()
 }
 
 // ByTenantField orders the results by tenant field.

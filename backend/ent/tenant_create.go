@@ -42,6 +42,12 @@ func (tc *TenantCreate) SetNillablePublicID(u *uuid.UUID) *TenantCreate {
 	return tc
 }
 
+// SetAuthID sets the "auth_id" field.
+func (tc *TenantCreate) SetAuthID(s string) *TenantCreate {
+	tc.mutation.SetAuthID(s)
+	return tc
+}
+
 // Mutation returns the TenantMutation object of the builder.
 func (tc *TenantCreate) Mutation() *TenantMutation {
 	return tc.mutation
@@ -102,6 +108,14 @@ func (tc *TenantCreate) check() error {
 	if _, ok := tc.mutation.PublicID(); !ok {
 		return &ValidationError{Name: "public_id", err: errors.New(`ent: missing required field "Tenant.public_id"`)}
 	}
+	if _, ok := tc.mutation.AuthID(); !ok {
+		return &ValidationError{Name: "auth_id", err: errors.New(`ent: missing required field "Tenant.auth_id"`)}
+	}
+	if v, ok := tc.mutation.AuthID(); ok {
+		if err := tenant.AuthIDValidator(v); err != nil {
+			return &ValidationError{Name: "auth_id", err: fmt.Errorf(`ent: validator failed for field "Tenant.auth_id": %w`, err)}
+		}
+	}
 	return nil
 }
 
@@ -136,6 +150,10 @@ func (tc *TenantCreate) createSpec() (*Tenant, *sqlgraph.CreateSpec) {
 	if value, ok := tc.mutation.PublicID(); ok {
 		_spec.SetField(tenant.FieldPublicID, field.TypeUUID, value)
 		_node.PublicID = value
+	}
+	if value, ok := tc.mutation.AuthID(); ok {
+		_spec.SetField(tenant.FieldAuthID, field.TypeString, value)
+		_node.AuthID = value
 	}
 	return _node, _spec
 }
@@ -213,6 +231,18 @@ func (u *TenantUpsert) UpdatePublicID() *TenantUpsert {
 	return u
 }
 
+// SetAuthID sets the "auth_id" field.
+func (u *TenantUpsert) SetAuthID(v string) *TenantUpsert {
+	u.Set(tenant.FieldAuthID, v)
+	return u
+}
+
+// UpdateAuthID sets the "auth_id" field to the value that was provided on create.
+func (u *TenantUpsert) UpdateAuthID() *TenantUpsert {
+	u.SetExcluded(tenant.FieldAuthID)
+	return u
+}
+
 // UpdateNewValues updates the mutable fields using the new values that were set on create.
 // Using this option is equivalent to using:
 //
@@ -278,6 +308,20 @@ func (u *TenantUpsertOne) SetPublicID(v uuid.UUID) *TenantUpsertOne {
 func (u *TenantUpsertOne) UpdatePublicID() *TenantUpsertOne {
 	return u.Update(func(s *TenantUpsert) {
 		s.UpdatePublicID()
+	})
+}
+
+// SetAuthID sets the "auth_id" field.
+func (u *TenantUpsertOne) SetAuthID(v string) *TenantUpsertOne {
+	return u.Update(func(s *TenantUpsert) {
+		s.SetAuthID(v)
+	})
+}
+
+// UpdateAuthID sets the "auth_id" field to the value that was provided on create.
+func (u *TenantUpsertOne) UpdateAuthID() *TenantUpsertOne {
+	return u.Update(func(s *TenantUpsert) {
+		s.UpdateAuthID()
 	})
 }
 
@@ -510,6 +554,20 @@ func (u *TenantUpsertBulk) SetPublicID(v uuid.UUID) *TenantUpsertBulk {
 func (u *TenantUpsertBulk) UpdatePublicID() *TenantUpsertBulk {
 	return u.Update(func(s *TenantUpsert) {
 		s.UpdatePublicID()
+	})
+}
+
+// SetAuthID sets the "auth_id" field.
+func (u *TenantUpsertBulk) SetAuthID(v string) *TenantUpsertBulk {
+	return u.Update(func(s *TenantUpsert) {
+		s.SetAuthID(v)
+	})
+}
+
+// UpdateAuthID sets the "auth_id" field to the value that was provided on create.
+func (u *TenantUpsertBulk) UpdateAuthID() *TenantUpsertBulk {
+	return u.Update(func(s *TenantUpsert) {
+		s.UpdateAuthID()
 	})
 }
 

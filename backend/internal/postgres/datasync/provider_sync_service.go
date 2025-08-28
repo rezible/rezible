@@ -62,69 +62,64 @@ func (s *ProviderSyncService) syncProviderData(ctx context.Context, hard bool) e
 	}
 
 	users, usersErr := s.pl.GetUserDataProvider(ctx)
-	if usersErr != nil {
-		return fmt.Errorf("users data provider: %w", usersErr)
-	}
-	if syncErr := syncUsers(ctx, s.db, users); syncErr != nil {
-		return fmt.Errorf("users: %w", syncErr)
+	if usersErr == nil {
+		if syncErr := syncUsers(ctx, s.db, users); syncErr != nil {
+			return fmt.Errorf("users: %w", syncErr)
+		}
 	}
 
 	teams, teamsErr := s.pl.GetTeamDataProvider(ctx)
-	if teamsErr != nil {
-		return fmt.Errorf("teams data provider: %w", teamsErr)
-	}
-	if syncErr := syncTeams(ctx, s.db, teams); syncErr != nil {
-		return fmt.Errorf("teams: %w", syncErr)
+	if teamsErr == nil {
+		if syncErr := syncTeams(ctx, s.db, teams); syncErr != nil {
+			return fmt.Errorf("teams: %w", syncErr)
+		}
 	}
 
 	oncall, oncallErr := s.pl.GetOncallDataProvider(ctx)
-	if oncallErr != nil {
-		return fmt.Errorf("oncall data provider: %w", oncallErr)
-	}
-	if syncErr := syncOncallRosters(ctx, s.db, oncall); syncErr != nil {
-		return fmt.Errorf("oncall rosters: %w", syncErr)
-	}
-	if syncErr := syncOncallShifts(ctx, s.db, oncall); syncErr != nil {
-		return fmt.Errorf("oncall shifts: %w", syncErr)
+	if oncallErr == nil {
+		if syncErr := syncOncallRosters(ctx, s.db, oncall); syncErr != nil {
+			return fmt.Errorf("oncall rosters: %w", syncErr)
+		}
+		if syncErr := syncOncallShifts(ctx, s.db, oncall); syncErr != nil {
+			return fmt.Errorf("oncall shifts: %w", syncErr)
+		}
 	}
 
 	components, componentsErr := s.pl.GetSystemComponentsDataProvider(ctx)
-	if componentsErr != nil {
-		return fmt.Errorf("system components data provider: %w", componentsErr)
-	}
-	if syncErr := syncSystemComponents(ctx, s.db, components); syncErr != nil {
-		return fmt.Errorf("system components: %w", syncErr)
+	if componentsErr == nil {
+		if syncErr := syncSystemComponents(ctx, s.db, components); syncErr != nil {
+			return fmt.Errorf("system components: %w", syncErr)
+		}
 	}
 
 	alerts, alertsErr := s.pl.GetAlertDataProvider(ctx)
-	if alertsErr != nil {
-		return fmt.Errorf("alert data provider: %w", alertsErr)
-	}
-	if syncErr := syncAlerts(ctx, s.db, alerts); syncErr != nil {
-		return fmt.Errorf("alerts: %w", syncErr)
+	if alertsErr == nil {
+		if syncErr := syncAlerts(ctx, s.db, alerts); syncErr != nil {
+			return fmt.Errorf("alerts: %w", syncErr)
+		}
 	}
 
 	playbooks, playbooksErr := s.pl.GetPlaybookDataProvider(ctx)
-	if playbooksErr != nil {
-		return fmt.Errorf("playbooks data provider: %w", playbooksErr)
-	}
-	if syncErr := syncPlaybooks(ctx, s.db, playbooks); syncErr != nil {
-		return fmt.Errorf("playbooks: %w", syncErr)
+	if playbooksErr == nil {
+		if syncErr := syncPlaybooks(ctx, s.db, playbooks); syncErr != nil {
+			return fmt.Errorf("playbooks: %w", syncErr)
+		}
 	}
 
 	incidents, incidentsErr := s.pl.GetIncidentDataProvider(ctx)
-	if incidentsErr != nil {
-		return fmt.Errorf("incidents data provider: %w", incidentsErr)
-	}
-	if syncErr := syncIncidentRoles(ctx, s.db, incidents); syncErr != nil {
-		return fmt.Errorf("incident roles: %w", syncErr)
-	}
-	if syncErr := syncIncidents(ctx, s.db, incidents); syncErr != nil {
-		return fmt.Errorf("incidents: %w", syncErr)
+	if incidentsErr == nil {
+		if syncErr := syncIncidentRoles(ctx, s.db, incidents); syncErr != nil {
+			return fmt.Errorf("incident roles: %w", syncErr)
+		}
+		if syncErr := syncIncidents(ctx, s.db, incidents); syncErr != nil {
+			return fmt.Errorf("incidents: %w", syncErr)
+		}
 	}
 
-	if syncErr := syncOncallEvents(ctx, s.db, alerts); syncErr != nil {
-		return fmt.Errorf("oncall events: %w", syncErr)
+	if alerts != nil {
+		if syncErr := syncOncallEvents(ctx, s.db, alerts); syncErr != nil {
+			return fmt.Errorf("oncall events: %w", syncErr)
+		}
 	}
 
 	return nil

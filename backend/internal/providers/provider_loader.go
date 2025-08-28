@@ -5,17 +5,13 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"os"
 	"strings"
 	"time"
-
-	"github.com/rs/zerolog/log"
 
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/access"
 	"github.com/rezible/rezible/ent"
 	"github.com/rezible/rezible/ent/providerconfig"
-	"github.com/rezible/rezible/ent/tenant"
 	"github.com/rezible/rezible/internal/providers/fake"
 	"github.com/rezible/rezible/internal/providers/grafana"
 	"github.com/rezible/rezible/internal/providers/jira"
@@ -39,18 +35,6 @@ type (
 		client   *ent.ProviderConfigClient
 		cfgCache providerConfigCache
 	}
-
-	TenantConfig struct {
-		TenantName    string              `json:"tenant_name"`
-		ConfigEntries []TenantConfigEntry `json:"configs"`
-	}
-
-	TenantConfigEntry struct {
-		Type         providerconfig.ProviderType `json:"type"`
-		ProviderName string                      `json:"provider_name"`
-		Disabled     bool                        `json:"disabled"`
-		Config       json.RawMessage             `json:"config"`
-	}
 )
 
 func NewProviderLoader(client *ent.ProviderConfigClient) *ProviderLoader {
@@ -58,85 +42,6 @@ func NewProviderLoader(client *ent.ProviderConfigClient) *ProviderLoader {
 		client:   client,
 		cfgCache: make(providerConfigCache),
 	}
-}
-
-func fakeProviderConfigEntry(t providerconfig.ProviderType) TenantConfigEntry {
-	return TenantConfigEntry{Type: t, ProviderName: "fake", Config: []byte("{}")}
-}
-
-func LoadDevConfig(ctx context.Context, client *ent.Client) error {
-	// TODO: use fake oncall provider
-	grafanaOncallRawConfig := fmt.Sprintf(`{"api_endpoint":"%s","api_token":"%s"}`,
-		os.Getenv("GRAFANA_ONCALL_API_ENDPOINT"),
-		os.Getenv("GRAFANA_ONCALL_API_TOKEN"))
-	cfg := &TenantConfig{
-		TenantName: "Rezible Test",
-		ConfigEntries: []TenantConfigEntry{
-			{
-				Type:         providerconfig.ProviderTypeUsers,
-				ProviderName: "slack",
-				Config:       []byte("{}"),
-			},
-			{
-				Type:         providerconfig.ProviderTypeTeams,
-				ProviderName: "slack",
-				Config:       []byte("{}"),
-			},
-			{
-				Type:         providerconfig.ProviderTypeOncall,
-				ProviderName: "grafana",
-				Config:       []byte(grafanaOncallRawConfig),
-			},
-			fakeProviderConfigEntry(providerconfig.ProviderTypeIncidents),
-			fakeProviderConfigEntry(providerconfig.ProviderTypeAlerts),
-			fakeProviderConfigEntry(providerconfig.ProviderTypeTickets),
-			fakeProviderConfigEntry(providerconfig.ProviderTypePlaybooks),
-			fakeProviderConfigEntry(providerconfig.ProviderTypeSystemComponents),
-		},
-	}
-	return LoadTenantConfig(ctx, client, cfg)
-}
-
-func createTenantContext(ctx context.Context, client *ent.Client, tenantName string) (context.Context, error) {
-	tnt, tenantErr := client.Tenant.Query().Where(tenant.Name(tenantName)).Only(ctx)
-	if ent.IsNotFound(tenantErr) {
-		tnt, tenantErr = client.Tenant.Create().SetName(tenantName).Save(ctx)
-	}
-	if tenantErr != nil {
-		return nil, fmt.Errorf("querying tenant %q: %w", tenantName, tenantErr)
-	}
-	return access.TenantSystemContext(ctx, tnt.ID), nil
-}
-
-func LoadTenantConfig(ctx context.Context, client *ent.Client, cfg *TenantConfig) error {
-	tenantCtx, ctxErr := createTenantContext(ctx, client, cfg.TenantName)
-	if ctxErr != nil {
-		return ctxErr
-	}
-
-	return ent.WithTx(tenantCtx, client, func(tx *ent.Tx) error {
-		for _, c := range cfg.ConfigEntries {
-			log.Info().
-				Str("name", c.ProviderName).
-				Str("type", string(c.Type)).
-				Msg("loading provider")
-
-			upsert := tx.ProviderConfig.Create().
-				SetProviderName(c.ProviderName).
-				SetProviderType(c.Type).
-				SetProviderConfig(c.Config).
-				SetEnabled(!c.Disabled).
-				SetUpdatedAt(time.Now()).
-				OnConflictColumns(providerconfig.FieldProviderName, providerconfig.FieldProviderType).
-				UpdateProviderConfig().
-				UpdateUpdatedAt()
-
-			if upsertErr := upsert.Exec(tenantCtx); upsertErr != nil {
-				return fmt.Errorf("upserting (%s %s): %w", string(c.Type), c.ProviderName, upsertErr)
-			}
-		}
-		return nil
-	})
 }
 
 func loadProvider[C any, P any](constructorFn func(C) (P, error), lc *providerConfig) (P, error) {

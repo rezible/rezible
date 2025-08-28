@@ -1209,6 +1209,10 @@ func init() {
 	tenantDescPublicID := tenantFields[1].Descriptor()
 	// tenant.DefaultPublicID holds the default value on creation for the public_id field.
 	tenant.DefaultPublicID = tenantDescPublicID.Default.(func() uuid.UUID)
+	// tenantDescAuthID is the schema descriptor for auth_id field.
+	tenantDescAuthID := tenantFields[2].Descriptor()
+	// tenant.AuthIDValidator is a validator for the "auth_id" field. It is called by the builders before save.
+	tenant.AuthIDValidator = tenantDescAuthID.Validators[0].(func(string) error)
 	ticketMixin := schema.Ticket{}.Mixin()
 	ticket.Policy = privacy.NewPolicies(ticketMixin[0], ticketMixin[1], schema.Ticket{})
 	ticket.Hooks[0] = func(next ent.Mutator) ent.Mutator {
@@ -1237,6 +1241,14 @@ func init() {
 	}
 	userFields := schema.User{}.Fields()
 	_ = userFields
+	// userDescName is the schema descriptor for name field.
+	userDescName := userFields[2].Descriptor()
+	// user.DefaultName holds the default value on creation for the name field.
+	user.DefaultName = userDescName.Default.(string)
+	// userDescConfirmed is the schema descriptor for confirmed field.
+	userDescConfirmed := userFields[5].Descriptor()
+	// user.DefaultConfirmed holds the default value on creation for the confirmed field.
+	user.DefaultConfirmed = userDescConfirmed.Default.(bool)
 	// userDescID is the schema descriptor for id field.
 	userDescID := userFields[0].Descriptor()
 	// user.DefaultID holds the default value on creation for the id field.

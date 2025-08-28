@@ -31,7 +31,7 @@ func main() {
 	addCliCommand("migrate", "Run database migrations", migrateCmd)
 	addCliCommand("seed", "Seed the database", seedCmd)
 	addCliCommand("load-fake-config", "Load fake provider config", loadFakeConfigCmd)
-	addCliCommand("load-tenant-config", "Load a tenant data provider config file into database", loadTenantConfigCmd)
+	addCliCommand("load-dev-config", "Load a development data provider config file into database", loadDevConfigCmd)
 	addCliCommand("sync", "Sync the data providers", syncCmd)
 
 	cli.Run()

@@ -6,15 +6,20 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"time"
 
 	"github.com/danielgtaylor/huma/v2/humacli"
+	"github.com/google/uuid"
 	_ "github.com/jackc/pgx/v5/stdlib"
-	"github.com/rezible/rezible/access"
+	"github.com/rezible/rezible/ent/tenant"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 	"github.com/spf13/cobra"
 	"gopkg.in/yaml.v3"
 
+	"github.com/rezible/rezible/access"
+	"github.com/rezible/rezible/ent"
+	"github.com/rezible/rezible/ent/providerconfig"
 	"github.com/rezible/rezible/internal/api"
 	"github.com/rezible/rezible/internal/postgres"
 	"github.com/rezible/rezible/internal/postgres/datasync"
@@ -80,7 +85,31 @@ func syncCmd(ctx context.Context, opts *Options) error {
 	})
 }
 
-func loadTenantConfigCmd(ctx context.Context, opts *Options) error {
+func seedCmd(ctx context.Context, opts *Options) error {
+	return withDatabase(ctx, opts, func(db *postgres.Database) error {
+		return seedDatabase(ctx, db)
+	})
+}
+
+func seedDatabase(ctx context.Context, db *postgres.Database) error {
+	return nil
+}
+
+type (
+	providerTenantConfig struct {
+		TenantName    string                      `json:"tenant_name"`
+		ConfigEntries []providerTenantConfigEntry `json:"configs"`
+	}
+
+	providerTenantConfigEntry struct {
+		Type         providerconfig.ProviderType `json:"type"`
+		ProviderName string                      `json:"provider_name"`
+		Disabled     bool                        `json:"disabled"`
+		Config       json.RawMessage             `json:"config"`
+	}
+)
+
+func loadDevConfigCmd(ctx context.Context, opts *Options) error {
 	return withDatabase(ctx, opts, func(db *postgres.Database) error {
 		// TODO: allow specifying file name
 		f, openErr := os.Open(".dev_provider_configs.json")
@@ -93,27 +122,79 @@ func loadTenantConfigCmd(ctx context.Context, opts *Options) error {
 			return fmt.Errorf("reading file: %w", readErr)
 		}
 
-		var cfg providers.TenantConfig
+		var cfg providerTenantConfig
 		if cfgErr := json.Unmarshal(fileContents, &cfg); cfgErr != nil {
 			return fmt.Errorf("unmarshalling file: %w", cfgErr)
 		}
 
-		return providers.LoadTenantConfig(ctx, db.Client(), &cfg)
+		return loadTenantProviderConfig(ctx, db.Client(), &cfg)
 	})
 }
 
 func loadFakeConfigCmd(ctx context.Context, opts *Options) error {
+	fakeProviderConfigEntry := func(t providerconfig.ProviderType) providerTenantConfigEntry {
+		return providerTenantConfigEntry{Type: t, ProviderName: "fake", Config: []byte("{}")}
+	}
 	return withDatabase(ctx, opts, func(db *postgres.Database) error {
-		return providers.LoadDevConfig(ctx, db.Client())
+		// TODO: use fake oncall provider
+		grafanaOncallRawConfig := fmt.Sprintf(`{"api_endpoint":"%s","api_token":"%s"}`,
+			os.Getenv("GRAFANA_ONCALL_API_ENDPOINT"),
+			os.Getenv("GRAFANA_ONCALL_API_TOKEN"))
+		cfg := &providerTenantConfig{
+			TenantName: "Rezible Test",
+			ConfigEntries: []providerTenantConfigEntry{
+				{
+					Type:         providerconfig.ProviderTypeOncall,
+					ProviderName: "grafana",
+					Config:       []byte(grafanaOncallRawConfig),
+				},
+				fakeProviderConfigEntry(providerconfig.ProviderTypeIncidents),
+				fakeProviderConfigEntry(providerconfig.ProviderTypeAlerts),
+				fakeProviderConfigEntry(providerconfig.ProviderTypeTickets),
+				fakeProviderConfigEntry(providerconfig.ProviderTypePlaybooks),
+				fakeProviderConfigEntry(providerconfig.ProviderTypeSystemComponents),
+			},
+		}
+		return loadTenantProviderConfig(ctx, db.Client(), cfg)
 	})
 }
 
-func seedCmd(ctx context.Context, opts *Options) error {
-	return withDatabase(ctx, opts, func(db *postgres.Database) error {
-		return seedDatabase(ctx, db)
-	})
-}
+func loadTenantProviderConfig(ctx context.Context, client *ent.Client, cfg *providerTenantConfig) error {
+	tenantName := cfg.TenantName
+	tnt, tenantErr := client.Tenant.Query().Where(tenant.Name(tenantName)).Only(ctx)
+	if ent.IsNotFound(tenantErr) {
+		create := client.Tenant.Create().
+			SetName(tenantName).
+			SetAuthID(uuid.New().String())
 
-func seedDatabase(ctx context.Context, db *postgres.Database) error {
-	return nil
+		tnt, tenantErr = create.Save(ctx)
+	}
+	if tenantErr != nil {
+		return fmt.Errorf("querying tenant %q: %w", tenantName, tenantErr)
+	}
+	ctx = access.TenantSystemContext(ctx, tnt.ID)
+
+	return ent.WithTx(ctx, client, func(tx *ent.Tx) error {
+		for _, c := range cfg.ConfigEntries {
+			log.Info().
+				Str("name", c.ProviderName).
+				Str("type", string(c.Type)).
+				Msg("loading provider")
+
+			upsert := tx.ProviderConfig.Create().
+				SetProviderName(c.ProviderName).
+				SetProviderType(c.Type).
+				SetProviderConfig(c.Config).
+				SetEnabled(!c.Disabled).
+				SetUpdatedAt(time.Now()).
+				OnConflictColumns(providerconfig.FieldProviderName, providerconfig.FieldProviderType).
+				UpdateProviderConfig().
+				UpdateUpdatedAt()
+
+			if upsertErr := upsert.Exec(ctx); upsertErr != nil {
+				return fmt.Errorf("upserting (%s %s): %w", string(c.Type), c.ProviderName, upsertErr)
+			}
+		}
+		return nil
+	})
 }

@@ -3,33 +3,35 @@ package datasync
 import (
 	"context"
 	"fmt"
+
+	"github.com/google/uuid"
 	"github.com/gosimple/slug"
 	"github.com/rezible/rezible/ent"
 	"github.com/rezible/rezible/ent/user"
 )
 
+type initialSlugCountFn = func(context.Context, string) (int, error)
+
 // TODO: just do this in postgres
 type slugTracker struct {
-	prefixCount map[string]int
+	prefixCount    map[string]int
+	initialCountFn initialSlugCountFn
 }
 
-func newSlugTracker() *slugTracker {
+func newSlugTracker(initialCountFn initialSlugCountFn) *slugTracker {
 	return &slugTracker{
-		prefixCount: make(map[string]int),
+		prefixCount:    make(map[string]int),
+		initialCountFn: initialCountFn,
 	}
 }
 
-func (s *slugTracker) reset() {
-	s.prefixCount = make(map[string]int)
-}
-
-func (s *slugTracker) generateUnique(title string, initialCountFn func(string) (int, error)) (string, error) {
+func (s *slugTracker) generateUnique(ctx context.Context, title string) (string, error) {
 	base := slug.MakeLang(title, "en")
 
 	numExisting, ok := s.prefixCount[base]
 	if !ok || numExisting == 0 {
 		var countErr error
-		numExisting, countErr = initialCountFn(base)
+		numExisting, countErr = s.initialCountFn(ctx, base)
 		if countErr != nil {
 			return "", countErr
 		}
@@ -38,14 +40,43 @@ func (s *slugTracker) generateUnique(title string, initialCountFn func(string) (
 	count := numExisting + 1
 	s.prefixCount[base] = count
 
+	newSlug := base
 	if count > 1 {
-		return fmt.Sprintf("%s-%d", base, count), nil
+		newSlug = fmt.Sprintf("%s-%d", base, count)
 	}
-	return base, nil
+	return newSlug, nil
 }
 
-// TODO: userTracker ?
-func lookupProviderUser(ctx context.Context, dbc *ent.Client, u *ent.User) (*ent.User, error) {
+type providerUserTracker struct {
+	users   *ent.UserClient
+	created map[string]uuid.UUID
+}
+
+func newProviderUserTracker(users *ent.UserClient) *providerUserTracker {
+	return &providerUserTracker{
+		users:   users,
+		created: make(map[string]uuid.UUID),
+	}
+}
+
+func (ut *providerUserTracker) lookupOrCreate(ctx context.Context, provUser *ent.User, provMapping *ent.User) (uuid.UUID, *ent.UserMutation, error) {
 	// TODO: cache?
-	return dbc.User.Query().Where(user.Email(u.Email)).First(ctx)
+	email := provUser.Email
+	if email != "" {
+		if createdId, ok := ut.created[email]; ok {
+			return createdId, nil, nil
+		}
+		dbId, lookupErr := ut.users.Query().Where(user.Email(email)).OnlyID(ctx)
+		if lookupErr == nil {
+			ut.created[email] = dbId
+			return dbId, nil, nil
+		} else if ent.IsNotFound(lookupErr) {
+			newId := uuid.New()
+			mut := ut.users.Create().SetID(newId).SetEmail(email).Mutation()
+			ut.created[email] = newId
+			return newId, mut, nil
+		}
+	}
+
+	return uuid.Nil, nil, fmt.Errorf("failed to match or create user")
 }

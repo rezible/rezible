@@ -63,6 +63,11 @@ func PublicID(v uuid.UUID) predicate.Tenant {
 	return predicate.Tenant(sql.FieldEQ(FieldPublicID, v))
 }
 
+// AuthID applies equality check predicate on the "auth_id" field. It's identical to AuthIDEQ.
+func AuthID(v string) predicate.Tenant {
+	return predicate.Tenant(sql.FieldEQ(FieldAuthID, v))
+}
+
 // NameEQ applies the EQ predicate on the "name" field.
 func NameEQ(v string) predicate.Tenant {
 	return predicate.Tenant(sql.FieldEQ(FieldName, v))
@@ -166,6 +171,71 @@ func PublicIDLT(v uuid.UUID) predicate.Tenant {
 // PublicIDLTE applies the LTE predicate on the "public_id" field.
 func PublicIDLTE(v uuid.UUID) predicate.Tenant {
 	return predicate.Tenant(sql.FieldLTE(FieldPublicID, v))
+}
+
+// AuthIDEQ applies the EQ predicate on the "auth_id" field.
+func AuthIDEQ(v string) predicate.Tenant {
+	return predicate.Tenant(sql.FieldEQ(FieldAuthID, v))
+}
+
+// AuthIDNEQ applies the NEQ predicate on the "auth_id" field.
+func AuthIDNEQ(v string) predicate.Tenant {
+	return predicate.Tenant(sql.FieldNEQ(FieldAuthID, v))
+}
+
+// AuthIDIn applies the In predicate on the "auth_id" field.
+func AuthIDIn(vs ...string) predicate.Tenant {
+	return predicate.Tenant(sql.FieldIn(FieldAuthID, vs...))
+}
+
+// AuthIDNotIn applies the NotIn predicate on the "auth_id" field.
+func AuthIDNotIn(vs ...string) predicate.Tenant {
+	return predicate.Tenant(sql.FieldNotIn(FieldAuthID, vs...))
+}
+
+// AuthIDGT applies the GT predicate on the "auth_id" field.
+func AuthIDGT(v string) predicate.Tenant {
+	return predicate.Tenant(sql.FieldGT(FieldAuthID, v))
+}
+
+// AuthIDGTE applies the GTE predicate on the "auth_id" field.
+func AuthIDGTE(v string) predicate.Tenant {
+	return predicate.Tenant(sql.FieldGTE(FieldAuthID, v))
+}
+
+// AuthIDLT applies the LT predicate on the "auth_id" field.
+func AuthIDLT(v string) predicate.Tenant {
+	return predicate.Tenant(sql.FieldLT(FieldAuthID, v))
+}
+
+// AuthIDLTE applies the LTE predicate on the "auth_id" field.
+func AuthIDLTE(v string) predicate.Tenant {
+	return predicate.Tenant(sql.FieldLTE(FieldAuthID, v))
+}
+
+// AuthIDContains applies the Contains predicate on the "auth_id" field.
+func AuthIDContains(v string) predicate.Tenant {
+	return predicate.Tenant(sql.FieldContains(FieldAuthID, v))
+}
+
+// AuthIDHasPrefix applies the HasPrefix predicate on the "auth_id" field.
+func AuthIDHasPrefix(v string) predicate.Tenant {
+	return predicate.Tenant(sql.FieldHasPrefix(FieldAuthID, v))
+}
+
+// AuthIDHasSuffix applies the HasSuffix predicate on the "auth_id" field.
+func AuthIDHasSuffix(v string) predicate.Tenant {
+	return predicate.Tenant(sql.FieldHasSuffix(FieldAuthID, v))
+}
+
+// AuthIDEqualFold applies the EqualFold predicate on the "auth_id" field.
+func AuthIDEqualFold(v string) predicate.Tenant {
+	return predicate.Tenant(sql.FieldEqualFold(FieldAuthID, v))
+}
+
+// AuthIDContainsFold applies the ContainsFold predicate on the "auth_id" field.
+func AuthIDContainsFold(v string) predicate.Tenant {
+	return predicate.Tenant(sql.FieldContainsFold(FieldAuthID, v))
 }
 
 // And groups predicates with the AND operator between them.

@@ -17,6 +17,8 @@ const (
 	FieldName = "name"
 	// FieldPublicID holds the string denoting the public_id field in the database.
 	FieldPublicID = "public_id"
+	// FieldAuthID holds the string denoting the auth_id field in the database.
+	FieldAuthID = "auth_id"
 	// Table holds the table name of the tenant in the database.
 	Table = "tenants"
 )
@@ -26,6 +28,7 @@ var Columns = []string{
 	FieldID,
 	FieldName,
 	FieldPublicID,
+	FieldAuthID,
 }
 
 // ValidColumn reports if the column name is valid (part of the table columns).
@@ -50,6 +53,8 @@ var (
 	NameValidator func(string) error
 	// DefaultPublicID holds the default value on creation for the "public_id" field.
 	DefaultPublicID func() uuid.UUID
+	// AuthIDValidator is a validator for the "auth_id" field. It is called by the builders before save.
+	AuthIDValidator func(string) error
 )
 
 // OrderOption defines the ordering options for the Tenant queries.
@@ -68,4 +73,9 @@ func ByName(opts ...sql.OrderTermOption) OrderOption {
 // ByPublicID orders the results by the public_id field.
 func ByPublicID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldPublicID, opts...).ToFunc()
+}
+
+// ByAuthID orders the results by the auth_id field.
+func ByAuthID(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldAuthID, opts...).ToFunc()
 }

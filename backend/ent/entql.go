@@ -1127,6 +1127,7 @@ var schemaGraph = func() *sqlgraph.Schema {
 		Fields: map[string]*sqlgraph.FieldSpec{
 			tenant.FieldName:     {Type: field.TypeString, Column: tenant.FieldName},
 			tenant.FieldPublicID: {Type: field.TypeUUID, Column: tenant.FieldPublicID},
+			tenant.FieldAuthID:   {Type: field.TypeString, Column: tenant.FieldAuthID},
 		},
 	}
 	graph.Nodes[56] = &sqlgraph.Node{
@@ -1156,11 +1157,12 @@ var schemaGraph = func() *sqlgraph.Schema {
 		},
 		Type: "User",
 		Fields: map[string]*sqlgraph.FieldSpec{
-			user.FieldTenantID: {Type: field.TypeInt, Column: user.FieldTenantID},
-			user.FieldName:     {Type: field.TypeString, Column: user.FieldName},
-			user.FieldEmail:    {Type: field.TypeString, Column: user.FieldEmail},
-			user.FieldChatID:   {Type: field.TypeString, Column: user.FieldChatID},
-			user.FieldTimezone: {Type: field.TypeString, Column: user.FieldTimezone},
+			user.FieldTenantID:  {Type: field.TypeInt, Column: user.FieldTenantID},
+			user.FieldEmail:     {Type: field.TypeString, Column: user.FieldEmail},
+			user.FieldName:      {Type: field.TypeString, Column: user.FieldName},
+			user.FieldChatID:    {Type: field.TypeString, Column: user.FieldChatID},
+			user.FieldTimezone:  {Type: field.TypeString, Column: user.FieldTimezone},
+			user.FieldConfirmed: {Type: field.TypeBool, Column: user.FieldConfirmed},
 		},
 	}
 	graph.MustAddE(
@@ -10891,6 +10893,11 @@ func (f *TenantFilter) WherePublicID(p entql.ValueP) {
 	f.Where(p.Field(tenant.FieldPublicID))
 }
 
+// WhereAuthID applies the entql string predicate on the auth_id field.
+func (f *TenantFilter) WhereAuthID(p entql.StringP) {
+	f.Where(p.Field(tenant.FieldAuthID))
+}
+
 // addPredicate implements the predicateAdder interface.
 func (tq *TicketQuery) addPredicate(pred func(s *sql.Selector)) {
 	tq.predicates = append(tq.predicates, pred)
@@ -11019,14 +11026,14 @@ func (f *UserFilter) WhereTenantID(p entql.IntP) {
 	f.Where(p.Field(user.FieldTenantID))
 }
 
-// WhereName applies the entql string predicate on the name field.
-func (f *UserFilter) WhereName(p entql.StringP) {
-	f.Where(p.Field(user.FieldName))
-}
-
 // WhereEmail applies the entql string predicate on the email field.
 func (f *UserFilter) WhereEmail(p entql.StringP) {
 	f.Where(p.Field(user.FieldEmail))
+}
+
+// WhereName applies the entql string predicate on the name field.
+func (f *UserFilter) WhereName(p entql.StringP) {
+	f.Where(p.Field(user.FieldName))
 }
 
 // WhereChatID applies the entql string predicate on the chat_id field.
@@ -11037,6 +11044,11 @@ func (f *UserFilter) WhereChatID(p entql.StringP) {
 // WhereTimezone applies the entql string predicate on the timezone field.
 func (f *UserFilter) WhereTimezone(p entql.StringP) {
 	f.Where(p.Field(user.FieldTimezone))
+}
+
+// WhereConfirmed applies the entql bool predicate on the confirmed field.
+func (f *UserFilter) WhereConfirmed(p entql.BoolP) {
+	f.Where(p.Field(user.FieldConfirmed))
 }
 
 // WhereHasTenant applies a predicate to check if query has an edge tenant.

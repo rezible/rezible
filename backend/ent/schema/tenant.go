@@ -3,6 +3,7 @@ package schema
 import (
 	"entgo.io/ent"
 	"entgo.io/ent/schema/field"
+	"entgo.io/ent/schema/index"
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/privacy"
 	"github.com/rezible/rezible/ent/schema/rules"
@@ -22,6 +23,13 @@ func (Tenant) Fields() []ent.Field {
 	return []ent.Field{
 		field.String("name").NotEmpty(),
 		field.UUID("public_id", uuid.UUID{}).Default(uuid.New),
+		field.String("auth_id").NotEmpty(),
+	}
+}
+
+func (Tenant) Indexes() []ent.Index {
+	return []ent.Index{
+		index.Fields("public_id"),
 	}
 }
 

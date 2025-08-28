@@ -26,15 +26,21 @@ type incidentBatcher struct {
 	db       *ent.Client
 	provider rez.IncidentDataProvider
 
+	userTracker        *providerUserTracker
 	slugs              *slugTracker
 	deletedIncidentIds []uuid.UUID
 	provIdRoleMap      map[string]*ent.IncidentRole
 	provIdSeverityMap  map[string]*ent.IncidentSeverity
 }
 
+func (b *incidentBatcher) getInitialSlugCount(ctx context.Context, prefix string) (int, error) {
+	return b.db.Incident.Query().Where(incident.SlugHasPrefix(prefix)).Count(ctx)
+}
+
 func (b *incidentBatcher) setup(ctx context.Context) error {
+	b.userTracker = newProviderUserTracker(b.db.User)
 	b.deletedIncidentIds = make([]uuid.UUID, 0)
-	b.slugs = newSlugTracker()
+	b.slugs = newSlugTracker(b.getInitialSlugCount)
 
 	b.provIdRoleMap = make(map[string]*ent.IncidentRole)
 	roles, rolesErr := b.db.IncidentRole.Query().All(ctx)
@@ -139,12 +145,6 @@ func (b *incidentBatcher) createBatchMutations(ctx context.Context, batch []*ent
 	return muts, nil
 }
 
-func (b *incidentBatcher) makeIncidentSlugCountFn(ctx context.Context) func(prefix string) (int, error) {
-	return func(prefix string) (int, error) {
-		return b.db.Incident.Query().Where(incident.SlugHasPrefix(prefix)).Count(ctx)
-	}
-}
-
 func (b *incidentBatcher) syncIncident(ctx context.Context, db, prov *ent.Incident) (uuid.UUID, *ent.IncidentMutation, error) {
 	var m *ent.IncidentMutation
 	var incId uuid.UUID
@@ -170,7 +170,7 @@ func (b *incidentBatcher) syncIncident(ctx context.Context, db, prov *ent.Incide
 	m.SetModifiedAt(prov.ModifiedAt)
 	m.SetClosedAt(prov.ClosedAt)
 
-	slug, slugErr := b.slugs.generateUnique(prov.Title, b.makeIncidentSlugCountFn(ctx))
+	slug, slugErr := b.slugs.generateUnique(ctx, prov.Title)
 	if slugErr != nil {
 		return incId, nil, fmt.Errorf("failed to create unique incident slug: %w", slugErr)
 	}
@@ -198,6 +198,9 @@ func (b *incidentBatcher) syncIncidentRoleAssignments(ctx context.Context, dbInc
 		}
 	}
 
+	// provUserMapping := b.provider.IncidentRoleDataMapping().Edges.Assignments[0].Edges.User
+	var provUserMapping *ent.User
+
 	var muts []ent.Mutation
 	for _, assn := range provInc.Edges.RoleAssignments {
 		a := assn
@@ -212,19 +215,21 @@ func (b *incidentBatcher) syncIncidentRoleAssignments(ctx context.Context, dbInc
 			return nil, fmt.Errorf("missing db role for id: %s", provRole.ProviderID)
 		}
 
-		usr, usrErr := lookupProviderUser(ctx, b.db, provUser)
-		if usrErr != nil {
-			// log.Warn().Str("email", provUser.Email).Msg("failed to lookup incident role user by email")
-			continue
+		userId, userMut, userErr := b.userTracker.lookupOrCreate(ctx, provUser, provUserMapping)
+		if userErr != nil {
+			return nil, fmt.Errorf("provider user: %w", userErr)
+		}
+		if userMut != nil {
+			muts = append(muts, userMut)
 		}
 
-		dbAssn, exists := dbAssns[b.userRoleAssignmentKey(usr.ID, role.ID)]
+		dbAssn, exists := dbAssns[b.userRoleAssignmentKey(userId, role.ID)]
 		if exists {
 			deletedIds.Remove(dbAssn.ID)
 		} else {
 			create := b.db.IncidentRoleAssignment.Create().
 				SetIncidentID(provInc.ID).
-				SetUserID(usr.ID).
+				SetUserID(userId).
 				SetRoleID(role.ID)
 			muts = append(muts, create.Mutation())
 		}

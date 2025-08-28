@@ -23,10 +23,11 @@ func (User) Mixin() []ent.Mixin {
 func (User) Fields() []ent.Field {
 	return []ent.Field{
 		field.UUID("id", uuid.New()).Default(uuid.New),
-		field.String("name"),
 		field.String("email"),
+		field.String("name").Optional().Default(""),
 		field.String("chat_id").Optional(),
 		field.String("timezone").Optional(),
+		field.Bool("confirmed").Default(false),
 	}
 }
 

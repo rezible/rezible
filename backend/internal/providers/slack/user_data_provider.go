@@ -13,29 +13,30 @@ import (
 )
 
 type UserDataProvider struct {
-	client *slack.Client
+	client       *slack.Client
+	workspaceIds []string
 }
 
 var _ rez.UserDataProvider = (*UserDataProvider)(nil)
 
-type UserDataProviderConfig struct{}
+type UserDataProviderConfig struct {
+	WorkspaceIds []string `json:"workspace_ids"`
+}
 
 func NewUserDataProvider(cfg UserDataProviderConfig) (*UserDataProvider, error) {
 	client, clientErr := rezslack.LoadClient()
 	if clientErr != nil {
 		return nil, clientErr
 	}
-	return &UserDataProvider{client: client}, nil
+	return &UserDataProvider{client: client, workspaceIds: cfg.WorkspaceIds}, nil
 }
 
-var (
-	userDataMapping = &ent.User{
-		Name:     "y",
-		Email:    "y",
-		ChatID:   "y",
-		Timezone: "y",
-	}
-)
+var userDataMapping = &ent.User{
+	Name:     "y",
+	Email:    "y",
+	ChatID:   "y",
+	Timezone: "y",
+}
 
 func (p *UserDataProvider) UserDataMapping() *ent.User {
 	return userDataMapping
@@ -43,15 +44,10 @@ func (p *UserDataProvider) UserDataMapping() *ent.User {
 
 func (p *UserDataProvider) PullUsers(ctx context.Context) iter.Seq2[*ent.User, error] {
 	return func(yield func(*ent.User, error) bool) {
-		for team, teamsErr := range pullSlackTeams(ctx, p.client) {
-			if teamsErr != nil {
-				yield(nil, fmt.Errorf("get teams: %w", teamsErr))
-				return
-			}
-
+		for _, workspaceId := range p.workspaceIds {
 			slackUsers, getErr := p.client.GetUsersContext(ctx,
 				slack.GetUsersOptionPresence(false),
-				slack.GetUsersOptionTeamID(team.ID))
+				slack.GetUsersOptionTeamID(workspaceId))
 			if getErr != nil {
 				yield(nil, fmt.Errorf("slack get users err: %w", getErr))
 				return

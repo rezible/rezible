@@ -24,7 +24,7 @@ type teamsBatcher struct {
 }
 
 func (b *teamsBatcher) setup(ctx context.Context) error {
-	b.slugs = newSlugTracker()
+	b.slugs = newSlugTracker(b.getTeamSlugCount)
 	return nil
 }
 
@@ -69,10 +69,8 @@ func (b *teamsBatcher) createBatchMutations(ctx context.Context, batch []*ent.Te
 	return mutations, nil
 }
 
-func (b *teamsBatcher) makeTeamSlugCountFn(ctx context.Context) func(prefix string) (int, error) {
-	return func(prefix string) (int, error) {
-		return b.db.Team.Query().Where(team.SlugHasPrefix(prefix)).Count(ctx)
-	}
+func (b *teamsBatcher) getTeamSlugCount(ctx context.Context, prefix string) (int, error) {
+	return b.db.Team.Query().Where(team.SlugHasPrefix(prefix)).Count(ctx)
 }
 
 func (b *teamsBatcher) syncTeam(ctx context.Context, db, prov *ent.Team) (*ent.TeamMutation, error) {
@@ -90,7 +88,7 @@ func (b *teamsBatcher) syncTeam(ctx context.Context, db, prov *ent.Team) (*ent.T
 		}
 	}
 
-	slug, slugErr := b.slugs.generateUnique(prov.Name, b.makeTeamSlugCountFn(ctx))
+	slug, slugErr := b.slugs.generateUnique(ctx, prov.Name)
 	if slugErr != nil {
 		return nil, fmt.Errorf("failed to create unique incident slug: %w", slugErr)
 	}

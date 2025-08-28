@@ -40,6 +40,20 @@ func (uu *UserUpdate) Where(ps ...predicate.User) *UserUpdate {
 	return uu
 }
 
+// SetEmail sets the "email" field.
+func (uu *UserUpdate) SetEmail(s string) *UserUpdate {
+	uu.mutation.SetEmail(s)
+	return uu
+}
+
+// SetNillableEmail sets the "email" field if the given value is not nil.
+func (uu *UserUpdate) SetNillableEmail(s *string) *UserUpdate {
+	if s != nil {
+		uu.SetEmail(*s)
+	}
+	return uu
+}
+
 // SetName sets the "name" field.
 func (uu *UserUpdate) SetName(s string) *UserUpdate {
 	uu.mutation.SetName(s)
@@ -54,17 +68,9 @@ func (uu *UserUpdate) SetNillableName(s *string) *UserUpdate {
 	return uu
 }
 
-// SetEmail sets the "email" field.
-func (uu *UserUpdate) SetEmail(s string) *UserUpdate {
-	uu.mutation.SetEmail(s)
-	return uu
-}
-
-// SetNillableEmail sets the "email" field if the given value is not nil.
-func (uu *UserUpdate) SetNillableEmail(s *string) *UserUpdate {
-	if s != nil {
-		uu.SetEmail(*s)
-	}
+// ClearName clears the value of the "name" field.
+func (uu *UserUpdate) ClearName() *UserUpdate {
+	uu.mutation.ClearName()
 	return uu
 }
 
@@ -105,6 +111,20 @@ func (uu *UserUpdate) SetNillableTimezone(s *string) *UserUpdate {
 // ClearTimezone clears the value of the "timezone" field.
 func (uu *UserUpdate) ClearTimezone() *UserUpdate {
 	uu.mutation.ClearTimezone()
+	return uu
+}
+
+// SetConfirmed sets the "confirmed" field.
+func (uu *UserUpdate) SetConfirmed(b bool) *UserUpdate {
+	uu.mutation.SetConfirmed(b)
+	return uu
+}
+
+// SetNillableConfirmed sets the "confirmed" field if the given value is not nil.
+func (uu *UserUpdate) SetNillableConfirmed(b *bool) *UserUpdate {
+	if b != nil {
+		uu.SetConfirmed(*b)
+	}
 	return uu
 }
 
@@ -634,11 +654,14 @@ func (uu *UserUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			}
 		}
 	}
+	if value, ok := uu.mutation.Email(); ok {
+		_spec.SetField(user.FieldEmail, field.TypeString, value)
+	}
 	if value, ok := uu.mutation.Name(); ok {
 		_spec.SetField(user.FieldName, field.TypeString, value)
 	}
-	if value, ok := uu.mutation.Email(); ok {
-		_spec.SetField(user.FieldEmail, field.TypeString, value)
+	if uu.mutation.NameCleared() {
+		_spec.ClearField(user.FieldName, field.TypeString)
 	}
 	if value, ok := uu.mutation.ChatID(); ok {
 		_spec.SetField(user.FieldChatID, field.TypeString, value)
@@ -651,6 +674,9 @@ func (uu *UserUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if uu.mutation.TimezoneCleared() {
 		_spec.ClearField(user.FieldTimezone, field.TypeString)
+	}
+	if value, ok := uu.mutation.Confirmed(); ok {
+		_spec.SetField(user.FieldConfirmed, field.TypeBool, value)
 	}
 	if uu.mutation.TeamsCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -1280,6 +1306,20 @@ type UserUpdateOne struct {
 	modifiers []func(*sql.UpdateBuilder)
 }
 
+// SetEmail sets the "email" field.
+func (uuo *UserUpdateOne) SetEmail(s string) *UserUpdateOne {
+	uuo.mutation.SetEmail(s)
+	return uuo
+}
+
+// SetNillableEmail sets the "email" field if the given value is not nil.
+func (uuo *UserUpdateOne) SetNillableEmail(s *string) *UserUpdateOne {
+	if s != nil {
+		uuo.SetEmail(*s)
+	}
+	return uuo
+}
+
 // SetName sets the "name" field.
 func (uuo *UserUpdateOne) SetName(s string) *UserUpdateOne {
 	uuo.mutation.SetName(s)
@@ -1294,17 +1334,9 @@ func (uuo *UserUpdateOne) SetNillableName(s *string) *UserUpdateOne {
 	return uuo
 }
 
-// SetEmail sets the "email" field.
-func (uuo *UserUpdateOne) SetEmail(s string) *UserUpdateOne {
-	uuo.mutation.SetEmail(s)
-	return uuo
-}
-
-// SetNillableEmail sets the "email" field if the given value is not nil.
-func (uuo *UserUpdateOne) SetNillableEmail(s *string) *UserUpdateOne {
-	if s != nil {
-		uuo.SetEmail(*s)
-	}
+// ClearName clears the value of the "name" field.
+func (uuo *UserUpdateOne) ClearName() *UserUpdateOne {
+	uuo.mutation.ClearName()
 	return uuo
 }
 
@@ -1345,6 +1377,20 @@ func (uuo *UserUpdateOne) SetNillableTimezone(s *string) *UserUpdateOne {
 // ClearTimezone clears the value of the "timezone" field.
 func (uuo *UserUpdateOne) ClearTimezone() *UserUpdateOne {
 	uuo.mutation.ClearTimezone()
+	return uuo
+}
+
+// SetConfirmed sets the "confirmed" field.
+func (uuo *UserUpdateOne) SetConfirmed(b bool) *UserUpdateOne {
+	uuo.mutation.SetConfirmed(b)
+	return uuo
+}
+
+// SetNillableConfirmed sets the "confirmed" field if the given value is not nil.
+func (uuo *UserUpdateOne) SetNillableConfirmed(b *bool) *UserUpdateOne {
+	if b != nil {
+		uuo.SetConfirmed(*b)
+	}
 	return uuo
 }
 
@@ -1904,11 +1950,14 @@ func (uuo *UserUpdateOne) sqlSave(ctx context.Context) (_node *User, err error) 
 			}
 		}
 	}
+	if value, ok := uuo.mutation.Email(); ok {
+		_spec.SetField(user.FieldEmail, field.TypeString, value)
+	}
 	if value, ok := uuo.mutation.Name(); ok {
 		_spec.SetField(user.FieldName, field.TypeString, value)
 	}
-	if value, ok := uuo.mutation.Email(); ok {
-		_spec.SetField(user.FieldEmail, field.TypeString, value)
+	if uuo.mutation.NameCleared() {
+		_spec.ClearField(user.FieldName, field.TypeString)
 	}
 	if value, ok := uuo.mutation.ChatID(); ok {
 		_spec.SetField(user.FieldChatID, field.TypeString, value)
@@ -1921,6 +1970,9 @@ func (uuo *UserUpdateOne) sqlSave(ctx context.Context) (_node *User, err error) 
 	}
 	if uuo.mutation.TimezoneCleared() {
 		_spec.ClearField(user.FieldTimezone, field.TypeString)
+	}
+	if value, ok := uuo.mutation.Confirmed(); ok {
+		_spec.SetField(user.FieldConfirmed, field.TypeBool, value)
 	}
 	if uuo.mutation.TeamsCleared() {
 		edge := &sqlgraph.EdgeSpec{

@@ -3,15 +3,17 @@ package datasync
 import (
 	"context"
 	"fmt"
+	"iter"
+
 	mapset "github.com/deckarep/golang-set/v2"
 	"github.com/google/uuid"
 	"github.com/gosimple/slug"
+
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
 	"github.com/rezible/rezible/ent/oncallroster"
 	"github.com/rezible/rezible/ent/oncallschedule"
 	"github.com/rezible/rezible/ent/oncallscheduleparticipant"
-	"iter"
 )
 
 func syncOncallRosters(ctx context.Context, db *ent.Client, prov rez.OncallDataProvider) error {
@@ -24,20 +26,19 @@ type oncallRosterBatcher struct {
 	db       *ent.Client
 	provider rez.OncallDataProvider
 
+	userTracker *providerUserTracker
+
 	deletedRosterIds      []uuid.UUID
 	deletedScheduleIds    []uuid.UUID
 	deletedParticipantIds []uuid.UUID
-}
-
-func newOncallRosterSyncer(db *ent.Client, prov rez.OncallDataProvider) *batchedDataSyncer[*ent.OncallRoster] {
-	b := &oncallRosterBatcher{db: db, provider: prov}
-	return newBatchedDataSyncer[*ent.OncallRoster](db, "oncall_rosters", b)
 }
 
 func (b *oncallRosterBatcher) setup(ctx context.Context) error {
 	b.deletedRosterIds = make([]uuid.UUID, 0)
 	b.deletedScheduleIds = make([]uuid.UUID, 0)
 	b.deletedParticipantIds = make([]uuid.UUID, 0)
+
+	b.userTracker = newProviderUserTracker(b.db.User)
 	return nil
 }
 
@@ -94,6 +95,9 @@ func (b *oncallRosterBatcher) createBatchMutations(ctx context.Context, batch []
 		}
 	}
 
+	//provUserMapping := b.provider.RosterDataMapping().Edges.Schedules[0].Edges.Participants[0].Edges.User
+	var provUserMapping *ent.User
+
 	var mutations []ent.Mutation
 	for _, roster := range batch {
 		provRoster := roster
@@ -127,11 +131,14 @@ func (b *oncallRosterBatcher) createBatchMutations(ctx context.Context, batch []
 				provPart := part
 				provPart.ScheduleID = provSched.ID
 
-				currUser, userErr := lookupProviderUser(ctx, b.db, provPart.Edges.User)
+				userId, userMut, userErr := b.userTracker.lookupOrCreate(ctx, provPart.Edges.User, provUserMapping)
 				if userErr != nil {
 					return nil, fmt.Errorf("querying for provider user: %w", userErr)
 				}
-				provPart.UserID = currUser.ID
+				if userMut != nil {
+					mutations = append(mutations, userMut)
+				}
+				provPart.UserID = userId
 
 				currPart, exists := participantIdMap[participantUniqueId(provPart)]
 				if exists {

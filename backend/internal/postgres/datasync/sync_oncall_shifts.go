@@ -7,8 +7,6 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"github.com/rs/zerolog/log"
-
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
 	"github.com/rezible/rezible/ent/oncallshift"
@@ -27,13 +25,15 @@ type oncallShiftBatchParams struct {
 }
 
 type oncallShiftsBatcher struct {
-	db       *ent.Client
-	provider rez.OncallDataProvider
+	db          *ent.Client
+	provider    rez.OncallDataProvider
+	userTracker *providerUserTracker
 
 	batchParams *oncallShiftBatchParams
 }
 
 func (b *oncallShiftsBatcher) setup(ctx context.Context) error {
+	b.userTracker = newProviderUserTracker(b.db.User)
 	return nil
 }
 
@@ -93,17 +93,22 @@ func (b *oncallShiftsBatcher) createBatchMutations(ctx context.Context, batch []
 		dbProvIds[sh.ProviderID] = sh
 	}
 
+	//provUserMapping := b.provider.UserShiftDataMapping().Edges.User
+	var provUserMapping *ent.User
+
 	var mutations []ent.Mutation
 	for _, provShift := range batch {
 		prov := provShift
 		prov.RosterID = b.batchParams.rosterID
 
-		usr, usrErr := lookupProviderUser(ctx, b.db, prov.Edges.User)
-		if usrErr != nil {
-			log.Error().Err(usrErr).Str("email", prov.Edges.User.Email).Msg("failed to get user")
-			continue
+		userId, userMut, userErr := b.userTracker.lookupOrCreate(ctx, prov.Edges.User, provUserMapping)
+		if userErr != nil {
+			return nil, fmt.Errorf("querying for provider user: %w", userErr)
 		}
-		prov.UserID = usr.ID
+		if userMut != nil {
+			mutations = append(mutations, userMut)
+		}
+		prov.UserID = userId
 
 		curr, exists := dbProvIds[prov.ProviderID]
 		if exists {
