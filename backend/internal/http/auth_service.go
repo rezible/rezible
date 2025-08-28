@@ -166,14 +166,9 @@ func (s *AuthService) delegateAuthFlowToProvider(w http.ResponseWriter, r *http.
 }
 
 func (s *AuthService) makeSessionCookie(r *http.Request, value string, expires time.Time, maxAge int) *http.Cookie {
-	//domain := r.Host
-	//if host, _, splitErr := net.SplitHostPort(r.Host); splitErr == nil {
-	//	domain = host
-	//}
 	cookie := &http.Cookie{
-		Name:  oapi.SessionCookieName,
-		Value: value,
-		//Domain:   domain,
+		Name:     oapi.SessionCookieName,
+		Value:    value,
 		Path:     "/",
 		Expires:  expires,
 		Secure:   true,
