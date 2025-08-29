@@ -178,7 +178,6 @@ func (s *rezServer) makeAuthService(ctx context.Context, users rez.UserService) 
 	if secretKey == "" {
 		return nil, errors.New("AUTH_SESSION_SECRET_KEY must be set")
 	}
-	//oidc.ConfigureSessionStore(secretKey)
 
 	if authProviderEnabled("saml") {
 		samlProv, spErr := saml.NewAuthSessionProvider(ctx)
@@ -195,10 +194,11 @@ func (s *rezServer) makeAuthService(ctx context.Context, users rez.UserService) 
 			return nil, fmt.Errorf("client id/secret env vars not set")
 		}
 		cfg := oidc.Config{
-			ProviderName: "Google",
-			ClientID:     clientID,
-			ClientSecret: clientSecret,
-			IssuerUrl:    "https://accounts.google.com",
+			SessionSecret: secretKey,
+			ProviderName:  "Google",
+			ClientID:      clientID,
+			ClientSecret:  clientSecret,
+			IssuerUrl:     "https://accounts.google.com",
 		}
 
 		googleProv, googleErr := oidc.NewAuthSessionProvider(ctx, cfg)

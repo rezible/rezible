@@ -12,6 +12,7 @@ import (
 	"strings"
 
 	"github.com/coreos/go-oidc/v3/oidc"
+	"github.com/gorilla/sessions"
 	"github.com/rs/zerolog/log"
 	"golang.org/x/oauth2"
 
@@ -19,35 +20,31 @@ import (
 	"github.com/rezible/rezible/ent"
 )
 
-//func ConfigureSessionStore(secretKey string) {
-//	maxAge := 86400 * 30 // 30 days
-//
-//	store := sessions.NewCookieStore([]byte(secretKey))
-//	store.MaxAge(maxAge)
-//	store.Options.Path = "/"
-//	store.Options.HttpOnly = true
-//	store.Options.SameSite = http.SameSiteStrictMode
-//	store.Options.Secure = true
-//
-//	gothic.Store = store
-//}
+type Config struct {
+	SessionSecret string
+	ProviderName  string `json:"provider_name"`
+	ClientID      string `json:"client_id"`
+	ClientSecret  string `json:"client_secret"`
+	IssuerUrl     string `json:"issuer_url"`
+}
+
+var userMapping = &ent.User{
+	Name:  "y",
+	Email: "y",
+}
 
 type AuthSessionProvider struct {
 	callbackPath string
+	providerId   string
 	displayName  string
+	sessionStore sessions.Store
 	oauth2Config oauth2.Config
 	verifier     *oidc.IDTokenVerifier
 }
 
-type Config struct {
-	ProviderName string `json:"provider_name"`
-	ClientID     string `json:"client_id"`
-	ClientSecret string `json:"client_secret"`
-	IssuerUrl    string `json:"issuer_url"`
-}
-
 func NewAuthSessionProvider(ctx context.Context, cfg Config) (*AuthSessionProvider, error) {
-	callbackPath := fmt.Sprintf("/auth/%s/%s", strings.ToLower(cfg.ProviderName), "callback")
+	providerId := strings.ToLower(cfg.ProviderName)
+	callbackPath := fmt.Sprintf("/auth/%s/%s", providerId, "callback")
 	redirectUrl, urlErr := url.JoinPath(rez.BackendUrl, callbackPath)
 	if urlErr != nil {
 		return nil, fmt.Errorf("creating redirect url: %w", urlErr)
@@ -67,28 +64,71 @@ func NewAuthSessionProvider(ctx context.Context, cfg Config) (*AuthSessionProvid
 	}
 
 	return &AuthSessionProvider{
+		providerId:   providerId,
 		callbackPath: callbackPath,
 		displayName:  cfg.ProviderName,
 		oauth2Config: oauth2Config,
 		verifier:     oidcProvider.Verifier(&oidc.Config{ClientID: cfg.ClientID}),
+		sessionStore: configureSessionStore(cfg.SessionSecret),
 	}, nil
 }
 
-func (s *AuthSessionProvider) Name() string {
+func (s *AuthSessionProvider) DisplayName() string {
 	return s.displayName
 }
 
-func (s *AuthSessionProvider) ClearSession(w http.ResponseWriter, r *http.Request) {
-
+func (s *AuthSessionProvider) Id() string {
+	return s.providerId
 }
 
-var userMapping = &ent.User{
-	Name:  "y",
-	Email: "y",
-}
-
-func (s *AuthSessionProvider) GetUserMapping() *ent.User {
+func (s *AuthSessionProvider) UserMapping() *ent.User {
 	return userMapping
+}
+
+func (s *AuthSessionProvider) setSession(w http.ResponseWriter, r *http.Request, sess *session) error {
+	return setSession(w, r, s.sessionStore, s.providerId, sess)
+}
+
+func (s *AuthSessionProvider) getSession(r *http.Request) (*session, error) {
+	return getSession(r, s.sessionStore, s.providerId)
+}
+
+func (s *AuthSessionProvider) clearSession(w http.ResponseWriter, r *http.Request) error {
+	return clearSession(w, r, s.sessionStore)
+}
+
+func (s *AuthSessionProvider) SessionExists(r *http.Request) bool {
+	sess, sessErr := s.getSession(r)
+	return sess == nil || sessErr != nil
+}
+
+func (s *AuthSessionProvider) ClearSession(w http.ResponseWriter, r *http.Request) error {
+	return s.clearSession(w, r)
+}
+
+func (s *AuthSessionProvider) StartAuthFlow(w http.ResponseWriter, r *http.Request) {
+	state, stateErr := getOrGenerateRequestState(r)
+	if stateErr != nil {
+		log.Error().Err(stateErr).Msg("could not create redirect state")
+		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		return
+	}
+
+	// TODO: PKCE / nonce gen?
+	authUrl := s.oauth2Config.AuthCodeURL(state)
+	log.Debug().Str("authUrl", authUrl).Msg("starting auth flow")
+
+	sess := &session{
+		State: state,
+	}
+
+	if setStateErr := s.setSession(w, r, sess); setStateErr != nil {
+		log.Error().Err(setStateErr).Msg("could not set session redirect state")
+		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		return
+	}
+
+	http.Redirect(w, r, authUrl, http.StatusFound)
 }
 
 func getOrGenerateRequestState(r *http.Request) (string, error) {
@@ -105,50 +145,7 @@ func getOrGenerateRequestState(r *http.Request) (string, error) {
 	return base64.URLEncoding.EncodeToString(nonceBytes), nil
 }
 
-func setRequestSessionState(w http.ResponseWriter, r *http.Request, state string) error {
-	// TODO: set session
-
-	return nil
-}
-
-func validateRequestSessionState(r *http.Request) error {
-	params := r.URL.Query()
-	reqState := params.Get("state")
-	if reqState == "" && r.Method == http.MethodPost {
-		reqState = r.FormValue("state")
-	}
-
-	// TODO: get session
-	sessState := ""
-
-	if reqState != sessState {
-		return errors.New("state mismatch")
-	}
-	return nil
-}
-
-func (s *AuthSessionProvider) StartAuthFlow(w http.ResponseWriter, r *http.Request) {
-	state, stateErr := getOrGenerateRequestState(r)
-	if stateErr != nil {
-		log.Error().Err(stateErr).Msg("could not create redirect state")
-		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
-		return
-	}
-
-	if setStateErr := setRequestSessionState(w, r, state); setStateErr != nil {
-		log.Error().Err(setStateErr).Msg("could not set session redirect state")
-		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
-		return
-	}
-
-	// TODO: PKCE / nonce gen?
-	redirect := s.oauth2Config.AuthCodeURL(state)
-	log.Debug().Str("authUrl", redirect).Msg("redirect")
-
-	http.Redirect(w, r, redirect, http.StatusFound)
-}
-
-func (s *AuthSessionProvider) HandleAuthFlowRequest(w http.ResponseWriter, r *http.Request, onCreated func(session rez.AuthProviderSession)) bool {
+func (s *AuthSessionProvider) HandleAuthFlowRequest(w http.ResponseWriter, r *http.Request, onCreated func(rez.AuthProviderSession)) bool {
 	if r.URL.Path == s.callbackPath {
 		if cbErr := s.handleFlowCallback(r, onCreated); cbErr != nil {
 			http.Error(w, http.StatusText(http.StatusForbidden), http.StatusForbidden)
@@ -158,8 +155,8 @@ func (s *AuthSessionProvider) HandleAuthFlowRequest(w http.ResponseWriter, r *ht
 	return false
 }
 
-func (s *AuthSessionProvider) handleFlowCallback(r *http.Request, onCreated func(session rez.AuthProviderSession)) error {
-	if validateErr := validateRequestSessionState(r); validateErr != nil {
+func (s *AuthSessionProvider) handleFlowCallback(r *http.Request, onCreated func(rez.AuthProviderSession)) error {
+	if validateErr := s.validateRequestSessionState(r); validateErr != nil {
 		log.Warn().Msg("invalid request session state")
 		if !rez.DebugMode {
 			return validateErr
@@ -178,6 +175,24 @@ func (s *AuthSessionProvider) handleFlowCallback(r *http.Request, onCreated func
 
 	onCreated(*ps)
 
+	return nil
+}
+
+func (s *AuthSessionProvider) validateRequestSessionState(r *http.Request) error {
+	sess, sessErr := s.getSession(r)
+	if sessErr != nil || sess == nil || sess.State == "" {
+		return fmt.Errorf("get session: %w", sessErr)
+	}
+
+	params := r.URL.Query()
+	reqState := params.Get("state")
+	if reqState == "" && r.Method == http.MethodPost {
+		reqState = r.FormValue("state")
+	}
+
+	if reqState != sess.State {
+		return errors.New("state mismatch")
+	}
 	return nil
 }
 

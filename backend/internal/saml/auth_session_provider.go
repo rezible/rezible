@@ -53,7 +53,7 @@ func (c *AuthSessionProviderConfig) resolveMountedPath(path string) (*url.URL, e
 	return c.appUrl.ResolveReference(parsed), nil
 }
 
-func loadConfig(ctx context.Context) (*AuthSessionProviderConfig, error) {
+func loadEnvConfig(ctx context.Context) (*AuthSessionProviderConfig, error) {
 	for _, v := range []string{IdPMetadataUrlEnv, CertFileEnv, CertKeyFileEnv} {
 		if os.Getenv(v) == "" {
 			return nil, fmt.Errorf("missing environment variable: %s", v)
@@ -85,7 +85,13 @@ func loadConfig(ctx context.Context) (*AuthSessionProviderConfig, error) {
 		return nil, fmt.Errorf("failed to cast *rsa.PrivateKey")
 	}
 
+	appUrl, appUrlErr := url.Parse(rez.BackendUrl)
+	if appUrlErr != nil {
+		return nil, fmt.Errorf("failed to parse backend url: %w", appUrlErr)
+	}
+
 	cfg := &AuthSessionProviderConfig{
+		appUrl:      *appUrl,
 		pathBase:    "/auth/saml",
 		idpMetadata: idpMetadata,
 		keyPair:     &keyPair,
@@ -112,23 +118,21 @@ func fetchIdpMetadata(ctx context.Context, metadataUrl string) (*saml.EntityDesc
 }
 
 type AuthSessionProvider struct {
-	appUrl url.URL
-	mw     *samlsp.Middleware
+	displayName string
+	providerId  string
+	mw          *samlsp.Middleware
 }
 
 func NewAuthSessionProvider(ctx context.Context) (*AuthSessionProvider, error) {
-	appUrl, appUrlErr := url.Parse(rez.BackendUrl)
-	if appUrlErr != nil {
-		return nil, fmt.Errorf("failed to parse backend url: %w", appUrlErr)
+	cfg, cfgErr := loadEnvConfig(ctx)
+	if cfgErr != nil {
+		return nil, fmt.Errorf("config error: %w", cfgErr)
 	}
 
 	p := &AuthSessionProvider{
-		appUrl: *appUrl,
-	}
-
-	cfg, cfgErr := loadConfig(ctx)
-	if cfgErr != nil {
-		return nil, fmt.Errorf("config error: %w", cfgErr)
+		// TODO: get these from config
+		displayName: "SAML",
+		providerId:  "saml",
 	}
 
 	mw, mwErr := p.createSamlMiddleware(cfg)
@@ -140,11 +144,15 @@ func NewAuthSessionProvider(ctx context.Context) (*AuthSessionProvider, error) {
 	return p, nil
 }
 
-func (p *AuthSessionProvider) Name() string {
-	return "saml"
+func (p *AuthSessionProvider) DisplayName() string {
+	return p.displayName
 }
 
-func (p *AuthSessionProvider) GetUserMapping() *ent.User {
+func (p *AuthSessionProvider) Id() string {
+	return p.providerId
+}
+
+func (p *AuthSessionProvider) UserMapping() *ent.User {
 	return userMapping
 }
 
@@ -190,7 +198,10 @@ func (p *AuthSessionProvider) createSamlMiddleware(cfg *AuthSessionProviderConfi
 	return mw, nil
 }
 
-func (p *AuthSessionProvider) onError(w http.ResponseWriter, _ *http.Request, err error) {
+func (p *AuthSessionProvider) onError(w http.ResponseWriter, r *http.Request, err error) {
+	if sessErr := p.ClearSession(w, r); sessErr != nil {
+		log.Error().Err(sessErr).Msg("failed to clear session")
+	}
 	var parseErr *saml.InvalidResponseError
 	if errors.As(err, &parseErr) {
 		log.Printf("WARNING: received invalid saml response: %s (now: %s) %s",
@@ -219,10 +230,13 @@ func (p *AuthSessionProvider) HandleAuthFlowRequest(w http.ResponseWriter, r *ht
 	return false
 }
 
-func (p *AuthSessionProvider) ClearSession(w http.ResponseWriter, r *http.Request) {
-	if delErr := p.mw.Session.DeleteSession(w, r); delErr != nil {
-		log.Error().Err(delErr).Msgf("failed to delete saml session")
-	}
+func (p *AuthSessionProvider) SessionExists(r *http.Request) bool {
+	sess, sessErr := p.mw.Session.GetSession(r)
+	return sess != nil && sessErr == nil
+}
+
+func (p *AuthSessionProvider) ClearSession(w http.ResponseWriter, r *http.Request) error {
+	return p.mw.Session.DeleteSession(w, r)
 }
 
 // mostly taken from samlsp

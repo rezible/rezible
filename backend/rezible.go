@@ -96,11 +96,13 @@ type (
 	}
 
 	AuthSessionProvider interface {
-		Name() string
-		GetUserMapping() *ent.User
+		Id() string
+		DisplayName() string
+		UserMapping() *ent.User
 		StartAuthFlow(w http.ResponseWriter, r *http.Request)
 		HandleAuthFlowRequest(w http.ResponseWriter, r *http.Request, onCreated func(AuthProviderSession)) bool
-		ClearSession(w http.ResponseWriter, r *http.Request)
+		SessionExists(r *http.Request) bool
+		ClearSession(w http.ResponseWriter, r *http.Request) error
 	}
 
 	AuthSession struct {

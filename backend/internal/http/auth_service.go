@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"net/http"
-	"strings"
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
@@ -87,11 +86,7 @@ func (s *AuthService) getMCPUserSession(r *http.Request) (*rez.AuthSession, erro
 func (s *AuthService) UserAuthHandler() http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.URL.Path == "/auth/logout" {
-			for _, prov := range s.providers {
-				prov.ClearSession(w, r)
-			}
-			http.SetCookie(w, s.makeSessionCookie(r, "", time.Now(), -1))
-			http.Redirect(w, r, rez.FrontendUrl, http.StatusFound)
+			s.handleLogout(w, r)
 			return
 		}
 
@@ -103,12 +98,25 @@ func (s *AuthService) UserAuthHandler() http.Handler {
 	})
 }
 
-func (s *AuthService) makeUserSessionCreatedCallback(w http.ResponseWriter, r *http.Request, provFlowRoute string) func(ps rez.AuthProviderSession) {
+func (s *AuthService) handleLogout(w http.ResponseWriter, r *http.Request) {
+	for _, prov := range s.providers {
+		if !prov.SessionExists(r) {
+			continue
+		}
+		if sessErr := prov.ClearSession(w, r); sessErr != nil {
+			log.Error().Err(sessErr).Msg("failed to clear session")
+		}
+	}
+	http.SetCookie(w, s.makeSessionCookie(r, "", time.Now(), -1))
+	http.Redirect(w, r, rez.FrontendUrl, http.StatusFound)
+}
+
+func (s *AuthService) makeUserSessionCreatedCallback(w http.ResponseWriter, r *http.Request, flowRoute string) func(ps rez.AuthProviderSession) {
 	ctx := r.Context()
 
 	return func(ps rez.AuthProviderSession) {
 		redirect := ps.RedirectUrl
-		if redirect == "" || redirect == provFlowRoute {
+		if redirect == "" || redirect == flowRoute {
 			redirect = rez.FrontendUrl
 		}
 
@@ -138,7 +146,7 @@ func (s *AuthService) makeUserSessionCreatedCallback(w http.ResponseWriter, r *h
 
 func (s *AuthService) delegateAuthFlowToProvider(w http.ResponseWriter, r *http.Request) bool {
 	for _, prov := range s.providers {
-		provFlowRoute := "/auth/" + strings.ToLower(prov.Name())
+		provFlowRoute := "/auth/" + prov.Id()
 		if r.URL.Path == provFlowRoute {
 			prov.StartAuthFlow(w, r)
 			return true
