@@ -20,8 +20,8 @@ type User struct {
 	ID uuid.UUID `json:"id,omitempty"`
 	// TenantID holds the value of the "tenant_id" field.
 	TenantID int `json:"tenant_id,omitempty"`
-	// AuthProviderID holds the value of the "auth_provider_id" field.
-	AuthProviderID string `json:"auth_provider_id,omitempty"`
+	// ProviderID holds the value of the "provider_id" field.
+	ProviderID string `json:"provider_id,omitempty"`
 	// Email holds the value of the "email" field.
 	Email string `json:"email,omitempty"`
 	// Name holds the value of the "name" field.
@@ -210,7 +210,7 @@ func (*User) scanValues(columns []string) ([]any, error) {
 			values[i] = new(sql.NullBool)
 		case user.FieldTenantID:
 			values[i] = new(sql.NullInt64)
-		case user.FieldAuthProviderID, user.FieldEmail, user.FieldName, user.FieldChatID, user.FieldTimezone:
+		case user.FieldProviderID, user.FieldEmail, user.FieldName, user.FieldChatID, user.FieldTimezone:
 			values[i] = new(sql.NullString)
 		case user.FieldID:
 			values[i] = new(uuid.UUID)
@@ -241,11 +241,11 @@ func (u *User) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				u.TenantID = int(value.Int64)
 			}
-		case user.FieldAuthProviderID:
+		case user.FieldProviderID:
 			if value, ok := values[i].(*sql.NullString); !ok {
-				return fmt.Errorf("unexpected type %T for field auth_provider_id", values[i])
+				return fmt.Errorf("unexpected type %T for field provider_id", values[i])
 			} else if value.Valid {
-				u.AuthProviderID = value.String
+				u.ProviderID = value.String
 			}
 		case user.FieldEmail:
 			if value, ok := values[i].(*sql.NullString); !ok {
@@ -386,8 +386,8 @@ func (u *User) String() string {
 	builder.WriteString("tenant_id=")
 	builder.WriteString(fmt.Sprintf("%v", u.TenantID))
 	builder.WriteString(", ")
-	builder.WriteString("auth_provider_id=")
-	builder.WriteString(u.AuthProviderID)
+	builder.WriteString("provider_id=")
+	builder.WriteString(u.ProviderID)
 	builder.WriteString(", ")
 	builder.WriteString("email=")
 	builder.WriteString(u.Email)

@@ -2140,7 +2140,8 @@ var (
 		{Name: "id", Type: field.TypeInt, Increment: true},
 		{Name: "name", Type: field.TypeString},
 		{Name: "public_id", Type: field.TypeUUID},
-		{Name: "auth_id", Type: field.TypeString},
+		{Name: "provider_id", Type: field.TypeString},
+		{Name: "initial_setup_at", Type: field.TypeTime, Nullable: true},
 	}
 	// TenantsTable holds the schema information for the "tenants" table.
 	TenantsTable = &schema.Table{
@@ -2186,7 +2187,7 @@ var (
 	// UsersColumns holds the columns for the "users" table.
 	UsersColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID},
-		{Name: "auth_provider_id", Type: field.TypeString, Nullable: true},
+		{Name: "provider_id", Type: field.TypeString, Nullable: true},
 		{Name: "email", Type: field.TypeString},
 		{Name: "name", Type: field.TypeString, Nullable: true, Default: ""},
 		{Name: "chat_id", Type: field.TypeString, Nullable: true},

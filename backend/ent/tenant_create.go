@@ -6,6 +6,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"time"
 
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
@@ -42,9 +43,23 @@ func (tc *TenantCreate) SetNillablePublicID(u *uuid.UUID) *TenantCreate {
 	return tc
 }
 
-// SetAuthID sets the "auth_id" field.
-func (tc *TenantCreate) SetAuthID(s string) *TenantCreate {
-	tc.mutation.SetAuthID(s)
+// SetProviderID sets the "provider_id" field.
+func (tc *TenantCreate) SetProviderID(s string) *TenantCreate {
+	tc.mutation.SetProviderID(s)
+	return tc
+}
+
+// SetInitialSetupAt sets the "initial_setup_at" field.
+func (tc *TenantCreate) SetInitialSetupAt(t time.Time) *TenantCreate {
+	tc.mutation.SetInitialSetupAt(t)
+	return tc
+}
+
+// SetNillableInitialSetupAt sets the "initial_setup_at" field if the given value is not nil.
+func (tc *TenantCreate) SetNillableInitialSetupAt(t *time.Time) *TenantCreate {
+	if t != nil {
+		tc.SetInitialSetupAt(*t)
+	}
 	return tc
 }
 
@@ -108,12 +123,12 @@ func (tc *TenantCreate) check() error {
 	if _, ok := tc.mutation.PublicID(); !ok {
 		return &ValidationError{Name: "public_id", err: errors.New(`ent: missing required field "Tenant.public_id"`)}
 	}
-	if _, ok := tc.mutation.AuthID(); !ok {
-		return &ValidationError{Name: "auth_id", err: errors.New(`ent: missing required field "Tenant.auth_id"`)}
+	if _, ok := tc.mutation.ProviderID(); !ok {
+		return &ValidationError{Name: "provider_id", err: errors.New(`ent: missing required field "Tenant.provider_id"`)}
 	}
-	if v, ok := tc.mutation.AuthID(); ok {
-		if err := tenant.AuthIDValidator(v); err != nil {
-			return &ValidationError{Name: "auth_id", err: fmt.Errorf(`ent: validator failed for field "Tenant.auth_id": %w`, err)}
+	if v, ok := tc.mutation.ProviderID(); ok {
+		if err := tenant.ProviderIDValidator(v); err != nil {
+			return &ValidationError{Name: "provider_id", err: fmt.Errorf(`ent: validator failed for field "Tenant.provider_id": %w`, err)}
 		}
 	}
 	return nil
@@ -151,9 +166,13 @@ func (tc *TenantCreate) createSpec() (*Tenant, *sqlgraph.CreateSpec) {
 		_spec.SetField(tenant.FieldPublicID, field.TypeUUID, value)
 		_node.PublicID = value
 	}
-	if value, ok := tc.mutation.AuthID(); ok {
-		_spec.SetField(tenant.FieldAuthID, field.TypeString, value)
-		_node.AuthID = value
+	if value, ok := tc.mutation.ProviderID(); ok {
+		_spec.SetField(tenant.FieldProviderID, field.TypeString, value)
+		_node.ProviderID = value
+	}
+	if value, ok := tc.mutation.InitialSetupAt(); ok {
+		_spec.SetField(tenant.FieldInitialSetupAt, field.TypeTime, value)
+		_node.InitialSetupAt = value
 	}
 	return _node, _spec
 }
@@ -231,15 +250,33 @@ func (u *TenantUpsert) UpdatePublicID() *TenantUpsert {
 	return u
 }
 
-// SetAuthID sets the "auth_id" field.
-func (u *TenantUpsert) SetAuthID(v string) *TenantUpsert {
-	u.Set(tenant.FieldAuthID, v)
+// SetProviderID sets the "provider_id" field.
+func (u *TenantUpsert) SetProviderID(v string) *TenantUpsert {
+	u.Set(tenant.FieldProviderID, v)
 	return u
 }
 
-// UpdateAuthID sets the "auth_id" field to the value that was provided on create.
-func (u *TenantUpsert) UpdateAuthID() *TenantUpsert {
-	u.SetExcluded(tenant.FieldAuthID)
+// UpdateProviderID sets the "provider_id" field to the value that was provided on create.
+func (u *TenantUpsert) UpdateProviderID() *TenantUpsert {
+	u.SetExcluded(tenant.FieldProviderID)
+	return u
+}
+
+// SetInitialSetupAt sets the "initial_setup_at" field.
+func (u *TenantUpsert) SetInitialSetupAt(v time.Time) *TenantUpsert {
+	u.Set(tenant.FieldInitialSetupAt, v)
+	return u
+}
+
+// UpdateInitialSetupAt sets the "initial_setup_at" field to the value that was provided on create.
+func (u *TenantUpsert) UpdateInitialSetupAt() *TenantUpsert {
+	u.SetExcluded(tenant.FieldInitialSetupAt)
+	return u
+}
+
+// ClearInitialSetupAt clears the value of the "initial_setup_at" field.
+func (u *TenantUpsert) ClearInitialSetupAt() *TenantUpsert {
+	u.SetNull(tenant.FieldInitialSetupAt)
 	return u
 }
 
@@ -311,17 +348,38 @@ func (u *TenantUpsertOne) UpdatePublicID() *TenantUpsertOne {
 	})
 }
 
-// SetAuthID sets the "auth_id" field.
-func (u *TenantUpsertOne) SetAuthID(v string) *TenantUpsertOne {
+// SetProviderID sets the "provider_id" field.
+func (u *TenantUpsertOne) SetProviderID(v string) *TenantUpsertOne {
 	return u.Update(func(s *TenantUpsert) {
-		s.SetAuthID(v)
+		s.SetProviderID(v)
 	})
 }
 
-// UpdateAuthID sets the "auth_id" field to the value that was provided on create.
-func (u *TenantUpsertOne) UpdateAuthID() *TenantUpsertOne {
+// UpdateProviderID sets the "provider_id" field to the value that was provided on create.
+func (u *TenantUpsertOne) UpdateProviderID() *TenantUpsertOne {
 	return u.Update(func(s *TenantUpsert) {
-		s.UpdateAuthID()
+		s.UpdateProviderID()
+	})
+}
+
+// SetInitialSetupAt sets the "initial_setup_at" field.
+func (u *TenantUpsertOne) SetInitialSetupAt(v time.Time) *TenantUpsertOne {
+	return u.Update(func(s *TenantUpsert) {
+		s.SetInitialSetupAt(v)
+	})
+}
+
+// UpdateInitialSetupAt sets the "initial_setup_at" field to the value that was provided on create.
+func (u *TenantUpsertOne) UpdateInitialSetupAt() *TenantUpsertOne {
+	return u.Update(func(s *TenantUpsert) {
+		s.UpdateInitialSetupAt()
+	})
+}
+
+// ClearInitialSetupAt clears the value of the "initial_setup_at" field.
+func (u *TenantUpsertOne) ClearInitialSetupAt() *TenantUpsertOne {
+	return u.Update(func(s *TenantUpsert) {
+		s.ClearInitialSetupAt()
 	})
 }
 
@@ -557,17 +615,38 @@ func (u *TenantUpsertBulk) UpdatePublicID() *TenantUpsertBulk {
 	})
 }
 
-// SetAuthID sets the "auth_id" field.
-func (u *TenantUpsertBulk) SetAuthID(v string) *TenantUpsertBulk {
+// SetProviderID sets the "provider_id" field.
+func (u *TenantUpsertBulk) SetProviderID(v string) *TenantUpsertBulk {
 	return u.Update(func(s *TenantUpsert) {
-		s.SetAuthID(v)
+		s.SetProviderID(v)
 	})
 }
 
-// UpdateAuthID sets the "auth_id" field to the value that was provided on create.
-func (u *TenantUpsertBulk) UpdateAuthID() *TenantUpsertBulk {
+// UpdateProviderID sets the "provider_id" field to the value that was provided on create.
+func (u *TenantUpsertBulk) UpdateProviderID() *TenantUpsertBulk {
 	return u.Update(func(s *TenantUpsert) {
-		s.UpdateAuthID()
+		s.UpdateProviderID()
+	})
+}
+
+// SetInitialSetupAt sets the "initial_setup_at" field.
+func (u *TenantUpsertBulk) SetInitialSetupAt(v time.Time) *TenantUpsertBulk {
+	return u.Update(func(s *TenantUpsert) {
+		s.SetInitialSetupAt(v)
+	})
+}
+
+// UpdateInitialSetupAt sets the "initial_setup_at" field to the value that was provided on create.
+func (u *TenantUpsertBulk) UpdateInitialSetupAt() *TenantUpsertBulk {
+	return u.Update(func(s *TenantUpsert) {
+		s.UpdateInitialSetupAt()
+	})
+}
+
+// ClearInitialSetupAt clears the value of the "initial_setup_at" field.
+func (u *TenantUpsertBulk) ClearInitialSetupAt() *TenantUpsertBulk {
+	return u.Update(func(s *TenantUpsert) {
+		s.ClearInitialSetupAt()
 	})
 }
 

@@ -6,6 +6,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"time"
 
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
@@ -57,17 +58,37 @@ func (tu *TenantUpdate) SetNillablePublicID(u *uuid.UUID) *TenantUpdate {
 	return tu
 }
 
-// SetAuthID sets the "auth_id" field.
-func (tu *TenantUpdate) SetAuthID(s string) *TenantUpdate {
-	tu.mutation.SetAuthID(s)
+// SetProviderID sets the "provider_id" field.
+func (tu *TenantUpdate) SetProviderID(s string) *TenantUpdate {
+	tu.mutation.SetProviderID(s)
 	return tu
 }
 
-// SetNillableAuthID sets the "auth_id" field if the given value is not nil.
-func (tu *TenantUpdate) SetNillableAuthID(s *string) *TenantUpdate {
+// SetNillableProviderID sets the "provider_id" field if the given value is not nil.
+func (tu *TenantUpdate) SetNillableProviderID(s *string) *TenantUpdate {
 	if s != nil {
-		tu.SetAuthID(*s)
+		tu.SetProviderID(*s)
 	}
+	return tu
+}
+
+// SetInitialSetupAt sets the "initial_setup_at" field.
+func (tu *TenantUpdate) SetInitialSetupAt(t time.Time) *TenantUpdate {
+	tu.mutation.SetInitialSetupAt(t)
+	return tu
+}
+
+// SetNillableInitialSetupAt sets the "initial_setup_at" field if the given value is not nil.
+func (tu *TenantUpdate) SetNillableInitialSetupAt(t *time.Time) *TenantUpdate {
+	if t != nil {
+		tu.SetInitialSetupAt(*t)
+	}
+	return tu
+}
+
+// ClearInitialSetupAt clears the value of the "initial_setup_at" field.
+func (tu *TenantUpdate) ClearInitialSetupAt() *TenantUpdate {
+	tu.mutation.ClearInitialSetupAt()
 	return tu
 }
 
@@ -110,9 +131,9 @@ func (tu *TenantUpdate) check() error {
 			return &ValidationError{Name: "name", err: fmt.Errorf(`ent: validator failed for field "Tenant.name": %w`, err)}
 		}
 	}
-	if v, ok := tu.mutation.AuthID(); ok {
-		if err := tenant.AuthIDValidator(v); err != nil {
-			return &ValidationError{Name: "auth_id", err: fmt.Errorf(`ent: validator failed for field "Tenant.auth_id": %w`, err)}
+	if v, ok := tu.mutation.ProviderID(); ok {
+		if err := tenant.ProviderIDValidator(v); err != nil {
+			return &ValidationError{Name: "provider_id", err: fmt.Errorf(`ent: validator failed for field "Tenant.provider_id": %w`, err)}
 		}
 	}
 	return nil
@@ -142,8 +163,14 @@ func (tu *TenantUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	if value, ok := tu.mutation.PublicID(); ok {
 		_spec.SetField(tenant.FieldPublicID, field.TypeUUID, value)
 	}
-	if value, ok := tu.mutation.AuthID(); ok {
-		_spec.SetField(tenant.FieldAuthID, field.TypeString, value)
+	if value, ok := tu.mutation.ProviderID(); ok {
+		_spec.SetField(tenant.FieldProviderID, field.TypeString, value)
+	}
+	if value, ok := tu.mutation.InitialSetupAt(); ok {
+		_spec.SetField(tenant.FieldInitialSetupAt, field.TypeTime, value)
+	}
+	if tu.mutation.InitialSetupAtCleared() {
+		_spec.ClearField(tenant.FieldInitialSetupAt, field.TypeTime)
 	}
 	_spec.AddModifiers(tu.modifiers...)
 	if n, err = sqlgraph.UpdateNodes(ctx, tu.driver, _spec); err != nil {
@@ -195,17 +222,37 @@ func (tuo *TenantUpdateOne) SetNillablePublicID(u *uuid.UUID) *TenantUpdateOne {
 	return tuo
 }
 
-// SetAuthID sets the "auth_id" field.
-func (tuo *TenantUpdateOne) SetAuthID(s string) *TenantUpdateOne {
-	tuo.mutation.SetAuthID(s)
+// SetProviderID sets the "provider_id" field.
+func (tuo *TenantUpdateOne) SetProviderID(s string) *TenantUpdateOne {
+	tuo.mutation.SetProviderID(s)
 	return tuo
 }
 
-// SetNillableAuthID sets the "auth_id" field if the given value is not nil.
-func (tuo *TenantUpdateOne) SetNillableAuthID(s *string) *TenantUpdateOne {
+// SetNillableProviderID sets the "provider_id" field if the given value is not nil.
+func (tuo *TenantUpdateOne) SetNillableProviderID(s *string) *TenantUpdateOne {
 	if s != nil {
-		tuo.SetAuthID(*s)
+		tuo.SetProviderID(*s)
 	}
+	return tuo
+}
+
+// SetInitialSetupAt sets the "initial_setup_at" field.
+func (tuo *TenantUpdateOne) SetInitialSetupAt(t time.Time) *TenantUpdateOne {
+	tuo.mutation.SetInitialSetupAt(t)
+	return tuo
+}
+
+// SetNillableInitialSetupAt sets the "initial_setup_at" field if the given value is not nil.
+func (tuo *TenantUpdateOne) SetNillableInitialSetupAt(t *time.Time) *TenantUpdateOne {
+	if t != nil {
+		tuo.SetInitialSetupAt(*t)
+	}
+	return tuo
+}
+
+// ClearInitialSetupAt clears the value of the "initial_setup_at" field.
+func (tuo *TenantUpdateOne) ClearInitialSetupAt() *TenantUpdateOne {
+	tuo.mutation.ClearInitialSetupAt()
 	return tuo
 }
 
@@ -261,9 +308,9 @@ func (tuo *TenantUpdateOne) check() error {
 			return &ValidationError{Name: "name", err: fmt.Errorf(`ent: validator failed for field "Tenant.name": %w`, err)}
 		}
 	}
-	if v, ok := tuo.mutation.AuthID(); ok {
-		if err := tenant.AuthIDValidator(v); err != nil {
-			return &ValidationError{Name: "auth_id", err: fmt.Errorf(`ent: validator failed for field "Tenant.auth_id": %w`, err)}
+	if v, ok := tuo.mutation.ProviderID(); ok {
+		if err := tenant.ProviderIDValidator(v); err != nil {
+			return &ValidationError{Name: "provider_id", err: fmt.Errorf(`ent: validator failed for field "Tenant.provider_id": %w`, err)}
 		}
 	}
 	return nil
@@ -310,8 +357,14 @@ func (tuo *TenantUpdateOne) sqlSave(ctx context.Context) (_node *Tenant, err err
 	if value, ok := tuo.mutation.PublicID(); ok {
 		_spec.SetField(tenant.FieldPublicID, field.TypeUUID, value)
 	}
-	if value, ok := tuo.mutation.AuthID(); ok {
-		_spec.SetField(tenant.FieldAuthID, field.TypeString, value)
+	if value, ok := tuo.mutation.ProviderID(); ok {
+		_spec.SetField(tenant.FieldProviderID, field.TypeString, value)
+	}
+	if value, ok := tuo.mutation.InitialSetupAt(); ok {
+		_spec.SetField(tenant.FieldInitialSetupAt, field.TypeTime, value)
+	}
+	if tuo.mutation.InitialSetupAtCleared() {
+		_spec.ClearField(tenant.FieldInitialSetupAt, field.TypeTime)
 	}
 	_spec.AddModifiers(tuo.modifiers...)
 	_node = &Tenant{config: tuo.config}

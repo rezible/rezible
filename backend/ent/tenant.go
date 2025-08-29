@@ -5,6 +5,7 @@ package ent
 import (
 	"fmt"
 	"strings"
+	"time"
 
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
@@ -21,9 +22,11 @@ type Tenant struct {
 	Name string `json:"name,omitempty"`
 	// PublicID holds the value of the "public_id" field.
 	PublicID uuid.UUID `json:"public_id,omitempty"`
-	// AuthID holds the value of the "auth_id" field.
-	AuthID       string `json:"auth_id,omitempty"`
-	selectValues sql.SelectValues
+	// ProviderID holds the value of the "provider_id" field.
+	ProviderID string `json:"provider_id,omitempty"`
+	// InitialSetupAt holds the value of the "initial_setup_at" field.
+	InitialSetupAt time.Time `json:"initial_setup_at,omitempty"`
+	selectValues   sql.SelectValues
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -33,8 +36,10 @@ func (*Tenant) scanValues(columns []string) ([]any, error) {
 		switch columns[i] {
 		case tenant.FieldID:
 			values[i] = new(sql.NullInt64)
-		case tenant.FieldName, tenant.FieldAuthID:
+		case tenant.FieldName, tenant.FieldProviderID:
 			values[i] = new(sql.NullString)
+		case tenant.FieldInitialSetupAt:
+			values[i] = new(sql.NullTime)
 		case tenant.FieldPublicID:
 			values[i] = new(uuid.UUID)
 		default:
@@ -70,11 +75,17 @@ func (t *Tenant) assignValues(columns []string, values []any) error {
 			} else if value != nil {
 				t.PublicID = *value
 			}
-		case tenant.FieldAuthID:
+		case tenant.FieldProviderID:
 			if value, ok := values[i].(*sql.NullString); !ok {
-				return fmt.Errorf("unexpected type %T for field auth_id", values[i])
+				return fmt.Errorf("unexpected type %T for field provider_id", values[i])
 			} else if value.Valid {
-				t.AuthID = value.String
+				t.ProviderID = value.String
+			}
+		case tenant.FieldInitialSetupAt:
+			if value, ok := values[i].(*sql.NullTime); !ok {
+				return fmt.Errorf("unexpected type %T for field initial_setup_at", values[i])
+			} else if value.Valid {
+				t.InitialSetupAt = value.Time
 			}
 		default:
 			t.selectValues.Set(columns[i], values[i])
@@ -118,8 +129,11 @@ func (t *Tenant) String() string {
 	builder.WriteString("public_id=")
 	builder.WriteString(fmt.Sprintf("%v", t.PublicID))
 	builder.WriteString(", ")
-	builder.WriteString("auth_id=")
-	builder.WriteString(t.AuthID)
+	builder.WriteString("provider_id=")
+	builder.WriteString(t.ProviderID)
+	builder.WriteString(", ")
+	builder.WriteString("initial_setup_at=")
+	builder.WriteString(t.InitialSetupAt.Format(time.ANSIC))
 	builder.WriteByte(')')
 	return builder.String()
 }

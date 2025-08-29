@@ -75,7 +75,7 @@ type (
 		CreateUserContext(ctx context.Context, userId uuid.UUID) (context.Context, error)
 		GetUserContext(ctx context.Context) *ent.User
 
-		FindOrCreateAuthProviderUser(ctx context.Context, user *ent.User, tenantId string) (*ent.User, error)
+		FindOrCreateAuthProviderUser(ctx context.Context, user *ent.User, tenant *ent.Tenant) (*ent.User, error)
 
 		ListUsers(context.Context, ListUsersParams) ([]*ent.User, error)
 
@@ -89,8 +89,8 @@ type (
 
 type (
 	AuthProviderSession struct {
-		User        *ent.User
-		TenantId    string
+		User        ent.User
+		Tenant      ent.Tenant
 		ExpiresAt   time.Time
 		RedirectUrl string
 	}

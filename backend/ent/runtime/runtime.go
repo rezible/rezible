@@ -1209,10 +1209,10 @@ func init() {
 	tenantDescPublicID := tenantFields[1].Descriptor()
 	// tenant.DefaultPublicID holds the default value on creation for the public_id field.
 	tenant.DefaultPublicID = tenantDescPublicID.Default.(func() uuid.UUID)
-	// tenantDescAuthID is the schema descriptor for auth_id field.
-	tenantDescAuthID := tenantFields[2].Descriptor()
-	// tenant.AuthIDValidator is a validator for the "auth_id" field. It is called by the builders before save.
-	tenant.AuthIDValidator = tenantDescAuthID.Validators[0].(func(string) error)
+	// tenantDescProviderID is the schema descriptor for provider_id field.
+	tenantDescProviderID := tenantFields[2].Descriptor()
+	// tenant.ProviderIDValidator is a validator for the "provider_id" field. It is called by the builders before save.
+	tenant.ProviderIDValidator = tenantDescProviderID.Validators[0].(func(string) error)
 	ticketMixin := schema.Ticket{}.Mixin()
 	ticket.Policy = privacy.NewPolicies(ticketMixin[0], ticketMixin[1], schema.Ticket{})
 	ticket.Hooks[0] = func(next ent.Mutator) ent.Mutator {

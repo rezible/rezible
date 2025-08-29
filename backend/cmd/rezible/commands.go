@@ -9,7 +9,6 @@ import (
 	"time"
 
 	"github.com/danielgtaylor/huma/v2/humacli"
-	"github.com/google/uuid"
 	_ "github.com/jackc/pgx/v5/stdlib"
 	"github.com/rezible/rezible/ent/tenant"
 	"github.com/rs/zerolog"
@@ -165,7 +164,7 @@ func loadTenantProviderConfig(ctx context.Context, client *ent.Client, cfg *prov
 	if ent.IsNotFound(tenantErr) {
 		create := client.Tenant.Create().
 			SetName(tenantName).
-			SetAuthID(uuid.New().String())
+			SetProviderID(tenantName)
 
 		tnt, tenantErr = create.Save(ctx)
 	}

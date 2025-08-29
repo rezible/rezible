@@ -3,6 +3,8 @@
 package tenant
 
 import (
+	"time"
+
 	"entgo.io/ent/dialect/sql"
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/predicate"
@@ -63,9 +65,14 @@ func PublicID(v uuid.UUID) predicate.Tenant {
 	return predicate.Tenant(sql.FieldEQ(FieldPublicID, v))
 }
 
-// AuthID applies equality check predicate on the "auth_id" field. It's identical to AuthIDEQ.
-func AuthID(v string) predicate.Tenant {
-	return predicate.Tenant(sql.FieldEQ(FieldAuthID, v))
+// ProviderID applies equality check predicate on the "provider_id" field. It's identical to ProviderIDEQ.
+func ProviderID(v string) predicate.Tenant {
+	return predicate.Tenant(sql.FieldEQ(FieldProviderID, v))
+}
+
+// InitialSetupAt applies equality check predicate on the "initial_setup_at" field. It's identical to InitialSetupAtEQ.
+func InitialSetupAt(v time.Time) predicate.Tenant {
+	return predicate.Tenant(sql.FieldEQ(FieldInitialSetupAt, v))
 }
 
 // NameEQ applies the EQ predicate on the "name" field.
@@ -173,69 +180,119 @@ func PublicIDLTE(v uuid.UUID) predicate.Tenant {
 	return predicate.Tenant(sql.FieldLTE(FieldPublicID, v))
 }
 
-// AuthIDEQ applies the EQ predicate on the "auth_id" field.
-func AuthIDEQ(v string) predicate.Tenant {
-	return predicate.Tenant(sql.FieldEQ(FieldAuthID, v))
+// ProviderIDEQ applies the EQ predicate on the "provider_id" field.
+func ProviderIDEQ(v string) predicate.Tenant {
+	return predicate.Tenant(sql.FieldEQ(FieldProviderID, v))
 }
 
-// AuthIDNEQ applies the NEQ predicate on the "auth_id" field.
-func AuthIDNEQ(v string) predicate.Tenant {
-	return predicate.Tenant(sql.FieldNEQ(FieldAuthID, v))
+// ProviderIDNEQ applies the NEQ predicate on the "provider_id" field.
+func ProviderIDNEQ(v string) predicate.Tenant {
+	return predicate.Tenant(sql.FieldNEQ(FieldProviderID, v))
 }
 
-// AuthIDIn applies the In predicate on the "auth_id" field.
-func AuthIDIn(vs ...string) predicate.Tenant {
-	return predicate.Tenant(sql.FieldIn(FieldAuthID, vs...))
+// ProviderIDIn applies the In predicate on the "provider_id" field.
+func ProviderIDIn(vs ...string) predicate.Tenant {
+	return predicate.Tenant(sql.FieldIn(FieldProviderID, vs...))
 }
 
-// AuthIDNotIn applies the NotIn predicate on the "auth_id" field.
-func AuthIDNotIn(vs ...string) predicate.Tenant {
-	return predicate.Tenant(sql.FieldNotIn(FieldAuthID, vs...))
+// ProviderIDNotIn applies the NotIn predicate on the "provider_id" field.
+func ProviderIDNotIn(vs ...string) predicate.Tenant {
+	return predicate.Tenant(sql.FieldNotIn(FieldProviderID, vs...))
 }
 
-// AuthIDGT applies the GT predicate on the "auth_id" field.
-func AuthIDGT(v string) predicate.Tenant {
-	return predicate.Tenant(sql.FieldGT(FieldAuthID, v))
+// ProviderIDGT applies the GT predicate on the "provider_id" field.
+func ProviderIDGT(v string) predicate.Tenant {
+	return predicate.Tenant(sql.FieldGT(FieldProviderID, v))
 }
 
-// AuthIDGTE applies the GTE predicate on the "auth_id" field.
-func AuthIDGTE(v string) predicate.Tenant {
-	return predicate.Tenant(sql.FieldGTE(FieldAuthID, v))
+// ProviderIDGTE applies the GTE predicate on the "provider_id" field.
+func ProviderIDGTE(v string) predicate.Tenant {
+	return predicate.Tenant(sql.FieldGTE(FieldProviderID, v))
 }
 
-// AuthIDLT applies the LT predicate on the "auth_id" field.
-func AuthIDLT(v string) predicate.Tenant {
-	return predicate.Tenant(sql.FieldLT(FieldAuthID, v))
+// ProviderIDLT applies the LT predicate on the "provider_id" field.
+func ProviderIDLT(v string) predicate.Tenant {
+	return predicate.Tenant(sql.FieldLT(FieldProviderID, v))
 }
 
-// AuthIDLTE applies the LTE predicate on the "auth_id" field.
-func AuthIDLTE(v string) predicate.Tenant {
-	return predicate.Tenant(sql.FieldLTE(FieldAuthID, v))
+// ProviderIDLTE applies the LTE predicate on the "provider_id" field.
+func ProviderIDLTE(v string) predicate.Tenant {
+	return predicate.Tenant(sql.FieldLTE(FieldProviderID, v))
 }
 
-// AuthIDContains applies the Contains predicate on the "auth_id" field.
-func AuthIDContains(v string) predicate.Tenant {
-	return predicate.Tenant(sql.FieldContains(FieldAuthID, v))
+// ProviderIDContains applies the Contains predicate on the "provider_id" field.
+func ProviderIDContains(v string) predicate.Tenant {
+	return predicate.Tenant(sql.FieldContains(FieldProviderID, v))
 }
 
-// AuthIDHasPrefix applies the HasPrefix predicate on the "auth_id" field.
-func AuthIDHasPrefix(v string) predicate.Tenant {
-	return predicate.Tenant(sql.FieldHasPrefix(FieldAuthID, v))
+// ProviderIDHasPrefix applies the HasPrefix predicate on the "provider_id" field.
+func ProviderIDHasPrefix(v string) predicate.Tenant {
+	return predicate.Tenant(sql.FieldHasPrefix(FieldProviderID, v))
 }
 
-// AuthIDHasSuffix applies the HasSuffix predicate on the "auth_id" field.
-func AuthIDHasSuffix(v string) predicate.Tenant {
-	return predicate.Tenant(sql.FieldHasSuffix(FieldAuthID, v))
+// ProviderIDHasSuffix applies the HasSuffix predicate on the "provider_id" field.
+func ProviderIDHasSuffix(v string) predicate.Tenant {
+	return predicate.Tenant(sql.FieldHasSuffix(FieldProviderID, v))
 }
 
-// AuthIDEqualFold applies the EqualFold predicate on the "auth_id" field.
-func AuthIDEqualFold(v string) predicate.Tenant {
-	return predicate.Tenant(sql.FieldEqualFold(FieldAuthID, v))
+// ProviderIDEqualFold applies the EqualFold predicate on the "provider_id" field.
+func ProviderIDEqualFold(v string) predicate.Tenant {
+	return predicate.Tenant(sql.FieldEqualFold(FieldProviderID, v))
 }
 
-// AuthIDContainsFold applies the ContainsFold predicate on the "auth_id" field.
-func AuthIDContainsFold(v string) predicate.Tenant {
-	return predicate.Tenant(sql.FieldContainsFold(FieldAuthID, v))
+// ProviderIDContainsFold applies the ContainsFold predicate on the "provider_id" field.
+func ProviderIDContainsFold(v string) predicate.Tenant {
+	return predicate.Tenant(sql.FieldContainsFold(FieldProviderID, v))
+}
+
+// InitialSetupAtEQ applies the EQ predicate on the "initial_setup_at" field.
+func InitialSetupAtEQ(v time.Time) predicate.Tenant {
+	return predicate.Tenant(sql.FieldEQ(FieldInitialSetupAt, v))
+}
+
+// InitialSetupAtNEQ applies the NEQ predicate on the "initial_setup_at" field.
+func InitialSetupAtNEQ(v time.Time) predicate.Tenant {
+	return predicate.Tenant(sql.FieldNEQ(FieldInitialSetupAt, v))
+}
+
+// InitialSetupAtIn applies the In predicate on the "initial_setup_at" field.
+func InitialSetupAtIn(vs ...time.Time) predicate.Tenant {
+	return predicate.Tenant(sql.FieldIn(FieldInitialSetupAt, vs...))
+}
+
+// InitialSetupAtNotIn applies the NotIn predicate on the "initial_setup_at" field.
+func InitialSetupAtNotIn(vs ...time.Time) predicate.Tenant {
+	return predicate.Tenant(sql.FieldNotIn(FieldInitialSetupAt, vs...))
+}
+
+// InitialSetupAtGT applies the GT predicate on the "initial_setup_at" field.
+func InitialSetupAtGT(v time.Time) predicate.Tenant {
+	return predicate.Tenant(sql.FieldGT(FieldInitialSetupAt, v))
+}
+
+// InitialSetupAtGTE applies the GTE predicate on the "initial_setup_at" field.
+func InitialSetupAtGTE(v time.Time) predicate.Tenant {
+	return predicate.Tenant(sql.FieldGTE(FieldInitialSetupAt, v))
+}
+
+// InitialSetupAtLT applies the LT predicate on the "initial_setup_at" field.
+func InitialSetupAtLT(v time.Time) predicate.Tenant {
+	return predicate.Tenant(sql.FieldLT(FieldInitialSetupAt, v))
+}
+
+// InitialSetupAtLTE applies the LTE predicate on the "initial_setup_at" field.
+func InitialSetupAtLTE(v time.Time) predicate.Tenant {
+	return predicate.Tenant(sql.FieldLTE(FieldInitialSetupAt, v))
+}
+
+// InitialSetupAtIsNil applies the IsNil predicate on the "initial_setup_at" field.
+func InitialSetupAtIsNil() predicate.Tenant {
+	return predicate.Tenant(sql.FieldIsNull(FieldInitialSetupAt))
+}
+
+// InitialSetupAtNotNil applies the NotNil predicate on the "initial_setup_at" field.
+func InitialSetupAtNotNil() predicate.Tenant {
+	return predicate.Tenant(sql.FieldNotNull(FieldInitialSetupAt))
 }
 
 // And groups predicates with the AND operator between them.

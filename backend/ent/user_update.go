@@ -40,23 +40,23 @@ func (uu *UserUpdate) Where(ps ...predicate.User) *UserUpdate {
 	return uu
 }
 
-// SetAuthProviderID sets the "auth_provider_id" field.
-func (uu *UserUpdate) SetAuthProviderID(s string) *UserUpdate {
-	uu.mutation.SetAuthProviderID(s)
+// SetProviderID sets the "provider_id" field.
+func (uu *UserUpdate) SetProviderID(s string) *UserUpdate {
+	uu.mutation.SetProviderID(s)
 	return uu
 }
 
-// SetNillableAuthProviderID sets the "auth_provider_id" field if the given value is not nil.
-func (uu *UserUpdate) SetNillableAuthProviderID(s *string) *UserUpdate {
+// SetNillableProviderID sets the "provider_id" field if the given value is not nil.
+func (uu *UserUpdate) SetNillableProviderID(s *string) *UserUpdate {
 	if s != nil {
-		uu.SetAuthProviderID(*s)
+		uu.SetProviderID(*s)
 	}
 	return uu
 }
 
-// ClearAuthProviderID clears the value of the "auth_provider_id" field.
-func (uu *UserUpdate) ClearAuthProviderID() *UserUpdate {
-	uu.mutation.ClearAuthProviderID()
+// ClearProviderID clears the value of the "provider_id" field.
+func (uu *UserUpdate) ClearProviderID() *UserUpdate {
+	uu.mutation.ClearProviderID()
 	return uu
 }
 
@@ -674,11 +674,11 @@ func (uu *UserUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			}
 		}
 	}
-	if value, ok := uu.mutation.AuthProviderID(); ok {
-		_spec.SetField(user.FieldAuthProviderID, field.TypeString, value)
+	if value, ok := uu.mutation.ProviderID(); ok {
+		_spec.SetField(user.FieldProviderID, field.TypeString, value)
 	}
-	if uu.mutation.AuthProviderIDCleared() {
-		_spec.ClearField(user.FieldAuthProviderID, field.TypeString)
+	if uu.mutation.ProviderIDCleared() {
+		_spec.ClearField(user.FieldProviderID, field.TypeString)
 	}
 	if value, ok := uu.mutation.Email(); ok {
 		_spec.SetField(user.FieldEmail, field.TypeString, value)
@@ -1332,23 +1332,23 @@ type UserUpdateOne struct {
 	modifiers []func(*sql.UpdateBuilder)
 }
 
-// SetAuthProviderID sets the "auth_provider_id" field.
-func (uuo *UserUpdateOne) SetAuthProviderID(s string) *UserUpdateOne {
-	uuo.mutation.SetAuthProviderID(s)
+// SetProviderID sets the "provider_id" field.
+func (uuo *UserUpdateOne) SetProviderID(s string) *UserUpdateOne {
+	uuo.mutation.SetProviderID(s)
 	return uuo
 }
 
-// SetNillableAuthProviderID sets the "auth_provider_id" field if the given value is not nil.
-func (uuo *UserUpdateOne) SetNillableAuthProviderID(s *string) *UserUpdateOne {
+// SetNillableProviderID sets the "provider_id" field if the given value is not nil.
+func (uuo *UserUpdateOne) SetNillableProviderID(s *string) *UserUpdateOne {
 	if s != nil {
-		uuo.SetAuthProviderID(*s)
+		uuo.SetProviderID(*s)
 	}
 	return uuo
 }
 
-// ClearAuthProviderID clears the value of the "auth_provider_id" field.
-func (uuo *UserUpdateOne) ClearAuthProviderID() *UserUpdateOne {
-	uuo.mutation.ClearAuthProviderID()
+// ClearProviderID clears the value of the "provider_id" field.
+func (uuo *UserUpdateOne) ClearProviderID() *UserUpdateOne {
+	uuo.mutation.ClearProviderID()
 	return uuo
 }
 
@@ -1996,11 +1996,11 @@ func (uuo *UserUpdateOne) sqlSave(ctx context.Context) (_node *User, err error) 
 			}
 		}
 	}
-	if value, ok := uuo.mutation.AuthProviderID(); ok {
-		_spec.SetField(user.FieldAuthProviderID, field.TypeString, value)
+	if value, ok := uuo.mutation.ProviderID(); ok {
+		_spec.SetField(user.FieldProviderID, field.TypeString, value)
 	}
-	if uuo.mutation.AuthProviderIDCleared() {
-		_spec.ClearField(user.FieldAuthProviderID, field.TypeString)
+	if uuo.mutation.ProviderIDCleared() {
+		_spec.ClearField(user.FieldProviderID, field.TypeString)
 	}
 	if value, ok := uuo.mutation.Email(); ok {
 		_spec.SetField(user.FieldEmail, field.TypeString, value)

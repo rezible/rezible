@@ -1125,9 +1125,10 @@ var schemaGraph = func() *sqlgraph.Schema {
 		},
 		Type: "Tenant",
 		Fields: map[string]*sqlgraph.FieldSpec{
-			tenant.FieldName:     {Type: field.TypeString, Column: tenant.FieldName},
-			tenant.FieldPublicID: {Type: field.TypeUUID, Column: tenant.FieldPublicID},
-			tenant.FieldAuthID:   {Type: field.TypeString, Column: tenant.FieldAuthID},
+			tenant.FieldName:           {Type: field.TypeString, Column: tenant.FieldName},
+			tenant.FieldPublicID:       {Type: field.TypeUUID, Column: tenant.FieldPublicID},
+			tenant.FieldProviderID:     {Type: field.TypeString, Column: tenant.FieldProviderID},
+			tenant.FieldInitialSetupAt: {Type: field.TypeTime, Column: tenant.FieldInitialSetupAt},
 		},
 	}
 	graph.Nodes[56] = &sqlgraph.Node{
@@ -1157,13 +1158,13 @@ var schemaGraph = func() *sqlgraph.Schema {
 		},
 		Type: "User",
 		Fields: map[string]*sqlgraph.FieldSpec{
-			user.FieldTenantID:       {Type: field.TypeInt, Column: user.FieldTenantID},
-			user.FieldAuthProviderID: {Type: field.TypeString, Column: user.FieldAuthProviderID},
-			user.FieldEmail:          {Type: field.TypeString, Column: user.FieldEmail},
-			user.FieldName:           {Type: field.TypeString, Column: user.FieldName},
-			user.FieldChatID:         {Type: field.TypeString, Column: user.FieldChatID},
-			user.FieldTimezone:       {Type: field.TypeString, Column: user.FieldTimezone},
-			user.FieldConfirmed:      {Type: field.TypeBool, Column: user.FieldConfirmed},
+			user.FieldTenantID:   {Type: field.TypeInt, Column: user.FieldTenantID},
+			user.FieldProviderID: {Type: field.TypeString, Column: user.FieldProviderID},
+			user.FieldEmail:      {Type: field.TypeString, Column: user.FieldEmail},
+			user.FieldName:       {Type: field.TypeString, Column: user.FieldName},
+			user.FieldChatID:     {Type: field.TypeString, Column: user.FieldChatID},
+			user.FieldTimezone:   {Type: field.TypeString, Column: user.FieldTimezone},
+			user.FieldConfirmed:  {Type: field.TypeBool, Column: user.FieldConfirmed},
 		},
 	}
 	graph.MustAddE(
@@ -10894,9 +10895,14 @@ func (f *TenantFilter) WherePublicID(p entql.ValueP) {
 	f.Where(p.Field(tenant.FieldPublicID))
 }
 
-// WhereAuthID applies the entql string predicate on the auth_id field.
-func (f *TenantFilter) WhereAuthID(p entql.StringP) {
-	f.Where(p.Field(tenant.FieldAuthID))
+// WhereProviderID applies the entql string predicate on the provider_id field.
+func (f *TenantFilter) WhereProviderID(p entql.StringP) {
+	f.Where(p.Field(tenant.FieldProviderID))
+}
+
+// WhereInitialSetupAt applies the entql time.Time predicate on the initial_setup_at field.
+func (f *TenantFilter) WhereInitialSetupAt(p entql.TimeP) {
+	f.Where(p.Field(tenant.FieldInitialSetupAt))
 }
 
 // addPredicate implements the predicateAdder interface.
@@ -11027,9 +11033,9 @@ func (f *UserFilter) WhereTenantID(p entql.IntP) {
 	f.Where(p.Field(user.FieldTenantID))
 }
 
-// WhereAuthProviderID applies the entql string predicate on the auth_provider_id field.
-func (f *UserFilter) WhereAuthProviderID(p entql.StringP) {
-	f.Where(p.Field(user.FieldAuthProviderID))
+// WhereProviderID applies the entql string predicate on the provider_id field.
+func (f *UserFilter) WhereProviderID(p entql.StringP) {
+	f.Where(p.Field(user.FieldProviderID))
 }
 
 // WhereEmail applies the entql string predicate on the email field.

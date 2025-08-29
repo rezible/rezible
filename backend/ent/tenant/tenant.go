@@ -17,8 +17,10 @@ const (
 	FieldName = "name"
 	// FieldPublicID holds the string denoting the public_id field in the database.
 	FieldPublicID = "public_id"
-	// FieldAuthID holds the string denoting the auth_id field in the database.
-	FieldAuthID = "auth_id"
+	// FieldProviderID holds the string denoting the provider_id field in the database.
+	FieldProviderID = "provider_id"
+	// FieldInitialSetupAt holds the string denoting the initial_setup_at field in the database.
+	FieldInitialSetupAt = "initial_setup_at"
 	// Table holds the table name of the tenant in the database.
 	Table = "tenants"
 )
@@ -28,7 +30,8 @@ var Columns = []string{
 	FieldID,
 	FieldName,
 	FieldPublicID,
-	FieldAuthID,
+	FieldProviderID,
+	FieldInitialSetupAt,
 }
 
 // ValidColumn reports if the column name is valid (part of the table columns).
@@ -53,8 +56,8 @@ var (
 	NameValidator func(string) error
 	// DefaultPublicID holds the default value on creation for the "public_id" field.
 	DefaultPublicID func() uuid.UUID
-	// AuthIDValidator is a validator for the "auth_id" field. It is called by the builders before save.
-	AuthIDValidator func(string) error
+	// ProviderIDValidator is a validator for the "provider_id" field. It is called by the builders before save.
+	ProviderIDValidator func(string) error
 )
 
 // OrderOption defines the ordering options for the Tenant queries.
@@ -75,7 +78,12 @@ func ByPublicID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldPublicID, opts...).ToFunc()
 }
 
-// ByAuthID orders the results by the auth_id field.
-func ByAuthID(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldAuthID, opts...).ToFunc()
+// ByProviderID orders the results by the provider_id field.
+func ByProviderID(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldProviderID, opts...).ToFunc()
+}
+
+// ByInitialSetupAt orders the results by the initial_setup_at field.
+func ByInitialSetupAt(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldInitialSetupAt, opts...).ToFunc()
 }

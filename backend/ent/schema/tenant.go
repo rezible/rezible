@@ -23,7 +23,8 @@ func (Tenant) Fields() []ent.Field {
 	return []ent.Field{
 		field.String("name").NotEmpty(),
 		field.UUID("public_id", uuid.UUID{}).Default(uuid.New),
-		field.String("auth_id").NotEmpty(),
+		field.String("provider_id").NotEmpty(),
+		field.Time("initial_setup_at").Optional(),
 	}
 }
 

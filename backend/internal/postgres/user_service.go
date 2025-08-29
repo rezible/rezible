@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"os"
-	"strings"
 
 	"github.com/google/uuid"
 	rez "github.com/rezible/rezible"
@@ -48,14 +47,6 @@ func (s *UserService) GetUserContext(ctx context.Context) *ent.User {
 	return ctx.Value(userCtxKey{}).(*ent.User)
 }
 
-func getEmailDomain(email string) (string, error) {
-	emailParts := strings.SplitN(email, "@", 2)
-	if len(emailParts) != 2 {
-		return "", fmt.Errorf("invalid user email domain")
-	}
-	return emailParts[1], nil
-}
-
 func nilEmptyString(s string) *string {
 	if s == "" {
 		return nil
@@ -63,13 +54,13 @@ func nilEmptyString(s string) *string {
 	return &s
 }
 
-func (s *UserService) getUserByAuthProviderID(ctx context.Context, authProviderID string) (*ent.User, error) {
-	userQuery := s.db.User.Query().Where(user.AuthProviderID(authProviderID))
+func (s *UserService) getUserByProviderID(ctx context.Context, providerID string) (*ent.User, error) {
+	userQuery := s.db.User.Query().Where(user.ProviderID(providerID))
 	return userQuery.Only(ctx)
 }
 
-func (s *UserService) FindOrCreateAuthProviderUser(ctx context.Context, provUser *ent.User, tenantAuthId string) (*ent.User, error) {
-	tnt, tenantErr := s.db.Tenant.Query().Where(tenant.AuthID(tenantAuthId)).Only(ctx)
+func (s *UserService) FindOrCreateAuthProviderUser(ctx context.Context, pu *ent.User, pt *ent.Tenant) (*ent.User, error) {
+	tnt, tenantErr := s.db.Tenant.Query().Where(tenant.ProviderID(pt.ProviderID)).Only(ctx)
 	if tenantErr != nil {
 		if !ent.IsNotFound(tenantErr) {
 			return nil, fmt.Errorf("failed to query tenant: %w", tenantErr)
@@ -79,7 +70,7 @@ func (s *UserService) FindOrCreateAuthProviderUser(ctx context.Context, provUser
 
 	if tnt != nil {
 		ctx = access.TenantSystemContext(ctx, tnt.ID)
-		usr, usrErr := s.getUserByAuthProviderID(ctx, provUser.AuthProviderID)
+		usr, usrErr := s.getUserByProviderID(ctx, pu.ProviderID)
 		if usrErr != nil {
 			if !ent.IsNotFound(usrErr) {
 				return nil, fmt.Errorf("failed to query user: %w", usrErr)
@@ -99,8 +90,8 @@ func (s *UserService) FindOrCreateAuthProviderUser(ctx context.Context, provUser
 	createUserTenantFn := func(tx *ent.Tx) error {
 		if tnt == nil {
 			createTenant := tx.Tenant.Create().
-				SetAuthID(tenantAuthId).
-				SetName(tenantAuthId)
+				SetProviderID(pt.ProviderID).
+				SetName(pt.Name)
 
 			tnt, tenantErr = createTenant.Save(ctx)
 			if tenantErr != nil {
@@ -111,11 +102,11 @@ func (s *UserService) FindOrCreateAuthProviderUser(ctx context.Context, provUser
 
 		createUser := tx.User.Create().
 			SetTenantID(tnt.ID).
-			SetAuthProviderID(provUser.AuthProviderID).
-			SetEmail(provUser.Email).
-			SetConfirmed(provUser.Confirmed).
-			SetNillableName(nilEmptyString(provUser.Name)).
-			SetNillableTimezone(nilEmptyString(provUser.Timezone))
+			SetProviderID(pu.ProviderID).
+			SetEmail(pu.Email).
+			SetConfirmed(pu.Confirmed).
+			SetNillableName(nilEmptyString(pu.Name)).
+			SetNillableTimezone(nilEmptyString(pu.Timezone))
 
 		created, createErr := createUser.Save(ctx)
 		if createErr != nil {

@@ -41,16 +41,16 @@ func (uc *UserCreate) SetTenantID(i int) *UserCreate {
 	return uc
 }
 
-// SetAuthProviderID sets the "auth_provider_id" field.
-func (uc *UserCreate) SetAuthProviderID(s string) *UserCreate {
-	uc.mutation.SetAuthProviderID(s)
+// SetProviderID sets the "provider_id" field.
+func (uc *UserCreate) SetProviderID(s string) *UserCreate {
+	uc.mutation.SetProviderID(s)
 	return uc
 }
 
-// SetNillableAuthProviderID sets the "auth_provider_id" field if the given value is not nil.
-func (uc *UserCreate) SetNillableAuthProviderID(s *string) *UserCreate {
+// SetNillableProviderID sets the "provider_id" field if the given value is not nil.
+func (uc *UserCreate) SetNillableProviderID(s *string) *UserCreate {
 	if s != nil {
-		uc.SetAuthProviderID(*s)
+		uc.SetProviderID(*s)
 	}
 	return uc
 }
@@ -436,9 +436,9 @@ func (uc *UserCreate) createSpec() (*User, *sqlgraph.CreateSpec) {
 		_node.ID = id
 		_spec.ID.Value = &id
 	}
-	if value, ok := uc.mutation.AuthProviderID(); ok {
-		_spec.SetField(user.FieldAuthProviderID, field.TypeString, value)
-		_node.AuthProviderID = value
+	if value, ok := uc.mutation.ProviderID(); ok {
+		_spec.SetField(user.FieldProviderID, field.TypeString, value)
+		_node.ProviderID = value
 	}
 	if value, ok := uc.mutation.Email(); ok {
 		_spec.SetField(user.FieldEmail, field.TypeString, value)
@@ -744,21 +744,21 @@ type (
 	}
 )
 
-// SetAuthProviderID sets the "auth_provider_id" field.
-func (u *UserUpsert) SetAuthProviderID(v string) *UserUpsert {
-	u.Set(user.FieldAuthProviderID, v)
+// SetProviderID sets the "provider_id" field.
+func (u *UserUpsert) SetProviderID(v string) *UserUpsert {
+	u.Set(user.FieldProviderID, v)
 	return u
 }
 
-// UpdateAuthProviderID sets the "auth_provider_id" field to the value that was provided on create.
-func (u *UserUpsert) UpdateAuthProviderID() *UserUpsert {
-	u.SetExcluded(user.FieldAuthProviderID)
+// UpdateProviderID sets the "provider_id" field to the value that was provided on create.
+func (u *UserUpsert) UpdateProviderID() *UserUpsert {
+	u.SetExcluded(user.FieldProviderID)
 	return u
 }
 
-// ClearAuthProviderID clears the value of the "auth_provider_id" field.
-func (u *UserUpsert) ClearAuthProviderID() *UserUpsert {
-	u.SetNull(user.FieldAuthProviderID)
+// ClearProviderID clears the value of the "provider_id" field.
+func (u *UserUpsert) ClearProviderID() *UserUpsert {
+	u.SetNull(user.FieldProviderID)
 	return u
 }
 
@@ -891,24 +891,24 @@ func (u *UserUpsertOne) Update(set func(*UserUpsert)) *UserUpsertOne {
 	return u
 }
 
-// SetAuthProviderID sets the "auth_provider_id" field.
-func (u *UserUpsertOne) SetAuthProviderID(v string) *UserUpsertOne {
+// SetProviderID sets the "provider_id" field.
+func (u *UserUpsertOne) SetProviderID(v string) *UserUpsertOne {
 	return u.Update(func(s *UserUpsert) {
-		s.SetAuthProviderID(v)
+		s.SetProviderID(v)
 	})
 }
 
-// UpdateAuthProviderID sets the "auth_provider_id" field to the value that was provided on create.
-func (u *UserUpsertOne) UpdateAuthProviderID() *UserUpsertOne {
+// UpdateProviderID sets the "provider_id" field to the value that was provided on create.
+func (u *UserUpsertOne) UpdateProviderID() *UserUpsertOne {
 	return u.Update(func(s *UserUpsert) {
-		s.UpdateAuthProviderID()
+		s.UpdateProviderID()
 	})
 }
 
-// ClearAuthProviderID clears the value of the "auth_provider_id" field.
-func (u *UserUpsertOne) ClearAuthProviderID() *UserUpsertOne {
+// ClearProviderID clears the value of the "provider_id" field.
+func (u *UserUpsertOne) ClearProviderID() *UserUpsertOne {
 	return u.Update(func(s *UserUpsert) {
-		s.ClearAuthProviderID()
+		s.ClearProviderID()
 	})
 }
 
@@ -1221,24 +1221,24 @@ func (u *UserUpsertBulk) Update(set func(*UserUpsert)) *UserUpsertBulk {
 	return u
 }
 
-// SetAuthProviderID sets the "auth_provider_id" field.
-func (u *UserUpsertBulk) SetAuthProviderID(v string) *UserUpsertBulk {
+// SetProviderID sets the "provider_id" field.
+func (u *UserUpsertBulk) SetProviderID(v string) *UserUpsertBulk {
 	return u.Update(func(s *UserUpsert) {
-		s.SetAuthProviderID(v)
+		s.SetProviderID(v)
 	})
 }
 
-// UpdateAuthProviderID sets the "auth_provider_id" field to the value that was provided on create.
-func (u *UserUpsertBulk) UpdateAuthProviderID() *UserUpsertBulk {
+// UpdateProviderID sets the "provider_id" field to the value that was provided on create.
+func (u *UserUpsertBulk) UpdateProviderID() *UserUpsertBulk {
 	return u.Update(func(s *UserUpsert) {
-		s.UpdateAuthProviderID()
+		s.UpdateProviderID()
 	})
 }
 
-// ClearAuthProviderID clears the value of the "auth_provider_id" field.
-func (u *UserUpsertBulk) ClearAuthProviderID() *UserUpsertBulk {
+// ClearProviderID clears the value of the "provider_id" field.
+func (u *UserUpsertBulk) ClearProviderID() *UserUpsertBulk {
 	return u.Update(func(s *UserUpsert) {
-		s.ClearAuthProviderID()
+		s.ClearProviderID()
 	})
 }
 

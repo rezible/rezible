@@ -174,6 +174,12 @@ func authProviderEnabled(name string) bool {
 func (s *rezServer) makeAuthService(ctx context.Context, users rez.UserService) (rez.AuthService, error) {
 	var provs []rez.AuthSessionProvider
 
+	secretKey := os.Getenv("AUTH_SESSION_SECRET_KEY")
+	if secretKey == "" {
+		return nil, errors.New("AUTH_SESSION_SECRET_KEY must be set")
+	}
+	//oidc.ConfigureSessionStore(secretKey)
+
 	if authProviderEnabled("saml") {
 		samlProv, spErr := saml.NewAuthSessionProvider(ctx)
 		if spErr != nil {
@@ -183,18 +189,25 @@ func (s *rezServer) makeAuthService(ctx context.Context, users rez.UserService) 
 	}
 
 	if authProviderEnabled("google_oidc") {
-		googleProv, googleErr := oidc.NewGoogleProvider(ctx)
+		clientID := os.Getenv("GOOGLE_OIDC_CLIENT_ID")
+		clientSecret := os.Getenv("GOOGLE_OIDC_CLIENT_SECRET")
+		if clientID == "" || clientSecret == "" {
+			return nil, fmt.Errorf("client id/secret env vars not set")
+		}
+		cfg := oidc.Config{
+			ProviderName: "Google",
+			ClientID:     clientID,
+			ClientSecret: clientSecret,
+			IssuerUrl:    "https://accounts.google.com",
+		}
+
+		googleProv, googleErr := oidc.NewAuthSessionProvider(ctx, cfg)
 		if googleErr != nil {
 			return nil, fmt.Errorf("oidc.NewGoogleProvider: %w", googleErr)
 		}
+
 		provs = append(provs, googleProv)
 	}
-
-	secretKey := os.Getenv("AUTH_SESSION_SECRET_KEY")
-	if secretKey == "" {
-		return nil, errors.New("AUTH_SESSION_SECRET_KEY must be set")
-	}
-	//oidc.ConfigureSessionStore(secretKey)
 
 	return http.NewAuthService(secretKey, users, provs)
 }

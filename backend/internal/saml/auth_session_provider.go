@@ -2,6 +2,7 @@ package saml
 
 import (
 	"context"
+	"crypto"
 	"crypto/rsa"
 	"crypto/tls"
 	"crypto/x509"
@@ -35,92 +36,125 @@ var (
 	}
 )
 
-type Config struct {
-	IdPMetadataUrl string
-	CertFile       string
-	CertKeyFile    string
+type AuthSessionProviderConfig struct {
+	idpMetadata *saml.EntityDescriptor
+	appUrl      url.URL
+	pathBase    string
+	keyPair     *tls.Certificate
+	cert        *x509.Certificate
+	key         crypto.Signer
+}
+
+func (c *AuthSessionProviderConfig) resolveMountedPath(path string) (*url.URL, error) {
+	parsed, parseErr := url.Parse(c.pathBase + path)
+	if parseErr != nil {
+		return nil, fmt.Errorf("failed to parse: %w", parseErr)
+	}
+	return c.appUrl.ResolveReference(parsed), nil
+}
+
+func loadConfig(ctx context.Context) (*AuthSessionProviderConfig, error) {
+	for _, v := range []string{IdPMetadataUrlEnv, CertFileEnv, CertKeyFileEnv} {
+		if os.Getenv(v) == "" {
+			return nil, fmt.Errorf("missing environment variable: %s", v)
+		}
+	}
+
+	idPMetadataUrl := os.Getenv(IdPMetadataUrlEnv)
+	idpMetadata, mdErr := fetchIdpMetadata(ctx, idPMetadataUrl)
+	if mdErr != nil {
+		return nil, fmt.Errorf("fetching idp metadata: %w", mdErr)
+	}
+
+	certFile := os.Getenv(CertFileEnv)
+	certKeyFile := os.Getenv(CertKeyFileEnv)
+
+	keyPair, pairErr := tls.LoadX509KeyPair(certFile, certKeyFile)
+	if pairErr != nil {
+		return nil, fmt.Errorf("failed to load keypair: %w", pairErr)
+	}
+
+	cert, certErr := x509.ParseCertificate(keyPair.Certificate[0])
+	if certErr != nil {
+		return nil, fmt.Errorf("failed to parse keypair cert: %w", certErr)
+	}
+	keyPair.Leaf = cert
+
+	privateKey, ok := keyPair.PrivateKey.(*rsa.PrivateKey)
+	if !ok {
+		return nil, fmt.Errorf("failed to cast *rsa.PrivateKey")
+	}
+
+	cfg := &AuthSessionProviderConfig{
+		pathBase:    "/auth/saml",
+		idpMetadata: idpMetadata,
+		keyPair:     &keyPair,
+		cert:        cert,
+		key:         privateKey,
+	}
+
+	return cfg, nil
+}
+
+func fetchIdpMetadata(ctx context.Context, metadataUrl string) (*saml.EntityDescriptor, error) {
+	idpMetadataURL, idpUrlErr := url.Parse(metadataUrl)
+	if idpUrlErr != nil {
+		return nil, fmt.Errorf("bad idp url: %w", idpUrlErr)
+	}
+
+	// TODO: use samlsp.ParseMetadata with a cache
+	idpMetadata, metadataErr := samlsp.FetchMetadata(ctx, http.DefaultClient, *idpMetadataURL)
+	if metadataErr != nil {
+		return nil, fmt.Errorf("fetching idp metadata: %w", metadataErr)
+	}
+
+	return idpMetadata, nil
 }
 
 type AuthSessionProvider struct {
-	pathBase string
-	mw       *samlsp.Middleware
+	appUrl url.URL
+	mw     *samlsp.Middleware
 }
 
 func NewAuthSessionProvider(ctx context.Context) (*AuthSessionProvider, error) {
-	p := &AuthSessionProvider{
-		pathBase: "/auth/saml/",
+	appUrl, appUrlErr := url.Parse(rez.BackendUrl)
+	if appUrlErr != nil {
+		return nil, fmt.Errorf("failed to parse backend url: %w", appUrlErr)
 	}
 
-	cfg, cfgErr := loadConfig()
+	p := &AuthSessionProvider{
+		appUrl: *appUrl,
+	}
+
+	cfg, cfgErr := loadConfig(ctx)
 	if cfgErr != nil {
 		return nil, fmt.Errorf("config error: %w", cfgErr)
 	}
 
-	if mwErr := p.createSamlMiddleware(ctx, cfg); mwErr != nil {
+	mw, mwErr := p.createSamlMiddleware(cfg)
+	if mwErr != nil {
 		return nil, fmt.Errorf("failed to create saml middleware: %w", mwErr)
 	}
+	p.mw = mw
 
 	return p, nil
-}
-
-func loadConfig() (Config, error) {
-	var cfg Config
-
-	for _, v := range []string{IdPMetadataUrlEnv, CertFileEnv, CertKeyFileEnv} {
-		if os.Getenv(v) == "" {
-			return cfg, fmt.Errorf("missing environment variable: %s", v)
-		}
-	}
-
-	cfg.IdPMetadataUrl = os.Getenv(IdPMetadataUrlEnv)
-	cfg.CertFile = os.Getenv(CertFileEnv)
-	cfg.CertKeyFile = os.Getenv(CertKeyFileEnv)
-
-	return cfg, nil
 }
 
 func (p *AuthSessionProvider) Name() string {
 	return "saml"
 }
 
-func (p *AuthSessionProvider) createSamlMiddleware(ctx context.Context, cfg Config) error {
-	appUrl, appUrlErr := url.Parse(rez.BackendUrl)
-	if appUrlErr != nil {
-		return fmt.Errorf("bad app url: %w", appUrlErr)
-	}
+func (p *AuthSessionProvider) GetUserMapping() *ent.User {
+	return userMapping
+}
 
-	keyPair, pairErr := tls.LoadX509KeyPair(cfg.CertFile, cfg.CertKeyFile)
-	if pairErr != nil {
-		return fmt.Errorf("failed to load keypair: %w", pairErr)
-	}
-	cert, certErr := x509.ParseCertificate(keyPair.Certificate[0])
-	if certErr != nil {
-		return fmt.Errorf("failed to parse keypair cert: %w", certErr)
-	}
-	keyPair.Leaf = cert
-
-	privateKey, ok := keyPair.PrivateKey.(*rsa.PrivateKey)
-	if !ok {
-		return fmt.Errorf("failed to cast *rsa.PrivateKey")
-	}
-
-	idpMetadataURL, idpUrlErr := url.Parse(cfg.IdPMetadataUrl)
-	if idpUrlErr != nil {
-		return fmt.Errorf("bad idp url: %w", idpUrlErr)
-	}
-
-	// TODO: use samlsp.ParseMetadata with a cache
-	idpMetadata, metadataErr := samlsp.FetchMetadata(ctx, http.DefaultClient, *idpMetadataURL)
-	if metadataErr != nil {
-		return fmt.Errorf("fetching idp metadata: %w", metadataErr)
-	}
-
+func (p *AuthSessionProvider) createSamlMiddleware(cfg *AuthSessionProviderConfig) (*samlsp.Middleware, error) {
 	opts := samlsp.Options{
-		URL:                *appUrl,
-		Key:                privateKey,
-		Certificate:        cert,
+		URL:                cfg.appUrl,
+		Key:                cfg.key,
+		Certificate:        cfg.cert,
 		CookieName:         sessionCookieName,
-		IDPMetadata:        idpMetadata,
+		IDPMetadata:        cfg.idpMetadata,
 		SignRequest:        true,
 		DefaultRedirectURI: rez.FrontendUrl,
 	}
@@ -130,22 +164,30 @@ func (p *AuthSessionProvider) createSamlMiddleware(ctx context.Context, cfg Conf
 
 	mw, mwErr := samlsp.New(opts)
 	if mwErr != nil {
-		return fmt.Errorf("samlsp.New: %w", mwErr)
+		return nil, fmt.Errorf("samlsp.New: %w", mwErr)
 	}
 
 	mw.OnError = p.onError
 
-	// fix redirect urls
-	resolveMountedPath := func(path string) url.URL {
-		return *appUrl.ResolveReference(&url.URL{Path: p.pathBase + path})
+	sloUrl, sloUrlErr := cfg.resolveMountedPath("slo")
+	if sloUrlErr != nil {
+		return nil, fmt.Errorf("slo path: %w", sloUrlErr)
 	}
-	mw.ServiceProvider.SloURL = resolveMountedPath("slo")
-	mw.ServiceProvider.AcsURL = resolveMountedPath("acs")
-	mw.ServiceProvider.AcsURL = resolveMountedPath("metadata")
+	mw.ServiceProvider.SloURL = *sloUrl
 
-	p.mw = mw
+	acsUrl, acsUrlErr := cfg.resolveMountedPath("acs")
+	if acsUrlErr != nil {
+		return nil, fmt.Errorf("acs path: %w", acsUrlErr)
+	}
+	mw.ServiceProvider.AcsURL = *acsUrl
 
-	return nil
+	metadataUrl, metadataUrlErr := cfg.resolveMountedPath("metadata")
+	if metadataUrlErr != nil {
+		return nil, fmt.Errorf("metadata path: %w", metadataUrlErr)
+	}
+	mw.ServiceProvider.MetadataURL = *metadataUrl
+
+	return mw, nil
 }
 
 func (p *AuthSessionProvider) onError(w http.ResponseWriter, _ *http.Request, err error) {
@@ -261,21 +303,55 @@ func (p *AuthSessionProvider) createSession(a *saml.Assertion, redirectUrl strin
 		return nil, fmt.Errorf("session does not implement samlsp.JWTSessionClaims")
 	}
 
+	if verifyErr := p.verifyClaims(claims); verifyErr != nil {
+		if rez.DebugMode {
+			log.Warn().Err(verifyErr).Msgf("failed to verify SAML claims")
+		} else {
+			return nil, fmt.Errorf("failed to verify claims: %w", verifyErr)
+		}
+	}
+
 	attr := sa.GetAttributes()
 
 	ps := &rez.AuthProviderSession{
-		User: &ent.User{
-			Name:  attr.Get("firstName"),
-			Email: attr.Get("email"),
+		User: ent.User{
+			ProviderID: claims.Subject,
+			Name:       attr.Get("firstName"),
+			Email:      attr.Get("email"),
+		},
+		Tenant: ent.Tenant{
+			ProviderID: claims.Subject,
 		},
 		ExpiresAt:   time.Unix(claims.ExpiresAt, 0),
 		RedirectUrl: redirectUrl,
-		TenantId:    claims.Subject,
 	}
 
 	return ps, nil
 }
 
-func (p *AuthSessionProvider) GetUserMapping() *ent.User {
-	return userMapping
+func (p *AuthSessionProvider) verifyClaims(claims samlsp.JWTSessionClaims) error {
+	log.Debug().
+		Str("audience", claims.Audience).
+		Str("issuer", claims.Issuer).
+		Msg("TODO: verify SAML audience claim")
+
+	audience := ""
+	if !claims.VerifyAudience(audience, true) {
+		return fmt.Errorf("audience '%s'", claims.Audience)
+	}
+
+	issuer := ""
+	if !claims.VerifyIssuer(issuer, true) {
+		return fmt.Errorf("issuer '%s'", claims.Issuer)
+	}
+
+	if !claims.VerifyExpiresAt(time.Now().Unix(), true) {
+		return fmt.Errorf("expiry '%v'", claims.ExpiresAt)
+	}
+
+	if !claims.VerifyNotBefore(time.Now().Unix(), true) {
+		return fmt.Errorf("expiry '%v'", claims.ExpiresAt)
+	}
+
+	return nil
 }

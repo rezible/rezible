@@ -9,7 +9,6 @@ import (
 	"io"
 	"net/http"
 	"net/url"
-	"os"
 	"strings"
 
 	"github.com/coreos/go-oidc/v3/oidc"
@@ -45,24 +44,6 @@ type Config struct {
 	ClientID     string `json:"client_id"`
 	ClientSecret string `json:"client_secret"`
 	IssuerUrl    string `json:"issuer_url"`
-	//DiscoveryUrl string `json:"oidc_discovery_url,omitempty"`
-}
-
-func NewGoogleProvider(ctx context.Context) (*AuthSessionProvider, error) {
-	clientID := os.Getenv("GOOGLE_OIDC_CLIENT_ID")
-	clientSecret := os.Getenv("GOOGLE_OIDC_CLIENT_SECRET")
-	if clientID == "" || clientSecret == "" {
-		return nil, fmt.Errorf("client id/secret env vars not set")
-	}
-	cfg := Config{
-		ProviderName: "Google",
-		ClientID:     clientID,
-		ClientSecret: clientSecret,
-		IssuerUrl:    "https://accounts.google.com",
-		//DiscoveryUrl: "https://accounts.google.com/.well-known/openid-configuration",
-	}
-
-	return NewAuthSessionProvider(ctx, cfg)
 }
 
 func NewAuthSessionProvider(ctx context.Context, cfg Config) (*AuthSessionProvider, error) {
@@ -110,32 +91,61 @@ func (s *AuthSessionProvider) GetUserMapping() *ent.User {
 	return userMapping
 }
 
-func (s *AuthSessionProvider) StartAuthFlow(w http.ResponseWriter, r *http.Request) {
-	redirect, redirectErr := s.createProviderSessionRedirect(w, r)
-	if redirectErr != nil {
-		log.Error().Err(redirectErr).Msg("could not create provider session redirect")
-		http.Error(w, redirectErr.Error(), http.StatusBadRequest)
-		return
+func getOrGenerateRequestState(r *http.Request) (string, error) {
+	state := r.URL.Query().Get("state")
+	if state != "" {
+		return state, nil
 	}
-	http.Redirect(w, r, redirect, http.StatusFound)
+
+	nonceBytes := make([]byte, 64)
+	_, err := io.ReadFull(rand.Reader, nonceBytes)
+	if err != nil {
+		return "", fmt.Errorf("generating nonce: %w", err)
+	}
+	return base64.URLEncoding.EncodeToString(nonceBytes), nil
 }
 
-func (s *AuthSessionProvider) createProviderSessionRedirect(w http.ResponseWriter, r *http.Request) (string, error) {
-	state := r.URL.Query().Get("state")
-	if state == "" {
-		nonceBytes := make([]byte, 64)
-		_, err := io.ReadFull(rand.Reader, nonceBytes)
-		if err != nil {
-			return "", fmt.Errorf("could not generate session state nonce: %w", err)
-		}
-		state = base64.URLEncoding.EncodeToString(nonceBytes)
+func setRequestSessionState(w http.ResponseWriter, r *http.Request, state string) error {
+	// TODO: set session
+
+	return nil
+}
+
+func validateRequestSessionState(r *http.Request) error {
+	params := r.URL.Query()
+	reqState := params.Get("state")
+	if reqState == "" && r.Method == http.MethodPost {
+		reqState = r.FormValue("state")
+	}
+
+	// TODO: get session
+	sessState := ""
+
+	if reqState != sessState {
+		return errors.New("state mismatch")
+	}
+	return nil
+}
+
+func (s *AuthSessionProvider) StartAuthFlow(w http.ResponseWriter, r *http.Request) {
+	state, stateErr := getOrGenerateRequestState(r)
+	if stateErr != nil {
+		log.Error().Err(stateErr).Msg("could not create redirect state")
+		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		return
+	}
+
+	if setStateErr := setRequestSessionState(w, r, state); setStateErr != nil {
+		log.Error().Err(setStateErr).Msg("could not set session redirect state")
+		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		return
 	}
 
 	// TODO: PKCE / nonce gen?
-	authUrl := s.oauth2Config.AuthCodeURL(state)
-	log.Debug().Str("authUrl", authUrl).Msg("redirect")
+	redirect := s.oauth2Config.AuthCodeURL(state)
+	log.Debug().Str("authUrl", redirect).Msg("redirect")
 
-	return authUrl, nil
+	http.Redirect(w, r, redirect, http.StatusFound)
 }
 
 func (s *AuthSessionProvider) HandleAuthFlowRequest(w http.ResponseWriter, r *http.Request, onCreated func(session rez.AuthProviderSession)) bool {
@@ -149,54 +159,32 @@ func (s *AuthSessionProvider) HandleAuthFlowRequest(w http.ResponseWriter, r *ht
 }
 
 func (s *AuthSessionProvider) handleFlowCallback(r *http.Request, onCreated func(session rez.AuthProviderSession)) error {
-	ctx := r.Context()
-
-	state := ""
-	if validateErr := s.validateRequestSessionState(r, state); validateErr != nil {
+	if validateErr := validateRequestSessionState(r); validateErr != nil {
 		log.Warn().Msg("invalid request session state")
 		if !rez.DebugMode {
 			return validateErr
 		}
 	}
 
-	token, tokenErr := s.getVerifiedIdToken(ctx, r.URL.Query().Get("code"))
+	token, tokenErr := s.getVerifiedIdToken(r)
 	if tokenErr != nil {
 		return fmt.Errorf("failed to get id token: %w", tokenErr)
 	}
 
-	var claims struct {
-		Name     string `json:"name"`
-		Email    string `json:"email"`
-		Verified bool   `json:"email_verified"`
-		Locale   string `json:"locale"`
-		Nonce    string `json:"nonce"`
-		TenantId string `json:"hd"`
-	}
-	if claimsErr := token.Claims(&claims); claimsErr != nil {
-		return fmt.Errorf("failed to parse id token claims: %w", claimsErr)
+	ps, psErr := s.extractTokenSession(token)
+	if psErr != nil {
+		return fmt.Errorf("failed to extract token session: %w", psErr)
 	}
 
-	log.Warn().Str("nonce", claims.Nonce).Msg("TODO: verify nonce")
-
-	user := &ent.User{
-		AuthProviderID: token.Subject,
-		Email:          claims.Email,
-		Confirmed:      claims.Verified,
-		Name:           claims.Name,
-		Timezone:       claims.Locale,
-	}
-
-	onCreated(rez.AuthProviderSession{
-		User:        user,
-		ExpiresAt:   token.Expiry,
-		TenantId:    claims.TenantId,
-		RedirectUrl: rez.FrontendUrl,
-	})
+	onCreated(*ps)
 
 	return nil
 }
 
-func (s *AuthSessionProvider) getVerifiedIdToken(ctx context.Context, authCode string) (*oidc.IDToken, error) {
+func (s *AuthSessionProvider) getVerifiedIdToken(r *http.Request) (*oidc.IDToken, error) {
+	ctx := r.Context()
+	authCode := r.URL.Query().Get("code")
+
 	token, exchangeErr := s.oauth2Config.Exchange(ctx, authCode)
 	if exchangeErr != nil {
 		return nil, fmt.Errorf("failed to exchange authorization code for access token: %w", exchangeErr)
@@ -215,15 +203,38 @@ func (s *AuthSessionProvider) getVerifiedIdToken(ctx context.Context, authCode s
 	return idToken, nil
 }
 
-func (s *AuthSessionProvider) validateRequestSessionState(r *http.Request, state string) error {
-	params := r.URL.Query()
-	reqState := params.Get("state")
-	if reqState == "" && r.Method == http.MethodPost {
-		reqState = r.FormValue("state")
+func (s *AuthSessionProvider) extractTokenSession(token *oidc.IDToken) (*rez.AuthProviderSession, error) {
+	// TODO: use different claims depending on issuer
+
+	var claims struct {
+		Name     string `json:"name"`
+		Email    string `json:"email"`
+		Verified bool   `json:"email_verified"`
+		Locale   string `json:"locale"`
+		Nonce    string `json:"nonce"`
+		TenantId string `json:"hd"`
+	}
+	if claimsErr := token.Claims(&claims); claimsErr != nil {
+		return nil, fmt.Errorf("failed to parse id token claims: %w", claimsErr)
 	}
 
-	if reqState != state {
-		return errors.New("state mismatch")
+	log.Warn().Str("nonce", claims.Nonce).Msg("TODO: verify nonce")
+
+	ps := rez.AuthProviderSession{
+		User: ent.User{
+			ProviderID: token.Subject,
+			Email:      claims.Email,
+			Confirmed:  claims.Verified,
+			Name:       claims.Name,
+			Timezone:   claims.Locale,
+		},
+		Tenant: ent.Tenant{
+			Name:       claims.TenantId,
+			ProviderID: claims.TenantId,
+		},
+		ExpiresAt:   token.Expiry,
+		RedirectUrl: rez.FrontendUrl,
 	}
-	return nil
+
+	return &ps, nil
 }

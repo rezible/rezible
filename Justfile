@@ -68,7 +68,7 @@ _default:
     just start-db
     createdb rezible
     just run-migrations
-    just run-backend load-fake-config
+    # just run-backend load-fake-config
 
 @run-migrations:
     just run-backend migrate

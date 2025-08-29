@@ -117,7 +117,7 @@ func (s *AuthService) makeUserSessionCreatedCallback(w http.ResponseWriter, r *h
 			expiry = time.Now().Add(defaultSessionDuration)
 		}
 
-		usr, usrErr := s.users.FindOrCreateAuthProviderUser(ctx, ps.User, ps.TenantId)
+		usr, usrErr := s.users.FindOrCreateAuthProviderUser(ctx, &ps.User, &ps.Tenant)
 		if usrErr != nil {
 			log.Error().Err(usrErr).Msg("FindOrCreateAuthProviderUser")
 			http.Error(w, "session error", http.StatusInternalServerError)
