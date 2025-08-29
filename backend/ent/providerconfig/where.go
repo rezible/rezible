@@ -61,14 +61,14 @@ func TenantID(v int) predicate.ProviderConfig {
 	return predicate.ProviderConfig(sql.FieldEQ(FieldTenantID, v))
 }
 
-// ProviderName applies equality check predicate on the "provider_name" field. It's identical to ProviderNameEQ.
-func ProviderName(v string) predicate.ProviderConfig {
-	return predicate.ProviderConfig(sql.FieldEQ(FieldProviderName, v))
+// ProviderID applies equality check predicate on the "provider_id" field. It's identical to ProviderIDEQ.
+func ProviderID(v string) predicate.ProviderConfig {
+	return predicate.ProviderConfig(sql.FieldEQ(FieldProviderID, v))
 }
 
-// ProviderConfig applies equality check predicate on the "provider_config" field. It's identical to ProviderConfigEQ.
-func ProviderConfig(v []byte) predicate.ProviderConfig {
-	return predicate.ProviderConfig(sql.FieldEQ(FieldProviderConfig, v))
+// Config applies equality check predicate on the "config" field. It's identical to ConfigEQ.
+func Config(v []byte) predicate.ProviderConfig {
+	return predicate.ProviderConfig(sql.FieldEQ(FieldConfig, v))
 }
 
 // Enabled applies equality check predicate on the "enabled" field. It's identical to EnabledEQ.
@@ -121,109 +121,109 @@ func ProviderTypeNotIn(vs ...ProviderType) predicate.ProviderConfig {
 	return predicate.ProviderConfig(sql.FieldNotIn(FieldProviderType, vs...))
 }
 
-// ProviderNameEQ applies the EQ predicate on the "provider_name" field.
-func ProviderNameEQ(v string) predicate.ProviderConfig {
-	return predicate.ProviderConfig(sql.FieldEQ(FieldProviderName, v))
+// ProviderIDEQ applies the EQ predicate on the "provider_id" field.
+func ProviderIDEQ(v string) predicate.ProviderConfig {
+	return predicate.ProviderConfig(sql.FieldEQ(FieldProviderID, v))
 }
 
-// ProviderNameNEQ applies the NEQ predicate on the "provider_name" field.
-func ProviderNameNEQ(v string) predicate.ProviderConfig {
-	return predicate.ProviderConfig(sql.FieldNEQ(FieldProviderName, v))
+// ProviderIDNEQ applies the NEQ predicate on the "provider_id" field.
+func ProviderIDNEQ(v string) predicate.ProviderConfig {
+	return predicate.ProviderConfig(sql.FieldNEQ(FieldProviderID, v))
 }
 
-// ProviderNameIn applies the In predicate on the "provider_name" field.
-func ProviderNameIn(vs ...string) predicate.ProviderConfig {
-	return predicate.ProviderConfig(sql.FieldIn(FieldProviderName, vs...))
+// ProviderIDIn applies the In predicate on the "provider_id" field.
+func ProviderIDIn(vs ...string) predicate.ProviderConfig {
+	return predicate.ProviderConfig(sql.FieldIn(FieldProviderID, vs...))
 }
 
-// ProviderNameNotIn applies the NotIn predicate on the "provider_name" field.
-func ProviderNameNotIn(vs ...string) predicate.ProviderConfig {
-	return predicate.ProviderConfig(sql.FieldNotIn(FieldProviderName, vs...))
+// ProviderIDNotIn applies the NotIn predicate on the "provider_id" field.
+func ProviderIDNotIn(vs ...string) predicate.ProviderConfig {
+	return predicate.ProviderConfig(sql.FieldNotIn(FieldProviderID, vs...))
 }
 
-// ProviderNameGT applies the GT predicate on the "provider_name" field.
-func ProviderNameGT(v string) predicate.ProviderConfig {
-	return predicate.ProviderConfig(sql.FieldGT(FieldProviderName, v))
+// ProviderIDGT applies the GT predicate on the "provider_id" field.
+func ProviderIDGT(v string) predicate.ProviderConfig {
+	return predicate.ProviderConfig(sql.FieldGT(FieldProviderID, v))
 }
 
-// ProviderNameGTE applies the GTE predicate on the "provider_name" field.
-func ProviderNameGTE(v string) predicate.ProviderConfig {
-	return predicate.ProviderConfig(sql.FieldGTE(FieldProviderName, v))
+// ProviderIDGTE applies the GTE predicate on the "provider_id" field.
+func ProviderIDGTE(v string) predicate.ProviderConfig {
+	return predicate.ProviderConfig(sql.FieldGTE(FieldProviderID, v))
 }
 
-// ProviderNameLT applies the LT predicate on the "provider_name" field.
-func ProviderNameLT(v string) predicate.ProviderConfig {
-	return predicate.ProviderConfig(sql.FieldLT(FieldProviderName, v))
+// ProviderIDLT applies the LT predicate on the "provider_id" field.
+func ProviderIDLT(v string) predicate.ProviderConfig {
+	return predicate.ProviderConfig(sql.FieldLT(FieldProviderID, v))
 }
 
-// ProviderNameLTE applies the LTE predicate on the "provider_name" field.
-func ProviderNameLTE(v string) predicate.ProviderConfig {
-	return predicate.ProviderConfig(sql.FieldLTE(FieldProviderName, v))
+// ProviderIDLTE applies the LTE predicate on the "provider_id" field.
+func ProviderIDLTE(v string) predicate.ProviderConfig {
+	return predicate.ProviderConfig(sql.FieldLTE(FieldProviderID, v))
 }
 
-// ProviderNameContains applies the Contains predicate on the "provider_name" field.
-func ProviderNameContains(v string) predicate.ProviderConfig {
-	return predicate.ProviderConfig(sql.FieldContains(FieldProviderName, v))
+// ProviderIDContains applies the Contains predicate on the "provider_id" field.
+func ProviderIDContains(v string) predicate.ProviderConfig {
+	return predicate.ProviderConfig(sql.FieldContains(FieldProviderID, v))
 }
 
-// ProviderNameHasPrefix applies the HasPrefix predicate on the "provider_name" field.
-func ProviderNameHasPrefix(v string) predicate.ProviderConfig {
-	return predicate.ProviderConfig(sql.FieldHasPrefix(FieldProviderName, v))
+// ProviderIDHasPrefix applies the HasPrefix predicate on the "provider_id" field.
+func ProviderIDHasPrefix(v string) predicate.ProviderConfig {
+	return predicate.ProviderConfig(sql.FieldHasPrefix(FieldProviderID, v))
 }
 
-// ProviderNameHasSuffix applies the HasSuffix predicate on the "provider_name" field.
-func ProviderNameHasSuffix(v string) predicate.ProviderConfig {
-	return predicate.ProviderConfig(sql.FieldHasSuffix(FieldProviderName, v))
+// ProviderIDHasSuffix applies the HasSuffix predicate on the "provider_id" field.
+func ProviderIDHasSuffix(v string) predicate.ProviderConfig {
+	return predicate.ProviderConfig(sql.FieldHasSuffix(FieldProviderID, v))
 }
 
-// ProviderNameEqualFold applies the EqualFold predicate on the "provider_name" field.
-func ProviderNameEqualFold(v string) predicate.ProviderConfig {
-	return predicate.ProviderConfig(sql.FieldEqualFold(FieldProviderName, v))
+// ProviderIDEqualFold applies the EqualFold predicate on the "provider_id" field.
+func ProviderIDEqualFold(v string) predicate.ProviderConfig {
+	return predicate.ProviderConfig(sql.FieldEqualFold(FieldProviderID, v))
 }
 
-// ProviderNameContainsFold applies the ContainsFold predicate on the "provider_name" field.
-func ProviderNameContainsFold(v string) predicate.ProviderConfig {
-	return predicate.ProviderConfig(sql.FieldContainsFold(FieldProviderName, v))
+// ProviderIDContainsFold applies the ContainsFold predicate on the "provider_id" field.
+func ProviderIDContainsFold(v string) predicate.ProviderConfig {
+	return predicate.ProviderConfig(sql.FieldContainsFold(FieldProviderID, v))
 }
 
-// ProviderConfigEQ applies the EQ predicate on the "provider_config" field.
-func ProviderConfigEQ(v []byte) predicate.ProviderConfig {
-	return predicate.ProviderConfig(sql.FieldEQ(FieldProviderConfig, v))
+// ConfigEQ applies the EQ predicate on the "config" field.
+func ConfigEQ(v []byte) predicate.ProviderConfig {
+	return predicate.ProviderConfig(sql.FieldEQ(FieldConfig, v))
 }
 
-// ProviderConfigNEQ applies the NEQ predicate on the "provider_config" field.
-func ProviderConfigNEQ(v []byte) predicate.ProviderConfig {
-	return predicate.ProviderConfig(sql.FieldNEQ(FieldProviderConfig, v))
+// ConfigNEQ applies the NEQ predicate on the "config" field.
+func ConfigNEQ(v []byte) predicate.ProviderConfig {
+	return predicate.ProviderConfig(sql.FieldNEQ(FieldConfig, v))
 }
 
-// ProviderConfigIn applies the In predicate on the "provider_config" field.
-func ProviderConfigIn(vs ...[]byte) predicate.ProviderConfig {
-	return predicate.ProviderConfig(sql.FieldIn(FieldProviderConfig, vs...))
+// ConfigIn applies the In predicate on the "config" field.
+func ConfigIn(vs ...[]byte) predicate.ProviderConfig {
+	return predicate.ProviderConfig(sql.FieldIn(FieldConfig, vs...))
 }
 
-// ProviderConfigNotIn applies the NotIn predicate on the "provider_config" field.
-func ProviderConfigNotIn(vs ...[]byte) predicate.ProviderConfig {
-	return predicate.ProviderConfig(sql.FieldNotIn(FieldProviderConfig, vs...))
+// ConfigNotIn applies the NotIn predicate on the "config" field.
+func ConfigNotIn(vs ...[]byte) predicate.ProviderConfig {
+	return predicate.ProviderConfig(sql.FieldNotIn(FieldConfig, vs...))
 }
 
-// ProviderConfigGT applies the GT predicate on the "provider_config" field.
-func ProviderConfigGT(v []byte) predicate.ProviderConfig {
-	return predicate.ProviderConfig(sql.FieldGT(FieldProviderConfig, v))
+// ConfigGT applies the GT predicate on the "config" field.
+func ConfigGT(v []byte) predicate.ProviderConfig {
+	return predicate.ProviderConfig(sql.FieldGT(FieldConfig, v))
 }
 
-// ProviderConfigGTE applies the GTE predicate on the "provider_config" field.
-func ProviderConfigGTE(v []byte) predicate.ProviderConfig {
-	return predicate.ProviderConfig(sql.FieldGTE(FieldProviderConfig, v))
+// ConfigGTE applies the GTE predicate on the "config" field.
+func ConfigGTE(v []byte) predicate.ProviderConfig {
+	return predicate.ProviderConfig(sql.FieldGTE(FieldConfig, v))
 }
 
-// ProviderConfigLT applies the LT predicate on the "provider_config" field.
-func ProviderConfigLT(v []byte) predicate.ProviderConfig {
-	return predicate.ProviderConfig(sql.FieldLT(FieldProviderConfig, v))
+// ConfigLT applies the LT predicate on the "config" field.
+func ConfigLT(v []byte) predicate.ProviderConfig {
+	return predicate.ProviderConfig(sql.FieldLT(FieldConfig, v))
 }
 
-// ProviderConfigLTE applies the LTE predicate on the "provider_config" field.
-func ProviderConfigLTE(v []byte) predicate.ProviderConfig {
-	return predicate.ProviderConfig(sql.FieldLTE(FieldProviderConfig, v))
+// ConfigLTE applies the LTE predicate on the "config" field.
+func ConfigLTE(v []byte) predicate.ProviderConfig {
+	return predicate.ProviderConfig(sql.FieldLTE(FieldConfig, v))
 }
 
 // EnabledEQ applies the EQ predicate on the "enabled" field.

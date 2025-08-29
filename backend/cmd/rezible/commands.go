@@ -79,8 +79,12 @@ func syncCmd(ctx context.Context, opts *Options) error {
 	return withDatabase(ctx, opts, func(db *postgres.Database) error {
 		args := jobs.SyncProviderData{Hard: true}
 		dbc := db.Client()
-		svc := datasync.NewProviderSyncService(dbc, providers.NewProviderLoader(dbc.ProviderConfig))
-		return svc.SyncProviderData(ctx, args)
+		cfgs, cfgsErr := postgres.NewProviderConfigService(dbc)
+		if cfgsErr != nil {
+			return cfgsErr
+		}
+		syncSvc := datasync.NewProviderSyncService(dbc, providers.NewProviderLoader(cfgs))
+		return syncSvc.SyncProviderData(ctx, args)
 	})
 }
 
@@ -101,10 +105,10 @@ type (
 	}
 
 	providerTenantConfigEntry struct {
-		Type         providerconfig.ProviderType `json:"type"`
-		ProviderName string                      `json:"provider_name"`
-		Disabled     bool                        `json:"disabled"`
-		Config       json.RawMessage             `json:"config"`
+		Type       providerconfig.ProviderType `json:"type"`
+		ProviderID string                      `json:"provider_id"`
+		Disabled   bool                        `json:"disabled"`
+		Config     json.RawMessage             `json:"config"`
 	}
 )
 
@@ -132,7 +136,7 @@ func loadDevConfigCmd(ctx context.Context, opts *Options) error {
 
 func loadFakeConfigCmd(ctx context.Context, opts *Options) error {
 	fakeProviderConfigEntry := func(t providerconfig.ProviderType) providerTenantConfigEntry {
-		return providerTenantConfigEntry{Type: t, ProviderName: "fake", Config: []byte("{}")}
+		return providerTenantConfigEntry{Type: t, ProviderID: "fake", Config: []byte("{}")}
 	}
 	return withDatabase(ctx, opts, func(db *postgres.Database) error {
 		// TODO: use fake oncall provider
@@ -143,9 +147,9 @@ func loadFakeConfigCmd(ctx context.Context, opts *Options) error {
 			TenantName: "Rezible Test",
 			ConfigEntries: []providerTenantConfigEntry{
 				{
-					Type:         providerconfig.ProviderTypeOncall,
-					ProviderName: "grafana",
-					Config:       []byte(grafanaOncallRawConfig),
+					Type:       providerconfig.ProviderTypeOncall,
+					ProviderID: "grafana",
+					Config:     []byte(grafanaOncallRawConfig),
 				},
 				fakeProviderConfigEntry(providerconfig.ProviderTypeIncidents),
 				fakeProviderConfigEntry(providerconfig.ProviderTypeAlerts),
@@ -176,22 +180,22 @@ func loadTenantProviderConfig(ctx context.Context, client *ent.Client, cfg *prov
 	return ent.WithTx(ctx, client, func(tx *ent.Tx) error {
 		for _, c := range cfg.ConfigEntries {
 			log.Info().
-				Str("name", c.ProviderName).
+				Str("name", c.ProviderID).
 				Str("type", string(c.Type)).
 				Msg("loading provider")
 
 			upsert := tx.ProviderConfig.Create().
-				SetProviderName(c.ProviderName).
+				SetProviderID(c.ProviderID).
 				SetProviderType(c.Type).
-				SetProviderConfig(c.Config).
+				SetConfig(c.Config).
 				SetEnabled(!c.Disabled).
 				SetUpdatedAt(time.Now()).
-				OnConflictColumns(providerconfig.FieldProviderName, providerconfig.FieldProviderType).
-				UpdateProviderConfig().
+				OnConflictColumns(providerconfig.FieldProviderID, providerconfig.FieldProviderType).
+				UpdateConfig().
 				UpdateUpdatedAt()
 
 			if upsertErr := upsert.Exec(ctx); upsertErr != nil {
-				return fmt.Errorf("upserting (%s %s): %w", string(c.Type), c.ProviderName, upsertErr)
+				return fmt.Errorf("upserting (%s %s): %w", string(c.Type), c.ProviderID, upsertErr)
 			}
 		}
 		return nil

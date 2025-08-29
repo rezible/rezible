@@ -3,6 +3,7 @@ package postgres
 import (
 	"context"
 	"fmt"
+
 	"github.com/google/uuid"
 
 	rez "github.com/rezible/rezible"
@@ -11,13 +12,11 @@ import (
 
 type PlaybookService struct {
 	db *ent.Client
-	pl rez.ProviderLoader
 }
 
-func NewPlaybookService(db *ent.Client, pl rez.ProviderLoader) (*PlaybookService, error) {
+func NewPlaybookService(db *ent.Client) (*PlaybookService, error) {
 	s := &PlaybookService{
 		db: db,
-		pl: pl,
 	}
 
 	return s, nil

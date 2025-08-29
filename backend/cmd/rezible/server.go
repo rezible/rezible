@@ -77,7 +77,10 @@ func (s *rezServer) setup() error {
 		return fmt.Errorf("failed to make embedded frontend server: %w", feFilesErr)
 	}
 
-	pl := providers.NewProviderLoader(dbc.ProviderConfig)
+	configs, pcErr := postgres.NewProviderConfigService(dbc)
+	if pcErr != nil {
+		return fmt.Errorf("failed to create provider configs: %w", pcErr)
+	}
 
 	users, usersErr := postgres.NewUserService(dbc)
 	if usersErr != nil {
@@ -144,14 +147,14 @@ func (s *rezServer) setup() error {
 		return fmt.Errorf("postgres.NewAlertService: %w", alertsErr)
 	}
 
-	playbooks, playbooksErr := postgres.NewPlaybookService(dbc, pl)
+	playbooks, playbooksErr := postgres.NewPlaybookService(dbc)
 	if playbooksErr != nil {
 		return fmt.Errorf("postgres.NewPlaybookService: %w", playbooksErr)
 	}
 
 	chat.SetOncallEventsService(oncallEvents)
 
-	apiHandler := api.NewHandler(dbc, auth, users, incidents, debriefs, oncall, oncallEvents, docs, retros, components, alerts, playbooks)
+	apiHandler := api.NewHandler(dbc, auth, configs, users, incidents, debriefs, oncall, oncallEvents, docs, retros, components, alerts, playbooks)
 	documentsHandler := docs.Handler()
 	webhookHandler := http.NewWebhooksHandler(chat)
 	mcpHandler := eino.NewMCPHandler(auth)
@@ -159,7 +162,7 @@ func (s *rezServer) setup() error {
 	listenAddr := net.JoinHostPort(s.opts.Host, s.opts.Port)
 	s.httpServer = http.NewServer(listenAddr, auth, frontendFiles, apiHandler, documentsHandler, webhookHandler, mcpHandler)
 
-	syncSvc := datasync.NewProviderSyncService(dbc, pl)
+	syncSvc := datasync.NewProviderSyncService(dbc, providers.NewProviderLoader(configs))
 	if jobsErr := s.registerJobs(syncSvc, oncall, debriefs); jobsErr != nil {
 		return fmt.Errorf("registering jobs: %w", jobsErr)
 	}

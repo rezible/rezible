@@ -21,10 +21,10 @@ const (
 	FieldTenantID = "tenant_id"
 	// FieldProviderType holds the string denoting the provider_type field in the database.
 	FieldProviderType = "provider_type"
-	// FieldProviderName holds the string denoting the provider_name field in the database.
-	FieldProviderName = "provider_name"
-	// FieldProviderConfig holds the string denoting the provider_config field in the database.
-	FieldProviderConfig = "provider_config"
+	// FieldProviderID holds the string denoting the provider_id field in the database.
+	FieldProviderID = "provider_id"
+	// FieldConfig holds the string denoting the config field in the database.
+	FieldConfig = "config"
 	// FieldEnabled holds the string denoting the enabled field in the database.
 	FieldEnabled = "enabled"
 	// FieldUpdatedAt holds the string denoting the updated_at field in the database.
@@ -47,8 +47,8 @@ var Columns = []string{
 	FieldID,
 	FieldTenantID,
 	FieldProviderType,
-	FieldProviderName,
-	FieldProviderConfig,
+	FieldProviderID,
+	FieldConfig,
 	FieldEnabled,
 	FieldUpdatedAt,
 }
@@ -126,9 +126,9 @@ func ByProviderType(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldProviderType, opts...).ToFunc()
 }
 
-// ByProviderName orders the results by the provider_name field.
-func ByProviderName(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldProviderName, opts...).ToFunc()
+// ByProviderID orders the results by the provider_id field.
+func ByProviderID(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldProviderID, opts...).ToFunc()
 }
 
 // ByEnabled orders the results by the enabled field.

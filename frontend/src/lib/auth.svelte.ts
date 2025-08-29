@@ -1,3 +1,4 @@
+import { onNavigate } from "$app/navigation";
 import {
 	type UserNotification,
 	type GetCurrentAuthSessionResponse,
@@ -8,7 +9,7 @@ import {
 } from "$lib/api";
 import { parseAbsoluteToLocal } from "@internationalized/date";
 import { createQuery, QueryClient } from "@tanstack/svelte-query";
-import { Context } from "runed";
+import { Context, watch } from "runed";
 import { onMount } from "svelte";
 
 export type SessionErrorCategory = "unknown" | "invalid" | "expired" | "no_session" | "no_user";
@@ -17,6 +18,27 @@ export type SessionError = {
 	category: SessionErrorCategory;
 	code?: string;
 };
+
+const parseSessionError = (err: ErrorModel): SessionError => {
+	let errCategory: SessionErrorCategory = "unknown";
+	const status = err.status ?? 503;
+	const errCode = err.detail;
+	if (status === 401) {
+		if (errCode === "session_expired") {
+			errCategory = "expired";
+		} else if (errCode === "no_session") {
+			errCategory = "no_session";
+		} else if (errCode === "missing_user") {
+			errCategory = "no_user";
+		}
+	} else if (status === 404) {
+		errCategory = "no_user";
+	} else if (status >= 500) {
+		// TODO
+		console.error("failed to get auth session", status, err);
+	}
+	return {category: errCategory, code: errCode} as SessionError;
+}
 
 type AuthSession = {
 	expiresAt: Date;
@@ -46,26 +68,9 @@ export class AuthSessionState {
 		if (this.session && this.session.expiresAt < new Date(Date.now())) {
 			return {category: "expired"};
 		}
-		if (!this.query.error) return;
-		const err = this.query.error as ErrorModel;
-		let errCategory: SessionErrorCategory = "unknown";
-		const status = err.status ?? 503;
-		const errCode = err.detail;
-		if (status === 401) {
-			if (errCode === "session_expired") {
-				errCategory = "expired";
-			} else if (errCode === "no_session") {
-				errCategory = "no_session";
-			} else if (errCode === "missing_user") {
-				errCategory = "no_user";
-			}
-		} else if (status === 404) {
-			errCategory = "no_user";
-		} else if (status >= 500) {
-			// TODO
-			console.error("failed to get auth session", status, err);
+		if (this.query.error) {
+			return parseSessionError(this.query.error as ErrorModel);
 		}
-		return {category: errCategory, code: errCode} as SessionError;
 	});
 
 	isAuthenticated = $derived(!!this.session && !this.error);

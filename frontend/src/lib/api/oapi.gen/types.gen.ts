@@ -304,11 +304,21 @@ export type CreateIncidentTypeResponseBody = {
     data: IncidentType;
 };
 
+export type CreateIntegrationRequestAttributes = {
+    config: {
+        [key: string]: string;
+    };
+    enabled: boolean;
+    kind: string;
+    provider_id: string;
+};
+
 export type CreateIntegrationRequestBody = {
     /**
      * A URL to the JSON Schema for this object.
      */
     readonly $schema?: string;
+    attributes: CreateIntegrationRequestAttributes;
 };
 
 export type CreateIntegrationResponseBody = {
@@ -1373,7 +1383,17 @@ export type IncidentTypeAttributes = {
 };
 
 export type Integration = {
-    [key: string]: never;
+    attributes: IntegrationAttributes;
+    id: string;
+};
+
+export type IntegrationAttributes = {
+    config: {
+        [key: string]: string;
+    };
+    enabled: boolean;
+    kind: string;
+    provider_id: string;
 };
 
 export type ListAlertIncidentLinksResponseBody = {
@@ -2352,7 +2372,10 @@ export type UpdateIncidentTypeResponseBody = {
 };
 
 export type UpdateIntegrationAttributes = {
-    [key: string]: never;
+    config?: {
+        [key: string]: string;
+    };
+    enabled?: boolean;
 };
 
 export type UpdateIntegrationRequestBody = {
@@ -5592,6 +5615,8 @@ export type ListIntegrationsData = {
         offset?: number;
         search?: string;
         archived?: boolean;
+        provider_id?: string;
+        kind?: string;
     };
     url: '/integrations';
 };
@@ -5679,7 +5704,7 @@ export type CreateIntegrationResponses = {
 
 export type CreateIntegrationResponse = CreateIntegrationResponses[keyof CreateIntegrationResponses];
 
-export type ArchiveIntegrationData = {
+export type DeleteIntegrationData = {
     body?: never;
     path: {
         id: string;
@@ -5688,7 +5713,7 @@ export type ArchiveIntegrationData = {
     url: '/integrations/{id}';
 };
 
-export type ArchiveIntegrationErrors = {
+export type DeleteIntegrationErrors = {
     /**
      * Bad Request
      */
@@ -5715,16 +5740,16 @@ export type ArchiveIntegrationErrors = {
     500: ErrorModel;
 };
 
-export type ArchiveIntegrationError = ArchiveIntegrationErrors[keyof ArchiveIntegrationErrors];
+export type DeleteIntegrationError = DeleteIntegrationErrors[keyof DeleteIntegrationErrors];
 
-export type ArchiveIntegrationResponses = {
+export type DeleteIntegrationResponses = {
     /**
      * No Content
      */
     204: void;
 };
 
-export type ArchiveIntegrationResponse = ArchiveIntegrationResponses[keyof ArchiveIntegrationResponses];
+export type DeleteIntegrationResponse = DeleteIntegrationResponses[keyof DeleteIntegrationResponses];
 
 export type GetIntegrationData = {
     body?: never;

@@ -11,6 +11,7 @@ import (
 	"github.com/texm/prosemirror-go"
 
 	"github.com/rezible/rezible/ent"
+	"github.com/rezible/rezible/ent/providerconfig"
 	"github.com/rezible/rezible/jobs"
 )
 
@@ -29,6 +30,9 @@ var (
 	ErrInvalidUser             = errors.New("user does not exist")
 	ErrInvalidTenant           = errors.New("tenant does not exist")
 	ErrUnauthorized            = errors.New("unauthorized")
+
+	ErrNoStoredProviderConfigs        = errors.New("no stored configs")
+	ErrMultipleEnabledProviderConfigs = errors.New("multiple stored configs enabled")
 )
 
 type (
@@ -36,6 +40,9 @@ type (
 )
 
 type (
+	DataProviderResourceUpdatedCallback = func(providerID string, updatedAt time.Time)
+
+	// TODO: support multiple enabled providers
 	ProviderLoader interface {
 		GetIncidentDataProvider(context.Context) (IncidentDataProvider, error)
 		GetOncallDataProvider(context.Context) (OncallDataProvider, error)
@@ -47,7 +54,20 @@ type (
 		GetPlaybookDataProvider(context.Context) (PlaybookDataProvider, error)
 	}
 
-	DataProviderResourceUpdatedCallback = func(providerID string, updatedAt time.Time)
+	ListProviderConfigsParams struct {
+		ProviderType providerconfig.ProviderType
+		ProviderId   string
+		Enabled      bool
+	}
+
+	ProviderConfigService interface {
+		GetEnabledTypeConfig(context.Context, providerconfig.ProviderType) (*ent.ProviderConfig, error)
+
+		ListProviderConfigs(context.Context, ListProviderConfigsParams) ([]*ent.ProviderConfig, error)
+		GetProviderConfig(context.Context, uuid.UUID) (*ent.ProviderConfig, error)
+		UpdateProviderConfig(context.Context, ent.ProviderConfig) (*ent.ProviderConfig, error)
+		DeleteProviderConfig(context.Context, uuid.UUID) error
+	}
 
 	ProviderSyncService interface {
 		MakeSyncProviderDataPeriodicJob() jobs.PeriodicJob

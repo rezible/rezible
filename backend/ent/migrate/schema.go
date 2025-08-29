@@ -1364,8 +1364,8 @@ var (
 	ProviderConfigsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID},
 		{Name: "provider_type", Type: field.TypeEnum, Enums: []string{"users", "teams", "incidents", "oncall", "alerts", "system_components", "tickets", "playbooks"}},
-		{Name: "provider_name", Type: field.TypeString},
-		{Name: "provider_config", Type: field.TypeBytes},
+		{Name: "provider_id", Type: field.TypeString},
+		{Name: "config", Type: field.TypeBytes},
 		{Name: "enabled", Type: field.TypeBool, Default: true},
 		{Name: "updated_at", Type: field.TypeTime},
 		{Name: "tenant_id", Type: field.TypeInt},
@@ -1390,7 +1390,7 @@ var (
 				Columns: []*schema.Column{ProviderConfigsColumns[6]},
 			},
 			{
-				Name:    "providerconfig_provider_name_provider_type",
+				Name:    "providerconfig_provider_id_provider_type",
 				Unique:  true,
 				Columns: []*schema.Column{ProviderConfigsColumns[2], ProviderConfigsColumns[1]},
 			},

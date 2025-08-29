@@ -771,12 +771,12 @@ var schemaGraph = func() *sqlgraph.Schema {
 		},
 		Type: "ProviderConfig",
 		Fields: map[string]*sqlgraph.FieldSpec{
-			providerconfig.FieldTenantID:       {Type: field.TypeInt, Column: providerconfig.FieldTenantID},
-			providerconfig.FieldProviderType:   {Type: field.TypeEnum, Column: providerconfig.FieldProviderType},
-			providerconfig.FieldProviderName:   {Type: field.TypeString, Column: providerconfig.FieldProviderName},
-			providerconfig.FieldProviderConfig: {Type: field.TypeBytes, Column: providerconfig.FieldProviderConfig},
-			providerconfig.FieldEnabled:        {Type: field.TypeBool, Column: providerconfig.FieldEnabled},
-			providerconfig.FieldUpdatedAt:      {Type: field.TypeTime, Column: providerconfig.FieldUpdatedAt},
+			providerconfig.FieldTenantID:     {Type: field.TypeInt, Column: providerconfig.FieldTenantID},
+			providerconfig.FieldProviderType: {Type: field.TypeEnum, Column: providerconfig.FieldProviderType},
+			providerconfig.FieldProviderID:   {Type: field.TypeString, Column: providerconfig.FieldProviderID},
+			providerconfig.FieldConfig:       {Type: field.TypeBytes, Column: providerconfig.FieldConfig},
+			providerconfig.FieldEnabled:      {Type: field.TypeBool, Column: providerconfig.FieldEnabled},
+			providerconfig.FieldUpdatedAt:    {Type: field.TypeTime, Column: providerconfig.FieldUpdatedAt},
 		},
 	}
 	graph.Nodes[37] = &sqlgraph.Node{
@@ -8452,14 +8452,14 @@ func (f *ProviderConfigFilter) WhereProviderType(p entql.StringP) {
 	f.Where(p.Field(providerconfig.FieldProviderType))
 }
 
-// WhereProviderName applies the entql string predicate on the provider_name field.
-func (f *ProviderConfigFilter) WhereProviderName(p entql.StringP) {
-	f.Where(p.Field(providerconfig.FieldProviderName))
+// WhereProviderID applies the entql string predicate on the provider_id field.
+func (f *ProviderConfigFilter) WhereProviderID(p entql.StringP) {
+	f.Where(p.Field(providerconfig.FieldProviderID))
 }
 
-// WhereProviderConfig applies the entql []byte predicate on the provider_config field.
-func (f *ProviderConfigFilter) WhereProviderConfig(p entql.BytesP) {
-	f.Where(p.Field(providerconfig.FieldProviderConfig))
+// WhereConfig applies the entql []byte predicate on the config field.
+func (f *ProviderConfigFilter) WhereConfig(p entql.BytesP) {
+	f.Where(p.Field(providerconfig.FieldConfig))
 }
 
 // WhereEnabled applies the entql bool predicate on the enabled field.

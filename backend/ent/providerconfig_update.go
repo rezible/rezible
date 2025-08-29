@@ -43,23 +43,23 @@ func (pcu *ProviderConfigUpdate) SetNillableProviderType(pt *providerconfig.Prov
 	return pcu
 }
 
-// SetProviderName sets the "provider_name" field.
-func (pcu *ProviderConfigUpdate) SetProviderName(s string) *ProviderConfigUpdate {
-	pcu.mutation.SetProviderName(s)
+// SetProviderID sets the "provider_id" field.
+func (pcu *ProviderConfigUpdate) SetProviderID(s string) *ProviderConfigUpdate {
+	pcu.mutation.SetProviderID(s)
 	return pcu
 }
 
-// SetNillableProviderName sets the "provider_name" field if the given value is not nil.
-func (pcu *ProviderConfigUpdate) SetNillableProviderName(s *string) *ProviderConfigUpdate {
+// SetNillableProviderID sets the "provider_id" field if the given value is not nil.
+func (pcu *ProviderConfigUpdate) SetNillableProviderID(s *string) *ProviderConfigUpdate {
 	if s != nil {
-		pcu.SetProviderName(*s)
+		pcu.SetProviderID(*s)
 	}
 	return pcu
 }
 
-// SetProviderConfig sets the "provider_config" field.
-func (pcu *ProviderConfigUpdate) SetProviderConfig(b []byte) *ProviderConfigUpdate {
-	pcu.mutation.SetProviderConfig(b)
+// SetConfig sets the "config" field.
+func (pcu *ProviderConfigUpdate) SetConfig(b []byte) *ProviderConfigUpdate {
+	pcu.mutation.SetConfig(b)
 	return pcu
 }
 
@@ -157,11 +157,11 @@ func (pcu *ProviderConfigUpdate) sqlSave(ctx context.Context) (n int, err error)
 	if value, ok := pcu.mutation.ProviderType(); ok {
 		_spec.SetField(providerconfig.FieldProviderType, field.TypeEnum, value)
 	}
-	if value, ok := pcu.mutation.ProviderName(); ok {
-		_spec.SetField(providerconfig.FieldProviderName, field.TypeString, value)
+	if value, ok := pcu.mutation.ProviderID(); ok {
+		_spec.SetField(providerconfig.FieldProviderID, field.TypeString, value)
 	}
-	if value, ok := pcu.mutation.ProviderConfig(); ok {
-		_spec.SetField(providerconfig.FieldProviderConfig, field.TypeBytes, value)
+	if value, ok := pcu.mutation.Config(); ok {
+		_spec.SetField(providerconfig.FieldConfig, field.TypeBytes, value)
 	}
 	if value, ok := pcu.mutation.Enabled(); ok {
 		_spec.SetField(providerconfig.FieldEnabled, field.TypeBool, value)
@@ -205,23 +205,23 @@ func (pcuo *ProviderConfigUpdateOne) SetNillableProviderType(pt *providerconfig.
 	return pcuo
 }
 
-// SetProviderName sets the "provider_name" field.
-func (pcuo *ProviderConfigUpdateOne) SetProviderName(s string) *ProviderConfigUpdateOne {
-	pcuo.mutation.SetProviderName(s)
+// SetProviderID sets the "provider_id" field.
+func (pcuo *ProviderConfigUpdateOne) SetProviderID(s string) *ProviderConfigUpdateOne {
+	pcuo.mutation.SetProviderID(s)
 	return pcuo
 }
 
-// SetNillableProviderName sets the "provider_name" field if the given value is not nil.
-func (pcuo *ProviderConfigUpdateOne) SetNillableProviderName(s *string) *ProviderConfigUpdateOne {
+// SetNillableProviderID sets the "provider_id" field if the given value is not nil.
+func (pcuo *ProviderConfigUpdateOne) SetNillableProviderID(s *string) *ProviderConfigUpdateOne {
 	if s != nil {
-		pcuo.SetProviderName(*s)
+		pcuo.SetProviderID(*s)
 	}
 	return pcuo
 }
 
-// SetProviderConfig sets the "provider_config" field.
-func (pcuo *ProviderConfigUpdateOne) SetProviderConfig(b []byte) *ProviderConfigUpdateOne {
-	pcuo.mutation.SetProviderConfig(b)
+// SetConfig sets the "config" field.
+func (pcuo *ProviderConfigUpdateOne) SetConfig(b []byte) *ProviderConfigUpdateOne {
+	pcuo.mutation.SetConfig(b)
 	return pcuo
 }
 
@@ -349,11 +349,11 @@ func (pcuo *ProviderConfigUpdateOne) sqlSave(ctx context.Context) (_node *Provid
 	if value, ok := pcuo.mutation.ProviderType(); ok {
 		_spec.SetField(providerconfig.FieldProviderType, field.TypeEnum, value)
 	}
-	if value, ok := pcuo.mutation.ProviderName(); ok {
-		_spec.SetField(providerconfig.FieldProviderName, field.TypeString, value)
+	if value, ok := pcuo.mutation.ProviderID(); ok {
+		_spec.SetField(providerconfig.FieldProviderID, field.TypeString, value)
 	}
-	if value, ok := pcuo.mutation.ProviderConfig(); ok {
-		_spec.SetField(providerconfig.FieldProviderConfig, field.TypeBytes, value)
+	if value, ok := pcuo.mutation.Config(); ok {
+		_spec.SetField(providerconfig.FieldConfig, field.TypeBytes, value)
 	}
 	if value, ok := pcuo.mutation.Enabled(); ok {
 		_spec.SetField(providerconfig.FieldEnabled, field.TypeBool, value)

@@ -22,23 +22,28 @@
 	setToastState();
 	setUserOncallInformationState();
 
-	const isAuthError = $derived(!!session.error);
-	const isAuthRoute = $derived(!!page.route.id?.startsWith("/auth"));
+	const routeId = $derived(page.route.id);
 
-	const authRedirectPath = $derived.by(() => {
+	const AuthRouteId = "/auth";
+	const isAuthRoute = $derived(!!routeId?.startsWith(AuthRouteId));
+
+	const orgNeedsSetup = $derived(session.isAuthenticated && !!session.org?.requiresInitialSetup);
+	const SetupRouteId = "/setup";
+	const isSetupRoute = $derived(!!routeId?.startsWith(SetupRouteId));
+
+	const redirectTo = $derived.by(() => {
 		if (!session.loaded) return;
-		if (isAuthError && !isAuthRoute) return "/auth";
-		if (!isAuthError && isAuthRoute) return "/";
+		if (!session.isAuthenticated && !isAuthRoute) return AuthRouteId;
+		if (orgNeedsSetup && !isSetupRoute) return SetupRouteId;
+		if (session.isAuthenticated && isAuthRoute) return "/";
 	});
 	const navigatingTo = $derived(navigating.to?.route.id);
 
-	watch(() => authRedirectPath, path => {
-		if (!path) return;
-		if (path === navigatingTo) return;
-		goto(path);
+	watch(() => redirectTo, route => {
+		if (!!route && route !== navigatingTo) goto(route);
 	});
 
-	const showPage = $derived(session.loaded && !authRedirectPath);
+	const showPage = $derived(session.loaded && !redirectTo);
 </script>
 
 <div class="antialiased flex h-dvh min-h-dvh w-dvw bg-surface-300 text-surface-content">

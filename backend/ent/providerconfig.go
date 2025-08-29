@@ -23,10 +23,10 @@ type ProviderConfig struct {
 	TenantID int `json:"tenant_id,omitempty"`
 	// ProviderType holds the value of the "provider_type" field.
 	ProviderType providerconfig.ProviderType `json:"provider_type,omitempty"`
-	// ProviderName holds the value of the "provider_name" field.
-	ProviderName string `json:"provider_name,omitempty"`
-	// ProviderConfig holds the value of the "provider_config" field.
-	ProviderConfig []byte `json:"provider_config,omitempty"`
+	// ProviderID holds the value of the "provider_id" field.
+	ProviderID string `json:"provider_id,omitempty"`
+	// Config holds the value of the "config" field.
+	Config []byte `json:"config,omitempty"`
 	// Enabled holds the value of the "enabled" field.
 	Enabled bool `json:"enabled,omitempty"`
 	// UpdatedAt holds the value of the "updated_at" field.
@@ -62,13 +62,13 @@ func (*ProviderConfig) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case providerconfig.FieldProviderConfig:
+		case providerconfig.FieldConfig:
 			values[i] = new([]byte)
 		case providerconfig.FieldEnabled:
 			values[i] = new(sql.NullBool)
 		case providerconfig.FieldTenantID:
 			values[i] = new(sql.NullInt64)
-		case providerconfig.FieldProviderType, providerconfig.FieldProviderName:
+		case providerconfig.FieldProviderType, providerconfig.FieldProviderID:
 			values[i] = new(sql.NullString)
 		case providerconfig.FieldUpdatedAt:
 			values[i] = new(sql.NullTime)
@@ -107,17 +107,17 @@ func (pc *ProviderConfig) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				pc.ProviderType = providerconfig.ProviderType(value.String)
 			}
-		case providerconfig.FieldProviderName:
+		case providerconfig.FieldProviderID:
 			if value, ok := values[i].(*sql.NullString); !ok {
-				return fmt.Errorf("unexpected type %T for field provider_name", values[i])
+				return fmt.Errorf("unexpected type %T for field provider_id", values[i])
 			} else if value.Valid {
-				pc.ProviderName = value.String
+				pc.ProviderID = value.String
 			}
-		case providerconfig.FieldProviderConfig:
+		case providerconfig.FieldConfig:
 			if value, ok := values[i].(*[]byte); !ok {
-				return fmt.Errorf("unexpected type %T for field provider_config", values[i])
+				return fmt.Errorf("unexpected type %T for field config", values[i])
 			} else if value != nil {
-				pc.ProviderConfig = *value
+				pc.Config = *value
 			}
 		case providerconfig.FieldEnabled:
 			if value, ok := values[i].(*sql.NullBool); !ok {
@@ -178,11 +178,11 @@ func (pc *ProviderConfig) String() string {
 	builder.WriteString("provider_type=")
 	builder.WriteString(fmt.Sprintf("%v", pc.ProviderType))
 	builder.WriteString(", ")
-	builder.WriteString("provider_name=")
-	builder.WriteString(pc.ProviderName)
+	builder.WriteString("provider_id=")
+	builder.WriteString(pc.ProviderID)
 	builder.WriteString(", ")
-	builder.WriteString("provider_config=")
-	builder.WriteString(fmt.Sprintf("%v", pc.ProviderConfig))
+	builder.WriteString("config=")
+	builder.WriteString(fmt.Sprintf("%v", pc.Config))
 	builder.WriteString(", ")
 	builder.WriteString("enabled=")
 	builder.WriteString(fmt.Sprintf("%v", pc.Enabled))

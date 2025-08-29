@@ -31910,20 +31910,20 @@ func (m *PlaybookMutation) ResetEdge(name string) error {
 // ProviderConfigMutation represents an operation that mutates the ProviderConfig nodes in the graph.
 type ProviderConfigMutation struct {
 	config
-	op              Op
-	typ             string
-	id              *uuid.UUID
-	provider_type   *providerconfig.ProviderType
-	provider_name   *string
-	provider_config *[]byte
-	enabled         *bool
-	updated_at      *time.Time
-	clearedFields   map[string]struct{}
-	tenant          *int
-	clearedtenant   bool
-	done            bool
-	oldValue        func(context.Context) (*ProviderConfig, error)
-	predicates      []predicate.ProviderConfig
+	op            Op
+	typ           string
+	id            *uuid.UUID
+	provider_type *providerconfig.ProviderType
+	provider_id   *string
+	_config       *[]byte
+	enabled       *bool
+	updated_at    *time.Time
+	clearedFields map[string]struct{}
+	tenant        *int
+	clearedtenant bool
+	done          bool
+	oldValue      func(context.Context) (*ProviderConfig, error)
+	predicates    []predicate.ProviderConfig
 }
 
 var _ ent.Mutation = (*ProviderConfigMutation)(nil)
@@ -32102,76 +32102,76 @@ func (m *ProviderConfigMutation) ResetProviderType() {
 	m.provider_type = nil
 }
 
-// SetProviderName sets the "provider_name" field.
-func (m *ProviderConfigMutation) SetProviderName(s string) {
-	m.provider_name = &s
+// SetProviderID sets the "provider_id" field.
+func (m *ProviderConfigMutation) SetProviderID(s string) {
+	m.provider_id = &s
 }
 
-// ProviderName returns the value of the "provider_name" field in the mutation.
-func (m *ProviderConfigMutation) ProviderName() (r string, exists bool) {
-	v := m.provider_name
+// ProviderID returns the value of the "provider_id" field in the mutation.
+func (m *ProviderConfigMutation) ProviderID() (r string, exists bool) {
+	v := m.provider_id
 	if v == nil {
 		return
 	}
 	return *v, true
 }
 
-// OldProviderName returns the old "provider_name" field's value of the ProviderConfig entity.
+// OldProviderID returns the old "provider_id" field's value of the ProviderConfig entity.
 // If the ProviderConfig object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *ProviderConfigMutation) OldProviderName(ctx context.Context) (v string, err error) {
+func (m *ProviderConfigMutation) OldProviderID(ctx context.Context) (v string, err error) {
 	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldProviderName is only allowed on UpdateOne operations")
+		return v, errors.New("OldProviderID is only allowed on UpdateOne operations")
 	}
 	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldProviderName requires an ID field in the mutation")
+		return v, errors.New("OldProviderID requires an ID field in the mutation")
 	}
 	oldValue, err := m.oldValue(ctx)
 	if err != nil {
-		return v, fmt.Errorf("querying old value for OldProviderName: %w", err)
+		return v, fmt.Errorf("querying old value for OldProviderID: %w", err)
 	}
-	return oldValue.ProviderName, nil
+	return oldValue.ProviderID, nil
 }
 
-// ResetProviderName resets all changes to the "provider_name" field.
-func (m *ProviderConfigMutation) ResetProviderName() {
-	m.provider_name = nil
+// ResetProviderID resets all changes to the "provider_id" field.
+func (m *ProviderConfigMutation) ResetProviderID() {
+	m.provider_id = nil
 }
 
-// SetProviderConfig sets the "provider_config" field.
-func (m *ProviderConfigMutation) SetProviderConfig(b []byte) {
-	m.provider_config = &b
+// SetConfig sets the "config" field.
+func (m *ProviderConfigMutation) SetConfig(b []byte) {
+	m._config = &b
 }
 
-// ProviderConfig returns the value of the "provider_config" field in the mutation.
-func (m *ProviderConfigMutation) ProviderConfig() (r []byte, exists bool) {
-	v := m.provider_config
+// Config returns the value of the "config" field in the mutation.
+func (m *ProviderConfigMutation) Config() (r []byte, exists bool) {
+	v := m._config
 	if v == nil {
 		return
 	}
 	return *v, true
 }
 
-// OldProviderConfig returns the old "provider_config" field's value of the ProviderConfig entity.
+// OldConfig returns the old "config" field's value of the ProviderConfig entity.
 // If the ProviderConfig object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *ProviderConfigMutation) OldProviderConfig(ctx context.Context) (v []byte, err error) {
+func (m *ProviderConfigMutation) OldConfig(ctx context.Context) (v []byte, err error) {
 	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldProviderConfig is only allowed on UpdateOne operations")
+		return v, errors.New("OldConfig is only allowed on UpdateOne operations")
 	}
 	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldProviderConfig requires an ID field in the mutation")
+		return v, errors.New("OldConfig requires an ID field in the mutation")
 	}
 	oldValue, err := m.oldValue(ctx)
 	if err != nil {
-		return v, fmt.Errorf("querying old value for OldProviderConfig: %w", err)
+		return v, fmt.Errorf("querying old value for OldConfig: %w", err)
 	}
-	return oldValue.ProviderConfig, nil
+	return oldValue.Config, nil
 }
 
-// ResetProviderConfig resets all changes to the "provider_config" field.
-func (m *ProviderConfigMutation) ResetProviderConfig() {
-	m.provider_config = nil
+// ResetConfig resets all changes to the "config" field.
+func (m *ProviderConfigMutation) ResetConfig() {
+	m._config = nil
 }
 
 // SetEnabled sets the "enabled" field.
@@ -32314,11 +32314,11 @@ func (m *ProviderConfigMutation) Fields() []string {
 	if m.provider_type != nil {
 		fields = append(fields, providerconfig.FieldProviderType)
 	}
-	if m.provider_name != nil {
-		fields = append(fields, providerconfig.FieldProviderName)
+	if m.provider_id != nil {
+		fields = append(fields, providerconfig.FieldProviderID)
 	}
-	if m.provider_config != nil {
-		fields = append(fields, providerconfig.FieldProviderConfig)
+	if m._config != nil {
+		fields = append(fields, providerconfig.FieldConfig)
 	}
 	if m.enabled != nil {
 		fields = append(fields, providerconfig.FieldEnabled)
@@ -32338,10 +32338,10 @@ func (m *ProviderConfigMutation) Field(name string) (ent.Value, bool) {
 		return m.TenantID()
 	case providerconfig.FieldProviderType:
 		return m.ProviderType()
-	case providerconfig.FieldProviderName:
-		return m.ProviderName()
-	case providerconfig.FieldProviderConfig:
-		return m.ProviderConfig()
+	case providerconfig.FieldProviderID:
+		return m.ProviderID()
+	case providerconfig.FieldConfig:
+		return m.Config()
 	case providerconfig.FieldEnabled:
 		return m.Enabled()
 	case providerconfig.FieldUpdatedAt:
@@ -32359,10 +32359,10 @@ func (m *ProviderConfigMutation) OldField(ctx context.Context, name string) (ent
 		return m.OldTenantID(ctx)
 	case providerconfig.FieldProviderType:
 		return m.OldProviderType(ctx)
-	case providerconfig.FieldProviderName:
-		return m.OldProviderName(ctx)
-	case providerconfig.FieldProviderConfig:
-		return m.OldProviderConfig(ctx)
+	case providerconfig.FieldProviderID:
+		return m.OldProviderID(ctx)
+	case providerconfig.FieldConfig:
+		return m.OldConfig(ctx)
 	case providerconfig.FieldEnabled:
 		return m.OldEnabled(ctx)
 	case providerconfig.FieldUpdatedAt:
@@ -32390,19 +32390,19 @@ func (m *ProviderConfigMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetProviderType(v)
 		return nil
-	case providerconfig.FieldProviderName:
+	case providerconfig.FieldProviderID:
 		v, ok := value.(string)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
-		m.SetProviderName(v)
+		m.SetProviderID(v)
 		return nil
-	case providerconfig.FieldProviderConfig:
+	case providerconfig.FieldConfig:
 		v, ok := value.([]byte)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
-		m.SetProviderConfig(v)
+		m.SetConfig(v)
 		return nil
 	case providerconfig.FieldEnabled:
 		v, ok := value.(bool)
@@ -32476,11 +32476,11 @@ func (m *ProviderConfigMutation) ResetField(name string) error {
 	case providerconfig.FieldProviderType:
 		m.ResetProviderType()
 		return nil
-	case providerconfig.FieldProviderName:
-		m.ResetProviderName()
+	case providerconfig.FieldProviderID:
+		m.ResetProviderID()
 		return nil
-	case providerconfig.FieldProviderConfig:
-		m.ResetProviderConfig()
+	case providerconfig.FieldConfig:
+		m.ResetConfig()
 		return nil
 	case providerconfig.FieldEnabled:
 		m.ResetEnabled()

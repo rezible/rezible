@@ -28,8 +28,8 @@ func (ProviderConfig) Fields() []ent.Field {
 	return []ent.Field{
 		field.UUID("id", uuid.New()).Default(uuid.New),
 		field.Enum("provider_type").Values(ProviderTypes...),
-		field.String("provider_name"),
-		field.Bytes("provider_config"),
+		field.String("provider_id"),
+		field.Bytes("config"),
 		field.Bool("enabled").Default(true),
 		field.Time("updated_at").Default(time.Now),
 	}
@@ -37,6 +37,6 @@ func (ProviderConfig) Fields() []ent.Field {
 
 func (ProviderConfig) Indexes() []ent.Index {
 	return []ent.Index{
-		index.Fields("provider_name", "provider_type").Unique(),
+		index.Fields("provider_id", "provider_type").Unique(),
 	}
 }

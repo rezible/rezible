@@ -39,6 +39,7 @@ var _ oapi.Handler = (*Handler)(nil)
 func NewHandler(
 	db *ent.Client,
 	auth rez.AuthService,
+	configs rez.ProviderConfigService,
 	users rez.UserService,
 	incidents rez.IncidentService,
 	debriefs rez.DebriefService,
@@ -65,7 +66,7 @@ func NewHandler(
 		tasksHandler:              newTasksHandler(db),
 		incidentTypesHandler:      newIncidentTypesHandler(db.IncidentType),
 		incidentsHandler:          newIncidentsHandler(db, incidents),
-		integrationsHandler:       newIntegrationsHandler(),
+		integrationsHandler:       newIntegrationsHandler(configs),
 		meetingsHandler:           newMeetingsHandler(),
 		oncallEventsHandler:       newOncallEventsHandler(auth, users, oncall, incidents, oncallEvents),
 		oncallRostersHandler:      newOncallRostersHandler(auth, users, incidents, oncall),

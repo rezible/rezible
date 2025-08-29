@@ -37,15 +37,15 @@ func (pcc *ProviderConfigCreate) SetProviderType(pt providerconfig.ProviderType)
 	return pcc
 }
 
-// SetProviderName sets the "provider_name" field.
-func (pcc *ProviderConfigCreate) SetProviderName(s string) *ProviderConfigCreate {
-	pcc.mutation.SetProviderName(s)
+// SetProviderID sets the "provider_id" field.
+func (pcc *ProviderConfigCreate) SetProviderID(s string) *ProviderConfigCreate {
+	pcc.mutation.SetProviderID(s)
 	return pcc
 }
 
-// SetProviderConfig sets the "provider_config" field.
-func (pcc *ProviderConfigCreate) SetProviderConfig(b []byte) *ProviderConfigCreate {
-	pcc.mutation.SetProviderConfig(b)
+// SetConfig sets the "config" field.
+func (pcc *ProviderConfigCreate) SetConfig(b []byte) *ProviderConfigCreate {
+	pcc.mutation.SetConfig(b)
 	return pcc
 }
 
@@ -167,11 +167,11 @@ func (pcc *ProviderConfigCreate) check() error {
 			return &ValidationError{Name: "provider_type", err: fmt.Errorf(`ent: validator failed for field "ProviderConfig.provider_type": %w`, err)}
 		}
 	}
-	if _, ok := pcc.mutation.ProviderName(); !ok {
-		return &ValidationError{Name: "provider_name", err: errors.New(`ent: missing required field "ProviderConfig.provider_name"`)}
+	if _, ok := pcc.mutation.ProviderID(); !ok {
+		return &ValidationError{Name: "provider_id", err: errors.New(`ent: missing required field "ProviderConfig.provider_id"`)}
 	}
-	if _, ok := pcc.mutation.ProviderConfig(); !ok {
-		return &ValidationError{Name: "provider_config", err: errors.New(`ent: missing required field "ProviderConfig.provider_config"`)}
+	if _, ok := pcc.mutation.Config(); !ok {
+		return &ValidationError{Name: "config", err: errors.New(`ent: missing required field "ProviderConfig.config"`)}
 	}
 	if _, ok := pcc.mutation.Enabled(); !ok {
 		return &ValidationError{Name: "enabled", err: errors.New(`ent: missing required field "ProviderConfig.enabled"`)}
@@ -222,13 +222,13 @@ func (pcc *ProviderConfigCreate) createSpec() (*ProviderConfig, *sqlgraph.Create
 		_spec.SetField(providerconfig.FieldProviderType, field.TypeEnum, value)
 		_node.ProviderType = value
 	}
-	if value, ok := pcc.mutation.ProviderName(); ok {
-		_spec.SetField(providerconfig.FieldProviderName, field.TypeString, value)
-		_node.ProviderName = value
+	if value, ok := pcc.mutation.ProviderID(); ok {
+		_spec.SetField(providerconfig.FieldProviderID, field.TypeString, value)
+		_node.ProviderID = value
 	}
-	if value, ok := pcc.mutation.ProviderConfig(); ok {
-		_spec.SetField(providerconfig.FieldProviderConfig, field.TypeBytes, value)
-		_node.ProviderConfig = value
+	if value, ok := pcc.mutation.Config(); ok {
+		_spec.SetField(providerconfig.FieldConfig, field.TypeBytes, value)
+		_node.Config = value
 	}
 	if value, ok := pcc.mutation.Enabled(); ok {
 		_spec.SetField(providerconfig.FieldEnabled, field.TypeBool, value)
@@ -319,27 +319,27 @@ func (u *ProviderConfigUpsert) UpdateProviderType() *ProviderConfigUpsert {
 	return u
 }
 
-// SetProviderName sets the "provider_name" field.
-func (u *ProviderConfigUpsert) SetProviderName(v string) *ProviderConfigUpsert {
-	u.Set(providerconfig.FieldProviderName, v)
+// SetProviderID sets the "provider_id" field.
+func (u *ProviderConfigUpsert) SetProviderID(v string) *ProviderConfigUpsert {
+	u.Set(providerconfig.FieldProviderID, v)
 	return u
 }
 
-// UpdateProviderName sets the "provider_name" field to the value that was provided on create.
-func (u *ProviderConfigUpsert) UpdateProviderName() *ProviderConfigUpsert {
-	u.SetExcluded(providerconfig.FieldProviderName)
+// UpdateProviderID sets the "provider_id" field to the value that was provided on create.
+func (u *ProviderConfigUpsert) UpdateProviderID() *ProviderConfigUpsert {
+	u.SetExcluded(providerconfig.FieldProviderID)
 	return u
 }
 
-// SetProviderConfig sets the "provider_config" field.
-func (u *ProviderConfigUpsert) SetProviderConfig(v []byte) *ProviderConfigUpsert {
-	u.Set(providerconfig.FieldProviderConfig, v)
+// SetConfig sets the "config" field.
+func (u *ProviderConfigUpsert) SetConfig(v []byte) *ProviderConfigUpsert {
+	u.Set(providerconfig.FieldConfig, v)
 	return u
 }
 
-// UpdateProviderConfig sets the "provider_config" field to the value that was provided on create.
-func (u *ProviderConfigUpsert) UpdateProviderConfig() *ProviderConfigUpsert {
-	u.SetExcluded(providerconfig.FieldProviderConfig)
+// UpdateConfig sets the "config" field to the value that was provided on create.
+func (u *ProviderConfigUpsert) UpdateConfig() *ProviderConfigUpsert {
+	u.SetExcluded(providerconfig.FieldConfig)
 	return u
 }
 
@@ -432,31 +432,31 @@ func (u *ProviderConfigUpsertOne) UpdateProviderType() *ProviderConfigUpsertOne 
 	})
 }
 
-// SetProviderName sets the "provider_name" field.
-func (u *ProviderConfigUpsertOne) SetProviderName(v string) *ProviderConfigUpsertOne {
+// SetProviderID sets the "provider_id" field.
+func (u *ProviderConfigUpsertOne) SetProviderID(v string) *ProviderConfigUpsertOne {
 	return u.Update(func(s *ProviderConfigUpsert) {
-		s.SetProviderName(v)
+		s.SetProviderID(v)
 	})
 }
 
-// UpdateProviderName sets the "provider_name" field to the value that was provided on create.
-func (u *ProviderConfigUpsertOne) UpdateProviderName() *ProviderConfigUpsertOne {
+// UpdateProviderID sets the "provider_id" field to the value that was provided on create.
+func (u *ProviderConfigUpsertOne) UpdateProviderID() *ProviderConfigUpsertOne {
 	return u.Update(func(s *ProviderConfigUpsert) {
-		s.UpdateProviderName()
+		s.UpdateProviderID()
 	})
 }
 
-// SetProviderConfig sets the "provider_config" field.
-func (u *ProviderConfigUpsertOne) SetProviderConfig(v []byte) *ProviderConfigUpsertOne {
+// SetConfig sets the "config" field.
+func (u *ProviderConfigUpsertOne) SetConfig(v []byte) *ProviderConfigUpsertOne {
 	return u.Update(func(s *ProviderConfigUpsert) {
-		s.SetProviderConfig(v)
+		s.SetConfig(v)
 	})
 }
 
-// UpdateProviderConfig sets the "provider_config" field to the value that was provided on create.
-func (u *ProviderConfigUpsertOne) UpdateProviderConfig() *ProviderConfigUpsertOne {
+// UpdateConfig sets the "config" field to the value that was provided on create.
+func (u *ProviderConfigUpsertOne) UpdateConfig() *ProviderConfigUpsertOne {
 	return u.Update(func(s *ProviderConfigUpsert) {
-		s.UpdateProviderConfig()
+		s.UpdateConfig()
 	})
 }
 
@@ -720,31 +720,31 @@ func (u *ProviderConfigUpsertBulk) UpdateProviderType() *ProviderConfigUpsertBul
 	})
 }
 
-// SetProviderName sets the "provider_name" field.
-func (u *ProviderConfigUpsertBulk) SetProviderName(v string) *ProviderConfigUpsertBulk {
+// SetProviderID sets the "provider_id" field.
+func (u *ProviderConfigUpsertBulk) SetProviderID(v string) *ProviderConfigUpsertBulk {
 	return u.Update(func(s *ProviderConfigUpsert) {
-		s.SetProviderName(v)
+		s.SetProviderID(v)
 	})
 }
 
-// UpdateProviderName sets the "provider_name" field to the value that was provided on create.
-func (u *ProviderConfigUpsertBulk) UpdateProviderName() *ProviderConfigUpsertBulk {
+// UpdateProviderID sets the "provider_id" field to the value that was provided on create.
+func (u *ProviderConfigUpsertBulk) UpdateProviderID() *ProviderConfigUpsertBulk {
 	return u.Update(func(s *ProviderConfigUpsert) {
-		s.UpdateProviderName()
+		s.UpdateProviderID()
 	})
 }
 
-// SetProviderConfig sets the "provider_config" field.
-func (u *ProviderConfigUpsertBulk) SetProviderConfig(v []byte) *ProviderConfigUpsertBulk {
+// SetConfig sets the "config" field.
+func (u *ProviderConfigUpsertBulk) SetConfig(v []byte) *ProviderConfigUpsertBulk {
 	return u.Update(func(s *ProviderConfigUpsert) {
-		s.SetProviderConfig(v)
+		s.SetConfig(v)
 	})
 }
 
-// UpdateProviderConfig sets the "provider_config" field to the value that was provided on create.
-func (u *ProviderConfigUpsertBulk) UpdateProviderConfig() *ProviderConfigUpsertBulk {
+// UpdateConfig sets the "config" field to the value that was provided on create.
+func (u *ProviderConfigUpsertBulk) UpdateConfig() *ProviderConfigUpsertBulk {
 	return u.Update(func(s *ProviderConfigUpsert) {
-		s.UpdateProviderConfig()
+		s.UpdateConfig()
 	})
 }
 
