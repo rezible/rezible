@@ -59,14 +59,15 @@ func (s *DocumentsService) Handler() http.Handler {
 	return r
 }
 
-func makeDocumentSessionTokenScopes(docId uuid.UUID) map[string]string {
-	return map[string]string{
-		"document": docId.String(),
+func makeDocumentSessionTokenScopes(docId uuid.UUID) rez.AuthSessionScopes {
+	return rez.AuthSessionScopes{
+		"documents": []string{docId.String()},
 	}
 }
 
 func (s *DocumentsService) CreateEditorSessionToken(sess *rez.AuthSession, docId uuid.UUID) (string, error) {
-	return s.auth.IssueAuthSessionToken(sess, makeDocumentSessionTokenScopes(docId))
+	sess.Scopes = makeDocumentSessionTokenScopes(docId)
+	return s.auth.IssueAuthSessionToken(sess)
 }
 
 func (s *DocumentsService) verifyRequestSignature(signature []byte, body []byte) bool {
@@ -118,13 +119,13 @@ func (s *DocumentsService) verifyRequestAuth(w http.ResponseWriter, r *http.Requ
 		return nil
 	}
 
-	userCtx, userErr := s.users.CreateUserContext(r.Context(), sess.UserId)
-	if userErr != nil {
-		http.Error(w, userErr.Error(), http.StatusBadRequest)
+	authCtx, authErr := s.auth.CreateAuthContext(r.Context(), sess)
+	if authErr != nil {
+		http.Error(w, authErr.Error(), http.StatusBadRequest)
 		return nil
 	}
 
-	return s.auth.SetAuthSession(userCtx, sess)
+	return authCtx
 }
 
 type documentAuthSessionUser struct {

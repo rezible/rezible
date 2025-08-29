@@ -36,7 +36,7 @@ func (s *UserService) CreateUserContext(ctx context.Context, userId uuid.UUID) (
 	usr, userErr := s.GetById(userLookupCtx, userId)
 	if userErr != nil {
 		if ent.IsNotFound(userErr) {
-			return nil, rez.ErrAuthSessionUserMissing
+			return nil, rez.ErrInvalidUser
 		}
 		return nil, fmt.Errorf("get user by id: %w", userErr)
 	}
@@ -61,22 +61,24 @@ func (s *UserService) getUserByProviderID(ctx context.Context, providerID string
 
 func (s *UserService) FindOrCreateAuthProviderUser(ctx context.Context, pu *ent.User, pt *ent.Tenant) (*ent.User, error) {
 	tnt, tenantErr := s.db.Tenant.Query().Where(tenant.ProviderID(pt.ProviderID)).Only(ctx)
-	if tenantErr != nil {
-		if !ent.IsNotFound(tenantErr) {
-			return nil, fmt.Errorf("failed to query tenant: %w", tenantErr)
-		}
-		// TODO: allow returning error here (tenant does not exist, don't create new tenant)
+	if tenantErr != nil && !ent.IsNotFound(tenantErr) {
+		return nil, fmt.Errorf("failed to query tenant: %w", tenantErr)
+	}
+
+	if tnt == nil && !rez.AllowTenantCreation {
+		return nil, rez.ErrInvalidTenant
 	}
 
 	if tnt != nil {
 		ctx = access.TenantSystemContext(ctx, tnt.ID)
 		usr, usrErr := s.getUserByProviderID(ctx, pu.ProviderID)
-		if usrErr != nil {
-			if !ent.IsNotFound(usrErr) {
-				return nil, fmt.Errorf("failed to query user: %w", usrErr)
-			}
-			// TODO: allow returning error here (tenant exists, don't create new user)
-		} else if usr != nil {
+		if usrErr != nil && !ent.IsNotFound(usrErr) {
+			return nil, fmt.Errorf("failed to query user: %w", usrErr)
+		}
+		if usr == nil && !rez.AllowUserCreation {
+			return nil, rez.ErrInvalidUser
+		}
+		if usr != nil {
 			return usr, nil
 		}
 	}
@@ -149,6 +151,10 @@ func (s *UserService) GetByEmail(ctx context.Context, email string) (*ent.User, 
 
 func (s *UserService) GetByChatId(ctx context.Context, chatId string) (*ent.User, error) {
 	return s.getOneWhere(ctx, user.ChatID(chatId))
+}
+
+func (s *UserService) GetTenantById(ctx context.Context, id int) (*ent.Tenant, error) {
+	return s.db.Tenant.Get(ctx, id)
 }
 
 func (s *UserService) LookupProviderUser(ctx context.Context, provUser *ent.User) (*ent.User, error) {

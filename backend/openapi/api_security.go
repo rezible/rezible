@@ -22,13 +22,14 @@ const (
 	SecurityMethodSessionCookie = "session-cookie"
 	SecurityMethodApiToken      = "api-token"
 
-	SessionCookieName = "rez_session"
+	SessionCookieName = "rezible_auth"
 )
 
 var (
 	ErrNoSession      = ErrorUnauthorized("no_session")
 	ErrSessionExpired = ErrorUnauthorized("session_expired")
-	ErrMissingUser    = ErrorUnauthorized("missing_user")
+	ErrInvalidUser    = ErrorUnauthorized("invalid_user")
+	ErrInvalidTenant  = ErrorUnauthorized("invalid_tenant")
 	ErrUnauthorized   = ErrorUnauthorized("unauthorized")
 	ErrUnknown        = ErrorUnauthorized("unknown")
 )
@@ -97,39 +98,51 @@ func extractRequestTokenAndScopes(r *http.Request, opSecurity oapiSecurity) (str
 func MakeSecurityMiddleware(auth rez.AuthService) Middleware {
 	return func(c Context, next func(Context)) {
 		r, w := humago.Unwrap(c)
-
 		opSecurity := c.Operation().Security
 
-		ctx := access.AnonymousContext(c.Context())
+		ctx := c.Context()
 		if !isExplicitNoSecurity(opSecurity) {
 			if opSecurity == nil {
 				opSecurity = DefaultSecurity
 			}
+			token, methodScopes := extractRequestTokenAndScopes(r, opSecurity)
 
-			var authErr error
-			token, scopes := extractRequestTokenAndScopes(r, opSecurity)
-			if token == "" {
-				authErr = rez.ErrNoAuthSession
-			} else {
-				ctx, authErr = auth.CreateVerifiedApiAuthContext(ctx, token, scopes)
+			var scopes rez.AuthSessionScopes
+			if len(methodScopes) > 0 {
+				scopes["api"] = methodScopes
 			}
-			if authErr != nil {
-				writeStatusError(w, authErr)
+
+			sess, sessErr := auth.VerifyAuthSessionToken(token, scopes)
+			if sessErr != nil {
+				writeAuthStatusError(w, sessErr)
 				return
 			}
+
+			authCtx, authCtxErr := auth.CreateAuthContext(ctx, sess)
+			if authCtxErr != nil {
+				writeAuthStatusError(w, authCtxErr)
+				return
+			}
+
+			ctx = authCtx
+		} else {
+			ctx = access.AnonymousContext(ctx)
 		}
+
 		next(huma.WithContext(c, ctx))
 	}
 }
 
-func writeStatusError(w http.ResponseWriter, err error) {
+func writeAuthStatusError(w http.ResponseWriter, err error) {
 	var resp StatusError
 	if errors.Is(err, rez.ErrNoAuthSession) {
 		resp = ErrNoSession
 	} else if errors.Is(err, rez.ErrAuthSessionExpired) {
 		resp = ErrSessionExpired
-	} else if errors.Is(err, rez.ErrAuthSessionUserMissing) {
-		resp = ErrMissingUser
+	} else if errors.Is(err, rez.ErrInvalidUser) {
+		resp = ErrInvalidUser
+	} else if errors.Is(err, rez.ErrInvalidTenant) {
+		resp = ErrInvalidTenant
 	} else if errors.Is(err, rez.ErrUnauthorized) {
 		resp = ErrUnauthorized
 	} else {

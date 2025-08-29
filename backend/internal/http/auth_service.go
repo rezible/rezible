@@ -4,8 +4,10 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+	"strings"
 	"time"
 
+	mapset "github.com/deckarep/golang-set/v2"
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/google/uuid"
 	"github.com/rs/zerolog/log"
@@ -44,8 +46,13 @@ func newUserAuthSession(userId uuid.UUID, expiresAt time.Time) *rez.AuthSession 
 	return &rez.AuthSession{UserId: userId, ExpiresAt: expiresAt}
 }
 
-func (s *AuthService) SetAuthSession(ctx context.Context, sess *rez.AuthSession) context.Context {
-	return context.WithValue(ctx, authUserSessionContextKey{}, sess)
+func (s *AuthService) CreateAuthContext(ctx context.Context, sess *rez.AuthSession) (context.Context, error) {
+	userCtx, userErr := s.users.CreateUserContext(ctx, sess.UserId)
+	if userErr != nil {
+		log.Debug().Err(userErr).Msg("failed to create user auth context")
+		return nil, userErr
+	}
+	return context.WithValue(userCtx, authUserSessionContextKey{}, sess), nil
 }
 
 func (s *AuthService) GetAuthSession(ctx context.Context) (*rez.AuthSession, error) {
@@ -65,7 +72,12 @@ func (s *AuthService) MCPServerMiddleware() func(http.Handler) http.Handler {
 				http.Error(w, http.StatusText(http.StatusUnauthorized), http.StatusUnauthorized)
 				return
 			}
-			next.ServeHTTP(w, r.WithContext(s.SetAuthSession(r.Context(), sess)))
+			ctx, ctxErr := s.CreateAuthContext(r.Context(), sess)
+			if ctxErr != nil {
+				http.Error(w, http.StatusText(http.StatusUnauthorized), http.StatusUnauthorized)
+				return
+			}
+			next.ServeHTTP(w, r.WithContext(ctx))
 		})
 	}
 }
@@ -132,7 +144,7 @@ func (s *AuthService) makeUserSessionCreatedCallback(w http.ResponseWriter, r *h
 			return
 		}
 
-		token, tokenErr := s.IssueAuthSessionToken(newUserAuthSession(usr.ID, ps.ExpiresAt), nil)
+		token, tokenErr := s.IssueAuthSessionToken(newUserAuthSession(usr.ID, ps.ExpiresAt))
 		if tokenErr != nil {
 			log.Error().Err(tokenErr).Msg("failed to issue session token")
 			http.Error(w, "session error", http.StatusInternalServerError)
@@ -144,9 +156,13 @@ func (s *AuthService) makeUserSessionCreatedCallback(w http.ResponseWriter, r *h
 	}
 }
 
+func (s *AuthService) GetProviderStartFlowPath(prov rez.AuthSessionProvider) string {
+	return "/auth/" + strings.ToLower(prov.Id())
+}
+
 func (s *AuthService) delegateAuthFlowToProvider(w http.ResponseWriter, r *http.Request) bool {
 	for _, prov := range s.providers {
-		provFlowRoute := "/auth/" + prov.Id()
+		provFlowRoute := s.GetProviderStartFlowPath(prov)
 		if r.URL.Path == provFlowRoute {
 			prov.StartAuthFlow(w, r)
 			return true
@@ -174,41 +190,23 @@ func (s *AuthService) makeSessionCookie(r *http.Request, token string, expires t
 	return cookie
 }
 
-func (s *AuthService) CreateVerifiedApiAuthContext(ctx context.Context, token string, requiredScopes []string) (context.Context, error) {
-	sess, tokenErr := s.VerifyAuthSessionToken(token, nil)
-	if tokenErr != nil {
-		return nil, tokenErr
-	}
-
-	for _, scope := range requiredScopes {
-		log.Debug().Str("scope", scope).Msg("check scope")
-	}
-
-	userCtx, userErr := s.users.CreateUserContext(ctx, sess.UserId)
-	if userErr != nil {
-		log.Debug().Err(userErr).Msg("failed to create user auth context")
-		return nil, userErr
-	}
-	return s.SetAuthSession(userCtx, sess), nil
-}
-
 type authSessionTokenClaims struct {
 	jwt.RegisteredClaims
-	Scope  map[string]string `json:"scope"`
-	UserId uuid.UUID         `json:"userId"`
+	Scopes rez.AuthSessionScopes `json:"scopes"`
+	UserId uuid.UUID             `json:"userId"`
 }
 
-func (s *AuthService) IssueAuthSessionToken(sess *rez.AuthSession, scope map[string]string) (string, error) {
+func (s *AuthService) IssueAuthSessionToken(sess *rez.AuthSession) (string, error) {
 	claims := jwt.MapClaims{
 		"userId": sess.UserId,
-		"scope":  scope,
+		"scopes": sess.Scopes,
 		"exp":    jwt.NewNumericDate(sess.ExpiresAt),
 	}
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 	return token.SignedString(s.sessionSecret)
 }
 
-func (s *AuthService) VerifyAuthSessionToken(token string, scope map[string]string) (*rez.AuthSession, error) {
+func (s *AuthService) VerifyAuthSessionToken(token string, scopes rez.AuthSessionScopes) (*rez.AuthSession, error) {
 	if token == "" {
 		return nil, rez.ErrNoAuthSession
 	}
@@ -231,19 +229,22 @@ func (s *AuthService) VerifyAuthSessionToken(token string, scope map[string]stri
 	}
 
 	if claims.UserId == uuid.Nil {
-		return nil, rez.ErrAuthSessionUserMissing
-	}
-
-	for name, v := range claims.Scope {
-		cv, ok := scope[name]
-		if !ok || cv != v {
-			return nil, rez.ErrAuthSessionInvalidScope
-		}
+		return nil, rez.ErrInvalidUser
 	}
 
 	exp, expErr := claims.GetExpirationTime()
 	if expErr != nil || exp.Before(time.Now()) {
 		return nil, rez.ErrAuthSessionExpired
+	}
+
+	for name, v := range claims.Scopes {
+		cv, ok := scopes[name]
+		if !ok {
+			return nil, rez.ErrAuthSessionInvalidScope
+		}
+		if !mapset.NewSet(v...).Equal(mapset.NewSet(cv...)) {
+			return nil, rez.ErrAuthSessionInvalidScope
+		}
 	}
 
 	return newUserAuthSession(claims.UserId, exp.Time), nil

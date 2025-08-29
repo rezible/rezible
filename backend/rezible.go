@@ -17,12 +17,17 @@ import (
 var (
 	BackendUrl  = "http://localhost:8888"
 	FrontendUrl = "http://localhost:5173"
-	DebugMode   = true
+
+	DebugMode = true
+
+	AllowTenantCreation = DebugMode
+	AllowUserCreation   = DebugMode
 
 	ErrNoAuthSession           = errors.New("no auth session")
 	ErrAuthSessionExpired      = errors.New("auth session expired")
-	ErrAuthSessionUserMissing  = errors.New("missing auth session user")
 	ErrAuthSessionInvalidScope = errors.New("invalid session token scope")
+	ErrInvalidUser             = errors.New("user does not exist")
+	ErrInvalidTenant           = errors.New("tenant does not exist")
 	ErrUnauthorized            = errors.New("unauthorized")
 )
 
@@ -83,6 +88,8 @@ type (
 		GetByEmail(context.Context, string) (*ent.User, error)
 		GetByChatId(context.Context, string) (*ent.User, error)
 
+		GetTenantById(context.Context, int) (*ent.Tenant, error)
+
 		LookupProviderUser(ctx context.Context, provUser *ent.User) (*ent.User, error)
 	}
 )
@@ -105,23 +112,24 @@ type (
 		ClearSession(w http.ResponseWriter, r *http.Request) error
 	}
 
-	AuthSession struct {
+	AuthSessionScopes map[string][]string
+	AuthSession       struct {
 		UserId    uuid.UUID
 		ExpiresAt time.Time
+		Scopes    AuthSessionScopes
 	}
 
 	AuthService interface {
 		Providers() []AuthSessionProvider
+		GetProviderStartFlowPath(prov AuthSessionProvider) string
 
 		UserAuthHandler() http.Handler
 		MCPServerMiddleware() func(http.Handler) http.Handler
 
-		CreateVerifiedApiAuthContext(ctx context.Context, token string, requiredScopes []string) (context.Context, error)
+		IssueAuthSessionToken(sess *AuthSession) (string, error)
+		VerifyAuthSessionToken(token string, scopes AuthSessionScopes) (*AuthSession, error)
 
-		IssueAuthSessionToken(sess *AuthSession, scope map[string]string) (string, error)
-		VerifyAuthSessionToken(token string, scope map[string]string) (*AuthSession, error)
-
-		SetAuthSession(context.Context, *AuthSession) context.Context
+		CreateAuthContext(context.Context, *AuthSession) (context.Context, error)
 		GetAuthSession(context.Context) (*AuthSession, error)
 	}
 )

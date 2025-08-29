@@ -12,7 +12,7 @@ import (
 type AuthSessionsHandler interface {
 	GetAuthSessionsConfig(context.Context, *GetAuthSessionsConfigRequest) (*GetAuthSessionsConfigResponse, error)
 
-	GetCurrentUserAuthSession(context.Context, *GetCurrentUserAuthSessionRequest) (*GetCurrentUserAuthSessionResponse, error)
+	GetCurrentAuthSession(context.Context, *GetCurrentAuthSessionRequest) (*GetCurrentAuthSessionResponse, error)
 
 	ListNotifications(context.Context, *ListNotificationsRequest) (*ListNotificationsResponse, error)
 	DeleteNotification(context.Context, *DeleteNotificationRequest) (*DeleteNotificationResponse, error)
@@ -21,7 +21,7 @@ type AuthSessionsHandler interface {
 func (o operations) RegisterAuthSessions(api huma.API) {
 	huma.Register(api, GetAuthSessionsConfig, o.GetAuthSessionsConfig)
 
-	huma.Register(api, GetCurrentUserAuthSession, o.GetCurrentUserAuthSession)
+	huma.Register(api, GetCurrentAuthSession, o.GetCurrentAuthSession)
 
 	huma.Register(api, ListNotifications, o.ListNotifications)
 	huma.Register(api, DeleteNotification, o.DeleteNotification)
@@ -38,15 +38,16 @@ type (
 		StartFlowEndpoint string `json:"startFlowEndpoint"`
 	}
 
-	UserAuthSession struct {
+	AuthSession struct {
 		ExpiresAt    time.Time    `json:"expiresAt"`
 		Organization Organization `json:"organization"`
 		User         User         `json:"user"`
 	}
 
 	Organization struct {
-		Id   uuid.UUID `json:"id"`
-		Name string    `json:"name"`
+		Id                   uuid.UUID `json:"id"`
+		Name                 string    `json:"name"`
+		RequiresInitialSetup bool      `json:"requiresInitialSetup"`
 	}
 
 	UserNotification struct {
@@ -81,20 +82,22 @@ var GetAuthSessionsConfig = huma.Operation{
 	Security:    ExplicitNoSecurity,
 }
 
-type GetAuthSessionsConfigRequest EmptyRequest
+type GetAuthSessionsConfigRequest struct {
+	Email string `query:"email" required:"false"`
+}
 type GetAuthSessionsConfigResponse ItemResponse[AuthSessionsConfig]
 
-var GetCurrentUserAuthSession = huma.Operation{
-	OperationID: "get-current-user-auth-session",
+var GetCurrentAuthSession = huma.Operation{
+	OperationID: "get-current-auth-session",
 	Method:      http.MethodGet,
-	Path:        "/auth_session/user",
+	Path:        "/auth_session",
 	Summary:     "Get the Auth Session for the Current User",
 	Tags:        authSessionsTags,
 	Errors:      errorCodes(),
 }
 
-type GetCurrentUserAuthSessionRequest EmptyRequest
-type GetCurrentUserAuthSessionResponse ItemResponse[UserAuthSession]
+type GetCurrentAuthSessionRequest EmptyRequest
+type GetCurrentAuthSessionResponse ItemResponse[AuthSession]
 
 var ListNotifications = huma.Operation{
 	OperationID: "list-user-notifications",

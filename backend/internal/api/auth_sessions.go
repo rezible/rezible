@@ -2,7 +2,6 @@ package api
 
 import (
 	"context"
-	"strings"
 
 	"github.com/google/uuid"
 
@@ -26,9 +25,9 @@ func (h *authSessionsHandler) GetAuthSessionsConfig(ctx context.Context, req *oa
 	configs := make([]oapi.AuthSessionProviderConfig, len(providers))
 	for i, prov := range providers {
 		configs[i] = oapi.AuthSessionProviderConfig{
-			Name:              prov.Name(),
+			Name:              prov.DisplayName(),
+			StartFlowEndpoint: h.auth.GetProviderStartFlowPath(prov),
 			Enabled:           true,
-			StartFlowEndpoint: "/auth/" + strings.ToLower(prov.Name()),
 		}
 	}
 
@@ -39,10 +38,11 @@ func (h *authSessionsHandler) GetAuthSessionsConfig(ctx context.Context, req *oa
 	return &resp, nil
 }
 
-func (h *authSessionsHandler) GetCurrentUserAuthSession(ctx context.Context, input *oapi.GetCurrentUserAuthSessionRequest) (*oapi.GetCurrentUserAuthSessionResponse, error) {
-	var resp oapi.GetCurrentUserAuthSessionResponse
+func (h *authSessionsHandler) GetCurrentAuthSession(ctx context.Context, input *oapi.GetCurrentAuthSessionRequest) (*oapi.GetCurrentAuthSessionResponse, error) {
+	var resp oapi.GetCurrentAuthSessionResponse
 
 	sess := getRequestAuthSession(ctx, h.auth)
+
 	user, userErr := h.users.GetById(ctx, sess.UserId)
 	if userErr != nil {
 		return nil, apiError("failed to get user", userErr)
@@ -53,7 +53,7 @@ func (h *authSessionsHandler) GetCurrentUserAuthSession(ctx context.Context, inp
 		return nil, apiError("failed to get tenant", tenantErr)
 	}
 
-	resp.Body.Data = oapi.UserAuthSession{
+	resp.Body.Data = oapi.AuthSession{
 		ExpiresAt:    sess.ExpiresAt,
 		Organization: oapi.Organization{Id: tenant.PublicID, Name: tenant.Name},
 		User:         oapi.UserFromEnt(user),

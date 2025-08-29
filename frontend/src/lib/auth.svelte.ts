@@ -1,9 +1,10 @@
 import {
 	type UserNotification,
-	type GetCurrentUserAuthSessionResponse,
+	type GetCurrentAuthSessionResponse,
 	type User,
-	getCurrentUserAuthSessionOptions,
+	getCurrentAuthSessionOptions,
 	type ErrorModel,
+	type Organization,
 } from "$lib/api";
 import { parseAbsoluteToLocal } from "@internationalized/date";
 import { createQuery, QueryClient } from "@tanstack/svelte-query";
@@ -20,23 +21,26 @@ export type SessionError = {
 type AuthSession = {
 	expiresAt: Date;
 	user: User;
+	organization: Organization;
 };
 
-const parseUserAuthSessionResponse = (resp: GetCurrentUserAuthSessionResponse): AuthSession => {
+const parseUserAuthSessionResponse = ({data}: GetCurrentAuthSessionResponse): AuthSession => {
 	return {
-		user: resp.data.user,
-		expiresAt: parseAbsoluteToLocal(resp.data.expiresAt).toDate(),
+		user: data.user,
+		organization: data.organization,
+		expiresAt: parseAbsoluteToLocal(data.expiresAt).toDate(),
 	};
 };
 
 const SessionExpiryCheckIntervalMs = 10_000;
 
 export class AuthSessionState {
-	private query = createQuery(() => getCurrentUserAuthSessionOptions());
+	private query = createQuery(() => getCurrentAuthSessionOptions());
 
 	session = $derived(this.query.data ? parseUserAuthSessionResponse(this.query.data) : null);
 	loaded = $derived(this.query.isFetched);
 	user = $derived(this.session?.user);
+	org = $derived(this.session?.organization);
 	
 	error = $derived.by<SessionError | undefined>(() => {
 		if (this.session && this.session.expiresAt < new Date(Date.now())) {

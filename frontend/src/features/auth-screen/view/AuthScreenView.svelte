@@ -4,7 +4,7 @@
 	import { useAuthSessionState, type SessionErrorCategory } from "$lib/auth.svelte";
 	import Button from "$components/button/Button.svelte";
 	import Header from "$components/header/Header.svelte";
-	import { mdiGithub, mdiGoogle } from "@mdi/js";
+	import { mdiGoogle, mdiKey } from "@mdi/js";
 	import Icon from "$src/components/icon/Icon.svelte";
 
 	const session = useAuthSessionState();
@@ -16,11 +16,10 @@
 
 	const errorCategory = $derived(session.error?.category);
 
-	type ProviderDisplay = {label: string; icon?: string};
+	type ProviderDisplay = {label: string; icon: string};
 	const providerDisplay = new Map<string, ProviderDisplay>([
-		["saml", {label: "SSO"}],
+		["saml", {label: "SSO", icon: mdiKey}],
 		["google", {label: "Google", icon: mdiGoogle}],
-		["github", {label: "Github", icon: mdiGithub}],
 	]);
 
 	const errorDisplayText: Record<SessionErrorCategory, string> = {
