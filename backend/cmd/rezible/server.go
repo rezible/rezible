@@ -196,15 +196,13 @@ func (s *rezServer) makeAuthService(ctx context.Context, users rez.UserService) 
 		if clientID == "" || clientSecret == "" {
 			return nil, fmt.Errorf("client id/secret env vars not set")
 		}
-		cfg := oidc.Config{
+
+		cfg := oidc.ProviderConfig{
 			SessionSecret: secretKey,
-			ProviderName:  "Google",
 			ClientID:      clientID,
 			ClientSecret:  clientSecret,
-			IssuerUrl:     "https://accounts.google.com",
 		}
-
-		googleProv, googleErr := oidc.NewAuthSessionProvider(ctx, cfg)
+		googleProv, googleErr := oidc.NewGoogleAuthSessionProvider(ctx, cfg)
 		if googleErr != nil {
 			return nil, fmt.Errorf("oidc.NewGoogleProvider: %w", googleErr)
 		}
