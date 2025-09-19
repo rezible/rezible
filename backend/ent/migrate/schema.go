@@ -1366,6 +1366,35 @@ var (
 			},
 		},
 	}
+	// OrganizationsColumns holds the columns for the "organizations" table.
+	OrganizationsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUUID},
+		{Name: "provider_id", Type: field.TypeString},
+		{Name: "name", Type: field.TypeString},
+		{Name: "initial_setup_at", Type: field.TypeTime, Nullable: true},
+		{Name: "tenant_id", Type: field.TypeInt},
+	}
+	// OrganizationsTable holds the schema information for the "organizations" table.
+	OrganizationsTable = &schema.Table{
+		Name:       "organizations",
+		Columns:    OrganizationsColumns,
+		PrimaryKey: []*schema.Column{OrganizationsColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "organizations_tenants_tenant",
+				Columns:    []*schema.Column{OrganizationsColumns[4]},
+				RefColumns: []*schema.Column{TenantsColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+		},
+		Indexes: []*schema.Index{
+			{
+				Name:    "organization_tenant_id",
+				Unique:  false,
+				Columns: []*schema.Column{OrganizationsColumns[4]},
+			},
+		},
+	}
 	// PlaybooksColumns holds the columns for the "playbooks" table.
 	PlaybooksColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID},
@@ -2173,23 +2202,12 @@ var (
 	// TenantsColumns holds the columns for the "tenants" table.
 	TenantsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeInt, Increment: true},
-		{Name: "name", Type: field.TypeString},
-		{Name: "public_id", Type: field.TypeUUID},
-		{Name: "provider_id", Type: field.TypeString},
-		{Name: "initial_setup_at", Type: field.TypeTime, Nullable: true},
 	}
 	// TenantsTable holds the schema information for the "tenants" table.
 	TenantsTable = &schema.Table{
 		Name:       "tenants",
 		Columns:    TenantsColumns,
 		PrimaryKey: []*schema.Column{TenantsColumns[0]},
-		Indexes: []*schema.Index{
-			{
-				Name:    "tenant_public_id",
-				Unique:  false,
-				Columns: []*schema.Column{TenantsColumns[2]},
-			},
-		},
 	}
 	// TicketsColumns holds the columns for the "tickets" table.
 	TicketsColumns = []*schema.Column{
@@ -2738,6 +2756,7 @@ var (
 		OncallShiftsTable,
 		OncallShiftHandoversTable,
 		OncallShiftMetricsTable,
+		OrganizationsTable,
 		PlaybooksTable,
 		ProviderConfigsTable,
 		ProviderSyncHistoriesTable,
@@ -2858,6 +2877,7 @@ func init() {
 	OncallShiftHandoversTable.ForeignKeys[1].RefTable = TenantsTable
 	OncallShiftMetricsTable.ForeignKeys[0].RefTable = OncallShiftsTable
 	OncallShiftMetricsTable.ForeignKeys[1].RefTable = TenantsTable
+	OrganizationsTable.ForeignKeys[0].RefTable = TenantsTable
 	PlaybooksTable.ForeignKeys[0].RefTable = TenantsTable
 	ProviderConfigsTable.ForeignKeys[0].RefTable = TenantsTable
 	ProviderSyncHistoriesTable.ForeignKeys[0].RefTable = TenantsTable

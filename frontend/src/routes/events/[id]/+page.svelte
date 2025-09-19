@@ -1,8 +1,8 @@
 <script lang="ts">
 	import { page } from "$app/state";
-	import { OncallEventView, setOncallEventViewState } from "$features/oncall-event";
+	import { EventView, setEventViewState } from "$src/features/event";
 
-	setOncallEventViewState(() => page.params.id);
+	setEventViewState(() => page.params.id);
 </script>
 
-<OncallEventView />
+<EventView />

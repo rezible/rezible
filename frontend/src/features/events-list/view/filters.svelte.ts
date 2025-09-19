@@ -1,4 +1,4 @@
-import type { ListOncallEventsData, OncallEventAttributes } from "$lib/api";
+import type { ListEventsData, EventAttributes } from "$lib/api";
 import { useUserOncallInformation } from "$lib/userOncall.svelte";
 import { PeriodType } from "@layerstack/utils";
 import type { DateRange as DateRangeType } from "@layerstack/utils/dateRange";
@@ -9,7 +9,7 @@ export type DateRangeOption = { label: string, value: "shift" | "7d" | "30d" | "
 const last7Days = () => ({ from: subWeeks(new Date(), 1), to: new Date(), periodType: PeriodType.Day });
 const lastMonth = () => ({ from: subMonths(new Date(), 1), to: new Date(), periodType: PeriodType.Day });
 
-export type EventKind = OncallEventAttributes["kind"];
+export type EventKind = EventAttributes["kind"];
 
 export type FilterOptions = {
 	rosterId?: string;
@@ -48,12 +48,14 @@ export class EventsListFiltersState {
 	annotation = $state<boolean>();
 	rosterId = $state<string>();
 
-	private listRosterEventsQueryData = $derived<ListOncallEventsData["query"]>({
+	private listRosterEventsQueryData = $derived<ListEventsData["query"]>({
 		from: this.dateRange.from?.toISOString(),
 		to: this.dateRange.to?.toISOString(),
-		rosterId: this.rosterId,
+		// rosterId: this.rosterId,
 	});
-	private listShiftEventsQueryData = $derived<ListOncallEventsData["query"]>({ shiftId: this.activeShift?.id });
+	private listShiftEventsQueryData = $derived<ListEventsData["query"]>({ 
+		// shiftId: this.activeShift?.id 
+	});
 	queryData = $derived(this.dateRangeOption === "shift" ? this.listShiftEventsQueryData : this.listRosterEventsQueryData);
 	queryEnabled = $derived(!!this.oncallInfo && !!this.defaultRosterId);
 };

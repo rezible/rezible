@@ -3,24 +3,25 @@
 	import FilterPage from "$components/filter-page/FilterPage.svelte";
 	import ListFilters from "./ListFilters.svelte";
 	import PaginatedListBox from "$components/paginated-listbox/PaginatedListBox.svelte";
-	import EventRow from "$components/oncall-events/EventRow.svelte";
+	import EventRow from "$src/components/events/EventRow.svelte";
 	import LoadingIndicator from "$components/loading-indicator/LoadingIndicator.svelte";
-	import { AnnotationDialogState, setAnnotationDialogState } from "$components/oncall-events/annotation-dialog/dialogState.svelte";
-	import EventAnnotationDialog from "$components/oncall-events/annotation-dialog/EventAnnotationDialog.svelte";
+	import { AnnotationDialogState, setAnnotationDialogState } from "$src/components/events/annotation-dialog/dialogState.svelte";
+	import EventAnnotationDialog from "$src/components/events/annotation-dialog/EventAnnotationDialog.svelte";
 	import { createQuery, useQueryClient } from "@tanstack/svelte-query";
 	import { QueryPaginatorState } from "$lib/paginator.svelte";
-	import { listOncallEventsOptions } from "$lib/api";
+	import { listEventsOptions } from "$lib/api";
 	import { EventsListFiltersState } from "./filters.svelte";
 
 	const filtersState = new EventsListFiltersState();
 
 	const paginator = new QueryPaginatorState();
-	const queryOptions = $derived(listOncallEventsOptions({ 
+	const queryOptions = $derived(listEventsOptions({ 
 		query: {
 			...filtersState.queryData,
 			limit: paginator.limit,
 			offset: paginator.offset,
-			withAnnotations: true,
+			// TODO
+			// withAnnotations: true,
 		}
 	}));
 	const query = createQuery(() => ({

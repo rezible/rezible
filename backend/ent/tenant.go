@@ -5,28 +5,18 @@ package ent
 import (
 	"fmt"
 	"strings"
-	"time"
 
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
-	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/tenant"
 )
 
 // Tenant is the model entity for the Tenant schema.
 type Tenant struct {
-	config `json:"-"`
+	config
 	// ID of the ent.
-	ID int `json:"id,omitempty"`
-	// Name holds the value of the "name" field.
-	Name string `json:"name,omitempty"`
-	// PublicID holds the value of the "public_id" field.
-	PublicID uuid.UUID `json:"public_id,omitempty"`
-	// ProviderID holds the value of the "provider_id" field.
-	ProviderID string `json:"provider_id,omitempty"`
-	// InitialSetupAt holds the value of the "initial_setup_at" field.
-	InitialSetupAt time.Time `json:"initial_setup_at,omitempty"`
-	selectValues   sql.SelectValues
+	ID           int `json:"id,omitempty"`
+	selectValues sql.SelectValues
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -36,12 +26,6 @@ func (*Tenant) scanValues(columns []string) ([]any, error) {
 		switch columns[i] {
 		case tenant.FieldID:
 			values[i] = new(sql.NullInt64)
-		case tenant.FieldName, tenant.FieldProviderID:
-			values[i] = new(sql.NullString)
-		case tenant.FieldInitialSetupAt:
-			values[i] = new(sql.NullTime)
-		case tenant.FieldPublicID:
-			values[i] = new(uuid.UUID)
 		default:
 			values[i] = new(sql.UnknownType)
 		}
@@ -63,30 +47,6 @@ func (t *Tenant) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field id", value)
 			}
 			t.ID = int(value.Int64)
-		case tenant.FieldName:
-			if value, ok := values[i].(*sql.NullString); !ok {
-				return fmt.Errorf("unexpected type %T for field name", values[i])
-			} else if value.Valid {
-				t.Name = value.String
-			}
-		case tenant.FieldPublicID:
-			if value, ok := values[i].(*uuid.UUID); !ok {
-				return fmt.Errorf("unexpected type %T for field public_id", values[i])
-			} else if value != nil {
-				t.PublicID = *value
-			}
-		case tenant.FieldProviderID:
-			if value, ok := values[i].(*sql.NullString); !ok {
-				return fmt.Errorf("unexpected type %T for field provider_id", values[i])
-			} else if value.Valid {
-				t.ProviderID = value.String
-			}
-		case tenant.FieldInitialSetupAt:
-			if value, ok := values[i].(*sql.NullTime); !ok {
-				return fmt.Errorf("unexpected type %T for field initial_setup_at", values[i])
-			} else if value.Valid {
-				t.InitialSetupAt = value.Time
-			}
 		default:
 			t.selectValues.Set(columns[i], values[i])
 		}
@@ -122,18 +82,7 @@ func (t *Tenant) Unwrap() *Tenant {
 func (t *Tenant) String() string {
 	var builder strings.Builder
 	builder.WriteString("Tenant(")
-	builder.WriteString(fmt.Sprintf("id=%v, ", t.ID))
-	builder.WriteString("name=")
-	builder.WriteString(t.Name)
-	builder.WriteString(", ")
-	builder.WriteString("public_id=")
-	builder.WriteString(fmt.Sprintf("%v", t.PublicID))
-	builder.WriteString(", ")
-	builder.WriteString("provider_id=")
-	builder.WriteString(t.ProviderID)
-	builder.WriteString(", ")
-	builder.WriteString("initial_setup_at=")
-	builder.WriteString(t.InitialSetupAt.Format(time.ANSIC))
+	builder.WriteString(fmt.Sprintf("id=%v", t.ID))
 	builder.WriteByte(')')
 	return builder.String()
 }

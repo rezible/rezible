@@ -48,6 +48,7 @@ import (
 	"github.com/rezible/rezible/ent/oncallshift"
 	"github.com/rezible/rezible/ent/oncallshifthandover"
 	"github.com/rezible/rezible/ent/oncallshiftmetrics"
+	"github.com/rezible/rezible/ent/organization"
 	"github.com/rezible/rezible/ent/playbook"
 	"github.com/rezible/rezible/ent/providerconfig"
 	"github.com/rezible/rezible/ent/providersynchistory"
@@ -167,6 +168,7 @@ func checkColumn(table, column string) error {
 			oncallshift.Table:                      oncallshift.ValidColumn,
 			oncallshifthandover.Table:              oncallshifthandover.ValidColumn,
 			oncallshiftmetrics.Table:               oncallshiftmetrics.ValidColumn,
+			organization.Table:                     organization.ValidColumn,
 			playbook.Table:                         playbook.ValidColumn,
 			providerconfig.Table:                   providerconfig.ValidColumn,
 			providersynchistory.Table:              providersynchistory.ValidColumn,

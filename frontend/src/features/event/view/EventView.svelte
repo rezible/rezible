@@ -1,8 +1,8 @@
 <script lang="ts">
 	import { appShell } from "$features/app-shell/lib/appShellState.svelte";
-	import { useOncallEventViewState } from "$features/oncall-event";
+	import { useEventViewState } from "$src/features/event";
 
-	const view = useOncallEventViewState();
+	const view = useEventViewState();
 
 	appShell.setPageBreadcrumbs(() => [
 		{ label: "Events" },
@@ -17,11 +17,6 @@
 		<!-- <span>Description</span> -->
 
 		<!-- <span>Owning Team</span> -->
-	</div>
-
-	<div class="flex flex-col gap-2 w-fit border p-2">
-		<span class="uppercase font-semibold text-surface-content/90">Roster</span>
-
 	</div>
 
 	<div class="flex flex-col gap-2 w-fit border p-2">

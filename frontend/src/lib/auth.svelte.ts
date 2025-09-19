@@ -76,6 +76,10 @@ export class AuthSessionState {
 	isAuthenticated = $derived(!!this.session && !this.error);
 	isSetup = $derived(this.isAuthenticated && !this.org?.requiresInitialSetup);
 
+	refetch() {
+		this.query.refetch();
+	}
+
 	checkSessionExpiry() {
 		if (!this.session) return;
 		const timeLeft = this.session.expiresAt.valueOf() - new Date(Date.now()).valueOf();
@@ -86,7 +90,7 @@ export class AuthSessionState {
 		}
 	}
 
-	refreshSession(timeLeft: number) {
+	private refreshSession(timeLeft: number) {
 		console.log("auth session expiring soon", timeLeft);
 	}
 

@@ -1,4 +1,4 @@
-import { type GetAlertMetricsData, getAlertMetricsOptions, getAlertOptions, listOncallEventsOptions } from "$lib/api";
+import { getAlertOptions } from "$lib/api";
 import type { Getter } from "$lib/utils.svelte";
 import { QueryPaginatorState } from "$src/lib/paginator.svelte";
 import { getLocalTimeZone, now, ZonedDateTime } from "@internationalized/date";

@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { OncallEventsListView } from "$features/oncall-events-list";
+	import { EventsListView } from "$features/events-list";
 </script>
 
-<OncallEventsListView />
+<EventsListView />

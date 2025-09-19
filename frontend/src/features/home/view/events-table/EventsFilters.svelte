@@ -11,10 +11,10 @@
 	import Button from "$components/button/Button.svelte";
 	import RosterSelectField from "$components/roster-select-field/RosterSelectField.svelte";
 	import Icon from "$components/icon/Icon.svelte";
-	import type { EventKind, OncallEventsTableState } from "./eventsTableState.svelte";
+	import type { EventKind, EventsTableState } from "./eventsTableState.svelte";
 
 	type Props = {
-		tableState: OncallEventsTableState;
+		tableState: EventsTableState;
 	};
 	const { tableState }: Props = $props();
 

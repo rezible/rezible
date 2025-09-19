@@ -11,11 +11,12 @@ import (
 
 type authSessionsHandler struct {
 	auth  rez.AuthService
+	orgs  rez.OrganizationService
 	users rez.UserService
 }
 
-func newAuthSessionsHandler(auth rez.AuthService, users rez.UserService) *authSessionsHandler {
-	return &authSessionsHandler{auth: auth, users: users}
+func newAuthSessionsHandler(auth rez.AuthService, orgs rez.OrganizationService, users rez.UserService) *authSessionsHandler {
+	return &authSessionsHandler{auth: auth, orgs: orgs, users: users}
 }
 
 func (h *authSessionsHandler) GetAuthSessionsConfig(ctx context.Context, req *oapi.GetAuthSessionsConfigRequest) (*oapi.GetAuthSessionsConfigResponse, error) {
@@ -48,17 +49,17 @@ func (h *authSessionsHandler) GetCurrentAuthSession(ctx context.Context, input *
 		return nil, apiError("failed to get user", userErr)
 	}
 
-	tenant, tenantErr := user.QueryTenant().Only(ctx)
-	if tenantErr != nil {
-		return nil, apiError("failed to get tenant", tenantErr)
+	org, orgErr := h.orgs.GetCurrent(ctx)
+	if orgErr != nil {
+		return nil, apiError("failed to get organization", orgErr)
 	}
 
 	resp.Body.Data = oapi.AuthSession{
 		User: oapi.UserFromEnt(user),
 		Organization: oapi.Organization{
-			Id:                   tenant.PublicID,
-			Name:                 tenant.Name,
-			RequiresInitialSetup: tenant.InitialSetupAt.IsZero(),
+			Id:                   org.ID,
+			Name:                 org.Name,
+			RequiresInitialSetup: org.InitialSetupAt.IsZero(),
 		},
 		ExpiresAt: sess.ExpiresAt,
 	}

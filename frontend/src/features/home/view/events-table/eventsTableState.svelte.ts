@@ -1,4 +1,4 @@
-import { listOncallEventsOptions, type ListOncallEventsData, type OncallEventAttributes } from "$lib/api";
+import { listEventsOptions, type ListEventsData, type EventAttributes } from "$lib/api";
 import { PeriodType } from "@layerstack/utils";
 import { type DateRange as DateRangeType } from "@layerstack/utils/dateRange";
 import { createQuery, useQueryClient } from "@tanstack/svelte-query";
@@ -18,7 +18,7 @@ export const dateRangeOptions: DateRangeOption[] = [
 const last7Days = () => ({ from: subWeeks(new Date(), 1), to: new Date(), periodType: PeriodType.Day });
 const lastMonth = () => ({ from: subMonths(new Date(), 1), to: new Date(), periodType: PeriodType.Day });
 
-export type EventKind = OncallEventAttributes["kind"];
+export type EventKind = EventAttributes["kind"];
 
 export type FilterOptions = {
 	rosterId?: string;
@@ -26,7 +26,7 @@ export type FilterOptions = {
 	annotated?: boolean;
 };
 
-export class OncallEventsTableState {
+export class EventsTableState {
 	private queryClient = useQueryClient();
 	private oncallInfo = useUserOncallInformation();
 
@@ -60,21 +60,25 @@ export class OncallEventsTableState {
 	paginator = new QueryPaginatorState();
 	queryEnabled = $derived(!!this.oncallInfo && !!this.defaultRosterId);
 
-	private listRosterEventsQueryData = $derived<ListOncallEventsData["query"]>({
+	private listRosterEventsQueryData = $derived<ListEventsData["query"]>({
 		from: this.dateRange.from?.toISOString(),
 		to: this.dateRange.to?.toISOString(),
-		rosterId: this.filters.rosterId,
+		// rosterId: this.filters.rosterId,
 	});
-	private listShiftEventsQueryData = $derived<ListOncallEventsData["query"]>({ shiftId: this.activeShift?.id });
+	private listShiftEventsQueryData = $derived<ListEventsData["query"]>({ 
+		from: this.dateRange.from?.toISOString(),
+		to: this.dateRange.to?.toISOString(),
+		// shiftId: this.activeShift?.id,
+	});
 	private listShiftEventsFinalQueryData = $derived(this.dateRangeOption === "shift" ? this.listShiftEventsQueryData : this.listRosterEventsQueryData);
 
-	private listEventsQueryData = $derived<ListOncallEventsData["query"]>({
+	private listEventsQueryData = $derived<ListEventsData["query"]>({
 		...this.listShiftEventsFinalQueryData,
 		limit: this.paginator.limit,
 		offset: this.paginator.offset,
-		withAnnotations: true,
+		// withAnnotations: true,
 	});
-	private listEventsQueryOptions = $derived(listOncallEventsOptions({ query: this.listEventsQueryData }));
+	private listEventsQueryOptions = $derived(listEventsOptions({ query: this.listEventsQueryData }));
 
 	private listEventsQuery = createQuery(() => ({
 		...this.listEventsQueryOptions,

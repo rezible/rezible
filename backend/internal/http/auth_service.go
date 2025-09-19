@@ -10,6 +10,7 @@ import (
 	mapset "github.com/deckarep/golang-set/v2"
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/google/uuid"
+	"github.com/rezible/rezible/access"
 	"github.com/rs/zerolog/log"
 
 	rez "github.com/rezible/rezible"
@@ -21,6 +22,7 @@ const (
 )
 
 type AuthService struct {
+	orgs          rez.OrganizationService
 	users         rez.UserService
 	providers     []rez.AuthSessionProvider
 	sessionSecret []byte
@@ -28,8 +30,9 @@ type AuthService struct {
 
 var _ rez.AuthService = (*AuthService)(nil)
 
-func NewAuthService(secretKey string, users rez.UserService, providers []rez.AuthSessionProvider) (*AuthService, error) {
+func NewAuthService(secretKey string, orgs rez.OrganizationService, users rez.UserService, providers []rez.AuthSessionProvider) (*AuthService, error) {
 	return &AuthService{
+		orgs:          orgs,
 		users:         users,
 		providers:     providers,
 		sessionSecret: []byte(secretKey),
@@ -137,7 +140,15 @@ func (s *AuthService) makeUserSessionCreatedCallback(w http.ResponseWriter, r *h
 			expiry = time.Now().Add(defaultSessionDuration)
 		}
 
-		usr, usrErr := s.users.FindOrCreateAuthProviderUser(ctx, &ps.User, &ps.Tenant)
+		org, orgErr := s.orgs.FindOrCreateAuthProviderOrganization(ctx, ps.Organization)
+		if orgErr != nil {
+			log.Error().Err(orgErr).Msg("FindOrCreateAuthProviderOrganization")
+			http.Error(w, "session error", http.StatusInternalServerError)
+			return
+		}
+
+		findUserCtx := access.TenantSystemContext(ctx, org.TenantID)
+		usr, usrErr := s.users.FindOrCreateAuthProviderUser(findUserCtx, ps.User)
 		if usrErr != nil {
 			log.Error().Err(usrErr).Msg("FindOrCreateAuthProviderUser")
 			http.Error(w, "session error", http.StatusInternalServerError)

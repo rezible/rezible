@@ -963,6 +963,30 @@ func (f OncallShiftMetricsMutationRuleFunc) EvalMutation(ctx context.Context, m 
 	return Denyf("ent/privacy: unexpected mutation type %T, expect *ent.OncallShiftMetricsMutation", m)
 }
 
+// The OrganizationQueryRuleFunc type is an adapter to allow the use of ordinary
+// functions as a query rule.
+type OrganizationQueryRuleFunc func(context.Context, *ent.OrganizationQuery) error
+
+// EvalQuery return f(ctx, q).
+func (f OrganizationQueryRuleFunc) EvalQuery(ctx context.Context, q ent.Query) error {
+	if q, ok := q.(*ent.OrganizationQuery); ok {
+		return f(ctx, q)
+	}
+	return Denyf("ent/privacy: unexpected query type %T, expect *ent.OrganizationQuery", q)
+}
+
+// The OrganizationMutationRuleFunc type is an adapter to allow the use of ordinary
+// functions as a mutation rule.
+type OrganizationMutationRuleFunc func(context.Context, *ent.OrganizationMutation) error
+
+// EvalMutation calls f(ctx, m).
+func (f OrganizationMutationRuleFunc) EvalMutation(ctx context.Context, m ent.Mutation) error {
+	if m, ok := m.(*ent.OrganizationMutation); ok {
+		return f(ctx, m)
+	}
+	return Denyf("ent/privacy: unexpected mutation type %T, expect *ent.OrganizationMutation", m)
+}
+
 // The PlaybookQueryRuleFunc type is an adapter to allow the use of ordinary
 // functions as a query rule.
 type PlaybookQueryRuleFunc func(context.Context, *ent.PlaybookQuery) error
@@ -1622,6 +1646,8 @@ func queryFilter(q ent.Query) (Filter, error) {
 		return q.Filter(), nil
 	case *ent.OncallShiftMetricsQuery:
 		return q.Filter(), nil
+	case *ent.OrganizationQuery:
+		return q.Filter(), nil
 	case *ent.PlaybookQuery:
 		return q.Filter(), nil
 	case *ent.ProviderConfigQuery:
@@ -1744,6 +1770,8 @@ func mutationFilter(m ent.Mutation) (Filter, error) {
 	case *ent.OncallShiftHandoverMutation:
 		return m.Filter(), nil
 	case *ent.OncallShiftMetricsMutation:
+		return m.Filter(), nil
+	case *ent.OrganizationMutation:
 		return m.Filter(), nil
 	case *ent.PlaybookMutation:
 		return m.Filter(), nil

@@ -42,6 +42,7 @@ import (
 	"github.com/rezible/rezible/ent/oncallshift"
 	"github.com/rezible/rezible/ent/oncallshifthandover"
 	"github.com/rezible/rezible/ent/oncallshiftmetrics"
+	"github.com/rezible/rezible/ent/organization"
 	"github.com/rezible/rezible/ent/playbook"
 	"github.com/rezible/rezible/ent/providerconfig"
 	"github.com/rezible/rezible/ent/providersynchistory"
@@ -780,6 +781,26 @@ func init() {
 	oncallshiftmetricsDescID := oncallshiftmetricsFields[0].Descriptor()
 	// oncallshiftmetrics.DefaultID holds the default value on creation for the id field.
 	oncallshiftmetrics.DefaultID = oncallshiftmetricsDescID.Default.(func() uuid.UUID)
+	organizationMixin := schema.Organization{}.Mixin()
+	organization.Policy = privacy.NewPolicies(organizationMixin[0], organizationMixin[1], schema.Organization{})
+	organization.Hooks[0] = func(next ent.Mutator) ent.Mutator {
+		return ent.MutateFunc(func(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+			if err := organization.Policy.EvalMutation(ctx, m); err != nil {
+				return nil, err
+			}
+			return next.Mutate(ctx, m)
+		})
+	}
+	organizationFields := schema.Organization{}.Fields()
+	_ = organizationFields
+	// organizationDescProviderID is the schema descriptor for provider_id field.
+	organizationDescProviderID := organizationFields[1].Descriptor()
+	// organization.ProviderIDValidator is a validator for the "provider_id" field. It is called by the builders before save.
+	organization.ProviderIDValidator = organizationDescProviderID.Validators[0].(func(string) error)
+	// organizationDescID is the schema descriptor for id field.
+	organizationDescID := organizationFields[0].Descriptor()
+	// organization.DefaultID holds the default value on creation for the id field.
+	organization.DefaultID = organizationDescID.Default.(func() uuid.UUID)
 	playbookMixin := schema.Playbook{}.Mixin()
 	playbook.Policy = privacy.NewPolicies(playbookMixin[0], playbookMixin[1], schema.Playbook{})
 	playbook.Hooks[0] = func(next ent.Mutator) ent.Mutator {
@@ -1216,20 +1237,6 @@ func init() {
 			return next.Mutate(ctx, m)
 		})
 	}
-	tenantFields := schema.Tenant{}.Fields()
-	_ = tenantFields
-	// tenantDescName is the schema descriptor for name field.
-	tenantDescName := tenantFields[0].Descriptor()
-	// tenant.NameValidator is a validator for the "name" field. It is called by the builders before save.
-	tenant.NameValidator = tenantDescName.Validators[0].(func(string) error)
-	// tenantDescPublicID is the schema descriptor for public_id field.
-	tenantDescPublicID := tenantFields[1].Descriptor()
-	// tenant.DefaultPublicID holds the default value on creation for the public_id field.
-	tenant.DefaultPublicID = tenantDescPublicID.Default.(func() uuid.UUID)
-	// tenantDescProviderID is the schema descriptor for provider_id field.
-	tenantDescProviderID := tenantFields[2].Descriptor()
-	// tenant.ProviderIDValidator is a validator for the "provider_id" field. It is called by the builders before save.
-	tenant.ProviderIDValidator = tenantDescProviderID.Validators[0].(func(string) error)
 	ticketMixin := schema.Ticket{}.Mixin()
 	ticket.Policy = privacy.NewPolicies(ticketMixin[0], ticketMixin[1], schema.Ticket{})
 	ticket.Hooks[0] = func(next ent.Mutator) ent.Mutator {

@@ -1,6 +1,6 @@
 <script lang="ts">
 	import Icon from "$components/icon/Icon.svelte";
-	import type { OncallEvent } from "$lib/api";
+	import type { Event } from "$lib/api";
 	import { mdiCalendar, mdiClose, mdiPhoneAlert } from "@mdi/js";
 	import { settings } from "$lib/settings.svelte";
 	import { PeriodType } from "@layerstack/utils";
@@ -11,7 +11,7 @@
 
 
 	type Props = {
-		event: OncallEvent;
+		event: Event;
 		close: () => void;
 	};
 	const { event, close }: Props = $props();

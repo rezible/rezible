@@ -7495,6 +7495,47 @@ export type GetOncallShiftMetricsResponses = {
 
 export type GetOncallShiftMetricsResponse = GetOncallShiftMetricsResponses[keyof GetOncallShiftMetricsResponses];
 
+export type FinishOrganizationSetupData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/organization/setup';
+};
+
+export type FinishOrganizationSetupErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
+
+export type FinishOrganizationSetupError = FinishOrganizationSetupErrors[keyof FinishOrganizationSetupErrors];
+
+export type FinishOrganizationSetupResponses = {
+    /**
+     * No Content
+     */
+    204: void;
+};
+
+export type FinishOrganizationSetupResponse = FinishOrganizationSetupResponses[keyof FinishOrganizationSetupResponses];
+
 export type ListPlaybooksData = {
     body?: never;
     path?: never;

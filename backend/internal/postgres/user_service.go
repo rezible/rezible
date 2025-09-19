@@ -12,17 +12,18 @@ import (
 	"github.com/rezible/rezible/ent/predicate"
 	"github.com/rezible/rezible/ent/privacy"
 	"github.com/rezible/rezible/ent/team"
-	"github.com/rezible/rezible/ent/tenant"
 	"github.com/rezible/rezible/ent/user"
 )
 
 type UserService struct {
-	db *ent.Client
+	db   *ent.Client
+	orgs rez.OrganizationService
 }
 
-func NewUserService(db *ent.Client) (*UserService, error) {
+func NewUserService(db *ent.Client, orgs rez.OrganizationService) (*UserService, error) {
 	s := &UserService{
-		db: db,
+		db:   db,
+		orgs: orgs,
 	}
 
 	return s, nil
@@ -55,75 +56,36 @@ func nilEmptyString(s string) *string {
 }
 
 func (s *UserService) getUserByProviderID(ctx context.Context, providerID string) (*ent.User, error) {
-	userQuery := s.db.User.Query().Where(user.ProviderID(providerID))
+	userQuery := s.db.User.Query().
+		Where(user.ProviderID(providerID))
 	return userQuery.Only(ctx)
 }
 
-func (s *UserService) FindOrCreateAuthProviderUser(ctx context.Context, pu *ent.User, pt *ent.Tenant) (*ent.User, error) {
-	tnt, tenantErr := s.db.Tenant.Query().Where(tenant.ProviderID(pt.ProviderID)).Only(ctx)
-	if tenantErr != nil && !ent.IsNotFound(tenantErr) {
-		return nil, fmt.Errorf("failed to query tenant: %w", tenantErr)
+func (s *UserService) FindOrCreateAuthProviderUser(ctx context.Context, pu ent.User) (*ent.User, error) {
+	usr, usrErr := s.getUserByProviderID(ctx, pu.ProviderID)
+	if usrErr != nil && !ent.IsNotFound(usrErr) {
+		return nil, fmt.Errorf("failed to query user: %w", usrErr)
+	}
+	if usr != nil {
+		return usr, nil
+	} else if !rez.AllowUserCreation {
+		return nil, rez.ErrInvalidUser
 	}
 
-	if tnt == nil && !rez.AllowTenantCreation {
-		return nil, rez.ErrInvalidTenant
+	// tenant exists, user does not exist
+
+	createUser := s.db.User.Create().
+		SetProviderID(pu.ProviderID).
+		SetEmail(pu.Email).
+		SetConfirmed(pu.Confirmed).
+		SetNillableName(nilEmptyString(pu.Name)).
+		SetNillableTimezone(nilEmptyString(pu.Timezone))
+
+	created, createErr := createUser.Save(ctx)
+	if createErr != nil {
+		return nil, fmt.Errorf("create user: %w", createErr)
 	}
-
-	if tnt != nil {
-		ctx = access.TenantSystemContext(ctx, tnt.ID)
-		usr, usrErr := s.getUserByProviderID(ctx, pu.ProviderID)
-		if usrErr != nil && !ent.IsNotFound(usrErr) {
-			return nil, fmt.Errorf("failed to query user: %w", usrErr)
-		}
-		if usr == nil && !rez.AllowUserCreation {
-			return nil, rez.ErrInvalidUser
-		}
-		if usr != nil {
-			return usr, nil
-		}
-	}
-
-	// tenant and user do not exist
-
-	ctx = access.SystemContext(ctx)
-
-	var createdUser *ent.User
-
-	createUserTenantFn := func(tx *ent.Tx) error {
-		if tnt == nil {
-			createTenant := tx.Tenant.Create().
-				SetProviderID(pt.ProviderID).
-				SetName(pt.Name)
-
-			tnt, tenantErr = createTenant.Save(ctx)
-			if tenantErr != nil {
-				return fmt.Errorf("create tenant: %w", tenantErr)
-			}
-			ctx = access.TenantSystemContext(ctx, tnt.ID)
-		}
-
-		createUser := tx.User.Create().
-			SetTenantID(tnt.ID).
-			SetProviderID(pu.ProviderID).
-			SetEmail(pu.Email).
-			SetConfirmed(pu.Confirmed).
-			SetNillableName(nilEmptyString(pu.Name)).
-			SetNillableTimezone(nilEmptyString(pu.Timezone))
-
-		created, createErr := createUser.Save(ctx)
-		if createErr != nil {
-			return fmt.Errorf("create user: %w", createErr)
-		}
-		createdUser = created
-
-		return nil
-	}
-
-	if txErr := ent.WithTx(ctx, s.db, createUserTenantFn); txErr != nil {
-		return nil, txErr
-	}
-
-	return createdUser, nil
+	return created, nil
 }
 
 func (s *UserService) Create(ctx context.Context, user ent.User) (*ent.User, error) {

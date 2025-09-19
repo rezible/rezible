@@ -10,7 +10,7 @@ import (
 
 	"github.com/danielgtaylor/huma/v2/humacli"
 	_ "github.com/jackc/pgx/v5/stdlib"
-	"github.com/rezible/rezible/ent/tenant"
+	"github.com/rezible/rezible/ent/organization"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 	"github.com/spf13/cobra"
@@ -100,7 +100,7 @@ func seedDatabase(ctx context.Context, db *postgres.Database) error {
 
 type (
 	providerTenantConfig struct {
-		TenantName    string                      `json:"tenant_name"`
+		OrgName       string                      `json:"organization_name"`
 		ConfigEntries []providerTenantConfigEntry `json:"configs"`
 	}
 
@@ -144,7 +144,7 @@ func loadFakeConfigCmd(ctx context.Context, opts *Options) error {
 			os.Getenv("GRAFANA_ONCALL_API_ENDPOINT"),
 			os.Getenv("GRAFANA_ONCALL_API_TOKEN"))
 		cfg := &providerTenantConfig{
-			TenantName: "Rezible Test",
+			OrgName: "Rezible Test",
 			ConfigEntries: []providerTenantConfigEntry{
 				{
 					Type:       providerconfig.ProviderTypeOncall,
@@ -163,20 +163,21 @@ func loadFakeConfigCmd(ctx context.Context, opts *Options) error {
 }
 
 func loadTenantProviderConfig(ctx context.Context, client *ent.Client, cfg *providerTenantConfig) error {
-	tenantName := cfg.TenantName
-	tnt, tenantErr := client.Tenant.Query().Where(tenant.Name(tenantName)).Only(ctx)
-	if ent.IsNotFound(tenantErr) {
-		create := client.Tenant.Create().
-			SetName(tenantName).
-			SetProviderID(tenantName)
-
-		tnt, tenantErr = create.Save(ctx)
+	org, orgErr := client.Organization.Query().Where(organization.Name(cfg.OrgName)).Only(ctx)
+	if orgErr != nil {
+		if !ent.IsNotFound(orgErr) {
+			return fmt.Errorf("querying org %q: %w", cfg.OrgName, orgErr)
+		}
+		if ent.IsNotFound(orgErr) {
+			tnt := client.Tenant.Create().SaveX(ctx)
+			org = client.Organization.Create().
+				SetName(cfg.OrgName).
+				SetProviderID(cfg.OrgName).
+				SetTenantID(tnt.ID).
+				SaveX(ctx)
+		}
 	}
-	if tenantErr != nil {
-		return fmt.Errorf("querying tenant %q: %w", tenantName, tenantErr)
-	}
-	ctx = access.TenantSystemContext(ctx, tnt.ID)
-
+	ctx = access.TenantSystemContext(ctx, org.TenantID)
 	return ent.WithTx(ctx, client, func(tx *ent.Tx) error {
 		for _, c := range cfg.ConfigEntries {
 			log.Info().

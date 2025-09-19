@@ -66,7 +66,7 @@
 
 <aside
 	class={cls(
-		"h-full group flex flex-col overflow-hidden bg-surface-300 pb-2 pl-2",
+		"h-full group flex flex-col overflow-hidden bg-surface-300",
 		expanded ? "w-60" : "w-fit"
 	)}
 >

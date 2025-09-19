@@ -2,22 +2,22 @@
 	import { Field, ToggleGroup, ToggleOption, Pagination } from "svelte-ux";
 	import Button from "$components/button/Button.svelte";
 	import Header from "$components/header/Header.svelte";
-	import EventAnnotationDialog from "$components/oncall-events/annotation-dialog/EventAnnotationDialog.svelte";
-	import EventRow from "$components/oncall-events/EventRow.svelte";
+	import EventAnnotationDialog from "$src/components/events/annotation-dialog/EventAnnotationDialog.svelte";
+	import EventRow from "$src/components/events/EventRow.svelte";
 	import LoadingIndicator from "$components/loading-indicator/LoadingIndicator.svelte";
 	import { mdiFilter } from "@mdi/js";
-	import { AnnotationDialogState, setAnnotationDialogState } from "$components/oncall-events/annotation-dialog/dialogState.svelte";
-	import { dateRangeOptions, OncallEventsTableState } from "./eventsTableState.svelte";
-	import type { OncallAnnotation } from "$lib/api";
+	import { AnnotationDialogState, setAnnotationDialogState } from "$src/components/events/annotation-dialog/dialogState.svelte";
+	import { dateRangeOptions, EventsTableState } from "./eventsTableState.svelte";
+	import type { EventAnnotation } from "$lib/api";
 	import { watch } from "runed";
 	import EventsFilters from "./EventsFilters.svelte";
 
-	const tableState = new OncallEventsTableState();
+	const tableState = new EventsTableState();
 
 	let filtersVisible = $state(false);
 
 	setAnnotationDialogState(new AnnotationDialogState({
-		onClosed: (updated?: OncallAnnotation) => {
+		onClosed: (updated?: EventAnnotation) => {
 			if (updated) tableState.invalidateQuery();
 		},
 	}));

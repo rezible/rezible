@@ -17,6 +17,8 @@ type IntegrationsHandler interface {
 	GetIntegration(context.Context, *GetIntegrationRequest) (*GetIntegrationResponse, error)
 	UpdateIntegration(context.Context, *UpdateIntegrationRequest) (*UpdateIntegrationResponse, error)
 	DeleteIntegration(context.Context, *DeleteIntegrationRequest) (*DeleteIntegrationResponse, error)
+
+	FinishOrganizationSetup(context.Context, *FinishOrganizationSetupRequest) (*FinishOrganizationSetupResponse, error)
 }
 
 func (o operations) RegisterIntegrations(api huma.API) {
@@ -25,6 +27,8 @@ func (o operations) RegisterIntegrations(api huma.API) {
 	huma.Register(api, GetIntegration, o.GetIntegration)
 	huma.Register(api, UpdateIntegration, o.UpdateIntegration)
 	huma.Register(api, DeleteIntegration, o.DeleteIntegration)
+
+	huma.Register(api, FinishOrganizationSetup, o.FinishOrganizationSetup)
 }
 
 type (
@@ -134,3 +138,15 @@ var DeleteIntegration = huma.Operation{
 
 type DeleteIntegrationRequest DeleteIdRequest
 type DeleteIntegrationResponse EmptyResponse
+
+var FinishOrganizationSetup = huma.Operation{
+	OperationID: "finish-organization-setup",
+	Method:      http.MethodPost,
+	Path:        "/organization/setup",
+	Summary:     "Finish initial org setup",
+	Tags:        integrationsTags,
+	Errors:      errorCodes(),
+}
+
+type FinishOrganizationSetupRequest EmptyRequest
+type FinishOrganizationSetupResponse EmptyResponse

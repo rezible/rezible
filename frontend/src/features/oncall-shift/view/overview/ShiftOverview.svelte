@@ -8,7 +8,7 @@
 	import ShiftAlerts from "./sections/ShiftAlerts.svelte";
 
 	import ShiftEventsSidebar from "./events-sidebar/ShiftEventsSidebar.svelte";
-	import EventAnnotationDialog from "$components/oncall-events/annotation-dialog/EventAnnotationDialog.svelte";
+	import EventAnnotationDialog from "$src/components/events/annotation-dialog/EventAnnotationDialog.svelte";
 	import { useOncallShiftViewState } from "$features/oncall-shift";
 
 	const view = useOncallShiftViewState();

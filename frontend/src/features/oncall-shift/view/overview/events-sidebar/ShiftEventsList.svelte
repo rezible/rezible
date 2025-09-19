@@ -1,6 +1,6 @@
 <script lang="ts">
-	import EventRow from "$components/oncall-events/EventRow.svelte";
-	import EventAnnotationDialog from "$components/oncall-events/annotation-dialog/EventAnnotationDialog.svelte";
+	import EventRow from "$src/components/events/EventRow.svelte";
+	import EventAnnotationDialog from "$src/components/events/annotation-dialog/EventAnnotationDialog.svelte";
 	import { useOncallShiftViewState } from "$features/oncall-shift";
 
 	const view = useOncallShiftViewState();

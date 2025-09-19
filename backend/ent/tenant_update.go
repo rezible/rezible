@@ -6,12 +6,10 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"time"
 
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
-	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/predicate"
 	"github.com/rezible/rezible/ent/tenant"
 )
@@ -27,68 +25,6 @@ type TenantUpdate struct {
 // Where appends a list predicates to the TenantUpdate builder.
 func (tu *TenantUpdate) Where(ps ...predicate.Tenant) *TenantUpdate {
 	tu.mutation.Where(ps...)
-	return tu
-}
-
-// SetName sets the "name" field.
-func (tu *TenantUpdate) SetName(s string) *TenantUpdate {
-	tu.mutation.SetName(s)
-	return tu
-}
-
-// SetNillableName sets the "name" field if the given value is not nil.
-func (tu *TenantUpdate) SetNillableName(s *string) *TenantUpdate {
-	if s != nil {
-		tu.SetName(*s)
-	}
-	return tu
-}
-
-// SetPublicID sets the "public_id" field.
-func (tu *TenantUpdate) SetPublicID(u uuid.UUID) *TenantUpdate {
-	tu.mutation.SetPublicID(u)
-	return tu
-}
-
-// SetNillablePublicID sets the "public_id" field if the given value is not nil.
-func (tu *TenantUpdate) SetNillablePublicID(u *uuid.UUID) *TenantUpdate {
-	if u != nil {
-		tu.SetPublicID(*u)
-	}
-	return tu
-}
-
-// SetProviderID sets the "provider_id" field.
-func (tu *TenantUpdate) SetProviderID(s string) *TenantUpdate {
-	tu.mutation.SetProviderID(s)
-	return tu
-}
-
-// SetNillableProviderID sets the "provider_id" field if the given value is not nil.
-func (tu *TenantUpdate) SetNillableProviderID(s *string) *TenantUpdate {
-	if s != nil {
-		tu.SetProviderID(*s)
-	}
-	return tu
-}
-
-// SetInitialSetupAt sets the "initial_setup_at" field.
-func (tu *TenantUpdate) SetInitialSetupAt(t time.Time) *TenantUpdate {
-	tu.mutation.SetInitialSetupAt(t)
-	return tu
-}
-
-// SetNillableInitialSetupAt sets the "initial_setup_at" field if the given value is not nil.
-func (tu *TenantUpdate) SetNillableInitialSetupAt(t *time.Time) *TenantUpdate {
-	if t != nil {
-		tu.SetInitialSetupAt(*t)
-	}
-	return tu
-}
-
-// ClearInitialSetupAt clears the value of the "initial_setup_at" field.
-func (tu *TenantUpdate) ClearInitialSetupAt() *TenantUpdate {
-	tu.mutation.ClearInitialSetupAt()
 	return tu
 }
 
@@ -124,21 +60,6 @@ func (tu *TenantUpdate) ExecX(ctx context.Context) {
 	}
 }
 
-// check runs all checks and user-defined validators on the builder.
-func (tu *TenantUpdate) check() error {
-	if v, ok := tu.mutation.Name(); ok {
-		if err := tenant.NameValidator(v); err != nil {
-			return &ValidationError{Name: "name", err: fmt.Errorf(`ent: validator failed for field "Tenant.name": %w`, err)}
-		}
-	}
-	if v, ok := tu.mutation.ProviderID(); ok {
-		if err := tenant.ProviderIDValidator(v); err != nil {
-			return &ValidationError{Name: "provider_id", err: fmt.Errorf(`ent: validator failed for field "Tenant.provider_id": %w`, err)}
-		}
-	}
-	return nil
-}
-
 // Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
 func (tu *TenantUpdate) Modify(modifiers ...func(u *sql.UpdateBuilder)) *TenantUpdate {
 	tu.modifiers = append(tu.modifiers, modifiers...)
@@ -146,9 +67,6 @@ func (tu *TenantUpdate) Modify(modifiers ...func(u *sql.UpdateBuilder)) *TenantU
 }
 
 func (tu *TenantUpdate) sqlSave(ctx context.Context) (n int, err error) {
-	if err := tu.check(); err != nil {
-		return n, err
-	}
 	_spec := sqlgraph.NewUpdateSpec(tenant.Table, tenant.Columns, sqlgraph.NewFieldSpec(tenant.FieldID, field.TypeInt))
 	if ps := tu.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
@@ -156,21 +74,6 @@ func (tu *TenantUpdate) sqlSave(ctx context.Context) (n int, err error) {
 				ps[i](selector)
 			}
 		}
-	}
-	if value, ok := tu.mutation.Name(); ok {
-		_spec.SetField(tenant.FieldName, field.TypeString, value)
-	}
-	if value, ok := tu.mutation.PublicID(); ok {
-		_spec.SetField(tenant.FieldPublicID, field.TypeUUID, value)
-	}
-	if value, ok := tu.mutation.ProviderID(); ok {
-		_spec.SetField(tenant.FieldProviderID, field.TypeString, value)
-	}
-	if value, ok := tu.mutation.InitialSetupAt(); ok {
-		_spec.SetField(tenant.FieldInitialSetupAt, field.TypeTime, value)
-	}
-	if tu.mutation.InitialSetupAtCleared() {
-		_spec.ClearField(tenant.FieldInitialSetupAt, field.TypeTime)
 	}
 	_spec.AddModifiers(tu.modifiers...)
 	if n, err = sqlgraph.UpdateNodes(ctx, tu.driver, _spec); err != nil {
@@ -192,68 +95,6 @@ type TenantUpdateOne struct {
 	hooks     []Hook
 	mutation  *TenantMutation
 	modifiers []func(*sql.UpdateBuilder)
-}
-
-// SetName sets the "name" field.
-func (tuo *TenantUpdateOne) SetName(s string) *TenantUpdateOne {
-	tuo.mutation.SetName(s)
-	return tuo
-}
-
-// SetNillableName sets the "name" field if the given value is not nil.
-func (tuo *TenantUpdateOne) SetNillableName(s *string) *TenantUpdateOne {
-	if s != nil {
-		tuo.SetName(*s)
-	}
-	return tuo
-}
-
-// SetPublicID sets the "public_id" field.
-func (tuo *TenantUpdateOne) SetPublicID(u uuid.UUID) *TenantUpdateOne {
-	tuo.mutation.SetPublicID(u)
-	return tuo
-}
-
-// SetNillablePublicID sets the "public_id" field if the given value is not nil.
-func (tuo *TenantUpdateOne) SetNillablePublicID(u *uuid.UUID) *TenantUpdateOne {
-	if u != nil {
-		tuo.SetPublicID(*u)
-	}
-	return tuo
-}
-
-// SetProviderID sets the "provider_id" field.
-func (tuo *TenantUpdateOne) SetProviderID(s string) *TenantUpdateOne {
-	tuo.mutation.SetProviderID(s)
-	return tuo
-}
-
-// SetNillableProviderID sets the "provider_id" field if the given value is not nil.
-func (tuo *TenantUpdateOne) SetNillableProviderID(s *string) *TenantUpdateOne {
-	if s != nil {
-		tuo.SetProviderID(*s)
-	}
-	return tuo
-}
-
-// SetInitialSetupAt sets the "initial_setup_at" field.
-func (tuo *TenantUpdateOne) SetInitialSetupAt(t time.Time) *TenantUpdateOne {
-	tuo.mutation.SetInitialSetupAt(t)
-	return tuo
-}
-
-// SetNillableInitialSetupAt sets the "initial_setup_at" field if the given value is not nil.
-func (tuo *TenantUpdateOne) SetNillableInitialSetupAt(t *time.Time) *TenantUpdateOne {
-	if t != nil {
-		tuo.SetInitialSetupAt(*t)
-	}
-	return tuo
-}
-
-// ClearInitialSetupAt clears the value of the "initial_setup_at" field.
-func (tuo *TenantUpdateOne) ClearInitialSetupAt() *TenantUpdateOne {
-	tuo.mutation.ClearInitialSetupAt()
-	return tuo
 }
 
 // Mutation returns the TenantMutation object of the builder.
@@ -301,21 +142,6 @@ func (tuo *TenantUpdateOne) ExecX(ctx context.Context) {
 	}
 }
 
-// check runs all checks and user-defined validators on the builder.
-func (tuo *TenantUpdateOne) check() error {
-	if v, ok := tuo.mutation.Name(); ok {
-		if err := tenant.NameValidator(v); err != nil {
-			return &ValidationError{Name: "name", err: fmt.Errorf(`ent: validator failed for field "Tenant.name": %w`, err)}
-		}
-	}
-	if v, ok := tuo.mutation.ProviderID(); ok {
-		if err := tenant.ProviderIDValidator(v); err != nil {
-			return &ValidationError{Name: "provider_id", err: fmt.Errorf(`ent: validator failed for field "Tenant.provider_id": %w`, err)}
-		}
-	}
-	return nil
-}
-
 // Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
 func (tuo *TenantUpdateOne) Modify(modifiers ...func(u *sql.UpdateBuilder)) *TenantUpdateOne {
 	tuo.modifiers = append(tuo.modifiers, modifiers...)
@@ -323,9 +149,6 @@ func (tuo *TenantUpdateOne) Modify(modifiers ...func(u *sql.UpdateBuilder)) *Ten
 }
 
 func (tuo *TenantUpdateOne) sqlSave(ctx context.Context) (_node *Tenant, err error) {
-	if err := tuo.check(); err != nil {
-		return _node, err
-	}
 	_spec := sqlgraph.NewUpdateSpec(tenant.Table, tenant.Columns, sqlgraph.NewFieldSpec(tenant.FieldID, field.TypeInt))
 	id, ok := tuo.mutation.ID()
 	if !ok {
@@ -350,21 +173,6 @@ func (tuo *TenantUpdateOne) sqlSave(ctx context.Context) (_node *Tenant, err err
 				ps[i](selector)
 			}
 		}
-	}
-	if value, ok := tuo.mutation.Name(); ok {
-		_spec.SetField(tenant.FieldName, field.TypeString, value)
-	}
-	if value, ok := tuo.mutation.PublicID(); ok {
-		_spec.SetField(tenant.FieldPublicID, field.TypeUUID, value)
-	}
-	if value, ok := tuo.mutation.ProviderID(); ok {
-		_spec.SetField(tenant.FieldProviderID, field.TypeString, value)
-	}
-	if value, ok := tuo.mutation.InitialSetupAt(); ok {
-		_spec.SetField(tenant.FieldInitialSetupAt, field.TypeTime, value)
-	}
-	if tuo.mutation.InitialSetupAtCleared() {
-		_spec.ClearField(tenant.FieldInitialSetupAt, field.TypeTime)
 	}
 	_spec.AddModifiers(tuo.modifiers...)
 	_node = &Tenant{config: tuo.config}

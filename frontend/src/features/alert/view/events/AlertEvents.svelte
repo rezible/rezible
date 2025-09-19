@@ -1,11 +1,11 @@
 <script lang="ts">
-	import { AnnotationDialogState, setAnnotationDialogState } from "$src/components/oncall-events/annotation-dialog/dialogState.svelte";
-	import EventRow from "$src/components/oncall-events/EventRow.svelte";
+	import { AnnotationDialogState, setAnnotationDialogState } from "$src/components/events/annotation-dialog/dialogState.svelte";
+	import EventRow from "$src/components/events/EventRow.svelte";
 	import LoadingQueryWrapper from "$src/components/loader/LoadingQueryWrapper.svelte";
 	import AlertEventsFilters from "./AlertEventsFilters.svelte";
 	import { Pagination } from "svelte-ux";
 	import { AlertEventsState } from "./alertEventsState.svelte";
-	import type { OncallEvent } from "$src/lib/api";
+	import type { Event } from "$src/lib/api";
 
 	const eventsState = new AlertEventsState();
 
@@ -17,7 +17,7 @@
 
 	<div class="flex-1 flex flex-col gap-1 border">
 		<LoadingQueryWrapper query={eventsState.query}>
-			{#snippet view(events: OncallEvent[])}
+			{#snippet view(events: Event[])}
 				{#each events as ev}
 					<EventRow event={ev} />
 				{:else}

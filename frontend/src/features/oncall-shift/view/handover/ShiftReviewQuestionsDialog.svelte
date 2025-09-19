@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { createOncallAnnotationMutation } from "$lib/api";
+	import { createEventAnnotationMutation } from "$lib/api";
 	import { Dialog } from "svelte-ux";
 	import { createMutation } from "@tanstack/svelte-query";
 	import ConfirmButtons from "$components/confirm-buttons/ConfirmButtons.svelte";
@@ -13,7 +13,7 @@
 
 	const reviewShiftMutation = createMutation(() => ({
 		// TODO: use correct query
-		...createOncallAnnotationMutation(),
+		...createEventAnnotationMutation(),
 		onSuccess: () => {
 			goto("/shifts/" + shiftId);
 		},

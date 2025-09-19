@@ -66,7 +66,7 @@ func (p *googleIdentity) ExtractTokenSession(token *oidc.IDToken) (*rez.AuthProv
 		Verified bool   `json:"email_verified"`
 		Locale   string `json:"locale"`
 		Nonce    string `json:"nonce"`
-		TenantId string `json:"hd"`
+		OrgId    string `json:"hd"`
 	}
 	if claimsErr := token.Claims(&claims); claimsErr != nil {
 		return nil, fmt.Errorf("failed to parse id token claims: %w", claimsErr)
@@ -82,9 +82,9 @@ func (p *googleIdentity) ExtractTokenSession(token *oidc.IDToken) (*rez.AuthProv
 			Name:       claims.Name,
 			Timezone:   claims.Locale,
 		},
-		Tenant: ent.Tenant{
-			Name:       claims.TenantId,
-			ProviderID: claims.TenantId,
+		Organization: ent.Organization{
+			ProviderID: claims.OrgId,
+			Name:       claims.OrgId, // TODO: use domain?
 		},
 		ExpiresAt:   token.Expiry,
 		RedirectUrl: rez.FrontendUrl,

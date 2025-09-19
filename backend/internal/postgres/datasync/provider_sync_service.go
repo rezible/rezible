@@ -44,12 +44,11 @@ func (s *ProviderSyncService) SyncProviderData(ctx context.Context, args jobs.Sy
 	}
 
 	for _, tenant := range tenants {
-		log.Debug().Str("tenant", tenant.Name).Msg("syncing provider data")
 		tenantCtx := access.TenantSystemContext(ctx, tenant.ID)
 		if syncErr := s.syncProviderData(tenantCtx, args.Hard); syncErr != nil {
 			log.Error().
 				Err(syncErr).
-				Str("tenant", tenant.Name).
+				Int("tenantID", tenant.ID).
 				Msg("failed to sync provider data")
 		}
 	}

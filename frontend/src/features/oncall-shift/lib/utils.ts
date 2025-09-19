@@ -1,4 +1,4 @@
-import type { OncallEvent } from "$lib/api";
+import type { Event } from "$lib/api";
 
 export type ShiftEventFilterKind = "alerts" | "nightAlerts" | "incidents";
 
@@ -10,7 +10,7 @@ export const isNightHours = (hour: number) => {
 	return hour >= 22 || hour < 6; // 10pm to 6am
 };
 
-export const shiftEventMatchesFilter = (event: OncallEvent, kind: ShiftEventFilterKind) => {
+export const shiftEventMatchesFilter = (event: Event, kind: ShiftEventFilterKind) => {
 	const attrs = event.attributes;
 	if ((kind === "alerts" || kind === "nightAlerts") && attrs.kind !== "alert") return false;
 	if (kind === "incidents" && attrs.kind !== "incident") return false;

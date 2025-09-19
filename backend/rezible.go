@@ -87,6 +87,14 @@ type (
 )
 
 type (
+	OrganizationService interface {
+		FindOrCreateAuthProviderOrganization(context.Context, ent.Organization) (*ent.Organization, error)
+		GetCurrent(context.Context) (*ent.Organization, error)
+		FinishSetup(context.Context) error
+	}
+)
+
+type (
 	UserDataProvider interface {
 		UserDataMapping() *ent.User
 		PullUsers(ctx context.Context) iter.Seq2[*ent.User, error]
@@ -100,7 +108,7 @@ type (
 		CreateUserContext(ctx context.Context, userId uuid.UUID) (context.Context, error)
 		GetUserContext(ctx context.Context) *ent.User
 
-		FindOrCreateAuthProviderUser(ctx context.Context, user *ent.User, tenant *ent.Tenant) (*ent.User, error)
+		FindOrCreateAuthProviderUser(context.Context, ent.User) (*ent.User, error)
 
 		ListUsers(context.Context, ListUsersParams) ([]*ent.User, error)
 
@@ -116,10 +124,10 @@ type (
 
 type (
 	AuthProviderSession struct {
-		User        ent.User
-		Tenant      ent.Tenant
-		ExpiresAt   time.Time
-		RedirectUrl string
+		Organization ent.Organization
+		User         ent.User
+		ExpiresAt    time.Time
+		RedirectUrl  string
 	}
 
 	AuthSessionProvider interface {

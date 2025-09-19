@@ -1,7 +1,7 @@
 import { getLocalTimeZone, parseAbsolute } from "@internationalized/date";
 import { createQuery, useQueryClient } from "@tanstack/svelte-query";
-import { AnnotationDialogState, setAnnotationDialogState } from "$components/oncall-events/annotation-dialog/dialogState.svelte";
-import { getAdjacentOncallShiftsOptions, getOncallShiftOptions, listOncallAnnotationsOptions, listOncallEventsOptions, type OncallAnnotation } from "$lib/api";
+import { AnnotationDialogState, setAnnotationDialogState } from "$src/components/events/annotation-dialog/dialogState.svelte";
+import { getAdjacentOncallShiftsOptions, getOncallShiftOptions, listEventAnnotationsOptions, listEventsOptions, type EventAnnotation } from "$lib/api";
 import { shiftEventMatchesFilter, type ShiftEventFilterKind } from "$features/oncall-shift/lib/utils";
 import { Context, watch } from "runed";
 import { settings } from "$lib/settings.svelte";
@@ -17,7 +17,7 @@ class OncallShiftViewState {
 		watch(idFn, id => { this.shiftId = id });
 
 		setAnnotationDialogState(new AnnotationDialogState({
-			onClosed: (updated?: OncallAnnotation) => {this.onAnnotationDialogUpdated(updated)},
+			onClosed: (updated?: EventAnnotation) => {this.onAnnotationDialogUpdated(updated)},
 		}));
 	}
 
@@ -42,9 +42,10 @@ class OncallShiftViewState {
 	nextShift = $derived(this.adjacentShiftsQuery.data?.data.next);
 	previousShift = $derived(this.adjacentShiftsQuery.data?.data.previous);
 
-	private eventsQueryOptions = $derived(listOncallEventsOptions({ query: {
-		shiftId: this.shiftId,
-		withAnnotations: true,
+	private eventsQueryOptions = $derived(listEventsOptions({ query: {
+		// TODO
+		// shiftId: this.shiftId,
+		// withAnnotations: true,
 	}}));
 	eventsQuery = createQuery(() => (this.eventsQueryOptions));
 	events = $derived(this.eventsQuery.data?.data);
@@ -56,10 +57,14 @@ class OncallShiftViewState {
 		return this.events.filter(e => (!this.eventsFilter || shiftEventMatchesFilter(e, this.eventsFilter)));
 	});
 
-	onAnnotationDialogUpdated(updated?: OncallAnnotation) {
+	onAnnotationDialogUpdated(updated?: EventAnnotation) {
 		if (!updated) return;
 		this.queryClient.invalidateQueries(this.eventsQueryOptions);
-		this.queryClient.invalidateQueries(listOncallAnnotationsOptions({ query: { shiftId: this.shiftId, withEvents: true } }));
+		this.queryClient.invalidateQueries(listEventAnnotationsOptions({ query: { 
+			// TODO
+			// shiftId: this.shiftId, 
+			withEvents: true 
+		} }));
 	}
 }
 

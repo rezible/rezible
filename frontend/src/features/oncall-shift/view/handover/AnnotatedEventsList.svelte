@@ -1,17 +1,17 @@
 <script lang="ts">
 	import { createMutation, createQuery } from "@tanstack/svelte-query";
 	import {
-	listOncallAnnotationsOptions,
+		listEventAnnotationsOptions,
 		updateOncallShiftHandoverMutation,
-		type ListOncallAnnotationsData,
-		type OncallAnnotation,
-		type OncallEvent,
+		type ListEventAnnotationsData,
+		type Event,
+		type EventAnnotation,
 		type OncallShiftHandover,
 		type UpdateOncallShiftHandoverRequestBody,
 	} from "$lib/api";
 	import Header from "$components/header/Header.svelte";
-	import EventAnnotationDialog from "$components/oncall-events/annotation-dialog/EventAnnotationDialog.svelte";
-	import EventRow from "$components/oncall-events/EventRow.svelte";
+	import EventAnnotationDialog from "$src/components/events/annotation-dialog/EventAnnotationDialog.svelte";
+	import EventRow from "$src/components/events/EventRow.svelte";
 
 	type Props = {
 		handover: OncallShiftHandover;
@@ -19,11 +19,12 @@
 	};
 	const { handover, onUpdated }: Props = $props();
 
-	const annotationsQueryOptions = $derived<ListOncallAnnotationsData["query"]>({
-		shiftId: handover.attributes.shiftId,
+	const annotationsQueryOptions = $derived<ListEventAnnotationsData["query"]>({
+		// TODO
+		// shiftId: handover.attributes.shiftId,
 		withEvents: true,
 	});
-	const annotationsQuery = createQuery(() => listOncallAnnotationsOptions({ query: annotationsQueryOptions }));
+	const annotationsQuery = createQuery(() => listEventAnnotationsOptions({ query: annotationsQueryOptions }));
 	const annotations = $derived(annotationsQuery.data?.data ?? []);
 
 	const pinnedAnnos = $derived(handover.attributes.pinnedAnnotations ?? []);
@@ -39,7 +40,7 @@
 			loadingId = undefined;
 		}
 	}));
-	const togglePinned = (anno: OncallAnnotation) => {
+	const togglePinned = (anno: EventAnnotation) => {
 		loadingId = $state.snapshot(anno.attributes.event.id);
 		const ids = new Set(pinnedAnnos.map(a => a.id));
 
@@ -63,7 +64,7 @@
 	<div class="flex-1 flex flex-col px-0 overflow-y-auto">
 		{#each annotations as anno}
 			<EventRow 
-				event={anno.attributes.event as OncallEvent} 
+				event={anno.attributes.event as Event} 
 				annotations={[anno]} 
 				pinned={pinnedEventIds.has(anno.attributes.event.id)}
 				{loadingId} togglePinned={() => togglePinned(anno)} />

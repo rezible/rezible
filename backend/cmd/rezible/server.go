@@ -82,12 +82,17 @@ func (s *rezServer) setup() error {
 		return fmt.Errorf("failed to create provider configs: %w", pcErr)
 	}
 
-	users, usersErr := postgres.NewUserService(dbc)
+	orgs, orgsErr := postgres.NewOrganizationsService(dbc)
+	if orgsErr != nil {
+		return fmt.Errorf("postgres.NewOrganizationsService: %w", orgsErr)
+	}
+
+	users, usersErr := postgres.NewUserService(dbc, orgs)
 	if usersErr != nil {
 		return fmt.Errorf("postgres.NewUserService: %w", usersErr)
 	}
 
-	auth, authErr := s.makeAuthService(ctx, users)
+	auth, authErr := s.makeAuthService(ctx, orgs, users)
 	if authErr != nil {
 		return fmt.Errorf("http.NewAuthService: %w", authErr)
 	}
@@ -157,7 +162,7 @@ func (s *rezServer) setup() error {
 		return fmt.Errorf("postgres.NewPlaybookService: %w", playbooksErr)
 	}
 
-	apiHandler := api.NewHandler(dbc, auth, configs, users, incidents, debriefs, oncall, events, annos, docs, retros, components, alerts, playbooks)
+	apiHandler := api.NewHandler(dbc, auth, orgs, configs, users, incidents, debriefs, oncall, events, annos, docs, retros, components, alerts, playbooks)
 	documentsHandler := docs.Handler()
 	webhookHandler := http.NewWebhooksHandler(chat)
 	mcpHandler := eino.NewMCPHandler(auth)
@@ -177,7 +182,7 @@ func authProviderEnabled(name string) bool {
 	return strings.ToLower(os.Getenv("AUTH_ENABLE_"+strings.ToUpper(name))) == "true"
 }
 
-func (s *rezServer) makeAuthService(ctx context.Context, users rez.UserService) (rez.AuthService, error) {
+func (s *rezServer) makeAuthService(ctx context.Context, orgs rez.OrganizationService, users rez.UserService) (rez.AuthService, error) {
 	var provs []rez.AuthSessionProvider
 
 	secretKey := os.Getenv("AUTH_SESSION_SECRET_KEY")
@@ -213,7 +218,7 @@ func (s *rezServer) makeAuthService(ctx context.Context, users rez.UserService) 
 		provs = append(provs, googleProv)
 	}
 
-	return http.NewAuthService(secretKey, users, provs)
+	return http.NewAuthService(secretKey, orgs, users, provs)
 }
 
 func (s *rezServer) registerJobs(

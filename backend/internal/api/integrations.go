@@ -11,11 +11,12 @@ import (
 )
 
 type integrationsHandler struct {
+	org     rez.OrganizationService
 	configs rez.ProviderConfigService
 }
 
-func newIntegrationsHandler(configs rez.ProviderConfigService) *integrationsHandler {
-	return &integrationsHandler{configs: configs}
+func newIntegrationsHandler(org rez.OrganizationService, configs rez.ProviderConfigService) *integrationsHandler {
+	return &integrationsHandler{org: org, configs: configs}
 }
 
 func toValidProviderType(kind string) (providerconfig.ProviderType, error) {
@@ -129,6 +130,16 @@ func (h *integrationsHandler) DeleteIntegration(ctx context.Context, req *oapi.D
 
 	if delErr := h.configs.DeleteProviderConfig(ctx, req.Id); delErr != nil {
 		return nil, apiError("failed to delete provider config", delErr)
+	}
+
+	return &resp, nil
+}
+
+func (h *integrationsHandler) FinishOrganizationSetup(ctx context.Context, req *oapi.FinishOrganizationSetupRequest) (*oapi.FinishOrganizationSetupResponse, error) {
+	var resp oapi.FinishOrganizationSetupResponse
+
+	if finishErr := h.org.FinishSetup(ctx); finishErr != nil {
+		return nil, apiError("failed to finish setup", finishErr)
 	}
 
 	return &resp, nil

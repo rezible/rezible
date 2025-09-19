@@ -1,13 +1,13 @@
 <script lang="ts">
-	import type { OncallAnnotation, OncallEvent } from "$lib/api";
+	import type { EventAnnotation, Event } from "$lib/api";
 	import { Checkbox, Field, TextField, ToggleGroup, ToggleOption } from "svelte-ux";
 	import Button from "$components/button/Button.svelte";
 	import { mdiClose, mdiPlus } from "@mdi/js";
 	import { useAnnotationDialogState } from "./dialogState.svelte";
 
 	type Props = {
-		event: OncallEvent;
-		current?: OncallAnnotation;
+		event: Event;
+		current?: EventAnnotation;
 	};
 	const { event, current }: Props = $props();
 
@@ -25,6 +25,7 @@
 </script>
 
 <div class="flex flex-col gap-2">
+	<!-- // TODO
 	{#if kind === "alert"}
 		<Field label="Did this alert indicate a real issue?">
 			<ToggleGroup inset variant="fill" size="lg" bind:value={dialog.attributes.alertAccuracy}>
@@ -60,6 +61,7 @@
 			{/if}
 		</Field>
 	{/if}
+	-->
 
 	<Field label="Tags">
 		<div class="flex gap-2" class:mr-2={dialog.attributes.tags.size > 0}>

@@ -5,7 +5,6 @@ package tenant
 import (
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
-	"github.com/google/uuid"
 )
 
 const (
@@ -13,14 +12,6 @@ const (
 	Label = "tenant"
 	// FieldID holds the string denoting the id field in the database.
 	FieldID = "id"
-	// FieldName holds the string denoting the name field in the database.
-	FieldName = "name"
-	// FieldPublicID holds the string denoting the public_id field in the database.
-	FieldPublicID = "public_id"
-	// FieldProviderID holds the string denoting the provider_id field in the database.
-	FieldProviderID = "provider_id"
-	// FieldInitialSetupAt holds the string denoting the initial_setup_at field in the database.
-	FieldInitialSetupAt = "initial_setup_at"
 	// Table holds the table name of the tenant in the database.
 	Table = "tenants"
 )
@@ -28,10 +19,6 @@ const (
 // Columns holds all SQL columns for tenant fields.
 var Columns = []string{
 	FieldID,
-	FieldName,
-	FieldPublicID,
-	FieldProviderID,
-	FieldInitialSetupAt,
 }
 
 // ValidColumn reports if the column name is valid (part of the table columns).
@@ -52,12 +39,6 @@ func ValidColumn(column string) bool {
 var (
 	Hooks  [1]ent.Hook
 	Policy ent.Policy
-	// NameValidator is a validator for the "name" field. It is called by the builders before save.
-	NameValidator func(string) error
-	// DefaultPublicID holds the default value on creation for the "public_id" field.
-	DefaultPublicID func() uuid.UUID
-	// ProviderIDValidator is a validator for the "provider_id" field. It is called by the builders before save.
-	ProviderIDValidator func(string) error
 )
 
 // OrderOption defines the ordering options for the Tenant queries.
@@ -66,24 +47,4 @@ type OrderOption func(*sql.Selector)
 // ByID orders the results by the id field.
 func ByID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldID, opts...).ToFunc()
-}
-
-// ByName orders the results by the name field.
-func ByName(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldName, opts...).ToFunc()
-}
-
-// ByPublicID orders the results by the public_id field.
-func ByPublicID(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldPublicID, opts...).ToFunc()
-}
-
-// ByProviderID orders the results by the provider_id field.
-func ByProviderID(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldProviderID, opts...).ToFunc()
-}
-
-// ByInitialSetupAt orders the results by the initial_setup_at field.
-func ByInitialSetupAt(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldInitialSetupAt, opts...).ToFunc()
 }

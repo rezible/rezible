@@ -327,17 +327,23 @@ func (p *AuthSessionProvider) createSession(a *saml.Assertion, redirectUrl strin
 
 	attr := sa.GetAttributes()
 
+	// TODO: fix this
+	po := ent.Organization{
+		ProviderID: claims.Subject,
+		Name:       claims.Subject,
+	}
+
+	pu := ent.User{
+		ProviderID: claims.Subject,
+		Name:       attr.Get("firstName"),
+		Email:      attr.Get("email"),
+	}
+
 	ps := &rez.AuthProviderSession{
-		User: ent.User{
-			ProviderID: claims.Subject,
-			Name:       attr.Get("firstName"),
-			Email:      attr.Get("email"),
-		},
-		Tenant: ent.Tenant{
-			ProviderID: claims.Subject,
-		},
-		ExpiresAt:   time.Unix(claims.ExpiresAt, 0),
-		RedirectUrl: redirectUrl,
+		Organization: po,
+		User:         pu,
+		ExpiresAt:    time.Unix(claims.ExpiresAt, 0),
+		RedirectUrl:  redirectUrl,
 	}
 
 	return ps, nil

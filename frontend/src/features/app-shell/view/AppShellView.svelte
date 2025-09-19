@@ -22,7 +22,7 @@
 	setUserOncallInformationState();
 </script>
 
-<div class="antialiased w-dvw h-dvh min-h-dvh bg-surface-300 text-surface-content">
+<div class="antialiased p-2 flex gap-2 w-dvw h-dvh min-h-dvh bg-surface-300 text-surface-content">
 	<SessionProtector>
 		{#if session.isAuthenticated}
 			{#if session.isSetup}
@@ -34,7 +34,7 @@
 			{/if}
 		{/if}
 
-		<main class="w-full max-w-full h-full max-h-full min-h-0 p-2 flex flex-col">
+		<main class="w-full max-w-full h-full max-h-full min-h-0 flex flex-col">
 			<PageContainer>
 				{@render children()}
 			</PageContainer>

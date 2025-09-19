@@ -114,6 +114,9 @@ type OncallShiftHandover func(*sql.Selector)
 // OncallShiftMetrics is the predicate function for oncallshiftmetrics builders.
 type OncallShiftMetrics func(*sql.Selector)
 
+// Organization is the predicate function for organization builders.
+type Organization func(*sql.Selector)
+
 // Playbook is the predicate function for playbook builders.
 type Playbook func(*sql.Selector)
 

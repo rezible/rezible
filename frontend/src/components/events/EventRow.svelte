@@ -1,5 +1,5 @@
 <script lang="ts">
-	import type { OncallAnnotation, OncallEvent } from "$lib/api";
+	import type { Event, EventAnnotation } from "$lib/api";
 	import { mdiPin, mdiPinOutline, mdiChatPlus, mdiMenuDown } from "@mdi/js";
 	import { Lazy, Tooltip } from "svelte-ux";
 	import Button from "$components/button/Button.svelte";
@@ -10,18 +10,17 @@
 	import EventTimeDate from "./EventTimeDate.svelte";
 
 	type Props = {
-		event: OncallEvent;
-		annotations?: OncallAnnotation[];
+		event: Event;
+		annotations?: EventAnnotation[];
 		pinned?: boolean;
 		togglePinned?: () => void;
 		loadingId?: string;
 	}
-	const { event, annotations, pinned, togglePinned, loadingId }: Props = $props();
+	const { event, annotations = [], pinned, togglePinned, loadingId }: Props = $props();
 
 	const annoDialog = useAnnotationDialogState();
 
-	const eventAnnotations = $derived(annotations || event.attributes.annotations || []);
-	const canCreate = $derived(annoDialog.allowCreating && annoDialog.canCreate(eventAnnotations));
+	const canCreate = $derived(annoDialog.allowCreating);
 
 	const attrs = $derived(event.attributes);
 
@@ -31,7 +30,7 @@
 	const kindIcon = $derived(getEventKindIcon(attrs.kind));
 </script>
 
-{#snippet annotationBox(anno: OncallAnnotation)}
+{#snippet annotationBox(anno: EventAnnotation)}
 	<div class="inline-block">
 		<button onclick={() => annoDialog.setOpen(event, anno)} 
 			class="max-w-32 min-w-12 h-fit border hover:border-neutral rounded p-1 bg-neutral-700/70 hover:bg-neutral-700/60 text-sm flex gap-2 flex-col cursor-pointer">
@@ -57,7 +56,7 @@
 
 	<div class="flex w-full h-full items-center justify-end gap-2">
 		<div class="flex-1 h-full items-center justify-end flex gap-2">
-			{#each eventAnnotations as anno}
+			{#each annotations as anno}
 				{@render annotationBox(anno)}
 			{/each}
 

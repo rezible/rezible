@@ -429,6 +429,18 @@ func (f OncallShiftMetricsFunc) Mutate(ctx context.Context, m ent.Mutation) (ent
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.OncallShiftMetricsMutation", m)
 }
 
+// The OrganizationFunc type is an adapter to allow the use of ordinary
+// function as Organization mutator.
+type OrganizationFunc func(context.Context, *ent.OrganizationMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f OrganizationFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.OrganizationMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.OrganizationMutation", m)
+}
+
 // The PlaybookFunc type is an adapter to allow the use of ordinary
 // function as Playbook mutator.
 type PlaybookFunc func(context.Context, *ent.PlaybookMutation) (ent.Value, error)
