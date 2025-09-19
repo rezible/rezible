@@ -50,9 +50,6 @@ func (OncallRoster) Edges() []ent.Edge {
 
 		edge.To("alerts", Alert.Type),
 
-		edge.From("events", OncallEvent.Type).Ref("roster"),
-		edge.From("annotations", OncallAnnotation.Type).Ref("roster"),
-
 		edge.From("teams", Team.Type).Ref("oncall_rosters"),
 		edge.From("shifts", OncallShift.Type).Ref("roster"),
 

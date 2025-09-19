@@ -9,7 +9,7 @@ import (
 	oapi "github.com/rezible/rezible/openapi"
 )
 
-type oncallEventsHandler struct {
+type opsEventsHandler struct {
 	auth      rez.AuthService
 	users     rez.UserService
 	oncall    rez.OncallService
@@ -17,11 +17,11 @@ type oncallEventsHandler struct {
 	events    rez.OncallEventsService
 }
 
-func newOncallEventsHandler(auth rez.AuthService, users rez.UserService, oncall rez.OncallService, inc rez.IncidentService, events rez.OncallEventsService) *oncallEventsHandler {
-	return &oncallEventsHandler{auth: auth, users: users, oncall: oncall, incidents: inc, events: events}
+func newOperationsEventsHandler(auth rez.AuthService, users rez.UserService, oncall rez.OncallService, inc rez.IncidentService, events rez.OncallEventsService) *opsEventsHandler {
+	return &opsEventsHandler{auth: auth, users: users, oncall: oncall, incidents: inc, events: events}
 }
 
-func (h *oncallEventsHandler) GetOncallEvent(ctx context.Context, req *oapi.GetOncallEventRequest) (*oapi.GetOncallEventResponse, error) {
+func (h *opsEventsHandler) GetOncallEvent(ctx context.Context, req *oapi.GetOncallEventRequest) (*oapi.GetOncallEventResponse, error) {
 	var resp oapi.GetOncallEventResponse
 
 	event, eventErr := h.events.GetEvent(ctx, req.Id)
@@ -33,7 +33,7 @@ func (h *oncallEventsHandler) GetOncallEvent(ctx context.Context, req *oapi.GetO
 	return &resp, nil
 }
 
-func (h *oncallEventsHandler) ListOncallEvents(ctx context.Context, req *oapi.ListOncallEventsRequest) (*oapi.ListOncallEventsResponse, error) {
+func (h *opsEventsHandler) ListOncallEvents(ctx context.Context, req *oapi.ListOncallEventsRequest) (*oapi.ListOncallEventsResponse, error) {
 	var resp oapi.ListOncallEventsResponse
 
 	params := rez.ListOncallEventsParams{
@@ -76,7 +76,7 @@ func (h *oncallEventsHandler) ListOncallEvents(ctx context.Context, req *oapi.Li
 	return &resp, nil
 }
 
-func (h *oncallEventsHandler) ListOncallAnnotations(ctx context.Context, request *oapi.ListOncallAnnotationsRequest) (*oapi.ListOncallAnnotationsResponse, error) {
+func (h *opsEventsHandler) ListOncallAnnotations(ctx context.Context, request *oapi.ListOncallAnnotationsRequest) (*oapi.ListOncallAnnotationsResponse, error) {
 	var resp oapi.ListOncallAnnotationsResponse
 
 	params := rez.ListOncallAnnotationsParams{
@@ -111,7 +111,7 @@ func (h *oncallEventsHandler) ListOncallAnnotations(ctx context.Context, request
 	return &resp, nil
 }
 
-func (h *oncallEventsHandler) CreateOncallAnnotation(ctx context.Context, request *oapi.CreateOncallAnnotationRequest) (*oapi.CreateOncallAnnotationResponse, error) {
+func (h *opsEventsHandler) CreateOncallAnnotation(ctx context.Context, request *oapi.CreateOncallAnnotationRequest) (*oapi.CreateOncallAnnotationResponse, error) {
 	var resp oapi.CreateOncallAnnotationResponse
 
 	user := getRequestAuthSession(ctx, h.auth)
@@ -137,7 +137,7 @@ func (h *oncallEventsHandler) CreateOncallAnnotation(ctx context.Context, reques
 	return &resp, nil
 }
 
-func (h *oncallEventsHandler) UpdateOncallAnnotation(ctx context.Context, request *oapi.UpdateOncallAnnotationRequest) (*oapi.UpdateOncallAnnotationResponse, error) {
+func (h *opsEventsHandler) UpdateOncallAnnotation(ctx context.Context, request *oapi.UpdateOncallAnnotationRequest) (*oapi.UpdateOncallAnnotationResponse, error) {
 	var resp oapi.UpdateOncallAnnotationResponse
 
 	attr := request.Body.Attributes
@@ -167,7 +167,7 @@ func (h *oncallEventsHandler) UpdateOncallAnnotation(ctx context.Context, reques
 	return &resp, nil
 }
 
-func (h *oncallEventsHandler) DeleteOncallAnnotation(ctx context.Context, request *oapi.DeleteOncallAnnotationRequest) (*oapi.DeleteOncallAnnotationResponse, error) {
+func (h *opsEventsHandler) DeleteOncallAnnotation(ctx context.Context, request *oapi.DeleteOncallAnnotationRequest) (*oapi.DeleteOncallAnnotationResponse, error) {
 	var resp oapi.DeleteOncallAnnotationResponse
 
 	if err := h.events.DeleteAnnotation(ctx, request.Id); err != nil {

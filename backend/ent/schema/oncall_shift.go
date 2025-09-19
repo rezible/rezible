@@ -86,7 +86,7 @@ func (OncallShiftHandover) Edges() []ent.Edge {
 			Unique().
 			Required().
 			Field("shift_id"),
-		edge.To("pinned_annotations", OncallAnnotation.Type),
+		edge.To("pinned_annotations", EventAnnotation.Type),
 	}
 }
 

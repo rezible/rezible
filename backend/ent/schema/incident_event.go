@@ -28,6 +28,7 @@ func (IncidentEvent) Fields() []ent.Field {
 		field.UUID("id", uuid.UUID{}).
 			Default(uuid.New),
 		field.UUID("incident_id", uuid.UUID{}),
+		field.UUID("event_id", uuid.UUID{}).Optional(),
 		field.Time("timestamp"),
 		field.Enum("kind").
 			Values("observation", "action", "decision", "context"),
@@ -63,6 +64,9 @@ func (IncidentEvent) Edges() []ent.Edge {
 			Field("incident_id").
 			Unique().
 			Required(),
+		edge.To("event", Event.Type).
+			Unique().
+			Field("event_id"),
 		edge.To("context", IncidentEventContext.Type).
 			Unique(),
 		edge.To("factors", IncidentEventContributingFactor.Type),

@@ -9,22 +9,21 @@ import (
 	"github.com/google/uuid"
 )
 
-type OncallAnnotation struct {
+type EventAnnotation struct {
 	ent.Schema
 }
 
-func (OncallAnnotation) Mixin() []ent.Mixin {
+func (EventAnnotation) Mixin() []ent.Mixin {
 	return []ent.Mixin{
 		BaseMixin{},
 		TenantMixin{},
 	}
 }
 
-func (OncallAnnotation) Fields() []ent.Field {
+func (EventAnnotation) Fields() []ent.Field {
 	return []ent.Field{
 		field.UUID("id", uuid.UUID{}).Default(uuid.New),
 		field.UUID("event_id", uuid.UUID{}),
-		field.UUID("roster_id", uuid.UUID{}),
 		field.UUID("creator_id", uuid.UUID{}),
 		field.Time("created_at").Default(time.Now),
 		field.Int("minutes_occupied"),
@@ -33,13 +32,11 @@ func (OncallAnnotation) Fields() []ent.Field {
 	}
 }
 
-func (OncallAnnotation) Edges() []ent.Edge {
+func (EventAnnotation) Edges() []ent.Edge {
 	return []ent.Edge{
-		edge.To("event", OncallEvent.Type).Unique().Required().Field("event_id"),
-		edge.To("roster", OncallRoster.Type).Unique().Required().Field("roster_id"),
+		edge.To("event", Event.Type).Unique().Required().Field("event_id"),
 		edge.To("creator", User.Type).Unique().Required().Field("creator_id"),
 
-		edge.To("alert_feedback", AlertFeedback.Type).Unique(),
 		edge.From("handovers", OncallShiftHandover.Type).Ref("pinned_annotations"),
 	}
 }

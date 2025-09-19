@@ -7,12 +7,10 @@ import (
 	"github.com/google/uuid"
 )
 
-// Alert holds the schema definition for the Alert entity.
 type Alert struct {
 	ent.Schema
 }
 
-// Fields of the Alert.
 func (Alert) Fields() []ent.Field {
 	return []ent.Field{
 		field.UUID("id", uuid.New()).Default(uuid.New),
@@ -36,12 +34,45 @@ func (Alert) Edges() []ent.Edge {
 	return []ent.Edge{
 		edge.From("playbooks", Playbook.Type).Ref("alerts"),
 		edge.From("roster", OncallRoster.Type).Ref("alerts").Unique().Field("roster_id"),
-		edge.From("events", OncallEvent.Type).Ref("alert"),
-		edge.To("feedback", AlertFeedback.Type),
+
+		edge.To("instances", AlertInstance.Type),
 	}
 }
 
-// AlertFeedback holds the schema definition for the AlertFeedback entity.
+type AlertInstance struct {
+	ent.Schema
+}
+
+func (AlertInstance) Mixin() []ent.Mixin {
+	return []ent.Mixin{
+		BaseMixin{},
+		TenantMixin{},
+	}
+}
+
+func (AlertInstance) Fields() []ent.Field {
+	return []ent.Field{
+		field.UUID("id", uuid.UUID{}).Default(uuid.New),
+		field.UUID("alert_id", uuid.UUID{}),
+		field.UUID("event_id", uuid.UUID{}),
+		// recipient, acked, etc
+	}
+}
+
+func (AlertInstance) Edges() []ent.Edge {
+	return []ent.Edge{
+		edge.To("alert", Alert.Type).
+			Required().
+			Unique().
+			Field("alert_id"),
+		edge.To("event", Event.Type).
+			Required().
+			Unique().
+			Field("event_id"),
+		edge.From("feedback", AlertFeedback.Type).Ref("alert_instance"),
+	}
+}
+
 type AlertFeedback struct {
 	ent.Schema
 }
@@ -53,12 +84,10 @@ func (AlertFeedback) Mixin() []ent.Mixin {
 	}
 }
 
-// Fields of the AlertFeedback.
 func (AlertFeedback) Fields() []ent.Field {
 	return []ent.Field{
 		field.UUID("id", uuid.UUID{}).Default(uuid.New),
-		field.UUID("alert_id", uuid.UUID{}),
-		field.UUID("annotation_id", uuid.UUID{}),
+		field.UUID("alert_instance_id", uuid.UUID{}),
 		field.Bool("actionable"),
 		field.Enum("accurate").Values("yes", "no", "unknown"),
 		field.Bool("documentation_available"),
@@ -66,19 +95,12 @@ func (AlertFeedback) Fields() []ent.Field {
 	}
 }
 
-// Edges of the OncallAnnotationAlertFeedback.
 func (AlertFeedback) Edges() []ent.Edge {
 	return []ent.Edge{
-		edge.From("alert", Alert.Type).
-			Ref("feedback").
+		edge.To("alert_instance", AlertInstance.Type).
 			Required().
 			Unique().
-			Field("alert_id"),
-		edge.From("annotation", OncallAnnotation.Type).
-			Ref("alert_feedback").
-			Required().
-			Unique().
-			Field("annotation_id"),
+			Field("alert_instance_id"),
 	}
 }
 

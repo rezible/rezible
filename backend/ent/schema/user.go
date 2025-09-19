@@ -41,7 +41,8 @@ func (User) Edges() []ent.Edge {
 
 		edge.From("oncall_schedules", OncallScheduleParticipant.Type).Ref("user"),
 		edge.From("oncall_shifts", OncallShift.Type).Ref("user"),
-		edge.From("oncall_annotations", OncallAnnotation.Type).Ref("creator"),
+
+		edge.From("event_annotations", EventAnnotation.Type).Ref("creator"),
 
 		edge.To("incidents", Incident.Type).
 			Through("role_assignments", IncidentRoleAssignment.Type),
