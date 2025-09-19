@@ -1,5 +1,5 @@
 import { mdiDelta } from "@mdi/js";
-import type { ListSystemComponentKindsResponse, SystemComponentAttributes, SystemComponentKind } from "./api";
+import type { SystemComponentKind } from "./api";
 import type { MenuOption } from "svelte-ux";
 
 export const getSystemComponentKindMenuOptions = (kinds: SystemComponentKind[]): MenuOption<string>[] => {
@@ -7,5 +7,6 @@ export const getSystemComponentKindMenuOptions = (kinds: SystemComponentKind[]):
 }
 
 export const getIconForComponentKind = (kindId: string) => {
+	// TODO
 	return mdiDelta;
 }

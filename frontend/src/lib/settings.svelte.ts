@@ -1,5 +1,4 @@
 import uxThemesCfg from "$src/svelteux-themes.json";
-import { Context } from "runed";
 import { settings as setUxSettings, getSettings as getUxSettings } from "svelte-ux";
 import { fromStore } from "svelte/store";
 

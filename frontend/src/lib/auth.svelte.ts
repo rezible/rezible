@@ -74,16 +74,26 @@ export class AuthSessionState {
 	});
 
 	isAuthenticated = $derived(!!this.session && !this.error);
+	isSetup = $derived(this.isAuthenticated && !this.org?.requiresInitialSetup);
+
+	checkSessionExpiry() {
+		if (!this.session) return;
+		const timeLeft = this.session.expiresAt.valueOf() - new Date(Date.now()).valueOf();
+		if (timeLeft <= 0) {
+			this.error = {category: "expired"};
+		} else if (timeLeft <= SessionExpiryCheckIntervalMs * 100) {
+			this.refreshSession(timeLeft);
+		}
+	}
+
+	refreshSession(timeLeft: number) {
+		console.log("auth session expiring soon", timeLeft);
+	}
 
 	constructor() {
 		onMount(() => {
 			const i = setInterval(() => {
-				if (!this || !this.session) return;
-				const timeLeft = this.session.expiresAt.valueOf() - new Date(Date.now()).valueOf();
-				if (timeLeft <= 0) this.error = {category: "expired"};
-				if (timeLeft <= SessionExpiryCheckIntervalMs * 100) {
-					console.log("auth session expiring soon", timeLeft);	
-				}
+				this.checkSessionExpiry();
 			}, SessionExpiryCheckIntervalMs);
 			return () => {
 				clearInterval(i);
@@ -95,18 +105,3 @@ export class AuthSessionState {
 const sessionCtx = new Context<AuthSessionState>("authSession");
 export const setAuthSessionState = (s: AuthSessionState) => sessionCtx.set(s);
 export const useAuthSessionState = () => sessionCtx.get();
-
-const createNotifications = () => {
-	const notifications = $state<UserNotification[]>([]);
-	let queryClient = $state<QueryClient>();
-
-	return {
-		get inbox() {
-			return notifications;
-		},
-		setQueryClient: (c: QueryClient) => {
-			queryClient = c;
-		},
-	};
-};
-export const notifications = createNotifications();

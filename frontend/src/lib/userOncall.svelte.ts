@@ -1,5 +1,5 @@
 import { createQuery, useQueryClient } from "@tanstack/svelte-query";
-import { getUserOncallInformationOptions, type GetUserOncallInformationData } from "./api";
+import { getUserOncallInformationOptions } from "./api";
 import { useAuthSessionState } from "./auth.svelte";
 import { Context } from "runed";
 

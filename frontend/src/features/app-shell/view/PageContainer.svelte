@@ -2,12 +2,14 @@
 	import type { Snippet } from "svelte";
 	import { appShell } from "$features/app-shell/lib/appShellState.svelte";
 	import Avatar from "$components/avatar/Avatar.svelte";
+	import { useAuthSessionState } from "$lib/auth.svelte";
 
 	type Props = {
 		children: Snippet;
-		hideNavBar?: boolean;
 	};
-	const { children, hideNavBar }: Props = $props();
+	const { children }: Props = $props();
+
+	const session = useAuthSessionState();
 
 	const pageBreadcrumbs = $derived(appShell.breadcrumbs);
 	const pageActions = $derived(appShell.pageActions);
@@ -33,20 +35,18 @@
 	</span>
 {/snippet}
 
-<div class="w-full max-w-full h-full max-h-full min-h-0 flex flex-col text-surface-content">
-	<div class="flex justify-between items-center h-11 rounded-md bg-surface-200/80" class:hidden={hideNavBar}>
-		<div class="flex items-center gap-2 px-2">
-			{@render breadcrumbs()}
+<div class="flex justify-between items-center h-11 rounded-md bg-surface-200/80" class:hidden={!session.isSetup}>
+	<div class="flex items-center gap-2 px-2">
+		{@render breadcrumbs()}
+	</div>
+
+	{#if pageActions}
+		<div class="flex items-center">
+			<pageActions.component {...pageActionsProps} />
 		</div>
+	{/if}
+</div>
 
-		{#if pageActions}
-			<div class="flex items-center">
-				<pageActions.component {...pageActionsProps} />
-			</div>
-		{/if}
-	</div>
-
-	<div class="flex flex-col flex-1 min-h-0 overflow-auto pt-1">
-		{@render children()}
-	</div>
+<div class="flex flex-col flex-1 min-h-0 overflow-auto pt-1">
+	{@render children()}
 </div>

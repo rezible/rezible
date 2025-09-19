@@ -3,7 +3,7 @@
 	import { browser, dev } from "$app/environment";
 	import { QueryClient, QueryClientProvider } from "@tanstack/svelte-query";
 	import { ThemeInit } from "svelte-ux";
-	import AppShell from "$features/app-shell/view/AppShellView.svelte";
+	import { AppShellView } from "$features/app-shell";
 
 	const { children } = $props();
 
@@ -26,5 +26,5 @@
 <ThemeInit />
 
 <QueryClientProvider client={queryClient}>
-	<AppShell>{@render children()}</AppShell>
+	<AppShellView>{@render children()}</AppShellView>
 </QueryClientProvider>

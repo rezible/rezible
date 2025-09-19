@@ -7,9 +7,8 @@
 	import Sidebar from "./sidebar/Sidebar.svelte";
 	import Toaster from "./toaster/Toaster.svelte";
 	import PageContainer from "./PageContainer.svelte";
-	import { navigating, page } from "$app/state";
-	import { goto } from "$app/navigation";
-	import { watch } from "runed";
+	import SessionProtector from "./SessionProtector.svelte";
+	import LogoHeader from "./sidebar/LogoHeader.svelte";
 
 	const { children } = $props();
 	
@@ -21,43 +20,26 @@
 
 	setToastState();
 	setUserOncallInformationState();
-
-	const routeId = $derived(page.route.id);
-
-	const AuthRouteId = "/auth";
-	const isAuthRoute = $derived(!!routeId?.startsWith(AuthRouteId));
-
-	const orgNeedsSetup = $derived(session.isAuthenticated && !!session.org?.requiresInitialSetup);
-	const SetupRouteId = "/setup";
-	const isSetupRoute = $derived(!!routeId?.startsWith(SetupRouteId));
-
-	const redirectTo = $derived.by(() => {
-		if (!session.loaded) return;
-		if (!session.isAuthenticated && !isAuthRoute) return AuthRouteId;
-		if (orgNeedsSetup && !isSetupRoute) return SetupRouteId;
-		if (session.isAuthenticated && isAuthRoute) return "/";
-	});
-	const navigatingTo = $derived(navigating.to?.route.id);
-
-	watch(() => redirectTo, route => {
-		if (!!route && route !== navigatingTo) goto(route);
-	});
-
-	const showPage = $derived(session.loaded && !redirectTo);
 </script>
 
-<div class="antialiased flex h-dvh min-h-dvh w-dvw bg-surface-300 text-surface-content">
-	{#if session.isAuthenticated}
-		<Sidebar />
-	{/if}
-
-	<main class="w-full h-full p-2">
-		<PageContainer hideNavBar={!session.isAuthenticated}>
-			{#if showPage}
-				{@render children()}
+<div class="antialiased w-dvw h-dvh min-h-dvh bg-surface-300 text-surface-content">
+	<SessionProtector>
+		{#if session.isAuthenticated}
+			{#if session.isSetup}
+				<Sidebar />
+			{:else}
+				<div class="w-full">
+					<LogoHeader />
+				</div>
 			{/if}
-		</PageContainer>
-	</main>
+		{/if}
+
+		<main class="w-full max-w-full h-full max-h-full min-h-0 p-2 flex flex-col">
+			<PageContainer>
+				{@render children()}
+			</PageContainer>
+		</main>
+	</SessionProtector>
 </div>
 
 <Toaster />
