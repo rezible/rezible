@@ -49,7 +49,7 @@ type saveablePlaybookQuery interface {
 	Save(context.Context) (*ent.Playbook, error)
 }
 
-func (s *PlaybookService) UpdatePlaybook(ctx context.Context, playbook *ent.Playbook) (*ent.Playbook, error) {
+func (s *PlaybookService) SetPlaybook(ctx context.Context, playbook *ent.Playbook) (*ent.Playbook, error) {
 	var q saveablePlaybookQuery
 	if playbook.ID == uuid.Nil {
 		q = s.db.Playbook.Create().

@@ -46,7 +46,7 @@ func (b *incidentRolesBatcher) setup(ctx context.Context) error {
 }
 
 func (b *incidentRolesBatcher) pullData(ctx context.Context) iter.Seq2[*ent.IncidentRole, error] {
-	roles, rolesErr := b.provider.GetRoles(ctx)
+	roles, rolesErr := b.provider.ListIncidentRoles(ctx)
 	return func(yield func(*ent.IncidentRole, error) bool) {
 		if rolesErr != nil {
 			yield(nil, rolesErr)

@@ -16,6 +16,7 @@ require (
 	github.com/go-faker/faker/v4 v4.6.1
 	github.com/golang-jwt/jwt/v5 v5.2.2
 	github.com/google/uuid v1.6.0
+	github.com/gorilla/sessions v1.4.0
 	github.com/gosimple/slug v1.15.0
 	github.com/jackc/pgx/v5 v5.7.5
 	github.com/mark3labs/mcp-go v0.32.0
@@ -72,7 +73,6 @@ require (
 	github.com/google/go-querystring v1.1.0 // indirect
 	github.com/goph/emperror v0.17.2 // indirect
 	github.com/gorilla/securecookie v1.1.2 // indirect
-	github.com/gorilla/sessions v1.4.0 // indirect
 	github.com/gorilla/websocket v1.5.3 // indirect
 	github.com/gosimple/unidecode v1.0.1 // indirect
 	github.com/hashicorp/hcl/v2 v2.23.0 // indirect

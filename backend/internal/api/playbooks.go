@@ -42,7 +42,7 @@ func (h *playbooksHandler) CreatePlaybook(ctx context.Context, request *oapi.Cre
 		Title:   attr.Title,
 		Content: []byte(attr.Content),
 	}
-	pb, createErr := h.playbooks.UpdatePlaybook(ctx, reqPb)
+	pb, createErr := h.playbooks.SetPlaybook(ctx, reqPb)
 	if createErr != nil {
 		return nil, apiError("failed to create", createErr)
 	}
@@ -80,7 +80,7 @@ func (h *playbooksHandler) UpdatePlaybook(ctx context.Context, request *oapi.Upd
 		pb.Title = *attr.Title
 	}
 
-	updated, updateErr := h.playbooks.UpdatePlaybook(ctx, pb)
+	updated, updateErr := h.playbooks.SetPlaybook(ctx, pb)
 	if updateErr != nil {
 		return nil, apiError("failed to update", updateErr)
 	}

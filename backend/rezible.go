@@ -187,6 +187,7 @@ type (
 		CreateRelationship(context.Context, ent.SystemComponentRelationship) (*ent.SystemComponentRelationship, error)
 
 		GetSystemAnalysis(context.Context, uuid.UUID) (*ent.SystemAnalysis, error)
+		// TODO: SetSystemAnalysis(context.Context, ent.SystemAnalysis) (*ent.SystemAnalysis, error)
 		CreateSystemAnalysisRelationship(context.Context, CreateSystemAnalysisRelationshipParams) (*ent.SystemAnalysisRelationship, error)
 	}
 )
@@ -256,14 +257,6 @@ type (
 	TicketDataProvider interface {
 		PullTickets(context.Context) iter.Seq2[*ent.Ticket, error]
 	}
-
-	ListTicketsParams struct {
-		ListParams
-	}
-
-	TicketService interface {
-		ListTickets(context.Context, ListTicketsParams) ([]*ent.Ticket, int, error)
-	}
 )
 
 type (
@@ -302,7 +295,7 @@ type (
 	PlaybookService interface {
 		ListPlaybooks(context.Context, ListPlaybooksParams) ([]*ent.Playbook, int, error)
 		GetPlaybook(context.Context, uuid.UUID) (*ent.Playbook, error)
-		UpdatePlaybook(context.Context, *ent.Playbook) (*ent.Playbook, error)
+		SetPlaybook(context.Context, *ent.Playbook) (*ent.Playbook, error)
 	}
 )
 
@@ -314,7 +307,7 @@ type (
 		SetOnIncidentUpdatedCallback(DataProviderResourceUpdatedCallback)
 		PullIncidents(context.Context) iter.Seq2[*ent.Incident, error]
 		GetIncidentByID(context.Context, string) (*ent.Incident, error)
-		GetRoles(context.Context) ([]*ent.IncidentRole, error)
+		ListIncidentRoles(context.Context) ([]*ent.IncidentRole, error)
 	}
 
 	ListIncidentsParams struct {

@@ -401,7 +401,7 @@ func (p *IncidentDataProvider) setIncidentIntegrationData(ctx context.Context, i
 	return nil
 }
 
-func (p *IncidentDataProvider) GetRoles(ctx context.Context) ([]*ent.IncidentRole, error) {
+func (p *IncidentDataProvider) ListIncidentRoles(ctx context.Context) ([]*ent.IncidentRole, error) {
 	type responseBody struct {
 		Error string         `json:"error"`
 		Roles []incidentRole `json:"roles"`

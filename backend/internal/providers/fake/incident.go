@@ -151,6 +151,6 @@ func (p *IncidentDataProvider) GetIncidentByID(ctx context.Context, id string) (
 	return nil, fmt.Errorf("not found")
 }
 
-func (p *IncidentDataProvider) GetRoles(ctx context.Context) ([]*ent.IncidentRole, error) {
+func (p *IncidentDataProvider) ListIncidentRoles(ctx context.Context) ([]*ent.IncidentRole, error) {
 	return p.roles, nil
 }
