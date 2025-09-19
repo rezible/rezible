@@ -395,7 +395,7 @@ func (s *OncallService) SendShiftHandover(ctx context.Context, handoverId uuid.U
 	query := s.db.OncallShiftHandover.Query().
 		Where(oncallshifthandover.ID(handoverId)).
 		WithShift().
-		WithPinnedAnnotations(func(q *ent.OncallAnnotationQuery) {
+		WithPinnedAnnotations(func(q *ent.EventAnnotationQuery) {
 			q.WithEvent()
 		})
 

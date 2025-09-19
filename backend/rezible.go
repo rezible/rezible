@@ -217,7 +217,7 @@ type (
 		GetServerWebsocketAddress() string
 		Handler() http.Handler
 		CreateEditorSessionToken(sess *AuthSession, docId uuid.UUID) (string, error)
-		CreateOncallShiftHandoverMessage(sections []OncallShiftHandoverSection, annotations []*ent.OncallAnnotation, roster *ent.OncallRoster, endingShift *ent.OncallShift, startingShift *ent.OncallShift) (*ContentNode, error)
+		CreateOncallShiftHandoverMessage(sections []OncallShiftHandoverSection, annotations []*ent.EventAnnotation, roster *ent.OncallRoster, endingShift *ent.OncallShift, startingShift *ent.OncallShift) (*ContentNode, error)
 	}
 )
 
@@ -226,13 +226,11 @@ type (
 		Content           []OncallShiftHandoverSection
 		EndingShift       *ent.OncallShift
 		StartingShift     *ent.OncallShift
-		PinnedAnnotations []*ent.OncallAnnotation
+		PinnedAnnotations []*ent.EventAnnotation
 	}
 
 	ChatService interface {
 		GetWebhooksHandler() http.Handler
-
-		SetOncallEventsService(OncallEventsService)
 
 		SendMessage(ctx context.Context, id string, msg *ContentNode) error
 		SendReply(ctx context.Context, channelId string, threadId string, text string) error
@@ -262,7 +260,7 @@ type (
 type (
 	AlertDataProvider interface {
 		PullAlerts(context.Context) iter.Seq2[*ent.Alert, error]
-		PullAlertEventsBetweenDates(ctx context.Context, start, end time.Time) iter.Seq2[*ent.OncallEvent, error]
+		PullAlertInstancesBetweenDates(ctx context.Context, start, end time.Time) iter.Seq2[*ent.AlertInstance, error]
 	}
 
 	ListAlertsParams struct {
@@ -370,6 +368,21 @@ type (
 )
 
 type (
+	ListEventsParams struct {
+		ListParams
+		From            time.Time
+		To              time.Time
+		WithAnnotations bool
+	}
+
+	LookupOncallProviderEventFn func(ctx context.Context, id string) (*ent.Event, error)
+
+	EventsService interface {
+		GetEvent(ctx context.Context, id uuid.UUID) (*ent.Event, error)
+		ListEvents(ctx context.Context, params ListEventsParams) (*ent.ListResult[*ent.Event], error)
+		GetProviderEvent(ctx context.Context, providerId string) (*ent.Event, error)
+	}
+
 	ExpandAnnotationsParams struct {
 		WithCreator       bool
 		WithRoster        bool
@@ -377,36 +390,22 @@ type (
 		WithEvent         bool
 	}
 
-	ListOncallEventsParams struct {
-		ListParams
-		From               time.Time
-		To                 time.Time
-		RosterID           uuid.UUID
-		AnnotationRosterID uuid.UUID
-		AlertID            uuid.UUID
-		WithAnnotations    bool
-	}
-
-	ListOncallAnnotationsParams struct {
+	ListAnnotationsParams struct {
 		ListParams
 		From     time.Time
 		To       time.Time
-		RosterID uuid.UUID
-		Shift    *ent.OncallShift
+		UserIds  []uuid.UUID
+		EventIds []uuid.UUID
 		Expand   ExpandAnnotationsParams
 	}
 
-	LookupOncallProviderEventFn func(ctx context.Context, id string) (*ent.OncallEvent, error)
+	EventAnnotationsService interface {
+		ListAnnotations(ctx context.Context, params ListAnnotationsParams) (*ent.ListResult[*ent.EventAnnotation], error)
 
-	OncallEventsService interface {
-		GetEvent(ctx context.Context, id uuid.UUID) (*ent.OncallEvent, error)
-		ListEvents(ctx context.Context, params ListOncallEventsParams) (*ent.ListResult[*ent.OncallEvent], error)
-		GetProviderEvent(ctx context.Context, providerId string) (*ent.OncallEvent, error)
+		LookupByUserEvent(ctx context.Context, userId uuid.UUID, event *ent.Event) (*ent.EventAnnotation, error)
 
-		ListAnnotations(ctx context.Context, params ListOncallAnnotationsParams) (*ent.ListResult[*ent.OncallAnnotation], error)
-
-		GetAnnotation(ctx context.Context, id uuid.UUID) (*ent.OncallAnnotation, error)
-		UpdateAnnotation(ctx context.Context, anno *ent.OncallAnnotation) (*ent.OncallAnnotation, error)
+		GetAnnotation(ctx context.Context, id uuid.UUID) (*ent.EventAnnotation, error)
+		SetAnnotation(ctx context.Context, anno *ent.EventAnnotation) (*ent.EventAnnotation, error)
 		DeleteAnnotation(ctx context.Context, id uuid.UUID) error
 	}
 )

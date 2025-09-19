@@ -81,7 +81,7 @@ type (
 		ShiftId           uuid.UUID                    `json:"shiftId"`
 		SentAt            time.Time                    `json:"sentAt"`
 		Content           []OncallShiftHandoverSection `json:"content"`
-		PinnedAnnotations []OncallAnnotation           `json:"pinnedAnnotations"`
+		PinnedAnnotations []EventAnnotation            `json:"pinnedAnnotations"`
 	}
 
 	OncallShiftHandoverSection struct {
@@ -123,17 +123,16 @@ func OncallShiftFromEnt(shift *ent.OncallShift) OncallShift {
 	}
 }
 
-type unmarshalOncallShiftContentSection struct {
+type handoverContentSection struct {
 	Header      string          `json:"header"`
 	Kind        string          `json:"kind" enum:"regular,annotations,incidents"`
 	JsonContent json.RawMessage `json:"jsonContent,omitempty"`
 }
 
-func OncallShiftHandoverFromEnt(p *ent.OncallShiftHandover) OncallShiftHandover {
-	var rawContents []unmarshalOncallShiftContentSection
-	if jsonErr := json.Unmarshal(p.Contents, &rawContents); jsonErr != nil {
-		// TODO: just return an error
-		log.Error().Err(jsonErr).Msg("Error unmarshalling OncallShiftHandover contents")
+func convertRawHandoverContents(contents []byte) ([]OncallShiftHandoverSection, error) {
+	var rawContents []handoverContentSection
+	if jsonErr := json.Unmarshal(contents, &rawContents); jsonErr != nil {
+		return nil, jsonErr
 	}
 	content := make([]OncallShiftHandoverSection, len(rawContents))
 	for i, rawContent := range rawContents {
@@ -146,20 +145,30 @@ func OncallShiftHandoverFromEnt(p *ent.OncallShiftHandover) OncallShiftHandover 
 			content[i].JsonContent = &str
 		}
 	}
+	return content, nil
+}
+
+func OncallShiftHandoverFromEnt(p *ent.OncallShiftHandover) OncallShiftHandover {
 	attr := OncallShiftHandoverAttributes{
-		ShiftId:           p.ShiftID,
-		Content:           content,
-		SentAt:            p.SentAt,
-		PinnedAnnotations: make([]OncallAnnotation, len(p.Edges.PinnedAnnotations)),
-	}
-	for i, anno := range p.Edges.PinnedAnnotations {
-		attr.PinnedAnnotations[i] = OncallAnnotationFromEnt(anno)
+		ShiftId: p.ShiftID,
+		SentAt:  p.SentAt,
 	}
 
-	return OncallShiftHandover{
-		Id:         p.ID,
-		Attributes: attr,
+	content, contentErr := convertRawHandoverContents(p.Contents)
+	if contentErr != nil {
+		// TODO: just return an error
+		log.Error().
+			Err(contentErr).
+			Msg("Error converting OncallShiftHandover.Contents")
 	}
+	attr.Content = content
+
+	attr.PinnedAnnotations = make([]EventAnnotation, len(p.Edges.PinnedAnnotations))
+	for i, anno := range p.Edges.PinnedAnnotations {
+		attr.PinnedAnnotations[i] = EventAnnotationFromEnt(anno)
+	}
+
+	return OncallShiftHandover{Id: p.ID, Attributes: attr}
 }
 
 // ops

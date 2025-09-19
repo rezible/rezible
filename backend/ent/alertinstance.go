@@ -5,11 +5,13 @@ package ent
 import (
 	"fmt"
 	"strings"
+	"time"
 
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/alert"
+	"github.com/rezible/rezible/ent/alertfeedback"
 	"github.com/rezible/rezible/ent/alertinstance"
 	"github.com/rezible/rezible/ent/event"
 	"github.com/rezible/rezible/ent/tenant"
@@ -26,11 +28,16 @@ type AlertInstance struct {
 	AlertID uuid.UUID `json:"alert_id,omitempty"`
 	// EventID holds the value of the "event_id" field.
 	EventID uuid.UUID `json:"event_id,omitempty"`
+	// ProviderID holds the value of the "provider_id" field.
+	ProviderID string `json:"provider_id,omitempty"`
+	// AcknowledgedAt holds the value of the "acknowledged_at" field.
+	AcknowledgedAt time.Time `json:"acknowledged_at,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the AlertInstanceQuery when eager-loading is set.
-	Edges           AlertInstanceEdges `json:"edges"`
-	alert_instances *uuid.UUID
-	selectValues    sql.SelectValues
+	Edges                   AlertInstanceEdges `json:"edges"`
+	alert_instances         *uuid.UUID
+	alert_instance_feedback *uuid.UUID
+	selectValues            sql.SelectValues
 }
 
 // AlertInstanceEdges holds the relations/edges for other nodes in the graph.
@@ -42,7 +49,7 @@ type AlertInstanceEdges struct {
 	// Event holds the value of the event edge.
 	Event *Event `json:"event,omitempty"`
 	// Feedback holds the value of the feedback edge.
-	Feedback []*AlertFeedback `json:"feedback,omitempty"`
+	Feedback *AlertFeedback `json:"feedback,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
 	loadedTypes [4]bool
@@ -82,10 +89,12 @@ func (e AlertInstanceEdges) EventOrErr() (*Event, error) {
 }
 
 // FeedbackOrErr returns the Feedback value or an error if the edge
-// was not loaded in eager-loading.
-func (e AlertInstanceEdges) FeedbackOrErr() ([]*AlertFeedback, error) {
-	if e.loadedTypes[3] {
+// was not loaded in eager-loading, or loaded but was not found.
+func (e AlertInstanceEdges) FeedbackOrErr() (*AlertFeedback, error) {
+	if e.Feedback != nil {
 		return e.Feedback, nil
+	} else if e.loadedTypes[3] {
+		return nil, &NotFoundError{label: alertfeedback.Label}
 	}
 	return nil, &NotLoadedError{edge: "feedback"}
 }
@@ -97,9 +106,15 @@ func (*AlertInstance) scanValues(columns []string) ([]any, error) {
 		switch columns[i] {
 		case alertinstance.FieldTenantID:
 			values[i] = new(sql.NullInt64)
+		case alertinstance.FieldProviderID:
+			values[i] = new(sql.NullString)
+		case alertinstance.FieldAcknowledgedAt:
+			values[i] = new(sql.NullTime)
 		case alertinstance.FieldID, alertinstance.FieldAlertID, alertinstance.FieldEventID:
 			values[i] = new(uuid.UUID)
 		case alertinstance.ForeignKeys[0]: // alert_instances
+			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
+		case alertinstance.ForeignKeys[1]: // alert_instance_feedback
 			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
 		default:
 			values[i] = new(sql.UnknownType)
@@ -140,12 +155,31 @@ func (ai *AlertInstance) assignValues(columns []string, values []any) error {
 			} else if value != nil {
 				ai.EventID = *value
 			}
+		case alertinstance.FieldProviderID:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field provider_id", values[i])
+			} else if value.Valid {
+				ai.ProviderID = value.String
+			}
+		case alertinstance.FieldAcknowledgedAt:
+			if value, ok := values[i].(*sql.NullTime); !ok {
+				return fmt.Errorf("unexpected type %T for field acknowledged_at", values[i])
+			} else if value.Valid {
+				ai.AcknowledgedAt = value.Time
+			}
 		case alertinstance.ForeignKeys[0]:
 			if value, ok := values[i].(*sql.NullScanner); !ok {
 				return fmt.Errorf("unexpected type %T for field alert_instances", values[i])
 			} else if value.Valid {
 				ai.alert_instances = new(uuid.UUID)
 				*ai.alert_instances = *value.S.(*uuid.UUID)
+			}
+		case alertinstance.ForeignKeys[1]:
+			if value, ok := values[i].(*sql.NullScanner); !ok {
+				return fmt.Errorf("unexpected type %T for field alert_instance_feedback", values[i])
+			} else if value.Valid {
+				ai.alert_instance_feedback = new(uuid.UUID)
+				*ai.alert_instance_feedback = *value.S.(*uuid.UUID)
 			}
 		default:
 			ai.selectValues.Set(columns[i], values[i])
@@ -211,6 +245,12 @@ func (ai *AlertInstance) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("event_id=")
 	builder.WriteString(fmt.Sprintf("%v", ai.EventID))
+	builder.WriteString(", ")
+	builder.WriteString("provider_id=")
+	builder.WriteString(ai.ProviderID)
+	builder.WriteString(", ")
+	builder.WriteString("acknowledged_at=")
+	builder.WriteString(ai.AcknowledgedAt.Format(time.ANSIC))
 	builder.WriteByte(')')
 	return builder.String()
 }

@@ -92,7 +92,17 @@ func (s *rezServer) setup() error {
 		return fmt.Errorf("http.NewAuthService: %w", authErr)
 	}
 
-	chat, chatErr := slack.NewChatService(users)
+	events, eventsErr := postgres.NewEventsService(dbc, users)
+	if eventsErr != nil {
+		return fmt.Errorf("postgres.NewEventsService: %w", eventsErr)
+	}
+
+	annos, annosErr := postgres.NewEventAnnotationsService(dbc, events)
+	if annosErr != nil {
+		return fmt.Errorf("postgres.NewEventAnnotationsService: %w", annosErr)
+	}
+
+	chat, chatErr := slack.NewChatService(users, annos)
 	if chatErr != nil {
 		return fmt.Errorf("postgres.NewChatService: %w", chatErr)
 	}
@@ -122,11 +132,6 @@ func (s *rezServer) setup() error {
 		return fmt.Errorf("postgres.NewOncallService: %w", oncallErr)
 	}
 
-	oncallEvents, eventsErr := postgres.NewOncallEventsService(dbc, users, oncall, incidents)
-	if eventsErr != nil {
-		return fmt.Errorf("postgres.NewOncallEventsService: %w", eventsErr)
-	}
-
 	debriefs, debriefsErr := postgres.NewDebriefService(dbc, jobSvc, lms, chat)
 	if debriefsErr != nil {
 		return fmt.Errorf("postgres.NewDebriefService: %w", debriefsErr)
@@ -152,9 +157,7 @@ func (s *rezServer) setup() error {
 		return fmt.Errorf("postgres.NewPlaybookService: %w", playbooksErr)
 	}
 
-	chat.SetOncallEventsService(oncallEvents)
-
-	apiHandler := api.NewHandler(dbc, auth, configs, users, incidents, debriefs, oncall, oncallEvents, docs, retros, components, alerts, playbooks)
+	apiHandler := api.NewHandler(dbc, auth, configs, users, incidents, debriefs, oncall, events, annos, docs, retros, components, alerts, playbooks)
 	documentsHandler := docs.Handler()
 	webhookHandler := http.NewWebhooksHandler(chat)
 	mcpHandler := eino.NewMCPHandler(auth)

@@ -3,6 +3,7 @@ package openapi
 import (
 	"context"
 	"net/http"
+	"time"
 
 	"github.com/danielgtaylor/huma/v2"
 	"github.com/google/uuid"
@@ -35,6 +36,24 @@ type (
 		Description string                              `json:"description"`
 		Definition  string                              `json:"definition"`
 		Roster      *Expandable[OncallRosterAttributes] `json:"roster,omitempty"`
+	}
+
+	AlertInstance struct {
+		Id         uuid.UUID               `json:"id"`
+		Attributes AlertInstanceAttributes `json:"attributes"`
+	}
+
+	AlertInstanceAttributes struct {
+		Timestamp time.Time              `json:"timestamp"`
+		Feedback  *AlertInstanceFeedback `json:"feedback,omitempty"`
+	}
+
+	AlertInstanceFeedback struct {
+		UserId                   uuid.UUID `json:"userId"`
+		Actionable               bool      `json:"actionable"`
+		Accurate                 string    `json:"accurate" enum:"yes,no,unknown"`
+		DocumentationAvailable   bool      `json:"documentationAvailable"`
+		DocumentationNeedsUpdate bool      `json:"documentationNeedsUpdate"`
 	}
 
 	AlertMetrics struct {

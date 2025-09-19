@@ -1227,7 +1227,7 @@ func (c *AlertInstanceClient) QueryFeedback(ai *AlertInstance) *AlertFeedbackQue
 		step := sqlgraph.NewStep(
 			sqlgraph.From(alertinstance.Table, alertinstance.FieldID, id),
 			sqlgraph.To(alertfeedback.Table, alertfeedback.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, true, alertinstance.FeedbackTable, alertinstance.FeedbackColumn),
+			sqlgraph.Edge(sqlgraph.M2O, false, alertinstance.FeedbackTable, alertinstance.FeedbackColumn),
 		)
 		fromV = sqlgraph.Neighbors(ai.driver.Dialect(), step)
 		return fromV, nil

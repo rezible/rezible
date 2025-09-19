@@ -9,7 +9,8 @@ import (
 	"github.com/rezible/rezible/ent"
 	"github.com/rezible/rezible/ent/alert"
 	afb "github.com/rezible/rezible/ent/alertfeedback"
-	oe "github.com/rezible/rezible/ent/oncallevent"
+	ae "github.com/rezible/rezible/ent/alertinstance"
+	"github.com/rezible/rezible/ent/event"
 )
 
 type AlertService struct {
@@ -47,38 +48,30 @@ func (s *AlertService) GetAlert(ctx context.Context, id uuid.UUID) (*ent.Alert, 
 }
 
 func (s *AlertService) GetAlertMetrics(ctx context.Context, params rez.GetAlertMetricsParams) (*ent.AlertMetrics, error) {
-	eventsQuery := s.db.OncallEvent.Query().
-		Where(oe.AlertID(params.AlertId)).
-		Where(oe.Or(oe.TimestampGTE(params.From), oe.TimestampGTE(params.To))).
-		WithAnnotations(func(q *ent.OncallAnnotationQuery) {
-			q.WithAlertFeedback()
+	query := s.db.AlertInstance.Query().
+		Where(ae.AlertID(params.AlertId)).
+		WithFeedback().
+		WithEvent(func(q *ent.EventQuery) {
+			q.Where(event.Or(event.TimestampGTE(params.From), event.TimestampGTE(params.To)))
 		})
 
-	//if params.RosterId != uuid.Nil {
-	//	eventsQuery = eventsQuery.Where(oe.RosterID(params.RosterId))
-	//}
-
-	events, eventsQueryErr := eventsQuery.All(ctx)
-	if eventsQueryErr != nil {
-		return nil, fmt.Errorf("events: %w", eventsQueryErr)
+	instances, queryErr := query.All(ctx)
+	if queryErr != nil {
+		return nil, fmt.Errorf("get alert instances: %w", queryErr)
 	}
 
 	metrics := &ent.AlertMetrics{
-		EventCount: len(events),
+		EventCount: len(instances),
 	}
 
-	for _, ev := range events {
-		if ev.RosterID != uuid.Nil {
-			hour := ev.Timestamp.Hour()
+	for _, ins := range instances {
+		if !ins.AcknowledgedAt.IsZero() {
+			hour := ins.AcknowledgedAt.Hour()
 			if hour > 18 || hour < 9 {
 				metrics.NightInterruptCount++
 			}
 		}
-		for _, anno := range ev.Edges.Annotations {
-			fb := anno.Edges.AlertFeedback
-			if fb == nil {
-				continue
-			}
+		if fb := ins.Edges.Feedback; fb != nil {
 			metrics.FeedbackCount++
 			if fb.Actionable {
 				metrics.FeedbackActionable++

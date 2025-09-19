@@ -6,6 +6,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"time"
 
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
@@ -60,6 +61,40 @@ func (aiu *AlertInstanceUpdate) SetNillableEventID(u *uuid.UUID) *AlertInstanceU
 	return aiu
 }
 
+// SetProviderID sets the "provider_id" field.
+func (aiu *AlertInstanceUpdate) SetProviderID(s string) *AlertInstanceUpdate {
+	aiu.mutation.SetProviderID(s)
+	return aiu
+}
+
+// SetNillableProviderID sets the "provider_id" field if the given value is not nil.
+func (aiu *AlertInstanceUpdate) SetNillableProviderID(s *string) *AlertInstanceUpdate {
+	if s != nil {
+		aiu.SetProviderID(*s)
+	}
+	return aiu
+}
+
+// SetAcknowledgedAt sets the "acknowledged_at" field.
+func (aiu *AlertInstanceUpdate) SetAcknowledgedAt(t time.Time) *AlertInstanceUpdate {
+	aiu.mutation.SetAcknowledgedAt(t)
+	return aiu
+}
+
+// SetNillableAcknowledgedAt sets the "acknowledged_at" field if the given value is not nil.
+func (aiu *AlertInstanceUpdate) SetNillableAcknowledgedAt(t *time.Time) *AlertInstanceUpdate {
+	if t != nil {
+		aiu.SetAcknowledgedAt(*t)
+	}
+	return aiu
+}
+
+// ClearAcknowledgedAt clears the value of the "acknowledged_at" field.
+func (aiu *AlertInstanceUpdate) ClearAcknowledgedAt() *AlertInstanceUpdate {
+	aiu.mutation.ClearAcknowledgedAt()
+	return aiu
+}
+
 // SetAlert sets the "alert" edge to the Alert entity.
 func (aiu *AlertInstanceUpdate) SetAlert(a *Alert) *AlertInstanceUpdate {
 	return aiu.SetAlertID(a.ID)
@@ -70,19 +105,23 @@ func (aiu *AlertInstanceUpdate) SetEvent(e *Event) *AlertInstanceUpdate {
 	return aiu.SetEventID(e.ID)
 }
 
-// AddFeedbackIDs adds the "feedback" edge to the AlertFeedback entity by IDs.
-func (aiu *AlertInstanceUpdate) AddFeedbackIDs(ids ...uuid.UUID) *AlertInstanceUpdate {
-	aiu.mutation.AddFeedbackIDs(ids...)
+// SetFeedbackID sets the "feedback" edge to the AlertFeedback entity by ID.
+func (aiu *AlertInstanceUpdate) SetFeedbackID(id uuid.UUID) *AlertInstanceUpdate {
+	aiu.mutation.SetFeedbackID(id)
 	return aiu
 }
 
-// AddFeedback adds the "feedback" edges to the AlertFeedback entity.
-func (aiu *AlertInstanceUpdate) AddFeedback(a ...*AlertFeedback) *AlertInstanceUpdate {
-	ids := make([]uuid.UUID, len(a))
-	for i := range a {
-		ids[i] = a[i].ID
+// SetNillableFeedbackID sets the "feedback" edge to the AlertFeedback entity by ID if the given value is not nil.
+func (aiu *AlertInstanceUpdate) SetNillableFeedbackID(id *uuid.UUID) *AlertInstanceUpdate {
+	if id != nil {
+		aiu = aiu.SetFeedbackID(*id)
 	}
-	return aiu.AddFeedbackIDs(ids...)
+	return aiu
+}
+
+// SetFeedback sets the "feedback" edge to the AlertFeedback entity.
+func (aiu *AlertInstanceUpdate) SetFeedback(a *AlertFeedback) *AlertInstanceUpdate {
+	return aiu.SetFeedbackID(a.ID)
 }
 
 // Mutation returns the AlertInstanceMutation object of the builder.
@@ -102,25 +141,10 @@ func (aiu *AlertInstanceUpdate) ClearEvent() *AlertInstanceUpdate {
 	return aiu
 }
 
-// ClearFeedback clears all "feedback" edges to the AlertFeedback entity.
+// ClearFeedback clears the "feedback" edge to the AlertFeedback entity.
 func (aiu *AlertInstanceUpdate) ClearFeedback() *AlertInstanceUpdate {
 	aiu.mutation.ClearFeedback()
 	return aiu
-}
-
-// RemoveFeedbackIDs removes the "feedback" edge to AlertFeedback entities by IDs.
-func (aiu *AlertInstanceUpdate) RemoveFeedbackIDs(ids ...uuid.UUID) *AlertInstanceUpdate {
-	aiu.mutation.RemoveFeedbackIDs(ids...)
-	return aiu
-}
-
-// RemoveFeedback removes "feedback" edges to AlertFeedback entities.
-func (aiu *AlertInstanceUpdate) RemoveFeedback(a ...*AlertFeedback) *AlertInstanceUpdate {
-	ids := make([]uuid.UUID, len(a))
-	for i := range a {
-		ids[i] = a[i].ID
-	}
-	return aiu.RemoveFeedbackIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -182,6 +206,15 @@ func (aiu *AlertInstanceUpdate) sqlSave(ctx context.Context) (n int, err error) 
 			}
 		}
 	}
+	if value, ok := aiu.mutation.ProviderID(); ok {
+		_spec.SetField(alertinstance.FieldProviderID, field.TypeString, value)
+	}
+	if value, ok := aiu.mutation.AcknowledgedAt(); ok {
+		_spec.SetField(alertinstance.FieldAcknowledgedAt, field.TypeTime, value)
+	}
+	if aiu.mutation.AcknowledgedAtCleared() {
+		_spec.ClearField(alertinstance.FieldAcknowledgedAt, field.TypeTime)
+	}
 	if aiu.mutation.AlertCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
@@ -242,37 +275,21 @@ func (aiu *AlertInstanceUpdate) sqlSave(ctx context.Context) (n int, err error) 
 	}
 	if aiu.mutation.FeedbackCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
 			Table:   alertinstance.FeedbackTable,
 			Columns: []string{alertinstance.FeedbackColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(alertfeedback.FieldID, field.TypeUUID),
 			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := aiu.mutation.RemovedFeedbackIDs(); len(nodes) > 0 && !aiu.mutation.FeedbackCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   alertinstance.FeedbackTable,
-			Columns: []string{alertinstance.FeedbackColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(alertfeedback.FieldID, field.TypeUUID),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
 	if nodes := aiu.mutation.FeedbackIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
 			Table:   alertinstance.FeedbackTable,
 			Columns: []string{alertinstance.FeedbackColumn},
 			Bidi:    false,
@@ -335,6 +352,40 @@ func (aiuo *AlertInstanceUpdateOne) SetNillableEventID(u *uuid.UUID) *AlertInsta
 	return aiuo
 }
 
+// SetProviderID sets the "provider_id" field.
+func (aiuo *AlertInstanceUpdateOne) SetProviderID(s string) *AlertInstanceUpdateOne {
+	aiuo.mutation.SetProviderID(s)
+	return aiuo
+}
+
+// SetNillableProviderID sets the "provider_id" field if the given value is not nil.
+func (aiuo *AlertInstanceUpdateOne) SetNillableProviderID(s *string) *AlertInstanceUpdateOne {
+	if s != nil {
+		aiuo.SetProviderID(*s)
+	}
+	return aiuo
+}
+
+// SetAcknowledgedAt sets the "acknowledged_at" field.
+func (aiuo *AlertInstanceUpdateOne) SetAcknowledgedAt(t time.Time) *AlertInstanceUpdateOne {
+	aiuo.mutation.SetAcknowledgedAt(t)
+	return aiuo
+}
+
+// SetNillableAcknowledgedAt sets the "acknowledged_at" field if the given value is not nil.
+func (aiuo *AlertInstanceUpdateOne) SetNillableAcknowledgedAt(t *time.Time) *AlertInstanceUpdateOne {
+	if t != nil {
+		aiuo.SetAcknowledgedAt(*t)
+	}
+	return aiuo
+}
+
+// ClearAcknowledgedAt clears the value of the "acknowledged_at" field.
+func (aiuo *AlertInstanceUpdateOne) ClearAcknowledgedAt() *AlertInstanceUpdateOne {
+	aiuo.mutation.ClearAcknowledgedAt()
+	return aiuo
+}
+
 // SetAlert sets the "alert" edge to the Alert entity.
 func (aiuo *AlertInstanceUpdateOne) SetAlert(a *Alert) *AlertInstanceUpdateOne {
 	return aiuo.SetAlertID(a.ID)
@@ -345,19 +396,23 @@ func (aiuo *AlertInstanceUpdateOne) SetEvent(e *Event) *AlertInstanceUpdateOne {
 	return aiuo.SetEventID(e.ID)
 }
 
-// AddFeedbackIDs adds the "feedback" edge to the AlertFeedback entity by IDs.
-func (aiuo *AlertInstanceUpdateOne) AddFeedbackIDs(ids ...uuid.UUID) *AlertInstanceUpdateOne {
-	aiuo.mutation.AddFeedbackIDs(ids...)
+// SetFeedbackID sets the "feedback" edge to the AlertFeedback entity by ID.
+func (aiuo *AlertInstanceUpdateOne) SetFeedbackID(id uuid.UUID) *AlertInstanceUpdateOne {
+	aiuo.mutation.SetFeedbackID(id)
 	return aiuo
 }
 
-// AddFeedback adds the "feedback" edges to the AlertFeedback entity.
-func (aiuo *AlertInstanceUpdateOne) AddFeedback(a ...*AlertFeedback) *AlertInstanceUpdateOne {
-	ids := make([]uuid.UUID, len(a))
-	for i := range a {
-		ids[i] = a[i].ID
+// SetNillableFeedbackID sets the "feedback" edge to the AlertFeedback entity by ID if the given value is not nil.
+func (aiuo *AlertInstanceUpdateOne) SetNillableFeedbackID(id *uuid.UUID) *AlertInstanceUpdateOne {
+	if id != nil {
+		aiuo = aiuo.SetFeedbackID(*id)
 	}
-	return aiuo.AddFeedbackIDs(ids...)
+	return aiuo
+}
+
+// SetFeedback sets the "feedback" edge to the AlertFeedback entity.
+func (aiuo *AlertInstanceUpdateOne) SetFeedback(a *AlertFeedback) *AlertInstanceUpdateOne {
+	return aiuo.SetFeedbackID(a.ID)
 }
 
 // Mutation returns the AlertInstanceMutation object of the builder.
@@ -377,25 +432,10 @@ func (aiuo *AlertInstanceUpdateOne) ClearEvent() *AlertInstanceUpdateOne {
 	return aiuo
 }
 
-// ClearFeedback clears all "feedback" edges to the AlertFeedback entity.
+// ClearFeedback clears the "feedback" edge to the AlertFeedback entity.
 func (aiuo *AlertInstanceUpdateOne) ClearFeedback() *AlertInstanceUpdateOne {
 	aiuo.mutation.ClearFeedback()
 	return aiuo
-}
-
-// RemoveFeedbackIDs removes the "feedback" edge to AlertFeedback entities by IDs.
-func (aiuo *AlertInstanceUpdateOne) RemoveFeedbackIDs(ids ...uuid.UUID) *AlertInstanceUpdateOne {
-	aiuo.mutation.RemoveFeedbackIDs(ids...)
-	return aiuo
-}
-
-// RemoveFeedback removes "feedback" edges to AlertFeedback entities.
-func (aiuo *AlertInstanceUpdateOne) RemoveFeedback(a ...*AlertFeedback) *AlertInstanceUpdateOne {
-	ids := make([]uuid.UUID, len(a))
-	for i := range a {
-		ids[i] = a[i].ID
-	}
-	return aiuo.RemoveFeedbackIDs(ids...)
 }
 
 // Where appends a list predicates to the AlertInstanceUpdate builder.
@@ -487,6 +527,15 @@ func (aiuo *AlertInstanceUpdateOne) sqlSave(ctx context.Context) (_node *AlertIn
 			}
 		}
 	}
+	if value, ok := aiuo.mutation.ProviderID(); ok {
+		_spec.SetField(alertinstance.FieldProviderID, field.TypeString, value)
+	}
+	if value, ok := aiuo.mutation.AcknowledgedAt(); ok {
+		_spec.SetField(alertinstance.FieldAcknowledgedAt, field.TypeTime, value)
+	}
+	if aiuo.mutation.AcknowledgedAtCleared() {
+		_spec.ClearField(alertinstance.FieldAcknowledgedAt, field.TypeTime)
+	}
 	if aiuo.mutation.AlertCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
@@ -547,37 +596,21 @@ func (aiuo *AlertInstanceUpdateOne) sqlSave(ctx context.Context) (_node *AlertIn
 	}
 	if aiuo.mutation.FeedbackCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
 			Table:   alertinstance.FeedbackTable,
 			Columns: []string{alertinstance.FeedbackColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(alertfeedback.FieldID, field.TypeUUID),
 			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := aiuo.mutation.RemovedFeedbackIDs(); len(nodes) > 0 && !aiuo.mutation.FeedbackCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   alertinstance.FeedbackTable,
-			Columns: []string{alertinstance.FeedbackColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(alertfeedback.FieldID, field.TypeUUID),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
 	if nodes := aiuo.mutation.FeedbackIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
 			Table:   alertinstance.FeedbackTable,
 			Columns: []string{alertinstance.FeedbackColumn},
 			Bidi:    false,

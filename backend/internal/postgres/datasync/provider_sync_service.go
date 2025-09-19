@@ -97,6 +97,9 @@ func (s *ProviderSyncService) syncProviderData(ctx context.Context, hard bool) e
 		if syncErr := syncAlerts(ctx, s.db, alerts); syncErr != nil {
 			return fmt.Errorf("alerts: %w", syncErr)
 		}
+		if syncErr := syncAlertInstances(ctx, s.db, alerts); syncErr != nil {
+			return fmt.Errorf("alert instances: %w", syncErr)
+		}
 	}
 
 	playbooks, playbooksErr := s.pl.GetPlaybookDataProvider(ctx)
@@ -113,12 +116,6 @@ func (s *ProviderSyncService) syncProviderData(ctx context.Context, hard bool) e
 		}
 		if syncErr := syncIncidents(ctx, s.db, incidents); syncErr != nil {
 			return fmt.Errorf("incidents: %w", syncErr)
-		}
-	}
-
-	if alerts != nil {
-		if syncErr := syncOncallEvents(ctx, s.db, alerts); syncErr != nil {
-			return fmt.Errorf("oncall events: %w", syncErr)
 		}
 	}
 

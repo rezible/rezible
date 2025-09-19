@@ -40,10 +40,13 @@ type Handler interface {
 	PlaybooksHandler
 	MeetingsHandler
 
+	EventsHandler
+	EventAnnotationsHandler
+	
 	AlertsHandler
+
 	OncallRostersHandler
 	OncallShiftsHandler
-	OncallEventsHandler
 
 	UsersHandler
 	AuthSessionsHandler

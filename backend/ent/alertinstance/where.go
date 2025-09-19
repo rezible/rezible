@@ -3,6 +3,8 @@
 package alertinstance
 
 import (
+	"time"
+
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"github.com/google/uuid"
@@ -69,6 +71,16 @@ func EventID(v uuid.UUID) predicate.AlertInstance {
 	return predicate.AlertInstance(sql.FieldEQ(FieldEventID, v))
 }
 
+// ProviderID applies equality check predicate on the "provider_id" field. It's identical to ProviderIDEQ.
+func ProviderID(v string) predicate.AlertInstance {
+	return predicate.AlertInstance(sql.FieldEQ(FieldProviderID, v))
+}
+
+// AcknowledgedAt applies equality check predicate on the "acknowledged_at" field. It's identical to AcknowledgedAtEQ.
+func AcknowledgedAt(v time.Time) predicate.AlertInstance {
+	return predicate.AlertInstance(sql.FieldEQ(FieldAcknowledgedAt, v))
+}
+
 // TenantIDEQ applies the EQ predicate on the "tenant_id" field.
 func TenantIDEQ(v int) predicate.AlertInstance {
 	return predicate.AlertInstance(sql.FieldEQ(FieldTenantID, v))
@@ -127,6 +139,121 @@ func EventIDIn(vs ...uuid.UUID) predicate.AlertInstance {
 // EventIDNotIn applies the NotIn predicate on the "event_id" field.
 func EventIDNotIn(vs ...uuid.UUID) predicate.AlertInstance {
 	return predicate.AlertInstance(sql.FieldNotIn(FieldEventID, vs...))
+}
+
+// ProviderIDEQ applies the EQ predicate on the "provider_id" field.
+func ProviderIDEQ(v string) predicate.AlertInstance {
+	return predicate.AlertInstance(sql.FieldEQ(FieldProviderID, v))
+}
+
+// ProviderIDNEQ applies the NEQ predicate on the "provider_id" field.
+func ProviderIDNEQ(v string) predicate.AlertInstance {
+	return predicate.AlertInstance(sql.FieldNEQ(FieldProviderID, v))
+}
+
+// ProviderIDIn applies the In predicate on the "provider_id" field.
+func ProviderIDIn(vs ...string) predicate.AlertInstance {
+	return predicate.AlertInstance(sql.FieldIn(FieldProviderID, vs...))
+}
+
+// ProviderIDNotIn applies the NotIn predicate on the "provider_id" field.
+func ProviderIDNotIn(vs ...string) predicate.AlertInstance {
+	return predicate.AlertInstance(sql.FieldNotIn(FieldProviderID, vs...))
+}
+
+// ProviderIDGT applies the GT predicate on the "provider_id" field.
+func ProviderIDGT(v string) predicate.AlertInstance {
+	return predicate.AlertInstance(sql.FieldGT(FieldProviderID, v))
+}
+
+// ProviderIDGTE applies the GTE predicate on the "provider_id" field.
+func ProviderIDGTE(v string) predicate.AlertInstance {
+	return predicate.AlertInstance(sql.FieldGTE(FieldProviderID, v))
+}
+
+// ProviderIDLT applies the LT predicate on the "provider_id" field.
+func ProviderIDLT(v string) predicate.AlertInstance {
+	return predicate.AlertInstance(sql.FieldLT(FieldProviderID, v))
+}
+
+// ProviderIDLTE applies the LTE predicate on the "provider_id" field.
+func ProviderIDLTE(v string) predicate.AlertInstance {
+	return predicate.AlertInstance(sql.FieldLTE(FieldProviderID, v))
+}
+
+// ProviderIDContains applies the Contains predicate on the "provider_id" field.
+func ProviderIDContains(v string) predicate.AlertInstance {
+	return predicate.AlertInstance(sql.FieldContains(FieldProviderID, v))
+}
+
+// ProviderIDHasPrefix applies the HasPrefix predicate on the "provider_id" field.
+func ProviderIDHasPrefix(v string) predicate.AlertInstance {
+	return predicate.AlertInstance(sql.FieldHasPrefix(FieldProviderID, v))
+}
+
+// ProviderIDHasSuffix applies the HasSuffix predicate on the "provider_id" field.
+func ProviderIDHasSuffix(v string) predicate.AlertInstance {
+	return predicate.AlertInstance(sql.FieldHasSuffix(FieldProviderID, v))
+}
+
+// ProviderIDEqualFold applies the EqualFold predicate on the "provider_id" field.
+func ProviderIDEqualFold(v string) predicate.AlertInstance {
+	return predicate.AlertInstance(sql.FieldEqualFold(FieldProviderID, v))
+}
+
+// ProviderIDContainsFold applies the ContainsFold predicate on the "provider_id" field.
+func ProviderIDContainsFold(v string) predicate.AlertInstance {
+	return predicate.AlertInstance(sql.FieldContainsFold(FieldProviderID, v))
+}
+
+// AcknowledgedAtEQ applies the EQ predicate on the "acknowledged_at" field.
+func AcknowledgedAtEQ(v time.Time) predicate.AlertInstance {
+	return predicate.AlertInstance(sql.FieldEQ(FieldAcknowledgedAt, v))
+}
+
+// AcknowledgedAtNEQ applies the NEQ predicate on the "acknowledged_at" field.
+func AcknowledgedAtNEQ(v time.Time) predicate.AlertInstance {
+	return predicate.AlertInstance(sql.FieldNEQ(FieldAcknowledgedAt, v))
+}
+
+// AcknowledgedAtIn applies the In predicate on the "acknowledged_at" field.
+func AcknowledgedAtIn(vs ...time.Time) predicate.AlertInstance {
+	return predicate.AlertInstance(sql.FieldIn(FieldAcknowledgedAt, vs...))
+}
+
+// AcknowledgedAtNotIn applies the NotIn predicate on the "acknowledged_at" field.
+func AcknowledgedAtNotIn(vs ...time.Time) predicate.AlertInstance {
+	return predicate.AlertInstance(sql.FieldNotIn(FieldAcknowledgedAt, vs...))
+}
+
+// AcknowledgedAtGT applies the GT predicate on the "acknowledged_at" field.
+func AcknowledgedAtGT(v time.Time) predicate.AlertInstance {
+	return predicate.AlertInstance(sql.FieldGT(FieldAcknowledgedAt, v))
+}
+
+// AcknowledgedAtGTE applies the GTE predicate on the "acknowledged_at" field.
+func AcknowledgedAtGTE(v time.Time) predicate.AlertInstance {
+	return predicate.AlertInstance(sql.FieldGTE(FieldAcknowledgedAt, v))
+}
+
+// AcknowledgedAtLT applies the LT predicate on the "acknowledged_at" field.
+func AcknowledgedAtLT(v time.Time) predicate.AlertInstance {
+	return predicate.AlertInstance(sql.FieldLT(FieldAcknowledgedAt, v))
+}
+
+// AcknowledgedAtLTE applies the LTE predicate on the "acknowledged_at" field.
+func AcknowledgedAtLTE(v time.Time) predicate.AlertInstance {
+	return predicate.AlertInstance(sql.FieldLTE(FieldAcknowledgedAt, v))
+}
+
+// AcknowledgedAtIsNil applies the IsNil predicate on the "acknowledged_at" field.
+func AcknowledgedAtIsNil() predicate.AlertInstance {
+	return predicate.AlertInstance(sql.FieldIsNull(FieldAcknowledgedAt))
+}
+
+// AcknowledgedAtNotNil applies the NotNil predicate on the "acknowledged_at" field.
+func AcknowledgedAtNotNil() predicate.AlertInstance {
+	return predicate.AlertInstance(sql.FieldNotNull(FieldAcknowledgedAt))
 }
 
 // HasTenant applies the HasEdge predicate on the "tenant" edge.
@@ -203,7 +330,7 @@ func HasFeedback() predicate.AlertInstance {
 	return predicate.AlertInstance(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, true, FeedbackTable, FeedbackColumn),
+			sqlgraph.Edge(sqlgraph.M2O, false, FeedbackTable, FeedbackColumn),
 		)
 		sqlgraph.HasNeighbors(s, step)
 	})

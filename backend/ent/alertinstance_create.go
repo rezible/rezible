@@ -6,6 +6,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"time"
 
 	"entgo.io/ent/dialect"
 	"entgo.io/ent/dialect/sql"
@@ -45,6 +46,26 @@ func (aic *AlertInstanceCreate) SetEventID(u uuid.UUID) *AlertInstanceCreate {
 	return aic
 }
 
+// SetProviderID sets the "provider_id" field.
+func (aic *AlertInstanceCreate) SetProviderID(s string) *AlertInstanceCreate {
+	aic.mutation.SetProviderID(s)
+	return aic
+}
+
+// SetAcknowledgedAt sets the "acknowledged_at" field.
+func (aic *AlertInstanceCreate) SetAcknowledgedAt(t time.Time) *AlertInstanceCreate {
+	aic.mutation.SetAcknowledgedAt(t)
+	return aic
+}
+
+// SetNillableAcknowledgedAt sets the "acknowledged_at" field if the given value is not nil.
+func (aic *AlertInstanceCreate) SetNillableAcknowledgedAt(t *time.Time) *AlertInstanceCreate {
+	if t != nil {
+		aic.SetAcknowledgedAt(*t)
+	}
+	return aic
+}
+
 // SetID sets the "id" field.
 func (aic *AlertInstanceCreate) SetID(u uuid.UUID) *AlertInstanceCreate {
 	aic.mutation.SetID(u)
@@ -74,19 +95,23 @@ func (aic *AlertInstanceCreate) SetEvent(e *Event) *AlertInstanceCreate {
 	return aic.SetEventID(e.ID)
 }
 
-// AddFeedbackIDs adds the "feedback" edge to the AlertFeedback entity by IDs.
-func (aic *AlertInstanceCreate) AddFeedbackIDs(ids ...uuid.UUID) *AlertInstanceCreate {
-	aic.mutation.AddFeedbackIDs(ids...)
+// SetFeedbackID sets the "feedback" edge to the AlertFeedback entity by ID.
+func (aic *AlertInstanceCreate) SetFeedbackID(id uuid.UUID) *AlertInstanceCreate {
+	aic.mutation.SetFeedbackID(id)
 	return aic
 }
 
-// AddFeedback adds the "feedback" edges to the AlertFeedback entity.
-func (aic *AlertInstanceCreate) AddFeedback(a ...*AlertFeedback) *AlertInstanceCreate {
-	ids := make([]uuid.UUID, len(a))
-	for i := range a {
-		ids[i] = a[i].ID
+// SetNillableFeedbackID sets the "feedback" edge to the AlertFeedback entity by ID if the given value is not nil.
+func (aic *AlertInstanceCreate) SetNillableFeedbackID(id *uuid.UUID) *AlertInstanceCreate {
+	if id != nil {
+		aic = aic.SetFeedbackID(*id)
 	}
-	return aic.AddFeedbackIDs(ids...)
+	return aic
+}
+
+// SetFeedback sets the "feedback" edge to the AlertFeedback entity.
+func (aic *AlertInstanceCreate) SetFeedback(a *AlertFeedback) *AlertInstanceCreate {
+	return aic.SetFeedbackID(a.ID)
 }
 
 // Mutation returns the AlertInstanceMutation object of the builder.
@@ -147,6 +172,9 @@ func (aic *AlertInstanceCreate) check() error {
 	if _, ok := aic.mutation.EventID(); !ok {
 		return &ValidationError{Name: "event_id", err: errors.New(`ent: missing required field "AlertInstance.event_id"`)}
 	}
+	if _, ok := aic.mutation.ProviderID(); !ok {
+		return &ValidationError{Name: "provider_id", err: errors.New(`ent: missing required field "AlertInstance.provider_id"`)}
+	}
 	if len(aic.mutation.TenantIDs()) == 0 {
 		return &ValidationError{Name: "tenant", err: errors.New(`ent: missing required edge "AlertInstance.tenant"`)}
 	}
@@ -191,6 +219,14 @@ func (aic *AlertInstanceCreate) createSpec() (*AlertInstance, *sqlgraph.CreateSp
 	if id, ok := aic.mutation.ID(); ok {
 		_node.ID = id
 		_spec.ID.Value = &id
+	}
+	if value, ok := aic.mutation.ProviderID(); ok {
+		_spec.SetField(alertinstance.FieldProviderID, field.TypeString, value)
+		_node.ProviderID = value
+	}
+	if value, ok := aic.mutation.AcknowledgedAt(); ok {
+		_spec.SetField(alertinstance.FieldAcknowledgedAt, field.TypeTime, value)
+		_node.AcknowledgedAt = value
 	}
 	if nodes := aic.mutation.TenantIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
@@ -245,8 +281,8 @@ func (aic *AlertInstanceCreate) createSpec() (*AlertInstance, *sqlgraph.CreateSp
 	}
 	if nodes := aic.mutation.FeedbackIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
 			Table:   alertinstance.FeedbackTable,
 			Columns: []string{alertinstance.FeedbackColumn},
 			Bidi:    false,
@@ -257,6 +293,7 @@ func (aic *AlertInstanceCreate) createSpec() (*AlertInstance, *sqlgraph.CreateSp
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
+		_node.alert_instance_feedback = &nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	return _node, _spec
@@ -332,6 +369,36 @@ func (u *AlertInstanceUpsert) SetEventID(v uuid.UUID) *AlertInstanceUpsert {
 // UpdateEventID sets the "event_id" field to the value that was provided on create.
 func (u *AlertInstanceUpsert) UpdateEventID() *AlertInstanceUpsert {
 	u.SetExcluded(alertinstance.FieldEventID)
+	return u
+}
+
+// SetProviderID sets the "provider_id" field.
+func (u *AlertInstanceUpsert) SetProviderID(v string) *AlertInstanceUpsert {
+	u.Set(alertinstance.FieldProviderID, v)
+	return u
+}
+
+// UpdateProviderID sets the "provider_id" field to the value that was provided on create.
+func (u *AlertInstanceUpsert) UpdateProviderID() *AlertInstanceUpsert {
+	u.SetExcluded(alertinstance.FieldProviderID)
+	return u
+}
+
+// SetAcknowledgedAt sets the "acknowledged_at" field.
+func (u *AlertInstanceUpsert) SetAcknowledgedAt(v time.Time) *AlertInstanceUpsert {
+	u.Set(alertinstance.FieldAcknowledgedAt, v)
+	return u
+}
+
+// UpdateAcknowledgedAt sets the "acknowledged_at" field to the value that was provided on create.
+func (u *AlertInstanceUpsert) UpdateAcknowledgedAt() *AlertInstanceUpsert {
+	u.SetExcluded(alertinstance.FieldAcknowledgedAt)
+	return u
+}
+
+// ClearAcknowledgedAt clears the value of the "acknowledged_at" field.
+func (u *AlertInstanceUpsert) ClearAcknowledgedAt() *AlertInstanceUpsert {
+	u.SetNull(alertinstance.FieldAcknowledgedAt)
 	return u
 }
 
@@ -411,6 +478,41 @@ func (u *AlertInstanceUpsertOne) SetEventID(v uuid.UUID) *AlertInstanceUpsertOne
 func (u *AlertInstanceUpsertOne) UpdateEventID() *AlertInstanceUpsertOne {
 	return u.Update(func(s *AlertInstanceUpsert) {
 		s.UpdateEventID()
+	})
+}
+
+// SetProviderID sets the "provider_id" field.
+func (u *AlertInstanceUpsertOne) SetProviderID(v string) *AlertInstanceUpsertOne {
+	return u.Update(func(s *AlertInstanceUpsert) {
+		s.SetProviderID(v)
+	})
+}
+
+// UpdateProviderID sets the "provider_id" field to the value that was provided on create.
+func (u *AlertInstanceUpsertOne) UpdateProviderID() *AlertInstanceUpsertOne {
+	return u.Update(func(s *AlertInstanceUpsert) {
+		s.UpdateProviderID()
+	})
+}
+
+// SetAcknowledgedAt sets the "acknowledged_at" field.
+func (u *AlertInstanceUpsertOne) SetAcknowledgedAt(v time.Time) *AlertInstanceUpsertOne {
+	return u.Update(func(s *AlertInstanceUpsert) {
+		s.SetAcknowledgedAt(v)
+	})
+}
+
+// UpdateAcknowledgedAt sets the "acknowledged_at" field to the value that was provided on create.
+func (u *AlertInstanceUpsertOne) UpdateAcknowledgedAt() *AlertInstanceUpsertOne {
+	return u.Update(func(s *AlertInstanceUpsert) {
+		s.UpdateAcknowledgedAt()
+	})
+}
+
+// ClearAcknowledgedAt clears the value of the "acknowledged_at" field.
+func (u *AlertInstanceUpsertOne) ClearAcknowledgedAt() *AlertInstanceUpsertOne {
+	return u.Update(func(s *AlertInstanceUpsert) {
+		s.ClearAcknowledgedAt()
 	})
 }
 
@@ -657,6 +759,41 @@ func (u *AlertInstanceUpsertBulk) SetEventID(v uuid.UUID) *AlertInstanceUpsertBu
 func (u *AlertInstanceUpsertBulk) UpdateEventID() *AlertInstanceUpsertBulk {
 	return u.Update(func(s *AlertInstanceUpsert) {
 		s.UpdateEventID()
+	})
+}
+
+// SetProviderID sets the "provider_id" field.
+func (u *AlertInstanceUpsertBulk) SetProviderID(v string) *AlertInstanceUpsertBulk {
+	return u.Update(func(s *AlertInstanceUpsert) {
+		s.SetProviderID(v)
+	})
+}
+
+// UpdateProviderID sets the "provider_id" field to the value that was provided on create.
+func (u *AlertInstanceUpsertBulk) UpdateProviderID() *AlertInstanceUpsertBulk {
+	return u.Update(func(s *AlertInstanceUpsert) {
+		s.UpdateProviderID()
+	})
+}
+
+// SetAcknowledgedAt sets the "acknowledged_at" field.
+func (u *AlertInstanceUpsertBulk) SetAcknowledgedAt(v time.Time) *AlertInstanceUpsertBulk {
+	return u.Update(func(s *AlertInstanceUpsert) {
+		s.SetAcknowledgedAt(v)
+	})
+}
+
+// UpdateAcknowledgedAt sets the "acknowledged_at" field to the value that was provided on create.
+func (u *AlertInstanceUpsertBulk) UpdateAcknowledgedAt() *AlertInstanceUpsertBulk {
+	return u.Update(func(s *AlertInstanceUpsert) {
+		s.UpdateAcknowledgedAt()
+	})
+}
+
+// ClearAcknowledgedAt clears the value of the "acknowledged_at" field.
+func (u *AlertInstanceUpsertBulk) ClearAcknowledgedAt() *AlertInstanceUpsertBulk {
+	return u.Update(func(s *AlertInstanceUpsert) {
+		s.ClearAcknowledgedAt()
 	})
 }
 

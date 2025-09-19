@@ -4,7 +4,6 @@ package ent
 
 import (
 	"context"
-	"database/sql/driver"
 	"errors"
 	"fmt"
 	"math"
@@ -151,7 +150,7 @@ func (aiq *AlertInstanceQuery) QueryFeedback() *AlertFeedbackQuery {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(alertinstance.Table, alertinstance.FieldID, selector),
 			sqlgraph.To(alertfeedback.Table, alertfeedback.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, true, alertinstance.FeedbackTable, alertinstance.FeedbackColumn),
+			sqlgraph.Edge(sqlgraph.M2O, false, alertinstance.FeedbackTable, alertinstance.FeedbackColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(aiq.driver.Dialect(), step)
 		return fromU, nil
@@ -498,6 +497,9 @@ func (aiq *AlertInstanceQuery) sqlAll(ctx context.Context, hooks ...queryHook) (
 			aiq.withFeedback != nil,
 		}
 	)
+	if aiq.withFeedback != nil {
+		withFKs = true
+	}
 	if withFKs {
 		_spec.Node.Columns = append(_spec.Node.Columns, alertinstance.ForeignKeys...)
 	}
@@ -541,9 +543,8 @@ func (aiq *AlertInstanceQuery) sqlAll(ctx context.Context, hooks ...queryHook) (
 		}
 	}
 	if query := aiq.withFeedback; query != nil {
-		if err := aiq.loadFeedback(ctx, query, nodes,
-			func(n *AlertInstance) { n.Edges.Feedback = []*AlertFeedback{} },
-			func(n *AlertInstance, e *AlertFeedback) { n.Edges.Feedback = append(n.Edges.Feedback, e) }); err != nil {
+		if err := aiq.loadFeedback(ctx, query, nodes, nil,
+			func(n *AlertInstance, e *AlertFeedback) { n.Edges.Feedback = e }); err != nil {
 			return nil, err
 		}
 	}
@@ -638,32 +639,34 @@ func (aiq *AlertInstanceQuery) loadEvent(ctx context.Context, query *EventQuery,
 	return nil
 }
 func (aiq *AlertInstanceQuery) loadFeedback(ctx context.Context, query *AlertFeedbackQuery, nodes []*AlertInstance, init func(*AlertInstance), assign func(*AlertInstance, *AlertFeedback)) error {
-	fks := make([]driver.Value, 0, len(nodes))
-	nodeids := make(map[uuid.UUID]*AlertInstance)
+	ids := make([]uuid.UUID, 0, len(nodes))
+	nodeids := make(map[uuid.UUID][]*AlertInstance)
 	for i := range nodes {
-		fks = append(fks, nodes[i].ID)
-		nodeids[nodes[i].ID] = nodes[i]
-		if init != nil {
-			init(nodes[i])
+		if nodes[i].alert_instance_feedback == nil {
+			continue
 		}
+		fk := *nodes[i].alert_instance_feedback
+		if _, ok := nodeids[fk]; !ok {
+			ids = append(ids, fk)
+		}
+		nodeids[fk] = append(nodeids[fk], nodes[i])
 	}
-	if len(query.ctx.Fields) > 0 {
-		query.ctx.AppendFieldOnce(alertfeedback.FieldAlertInstanceID)
+	if len(ids) == 0 {
+		return nil
 	}
-	query.Where(predicate.AlertFeedback(func(s *sql.Selector) {
-		s.Where(sql.InValues(s.C(alertinstance.FeedbackColumn), fks...))
-	}))
+	query.Where(alertfeedback.IDIn(ids...))
 	neighbors, err := query.All(ctx)
 	if err != nil {
 		return err
 	}
 	for _, n := range neighbors {
-		fk := n.AlertInstanceID
-		node, ok := nodeids[fk]
+		nodes, ok := nodeids[n.ID]
 		if !ok {
-			return fmt.Errorf(`unexpected referenced foreign-key "alert_instance_id" returned %v for node %v`, fk, n.ID)
+			return fmt.Errorf(`unexpected foreign-key "alert_instance_feedback" returned %v`, n.ID)
 		}
-		assign(node, n)
+		for i := range nodes {
+			assign(nodes[i], n)
+		}
 	}
 	return nil
 }

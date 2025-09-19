@@ -1787,6 +1787,8 @@ type AlertInstanceMutation struct {
 	op              Op
 	typ             string
 	id              *uuid.UUID
+	provider_id     *string
+	acknowledged_at *time.Time
 	clearedFields   map[string]struct{}
 	tenant          *int
 	clearedtenant   bool
@@ -1794,8 +1796,7 @@ type AlertInstanceMutation struct {
 	clearedalert    bool
 	event           *uuid.UUID
 	clearedevent    bool
-	feedback        map[uuid.UUID]struct{}
-	removedfeedback map[uuid.UUID]struct{}
+	feedback        *uuid.UUID
 	clearedfeedback bool
 	done            bool
 	oldValue        func(context.Context) (*AlertInstance, error)
@@ -2014,6 +2015,91 @@ func (m *AlertInstanceMutation) ResetEventID() {
 	m.event = nil
 }
 
+// SetProviderID sets the "provider_id" field.
+func (m *AlertInstanceMutation) SetProviderID(s string) {
+	m.provider_id = &s
+}
+
+// ProviderID returns the value of the "provider_id" field in the mutation.
+func (m *AlertInstanceMutation) ProviderID() (r string, exists bool) {
+	v := m.provider_id
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldProviderID returns the old "provider_id" field's value of the AlertInstance entity.
+// If the AlertInstance object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *AlertInstanceMutation) OldProviderID(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldProviderID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldProviderID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldProviderID: %w", err)
+	}
+	return oldValue.ProviderID, nil
+}
+
+// ResetProviderID resets all changes to the "provider_id" field.
+func (m *AlertInstanceMutation) ResetProviderID() {
+	m.provider_id = nil
+}
+
+// SetAcknowledgedAt sets the "acknowledged_at" field.
+func (m *AlertInstanceMutation) SetAcknowledgedAt(t time.Time) {
+	m.acknowledged_at = &t
+}
+
+// AcknowledgedAt returns the value of the "acknowledged_at" field in the mutation.
+func (m *AlertInstanceMutation) AcknowledgedAt() (r time.Time, exists bool) {
+	v := m.acknowledged_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldAcknowledgedAt returns the old "acknowledged_at" field's value of the AlertInstance entity.
+// If the AlertInstance object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *AlertInstanceMutation) OldAcknowledgedAt(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldAcknowledgedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldAcknowledgedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldAcknowledgedAt: %w", err)
+	}
+	return oldValue.AcknowledgedAt, nil
+}
+
+// ClearAcknowledgedAt clears the value of the "acknowledged_at" field.
+func (m *AlertInstanceMutation) ClearAcknowledgedAt() {
+	m.acknowledged_at = nil
+	m.clearedFields[alertinstance.FieldAcknowledgedAt] = struct{}{}
+}
+
+// AcknowledgedAtCleared returns if the "acknowledged_at" field was cleared in this mutation.
+func (m *AlertInstanceMutation) AcknowledgedAtCleared() bool {
+	_, ok := m.clearedFields[alertinstance.FieldAcknowledgedAt]
+	return ok
+}
+
+// ResetAcknowledgedAt resets all changes to the "acknowledged_at" field.
+func (m *AlertInstanceMutation) ResetAcknowledgedAt() {
+	m.acknowledged_at = nil
+	delete(m.clearedFields, alertinstance.FieldAcknowledgedAt)
+}
+
 // ClearTenant clears the "tenant" edge to the Tenant entity.
 func (m *AlertInstanceMutation) ClearTenant() {
 	m.clearedtenant = true
@@ -2095,14 +2181,9 @@ func (m *AlertInstanceMutation) ResetEvent() {
 	m.clearedevent = false
 }
 
-// AddFeedbackIDs adds the "feedback" edge to the AlertFeedback entity by ids.
-func (m *AlertInstanceMutation) AddFeedbackIDs(ids ...uuid.UUID) {
-	if m.feedback == nil {
-		m.feedback = make(map[uuid.UUID]struct{})
-	}
-	for i := range ids {
-		m.feedback[ids[i]] = struct{}{}
-	}
+// SetFeedbackID sets the "feedback" edge to the AlertFeedback entity by id.
+func (m *AlertInstanceMutation) SetFeedbackID(id uuid.UUID) {
+	m.feedback = &id
 }
 
 // ClearFeedback clears the "feedback" edge to the AlertFeedback entity.
@@ -2115,29 +2196,20 @@ func (m *AlertInstanceMutation) FeedbackCleared() bool {
 	return m.clearedfeedback
 }
 
-// RemoveFeedbackIDs removes the "feedback" edge to the AlertFeedback entity by IDs.
-func (m *AlertInstanceMutation) RemoveFeedbackIDs(ids ...uuid.UUID) {
-	if m.removedfeedback == nil {
-		m.removedfeedback = make(map[uuid.UUID]struct{})
-	}
-	for i := range ids {
-		delete(m.feedback, ids[i])
-		m.removedfeedback[ids[i]] = struct{}{}
-	}
-}
-
-// RemovedFeedback returns the removed IDs of the "feedback" edge to the AlertFeedback entity.
-func (m *AlertInstanceMutation) RemovedFeedbackIDs() (ids []uuid.UUID) {
-	for id := range m.removedfeedback {
-		ids = append(ids, id)
+// FeedbackID returns the "feedback" edge ID in the mutation.
+func (m *AlertInstanceMutation) FeedbackID() (id uuid.UUID, exists bool) {
+	if m.feedback != nil {
+		return *m.feedback, true
 	}
 	return
 }
 
 // FeedbackIDs returns the "feedback" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// FeedbackID instead. It exists only for internal usage by the builders.
 func (m *AlertInstanceMutation) FeedbackIDs() (ids []uuid.UUID) {
-	for id := range m.feedback {
-		ids = append(ids, id)
+	if id := m.feedback; id != nil {
+		ids = append(ids, *id)
 	}
 	return
 }
@@ -2146,7 +2218,6 @@ func (m *AlertInstanceMutation) FeedbackIDs() (ids []uuid.UUID) {
 func (m *AlertInstanceMutation) ResetFeedback() {
 	m.feedback = nil
 	m.clearedfeedback = false
-	m.removedfeedback = nil
 }
 
 // Where appends a list predicates to the AlertInstanceMutation builder.
@@ -2183,7 +2254,7 @@ func (m *AlertInstanceMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *AlertInstanceMutation) Fields() []string {
-	fields := make([]string, 0, 3)
+	fields := make([]string, 0, 5)
 	if m.tenant != nil {
 		fields = append(fields, alertinstance.FieldTenantID)
 	}
@@ -2192,6 +2263,12 @@ func (m *AlertInstanceMutation) Fields() []string {
 	}
 	if m.event != nil {
 		fields = append(fields, alertinstance.FieldEventID)
+	}
+	if m.provider_id != nil {
+		fields = append(fields, alertinstance.FieldProviderID)
+	}
+	if m.acknowledged_at != nil {
+		fields = append(fields, alertinstance.FieldAcknowledgedAt)
 	}
 	return fields
 }
@@ -2207,6 +2284,10 @@ func (m *AlertInstanceMutation) Field(name string) (ent.Value, bool) {
 		return m.AlertID()
 	case alertinstance.FieldEventID:
 		return m.EventID()
+	case alertinstance.FieldProviderID:
+		return m.ProviderID()
+	case alertinstance.FieldAcknowledgedAt:
+		return m.AcknowledgedAt()
 	}
 	return nil, false
 }
@@ -2222,6 +2303,10 @@ func (m *AlertInstanceMutation) OldField(ctx context.Context, name string) (ent.
 		return m.OldAlertID(ctx)
 	case alertinstance.FieldEventID:
 		return m.OldEventID(ctx)
+	case alertinstance.FieldProviderID:
+		return m.OldProviderID(ctx)
+	case alertinstance.FieldAcknowledgedAt:
+		return m.OldAcknowledgedAt(ctx)
 	}
 	return nil, fmt.Errorf("unknown AlertInstance field %s", name)
 }
@@ -2251,6 +2336,20 @@ func (m *AlertInstanceMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetEventID(v)
+		return nil
+	case alertinstance.FieldProviderID:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetProviderID(v)
+		return nil
+	case alertinstance.FieldAcknowledgedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetAcknowledgedAt(v)
 		return nil
 	}
 	return fmt.Errorf("unknown AlertInstance field %s", name)
@@ -2284,7 +2383,11 @@ func (m *AlertInstanceMutation) AddField(name string, value ent.Value) error {
 // ClearedFields returns all nullable fields that were cleared during this
 // mutation.
 func (m *AlertInstanceMutation) ClearedFields() []string {
-	return nil
+	var fields []string
+	if m.FieldCleared(alertinstance.FieldAcknowledgedAt) {
+		fields = append(fields, alertinstance.FieldAcknowledgedAt)
+	}
+	return fields
 }
 
 // FieldCleared returns a boolean indicating if a field with the given name was
@@ -2297,6 +2400,11 @@ func (m *AlertInstanceMutation) FieldCleared(name string) bool {
 // ClearField clears the value of the field with the given name. It returns an
 // error if the field is not defined in the schema.
 func (m *AlertInstanceMutation) ClearField(name string) error {
+	switch name {
+	case alertinstance.FieldAcknowledgedAt:
+		m.ClearAcknowledgedAt()
+		return nil
+	}
 	return fmt.Errorf("unknown AlertInstance nullable field %s", name)
 }
 
@@ -2312,6 +2420,12 @@ func (m *AlertInstanceMutation) ResetField(name string) error {
 		return nil
 	case alertinstance.FieldEventID:
 		m.ResetEventID()
+		return nil
+	case alertinstance.FieldProviderID:
+		m.ResetProviderID()
+		return nil
+	case alertinstance.FieldAcknowledgedAt:
+		m.ResetAcknowledgedAt()
 		return nil
 	}
 	return fmt.Errorf("unknown AlertInstance field %s", name)
@@ -2352,11 +2466,9 @@ func (m *AlertInstanceMutation) AddedIDs(name string) []ent.Value {
 			return []ent.Value{*id}
 		}
 	case alertinstance.EdgeFeedback:
-		ids := make([]ent.Value, 0, len(m.feedback))
-		for id := range m.feedback {
-			ids = append(ids, id)
+		if id := m.feedback; id != nil {
+			return []ent.Value{*id}
 		}
-		return ids
 	}
 	return nil
 }
@@ -2364,23 +2476,12 @@ func (m *AlertInstanceMutation) AddedIDs(name string) []ent.Value {
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *AlertInstanceMutation) RemovedEdges() []string {
 	edges := make([]string, 0, 4)
-	if m.removedfeedback != nil {
-		edges = append(edges, alertinstance.EdgeFeedback)
-	}
 	return edges
 }
 
 // RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
 // the given name in this mutation.
 func (m *AlertInstanceMutation) RemovedIDs(name string) []ent.Value {
-	switch name {
-	case alertinstance.EdgeFeedback:
-		ids := make([]ent.Value, 0, len(m.removedfeedback))
-		for id := range m.removedfeedback {
-			ids = append(ids, id)
-		}
-		return ids
-	}
 	return nil
 }
 
@@ -2430,6 +2531,9 @@ func (m *AlertInstanceMutation) ClearEdge(name string) error {
 		return nil
 	case alertinstance.EdgeEvent:
 		m.ClearEvent()
+		return nil
+	case alertinstance.EdgeFeedback:
+		m.ClearFeedback()
 		return nil
 	}
 	return fmt.Errorf("unknown AlertInstance unique edge %s", name)

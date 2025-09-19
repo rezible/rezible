@@ -3,7 +3,6 @@ package openapi
 import (
 	"context"
 	"net/http"
-	"time"
 
 	"github.com/danielgtaylor/huma/v2"
 	"github.com/google/uuid"
@@ -63,14 +62,6 @@ type (
 		ActionabilityFeedback float32 `json:"alertActionability"`
 		AccuracyFeedback      float32 `json:"alertAccuracy"`
 		DocumentationFeedback float32 `json:"alertDocumentation"`
-	}
-
-	OncallShiftMetricsAlertInstance struct {
-		AlertId          uuid.UUID              `json:"alertId"`
-		Timestamp        time.Time              `json:"timestamp"`
-		ResponseMinutes  float32                `json:"responseMinutes"`
-		LinkedIncidentID *uuid.UUID             `json:"linkedIncidentId,omitempty"`
-		Feedback         *AlertFeedbackInstance `json:"feedback"`
 	}
 )
 

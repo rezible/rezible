@@ -9,11 +9,10 @@ import (
 
 type alertsHandler struct {
 	alerts rez.AlertService
-	events rez.OncallEventsService
 }
 
-func newAlertsHandler(alerts rez.AlertService, events rez.OncallEventsService) *alertsHandler {
-	return &alertsHandler{alerts: alerts, events: events}
+func newAlertsHandler(alerts rez.AlertService) *alertsHandler {
+	return &alertsHandler{alerts: alerts}
 }
 
 func (h *alertsHandler) ListAlerts(ctx context.Context, req *oapi.ListAlertsRequest) (*oapi.ListAlertsResponse, error) {

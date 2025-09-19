@@ -20,6 +20,10 @@ const (
 	FieldAlertID = "alert_id"
 	// FieldEventID holds the string denoting the event_id field in the database.
 	FieldEventID = "event_id"
+	// FieldProviderID holds the string denoting the provider_id field in the database.
+	FieldProviderID = "provider_id"
+	// FieldAcknowledgedAt holds the string denoting the acknowledged_at field in the database.
+	FieldAcknowledgedAt = "acknowledged_at"
 	// EdgeTenant holds the string denoting the tenant edge name in mutations.
 	EdgeTenant = "tenant"
 	// EdgeAlert holds the string denoting the alert edge name in mutations.
@@ -52,12 +56,12 @@ const (
 	// EventColumn is the table column denoting the event relation/edge.
 	EventColumn = "event_id"
 	// FeedbackTable is the table that holds the feedback relation/edge.
-	FeedbackTable = "alert_feedbacks"
+	FeedbackTable = "alert_instances"
 	// FeedbackInverseTable is the table name for the AlertFeedback entity.
 	// It exists in this package in order to avoid circular dependency with the "alertfeedback" package.
 	FeedbackInverseTable = "alert_feedbacks"
 	// FeedbackColumn is the table column denoting the feedback relation/edge.
-	FeedbackColumn = "alert_instance_id"
+	FeedbackColumn = "alert_instance_feedback"
 )
 
 // Columns holds all SQL columns for alertinstance fields.
@@ -66,12 +70,15 @@ var Columns = []string{
 	FieldTenantID,
 	FieldAlertID,
 	FieldEventID,
+	FieldProviderID,
+	FieldAcknowledgedAt,
 }
 
 // ForeignKeys holds the SQL foreign-keys that are owned by the "alert_instances"
 // table and are not defined as standalone fields in the schema.
 var ForeignKeys = []string{
 	"alert_instances",
+	"alert_instance_feedback",
 }
 
 // ValidColumn reports if the column name is valid (part of the table columns).
@@ -124,6 +131,16 @@ func ByEventID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldEventID, opts...).ToFunc()
 }
 
+// ByProviderID orders the results by the provider_id field.
+func ByProviderID(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldProviderID, opts...).ToFunc()
+}
+
+// ByAcknowledgedAt orders the results by the acknowledged_at field.
+func ByAcknowledgedAt(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldAcknowledgedAt, opts...).ToFunc()
+}
+
 // ByTenantField orders the results by tenant field.
 func ByTenantField(field string, opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
@@ -145,17 +162,10 @@ func ByEventField(field string, opts ...sql.OrderTermOption) OrderOption {
 	}
 }
 
-// ByFeedbackCount orders the results by feedback count.
-func ByFeedbackCount(opts ...sql.OrderTermOption) OrderOption {
+// ByFeedbackField orders the results by feedback field.
+func ByFeedbackField(field string, opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborsCount(s, newFeedbackStep(), opts...)
-	}
-}
-
-// ByFeedback orders the results by feedback terms.
-func ByFeedback(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
-	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborTerms(s, newFeedbackStep(), append([]sql.OrderTerm{term}, terms...)...)
+		sqlgraph.OrderByNeighborTerms(s, newFeedbackStep(), sql.OrderByField(field, opts...))
 	}
 }
 func newTenantStep() *sqlgraph.Step {
@@ -183,6 +193,6 @@ func newFeedbackStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(FeedbackInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.O2M, true, FeedbackTable, FeedbackColumn),
+		sqlgraph.Edge(sqlgraph.M2O, false, FeedbackTable, FeedbackColumn),
 	)
 }

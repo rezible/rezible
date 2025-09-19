@@ -7,7 +7,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"github.com/rezible/rezible/ent/oncallevent"
+	"github.com/rezible/rezible/ent/event"
 	"github.com/rs/zerolog/log"
 
 	rez "github.com/rezible/rezible"
@@ -121,56 +121,60 @@ func (p *AlertDataProvider) PullAlerts(ctx context.Context) iter.Seq2[*ent.Alert
 	}
 }
 
-func (p *AlertDataProvider) makeFakeDayAlertEvent(date time.Time) *ent.OncallEvent {
+func (p *AlertDataProvider) makeFakeDayAlertInstance(date time.Time) *ent.AlertInstance {
 	id := uuid.New()
 	hour := rand.Intn(24)
 	minute := rand.Intn(60)
 	alert := fakeAlerts[rand.Intn(len(fakeAlerts))]
-	return &ent.OncallEvent{
-		ID:         id,
-		ProviderID: id.String(),
+
+	e := &ent.Event{
 		Timestamp: time.Date(
 			date.Year(), date.Month(), date.Day(),
 			hour, minute, 0, 0, date.Location(),
 		),
 		Source:      "fake",
-		Kind:        oncallevent.KindAlert,
+		Kind:        event.KindAlert,
 		Title:       alert.Title,
 		Description: "", // alert.Description,
-		Edges: ent.OncallEventEdges{
+	}
+	return &ent.AlertInstance{
+		ID:         id,
+		ProviderID: id.String(),
+		Edges: ent.AlertInstanceEdges{
 			Alert: alert,
+			Event: e,
 		},
 	}
 }
 
-func (p *AlertDataProvider) makeFakeAlertEvents(start, end time.Time) []*ent.OncallEvent {
+func (p *AlertDataProvider) makeFakeAlertInstances(start, end time.Time) []*ent.AlertInstance {
 	numHours := end.Sub(start).Hours()
 	if numHours <= 0 {
 		return nil
 	}
 	numDays := int(numHours / 24)
-	maxDailyEvents := 20
-	events := make([]*ent.OncallEvent, 0, numDays*maxDailyEvents)
+	maxDaily := 20
+	instances := make([]*ent.AlertInstance, 0, numDays*maxDaily)
 
 	for day := 0; day < numDays; day++ {
-		for i := 0; i < rand.Intn(maxDailyEvents); i++ {
-			events = append(events, p.makeFakeDayAlertEvent(start.AddDate(0, 0, day)))
+		for i := 0; i < rand.Intn(maxDaily); i++ {
+			instances = append(instances, p.makeFakeDayAlertInstance(start.AddDate(0, 0, day)))
 		}
 	}
 	log.Debug().
 		Int("days", numDays).
-		Int("total", len(events)).
+		Int("total", len(instances)).
 		Msg("created fake oncall events")
 
-	return events
+	return instances
 }
 
-func (p *AlertDataProvider) PullAlertEventsBetweenDates(ctx context.Context, start, end time.Time) iter.Seq2[*ent.OncallEvent, error] {
+func (p *AlertDataProvider) PullAlertInstancesBetweenDates(ctx context.Context, start, end time.Time) iter.Seq2[*ent.AlertInstance, error] {
 	oneWeek := 7 * 24 * time.Hour
-	fakeEvents := p.makeFakeAlertEvents(time.Now().Add(-oneWeek), time.Now().Add(oneWeek))
-	return func(yield func(*ent.OncallEvent, error) bool) {
-		for _, event := range fakeEvents {
-			if !yield(event, nil) {
+	instances := p.makeFakeAlertInstances(time.Now().Add(-oneWeek), time.Now().Add(oneWeek))
+	return func(yield func(*ent.AlertInstance, error) bool) {
+		for _, inst := range instances {
+			if !yield(inst, nil) {
 				break
 			}
 		}

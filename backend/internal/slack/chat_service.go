@@ -24,8 +24,8 @@ type ChatService struct {
 	client               *slack.Client
 	webhookSigningSecret string
 
-	users  rez.UserService
-	events rez.OncallEventsService
+	users rez.UserService
+	annos rez.EventAnnotationsService
 }
 
 func LoadClient() (*slack.Client, error) {
@@ -36,25 +36,21 @@ func LoadClient() (*slack.Client, error) {
 	return slack.New(apiKey), nil
 }
 
-func NewChatService(users rez.UserService) (*ChatService, error) {
+func NewChatService(users rez.UserService, annos rez.EventAnnotationsService) (*ChatService, error) {
+	s := &ChatService{
+		users: users,
+		annos: annos,
+	}
 	client, clientErr := LoadClient()
 	if clientErr != nil {
 		return nil, clientErr
 	}
-	signingSecret := os.Getenv(signingSecretEnvVar)
-	if signingSecret == "" {
+	s.client = client
+	s.webhookSigningSecret = os.Getenv(signingSecretEnvVar)
+	if s.webhookSigningSecret == "" {
 		return nil, fmt.Errorf("%s environment variable not set", signingSecretEnvVar)
 	}
-	p := &ChatService{
-		client:               client,
-		users:                users,
-		webhookSigningSecret: signingSecret,
-	}
-	return p, nil
-}
-
-func (s *ChatService) SetOncallEventsService(svc rez.OncallEventsService) {
-	s.events = svc
+	return s, nil
 }
 
 func (s *ChatService) GetWebhooksHandler() http.Handler {
@@ -163,6 +159,6 @@ func (s *ChatService) handleAnnotationModalSubmission(ctx context.Context, ic *s
 	if annoErr != nil {
 		return fmt.Errorf("failed to get view annotation: %w", annoErr)
 	}
-	_, createErr := s.events.UpdateAnnotation(ctx, anno)
+	_, createErr := s.annos.SetAnnotation(ctx, anno)
 	return createErr
 }

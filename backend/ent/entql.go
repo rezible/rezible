@@ -122,9 +122,11 @@ var schemaGraph = func() *sqlgraph.Schema {
 		},
 		Type: "AlertInstance",
 		Fields: map[string]*sqlgraph.FieldSpec{
-			alertinstance.FieldTenantID: {Type: field.TypeInt, Column: alertinstance.FieldTenantID},
-			alertinstance.FieldAlertID:  {Type: field.TypeUUID, Column: alertinstance.FieldAlertID},
-			alertinstance.FieldEventID:  {Type: field.TypeUUID, Column: alertinstance.FieldEventID},
+			alertinstance.FieldTenantID:       {Type: field.TypeInt, Column: alertinstance.FieldTenantID},
+			alertinstance.FieldAlertID:        {Type: field.TypeUUID, Column: alertinstance.FieldAlertID},
+			alertinstance.FieldEventID:        {Type: field.TypeUUID, Column: alertinstance.FieldEventID},
+			alertinstance.FieldProviderID:     {Type: field.TypeString, Column: alertinstance.FieldProviderID},
+			alertinstance.FieldAcknowledgedAt: {Type: field.TypeTime, Column: alertinstance.FieldAcknowledgedAt},
 		},
 	}
 	graph.Nodes[3] = &sqlgraph.Node{
@@ -1292,8 +1294,8 @@ var schemaGraph = func() *sqlgraph.Schema {
 	graph.MustAddE(
 		"feedback",
 		&sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
 			Table:   alertinstance.FeedbackTable,
 			Columns: []string{alertinstance.FeedbackColumn},
 			Bidi:    false,
@@ -4251,6 +4253,16 @@ func (f *AlertInstanceFilter) WhereAlertID(p entql.ValueP) {
 // WhereEventID applies the entql [16]byte predicate on the event_id field.
 func (f *AlertInstanceFilter) WhereEventID(p entql.ValueP) {
 	f.Where(p.Field(alertinstance.FieldEventID))
+}
+
+// WhereProviderID applies the entql string predicate on the provider_id field.
+func (f *AlertInstanceFilter) WhereProviderID(p entql.StringP) {
+	f.Where(p.Field(alertinstance.FieldProviderID))
+}
+
+// WhereAcknowledgedAt applies the entql time.Time predicate on the acknowledged_at field.
+func (f *AlertInstanceFilter) WhereAcknowledgedAt(p entql.TimeP) {
+	f.Where(p.Field(alertinstance.FieldAcknowledgedAt))
 }
 
 // WhereHasTenant applies a predicate to check if query has an edge tenant.

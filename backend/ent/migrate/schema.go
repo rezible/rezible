@@ -85,10 +85,13 @@ var (
 	// AlertInstancesColumns holds the columns for the "alert_instances" table.
 	AlertInstancesColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID},
+		{Name: "provider_id", Type: field.TypeString},
+		{Name: "acknowledged_at", Type: field.TypeTime, Nullable: true},
 		{Name: "alert_instances", Type: field.TypeUUID, Nullable: true},
 		{Name: "tenant_id", Type: field.TypeInt},
 		{Name: "alert_id", Type: field.TypeUUID},
 		{Name: "event_id", Type: field.TypeUUID},
+		{Name: "alert_instance_feedback", Type: field.TypeUUID, Nullable: true},
 	}
 	// AlertInstancesTable holds the schema information for the "alert_instances" table.
 	AlertInstancesTable = &schema.Table{
@@ -98,34 +101,40 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "alert_instances_alerts_instances",
-				Columns:    []*schema.Column{AlertInstancesColumns[1]},
+				Columns:    []*schema.Column{AlertInstancesColumns[3]},
 				RefColumns: []*schema.Column{AlertsColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
 			{
 				Symbol:     "alert_instances_tenants_tenant",
-				Columns:    []*schema.Column{AlertInstancesColumns[2]},
+				Columns:    []*schema.Column{AlertInstancesColumns[4]},
 				RefColumns: []*schema.Column{TenantsColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
 			{
 				Symbol:     "alert_instances_alerts_alert",
-				Columns:    []*schema.Column{AlertInstancesColumns[3]},
+				Columns:    []*schema.Column{AlertInstancesColumns[5]},
 				RefColumns: []*schema.Column{AlertsColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
 			{
 				Symbol:     "alert_instances_events_event",
-				Columns:    []*schema.Column{AlertInstancesColumns[4]},
+				Columns:    []*schema.Column{AlertInstancesColumns[6]},
 				RefColumns: []*schema.Column{EventsColumns[0]},
 				OnDelete:   schema.NoAction,
+			},
+			{
+				Symbol:     "alert_instances_alert_feedbacks_feedback",
+				Columns:    []*schema.Column{AlertInstancesColumns[7]},
+				RefColumns: []*schema.Column{AlertFeedbacksColumns[0]},
+				OnDelete:   schema.SetNull,
 			},
 		},
 		Indexes: []*schema.Index{
 			{
 				Name:    "alertinstance_tenant_id",
 				Unique:  false,
-				Columns: []*schema.Column{AlertInstancesColumns[2]},
+				Columns: []*schema.Column{AlertInstancesColumns[4]},
 			},
 		},
 	}
@@ -2782,6 +2791,7 @@ func init() {
 	AlertInstancesTable.ForeignKeys[1].RefTable = TenantsTable
 	AlertInstancesTable.ForeignKeys[2].RefTable = AlertsTable
 	AlertInstancesTable.ForeignKeys[3].RefTable = EventsTable
+	AlertInstancesTable.ForeignKeys[4].RefTable = AlertFeedbacksTable
 	DocumentsTable.ForeignKeys[0].RefTable = TenantsTable
 	EventsTable.ForeignKeys[0].RefTable = TenantsTable
 	EventAnnotationsTable.ForeignKeys[0].RefTable = TenantsTable

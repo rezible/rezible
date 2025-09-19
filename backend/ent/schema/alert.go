@@ -55,7 +55,9 @@ func (AlertInstance) Fields() []ent.Field {
 		field.UUID("id", uuid.UUID{}).Default(uuid.New),
 		field.UUID("alert_id", uuid.UUID{}),
 		field.UUID("event_id", uuid.UUID{}),
-		// recipient, acked, etc
+		field.String("provider_id"),
+		field.Time("acknowledged_at").Optional(),
+		//field.UUID("acknowledged_by_id", uuid.UUID{}).Optional(),
 	}
 }
 
@@ -69,7 +71,7 @@ func (AlertInstance) Edges() []ent.Edge {
 			Required().
 			Unique().
 			Field("event_id"),
-		edge.From("feedback", AlertFeedback.Type).Ref("alert_instance"),
+		edge.To("feedback", AlertFeedback.Type).Unique(),
 	}
 }
 

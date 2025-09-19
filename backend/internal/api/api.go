@@ -22,7 +22,8 @@ type Handler struct {
 	*incidentsHandler
 	*integrationsHandler
 	*meetingsHandler
-	*oncallEventsHandler
+	*eventsHandler
+	*eventAnnotationsHandler
 	*oncallMetricsHandler
 	*oncallRostersHandler
 	*oncallShiftsHandler
@@ -44,7 +45,8 @@ func NewHandler(
 	incidents rez.IncidentService,
 	debriefs rez.DebriefService,
 	oncall rez.OncallService,
-	oncallEvents rez.OncallEventsService,
+	events rez.EventsService,
+	annos rez.EventAnnotationsService,
 	documents rez.DocumentsService,
 	retros rez.RetrospectiveService,
 	components rez.SystemComponentsService,
@@ -52,7 +54,7 @@ func NewHandler(
 	playbooks rez.PlaybookService,
 ) *Handler {
 	return &Handler{
-		alertsHandler:             newAlertsHandler(alerts, oncallEvents),
+		alertsHandler:             newAlertsHandler(alerts),
 		oncallMetricsHandler:      newOncallMetricsHandler(oncall),
 		authSessionsHandler:       newAuthSessionsHandler(auth, users),
 		documentsHandler:          newDocumentsHandler(documents, auth, users),
@@ -68,7 +70,8 @@ func NewHandler(
 		incidentsHandler:          newIncidentsHandler(db, incidents),
 		integrationsHandler:       newIntegrationsHandler(configs),
 		meetingsHandler:           newMeetingsHandler(),
-		oncallEventsHandler:       newOncallEventsHandler(auth, users, oncall, incidents, oncallEvents),
+		eventsHandler:             newEventsHandler(auth, events),
+		eventAnnotationsHandler:   newEventAnnotationsHandler(auth, annos),
 		oncallRostersHandler:      newOncallRostersHandler(auth, users, incidents, oncall),
 		oncallShiftsHandler:       newOncallShiftsHandler(auth, users, incidents, oncall),
 		playbooksHandler:          newPlaybooksHandler(playbooks),

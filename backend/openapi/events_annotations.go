@@ -32,66 +32,26 @@ type (
 	}
 
 	EventAnnotationAttributes struct {
-		Event           Expandable[EventAttributes]        `json:"event"`
-		Roster          Expandable[OncallRosterAttributes] `json:"roster"`
-		Creator         Expandable[UserAttributes]         `json:"creator"`
-		Notes           string                             `json:"notes"`
-		Tags            []string                           `json:"tags"`
-		MinutesOccupied int                                `json:"minutesOccupied"`
-		AlertFeedback   *AlertFeedbackInstance             `json:"alertFeedback,omitempty"`
-	}
-
-	AlertFeedbackInstance struct {
-		Actionable               bool   `json:"actionable"`
-		Accurate                 string `json:"accurate" enum:"yes,no,unknown"`
-		DocumentationAvailable   bool   `json:"documentationAvailable"`
-		DocumentationNeedsUpdate bool   `json:"documentationNeedsUpdate"`
+		Event           Expandable[EventAttributes] `json:"event"`
+		Creator         Expandable[UserAttributes]  `json:"creator"`
+		Notes           string                      `json:"notes"`
+		Tags            []string                    `json:"tags"`
+		MinutesOccupied int                         `json:"minutesOccupied"`
 	}
 
 	ExpandAnnotationFields struct {
-		Creator       bool `json:"creator"`
-		Roster        bool `json:"roster"`
-		Event         bool `json:"event"`
-		AlertFeedback bool `json:"alertFeedback"`
+		Creator bool `json:"creator"`
+		Event   bool `json:"event"`
 	}
 )
-
-func EventFromEnt(e *ent.Event) Event {
-	attr := EventAttributes{
-		Kind:        e.Kind.String(),
-		Title:       e.Title,
-		Description: e.Description,
-		Timestamp:   e.Timestamp,
-		RosterId:    e.RosterID,
-		AlertId:     e.AlertID,
-	}
-
-	if e.Edges.Annotations != nil {
-		attr.Annotations = make([]EventAnnotation, len(e.Edges.Annotations))
-		for i, a := range e.Edges.Annotations {
-			attr.Annotations[i] = EventAnnotationFromEnt(a)
-		}
-	}
-
-	return Event{
-		Id:         e.ID,
-		Attributes: attr,
-	}
-}
 
 func EventAnnotationFromEnt(an *ent.EventAnnotation) EventAnnotation {
 	attr := EventAnnotationAttributes{
 		Notes:           an.Notes,
 		Tags:            nil,
 		MinutesOccupied: an.MinutesOccupied,
-		Roster:          Expandable[OncallRosterAttributes]{Id: an.RosterID},
 		Creator:         Expandable[UserAttributes]{Id: an.CreatorID},
 		Event:           Expandable[EventAttributes]{Id: an.EventID},
-	}
-
-	if an.Edges.Roster != nil {
-		roster := OncallRosterFromEnt(an.Edges.Roster)
-		attr.Roster.Attributes = &roster.Attributes
 	}
 
 	if an.Edges.Creator != nil {
@@ -99,14 +59,14 @@ func EventAnnotationFromEnt(an *ent.EventAnnotation) EventAnnotation {
 		attr.Creator.Attributes = &usr.Attributes
 	}
 
-	if fb := an.Edges.AlertFeedback; fb != nil {
-		attr.AlertFeedback = &AlertFeedbackInstance{
-			Accurate:                 fb.Accurate.String(),
-			Actionable:               fb.Actionable,
-			DocumentationAvailable:   fb.DocumentationAvailable,
-			DocumentationNeedsUpdate: fb.DocumentationNeedsUpdate,
-		}
-	}
+	//if fb := an.Edges.AlertFeedback; fb != nil {
+	//	attr.AlertFeedback = &AlertFeedbackInstance{
+	//		Accurate:                 fb.Accurate.String(),
+	//		Actionable:               fb.Actionable,
+	//		DocumentationAvailable:   fb.DocumentationAvailable,
+	//		DocumentationNeedsUpdate: fb.DocumentationNeedsUpdate,
+	//	}
+	//}
 
 	if an.Edges.Event != nil {
 		ev := EventFromEnt(an.Edges.Event)
@@ -119,51 +79,16 @@ func EventAnnotationFromEnt(an *ent.EventAnnotation) EventAnnotation {
 	}
 }
 
-var EventsTags = []string{"Oncall Events"}
+var EventAnnotationsTags = []string{"Event Annotations"}
 
 // ops
 
-var GetEvent = huma.Operation{
-	OperationID: "get-oncall-event",
-	Method:      http.MethodGet,
-	Path:        "/oncall/events/{id}",
-	Summary:     "Get Oncall Event",
-	Tags:        EventsTags,
-	Errors:      errorCodes(),
-}
-
-type GetEventRequest struct {
-	GetIdRequest
-}
-type GetEventResponse ItemResponse[Event]
-
-var ListEvents = huma.Operation{
-	OperationID: "list-oncall-events",
-	Method:      http.MethodGet,
-	Path:        "/oncall/events",
-	Summary:     "List Oncall Events",
-	Tags:        EventsTags,
-	Errors:      errorCodes(),
-}
-
-type ListEventsRequest struct {
-	ListRequest
-	From               time.Time `query:"from"`
-	To                 time.Time `query:"to"`
-	ShiftId            uuid.UUID `query:"shiftId"`
-	AlertId            uuid.UUID `query:"alertId"`
-	RosterId           uuid.UUID `query:"rosterId"`
-	AnnotationRosterId uuid.UUID `query:"annotationRosterId"`
-	WithAnnotations    bool      `query:"withAnnotations"`
-}
-type ListEventsResponse PaginatedResponse[Event]
-
 var ListEventAnnotations = huma.Operation{
-	OperationID: "list-oncall-annotations",
+	OperationID: "list-event-annotations",
 	Method:      http.MethodGet,
-	Path:        "/oncall/annotations",
-	Summary:     "List Oncall Annotations",
-	Tags:        EventsTags,
+	Path:        "/event_annotations",
+	Summary:     "List Event Annotations",
+	Tags:        EventAnnotationsTags,
 	Errors:      errorCodes(),
 }
 
@@ -171,56 +96,53 @@ type ListEventAnnotationsRequest struct {
 	ListRequest
 	From       time.Time `query:"from"`
 	To         time.Time `query:"to"`
-	RosterId   uuid.UUID `query:"rosterId"`
-	ShiftId    uuid.UUID `query:"shiftId"`
+	UserIds    uuid.UUID `query:"userIds"`
+	ShiftIds   uuid.UUID `query:"shiftIds"`
 	WithEvents bool      `query:"withEvents"`
 }
 type ListEventAnnotationsResponse PaginatedResponse[EventAnnotation]
 
 var CreateEventAnnotation = huma.Operation{
-	OperationID: "create-oncall-annotation",
+	OperationID: "create-event-annotation",
 	Method:      http.MethodPost,
-	Path:        "/oncall/annotations",
-	Summary:     "Create an Oncall Annotation",
-	Tags:        EventsTags,
+	Path:        "/event_annotations",
+	Summary:     "Create an Event Annotation",
+	Tags:        EventAnnotationsTags,
 	Errors:      errorCodes(),
 }
 
 type CreateEventAnnotationRequestAttributes struct {
-	EventId         uuid.UUID              `json:"eventId"`
-	RosterId        uuid.UUID              `json:"rosterId"`
-	Notes           string                 `json:"notes"`
-	MinutesOccupied int                    `json:"minutesOccupied"`
-	Tags            []string               `json:"tags"`
-	AlertFeedback   *AlertFeedbackInstance `json:"alertFeedback,omitempty"`
+	EventId         uuid.UUID `json:"eventId"`
+	Notes           string    `json:"notes"`
+	MinutesOccupied int       `json:"minutesOccupied"`
+	Tags            []string  `json:"tags"`
 }
 type CreateEventAnnotationRequest RequestWithBodyAttributes[CreateEventAnnotationRequestAttributes]
 type CreateEventAnnotationResponse ItemResponse[EventAnnotation]
 
 var UpdateEventAnnotation = huma.Operation{
-	OperationID: "update-oncall-annotation",
+	OperationID: "update-event-annotation",
 	Method:      http.MethodPatch,
-	Path:        "/oncall/annotations/{id}",
-	Summary:     "Update an Oncall Event Annotation",
-	Tags:        EventsTags,
+	Path:        "/event_annotations/{id}",
+	Summary:     "Update an Event Annotation",
+	Tags:        EventAnnotationsTags,
 	Errors:      errorCodes(),
 }
 
 type UpdateEventAnnotationRequestAttributes struct {
-	Notes           *string                `json:"notes,omitempty"`
-	MinutesOccupied *int                   `json:"minutesOccupied,omitempty"`
-	Tags            *[]string              `json:"tags,omitempty"`
-	AlertFeedback   *AlertFeedbackInstance `json:"alertFeedback,omitempty"`
+	Notes           *string   `json:"notes,omitempty"`
+	MinutesOccupied *int      `json:"minutesOccupied,omitempty"`
+	Tags            *[]string `json:"tags,omitempty"`
 }
 type UpdateEventAnnotationRequest UpdateIdRequest[UpdateEventAnnotationRequestAttributes]
 type UpdateEventAnnotationResponse ItemResponse[EventAnnotation]
 
 var DeleteEventAnnotation = huma.Operation{
-	OperationID: "delete-oncall-annotation",
+	OperationID: "delete-event-annotation",
 	Method:      http.MethodDelete,
-	Path:        "/oncall/annotations/{id}",
-	Summary:     "Delete an Oncall Event Annotation",
-	Tags:        EventsTags,
+	Path:        "/event_annotations/{id}",
+	Summary:     "Delete an Event Annotation",
+	Tags:        EventAnnotationsTags,
 	Errors:      errorCodes(),
 }
 
