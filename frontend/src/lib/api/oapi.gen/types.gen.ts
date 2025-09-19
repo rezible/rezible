@@ -61,13 +61,6 @@ export type AlertAttributes = {
     title: string;
 };
 
-export type AlertFeedbackInstance = {
-    accurate: 'yes' | 'no' | 'unknown';
-    actionable: boolean;
-    documentationAvailable: boolean;
-    documentationNeedsUpdate: boolean;
-};
-
 export type AlertIncidentLink = {
     attributes: AlertIncidentLinkAttributes;
     id: string;
@@ -106,6 +99,29 @@ export type AuthSessionProviderConfig = {
 
 export type AuthSessionsConfig = {
     providers: Array<AuthSessionProviderConfig>;
+};
+
+export type CreateEventAnnotationRequestAttributes = {
+    eventId: string;
+    minutesOccupied: number;
+    notes: string;
+    tags: Array<string>;
+};
+
+export type CreateEventAnnotationRequestBody = {
+    /**
+     * A URL to the JSON Schema for this object.
+     */
+    readonly $schema?: string;
+    attributes: CreateEventAnnotationRequestAttributes;
+};
+
+export type CreateEventAnnotationResponseBody = {
+    /**
+     * A URL to the JSON Schema for this object.
+     */
+    readonly $schema?: string;
+    data: EventAnnotation;
 };
 
 export type CreateIncidentAttributes = {
@@ -382,31 +398,6 @@ export type CreateMeetingSessionResponseBody = {
      */
     readonly $schema?: string;
     data: MeetingSession;
-};
-
-export type CreateOncallAnnotationRequestAttributes = {
-    alertFeedback?: AlertFeedbackInstance;
-    eventId: string;
-    minutesOccupied: number;
-    notes: string;
-    rosterId: string;
-    tags: Array<string>;
-};
-
-export type CreateOncallAnnotationRequestBody = {
-    /**
-     * A URL to the JSON Schema for this object.
-     */
-    readonly $schema?: string;
-    attributes: CreateOncallAnnotationRequestAttributes;
-};
-
-export type CreateOncallAnnotationResponseBody = {
-    /**
-     * A URL to the JSON Schema for this object.
-     */
-    readonly $schema?: string;
-    data: OncallAnnotation;
 };
 
 export type CreateOncallShiftHandoverTemplateRequestAttributes = {
@@ -757,8 +748,35 @@ export type ErrorModel = {
     type?: string;
 };
 
-export type ExpandableOncallEventAttributes = {
-    attributes?: OncallEventAttributes;
+export type Event = {
+    attributes: EventAttributes;
+    id: string;
+};
+
+export type EventAnnotation = {
+    attributes: EventAnnotationAttributes;
+    id: string;
+};
+
+export type EventAnnotationAttributes = {
+    creator: ExpandableUserAttributes;
+    event: ExpandableEventAttributes;
+    minutesOccupied: number;
+    notes: string;
+    tags: Array<string>;
+};
+
+export type EventAttributes = {
+    alert_id?: string;
+    description: string;
+    kind: string;
+    roster_id?: string;
+    timestamp: string;
+    title: string;
+};
+
+export type ExpandableEventAttributes = {
+    attributes?: EventAttributes;
     id: string;
 };
 
@@ -824,6 +842,14 @@ export type GetCurrentAuthSessionResponseBody = {
      */
     readonly $schema?: string;
     data: AuthSession;
+};
+
+export type GetEventResponseBody = {
+    /**
+     * A URL to the JSON Schema for this object.
+     */
+    readonly $schema?: string;
+    data: Event;
 };
 
 export type GetIncidentDebriefQuestionResponseBody = {
@@ -920,14 +946,6 @@ export type GetMeetingSessionResponseBody = {
      */
     readonly $schema?: string;
     data: MeetingSession;
-};
-
-export type GetOncallEventResponseBody = {
-    /**
-     * A URL to the JSON Schema for this object.
-     */
-    readonly $schema?: string;
-    data: OncallEvent;
 };
 
 export type GetOncallRosterMetricsResponseBody = {
@@ -1414,6 +1432,24 @@ export type ListAlertsResponseBody = {
     pagination: ResponsePagination;
 };
 
+export type ListEventAnnotationsResponseBody = {
+    /**
+     * A URL to the JSON Schema for this object.
+     */
+    readonly $schema?: string;
+    data: Array<EventAnnotation>;
+    pagination: ResponsePagination;
+};
+
+export type ListEventsResponseBody = {
+    /**
+     * A URL to the JSON Schema for this object.
+     */
+    readonly $schema?: string;
+    data: Array<Event>;
+    pagination: ResponsePagination;
+};
+
 export type ListIncidentDebriefMessagesResponseBody = {
     /**
      * A URL to the JSON Schema for this object.
@@ -1553,24 +1589,6 @@ export type ListNotificationsResponseBody = {
      */
     readonly $schema?: string;
     data: Array<UserNotification>;
-    pagination: ResponsePagination;
-};
-
-export type ListOncallAnnotationsResponseBody = {
-    /**
-     * A URL to the JSON Schema for this object.
-     */
-    readonly $schema?: string;
-    data: Array<OncallAnnotation>;
-    pagination: ResponsePagination;
-};
-
-export type ListOncallEventsResponseBody = {
-    /**
-     * A URL to the JSON Schema for this object.
-     */
-    readonly $schema?: string;
-    data: Array<OncallEvent>;
     pagination: ResponsePagination;
 };
 
@@ -1753,36 +1771,6 @@ export type MeetingSessionAttributes = {
     title: string;
 };
 
-export type OncallAnnotation = {
-    attributes: OncallAnnotationAttributes;
-    id: string;
-};
-
-export type OncallAnnotationAttributes = {
-    alertFeedback?: AlertFeedbackInstance;
-    creator: ExpandableUserAttributes;
-    event: ExpandableOncallEventAttributes;
-    minutesOccupied: number;
-    notes: string;
-    roster: ExpandableOncallRosterAttributes;
-    tags: Array<string>;
-};
-
-export type OncallEvent = {
-    attributes: OncallEventAttributes;
-    id: string;
-};
-
-export type OncallEventAttributes = {
-    alert_id?: string;
-    annotations?: Array<OncallAnnotation>;
-    description: string;
-    kind: string;
-    roster_id?: string;
-    timestamp: string;
-    title: string;
-};
-
 export type OncallRoster = {
     attributes: OncallRosterAttributes;
     id: string;
@@ -1843,7 +1831,7 @@ export type OncallShiftHandover = {
 
 export type OncallShiftHandoverAttributes = {
     content: Array<OncallShiftHandoverSection>;
-    pinnedAnnotations: Array<OncallAnnotation>;
+    pinnedAnnotations: Array<EventAnnotation>;
     sentAt: string;
     shiftId: string;
 };
@@ -2145,6 +2133,28 @@ export type TeamAttributes = {
     slug: string;
 };
 
+export type UpdateEventAnnotationRequestAttributes = {
+    minutesOccupied?: number;
+    notes?: string;
+    tags?: Array<string>;
+};
+
+export type UpdateEventAnnotationRequestBody = {
+    /**
+     * A URL to the JSON Schema for this object.
+     */
+    readonly $schema?: string;
+    attributes: UpdateEventAnnotationRequestAttributes;
+};
+
+export type UpdateEventAnnotationResponseBody = {
+    /**
+     * A URL to the JSON Schema for this object.
+     */
+    readonly $schema?: string;
+    data: EventAnnotation;
+};
+
 export type UpdateIncidentAttributes = {
     environments?: Array<string>;
     private?: boolean;
@@ -2432,29 +2442,6 @@ export type UpdateMeetingSessionResponseBody = {
      */
     readonly $schema?: string;
     data: MeetingSession;
-};
-
-export type UpdateOncallAnnotationRequestAttributes = {
-    alertFeedback?: AlertFeedbackInstance;
-    minutesOccupied?: number;
-    notes?: string;
-    tags?: Array<string>;
-};
-
-export type UpdateOncallAnnotationRequestBody = {
-    /**
-     * A URL to the JSON Schema for this object.
-     */
-    readonly $schema?: string;
-    attributes: UpdateOncallAnnotationRequestAttributes;
-};
-
-export type UpdateOncallAnnotationResponseBody = {
-    /**
-     * A URL to the JSON Schema for this object.
-     */
-    readonly $schema?: string;
-    data: OncallAnnotation;
 };
 
 export type UpdateOncallShiftHandoverAttributes = {
@@ -3419,6 +3406,299 @@ export type RequestDocumentEditorSessionResponses = {
 };
 
 export type RequestDocumentEditorSessionResponse = RequestDocumentEditorSessionResponses[keyof RequestDocumentEditorSessionResponses];
+
+export type ListEventAnnotationsData = {
+    body?: never;
+    path?: never;
+    query?: {
+        limit?: number;
+        offset?: number;
+        search?: string;
+        archived?: boolean;
+        from?: string;
+        to?: string;
+        userIds?: string;
+        shiftIds?: string;
+        withEvents?: boolean;
+    };
+    url: '/event_annotations';
+};
+
+export type ListEventAnnotationsErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
+
+export type ListEventAnnotationsError = ListEventAnnotationsErrors[keyof ListEventAnnotationsErrors];
+
+export type ListEventAnnotationsResponses = {
+    /**
+     * OK
+     */
+    200: ListEventAnnotationsResponseBody;
+};
+
+export type ListEventAnnotationsResponse = ListEventAnnotationsResponses[keyof ListEventAnnotationsResponses];
+
+export type CreateEventAnnotationData = {
+    body: CreateEventAnnotationRequestBody;
+    path?: never;
+    query?: never;
+    url: '/event_annotations';
+};
+
+export type CreateEventAnnotationErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
+
+export type CreateEventAnnotationError = CreateEventAnnotationErrors[keyof CreateEventAnnotationErrors];
+
+export type CreateEventAnnotationResponses = {
+    /**
+     * OK
+     */
+    200: CreateEventAnnotationResponseBody;
+};
+
+export type CreateEventAnnotationResponse = CreateEventAnnotationResponses[keyof CreateEventAnnotationResponses];
+
+export type DeleteEventAnnotationData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/event_annotations/{id}';
+};
+
+export type DeleteEventAnnotationErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
+
+export type DeleteEventAnnotationError = DeleteEventAnnotationErrors[keyof DeleteEventAnnotationErrors];
+
+export type DeleteEventAnnotationResponses = {
+    /**
+     * No Content
+     */
+    204: void;
+};
+
+export type DeleteEventAnnotationResponse = DeleteEventAnnotationResponses[keyof DeleteEventAnnotationResponses];
+
+export type UpdateEventAnnotationData = {
+    body: UpdateEventAnnotationRequestBody;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/event_annotations/{id}';
+};
+
+export type UpdateEventAnnotationErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
+
+export type UpdateEventAnnotationError = UpdateEventAnnotationErrors[keyof UpdateEventAnnotationErrors];
+
+export type UpdateEventAnnotationResponses = {
+    /**
+     * OK
+     */
+    200: UpdateEventAnnotationResponseBody;
+};
+
+export type UpdateEventAnnotationResponse = UpdateEventAnnotationResponses[keyof UpdateEventAnnotationResponses];
+
+export type ListEventsData = {
+    body?: never;
+    path?: never;
+    query?: {
+        limit?: number;
+        offset?: number;
+        search?: string;
+        archived?: boolean;
+        from?: string;
+        to?: string;
+    };
+    url: '/events';
+};
+
+export type ListEventsErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
+
+export type ListEventsError = ListEventsErrors[keyof ListEventsErrors];
+
+export type ListEventsResponses = {
+    /**
+     * OK
+     */
+    200: ListEventsResponseBody;
+};
+
+export type ListEventsResponse = ListEventsResponses[keyof ListEventsResponses];
+
+export type GetEventData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/events/{id}';
+};
+
+export type GetEventErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
+
+export type GetEventError = GetEventErrors[keyof GetEventErrors];
+
+export type GetEventResponses = {
+    /**
+     * OK
+     */
+    200: GetEventResponseBody;
+};
+
+export type GetEventResponse = GetEventResponses[keyof GetEventResponses];
 
 export type GetIncidentDebriefData = {
     body?: never;
@@ -6321,304 +6601,6 @@ export type UpdateMeetingSessionResponses = {
 };
 
 export type UpdateMeetingSessionResponse = UpdateMeetingSessionResponses[keyof UpdateMeetingSessionResponses];
-
-export type ListOncallAnnotationsData = {
-    body?: never;
-    path?: never;
-    query?: {
-        limit?: number;
-        offset?: number;
-        search?: string;
-        archived?: boolean;
-        from?: string;
-        to?: string;
-        rosterId?: string;
-        shiftId?: string;
-        withEvents?: boolean;
-    };
-    url: '/oncall/annotations';
-};
-
-export type ListOncallAnnotationsErrors = {
-    /**
-     * Bad Request
-     */
-    400: ErrorModel;
-    /**
-     * Unauthorized
-     */
-    401: ErrorModel;
-    /**
-     * Forbidden
-     */
-    403: ErrorModel;
-    /**
-     * Not Found
-     */
-    404: ErrorModel;
-    /**
-     * Unprocessable Entity
-     */
-    422: ErrorModel;
-    /**
-     * Internal Server Error
-     */
-    500: ErrorModel;
-};
-
-export type ListOncallAnnotationsError = ListOncallAnnotationsErrors[keyof ListOncallAnnotationsErrors];
-
-export type ListOncallAnnotationsResponses = {
-    /**
-     * OK
-     */
-    200: ListOncallAnnotationsResponseBody;
-};
-
-export type ListOncallAnnotationsResponse = ListOncallAnnotationsResponses[keyof ListOncallAnnotationsResponses];
-
-export type CreateOncallAnnotationData = {
-    body: CreateOncallAnnotationRequestBody;
-    path?: never;
-    query?: never;
-    url: '/oncall/annotations';
-};
-
-export type CreateOncallAnnotationErrors = {
-    /**
-     * Bad Request
-     */
-    400: ErrorModel;
-    /**
-     * Unauthorized
-     */
-    401: ErrorModel;
-    /**
-     * Forbidden
-     */
-    403: ErrorModel;
-    /**
-     * Not Found
-     */
-    404: ErrorModel;
-    /**
-     * Unprocessable Entity
-     */
-    422: ErrorModel;
-    /**
-     * Internal Server Error
-     */
-    500: ErrorModel;
-};
-
-export type CreateOncallAnnotationError = CreateOncallAnnotationErrors[keyof CreateOncallAnnotationErrors];
-
-export type CreateOncallAnnotationResponses = {
-    /**
-     * OK
-     */
-    200: CreateOncallAnnotationResponseBody;
-};
-
-export type CreateOncallAnnotationResponse = CreateOncallAnnotationResponses[keyof CreateOncallAnnotationResponses];
-
-export type DeleteOncallAnnotationData = {
-    body?: never;
-    path: {
-        id: string;
-    };
-    query?: never;
-    url: '/oncall/annotations/{id}';
-};
-
-export type DeleteOncallAnnotationErrors = {
-    /**
-     * Bad Request
-     */
-    400: ErrorModel;
-    /**
-     * Unauthorized
-     */
-    401: ErrorModel;
-    /**
-     * Forbidden
-     */
-    403: ErrorModel;
-    /**
-     * Not Found
-     */
-    404: ErrorModel;
-    /**
-     * Unprocessable Entity
-     */
-    422: ErrorModel;
-    /**
-     * Internal Server Error
-     */
-    500: ErrorModel;
-};
-
-export type DeleteOncallAnnotationError = DeleteOncallAnnotationErrors[keyof DeleteOncallAnnotationErrors];
-
-export type DeleteOncallAnnotationResponses = {
-    /**
-     * No Content
-     */
-    204: void;
-};
-
-export type DeleteOncallAnnotationResponse = DeleteOncallAnnotationResponses[keyof DeleteOncallAnnotationResponses];
-
-export type UpdateOncallAnnotationData = {
-    body: UpdateOncallAnnotationRequestBody;
-    path: {
-        id: string;
-    };
-    query?: never;
-    url: '/oncall/annotations/{id}';
-};
-
-export type UpdateOncallAnnotationErrors = {
-    /**
-     * Bad Request
-     */
-    400: ErrorModel;
-    /**
-     * Unauthorized
-     */
-    401: ErrorModel;
-    /**
-     * Forbidden
-     */
-    403: ErrorModel;
-    /**
-     * Not Found
-     */
-    404: ErrorModel;
-    /**
-     * Unprocessable Entity
-     */
-    422: ErrorModel;
-    /**
-     * Internal Server Error
-     */
-    500: ErrorModel;
-};
-
-export type UpdateOncallAnnotationError = UpdateOncallAnnotationErrors[keyof UpdateOncallAnnotationErrors];
-
-export type UpdateOncallAnnotationResponses = {
-    /**
-     * OK
-     */
-    200: UpdateOncallAnnotationResponseBody;
-};
-
-export type UpdateOncallAnnotationResponse = UpdateOncallAnnotationResponses[keyof UpdateOncallAnnotationResponses];
-
-export type ListOncallEventsData = {
-    body?: never;
-    path?: never;
-    query?: {
-        limit?: number;
-        offset?: number;
-        search?: string;
-        archived?: boolean;
-        from?: string;
-        to?: string;
-        shiftId?: string;
-        alertId?: string;
-        rosterId?: string;
-        annotationRosterId?: string;
-        withAnnotations?: boolean;
-    };
-    url: '/oncall/events';
-};
-
-export type ListOncallEventsErrors = {
-    /**
-     * Bad Request
-     */
-    400: ErrorModel;
-    /**
-     * Unauthorized
-     */
-    401: ErrorModel;
-    /**
-     * Forbidden
-     */
-    403: ErrorModel;
-    /**
-     * Not Found
-     */
-    404: ErrorModel;
-    /**
-     * Unprocessable Entity
-     */
-    422: ErrorModel;
-    /**
-     * Internal Server Error
-     */
-    500: ErrorModel;
-};
-
-export type ListOncallEventsError = ListOncallEventsErrors[keyof ListOncallEventsErrors];
-
-export type ListOncallEventsResponses = {
-    /**
-     * OK
-     */
-    200: ListOncallEventsResponseBody;
-};
-
-export type ListOncallEventsResponse = ListOncallEventsResponses[keyof ListOncallEventsResponses];
-
-export type GetOncallEventData = {
-    body?: never;
-    path: {
-        id: string;
-    };
-    query?: never;
-    url: '/oncall/events/{id}';
-};
-
-export type GetOncallEventErrors = {
-    /**
-     * Bad Request
-     */
-    400: ErrorModel;
-    /**
-     * Unauthorized
-     */
-    401: ErrorModel;
-    /**
-     * Forbidden
-     */
-    403: ErrorModel;
-    /**
-     * Not Found
-     */
-    404: ErrorModel;
-    /**
-     * Unprocessable Entity
-     */
-    422: ErrorModel;
-    /**
-     * Internal Server Error
-     */
-    500: ErrorModel;
-};
-
-export type GetOncallEventError = GetOncallEventErrors[keyof GetOncallEventErrors];
-
-export type GetOncallEventResponses = {
-    /**
-     * OK
-     */
-    200: GetOncallEventResponseBody;
-};
-
-export type GetOncallEventResponse = GetOncallEventResponses[keyof GetOncallEventResponses];
 
 export type CreateOncallHandoverTemplateData = {
     body: CreateOncallShiftHandoverTemplateRequestBody;
