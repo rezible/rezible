@@ -14,6 +14,7 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
+	"github.com/rezible/rezible/ent/event"
 	"github.com/rezible/rezible/ent/incident"
 	"github.com/rezible/rezible/ent/incidentevent"
 	"github.com/rezible/rezible/ent/incidenteventcontext"
@@ -34,6 +35,7 @@ type IncidentEventQuery struct {
 	predicates           []predicate.IncidentEvent
 	withTenant           *TenantQuery
 	withIncident         *IncidentQuery
+	withEvent            *EventQuery
 	withContext          *IncidentEventContextQuery
 	withFactors          *IncidentEventContributingFactorQuery
 	withEvidence         *IncidentEventEvidenceQuery
@@ -113,6 +115,28 @@ func (ieq *IncidentEventQuery) QueryIncident() *IncidentQuery {
 			sqlgraph.From(incidentevent.Table, incidentevent.FieldID, selector),
 			sqlgraph.To(incident.Table, incident.FieldID),
 			sqlgraph.Edge(sqlgraph.M2O, true, incidentevent.IncidentTable, incidentevent.IncidentColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(ieq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryEvent chains the current query on the "event" edge.
+func (ieq *IncidentEventQuery) QueryEvent() *EventQuery {
+	query := (&EventClient{config: ieq.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := ieq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := ieq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(incidentevent.Table, incidentevent.FieldID, selector),
+			sqlgraph.To(event.Table, event.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, incidentevent.EventTable, incidentevent.EventColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(ieq.driver.Dialect(), step)
 		return fromU, nil
@@ -424,6 +448,7 @@ func (ieq *IncidentEventQuery) Clone() *IncidentEventQuery {
 		predicates:           append([]predicate.IncidentEvent{}, ieq.predicates...),
 		withTenant:           ieq.withTenant.Clone(),
 		withIncident:         ieq.withIncident.Clone(),
+		withEvent:            ieq.withEvent.Clone(),
 		withContext:          ieq.withContext.Clone(),
 		withFactors:          ieq.withFactors.Clone(),
 		withEvidence:         ieq.withEvidence.Clone(),
@@ -455,6 +480,17 @@ func (ieq *IncidentEventQuery) WithIncident(opts ...func(*IncidentQuery)) *Incid
 		opt(query)
 	}
 	ieq.withIncident = query
+	return ieq
+}
+
+// WithEvent tells the query-builder to eager-load the nodes that are connected to
+// the "event" edge. The optional arguments are used to configure the query builder of the edge.
+func (ieq *IncidentEventQuery) WithEvent(opts ...func(*EventQuery)) *IncidentEventQuery {
+	query := (&EventClient{config: ieq.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	ieq.withEvent = query
 	return ieq
 }
 
@@ -597,9 +633,10 @@ func (ieq *IncidentEventQuery) sqlAll(ctx context.Context, hooks ...queryHook) (
 	var (
 		nodes       = []*IncidentEvent{}
 		_spec       = ieq.querySpec()
-		loadedTypes = [7]bool{
+		loadedTypes = [8]bool{
 			ieq.withTenant != nil,
 			ieq.withIncident != nil,
+			ieq.withEvent != nil,
 			ieq.withContext != nil,
 			ieq.withFactors != nil,
 			ieq.withEvidence != nil,
@@ -637,6 +674,12 @@ func (ieq *IncidentEventQuery) sqlAll(ctx context.Context, hooks ...queryHook) (
 	if query := ieq.withIncident; query != nil {
 		if err := ieq.loadIncident(ctx, query, nodes, nil,
 			func(n *IncidentEvent, e *Incident) { n.Edges.Incident = e }); err != nil {
+			return nil, err
+		}
+	}
+	if query := ieq.withEvent; query != nil {
+		if err := ieq.loadEvent(ctx, query, nodes, nil,
+			func(n *IncidentEvent, e *Event) { n.Edges.Event = e }); err != nil {
 			return nil, err
 		}
 	}
@@ -734,6 +777,35 @@ func (ieq *IncidentEventQuery) loadIncident(ctx context.Context, query *Incident
 		nodes, ok := nodeids[n.ID]
 		if !ok {
 			return fmt.Errorf(`unexpected foreign-key "incident_id" returned %v`, n.ID)
+		}
+		for i := range nodes {
+			assign(nodes[i], n)
+		}
+	}
+	return nil
+}
+func (ieq *IncidentEventQuery) loadEvent(ctx context.Context, query *EventQuery, nodes []*IncidentEvent, init func(*IncidentEvent), assign func(*IncidentEvent, *Event)) error {
+	ids := make([]uuid.UUID, 0, len(nodes))
+	nodeids := make(map[uuid.UUID][]*IncidentEvent)
+	for i := range nodes {
+		fk := nodes[i].EventID
+		if _, ok := nodeids[fk]; !ok {
+			ids = append(ids, fk)
+		}
+		nodeids[fk] = append(nodeids[fk], nodes[i])
+	}
+	if len(ids) == 0 {
+		return nil
+	}
+	query.Where(event.IDIn(ids...))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		nodes, ok := nodeids[n.ID]
+		if !ok {
+			return fmt.Errorf(`unexpected foreign-key "event_id" returned %v`, n.ID)
 		}
 		for i := range nodes {
 			assign(nodes[i], n)
@@ -956,6 +1028,9 @@ func (ieq *IncidentEventQuery) querySpec() *sqlgraph.QuerySpec {
 		}
 		if ieq.withIncident != nil {
 			_spec.Node.AddColumnOnce(incidentevent.FieldIncidentID)
+		}
+		if ieq.withEvent != nil {
+			_spec.Node.AddColumnOnce(incidentevent.FieldEventID)
 		}
 	}
 	if ps := ieq.predicates; len(ps) > 0 {

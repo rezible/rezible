@@ -15,8 +15,6 @@ import (
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/alert"
-	"github.com/rezible/rezible/ent/oncallannotation"
-	"github.com/rezible/rezible/ent/oncallevent"
 	"github.com/rezible/rezible/ent/oncallhandovertemplate"
 	"github.com/rezible/rezible/ent/oncallroster"
 	"github.com/rezible/rezible/ent/oncallrostermetrics"
@@ -39,8 +37,6 @@ type OncallRosterQuery struct {
 	withSchedules        *OncallScheduleQuery
 	withHandoverTemplate *OncallHandoverTemplateQuery
 	withAlerts           *AlertQuery
-	withEvents           *OncallEventQuery
-	withAnnotations      *OncallAnnotationQuery
 	withTeams            *TeamQuery
 	withShifts           *OncallShiftQuery
 	withUserWatchers     *UserQuery
@@ -163,50 +159,6 @@ func (orq *OncallRosterQuery) QueryAlerts() *AlertQuery {
 			sqlgraph.From(oncallroster.Table, oncallroster.FieldID, selector),
 			sqlgraph.To(alert.Table, alert.FieldID),
 			sqlgraph.Edge(sqlgraph.O2M, false, oncallroster.AlertsTable, oncallroster.AlertsColumn),
-		)
-		fromU = sqlgraph.SetNeighbors(orq.driver.Dialect(), step)
-		return fromU, nil
-	}
-	return query
-}
-
-// QueryEvents chains the current query on the "events" edge.
-func (orq *OncallRosterQuery) QueryEvents() *OncallEventQuery {
-	query := (&OncallEventClient{config: orq.config}).Query()
-	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
-		if err := orq.prepareQuery(ctx); err != nil {
-			return nil, err
-		}
-		selector := orq.sqlQuery(ctx)
-		if err := selector.Err(); err != nil {
-			return nil, err
-		}
-		step := sqlgraph.NewStep(
-			sqlgraph.From(oncallroster.Table, oncallroster.FieldID, selector),
-			sqlgraph.To(oncallevent.Table, oncallevent.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, true, oncallroster.EventsTable, oncallroster.EventsColumn),
-		)
-		fromU = sqlgraph.SetNeighbors(orq.driver.Dialect(), step)
-		return fromU, nil
-	}
-	return query
-}
-
-// QueryAnnotations chains the current query on the "annotations" edge.
-func (orq *OncallRosterQuery) QueryAnnotations() *OncallAnnotationQuery {
-	query := (&OncallAnnotationClient{config: orq.config}).Query()
-	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
-		if err := orq.prepareQuery(ctx); err != nil {
-			return nil, err
-		}
-		selector := orq.sqlQuery(ctx)
-		if err := selector.Err(); err != nil {
-			return nil, err
-		}
-		step := sqlgraph.NewStep(
-			sqlgraph.From(oncallroster.Table, oncallroster.FieldID, selector),
-			sqlgraph.To(oncallannotation.Table, oncallannotation.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, true, oncallroster.AnnotationsTable, oncallroster.AnnotationsColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(orq.driver.Dialect(), step)
 		return fromU, nil
@@ -498,8 +450,6 @@ func (orq *OncallRosterQuery) Clone() *OncallRosterQuery {
 		withSchedules:        orq.withSchedules.Clone(),
 		withHandoverTemplate: orq.withHandoverTemplate.Clone(),
 		withAlerts:           orq.withAlerts.Clone(),
-		withEvents:           orq.withEvents.Clone(),
-		withAnnotations:      orq.withAnnotations.Clone(),
 		withTeams:            orq.withTeams.Clone(),
 		withShifts:           orq.withShifts.Clone(),
 		withUserWatchers:     orq.withUserWatchers.Clone(),
@@ -552,28 +502,6 @@ func (orq *OncallRosterQuery) WithAlerts(opts ...func(*AlertQuery)) *OncallRoste
 		opt(query)
 	}
 	orq.withAlerts = query
-	return orq
-}
-
-// WithEvents tells the query-builder to eager-load the nodes that are connected to
-// the "events" edge. The optional arguments are used to configure the query builder of the edge.
-func (orq *OncallRosterQuery) WithEvents(opts ...func(*OncallEventQuery)) *OncallRosterQuery {
-	query := (&OncallEventClient{config: orq.config}).Query()
-	for _, opt := range opts {
-		opt(query)
-	}
-	orq.withEvents = query
-	return orq
-}
-
-// WithAnnotations tells the query-builder to eager-load the nodes that are connected to
-// the "annotations" edge. The optional arguments are used to configure the query builder of the edge.
-func (orq *OncallRosterQuery) WithAnnotations(opts ...func(*OncallAnnotationQuery)) *OncallRosterQuery {
-	query := (&OncallAnnotationClient{config: orq.config}).Query()
-	for _, opt := range opts {
-		opt(query)
-	}
-	orq.withAnnotations = query
 	return orq
 }
 
@@ -705,13 +633,11 @@ func (orq *OncallRosterQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([
 	var (
 		nodes       = []*OncallRoster{}
 		_spec       = orq.querySpec()
-		loadedTypes = [10]bool{
+		loadedTypes = [8]bool{
 			orq.withTenant != nil,
 			orq.withSchedules != nil,
 			orq.withHandoverTemplate != nil,
 			orq.withAlerts != nil,
-			orq.withEvents != nil,
-			orq.withAnnotations != nil,
 			orq.withTeams != nil,
 			orq.withShifts != nil,
 			orq.withUserWatchers != nil,
@@ -762,20 +688,6 @@ func (orq *OncallRosterQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([
 		if err := orq.loadAlerts(ctx, query, nodes,
 			func(n *OncallRoster) { n.Edges.Alerts = []*Alert{} },
 			func(n *OncallRoster, e *Alert) { n.Edges.Alerts = append(n.Edges.Alerts, e) }); err != nil {
-			return nil, err
-		}
-	}
-	if query := orq.withEvents; query != nil {
-		if err := orq.loadEvents(ctx, query, nodes,
-			func(n *OncallRoster) { n.Edges.Events = []*OncallEvent{} },
-			func(n *OncallRoster, e *OncallEvent) { n.Edges.Events = append(n.Edges.Events, e) }); err != nil {
-			return nil, err
-		}
-	}
-	if query := orq.withAnnotations; query != nil {
-		if err := orq.loadAnnotations(ctx, query, nodes,
-			func(n *OncallRoster) { n.Edges.Annotations = []*OncallAnnotation{} },
-			func(n *OncallRoster, e *OncallAnnotation) { n.Edges.Annotations = append(n.Edges.Annotations, e) }); err != nil {
 			return nil, err
 		}
 	}
@@ -913,66 +825,6 @@ func (orq *OncallRosterQuery) loadAlerts(ctx context.Context, query *AlertQuery,
 	}
 	query.Where(predicate.Alert(func(s *sql.Selector) {
 		s.Where(sql.InValues(s.C(oncallroster.AlertsColumn), fks...))
-	}))
-	neighbors, err := query.All(ctx)
-	if err != nil {
-		return err
-	}
-	for _, n := range neighbors {
-		fk := n.RosterID
-		node, ok := nodeids[fk]
-		if !ok {
-			return fmt.Errorf(`unexpected referenced foreign-key "roster_id" returned %v for node %v`, fk, n.ID)
-		}
-		assign(node, n)
-	}
-	return nil
-}
-func (orq *OncallRosterQuery) loadEvents(ctx context.Context, query *OncallEventQuery, nodes []*OncallRoster, init func(*OncallRoster), assign func(*OncallRoster, *OncallEvent)) error {
-	fks := make([]driver.Value, 0, len(nodes))
-	nodeids := make(map[uuid.UUID]*OncallRoster)
-	for i := range nodes {
-		fks = append(fks, nodes[i].ID)
-		nodeids[nodes[i].ID] = nodes[i]
-		if init != nil {
-			init(nodes[i])
-		}
-	}
-	if len(query.ctx.Fields) > 0 {
-		query.ctx.AppendFieldOnce(oncallevent.FieldRosterID)
-	}
-	query.Where(predicate.OncallEvent(func(s *sql.Selector) {
-		s.Where(sql.InValues(s.C(oncallroster.EventsColumn), fks...))
-	}))
-	neighbors, err := query.All(ctx)
-	if err != nil {
-		return err
-	}
-	for _, n := range neighbors {
-		fk := n.RosterID
-		node, ok := nodeids[fk]
-		if !ok {
-			return fmt.Errorf(`unexpected referenced foreign-key "roster_id" returned %v for node %v`, fk, n.ID)
-		}
-		assign(node, n)
-	}
-	return nil
-}
-func (orq *OncallRosterQuery) loadAnnotations(ctx context.Context, query *OncallAnnotationQuery, nodes []*OncallRoster, init func(*OncallRoster), assign func(*OncallRoster, *OncallAnnotation)) error {
-	fks := make([]driver.Value, 0, len(nodes))
-	nodeids := make(map[uuid.UUID]*OncallRoster)
-	for i := range nodes {
-		fks = append(fks, nodes[i].ID)
-		nodeids[nodes[i].ID] = nodes[i]
-		if init != nil {
-			init(nodes[i])
-		}
-	}
-	if len(query.ctx.Fields) > 0 {
-		query.ctx.AppendFieldOnce(oncallannotation.FieldRosterID)
-	}
-	query.Where(predicate.OncallAnnotation(func(s *sql.Selector) {
-		s.Where(sql.InValues(s.C(oncallroster.AnnotationsColumn), fks...))
 	}))
 	neighbors, err := query.All(ctx)
 	if err != nil {

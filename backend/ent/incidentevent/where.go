@@ -66,6 +66,11 @@ func IncidentID(v uuid.UUID) predicate.IncidentEvent {
 	return predicate.IncidentEvent(sql.FieldEQ(FieldIncidentID, v))
 }
 
+// EventID applies equality check predicate on the "event_id" field. It's identical to EventIDEQ.
+func EventID(v uuid.UUID) predicate.IncidentEvent {
+	return predicate.IncidentEvent(sql.FieldEQ(FieldEventID, v))
+}
+
 // Timestamp applies equality check predicate on the "timestamp" field. It's identical to TimestampEQ.
 func Timestamp(v time.Time) predicate.IncidentEvent {
 	return predicate.IncidentEvent(sql.FieldEQ(FieldTimestamp, v))
@@ -149,6 +154,36 @@ func IncidentIDIn(vs ...uuid.UUID) predicate.IncidentEvent {
 // IncidentIDNotIn applies the NotIn predicate on the "incident_id" field.
 func IncidentIDNotIn(vs ...uuid.UUID) predicate.IncidentEvent {
 	return predicate.IncidentEvent(sql.FieldNotIn(FieldIncidentID, vs...))
+}
+
+// EventIDEQ applies the EQ predicate on the "event_id" field.
+func EventIDEQ(v uuid.UUID) predicate.IncidentEvent {
+	return predicate.IncidentEvent(sql.FieldEQ(FieldEventID, v))
+}
+
+// EventIDNEQ applies the NEQ predicate on the "event_id" field.
+func EventIDNEQ(v uuid.UUID) predicate.IncidentEvent {
+	return predicate.IncidentEvent(sql.FieldNEQ(FieldEventID, v))
+}
+
+// EventIDIn applies the In predicate on the "event_id" field.
+func EventIDIn(vs ...uuid.UUID) predicate.IncidentEvent {
+	return predicate.IncidentEvent(sql.FieldIn(FieldEventID, vs...))
+}
+
+// EventIDNotIn applies the NotIn predicate on the "event_id" field.
+func EventIDNotIn(vs ...uuid.UUID) predicate.IncidentEvent {
+	return predicate.IncidentEvent(sql.FieldNotIn(FieldEventID, vs...))
+}
+
+// EventIDIsNil applies the IsNil predicate on the "event_id" field.
+func EventIDIsNil() predicate.IncidentEvent {
+	return predicate.IncidentEvent(sql.FieldIsNull(FieldEventID))
+}
+
+// EventIDNotNil applies the NotNil predicate on the "event_id" field.
+func EventIDNotNil() predicate.IncidentEvent {
+	return predicate.IncidentEvent(sql.FieldNotNull(FieldEventID))
 }
 
 // TimestampEQ applies the EQ predicate on the "timestamp" field.
@@ -569,6 +604,29 @@ func HasIncident() predicate.IncidentEvent {
 func HasIncidentWith(preds ...predicate.Incident) predicate.IncidentEvent {
 	return predicate.IncidentEvent(func(s *sql.Selector) {
 		step := newIncidentStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasEvent applies the HasEdge predicate on the "event" edge.
+func HasEvent() predicate.IncidentEvent {
+	return predicate.IncidentEvent(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, EventTable, EventColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasEventWith applies the HasEdge predicate on the "event" edge with a given conditions (other predicates).
+func HasEventWith(preds ...predicate.Event) predicate.IncidentEvent {
+	return predicate.IncidentEvent(func(s *sql.Selector) {
+		step := newEventStep()
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)

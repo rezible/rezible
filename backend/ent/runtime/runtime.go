@@ -9,7 +9,10 @@ import (
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/alert"
 	"github.com/rezible/rezible/ent/alertfeedback"
+	"github.com/rezible/rezible/ent/alertinstance"
 	"github.com/rezible/rezible/ent/document"
+	"github.com/rezible/rezible/ent/event"
+	"github.com/rezible/rezible/ent/eventannotation"
 	"github.com/rezible/rezible/ent/incident"
 	"github.com/rezible/rezible/ent/incidentdebrief"
 	"github.com/rezible/rezible/ent/incidentdebriefmessage"
@@ -31,8 +34,6 @@ import (
 	"github.com/rezible/rezible/ent/incidenttype"
 	"github.com/rezible/rezible/ent/meetingschedule"
 	"github.com/rezible/rezible/ent/meetingsession"
-	"github.com/rezible/rezible/ent/oncallannotation"
-	"github.com/rezible/rezible/ent/oncallevent"
 	"github.com/rezible/rezible/ent/oncallhandovertemplate"
 	"github.com/rezible/rezible/ent/oncallroster"
 	"github.com/rezible/rezible/ent/oncallrostermetrics"
@@ -106,6 +107,22 @@ func init() {
 	alertfeedbackDescID := alertfeedbackFields[0].Descriptor()
 	// alertfeedback.DefaultID holds the default value on creation for the id field.
 	alertfeedback.DefaultID = alertfeedbackDescID.Default.(func() uuid.UUID)
+	alertinstanceMixin := schema.AlertInstance{}.Mixin()
+	alertinstance.Policy = privacy.NewPolicies(alertinstanceMixin[0], alertinstanceMixin[1], schema.AlertInstance{})
+	alertinstance.Hooks[0] = func(next ent.Mutator) ent.Mutator {
+		return ent.MutateFunc(func(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+			if err := alertinstance.Policy.EvalMutation(ctx, m); err != nil {
+				return nil, err
+			}
+			return next.Mutate(ctx, m)
+		})
+	}
+	alertinstanceFields := schema.AlertInstance{}.Fields()
+	_ = alertinstanceFields
+	// alertinstanceDescID is the schema descriptor for id field.
+	alertinstanceDescID := alertinstanceFields[0].Descriptor()
+	// alertinstance.DefaultID holds the default value on creation for the id field.
+	alertinstance.DefaultID = alertinstanceDescID.Default.(func() uuid.UUID)
 	documentMixin := schema.Document{}.Mixin()
 	document.Policy = privacy.NewPolicies(documentMixin[0], documentMixin[1], schema.Document{})
 	document.Hooks[0] = func(next ent.Mutator) ent.Mutator {
@@ -122,6 +139,42 @@ func init() {
 	documentDescID := documentFields[0].Descriptor()
 	// document.DefaultID holds the default value on creation for the id field.
 	document.DefaultID = documentDescID.Default.(func() uuid.UUID)
+	eventMixin := schema.Event{}.Mixin()
+	event.Policy = privacy.NewPolicies(eventMixin[0], eventMixin[1], schema.Event{})
+	event.Hooks[0] = func(next ent.Mutator) ent.Mutator {
+		return ent.MutateFunc(func(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+			if err := event.Policy.EvalMutation(ctx, m); err != nil {
+				return nil, err
+			}
+			return next.Mutate(ctx, m)
+		})
+	}
+	eventFields := schema.Event{}.Fields()
+	_ = eventFields
+	// eventDescID is the schema descriptor for id field.
+	eventDescID := eventFields[0].Descriptor()
+	// event.DefaultID holds the default value on creation for the id field.
+	event.DefaultID = eventDescID.Default.(func() uuid.UUID)
+	eventannotationMixin := schema.EventAnnotation{}.Mixin()
+	eventannotation.Policy = privacy.NewPolicies(eventannotationMixin[0], eventannotationMixin[1], schema.EventAnnotation{})
+	eventannotation.Hooks[0] = func(next ent.Mutator) ent.Mutator {
+		return ent.MutateFunc(func(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+			if err := eventannotation.Policy.EvalMutation(ctx, m); err != nil {
+				return nil, err
+			}
+			return next.Mutate(ctx, m)
+		})
+	}
+	eventannotationFields := schema.EventAnnotation{}.Fields()
+	_ = eventannotationFields
+	// eventannotationDescCreatedAt is the schema descriptor for created_at field.
+	eventannotationDescCreatedAt := eventannotationFields[3].Descriptor()
+	// eventannotation.DefaultCreatedAt holds the default value on creation for the created_at field.
+	eventannotation.DefaultCreatedAt = eventannotationDescCreatedAt.Default.(func() time.Time)
+	// eventannotationDescID is the schema descriptor for id field.
+	eventannotationDescID := eventannotationFields[0].Descriptor()
+	// eventannotation.DefaultID holds the default value on creation for the id field.
+	eventannotation.DefaultID = eventannotationDescID.Default.(func() uuid.UUID)
 	incidentMixin := schema.Incident{}.Mixin()
 	incident.Policy = privacy.NewPolicies(incidentMixin[0], incidentMixin[1], schema.Incident{})
 	incident.Hooks[0] = func(next ent.Mutator) ent.Mutator {
@@ -223,29 +276,29 @@ func init() {
 	incidenteventFields := schema.IncidentEvent{}.Fields()
 	_ = incidenteventFields
 	// incidenteventDescTitle is the schema descriptor for title field.
-	incidenteventDescTitle := incidenteventFields[4].Descriptor()
+	incidenteventDescTitle := incidenteventFields[5].Descriptor()
 	// incidentevent.TitleValidator is a validator for the "title" field. It is called by the builders before save.
 	incidentevent.TitleValidator = incidenteventDescTitle.Validators[0].(func(string) error)
 	// incidenteventDescIsKey is the schema descriptor for is_key field.
-	incidenteventDescIsKey := incidenteventFields[6].Descriptor()
+	incidenteventDescIsKey := incidenteventFields[7].Descriptor()
 	// incidentevent.DefaultIsKey holds the default value on creation for the is_key field.
 	incidentevent.DefaultIsKey = incidenteventDescIsKey.Default.(bool)
 	// incidenteventDescCreatedAt is the schema descriptor for created_at field.
-	incidenteventDescCreatedAt := incidenteventFields[7].Descriptor()
+	incidenteventDescCreatedAt := incidenteventFields[8].Descriptor()
 	// incidentevent.DefaultCreatedAt holds the default value on creation for the created_at field.
 	incidentevent.DefaultCreatedAt = incidenteventDescCreatedAt.Default.(func() time.Time)
 	// incidenteventDescUpdatedAt is the schema descriptor for updated_at field.
-	incidenteventDescUpdatedAt := incidenteventFields[8].Descriptor()
+	incidenteventDescUpdatedAt := incidenteventFields[9].Descriptor()
 	// incidentevent.DefaultUpdatedAt holds the default value on creation for the updated_at field.
 	incidentevent.DefaultUpdatedAt = incidenteventDescUpdatedAt.Default.(func() time.Time)
 	// incidentevent.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
 	incidentevent.UpdateDefaultUpdatedAt = incidenteventDescUpdatedAt.UpdateDefault.(func() time.Time)
 	// incidenteventDescSequence is the schema descriptor for sequence field.
-	incidenteventDescSequence := incidenteventFields[10].Descriptor()
+	incidenteventDescSequence := incidenteventFields[11].Descriptor()
 	// incidentevent.DefaultSequence holds the default value on creation for the sequence field.
 	incidentevent.DefaultSequence = incidenteventDescSequence.Default.(int)
 	// incidenteventDescIsDraft is the schema descriptor for is_draft field.
-	incidenteventDescIsDraft := incidenteventFields[11].Descriptor()
+	incidenteventDescIsDraft := incidenteventFields[12].Descriptor()
 	// incidentevent.DefaultIsDraft holds the default value on creation for the is_draft field.
 	incidentevent.DefaultIsDraft = incidenteventDescIsDraft.Default.(bool)
 	// incidenteventDescID is the schema descriptor for id field.
@@ -565,42 +618,6 @@ func init() {
 	meetingsessionDescID := meetingsessionFields[0].Descriptor()
 	// meetingsession.DefaultID holds the default value on creation for the id field.
 	meetingsession.DefaultID = meetingsessionDescID.Default.(func() uuid.UUID)
-	oncallannotationMixin := schema.OncallAnnotation{}.Mixin()
-	oncallannotation.Policy = privacy.NewPolicies(oncallannotationMixin[0], oncallannotationMixin[1], schema.OncallAnnotation{})
-	oncallannotation.Hooks[0] = func(next ent.Mutator) ent.Mutator {
-		return ent.MutateFunc(func(ctx context.Context, m ent.Mutation) (ent.Value, error) {
-			if err := oncallannotation.Policy.EvalMutation(ctx, m); err != nil {
-				return nil, err
-			}
-			return next.Mutate(ctx, m)
-		})
-	}
-	oncallannotationFields := schema.OncallAnnotation{}.Fields()
-	_ = oncallannotationFields
-	// oncallannotationDescCreatedAt is the schema descriptor for created_at field.
-	oncallannotationDescCreatedAt := oncallannotationFields[4].Descriptor()
-	// oncallannotation.DefaultCreatedAt holds the default value on creation for the created_at field.
-	oncallannotation.DefaultCreatedAt = oncallannotationDescCreatedAt.Default.(func() time.Time)
-	// oncallannotationDescID is the schema descriptor for id field.
-	oncallannotationDescID := oncallannotationFields[0].Descriptor()
-	// oncallannotation.DefaultID holds the default value on creation for the id field.
-	oncallannotation.DefaultID = oncallannotationDescID.Default.(func() uuid.UUID)
-	oncalleventMixin := schema.OncallEvent{}.Mixin()
-	oncallevent.Policy = privacy.NewPolicies(oncalleventMixin[0], oncalleventMixin[1], schema.OncallEvent{})
-	oncallevent.Hooks[0] = func(next ent.Mutator) ent.Mutator {
-		return ent.MutateFunc(func(ctx context.Context, m ent.Mutation) (ent.Value, error) {
-			if err := oncallevent.Policy.EvalMutation(ctx, m); err != nil {
-				return nil, err
-			}
-			return next.Mutate(ctx, m)
-		})
-	}
-	oncalleventFields := schema.OncallEvent{}.Fields()
-	_ = oncalleventFields
-	// oncalleventDescID is the schema descriptor for id field.
-	oncalleventDescID := oncalleventFields[0].Descriptor()
-	// oncallevent.DefaultID holds the default value on creation for the id field.
-	oncallevent.DefaultID = oncalleventDescID.Default.(func() uuid.UUID)
 	oncallhandovertemplateMixin := schema.OncallHandoverTemplate{}.Mixin()
 	oncallhandovertemplate.Policy = privacy.NewPolicies(oncallhandovertemplateMixin[0], oncallhandovertemplateMixin[1], schema.OncallHandoverTemplate{})
 	oncallhandovertemplate.Hooks[0] = func(next ent.Mutator) ent.Mutator {

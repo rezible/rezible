@@ -713,52 +713,6 @@ func HasAlertsWith(preds ...predicate.Alert) predicate.OncallRoster {
 	})
 }
 
-// HasEvents applies the HasEdge predicate on the "events" edge.
-func HasEvents() predicate.OncallRoster {
-	return predicate.OncallRoster(func(s *sql.Selector) {
-		step := sqlgraph.NewStep(
-			sqlgraph.From(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, true, EventsTable, EventsColumn),
-		)
-		sqlgraph.HasNeighbors(s, step)
-	})
-}
-
-// HasEventsWith applies the HasEdge predicate on the "events" edge with a given conditions (other predicates).
-func HasEventsWith(preds ...predicate.OncallEvent) predicate.OncallRoster {
-	return predicate.OncallRoster(func(s *sql.Selector) {
-		step := newEventsStep()
-		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
-			for _, p := range preds {
-				p(s)
-			}
-		})
-	})
-}
-
-// HasAnnotations applies the HasEdge predicate on the "annotations" edge.
-func HasAnnotations() predicate.OncallRoster {
-	return predicate.OncallRoster(func(s *sql.Selector) {
-		step := sqlgraph.NewStep(
-			sqlgraph.From(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, true, AnnotationsTable, AnnotationsColumn),
-		)
-		sqlgraph.HasNeighbors(s, step)
-	})
-}
-
-// HasAnnotationsWith applies the HasEdge predicate on the "annotations" edge with a given conditions (other predicates).
-func HasAnnotationsWith(preds ...predicate.OncallAnnotation) predicate.OncallRoster {
-	return predicate.OncallRoster(func(s *sql.Selector) {
-		step := newAnnotationsStep()
-		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
-			for _, p := range preds {
-				p(s)
-			}
-		})
-	})
-}
-
 // HasTeams applies the HasEdge predicate on the "teams" edge.
 func HasTeams() predicate.OncallRoster {
 	return predicate.OncallRoster(func(s *sql.Selector) {

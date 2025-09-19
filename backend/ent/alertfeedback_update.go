@@ -11,9 +11,8 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
-	"github.com/rezible/rezible/ent/alert"
 	"github.com/rezible/rezible/ent/alertfeedback"
-	"github.com/rezible/rezible/ent/oncallannotation"
+	"github.com/rezible/rezible/ent/alertinstance"
 	"github.com/rezible/rezible/ent/predicate"
 )
 
@@ -31,30 +30,16 @@ func (afu *AlertFeedbackUpdate) Where(ps ...predicate.AlertFeedback) *AlertFeedb
 	return afu
 }
 
-// SetAlertID sets the "alert_id" field.
-func (afu *AlertFeedbackUpdate) SetAlertID(u uuid.UUID) *AlertFeedbackUpdate {
-	afu.mutation.SetAlertID(u)
+// SetAlertInstanceID sets the "alert_instance_id" field.
+func (afu *AlertFeedbackUpdate) SetAlertInstanceID(u uuid.UUID) *AlertFeedbackUpdate {
+	afu.mutation.SetAlertInstanceID(u)
 	return afu
 }
 
-// SetNillableAlertID sets the "alert_id" field if the given value is not nil.
-func (afu *AlertFeedbackUpdate) SetNillableAlertID(u *uuid.UUID) *AlertFeedbackUpdate {
+// SetNillableAlertInstanceID sets the "alert_instance_id" field if the given value is not nil.
+func (afu *AlertFeedbackUpdate) SetNillableAlertInstanceID(u *uuid.UUID) *AlertFeedbackUpdate {
 	if u != nil {
-		afu.SetAlertID(*u)
-	}
-	return afu
-}
-
-// SetAnnotationID sets the "annotation_id" field.
-func (afu *AlertFeedbackUpdate) SetAnnotationID(u uuid.UUID) *AlertFeedbackUpdate {
-	afu.mutation.SetAnnotationID(u)
-	return afu
-}
-
-// SetNillableAnnotationID sets the "annotation_id" field if the given value is not nil.
-func (afu *AlertFeedbackUpdate) SetNillableAnnotationID(u *uuid.UUID) *AlertFeedbackUpdate {
-	if u != nil {
-		afu.SetAnnotationID(*u)
+		afu.SetAlertInstanceID(*u)
 	}
 	return afu
 }
@@ -115,14 +100,9 @@ func (afu *AlertFeedbackUpdate) SetNillableDocumentationNeedsUpdate(b *bool) *Al
 	return afu
 }
 
-// SetAlert sets the "alert" edge to the Alert entity.
-func (afu *AlertFeedbackUpdate) SetAlert(a *Alert) *AlertFeedbackUpdate {
-	return afu.SetAlertID(a.ID)
-}
-
-// SetAnnotation sets the "annotation" edge to the OncallAnnotation entity.
-func (afu *AlertFeedbackUpdate) SetAnnotation(o *OncallAnnotation) *AlertFeedbackUpdate {
-	return afu.SetAnnotationID(o.ID)
+// SetAlertInstance sets the "alert_instance" edge to the AlertInstance entity.
+func (afu *AlertFeedbackUpdate) SetAlertInstance(a *AlertInstance) *AlertFeedbackUpdate {
+	return afu.SetAlertInstanceID(a.ID)
 }
 
 // Mutation returns the AlertFeedbackMutation object of the builder.
@@ -130,15 +110,9 @@ func (afu *AlertFeedbackUpdate) Mutation() *AlertFeedbackMutation {
 	return afu.mutation
 }
 
-// ClearAlert clears the "alert" edge to the Alert entity.
-func (afu *AlertFeedbackUpdate) ClearAlert() *AlertFeedbackUpdate {
-	afu.mutation.ClearAlert()
-	return afu
-}
-
-// ClearAnnotation clears the "annotation" edge to the OncallAnnotation entity.
-func (afu *AlertFeedbackUpdate) ClearAnnotation() *AlertFeedbackUpdate {
-	afu.mutation.ClearAnnotation()
+// ClearAlertInstance clears the "alert_instance" edge to the AlertInstance entity.
+func (afu *AlertFeedbackUpdate) ClearAlertInstance() *AlertFeedbackUpdate {
+	afu.mutation.ClearAlertInstance()
 	return afu
 }
 
@@ -179,11 +153,8 @@ func (afu *AlertFeedbackUpdate) check() error {
 	if afu.mutation.TenantCleared() && len(afu.mutation.TenantIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "AlertFeedback.tenant"`)
 	}
-	if afu.mutation.AlertCleared() && len(afu.mutation.AlertIDs()) > 0 {
-		return errors.New(`ent: clearing a required unique edge "AlertFeedback.alert"`)
-	}
-	if afu.mutation.AnnotationCleared() && len(afu.mutation.AnnotationIDs()) > 0 {
-		return errors.New(`ent: clearing a required unique edge "AlertFeedback.annotation"`)
+	if afu.mutation.AlertInstanceCleared() && len(afu.mutation.AlertInstanceIDs()) > 0 {
+		return errors.New(`ent: clearing a required unique edge "AlertFeedback.alert_instance"`)
 	}
 	return nil
 }
@@ -218,57 +189,28 @@ func (afu *AlertFeedbackUpdate) sqlSave(ctx context.Context) (n int, err error) 
 	if value, ok := afu.mutation.DocumentationNeedsUpdate(); ok {
 		_spec.SetField(alertfeedback.FieldDocumentationNeedsUpdate, field.TypeBool, value)
 	}
-	if afu.mutation.AlertCleared() {
+	if afu.mutation.AlertInstanceCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
-			Inverse: true,
-			Table:   alertfeedback.AlertTable,
-			Columns: []string{alertfeedback.AlertColumn},
+			Inverse: false,
+			Table:   alertfeedback.AlertInstanceTable,
+			Columns: []string{alertfeedback.AlertInstanceColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(alert.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(alertinstance.FieldID, field.TypeUUID),
 			},
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := afu.mutation.AlertIDs(); len(nodes) > 0 {
+	if nodes := afu.mutation.AlertInstanceIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
-			Inverse: true,
-			Table:   alertfeedback.AlertTable,
-			Columns: []string{alertfeedback.AlertColumn},
+			Inverse: false,
+			Table:   alertfeedback.AlertInstanceTable,
+			Columns: []string{alertfeedback.AlertInstanceColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(alert.FieldID, field.TypeUUID),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
-	}
-	if afu.mutation.AnnotationCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2O,
-			Inverse: true,
-			Table:   alertfeedback.AnnotationTable,
-			Columns: []string{alertfeedback.AnnotationColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(oncallannotation.FieldID, field.TypeUUID),
-			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := afu.mutation.AnnotationIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2O,
-			Inverse: true,
-			Table:   alertfeedback.AnnotationTable,
-			Columns: []string{alertfeedback.AnnotationColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(oncallannotation.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(alertinstance.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {
@@ -298,30 +240,16 @@ type AlertFeedbackUpdateOne struct {
 	modifiers []func(*sql.UpdateBuilder)
 }
 
-// SetAlertID sets the "alert_id" field.
-func (afuo *AlertFeedbackUpdateOne) SetAlertID(u uuid.UUID) *AlertFeedbackUpdateOne {
-	afuo.mutation.SetAlertID(u)
+// SetAlertInstanceID sets the "alert_instance_id" field.
+func (afuo *AlertFeedbackUpdateOne) SetAlertInstanceID(u uuid.UUID) *AlertFeedbackUpdateOne {
+	afuo.mutation.SetAlertInstanceID(u)
 	return afuo
 }
 
-// SetNillableAlertID sets the "alert_id" field if the given value is not nil.
-func (afuo *AlertFeedbackUpdateOne) SetNillableAlertID(u *uuid.UUID) *AlertFeedbackUpdateOne {
+// SetNillableAlertInstanceID sets the "alert_instance_id" field if the given value is not nil.
+func (afuo *AlertFeedbackUpdateOne) SetNillableAlertInstanceID(u *uuid.UUID) *AlertFeedbackUpdateOne {
 	if u != nil {
-		afuo.SetAlertID(*u)
-	}
-	return afuo
-}
-
-// SetAnnotationID sets the "annotation_id" field.
-func (afuo *AlertFeedbackUpdateOne) SetAnnotationID(u uuid.UUID) *AlertFeedbackUpdateOne {
-	afuo.mutation.SetAnnotationID(u)
-	return afuo
-}
-
-// SetNillableAnnotationID sets the "annotation_id" field if the given value is not nil.
-func (afuo *AlertFeedbackUpdateOne) SetNillableAnnotationID(u *uuid.UUID) *AlertFeedbackUpdateOne {
-	if u != nil {
-		afuo.SetAnnotationID(*u)
+		afuo.SetAlertInstanceID(*u)
 	}
 	return afuo
 }
@@ -382,14 +310,9 @@ func (afuo *AlertFeedbackUpdateOne) SetNillableDocumentationNeedsUpdate(b *bool)
 	return afuo
 }
 
-// SetAlert sets the "alert" edge to the Alert entity.
-func (afuo *AlertFeedbackUpdateOne) SetAlert(a *Alert) *AlertFeedbackUpdateOne {
-	return afuo.SetAlertID(a.ID)
-}
-
-// SetAnnotation sets the "annotation" edge to the OncallAnnotation entity.
-func (afuo *AlertFeedbackUpdateOne) SetAnnotation(o *OncallAnnotation) *AlertFeedbackUpdateOne {
-	return afuo.SetAnnotationID(o.ID)
+// SetAlertInstance sets the "alert_instance" edge to the AlertInstance entity.
+func (afuo *AlertFeedbackUpdateOne) SetAlertInstance(a *AlertInstance) *AlertFeedbackUpdateOne {
+	return afuo.SetAlertInstanceID(a.ID)
 }
 
 // Mutation returns the AlertFeedbackMutation object of the builder.
@@ -397,15 +320,9 @@ func (afuo *AlertFeedbackUpdateOne) Mutation() *AlertFeedbackMutation {
 	return afuo.mutation
 }
 
-// ClearAlert clears the "alert" edge to the Alert entity.
-func (afuo *AlertFeedbackUpdateOne) ClearAlert() *AlertFeedbackUpdateOne {
-	afuo.mutation.ClearAlert()
-	return afuo
-}
-
-// ClearAnnotation clears the "annotation" edge to the OncallAnnotation entity.
-func (afuo *AlertFeedbackUpdateOne) ClearAnnotation() *AlertFeedbackUpdateOne {
-	afuo.mutation.ClearAnnotation()
+// ClearAlertInstance clears the "alert_instance" edge to the AlertInstance entity.
+func (afuo *AlertFeedbackUpdateOne) ClearAlertInstance() *AlertFeedbackUpdateOne {
+	afuo.mutation.ClearAlertInstance()
 	return afuo
 }
 
@@ -459,11 +376,8 @@ func (afuo *AlertFeedbackUpdateOne) check() error {
 	if afuo.mutation.TenantCleared() && len(afuo.mutation.TenantIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "AlertFeedback.tenant"`)
 	}
-	if afuo.mutation.AlertCleared() && len(afuo.mutation.AlertIDs()) > 0 {
-		return errors.New(`ent: clearing a required unique edge "AlertFeedback.alert"`)
-	}
-	if afuo.mutation.AnnotationCleared() && len(afuo.mutation.AnnotationIDs()) > 0 {
-		return errors.New(`ent: clearing a required unique edge "AlertFeedback.annotation"`)
+	if afuo.mutation.AlertInstanceCleared() && len(afuo.mutation.AlertInstanceIDs()) > 0 {
+		return errors.New(`ent: clearing a required unique edge "AlertFeedback.alert_instance"`)
 	}
 	return nil
 }
@@ -515,57 +429,28 @@ func (afuo *AlertFeedbackUpdateOne) sqlSave(ctx context.Context) (_node *AlertFe
 	if value, ok := afuo.mutation.DocumentationNeedsUpdate(); ok {
 		_spec.SetField(alertfeedback.FieldDocumentationNeedsUpdate, field.TypeBool, value)
 	}
-	if afuo.mutation.AlertCleared() {
+	if afuo.mutation.AlertInstanceCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
-			Inverse: true,
-			Table:   alertfeedback.AlertTable,
-			Columns: []string{alertfeedback.AlertColumn},
+			Inverse: false,
+			Table:   alertfeedback.AlertInstanceTable,
+			Columns: []string{alertfeedback.AlertInstanceColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(alert.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(alertinstance.FieldID, field.TypeUUID),
 			},
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := afuo.mutation.AlertIDs(); len(nodes) > 0 {
+	if nodes := afuo.mutation.AlertInstanceIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
-			Inverse: true,
-			Table:   alertfeedback.AlertTable,
-			Columns: []string{alertfeedback.AlertColumn},
+			Inverse: false,
+			Table:   alertfeedback.AlertInstanceTable,
+			Columns: []string{alertfeedback.AlertInstanceColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(alert.FieldID, field.TypeUUID),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
-	}
-	if afuo.mutation.AnnotationCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2O,
-			Inverse: true,
-			Table:   alertfeedback.AnnotationTable,
-			Columns: []string{alertfeedback.AnnotationColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(oncallannotation.FieldID, field.TypeUUID),
-			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := afuo.mutation.AnnotationIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2O,
-			Inverse: true,
-			Table:   alertfeedback.AnnotationTable,
-			Columns: []string{alertfeedback.AnnotationColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(oncallannotation.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(alertinstance.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {

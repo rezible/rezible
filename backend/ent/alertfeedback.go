@@ -9,9 +9,8 @@ import (
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
 	"github.com/google/uuid"
-	"github.com/rezible/rezible/ent/alert"
 	"github.com/rezible/rezible/ent/alertfeedback"
-	"github.com/rezible/rezible/ent/oncallannotation"
+	"github.com/rezible/rezible/ent/alertinstance"
 	"github.com/rezible/rezible/ent/tenant"
 )
 
@@ -22,10 +21,8 @@ type AlertFeedback struct {
 	ID uuid.UUID `json:"id,omitempty"`
 	// TenantID holds the value of the "tenant_id" field.
 	TenantID int `json:"tenant_id,omitempty"`
-	// AlertID holds the value of the "alert_id" field.
-	AlertID uuid.UUID `json:"alert_id,omitempty"`
-	// AnnotationID holds the value of the "annotation_id" field.
-	AnnotationID uuid.UUID `json:"annotation_id,omitempty"`
+	// AlertInstanceID holds the value of the "alert_instance_id" field.
+	AlertInstanceID uuid.UUID `json:"alert_instance_id,omitempty"`
 	// Actionable holds the value of the "actionable" field.
 	Actionable bool `json:"actionable,omitempty"`
 	// Accurate holds the value of the "accurate" field.
@@ -44,13 +41,11 @@ type AlertFeedback struct {
 type AlertFeedbackEdges struct {
 	// Tenant holds the value of the tenant edge.
 	Tenant *Tenant `json:"tenant,omitempty"`
-	// Alert holds the value of the alert edge.
-	Alert *Alert `json:"alert,omitempty"`
-	// Annotation holds the value of the annotation edge.
-	Annotation *OncallAnnotation `json:"annotation,omitempty"`
+	// AlertInstance holds the value of the alert_instance edge.
+	AlertInstance *AlertInstance `json:"alert_instance,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [3]bool
+	loadedTypes [2]bool
 }
 
 // TenantOrErr returns the Tenant value or an error if the edge
@@ -64,26 +59,15 @@ func (e AlertFeedbackEdges) TenantOrErr() (*Tenant, error) {
 	return nil, &NotLoadedError{edge: "tenant"}
 }
 
-// AlertOrErr returns the Alert value or an error if the edge
+// AlertInstanceOrErr returns the AlertInstance value or an error if the edge
 // was not loaded in eager-loading, or loaded but was not found.
-func (e AlertFeedbackEdges) AlertOrErr() (*Alert, error) {
-	if e.Alert != nil {
-		return e.Alert, nil
+func (e AlertFeedbackEdges) AlertInstanceOrErr() (*AlertInstance, error) {
+	if e.AlertInstance != nil {
+		return e.AlertInstance, nil
 	} else if e.loadedTypes[1] {
-		return nil, &NotFoundError{label: alert.Label}
+		return nil, &NotFoundError{label: alertinstance.Label}
 	}
-	return nil, &NotLoadedError{edge: "alert"}
-}
-
-// AnnotationOrErr returns the Annotation value or an error if the edge
-// was not loaded in eager-loading, or loaded but was not found.
-func (e AlertFeedbackEdges) AnnotationOrErr() (*OncallAnnotation, error) {
-	if e.Annotation != nil {
-		return e.Annotation, nil
-	} else if e.loadedTypes[2] {
-		return nil, &NotFoundError{label: oncallannotation.Label}
-	}
-	return nil, &NotLoadedError{edge: "annotation"}
+	return nil, &NotLoadedError{edge: "alert_instance"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -97,7 +81,7 @@ func (*AlertFeedback) scanValues(columns []string) ([]any, error) {
 			values[i] = new(sql.NullInt64)
 		case alertfeedback.FieldAccurate:
 			values[i] = new(sql.NullString)
-		case alertfeedback.FieldID, alertfeedback.FieldAlertID, alertfeedback.FieldAnnotationID:
+		case alertfeedback.FieldID, alertfeedback.FieldAlertInstanceID:
 			values[i] = new(uuid.UUID)
 		default:
 			values[i] = new(sql.UnknownType)
@@ -126,17 +110,11 @@ func (af *AlertFeedback) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				af.TenantID = int(value.Int64)
 			}
-		case alertfeedback.FieldAlertID:
+		case alertfeedback.FieldAlertInstanceID:
 			if value, ok := values[i].(*uuid.UUID); !ok {
-				return fmt.Errorf("unexpected type %T for field alert_id", values[i])
+				return fmt.Errorf("unexpected type %T for field alert_instance_id", values[i])
 			} else if value != nil {
-				af.AlertID = *value
-			}
-		case alertfeedback.FieldAnnotationID:
-			if value, ok := values[i].(*uuid.UUID); !ok {
-				return fmt.Errorf("unexpected type %T for field annotation_id", values[i])
-			} else if value != nil {
-				af.AnnotationID = *value
+				af.AlertInstanceID = *value
 			}
 		case alertfeedback.FieldActionable:
 			if value, ok := values[i].(*sql.NullBool); !ok {
@@ -180,14 +158,9 @@ func (af *AlertFeedback) QueryTenant() *TenantQuery {
 	return NewAlertFeedbackClient(af.config).QueryTenant(af)
 }
 
-// QueryAlert queries the "alert" edge of the AlertFeedback entity.
-func (af *AlertFeedback) QueryAlert() *AlertQuery {
-	return NewAlertFeedbackClient(af.config).QueryAlert(af)
-}
-
-// QueryAnnotation queries the "annotation" edge of the AlertFeedback entity.
-func (af *AlertFeedback) QueryAnnotation() *OncallAnnotationQuery {
-	return NewAlertFeedbackClient(af.config).QueryAnnotation(af)
+// QueryAlertInstance queries the "alert_instance" edge of the AlertFeedback entity.
+func (af *AlertFeedback) QueryAlertInstance() *AlertInstanceQuery {
+	return NewAlertFeedbackClient(af.config).QueryAlertInstance(af)
 }
 
 // Update returns a builder for updating this AlertFeedback.
@@ -216,11 +189,8 @@ func (af *AlertFeedback) String() string {
 	builder.WriteString("tenant_id=")
 	builder.WriteString(fmt.Sprintf("%v", af.TenantID))
 	builder.WriteString(", ")
-	builder.WriteString("alert_id=")
-	builder.WriteString(fmt.Sprintf("%v", af.AlertID))
-	builder.WriteString(", ")
-	builder.WriteString("annotation_id=")
-	builder.WriteString(fmt.Sprintf("%v", af.AnnotationID))
+	builder.WriteString("alert_instance_id=")
+	builder.WriteString(fmt.Sprintf("%v", af.AlertInstanceID))
 	builder.WriteString(", ")
 	builder.WriteString("actionable=")
 	builder.WriteString(fmt.Sprintf("%v", af.Actionable))

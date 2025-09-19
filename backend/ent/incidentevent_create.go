@@ -13,6 +13,7 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
+	"github.com/rezible/rezible/ent/event"
 	"github.com/rezible/rezible/ent/incident"
 	"github.com/rezible/rezible/ent/incidentevent"
 	"github.com/rezible/rezible/ent/incidenteventcontext"
@@ -40,6 +41,20 @@ func (iec *IncidentEventCreate) SetTenantID(i int) *IncidentEventCreate {
 // SetIncidentID sets the "incident_id" field.
 func (iec *IncidentEventCreate) SetIncidentID(u uuid.UUID) *IncidentEventCreate {
 	iec.mutation.SetIncidentID(u)
+	return iec
+}
+
+// SetEventID sets the "event_id" field.
+func (iec *IncidentEventCreate) SetEventID(u uuid.UUID) *IncidentEventCreate {
+	iec.mutation.SetEventID(u)
+	return iec
+}
+
+// SetNillableEventID sets the "event_id" field if the given value is not nil.
+func (iec *IncidentEventCreate) SetNillableEventID(u *uuid.UUID) *IncidentEventCreate {
+	if u != nil {
+		iec.SetEventID(*u)
+	}
 	return iec
 }
 
@@ -173,6 +188,11 @@ func (iec *IncidentEventCreate) SetTenant(t *Tenant) *IncidentEventCreate {
 // SetIncident sets the "incident" edge to the Incident entity.
 func (iec *IncidentEventCreate) SetIncident(i *Incident) *IncidentEventCreate {
 	return iec.SetIncidentID(i.ID)
+}
+
+// SetEvent sets the "event" edge to the Event entity.
+func (iec *IncidentEventCreate) SetEvent(e *Event) *IncidentEventCreate {
+	return iec.SetEventID(e.ID)
 }
 
 // SetContextID sets the "context" edge to the IncidentEventContext entity by ID.
@@ -488,6 +508,23 @@ func (iec *IncidentEventCreate) createSpec() (*IncidentEvent, *sqlgraph.CreateSp
 		_node.IncidentID = nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
+	if nodes := iec.mutation.EventIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   incidentevent.EventTable,
+			Columns: []string{incidentevent.EventColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(event.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_node.EventID = nodes[0]
+		_spec.Edges = append(_spec.Edges, edge)
+	}
 	if nodes := iec.mutation.ContextIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2O,
@@ -636,6 +673,24 @@ func (u *IncidentEventUpsert) SetIncidentID(v uuid.UUID) *IncidentEventUpsert {
 // UpdateIncidentID sets the "incident_id" field to the value that was provided on create.
 func (u *IncidentEventUpsert) UpdateIncidentID() *IncidentEventUpsert {
 	u.SetExcluded(incidentevent.FieldIncidentID)
+	return u
+}
+
+// SetEventID sets the "event_id" field.
+func (u *IncidentEventUpsert) SetEventID(v uuid.UUID) *IncidentEventUpsert {
+	u.Set(incidentevent.FieldEventID, v)
+	return u
+}
+
+// UpdateEventID sets the "event_id" field to the value that was provided on create.
+func (u *IncidentEventUpsert) UpdateEventID() *IncidentEventUpsert {
+	u.SetExcluded(incidentevent.FieldEventID)
+	return u
+}
+
+// ClearEventID clears the value of the "event_id" field.
+func (u *IncidentEventUpsert) ClearEventID() *IncidentEventUpsert {
+	u.SetNull(incidentevent.FieldEventID)
 	return u
 }
 
@@ -833,6 +888,27 @@ func (u *IncidentEventUpsertOne) SetIncidentID(v uuid.UUID) *IncidentEventUpsert
 func (u *IncidentEventUpsertOne) UpdateIncidentID() *IncidentEventUpsertOne {
 	return u.Update(func(s *IncidentEventUpsert) {
 		s.UpdateIncidentID()
+	})
+}
+
+// SetEventID sets the "event_id" field.
+func (u *IncidentEventUpsertOne) SetEventID(v uuid.UUID) *IncidentEventUpsertOne {
+	return u.Update(func(s *IncidentEventUpsert) {
+		s.SetEventID(v)
+	})
+}
+
+// UpdateEventID sets the "event_id" field to the value that was provided on create.
+func (u *IncidentEventUpsertOne) UpdateEventID() *IncidentEventUpsertOne {
+	return u.Update(func(s *IncidentEventUpsert) {
+		s.UpdateEventID()
+	})
+}
+
+// ClearEventID clears the value of the "event_id" field.
+func (u *IncidentEventUpsertOne) ClearEventID() *IncidentEventUpsertOne {
+	return u.Update(func(s *IncidentEventUpsert) {
+		s.ClearEventID()
 	})
 }
 
@@ -1219,6 +1295,27 @@ func (u *IncidentEventUpsertBulk) SetIncidentID(v uuid.UUID) *IncidentEventUpser
 func (u *IncidentEventUpsertBulk) UpdateIncidentID() *IncidentEventUpsertBulk {
 	return u.Update(func(s *IncidentEventUpsert) {
 		s.UpdateIncidentID()
+	})
+}
+
+// SetEventID sets the "event_id" field.
+func (u *IncidentEventUpsertBulk) SetEventID(v uuid.UUID) *IncidentEventUpsertBulk {
+	return u.Update(func(s *IncidentEventUpsert) {
+		s.SetEventID(v)
+	})
+}
+
+// UpdateEventID sets the "event_id" field to the value that was provided on create.
+func (u *IncidentEventUpsertBulk) UpdateEventID() *IncidentEventUpsertBulk {
+	return u.Update(func(s *IncidentEventUpsert) {
+		s.UpdateEventID()
+	})
+}
+
+// ClearEventID clears the value of the "event_id" field.
+func (u *IncidentEventUpsertBulk) ClearEventID() *IncidentEventUpsertBulk {
+	return u.Update(func(s *IncidentEventUpsert) {
+		s.ClearEventID()
 	})
 }
 

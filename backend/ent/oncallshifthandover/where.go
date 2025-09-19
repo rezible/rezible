@@ -369,7 +369,7 @@ func HasPinnedAnnotations() predicate.OncallShiftHandover {
 }
 
 // HasPinnedAnnotationsWith applies the HasEdge predicate on the "pinned_annotations" edge with a given conditions (other predicates).
-func HasPinnedAnnotationsWith(preds ...predicate.OncallAnnotation) predicate.OncallShiftHandover {
+func HasPinnedAnnotationsWith(preds ...predicate.EventAnnotation) predicate.OncallShiftHandover {
 	return predicate.OncallShiftHandover(func(s *sql.Selector) {
 		step := newPinnedAnnotationsStep()
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {

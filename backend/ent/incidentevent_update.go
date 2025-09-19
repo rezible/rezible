@@ -12,6 +12,7 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
+	"github.com/rezible/rezible/ent/event"
 	"github.com/rezible/rezible/ent/incident"
 	"github.com/rezible/rezible/ent/incidentevent"
 	"github.com/rezible/rezible/ent/incidenteventcontext"
@@ -47,6 +48,26 @@ func (ieu *IncidentEventUpdate) SetNillableIncidentID(u *uuid.UUID) *IncidentEve
 	if u != nil {
 		ieu.SetIncidentID(*u)
 	}
+	return ieu
+}
+
+// SetEventID sets the "event_id" field.
+func (ieu *IncidentEventUpdate) SetEventID(u uuid.UUID) *IncidentEventUpdate {
+	ieu.mutation.SetEventID(u)
+	return ieu
+}
+
+// SetNillableEventID sets the "event_id" field if the given value is not nil.
+func (ieu *IncidentEventUpdate) SetNillableEventID(u *uuid.UUID) *IncidentEventUpdate {
+	if u != nil {
+		ieu.SetEventID(*u)
+	}
+	return ieu
+}
+
+// ClearEventID clears the value of the "event_id" field.
+func (ieu *IncidentEventUpdate) ClearEventID() *IncidentEventUpdate {
+	ieu.mutation.ClearEventID()
 	return ieu
 }
 
@@ -200,6 +221,11 @@ func (ieu *IncidentEventUpdate) SetIncident(i *Incident) *IncidentEventUpdate {
 	return ieu.SetIncidentID(i.ID)
 }
 
+// SetEvent sets the "event" edge to the Event entity.
+func (ieu *IncidentEventUpdate) SetEvent(e *Event) *IncidentEventUpdate {
+	return ieu.SetEventID(e.ID)
+}
+
 // SetContextID sets the "context" edge to the IncidentEventContext entity by ID.
 func (ieu *IncidentEventUpdate) SetContextID(id uuid.UUID) *IncidentEventUpdate {
 	ieu.mutation.SetContextID(id)
@@ -287,6 +313,12 @@ func (ieu *IncidentEventUpdate) Mutation() *IncidentEventMutation {
 // ClearIncident clears the "incident" edge to the Incident entity.
 func (ieu *IncidentEventUpdate) ClearIncident() *IncidentEventUpdate {
 	ieu.mutation.ClearIncident()
+	return ieu
+}
+
+// ClearEvent clears the "event" edge to the Event entity.
+func (ieu *IncidentEventUpdate) ClearEvent() *IncidentEventUpdate {
+	ieu.mutation.ClearEvent()
 	return ieu
 }
 
@@ -519,6 +551,35 @@ func (ieu *IncidentEventUpdate) sqlSave(ctx context.Context) (n int, err error) 
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(incident.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if ieu.mutation.EventCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   incidentevent.EventTable,
+			Columns: []string{incidentevent.EventColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(event.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := ieu.mutation.EventIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   incidentevent.EventTable,
+			Columns: []string{incidentevent.EventColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(event.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {
@@ -792,6 +853,26 @@ func (ieuo *IncidentEventUpdateOne) SetNillableIncidentID(u *uuid.UUID) *Inciden
 	return ieuo
 }
 
+// SetEventID sets the "event_id" field.
+func (ieuo *IncidentEventUpdateOne) SetEventID(u uuid.UUID) *IncidentEventUpdateOne {
+	ieuo.mutation.SetEventID(u)
+	return ieuo
+}
+
+// SetNillableEventID sets the "event_id" field if the given value is not nil.
+func (ieuo *IncidentEventUpdateOne) SetNillableEventID(u *uuid.UUID) *IncidentEventUpdateOne {
+	if u != nil {
+		ieuo.SetEventID(*u)
+	}
+	return ieuo
+}
+
+// ClearEventID clears the value of the "event_id" field.
+func (ieuo *IncidentEventUpdateOne) ClearEventID() *IncidentEventUpdateOne {
+	ieuo.mutation.ClearEventID()
+	return ieuo
+}
+
 // SetTimestamp sets the "timestamp" field.
 func (ieuo *IncidentEventUpdateOne) SetTimestamp(t time.Time) *IncidentEventUpdateOne {
 	ieuo.mutation.SetTimestamp(t)
@@ -942,6 +1023,11 @@ func (ieuo *IncidentEventUpdateOne) SetIncident(i *Incident) *IncidentEventUpdat
 	return ieuo.SetIncidentID(i.ID)
 }
 
+// SetEvent sets the "event" edge to the Event entity.
+func (ieuo *IncidentEventUpdateOne) SetEvent(e *Event) *IncidentEventUpdateOne {
+	return ieuo.SetEventID(e.ID)
+}
+
 // SetContextID sets the "context" edge to the IncidentEventContext entity by ID.
 func (ieuo *IncidentEventUpdateOne) SetContextID(id uuid.UUID) *IncidentEventUpdateOne {
 	ieuo.mutation.SetContextID(id)
@@ -1029,6 +1115,12 @@ func (ieuo *IncidentEventUpdateOne) Mutation() *IncidentEventMutation {
 // ClearIncident clears the "incident" edge to the Incident entity.
 func (ieuo *IncidentEventUpdateOne) ClearIncident() *IncidentEventUpdateOne {
 	ieuo.mutation.ClearIncident()
+	return ieuo
+}
+
+// ClearEvent clears the "event" edge to the Event entity.
+func (ieuo *IncidentEventUpdateOne) ClearEvent() *IncidentEventUpdateOne {
+	ieuo.mutation.ClearEvent()
 	return ieuo
 }
 
@@ -1291,6 +1383,35 @@ func (ieuo *IncidentEventUpdateOne) sqlSave(ctx context.Context) (_node *Inciden
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(incident.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if ieuo.mutation.EventCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   incidentevent.EventTable,
+			Columns: []string{incidentevent.EventColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(event.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := ieuo.mutation.EventIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   incidentevent.EventTable,
+			Columns: []string{incidentevent.EventColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(event.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {

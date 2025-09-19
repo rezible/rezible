@@ -14,8 +14,6 @@ import (
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/alert"
-	"github.com/rezible/rezible/ent/oncallannotation"
-	"github.com/rezible/rezible/ent/oncallevent"
 	"github.com/rezible/rezible/ent/oncallhandovertemplate"
 	"github.com/rezible/rezible/ent/oncallroster"
 	"github.com/rezible/rezible/ent/oncallrostermetrics"
@@ -180,36 +178,6 @@ func (orc *OncallRosterCreate) AddAlerts(a ...*Alert) *OncallRosterCreate {
 		ids[i] = a[i].ID
 	}
 	return orc.AddAlertIDs(ids...)
-}
-
-// AddEventIDs adds the "events" edge to the OncallEvent entity by IDs.
-func (orc *OncallRosterCreate) AddEventIDs(ids ...uuid.UUID) *OncallRosterCreate {
-	orc.mutation.AddEventIDs(ids...)
-	return orc
-}
-
-// AddEvents adds the "events" edges to the OncallEvent entity.
-func (orc *OncallRosterCreate) AddEvents(o ...*OncallEvent) *OncallRosterCreate {
-	ids := make([]uuid.UUID, len(o))
-	for i := range o {
-		ids[i] = o[i].ID
-	}
-	return orc.AddEventIDs(ids...)
-}
-
-// AddAnnotationIDs adds the "annotations" edge to the OncallAnnotation entity by IDs.
-func (orc *OncallRosterCreate) AddAnnotationIDs(ids ...uuid.UUID) *OncallRosterCreate {
-	orc.mutation.AddAnnotationIDs(ids...)
-	return orc
-}
-
-// AddAnnotations adds the "annotations" edges to the OncallAnnotation entity.
-func (orc *OncallRosterCreate) AddAnnotations(o ...*OncallAnnotation) *OncallRosterCreate {
-	ids := make([]uuid.UUID, len(o))
-	for i := range o {
-		ids[i] = o[i].ID
-	}
-	return orc.AddAnnotationIDs(ids...)
 }
 
 // AddTeamIDs adds the "teams" edge to the Team entity by IDs.
@@ -459,38 +427,6 @@ func (orc *OncallRosterCreate) createSpec() (*OncallRoster, *sqlgraph.CreateSpec
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(alert.FieldID, field.TypeUUID),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges = append(_spec.Edges, edge)
-	}
-	if nodes := orc.mutation.EventsIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   oncallroster.EventsTable,
-			Columns: []string{oncallroster.EventsColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(oncallevent.FieldID, field.TypeUUID),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges = append(_spec.Edges, edge)
-	}
-	if nodes := orc.mutation.AnnotationsIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   oncallroster.AnnotationsTable,
-			Columns: []string{oncallroster.AnnotationsColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(oncallannotation.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {

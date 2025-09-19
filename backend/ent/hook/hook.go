@@ -33,6 +33,18 @@ func (f AlertFeedbackFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Valu
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.AlertFeedbackMutation", m)
 }
 
+// The AlertInstanceFunc type is an adapter to allow the use of ordinary
+// function as AlertInstance mutator.
+type AlertInstanceFunc func(context.Context, *ent.AlertInstanceMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f AlertInstanceFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.AlertInstanceMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.AlertInstanceMutation", m)
+}
+
 // The DocumentFunc type is an adapter to allow the use of ordinary
 // function as Document mutator.
 type DocumentFunc func(context.Context, *ent.DocumentMutation) (ent.Value, error)
@@ -43,6 +55,30 @@ func (f DocumentFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, er
 		return f(ctx, mv)
 	}
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.DocumentMutation", m)
+}
+
+// The EventFunc type is an adapter to allow the use of ordinary
+// function as Event mutator.
+type EventFunc func(context.Context, *ent.EventMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f EventFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.EventMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.EventMutation", m)
+}
+
+// The EventAnnotationFunc type is an adapter to allow the use of ordinary
+// function as EventAnnotation mutator.
+type EventAnnotationFunc func(context.Context, *ent.EventAnnotationMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f EventAnnotationFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.EventAnnotationMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.EventAnnotationMutation", m)
 }
 
 // The IncidentFunc type is an adapter to allow the use of ordinary
@@ -295,30 +331,6 @@ func (f MeetingSessionFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Val
 		return f(ctx, mv)
 	}
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.MeetingSessionMutation", m)
-}
-
-// The OncallAnnotationFunc type is an adapter to allow the use of ordinary
-// function as OncallAnnotation mutator.
-type OncallAnnotationFunc func(context.Context, *ent.OncallAnnotationMutation) (ent.Value, error)
-
-// Mutate calls f(ctx, m).
-func (f OncallAnnotationFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
-	if mv, ok := m.(*ent.OncallAnnotationMutation); ok {
-		return f(ctx, mv)
-	}
-	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.OncallAnnotationMutation", m)
-}
-
-// The OncallEventFunc type is an adapter to allow the use of ordinary
-// function as OncallEvent mutator.
-type OncallEventFunc func(context.Context, *ent.OncallEventMutation) (ent.Value, error)
-
-// Mutate calls f(ctx, m).
-func (f OncallEventFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
-	if mv, ok := m.(*ent.OncallEventMutation); ok {
-		return f(ctx, mv)
-	}
-	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.OncallEventMutation", m)
 }
 
 // The OncallHandoverTemplateFunc type is an adapter to allow the use of ordinary

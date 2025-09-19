@@ -599,21 +599,21 @@ func HasOncallShiftsWith(preds ...predicate.OncallShift) predicate.User {
 	})
 }
 
-// HasOncallAnnotations applies the HasEdge predicate on the "oncall_annotations" edge.
-func HasOncallAnnotations() predicate.User {
+// HasEventAnnotations applies the HasEdge predicate on the "event_annotations" edge.
+func HasEventAnnotations() predicate.User {
 	return predicate.User(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, true, OncallAnnotationsTable, OncallAnnotationsColumn),
+			sqlgraph.Edge(sqlgraph.O2M, true, EventAnnotationsTable, EventAnnotationsColumn),
 		)
 		sqlgraph.HasNeighbors(s, step)
 	})
 }
 
-// HasOncallAnnotationsWith applies the HasEdge predicate on the "oncall_annotations" edge with a given conditions (other predicates).
-func HasOncallAnnotationsWith(preds ...predicate.OncallAnnotation) predicate.User {
+// HasEventAnnotationsWith applies the HasEdge predicate on the "event_annotations" edge with a given conditions (other predicates).
+func HasEventAnnotationsWith(preds ...predicate.EventAnnotation) predicate.User {
 	return predicate.User(func(s *sql.Selector) {
-		step := newOncallAnnotationsStep()
+		step := newEventAnnotationsStep()
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)

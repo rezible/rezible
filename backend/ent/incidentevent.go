@@ -10,6 +10,7 @@ import (
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
 	"github.com/google/uuid"
+	"github.com/rezible/rezible/ent/event"
 	"github.com/rezible/rezible/ent/incident"
 	"github.com/rezible/rezible/ent/incidentevent"
 	"github.com/rezible/rezible/ent/incidenteventcontext"
@@ -25,6 +26,8 @@ type IncidentEvent struct {
 	TenantID int `json:"tenant_id,omitempty"`
 	// IncidentID holds the value of the "incident_id" field.
 	IncidentID uuid.UUID `json:"incident_id,omitempty"`
+	// EventID holds the value of the "event_id" field.
+	EventID uuid.UUID `json:"event_id,omitempty"`
 	// Timestamp holds the value of the "timestamp" field.
 	Timestamp time.Time `json:"timestamp,omitempty"`
 	// Kind holds the value of the "kind" field.
@@ -57,6 +60,8 @@ type IncidentEventEdges struct {
 	Tenant *Tenant `json:"tenant,omitempty"`
 	// Incident holds the value of the incident edge.
 	Incident *Incident `json:"incident,omitempty"`
+	// Event holds the value of the event edge.
+	Event *Event `json:"event,omitempty"`
 	// Context holds the value of the context edge.
 	Context *IncidentEventContext `json:"context,omitempty"`
 	// Factors holds the value of the factors edge.
@@ -69,7 +74,7 @@ type IncidentEventEdges struct {
 	EventComponents []*IncidentEventSystemComponent `json:"event_components,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [7]bool
+	loadedTypes [8]bool
 }
 
 // TenantOrErr returns the Tenant value or an error if the edge
@@ -94,12 +99,23 @@ func (e IncidentEventEdges) IncidentOrErr() (*Incident, error) {
 	return nil, &NotLoadedError{edge: "incident"}
 }
 
+// EventOrErr returns the Event value or an error if the edge
+// was not loaded in eager-loading, or loaded but was not found.
+func (e IncidentEventEdges) EventOrErr() (*Event, error) {
+	if e.Event != nil {
+		return e.Event, nil
+	} else if e.loadedTypes[2] {
+		return nil, &NotFoundError{label: event.Label}
+	}
+	return nil, &NotLoadedError{edge: "event"}
+}
+
 // ContextOrErr returns the Context value or an error if the edge
 // was not loaded in eager-loading, or loaded but was not found.
 func (e IncidentEventEdges) ContextOrErr() (*IncidentEventContext, error) {
 	if e.Context != nil {
 		return e.Context, nil
-	} else if e.loadedTypes[2] {
+	} else if e.loadedTypes[3] {
 		return nil, &NotFoundError{label: incidenteventcontext.Label}
 	}
 	return nil, &NotLoadedError{edge: "context"}
@@ -108,7 +124,7 @@ func (e IncidentEventEdges) ContextOrErr() (*IncidentEventContext, error) {
 // FactorsOrErr returns the Factors value or an error if the edge
 // was not loaded in eager-loading.
 func (e IncidentEventEdges) FactorsOrErr() ([]*IncidentEventContributingFactor, error) {
-	if e.loadedTypes[3] {
+	if e.loadedTypes[4] {
 		return e.Factors, nil
 	}
 	return nil, &NotLoadedError{edge: "factors"}
@@ -117,7 +133,7 @@ func (e IncidentEventEdges) FactorsOrErr() ([]*IncidentEventContributingFactor, 
 // EvidenceOrErr returns the Evidence value or an error if the edge
 // was not loaded in eager-loading.
 func (e IncidentEventEdges) EvidenceOrErr() ([]*IncidentEventEvidence, error) {
-	if e.loadedTypes[4] {
+	if e.loadedTypes[5] {
 		return e.Evidence, nil
 	}
 	return nil, &NotLoadedError{edge: "evidence"}
@@ -126,7 +142,7 @@ func (e IncidentEventEdges) EvidenceOrErr() ([]*IncidentEventEvidence, error) {
 // SystemComponentsOrErr returns the SystemComponents value or an error if the edge
 // was not loaded in eager-loading.
 func (e IncidentEventEdges) SystemComponentsOrErr() ([]*SystemComponent, error) {
-	if e.loadedTypes[5] {
+	if e.loadedTypes[6] {
 		return e.SystemComponents, nil
 	}
 	return nil, &NotLoadedError{edge: "system_components"}
@@ -135,7 +151,7 @@ func (e IncidentEventEdges) SystemComponentsOrErr() ([]*SystemComponent, error) 
 // EventComponentsOrErr returns the EventComponents value or an error if the edge
 // was not loaded in eager-loading.
 func (e IncidentEventEdges) EventComponentsOrErr() ([]*IncidentEventSystemComponent, error) {
-	if e.loadedTypes[6] {
+	if e.loadedTypes[7] {
 		return e.EventComponents, nil
 	}
 	return nil, &NotLoadedError{edge: "event_components"}
@@ -154,7 +170,7 @@ func (*IncidentEvent) scanValues(columns []string) ([]any, error) {
 			values[i] = new(sql.NullString)
 		case incidentevent.FieldTimestamp, incidentevent.FieldCreatedAt, incidentevent.FieldUpdatedAt:
 			values[i] = new(sql.NullTime)
-		case incidentevent.FieldID, incidentevent.FieldIncidentID, incidentevent.FieldCreatedBy:
+		case incidentevent.FieldID, incidentevent.FieldIncidentID, incidentevent.FieldEventID, incidentevent.FieldCreatedBy:
 			values[i] = new(uuid.UUID)
 		default:
 			values[i] = new(sql.UnknownType)
@@ -188,6 +204,12 @@ func (ie *IncidentEvent) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field incident_id", values[i])
 			} else if value != nil {
 				ie.IncidentID = *value
+			}
+		case incidentevent.FieldEventID:
+			if value, ok := values[i].(*uuid.UUID); !ok {
+				return fmt.Errorf("unexpected type %T for field event_id", values[i])
+			} else if value != nil {
+				ie.EventID = *value
 			}
 		case incidentevent.FieldTimestamp:
 			if value, ok := values[i].(*sql.NullTime); !ok {
@@ -272,6 +294,11 @@ func (ie *IncidentEvent) QueryIncident() *IncidentQuery {
 	return NewIncidentEventClient(ie.config).QueryIncident(ie)
 }
 
+// QueryEvent queries the "event" edge of the IncidentEvent entity.
+func (ie *IncidentEvent) QueryEvent() *EventQuery {
+	return NewIncidentEventClient(ie.config).QueryEvent(ie)
+}
+
 // QueryContext queries the "context" edge of the IncidentEvent entity.
 func (ie *IncidentEvent) QueryContext() *IncidentEventContextQuery {
 	return NewIncidentEventClient(ie.config).QueryContext(ie)
@@ -325,6 +352,9 @@ func (ie *IncidentEvent) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("incident_id=")
 	builder.WriteString(fmt.Sprintf("%v", ie.IncidentID))
+	builder.WriteString(", ")
+	builder.WriteString("event_id=")
+	builder.WriteString(fmt.Sprintf("%v", ie.EventID))
 	builder.WriteString(", ")
 	builder.WriteString("timestamp=")
 	builder.WriteString(ie.Timestamp.Format(time.ANSIC))

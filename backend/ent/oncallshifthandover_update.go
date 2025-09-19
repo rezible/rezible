@@ -12,7 +12,7 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
-	"github.com/rezible/rezible/ent/oncallannotation"
+	"github.com/rezible/rezible/ent/eventannotation"
 	"github.com/rezible/rezible/ent/oncallshift"
 	"github.com/rezible/rezible/ent/oncallshifthandover"
 	"github.com/rezible/rezible/ent/predicate"
@@ -119,17 +119,17 @@ func (oshu *OncallShiftHandoverUpdate) SetShift(o *OncallShift) *OncallShiftHand
 	return oshu.SetShiftID(o.ID)
 }
 
-// AddPinnedAnnotationIDs adds the "pinned_annotations" edge to the OncallAnnotation entity by IDs.
+// AddPinnedAnnotationIDs adds the "pinned_annotations" edge to the EventAnnotation entity by IDs.
 func (oshu *OncallShiftHandoverUpdate) AddPinnedAnnotationIDs(ids ...uuid.UUID) *OncallShiftHandoverUpdate {
 	oshu.mutation.AddPinnedAnnotationIDs(ids...)
 	return oshu
 }
 
-// AddPinnedAnnotations adds the "pinned_annotations" edges to the OncallAnnotation entity.
-func (oshu *OncallShiftHandoverUpdate) AddPinnedAnnotations(o ...*OncallAnnotation) *OncallShiftHandoverUpdate {
-	ids := make([]uuid.UUID, len(o))
-	for i := range o {
-		ids[i] = o[i].ID
+// AddPinnedAnnotations adds the "pinned_annotations" edges to the EventAnnotation entity.
+func (oshu *OncallShiftHandoverUpdate) AddPinnedAnnotations(e ...*EventAnnotation) *OncallShiftHandoverUpdate {
+	ids := make([]uuid.UUID, len(e))
+	for i := range e {
+		ids[i] = e[i].ID
 	}
 	return oshu.AddPinnedAnnotationIDs(ids...)
 }
@@ -145,23 +145,23 @@ func (oshu *OncallShiftHandoverUpdate) ClearShift() *OncallShiftHandoverUpdate {
 	return oshu
 }
 
-// ClearPinnedAnnotations clears all "pinned_annotations" edges to the OncallAnnotation entity.
+// ClearPinnedAnnotations clears all "pinned_annotations" edges to the EventAnnotation entity.
 func (oshu *OncallShiftHandoverUpdate) ClearPinnedAnnotations() *OncallShiftHandoverUpdate {
 	oshu.mutation.ClearPinnedAnnotations()
 	return oshu
 }
 
-// RemovePinnedAnnotationIDs removes the "pinned_annotations" edge to OncallAnnotation entities by IDs.
+// RemovePinnedAnnotationIDs removes the "pinned_annotations" edge to EventAnnotation entities by IDs.
 func (oshu *OncallShiftHandoverUpdate) RemovePinnedAnnotationIDs(ids ...uuid.UUID) *OncallShiftHandoverUpdate {
 	oshu.mutation.RemovePinnedAnnotationIDs(ids...)
 	return oshu
 }
 
-// RemovePinnedAnnotations removes "pinned_annotations" edges to OncallAnnotation entities.
-func (oshu *OncallShiftHandoverUpdate) RemovePinnedAnnotations(o ...*OncallAnnotation) *OncallShiftHandoverUpdate {
-	ids := make([]uuid.UUID, len(o))
-	for i := range o {
-		ids[i] = o[i].ID
+// RemovePinnedAnnotations removes "pinned_annotations" edges to EventAnnotation entities.
+func (oshu *OncallShiftHandoverUpdate) RemovePinnedAnnotations(e ...*EventAnnotation) *OncallShiftHandoverUpdate {
+	ids := make([]uuid.UUID, len(e))
+	for i := range e {
+		ids[i] = e[i].ID
 	}
 	return oshu.RemovePinnedAnnotationIDs(ids...)
 }
@@ -277,7 +277,7 @@ func (oshu *OncallShiftHandoverUpdate) sqlSave(ctx context.Context) (n int, err 
 			Columns: oncallshifthandover.PinnedAnnotationsPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(oncallannotation.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(eventannotation.FieldID, field.TypeUUID),
 			},
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
@@ -290,7 +290,7 @@ func (oshu *OncallShiftHandoverUpdate) sqlSave(ctx context.Context) (n int, err 
 			Columns: oncallshifthandover.PinnedAnnotationsPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(oncallannotation.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(eventannotation.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {
@@ -306,7 +306,7 @@ func (oshu *OncallShiftHandoverUpdate) sqlSave(ctx context.Context) (n int, err 
 			Columns: oncallshifthandover.PinnedAnnotationsPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(oncallannotation.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(eventannotation.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {
@@ -423,17 +423,17 @@ func (oshuo *OncallShiftHandoverUpdateOne) SetShift(o *OncallShift) *OncallShift
 	return oshuo.SetShiftID(o.ID)
 }
 
-// AddPinnedAnnotationIDs adds the "pinned_annotations" edge to the OncallAnnotation entity by IDs.
+// AddPinnedAnnotationIDs adds the "pinned_annotations" edge to the EventAnnotation entity by IDs.
 func (oshuo *OncallShiftHandoverUpdateOne) AddPinnedAnnotationIDs(ids ...uuid.UUID) *OncallShiftHandoverUpdateOne {
 	oshuo.mutation.AddPinnedAnnotationIDs(ids...)
 	return oshuo
 }
 
-// AddPinnedAnnotations adds the "pinned_annotations" edges to the OncallAnnotation entity.
-func (oshuo *OncallShiftHandoverUpdateOne) AddPinnedAnnotations(o ...*OncallAnnotation) *OncallShiftHandoverUpdateOne {
-	ids := make([]uuid.UUID, len(o))
-	for i := range o {
-		ids[i] = o[i].ID
+// AddPinnedAnnotations adds the "pinned_annotations" edges to the EventAnnotation entity.
+func (oshuo *OncallShiftHandoverUpdateOne) AddPinnedAnnotations(e ...*EventAnnotation) *OncallShiftHandoverUpdateOne {
+	ids := make([]uuid.UUID, len(e))
+	for i := range e {
+		ids[i] = e[i].ID
 	}
 	return oshuo.AddPinnedAnnotationIDs(ids...)
 }
@@ -449,23 +449,23 @@ func (oshuo *OncallShiftHandoverUpdateOne) ClearShift() *OncallShiftHandoverUpda
 	return oshuo
 }
 
-// ClearPinnedAnnotations clears all "pinned_annotations" edges to the OncallAnnotation entity.
+// ClearPinnedAnnotations clears all "pinned_annotations" edges to the EventAnnotation entity.
 func (oshuo *OncallShiftHandoverUpdateOne) ClearPinnedAnnotations() *OncallShiftHandoverUpdateOne {
 	oshuo.mutation.ClearPinnedAnnotations()
 	return oshuo
 }
 
-// RemovePinnedAnnotationIDs removes the "pinned_annotations" edge to OncallAnnotation entities by IDs.
+// RemovePinnedAnnotationIDs removes the "pinned_annotations" edge to EventAnnotation entities by IDs.
 func (oshuo *OncallShiftHandoverUpdateOne) RemovePinnedAnnotationIDs(ids ...uuid.UUID) *OncallShiftHandoverUpdateOne {
 	oshuo.mutation.RemovePinnedAnnotationIDs(ids...)
 	return oshuo
 }
 
-// RemovePinnedAnnotations removes "pinned_annotations" edges to OncallAnnotation entities.
-func (oshuo *OncallShiftHandoverUpdateOne) RemovePinnedAnnotations(o ...*OncallAnnotation) *OncallShiftHandoverUpdateOne {
-	ids := make([]uuid.UUID, len(o))
-	for i := range o {
-		ids[i] = o[i].ID
+// RemovePinnedAnnotations removes "pinned_annotations" edges to EventAnnotation entities.
+func (oshuo *OncallShiftHandoverUpdateOne) RemovePinnedAnnotations(e ...*EventAnnotation) *OncallShiftHandoverUpdateOne {
+	ids := make([]uuid.UUID, len(e))
+	for i := range e {
+		ids[i] = e[i].ID
 	}
 	return oshuo.RemovePinnedAnnotationIDs(ids...)
 }
@@ -611,7 +611,7 @@ func (oshuo *OncallShiftHandoverUpdateOne) sqlSave(ctx context.Context) (_node *
 			Columns: oncallshifthandover.PinnedAnnotationsPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(oncallannotation.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(eventannotation.FieldID, field.TypeUUID),
 			},
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
@@ -624,7 +624,7 @@ func (oshuo *OncallShiftHandoverUpdateOne) sqlSave(ctx context.Context) (_node *
 			Columns: oncallshifthandover.PinnedAnnotationsPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(oncallannotation.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(eventannotation.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {
@@ -640,7 +640,7 @@ func (oshuo *OncallShiftHandoverUpdateOne) sqlSave(ctx context.Context) (_node *
 			Columns: oncallshifthandover.PinnedAnnotationsPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(oncallannotation.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(eventannotation.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {

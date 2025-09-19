@@ -12,8 +12,7 @@ import (
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/alert"
-	"github.com/rezible/rezible/ent/alertfeedback"
-	"github.com/rezible/rezible/ent/oncallevent"
+	"github.com/rezible/rezible/ent/alertinstance"
 	"github.com/rezible/rezible/ent/oncallroster"
 	"github.com/rezible/rezible/ent/playbook"
 	"github.com/rezible/rezible/ent/predicate"
@@ -141,34 +140,19 @@ func (au *AlertUpdate) SetRoster(o *OncallRoster) *AlertUpdate {
 	return au.SetRosterID(o.ID)
 }
 
-// AddEventIDs adds the "events" edge to the OncallEvent entity by IDs.
-func (au *AlertUpdate) AddEventIDs(ids ...uuid.UUID) *AlertUpdate {
-	au.mutation.AddEventIDs(ids...)
+// AddInstanceIDs adds the "instances" edge to the AlertInstance entity by IDs.
+func (au *AlertUpdate) AddInstanceIDs(ids ...uuid.UUID) *AlertUpdate {
+	au.mutation.AddInstanceIDs(ids...)
 	return au
 }
 
-// AddEvents adds the "events" edges to the OncallEvent entity.
-func (au *AlertUpdate) AddEvents(o ...*OncallEvent) *AlertUpdate {
-	ids := make([]uuid.UUID, len(o))
-	for i := range o {
-		ids[i] = o[i].ID
-	}
-	return au.AddEventIDs(ids...)
-}
-
-// AddFeedbackIDs adds the "feedback" edge to the AlertFeedback entity by IDs.
-func (au *AlertUpdate) AddFeedbackIDs(ids ...uuid.UUID) *AlertUpdate {
-	au.mutation.AddFeedbackIDs(ids...)
-	return au
-}
-
-// AddFeedback adds the "feedback" edges to the AlertFeedback entity.
-func (au *AlertUpdate) AddFeedback(a ...*AlertFeedback) *AlertUpdate {
+// AddInstances adds the "instances" edges to the AlertInstance entity.
+func (au *AlertUpdate) AddInstances(a ...*AlertInstance) *AlertUpdate {
 	ids := make([]uuid.UUID, len(a))
 	for i := range a {
 		ids[i] = a[i].ID
 	}
-	return au.AddFeedbackIDs(ids...)
+	return au.AddInstanceIDs(ids...)
 }
 
 // Mutation returns the AlertMutation object of the builder.
@@ -203,46 +187,25 @@ func (au *AlertUpdate) ClearRoster() *AlertUpdate {
 	return au
 }
 
-// ClearEvents clears all "events" edges to the OncallEvent entity.
-func (au *AlertUpdate) ClearEvents() *AlertUpdate {
-	au.mutation.ClearEvents()
+// ClearInstances clears all "instances" edges to the AlertInstance entity.
+func (au *AlertUpdate) ClearInstances() *AlertUpdate {
+	au.mutation.ClearInstances()
 	return au
 }
 
-// RemoveEventIDs removes the "events" edge to OncallEvent entities by IDs.
-func (au *AlertUpdate) RemoveEventIDs(ids ...uuid.UUID) *AlertUpdate {
-	au.mutation.RemoveEventIDs(ids...)
+// RemoveInstanceIDs removes the "instances" edge to AlertInstance entities by IDs.
+func (au *AlertUpdate) RemoveInstanceIDs(ids ...uuid.UUID) *AlertUpdate {
+	au.mutation.RemoveInstanceIDs(ids...)
 	return au
 }
 
-// RemoveEvents removes "events" edges to OncallEvent entities.
-func (au *AlertUpdate) RemoveEvents(o ...*OncallEvent) *AlertUpdate {
-	ids := make([]uuid.UUID, len(o))
-	for i := range o {
-		ids[i] = o[i].ID
-	}
-	return au.RemoveEventIDs(ids...)
-}
-
-// ClearFeedback clears all "feedback" edges to the AlertFeedback entity.
-func (au *AlertUpdate) ClearFeedback() *AlertUpdate {
-	au.mutation.ClearFeedback()
-	return au
-}
-
-// RemoveFeedbackIDs removes the "feedback" edge to AlertFeedback entities by IDs.
-func (au *AlertUpdate) RemoveFeedbackIDs(ids ...uuid.UUID) *AlertUpdate {
-	au.mutation.RemoveFeedbackIDs(ids...)
-	return au
-}
-
-// RemoveFeedback removes "feedback" edges to AlertFeedback entities.
-func (au *AlertUpdate) RemoveFeedback(a ...*AlertFeedback) *AlertUpdate {
+// RemoveInstances removes "instances" edges to AlertInstance entities.
+func (au *AlertUpdate) RemoveInstances(a ...*AlertInstance) *AlertUpdate {
 	ids := make([]uuid.UUID, len(a))
 	for i := range a {
 		ids[i] = a[i].ID
 	}
-	return au.RemoveFeedbackIDs(ids...)
+	return au.RemoveInstanceIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -390,28 +353,28 @@ func (au *AlertUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if au.mutation.EventsCleared() {
+	if au.mutation.InstancesCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   alert.EventsTable,
-			Columns: []string{alert.EventsColumn},
+			Inverse: false,
+			Table:   alert.InstancesTable,
+			Columns: []string{alert.InstancesColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(oncallevent.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(alertinstance.FieldID, field.TypeUUID),
 			},
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := au.mutation.RemovedEventsIDs(); len(nodes) > 0 && !au.mutation.EventsCleared() {
+	if nodes := au.mutation.RemovedInstancesIDs(); len(nodes) > 0 && !au.mutation.InstancesCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   alert.EventsTable,
-			Columns: []string{alert.EventsColumn},
+			Inverse: false,
+			Table:   alert.InstancesTable,
+			Columns: []string{alert.InstancesColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(oncallevent.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(alertinstance.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {
@@ -419,60 +382,15 @@ func (au *AlertUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := au.mutation.EventsIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   alert.EventsTable,
-			Columns: []string{alert.EventsColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(oncallevent.FieldID, field.TypeUUID),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
-	}
-	if au.mutation.FeedbackCleared() {
+	if nodes := au.mutation.InstancesIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   alert.FeedbackTable,
-			Columns: []string{alert.FeedbackColumn},
+			Table:   alert.InstancesTable,
+			Columns: []string{alert.InstancesColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(alertfeedback.FieldID, field.TypeUUID),
-			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := au.mutation.RemovedFeedbackIDs(); len(nodes) > 0 && !au.mutation.FeedbackCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   alert.FeedbackTable,
-			Columns: []string{alert.FeedbackColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(alertfeedback.FieldID, field.TypeUUID),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := au.mutation.FeedbackIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   alert.FeedbackTable,
-			Columns: []string{alert.FeedbackColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(alertfeedback.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(alertinstance.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {
@@ -610,34 +528,19 @@ func (auo *AlertUpdateOne) SetRoster(o *OncallRoster) *AlertUpdateOne {
 	return auo.SetRosterID(o.ID)
 }
 
-// AddEventIDs adds the "events" edge to the OncallEvent entity by IDs.
-func (auo *AlertUpdateOne) AddEventIDs(ids ...uuid.UUID) *AlertUpdateOne {
-	auo.mutation.AddEventIDs(ids...)
+// AddInstanceIDs adds the "instances" edge to the AlertInstance entity by IDs.
+func (auo *AlertUpdateOne) AddInstanceIDs(ids ...uuid.UUID) *AlertUpdateOne {
+	auo.mutation.AddInstanceIDs(ids...)
 	return auo
 }
 
-// AddEvents adds the "events" edges to the OncallEvent entity.
-func (auo *AlertUpdateOne) AddEvents(o ...*OncallEvent) *AlertUpdateOne {
-	ids := make([]uuid.UUID, len(o))
-	for i := range o {
-		ids[i] = o[i].ID
-	}
-	return auo.AddEventIDs(ids...)
-}
-
-// AddFeedbackIDs adds the "feedback" edge to the AlertFeedback entity by IDs.
-func (auo *AlertUpdateOne) AddFeedbackIDs(ids ...uuid.UUID) *AlertUpdateOne {
-	auo.mutation.AddFeedbackIDs(ids...)
-	return auo
-}
-
-// AddFeedback adds the "feedback" edges to the AlertFeedback entity.
-func (auo *AlertUpdateOne) AddFeedback(a ...*AlertFeedback) *AlertUpdateOne {
+// AddInstances adds the "instances" edges to the AlertInstance entity.
+func (auo *AlertUpdateOne) AddInstances(a ...*AlertInstance) *AlertUpdateOne {
 	ids := make([]uuid.UUID, len(a))
 	for i := range a {
 		ids[i] = a[i].ID
 	}
-	return auo.AddFeedbackIDs(ids...)
+	return auo.AddInstanceIDs(ids...)
 }
 
 // Mutation returns the AlertMutation object of the builder.
@@ -672,46 +575,25 @@ func (auo *AlertUpdateOne) ClearRoster() *AlertUpdateOne {
 	return auo
 }
 
-// ClearEvents clears all "events" edges to the OncallEvent entity.
-func (auo *AlertUpdateOne) ClearEvents() *AlertUpdateOne {
-	auo.mutation.ClearEvents()
+// ClearInstances clears all "instances" edges to the AlertInstance entity.
+func (auo *AlertUpdateOne) ClearInstances() *AlertUpdateOne {
+	auo.mutation.ClearInstances()
 	return auo
 }
 
-// RemoveEventIDs removes the "events" edge to OncallEvent entities by IDs.
-func (auo *AlertUpdateOne) RemoveEventIDs(ids ...uuid.UUID) *AlertUpdateOne {
-	auo.mutation.RemoveEventIDs(ids...)
+// RemoveInstanceIDs removes the "instances" edge to AlertInstance entities by IDs.
+func (auo *AlertUpdateOne) RemoveInstanceIDs(ids ...uuid.UUID) *AlertUpdateOne {
+	auo.mutation.RemoveInstanceIDs(ids...)
 	return auo
 }
 
-// RemoveEvents removes "events" edges to OncallEvent entities.
-func (auo *AlertUpdateOne) RemoveEvents(o ...*OncallEvent) *AlertUpdateOne {
-	ids := make([]uuid.UUID, len(o))
-	for i := range o {
-		ids[i] = o[i].ID
-	}
-	return auo.RemoveEventIDs(ids...)
-}
-
-// ClearFeedback clears all "feedback" edges to the AlertFeedback entity.
-func (auo *AlertUpdateOne) ClearFeedback() *AlertUpdateOne {
-	auo.mutation.ClearFeedback()
-	return auo
-}
-
-// RemoveFeedbackIDs removes the "feedback" edge to AlertFeedback entities by IDs.
-func (auo *AlertUpdateOne) RemoveFeedbackIDs(ids ...uuid.UUID) *AlertUpdateOne {
-	auo.mutation.RemoveFeedbackIDs(ids...)
-	return auo
-}
-
-// RemoveFeedback removes "feedback" edges to AlertFeedback entities.
-func (auo *AlertUpdateOne) RemoveFeedback(a ...*AlertFeedback) *AlertUpdateOne {
+// RemoveInstances removes "instances" edges to AlertInstance entities.
+func (auo *AlertUpdateOne) RemoveInstances(a ...*AlertInstance) *AlertUpdateOne {
 	ids := make([]uuid.UUID, len(a))
 	for i := range a {
 		ids[i] = a[i].ID
 	}
-	return auo.RemoveFeedbackIDs(ids...)
+	return auo.RemoveInstanceIDs(ids...)
 }
 
 // Where appends a list predicates to the AlertUpdate builder.
@@ -889,28 +771,28 @@ func (auo *AlertUpdateOne) sqlSave(ctx context.Context) (_node *Alert, err error
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if auo.mutation.EventsCleared() {
+	if auo.mutation.InstancesCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   alert.EventsTable,
-			Columns: []string{alert.EventsColumn},
+			Inverse: false,
+			Table:   alert.InstancesTable,
+			Columns: []string{alert.InstancesColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(oncallevent.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(alertinstance.FieldID, field.TypeUUID),
 			},
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := auo.mutation.RemovedEventsIDs(); len(nodes) > 0 && !auo.mutation.EventsCleared() {
+	if nodes := auo.mutation.RemovedInstancesIDs(); len(nodes) > 0 && !auo.mutation.InstancesCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   alert.EventsTable,
-			Columns: []string{alert.EventsColumn},
+			Inverse: false,
+			Table:   alert.InstancesTable,
+			Columns: []string{alert.InstancesColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(oncallevent.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(alertinstance.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {
@@ -918,60 +800,15 @@ func (auo *AlertUpdateOne) sqlSave(ctx context.Context) (_node *Alert, err error
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := auo.mutation.EventsIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   alert.EventsTable,
-			Columns: []string{alert.EventsColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(oncallevent.FieldID, field.TypeUUID),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
-	}
-	if auo.mutation.FeedbackCleared() {
+	if nodes := auo.mutation.InstancesIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   alert.FeedbackTable,
-			Columns: []string{alert.FeedbackColumn},
+			Table:   alert.InstancesTable,
+			Columns: []string{alert.InstancesColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(alertfeedback.FieldID, field.TypeUUID),
-			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := auo.mutation.RemovedFeedbackIDs(); len(nodes) > 0 && !auo.mutation.FeedbackCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   alert.FeedbackTable,
-			Columns: []string{alert.FeedbackColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(alertfeedback.FieldID, field.TypeUUID),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := auo.mutation.FeedbackIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   alert.FeedbackTable,
-			Columns: []string{alert.FeedbackColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(alertfeedback.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(alertinstance.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {

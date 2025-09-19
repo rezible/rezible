@@ -45,13 +45,11 @@ type AlertEdges struct {
 	Playbooks []*Playbook `json:"playbooks,omitempty"`
 	// Roster holds the value of the roster edge.
 	Roster *OncallRoster `json:"roster,omitempty"`
-	// Events holds the value of the events edge.
-	Events []*OncallEvent `json:"events,omitempty"`
-	// Feedback holds the value of the feedback edge.
-	Feedback []*AlertFeedback `json:"feedback,omitempty"`
+	// Instances holds the value of the instances edge.
+	Instances []*AlertInstance `json:"instances,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [5]bool
+	loadedTypes [4]bool
 }
 
 // TenantOrErr returns the Tenant value or an error if the edge
@@ -85,22 +83,13 @@ func (e AlertEdges) RosterOrErr() (*OncallRoster, error) {
 	return nil, &NotLoadedError{edge: "roster"}
 }
 
-// EventsOrErr returns the Events value or an error if the edge
+// InstancesOrErr returns the Instances value or an error if the edge
 // was not loaded in eager-loading.
-func (e AlertEdges) EventsOrErr() ([]*OncallEvent, error) {
+func (e AlertEdges) InstancesOrErr() ([]*AlertInstance, error) {
 	if e.loadedTypes[3] {
-		return e.Events, nil
+		return e.Instances, nil
 	}
-	return nil, &NotLoadedError{edge: "events"}
-}
-
-// FeedbackOrErr returns the Feedback value or an error if the edge
-// was not loaded in eager-loading.
-func (e AlertEdges) FeedbackOrErr() ([]*AlertFeedback, error) {
-	if e.loadedTypes[4] {
-		return e.Feedback, nil
-	}
-	return nil, &NotLoadedError{edge: "feedback"}
+	return nil, &NotLoadedError{edge: "instances"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -199,14 +188,9 @@ func (a *Alert) QueryRoster() *OncallRosterQuery {
 	return NewAlertClient(a.config).QueryRoster(a)
 }
 
-// QueryEvents queries the "events" edge of the Alert entity.
-func (a *Alert) QueryEvents() *OncallEventQuery {
-	return NewAlertClient(a.config).QueryEvents(a)
-}
-
-// QueryFeedback queries the "feedback" edge of the Alert entity.
-func (a *Alert) QueryFeedback() *AlertFeedbackQuery {
-	return NewAlertClient(a.config).QueryFeedback(a)
+// QueryInstances queries the "instances" edge of the Alert entity.
+func (a *Alert) QueryInstances() *AlertInstanceQuery {
+	return NewAlertClient(a.config).QueryInstances(a)
 }
 
 // Update returns a builder for updating this Alert.

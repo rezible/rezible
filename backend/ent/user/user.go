@@ -38,8 +38,8 @@ const (
 	EdgeOncallSchedules = "oncall_schedules"
 	// EdgeOncallShifts holds the string denoting the oncall_shifts edge name in mutations.
 	EdgeOncallShifts = "oncall_shifts"
-	// EdgeOncallAnnotations holds the string denoting the oncall_annotations edge name in mutations.
-	EdgeOncallAnnotations = "oncall_annotations"
+	// EdgeEventAnnotations holds the string denoting the event_annotations edge name in mutations.
+	EdgeEventAnnotations = "event_annotations"
 	// EdgeIncidents holds the string denoting the incidents edge name in mutations.
 	EdgeIncidents = "incidents"
 	// EdgeIncidentDebriefs holds the string denoting the incident_debriefs edge name in mutations.
@@ -89,13 +89,13 @@ const (
 	OncallShiftsInverseTable = "oncall_shifts"
 	// OncallShiftsColumn is the table column denoting the oncall_shifts relation/edge.
 	OncallShiftsColumn = "user_id"
-	// OncallAnnotationsTable is the table that holds the oncall_annotations relation/edge.
-	OncallAnnotationsTable = "oncall_annotations"
-	// OncallAnnotationsInverseTable is the table name for the OncallAnnotation entity.
-	// It exists in this package in order to avoid circular dependency with the "oncallannotation" package.
-	OncallAnnotationsInverseTable = "oncall_annotations"
-	// OncallAnnotationsColumn is the table column denoting the oncall_annotations relation/edge.
-	OncallAnnotationsColumn = "creator_id"
+	// EventAnnotationsTable is the table that holds the event_annotations relation/edge.
+	EventAnnotationsTable = "event_annotations"
+	// EventAnnotationsInverseTable is the table name for the EventAnnotation entity.
+	// It exists in this package in order to avoid circular dependency with the "eventannotation" package.
+	EventAnnotationsInverseTable = "event_annotations"
+	// EventAnnotationsColumn is the table column denoting the event_annotations relation/edge.
+	EventAnnotationsColumn = "creator_id"
 	// IncidentsTable is the table that holds the incidents relation/edge. The primary key declared below.
 	IncidentsTable = "incident_role_assignments"
 	// IncidentsInverseTable is the table name for the Incident entity.
@@ -308,17 +308,17 @@ func ByOncallShifts(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 	}
 }
 
-// ByOncallAnnotationsCount orders the results by oncall_annotations count.
-func ByOncallAnnotationsCount(opts ...sql.OrderTermOption) OrderOption {
+// ByEventAnnotationsCount orders the results by event_annotations count.
+func ByEventAnnotationsCount(opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborsCount(s, newOncallAnnotationsStep(), opts...)
+		sqlgraph.OrderByNeighborsCount(s, newEventAnnotationsStep(), opts...)
 	}
 }
 
-// ByOncallAnnotations orders the results by oncall_annotations terms.
-func ByOncallAnnotations(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+// ByEventAnnotations orders the results by event_annotations terms.
+func ByEventAnnotations(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborTerms(s, newOncallAnnotationsStep(), append([]sql.OrderTerm{term}, terms...)...)
+		sqlgraph.OrderByNeighborTerms(s, newEventAnnotationsStep(), append([]sql.OrderTerm{term}, terms...)...)
 	}
 }
 
@@ -468,11 +468,11 @@ func newOncallShiftsStep() *sqlgraph.Step {
 		sqlgraph.Edge(sqlgraph.O2M, true, OncallShiftsTable, OncallShiftsColumn),
 	)
 }
-func newOncallAnnotationsStep() *sqlgraph.Step {
+func newEventAnnotationsStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
-		sqlgraph.To(OncallAnnotationsInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.O2M, true, OncallAnnotationsTable, OncallAnnotationsColumn),
+		sqlgraph.To(EventAnnotationsInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, true, EventAnnotationsTable, EventAnnotationsColumn),
 	)
 }
 func newIncidentsStep() *sqlgraph.Step {

@@ -50,8 +50,8 @@ type UserEdges struct {
 	OncallSchedules []*OncallScheduleParticipant `json:"oncall_schedules,omitempty"`
 	// OncallShifts holds the value of the oncall_shifts edge.
 	OncallShifts []*OncallShift `json:"oncall_shifts,omitempty"`
-	// OncallAnnotations holds the value of the oncall_annotations edge.
-	OncallAnnotations []*OncallAnnotation `json:"oncall_annotations,omitempty"`
+	// EventAnnotations holds the value of the event_annotations edge.
+	EventAnnotations []*EventAnnotation `json:"event_annotations,omitempty"`
 	// Incidents holds the value of the incidents edge.
 	Incidents []*Incident `json:"incidents,omitempty"`
 	// IncidentDebriefs holds the value of the incident_debriefs edge.
@@ -120,13 +120,13 @@ func (e UserEdges) OncallShiftsOrErr() ([]*OncallShift, error) {
 	return nil, &NotLoadedError{edge: "oncall_shifts"}
 }
 
-// OncallAnnotationsOrErr returns the OncallAnnotations value or an error if the edge
+// EventAnnotationsOrErr returns the EventAnnotations value or an error if the edge
 // was not loaded in eager-loading.
-func (e UserEdges) OncallAnnotationsOrErr() ([]*OncallAnnotation, error) {
+func (e UserEdges) EventAnnotationsOrErr() ([]*EventAnnotation, error) {
 	if e.loadedTypes[5] {
-		return e.OncallAnnotations, nil
+		return e.EventAnnotations, nil
 	}
-	return nil, &NotLoadedError{edge: "oncall_annotations"}
+	return nil, &NotLoadedError{edge: "event_annotations"}
 }
 
 // IncidentsOrErr returns the Incidents value or an error if the edge
@@ -315,9 +315,9 @@ func (u *User) QueryOncallShifts() *OncallShiftQuery {
 	return NewUserClient(u.config).QueryOncallShifts(u)
 }
 
-// QueryOncallAnnotations queries the "oncall_annotations" edge of the User entity.
-func (u *User) QueryOncallAnnotations() *OncallAnnotationQuery {
-	return NewUserClient(u.config).QueryOncallAnnotations(u)
+// QueryEventAnnotations queries the "event_annotations" edge of the User entity.
+func (u *User) QueryEventAnnotations() *EventAnnotationQuery {
+	return NewUserClient(u.config).QueryEventAnnotations(u)
 }
 
 // QueryIncidents queries the "incidents" edge of the User entity.

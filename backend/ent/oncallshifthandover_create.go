@@ -13,7 +13,7 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
-	"github.com/rezible/rezible/ent/oncallannotation"
+	"github.com/rezible/rezible/ent/eventannotation"
 	"github.com/rezible/rezible/ent/oncallshift"
 	"github.com/rezible/rezible/ent/oncallshifthandover"
 	"github.com/rezible/rezible/ent/tenant"
@@ -117,17 +117,17 @@ func (oshc *OncallShiftHandoverCreate) SetShift(o *OncallShift) *OncallShiftHand
 	return oshc.SetShiftID(o.ID)
 }
 
-// AddPinnedAnnotationIDs adds the "pinned_annotations" edge to the OncallAnnotation entity by IDs.
+// AddPinnedAnnotationIDs adds the "pinned_annotations" edge to the EventAnnotation entity by IDs.
 func (oshc *OncallShiftHandoverCreate) AddPinnedAnnotationIDs(ids ...uuid.UUID) *OncallShiftHandoverCreate {
 	oshc.mutation.AddPinnedAnnotationIDs(ids...)
 	return oshc
 }
 
-// AddPinnedAnnotations adds the "pinned_annotations" edges to the OncallAnnotation entity.
-func (oshc *OncallShiftHandoverCreate) AddPinnedAnnotations(o ...*OncallAnnotation) *OncallShiftHandoverCreate {
-	ids := make([]uuid.UUID, len(o))
-	for i := range o {
-		ids[i] = o[i].ID
+// AddPinnedAnnotations adds the "pinned_annotations" edges to the EventAnnotation entity.
+func (oshc *OncallShiftHandoverCreate) AddPinnedAnnotations(e ...*EventAnnotation) *OncallShiftHandoverCreate {
+	ids := make([]uuid.UUID, len(e))
+	for i := range e {
+		ids[i] = e[i].ID
 	}
 	return oshc.AddPinnedAnnotationIDs(ids...)
 }
@@ -314,7 +314,7 @@ func (oshc *OncallShiftHandoverCreate) createSpec() (*OncallShiftHandover, *sqlg
 			Columns: oncallshifthandover.PinnedAnnotationsPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(oncallannotation.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(eventannotation.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {

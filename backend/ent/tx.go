@@ -16,10 +16,16 @@ type Tx struct {
 	Alert *AlertClient
 	// AlertFeedback is the client for interacting with the AlertFeedback builders.
 	AlertFeedback *AlertFeedbackClient
+	// AlertInstance is the client for interacting with the AlertInstance builders.
+	AlertInstance *AlertInstanceClient
 	// AlertMetrics is the client for interacting with the AlertMetrics builders.
 	AlertMetrics *AlertMetricsClient
 	// Document is the client for interacting with the Document builders.
 	Document *DocumentClient
+	// Event is the client for interacting with the Event builders.
+	Event *EventClient
+	// EventAnnotation is the client for interacting with the EventAnnotation builders.
+	EventAnnotation *EventAnnotationClient
 	// Incident is the client for interacting with the Incident builders.
 	Incident *IncidentClient
 	// IncidentDebrief is the client for interacting with the IncidentDebrief builders.
@@ -62,10 +68,6 @@ type Tx struct {
 	MeetingSchedule *MeetingScheduleClient
 	// MeetingSession is the client for interacting with the MeetingSession builders.
 	MeetingSession *MeetingSessionClient
-	// OncallAnnotation is the client for interacting with the OncallAnnotation builders.
-	OncallAnnotation *OncallAnnotationClient
-	// OncallEvent is the client for interacting with the OncallEvent builders.
-	OncallEvent *OncallEventClient
 	// OncallHandoverTemplate is the client for interacting with the OncallHandoverTemplate builders.
 	OncallHandoverTemplate *OncallHandoverTemplateClient
 	// OncallRoster is the client for interacting with the OncallRoster builders.
@@ -261,8 +263,11 @@ func (tx *Tx) Client() *Client {
 func (tx *Tx) init() {
 	tx.Alert = NewAlertClient(tx.config)
 	tx.AlertFeedback = NewAlertFeedbackClient(tx.config)
+	tx.AlertInstance = NewAlertInstanceClient(tx.config)
 	tx.AlertMetrics = NewAlertMetricsClient(tx.config)
 	tx.Document = NewDocumentClient(tx.config)
+	tx.Event = NewEventClient(tx.config)
+	tx.EventAnnotation = NewEventAnnotationClient(tx.config)
 	tx.Incident = NewIncidentClient(tx.config)
 	tx.IncidentDebrief = NewIncidentDebriefClient(tx.config)
 	tx.IncidentDebriefMessage = NewIncidentDebriefMessageClient(tx.config)
@@ -284,8 +289,6 @@ func (tx *Tx) init() {
 	tx.IncidentType = NewIncidentTypeClient(tx.config)
 	tx.MeetingSchedule = NewMeetingScheduleClient(tx.config)
 	tx.MeetingSession = NewMeetingSessionClient(tx.config)
-	tx.OncallAnnotation = NewOncallAnnotationClient(tx.config)
-	tx.OncallEvent = NewOncallEventClient(tx.config)
 	tx.OncallHandoverTemplate = NewOncallHandoverTemplateClient(tx.config)
 	tx.OncallRoster = NewOncallRosterClient(tx.config)
 	tx.OncallRosterMetrics = NewOncallRosterMetricsClient(tx.config)

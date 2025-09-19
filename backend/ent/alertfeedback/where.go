@@ -59,14 +59,9 @@ func TenantID(v int) predicate.AlertFeedback {
 	return predicate.AlertFeedback(sql.FieldEQ(FieldTenantID, v))
 }
 
-// AlertID applies equality check predicate on the "alert_id" field. It's identical to AlertIDEQ.
-func AlertID(v uuid.UUID) predicate.AlertFeedback {
-	return predicate.AlertFeedback(sql.FieldEQ(FieldAlertID, v))
-}
-
-// AnnotationID applies equality check predicate on the "annotation_id" field. It's identical to AnnotationIDEQ.
-func AnnotationID(v uuid.UUID) predicate.AlertFeedback {
-	return predicate.AlertFeedback(sql.FieldEQ(FieldAnnotationID, v))
+// AlertInstanceID applies equality check predicate on the "alert_instance_id" field. It's identical to AlertInstanceIDEQ.
+func AlertInstanceID(v uuid.UUID) predicate.AlertFeedback {
+	return predicate.AlertFeedback(sql.FieldEQ(FieldAlertInstanceID, v))
 }
 
 // Actionable applies equality check predicate on the "actionable" field. It's identical to ActionableEQ.
@@ -104,44 +99,24 @@ func TenantIDNotIn(vs ...int) predicate.AlertFeedback {
 	return predicate.AlertFeedback(sql.FieldNotIn(FieldTenantID, vs...))
 }
 
-// AlertIDEQ applies the EQ predicate on the "alert_id" field.
-func AlertIDEQ(v uuid.UUID) predicate.AlertFeedback {
-	return predicate.AlertFeedback(sql.FieldEQ(FieldAlertID, v))
+// AlertInstanceIDEQ applies the EQ predicate on the "alert_instance_id" field.
+func AlertInstanceIDEQ(v uuid.UUID) predicate.AlertFeedback {
+	return predicate.AlertFeedback(sql.FieldEQ(FieldAlertInstanceID, v))
 }
 
-// AlertIDNEQ applies the NEQ predicate on the "alert_id" field.
-func AlertIDNEQ(v uuid.UUID) predicate.AlertFeedback {
-	return predicate.AlertFeedback(sql.FieldNEQ(FieldAlertID, v))
+// AlertInstanceIDNEQ applies the NEQ predicate on the "alert_instance_id" field.
+func AlertInstanceIDNEQ(v uuid.UUID) predicate.AlertFeedback {
+	return predicate.AlertFeedback(sql.FieldNEQ(FieldAlertInstanceID, v))
 }
 
-// AlertIDIn applies the In predicate on the "alert_id" field.
-func AlertIDIn(vs ...uuid.UUID) predicate.AlertFeedback {
-	return predicate.AlertFeedback(sql.FieldIn(FieldAlertID, vs...))
+// AlertInstanceIDIn applies the In predicate on the "alert_instance_id" field.
+func AlertInstanceIDIn(vs ...uuid.UUID) predicate.AlertFeedback {
+	return predicate.AlertFeedback(sql.FieldIn(FieldAlertInstanceID, vs...))
 }
 
-// AlertIDNotIn applies the NotIn predicate on the "alert_id" field.
-func AlertIDNotIn(vs ...uuid.UUID) predicate.AlertFeedback {
-	return predicate.AlertFeedback(sql.FieldNotIn(FieldAlertID, vs...))
-}
-
-// AnnotationIDEQ applies the EQ predicate on the "annotation_id" field.
-func AnnotationIDEQ(v uuid.UUID) predicate.AlertFeedback {
-	return predicate.AlertFeedback(sql.FieldEQ(FieldAnnotationID, v))
-}
-
-// AnnotationIDNEQ applies the NEQ predicate on the "annotation_id" field.
-func AnnotationIDNEQ(v uuid.UUID) predicate.AlertFeedback {
-	return predicate.AlertFeedback(sql.FieldNEQ(FieldAnnotationID, v))
-}
-
-// AnnotationIDIn applies the In predicate on the "annotation_id" field.
-func AnnotationIDIn(vs ...uuid.UUID) predicate.AlertFeedback {
-	return predicate.AlertFeedback(sql.FieldIn(FieldAnnotationID, vs...))
-}
-
-// AnnotationIDNotIn applies the NotIn predicate on the "annotation_id" field.
-func AnnotationIDNotIn(vs ...uuid.UUID) predicate.AlertFeedback {
-	return predicate.AlertFeedback(sql.FieldNotIn(FieldAnnotationID, vs...))
+// AlertInstanceIDNotIn applies the NotIn predicate on the "alert_instance_id" field.
+func AlertInstanceIDNotIn(vs ...uuid.UUID) predicate.AlertFeedback {
+	return predicate.AlertFeedback(sql.FieldNotIn(FieldAlertInstanceID, vs...))
 }
 
 // ActionableEQ applies the EQ predicate on the "actionable" field.
@@ -217,44 +192,21 @@ func HasTenantWith(preds ...predicate.Tenant) predicate.AlertFeedback {
 	})
 }
 
-// HasAlert applies the HasEdge predicate on the "alert" edge.
-func HasAlert() predicate.AlertFeedback {
+// HasAlertInstance applies the HasEdge predicate on the "alert_instance" edge.
+func HasAlertInstance() predicate.AlertFeedback {
 	return predicate.AlertFeedback(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, true, AlertTable, AlertColumn),
+			sqlgraph.Edge(sqlgraph.M2O, false, AlertInstanceTable, AlertInstanceColumn),
 		)
 		sqlgraph.HasNeighbors(s, step)
 	})
 }
 
-// HasAlertWith applies the HasEdge predicate on the "alert" edge with a given conditions (other predicates).
-func HasAlertWith(preds ...predicate.Alert) predicate.AlertFeedback {
+// HasAlertInstanceWith applies the HasEdge predicate on the "alert_instance" edge with a given conditions (other predicates).
+func HasAlertInstanceWith(preds ...predicate.AlertInstance) predicate.AlertFeedback {
 	return predicate.AlertFeedback(func(s *sql.Selector) {
-		step := newAlertStep()
-		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
-			for _, p := range preds {
-				p(s)
-			}
-		})
-	})
-}
-
-// HasAnnotation applies the HasEdge predicate on the "annotation" edge.
-func HasAnnotation() predicate.AlertFeedback {
-	return predicate.AlertFeedback(func(s *sql.Selector) {
-		step := sqlgraph.NewStep(
-			sqlgraph.From(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.O2O, true, AnnotationTable, AnnotationColumn),
-		)
-		sqlgraph.HasNeighbors(s, step)
-	})
-}
-
-// HasAnnotationWith applies the HasEdge predicate on the "annotation" edge with a given conditions (other predicates).
-func HasAnnotationWith(preds ...predicate.OncallAnnotation) predicate.AlertFeedback {
-	return predicate.AlertFeedback(func(s *sql.Selector) {
-		step := newAnnotationStep()
+		step := newAlertInstanceStep()
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)

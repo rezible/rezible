@@ -20,6 +20,14 @@ func (c *AlertFeedbackClient) Debug() *AlertFeedbackClient {
 	return &AlertFeedbackClient{config: cfg}
 }
 
+func (c *AlertInstanceClient) Debug() *AlertInstanceClient {
+	if c.debug {
+		return c
+	}
+	cfg := config{driver: dialect.Debug(c.driver, c.log), log: c.log, debug: true, hooks: c.hooks, inters: c.inters}
+	return &AlertInstanceClient{config: cfg}
+}
+
 func (c *AlertMetricsClient) Debug() *AlertMetricsClient {
 	if c.debug {
 		return c
@@ -34,6 +42,22 @@ func (c *DocumentClient) Debug() *DocumentClient {
 	}
 	cfg := config{driver: dialect.Debug(c.driver, c.log), log: c.log, debug: true, hooks: c.hooks, inters: c.inters}
 	return &DocumentClient{config: cfg}
+}
+
+func (c *EventClient) Debug() *EventClient {
+	if c.debug {
+		return c
+	}
+	cfg := config{driver: dialect.Debug(c.driver, c.log), log: c.log, debug: true, hooks: c.hooks, inters: c.inters}
+	return &EventClient{config: cfg}
+}
+
+func (c *EventAnnotationClient) Debug() *EventAnnotationClient {
+	if c.debug {
+		return c
+	}
+	cfg := config{driver: dialect.Debug(c.driver, c.log), log: c.log, debug: true, hooks: c.hooks, inters: c.inters}
+	return &EventAnnotationClient{config: cfg}
 }
 
 func (c *IncidentClient) Debug() *IncidentClient {
@@ -202,22 +226,6 @@ func (c *MeetingSessionClient) Debug() *MeetingSessionClient {
 	}
 	cfg := config{driver: dialect.Debug(c.driver, c.log), log: c.log, debug: true, hooks: c.hooks, inters: c.inters}
 	return &MeetingSessionClient{config: cfg}
-}
-
-func (c *OncallAnnotationClient) Debug() *OncallAnnotationClient {
-	if c.debug {
-		return c
-	}
-	cfg := config{driver: dialect.Debug(c.driver, c.log), log: c.log, debug: true, hooks: c.hooks, inters: c.inters}
-	return &OncallAnnotationClient{config: cfg}
-}
-
-func (c *OncallEventClient) Debug() *OncallEventClient {
-	if c.debug {
-		return c
-	}
-	cfg := config{driver: dialect.Debug(c.driver, c.log), log: c.log, debug: true, hooks: c.hooks, inters: c.inters}
-	return &OncallEventClient{config: cfg}
 }
 
 func (c *OncallHandoverTemplateClient) Debug() *OncallHandoverTemplateClient {

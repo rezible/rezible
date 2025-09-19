@@ -159,6 +159,30 @@ func (f AlertFeedbackMutationRuleFunc) EvalMutation(ctx context.Context, m ent.M
 	return Denyf("ent/privacy: unexpected mutation type %T, expect *ent.AlertFeedbackMutation", m)
 }
 
+// The AlertInstanceQueryRuleFunc type is an adapter to allow the use of ordinary
+// functions as a query rule.
+type AlertInstanceQueryRuleFunc func(context.Context, *ent.AlertInstanceQuery) error
+
+// EvalQuery return f(ctx, q).
+func (f AlertInstanceQueryRuleFunc) EvalQuery(ctx context.Context, q ent.Query) error {
+	if q, ok := q.(*ent.AlertInstanceQuery); ok {
+		return f(ctx, q)
+	}
+	return Denyf("ent/privacy: unexpected query type %T, expect *ent.AlertInstanceQuery", q)
+}
+
+// The AlertInstanceMutationRuleFunc type is an adapter to allow the use of ordinary
+// functions as a mutation rule.
+type AlertInstanceMutationRuleFunc func(context.Context, *ent.AlertInstanceMutation) error
+
+// EvalMutation calls f(ctx, m).
+func (f AlertInstanceMutationRuleFunc) EvalMutation(ctx context.Context, m ent.Mutation) error {
+	if m, ok := m.(*ent.AlertInstanceMutation); ok {
+		return f(ctx, m)
+	}
+	return Denyf("ent/privacy: unexpected mutation type %T, expect *ent.AlertInstanceMutation", m)
+}
+
 // The AlertMetricsQueryRuleFunc type is an adapter to allow the use of ordinary
 // functions as a query rule.
 type AlertMetricsQueryRuleFunc func(context.Context, *ent.AlertMetricsQuery) error
@@ -193,6 +217,54 @@ func (f DocumentMutationRuleFunc) EvalMutation(ctx context.Context, m ent.Mutati
 		return f(ctx, m)
 	}
 	return Denyf("ent/privacy: unexpected mutation type %T, expect *ent.DocumentMutation", m)
+}
+
+// The EventQueryRuleFunc type is an adapter to allow the use of ordinary
+// functions as a query rule.
+type EventQueryRuleFunc func(context.Context, *ent.EventQuery) error
+
+// EvalQuery return f(ctx, q).
+func (f EventQueryRuleFunc) EvalQuery(ctx context.Context, q ent.Query) error {
+	if q, ok := q.(*ent.EventQuery); ok {
+		return f(ctx, q)
+	}
+	return Denyf("ent/privacy: unexpected query type %T, expect *ent.EventQuery", q)
+}
+
+// The EventMutationRuleFunc type is an adapter to allow the use of ordinary
+// functions as a mutation rule.
+type EventMutationRuleFunc func(context.Context, *ent.EventMutation) error
+
+// EvalMutation calls f(ctx, m).
+func (f EventMutationRuleFunc) EvalMutation(ctx context.Context, m ent.Mutation) error {
+	if m, ok := m.(*ent.EventMutation); ok {
+		return f(ctx, m)
+	}
+	return Denyf("ent/privacy: unexpected mutation type %T, expect *ent.EventMutation", m)
+}
+
+// The EventAnnotationQueryRuleFunc type is an adapter to allow the use of ordinary
+// functions as a query rule.
+type EventAnnotationQueryRuleFunc func(context.Context, *ent.EventAnnotationQuery) error
+
+// EvalQuery return f(ctx, q).
+func (f EventAnnotationQueryRuleFunc) EvalQuery(ctx context.Context, q ent.Query) error {
+	if q, ok := q.(*ent.EventAnnotationQuery); ok {
+		return f(ctx, q)
+	}
+	return Denyf("ent/privacy: unexpected query type %T, expect *ent.EventAnnotationQuery", q)
+}
+
+// The EventAnnotationMutationRuleFunc type is an adapter to allow the use of ordinary
+// functions as a mutation rule.
+type EventAnnotationMutationRuleFunc func(context.Context, *ent.EventAnnotationMutation) error
+
+// EvalMutation calls f(ctx, m).
+func (f EventAnnotationMutationRuleFunc) EvalMutation(ctx context.Context, m ent.Mutation) error {
+	if m, ok := m.(*ent.EventAnnotationMutation); ok {
+		return f(ctx, m)
+	}
+	return Denyf("ent/privacy: unexpected mutation type %T, expect *ent.EventAnnotationMutation", m)
 }
 
 // The IncidentQueryRuleFunc type is an adapter to allow the use of ordinary
@@ -697,54 +769,6 @@ func (f MeetingSessionMutationRuleFunc) EvalMutation(ctx context.Context, m ent.
 		return f(ctx, m)
 	}
 	return Denyf("ent/privacy: unexpected mutation type %T, expect *ent.MeetingSessionMutation", m)
-}
-
-// The OncallAnnotationQueryRuleFunc type is an adapter to allow the use of ordinary
-// functions as a query rule.
-type OncallAnnotationQueryRuleFunc func(context.Context, *ent.OncallAnnotationQuery) error
-
-// EvalQuery return f(ctx, q).
-func (f OncallAnnotationQueryRuleFunc) EvalQuery(ctx context.Context, q ent.Query) error {
-	if q, ok := q.(*ent.OncallAnnotationQuery); ok {
-		return f(ctx, q)
-	}
-	return Denyf("ent/privacy: unexpected query type %T, expect *ent.OncallAnnotationQuery", q)
-}
-
-// The OncallAnnotationMutationRuleFunc type is an adapter to allow the use of ordinary
-// functions as a mutation rule.
-type OncallAnnotationMutationRuleFunc func(context.Context, *ent.OncallAnnotationMutation) error
-
-// EvalMutation calls f(ctx, m).
-func (f OncallAnnotationMutationRuleFunc) EvalMutation(ctx context.Context, m ent.Mutation) error {
-	if m, ok := m.(*ent.OncallAnnotationMutation); ok {
-		return f(ctx, m)
-	}
-	return Denyf("ent/privacy: unexpected mutation type %T, expect *ent.OncallAnnotationMutation", m)
-}
-
-// The OncallEventQueryRuleFunc type is an adapter to allow the use of ordinary
-// functions as a query rule.
-type OncallEventQueryRuleFunc func(context.Context, *ent.OncallEventQuery) error
-
-// EvalQuery return f(ctx, q).
-func (f OncallEventQueryRuleFunc) EvalQuery(ctx context.Context, q ent.Query) error {
-	if q, ok := q.(*ent.OncallEventQuery); ok {
-		return f(ctx, q)
-	}
-	return Denyf("ent/privacy: unexpected query type %T, expect *ent.OncallEventQuery", q)
-}
-
-// The OncallEventMutationRuleFunc type is an adapter to allow the use of ordinary
-// functions as a mutation rule.
-type OncallEventMutationRuleFunc func(context.Context, *ent.OncallEventMutation) error
-
-// EvalMutation calls f(ctx, m).
-func (f OncallEventMutationRuleFunc) EvalMutation(ctx context.Context, m ent.Mutation) error {
-	if m, ok := m.(*ent.OncallEventMutation); ok {
-		return f(ctx, m)
-	}
-	return Denyf("ent/privacy: unexpected mutation type %T, expect *ent.OncallEventMutation", m)
 }
 
 // The OncallHandoverTemplateQueryRuleFunc type is an adapter to allow the use of ordinary
@@ -1530,9 +1554,15 @@ func queryFilter(q ent.Query) (Filter, error) {
 		return q.Filter(), nil
 	case *ent.AlertFeedbackQuery:
 		return q.Filter(), nil
+	case *ent.AlertInstanceQuery:
+		return q.Filter(), nil
 	case *ent.AlertMetricsQuery:
 		return q.Filter(), nil
 	case *ent.DocumentQuery:
+		return q.Filter(), nil
+	case *ent.EventQuery:
+		return q.Filter(), nil
+	case *ent.EventAnnotationQuery:
 		return q.Filter(), nil
 	case *ent.IncidentQuery:
 		return q.Filter(), nil
@@ -1575,10 +1605,6 @@ func queryFilter(q ent.Query) (Filter, error) {
 	case *ent.MeetingScheduleQuery:
 		return q.Filter(), nil
 	case *ent.MeetingSessionQuery:
-		return q.Filter(), nil
-	case *ent.OncallAnnotationQuery:
-		return q.Filter(), nil
-	case *ent.OncallEventQuery:
 		return q.Filter(), nil
 	case *ent.OncallHandoverTemplateQuery:
 		return q.Filter(), nil
@@ -1653,7 +1679,13 @@ func mutationFilter(m ent.Mutation) (Filter, error) {
 		return m.Filter(), nil
 	case *ent.AlertFeedbackMutation:
 		return m.Filter(), nil
+	case *ent.AlertInstanceMutation:
+		return m.Filter(), nil
 	case *ent.DocumentMutation:
+		return m.Filter(), nil
+	case *ent.EventMutation:
+		return m.Filter(), nil
+	case *ent.EventAnnotationMutation:
 		return m.Filter(), nil
 	case *ent.IncidentMutation:
 		return m.Filter(), nil
@@ -1696,10 +1728,6 @@ func mutationFilter(m ent.Mutation) (Filter, error) {
 	case *ent.MeetingScheduleMutation:
 		return m.Filter(), nil
 	case *ent.MeetingSessionMutation:
-		return m.Filter(), nil
-	case *ent.OncallAnnotationMutation:
-		return m.Filter(), nil
-	case *ent.OncallEventMutation:
 		return m.Filter(), nil
 	case *ent.OncallHandoverTemplateMutation:
 		return m.Filter(), nil

@@ -18,10 +18,8 @@ const (
 	FieldID = "id"
 	// FieldTenantID holds the string denoting the tenant_id field in the database.
 	FieldTenantID = "tenant_id"
-	// FieldAlertID holds the string denoting the alert_id field in the database.
-	FieldAlertID = "alert_id"
-	// FieldAnnotationID holds the string denoting the annotation_id field in the database.
-	FieldAnnotationID = "annotation_id"
+	// FieldAlertInstanceID holds the string denoting the alert_instance_id field in the database.
+	FieldAlertInstanceID = "alert_instance_id"
 	// FieldActionable holds the string denoting the actionable field in the database.
 	FieldActionable = "actionable"
 	// FieldAccurate holds the string denoting the accurate field in the database.
@@ -32,10 +30,8 @@ const (
 	FieldDocumentationNeedsUpdate = "documentation_needs_update"
 	// EdgeTenant holds the string denoting the tenant edge name in mutations.
 	EdgeTenant = "tenant"
-	// EdgeAlert holds the string denoting the alert edge name in mutations.
-	EdgeAlert = "alert"
-	// EdgeAnnotation holds the string denoting the annotation edge name in mutations.
-	EdgeAnnotation = "annotation"
+	// EdgeAlertInstance holds the string denoting the alert_instance edge name in mutations.
+	EdgeAlertInstance = "alert_instance"
 	// Table holds the table name of the alertfeedback in the database.
 	Table = "alert_feedbacks"
 	// TenantTable is the table that holds the tenant relation/edge.
@@ -45,28 +41,20 @@ const (
 	TenantInverseTable = "tenants"
 	// TenantColumn is the table column denoting the tenant relation/edge.
 	TenantColumn = "tenant_id"
-	// AlertTable is the table that holds the alert relation/edge.
-	AlertTable = "alert_feedbacks"
-	// AlertInverseTable is the table name for the Alert entity.
-	// It exists in this package in order to avoid circular dependency with the "alert" package.
-	AlertInverseTable = "alerts"
-	// AlertColumn is the table column denoting the alert relation/edge.
-	AlertColumn = "alert_id"
-	// AnnotationTable is the table that holds the annotation relation/edge.
-	AnnotationTable = "alert_feedbacks"
-	// AnnotationInverseTable is the table name for the OncallAnnotation entity.
-	// It exists in this package in order to avoid circular dependency with the "oncallannotation" package.
-	AnnotationInverseTable = "oncall_annotations"
-	// AnnotationColumn is the table column denoting the annotation relation/edge.
-	AnnotationColumn = "annotation_id"
+	// AlertInstanceTable is the table that holds the alert_instance relation/edge.
+	AlertInstanceTable = "alert_feedbacks"
+	// AlertInstanceInverseTable is the table name for the AlertInstance entity.
+	// It exists in this package in order to avoid circular dependency with the "alertinstance" package.
+	AlertInstanceInverseTable = "alert_instances"
+	// AlertInstanceColumn is the table column denoting the alert_instance relation/edge.
+	AlertInstanceColumn = "alert_instance_id"
 )
 
 // Columns holds all SQL columns for alertfeedback fields.
 var Columns = []string{
 	FieldID,
 	FieldTenantID,
-	FieldAlertID,
-	FieldAnnotationID,
+	FieldAlertInstanceID,
 	FieldActionable,
 	FieldAccurate,
 	FieldDocumentationAvailable,
@@ -132,14 +120,9 @@ func ByTenantID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldTenantID, opts...).ToFunc()
 }
 
-// ByAlertID orders the results by the alert_id field.
-func ByAlertID(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldAlertID, opts...).ToFunc()
-}
-
-// ByAnnotationID orders the results by the annotation_id field.
-func ByAnnotationID(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldAnnotationID, opts...).ToFunc()
+// ByAlertInstanceID orders the results by the alert_instance_id field.
+func ByAlertInstanceID(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldAlertInstanceID, opts...).ToFunc()
 }
 
 // ByActionable orders the results by the actionable field.
@@ -169,17 +152,10 @@ func ByTenantField(field string, opts ...sql.OrderTermOption) OrderOption {
 	}
 }
 
-// ByAlertField orders the results by alert field.
-func ByAlertField(field string, opts ...sql.OrderTermOption) OrderOption {
+// ByAlertInstanceField orders the results by alert_instance field.
+func ByAlertInstanceField(field string, opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborTerms(s, newAlertStep(), sql.OrderByField(field, opts...))
-	}
-}
-
-// ByAnnotationField orders the results by annotation field.
-func ByAnnotationField(field string, opts ...sql.OrderTermOption) OrderOption {
-	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborTerms(s, newAnnotationStep(), sql.OrderByField(field, opts...))
+		sqlgraph.OrderByNeighborTerms(s, newAlertInstanceStep(), sql.OrderByField(field, opts...))
 	}
 }
 func newTenantStep() *sqlgraph.Step {
@@ -189,17 +165,10 @@ func newTenantStep() *sqlgraph.Step {
 		sqlgraph.Edge(sqlgraph.M2O, false, TenantTable, TenantColumn),
 	)
 }
-func newAlertStep() *sqlgraph.Step {
+func newAlertInstanceStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
-		sqlgraph.To(AlertInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.M2O, true, AlertTable, AlertColumn),
-	)
-}
-func newAnnotationStep() *sqlgraph.Step {
-	return sqlgraph.NewStep(
-		sqlgraph.From(Table, FieldID),
-		sqlgraph.To(AnnotationInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.O2O, true, AnnotationTable, AnnotationColumn),
+		sqlgraph.To(AlertInstanceInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.M2O, false, AlertInstanceTable, AlertInstanceColumn),
 	)
 }

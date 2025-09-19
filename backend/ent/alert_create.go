@@ -13,8 +13,7 @@ import (
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/alert"
-	"github.com/rezible/rezible/ent/alertfeedback"
-	"github.com/rezible/rezible/ent/oncallevent"
+	"github.com/rezible/rezible/ent/alertinstance"
 	"github.com/rezible/rezible/ent/oncallroster"
 	"github.com/rezible/rezible/ent/playbook"
 	"github.com/rezible/rezible/ent/tenant"
@@ -127,34 +126,19 @@ func (ac *AlertCreate) SetRoster(o *OncallRoster) *AlertCreate {
 	return ac.SetRosterID(o.ID)
 }
 
-// AddEventIDs adds the "events" edge to the OncallEvent entity by IDs.
-func (ac *AlertCreate) AddEventIDs(ids ...uuid.UUID) *AlertCreate {
-	ac.mutation.AddEventIDs(ids...)
+// AddInstanceIDs adds the "instances" edge to the AlertInstance entity by IDs.
+func (ac *AlertCreate) AddInstanceIDs(ids ...uuid.UUID) *AlertCreate {
+	ac.mutation.AddInstanceIDs(ids...)
 	return ac
 }
 
-// AddEvents adds the "events" edges to the OncallEvent entity.
-func (ac *AlertCreate) AddEvents(o ...*OncallEvent) *AlertCreate {
-	ids := make([]uuid.UUID, len(o))
-	for i := range o {
-		ids[i] = o[i].ID
-	}
-	return ac.AddEventIDs(ids...)
-}
-
-// AddFeedbackIDs adds the "feedback" edge to the AlertFeedback entity by IDs.
-func (ac *AlertCreate) AddFeedbackIDs(ids ...uuid.UUID) *AlertCreate {
-	ac.mutation.AddFeedbackIDs(ids...)
-	return ac
-}
-
-// AddFeedback adds the "feedback" edges to the AlertFeedback entity.
-func (ac *AlertCreate) AddFeedback(a ...*AlertFeedback) *AlertCreate {
+// AddInstances adds the "instances" edges to the AlertInstance entity.
+func (ac *AlertCreate) AddInstances(a ...*AlertInstance) *AlertCreate {
 	ids := make([]uuid.UUID, len(a))
 	for i := range a {
 		ids[i] = a[i].ID
 	}
-	return ac.AddFeedbackIDs(ids...)
+	return ac.AddInstanceIDs(ids...)
 }
 
 // Mutation returns the AlertMutation object of the builder.
@@ -320,31 +304,15 @@ func (ac *AlertCreate) createSpec() (*Alert, *sqlgraph.CreateSpec) {
 		_node.RosterID = nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
-	if nodes := ac.mutation.EventsIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   alert.EventsTable,
-			Columns: []string{alert.EventsColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(oncallevent.FieldID, field.TypeUUID),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges = append(_spec.Edges, edge)
-	}
-	if nodes := ac.mutation.FeedbackIDs(); len(nodes) > 0 {
+	if nodes := ac.mutation.InstancesIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   alert.FeedbackTable,
-			Columns: []string{alert.FeedbackColumn},
+			Table:   alert.InstancesTable,
+			Columns: []string{alert.InstancesColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(alertfeedback.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(alertinstance.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {
