@@ -438,6 +438,15 @@ type (
 		UserID uuid.UUID
 	}
 
+	OncallRostersService interface {
+		ListRosters(context.Context, ListOncallRostersParams) (*ent.ListResult[*ent.OncallRoster], error)
+		GetRosterByID(ctx context.Context, id uuid.UUID) (*ent.OncallRoster, error)
+		GetRosterBySlug(ctx context.Context, slug string) (*ent.OncallRoster, error)
+		GetRosterByScheduleId(ctx context.Context, scheduleId uuid.UUID) (*ent.OncallRoster, error)
+
+		ListSchedules(ctx context.Context, params ListOncallSchedulesParams) (*ent.ListResult[*ent.OncallSchedule], error)
+	}
+
 	ListOncallShiftsParams struct {
 		ListParams
 		UserID uuid.UUID
@@ -445,29 +454,25 @@ type (
 		Window time.Duration
 	}
 
-	OncallService interface {
+	OncallShiftsService interface {
 		MakeScanShiftsPeriodicJob() jobs.PeriodicJob
 		HandlePeriodicScanShifts(context.Context, jobs.ScanOncallShifts) error
 		HandleEnsureShiftHandoverSent(context.Context, jobs.EnsureShiftHandoverSent) error
 		HandleEnsureShiftHandoverReminderSent(context.Context, jobs.EnsureShiftHandoverReminderSent) error
-		HandleGenerateShiftMetrics(context.Context, jobs.GenerateShiftMetrics) error
-
-		ListRosters(context.Context, ListOncallRostersParams) (*ent.ListResult[*ent.OncallRoster], error)
-		GetRosterByID(ctx context.Context, id uuid.UUID) (*ent.OncallRoster, error)
-		GetRosterBySlug(ctx context.Context, slug string) (*ent.OncallRoster, error)
-		GetRosterByScheduleId(ctx context.Context, scheduleId uuid.UUID) (*ent.OncallRoster, error)
-
-		ListSchedules(ctx context.Context, params ListOncallSchedulesParams) (*ent.ListResult[*ent.OncallSchedule], error)
 
 		ListShifts(ctx context.Context, params ListOncallShiftsParams) (*ent.ListResult[*ent.OncallShift], error)
 		GetShiftByID(ctx context.Context, id uuid.UUID) (*ent.OncallShift, error)
 		GetAdjacentShifts(ctx context.Context, id uuid.UUID) (*ent.OncallShift, *ent.OncallShift, error)
-		GetShiftMetrics(ctx context.Context, id uuid.UUID) (*ent.OncallShiftMetrics, error)
-		GetComparisonShiftMetrics(ctx context.Context, from, to time.Time) (*ent.OncallShiftMetrics, error)
 
 		GetShiftHandover(ctx context.Context, id uuid.UUID) (*ent.OncallShiftHandover, error)
 		GetHandoverForShift(ctx context.Context, shiftId uuid.UUID) (*ent.OncallShiftHandover, error)
 		UpdateShiftHandover(ctx context.Context, handover *ent.OncallShiftHandover) (*ent.OncallShiftHandover, error)
 		SendShiftHandover(ctx context.Context, id uuid.UUID) (*ent.OncallShiftHandover, error)
+	}
+
+	OncallMetricsService interface {
+		HandleGenerateShiftMetrics(context.Context, jobs.GenerateShiftMetrics) error
+		GetShiftMetrics(ctx context.Context, id uuid.UUID) (*ent.OncallShiftMetrics, error)
+		GetComparisonShiftMetrics(ctx context.Context, from, to time.Time) (*ent.OncallShiftMetrics, error)
 	}
 )

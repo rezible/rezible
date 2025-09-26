@@ -15,17 +15,18 @@ type oncallRostersHandler struct {
 	auth      rez.AuthService
 	users     rez.UserService
 	incidents rez.IncidentService
-	oncall    rez.OncallService
+	rosters   rez.OncallRostersService
+	shifts    rez.OncallShiftsService
 }
 
-func newOncallRostersHandler(auth rez.AuthService, users rez.UserService, inc rez.IncidentService, oncall rez.OncallService) *oncallRostersHandler {
-	return &oncallRostersHandler{auth: auth, users: users, incidents: inc, oncall: oncall}
+func newOncallRostersHandler(auth rez.AuthService, users rez.UserService, inc rez.IncidentService, rosters rez.OncallRostersService, shifts rez.OncallShiftsService) *oncallRostersHandler {
+	return &oncallRostersHandler{auth: auth, users: users, incidents: inc, rosters: rosters, shifts: shifts}
 }
 
 func (h *oncallRostersHandler) ListOncallRosters(ctx context.Context, request *oapi.ListOncallRostersRequest) (*oapi.ListOncallRostersResponse, error) {
 	var resp oapi.ListOncallRostersResponse
 
-	listRes, rostersErr := h.oncall.ListRosters(ctx, rez.ListOncallRostersParams{
+	listRes, rostersErr := h.rosters.ListRosters(ctx, rez.ListOncallRostersParams{
 		ListParams: request.ListParams(),
 		UserID:     request.UserId,
 	})
@@ -50,9 +51,9 @@ func (h *oncallRostersHandler) GetOncallRoster(ctx context.Context, request *oap
 	var roster *ent.OncallRoster
 	var rosterErr error
 	if request.Id.IsSlug {
-		roster, rosterErr = h.oncall.GetRosterBySlug(ctx, request.Id.Slug)
+		roster, rosterErr = h.rosters.GetRosterBySlug(ctx, request.Id.Slug)
 	} else {
-		roster, rosterErr = h.oncall.GetRosterByID(ctx, request.Id.UUID)
+		roster, rosterErr = h.rosters.GetRosterByID(ctx, request.Id.UUID)
 	}
 	if rosterErr != nil {
 		return nil, apiError("failed to get oncall roster", rosterErr)
@@ -152,7 +153,7 @@ func (h *oncallRostersHandler) GetUserOncallInformation(ctx context.Context, req
 		return nil, apiError("failed to get user", userErr)
 	}
 
-	memberRosters, rostersErr := h.oncall.ListRosters(ctx, rez.ListOncallRostersParams{
+	memberRosters, rostersErr := h.rosters.ListRosters(ctx, rez.ListOncallRostersParams{
 		UserID: userId,
 	})
 	if rostersErr != nil {
@@ -165,7 +166,7 @@ func (h *oncallRostersHandler) GetUserOncallInformation(ctx context.Context, req
 	}
 
 	oneWeek := time.Hour * 24 * 7
-	userShifts, shiftsErr := h.oncall.ListShifts(ctx, rez.ListOncallShiftsParams{
+	userShifts, shiftsErr := h.shifts.ListShifts(ctx, rez.ListOncallShiftsParams{
 		UserID: userId,
 		Anchor: time.Now(),
 		Window: oneWeek,

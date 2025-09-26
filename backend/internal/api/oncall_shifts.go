@@ -17,11 +17,11 @@ type oncallShiftsHandler struct {
 	auth      rez.AuthService
 	users     rez.UserService
 	incidents rez.IncidentService
-	oncall    rez.OncallService
+	shifts    rez.OncallShiftsService
 }
 
-func newOncallShiftsHandler(auth rez.AuthService, users rez.UserService, inc rez.IncidentService, oncall rez.OncallService) *oncallShiftsHandler {
-	return &oncallShiftsHandler{auth: auth, users: users, incidents: inc, oncall: oncall}
+func newOncallShiftsHandler(auth rez.AuthService, users rez.UserService, inc rez.IncidentService, shifts rez.OncallShiftsService) *oncallShiftsHandler {
+	return &oncallShiftsHandler{auth: auth, users: users, incidents: inc, shifts: shifts}
 }
 
 func (h *oncallShiftsHandler) ListOncallShifts(ctx context.Context, request *oapi.ListOncallShiftsRequest) (*oapi.ListOncallShiftsResponse, error) {
@@ -37,7 +37,7 @@ func (h *oncallShiftsHandler) ListOncallShifts(ctx context.Context, request *oap
 		listParams.Window = time.Minute
 	}
 
-	listRes, shiftsErr := h.oncall.ListShifts(ctx, listParams)
+	listRes, shiftsErr := h.shifts.ListShifts(ctx, listParams)
 	if shiftsErr != nil {
 		return nil, apiError("failed to list oncall shifts", shiftsErr)
 	}
@@ -56,7 +56,7 @@ func (h *oncallShiftsHandler) ListOncallShifts(ctx context.Context, request *oap
 func (h *oncallShiftsHandler) GetOncallShift(ctx context.Context, request *oapi.GetOncallShiftRequest) (*oapi.GetOncallShiftResponse, error) {
 	var resp oapi.GetOncallShiftResponse
 
-	shift, shiftErr := h.oncall.GetShiftByID(ctx, request.Id)
+	shift, shiftErr := h.shifts.GetShiftByID(ctx, request.Id)
 	if shiftErr != nil {
 		return nil, apiError("failed to query shift", shiftErr)
 	}
@@ -68,7 +68,7 @@ func (h *oncallShiftsHandler) GetOncallShift(ctx context.Context, request *oapi.
 func (h *oncallShiftsHandler) GetAdjacentOncallShifts(ctx context.Context, request *oapi.GetAdjacentOncallShiftsRequest) (*oapi.GetAdjacentOncallShiftsResponse, error) {
 	var resp oapi.GetAdjacentOncallShiftsResponse
 
-	prev, next, shiftErr := h.oncall.GetAdjacentShifts(ctx, request.Id)
+	prev, next, shiftErr := h.shifts.GetAdjacentShifts(ctx, request.Id)
 	if shiftErr != nil {
 		log.Debug().Err(shiftErr).Msg("GetAdjacentOncallShifts")
 		return nil, apiError("failed to query adjacent shifts", shiftErr)
@@ -140,7 +140,7 @@ func (h *oncallShiftsHandler) ArchiveOncallShiftHandoverTemplate(ctx context.Con
 func (h *oncallShiftsHandler) GetOncallShiftHandover(ctx context.Context, request *oapi.GetOncallShiftHandoverRequest) (*oapi.GetOncallShiftHandoverResponse, error) {
 	var resp oapi.GetOncallShiftHandoverResponse
 
-	handover, handoverErr := h.oncall.GetHandoverForShift(ctx, request.Id)
+	handover, handoverErr := h.shifts.GetHandoverForShift(ctx, request.Id)
 	if handoverErr != nil && !ent.IsNotFound(handoverErr) {
 		return nil, apiError("failed to get handover", handoverErr)
 	}
@@ -170,7 +170,7 @@ func (h *oncallShiftsHandler) UpdateOncallShiftHandover(ctx context.Context, req
 		}
 	}
 
-	updated, updateErr := h.oncall.UpdateShiftHandover(ctx, ho)
+	updated, updateErr := h.shifts.UpdateShiftHandover(ctx, ho)
 	if updateErr != nil {
 		return nil, apiError("failed to update handover", updateErr)
 	}
@@ -205,7 +205,7 @@ func (h *oncallShiftsHandler) SendOncallShiftHandover(ctx context.Context, reque
 	//	sections[i] = hoSec
 	//}
 
-	handover, sendErr := h.oncall.SendShiftHandover(ctx, request.Id)
+	handover, sendErr := h.shifts.SendShiftHandover(ctx, request.Id)
 	if sendErr != nil {
 		return nil, apiError("failed to send handover", sendErr)
 	}

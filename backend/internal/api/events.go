@@ -21,7 +21,7 @@ func (h *eventsHandler) GetEvent(ctx context.Context, req *oapi.GetEventRequest)
 
 	event, eventErr := h.events.GetEvent(ctx, req.Id)
 	if eventErr != nil {
-		return nil, apiError("failed to get oncall event", eventErr)
+		return nil, apiError("failed to get event", eventErr)
 	}
 	resp.Body.Data = oapi.EventFromEnt(event)
 
@@ -36,16 +36,6 @@ func (h *eventsHandler) ListEvents(ctx context.Context, req *oapi.ListEventsRequ
 		From:       req.From,
 		To:         req.To,
 	}
-
-	//if req.ShiftId != uuid.Nil {
-	//	shift, shiftErr := h.oncall.GetShiftByID(ctx, req.ShiftId)
-	//	if shiftErr != nil {
-	//		return nil, apiError("failed to query shift", shiftErr)
-	//	}
-	//	params.From = shift.StartAt
-	//	params.To = shift.EndAt
-	//	params.RosterID = shift.RosterID
-	//}
 
 	listRes, eventsErr := h.events.ListEvents(ctx, params)
 	if eventsErr != nil {

@@ -72,15 +72,11 @@ func (s *rezServer) setup() error {
 
 	dbc := db.Client()
 
-	frontendFiles, feFilesErr := http.GetEmbeddedFrontendFiles()
-	if feFilesErr != nil {
-		return fmt.Errorf("failed to make embedded frontend server: %w", feFilesErr)
-	}
-
 	configs, pcErr := postgres.NewProviderConfigService(dbc)
 	if pcErr != nil {
 		return fmt.Errorf("failed to create provider configs: %w", pcErr)
 	}
+	syncSvc := datasync.NewProviderSyncService(dbc, providers.NewProviderLoader(configs))
 
 	orgs, orgsErr := postgres.NewOrganizationsService(dbc)
 	if orgsErr != nil {
@@ -127,14 +123,24 @@ func (s *rezServer) setup() error {
 		return fmt.Errorf("prosemirror.NewDocumentsService: %w", docsErr)
 	}
 
-	incidents, incidentsErr := postgres.NewIncidentService(dbc, jobSvc, lms, chat, users)
+	incidents, incidentsErr := postgres.NewIncidentService(dbc, jobSvc, chat, users)
 	if incidentsErr != nil {
 		return fmt.Errorf("postgres.NewIncidentService: %w", incidentsErr)
 	}
 
-	oncall, oncallErr := postgres.NewOncallService(dbc, jobSvc, docs, chat, users, incidents)
-	if oncallErr != nil {
-		return fmt.Errorf("postgres.NewOncallService: %w", oncallErr)
+	rosters, rostersErr := postgres.NewOncallRostersService(dbc, jobSvc)
+	if rostersErr != nil {
+		return fmt.Errorf("postgres.NewOncallRostersService: %w", rostersErr)
+	}
+
+	shifts, shiftsErr := postgres.NewOncallShiftsService(dbc, jobSvc, chat)
+	if shiftsErr != nil {
+		return fmt.Errorf("postgres.NewOncallShiftsService: %w", shiftsErr)
+	}
+
+	oncallMetrics, oncallMetricsErr := postgres.NewOncallMetricsService(dbc, jobSvc, shifts)
+	if oncallMetricsErr != nil {
+		return fmt.Errorf("postgres.NewOncallMetricsService: %w", oncallMetricsErr)
 	}
 
 	debriefs, debriefsErr := postgres.NewDebriefService(dbc, jobSvc, lms, chat)
@@ -162,18 +168,23 @@ func (s *rezServer) setup() error {
 		return fmt.Errorf("postgres.NewPlaybookService: %w", playbooksErr)
 	}
 
-	apiHandler := api.NewHandler(dbc, auth, orgs, configs, users, incidents, debriefs, oncall, events, annos, docs, retros, components, alerts, playbooks)
+	frontendFS, feFSErr := http.GetEmbeddedFrontendFiles()
+	if feFSErr != nil {
+		return fmt.Errorf("failed to get embedded frontend files: %w", feFSErr)
+	}
+
+	jobsErr := s.registerJobs(syncSvc, shifts, oncallMetrics, debriefs)
+	if jobsErr != nil {
+		return fmt.Errorf("registering jobs: %w", jobsErr)
+	}
+
+	apiHandler := api.NewHandler(dbc, auth, orgs, configs, users, incidents, debriefs, rosters, shifts, oncallMetrics, events, annos, docs, retros, components, alerts, playbooks)
 	documentsHandler := docs.Handler()
 	webhookHandler := http.NewWebhooksHandler(chat)
 	mcpHandler := eino.NewMCPHandler(auth)
 
 	listenAddr := net.JoinHostPort(s.opts.Host, s.opts.Port)
-	s.httpServer = http.NewServer(listenAddr, auth, frontendFiles, apiHandler, documentsHandler, webhookHandler, mcpHandler)
-
-	syncSvc := datasync.NewProviderSyncService(dbc, providers.NewProviderLoader(configs))
-	if jobsErr := s.registerJobs(syncSvc, oncall, debriefs); jobsErr != nil {
-		return fmt.Errorf("registering jobs: %w", jobsErr)
-	}
+	s.httpServer = http.NewServer(listenAddr, auth, frontendFS, apiHandler, documentsHandler, webhookHandler, mcpHandler)
 
 	return nil
 }
@@ -223,15 +234,16 @@ func (s *rezServer) makeAuthService(ctx context.Context, orgs rez.OrganizationSe
 
 func (s *rezServer) registerJobs(
 	sync rez.ProviderSyncService,
-	oncall rez.OncallService,
+	shifts rez.OncallShiftsService,
+	oncallMetrics rez.OncallMetricsService,
 	debriefs rez.DebriefService,
 ) error {
 	river.RegisterPeriodicJob(sync.MakeSyncProviderDataPeriodicJob(), sync.SyncProviderData)
 
-	river.RegisterPeriodicJob(oncall.MakeScanShiftsPeriodicJob(), oncall.HandlePeriodicScanShifts)
-	river.RegisterWorkerFunc(oncall.HandleEnsureShiftHandoverReminderSent)
-	river.RegisterWorkerFunc(oncall.HandleEnsureShiftHandoverSent)
-	river.RegisterWorkerFunc(oncall.HandleGenerateShiftMetrics)
+	river.RegisterPeriodicJob(shifts.MakeScanShiftsPeriodicJob(), shifts.HandlePeriodicScanShifts)
+	river.RegisterWorkerFunc(shifts.HandleEnsureShiftHandoverReminderSent)
+	river.RegisterWorkerFunc(shifts.HandleEnsureShiftHandoverSent)
+	river.RegisterWorkerFunc(oncallMetrics.HandleGenerateShiftMetrics)
 
 	river.RegisterWorkerFunc(debriefs.HandleGenerateDebriefResponse)
 	river.RegisterWorkerFunc(debriefs.HandleGenerateSuggestions)

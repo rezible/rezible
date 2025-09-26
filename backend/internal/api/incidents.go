@@ -12,14 +12,14 @@ import (
 )
 
 type incidentsHandler struct {
-	incidents rez.IncidentService
 	db        *ent.Client
+	incidents rez.IncidentService
 }
 
 func newIncidentsHandler(db *ent.Client, incidents rez.IncidentService) *incidentsHandler {
 	return &incidentsHandler{
-		incidents: incidents,
 		db:        db,
+		incidents: incidents,
 	}
 }
 

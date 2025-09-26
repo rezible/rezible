@@ -2,6 +2,7 @@ package api
 
 import (
 	"context"
+
 	"github.com/rezible/rezible/ent"
 	"github.com/rezible/rezible/ent/incidentseverity"
 	"github.com/rezible/rezible/ent/schema"

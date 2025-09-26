@@ -31,14 +31,11 @@ func (OncallRoster) Fields() []ent.Field {
 		field.String("chat_handle").Optional(),
 		field.String("chat_channel_id").Optional(),
 		field.UUID("handover_template_id", uuid.UUID{}).Optional(),
-		//field.UUID("parent_id", uuid.UUID{}).Optional(),
 	}
 }
 
 func (OncallRoster) Indexes() []ent.Index {
-	return []ent.Index{
-		// index.Fields("id", "parent_id").Unique(),
-	}
+	return []ent.Index{}
 }
 
 // Edges of the OncallRoster.

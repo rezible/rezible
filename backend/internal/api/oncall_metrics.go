@@ -12,11 +12,11 @@ import (
 )
 
 type oncallMetricsHandler struct {
-	oncall rez.OncallService
+	metrics rez.OncallMetricsService
 }
 
-func newOncallMetricsHandler(oncall rez.OncallService) *oncallMetricsHandler {
-	return &oncallMetricsHandler{oncall: oncall}
+func newOncallMetricsHandler(metrics rez.OncallMetricsService) *oncallMetricsHandler {
+	return &oncallMetricsHandler{metrics: metrics}
 }
 
 func (h *oncallMetricsHandler) GetOncallRosterMetrics(ctx context.Context, request *oapi.GetOncallRosterMetricsRequest) (*oapi.GetOncallRosterMetricsResponse, error) {
@@ -31,12 +31,12 @@ func (h *oncallMetricsHandler) GetOncallShiftMetrics(ctx context.Context, reques
 	var metrics *ent.OncallShiftMetrics
 	var metricsErr error
 	if request.ShiftId != uuid.Nil {
-		metrics, metricsErr = h.oncall.GetShiftMetrics(ctx, request.ShiftId)
+		metrics, metricsErr = h.metrics.GetShiftMetrics(ctx, request.ShiftId)
 	} else {
 		// TODO: include in request
 		from := time.Now().Add(-time.Hour)
 		to := time.Now().Add(time.Hour)
-		metrics, metricsErr = h.oncall.GetComparisonShiftMetrics(ctx, from, to)
+		metrics, metricsErr = h.metrics.GetComparisonShiftMetrics(ctx, from, to)
 	}
 	if metricsErr != nil {
 		return nil, apiError("failed to get oncall shift metrics", metricsErr)
