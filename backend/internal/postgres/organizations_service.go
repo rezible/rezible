@@ -20,7 +20,7 @@ func NewOrganizationsService(db *ent.Client) (*OrganizationsService, error) {
 }
 
 func (s *OrganizationsService) GetCurrent(ctx context.Context) (*ent.Organization, error) {
-	// scoped by tenant id in content
+	// scoped by tenant id in context
 	return s.db.Organization.Query().First(ctx)
 }
 

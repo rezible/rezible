@@ -33,6 +33,7 @@ type rezServer struct {
 	db         *postgres.Database
 	jobs       *river.JobService
 	httpServer *http.Server
+	slackSvc   *slack.ChatService
 }
 
 func newRezibleServer(opts *Options) *rezServer {
@@ -107,6 +108,7 @@ func (s *rezServer) setup() error {
 	if chatErr != nil {
 		return fmt.Errorf("postgres.NewChatService: %w", chatErr)
 	}
+	s.slackSvc = chat
 
 	_, teamsErr := postgres.NewTeamService(dbc)
 	if teamsErr != nil {
@@ -257,6 +259,14 @@ func (s *rezServer) start() error {
 
 	if jobsErr := s.jobs.Start(access.SystemContext(ctx)); jobsErr != nil {
 		return fmt.Errorf("failed to start background jobs client: %w", jobsErr)
+	}
+
+	if slack.UseSocketMode() {
+		go func() {
+			if slackErr := s.slackSvc.RunSocketMode(access.AnonymousContext(ctx)); slackErr != nil {
+				log.Error().Err(slackErr).Msg("slack socket mode fail")
+			}
+		}()
 	}
 
 	if serverErr := s.httpServer.Start(access.AnonymousContext(ctx)); serverErr != nil {

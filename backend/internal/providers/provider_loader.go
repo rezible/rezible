@@ -85,6 +85,9 @@ func (l *ProviderLoader) GetIncidentDataProvider(ctx context.Context) (rez.Incid
 func (l *ProviderLoader) GetUserDataProvider(ctx context.Context) (rez.UserDataProvider, error) {
 	cfg, cfgErr := l.config.GetEnabledTypeConfig(ctx, providerconfig.ProviderTypeUsers)
 	if cfgErr != nil {
+		if rez.DebugMode {
+			return slack.DebugOnlyUserDataProvider(ctx)
+		}
 		return nil, cfgErr
 	}
 

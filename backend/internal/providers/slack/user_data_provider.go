@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"iter"
 
+	"github.com/rs/zerolog/log"
 	"github.com/slack-go/slack"
 
 	rez "github.com/rezible/rezible"
@@ -21,6 +22,22 @@ var _ rez.UserDataProvider = (*UserDataProvider)(nil)
 
 type UserDataProviderConfig struct {
 	WorkspaceIds []string `json:"workspace_ids"`
+}
+
+func DebugOnlyUserDataProvider(ctx context.Context) (*UserDataProvider, error) {
+	client, clientErr := rezslack.LoadClient()
+	if clientErr != nil {
+		return nil, clientErr
+	}
+	var ids []string
+	teams, _, teamsErr := client.ListTeamsContext(ctx, slack.ListTeamsParameters{})
+	if teamsErr != nil {
+		return nil, teamsErr
+	}
+	for _, team := range teams {
+		ids = append(ids, team.ID)
+	}
+	return &UserDataProvider{client: client, workspaceIds: ids}, nil
 }
 
 func NewUserDataProvider(cfg UserDataProviderConfig) (*UserDataProvider, error) {
@@ -53,6 +70,7 @@ func (p *UserDataProvider) PullUsers(ctx context.Context) iter.Seq2[*ent.User, e
 				return
 			}
 			for _, u := range slackUsers {
+				log.Debug().Interface("user", u).Msg("slack user")
 				if u.IsBot || u.ID == "USLACKBOT" {
 					continue
 				}
