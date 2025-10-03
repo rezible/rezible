@@ -4,22 +4,48 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"fmt"
 	"io"
 	"net/http"
+	"os"
 	"time"
 
+	"github.com/go-chi/chi/v5"
 	"github.com/rs/zerolog/log"
 	"github.com/slack-go/slack"
 	"github.com/slack-go/slack/slackevents"
 )
 
-var (
-	maxWebhookPayloadBytes = int64(4<<20 + 1) // 4 MB
-
-	createAnnotationActionCallbackID = "create_annotation"
+const (
+	signingSecretEnvVar = "SLACK_WEBHOOK_SIGNING_SECRET"
 )
 
-func (s *ChatService) verifyWebhook(w http.ResponseWriter, r *http.Request) error {
+var (
+	maxWebhookPayloadBytes = int64(4<<20 + 1) // 4 MB
+)
+
+type WebhookListener struct {
+	chatSvc       *ChatService
+	signingSecret string
+}
+
+func NewWebhookEventListener(chatSvc *ChatService) (*WebhookListener, error) {
+	signingSecret := os.Getenv(signingSecretEnvVar)
+	if signingSecret == "" && !UseSocketMode() {
+		return nil, fmt.Errorf("%s environment variable not set", signingSecretEnvVar)
+	}
+	return &WebhookListener{chatSvc: chatSvc, signingSecret: signingSecret}, nil
+}
+
+func (wl *WebhookListener) Handler() http.Handler {
+	mux := chi.NewMux()
+	mux.HandleFunc("/options", wl.handleOptionsWebhook)
+	mux.HandleFunc("/events", wl.handleEventsWebhook)
+	mux.HandleFunc("/interaction", wl.handleInteractionsWebhook)
+	return mux
+}
+
+func (wl *WebhookListener) verifyWebhook(w http.ResponseWriter, r *http.Request) error {
 	bodyReader := http.MaxBytesReader(w, r.Body, maxWebhookPayloadBytes)
 	body, bodyErr := io.ReadAll(bodyReader)
 	if bodyErr != nil {
@@ -27,7 +53,7 @@ func (s *ChatService) verifyWebhook(w http.ResponseWriter, r *http.Request) erro
 		return bodyErr
 	}
 
-	sv, svErr := slack.NewSecretsVerifier(r.Header, s.webhookSigningSecret)
+	sv, svErr := slack.NewSecretsVerifier(r.Header, wl.signingSecret)
 	if svErr != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		return svErr
@@ -48,8 +74,8 @@ func (s *ChatService) verifyWebhook(w http.ResponseWriter, r *http.Request) erro
 	return nil
 }
 
-func (s *ChatService) handleOptionsWebhook(w http.ResponseWriter, r *http.Request) {
-	if verifyErr := s.verifyWebhook(w, r); verifyErr != nil {
+func (wl *WebhookListener) handleOptionsWebhook(w http.ResponseWriter, r *http.Request) {
+	if verifyErr := wl.verifyWebhook(w, r); verifyErr != nil {
 		log.Error().Err(verifyErr).Msg("failed to verify webhook body")
 		return
 	}
@@ -59,8 +85,8 @@ func (s *ChatService) handleOptionsWebhook(w http.ResponseWriter, r *http.Reques
 	w.WriteHeader(http.StatusOK)
 }
 
-func (s *ChatService) handleEventsWebhook(w http.ResponseWriter, r *http.Request) {
-	if verifyErr := s.verifyWebhook(w, r); verifyErr != nil {
+func (wl *WebhookListener) handleEventsWebhook(w http.ResponseWriter, r *http.Request) {
+	if verifyErr := wl.verifyWebhook(w, r); verifyErr != nil {
 		log.Error().Err(verifyErr).Msg("failed to verify webhook body")
 		return
 	}
@@ -87,22 +113,35 @@ func (s *ChatService) handleEventsWebhook(w http.ResponseWriter, r *http.Request
 		w.Header().Set("Content-Type", "text")
 		_, writeErr := w.Write([]byte(res.Challenge))
 		if writeErr != nil {
-			log.Error().Err(writeErr).Msg("failed to write challenge response")
+			log.Error().Err(writeErr).Msg("failed to write url verification challenge response")
 		}
-	} else if ev.Type == slackevents.AppRateLimited {
+		return
+	}
+
+	if ev.Type == slackevents.AppRateLimited {
 		log.Warn().Msg("slack app rate limited")
 		w.WriteHeader(http.StatusOK)
-	} else if ev.Type == slackevents.CallbackEvent {
-		go s.handleEventsAPIEvent(ev)
-		w.WriteHeader(http.StatusOK)
-	} else {
-		log.Warn().Str("type", ev.Type).Msg("failed to handle event")
-		w.WriteHeader(http.StatusBadRequest)
+		return
 	}
+
+	if ev.Type == slackevents.CallbackEvent {
+		handled, cbErr := wl.chatSvc.onCallbackEventReceived(r.Context(), ev)
+		if cbErr != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+		} else if !handled {
+			w.WriteHeader(http.StatusBadRequest)
+		} else {
+			w.WriteHeader(http.StatusOK)
+		}
+		return
+	}
+
+	log.Warn().Str("type", ev.Type).Msg("didnt handle webhook event")
+	w.WriteHeader(http.StatusBadRequest)
 }
 
-func (s *ChatService) handleInteractionsWebhook(w http.ResponseWriter, r *http.Request) {
-	if verifyErr := s.verifyWebhook(w, r); verifyErr != nil {
+func (wl *WebhookListener) handleInteractionsWebhook(w http.ResponseWriter, r *http.Request) {
+	if verifyErr := wl.verifyWebhook(w, r); verifyErr != nil {
 		log.Error().Err(verifyErr).Msg("failed to verify webhook body")
 		return
 	}
@@ -119,14 +158,17 @@ func (s *ChatService) handleInteractionsWebhook(w http.ResponseWriter, r *http.R
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
+
 	ctx, cancel := context.WithTimeout(r.Context(), time.Second*3)
 	defer cancel()
-
-	if handlerErr := s.handleInteractionEvent(ctx, &ic); handlerErr != nil {
+	handled, handlerErr := wl.chatSvc.onInteractionEventReceived(ctx, &ic)
+	if handlerErr != nil {
 		log.Error().Err(handlerErr).Str("type", string(ic.Type)).Msg("failed to handle interaction")
 		w.WriteHeader(http.StatusInternalServerError)
-		return
+	} else if !handled {
+		log.Warn().Str("type", string(ic.Type)).Msg("didnt handle webhook interaction event")
+		w.WriteHeader(http.StatusBadRequest)
+	} else {
+		w.WriteHeader(http.StatusOK)
 	}
-
-	w.WriteHeader(http.StatusOK)
 }

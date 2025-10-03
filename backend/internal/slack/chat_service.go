@@ -3,7 +3,6 @@ package slack
 import (
 	"context"
 	"fmt"
-	"net/http"
 	"os"
 
 	rez "github.com/rezible/rezible"
@@ -14,18 +13,14 @@ import (
 )
 
 const (
-	botTokenEnvVar         = "SLACK_BOT_TOKEN"
-	appTokenEnvVar         = "SLACK_APP_TOKEN"
-	enableSocketModeEnvVar = "SLACK_USE_SOCKETMODE"
-	signingSecretEnvVar    = "SLACK_WEBHOOK_SIGNING_SECRET"
+	botTokenEnvVar = "SLACK_BOT_TOKEN"
+	appTokenEnvVar = "SLACK_APP_TOKEN"
 )
 
 type ChatService struct {
-	client               *slack.Client
-	webhookSigningSecret string
-
-	users rez.UserService
-	annos rez.EventAnnotationsService
+	client *slack.Client
+	users  rez.UserService
+	annos  rez.EventAnnotationsService
 }
 
 func LoadClient() (*slack.Client, error) {
@@ -45,24 +40,15 @@ func LoadClient() (*slack.Client, error) {
 	return client, nil
 }
 
-func UseSocketMode() bool {
-	return os.Getenv(enableSocketModeEnvVar) == "true"
-}
-
 func NewChatService(users rez.UserService, annos rez.EventAnnotationsService) (*ChatService, error) {
-	s := &ChatService{
-		users: users,
-		annos: annos,
-	}
 	client, clientErr := LoadClient()
 	if clientErr != nil {
 		return nil, clientErr
 	}
-	s.client = client
-
-	s.webhookSigningSecret = os.Getenv(signingSecretEnvVar)
-	if s.webhookSigningSecret == "" && !UseSocketMode() {
-		return nil, fmt.Errorf("%s environment variable not set", signingSecretEnvVar)
+	s := &ChatService{
+		users:  users,
+		annos:  annos,
+		client: client,
 	}
 	return s, nil
 }
@@ -74,14 +60,6 @@ func (s *ChatService) lookupChatUser(baseCtx context.Context, chatId string) (*e
 		return nil, nil, usrErr
 	}
 	return usr, access.TenantUserContext(baseCtx, usr.TenantID), nil
-}
-
-func (s *ChatService) GetWebhooksHandler() http.Handler {
-	mux := http.NewServeMux()
-	mux.HandleFunc("/slack/options", s.handleOptionsWebhook)
-	mux.HandleFunc("/slack/events", s.handleEventsWebhook)
-	mux.HandleFunc("/slack/interaction", s.handleInteractionsWebhook)
-	return mux
 }
 
 func (s *ChatService) sendMessage(ctx context.Context, channelId string, msgOpts ...slack.MsgOption) error {

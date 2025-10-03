@@ -3,19 +3,20 @@ package river
 import (
 	"context"
 	"fmt"
-	"github.com/rezible/rezible/jobs"
 	"time"
+
+	"github.com/rezible/rezible/jobs"
+
+	"log/slog"
 
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 	slogzerolog "github.com/samber/slog-zerolog/v2"
-	"log/slog"
 
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 
 	"github.com/riverqueue/river"
-	"github.com/riverqueue/river/riverdriver"
 	"github.com/riverqueue/river/riverdriver/riverpgxv5"
 	"github.com/riverqueue/river/rivermigrate"
 	"github.com/riverqueue/river/rivertype"
@@ -31,9 +32,7 @@ var (
 type (
 	pgxClient  = river.Client[pgx.Tx]
 	JobService struct {
-		driver    riverdriver.Driver[pgx.Tx]
-		clientCfg *river.Config
-		client    *pgxClient
+		client *pgxClient
 	}
 
 	Job[T jobs.JobArgs]    = river.Job[T]
@@ -57,10 +56,12 @@ func NewJobService(pool *pgxpool.Pool) (*JobService, error) {
 		PeriodicJobs: periodicJobs,
 	}
 
-	svc := &JobService{
-		driver:    riverpgxv5.New(pool),
-		clientCfg: cfg,
+	client, clientErr := river.NewClient(riverpgxv5.New(pool), cfg)
+	if clientErr != nil {
+		return nil, fmt.Errorf("failed to create client: %w", clientErr)
 	}
+
+	svc := &JobService{client: client}
 
 	return svc, nil
 }
@@ -113,12 +114,11 @@ func RunMigrations(ctx context.Context, pool *pgxpool.Pool) error {
 }
 
 func (s *JobService) Start(ctx context.Context) error {
-	s.clientCfg.PeriodicJobs = periodicJobs
-	client, clientErr := river.NewClient(s.driver, s.clientCfg)
-	if clientErr != nil {
-		return fmt.Errorf("could not create river client: %w", clientErr)
+	pj := s.client.PeriodicJobs()
+	_, pjErr := pj.AddManySafely(periodicJobs)
+	if pjErr != nil {
+		return fmt.Errorf("failed to add periodic jobs: %w", pjErr)
 	}
-	s.client = client
 	return s.client.Start(ctx)
 }
 

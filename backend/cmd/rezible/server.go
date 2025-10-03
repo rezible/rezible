@@ -9,9 +9,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/rs/zerolog"
-	"github.com/rs/zerolog/log"
-
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/access"
 	"github.com/rezible/rezible/internal/api"
@@ -25,6 +22,8 @@ import (
 	"github.com/rezible/rezible/internal/river"
 	"github.com/rezible/rezible/internal/saml"
 	"github.com/rezible/rezible/internal/slack"
+	"github.com/rs/zerolog"
+	"github.com/rs/zerolog/log"
 )
 
 type rezServer struct {
@@ -33,7 +32,8 @@ type rezServer struct {
 	db         *postgres.Database
 	jobs       *river.JobService
 	httpServer *http.Server
-	slackSvc   *slack.ChatService
+
+	slackSocketListener *slack.SocketModeListener
 }
 
 func newRezibleServer(opts *Options) *rezServer {
@@ -45,14 +45,49 @@ func newRezibleServer(opts *Options) *rezServer {
 	return &rezServer{opts: opts}
 }
 
-func (s *rezServer) Start() {
+func (s *rezServer) Start(ctx context.Context) error {
 	if setupErr := s.setup(); setupErr != nil {
-		s.Stop()
-		log.Fatal().Err(setupErr).Msg("failed to setup rezible server")
+		return fmt.Errorf("failed to setup server: %w", setupErr)
 	}
 
-	if startErr := s.start(); startErr != nil {
-		log.Fatal().Err(startErr).Msg("rezServer.start")
+	if jobsErr := s.jobs.Start(access.SystemContext(ctx)); jobsErr != nil {
+		return fmt.Errorf("failed to start background jobs client: %w", jobsErr)
+	}
+
+	if s.slackSocketListener != nil {
+		if slErr := s.slackSocketListener.Start(ctx); slErr != nil {
+			return fmt.Errorf("failed to start slack socket listener: %w", slErr)
+		}
+	}
+
+	return s.httpServer.Start(ctx)
+}
+
+func (s *rezServer) Stop(ctx context.Context) {
+	timeout := time.Duration(s.opts.StopTimeoutSeconds) * time.Second
+	timeoutCtx, cancelStopCtx := context.WithTimeout(ctx, timeout)
+	defer cancelStopCtx()
+
+	if s.jobs != nil {
+		if jobsErr := s.jobs.Stop(timeoutCtx); jobsErr != nil {
+			log.Error().Err(jobsErr).Msg("failed to stop jobs client")
+		}
+	}
+
+	if s.slackSocketListener != nil {
+		if slErr := s.slackSocketListener.Stop(timeoutCtx); slErr != nil {
+			log.Error().Err(slErr).Msg("failed to stop slack socket listener")
+		}
+	}
+
+	if s.httpServer != nil {
+		if srvErr := s.httpServer.Stop(timeoutCtx); srvErr != nil {
+			log.Error().Err(srvErr).Msg("failed to stop http server")
+		}
+	}
+
+	if s.db != nil {
+		s.db.Close()
 	}
 }
 
@@ -108,7 +143,6 @@ func (s *rezServer) setup() error {
 	if chatErr != nil {
 		return fmt.Errorf("postgres.NewChatService: %w", chatErr)
 	}
-	s.slackSvc = chat
 
 	_, teamsErr := postgres.NewTeamService(dbc)
 	if teamsErr != nil {
@@ -170,23 +204,40 @@ func (s *rezServer) setup() error {
 		return fmt.Errorf("postgres.NewPlaybookService: %w", playbooksErr)
 	}
 
-	frontendFS, feFSErr := http.GetEmbeddedFrontendFiles()
-	if feFSErr != nil {
-		return fmt.Errorf("failed to get embedded frontend files: %w", feFSErr)
-	}
-
 	jobsErr := s.registerJobs(syncSvc, shifts, oncallMetrics, debriefs)
 	if jobsErr != nil {
 		return fmt.Errorf("registering jobs: %w", jobsErr)
 	}
 
-	apiHandler := api.NewHandler(dbc, auth, orgs, configs, users, incidents, debriefs, rosters, shifts, oncallMetrics, events, annos, docs, retros, components, alerts, playbooks)
-	documentsHandler := docs.Handler()
-	webhookHandler := http.NewWebhooksHandler(chat)
-	mcpHandler := eino.NewMCPHandler(auth)
+	frontendFS, feFSErr := http.GetEmbeddedFrontendFiles()
+	if feFSErr != nil {
+		return fmt.Errorf("failed to get embedded frontend files: %w", feFSErr)
+	}
 
 	listenAddr := net.JoinHostPort(s.opts.Host, s.opts.Port)
-	s.httpServer = http.NewServer(listenAddr, auth, frontendFS, apiHandler, documentsHandler, webhookHandler, mcpHandler)
+	srv := http.NewServer(listenAddr, auth)
+
+	apiHandler := api.NewHandler(dbc, auth, orgs, configs, users, incidents, debriefs, rosters, shifts, oncallMetrics, events, annos, docs, retros, components, alerts, playbooks)
+	srv.MountOpenApi(apiHandler)
+	srv.MountDocuments(docs)
+	srv.MountMCP(eino.NewMCPHandler(auth))
+	srv.MountStaticFrontend(frontendFS)
+
+	if slack.UseSocketMode() {
+		sml, listenerErr := slack.NewSocketModeEventListener(chat)
+		if listenerErr != nil {
+			return fmt.Errorf("slack.NewSocketModeEventListener: %w", listenerErr)
+		}
+		s.slackSocketListener = sml
+	} else {
+		webhookListener, whErr := slack.NewWebhookEventListener(chat)
+		if whErr != nil {
+			return fmt.Errorf("slack.NewWebhookEventListener: %w", whErr)
+		}
+		srv.AddWebhookPathHandler("/slack", webhookListener.Handler())
+	}
+
+	s.httpServer = srv
 
 	return nil
 }
@@ -252,48 +303,4 @@ func (s *rezServer) registerJobs(
 	river.RegisterWorkerFunc(debriefs.HandleSendDebriefRequests)
 
 	return nil
-}
-
-func (s *rezServer) start() error {
-	ctx := context.Background()
-
-	if jobsErr := s.jobs.Start(access.SystemContext(ctx)); jobsErr != nil {
-		return fmt.Errorf("failed to start background jobs client: %w", jobsErr)
-	}
-
-	if slack.UseSocketMode() {
-		go func() {
-			if slackErr := s.slackSvc.RunSocketMode(access.AnonymousContext(ctx)); slackErr != nil {
-				log.Error().Err(slackErr).Msg("slack socket mode fail")
-			}
-		}()
-	}
-
-	if serverErr := s.httpServer.Start(access.AnonymousContext(ctx)); serverErr != nil {
-		return fmt.Errorf("http Server error: %w", serverErr)
-	}
-
-	return nil
-}
-
-func (s *rezServer) Stop() {
-	timeout := time.Duration(s.opts.StopTimeoutSeconds) * time.Second
-	ctx, cancelStopCtx := context.WithTimeout(context.Background(), timeout)
-	defer cancelStopCtx()
-
-	if s.httpServer != nil {
-		if dbErr := s.httpServer.Stop(ctx); dbErr != nil {
-			log.Error().Err(dbErr).Msg("failed to stop http server")
-		}
-	}
-
-	if s.jobs != nil {
-		if dbErr := s.jobs.Stop(ctx); dbErr != nil {
-			log.Error().Err(dbErr).Msg("failed to stop jobs client")
-		}
-	}
-
-	if s.db != nil {
-		s.db.Close()
-	}
 }

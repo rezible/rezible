@@ -40,6 +40,14 @@ type (
 )
 
 type (
+	OrganizationService interface {
+		FindOrCreateAuthProviderOrganization(context.Context, ent.Organization) (*ent.Organization, error)
+		GetCurrent(context.Context) (*ent.Organization, error)
+		FinishSetup(context.Context) error
+	}
+)
+
+type (
 	DataProviderResourceUpdatedCallback = func(providerID string, updatedAt time.Time)
 
 	// TODO: support multiple enabled providers
@@ -83,14 +91,6 @@ type (
 		Insert(ctx context.Context, params jobs.InsertJobParams) error
 		InsertTx(ctx context.Context, tx *ent.Tx, params jobs.InsertJobParams) error
 		InsertMany(ctx context.Context, params []jobs.InsertJobParams) error
-	}
-)
-
-type (
-	OrganizationService interface {
-		FindOrCreateAuthProviderOrganization(context.Context, ent.Organization) (*ent.Organization, error)
-		GetCurrent(context.Context) (*ent.Organization, error)
-		FinishSetup(context.Context) error
 	}
 )
 
@@ -238,8 +238,6 @@ type (
 	}
 
 	ChatService interface {
-		GetWebhooksHandler() http.Handler
-
 		SendMessage(ctx context.Context, id string, msg *ContentNode) error
 		SendReply(ctx context.Context, channelId string, threadId string, text string) error
 		SendTextMessage(ctx context.Context, id string, text string) error

@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/danielgtaylor/huma/v2/humacli"
+	"github.com/rs/zerolog/log"
 )
 
 type Options struct {
@@ -19,8 +20,16 @@ type Options struct {
 func main() {
 	onOptionsParsed := func(hooks humacli.Hooks, opts *Options) {
 		s := newRezibleServer(opts)
-		hooks.OnStart(s.Start)
-		hooks.OnStop(s.Stop)
+		ctx, cancelCtx := context.WithCancel(context.Background())
+		hooks.OnStart(func() {
+			if startErr := s.Start(ctx); startErr != nil {
+				log.Error().Err(startErr).Msg("failed to start server")
+			}
+		})
+		hooks.OnStop(func() {
+			defer cancelCtx()
+			s.Stop(ctx)
+		})
 	}
 	cli := humacli.New(onOptionsParsed)
 

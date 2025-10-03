@@ -19,56 +19,67 @@ import (
 )
 
 type Server struct {
+	auth       rez.AuthService
+	router     *chi.Mux
 	httpServer *http.Server
+	webhooks   *chi.Mux
 }
 
-func NewServer(
-	addr string,
-	auth rez.AuthService,
-	feFiles fs.FS,
-	oapiHandler oapi.Handler,
-	documentsHandler http.Handler,
-	webhooksHandler http.Handler,
-	mcpHandler mcp.Handler,
-) *Server {
+func NewServer(addr string, auth rez.AuthService) *Server {
 	var s Server
 
-	router := chi.NewRouter()
-	router.Use(middleware.Recoverer)
+	s.auth = auth
+	s.router = chi.NewRouter()
+	s.router.Use(middleware.Recoverer)
 
-	oapiServer := oapi.MakeApi(oapiHandler, "/api/v1", oapi.MakeSecurityMiddleware(auth))
-	oapiV1Router := chi.Chain(middleware.Logger).
-		Handler(oapiServer.Adapter())
-	router.Mount("/api/v1", oapiV1Router)
+	s.router.Mount("/auth", auth.UserAuthHandler())
 
-	docsApiRouter := chi.Chain(middleware.Logger).
-		Handler(documentsHandler)
-	router.Mount("/api/documents", docsApiRouter)
+	s.webhooks = chi.NewMux()
+	s.mountWebhooks()
 
-	// router.Get("/api/docs", serveApiDocs)
-
-	webhooksRouter := chi.Chain(middleware.Logger).
-		Handler(http.StripPrefix("/api/webhooks", webhooksHandler))
-	router.Mount("/api/webhooks", webhooksRouter)
-
-	mcpRouter := chi.Chain(auth.MCPServerMiddleware()).
-		Handler(mcp.NewHTTPServer(mcpHandler, "/mcp"))
-	router.Mount("/mcp", mcpRouter)
-
-	router.Mount("/auth", auth.UserAuthHandler())
-
-	router.Get("/health", makeHealthCheckHandler())
-
-	frontendRouter := chi.Chain().
-		Handler(makeEmbeddedFrontendFilesServer(feFiles))
-	router.Handle("/*", frontendRouter)
+	s.router.Get("/health", makeHealthCheckHandler())
 
 	s.httpServer = &http.Server{
 		Addr:    addr,
-		Handler: router,
+		Handler: s.router,
 	}
 
 	return &s
+}
+
+func (s *Server) commonMiddleware() chi.Middlewares {
+	return chi.Chain(middleware.Logger)
+}
+
+func (s *Server) MountMCP(h mcp.Handler) {
+	mcpRouter := chi.Chain(s.auth.MCPServerMiddleware()).
+		Handler(mcp.NewHTTPServer(h, "/mcp"))
+	s.router.Mount("/mcp", mcpRouter)
+}
+
+func (s *Server) MountDocuments(docs rez.DocumentsService) {
+	docsApiRouter := s.commonMiddleware().Handler(docs.Handler())
+	s.router.Mount("/api/documents", docsApiRouter)
+}
+
+func (s *Server) AddWebhookPathHandler(path string, handler http.Handler) {
+	s.webhooks.Mount(path, handler)
+}
+
+func (s *Server) mountWebhooks() {
+	webhooksRouter := s.commonMiddleware().Handler(http.StripPrefix("/api/webhooks", s.webhooks))
+	s.router.Mount("/api/webhooks", webhooksRouter)
+}
+
+func (s *Server) MountStaticFrontend(feFiles fs.FS) {
+	s.router.Handle("/*", makeEmbeddedFrontendFilesServer(feFiles))
+}
+
+func (s *Server) MountOpenApi(h oapi.Handler) {
+	oapiServer := oapi.MakeApi(h, "/api/v1", oapi.MakeSecurityMiddleware(s.auth))
+	oapiV1Router := chi.Chain(middleware.Logger).
+		Handler(oapiServer.Adapter())
+	s.router.Mount("/api/v1", oapiV1Router)
 }
 
 func (s *Server) Start(baseCtx context.Context) error {

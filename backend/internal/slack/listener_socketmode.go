@@ -2,6 +2,8 @@ package slack
 
 import (
 	"context"
+	"fmt"
+	"os"
 
 	"github.com/rs/zerolog/log"
 	"github.com/slack-go/slack"
@@ -9,46 +11,109 @@ import (
 	"github.com/slack-go/slack/socketmode"
 )
 
-func (s *ChatService) RunSocketMode(ctx context.Context) error {
+const (
+	enableSocketModeEnvVar = "SLACK_USE_SOCKETMODE"
+)
+
+func UseSocketMode() bool {
+	return os.Getenv(enableSocketModeEnvVar) == "true"
+}
+
+type SocketModeListener struct {
+	chatSvc  *ChatService
+	client   *socketmode.Client
+	cancelFn context.CancelFunc
+}
+
+func NewSocketModeEventListener(chatSvc *ChatService) (*SocketModeListener, error) {
 	smc := socketmode.New(
-		s.client,
+		chatSvc.client,
 		//socketmode.OptionDebug(true),
 	)
-	smh := socketmode.NewSocketmodeHandler(smc)
-
-	smh.Handle(socketmode.EventTypeConnectionError, s.onSocketModeConnectionFailed)
-	smh.Handle(socketmode.EventTypeEventsAPI, s.handleSocketModeEventsAPI)
-	smh.Handle(socketmode.EventTypeInteractive, s.handleSocketModeInteraction)
-	smh.HandleDefault(s.handleSocketModeDefault)
-
-	return smh.RunEventLoopContext(ctx)
-}
-
-func (s *ChatService) onSocketModeConnectionFailed(evt *socketmode.Event, client *socketmode.Client) {
-	log.Error().Interface("evt", evt).Msg("socket mode connection failed")
-}
-
-func (s *ChatService) handleSocketModeDefault(evt *socketmode.Event, client *socketmode.Client) {
-	log.Debug().Str("type", string(evt.Type)).Msg("didnt handle socket mode event")
-}
-
-func (s *ChatService) handleSocketModeEventsAPI(evt *socketmode.Event, smc *socketmode.Client) {
-	eae, _ := evt.Data.(slackevents.EventsAPIEvent)
-	smc.Ack(*evt.Request)
-	s.handleEventsAPIEvent(eae)
-}
-
-func (s *ChatService) handleSocketModeInteraction(evt *socketmode.Event, smc *socketmode.Client) {
-	ic, ok := evt.Data.(slack.InteractionCallback)
-	if !ok {
-		log.Error().Interface("evt", evt).Msg("failed to cast interaction callback")
-		return
+	sml := &SocketModeListener{
+		chatSvc: chatSvc,
+		client:  smc,
 	}
-	ctx := context.Background()
-	if handlerErr := s.handleInteractionEvent(ctx, &ic); handlerErr != nil {
-		log.Error().Err(handlerErr).Msg("handling socket mode interaction")
+	return sml, nil
+}
+
+func (sml *SocketModeListener) Start(baseCtx context.Context) error {
+	ctx, cancel := context.WithCancel(baseCtx)
+	sml.cancelFn = cancel
+	
+	go sml.runEventLoop(ctx)
+	return sml.client.RunContext(ctx)
+}
+
+func (sml *SocketModeListener) Stop(ctx context.Context) error {
+	if sml.cancelFn != nil {
+		sml.cancelFn()
 	}
-	if ackErr := smc.AckCtx(ctx, evt.Request.EnvelopeID, nil); ackErr != nil {
-		log.Error().Err(ackErr).Msg("acking socket mode interaction")
+	return nil
+}
+
+func (sml *SocketModeListener) runEventLoop(ctx context.Context) {
+	for {
+		select {
+		case evt, ok := <-sml.client.Events:
+			if ok {
+				sml.onEvent(ctx, &evt)
+			}
+		case <-ctx.Done():
+			log.Debug().Msg("closed socketmode event loop")
+			return
+		}
+	}
+}
+
+func (sml *SocketModeListener) onEvent(ctx context.Context, evt *socketmode.Event) {
+	log.Debug().Str("type", string(evt.Type)).Msg("socket event")
+	handled, payload, handlerErr := sml.handleEvent(ctx, evt)
+	if handlerErr != nil {
+		log.Error().Err(handlerErr).Msgf("Error handling socket mode event")
+	} else if !handled {
+		log.Warn().Str("type", string(evt.Type)).Msgf("skipping socket mode event")
+	} else {
+		if evt.Request != nil {
+			ackErr := sml.client.AckCtx(ctx, evt.Request.EnvelopeID, payload)
+			if ackErr != nil {
+				log.Error().Err(ackErr).Msgf("Error acking socket mode event")
+			}
+		}
+	}
+}
+
+func (sml *SocketModeListener) handleEvent(ctx context.Context, evt *socketmode.Event) (bool, any, error) {
+	switch evt.Type {
+	case socketmode.EventTypeConnecting:
+		return true, nil, nil
+	case socketmode.EventTypeConnectionError:
+		return true, nil, nil
+	case socketmode.EventTypeConnected:
+		return true, nil, nil
+	case socketmode.EventTypeHello:
+		return true, nil, nil
+	case socketmode.EventTypeEventsAPI:
+		eventsAPIEvent, ok := evt.Data.(slackevents.EventsAPIEvent)
+		if !ok {
+			return false, nil, fmt.Errorf("invalid events api event data")
+		}
+		handled, handleErr := sml.chatSvc.handleEventsApiEvent(ctx, eventsAPIEvent)
+		return handled, nil, handleErr
+	case socketmode.EventTypeInteractive:
+		ic, ok := evt.Data.(slack.InteractionCallback)
+		if !ok {
+			return false, nil, fmt.Errorf("invalid interaction callback data")
+		}
+		return sml.chatSvc.handleInteractionEvent(ctx, &ic)
+	case socketmode.EventTypeSlashCommand:
+		cmd, ok := evt.Data.(slack.SlashCommand)
+		if !ok {
+			return false, nil, fmt.Errorf("invalid slash command data")
+		}
+		return sml.chatSvc.handleSlashCommand(ctx, cmd)
+	default:
+		log.Warn().Str("type", string(evt.Type)).Msg("skipping socketmode event")
+		return false, nil, nil
 	}
 }

@@ -7,7 +7,17 @@ import (
 	"github.com/slack-go/slack/slackevents"
 )
 
-func (s *ChatService) handleEventsAPIEvent(ev slackevents.EventsAPIEvent) {
+func (s *ChatService) handleEventsApiEvent(ctx context.Context, ev slackevents.EventsAPIEvent) (bool, error) {
+	log.Debug().Str("type", string(ev.Type)).Msg("handleEventsApiEvent")
+	return s.handleCallbackEvent(ctx, ev)
+}
+
+func (s *ChatService) onCallbackEventReceived(ctx context.Context, ev slackevents.EventsAPIEvent) (bool, error) {
+	// TODO: queue?
+	return s.handleCallbackEvent(ctx, ev)
+}
+
+func (s *ChatService) handleCallbackEvent(ctx context.Context, ev slackevents.EventsAPIEvent) (bool, error) {
 	switch data := ev.InnerEvent.Data.(type) {
 	case *slackevents.AppHomeOpenedEvent:
 		s.onUserHomeOpenedEvent(data)
@@ -22,6 +32,7 @@ func (s *ChatService) handleEventsAPIEvent(ev slackevents.EventsAPIEvent) {
 			Str("innerEventType", ev.InnerEvent.Type).
 			Msg("unhandled slack callback event")
 	}
+	return true, nil
 }
 
 func (s *ChatService) onMentionEvent(data *slackevents.AppMentionEvent) {
