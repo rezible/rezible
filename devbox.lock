@@ -146,8 +146,8 @@
       }
     },
     "github:NixOS/nixpkgs/nixpkgs-unstable": {
-      "last_modified": "2025-07-22T02:38:50Z",
-      "resolved": "github:NixOS/nixpkgs/83e677f31c84212343f4cc553bab85c2efcad60a?lastModified=1753151930&narHash=sha256-XSQy6wRKHhRe%2F%2FiVY5lS%2FZpI%2FJn6crWI8fQzl647wCg%3D"
+      "last_modified": "2025-10-02T15:02:55Z",
+      "resolved": "github:NixOS/nixpkgs/dc704e6102e76aad573f63b74c742cd96f8f1e6c?lastModified=1759417375&narHash=sha256-O7eHcgkQXJNygY6AypkF9tFhsoDQjpNEojw3eFs73Ow%3D"
     },
     "glibcLocales@latest": {
       "last_modified": "2024-10-13T23:44:06Z",
@@ -434,51 +434,51 @@
         }
       }
     },
-    "process-compose@1.24.2": {
-      "last_modified": "2024-09-10T15:01:03Z",
-      "resolved": "github:NixOS/nixpkgs/5ed627539ac84809c78b2dd6d26a5cebeb5ae269#process-compose",
+    "process-compose@latest": {
+      "last_modified": "2025-09-18T16:33:27Z",
+      "resolved": "github:NixOS/nixpkgs/f4b140d5b253f5e2a1ff4e5506edbf8267724bde#process-compose",
       "source": "devbox-search",
-      "version": "1.24.2",
+      "version": "1.75.1",
       "systems": {
         "aarch64-darwin": {
           "outputs": [
             {
               "name": "out",
-              "path": "/nix/store/3c8p4602nwh4dkh53gif62r7nr9cvy81-process-compose-1.24.2",
+              "path": "/nix/store/r4r1k29kh25ykpg3fcjw0wps02sq9c7d-process-compose-1.75.1",
               "default": true
             }
           ],
-          "store_path": "/nix/store/3c8p4602nwh4dkh53gif62r7nr9cvy81-process-compose-1.24.2"
+          "store_path": "/nix/store/r4r1k29kh25ykpg3fcjw0wps02sq9c7d-process-compose-1.75.1"
         },
         "aarch64-linux": {
           "outputs": [
             {
               "name": "out",
-              "path": "/nix/store/jnnxd0b2i89lji13vxkhswwpya2829yd-process-compose-1.24.2",
+              "path": "/nix/store/q0ic7pwvhwb9awyqav3pddy8br29m3wk-process-compose-1.75.1",
               "default": true
             }
           ],
-          "store_path": "/nix/store/jnnxd0b2i89lji13vxkhswwpya2829yd-process-compose-1.24.2"
+          "store_path": "/nix/store/q0ic7pwvhwb9awyqav3pddy8br29m3wk-process-compose-1.75.1"
         },
         "x86_64-darwin": {
           "outputs": [
             {
               "name": "out",
-              "path": "/nix/store/asagmidicsmjl4h3nssc2rmdyc0501hh-process-compose-1.24.2",
+              "path": "/nix/store/mnipfv69349bsw963d03aldyp9izsxzn-process-compose-1.75.1",
               "default": true
             }
           ],
-          "store_path": "/nix/store/asagmidicsmjl4h3nssc2rmdyc0501hh-process-compose-1.24.2"
+          "store_path": "/nix/store/mnipfv69349bsw963d03aldyp9izsxzn-process-compose-1.75.1"
         },
         "x86_64-linux": {
           "outputs": [
             {
               "name": "out",
-              "path": "/nix/store/0sjldfq6bq50m29gdav27wz0hfn2j2hc-process-compose-1.24.2",
+              "path": "/nix/store/sspvcqrv1xgslqrqyxk5kcnjdnh98b5s-process-compose-1.75.1",
               "default": true
             }
           ],
-          "store_path": "/nix/store/0sjldfq6bq50m29gdav27wz0hfn2j2hc-process-compose-1.24.2"
+          "store_path": "/nix/store/sspvcqrv1xgslqrqyxk5kcnjdnh98b5s-process-compose-1.75.1"
         }
       }
     },

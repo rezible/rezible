@@ -6,13 +6,13 @@
       "version":   "latest",
       "platforms": ["x86_64-linux", "aarch64-linux"]
     },
-    "ent-go":                      "latest",
-    "atlas":                       "latest",
-    "bun":                         "latest",
-    "process-compose":             "1.24.2",
-    "just":                        "latest",
-    "postgresql":                  "latest",
-    "go":                          "latest"
+    "ent-go":     "latest",
+    "atlas":      "latest",
+    "bun":        "latest",
+    "just":       "latest",
+    "postgresql": "latest",
+    "go":         "latest",
+    "process-compose": "latest"
   },
   "env": {
     "DB_URL": "postgresql://localhost/rezible?sslmode=disable"
