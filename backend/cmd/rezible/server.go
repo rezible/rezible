@@ -54,13 +54,14 @@ func (s *rezServer) Start(ctx context.Context) error {
 		return fmt.Errorf("failed to start background jobs client: %w", jobsErr)
 	}
 
+	anonCtx := access.AnonymousContext(ctx)
 	if s.slackSocketListener != nil {
-		if slErr := s.slackSocketListener.Start(ctx); slErr != nil {
+		if slErr := s.slackSocketListener.Start(anonCtx); slErr != nil {
 			return fmt.Errorf("failed to start slack socket listener: %w", slErr)
 		}
 	}
 
-	return s.httpServer.Start(ctx)
+	return s.httpServer.Start(anonCtx)
 }
 
 func (s *rezServer) Stop(ctx context.Context) {

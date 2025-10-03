@@ -8,14 +8,14 @@ processes:
     command: just dev-backend
     availability:
       restart: on_failure
-      max_restarts: 1
+      max_restarts: 3
     readiness_probe:
       http_get:
         scheme: http
         host: localhost
-        path: "/health"
         port: 8888
-      initial_delay_seconds: 1
+        path: "/health"
+      initial_delay_seconds: 10
       period_seconds: 10
       timeout_seconds: 1
       success_threshold: 1

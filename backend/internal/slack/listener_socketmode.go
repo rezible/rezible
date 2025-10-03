@@ -2,6 +2,7 @@ package slack
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"os"
 
@@ -40,9 +41,16 @@ func NewSocketModeEventListener(chatSvc *ChatService) (*SocketModeListener, erro
 func (sml *SocketModeListener) Start(baseCtx context.Context) error {
 	ctx, cancel := context.WithCancel(baseCtx)
 	sml.cancelFn = cancel
-	
 	go sml.runEventLoop(ctx)
-	return sml.client.RunContext(ctx)
+	go func() {
+		log.Info().Msg("Listening for slack socket mode events")
+		runErr := sml.client.RunContext(ctx)
+		log.Info().Msg("Closed socket mode connection")
+		if runErr != nil && !errors.Is(runErr, context.Canceled) {
+			log.Error().Err(runErr).Msg("error running socket mode")
+		}
+	}()
+	return nil
 }
 
 func (sml *SocketModeListener) Stop(ctx context.Context) error {
@@ -60,39 +68,31 @@ func (sml *SocketModeListener) runEventLoop(ctx context.Context) {
 				sml.onEvent(ctx, &evt)
 			}
 		case <-ctx.Done():
-			log.Debug().Msg("closed socketmode event loop")
 			return
 		}
 	}
 }
 
 func (sml *SocketModeListener) onEvent(ctx context.Context, evt *socketmode.Event) {
-	log.Debug().Str("type", string(evt.Type)).Msg("socket event")
+	if evt.Request == nil || evt.Type == socketmode.EventTypeHello {
+		return
+	}
+
 	handled, payload, handlerErr := sml.handleEvent(ctx, evt)
 	if handlerErr != nil {
 		log.Error().Err(handlerErr).Msgf("Error handling socket mode event")
 	} else if !handled {
 		log.Warn().Str("type", string(evt.Type)).Msgf("skipping socket mode event")
 	} else {
-		if evt.Request != nil {
-			ackErr := sml.client.AckCtx(ctx, evt.Request.EnvelopeID, payload)
-			if ackErr != nil {
-				log.Error().Err(ackErr).Msgf("Error acking socket mode event")
-			}
+		ackErr := sml.client.AckCtx(ctx, evt.Request.EnvelopeID, payload)
+		if ackErr != nil {
+			log.Error().Err(ackErr).Msgf("Error acking socket mode event")
 		}
 	}
 }
 
 func (sml *SocketModeListener) handleEvent(ctx context.Context, evt *socketmode.Event) (bool, any, error) {
 	switch evt.Type {
-	case socketmode.EventTypeConnecting:
-		return true, nil, nil
-	case socketmode.EventTypeConnectionError:
-		return true, nil, nil
-	case socketmode.EventTypeConnected:
-		return true, nil, nil
-	case socketmode.EventTypeHello:
-		return true, nil, nil
 	case socketmode.EventTypeEventsAPI:
 		eventsAPIEvent, ok := evt.Data.(slackevents.EventsAPIEvent)
 		if !ok {

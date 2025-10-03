@@ -8,7 +8,6 @@ import (
 )
 
 func (s *ChatService) handleEventsApiEvent(ctx context.Context, ev slackevents.EventsAPIEvent) (bool, error) {
-	log.Debug().Str("type", string(ev.Type)).Msg("handleEventsApiEvent")
 	return s.handleCallbackEvent(ctx, ev)
 }
 
