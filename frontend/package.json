@@ -14,7 +14,7 @@
 		"format": "prettier --plugin-search-dir . --write ."
 	},
 	"devDependencies": {
-		"@hey-api/openapi-ts": "^0.78.2",
+		"@hey-api/openapi-ts": "^0.84.4",
 		"@sveltejs/adapter-static": "^3.0.8",
 		"@sveltejs/kit": "^2.21.4",
 		"@sveltejs/vite-plugin-svelte": "^5.1.0",
@@ -40,7 +40,7 @@
 		"vite": "^6.3.5"
 	},
 	"dependencies": {
-		"@hey-api/client-fetch": "^0.10.2",
+		"@hey-api/client-fetch": "^0.13.1",
 		"@hocuspocus/provider": "^2.15.2",
 		"@internationalized/date": "^3.8.2",
 		"@layerstack/svelte-table": "^1.0.1",
