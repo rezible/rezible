@@ -9,6 +9,10 @@ import (
 	"strings"
 	"time"
 
+	"github.com/rs/zerolog"
+	"github.com/rs/zerolog/log"
+	"github.com/sourcegraph/conc/pool"
+
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/access"
 	"github.com/rezible/rezible/internal/api"
@@ -22,17 +26,14 @@ import (
 	"github.com/rezible/rezible/internal/river"
 	"github.com/rezible/rezible/internal/saml"
 	"github.com/rezible/rezible/internal/slack"
-	"github.com/rs/zerolog"
-	"github.com/rs/zerolog/log"
 )
 
 type rezServer struct {
 	opts *Options
 
-	db         *postgres.Database
-	jobs       *river.JobService
-	httpServer *http.Server
-
+	db                  *postgres.Database
+	jobs                *river.JobService
+	httpServer          *http.Server
 	slackSocketListener *slack.SocketModeListener
 }
 
@@ -54,42 +55,52 @@ func (s *rezServer) Start(ctx context.Context) error {
 		return fmt.Errorf("failed to start background jobs client: %w", jobsErr)
 	}
 
-	anonCtx := access.AnonymousContext(ctx)
+	p := pool.New().
+		WithErrors().
+		WithContext(access.AnonymousContext(ctx))
+
 	if s.slackSocketListener != nil {
-		if slErr := s.slackSocketListener.Start(anonCtx); slErr != nil {
-			return fmt.Errorf("failed to start slack socket listener: %w", slErr)
-		}
+		p.Go(s.slackSocketListener.Start)
 	}
 
-	return s.httpServer.Start(anonCtx)
+	if s.httpServer != nil {
+		p.Go(s.httpServer.Start)
+	}
+
+	return p.Wait()
 }
 
-func (s *rezServer) Stop(ctx context.Context) {
+func (s *rezServer) Stop(ctx context.Context) error {
 	timeout := time.Duration(s.opts.StopTimeoutSeconds) * time.Second
 	timeoutCtx, cancelStopCtx := context.WithTimeout(ctx, timeout)
 	defer cancelStopCtx()
 
-	if s.jobs != nil {
-		if jobsErr := s.jobs.Stop(timeoutCtx); jobsErr != nil {
-			log.Error().Err(jobsErr).Msg("failed to stop jobs client")
+	var stopErr error
+	if s.httpServer != nil {
+		if srvErr := s.httpServer.Stop(timeoutCtx); srvErr != nil {
+			stopErr = errors.Join(stopErr, fmt.Errorf("stopping http server: %w", srvErr))
 		}
 	}
 
 	if s.slackSocketListener != nil {
 		if slErr := s.slackSocketListener.Stop(timeoutCtx); slErr != nil {
-			log.Error().Err(slErr).Msg("failed to stop slack socket listener")
+			stopErr = errors.Join(stopErr, fmt.Errorf("stopping slack socket listener: %w", slErr))
 		}
 	}
 
-	if s.httpServer != nil {
-		if srvErr := s.httpServer.Stop(timeoutCtx); srvErr != nil {
-			log.Error().Err(srvErr).Msg("failed to stop http server")
+	if s.jobs != nil {
+		if jobsErr := s.jobs.Stop(timeoutCtx); jobsErr != nil {
+			stopErr = errors.Join(stopErr, fmt.Errorf("stopping jobs client: %w", jobsErr))
 		}
 	}
 
 	if s.db != nil {
-		s.db.Close()
+		if dbErr := s.db.Close(); dbErr != nil {
+			stopErr = errors.Join(stopErr, fmt.Errorf("closing db client: %w", dbErr))
+		}
 	}
+
+	return stopErr
 }
 
 func (s *rezServer) setup() error {

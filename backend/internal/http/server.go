@@ -87,11 +87,11 @@ func (s *Server) Start(baseCtx context.Context) error {
 		return baseCtx
 	}
 
-	log.Info().Msgf("Serving on %s", s.httpServer.Addr)
-
+	log.Info().Msgf("HTTP server listening on %s", s.httpServer.Addr)
 	if err := s.httpServer.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
-		return fmt.Errorf("server error: %w", err)
+		return fmt.Errorf("http server error: %w", err)
 	}
+	log.Info().Msgf("Stopped HTTP server")
 	return nil
 }
 

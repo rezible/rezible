@@ -32,35 +32,34 @@ func NewSocketModeEventListener(chatSvc *ChatService) (*SocketModeListener, erro
 		//socketmode.OptionDebug(true),
 	)
 	sml := &SocketModeListener{
-		chatSvc: chatSvc,
-		client:  smc,
+		chatSvc:  chatSvc,
+		client:   smc,
+		cancelFn: func() {},
 	}
 	return sml, nil
 }
 
-func (sml *SocketModeListener) Start(baseCtx context.Context) error {
-	ctx, cancel := context.WithCancel(baseCtx)
+func (sml *SocketModeListener) Start(ctx context.Context) error {
+	cancelCtx, cancel := context.WithCancel(ctx)
 	sml.cancelFn = cancel
-	go sml.runEventLoop(ctx)
-	go func() {
-		log.Info().Msg("Listening for slack socket mode events")
-		runErr := sml.client.RunContext(ctx)
-		log.Info().Msg("Closed socket mode connection")
-		if runErr != nil && !errors.Is(runErr, context.Canceled) {
-			log.Error().Err(runErr).Msg("error running socket mode")
-		}
-	}()
+
+	log.Info().Msg("Listening for slack events in socket mode")
+	go sml.runEventConsumerLoop(cancelCtx)
+
+	runErr := sml.client.RunContext(cancelCtx)
+	if runErr != nil && !errors.Is(runErr, context.Canceled) {
+		return fmt.Errorf("error running socket mode listener: %w", runErr)
+	}
+	log.Info().Msg("Closed slack socket mode connection")
 	return nil
 }
 
 func (sml *SocketModeListener) Stop(ctx context.Context) error {
-	if sml.cancelFn != nil {
-		sml.cancelFn()
-	}
+	sml.cancelFn()
 	return nil
 }
 
-func (sml *SocketModeListener) runEventLoop(ctx context.Context) {
+func (sml *SocketModeListener) runEventConsumerLoop(ctx context.Context) {
 	for {
 		select {
 		case evt, ok := <-sml.client.Events:

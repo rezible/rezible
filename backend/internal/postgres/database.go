@@ -62,13 +62,14 @@ func (d *Database) Client() *ent.Client {
 	return d.client
 }
 
-func (d *Database) Close() {
+func (d *Database) Close() error {
 	d.Pool.Close()
 	if d.client != nil {
 		if clientErr := d.client.Close(); clientErr != nil {
-			log.Error().Err(clientErr).Msg("failed to close ent client")
+			return fmt.Errorf("closing ent client: %w", clientErr)
 		}
 	}
+	return nil
 }
 
 func setTenantContextInterceptor() ent.Interceptor {
