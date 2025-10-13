@@ -161,7 +161,7 @@ func (s *rezServer) setup() error {
 		return fmt.Errorf("prosemirror.NewDocumentsService: %w", docsErr)
 	}
 
-	incidents, incidentsErr := postgres.NewIncidentService(dbc, jobSvc, chat, users)
+	incidents, incidentsErr := postgres.NewIncidentService(dbc, jobSvc, users)
 	if incidentsErr != nil {
 		return fmt.Errorf("postgres.NewIncidentService: %w", incidentsErr)
 	}
@@ -181,7 +181,7 @@ func (s *rezServer) setup() error {
 		return fmt.Errorf("postgres.NewOncallMetricsService: %w", oncallMetricsErr)
 	}
 
-	debriefs, debriefsErr := postgres.NewDebriefService(dbc, jobSvc, lms, chat)
+	debriefs, debriefsErr := postgres.NewDebriefService(dbc, jobSvc, lms)
 	if debriefsErr != nil {
 		return fmt.Errorf("postgres.NewDebriefService: %w", debriefsErr)
 	}

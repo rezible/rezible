@@ -12,7 +12,6 @@ const (
 )
 
 func (s *ChatService) onInteractionEventReceived(ctx context.Context, ic *slack.InteractionCallback) (bool, error) {
-	// TODO: queue?
 	handled, _, err := s.handleInteractionEvent(ctx, ic)
 	return handled, err
 }

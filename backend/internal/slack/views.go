@@ -15,7 +15,7 @@ import (
 	"github.com/rezible/rezible/ent"
 )
 
-var (
+const (
 	createAnnotationModalViewCallbackID = "create_annotation_confirm"
 )
 

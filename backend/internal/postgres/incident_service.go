@@ -19,14 +19,12 @@ type IncidentService struct {
 	db    *ent.Client
 	jobs  rez.JobsService
 	users rez.UserService
-	chat  rez.ChatService
 }
 
-func NewIncidentService(db *ent.Client, jobs rez.JobsService, chat rez.ChatService, users rez.UserService) (*IncidentService, error) {
+func NewIncidentService(db *ent.Client, jobs rez.JobsService, users rez.UserService) (*IncidentService, error) {
 	svc := &IncidentService{
 		db:    db,
 		jobs:  jobs,
-		chat:  chat,
 		users: users,
 	}
 
