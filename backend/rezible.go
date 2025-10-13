@@ -332,6 +332,7 @@ type (
 
 	IncidentService interface {
 		Get(context.Context, uuid.UUID) (*ent.Incident, error)
+		Set(context.Context, uuid.UUID, func(*ent.IncidentMutation)) (*ent.Incident, error)
 		GetBySlug(context.Context, string) (*ent.Incident, error)
 		GetByChatChannelID(context.Context, string) (*ent.Incident, error)
 		ListIncidents(context.Context, ListIncidentsParams) (*ent.ListResult[*ent.Incident], error)

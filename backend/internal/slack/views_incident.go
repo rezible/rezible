@@ -123,45 +123,20 @@ func (s *ChatService) makeIncidentModalViewBlocks(ctx context.Context, meta *inc
 	return blockSet, nil
 }
 
-func getIncidentModalMetadata(view slack.View) (*incidentViewMetadata, error) {
-	var meta incidentViewMetadata
-	if jsonErr := json.Unmarshal([]byte(view.PrivateMetadata), &meta); jsonErr != nil {
-		return nil, fmt.Errorf("failed to unmarshal metadata: %w", jsonErr)
-	}
-
-	var title string
-	var severityId uuid.UUID
+func setIncidentFieldsFromModalMetadata(view slack.View, m *ent.IncidentMutation) {
 	if view.State != nil {
 		if titleInput := getViewStateBlockAction(view.State, "title_block", "title_input"); titleInput != nil {
-			title = titleInput.Value
+			m.SetTitle(titleInput.Value)
 		}
-		if sevBlock := getViewStateBlockAction(view.State, "severity_block", "severity_select"); sevBlock != nil {
-			if sevBlock.SelectedOption.Value != "" {
-				if sevId, sevErr := uuid.Parse(sevBlock.SelectedOption.Value); sevErr == nil {
-					severityId = sevId
+		// TODO: re-enable this
+		/*
+			if sevBlock := getViewStateBlockAction(view.State, "severity_block", "severity_select"); sevBlock != nil {
+				if sevBlock.SelectedOption.Value != "" {
+					if sevId, sevErr := uuid.Parse(sevBlock.SelectedOption.Value); sevErr == nil {
+						m.SetSeverityID(sevId)
+					}
 				}
 			}
-		}
+		*/
 	}
-
-	incident := &ent.Incident{
-		ID:         meta.IncidentId,
-		Title:      title,
-		SeverityID: severityId,
-	}
-	meta.incident = incident
-
-	return &meta, nil
-}
-
-func (s *ChatService) sendIncidentCreatedMessage(ctx context.Context, md *incidentViewMetadata) error {
-	inc := md.incident
-	sendErr := s.sendMessage(ctx, md.ChannelId,
-		slack.MsgOptionText(fmt.Sprintf("Incident created: *%s* #%s", inc.Title, inc.ChatChannelID), false),
-		slack.MsgOptionBroadcast())
-	if sendErr != nil {
-		//log.Error().Interface("meta", meta).Err(sendErr).Msg("failed to send incident created message")
-		return sendErr
-	}
-	return nil
 }

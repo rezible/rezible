@@ -2,9 +2,10 @@ package slack
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 
-	"github.com/rs/zerolog/log"
+	"github.com/rezible/rezible/ent"
 	"github.com/slack-go/slack"
 )
 
@@ -106,16 +107,28 @@ func (s *ChatService) handleIncidentModalInteraction(ctx context.Context, ic *sl
 }
 
 func (s *ChatService) handleIncidentModalSubmission(ctx context.Context, ic *slack.InteractionCallback) (any, error) {
-	md, mdErr := getIncidentModalMetadata(ic.View)
-	if mdErr != nil {
-		return nil, fmt.Errorf("failed to get incident view metadata: %w", mdErr)
+	var meta incidentViewMetadata
+	if jsonErr := json.Unmarshal([]byte(ic.View.PrivateMetadata), &meta); jsonErr != nil {
+		return nil, fmt.Errorf("failed to unmarshal metadata: %w", jsonErr)
 	}
 
-	// TODO: create/update incident
+	// TODO: create incident channel
+	channelId := "foo"
 
-	if msgErr := s.sendIncidentCreatedMessage(ctx, md); msgErr != nil {
-		log.Error().Err(msgErr).Msg("failed to send incident created message")
-		return nil, msgErr
+	inc, incErr := s.incidents.Set(ctx, meta.IncidentId, func(m *ent.IncidentMutation) {
+		m.SetChatChannelID(channelId)
+		setIncidentFieldsFromModalMetadata(ic.View, m)
+	})
+	if incErr != nil {
+		return nil, fmt.Errorf("failed to set incident: %w", incErr)
+	}
+
+	msgText := fmt.Sprintf("Incident created: *%s* #%s", inc.Title, inc.ChatChannelID)
+	sendErr := s.sendMessage(ctx, meta.ChannelId,
+		slack.MsgOptionText(msgText, false),
+		slack.MsgOptionBroadcast())
+	if sendErr != nil {
+		return nil, fmt.Errorf("failed to send creation message: %w", sendErr)
 	}
 
 	return nil, nil

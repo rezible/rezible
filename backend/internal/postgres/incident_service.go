@@ -2,6 +2,7 @@ package postgres
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	"github.com/google/uuid"
@@ -67,6 +68,29 @@ func (s *IncidentService) incidentQuery(pred predicate.Incident, edges bool) *en
 
 func (s *IncidentService) Get(ctx context.Context, id uuid.UUID) (*ent.Incident, error) {
 	return s.incidentQuery(incident.ID(id), true).Only(ctx)
+}
+
+func (s *IncidentService) Set(ctx context.Context, id uuid.UUID, setFn func(*ent.IncidentMutation)) (*ent.Incident, error) {
+	if id != uuid.Nil {
+		curr, getErr := s.db.Incident.Get(ctx, id)
+		if getErr != nil {
+			return nil, fmt.Errorf("failed to fetch incident: %w", getErr)
+		}
+		update := s.db.Incident.UpdateOne(curr)
+		setFn(update.Mutation())
+		return update.Save(ctx)
+	}
+
+	create := s.db.Incident.Create().SetID(uuid.New())
+	mut := create.Mutation()
+	setFn(mut)
+
+	if title, ok := mut.Title(); ok {
+		// TODO: generate slug
+		create.SetSlug(title)
+	}
+
+	return create.Save(ctx)
 }
 
 func (s *IncidentService) GetByChatChannelID(ctx context.Context, id string) (*ent.Incident, error) {
