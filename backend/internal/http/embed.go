@@ -14,9 +14,9 @@ import (
 )
 
 var (
-	//go:embed all:frontend-dist/*
-	frontendFiles    embed.FS
 	frontendFilesDir = "frontend-dist"
+	//go:embed all:frontend-dist/*
+	frontendFiles embed.FS
 )
 
 func GetEmbeddedFrontendFiles() (fs.FS, error) {

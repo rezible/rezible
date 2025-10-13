@@ -50,7 +50,6 @@ type (
 type (
 	DataProviderResourceUpdatedCallback = func(providerID string, updatedAt time.Time)
 
-	// TODO: support multiple enabled providers
 	ProviderLoader interface {
 		GetIncidentDataProvider(context.Context) (IncidentDataProvider, error)
 		GetOncallDataProvider(context.Context) (OncallDataProvider, error)

@@ -14,10 +14,11 @@ import (
 
 	"github.com/go-chi/chi/v5"
 	"github.com/google/uuid"
+	"github.com/rs/zerolog/log"
+
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
 	oapi "github.com/rezible/rezible/openapi"
-	"github.com/rs/zerolog/log"
 )
 
 type DocumentsService struct {
@@ -51,6 +52,7 @@ func (s *DocumentsService) GetServerWebsocketAddress() string {
 	return fmt.Sprintf("ws://%s", s.serverAddress)
 }
 
+// TODO: these should just be regular api endpoints
 func (s *DocumentsService) Handler() http.Handler {
 	r := chi.NewRouter()
 	r.Post("/auth", s.handleAuthRequest)
