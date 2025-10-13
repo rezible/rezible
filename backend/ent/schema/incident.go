@@ -1,6 +1,8 @@
 package schema
 
 import (
+	"time"
+
 	"entgo.io/ent"
 	"entgo.io/ent/schema/edge"
 	"entgo.io/ent/schema/field"
@@ -26,11 +28,11 @@ func (Incident) Fields() []ent.Field {
 		field.String("slug").Unique(),
 		field.String("title"),
 		field.Bool("private").Default(false),
-		field.String("summary"),
-		field.Time("opened_at"),
-		field.Time("modified_at"),
-		field.Time("closed_at"),
-		field.String("provider_id"),
+		field.String("summary").Optional(),
+		field.Time("opened_at").Default(time.Now),
+		field.Time("modified_at").Optional(),
+		field.Time("closed_at").Optional(),
+		field.String("provider_id").Optional(),
 		field.String("chat_channel_id").Optional(),
 		field.UUID("severity_id", uuid.UUID{}).Optional(),
 		field.UUID("type_id", uuid.UUID{}).Optional(),

@@ -5309,9 +5309,22 @@ func (m *IncidentMutation) OldSummary(ctx context.Context) (v string, err error)
 	return oldValue.Summary, nil
 }
 
+// ClearSummary clears the value of the "summary" field.
+func (m *IncidentMutation) ClearSummary() {
+	m.summary = nil
+	m.clearedFields[incident.FieldSummary] = struct{}{}
+}
+
+// SummaryCleared returns if the "summary" field was cleared in this mutation.
+func (m *IncidentMutation) SummaryCleared() bool {
+	_, ok := m.clearedFields[incident.FieldSummary]
+	return ok
+}
+
 // ResetSummary resets all changes to the "summary" field.
 func (m *IncidentMutation) ResetSummary() {
 	m.summary = nil
+	delete(m.clearedFields, incident.FieldSummary)
 }
 
 // SetOpenedAt sets the "opened_at" field.
@@ -5381,9 +5394,22 @@ func (m *IncidentMutation) OldModifiedAt(ctx context.Context) (v time.Time, err 
 	return oldValue.ModifiedAt, nil
 }
 
+// ClearModifiedAt clears the value of the "modified_at" field.
+func (m *IncidentMutation) ClearModifiedAt() {
+	m.modified_at = nil
+	m.clearedFields[incident.FieldModifiedAt] = struct{}{}
+}
+
+// ModifiedAtCleared returns if the "modified_at" field was cleared in this mutation.
+func (m *IncidentMutation) ModifiedAtCleared() bool {
+	_, ok := m.clearedFields[incident.FieldModifiedAt]
+	return ok
+}
+
 // ResetModifiedAt resets all changes to the "modified_at" field.
 func (m *IncidentMutation) ResetModifiedAt() {
 	m.modified_at = nil
+	delete(m.clearedFields, incident.FieldModifiedAt)
 }
 
 // SetClosedAt sets the "closed_at" field.
@@ -5417,9 +5443,22 @@ func (m *IncidentMutation) OldClosedAt(ctx context.Context) (v time.Time, err er
 	return oldValue.ClosedAt, nil
 }
 
+// ClearClosedAt clears the value of the "closed_at" field.
+func (m *IncidentMutation) ClearClosedAt() {
+	m.closed_at = nil
+	m.clearedFields[incident.FieldClosedAt] = struct{}{}
+}
+
+// ClosedAtCleared returns if the "closed_at" field was cleared in this mutation.
+func (m *IncidentMutation) ClosedAtCleared() bool {
+	_, ok := m.clearedFields[incident.FieldClosedAt]
+	return ok
+}
+
 // ResetClosedAt resets all changes to the "closed_at" field.
 func (m *IncidentMutation) ResetClosedAt() {
 	m.closed_at = nil
+	delete(m.clearedFields, incident.FieldClosedAt)
 }
 
 // SetProviderID sets the "provider_id" field.
@@ -5453,9 +5492,22 @@ func (m *IncidentMutation) OldProviderID(ctx context.Context) (v string, err err
 	return oldValue.ProviderID, nil
 }
 
+// ClearProviderID clears the value of the "provider_id" field.
+func (m *IncidentMutation) ClearProviderID() {
+	m.provider_id = nil
+	m.clearedFields[incident.FieldProviderID] = struct{}{}
+}
+
+// ProviderIDCleared returns if the "provider_id" field was cleared in this mutation.
+func (m *IncidentMutation) ProviderIDCleared() bool {
+	_, ok := m.clearedFields[incident.FieldProviderID]
+	return ok
+}
+
 // ResetProviderID resets all changes to the "provider_id" field.
 func (m *IncidentMutation) ResetProviderID() {
 	m.provider_id = nil
+	delete(m.clearedFields, incident.FieldProviderID)
 }
 
 // SetChatChannelID sets the "chat_channel_id" field.
@@ -6635,6 +6687,18 @@ func (m *IncidentMutation) AddField(name string, value ent.Value) error {
 // mutation.
 func (m *IncidentMutation) ClearedFields() []string {
 	var fields []string
+	if m.FieldCleared(incident.FieldSummary) {
+		fields = append(fields, incident.FieldSummary)
+	}
+	if m.FieldCleared(incident.FieldModifiedAt) {
+		fields = append(fields, incident.FieldModifiedAt)
+	}
+	if m.FieldCleared(incident.FieldClosedAt) {
+		fields = append(fields, incident.FieldClosedAt)
+	}
+	if m.FieldCleared(incident.FieldProviderID) {
+		fields = append(fields, incident.FieldProviderID)
+	}
 	if m.FieldCleared(incident.FieldChatChannelID) {
 		fields = append(fields, incident.FieldChatChannelID)
 	}
@@ -6658,6 +6722,18 @@ func (m *IncidentMutation) FieldCleared(name string) bool {
 // error if the field is not defined in the schema.
 func (m *IncidentMutation) ClearField(name string) error {
 	switch name {
+	case incident.FieldSummary:
+		m.ClearSummary()
+		return nil
+	case incident.FieldModifiedAt:
+		m.ClearModifiedAt()
+		return nil
+	case incident.FieldClosedAt:
+		m.ClearClosedAt()
+		return nil
+	case incident.FieldProviderID:
+		m.ClearProviderID()
+		return nil
 	case incident.FieldChatChannelID:
 		m.ClearChatChannelID()
 		return nil

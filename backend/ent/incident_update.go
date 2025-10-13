@@ -99,6 +99,12 @@ func (iu *IncidentUpdate) SetNillableSummary(s *string) *IncidentUpdate {
 	return iu
 }
 
+// ClearSummary clears the value of the "summary" field.
+func (iu *IncidentUpdate) ClearSummary() *IncidentUpdate {
+	iu.mutation.ClearSummary()
+	return iu
+}
+
 // SetOpenedAt sets the "opened_at" field.
 func (iu *IncidentUpdate) SetOpenedAt(t time.Time) *IncidentUpdate {
 	iu.mutation.SetOpenedAt(t)
@@ -127,6 +133,12 @@ func (iu *IncidentUpdate) SetNillableModifiedAt(t *time.Time) *IncidentUpdate {
 	return iu
 }
 
+// ClearModifiedAt clears the value of the "modified_at" field.
+func (iu *IncidentUpdate) ClearModifiedAt() *IncidentUpdate {
+	iu.mutation.ClearModifiedAt()
+	return iu
+}
+
 // SetClosedAt sets the "closed_at" field.
 func (iu *IncidentUpdate) SetClosedAt(t time.Time) *IncidentUpdate {
 	iu.mutation.SetClosedAt(t)
@@ -141,6 +153,12 @@ func (iu *IncidentUpdate) SetNillableClosedAt(t *time.Time) *IncidentUpdate {
 	return iu
 }
 
+// ClearClosedAt clears the value of the "closed_at" field.
+func (iu *IncidentUpdate) ClearClosedAt() *IncidentUpdate {
+	iu.mutation.ClearClosedAt()
+	return iu
+}
+
 // SetProviderID sets the "provider_id" field.
 func (iu *IncidentUpdate) SetProviderID(s string) *IncidentUpdate {
 	iu.mutation.SetProviderID(s)
@@ -152,6 +170,12 @@ func (iu *IncidentUpdate) SetNillableProviderID(s *string) *IncidentUpdate {
 	if s != nil {
 		iu.SetProviderID(*s)
 	}
+	return iu
+}
+
+// ClearProviderID clears the value of the "provider_id" field.
+func (iu *IncidentUpdate) ClearProviderID() *IncidentUpdate {
+	iu.mutation.ClearProviderID()
 	return iu
 }
 
@@ -764,17 +788,29 @@ func (iu *IncidentUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	if value, ok := iu.mutation.Summary(); ok {
 		_spec.SetField(incident.FieldSummary, field.TypeString, value)
 	}
+	if iu.mutation.SummaryCleared() {
+		_spec.ClearField(incident.FieldSummary, field.TypeString)
+	}
 	if value, ok := iu.mutation.OpenedAt(); ok {
 		_spec.SetField(incident.FieldOpenedAt, field.TypeTime, value)
 	}
 	if value, ok := iu.mutation.ModifiedAt(); ok {
 		_spec.SetField(incident.FieldModifiedAt, field.TypeTime, value)
 	}
+	if iu.mutation.ModifiedAtCleared() {
+		_spec.ClearField(incident.FieldModifiedAt, field.TypeTime)
+	}
 	if value, ok := iu.mutation.ClosedAt(); ok {
 		_spec.SetField(incident.FieldClosedAt, field.TypeTime, value)
 	}
+	if iu.mutation.ClosedAtCleared() {
+		_spec.ClearField(incident.FieldClosedAt, field.TypeTime)
+	}
 	if value, ok := iu.mutation.ProviderID(); ok {
 		_spec.SetField(incident.FieldProviderID, field.TypeString, value)
+	}
+	if iu.mutation.ProviderIDCleared() {
+		_spec.ClearField(incident.FieldProviderID, field.TypeString)
 	}
 	if value, ok := iu.mutation.ChatChannelID(); ok {
 		_spec.SetField(incident.FieldChatChannelID, field.TypeString, value)
@@ -1508,6 +1544,12 @@ func (iuo *IncidentUpdateOne) SetNillableSummary(s *string) *IncidentUpdateOne {
 	return iuo
 }
 
+// ClearSummary clears the value of the "summary" field.
+func (iuo *IncidentUpdateOne) ClearSummary() *IncidentUpdateOne {
+	iuo.mutation.ClearSummary()
+	return iuo
+}
+
 // SetOpenedAt sets the "opened_at" field.
 func (iuo *IncidentUpdateOne) SetOpenedAt(t time.Time) *IncidentUpdateOne {
 	iuo.mutation.SetOpenedAt(t)
@@ -1536,6 +1578,12 @@ func (iuo *IncidentUpdateOne) SetNillableModifiedAt(t *time.Time) *IncidentUpdat
 	return iuo
 }
 
+// ClearModifiedAt clears the value of the "modified_at" field.
+func (iuo *IncidentUpdateOne) ClearModifiedAt() *IncidentUpdateOne {
+	iuo.mutation.ClearModifiedAt()
+	return iuo
+}
+
 // SetClosedAt sets the "closed_at" field.
 func (iuo *IncidentUpdateOne) SetClosedAt(t time.Time) *IncidentUpdateOne {
 	iuo.mutation.SetClosedAt(t)
@@ -1550,6 +1598,12 @@ func (iuo *IncidentUpdateOne) SetNillableClosedAt(t *time.Time) *IncidentUpdateO
 	return iuo
 }
 
+// ClearClosedAt clears the value of the "closed_at" field.
+func (iuo *IncidentUpdateOne) ClearClosedAt() *IncidentUpdateOne {
+	iuo.mutation.ClearClosedAt()
+	return iuo
+}
+
 // SetProviderID sets the "provider_id" field.
 func (iuo *IncidentUpdateOne) SetProviderID(s string) *IncidentUpdateOne {
 	iuo.mutation.SetProviderID(s)
@@ -1561,6 +1615,12 @@ func (iuo *IncidentUpdateOne) SetNillableProviderID(s *string) *IncidentUpdateOn
 	if s != nil {
 		iuo.SetProviderID(*s)
 	}
+	return iuo
+}
+
+// ClearProviderID clears the value of the "provider_id" field.
+func (iuo *IncidentUpdateOne) ClearProviderID() *IncidentUpdateOne {
+	iuo.mutation.ClearProviderID()
 	return iuo
 }
 
@@ -2203,17 +2263,29 @@ func (iuo *IncidentUpdateOne) sqlSave(ctx context.Context) (_node *Incident, err
 	if value, ok := iuo.mutation.Summary(); ok {
 		_spec.SetField(incident.FieldSummary, field.TypeString, value)
 	}
+	if iuo.mutation.SummaryCleared() {
+		_spec.ClearField(incident.FieldSummary, field.TypeString)
+	}
 	if value, ok := iuo.mutation.OpenedAt(); ok {
 		_spec.SetField(incident.FieldOpenedAt, field.TypeTime, value)
 	}
 	if value, ok := iuo.mutation.ModifiedAt(); ok {
 		_spec.SetField(incident.FieldModifiedAt, field.TypeTime, value)
 	}
+	if iuo.mutation.ModifiedAtCleared() {
+		_spec.ClearField(incident.FieldModifiedAt, field.TypeTime)
+	}
 	if value, ok := iuo.mutation.ClosedAt(); ok {
 		_spec.SetField(incident.FieldClosedAt, field.TypeTime, value)
 	}
+	if iuo.mutation.ClosedAtCleared() {
+		_spec.ClearField(incident.FieldClosedAt, field.TypeTime)
+	}
 	if value, ok := iuo.mutation.ProviderID(); ok {
 		_spec.SetField(incident.FieldProviderID, field.TypeString, value)
+	}
+	if iuo.mutation.ProviderIDCleared() {
+		_spec.ClearField(incident.FieldProviderID, field.TypeString)
 	}
 	if value, ok := iuo.mutation.ChatChannelID(); ok {
 		_spec.SetField(incident.FieldChatChannelID, field.TypeString, value)

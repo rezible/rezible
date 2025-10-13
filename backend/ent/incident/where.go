@@ -331,6 +331,16 @@ func SummaryHasSuffix(v string) predicate.Incident {
 	return predicate.Incident(sql.FieldHasSuffix(FieldSummary, v))
 }
 
+// SummaryIsNil applies the IsNil predicate on the "summary" field.
+func SummaryIsNil() predicate.Incident {
+	return predicate.Incident(sql.FieldIsNull(FieldSummary))
+}
+
+// SummaryNotNil applies the NotNil predicate on the "summary" field.
+func SummaryNotNil() predicate.Incident {
+	return predicate.Incident(sql.FieldNotNull(FieldSummary))
+}
+
 // SummaryEqualFold applies the EqualFold predicate on the "summary" field.
 func SummaryEqualFold(v string) predicate.Incident {
 	return predicate.Incident(sql.FieldEqualFold(FieldSummary, v))
@@ -421,6 +431,16 @@ func ModifiedAtLTE(v time.Time) predicate.Incident {
 	return predicate.Incident(sql.FieldLTE(FieldModifiedAt, v))
 }
 
+// ModifiedAtIsNil applies the IsNil predicate on the "modified_at" field.
+func ModifiedAtIsNil() predicate.Incident {
+	return predicate.Incident(sql.FieldIsNull(FieldModifiedAt))
+}
+
+// ModifiedAtNotNil applies the NotNil predicate on the "modified_at" field.
+func ModifiedAtNotNil() predicate.Incident {
+	return predicate.Incident(sql.FieldNotNull(FieldModifiedAt))
+}
+
 // ClosedAtEQ applies the EQ predicate on the "closed_at" field.
 func ClosedAtEQ(v time.Time) predicate.Incident {
 	return predicate.Incident(sql.FieldEQ(FieldClosedAt, v))
@@ -459,6 +479,16 @@ func ClosedAtLT(v time.Time) predicate.Incident {
 // ClosedAtLTE applies the LTE predicate on the "closed_at" field.
 func ClosedAtLTE(v time.Time) predicate.Incident {
 	return predicate.Incident(sql.FieldLTE(FieldClosedAt, v))
+}
+
+// ClosedAtIsNil applies the IsNil predicate on the "closed_at" field.
+func ClosedAtIsNil() predicate.Incident {
+	return predicate.Incident(sql.FieldIsNull(FieldClosedAt))
+}
+
+// ClosedAtNotNil applies the NotNil predicate on the "closed_at" field.
+func ClosedAtNotNil() predicate.Incident {
+	return predicate.Incident(sql.FieldNotNull(FieldClosedAt))
 }
 
 // ProviderIDEQ applies the EQ predicate on the "provider_id" field.
@@ -514,6 +544,16 @@ func ProviderIDHasPrefix(v string) predicate.Incident {
 // ProviderIDHasSuffix applies the HasSuffix predicate on the "provider_id" field.
 func ProviderIDHasSuffix(v string) predicate.Incident {
 	return predicate.Incident(sql.FieldHasSuffix(FieldProviderID, v))
+}
+
+// ProviderIDIsNil applies the IsNil predicate on the "provider_id" field.
+func ProviderIDIsNil() predicate.Incident {
+	return predicate.Incident(sql.FieldIsNull(FieldProviderID))
+}
+
+// ProviderIDNotNil applies the NotNil predicate on the "provider_id" field.
+func ProviderIDNotNil() predicate.Incident {
+	return predicate.Incident(sql.FieldNotNull(FieldProviderID))
 }
 
 // ProviderIDEqualFold applies the EqualFold predicate on the "provider_id" field.

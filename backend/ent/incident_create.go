@@ -76,9 +76,25 @@ func (ic *IncidentCreate) SetSummary(s string) *IncidentCreate {
 	return ic
 }
 
+// SetNillableSummary sets the "summary" field if the given value is not nil.
+func (ic *IncidentCreate) SetNillableSummary(s *string) *IncidentCreate {
+	if s != nil {
+		ic.SetSummary(*s)
+	}
+	return ic
+}
+
 // SetOpenedAt sets the "opened_at" field.
 func (ic *IncidentCreate) SetOpenedAt(t time.Time) *IncidentCreate {
 	ic.mutation.SetOpenedAt(t)
+	return ic
+}
+
+// SetNillableOpenedAt sets the "opened_at" field if the given value is not nil.
+func (ic *IncidentCreate) SetNillableOpenedAt(t *time.Time) *IncidentCreate {
+	if t != nil {
+		ic.SetOpenedAt(*t)
+	}
 	return ic
 }
 
@@ -88,15 +104,39 @@ func (ic *IncidentCreate) SetModifiedAt(t time.Time) *IncidentCreate {
 	return ic
 }
 
+// SetNillableModifiedAt sets the "modified_at" field if the given value is not nil.
+func (ic *IncidentCreate) SetNillableModifiedAt(t *time.Time) *IncidentCreate {
+	if t != nil {
+		ic.SetModifiedAt(*t)
+	}
+	return ic
+}
+
 // SetClosedAt sets the "closed_at" field.
 func (ic *IncidentCreate) SetClosedAt(t time.Time) *IncidentCreate {
 	ic.mutation.SetClosedAt(t)
 	return ic
 }
 
+// SetNillableClosedAt sets the "closed_at" field if the given value is not nil.
+func (ic *IncidentCreate) SetNillableClosedAt(t *time.Time) *IncidentCreate {
+	if t != nil {
+		ic.SetClosedAt(*t)
+	}
+	return ic
+}
+
 // SetProviderID sets the "provider_id" field.
 func (ic *IncidentCreate) SetProviderID(s string) *IncidentCreate {
 	ic.mutation.SetProviderID(s)
+	return ic
+}
+
+// SetNillableProviderID sets the "provider_id" field if the given value is not nil.
+func (ic *IncidentCreate) SetNillableProviderID(s *string) *IncidentCreate {
+	if s != nil {
+		ic.SetProviderID(*s)
+	}
 	return ic
 }
 
@@ -411,6 +451,13 @@ func (ic *IncidentCreate) defaults() error {
 		v := incident.DefaultPrivate
 		ic.mutation.SetPrivate(v)
 	}
+	if _, ok := ic.mutation.OpenedAt(); !ok {
+		if incident.DefaultOpenedAt == nil {
+			return fmt.Errorf("ent: uninitialized incident.DefaultOpenedAt (forgotten import ent/runtime?)")
+		}
+		v := incident.DefaultOpenedAt()
+		ic.mutation.SetOpenedAt(v)
+	}
 	if _, ok := ic.mutation.ID(); !ok {
 		if incident.DefaultID == nil {
 			return fmt.Errorf("ent: uninitialized incident.DefaultID (forgotten import ent/runtime?)")
@@ -435,20 +482,8 @@ func (ic *IncidentCreate) check() error {
 	if _, ok := ic.mutation.Private(); !ok {
 		return &ValidationError{Name: "private", err: errors.New(`ent: missing required field "Incident.private"`)}
 	}
-	if _, ok := ic.mutation.Summary(); !ok {
-		return &ValidationError{Name: "summary", err: errors.New(`ent: missing required field "Incident.summary"`)}
-	}
 	if _, ok := ic.mutation.OpenedAt(); !ok {
 		return &ValidationError{Name: "opened_at", err: errors.New(`ent: missing required field "Incident.opened_at"`)}
-	}
-	if _, ok := ic.mutation.ModifiedAt(); !ok {
-		return &ValidationError{Name: "modified_at", err: errors.New(`ent: missing required field "Incident.modified_at"`)}
-	}
-	if _, ok := ic.mutation.ClosedAt(); !ok {
-		return &ValidationError{Name: "closed_at", err: errors.New(`ent: missing required field "Incident.closed_at"`)}
-	}
-	if _, ok := ic.mutation.ProviderID(); !ok {
-		return &ValidationError{Name: "provider_id", err: errors.New(`ent: missing required field "Incident.provider_id"`)}
 	}
 	if len(ic.mutation.TenantIDs()) == 0 {
 		return &ValidationError{Name: "tenant", err: errors.New(`ent: missing required edge "Incident.tenant"`)}
@@ -891,6 +926,12 @@ func (u *IncidentUpsert) UpdateSummary() *IncidentUpsert {
 	return u
 }
 
+// ClearSummary clears the value of the "summary" field.
+func (u *IncidentUpsert) ClearSummary() *IncidentUpsert {
+	u.SetNull(incident.FieldSummary)
+	return u
+}
+
 // SetOpenedAt sets the "opened_at" field.
 func (u *IncidentUpsert) SetOpenedAt(v time.Time) *IncidentUpsert {
 	u.Set(incident.FieldOpenedAt, v)
@@ -915,6 +956,12 @@ func (u *IncidentUpsert) UpdateModifiedAt() *IncidentUpsert {
 	return u
 }
 
+// ClearModifiedAt clears the value of the "modified_at" field.
+func (u *IncidentUpsert) ClearModifiedAt() *IncidentUpsert {
+	u.SetNull(incident.FieldModifiedAt)
+	return u
+}
+
 // SetClosedAt sets the "closed_at" field.
 func (u *IncidentUpsert) SetClosedAt(v time.Time) *IncidentUpsert {
 	u.Set(incident.FieldClosedAt, v)
@@ -927,6 +974,12 @@ func (u *IncidentUpsert) UpdateClosedAt() *IncidentUpsert {
 	return u
 }
 
+// ClearClosedAt clears the value of the "closed_at" field.
+func (u *IncidentUpsert) ClearClosedAt() *IncidentUpsert {
+	u.SetNull(incident.FieldClosedAt)
+	return u
+}
+
 // SetProviderID sets the "provider_id" field.
 func (u *IncidentUpsert) SetProviderID(v string) *IncidentUpsert {
 	u.Set(incident.FieldProviderID, v)
@@ -936,6 +989,12 @@ func (u *IncidentUpsert) SetProviderID(v string) *IncidentUpsert {
 // UpdateProviderID sets the "provider_id" field to the value that was provided on create.
 func (u *IncidentUpsert) UpdateProviderID() *IncidentUpsert {
 	u.SetExcluded(incident.FieldProviderID)
+	return u
+}
+
+// ClearProviderID clears the value of the "provider_id" field.
+func (u *IncidentUpsert) ClearProviderID() *IncidentUpsert {
+	u.SetNull(incident.FieldProviderID)
 	return u
 }
 
@@ -1100,6 +1159,13 @@ func (u *IncidentUpsertOne) UpdateSummary() *IncidentUpsertOne {
 	})
 }
 
+// ClearSummary clears the value of the "summary" field.
+func (u *IncidentUpsertOne) ClearSummary() *IncidentUpsertOne {
+	return u.Update(func(s *IncidentUpsert) {
+		s.ClearSummary()
+	})
+}
+
 // SetOpenedAt sets the "opened_at" field.
 func (u *IncidentUpsertOne) SetOpenedAt(v time.Time) *IncidentUpsertOne {
 	return u.Update(func(s *IncidentUpsert) {
@@ -1128,6 +1194,13 @@ func (u *IncidentUpsertOne) UpdateModifiedAt() *IncidentUpsertOne {
 	})
 }
 
+// ClearModifiedAt clears the value of the "modified_at" field.
+func (u *IncidentUpsertOne) ClearModifiedAt() *IncidentUpsertOne {
+	return u.Update(func(s *IncidentUpsert) {
+		s.ClearModifiedAt()
+	})
+}
+
 // SetClosedAt sets the "closed_at" field.
 func (u *IncidentUpsertOne) SetClosedAt(v time.Time) *IncidentUpsertOne {
 	return u.Update(func(s *IncidentUpsert) {
@@ -1142,6 +1215,13 @@ func (u *IncidentUpsertOne) UpdateClosedAt() *IncidentUpsertOne {
 	})
 }
 
+// ClearClosedAt clears the value of the "closed_at" field.
+func (u *IncidentUpsertOne) ClearClosedAt() *IncidentUpsertOne {
+	return u.Update(func(s *IncidentUpsert) {
+		s.ClearClosedAt()
+	})
+}
+
 // SetProviderID sets the "provider_id" field.
 func (u *IncidentUpsertOne) SetProviderID(v string) *IncidentUpsertOne {
 	return u.Update(func(s *IncidentUpsert) {
@@ -1153,6 +1233,13 @@ func (u *IncidentUpsertOne) SetProviderID(v string) *IncidentUpsertOne {
 func (u *IncidentUpsertOne) UpdateProviderID() *IncidentUpsertOne {
 	return u.Update(func(s *IncidentUpsert) {
 		s.UpdateProviderID()
+	})
+}
+
+// ClearProviderID clears the value of the "provider_id" field.
+func (u *IncidentUpsertOne) ClearProviderID() *IncidentUpsertOne {
+	return u.Update(func(s *IncidentUpsert) {
+		s.ClearProviderID()
 	})
 }
 
@@ -1493,6 +1580,13 @@ func (u *IncidentUpsertBulk) UpdateSummary() *IncidentUpsertBulk {
 	})
 }
 
+// ClearSummary clears the value of the "summary" field.
+func (u *IncidentUpsertBulk) ClearSummary() *IncidentUpsertBulk {
+	return u.Update(func(s *IncidentUpsert) {
+		s.ClearSummary()
+	})
+}
+
 // SetOpenedAt sets the "opened_at" field.
 func (u *IncidentUpsertBulk) SetOpenedAt(v time.Time) *IncidentUpsertBulk {
 	return u.Update(func(s *IncidentUpsert) {
@@ -1521,6 +1615,13 @@ func (u *IncidentUpsertBulk) UpdateModifiedAt() *IncidentUpsertBulk {
 	})
 }
 
+// ClearModifiedAt clears the value of the "modified_at" field.
+func (u *IncidentUpsertBulk) ClearModifiedAt() *IncidentUpsertBulk {
+	return u.Update(func(s *IncidentUpsert) {
+		s.ClearModifiedAt()
+	})
+}
+
 // SetClosedAt sets the "closed_at" field.
 func (u *IncidentUpsertBulk) SetClosedAt(v time.Time) *IncidentUpsertBulk {
 	return u.Update(func(s *IncidentUpsert) {
@@ -1535,6 +1636,13 @@ func (u *IncidentUpsertBulk) UpdateClosedAt() *IncidentUpsertBulk {
 	})
 }
 
+// ClearClosedAt clears the value of the "closed_at" field.
+func (u *IncidentUpsertBulk) ClearClosedAt() *IncidentUpsertBulk {
+	return u.Update(func(s *IncidentUpsert) {
+		s.ClearClosedAt()
+	})
+}
+
 // SetProviderID sets the "provider_id" field.
 func (u *IncidentUpsertBulk) SetProviderID(v string) *IncidentUpsertBulk {
 	return u.Update(func(s *IncidentUpsert) {
@@ -1546,6 +1654,13 @@ func (u *IncidentUpsertBulk) SetProviderID(v string) *IncidentUpsertBulk {
 func (u *IncidentUpsertBulk) UpdateProviderID() *IncidentUpsertBulk {
 	return u.Update(func(s *IncidentUpsert) {
 		s.UpdateProviderID()
+	})
+}
+
+// ClearProviderID clears the value of the "provider_id" field.
+func (u *IncidentUpsertBulk) ClearProviderID() *IncidentUpsertBulk {
+	return u.Update(func(s *IncidentUpsert) {
+		s.ClearProviderID()
 	})
 }
 

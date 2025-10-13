@@ -3,6 +3,8 @@
 package incident
 
 import (
+	"time"
+
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
@@ -228,6 +230,8 @@ var (
 	Policy ent.Policy
 	// DefaultPrivate holds the default value on creation for the "private" field.
 	DefaultPrivate bool
+	// DefaultOpenedAt holds the default value on creation for the "opened_at" field.
+	DefaultOpenedAt func() time.Time
 	// DefaultID holds the default value on creation for the "id" field.
 	DefaultID func() uuid.UUID
 )
