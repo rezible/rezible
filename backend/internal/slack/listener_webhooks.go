@@ -45,37 +45,36 @@ func (wh *WebhookEventHandler) Handler() http.Handler {
 	return mux
 }
 
-func (wh *WebhookEventHandler) verifyWebhook(w http.ResponseWriter, r *http.Request) error {
+func (wh *WebhookEventHandler) readAndVerify(w http.ResponseWriter, r *http.Request) ([]byte, error) {
+	sv, svErr := slack.NewSecretsVerifier(r.Header, wh.signingSecret)
+	if svErr != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		return nil, svErr
+	}
+
 	bodyReader := http.MaxBytesReader(w, r.Body, maxWebhookPayloadBytes)
 	body, bodyErr := io.ReadAll(bodyReader)
 	if bodyErr != nil {
 		w.WriteHeader(http.StatusBadRequest)
-		return bodyErr
-	}
-
-	sv, svErr := slack.NewSecretsVerifier(r.Header, wh.signingSecret)
-	if svErr != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		return svErr
+		return nil, bodyErr
 	}
 
 	if _, writeErr := sv.Write(body); writeErr != nil {
 		w.WriteHeader(http.StatusInternalServerError)
-		return writeErr
+		return nil, writeErr
 	}
 
 	if verificationErr := sv.Ensure(); verificationErr != nil {
 		w.WriteHeader(http.StatusUnauthorized)
-		return verificationErr
+		return nil, verificationErr
 	}
 
-	r.Body = io.NopCloser(bytes.NewBuffer(body))
-
-	return nil
+	return body, nil
 }
 
 func (wh *WebhookEventHandler) handleOptionsWebhook(w http.ResponseWriter, r *http.Request) {
-	if verifyErr := wh.verifyWebhook(w, r); verifyErr != nil {
+	_, verifyErr := wh.readAndVerify(w, r)
+	if verifyErr != nil {
 		log.Error().Err(verifyErr).Msg("failed to verify webhook body")
 		return
 	}
@@ -86,23 +85,23 @@ func (wh *WebhookEventHandler) handleOptionsWebhook(w http.ResponseWriter, r *ht
 }
 
 func (wh *WebhookEventHandler) handleEventsWebhook(w http.ResponseWriter, r *http.Request) {
-	if verifyErr := wh.verifyWebhook(w, r); verifyErr != nil {
+	body, verifyErr := wh.readAndVerify(w, r)
+	if verifyErr != nil {
 		log.Error().Err(verifyErr).Msg("failed to verify webhook body")
 		return
 	}
 
-	body, readErr := io.ReadAll(r.Body)
-	if readErr != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		return
-	}
-
-	ev, evErr := slackevents.ParseEvent(body, slackevents.OptionNoVerifyToken())
+	ev, evErr := slackevents.ParseEvent(body,
+		// skip using the verification token as we verified via header
+		slackevents.OptionNoVerifyToken())
 	if evErr != nil {
 		log.Error().Err(evErr).Msg("failed to parse event")
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
+
+	// TODO: revise usage of this
+	ctx := r.Context()
 
 	if ev.Type == slackevents.URLVerification {
 		var res *slackevents.ChallengeResponse
@@ -125,14 +124,11 @@ func (wh *WebhookEventHandler) handleEventsWebhook(w http.ResponseWriter, r *htt
 	}
 
 	if ev.Type == slackevents.CallbackEvent {
-		handled, cbErr := wh.chatSvc.onCallbackEventReceived(r.Context(), ev)
-		if cbErr != nil {
-			w.WriteHeader(http.StatusInternalServerError)
-		} else if !handled {
-			w.WriteHeader(http.StatusBadRequest)
-		} else {
-			w.WriteHeader(http.StatusOK)
+		respHdr := http.StatusOK
+		if queueErr := wh.chatSvc.queueCallbackEvent(ctx, ev); queueErr != nil {
+			respHdr = http.StatusInternalServerError
 		}
+		w.WriteHeader(respHdr)
 		return
 	}
 
@@ -141,11 +137,13 @@ func (wh *WebhookEventHandler) handleEventsWebhook(w http.ResponseWriter, r *htt
 }
 
 func (wh *WebhookEventHandler) handleInteractionsWebhook(w http.ResponseWriter, r *http.Request) {
-	if verifyErr := wh.verifyWebhook(w, r); verifyErr != nil {
+	body, verifyErr := wh.readAndVerify(w, r)
+	if verifyErr != nil {
 		log.Error().Err(verifyErr).Msg("failed to verify webhook body")
 		return
 	}
 
+	r.Body = io.NopCloser(bytes.NewBuffer(body))
 	payload := r.PostFormValue("payload")
 	if payload == "" {
 		w.WriteHeader(http.StatusBadRequest)
@@ -162,13 +160,14 @@ func (wh *WebhookEventHandler) handleInteractionsWebhook(w http.ResponseWriter, 
 	ctx, cancel := context.WithTimeout(r.Context(), time.Second*3)
 	defer cancel()
 	handled, handlerErr := wh.chatSvc.onInteractionEventReceived(ctx, &ic)
+
+	hdr := http.StatusOK
 	if handlerErr != nil {
 		log.Error().Err(handlerErr).Str("type", string(ic.Type)).Msg("failed to handle interaction")
-		w.WriteHeader(http.StatusInternalServerError)
+		hdr = http.StatusInternalServerError
 	} else if !handled {
 		log.Warn().Str("type", string(ic.Type)).Msg("didnt handle webhook interaction event")
-		w.WriteHeader(http.StatusBadRequest)
-	} else {
-		w.WriteHeader(http.StatusOK)
+		hdr = http.StatusBadRequest
 	}
+	w.WriteHeader(hdr)
 }

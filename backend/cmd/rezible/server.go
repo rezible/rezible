@@ -12,6 +12,7 @@ import (
 
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
+
 	"github.com/sourcegraph/conc/pool"
 
 	rez "github.com/rezible/rezible"
@@ -140,7 +141,7 @@ func (s *rezServer) setup() error {
 		return fmt.Errorf("postgres.NewEventAnnotationsService: %w", annosErr)
 	}
 
-	chat, chatErr := slack.NewChatService(users, annos)
+	chat, chatErr := slack.NewChatService(jobSvc, users, annos)
 	if chatErr != nil {
 		return fmt.Errorf("postgres.NewChatService: %w", chatErr)
 	}
@@ -205,15 +206,12 @@ func (s *rezServer) setup() error {
 		return fmt.Errorf("postgres.NewPlaybookService: %w", playbooksErr)
 	}
 
-	jobsErr := registerJobs(syncSvc, shifts, oncallMetrics, debriefs)
-	if jobsErr != nil {
-		return fmt.Errorf("registering jobs: %w", jobsErr)
-	}
-
 	frontendFS, feFSErr := http.GetEmbeddedFrontendFiles()
 	if feFSErr != nil {
 		return fmt.Errorf("failed to get embedded frontend files: %w", feFSErr)
 	}
+
+	river.RegisterJobWorkers(chat, syncSvc, shifts, oncallMetrics, debriefs)
 
 	listenAddr := net.JoinHostPort(s.opts.Host, s.opts.Port)
 	srv := http.NewServer(listenAddr, auth)
@@ -284,24 +282,4 @@ func makeAuthService(ctx context.Context, orgs rez.OrganizationService, users re
 	}
 
 	return http.NewAuthService(secretKey, orgs, users, provs)
-}
-
-func registerJobs(
-	sync rez.ProviderSyncService,
-	shifts rez.OncallShiftsService,
-	oncallMetrics rez.OncallMetricsService,
-	debriefs rez.DebriefService,
-) error {
-	river.RegisterPeriodicJob(sync.MakeSyncProviderDataPeriodicJob(), sync.SyncProviderData)
-
-	river.RegisterPeriodicJob(shifts.MakeScanShiftsPeriodicJob(), shifts.HandlePeriodicScanShifts)
-	river.RegisterWorkerFunc(shifts.HandleEnsureShiftHandoverReminderSent)
-	river.RegisterWorkerFunc(shifts.HandleEnsureShiftHandoverSent)
-	river.RegisterWorkerFunc(oncallMetrics.HandleGenerateShiftMetrics)
-
-	river.RegisterWorkerFunc(debriefs.HandleGenerateDebriefResponse)
-	river.RegisterWorkerFunc(debriefs.HandleGenerateSuggestions)
-	river.RegisterWorkerFunc(debriefs.HandleSendDebriefRequests)
-
-	return nil
 }

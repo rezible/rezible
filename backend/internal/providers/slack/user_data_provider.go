@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"iter"
 
-	"github.com/rs/zerolog/log"
 	"github.com/slack-go/slack"
 
 	rez "github.com/rezible/rezible"
@@ -70,7 +69,6 @@ func (p *UserDataProvider) PullUsers(ctx context.Context) iter.Seq2[*ent.User, e
 				return
 			}
 			for _, u := range slackUsers {
-				log.Debug().Interface("user", u).Msg("slack user")
 				if u.IsBot || u.ID == "USLACKBOT" {
 					continue
 				}

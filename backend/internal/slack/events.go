@@ -2,39 +2,64 @@ package slack
 
 import (
 	"context"
+	"fmt"
 
+	"github.com/rezible/rezible/jobs"
 	"github.com/rs/zerolog/log"
 	"github.com/slack-go/slack/slackevents"
 )
 
-func (s *ChatService) handleEventsApiEvent(ctx context.Context, ev slackevents.EventsAPIEvent) (bool, error) {
-	return s.handleCallbackEvent(ctx, ev)
+const (
+	eventKindCallback = "callback"
+)
+
+func (s *ChatService) queueCallbackEvent(ctx context.Context, data slackevents.EventsAPIEvent) error {
+	return s.jobs.Insert(ctx, jobs.InsertJobParams{
+		Args: jobs.ProcessChatEvent{
+			Provider:  "slack",
+			EventKind: eventKindCallback,
+			Data:      data,
+		},
+	})
 }
 
-func (s *ChatService) onCallbackEventReceived(ctx context.Context, ev slackevents.EventsAPIEvent) (bool, error) {
-	// TODO: queue?
-	return s.handleCallbackEvent(ctx, ev)
+func (s *ChatService) ProcessEvent(ctx context.Context, args jobs.ProcessChatEvent) error {
+	if args.Provider != "slack" {
+		return fmt.Errorf("invalid provider")
+	}
+	if args.EventKind == eventKindCallback {
+		data, ok := args.Data.(slackevents.EventsAPIEvent)
+		if !ok {
+			return fmt.Errorf("invalid event")
+		}
+		_, handleErr := s.handleCallbackEvent(ctx, &data)
+		if handleErr != nil {
+			return fmt.Errorf("failed to handle callback event: %w", handleErr)
+		}
+		return nil
+	}
+	return nil
 }
 
-func (s *ChatService) handleCallbackEvent(ctx context.Context, ev slackevents.EventsAPIEvent) (bool, error) {
+func (s *ChatService) handleCallbackEvent(ctx context.Context, ev *slackevents.EventsAPIEvent) (bool, error) {
 	switch data := ev.InnerEvent.Data.(type) {
 	case *slackevents.AppHomeOpenedEvent:
-		s.onUserHomeOpenedEvent(data)
+		return true, s.onUserHomeOpenedEvent(data)
 	case *slackevents.AppMentionEvent:
-		s.onMentionEvent(data)
+		return true, s.onMentionEvent(data)
 	case *slackevents.AssistantThreadStartedEvent:
-		s.onAssistantThreadStartedEvent(data)
+		return true, s.onAssistantThreadStartedEvent(data)
 	case *slackevents.MessageEvent:
-		s.onMessageEvent(data)
+		return true, s.onMessageEvent(data)
 	default:
 		log.Debug().
 			Str("innerEventType", ev.InnerEvent.Type).
 			Msg("unhandled slack callback event")
+		return false, nil
 	}
-	return true, nil
 }
 
-func (s *ChatService) onMentionEvent(data *slackevents.AppMentionEvent) {
+func (s *ChatService) onMentionEvent(data *slackevents.AppMentionEvent) error {
 	replyTs := data.TimeStamp
 	if data.ThreadTimeStamp != "" {
 		replyTs = data.ThreadTimeStamp
@@ -42,9 +67,10 @@ func (s *ChatService) onMentionEvent(data *slackevents.AppMentionEvent) {
 
 	// data.Channel, replyTs, data.User, data.Text
 	log.Debug().Str("replyTs", replyTs).Msg("mention event")
+	return nil
 }
 
-func (s *ChatService) onMessageEvent(data *slackevents.MessageEvent) {
+func (s *ChatService) onMessageEvent(data *slackevents.MessageEvent) error {
 	threadTs := data.ThreadTimeStamp
 	// TODO check if thread is 'monitored'
 
@@ -54,25 +80,30 @@ func (s *ChatService) onMessageEvent(data *slackevents.MessageEvent) {
 		Str("thread", threadTs).
 		Str("user", data.User).
 		Msg("message")
+	return nil
 }
 
-func (s *ChatService) onAssistantThreadStartedEvent(data *slackevents.AssistantThreadStartedEvent) {
+func (s *ChatService) onAssistantThreadStartedEvent(data *slackevents.AssistantThreadStartedEvent) error {
 	log.Debug().Msg("assistant thread started")
+	return nil
 }
 
-func (s *ChatService) onUserHomeOpenedEvent(data *slackevents.AppHomeOpenedEvent) {
+func (s *ChatService) onUserHomeOpenedEvent(data *slackevents.AppHomeOpenedEvent) error {
 	usr, ctx, usrErr := s.lookupChatUser(context.Background(), data.User)
 	if usrErr != nil {
-		log.Warn().Err(usrErr).Msg("failed to lookup user")
-		return
+		return fmt.Errorf("failed to lookup user: %w", usrErr)
 	}
+
 	homeView, viewErr := makeUserHomeView(ctx, usr)
 	if viewErr != nil || homeView == nil {
-		log.Error().Err(viewErr).Msg("failed to create user home view")
-		return
+		return fmt.Errorf("failed to create user home view: %w", viewErr)
 	}
+
 	resp, publishErr := s.client.PublishViewContext(ctx, data.User, *homeView, "")
 	if publishErr != nil {
 		logSlackViewErrorResponse(publishErr, resp)
+		return fmt.Errorf("failed to publish user home view: %w", publishErr)
 	}
+
+	return nil
 }

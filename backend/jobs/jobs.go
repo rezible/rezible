@@ -113,3 +113,13 @@ type GenerateShiftMetrics struct {
 func (GenerateShiftMetrics) Kind() string {
 	return "generate-shift-metrics"
 }
+
+type ProcessChatEvent struct {
+	Provider  string
+	EventKind string
+	Data      any
+}
+
+func (ProcessChatEvent) Kind() string {
+	return "process-chat-event"
+}

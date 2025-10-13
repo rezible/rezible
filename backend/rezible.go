@@ -238,6 +238,8 @@ type (
 	}
 
 	ChatService interface {
+		ProcessEvent(context.Context, jobs.ProcessChatEvent) error
+
 		SendMessage(ctx context.Context, id string, msg *ContentNode) error
 		SendReply(ctx context.Context, channelId string, threadId string, text string) error
 		SendTextMessage(ctx context.Context, id string, text string) error

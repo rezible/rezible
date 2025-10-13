@@ -12,17 +12,20 @@ import (
 )
 
 type ChatService struct {
+	jobs  rez.JobsService
+	users rez.UserService
+	annos rez.EventAnnotationsService
+
 	client *slack.Client
-	users  rez.UserService
-	annos  rez.EventAnnotationsService
 }
 
-func NewChatService(users rez.UserService, annos rez.EventAnnotationsService) (*ChatService, error) {
+func NewChatService(jobs rez.JobsService, users rez.UserService, annos rez.EventAnnotationsService) (*ChatService, error) {
 	client, clientErr := LoadClient()
 	if clientErr != nil {
 		return nil, clientErr
 	}
 	s := &ChatService{
+		jobs:   jobs,
 		users:  users,
 		annos:  annos,
 		client: client,

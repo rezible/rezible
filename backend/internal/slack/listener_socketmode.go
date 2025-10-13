@@ -76,7 +76,7 @@ func (sml *SocketModeListener) runEventConsumerLoop(ctx context.Context) error {
 		select {
 		case evt, ok := <-sml.client.Events:
 			if ok {
-				sml.onEvent(ctx, &evt)
+				sml.onEventReceived(ctx, &evt)
 			}
 		case <-ctx.Done():
 			return nil
@@ -84,7 +84,7 @@ func (sml *SocketModeListener) runEventConsumerLoop(ctx context.Context) error {
 	}
 }
 
-func (sml *SocketModeListener) onEvent(ctx context.Context, evt *socketmode.Event) {
+func (sml *SocketModeListener) onEventReceived(ctx context.Context, evt *socketmode.Event) {
 	if evt.Request == nil || evt.Type == socketmode.EventTypeHello {
 		return
 	}
@@ -105,12 +105,11 @@ func (sml *SocketModeListener) onEvent(ctx context.Context, evt *socketmode.Even
 func (sml *SocketModeListener) handleEvent(ctx context.Context, evt *socketmode.Event) (bool, any, error) {
 	switch evt.Type {
 	case socketmode.EventTypeEventsAPI:
-		eventsAPIEvent, ok := evt.Data.(slackevents.EventsAPIEvent)
+		eev, ok := evt.Data.(slackevents.EventsAPIEvent)
 		if !ok {
 			return false, nil, fmt.Errorf("invalid events api event data")
 		}
-		handled, handleErr := sml.chatSvc.handleEventsApiEvent(ctx, eventsAPIEvent)
-		return handled, nil, handleErr
+		return sml.handleEventsApiEvent(ctx, &eev)
 	case socketmode.EventTypeInteractive:
 		ic, ok := evt.Data.(slack.InteractionCallback)
 		if !ok {
@@ -122,9 +121,21 @@ func (sml *SocketModeListener) handleEvent(ctx context.Context, evt *socketmode.
 		if !ok {
 			return false, nil, fmt.Errorf("invalid slash command data")
 		}
-		return sml.chatSvc.handleSlashCommand(ctx, cmd)
+		return sml.chatSvc.handleSlashCommand(ctx, &cmd)
 	default:
-		log.Warn().Str("type", string(evt.Type)).Msg("skipping socketmode event")
+		log.Warn().Str("type", string(evt.Type)).Msg("skipped socketmode event")
 		return false, nil, nil
 	}
+}
+
+func (sml *SocketModeListener) handleEventsApiEvent(ctx context.Context, evt *slackevents.EventsAPIEvent) (bool, any, error) {
+	if evt.Type == slackevents.CallbackEvent {
+		handled, handleErr := sml.chatSvc.handleCallbackEvent(ctx, evt)
+		if handleErr != nil {
+			return true, nil, fmt.Errorf("handling callback event: %w", handleErr)
+		}
+		return handled, nil, nil
+	}
+	log.Warn().Str("type", string(evt.Type)).Msg("didnt handle slack callback event")
+	return false, nil, nil
 }
