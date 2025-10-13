@@ -3,7 +3,6 @@ package slack
 import (
 	"context"
 	"fmt"
-	"os"
 
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/access"
@@ -12,32 +11,10 @@ import (
 	"github.com/slack-go/slack"
 )
 
-const (
-	botTokenEnvVar = "SLACK_BOT_TOKEN"
-	appTokenEnvVar = "SLACK_APP_TOKEN"
-)
-
 type ChatService struct {
 	client *slack.Client
 	users  rez.UserService
 	annos  rez.EventAnnotationsService
-}
-
-func LoadClient() (*slack.Client, error) {
-	botToken := os.Getenv(botTokenEnvVar)
-	if botToken == "" {
-		return nil, fmt.Errorf("%s environment variable not set", botTokenEnvVar)
-	}
-
-	appToken := os.Getenv(appTokenEnvVar)
-	if appToken != "" {
-		// TODO: check if socketmode enabled
-	}
-
-	client := slack.New(botToken,
-		slack.OptionAppLevelToken(appToken))
-
-	return client, nil
 }
 
 func NewChatService(users rez.UserService, annos rez.EventAnnotationsService) (*ChatService, error) {
@@ -51,6 +28,10 @@ func NewChatService(users rez.UserService, annos rez.EventAnnotationsService) (*
 		client: client,
 	}
 	return s, nil
+}
+
+func (s *ChatService) EnableEventListener() bool {
+	return UseSocketMode()
 }
 
 func (s *ChatService) lookupChatUser(baseCtx context.Context, chatId string) (*ent.User, context.Context, error) {

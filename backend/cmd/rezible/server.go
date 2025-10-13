@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"io"
 	"net"
 	"os"
 	"strings"
@@ -31,10 +32,14 @@ import (
 type rezServer struct {
 	opts *Options
 
-	db                  *postgres.Database
-	jobs                *river.JobService
-	httpServer          *http.Server
-	slackSocketListener *slack.SocketModeListener
+	db        *postgres.Database
+	listeners map[string]listener
+	closers   map[string]io.Closer
+}
+
+type listener interface {
+	Start(ctx context.Context) error
+	Stop(ctx context.Context) error
 }
 
 func newRezibleServer(opts *Options) *rezServer {
@@ -43,7 +48,11 @@ func newRezibleServer(opts *Options) *rezServer {
 		log.Logger = log.Level(zerolog.DebugLevel).Output(zerolog.ConsoleWriter{Out: os.Stderr})
 	}
 
-	return &rezServer{opts: opts}
+	return &rezServer{
+		opts:      opts,
+		listeners: make(map[string]listener),
+		closers:   make(map[string]io.Closer),
+	}
 }
 
 func (s *rezServer) Start(ctx context.Context) error {
@@ -51,20 +60,12 @@ func (s *rezServer) Start(ctx context.Context) error {
 		return fmt.Errorf("failed to setup server: %w", setupErr)
 	}
 
-	if jobsErr := s.jobs.Start(access.SystemContext(ctx)); jobsErr != nil {
-		return fmt.Errorf("failed to start background jobs client: %w", jobsErr)
-	}
-
 	p := pool.New().
 		WithErrors().
 		WithContext(access.AnonymousContext(ctx))
 
-	if s.slackSocketListener != nil {
-		p.Go(s.slackSocketListener.Start)
-	}
-
-	if s.httpServer != nil {
-		p.Go(s.httpServer.Start)
+	for _, l := range s.listeners {
+		p.Go(l.Start)
 	}
 
 	return p.Wait()
@@ -75,32 +76,20 @@ func (s *rezServer) Stop(ctx context.Context) error {
 	timeoutCtx, cancelStopCtx := context.WithTimeout(ctx, timeout)
 	defer cancelStopCtx()
 
-	var stopErr error
-	if s.httpServer != nil {
-		if srvErr := s.httpServer.Stop(timeoutCtx); srvErr != nil {
-			stopErr = errors.Join(stopErr, fmt.Errorf("stopping http server: %w", srvErr))
+	var err error
+	for name, l := range s.listeners {
+		if listenerErr := l.Stop(timeoutCtx); listenerErr != nil && !errors.Is(listenerErr, context.Canceled) {
+			err = errors.Join(err, fmt.Errorf("stopping %s: %w", name, listenerErr))
 		}
 	}
 
-	if s.slackSocketListener != nil {
-		if slErr := s.slackSocketListener.Stop(timeoutCtx); slErr != nil {
-			stopErr = errors.Join(stopErr, fmt.Errorf("stopping slack socket listener: %w", slErr))
+	for name, c := range s.closers {
+		if closeErr := c.Close(); closeErr != nil {
+			err = errors.Join(err, fmt.Errorf("closing %s: %w", name, closeErr))
 		}
 	}
 
-	if s.jobs != nil {
-		if jobsErr := s.jobs.Stop(timeoutCtx); jobsErr != nil {
-			stopErr = errors.Join(stopErr, fmt.Errorf("stopping jobs client: %w", jobsErr))
-		}
-	}
-
-	if s.db != nil {
-		if dbErr := s.db.Close(); dbErr != nil {
-			stopErr = errors.Join(stopErr, fmt.Errorf("closing db client: %w", dbErr))
-		}
-	}
-
-	return stopErr
+	return err
 }
 
 func (s *rezServer) setup() error {
@@ -110,13 +99,13 @@ func (s *rezServer) setup() error {
 	if poolErr != nil {
 		return fmt.Errorf("failed to open db: %w", poolErr)
 	}
-	s.db = db
+	s.closers["db"] = db
 
 	jobSvc, jobSvcErr := river.NewJobService(db.Pool)
 	if jobSvcErr != nil {
 		return fmt.Errorf("failed to create job service: %w", jobSvcErr)
 	}
-	s.jobs = jobSvc
+	s.listeners["jobs"] = jobSvc
 
 	dbc := db.Client()
 
@@ -136,7 +125,7 @@ func (s *rezServer) setup() error {
 		return fmt.Errorf("postgres.NewUserService: %w", usersErr)
 	}
 
-	auth, authErr := s.makeAuthService(ctx, orgs, users)
+	auth, authErr := makeAuthService(ctx, orgs, users)
 	if authErr != nil {
 		return fmt.Errorf("http.NewAuthService: %w", authErr)
 	}
@@ -216,7 +205,7 @@ func (s *rezServer) setup() error {
 		return fmt.Errorf("postgres.NewPlaybookService: %w", playbooksErr)
 	}
 
-	jobsErr := s.registerJobs(syncSvc, shifts, oncallMetrics, debriefs)
+	jobsErr := registerJobs(syncSvc, shifts, oncallMetrics, debriefs)
 	if jobsErr != nil {
 		return fmt.Errorf("registering jobs: %w", jobsErr)
 	}
@@ -235,21 +224,21 @@ func (s *rezServer) setup() error {
 	srv.MountMCP(eino.NewMCPHandler(auth))
 	srv.MountStaticFrontend(frontendFS)
 
-	if slack.UseSocketMode() {
-		sml, listenerErr := slack.NewSocketModeEventListener(chat)
+	if chat.EnableEventListener() {
+		sml, listenerErr := chat.MakeEventListener()
 		if listenerErr != nil {
 			return fmt.Errorf("slack.NewSocketModeEventListener: %w", listenerErr)
 		}
-		s.slackSocketListener = sml
+		s.listeners["chat events"] = sml
 	} else {
-		webhookListener, whErr := slack.NewWebhookEventListener(chat)
+		whHandler, whErr := slack.NewWebhookEventHandler(chat)
 		if whErr != nil {
 			return fmt.Errorf("slack.NewWebhookEventListener: %w", whErr)
 		}
-		srv.AddWebhookPathHandler("/slack", webhookListener.Handler())
+		srv.AddWebhookPathHandler("/slack", whHandler.Handler())
 	}
 
-	s.httpServer = srv
+	s.listeners["http server"] = srv
 
 	return nil
 }
@@ -258,7 +247,7 @@ func authProviderEnabled(name string) bool {
 	return strings.ToLower(os.Getenv("AUTH_ENABLE_"+strings.ToUpper(name))) == "true"
 }
 
-func (s *rezServer) makeAuthService(ctx context.Context, orgs rez.OrganizationService, users rez.UserService) (rez.AuthService, error) {
+func makeAuthService(ctx context.Context, orgs rez.OrganizationService, users rez.UserService) (rez.AuthService, error) {
 	var provs []rez.AuthSessionProvider
 
 	secretKey := os.Getenv("AUTH_SESSION_SECRET_KEY")
@@ -297,7 +286,7 @@ func (s *rezServer) makeAuthService(ctx context.Context, orgs rez.OrganizationSe
 	return http.NewAuthService(secretKey, orgs, users, provs)
 }
 
-func (s *rezServer) registerJobs(
+func registerJobs(
 	sync rez.ProviderSyncService,
 	shifts rez.OncallShiftsService,
 	oncallMetrics rez.OncallMetricsService,

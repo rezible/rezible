@@ -24,28 +24,28 @@ var (
 	maxWebhookPayloadBytes = int64(4<<20 + 1) // 4 MB
 )
 
-type WebhookListener struct {
+type WebhookEventHandler struct {
 	chatSvc       *ChatService
 	signingSecret string
 }
 
-func NewWebhookEventListener(chatSvc *ChatService) (*WebhookListener, error) {
+func NewWebhookEventHandler(chatSvc *ChatService) (*WebhookEventHandler, error) {
 	signingSecret := os.Getenv(signingSecretEnvVar)
 	if signingSecret == "" && !UseSocketMode() {
 		return nil, fmt.Errorf("%s environment variable not set", signingSecretEnvVar)
 	}
-	return &WebhookListener{chatSvc: chatSvc, signingSecret: signingSecret}, nil
+	return &WebhookEventHandler{chatSvc: chatSvc, signingSecret: signingSecret}, nil
 }
 
-func (wl *WebhookListener) Handler() http.Handler {
+func (wh *WebhookEventHandler) Handler() http.Handler {
 	mux := chi.NewMux()
-	mux.HandleFunc("/options", wl.handleOptionsWebhook)
-	mux.HandleFunc("/events", wl.handleEventsWebhook)
-	mux.HandleFunc("/interaction", wl.handleInteractionsWebhook)
+	mux.HandleFunc("/options", wh.handleOptionsWebhook)
+	mux.HandleFunc("/events", wh.handleEventsWebhook)
+	mux.HandleFunc("/interaction", wh.handleInteractionsWebhook)
 	return mux
 }
 
-func (wl *WebhookListener) verifyWebhook(w http.ResponseWriter, r *http.Request) error {
+func (wh *WebhookEventHandler) verifyWebhook(w http.ResponseWriter, r *http.Request) error {
 	bodyReader := http.MaxBytesReader(w, r.Body, maxWebhookPayloadBytes)
 	body, bodyErr := io.ReadAll(bodyReader)
 	if bodyErr != nil {
@@ -53,7 +53,7 @@ func (wl *WebhookListener) verifyWebhook(w http.ResponseWriter, r *http.Request)
 		return bodyErr
 	}
 
-	sv, svErr := slack.NewSecretsVerifier(r.Header, wl.signingSecret)
+	sv, svErr := slack.NewSecretsVerifier(r.Header, wh.signingSecret)
 	if svErr != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		return svErr
@@ -74,8 +74,8 @@ func (wl *WebhookListener) verifyWebhook(w http.ResponseWriter, r *http.Request)
 	return nil
 }
 
-func (wl *WebhookListener) handleOptionsWebhook(w http.ResponseWriter, r *http.Request) {
-	if verifyErr := wl.verifyWebhook(w, r); verifyErr != nil {
+func (wh *WebhookEventHandler) handleOptionsWebhook(w http.ResponseWriter, r *http.Request) {
+	if verifyErr := wh.verifyWebhook(w, r); verifyErr != nil {
 		log.Error().Err(verifyErr).Msg("failed to verify webhook body")
 		return
 	}
@@ -85,8 +85,8 @@ func (wl *WebhookListener) handleOptionsWebhook(w http.ResponseWriter, r *http.R
 	w.WriteHeader(http.StatusOK)
 }
 
-func (wl *WebhookListener) handleEventsWebhook(w http.ResponseWriter, r *http.Request) {
-	if verifyErr := wl.verifyWebhook(w, r); verifyErr != nil {
+func (wh *WebhookEventHandler) handleEventsWebhook(w http.ResponseWriter, r *http.Request) {
+	if verifyErr := wh.verifyWebhook(w, r); verifyErr != nil {
 		log.Error().Err(verifyErr).Msg("failed to verify webhook body")
 		return
 	}
@@ -125,7 +125,7 @@ func (wl *WebhookListener) handleEventsWebhook(w http.ResponseWriter, r *http.Re
 	}
 
 	if ev.Type == slackevents.CallbackEvent {
-		handled, cbErr := wl.chatSvc.onCallbackEventReceived(r.Context(), ev)
+		handled, cbErr := wh.chatSvc.onCallbackEventReceived(r.Context(), ev)
 		if cbErr != nil {
 			w.WriteHeader(http.StatusInternalServerError)
 		} else if !handled {
@@ -140,8 +140,8 @@ func (wl *WebhookListener) handleEventsWebhook(w http.ResponseWriter, r *http.Re
 	w.WriteHeader(http.StatusBadRequest)
 }
 
-func (wl *WebhookListener) handleInteractionsWebhook(w http.ResponseWriter, r *http.Request) {
-	if verifyErr := wl.verifyWebhook(w, r); verifyErr != nil {
+func (wh *WebhookEventHandler) handleInteractionsWebhook(w http.ResponseWriter, r *http.Request) {
+	if verifyErr := wh.verifyWebhook(w, r); verifyErr != nil {
 		log.Error().Err(verifyErr).Msg("failed to verify webhook body")
 		return
 	}
@@ -161,7 +161,7 @@ func (wl *WebhookListener) handleInteractionsWebhook(w http.ResponseWriter, r *h
 
 	ctx, cancel := context.WithTimeout(r.Context(), time.Second*3)
 	defer cancel()
-	handled, handlerErr := wl.chatSvc.onInteractionEventReceived(ctx, &ic)
+	handled, handlerErr := wh.chatSvc.onInteractionEventReceived(ctx, &ic)
 	if handlerErr != nil {
 		log.Error().Err(handlerErr).Str("type", string(ic.Type)).Msg("failed to handle interaction")
 		w.WriteHeader(http.StatusInternalServerError)

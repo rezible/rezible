@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/rezible/rezible/access"
 	"github.com/rezible/rezible/jobs"
 
 	"log/slog"
@@ -119,7 +120,7 @@ func (s *JobService) Start(ctx context.Context) error {
 	if pjErr != nil {
 		return fmt.Errorf("failed to add periodic jobs: %w", pjErr)
 	}
-	return s.client.Start(ctx)
+	return s.client.Start(access.SystemContext(ctx))
 }
 
 func (s *JobService) Stop(ctx context.Context) error {

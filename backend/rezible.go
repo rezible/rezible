@@ -245,6 +245,14 @@ type (
 		// TODO: this should just be converted to *ContentNode by DocumentService
 		SendOncallHandover(ctx context.Context, params SendOncallHandoverParams) error
 		SendOncallHandoverReminder(context.Context, *ent.OncallShift) error
+
+		EnableEventListener() bool
+		MakeEventListener() (ChatEventListener, error)
+	}
+
+	ChatEventListener interface {
+		Start(ctx context.Context) error
+		Stop(ctx context.Context) error
 	}
 )
 
