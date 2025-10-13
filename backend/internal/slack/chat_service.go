@@ -12,29 +12,36 @@ import (
 )
 
 type ChatService struct {
-	jobs  rez.JobsService
-	users rez.UserService
-	annos rez.EventAnnotationsService
+	jobs      rez.JobsService
+	users     rez.UserService
+	incidents rez.IncidentService
+	annos     rez.EventAnnotationsService
 
 	client *slack.Client
 }
 
-func NewChatService(jobs rez.JobsService, users rez.UserService, annos rez.EventAnnotationsService) (*ChatService, error) {
+func NewChatService(jobs rez.JobsService, users rez.UserService, incidents rez.IncidentService, annos rez.EventAnnotationsService) (*ChatService, error) {
 	client, clientErr := LoadClient()
 	if clientErr != nil {
 		return nil, clientErr
 	}
 	s := &ChatService{
-		jobs:   jobs,
-		users:  users,
-		annos:  annos,
-		client: client,
+		jobs:      jobs,
+		users:     users,
+		incidents: incidents,
+		annos:     annos,
+		client:    client,
 	}
 	return s, nil
 }
 
 func (s *ChatService) EnableEventListener() bool {
 	return UseSocketMode()
+}
+
+func (s *ChatService) getChatUserContext(ctx context.Context, userId string) (context.Context, error) {
+	_, usrCtx, usrErr := s.lookupChatUser(ctx, userId)
+	return usrCtx, usrErr
 }
 
 func (s *ChatService) lookupChatUser(baseCtx context.Context, chatId string) (*ent.User, context.Context, error) {

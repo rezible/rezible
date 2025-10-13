@@ -331,10 +331,16 @@ type (
 	}
 
 	IncidentService interface {
-		GetByID(context.Context, uuid.UUID) (*ent.Incident, error)
-		GetIdForSlug(context.Context, string) (uuid.UUID, error)
+		Get(context.Context, uuid.UUID) (*ent.Incident, error)
 		GetBySlug(context.Context, string) (*ent.Incident, error)
+		GetByChatChannelID(context.Context, string) (*ent.Incident, error)
 		ListIncidents(context.Context, ListIncidentsParams) (*ent.ListResult[*ent.Incident], error)
+
+		ListIncidentFields(context.Context) (ent.IncidentEdges, error)
+
+		ListIncidentRoles(context.Context) ([]*ent.IncidentRole, error)
+		ListIncidentSeverities(context.Context) ([]*ent.IncidentSeverity, error)
+		ListIncidentTypes(context.Context) ([]*ent.IncidentType, error)
 	}
 )
 

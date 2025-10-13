@@ -68,7 +68,7 @@ func (h *retrospectivesHandler) GetRetrospectiveForIncident(ctx context.Context,
 	if input.Id.IsSlug {
 		inc, incErr = h.incidents.GetBySlug(ctx, input.Id.Slug)
 	} else {
-		inc, incErr = h.incidents.GetByID(ctx, input.Id.UUID)
+		inc, incErr = h.incidents.Get(ctx, input.Id.UUID)
 	}
 	if incErr != nil {
 		return nil, apiError("failed to get incident", incErr)

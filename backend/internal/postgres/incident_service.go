@@ -65,12 +65,12 @@ func (s *IncidentService) incidentQuery(pred predicate.Incident, edges bool) *en
 	return q
 }
 
-func (s *IncidentService) GetByID(ctx context.Context, id uuid.UUID) (*ent.Incident, error) {
+func (s *IncidentService) Get(ctx context.Context, id uuid.UUID) (*ent.Incident, error) {
 	return s.incidentQuery(incident.ID(id), true).Only(ctx)
 }
 
-func (s *IncidentService) GetIdForSlug(ctx context.Context, slug string) (uuid.UUID, error) {
-	return s.incidentQuery(incident.Slug(slug), false).OnlyID(ctx)
+func (s *IncidentService) GetByChatChannelID(ctx context.Context, id string) (*ent.Incident, error) {
+	return s.incidentQuery(incident.ChatChannelID(id), false).Only(ctx)
 }
 
 func (s *IncidentService) GetBySlug(ctx context.Context, slug string) (*ent.Incident, error) {
@@ -111,4 +111,8 @@ func (s *IncidentService) ListIncidentSeverities(ctx context.Context) ([]*ent.In
 
 func (s *IncidentService) ListIncidentTypes(ctx context.Context) ([]*ent.IncidentType, error) {
 	return s.db.IncidentType.Query().All(ctx)
+}
+
+func (s *IncidentService) ListIncidentFields(context.Context) (ent.IncidentEdges, error) {
+	return ent.IncidentEdges{}, nil
 }

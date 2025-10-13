@@ -141,11 +141,6 @@ func (s *rezServer) setup() error {
 		return fmt.Errorf("postgres.NewEventAnnotationsService: %w", annosErr)
 	}
 
-	chat, chatErr := slack.NewChatService(jobSvc, users, annos)
-	if chatErr != nil {
-		return fmt.Errorf("postgres.NewChatService: %w", chatErr)
-	}
-
 	_, teamsErr := postgres.NewTeamService(dbc)
 	if teamsErr != nil {
 		return fmt.Errorf("postgres.NewTeamService: %w", teamsErr)
@@ -169,6 +164,11 @@ func (s *rezServer) setup() error {
 	rosters, rostersErr := postgres.NewOncallRostersService(dbc, jobSvc)
 	if rostersErr != nil {
 		return fmt.Errorf("postgres.NewOncallRostersService: %w", rostersErr)
+	}
+
+	chat, chatErr := slack.NewChatService(jobSvc, users, incidents, annos)
+	if chatErr != nil {
+		return fmt.Errorf("postgres.NewChatService: %w", chatErr)
 	}
 
 	shifts, shiftsErr := postgres.NewOncallShiftsService(dbc, jobSvc, chat)

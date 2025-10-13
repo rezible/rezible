@@ -47,10 +47,6 @@ func (sml *SocketModeListener) Start(ctx context.Context) error {
 		WithErrors().
 		WithContext(cancelCtx)
 
-	p = pool.New().
-		WithErrors().
-		WithContext(cancelCtx)
-
 	log.Info().Msg("Listening for slack events in socket mode")
 
 	p.Go(sml.runEventConsumerLoop)
@@ -72,6 +68,11 @@ func (sml *SocketModeListener) Stop(ctx context.Context) error {
 }
 
 func (sml *SocketModeListener) runEventConsumerLoop(ctx context.Context) error {
+	defer func() {
+		if err := recover(); err != nil {
+			log.Error().Interface("panic", err).Msg("panic while handling socket mode event")
+		}
+	}()
 	for {
 		select {
 		case evt, ok := <-sml.client.Events:
@@ -136,6 +137,6 @@ func (sml *SocketModeListener) handleEventsApiEvent(ctx context.Context, evt *sl
 		}
 		return handled, nil, nil
 	}
-	log.Warn().Str("type", string(evt.Type)).Msg("didnt handle slack callback event")
+	log.Warn().Str("type", evt.Type).Msg("didnt handle slack callback event")
 	return false, nil, nil
 }
