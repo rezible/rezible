@@ -123,3 +123,13 @@ type ProcessChatEvent struct {
 func (ProcessChatEvent) Kind() string {
 	return "process-chat-event"
 }
+
+type IncidentChatUpdate struct {
+	IncidentId      uuid.UUID
+	Created         bool
+	OriginChannelId string
+}
+
+func (IncidentChatUpdate) Kind() string {
+	return "incident-chat-update"
+}

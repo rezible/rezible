@@ -12,6 +12,7 @@ func RegisterJobWorkers(
 	debriefs rez.DebriefService,
 ) {
 	RegisterWorkerFunc(chat.ProcessEvent)
+	RegisterWorkerFunc(chat.HandleIncidentChatUpdate)
 
 	RegisterPeriodicJob(sync.MakeSyncProviderDataPeriodicJob(), sync.SyncProviderData)
 

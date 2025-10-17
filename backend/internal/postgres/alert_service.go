@@ -93,3 +93,8 @@ func (s *AlertService) GetAlertMetrics(ctx context.Context, params rez.GetAlertM
 
 	return metrics, nil
 }
+
+func (s *AlertService) GetActiveAlertsForComponents(ctx context.Context, componentIDs []uuid.UUID) ([]*ent.Alert, error) {
+	// TODO: Implement actual alert correlation logic for components
+	return []*ent.Alert{}, nil
+}

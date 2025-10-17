@@ -5,7 +5,9 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/rezible/rezible/ent"
+	"github.com/google/uuid"
+	"github.com/rezible/rezible/jobs"
+	"github.com/rs/zerolog/log"
 	"github.com/slack-go/slack"
 )
 
@@ -112,23 +114,20 @@ func (s *ChatService) handleIncidentModalSubmission(ctx context.Context, ic *sla
 		return nil, fmt.Errorf("failed to unmarshal metadata: %w", jsonErr)
 	}
 
-	// TODO: create incident channel
-	channelId := "foo"
-
-	inc, incErr := s.incidents.Set(ctx, meta.IncidentId, func(m *ent.IncidentMutation) {
-		m.SetChatChannelID(channelId)
-		setIncidentFieldsFromModalMetadata(ic.View, m)
-	})
+	inc, incErr := s.incidents.Set(ctx, meta.IncidentId, setIncidentFieldsFromModal(ic.View))
 	if incErr != nil {
-		return nil, fmt.Errorf("failed to set incident: %w", incErr)
+		return nil, fmt.Errorf("upsert incident from modal data: %w", incErr)
 	}
 
-	msgText := fmt.Sprintf("Incident created: *%s* #%s", inc.Title, inc.ChatChannelID)
-	sendErr := s.sendMessage(ctx, meta.ChannelId,
-		slack.MsgOptionText(msgText, false),
-		slack.MsgOptionBroadcast())
-	if sendErr != nil {
-		return nil, fmt.Errorf("failed to send creation message: %w", sendErr)
+	// TODO: handle this in incident service
+	chatUpdateJobArgs := jobs.IncidentChatUpdate{
+		IncidentId:      inc.ID,
+		Created:         meta.IncidentId == uuid.Nil,
+		OriginChannelId: meta.ChannelId,
+	}
+	chatUpdateJobErr := s.jobs.Insert(ctx, jobs.InsertJobParams{Args: chatUpdateJobArgs})
+	if chatUpdateJobErr != nil {
+		log.Warn().Err(chatUpdateJobErr).Msg("failed to incident chat update job")
 	}
 
 	return nil, nil

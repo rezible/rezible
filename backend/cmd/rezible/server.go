@@ -166,7 +166,12 @@ func (s *rezServer) setup() error {
 		return fmt.Errorf("postgres.NewOncallRostersService: %w", rostersErr)
 	}
 
-	chat, chatErr := slack.NewChatService(jobSvc, users, incidents, annos)
+	components, componentsErr := postgres.NewSystemComponentsService(dbc)
+	if componentsErr != nil {
+		return fmt.Errorf("postgres.NewSystemComponentsService: %w", componentsErr)
+	}
+
+	chat, chatErr := slack.NewChatService(jobSvc, users, incidents, annos, components)
 	if chatErr != nil {
 		return fmt.Errorf("postgres.NewChatService: %w", chatErr)
 	}
@@ -189,11 +194,6 @@ func (s *rezServer) setup() error {
 	retros, retrosErr := postgres.NewRetrospectiveService(dbc)
 	if retrosErr != nil {
 		return fmt.Errorf("postgres.NewRetrospectiveService: %w", retrosErr)
-	}
-
-	components, componentsErr := postgres.NewSystemComponentsService(dbc)
-	if componentsErr != nil {
-		return fmt.Errorf("postgres.NewSystemComponentsService: %w", componentsErr)
 	}
 
 	alerts, alertsErr := postgres.NewAlertService(dbc)

@@ -238,6 +238,7 @@ type (
 
 	ChatService interface {
 		ProcessEvent(context.Context, jobs.ProcessChatEvent) error
+		HandleIncidentChatUpdate(context.Context, jobs.IncidentChatUpdate) error
 
 		SendMessage(ctx context.Context, id string, msg *ContentNode) error
 		SendReply(ctx context.Context, channelId string, threadId string, text string) error
@@ -293,6 +294,7 @@ type (
 		ListAlerts(context.Context, ListAlertsParams) ([]*ent.Alert, int, error)
 		GetAlert(context.Context, uuid.UUID) (*ent.Alert, error)
 		GetAlertMetrics(context.Context, GetAlertMetricsParams) (*ent.AlertMetrics, error)
+		GetActiveAlertsForComponents(context.Context, []uuid.UUID) ([]*ent.Alert, error)
 	}
 )
 
@@ -459,6 +461,8 @@ type (
 		GetRosterByScheduleId(ctx context.Context, scheduleId uuid.UUID) (*ent.OncallRoster, error)
 
 		ListSchedules(ctx context.Context, params ListOncallSchedulesParams) (*ent.ListResult[*ent.OncallSchedule], error)
+
+		GetCurrentOncallForComponent(context.Context, uuid.UUID) ([]*ent.User, error)
 	}
 
 	ListOncallShiftsParams struct {

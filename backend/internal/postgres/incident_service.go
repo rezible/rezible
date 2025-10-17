@@ -3,9 +3,11 @@ package postgres
 import (
 	"context"
 	"fmt"
+	"math/rand"
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/gosimple/slug"
 	"github.com/rezible/rezible/ent/retrospective"
 	"github.com/rs/zerolog/log"
 
@@ -70,27 +72,90 @@ func (s *IncidentService) Get(ctx context.Context, id uuid.UUID) (*ent.Incident,
 	return s.incidentQuery(incident.ID(id), true).Only(ctx)
 }
 
+// TODO: load these from somewhere
+var (
+	slugAdjectives = []string{
+		"quick", "bright", "calm", "wise", "bold", "clear", "fair", "grand", "kind", "noble",
+		"quiet", "swift", "warm", "young", "crisp", "fresh", "light", "solid", "steady", "vital",
+		"active", "clever", "direct", "eager", "gentle", "honest", "lively", "modest", "polite", "prompt",
+		"secure", "simple", "smooth", "stable", "strong", "subtle", "tender", "upbeat", "useful", "valid",
+		"aware", "brief", "civil", "exact", "frank", "happy", "ideal", "joint", "loose", "lucky",
+	}
+	slugNouns = []string{
+		"cloud", "river", "mountain", "forest", "ocean", "valley", "meadow", "harbor", "prairie", "canyon",
+		"desert", "glacier", "island", "plateau", "summit", "delta", "fjord", "lagoon", "marsh", "oasis",
+		"ridge", "stream", "tundra", "basin", "beacon", "bridge", "castle", "garden", "haven", "portal",
+		"quest", "refuge", "signal", "tower", "voyage", "anchor", "compass", "horizon", "journey", "path",
+		"storm", "sunrise", "tide", "wave", "wind", "crystal", "ember", "flame", "prism", "spark",
+	}
+)
+
+func (s *IncidentService) generateIncidentSlug(ctx context.Context, openedAt time.Time) (string, error) {
+	randgen := rand.New(rand.NewSource(openedAt.UnixNano()))
+	datePrefix := openedAt.Format("20060102")
+	const maxRetries = 5
+	for attempt := 0; attempt < maxRetries; attempt++ {
+		adj := slugAdjectives[randgen.Intn(len(slugAdjectives))]
+		noun := slugNouns[randgen.Intn(len(slugNouns))]
+		candidate := slug.Make(fmt.Sprintf("%s-%s-%s", datePrefix, adj, noun))
+
+		exists, queryErr := s.db.Incident.Query().Where(incident.Slug(candidate)).Exist(ctx)
+		if queryErr != nil {
+			return "", fmt.Errorf("failed to check slug uniqueness: %w", queryErr)
+		}
+		if !exists {
+			return candidate, nil
+		}
+	}
+
+	// fallback - use uuid as suffix
+	adj := slugAdjectives[randgen.Intn(len(slugAdjectives))]
+	noun := slugNouns[randgen.Intn(len(slugNouns))]
+	shortUUID := uuid.New().String()[:8]
+	return slug.Make(fmt.Sprintf("%s-%s-%s-%s", datePrefix, adj, noun, shortUUID)), nil
+}
+
+type incidentMutator interface {
+	Save(ctx context.Context) (*ent.Incident, error)
+	Mutation() *ent.IncidentMutation
+}
+
 func (s *IncidentService) Set(ctx context.Context, id uuid.UUID, setFn func(*ent.IncidentMutation)) (*ent.Incident, error) {
-	if id != uuid.Nil {
+	var mutator incidentMutator
+	isNew := id == uuid.Nil
+	if isNew {
+		mutator = s.db.Incident.Create().SetID(uuid.New())
+	} else {
 		curr, getErr := s.db.Incident.Get(ctx, id)
 		if getErr != nil {
-			return nil, fmt.Errorf("failed to fetch incident: %w", getErr)
+			return nil, fmt.Errorf("fetch existing incident: %w", getErr)
 		}
-		update := s.db.Incident.UpdateOne(curr)
-		setFn(update.Mutation())
-		return update.Save(ctx)
+		mutator = s.db.Incident.UpdateOne(curr)
 	}
 
-	create := s.db.Incident.Create().SetID(uuid.New())
-	mut := create.Mutation()
+	mut := mutator.Mutation()
 	setFn(mut)
 
-	if title, ok := mut.Title(); ok {
-		// TODO: generate slug
-		create.SetSlug(title)
+	if isNew {
+		openedAt := time.Now()
+		if at, exists := mut.OpenedAt(); exists {
+			openedAt = at
+		}
+		generatedSlug, slugErr := s.generateIncidentSlug(ctx, openedAt)
+		if slugErr != nil {
+			return nil, fmt.Errorf("generate slug: %w", slugErr)
+		}
+		mut.SetSlug(generatedSlug)
 	}
 
-	return create.Save(ctx)
+	updated, saveErr := mutator.Save(ctx)
+	if saveErr != nil {
+		return nil, fmt.Errorf("save incident: %w", saveErr)
+	}
+
+	// TODO: notify services on incident update
+
+	return updated, nil
 }
 
 func (s *IncidentService) GetByChatChannelID(ctx context.Context, id string) (*ent.Incident, error) {
