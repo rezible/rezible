@@ -18,14 +18,15 @@ import (
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/access"
 	"github.com/rezible/rezible/internal/api"
+	"github.com/rezible/rezible/internal/db"
+	"github.com/rezible/rezible/internal/db/datasync"
 	"github.com/rezible/rezible/internal/eino"
 	"github.com/rezible/rezible/internal/hocuspocus"
 	"github.com/rezible/rezible/internal/http"
 	"github.com/rezible/rezible/internal/oidc"
 	"github.com/rezible/rezible/internal/postgres"
-	"github.com/rezible/rezible/internal/postgres/datasync"
+	"github.com/rezible/rezible/internal/postgres/river"
 	"github.com/rezible/rezible/internal/providers"
-	"github.com/rezible/rezible/internal/river"
 	"github.com/rezible/rezible/internal/saml"
 	"github.com/rezible/rezible/internal/slack"
 )
@@ -33,7 +34,6 @@ import (
 type rezServer struct {
 	opts *Options
 
-	db        *postgres.Database
 	listeners map[string]listener
 	closers   map[string]io.Closer
 }
@@ -96,32 +96,32 @@ func (s *rezServer) Stop(ctx context.Context) error {
 func (s *rezServer) setup() error {
 	ctx := access.SystemContext(context.Background())
 
-	db, poolErr := postgres.Open(ctx, s.opts.DatabaseUrl)
+	pgClient, poolErr := postgres.Open(ctx, s.opts.DatabaseUrl)
 	if poolErr != nil {
 		return fmt.Errorf("failed to open db: %w", poolErr)
 	}
-	s.closers["db"] = db
+	s.closers["database_client"] = pgClient
 
-	jobSvc, jobSvcErr := river.NewJobService(db.Pool)
+	jobSvc, jobSvcErr := river.NewJobService(pgClient.Pool)
 	if jobSvcErr != nil {
 		return fmt.Errorf("failed to create job service: %w", jobSvcErr)
 	}
 	s.listeners["jobs"] = jobSvc
 
-	dbc := db.Client()
+	dbc := pgClient.Client()
 
-	configs, pcErr := postgres.NewProviderConfigService(dbc)
+	configs, pcErr := db.NewProviderConfigService(dbc)
 	if pcErr != nil {
 		return fmt.Errorf("failed to create provider configs: %w", pcErr)
 	}
 	syncSvc := datasync.NewProviderSyncService(dbc, providers.NewProviderLoader(configs))
 
-	orgs, orgsErr := postgres.NewOrganizationsService(dbc)
+	orgs, orgsErr := db.NewOrganizationsService(dbc)
 	if orgsErr != nil {
 		return fmt.Errorf("postgres.NewOrganizationsService: %w", orgsErr)
 	}
 
-	users, usersErr := postgres.NewUserService(dbc, orgs)
+	users, usersErr := db.NewUserService(dbc, orgs)
 	if usersErr != nil {
 		return fmt.Errorf("postgres.NewUserService: %w", usersErr)
 	}
@@ -131,17 +131,17 @@ func (s *rezServer) setup() error {
 		return fmt.Errorf("http.NewAuthService: %w", authErr)
 	}
 
-	events, eventsErr := postgres.NewEventsService(dbc, users)
+	events, eventsErr := db.NewEventsService(dbc, users)
 	if eventsErr != nil {
 		return fmt.Errorf("postgres.NewEventsService: %w", eventsErr)
 	}
 
-	annos, annosErr := postgres.NewEventAnnotationsService(dbc, events)
+	annos, annosErr := db.NewEventAnnotationsService(dbc, events)
 	if annosErr != nil {
 		return fmt.Errorf("postgres.NewEventAnnotationsService: %w", annosErr)
 	}
 
-	_, teamsErr := postgres.NewTeamService(dbc)
+	_, teamsErr := db.NewTeamService(dbc)
 	if teamsErr != nil {
 		return fmt.Errorf("postgres.NewTeamService: %w", teamsErr)
 	}
@@ -156,17 +156,17 @@ func (s *rezServer) setup() error {
 		return fmt.Errorf("prosemirror.NewDocumentsService: %w", docsErr)
 	}
 
-	incidents, incidentsErr := postgres.NewIncidentService(dbc, jobSvc, users)
+	incidents, incidentsErr := db.NewIncidentService(dbc, jobSvc, users)
 	if incidentsErr != nil {
 		return fmt.Errorf("postgres.NewIncidentService: %w", incidentsErr)
 	}
 
-	rosters, rostersErr := postgres.NewOncallRostersService(dbc, jobSvc)
+	rosters, rostersErr := db.NewOncallRostersService(dbc, jobSvc)
 	if rostersErr != nil {
 		return fmt.Errorf("postgres.NewOncallRostersService: %w", rostersErr)
 	}
 
-	components, componentsErr := postgres.NewSystemComponentsService(dbc)
+	components, componentsErr := db.NewSystemComponentsService(dbc)
 	if componentsErr != nil {
 		return fmt.Errorf("postgres.NewSystemComponentsService: %w", componentsErr)
 	}
@@ -176,32 +176,32 @@ func (s *rezServer) setup() error {
 		return fmt.Errorf("postgres.NewChatService: %w", chatErr)
 	}
 
-	shifts, shiftsErr := postgres.NewOncallShiftsService(dbc, jobSvc, chat)
+	shifts, shiftsErr := db.NewOncallShiftsService(dbc, jobSvc, chat)
 	if shiftsErr != nil {
 		return fmt.Errorf("postgres.NewOncallShiftsService: %w", shiftsErr)
 	}
 
-	oncallMetrics, oncallMetricsErr := postgres.NewOncallMetricsService(dbc, jobSvc, shifts)
+	oncallMetrics, oncallMetricsErr := db.NewOncallMetricsService(dbc, jobSvc, shifts)
 	if oncallMetricsErr != nil {
 		return fmt.Errorf("postgres.NewOncallMetricsService: %w", oncallMetricsErr)
 	}
 
-	debriefs, debriefsErr := postgres.NewDebriefService(dbc, jobSvc, lms)
+	debriefs, debriefsErr := db.NewDebriefService(dbc, jobSvc, lms)
 	if debriefsErr != nil {
 		return fmt.Errorf("postgres.NewDebriefService: %w", debriefsErr)
 	}
 
-	retros, retrosErr := postgres.NewRetrospectiveService(dbc)
+	retros, retrosErr := db.NewRetrospectiveService(dbc)
 	if retrosErr != nil {
 		return fmt.Errorf("postgres.NewRetrospectiveService: %w", retrosErr)
 	}
 
-	alerts, alertsErr := postgres.NewAlertService(dbc)
+	alerts, alertsErr := db.NewAlertService(dbc)
 	if alertsErr != nil {
 		return fmt.Errorf("postgres.NewAlertService: %w", alertsErr)
 	}
 
-	playbooks, playbooksErr := postgres.NewPlaybookService(dbc)
+	playbooks, playbooksErr := db.NewPlaybookService(dbc)
 	if playbooksErr != nil {
 		return fmt.Errorf("postgres.NewPlaybookService: %w", playbooksErr)
 	}
@@ -236,7 +236,7 @@ func (s *rezServer) setup() error {
 		srv.AddWebhookPathHandler("/slack", whHandler.Handler())
 	}
 
-	s.listeners["http server"] = srv
+	s.listeners["httpServer"] = srv
 
 	return nil
 }

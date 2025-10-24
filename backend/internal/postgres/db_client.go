@@ -6,8 +6,6 @@ import (
 	"errors"
 	"fmt"
 
-	"entgo.io/ent/dialect"
-	"github.com/jackc/pgx/v5/stdlib"
 	"github.com/rezible/rezible/access"
 	"github.com/rezible/rezible/ent/entpgx"
 	"github.com/rs/zerolog/log"
@@ -20,12 +18,12 @@ import (
 	_ "github.com/rezible/rezible/ent/runtime"
 )
 
-type Database struct {
+type DatabaseClient struct {
 	*pgxpool.Pool
 	client *ent.Client
 }
 
-func Open(ctx context.Context, uri string) (*Database, error) {
+func Open(ctx context.Context, uri string) (*DatabaseClient, error) {
 	pool, poolErr := pgxpool.New(ctx, uri)
 	if poolErr != nil {
 		return nil, fmt.Errorf("create: %w", poolErr)
@@ -36,23 +34,10 @@ func Open(ctx context.Context, uri string) (*Database, error) {
 		return nil, fmt.Errorf("ping: %w", pingErr)
 	}
 
-	return &Database{Pool: pool}, nil
+	return &DatabaseClient{Pool: pool}, nil
 }
 
-func (d *Database) RunMigrations(ctx context.Context) error {
-	driver := ent.Driver(entsql.OpenDB(dialect.Postgres, stdlib.OpenDBFromPool(d.Pool)))
-	d.client = ent.NewClient(driver)
-	if schemaErr := d.client.Schema.Create(ctx); schemaErr != nil {
-		return fmt.Errorf("create schema: %w", schemaErr)
-	}
-
-	// TODO: enable RLS?
-	// https://entgo.io/docs/migration/row-level-security
-
-	return nil
-}
-
-func (d *Database) Client() *ent.Client {
+func (d *DatabaseClient) Client() *ent.Client {
 	if d.client == nil {
 		driver := ent.Driver(entpgx.NewPgxPoolDriver(d.Pool))
 		d.client = ent.NewClient(driver)
@@ -62,7 +47,7 @@ func (d *Database) Client() *ent.Client {
 	return d.client
 }
 
-func (d *Database) Close() error {
+func (d *DatabaseClient) Close() error {
 	d.Pool.Close()
 	if d.client != nil {
 		if clientErr := d.client.Close(); clientErr != nil {

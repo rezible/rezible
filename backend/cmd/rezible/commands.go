@@ -11,6 +11,7 @@ import (
 	"github.com/danielgtaylor/huma/v2/humacli"
 	_ "github.com/jackc/pgx/v5/stdlib"
 	"github.com/rezible/rezible/ent/organization"
+	"github.com/rezible/rezible/internal/db"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 	"github.com/spf13/cobra"
@@ -20,10 +21,9 @@ import (
 	"github.com/rezible/rezible/ent"
 	"github.com/rezible/rezible/ent/providerconfig"
 	"github.com/rezible/rezible/internal/api"
+	"github.com/rezible/rezible/internal/db/datasync"
 	"github.com/rezible/rezible/internal/postgres"
-	"github.com/rezible/rezible/internal/postgres/datasync"
 	"github.com/rezible/rezible/internal/providers"
-	"github.com/rezible/rezible/internal/river"
 	"github.com/rezible/rezible/jobs"
 	"github.com/rezible/rezible/openapi"
 )
@@ -51,50 +51,47 @@ func printSpecCmd(ctx context.Context, opts *Options) error {
 	return nil
 }
 
-func withDatabase(ctx context.Context, opts *Options, fn func(db *postgres.Database) error) error {
-	db, dbErr := postgres.Open(ctx, opts.DatabaseUrl)
+func migrateCmd(ctx context.Context, opts *Options) error {
+	if dbErr := postgres.RunMigrations(ctx, opts.DatabaseUrl); dbErr != nil {
+		return fmt.Errorf("failed to run postgres migrations: %w", dbErr)
+	}
+
+	return nil
+}
+
+func withDatabaseClient(ctx context.Context, opts *Options, fn func(client *ent.Client) error) error {
+	dbc, dbErr := postgres.Open(ctx, opts.DatabaseUrl)
 	if dbErr != nil {
 		return fmt.Errorf("failed to open database: %w", dbErr)
 	}
-	defer db.Close()
-
-	return fn(db)
-}
-
-func migrateCmd(ctx context.Context, opts *Options) error {
-	return withDatabase(ctx, opts, func(db *postgres.Database) error {
-		if dbErr := db.RunMigrations(ctx); dbErr != nil {
-			return fmt.Errorf("failed to run ent migrations: %w", dbErr)
+	defer func() {
+		if closeErr := dbc.Close(); closeErr != nil {
+			log.Error().Err(closeErr).Msg("failed to close database connection")
 		}
+	}()
 
-		if riverErr := river.RunMigrations(ctx, db.Pool); riverErr != nil {
-			return fmt.Errorf("failed to run river migrations: %w", riverErr)
-		}
-
-		return nil
-	})
+	return fn(dbc.Client())
 }
 
 func syncCmd(ctx context.Context, opts *Options) error {
-	return withDatabase(ctx, opts, func(db *postgres.Database) error {
+	return withDatabaseClient(ctx, opts, func(client *ent.Client) error {
 		args := jobs.SyncProviderData{Hard: true}
-		dbc := db.Client()
-		cfgs, cfgsErr := postgres.NewProviderConfigService(dbc)
+		cfgs, cfgsErr := db.NewProviderConfigService(client)
 		if cfgsErr != nil {
 			return cfgsErr
 		}
-		syncSvc := datasync.NewProviderSyncService(dbc, providers.NewProviderLoader(cfgs))
+		syncSvc := datasync.NewProviderSyncService(client, providers.NewProviderLoader(cfgs))
 		return syncSvc.SyncProviderData(ctx, args)
 	})
 }
 
 func seedCmd(ctx context.Context, opts *Options) error {
-	return withDatabase(ctx, opts, func(db *postgres.Database) error {
-		return seedDatabase(ctx, db)
+	return withDatabaseClient(ctx, opts, func(client *ent.Client) error {
+		return seedDatabase(ctx, client)
 	})
 }
 
-func seedDatabase(ctx context.Context, db *postgres.Database) error {
+func seedDatabase(ctx context.Context, client *ent.Client) error {
 	return nil
 }
 
@@ -113,7 +110,7 @@ type (
 )
 
 func loadDevConfigCmd(ctx context.Context, opts *Options) error {
-	return withDatabase(ctx, opts, func(db *postgres.Database) error {
+	return withDatabaseClient(ctx, opts, func(client *ent.Client) error {
 		// TODO: allow specifying file name
 		f, openErr := os.Open(".dev_provider_configs.json")
 		if openErr != nil {
@@ -130,7 +127,7 @@ func loadDevConfigCmd(ctx context.Context, opts *Options) error {
 			return fmt.Errorf("unmarshalling file: %w", cfgErr)
 		}
 
-		return loadTenantProviderConfig(ctx, db.Client(), &cfg)
+		return loadTenantProviderConfig(ctx, client, &cfg)
 	})
 }
 
@@ -138,7 +135,7 @@ func loadFakeConfigCmd(ctx context.Context, opts *Options) error {
 	fakeProviderConfigEntry := func(t providerconfig.ProviderType) providerTenantConfigEntry {
 		return providerTenantConfigEntry{Type: t, ProviderID: "fake", Config: []byte("{}")}
 	}
-	return withDatabase(ctx, opts, func(db *postgres.Database) error {
+	return withDatabaseClient(ctx, opts, func(client *ent.Client) error {
 		// TODO: use fake oncall provider
 		grafanaOncallRawConfig := fmt.Sprintf(`{"api_endpoint":"%s","api_token":"%s"}`,
 			os.Getenv("GRAFANA_ONCALL_API_ENDPOINT"),
@@ -158,7 +155,7 @@ func loadFakeConfigCmd(ctx context.Context, opts *Options) error {
 				fakeProviderConfigEntry(providerconfig.ProviderTypeSystemComponents),
 			},
 		}
-		return loadTenantProviderConfig(ctx, db.Client(), cfg)
+		return loadTenantProviderConfig(ctx, client, cfg)
 	})
 }
 
