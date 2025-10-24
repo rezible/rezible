@@ -8,13 +8,12 @@ import (
 	"os"
 	"time"
 
-	"github.com/danielgtaylor/huma/v2/humacli"
 	_ "github.com/jackc/pgx/v5/stdlib"
 	"github.com/rezible/rezible/ent/organization"
 	"github.com/rezible/rezible/internal/db"
-	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 	"gopkg.in/yaml.v3"
 
 	"github.com/rezible/rezible/access"
@@ -28,71 +27,73 @@ import (
 	"github.com/rezible/rezible/openapi"
 )
 
-func makeCommand(name string, desc string, cmdFn func(ctx context.Context, opts *Options) error) *cobra.Command {
-	return &cobra.Command{
-		Use:   name,
-		Short: desc,
-		Run: humacli.WithOptions(func(cmd *cobra.Command, args []string, o *Options) {
-			log.Logger = log.Level(zerolog.DebugLevel).Output(zerolog.ConsoleWriter{Out: os.Stderr})
-			ctx := access.SystemContext(cmd.Context())
-			if cmdErr := cmdFn(ctx, o); cmdErr != nil {
-				log.Fatal().Err(cmdErr).Str("cmd", name).Msg("command failed")
-			}
-		}),
-	}
-}
-
-func printSpecCmd(ctx context.Context, opts *Options) error {
-	spec, yamlErr := yaml.Marshal(openapi.MakeApi(&api.Handler{}, "").OpenAPI())
-	if yamlErr != nil {
-		return yamlErr
-	}
-	fmt.Println(string(spec))
-	return nil
-}
-
-func migrateCmd(ctx context.Context, opts *Options) error {
-	if dbErr := postgres.RunMigrations(ctx, opts.DatabaseUrl); dbErr != nil {
-		return fmt.Errorf("failed to run postgres migrations: %w", dbErr)
-	}
-
-	return nil
-}
-
-func withDatabaseClient(ctx context.Context, opts *Options, fn func(client *ent.Client) error) error {
-	dbc, dbErr := postgres.Open(ctx, opts.DatabaseUrl)
-	if dbErr != nil {
-		return fmt.Errorf("failed to open database: %w", dbErr)
-	}
-	defer func() {
-		if closeErr := dbc.Close(); closeErr != nil {
-			log.Error().Err(closeErr).Msg("failed to close database connection")
+var printSpecCmd = &cobra.Command{
+	Use:   "openapi",
+	Short: "Print the OpenAPI spec",
+	Run: func(cmd *cobra.Command, args []string) {
+		spec, yamlErr := yaml.Marshal(openapi.MakeApi(&api.Handler{}, "").OpenAPI())
+		if yamlErr != nil {
+			log.Fatal().Err(yamlErr).Msg("failed to marshal OpenAPI spec")
 		}
-	}()
-
-	return fn(dbc.Client())
+		fmt.Println(string(spec))
+	},
 }
 
-func syncCmd(ctx context.Context, opts *Options) error {
-	return withDatabaseClient(ctx, opts, func(client *ent.Client) error {
+var migrateCmd = &cobra.Command{
+	Use:   "migrate",
+	Short: "Run database migrations",
+	Run: func(cmd *cobra.Command, args []string) {
+		ctx := access.SystemContext(cmd.Context())
+		if err := postgres.RunMigrations(ctx, viper.GetString("db_url")); err != nil {
+			log.Fatal().Err(err).Msg("failed to run database migrations")
+		}
+	},
+}
+
+func withDatabaseClient(fn func(ctx context.Context, client *ent.Client)) func(cmd *cobra.Command, args []string) {
+	return func(cmd *cobra.Command, args []string) {
+		dbUrl, flagErr := cmd.Flags().GetString("db_url")
+		if flagErr != nil {
+			log.Fatal().Err(flagErr).Msg("failed to get database url")
+		}
+
+		ctx := cmd.Context()
+		dbc, dbErr := postgres.Open(ctx, dbUrl)
+		if dbErr != nil {
+			log.Fatal().Err(dbErr).Msg("failed to open database")
+		}
+		defer func() {
+			if closeErr := dbc.Close(); closeErr != nil {
+				log.Error().Err(closeErr).Msg("failed to close database connection")
+			}
+		}()
+
+		fn(ctx, dbc.Client())
+	}
+}
+
+var syncCmd = &cobra.Command{
+	Use:   "sync",
+	Short: "Run sync",
+	Run: withDatabaseClient(func(ctx context.Context, client *ent.Client) {
 		args := jobs.SyncProviderData{Hard: true}
 		cfgs, cfgsErr := db.NewProviderConfigService(client)
 		if cfgsErr != nil {
-			return cfgsErr
+			log.Fatal().Err(cfgsErr).Msg("failed to load provider configs")
 		}
 		syncSvc := datasync.NewProviderSyncService(client, providers.NewProviderLoader(cfgs))
-		return syncSvc.SyncProviderData(ctx, args)
-	})
+		if syncErr := syncSvc.SyncProviderData(ctx, args); syncErr != nil {
+			log.Fatal().Err(syncErr).Msg("failed to sync provider data")
+		}
+	}),
 }
 
-func seedCmd(ctx context.Context, opts *Options) error {
-	return withDatabaseClient(ctx, opts, func(client *ent.Client) error {
-		return seedDatabase(ctx, client)
-	})
-}
+var seedCmd = &cobra.Command{
+	Use:   "seed",
+	Short: "Seed the database",
+	Run: withDatabaseClient(func(ctx context.Context, client *ent.Client) {
 
-func seedDatabase(ctx context.Context, client *ent.Client) error {
-	return nil
+	}),
 }
 
 type (
@@ -109,61 +110,70 @@ type (
 	}
 )
 
-func loadDevConfigCmd(ctx context.Context, opts *Options) error {
-	return withDatabaseClient(ctx, opts, func(client *ent.Client) error {
-		// TODO: allow specifying file name
-		f, openErr := os.Open(".dev_provider_configs.json")
-		if openErr != nil {
-			return fmt.Errorf("opening file: %w", openErr)
-		}
-		defer f.Close()
-		fileContents, readErr := io.ReadAll(f)
-		if readErr != nil {
-			return fmt.Errorf("reading file: %w", readErr)
-		}
-
-		var cfg providerTenantConfig
-		if cfgErr := json.Unmarshal(fileContents, &cfg); cfgErr != nil {
-			return fmt.Errorf("unmarshalling file: %w", cfgErr)
-		}
-
-		return loadTenantProviderConfig(ctx, client, &cfg)
-	})
+var loadDevConfigCmd = &cobra.Command{
+	Use:   "load-dev-config",
+	Short: "Load dev config",
+	Run:   withDatabaseClient(loadDevConfig),
 }
 
-func loadFakeConfigCmd(ctx context.Context, opts *Options) error {
+func loadDevConfig(ctx context.Context, client *ent.Client) {
+	// TODO: allow specifying file name
+	fileName := ".dev_provider_configs.json"
+	f, openErr := os.Open(fileName)
+	if openErr != nil {
+		log.Fatal().Err(openErr).Str("fileName", fileName).Msg("failed to open")
+	}
+	defer f.Close()
+	fileContents, readErr := io.ReadAll(f)
+	if readErr != nil {
+		log.Fatal().Err(readErr).Str("fileName", fileName).Msg("failed to read")
+	}
+
+	var cfg providerTenantConfig
+	if cfgErr := json.Unmarshal(fileContents, &cfg); cfgErr != nil {
+		log.Fatal().Err(cfgErr).Msg("failed to unmarshal")
+	}
+
+	loadTenantProviderConfig(ctx, client, &cfg)
+}
+
+var loadFakeConfigCmd = &cobra.Command{
+	Use:   "load-fake-config",
+	Short: "Load fake config",
+	Run:   withDatabaseClient(loadFakeConfig),
+}
+
+func loadFakeConfig(ctx context.Context, client *ent.Client) {
 	fakeProviderConfigEntry := func(t providerconfig.ProviderType) providerTenantConfigEntry {
 		return providerTenantConfigEntry{Type: t, ProviderID: "fake", Config: []byte("{}")}
 	}
-	return withDatabaseClient(ctx, opts, func(client *ent.Client) error {
-		// TODO: use fake oncall provider
-		grafanaOncallRawConfig := fmt.Sprintf(`{"api_endpoint":"%s","api_token":"%s"}`,
-			os.Getenv("GRAFANA_ONCALL_API_ENDPOINT"),
-			os.Getenv("GRAFANA_ONCALL_API_TOKEN"))
-		cfg := &providerTenantConfig{
-			OrgName: "Rezible Test",
-			ConfigEntries: []providerTenantConfigEntry{
-				{
-					Type:       providerconfig.ProviderTypeOncall,
-					ProviderID: "grafana",
-					Config:     []byte(grafanaOncallRawConfig),
-				},
-				fakeProviderConfigEntry(providerconfig.ProviderTypeIncidents),
-				fakeProviderConfigEntry(providerconfig.ProviderTypeAlerts),
-				fakeProviderConfigEntry(providerconfig.ProviderTypeTickets),
-				fakeProviderConfigEntry(providerconfig.ProviderTypePlaybooks),
-				fakeProviderConfigEntry(providerconfig.ProviderTypeSystemComponents),
+	// TODO: use fake oncall provider
+	grafanaOncallRawConfig := fmt.Sprintf(`{"api_endpoint":"%s","api_token":"%s"}`,
+		os.Getenv("GRAFANA_ONCALL_API_ENDPOINT"),
+		os.Getenv("GRAFANA_ONCALL_API_TOKEN"))
+	cfg := &providerTenantConfig{
+		OrgName: "Rezible Test",
+		ConfigEntries: []providerTenantConfigEntry{
+			{
+				Type:       providerconfig.ProviderTypeOncall,
+				ProviderID: "grafana",
+				Config:     []byte(grafanaOncallRawConfig),
 			},
-		}
-		return loadTenantProviderConfig(ctx, client, cfg)
-	})
+			fakeProviderConfigEntry(providerconfig.ProviderTypeIncidents),
+			fakeProviderConfigEntry(providerconfig.ProviderTypeAlerts),
+			fakeProviderConfigEntry(providerconfig.ProviderTypeTickets),
+			fakeProviderConfigEntry(providerconfig.ProviderTypePlaybooks),
+			fakeProviderConfigEntry(providerconfig.ProviderTypeSystemComponents),
+		},
+	}
+	loadTenantProviderConfig(ctx, client, cfg)
 }
 
-func loadTenantProviderConfig(ctx context.Context, client *ent.Client, cfg *providerTenantConfig) error {
+func loadTenantProviderConfig(ctx context.Context, client *ent.Client, cfg *providerTenantConfig) {
 	org, orgErr := client.Organization.Query().Where(organization.Name(cfg.OrgName)).Only(ctx)
 	if orgErr != nil {
 		if !ent.IsNotFound(orgErr) {
-			return fmt.Errorf("querying org %q: %w", cfg.OrgName, orgErr)
+			log.Fatal().Err(orgErr).Msg("failed to load organization")
 		}
 		if ent.IsNotFound(orgErr) {
 			tnt := client.Tenant.Create().SaveX(ctx)
@@ -175,7 +185,7 @@ func loadTenantProviderConfig(ctx context.Context, client *ent.Client, cfg *prov
 		}
 	}
 	ctx = access.TenantSystemContext(ctx, org.TenantID)
-	return ent.WithTx(ctx, client, func(tx *ent.Tx) error {
+	loadConfigTxFn := func(tx *ent.Tx) error {
 		for _, c := range cfg.ConfigEntries {
 			log.Info().
 				Str("name", c.ProviderID).
@@ -197,5 +207,9 @@ func loadTenantProviderConfig(ctx context.Context, client *ent.Client, cfg *prov
 			}
 		}
 		return nil
-	})
+	}
+
+	if txErr := ent.WithTx(ctx, client, loadConfigTxFn); txErr != nil {
+		log.Fatal().Err(txErr).Msg("failed to load provider config")
+	}
 }

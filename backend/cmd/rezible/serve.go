@@ -12,8 +12,8 @@ import (
 
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
-
 	"github.com/sourcegraph/conc/pool"
+	"github.com/spf13/cobra"
 
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/access"
@@ -31,9 +31,49 @@ import (
 	"github.com/rezible/rezible/internal/slack"
 )
 
-type rezServer struct {
-	opts *Options
+var serveCmd = &cobra.Command{
+	Use:   "serve",
+	Short: "runs the rezible server",
+	Run: func(cmd *cobra.Command, args []string) {
+		if err := runRezibleServer(cmd.Context()); err != nil {
+			log.Fatal().Err(err).Msg("failed to serve")
+		}
+	},
+}
 
+// TODO: remove this
+type Options struct {
+	DebugMode                   bool   `doc:"App Debug Mode" name:"debug" default:"false"`
+	Host                        string `doc:"Hostname to listen on." default:"localhost"`
+	Port                        string `doc:"Port to listen on." short:"p" default:"8888"`
+	StopTimeoutSeconds          int    `doc:"Timeout in seconds to wait before cancelling" default:"10"`
+	DocumentServerAddress       string `doc:"Document server address" name:"document_server_address" default:"localhost:8889"`
+	DocumentServerWebhookSecret string `doc:"Document server webhook secret" name:"document_server_webhook_secret"`
+	DatabaseUrl                 string `doc:"Database connection url" name:"db_url"`
+}
+
+func loadOptions(ctx context.Context) Options {
+	opts := Options{
+		DebugMode:                   os.Getenv("REZ_DEBUG") == "true",
+		Host:                        "localhost",
+		Port:                        "8888",
+		DatabaseUrl:                 os.Getenv("DB_URL"),
+		StopTimeoutSeconds:          10,
+		DocumentServerAddress:       "localhost:8889",
+		DocumentServerWebhookSecret: os.Getenv("DOCUMENT_SERVER_WEBHOOK_SECRET"),
+	}
+
+	rez.DebugMode = opts.DebugMode
+	if opts.DebugMode {
+		log.Logger = log.Level(zerolog.DebugLevel).Output(zerolog.ConsoleWriter{Out: os.Stderr})
+	}
+	return opts
+}
+
+type rezServer struct {
+	opts Options
+
+	errChan   chan error
 	listeners map[string]listener
 	closers   map[string]io.Closer
 }
@@ -43,38 +83,56 @@ type listener interface {
 	Stop(ctx context.Context) error
 }
 
-func newRezibleServer(opts *Options) *rezServer {
-	rez.DebugMode = opts.DebugMode
-	if opts.DebugMode {
-		log.Logger = log.Level(zerolog.DebugLevel).Output(zerolog.ConsoleWriter{Out: os.Stderr})
-	}
+func runRezibleServer(ctx context.Context) error {
+	ctx = access.AnonymousContext(ctx)
+	opts := loadOptions(ctx)
 
-	return &rezServer{
+	s := &rezServer{
 		opts:      opts,
+		errChan:   make(chan error),
 		listeners: make(map[string]listener),
 		closers:   make(map[string]io.Closer),
 	}
-}
 
-func (s *rezServer) Start(ctx context.Context) error {
-	if setupErr := s.setup(); setupErr != nil {
-		return fmt.Errorf("failed to setup server: %w", setupErr)
+	if setupErr := s.setup(ctx); setupErr != nil {
+		return fmt.Errorf("setup failed: %w", setupErr)
 	}
 
+	go s.Start(ctx)
+
+	var err error
+	select {
+	case <-ctx.Done():
+		err = ctx.Err()
+	case waitErr := <-s.errChan:
+		err = fmt.Errorf("server error: %w", waitErr)
+	}
+
+	stopErr := s.Stop()
+	if stopErr != nil {
+		log.Error().Err(stopErr).Msg("Failed to stop rezible server")
+	}
+	if err != nil && !errors.Is(err, context.Canceled) {
+		return err
+	}
+	return nil
+}
+
+func (s *rezServer) Start(ctx context.Context) {
 	p := pool.New().
 		WithErrors().
-		WithContext(access.AnonymousContext(ctx))
+		WithContext(ctx)
 
 	for _, l := range s.listeners {
 		p.Go(l.Start)
 	}
 
-	return p.Wait()
+	s.errChan <- p.Wait()
 }
 
-func (s *rezServer) Stop(ctx context.Context) error {
+func (s *rezServer) Stop() error {
 	timeout := time.Duration(s.opts.StopTimeoutSeconds) * time.Second
-	timeoutCtx, cancelStopCtx := context.WithTimeout(ctx, timeout)
+	timeoutCtx, cancelStopCtx := context.WithTimeout(context.Background(), timeout)
 	defer cancelStopCtx()
 
 	var err error
@@ -93,9 +151,7 @@ func (s *rezServer) Stop(ctx context.Context) error {
 	return err
 }
 
-func (s *rezServer) setup() error {
-	ctx := access.SystemContext(context.Background())
-
+func (s *rezServer) setup(ctx context.Context) error {
 	pgClient, poolErr := postgres.Open(ctx, s.opts.DatabaseUrl)
 	if poolErr != nil {
 		return fmt.Errorf("failed to open db: %w", poolErr)

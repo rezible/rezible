@@ -33,6 +33,7 @@ func Open(ctx context.Context, uri string) (*DatabaseClient, error) {
 		pool.Close()
 		return nil, fmt.Errorf("ping: %w", pingErr)
 	}
+	log.Debug().Msg("successfully connected to postgres")
 
 	return &DatabaseClient{Pool: pool}, nil
 }

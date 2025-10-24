@@ -21,13 +21,14 @@ require (
 	github.com/jackc/pgx/v5 v5.7.5
 	github.com/mark3labs/mcp-go v0.32.0
 	github.com/riverqueue/river v0.23.1
-	github.com/riverqueue/river/riverdriver v0.23.1
 	github.com/riverqueue/river/riverdriver/riverpgxv5 v0.23.1
 	github.com/riverqueue/river/rivertype v0.23.1
 	github.com/rs/zerolog v1.34.0
 	github.com/samber/slog-zerolog/v2 v2.7.3
 	github.com/slack-go/slack v0.16.0
-	github.com/spf13/cobra v1.9.1
+	github.com/sourcegraph/conc v0.3.1-0.20240121214520-5f936abd7ae8
+	github.com/spf13/cobra v1.10.1
+	github.com/spf13/viper v1.21.0
 	github.com/texm/prosemirror-go v0.0.0-20241205030628-c6d58982acfd
 	golang.org/x/oauth2 v0.29.0
 	gopkg.in/yaml.v3 v3.0.1
@@ -62,12 +63,14 @@ require (
 	github.com/di-wu/xsd-datetime v1.0.0 // indirect
 	github.com/dustin/go-humanize v1.0.1 // indirect
 	github.com/fatih/structs v1.1.0 // indirect
+	github.com/fsnotify/fsnotify v1.9.0 // indirect
 	github.com/getkin/kin-openapi v0.132.0 // indirect
 	github.com/go-jose/go-jose/v4 v4.0.5 // indirect
 	github.com/go-json-experiment/json v0.0.0-20250626171732-1a886bd29d1b // indirect
 	github.com/go-openapi/inflect v0.21.2 // indirect
 	github.com/go-openapi/jsonpointer v0.21.1 // indirect
 	github.com/go-openapi/swag v0.23.1 // indirect
+	github.com/go-viper/mapstructure/v2 v2.4.0 // indirect
 	github.com/golang-jwt/jwt/v4 v4.5.2 // indirect
 	github.com/google/go-cmp v0.7.0 // indirect
 	github.com/google/go-querystring v1.1.0 // indirect
@@ -99,17 +102,20 @@ require (
 	github.com/perimeterx/marshmallow v1.1.5 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
+	github.com/riverqueue/river/riverdriver v0.23.1 // indirect
 	github.com/riverqueue/river/rivershared v0.23.1 // indirect
 	github.com/russellhaering/goxmldsig v1.5.0 // indirect
+	github.com/sagikazarmark/locafero v0.11.0 // indirect
 	github.com/samber/lo v1.49.1 // indirect
 	github.com/samber/slog-common v0.18.1 // indirect
 	github.com/scim2/filter-parser/v2 v2.2.0 // indirect
 	github.com/sirupsen/logrus v1.9.3 // indirect
 	github.com/slongfield/pyfmt v0.0.0-20220222012616-ea85ff4c361f // indirect
-	github.com/sourcegraph/conc v0.3.0 // indirect
-	github.com/spf13/cast v1.7.1 // indirect
-	github.com/spf13/pflag v1.0.6 // indirect
-	github.com/stretchr/testify v1.10.0 // indirect
+	github.com/spf13/afero v1.15.0 // indirect
+	github.com/spf13/cast v1.10.0 // indirect
+	github.com/spf13/pflag v1.0.10 // indirect
+	github.com/stretchr/testify v1.11.1 // indirect
+	github.com/subosito/gotenv v1.6.0 // indirect
 	github.com/tidwall/gjson v1.18.0 // indirect
 	github.com/tidwall/match v1.1.1 // indirect
 	github.com/tidwall/pretty v1.2.1 // indirect
@@ -121,14 +127,15 @@ require (
 	github.com/zclconf/go-cty v1.16.3 // indirect
 	github.com/zclconf/go-cty-yaml v1.1.0 // indirect
 	go.uber.org/goleak v1.3.0 // indirect
+	go.yaml.in/yaml/v3 v3.0.4 // indirect
 	golang.org/x/arch v0.18.0 // indirect
 	golang.org/x/crypto v0.39.0 // indirect
 	golang.org/x/exp v0.0.0-20250620022241-b7579e27df2b // indirect
-	golang.org/x/mod v0.25.0 // indirect
-	golang.org/x/sync v0.15.0 // indirect
+	golang.org/x/mod v0.26.0 // indirect
+	golang.org/x/sync v0.16.0 // indirect
 	golang.org/x/sys v0.34.0 // indirect
-	golang.org/x/text v0.26.0 // indirect
-	golang.org/x/tools v0.34.0 // indirect
+	golang.org/x/text v0.28.0 // indirect
+	golang.org/x/tools v0.35.0 // indirect
 )
 
 replace github.com/getkin/kin-openapi v0.132.0 => github.com/getkin/kin-openapi v0.118.0

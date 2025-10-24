@@ -15,7 +15,7 @@ processes:
         host: localhost
         port: 8888
         path: "/health"
-      initial_delay_seconds: 10
+      initial_delay_seconds: 3
       period_seconds: 10
       timeout_seconds: 1
       success_threshold: 1
@@ -25,17 +25,28 @@ processes:
         condition: process_healthy
       document-server:
         condition: process_started
+
+  frontend:
+    command: just dev-frontend
+    availability:
+      restart: on_failure
+      max_restarts: 1
+    depends_on:
+      backend:
+        condition: process_healthy
+
   postgresql:
-    command: pg_ctl start -o "-k $PGHOST"
+    command: just run-db
     is_daemon: true
     availability:
       restart: always
     shutdown:
-      command: "pg_ctl stop -m fast"
+      command: just stop-db
     readiness_probe:
       exec:
         command: pg_isready
       initial_delay_seconds: 1
+
   document-server:
     command: just dev-document-server
     availability:
@@ -44,8 +55,3 @@ processes:
     depends_on:
       postgresql:
         condition: process_healthy
-  frontend:
-    command: just dev-frontend
-    availability:
-      restart: on_failure
-      max_restarts: 1

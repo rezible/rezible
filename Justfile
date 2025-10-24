@@ -27,7 +27,7 @@ _default:
     bun update
 
 @run-backend *ARGS:
-    cd backend && SERVICE_DB_URL="$DB_URL" SERVICE_DEBUG=true go run ./cmd/rezible {{ARGS}}
+    cd backend && REZ_DB_URL="$DB_URL" REZ_DEBUG=true go run ./cmd/rezible {{ARGS}}
 
 # [group('Code Generation')]
 
@@ -76,8 +76,11 @@ _default:
 @seed-db:
     just run-backend seed
 
-@start-db:
-    -pg_isready -q || pg_ctl -o "-k $PGHOST" start > /dev/null
+@run-db: stop-db
+    -pg_isready -q || pg_ctl -o "-k $PGHOST" start
+
+@start-db: stop-db
+   just run-db > /dev/null
 
 @run-psql:
     psql -d rezible
