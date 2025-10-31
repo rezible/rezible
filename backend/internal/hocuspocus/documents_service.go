@@ -32,11 +32,14 @@ type DocumentsService struct {
 
 const webhookSecretEnvVar = "DOCUMENTS_API_SECRET"
 
-func NewDocumentsService(serverAddress string, db *ent.Client, auth rez.AuthService, users rez.UserService) (*DocumentsService, error) {
+func NewDocumentsService(db *ent.Client, auth rez.AuthService, users rez.UserService) (*DocumentsService, error) {
 	webhookSecret := os.Getenv(webhookSecretEnvVar)
 	if webhookSecret == "" {
 		return nil, fmt.Errorf("%s not set", webhookSecretEnvVar)
 	}
+
+	serverAddress := rez.Config.DocumentServerAddress()
+
 	svc := &DocumentsService{
 		serverAddress: serverAddress,
 		webhookSecret: []byte(webhookSecret),

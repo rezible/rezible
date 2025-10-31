@@ -85,7 +85,7 @@ func loadEnvConfig(ctx context.Context) (*AuthSessionProviderConfig, error) {
 		return nil, fmt.Errorf("failed to cast *rsa.PrivateKey")
 	}
 
-	appUrl, appUrlErr := url.Parse(rez.BackendUrl)
+	appUrl, appUrlErr := url.Parse(rez.Config.BackendUrl())
 	if appUrlErr != nil {
 		return nil, fmt.Errorf("failed to parse backend url: %w", appUrlErr)
 	}
@@ -164,9 +164,9 @@ func (p *AuthSessionProvider) createSamlMiddleware(cfg *AuthSessionProviderConfi
 		CookieName:         sessionCookieName,
 		IDPMetadata:        cfg.idpMetadata,
 		SignRequest:        true,
-		DefaultRedirectURI: rez.FrontendUrl,
+		DefaultRedirectURI: rez.Config.FrontendUrl(),
 	}
-	if !rez.DebugMode {
+	if !rez.Config.DebugMode() {
 		opts.CookieSameSite = http.SameSiteLaxMode
 	}
 
@@ -318,7 +318,7 @@ func (p *AuthSessionProvider) createSession(a *saml.Assertion, redirectUrl strin
 	}
 
 	if verifyErr := p.verifyClaims(claims); verifyErr != nil {
-		if rez.DebugMode {
+		if rez.Config.DebugMode() {
 			log.Warn().Err(verifyErr).Msgf("failed to verify SAML claims")
 		} else {
 			return nil, fmt.Errorf("failed to verify claims: %w", verifyErr)

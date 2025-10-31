@@ -125,7 +125,7 @@ func (b *handoverMessageBuilder) build(content []rez.OncallShiftHandoverSection)
 	b.addBlocks(slack.NewDividerBlock())
 
 	// Footer
-	endingShiftLink := fmt.Sprintf("%s/oncall/shifts/%s", rez.FrontendUrl, b.endingShift.ID)
+	endingShiftLink := fmt.Sprintf("%s/oncall/shifts/%s", rez.Config.FrontendUrl(), b.endingShift.ID)
 	footerEl := slack.NewRichTextSection(slack.NewRichTextSectionLinkElement(
 		endingShiftLink, "View Full Shift Details in Rezible", nil))
 	b.addBlocks(slack.NewRichTextBlock("handover_footer", footerEl))
@@ -151,7 +151,7 @@ func (b *handoverMessageBuilder) createPinnedAnnotationsBlocks() ([]slack.Block,
 
 		var eventEls []slack.RichTextSectionElement
 		if ev.Kind == "incident" {
-			link := fmt.Sprintf("%s/incidents/%s", rez.FrontendUrl, ev.ID)
+			link := fmt.Sprintf("%s/incidents/%s", rez.Config.FrontendUrl(), ev.ID)
 			eventEls = append(eventEls, slack.NewRichTextSectionLinkElement(link, ev.Title, nil))
 		} else {
 			eventEls = append(eventEls, slack.NewRichTextSectionTextElement(ev.Title, nil))

@@ -136,7 +136,7 @@ func (s *AuthSessionProvider) handleFlowCallback(r *http.Request, onCreated func
 
 	if rs := getRequestState(r); rs != sess.State {
 		log.Warn().Msg("invalid request session state")
-		if !rez.DebugMode {
+		if !rez.Config.DebugMode() {
 			return errors.New("state mismatch")
 		}
 	}

@@ -24,7 +24,7 @@ func makeCallbackPath(pid string) string {
 
 func NewGoogleAuthSessionProvider(ctx context.Context, cfg ProviderConfig) (*AuthSessionProvider, error) {
 	callbackPath := makeCallbackPath(googleProviderId)
-	redirectUrl, urlErr := url.JoinPath(rez.BackendUrl, callbackPath)
+	redirectUrl, urlErr := url.JoinPath(rez.Config.BackendUrl(), callbackPath)
 	if urlErr != nil {
 		return nil, fmt.Errorf("creating redirect url: %w", urlErr)
 	}
@@ -87,7 +87,7 @@ func (p *googleIdentity) ExtractTokenSession(token *oidc.IDToken) (*rez.AuthProv
 			Name:       claims.OrgId, // TODO: use domain?
 		},
 		ExpiresAt:   token.Expiry,
-		RedirectUrl: rez.FrontendUrl,
+		RedirectUrl: rez.Config.FrontendUrl(),
 	}
 
 	return &ps, nil

@@ -33,7 +33,7 @@ var (
 )
 
 func (s *LanguageModelService) GenerateDebriefResponse(ctx context.Context, debrief *ent.IncidentDebrief) (*ent.IncidentDebriefMessage, error) {
-	if rez.DebugMode {
+	if rez.Config.DebugMode() {
 		log.Debug().Msg("TODO: faking ai response")
 		return &ent.IncidentDebriefMessage{
 			DebriefID: debrief.ID,

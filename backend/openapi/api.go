@@ -5,6 +5,7 @@ import (
 
 	"github.com/danielgtaylor/huma/v2"
 	"github.com/danielgtaylor/huma/v2/adapters/humago"
+	"gopkg.in/yaml.v3"
 )
 
 type (
@@ -42,7 +43,7 @@ type Handler interface {
 
 	EventsHandler
 	EventAnnotationsHandler
-	
+
 	AlertsHandler
 
 	OncallRostersHandler
@@ -88,4 +89,14 @@ func MakeApi(s Handler, prefix string, mw ...Middleware) huma.API {
 	RegisterRoutes(api, s)
 
 	return api
+}
+
+func GetYamlSpec(prefix string) (string, error) {
+	h := operations{}
+	api := MakeApi(h, prefix)
+	spec, specErr := yaml.Marshal(api.OpenAPI())
+	if specErr != nil {
+		return "", specErr
+	}
+	return string(spec), nil
 }

@@ -11,19 +11,14 @@ import (
 	"github.com/rezible/rezible/internal/postgres/river"
 )
 
-func RunMigrations(ctx context.Context, dbUrl string) error {
-	dbc, dbcErr := Open(ctx, dbUrl)
-	if dbcErr != nil {
-		return fmt.Errorf("open postgres db error: %w", dbcErr)
-	}
-	pool := dbc.Pool
-	driver := ent.Driver(entsql.OpenDB(dialect.Postgres, stdlib.OpenDBFromPool(pool)))
+func (dbc *DatabaseClient) RunMigrations(ctx context.Context) error {
+	driver := ent.Driver(entsql.OpenDB(dialect.Postgres, stdlib.OpenDBFromPool(dbc.pool)))
 	client := ent.NewClient(driver)
 	if schemaErr := client.Schema.Create(ctx); schemaErr != nil {
 		return fmt.Errorf("create schema: %w", schemaErr)
 	}
 
-	if riverErr := river.RunMigrations(ctx, pool); riverErr != nil {
+	if riverErr := river.RunMigrations(ctx, dbc.pool); riverErr != nil {
 		return fmt.Errorf("failed to run river migrations: %w", riverErr)
 	}
 

@@ -16,14 +16,6 @@ import (
 )
 
 var (
-	BackendUrl  = "http://localhost:8888"
-	FrontendUrl = "http://localhost:5173"
-
-	DebugMode = true
-
-	AllowTenantCreation = DebugMode
-	AllowUserCreation   = DebugMode
-
 	ErrNoAuthSession           = errors.New("no auth session")
 	ErrAuthSessionExpired      = errors.New("auth session expired")
 	ErrAuthSessionInvalidScope = errors.New("invalid session token scope")
@@ -35,9 +27,29 @@ var (
 	ErrMultipleEnabledProviderConfigs = errors.New("multiple stored configs enabled")
 )
 
-type (
-	ListParams = ent.ListParams
-)
+type ConfigLoader interface {
+	DebugMode() bool
+	DatabaseUrl() string
+	BackendUrl() string
+	FrontendUrl() string
+
+	HttpServerAddress() string
+	DocumentServerAddress() string
+
+	AllowTenantCreation() bool
+	AllowUserCreation() bool
+	ServerStopTimeout() time.Duration
+}
+
+var Config ConfigLoader
+
+type Database interface {
+	RunMigrations(ctx context.Context) error
+	Client() *ent.Client
+	Close() error
+}
+
+type ListParams = ent.ListParams
 
 type (
 	OrganizationService interface {

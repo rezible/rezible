@@ -29,9 +29,9 @@ func GetEmbeddedFrontendFiles() (fs.FS, error) {
 }
 
 func makeEmbeddedFrontendFilesServer(files fs.FS) http.Handler {
-	if rez.DebugMode {
+	if rez.Config.DebugMode() {
 		// redirect to frontend vite dev server
-		return http.RedirectHandler(rez.FrontendUrl, http.StatusFound)
+		return http.RedirectHandler(rez.Config.FrontendUrl(), http.StatusFound)
 	}
 
 	fileServer := http.FileServer(http.FS(files))

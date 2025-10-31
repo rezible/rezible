@@ -2,7 +2,7 @@ set shell := ["bash", "-uc"]
 set dotenv-load
 
 frontend_dist_dir := "./backend/internal/http/frontend-dist"
-saml_cert_dir := "./backend/internal/saml/testdata"
+saml_cert_dir := "./backend/internal/http/saml/testdata"
 
 _default:
   @just --list
@@ -10,8 +10,8 @@ _default:
 # [group('Setup')]
 
 @setup:
-    mkdir -p "{{ saml_cert_dir }}"
     mkdir -p "{{ frontend_dist_dir }}" && echo "<p>this will be replaced by the frontend build</p>" > "{{ frontend_dist_dir }}/index.html"
+    mkdir -p "{{ saml_cert_dir }}"
     openssl req -x509 -newkey rsa:2048 -keyout "{{ saml_cert_dir }}/test.key" -out "{{ saml_cert_dir }}/test.cert" -days 365 -nodes -subj "/CN=test.rezible.com"
     just install-dependencies
     just codegen

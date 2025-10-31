@@ -1,4 +1,4 @@
-package providers
+package dataproviders
 
 import (
 	"context"
@@ -8,10 +8,10 @@ import (
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
 	"github.com/rezible/rezible/ent/providerconfig"
-	"github.com/rezible/rezible/internal/providers/fake"
-	"github.com/rezible/rezible/internal/providers/grafana"
-	"github.com/rezible/rezible/internal/providers/jira"
-	"github.com/rezible/rezible/internal/providers/slack"
+	fakeprovider "github.com/rezible/rezible/internal/dataproviders/fake"
+	"github.com/rezible/rezible/internal/dataproviders/grafana"
+	"github.com/rezible/rezible/internal/dataproviders/jira"
+	"github.com/rezible/rezible/internal/dataproviders/slack"
 )
 
 type ProviderLoader struct {
@@ -85,7 +85,7 @@ func (l *ProviderLoader) GetIncidentDataProvider(ctx context.Context) (rez.Incid
 func (l *ProviderLoader) GetUserDataProvider(ctx context.Context) (rez.UserDataProvider, error) {
 	cfg, cfgErr := l.config.GetEnabledTypeConfig(ctx, providerconfig.ProviderTypeUsers)
 	if cfgErr != nil {
-		if rez.DebugMode {
+		if rez.Config.DebugMode() {
 			return slack.DebugOnlyUserDataProvider(ctx)
 		}
 		return nil, cfgErr

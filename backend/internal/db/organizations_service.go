@@ -35,7 +35,7 @@ func (s *OrganizationsService) FindOrCreateAuthProviderOrganization(ctx context.
 	if org != nil {
 		return org, nil
 	}
-	if !rez.AllowTenantCreation {
+	if !rez.Config.AllowTenantCreation() {
 		return nil, rez.ErrInvalidTenant
 	}
 

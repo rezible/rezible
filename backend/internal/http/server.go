@@ -25,7 +25,7 @@ type Server struct {
 	webhooks   *chi.Mux
 }
 
-func NewServer(addr string, auth rez.AuthService) *Server {
+func NewServer(auth rez.AuthService) *Server {
 	var s Server
 
 	s.auth = auth
@@ -40,7 +40,7 @@ func NewServer(addr string, auth rez.AuthService) *Server {
 	s.router.Get("/health", makeHealthCheckHandler())
 
 	s.httpServer = &http.Server{
-		Addr:    addr,
+		Addr:    rez.Config.HttpServerAddress(),
 		Handler: s.router,
 	}
 

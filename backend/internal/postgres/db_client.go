@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 
+	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/access"
 	"github.com/rezible/rezible/ent/entpgx"
 	"github.com/rs/zerolog/log"
@@ -19,12 +20,12 @@ import (
 )
 
 type DatabaseClient struct {
-	*pgxpool.Pool
+	pool   *pgxpool.Pool
 	client *ent.Client
 }
 
-func Open(ctx context.Context, uri string) (*DatabaseClient, error) {
-	pool, poolErr := pgxpool.New(ctx, uri)
+func NewDatabaseClient(ctx context.Context) (*DatabaseClient, error) {
+	pool, poolErr := pgxpool.New(ctx, rez.Config.DatabaseUrl())
 	if poolErr != nil {
 		return nil, fmt.Errorf("create: %w", poolErr)
 	}
@@ -35,23 +36,27 @@ func Open(ctx context.Context, uri string) (*DatabaseClient, error) {
 	}
 	log.Debug().Msg("successfully connected to postgres")
 
-	return &DatabaseClient{Pool: pool}, nil
+	return &DatabaseClient{pool: pool}, nil
 }
 
-func (d *DatabaseClient) Client() *ent.Client {
-	if d.client == nil {
-		driver := ent.Driver(entpgx.NewPgxPoolDriver(d.Pool))
-		d.client = ent.NewClient(driver)
-		d.client.Use(ensureTenantIdSetHook)
-		d.client.Intercept(setTenantContextInterceptor())
+func (dbc *DatabaseClient) Client() *ent.Client {
+	if dbc.client == nil {
+		driver := ent.Driver(entpgx.NewPgxPoolDriver(dbc.pool))
+		dbc.client = ent.NewClient(driver)
+		dbc.client.Use(ensureTenantIdSetHook)
+		dbc.client.Intercept(setTenantContextInterceptor())
 	}
-	return d.client
+	return dbc.client
 }
 
-func (d *DatabaseClient) Close() error {
-	d.Pool.Close()
-	if d.client != nil {
-		if clientErr := d.client.Close(); clientErr != nil {
+func (dbc *DatabaseClient) Pool() *pgxpool.Pool {
+	return dbc.pool
+}
+
+func (dbc *DatabaseClient) Close() error {
+	dbc.pool.Close()
+	if dbc.client != nil {
+		if clientErr := dbc.client.Close(); clientErr != nil {
 			return fmt.Errorf("closing ent client: %w", clientErr)
 		}
 	}

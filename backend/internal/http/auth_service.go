@@ -2,8 +2,10 @@ package http
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net/http"
+	"os"
 	"strings"
 	"time"
 
@@ -30,7 +32,17 @@ type AuthService struct {
 
 var _ rez.AuthService = (*AuthService)(nil)
 
-func NewAuthService(secretKey string, orgs rez.OrganizationService, users rez.UserService, providers []rez.AuthSessionProvider) (*AuthService, error) {
+func NewAuthSessionService(ctx context.Context, orgs rez.OrganizationService, users rez.UserService) (*AuthService, error) {
+	secretKey := os.Getenv("AUTH_SESSION_SECRET_KEY")
+	if secretKey == "" {
+		return nil, errors.New("AUTH_SESSION_SECRET_KEY must be set")
+	}
+
+	providers, provsErr := getAuthSessionProviders(ctx, secretKey)
+	if provsErr != nil {
+		return nil, fmt.Errorf("loading session providers: %w", provsErr)
+	}
+
 	return &AuthService{
 		orgs:          orgs,
 		users:         users,
@@ -109,7 +121,7 @@ func (s *AuthService) UserAuthHandler() http.Handler {
 			return
 		}
 
-		http.Redirect(w, r, rez.FrontendUrl, http.StatusFound)
+		http.Redirect(w, r, rez.Config.FrontendUrl(), http.StatusFound)
 	})
 }
 
@@ -123,7 +135,7 @@ func (s *AuthService) handleLogout(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 	http.SetCookie(w, s.makeSessionCookie(r, "", time.Now(), -1))
-	http.Redirect(w, r, rez.FrontendUrl, http.StatusFound)
+	http.Redirect(w, r, rez.Config.FrontendUrl(), http.StatusFound)
 }
 
 func (s *AuthService) makeUserSessionCreatedCallback(w http.ResponseWriter, r *http.Request, flowRoute string) func(ps rez.AuthProviderSession) {
@@ -132,7 +144,7 @@ func (s *AuthService) makeUserSessionCreatedCallback(w http.ResponseWriter, r *h
 	return func(ps rez.AuthProviderSession) {
 		redirect := ps.RedirectUrl
 		if redirect == "" || redirect == flowRoute {
-			redirect = rez.FrontendUrl
+			redirect = rez.Config.FrontendUrl()
 		}
 
 		expiry := ps.ExpiresAt
