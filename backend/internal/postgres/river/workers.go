@@ -6,7 +6,7 @@ import (
 
 func RegisterJobWorkers(
 	chat rez.ChatService,
-	sync rez.ProviderSyncService,
+	sync rez.ProviderDataSyncService,
 	shifts rez.OncallShiftsService,
 	oncallMetrics rez.OncallMetricsService,
 	debriefs rez.DebriefService,
@@ -15,8 +15,8 @@ func RegisterJobWorkers(
 	RegisterWorkerFunc(chat.HandleIncidentChatUpdate)
 
 	RegisterPeriodicJob(sync.MakeSyncProviderDataPeriodicJob(), sync.SyncProviderData)
-
 	RegisterPeriodicJob(shifts.MakeScanShiftsPeriodicJob(), shifts.HandlePeriodicScanShifts)
+	
 	RegisterWorkerFunc(shifts.HandleEnsureShiftHandoverReminderSent)
 	RegisterWorkerFunc(shifts.HandleEnsureShiftHandoverSent)
 	RegisterWorkerFunc(oncallMetrics.HandleGenerateShiftMetrics)

@@ -92,7 +92,7 @@ type (
 		DeleteProviderConfig(context.Context, uuid.UUID) error
 	}
 
-	ProviderSyncService interface {
+	ProviderDataSyncService interface {
 		MakeSyncProviderDataPeriodicJob() jobs.PeriodicJob
 		SyncProviderData(context.Context, jobs.SyncProviderData) error
 	}

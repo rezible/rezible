@@ -13,16 +13,16 @@ import (
 	"github.com/rezible/rezible/jobs"
 )
 
-type ProviderSyncService struct {
+type ProviderDataSyncService struct {
 	db *ent.Client
 	pl rez.ProviderLoader
 }
 
-func NewProviderSyncService(db *ent.Client, pl rez.ProviderLoader) *ProviderSyncService {
-	return &ProviderSyncService{db: db, pl: pl}
+func NewProviderSyncService(db *ent.Client, pl rez.ProviderLoader) *ProviderDataSyncService {
+	return &ProviderDataSyncService{db: db, pl: pl}
 }
 
-func (s *ProviderSyncService) MakeSyncProviderDataPeriodicJob() jobs.PeriodicJob {
+func (s *ProviderDataSyncService) MakeSyncProviderDataPeriodicJob() jobs.PeriodicJob {
 	return jobs.PeriodicJob{
 		ConstructorFunc: func() jobs.InsertJobParams {
 			return jobs.InsertJobParams{
@@ -37,7 +37,7 @@ func (s *ProviderSyncService) MakeSyncProviderDataPeriodicJob() jobs.PeriodicJob
 	}
 }
 
-func (s *ProviderSyncService) SyncProviderData(ctx context.Context, args jobs.SyncProviderData) error {
+func (s *ProviderDataSyncService) SyncProviderData(ctx context.Context, args jobs.SyncProviderData) error {
 	tenants, tenantsErr := s.db.Tenant.Query().All(ctx)
 	if tenantsErr != nil {
 		return fmt.Errorf("querying tenants: %w", tenantsErr)
@@ -55,7 +55,7 @@ func (s *ProviderSyncService) SyncProviderData(ctx context.Context, args jobs.Sy
 	return nil
 }
 
-func (s *ProviderSyncService) syncProviderData(ctx context.Context, hard bool) error {
+func (s *ProviderDataSyncService) syncProviderData(ctx context.Context, hard bool) error {
 	if hard {
 		s.db.ProviderSyncHistory.Delete().ExecX(ctx)
 	}
