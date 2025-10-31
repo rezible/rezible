@@ -3,7 +3,6 @@ package http
 import (
 	"context"
 	"fmt"
-	"os"
 	"strings"
 
 	rez "github.com/rezible/rezible"
@@ -12,7 +11,8 @@ import (
 )
 
 func isAuthProviderEnabled(name string) bool {
-	return strings.ToLower(os.Getenv("AUTH_ENABLE_"+strings.ToUpper(name))) == "true"
+	key := "auth." + strings.ToUpper(name) + ".enabled"
+	return strings.ToLower(rez.Config.GetString(key)) == "true"
 }
 
 func getAuthSessionProviders(ctx context.Context, secretKey string) ([]rez.AuthSessionProvider, error) {
@@ -26,11 +26,11 @@ func getAuthSessionProviders(ctx context.Context, secretKey string) ([]rez.AuthS
 		provs = append(provs, samlProv)
 	}
 
-	if isAuthProviderEnabled("google_oidc") {
-		clientID := os.Getenv("GOOGLE_OIDC_CLIENT_ID")
-		clientSecret := os.Getenv("GOOGLE_OIDC_CLIENT_SECRET")
+	if isAuthProviderEnabled("google") {
+		clientID := rez.Config.GetString("auth.google.client_id")
+		clientSecret := rez.Config.GetString("auth.google.client_secret")
 		if clientID == "" || clientSecret == "" {
-			return nil, fmt.Errorf("client id/secret env vars not set")
+			return nil, fmt.Errorf("google client id/secret not set")
 		}
 
 		googleCfg := oidc.ProviderConfig{

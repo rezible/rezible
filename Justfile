@@ -27,7 +27,7 @@ _default:
     bun update
 
 @run-backend *ARGS:
-    cd backend && REZ_DB_URL="$DB_URL" REZ_DEBUG=true go run ./cmd/rezible {{ARGS}}
+    cd backend && DB_URL="$DB_URL" DEBUG_MODE=true go run ./cmd/rezible {{ARGS}}
 
 # [group('Code Generation')]
 

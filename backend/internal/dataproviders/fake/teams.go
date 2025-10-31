@@ -2,9 +2,10 @@ package fakeprovider
 
 import (
 	"context"
-	"github.com/rezible/rezible/ent"
 	"iter"
-	"os"
+
+	rez "github.com/rezible/rezible"
+	"github.com/rezible/rezible/ent"
 )
 
 type TeamDataProvider struct{}
@@ -36,7 +37,7 @@ func (p *TeamDataProvider) PullTeams(ctx context.Context) iter.Seq2[*ent.Team, e
 		Name:       "Test Team",
 		Edges:      ent.TeamEdges{Users: ent.Users{}},
 	}
-	debugEmail := os.Getenv("REZ_DEBUG_DEFAULT_USER_EMAIL")
+	debugEmail := rez.Config.GetString("REZ_DEBUG_DEFAULT_USER_EMAIL")
 	if debugEmail != "" {
 		fakeTeam1.Edges.Users = append(fakeTeam1.Edges.Users, &ent.User{Email: debugEmail})
 	}

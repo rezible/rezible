@@ -34,7 +34,6 @@ func NewDatabaseClient(ctx context.Context) (*DatabaseClient, error) {
 		pool.Close()
 		return nil, fmt.Errorf("ping: %w", pingErr)
 	}
-	log.Debug().Msg("successfully connected to postgres")
 
 	return &DatabaseClient{pool: pool}, nil
 }

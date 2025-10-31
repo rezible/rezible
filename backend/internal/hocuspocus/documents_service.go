@@ -10,7 +10,6 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-	"os"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/google/uuid"
@@ -30,15 +29,9 @@ type DocumentsService struct {
 	users rez.UserService
 }
 
-const webhookSecretEnvVar = "DOCUMENTS_API_SECRET"
-
 func NewDocumentsService(db *ent.Client, auth rez.AuthService, users rez.UserService) (*DocumentsService, error) {
-	webhookSecret := os.Getenv(webhookSecretEnvVar)
-	if webhookSecret == "" {
-		return nil, fmt.Errorf("%s not set", webhookSecretEnvVar)
-	}
-
-	serverAddress := rez.Config.DocumentServerAddress()
+	webhookSecret := rez.Config.GetString("DOCUMENTS_API_SECRET")
+	serverAddress := rez.Config.GetString("DOCUMENTS_SERVER_ADDRESS")
 
 	svc := &DocumentsService{
 		serverAddress: serverAddress,

@@ -10,7 +10,6 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
-	"os"
 	"time"
 
 	"github.com/crewjam/saml"
@@ -24,9 +23,8 @@ import (
 const (
 	sessionCookieName = "saml_session"
 
-	IdPMetadataUrlEnv = "SAML_IDP_METADATA_URL"
-	CertFileEnv       = "SAML_CERT_FILE"
-	CertKeyFileEnv    = "SAML_CERT_KEY_FILE"
+	CertFileEnv    = "SAML_CERT_FILE"
+	CertKeyFileEnv = "SAML_CERT_KEY_FILE"
 )
 
 var (
@@ -54,20 +52,14 @@ func (c *AuthSessionProviderConfig) resolveMountedPath(path string) (*url.URL, e
 }
 
 func loadEnvConfig(ctx context.Context) (*AuthSessionProviderConfig, error) {
-	for _, v := range []string{IdPMetadataUrlEnv, CertFileEnv, CertKeyFileEnv} {
-		if os.Getenv(v) == "" {
-			return nil, fmt.Errorf("missing environment variable: %s", v)
-		}
-	}
-
-	idPMetadataUrl := os.Getenv(IdPMetadataUrlEnv)
+	idPMetadataUrl := rez.Config.GetString("auth.saml.idp_metadata_url")
 	idpMetadata, mdErr := fetchIdpMetadata(ctx, idPMetadataUrl)
 	if mdErr != nil {
 		return nil, fmt.Errorf("fetching idp metadata: %w", mdErr)
 	}
 
-	certFile := os.Getenv(CertFileEnv)
-	certKeyFile := os.Getenv(CertKeyFileEnv)
+	certFile := rez.Config.GetString("auth.saml.cert_file")
+	certKeyFile := rez.Config.GetString("auth.saml.cert_key_file")
 
 	keyPair, pairErr := tls.LoadX509KeyPair(certFile, certKeyFile)
 	if pairErr != nil {

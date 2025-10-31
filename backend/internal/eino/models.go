@@ -2,21 +2,18 @@ package eino
 
 import (
 	"context"
+	"errors"
 	"fmt"
-	"os"
 
 	"github.com/cloudwego/eino-ext/components/model/claude"
 	"github.com/cloudwego/eino/components/model"
-)
-
-const (
-	anthropicApiKeyEnvVar = "ANTHROPIC_API_KEY"
+	rez "github.com/rezible/rezible"
 )
 
 func newClaudeLanguageModelProvider(ctx context.Context) (model.ToolCallingChatModel, error) {
-	apiKey := os.Getenv(anthropicApiKeyEnvVar)
+	apiKey := rez.Config.GetString("AI.ANTHROPIC_API_KEY")
 	if apiKey == "" {
-		return nil, fmt.Errorf("%s not set", anthropicApiKeyEnvVar)
+		return nil, errors.New("anthropic api key not set")
 	}
 
 	claudeCfg := &claude.Config{

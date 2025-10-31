@@ -8,6 +8,7 @@ import (
 	"os"
 	"time"
 
+	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/access"
 	"github.com/rezible/rezible/ent"
 	"github.com/rezible/rezible/ent/organization"
@@ -97,22 +98,27 @@ func LoadDevConfig(ctx context.Context, client *ent.Client) {
 	loadTenantProviderConfig(ctx, client, &cfg)
 }
 
+// TODO: use fake oncall provider
+func grafanaOncallProviderConfig() providerTenantConfigEntry {
+	apiEndpoint := rez.Config.GetString("GRAFANA_ONCALL_API_ENDPOINT")
+	apiToken := rez.Config.GetString("GRAFANA_ONCALL_API_TOKEN")
+	grafanaOncallRawConfig := fmt.Sprintf(`{"api_endpoint":"%s","api_token":"%s"}`, apiEndpoint, apiToken)
+	return providerTenantConfigEntry{
+		Type:       providerconfig.ProviderTypeOncall,
+		ProviderID: "grafana",
+		Config:     []byte(grafanaOncallRawConfig),
+	}
+}
+
 func LoadFakeConfig(ctx context.Context, client *ent.Client) {
 	fakeProviderConfigEntry := func(t providerconfig.ProviderType) providerTenantConfigEntry {
 		return providerTenantConfigEntry{Type: t, ProviderID: "fake", Config: []byte("{}")}
 	}
-	// TODO: use fake oncall provider
-	grafanaOncallRawConfig := fmt.Sprintf(`{"api_endpoint":"%s","api_token":"%s"}`,
-		os.Getenv("GRAFANA_ONCALL_API_ENDPOINT"),
-		os.Getenv("GRAFANA_ONCALL_API_TOKEN"))
+
 	cfg := &providerTenantConfig{
 		OrgName: "Rezible Test",
 		ConfigEntries: []providerTenantConfigEntry{
-			{
-				Type:       providerconfig.ProviderTypeOncall,
-				ProviderID: "grafana",
-				Config:     []byte(grafanaOncallRawConfig),
-			},
+			grafanaOncallProviderConfig(),
 			fakeProviderConfigEntry(providerconfig.ProviderTypeIncidents),
 			fakeProviderConfigEntry(providerconfig.ProviderTypeAlerts),
 			fakeProviderConfigEntry(providerconfig.ProviderTypeTickets),

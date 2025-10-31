@@ -243,6 +243,6 @@ func (l dbListener) Start(ctx context.Context) error {
 }
 
 func (l dbListener) Stop(ctx context.Context) error {
-	log.Debug().Msg("Closing database connection")
+	// log.Debug().Msg("Closing database connection")
 	return l.dbc.Close()
 }

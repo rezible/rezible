@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
-	"os"
 	"strings"
 	"time"
 
@@ -33,9 +32,9 @@ type AuthService struct {
 var _ rez.AuthService = (*AuthService)(nil)
 
 func NewAuthSessionService(ctx context.Context, orgs rez.OrganizationService, users rez.UserService) (*AuthService, error) {
-	secretKey := os.Getenv("AUTH_SESSION_SECRET_KEY")
+	secretKey := rez.Config.GetString("AUTH.SECRET_KEY")
 	if secretKey == "" {
-		return nil, errors.New("AUTH_SESSION_SECRET_KEY must be set")
+		return nil, errors.New("auth session secret key must be set")
 	}
 
 	providers, provsErr := getAuthSessionProviders(ctx, secretKey)

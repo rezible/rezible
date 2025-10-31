@@ -29,7 +29,7 @@ var cli = &cobra.Command{
 }
 
 func init() {
-	rez.Config = viper.InitConfig(cli)
+	rez.Config = viper.InitConfig()
 
 	cli.AddCommand(serveCmd)
 	cli.AddCommand(printSpecCmd)

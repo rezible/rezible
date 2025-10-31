@@ -4,20 +4,16 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
-	"fmt"
+	"errors"
 	"io"
 	"net/http"
-	"os"
 	"time"
 
 	"github.com/go-chi/chi/v5"
+	rez "github.com/rezible/rezible"
 	"github.com/rs/zerolog/log"
 	"github.com/slack-go/slack"
 	"github.com/slack-go/slack/slackevents"
-)
-
-const (
-	signingSecretEnvVar = "SLACK_WEBHOOK_SIGNING_SECRET"
 )
 
 var (
@@ -30,9 +26,9 @@ type WebhookEventHandler struct {
 }
 
 func NewWebhookEventHandler(chatSvc *ChatService) (*WebhookEventHandler, error) {
-	signingSecret := os.Getenv(signingSecretEnvVar)
+	signingSecret := rez.Config.GetString("slack.webhook_signing_secret")
 	if signingSecret == "" && !UseSocketMode() {
-		return nil, fmt.Errorf("%s environment variable not set", signingSecretEnvVar)
+		return nil, errors.New("slack.webhook_signing_secret not set")
 	}
 	return &WebhookEventHandler{chatSvc: chatSvc, signingSecret: signingSecret}, nil
 }

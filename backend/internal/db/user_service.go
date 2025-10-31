@@ -3,7 +3,6 @@ package db
 import (
 	"context"
 	"fmt"
-	"os"
 
 	"github.com/google/uuid"
 	rez "github.com/rezible/rezible"
@@ -122,9 +121,12 @@ func (s *UserService) GetTenantById(ctx context.Context, id int) (*ent.Tenant, e
 func (s *UserService) LookupProviderUser(ctx context.Context, provUser *ent.User) (*ent.User, error) {
 	// TODO: use provider mapping to match user details, not just by email
 	email := provUser.Email
-	if rez.Config.DebugMode() && os.Getenv("REZ_DEBUG_DEFAULT_USER_EMAIL") != "" {
-		email = os.Getenv("REZ_DEBUG_DEFAULT_USER_EMAIL")
-		//log.Debug().Str("email", email).Msg("using debug auth email")
+	if rez.Config.DebugMode() {
+		defaultEmail := rez.Config.GetString("REZ_DEBUG_DEFAULT_USER_EMAIL")
+		if defaultEmail != "" {
+			email = defaultEmail
+			//log.Debug().Str("email", email).Msg("using debug auth email")
+		}
 	}
 
 	allowQueryCtx := privacy.DecisionContext(ctx, privacy.Allow)

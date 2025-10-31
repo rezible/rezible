@@ -1,32 +1,25 @@
 package slack
 
 import (
-	"fmt"
-	"os"
+	"errors"
 
+	rez "github.com/rezible/rezible"
 	"github.com/slack-go/slack"
 )
 
-const (
-	botTokenEnvVar = "SLACK_BOT_TOKEN"
-	appTokenEnvVar = "SLACK_APP_TOKEN"
-
-	enableSocketModeEnvVar = "SLACK_USE_SOCKETMODE"
-)
-
 func UseSocketMode() bool {
-	return os.Getenv(enableSocketModeEnvVar) == "true"
+	return rez.Config.GetBool("slack.socketmode.enabled")
 }
 
 func LoadClient() (*slack.Client, error) {
-	botToken := os.Getenv(botTokenEnvVar)
+	botToken := rez.Config.GetString("slack.bot_token")
 	if botToken == "" {
-		return nil, fmt.Errorf("%s environment variable not set", botTokenEnvVar)
+		return nil, errors.New("slack.bot_token not set")
 	}
 
-	appToken := os.Getenv(appTokenEnvVar)
+	appToken := rez.Config.GetString("slack.app_token")
 	if appToken != "" && !UseSocketMode() {
-		// TODO: check if socketmode enabled
+		return nil, errors.New("slack.app_token not set")
 	}
 
 	client := slack.New(botToken,

@@ -29,16 +29,20 @@ var (
 
 type ConfigLoader interface {
 	DebugMode() bool
+
 	DatabaseUrl() string
+
 	BackendUrl() string
 	FrontendUrl() string
 
+	GetString(key string) string
+	GetBool(key string) bool
+
 	HttpServerAddress() string
-	DocumentServerAddress() string
+	ServerStopTimeout() time.Duration
 
 	AllowTenantCreation() bool
 	AllowUserCreation() bool
-	ServerStopTimeout() time.Duration
 }
 
 var Config ConfigLoader

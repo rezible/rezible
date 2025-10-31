@@ -7,31 +7,21 @@ import (
 
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
-	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 
 	rez "github.com/rezible/rezible"
 )
 
 type Config struct {
-	cli *cobra.Command
-	db  *rez.Database
+	db *rez.Database
 }
 
-func InitConfig(cli *cobra.Command) *Config {
-	cfg := &Config{cli: cli}
+func InitConfig() *Config {
+	cfg := &Config{}
 
-	flags := cli.Flags()
-	flags.Bool("debug", false, "Enable debug logging")
-	_ = viper.BindPFlag("debug", flags.Lookup("debug"))
-
-	flags.String("db_url", "", "Database URL")
-	_ = viper.BindPFlag("db_url", flags.Lookup("db_url"))
-
-	flags.Int("stop_timeout", 10, "server stop timeout")
-	_ = viper.BindPFlag("stop_timeout", flags.Lookup("stop_timeout"))
-
-	viper.SetEnvPrefix("REZ")
+	// viper.SetEnvPrefix("REZ")
+	viper.SetDefault("stop_timeout", 10)
+	
 	viper.AutomaticEnv()
 
 	if cfg.DebugMode() {
@@ -41,12 +31,20 @@ func InitConfig(cli *cobra.Command) *Config {
 	return cfg
 }
 
+func (c *Config) GetString(key string) string {
+	return viper.GetString(key)
+}
+
+func (c *Config) GetBool(key string) bool {
+	return viper.GetBool(key)
+}
+
 func (c *Config) DebugMode() bool {
-	return os.Getenv("REZ_DEBUG") == "true"
+	return c.GetBool("debug_mode")
 }
 
 func (c *Config) DatabaseUrl() string {
-	return viper.GetString("db_url")
+	return c.GetString("db_url")
 }
 
 func (c *Config) BackendUrl() string {
@@ -69,10 +67,6 @@ func (c *Config) HttpServerAddress() string {
 	host := "localhost"
 	port := "8888"
 	return net.JoinHostPort(host, port)
-}
-
-func (c *Config) DocumentServerAddress() string {
-	return "localhost:8889"
 }
 
 func (c *Config) ServerStopTimeout() time.Duration {
