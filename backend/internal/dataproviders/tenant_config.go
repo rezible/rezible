@@ -8,12 +8,13 @@ import (
 	"os"
 	"time"
 
+	"github.com/rs/zerolog/log"
+
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/access"
 	"github.com/rezible/rezible/ent"
 	"github.com/rezible/rezible/ent/organization"
 	"github.com/rezible/rezible/ent/providerconfig"
-	"github.com/rs/zerolog/log"
 )
 
 // TODO: move this

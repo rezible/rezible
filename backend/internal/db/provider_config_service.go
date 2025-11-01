@@ -2,7 +2,6 @@ package db
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/google/uuid"
 	rez "github.com/rezible/rezible"
@@ -40,24 +39,6 @@ func (s *ProviderConfigService) listQuery(p rez.ListProviderConfigsParams) *ent.
 func (s *ProviderConfigService) ListProviderConfigs(ctx context.Context, params rez.ListProviderConfigsParams) ([]*ent.ProviderConfig, error) {
 	query := s.listQuery(params)
 	return query.All(ctx)
-}
-
-func (s *ProviderConfigService) GetEnabledTypeConfig(ctx context.Context, t providerconfig.ProviderType) (*ent.ProviderConfig, error) {
-	query := s.listQuery(rez.ListProviderConfigsParams{
-		ProviderType: t,
-		Enabled:      true,
-	})
-	pc, queryErr := query.Only(ctx)
-	if queryErr == nil {
-		return pc, nil
-	}
-	if ent.IsNotFound(queryErr) {
-		return nil, rez.ErrNoStoredProviderConfigs
-	}
-	if ent.IsNotSingular(queryErr) {
-		return nil, rez.ErrMultipleEnabledProviderConfigs
-	}
-	return nil, fmt.Errorf("failed to load %s provider config: %w", t, queryErr)
 }
 
 func (s *ProviderConfigService) GetProviderConfig(ctx context.Context, id uuid.UUID) (*ent.ProviderConfig, error) {

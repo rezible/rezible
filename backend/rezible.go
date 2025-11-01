@@ -66,15 +66,15 @@ type (
 type (
 	DataProviderResourceUpdatedCallback = func(providerID string, updatedAt time.Time)
 
-	ProviderLoader interface {
-		GetIncidentDataProvider(context.Context) (IncidentDataProvider, error)
-		GetOncallDataProvider(context.Context) (OncallDataProvider, error)
-		GetSystemComponentsDataProvider(context.Context) (SystemComponentsDataProvider, error)
-		GetTeamDataProvider(context.Context) (TeamDataProvider, error)
-		GetUserDataProvider(context.Context) (UserDataProvider, error)
-		GetTicketDataProvider(context.Context) (TicketDataProvider, error)
-		GetAlertDataProvider(context.Context) (AlertDataProvider, error)
-		GetPlaybookDataProvider(context.Context) (PlaybookDataProvider, error)
+	DataProviderLoader interface {
+		GetTeamDataProviders(context.Context) ([]TeamDataProvider, error)
+		GetUserDataProviders(context.Context) ([]UserDataProvider, error)
+		GetIncidentDataProviders(context.Context) ([]IncidentDataProvider, error)
+		GetOncallDataProviders(context.Context) ([]OncallDataProvider, error)
+		GetSystemComponentsDataProviders(context.Context) ([]SystemComponentsDataProvider, error)
+		GetTicketDataProviders(context.Context) ([]TicketDataProvider, error)
+		GetAlertDataProviders(context.Context) ([]AlertDataProvider, error)
+		GetPlaybookDataProviders(context.Context) ([]PlaybookDataProvider, error)
 	}
 
 	ListProviderConfigsParams struct {
@@ -84,8 +84,6 @@ type (
 	}
 
 	ProviderConfigService interface {
-		GetEnabledTypeConfig(context.Context, providerconfig.ProviderType) (*ent.ProviderConfig, error)
-
 		ListProviderConfigs(context.Context, ListProviderConfigsParams) ([]*ent.ProviderConfig, error)
 		GetProviderConfig(context.Context, uuid.UUID) (*ent.ProviderConfig, error)
 		UpdateProviderConfig(context.Context, ent.ProviderConfig) (*ent.ProviderConfig, error)

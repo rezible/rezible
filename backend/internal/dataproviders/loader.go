@@ -24,6 +24,13 @@ func NewProviderLoader(config rez.ProviderConfigService) *ProviderLoader {
 	}
 }
 
+func (l *ProviderLoader) listEnabledConfigs(ctx context.Context, t providerconfig.ProviderType) (ent.ProviderConfigs, error) {
+	return l.config.ListProviderConfigs(ctx, rez.ListProviderConfigsParams{
+		ProviderType: t,
+		Enabled:      true,
+	})
+}
+
 func loadProviderCtx[C any, P any](ctx context.Context, constructorFn func(context.Context, C) (P, error), pc *ent.ProviderConfig) (P, error) {
 	return loadProvider(func(c C) (P, error) {
 		return constructorFn(ctx, c)
@@ -39,117 +46,174 @@ func loadProvider[C any, P any](constructorFn func(C) (P, error), pc *ent.Provid
 	return constructorFn(cfg)
 }
 
-func (l *ProviderLoader) GetOncallDataProvider(ctx context.Context) (rez.OncallDataProvider, error) {
-	cfg, cfgErr := l.config.GetEnabledTypeConfig(ctx, providerconfig.ProviderTypeOncall)
-	if cfgErr != nil {
-		return nil, cfgErr
+func (l *ProviderLoader) GetUserDataProviders(ctx context.Context) ([]rez.UserDataProvider, error) {
+	cfgs, cfgsErr := l.listEnabledConfigs(ctx, providerconfig.ProviderTypeUsers)
+	if cfgsErr != nil {
+		return nil, cfgsErr
 	}
 
-	switch cfg.ProviderID {
-	case "grafana":
-		return loadProvider(grafana.NewOncallDataProvider, cfg)
-	case "fake":
-		return loadProvider(fakeprovider.NewOncallDataProvider, cfg)
-	}
-	return nil, fmt.Errorf("invalid oncall data provider: %s", cfg.ProviderID)
-}
-
-func (l *ProviderLoader) GetAlertDataProvider(ctx context.Context) (rez.AlertDataProvider, error) {
-	cfg, cfgErr := l.config.GetEnabledTypeConfig(ctx, providerconfig.ProviderTypeAlerts)
-	if cfgErr != nil {
-		return nil, cfgErr
-	}
-
-	switch cfg.ProviderID {
-	case "fake":
-		return loadProvider(fakeprovider.NewAlertDataProvider, cfg)
-	}
-	return nil, fmt.Errorf("invalid alerts data provider: %s", cfg.ProviderID)
-}
-
-func (l *ProviderLoader) GetIncidentDataProvider(ctx context.Context) (rez.IncidentDataProvider, error) {
-	cfg, cfgErr := l.config.GetEnabledTypeConfig(ctx, providerconfig.ProviderTypeIncidents)
-	if cfgErr != nil {
-		return nil, cfgErr
-	}
-
-	switch cfg.ProviderID {
-	case "grafana":
-		return loadProvider(grafana.NewIncidentDataProvider, cfg)
-	case "fake":
-		return loadProvider(fakeprovider.NewIncidentDataProvider, cfg)
-	}
-	return nil, fmt.Errorf("invalid incident data provider: %s", cfg.ProviderID)
-}
-
-func (l *ProviderLoader) GetUserDataProvider(ctx context.Context) (rez.UserDataProvider, error) {
-	cfg, cfgErr := l.config.GetEnabledTypeConfig(ctx, providerconfig.ProviderTypeUsers)
-	if cfgErr != nil {
-		if rez.Config.DebugMode() {
-			return slack.DebugOnlyUserDataProvider(ctx)
+	provs := make([]rez.UserDataProvider, len(cfgs))
+	for i, cfg := range cfgs {
+		var pErr error
+		switch cfg.ProviderID {
+		case "slack":
+			provs[i], pErr = loadProvider(slack.NewUserDataProvider, cfg)
 		}
-		return nil, cfgErr
+		if pErr != nil {
+			return nil, fmt.Errorf("failed to load provider config: %w", pErr)
+		}
 	}
-
-	switch cfg.ProviderID {
-	case "slack":
-		return loadProvider(slack.NewUserDataProvider, cfg)
-	}
-	return nil, fmt.Errorf("invalid user data provider: %s", cfg.ProviderID)
+	return provs, nil
 }
 
-func (l *ProviderLoader) GetTeamDataProvider(ctx context.Context) (rez.TeamDataProvider, error) {
-	cfg, cfgErr := l.config.GetEnabledTypeConfig(ctx, providerconfig.ProviderTypeTeams)
-	if cfgErr != nil {
-		return nil, cfgErr
+func (l *ProviderLoader) GetTeamDataProviders(ctx context.Context) ([]rez.TeamDataProvider, error) {
+	cfgs, cfgsErr := l.listEnabledConfigs(ctx, providerconfig.ProviderTypeTeams)
+	if cfgsErr != nil {
+		return nil, cfgsErr
 	}
 
-	switch cfg.ProviderID {
-	case "slack":
-		return loadProvider(slack.NewTeamDataProvider, cfg)
-	case "fake":
-		return loadProvider(fakeprovider.NewTeamsDataProvider, cfg)
+	provs := make([]rez.TeamDataProvider, len(cfgs))
+	for i, cfg := range cfgs {
+		var pErr error
+		switch cfg.ProviderID {
+		case "slack":
+			provs[i], pErr = loadProvider(slack.NewTeamDataProvider, cfg)
+		case "fake":
+			provs[i], pErr = loadProvider(fakeprovider.NewTeamsDataProvider, cfg)
+		}
+		if pErr != nil {
+			return nil, fmt.Errorf("failed to load provider config: %w", pErr)
+		}
 	}
-	return nil, fmt.Errorf("invalid team data provider: %s", cfg.ProviderID)
+	return provs, nil
 }
 
-func (l *ProviderLoader) GetSystemComponentsDataProvider(ctx context.Context) (rez.SystemComponentsDataProvider, error) {
-	cfg, cfgErr := l.config.GetEnabledTypeConfig(ctx, providerconfig.ProviderTypeSystemComponents)
-	if cfgErr != nil {
-		return nil, cfgErr
+func (l *ProviderLoader) GetOncallDataProviders(ctx context.Context) ([]rez.OncallDataProvider, error) {
+	cfgs, cfgsErr := l.listEnabledConfigs(ctx, providerconfig.ProviderTypeOncall)
+	if cfgsErr != nil {
+		return nil, cfgsErr
 	}
 
-	switch cfg.ProviderID {
-	case "fake":
-		return loadProvider(fakeprovider.NewSystemComponentsDataProvider, cfg)
+	provs := make([]rez.OncallDataProvider, len(cfgs))
+	for i, cfg := range cfgs {
+		var pErr error
+		switch cfg.ProviderID {
+		case "grafana":
+			provs[i], pErr = loadProvider(grafana.NewOncallDataProvider, cfg)
+		case "fake":
+			provs[i], pErr = loadProvider(fakeprovider.NewOncallDataProvider, cfg)
+		default:
+			pErr = fmt.Errorf("unknown provider: %s", cfg.ProviderID)
+		}
+		if pErr != nil {
+			return nil, fmt.Errorf("failed to load provider config: %w", pErr)
+		}
 	}
-	return nil, fmt.Errorf("invalid system components data provider: %s", cfg.ProviderID)
+	return provs, nil
 }
 
-func (l *ProviderLoader) GetTicketDataProvider(ctx context.Context) (rez.TicketDataProvider, error) {
-	cfg, cfgErr := l.config.GetEnabledTypeConfig(ctx, providerconfig.ProviderTypeTickets)
-	if cfgErr != nil {
-		return nil, cfgErr
+func (l *ProviderLoader) GetAlertDataProviders(ctx context.Context) ([]rez.AlertDataProvider, error) {
+	cfgs, cfgsErr := l.listEnabledConfigs(ctx, providerconfig.ProviderTypeAlerts)
+	if cfgsErr != nil {
+		return nil, cfgsErr
 	}
 
-	switch cfg.ProviderID {
-	case "jira":
-		return loadProviderCtx(ctx, jira.NewTicketDataProvider, cfg)
-	case "fake":
-		return loadProvider(fakeprovider.NewTicketDataProvider, cfg)
+	provs := make([]rez.AlertDataProvider, len(cfgs))
+	for i, cfg := range cfgs {
+		var pErr error
+		switch cfg.ProviderID {
+		case "fake":
+			provs[i], pErr = loadProvider(fakeprovider.NewAlertDataProvider, cfg)
+		default:
+			pErr = fmt.Errorf("unknown provider: %s", cfg.ProviderID)
+		}
+		if pErr != nil {
+			return nil, fmt.Errorf("failed to load provider config: %w", pErr)
+		}
 	}
-	return nil, fmt.Errorf("invalid ticket data provider: %s", cfg.ProviderID)
+	return provs, nil
 }
 
-func (l *ProviderLoader) GetPlaybookDataProvider(ctx context.Context) (rez.PlaybookDataProvider, error) {
-	cfg, cfgErr := l.config.GetEnabledTypeConfig(ctx, providerconfig.ProviderTypePlaybooks)
-	if cfgErr != nil {
-		return nil, cfgErr
+func (l *ProviderLoader) GetIncidentDataProviders(ctx context.Context) ([]rez.IncidentDataProvider, error) {
+	cfgs, cfgsErr := l.listEnabledConfigs(ctx, providerconfig.ProviderTypeIncidents)
+	if cfgsErr != nil {
+		return nil, cfgsErr
 	}
 
-	switch cfg.ProviderID {
-	case "fake":
-		return loadProvider(fakeprovider.NewPlaybookDataProvider, cfg)
+	provs := make([]rez.IncidentDataProvider, len(cfgs))
+	for i, cfg := range cfgs {
+		var pErr error
+		switch cfg.ProviderID {
+		case "grafana":
+			provs[i], pErr = loadProvider(grafana.NewIncidentDataProvider, cfg)
+		case "fake":
+			provs[i], pErr = loadProvider(fakeprovider.NewIncidentDataProvider, cfg)
+		}
+		if pErr != nil {
+			return nil, fmt.Errorf("failed to load provider config: %w", pErr)
+		}
 	}
-	return nil, fmt.Errorf("invalid playbooks data provider: %s", cfg.ProviderID)
+	return provs, nil
+}
+
+func (l *ProviderLoader) GetSystemComponentsDataProviders(ctx context.Context) ([]rez.SystemComponentsDataProvider, error) {
+	cfgs, cfgsErr := l.listEnabledConfigs(ctx, providerconfig.ProviderTypeSystemComponents)
+	if cfgsErr != nil {
+		return nil, cfgsErr
+	}
+
+	provs := make([]rez.SystemComponentsDataProvider, len(cfgs))
+	for i, cfg := range cfgs {
+		var pErr error
+		switch cfg.ProviderID {
+		case "fake":
+			provs[i], pErr = loadProvider(fakeprovider.NewSystemComponentsDataProvider, cfg)
+		}
+		if pErr != nil {
+			return nil, fmt.Errorf("failed to load provider config: %w", pErr)
+		}
+	}
+	return provs, nil
+}
+
+func (l *ProviderLoader) GetTicketDataProviders(ctx context.Context) ([]rez.TicketDataProvider, error) {
+	cfgs, cfgsErr := l.listEnabledConfigs(ctx, providerconfig.ProviderTypeTickets)
+	if cfgsErr != nil {
+		return nil, cfgsErr
+	}
+
+	provs := make([]rez.TicketDataProvider, len(cfgs))
+	for i, cfg := range cfgs {
+		var pErr error
+		switch cfg.ProviderID {
+		case "jira":
+			provs[i], pErr = loadProviderCtx(ctx, jira.NewTicketDataProvider, cfg)
+		case "fake":
+			provs[i], pErr = loadProvider(fakeprovider.NewTicketDataProvider, cfg)
+		}
+		if pErr != nil {
+			return nil, fmt.Errorf("failed to load provider config: %w", pErr)
+		}
+	}
+	return provs, nil
+}
+
+func (l *ProviderLoader) GetPlaybookDataProviders(ctx context.Context) ([]rez.PlaybookDataProvider, error) {
+	cfgs, cfgsErr := l.listEnabledConfigs(ctx, providerconfig.ProviderTypePlaybooks)
+	if cfgsErr != nil {
+		return nil, cfgsErr
+	}
+
+	provs := make([]rez.PlaybookDataProvider, len(cfgs))
+	for i, cfg := range cfgs {
+		var pErr error
+		switch cfg.ProviderID {
+		case "fake":
+			provs[i], pErr = loadProvider(fakeprovider.NewPlaybookDataProvider, cfg)
+		}
+		if pErr != nil {
+			return nil, fmt.Errorf("failed to load provider config: %w", pErr)
+		}
+	}
+	return provs, nil
 }
