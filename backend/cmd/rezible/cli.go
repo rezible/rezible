@@ -12,7 +12,6 @@ import (
 
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/access"
-	"github.com/rezible/rezible/ent"
 	rezinternal "github.com/rezible/rezible/internal"
 	"github.com/rezible/rezible/internal/dataproviders"
 	"github.com/rezible/rezible/internal/db"
@@ -22,30 +21,10 @@ import (
 	"github.com/rezible/rezible/openapi"
 )
 
-var cli = &cobra.Command{
+var rootCmd = &cobra.Command{
 	Use:   "rezible",
 	Short: "",
 	Run:   serveCmd.Run,
-}
-
-func init() {
-	rez.Config = viper.InitConfig()
-
-	cli.AddCommand(serveCmd)
-	cli.AddCommand(printSpecCmd)
-	cli.AddCommand(migrateCmd)
-	cli.AddCommand(syncCmd)
-	cli.AddCommand(loadFakeConfigCmd)
-	cli.AddCommand(loadDevConfigCmd)
-}
-
-func main() {
-	ctx, stopFn := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
-	defer stopFn()
-
-	if runErr := cli.ExecuteContext(ctx); runErr != nil {
-		os.Exit(1)
-	}
 }
 
 var serveCmd = &cobra.Command{
@@ -70,63 +49,102 @@ var printSpecCmd = &cobra.Command{
 	},
 }
 
-var migrateCmd = &cobra.Command{
-	Use:   "migrate",
-	Short: "Run database migrations",
+func withDatabase(ctx context.Context, fn func(dbc rez.Database)) {
+	dbc, dbcErr := rezinternal.OpenDatabase(ctx)
+	if dbcErr != nil {
+		log.Fatal().Err(dbcErr).Msg("failed to get database")
+	}
+
+	defer func() {
+		if closeErr := dbc.Close(); closeErr != nil {
+			log.Error().Err(closeErr).Msg("failed to close database connection")
+		}
+	}()
+
+	fn(dbc)
+}
+
+var providersCmd = &cobra.Command{
+	Use: "provider-configs",
+}
+
+var providersLoadCmd = &cobra.Command{
+	Use:   "load [source]",
+	Short: "Load tenant provider configs from source",
+	Args:  cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
 		ctx := access.SystemContext(cmd.Context())
-		dbc, dbcErr := rezinternal.OpenDatabase(ctx)
-		if dbcErr != nil {
-			log.Fatal().Err(dbcErr).Msg("failed to load database")
-		}
-		if migErr := dbc.RunMigrations(ctx); migErr != nil {
-			log.Fatal().Err(migErr).Msg("failed to run migrations")
-		}
+		src := args[0]
+		withDatabase(cmd.Context(), func(dbc rez.Database) {
+			var loadErr error
+			if src == "fake" {
+				loadErr = dataproviders.LoadFakeConfig(ctx, dbc.Client())
+			} else {
+				loadErr = dataproviders.LoadTenantConfig(ctx, dbc.Client(), src)
+			}
+			if loadErr != nil {
+				log.Fatal().Err(loadErr).Msg("failed to load tenant config")
+			}
+		})
 	},
 }
 
-func withDatabaseClient(fn func(ctx context.Context, client *ent.Client)) func(cmd *cobra.Command, args []string) {
-	return func(cmd *cobra.Command, args []string) {
-		ctx := cmd.Context()
-		dbc, dbcErr := rezinternal.OpenDatabase(ctx)
-		if dbcErr != nil {
-			log.Fatal().Err(dbcErr).Msg("failed to get database")
-		}
-
-		defer func() {
-			if closeErr := dbc.Close(); closeErr != nil {
-				log.Error().Err(closeErr).Msg("failed to close database connection")
-			}
-		}()
-
-		fn(ctx, dbc.Client())
-	}
-}
-
-var loadDevConfigCmd = &cobra.Command{
-	Use:   "load-dev-config",
-	Short: "Load dev config",
-	Run:   withDatabaseClient(dataproviders.LoadDevConfig),
-}
-
-var loadFakeConfigCmd = &cobra.Command{
-	Use:   "load-fake-config",
-	Short: "Load fake config",
-	Run:   withDatabaseClient(dataproviders.LoadFakeConfig),
-}
-
-var syncCmd = &cobra.Command{
+var providersSyncCmd = &cobra.Command{
 	Use:   "sync",
-	Short: "Run sync",
-	Run: withDatabaseClient(func(ctx context.Context, client *ent.Client) {
-		cfgs, cfgsErr := db.NewProviderConfigService(client)
-		if cfgsErr != nil {
-			log.Fatal().Err(cfgsErr).Msg("failed to load provider configs")
+	Short: "Run provider data sync",
+	Run: func(cmd *cobra.Command, args []string) {
+		ctx := access.SystemContext(cmd.Context())
+		syncArgs := jobs.SyncProviderData{
+			Hard: true,
 		}
-		syncSvc := datasync.NewProviderSyncService(client, dataproviders.NewProviderLoader(cfgs))
-		syncErr := syncSvc.SyncProviderData(ctx, jobs.SyncProviderData{Hard: true})
-		if syncErr != nil {
-			log.Fatal().Err(syncErr).Msg("failed to sync provider data")
-		}
-	}),
+		withDatabase(ctx, func(dbc rez.Database) {
+			client := dbc.Client()
+			cfgs, cfgsErr := db.NewProviderConfigService(client)
+			if cfgsErr != nil {
+				log.Fatal().Err(cfgsErr).Msg("failed to load provider configs")
+			}
+			svc := datasync.NewProviderSyncService(client, dataproviders.NewProviderLoader(cfgs))
+			syncErr := svc.SyncProviderData(ctx, syncArgs)
+			if syncErr != nil {
+				log.Fatal().Err(syncErr).Msg("failed to sync provider data")
+			}
+		})
+	},
+}
+
+var dbCmd = &cobra.Command{
+	Use: "db",
+}
+
+var dbMigrateCmd = &cobra.Command{
+	Use: "migrate",
+}
+
+var dbMigrateApplyCmd = &cobra.Command{
+	Use:   "apply [direction]",
+	Short: "apply database migrations",
+	Args:  cobra.ExactArgs(1),
+	Run: func(cmd *cobra.Command, args []string) {
+
+	},
+}
+
+func init() {
+	rez.Config = viper.InitConfig()
+
+	rootCmd.AddCommand(serveCmd, printSpecCmd, providersCmd, dbCmd)
+
+	providersCmd.AddCommand(providersLoadCmd, providersSyncCmd)
+
+	dbCmd.AddCommand(dbMigrateCmd)
+	dbMigrateCmd.AddCommand(dbMigrateApplyCmd)
+}
+
+func main() {
+	ctx, stopFn := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
+	defer stopFn()
+
+	if runErr := rootCmd.ExecuteContext(ctx); runErr != nil {
+		os.Exit(1)
+	}
 }

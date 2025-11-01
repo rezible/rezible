@@ -33,19 +33,23 @@ type (
 	}
 )
 
-func loadTenantProviderConfig(ctx context.Context, client *ent.Client, cfg *providerTenantConfig) {
+func loadTenantProviderConfig(ctx context.Context, client *ent.Client, cfg *providerTenantConfig) error {
 	org, orgErr := client.Organization.Query().Where(organization.Name(cfg.OrgName)).Only(ctx)
 	if orgErr != nil {
 		if !ent.IsNotFound(orgErr) {
-			log.Fatal().Err(orgErr).Msg("failed to load organization")
+			return fmt.Errorf("query organization: %w", orgErr)
 		}
-		if ent.IsNotFound(orgErr) {
-			tnt := client.Tenant.Create().SaveX(ctx)
-			org = client.Organization.Create().
-				SetName(cfg.OrgName).
-				SetProviderID(cfg.OrgName).
-				SetTenantID(tnt.ID).
-				SaveX(ctx)
+		tnt, tntErr := client.Tenant.Create().Save(ctx)
+		if tntErr != nil {
+			return fmt.Errorf("create tenant: %w", tntErr)
+		}
+		org, orgErr = client.Organization.Create().
+			SetName(cfg.OrgName).
+			SetProviderID(cfg.OrgName).
+			SetTenantID(tnt.ID).
+			Save(ctx)
+		if orgErr != nil {
+			return fmt.Errorf("create organization: %w", orgErr)
 		}
 	}
 	ctx = access.TenantSystemContext(ctx, org.TenantID)
@@ -74,29 +78,31 @@ func loadTenantProviderConfig(ctx context.Context, client *ent.Client, cfg *prov
 	}
 
 	if txErr := ent.WithTx(ctx, client, loadConfigTxFn); txErr != nil {
-		log.Fatal().Err(txErr).Msg("failed to load provider config")
+		return fmt.Errorf("tx: %w", txErr)
 	}
+	return nil
 }
 
-func LoadDevConfig(ctx context.Context, client *ent.Client) {
-	// TODO: allow specifying file name
-	fileName := ".dev_provider_configs.json"
+func LoadTenantConfig(ctx context.Context, client *ent.Client, fileName string) error {
 	f, openErr := os.Open(fileName)
 	if openErr != nil {
-		log.Fatal().Err(openErr).Str("fileName", fileName).Msg("failed to open")
+		return fmt.Errorf("open file: %w", openErr)
 	}
 	defer f.Close()
 	fileContents, readErr := io.ReadAll(f)
 	if readErr != nil {
-		log.Fatal().Err(readErr).Str("fileName", fileName).Msg("failed to read")
+		return fmt.Errorf("read file: %w", readErr)
 	}
 
 	var cfg providerTenantConfig
 	if cfgErr := json.Unmarshal(fileContents, &cfg); cfgErr != nil {
-		log.Fatal().Err(cfgErr).Msg("failed to unmarshal")
+		return fmt.Errorf("unmarshal file: %w", cfgErr)
 	}
 
-	loadTenantProviderConfig(ctx, client, &cfg)
+	if loadErr := loadTenantProviderConfig(ctx, client, &cfg); loadErr != nil {
+		return fmt.Errorf("loading config: %w", loadErr)
+	}
+	return nil
 }
 
 // TODO: use fake oncall provider
@@ -111,13 +117,13 @@ func grafanaOncallProviderConfig() providerTenantConfigEntry {
 	}
 }
 
-func LoadFakeConfig(ctx context.Context, client *ent.Client) {
+func LoadFakeConfig(ctx context.Context, client *ent.Client) error {
 	fakeProviderConfigEntry := func(t providerconfig.ProviderType) providerTenantConfigEntry {
 		return providerTenantConfigEntry{Type: t, ProviderID: "fake", Config: []byte("{}")}
 	}
 
 	cfg := &providerTenantConfig{
-		OrgName: "Rezible Test",
+		OrgName: "Test Organization",
 		ConfigEntries: []providerTenantConfigEntry{
 			grafanaOncallProviderConfig(),
 			fakeProviderConfigEntry(providerconfig.ProviderTypeIncidents),
@@ -127,5 +133,8 @@ func LoadFakeConfig(ctx context.Context, client *ent.Client) {
 			fakeProviderConfigEntry(providerconfig.ProviderTypeSystemComponents),
 		},
 	}
-	loadTenantProviderConfig(ctx, client, cfg)
+	if loadErr := loadTenantProviderConfig(ctx, client, cfg); loadErr != nil {
+		return fmt.Errorf("loading fake config: %w", loadErr)
+	}
+	return nil
 }
