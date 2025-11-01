@@ -48,7 +48,6 @@ type ConfigLoader interface {
 var Config ConfigLoader
 
 type Database interface {
-	RunMigrations(ctx context.Context) error
 	Client() *ent.Client
 	Close() error
 }

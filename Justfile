@@ -71,7 +71,7 @@ _default:
     # just run-backend load-fake-config
 
 @run-migrations:
-    just run-backend migrate
+    just run-backend db migrate apply up
 
 @seed-db:
     just run-backend seed

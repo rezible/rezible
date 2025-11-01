@@ -11,7 +11,6 @@ import (
 	"log/slog"
 
 	"github.com/rs/zerolog"
-	"github.com/rs/zerolog/log"
 	slogzerolog "github.com/samber/slog-zerolog/v2"
 
 	"github.com/jackc/pgx/v5"
@@ -19,7 +18,6 @@ import (
 
 	"github.com/riverqueue/river"
 	"github.com/riverqueue/river/riverdriver/riverpgxv5"
-	"github.com/riverqueue/river/rivermigrate"
 	"github.com/riverqueue/river/rivertype"
 
 	"github.com/rezible/rezible/ent"
@@ -92,26 +90,6 @@ func periodicInterval(interval time.Duration) river.PeriodicSchedule {
 }
 func (s *periodicIntervalSchedule) Next(t time.Time) time.Time {
 	return t.Add(s.interval)
-}
-
-func RunMigrations(ctx context.Context, pool *pgxpool.Pool) error {
-	cfg := &rivermigrate.Config{}
-	migrator, migErr := rivermigrate.New(riverpgxv5.New(pool), cfg)
-	if migErr != nil {
-		return fmt.Errorf("failed to create migrator: %w", migErr)
-	}
-
-	opts := &rivermigrate.MigrateOpts{}
-	res, migrationErr := migrator.Migrate(ctx, rivermigrate.DirectionUp, opts)
-	if migrationErr != nil {
-		return fmt.Errorf("failed to migrate: %w", migrationErr)
-	}
-
-	if len(res.Versions) > 0 {
-		log.Info().Int("versions", len(res.Versions)).Msg("ran river migrations")
-	}
-
-	return nil
 }
 
 func (s *JobService) Start(ctx context.Context) error {

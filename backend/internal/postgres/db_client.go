@@ -11,12 +11,12 @@ import (
 	"github.com/rezible/rezible/ent/entpgx"
 	"github.com/rs/zerolog/log"
 
+	"entgo.io/ent/dialect"
 	entsql "entgo.io/ent/dialect/sql"
 	"github.com/jackc/pgx/v5/pgxpool"
 	_ "github.com/jackc/pgx/v5/stdlib"
 
 	"github.com/rezible/rezible/ent"
-	_ "github.com/rezible/rezible/ent/runtime"
 )
 
 type DatabaseClient struct {
@@ -38,10 +38,13 @@ func NewDatabaseClient(ctx context.Context) (*DatabaseClient, error) {
 	return &DatabaseClient{pool: pool}, nil
 }
 
+func (dbc *DatabaseClient) newClient(driver dialect.Driver) *ent.Client {
+	return ent.NewClient(ent.Driver(driver))
+}
+
 func (dbc *DatabaseClient) Client() *ent.Client {
 	if dbc.client == nil {
-		driver := ent.Driver(entpgx.NewPgxPoolDriver(dbc.pool))
-		dbc.client = ent.NewClient(driver)
+		dbc.client = dbc.newClient(entpgx.NewPgxPoolDriver(dbc.pool))
 		dbc.client.Use(ensureTenantIdSetHook)
 		dbc.client.Intercept(setTenantContextInterceptor())
 	}

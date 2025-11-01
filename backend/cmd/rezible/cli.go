@@ -50,7 +50,7 @@ var printSpecCmd = &cobra.Command{
 }
 
 func withDatabase(ctx context.Context, fn func(dbc rez.Database)) {
-	dbc, dbcErr := rezinternal.OpenDatabase(ctx)
+	dbc, dbcErr := rezinternal.OpenPostgresDatabase(ctx)
 	if dbcErr != nil {
 		log.Fatal().Err(dbcErr).Msg("failed to get database")
 	}
@@ -120,12 +120,24 @@ var dbMigrateCmd = &cobra.Command{
 	Use: "migrate",
 }
 
+var dbMigrateGenerateCmd = &cobra.Command{
+	Use:   "generate [name]",
+	Short: "create a new migration",
+	Args:  cobra.ExactArgs(1),
+	Run: func(cmd *cobra.Command, args []string) {
+
+	},
+}
+
 var dbMigrateApplyCmd = &cobra.Command{
 	Use:   "apply [direction]",
 	Short: "apply database migrations",
 	Args:  cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
-
+		// TODO: use generated migrations
+		if migErr := rezinternal.RunAutoMigrations(cmd.Context()); migErr != nil {
+			log.Fatal().Err(migErr).Msg("failed to apply database migrations")
+		}
 	},
 }
 
@@ -137,7 +149,7 @@ func init() {
 	providersCmd.AddCommand(providersLoadCmd, providersSyncCmd)
 
 	dbCmd.AddCommand(dbMigrateCmd)
-	dbMigrateCmd.AddCommand(dbMigrateApplyCmd)
+	dbMigrateCmd.AddCommand(dbMigrateGenerateCmd, dbMigrateApplyCmd)
 }
 
 func main() {

@@ -79,14 +79,19 @@ func stopListeners(listeners map[string]listener) error {
 	return err
 }
 
-func OpenDatabase(ctx context.Context) (rez.Database, error) {
+func RunAutoMigrations(ctx context.Context) error {
+	return postgres.RunAutoMigrations(ctx)
+}
+
+func OpenPostgresDatabase(ctx context.Context) (rez.Database, error) {
+	// TODO: allow different db?
 	return postgres.NewDatabaseClient(ctx)
 }
 
 func setupListeners(ctx context.Context) (map[string]listener, error) {
 	listeners := make(map[string]listener)
 
-	dbConn, dbConnErr := OpenDatabase(ctx)
+	dbConn, dbConnErr := OpenPostgresDatabase(ctx)
 	if dbConnErr != nil {
 		return nil, fmt.Errorf("postgres.NewDatabaseClient: %w", dbConnErr)
 	}
