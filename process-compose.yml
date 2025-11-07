@@ -31,9 +31,6 @@ processes:
     availability:
       restart: on_failure
       max_restarts: 1
-    depends_on:
-      backend:
-        condition: process_healthy
 
   postgresql:
     command: just run-db

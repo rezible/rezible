@@ -5,6 +5,9 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/rs/zerolog/log"
+	"github.com/sourcegraph/conc/pool"
+
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/access"
 	"github.com/rezible/rezible/internal/api"
@@ -17,8 +20,6 @@ import (
 	"github.com/rezible/rezible/internal/postgres"
 	"github.com/rezible/rezible/internal/postgres/river"
 	"github.com/rezible/rezible/internal/slack"
-	"github.com/rs/zerolog/log"
-	"github.com/sourcegraph/conc/pool"
 )
 
 func RunAutoMigrations(ctx context.Context) error {
@@ -26,28 +27,27 @@ func RunAutoMigrations(ctx context.Context) error {
 }
 
 func OpenPostgresDatabase(ctx context.Context) (rez.Database, error) {
-	// TODO: allow different db?
 	return postgres.NewDatabaseClient(ctx)
 }
 
 func RunServer(ctx context.Context) error {
 	ctx = access.AnonymousContext(ctx)
 
-	listeners, setupErr := setupListeners(ctx)
+	s, setupErr := setupServer(ctx)
 	if setupErr != nil {
 		return fmt.Errorf("setup: %s", setupErr)
 	}
 
-	runErr := runListeners(ctx, listeners)
-
-	if stopErr := stopListeners(listeners); stopErr != nil {
-		log.Error().Err(stopErr).Msg("Failed to stop rezible server")
-	}
-
+	runErr := s.start(ctx)
 	if runErr != nil && !errors.Is(runErr, context.Canceled) {
-		return runErr
+		runErr = nil
 	}
-	return nil
+
+	if stopErr := s.stop(); stopErr != nil {
+		log.Error().Err(stopErr).Msg("Failed to stop server")
+	}
+
+	return runErr
 }
 
 type listener interface {
@@ -55,11 +55,13 @@ type listener interface {
 	Stop(ctx context.Context) error
 }
 
-func runListeners(ctx context.Context, listeners map[string]listener) error {
+type Server map[string]listener
+
+func (s Server) start(ctx context.Context) error {
 	errChan := make(chan error)
 	go func() {
 		p := pool.New().WithErrors().WithContext(ctx)
-		for _, l := range listeners {
+		for _, l := range s {
 			p.Go(l.Start)
 		}
 		errChan <- p.Wait()
@@ -73,13 +75,13 @@ func runListeners(ctx context.Context, listeners map[string]listener) error {
 	}
 }
 
-func stopListeners(listeners map[string]listener) error {
+func (s Server) stop() error {
 	timeout := rez.Config.ServerStopTimeout()
 	timeoutCtx, cancelStopCtx := context.WithTimeout(context.Background(), timeout)
 	defer cancelStopCtx()
 
 	var err error
-	for name, l := range listeners {
+	for name, l := range s {
 		if listenerErr := l.Stop(timeoutCtx); listenerErr != nil && !errors.Is(listenerErr, context.Canceled) {
 			err = errors.Join(err, fmt.Errorf("stopping %s: %w", name, listenerErr))
 		}
@@ -88,8 +90,21 @@ func stopListeners(listeners map[string]listener) error {
 	return err
 }
 
-func setupListeners(ctx context.Context) (map[string]listener, error) {
-	listeners := make(map[string]listener)
+type dbListener struct {
+	dbc rez.Database
+}
+
+func (l dbListener) Start(ctx context.Context) error {
+	return nil
+}
+
+func (l dbListener) Stop(ctx context.Context) error {
+	// log.Debug().Msg("Closing database connection")
+	return l.dbc.Close()
+}
+
+func setupServer(ctx context.Context) (Server, error) {
+	listeners := make(Server)
 
 	dbConn, dbConnErr := OpenPostgresDatabase(ctx)
 	if dbConnErr != nil {
@@ -237,17 +252,4 @@ func setupListeners(ctx context.Context) (map[string]listener, error) {
 	river.RegisterJobWorkers(chat, syncSvc, shifts, oncallMetrics, debriefs)
 
 	return listeners, nil
-}
-
-type dbListener struct {
-	dbc rez.Database
-}
-
-func (l dbListener) Start(ctx context.Context) error {
-	return nil
-}
-
-func (l dbListener) Stop(ctx context.Context) error {
-	// log.Debug().Msg("Closing database connection")
-	return l.dbc.Close()
 }
