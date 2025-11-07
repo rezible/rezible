@@ -32,6 +32,12 @@ processes:
       restart: on_failure
       max_restarts: 1
 
+  localias:
+    command: localias reload
+    is_daemon: true
+    shutdown:
+      command: localias stop
+
   postgresql:
     command: just run-db
     is_daemon: true

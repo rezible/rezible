@@ -16,6 +16,7 @@ _default:
     just install-dependencies
     just codegen
     just setup-db
+    localias reload
 
 @install-dependencies:
     cd backend && go mod tidy

@@ -6,13 +6,12 @@
       "version":   "latest",
       "platforms": ["x86_64-linux", "aarch64-linux"]
     },
-    "ent-go":     "latest",
-    "atlas":      "latest",
-    "bun":        "latest",
-    "just":       "latest",
-    "postgresql": "latest",
-    "go":         "latest",
-    "process-compose": "latest"
+    "bun":                         "latest",
+    "just":                        "latest",
+    "postgresql":                  "latest",
+    "go":                          "latest",
+    "process-compose":             "latest",
+    "github:peterldowns/localias": ""
   },
   "env": {
     "DB_URL": "postgresql://localhost/rezible?sslmode=disable"
