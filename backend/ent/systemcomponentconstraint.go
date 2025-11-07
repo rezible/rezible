@@ -102,7 +102,7 @@ func (*SystemComponentConstraint) scanValues(columns []string) ([]any, error) {
 
 // assignValues assigns the values that were returned from sql.Rows (after scanning)
 // to the SystemComponentConstraint fields.
-func (scc *SystemComponentConstraint) assignValues(columns []string, values []any) error {
+func (_m *SystemComponentConstraint) assignValues(columns []string, values []any) error {
 	if m, n := len(values), len(columns); m < n {
 		return fmt.Errorf("mismatch number of scan values: %d != %d", m, n)
 	}
@@ -112,40 +112,40 @@ func (scc *SystemComponentConstraint) assignValues(columns []string, values []an
 			if value, ok := values[i].(*uuid.UUID); !ok {
 				return fmt.Errorf("unexpected type %T for field id", values[i])
 			} else if value != nil {
-				scc.ID = *value
+				_m.ID = *value
 			}
 		case systemcomponentconstraint.FieldTenantID:
 			if value, ok := values[i].(*sql.NullInt64); !ok {
 				return fmt.Errorf("unexpected type %T for field tenant_id", values[i])
 			} else if value.Valid {
-				scc.TenantID = int(value.Int64)
+				_m.TenantID = int(value.Int64)
 			}
 		case systemcomponentconstraint.FieldComponentID:
 			if value, ok := values[i].(*uuid.UUID); !ok {
 				return fmt.Errorf("unexpected type %T for field component_id", values[i])
 			} else if value != nil {
-				scc.ComponentID = *value
+				_m.ComponentID = *value
 			}
 		case systemcomponentconstraint.FieldLabel:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field label", values[i])
 			} else if value.Valid {
-				scc.Label = value.String
+				_m.Label = value.String
 			}
 		case systemcomponentconstraint.FieldDescription:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field description", values[i])
 			} else if value.Valid {
-				scc.Description = value.String
+				_m.Description = value.String
 			}
 		case systemcomponentconstraint.FieldCreatedAt:
 			if value, ok := values[i].(*sql.NullTime); !ok {
 				return fmt.Errorf("unexpected type %T for field created_at", values[i])
 			} else if value.Valid {
-				scc.CreatedAt = value.Time
+				_m.CreatedAt = value.Time
 			}
 		default:
-			scc.selectValues.Set(columns[i], values[i])
+			_m.selectValues.Set(columns[i], values[i])
 		}
 	}
 	return nil
@@ -153,62 +153,62 @@ func (scc *SystemComponentConstraint) assignValues(columns []string, values []an
 
 // Value returns the ent.Value that was dynamically selected and assigned to the SystemComponentConstraint.
 // This includes values selected through modifiers, order, etc.
-func (scc *SystemComponentConstraint) Value(name string) (ent.Value, error) {
-	return scc.selectValues.Get(name)
+func (_m *SystemComponentConstraint) Value(name string) (ent.Value, error) {
+	return _m.selectValues.Get(name)
 }
 
 // QueryTenant queries the "tenant" edge of the SystemComponentConstraint entity.
-func (scc *SystemComponentConstraint) QueryTenant() *TenantQuery {
-	return NewSystemComponentConstraintClient(scc.config).QueryTenant(scc)
+func (_m *SystemComponentConstraint) QueryTenant() *TenantQuery {
+	return NewSystemComponentConstraintClient(_m.config).QueryTenant(_m)
 }
 
 // QueryComponent queries the "component" edge of the SystemComponentConstraint entity.
-func (scc *SystemComponentConstraint) QueryComponent() *SystemComponentQuery {
-	return NewSystemComponentConstraintClient(scc.config).QueryComponent(scc)
+func (_m *SystemComponentConstraint) QueryComponent() *SystemComponentQuery {
+	return NewSystemComponentConstraintClient(_m.config).QueryComponent(_m)
 }
 
 // QueryHazards queries the "hazards" edge of the SystemComponentConstraint entity.
-func (scc *SystemComponentConstraint) QueryHazards() *SystemHazardQuery {
-	return NewSystemComponentConstraintClient(scc.config).QueryHazards(scc)
+func (_m *SystemComponentConstraint) QueryHazards() *SystemHazardQuery {
+	return NewSystemComponentConstraintClient(_m.config).QueryHazards(_m)
 }
 
 // Update returns a builder for updating this SystemComponentConstraint.
 // Note that you need to call SystemComponentConstraint.Unwrap() before calling this method if this SystemComponentConstraint
 // was returned from a transaction, and the transaction was committed or rolled back.
-func (scc *SystemComponentConstraint) Update() *SystemComponentConstraintUpdateOne {
-	return NewSystemComponentConstraintClient(scc.config).UpdateOne(scc)
+func (_m *SystemComponentConstraint) Update() *SystemComponentConstraintUpdateOne {
+	return NewSystemComponentConstraintClient(_m.config).UpdateOne(_m)
 }
 
 // Unwrap unwraps the SystemComponentConstraint entity that was returned from a transaction after it was closed,
 // so that all future queries will be executed through the driver which created the transaction.
-func (scc *SystemComponentConstraint) Unwrap() *SystemComponentConstraint {
-	_tx, ok := scc.config.driver.(*txDriver)
+func (_m *SystemComponentConstraint) Unwrap() *SystemComponentConstraint {
+	_tx, ok := _m.config.driver.(*txDriver)
 	if !ok {
 		panic("ent: SystemComponentConstraint is not a transactional entity")
 	}
-	scc.config.driver = _tx.drv
-	return scc
+	_m.config.driver = _tx.drv
+	return _m
 }
 
 // String implements the fmt.Stringer.
-func (scc *SystemComponentConstraint) String() string {
+func (_m *SystemComponentConstraint) String() string {
 	var builder strings.Builder
 	builder.WriteString("SystemComponentConstraint(")
-	builder.WriteString(fmt.Sprintf("id=%v, ", scc.ID))
+	builder.WriteString(fmt.Sprintf("id=%v, ", _m.ID))
 	builder.WriteString("tenant_id=")
-	builder.WriteString(fmt.Sprintf("%v", scc.TenantID))
+	builder.WriteString(fmt.Sprintf("%v", _m.TenantID))
 	builder.WriteString(", ")
 	builder.WriteString("component_id=")
-	builder.WriteString(fmt.Sprintf("%v", scc.ComponentID))
+	builder.WriteString(fmt.Sprintf("%v", _m.ComponentID))
 	builder.WriteString(", ")
 	builder.WriteString("label=")
-	builder.WriteString(scc.Label)
+	builder.WriteString(_m.Label)
 	builder.WriteString(", ")
 	builder.WriteString("description=")
-	builder.WriteString(scc.Description)
+	builder.WriteString(_m.Description)
 	builder.WriteString(", ")
 	builder.WriteString("created_at=")
-	builder.WriteString(scc.CreatedAt.Format(time.ANSIC))
+	builder.WriteString(_m.CreatedAt.Format(time.ANSIC))
 	builder.WriteByte(')')
 	return builder.String()
 }

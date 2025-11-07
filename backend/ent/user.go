@@ -223,7 +223,7 @@ func (*User) scanValues(columns []string) ([]any, error) {
 
 // assignValues assigns the values that were returned from sql.Rows (after scanning)
 // to the User fields.
-func (u *User) assignValues(columns []string, values []any) error {
+func (_m *User) assignValues(columns []string, values []any) error {
 	if m, n := len(values), len(columns); m < n {
 		return fmt.Errorf("mismatch number of scan values: %d != %d", m, n)
 	}
@@ -233,52 +233,52 @@ func (u *User) assignValues(columns []string, values []any) error {
 			if value, ok := values[i].(*uuid.UUID); !ok {
 				return fmt.Errorf("unexpected type %T for field id", values[i])
 			} else if value != nil {
-				u.ID = *value
+				_m.ID = *value
 			}
 		case user.FieldTenantID:
 			if value, ok := values[i].(*sql.NullInt64); !ok {
 				return fmt.Errorf("unexpected type %T for field tenant_id", values[i])
 			} else if value.Valid {
-				u.TenantID = int(value.Int64)
+				_m.TenantID = int(value.Int64)
 			}
 		case user.FieldProviderID:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field provider_id", values[i])
 			} else if value.Valid {
-				u.ProviderID = value.String
+				_m.ProviderID = value.String
 			}
 		case user.FieldEmail:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field email", values[i])
 			} else if value.Valid {
-				u.Email = value.String
+				_m.Email = value.String
 			}
 		case user.FieldName:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field name", values[i])
 			} else if value.Valid {
-				u.Name = value.String
+				_m.Name = value.String
 			}
 		case user.FieldChatID:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field chat_id", values[i])
 			} else if value.Valid {
-				u.ChatID = value.String
+				_m.ChatID = value.String
 			}
 		case user.FieldTimezone:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field timezone", values[i])
 			} else if value.Valid {
-				u.Timezone = value.String
+				_m.Timezone = value.String
 			}
 		case user.FieldConfirmed:
 			if value, ok := values[i].(*sql.NullBool); !ok {
 				return fmt.Errorf("unexpected type %T for field confirmed", values[i])
 			} else if value.Valid {
-				u.Confirmed = value.Bool
+				_m.Confirmed = value.Bool
 			}
 		default:
-			u.selectValues.Set(columns[i], values[i])
+			_m.selectValues.Set(columns[i], values[i])
 		}
 	}
 	return nil
@@ -286,123 +286,123 @@ func (u *User) assignValues(columns []string, values []any) error {
 
 // Value returns the ent.Value that was dynamically selected and assigned to the User.
 // This includes values selected through modifiers, order, etc.
-func (u *User) Value(name string) (ent.Value, error) {
-	return u.selectValues.Get(name)
+func (_m *User) Value(name string) (ent.Value, error) {
+	return _m.selectValues.Get(name)
 }
 
 // QueryTenant queries the "tenant" edge of the User entity.
-func (u *User) QueryTenant() *TenantQuery {
-	return NewUserClient(u.config).QueryTenant(u)
+func (_m *User) QueryTenant() *TenantQuery {
+	return NewUserClient(_m.config).QueryTenant(_m)
 }
 
 // QueryTeams queries the "teams" edge of the User entity.
-func (u *User) QueryTeams() *TeamQuery {
-	return NewUserClient(u.config).QueryTeams(u)
+func (_m *User) QueryTeams() *TeamQuery {
+	return NewUserClient(_m.config).QueryTeams(_m)
 }
 
 // QueryWatchedOncallRosters queries the "watched_oncall_rosters" edge of the User entity.
-func (u *User) QueryWatchedOncallRosters() *OncallRosterQuery {
-	return NewUserClient(u.config).QueryWatchedOncallRosters(u)
+func (_m *User) QueryWatchedOncallRosters() *OncallRosterQuery {
+	return NewUserClient(_m.config).QueryWatchedOncallRosters(_m)
 }
 
 // QueryOncallSchedules queries the "oncall_schedules" edge of the User entity.
-func (u *User) QueryOncallSchedules() *OncallScheduleParticipantQuery {
-	return NewUserClient(u.config).QueryOncallSchedules(u)
+func (_m *User) QueryOncallSchedules() *OncallScheduleParticipantQuery {
+	return NewUserClient(_m.config).QueryOncallSchedules(_m)
 }
 
 // QueryOncallShifts queries the "oncall_shifts" edge of the User entity.
-func (u *User) QueryOncallShifts() *OncallShiftQuery {
-	return NewUserClient(u.config).QueryOncallShifts(u)
+func (_m *User) QueryOncallShifts() *OncallShiftQuery {
+	return NewUserClient(_m.config).QueryOncallShifts(_m)
 }
 
 // QueryEventAnnotations queries the "event_annotations" edge of the User entity.
-func (u *User) QueryEventAnnotations() *EventAnnotationQuery {
-	return NewUserClient(u.config).QueryEventAnnotations(u)
+func (_m *User) QueryEventAnnotations() *EventAnnotationQuery {
+	return NewUserClient(_m.config).QueryEventAnnotations(_m)
 }
 
 // QueryIncidents queries the "incidents" edge of the User entity.
-func (u *User) QueryIncidents() *IncidentQuery {
-	return NewUserClient(u.config).QueryIncidents(u)
+func (_m *User) QueryIncidents() *IncidentQuery {
+	return NewUserClient(_m.config).QueryIncidents(_m)
 }
 
 // QueryIncidentDebriefs queries the "incident_debriefs" edge of the User entity.
-func (u *User) QueryIncidentDebriefs() *IncidentDebriefQuery {
-	return NewUserClient(u.config).QueryIncidentDebriefs(u)
+func (_m *User) QueryIncidentDebriefs() *IncidentDebriefQuery {
+	return NewUserClient(_m.config).QueryIncidentDebriefs(_m)
 }
 
 // QueryAssignedTasks queries the "assigned_tasks" edge of the User entity.
-func (u *User) QueryAssignedTasks() *TaskQuery {
-	return NewUserClient(u.config).QueryAssignedTasks(u)
+func (_m *User) QueryAssignedTasks() *TaskQuery {
+	return NewUserClient(_m.config).QueryAssignedTasks(_m)
 }
 
 // QueryCreatedTasks queries the "created_tasks" edge of the User entity.
-func (u *User) QueryCreatedTasks() *TaskQuery {
-	return NewUserClient(u.config).QueryCreatedTasks(u)
+func (_m *User) QueryCreatedTasks() *TaskQuery {
+	return NewUserClient(_m.config).QueryCreatedTasks(_m)
 }
 
 // QueryRetrospectiveReviewRequests queries the "retrospective_review_requests" edge of the User entity.
-func (u *User) QueryRetrospectiveReviewRequests() *RetrospectiveReviewQuery {
-	return NewUserClient(u.config).QueryRetrospectiveReviewRequests(u)
+func (_m *User) QueryRetrospectiveReviewRequests() *RetrospectiveReviewQuery {
+	return NewUserClient(_m.config).QueryRetrospectiveReviewRequests(_m)
 }
 
 // QueryRetrospectiveReviewResponses queries the "retrospective_review_responses" edge of the User entity.
-func (u *User) QueryRetrospectiveReviewResponses() *RetrospectiveReviewQuery {
-	return NewUserClient(u.config).QueryRetrospectiveReviewResponses(u)
+func (_m *User) QueryRetrospectiveReviewResponses() *RetrospectiveReviewQuery {
+	return NewUserClient(_m.config).QueryRetrospectiveReviewResponses(_m)
 }
 
 // QueryRetrospectiveComments queries the "retrospective_comments" edge of the User entity.
-func (u *User) QueryRetrospectiveComments() *RetrospectiveCommentQuery {
-	return NewUserClient(u.config).QueryRetrospectiveComments(u)
+func (_m *User) QueryRetrospectiveComments() *RetrospectiveCommentQuery {
+	return NewUserClient(_m.config).QueryRetrospectiveComments(_m)
 }
 
 // QueryRoleAssignments queries the "role_assignments" edge of the User entity.
-func (u *User) QueryRoleAssignments() *IncidentRoleAssignmentQuery {
-	return NewUserClient(u.config).QueryRoleAssignments(u)
+func (_m *User) QueryRoleAssignments() *IncidentRoleAssignmentQuery {
+	return NewUserClient(_m.config).QueryRoleAssignments(_m)
 }
 
 // Update returns a builder for updating this User.
 // Note that you need to call User.Unwrap() before calling this method if this User
 // was returned from a transaction, and the transaction was committed or rolled back.
-func (u *User) Update() *UserUpdateOne {
-	return NewUserClient(u.config).UpdateOne(u)
+func (_m *User) Update() *UserUpdateOne {
+	return NewUserClient(_m.config).UpdateOne(_m)
 }
 
 // Unwrap unwraps the User entity that was returned from a transaction after it was closed,
 // so that all future queries will be executed through the driver which created the transaction.
-func (u *User) Unwrap() *User {
-	_tx, ok := u.config.driver.(*txDriver)
+func (_m *User) Unwrap() *User {
+	_tx, ok := _m.config.driver.(*txDriver)
 	if !ok {
 		panic("ent: User is not a transactional entity")
 	}
-	u.config.driver = _tx.drv
-	return u
+	_m.config.driver = _tx.drv
+	return _m
 }
 
 // String implements the fmt.Stringer.
-func (u *User) String() string {
+func (_m *User) String() string {
 	var builder strings.Builder
 	builder.WriteString("User(")
-	builder.WriteString(fmt.Sprintf("id=%v, ", u.ID))
+	builder.WriteString(fmt.Sprintf("id=%v, ", _m.ID))
 	builder.WriteString("tenant_id=")
-	builder.WriteString(fmt.Sprintf("%v", u.TenantID))
+	builder.WriteString(fmt.Sprintf("%v", _m.TenantID))
 	builder.WriteString(", ")
 	builder.WriteString("provider_id=")
-	builder.WriteString(u.ProviderID)
+	builder.WriteString(_m.ProviderID)
 	builder.WriteString(", ")
 	builder.WriteString("email=")
-	builder.WriteString(u.Email)
+	builder.WriteString(_m.Email)
 	builder.WriteString(", ")
 	builder.WriteString("name=")
-	builder.WriteString(u.Name)
+	builder.WriteString(_m.Name)
 	builder.WriteString(", ")
 	builder.WriteString("chat_id=")
-	builder.WriteString(u.ChatID)
+	builder.WriteString(_m.ChatID)
 	builder.WriteString(", ")
 	builder.WriteString("timezone=")
-	builder.WriteString(u.Timezone)
+	builder.WriteString(_m.Timezone)
 	builder.WriteString(", ")
 	builder.WriteString("confirmed=")
-	builder.WriteString(fmt.Sprintf("%v", u.Confirmed))
+	builder.WriteString(fmt.Sprintf("%v", _m.Confirmed))
 	builder.WriteByte(')')
 	return builder.String()
 }

@@ -108,7 +108,7 @@ func (*OncallShiftHandover) scanValues(columns []string) ([]any, error) {
 
 // assignValues assigns the values that were returned from sql.Rows (after scanning)
 // to the OncallShiftHandover fields.
-func (osh *OncallShiftHandover) assignValues(columns []string, values []any) error {
+func (_m *OncallShiftHandover) assignValues(columns []string, values []any) error {
 	if m, n := len(values), len(columns); m < n {
 		return fmt.Errorf("mismatch number of scan values: %d != %d", m, n)
 	}
@@ -118,52 +118,52 @@ func (osh *OncallShiftHandover) assignValues(columns []string, values []any) err
 			if value, ok := values[i].(*uuid.UUID); !ok {
 				return fmt.Errorf("unexpected type %T for field id", values[i])
 			} else if value != nil {
-				osh.ID = *value
+				_m.ID = *value
 			}
 		case oncallshifthandover.FieldTenantID:
 			if value, ok := values[i].(*sql.NullInt64); !ok {
 				return fmt.Errorf("unexpected type %T for field tenant_id", values[i])
 			} else if value.Valid {
-				osh.TenantID = int(value.Int64)
+				_m.TenantID = int(value.Int64)
 			}
 		case oncallshifthandover.FieldShiftID:
 			if value, ok := values[i].(*uuid.UUID); !ok {
 				return fmt.Errorf("unexpected type %T for field shift_id", values[i])
 			} else if value != nil {
-				osh.ShiftID = *value
+				_m.ShiftID = *value
 			}
 		case oncallshifthandover.FieldCreatedAt:
 			if value, ok := values[i].(*sql.NullTime); !ok {
 				return fmt.Errorf("unexpected type %T for field created_at", values[i])
 			} else if value.Valid {
-				osh.CreatedAt = value.Time
+				_m.CreatedAt = value.Time
 			}
 		case oncallshifthandover.FieldReminderSent:
 			if value, ok := values[i].(*sql.NullBool); !ok {
 				return fmt.Errorf("unexpected type %T for field reminder_sent", values[i])
 			} else if value.Valid {
-				osh.ReminderSent = value.Bool
+				_m.ReminderSent = value.Bool
 			}
 		case oncallshifthandover.FieldUpdatedAt:
 			if value, ok := values[i].(*sql.NullTime); !ok {
 				return fmt.Errorf("unexpected type %T for field updated_at", values[i])
 			} else if value.Valid {
-				osh.UpdatedAt = value.Time
+				_m.UpdatedAt = value.Time
 			}
 		case oncallshifthandover.FieldSentAt:
 			if value, ok := values[i].(*sql.NullTime); !ok {
 				return fmt.Errorf("unexpected type %T for field sent_at", values[i])
 			} else if value.Valid {
-				osh.SentAt = value.Time
+				_m.SentAt = value.Time
 			}
 		case oncallshifthandover.FieldContents:
 			if value, ok := values[i].(*[]byte); !ok {
 				return fmt.Errorf("unexpected type %T for field contents", values[i])
 			} else if value != nil {
-				osh.Contents = *value
+				_m.Contents = *value
 			}
 		default:
-			osh.selectValues.Set(columns[i], values[i])
+			_m.selectValues.Set(columns[i], values[i])
 		}
 	}
 	return nil
@@ -171,68 +171,68 @@ func (osh *OncallShiftHandover) assignValues(columns []string, values []any) err
 
 // Value returns the ent.Value that was dynamically selected and assigned to the OncallShiftHandover.
 // This includes values selected through modifiers, order, etc.
-func (osh *OncallShiftHandover) Value(name string) (ent.Value, error) {
-	return osh.selectValues.Get(name)
+func (_m *OncallShiftHandover) Value(name string) (ent.Value, error) {
+	return _m.selectValues.Get(name)
 }
 
 // QueryTenant queries the "tenant" edge of the OncallShiftHandover entity.
-func (osh *OncallShiftHandover) QueryTenant() *TenantQuery {
-	return NewOncallShiftHandoverClient(osh.config).QueryTenant(osh)
+func (_m *OncallShiftHandover) QueryTenant() *TenantQuery {
+	return NewOncallShiftHandoverClient(_m.config).QueryTenant(_m)
 }
 
 // QueryShift queries the "shift" edge of the OncallShiftHandover entity.
-func (osh *OncallShiftHandover) QueryShift() *OncallShiftQuery {
-	return NewOncallShiftHandoverClient(osh.config).QueryShift(osh)
+func (_m *OncallShiftHandover) QueryShift() *OncallShiftQuery {
+	return NewOncallShiftHandoverClient(_m.config).QueryShift(_m)
 }
 
 // QueryPinnedAnnotations queries the "pinned_annotations" edge of the OncallShiftHandover entity.
-func (osh *OncallShiftHandover) QueryPinnedAnnotations() *EventAnnotationQuery {
-	return NewOncallShiftHandoverClient(osh.config).QueryPinnedAnnotations(osh)
+func (_m *OncallShiftHandover) QueryPinnedAnnotations() *EventAnnotationQuery {
+	return NewOncallShiftHandoverClient(_m.config).QueryPinnedAnnotations(_m)
 }
 
 // Update returns a builder for updating this OncallShiftHandover.
 // Note that you need to call OncallShiftHandover.Unwrap() before calling this method if this OncallShiftHandover
 // was returned from a transaction, and the transaction was committed or rolled back.
-func (osh *OncallShiftHandover) Update() *OncallShiftHandoverUpdateOne {
-	return NewOncallShiftHandoverClient(osh.config).UpdateOne(osh)
+func (_m *OncallShiftHandover) Update() *OncallShiftHandoverUpdateOne {
+	return NewOncallShiftHandoverClient(_m.config).UpdateOne(_m)
 }
 
 // Unwrap unwraps the OncallShiftHandover entity that was returned from a transaction after it was closed,
 // so that all future queries will be executed through the driver which created the transaction.
-func (osh *OncallShiftHandover) Unwrap() *OncallShiftHandover {
-	_tx, ok := osh.config.driver.(*txDriver)
+func (_m *OncallShiftHandover) Unwrap() *OncallShiftHandover {
+	_tx, ok := _m.config.driver.(*txDriver)
 	if !ok {
 		panic("ent: OncallShiftHandover is not a transactional entity")
 	}
-	osh.config.driver = _tx.drv
-	return osh
+	_m.config.driver = _tx.drv
+	return _m
 }
 
 // String implements the fmt.Stringer.
-func (osh *OncallShiftHandover) String() string {
+func (_m *OncallShiftHandover) String() string {
 	var builder strings.Builder
 	builder.WriteString("OncallShiftHandover(")
-	builder.WriteString(fmt.Sprintf("id=%v, ", osh.ID))
+	builder.WriteString(fmt.Sprintf("id=%v, ", _m.ID))
 	builder.WriteString("tenant_id=")
-	builder.WriteString(fmt.Sprintf("%v", osh.TenantID))
+	builder.WriteString(fmt.Sprintf("%v", _m.TenantID))
 	builder.WriteString(", ")
 	builder.WriteString("shift_id=")
-	builder.WriteString(fmt.Sprintf("%v", osh.ShiftID))
+	builder.WriteString(fmt.Sprintf("%v", _m.ShiftID))
 	builder.WriteString(", ")
 	builder.WriteString("created_at=")
-	builder.WriteString(osh.CreatedAt.Format(time.ANSIC))
+	builder.WriteString(_m.CreatedAt.Format(time.ANSIC))
 	builder.WriteString(", ")
 	builder.WriteString("reminder_sent=")
-	builder.WriteString(fmt.Sprintf("%v", osh.ReminderSent))
+	builder.WriteString(fmt.Sprintf("%v", _m.ReminderSent))
 	builder.WriteString(", ")
 	builder.WriteString("updated_at=")
-	builder.WriteString(osh.UpdatedAt.Format(time.ANSIC))
+	builder.WriteString(_m.UpdatedAt.Format(time.ANSIC))
 	builder.WriteString(", ")
 	builder.WriteString("sent_at=")
-	builder.WriteString(osh.SentAt.Format(time.ANSIC))
+	builder.WriteString(_m.SentAt.Format(time.ANSIC))
 	builder.WriteString(", ")
 	builder.WriteString("contents=")
-	builder.WriteString(fmt.Sprintf("%v", osh.Contents))
+	builder.WriteString(fmt.Sprintf("%v", _m.Contents))
 	builder.WriteByte(')')
 	return builder.String()
 }

@@ -20,56 +20,56 @@ type ProviderConfigDelete struct {
 }
 
 // Where appends a list predicates to the ProviderConfigDelete builder.
-func (pcd *ProviderConfigDelete) Where(ps ...predicate.ProviderConfig) *ProviderConfigDelete {
-	pcd.mutation.Where(ps...)
-	return pcd
+func (_d *ProviderConfigDelete) Where(ps ...predicate.ProviderConfig) *ProviderConfigDelete {
+	_d.mutation.Where(ps...)
+	return _d
 }
 
 // Exec executes the deletion query and returns how many vertices were deleted.
-func (pcd *ProviderConfigDelete) Exec(ctx context.Context) (int, error) {
-	return withHooks(ctx, pcd.sqlExec, pcd.mutation, pcd.hooks)
+func (_d *ProviderConfigDelete) Exec(ctx context.Context) (int, error) {
+	return withHooks(ctx, _d.sqlExec, _d.mutation, _d.hooks)
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (pcd *ProviderConfigDelete) ExecX(ctx context.Context) int {
-	n, err := pcd.Exec(ctx)
+func (_d *ProviderConfigDelete) ExecX(ctx context.Context) int {
+	n, err := _d.Exec(ctx)
 	if err != nil {
 		panic(err)
 	}
 	return n
 }
 
-func (pcd *ProviderConfigDelete) sqlExec(ctx context.Context) (int, error) {
+func (_d *ProviderConfigDelete) sqlExec(ctx context.Context) (int, error) {
 	_spec := sqlgraph.NewDeleteSpec(providerconfig.Table, sqlgraph.NewFieldSpec(providerconfig.FieldID, field.TypeUUID))
-	if ps := pcd.mutation.predicates; len(ps) > 0 {
+	if ps := _d.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {
 				ps[i](selector)
 			}
 		}
 	}
-	affected, err := sqlgraph.DeleteNodes(ctx, pcd.driver, _spec)
+	affected, err := sqlgraph.DeleteNodes(ctx, _d.driver, _spec)
 	if err != nil && sqlgraph.IsConstraintError(err) {
 		err = &ConstraintError{msg: err.Error(), wrap: err}
 	}
-	pcd.mutation.done = true
+	_d.mutation.done = true
 	return affected, err
 }
 
 // ProviderConfigDeleteOne is the builder for deleting a single ProviderConfig entity.
 type ProviderConfigDeleteOne struct {
-	pcd *ProviderConfigDelete
+	_d *ProviderConfigDelete
 }
 
 // Where appends a list predicates to the ProviderConfigDelete builder.
-func (pcdo *ProviderConfigDeleteOne) Where(ps ...predicate.ProviderConfig) *ProviderConfigDeleteOne {
-	pcdo.pcd.mutation.Where(ps...)
-	return pcdo
+func (_d *ProviderConfigDeleteOne) Where(ps ...predicate.ProviderConfig) *ProviderConfigDeleteOne {
+	_d._d.mutation.Where(ps...)
+	return _d
 }
 
 // Exec executes the deletion query.
-func (pcdo *ProviderConfigDeleteOne) Exec(ctx context.Context) error {
-	n, err := pcdo.pcd.Exec(ctx)
+func (_d *ProviderConfigDeleteOne) Exec(ctx context.Context) error {
+	n, err := _d._d.Exec(ctx)
 	switch {
 	case err != nil:
 		return err
@@ -81,8 +81,8 @@ func (pcdo *ProviderConfigDeleteOne) Exec(ctx context.Context) error {
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (pcdo *ProviderConfigDeleteOne) ExecX(ctx context.Context) {
-	if err := pcdo.Exec(ctx); err != nil {
+func (_d *ProviderConfigDeleteOne) ExecX(ctx context.Context) {
+	if err := _d.Exec(ctx); err != nil {
 		panic(err)
 	}
 }

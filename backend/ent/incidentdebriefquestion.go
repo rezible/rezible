@@ -134,7 +134,7 @@ func (*IncidentDebriefQuestion) scanValues(columns []string) ([]any, error) {
 
 // assignValues assigns the values that were returned from sql.Rows (after scanning)
 // to the IncidentDebriefQuestion fields.
-func (idq *IncidentDebriefQuestion) assignValues(columns []string, values []any) error {
+func (_m *IncidentDebriefQuestion) assignValues(columns []string, values []any) error {
 	if m, n := len(values), len(columns); m < n {
 		return fmt.Errorf("mismatch number of scan values: %d != %d", m, n)
 	}
@@ -144,22 +144,22 @@ func (idq *IncidentDebriefQuestion) assignValues(columns []string, values []any)
 			if value, ok := values[i].(*uuid.UUID); !ok {
 				return fmt.Errorf("unexpected type %T for field id", values[i])
 			} else if value != nil {
-				idq.ID = *value
+				_m.ID = *value
 			}
 		case incidentdebriefquestion.FieldTenantID:
 			if value, ok := values[i].(*sql.NullInt64); !ok {
 				return fmt.Errorf("unexpected type %T for field tenant_id", values[i])
 			} else if value.Valid {
-				idq.TenantID = int(value.Int64)
+				_m.TenantID = int(value.Int64)
 			}
 		case incidentdebriefquestion.FieldContent:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field content", values[i])
 			} else if value.Valid {
-				idq.Content = value.String
+				_m.Content = value.String
 			}
 		default:
-			idq.selectValues.Set(columns[i], values[i])
+			_m.selectValues.Set(columns[i], values[i])
 		}
 	}
 	return nil
@@ -167,73 +167,73 @@ func (idq *IncidentDebriefQuestion) assignValues(columns []string, values []any)
 
 // Value returns the ent.Value that was dynamically selected and assigned to the IncidentDebriefQuestion.
 // This includes values selected through modifiers, order, etc.
-func (idq *IncidentDebriefQuestion) Value(name string) (ent.Value, error) {
-	return idq.selectValues.Get(name)
+func (_m *IncidentDebriefQuestion) Value(name string) (ent.Value, error) {
+	return _m.selectValues.Get(name)
 }
 
 // QueryTenant queries the "tenant" edge of the IncidentDebriefQuestion entity.
-func (idq *IncidentDebriefQuestion) QueryTenant() *TenantQuery {
-	return NewIncidentDebriefQuestionClient(idq.config).QueryTenant(idq)
+func (_m *IncidentDebriefQuestion) QueryTenant() *TenantQuery {
+	return NewIncidentDebriefQuestionClient(_m.config).QueryTenant(_m)
 }
 
 // QueryMessages queries the "messages" edge of the IncidentDebriefQuestion entity.
-func (idq *IncidentDebriefQuestion) QueryMessages() *IncidentDebriefMessageQuery {
-	return NewIncidentDebriefQuestionClient(idq.config).QueryMessages(idq)
+func (_m *IncidentDebriefQuestion) QueryMessages() *IncidentDebriefMessageQuery {
+	return NewIncidentDebriefQuestionClient(_m.config).QueryMessages(_m)
 }
 
 // QueryIncidentFields queries the "incident_fields" edge of the IncidentDebriefQuestion entity.
-func (idq *IncidentDebriefQuestion) QueryIncidentFields() *IncidentFieldQuery {
-	return NewIncidentDebriefQuestionClient(idq.config).QueryIncidentFields(idq)
+func (_m *IncidentDebriefQuestion) QueryIncidentFields() *IncidentFieldQuery {
+	return NewIncidentDebriefQuestionClient(_m.config).QueryIncidentFields(_m)
 }
 
 // QueryIncidentRoles queries the "incident_roles" edge of the IncidentDebriefQuestion entity.
-func (idq *IncidentDebriefQuestion) QueryIncidentRoles() *IncidentRoleQuery {
-	return NewIncidentDebriefQuestionClient(idq.config).QueryIncidentRoles(idq)
+func (_m *IncidentDebriefQuestion) QueryIncidentRoles() *IncidentRoleQuery {
+	return NewIncidentDebriefQuestionClient(_m.config).QueryIncidentRoles(_m)
 }
 
 // QueryIncidentSeverities queries the "incident_severities" edge of the IncidentDebriefQuestion entity.
-func (idq *IncidentDebriefQuestion) QueryIncidentSeverities() *IncidentSeverityQuery {
-	return NewIncidentDebriefQuestionClient(idq.config).QueryIncidentSeverities(idq)
+func (_m *IncidentDebriefQuestion) QueryIncidentSeverities() *IncidentSeverityQuery {
+	return NewIncidentDebriefQuestionClient(_m.config).QueryIncidentSeverities(_m)
 }
 
 // QueryIncidentTags queries the "incident_tags" edge of the IncidentDebriefQuestion entity.
-func (idq *IncidentDebriefQuestion) QueryIncidentTags() *IncidentTagQuery {
-	return NewIncidentDebriefQuestionClient(idq.config).QueryIncidentTags(idq)
+func (_m *IncidentDebriefQuestion) QueryIncidentTags() *IncidentTagQuery {
+	return NewIncidentDebriefQuestionClient(_m.config).QueryIncidentTags(_m)
 }
 
 // QueryIncidentTypes queries the "incident_types" edge of the IncidentDebriefQuestion entity.
-func (idq *IncidentDebriefQuestion) QueryIncidentTypes() *IncidentTypeQuery {
-	return NewIncidentDebriefQuestionClient(idq.config).QueryIncidentTypes(idq)
+func (_m *IncidentDebriefQuestion) QueryIncidentTypes() *IncidentTypeQuery {
+	return NewIncidentDebriefQuestionClient(_m.config).QueryIncidentTypes(_m)
 }
 
 // Update returns a builder for updating this IncidentDebriefQuestion.
 // Note that you need to call IncidentDebriefQuestion.Unwrap() before calling this method if this IncidentDebriefQuestion
 // was returned from a transaction, and the transaction was committed or rolled back.
-func (idq *IncidentDebriefQuestion) Update() *IncidentDebriefQuestionUpdateOne {
-	return NewIncidentDebriefQuestionClient(idq.config).UpdateOne(idq)
+func (_m *IncidentDebriefQuestion) Update() *IncidentDebriefQuestionUpdateOne {
+	return NewIncidentDebriefQuestionClient(_m.config).UpdateOne(_m)
 }
 
 // Unwrap unwraps the IncidentDebriefQuestion entity that was returned from a transaction after it was closed,
 // so that all future queries will be executed through the driver which created the transaction.
-func (idq *IncidentDebriefQuestion) Unwrap() *IncidentDebriefQuestion {
-	_tx, ok := idq.config.driver.(*txDriver)
+func (_m *IncidentDebriefQuestion) Unwrap() *IncidentDebriefQuestion {
+	_tx, ok := _m.config.driver.(*txDriver)
 	if !ok {
 		panic("ent: IncidentDebriefQuestion is not a transactional entity")
 	}
-	idq.config.driver = _tx.drv
-	return idq
+	_m.config.driver = _tx.drv
+	return _m
 }
 
 // String implements the fmt.Stringer.
-func (idq *IncidentDebriefQuestion) String() string {
+func (_m *IncidentDebriefQuestion) String() string {
 	var builder strings.Builder
 	builder.WriteString("IncidentDebriefQuestion(")
-	builder.WriteString(fmt.Sprintf("id=%v, ", idq.ID))
+	builder.WriteString(fmt.Sprintf("id=%v, ", _m.ID))
 	builder.WriteString("tenant_id=")
-	builder.WriteString(fmt.Sprintf("%v", idq.TenantID))
+	builder.WriteString(fmt.Sprintf("%v", _m.TenantID))
 	builder.WriteString(", ")
 	builder.WriteString("content=")
-	builder.WriteString(idq.Content)
+	builder.WriteString(_m.Content)
 	builder.WriteByte(')')
 	return builder.String()
 }

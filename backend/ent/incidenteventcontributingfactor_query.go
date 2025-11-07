@@ -36,44 +36,44 @@ type IncidentEventContributingFactorQuery struct {
 }
 
 // Where adds a new predicate for the IncidentEventContributingFactorQuery builder.
-func (iecfq *IncidentEventContributingFactorQuery) Where(ps ...predicate.IncidentEventContributingFactor) *IncidentEventContributingFactorQuery {
-	iecfq.predicates = append(iecfq.predicates, ps...)
-	return iecfq
+func (_q *IncidentEventContributingFactorQuery) Where(ps ...predicate.IncidentEventContributingFactor) *IncidentEventContributingFactorQuery {
+	_q.predicates = append(_q.predicates, ps...)
+	return _q
 }
 
 // Limit the number of records to be returned by this query.
-func (iecfq *IncidentEventContributingFactorQuery) Limit(limit int) *IncidentEventContributingFactorQuery {
-	iecfq.ctx.Limit = &limit
-	return iecfq
+func (_q *IncidentEventContributingFactorQuery) Limit(limit int) *IncidentEventContributingFactorQuery {
+	_q.ctx.Limit = &limit
+	return _q
 }
 
 // Offset to start from.
-func (iecfq *IncidentEventContributingFactorQuery) Offset(offset int) *IncidentEventContributingFactorQuery {
-	iecfq.ctx.Offset = &offset
-	return iecfq
+func (_q *IncidentEventContributingFactorQuery) Offset(offset int) *IncidentEventContributingFactorQuery {
+	_q.ctx.Offset = &offset
+	return _q
 }
 
 // Unique configures the query builder to filter duplicate records on query.
 // By default, unique is set to true, and can be disabled using this method.
-func (iecfq *IncidentEventContributingFactorQuery) Unique(unique bool) *IncidentEventContributingFactorQuery {
-	iecfq.ctx.Unique = &unique
-	return iecfq
+func (_q *IncidentEventContributingFactorQuery) Unique(unique bool) *IncidentEventContributingFactorQuery {
+	_q.ctx.Unique = &unique
+	return _q
 }
 
 // Order specifies how the records should be ordered.
-func (iecfq *IncidentEventContributingFactorQuery) Order(o ...incidenteventcontributingfactor.OrderOption) *IncidentEventContributingFactorQuery {
-	iecfq.order = append(iecfq.order, o...)
-	return iecfq
+func (_q *IncidentEventContributingFactorQuery) Order(o ...incidenteventcontributingfactor.OrderOption) *IncidentEventContributingFactorQuery {
+	_q.order = append(_q.order, o...)
+	return _q
 }
 
 // QueryTenant chains the current query on the "tenant" edge.
-func (iecfq *IncidentEventContributingFactorQuery) QueryTenant() *TenantQuery {
-	query := (&TenantClient{config: iecfq.config}).Query()
+func (_q *IncidentEventContributingFactorQuery) QueryTenant() *TenantQuery {
+	query := (&TenantClient{config: _q.config}).Query()
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
-		if err := iecfq.prepareQuery(ctx); err != nil {
+		if err := _q.prepareQuery(ctx); err != nil {
 			return nil, err
 		}
-		selector := iecfq.sqlQuery(ctx)
+		selector := _q.sqlQuery(ctx)
 		if err := selector.Err(); err != nil {
 			return nil, err
 		}
@@ -82,20 +82,20 @@ func (iecfq *IncidentEventContributingFactorQuery) QueryTenant() *TenantQuery {
 			sqlgraph.To(tenant.Table, tenant.FieldID),
 			sqlgraph.Edge(sqlgraph.M2O, false, incidenteventcontributingfactor.TenantTable, incidenteventcontributingfactor.TenantColumn),
 		)
-		fromU = sqlgraph.SetNeighbors(iecfq.driver.Dialect(), step)
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
 	}
 	return query
 }
 
 // QueryEvent chains the current query on the "event" edge.
-func (iecfq *IncidentEventContributingFactorQuery) QueryEvent() *IncidentEventQuery {
-	query := (&IncidentEventClient{config: iecfq.config}).Query()
+func (_q *IncidentEventContributingFactorQuery) QueryEvent() *IncidentEventQuery {
+	query := (&IncidentEventClient{config: _q.config}).Query()
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
-		if err := iecfq.prepareQuery(ctx); err != nil {
+		if err := _q.prepareQuery(ctx); err != nil {
 			return nil, err
 		}
-		selector := iecfq.sqlQuery(ctx)
+		selector := _q.sqlQuery(ctx)
 		if err := selector.Err(); err != nil {
 			return nil, err
 		}
@@ -104,7 +104,7 @@ func (iecfq *IncidentEventContributingFactorQuery) QueryEvent() *IncidentEventQu
 			sqlgraph.To(incidentevent.Table, incidentevent.FieldID),
 			sqlgraph.Edge(sqlgraph.M2O, true, incidenteventcontributingfactor.EventTable, incidenteventcontributingfactor.EventColumn),
 		)
-		fromU = sqlgraph.SetNeighbors(iecfq.driver.Dialect(), step)
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
 	}
 	return query
@@ -112,8 +112,8 @@ func (iecfq *IncidentEventContributingFactorQuery) QueryEvent() *IncidentEventQu
 
 // First returns the first IncidentEventContributingFactor entity from the query.
 // Returns a *NotFoundError when no IncidentEventContributingFactor was found.
-func (iecfq *IncidentEventContributingFactorQuery) First(ctx context.Context) (*IncidentEventContributingFactor, error) {
-	nodes, err := iecfq.Limit(1).All(setContextOp(ctx, iecfq.ctx, ent.OpQueryFirst))
+func (_q *IncidentEventContributingFactorQuery) First(ctx context.Context) (*IncidentEventContributingFactor, error) {
+	nodes, err := _q.Limit(1).All(setContextOp(ctx, _q.ctx, ent.OpQueryFirst))
 	if err != nil {
 		return nil, err
 	}
@@ -124,8 +124,8 @@ func (iecfq *IncidentEventContributingFactorQuery) First(ctx context.Context) (*
 }
 
 // FirstX is like First, but panics if an error occurs.
-func (iecfq *IncidentEventContributingFactorQuery) FirstX(ctx context.Context) *IncidentEventContributingFactor {
-	node, err := iecfq.First(ctx)
+func (_q *IncidentEventContributingFactorQuery) FirstX(ctx context.Context) *IncidentEventContributingFactor {
+	node, err := _q.First(ctx)
 	if err != nil && !IsNotFound(err) {
 		panic(err)
 	}
@@ -134,9 +134,9 @@ func (iecfq *IncidentEventContributingFactorQuery) FirstX(ctx context.Context) *
 
 // FirstID returns the first IncidentEventContributingFactor ID from the query.
 // Returns a *NotFoundError when no IncidentEventContributingFactor ID was found.
-func (iecfq *IncidentEventContributingFactorQuery) FirstID(ctx context.Context) (id uuid.UUID, err error) {
+func (_q *IncidentEventContributingFactorQuery) FirstID(ctx context.Context) (id uuid.UUID, err error) {
 	var ids []uuid.UUID
-	if ids, err = iecfq.Limit(1).IDs(setContextOp(ctx, iecfq.ctx, ent.OpQueryFirstID)); err != nil {
+	if ids, err = _q.Limit(1).IDs(setContextOp(ctx, _q.ctx, ent.OpQueryFirstID)); err != nil {
 		return
 	}
 	if len(ids) == 0 {
@@ -147,8 +147,8 @@ func (iecfq *IncidentEventContributingFactorQuery) FirstID(ctx context.Context) 
 }
 
 // FirstIDX is like FirstID, but panics if an error occurs.
-func (iecfq *IncidentEventContributingFactorQuery) FirstIDX(ctx context.Context) uuid.UUID {
-	id, err := iecfq.FirstID(ctx)
+func (_q *IncidentEventContributingFactorQuery) FirstIDX(ctx context.Context) uuid.UUID {
+	id, err := _q.FirstID(ctx)
 	if err != nil && !IsNotFound(err) {
 		panic(err)
 	}
@@ -158,8 +158,8 @@ func (iecfq *IncidentEventContributingFactorQuery) FirstIDX(ctx context.Context)
 // Only returns a single IncidentEventContributingFactor entity found by the query, ensuring it only returns one.
 // Returns a *NotSingularError when more than one IncidentEventContributingFactor entity is found.
 // Returns a *NotFoundError when no IncidentEventContributingFactor entities are found.
-func (iecfq *IncidentEventContributingFactorQuery) Only(ctx context.Context) (*IncidentEventContributingFactor, error) {
-	nodes, err := iecfq.Limit(2).All(setContextOp(ctx, iecfq.ctx, ent.OpQueryOnly))
+func (_q *IncidentEventContributingFactorQuery) Only(ctx context.Context) (*IncidentEventContributingFactor, error) {
+	nodes, err := _q.Limit(2).All(setContextOp(ctx, _q.ctx, ent.OpQueryOnly))
 	if err != nil {
 		return nil, err
 	}
@@ -174,8 +174,8 @@ func (iecfq *IncidentEventContributingFactorQuery) Only(ctx context.Context) (*I
 }
 
 // OnlyX is like Only, but panics if an error occurs.
-func (iecfq *IncidentEventContributingFactorQuery) OnlyX(ctx context.Context) *IncidentEventContributingFactor {
-	node, err := iecfq.Only(ctx)
+func (_q *IncidentEventContributingFactorQuery) OnlyX(ctx context.Context) *IncidentEventContributingFactor {
+	node, err := _q.Only(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -185,9 +185,9 @@ func (iecfq *IncidentEventContributingFactorQuery) OnlyX(ctx context.Context) *I
 // OnlyID is like Only, but returns the only IncidentEventContributingFactor ID in the query.
 // Returns a *NotSingularError when more than one IncidentEventContributingFactor ID is found.
 // Returns a *NotFoundError when no entities are found.
-func (iecfq *IncidentEventContributingFactorQuery) OnlyID(ctx context.Context) (id uuid.UUID, err error) {
+func (_q *IncidentEventContributingFactorQuery) OnlyID(ctx context.Context) (id uuid.UUID, err error) {
 	var ids []uuid.UUID
-	if ids, err = iecfq.Limit(2).IDs(setContextOp(ctx, iecfq.ctx, ent.OpQueryOnlyID)); err != nil {
+	if ids, err = _q.Limit(2).IDs(setContextOp(ctx, _q.ctx, ent.OpQueryOnlyID)); err != nil {
 		return
 	}
 	switch len(ids) {
@@ -202,8 +202,8 @@ func (iecfq *IncidentEventContributingFactorQuery) OnlyID(ctx context.Context) (
 }
 
 // OnlyIDX is like OnlyID, but panics if an error occurs.
-func (iecfq *IncidentEventContributingFactorQuery) OnlyIDX(ctx context.Context) uuid.UUID {
-	id, err := iecfq.OnlyID(ctx)
+func (_q *IncidentEventContributingFactorQuery) OnlyIDX(ctx context.Context) uuid.UUID {
+	id, err := _q.OnlyID(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -211,18 +211,18 @@ func (iecfq *IncidentEventContributingFactorQuery) OnlyIDX(ctx context.Context) 
 }
 
 // All executes the query and returns a list of IncidentEventContributingFactors.
-func (iecfq *IncidentEventContributingFactorQuery) All(ctx context.Context) ([]*IncidentEventContributingFactor, error) {
-	ctx = setContextOp(ctx, iecfq.ctx, ent.OpQueryAll)
-	if err := iecfq.prepareQuery(ctx); err != nil {
+func (_q *IncidentEventContributingFactorQuery) All(ctx context.Context) ([]*IncidentEventContributingFactor, error) {
+	ctx = setContextOp(ctx, _q.ctx, ent.OpQueryAll)
+	if err := _q.prepareQuery(ctx); err != nil {
 		return nil, err
 	}
 	qr := querierAll[[]*IncidentEventContributingFactor, *IncidentEventContributingFactorQuery]()
-	return withInterceptors[[]*IncidentEventContributingFactor](ctx, iecfq, qr, iecfq.inters)
+	return withInterceptors[[]*IncidentEventContributingFactor](ctx, _q, qr, _q.inters)
 }
 
 // AllX is like All, but panics if an error occurs.
-func (iecfq *IncidentEventContributingFactorQuery) AllX(ctx context.Context) []*IncidentEventContributingFactor {
-	nodes, err := iecfq.All(ctx)
+func (_q *IncidentEventContributingFactorQuery) AllX(ctx context.Context) []*IncidentEventContributingFactor {
+	nodes, err := _q.All(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -230,20 +230,20 @@ func (iecfq *IncidentEventContributingFactorQuery) AllX(ctx context.Context) []*
 }
 
 // IDs executes the query and returns a list of IncidentEventContributingFactor IDs.
-func (iecfq *IncidentEventContributingFactorQuery) IDs(ctx context.Context) (ids []uuid.UUID, err error) {
-	if iecfq.ctx.Unique == nil && iecfq.path != nil {
-		iecfq.Unique(true)
+func (_q *IncidentEventContributingFactorQuery) IDs(ctx context.Context) (ids []uuid.UUID, err error) {
+	if _q.ctx.Unique == nil && _q.path != nil {
+		_q.Unique(true)
 	}
-	ctx = setContextOp(ctx, iecfq.ctx, ent.OpQueryIDs)
-	if err = iecfq.Select(incidenteventcontributingfactor.FieldID).Scan(ctx, &ids); err != nil {
+	ctx = setContextOp(ctx, _q.ctx, ent.OpQueryIDs)
+	if err = _q.Select(incidenteventcontributingfactor.FieldID).Scan(ctx, &ids); err != nil {
 		return nil, err
 	}
 	return ids, nil
 }
 
 // IDsX is like IDs, but panics if an error occurs.
-func (iecfq *IncidentEventContributingFactorQuery) IDsX(ctx context.Context) []uuid.UUID {
-	ids, err := iecfq.IDs(ctx)
+func (_q *IncidentEventContributingFactorQuery) IDsX(ctx context.Context) []uuid.UUID {
+	ids, err := _q.IDs(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -251,17 +251,17 @@ func (iecfq *IncidentEventContributingFactorQuery) IDsX(ctx context.Context) []u
 }
 
 // Count returns the count of the given query.
-func (iecfq *IncidentEventContributingFactorQuery) Count(ctx context.Context) (int, error) {
-	ctx = setContextOp(ctx, iecfq.ctx, ent.OpQueryCount)
-	if err := iecfq.prepareQuery(ctx); err != nil {
+func (_q *IncidentEventContributingFactorQuery) Count(ctx context.Context) (int, error) {
+	ctx = setContextOp(ctx, _q.ctx, ent.OpQueryCount)
+	if err := _q.prepareQuery(ctx); err != nil {
 		return 0, err
 	}
-	return withInterceptors[int](ctx, iecfq, querierCount[*IncidentEventContributingFactorQuery](), iecfq.inters)
+	return withInterceptors[int](ctx, _q, querierCount[*IncidentEventContributingFactorQuery](), _q.inters)
 }
 
 // CountX is like Count, but panics if an error occurs.
-func (iecfq *IncidentEventContributingFactorQuery) CountX(ctx context.Context) int {
-	count, err := iecfq.Count(ctx)
+func (_q *IncidentEventContributingFactorQuery) CountX(ctx context.Context) int {
+	count, err := _q.Count(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -269,9 +269,9 @@ func (iecfq *IncidentEventContributingFactorQuery) CountX(ctx context.Context) i
 }
 
 // Exist returns true if the query has elements in the graph.
-func (iecfq *IncidentEventContributingFactorQuery) Exist(ctx context.Context) (bool, error) {
-	ctx = setContextOp(ctx, iecfq.ctx, ent.OpQueryExist)
-	switch _, err := iecfq.FirstID(ctx); {
+func (_q *IncidentEventContributingFactorQuery) Exist(ctx context.Context) (bool, error) {
+	ctx = setContextOp(ctx, _q.ctx, ent.OpQueryExist)
+	switch _, err := _q.FirstID(ctx); {
 	case IsNotFound(err):
 		return false, nil
 	case err != nil:
@@ -282,8 +282,8 @@ func (iecfq *IncidentEventContributingFactorQuery) Exist(ctx context.Context) (b
 }
 
 // ExistX is like Exist, but panics if an error occurs.
-func (iecfq *IncidentEventContributingFactorQuery) ExistX(ctx context.Context) bool {
-	exist, err := iecfq.Exist(ctx)
+func (_q *IncidentEventContributingFactorQuery) ExistX(ctx context.Context) bool {
+	exist, err := _q.Exist(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -292,45 +292,45 @@ func (iecfq *IncidentEventContributingFactorQuery) ExistX(ctx context.Context) b
 
 // Clone returns a duplicate of the IncidentEventContributingFactorQuery builder, including all associated steps. It can be
 // used to prepare common query builders and use them differently after the clone is made.
-func (iecfq *IncidentEventContributingFactorQuery) Clone() *IncidentEventContributingFactorQuery {
-	if iecfq == nil {
+func (_q *IncidentEventContributingFactorQuery) Clone() *IncidentEventContributingFactorQuery {
+	if _q == nil {
 		return nil
 	}
 	return &IncidentEventContributingFactorQuery{
-		config:     iecfq.config,
-		ctx:        iecfq.ctx.Clone(),
-		order:      append([]incidenteventcontributingfactor.OrderOption{}, iecfq.order...),
-		inters:     append([]Interceptor{}, iecfq.inters...),
-		predicates: append([]predicate.IncidentEventContributingFactor{}, iecfq.predicates...),
-		withTenant: iecfq.withTenant.Clone(),
-		withEvent:  iecfq.withEvent.Clone(),
+		config:     _q.config,
+		ctx:        _q.ctx.Clone(),
+		order:      append([]incidenteventcontributingfactor.OrderOption{}, _q.order...),
+		inters:     append([]Interceptor{}, _q.inters...),
+		predicates: append([]predicate.IncidentEventContributingFactor{}, _q.predicates...),
+		withTenant: _q.withTenant.Clone(),
+		withEvent:  _q.withEvent.Clone(),
 		// clone intermediate query.
-		sql:       iecfq.sql.Clone(),
-		path:      iecfq.path,
-		modifiers: append([]func(*sql.Selector){}, iecfq.modifiers...),
+		sql:       _q.sql.Clone(),
+		path:      _q.path,
+		modifiers: append([]func(*sql.Selector){}, _q.modifiers...),
 	}
 }
 
 // WithTenant tells the query-builder to eager-load the nodes that are connected to
 // the "tenant" edge. The optional arguments are used to configure the query builder of the edge.
-func (iecfq *IncidentEventContributingFactorQuery) WithTenant(opts ...func(*TenantQuery)) *IncidentEventContributingFactorQuery {
-	query := (&TenantClient{config: iecfq.config}).Query()
+func (_q *IncidentEventContributingFactorQuery) WithTenant(opts ...func(*TenantQuery)) *IncidentEventContributingFactorQuery {
+	query := (&TenantClient{config: _q.config}).Query()
 	for _, opt := range opts {
 		opt(query)
 	}
-	iecfq.withTenant = query
-	return iecfq
+	_q.withTenant = query
+	return _q
 }
 
 // WithEvent tells the query-builder to eager-load the nodes that are connected to
 // the "event" edge. The optional arguments are used to configure the query builder of the edge.
-func (iecfq *IncidentEventContributingFactorQuery) WithEvent(opts ...func(*IncidentEventQuery)) *IncidentEventContributingFactorQuery {
-	query := (&IncidentEventClient{config: iecfq.config}).Query()
+func (_q *IncidentEventContributingFactorQuery) WithEvent(opts ...func(*IncidentEventQuery)) *IncidentEventContributingFactorQuery {
+	query := (&IncidentEventClient{config: _q.config}).Query()
 	for _, opt := range opts {
 		opt(query)
 	}
-	iecfq.withEvent = query
-	return iecfq
+	_q.withEvent = query
+	return _q
 }
 
 // GroupBy is used to group vertices by one or more fields/columns.
@@ -347,10 +347,10 @@ func (iecfq *IncidentEventContributingFactorQuery) WithEvent(opts ...func(*Incid
 //		GroupBy(incidenteventcontributingfactor.FieldTenantID).
 //		Aggregate(ent.Count()).
 //		Scan(ctx, &v)
-func (iecfq *IncidentEventContributingFactorQuery) GroupBy(field string, fields ...string) *IncidentEventContributingFactorGroupBy {
-	iecfq.ctx.Fields = append([]string{field}, fields...)
-	grbuild := &IncidentEventContributingFactorGroupBy{build: iecfq}
-	grbuild.flds = &iecfq.ctx.Fields
+func (_q *IncidentEventContributingFactorQuery) GroupBy(field string, fields ...string) *IncidentEventContributingFactorGroupBy {
+	_q.ctx.Fields = append([]string{field}, fields...)
+	grbuild := &IncidentEventContributingFactorGroupBy{build: _q}
+	grbuild.flds = &_q.ctx.Fields
 	grbuild.label = incidenteventcontributingfactor.Label
 	grbuild.scan = grbuild.Scan
 	return grbuild
@@ -368,62 +368,62 @@ func (iecfq *IncidentEventContributingFactorQuery) GroupBy(field string, fields 
 //	client.IncidentEventContributingFactor.Query().
 //		Select(incidenteventcontributingfactor.FieldTenantID).
 //		Scan(ctx, &v)
-func (iecfq *IncidentEventContributingFactorQuery) Select(fields ...string) *IncidentEventContributingFactorSelect {
-	iecfq.ctx.Fields = append(iecfq.ctx.Fields, fields...)
-	sbuild := &IncidentEventContributingFactorSelect{IncidentEventContributingFactorQuery: iecfq}
+func (_q *IncidentEventContributingFactorQuery) Select(fields ...string) *IncidentEventContributingFactorSelect {
+	_q.ctx.Fields = append(_q.ctx.Fields, fields...)
+	sbuild := &IncidentEventContributingFactorSelect{IncidentEventContributingFactorQuery: _q}
 	sbuild.label = incidenteventcontributingfactor.Label
-	sbuild.flds, sbuild.scan = &iecfq.ctx.Fields, sbuild.Scan
+	sbuild.flds, sbuild.scan = &_q.ctx.Fields, sbuild.Scan
 	return sbuild
 }
 
 // Aggregate returns a IncidentEventContributingFactorSelect configured with the given aggregations.
-func (iecfq *IncidentEventContributingFactorQuery) Aggregate(fns ...AggregateFunc) *IncidentEventContributingFactorSelect {
-	return iecfq.Select().Aggregate(fns...)
+func (_q *IncidentEventContributingFactorQuery) Aggregate(fns ...AggregateFunc) *IncidentEventContributingFactorSelect {
+	return _q.Select().Aggregate(fns...)
 }
 
-func (iecfq *IncidentEventContributingFactorQuery) prepareQuery(ctx context.Context) error {
-	for _, inter := range iecfq.inters {
+func (_q *IncidentEventContributingFactorQuery) prepareQuery(ctx context.Context) error {
+	for _, inter := range _q.inters {
 		if inter == nil {
 			return fmt.Errorf("ent: uninitialized interceptor (forgotten import ent/runtime?)")
 		}
 		if trv, ok := inter.(Traverser); ok {
-			if err := trv.Traverse(ctx, iecfq); err != nil {
+			if err := trv.Traverse(ctx, _q); err != nil {
 				return err
 			}
 		}
 	}
-	for _, f := range iecfq.ctx.Fields {
+	for _, f := range _q.ctx.Fields {
 		if !incidenteventcontributingfactor.ValidColumn(f) {
 			return &ValidationError{Name: f, err: fmt.Errorf("ent: invalid field %q for query", f)}
 		}
 	}
-	if iecfq.path != nil {
-		prev, err := iecfq.path(ctx)
+	if _q.path != nil {
+		prev, err := _q.path(ctx)
 		if err != nil {
 			return err
 		}
-		iecfq.sql = prev
+		_q.sql = prev
 	}
 	if incidenteventcontributingfactor.Policy == nil {
 		return errors.New("ent: uninitialized incidenteventcontributingfactor.Policy (forgotten import ent/runtime?)")
 	}
-	if err := incidenteventcontributingfactor.Policy.EvalQuery(ctx, iecfq); err != nil {
+	if err := incidenteventcontributingfactor.Policy.EvalQuery(ctx, _q); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (iecfq *IncidentEventContributingFactorQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*IncidentEventContributingFactor, error) {
+func (_q *IncidentEventContributingFactorQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*IncidentEventContributingFactor, error) {
 	var (
 		nodes       = []*IncidentEventContributingFactor{}
-		withFKs     = iecfq.withFKs
-		_spec       = iecfq.querySpec()
+		withFKs     = _q.withFKs
+		_spec       = _q.querySpec()
 		loadedTypes = [2]bool{
-			iecfq.withTenant != nil,
-			iecfq.withEvent != nil,
+			_q.withTenant != nil,
+			_q.withEvent != nil,
 		}
 	)
-	if iecfq.withEvent != nil {
+	if _q.withEvent != nil {
 		withFKs = true
 	}
 	if withFKs {
@@ -433,31 +433,31 @@ func (iecfq *IncidentEventContributingFactorQuery) sqlAll(ctx context.Context, h
 		return (*IncidentEventContributingFactor).scanValues(nil, columns)
 	}
 	_spec.Assign = func(columns []string, values []any) error {
-		node := &IncidentEventContributingFactor{config: iecfq.config}
+		node := &IncidentEventContributingFactor{config: _q.config}
 		nodes = append(nodes, node)
 		node.Edges.loadedTypes = loadedTypes
 		return node.assignValues(columns, values)
 	}
-	if len(iecfq.modifiers) > 0 {
-		_spec.Modifiers = iecfq.modifiers
+	if len(_q.modifiers) > 0 {
+		_spec.Modifiers = _q.modifiers
 	}
 	for i := range hooks {
 		hooks[i](ctx, _spec)
 	}
-	if err := sqlgraph.QueryNodes(ctx, iecfq.driver, _spec); err != nil {
+	if err := sqlgraph.QueryNodes(ctx, _q.driver, _spec); err != nil {
 		return nil, err
 	}
 	if len(nodes) == 0 {
 		return nodes, nil
 	}
-	if query := iecfq.withTenant; query != nil {
-		if err := iecfq.loadTenant(ctx, query, nodes, nil,
+	if query := _q.withTenant; query != nil {
+		if err := _q.loadTenant(ctx, query, nodes, nil,
 			func(n *IncidentEventContributingFactor, e *Tenant) { n.Edges.Tenant = e }); err != nil {
 			return nil, err
 		}
 	}
-	if query := iecfq.withEvent; query != nil {
-		if err := iecfq.loadEvent(ctx, query, nodes, nil,
+	if query := _q.withEvent; query != nil {
+		if err := _q.loadEvent(ctx, query, nodes, nil,
 			func(n *IncidentEventContributingFactor, e *IncidentEvent) { n.Edges.Event = e }); err != nil {
 			return nil, err
 		}
@@ -465,7 +465,7 @@ func (iecfq *IncidentEventContributingFactorQuery) sqlAll(ctx context.Context, h
 	return nodes, nil
 }
 
-func (iecfq *IncidentEventContributingFactorQuery) loadTenant(ctx context.Context, query *TenantQuery, nodes []*IncidentEventContributingFactor, init func(*IncidentEventContributingFactor), assign func(*IncidentEventContributingFactor, *Tenant)) error {
+func (_q *IncidentEventContributingFactorQuery) loadTenant(ctx context.Context, query *TenantQuery, nodes []*IncidentEventContributingFactor, init func(*IncidentEventContributingFactor), assign func(*IncidentEventContributingFactor, *Tenant)) error {
 	ids := make([]int, 0, len(nodes))
 	nodeids := make(map[int][]*IncidentEventContributingFactor)
 	for i := range nodes {
@@ -494,7 +494,7 @@ func (iecfq *IncidentEventContributingFactorQuery) loadTenant(ctx context.Contex
 	}
 	return nil
 }
-func (iecfq *IncidentEventContributingFactorQuery) loadEvent(ctx context.Context, query *IncidentEventQuery, nodes []*IncidentEventContributingFactor, init func(*IncidentEventContributingFactor), assign func(*IncidentEventContributingFactor, *IncidentEvent)) error {
+func (_q *IncidentEventContributingFactorQuery) loadEvent(ctx context.Context, query *IncidentEventQuery, nodes []*IncidentEventContributingFactor, init func(*IncidentEventContributingFactor), assign func(*IncidentEventContributingFactor, *IncidentEvent)) error {
 	ids := make([]uuid.UUID, 0, len(nodes))
 	nodeids := make(map[uuid.UUID][]*IncidentEventContributingFactor)
 	for i := range nodes {
@@ -527,27 +527,27 @@ func (iecfq *IncidentEventContributingFactorQuery) loadEvent(ctx context.Context
 	return nil
 }
 
-func (iecfq *IncidentEventContributingFactorQuery) sqlCount(ctx context.Context) (int, error) {
-	_spec := iecfq.querySpec()
-	if len(iecfq.modifiers) > 0 {
-		_spec.Modifiers = iecfq.modifiers
+func (_q *IncidentEventContributingFactorQuery) sqlCount(ctx context.Context) (int, error) {
+	_spec := _q.querySpec()
+	if len(_q.modifiers) > 0 {
+		_spec.Modifiers = _q.modifiers
 	}
-	_spec.Node.Columns = iecfq.ctx.Fields
-	if len(iecfq.ctx.Fields) > 0 {
-		_spec.Unique = iecfq.ctx.Unique != nil && *iecfq.ctx.Unique
+	_spec.Node.Columns = _q.ctx.Fields
+	if len(_q.ctx.Fields) > 0 {
+		_spec.Unique = _q.ctx.Unique != nil && *_q.ctx.Unique
 	}
-	return sqlgraph.CountNodes(ctx, iecfq.driver, _spec)
+	return sqlgraph.CountNodes(ctx, _q.driver, _spec)
 }
 
-func (iecfq *IncidentEventContributingFactorQuery) querySpec() *sqlgraph.QuerySpec {
+func (_q *IncidentEventContributingFactorQuery) querySpec() *sqlgraph.QuerySpec {
 	_spec := sqlgraph.NewQuerySpec(incidenteventcontributingfactor.Table, incidenteventcontributingfactor.Columns, sqlgraph.NewFieldSpec(incidenteventcontributingfactor.FieldID, field.TypeUUID))
-	_spec.From = iecfq.sql
-	if unique := iecfq.ctx.Unique; unique != nil {
+	_spec.From = _q.sql
+	if unique := _q.ctx.Unique; unique != nil {
 		_spec.Unique = *unique
-	} else if iecfq.path != nil {
+	} else if _q.path != nil {
 		_spec.Unique = true
 	}
-	if fields := iecfq.ctx.Fields; len(fields) > 0 {
+	if fields := _q.ctx.Fields; len(fields) > 0 {
 		_spec.Node.Columns = make([]string, 0, len(fields))
 		_spec.Node.Columns = append(_spec.Node.Columns, incidenteventcontributingfactor.FieldID)
 		for i := range fields {
@@ -555,24 +555,24 @@ func (iecfq *IncidentEventContributingFactorQuery) querySpec() *sqlgraph.QuerySp
 				_spec.Node.Columns = append(_spec.Node.Columns, fields[i])
 			}
 		}
-		if iecfq.withTenant != nil {
+		if _q.withTenant != nil {
 			_spec.Node.AddColumnOnce(incidenteventcontributingfactor.FieldTenantID)
 		}
 	}
-	if ps := iecfq.predicates; len(ps) > 0 {
+	if ps := _q.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {
 				ps[i](selector)
 			}
 		}
 	}
-	if limit := iecfq.ctx.Limit; limit != nil {
+	if limit := _q.ctx.Limit; limit != nil {
 		_spec.Limit = *limit
 	}
-	if offset := iecfq.ctx.Offset; offset != nil {
+	if offset := _q.ctx.Offset; offset != nil {
 		_spec.Offset = *offset
 	}
-	if ps := iecfq.order; len(ps) > 0 {
+	if ps := _q.order; len(ps) > 0 {
 		_spec.Order = func(selector *sql.Selector) {
 			for i := range ps {
 				ps[i](selector)
@@ -582,45 +582,45 @@ func (iecfq *IncidentEventContributingFactorQuery) querySpec() *sqlgraph.QuerySp
 	return _spec
 }
 
-func (iecfq *IncidentEventContributingFactorQuery) sqlQuery(ctx context.Context) *sql.Selector {
-	builder := sql.Dialect(iecfq.driver.Dialect())
+func (_q *IncidentEventContributingFactorQuery) sqlQuery(ctx context.Context) *sql.Selector {
+	builder := sql.Dialect(_q.driver.Dialect())
 	t1 := builder.Table(incidenteventcontributingfactor.Table)
-	columns := iecfq.ctx.Fields
+	columns := _q.ctx.Fields
 	if len(columns) == 0 {
 		columns = incidenteventcontributingfactor.Columns
 	}
 	selector := builder.Select(t1.Columns(columns...)...).From(t1)
-	if iecfq.sql != nil {
-		selector = iecfq.sql
+	if _q.sql != nil {
+		selector = _q.sql
 		selector.Select(selector.Columns(columns...)...)
 	}
-	if iecfq.ctx.Unique != nil && *iecfq.ctx.Unique {
+	if _q.ctx.Unique != nil && *_q.ctx.Unique {
 		selector.Distinct()
 	}
-	for _, m := range iecfq.modifiers {
+	for _, m := range _q.modifiers {
 		m(selector)
 	}
-	for _, p := range iecfq.predicates {
+	for _, p := range _q.predicates {
 		p(selector)
 	}
-	for _, p := range iecfq.order {
+	for _, p := range _q.order {
 		p(selector)
 	}
-	if offset := iecfq.ctx.Offset; offset != nil {
+	if offset := _q.ctx.Offset; offset != nil {
 		// limit is mandatory for offset clause. We start
 		// with default value, and override it below if needed.
 		selector.Offset(*offset).Limit(math.MaxInt32)
 	}
-	if limit := iecfq.ctx.Limit; limit != nil {
+	if limit := _q.ctx.Limit; limit != nil {
 		selector.Limit(*limit)
 	}
 	return selector
 }
 
 // Modify adds a query modifier for attaching custom logic to queries.
-func (iecfq *IncidentEventContributingFactorQuery) Modify(modifiers ...func(s *sql.Selector)) *IncidentEventContributingFactorSelect {
-	iecfq.modifiers = append(iecfq.modifiers, modifiers...)
-	return iecfq.Select()
+func (_q *IncidentEventContributingFactorQuery) Modify(modifiers ...func(s *sql.Selector)) *IncidentEventContributingFactorSelect {
+	_q.modifiers = append(_q.modifiers, modifiers...)
+	return _q.Select()
 }
 
 // IncidentEventContributingFactorGroupBy is the group-by builder for IncidentEventContributingFactor entities.
@@ -630,41 +630,41 @@ type IncidentEventContributingFactorGroupBy struct {
 }
 
 // Aggregate adds the given aggregation functions to the group-by query.
-func (iecfgb *IncidentEventContributingFactorGroupBy) Aggregate(fns ...AggregateFunc) *IncidentEventContributingFactorGroupBy {
-	iecfgb.fns = append(iecfgb.fns, fns...)
-	return iecfgb
+func (_g *IncidentEventContributingFactorGroupBy) Aggregate(fns ...AggregateFunc) *IncidentEventContributingFactorGroupBy {
+	_g.fns = append(_g.fns, fns...)
+	return _g
 }
 
 // Scan applies the selector query and scans the result into the given value.
-func (iecfgb *IncidentEventContributingFactorGroupBy) Scan(ctx context.Context, v any) error {
-	ctx = setContextOp(ctx, iecfgb.build.ctx, ent.OpQueryGroupBy)
-	if err := iecfgb.build.prepareQuery(ctx); err != nil {
+func (_g *IncidentEventContributingFactorGroupBy) Scan(ctx context.Context, v any) error {
+	ctx = setContextOp(ctx, _g.build.ctx, ent.OpQueryGroupBy)
+	if err := _g.build.prepareQuery(ctx); err != nil {
 		return err
 	}
-	return scanWithInterceptors[*IncidentEventContributingFactorQuery, *IncidentEventContributingFactorGroupBy](ctx, iecfgb.build, iecfgb, iecfgb.build.inters, v)
+	return scanWithInterceptors[*IncidentEventContributingFactorQuery, *IncidentEventContributingFactorGroupBy](ctx, _g.build, _g, _g.build.inters, v)
 }
 
-func (iecfgb *IncidentEventContributingFactorGroupBy) sqlScan(ctx context.Context, root *IncidentEventContributingFactorQuery, v any) error {
+func (_g *IncidentEventContributingFactorGroupBy) sqlScan(ctx context.Context, root *IncidentEventContributingFactorQuery, v any) error {
 	selector := root.sqlQuery(ctx).Select()
-	aggregation := make([]string, 0, len(iecfgb.fns))
-	for _, fn := range iecfgb.fns {
+	aggregation := make([]string, 0, len(_g.fns))
+	for _, fn := range _g.fns {
 		aggregation = append(aggregation, fn(selector))
 	}
 	if len(selector.SelectedColumns()) == 0 {
-		columns := make([]string, 0, len(*iecfgb.flds)+len(iecfgb.fns))
-		for _, f := range *iecfgb.flds {
+		columns := make([]string, 0, len(*_g.flds)+len(_g.fns))
+		for _, f := range *_g.flds {
 			columns = append(columns, selector.C(f))
 		}
 		columns = append(columns, aggregation...)
 		selector.Select(columns...)
 	}
-	selector.GroupBy(selector.Columns(*iecfgb.flds...)...)
+	selector.GroupBy(selector.Columns(*_g.flds...)...)
 	if err := selector.Err(); err != nil {
 		return err
 	}
 	rows := &sql.Rows{}
 	query, args := selector.Query()
-	if err := iecfgb.build.driver.Query(ctx, query, args, rows); err != nil {
+	if err := _g.build.driver.Query(ctx, query, args, rows); err != nil {
 		return err
 	}
 	defer rows.Close()
@@ -678,27 +678,27 @@ type IncidentEventContributingFactorSelect struct {
 }
 
 // Aggregate adds the given aggregation functions to the selector query.
-func (iecfs *IncidentEventContributingFactorSelect) Aggregate(fns ...AggregateFunc) *IncidentEventContributingFactorSelect {
-	iecfs.fns = append(iecfs.fns, fns...)
-	return iecfs
+func (_s *IncidentEventContributingFactorSelect) Aggregate(fns ...AggregateFunc) *IncidentEventContributingFactorSelect {
+	_s.fns = append(_s.fns, fns...)
+	return _s
 }
 
 // Scan applies the selector query and scans the result into the given value.
-func (iecfs *IncidentEventContributingFactorSelect) Scan(ctx context.Context, v any) error {
-	ctx = setContextOp(ctx, iecfs.ctx, ent.OpQuerySelect)
-	if err := iecfs.prepareQuery(ctx); err != nil {
+func (_s *IncidentEventContributingFactorSelect) Scan(ctx context.Context, v any) error {
+	ctx = setContextOp(ctx, _s.ctx, ent.OpQuerySelect)
+	if err := _s.prepareQuery(ctx); err != nil {
 		return err
 	}
-	return scanWithInterceptors[*IncidentEventContributingFactorQuery, *IncidentEventContributingFactorSelect](ctx, iecfs.IncidentEventContributingFactorQuery, iecfs, iecfs.inters, v)
+	return scanWithInterceptors[*IncidentEventContributingFactorQuery, *IncidentEventContributingFactorSelect](ctx, _s.IncidentEventContributingFactorQuery, _s, _s.inters, v)
 }
 
-func (iecfs *IncidentEventContributingFactorSelect) sqlScan(ctx context.Context, root *IncidentEventContributingFactorQuery, v any) error {
+func (_s *IncidentEventContributingFactorSelect) sqlScan(ctx context.Context, root *IncidentEventContributingFactorQuery, v any) error {
 	selector := root.sqlQuery(ctx)
-	aggregation := make([]string, 0, len(iecfs.fns))
-	for _, fn := range iecfs.fns {
+	aggregation := make([]string, 0, len(_s.fns))
+	for _, fn := range _s.fns {
 		aggregation = append(aggregation, fn(selector))
 	}
-	switch n := len(*iecfs.selector.flds); {
+	switch n := len(*_s.selector.flds); {
 	case n == 0 && len(aggregation) > 0:
 		selector.Select(aggregation...)
 	case n != 0 && len(aggregation) > 0:
@@ -706,7 +706,7 @@ func (iecfs *IncidentEventContributingFactorSelect) sqlScan(ctx context.Context,
 	}
 	rows := &sql.Rows{}
 	query, args := selector.Query()
-	if err := iecfs.driver.Query(ctx, query, args, rows); err != nil {
+	if err := _s.driver.Query(ctx, query, args, rows); err != nil {
 		return err
 	}
 	defer rows.Close()
@@ -714,7 +714,7 @@ func (iecfs *IncidentEventContributingFactorSelect) sqlScan(ctx context.Context,
 }
 
 // Modify adds a query modifier for attaching custom logic to queries.
-func (iecfs *IncidentEventContributingFactorSelect) Modify(modifiers ...func(s *sql.Selector)) *IncidentEventContributingFactorSelect {
-	iecfs.modifiers = append(iecfs.modifiers, modifiers...)
-	return iecfs
+func (_s *IncidentEventContributingFactorSelect) Modify(modifiers ...func(s *sql.Selector)) *IncidentEventContributingFactorSelect {
+	_s.modifiers = append(_s.modifiers, modifiers...)
+	return _s
 }

@@ -32,393 +32,393 @@ type OncallRosterUpdate struct {
 }
 
 // Where appends a list predicates to the OncallRosterUpdate builder.
-func (oru *OncallRosterUpdate) Where(ps ...predicate.OncallRoster) *OncallRosterUpdate {
-	oru.mutation.Where(ps...)
-	return oru
+func (_u *OncallRosterUpdate) Where(ps ...predicate.OncallRoster) *OncallRosterUpdate {
+	_u.mutation.Where(ps...)
+	return _u
 }
 
 // SetArchiveTime sets the "archive_time" field.
-func (oru *OncallRosterUpdate) SetArchiveTime(t time.Time) *OncallRosterUpdate {
-	oru.mutation.SetArchiveTime(t)
-	return oru
+func (_u *OncallRosterUpdate) SetArchiveTime(v time.Time) *OncallRosterUpdate {
+	_u.mutation.SetArchiveTime(v)
+	return _u
 }
 
 // SetNillableArchiveTime sets the "archive_time" field if the given value is not nil.
-func (oru *OncallRosterUpdate) SetNillableArchiveTime(t *time.Time) *OncallRosterUpdate {
-	if t != nil {
-		oru.SetArchiveTime(*t)
+func (_u *OncallRosterUpdate) SetNillableArchiveTime(v *time.Time) *OncallRosterUpdate {
+	if v != nil {
+		_u.SetArchiveTime(*v)
 	}
-	return oru
+	return _u
 }
 
 // ClearArchiveTime clears the value of the "archive_time" field.
-func (oru *OncallRosterUpdate) ClearArchiveTime() *OncallRosterUpdate {
-	oru.mutation.ClearArchiveTime()
-	return oru
+func (_u *OncallRosterUpdate) ClearArchiveTime() *OncallRosterUpdate {
+	_u.mutation.ClearArchiveTime()
+	return _u
 }
 
 // SetName sets the "name" field.
-func (oru *OncallRosterUpdate) SetName(s string) *OncallRosterUpdate {
-	oru.mutation.SetName(s)
-	return oru
+func (_u *OncallRosterUpdate) SetName(v string) *OncallRosterUpdate {
+	_u.mutation.SetName(v)
+	return _u
 }
 
 // SetNillableName sets the "name" field if the given value is not nil.
-func (oru *OncallRosterUpdate) SetNillableName(s *string) *OncallRosterUpdate {
-	if s != nil {
-		oru.SetName(*s)
+func (_u *OncallRosterUpdate) SetNillableName(v *string) *OncallRosterUpdate {
+	if v != nil {
+		_u.SetName(*v)
 	}
-	return oru
+	return _u
 }
 
 // SetSlug sets the "slug" field.
-func (oru *OncallRosterUpdate) SetSlug(s string) *OncallRosterUpdate {
-	oru.mutation.SetSlug(s)
-	return oru
+func (_u *OncallRosterUpdate) SetSlug(v string) *OncallRosterUpdate {
+	_u.mutation.SetSlug(v)
+	return _u
 }
 
 // SetNillableSlug sets the "slug" field if the given value is not nil.
-func (oru *OncallRosterUpdate) SetNillableSlug(s *string) *OncallRosterUpdate {
-	if s != nil {
-		oru.SetSlug(*s)
+func (_u *OncallRosterUpdate) SetNillableSlug(v *string) *OncallRosterUpdate {
+	if v != nil {
+		_u.SetSlug(*v)
 	}
-	return oru
+	return _u
 }
 
 // SetProviderID sets the "provider_id" field.
-func (oru *OncallRosterUpdate) SetProviderID(s string) *OncallRosterUpdate {
-	oru.mutation.SetProviderID(s)
-	return oru
+func (_u *OncallRosterUpdate) SetProviderID(v string) *OncallRosterUpdate {
+	_u.mutation.SetProviderID(v)
+	return _u
 }
 
 // SetNillableProviderID sets the "provider_id" field if the given value is not nil.
-func (oru *OncallRosterUpdate) SetNillableProviderID(s *string) *OncallRosterUpdate {
-	if s != nil {
-		oru.SetProviderID(*s)
+func (_u *OncallRosterUpdate) SetNillableProviderID(v *string) *OncallRosterUpdate {
+	if v != nil {
+		_u.SetProviderID(*v)
 	}
-	return oru
+	return _u
 }
 
 // SetTimezone sets the "timezone" field.
-func (oru *OncallRosterUpdate) SetTimezone(s string) *OncallRosterUpdate {
-	oru.mutation.SetTimezone(s)
-	return oru
+func (_u *OncallRosterUpdate) SetTimezone(v string) *OncallRosterUpdate {
+	_u.mutation.SetTimezone(v)
+	return _u
 }
 
 // SetNillableTimezone sets the "timezone" field if the given value is not nil.
-func (oru *OncallRosterUpdate) SetNillableTimezone(s *string) *OncallRosterUpdate {
-	if s != nil {
-		oru.SetTimezone(*s)
+func (_u *OncallRosterUpdate) SetNillableTimezone(v *string) *OncallRosterUpdate {
+	if v != nil {
+		_u.SetTimezone(*v)
 	}
-	return oru
+	return _u
 }
 
 // ClearTimezone clears the value of the "timezone" field.
-func (oru *OncallRosterUpdate) ClearTimezone() *OncallRosterUpdate {
-	oru.mutation.ClearTimezone()
-	return oru
+func (_u *OncallRosterUpdate) ClearTimezone() *OncallRosterUpdate {
+	_u.mutation.ClearTimezone()
+	return _u
 }
 
 // SetChatHandle sets the "chat_handle" field.
-func (oru *OncallRosterUpdate) SetChatHandle(s string) *OncallRosterUpdate {
-	oru.mutation.SetChatHandle(s)
-	return oru
+func (_u *OncallRosterUpdate) SetChatHandle(v string) *OncallRosterUpdate {
+	_u.mutation.SetChatHandle(v)
+	return _u
 }
 
 // SetNillableChatHandle sets the "chat_handle" field if the given value is not nil.
-func (oru *OncallRosterUpdate) SetNillableChatHandle(s *string) *OncallRosterUpdate {
-	if s != nil {
-		oru.SetChatHandle(*s)
+func (_u *OncallRosterUpdate) SetNillableChatHandle(v *string) *OncallRosterUpdate {
+	if v != nil {
+		_u.SetChatHandle(*v)
 	}
-	return oru
+	return _u
 }
 
 // ClearChatHandle clears the value of the "chat_handle" field.
-func (oru *OncallRosterUpdate) ClearChatHandle() *OncallRosterUpdate {
-	oru.mutation.ClearChatHandle()
-	return oru
+func (_u *OncallRosterUpdate) ClearChatHandle() *OncallRosterUpdate {
+	_u.mutation.ClearChatHandle()
+	return _u
 }
 
 // SetChatChannelID sets the "chat_channel_id" field.
-func (oru *OncallRosterUpdate) SetChatChannelID(s string) *OncallRosterUpdate {
-	oru.mutation.SetChatChannelID(s)
-	return oru
+func (_u *OncallRosterUpdate) SetChatChannelID(v string) *OncallRosterUpdate {
+	_u.mutation.SetChatChannelID(v)
+	return _u
 }
 
 // SetNillableChatChannelID sets the "chat_channel_id" field if the given value is not nil.
-func (oru *OncallRosterUpdate) SetNillableChatChannelID(s *string) *OncallRosterUpdate {
-	if s != nil {
-		oru.SetChatChannelID(*s)
+func (_u *OncallRosterUpdate) SetNillableChatChannelID(v *string) *OncallRosterUpdate {
+	if v != nil {
+		_u.SetChatChannelID(*v)
 	}
-	return oru
+	return _u
 }
 
 // ClearChatChannelID clears the value of the "chat_channel_id" field.
-func (oru *OncallRosterUpdate) ClearChatChannelID() *OncallRosterUpdate {
-	oru.mutation.ClearChatChannelID()
-	return oru
+func (_u *OncallRosterUpdate) ClearChatChannelID() *OncallRosterUpdate {
+	_u.mutation.ClearChatChannelID()
+	return _u
 }
 
 // SetHandoverTemplateID sets the "handover_template_id" field.
-func (oru *OncallRosterUpdate) SetHandoverTemplateID(u uuid.UUID) *OncallRosterUpdate {
-	oru.mutation.SetHandoverTemplateID(u)
-	return oru
+func (_u *OncallRosterUpdate) SetHandoverTemplateID(v uuid.UUID) *OncallRosterUpdate {
+	_u.mutation.SetHandoverTemplateID(v)
+	return _u
 }
 
 // SetNillableHandoverTemplateID sets the "handover_template_id" field if the given value is not nil.
-func (oru *OncallRosterUpdate) SetNillableHandoverTemplateID(u *uuid.UUID) *OncallRosterUpdate {
-	if u != nil {
-		oru.SetHandoverTemplateID(*u)
+func (_u *OncallRosterUpdate) SetNillableHandoverTemplateID(v *uuid.UUID) *OncallRosterUpdate {
+	if v != nil {
+		_u.SetHandoverTemplateID(*v)
 	}
-	return oru
+	return _u
 }
 
 // ClearHandoverTemplateID clears the value of the "handover_template_id" field.
-func (oru *OncallRosterUpdate) ClearHandoverTemplateID() *OncallRosterUpdate {
-	oru.mutation.ClearHandoverTemplateID()
-	return oru
+func (_u *OncallRosterUpdate) ClearHandoverTemplateID() *OncallRosterUpdate {
+	_u.mutation.ClearHandoverTemplateID()
+	return _u
 }
 
 // AddScheduleIDs adds the "schedules" edge to the OncallSchedule entity by IDs.
-func (oru *OncallRosterUpdate) AddScheduleIDs(ids ...uuid.UUID) *OncallRosterUpdate {
-	oru.mutation.AddScheduleIDs(ids...)
-	return oru
+func (_u *OncallRosterUpdate) AddScheduleIDs(ids ...uuid.UUID) *OncallRosterUpdate {
+	_u.mutation.AddScheduleIDs(ids...)
+	return _u
 }
 
 // AddSchedules adds the "schedules" edges to the OncallSchedule entity.
-func (oru *OncallRosterUpdate) AddSchedules(o ...*OncallSchedule) *OncallRosterUpdate {
-	ids := make([]uuid.UUID, len(o))
-	for i := range o {
-		ids[i] = o[i].ID
+func (_u *OncallRosterUpdate) AddSchedules(v ...*OncallSchedule) *OncallRosterUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
 	}
-	return oru.AddScheduleIDs(ids...)
+	return _u.AddScheduleIDs(ids...)
 }
 
 // SetHandoverTemplate sets the "handover_template" edge to the OncallHandoverTemplate entity.
-func (oru *OncallRosterUpdate) SetHandoverTemplate(o *OncallHandoverTemplate) *OncallRosterUpdate {
-	return oru.SetHandoverTemplateID(o.ID)
+func (_u *OncallRosterUpdate) SetHandoverTemplate(v *OncallHandoverTemplate) *OncallRosterUpdate {
+	return _u.SetHandoverTemplateID(v.ID)
 }
 
 // AddAlertIDs adds the "alerts" edge to the Alert entity by IDs.
-func (oru *OncallRosterUpdate) AddAlertIDs(ids ...uuid.UUID) *OncallRosterUpdate {
-	oru.mutation.AddAlertIDs(ids...)
-	return oru
+func (_u *OncallRosterUpdate) AddAlertIDs(ids ...uuid.UUID) *OncallRosterUpdate {
+	_u.mutation.AddAlertIDs(ids...)
+	return _u
 }
 
 // AddAlerts adds the "alerts" edges to the Alert entity.
-func (oru *OncallRosterUpdate) AddAlerts(a ...*Alert) *OncallRosterUpdate {
-	ids := make([]uuid.UUID, len(a))
-	for i := range a {
-		ids[i] = a[i].ID
+func (_u *OncallRosterUpdate) AddAlerts(v ...*Alert) *OncallRosterUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
 	}
-	return oru.AddAlertIDs(ids...)
+	return _u.AddAlertIDs(ids...)
 }
 
 // AddTeamIDs adds the "teams" edge to the Team entity by IDs.
-func (oru *OncallRosterUpdate) AddTeamIDs(ids ...uuid.UUID) *OncallRosterUpdate {
-	oru.mutation.AddTeamIDs(ids...)
-	return oru
+func (_u *OncallRosterUpdate) AddTeamIDs(ids ...uuid.UUID) *OncallRosterUpdate {
+	_u.mutation.AddTeamIDs(ids...)
+	return _u
 }
 
 // AddTeams adds the "teams" edges to the Team entity.
-func (oru *OncallRosterUpdate) AddTeams(t ...*Team) *OncallRosterUpdate {
-	ids := make([]uuid.UUID, len(t))
-	for i := range t {
-		ids[i] = t[i].ID
+func (_u *OncallRosterUpdate) AddTeams(v ...*Team) *OncallRosterUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
 	}
-	return oru.AddTeamIDs(ids...)
+	return _u.AddTeamIDs(ids...)
 }
 
 // AddShiftIDs adds the "shifts" edge to the OncallShift entity by IDs.
-func (oru *OncallRosterUpdate) AddShiftIDs(ids ...uuid.UUID) *OncallRosterUpdate {
-	oru.mutation.AddShiftIDs(ids...)
-	return oru
+func (_u *OncallRosterUpdate) AddShiftIDs(ids ...uuid.UUID) *OncallRosterUpdate {
+	_u.mutation.AddShiftIDs(ids...)
+	return _u
 }
 
 // AddShifts adds the "shifts" edges to the OncallShift entity.
-func (oru *OncallRosterUpdate) AddShifts(o ...*OncallShift) *OncallRosterUpdate {
-	ids := make([]uuid.UUID, len(o))
-	for i := range o {
-		ids[i] = o[i].ID
+func (_u *OncallRosterUpdate) AddShifts(v ...*OncallShift) *OncallRosterUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
 	}
-	return oru.AddShiftIDs(ids...)
+	return _u.AddShiftIDs(ids...)
 }
 
 // AddUserWatcherIDs adds the "user_watchers" edge to the User entity by IDs.
-func (oru *OncallRosterUpdate) AddUserWatcherIDs(ids ...uuid.UUID) *OncallRosterUpdate {
-	oru.mutation.AddUserWatcherIDs(ids...)
-	return oru
+func (_u *OncallRosterUpdate) AddUserWatcherIDs(ids ...uuid.UUID) *OncallRosterUpdate {
+	_u.mutation.AddUserWatcherIDs(ids...)
+	return _u
 }
 
 // AddUserWatchers adds the "user_watchers" edges to the User entity.
-func (oru *OncallRosterUpdate) AddUserWatchers(u ...*User) *OncallRosterUpdate {
-	ids := make([]uuid.UUID, len(u))
-	for i := range u {
-		ids[i] = u[i].ID
+func (_u *OncallRosterUpdate) AddUserWatchers(v ...*User) *OncallRosterUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
 	}
-	return oru.AddUserWatcherIDs(ids...)
+	return _u.AddUserWatcherIDs(ids...)
 }
 
 // AddMetricIDs adds the "metrics" edge to the OncallRosterMetrics entity by IDs.
-func (oru *OncallRosterUpdate) AddMetricIDs(ids ...uuid.UUID) *OncallRosterUpdate {
-	oru.mutation.AddMetricIDs(ids...)
-	return oru
+func (_u *OncallRosterUpdate) AddMetricIDs(ids ...uuid.UUID) *OncallRosterUpdate {
+	_u.mutation.AddMetricIDs(ids...)
+	return _u
 }
 
 // AddMetrics adds the "metrics" edges to the OncallRosterMetrics entity.
-func (oru *OncallRosterUpdate) AddMetrics(o ...*OncallRosterMetrics) *OncallRosterUpdate {
-	ids := make([]uuid.UUID, len(o))
-	for i := range o {
-		ids[i] = o[i].ID
+func (_u *OncallRosterUpdate) AddMetrics(v ...*OncallRosterMetrics) *OncallRosterUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
 	}
-	return oru.AddMetricIDs(ids...)
+	return _u.AddMetricIDs(ids...)
 }
 
 // Mutation returns the OncallRosterMutation object of the builder.
-func (oru *OncallRosterUpdate) Mutation() *OncallRosterMutation {
-	return oru.mutation
+func (_u *OncallRosterUpdate) Mutation() *OncallRosterMutation {
+	return _u.mutation
 }
 
 // ClearSchedules clears all "schedules" edges to the OncallSchedule entity.
-func (oru *OncallRosterUpdate) ClearSchedules() *OncallRosterUpdate {
-	oru.mutation.ClearSchedules()
-	return oru
+func (_u *OncallRosterUpdate) ClearSchedules() *OncallRosterUpdate {
+	_u.mutation.ClearSchedules()
+	return _u
 }
 
 // RemoveScheduleIDs removes the "schedules" edge to OncallSchedule entities by IDs.
-func (oru *OncallRosterUpdate) RemoveScheduleIDs(ids ...uuid.UUID) *OncallRosterUpdate {
-	oru.mutation.RemoveScheduleIDs(ids...)
-	return oru
+func (_u *OncallRosterUpdate) RemoveScheduleIDs(ids ...uuid.UUID) *OncallRosterUpdate {
+	_u.mutation.RemoveScheduleIDs(ids...)
+	return _u
 }
 
 // RemoveSchedules removes "schedules" edges to OncallSchedule entities.
-func (oru *OncallRosterUpdate) RemoveSchedules(o ...*OncallSchedule) *OncallRosterUpdate {
-	ids := make([]uuid.UUID, len(o))
-	for i := range o {
-		ids[i] = o[i].ID
+func (_u *OncallRosterUpdate) RemoveSchedules(v ...*OncallSchedule) *OncallRosterUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
 	}
-	return oru.RemoveScheduleIDs(ids...)
+	return _u.RemoveScheduleIDs(ids...)
 }
 
 // ClearHandoverTemplate clears the "handover_template" edge to the OncallHandoverTemplate entity.
-func (oru *OncallRosterUpdate) ClearHandoverTemplate() *OncallRosterUpdate {
-	oru.mutation.ClearHandoverTemplate()
-	return oru
+func (_u *OncallRosterUpdate) ClearHandoverTemplate() *OncallRosterUpdate {
+	_u.mutation.ClearHandoverTemplate()
+	return _u
 }
 
 // ClearAlerts clears all "alerts" edges to the Alert entity.
-func (oru *OncallRosterUpdate) ClearAlerts() *OncallRosterUpdate {
-	oru.mutation.ClearAlerts()
-	return oru
+func (_u *OncallRosterUpdate) ClearAlerts() *OncallRosterUpdate {
+	_u.mutation.ClearAlerts()
+	return _u
 }
 
 // RemoveAlertIDs removes the "alerts" edge to Alert entities by IDs.
-func (oru *OncallRosterUpdate) RemoveAlertIDs(ids ...uuid.UUID) *OncallRosterUpdate {
-	oru.mutation.RemoveAlertIDs(ids...)
-	return oru
+func (_u *OncallRosterUpdate) RemoveAlertIDs(ids ...uuid.UUID) *OncallRosterUpdate {
+	_u.mutation.RemoveAlertIDs(ids...)
+	return _u
 }
 
 // RemoveAlerts removes "alerts" edges to Alert entities.
-func (oru *OncallRosterUpdate) RemoveAlerts(a ...*Alert) *OncallRosterUpdate {
-	ids := make([]uuid.UUID, len(a))
-	for i := range a {
-		ids[i] = a[i].ID
+func (_u *OncallRosterUpdate) RemoveAlerts(v ...*Alert) *OncallRosterUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
 	}
-	return oru.RemoveAlertIDs(ids...)
+	return _u.RemoveAlertIDs(ids...)
 }
 
 // ClearTeams clears all "teams" edges to the Team entity.
-func (oru *OncallRosterUpdate) ClearTeams() *OncallRosterUpdate {
-	oru.mutation.ClearTeams()
-	return oru
+func (_u *OncallRosterUpdate) ClearTeams() *OncallRosterUpdate {
+	_u.mutation.ClearTeams()
+	return _u
 }
 
 // RemoveTeamIDs removes the "teams" edge to Team entities by IDs.
-func (oru *OncallRosterUpdate) RemoveTeamIDs(ids ...uuid.UUID) *OncallRosterUpdate {
-	oru.mutation.RemoveTeamIDs(ids...)
-	return oru
+func (_u *OncallRosterUpdate) RemoveTeamIDs(ids ...uuid.UUID) *OncallRosterUpdate {
+	_u.mutation.RemoveTeamIDs(ids...)
+	return _u
 }
 
 // RemoveTeams removes "teams" edges to Team entities.
-func (oru *OncallRosterUpdate) RemoveTeams(t ...*Team) *OncallRosterUpdate {
-	ids := make([]uuid.UUID, len(t))
-	for i := range t {
-		ids[i] = t[i].ID
+func (_u *OncallRosterUpdate) RemoveTeams(v ...*Team) *OncallRosterUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
 	}
-	return oru.RemoveTeamIDs(ids...)
+	return _u.RemoveTeamIDs(ids...)
 }
 
 // ClearShifts clears all "shifts" edges to the OncallShift entity.
-func (oru *OncallRosterUpdate) ClearShifts() *OncallRosterUpdate {
-	oru.mutation.ClearShifts()
-	return oru
+func (_u *OncallRosterUpdate) ClearShifts() *OncallRosterUpdate {
+	_u.mutation.ClearShifts()
+	return _u
 }
 
 // RemoveShiftIDs removes the "shifts" edge to OncallShift entities by IDs.
-func (oru *OncallRosterUpdate) RemoveShiftIDs(ids ...uuid.UUID) *OncallRosterUpdate {
-	oru.mutation.RemoveShiftIDs(ids...)
-	return oru
+func (_u *OncallRosterUpdate) RemoveShiftIDs(ids ...uuid.UUID) *OncallRosterUpdate {
+	_u.mutation.RemoveShiftIDs(ids...)
+	return _u
 }
 
 // RemoveShifts removes "shifts" edges to OncallShift entities.
-func (oru *OncallRosterUpdate) RemoveShifts(o ...*OncallShift) *OncallRosterUpdate {
-	ids := make([]uuid.UUID, len(o))
-	for i := range o {
-		ids[i] = o[i].ID
+func (_u *OncallRosterUpdate) RemoveShifts(v ...*OncallShift) *OncallRosterUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
 	}
-	return oru.RemoveShiftIDs(ids...)
+	return _u.RemoveShiftIDs(ids...)
 }
 
 // ClearUserWatchers clears all "user_watchers" edges to the User entity.
-func (oru *OncallRosterUpdate) ClearUserWatchers() *OncallRosterUpdate {
-	oru.mutation.ClearUserWatchers()
-	return oru
+func (_u *OncallRosterUpdate) ClearUserWatchers() *OncallRosterUpdate {
+	_u.mutation.ClearUserWatchers()
+	return _u
 }
 
 // RemoveUserWatcherIDs removes the "user_watchers" edge to User entities by IDs.
-func (oru *OncallRosterUpdate) RemoveUserWatcherIDs(ids ...uuid.UUID) *OncallRosterUpdate {
-	oru.mutation.RemoveUserWatcherIDs(ids...)
-	return oru
+func (_u *OncallRosterUpdate) RemoveUserWatcherIDs(ids ...uuid.UUID) *OncallRosterUpdate {
+	_u.mutation.RemoveUserWatcherIDs(ids...)
+	return _u
 }
 
 // RemoveUserWatchers removes "user_watchers" edges to User entities.
-func (oru *OncallRosterUpdate) RemoveUserWatchers(u ...*User) *OncallRosterUpdate {
-	ids := make([]uuid.UUID, len(u))
-	for i := range u {
-		ids[i] = u[i].ID
+func (_u *OncallRosterUpdate) RemoveUserWatchers(v ...*User) *OncallRosterUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
 	}
-	return oru.RemoveUserWatcherIDs(ids...)
+	return _u.RemoveUserWatcherIDs(ids...)
 }
 
 // ClearMetrics clears all "metrics" edges to the OncallRosterMetrics entity.
-func (oru *OncallRosterUpdate) ClearMetrics() *OncallRosterUpdate {
-	oru.mutation.ClearMetrics()
-	return oru
+func (_u *OncallRosterUpdate) ClearMetrics() *OncallRosterUpdate {
+	_u.mutation.ClearMetrics()
+	return _u
 }
 
 // RemoveMetricIDs removes the "metrics" edge to OncallRosterMetrics entities by IDs.
-func (oru *OncallRosterUpdate) RemoveMetricIDs(ids ...uuid.UUID) *OncallRosterUpdate {
-	oru.mutation.RemoveMetricIDs(ids...)
-	return oru
+func (_u *OncallRosterUpdate) RemoveMetricIDs(ids ...uuid.UUID) *OncallRosterUpdate {
+	_u.mutation.RemoveMetricIDs(ids...)
+	return _u
 }
 
 // RemoveMetrics removes "metrics" edges to OncallRosterMetrics entities.
-func (oru *OncallRosterUpdate) RemoveMetrics(o ...*OncallRosterMetrics) *OncallRosterUpdate {
-	ids := make([]uuid.UUID, len(o))
-	for i := range o {
-		ids[i] = o[i].ID
+func (_u *OncallRosterUpdate) RemoveMetrics(v ...*OncallRosterMetrics) *OncallRosterUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
 	}
-	return oru.RemoveMetricIDs(ids...)
+	return _u.RemoveMetricIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
-func (oru *OncallRosterUpdate) Save(ctx context.Context) (int, error) {
-	return withHooks(ctx, oru.sqlSave, oru.mutation, oru.hooks)
+func (_u *OncallRosterUpdate) Save(ctx context.Context) (int, error) {
+	return withHooks(ctx, _u.sqlSave, _u.mutation, _u.hooks)
 }
 
 // SaveX is like Save, but panics if an error occurs.
-func (oru *OncallRosterUpdate) SaveX(ctx context.Context) int {
-	affected, err := oru.Save(ctx)
+func (_u *OncallRosterUpdate) SaveX(ctx context.Context) int {
+	affected, err := _u.Save(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -426,78 +426,78 @@ func (oru *OncallRosterUpdate) SaveX(ctx context.Context) int {
 }
 
 // Exec executes the query.
-func (oru *OncallRosterUpdate) Exec(ctx context.Context) error {
-	_, err := oru.Save(ctx)
+func (_u *OncallRosterUpdate) Exec(ctx context.Context) error {
+	_, err := _u.Save(ctx)
 	return err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (oru *OncallRosterUpdate) ExecX(ctx context.Context) {
-	if err := oru.Exec(ctx); err != nil {
+func (_u *OncallRosterUpdate) ExecX(ctx context.Context) {
+	if err := _u.Exec(ctx); err != nil {
 		panic(err)
 	}
 }
 
 // check runs all checks and user-defined validators on the builder.
-func (oru *OncallRosterUpdate) check() error {
-	if oru.mutation.TenantCleared() && len(oru.mutation.TenantIDs()) > 0 {
+func (_u *OncallRosterUpdate) check() error {
+	if _u.mutation.TenantCleared() && len(_u.mutation.TenantIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "OncallRoster.tenant"`)
 	}
 	return nil
 }
 
 // Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
-func (oru *OncallRosterUpdate) Modify(modifiers ...func(u *sql.UpdateBuilder)) *OncallRosterUpdate {
-	oru.modifiers = append(oru.modifiers, modifiers...)
-	return oru
+func (_u *OncallRosterUpdate) Modify(modifiers ...func(u *sql.UpdateBuilder)) *OncallRosterUpdate {
+	_u.modifiers = append(_u.modifiers, modifiers...)
+	return _u
 }
 
-func (oru *OncallRosterUpdate) sqlSave(ctx context.Context) (n int, err error) {
-	if err := oru.check(); err != nil {
-		return n, err
+func (_u *OncallRosterUpdate) sqlSave(ctx context.Context) (_node int, err error) {
+	if err := _u.check(); err != nil {
+		return _node, err
 	}
 	_spec := sqlgraph.NewUpdateSpec(oncallroster.Table, oncallroster.Columns, sqlgraph.NewFieldSpec(oncallroster.FieldID, field.TypeUUID))
-	if ps := oru.mutation.predicates; len(ps) > 0 {
+	if ps := _u.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {
 				ps[i](selector)
 			}
 		}
 	}
-	if value, ok := oru.mutation.ArchiveTime(); ok {
+	if value, ok := _u.mutation.ArchiveTime(); ok {
 		_spec.SetField(oncallroster.FieldArchiveTime, field.TypeTime, value)
 	}
-	if oru.mutation.ArchiveTimeCleared() {
+	if _u.mutation.ArchiveTimeCleared() {
 		_spec.ClearField(oncallroster.FieldArchiveTime, field.TypeTime)
 	}
-	if value, ok := oru.mutation.Name(); ok {
+	if value, ok := _u.mutation.Name(); ok {
 		_spec.SetField(oncallroster.FieldName, field.TypeString, value)
 	}
-	if value, ok := oru.mutation.Slug(); ok {
+	if value, ok := _u.mutation.Slug(); ok {
 		_spec.SetField(oncallroster.FieldSlug, field.TypeString, value)
 	}
-	if value, ok := oru.mutation.ProviderID(); ok {
+	if value, ok := _u.mutation.ProviderID(); ok {
 		_spec.SetField(oncallroster.FieldProviderID, field.TypeString, value)
 	}
-	if value, ok := oru.mutation.Timezone(); ok {
+	if value, ok := _u.mutation.Timezone(); ok {
 		_spec.SetField(oncallroster.FieldTimezone, field.TypeString, value)
 	}
-	if oru.mutation.TimezoneCleared() {
+	if _u.mutation.TimezoneCleared() {
 		_spec.ClearField(oncallroster.FieldTimezone, field.TypeString)
 	}
-	if value, ok := oru.mutation.ChatHandle(); ok {
+	if value, ok := _u.mutation.ChatHandle(); ok {
 		_spec.SetField(oncallroster.FieldChatHandle, field.TypeString, value)
 	}
-	if oru.mutation.ChatHandleCleared() {
+	if _u.mutation.ChatHandleCleared() {
 		_spec.ClearField(oncallroster.FieldChatHandle, field.TypeString)
 	}
-	if value, ok := oru.mutation.ChatChannelID(); ok {
+	if value, ok := _u.mutation.ChatChannelID(); ok {
 		_spec.SetField(oncallroster.FieldChatChannelID, field.TypeString, value)
 	}
-	if oru.mutation.ChatChannelIDCleared() {
+	if _u.mutation.ChatChannelIDCleared() {
 		_spec.ClearField(oncallroster.FieldChatChannelID, field.TypeString)
 	}
-	if oru.mutation.SchedulesCleared() {
+	if _u.mutation.SchedulesCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
@@ -510,7 +510,7 @@ func (oru *OncallRosterUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := oru.mutation.RemovedSchedulesIDs(); len(nodes) > 0 && !oru.mutation.SchedulesCleared() {
+	if nodes := _u.mutation.RemovedSchedulesIDs(); len(nodes) > 0 && !_u.mutation.SchedulesCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
@@ -526,7 +526,7 @@ func (oru *OncallRosterUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := oru.mutation.SchedulesIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.SchedulesIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
@@ -542,7 +542,7 @@ func (oru *OncallRosterUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if oru.mutation.HandoverTemplateCleared() {
+	if _u.mutation.HandoverTemplateCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: true,
@@ -555,7 +555,7 @@ func (oru *OncallRosterUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := oru.mutation.HandoverTemplateIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.HandoverTemplateIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: true,
@@ -571,7 +571,7 @@ func (oru *OncallRosterUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if oru.mutation.AlertsCleared() {
+	if _u.mutation.AlertsCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
@@ -584,23 +584,7 @@ func (oru *OncallRosterUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := oru.mutation.RemovedAlertsIDs(); len(nodes) > 0 && !oru.mutation.AlertsCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   oncallroster.AlertsTable,
-			Columns: []string{oncallroster.AlertsColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(alert.FieldID, field.TypeUUID),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := oru.mutation.AlertsIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.RemovedAlertsIDs(); len(nodes) > 0 && !_u.mutation.AlertsCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
@@ -614,9 +598,25 @@ func (oru *OncallRosterUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.AlertsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   oncallroster.AlertsTable,
+			Columns: []string{oncallroster.AlertsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(alert.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if oru.mutation.TeamsCleared() {
+	if _u.mutation.TeamsCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
 			Inverse: true,
@@ -629,7 +629,7 @@ func (oru *OncallRosterUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := oru.mutation.RemovedTeamsIDs(); len(nodes) > 0 && !oru.mutation.TeamsCleared() {
+	if nodes := _u.mutation.RemovedTeamsIDs(); len(nodes) > 0 && !_u.mutation.TeamsCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
 			Inverse: true,
@@ -645,7 +645,7 @@ func (oru *OncallRosterUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := oru.mutation.TeamsIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.TeamsIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
 			Inverse: true,
@@ -661,7 +661,7 @@ func (oru *OncallRosterUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if oru.mutation.ShiftsCleared() {
+	if _u.mutation.ShiftsCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: true,
@@ -674,7 +674,7 @@ func (oru *OncallRosterUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := oru.mutation.RemovedShiftsIDs(); len(nodes) > 0 && !oru.mutation.ShiftsCleared() {
+	if nodes := _u.mutation.RemovedShiftsIDs(); len(nodes) > 0 && !_u.mutation.ShiftsCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: true,
@@ -690,7 +690,7 @@ func (oru *OncallRosterUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := oru.mutation.ShiftsIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.ShiftsIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: true,
@@ -706,7 +706,7 @@ func (oru *OncallRosterUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if oru.mutation.UserWatchersCleared() {
+	if _u.mutation.UserWatchersCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
 			Inverse: true,
@@ -719,7 +719,7 @@ func (oru *OncallRosterUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := oru.mutation.RemovedUserWatchersIDs(); len(nodes) > 0 && !oru.mutation.UserWatchersCleared() {
+	if nodes := _u.mutation.RemovedUserWatchersIDs(); len(nodes) > 0 && !_u.mutation.UserWatchersCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
 			Inverse: true,
@@ -735,7 +735,7 @@ func (oru *OncallRosterUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := oru.mutation.UserWatchersIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.UserWatchersIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
 			Inverse: true,
@@ -751,7 +751,7 @@ func (oru *OncallRosterUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if oru.mutation.MetricsCleared() {
+	if _u.mutation.MetricsCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: true,
@@ -764,7 +764,7 @@ func (oru *OncallRosterUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := oru.mutation.RemovedMetricsIDs(); len(nodes) > 0 && !oru.mutation.MetricsCleared() {
+	if nodes := _u.mutation.RemovedMetricsIDs(); len(nodes) > 0 && !_u.mutation.MetricsCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: true,
@@ -780,7 +780,7 @@ func (oru *OncallRosterUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := oru.mutation.MetricsIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.MetricsIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: true,
@@ -796,8 +796,8 @@ func (oru *OncallRosterUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	_spec.AddModifiers(oru.modifiers...)
-	if n, err = sqlgraph.UpdateNodes(ctx, oru.driver, _spec); err != nil {
+	_spec.AddModifiers(_u.modifiers...)
+	if _node, err = sqlgraph.UpdateNodes(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{oncallroster.Label}
 		} else if sqlgraph.IsConstraintError(err) {
@@ -805,8 +805,8 @@ func (oru *OncallRosterUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		return 0, err
 	}
-	oru.mutation.done = true
-	return n, nil
+	_u.mutation.done = true
+	return _node, nil
 }
 
 // OncallRosterUpdateOne is the builder for updating a single OncallRoster entity.
@@ -819,400 +819,400 @@ type OncallRosterUpdateOne struct {
 }
 
 // SetArchiveTime sets the "archive_time" field.
-func (oruo *OncallRosterUpdateOne) SetArchiveTime(t time.Time) *OncallRosterUpdateOne {
-	oruo.mutation.SetArchiveTime(t)
-	return oruo
+func (_u *OncallRosterUpdateOne) SetArchiveTime(v time.Time) *OncallRosterUpdateOne {
+	_u.mutation.SetArchiveTime(v)
+	return _u
 }
 
 // SetNillableArchiveTime sets the "archive_time" field if the given value is not nil.
-func (oruo *OncallRosterUpdateOne) SetNillableArchiveTime(t *time.Time) *OncallRosterUpdateOne {
-	if t != nil {
-		oruo.SetArchiveTime(*t)
+func (_u *OncallRosterUpdateOne) SetNillableArchiveTime(v *time.Time) *OncallRosterUpdateOne {
+	if v != nil {
+		_u.SetArchiveTime(*v)
 	}
-	return oruo
+	return _u
 }
 
 // ClearArchiveTime clears the value of the "archive_time" field.
-func (oruo *OncallRosterUpdateOne) ClearArchiveTime() *OncallRosterUpdateOne {
-	oruo.mutation.ClearArchiveTime()
-	return oruo
+func (_u *OncallRosterUpdateOne) ClearArchiveTime() *OncallRosterUpdateOne {
+	_u.mutation.ClearArchiveTime()
+	return _u
 }
 
 // SetName sets the "name" field.
-func (oruo *OncallRosterUpdateOne) SetName(s string) *OncallRosterUpdateOne {
-	oruo.mutation.SetName(s)
-	return oruo
+func (_u *OncallRosterUpdateOne) SetName(v string) *OncallRosterUpdateOne {
+	_u.mutation.SetName(v)
+	return _u
 }
 
 // SetNillableName sets the "name" field if the given value is not nil.
-func (oruo *OncallRosterUpdateOne) SetNillableName(s *string) *OncallRosterUpdateOne {
-	if s != nil {
-		oruo.SetName(*s)
+func (_u *OncallRosterUpdateOne) SetNillableName(v *string) *OncallRosterUpdateOne {
+	if v != nil {
+		_u.SetName(*v)
 	}
-	return oruo
+	return _u
 }
 
 // SetSlug sets the "slug" field.
-func (oruo *OncallRosterUpdateOne) SetSlug(s string) *OncallRosterUpdateOne {
-	oruo.mutation.SetSlug(s)
-	return oruo
+func (_u *OncallRosterUpdateOne) SetSlug(v string) *OncallRosterUpdateOne {
+	_u.mutation.SetSlug(v)
+	return _u
 }
 
 // SetNillableSlug sets the "slug" field if the given value is not nil.
-func (oruo *OncallRosterUpdateOne) SetNillableSlug(s *string) *OncallRosterUpdateOne {
-	if s != nil {
-		oruo.SetSlug(*s)
+func (_u *OncallRosterUpdateOne) SetNillableSlug(v *string) *OncallRosterUpdateOne {
+	if v != nil {
+		_u.SetSlug(*v)
 	}
-	return oruo
+	return _u
 }
 
 // SetProviderID sets the "provider_id" field.
-func (oruo *OncallRosterUpdateOne) SetProviderID(s string) *OncallRosterUpdateOne {
-	oruo.mutation.SetProviderID(s)
-	return oruo
+func (_u *OncallRosterUpdateOne) SetProviderID(v string) *OncallRosterUpdateOne {
+	_u.mutation.SetProviderID(v)
+	return _u
 }
 
 // SetNillableProviderID sets the "provider_id" field if the given value is not nil.
-func (oruo *OncallRosterUpdateOne) SetNillableProviderID(s *string) *OncallRosterUpdateOne {
-	if s != nil {
-		oruo.SetProviderID(*s)
+func (_u *OncallRosterUpdateOne) SetNillableProviderID(v *string) *OncallRosterUpdateOne {
+	if v != nil {
+		_u.SetProviderID(*v)
 	}
-	return oruo
+	return _u
 }
 
 // SetTimezone sets the "timezone" field.
-func (oruo *OncallRosterUpdateOne) SetTimezone(s string) *OncallRosterUpdateOne {
-	oruo.mutation.SetTimezone(s)
-	return oruo
+func (_u *OncallRosterUpdateOne) SetTimezone(v string) *OncallRosterUpdateOne {
+	_u.mutation.SetTimezone(v)
+	return _u
 }
 
 // SetNillableTimezone sets the "timezone" field if the given value is not nil.
-func (oruo *OncallRosterUpdateOne) SetNillableTimezone(s *string) *OncallRosterUpdateOne {
-	if s != nil {
-		oruo.SetTimezone(*s)
+func (_u *OncallRosterUpdateOne) SetNillableTimezone(v *string) *OncallRosterUpdateOne {
+	if v != nil {
+		_u.SetTimezone(*v)
 	}
-	return oruo
+	return _u
 }
 
 // ClearTimezone clears the value of the "timezone" field.
-func (oruo *OncallRosterUpdateOne) ClearTimezone() *OncallRosterUpdateOne {
-	oruo.mutation.ClearTimezone()
-	return oruo
+func (_u *OncallRosterUpdateOne) ClearTimezone() *OncallRosterUpdateOne {
+	_u.mutation.ClearTimezone()
+	return _u
 }
 
 // SetChatHandle sets the "chat_handle" field.
-func (oruo *OncallRosterUpdateOne) SetChatHandle(s string) *OncallRosterUpdateOne {
-	oruo.mutation.SetChatHandle(s)
-	return oruo
+func (_u *OncallRosterUpdateOne) SetChatHandle(v string) *OncallRosterUpdateOne {
+	_u.mutation.SetChatHandle(v)
+	return _u
 }
 
 // SetNillableChatHandle sets the "chat_handle" field if the given value is not nil.
-func (oruo *OncallRosterUpdateOne) SetNillableChatHandle(s *string) *OncallRosterUpdateOne {
-	if s != nil {
-		oruo.SetChatHandle(*s)
+func (_u *OncallRosterUpdateOne) SetNillableChatHandle(v *string) *OncallRosterUpdateOne {
+	if v != nil {
+		_u.SetChatHandle(*v)
 	}
-	return oruo
+	return _u
 }
 
 // ClearChatHandle clears the value of the "chat_handle" field.
-func (oruo *OncallRosterUpdateOne) ClearChatHandle() *OncallRosterUpdateOne {
-	oruo.mutation.ClearChatHandle()
-	return oruo
+func (_u *OncallRosterUpdateOne) ClearChatHandle() *OncallRosterUpdateOne {
+	_u.mutation.ClearChatHandle()
+	return _u
 }
 
 // SetChatChannelID sets the "chat_channel_id" field.
-func (oruo *OncallRosterUpdateOne) SetChatChannelID(s string) *OncallRosterUpdateOne {
-	oruo.mutation.SetChatChannelID(s)
-	return oruo
+func (_u *OncallRosterUpdateOne) SetChatChannelID(v string) *OncallRosterUpdateOne {
+	_u.mutation.SetChatChannelID(v)
+	return _u
 }
 
 // SetNillableChatChannelID sets the "chat_channel_id" field if the given value is not nil.
-func (oruo *OncallRosterUpdateOne) SetNillableChatChannelID(s *string) *OncallRosterUpdateOne {
-	if s != nil {
-		oruo.SetChatChannelID(*s)
+func (_u *OncallRosterUpdateOne) SetNillableChatChannelID(v *string) *OncallRosterUpdateOne {
+	if v != nil {
+		_u.SetChatChannelID(*v)
 	}
-	return oruo
+	return _u
 }
 
 // ClearChatChannelID clears the value of the "chat_channel_id" field.
-func (oruo *OncallRosterUpdateOne) ClearChatChannelID() *OncallRosterUpdateOne {
-	oruo.mutation.ClearChatChannelID()
-	return oruo
+func (_u *OncallRosterUpdateOne) ClearChatChannelID() *OncallRosterUpdateOne {
+	_u.mutation.ClearChatChannelID()
+	return _u
 }
 
 // SetHandoverTemplateID sets the "handover_template_id" field.
-func (oruo *OncallRosterUpdateOne) SetHandoverTemplateID(u uuid.UUID) *OncallRosterUpdateOne {
-	oruo.mutation.SetHandoverTemplateID(u)
-	return oruo
+func (_u *OncallRosterUpdateOne) SetHandoverTemplateID(v uuid.UUID) *OncallRosterUpdateOne {
+	_u.mutation.SetHandoverTemplateID(v)
+	return _u
 }
 
 // SetNillableHandoverTemplateID sets the "handover_template_id" field if the given value is not nil.
-func (oruo *OncallRosterUpdateOne) SetNillableHandoverTemplateID(u *uuid.UUID) *OncallRosterUpdateOne {
-	if u != nil {
-		oruo.SetHandoverTemplateID(*u)
+func (_u *OncallRosterUpdateOne) SetNillableHandoverTemplateID(v *uuid.UUID) *OncallRosterUpdateOne {
+	if v != nil {
+		_u.SetHandoverTemplateID(*v)
 	}
-	return oruo
+	return _u
 }
 
 // ClearHandoverTemplateID clears the value of the "handover_template_id" field.
-func (oruo *OncallRosterUpdateOne) ClearHandoverTemplateID() *OncallRosterUpdateOne {
-	oruo.mutation.ClearHandoverTemplateID()
-	return oruo
+func (_u *OncallRosterUpdateOne) ClearHandoverTemplateID() *OncallRosterUpdateOne {
+	_u.mutation.ClearHandoverTemplateID()
+	return _u
 }
 
 // AddScheduleIDs adds the "schedules" edge to the OncallSchedule entity by IDs.
-func (oruo *OncallRosterUpdateOne) AddScheduleIDs(ids ...uuid.UUID) *OncallRosterUpdateOne {
-	oruo.mutation.AddScheduleIDs(ids...)
-	return oruo
+func (_u *OncallRosterUpdateOne) AddScheduleIDs(ids ...uuid.UUID) *OncallRosterUpdateOne {
+	_u.mutation.AddScheduleIDs(ids...)
+	return _u
 }
 
 // AddSchedules adds the "schedules" edges to the OncallSchedule entity.
-func (oruo *OncallRosterUpdateOne) AddSchedules(o ...*OncallSchedule) *OncallRosterUpdateOne {
-	ids := make([]uuid.UUID, len(o))
-	for i := range o {
-		ids[i] = o[i].ID
+func (_u *OncallRosterUpdateOne) AddSchedules(v ...*OncallSchedule) *OncallRosterUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
 	}
-	return oruo.AddScheduleIDs(ids...)
+	return _u.AddScheduleIDs(ids...)
 }
 
 // SetHandoverTemplate sets the "handover_template" edge to the OncallHandoverTemplate entity.
-func (oruo *OncallRosterUpdateOne) SetHandoverTemplate(o *OncallHandoverTemplate) *OncallRosterUpdateOne {
-	return oruo.SetHandoverTemplateID(o.ID)
+func (_u *OncallRosterUpdateOne) SetHandoverTemplate(v *OncallHandoverTemplate) *OncallRosterUpdateOne {
+	return _u.SetHandoverTemplateID(v.ID)
 }
 
 // AddAlertIDs adds the "alerts" edge to the Alert entity by IDs.
-func (oruo *OncallRosterUpdateOne) AddAlertIDs(ids ...uuid.UUID) *OncallRosterUpdateOne {
-	oruo.mutation.AddAlertIDs(ids...)
-	return oruo
+func (_u *OncallRosterUpdateOne) AddAlertIDs(ids ...uuid.UUID) *OncallRosterUpdateOne {
+	_u.mutation.AddAlertIDs(ids...)
+	return _u
 }
 
 // AddAlerts adds the "alerts" edges to the Alert entity.
-func (oruo *OncallRosterUpdateOne) AddAlerts(a ...*Alert) *OncallRosterUpdateOne {
-	ids := make([]uuid.UUID, len(a))
-	for i := range a {
-		ids[i] = a[i].ID
+func (_u *OncallRosterUpdateOne) AddAlerts(v ...*Alert) *OncallRosterUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
 	}
-	return oruo.AddAlertIDs(ids...)
+	return _u.AddAlertIDs(ids...)
 }
 
 // AddTeamIDs adds the "teams" edge to the Team entity by IDs.
-func (oruo *OncallRosterUpdateOne) AddTeamIDs(ids ...uuid.UUID) *OncallRosterUpdateOne {
-	oruo.mutation.AddTeamIDs(ids...)
-	return oruo
+func (_u *OncallRosterUpdateOne) AddTeamIDs(ids ...uuid.UUID) *OncallRosterUpdateOne {
+	_u.mutation.AddTeamIDs(ids...)
+	return _u
 }
 
 // AddTeams adds the "teams" edges to the Team entity.
-func (oruo *OncallRosterUpdateOne) AddTeams(t ...*Team) *OncallRosterUpdateOne {
-	ids := make([]uuid.UUID, len(t))
-	for i := range t {
-		ids[i] = t[i].ID
+func (_u *OncallRosterUpdateOne) AddTeams(v ...*Team) *OncallRosterUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
 	}
-	return oruo.AddTeamIDs(ids...)
+	return _u.AddTeamIDs(ids...)
 }
 
 // AddShiftIDs adds the "shifts" edge to the OncallShift entity by IDs.
-func (oruo *OncallRosterUpdateOne) AddShiftIDs(ids ...uuid.UUID) *OncallRosterUpdateOne {
-	oruo.mutation.AddShiftIDs(ids...)
-	return oruo
+func (_u *OncallRosterUpdateOne) AddShiftIDs(ids ...uuid.UUID) *OncallRosterUpdateOne {
+	_u.mutation.AddShiftIDs(ids...)
+	return _u
 }
 
 // AddShifts adds the "shifts" edges to the OncallShift entity.
-func (oruo *OncallRosterUpdateOne) AddShifts(o ...*OncallShift) *OncallRosterUpdateOne {
-	ids := make([]uuid.UUID, len(o))
-	for i := range o {
-		ids[i] = o[i].ID
+func (_u *OncallRosterUpdateOne) AddShifts(v ...*OncallShift) *OncallRosterUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
 	}
-	return oruo.AddShiftIDs(ids...)
+	return _u.AddShiftIDs(ids...)
 }
 
 // AddUserWatcherIDs adds the "user_watchers" edge to the User entity by IDs.
-func (oruo *OncallRosterUpdateOne) AddUserWatcherIDs(ids ...uuid.UUID) *OncallRosterUpdateOne {
-	oruo.mutation.AddUserWatcherIDs(ids...)
-	return oruo
+func (_u *OncallRosterUpdateOne) AddUserWatcherIDs(ids ...uuid.UUID) *OncallRosterUpdateOne {
+	_u.mutation.AddUserWatcherIDs(ids...)
+	return _u
 }
 
 // AddUserWatchers adds the "user_watchers" edges to the User entity.
-func (oruo *OncallRosterUpdateOne) AddUserWatchers(u ...*User) *OncallRosterUpdateOne {
-	ids := make([]uuid.UUID, len(u))
-	for i := range u {
-		ids[i] = u[i].ID
+func (_u *OncallRosterUpdateOne) AddUserWatchers(v ...*User) *OncallRosterUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
 	}
-	return oruo.AddUserWatcherIDs(ids...)
+	return _u.AddUserWatcherIDs(ids...)
 }
 
 // AddMetricIDs adds the "metrics" edge to the OncallRosterMetrics entity by IDs.
-func (oruo *OncallRosterUpdateOne) AddMetricIDs(ids ...uuid.UUID) *OncallRosterUpdateOne {
-	oruo.mutation.AddMetricIDs(ids...)
-	return oruo
+func (_u *OncallRosterUpdateOne) AddMetricIDs(ids ...uuid.UUID) *OncallRosterUpdateOne {
+	_u.mutation.AddMetricIDs(ids...)
+	return _u
 }
 
 // AddMetrics adds the "metrics" edges to the OncallRosterMetrics entity.
-func (oruo *OncallRosterUpdateOne) AddMetrics(o ...*OncallRosterMetrics) *OncallRosterUpdateOne {
-	ids := make([]uuid.UUID, len(o))
-	for i := range o {
-		ids[i] = o[i].ID
+func (_u *OncallRosterUpdateOne) AddMetrics(v ...*OncallRosterMetrics) *OncallRosterUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
 	}
-	return oruo.AddMetricIDs(ids...)
+	return _u.AddMetricIDs(ids...)
 }
 
 // Mutation returns the OncallRosterMutation object of the builder.
-func (oruo *OncallRosterUpdateOne) Mutation() *OncallRosterMutation {
-	return oruo.mutation
+func (_u *OncallRosterUpdateOne) Mutation() *OncallRosterMutation {
+	return _u.mutation
 }
 
 // ClearSchedules clears all "schedules" edges to the OncallSchedule entity.
-func (oruo *OncallRosterUpdateOne) ClearSchedules() *OncallRosterUpdateOne {
-	oruo.mutation.ClearSchedules()
-	return oruo
+func (_u *OncallRosterUpdateOne) ClearSchedules() *OncallRosterUpdateOne {
+	_u.mutation.ClearSchedules()
+	return _u
 }
 
 // RemoveScheduleIDs removes the "schedules" edge to OncallSchedule entities by IDs.
-func (oruo *OncallRosterUpdateOne) RemoveScheduleIDs(ids ...uuid.UUID) *OncallRosterUpdateOne {
-	oruo.mutation.RemoveScheduleIDs(ids...)
-	return oruo
+func (_u *OncallRosterUpdateOne) RemoveScheduleIDs(ids ...uuid.UUID) *OncallRosterUpdateOne {
+	_u.mutation.RemoveScheduleIDs(ids...)
+	return _u
 }
 
 // RemoveSchedules removes "schedules" edges to OncallSchedule entities.
-func (oruo *OncallRosterUpdateOne) RemoveSchedules(o ...*OncallSchedule) *OncallRosterUpdateOne {
-	ids := make([]uuid.UUID, len(o))
-	for i := range o {
-		ids[i] = o[i].ID
+func (_u *OncallRosterUpdateOne) RemoveSchedules(v ...*OncallSchedule) *OncallRosterUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
 	}
-	return oruo.RemoveScheduleIDs(ids...)
+	return _u.RemoveScheduleIDs(ids...)
 }
 
 // ClearHandoverTemplate clears the "handover_template" edge to the OncallHandoverTemplate entity.
-func (oruo *OncallRosterUpdateOne) ClearHandoverTemplate() *OncallRosterUpdateOne {
-	oruo.mutation.ClearHandoverTemplate()
-	return oruo
+func (_u *OncallRosterUpdateOne) ClearHandoverTemplate() *OncallRosterUpdateOne {
+	_u.mutation.ClearHandoverTemplate()
+	return _u
 }
 
 // ClearAlerts clears all "alerts" edges to the Alert entity.
-func (oruo *OncallRosterUpdateOne) ClearAlerts() *OncallRosterUpdateOne {
-	oruo.mutation.ClearAlerts()
-	return oruo
+func (_u *OncallRosterUpdateOne) ClearAlerts() *OncallRosterUpdateOne {
+	_u.mutation.ClearAlerts()
+	return _u
 }
 
 // RemoveAlertIDs removes the "alerts" edge to Alert entities by IDs.
-func (oruo *OncallRosterUpdateOne) RemoveAlertIDs(ids ...uuid.UUID) *OncallRosterUpdateOne {
-	oruo.mutation.RemoveAlertIDs(ids...)
-	return oruo
+func (_u *OncallRosterUpdateOne) RemoveAlertIDs(ids ...uuid.UUID) *OncallRosterUpdateOne {
+	_u.mutation.RemoveAlertIDs(ids...)
+	return _u
 }
 
 // RemoveAlerts removes "alerts" edges to Alert entities.
-func (oruo *OncallRosterUpdateOne) RemoveAlerts(a ...*Alert) *OncallRosterUpdateOne {
-	ids := make([]uuid.UUID, len(a))
-	for i := range a {
-		ids[i] = a[i].ID
+func (_u *OncallRosterUpdateOne) RemoveAlerts(v ...*Alert) *OncallRosterUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
 	}
-	return oruo.RemoveAlertIDs(ids...)
+	return _u.RemoveAlertIDs(ids...)
 }
 
 // ClearTeams clears all "teams" edges to the Team entity.
-func (oruo *OncallRosterUpdateOne) ClearTeams() *OncallRosterUpdateOne {
-	oruo.mutation.ClearTeams()
-	return oruo
+func (_u *OncallRosterUpdateOne) ClearTeams() *OncallRosterUpdateOne {
+	_u.mutation.ClearTeams()
+	return _u
 }
 
 // RemoveTeamIDs removes the "teams" edge to Team entities by IDs.
-func (oruo *OncallRosterUpdateOne) RemoveTeamIDs(ids ...uuid.UUID) *OncallRosterUpdateOne {
-	oruo.mutation.RemoveTeamIDs(ids...)
-	return oruo
+func (_u *OncallRosterUpdateOne) RemoveTeamIDs(ids ...uuid.UUID) *OncallRosterUpdateOne {
+	_u.mutation.RemoveTeamIDs(ids...)
+	return _u
 }
 
 // RemoveTeams removes "teams" edges to Team entities.
-func (oruo *OncallRosterUpdateOne) RemoveTeams(t ...*Team) *OncallRosterUpdateOne {
-	ids := make([]uuid.UUID, len(t))
-	for i := range t {
-		ids[i] = t[i].ID
+func (_u *OncallRosterUpdateOne) RemoveTeams(v ...*Team) *OncallRosterUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
 	}
-	return oruo.RemoveTeamIDs(ids...)
+	return _u.RemoveTeamIDs(ids...)
 }
 
 // ClearShifts clears all "shifts" edges to the OncallShift entity.
-func (oruo *OncallRosterUpdateOne) ClearShifts() *OncallRosterUpdateOne {
-	oruo.mutation.ClearShifts()
-	return oruo
+func (_u *OncallRosterUpdateOne) ClearShifts() *OncallRosterUpdateOne {
+	_u.mutation.ClearShifts()
+	return _u
 }
 
 // RemoveShiftIDs removes the "shifts" edge to OncallShift entities by IDs.
-func (oruo *OncallRosterUpdateOne) RemoveShiftIDs(ids ...uuid.UUID) *OncallRosterUpdateOne {
-	oruo.mutation.RemoveShiftIDs(ids...)
-	return oruo
+func (_u *OncallRosterUpdateOne) RemoveShiftIDs(ids ...uuid.UUID) *OncallRosterUpdateOne {
+	_u.mutation.RemoveShiftIDs(ids...)
+	return _u
 }
 
 // RemoveShifts removes "shifts" edges to OncallShift entities.
-func (oruo *OncallRosterUpdateOne) RemoveShifts(o ...*OncallShift) *OncallRosterUpdateOne {
-	ids := make([]uuid.UUID, len(o))
-	for i := range o {
-		ids[i] = o[i].ID
+func (_u *OncallRosterUpdateOne) RemoveShifts(v ...*OncallShift) *OncallRosterUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
 	}
-	return oruo.RemoveShiftIDs(ids...)
+	return _u.RemoveShiftIDs(ids...)
 }
 
 // ClearUserWatchers clears all "user_watchers" edges to the User entity.
-func (oruo *OncallRosterUpdateOne) ClearUserWatchers() *OncallRosterUpdateOne {
-	oruo.mutation.ClearUserWatchers()
-	return oruo
+func (_u *OncallRosterUpdateOne) ClearUserWatchers() *OncallRosterUpdateOne {
+	_u.mutation.ClearUserWatchers()
+	return _u
 }
 
 // RemoveUserWatcherIDs removes the "user_watchers" edge to User entities by IDs.
-func (oruo *OncallRosterUpdateOne) RemoveUserWatcherIDs(ids ...uuid.UUID) *OncallRosterUpdateOne {
-	oruo.mutation.RemoveUserWatcherIDs(ids...)
-	return oruo
+func (_u *OncallRosterUpdateOne) RemoveUserWatcherIDs(ids ...uuid.UUID) *OncallRosterUpdateOne {
+	_u.mutation.RemoveUserWatcherIDs(ids...)
+	return _u
 }
 
 // RemoveUserWatchers removes "user_watchers" edges to User entities.
-func (oruo *OncallRosterUpdateOne) RemoveUserWatchers(u ...*User) *OncallRosterUpdateOne {
-	ids := make([]uuid.UUID, len(u))
-	for i := range u {
-		ids[i] = u[i].ID
+func (_u *OncallRosterUpdateOne) RemoveUserWatchers(v ...*User) *OncallRosterUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
 	}
-	return oruo.RemoveUserWatcherIDs(ids...)
+	return _u.RemoveUserWatcherIDs(ids...)
 }
 
 // ClearMetrics clears all "metrics" edges to the OncallRosterMetrics entity.
-func (oruo *OncallRosterUpdateOne) ClearMetrics() *OncallRosterUpdateOne {
-	oruo.mutation.ClearMetrics()
-	return oruo
+func (_u *OncallRosterUpdateOne) ClearMetrics() *OncallRosterUpdateOne {
+	_u.mutation.ClearMetrics()
+	return _u
 }
 
 // RemoveMetricIDs removes the "metrics" edge to OncallRosterMetrics entities by IDs.
-func (oruo *OncallRosterUpdateOne) RemoveMetricIDs(ids ...uuid.UUID) *OncallRosterUpdateOne {
-	oruo.mutation.RemoveMetricIDs(ids...)
-	return oruo
+func (_u *OncallRosterUpdateOne) RemoveMetricIDs(ids ...uuid.UUID) *OncallRosterUpdateOne {
+	_u.mutation.RemoveMetricIDs(ids...)
+	return _u
 }
 
 // RemoveMetrics removes "metrics" edges to OncallRosterMetrics entities.
-func (oruo *OncallRosterUpdateOne) RemoveMetrics(o ...*OncallRosterMetrics) *OncallRosterUpdateOne {
-	ids := make([]uuid.UUID, len(o))
-	for i := range o {
-		ids[i] = o[i].ID
+func (_u *OncallRosterUpdateOne) RemoveMetrics(v ...*OncallRosterMetrics) *OncallRosterUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
 	}
-	return oruo.RemoveMetricIDs(ids...)
+	return _u.RemoveMetricIDs(ids...)
 }
 
 // Where appends a list predicates to the OncallRosterUpdate builder.
-func (oruo *OncallRosterUpdateOne) Where(ps ...predicate.OncallRoster) *OncallRosterUpdateOne {
-	oruo.mutation.Where(ps...)
-	return oruo
+func (_u *OncallRosterUpdateOne) Where(ps ...predicate.OncallRoster) *OncallRosterUpdateOne {
+	_u.mutation.Where(ps...)
+	return _u
 }
 
 // Select allows selecting one or more fields (columns) of the returned entity.
 // The default is selecting all fields defined in the entity schema.
-func (oruo *OncallRosterUpdateOne) Select(field string, fields ...string) *OncallRosterUpdateOne {
-	oruo.fields = append([]string{field}, fields...)
-	return oruo
+func (_u *OncallRosterUpdateOne) Select(field string, fields ...string) *OncallRosterUpdateOne {
+	_u.fields = append([]string{field}, fields...)
+	return _u
 }
 
 // Save executes the query and returns the updated OncallRoster entity.
-func (oruo *OncallRosterUpdateOne) Save(ctx context.Context) (*OncallRoster, error) {
-	return withHooks(ctx, oruo.sqlSave, oruo.mutation, oruo.hooks)
+func (_u *OncallRosterUpdateOne) Save(ctx context.Context) (*OncallRoster, error) {
+	return withHooks(ctx, _u.sqlSave, _u.mutation, _u.hooks)
 }
 
 // SaveX is like Save, but panics if an error occurs.
-func (oruo *OncallRosterUpdateOne) SaveX(ctx context.Context) *OncallRoster {
-	node, err := oruo.Save(ctx)
+func (_u *OncallRosterUpdateOne) SaveX(ctx context.Context) *OncallRoster {
+	node, err := _u.Save(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -1220,43 +1220,43 @@ func (oruo *OncallRosterUpdateOne) SaveX(ctx context.Context) *OncallRoster {
 }
 
 // Exec executes the query on the entity.
-func (oruo *OncallRosterUpdateOne) Exec(ctx context.Context) error {
-	_, err := oruo.Save(ctx)
+func (_u *OncallRosterUpdateOne) Exec(ctx context.Context) error {
+	_, err := _u.Save(ctx)
 	return err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (oruo *OncallRosterUpdateOne) ExecX(ctx context.Context) {
-	if err := oruo.Exec(ctx); err != nil {
+func (_u *OncallRosterUpdateOne) ExecX(ctx context.Context) {
+	if err := _u.Exec(ctx); err != nil {
 		panic(err)
 	}
 }
 
 // check runs all checks and user-defined validators on the builder.
-func (oruo *OncallRosterUpdateOne) check() error {
-	if oruo.mutation.TenantCleared() && len(oruo.mutation.TenantIDs()) > 0 {
+func (_u *OncallRosterUpdateOne) check() error {
+	if _u.mutation.TenantCleared() && len(_u.mutation.TenantIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "OncallRoster.tenant"`)
 	}
 	return nil
 }
 
 // Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
-func (oruo *OncallRosterUpdateOne) Modify(modifiers ...func(u *sql.UpdateBuilder)) *OncallRosterUpdateOne {
-	oruo.modifiers = append(oruo.modifiers, modifiers...)
-	return oruo
+func (_u *OncallRosterUpdateOne) Modify(modifiers ...func(u *sql.UpdateBuilder)) *OncallRosterUpdateOne {
+	_u.modifiers = append(_u.modifiers, modifiers...)
+	return _u
 }
 
-func (oruo *OncallRosterUpdateOne) sqlSave(ctx context.Context) (_node *OncallRoster, err error) {
-	if err := oruo.check(); err != nil {
+func (_u *OncallRosterUpdateOne) sqlSave(ctx context.Context) (_node *OncallRoster, err error) {
+	if err := _u.check(); err != nil {
 		return _node, err
 	}
 	_spec := sqlgraph.NewUpdateSpec(oncallroster.Table, oncallroster.Columns, sqlgraph.NewFieldSpec(oncallroster.FieldID, field.TypeUUID))
-	id, ok := oruo.mutation.ID()
+	id, ok := _u.mutation.ID()
 	if !ok {
 		return nil, &ValidationError{Name: "id", err: errors.New(`ent: missing "OncallRoster.id" for update`)}
 	}
 	_spec.Node.ID.Value = id
-	if fields := oruo.fields; len(fields) > 0 {
+	if fields := _u.fields; len(fields) > 0 {
 		_spec.Node.Columns = make([]string, 0, len(fields))
 		_spec.Node.Columns = append(_spec.Node.Columns, oncallroster.FieldID)
 		for _, f := range fields {
@@ -1268,47 +1268,47 @@ func (oruo *OncallRosterUpdateOne) sqlSave(ctx context.Context) (_node *OncallRo
 			}
 		}
 	}
-	if ps := oruo.mutation.predicates; len(ps) > 0 {
+	if ps := _u.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {
 				ps[i](selector)
 			}
 		}
 	}
-	if value, ok := oruo.mutation.ArchiveTime(); ok {
+	if value, ok := _u.mutation.ArchiveTime(); ok {
 		_spec.SetField(oncallroster.FieldArchiveTime, field.TypeTime, value)
 	}
-	if oruo.mutation.ArchiveTimeCleared() {
+	if _u.mutation.ArchiveTimeCleared() {
 		_spec.ClearField(oncallroster.FieldArchiveTime, field.TypeTime)
 	}
-	if value, ok := oruo.mutation.Name(); ok {
+	if value, ok := _u.mutation.Name(); ok {
 		_spec.SetField(oncallroster.FieldName, field.TypeString, value)
 	}
-	if value, ok := oruo.mutation.Slug(); ok {
+	if value, ok := _u.mutation.Slug(); ok {
 		_spec.SetField(oncallroster.FieldSlug, field.TypeString, value)
 	}
-	if value, ok := oruo.mutation.ProviderID(); ok {
+	if value, ok := _u.mutation.ProviderID(); ok {
 		_spec.SetField(oncallroster.FieldProviderID, field.TypeString, value)
 	}
-	if value, ok := oruo.mutation.Timezone(); ok {
+	if value, ok := _u.mutation.Timezone(); ok {
 		_spec.SetField(oncallroster.FieldTimezone, field.TypeString, value)
 	}
-	if oruo.mutation.TimezoneCleared() {
+	if _u.mutation.TimezoneCleared() {
 		_spec.ClearField(oncallroster.FieldTimezone, field.TypeString)
 	}
-	if value, ok := oruo.mutation.ChatHandle(); ok {
+	if value, ok := _u.mutation.ChatHandle(); ok {
 		_spec.SetField(oncallroster.FieldChatHandle, field.TypeString, value)
 	}
-	if oruo.mutation.ChatHandleCleared() {
+	if _u.mutation.ChatHandleCleared() {
 		_spec.ClearField(oncallroster.FieldChatHandle, field.TypeString)
 	}
-	if value, ok := oruo.mutation.ChatChannelID(); ok {
+	if value, ok := _u.mutation.ChatChannelID(); ok {
 		_spec.SetField(oncallroster.FieldChatChannelID, field.TypeString, value)
 	}
-	if oruo.mutation.ChatChannelIDCleared() {
+	if _u.mutation.ChatChannelIDCleared() {
 		_spec.ClearField(oncallroster.FieldChatChannelID, field.TypeString)
 	}
-	if oruo.mutation.SchedulesCleared() {
+	if _u.mutation.SchedulesCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
@@ -1321,7 +1321,7 @@ func (oruo *OncallRosterUpdateOne) sqlSave(ctx context.Context) (_node *OncallRo
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := oruo.mutation.RemovedSchedulesIDs(); len(nodes) > 0 && !oruo.mutation.SchedulesCleared() {
+	if nodes := _u.mutation.RemovedSchedulesIDs(); len(nodes) > 0 && !_u.mutation.SchedulesCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
@@ -1337,7 +1337,7 @@ func (oruo *OncallRosterUpdateOne) sqlSave(ctx context.Context) (_node *OncallRo
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := oruo.mutation.SchedulesIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.SchedulesIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
@@ -1353,7 +1353,7 @@ func (oruo *OncallRosterUpdateOne) sqlSave(ctx context.Context) (_node *OncallRo
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if oruo.mutation.HandoverTemplateCleared() {
+	if _u.mutation.HandoverTemplateCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: true,
@@ -1366,7 +1366,7 @@ func (oruo *OncallRosterUpdateOne) sqlSave(ctx context.Context) (_node *OncallRo
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := oruo.mutation.HandoverTemplateIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.HandoverTemplateIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: true,
@@ -1382,7 +1382,7 @@ func (oruo *OncallRosterUpdateOne) sqlSave(ctx context.Context) (_node *OncallRo
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if oruo.mutation.AlertsCleared() {
+	if _u.mutation.AlertsCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
@@ -1395,23 +1395,7 @@ func (oruo *OncallRosterUpdateOne) sqlSave(ctx context.Context) (_node *OncallRo
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := oruo.mutation.RemovedAlertsIDs(); len(nodes) > 0 && !oruo.mutation.AlertsCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   oncallroster.AlertsTable,
-			Columns: []string{oncallroster.AlertsColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(alert.FieldID, field.TypeUUID),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := oruo.mutation.AlertsIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.RemovedAlertsIDs(); len(nodes) > 0 && !_u.mutation.AlertsCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
@@ -1425,9 +1409,25 @@ func (oruo *OncallRosterUpdateOne) sqlSave(ctx context.Context) (_node *OncallRo
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.AlertsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   oncallroster.AlertsTable,
+			Columns: []string{oncallroster.AlertsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(alert.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if oruo.mutation.TeamsCleared() {
+	if _u.mutation.TeamsCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
 			Inverse: true,
@@ -1440,7 +1440,7 @@ func (oruo *OncallRosterUpdateOne) sqlSave(ctx context.Context) (_node *OncallRo
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := oruo.mutation.RemovedTeamsIDs(); len(nodes) > 0 && !oruo.mutation.TeamsCleared() {
+	if nodes := _u.mutation.RemovedTeamsIDs(); len(nodes) > 0 && !_u.mutation.TeamsCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
 			Inverse: true,
@@ -1456,7 +1456,7 @@ func (oruo *OncallRosterUpdateOne) sqlSave(ctx context.Context) (_node *OncallRo
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := oruo.mutation.TeamsIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.TeamsIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
 			Inverse: true,
@@ -1472,7 +1472,7 @@ func (oruo *OncallRosterUpdateOne) sqlSave(ctx context.Context) (_node *OncallRo
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if oruo.mutation.ShiftsCleared() {
+	if _u.mutation.ShiftsCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: true,
@@ -1485,7 +1485,7 @@ func (oruo *OncallRosterUpdateOne) sqlSave(ctx context.Context) (_node *OncallRo
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := oruo.mutation.RemovedShiftsIDs(); len(nodes) > 0 && !oruo.mutation.ShiftsCleared() {
+	if nodes := _u.mutation.RemovedShiftsIDs(); len(nodes) > 0 && !_u.mutation.ShiftsCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: true,
@@ -1501,7 +1501,7 @@ func (oruo *OncallRosterUpdateOne) sqlSave(ctx context.Context) (_node *OncallRo
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := oruo.mutation.ShiftsIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.ShiftsIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: true,
@@ -1517,7 +1517,7 @@ func (oruo *OncallRosterUpdateOne) sqlSave(ctx context.Context) (_node *OncallRo
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if oruo.mutation.UserWatchersCleared() {
+	if _u.mutation.UserWatchersCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
 			Inverse: true,
@@ -1530,7 +1530,7 @@ func (oruo *OncallRosterUpdateOne) sqlSave(ctx context.Context) (_node *OncallRo
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := oruo.mutation.RemovedUserWatchersIDs(); len(nodes) > 0 && !oruo.mutation.UserWatchersCleared() {
+	if nodes := _u.mutation.RemovedUserWatchersIDs(); len(nodes) > 0 && !_u.mutation.UserWatchersCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
 			Inverse: true,
@@ -1546,7 +1546,7 @@ func (oruo *OncallRosterUpdateOne) sqlSave(ctx context.Context) (_node *OncallRo
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := oruo.mutation.UserWatchersIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.UserWatchersIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
 			Inverse: true,
@@ -1562,7 +1562,7 @@ func (oruo *OncallRosterUpdateOne) sqlSave(ctx context.Context) (_node *OncallRo
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if oruo.mutation.MetricsCleared() {
+	if _u.mutation.MetricsCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: true,
@@ -1575,7 +1575,7 @@ func (oruo *OncallRosterUpdateOne) sqlSave(ctx context.Context) (_node *OncallRo
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := oruo.mutation.RemovedMetricsIDs(); len(nodes) > 0 && !oruo.mutation.MetricsCleared() {
+	if nodes := _u.mutation.RemovedMetricsIDs(); len(nodes) > 0 && !_u.mutation.MetricsCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: true,
@@ -1591,7 +1591,7 @@ func (oruo *OncallRosterUpdateOne) sqlSave(ctx context.Context) (_node *OncallRo
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := oruo.mutation.MetricsIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.MetricsIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: true,
@@ -1607,11 +1607,11 @@ func (oruo *OncallRosterUpdateOne) sqlSave(ctx context.Context) (_node *OncallRo
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	_spec.AddModifiers(oruo.modifiers...)
-	_node = &OncallRoster{config: oruo.config}
+	_spec.AddModifiers(_u.modifiers...)
+	_node = &OncallRoster{config: _u.config}
 	_spec.Assign = _node.assignValues
 	_spec.ScanValues = _node.scanValues
-	if err = sqlgraph.UpdateNode(ctx, oruo.driver, _spec); err != nil {
+	if err = sqlgraph.UpdateNode(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{oncallroster.Label}
 		} else if sqlgraph.IsConstraintError(err) {
@@ -1619,6 +1619,6 @@ func (oruo *OncallRosterUpdateOne) sqlSave(ctx context.Context) (_node *OncallRo
 		}
 		return nil, err
 	}
-	oruo.mutation.done = true
+	_u.mutation.done = true
 	return _node, nil
 }

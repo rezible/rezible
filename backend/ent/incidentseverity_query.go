@@ -38,44 +38,44 @@ type IncidentSeverityQuery struct {
 }
 
 // Where adds a new predicate for the IncidentSeverityQuery builder.
-func (isq *IncidentSeverityQuery) Where(ps ...predicate.IncidentSeverity) *IncidentSeverityQuery {
-	isq.predicates = append(isq.predicates, ps...)
-	return isq
+func (_q *IncidentSeverityQuery) Where(ps ...predicate.IncidentSeverity) *IncidentSeverityQuery {
+	_q.predicates = append(_q.predicates, ps...)
+	return _q
 }
 
 // Limit the number of records to be returned by this query.
-func (isq *IncidentSeverityQuery) Limit(limit int) *IncidentSeverityQuery {
-	isq.ctx.Limit = &limit
-	return isq
+func (_q *IncidentSeverityQuery) Limit(limit int) *IncidentSeverityQuery {
+	_q.ctx.Limit = &limit
+	return _q
 }
 
 // Offset to start from.
-func (isq *IncidentSeverityQuery) Offset(offset int) *IncidentSeverityQuery {
-	isq.ctx.Offset = &offset
-	return isq
+func (_q *IncidentSeverityQuery) Offset(offset int) *IncidentSeverityQuery {
+	_q.ctx.Offset = &offset
+	return _q
 }
 
 // Unique configures the query builder to filter duplicate records on query.
 // By default, unique is set to true, and can be disabled using this method.
-func (isq *IncidentSeverityQuery) Unique(unique bool) *IncidentSeverityQuery {
-	isq.ctx.Unique = &unique
-	return isq
+func (_q *IncidentSeverityQuery) Unique(unique bool) *IncidentSeverityQuery {
+	_q.ctx.Unique = &unique
+	return _q
 }
 
 // Order specifies how the records should be ordered.
-func (isq *IncidentSeverityQuery) Order(o ...incidentseverity.OrderOption) *IncidentSeverityQuery {
-	isq.order = append(isq.order, o...)
-	return isq
+func (_q *IncidentSeverityQuery) Order(o ...incidentseverity.OrderOption) *IncidentSeverityQuery {
+	_q.order = append(_q.order, o...)
+	return _q
 }
 
 // QueryTenant chains the current query on the "tenant" edge.
-func (isq *IncidentSeverityQuery) QueryTenant() *TenantQuery {
-	query := (&TenantClient{config: isq.config}).Query()
+func (_q *IncidentSeverityQuery) QueryTenant() *TenantQuery {
+	query := (&TenantClient{config: _q.config}).Query()
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
-		if err := isq.prepareQuery(ctx); err != nil {
+		if err := _q.prepareQuery(ctx); err != nil {
 			return nil, err
 		}
-		selector := isq.sqlQuery(ctx)
+		selector := _q.sqlQuery(ctx)
 		if err := selector.Err(); err != nil {
 			return nil, err
 		}
@@ -84,20 +84,20 @@ func (isq *IncidentSeverityQuery) QueryTenant() *TenantQuery {
 			sqlgraph.To(tenant.Table, tenant.FieldID),
 			sqlgraph.Edge(sqlgraph.M2O, false, incidentseverity.TenantTable, incidentseverity.TenantColumn),
 		)
-		fromU = sqlgraph.SetNeighbors(isq.driver.Dialect(), step)
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
 	}
 	return query
 }
 
 // QueryIncidents chains the current query on the "incidents" edge.
-func (isq *IncidentSeverityQuery) QueryIncidents() *IncidentQuery {
-	query := (&IncidentClient{config: isq.config}).Query()
+func (_q *IncidentSeverityQuery) QueryIncidents() *IncidentQuery {
+	query := (&IncidentClient{config: _q.config}).Query()
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
-		if err := isq.prepareQuery(ctx); err != nil {
+		if err := _q.prepareQuery(ctx); err != nil {
 			return nil, err
 		}
-		selector := isq.sqlQuery(ctx)
+		selector := _q.sqlQuery(ctx)
 		if err := selector.Err(); err != nil {
 			return nil, err
 		}
@@ -106,20 +106,20 @@ func (isq *IncidentSeverityQuery) QueryIncidents() *IncidentQuery {
 			sqlgraph.To(incident.Table, incident.FieldID),
 			sqlgraph.Edge(sqlgraph.O2M, true, incidentseverity.IncidentsTable, incidentseverity.IncidentsColumn),
 		)
-		fromU = sqlgraph.SetNeighbors(isq.driver.Dialect(), step)
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
 	}
 	return query
 }
 
 // QueryDebriefQuestions chains the current query on the "debrief_questions" edge.
-func (isq *IncidentSeverityQuery) QueryDebriefQuestions() *IncidentDebriefQuestionQuery {
-	query := (&IncidentDebriefQuestionClient{config: isq.config}).Query()
+func (_q *IncidentSeverityQuery) QueryDebriefQuestions() *IncidentDebriefQuestionQuery {
+	query := (&IncidentDebriefQuestionClient{config: _q.config}).Query()
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
-		if err := isq.prepareQuery(ctx); err != nil {
+		if err := _q.prepareQuery(ctx); err != nil {
 			return nil, err
 		}
-		selector := isq.sqlQuery(ctx)
+		selector := _q.sqlQuery(ctx)
 		if err := selector.Err(); err != nil {
 			return nil, err
 		}
@@ -128,7 +128,7 @@ func (isq *IncidentSeverityQuery) QueryDebriefQuestions() *IncidentDebriefQuesti
 			sqlgraph.To(incidentdebriefquestion.Table, incidentdebriefquestion.FieldID),
 			sqlgraph.Edge(sqlgraph.M2M, true, incidentseverity.DebriefQuestionsTable, incidentseverity.DebriefQuestionsPrimaryKey...),
 		)
-		fromU = sqlgraph.SetNeighbors(isq.driver.Dialect(), step)
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
 	}
 	return query
@@ -136,8 +136,8 @@ func (isq *IncidentSeverityQuery) QueryDebriefQuestions() *IncidentDebriefQuesti
 
 // First returns the first IncidentSeverity entity from the query.
 // Returns a *NotFoundError when no IncidentSeverity was found.
-func (isq *IncidentSeverityQuery) First(ctx context.Context) (*IncidentSeverity, error) {
-	nodes, err := isq.Limit(1).All(setContextOp(ctx, isq.ctx, ent.OpQueryFirst))
+func (_q *IncidentSeverityQuery) First(ctx context.Context) (*IncidentSeverity, error) {
+	nodes, err := _q.Limit(1).All(setContextOp(ctx, _q.ctx, ent.OpQueryFirst))
 	if err != nil {
 		return nil, err
 	}
@@ -148,8 +148,8 @@ func (isq *IncidentSeverityQuery) First(ctx context.Context) (*IncidentSeverity,
 }
 
 // FirstX is like First, but panics if an error occurs.
-func (isq *IncidentSeverityQuery) FirstX(ctx context.Context) *IncidentSeverity {
-	node, err := isq.First(ctx)
+func (_q *IncidentSeverityQuery) FirstX(ctx context.Context) *IncidentSeverity {
+	node, err := _q.First(ctx)
 	if err != nil && !IsNotFound(err) {
 		panic(err)
 	}
@@ -158,9 +158,9 @@ func (isq *IncidentSeverityQuery) FirstX(ctx context.Context) *IncidentSeverity 
 
 // FirstID returns the first IncidentSeverity ID from the query.
 // Returns a *NotFoundError when no IncidentSeverity ID was found.
-func (isq *IncidentSeverityQuery) FirstID(ctx context.Context) (id uuid.UUID, err error) {
+func (_q *IncidentSeverityQuery) FirstID(ctx context.Context) (id uuid.UUID, err error) {
 	var ids []uuid.UUID
-	if ids, err = isq.Limit(1).IDs(setContextOp(ctx, isq.ctx, ent.OpQueryFirstID)); err != nil {
+	if ids, err = _q.Limit(1).IDs(setContextOp(ctx, _q.ctx, ent.OpQueryFirstID)); err != nil {
 		return
 	}
 	if len(ids) == 0 {
@@ -171,8 +171,8 @@ func (isq *IncidentSeverityQuery) FirstID(ctx context.Context) (id uuid.UUID, er
 }
 
 // FirstIDX is like FirstID, but panics if an error occurs.
-func (isq *IncidentSeverityQuery) FirstIDX(ctx context.Context) uuid.UUID {
-	id, err := isq.FirstID(ctx)
+func (_q *IncidentSeverityQuery) FirstIDX(ctx context.Context) uuid.UUID {
+	id, err := _q.FirstID(ctx)
 	if err != nil && !IsNotFound(err) {
 		panic(err)
 	}
@@ -182,8 +182,8 @@ func (isq *IncidentSeverityQuery) FirstIDX(ctx context.Context) uuid.UUID {
 // Only returns a single IncidentSeverity entity found by the query, ensuring it only returns one.
 // Returns a *NotSingularError when more than one IncidentSeverity entity is found.
 // Returns a *NotFoundError when no IncidentSeverity entities are found.
-func (isq *IncidentSeverityQuery) Only(ctx context.Context) (*IncidentSeverity, error) {
-	nodes, err := isq.Limit(2).All(setContextOp(ctx, isq.ctx, ent.OpQueryOnly))
+func (_q *IncidentSeverityQuery) Only(ctx context.Context) (*IncidentSeverity, error) {
+	nodes, err := _q.Limit(2).All(setContextOp(ctx, _q.ctx, ent.OpQueryOnly))
 	if err != nil {
 		return nil, err
 	}
@@ -198,8 +198,8 @@ func (isq *IncidentSeverityQuery) Only(ctx context.Context) (*IncidentSeverity, 
 }
 
 // OnlyX is like Only, but panics if an error occurs.
-func (isq *IncidentSeverityQuery) OnlyX(ctx context.Context) *IncidentSeverity {
-	node, err := isq.Only(ctx)
+func (_q *IncidentSeverityQuery) OnlyX(ctx context.Context) *IncidentSeverity {
+	node, err := _q.Only(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -209,9 +209,9 @@ func (isq *IncidentSeverityQuery) OnlyX(ctx context.Context) *IncidentSeverity {
 // OnlyID is like Only, but returns the only IncidentSeverity ID in the query.
 // Returns a *NotSingularError when more than one IncidentSeverity ID is found.
 // Returns a *NotFoundError when no entities are found.
-func (isq *IncidentSeverityQuery) OnlyID(ctx context.Context) (id uuid.UUID, err error) {
+func (_q *IncidentSeverityQuery) OnlyID(ctx context.Context) (id uuid.UUID, err error) {
 	var ids []uuid.UUID
-	if ids, err = isq.Limit(2).IDs(setContextOp(ctx, isq.ctx, ent.OpQueryOnlyID)); err != nil {
+	if ids, err = _q.Limit(2).IDs(setContextOp(ctx, _q.ctx, ent.OpQueryOnlyID)); err != nil {
 		return
 	}
 	switch len(ids) {
@@ -226,8 +226,8 @@ func (isq *IncidentSeverityQuery) OnlyID(ctx context.Context) (id uuid.UUID, err
 }
 
 // OnlyIDX is like OnlyID, but panics if an error occurs.
-func (isq *IncidentSeverityQuery) OnlyIDX(ctx context.Context) uuid.UUID {
-	id, err := isq.OnlyID(ctx)
+func (_q *IncidentSeverityQuery) OnlyIDX(ctx context.Context) uuid.UUID {
+	id, err := _q.OnlyID(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -235,18 +235,18 @@ func (isq *IncidentSeverityQuery) OnlyIDX(ctx context.Context) uuid.UUID {
 }
 
 // All executes the query and returns a list of IncidentSeverities.
-func (isq *IncidentSeverityQuery) All(ctx context.Context) ([]*IncidentSeverity, error) {
-	ctx = setContextOp(ctx, isq.ctx, ent.OpQueryAll)
-	if err := isq.prepareQuery(ctx); err != nil {
+func (_q *IncidentSeverityQuery) All(ctx context.Context) ([]*IncidentSeverity, error) {
+	ctx = setContextOp(ctx, _q.ctx, ent.OpQueryAll)
+	if err := _q.prepareQuery(ctx); err != nil {
 		return nil, err
 	}
 	qr := querierAll[[]*IncidentSeverity, *IncidentSeverityQuery]()
-	return withInterceptors[[]*IncidentSeverity](ctx, isq, qr, isq.inters)
+	return withInterceptors[[]*IncidentSeverity](ctx, _q, qr, _q.inters)
 }
 
 // AllX is like All, but panics if an error occurs.
-func (isq *IncidentSeverityQuery) AllX(ctx context.Context) []*IncidentSeverity {
-	nodes, err := isq.All(ctx)
+func (_q *IncidentSeverityQuery) AllX(ctx context.Context) []*IncidentSeverity {
+	nodes, err := _q.All(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -254,20 +254,20 @@ func (isq *IncidentSeverityQuery) AllX(ctx context.Context) []*IncidentSeverity 
 }
 
 // IDs executes the query and returns a list of IncidentSeverity IDs.
-func (isq *IncidentSeverityQuery) IDs(ctx context.Context) (ids []uuid.UUID, err error) {
-	if isq.ctx.Unique == nil && isq.path != nil {
-		isq.Unique(true)
+func (_q *IncidentSeverityQuery) IDs(ctx context.Context) (ids []uuid.UUID, err error) {
+	if _q.ctx.Unique == nil && _q.path != nil {
+		_q.Unique(true)
 	}
-	ctx = setContextOp(ctx, isq.ctx, ent.OpQueryIDs)
-	if err = isq.Select(incidentseverity.FieldID).Scan(ctx, &ids); err != nil {
+	ctx = setContextOp(ctx, _q.ctx, ent.OpQueryIDs)
+	if err = _q.Select(incidentseverity.FieldID).Scan(ctx, &ids); err != nil {
 		return nil, err
 	}
 	return ids, nil
 }
 
 // IDsX is like IDs, but panics if an error occurs.
-func (isq *IncidentSeverityQuery) IDsX(ctx context.Context) []uuid.UUID {
-	ids, err := isq.IDs(ctx)
+func (_q *IncidentSeverityQuery) IDsX(ctx context.Context) []uuid.UUID {
+	ids, err := _q.IDs(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -275,17 +275,17 @@ func (isq *IncidentSeverityQuery) IDsX(ctx context.Context) []uuid.UUID {
 }
 
 // Count returns the count of the given query.
-func (isq *IncidentSeverityQuery) Count(ctx context.Context) (int, error) {
-	ctx = setContextOp(ctx, isq.ctx, ent.OpQueryCount)
-	if err := isq.prepareQuery(ctx); err != nil {
+func (_q *IncidentSeverityQuery) Count(ctx context.Context) (int, error) {
+	ctx = setContextOp(ctx, _q.ctx, ent.OpQueryCount)
+	if err := _q.prepareQuery(ctx); err != nil {
 		return 0, err
 	}
-	return withInterceptors[int](ctx, isq, querierCount[*IncidentSeverityQuery](), isq.inters)
+	return withInterceptors[int](ctx, _q, querierCount[*IncidentSeverityQuery](), _q.inters)
 }
 
 // CountX is like Count, but panics if an error occurs.
-func (isq *IncidentSeverityQuery) CountX(ctx context.Context) int {
-	count, err := isq.Count(ctx)
+func (_q *IncidentSeverityQuery) CountX(ctx context.Context) int {
+	count, err := _q.Count(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -293,9 +293,9 @@ func (isq *IncidentSeverityQuery) CountX(ctx context.Context) int {
 }
 
 // Exist returns true if the query has elements in the graph.
-func (isq *IncidentSeverityQuery) Exist(ctx context.Context) (bool, error) {
-	ctx = setContextOp(ctx, isq.ctx, ent.OpQueryExist)
-	switch _, err := isq.FirstID(ctx); {
+func (_q *IncidentSeverityQuery) Exist(ctx context.Context) (bool, error) {
+	ctx = setContextOp(ctx, _q.ctx, ent.OpQueryExist)
+	switch _, err := _q.FirstID(ctx); {
 	case IsNotFound(err):
 		return false, nil
 	case err != nil:
@@ -306,8 +306,8 @@ func (isq *IncidentSeverityQuery) Exist(ctx context.Context) (bool, error) {
 }
 
 // ExistX is like Exist, but panics if an error occurs.
-func (isq *IncidentSeverityQuery) ExistX(ctx context.Context) bool {
-	exist, err := isq.Exist(ctx)
+func (_q *IncidentSeverityQuery) ExistX(ctx context.Context) bool {
+	exist, err := _q.Exist(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -316,57 +316,57 @@ func (isq *IncidentSeverityQuery) ExistX(ctx context.Context) bool {
 
 // Clone returns a duplicate of the IncidentSeverityQuery builder, including all associated steps. It can be
 // used to prepare common query builders and use them differently after the clone is made.
-func (isq *IncidentSeverityQuery) Clone() *IncidentSeverityQuery {
-	if isq == nil {
+func (_q *IncidentSeverityQuery) Clone() *IncidentSeverityQuery {
+	if _q == nil {
 		return nil
 	}
 	return &IncidentSeverityQuery{
-		config:               isq.config,
-		ctx:                  isq.ctx.Clone(),
-		order:                append([]incidentseverity.OrderOption{}, isq.order...),
-		inters:               append([]Interceptor{}, isq.inters...),
-		predicates:           append([]predicate.IncidentSeverity{}, isq.predicates...),
-		withTenant:           isq.withTenant.Clone(),
-		withIncidents:        isq.withIncidents.Clone(),
-		withDebriefQuestions: isq.withDebriefQuestions.Clone(),
+		config:               _q.config,
+		ctx:                  _q.ctx.Clone(),
+		order:                append([]incidentseverity.OrderOption{}, _q.order...),
+		inters:               append([]Interceptor{}, _q.inters...),
+		predicates:           append([]predicate.IncidentSeverity{}, _q.predicates...),
+		withTenant:           _q.withTenant.Clone(),
+		withIncidents:        _q.withIncidents.Clone(),
+		withDebriefQuestions: _q.withDebriefQuestions.Clone(),
 		// clone intermediate query.
-		sql:       isq.sql.Clone(),
-		path:      isq.path,
-		modifiers: append([]func(*sql.Selector){}, isq.modifiers...),
+		sql:       _q.sql.Clone(),
+		path:      _q.path,
+		modifiers: append([]func(*sql.Selector){}, _q.modifiers...),
 	}
 }
 
 // WithTenant tells the query-builder to eager-load the nodes that are connected to
 // the "tenant" edge. The optional arguments are used to configure the query builder of the edge.
-func (isq *IncidentSeverityQuery) WithTenant(opts ...func(*TenantQuery)) *IncidentSeverityQuery {
-	query := (&TenantClient{config: isq.config}).Query()
+func (_q *IncidentSeverityQuery) WithTenant(opts ...func(*TenantQuery)) *IncidentSeverityQuery {
+	query := (&TenantClient{config: _q.config}).Query()
 	for _, opt := range opts {
 		opt(query)
 	}
-	isq.withTenant = query
-	return isq
+	_q.withTenant = query
+	return _q
 }
 
 // WithIncidents tells the query-builder to eager-load the nodes that are connected to
 // the "incidents" edge. The optional arguments are used to configure the query builder of the edge.
-func (isq *IncidentSeverityQuery) WithIncidents(opts ...func(*IncidentQuery)) *IncidentSeverityQuery {
-	query := (&IncidentClient{config: isq.config}).Query()
+func (_q *IncidentSeverityQuery) WithIncidents(opts ...func(*IncidentQuery)) *IncidentSeverityQuery {
+	query := (&IncidentClient{config: _q.config}).Query()
 	for _, opt := range opts {
 		opt(query)
 	}
-	isq.withIncidents = query
-	return isq
+	_q.withIncidents = query
+	return _q
 }
 
 // WithDebriefQuestions tells the query-builder to eager-load the nodes that are connected to
 // the "debrief_questions" edge. The optional arguments are used to configure the query builder of the edge.
-func (isq *IncidentSeverityQuery) WithDebriefQuestions(opts ...func(*IncidentDebriefQuestionQuery)) *IncidentSeverityQuery {
-	query := (&IncidentDebriefQuestionClient{config: isq.config}).Query()
+func (_q *IncidentSeverityQuery) WithDebriefQuestions(opts ...func(*IncidentDebriefQuestionQuery)) *IncidentSeverityQuery {
+	query := (&IncidentDebriefQuestionClient{config: _q.config}).Query()
 	for _, opt := range opts {
 		opt(query)
 	}
-	isq.withDebriefQuestions = query
-	return isq
+	_q.withDebriefQuestions = query
+	return _q
 }
 
 // GroupBy is used to group vertices by one or more fields/columns.
@@ -383,10 +383,10 @@ func (isq *IncidentSeverityQuery) WithDebriefQuestions(opts ...func(*IncidentDeb
 //		GroupBy(incidentseverity.FieldTenantID).
 //		Aggregate(ent.Count()).
 //		Scan(ctx, &v)
-func (isq *IncidentSeverityQuery) GroupBy(field string, fields ...string) *IncidentSeverityGroupBy {
-	isq.ctx.Fields = append([]string{field}, fields...)
-	grbuild := &IncidentSeverityGroupBy{build: isq}
-	grbuild.flds = &isq.ctx.Fields
+func (_q *IncidentSeverityQuery) GroupBy(field string, fields ...string) *IncidentSeverityGroupBy {
+	_q.ctx.Fields = append([]string{field}, fields...)
+	grbuild := &IncidentSeverityGroupBy{build: _q}
+	grbuild.flds = &_q.ctx.Fields
 	grbuild.label = incidentseverity.Label
 	grbuild.scan = grbuild.Scan
 	return grbuild
@@ -404,97 +404,97 @@ func (isq *IncidentSeverityQuery) GroupBy(field string, fields ...string) *Incid
 //	client.IncidentSeverity.Query().
 //		Select(incidentseverity.FieldTenantID).
 //		Scan(ctx, &v)
-func (isq *IncidentSeverityQuery) Select(fields ...string) *IncidentSeveritySelect {
-	isq.ctx.Fields = append(isq.ctx.Fields, fields...)
-	sbuild := &IncidentSeveritySelect{IncidentSeverityQuery: isq}
+func (_q *IncidentSeverityQuery) Select(fields ...string) *IncidentSeveritySelect {
+	_q.ctx.Fields = append(_q.ctx.Fields, fields...)
+	sbuild := &IncidentSeveritySelect{IncidentSeverityQuery: _q}
 	sbuild.label = incidentseverity.Label
-	sbuild.flds, sbuild.scan = &isq.ctx.Fields, sbuild.Scan
+	sbuild.flds, sbuild.scan = &_q.ctx.Fields, sbuild.Scan
 	return sbuild
 }
 
 // Aggregate returns a IncidentSeveritySelect configured with the given aggregations.
-func (isq *IncidentSeverityQuery) Aggregate(fns ...AggregateFunc) *IncidentSeveritySelect {
-	return isq.Select().Aggregate(fns...)
+func (_q *IncidentSeverityQuery) Aggregate(fns ...AggregateFunc) *IncidentSeveritySelect {
+	return _q.Select().Aggregate(fns...)
 }
 
-func (isq *IncidentSeverityQuery) prepareQuery(ctx context.Context) error {
-	for _, inter := range isq.inters {
+func (_q *IncidentSeverityQuery) prepareQuery(ctx context.Context) error {
+	for _, inter := range _q.inters {
 		if inter == nil {
 			return fmt.Errorf("ent: uninitialized interceptor (forgotten import ent/runtime?)")
 		}
 		if trv, ok := inter.(Traverser); ok {
-			if err := trv.Traverse(ctx, isq); err != nil {
+			if err := trv.Traverse(ctx, _q); err != nil {
 				return err
 			}
 		}
 	}
-	for _, f := range isq.ctx.Fields {
+	for _, f := range _q.ctx.Fields {
 		if !incidentseverity.ValidColumn(f) {
 			return &ValidationError{Name: f, err: fmt.Errorf("ent: invalid field %q for query", f)}
 		}
 	}
-	if isq.path != nil {
-		prev, err := isq.path(ctx)
+	if _q.path != nil {
+		prev, err := _q.path(ctx)
 		if err != nil {
 			return err
 		}
-		isq.sql = prev
+		_q.sql = prev
 	}
 	if incidentseverity.Policy == nil {
 		return errors.New("ent: uninitialized incidentseverity.Policy (forgotten import ent/runtime?)")
 	}
-	if err := incidentseverity.Policy.EvalQuery(ctx, isq); err != nil {
+	if err := incidentseverity.Policy.EvalQuery(ctx, _q); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (isq *IncidentSeverityQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*IncidentSeverity, error) {
+func (_q *IncidentSeverityQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*IncidentSeverity, error) {
 	var (
 		nodes       = []*IncidentSeverity{}
-		_spec       = isq.querySpec()
+		_spec       = _q.querySpec()
 		loadedTypes = [3]bool{
-			isq.withTenant != nil,
-			isq.withIncidents != nil,
-			isq.withDebriefQuestions != nil,
+			_q.withTenant != nil,
+			_q.withIncidents != nil,
+			_q.withDebriefQuestions != nil,
 		}
 	)
 	_spec.ScanValues = func(columns []string) ([]any, error) {
 		return (*IncidentSeverity).scanValues(nil, columns)
 	}
 	_spec.Assign = func(columns []string, values []any) error {
-		node := &IncidentSeverity{config: isq.config}
+		node := &IncidentSeverity{config: _q.config}
 		nodes = append(nodes, node)
 		node.Edges.loadedTypes = loadedTypes
 		return node.assignValues(columns, values)
 	}
-	if len(isq.modifiers) > 0 {
-		_spec.Modifiers = isq.modifiers
+	if len(_q.modifiers) > 0 {
+		_spec.Modifiers = _q.modifiers
 	}
 	for i := range hooks {
 		hooks[i](ctx, _spec)
 	}
-	if err := sqlgraph.QueryNodes(ctx, isq.driver, _spec); err != nil {
+	if err := sqlgraph.QueryNodes(ctx, _q.driver, _spec); err != nil {
 		return nil, err
 	}
 	if len(nodes) == 0 {
 		return nodes, nil
 	}
-	if query := isq.withTenant; query != nil {
-		if err := isq.loadTenant(ctx, query, nodes, nil,
+	if query := _q.withTenant; query != nil {
+		if err := _q.loadTenant(ctx, query, nodes, nil,
 			func(n *IncidentSeverity, e *Tenant) { n.Edges.Tenant = e }); err != nil {
 			return nil, err
 		}
 	}
-	if query := isq.withIncidents; query != nil {
-		if err := isq.loadIncidents(ctx, query, nodes,
+	if query := _q.withIncidents; query != nil {
+		if err := _q.loadIncidents(ctx, query, nodes,
 			func(n *IncidentSeverity) { n.Edges.Incidents = []*Incident{} },
 			func(n *IncidentSeverity, e *Incident) { n.Edges.Incidents = append(n.Edges.Incidents, e) }); err != nil {
 			return nil, err
 		}
 	}
-	if query := isq.withDebriefQuestions; query != nil {
-		if err := isq.loadDebriefQuestions(ctx, query, nodes,
+	if query := _q.withDebriefQuestions; query != nil {
+		if err := _q.loadDebriefQuestions(ctx, query, nodes,
 			func(n *IncidentSeverity) { n.Edges.DebriefQuestions = []*IncidentDebriefQuestion{} },
 			func(n *IncidentSeverity, e *IncidentDebriefQuestion) {
 				n.Edges.DebriefQuestions = append(n.Edges.DebriefQuestions, e)
@@ -505,7 +505,7 @@ func (isq *IncidentSeverityQuery) sqlAll(ctx context.Context, hooks ...queryHook
 	return nodes, nil
 }
 
-func (isq *IncidentSeverityQuery) loadTenant(ctx context.Context, query *TenantQuery, nodes []*IncidentSeverity, init func(*IncidentSeverity), assign func(*IncidentSeverity, *Tenant)) error {
+func (_q *IncidentSeverityQuery) loadTenant(ctx context.Context, query *TenantQuery, nodes []*IncidentSeverity, init func(*IncidentSeverity), assign func(*IncidentSeverity, *Tenant)) error {
 	ids := make([]int, 0, len(nodes))
 	nodeids := make(map[int][]*IncidentSeverity)
 	for i := range nodes {
@@ -534,7 +534,7 @@ func (isq *IncidentSeverityQuery) loadTenant(ctx context.Context, query *TenantQ
 	}
 	return nil
 }
-func (isq *IncidentSeverityQuery) loadIncidents(ctx context.Context, query *IncidentQuery, nodes []*IncidentSeverity, init func(*IncidentSeverity), assign func(*IncidentSeverity, *Incident)) error {
+func (_q *IncidentSeverityQuery) loadIncidents(ctx context.Context, query *IncidentQuery, nodes []*IncidentSeverity, init func(*IncidentSeverity), assign func(*IncidentSeverity, *Incident)) error {
 	fks := make([]driver.Value, 0, len(nodes))
 	nodeids := make(map[uuid.UUID]*IncidentSeverity)
 	for i := range nodes {
@@ -564,7 +564,7 @@ func (isq *IncidentSeverityQuery) loadIncidents(ctx context.Context, query *Inci
 	}
 	return nil
 }
-func (isq *IncidentSeverityQuery) loadDebriefQuestions(ctx context.Context, query *IncidentDebriefQuestionQuery, nodes []*IncidentSeverity, init func(*IncidentSeverity), assign func(*IncidentSeverity, *IncidentDebriefQuestion)) error {
+func (_q *IncidentSeverityQuery) loadDebriefQuestions(ctx context.Context, query *IncidentDebriefQuestionQuery, nodes []*IncidentSeverity, init func(*IncidentSeverity), assign func(*IncidentSeverity, *IncidentDebriefQuestion)) error {
 	edgeIDs := make([]driver.Value, len(nodes))
 	byID := make(map[uuid.UUID]*IncidentSeverity)
 	nids := make(map[uuid.UUID]map[*IncidentSeverity]struct{})
@@ -626,27 +626,27 @@ func (isq *IncidentSeverityQuery) loadDebriefQuestions(ctx context.Context, quer
 	return nil
 }
 
-func (isq *IncidentSeverityQuery) sqlCount(ctx context.Context) (int, error) {
-	_spec := isq.querySpec()
-	if len(isq.modifiers) > 0 {
-		_spec.Modifiers = isq.modifiers
+func (_q *IncidentSeverityQuery) sqlCount(ctx context.Context) (int, error) {
+	_spec := _q.querySpec()
+	if len(_q.modifiers) > 0 {
+		_spec.Modifiers = _q.modifiers
 	}
-	_spec.Node.Columns = isq.ctx.Fields
-	if len(isq.ctx.Fields) > 0 {
-		_spec.Unique = isq.ctx.Unique != nil && *isq.ctx.Unique
+	_spec.Node.Columns = _q.ctx.Fields
+	if len(_q.ctx.Fields) > 0 {
+		_spec.Unique = _q.ctx.Unique != nil && *_q.ctx.Unique
 	}
-	return sqlgraph.CountNodes(ctx, isq.driver, _spec)
+	return sqlgraph.CountNodes(ctx, _q.driver, _spec)
 }
 
-func (isq *IncidentSeverityQuery) querySpec() *sqlgraph.QuerySpec {
+func (_q *IncidentSeverityQuery) querySpec() *sqlgraph.QuerySpec {
 	_spec := sqlgraph.NewQuerySpec(incidentseverity.Table, incidentseverity.Columns, sqlgraph.NewFieldSpec(incidentseverity.FieldID, field.TypeUUID))
-	_spec.From = isq.sql
-	if unique := isq.ctx.Unique; unique != nil {
+	_spec.From = _q.sql
+	if unique := _q.ctx.Unique; unique != nil {
 		_spec.Unique = *unique
-	} else if isq.path != nil {
+	} else if _q.path != nil {
 		_spec.Unique = true
 	}
-	if fields := isq.ctx.Fields; len(fields) > 0 {
+	if fields := _q.ctx.Fields; len(fields) > 0 {
 		_spec.Node.Columns = make([]string, 0, len(fields))
 		_spec.Node.Columns = append(_spec.Node.Columns, incidentseverity.FieldID)
 		for i := range fields {
@@ -654,24 +654,24 @@ func (isq *IncidentSeverityQuery) querySpec() *sqlgraph.QuerySpec {
 				_spec.Node.Columns = append(_spec.Node.Columns, fields[i])
 			}
 		}
-		if isq.withTenant != nil {
+		if _q.withTenant != nil {
 			_spec.Node.AddColumnOnce(incidentseverity.FieldTenantID)
 		}
 	}
-	if ps := isq.predicates; len(ps) > 0 {
+	if ps := _q.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {
 				ps[i](selector)
 			}
 		}
 	}
-	if limit := isq.ctx.Limit; limit != nil {
+	if limit := _q.ctx.Limit; limit != nil {
 		_spec.Limit = *limit
 	}
-	if offset := isq.ctx.Offset; offset != nil {
+	if offset := _q.ctx.Offset; offset != nil {
 		_spec.Offset = *offset
 	}
-	if ps := isq.order; len(ps) > 0 {
+	if ps := _q.order; len(ps) > 0 {
 		_spec.Order = func(selector *sql.Selector) {
 			for i := range ps {
 				ps[i](selector)
@@ -681,45 +681,45 @@ func (isq *IncidentSeverityQuery) querySpec() *sqlgraph.QuerySpec {
 	return _spec
 }
 
-func (isq *IncidentSeverityQuery) sqlQuery(ctx context.Context) *sql.Selector {
-	builder := sql.Dialect(isq.driver.Dialect())
+func (_q *IncidentSeverityQuery) sqlQuery(ctx context.Context) *sql.Selector {
+	builder := sql.Dialect(_q.driver.Dialect())
 	t1 := builder.Table(incidentseverity.Table)
-	columns := isq.ctx.Fields
+	columns := _q.ctx.Fields
 	if len(columns) == 0 {
 		columns = incidentseverity.Columns
 	}
 	selector := builder.Select(t1.Columns(columns...)...).From(t1)
-	if isq.sql != nil {
-		selector = isq.sql
+	if _q.sql != nil {
+		selector = _q.sql
 		selector.Select(selector.Columns(columns...)...)
 	}
-	if isq.ctx.Unique != nil && *isq.ctx.Unique {
+	if _q.ctx.Unique != nil && *_q.ctx.Unique {
 		selector.Distinct()
 	}
-	for _, m := range isq.modifiers {
+	for _, m := range _q.modifiers {
 		m(selector)
 	}
-	for _, p := range isq.predicates {
+	for _, p := range _q.predicates {
 		p(selector)
 	}
-	for _, p := range isq.order {
+	for _, p := range _q.order {
 		p(selector)
 	}
-	if offset := isq.ctx.Offset; offset != nil {
+	if offset := _q.ctx.Offset; offset != nil {
 		// limit is mandatory for offset clause. We start
 		// with default value, and override it below if needed.
 		selector.Offset(*offset).Limit(math.MaxInt32)
 	}
-	if limit := isq.ctx.Limit; limit != nil {
+	if limit := _q.ctx.Limit; limit != nil {
 		selector.Limit(*limit)
 	}
 	return selector
 }
 
 // Modify adds a query modifier for attaching custom logic to queries.
-func (isq *IncidentSeverityQuery) Modify(modifiers ...func(s *sql.Selector)) *IncidentSeveritySelect {
-	isq.modifiers = append(isq.modifiers, modifiers...)
-	return isq.Select()
+func (_q *IncidentSeverityQuery) Modify(modifiers ...func(s *sql.Selector)) *IncidentSeveritySelect {
+	_q.modifiers = append(_q.modifiers, modifiers...)
+	return _q.Select()
 }
 
 // IncidentSeverityGroupBy is the group-by builder for IncidentSeverity entities.
@@ -729,41 +729,41 @@ type IncidentSeverityGroupBy struct {
 }
 
 // Aggregate adds the given aggregation functions to the group-by query.
-func (isgb *IncidentSeverityGroupBy) Aggregate(fns ...AggregateFunc) *IncidentSeverityGroupBy {
-	isgb.fns = append(isgb.fns, fns...)
-	return isgb
+func (_g *IncidentSeverityGroupBy) Aggregate(fns ...AggregateFunc) *IncidentSeverityGroupBy {
+	_g.fns = append(_g.fns, fns...)
+	return _g
 }
 
 // Scan applies the selector query and scans the result into the given value.
-func (isgb *IncidentSeverityGroupBy) Scan(ctx context.Context, v any) error {
-	ctx = setContextOp(ctx, isgb.build.ctx, ent.OpQueryGroupBy)
-	if err := isgb.build.prepareQuery(ctx); err != nil {
+func (_g *IncidentSeverityGroupBy) Scan(ctx context.Context, v any) error {
+	ctx = setContextOp(ctx, _g.build.ctx, ent.OpQueryGroupBy)
+	if err := _g.build.prepareQuery(ctx); err != nil {
 		return err
 	}
-	return scanWithInterceptors[*IncidentSeverityQuery, *IncidentSeverityGroupBy](ctx, isgb.build, isgb, isgb.build.inters, v)
+	return scanWithInterceptors[*IncidentSeverityQuery, *IncidentSeverityGroupBy](ctx, _g.build, _g, _g.build.inters, v)
 }
 
-func (isgb *IncidentSeverityGroupBy) sqlScan(ctx context.Context, root *IncidentSeverityQuery, v any) error {
+func (_g *IncidentSeverityGroupBy) sqlScan(ctx context.Context, root *IncidentSeverityQuery, v any) error {
 	selector := root.sqlQuery(ctx).Select()
-	aggregation := make([]string, 0, len(isgb.fns))
-	for _, fn := range isgb.fns {
+	aggregation := make([]string, 0, len(_g.fns))
+	for _, fn := range _g.fns {
 		aggregation = append(aggregation, fn(selector))
 	}
 	if len(selector.SelectedColumns()) == 0 {
-		columns := make([]string, 0, len(*isgb.flds)+len(isgb.fns))
-		for _, f := range *isgb.flds {
+		columns := make([]string, 0, len(*_g.flds)+len(_g.fns))
+		for _, f := range *_g.flds {
 			columns = append(columns, selector.C(f))
 		}
 		columns = append(columns, aggregation...)
 		selector.Select(columns...)
 	}
-	selector.GroupBy(selector.Columns(*isgb.flds...)...)
+	selector.GroupBy(selector.Columns(*_g.flds...)...)
 	if err := selector.Err(); err != nil {
 		return err
 	}
 	rows := &sql.Rows{}
 	query, args := selector.Query()
-	if err := isgb.build.driver.Query(ctx, query, args, rows); err != nil {
+	if err := _g.build.driver.Query(ctx, query, args, rows); err != nil {
 		return err
 	}
 	defer rows.Close()
@@ -777,27 +777,27 @@ type IncidentSeveritySelect struct {
 }
 
 // Aggregate adds the given aggregation functions to the selector query.
-func (iss *IncidentSeveritySelect) Aggregate(fns ...AggregateFunc) *IncidentSeveritySelect {
-	iss.fns = append(iss.fns, fns...)
-	return iss
+func (_s *IncidentSeveritySelect) Aggregate(fns ...AggregateFunc) *IncidentSeveritySelect {
+	_s.fns = append(_s.fns, fns...)
+	return _s
 }
 
 // Scan applies the selector query and scans the result into the given value.
-func (iss *IncidentSeveritySelect) Scan(ctx context.Context, v any) error {
-	ctx = setContextOp(ctx, iss.ctx, ent.OpQuerySelect)
-	if err := iss.prepareQuery(ctx); err != nil {
+func (_s *IncidentSeveritySelect) Scan(ctx context.Context, v any) error {
+	ctx = setContextOp(ctx, _s.ctx, ent.OpQuerySelect)
+	if err := _s.prepareQuery(ctx); err != nil {
 		return err
 	}
-	return scanWithInterceptors[*IncidentSeverityQuery, *IncidentSeveritySelect](ctx, iss.IncidentSeverityQuery, iss, iss.inters, v)
+	return scanWithInterceptors[*IncidentSeverityQuery, *IncidentSeveritySelect](ctx, _s.IncidentSeverityQuery, _s, _s.inters, v)
 }
 
-func (iss *IncidentSeveritySelect) sqlScan(ctx context.Context, root *IncidentSeverityQuery, v any) error {
+func (_s *IncidentSeveritySelect) sqlScan(ctx context.Context, root *IncidentSeverityQuery, v any) error {
 	selector := root.sqlQuery(ctx)
-	aggregation := make([]string, 0, len(iss.fns))
-	for _, fn := range iss.fns {
+	aggregation := make([]string, 0, len(_s.fns))
+	for _, fn := range _s.fns {
 		aggregation = append(aggregation, fn(selector))
 	}
-	switch n := len(*iss.selector.flds); {
+	switch n := len(*_s.selector.flds); {
 	case n == 0 && len(aggregation) > 0:
 		selector.Select(aggregation...)
 	case n != 0 && len(aggregation) > 0:
@@ -805,7 +805,7 @@ func (iss *IncidentSeveritySelect) sqlScan(ctx context.Context, root *IncidentSe
 	}
 	rows := &sql.Rows{}
 	query, args := selector.Query()
-	if err := iss.driver.Query(ctx, query, args, rows); err != nil {
+	if err := _s.driver.Query(ctx, query, args, rows); err != nil {
 		return err
 	}
 	defer rows.Close()
@@ -813,7 +813,7 @@ func (iss *IncidentSeveritySelect) sqlScan(ctx context.Context, root *IncidentSe
 }
 
 // Modify adds a query modifier for attaching custom logic to queries.
-func (iss *IncidentSeveritySelect) Modify(modifiers ...func(s *sql.Selector)) *IncidentSeveritySelect {
-	iss.modifiers = append(iss.modifiers, modifiers...)
-	return iss
+func (_s *IncidentSeveritySelect) Modify(modifiers ...func(s *sql.Selector)) *IncidentSeveritySelect {
+	_s.modifiers = append(_s.modifiers, modifiers...)
+	return _s
 }

@@ -27,133 +27,133 @@ type IncidentFieldOptionUpdate struct {
 }
 
 // Where appends a list predicates to the IncidentFieldOptionUpdate builder.
-func (ifou *IncidentFieldOptionUpdate) Where(ps ...predicate.IncidentFieldOption) *IncidentFieldOptionUpdate {
-	ifou.mutation.Where(ps...)
-	return ifou
+func (_u *IncidentFieldOptionUpdate) Where(ps ...predicate.IncidentFieldOption) *IncidentFieldOptionUpdate {
+	_u.mutation.Where(ps...)
+	return _u
 }
 
 // SetArchiveTime sets the "archive_time" field.
-func (ifou *IncidentFieldOptionUpdate) SetArchiveTime(t time.Time) *IncidentFieldOptionUpdate {
-	ifou.mutation.SetArchiveTime(t)
-	return ifou
+func (_u *IncidentFieldOptionUpdate) SetArchiveTime(v time.Time) *IncidentFieldOptionUpdate {
+	_u.mutation.SetArchiveTime(v)
+	return _u
 }
 
 // SetNillableArchiveTime sets the "archive_time" field if the given value is not nil.
-func (ifou *IncidentFieldOptionUpdate) SetNillableArchiveTime(t *time.Time) *IncidentFieldOptionUpdate {
-	if t != nil {
-		ifou.SetArchiveTime(*t)
+func (_u *IncidentFieldOptionUpdate) SetNillableArchiveTime(v *time.Time) *IncidentFieldOptionUpdate {
+	if v != nil {
+		_u.SetArchiveTime(*v)
 	}
-	return ifou
+	return _u
 }
 
 // ClearArchiveTime clears the value of the "archive_time" field.
-func (ifou *IncidentFieldOptionUpdate) ClearArchiveTime() *IncidentFieldOptionUpdate {
-	ifou.mutation.ClearArchiveTime()
-	return ifou
+func (_u *IncidentFieldOptionUpdate) ClearArchiveTime() *IncidentFieldOptionUpdate {
+	_u.mutation.ClearArchiveTime()
+	return _u
 }
 
 // SetIncidentFieldID sets the "incident_field_id" field.
-func (ifou *IncidentFieldOptionUpdate) SetIncidentFieldID(u uuid.UUID) *IncidentFieldOptionUpdate {
-	ifou.mutation.SetIncidentFieldID(u)
-	return ifou
+func (_u *IncidentFieldOptionUpdate) SetIncidentFieldID(v uuid.UUID) *IncidentFieldOptionUpdate {
+	_u.mutation.SetIncidentFieldID(v)
+	return _u
 }
 
 // SetNillableIncidentFieldID sets the "incident_field_id" field if the given value is not nil.
-func (ifou *IncidentFieldOptionUpdate) SetNillableIncidentFieldID(u *uuid.UUID) *IncidentFieldOptionUpdate {
-	if u != nil {
-		ifou.SetIncidentFieldID(*u)
+func (_u *IncidentFieldOptionUpdate) SetNillableIncidentFieldID(v *uuid.UUID) *IncidentFieldOptionUpdate {
+	if v != nil {
+		_u.SetIncidentFieldID(*v)
 	}
-	return ifou
+	return _u
 }
 
 // SetType sets the "type" field.
-func (ifou *IncidentFieldOptionUpdate) SetType(i incidentfieldoption.Type) *IncidentFieldOptionUpdate {
-	ifou.mutation.SetType(i)
-	return ifou
+func (_u *IncidentFieldOptionUpdate) SetType(v incidentfieldoption.Type) *IncidentFieldOptionUpdate {
+	_u.mutation.SetType(v)
+	return _u
 }
 
 // SetNillableType sets the "type" field if the given value is not nil.
-func (ifou *IncidentFieldOptionUpdate) SetNillableType(i *incidentfieldoption.Type) *IncidentFieldOptionUpdate {
-	if i != nil {
-		ifou.SetType(*i)
+func (_u *IncidentFieldOptionUpdate) SetNillableType(v *incidentfieldoption.Type) *IncidentFieldOptionUpdate {
+	if v != nil {
+		_u.SetType(*v)
 	}
-	return ifou
+	return _u
 }
 
 // SetValue sets the "value" field.
-func (ifou *IncidentFieldOptionUpdate) SetValue(s string) *IncidentFieldOptionUpdate {
-	ifou.mutation.SetValue(s)
-	return ifou
+func (_u *IncidentFieldOptionUpdate) SetValue(v string) *IncidentFieldOptionUpdate {
+	_u.mutation.SetValue(v)
+	return _u
 }
 
 // SetNillableValue sets the "value" field if the given value is not nil.
-func (ifou *IncidentFieldOptionUpdate) SetNillableValue(s *string) *IncidentFieldOptionUpdate {
-	if s != nil {
-		ifou.SetValue(*s)
+func (_u *IncidentFieldOptionUpdate) SetNillableValue(v *string) *IncidentFieldOptionUpdate {
+	if v != nil {
+		_u.SetValue(*v)
 	}
-	return ifou
+	return _u
 }
 
 // SetIncidentField sets the "incident_field" edge to the IncidentField entity.
-func (ifou *IncidentFieldOptionUpdate) SetIncidentField(i *IncidentField) *IncidentFieldOptionUpdate {
-	return ifou.SetIncidentFieldID(i.ID)
+func (_u *IncidentFieldOptionUpdate) SetIncidentField(v *IncidentField) *IncidentFieldOptionUpdate {
+	return _u.SetIncidentFieldID(v.ID)
 }
 
 // AddIncidentIDs adds the "incidents" edge to the Incident entity by IDs.
-func (ifou *IncidentFieldOptionUpdate) AddIncidentIDs(ids ...uuid.UUID) *IncidentFieldOptionUpdate {
-	ifou.mutation.AddIncidentIDs(ids...)
-	return ifou
+func (_u *IncidentFieldOptionUpdate) AddIncidentIDs(ids ...uuid.UUID) *IncidentFieldOptionUpdate {
+	_u.mutation.AddIncidentIDs(ids...)
+	return _u
 }
 
 // AddIncidents adds the "incidents" edges to the Incident entity.
-func (ifou *IncidentFieldOptionUpdate) AddIncidents(i ...*Incident) *IncidentFieldOptionUpdate {
-	ids := make([]uuid.UUID, len(i))
-	for j := range i {
-		ids[j] = i[j].ID
+func (_u *IncidentFieldOptionUpdate) AddIncidents(v ...*Incident) *IncidentFieldOptionUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
 	}
-	return ifou.AddIncidentIDs(ids...)
+	return _u.AddIncidentIDs(ids...)
 }
 
 // Mutation returns the IncidentFieldOptionMutation object of the builder.
-func (ifou *IncidentFieldOptionUpdate) Mutation() *IncidentFieldOptionMutation {
-	return ifou.mutation
+func (_u *IncidentFieldOptionUpdate) Mutation() *IncidentFieldOptionMutation {
+	return _u.mutation
 }
 
 // ClearIncidentField clears the "incident_field" edge to the IncidentField entity.
-func (ifou *IncidentFieldOptionUpdate) ClearIncidentField() *IncidentFieldOptionUpdate {
-	ifou.mutation.ClearIncidentField()
-	return ifou
+func (_u *IncidentFieldOptionUpdate) ClearIncidentField() *IncidentFieldOptionUpdate {
+	_u.mutation.ClearIncidentField()
+	return _u
 }
 
 // ClearIncidents clears all "incidents" edges to the Incident entity.
-func (ifou *IncidentFieldOptionUpdate) ClearIncidents() *IncidentFieldOptionUpdate {
-	ifou.mutation.ClearIncidents()
-	return ifou
+func (_u *IncidentFieldOptionUpdate) ClearIncidents() *IncidentFieldOptionUpdate {
+	_u.mutation.ClearIncidents()
+	return _u
 }
 
 // RemoveIncidentIDs removes the "incidents" edge to Incident entities by IDs.
-func (ifou *IncidentFieldOptionUpdate) RemoveIncidentIDs(ids ...uuid.UUID) *IncidentFieldOptionUpdate {
-	ifou.mutation.RemoveIncidentIDs(ids...)
-	return ifou
+func (_u *IncidentFieldOptionUpdate) RemoveIncidentIDs(ids ...uuid.UUID) *IncidentFieldOptionUpdate {
+	_u.mutation.RemoveIncidentIDs(ids...)
+	return _u
 }
 
 // RemoveIncidents removes "incidents" edges to Incident entities.
-func (ifou *IncidentFieldOptionUpdate) RemoveIncidents(i ...*Incident) *IncidentFieldOptionUpdate {
-	ids := make([]uuid.UUID, len(i))
-	for j := range i {
-		ids[j] = i[j].ID
+func (_u *IncidentFieldOptionUpdate) RemoveIncidents(v ...*Incident) *IncidentFieldOptionUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
 	}
-	return ifou.RemoveIncidentIDs(ids...)
+	return _u.RemoveIncidentIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
-func (ifou *IncidentFieldOptionUpdate) Save(ctx context.Context) (int, error) {
-	return withHooks(ctx, ifou.sqlSave, ifou.mutation, ifou.hooks)
+func (_u *IncidentFieldOptionUpdate) Save(ctx context.Context) (int, error) {
+	return withHooks(ctx, _u.sqlSave, _u.mutation, _u.hooks)
 }
 
 // SaveX is like Save, but panics if an error occurs.
-func (ifou *IncidentFieldOptionUpdate) SaveX(ctx context.Context) int {
-	affected, err := ifou.Save(ctx)
+func (_u *IncidentFieldOptionUpdate) SaveX(ctx context.Context) int {
+	affected, err := _u.Save(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -161,65 +161,65 @@ func (ifou *IncidentFieldOptionUpdate) SaveX(ctx context.Context) int {
 }
 
 // Exec executes the query.
-func (ifou *IncidentFieldOptionUpdate) Exec(ctx context.Context) error {
-	_, err := ifou.Save(ctx)
+func (_u *IncidentFieldOptionUpdate) Exec(ctx context.Context) error {
+	_, err := _u.Save(ctx)
 	return err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (ifou *IncidentFieldOptionUpdate) ExecX(ctx context.Context) {
-	if err := ifou.Exec(ctx); err != nil {
+func (_u *IncidentFieldOptionUpdate) ExecX(ctx context.Context) {
+	if err := _u.Exec(ctx); err != nil {
 		panic(err)
 	}
 }
 
 // check runs all checks and user-defined validators on the builder.
-func (ifou *IncidentFieldOptionUpdate) check() error {
-	if v, ok := ifou.mutation.GetType(); ok {
+func (_u *IncidentFieldOptionUpdate) check() error {
+	if v, ok := _u.mutation.GetType(); ok {
 		if err := incidentfieldoption.TypeValidator(v); err != nil {
 			return &ValidationError{Name: "type", err: fmt.Errorf(`ent: validator failed for field "IncidentFieldOption.type": %w`, err)}
 		}
 	}
-	if ifou.mutation.TenantCleared() && len(ifou.mutation.TenantIDs()) > 0 {
+	if _u.mutation.TenantCleared() && len(_u.mutation.TenantIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "IncidentFieldOption.tenant"`)
 	}
-	if ifou.mutation.IncidentFieldCleared() && len(ifou.mutation.IncidentFieldIDs()) > 0 {
+	if _u.mutation.IncidentFieldCleared() && len(_u.mutation.IncidentFieldIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "IncidentFieldOption.incident_field"`)
 	}
 	return nil
 }
 
 // Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
-func (ifou *IncidentFieldOptionUpdate) Modify(modifiers ...func(u *sql.UpdateBuilder)) *IncidentFieldOptionUpdate {
-	ifou.modifiers = append(ifou.modifiers, modifiers...)
-	return ifou
+func (_u *IncidentFieldOptionUpdate) Modify(modifiers ...func(u *sql.UpdateBuilder)) *IncidentFieldOptionUpdate {
+	_u.modifiers = append(_u.modifiers, modifiers...)
+	return _u
 }
 
-func (ifou *IncidentFieldOptionUpdate) sqlSave(ctx context.Context) (n int, err error) {
-	if err := ifou.check(); err != nil {
-		return n, err
+func (_u *IncidentFieldOptionUpdate) sqlSave(ctx context.Context) (_node int, err error) {
+	if err := _u.check(); err != nil {
+		return _node, err
 	}
 	_spec := sqlgraph.NewUpdateSpec(incidentfieldoption.Table, incidentfieldoption.Columns, sqlgraph.NewFieldSpec(incidentfieldoption.FieldID, field.TypeUUID))
-	if ps := ifou.mutation.predicates; len(ps) > 0 {
+	if ps := _u.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {
 				ps[i](selector)
 			}
 		}
 	}
-	if value, ok := ifou.mutation.ArchiveTime(); ok {
+	if value, ok := _u.mutation.ArchiveTime(); ok {
 		_spec.SetField(incidentfieldoption.FieldArchiveTime, field.TypeTime, value)
 	}
-	if ifou.mutation.ArchiveTimeCleared() {
+	if _u.mutation.ArchiveTimeCleared() {
 		_spec.ClearField(incidentfieldoption.FieldArchiveTime, field.TypeTime)
 	}
-	if value, ok := ifou.mutation.GetType(); ok {
+	if value, ok := _u.mutation.GetType(); ok {
 		_spec.SetField(incidentfieldoption.FieldType, field.TypeEnum, value)
 	}
-	if value, ok := ifou.mutation.Value(); ok {
+	if value, ok := _u.mutation.Value(); ok {
 		_spec.SetField(incidentfieldoption.FieldValue, field.TypeString, value)
 	}
-	if ifou.mutation.IncidentFieldCleared() {
+	if _u.mutation.IncidentFieldCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: true,
@@ -232,7 +232,7 @@ func (ifou *IncidentFieldOptionUpdate) sqlSave(ctx context.Context) (n int, err 
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := ifou.mutation.IncidentFieldIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.IncidentFieldIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: true,
@@ -248,7 +248,7 @@ func (ifou *IncidentFieldOptionUpdate) sqlSave(ctx context.Context) (n int, err 
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if ifou.mutation.IncidentsCleared() {
+	if _u.mutation.IncidentsCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
 			Inverse: true,
@@ -261,7 +261,7 @@ func (ifou *IncidentFieldOptionUpdate) sqlSave(ctx context.Context) (n int, err 
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := ifou.mutation.RemovedIncidentsIDs(); len(nodes) > 0 && !ifou.mutation.IncidentsCleared() {
+	if nodes := _u.mutation.RemovedIncidentsIDs(); len(nodes) > 0 && !_u.mutation.IncidentsCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
 			Inverse: true,
@@ -277,7 +277,7 @@ func (ifou *IncidentFieldOptionUpdate) sqlSave(ctx context.Context) (n int, err 
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := ifou.mutation.IncidentsIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.IncidentsIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
 			Inverse: true,
@@ -293,8 +293,8 @@ func (ifou *IncidentFieldOptionUpdate) sqlSave(ctx context.Context) (n int, err 
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	_spec.AddModifiers(ifou.modifiers...)
-	if n, err = sqlgraph.UpdateNodes(ctx, ifou.driver, _spec); err != nil {
+	_spec.AddModifiers(_u.modifiers...)
+	if _node, err = sqlgraph.UpdateNodes(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{incidentfieldoption.Label}
 		} else if sqlgraph.IsConstraintError(err) {
@@ -302,8 +302,8 @@ func (ifou *IncidentFieldOptionUpdate) sqlSave(ctx context.Context) (n int, err 
 		}
 		return 0, err
 	}
-	ifou.mutation.done = true
-	return n, nil
+	_u.mutation.done = true
+	return _node, nil
 }
 
 // IncidentFieldOptionUpdateOne is the builder for updating a single IncidentFieldOption entity.
@@ -316,140 +316,140 @@ type IncidentFieldOptionUpdateOne struct {
 }
 
 // SetArchiveTime sets the "archive_time" field.
-func (ifouo *IncidentFieldOptionUpdateOne) SetArchiveTime(t time.Time) *IncidentFieldOptionUpdateOne {
-	ifouo.mutation.SetArchiveTime(t)
-	return ifouo
+func (_u *IncidentFieldOptionUpdateOne) SetArchiveTime(v time.Time) *IncidentFieldOptionUpdateOne {
+	_u.mutation.SetArchiveTime(v)
+	return _u
 }
 
 // SetNillableArchiveTime sets the "archive_time" field if the given value is not nil.
-func (ifouo *IncidentFieldOptionUpdateOne) SetNillableArchiveTime(t *time.Time) *IncidentFieldOptionUpdateOne {
-	if t != nil {
-		ifouo.SetArchiveTime(*t)
+func (_u *IncidentFieldOptionUpdateOne) SetNillableArchiveTime(v *time.Time) *IncidentFieldOptionUpdateOne {
+	if v != nil {
+		_u.SetArchiveTime(*v)
 	}
-	return ifouo
+	return _u
 }
 
 // ClearArchiveTime clears the value of the "archive_time" field.
-func (ifouo *IncidentFieldOptionUpdateOne) ClearArchiveTime() *IncidentFieldOptionUpdateOne {
-	ifouo.mutation.ClearArchiveTime()
-	return ifouo
+func (_u *IncidentFieldOptionUpdateOne) ClearArchiveTime() *IncidentFieldOptionUpdateOne {
+	_u.mutation.ClearArchiveTime()
+	return _u
 }
 
 // SetIncidentFieldID sets the "incident_field_id" field.
-func (ifouo *IncidentFieldOptionUpdateOne) SetIncidentFieldID(u uuid.UUID) *IncidentFieldOptionUpdateOne {
-	ifouo.mutation.SetIncidentFieldID(u)
-	return ifouo
+func (_u *IncidentFieldOptionUpdateOne) SetIncidentFieldID(v uuid.UUID) *IncidentFieldOptionUpdateOne {
+	_u.mutation.SetIncidentFieldID(v)
+	return _u
 }
 
 // SetNillableIncidentFieldID sets the "incident_field_id" field if the given value is not nil.
-func (ifouo *IncidentFieldOptionUpdateOne) SetNillableIncidentFieldID(u *uuid.UUID) *IncidentFieldOptionUpdateOne {
-	if u != nil {
-		ifouo.SetIncidentFieldID(*u)
+func (_u *IncidentFieldOptionUpdateOne) SetNillableIncidentFieldID(v *uuid.UUID) *IncidentFieldOptionUpdateOne {
+	if v != nil {
+		_u.SetIncidentFieldID(*v)
 	}
-	return ifouo
+	return _u
 }
 
 // SetType sets the "type" field.
-func (ifouo *IncidentFieldOptionUpdateOne) SetType(i incidentfieldoption.Type) *IncidentFieldOptionUpdateOne {
-	ifouo.mutation.SetType(i)
-	return ifouo
+func (_u *IncidentFieldOptionUpdateOne) SetType(v incidentfieldoption.Type) *IncidentFieldOptionUpdateOne {
+	_u.mutation.SetType(v)
+	return _u
 }
 
 // SetNillableType sets the "type" field if the given value is not nil.
-func (ifouo *IncidentFieldOptionUpdateOne) SetNillableType(i *incidentfieldoption.Type) *IncidentFieldOptionUpdateOne {
-	if i != nil {
-		ifouo.SetType(*i)
+func (_u *IncidentFieldOptionUpdateOne) SetNillableType(v *incidentfieldoption.Type) *IncidentFieldOptionUpdateOne {
+	if v != nil {
+		_u.SetType(*v)
 	}
-	return ifouo
+	return _u
 }
 
 // SetValue sets the "value" field.
-func (ifouo *IncidentFieldOptionUpdateOne) SetValue(s string) *IncidentFieldOptionUpdateOne {
-	ifouo.mutation.SetValue(s)
-	return ifouo
+func (_u *IncidentFieldOptionUpdateOne) SetValue(v string) *IncidentFieldOptionUpdateOne {
+	_u.mutation.SetValue(v)
+	return _u
 }
 
 // SetNillableValue sets the "value" field if the given value is not nil.
-func (ifouo *IncidentFieldOptionUpdateOne) SetNillableValue(s *string) *IncidentFieldOptionUpdateOne {
-	if s != nil {
-		ifouo.SetValue(*s)
+func (_u *IncidentFieldOptionUpdateOne) SetNillableValue(v *string) *IncidentFieldOptionUpdateOne {
+	if v != nil {
+		_u.SetValue(*v)
 	}
-	return ifouo
+	return _u
 }
 
 // SetIncidentField sets the "incident_field" edge to the IncidentField entity.
-func (ifouo *IncidentFieldOptionUpdateOne) SetIncidentField(i *IncidentField) *IncidentFieldOptionUpdateOne {
-	return ifouo.SetIncidentFieldID(i.ID)
+func (_u *IncidentFieldOptionUpdateOne) SetIncidentField(v *IncidentField) *IncidentFieldOptionUpdateOne {
+	return _u.SetIncidentFieldID(v.ID)
 }
 
 // AddIncidentIDs adds the "incidents" edge to the Incident entity by IDs.
-func (ifouo *IncidentFieldOptionUpdateOne) AddIncidentIDs(ids ...uuid.UUID) *IncidentFieldOptionUpdateOne {
-	ifouo.mutation.AddIncidentIDs(ids...)
-	return ifouo
+func (_u *IncidentFieldOptionUpdateOne) AddIncidentIDs(ids ...uuid.UUID) *IncidentFieldOptionUpdateOne {
+	_u.mutation.AddIncidentIDs(ids...)
+	return _u
 }
 
 // AddIncidents adds the "incidents" edges to the Incident entity.
-func (ifouo *IncidentFieldOptionUpdateOne) AddIncidents(i ...*Incident) *IncidentFieldOptionUpdateOne {
-	ids := make([]uuid.UUID, len(i))
-	for j := range i {
-		ids[j] = i[j].ID
+func (_u *IncidentFieldOptionUpdateOne) AddIncidents(v ...*Incident) *IncidentFieldOptionUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
 	}
-	return ifouo.AddIncidentIDs(ids...)
+	return _u.AddIncidentIDs(ids...)
 }
 
 // Mutation returns the IncidentFieldOptionMutation object of the builder.
-func (ifouo *IncidentFieldOptionUpdateOne) Mutation() *IncidentFieldOptionMutation {
-	return ifouo.mutation
+func (_u *IncidentFieldOptionUpdateOne) Mutation() *IncidentFieldOptionMutation {
+	return _u.mutation
 }
 
 // ClearIncidentField clears the "incident_field" edge to the IncidentField entity.
-func (ifouo *IncidentFieldOptionUpdateOne) ClearIncidentField() *IncidentFieldOptionUpdateOne {
-	ifouo.mutation.ClearIncidentField()
-	return ifouo
+func (_u *IncidentFieldOptionUpdateOne) ClearIncidentField() *IncidentFieldOptionUpdateOne {
+	_u.mutation.ClearIncidentField()
+	return _u
 }
 
 // ClearIncidents clears all "incidents" edges to the Incident entity.
-func (ifouo *IncidentFieldOptionUpdateOne) ClearIncidents() *IncidentFieldOptionUpdateOne {
-	ifouo.mutation.ClearIncidents()
-	return ifouo
+func (_u *IncidentFieldOptionUpdateOne) ClearIncidents() *IncidentFieldOptionUpdateOne {
+	_u.mutation.ClearIncidents()
+	return _u
 }
 
 // RemoveIncidentIDs removes the "incidents" edge to Incident entities by IDs.
-func (ifouo *IncidentFieldOptionUpdateOne) RemoveIncidentIDs(ids ...uuid.UUID) *IncidentFieldOptionUpdateOne {
-	ifouo.mutation.RemoveIncidentIDs(ids...)
-	return ifouo
+func (_u *IncidentFieldOptionUpdateOne) RemoveIncidentIDs(ids ...uuid.UUID) *IncidentFieldOptionUpdateOne {
+	_u.mutation.RemoveIncidentIDs(ids...)
+	return _u
 }
 
 // RemoveIncidents removes "incidents" edges to Incident entities.
-func (ifouo *IncidentFieldOptionUpdateOne) RemoveIncidents(i ...*Incident) *IncidentFieldOptionUpdateOne {
-	ids := make([]uuid.UUID, len(i))
-	for j := range i {
-		ids[j] = i[j].ID
+func (_u *IncidentFieldOptionUpdateOne) RemoveIncidents(v ...*Incident) *IncidentFieldOptionUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
 	}
-	return ifouo.RemoveIncidentIDs(ids...)
+	return _u.RemoveIncidentIDs(ids...)
 }
 
 // Where appends a list predicates to the IncidentFieldOptionUpdate builder.
-func (ifouo *IncidentFieldOptionUpdateOne) Where(ps ...predicate.IncidentFieldOption) *IncidentFieldOptionUpdateOne {
-	ifouo.mutation.Where(ps...)
-	return ifouo
+func (_u *IncidentFieldOptionUpdateOne) Where(ps ...predicate.IncidentFieldOption) *IncidentFieldOptionUpdateOne {
+	_u.mutation.Where(ps...)
+	return _u
 }
 
 // Select allows selecting one or more fields (columns) of the returned entity.
 // The default is selecting all fields defined in the entity schema.
-func (ifouo *IncidentFieldOptionUpdateOne) Select(field string, fields ...string) *IncidentFieldOptionUpdateOne {
-	ifouo.fields = append([]string{field}, fields...)
-	return ifouo
+func (_u *IncidentFieldOptionUpdateOne) Select(field string, fields ...string) *IncidentFieldOptionUpdateOne {
+	_u.fields = append([]string{field}, fields...)
+	return _u
 }
 
 // Save executes the query and returns the updated IncidentFieldOption entity.
-func (ifouo *IncidentFieldOptionUpdateOne) Save(ctx context.Context) (*IncidentFieldOption, error) {
-	return withHooks(ctx, ifouo.sqlSave, ifouo.mutation, ifouo.hooks)
+func (_u *IncidentFieldOptionUpdateOne) Save(ctx context.Context) (*IncidentFieldOption, error) {
+	return withHooks(ctx, _u.sqlSave, _u.mutation, _u.hooks)
 }
 
 // SaveX is like Save, but panics if an error occurs.
-func (ifouo *IncidentFieldOptionUpdateOne) SaveX(ctx context.Context) *IncidentFieldOption {
-	node, err := ifouo.Save(ctx)
+func (_u *IncidentFieldOptionUpdateOne) SaveX(ctx context.Context) *IncidentFieldOption {
+	node, err := _u.Save(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -457,51 +457,51 @@ func (ifouo *IncidentFieldOptionUpdateOne) SaveX(ctx context.Context) *IncidentF
 }
 
 // Exec executes the query on the entity.
-func (ifouo *IncidentFieldOptionUpdateOne) Exec(ctx context.Context) error {
-	_, err := ifouo.Save(ctx)
+func (_u *IncidentFieldOptionUpdateOne) Exec(ctx context.Context) error {
+	_, err := _u.Save(ctx)
 	return err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (ifouo *IncidentFieldOptionUpdateOne) ExecX(ctx context.Context) {
-	if err := ifouo.Exec(ctx); err != nil {
+func (_u *IncidentFieldOptionUpdateOne) ExecX(ctx context.Context) {
+	if err := _u.Exec(ctx); err != nil {
 		panic(err)
 	}
 }
 
 // check runs all checks and user-defined validators on the builder.
-func (ifouo *IncidentFieldOptionUpdateOne) check() error {
-	if v, ok := ifouo.mutation.GetType(); ok {
+func (_u *IncidentFieldOptionUpdateOne) check() error {
+	if v, ok := _u.mutation.GetType(); ok {
 		if err := incidentfieldoption.TypeValidator(v); err != nil {
 			return &ValidationError{Name: "type", err: fmt.Errorf(`ent: validator failed for field "IncidentFieldOption.type": %w`, err)}
 		}
 	}
-	if ifouo.mutation.TenantCleared() && len(ifouo.mutation.TenantIDs()) > 0 {
+	if _u.mutation.TenantCleared() && len(_u.mutation.TenantIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "IncidentFieldOption.tenant"`)
 	}
-	if ifouo.mutation.IncidentFieldCleared() && len(ifouo.mutation.IncidentFieldIDs()) > 0 {
+	if _u.mutation.IncidentFieldCleared() && len(_u.mutation.IncidentFieldIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "IncidentFieldOption.incident_field"`)
 	}
 	return nil
 }
 
 // Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
-func (ifouo *IncidentFieldOptionUpdateOne) Modify(modifiers ...func(u *sql.UpdateBuilder)) *IncidentFieldOptionUpdateOne {
-	ifouo.modifiers = append(ifouo.modifiers, modifiers...)
-	return ifouo
+func (_u *IncidentFieldOptionUpdateOne) Modify(modifiers ...func(u *sql.UpdateBuilder)) *IncidentFieldOptionUpdateOne {
+	_u.modifiers = append(_u.modifiers, modifiers...)
+	return _u
 }
 
-func (ifouo *IncidentFieldOptionUpdateOne) sqlSave(ctx context.Context) (_node *IncidentFieldOption, err error) {
-	if err := ifouo.check(); err != nil {
+func (_u *IncidentFieldOptionUpdateOne) sqlSave(ctx context.Context) (_node *IncidentFieldOption, err error) {
+	if err := _u.check(); err != nil {
 		return _node, err
 	}
 	_spec := sqlgraph.NewUpdateSpec(incidentfieldoption.Table, incidentfieldoption.Columns, sqlgraph.NewFieldSpec(incidentfieldoption.FieldID, field.TypeUUID))
-	id, ok := ifouo.mutation.ID()
+	id, ok := _u.mutation.ID()
 	if !ok {
 		return nil, &ValidationError{Name: "id", err: errors.New(`ent: missing "IncidentFieldOption.id" for update`)}
 	}
 	_spec.Node.ID.Value = id
-	if fields := ifouo.fields; len(fields) > 0 {
+	if fields := _u.fields; len(fields) > 0 {
 		_spec.Node.Columns = make([]string, 0, len(fields))
 		_spec.Node.Columns = append(_spec.Node.Columns, incidentfieldoption.FieldID)
 		for _, f := range fields {
@@ -513,26 +513,26 @@ func (ifouo *IncidentFieldOptionUpdateOne) sqlSave(ctx context.Context) (_node *
 			}
 		}
 	}
-	if ps := ifouo.mutation.predicates; len(ps) > 0 {
+	if ps := _u.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {
 				ps[i](selector)
 			}
 		}
 	}
-	if value, ok := ifouo.mutation.ArchiveTime(); ok {
+	if value, ok := _u.mutation.ArchiveTime(); ok {
 		_spec.SetField(incidentfieldoption.FieldArchiveTime, field.TypeTime, value)
 	}
-	if ifouo.mutation.ArchiveTimeCleared() {
+	if _u.mutation.ArchiveTimeCleared() {
 		_spec.ClearField(incidentfieldoption.FieldArchiveTime, field.TypeTime)
 	}
-	if value, ok := ifouo.mutation.GetType(); ok {
+	if value, ok := _u.mutation.GetType(); ok {
 		_spec.SetField(incidentfieldoption.FieldType, field.TypeEnum, value)
 	}
-	if value, ok := ifouo.mutation.Value(); ok {
+	if value, ok := _u.mutation.Value(); ok {
 		_spec.SetField(incidentfieldoption.FieldValue, field.TypeString, value)
 	}
-	if ifouo.mutation.IncidentFieldCleared() {
+	if _u.mutation.IncidentFieldCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: true,
@@ -545,7 +545,7 @@ func (ifouo *IncidentFieldOptionUpdateOne) sqlSave(ctx context.Context) (_node *
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := ifouo.mutation.IncidentFieldIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.IncidentFieldIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: true,
@@ -561,7 +561,7 @@ func (ifouo *IncidentFieldOptionUpdateOne) sqlSave(ctx context.Context) (_node *
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if ifouo.mutation.IncidentsCleared() {
+	if _u.mutation.IncidentsCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
 			Inverse: true,
@@ -574,7 +574,7 @@ func (ifouo *IncidentFieldOptionUpdateOne) sqlSave(ctx context.Context) (_node *
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := ifouo.mutation.RemovedIncidentsIDs(); len(nodes) > 0 && !ifouo.mutation.IncidentsCleared() {
+	if nodes := _u.mutation.RemovedIncidentsIDs(); len(nodes) > 0 && !_u.mutation.IncidentsCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
 			Inverse: true,
@@ -590,7 +590,7 @@ func (ifouo *IncidentFieldOptionUpdateOne) sqlSave(ctx context.Context) (_node *
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := ifouo.mutation.IncidentsIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.IncidentsIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
 			Inverse: true,
@@ -606,11 +606,11 @@ func (ifouo *IncidentFieldOptionUpdateOne) sqlSave(ctx context.Context) (_node *
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	_spec.AddModifiers(ifouo.modifiers...)
-	_node = &IncidentFieldOption{config: ifouo.config}
+	_spec.AddModifiers(_u.modifiers...)
+	_node = &IncidentFieldOption{config: _u.config}
 	_spec.Assign = _node.assignValues
 	_spec.ScanValues = _node.scanValues
-	if err = sqlgraph.UpdateNode(ctx, ifouo.driver, _spec); err != nil {
+	if err = sqlgraph.UpdateNode(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{incidentfieldoption.Label}
 		} else if sqlgraph.IsConstraintError(err) {
@@ -618,6 +618,6 @@ func (ifouo *IncidentFieldOptionUpdateOne) sqlSave(ctx context.Context) (_node *
 		}
 		return nil, err
 	}
-	ifouo.mutation.done = true
+	_u.mutation.done = true
 	return _node, nil
 }

@@ -35,44 +35,44 @@ type AlertFeedbackQuery struct {
 }
 
 // Where adds a new predicate for the AlertFeedbackQuery builder.
-func (afq *AlertFeedbackQuery) Where(ps ...predicate.AlertFeedback) *AlertFeedbackQuery {
-	afq.predicates = append(afq.predicates, ps...)
-	return afq
+func (_q *AlertFeedbackQuery) Where(ps ...predicate.AlertFeedback) *AlertFeedbackQuery {
+	_q.predicates = append(_q.predicates, ps...)
+	return _q
 }
 
 // Limit the number of records to be returned by this query.
-func (afq *AlertFeedbackQuery) Limit(limit int) *AlertFeedbackQuery {
-	afq.ctx.Limit = &limit
-	return afq
+func (_q *AlertFeedbackQuery) Limit(limit int) *AlertFeedbackQuery {
+	_q.ctx.Limit = &limit
+	return _q
 }
 
 // Offset to start from.
-func (afq *AlertFeedbackQuery) Offset(offset int) *AlertFeedbackQuery {
-	afq.ctx.Offset = &offset
-	return afq
+func (_q *AlertFeedbackQuery) Offset(offset int) *AlertFeedbackQuery {
+	_q.ctx.Offset = &offset
+	return _q
 }
 
 // Unique configures the query builder to filter duplicate records on query.
 // By default, unique is set to true, and can be disabled using this method.
-func (afq *AlertFeedbackQuery) Unique(unique bool) *AlertFeedbackQuery {
-	afq.ctx.Unique = &unique
-	return afq
+func (_q *AlertFeedbackQuery) Unique(unique bool) *AlertFeedbackQuery {
+	_q.ctx.Unique = &unique
+	return _q
 }
 
 // Order specifies how the records should be ordered.
-func (afq *AlertFeedbackQuery) Order(o ...alertfeedback.OrderOption) *AlertFeedbackQuery {
-	afq.order = append(afq.order, o...)
-	return afq
+func (_q *AlertFeedbackQuery) Order(o ...alertfeedback.OrderOption) *AlertFeedbackQuery {
+	_q.order = append(_q.order, o...)
+	return _q
 }
 
 // QueryTenant chains the current query on the "tenant" edge.
-func (afq *AlertFeedbackQuery) QueryTenant() *TenantQuery {
-	query := (&TenantClient{config: afq.config}).Query()
+func (_q *AlertFeedbackQuery) QueryTenant() *TenantQuery {
+	query := (&TenantClient{config: _q.config}).Query()
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
-		if err := afq.prepareQuery(ctx); err != nil {
+		if err := _q.prepareQuery(ctx); err != nil {
 			return nil, err
 		}
-		selector := afq.sqlQuery(ctx)
+		selector := _q.sqlQuery(ctx)
 		if err := selector.Err(); err != nil {
 			return nil, err
 		}
@@ -81,20 +81,20 @@ func (afq *AlertFeedbackQuery) QueryTenant() *TenantQuery {
 			sqlgraph.To(tenant.Table, tenant.FieldID),
 			sqlgraph.Edge(sqlgraph.M2O, false, alertfeedback.TenantTable, alertfeedback.TenantColumn),
 		)
-		fromU = sqlgraph.SetNeighbors(afq.driver.Dialect(), step)
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
 	}
 	return query
 }
 
 // QueryAlertInstance chains the current query on the "alert_instance" edge.
-func (afq *AlertFeedbackQuery) QueryAlertInstance() *AlertInstanceQuery {
-	query := (&AlertInstanceClient{config: afq.config}).Query()
+func (_q *AlertFeedbackQuery) QueryAlertInstance() *AlertInstanceQuery {
+	query := (&AlertInstanceClient{config: _q.config}).Query()
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
-		if err := afq.prepareQuery(ctx); err != nil {
+		if err := _q.prepareQuery(ctx); err != nil {
 			return nil, err
 		}
-		selector := afq.sqlQuery(ctx)
+		selector := _q.sqlQuery(ctx)
 		if err := selector.Err(); err != nil {
 			return nil, err
 		}
@@ -103,7 +103,7 @@ func (afq *AlertFeedbackQuery) QueryAlertInstance() *AlertInstanceQuery {
 			sqlgraph.To(alertinstance.Table, alertinstance.FieldID),
 			sqlgraph.Edge(sqlgraph.M2O, false, alertfeedback.AlertInstanceTable, alertfeedback.AlertInstanceColumn),
 		)
-		fromU = sqlgraph.SetNeighbors(afq.driver.Dialect(), step)
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
 	}
 	return query
@@ -111,8 +111,8 @@ func (afq *AlertFeedbackQuery) QueryAlertInstance() *AlertInstanceQuery {
 
 // First returns the first AlertFeedback entity from the query.
 // Returns a *NotFoundError when no AlertFeedback was found.
-func (afq *AlertFeedbackQuery) First(ctx context.Context) (*AlertFeedback, error) {
-	nodes, err := afq.Limit(1).All(setContextOp(ctx, afq.ctx, ent.OpQueryFirst))
+func (_q *AlertFeedbackQuery) First(ctx context.Context) (*AlertFeedback, error) {
+	nodes, err := _q.Limit(1).All(setContextOp(ctx, _q.ctx, ent.OpQueryFirst))
 	if err != nil {
 		return nil, err
 	}
@@ -123,8 +123,8 @@ func (afq *AlertFeedbackQuery) First(ctx context.Context) (*AlertFeedback, error
 }
 
 // FirstX is like First, but panics if an error occurs.
-func (afq *AlertFeedbackQuery) FirstX(ctx context.Context) *AlertFeedback {
-	node, err := afq.First(ctx)
+func (_q *AlertFeedbackQuery) FirstX(ctx context.Context) *AlertFeedback {
+	node, err := _q.First(ctx)
 	if err != nil && !IsNotFound(err) {
 		panic(err)
 	}
@@ -133,9 +133,9 @@ func (afq *AlertFeedbackQuery) FirstX(ctx context.Context) *AlertFeedback {
 
 // FirstID returns the first AlertFeedback ID from the query.
 // Returns a *NotFoundError when no AlertFeedback ID was found.
-func (afq *AlertFeedbackQuery) FirstID(ctx context.Context) (id uuid.UUID, err error) {
+func (_q *AlertFeedbackQuery) FirstID(ctx context.Context) (id uuid.UUID, err error) {
 	var ids []uuid.UUID
-	if ids, err = afq.Limit(1).IDs(setContextOp(ctx, afq.ctx, ent.OpQueryFirstID)); err != nil {
+	if ids, err = _q.Limit(1).IDs(setContextOp(ctx, _q.ctx, ent.OpQueryFirstID)); err != nil {
 		return
 	}
 	if len(ids) == 0 {
@@ -146,8 +146,8 @@ func (afq *AlertFeedbackQuery) FirstID(ctx context.Context) (id uuid.UUID, err e
 }
 
 // FirstIDX is like FirstID, but panics if an error occurs.
-func (afq *AlertFeedbackQuery) FirstIDX(ctx context.Context) uuid.UUID {
-	id, err := afq.FirstID(ctx)
+func (_q *AlertFeedbackQuery) FirstIDX(ctx context.Context) uuid.UUID {
+	id, err := _q.FirstID(ctx)
 	if err != nil && !IsNotFound(err) {
 		panic(err)
 	}
@@ -157,8 +157,8 @@ func (afq *AlertFeedbackQuery) FirstIDX(ctx context.Context) uuid.UUID {
 // Only returns a single AlertFeedback entity found by the query, ensuring it only returns one.
 // Returns a *NotSingularError when more than one AlertFeedback entity is found.
 // Returns a *NotFoundError when no AlertFeedback entities are found.
-func (afq *AlertFeedbackQuery) Only(ctx context.Context) (*AlertFeedback, error) {
-	nodes, err := afq.Limit(2).All(setContextOp(ctx, afq.ctx, ent.OpQueryOnly))
+func (_q *AlertFeedbackQuery) Only(ctx context.Context) (*AlertFeedback, error) {
+	nodes, err := _q.Limit(2).All(setContextOp(ctx, _q.ctx, ent.OpQueryOnly))
 	if err != nil {
 		return nil, err
 	}
@@ -173,8 +173,8 @@ func (afq *AlertFeedbackQuery) Only(ctx context.Context) (*AlertFeedback, error)
 }
 
 // OnlyX is like Only, but panics if an error occurs.
-func (afq *AlertFeedbackQuery) OnlyX(ctx context.Context) *AlertFeedback {
-	node, err := afq.Only(ctx)
+func (_q *AlertFeedbackQuery) OnlyX(ctx context.Context) *AlertFeedback {
+	node, err := _q.Only(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -184,9 +184,9 @@ func (afq *AlertFeedbackQuery) OnlyX(ctx context.Context) *AlertFeedback {
 // OnlyID is like Only, but returns the only AlertFeedback ID in the query.
 // Returns a *NotSingularError when more than one AlertFeedback ID is found.
 // Returns a *NotFoundError when no entities are found.
-func (afq *AlertFeedbackQuery) OnlyID(ctx context.Context) (id uuid.UUID, err error) {
+func (_q *AlertFeedbackQuery) OnlyID(ctx context.Context) (id uuid.UUID, err error) {
 	var ids []uuid.UUID
-	if ids, err = afq.Limit(2).IDs(setContextOp(ctx, afq.ctx, ent.OpQueryOnlyID)); err != nil {
+	if ids, err = _q.Limit(2).IDs(setContextOp(ctx, _q.ctx, ent.OpQueryOnlyID)); err != nil {
 		return
 	}
 	switch len(ids) {
@@ -201,8 +201,8 @@ func (afq *AlertFeedbackQuery) OnlyID(ctx context.Context) (id uuid.UUID, err er
 }
 
 // OnlyIDX is like OnlyID, but panics if an error occurs.
-func (afq *AlertFeedbackQuery) OnlyIDX(ctx context.Context) uuid.UUID {
-	id, err := afq.OnlyID(ctx)
+func (_q *AlertFeedbackQuery) OnlyIDX(ctx context.Context) uuid.UUID {
+	id, err := _q.OnlyID(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -210,18 +210,18 @@ func (afq *AlertFeedbackQuery) OnlyIDX(ctx context.Context) uuid.UUID {
 }
 
 // All executes the query and returns a list of AlertFeedbacks.
-func (afq *AlertFeedbackQuery) All(ctx context.Context) ([]*AlertFeedback, error) {
-	ctx = setContextOp(ctx, afq.ctx, ent.OpQueryAll)
-	if err := afq.prepareQuery(ctx); err != nil {
+func (_q *AlertFeedbackQuery) All(ctx context.Context) ([]*AlertFeedback, error) {
+	ctx = setContextOp(ctx, _q.ctx, ent.OpQueryAll)
+	if err := _q.prepareQuery(ctx); err != nil {
 		return nil, err
 	}
 	qr := querierAll[[]*AlertFeedback, *AlertFeedbackQuery]()
-	return withInterceptors[[]*AlertFeedback](ctx, afq, qr, afq.inters)
+	return withInterceptors[[]*AlertFeedback](ctx, _q, qr, _q.inters)
 }
 
 // AllX is like All, but panics if an error occurs.
-func (afq *AlertFeedbackQuery) AllX(ctx context.Context) []*AlertFeedback {
-	nodes, err := afq.All(ctx)
+func (_q *AlertFeedbackQuery) AllX(ctx context.Context) []*AlertFeedback {
+	nodes, err := _q.All(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -229,20 +229,20 @@ func (afq *AlertFeedbackQuery) AllX(ctx context.Context) []*AlertFeedback {
 }
 
 // IDs executes the query and returns a list of AlertFeedback IDs.
-func (afq *AlertFeedbackQuery) IDs(ctx context.Context) (ids []uuid.UUID, err error) {
-	if afq.ctx.Unique == nil && afq.path != nil {
-		afq.Unique(true)
+func (_q *AlertFeedbackQuery) IDs(ctx context.Context) (ids []uuid.UUID, err error) {
+	if _q.ctx.Unique == nil && _q.path != nil {
+		_q.Unique(true)
 	}
-	ctx = setContextOp(ctx, afq.ctx, ent.OpQueryIDs)
-	if err = afq.Select(alertfeedback.FieldID).Scan(ctx, &ids); err != nil {
+	ctx = setContextOp(ctx, _q.ctx, ent.OpQueryIDs)
+	if err = _q.Select(alertfeedback.FieldID).Scan(ctx, &ids); err != nil {
 		return nil, err
 	}
 	return ids, nil
 }
 
 // IDsX is like IDs, but panics if an error occurs.
-func (afq *AlertFeedbackQuery) IDsX(ctx context.Context) []uuid.UUID {
-	ids, err := afq.IDs(ctx)
+func (_q *AlertFeedbackQuery) IDsX(ctx context.Context) []uuid.UUID {
+	ids, err := _q.IDs(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -250,17 +250,17 @@ func (afq *AlertFeedbackQuery) IDsX(ctx context.Context) []uuid.UUID {
 }
 
 // Count returns the count of the given query.
-func (afq *AlertFeedbackQuery) Count(ctx context.Context) (int, error) {
-	ctx = setContextOp(ctx, afq.ctx, ent.OpQueryCount)
-	if err := afq.prepareQuery(ctx); err != nil {
+func (_q *AlertFeedbackQuery) Count(ctx context.Context) (int, error) {
+	ctx = setContextOp(ctx, _q.ctx, ent.OpQueryCount)
+	if err := _q.prepareQuery(ctx); err != nil {
 		return 0, err
 	}
-	return withInterceptors[int](ctx, afq, querierCount[*AlertFeedbackQuery](), afq.inters)
+	return withInterceptors[int](ctx, _q, querierCount[*AlertFeedbackQuery](), _q.inters)
 }
 
 // CountX is like Count, but panics if an error occurs.
-func (afq *AlertFeedbackQuery) CountX(ctx context.Context) int {
-	count, err := afq.Count(ctx)
+func (_q *AlertFeedbackQuery) CountX(ctx context.Context) int {
+	count, err := _q.Count(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -268,9 +268,9 @@ func (afq *AlertFeedbackQuery) CountX(ctx context.Context) int {
 }
 
 // Exist returns true if the query has elements in the graph.
-func (afq *AlertFeedbackQuery) Exist(ctx context.Context) (bool, error) {
-	ctx = setContextOp(ctx, afq.ctx, ent.OpQueryExist)
-	switch _, err := afq.FirstID(ctx); {
+func (_q *AlertFeedbackQuery) Exist(ctx context.Context) (bool, error) {
+	ctx = setContextOp(ctx, _q.ctx, ent.OpQueryExist)
+	switch _, err := _q.FirstID(ctx); {
 	case IsNotFound(err):
 		return false, nil
 	case err != nil:
@@ -281,8 +281,8 @@ func (afq *AlertFeedbackQuery) Exist(ctx context.Context) (bool, error) {
 }
 
 // ExistX is like Exist, but panics if an error occurs.
-func (afq *AlertFeedbackQuery) ExistX(ctx context.Context) bool {
-	exist, err := afq.Exist(ctx)
+func (_q *AlertFeedbackQuery) ExistX(ctx context.Context) bool {
+	exist, err := _q.Exist(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -291,45 +291,45 @@ func (afq *AlertFeedbackQuery) ExistX(ctx context.Context) bool {
 
 // Clone returns a duplicate of the AlertFeedbackQuery builder, including all associated steps. It can be
 // used to prepare common query builders and use them differently after the clone is made.
-func (afq *AlertFeedbackQuery) Clone() *AlertFeedbackQuery {
-	if afq == nil {
+func (_q *AlertFeedbackQuery) Clone() *AlertFeedbackQuery {
+	if _q == nil {
 		return nil
 	}
 	return &AlertFeedbackQuery{
-		config:            afq.config,
-		ctx:               afq.ctx.Clone(),
-		order:             append([]alertfeedback.OrderOption{}, afq.order...),
-		inters:            append([]Interceptor{}, afq.inters...),
-		predicates:        append([]predicate.AlertFeedback{}, afq.predicates...),
-		withTenant:        afq.withTenant.Clone(),
-		withAlertInstance: afq.withAlertInstance.Clone(),
+		config:            _q.config,
+		ctx:               _q.ctx.Clone(),
+		order:             append([]alertfeedback.OrderOption{}, _q.order...),
+		inters:            append([]Interceptor{}, _q.inters...),
+		predicates:        append([]predicate.AlertFeedback{}, _q.predicates...),
+		withTenant:        _q.withTenant.Clone(),
+		withAlertInstance: _q.withAlertInstance.Clone(),
 		// clone intermediate query.
-		sql:       afq.sql.Clone(),
-		path:      afq.path,
-		modifiers: append([]func(*sql.Selector){}, afq.modifiers...),
+		sql:       _q.sql.Clone(),
+		path:      _q.path,
+		modifiers: append([]func(*sql.Selector){}, _q.modifiers...),
 	}
 }
 
 // WithTenant tells the query-builder to eager-load the nodes that are connected to
 // the "tenant" edge. The optional arguments are used to configure the query builder of the edge.
-func (afq *AlertFeedbackQuery) WithTenant(opts ...func(*TenantQuery)) *AlertFeedbackQuery {
-	query := (&TenantClient{config: afq.config}).Query()
+func (_q *AlertFeedbackQuery) WithTenant(opts ...func(*TenantQuery)) *AlertFeedbackQuery {
+	query := (&TenantClient{config: _q.config}).Query()
 	for _, opt := range opts {
 		opt(query)
 	}
-	afq.withTenant = query
-	return afq
+	_q.withTenant = query
+	return _q
 }
 
 // WithAlertInstance tells the query-builder to eager-load the nodes that are connected to
 // the "alert_instance" edge. The optional arguments are used to configure the query builder of the edge.
-func (afq *AlertFeedbackQuery) WithAlertInstance(opts ...func(*AlertInstanceQuery)) *AlertFeedbackQuery {
-	query := (&AlertInstanceClient{config: afq.config}).Query()
+func (_q *AlertFeedbackQuery) WithAlertInstance(opts ...func(*AlertInstanceQuery)) *AlertFeedbackQuery {
+	query := (&AlertInstanceClient{config: _q.config}).Query()
 	for _, opt := range opts {
 		opt(query)
 	}
-	afq.withAlertInstance = query
-	return afq
+	_q.withAlertInstance = query
+	return _q
 }
 
 // GroupBy is used to group vertices by one or more fields/columns.
@@ -346,10 +346,10 @@ func (afq *AlertFeedbackQuery) WithAlertInstance(opts ...func(*AlertInstanceQuer
 //		GroupBy(alertfeedback.FieldTenantID).
 //		Aggregate(ent.Count()).
 //		Scan(ctx, &v)
-func (afq *AlertFeedbackQuery) GroupBy(field string, fields ...string) *AlertFeedbackGroupBy {
-	afq.ctx.Fields = append([]string{field}, fields...)
-	grbuild := &AlertFeedbackGroupBy{build: afq}
-	grbuild.flds = &afq.ctx.Fields
+func (_q *AlertFeedbackQuery) GroupBy(field string, fields ...string) *AlertFeedbackGroupBy {
+	_q.ctx.Fields = append([]string{field}, fields...)
+	grbuild := &AlertFeedbackGroupBy{build: _q}
+	grbuild.flds = &_q.ctx.Fields
 	grbuild.label = alertfeedback.Label
 	grbuild.scan = grbuild.Scan
 	return grbuild
@@ -367,89 +367,89 @@ func (afq *AlertFeedbackQuery) GroupBy(field string, fields ...string) *AlertFee
 //	client.AlertFeedback.Query().
 //		Select(alertfeedback.FieldTenantID).
 //		Scan(ctx, &v)
-func (afq *AlertFeedbackQuery) Select(fields ...string) *AlertFeedbackSelect {
-	afq.ctx.Fields = append(afq.ctx.Fields, fields...)
-	sbuild := &AlertFeedbackSelect{AlertFeedbackQuery: afq}
+func (_q *AlertFeedbackQuery) Select(fields ...string) *AlertFeedbackSelect {
+	_q.ctx.Fields = append(_q.ctx.Fields, fields...)
+	sbuild := &AlertFeedbackSelect{AlertFeedbackQuery: _q}
 	sbuild.label = alertfeedback.Label
-	sbuild.flds, sbuild.scan = &afq.ctx.Fields, sbuild.Scan
+	sbuild.flds, sbuild.scan = &_q.ctx.Fields, sbuild.Scan
 	return sbuild
 }
 
 // Aggregate returns a AlertFeedbackSelect configured with the given aggregations.
-func (afq *AlertFeedbackQuery) Aggregate(fns ...AggregateFunc) *AlertFeedbackSelect {
-	return afq.Select().Aggregate(fns...)
+func (_q *AlertFeedbackQuery) Aggregate(fns ...AggregateFunc) *AlertFeedbackSelect {
+	return _q.Select().Aggregate(fns...)
 }
 
-func (afq *AlertFeedbackQuery) prepareQuery(ctx context.Context) error {
-	for _, inter := range afq.inters {
+func (_q *AlertFeedbackQuery) prepareQuery(ctx context.Context) error {
+	for _, inter := range _q.inters {
 		if inter == nil {
 			return fmt.Errorf("ent: uninitialized interceptor (forgotten import ent/runtime?)")
 		}
 		if trv, ok := inter.(Traverser); ok {
-			if err := trv.Traverse(ctx, afq); err != nil {
+			if err := trv.Traverse(ctx, _q); err != nil {
 				return err
 			}
 		}
 	}
-	for _, f := range afq.ctx.Fields {
+	for _, f := range _q.ctx.Fields {
 		if !alertfeedback.ValidColumn(f) {
 			return &ValidationError{Name: f, err: fmt.Errorf("ent: invalid field %q for query", f)}
 		}
 	}
-	if afq.path != nil {
-		prev, err := afq.path(ctx)
+	if _q.path != nil {
+		prev, err := _q.path(ctx)
 		if err != nil {
 			return err
 		}
-		afq.sql = prev
+		_q.sql = prev
 	}
 	if alertfeedback.Policy == nil {
 		return errors.New("ent: uninitialized alertfeedback.Policy (forgotten import ent/runtime?)")
 	}
-	if err := alertfeedback.Policy.EvalQuery(ctx, afq); err != nil {
+	if err := alertfeedback.Policy.EvalQuery(ctx, _q); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (afq *AlertFeedbackQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*AlertFeedback, error) {
+func (_q *AlertFeedbackQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*AlertFeedback, error) {
 	var (
 		nodes       = []*AlertFeedback{}
-		_spec       = afq.querySpec()
+		_spec       = _q.querySpec()
 		loadedTypes = [2]bool{
-			afq.withTenant != nil,
-			afq.withAlertInstance != nil,
+			_q.withTenant != nil,
+			_q.withAlertInstance != nil,
 		}
 	)
 	_spec.ScanValues = func(columns []string) ([]any, error) {
 		return (*AlertFeedback).scanValues(nil, columns)
 	}
 	_spec.Assign = func(columns []string, values []any) error {
-		node := &AlertFeedback{config: afq.config}
+		node := &AlertFeedback{config: _q.config}
 		nodes = append(nodes, node)
 		node.Edges.loadedTypes = loadedTypes
 		return node.assignValues(columns, values)
 	}
-	if len(afq.modifiers) > 0 {
-		_spec.Modifiers = afq.modifiers
+	if len(_q.modifiers) > 0 {
+		_spec.Modifiers = _q.modifiers
 	}
 	for i := range hooks {
 		hooks[i](ctx, _spec)
 	}
-	if err := sqlgraph.QueryNodes(ctx, afq.driver, _spec); err != nil {
+	if err := sqlgraph.QueryNodes(ctx, _q.driver, _spec); err != nil {
 		return nil, err
 	}
 	if len(nodes) == 0 {
 		return nodes, nil
 	}
-	if query := afq.withTenant; query != nil {
-		if err := afq.loadTenant(ctx, query, nodes, nil,
+	if query := _q.withTenant; query != nil {
+		if err := _q.loadTenant(ctx, query, nodes, nil,
 			func(n *AlertFeedback, e *Tenant) { n.Edges.Tenant = e }); err != nil {
 			return nil, err
 		}
 	}
-	if query := afq.withAlertInstance; query != nil {
-		if err := afq.loadAlertInstance(ctx, query, nodes, nil,
+	if query := _q.withAlertInstance; query != nil {
+		if err := _q.loadAlertInstance(ctx, query, nodes, nil,
 			func(n *AlertFeedback, e *AlertInstance) { n.Edges.AlertInstance = e }); err != nil {
 			return nil, err
 		}
@@ -457,7 +457,7 @@ func (afq *AlertFeedbackQuery) sqlAll(ctx context.Context, hooks ...queryHook) (
 	return nodes, nil
 }
 
-func (afq *AlertFeedbackQuery) loadTenant(ctx context.Context, query *TenantQuery, nodes []*AlertFeedback, init func(*AlertFeedback), assign func(*AlertFeedback, *Tenant)) error {
+func (_q *AlertFeedbackQuery) loadTenant(ctx context.Context, query *TenantQuery, nodes []*AlertFeedback, init func(*AlertFeedback), assign func(*AlertFeedback, *Tenant)) error {
 	ids := make([]int, 0, len(nodes))
 	nodeids := make(map[int][]*AlertFeedback)
 	for i := range nodes {
@@ -486,7 +486,7 @@ func (afq *AlertFeedbackQuery) loadTenant(ctx context.Context, query *TenantQuer
 	}
 	return nil
 }
-func (afq *AlertFeedbackQuery) loadAlertInstance(ctx context.Context, query *AlertInstanceQuery, nodes []*AlertFeedback, init func(*AlertFeedback), assign func(*AlertFeedback, *AlertInstance)) error {
+func (_q *AlertFeedbackQuery) loadAlertInstance(ctx context.Context, query *AlertInstanceQuery, nodes []*AlertFeedback, init func(*AlertFeedback), assign func(*AlertFeedback, *AlertInstance)) error {
 	ids := make([]uuid.UUID, 0, len(nodes))
 	nodeids := make(map[uuid.UUID][]*AlertFeedback)
 	for i := range nodes {
@@ -516,27 +516,27 @@ func (afq *AlertFeedbackQuery) loadAlertInstance(ctx context.Context, query *Ale
 	return nil
 }
 
-func (afq *AlertFeedbackQuery) sqlCount(ctx context.Context) (int, error) {
-	_spec := afq.querySpec()
-	if len(afq.modifiers) > 0 {
-		_spec.Modifiers = afq.modifiers
+func (_q *AlertFeedbackQuery) sqlCount(ctx context.Context) (int, error) {
+	_spec := _q.querySpec()
+	if len(_q.modifiers) > 0 {
+		_spec.Modifiers = _q.modifiers
 	}
-	_spec.Node.Columns = afq.ctx.Fields
-	if len(afq.ctx.Fields) > 0 {
-		_spec.Unique = afq.ctx.Unique != nil && *afq.ctx.Unique
+	_spec.Node.Columns = _q.ctx.Fields
+	if len(_q.ctx.Fields) > 0 {
+		_spec.Unique = _q.ctx.Unique != nil && *_q.ctx.Unique
 	}
-	return sqlgraph.CountNodes(ctx, afq.driver, _spec)
+	return sqlgraph.CountNodes(ctx, _q.driver, _spec)
 }
 
-func (afq *AlertFeedbackQuery) querySpec() *sqlgraph.QuerySpec {
+func (_q *AlertFeedbackQuery) querySpec() *sqlgraph.QuerySpec {
 	_spec := sqlgraph.NewQuerySpec(alertfeedback.Table, alertfeedback.Columns, sqlgraph.NewFieldSpec(alertfeedback.FieldID, field.TypeUUID))
-	_spec.From = afq.sql
-	if unique := afq.ctx.Unique; unique != nil {
+	_spec.From = _q.sql
+	if unique := _q.ctx.Unique; unique != nil {
 		_spec.Unique = *unique
-	} else if afq.path != nil {
+	} else if _q.path != nil {
 		_spec.Unique = true
 	}
-	if fields := afq.ctx.Fields; len(fields) > 0 {
+	if fields := _q.ctx.Fields; len(fields) > 0 {
 		_spec.Node.Columns = make([]string, 0, len(fields))
 		_spec.Node.Columns = append(_spec.Node.Columns, alertfeedback.FieldID)
 		for i := range fields {
@@ -544,27 +544,27 @@ func (afq *AlertFeedbackQuery) querySpec() *sqlgraph.QuerySpec {
 				_spec.Node.Columns = append(_spec.Node.Columns, fields[i])
 			}
 		}
-		if afq.withTenant != nil {
+		if _q.withTenant != nil {
 			_spec.Node.AddColumnOnce(alertfeedback.FieldTenantID)
 		}
-		if afq.withAlertInstance != nil {
+		if _q.withAlertInstance != nil {
 			_spec.Node.AddColumnOnce(alertfeedback.FieldAlertInstanceID)
 		}
 	}
-	if ps := afq.predicates; len(ps) > 0 {
+	if ps := _q.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {
 				ps[i](selector)
 			}
 		}
 	}
-	if limit := afq.ctx.Limit; limit != nil {
+	if limit := _q.ctx.Limit; limit != nil {
 		_spec.Limit = *limit
 	}
-	if offset := afq.ctx.Offset; offset != nil {
+	if offset := _q.ctx.Offset; offset != nil {
 		_spec.Offset = *offset
 	}
-	if ps := afq.order; len(ps) > 0 {
+	if ps := _q.order; len(ps) > 0 {
 		_spec.Order = func(selector *sql.Selector) {
 			for i := range ps {
 				ps[i](selector)
@@ -574,45 +574,45 @@ func (afq *AlertFeedbackQuery) querySpec() *sqlgraph.QuerySpec {
 	return _spec
 }
 
-func (afq *AlertFeedbackQuery) sqlQuery(ctx context.Context) *sql.Selector {
-	builder := sql.Dialect(afq.driver.Dialect())
+func (_q *AlertFeedbackQuery) sqlQuery(ctx context.Context) *sql.Selector {
+	builder := sql.Dialect(_q.driver.Dialect())
 	t1 := builder.Table(alertfeedback.Table)
-	columns := afq.ctx.Fields
+	columns := _q.ctx.Fields
 	if len(columns) == 0 {
 		columns = alertfeedback.Columns
 	}
 	selector := builder.Select(t1.Columns(columns...)...).From(t1)
-	if afq.sql != nil {
-		selector = afq.sql
+	if _q.sql != nil {
+		selector = _q.sql
 		selector.Select(selector.Columns(columns...)...)
 	}
-	if afq.ctx.Unique != nil && *afq.ctx.Unique {
+	if _q.ctx.Unique != nil && *_q.ctx.Unique {
 		selector.Distinct()
 	}
-	for _, m := range afq.modifiers {
+	for _, m := range _q.modifiers {
 		m(selector)
 	}
-	for _, p := range afq.predicates {
+	for _, p := range _q.predicates {
 		p(selector)
 	}
-	for _, p := range afq.order {
+	for _, p := range _q.order {
 		p(selector)
 	}
-	if offset := afq.ctx.Offset; offset != nil {
+	if offset := _q.ctx.Offset; offset != nil {
 		// limit is mandatory for offset clause. We start
 		// with default value, and override it below if needed.
 		selector.Offset(*offset).Limit(math.MaxInt32)
 	}
-	if limit := afq.ctx.Limit; limit != nil {
+	if limit := _q.ctx.Limit; limit != nil {
 		selector.Limit(*limit)
 	}
 	return selector
 }
 
 // Modify adds a query modifier for attaching custom logic to queries.
-func (afq *AlertFeedbackQuery) Modify(modifiers ...func(s *sql.Selector)) *AlertFeedbackSelect {
-	afq.modifiers = append(afq.modifiers, modifiers...)
-	return afq.Select()
+func (_q *AlertFeedbackQuery) Modify(modifiers ...func(s *sql.Selector)) *AlertFeedbackSelect {
+	_q.modifiers = append(_q.modifiers, modifiers...)
+	return _q.Select()
 }
 
 // AlertFeedbackGroupBy is the group-by builder for AlertFeedback entities.
@@ -622,41 +622,41 @@ type AlertFeedbackGroupBy struct {
 }
 
 // Aggregate adds the given aggregation functions to the group-by query.
-func (afgb *AlertFeedbackGroupBy) Aggregate(fns ...AggregateFunc) *AlertFeedbackGroupBy {
-	afgb.fns = append(afgb.fns, fns...)
-	return afgb
+func (_g *AlertFeedbackGroupBy) Aggregate(fns ...AggregateFunc) *AlertFeedbackGroupBy {
+	_g.fns = append(_g.fns, fns...)
+	return _g
 }
 
 // Scan applies the selector query and scans the result into the given value.
-func (afgb *AlertFeedbackGroupBy) Scan(ctx context.Context, v any) error {
-	ctx = setContextOp(ctx, afgb.build.ctx, ent.OpQueryGroupBy)
-	if err := afgb.build.prepareQuery(ctx); err != nil {
+func (_g *AlertFeedbackGroupBy) Scan(ctx context.Context, v any) error {
+	ctx = setContextOp(ctx, _g.build.ctx, ent.OpQueryGroupBy)
+	if err := _g.build.prepareQuery(ctx); err != nil {
 		return err
 	}
-	return scanWithInterceptors[*AlertFeedbackQuery, *AlertFeedbackGroupBy](ctx, afgb.build, afgb, afgb.build.inters, v)
+	return scanWithInterceptors[*AlertFeedbackQuery, *AlertFeedbackGroupBy](ctx, _g.build, _g, _g.build.inters, v)
 }
 
-func (afgb *AlertFeedbackGroupBy) sqlScan(ctx context.Context, root *AlertFeedbackQuery, v any) error {
+func (_g *AlertFeedbackGroupBy) sqlScan(ctx context.Context, root *AlertFeedbackQuery, v any) error {
 	selector := root.sqlQuery(ctx).Select()
-	aggregation := make([]string, 0, len(afgb.fns))
-	for _, fn := range afgb.fns {
+	aggregation := make([]string, 0, len(_g.fns))
+	for _, fn := range _g.fns {
 		aggregation = append(aggregation, fn(selector))
 	}
 	if len(selector.SelectedColumns()) == 0 {
-		columns := make([]string, 0, len(*afgb.flds)+len(afgb.fns))
-		for _, f := range *afgb.flds {
+		columns := make([]string, 0, len(*_g.flds)+len(_g.fns))
+		for _, f := range *_g.flds {
 			columns = append(columns, selector.C(f))
 		}
 		columns = append(columns, aggregation...)
 		selector.Select(columns...)
 	}
-	selector.GroupBy(selector.Columns(*afgb.flds...)...)
+	selector.GroupBy(selector.Columns(*_g.flds...)...)
 	if err := selector.Err(); err != nil {
 		return err
 	}
 	rows := &sql.Rows{}
 	query, args := selector.Query()
-	if err := afgb.build.driver.Query(ctx, query, args, rows); err != nil {
+	if err := _g.build.driver.Query(ctx, query, args, rows); err != nil {
 		return err
 	}
 	defer rows.Close()
@@ -670,27 +670,27 @@ type AlertFeedbackSelect struct {
 }
 
 // Aggregate adds the given aggregation functions to the selector query.
-func (afs *AlertFeedbackSelect) Aggregate(fns ...AggregateFunc) *AlertFeedbackSelect {
-	afs.fns = append(afs.fns, fns...)
-	return afs
+func (_s *AlertFeedbackSelect) Aggregate(fns ...AggregateFunc) *AlertFeedbackSelect {
+	_s.fns = append(_s.fns, fns...)
+	return _s
 }
 
 // Scan applies the selector query and scans the result into the given value.
-func (afs *AlertFeedbackSelect) Scan(ctx context.Context, v any) error {
-	ctx = setContextOp(ctx, afs.ctx, ent.OpQuerySelect)
-	if err := afs.prepareQuery(ctx); err != nil {
+func (_s *AlertFeedbackSelect) Scan(ctx context.Context, v any) error {
+	ctx = setContextOp(ctx, _s.ctx, ent.OpQuerySelect)
+	if err := _s.prepareQuery(ctx); err != nil {
 		return err
 	}
-	return scanWithInterceptors[*AlertFeedbackQuery, *AlertFeedbackSelect](ctx, afs.AlertFeedbackQuery, afs, afs.inters, v)
+	return scanWithInterceptors[*AlertFeedbackQuery, *AlertFeedbackSelect](ctx, _s.AlertFeedbackQuery, _s, _s.inters, v)
 }
 
-func (afs *AlertFeedbackSelect) sqlScan(ctx context.Context, root *AlertFeedbackQuery, v any) error {
+func (_s *AlertFeedbackSelect) sqlScan(ctx context.Context, root *AlertFeedbackQuery, v any) error {
 	selector := root.sqlQuery(ctx)
-	aggregation := make([]string, 0, len(afs.fns))
-	for _, fn := range afs.fns {
+	aggregation := make([]string, 0, len(_s.fns))
+	for _, fn := range _s.fns {
 		aggregation = append(aggregation, fn(selector))
 	}
-	switch n := len(*afs.selector.flds); {
+	switch n := len(*_s.selector.flds); {
 	case n == 0 && len(aggregation) > 0:
 		selector.Select(aggregation...)
 	case n != 0 && len(aggregation) > 0:
@@ -698,7 +698,7 @@ func (afs *AlertFeedbackSelect) sqlScan(ctx context.Context, root *AlertFeedback
 	}
 	rows := &sql.Rows{}
 	query, args := selector.Query()
-	if err := afs.driver.Query(ctx, query, args, rows); err != nil {
+	if err := _s.driver.Query(ctx, query, args, rows); err != nil {
 		return err
 	}
 	defer rows.Close()
@@ -706,7 +706,7 @@ func (afs *AlertFeedbackSelect) sqlScan(ctx context.Context, root *AlertFeedback
 }
 
 // Modify adds a query modifier for attaching custom logic to queries.
-func (afs *AlertFeedbackSelect) Modify(modifiers ...func(s *sql.Selector)) *AlertFeedbackSelect {
-	afs.modifiers = append(afs.modifiers, modifiers...)
-	return afs
+func (_s *AlertFeedbackSelect) Modify(modifiers ...func(s *sql.Selector)) *AlertFeedbackSelect {
+	_s.modifiers = append(_s.modifiers, modifiers...)
+	return _s
 }

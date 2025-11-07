@@ -20,56 +20,56 @@ type IncidentEventSystemComponentDelete struct {
 }
 
 // Where appends a list predicates to the IncidentEventSystemComponentDelete builder.
-func (iescd *IncidentEventSystemComponentDelete) Where(ps ...predicate.IncidentEventSystemComponent) *IncidentEventSystemComponentDelete {
-	iescd.mutation.Where(ps...)
-	return iescd
+func (_d *IncidentEventSystemComponentDelete) Where(ps ...predicate.IncidentEventSystemComponent) *IncidentEventSystemComponentDelete {
+	_d.mutation.Where(ps...)
+	return _d
 }
 
 // Exec executes the deletion query and returns how many vertices were deleted.
-func (iescd *IncidentEventSystemComponentDelete) Exec(ctx context.Context) (int, error) {
-	return withHooks(ctx, iescd.sqlExec, iescd.mutation, iescd.hooks)
+func (_d *IncidentEventSystemComponentDelete) Exec(ctx context.Context) (int, error) {
+	return withHooks(ctx, _d.sqlExec, _d.mutation, _d.hooks)
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (iescd *IncidentEventSystemComponentDelete) ExecX(ctx context.Context) int {
-	n, err := iescd.Exec(ctx)
+func (_d *IncidentEventSystemComponentDelete) ExecX(ctx context.Context) int {
+	n, err := _d.Exec(ctx)
 	if err != nil {
 		panic(err)
 	}
 	return n
 }
 
-func (iescd *IncidentEventSystemComponentDelete) sqlExec(ctx context.Context) (int, error) {
+func (_d *IncidentEventSystemComponentDelete) sqlExec(ctx context.Context) (int, error) {
 	_spec := sqlgraph.NewDeleteSpec(incidenteventsystemcomponent.Table, sqlgraph.NewFieldSpec(incidenteventsystemcomponent.FieldID, field.TypeUUID))
-	if ps := iescd.mutation.predicates; len(ps) > 0 {
+	if ps := _d.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {
 				ps[i](selector)
 			}
 		}
 	}
-	affected, err := sqlgraph.DeleteNodes(ctx, iescd.driver, _spec)
+	affected, err := sqlgraph.DeleteNodes(ctx, _d.driver, _spec)
 	if err != nil && sqlgraph.IsConstraintError(err) {
 		err = &ConstraintError{msg: err.Error(), wrap: err}
 	}
-	iescd.mutation.done = true
+	_d.mutation.done = true
 	return affected, err
 }
 
 // IncidentEventSystemComponentDeleteOne is the builder for deleting a single IncidentEventSystemComponent entity.
 type IncidentEventSystemComponentDeleteOne struct {
-	iescd *IncidentEventSystemComponentDelete
+	_d *IncidentEventSystemComponentDelete
 }
 
 // Where appends a list predicates to the IncidentEventSystemComponentDelete builder.
-func (iescdo *IncidentEventSystemComponentDeleteOne) Where(ps ...predicate.IncidentEventSystemComponent) *IncidentEventSystemComponentDeleteOne {
-	iescdo.iescd.mutation.Where(ps...)
-	return iescdo
+func (_d *IncidentEventSystemComponentDeleteOne) Where(ps ...predicate.IncidentEventSystemComponent) *IncidentEventSystemComponentDeleteOne {
+	_d._d.mutation.Where(ps...)
+	return _d
 }
 
 // Exec executes the deletion query.
-func (iescdo *IncidentEventSystemComponentDeleteOne) Exec(ctx context.Context) error {
-	n, err := iescdo.iescd.Exec(ctx)
+func (_d *IncidentEventSystemComponentDeleteOne) Exec(ctx context.Context) error {
+	n, err := _d._d.Exec(ctx)
 	switch {
 	case err != nil:
 		return err
@@ -81,8 +81,8 @@ func (iescdo *IncidentEventSystemComponentDeleteOne) Exec(ctx context.Context) e
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (iescdo *IncidentEventSystemComponentDeleteOne) ExecX(ctx context.Context) {
-	if err := iescdo.Exec(ctx); err != nil {
+func (_d *IncidentEventSystemComponentDeleteOne) ExecX(ctx context.Context) {
+	if err := _d.Exec(ctx); err != nil {
 		panic(err)
 	}
 }

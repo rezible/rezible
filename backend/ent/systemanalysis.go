@@ -118,7 +118,7 @@ func (*SystemAnalysis) scanValues(columns []string) ([]any, error) {
 
 // assignValues assigns the values that were returned from sql.Rows (after scanning)
 // to the SystemAnalysis fields.
-func (sa *SystemAnalysis) assignValues(columns []string, values []any) error {
+func (_m *SystemAnalysis) assignValues(columns []string, values []any) error {
 	if m, n := len(values), len(columns); m < n {
 		return fmt.Errorf("mismatch number of scan values: %d != %d", m, n)
 	}
@@ -128,28 +128,28 @@ func (sa *SystemAnalysis) assignValues(columns []string, values []any) error {
 			if value, ok := values[i].(*uuid.UUID); !ok {
 				return fmt.Errorf("unexpected type %T for field id", values[i])
 			} else if value != nil {
-				sa.ID = *value
+				_m.ID = *value
 			}
 		case systemanalysis.FieldTenantID:
 			if value, ok := values[i].(*sql.NullInt64); !ok {
 				return fmt.Errorf("unexpected type %T for field tenant_id", values[i])
 			} else if value.Valid {
-				sa.TenantID = int(value.Int64)
+				_m.TenantID = int(value.Int64)
 			}
 		case systemanalysis.FieldCreatedAt:
 			if value, ok := values[i].(*sql.NullTime); !ok {
 				return fmt.Errorf("unexpected type %T for field created_at", values[i])
 			} else if value.Valid {
-				sa.CreatedAt = value.Time
+				_m.CreatedAt = value.Time
 			}
 		case systemanalysis.FieldUpdatedAt:
 			if value, ok := values[i].(*sql.NullTime); !ok {
 				return fmt.Errorf("unexpected type %T for field updated_at", values[i])
 			} else if value.Valid {
-				sa.UpdatedAt = value.Time
+				_m.UpdatedAt = value.Time
 			}
 		default:
-			sa.selectValues.Set(columns[i], values[i])
+			_m.selectValues.Set(columns[i], values[i])
 		}
 	}
 	return nil
@@ -157,66 +157,66 @@ func (sa *SystemAnalysis) assignValues(columns []string, values []any) error {
 
 // Value returns the ent.Value that was dynamically selected and assigned to the SystemAnalysis.
 // This includes values selected through modifiers, order, etc.
-func (sa *SystemAnalysis) Value(name string) (ent.Value, error) {
-	return sa.selectValues.Get(name)
+func (_m *SystemAnalysis) Value(name string) (ent.Value, error) {
+	return _m.selectValues.Get(name)
 }
 
 // QueryTenant queries the "tenant" edge of the SystemAnalysis entity.
-func (sa *SystemAnalysis) QueryTenant() *TenantQuery {
-	return NewSystemAnalysisClient(sa.config).QueryTenant(sa)
+func (_m *SystemAnalysis) QueryTenant() *TenantQuery {
+	return NewSystemAnalysisClient(_m.config).QueryTenant(_m)
 }
 
 // QueryRetrospective queries the "retrospective" edge of the SystemAnalysis entity.
-func (sa *SystemAnalysis) QueryRetrospective() *RetrospectiveQuery {
-	return NewSystemAnalysisClient(sa.config).QueryRetrospective(sa)
+func (_m *SystemAnalysis) QueryRetrospective() *RetrospectiveQuery {
+	return NewSystemAnalysisClient(_m.config).QueryRetrospective(_m)
 }
 
 // QueryComponents queries the "components" edge of the SystemAnalysis entity.
-func (sa *SystemAnalysis) QueryComponents() *SystemComponentQuery {
-	return NewSystemAnalysisClient(sa.config).QueryComponents(sa)
+func (_m *SystemAnalysis) QueryComponents() *SystemComponentQuery {
+	return NewSystemAnalysisClient(_m.config).QueryComponents(_m)
 }
 
 // QueryRelationships queries the "relationships" edge of the SystemAnalysis entity.
-func (sa *SystemAnalysis) QueryRelationships() *SystemAnalysisRelationshipQuery {
-	return NewSystemAnalysisClient(sa.config).QueryRelationships(sa)
+func (_m *SystemAnalysis) QueryRelationships() *SystemAnalysisRelationshipQuery {
+	return NewSystemAnalysisClient(_m.config).QueryRelationships(_m)
 }
 
 // QueryAnalysisComponents queries the "analysis_components" edge of the SystemAnalysis entity.
-func (sa *SystemAnalysis) QueryAnalysisComponents() *SystemAnalysisComponentQuery {
-	return NewSystemAnalysisClient(sa.config).QueryAnalysisComponents(sa)
+func (_m *SystemAnalysis) QueryAnalysisComponents() *SystemAnalysisComponentQuery {
+	return NewSystemAnalysisClient(_m.config).QueryAnalysisComponents(_m)
 }
 
 // Update returns a builder for updating this SystemAnalysis.
 // Note that you need to call SystemAnalysis.Unwrap() before calling this method if this SystemAnalysis
 // was returned from a transaction, and the transaction was committed or rolled back.
-func (sa *SystemAnalysis) Update() *SystemAnalysisUpdateOne {
-	return NewSystemAnalysisClient(sa.config).UpdateOne(sa)
+func (_m *SystemAnalysis) Update() *SystemAnalysisUpdateOne {
+	return NewSystemAnalysisClient(_m.config).UpdateOne(_m)
 }
 
 // Unwrap unwraps the SystemAnalysis entity that was returned from a transaction after it was closed,
 // so that all future queries will be executed through the driver which created the transaction.
-func (sa *SystemAnalysis) Unwrap() *SystemAnalysis {
-	_tx, ok := sa.config.driver.(*txDriver)
+func (_m *SystemAnalysis) Unwrap() *SystemAnalysis {
+	_tx, ok := _m.config.driver.(*txDriver)
 	if !ok {
 		panic("ent: SystemAnalysis is not a transactional entity")
 	}
-	sa.config.driver = _tx.drv
-	return sa
+	_m.config.driver = _tx.drv
+	return _m
 }
 
 // String implements the fmt.Stringer.
-func (sa *SystemAnalysis) String() string {
+func (_m *SystemAnalysis) String() string {
 	var builder strings.Builder
 	builder.WriteString("SystemAnalysis(")
-	builder.WriteString(fmt.Sprintf("id=%v, ", sa.ID))
+	builder.WriteString(fmt.Sprintf("id=%v, ", _m.ID))
 	builder.WriteString("tenant_id=")
-	builder.WriteString(fmt.Sprintf("%v", sa.TenantID))
+	builder.WriteString(fmt.Sprintf("%v", _m.TenantID))
 	builder.WriteString(", ")
 	builder.WriteString("created_at=")
-	builder.WriteString(sa.CreatedAt.Format(time.ANSIC))
+	builder.WriteString(_m.CreatedAt.Format(time.ANSIC))
 	builder.WriteString(", ")
 	builder.WriteString("updated_at=")
-	builder.WriteString(sa.UpdatedAt.Format(time.ANSIC))
+	builder.WriteString(_m.UpdatedAt.Format(time.ANSIC))
 	builder.WriteByte(')')
 	return builder.String()
 }

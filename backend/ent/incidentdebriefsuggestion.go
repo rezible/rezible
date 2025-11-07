@@ -85,7 +85,7 @@ func (*IncidentDebriefSuggestion) scanValues(columns []string) ([]any, error) {
 
 // assignValues assigns the values that were returned from sql.Rows (after scanning)
 // to the IncidentDebriefSuggestion fields.
-func (ids *IncidentDebriefSuggestion) assignValues(columns []string, values []any) error {
+func (_m *IncidentDebriefSuggestion) assignValues(columns []string, values []any) error {
 	if m, n := len(values), len(columns); m < n {
 		return fmt.Errorf("mismatch number of scan values: %d != %d", m, n)
 	}
@@ -95,29 +95,29 @@ func (ids *IncidentDebriefSuggestion) assignValues(columns []string, values []an
 			if value, ok := values[i].(*uuid.UUID); !ok {
 				return fmt.Errorf("unexpected type %T for field id", values[i])
 			} else if value != nil {
-				ids.ID = *value
+				_m.ID = *value
 			}
 		case incidentdebriefsuggestion.FieldTenantID:
 			if value, ok := values[i].(*sql.NullInt64); !ok {
 				return fmt.Errorf("unexpected type %T for field tenant_id", values[i])
 			} else if value.Valid {
-				ids.TenantID = int(value.Int64)
+				_m.TenantID = int(value.Int64)
 			}
 		case incidentdebriefsuggestion.FieldContent:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field content", values[i])
 			} else if value.Valid {
-				ids.Content = value.String
+				_m.Content = value.String
 			}
 		case incidentdebriefsuggestion.ForeignKeys[0]:
 			if value, ok := values[i].(*sql.NullScanner); !ok {
 				return fmt.Errorf("unexpected type %T for field incident_debrief_suggestions", values[i])
 			} else if value.Valid {
-				ids.incident_debrief_suggestions = new(uuid.UUID)
-				*ids.incident_debrief_suggestions = *value.S.(*uuid.UUID)
+				_m.incident_debrief_suggestions = new(uuid.UUID)
+				*_m.incident_debrief_suggestions = *value.S.(*uuid.UUID)
 			}
 		default:
-			ids.selectValues.Set(columns[i], values[i])
+			_m.selectValues.Set(columns[i], values[i])
 		}
 	}
 	return nil
@@ -125,48 +125,48 @@ func (ids *IncidentDebriefSuggestion) assignValues(columns []string, values []an
 
 // Value returns the ent.Value that was dynamically selected and assigned to the IncidentDebriefSuggestion.
 // This includes values selected through modifiers, order, etc.
-func (ids *IncidentDebriefSuggestion) Value(name string) (ent.Value, error) {
-	return ids.selectValues.Get(name)
+func (_m *IncidentDebriefSuggestion) Value(name string) (ent.Value, error) {
+	return _m.selectValues.Get(name)
 }
 
 // QueryTenant queries the "tenant" edge of the IncidentDebriefSuggestion entity.
-func (ids *IncidentDebriefSuggestion) QueryTenant() *TenantQuery {
-	return NewIncidentDebriefSuggestionClient(ids.config).QueryTenant(ids)
+func (_m *IncidentDebriefSuggestion) QueryTenant() *TenantQuery {
+	return NewIncidentDebriefSuggestionClient(_m.config).QueryTenant(_m)
 }
 
 // QueryDebrief queries the "debrief" edge of the IncidentDebriefSuggestion entity.
-func (ids *IncidentDebriefSuggestion) QueryDebrief() *IncidentDebriefQuery {
-	return NewIncidentDebriefSuggestionClient(ids.config).QueryDebrief(ids)
+func (_m *IncidentDebriefSuggestion) QueryDebrief() *IncidentDebriefQuery {
+	return NewIncidentDebriefSuggestionClient(_m.config).QueryDebrief(_m)
 }
 
 // Update returns a builder for updating this IncidentDebriefSuggestion.
 // Note that you need to call IncidentDebriefSuggestion.Unwrap() before calling this method if this IncidentDebriefSuggestion
 // was returned from a transaction, and the transaction was committed or rolled back.
-func (ids *IncidentDebriefSuggestion) Update() *IncidentDebriefSuggestionUpdateOne {
-	return NewIncidentDebriefSuggestionClient(ids.config).UpdateOne(ids)
+func (_m *IncidentDebriefSuggestion) Update() *IncidentDebriefSuggestionUpdateOne {
+	return NewIncidentDebriefSuggestionClient(_m.config).UpdateOne(_m)
 }
 
 // Unwrap unwraps the IncidentDebriefSuggestion entity that was returned from a transaction after it was closed,
 // so that all future queries will be executed through the driver which created the transaction.
-func (ids *IncidentDebriefSuggestion) Unwrap() *IncidentDebriefSuggestion {
-	_tx, ok := ids.config.driver.(*txDriver)
+func (_m *IncidentDebriefSuggestion) Unwrap() *IncidentDebriefSuggestion {
+	_tx, ok := _m.config.driver.(*txDriver)
 	if !ok {
 		panic("ent: IncidentDebriefSuggestion is not a transactional entity")
 	}
-	ids.config.driver = _tx.drv
-	return ids
+	_m.config.driver = _tx.drv
+	return _m
 }
 
 // String implements the fmt.Stringer.
-func (ids *IncidentDebriefSuggestion) String() string {
+func (_m *IncidentDebriefSuggestion) String() string {
 	var builder strings.Builder
 	builder.WriteString("IncidentDebriefSuggestion(")
-	builder.WriteString(fmt.Sprintf("id=%v, ", ids.ID))
+	builder.WriteString(fmt.Sprintf("id=%v, ", _m.ID))
 	builder.WriteString("tenant_id=")
-	builder.WriteString(fmt.Sprintf("%v", ids.TenantID))
+	builder.WriteString(fmt.Sprintf("%v", _m.TenantID))
 	builder.WriteString(", ")
 	builder.WriteString("content=")
-	builder.WriteString(ids.Content)
+	builder.WriteString(_m.Content)
 	builder.WriteByte(')')
 	return builder.String()
 }

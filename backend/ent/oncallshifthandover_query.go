@@ -38,44 +38,44 @@ type OncallShiftHandoverQuery struct {
 }
 
 // Where adds a new predicate for the OncallShiftHandoverQuery builder.
-func (oshq *OncallShiftHandoverQuery) Where(ps ...predicate.OncallShiftHandover) *OncallShiftHandoverQuery {
-	oshq.predicates = append(oshq.predicates, ps...)
-	return oshq
+func (_q *OncallShiftHandoverQuery) Where(ps ...predicate.OncallShiftHandover) *OncallShiftHandoverQuery {
+	_q.predicates = append(_q.predicates, ps...)
+	return _q
 }
 
 // Limit the number of records to be returned by this query.
-func (oshq *OncallShiftHandoverQuery) Limit(limit int) *OncallShiftHandoverQuery {
-	oshq.ctx.Limit = &limit
-	return oshq
+func (_q *OncallShiftHandoverQuery) Limit(limit int) *OncallShiftHandoverQuery {
+	_q.ctx.Limit = &limit
+	return _q
 }
 
 // Offset to start from.
-func (oshq *OncallShiftHandoverQuery) Offset(offset int) *OncallShiftHandoverQuery {
-	oshq.ctx.Offset = &offset
-	return oshq
+func (_q *OncallShiftHandoverQuery) Offset(offset int) *OncallShiftHandoverQuery {
+	_q.ctx.Offset = &offset
+	return _q
 }
 
 // Unique configures the query builder to filter duplicate records on query.
 // By default, unique is set to true, and can be disabled using this method.
-func (oshq *OncallShiftHandoverQuery) Unique(unique bool) *OncallShiftHandoverQuery {
-	oshq.ctx.Unique = &unique
-	return oshq
+func (_q *OncallShiftHandoverQuery) Unique(unique bool) *OncallShiftHandoverQuery {
+	_q.ctx.Unique = &unique
+	return _q
 }
 
 // Order specifies how the records should be ordered.
-func (oshq *OncallShiftHandoverQuery) Order(o ...oncallshifthandover.OrderOption) *OncallShiftHandoverQuery {
-	oshq.order = append(oshq.order, o...)
-	return oshq
+func (_q *OncallShiftHandoverQuery) Order(o ...oncallshifthandover.OrderOption) *OncallShiftHandoverQuery {
+	_q.order = append(_q.order, o...)
+	return _q
 }
 
 // QueryTenant chains the current query on the "tenant" edge.
-func (oshq *OncallShiftHandoverQuery) QueryTenant() *TenantQuery {
-	query := (&TenantClient{config: oshq.config}).Query()
+func (_q *OncallShiftHandoverQuery) QueryTenant() *TenantQuery {
+	query := (&TenantClient{config: _q.config}).Query()
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
-		if err := oshq.prepareQuery(ctx); err != nil {
+		if err := _q.prepareQuery(ctx); err != nil {
 			return nil, err
 		}
-		selector := oshq.sqlQuery(ctx)
+		selector := _q.sqlQuery(ctx)
 		if err := selector.Err(); err != nil {
 			return nil, err
 		}
@@ -84,20 +84,20 @@ func (oshq *OncallShiftHandoverQuery) QueryTenant() *TenantQuery {
 			sqlgraph.To(tenant.Table, tenant.FieldID),
 			sqlgraph.Edge(sqlgraph.M2O, false, oncallshifthandover.TenantTable, oncallshifthandover.TenantColumn),
 		)
-		fromU = sqlgraph.SetNeighbors(oshq.driver.Dialect(), step)
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
 	}
 	return query
 }
 
 // QueryShift chains the current query on the "shift" edge.
-func (oshq *OncallShiftHandoverQuery) QueryShift() *OncallShiftQuery {
-	query := (&OncallShiftClient{config: oshq.config}).Query()
+func (_q *OncallShiftHandoverQuery) QueryShift() *OncallShiftQuery {
+	query := (&OncallShiftClient{config: _q.config}).Query()
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
-		if err := oshq.prepareQuery(ctx); err != nil {
+		if err := _q.prepareQuery(ctx); err != nil {
 			return nil, err
 		}
-		selector := oshq.sqlQuery(ctx)
+		selector := _q.sqlQuery(ctx)
 		if err := selector.Err(); err != nil {
 			return nil, err
 		}
@@ -106,20 +106,20 @@ func (oshq *OncallShiftHandoverQuery) QueryShift() *OncallShiftQuery {
 			sqlgraph.To(oncallshift.Table, oncallshift.FieldID),
 			sqlgraph.Edge(sqlgraph.O2O, true, oncallshifthandover.ShiftTable, oncallshifthandover.ShiftColumn),
 		)
-		fromU = sqlgraph.SetNeighbors(oshq.driver.Dialect(), step)
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
 	}
 	return query
 }
 
 // QueryPinnedAnnotations chains the current query on the "pinned_annotations" edge.
-func (oshq *OncallShiftHandoverQuery) QueryPinnedAnnotations() *EventAnnotationQuery {
-	query := (&EventAnnotationClient{config: oshq.config}).Query()
+func (_q *OncallShiftHandoverQuery) QueryPinnedAnnotations() *EventAnnotationQuery {
+	query := (&EventAnnotationClient{config: _q.config}).Query()
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
-		if err := oshq.prepareQuery(ctx); err != nil {
+		if err := _q.prepareQuery(ctx); err != nil {
 			return nil, err
 		}
-		selector := oshq.sqlQuery(ctx)
+		selector := _q.sqlQuery(ctx)
 		if err := selector.Err(); err != nil {
 			return nil, err
 		}
@@ -128,7 +128,7 @@ func (oshq *OncallShiftHandoverQuery) QueryPinnedAnnotations() *EventAnnotationQ
 			sqlgraph.To(eventannotation.Table, eventannotation.FieldID),
 			sqlgraph.Edge(sqlgraph.M2M, false, oncallshifthandover.PinnedAnnotationsTable, oncallshifthandover.PinnedAnnotationsPrimaryKey...),
 		)
-		fromU = sqlgraph.SetNeighbors(oshq.driver.Dialect(), step)
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
 	}
 	return query
@@ -136,8 +136,8 @@ func (oshq *OncallShiftHandoverQuery) QueryPinnedAnnotations() *EventAnnotationQ
 
 // First returns the first OncallShiftHandover entity from the query.
 // Returns a *NotFoundError when no OncallShiftHandover was found.
-func (oshq *OncallShiftHandoverQuery) First(ctx context.Context) (*OncallShiftHandover, error) {
-	nodes, err := oshq.Limit(1).All(setContextOp(ctx, oshq.ctx, ent.OpQueryFirst))
+func (_q *OncallShiftHandoverQuery) First(ctx context.Context) (*OncallShiftHandover, error) {
+	nodes, err := _q.Limit(1).All(setContextOp(ctx, _q.ctx, ent.OpQueryFirst))
 	if err != nil {
 		return nil, err
 	}
@@ -148,8 +148,8 @@ func (oshq *OncallShiftHandoverQuery) First(ctx context.Context) (*OncallShiftHa
 }
 
 // FirstX is like First, but panics if an error occurs.
-func (oshq *OncallShiftHandoverQuery) FirstX(ctx context.Context) *OncallShiftHandover {
-	node, err := oshq.First(ctx)
+func (_q *OncallShiftHandoverQuery) FirstX(ctx context.Context) *OncallShiftHandover {
+	node, err := _q.First(ctx)
 	if err != nil && !IsNotFound(err) {
 		panic(err)
 	}
@@ -158,9 +158,9 @@ func (oshq *OncallShiftHandoverQuery) FirstX(ctx context.Context) *OncallShiftHa
 
 // FirstID returns the first OncallShiftHandover ID from the query.
 // Returns a *NotFoundError when no OncallShiftHandover ID was found.
-func (oshq *OncallShiftHandoverQuery) FirstID(ctx context.Context) (id uuid.UUID, err error) {
+func (_q *OncallShiftHandoverQuery) FirstID(ctx context.Context) (id uuid.UUID, err error) {
 	var ids []uuid.UUID
-	if ids, err = oshq.Limit(1).IDs(setContextOp(ctx, oshq.ctx, ent.OpQueryFirstID)); err != nil {
+	if ids, err = _q.Limit(1).IDs(setContextOp(ctx, _q.ctx, ent.OpQueryFirstID)); err != nil {
 		return
 	}
 	if len(ids) == 0 {
@@ -171,8 +171,8 @@ func (oshq *OncallShiftHandoverQuery) FirstID(ctx context.Context) (id uuid.UUID
 }
 
 // FirstIDX is like FirstID, but panics if an error occurs.
-func (oshq *OncallShiftHandoverQuery) FirstIDX(ctx context.Context) uuid.UUID {
-	id, err := oshq.FirstID(ctx)
+func (_q *OncallShiftHandoverQuery) FirstIDX(ctx context.Context) uuid.UUID {
+	id, err := _q.FirstID(ctx)
 	if err != nil && !IsNotFound(err) {
 		panic(err)
 	}
@@ -182,8 +182,8 @@ func (oshq *OncallShiftHandoverQuery) FirstIDX(ctx context.Context) uuid.UUID {
 // Only returns a single OncallShiftHandover entity found by the query, ensuring it only returns one.
 // Returns a *NotSingularError when more than one OncallShiftHandover entity is found.
 // Returns a *NotFoundError when no OncallShiftHandover entities are found.
-func (oshq *OncallShiftHandoverQuery) Only(ctx context.Context) (*OncallShiftHandover, error) {
-	nodes, err := oshq.Limit(2).All(setContextOp(ctx, oshq.ctx, ent.OpQueryOnly))
+func (_q *OncallShiftHandoverQuery) Only(ctx context.Context) (*OncallShiftHandover, error) {
+	nodes, err := _q.Limit(2).All(setContextOp(ctx, _q.ctx, ent.OpQueryOnly))
 	if err != nil {
 		return nil, err
 	}
@@ -198,8 +198,8 @@ func (oshq *OncallShiftHandoverQuery) Only(ctx context.Context) (*OncallShiftHan
 }
 
 // OnlyX is like Only, but panics if an error occurs.
-func (oshq *OncallShiftHandoverQuery) OnlyX(ctx context.Context) *OncallShiftHandover {
-	node, err := oshq.Only(ctx)
+func (_q *OncallShiftHandoverQuery) OnlyX(ctx context.Context) *OncallShiftHandover {
+	node, err := _q.Only(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -209,9 +209,9 @@ func (oshq *OncallShiftHandoverQuery) OnlyX(ctx context.Context) *OncallShiftHan
 // OnlyID is like Only, but returns the only OncallShiftHandover ID in the query.
 // Returns a *NotSingularError when more than one OncallShiftHandover ID is found.
 // Returns a *NotFoundError when no entities are found.
-func (oshq *OncallShiftHandoverQuery) OnlyID(ctx context.Context) (id uuid.UUID, err error) {
+func (_q *OncallShiftHandoverQuery) OnlyID(ctx context.Context) (id uuid.UUID, err error) {
 	var ids []uuid.UUID
-	if ids, err = oshq.Limit(2).IDs(setContextOp(ctx, oshq.ctx, ent.OpQueryOnlyID)); err != nil {
+	if ids, err = _q.Limit(2).IDs(setContextOp(ctx, _q.ctx, ent.OpQueryOnlyID)); err != nil {
 		return
 	}
 	switch len(ids) {
@@ -226,8 +226,8 @@ func (oshq *OncallShiftHandoverQuery) OnlyID(ctx context.Context) (id uuid.UUID,
 }
 
 // OnlyIDX is like OnlyID, but panics if an error occurs.
-func (oshq *OncallShiftHandoverQuery) OnlyIDX(ctx context.Context) uuid.UUID {
-	id, err := oshq.OnlyID(ctx)
+func (_q *OncallShiftHandoverQuery) OnlyIDX(ctx context.Context) uuid.UUID {
+	id, err := _q.OnlyID(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -235,18 +235,18 @@ func (oshq *OncallShiftHandoverQuery) OnlyIDX(ctx context.Context) uuid.UUID {
 }
 
 // All executes the query and returns a list of OncallShiftHandovers.
-func (oshq *OncallShiftHandoverQuery) All(ctx context.Context) ([]*OncallShiftHandover, error) {
-	ctx = setContextOp(ctx, oshq.ctx, ent.OpQueryAll)
-	if err := oshq.prepareQuery(ctx); err != nil {
+func (_q *OncallShiftHandoverQuery) All(ctx context.Context) ([]*OncallShiftHandover, error) {
+	ctx = setContextOp(ctx, _q.ctx, ent.OpQueryAll)
+	if err := _q.prepareQuery(ctx); err != nil {
 		return nil, err
 	}
 	qr := querierAll[[]*OncallShiftHandover, *OncallShiftHandoverQuery]()
-	return withInterceptors[[]*OncallShiftHandover](ctx, oshq, qr, oshq.inters)
+	return withInterceptors[[]*OncallShiftHandover](ctx, _q, qr, _q.inters)
 }
 
 // AllX is like All, but panics if an error occurs.
-func (oshq *OncallShiftHandoverQuery) AllX(ctx context.Context) []*OncallShiftHandover {
-	nodes, err := oshq.All(ctx)
+func (_q *OncallShiftHandoverQuery) AllX(ctx context.Context) []*OncallShiftHandover {
+	nodes, err := _q.All(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -254,20 +254,20 @@ func (oshq *OncallShiftHandoverQuery) AllX(ctx context.Context) []*OncallShiftHa
 }
 
 // IDs executes the query and returns a list of OncallShiftHandover IDs.
-func (oshq *OncallShiftHandoverQuery) IDs(ctx context.Context) (ids []uuid.UUID, err error) {
-	if oshq.ctx.Unique == nil && oshq.path != nil {
-		oshq.Unique(true)
+func (_q *OncallShiftHandoverQuery) IDs(ctx context.Context) (ids []uuid.UUID, err error) {
+	if _q.ctx.Unique == nil && _q.path != nil {
+		_q.Unique(true)
 	}
-	ctx = setContextOp(ctx, oshq.ctx, ent.OpQueryIDs)
-	if err = oshq.Select(oncallshifthandover.FieldID).Scan(ctx, &ids); err != nil {
+	ctx = setContextOp(ctx, _q.ctx, ent.OpQueryIDs)
+	if err = _q.Select(oncallshifthandover.FieldID).Scan(ctx, &ids); err != nil {
 		return nil, err
 	}
 	return ids, nil
 }
 
 // IDsX is like IDs, but panics if an error occurs.
-func (oshq *OncallShiftHandoverQuery) IDsX(ctx context.Context) []uuid.UUID {
-	ids, err := oshq.IDs(ctx)
+func (_q *OncallShiftHandoverQuery) IDsX(ctx context.Context) []uuid.UUID {
+	ids, err := _q.IDs(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -275,17 +275,17 @@ func (oshq *OncallShiftHandoverQuery) IDsX(ctx context.Context) []uuid.UUID {
 }
 
 // Count returns the count of the given query.
-func (oshq *OncallShiftHandoverQuery) Count(ctx context.Context) (int, error) {
-	ctx = setContextOp(ctx, oshq.ctx, ent.OpQueryCount)
-	if err := oshq.prepareQuery(ctx); err != nil {
+func (_q *OncallShiftHandoverQuery) Count(ctx context.Context) (int, error) {
+	ctx = setContextOp(ctx, _q.ctx, ent.OpQueryCount)
+	if err := _q.prepareQuery(ctx); err != nil {
 		return 0, err
 	}
-	return withInterceptors[int](ctx, oshq, querierCount[*OncallShiftHandoverQuery](), oshq.inters)
+	return withInterceptors[int](ctx, _q, querierCount[*OncallShiftHandoverQuery](), _q.inters)
 }
 
 // CountX is like Count, but panics if an error occurs.
-func (oshq *OncallShiftHandoverQuery) CountX(ctx context.Context) int {
-	count, err := oshq.Count(ctx)
+func (_q *OncallShiftHandoverQuery) CountX(ctx context.Context) int {
+	count, err := _q.Count(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -293,9 +293,9 @@ func (oshq *OncallShiftHandoverQuery) CountX(ctx context.Context) int {
 }
 
 // Exist returns true if the query has elements in the graph.
-func (oshq *OncallShiftHandoverQuery) Exist(ctx context.Context) (bool, error) {
-	ctx = setContextOp(ctx, oshq.ctx, ent.OpQueryExist)
-	switch _, err := oshq.FirstID(ctx); {
+func (_q *OncallShiftHandoverQuery) Exist(ctx context.Context) (bool, error) {
+	ctx = setContextOp(ctx, _q.ctx, ent.OpQueryExist)
+	switch _, err := _q.FirstID(ctx); {
 	case IsNotFound(err):
 		return false, nil
 	case err != nil:
@@ -306,8 +306,8 @@ func (oshq *OncallShiftHandoverQuery) Exist(ctx context.Context) (bool, error) {
 }
 
 // ExistX is like Exist, but panics if an error occurs.
-func (oshq *OncallShiftHandoverQuery) ExistX(ctx context.Context) bool {
-	exist, err := oshq.Exist(ctx)
+func (_q *OncallShiftHandoverQuery) ExistX(ctx context.Context) bool {
+	exist, err := _q.Exist(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -316,57 +316,57 @@ func (oshq *OncallShiftHandoverQuery) ExistX(ctx context.Context) bool {
 
 // Clone returns a duplicate of the OncallShiftHandoverQuery builder, including all associated steps. It can be
 // used to prepare common query builders and use them differently after the clone is made.
-func (oshq *OncallShiftHandoverQuery) Clone() *OncallShiftHandoverQuery {
-	if oshq == nil {
+func (_q *OncallShiftHandoverQuery) Clone() *OncallShiftHandoverQuery {
+	if _q == nil {
 		return nil
 	}
 	return &OncallShiftHandoverQuery{
-		config:                oshq.config,
-		ctx:                   oshq.ctx.Clone(),
-		order:                 append([]oncallshifthandover.OrderOption{}, oshq.order...),
-		inters:                append([]Interceptor{}, oshq.inters...),
-		predicates:            append([]predicate.OncallShiftHandover{}, oshq.predicates...),
-		withTenant:            oshq.withTenant.Clone(),
-		withShift:             oshq.withShift.Clone(),
-		withPinnedAnnotations: oshq.withPinnedAnnotations.Clone(),
+		config:                _q.config,
+		ctx:                   _q.ctx.Clone(),
+		order:                 append([]oncallshifthandover.OrderOption{}, _q.order...),
+		inters:                append([]Interceptor{}, _q.inters...),
+		predicates:            append([]predicate.OncallShiftHandover{}, _q.predicates...),
+		withTenant:            _q.withTenant.Clone(),
+		withShift:             _q.withShift.Clone(),
+		withPinnedAnnotations: _q.withPinnedAnnotations.Clone(),
 		// clone intermediate query.
-		sql:       oshq.sql.Clone(),
-		path:      oshq.path,
-		modifiers: append([]func(*sql.Selector){}, oshq.modifiers...),
+		sql:       _q.sql.Clone(),
+		path:      _q.path,
+		modifiers: append([]func(*sql.Selector){}, _q.modifiers...),
 	}
 }
 
 // WithTenant tells the query-builder to eager-load the nodes that are connected to
 // the "tenant" edge. The optional arguments are used to configure the query builder of the edge.
-func (oshq *OncallShiftHandoverQuery) WithTenant(opts ...func(*TenantQuery)) *OncallShiftHandoverQuery {
-	query := (&TenantClient{config: oshq.config}).Query()
+func (_q *OncallShiftHandoverQuery) WithTenant(opts ...func(*TenantQuery)) *OncallShiftHandoverQuery {
+	query := (&TenantClient{config: _q.config}).Query()
 	for _, opt := range opts {
 		opt(query)
 	}
-	oshq.withTenant = query
-	return oshq
+	_q.withTenant = query
+	return _q
 }
 
 // WithShift tells the query-builder to eager-load the nodes that are connected to
 // the "shift" edge. The optional arguments are used to configure the query builder of the edge.
-func (oshq *OncallShiftHandoverQuery) WithShift(opts ...func(*OncallShiftQuery)) *OncallShiftHandoverQuery {
-	query := (&OncallShiftClient{config: oshq.config}).Query()
+func (_q *OncallShiftHandoverQuery) WithShift(opts ...func(*OncallShiftQuery)) *OncallShiftHandoverQuery {
+	query := (&OncallShiftClient{config: _q.config}).Query()
 	for _, opt := range opts {
 		opt(query)
 	}
-	oshq.withShift = query
-	return oshq
+	_q.withShift = query
+	return _q
 }
 
 // WithPinnedAnnotations tells the query-builder to eager-load the nodes that are connected to
 // the "pinned_annotations" edge. The optional arguments are used to configure the query builder of the edge.
-func (oshq *OncallShiftHandoverQuery) WithPinnedAnnotations(opts ...func(*EventAnnotationQuery)) *OncallShiftHandoverQuery {
-	query := (&EventAnnotationClient{config: oshq.config}).Query()
+func (_q *OncallShiftHandoverQuery) WithPinnedAnnotations(opts ...func(*EventAnnotationQuery)) *OncallShiftHandoverQuery {
+	query := (&EventAnnotationClient{config: _q.config}).Query()
 	for _, opt := range opts {
 		opt(query)
 	}
-	oshq.withPinnedAnnotations = query
-	return oshq
+	_q.withPinnedAnnotations = query
+	return _q
 }
 
 // GroupBy is used to group vertices by one or more fields/columns.
@@ -383,10 +383,10 @@ func (oshq *OncallShiftHandoverQuery) WithPinnedAnnotations(opts ...func(*EventA
 //		GroupBy(oncallshifthandover.FieldTenantID).
 //		Aggregate(ent.Count()).
 //		Scan(ctx, &v)
-func (oshq *OncallShiftHandoverQuery) GroupBy(field string, fields ...string) *OncallShiftHandoverGroupBy {
-	oshq.ctx.Fields = append([]string{field}, fields...)
-	grbuild := &OncallShiftHandoverGroupBy{build: oshq}
-	grbuild.flds = &oshq.ctx.Fields
+func (_q *OncallShiftHandoverQuery) GroupBy(field string, fields ...string) *OncallShiftHandoverGroupBy {
+	_q.ctx.Fields = append([]string{field}, fields...)
+	grbuild := &OncallShiftHandoverGroupBy{build: _q}
+	grbuild.flds = &_q.ctx.Fields
 	grbuild.label = oncallshifthandover.Label
 	grbuild.scan = grbuild.Scan
 	return grbuild
@@ -404,96 +404,96 @@ func (oshq *OncallShiftHandoverQuery) GroupBy(field string, fields ...string) *O
 //	client.OncallShiftHandover.Query().
 //		Select(oncallshifthandover.FieldTenantID).
 //		Scan(ctx, &v)
-func (oshq *OncallShiftHandoverQuery) Select(fields ...string) *OncallShiftHandoverSelect {
-	oshq.ctx.Fields = append(oshq.ctx.Fields, fields...)
-	sbuild := &OncallShiftHandoverSelect{OncallShiftHandoverQuery: oshq}
+func (_q *OncallShiftHandoverQuery) Select(fields ...string) *OncallShiftHandoverSelect {
+	_q.ctx.Fields = append(_q.ctx.Fields, fields...)
+	sbuild := &OncallShiftHandoverSelect{OncallShiftHandoverQuery: _q}
 	sbuild.label = oncallshifthandover.Label
-	sbuild.flds, sbuild.scan = &oshq.ctx.Fields, sbuild.Scan
+	sbuild.flds, sbuild.scan = &_q.ctx.Fields, sbuild.Scan
 	return sbuild
 }
 
 // Aggregate returns a OncallShiftHandoverSelect configured with the given aggregations.
-func (oshq *OncallShiftHandoverQuery) Aggregate(fns ...AggregateFunc) *OncallShiftHandoverSelect {
-	return oshq.Select().Aggregate(fns...)
+func (_q *OncallShiftHandoverQuery) Aggregate(fns ...AggregateFunc) *OncallShiftHandoverSelect {
+	return _q.Select().Aggregate(fns...)
 }
 
-func (oshq *OncallShiftHandoverQuery) prepareQuery(ctx context.Context) error {
-	for _, inter := range oshq.inters {
+func (_q *OncallShiftHandoverQuery) prepareQuery(ctx context.Context) error {
+	for _, inter := range _q.inters {
 		if inter == nil {
 			return fmt.Errorf("ent: uninitialized interceptor (forgotten import ent/runtime?)")
 		}
 		if trv, ok := inter.(Traverser); ok {
-			if err := trv.Traverse(ctx, oshq); err != nil {
+			if err := trv.Traverse(ctx, _q); err != nil {
 				return err
 			}
 		}
 	}
-	for _, f := range oshq.ctx.Fields {
+	for _, f := range _q.ctx.Fields {
 		if !oncallshifthandover.ValidColumn(f) {
 			return &ValidationError{Name: f, err: fmt.Errorf("ent: invalid field %q for query", f)}
 		}
 	}
-	if oshq.path != nil {
-		prev, err := oshq.path(ctx)
+	if _q.path != nil {
+		prev, err := _q.path(ctx)
 		if err != nil {
 			return err
 		}
-		oshq.sql = prev
+		_q.sql = prev
 	}
 	if oncallshifthandover.Policy == nil {
 		return errors.New("ent: uninitialized oncallshifthandover.Policy (forgotten import ent/runtime?)")
 	}
-	if err := oncallshifthandover.Policy.EvalQuery(ctx, oshq); err != nil {
+	if err := oncallshifthandover.Policy.EvalQuery(ctx, _q); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (oshq *OncallShiftHandoverQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*OncallShiftHandover, error) {
+func (_q *OncallShiftHandoverQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*OncallShiftHandover, error) {
 	var (
 		nodes       = []*OncallShiftHandover{}
-		_spec       = oshq.querySpec()
+		_spec       = _q.querySpec()
 		loadedTypes = [3]bool{
-			oshq.withTenant != nil,
-			oshq.withShift != nil,
-			oshq.withPinnedAnnotations != nil,
+			_q.withTenant != nil,
+			_q.withShift != nil,
+			_q.withPinnedAnnotations != nil,
 		}
 	)
 	_spec.ScanValues = func(columns []string) ([]any, error) {
 		return (*OncallShiftHandover).scanValues(nil, columns)
 	}
 	_spec.Assign = func(columns []string, values []any) error {
-		node := &OncallShiftHandover{config: oshq.config}
+		node := &OncallShiftHandover{config: _q.config}
 		nodes = append(nodes, node)
 		node.Edges.loadedTypes = loadedTypes
 		return node.assignValues(columns, values)
 	}
-	if len(oshq.modifiers) > 0 {
-		_spec.Modifiers = oshq.modifiers
+	if len(_q.modifiers) > 0 {
+		_spec.Modifiers = _q.modifiers
 	}
 	for i := range hooks {
 		hooks[i](ctx, _spec)
 	}
-	if err := sqlgraph.QueryNodes(ctx, oshq.driver, _spec); err != nil {
+	if err := sqlgraph.QueryNodes(ctx, _q.driver, _spec); err != nil {
 		return nil, err
 	}
 	if len(nodes) == 0 {
 		return nodes, nil
 	}
-	if query := oshq.withTenant; query != nil {
-		if err := oshq.loadTenant(ctx, query, nodes, nil,
+	if query := _q.withTenant; query != nil {
+		if err := _q.loadTenant(ctx, query, nodes, nil,
 			func(n *OncallShiftHandover, e *Tenant) { n.Edges.Tenant = e }); err != nil {
 			return nil, err
 		}
 	}
-	if query := oshq.withShift; query != nil {
-		if err := oshq.loadShift(ctx, query, nodes, nil,
+	if query := _q.withShift; query != nil {
+		if err := _q.loadShift(ctx, query, nodes, nil,
 			func(n *OncallShiftHandover, e *OncallShift) { n.Edges.Shift = e }); err != nil {
 			return nil, err
 		}
 	}
-	if query := oshq.withPinnedAnnotations; query != nil {
-		if err := oshq.loadPinnedAnnotations(ctx, query, nodes,
+	if query := _q.withPinnedAnnotations; query != nil {
+		if err := _q.loadPinnedAnnotations(ctx, query, nodes,
 			func(n *OncallShiftHandover) { n.Edges.PinnedAnnotations = []*EventAnnotation{} },
 			func(n *OncallShiftHandover, e *EventAnnotation) {
 				n.Edges.PinnedAnnotations = append(n.Edges.PinnedAnnotations, e)
@@ -504,7 +504,7 @@ func (oshq *OncallShiftHandoverQuery) sqlAll(ctx context.Context, hooks ...query
 	return nodes, nil
 }
 
-func (oshq *OncallShiftHandoverQuery) loadTenant(ctx context.Context, query *TenantQuery, nodes []*OncallShiftHandover, init func(*OncallShiftHandover), assign func(*OncallShiftHandover, *Tenant)) error {
+func (_q *OncallShiftHandoverQuery) loadTenant(ctx context.Context, query *TenantQuery, nodes []*OncallShiftHandover, init func(*OncallShiftHandover), assign func(*OncallShiftHandover, *Tenant)) error {
 	ids := make([]int, 0, len(nodes))
 	nodeids := make(map[int][]*OncallShiftHandover)
 	for i := range nodes {
@@ -533,7 +533,7 @@ func (oshq *OncallShiftHandoverQuery) loadTenant(ctx context.Context, query *Ten
 	}
 	return nil
 }
-func (oshq *OncallShiftHandoverQuery) loadShift(ctx context.Context, query *OncallShiftQuery, nodes []*OncallShiftHandover, init func(*OncallShiftHandover), assign func(*OncallShiftHandover, *OncallShift)) error {
+func (_q *OncallShiftHandoverQuery) loadShift(ctx context.Context, query *OncallShiftQuery, nodes []*OncallShiftHandover, init func(*OncallShiftHandover), assign func(*OncallShiftHandover, *OncallShift)) error {
 	ids := make([]uuid.UUID, 0, len(nodes))
 	nodeids := make(map[uuid.UUID][]*OncallShiftHandover)
 	for i := range nodes {
@@ -562,7 +562,7 @@ func (oshq *OncallShiftHandoverQuery) loadShift(ctx context.Context, query *Onca
 	}
 	return nil
 }
-func (oshq *OncallShiftHandoverQuery) loadPinnedAnnotations(ctx context.Context, query *EventAnnotationQuery, nodes []*OncallShiftHandover, init func(*OncallShiftHandover), assign func(*OncallShiftHandover, *EventAnnotation)) error {
+func (_q *OncallShiftHandoverQuery) loadPinnedAnnotations(ctx context.Context, query *EventAnnotationQuery, nodes []*OncallShiftHandover, init func(*OncallShiftHandover), assign func(*OncallShiftHandover, *EventAnnotation)) error {
 	edgeIDs := make([]driver.Value, len(nodes))
 	byID := make(map[uuid.UUID]*OncallShiftHandover)
 	nids := make(map[uuid.UUID]map[*OncallShiftHandover]struct{})
@@ -624,27 +624,27 @@ func (oshq *OncallShiftHandoverQuery) loadPinnedAnnotations(ctx context.Context,
 	return nil
 }
 
-func (oshq *OncallShiftHandoverQuery) sqlCount(ctx context.Context) (int, error) {
-	_spec := oshq.querySpec()
-	if len(oshq.modifiers) > 0 {
-		_spec.Modifiers = oshq.modifiers
+func (_q *OncallShiftHandoverQuery) sqlCount(ctx context.Context) (int, error) {
+	_spec := _q.querySpec()
+	if len(_q.modifiers) > 0 {
+		_spec.Modifiers = _q.modifiers
 	}
-	_spec.Node.Columns = oshq.ctx.Fields
-	if len(oshq.ctx.Fields) > 0 {
-		_spec.Unique = oshq.ctx.Unique != nil && *oshq.ctx.Unique
+	_spec.Node.Columns = _q.ctx.Fields
+	if len(_q.ctx.Fields) > 0 {
+		_spec.Unique = _q.ctx.Unique != nil && *_q.ctx.Unique
 	}
-	return sqlgraph.CountNodes(ctx, oshq.driver, _spec)
+	return sqlgraph.CountNodes(ctx, _q.driver, _spec)
 }
 
-func (oshq *OncallShiftHandoverQuery) querySpec() *sqlgraph.QuerySpec {
+func (_q *OncallShiftHandoverQuery) querySpec() *sqlgraph.QuerySpec {
 	_spec := sqlgraph.NewQuerySpec(oncallshifthandover.Table, oncallshifthandover.Columns, sqlgraph.NewFieldSpec(oncallshifthandover.FieldID, field.TypeUUID))
-	_spec.From = oshq.sql
-	if unique := oshq.ctx.Unique; unique != nil {
+	_spec.From = _q.sql
+	if unique := _q.ctx.Unique; unique != nil {
 		_spec.Unique = *unique
-	} else if oshq.path != nil {
+	} else if _q.path != nil {
 		_spec.Unique = true
 	}
-	if fields := oshq.ctx.Fields; len(fields) > 0 {
+	if fields := _q.ctx.Fields; len(fields) > 0 {
 		_spec.Node.Columns = make([]string, 0, len(fields))
 		_spec.Node.Columns = append(_spec.Node.Columns, oncallshifthandover.FieldID)
 		for i := range fields {
@@ -652,27 +652,27 @@ func (oshq *OncallShiftHandoverQuery) querySpec() *sqlgraph.QuerySpec {
 				_spec.Node.Columns = append(_spec.Node.Columns, fields[i])
 			}
 		}
-		if oshq.withTenant != nil {
+		if _q.withTenant != nil {
 			_spec.Node.AddColumnOnce(oncallshifthandover.FieldTenantID)
 		}
-		if oshq.withShift != nil {
+		if _q.withShift != nil {
 			_spec.Node.AddColumnOnce(oncallshifthandover.FieldShiftID)
 		}
 	}
-	if ps := oshq.predicates; len(ps) > 0 {
+	if ps := _q.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {
 				ps[i](selector)
 			}
 		}
 	}
-	if limit := oshq.ctx.Limit; limit != nil {
+	if limit := _q.ctx.Limit; limit != nil {
 		_spec.Limit = *limit
 	}
-	if offset := oshq.ctx.Offset; offset != nil {
+	if offset := _q.ctx.Offset; offset != nil {
 		_spec.Offset = *offset
 	}
-	if ps := oshq.order; len(ps) > 0 {
+	if ps := _q.order; len(ps) > 0 {
 		_spec.Order = func(selector *sql.Selector) {
 			for i := range ps {
 				ps[i](selector)
@@ -682,45 +682,45 @@ func (oshq *OncallShiftHandoverQuery) querySpec() *sqlgraph.QuerySpec {
 	return _spec
 }
 
-func (oshq *OncallShiftHandoverQuery) sqlQuery(ctx context.Context) *sql.Selector {
-	builder := sql.Dialect(oshq.driver.Dialect())
+func (_q *OncallShiftHandoverQuery) sqlQuery(ctx context.Context) *sql.Selector {
+	builder := sql.Dialect(_q.driver.Dialect())
 	t1 := builder.Table(oncallshifthandover.Table)
-	columns := oshq.ctx.Fields
+	columns := _q.ctx.Fields
 	if len(columns) == 0 {
 		columns = oncallshifthandover.Columns
 	}
 	selector := builder.Select(t1.Columns(columns...)...).From(t1)
-	if oshq.sql != nil {
-		selector = oshq.sql
+	if _q.sql != nil {
+		selector = _q.sql
 		selector.Select(selector.Columns(columns...)...)
 	}
-	if oshq.ctx.Unique != nil && *oshq.ctx.Unique {
+	if _q.ctx.Unique != nil && *_q.ctx.Unique {
 		selector.Distinct()
 	}
-	for _, m := range oshq.modifiers {
+	for _, m := range _q.modifiers {
 		m(selector)
 	}
-	for _, p := range oshq.predicates {
+	for _, p := range _q.predicates {
 		p(selector)
 	}
-	for _, p := range oshq.order {
+	for _, p := range _q.order {
 		p(selector)
 	}
-	if offset := oshq.ctx.Offset; offset != nil {
+	if offset := _q.ctx.Offset; offset != nil {
 		// limit is mandatory for offset clause. We start
 		// with default value, and override it below if needed.
 		selector.Offset(*offset).Limit(math.MaxInt32)
 	}
-	if limit := oshq.ctx.Limit; limit != nil {
+	if limit := _q.ctx.Limit; limit != nil {
 		selector.Limit(*limit)
 	}
 	return selector
 }
 
 // Modify adds a query modifier for attaching custom logic to queries.
-func (oshq *OncallShiftHandoverQuery) Modify(modifiers ...func(s *sql.Selector)) *OncallShiftHandoverSelect {
-	oshq.modifiers = append(oshq.modifiers, modifiers...)
-	return oshq.Select()
+func (_q *OncallShiftHandoverQuery) Modify(modifiers ...func(s *sql.Selector)) *OncallShiftHandoverSelect {
+	_q.modifiers = append(_q.modifiers, modifiers...)
+	return _q.Select()
 }
 
 // OncallShiftHandoverGroupBy is the group-by builder for OncallShiftHandover entities.
@@ -730,41 +730,41 @@ type OncallShiftHandoverGroupBy struct {
 }
 
 // Aggregate adds the given aggregation functions to the group-by query.
-func (oshgb *OncallShiftHandoverGroupBy) Aggregate(fns ...AggregateFunc) *OncallShiftHandoverGroupBy {
-	oshgb.fns = append(oshgb.fns, fns...)
-	return oshgb
+func (_g *OncallShiftHandoverGroupBy) Aggregate(fns ...AggregateFunc) *OncallShiftHandoverGroupBy {
+	_g.fns = append(_g.fns, fns...)
+	return _g
 }
 
 // Scan applies the selector query and scans the result into the given value.
-func (oshgb *OncallShiftHandoverGroupBy) Scan(ctx context.Context, v any) error {
-	ctx = setContextOp(ctx, oshgb.build.ctx, ent.OpQueryGroupBy)
-	if err := oshgb.build.prepareQuery(ctx); err != nil {
+func (_g *OncallShiftHandoverGroupBy) Scan(ctx context.Context, v any) error {
+	ctx = setContextOp(ctx, _g.build.ctx, ent.OpQueryGroupBy)
+	if err := _g.build.prepareQuery(ctx); err != nil {
 		return err
 	}
-	return scanWithInterceptors[*OncallShiftHandoverQuery, *OncallShiftHandoverGroupBy](ctx, oshgb.build, oshgb, oshgb.build.inters, v)
+	return scanWithInterceptors[*OncallShiftHandoverQuery, *OncallShiftHandoverGroupBy](ctx, _g.build, _g, _g.build.inters, v)
 }
 
-func (oshgb *OncallShiftHandoverGroupBy) sqlScan(ctx context.Context, root *OncallShiftHandoverQuery, v any) error {
+func (_g *OncallShiftHandoverGroupBy) sqlScan(ctx context.Context, root *OncallShiftHandoverQuery, v any) error {
 	selector := root.sqlQuery(ctx).Select()
-	aggregation := make([]string, 0, len(oshgb.fns))
-	for _, fn := range oshgb.fns {
+	aggregation := make([]string, 0, len(_g.fns))
+	for _, fn := range _g.fns {
 		aggregation = append(aggregation, fn(selector))
 	}
 	if len(selector.SelectedColumns()) == 0 {
-		columns := make([]string, 0, len(*oshgb.flds)+len(oshgb.fns))
-		for _, f := range *oshgb.flds {
+		columns := make([]string, 0, len(*_g.flds)+len(_g.fns))
+		for _, f := range *_g.flds {
 			columns = append(columns, selector.C(f))
 		}
 		columns = append(columns, aggregation...)
 		selector.Select(columns...)
 	}
-	selector.GroupBy(selector.Columns(*oshgb.flds...)...)
+	selector.GroupBy(selector.Columns(*_g.flds...)...)
 	if err := selector.Err(); err != nil {
 		return err
 	}
 	rows := &sql.Rows{}
 	query, args := selector.Query()
-	if err := oshgb.build.driver.Query(ctx, query, args, rows); err != nil {
+	if err := _g.build.driver.Query(ctx, query, args, rows); err != nil {
 		return err
 	}
 	defer rows.Close()
@@ -778,27 +778,27 @@ type OncallShiftHandoverSelect struct {
 }
 
 // Aggregate adds the given aggregation functions to the selector query.
-func (oshs *OncallShiftHandoverSelect) Aggregate(fns ...AggregateFunc) *OncallShiftHandoverSelect {
-	oshs.fns = append(oshs.fns, fns...)
-	return oshs
+func (_s *OncallShiftHandoverSelect) Aggregate(fns ...AggregateFunc) *OncallShiftHandoverSelect {
+	_s.fns = append(_s.fns, fns...)
+	return _s
 }
 
 // Scan applies the selector query and scans the result into the given value.
-func (oshs *OncallShiftHandoverSelect) Scan(ctx context.Context, v any) error {
-	ctx = setContextOp(ctx, oshs.ctx, ent.OpQuerySelect)
-	if err := oshs.prepareQuery(ctx); err != nil {
+func (_s *OncallShiftHandoverSelect) Scan(ctx context.Context, v any) error {
+	ctx = setContextOp(ctx, _s.ctx, ent.OpQuerySelect)
+	if err := _s.prepareQuery(ctx); err != nil {
 		return err
 	}
-	return scanWithInterceptors[*OncallShiftHandoverQuery, *OncallShiftHandoverSelect](ctx, oshs.OncallShiftHandoverQuery, oshs, oshs.inters, v)
+	return scanWithInterceptors[*OncallShiftHandoverQuery, *OncallShiftHandoverSelect](ctx, _s.OncallShiftHandoverQuery, _s, _s.inters, v)
 }
 
-func (oshs *OncallShiftHandoverSelect) sqlScan(ctx context.Context, root *OncallShiftHandoverQuery, v any) error {
+func (_s *OncallShiftHandoverSelect) sqlScan(ctx context.Context, root *OncallShiftHandoverQuery, v any) error {
 	selector := root.sqlQuery(ctx)
-	aggregation := make([]string, 0, len(oshs.fns))
-	for _, fn := range oshs.fns {
+	aggregation := make([]string, 0, len(_s.fns))
+	for _, fn := range _s.fns {
 		aggregation = append(aggregation, fn(selector))
 	}
-	switch n := len(*oshs.selector.flds); {
+	switch n := len(*_s.selector.flds); {
 	case n == 0 && len(aggregation) > 0:
 		selector.Select(aggregation...)
 	case n != 0 && len(aggregation) > 0:
@@ -806,7 +806,7 @@ func (oshs *OncallShiftHandoverSelect) sqlScan(ctx context.Context, root *Oncall
 	}
 	rows := &sql.Rows{}
 	query, args := selector.Query()
-	if err := oshs.driver.Query(ctx, query, args, rows); err != nil {
+	if err := _s.driver.Query(ctx, query, args, rows); err != nil {
 		return err
 	}
 	defer rows.Close()
@@ -814,7 +814,7 @@ func (oshs *OncallShiftHandoverSelect) sqlScan(ctx context.Context, root *Oncall
 }
 
 // Modify adds a query modifier for attaching custom logic to queries.
-func (oshs *OncallShiftHandoverSelect) Modify(modifiers ...func(s *sql.Selector)) *OncallShiftHandoverSelect {
-	oshs.modifiers = append(oshs.modifiers, modifiers...)
-	return oshs
+func (_s *OncallShiftHandoverSelect) Modify(modifiers ...func(s *sql.Selector)) *OncallShiftHandoverSelect {
+	_s.modifiers = append(_s.modifiers, modifiers...)
+	return _s
 }

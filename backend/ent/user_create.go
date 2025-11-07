@@ -36,317 +36,317 @@ type UserCreate struct {
 }
 
 // SetTenantID sets the "tenant_id" field.
-func (uc *UserCreate) SetTenantID(i int) *UserCreate {
-	uc.mutation.SetTenantID(i)
-	return uc
+func (_c *UserCreate) SetTenantID(v int) *UserCreate {
+	_c.mutation.SetTenantID(v)
+	return _c
 }
 
 // SetProviderID sets the "provider_id" field.
-func (uc *UserCreate) SetProviderID(s string) *UserCreate {
-	uc.mutation.SetProviderID(s)
-	return uc
+func (_c *UserCreate) SetProviderID(v string) *UserCreate {
+	_c.mutation.SetProviderID(v)
+	return _c
 }
 
 // SetNillableProviderID sets the "provider_id" field if the given value is not nil.
-func (uc *UserCreate) SetNillableProviderID(s *string) *UserCreate {
-	if s != nil {
-		uc.SetProviderID(*s)
+func (_c *UserCreate) SetNillableProviderID(v *string) *UserCreate {
+	if v != nil {
+		_c.SetProviderID(*v)
 	}
-	return uc
+	return _c
 }
 
 // SetEmail sets the "email" field.
-func (uc *UserCreate) SetEmail(s string) *UserCreate {
-	uc.mutation.SetEmail(s)
-	return uc
+func (_c *UserCreate) SetEmail(v string) *UserCreate {
+	_c.mutation.SetEmail(v)
+	return _c
 }
 
 // SetName sets the "name" field.
-func (uc *UserCreate) SetName(s string) *UserCreate {
-	uc.mutation.SetName(s)
-	return uc
+func (_c *UserCreate) SetName(v string) *UserCreate {
+	_c.mutation.SetName(v)
+	return _c
 }
 
 // SetNillableName sets the "name" field if the given value is not nil.
-func (uc *UserCreate) SetNillableName(s *string) *UserCreate {
-	if s != nil {
-		uc.SetName(*s)
+func (_c *UserCreate) SetNillableName(v *string) *UserCreate {
+	if v != nil {
+		_c.SetName(*v)
 	}
-	return uc
+	return _c
 }
 
 // SetChatID sets the "chat_id" field.
-func (uc *UserCreate) SetChatID(s string) *UserCreate {
-	uc.mutation.SetChatID(s)
-	return uc
+func (_c *UserCreate) SetChatID(v string) *UserCreate {
+	_c.mutation.SetChatID(v)
+	return _c
 }
 
 // SetNillableChatID sets the "chat_id" field if the given value is not nil.
-func (uc *UserCreate) SetNillableChatID(s *string) *UserCreate {
-	if s != nil {
-		uc.SetChatID(*s)
+func (_c *UserCreate) SetNillableChatID(v *string) *UserCreate {
+	if v != nil {
+		_c.SetChatID(*v)
 	}
-	return uc
+	return _c
 }
 
 // SetTimezone sets the "timezone" field.
-func (uc *UserCreate) SetTimezone(s string) *UserCreate {
-	uc.mutation.SetTimezone(s)
-	return uc
+func (_c *UserCreate) SetTimezone(v string) *UserCreate {
+	_c.mutation.SetTimezone(v)
+	return _c
 }
 
 // SetNillableTimezone sets the "timezone" field if the given value is not nil.
-func (uc *UserCreate) SetNillableTimezone(s *string) *UserCreate {
-	if s != nil {
-		uc.SetTimezone(*s)
+func (_c *UserCreate) SetNillableTimezone(v *string) *UserCreate {
+	if v != nil {
+		_c.SetTimezone(*v)
 	}
-	return uc
+	return _c
 }
 
 // SetConfirmed sets the "confirmed" field.
-func (uc *UserCreate) SetConfirmed(b bool) *UserCreate {
-	uc.mutation.SetConfirmed(b)
-	return uc
+func (_c *UserCreate) SetConfirmed(v bool) *UserCreate {
+	_c.mutation.SetConfirmed(v)
+	return _c
 }
 
 // SetNillableConfirmed sets the "confirmed" field if the given value is not nil.
-func (uc *UserCreate) SetNillableConfirmed(b *bool) *UserCreate {
-	if b != nil {
-		uc.SetConfirmed(*b)
+func (_c *UserCreate) SetNillableConfirmed(v *bool) *UserCreate {
+	if v != nil {
+		_c.SetConfirmed(*v)
 	}
-	return uc
+	return _c
 }
 
 // SetID sets the "id" field.
-func (uc *UserCreate) SetID(u uuid.UUID) *UserCreate {
-	uc.mutation.SetID(u)
-	return uc
+func (_c *UserCreate) SetID(v uuid.UUID) *UserCreate {
+	_c.mutation.SetID(v)
+	return _c
 }
 
 // SetNillableID sets the "id" field if the given value is not nil.
-func (uc *UserCreate) SetNillableID(u *uuid.UUID) *UserCreate {
-	if u != nil {
-		uc.SetID(*u)
+func (_c *UserCreate) SetNillableID(v *uuid.UUID) *UserCreate {
+	if v != nil {
+		_c.SetID(*v)
 	}
-	return uc
+	return _c
 }
 
 // SetTenant sets the "tenant" edge to the Tenant entity.
-func (uc *UserCreate) SetTenant(t *Tenant) *UserCreate {
-	return uc.SetTenantID(t.ID)
+func (_c *UserCreate) SetTenant(v *Tenant) *UserCreate {
+	return _c.SetTenantID(v.ID)
 }
 
 // AddTeamIDs adds the "teams" edge to the Team entity by IDs.
-func (uc *UserCreate) AddTeamIDs(ids ...uuid.UUID) *UserCreate {
-	uc.mutation.AddTeamIDs(ids...)
-	return uc
+func (_c *UserCreate) AddTeamIDs(ids ...uuid.UUID) *UserCreate {
+	_c.mutation.AddTeamIDs(ids...)
+	return _c
 }
 
 // AddTeams adds the "teams" edges to the Team entity.
-func (uc *UserCreate) AddTeams(t ...*Team) *UserCreate {
-	ids := make([]uuid.UUID, len(t))
-	for i := range t {
-		ids[i] = t[i].ID
+func (_c *UserCreate) AddTeams(v ...*Team) *UserCreate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
 	}
-	return uc.AddTeamIDs(ids...)
+	return _c.AddTeamIDs(ids...)
 }
 
 // AddWatchedOncallRosterIDs adds the "watched_oncall_rosters" edge to the OncallRoster entity by IDs.
-func (uc *UserCreate) AddWatchedOncallRosterIDs(ids ...uuid.UUID) *UserCreate {
-	uc.mutation.AddWatchedOncallRosterIDs(ids...)
-	return uc
+func (_c *UserCreate) AddWatchedOncallRosterIDs(ids ...uuid.UUID) *UserCreate {
+	_c.mutation.AddWatchedOncallRosterIDs(ids...)
+	return _c
 }
 
 // AddWatchedOncallRosters adds the "watched_oncall_rosters" edges to the OncallRoster entity.
-func (uc *UserCreate) AddWatchedOncallRosters(o ...*OncallRoster) *UserCreate {
-	ids := make([]uuid.UUID, len(o))
-	for i := range o {
-		ids[i] = o[i].ID
+func (_c *UserCreate) AddWatchedOncallRosters(v ...*OncallRoster) *UserCreate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
 	}
-	return uc.AddWatchedOncallRosterIDs(ids...)
+	return _c.AddWatchedOncallRosterIDs(ids...)
 }
 
 // AddOncallScheduleIDs adds the "oncall_schedules" edge to the OncallScheduleParticipant entity by IDs.
-func (uc *UserCreate) AddOncallScheduleIDs(ids ...uuid.UUID) *UserCreate {
-	uc.mutation.AddOncallScheduleIDs(ids...)
-	return uc
+func (_c *UserCreate) AddOncallScheduleIDs(ids ...uuid.UUID) *UserCreate {
+	_c.mutation.AddOncallScheduleIDs(ids...)
+	return _c
 }
 
 // AddOncallSchedules adds the "oncall_schedules" edges to the OncallScheduleParticipant entity.
-func (uc *UserCreate) AddOncallSchedules(o ...*OncallScheduleParticipant) *UserCreate {
-	ids := make([]uuid.UUID, len(o))
-	for i := range o {
-		ids[i] = o[i].ID
+func (_c *UserCreate) AddOncallSchedules(v ...*OncallScheduleParticipant) *UserCreate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
 	}
-	return uc.AddOncallScheduleIDs(ids...)
+	return _c.AddOncallScheduleIDs(ids...)
 }
 
 // AddOncallShiftIDs adds the "oncall_shifts" edge to the OncallShift entity by IDs.
-func (uc *UserCreate) AddOncallShiftIDs(ids ...uuid.UUID) *UserCreate {
-	uc.mutation.AddOncallShiftIDs(ids...)
-	return uc
+func (_c *UserCreate) AddOncallShiftIDs(ids ...uuid.UUID) *UserCreate {
+	_c.mutation.AddOncallShiftIDs(ids...)
+	return _c
 }
 
 // AddOncallShifts adds the "oncall_shifts" edges to the OncallShift entity.
-func (uc *UserCreate) AddOncallShifts(o ...*OncallShift) *UserCreate {
-	ids := make([]uuid.UUID, len(o))
-	for i := range o {
-		ids[i] = o[i].ID
+func (_c *UserCreate) AddOncallShifts(v ...*OncallShift) *UserCreate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
 	}
-	return uc.AddOncallShiftIDs(ids...)
+	return _c.AddOncallShiftIDs(ids...)
 }
 
 // AddEventAnnotationIDs adds the "event_annotations" edge to the EventAnnotation entity by IDs.
-func (uc *UserCreate) AddEventAnnotationIDs(ids ...uuid.UUID) *UserCreate {
-	uc.mutation.AddEventAnnotationIDs(ids...)
-	return uc
+func (_c *UserCreate) AddEventAnnotationIDs(ids ...uuid.UUID) *UserCreate {
+	_c.mutation.AddEventAnnotationIDs(ids...)
+	return _c
 }
 
 // AddEventAnnotations adds the "event_annotations" edges to the EventAnnotation entity.
-func (uc *UserCreate) AddEventAnnotations(e ...*EventAnnotation) *UserCreate {
-	ids := make([]uuid.UUID, len(e))
-	for i := range e {
-		ids[i] = e[i].ID
+func (_c *UserCreate) AddEventAnnotations(v ...*EventAnnotation) *UserCreate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
 	}
-	return uc.AddEventAnnotationIDs(ids...)
+	return _c.AddEventAnnotationIDs(ids...)
 }
 
 // AddIncidentIDs adds the "incidents" edge to the Incident entity by IDs.
-func (uc *UserCreate) AddIncidentIDs(ids ...uuid.UUID) *UserCreate {
-	uc.mutation.AddIncidentIDs(ids...)
-	return uc
+func (_c *UserCreate) AddIncidentIDs(ids ...uuid.UUID) *UserCreate {
+	_c.mutation.AddIncidentIDs(ids...)
+	return _c
 }
 
 // AddIncidents adds the "incidents" edges to the Incident entity.
-func (uc *UserCreate) AddIncidents(i ...*Incident) *UserCreate {
-	ids := make([]uuid.UUID, len(i))
-	for j := range i {
-		ids[j] = i[j].ID
+func (_c *UserCreate) AddIncidents(v ...*Incident) *UserCreate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
 	}
-	return uc.AddIncidentIDs(ids...)
+	return _c.AddIncidentIDs(ids...)
 }
 
 // AddIncidentDebriefIDs adds the "incident_debriefs" edge to the IncidentDebrief entity by IDs.
-func (uc *UserCreate) AddIncidentDebriefIDs(ids ...uuid.UUID) *UserCreate {
-	uc.mutation.AddIncidentDebriefIDs(ids...)
-	return uc
+func (_c *UserCreate) AddIncidentDebriefIDs(ids ...uuid.UUID) *UserCreate {
+	_c.mutation.AddIncidentDebriefIDs(ids...)
+	return _c
 }
 
 // AddIncidentDebriefs adds the "incident_debriefs" edges to the IncidentDebrief entity.
-func (uc *UserCreate) AddIncidentDebriefs(i ...*IncidentDebrief) *UserCreate {
-	ids := make([]uuid.UUID, len(i))
-	for j := range i {
-		ids[j] = i[j].ID
+func (_c *UserCreate) AddIncidentDebriefs(v ...*IncidentDebrief) *UserCreate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
 	}
-	return uc.AddIncidentDebriefIDs(ids...)
+	return _c.AddIncidentDebriefIDs(ids...)
 }
 
 // AddAssignedTaskIDs adds the "assigned_tasks" edge to the Task entity by IDs.
-func (uc *UserCreate) AddAssignedTaskIDs(ids ...uuid.UUID) *UserCreate {
-	uc.mutation.AddAssignedTaskIDs(ids...)
-	return uc
+func (_c *UserCreate) AddAssignedTaskIDs(ids ...uuid.UUID) *UserCreate {
+	_c.mutation.AddAssignedTaskIDs(ids...)
+	return _c
 }
 
 // AddAssignedTasks adds the "assigned_tasks" edges to the Task entity.
-func (uc *UserCreate) AddAssignedTasks(t ...*Task) *UserCreate {
-	ids := make([]uuid.UUID, len(t))
-	for i := range t {
-		ids[i] = t[i].ID
+func (_c *UserCreate) AddAssignedTasks(v ...*Task) *UserCreate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
 	}
-	return uc.AddAssignedTaskIDs(ids...)
+	return _c.AddAssignedTaskIDs(ids...)
 }
 
 // AddCreatedTaskIDs adds the "created_tasks" edge to the Task entity by IDs.
-func (uc *UserCreate) AddCreatedTaskIDs(ids ...uuid.UUID) *UserCreate {
-	uc.mutation.AddCreatedTaskIDs(ids...)
-	return uc
+func (_c *UserCreate) AddCreatedTaskIDs(ids ...uuid.UUID) *UserCreate {
+	_c.mutation.AddCreatedTaskIDs(ids...)
+	return _c
 }
 
 // AddCreatedTasks adds the "created_tasks" edges to the Task entity.
-func (uc *UserCreate) AddCreatedTasks(t ...*Task) *UserCreate {
-	ids := make([]uuid.UUID, len(t))
-	for i := range t {
-		ids[i] = t[i].ID
+func (_c *UserCreate) AddCreatedTasks(v ...*Task) *UserCreate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
 	}
-	return uc.AddCreatedTaskIDs(ids...)
+	return _c.AddCreatedTaskIDs(ids...)
 }
 
 // AddRetrospectiveReviewRequestIDs adds the "retrospective_review_requests" edge to the RetrospectiveReview entity by IDs.
-func (uc *UserCreate) AddRetrospectiveReviewRequestIDs(ids ...uuid.UUID) *UserCreate {
-	uc.mutation.AddRetrospectiveReviewRequestIDs(ids...)
-	return uc
+func (_c *UserCreate) AddRetrospectiveReviewRequestIDs(ids ...uuid.UUID) *UserCreate {
+	_c.mutation.AddRetrospectiveReviewRequestIDs(ids...)
+	return _c
 }
 
 // AddRetrospectiveReviewRequests adds the "retrospective_review_requests" edges to the RetrospectiveReview entity.
-func (uc *UserCreate) AddRetrospectiveReviewRequests(r ...*RetrospectiveReview) *UserCreate {
-	ids := make([]uuid.UUID, len(r))
-	for i := range r {
-		ids[i] = r[i].ID
+func (_c *UserCreate) AddRetrospectiveReviewRequests(v ...*RetrospectiveReview) *UserCreate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
 	}
-	return uc.AddRetrospectiveReviewRequestIDs(ids...)
+	return _c.AddRetrospectiveReviewRequestIDs(ids...)
 }
 
 // AddRetrospectiveReviewResponseIDs adds the "retrospective_review_responses" edge to the RetrospectiveReview entity by IDs.
-func (uc *UserCreate) AddRetrospectiveReviewResponseIDs(ids ...uuid.UUID) *UserCreate {
-	uc.mutation.AddRetrospectiveReviewResponseIDs(ids...)
-	return uc
+func (_c *UserCreate) AddRetrospectiveReviewResponseIDs(ids ...uuid.UUID) *UserCreate {
+	_c.mutation.AddRetrospectiveReviewResponseIDs(ids...)
+	return _c
 }
 
 // AddRetrospectiveReviewResponses adds the "retrospective_review_responses" edges to the RetrospectiveReview entity.
-func (uc *UserCreate) AddRetrospectiveReviewResponses(r ...*RetrospectiveReview) *UserCreate {
-	ids := make([]uuid.UUID, len(r))
-	for i := range r {
-		ids[i] = r[i].ID
+func (_c *UserCreate) AddRetrospectiveReviewResponses(v ...*RetrospectiveReview) *UserCreate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
 	}
-	return uc.AddRetrospectiveReviewResponseIDs(ids...)
+	return _c.AddRetrospectiveReviewResponseIDs(ids...)
 }
 
 // AddRetrospectiveCommentIDs adds the "retrospective_comments" edge to the RetrospectiveComment entity by IDs.
-func (uc *UserCreate) AddRetrospectiveCommentIDs(ids ...uuid.UUID) *UserCreate {
-	uc.mutation.AddRetrospectiveCommentIDs(ids...)
-	return uc
+func (_c *UserCreate) AddRetrospectiveCommentIDs(ids ...uuid.UUID) *UserCreate {
+	_c.mutation.AddRetrospectiveCommentIDs(ids...)
+	return _c
 }
 
 // AddRetrospectiveComments adds the "retrospective_comments" edges to the RetrospectiveComment entity.
-func (uc *UserCreate) AddRetrospectiveComments(r ...*RetrospectiveComment) *UserCreate {
-	ids := make([]uuid.UUID, len(r))
-	for i := range r {
-		ids[i] = r[i].ID
+func (_c *UserCreate) AddRetrospectiveComments(v ...*RetrospectiveComment) *UserCreate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
 	}
-	return uc.AddRetrospectiveCommentIDs(ids...)
+	return _c.AddRetrospectiveCommentIDs(ids...)
 }
 
 // AddRoleAssignmentIDs adds the "role_assignments" edge to the IncidentRoleAssignment entity by IDs.
-func (uc *UserCreate) AddRoleAssignmentIDs(ids ...uuid.UUID) *UserCreate {
-	uc.mutation.AddRoleAssignmentIDs(ids...)
-	return uc
+func (_c *UserCreate) AddRoleAssignmentIDs(ids ...uuid.UUID) *UserCreate {
+	_c.mutation.AddRoleAssignmentIDs(ids...)
+	return _c
 }
 
 // AddRoleAssignments adds the "role_assignments" edges to the IncidentRoleAssignment entity.
-func (uc *UserCreate) AddRoleAssignments(i ...*IncidentRoleAssignment) *UserCreate {
-	ids := make([]uuid.UUID, len(i))
-	for j := range i {
-		ids[j] = i[j].ID
+func (_c *UserCreate) AddRoleAssignments(v ...*IncidentRoleAssignment) *UserCreate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
 	}
-	return uc.AddRoleAssignmentIDs(ids...)
+	return _c.AddRoleAssignmentIDs(ids...)
 }
 
 // Mutation returns the UserMutation object of the builder.
-func (uc *UserCreate) Mutation() *UserMutation {
-	return uc.mutation
+func (_c *UserCreate) Mutation() *UserMutation {
+	return _c.mutation
 }
 
 // Save creates the User in the database.
-func (uc *UserCreate) Save(ctx context.Context) (*User, error) {
-	if err := uc.defaults(); err != nil {
+func (_c *UserCreate) Save(ctx context.Context) (*User, error) {
+	if err := _c.defaults(); err != nil {
 		return nil, err
 	}
-	return withHooks(ctx, uc.sqlSave, uc.mutation, uc.hooks)
+	return withHooks(ctx, _c.sqlSave, _c.mutation, _c.hooks)
 }
 
 // SaveX calls Save and panics if Save returns an error.
-func (uc *UserCreate) SaveX(ctx context.Context) *User {
-	v, err := uc.Save(ctx)
+func (_c *UserCreate) SaveX(ctx context.Context) *User {
+	v, err := _c.Save(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -354,61 +354,61 @@ func (uc *UserCreate) SaveX(ctx context.Context) *User {
 }
 
 // Exec executes the query.
-func (uc *UserCreate) Exec(ctx context.Context) error {
-	_, err := uc.Save(ctx)
+func (_c *UserCreate) Exec(ctx context.Context) error {
+	_, err := _c.Save(ctx)
 	return err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (uc *UserCreate) ExecX(ctx context.Context) {
-	if err := uc.Exec(ctx); err != nil {
+func (_c *UserCreate) ExecX(ctx context.Context) {
+	if err := _c.Exec(ctx); err != nil {
 		panic(err)
 	}
 }
 
 // defaults sets the default values of the builder before save.
-func (uc *UserCreate) defaults() error {
-	if _, ok := uc.mutation.Name(); !ok {
+func (_c *UserCreate) defaults() error {
+	if _, ok := _c.mutation.Name(); !ok {
 		v := user.DefaultName
-		uc.mutation.SetName(v)
+		_c.mutation.SetName(v)
 	}
-	if _, ok := uc.mutation.Confirmed(); !ok {
+	if _, ok := _c.mutation.Confirmed(); !ok {
 		v := user.DefaultConfirmed
-		uc.mutation.SetConfirmed(v)
+		_c.mutation.SetConfirmed(v)
 	}
-	if _, ok := uc.mutation.ID(); !ok {
+	if _, ok := _c.mutation.ID(); !ok {
 		if user.DefaultID == nil {
 			return fmt.Errorf("ent: uninitialized user.DefaultID (forgotten import ent/runtime?)")
 		}
 		v := user.DefaultID()
-		uc.mutation.SetID(v)
+		_c.mutation.SetID(v)
 	}
 	return nil
 }
 
 // check runs all checks and user-defined validators on the builder.
-func (uc *UserCreate) check() error {
-	if _, ok := uc.mutation.TenantID(); !ok {
+func (_c *UserCreate) check() error {
+	if _, ok := _c.mutation.TenantID(); !ok {
 		return &ValidationError{Name: "tenant_id", err: errors.New(`ent: missing required field "User.tenant_id"`)}
 	}
-	if _, ok := uc.mutation.Email(); !ok {
+	if _, ok := _c.mutation.Email(); !ok {
 		return &ValidationError{Name: "email", err: errors.New(`ent: missing required field "User.email"`)}
 	}
-	if _, ok := uc.mutation.Confirmed(); !ok {
+	if _, ok := _c.mutation.Confirmed(); !ok {
 		return &ValidationError{Name: "confirmed", err: errors.New(`ent: missing required field "User.confirmed"`)}
 	}
-	if len(uc.mutation.TenantIDs()) == 0 {
+	if len(_c.mutation.TenantIDs()) == 0 {
 		return &ValidationError{Name: "tenant", err: errors.New(`ent: missing required edge "User.tenant"`)}
 	}
 	return nil
 }
 
-func (uc *UserCreate) sqlSave(ctx context.Context) (*User, error) {
-	if err := uc.check(); err != nil {
+func (_c *UserCreate) sqlSave(ctx context.Context) (*User, error) {
+	if err := _c.check(); err != nil {
 		return nil, err
 	}
-	_node, _spec := uc.createSpec()
-	if err := sqlgraph.CreateNode(ctx, uc.driver, _spec); err != nil {
+	_node, _spec := _c.createSpec()
+	if err := sqlgraph.CreateNode(ctx, _c.driver, _spec); err != nil {
 		if sqlgraph.IsConstraintError(err) {
 			err = &ConstraintError{msg: err.Error(), wrap: err}
 		}
@@ -421,46 +421,46 @@ func (uc *UserCreate) sqlSave(ctx context.Context) (*User, error) {
 			return nil, err
 		}
 	}
-	uc.mutation.id = &_node.ID
-	uc.mutation.done = true
+	_c.mutation.id = &_node.ID
+	_c.mutation.done = true
 	return _node, nil
 }
 
-func (uc *UserCreate) createSpec() (*User, *sqlgraph.CreateSpec) {
+func (_c *UserCreate) createSpec() (*User, *sqlgraph.CreateSpec) {
 	var (
-		_node = &User{config: uc.config}
+		_node = &User{config: _c.config}
 		_spec = sqlgraph.NewCreateSpec(user.Table, sqlgraph.NewFieldSpec(user.FieldID, field.TypeUUID))
 	)
-	_spec.OnConflict = uc.conflict
-	if id, ok := uc.mutation.ID(); ok {
+	_spec.OnConflict = _c.conflict
+	if id, ok := _c.mutation.ID(); ok {
 		_node.ID = id
 		_spec.ID.Value = &id
 	}
-	if value, ok := uc.mutation.ProviderID(); ok {
+	if value, ok := _c.mutation.ProviderID(); ok {
 		_spec.SetField(user.FieldProviderID, field.TypeString, value)
 		_node.ProviderID = value
 	}
-	if value, ok := uc.mutation.Email(); ok {
+	if value, ok := _c.mutation.Email(); ok {
 		_spec.SetField(user.FieldEmail, field.TypeString, value)
 		_node.Email = value
 	}
-	if value, ok := uc.mutation.Name(); ok {
+	if value, ok := _c.mutation.Name(); ok {
 		_spec.SetField(user.FieldName, field.TypeString, value)
 		_node.Name = value
 	}
-	if value, ok := uc.mutation.ChatID(); ok {
+	if value, ok := _c.mutation.ChatID(); ok {
 		_spec.SetField(user.FieldChatID, field.TypeString, value)
 		_node.ChatID = value
 	}
-	if value, ok := uc.mutation.Timezone(); ok {
+	if value, ok := _c.mutation.Timezone(); ok {
 		_spec.SetField(user.FieldTimezone, field.TypeString, value)
 		_node.Timezone = value
 	}
-	if value, ok := uc.mutation.Confirmed(); ok {
+	if value, ok := _c.mutation.Confirmed(); ok {
 		_spec.SetField(user.FieldConfirmed, field.TypeBool, value)
 		_node.Confirmed = value
 	}
-	if nodes := uc.mutation.TenantIDs(); len(nodes) > 0 {
+	if nodes := _c.mutation.TenantIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
@@ -477,7 +477,7 @@ func (uc *UserCreate) createSpec() (*User, *sqlgraph.CreateSpec) {
 		_node.TenantID = nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
-	if nodes := uc.mutation.TeamsIDs(); len(nodes) > 0 {
+	if nodes := _c.mutation.TeamsIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
 			Inverse: true,
@@ -493,7 +493,7 @@ func (uc *UserCreate) createSpec() (*User, *sqlgraph.CreateSpec) {
 		}
 		_spec.Edges = append(_spec.Edges, edge)
 	}
-	if nodes := uc.mutation.WatchedOncallRostersIDs(); len(nodes) > 0 {
+	if nodes := _c.mutation.WatchedOncallRostersIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
 			Inverse: false,
@@ -509,7 +509,7 @@ func (uc *UserCreate) createSpec() (*User, *sqlgraph.CreateSpec) {
 		}
 		_spec.Edges = append(_spec.Edges, edge)
 	}
-	if nodes := uc.mutation.OncallSchedulesIDs(); len(nodes) > 0 {
+	if nodes := _c.mutation.OncallSchedulesIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: true,
@@ -525,7 +525,7 @@ func (uc *UserCreate) createSpec() (*User, *sqlgraph.CreateSpec) {
 		}
 		_spec.Edges = append(_spec.Edges, edge)
 	}
-	if nodes := uc.mutation.OncallShiftsIDs(); len(nodes) > 0 {
+	if nodes := _c.mutation.OncallShiftsIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: true,
@@ -541,7 +541,7 @@ func (uc *UserCreate) createSpec() (*User, *sqlgraph.CreateSpec) {
 		}
 		_spec.Edges = append(_spec.Edges, edge)
 	}
-	if nodes := uc.mutation.EventAnnotationsIDs(); len(nodes) > 0 {
+	if nodes := _c.mutation.EventAnnotationsIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: true,
@@ -557,7 +557,7 @@ func (uc *UserCreate) createSpec() (*User, *sqlgraph.CreateSpec) {
 		}
 		_spec.Edges = append(_spec.Edges, edge)
 	}
-	if nodes := uc.mutation.IncidentsIDs(); len(nodes) > 0 {
+	if nodes := _c.mutation.IncidentsIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
 			Inverse: false,
@@ -571,7 +571,7 @@ func (uc *UserCreate) createSpec() (*User, *sqlgraph.CreateSpec) {
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
-		createE := &IncidentRoleAssignmentCreate{config: uc.config, mutation: newIncidentRoleAssignmentMutation(uc.config, OpCreate)}
+		createE := &IncidentRoleAssignmentCreate{config: _c.config, mutation: newIncidentRoleAssignmentMutation(_c.config, OpCreate)}
 		_ = createE.defaults()
 		_, specE := createE.createSpec()
 		edge.Target.Fields = specE.Fields
@@ -580,7 +580,7 @@ func (uc *UserCreate) createSpec() (*User, *sqlgraph.CreateSpec) {
 		}
 		_spec.Edges = append(_spec.Edges, edge)
 	}
-	if nodes := uc.mutation.IncidentDebriefsIDs(); len(nodes) > 0 {
+	if nodes := _c.mutation.IncidentDebriefsIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
@@ -596,7 +596,7 @@ func (uc *UserCreate) createSpec() (*User, *sqlgraph.CreateSpec) {
 		}
 		_spec.Edges = append(_spec.Edges, edge)
 	}
-	if nodes := uc.mutation.AssignedTasksIDs(); len(nodes) > 0 {
+	if nodes := _c.mutation.AssignedTasksIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
@@ -612,7 +612,7 @@ func (uc *UserCreate) createSpec() (*User, *sqlgraph.CreateSpec) {
 		}
 		_spec.Edges = append(_spec.Edges, edge)
 	}
-	if nodes := uc.mutation.CreatedTasksIDs(); len(nodes) > 0 {
+	if nodes := _c.mutation.CreatedTasksIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
@@ -628,7 +628,7 @@ func (uc *UserCreate) createSpec() (*User, *sqlgraph.CreateSpec) {
 		}
 		_spec.Edges = append(_spec.Edges, edge)
 	}
-	if nodes := uc.mutation.RetrospectiveReviewRequestsIDs(); len(nodes) > 0 {
+	if nodes := _c.mutation.RetrospectiveReviewRequestsIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: true,
@@ -644,7 +644,7 @@ func (uc *UserCreate) createSpec() (*User, *sqlgraph.CreateSpec) {
 		}
 		_spec.Edges = append(_spec.Edges, edge)
 	}
-	if nodes := uc.mutation.RetrospectiveReviewResponsesIDs(); len(nodes) > 0 {
+	if nodes := _c.mutation.RetrospectiveReviewResponsesIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: true,
@@ -660,7 +660,7 @@ func (uc *UserCreate) createSpec() (*User, *sqlgraph.CreateSpec) {
 		}
 		_spec.Edges = append(_spec.Edges, edge)
 	}
-	if nodes := uc.mutation.RetrospectiveCommentsIDs(); len(nodes) > 0 {
+	if nodes := _c.mutation.RetrospectiveCommentsIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: true,
@@ -676,7 +676,7 @@ func (uc *UserCreate) createSpec() (*User, *sqlgraph.CreateSpec) {
 		}
 		_spec.Edges = append(_spec.Edges, edge)
 	}
-	if nodes := uc.mutation.RoleAssignmentsIDs(); len(nodes) > 0 {
+	if nodes := _c.mutation.RoleAssignmentsIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: true,
@@ -711,10 +711,10 @@ func (uc *UserCreate) createSpec() (*User, *sqlgraph.CreateSpec) {
 //			SetTenantID(v+v).
 //		}).
 //		Exec(ctx)
-func (uc *UserCreate) OnConflict(opts ...sql.ConflictOption) *UserUpsertOne {
-	uc.conflict = opts
+func (_c *UserCreate) OnConflict(opts ...sql.ConflictOption) *UserUpsertOne {
+	_c.conflict = opts
 	return &UserUpsertOne{
-		create: uc,
+		create: _c,
 	}
 }
 
@@ -724,10 +724,10 @@ func (uc *UserCreate) OnConflict(opts ...sql.ConflictOption) *UserUpsertOne {
 //	client.User.Create().
 //		OnConflict(sql.ConflictColumns(columns...)).
 //		Exec(ctx)
-func (uc *UserCreate) OnConflictColumns(columns ...string) *UserUpsertOne {
-	uc.conflict = append(uc.conflict, sql.ConflictColumns(columns...))
+func (_c *UserCreate) OnConflictColumns(columns ...string) *UserUpsertOne {
+	_c.conflict = append(_c.conflict, sql.ConflictColumns(columns...))
 	return &UserUpsertOne{
-		create: uc,
+		create: _c,
 	}
 }
 
@@ -1050,16 +1050,16 @@ type UserCreateBulk struct {
 }
 
 // Save creates the User entities in the database.
-func (ucb *UserCreateBulk) Save(ctx context.Context) ([]*User, error) {
-	if ucb.err != nil {
-		return nil, ucb.err
+func (_c *UserCreateBulk) Save(ctx context.Context) ([]*User, error) {
+	if _c.err != nil {
+		return nil, _c.err
 	}
-	specs := make([]*sqlgraph.CreateSpec, len(ucb.builders))
-	nodes := make([]*User, len(ucb.builders))
-	mutators := make([]Mutator, len(ucb.builders))
-	for i := range ucb.builders {
+	specs := make([]*sqlgraph.CreateSpec, len(_c.builders))
+	nodes := make([]*User, len(_c.builders))
+	mutators := make([]Mutator, len(_c.builders))
+	for i := range _c.builders {
 		func(i int, root context.Context) {
-			builder := ucb.builders[i]
+			builder := _c.builders[i]
 			builder.defaults()
 			var mut Mutator = MutateFunc(func(ctx context.Context, m Mutation) (Value, error) {
 				mutation, ok := m.(*UserMutation)
@@ -1073,12 +1073,12 @@ func (ucb *UserCreateBulk) Save(ctx context.Context) ([]*User, error) {
 				var err error
 				nodes[i], specs[i] = builder.createSpec()
 				if i < len(mutators)-1 {
-					_, err = mutators[i+1].Mutate(root, ucb.builders[i+1].mutation)
+					_, err = mutators[i+1].Mutate(root, _c.builders[i+1].mutation)
 				} else {
 					spec := &sqlgraph.BatchCreateSpec{Nodes: specs}
-					spec.OnConflict = ucb.conflict
+					spec.OnConflict = _c.conflict
 					// Invoke the actual operation on the latest mutation in the chain.
-					if err = sqlgraph.BatchCreate(ctx, ucb.driver, spec); err != nil {
+					if err = sqlgraph.BatchCreate(ctx, _c.driver, spec); err != nil {
 						if sqlgraph.IsConstraintError(err) {
 							err = &ConstraintError{msg: err.Error(), wrap: err}
 						}
@@ -1098,7 +1098,7 @@ func (ucb *UserCreateBulk) Save(ctx context.Context) ([]*User, error) {
 		}(i, ctx)
 	}
 	if len(mutators) > 0 {
-		if _, err := mutators[0].Mutate(ctx, ucb.builders[0].mutation); err != nil {
+		if _, err := mutators[0].Mutate(ctx, _c.builders[0].mutation); err != nil {
 			return nil, err
 		}
 	}
@@ -1106,8 +1106,8 @@ func (ucb *UserCreateBulk) Save(ctx context.Context) ([]*User, error) {
 }
 
 // SaveX is like Save, but panics if an error occurs.
-func (ucb *UserCreateBulk) SaveX(ctx context.Context) []*User {
-	v, err := ucb.Save(ctx)
+func (_c *UserCreateBulk) SaveX(ctx context.Context) []*User {
+	v, err := _c.Save(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -1115,14 +1115,14 @@ func (ucb *UserCreateBulk) SaveX(ctx context.Context) []*User {
 }
 
 // Exec executes the query.
-func (ucb *UserCreateBulk) Exec(ctx context.Context) error {
-	_, err := ucb.Save(ctx)
+func (_c *UserCreateBulk) Exec(ctx context.Context) error {
+	_, err := _c.Save(ctx)
 	return err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (ucb *UserCreateBulk) ExecX(ctx context.Context) {
-	if err := ucb.Exec(ctx); err != nil {
+func (_c *UserCreateBulk) ExecX(ctx context.Context) {
+	if err := _c.Exec(ctx); err != nil {
 		panic(err)
 	}
 }
@@ -1142,10 +1142,10 @@ func (ucb *UserCreateBulk) ExecX(ctx context.Context) {
 //			SetTenantID(v+v).
 //		}).
 //		Exec(ctx)
-func (ucb *UserCreateBulk) OnConflict(opts ...sql.ConflictOption) *UserUpsertBulk {
-	ucb.conflict = opts
+func (_c *UserCreateBulk) OnConflict(opts ...sql.ConflictOption) *UserUpsertBulk {
+	_c.conflict = opts
 	return &UserUpsertBulk{
-		create: ucb,
+		create: _c,
 	}
 }
 
@@ -1155,10 +1155,10 @@ func (ucb *UserCreateBulk) OnConflict(opts ...sql.ConflictOption) *UserUpsertBul
 //	client.User.Create().
 //		OnConflict(sql.ConflictColumns(columns...)).
 //		Exec(ctx)
-func (ucb *UserCreateBulk) OnConflictColumns(columns ...string) *UserUpsertBulk {
-	ucb.conflict = append(ucb.conflict, sql.ConflictColumns(columns...))
+func (_c *UserCreateBulk) OnConflictColumns(columns ...string) *UserUpsertBulk {
+	_c.conflict = append(_c.conflict, sql.ConflictColumns(columns...))
 	return &UserUpsertBulk{
-		create: ucb,
+		create: _c,
 	}
 }
 

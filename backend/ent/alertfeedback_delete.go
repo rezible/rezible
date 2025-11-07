@@ -20,56 +20,56 @@ type AlertFeedbackDelete struct {
 }
 
 // Where appends a list predicates to the AlertFeedbackDelete builder.
-func (afd *AlertFeedbackDelete) Where(ps ...predicate.AlertFeedback) *AlertFeedbackDelete {
-	afd.mutation.Where(ps...)
-	return afd
+func (_d *AlertFeedbackDelete) Where(ps ...predicate.AlertFeedback) *AlertFeedbackDelete {
+	_d.mutation.Where(ps...)
+	return _d
 }
 
 // Exec executes the deletion query and returns how many vertices were deleted.
-func (afd *AlertFeedbackDelete) Exec(ctx context.Context) (int, error) {
-	return withHooks(ctx, afd.sqlExec, afd.mutation, afd.hooks)
+func (_d *AlertFeedbackDelete) Exec(ctx context.Context) (int, error) {
+	return withHooks(ctx, _d.sqlExec, _d.mutation, _d.hooks)
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (afd *AlertFeedbackDelete) ExecX(ctx context.Context) int {
-	n, err := afd.Exec(ctx)
+func (_d *AlertFeedbackDelete) ExecX(ctx context.Context) int {
+	n, err := _d.Exec(ctx)
 	if err != nil {
 		panic(err)
 	}
 	return n
 }
 
-func (afd *AlertFeedbackDelete) sqlExec(ctx context.Context) (int, error) {
+func (_d *AlertFeedbackDelete) sqlExec(ctx context.Context) (int, error) {
 	_spec := sqlgraph.NewDeleteSpec(alertfeedback.Table, sqlgraph.NewFieldSpec(alertfeedback.FieldID, field.TypeUUID))
-	if ps := afd.mutation.predicates; len(ps) > 0 {
+	if ps := _d.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {
 				ps[i](selector)
 			}
 		}
 	}
-	affected, err := sqlgraph.DeleteNodes(ctx, afd.driver, _spec)
+	affected, err := sqlgraph.DeleteNodes(ctx, _d.driver, _spec)
 	if err != nil && sqlgraph.IsConstraintError(err) {
 		err = &ConstraintError{msg: err.Error(), wrap: err}
 	}
-	afd.mutation.done = true
+	_d.mutation.done = true
 	return affected, err
 }
 
 // AlertFeedbackDeleteOne is the builder for deleting a single AlertFeedback entity.
 type AlertFeedbackDeleteOne struct {
-	afd *AlertFeedbackDelete
+	_d *AlertFeedbackDelete
 }
 
 // Where appends a list predicates to the AlertFeedbackDelete builder.
-func (afdo *AlertFeedbackDeleteOne) Where(ps ...predicate.AlertFeedback) *AlertFeedbackDeleteOne {
-	afdo.afd.mutation.Where(ps...)
-	return afdo
+func (_d *AlertFeedbackDeleteOne) Where(ps ...predicate.AlertFeedback) *AlertFeedbackDeleteOne {
+	_d._d.mutation.Where(ps...)
+	return _d
 }
 
 // Exec executes the deletion query.
-func (afdo *AlertFeedbackDeleteOne) Exec(ctx context.Context) error {
-	n, err := afdo.afd.Exec(ctx)
+func (_d *AlertFeedbackDeleteOne) Exec(ctx context.Context) error {
+	n, err := _d._d.Exec(ctx)
 	switch {
 	case err != nil:
 		return err
@@ -81,8 +81,8 @@ func (afdo *AlertFeedbackDeleteOne) Exec(ctx context.Context) error {
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (afdo *AlertFeedbackDeleteOne) ExecX(ctx context.Context) {
-	if err := afdo.Exec(ctx); err != nil {
+func (_d *AlertFeedbackDeleteOne) ExecX(ctx context.Context) {
+	if err := _d.Exec(ctx); err != nil {
 		panic(err)
 	}
 }

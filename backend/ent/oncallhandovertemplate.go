@@ -90,7 +90,7 @@ func (*OncallHandoverTemplate) scanValues(columns []string) ([]any, error) {
 
 // assignValues assigns the values that were returned from sql.Rows (after scanning)
 // to the OncallHandoverTemplate fields.
-func (oht *OncallHandoverTemplate) assignValues(columns []string, values []any) error {
+func (_m *OncallHandoverTemplate) assignValues(columns []string, values []any) error {
 	if m, n := len(values), len(columns); m < n {
 		return fmt.Errorf("mismatch number of scan values: %d != %d", m, n)
 	}
@@ -100,40 +100,40 @@ func (oht *OncallHandoverTemplate) assignValues(columns []string, values []any) 
 			if value, ok := values[i].(*uuid.UUID); !ok {
 				return fmt.Errorf("unexpected type %T for field id", values[i])
 			} else if value != nil {
-				oht.ID = *value
+				_m.ID = *value
 			}
 		case oncallhandovertemplate.FieldTenantID:
 			if value, ok := values[i].(*sql.NullInt64); !ok {
 				return fmt.Errorf("unexpected type %T for field tenant_id", values[i])
 			} else if value.Valid {
-				oht.TenantID = int(value.Int64)
+				_m.TenantID = int(value.Int64)
 			}
 		case oncallhandovertemplate.FieldCreatedAt:
 			if value, ok := values[i].(*sql.NullTime); !ok {
 				return fmt.Errorf("unexpected type %T for field created_at", values[i])
 			} else if value.Valid {
-				oht.CreatedAt = value.Time
+				_m.CreatedAt = value.Time
 			}
 		case oncallhandovertemplate.FieldUpdatedAt:
 			if value, ok := values[i].(*sql.NullTime); !ok {
 				return fmt.Errorf("unexpected type %T for field updated_at", values[i])
 			} else if value.Valid {
-				oht.UpdatedAt = value.Time
+				_m.UpdatedAt = value.Time
 			}
 		case oncallhandovertemplate.FieldContents:
 			if value, ok := values[i].(*[]byte); !ok {
 				return fmt.Errorf("unexpected type %T for field contents", values[i])
 			} else if value != nil {
-				oht.Contents = *value
+				_m.Contents = *value
 			}
 		case oncallhandovertemplate.FieldIsDefault:
 			if value, ok := values[i].(*sql.NullBool); !ok {
 				return fmt.Errorf("unexpected type %T for field is_default", values[i])
 			} else if value.Valid {
-				oht.IsDefault = value.Bool
+				_m.IsDefault = value.Bool
 			}
 		default:
-			oht.selectValues.Set(columns[i], values[i])
+			_m.selectValues.Set(columns[i], values[i])
 		}
 	}
 	return nil
@@ -141,57 +141,57 @@ func (oht *OncallHandoverTemplate) assignValues(columns []string, values []any) 
 
 // Value returns the ent.Value that was dynamically selected and assigned to the OncallHandoverTemplate.
 // This includes values selected through modifiers, order, etc.
-func (oht *OncallHandoverTemplate) Value(name string) (ent.Value, error) {
-	return oht.selectValues.Get(name)
+func (_m *OncallHandoverTemplate) Value(name string) (ent.Value, error) {
+	return _m.selectValues.Get(name)
 }
 
 // QueryTenant queries the "tenant" edge of the OncallHandoverTemplate entity.
-func (oht *OncallHandoverTemplate) QueryTenant() *TenantQuery {
-	return NewOncallHandoverTemplateClient(oht.config).QueryTenant(oht)
+func (_m *OncallHandoverTemplate) QueryTenant() *TenantQuery {
+	return NewOncallHandoverTemplateClient(_m.config).QueryTenant(_m)
 }
 
 // QueryRoster queries the "roster" edge of the OncallHandoverTemplate entity.
-func (oht *OncallHandoverTemplate) QueryRoster() *OncallRosterQuery {
-	return NewOncallHandoverTemplateClient(oht.config).QueryRoster(oht)
+func (_m *OncallHandoverTemplate) QueryRoster() *OncallRosterQuery {
+	return NewOncallHandoverTemplateClient(_m.config).QueryRoster(_m)
 }
 
 // Update returns a builder for updating this OncallHandoverTemplate.
 // Note that you need to call OncallHandoverTemplate.Unwrap() before calling this method if this OncallHandoverTemplate
 // was returned from a transaction, and the transaction was committed or rolled back.
-func (oht *OncallHandoverTemplate) Update() *OncallHandoverTemplateUpdateOne {
-	return NewOncallHandoverTemplateClient(oht.config).UpdateOne(oht)
+func (_m *OncallHandoverTemplate) Update() *OncallHandoverTemplateUpdateOne {
+	return NewOncallHandoverTemplateClient(_m.config).UpdateOne(_m)
 }
 
 // Unwrap unwraps the OncallHandoverTemplate entity that was returned from a transaction after it was closed,
 // so that all future queries will be executed through the driver which created the transaction.
-func (oht *OncallHandoverTemplate) Unwrap() *OncallHandoverTemplate {
-	_tx, ok := oht.config.driver.(*txDriver)
+func (_m *OncallHandoverTemplate) Unwrap() *OncallHandoverTemplate {
+	_tx, ok := _m.config.driver.(*txDriver)
 	if !ok {
 		panic("ent: OncallHandoverTemplate is not a transactional entity")
 	}
-	oht.config.driver = _tx.drv
-	return oht
+	_m.config.driver = _tx.drv
+	return _m
 }
 
 // String implements the fmt.Stringer.
-func (oht *OncallHandoverTemplate) String() string {
+func (_m *OncallHandoverTemplate) String() string {
 	var builder strings.Builder
 	builder.WriteString("OncallHandoverTemplate(")
-	builder.WriteString(fmt.Sprintf("id=%v, ", oht.ID))
+	builder.WriteString(fmt.Sprintf("id=%v, ", _m.ID))
 	builder.WriteString("tenant_id=")
-	builder.WriteString(fmt.Sprintf("%v", oht.TenantID))
+	builder.WriteString(fmt.Sprintf("%v", _m.TenantID))
 	builder.WriteString(", ")
 	builder.WriteString("created_at=")
-	builder.WriteString(oht.CreatedAt.Format(time.ANSIC))
+	builder.WriteString(_m.CreatedAt.Format(time.ANSIC))
 	builder.WriteString(", ")
 	builder.WriteString("updated_at=")
-	builder.WriteString(oht.UpdatedAt.Format(time.ANSIC))
+	builder.WriteString(_m.UpdatedAt.Format(time.ANSIC))
 	builder.WriteString(", ")
 	builder.WriteString("contents=")
-	builder.WriteString(fmt.Sprintf("%v", oht.Contents))
+	builder.WriteString(fmt.Sprintf("%v", _m.Contents))
 	builder.WriteString(", ")
 	builder.WriteString("is_default=")
-	builder.WriteString(fmt.Sprintf("%v", oht.IsDefault))
+	builder.WriteString(fmt.Sprintf("%v", _m.IsDefault))
 	builder.WriteByte(')')
 	return builder.String()
 }

@@ -124,7 +124,7 @@ func (*IncidentDebrief) scanValues(columns []string) ([]any, error) {
 
 // assignValues assigns the values that were returned from sql.Rows (after scanning)
 // to the IncidentDebrief fields.
-func (id *IncidentDebrief) assignValues(columns []string, values []any) error {
+func (_m *IncidentDebrief) assignValues(columns []string, values []any) error {
 	if m, n := len(values), len(columns); m < n {
 		return fmt.Errorf("mismatch number of scan values: %d != %d", m, n)
 	}
@@ -134,40 +134,40 @@ func (id *IncidentDebrief) assignValues(columns []string, values []any) error {
 			if value, ok := values[i].(*uuid.UUID); !ok {
 				return fmt.Errorf("unexpected type %T for field id", values[i])
 			} else if value != nil {
-				id.ID = *value
+				_m.ID = *value
 			}
 		case incidentdebrief.FieldTenantID:
 			if value, ok := values[i].(*sql.NullInt64); !ok {
 				return fmt.Errorf("unexpected type %T for field tenant_id", values[i])
 			} else if value.Valid {
-				id.TenantID = int(value.Int64)
+				_m.TenantID = int(value.Int64)
 			}
 		case incidentdebrief.FieldIncidentID:
 			if value, ok := values[i].(*uuid.UUID); !ok {
 				return fmt.Errorf("unexpected type %T for field incident_id", values[i])
 			} else if value != nil {
-				id.IncidentID = *value
+				_m.IncidentID = *value
 			}
 		case incidentdebrief.FieldUserID:
 			if value, ok := values[i].(*uuid.UUID); !ok {
 				return fmt.Errorf("unexpected type %T for field user_id", values[i])
 			} else if value != nil {
-				id.UserID = *value
+				_m.UserID = *value
 			}
 		case incidentdebrief.FieldRequired:
 			if value, ok := values[i].(*sql.NullBool); !ok {
 				return fmt.Errorf("unexpected type %T for field required", values[i])
 			} else if value.Valid {
-				id.Required = value.Bool
+				_m.Required = value.Bool
 			}
 		case incidentdebrief.FieldStarted:
 			if value, ok := values[i].(*sql.NullBool); !ok {
 				return fmt.Errorf("unexpected type %T for field started", values[i])
 			} else if value.Valid {
-				id.Started = value.Bool
+				_m.Started = value.Bool
 			}
 		default:
-			id.selectValues.Set(columns[i], values[i])
+			_m.selectValues.Set(columns[i], values[i])
 		}
 	}
 	return nil
@@ -175,72 +175,72 @@ func (id *IncidentDebrief) assignValues(columns []string, values []any) error {
 
 // Value returns the ent.Value that was dynamically selected and assigned to the IncidentDebrief.
 // This includes values selected through modifiers, order, etc.
-func (id *IncidentDebrief) Value(name string) (ent.Value, error) {
-	return id.selectValues.Get(name)
+func (_m *IncidentDebrief) Value(name string) (ent.Value, error) {
+	return _m.selectValues.Get(name)
 }
 
 // QueryTenant queries the "tenant" edge of the IncidentDebrief entity.
-func (id *IncidentDebrief) QueryTenant() *TenantQuery {
-	return NewIncidentDebriefClient(id.config).QueryTenant(id)
+func (_m *IncidentDebrief) QueryTenant() *TenantQuery {
+	return NewIncidentDebriefClient(_m.config).QueryTenant(_m)
 }
 
 // QueryIncident queries the "incident" edge of the IncidentDebrief entity.
-func (id *IncidentDebrief) QueryIncident() *IncidentQuery {
-	return NewIncidentDebriefClient(id.config).QueryIncident(id)
+func (_m *IncidentDebrief) QueryIncident() *IncidentQuery {
+	return NewIncidentDebriefClient(_m.config).QueryIncident(_m)
 }
 
 // QueryUser queries the "user" edge of the IncidentDebrief entity.
-func (id *IncidentDebrief) QueryUser() *UserQuery {
-	return NewIncidentDebriefClient(id.config).QueryUser(id)
+func (_m *IncidentDebrief) QueryUser() *UserQuery {
+	return NewIncidentDebriefClient(_m.config).QueryUser(_m)
 }
 
 // QueryMessages queries the "messages" edge of the IncidentDebrief entity.
-func (id *IncidentDebrief) QueryMessages() *IncidentDebriefMessageQuery {
-	return NewIncidentDebriefClient(id.config).QueryMessages(id)
+func (_m *IncidentDebrief) QueryMessages() *IncidentDebriefMessageQuery {
+	return NewIncidentDebriefClient(_m.config).QueryMessages(_m)
 }
 
 // QuerySuggestions queries the "suggestions" edge of the IncidentDebrief entity.
-func (id *IncidentDebrief) QuerySuggestions() *IncidentDebriefSuggestionQuery {
-	return NewIncidentDebriefClient(id.config).QuerySuggestions(id)
+func (_m *IncidentDebrief) QuerySuggestions() *IncidentDebriefSuggestionQuery {
+	return NewIncidentDebriefClient(_m.config).QuerySuggestions(_m)
 }
 
 // Update returns a builder for updating this IncidentDebrief.
 // Note that you need to call IncidentDebrief.Unwrap() before calling this method if this IncidentDebrief
 // was returned from a transaction, and the transaction was committed or rolled back.
-func (id *IncidentDebrief) Update() *IncidentDebriefUpdateOne {
-	return NewIncidentDebriefClient(id.config).UpdateOne(id)
+func (_m *IncidentDebrief) Update() *IncidentDebriefUpdateOne {
+	return NewIncidentDebriefClient(_m.config).UpdateOne(_m)
 }
 
 // Unwrap unwraps the IncidentDebrief entity that was returned from a transaction after it was closed,
 // so that all future queries will be executed through the driver which created the transaction.
-func (id *IncidentDebrief) Unwrap() *IncidentDebrief {
-	_tx, ok := id.config.driver.(*txDriver)
+func (_m *IncidentDebrief) Unwrap() *IncidentDebrief {
+	_tx, ok := _m.config.driver.(*txDriver)
 	if !ok {
 		panic("ent: IncidentDebrief is not a transactional entity")
 	}
-	id.config.driver = _tx.drv
-	return id
+	_m.config.driver = _tx.drv
+	return _m
 }
 
 // String implements the fmt.Stringer.
-func (id *IncidentDebrief) String() string {
+func (_m *IncidentDebrief) String() string {
 	var builder strings.Builder
 	builder.WriteString("IncidentDebrief(")
-	builder.WriteString(fmt.Sprintf("id=%v, ", id.ID))
+	builder.WriteString(fmt.Sprintf("id=%v, ", _m.ID))
 	builder.WriteString("tenant_id=")
-	builder.WriteString(fmt.Sprintf("%v", id.TenantID))
+	builder.WriteString(fmt.Sprintf("%v", _m.TenantID))
 	builder.WriteString(", ")
 	builder.WriteString("incident_id=")
-	builder.WriteString(fmt.Sprintf("%v", id.IncidentID))
+	builder.WriteString(fmt.Sprintf("%v", _m.IncidentID))
 	builder.WriteString(", ")
 	builder.WriteString("user_id=")
-	builder.WriteString(fmt.Sprintf("%v", id.UserID))
+	builder.WriteString(fmt.Sprintf("%v", _m.UserID))
 	builder.WriteString(", ")
 	builder.WriteString("required=")
-	builder.WriteString(fmt.Sprintf("%v", id.Required))
+	builder.WriteString(fmt.Sprintf("%v", _m.Required))
 	builder.WriteString(", ")
 	builder.WriteString("started=")
-	builder.WriteString(fmt.Sprintf("%v", id.Started))
+	builder.WriteString(fmt.Sprintf("%v", _m.Started))
 	builder.WriteByte(')')
 	return builder.String()
 }

@@ -77,7 +77,7 @@ func (*ProviderSyncHistory) scanValues(columns []string) ([]any, error) {
 
 // assignValues assigns the values that were returned from sql.Rows (after scanning)
 // to the ProviderSyncHistory fields.
-func (psh *ProviderSyncHistory) assignValues(columns []string, values []any) error {
+func (_m *ProviderSyncHistory) assignValues(columns []string, values []any) error {
 	if m, n := len(values), len(columns); m < n {
 		return fmt.Errorf("mismatch number of scan values: %d != %d", m, n)
 	}
@@ -87,40 +87,40 @@ func (psh *ProviderSyncHistory) assignValues(columns []string, values []any) err
 			if value, ok := values[i].(*uuid.UUID); !ok {
 				return fmt.Errorf("unexpected type %T for field id", values[i])
 			} else if value != nil {
-				psh.ID = *value
+				_m.ID = *value
 			}
 		case providersynchistory.FieldTenantID:
 			if value, ok := values[i].(*sql.NullInt64); !ok {
 				return fmt.Errorf("unexpected type %T for field tenant_id", values[i])
 			} else if value.Valid {
-				psh.TenantID = int(value.Int64)
+				_m.TenantID = int(value.Int64)
 			}
 		case providersynchistory.FieldDataType:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field data_type", values[i])
 			} else if value.Valid {
-				psh.DataType = value.String
+				_m.DataType = value.String
 			}
 		case providersynchistory.FieldStartedAt:
 			if value, ok := values[i].(*sql.NullTime); !ok {
 				return fmt.Errorf("unexpected type %T for field started_at", values[i])
 			} else if value.Valid {
-				psh.StartedAt = value.Time
+				_m.StartedAt = value.Time
 			}
 		case providersynchistory.FieldFinishedAt:
 			if value, ok := values[i].(*sql.NullTime); !ok {
 				return fmt.Errorf("unexpected type %T for field finished_at", values[i])
 			} else if value.Valid {
-				psh.FinishedAt = value.Time
+				_m.FinishedAt = value.Time
 			}
 		case providersynchistory.FieldNumMutations:
 			if value, ok := values[i].(*sql.NullInt64); !ok {
 				return fmt.Errorf("unexpected type %T for field num_mutations", values[i])
 			} else if value.Valid {
-				psh.NumMutations = int(value.Int64)
+				_m.NumMutations = int(value.Int64)
 			}
 		default:
-			psh.selectValues.Set(columns[i], values[i])
+			_m.selectValues.Set(columns[i], values[i])
 		}
 	}
 	return nil
@@ -128,52 +128,52 @@ func (psh *ProviderSyncHistory) assignValues(columns []string, values []any) err
 
 // Value returns the ent.Value that was dynamically selected and assigned to the ProviderSyncHistory.
 // This includes values selected through modifiers, order, etc.
-func (psh *ProviderSyncHistory) Value(name string) (ent.Value, error) {
-	return psh.selectValues.Get(name)
+func (_m *ProviderSyncHistory) Value(name string) (ent.Value, error) {
+	return _m.selectValues.Get(name)
 }
 
 // QueryTenant queries the "tenant" edge of the ProviderSyncHistory entity.
-func (psh *ProviderSyncHistory) QueryTenant() *TenantQuery {
-	return NewProviderSyncHistoryClient(psh.config).QueryTenant(psh)
+func (_m *ProviderSyncHistory) QueryTenant() *TenantQuery {
+	return NewProviderSyncHistoryClient(_m.config).QueryTenant(_m)
 }
 
 // Update returns a builder for updating this ProviderSyncHistory.
 // Note that you need to call ProviderSyncHistory.Unwrap() before calling this method if this ProviderSyncHistory
 // was returned from a transaction, and the transaction was committed or rolled back.
-func (psh *ProviderSyncHistory) Update() *ProviderSyncHistoryUpdateOne {
-	return NewProviderSyncHistoryClient(psh.config).UpdateOne(psh)
+func (_m *ProviderSyncHistory) Update() *ProviderSyncHistoryUpdateOne {
+	return NewProviderSyncHistoryClient(_m.config).UpdateOne(_m)
 }
 
 // Unwrap unwraps the ProviderSyncHistory entity that was returned from a transaction after it was closed,
 // so that all future queries will be executed through the driver which created the transaction.
-func (psh *ProviderSyncHistory) Unwrap() *ProviderSyncHistory {
-	_tx, ok := psh.config.driver.(*txDriver)
+func (_m *ProviderSyncHistory) Unwrap() *ProviderSyncHistory {
+	_tx, ok := _m.config.driver.(*txDriver)
 	if !ok {
 		panic("ent: ProviderSyncHistory is not a transactional entity")
 	}
-	psh.config.driver = _tx.drv
-	return psh
+	_m.config.driver = _tx.drv
+	return _m
 }
 
 // String implements the fmt.Stringer.
-func (psh *ProviderSyncHistory) String() string {
+func (_m *ProviderSyncHistory) String() string {
 	var builder strings.Builder
 	builder.WriteString("ProviderSyncHistory(")
-	builder.WriteString(fmt.Sprintf("id=%v, ", psh.ID))
+	builder.WriteString(fmt.Sprintf("id=%v, ", _m.ID))
 	builder.WriteString("tenant_id=")
-	builder.WriteString(fmt.Sprintf("%v", psh.TenantID))
+	builder.WriteString(fmt.Sprintf("%v", _m.TenantID))
 	builder.WriteString(", ")
 	builder.WriteString("data_type=")
-	builder.WriteString(psh.DataType)
+	builder.WriteString(_m.DataType)
 	builder.WriteString(", ")
 	builder.WriteString("started_at=")
-	builder.WriteString(psh.StartedAt.Format(time.ANSIC))
+	builder.WriteString(_m.StartedAt.Format(time.ANSIC))
 	builder.WriteString(", ")
 	builder.WriteString("finished_at=")
-	builder.WriteString(psh.FinishedAt.Format(time.ANSIC))
+	builder.WriteString(_m.FinishedAt.Format(time.ANSIC))
 	builder.WriteString(", ")
 	builder.WriteString("num_mutations=")
-	builder.WriteString(fmt.Sprintf("%v", psh.NumMutations))
+	builder.WriteString(fmt.Sprintf("%v", _m.NumMutations))
 	builder.WriteByte(')')
 	return builder.String()
 }

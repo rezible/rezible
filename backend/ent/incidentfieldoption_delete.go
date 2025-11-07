@@ -20,56 +20,56 @@ type IncidentFieldOptionDelete struct {
 }
 
 // Where appends a list predicates to the IncidentFieldOptionDelete builder.
-func (ifod *IncidentFieldOptionDelete) Where(ps ...predicate.IncidentFieldOption) *IncidentFieldOptionDelete {
-	ifod.mutation.Where(ps...)
-	return ifod
+func (_d *IncidentFieldOptionDelete) Where(ps ...predicate.IncidentFieldOption) *IncidentFieldOptionDelete {
+	_d.mutation.Where(ps...)
+	return _d
 }
 
 // Exec executes the deletion query and returns how many vertices were deleted.
-func (ifod *IncidentFieldOptionDelete) Exec(ctx context.Context) (int, error) {
-	return withHooks(ctx, ifod.sqlExec, ifod.mutation, ifod.hooks)
+func (_d *IncidentFieldOptionDelete) Exec(ctx context.Context) (int, error) {
+	return withHooks(ctx, _d.sqlExec, _d.mutation, _d.hooks)
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (ifod *IncidentFieldOptionDelete) ExecX(ctx context.Context) int {
-	n, err := ifod.Exec(ctx)
+func (_d *IncidentFieldOptionDelete) ExecX(ctx context.Context) int {
+	n, err := _d.Exec(ctx)
 	if err != nil {
 		panic(err)
 	}
 	return n
 }
 
-func (ifod *IncidentFieldOptionDelete) sqlExec(ctx context.Context) (int, error) {
+func (_d *IncidentFieldOptionDelete) sqlExec(ctx context.Context) (int, error) {
 	_spec := sqlgraph.NewDeleteSpec(incidentfieldoption.Table, sqlgraph.NewFieldSpec(incidentfieldoption.FieldID, field.TypeUUID))
-	if ps := ifod.mutation.predicates; len(ps) > 0 {
+	if ps := _d.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {
 				ps[i](selector)
 			}
 		}
 	}
-	affected, err := sqlgraph.DeleteNodes(ctx, ifod.driver, _spec)
+	affected, err := sqlgraph.DeleteNodes(ctx, _d.driver, _spec)
 	if err != nil && sqlgraph.IsConstraintError(err) {
 		err = &ConstraintError{msg: err.Error(), wrap: err}
 	}
-	ifod.mutation.done = true
+	_d.mutation.done = true
 	return affected, err
 }
 
 // IncidentFieldOptionDeleteOne is the builder for deleting a single IncidentFieldOption entity.
 type IncidentFieldOptionDeleteOne struct {
-	ifod *IncidentFieldOptionDelete
+	_d *IncidentFieldOptionDelete
 }
 
 // Where appends a list predicates to the IncidentFieldOptionDelete builder.
-func (ifodo *IncidentFieldOptionDeleteOne) Where(ps ...predicate.IncidentFieldOption) *IncidentFieldOptionDeleteOne {
-	ifodo.ifod.mutation.Where(ps...)
-	return ifodo
+func (_d *IncidentFieldOptionDeleteOne) Where(ps ...predicate.IncidentFieldOption) *IncidentFieldOptionDeleteOne {
+	_d._d.mutation.Where(ps...)
+	return _d
 }
 
 // Exec executes the deletion query.
-func (ifodo *IncidentFieldOptionDeleteOne) Exec(ctx context.Context) error {
-	n, err := ifodo.ifod.Exec(ctx)
+func (_d *IncidentFieldOptionDeleteOne) Exec(ctx context.Context) error {
+	n, err := _d._d.Exec(ctx)
 	switch {
 	case err != nil:
 		return err
@@ -81,8 +81,8 @@ func (ifodo *IncidentFieldOptionDeleteOne) Exec(ctx context.Context) error {
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (ifodo *IncidentFieldOptionDeleteOne) ExecX(ctx context.Context) {
-	if err := ifodo.Exec(ctx); err != nil {
+func (_d *IncidentFieldOptionDeleteOne) ExecX(ctx context.Context) {
+	if err := _d.Exec(ctx); err != nil {
 		panic(err)
 	}
 }

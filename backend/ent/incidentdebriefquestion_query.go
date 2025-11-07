@@ -46,44 +46,44 @@ type IncidentDebriefQuestionQuery struct {
 }
 
 // Where adds a new predicate for the IncidentDebriefQuestionQuery builder.
-func (idqq *IncidentDebriefQuestionQuery) Where(ps ...predicate.IncidentDebriefQuestion) *IncidentDebriefQuestionQuery {
-	idqq.predicates = append(idqq.predicates, ps...)
-	return idqq
+func (_q *IncidentDebriefQuestionQuery) Where(ps ...predicate.IncidentDebriefQuestion) *IncidentDebriefQuestionQuery {
+	_q.predicates = append(_q.predicates, ps...)
+	return _q
 }
 
 // Limit the number of records to be returned by this query.
-func (idqq *IncidentDebriefQuestionQuery) Limit(limit int) *IncidentDebriefQuestionQuery {
-	idqq.ctx.Limit = &limit
-	return idqq
+func (_q *IncidentDebriefQuestionQuery) Limit(limit int) *IncidentDebriefQuestionQuery {
+	_q.ctx.Limit = &limit
+	return _q
 }
 
 // Offset to start from.
-func (idqq *IncidentDebriefQuestionQuery) Offset(offset int) *IncidentDebriefQuestionQuery {
-	idqq.ctx.Offset = &offset
-	return idqq
+func (_q *IncidentDebriefQuestionQuery) Offset(offset int) *IncidentDebriefQuestionQuery {
+	_q.ctx.Offset = &offset
+	return _q
 }
 
 // Unique configures the query builder to filter duplicate records on query.
 // By default, unique is set to true, and can be disabled using this method.
-func (idqq *IncidentDebriefQuestionQuery) Unique(unique bool) *IncidentDebriefQuestionQuery {
-	idqq.ctx.Unique = &unique
-	return idqq
+func (_q *IncidentDebriefQuestionQuery) Unique(unique bool) *IncidentDebriefQuestionQuery {
+	_q.ctx.Unique = &unique
+	return _q
 }
 
 // Order specifies how the records should be ordered.
-func (idqq *IncidentDebriefQuestionQuery) Order(o ...incidentdebriefquestion.OrderOption) *IncidentDebriefQuestionQuery {
-	idqq.order = append(idqq.order, o...)
-	return idqq
+func (_q *IncidentDebriefQuestionQuery) Order(o ...incidentdebriefquestion.OrderOption) *IncidentDebriefQuestionQuery {
+	_q.order = append(_q.order, o...)
+	return _q
 }
 
 // QueryTenant chains the current query on the "tenant" edge.
-func (idqq *IncidentDebriefQuestionQuery) QueryTenant() *TenantQuery {
-	query := (&TenantClient{config: idqq.config}).Query()
+func (_q *IncidentDebriefQuestionQuery) QueryTenant() *TenantQuery {
+	query := (&TenantClient{config: _q.config}).Query()
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
-		if err := idqq.prepareQuery(ctx); err != nil {
+		if err := _q.prepareQuery(ctx); err != nil {
 			return nil, err
 		}
-		selector := idqq.sqlQuery(ctx)
+		selector := _q.sqlQuery(ctx)
 		if err := selector.Err(); err != nil {
 			return nil, err
 		}
@@ -92,20 +92,20 @@ func (idqq *IncidentDebriefQuestionQuery) QueryTenant() *TenantQuery {
 			sqlgraph.To(tenant.Table, tenant.FieldID),
 			sqlgraph.Edge(sqlgraph.M2O, false, incidentdebriefquestion.TenantTable, incidentdebriefquestion.TenantColumn),
 		)
-		fromU = sqlgraph.SetNeighbors(idqq.driver.Dialect(), step)
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
 	}
 	return query
 }
 
 // QueryMessages chains the current query on the "messages" edge.
-func (idqq *IncidentDebriefQuestionQuery) QueryMessages() *IncidentDebriefMessageQuery {
-	query := (&IncidentDebriefMessageClient{config: idqq.config}).Query()
+func (_q *IncidentDebriefQuestionQuery) QueryMessages() *IncidentDebriefMessageQuery {
+	query := (&IncidentDebriefMessageClient{config: _q.config}).Query()
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
-		if err := idqq.prepareQuery(ctx); err != nil {
+		if err := _q.prepareQuery(ctx); err != nil {
 			return nil, err
 		}
-		selector := idqq.sqlQuery(ctx)
+		selector := _q.sqlQuery(ctx)
 		if err := selector.Err(); err != nil {
 			return nil, err
 		}
@@ -114,20 +114,20 @@ func (idqq *IncidentDebriefQuestionQuery) QueryMessages() *IncidentDebriefMessag
 			sqlgraph.To(incidentdebriefmessage.Table, incidentdebriefmessage.FieldID),
 			sqlgraph.Edge(sqlgraph.O2M, true, incidentdebriefquestion.MessagesTable, incidentdebriefquestion.MessagesColumn),
 		)
-		fromU = sqlgraph.SetNeighbors(idqq.driver.Dialect(), step)
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
 	}
 	return query
 }
 
 // QueryIncidentFields chains the current query on the "incident_fields" edge.
-func (idqq *IncidentDebriefQuestionQuery) QueryIncidentFields() *IncidentFieldQuery {
-	query := (&IncidentFieldClient{config: idqq.config}).Query()
+func (_q *IncidentDebriefQuestionQuery) QueryIncidentFields() *IncidentFieldQuery {
+	query := (&IncidentFieldClient{config: _q.config}).Query()
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
-		if err := idqq.prepareQuery(ctx); err != nil {
+		if err := _q.prepareQuery(ctx); err != nil {
 			return nil, err
 		}
-		selector := idqq.sqlQuery(ctx)
+		selector := _q.sqlQuery(ctx)
 		if err := selector.Err(); err != nil {
 			return nil, err
 		}
@@ -136,20 +136,20 @@ func (idqq *IncidentDebriefQuestionQuery) QueryIncidentFields() *IncidentFieldQu
 			sqlgraph.To(incidentfield.Table, incidentfield.FieldID),
 			sqlgraph.Edge(sqlgraph.M2M, false, incidentdebriefquestion.IncidentFieldsTable, incidentdebriefquestion.IncidentFieldsPrimaryKey...),
 		)
-		fromU = sqlgraph.SetNeighbors(idqq.driver.Dialect(), step)
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
 	}
 	return query
 }
 
 // QueryIncidentRoles chains the current query on the "incident_roles" edge.
-func (idqq *IncidentDebriefQuestionQuery) QueryIncidentRoles() *IncidentRoleQuery {
-	query := (&IncidentRoleClient{config: idqq.config}).Query()
+func (_q *IncidentDebriefQuestionQuery) QueryIncidentRoles() *IncidentRoleQuery {
+	query := (&IncidentRoleClient{config: _q.config}).Query()
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
-		if err := idqq.prepareQuery(ctx); err != nil {
+		if err := _q.prepareQuery(ctx); err != nil {
 			return nil, err
 		}
-		selector := idqq.sqlQuery(ctx)
+		selector := _q.sqlQuery(ctx)
 		if err := selector.Err(); err != nil {
 			return nil, err
 		}
@@ -158,20 +158,20 @@ func (idqq *IncidentDebriefQuestionQuery) QueryIncidentRoles() *IncidentRoleQuer
 			sqlgraph.To(incidentrole.Table, incidentrole.FieldID),
 			sqlgraph.Edge(sqlgraph.M2M, false, incidentdebriefquestion.IncidentRolesTable, incidentdebriefquestion.IncidentRolesPrimaryKey...),
 		)
-		fromU = sqlgraph.SetNeighbors(idqq.driver.Dialect(), step)
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
 	}
 	return query
 }
 
 // QueryIncidentSeverities chains the current query on the "incident_severities" edge.
-func (idqq *IncidentDebriefQuestionQuery) QueryIncidentSeverities() *IncidentSeverityQuery {
-	query := (&IncidentSeverityClient{config: idqq.config}).Query()
+func (_q *IncidentDebriefQuestionQuery) QueryIncidentSeverities() *IncidentSeverityQuery {
+	query := (&IncidentSeverityClient{config: _q.config}).Query()
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
-		if err := idqq.prepareQuery(ctx); err != nil {
+		if err := _q.prepareQuery(ctx); err != nil {
 			return nil, err
 		}
-		selector := idqq.sqlQuery(ctx)
+		selector := _q.sqlQuery(ctx)
 		if err := selector.Err(); err != nil {
 			return nil, err
 		}
@@ -180,20 +180,20 @@ func (idqq *IncidentDebriefQuestionQuery) QueryIncidentSeverities() *IncidentSev
 			sqlgraph.To(incidentseverity.Table, incidentseverity.FieldID),
 			sqlgraph.Edge(sqlgraph.M2M, false, incidentdebriefquestion.IncidentSeveritiesTable, incidentdebriefquestion.IncidentSeveritiesPrimaryKey...),
 		)
-		fromU = sqlgraph.SetNeighbors(idqq.driver.Dialect(), step)
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
 	}
 	return query
 }
 
 // QueryIncidentTags chains the current query on the "incident_tags" edge.
-func (idqq *IncidentDebriefQuestionQuery) QueryIncidentTags() *IncidentTagQuery {
-	query := (&IncidentTagClient{config: idqq.config}).Query()
+func (_q *IncidentDebriefQuestionQuery) QueryIncidentTags() *IncidentTagQuery {
+	query := (&IncidentTagClient{config: _q.config}).Query()
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
-		if err := idqq.prepareQuery(ctx); err != nil {
+		if err := _q.prepareQuery(ctx); err != nil {
 			return nil, err
 		}
-		selector := idqq.sqlQuery(ctx)
+		selector := _q.sqlQuery(ctx)
 		if err := selector.Err(); err != nil {
 			return nil, err
 		}
@@ -202,20 +202,20 @@ func (idqq *IncidentDebriefQuestionQuery) QueryIncidentTags() *IncidentTagQuery 
 			sqlgraph.To(incidenttag.Table, incidenttag.FieldID),
 			sqlgraph.Edge(sqlgraph.M2M, false, incidentdebriefquestion.IncidentTagsTable, incidentdebriefquestion.IncidentTagsPrimaryKey...),
 		)
-		fromU = sqlgraph.SetNeighbors(idqq.driver.Dialect(), step)
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
 	}
 	return query
 }
 
 // QueryIncidentTypes chains the current query on the "incident_types" edge.
-func (idqq *IncidentDebriefQuestionQuery) QueryIncidentTypes() *IncidentTypeQuery {
-	query := (&IncidentTypeClient{config: idqq.config}).Query()
+func (_q *IncidentDebriefQuestionQuery) QueryIncidentTypes() *IncidentTypeQuery {
+	query := (&IncidentTypeClient{config: _q.config}).Query()
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
-		if err := idqq.prepareQuery(ctx); err != nil {
+		if err := _q.prepareQuery(ctx); err != nil {
 			return nil, err
 		}
-		selector := idqq.sqlQuery(ctx)
+		selector := _q.sqlQuery(ctx)
 		if err := selector.Err(); err != nil {
 			return nil, err
 		}
@@ -224,7 +224,7 @@ func (idqq *IncidentDebriefQuestionQuery) QueryIncidentTypes() *IncidentTypeQuer
 			sqlgraph.To(incidenttype.Table, incidenttype.FieldID),
 			sqlgraph.Edge(sqlgraph.M2M, false, incidentdebriefquestion.IncidentTypesTable, incidentdebriefquestion.IncidentTypesPrimaryKey...),
 		)
-		fromU = sqlgraph.SetNeighbors(idqq.driver.Dialect(), step)
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
 	}
 	return query
@@ -232,8 +232,8 @@ func (idqq *IncidentDebriefQuestionQuery) QueryIncidentTypes() *IncidentTypeQuer
 
 // First returns the first IncidentDebriefQuestion entity from the query.
 // Returns a *NotFoundError when no IncidentDebriefQuestion was found.
-func (idqq *IncidentDebriefQuestionQuery) First(ctx context.Context) (*IncidentDebriefQuestion, error) {
-	nodes, err := idqq.Limit(1).All(setContextOp(ctx, idqq.ctx, ent.OpQueryFirst))
+func (_q *IncidentDebriefQuestionQuery) First(ctx context.Context) (*IncidentDebriefQuestion, error) {
+	nodes, err := _q.Limit(1).All(setContextOp(ctx, _q.ctx, ent.OpQueryFirst))
 	if err != nil {
 		return nil, err
 	}
@@ -244,8 +244,8 @@ func (idqq *IncidentDebriefQuestionQuery) First(ctx context.Context) (*IncidentD
 }
 
 // FirstX is like First, but panics if an error occurs.
-func (idqq *IncidentDebriefQuestionQuery) FirstX(ctx context.Context) *IncidentDebriefQuestion {
-	node, err := idqq.First(ctx)
+func (_q *IncidentDebriefQuestionQuery) FirstX(ctx context.Context) *IncidentDebriefQuestion {
+	node, err := _q.First(ctx)
 	if err != nil && !IsNotFound(err) {
 		panic(err)
 	}
@@ -254,9 +254,9 @@ func (idqq *IncidentDebriefQuestionQuery) FirstX(ctx context.Context) *IncidentD
 
 // FirstID returns the first IncidentDebriefQuestion ID from the query.
 // Returns a *NotFoundError when no IncidentDebriefQuestion ID was found.
-func (idqq *IncidentDebriefQuestionQuery) FirstID(ctx context.Context) (id uuid.UUID, err error) {
+func (_q *IncidentDebriefQuestionQuery) FirstID(ctx context.Context) (id uuid.UUID, err error) {
 	var ids []uuid.UUID
-	if ids, err = idqq.Limit(1).IDs(setContextOp(ctx, idqq.ctx, ent.OpQueryFirstID)); err != nil {
+	if ids, err = _q.Limit(1).IDs(setContextOp(ctx, _q.ctx, ent.OpQueryFirstID)); err != nil {
 		return
 	}
 	if len(ids) == 0 {
@@ -267,8 +267,8 @@ func (idqq *IncidentDebriefQuestionQuery) FirstID(ctx context.Context) (id uuid.
 }
 
 // FirstIDX is like FirstID, but panics if an error occurs.
-func (idqq *IncidentDebriefQuestionQuery) FirstIDX(ctx context.Context) uuid.UUID {
-	id, err := idqq.FirstID(ctx)
+func (_q *IncidentDebriefQuestionQuery) FirstIDX(ctx context.Context) uuid.UUID {
+	id, err := _q.FirstID(ctx)
 	if err != nil && !IsNotFound(err) {
 		panic(err)
 	}
@@ -278,8 +278,8 @@ func (idqq *IncidentDebriefQuestionQuery) FirstIDX(ctx context.Context) uuid.UUI
 // Only returns a single IncidentDebriefQuestion entity found by the query, ensuring it only returns one.
 // Returns a *NotSingularError when more than one IncidentDebriefQuestion entity is found.
 // Returns a *NotFoundError when no IncidentDebriefQuestion entities are found.
-func (idqq *IncidentDebriefQuestionQuery) Only(ctx context.Context) (*IncidentDebriefQuestion, error) {
-	nodes, err := idqq.Limit(2).All(setContextOp(ctx, idqq.ctx, ent.OpQueryOnly))
+func (_q *IncidentDebriefQuestionQuery) Only(ctx context.Context) (*IncidentDebriefQuestion, error) {
+	nodes, err := _q.Limit(2).All(setContextOp(ctx, _q.ctx, ent.OpQueryOnly))
 	if err != nil {
 		return nil, err
 	}
@@ -294,8 +294,8 @@ func (idqq *IncidentDebriefQuestionQuery) Only(ctx context.Context) (*IncidentDe
 }
 
 // OnlyX is like Only, but panics if an error occurs.
-func (idqq *IncidentDebriefQuestionQuery) OnlyX(ctx context.Context) *IncidentDebriefQuestion {
-	node, err := idqq.Only(ctx)
+func (_q *IncidentDebriefQuestionQuery) OnlyX(ctx context.Context) *IncidentDebriefQuestion {
+	node, err := _q.Only(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -305,9 +305,9 @@ func (idqq *IncidentDebriefQuestionQuery) OnlyX(ctx context.Context) *IncidentDe
 // OnlyID is like Only, but returns the only IncidentDebriefQuestion ID in the query.
 // Returns a *NotSingularError when more than one IncidentDebriefQuestion ID is found.
 // Returns a *NotFoundError when no entities are found.
-func (idqq *IncidentDebriefQuestionQuery) OnlyID(ctx context.Context) (id uuid.UUID, err error) {
+func (_q *IncidentDebriefQuestionQuery) OnlyID(ctx context.Context) (id uuid.UUID, err error) {
 	var ids []uuid.UUID
-	if ids, err = idqq.Limit(2).IDs(setContextOp(ctx, idqq.ctx, ent.OpQueryOnlyID)); err != nil {
+	if ids, err = _q.Limit(2).IDs(setContextOp(ctx, _q.ctx, ent.OpQueryOnlyID)); err != nil {
 		return
 	}
 	switch len(ids) {
@@ -322,8 +322,8 @@ func (idqq *IncidentDebriefQuestionQuery) OnlyID(ctx context.Context) (id uuid.U
 }
 
 // OnlyIDX is like OnlyID, but panics if an error occurs.
-func (idqq *IncidentDebriefQuestionQuery) OnlyIDX(ctx context.Context) uuid.UUID {
-	id, err := idqq.OnlyID(ctx)
+func (_q *IncidentDebriefQuestionQuery) OnlyIDX(ctx context.Context) uuid.UUID {
+	id, err := _q.OnlyID(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -331,18 +331,18 @@ func (idqq *IncidentDebriefQuestionQuery) OnlyIDX(ctx context.Context) uuid.UUID
 }
 
 // All executes the query and returns a list of IncidentDebriefQuestions.
-func (idqq *IncidentDebriefQuestionQuery) All(ctx context.Context) ([]*IncidentDebriefQuestion, error) {
-	ctx = setContextOp(ctx, idqq.ctx, ent.OpQueryAll)
-	if err := idqq.prepareQuery(ctx); err != nil {
+func (_q *IncidentDebriefQuestionQuery) All(ctx context.Context) ([]*IncidentDebriefQuestion, error) {
+	ctx = setContextOp(ctx, _q.ctx, ent.OpQueryAll)
+	if err := _q.prepareQuery(ctx); err != nil {
 		return nil, err
 	}
 	qr := querierAll[[]*IncidentDebriefQuestion, *IncidentDebriefQuestionQuery]()
-	return withInterceptors[[]*IncidentDebriefQuestion](ctx, idqq, qr, idqq.inters)
+	return withInterceptors[[]*IncidentDebriefQuestion](ctx, _q, qr, _q.inters)
 }
 
 // AllX is like All, but panics if an error occurs.
-func (idqq *IncidentDebriefQuestionQuery) AllX(ctx context.Context) []*IncidentDebriefQuestion {
-	nodes, err := idqq.All(ctx)
+func (_q *IncidentDebriefQuestionQuery) AllX(ctx context.Context) []*IncidentDebriefQuestion {
+	nodes, err := _q.All(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -350,20 +350,20 @@ func (idqq *IncidentDebriefQuestionQuery) AllX(ctx context.Context) []*IncidentD
 }
 
 // IDs executes the query and returns a list of IncidentDebriefQuestion IDs.
-func (idqq *IncidentDebriefQuestionQuery) IDs(ctx context.Context) (ids []uuid.UUID, err error) {
-	if idqq.ctx.Unique == nil && idqq.path != nil {
-		idqq.Unique(true)
+func (_q *IncidentDebriefQuestionQuery) IDs(ctx context.Context) (ids []uuid.UUID, err error) {
+	if _q.ctx.Unique == nil && _q.path != nil {
+		_q.Unique(true)
 	}
-	ctx = setContextOp(ctx, idqq.ctx, ent.OpQueryIDs)
-	if err = idqq.Select(incidentdebriefquestion.FieldID).Scan(ctx, &ids); err != nil {
+	ctx = setContextOp(ctx, _q.ctx, ent.OpQueryIDs)
+	if err = _q.Select(incidentdebriefquestion.FieldID).Scan(ctx, &ids); err != nil {
 		return nil, err
 	}
 	return ids, nil
 }
 
 // IDsX is like IDs, but panics if an error occurs.
-func (idqq *IncidentDebriefQuestionQuery) IDsX(ctx context.Context) []uuid.UUID {
-	ids, err := idqq.IDs(ctx)
+func (_q *IncidentDebriefQuestionQuery) IDsX(ctx context.Context) []uuid.UUID {
+	ids, err := _q.IDs(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -371,17 +371,17 @@ func (idqq *IncidentDebriefQuestionQuery) IDsX(ctx context.Context) []uuid.UUID 
 }
 
 // Count returns the count of the given query.
-func (idqq *IncidentDebriefQuestionQuery) Count(ctx context.Context) (int, error) {
-	ctx = setContextOp(ctx, idqq.ctx, ent.OpQueryCount)
-	if err := idqq.prepareQuery(ctx); err != nil {
+func (_q *IncidentDebriefQuestionQuery) Count(ctx context.Context) (int, error) {
+	ctx = setContextOp(ctx, _q.ctx, ent.OpQueryCount)
+	if err := _q.prepareQuery(ctx); err != nil {
 		return 0, err
 	}
-	return withInterceptors[int](ctx, idqq, querierCount[*IncidentDebriefQuestionQuery](), idqq.inters)
+	return withInterceptors[int](ctx, _q, querierCount[*IncidentDebriefQuestionQuery](), _q.inters)
 }
 
 // CountX is like Count, but panics if an error occurs.
-func (idqq *IncidentDebriefQuestionQuery) CountX(ctx context.Context) int {
-	count, err := idqq.Count(ctx)
+func (_q *IncidentDebriefQuestionQuery) CountX(ctx context.Context) int {
+	count, err := _q.Count(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -389,9 +389,9 @@ func (idqq *IncidentDebriefQuestionQuery) CountX(ctx context.Context) int {
 }
 
 // Exist returns true if the query has elements in the graph.
-func (idqq *IncidentDebriefQuestionQuery) Exist(ctx context.Context) (bool, error) {
-	ctx = setContextOp(ctx, idqq.ctx, ent.OpQueryExist)
-	switch _, err := idqq.FirstID(ctx); {
+func (_q *IncidentDebriefQuestionQuery) Exist(ctx context.Context) (bool, error) {
+	ctx = setContextOp(ctx, _q.ctx, ent.OpQueryExist)
+	switch _, err := _q.FirstID(ctx); {
 	case IsNotFound(err):
 		return false, nil
 	case err != nil:
@@ -402,8 +402,8 @@ func (idqq *IncidentDebriefQuestionQuery) Exist(ctx context.Context) (bool, erro
 }
 
 // ExistX is like Exist, but panics if an error occurs.
-func (idqq *IncidentDebriefQuestionQuery) ExistX(ctx context.Context) bool {
-	exist, err := idqq.Exist(ctx)
+func (_q *IncidentDebriefQuestionQuery) ExistX(ctx context.Context) bool {
+	exist, err := _q.Exist(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -412,105 +412,105 @@ func (idqq *IncidentDebriefQuestionQuery) ExistX(ctx context.Context) bool {
 
 // Clone returns a duplicate of the IncidentDebriefQuestionQuery builder, including all associated steps. It can be
 // used to prepare common query builders and use them differently after the clone is made.
-func (idqq *IncidentDebriefQuestionQuery) Clone() *IncidentDebriefQuestionQuery {
-	if idqq == nil {
+func (_q *IncidentDebriefQuestionQuery) Clone() *IncidentDebriefQuestionQuery {
+	if _q == nil {
 		return nil
 	}
 	return &IncidentDebriefQuestionQuery{
-		config:                 idqq.config,
-		ctx:                    idqq.ctx.Clone(),
-		order:                  append([]incidentdebriefquestion.OrderOption{}, idqq.order...),
-		inters:                 append([]Interceptor{}, idqq.inters...),
-		predicates:             append([]predicate.IncidentDebriefQuestion{}, idqq.predicates...),
-		withTenant:             idqq.withTenant.Clone(),
-		withMessages:           idqq.withMessages.Clone(),
-		withIncidentFields:     idqq.withIncidentFields.Clone(),
-		withIncidentRoles:      idqq.withIncidentRoles.Clone(),
-		withIncidentSeverities: idqq.withIncidentSeverities.Clone(),
-		withIncidentTags:       idqq.withIncidentTags.Clone(),
-		withIncidentTypes:      idqq.withIncidentTypes.Clone(),
+		config:                 _q.config,
+		ctx:                    _q.ctx.Clone(),
+		order:                  append([]incidentdebriefquestion.OrderOption{}, _q.order...),
+		inters:                 append([]Interceptor{}, _q.inters...),
+		predicates:             append([]predicate.IncidentDebriefQuestion{}, _q.predicates...),
+		withTenant:             _q.withTenant.Clone(),
+		withMessages:           _q.withMessages.Clone(),
+		withIncidentFields:     _q.withIncidentFields.Clone(),
+		withIncidentRoles:      _q.withIncidentRoles.Clone(),
+		withIncidentSeverities: _q.withIncidentSeverities.Clone(),
+		withIncidentTags:       _q.withIncidentTags.Clone(),
+		withIncidentTypes:      _q.withIncidentTypes.Clone(),
 		// clone intermediate query.
-		sql:       idqq.sql.Clone(),
-		path:      idqq.path,
-		modifiers: append([]func(*sql.Selector){}, idqq.modifiers...),
+		sql:       _q.sql.Clone(),
+		path:      _q.path,
+		modifiers: append([]func(*sql.Selector){}, _q.modifiers...),
 	}
 }
 
 // WithTenant tells the query-builder to eager-load the nodes that are connected to
 // the "tenant" edge. The optional arguments are used to configure the query builder of the edge.
-func (idqq *IncidentDebriefQuestionQuery) WithTenant(opts ...func(*TenantQuery)) *IncidentDebriefQuestionQuery {
-	query := (&TenantClient{config: idqq.config}).Query()
+func (_q *IncidentDebriefQuestionQuery) WithTenant(opts ...func(*TenantQuery)) *IncidentDebriefQuestionQuery {
+	query := (&TenantClient{config: _q.config}).Query()
 	for _, opt := range opts {
 		opt(query)
 	}
-	idqq.withTenant = query
-	return idqq
+	_q.withTenant = query
+	return _q
 }
 
 // WithMessages tells the query-builder to eager-load the nodes that are connected to
 // the "messages" edge. The optional arguments are used to configure the query builder of the edge.
-func (idqq *IncidentDebriefQuestionQuery) WithMessages(opts ...func(*IncidentDebriefMessageQuery)) *IncidentDebriefQuestionQuery {
-	query := (&IncidentDebriefMessageClient{config: idqq.config}).Query()
+func (_q *IncidentDebriefQuestionQuery) WithMessages(opts ...func(*IncidentDebriefMessageQuery)) *IncidentDebriefQuestionQuery {
+	query := (&IncidentDebriefMessageClient{config: _q.config}).Query()
 	for _, opt := range opts {
 		opt(query)
 	}
-	idqq.withMessages = query
-	return idqq
+	_q.withMessages = query
+	return _q
 }
 
 // WithIncidentFields tells the query-builder to eager-load the nodes that are connected to
 // the "incident_fields" edge. The optional arguments are used to configure the query builder of the edge.
-func (idqq *IncidentDebriefQuestionQuery) WithIncidentFields(opts ...func(*IncidentFieldQuery)) *IncidentDebriefQuestionQuery {
-	query := (&IncidentFieldClient{config: idqq.config}).Query()
+func (_q *IncidentDebriefQuestionQuery) WithIncidentFields(opts ...func(*IncidentFieldQuery)) *IncidentDebriefQuestionQuery {
+	query := (&IncidentFieldClient{config: _q.config}).Query()
 	for _, opt := range opts {
 		opt(query)
 	}
-	idqq.withIncidentFields = query
-	return idqq
+	_q.withIncidentFields = query
+	return _q
 }
 
 // WithIncidentRoles tells the query-builder to eager-load the nodes that are connected to
 // the "incident_roles" edge. The optional arguments are used to configure the query builder of the edge.
-func (idqq *IncidentDebriefQuestionQuery) WithIncidentRoles(opts ...func(*IncidentRoleQuery)) *IncidentDebriefQuestionQuery {
-	query := (&IncidentRoleClient{config: idqq.config}).Query()
+func (_q *IncidentDebriefQuestionQuery) WithIncidentRoles(opts ...func(*IncidentRoleQuery)) *IncidentDebriefQuestionQuery {
+	query := (&IncidentRoleClient{config: _q.config}).Query()
 	for _, opt := range opts {
 		opt(query)
 	}
-	idqq.withIncidentRoles = query
-	return idqq
+	_q.withIncidentRoles = query
+	return _q
 }
 
 // WithIncidentSeverities tells the query-builder to eager-load the nodes that are connected to
 // the "incident_severities" edge. The optional arguments are used to configure the query builder of the edge.
-func (idqq *IncidentDebriefQuestionQuery) WithIncidentSeverities(opts ...func(*IncidentSeverityQuery)) *IncidentDebriefQuestionQuery {
-	query := (&IncidentSeverityClient{config: idqq.config}).Query()
+func (_q *IncidentDebriefQuestionQuery) WithIncidentSeverities(opts ...func(*IncidentSeverityQuery)) *IncidentDebriefQuestionQuery {
+	query := (&IncidentSeverityClient{config: _q.config}).Query()
 	for _, opt := range opts {
 		opt(query)
 	}
-	idqq.withIncidentSeverities = query
-	return idqq
+	_q.withIncidentSeverities = query
+	return _q
 }
 
 // WithIncidentTags tells the query-builder to eager-load the nodes that are connected to
 // the "incident_tags" edge. The optional arguments are used to configure the query builder of the edge.
-func (idqq *IncidentDebriefQuestionQuery) WithIncidentTags(opts ...func(*IncidentTagQuery)) *IncidentDebriefQuestionQuery {
-	query := (&IncidentTagClient{config: idqq.config}).Query()
+func (_q *IncidentDebriefQuestionQuery) WithIncidentTags(opts ...func(*IncidentTagQuery)) *IncidentDebriefQuestionQuery {
+	query := (&IncidentTagClient{config: _q.config}).Query()
 	for _, opt := range opts {
 		opt(query)
 	}
-	idqq.withIncidentTags = query
-	return idqq
+	_q.withIncidentTags = query
+	return _q
 }
 
 // WithIncidentTypes tells the query-builder to eager-load the nodes that are connected to
 // the "incident_types" edge. The optional arguments are used to configure the query builder of the edge.
-func (idqq *IncidentDebriefQuestionQuery) WithIncidentTypes(opts ...func(*IncidentTypeQuery)) *IncidentDebriefQuestionQuery {
-	query := (&IncidentTypeClient{config: idqq.config}).Query()
+func (_q *IncidentDebriefQuestionQuery) WithIncidentTypes(opts ...func(*IncidentTypeQuery)) *IncidentDebriefQuestionQuery {
+	query := (&IncidentTypeClient{config: _q.config}).Query()
 	for _, opt := range opts {
 		opt(query)
 	}
-	idqq.withIncidentTypes = query
-	return idqq
+	_q.withIncidentTypes = query
+	return _q
 }
 
 // GroupBy is used to group vertices by one or more fields/columns.
@@ -527,10 +527,10 @@ func (idqq *IncidentDebriefQuestionQuery) WithIncidentTypes(opts ...func(*Incide
 //		GroupBy(incidentdebriefquestion.FieldTenantID).
 //		Aggregate(ent.Count()).
 //		Scan(ctx, &v)
-func (idqq *IncidentDebriefQuestionQuery) GroupBy(field string, fields ...string) *IncidentDebriefQuestionGroupBy {
-	idqq.ctx.Fields = append([]string{field}, fields...)
-	grbuild := &IncidentDebriefQuestionGroupBy{build: idqq}
-	grbuild.flds = &idqq.ctx.Fields
+func (_q *IncidentDebriefQuestionQuery) GroupBy(field string, fields ...string) *IncidentDebriefQuestionGroupBy {
+	_q.ctx.Fields = append([]string{field}, fields...)
+	grbuild := &IncidentDebriefQuestionGroupBy{build: _q}
+	grbuild.flds = &_q.ctx.Fields
 	grbuild.label = incidentdebriefquestion.Label
 	grbuild.scan = grbuild.Scan
 	return grbuild
@@ -548,94 +548,94 @@ func (idqq *IncidentDebriefQuestionQuery) GroupBy(field string, fields ...string
 //	client.IncidentDebriefQuestion.Query().
 //		Select(incidentdebriefquestion.FieldTenantID).
 //		Scan(ctx, &v)
-func (idqq *IncidentDebriefQuestionQuery) Select(fields ...string) *IncidentDebriefQuestionSelect {
-	idqq.ctx.Fields = append(idqq.ctx.Fields, fields...)
-	sbuild := &IncidentDebriefQuestionSelect{IncidentDebriefQuestionQuery: idqq}
+func (_q *IncidentDebriefQuestionQuery) Select(fields ...string) *IncidentDebriefQuestionSelect {
+	_q.ctx.Fields = append(_q.ctx.Fields, fields...)
+	sbuild := &IncidentDebriefQuestionSelect{IncidentDebriefQuestionQuery: _q}
 	sbuild.label = incidentdebriefquestion.Label
-	sbuild.flds, sbuild.scan = &idqq.ctx.Fields, sbuild.Scan
+	sbuild.flds, sbuild.scan = &_q.ctx.Fields, sbuild.Scan
 	return sbuild
 }
 
 // Aggregate returns a IncidentDebriefQuestionSelect configured with the given aggregations.
-func (idqq *IncidentDebriefQuestionQuery) Aggregate(fns ...AggregateFunc) *IncidentDebriefQuestionSelect {
-	return idqq.Select().Aggregate(fns...)
+func (_q *IncidentDebriefQuestionQuery) Aggregate(fns ...AggregateFunc) *IncidentDebriefQuestionSelect {
+	return _q.Select().Aggregate(fns...)
 }
 
-func (idqq *IncidentDebriefQuestionQuery) prepareQuery(ctx context.Context) error {
-	for _, inter := range idqq.inters {
+func (_q *IncidentDebriefQuestionQuery) prepareQuery(ctx context.Context) error {
+	for _, inter := range _q.inters {
 		if inter == nil {
 			return fmt.Errorf("ent: uninitialized interceptor (forgotten import ent/runtime?)")
 		}
 		if trv, ok := inter.(Traverser); ok {
-			if err := trv.Traverse(ctx, idqq); err != nil {
+			if err := trv.Traverse(ctx, _q); err != nil {
 				return err
 			}
 		}
 	}
-	for _, f := range idqq.ctx.Fields {
+	for _, f := range _q.ctx.Fields {
 		if !incidentdebriefquestion.ValidColumn(f) {
 			return &ValidationError{Name: f, err: fmt.Errorf("ent: invalid field %q for query", f)}
 		}
 	}
-	if idqq.path != nil {
-		prev, err := idqq.path(ctx)
+	if _q.path != nil {
+		prev, err := _q.path(ctx)
 		if err != nil {
 			return err
 		}
-		idqq.sql = prev
+		_q.sql = prev
 	}
 	if incidentdebriefquestion.Policy == nil {
 		return errors.New("ent: uninitialized incidentdebriefquestion.Policy (forgotten import ent/runtime?)")
 	}
-	if err := incidentdebriefquestion.Policy.EvalQuery(ctx, idqq); err != nil {
+	if err := incidentdebriefquestion.Policy.EvalQuery(ctx, _q); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (idqq *IncidentDebriefQuestionQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*IncidentDebriefQuestion, error) {
+func (_q *IncidentDebriefQuestionQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*IncidentDebriefQuestion, error) {
 	var (
 		nodes       = []*IncidentDebriefQuestion{}
-		_spec       = idqq.querySpec()
+		_spec       = _q.querySpec()
 		loadedTypes = [7]bool{
-			idqq.withTenant != nil,
-			idqq.withMessages != nil,
-			idqq.withIncidentFields != nil,
-			idqq.withIncidentRoles != nil,
-			idqq.withIncidentSeverities != nil,
-			idqq.withIncidentTags != nil,
-			idqq.withIncidentTypes != nil,
+			_q.withTenant != nil,
+			_q.withMessages != nil,
+			_q.withIncidentFields != nil,
+			_q.withIncidentRoles != nil,
+			_q.withIncidentSeverities != nil,
+			_q.withIncidentTags != nil,
+			_q.withIncidentTypes != nil,
 		}
 	)
 	_spec.ScanValues = func(columns []string) ([]any, error) {
 		return (*IncidentDebriefQuestion).scanValues(nil, columns)
 	}
 	_spec.Assign = func(columns []string, values []any) error {
-		node := &IncidentDebriefQuestion{config: idqq.config}
+		node := &IncidentDebriefQuestion{config: _q.config}
 		nodes = append(nodes, node)
 		node.Edges.loadedTypes = loadedTypes
 		return node.assignValues(columns, values)
 	}
-	if len(idqq.modifiers) > 0 {
-		_spec.Modifiers = idqq.modifiers
+	if len(_q.modifiers) > 0 {
+		_spec.Modifiers = _q.modifiers
 	}
 	for i := range hooks {
 		hooks[i](ctx, _spec)
 	}
-	if err := sqlgraph.QueryNodes(ctx, idqq.driver, _spec); err != nil {
+	if err := sqlgraph.QueryNodes(ctx, _q.driver, _spec); err != nil {
 		return nil, err
 	}
 	if len(nodes) == 0 {
 		return nodes, nil
 	}
-	if query := idqq.withTenant; query != nil {
-		if err := idqq.loadTenant(ctx, query, nodes, nil,
+	if query := _q.withTenant; query != nil {
+		if err := _q.loadTenant(ctx, query, nodes, nil,
 			func(n *IncidentDebriefQuestion, e *Tenant) { n.Edges.Tenant = e }); err != nil {
 			return nil, err
 		}
 	}
-	if query := idqq.withMessages; query != nil {
-		if err := idqq.loadMessages(ctx, query, nodes,
+	if query := _q.withMessages; query != nil {
+		if err := _q.loadMessages(ctx, query, nodes,
 			func(n *IncidentDebriefQuestion) { n.Edges.Messages = []*IncidentDebriefMessage{} },
 			func(n *IncidentDebriefQuestion, e *IncidentDebriefMessage) {
 				n.Edges.Messages = append(n.Edges.Messages, e)
@@ -643,8 +643,8 @@ func (idqq *IncidentDebriefQuestionQuery) sqlAll(ctx context.Context, hooks ...q
 			return nil, err
 		}
 	}
-	if query := idqq.withIncidentFields; query != nil {
-		if err := idqq.loadIncidentFields(ctx, query, nodes,
+	if query := _q.withIncidentFields; query != nil {
+		if err := _q.loadIncidentFields(ctx, query, nodes,
 			func(n *IncidentDebriefQuestion) { n.Edges.IncidentFields = []*IncidentField{} },
 			func(n *IncidentDebriefQuestion, e *IncidentField) {
 				n.Edges.IncidentFields = append(n.Edges.IncidentFields, e)
@@ -652,8 +652,8 @@ func (idqq *IncidentDebriefQuestionQuery) sqlAll(ctx context.Context, hooks ...q
 			return nil, err
 		}
 	}
-	if query := idqq.withIncidentRoles; query != nil {
-		if err := idqq.loadIncidentRoles(ctx, query, nodes,
+	if query := _q.withIncidentRoles; query != nil {
+		if err := _q.loadIncidentRoles(ctx, query, nodes,
 			func(n *IncidentDebriefQuestion) { n.Edges.IncidentRoles = []*IncidentRole{} },
 			func(n *IncidentDebriefQuestion, e *IncidentRole) {
 				n.Edges.IncidentRoles = append(n.Edges.IncidentRoles, e)
@@ -661,8 +661,8 @@ func (idqq *IncidentDebriefQuestionQuery) sqlAll(ctx context.Context, hooks ...q
 			return nil, err
 		}
 	}
-	if query := idqq.withIncidentSeverities; query != nil {
-		if err := idqq.loadIncidentSeverities(ctx, query, nodes,
+	if query := _q.withIncidentSeverities; query != nil {
+		if err := _q.loadIncidentSeverities(ctx, query, nodes,
 			func(n *IncidentDebriefQuestion) { n.Edges.IncidentSeverities = []*IncidentSeverity{} },
 			func(n *IncidentDebriefQuestion, e *IncidentSeverity) {
 				n.Edges.IncidentSeverities = append(n.Edges.IncidentSeverities, e)
@@ -670,8 +670,8 @@ func (idqq *IncidentDebriefQuestionQuery) sqlAll(ctx context.Context, hooks ...q
 			return nil, err
 		}
 	}
-	if query := idqq.withIncidentTags; query != nil {
-		if err := idqq.loadIncidentTags(ctx, query, nodes,
+	if query := _q.withIncidentTags; query != nil {
+		if err := _q.loadIncidentTags(ctx, query, nodes,
 			func(n *IncidentDebriefQuestion) { n.Edges.IncidentTags = []*IncidentTag{} },
 			func(n *IncidentDebriefQuestion, e *IncidentTag) {
 				n.Edges.IncidentTags = append(n.Edges.IncidentTags, e)
@@ -679,8 +679,8 @@ func (idqq *IncidentDebriefQuestionQuery) sqlAll(ctx context.Context, hooks ...q
 			return nil, err
 		}
 	}
-	if query := idqq.withIncidentTypes; query != nil {
-		if err := idqq.loadIncidentTypes(ctx, query, nodes,
+	if query := _q.withIncidentTypes; query != nil {
+		if err := _q.loadIncidentTypes(ctx, query, nodes,
 			func(n *IncidentDebriefQuestion) { n.Edges.IncidentTypes = []*IncidentType{} },
 			func(n *IncidentDebriefQuestion, e *IncidentType) {
 				n.Edges.IncidentTypes = append(n.Edges.IncidentTypes, e)
@@ -691,7 +691,7 @@ func (idqq *IncidentDebriefQuestionQuery) sqlAll(ctx context.Context, hooks ...q
 	return nodes, nil
 }
 
-func (idqq *IncidentDebriefQuestionQuery) loadTenant(ctx context.Context, query *TenantQuery, nodes []*IncidentDebriefQuestion, init func(*IncidentDebriefQuestion), assign func(*IncidentDebriefQuestion, *Tenant)) error {
+func (_q *IncidentDebriefQuestionQuery) loadTenant(ctx context.Context, query *TenantQuery, nodes []*IncidentDebriefQuestion, init func(*IncidentDebriefQuestion), assign func(*IncidentDebriefQuestion, *Tenant)) error {
 	ids := make([]int, 0, len(nodes))
 	nodeids := make(map[int][]*IncidentDebriefQuestion)
 	for i := range nodes {
@@ -720,7 +720,7 @@ func (idqq *IncidentDebriefQuestionQuery) loadTenant(ctx context.Context, query 
 	}
 	return nil
 }
-func (idqq *IncidentDebriefQuestionQuery) loadMessages(ctx context.Context, query *IncidentDebriefMessageQuery, nodes []*IncidentDebriefQuestion, init func(*IncidentDebriefQuestion), assign func(*IncidentDebriefQuestion, *IncidentDebriefMessage)) error {
+func (_q *IncidentDebriefQuestionQuery) loadMessages(ctx context.Context, query *IncidentDebriefMessageQuery, nodes []*IncidentDebriefQuestion, init func(*IncidentDebriefQuestion), assign func(*IncidentDebriefQuestion, *IncidentDebriefMessage)) error {
 	fks := make([]driver.Value, 0, len(nodes))
 	nodeids := make(map[uuid.UUID]*IncidentDebriefQuestion)
 	for i := range nodes {
@@ -750,7 +750,7 @@ func (idqq *IncidentDebriefQuestionQuery) loadMessages(ctx context.Context, quer
 	}
 	return nil
 }
-func (idqq *IncidentDebriefQuestionQuery) loadIncidentFields(ctx context.Context, query *IncidentFieldQuery, nodes []*IncidentDebriefQuestion, init func(*IncidentDebriefQuestion), assign func(*IncidentDebriefQuestion, *IncidentField)) error {
+func (_q *IncidentDebriefQuestionQuery) loadIncidentFields(ctx context.Context, query *IncidentFieldQuery, nodes []*IncidentDebriefQuestion, init func(*IncidentDebriefQuestion), assign func(*IncidentDebriefQuestion, *IncidentField)) error {
 	edgeIDs := make([]driver.Value, len(nodes))
 	byID := make(map[uuid.UUID]*IncidentDebriefQuestion)
 	nids := make(map[uuid.UUID]map[*IncidentDebriefQuestion]struct{})
@@ -811,7 +811,7 @@ func (idqq *IncidentDebriefQuestionQuery) loadIncidentFields(ctx context.Context
 	}
 	return nil
 }
-func (idqq *IncidentDebriefQuestionQuery) loadIncidentRoles(ctx context.Context, query *IncidentRoleQuery, nodes []*IncidentDebriefQuestion, init func(*IncidentDebriefQuestion), assign func(*IncidentDebriefQuestion, *IncidentRole)) error {
+func (_q *IncidentDebriefQuestionQuery) loadIncidentRoles(ctx context.Context, query *IncidentRoleQuery, nodes []*IncidentDebriefQuestion, init func(*IncidentDebriefQuestion), assign func(*IncidentDebriefQuestion, *IncidentRole)) error {
 	edgeIDs := make([]driver.Value, len(nodes))
 	byID := make(map[uuid.UUID]*IncidentDebriefQuestion)
 	nids := make(map[uuid.UUID]map[*IncidentDebriefQuestion]struct{})
@@ -872,7 +872,7 @@ func (idqq *IncidentDebriefQuestionQuery) loadIncidentRoles(ctx context.Context,
 	}
 	return nil
 }
-func (idqq *IncidentDebriefQuestionQuery) loadIncidentSeverities(ctx context.Context, query *IncidentSeverityQuery, nodes []*IncidentDebriefQuestion, init func(*IncidentDebriefQuestion), assign func(*IncidentDebriefQuestion, *IncidentSeverity)) error {
+func (_q *IncidentDebriefQuestionQuery) loadIncidentSeverities(ctx context.Context, query *IncidentSeverityQuery, nodes []*IncidentDebriefQuestion, init func(*IncidentDebriefQuestion), assign func(*IncidentDebriefQuestion, *IncidentSeverity)) error {
 	edgeIDs := make([]driver.Value, len(nodes))
 	byID := make(map[uuid.UUID]*IncidentDebriefQuestion)
 	nids := make(map[uuid.UUID]map[*IncidentDebriefQuestion]struct{})
@@ -933,7 +933,7 @@ func (idqq *IncidentDebriefQuestionQuery) loadIncidentSeverities(ctx context.Con
 	}
 	return nil
 }
-func (idqq *IncidentDebriefQuestionQuery) loadIncidentTags(ctx context.Context, query *IncidentTagQuery, nodes []*IncidentDebriefQuestion, init func(*IncidentDebriefQuestion), assign func(*IncidentDebriefQuestion, *IncidentTag)) error {
+func (_q *IncidentDebriefQuestionQuery) loadIncidentTags(ctx context.Context, query *IncidentTagQuery, nodes []*IncidentDebriefQuestion, init func(*IncidentDebriefQuestion), assign func(*IncidentDebriefQuestion, *IncidentTag)) error {
 	edgeIDs := make([]driver.Value, len(nodes))
 	byID := make(map[uuid.UUID]*IncidentDebriefQuestion)
 	nids := make(map[uuid.UUID]map[*IncidentDebriefQuestion]struct{})
@@ -994,7 +994,7 @@ func (idqq *IncidentDebriefQuestionQuery) loadIncidentTags(ctx context.Context, 
 	}
 	return nil
 }
-func (idqq *IncidentDebriefQuestionQuery) loadIncidentTypes(ctx context.Context, query *IncidentTypeQuery, nodes []*IncidentDebriefQuestion, init func(*IncidentDebriefQuestion), assign func(*IncidentDebriefQuestion, *IncidentType)) error {
+func (_q *IncidentDebriefQuestionQuery) loadIncidentTypes(ctx context.Context, query *IncidentTypeQuery, nodes []*IncidentDebriefQuestion, init func(*IncidentDebriefQuestion), assign func(*IncidentDebriefQuestion, *IncidentType)) error {
 	edgeIDs := make([]driver.Value, len(nodes))
 	byID := make(map[uuid.UUID]*IncidentDebriefQuestion)
 	nids := make(map[uuid.UUID]map[*IncidentDebriefQuestion]struct{})
@@ -1056,27 +1056,27 @@ func (idqq *IncidentDebriefQuestionQuery) loadIncidentTypes(ctx context.Context,
 	return nil
 }
 
-func (idqq *IncidentDebriefQuestionQuery) sqlCount(ctx context.Context) (int, error) {
-	_spec := idqq.querySpec()
-	if len(idqq.modifiers) > 0 {
-		_spec.Modifiers = idqq.modifiers
+func (_q *IncidentDebriefQuestionQuery) sqlCount(ctx context.Context) (int, error) {
+	_spec := _q.querySpec()
+	if len(_q.modifiers) > 0 {
+		_spec.Modifiers = _q.modifiers
 	}
-	_spec.Node.Columns = idqq.ctx.Fields
-	if len(idqq.ctx.Fields) > 0 {
-		_spec.Unique = idqq.ctx.Unique != nil && *idqq.ctx.Unique
+	_spec.Node.Columns = _q.ctx.Fields
+	if len(_q.ctx.Fields) > 0 {
+		_spec.Unique = _q.ctx.Unique != nil && *_q.ctx.Unique
 	}
-	return sqlgraph.CountNodes(ctx, idqq.driver, _spec)
+	return sqlgraph.CountNodes(ctx, _q.driver, _spec)
 }
 
-func (idqq *IncidentDebriefQuestionQuery) querySpec() *sqlgraph.QuerySpec {
+func (_q *IncidentDebriefQuestionQuery) querySpec() *sqlgraph.QuerySpec {
 	_spec := sqlgraph.NewQuerySpec(incidentdebriefquestion.Table, incidentdebriefquestion.Columns, sqlgraph.NewFieldSpec(incidentdebriefquestion.FieldID, field.TypeUUID))
-	_spec.From = idqq.sql
-	if unique := idqq.ctx.Unique; unique != nil {
+	_spec.From = _q.sql
+	if unique := _q.ctx.Unique; unique != nil {
 		_spec.Unique = *unique
-	} else if idqq.path != nil {
+	} else if _q.path != nil {
 		_spec.Unique = true
 	}
-	if fields := idqq.ctx.Fields; len(fields) > 0 {
+	if fields := _q.ctx.Fields; len(fields) > 0 {
 		_spec.Node.Columns = make([]string, 0, len(fields))
 		_spec.Node.Columns = append(_spec.Node.Columns, incidentdebriefquestion.FieldID)
 		for i := range fields {
@@ -1084,24 +1084,24 @@ func (idqq *IncidentDebriefQuestionQuery) querySpec() *sqlgraph.QuerySpec {
 				_spec.Node.Columns = append(_spec.Node.Columns, fields[i])
 			}
 		}
-		if idqq.withTenant != nil {
+		if _q.withTenant != nil {
 			_spec.Node.AddColumnOnce(incidentdebriefquestion.FieldTenantID)
 		}
 	}
-	if ps := idqq.predicates; len(ps) > 0 {
+	if ps := _q.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {
 				ps[i](selector)
 			}
 		}
 	}
-	if limit := idqq.ctx.Limit; limit != nil {
+	if limit := _q.ctx.Limit; limit != nil {
 		_spec.Limit = *limit
 	}
-	if offset := idqq.ctx.Offset; offset != nil {
+	if offset := _q.ctx.Offset; offset != nil {
 		_spec.Offset = *offset
 	}
-	if ps := idqq.order; len(ps) > 0 {
+	if ps := _q.order; len(ps) > 0 {
 		_spec.Order = func(selector *sql.Selector) {
 			for i := range ps {
 				ps[i](selector)
@@ -1111,45 +1111,45 @@ func (idqq *IncidentDebriefQuestionQuery) querySpec() *sqlgraph.QuerySpec {
 	return _spec
 }
 
-func (idqq *IncidentDebriefQuestionQuery) sqlQuery(ctx context.Context) *sql.Selector {
-	builder := sql.Dialect(idqq.driver.Dialect())
+func (_q *IncidentDebriefQuestionQuery) sqlQuery(ctx context.Context) *sql.Selector {
+	builder := sql.Dialect(_q.driver.Dialect())
 	t1 := builder.Table(incidentdebriefquestion.Table)
-	columns := idqq.ctx.Fields
+	columns := _q.ctx.Fields
 	if len(columns) == 0 {
 		columns = incidentdebriefquestion.Columns
 	}
 	selector := builder.Select(t1.Columns(columns...)...).From(t1)
-	if idqq.sql != nil {
-		selector = idqq.sql
+	if _q.sql != nil {
+		selector = _q.sql
 		selector.Select(selector.Columns(columns...)...)
 	}
-	if idqq.ctx.Unique != nil && *idqq.ctx.Unique {
+	if _q.ctx.Unique != nil && *_q.ctx.Unique {
 		selector.Distinct()
 	}
-	for _, m := range idqq.modifiers {
+	for _, m := range _q.modifiers {
 		m(selector)
 	}
-	for _, p := range idqq.predicates {
+	for _, p := range _q.predicates {
 		p(selector)
 	}
-	for _, p := range idqq.order {
+	for _, p := range _q.order {
 		p(selector)
 	}
-	if offset := idqq.ctx.Offset; offset != nil {
+	if offset := _q.ctx.Offset; offset != nil {
 		// limit is mandatory for offset clause. We start
 		// with default value, and override it below if needed.
 		selector.Offset(*offset).Limit(math.MaxInt32)
 	}
-	if limit := idqq.ctx.Limit; limit != nil {
+	if limit := _q.ctx.Limit; limit != nil {
 		selector.Limit(*limit)
 	}
 	return selector
 }
 
 // Modify adds a query modifier for attaching custom logic to queries.
-func (idqq *IncidentDebriefQuestionQuery) Modify(modifiers ...func(s *sql.Selector)) *IncidentDebriefQuestionSelect {
-	idqq.modifiers = append(idqq.modifiers, modifiers...)
-	return idqq.Select()
+func (_q *IncidentDebriefQuestionQuery) Modify(modifiers ...func(s *sql.Selector)) *IncidentDebriefQuestionSelect {
+	_q.modifiers = append(_q.modifiers, modifiers...)
+	return _q.Select()
 }
 
 // IncidentDebriefQuestionGroupBy is the group-by builder for IncidentDebriefQuestion entities.
@@ -1159,41 +1159,41 @@ type IncidentDebriefQuestionGroupBy struct {
 }
 
 // Aggregate adds the given aggregation functions to the group-by query.
-func (idqgb *IncidentDebriefQuestionGroupBy) Aggregate(fns ...AggregateFunc) *IncidentDebriefQuestionGroupBy {
-	idqgb.fns = append(idqgb.fns, fns...)
-	return idqgb
+func (_g *IncidentDebriefQuestionGroupBy) Aggregate(fns ...AggregateFunc) *IncidentDebriefQuestionGroupBy {
+	_g.fns = append(_g.fns, fns...)
+	return _g
 }
 
 // Scan applies the selector query and scans the result into the given value.
-func (idqgb *IncidentDebriefQuestionGroupBy) Scan(ctx context.Context, v any) error {
-	ctx = setContextOp(ctx, idqgb.build.ctx, ent.OpQueryGroupBy)
-	if err := idqgb.build.prepareQuery(ctx); err != nil {
+func (_g *IncidentDebriefQuestionGroupBy) Scan(ctx context.Context, v any) error {
+	ctx = setContextOp(ctx, _g.build.ctx, ent.OpQueryGroupBy)
+	if err := _g.build.prepareQuery(ctx); err != nil {
 		return err
 	}
-	return scanWithInterceptors[*IncidentDebriefQuestionQuery, *IncidentDebriefQuestionGroupBy](ctx, idqgb.build, idqgb, idqgb.build.inters, v)
+	return scanWithInterceptors[*IncidentDebriefQuestionQuery, *IncidentDebriefQuestionGroupBy](ctx, _g.build, _g, _g.build.inters, v)
 }
 
-func (idqgb *IncidentDebriefQuestionGroupBy) sqlScan(ctx context.Context, root *IncidentDebriefQuestionQuery, v any) error {
+func (_g *IncidentDebriefQuestionGroupBy) sqlScan(ctx context.Context, root *IncidentDebriefQuestionQuery, v any) error {
 	selector := root.sqlQuery(ctx).Select()
-	aggregation := make([]string, 0, len(idqgb.fns))
-	for _, fn := range idqgb.fns {
+	aggregation := make([]string, 0, len(_g.fns))
+	for _, fn := range _g.fns {
 		aggregation = append(aggregation, fn(selector))
 	}
 	if len(selector.SelectedColumns()) == 0 {
-		columns := make([]string, 0, len(*idqgb.flds)+len(idqgb.fns))
-		for _, f := range *idqgb.flds {
+		columns := make([]string, 0, len(*_g.flds)+len(_g.fns))
+		for _, f := range *_g.flds {
 			columns = append(columns, selector.C(f))
 		}
 		columns = append(columns, aggregation...)
 		selector.Select(columns...)
 	}
-	selector.GroupBy(selector.Columns(*idqgb.flds...)...)
+	selector.GroupBy(selector.Columns(*_g.flds...)...)
 	if err := selector.Err(); err != nil {
 		return err
 	}
 	rows := &sql.Rows{}
 	query, args := selector.Query()
-	if err := idqgb.build.driver.Query(ctx, query, args, rows); err != nil {
+	if err := _g.build.driver.Query(ctx, query, args, rows); err != nil {
 		return err
 	}
 	defer rows.Close()
@@ -1207,27 +1207,27 @@ type IncidentDebriefQuestionSelect struct {
 }
 
 // Aggregate adds the given aggregation functions to the selector query.
-func (idqs *IncidentDebriefQuestionSelect) Aggregate(fns ...AggregateFunc) *IncidentDebriefQuestionSelect {
-	idqs.fns = append(idqs.fns, fns...)
-	return idqs
+func (_s *IncidentDebriefQuestionSelect) Aggregate(fns ...AggregateFunc) *IncidentDebriefQuestionSelect {
+	_s.fns = append(_s.fns, fns...)
+	return _s
 }
 
 // Scan applies the selector query and scans the result into the given value.
-func (idqs *IncidentDebriefQuestionSelect) Scan(ctx context.Context, v any) error {
-	ctx = setContextOp(ctx, idqs.ctx, ent.OpQuerySelect)
-	if err := idqs.prepareQuery(ctx); err != nil {
+func (_s *IncidentDebriefQuestionSelect) Scan(ctx context.Context, v any) error {
+	ctx = setContextOp(ctx, _s.ctx, ent.OpQuerySelect)
+	if err := _s.prepareQuery(ctx); err != nil {
 		return err
 	}
-	return scanWithInterceptors[*IncidentDebriefQuestionQuery, *IncidentDebriefQuestionSelect](ctx, idqs.IncidentDebriefQuestionQuery, idqs, idqs.inters, v)
+	return scanWithInterceptors[*IncidentDebriefQuestionQuery, *IncidentDebriefQuestionSelect](ctx, _s.IncidentDebriefQuestionQuery, _s, _s.inters, v)
 }
 
-func (idqs *IncidentDebriefQuestionSelect) sqlScan(ctx context.Context, root *IncidentDebriefQuestionQuery, v any) error {
+func (_s *IncidentDebriefQuestionSelect) sqlScan(ctx context.Context, root *IncidentDebriefQuestionQuery, v any) error {
 	selector := root.sqlQuery(ctx)
-	aggregation := make([]string, 0, len(idqs.fns))
-	for _, fn := range idqs.fns {
+	aggregation := make([]string, 0, len(_s.fns))
+	for _, fn := range _s.fns {
 		aggregation = append(aggregation, fn(selector))
 	}
-	switch n := len(*idqs.selector.flds); {
+	switch n := len(*_s.selector.flds); {
 	case n == 0 && len(aggregation) > 0:
 		selector.Select(aggregation...)
 	case n != 0 && len(aggregation) > 0:
@@ -1235,7 +1235,7 @@ func (idqs *IncidentDebriefQuestionSelect) sqlScan(ctx context.Context, root *In
 	}
 	rows := &sql.Rows{}
 	query, args := selector.Query()
-	if err := idqs.driver.Query(ctx, query, args, rows); err != nil {
+	if err := _s.driver.Query(ctx, query, args, rows); err != nil {
 		return err
 	}
 	defer rows.Close()
@@ -1243,7 +1243,7 @@ func (idqs *IncidentDebriefQuestionSelect) sqlScan(ctx context.Context, root *In
 }
 
 // Modify adds a query modifier for attaching custom logic to queries.
-func (idqs *IncidentDebriefQuestionSelect) Modify(modifiers ...func(s *sql.Selector)) *IncidentDebriefQuestionSelect {
-	idqs.modifiers = append(idqs.modifiers, modifiers...)
-	return idqs
+func (_s *IncidentDebriefQuestionSelect) Modify(modifiers ...func(s *sql.Selector)) *IncidentDebriefQuestionSelect {
+	_s.modifiers = append(_s.modifiers, modifiers...)
+	return _s
 }

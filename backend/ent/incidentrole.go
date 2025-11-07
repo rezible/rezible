@@ -101,7 +101,7 @@ func (*IncidentRole) scanValues(columns []string) ([]any, error) {
 
 // assignValues assigns the values that were returned from sql.Rows (after scanning)
 // to the IncidentRole fields.
-func (ir *IncidentRole) assignValues(columns []string, values []any) error {
+func (_m *IncidentRole) assignValues(columns []string, values []any) error {
 	if m, n := len(values), len(columns); m < n {
 		return fmt.Errorf("mismatch number of scan values: %d != %d", m, n)
 	}
@@ -111,40 +111,40 @@ func (ir *IncidentRole) assignValues(columns []string, values []any) error {
 			if value, ok := values[i].(*uuid.UUID); !ok {
 				return fmt.Errorf("unexpected type %T for field id", values[i])
 			} else if value != nil {
-				ir.ID = *value
+				_m.ID = *value
 			}
 		case incidentrole.FieldTenantID:
 			if value, ok := values[i].(*sql.NullInt64); !ok {
 				return fmt.Errorf("unexpected type %T for field tenant_id", values[i])
 			} else if value.Valid {
-				ir.TenantID = int(value.Int64)
+				_m.TenantID = int(value.Int64)
 			}
 		case incidentrole.FieldArchiveTime:
 			if value, ok := values[i].(*sql.NullTime); !ok {
 				return fmt.Errorf("unexpected type %T for field archive_time", values[i])
 			} else if value.Valid {
-				ir.ArchiveTime = value.Time
+				_m.ArchiveTime = value.Time
 			}
 		case incidentrole.FieldName:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field name", values[i])
 			} else if value.Valid {
-				ir.Name = value.String
+				_m.Name = value.String
 			}
 		case incidentrole.FieldProviderID:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field provider_id", values[i])
 			} else if value.Valid {
-				ir.ProviderID = value.String
+				_m.ProviderID = value.String
 			}
 		case incidentrole.FieldRequired:
 			if value, ok := values[i].(*sql.NullBool); !ok {
 				return fmt.Errorf("unexpected type %T for field required", values[i])
 			} else if value.Valid {
-				ir.Required = value.Bool
+				_m.Required = value.Bool
 			}
 		default:
-			ir.selectValues.Set(columns[i], values[i])
+			_m.selectValues.Set(columns[i], values[i])
 		}
 	}
 	return nil
@@ -152,62 +152,62 @@ func (ir *IncidentRole) assignValues(columns []string, values []any) error {
 
 // Value returns the ent.Value that was dynamically selected and assigned to the IncidentRole.
 // This includes values selected through modifiers, order, etc.
-func (ir *IncidentRole) Value(name string) (ent.Value, error) {
-	return ir.selectValues.Get(name)
+func (_m *IncidentRole) Value(name string) (ent.Value, error) {
+	return _m.selectValues.Get(name)
 }
 
 // QueryTenant queries the "tenant" edge of the IncidentRole entity.
-func (ir *IncidentRole) QueryTenant() *TenantQuery {
-	return NewIncidentRoleClient(ir.config).QueryTenant(ir)
+func (_m *IncidentRole) QueryTenant() *TenantQuery {
+	return NewIncidentRoleClient(_m.config).QueryTenant(_m)
 }
 
 // QueryAssignments queries the "assignments" edge of the IncidentRole entity.
-func (ir *IncidentRole) QueryAssignments() *IncidentRoleAssignmentQuery {
-	return NewIncidentRoleClient(ir.config).QueryAssignments(ir)
+func (_m *IncidentRole) QueryAssignments() *IncidentRoleAssignmentQuery {
+	return NewIncidentRoleClient(_m.config).QueryAssignments(_m)
 }
 
 // QueryDebriefQuestions queries the "debrief_questions" edge of the IncidentRole entity.
-func (ir *IncidentRole) QueryDebriefQuestions() *IncidentDebriefQuestionQuery {
-	return NewIncidentRoleClient(ir.config).QueryDebriefQuestions(ir)
+func (_m *IncidentRole) QueryDebriefQuestions() *IncidentDebriefQuestionQuery {
+	return NewIncidentRoleClient(_m.config).QueryDebriefQuestions(_m)
 }
 
 // Update returns a builder for updating this IncidentRole.
 // Note that you need to call IncidentRole.Unwrap() before calling this method if this IncidentRole
 // was returned from a transaction, and the transaction was committed or rolled back.
-func (ir *IncidentRole) Update() *IncidentRoleUpdateOne {
-	return NewIncidentRoleClient(ir.config).UpdateOne(ir)
+func (_m *IncidentRole) Update() *IncidentRoleUpdateOne {
+	return NewIncidentRoleClient(_m.config).UpdateOne(_m)
 }
 
 // Unwrap unwraps the IncidentRole entity that was returned from a transaction after it was closed,
 // so that all future queries will be executed through the driver which created the transaction.
-func (ir *IncidentRole) Unwrap() *IncidentRole {
-	_tx, ok := ir.config.driver.(*txDriver)
+func (_m *IncidentRole) Unwrap() *IncidentRole {
+	_tx, ok := _m.config.driver.(*txDriver)
 	if !ok {
 		panic("ent: IncidentRole is not a transactional entity")
 	}
-	ir.config.driver = _tx.drv
-	return ir
+	_m.config.driver = _tx.drv
+	return _m
 }
 
 // String implements the fmt.Stringer.
-func (ir *IncidentRole) String() string {
+func (_m *IncidentRole) String() string {
 	var builder strings.Builder
 	builder.WriteString("IncidentRole(")
-	builder.WriteString(fmt.Sprintf("id=%v, ", ir.ID))
+	builder.WriteString(fmt.Sprintf("id=%v, ", _m.ID))
 	builder.WriteString("tenant_id=")
-	builder.WriteString(fmt.Sprintf("%v", ir.TenantID))
+	builder.WriteString(fmt.Sprintf("%v", _m.TenantID))
 	builder.WriteString(", ")
 	builder.WriteString("archive_time=")
-	builder.WriteString(ir.ArchiveTime.Format(time.ANSIC))
+	builder.WriteString(_m.ArchiveTime.Format(time.ANSIC))
 	builder.WriteString(", ")
 	builder.WriteString("name=")
-	builder.WriteString(ir.Name)
+	builder.WriteString(_m.Name)
 	builder.WriteString(", ")
 	builder.WriteString("provider_id=")
-	builder.WriteString(ir.ProviderID)
+	builder.WriteString(_m.ProviderID)
 	builder.WriteString(", ")
 	builder.WriteString("required=")
-	builder.WriteString(fmt.Sprintf("%v", ir.Required))
+	builder.WriteString(fmt.Sprintf("%v", _m.Required))
 	builder.WriteByte(')')
 	return builder.String()
 }

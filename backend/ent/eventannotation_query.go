@@ -40,44 +40,44 @@ type EventAnnotationQuery struct {
 }
 
 // Where adds a new predicate for the EventAnnotationQuery builder.
-func (eaq *EventAnnotationQuery) Where(ps ...predicate.EventAnnotation) *EventAnnotationQuery {
-	eaq.predicates = append(eaq.predicates, ps...)
-	return eaq
+func (_q *EventAnnotationQuery) Where(ps ...predicate.EventAnnotation) *EventAnnotationQuery {
+	_q.predicates = append(_q.predicates, ps...)
+	return _q
 }
 
 // Limit the number of records to be returned by this query.
-func (eaq *EventAnnotationQuery) Limit(limit int) *EventAnnotationQuery {
-	eaq.ctx.Limit = &limit
-	return eaq
+func (_q *EventAnnotationQuery) Limit(limit int) *EventAnnotationQuery {
+	_q.ctx.Limit = &limit
+	return _q
 }
 
 // Offset to start from.
-func (eaq *EventAnnotationQuery) Offset(offset int) *EventAnnotationQuery {
-	eaq.ctx.Offset = &offset
-	return eaq
+func (_q *EventAnnotationQuery) Offset(offset int) *EventAnnotationQuery {
+	_q.ctx.Offset = &offset
+	return _q
 }
 
 // Unique configures the query builder to filter duplicate records on query.
 // By default, unique is set to true, and can be disabled using this method.
-func (eaq *EventAnnotationQuery) Unique(unique bool) *EventAnnotationQuery {
-	eaq.ctx.Unique = &unique
-	return eaq
+func (_q *EventAnnotationQuery) Unique(unique bool) *EventAnnotationQuery {
+	_q.ctx.Unique = &unique
+	return _q
 }
 
 // Order specifies how the records should be ordered.
-func (eaq *EventAnnotationQuery) Order(o ...eventannotation.OrderOption) *EventAnnotationQuery {
-	eaq.order = append(eaq.order, o...)
-	return eaq
+func (_q *EventAnnotationQuery) Order(o ...eventannotation.OrderOption) *EventAnnotationQuery {
+	_q.order = append(_q.order, o...)
+	return _q
 }
 
 // QueryTenant chains the current query on the "tenant" edge.
-func (eaq *EventAnnotationQuery) QueryTenant() *TenantQuery {
-	query := (&TenantClient{config: eaq.config}).Query()
+func (_q *EventAnnotationQuery) QueryTenant() *TenantQuery {
+	query := (&TenantClient{config: _q.config}).Query()
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
-		if err := eaq.prepareQuery(ctx); err != nil {
+		if err := _q.prepareQuery(ctx); err != nil {
 			return nil, err
 		}
-		selector := eaq.sqlQuery(ctx)
+		selector := _q.sqlQuery(ctx)
 		if err := selector.Err(); err != nil {
 			return nil, err
 		}
@@ -86,20 +86,20 @@ func (eaq *EventAnnotationQuery) QueryTenant() *TenantQuery {
 			sqlgraph.To(tenant.Table, tenant.FieldID),
 			sqlgraph.Edge(sqlgraph.M2O, false, eventannotation.TenantTable, eventannotation.TenantColumn),
 		)
-		fromU = sqlgraph.SetNeighbors(eaq.driver.Dialect(), step)
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
 	}
 	return query
 }
 
 // QueryEvent chains the current query on the "event" edge.
-func (eaq *EventAnnotationQuery) QueryEvent() *EventQuery {
-	query := (&EventClient{config: eaq.config}).Query()
+func (_q *EventAnnotationQuery) QueryEvent() *EventQuery {
+	query := (&EventClient{config: _q.config}).Query()
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
-		if err := eaq.prepareQuery(ctx); err != nil {
+		if err := _q.prepareQuery(ctx); err != nil {
 			return nil, err
 		}
-		selector := eaq.sqlQuery(ctx)
+		selector := _q.sqlQuery(ctx)
 		if err := selector.Err(); err != nil {
 			return nil, err
 		}
@@ -108,20 +108,20 @@ func (eaq *EventAnnotationQuery) QueryEvent() *EventQuery {
 			sqlgraph.To(event.Table, event.FieldID),
 			sqlgraph.Edge(sqlgraph.M2O, false, eventannotation.EventTable, eventannotation.EventColumn),
 		)
-		fromU = sqlgraph.SetNeighbors(eaq.driver.Dialect(), step)
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
 	}
 	return query
 }
 
 // QueryCreator chains the current query on the "creator" edge.
-func (eaq *EventAnnotationQuery) QueryCreator() *UserQuery {
-	query := (&UserClient{config: eaq.config}).Query()
+func (_q *EventAnnotationQuery) QueryCreator() *UserQuery {
+	query := (&UserClient{config: _q.config}).Query()
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
-		if err := eaq.prepareQuery(ctx); err != nil {
+		if err := _q.prepareQuery(ctx); err != nil {
 			return nil, err
 		}
-		selector := eaq.sqlQuery(ctx)
+		selector := _q.sqlQuery(ctx)
 		if err := selector.Err(); err != nil {
 			return nil, err
 		}
@@ -130,20 +130,20 @@ func (eaq *EventAnnotationQuery) QueryCreator() *UserQuery {
 			sqlgraph.To(user.Table, user.FieldID),
 			sqlgraph.Edge(sqlgraph.M2O, false, eventannotation.CreatorTable, eventannotation.CreatorColumn),
 		)
-		fromU = sqlgraph.SetNeighbors(eaq.driver.Dialect(), step)
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
 	}
 	return query
 }
 
 // QueryHandovers chains the current query on the "handovers" edge.
-func (eaq *EventAnnotationQuery) QueryHandovers() *OncallShiftHandoverQuery {
-	query := (&OncallShiftHandoverClient{config: eaq.config}).Query()
+func (_q *EventAnnotationQuery) QueryHandovers() *OncallShiftHandoverQuery {
+	query := (&OncallShiftHandoverClient{config: _q.config}).Query()
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
-		if err := eaq.prepareQuery(ctx); err != nil {
+		if err := _q.prepareQuery(ctx); err != nil {
 			return nil, err
 		}
-		selector := eaq.sqlQuery(ctx)
+		selector := _q.sqlQuery(ctx)
 		if err := selector.Err(); err != nil {
 			return nil, err
 		}
@@ -152,7 +152,7 @@ func (eaq *EventAnnotationQuery) QueryHandovers() *OncallShiftHandoverQuery {
 			sqlgraph.To(oncallshifthandover.Table, oncallshifthandover.FieldID),
 			sqlgraph.Edge(sqlgraph.M2M, true, eventannotation.HandoversTable, eventannotation.HandoversPrimaryKey...),
 		)
-		fromU = sqlgraph.SetNeighbors(eaq.driver.Dialect(), step)
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
 	}
 	return query
@@ -160,8 +160,8 @@ func (eaq *EventAnnotationQuery) QueryHandovers() *OncallShiftHandoverQuery {
 
 // First returns the first EventAnnotation entity from the query.
 // Returns a *NotFoundError when no EventAnnotation was found.
-func (eaq *EventAnnotationQuery) First(ctx context.Context) (*EventAnnotation, error) {
-	nodes, err := eaq.Limit(1).All(setContextOp(ctx, eaq.ctx, ent.OpQueryFirst))
+func (_q *EventAnnotationQuery) First(ctx context.Context) (*EventAnnotation, error) {
+	nodes, err := _q.Limit(1).All(setContextOp(ctx, _q.ctx, ent.OpQueryFirst))
 	if err != nil {
 		return nil, err
 	}
@@ -172,8 +172,8 @@ func (eaq *EventAnnotationQuery) First(ctx context.Context) (*EventAnnotation, e
 }
 
 // FirstX is like First, but panics if an error occurs.
-func (eaq *EventAnnotationQuery) FirstX(ctx context.Context) *EventAnnotation {
-	node, err := eaq.First(ctx)
+func (_q *EventAnnotationQuery) FirstX(ctx context.Context) *EventAnnotation {
+	node, err := _q.First(ctx)
 	if err != nil && !IsNotFound(err) {
 		panic(err)
 	}
@@ -182,9 +182,9 @@ func (eaq *EventAnnotationQuery) FirstX(ctx context.Context) *EventAnnotation {
 
 // FirstID returns the first EventAnnotation ID from the query.
 // Returns a *NotFoundError when no EventAnnotation ID was found.
-func (eaq *EventAnnotationQuery) FirstID(ctx context.Context) (id uuid.UUID, err error) {
+func (_q *EventAnnotationQuery) FirstID(ctx context.Context) (id uuid.UUID, err error) {
 	var ids []uuid.UUID
-	if ids, err = eaq.Limit(1).IDs(setContextOp(ctx, eaq.ctx, ent.OpQueryFirstID)); err != nil {
+	if ids, err = _q.Limit(1).IDs(setContextOp(ctx, _q.ctx, ent.OpQueryFirstID)); err != nil {
 		return
 	}
 	if len(ids) == 0 {
@@ -195,8 +195,8 @@ func (eaq *EventAnnotationQuery) FirstID(ctx context.Context) (id uuid.UUID, err
 }
 
 // FirstIDX is like FirstID, but panics if an error occurs.
-func (eaq *EventAnnotationQuery) FirstIDX(ctx context.Context) uuid.UUID {
-	id, err := eaq.FirstID(ctx)
+func (_q *EventAnnotationQuery) FirstIDX(ctx context.Context) uuid.UUID {
+	id, err := _q.FirstID(ctx)
 	if err != nil && !IsNotFound(err) {
 		panic(err)
 	}
@@ -206,8 +206,8 @@ func (eaq *EventAnnotationQuery) FirstIDX(ctx context.Context) uuid.UUID {
 // Only returns a single EventAnnotation entity found by the query, ensuring it only returns one.
 // Returns a *NotSingularError when more than one EventAnnotation entity is found.
 // Returns a *NotFoundError when no EventAnnotation entities are found.
-func (eaq *EventAnnotationQuery) Only(ctx context.Context) (*EventAnnotation, error) {
-	nodes, err := eaq.Limit(2).All(setContextOp(ctx, eaq.ctx, ent.OpQueryOnly))
+func (_q *EventAnnotationQuery) Only(ctx context.Context) (*EventAnnotation, error) {
+	nodes, err := _q.Limit(2).All(setContextOp(ctx, _q.ctx, ent.OpQueryOnly))
 	if err != nil {
 		return nil, err
 	}
@@ -222,8 +222,8 @@ func (eaq *EventAnnotationQuery) Only(ctx context.Context) (*EventAnnotation, er
 }
 
 // OnlyX is like Only, but panics if an error occurs.
-func (eaq *EventAnnotationQuery) OnlyX(ctx context.Context) *EventAnnotation {
-	node, err := eaq.Only(ctx)
+func (_q *EventAnnotationQuery) OnlyX(ctx context.Context) *EventAnnotation {
+	node, err := _q.Only(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -233,9 +233,9 @@ func (eaq *EventAnnotationQuery) OnlyX(ctx context.Context) *EventAnnotation {
 // OnlyID is like Only, but returns the only EventAnnotation ID in the query.
 // Returns a *NotSingularError when more than one EventAnnotation ID is found.
 // Returns a *NotFoundError when no entities are found.
-func (eaq *EventAnnotationQuery) OnlyID(ctx context.Context) (id uuid.UUID, err error) {
+func (_q *EventAnnotationQuery) OnlyID(ctx context.Context) (id uuid.UUID, err error) {
 	var ids []uuid.UUID
-	if ids, err = eaq.Limit(2).IDs(setContextOp(ctx, eaq.ctx, ent.OpQueryOnlyID)); err != nil {
+	if ids, err = _q.Limit(2).IDs(setContextOp(ctx, _q.ctx, ent.OpQueryOnlyID)); err != nil {
 		return
 	}
 	switch len(ids) {
@@ -250,8 +250,8 @@ func (eaq *EventAnnotationQuery) OnlyID(ctx context.Context) (id uuid.UUID, err 
 }
 
 // OnlyIDX is like OnlyID, but panics if an error occurs.
-func (eaq *EventAnnotationQuery) OnlyIDX(ctx context.Context) uuid.UUID {
-	id, err := eaq.OnlyID(ctx)
+func (_q *EventAnnotationQuery) OnlyIDX(ctx context.Context) uuid.UUID {
+	id, err := _q.OnlyID(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -259,18 +259,18 @@ func (eaq *EventAnnotationQuery) OnlyIDX(ctx context.Context) uuid.UUID {
 }
 
 // All executes the query and returns a list of EventAnnotations.
-func (eaq *EventAnnotationQuery) All(ctx context.Context) ([]*EventAnnotation, error) {
-	ctx = setContextOp(ctx, eaq.ctx, ent.OpQueryAll)
-	if err := eaq.prepareQuery(ctx); err != nil {
+func (_q *EventAnnotationQuery) All(ctx context.Context) ([]*EventAnnotation, error) {
+	ctx = setContextOp(ctx, _q.ctx, ent.OpQueryAll)
+	if err := _q.prepareQuery(ctx); err != nil {
 		return nil, err
 	}
 	qr := querierAll[[]*EventAnnotation, *EventAnnotationQuery]()
-	return withInterceptors[[]*EventAnnotation](ctx, eaq, qr, eaq.inters)
+	return withInterceptors[[]*EventAnnotation](ctx, _q, qr, _q.inters)
 }
 
 // AllX is like All, but panics if an error occurs.
-func (eaq *EventAnnotationQuery) AllX(ctx context.Context) []*EventAnnotation {
-	nodes, err := eaq.All(ctx)
+func (_q *EventAnnotationQuery) AllX(ctx context.Context) []*EventAnnotation {
+	nodes, err := _q.All(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -278,20 +278,20 @@ func (eaq *EventAnnotationQuery) AllX(ctx context.Context) []*EventAnnotation {
 }
 
 // IDs executes the query and returns a list of EventAnnotation IDs.
-func (eaq *EventAnnotationQuery) IDs(ctx context.Context) (ids []uuid.UUID, err error) {
-	if eaq.ctx.Unique == nil && eaq.path != nil {
-		eaq.Unique(true)
+func (_q *EventAnnotationQuery) IDs(ctx context.Context) (ids []uuid.UUID, err error) {
+	if _q.ctx.Unique == nil && _q.path != nil {
+		_q.Unique(true)
 	}
-	ctx = setContextOp(ctx, eaq.ctx, ent.OpQueryIDs)
-	if err = eaq.Select(eventannotation.FieldID).Scan(ctx, &ids); err != nil {
+	ctx = setContextOp(ctx, _q.ctx, ent.OpQueryIDs)
+	if err = _q.Select(eventannotation.FieldID).Scan(ctx, &ids); err != nil {
 		return nil, err
 	}
 	return ids, nil
 }
 
 // IDsX is like IDs, but panics if an error occurs.
-func (eaq *EventAnnotationQuery) IDsX(ctx context.Context) []uuid.UUID {
-	ids, err := eaq.IDs(ctx)
+func (_q *EventAnnotationQuery) IDsX(ctx context.Context) []uuid.UUID {
+	ids, err := _q.IDs(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -299,17 +299,17 @@ func (eaq *EventAnnotationQuery) IDsX(ctx context.Context) []uuid.UUID {
 }
 
 // Count returns the count of the given query.
-func (eaq *EventAnnotationQuery) Count(ctx context.Context) (int, error) {
-	ctx = setContextOp(ctx, eaq.ctx, ent.OpQueryCount)
-	if err := eaq.prepareQuery(ctx); err != nil {
+func (_q *EventAnnotationQuery) Count(ctx context.Context) (int, error) {
+	ctx = setContextOp(ctx, _q.ctx, ent.OpQueryCount)
+	if err := _q.prepareQuery(ctx); err != nil {
 		return 0, err
 	}
-	return withInterceptors[int](ctx, eaq, querierCount[*EventAnnotationQuery](), eaq.inters)
+	return withInterceptors[int](ctx, _q, querierCount[*EventAnnotationQuery](), _q.inters)
 }
 
 // CountX is like Count, but panics if an error occurs.
-func (eaq *EventAnnotationQuery) CountX(ctx context.Context) int {
-	count, err := eaq.Count(ctx)
+func (_q *EventAnnotationQuery) CountX(ctx context.Context) int {
+	count, err := _q.Count(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -317,9 +317,9 @@ func (eaq *EventAnnotationQuery) CountX(ctx context.Context) int {
 }
 
 // Exist returns true if the query has elements in the graph.
-func (eaq *EventAnnotationQuery) Exist(ctx context.Context) (bool, error) {
-	ctx = setContextOp(ctx, eaq.ctx, ent.OpQueryExist)
-	switch _, err := eaq.FirstID(ctx); {
+func (_q *EventAnnotationQuery) Exist(ctx context.Context) (bool, error) {
+	ctx = setContextOp(ctx, _q.ctx, ent.OpQueryExist)
+	switch _, err := _q.FirstID(ctx); {
 	case IsNotFound(err):
 		return false, nil
 	case err != nil:
@@ -330,8 +330,8 @@ func (eaq *EventAnnotationQuery) Exist(ctx context.Context) (bool, error) {
 }
 
 // ExistX is like Exist, but panics if an error occurs.
-func (eaq *EventAnnotationQuery) ExistX(ctx context.Context) bool {
-	exist, err := eaq.Exist(ctx)
+func (_q *EventAnnotationQuery) ExistX(ctx context.Context) bool {
+	exist, err := _q.Exist(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -340,69 +340,69 @@ func (eaq *EventAnnotationQuery) ExistX(ctx context.Context) bool {
 
 // Clone returns a duplicate of the EventAnnotationQuery builder, including all associated steps. It can be
 // used to prepare common query builders and use them differently after the clone is made.
-func (eaq *EventAnnotationQuery) Clone() *EventAnnotationQuery {
-	if eaq == nil {
+func (_q *EventAnnotationQuery) Clone() *EventAnnotationQuery {
+	if _q == nil {
 		return nil
 	}
 	return &EventAnnotationQuery{
-		config:        eaq.config,
-		ctx:           eaq.ctx.Clone(),
-		order:         append([]eventannotation.OrderOption{}, eaq.order...),
-		inters:        append([]Interceptor{}, eaq.inters...),
-		predicates:    append([]predicate.EventAnnotation{}, eaq.predicates...),
-		withTenant:    eaq.withTenant.Clone(),
-		withEvent:     eaq.withEvent.Clone(),
-		withCreator:   eaq.withCreator.Clone(),
-		withHandovers: eaq.withHandovers.Clone(),
+		config:        _q.config,
+		ctx:           _q.ctx.Clone(),
+		order:         append([]eventannotation.OrderOption{}, _q.order...),
+		inters:        append([]Interceptor{}, _q.inters...),
+		predicates:    append([]predicate.EventAnnotation{}, _q.predicates...),
+		withTenant:    _q.withTenant.Clone(),
+		withEvent:     _q.withEvent.Clone(),
+		withCreator:   _q.withCreator.Clone(),
+		withHandovers: _q.withHandovers.Clone(),
 		// clone intermediate query.
-		sql:       eaq.sql.Clone(),
-		path:      eaq.path,
-		modifiers: append([]func(*sql.Selector){}, eaq.modifiers...),
+		sql:       _q.sql.Clone(),
+		path:      _q.path,
+		modifiers: append([]func(*sql.Selector){}, _q.modifiers...),
 	}
 }
 
 // WithTenant tells the query-builder to eager-load the nodes that are connected to
 // the "tenant" edge. The optional arguments are used to configure the query builder of the edge.
-func (eaq *EventAnnotationQuery) WithTenant(opts ...func(*TenantQuery)) *EventAnnotationQuery {
-	query := (&TenantClient{config: eaq.config}).Query()
+func (_q *EventAnnotationQuery) WithTenant(opts ...func(*TenantQuery)) *EventAnnotationQuery {
+	query := (&TenantClient{config: _q.config}).Query()
 	for _, opt := range opts {
 		opt(query)
 	}
-	eaq.withTenant = query
-	return eaq
+	_q.withTenant = query
+	return _q
 }
 
 // WithEvent tells the query-builder to eager-load the nodes that are connected to
 // the "event" edge. The optional arguments are used to configure the query builder of the edge.
-func (eaq *EventAnnotationQuery) WithEvent(opts ...func(*EventQuery)) *EventAnnotationQuery {
-	query := (&EventClient{config: eaq.config}).Query()
+func (_q *EventAnnotationQuery) WithEvent(opts ...func(*EventQuery)) *EventAnnotationQuery {
+	query := (&EventClient{config: _q.config}).Query()
 	for _, opt := range opts {
 		opt(query)
 	}
-	eaq.withEvent = query
-	return eaq
+	_q.withEvent = query
+	return _q
 }
 
 // WithCreator tells the query-builder to eager-load the nodes that are connected to
 // the "creator" edge. The optional arguments are used to configure the query builder of the edge.
-func (eaq *EventAnnotationQuery) WithCreator(opts ...func(*UserQuery)) *EventAnnotationQuery {
-	query := (&UserClient{config: eaq.config}).Query()
+func (_q *EventAnnotationQuery) WithCreator(opts ...func(*UserQuery)) *EventAnnotationQuery {
+	query := (&UserClient{config: _q.config}).Query()
 	for _, opt := range opts {
 		opt(query)
 	}
-	eaq.withCreator = query
-	return eaq
+	_q.withCreator = query
+	return _q
 }
 
 // WithHandovers tells the query-builder to eager-load the nodes that are connected to
 // the "handovers" edge. The optional arguments are used to configure the query builder of the edge.
-func (eaq *EventAnnotationQuery) WithHandovers(opts ...func(*OncallShiftHandoverQuery)) *EventAnnotationQuery {
-	query := (&OncallShiftHandoverClient{config: eaq.config}).Query()
+func (_q *EventAnnotationQuery) WithHandovers(opts ...func(*OncallShiftHandoverQuery)) *EventAnnotationQuery {
+	query := (&OncallShiftHandoverClient{config: _q.config}).Query()
 	for _, opt := range opts {
 		opt(query)
 	}
-	eaq.withHandovers = query
-	return eaq
+	_q.withHandovers = query
+	return _q
 }
 
 // GroupBy is used to group vertices by one or more fields/columns.
@@ -419,10 +419,10 @@ func (eaq *EventAnnotationQuery) WithHandovers(opts ...func(*OncallShiftHandover
 //		GroupBy(eventannotation.FieldTenantID).
 //		Aggregate(ent.Count()).
 //		Scan(ctx, &v)
-func (eaq *EventAnnotationQuery) GroupBy(field string, fields ...string) *EventAnnotationGroupBy {
-	eaq.ctx.Fields = append([]string{field}, fields...)
-	grbuild := &EventAnnotationGroupBy{build: eaq}
-	grbuild.flds = &eaq.ctx.Fields
+func (_q *EventAnnotationQuery) GroupBy(field string, fields ...string) *EventAnnotationGroupBy {
+	_q.ctx.Fields = append([]string{field}, fields...)
+	grbuild := &EventAnnotationGroupBy{build: _q}
+	grbuild.flds = &_q.ctx.Fields
 	grbuild.label = eventannotation.Label
 	grbuild.scan = grbuild.Scan
 	return grbuild
@@ -440,103 +440,103 @@ func (eaq *EventAnnotationQuery) GroupBy(field string, fields ...string) *EventA
 //	client.EventAnnotation.Query().
 //		Select(eventannotation.FieldTenantID).
 //		Scan(ctx, &v)
-func (eaq *EventAnnotationQuery) Select(fields ...string) *EventAnnotationSelect {
-	eaq.ctx.Fields = append(eaq.ctx.Fields, fields...)
-	sbuild := &EventAnnotationSelect{EventAnnotationQuery: eaq}
+func (_q *EventAnnotationQuery) Select(fields ...string) *EventAnnotationSelect {
+	_q.ctx.Fields = append(_q.ctx.Fields, fields...)
+	sbuild := &EventAnnotationSelect{EventAnnotationQuery: _q}
 	sbuild.label = eventannotation.Label
-	sbuild.flds, sbuild.scan = &eaq.ctx.Fields, sbuild.Scan
+	sbuild.flds, sbuild.scan = &_q.ctx.Fields, sbuild.Scan
 	return sbuild
 }
 
 // Aggregate returns a EventAnnotationSelect configured with the given aggregations.
-func (eaq *EventAnnotationQuery) Aggregate(fns ...AggregateFunc) *EventAnnotationSelect {
-	return eaq.Select().Aggregate(fns...)
+func (_q *EventAnnotationQuery) Aggregate(fns ...AggregateFunc) *EventAnnotationSelect {
+	return _q.Select().Aggregate(fns...)
 }
 
-func (eaq *EventAnnotationQuery) prepareQuery(ctx context.Context) error {
-	for _, inter := range eaq.inters {
+func (_q *EventAnnotationQuery) prepareQuery(ctx context.Context) error {
+	for _, inter := range _q.inters {
 		if inter == nil {
 			return fmt.Errorf("ent: uninitialized interceptor (forgotten import ent/runtime?)")
 		}
 		if trv, ok := inter.(Traverser); ok {
-			if err := trv.Traverse(ctx, eaq); err != nil {
+			if err := trv.Traverse(ctx, _q); err != nil {
 				return err
 			}
 		}
 	}
-	for _, f := range eaq.ctx.Fields {
+	for _, f := range _q.ctx.Fields {
 		if !eventannotation.ValidColumn(f) {
 			return &ValidationError{Name: f, err: fmt.Errorf("ent: invalid field %q for query", f)}
 		}
 	}
-	if eaq.path != nil {
-		prev, err := eaq.path(ctx)
+	if _q.path != nil {
+		prev, err := _q.path(ctx)
 		if err != nil {
 			return err
 		}
-		eaq.sql = prev
+		_q.sql = prev
 	}
 	if eventannotation.Policy == nil {
 		return errors.New("ent: uninitialized eventannotation.Policy (forgotten import ent/runtime?)")
 	}
-	if err := eventannotation.Policy.EvalQuery(ctx, eaq); err != nil {
+	if err := eventannotation.Policy.EvalQuery(ctx, _q); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (eaq *EventAnnotationQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*EventAnnotation, error) {
+func (_q *EventAnnotationQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*EventAnnotation, error) {
 	var (
 		nodes       = []*EventAnnotation{}
-		_spec       = eaq.querySpec()
+		_spec       = _q.querySpec()
 		loadedTypes = [4]bool{
-			eaq.withTenant != nil,
-			eaq.withEvent != nil,
-			eaq.withCreator != nil,
-			eaq.withHandovers != nil,
+			_q.withTenant != nil,
+			_q.withEvent != nil,
+			_q.withCreator != nil,
+			_q.withHandovers != nil,
 		}
 	)
 	_spec.ScanValues = func(columns []string) ([]any, error) {
 		return (*EventAnnotation).scanValues(nil, columns)
 	}
 	_spec.Assign = func(columns []string, values []any) error {
-		node := &EventAnnotation{config: eaq.config}
+		node := &EventAnnotation{config: _q.config}
 		nodes = append(nodes, node)
 		node.Edges.loadedTypes = loadedTypes
 		return node.assignValues(columns, values)
 	}
-	if len(eaq.modifiers) > 0 {
-		_spec.Modifiers = eaq.modifiers
+	if len(_q.modifiers) > 0 {
+		_spec.Modifiers = _q.modifiers
 	}
 	for i := range hooks {
 		hooks[i](ctx, _spec)
 	}
-	if err := sqlgraph.QueryNodes(ctx, eaq.driver, _spec); err != nil {
+	if err := sqlgraph.QueryNodes(ctx, _q.driver, _spec); err != nil {
 		return nil, err
 	}
 	if len(nodes) == 0 {
 		return nodes, nil
 	}
-	if query := eaq.withTenant; query != nil {
-		if err := eaq.loadTenant(ctx, query, nodes, nil,
+	if query := _q.withTenant; query != nil {
+		if err := _q.loadTenant(ctx, query, nodes, nil,
 			func(n *EventAnnotation, e *Tenant) { n.Edges.Tenant = e }); err != nil {
 			return nil, err
 		}
 	}
-	if query := eaq.withEvent; query != nil {
-		if err := eaq.loadEvent(ctx, query, nodes, nil,
+	if query := _q.withEvent; query != nil {
+		if err := _q.loadEvent(ctx, query, nodes, nil,
 			func(n *EventAnnotation, e *Event) { n.Edges.Event = e }); err != nil {
 			return nil, err
 		}
 	}
-	if query := eaq.withCreator; query != nil {
-		if err := eaq.loadCreator(ctx, query, nodes, nil,
+	if query := _q.withCreator; query != nil {
+		if err := _q.loadCreator(ctx, query, nodes, nil,
 			func(n *EventAnnotation, e *User) { n.Edges.Creator = e }); err != nil {
 			return nil, err
 		}
 	}
-	if query := eaq.withHandovers; query != nil {
-		if err := eaq.loadHandovers(ctx, query, nodes,
+	if query := _q.withHandovers; query != nil {
+		if err := _q.loadHandovers(ctx, query, nodes,
 			func(n *EventAnnotation) { n.Edges.Handovers = []*OncallShiftHandover{} },
 			func(n *EventAnnotation, e *OncallShiftHandover) { n.Edges.Handovers = append(n.Edges.Handovers, e) }); err != nil {
 			return nil, err
@@ -545,7 +545,7 @@ func (eaq *EventAnnotationQuery) sqlAll(ctx context.Context, hooks ...queryHook)
 	return nodes, nil
 }
 
-func (eaq *EventAnnotationQuery) loadTenant(ctx context.Context, query *TenantQuery, nodes []*EventAnnotation, init func(*EventAnnotation), assign func(*EventAnnotation, *Tenant)) error {
+func (_q *EventAnnotationQuery) loadTenant(ctx context.Context, query *TenantQuery, nodes []*EventAnnotation, init func(*EventAnnotation), assign func(*EventAnnotation, *Tenant)) error {
 	ids := make([]int, 0, len(nodes))
 	nodeids := make(map[int][]*EventAnnotation)
 	for i := range nodes {
@@ -574,7 +574,7 @@ func (eaq *EventAnnotationQuery) loadTenant(ctx context.Context, query *TenantQu
 	}
 	return nil
 }
-func (eaq *EventAnnotationQuery) loadEvent(ctx context.Context, query *EventQuery, nodes []*EventAnnotation, init func(*EventAnnotation), assign func(*EventAnnotation, *Event)) error {
+func (_q *EventAnnotationQuery) loadEvent(ctx context.Context, query *EventQuery, nodes []*EventAnnotation, init func(*EventAnnotation), assign func(*EventAnnotation, *Event)) error {
 	ids := make([]uuid.UUID, 0, len(nodes))
 	nodeids := make(map[uuid.UUID][]*EventAnnotation)
 	for i := range nodes {
@@ -603,7 +603,7 @@ func (eaq *EventAnnotationQuery) loadEvent(ctx context.Context, query *EventQuer
 	}
 	return nil
 }
-func (eaq *EventAnnotationQuery) loadCreator(ctx context.Context, query *UserQuery, nodes []*EventAnnotation, init func(*EventAnnotation), assign func(*EventAnnotation, *User)) error {
+func (_q *EventAnnotationQuery) loadCreator(ctx context.Context, query *UserQuery, nodes []*EventAnnotation, init func(*EventAnnotation), assign func(*EventAnnotation, *User)) error {
 	ids := make([]uuid.UUID, 0, len(nodes))
 	nodeids := make(map[uuid.UUID][]*EventAnnotation)
 	for i := range nodes {
@@ -632,7 +632,7 @@ func (eaq *EventAnnotationQuery) loadCreator(ctx context.Context, query *UserQue
 	}
 	return nil
 }
-func (eaq *EventAnnotationQuery) loadHandovers(ctx context.Context, query *OncallShiftHandoverQuery, nodes []*EventAnnotation, init func(*EventAnnotation), assign func(*EventAnnotation, *OncallShiftHandover)) error {
+func (_q *EventAnnotationQuery) loadHandovers(ctx context.Context, query *OncallShiftHandoverQuery, nodes []*EventAnnotation, init func(*EventAnnotation), assign func(*EventAnnotation, *OncallShiftHandover)) error {
 	edgeIDs := make([]driver.Value, len(nodes))
 	byID := make(map[uuid.UUID]*EventAnnotation)
 	nids := make(map[uuid.UUID]map[*EventAnnotation]struct{})
@@ -694,27 +694,27 @@ func (eaq *EventAnnotationQuery) loadHandovers(ctx context.Context, query *Oncal
 	return nil
 }
 
-func (eaq *EventAnnotationQuery) sqlCount(ctx context.Context) (int, error) {
-	_spec := eaq.querySpec()
-	if len(eaq.modifiers) > 0 {
-		_spec.Modifiers = eaq.modifiers
+func (_q *EventAnnotationQuery) sqlCount(ctx context.Context) (int, error) {
+	_spec := _q.querySpec()
+	if len(_q.modifiers) > 0 {
+		_spec.Modifiers = _q.modifiers
 	}
-	_spec.Node.Columns = eaq.ctx.Fields
-	if len(eaq.ctx.Fields) > 0 {
-		_spec.Unique = eaq.ctx.Unique != nil && *eaq.ctx.Unique
+	_spec.Node.Columns = _q.ctx.Fields
+	if len(_q.ctx.Fields) > 0 {
+		_spec.Unique = _q.ctx.Unique != nil && *_q.ctx.Unique
 	}
-	return sqlgraph.CountNodes(ctx, eaq.driver, _spec)
+	return sqlgraph.CountNodes(ctx, _q.driver, _spec)
 }
 
-func (eaq *EventAnnotationQuery) querySpec() *sqlgraph.QuerySpec {
+func (_q *EventAnnotationQuery) querySpec() *sqlgraph.QuerySpec {
 	_spec := sqlgraph.NewQuerySpec(eventannotation.Table, eventannotation.Columns, sqlgraph.NewFieldSpec(eventannotation.FieldID, field.TypeUUID))
-	_spec.From = eaq.sql
-	if unique := eaq.ctx.Unique; unique != nil {
+	_spec.From = _q.sql
+	if unique := _q.ctx.Unique; unique != nil {
 		_spec.Unique = *unique
-	} else if eaq.path != nil {
+	} else if _q.path != nil {
 		_spec.Unique = true
 	}
-	if fields := eaq.ctx.Fields; len(fields) > 0 {
+	if fields := _q.ctx.Fields; len(fields) > 0 {
 		_spec.Node.Columns = make([]string, 0, len(fields))
 		_spec.Node.Columns = append(_spec.Node.Columns, eventannotation.FieldID)
 		for i := range fields {
@@ -722,30 +722,30 @@ func (eaq *EventAnnotationQuery) querySpec() *sqlgraph.QuerySpec {
 				_spec.Node.Columns = append(_spec.Node.Columns, fields[i])
 			}
 		}
-		if eaq.withTenant != nil {
+		if _q.withTenant != nil {
 			_spec.Node.AddColumnOnce(eventannotation.FieldTenantID)
 		}
-		if eaq.withEvent != nil {
+		if _q.withEvent != nil {
 			_spec.Node.AddColumnOnce(eventannotation.FieldEventID)
 		}
-		if eaq.withCreator != nil {
+		if _q.withCreator != nil {
 			_spec.Node.AddColumnOnce(eventannotation.FieldCreatorID)
 		}
 	}
-	if ps := eaq.predicates; len(ps) > 0 {
+	if ps := _q.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {
 				ps[i](selector)
 			}
 		}
 	}
-	if limit := eaq.ctx.Limit; limit != nil {
+	if limit := _q.ctx.Limit; limit != nil {
 		_spec.Limit = *limit
 	}
-	if offset := eaq.ctx.Offset; offset != nil {
+	if offset := _q.ctx.Offset; offset != nil {
 		_spec.Offset = *offset
 	}
-	if ps := eaq.order; len(ps) > 0 {
+	if ps := _q.order; len(ps) > 0 {
 		_spec.Order = func(selector *sql.Selector) {
 			for i := range ps {
 				ps[i](selector)
@@ -755,45 +755,45 @@ func (eaq *EventAnnotationQuery) querySpec() *sqlgraph.QuerySpec {
 	return _spec
 }
 
-func (eaq *EventAnnotationQuery) sqlQuery(ctx context.Context) *sql.Selector {
-	builder := sql.Dialect(eaq.driver.Dialect())
+func (_q *EventAnnotationQuery) sqlQuery(ctx context.Context) *sql.Selector {
+	builder := sql.Dialect(_q.driver.Dialect())
 	t1 := builder.Table(eventannotation.Table)
-	columns := eaq.ctx.Fields
+	columns := _q.ctx.Fields
 	if len(columns) == 0 {
 		columns = eventannotation.Columns
 	}
 	selector := builder.Select(t1.Columns(columns...)...).From(t1)
-	if eaq.sql != nil {
-		selector = eaq.sql
+	if _q.sql != nil {
+		selector = _q.sql
 		selector.Select(selector.Columns(columns...)...)
 	}
-	if eaq.ctx.Unique != nil && *eaq.ctx.Unique {
+	if _q.ctx.Unique != nil && *_q.ctx.Unique {
 		selector.Distinct()
 	}
-	for _, m := range eaq.modifiers {
+	for _, m := range _q.modifiers {
 		m(selector)
 	}
-	for _, p := range eaq.predicates {
+	for _, p := range _q.predicates {
 		p(selector)
 	}
-	for _, p := range eaq.order {
+	for _, p := range _q.order {
 		p(selector)
 	}
-	if offset := eaq.ctx.Offset; offset != nil {
+	if offset := _q.ctx.Offset; offset != nil {
 		// limit is mandatory for offset clause. We start
 		// with default value, and override it below if needed.
 		selector.Offset(*offset).Limit(math.MaxInt32)
 	}
-	if limit := eaq.ctx.Limit; limit != nil {
+	if limit := _q.ctx.Limit; limit != nil {
 		selector.Limit(*limit)
 	}
 	return selector
 }
 
 // Modify adds a query modifier for attaching custom logic to queries.
-func (eaq *EventAnnotationQuery) Modify(modifiers ...func(s *sql.Selector)) *EventAnnotationSelect {
-	eaq.modifiers = append(eaq.modifiers, modifiers...)
-	return eaq.Select()
+func (_q *EventAnnotationQuery) Modify(modifiers ...func(s *sql.Selector)) *EventAnnotationSelect {
+	_q.modifiers = append(_q.modifiers, modifiers...)
+	return _q.Select()
 }
 
 // EventAnnotationGroupBy is the group-by builder for EventAnnotation entities.
@@ -803,41 +803,41 @@ type EventAnnotationGroupBy struct {
 }
 
 // Aggregate adds the given aggregation functions to the group-by query.
-func (eagb *EventAnnotationGroupBy) Aggregate(fns ...AggregateFunc) *EventAnnotationGroupBy {
-	eagb.fns = append(eagb.fns, fns...)
-	return eagb
+func (_g *EventAnnotationGroupBy) Aggregate(fns ...AggregateFunc) *EventAnnotationGroupBy {
+	_g.fns = append(_g.fns, fns...)
+	return _g
 }
 
 // Scan applies the selector query and scans the result into the given value.
-func (eagb *EventAnnotationGroupBy) Scan(ctx context.Context, v any) error {
-	ctx = setContextOp(ctx, eagb.build.ctx, ent.OpQueryGroupBy)
-	if err := eagb.build.prepareQuery(ctx); err != nil {
+func (_g *EventAnnotationGroupBy) Scan(ctx context.Context, v any) error {
+	ctx = setContextOp(ctx, _g.build.ctx, ent.OpQueryGroupBy)
+	if err := _g.build.prepareQuery(ctx); err != nil {
 		return err
 	}
-	return scanWithInterceptors[*EventAnnotationQuery, *EventAnnotationGroupBy](ctx, eagb.build, eagb, eagb.build.inters, v)
+	return scanWithInterceptors[*EventAnnotationQuery, *EventAnnotationGroupBy](ctx, _g.build, _g, _g.build.inters, v)
 }
 
-func (eagb *EventAnnotationGroupBy) sqlScan(ctx context.Context, root *EventAnnotationQuery, v any) error {
+func (_g *EventAnnotationGroupBy) sqlScan(ctx context.Context, root *EventAnnotationQuery, v any) error {
 	selector := root.sqlQuery(ctx).Select()
-	aggregation := make([]string, 0, len(eagb.fns))
-	for _, fn := range eagb.fns {
+	aggregation := make([]string, 0, len(_g.fns))
+	for _, fn := range _g.fns {
 		aggregation = append(aggregation, fn(selector))
 	}
 	if len(selector.SelectedColumns()) == 0 {
-		columns := make([]string, 0, len(*eagb.flds)+len(eagb.fns))
-		for _, f := range *eagb.flds {
+		columns := make([]string, 0, len(*_g.flds)+len(_g.fns))
+		for _, f := range *_g.flds {
 			columns = append(columns, selector.C(f))
 		}
 		columns = append(columns, aggregation...)
 		selector.Select(columns...)
 	}
-	selector.GroupBy(selector.Columns(*eagb.flds...)...)
+	selector.GroupBy(selector.Columns(*_g.flds...)...)
 	if err := selector.Err(); err != nil {
 		return err
 	}
 	rows := &sql.Rows{}
 	query, args := selector.Query()
-	if err := eagb.build.driver.Query(ctx, query, args, rows); err != nil {
+	if err := _g.build.driver.Query(ctx, query, args, rows); err != nil {
 		return err
 	}
 	defer rows.Close()
@@ -851,27 +851,27 @@ type EventAnnotationSelect struct {
 }
 
 // Aggregate adds the given aggregation functions to the selector query.
-func (eas *EventAnnotationSelect) Aggregate(fns ...AggregateFunc) *EventAnnotationSelect {
-	eas.fns = append(eas.fns, fns...)
-	return eas
+func (_s *EventAnnotationSelect) Aggregate(fns ...AggregateFunc) *EventAnnotationSelect {
+	_s.fns = append(_s.fns, fns...)
+	return _s
 }
 
 // Scan applies the selector query and scans the result into the given value.
-func (eas *EventAnnotationSelect) Scan(ctx context.Context, v any) error {
-	ctx = setContextOp(ctx, eas.ctx, ent.OpQuerySelect)
-	if err := eas.prepareQuery(ctx); err != nil {
+func (_s *EventAnnotationSelect) Scan(ctx context.Context, v any) error {
+	ctx = setContextOp(ctx, _s.ctx, ent.OpQuerySelect)
+	if err := _s.prepareQuery(ctx); err != nil {
 		return err
 	}
-	return scanWithInterceptors[*EventAnnotationQuery, *EventAnnotationSelect](ctx, eas.EventAnnotationQuery, eas, eas.inters, v)
+	return scanWithInterceptors[*EventAnnotationQuery, *EventAnnotationSelect](ctx, _s.EventAnnotationQuery, _s, _s.inters, v)
 }
 
-func (eas *EventAnnotationSelect) sqlScan(ctx context.Context, root *EventAnnotationQuery, v any) error {
+func (_s *EventAnnotationSelect) sqlScan(ctx context.Context, root *EventAnnotationQuery, v any) error {
 	selector := root.sqlQuery(ctx)
-	aggregation := make([]string, 0, len(eas.fns))
-	for _, fn := range eas.fns {
+	aggregation := make([]string, 0, len(_s.fns))
+	for _, fn := range _s.fns {
 		aggregation = append(aggregation, fn(selector))
 	}
-	switch n := len(*eas.selector.flds); {
+	switch n := len(*_s.selector.flds); {
 	case n == 0 && len(aggregation) > 0:
 		selector.Select(aggregation...)
 	case n != 0 && len(aggregation) > 0:
@@ -879,7 +879,7 @@ func (eas *EventAnnotationSelect) sqlScan(ctx context.Context, root *EventAnnota
 	}
 	rows := &sql.Rows{}
 	query, args := selector.Query()
-	if err := eas.driver.Query(ctx, query, args, rows); err != nil {
+	if err := _s.driver.Query(ctx, query, args, rows); err != nil {
 		return err
 	}
 	defer rows.Close()
@@ -887,7 +887,7 @@ func (eas *EventAnnotationSelect) sqlScan(ctx context.Context, root *EventAnnota
 }
 
 // Modify adds a query modifier for attaching custom logic to queries.
-func (eas *EventAnnotationSelect) Modify(modifiers ...func(s *sql.Selector)) *EventAnnotationSelect {
-	eas.modifiers = append(eas.modifiers, modifiers...)
-	return eas
+func (_s *EventAnnotationSelect) Modify(modifiers ...func(s *sql.Selector)) *EventAnnotationSelect {
+	_s.modifiers = append(_s.modifiers, modifiers...)
+	return _s
 }

@@ -91,7 +91,7 @@ func (*IncidentMilestone) scanValues(columns []string) ([]any, error) {
 
 // assignValues assigns the values that were returned from sql.Rows (after scanning)
 // to the IncidentMilestone fields.
-func (im *IncidentMilestone) assignValues(columns []string, values []any) error {
+func (_m *IncidentMilestone) assignValues(columns []string, values []any) error {
 	if m, n := len(values), len(columns); m < n {
 		return fmt.Errorf("mismatch number of scan values: %d != %d", m, n)
 	}
@@ -101,40 +101,40 @@ func (im *IncidentMilestone) assignValues(columns []string, values []any) error 
 			if value, ok := values[i].(*uuid.UUID); !ok {
 				return fmt.Errorf("unexpected type %T for field id", values[i])
 			} else if value != nil {
-				im.ID = *value
+				_m.ID = *value
 			}
 		case incidentmilestone.FieldTenantID:
 			if value, ok := values[i].(*sql.NullInt64); !ok {
 				return fmt.Errorf("unexpected type %T for field tenant_id", values[i])
 			} else if value.Valid {
-				im.TenantID = int(value.Int64)
+				_m.TenantID = int(value.Int64)
 			}
 		case incidentmilestone.FieldIncidentID:
 			if value, ok := values[i].(*uuid.UUID); !ok {
 				return fmt.Errorf("unexpected type %T for field incident_id", values[i])
 			} else if value != nil {
-				im.IncidentID = *value
+				_m.IncidentID = *value
 			}
 		case incidentmilestone.FieldKind:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field kind", values[i])
 			} else if value.Valid {
-				im.Kind = incidentmilestone.Kind(value.String)
+				_m.Kind = incidentmilestone.Kind(value.String)
 			}
 		case incidentmilestone.FieldDescription:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field description", values[i])
 			} else if value.Valid {
-				im.Description = value.String
+				_m.Description = value.String
 			}
 		case incidentmilestone.FieldTime:
 			if value, ok := values[i].(*sql.NullTime); !ok {
 				return fmt.Errorf("unexpected type %T for field time", values[i])
 			} else if value.Valid {
-				im.Time = value.Time
+				_m.Time = value.Time
 			}
 		default:
-			im.selectValues.Set(columns[i], values[i])
+			_m.selectValues.Set(columns[i], values[i])
 		}
 	}
 	return nil
@@ -142,57 +142,57 @@ func (im *IncidentMilestone) assignValues(columns []string, values []any) error 
 
 // Value returns the ent.Value that was dynamically selected and assigned to the IncidentMilestone.
 // This includes values selected through modifiers, order, etc.
-func (im *IncidentMilestone) Value(name string) (ent.Value, error) {
-	return im.selectValues.Get(name)
+func (_m *IncidentMilestone) Value(name string) (ent.Value, error) {
+	return _m.selectValues.Get(name)
 }
 
 // QueryTenant queries the "tenant" edge of the IncidentMilestone entity.
-func (im *IncidentMilestone) QueryTenant() *TenantQuery {
-	return NewIncidentMilestoneClient(im.config).QueryTenant(im)
+func (_m *IncidentMilestone) QueryTenant() *TenantQuery {
+	return NewIncidentMilestoneClient(_m.config).QueryTenant(_m)
 }
 
 // QueryIncident queries the "incident" edge of the IncidentMilestone entity.
-func (im *IncidentMilestone) QueryIncident() *IncidentQuery {
-	return NewIncidentMilestoneClient(im.config).QueryIncident(im)
+func (_m *IncidentMilestone) QueryIncident() *IncidentQuery {
+	return NewIncidentMilestoneClient(_m.config).QueryIncident(_m)
 }
 
 // Update returns a builder for updating this IncidentMilestone.
 // Note that you need to call IncidentMilestone.Unwrap() before calling this method if this IncidentMilestone
 // was returned from a transaction, and the transaction was committed or rolled back.
-func (im *IncidentMilestone) Update() *IncidentMilestoneUpdateOne {
-	return NewIncidentMilestoneClient(im.config).UpdateOne(im)
+func (_m *IncidentMilestone) Update() *IncidentMilestoneUpdateOne {
+	return NewIncidentMilestoneClient(_m.config).UpdateOne(_m)
 }
 
 // Unwrap unwraps the IncidentMilestone entity that was returned from a transaction after it was closed,
 // so that all future queries will be executed through the driver which created the transaction.
-func (im *IncidentMilestone) Unwrap() *IncidentMilestone {
-	_tx, ok := im.config.driver.(*txDriver)
+func (_m *IncidentMilestone) Unwrap() *IncidentMilestone {
+	_tx, ok := _m.config.driver.(*txDriver)
 	if !ok {
 		panic("ent: IncidentMilestone is not a transactional entity")
 	}
-	im.config.driver = _tx.drv
-	return im
+	_m.config.driver = _tx.drv
+	return _m
 }
 
 // String implements the fmt.Stringer.
-func (im *IncidentMilestone) String() string {
+func (_m *IncidentMilestone) String() string {
 	var builder strings.Builder
 	builder.WriteString("IncidentMilestone(")
-	builder.WriteString(fmt.Sprintf("id=%v, ", im.ID))
+	builder.WriteString(fmt.Sprintf("id=%v, ", _m.ID))
 	builder.WriteString("tenant_id=")
-	builder.WriteString(fmt.Sprintf("%v", im.TenantID))
+	builder.WriteString(fmt.Sprintf("%v", _m.TenantID))
 	builder.WriteString(", ")
 	builder.WriteString("incident_id=")
-	builder.WriteString(fmt.Sprintf("%v", im.IncidentID))
+	builder.WriteString(fmt.Sprintf("%v", _m.IncidentID))
 	builder.WriteString(", ")
 	builder.WriteString("kind=")
-	builder.WriteString(fmt.Sprintf("%v", im.Kind))
+	builder.WriteString(fmt.Sprintf("%v", _m.Kind))
 	builder.WriteString(", ")
 	builder.WriteString("description=")
-	builder.WriteString(im.Description)
+	builder.WriteString(_m.Description)
 	builder.WriteString(", ")
 	builder.WriteString("time=")
-	builder.WriteString(im.Time.Format(time.ANSIC))
+	builder.WriteString(_m.Time.Format(time.ANSIC))
 	builder.WriteByte(')')
 	return builder.String()
 }

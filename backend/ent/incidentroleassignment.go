@@ -112,7 +112,7 @@ func (*IncidentRoleAssignment) scanValues(columns []string) ([]any, error) {
 
 // assignValues assigns the values that were returned from sql.Rows (after scanning)
 // to the IncidentRoleAssignment fields.
-func (ira *IncidentRoleAssignment) assignValues(columns []string, values []any) error {
+func (_m *IncidentRoleAssignment) assignValues(columns []string, values []any) error {
 	if m, n := len(values), len(columns); m < n {
 		return fmt.Errorf("mismatch number of scan values: %d != %d", m, n)
 	}
@@ -122,34 +122,34 @@ func (ira *IncidentRoleAssignment) assignValues(columns []string, values []any) 
 			if value, ok := values[i].(*uuid.UUID); !ok {
 				return fmt.Errorf("unexpected type %T for field id", values[i])
 			} else if value != nil {
-				ira.ID = *value
+				_m.ID = *value
 			}
 		case incidentroleassignment.FieldTenantID:
 			if value, ok := values[i].(*sql.NullInt64); !ok {
 				return fmt.Errorf("unexpected type %T for field tenant_id", values[i])
 			} else if value.Valid {
-				ira.TenantID = int(value.Int64)
+				_m.TenantID = int(value.Int64)
 			}
 		case incidentroleassignment.FieldIncidentID:
 			if value, ok := values[i].(*uuid.UUID); !ok {
 				return fmt.Errorf("unexpected type %T for field incident_id", values[i])
 			} else if value != nil {
-				ira.IncidentID = *value
+				_m.IncidentID = *value
 			}
 		case incidentroleassignment.FieldUserID:
 			if value, ok := values[i].(*uuid.UUID); !ok {
 				return fmt.Errorf("unexpected type %T for field user_id", values[i])
 			} else if value != nil {
-				ira.UserID = *value
+				_m.UserID = *value
 			}
 		case incidentroleassignment.FieldRoleID:
 			if value, ok := values[i].(*uuid.UUID); !ok {
 				return fmt.Errorf("unexpected type %T for field role_id", values[i])
 			} else if value != nil {
-				ira.RoleID = *value
+				_m.RoleID = *value
 			}
 		default:
-			ira.selectValues.Set(columns[i], values[i])
+			_m.selectValues.Set(columns[i], values[i])
 		}
 	}
 	return nil
@@ -157,64 +157,64 @@ func (ira *IncidentRoleAssignment) assignValues(columns []string, values []any) 
 
 // Value returns the ent.Value that was dynamically selected and assigned to the IncidentRoleAssignment.
 // This includes values selected through modifiers, order, etc.
-func (ira *IncidentRoleAssignment) Value(name string) (ent.Value, error) {
-	return ira.selectValues.Get(name)
+func (_m *IncidentRoleAssignment) Value(name string) (ent.Value, error) {
+	return _m.selectValues.Get(name)
 }
 
 // QueryTenant queries the "tenant" edge of the IncidentRoleAssignment entity.
-func (ira *IncidentRoleAssignment) QueryTenant() *TenantQuery {
-	return NewIncidentRoleAssignmentClient(ira.config).QueryTenant(ira)
+func (_m *IncidentRoleAssignment) QueryTenant() *TenantQuery {
+	return NewIncidentRoleAssignmentClient(_m.config).QueryTenant(_m)
 }
 
 // QueryIncident queries the "incident" edge of the IncidentRoleAssignment entity.
-func (ira *IncidentRoleAssignment) QueryIncident() *IncidentQuery {
-	return NewIncidentRoleAssignmentClient(ira.config).QueryIncident(ira)
+func (_m *IncidentRoleAssignment) QueryIncident() *IncidentQuery {
+	return NewIncidentRoleAssignmentClient(_m.config).QueryIncident(_m)
 }
 
 // QueryUser queries the "user" edge of the IncidentRoleAssignment entity.
-func (ira *IncidentRoleAssignment) QueryUser() *UserQuery {
-	return NewIncidentRoleAssignmentClient(ira.config).QueryUser(ira)
+func (_m *IncidentRoleAssignment) QueryUser() *UserQuery {
+	return NewIncidentRoleAssignmentClient(_m.config).QueryUser(_m)
 }
 
 // QueryRole queries the "role" edge of the IncidentRoleAssignment entity.
-func (ira *IncidentRoleAssignment) QueryRole() *IncidentRoleQuery {
-	return NewIncidentRoleAssignmentClient(ira.config).QueryRole(ira)
+func (_m *IncidentRoleAssignment) QueryRole() *IncidentRoleQuery {
+	return NewIncidentRoleAssignmentClient(_m.config).QueryRole(_m)
 }
 
 // Update returns a builder for updating this IncidentRoleAssignment.
 // Note that you need to call IncidentRoleAssignment.Unwrap() before calling this method if this IncidentRoleAssignment
 // was returned from a transaction, and the transaction was committed or rolled back.
-func (ira *IncidentRoleAssignment) Update() *IncidentRoleAssignmentUpdateOne {
-	return NewIncidentRoleAssignmentClient(ira.config).UpdateOne(ira)
+func (_m *IncidentRoleAssignment) Update() *IncidentRoleAssignmentUpdateOne {
+	return NewIncidentRoleAssignmentClient(_m.config).UpdateOne(_m)
 }
 
 // Unwrap unwraps the IncidentRoleAssignment entity that was returned from a transaction after it was closed,
 // so that all future queries will be executed through the driver which created the transaction.
-func (ira *IncidentRoleAssignment) Unwrap() *IncidentRoleAssignment {
-	_tx, ok := ira.config.driver.(*txDriver)
+func (_m *IncidentRoleAssignment) Unwrap() *IncidentRoleAssignment {
+	_tx, ok := _m.config.driver.(*txDriver)
 	if !ok {
 		panic("ent: IncidentRoleAssignment is not a transactional entity")
 	}
-	ira.config.driver = _tx.drv
-	return ira
+	_m.config.driver = _tx.drv
+	return _m
 }
 
 // String implements the fmt.Stringer.
-func (ira *IncidentRoleAssignment) String() string {
+func (_m *IncidentRoleAssignment) String() string {
 	var builder strings.Builder
 	builder.WriteString("IncidentRoleAssignment(")
-	builder.WriteString(fmt.Sprintf("id=%v, ", ira.ID))
+	builder.WriteString(fmt.Sprintf("id=%v, ", _m.ID))
 	builder.WriteString("tenant_id=")
-	builder.WriteString(fmt.Sprintf("%v", ira.TenantID))
+	builder.WriteString(fmt.Sprintf("%v", _m.TenantID))
 	builder.WriteString(", ")
 	builder.WriteString("incident_id=")
-	builder.WriteString(fmt.Sprintf("%v", ira.IncidentID))
+	builder.WriteString(fmt.Sprintf("%v", _m.IncidentID))
 	builder.WriteString(", ")
 	builder.WriteString("user_id=")
-	builder.WriteString(fmt.Sprintf("%v", ira.UserID))
+	builder.WriteString(fmt.Sprintf("%v", _m.UserID))
 	builder.WriteString(", ")
 	builder.WriteString("role_id=")
-	builder.WriteString(fmt.Sprintf("%v", ira.RoleID))
+	builder.WriteString(fmt.Sprintf("%v", _m.RoleID))
 	builder.WriteByte(')')
 	return builder.String()
 }

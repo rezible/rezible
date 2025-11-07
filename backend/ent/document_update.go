@@ -25,55 +25,55 @@ type DocumentUpdate struct {
 }
 
 // Where appends a list predicates to the DocumentUpdate builder.
-func (du *DocumentUpdate) Where(ps ...predicate.Document) *DocumentUpdate {
-	du.mutation.Where(ps...)
-	return du
+func (_u *DocumentUpdate) Where(ps ...predicate.Document) *DocumentUpdate {
+	_u.mutation.Where(ps...)
+	return _u
 }
 
 // SetContent sets the "content" field.
-func (du *DocumentUpdate) SetContent(b []byte) *DocumentUpdate {
-	du.mutation.SetContent(b)
-	return du
+func (_u *DocumentUpdate) SetContent(v []byte) *DocumentUpdate {
+	_u.mutation.SetContent(v)
+	return _u
 }
 
 // SetRetrospectiveID sets the "retrospective" edge to the Retrospective entity by ID.
-func (du *DocumentUpdate) SetRetrospectiveID(id uuid.UUID) *DocumentUpdate {
-	du.mutation.SetRetrospectiveID(id)
-	return du
+func (_u *DocumentUpdate) SetRetrospectiveID(id uuid.UUID) *DocumentUpdate {
+	_u.mutation.SetRetrospectiveID(id)
+	return _u
 }
 
 // SetNillableRetrospectiveID sets the "retrospective" edge to the Retrospective entity by ID if the given value is not nil.
-func (du *DocumentUpdate) SetNillableRetrospectiveID(id *uuid.UUID) *DocumentUpdate {
+func (_u *DocumentUpdate) SetNillableRetrospectiveID(id *uuid.UUID) *DocumentUpdate {
 	if id != nil {
-		du = du.SetRetrospectiveID(*id)
+		_u = _u.SetRetrospectiveID(*id)
 	}
-	return du
+	return _u
 }
 
 // SetRetrospective sets the "retrospective" edge to the Retrospective entity.
-func (du *DocumentUpdate) SetRetrospective(r *Retrospective) *DocumentUpdate {
-	return du.SetRetrospectiveID(r.ID)
+func (_u *DocumentUpdate) SetRetrospective(v *Retrospective) *DocumentUpdate {
+	return _u.SetRetrospectiveID(v.ID)
 }
 
 // Mutation returns the DocumentMutation object of the builder.
-func (du *DocumentUpdate) Mutation() *DocumentMutation {
-	return du.mutation
+func (_u *DocumentUpdate) Mutation() *DocumentMutation {
+	return _u.mutation
 }
 
 // ClearRetrospective clears the "retrospective" edge to the Retrospective entity.
-func (du *DocumentUpdate) ClearRetrospective() *DocumentUpdate {
-	du.mutation.ClearRetrospective()
-	return du
+func (_u *DocumentUpdate) ClearRetrospective() *DocumentUpdate {
+	_u.mutation.ClearRetrospective()
+	return _u
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
-func (du *DocumentUpdate) Save(ctx context.Context) (int, error) {
-	return withHooks(ctx, du.sqlSave, du.mutation, du.hooks)
+func (_u *DocumentUpdate) Save(ctx context.Context) (int, error) {
+	return withHooks(ctx, _u.sqlSave, _u.mutation, _u.hooks)
 }
 
 // SaveX is like Save, but panics if an error occurs.
-func (du *DocumentUpdate) SaveX(ctx context.Context) int {
-	affected, err := du.Save(ctx)
+func (_u *DocumentUpdate) SaveX(ctx context.Context) int {
+	affected, err := _u.Save(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -81,48 +81,48 @@ func (du *DocumentUpdate) SaveX(ctx context.Context) int {
 }
 
 // Exec executes the query.
-func (du *DocumentUpdate) Exec(ctx context.Context) error {
-	_, err := du.Save(ctx)
+func (_u *DocumentUpdate) Exec(ctx context.Context) error {
+	_, err := _u.Save(ctx)
 	return err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (du *DocumentUpdate) ExecX(ctx context.Context) {
-	if err := du.Exec(ctx); err != nil {
+func (_u *DocumentUpdate) ExecX(ctx context.Context) {
+	if err := _u.Exec(ctx); err != nil {
 		panic(err)
 	}
 }
 
 // check runs all checks and user-defined validators on the builder.
-func (du *DocumentUpdate) check() error {
-	if du.mutation.TenantCleared() && len(du.mutation.TenantIDs()) > 0 {
+func (_u *DocumentUpdate) check() error {
+	if _u.mutation.TenantCleared() && len(_u.mutation.TenantIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "Document.tenant"`)
 	}
 	return nil
 }
 
 // Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
-func (du *DocumentUpdate) Modify(modifiers ...func(u *sql.UpdateBuilder)) *DocumentUpdate {
-	du.modifiers = append(du.modifiers, modifiers...)
-	return du
+func (_u *DocumentUpdate) Modify(modifiers ...func(u *sql.UpdateBuilder)) *DocumentUpdate {
+	_u.modifiers = append(_u.modifiers, modifiers...)
+	return _u
 }
 
-func (du *DocumentUpdate) sqlSave(ctx context.Context) (n int, err error) {
-	if err := du.check(); err != nil {
-		return n, err
+func (_u *DocumentUpdate) sqlSave(ctx context.Context) (_node int, err error) {
+	if err := _u.check(); err != nil {
+		return _node, err
 	}
 	_spec := sqlgraph.NewUpdateSpec(document.Table, document.Columns, sqlgraph.NewFieldSpec(document.FieldID, field.TypeUUID))
-	if ps := du.mutation.predicates; len(ps) > 0 {
+	if ps := _u.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {
 				ps[i](selector)
 			}
 		}
 	}
-	if value, ok := du.mutation.Content(); ok {
+	if value, ok := _u.mutation.Content(); ok {
 		_spec.SetField(document.FieldContent, field.TypeBytes, value)
 	}
-	if du.mutation.RetrospectiveCleared() {
+	if _u.mutation.RetrospectiveCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2O,
 			Inverse: false,
@@ -135,7 +135,7 @@ func (du *DocumentUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := du.mutation.RetrospectiveIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.RetrospectiveIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2O,
 			Inverse: false,
@@ -151,8 +151,8 @@ func (du *DocumentUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	_spec.AddModifiers(du.modifiers...)
-	if n, err = sqlgraph.UpdateNodes(ctx, du.driver, _spec); err != nil {
+	_spec.AddModifiers(_u.modifiers...)
+	if _node, err = sqlgraph.UpdateNodes(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{document.Label}
 		} else if sqlgraph.IsConstraintError(err) {
@@ -160,8 +160,8 @@ func (du *DocumentUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		return 0, err
 	}
-	du.mutation.done = true
-	return n, nil
+	_u.mutation.done = true
+	return _node, nil
 }
 
 // DocumentUpdateOne is the builder for updating a single Document entity.
@@ -174,62 +174,62 @@ type DocumentUpdateOne struct {
 }
 
 // SetContent sets the "content" field.
-func (duo *DocumentUpdateOne) SetContent(b []byte) *DocumentUpdateOne {
-	duo.mutation.SetContent(b)
-	return duo
+func (_u *DocumentUpdateOne) SetContent(v []byte) *DocumentUpdateOne {
+	_u.mutation.SetContent(v)
+	return _u
 }
 
 // SetRetrospectiveID sets the "retrospective" edge to the Retrospective entity by ID.
-func (duo *DocumentUpdateOne) SetRetrospectiveID(id uuid.UUID) *DocumentUpdateOne {
-	duo.mutation.SetRetrospectiveID(id)
-	return duo
+func (_u *DocumentUpdateOne) SetRetrospectiveID(id uuid.UUID) *DocumentUpdateOne {
+	_u.mutation.SetRetrospectiveID(id)
+	return _u
 }
 
 // SetNillableRetrospectiveID sets the "retrospective" edge to the Retrospective entity by ID if the given value is not nil.
-func (duo *DocumentUpdateOne) SetNillableRetrospectiveID(id *uuid.UUID) *DocumentUpdateOne {
+func (_u *DocumentUpdateOne) SetNillableRetrospectiveID(id *uuid.UUID) *DocumentUpdateOne {
 	if id != nil {
-		duo = duo.SetRetrospectiveID(*id)
+		_u = _u.SetRetrospectiveID(*id)
 	}
-	return duo
+	return _u
 }
 
 // SetRetrospective sets the "retrospective" edge to the Retrospective entity.
-func (duo *DocumentUpdateOne) SetRetrospective(r *Retrospective) *DocumentUpdateOne {
-	return duo.SetRetrospectiveID(r.ID)
+func (_u *DocumentUpdateOne) SetRetrospective(v *Retrospective) *DocumentUpdateOne {
+	return _u.SetRetrospectiveID(v.ID)
 }
 
 // Mutation returns the DocumentMutation object of the builder.
-func (duo *DocumentUpdateOne) Mutation() *DocumentMutation {
-	return duo.mutation
+func (_u *DocumentUpdateOne) Mutation() *DocumentMutation {
+	return _u.mutation
 }
 
 // ClearRetrospective clears the "retrospective" edge to the Retrospective entity.
-func (duo *DocumentUpdateOne) ClearRetrospective() *DocumentUpdateOne {
-	duo.mutation.ClearRetrospective()
-	return duo
+func (_u *DocumentUpdateOne) ClearRetrospective() *DocumentUpdateOne {
+	_u.mutation.ClearRetrospective()
+	return _u
 }
 
 // Where appends a list predicates to the DocumentUpdate builder.
-func (duo *DocumentUpdateOne) Where(ps ...predicate.Document) *DocumentUpdateOne {
-	duo.mutation.Where(ps...)
-	return duo
+func (_u *DocumentUpdateOne) Where(ps ...predicate.Document) *DocumentUpdateOne {
+	_u.mutation.Where(ps...)
+	return _u
 }
 
 // Select allows selecting one or more fields (columns) of the returned entity.
 // The default is selecting all fields defined in the entity schema.
-func (duo *DocumentUpdateOne) Select(field string, fields ...string) *DocumentUpdateOne {
-	duo.fields = append([]string{field}, fields...)
-	return duo
+func (_u *DocumentUpdateOne) Select(field string, fields ...string) *DocumentUpdateOne {
+	_u.fields = append([]string{field}, fields...)
+	return _u
 }
 
 // Save executes the query and returns the updated Document entity.
-func (duo *DocumentUpdateOne) Save(ctx context.Context) (*Document, error) {
-	return withHooks(ctx, duo.sqlSave, duo.mutation, duo.hooks)
+func (_u *DocumentUpdateOne) Save(ctx context.Context) (*Document, error) {
+	return withHooks(ctx, _u.sqlSave, _u.mutation, _u.hooks)
 }
 
 // SaveX is like Save, but panics if an error occurs.
-func (duo *DocumentUpdateOne) SaveX(ctx context.Context) *Document {
-	node, err := duo.Save(ctx)
+func (_u *DocumentUpdateOne) SaveX(ctx context.Context) *Document {
+	node, err := _u.Save(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -237,43 +237,43 @@ func (duo *DocumentUpdateOne) SaveX(ctx context.Context) *Document {
 }
 
 // Exec executes the query on the entity.
-func (duo *DocumentUpdateOne) Exec(ctx context.Context) error {
-	_, err := duo.Save(ctx)
+func (_u *DocumentUpdateOne) Exec(ctx context.Context) error {
+	_, err := _u.Save(ctx)
 	return err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (duo *DocumentUpdateOne) ExecX(ctx context.Context) {
-	if err := duo.Exec(ctx); err != nil {
+func (_u *DocumentUpdateOne) ExecX(ctx context.Context) {
+	if err := _u.Exec(ctx); err != nil {
 		panic(err)
 	}
 }
 
 // check runs all checks and user-defined validators on the builder.
-func (duo *DocumentUpdateOne) check() error {
-	if duo.mutation.TenantCleared() && len(duo.mutation.TenantIDs()) > 0 {
+func (_u *DocumentUpdateOne) check() error {
+	if _u.mutation.TenantCleared() && len(_u.mutation.TenantIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "Document.tenant"`)
 	}
 	return nil
 }
 
 // Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
-func (duo *DocumentUpdateOne) Modify(modifiers ...func(u *sql.UpdateBuilder)) *DocumentUpdateOne {
-	duo.modifiers = append(duo.modifiers, modifiers...)
-	return duo
+func (_u *DocumentUpdateOne) Modify(modifiers ...func(u *sql.UpdateBuilder)) *DocumentUpdateOne {
+	_u.modifiers = append(_u.modifiers, modifiers...)
+	return _u
 }
 
-func (duo *DocumentUpdateOne) sqlSave(ctx context.Context) (_node *Document, err error) {
-	if err := duo.check(); err != nil {
+func (_u *DocumentUpdateOne) sqlSave(ctx context.Context) (_node *Document, err error) {
+	if err := _u.check(); err != nil {
 		return _node, err
 	}
 	_spec := sqlgraph.NewUpdateSpec(document.Table, document.Columns, sqlgraph.NewFieldSpec(document.FieldID, field.TypeUUID))
-	id, ok := duo.mutation.ID()
+	id, ok := _u.mutation.ID()
 	if !ok {
 		return nil, &ValidationError{Name: "id", err: errors.New(`ent: missing "Document.id" for update`)}
 	}
 	_spec.Node.ID.Value = id
-	if fields := duo.fields; len(fields) > 0 {
+	if fields := _u.fields; len(fields) > 0 {
 		_spec.Node.Columns = make([]string, 0, len(fields))
 		_spec.Node.Columns = append(_spec.Node.Columns, document.FieldID)
 		for _, f := range fields {
@@ -285,17 +285,17 @@ func (duo *DocumentUpdateOne) sqlSave(ctx context.Context) (_node *Document, err
 			}
 		}
 	}
-	if ps := duo.mutation.predicates; len(ps) > 0 {
+	if ps := _u.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {
 				ps[i](selector)
 			}
 		}
 	}
-	if value, ok := duo.mutation.Content(); ok {
+	if value, ok := _u.mutation.Content(); ok {
 		_spec.SetField(document.FieldContent, field.TypeBytes, value)
 	}
-	if duo.mutation.RetrospectiveCleared() {
+	if _u.mutation.RetrospectiveCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2O,
 			Inverse: false,
@@ -308,7 +308,7 @@ func (duo *DocumentUpdateOne) sqlSave(ctx context.Context) (_node *Document, err
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := duo.mutation.RetrospectiveIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.RetrospectiveIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2O,
 			Inverse: false,
@@ -324,11 +324,11 @@ func (duo *DocumentUpdateOne) sqlSave(ctx context.Context) (_node *Document, err
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	_spec.AddModifiers(duo.modifiers...)
-	_node = &Document{config: duo.config}
+	_spec.AddModifiers(_u.modifiers...)
+	_node = &Document{config: _u.config}
 	_spec.Assign = _node.assignValues
 	_spec.ScanValues = _node.scanValues
-	if err = sqlgraph.UpdateNode(ctx, duo.driver, _spec); err != nil {
+	if err = sqlgraph.UpdateNode(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{document.Label}
 		} else if sqlgraph.IsConstraintError(err) {
@@ -336,6 +336,6 @@ func (duo *DocumentUpdateOne) sqlSave(ctx context.Context) (_node *Document, err
 		}
 		return nil, err
 	}
-	duo.mutation.done = true
+	_u.mutation.done = true
 	return _node, nil
 }

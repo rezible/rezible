@@ -26,86 +26,86 @@ type ProviderSyncHistoryCreate struct {
 }
 
 // SetTenantID sets the "tenant_id" field.
-func (pshc *ProviderSyncHistoryCreate) SetTenantID(i int) *ProviderSyncHistoryCreate {
-	pshc.mutation.SetTenantID(i)
-	return pshc
+func (_c *ProviderSyncHistoryCreate) SetTenantID(v int) *ProviderSyncHistoryCreate {
+	_c.mutation.SetTenantID(v)
+	return _c
 }
 
 // SetDataType sets the "data_type" field.
-func (pshc *ProviderSyncHistoryCreate) SetDataType(s string) *ProviderSyncHistoryCreate {
-	pshc.mutation.SetDataType(s)
-	return pshc
+func (_c *ProviderSyncHistoryCreate) SetDataType(v string) *ProviderSyncHistoryCreate {
+	_c.mutation.SetDataType(v)
+	return _c
 }
 
 // SetStartedAt sets the "started_at" field.
-func (pshc *ProviderSyncHistoryCreate) SetStartedAt(t time.Time) *ProviderSyncHistoryCreate {
-	pshc.mutation.SetStartedAt(t)
-	return pshc
+func (_c *ProviderSyncHistoryCreate) SetStartedAt(v time.Time) *ProviderSyncHistoryCreate {
+	_c.mutation.SetStartedAt(v)
+	return _c
 }
 
 // SetNillableStartedAt sets the "started_at" field if the given value is not nil.
-func (pshc *ProviderSyncHistoryCreate) SetNillableStartedAt(t *time.Time) *ProviderSyncHistoryCreate {
-	if t != nil {
-		pshc.SetStartedAt(*t)
+func (_c *ProviderSyncHistoryCreate) SetNillableStartedAt(v *time.Time) *ProviderSyncHistoryCreate {
+	if v != nil {
+		_c.SetStartedAt(*v)
 	}
-	return pshc
+	return _c
 }
 
 // SetFinishedAt sets the "finished_at" field.
-func (pshc *ProviderSyncHistoryCreate) SetFinishedAt(t time.Time) *ProviderSyncHistoryCreate {
-	pshc.mutation.SetFinishedAt(t)
-	return pshc
+func (_c *ProviderSyncHistoryCreate) SetFinishedAt(v time.Time) *ProviderSyncHistoryCreate {
+	_c.mutation.SetFinishedAt(v)
+	return _c
 }
 
 // SetNillableFinishedAt sets the "finished_at" field if the given value is not nil.
-func (pshc *ProviderSyncHistoryCreate) SetNillableFinishedAt(t *time.Time) *ProviderSyncHistoryCreate {
-	if t != nil {
-		pshc.SetFinishedAt(*t)
+func (_c *ProviderSyncHistoryCreate) SetNillableFinishedAt(v *time.Time) *ProviderSyncHistoryCreate {
+	if v != nil {
+		_c.SetFinishedAt(*v)
 	}
-	return pshc
+	return _c
 }
 
 // SetNumMutations sets the "num_mutations" field.
-func (pshc *ProviderSyncHistoryCreate) SetNumMutations(i int) *ProviderSyncHistoryCreate {
-	pshc.mutation.SetNumMutations(i)
-	return pshc
+func (_c *ProviderSyncHistoryCreate) SetNumMutations(v int) *ProviderSyncHistoryCreate {
+	_c.mutation.SetNumMutations(v)
+	return _c
 }
 
 // SetID sets the "id" field.
-func (pshc *ProviderSyncHistoryCreate) SetID(u uuid.UUID) *ProviderSyncHistoryCreate {
-	pshc.mutation.SetID(u)
-	return pshc
+func (_c *ProviderSyncHistoryCreate) SetID(v uuid.UUID) *ProviderSyncHistoryCreate {
+	_c.mutation.SetID(v)
+	return _c
 }
 
 // SetNillableID sets the "id" field if the given value is not nil.
-func (pshc *ProviderSyncHistoryCreate) SetNillableID(u *uuid.UUID) *ProviderSyncHistoryCreate {
-	if u != nil {
-		pshc.SetID(*u)
+func (_c *ProviderSyncHistoryCreate) SetNillableID(v *uuid.UUID) *ProviderSyncHistoryCreate {
+	if v != nil {
+		_c.SetID(*v)
 	}
-	return pshc
+	return _c
 }
 
 // SetTenant sets the "tenant" edge to the Tenant entity.
-func (pshc *ProviderSyncHistoryCreate) SetTenant(t *Tenant) *ProviderSyncHistoryCreate {
-	return pshc.SetTenantID(t.ID)
+func (_c *ProviderSyncHistoryCreate) SetTenant(v *Tenant) *ProviderSyncHistoryCreate {
+	return _c.SetTenantID(v.ID)
 }
 
 // Mutation returns the ProviderSyncHistoryMutation object of the builder.
-func (pshc *ProviderSyncHistoryCreate) Mutation() *ProviderSyncHistoryMutation {
-	return pshc.mutation
+func (_c *ProviderSyncHistoryCreate) Mutation() *ProviderSyncHistoryMutation {
+	return _c.mutation
 }
 
 // Save creates the ProviderSyncHistory in the database.
-func (pshc *ProviderSyncHistoryCreate) Save(ctx context.Context) (*ProviderSyncHistory, error) {
-	if err := pshc.defaults(); err != nil {
+func (_c *ProviderSyncHistoryCreate) Save(ctx context.Context) (*ProviderSyncHistory, error) {
+	if err := _c.defaults(); err != nil {
 		return nil, err
 	}
-	return withHooks(ctx, pshc.sqlSave, pshc.mutation, pshc.hooks)
+	return withHooks(ctx, _c.sqlSave, _c.mutation, _c.hooks)
 }
 
 // SaveX calls Save and panics if Save returns an error.
-func (pshc *ProviderSyncHistoryCreate) SaveX(ctx context.Context) *ProviderSyncHistory {
-	v, err := pshc.Save(ctx)
+func (_c *ProviderSyncHistoryCreate) SaveX(ctx context.Context) *ProviderSyncHistory {
+	v, err := _c.Save(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -113,73 +113,73 @@ func (pshc *ProviderSyncHistoryCreate) SaveX(ctx context.Context) *ProviderSyncH
 }
 
 // Exec executes the query.
-func (pshc *ProviderSyncHistoryCreate) Exec(ctx context.Context) error {
-	_, err := pshc.Save(ctx)
+func (_c *ProviderSyncHistoryCreate) Exec(ctx context.Context) error {
+	_, err := _c.Save(ctx)
 	return err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (pshc *ProviderSyncHistoryCreate) ExecX(ctx context.Context) {
-	if err := pshc.Exec(ctx); err != nil {
+func (_c *ProviderSyncHistoryCreate) ExecX(ctx context.Context) {
+	if err := _c.Exec(ctx); err != nil {
 		panic(err)
 	}
 }
 
 // defaults sets the default values of the builder before save.
-func (pshc *ProviderSyncHistoryCreate) defaults() error {
-	if _, ok := pshc.mutation.StartedAt(); !ok {
+func (_c *ProviderSyncHistoryCreate) defaults() error {
+	if _, ok := _c.mutation.StartedAt(); !ok {
 		if providersynchistory.DefaultStartedAt == nil {
 			return fmt.Errorf("ent: uninitialized providersynchistory.DefaultStartedAt (forgotten import ent/runtime?)")
 		}
 		v := providersynchistory.DefaultStartedAt()
-		pshc.mutation.SetStartedAt(v)
+		_c.mutation.SetStartedAt(v)
 	}
-	if _, ok := pshc.mutation.FinishedAt(); !ok {
+	if _, ok := _c.mutation.FinishedAt(); !ok {
 		if providersynchistory.DefaultFinishedAt == nil {
 			return fmt.Errorf("ent: uninitialized providersynchistory.DefaultFinishedAt (forgotten import ent/runtime?)")
 		}
 		v := providersynchistory.DefaultFinishedAt()
-		pshc.mutation.SetFinishedAt(v)
+		_c.mutation.SetFinishedAt(v)
 	}
-	if _, ok := pshc.mutation.ID(); !ok {
+	if _, ok := _c.mutation.ID(); !ok {
 		if providersynchistory.DefaultID == nil {
 			return fmt.Errorf("ent: uninitialized providersynchistory.DefaultID (forgotten import ent/runtime?)")
 		}
 		v := providersynchistory.DefaultID()
-		pshc.mutation.SetID(v)
+		_c.mutation.SetID(v)
 	}
 	return nil
 }
 
 // check runs all checks and user-defined validators on the builder.
-func (pshc *ProviderSyncHistoryCreate) check() error {
-	if _, ok := pshc.mutation.TenantID(); !ok {
+func (_c *ProviderSyncHistoryCreate) check() error {
+	if _, ok := _c.mutation.TenantID(); !ok {
 		return &ValidationError{Name: "tenant_id", err: errors.New(`ent: missing required field "ProviderSyncHistory.tenant_id"`)}
 	}
-	if _, ok := pshc.mutation.DataType(); !ok {
+	if _, ok := _c.mutation.DataType(); !ok {
 		return &ValidationError{Name: "data_type", err: errors.New(`ent: missing required field "ProviderSyncHistory.data_type"`)}
 	}
-	if _, ok := pshc.mutation.StartedAt(); !ok {
+	if _, ok := _c.mutation.StartedAt(); !ok {
 		return &ValidationError{Name: "started_at", err: errors.New(`ent: missing required field "ProviderSyncHistory.started_at"`)}
 	}
-	if _, ok := pshc.mutation.FinishedAt(); !ok {
+	if _, ok := _c.mutation.FinishedAt(); !ok {
 		return &ValidationError{Name: "finished_at", err: errors.New(`ent: missing required field "ProviderSyncHistory.finished_at"`)}
 	}
-	if _, ok := pshc.mutation.NumMutations(); !ok {
+	if _, ok := _c.mutation.NumMutations(); !ok {
 		return &ValidationError{Name: "num_mutations", err: errors.New(`ent: missing required field "ProviderSyncHistory.num_mutations"`)}
 	}
-	if len(pshc.mutation.TenantIDs()) == 0 {
+	if len(_c.mutation.TenantIDs()) == 0 {
 		return &ValidationError{Name: "tenant", err: errors.New(`ent: missing required edge "ProviderSyncHistory.tenant"`)}
 	}
 	return nil
 }
 
-func (pshc *ProviderSyncHistoryCreate) sqlSave(ctx context.Context) (*ProviderSyncHistory, error) {
-	if err := pshc.check(); err != nil {
+func (_c *ProviderSyncHistoryCreate) sqlSave(ctx context.Context) (*ProviderSyncHistory, error) {
+	if err := _c.check(); err != nil {
 		return nil, err
 	}
-	_node, _spec := pshc.createSpec()
-	if err := sqlgraph.CreateNode(ctx, pshc.driver, _spec); err != nil {
+	_node, _spec := _c.createSpec()
+	if err := sqlgraph.CreateNode(ctx, _c.driver, _spec); err != nil {
 		if sqlgraph.IsConstraintError(err) {
 			err = &ConstraintError{msg: err.Error(), wrap: err}
 		}
@@ -192,38 +192,38 @@ func (pshc *ProviderSyncHistoryCreate) sqlSave(ctx context.Context) (*ProviderSy
 			return nil, err
 		}
 	}
-	pshc.mutation.id = &_node.ID
-	pshc.mutation.done = true
+	_c.mutation.id = &_node.ID
+	_c.mutation.done = true
 	return _node, nil
 }
 
-func (pshc *ProviderSyncHistoryCreate) createSpec() (*ProviderSyncHistory, *sqlgraph.CreateSpec) {
+func (_c *ProviderSyncHistoryCreate) createSpec() (*ProviderSyncHistory, *sqlgraph.CreateSpec) {
 	var (
-		_node = &ProviderSyncHistory{config: pshc.config}
+		_node = &ProviderSyncHistory{config: _c.config}
 		_spec = sqlgraph.NewCreateSpec(providersynchistory.Table, sqlgraph.NewFieldSpec(providersynchistory.FieldID, field.TypeUUID))
 	)
-	_spec.OnConflict = pshc.conflict
-	if id, ok := pshc.mutation.ID(); ok {
+	_spec.OnConflict = _c.conflict
+	if id, ok := _c.mutation.ID(); ok {
 		_node.ID = id
 		_spec.ID.Value = &id
 	}
-	if value, ok := pshc.mutation.DataType(); ok {
+	if value, ok := _c.mutation.DataType(); ok {
 		_spec.SetField(providersynchistory.FieldDataType, field.TypeString, value)
 		_node.DataType = value
 	}
-	if value, ok := pshc.mutation.StartedAt(); ok {
+	if value, ok := _c.mutation.StartedAt(); ok {
 		_spec.SetField(providersynchistory.FieldStartedAt, field.TypeTime, value)
 		_node.StartedAt = value
 	}
-	if value, ok := pshc.mutation.FinishedAt(); ok {
+	if value, ok := _c.mutation.FinishedAt(); ok {
 		_spec.SetField(providersynchistory.FieldFinishedAt, field.TypeTime, value)
 		_node.FinishedAt = value
 	}
-	if value, ok := pshc.mutation.NumMutations(); ok {
+	if value, ok := _c.mutation.NumMutations(); ok {
 		_spec.SetField(providersynchistory.FieldNumMutations, field.TypeInt, value)
 		_node.NumMutations = value
 	}
-	if nodes := pshc.mutation.TenantIDs(); len(nodes) > 0 {
+	if nodes := _c.mutation.TenantIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
@@ -259,10 +259,10 @@ func (pshc *ProviderSyncHistoryCreate) createSpec() (*ProviderSyncHistory, *sqlg
 //			SetTenantID(v+v).
 //		}).
 //		Exec(ctx)
-func (pshc *ProviderSyncHistoryCreate) OnConflict(opts ...sql.ConflictOption) *ProviderSyncHistoryUpsertOne {
-	pshc.conflict = opts
+func (_c *ProviderSyncHistoryCreate) OnConflict(opts ...sql.ConflictOption) *ProviderSyncHistoryUpsertOne {
+	_c.conflict = opts
 	return &ProviderSyncHistoryUpsertOne{
-		create: pshc,
+		create: _c,
 	}
 }
 
@@ -272,10 +272,10 @@ func (pshc *ProviderSyncHistoryCreate) OnConflict(opts ...sql.ConflictOption) *P
 //	client.ProviderSyncHistory.Create().
 //		OnConflict(sql.ConflictColumns(columns...)).
 //		Exec(ctx)
-func (pshc *ProviderSyncHistoryCreate) OnConflictColumns(columns ...string) *ProviderSyncHistoryUpsertOne {
-	pshc.conflict = append(pshc.conflict, sql.ConflictColumns(columns...))
+func (_c *ProviderSyncHistoryCreate) OnConflictColumns(columns ...string) *ProviderSyncHistoryUpsertOne {
+	_c.conflict = append(_c.conflict, sql.ConflictColumns(columns...))
 	return &ProviderSyncHistoryUpsertOne{
-		create: pshc,
+		create: _c,
 	}
 }
 
@@ -507,16 +507,16 @@ type ProviderSyncHistoryCreateBulk struct {
 }
 
 // Save creates the ProviderSyncHistory entities in the database.
-func (pshcb *ProviderSyncHistoryCreateBulk) Save(ctx context.Context) ([]*ProviderSyncHistory, error) {
-	if pshcb.err != nil {
-		return nil, pshcb.err
+func (_c *ProviderSyncHistoryCreateBulk) Save(ctx context.Context) ([]*ProviderSyncHistory, error) {
+	if _c.err != nil {
+		return nil, _c.err
 	}
-	specs := make([]*sqlgraph.CreateSpec, len(pshcb.builders))
-	nodes := make([]*ProviderSyncHistory, len(pshcb.builders))
-	mutators := make([]Mutator, len(pshcb.builders))
-	for i := range pshcb.builders {
+	specs := make([]*sqlgraph.CreateSpec, len(_c.builders))
+	nodes := make([]*ProviderSyncHistory, len(_c.builders))
+	mutators := make([]Mutator, len(_c.builders))
+	for i := range _c.builders {
 		func(i int, root context.Context) {
-			builder := pshcb.builders[i]
+			builder := _c.builders[i]
 			builder.defaults()
 			var mut Mutator = MutateFunc(func(ctx context.Context, m Mutation) (Value, error) {
 				mutation, ok := m.(*ProviderSyncHistoryMutation)
@@ -530,12 +530,12 @@ func (pshcb *ProviderSyncHistoryCreateBulk) Save(ctx context.Context) ([]*Provid
 				var err error
 				nodes[i], specs[i] = builder.createSpec()
 				if i < len(mutators)-1 {
-					_, err = mutators[i+1].Mutate(root, pshcb.builders[i+1].mutation)
+					_, err = mutators[i+1].Mutate(root, _c.builders[i+1].mutation)
 				} else {
 					spec := &sqlgraph.BatchCreateSpec{Nodes: specs}
-					spec.OnConflict = pshcb.conflict
+					spec.OnConflict = _c.conflict
 					// Invoke the actual operation on the latest mutation in the chain.
-					if err = sqlgraph.BatchCreate(ctx, pshcb.driver, spec); err != nil {
+					if err = sqlgraph.BatchCreate(ctx, _c.driver, spec); err != nil {
 						if sqlgraph.IsConstraintError(err) {
 							err = &ConstraintError{msg: err.Error(), wrap: err}
 						}
@@ -555,7 +555,7 @@ func (pshcb *ProviderSyncHistoryCreateBulk) Save(ctx context.Context) ([]*Provid
 		}(i, ctx)
 	}
 	if len(mutators) > 0 {
-		if _, err := mutators[0].Mutate(ctx, pshcb.builders[0].mutation); err != nil {
+		if _, err := mutators[0].Mutate(ctx, _c.builders[0].mutation); err != nil {
 			return nil, err
 		}
 	}
@@ -563,8 +563,8 @@ func (pshcb *ProviderSyncHistoryCreateBulk) Save(ctx context.Context) ([]*Provid
 }
 
 // SaveX is like Save, but panics if an error occurs.
-func (pshcb *ProviderSyncHistoryCreateBulk) SaveX(ctx context.Context) []*ProviderSyncHistory {
-	v, err := pshcb.Save(ctx)
+func (_c *ProviderSyncHistoryCreateBulk) SaveX(ctx context.Context) []*ProviderSyncHistory {
+	v, err := _c.Save(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -572,14 +572,14 @@ func (pshcb *ProviderSyncHistoryCreateBulk) SaveX(ctx context.Context) []*Provid
 }
 
 // Exec executes the query.
-func (pshcb *ProviderSyncHistoryCreateBulk) Exec(ctx context.Context) error {
-	_, err := pshcb.Save(ctx)
+func (_c *ProviderSyncHistoryCreateBulk) Exec(ctx context.Context) error {
+	_, err := _c.Save(ctx)
 	return err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (pshcb *ProviderSyncHistoryCreateBulk) ExecX(ctx context.Context) {
-	if err := pshcb.Exec(ctx); err != nil {
+func (_c *ProviderSyncHistoryCreateBulk) ExecX(ctx context.Context) {
+	if err := _c.Exec(ctx); err != nil {
 		panic(err)
 	}
 }
@@ -599,10 +599,10 @@ func (pshcb *ProviderSyncHistoryCreateBulk) ExecX(ctx context.Context) {
 //			SetTenantID(v+v).
 //		}).
 //		Exec(ctx)
-func (pshcb *ProviderSyncHistoryCreateBulk) OnConflict(opts ...sql.ConflictOption) *ProviderSyncHistoryUpsertBulk {
-	pshcb.conflict = opts
+func (_c *ProviderSyncHistoryCreateBulk) OnConflict(opts ...sql.ConflictOption) *ProviderSyncHistoryUpsertBulk {
+	_c.conflict = opts
 	return &ProviderSyncHistoryUpsertBulk{
-		create: pshcb,
+		create: _c,
 	}
 }
 
@@ -612,10 +612,10 @@ func (pshcb *ProviderSyncHistoryCreateBulk) OnConflict(opts ...sql.ConflictOptio
 //	client.ProviderSyncHistory.Create().
 //		OnConflict(sql.ConflictColumns(columns...)).
 //		Exec(ctx)
-func (pshcb *ProviderSyncHistoryCreateBulk) OnConflictColumns(columns ...string) *ProviderSyncHistoryUpsertBulk {
-	pshcb.conflict = append(pshcb.conflict, sql.ConflictColumns(columns...))
+func (_c *ProviderSyncHistoryCreateBulk) OnConflictColumns(columns ...string) *ProviderSyncHistoryUpsertBulk {
+	_c.conflict = append(_c.conflict, sql.ConflictColumns(columns...))
 	return &ProviderSyncHistoryUpsertBulk{
-		create: pshcb,
+		create: _c,
 	}
 }
 

@@ -28,106 +28,106 @@ type SystemComponentConstraintCreate struct {
 }
 
 // SetTenantID sets the "tenant_id" field.
-func (sccc *SystemComponentConstraintCreate) SetTenantID(i int) *SystemComponentConstraintCreate {
-	sccc.mutation.SetTenantID(i)
-	return sccc
+func (_c *SystemComponentConstraintCreate) SetTenantID(v int) *SystemComponentConstraintCreate {
+	_c.mutation.SetTenantID(v)
+	return _c
 }
 
 // SetComponentID sets the "component_id" field.
-func (sccc *SystemComponentConstraintCreate) SetComponentID(u uuid.UUID) *SystemComponentConstraintCreate {
-	sccc.mutation.SetComponentID(u)
-	return sccc
+func (_c *SystemComponentConstraintCreate) SetComponentID(v uuid.UUID) *SystemComponentConstraintCreate {
+	_c.mutation.SetComponentID(v)
+	return _c
 }
 
 // SetLabel sets the "label" field.
-func (sccc *SystemComponentConstraintCreate) SetLabel(s string) *SystemComponentConstraintCreate {
-	sccc.mutation.SetLabel(s)
-	return sccc
+func (_c *SystemComponentConstraintCreate) SetLabel(v string) *SystemComponentConstraintCreate {
+	_c.mutation.SetLabel(v)
+	return _c
 }
 
 // SetDescription sets the "description" field.
-func (sccc *SystemComponentConstraintCreate) SetDescription(s string) *SystemComponentConstraintCreate {
-	sccc.mutation.SetDescription(s)
-	return sccc
+func (_c *SystemComponentConstraintCreate) SetDescription(v string) *SystemComponentConstraintCreate {
+	_c.mutation.SetDescription(v)
+	return _c
 }
 
 // SetNillableDescription sets the "description" field if the given value is not nil.
-func (sccc *SystemComponentConstraintCreate) SetNillableDescription(s *string) *SystemComponentConstraintCreate {
-	if s != nil {
-		sccc.SetDescription(*s)
+func (_c *SystemComponentConstraintCreate) SetNillableDescription(v *string) *SystemComponentConstraintCreate {
+	if v != nil {
+		_c.SetDescription(*v)
 	}
-	return sccc
+	return _c
 }
 
 // SetCreatedAt sets the "created_at" field.
-func (sccc *SystemComponentConstraintCreate) SetCreatedAt(t time.Time) *SystemComponentConstraintCreate {
-	sccc.mutation.SetCreatedAt(t)
-	return sccc
+func (_c *SystemComponentConstraintCreate) SetCreatedAt(v time.Time) *SystemComponentConstraintCreate {
+	_c.mutation.SetCreatedAt(v)
+	return _c
 }
 
 // SetNillableCreatedAt sets the "created_at" field if the given value is not nil.
-func (sccc *SystemComponentConstraintCreate) SetNillableCreatedAt(t *time.Time) *SystemComponentConstraintCreate {
-	if t != nil {
-		sccc.SetCreatedAt(*t)
+func (_c *SystemComponentConstraintCreate) SetNillableCreatedAt(v *time.Time) *SystemComponentConstraintCreate {
+	if v != nil {
+		_c.SetCreatedAt(*v)
 	}
-	return sccc
+	return _c
 }
 
 // SetID sets the "id" field.
-func (sccc *SystemComponentConstraintCreate) SetID(u uuid.UUID) *SystemComponentConstraintCreate {
-	sccc.mutation.SetID(u)
-	return sccc
+func (_c *SystemComponentConstraintCreate) SetID(v uuid.UUID) *SystemComponentConstraintCreate {
+	_c.mutation.SetID(v)
+	return _c
 }
 
 // SetNillableID sets the "id" field if the given value is not nil.
-func (sccc *SystemComponentConstraintCreate) SetNillableID(u *uuid.UUID) *SystemComponentConstraintCreate {
-	if u != nil {
-		sccc.SetID(*u)
+func (_c *SystemComponentConstraintCreate) SetNillableID(v *uuid.UUID) *SystemComponentConstraintCreate {
+	if v != nil {
+		_c.SetID(*v)
 	}
-	return sccc
+	return _c
 }
 
 // SetTenant sets the "tenant" edge to the Tenant entity.
-func (sccc *SystemComponentConstraintCreate) SetTenant(t *Tenant) *SystemComponentConstraintCreate {
-	return sccc.SetTenantID(t.ID)
+func (_c *SystemComponentConstraintCreate) SetTenant(v *Tenant) *SystemComponentConstraintCreate {
+	return _c.SetTenantID(v.ID)
 }
 
 // SetComponent sets the "component" edge to the SystemComponent entity.
-func (sccc *SystemComponentConstraintCreate) SetComponent(s *SystemComponent) *SystemComponentConstraintCreate {
-	return sccc.SetComponentID(s.ID)
+func (_c *SystemComponentConstraintCreate) SetComponent(v *SystemComponent) *SystemComponentConstraintCreate {
+	return _c.SetComponentID(v.ID)
 }
 
 // AddHazardIDs adds the "hazards" edge to the SystemHazard entity by IDs.
-func (sccc *SystemComponentConstraintCreate) AddHazardIDs(ids ...uuid.UUID) *SystemComponentConstraintCreate {
-	sccc.mutation.AddHazardIDs(ids...)
-	return sccc
+func (_c *SystemComponentConstraintCreate) AddHazardIDs(ids ...uuid.UUID) *SystemComponentConstraintCreate {
+	_c.mutation.AddHazardIDs(ids...)
+	return _c
 }
 
 // AddHazards adds the "hazards" edges to the SystemHazard entity.
-func (sccc *SystemComponentConstraintCreate) AddHazards(s ...*SystemHazard) *SystemComponentConstraintCreate {
-	ids := make([]uuid.UUID, len(s))
-	for i := range s {
-		ids[i] = s[i].ID
+func (_c *SystemComponentConstraintCreate) AddHazards(v ...*SystemHazard) *SystemComponentConstraintCreate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
 	}
-	return sccc.AddHazardIDs(ids...)
+	return _c.AddHazardIDs(ids...)
 }
 
 // Mutation returns the SystemComponentConstraintMutation object of the builder.
-func (sccc *SystemComponentConstraintCreate) Mutation() *SystemComponentConstraintMutation {
-	return sccc.mutation
+func (_c *SystemComponentConstraintCreate) Mutation() *SystemComponentConstraintMutation {
+	return _c.mutation
 }
 
 // Save creates the SystemComponentConstraint in the database.
-func (sccc *SystemComponentConstraintCreate) Save(ctx context.Context) (*SystemComponentConstraint, error) {
-	if err := sccc.defaults(); err != nil {
+func (_c *SystemComponentConstraintCreate) Save(ctx context.Context) (*SystemComponentConstraint, error) {
+	if err := _c.defaults(); err != nil {
 		return nil, err
 	}
-	return withHooks(ctx, sccc.sqlSave, sccc.mutation, sccc.hooks)
+	return withHooks(ctx, _c.sqlSave, _c.mutation, _c.hooks)
 }
 
 // SaveX calls Save and panics if Save returns an error.
-func (sccc *SystemComponentConstraintCreate) SaveX(ctx context.Context) *SystemComponentConstraint {
-	v, err := sccc.Save(ctx)
+func (_c *SystemComponentConstraintCreate) SaveX(ctx context.Context) *SystemComponentConstraint {
+	v, err := _c.Save(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -135,66 +135,66 @@ func (sccc *SystemComponentConstraintCreate) SaveX(ctx context.Context) *SystemC
 }
 
 // Exec executes the query.
-func (sccc *SystemComponentConstraintCreate) Exec(ctx context.Context) error {
-	_, err := sccc.Save(ctx)
+func (_c *SystemComponentConstraintCreate) Exec(ctx context.Context) error {
+	_, err := _c.Save(ctx)
 	return err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (sccc *SystemComponentConstraintCreate) ExecX(ctx context.Context) {
-	if err := sccc.Exec(ctx); err != nil {
+func (_c *SystemComponentConstraintCreate) ExecX(ctx context.Context) {
+	if err := _c.Exec(ctx); err != nil {
 		panic(err)
 	}
 }
 
 // defaults sets the default values of the builder before save.
-func (sccc *SystemComponentConstraintCreate) defaults() error {
-	if _, ok := sccc.mutation.CreatedAt(); !ok {
+func (_c *SystemComponentConstraintCreate) defaults() error {
+	if _, ok := _c.mutation.CreatedAt(); !ok {
 		if systemcomponentconstraint.DefaultCreatedAt == nil {
 			return fmt.Errorf("ent: uninitialized systemcomponentconstraint.DefaultCreatedAt (forgotten import ent/runtime?)")
 		}
 		v := systemcomponentconstraint.DefaultCreatedAt()
-		sccc.mutation.SetCreatedAt(v)
+		_c.mutation.SetCreatedAt(v)
 	}
-	if _, ok := sccc.mutation.ID(); !ok {
+	if _, ok := _c.mutation.ID(); !ok {
 		if systemcomponentconstraint.DefaultID == nil {
 			return fmt.Errorf("ent: uninitialized systemcomponentconstraint.DefaultID (forgotten import ent/runtime?)")
 		}
 		v := systemcomponentconstraint.DefaultID()
-		sccc.mutation.SetID(v)
+		_c.mutation.SetID(v)
 	}
 	return nil
 }
 
 // check runs all checks and user-defined validators on the builder.
-func (sccc *SystemComponentConstraintCreate) check() error {
-	if _, ok := sccc.mutation.TenantID(); !ok {
+func (_c *SystemComponentConstraintCreate) check() error {
+	if _, ok := _c.mutation.TenantID(); !ok {
 		return &ValidationError{Name: "tenant_id", err: errors.New(`ent: missing required field "SystemComponentConstraint.tenant_id"`)}
 	}
-	if _, ok := sccc.mutation.ComponentID(); !ok {
+	if _, ok := _c.mutation.ComponentID(); !ok {
 		return &ValidationError{Name: "component_id", err: errors.New(`ent: missing required field "SystemComponentConstraint.component_id"`)}
 	}
-	if _, ok := sccc.mutation.Label(); !ok {
+	if _, ok := _c.mutation.Label(); !ok {
 		return &ValidationError{Name: "label", err: errors.New(`ent: missing required field "SystemComponentConstraint.label"`)}
 	}
-	if _, ok := sccc.mutation.CreatedAt(); !ok {
+	if _, ok := _c.mutation.CreatedAt(); !ok {
 		return &ValidationError{Name: "created_at", err: errors.New(`ent: missing required field "SystemComponentConstraint.created_at"`)}
 	}
-	if len(sccc.mutation.TenantIDs()) == 0 {
+	if len(_c.mutation.TenantIDs()) == 0 {
 		return &ValidationError{Name: "tenant", err: errors.New(`ent: missing required edge "SystemComponentConstraint.tenant"`)}
 	}
-	if len(sccc.mutation.ComponentIDs()) == 0 {
+	if len(_c.mutation.ComponentIDs()) == 0 {
 		return &ValidationError{Name: "component", err: errors.New(`ent: missing required edge "SystemComponentConstraint.component"`)}
 	}
 	return nil
 }
 
-func (sccc *SystemComponentConstraintCreate) sqlSave(ctx context.Context) (*SystemComponentConstraint, error) {
-	if err := sccc.check(); err != nil {
+func (_c *SystemComponentConstraintCreate) sqlSave(ctx context.Context) (*SystemComponentConstraint, error) {
+	if err := _c.check(); err != nil {
 		return nil, err
 	}
-	_node, _spec := sccc.createSpec()
-	if err := sqlgraph.CreateNode(ctx, sccc.driver, _spec); err != nil {
+	_node, _spec := _c.createSpec()
+	if err := sqlgraph.CreateNode(ctx, _c.driver, _spec); err != nil {
 		if sqlgraph.IsConstraintError(err) {
 			err = &ConstraintError{msg: err.Error(), wrap: err}
 		}
@@ -207,34 +207,34 @@ func (sccc *SystemComponentConstraintCreate) sqlSave(ctx context.Context) (*Syst
 			return nil, err
 		}
 	}
-	sccc.mutation.id = &_node.ID
-	sccc.mutation.done = true
+	_c.mutation.id = &_node.ID
+	_c.mutation.done = true
 	return _node, nil
 }
 
-func (sccc *SystemComponentConstraintCreate) createSpec() (*SystemComponentConstraint, *sqlgraph.CreateSpec) {
+func (_c *SystemComponentConstraintCreate) createSpec() (*SystemComponentConstraint, *sqlgraph.CreateSpec) {
 	var (
-		_node = &SystemComponentConstraint{config: sccc.config}
+		_node = &SystemComponentConstraint{config: _c.config}
 		_spec = sqlgraph.NewCreateSpec(systemcomponentconstraint.Table, sqlgraph.NewFieldSpec(systemcomponentconstraint.FieldID, field.TypeUUID))
 	)
-	_spec.OnConflict = sccc.conflict
-	if id, ok := sccc.mutation.ID(); ok {
+	_spec.OnConflict = _c.conflict
+	if id, ok := _c.mutation.ID(); ok {
 		_node.ID = id
 		_spec.ID.Value = &id
 	}
-	if value, ok := sccc.mutation.Label(); ok {
+	if value, ok := _c.mutation.Label(); ok {
 		_spec.SetField(systemcomponentconstraint.FieldLabel, field.TypeString, value)
 		_node.Label = value
 	}
-	if value, ok := sccc.mutation.Description(); ok {
+	if value, ok := _c.mutation.Description(); ok {
 		_spec.SetField(systemcomponentconstraint.FieldDescription, field.TypeString, value)
 		_node.Description = value
 	}
-	if value, ok := sccc.mutation.CreatedAt(); ok {
+	if value, ok := _c.mutation.CreatedAt(); ok {
 		_spec.SetField(systemcomponentconstraint.FieldCreatedAt, field.TypeTime, value)
 		_node.CreatedAt = value
 	}
-	if nodes := sccc.mutation.TenantIDs(); len(nodes) > 0 {
+	if nodes := _c.mutation.TenantIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
@@ -251,7 +251,7 @@ func (sccc *SystemComponentConstraintCreate) createSpec() (*SystemComponentConst
 		_node.TenantID = nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
-	if nodes := sccc.mutation.ComponentIDs(); len(nodes) > 0 {
+	if nodes := _c.mutation.ComponentIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
@@ -268,7 +268,7 @@ func (sccc *SystemComponentConstraintCreate) createSpec() (*SystemComponentConst
 		_node.ComponentID = nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
-	if nodes := sccc.mutation.HazardsIDs(); len(nodes) > 0 {
+	if nodes := _c.mutation.HazardsIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
 			Inverse: true,
@@ -303,10 +303,10 @@ func (sccc *SystemComponentConstraintCreate) createSpec() (*SystemComponentConst
 //			SetTenantID(v+v).
 //		}).
 //		Exec(ctx)
-func (sccc *SystemComponentConstraintCreate) OnConflict(opts ...sql.ConflictOption) *SystemComponentConstraintUpsertOne {
-	sccc.conflict = opts
+func (_c *SystemComponentConstraintCreate) OnConflict(opts ...sql.ConflictOption) *SystemComponentConstraintUpsertOne {
+	_c.conflict = opts
 	return &SystemComponentConstraintUpsertOne{
-		create: sccc,
+		create: _c,
 	}
 }
 
@@ -316,10 +316,10 @@ func (sccc *SystemComponentConstraintCreate) OnConflict(opts ...sql.ConflictOpti
 //	client.SystemComponentConstraint.Create().
 //		OnConflict(sql.ConflictColumns(columns...)).
 //		Exec(ctx)
-func (sccc *SystemComponentConstraintCreate) OnConflictColumns(columns ...string) *SystemComponentConstraintUpsertOne {
-	sccc.conflict = append(sccc.conflict, sql.ConflictColumns(columns...))
+func (_c *SystemComponentConstraintCreate) OnConflictColumns(columns ...string) *SystemComponentConstraintUpsertOne {
+	_c.conflict = append(_c.conflict, sql.ConflictColumns(columns...))
 	return &SystemComponentConstraintUpsertOne{
-		create: sccc,
+		create: _c,
 	}
 }
 
@@ -551,16 +551,16 @@ type SystemComponentConstraintCreateBulk struct {
 }
 
 // Save creates the SystemComponentConstraint entities in the database.
-func (scccb *SystemComponentConstraintCreateBulk) Save(ctx context.Context) ([]*SystemComponentConstraint, error) {
-	if scccb.err != nil {
-		return nil, scccb.err
+func (_c *SystemComponentConstraintCreateBulk) Save(ctx context.Context) ([]*SystemComponentConstraint, error) {
+	if _c.err != nil {
+		return nil, _c.err
 	}
-	specs := make([]*sqlgraph.CreateSpec, len(scccb.builders))
-	nodes := make([]*SystemComponentConstraint, len(scccb.builders))
-	mutators := make([]Mutator, len(scccb.builders))
-	for i := range scccb.builders {
+	specs := make([]*sqlgraph.CreateSpec, len(_c.builders))
+	nodes := make([]*SystemComponentConstraint, len(_c.builders))
+	mutators := make([]Mutator, len(_c.builders))
+	for i := range _c.builders {
 		func(i int, root context.Context) {
-			builder := scccb.builders[i]
+			builder := _c.builders[i]
 			builder.defaults()
 			var mut Mutator = MutateFunc(func(ctx context.Context, m Mutation) (Value, error) {
 				mutation, ok := m.(*SystemComponentConstraintMutation)
@@ -574,12 +574,12 @@ func (scccb *SystemComponentConstraintCreateBulk) Save(ctx context.Context) ([]*
 				var err error
 				nodes[i], specs[i] = builder.createSpec()
 				if i < len(mutators)-1 {
-					_, err = mutators[i+1].Mutate(root, scccb.builders[i+1].mutation)
+					_, err = mutators[i+1].Mutate(root, _c.builders[i+1].mutation)
 				} else {
 					spec := &sqlgraph.BatchCreateSpec{Nodes: specs}
-					spec.OnConflict = scccb.conflict
+					spec.OnConflict = _c.conflict
 					// Invoke the actual operation on the latest mutation in the chain.
-					if err = sqlgraph.BatchCreate(ctx, scccb.driver, spec); err != nil {
+					if err = sqlgraph.BatchCreate(ctx, _c.driver, spec); err != nil {
 						if sqlgraph.IsConstraintError(err) {
 							err = &ConstraintError{msg: err.Error(), wrap: err}
 						}
@@ -599,7 +599,7 @@ func (scccb *SystemComponentConstraintCreateBulk) Save(ctx context.Context) ([]*
 		}(i, ctx)
 	}
 	if len(mutators) > 0 {
-		if _, err := mutators[0].Mutate(ctx, scccb.builders[0].mutation); err != nil {
+		if _, err := mutators[0].Mutate(ctx, _c.builders[0].mutation); err != nil {
 			return nil, err
 		}
 	}
@@ -607,8 +607,8 @@ func (scccb *SystemComponentConstraintCreateBulk) Save(ctx context.Context) ([]*
 }
 
 // SaveX is like Save, but panics if an error occurs.
-func (scccb *SystemComponentConstraintCreateBulk) SaveX(ctx context.Context) []*SystemComponentConstraint {
-	v, err := scccb.Save(ctx)
+func (_c *SystemComponentConstraintCreateBulk) SaveX(ctx context.Context) []*SystemComponentConstraint {
+	v, err := _c.Save(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -616,14 +616,14 @@ func (scccb *SystemComponentConstraintCreateBulk) SaveX(ctx context.Context) []*
 }
 
 // Exec executes the query.
-func (scccb *SystemComponentConstraintCreateBulk) Exec(ctx context.Context) error {
-	_, err := scccb.Save(ctx)
+func (_c *SystemComponentConstraintCreateBulk) Exec(ctx context.Context) error {
+	_, err := _c.Save(ctx)
 	return err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (scccb *SystemComponentConstraintCreateBulk) ExecX(ctx context.Context) {
-	if err := scccb.Exec(ctx); err != nil {
+func (_c *SystemComponentConstraintCreateBulk) ExecX(ctx context.Context) {
+	if err := _c.Exec(ctx); err != nil {
 		panic(err)
 	}
 }
@@ -643,10 +643,10 @@ func (scccb *SystemComponentConstraintCreateBulk) ExecX(ctx context.Context) {
 //			SetTenantID(v+v).
 //		}).
 //		Exec(ctx)
-func (scccb *SystemComponentConstraintCreateBulk) OnConflict(opts ...sql.ConflictOption) *SystemComponentConstraintUpsertBulk {
-	scccb.conflict = opts
+func (_c *SystemComponentConstraintCreateBulk) OnConflict(opts ...sql.ConflictOption) *SystemComponentConstraintUpsertBulk {
+	_c.conflict = opts
 	return &SystemComponentConstraintUpsertBulk{
-		create: scccb,
+		create: _c,
 	}
 }
 
@@ -656,10 +656,10 @@ func (scccb *SystemComponentConstraintCreateBulk) OnConflict(opts ...sql.Conflic
 //	client.SystemComponentConstraint.Create().
 //		OnConflict(sql.ConflictColumns(columns...)).
 //		Exec(ctx)
-func (scccb *SystemComponentConstraintCreateBulk) OnConflictColumns(columns ...string) *SystemComponentConstraintUpsertBulk {
-	scccb.conflict = append(scccb.conflict, sql.ConflictColumns(columns...))
+func (_c *SystemComponentConstraintCreateBulk) OnConflictColumns(columns ...string) *SystemComponentConstraintUpsertBulk {
+	_c.conflict = append(_c.conflict, sql.ConflictColumns(columns...))
 	return &SystemComponentConstraintUpsertBulk{
-		create: scccb,
+		create: _c,
 	}
 }
 

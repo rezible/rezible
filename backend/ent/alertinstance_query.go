@@ -40,44 +40,44 @@ type AlertInstanceQuery struct {
 }
 
 // Where adds a new predicate for the AlertInstanceQuery builder.
-func (aiq *AlertInstanceQuery) Where(ps ...predicate.AlertInstance) *AlertInstanceQuery {
-	aiq.predicates = append(aiq.predicates, ps...)
-	return aiq
+func (_q *AlertInstanceQuery) Where(ps ...predicate.AlertInstance) *AlertInstanceQuery {
+	_q.predicates = append(_q.predicates, ps...)
+	return _q
 }
 
 // Limit the number of records to be returned by this query.
-func (aiq *AlertInstanceQuery) Limit(limit int) *AlertInstanceQuery {
-	aiq.ctx.Limit = &limit
-	return aiq
+func (_q *AlertInstanceQuery) Limit(limit int) *AlertInstanceQuery {
+	_q.ctx.Limit = &limit
+	return _q
 }
 
 // Offset to start from.
-func (aiq *AlertInstanceQuery) Offset(offset int) *AlertInstanceQuery {
-	aiq.ctx.Offset = &offset
-	return aiq
+func (_q *AlertInstanceQuery) Offset(offset int) *AlertInstanceQuery {
+	_q.ctx.Offset = &offset
+	return _q
 }
 
 // Unique configures the query builder to filter duplicate records on query.
 // By default, unique is set to true, and can be disabled using this method.
-func (aiq *AlertInstanceQuery) Unique(unique bool) *AlertInstanceQuery {
-	aiq.ctx.Unique = &unique
-	return aiq
+func (_q *AlertInstanceQuery) Unique(unique bool) *AlertInstanceQuery {
+	_q.ctx.Unique = &unique
+	return _q
 }
 
 // Order specifies how the records should be ordered.
-func (aiq *AlertInstanceQuery) Order(o ...alertinstance.OrderOption) *AlertInstanceQuery {
-	aiq.order = append(aiq.order, o...)
-	return aiq
+func (_q *AlertInstanceQuery) Order(o ...alertinstance.OrderOption) *AlertInstanceQuery {
+	_q.order = append(_q.order, o...)
+	return _q
 }
 
 // QueryTenant chains the current query on the "tenant" edge.
-func (aiq *AlertInstanceQuery) QueryTenant() *TenantQuery {
-	query := (&TenantClient{config: aiq.config}).Query()
+func (_q *AlertInstanceQuery) QueryTenant() *TenantQuery {
+	query := (&TenantClient{config: _q.config}).Query()
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
-		if err := aiq.prepareQuery(ctx); err != nil {
+		if err := _q.prepareQuery(ctx); err != nil {
 			return nil, err
 		}
-		selector := aiq.sqlQuery(ctx)
+		selector := _q.sqlQuery(ctx)
 		if err := selector.Err(); err != nil {
 			return nil, err
 		}
@@ -86,20 +86,20 @@ func (aiq *AlertInstanceQuery) QueryTenant() *TenantQuery {
 			sqlgraph.To(tenant.Table, tenant.FieldID),
 			sqlgraph.Edge(sqlgraph.M2O, false, alertinstance.TenantTable, alertinstance.TenantColumn),
 		)
-		fromU = sqlgraph.SetNeighbors(aiq.driver.Dialect(), step)
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
 	}
 	return query
 }
 
 // QueryAlert chains the current query on the "alert" edge.
-func (aiq *AlertInstanceQuery) QueryAlert() *AlertQuery {
-	query := (&AlertClient{config: aiq.config}).Query()
+func (_q *AlertInstanceQuery) QueryAlert() *AlertQuery {
+	query := (&AlertClient{config: _q.config}).Query()
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
-		if err := aiq.prepareQuery(ctx); err != nil {
+		if err := _q.prepareQuery(ctx); err != nil {
 			return nil, err
 		}
-		selector := aiq.sqlQuery(ctx)
+		selector := _q.sqlQuery(ctx)
 		if err := selector.Err(); err != nil {
 			return nil, err
 		}
@@ -108,20 +108,20 @@ func (aiq *AlertInstanceQuery) QueryAlert() *AlertQuery {
 			sqlgraph.To(alert.Table, alert.FieldID),
 			sqlgraph.Edge(sqlgraph.M2O, false, alertinstance.AlertTable, alertinstance.AlertColumn),
 		)
-		fromU = sqlgraph.SetNeighbors(aiq.driver.Dialect(), step)
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
 	}
 	return query
 }
 
 // QueryEvent chains the current query on the "event" edge.
-func (aiq *AlertInstanceQuery) QueryEvent() *EventQuery {
-	query := (&EventClient{config: aiq.config}).Query()
+func (_q *AlertInstanceQuery) QueryEvent() *EventQuery {
+	query := (&EventClient{config: _q.config}).Query()
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
-		if err := aiq.prepareQuery(ctx); err != nil {
+		if err := _q.prepareQuery(ctx); err != nil {
 			return nil, err
 		}
-		selector := aiq.sqlQuery(ctx)
+		selector := _q.sqlQuery(ctx)
 		if err := selector.Err(); err != nil {
 			return nil, err
 		}
@@ -130,20 +130,20 @@ func (aiq *AlertInstanceQuery) QueryEvent() *EventQuery {
 			sqlgraph.To(event.Table, event.FieldID),
 			sqlgraph.Edge(sqlgraph.M2O, false, alertinstance.EventTable, alertinstance.EventColumn),
 		)
-		fromU = sqlgraph.SetNeighbors(aiq.driver.Dialect(), step)
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
 	}
 	return query
 }
 
 // QueryFeedback chains the current query on the "feedback" edge.
-func (aiq *AlertInstanceQuery) QueryFeedback() *AlertFeedbackQuery {
-	query := (&AlertFeedbackClient{config: aiq.config}).Query()
+func (_q *AlertInstanceQuery) QueryFeedback() *AlertFeedbackQuery {
+	query := (&AlertFeedbackClient{config: _q.config}).Query()
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
-		if err := aiq.prepareQuery(ctx); err != nil {
+		if err := _q.prepareQuery(ctx); err != nil {
 			return nil, err
 		}
-		selector := aiq.sqlQuery(ctx)
+		selector := _q.sqlQuery(ctx)
 		if err := selector.Err(); err != nil {
 			return nil, err
 		}
@@ -152,7 +152,7 @@ func (aiq *AlertInstanceQuery) QueryFeedback() *AlertFeedbackQuery {
 			sqlgraph.To(alertfeedback.Table, alertfeedback.FieldID),
 			sqlgraph.Edge(sqlgraph.M2O, false, alertinstance.FeedbackTable, alertinstance.FeedbackColumn),
 		)
-		fromU = sqlgraph.SetNeighbors(aiq.driver.Dialect(), step)
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
 	}
 	return query
@@ -160,8 +160,8 @@ func (aiq *AlertInstanceQuery) QueryFeedback() *AlertFeedbackQuery {
 
 // First returns the first AlertInstance entity from the query.
 // Returns a *NotFoundError when no AlertInstance was found.
-func (aiq *AlertInstanceQuery) First(ctx context.Context) (*AlertInstance, error) {
-	nodes, err := aiq.Limit(1).All(setContextOp(ctx, aiq.ctx, ent.OpQueryFirst))
+func (_q *AlertInstanceQuery) First(ctx context.Context) (*AlertInstance, error) {
+	nodes, err := _q.Limit(1).All(setContextOp(ctx, _q.ctx, ent.OpQueryFirst))
 	if err != nil {
 		return nil, err
 	}
@@ -172,8 +172,8 @@ func (aiq *AlertInstanceQuery) First(ctx context.Context) (*AlertInstance, error
 }
 
 // FirstX is like First, but panics if an error occurs.
-func (aiq *AlertInstanceQuery) FirstX(ctx context.Context) *AlertInstance {
-	node, err := aiq.First(ctx)
+func (_q *AlertInstanceQuery) FirstX(ctx context.Context) *AlertInstance {
+	node, err := _q.First(ctx)
 	if err != nil && !IsNotFound(err) {
 		panic(err)
 	}
@@ -182,9 +182,9 @@ func (aiq *AlertInstanceQuery) FirstX(ctx context.Context) *AlertInstance {
 
 // FirstID returns the first AlertInstance ID from the query.
 // Returns a *NotFoundError when no AlertInstance ID was found.
-func (aiq *AlertInstanceQuery) FirstID(ctx context.Context) (id uuid.UUID, err error) {
+func (_q *AlertInstanceQuery) FirstID(ctx context.Context) (id uuid.UUID, err error) {
 	var ids []uuid.UUID
-	if ids, err = aiq.Limit(1).IDs(setContextOp(ctx, aiq.ctx, ent.OpQueryFirstID)); err != nil {
+	if ids, err = _q.Limit(1).IDs(setContextOp(ctx, _q.ctx, ent.OpQueryFirstID)); err != nil {
 		return
 	}
 	if len(ids) == 0 {
@@ -195,8 +195,8 @@ func (aiq *AlertInstanceQuery) FirstID(ctx context.Context) (id uuid.UUID, err e
 }
 
 // FirstIDX is like FirstID, but panics if an error occurs.
-func (aiq *AlertInstanceQuery) FirstIDX(ctx context.Context) uuid.UUID {
-	id, err := aiq.FirstID(ctx)
+func (_q *AlertInstanceQuery) FirstIDX(ctx context.Context) uuid.UUID {
+	id, err := _q.FirstID(ctx)
 	if err != nil && !IsNotFound(err) {
 		panic(err)
 	}
@@ -206,8 +206,8 @@ func (aiq *AlertInstanceQuery) FirstIDX(ctx context.Context) uuid.UUID {
 // Only returns a single AlertInstance entity found by the query, ensuring it only returns one.
 // Returns a *NotSingularError when more than one AlertInstance entity is found.
 // Returns a *NotFoundError when no AlertInstance entities are found.
-func (aiq *AlertInstanceQuery) Only(ctx context.Context) (*AlertInstance, error) {
-	nodes, err := aiq.Limit(2).All(setContextOp(ctx, aiq.ctx, ent.OpQueryOnly))
+func (_q *AlertInstanceQuery) Only(ctx context.Context) (*AlertInstance, error) {
+	nodes, err := _q.Limit(2).All(setContextOp(ctx, _q.ctx, ent.OpQueryOnly))
 	if err != nil {
 		return nil, err
 	}
@@ -222,8 +222,8 @@ func (aiq *AlertInstanceQuery) Only(ctx context.Context) (*AlertInstance, error)
 }
 
 // OnlyX is like Only, but panics if an error occurs.
-func (aiq *AlertInstanceQuery) OnlyX(ctx context.Context) *AlertInstance {
-	node, err := aiq.Only(ctx)
+func (_q *AlertInstanceQuery) OnlyX(ctx context.Context) *AlertInstance {
+	node, err := _q.Only(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -233,9 +233,9 @@ func (aiq *AlertInstanceQuery) OnlyX(ctx context.Context) *AlertInstance {
 // OnlyID is like Only, but returns the only AlertInstance ID in the query.
 // Returns a *NotSingularError when more than one AlertInstance ID is found.
 // Returns a *NotFoundError when no entities are found.
-func (aiq *AlertInstanceQuery) OnlyID(ctx context.Context) (id uuid.UUID, err error) {
+func (_q *AlertInstanceQuery) OnlyID(ctx context.Context) (id uuid.UUID, err error) {
 	var ids []uuid.UUID
-	if ids, err = aiq.Limit(2).IDs(setContextOp(ctx, aiq.ctx, ent.OpQueryOnlyID)); err != nil {
+	if ids, err = _q.Limit(2).IDs(setContextOp(ctx, _q.ctx, ent.OpQueryOnlyID)); err != nil {
 		return
 	}
 	switch len(ids) {
@@ -250,8 +250,8 @@ func (aiq *AlertInstanceQuery) OnlyID(ctx context.Context) (id uuid.UUID, err er
 }
 
 // OnlyIDX is like OnlyID, but panics if an error occurs.
-func (aiq *AlertInstanceQuery) OnlyIDX(ctx context.Context) uuid.UUID {
-	id, err := aiq.OnlyID(ctx)
+func (_q *AlertInstanceQuery) OnlyIDX(ctx context.Context) uuid.UUID {
+	id, err := _q.OnlyID(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -259,18 +259,18 @@ func (aiq *AlertInstanceQuery) OnlyIDX(ctx context.Context) uuid.UUID {
 }
 
 // All executes the query and returns a list of AlertInstances.
-func (aiq *AlertInstanceQuery) All(ctx context.Context) ([]*AlertInstance, error) {
-	ctx = setContextOp(ctx, aiq.ctx, ent.OpQueryAll)
-	if err := aiq.prepareQuery(ctx); err != nil {
+func (_q *AlertInstanceQuery) All(ctx context.Context) ([]*AlertInstance, error) {
+	ctx = setContextOp(ctx, _q.ctx, ent.OpQueryAll)
+	if err := _q.prepareQuery(ctx); err != nil {
 		return nil, err
 	}
 	qr := querierAll[[]*AlertInstance, *AlertInstanceQuery]()
-	return withInterceptors[[]*AlertInstance](ctx, aiq, qr, aiq.inters)
+	return withInterceptors[[]*AlertInstance](ctx, _q, qr, _q.inters)
 }
 
 // AllX is like All, but panics if an error occurs.
-func (aiq *AlertInstanceQuery) AllX(ctx context.Context) []*AlertInstance {
-	nodes, err := aiq.All(ctx)
+func (_q *AlertInstanceQuery) AllX(ctx context.Context) []*AlertInstance {
+	nodes, err := _q.All(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -278,20 +278,20 @@ func (aiq *AlertInstanceQuery) AllX(ctx context.Context) []*AlertInstance {
 }
 
 // IDs executes the query and returns a list of AlertInstance IDs.
-func (aiq *AlertInstanceQuery) IDs(ctx context.Context) (ids []uuid.UUID, err error) {
-	if aiq.ctx.Unique == nil && aiq.path != nil {
-		aiq.Unique(true)
+func (_q *AlertInstanceQuery) IDs(ctx context.Context) (ids []uuid.UUID, err error) {
+	if _q.ctx.Unique == nil && _q.path != nil {
+		_q.Unique(true)
 	}
-	ctx = setContextOp(ctx, aiq.ctx, ent.OpQueryIDs)
-	if err = aiq.Select(alertinstance.FieldID).Scan(ctx, &ids); err != nil {
+	ctx = setContextOp(ctx, _q.ctx, ent.OpQueryIDs)
+	if err = _q.Select(alertinstance.FieldID).Scan(ctx, &ids); err != nil {
 		return nil, err
 	}
 	return ids, nil
 }
 
 // IDsX is like IDs, but panics if an error occurs.
-func (aiq *AlertInstanceQuery) IDsX(ctx context.Context) []uuid.UUID {
-	ids, err := aiq.IDs(ctx)
+func (_q *AlertInstanceQuery) IDsX(ctx context.Context) []uuid.UUID {
+	ids, err := _q.IDs(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -299,17 +299,17 @@ func (aiq *AlertInstanceQuery) IDsX(ctx context.Context) []uuid.UUID {
 }
 
 // Count returns the count of the given query.
-func (aiq *AlertInstanceQuery) Count(ctx context.Context) (int, error) {
-	ctx = setContextOp(ctx, aiq.ctx, ent.OpQueryCount)
-	if err := aiq.prepareQuery(ctx); err != nil {
+func (_q *AlertInstanceQuery) Count(ctx context.Context) (int, error) {
+	ctx = setContextOp(ctx, _q.ctx, ent.OpQueryCount)
+	if err := _q.prepareQuery(ctx); err != nil {
 		return 0, err
 	}
-	return withInterceptors[int](ctx, aiq, querierCount[*AlertInstanceQuery](), aiq.inters)
+	return withInterceptors[int](ctx, _q, querierCount[*AlertInstanceQuery](), _q.inters)
 }
 
 // CountX is like Count, but panics if an error occurs.
-func (aiq *AlertInstanceQuery) CountX(ctx context.Context) int {
-	count, err := aiq.Count(ctx)
+func (_q *AlertInstanceQuery) CountX(ctx context.Context) int {
+	count, err := _q.Count(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -317,9 +317,9 @@ func (aiq *AlertInstanceQuery) CountX(ctx context.Context) int {
 }
 
 // Exist returns true if the query has elements in the graph.
-func (aiq *AlertInstanceQuery) Exist(ctx context.Context) (bool, error) {
-	ctx = setContextOp(ctx, aiq.ctx, ent.OpQueryExist)
-	switch _, err := aiq.FirstID(ctx); {
+func (_q *AlertInstanceQuery) Exist(ctx context.Context) (bool, error) {
+	ctx = setContextOp(ctx, _q.ctx, ent.OpQueryExist)
+	switch _, err := _q.FirstID(ctx); {
 	case IsNotFound(err):
 		return false, nil
 	case err != nil:
@@ -330,8 +330,8 @@ func (aiq *AlertInstanceQuery) Exist(ctx context.Context) (bool, error) {
 }
 
 // ExistX is like Exist, but panics if an error occurs.
-func (aiq *AlertInstanceQuery) ExistX(ctx context.Context) bool {
-	exist, err := aiq.Exist(ctx)
+func (_q *AlertInstanceQuery) ExistX(ctx context.Context) bool {
+	exist, err := _q.Exist(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -340,69 +340,69 @@ func (aiq *AlertInstanceQuery) ExistX(ctx context.Context) bool {
 
 // Clone returns a duplicate of the AlertInstanceQuery builder, including all associated steps. It can be
 // used to prepare common query builders and use them differently after the clone is made.
-func (aiq *AlertInstanceQuery) Clone() *AlertInstanceQuery {
-	if aiq == nil {
+func (_q *AlertInstanceQuery) Clone() *AlertInstanceQuery {
+	if _q == nil {
 		return nil
 	}
 	return &AlertInstanceQuery{
-		config:       aiq.config,
-		ctx:          aiq.ctx.Clone(),
-		order:        append([]alertinstance.OrderOption{}, aiq.order...),
-		inters:       append([]Interceptor{}, aiq.inters...),
-		predicates:   append([]predicate.AlertInstance{}, aiq.predicates...),
-		withTenant:   aiq.withTenant.Clone(),
-		withAlert:    aiq.withAlert.Clone(),
-		withEvent:    aiq.withEvent.Clone(),
-		withFeedback: aiq.withFeedback.Clone(),
+		config:       _q.config,
+		ctx:          _q.ctx.Clone(),
+		order:        append([]alertinstance.OrderOption{}, _q.order...),
+		inters:       append([]Interceptor{}, _q.inters...),
+		predicates:   append([]predicate.AlertInstance{}, _q.predicates...),
+		withTenant:   _q.withTenant.Clone(),
+		withAlert:    _q.withAlert.Clone(),
+		withEvent:    _q.withEvent.Clone(),
+		withFeedback: _q.withFeedback.Clone(),
 		// clone intermediate query.
-		sql:       aiq.sql.Clone(),
-		path:      aiq.path,
-		modifiers: append([]func(*sql.Selector){}, aiq.modifiers...),
+		sql:       _q.sql.Clone(),
+		path:      _q.path,
+		modifiers: append([]func(*sql.Selector){}, _q.modifiers...),
 	}
 }
 
 // WithTenant tells the query-builder to eager-load the nodes that are connected to
 // the "tenant" edge. The optional arguments are used to configure the query builder of the edge.
-func (aiq *AlertInstanceQuery) WithTenant(opts ...func(*TenantQuery)) *AlertInstanceQuery {
-	query := (&TenantClient{config: aiq.config}).Query()
+func (_q *AlertInstanceQuery) WithTenant(opts ...func(*TenantQuery)) *AlertInstanceQuery {
+	query := (&TenantClient{config: _q.config}).Query()
 	for _, opt := range opts {
 		opt(query)
 	}
-	aiq.withTenant = query
-	return aiq
+	_q.withTenant = query
+	return _q
 }
 
 // WithAlert tells the query-builder to eager-load the nodes that are connected to
 // the "alert" edge. The optional arguments are used to configure the query builder of the edge.
-func (aiq *AlertInstanceQuery) WithAlert(opts ...func(*AlertQuery)) *AlertInstanceQuery {
-	query := (&AlertClient{config: aiq.config}).Query()
+func (_q *AlertInstanceQuery) WithAlert(opts ...func(*AlertQuery)) *AlertInstanceQuery {
+	query := (&AlertClient{config: _q.config}).Query()
 	for _, opt := range opts {
 		opt(query)
 	}
-	aiq.withAlert = query
-	return aiq
+	_q.withAlert = query
+	return _q
 }
 
 // WithEvent tells the query-builder to eager-load the nodes that are connected to
 // the "event" edge. The optional arguments are used to configure the query builder of the edge.
-func (aiq *AlertInstanceQuery) WithEvent(opts ...func(*EventQuery)) *AlertInstanceQuery {
-	query := (&EventClient{config: aiq.config}).Query()
+func (_q *AlertInstanceQuery) WithEvent(opts ...func(*EventQuery)) *AlertInstanceQuery {
+	query := (&EventClient{config: _q.config}).Query()
 	for _, opt := range opts {
 		opt(query)
 	}
-	aiq.withEvent = query
-	return aiq
+	_q.withEvent = query
+	return _q
 }
 
 // WithFeedback tells the query-builder to eager-load the nodes that are connected to
 // the "feedback" edge. The optional arguments are used to configure the query builder of the edge.
-func (aiq *AlertInstanceQuery) WithFeedback(opts ...func(*AlertFeedbackQuery)) *AlertInstanceQuery {
-	query := (&AlertFeedbackClient{config: aiq.config}).Query()
+func (_q *AlertInstanceQuery) WithFeedback(opts ...func(*AlertFeedbackQuery)) *AlertInstanceQuery {
+	query := (&AlertFeedbackClient{config: _q.config}).Query()
 	for _, opt := range opts {
 		opt(query)
 	}
-	aiq.withFeedback = query
-	return aiq
+	_q.withFeedback = query
+	return _q
 }
 
 // GroupBy is used to group vertices by one or more fields/columns.
@@ -419,10 +419,10 @@ func (aiq *AlertInstanceQuery) WithFeedback(opts ...func(*AlertFeedbackQuery)) *
 //		GroupBy(alertinstance.FieldTenantID).
 //		Aggregate(ent.Count()).
 //		Scan(ctx, &v)
-func (aiq *AlertInstanceQuery) GroupBy(field string, fields ...string) *AlertInstanceGroupBy {
-	aiq.ctx.Fields = append([]string{field}, fields...)
-	grbuild := &AlertInstanceGroupBy{build: aiq}
-	grbuild.flds = &aiq.ctx.Fields
+func (_q *AlertInstanceQuery) GroupBy(field string, fields ...string) *AlertInstanceGroupBy {
+	_q.ctx.Fields = append([]string{field}, fields...)
+	grbuild := &AlertInstanceGroupBy{build: _q}
+	grbuild.flds = &_q.ctx.Fields
 	grbuild.label = alertinstance.Label
 	grbuild.scan = grbuild.Scan
 	return grbuild
@@ -440,64 +440,64 @@ func (aiq *AlertInstanceQuery) GroupBy(field string, fields ...string) *AlertIns
 //	client.AlertInstance.Query().
 //		Select(alertinstance.FieldTenantID).
 //		Scan(ctx, &v)
-func (aiq *AlertInstanceQuery) Select(fields ...string) *AlertInstanceSelect {
-	aiq.ctx.Fields = append(aiq.ctx.Fields, fields...)
-	sbuild := &AlertInstanceSelect{AlertInstanceQuery: aiq}
+func (_q *AlertInstanceQuery) Select(fields ...string) *AlertInstanceSelect {
+	_q.ctx.Fields = append(_q.ctx.Fields, fields...)
+	sbuild := &AlertInstanceSelect{AlertInstanceQuery: _q}
 	sbuild.label = alertinstance.Label
-	sbuild.flds, sbuild.scan = &aiq.ctx.Fields, sbuild.Scan
+	sbuild.flds, sbuild.scan = &_q.ctx.Fields, sbuild.Scan
 	return sbuild
 }
 
 // Aggregate returns a AlertInstanceSelect configured with the given aggregations.
-func (aiq *AlertInstanceQuery) Aggregate(fns ...AggregateFunc) *AlertInstanceSelect {
-	return aiq.Select().Aggregate(fns...)
+func (_q *AlertInstanceQuery) Aggregate(fns ...AggregateFunc) *AlertInstanceSelect {
+	return _q.Select().Aggregate(fns...)
 }
 
-func (aiq *AlertInstanceQuery) prepareQuery(ctx context.Context) error {
-	for _, inter := range aiq.inters {
+func (_q *AlertInstanceQuery) prepareQuery(ctx context.Context) error {
+	for _, inter := range _q.inters {
 		if inter == nil {
 			return fmt.Errorf("ent: uninitialized interceptor (forgotten import ent/runtime?)")
 		}
 		if trv, ok := inter.(Traverser); ok {
-			if err := trv.Traverse(ctx, aiq); err != nil {
+			if err := trv.Traverse(ctx, _q); err != nil {
 				return err
 			}
 		}
 	}
-	for _, f := range aiq.ctx.Fields {
+	for _, f := range _q.ctx.Fields {
 		if !alertinstance.ValidColumn(f) {
 			return &ValidationError{Name: f, err: fmt.Errorf("ent: invalid field %q for query", f)}
 		}
 	}
-	if aiq.path != nil {
-		prev, err := aiq.path(ctx)
+	if _q.path != nil {
+		prev, err := _q.path(ctx)
 		if err != nil {
 			return err
 		}
-		aiq.sql = prev
+		_q.sql = prev
 	}
 	if alertinstance.Policy == nil {
 		return errors.New("ent: uninitialized alertinstance.Policy (forgotten import ent/runtime?)")
 	}
-	if err := alertinstance.Policy.EvalQuery(ctx, aiq); err != nil {
+	if err := alertinstance.Policy.EvalQuery(ctx, _q); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (aiq *AlertInstanceQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*AlertInstance, error) {
+func (_q *AlertInstanceQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*AlertInstance, error) {
 	var (
 		nodes       = []*AlertInstance{}
-		withFKs     = aiq.withFKs
-		_spec       = aiq.querySpec()
+		withFKs     = _q.withFKs
+		_spec       = _q.querySpec()
 		loadedTypes = [4]bool{
-			aiq.withTenant != nil,
-			aiq.withAlert != nil,
-			aiq.withEvent != nil,
-			aiq.withFeedback != nil,
+			_q.withTenant != nil,
+			_q.withAlert != nil,
+			_q.withEvent != nil,
+			_q.withFeedback != nil,
 		}
 	)
-	if aiq.withFeedback != nil {
+	if _q.withFeedback != nil {
 		withFKs = true
 	}
 	if withFKs {
@@ -507,43 +507,43 @@ func (aiq *AlertInstanceQuery) sqlAll(ctx context.Context, hooks ...queryHook) (
 		return (*AlertInstance).scanValues(nil, columns)
 	}
 	_spec.Assign = func(columns []string, values []any) error {
-		node := &AlertInstance{config: aiq.config}
+		node := &AlertInstance{config: _q.config}
 		nodes = append(nodes, node)
 		node.Edges.loadedTypes = loadedTypes
 		return node.assignValues(columns, values)
 	}
-	if len(aiq.modifiers) > 0 {
-		_spec.Modifiers = aiq.modifiers
+	if len(_q.modifiers) > 0 {
+		_spec.Modifiers = _q.modifiers
 	}
 	for i := range hooks {
 		hooks[i](ctx, _spec)
 	}
-	if err := sqlgraph.QueryNodes(ctx, aiq.driver, _spec); err != nil {
+	if err := sqlgraph.QueryNodes(ctx, _q.driver, _spec); err != nil {
 		return nil, err
 	}
 	if len(nodes) == 0 {
 		return nodes, nil
 	}
-	if query := aiq.withTenant; query != nil {
-		if err := aiq.loadTenant(ctx, query, nodes, nil,
+	if query := _q.withTenant; query != nil {
+		if err := _q.loadTenant(ctx, query, nodes, nil,
 			func(n *AlertInstance, e *Tenant) { n.Edges.Tenant = e }); err != nil {
 			return nil, err
 		}
 	}
-	if query := aiq.withAlert; query != nil {
-		if err := aiq.loadAlert(ctx, query, nodes, nil,
+	if query := _q.withAlert; query != nil {
+		if err := _q.loadAlert(ctx, query, nodes, nil,
 			func(n *AlertInstance, e *Alert) { n.Edges.Alert = e }); err != nil {
 			return nil, err
 		}
 	}
-	if query := aiq.withEvent; query != nil {
-		if err := aiq.loadEvent(ctx, query, nodes, nil,
+	if query := _q.withEvent; query != nil {
+		if err := _q.loadEvent(ctx, query, nodes, nil,
 			func(n *AlertInstance, e *Event) { n.Edges.Event = e }); err != nil {
 			return nil, err
 		}
 	}
-	if query := aiq.withFeedback; query != nil {
-		if err := aiq.loadFeedback(ctx, query, nodes, nil,
+	if query := _q.withFeedback; query != nil {
+		if err := _q.loadFeedback(ctx, query, nodes, nil,
 			func(n *AlertInstance, e *AlertFeedback) { n.Edges.Feedback = e }); err != nil {
 			return nil, err
 		}
@@ -551,7 +551,7 @@ func (aiq *AlertInstanceQuery) sqlAll(ctx context.Context, hooks ...queryHook) (
 	return nodes, nil
 }
 
-func (aiq *AlertInstanceQuery) loadTenant(ctx context.Context, query *TenantQuery, nodes []*AlertInstance, init func(*AlertInstance), assign func(*AlertInstance, *Tenant)) error {
+func (_q *AlertInstanceQuery) loadTenant(ctx context.Context, query *TenantQuery, nodes []*AlertInstance, init func(*AlertInstance), assign func(*AlertInstance, *Tenant)) error {
 	ids := make([]int, 0, len(nodes))
 	nodeids := make(map[int][]*AlertInstance)
 	for i := range nodes {
@@ -580,7 +580,7 @@ func (aiq *AlertInstanceQuery) loadTenant(ctx context.Context, query *TenantQuer
 	}
 	return nil
 }
-func (aiq *AlertInstanceQuery) loadAlert(ctx context.Context, query *AlertQuery, nodes []*AlertInstance, init func(*AlertInstance), assign func(*AlertInstance, *Alert)) error {
+func (_q *AlertInstanceQuery) loadAlert(ctx context.Context, query *AlertQuery, nodes []*AlertInstance, init func(*AlertInstance), assign func(*AlertInstance, *Alert)) error {
 	ids := make([]uuid.UUID, 0, len(nodes))
 	nodeids := make(map[uuid.UUID][]*AlertInstance)
 	for i := range nodes {
@@ -609,7 +609,7 @@ func (aiq *AlertInstanceQuery) loadAlert(ctx context.Context, query *AlertQuery,
 	}
 	return nil
 }
-func (aiq *AlertInstanceQuery) loadEvent(ctx context.Context, query *EventQuery, nodes []*AlertInstance, init func(*AlertInstance), assign func(*AlertInstance, *Event)) error {
+func (_q *AlertInstanceQuery) loadEvent(ctx context.Context, query *EventQuery, nodes []*AlertInstance, init func(*AlertInstance), assign func(*AlertInstance, *Event)) error {
 	ids := make([]uuid.UUID, 0, len(nodes))
 	nodeids := make(map[uuid.UUID][]*AlertInstance)
 	for i := range nodes {
@@ -638,7 +638,7 @@ func (aiq *AlertInstanceQuery) loadEvent(ctx context.Context, query *EventQuery,
 	}
 	return nil
 }
-func (aiq *AlertInstanceQuery) loadFeedback(ctx context.Context, query *AlertFeedbackQuery, nodes []*AlertInstance, init func(*AlertInstance), assign func(*AlertInstance, *AlertFeedback)) error {
+func (_q *AlertInstanceQuery) loadFeedback(ctx context.Context, query *AlertFeedbackQuery, nodes []*AlertInstance, init func(*AlertInstance), assign func(*AlertInstance, *AlertFeedback)) error {
 	ids := make([]uuid.UUID, 0, len(nodes))
 	nodeids := make(map[uuid.UUID][]*AlertInstance)
 	for i := range nodes {
@@ -671,27 +671,27 @@ func (aiq *AlertInstanceQuery) loadFeedback(ctx context.Context, query *AlertFee
 	return nil
 }
 
-func (aiq *AlertInstanceQuery) sqlCount(ctx context.Context) (int, error) {
-	_spec := aiq.querySpec()
-	if len(aiq.modifiers) > 0 {
-		_spec.Modifiers = aiq.modifiers
+func (_q *AlertInstanceQuery) sqlCount(ctx context.Context) (int, error) {
+	_spec := _q.querySpec()
+	if len(_q.modifiers) > 0 {
+		_spec.Modifiers = _q.modifiers
 	}
-	_spec.Node.Columns = aiq.ctx.Fields
-	if len(aiq.ctx.Fields) > 0 {
-		_spec.Unique = aiq.ctx.Unique != nil && *aiq.ctx.Unique
+	_spec.Node.Columns = _q.ctx.Fields
+	if len(_q.ctx.Fields) > 0 {
+		_spec.Unique = _q.ctx.Unique != nil && *_q.ctx.Unique
 	}
-	return sqlgraph.CountNodes(ctx, aiq.driver, _spec)
+	return sqlgraph.CountNodes(ctx, _q.driver, _spec)
 }
 
-func (aiq *AlertInstanceQuery) querySpec() *sqlgraph.QuerySpec {
+func (_q *AlertInstanceQuery) querySpec() *sqlgraph.QuerySpec {
 	_spec := sqlgraph.NewQuerySpec(alertinstance.Table, alertinstance.Columns, sqlgraph.NewFieldSpec(alertinstance.FieldID, field.TypeUUID))
-	_spec.From = aiq.sql
-	if unique := aiq.ctx.Unique; unique != nil {
+	_spec.From = _q.sql
+	if unique := _q.ctx.Unique; unique != nil {
 		_spec.Unique = *unique
-	} else if aiq.path != nil {
+	} else if _q.path != nil {
 		_spec.Unique = true
 	}
-	if fields := aiq.ctx.Fields; len(fields) > 0 {
+	if fields := _q.ctx.Fields; len(fields) > 0 {
 		_spec.Node.Columns = make([]string, 0, len(fields))
 		_spec.Node.Columns = append(_spec.Node.Columns, alertinstance.FieldID)
 		for i := range fields {
@@ -699,30 +699,30 @@ func (aiq *AlertInstanceQuery) querySpec() *sqlgraph.QuerySpec {
 				_spec.Node.Columns = append(_spec.Node.Columns, fields[i])
 			}
 		}
-		if aiq.withTenant != nil {
+		if _q.withTenant != nil {
 			_spec.Node.AddColumnOnce(alertinstance.FieldTenantID)
 		}
-		if aiq.withAlert != nil {
+		if _q.withAlert != nil {
 			_spec.Node.AddColumnOnce(alertinstance.FieldAlertID)
 		}
-		if aiq.withEvent != nil {
+		if _q.withEvent != nil {
 			_spec.Node.AddColumnOnce(alertinstance.FieldEventID)
 		}
 	}
-	if ps := aiq.predicates; len(ps) > 0 {
+	if ps := _q.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {
 				ps[i](selector)
 			}
 		}
 	}
-	if limit := aiq.ctx.Limit; limit != nil {
+	if limit := _q.ctx.Limit; limit != nil {
 		_spec.Limit = *limit
 	}
-	if offset := aiq.ctx.Offset; offset != nil {
+	if offset := _q.ctx.Offset; offset != nil {
 		_spec.Offset = *offset
 	}
-	if ps := aiq.order; len(ps) > 0 {
+	if ps := _q.order; len(ps) > 0 {
 		_spec.Order = func(selector *sql.Selector) {
 			for i := range ps {
 				ps[i](selector)
@@ -732,45 +732,45 @@ func (aiq *AlertInstanceQuery) querySpec() *sqlgraph.QuerySpec {
 	return _spec
 }
 
-func (aiq *AlertInstanceQuery) sqlQuery(ctx context.Context) *sql.Selector {
-	builder := sql.Dialect(aiq.driver.Dialect())
+func (_q *AlertInstanceQuery) sqlQuery(ctx context.Context) *sql.Selector {
+	builder := sql.Dialect(_q.driver.Dialect())
 	t1 := builder.Table(alertinstance.Table)
-	columns := aiq.ctx.Fields
+	columns := _q.ctx.Fields
 	if len(columns) == 0 {
 		columns = alertinstance.Columns
 	}
 	selector := builder.Select(t1.Columns(columns...)...).From(t1)
-	if aiq.sql != nil {
-		selector = aiq.sql
+	if _q.sql != nil {
+		selector = _q.sql
 		selector.Select(selector.Columns(columns...)...)
 	}
-	if aiq.ctx.Unique != nil && *aiq.ctx.Unique {
+	if _q.ctx.Unique != nil && *_q.ctx.Unique {
 		selector.Distinct()
 	}
-	for _, m := range aiq.modifiers {
+	for _, m := range _q.modifiers {
 		m(selector)
 	}
-	for _, p := range aiq.predicates {
+	for _, p := range _q.predicates {
 		p(selector)
 	}
-	for _, p := range aiq.order {
+	for _, p := range _q.order {
 		p(selector)
 	}
-	if offset := aiq.ctx.Offset; offset != nil {
+	if offset := _q.ctx.Offset; offset != nil {
 		// limit is mandatory for offset clause. We start
 		// with default value, and override it below if needed.
 		selector.Offset(*offset).Limit(math.MaxInt32)
 	}
-	if limit := aiq.ctx.Limit; limit != nil {
+	if limit := _q.ctx.Limit; limit != nil {
 		selector.Limit(*limit)
 	}
 	return selector
 }
 
 // Modify adds a query modifier for attaching custom logic to queries.
-func (aiq *AlertInstanceQuery) Modify(modifiers ...func(s *sql.Selector)) *AlertInstanceSelect {
-	aiq.modifiers = append(aiq.modifiers, modifiers...)
-	return aiq.Select()
+func (_q *AlertInstanceQuery) Modify(modifiers ...func(s *sql.Selector)) *AlertInstanceSelect {
+	_q.modifiers = append(_q.modifiers, modifiers...)
+	return _q.Select()
 }
 
 // AlertInstanceGroupBy is the group-by builder for AlertInstance entities.
@@ -780,41 +780,41 @@ type AlertInstanceGroupBy struct {
 }
 
 // Aggregate adds the given aggregation functions to the group-by query.
-func (aigb *AlertInstanceGroupBy) Aggregate(fns ...AggregateFunc) *AlertInstanceGroupBy {
-	aigb.fns = append(aigb.fns, fns...)
-	return aigb
+func (_g *AlertInstanceGroupBy) Aggregate(fns ...AggregateFunc) *AlertInstanceGroupBy {
+	_g.fns = append(_g.fns, fns...)
+	return _g
 }
 
 // Scan applies the selector query and scans the result into the given value.
-func (aigb *AlertInstanceGroupBy) Scan(ctx context.Context, v any) error {
-	ctx = setContextOp(ctx, aigb.build.ctx, ent.OpQueryGroupBy)
-	if err := aigb.build.prepareQuery(ctx); err != nil {
+func (_g *AlertInstanceGroupBy) Scan(ctx context.Context, v any) error {
+	ctx = setContextOp(ctx, _g.build.ctx, ent.OpQueryGroupBy)
+	if err := _g.build.prepareQuery(ctx); err != nil {
 		return err
 	}
-	return scanWithInterceptors[*AlertInstanceQuery, *AlertInstanceGroupBy](ctx, aigb.build, aigb, aigb.build.inters, v)
+	return scanWithInterceptors[*AlertInstanceQuery, *AlertInstanceGroupBy](ctx, _g.build, _g, _g.build.inters, v)
 }
 
-func (aigb *AlertInstanceGroupBy) sqlScan(ctx context.Context, root *AlertInstanceQuery, v any) error {
+func (_g *AlertInstanceGroupBy) sqlScan(ctx context.Context, root *AlertInstanceQuery, v any) error {
 	selector := root.sqlQuery(ctx).Select()
-	aggregation := make([]string, 0, len(aigb.fns))
-	for _, fn := range aigb.fns {
+	aggregation := make([]string, 0, len(_g.fns))
+	for _, fn := range _g.fns {
 		aggregation = append(aggregation, fn(selector))
 	}
 	if len(selector.SelectedColumns()) == 0 {
-		columns := make([]string, 0, len(*aigb.flds)+len(aigb.fns))
-		for _, f := range *aigb.flds {
+		columns := make([]string, 0, len(*_g.flds)+len(_g.fns))
+		for _, f := range *_g.flds {
 			columns = append(columns, selector.C(f))
 		}
 		columns = append(columns, aggregation...)
 		selector.Select(columns...)
 	}
-	selector.GroupBy(selector.Columns(*aigb.flds...)...)
+	selector.GroupBy(selector.Columns(*_g.flds...)...)
 	if err := selector.Err(); err != nil {
 		return err
 	}
 	rows := &sql.Rows{}
 	query, args := selector.Query()
-	if err := aigb.build.driver.Query(ctx, query, args, rows); err != nil {
+	if err := _g.build.driver.Query(ctx, query, args, rows); err != nil {
 		return err
 	}
 	defer rows.Close()
@@ -828,27 +828,27 @@ type AlertInstanceSelect struct {
 }
 
 // Aggregate adds the given aggregation functions to the selector query.
-func (ais *AlertInstanceSelect) Aggregate(fns ...AggregateFunc) *AlertInstanceSelect {
-	ais.fns = append(ais.fns, fns...)
-	return ais
+func (_s *AlertInstanceSelect) Aggregate(fns ...AggregateFunc) *AlertInstanceSelect {
+	_s.fns = append(_s.fns, fns...)
+	return _s
 }
 
 // Scan applies the selector query and scans the result into the given value.
-func (ais *AlertInstanceSelect) Scan(ctx context.Context, v any) error {
-	ctx = setContextOp(ctx, ais.ctx, ent.OpQuerySelect)
-	if err := ais.prepareQuery(ctx); err != nil {
+func (_s *AlertInstanceSelect) Scan(ctx context.Context, v any) error {
+	ctx = setContextOp(ctx, _s.ctx, ent.OpQuerySelect)
+	if err := _s.prepareQuery(ctx); err != nil {
 		return err
 	}
-	return scanWithInterceptors[*AlertInstanceQuery, *AlertInstanceSelect](ctx, ais.AlertInstanceQuery, ais, ais.inters, v)
+	return scanWithInterceptors[*AlertInstanceQuery, *AlertInstanceSelect](ctx, _s.AlertInstanceQuery, _s, _s.inters, v)
 }
 
-func (ais *AlertInstanceSelect) sqlScan(ctx context.Context, root *AlertInstanceQuery, v any) error {
+func (_s *AlertInstanceSelect) sqlScan(ctx context.Context, root *AlertInstanceQuery, v any) error {
 	selector := root.sqlQuery(ctx)
-	aggregation := make([]string, 0, len(ais.fns))
-	for _, fn := range ais.fns {
+	aggregation := make([]string, 0, len(_s.fns))
+	for _, fn := range _s.fns {
 		aggregation = append(aggregation, fn(selector))
 	}
-	switch n := len(*ais.selector.flds); {
+	switch n := len(*_s.selector.flds); {
 	case n == 0 && len(aggregation) > 0:
 		selector.Select(aggregation...)
 	case n != 0 && len(aggregation) > 0:
@@ -856,7 +856,7 @@ func (ais *AlertInstanceSelect) sqlScan(ctx context.Context, root *AlertInstance
 	}
 	rows := &sql.Rows{}
 	query, args := selector.Query()
-	if err := ais.driver.Query(ctx, query, args, rows); err != nil {
+	if err := _s.driver.Query(ctx, query, args, rows); err != nil {
 		return err
 	}
 	defer rows.Close()
@@ -864,7 +864,7 @@ func (ais *AlertInstanceSelect) sqlScan(ctx context.Context, root *AlertInstance
 }
 
 // Modify adds a query modifier for attaching custom logic to queries.
-func (ais *AlertInstanceSelect) Modify(modifiers ...func(s *sql.Selector)) *AlertInstanceSelect {
-	ais.modifiers = append(ais.modifiers, modifiers...)
-	return ais
+func (_s *AlertInstanceSelect) Modify(modifiers ...func(s *sql.Selector)) *AlertInstanceSelect {
+	_s.modifiers = append(_s.modifiers, modifiers...)
+	return _s
 }

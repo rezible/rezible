@@ -38,44 +38,44 @@ type OncallScheduleQuery struct {
 }
 
 // Where adds a new predicate for the OncallScheduleQuery builder.
-func (osq *OncallScheduleQuery) Where(ps ...predicate.OncallSchedule) *OncallScheduleQuery {
-	osq.predicates = append(osq.predicates, ps...)
-	return osq
+func (_q *OncallScheduleQuery) Where(ps ...predicate.OncallSchedule) *OncallScheduleQuery {
+	_q.predicates = append(_q.predicates, ps...)
+	return _q
 }
 
 // Limit the number of records to be returned by this query.
-func (osq *OncallScheduleQuery) Limit(limit int) *OncallScheduleQuery {
-	osq.ctx.Limit = &limit
-	return osq
+func (_q *OncallScheduleQuery) Limit(limit int) *OncallScheduleQuery {
+	_q.ctx.Limit = &limit
+	return _q
 }
 
 // Offset to start from.
-func (osq *OncallScheduleQuery) Offset(offset int) *OncallScheduleQuery {
-	osq.ctx.Offset = &offset
-	return osq
+func (_q *OncallScheduleQuery) Offset(offset int) *OncallScheduleQuery {
+	_q.ctx.Offset = &offset
+	return _q
 }
 
 // Unique configures the query builder to filter duplicate records on query.
 // By default, unique is set to true, and can be disabled using this method.
-func (osq *OncallScheduleQuery) Unique(unique bool) *OncallScheduleQuery {
-	osq.ctx.Unique = &unique
-	return osq
+func (_q *OncallScheduleQuery) Unique(unique bool) *OncallScheduleQuery {
+	_q.ctx.Unique = &unique
+	return _q
 }
 
 // Order specifies how the records should be ordered.
-func (osq *OncallScheduleQuery) Order(o ...oncallschedule.OrderOption) *OncallScheduleQuery {
-	osq.order = append(osq.order, o...)
-	return osq
+func (_q *OncallScheduleQuery) Order(o ...oncallschedule.OrderOption) *OncallScheduleQuery {
+	_q.order = append(_q.order, o...)
+	return _q
 }
 
 // QueryTenant chains the current query on the "tenant" edge.
-func (osq *OncallScheduleQuery) QueryTenant() *TenantQuery {
-	query := (&TenantClient{config: osq.config}).Query()
+func (_q *OncallScheduleQuery) QueryTenant() *TenantQuery {
+	query := (&TenantClient{config: _q.config}).Query()
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
-		if err := osq.prepareQuery(ctx); err != nil {
+		if err := _q.prepareQuery(ctx); err != nil {
 			return nil, err
 		}
-		selector := osq.sqlQuery(ctx)
+		selector := _q.sqlQuery(ctx)
 		if err := selector.Err(); err != nil {
 			return nil, err
 		}
@@ -84,20 +84,20 @@ func (osq *OncallScheduleQuery) QueryTenant() *TenantQuery {
 			sqlgraph.To(tenant.Table, tenant.FieldID),
 			sqlgraph.Edge(sqlgraph.M2O, false, oncallschedule.TenantTable, oncallschedule.TenantColumn),
 		)
-		fromU = sqlgraph.SetNeighbors(osq.driver.Dialect(), step)
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
 	}
 	return query
 }
 
 // QueryParticipants chains the current query on the "participants" edge.
-func (osq *OncallScheduleQuery) QueryParticipants() *OncallScheduleParticipantQuery {
-	query := (&OncallScheduleParticipantClient{config: osq.config}).Query()
+func (_q *OncallScheduleQuery) QueryParticipants() *OncallScheduleParticipantQuery {
+	query := (&OncallScheduleParticipantClient{config: _q.config}).Query()
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
-		if err := osq.prepareQuery(ctx); err != nil {
+		if err := _q.prepareQuery(ctx); err != nil {
 			return nil, err
 		}
-		selector := osq.sqlQuery(ctx)
+		selector := _q.sqlQuery(ctx)
 		if err := selector.Err(); err != nil {
 			return nil, err
 		}
@@ -106,20 +106,20 @@ func (osq *OncallScheduleQuery) QueryParticipants() *OncallScheduleParticipantQu
 			sqlgraph.To(oncallscheduleparticipant.Table, oncallscheduleparticipant.FieldID),
 			sqlgraph.Edge(sqlgraph.O2M, false, oncallschedule.ParticipantsTable, oncallschedule.ParticipantsColumn),
 		)
-		fromU = sqlgraph.SetNeighbors(osq.driver.Dialect(), step)
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
 	}
 	return query
 }
 
 // QueryRoster chains the current query on the "roster" edge.
-func (osq *OncallScheduleQuery) QueryRoster() *OncallRosterQuery {
-	query := (&OncallRosterClient{config: osq.config}).Query()
+func (_q *OncallScheduleQuery) QueryRoster() *OncallRosterQuery {
+	query := (&OncallRosterClient{config: _q.config}).Query()
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
-		if err := osq.prepareQuery(ctx); err != nil {
+		if err := _q.prepareQuery(ctx); err != nil {
 			return nil, err
 		}
-		selector := osq.sqlQuery(ctx)
+		selector := _q.sqlQuery(ctx)
 		if err := selector.Err(); err != nil {
 			return nil, err
 		}
@@ -128,7 +128,7 @@ func (osq *OncallScheduleQuery) QueryRoster() *OncallRosterQuery {
 			sqlgraph.To(oncallroster.Table, oncallroster.FieldID),
 			sqlgraph.Edge(sqlgraph.M2O, true, oncallschedule.RosterTable, oncallschedule.RosterColumn),
 		)
-		fromU = sqlgraph.SetNeighbors(osq.driver.Dialect(), step)
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
 	}
 	return query
@@ -136,8 +136,8 @@ func (osq *OncallScheduleQuery) QueryRoster() *OncallRosterQuery {
 
 // First returns the first OncallSchedule entity from the query.
 // Returns a *NotFoundError when no OncallSchedule was found.
-func (osq *OncallScheduleQuery) First(ctx context.Context) (*OncallSchedule, error) {
-	nodes, err := osq.Limit(1).All(setContextOp(ctx, osq.ctx, ent.OpQueryFirst))
+func (_q *OncallScheduleQuery) First(ctx context.Context) (*OncallSchedule, error) {
+	nodes, err := _q.Limit(1).All(setContextOp(ctx, _q.ctx, ent.OpQueryFirst))
 	if err != nil {
 		return nil, err
 	}
@@ -148,8 +148,8 @@ func (osq *OncallScheduleQuery) First(ctx context.Context) (*OncallSchedule, err
 }
 
 // FirstX is like First, but panics if an error occurs.
-func (osq *OncallScheduleQuery) FirstX(ctx context.Context) *OncallSchedule {
-	node, err := osq.First(ctx)
+func (_q *OncallScheduleQuery) FirstX(ctx context.Context) *OncallSchedule {
+	node, err := _q.First(ctx)
 	if err != nil && !IsNotFound(err) {
 		panic(err)
 	}
@@ -158,9 +158,9 @@ func (osq *OncallScheduleQuery) FirstX(ctx context.Context) *OncallSchedule {
 
 // FirstID returns the first OncallSchedule ID from the query.
 // Returns a *NotFoundError when no OncallSchedule ID was found.
-func (osq *OncallScheduleQuery) FirstID(ctx context.Context) (id uuid.UUID, err error) {
+func (_q *OncallScheduleQuery) FirstID(ctx context.Context) (id uuid.UUID, err error) {
 	var ids []uuid.UUID
-	if ids, err = osq.Limit(1).IDs(setContextOp(ctx, osq.ctx, ent.OpQueryFirstID)); err != nil {
+	if ids, err = _q.Limit(1).IDs(setContextOp(ctx, _q.ctx, ent.OpQueryFirstID)); err != nil {
 		return
 	}
 	if len(ids) == 0 {
@@ -171,8 +171,8 @@ func (osq *OncallScheduleQuery) FirstID(ctx context.Context) (id uuid.UUID, err 
 }
 
 // FirstIDX is like FirstID, but panics if an error occurs.
-func (osq *OncallScheduleQuery) FirstIDX(ctx context.Context) uuid.UUID {
-	id, err := osq.FirstID(ctx)
+func (_q *OncallScheduleQuery) FirstIDX(ctx context.Context) uuid.UUID {
+	id, err := _q.FirstID(ctx)
 	if err != nil && !IsNotFound(err) {
 		panic(err)
 	}
@@ -182,8 +182,8 @@ func (osq *OncallScheduleQuery) FirstIDX(ctx context.Context) uuid.UUID {
 // Only returns a single OncallSchedule entity found by the query, ensuring it only returns one.
 // Returns a *NotSingularError when more than one OncallSchedule entity is found.
 // Returns a *NotFoundError when no OncallSchedule entities are found.
-func (osq *OncallScheduleQuery) Only(ctx context.Context) (*OncallSchedule, error) {
-	nodes, err := osq.Limit(2).All(setContextOp(ctx, osq.ctx, ent.OpQueryOnly))
+func (_q *OncallScheduleQuery) Only(ctx context.Context) (*OncallSchedule, error) {
+	nodes, err := _q.Limit(2).All(setContextOp(ctx, _q.ctx, ent.OpQueryOnly))
 	if err != nil {
 		return nil, err
 	}
@@ -198,8 +198,8 @@ func (osq *OncallScheduleQuery) Only(ctx context.Context) (*OncallSchedule, erro
 }
 
 // OnlyX is like Only, but panics if an error occurs.
-func (osq *OncallScheduleQuery) OnlyX(ctx context.Context) *OncallSchedule {
-	node, err := osq.Only(ctx)
+func (_q *OncallScheduleQuery) OnlyX(ctx context.Context) *OncallSchedule {
+	node, err := _q.Only(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -209,9 +209,9 @@ func (osq *OncallScheduleQuery) OnlyX(ctx context.Context) *OncallSchedule {
 // OnlyID is like Only, but returns the only OncallSchedule ID in the query.
 // Returns a *NotSingularError when more than one OncallSchedule ID is found.
 // Returns a *NotFoundError when no entities are found.
-func (osq *OncallScheduleQuery) OnlyID(ctx context.Context) (id uuid.UUID, err error) {
+func (_q *OncallScheduleQuery) OnlyID(ctx context.Context) (id uuid.UUID, err error) {
 	var ids []uuid.UUID
-	if ids, err = osq.Limit(2).IDs(setContextOp(ctx, osq.ctx, ent.OpQueryOnlyID)); err != nil {
+	if ids, err = _q.Limit(2).IDs(setContextOp(ctx, _q.ctx, ent.OpQueryOnlyID)); err != nil {
 		return
 	}
 	switch len(ids) {
@@ -226,8 +226,8 @@ func (osq *OncallScheduleQuery) OnlyID(ctx context.Context) (id uuid.UUID, err e
 }
 
 // OnlyIDX is like OnlyID, but panics if an error occurs.
-func (osq *OncallScheduleQuery) OnlyIDX(ctx context.Context) uuid.UUID {
-	id, err := osq.OnlyID(ctx)
+func (_q *OncallScheduleQuery) OnlyIDX(ctx context.Context) uuid.UUID {
+	id, err := _q.OnlyID(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -235,18 +235,18 @@ func (osq *OncallScheduleQuery) OnlyIDX(ctx context.Context) uuid.UUID {
 }
 
 // All executes the query and returns a list of OncallSchedules.
-func (osq *OncallScheduleQuery) All(ctx context.Context) ([]*OncallSchedule, error) {
-	ctx = setContextOp(ctx, osq.ctx, ent.OpQueryAll)
-	if err := osq.prepareQuery(ctx); err != nil {
+func (_q *OncallScheduleQuery) All(ctx context.Context) ([]*OncallSchedule, error) {
+	ctx = setContextOp(ctx, _q.ctx, ent.OpQueryAll)
+	if err := _q.prepareQuery(ctx); err != nil {
 		return nil, err
 	}
 	qr := querierAll[[]*OncallSchedule, *OncallScheduleQuery]()
-	return withInterceptors[[]*OncallSchedule](ctx, osq, qr, osq.inters)
+	return withInterceptors[[]*OncallSchedule](ctx, _q, qr, _q.inters)
 }
 
 // AllX is like All, but panics if an error occurs.
-func (osq *OncallScheduleQuery) AllX(ctx context.Context) []*OncallSchedule {
-	nodes, err := osq.All(ctx)
+func (_q *OncallScheduleQuery) AllX(ctx context.Context) []*OncallSchedule {
+	nodes, err := _q.All(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -254,20 +254,20 @@ func (osq *OncallScheduleQuery) AllX(ctx context.Context) []*OncallSchedule {
 }
 
 // IDs executes the query and returns a list of OncallSchedule IDs.
-func (osq *OncallScheduleQuery) IDs(ctx context.Context) (ids []uuid.UUID, err error) {
-	if osq.ctx.Unique == nil && osq.path != nil {
-		osq.Unique(true)
+func (_q *OncallScheduleQuery) IDs(ctx context.Context) (ids []uuid.UUID, err error) {
+	if _q.ctx.Unique == nil && _q.path != nil {
+		_q.Unique(true)
 	}
-	ctx = setContextOp(ctx, osq.ctx, ent.OpQueryIDs)
-	if err = osq.Select(oncallschedule.FieldID).Scan(ctx, &ids); err != nil {
+	ctx = setContextOp(ctx, _q.ctx, ent.OpQueryIDs)
+	if err = _q.Select(oncallschedule.FieldID).Scan(ctx, &ids); err != nil {
 		return nil, err
 	}
 	return ids, nil
 }
 
 // IDsX is like IDs, but panics if an error occurs.
-func (osq *OncallScheduleQuery) IDsX(ctx context.Context) []uuid.UUID {
-	ids, err := osq.IDs(ctx)
+func (_q *OncallScheduleQuery) IDsX(ctx context.Context) []uuid.UUID {
+	ids, err := _q.IDs(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -275,17 +275,17 @@ func (osq *OncallScheduleQuery) IDsX(ctx context.Context) []uuid.UUID {
 }
 
 // Count returns the count of the given query.
-func (osq *OncallScheduleQuery) Count(ctx context.Context) (int, error) {
-	ctx = setContextOp(ctx, osq.ctx, ent.OpQueryCount)
-	if err := osq.prepareQuery(ctx); err != nil {
+func (_q *OncallScheduleQuery) Count(ctx context.Context) (int, error) {
+	ctx = setContextOp(ctx, _q.ctx, ent.OpQueryCount)
+	if err := _q.prepareQuery(ctx); err != nil {
 		return 0, err
 	}
-	return withInterceptors[int](ctx, osq, querierCount[*OncallScheduleQuery](), osq.inters)
+	return withInterceptors[int](ctx, _q, querierCount[*OncallScheduleQuery](), _q.inters)
 }
 
 // CountX is like Count, but panics if an error occurs.
-func (osq *OncallScheduleQuery) CountX(ctx context.Context) int {
-	count, err := osq.Count(ctx)
+func (_q *OncallScheduleQuery) CountX(ctx context.Context) int {
+	count, err := _q.Count(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -293,9 +293,9 @@ func (osq *OncallScheduleQuery) CountX(ctx context.Context) int {
 }
 
 // Exist returns true if the query has elements in the graph.
-func (osq *OncallScheduleQuery) Exist(ctx context.Context) (bool, error) {
-	ctx = setContextOp(ctx, osq.ctx, ent.OpQueryExist)
-	switch _, err := osq.FirstID(ctx); {
+func (_q *OncallScheduleQuery) Exist(ctx context.Context) (bool, error) {
+	ctx = setContextOp(ctx, _q.ctx, ent.OpQueryExist)
+	switch _, err := _q.FirstID(ctx); {
 	case IsNotFound(err):
 		return false, nil
 	case err != nil:
@@ -306,8 +306,8 @@ func (osq *OncallScheduleQuery) Exist(ctx context.Context) (bool, error) {
 }
 
 // ExistX is like Exist, but panics if an error occurs.
-func (osq *OncallScheduleQuery) ExistX(ctx context.Context) bool {
-	exist, err := osq.Exist(ctx)
+func (_q *OncallScheduleQuery) ExistX(ctx context.Context) bool {
+	exist, err := _q.Exist(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -316,57 +316,57 @@ func (osq *OncallScheduleQuery) ExistX(ctx context.Context) bool {
 
 // Clone returns a duplicate of the OncallScheduleQuery builder, including all associated steps. It can be
 // used to prepare common query builders and use them differently after the clone is made.
-func (osq *OncallScheduleQuery) Clone() *OncallScheduleQuery {
-	if osq == nil {
+func (_q *OncallScheduleQuery) Clone() *OncallScheduleQuery {
+	if _q == nil {
 		return nil
 	}
 	return &OncallScheduleQuery{
-		config:           osq.config,
-		ctx:              osq.ctx.Clone(),
-		order:            append([]oncallschedule.OrderOption{}, osq.order...),
-		inters:           append([]Interceptor{}, osq.inters...),
-		predicates:       append([]predicate.OncallSchedule{}, osq.predicates...),
-		withTenant:       osq.withTenant.Clone(),
-		withParticipants: osq.withParticipants.Clone(),
-		withRoster:       osq.withRoster.Clone(),
+		config:           _q.config,
+		ctx:              _q.ctx.Clone(),
+		order:            append([]oncallschedule.OrderOption{}, _q.order...),
+		inters:           append([]Interceptor{}, _q.inters...),
+		predicates:       append([]predicate.OncallSchedule{}, _q.predicates...),
+		withTenant:       _q.withTenant.Clone(),
+		withParticipants: _q.withParticipants.Clone(),
+		withRoster:       _q.withRoster.Clone(),
 		// clone intermediate query.
-		sql:       osq.sql.Clone(),
-		path:      osq.path,
-		modifiers: append([]func(*sql.Selector){}, osq.modifiers...),
+		sql:       _q.sql.Clone(),
+		path:      _q.path,
+		modifiers: append([]func(*sql.Selector){}, _q.modifiers...),
 	}
 }
 
 // WithTenant tells the query-builder to eager-load the nodes that are connected to
 // the "tenant" edge. The optional arguments are used to configure the query builder of the edge.
-func (osq *OncallScheduleQuery) WithTenant(opts ...func(*TenantQuery)) *OncallScheduleQuery {
-	query := (&TenantClient{config: osq.config}).Query()
+func (_q *OncallScheduleQuery) WithTenant(opts ...func(*TenantQuery)) *OncallScheduleQuery {
+	query := (&TenantClient{config: _q.config}).Query()
 	for _, opt := range opts {
 		opt(query)
 	}
-	osq.withTenant = query
-	return osq
+	_q.withTenant = query
+	return _q
 }
 
 // WithParticipants tells the query-builder to eager-load the nodes that are connected to
 // the "participants" edge. The optional arguments are used to configure the query builder of the edge.
-func (osq *OncallScheduleQuery) WithParticipants(opts ...func(*OncallScheduleParticipantQuery)) *OncallScheduleQuery {
-	query := (&OncallScheduleParticipantClient{config: osq.config}).Query()
+func (_q *OncallScheduleQuery) WithParticipants(opts ...func(*OncallScheduleParticipantQuery)) *OncallScheduleQuery {
+	query := (&OncallScheduleParticipantClient{config: _q.config}).Query()
 	for _, opt := range opts {
 		opt(query)
 	}
-	osq.withParticipants = query
-	return osq
+	_q.withParticipants = query
+	return _q
 }
 
 // WithRoster tells the query-builder to eager-load the nodes that are connected to
 // the "roster" edge. The optional arguments are used to configure the query builder of the edge.
-func (osq *OncallScheduleQuery) WithRoster(opts ...func(*OncallRosterQuery)) *OncallScheduleQuery {
-	query := (&OncallRosterClient{config: osq.config}).Query()
+func (_q *OncallScheduleQuery) WithRoster(opts ...func(*OncallRosterQuery)) *OncallScheduleQuery {
+	query := (&OncallRosterClient{config: _q.config}).Query()
 	for _, opt := range opts {
 		opt(query)
 	}
-	osq.withRoster = query
-	return osq
+	_q.withRoster = query
+	return _q
 }
 
 // GroupBy is used to group vertices by one or more fields/columns.
@@ -383,10 +383,10 @@ func (osq *OncallScheduleQuery) WithRoster(opts ...func(*OncallRosterQuery)) *On
 //		GroupBy(oncallschedule.FieldTenantID).
 //		Aggregate(ent.Count()).
 //		Scan(ctx, &v)
-func (osq *OncallScheduleQuery) GroupBy(field string, fields ...string) *OncallScheduleGroupBy {
-	osq.ctx.Fields = append([]string{field}, fields...)
-	grbuild := &OncallScheduleGroupBy{build: osq}
-	grbuild.flds = &osq.ctx.Fields
+func (_q *OncallScheduleQuery) GroupBy(field string, fields ...string) *OncallScheduleGroupBy {
+	_q.ctx.Fields = append([]string{field}, fields...)
+	grbuild := &OncallScheduleGroupBy{build: _q}
+	grbuild.flds = &_q.ctx.Fields
 	grbuild.label = oncallschedule.Label
 	grbuild.scan = grbuild.Scan
 	return grbuild
@@ -404,90 +404,90 @@ func (osq *OncallScheduleQuery) GroupBy(field string, fields ...string) *OncallS
 //	client.OncallSchedule.Query().
 //		Select(oncallschedule.FieldTenantID).
 //		Scan(ctx, &v)
-func (osq *OncallScheduleQuery) Select(fields ...string) *OncallScheduleSelect {
-	osq.ctx.Fields = append(osq.ctx.Fields, fields...)
-	sbuild := &OncallScheduleSelect{OncallScheduleQuery: osq}
+func (_q *OncallScheduleQuery) Select(fields ...string) *OncallScheduleSelect {
+	_q.ctx.Fields = append(_q.ctx.Fields, fields...)
+	sbuild := &OncallScheduleSelect{OncallScheduleQuery: _q}
 	sbuild.label = oncallschedule.Label
-	sbuild.flds, sbuild.scan = &osq.ctx.Fields, sbuild.Scan
+	sbuild.flds, sbuild.scan = &_q.ctx.Fields, sbuild.Scan
 	return sbuild
 }
 
 // Aggregate returns a OncallScheduleSelect configured with the given aggregations.
-func (osq *OncallScheduleQuery) Aggregate(fns ...AggregateFunc) *OncallScheduleSelect {
-	return osq.Select().Aggregate(fns...)
+func (_q *OncallScheduleQuery) Aggregate(fns ...AggregateFunc) *OncallScheduleSelect {
+	return _q.Select().Aggregate(fns...)
 }
 
-func (osq *OncallScheduleQuery) prepareQuery(ctx context.Context) error {
-	for _, inter := range osq.inters {
+func (_q *OncallScheduleQuery) prepareQuery(ctx context.Context) error {
+	for _, inter := range _q.inters {
 		if inter == nil {
 			return fmt.Errorf("ent: uninitialized interceptor (forgotten import ent/runtime?)")
 		}
 		if trv, ok := inter.(Traverser); ok {
-			if err := trv.Traverse(ctx, osq); err != nil {
+			if err := trv.Traverse(ctx, _q); err != nil {
 				return err
 			}
 		}
 	}
-	for _, f := range osq.ctx.Fields {
+	for _, f := range _q.ctx.Fields {
 		if !oncallschedule.ValidColumn(f) {
 			return &ValidationError{Name: f, err: fmt.Errorf("ent: invalid field %q for query", f)}
 		}
 	}
-	if osq.path != nil {
-		prev, err := osq.path(ctx)
+	if _q.path != nil {
+		prev, err := _q.path(ctx)
 		if err != nil {
 			return err
 		}
-		osq.sql = prev
+		_q.sql = prev
 	}
 	if oncallschedule.Policy == nil {
 		return errors.New("ent: uninitialized oncallschedule.Policy (forgotten import ent/runtime?)")
 	}
-	if err := oncallschedule.Policy.EvalQuery(ctx, osq); err != nil {
+	if err := oncallschedule.Policy.EvalQuery(ctx, _q); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (osq *OncallScheduleQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*OncallSchedule, error) {
+func (_q *OncallScheduleQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*OncallSchedule, error) {
 	var (
 		nodes       = []*OncallSchedule{}
-		_spec       = osq.querySpec()
+		_spec       = _q.querySpec()
 		loadedTypes = [3]bool{
-			osq.withTenant != nil,
-			osq.withParticipants != nil,
-			osq.withRoster != nil,
+			_q.withTenant != nil,
+			_q.withParticipants != nil,
+			_q.withRoster != nil,
 		}
 	)
 	_spec.ScanValues = func(columns []string) ([]any, error) {
 		return (*OncallSchedule).scanValues(nil, columns)
 	}
 	_spec.Assign = func(columns []string, values []any) error {
-		node := &OncallSchedule{config: osq.config}
+		node := &OncallSchedule{config: _q.config}
 		nodes = append(nodes, node)
 		node.Edges.loadedTypes = loadedTypes
 		return node.assignValues(columns, values)
 	}
-	if len(osq.modifiers) > 0 {
-		_spec.Modifiers = osq.modifiers
+	if len(_q.modifiers) > 0 {
+		_spec.Modifiers = _q.modifiers
 	}
 	for i := range hooks {
 		hooks[i](ctx, _spec)
 	}
-	if err := sqlgraph.QueryNodes(ctx, osq.driver, _spec); err != nil {
+	if err := sqlgraph.QueryNodes(ctx, _q.driver, _spec); err != nil {
 		return nil, err
 	}
 	if len(nodes) == 0 {
 		return nodes, nil
 	}
-	if query := osq.withTenant; query != nil {
-		if err := osq.loadTenant(ctx, query, nodes, nil,
+	if query := _q.withTenant; query != nil {
+		if err := _q.loadTenant(ctx, query, nodes, nil,
 			func(n *OncallSchedule, e *Tenant) { n.Edges.Tenant = e }); err != nil {
 			return nil, err
 		}
 	}
-	if query := osq.withParticipants; query != nil {
-		if err := osq.loadParticipants(ctx, query, nodes,
+	if query := _q.withParticipants; query != nil {
+		if err := _q.loadParticipants(ctx, query, nodes,
 			func(n *OncallSchedule) { n.Edges.Participants = []*OncallScheduleParticipant{} },
 			func(n *OncallSchedule, e *OncallScheduleParticipant) {
 				n.Edges.Participants = append(n.Edges.Participants, e)
@@ -495,8 +495,8 @@ func (osq *OncallScheduleQuery) sqlAll(ctx context.Context, hooks ...queryHook) 
 			return nil, err
 		}
 	}
-	if query := osq.withRoster; query != nil {
-		if err := osq.loadRoster(ctx, query, nodes, nil,
+	if query := _q.withRoster; query != nil {
+		if err := _q.loadRoster(ctx, query, nodes, nil,
 			func(n *OncallSchedule, e *OncallRoster) { n.Edges.Roster = e }); err != nil {
 			return nil, err
 		}
@@ -504,7 +504,7 @@ func (osq *OncallScheduleQuery) sqlAll(ctx context.Context, hooks ...queryHook) 
 	return nodes, nil
 }
 
-func (osq *OncallScheduleQuery) loadTenant(ctx context.Context, query *TenantQuery, nodes []*OncallSchedule, init func(*OncallSchedule), assign func(*OncallSchedule, *Tenant)) error {
+func (_q *OncallScheduleQuery) loadTenant(ctx context.Context, query *TenantQuery, nodes []*OncallSchedule, init func(*OncallSchedule), assign func(*OncallSchedule, *Tenant)) error {
 	ids := make([]int, 0, len(nodes))
 	nodeids := make(map[int][]*OncallSchedule)
 	for i := range nodes {
@@ -533,7 +533,7 @@ func (osq *OncallScheduleQuery) loadTenant(ctx context.Context, query *TenantQue
 	}
 	return nil
 }
-func (osq *OncallScheduleQuery) loadParticipants(ctx context.Context, query *OncallScheduleParticipantQuery, nodes []*OncallSchedule, init func(*OncallSchedule), assign func(*OncallSchedule, *OncallScheduleParticipant)) error {
+func (_q *OncallScheduleQuery) loadParticipants(ctx context.Context, query *OncallScheduleParticipantQuery, nodes []*OncallSchedule, init func(*OncallSchedule), assign func(*OncallSchedule, *OncallScheduleParticipant)) error {
 	fks := make([]driver.Value, 0, len(nodes))
 	nodeids := make(map[uuid.UUID]*OncallSchedule)
 	for i := range nodes {
@@ -563,7 +563,7 @@ func (osq *OncallScheduleQuery) loadParticipants(ctx context.Context, query *Onc
 	}
 	return nil
 }
-func (osq *OncallScheduleQuery) loadRoster(ctx context.Context, query *OncallRosterQuery, nodes []*OncallSchedule, init func(*OncallSchedule), assign func(*OncallSchedule, *OncallRoster)) error {
+func (_q *OncallScheduleQuery) loadRoster(ctx context.Context, query *OncallRosterQuery, nodes []*OncallSchedule, init func(*OncallSchedule), assign func(*OncallSchedule, *OncallRoster)) error {
 	ids := make([]uuid.UUID, 0, len(nodes))
 	nodeids := make(map[uuid.UUID][]*OncallSchedule)
 	for i := range nodes {
@@ -593,27 +593,27 @@ func (osq *OncallScheduleQuery) loadRoster(ctx context.Context, query *OncallRos
 	return nil
 }
 
-func (osq *OncallScheduleQuery) sqlCount(ctx context.Context) (int, error) {
-	_spec := osq.querySpec()
-	if len(osq.modifiers) > 0 {
-		_spec.Modifiers = osq.modifiers
+func (_q *OncallScheduleQuery) sqlCount(ctx context.Context) (int, error) {
+	_spec := _q.querySpec()
+	if len(_q.modifiers) > 0 {
+		_spec.Modifiers = _q.modifiers
 	}
-	_spec.Node.Columns = osq.ctx.Fields
-	if len(osq.ctx.Fields) > 0 {
-		_spec.Unique = osq.ctx.Unique != nil && *osq.ctx.Unique
+	_spec.Node.Columns = _q.ctx.Fields
+	if len(_q.ctx.Fields) > 0 {
+		_spec.Unique = _q.ctx.Unique != nil && *_q.ctx.Unique
 	}
-	return sqlgraph.CountNodes(ctx, osq.driver, _spec)
+	return sqlgraph.CountNodes(ctx, _q.driver, _spec)
 }
 
-func (osq *OncallScheduleQuery) querySpec() *sqlgraph.QuerySpec {
+func (_q *OncallScheduleQuery) querySpec() *sqlgraph.QuerySpec {
 	_spec := sqlgraph.NewQuerySpec(oncallschedule.Table, oncallschedule.Columns, sqlgraph.NewFieldSpec(oncallschedule.FieldID, field.TypeUUID))
-	_spec.From = osq.sql
-	if unique := osq.ctx.Unique; unique != nil {
+	_spec.From = _q.sql
+	if unique := _q.ctx.Unique; unique != nil {
 		_spec.Unique = *unique
-	} else if osq.path != nil {
+	} else if _q.path != nil {
 		_spec.Unique = true
 	}
-	if fields := osq.ctx.Fields; len(fields) > 0 {
+	if fields := _q.ctx.Fields; len(fields) > 0 {
 		_spec.Node.Columns = make([]string, 0, len(fields))
 		_spec.Node.Columns = append(_spec.Node.Columns, oncallschedule.FieldID)
 		for i := range fields {
@@ -621,27 +621,27 @@ func (osq *OncallScheduleQuery) querySpec() *sqlgraph.QuerySpec {
 				_spec.Node.Columns = append(_spec.Node.Columns, fields[i])
 			}
 		}
-		if osq.withTenant != nil {
+		if _q.withTenant != nil {
 			_spec.Node.AddColumnOnce(oncallschedule.FieldTenantID)
 		}
-		if osq.withRoster != nil {
+		if _q.withRoster != nil {
 			_spec.Node.AddColumnOnce(oncallschedule.FieldRosterID)
 		}
 	}
-	if ps := osq.predicates; len(ps) > 0 {
+	if ps := _q.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {
 				ps[i](selector)
 			}
 		}
 	}
-	if limit := osq.ctx.Limit; limit != nil {
+	if limit := _q.ctx.Limit; limit != nil {
 		_spec.Limit = *limit
 	}
-	if offset := osq.ctx.Offset; offset != nil {
+	if offset := _q.ctx.Offset; offset != nil {
 		_spec.Offset = *offset
 	}
-	if ps := osq.order; len(ps) > 0 {
+	if ps := _q.order; len(ps) > 0 {
 		_spec.Order = func(selector *sql.Selector) {
 			for i := range ps {
 				ps[i](selector)
@@ -651,45 +651,45 @@ func (osq *OncallScheduleQuery) querySpec() *sqlgraph.QuerySpec {
 	return _spec
 }
 
-func (osq *OncallScheduleQuery) sqlQuery(ctx context.Context) *sql.Selector {
-	builder := sql.Dialect(osq.driver.Dialect())
+func (_q *OncallScheduleQuery) sqlQuery(ctx context.Context) *sql.Selector {
+	builder := sql.Dialect(_q.driver.Dialect())
 	t1 := builder.Table(oncallschedule.Table)
-	columns := osq.ctx.Fields
+	columns := _q.ctx.Fields
 	if len(columns) == 0 {
 		columns = oncallschedule.Columns
 	}
 	selector := builder.Select(t1.Columns(columns...)...).From(t1)
-	if osq.sql != nil {
-		selector = osq.sql
+	if _q.sql != nil {
+		selector = _q.sql
 		selector.Select(selector.Columns(columns...)...)
 	}
-	if osq.ctx.Unique != nil && *osq.ctx.Unique {
+	if _q.ctx.Unique != nil && *_q.ctx.Unique {
 		selector.Distinct()
 	}
-	for _, m := range osq.modifiers {
+	for _, m := range _q.modifiers {
 		m(selector)
 	}
-	for _, p := range osq.predicates {
+	for _, p := range _q.predicates {
 		p(selector)
 	}
-	for _, p := range osq.order {
+	for _, p := range _q.order {
 		p(selector)
 	}
-	if offset := osq.ctx.Offset; offset != nil {
+	if offset := _q.ctx.Offset; offset != nil {
 		// limit is mandatory for offset clause. We start
 		// with default value, and override it below if needed.
 		selector.Offset(*offset).Limit(math.MaxInt32)
 	}
-	if limit := osq.ctx.Limit; limit != nil {
+	if limit := _q.ctx.Limit; limit != nil {
 		selector.Limit(*limit)
 	}
 	return selector
 }
 
 // Modify adds a query modifier for attaching custom logic to queries.
-func (osq *OncallScheduleQuery) Modify(modifiers ...func(s *sql.Selector)) *OncallScheduleSelect {
-	osq.modifiers = append(osq.modifiers, modifiers...)
-	return osq.Select()
+func (_q *OncallScheduleQuery) Modify(modifiers ...func(s *sql.Selector)) *OncallScheduleSelect {
+	_q.modifiers = append(_q.modifiers, modifiers...)
+	return _q.Select()
 }
 
 // OncallScheduleGroupBy is the group-by builder for OncallSchedule entities.
@@ -699,41 +699,41 @@ type OncallScheduleGroupBy struct {
 }
 
 // Aggregate adds the given aggregation functions to the group-by query.
-func (osgb *OncallScheduleGroupBy) Aggregate(fns ...AggregateFunc) *OncallScheduleGroupBy {
-	osgb.fns = append(osgb.fns, fns...)
-	return osgb
+func (_g *OncallScheduleGroupBy) Aggregate(fns ...AggregateFunc) *OncallScheduleGroupBy {
+	_g.fns = append(_g.fns, fns...)
+	return _g
 }
 
 // Scan applies the selector query and scans the result into the given value.
-func (osgb *OncallScheduleGroupBy) Scan(ctx context.Context, v any) error {
-	ctx = setContextOp(ctx, osgb.build.ctx, ent.OpQueryGroupBy)
-	if err := osgb.build.prepareQuery(ctx); err != nil {
+func (_g *OncallScheduleGroupBy) Scan(ctx context.Context, v any) error {
+	ctx = setContextOp(ctx, _g.build.ctx, ent.OpQueryGroupBy)
+	if err := _g.build.prepareQuery(ctx); err != nil {
 		return err
 	}
-	return scanWithInterceptors[*OncallScheduleQuery, *OncallScheduleGroupBy](ctx, osgb.build, osgb, osgb.build.inters, v)
+	return scanWithInterceptors[*OncallScheduleQuery, *OncallScheduleGroupBy](ctx, _g.build, _g, _g.build.inters, v)
 }
 
-func (osgb *OncallScheduleGroupBy) sqlScan(ctx context.Context, root *OncallScheduleQuery, v any) error {
+func (_g *OncallScheduleGroupBy) sqlScan(ctx context.Context, root *OncallScheduleQuery, v any) error {
 	selector := root.sqlQuery(ctx).Select()
-	aggregation := make([]string, 0, len(osgb.fns))
-	for _, fn := range osgb.fns {
+	aggregation := make([]string, 0, len(_g.fns))
+	for _, fn := range _g.fns {
 		aggregation = append(aggregation, fn(selector))
 	}
 	if len(selector.SelectedColumns()) == 0 {
-		columns := make([]string, 0, len(*osgb.flds)+len(osgb.fns))
-		for _, f := range *osgb.flds {
+		columns := make([]string, 0, len(*_g.flds)+len(_g.fns))
+		for _, f := range *_g.flds {
 			columns = append(columns, selector.C(f))
 		}
 		columns = append(columns, aggregation...)
 		selector.Select(columns...)
 	}
-	selector.GroupBy(selector.Columns(*osgb.flds...)...)
+	selector.GroupBy(selector.Columns(*_g.flds...)...)
 	if err := selector.Err(); err != nil {
 		return err
 	}
 	rows := &sql.Rows{}
 	query, args := selector.Query()
-	if err := osgb.build.driver.Query(ctx, query, args, rows); err != nil {
+	if err := _g.build.driver.Query(ctx, query, args, rows); err != nil {
 		return err
 	}
 	defer rows.Close()
@@ -747,27 +747,27 @@ type OncallScheduleSelect struct {
 }
 
 // Aggregate adds the given aggregation functions to the selector query.
-func (oss *OncallScheduleSelect) Aggregate(fns ...AggregateFunc) *OncallScheduleSelect {
-	oss.fns = append(oss.fns, fns...)
-	return oss
+func (_s *OncallScheduleSelect) Aggregate(fns ...AggregateFunc) *OncallScheduleSelect {
+	_s.fns = append(_s.fns, fns...)
+	return _s
 }
 
 // Scan applies the selector query and scans the result into the given value.
-func (oss *OncallScheduleSelect) Scan(ctx context.Context, v any) error {
-	ctx = setContextOp(ctx, oss.ctx, ent.OpQuerySelect)
-	if err := oss.prepareQuery(ctx); err != nil {
+func (_s *OncallScheduleSelect) Scan(ctx context.Context, v any) error {
+	ctx = setContextOp(ctx, _s.ctx, ent.OpQuerySelect)
+	if err := _s.prepareQuery(ctx); err != nil {
 		return err
 	}
-	return scanWithInterceptors[*OncallScheduleQuery, *OncallScheduleSelect](ctx, oss.OncallScheduleQuery, oss, oss.inters, v)
+	return scanWithInterceptors[*OncallScheduleQuery, *OncallScheduleSelect](ctx, _s.OncallScheduleQuery, _s, _s.inters, v)
 }
 
-func (oss *OncallScheduleSelect) sqlScan(ctx context.Context, root *OncallScheduleQuery, v any) error {
+func (_s *OncallScheduleSelect) sqlScan(ctx context.Context, root *OncallScheduleQuery, v any) error {
 	selector := root.sqlQuery(ctx)
-	aggregation := make([]string, 0, len(oss.fns))
-	for _, fn := range oss.fns {
+	aggregation := make([]string, 0, len(_s.fns))
+	for _, fn := range _s.fns {
 		aggregation = append(aggregation, fn(selector))
 	}
-	switch n := len(*oss.selector.flds); {
+	switch n := len(*_s.selector.flds); {
 	case n == 0 && len(aggregation) > 0:
 		selector.Select(aggregation...)
 	case n != 0 && len(aggregation) > 0:
@@ -775,7 +775,7 @@ func (oss *OncallScheduleSelect) sqlScan(ctx context.Context, root *OncallSchedu
 	}
 	rows := &sql.Rows{}
 	query, args := selector.Query()
-	if err := oss.driver.Query(ctx, query, args, rows); err != nil {
+	if err := _s.driver.Query(ctx, query, args, rows); err != nil {
 		return err
 	}
 	defer rows.Close()
@@ -783,7 +783,7 @@ func (oss *OncallScheduleSelect) sqlScan(ctx context.Context, root *OncallSchedu
 }
 
 // Modify adds a query modifier for attaching custom logic to queries.
-func (oss *OncallScheduleSelect) Modify(modifiers ...func(s *sql.Selector)) *OncallScheduleSelect {
-	oss.modifiers = append(oss.modifiers, modifiers...)
-	return oss
+func (_s *OncallScheduleSelect) Modify(modifiers ...func(s *sql.Selector)) *OncallScheduleSelect {
+	_s.modifiers = append(_s.modifiers, modifiers...)
+	return _s
 }

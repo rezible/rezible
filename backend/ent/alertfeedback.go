@@ -92,7 +92,7 @@ func (*AlertFeedback) scanValues(columns []string) ([]any, error) {
 
 // assignValues assigns the values that were returned from sql.Rows (after scanning)
 // to the AlertFeedback fields.
-func (af *AlertFeedback) assignValues(columns []string, values []any) error {
+func (_m *AlertFeedback) assignValues(columns []string, values []any) error {
 	if m, n := len(values), len(columns); m < n {
 		return fmt.Errorf("mismatch number of scan values: %d != %d", m, n)
 	}
@@ -102,46 +102,46 @@ func (af *AlertFeedback) assignValues(columns []string, values []any) error {
 			if value, ok := values[i].(*uuid.UUID); !ok {
 				return fmt.Errorf("unexpected type %T for field id", values[i])
 			} else if value != nil {
-				af.ID = *value
+				_m.ID = *value
 			}
 		case alertfeedback.FieldTenantID:
 			if value, ok := values[i].(*sql.NullInt64); !ok {
 				return fmt.Errorf("unexpected type %T for field tenant_id", values[i])
 			} else if value.Valid {
-				af.TenantID = int(value.Int64)
+				_m.TenantID = int(value.Int64)
 			}
 		case alertfeedback.FieldAlertInstanceID:
 			if value, ok := values[i].(*uuid.UUID); !ok {
 				return fmt.Errorf("unexpected type %T for field alert_instance_id", values[i])
 			} else if value != nil {
-				af.AlertInstanceID = *value
+				_m.AlertInstanceID = *value
 			}
 		case alertfeedback.FieldActionable:
 			if value, ok := values[i].(*sql.NullBool); !ok {
 				return fmt.Errorf("unexpected type %T for field actionable", values[i])
 			} else if value.Valid {
-				af.Actionable = value.Bool
+				_m.Actionable = value.Bool
 			}
 		case alertfeedback.FieldAccurate:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field accurate", values[i])
 			} else if value.Valid {
-				af.Accurate = alertfeedback.Accurate(value.String)
+				_m.Accurate = alertfeedback.Accurate(value.String)
 			}
 		case alertfeedback.FieldDocumentationAvailable:
 			if value, ok := values[i].(*sql.NullBool); !ok {
 				return fmt.Errorf("unexpected type %T for field documentation_available", values[i])
 			} else if value.Valid {
-				af.DocumentationAvailable = value.Bool
+				_m.DocumentationAvailable = value.Bool
 			}
 		case alertfeedback.FieldDocumentationNeedsUpdate:
 			if value, ok := values[i].(*sql.NullBool); !ok {
 				return fmt.Errorf("unexpected type %T for field documentation_needs_update", values[i])
 			} else if value.Valid {
-				af.DocumentationNeedsUpdate = value.Bool
+				_m.DocumentationNeedsUpdate = value.Bool
 			}
 		default:
-			af.selectValues.Set(columns[i], values[i])
+			_m.selectValues.Set(columns[i], values[i])
 		}
 	}
 	return nil
@@ -149,60 +149,60 @@ func (af *AlertFeedback) assignValues(columns []string, values []any) error {
 
 // Value returns the ent.Value that was dynamically selected and assigned to the AlertFeedback.
 // This includes values selected through modifiers, order, etc.
-func (af *AlertFeedback) Value(name string) (ent.Value, error) {
-	return af.selectValues.Get(name)
+func (_m *AlertFeedback) Value(name string) (ent.Value, error) {
+	return _m.selectValues.Get(name)
 }
 
 // QueryTenant queries the "tenant" edge of the AlertFeedback entity.
-func (af *AlertFeedback) QueryTenant() *TenantQuery {
-	return NewAlertFeedbackClient(af.config).QueryTenant(af)
+func (_m *AlertFeedback) QueryTenant() *TenantQuery {
+	return NewAlertFeedbackClient(_m.config).QueryTenant(_m)
 }
 
 // QueryAlertInstance queries the "alert_instance" edge of the AlertFeedback entity.
-func (af *AlertFeedback) QueryAlertInstance() *AlertInstanceQuery {
-	return NewAlertFeedbackClient(af.config).QueryAlertInstance(af)
+func (_m *AlertFeedback) QueryAlertInstance() *AlertInstanceQuery {
+	return NewAlertFeedbackClient(_m.config).QueryAlertInstance(_m)
 }
 
 // Update returns a builder for updating this AlertFeedback.
 // Note that you need to call AlertFeedback.Unwrap() before calling this method if this AlertFeedback
 // was returned from a transaction, and the transaction was committed or rolled back.
-func (af *AlertFeedback) Update() *AlertFeedbackUpdateOne {
-	return NewAlertFeedbackClient(af.config).UpdateOne(af)
+func (_m *AlertFeedback) Update() *AlertFeedbackUpdateOne {
+	return NewAlertFeedbackClient(_m.config).UpdateOne(_m)
 }
 
 // Unwrap unwraps the AlertFeedback entity that was returned from a transaction after it was closed,
 // so that all future queries will be executed through the driver which created the transaction.
-func (af *AlertFeedback) Unwrap() *AlertFeedback {
-	_tx, ok := af.config.driver.(*txDriver)
+func (_m *AlertFeedback) Unwrap() *AlertFeedback {
+	_tx, ok := _m.config.driver.(*txDriver)
 	if !ok {
 		panic("ent: AlertFeedback is not a transactional entity")
 	}
-	af.config.driver = _tx.drv
-	return af
+	_m.config.driver = _tx.drv
+	return _m
 }
 
 // String implements the fmt.Stringer.
-func (af *AlertFeedback) String() string {
+func (_m *AlertFeedback) String() string {
 	var builder strings.Builder
 	builder.WriteString("AlertFeedback(")
-	builder.WriteString(fmt.Sprintf("id=%v, ", af.ID))
+	builder.WriteString(fmt.Sprintf("id=%v, ", _m.ID))
 	builder.WriteString("tenant_id=")
-	builder.WriteString(fmt.Sprintf("%v", af.TenantID))
+	builder.WriteString(fmt.Sprintf("%v", _m.TenantID))
 	builder.WriteString(", ")
 	builder.WriteString("alert_instance_id=")
-	builder.WriteString(fmt.Sprintf("%v", af.AlertInstanceID))
+	builder.WriteString(fmt.Sprintf("%v", _m.AlertInstanceID))
 	builder.WriteString(", ")
 	builder.WriteString("actionable=")
-	builder.WriteString(fmt.Sprintf("%v", af.Actionable))
+	builder.WriteString(fmt.Sprintf("%v", _m.Actionable))
 	builder.WriteString(", ")
 	builder.WriteString("accurate=")
-	builder.WriteString(fmt.Sprintf("%v", af.Accurate))
+	builder.WriteString(fmt.Sprintf("%v", _m.Accurate))
 	builder.WriteString(", ")
 	builder.WriteString("documentation_available=")
-	builder.WriteString(fmt.Sprintf("%v", af.DocumentationAvailable))
+	builder.WriteString(fmt.Sprintf("%v", _m.DocumentationAvailable))
 	builder.WriteString(", ")
 	builder.WriteString("documentation_needs_update=")
-	builder.WriteString(fmt.Sprintf("%v", af.DocumentationNeedsUpdate))
+	builder.WriteString(fmt.Sprintf("%v", _m.DocumentationNeedsUpdate))
 	builder.WriteByte(')')
 	return builder.String()
 }

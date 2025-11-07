@@ -20,56 +20,56 @@ type IncidentMilestoneDelete struct {
 }
 
 // Where appends a list predicates to the IncidentMilestoneDelete builder.
-func (imd *IncidentMilestoneDelete) Where(ps ...predicate.IncidentMilestone) *IncidentMilestoneDelete {
-	imd.mutation.Where(ps...)
-	return imd
+func (_d *IncidentMilestoneDelete) Where(ps ...predicate.IncidentMilestone) *IncidentMilestoneDelete {
+	_d.mutation.Where(ps...)
+	return _d
 }
 
 // Exec executes the deletion query and returns how many vertices were deleted.
-func (imd *IncidentMilestoneDelete) Exec(ctx context.Context) (int, error) {
-	return withHooks(ctx, imd.sqlExec, imd.mutation, imd.hooks)
+func (_d *IncidentMilestoneDelete) Exec(ctx context.Context) (int, error) {
+	return withHooks(ctx, _d.sqlExec, _d.mutation, _d.hooks)
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (imd *IncidentMilestoneDelete) ExecX(ctx context.Context) int {
-	n, err := imd.Exec(ctx)
+func (_d *IncidentMilestoneDelete) ExecX(ctx context.Context) int {
+	n, err := _d.Exec(ctx)
 	if err != nil {
 		panic(err)
 	}
 	return n
 }
 
-func (imd *IncidentMilestoneDelete) sqlExec(ctx context.Context) (int, error) {
+func (_d *IncidentMilestoneDelete) sqlExec(ctx context.Context) (int, error) {
 	_spec := sqlgraph.NewDeleteSpec(incidentmilestone.Table, sqlgraph.NewFieldSpec(incidentmilestone.FieldID, field.TypeUUID))
-	if ps := imd.mutation.predicates; len(ps) > 0 {
+	if ps := _d.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {
 				ps[i](selector)
 			}
 		}
 	}
-	affected, err := sqlgraph.DeleteNodes(ctx, imd.driver, _spec)
+	affected, err := sqlgraph.DeleteNodes(ctx, _d.driver, _spec)
 	if err != nil && sqlgraph.IsConstraintError(err) {
 		err = &ConstraintError{msg: err.Error(), wrap: err}
 	}
-	imd.mutation.done = true
+	_d.mutation.done = true
 	return affected, err
 }
 
 // IncidentMilestoneDeleteOne is the builder for deleting a single IncidentMilestone entity.
 type IncidentMilestoneDeleteOne struct {
-	imd *IncidentMilestoneDelete
+	_d *IncidentMilestoneDelete
 }
 
 // Where appends a list predicates to the IncidentMilestoneDelete builder.
-func (imdo *IncidentMilestoneDeleteOne) Where(ps ...predicate.IncidentMilestone) *IncidentMilestoneDeleteOne {
-	imdo.imd.mutation.Where(ps...)
-	return imdo
+func (_d *IncidentMilestoneDeleteOne) Where(ps ...predicate.IncidentMilestone) *IncidentMilestoneDeleteOne {
+	_d._d.mutation.Where(ps...)
+	return _d
 }
 
 // Exec executes the deletion query.
-func (imdo *IncidentMilestoneDeleteOne) Exec(ctx context.Context) error {
-	n, err := imdo.imd.Exec(ctx)
+func (_d *IncidentMilestoneDeleteOne) Exec(ctx context.Context) error {
+	n, err := _d._d.Exec(ctx)
 	switch {
 	case err != nil:
 		return err
@@ -81,8 +81,8 @@ func (imdo *IncidentMilestoneDeleteOne) Exec(ctx context.Context) error {
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (imdo *IncidentMilestoneDeleteOne) ExecX(ctx context.Context) {
-	if err := imdo.Exec(ctx); err != nil {
+func (_d *IncidentMilestoneDeleteOne) ExecX(ctx context.Context) {
+	if err := _d.Exec(ctx); err != nil {
 		panic(err)
 	}
 }

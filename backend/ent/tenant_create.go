@@ -22,18 +22,18 @@ type TenantCreate struct {
 }
 
 // Mutation returns the TenantMutation object of the builder.
-func (tc *TenantCreate) Mutation() *TenantMutation {
-	return tc.mutation
+func (_c *TenantCreate) Mutation() *TenantMutation {
+	return _c.mutation
 }
 
 // Save creates the Tenant in the database.
-func (tc *TenantCreate) Save(ctx context.Context) (*Tenant, error) {
-	return withHooks(ctx, tc.sqlSave, tc.mutation, tc.hooks)
+func (_c *TenantCreate) Save(ctx context.Context) (*Tenant, error) {
+	return withHooks(ctx, _c.sqlSave, _c.mutation, _c.hooks)
 }
 
 // SaveX calls Save and panics if Save returns an error.
-func (tc *TenantCreate) SaveX(ctx context.Context) *Tenant {
-	v, err := tc.Save(ctx)
+func (_c *TenantCreate) SaveX(ctx context.Context) *Tenant {
+	v, err := _c.Save(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -41,29 +41,29 @@ func (tc *TenantCreate) SaveX(ctx context.Context) *Tenant {
 }
 
 // Exec executes the query.
-func (tc *TenantCreate) Exec(ctx context.Context) error {
-	_, err := tc.Save(ctx)
+func (_c *TenantCreate) Exec(ctx context.Context) error {
+	_, err := _c.Save(ctx)
 	return err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (tc *TenantCreate) ExecX(ctx context.Context) {
-	if err := tc.Exec(ctx); err != nil {
+func (_c *TenantCreate) ExecX(ctx context.Context) {
+	if err := _c.Exec(ctx); err != nil {
 		panic(err)
 	}
 }
 
 // check runs all checks and user-defined validators on the builder.
-func (tc *TenantCreate) check() error {
+func (_c *TenantCreate) check() error {
 	return nil
 }
 
-func (tc *TenantCreate) sqlSave(ctx context.Context) (*Tenant, error) {
-	if err := tc.check(); err != nil {
+func (_c *TenantCreate) sqlSave(ctx context.Context) (*Tenant, error) {
+	if err := _c.check(); err != nil {
 		return nil, err
 	}
-	_node, _spec := tc.createSpec()
-	if err := sqlgraph.CreateNode(ctx, tc.driver, _spec); err != nil {
+	_node, _spec := _c.createSpec()
+	if err := sqlgraph.CreateNode(ctx, _c.driver, _spec); err != nil {
 		if sqlgraph.IsConstraintError(err) {
 			err = &ConstraintError{msg: err.Error(), wrap: err}
 		}
@@ -71,17 +71,17 @@ func (tc *TenantCreate) sqlSave(ctx context.Context) (*Tenant, error) {
 	}
 	id := _spec.ID.Value.(int64)
 	_node.ID = int(id)
-	tc.mutation.id = &_node.ID
-	tc.mutation.done = true
+	_c.mutation.id = &_node.ID
+	_c.mutation.done = true
 	return _node, nil
 }
 
-func (tc *TenantCreate) createSpec() (*Tenant, *sqlgraph.CreateSpec) {
+func (_c *TenantCreate) createSpec() (*Tenant, *sqlgraph.CreateSpec) {
 	var (
-		_node = &Tenant{config: tc.config}
+		_node = &Tenant{config: _c.config}
 		_spec = sqlgraph.NewCreateSpec(tenant.Table, sqlgraph.NewFieldSpec(tenant.FieldID, field.TypeInt))
 	)
-	_spec.OnConflict = tc.conflict
+	_spec.OnConflict = _c.conflict
 	return _node, _spec
 }
 
@@ -95,10 +95,10 @@ func (tc *TenantCreate) createSpec() (*Tenant, *sqlgraph.CreateSpec) {
 //			sql.ResolveWithNewValues(),
 //		).
 //		Exec(ctx)
-func (tc *TenantCreate) OnConflict(opts ...sql.ConflictOption) *TenantUpsertOne {
-	tc.conflict = opts
+func (_c *TenantCreate) OnConflict(opts ...sql.ConflictOption) *TenantUpsertOne {
+	_c.conflict = opts
 	return &TenantUpsertOne{
-		create: tc,
+		create: _c,
 	}
 }
 
@@ -108,10 +108,10 @@ func (tc *TenantCreate) OnConflict(opts ...sql.ConflictOption) *TenantUpsertOne 
 //	client.Tenant.Create().
 //		OnConflict(sql.ConflictColumns(columns...)).
 //		Exec(ctx)
-func (tc *TenantCreate) OnConflictColumns(columns ...string) *TenantUpsertOne {
-	tc.conflict = append(tc.conflict, sql.ConflictColumns(columns...))
+func (_c *TenantCreate) OnConflictColumns(columns ...string) *TenantUpsertOne {
+	_c.conflict = append(_c.conflict, sql.ConflictColumns(columns...))
 	return &TenantUpsertOne{
-		create: tc,
+		create: _c,
 	}
 }
 
@@ -210,16 +210,16 @@ type TenantCreateBulk struct {
 }
 
 // Save creates the Tenant entities in the database.
-func (tcb *TenantCreateBulk) Save(ctx context.Context) ([]*Tenant, error) {
-	if tcb.err != nil {
-		return nil, tcb.err
+func (_c *TenantCreateBulk) Save(ctx context.Context) ([]*Tenant, error) {
+	if _c.err != nil {
+		return nil, _c.err
 	}
-	specs := make([]*sqlgraph.CreateSpec, len(tcb.builders))
-	nodes := make([]*Tenant, len(tcb.builders))
-	mutators := make([]Mutator, len(tcb.builders))
-	for i := range tcb.builders {
+	specs := make([]*sqlgraph.CreateSpec, len(_c.builders))
+	nodes := make([]*Tenant, len(_c.builders))
+	mutators := make([]Mutator, len(_c.builders))
+	for i := range _c.builders {
 		func(i int, root context.Context) {
-			builder := tcb.builders[i]
+			builder := _c.builders[i]
 			var mut Mutator = MutateFunc(func(ctx context.Context, m Mutation) (Value, error) {
 				mutation, ok := m.(*TenantMutation)
 				if !ok {
@@ -232,12 +232,12 @@ func (tcb *TenantCreateBulk) Save(ctx context.Context) ([]*Tenant, error) {
 				var err error
 				nodes[i], specs[i] = builder.createSpec()
 				if i < len(mutators)-1 {
-					_, err = mutators[i+1].Mutate(root, tcb.builders[i+1].mutation)
+					_, err = mutators[i+1].Mutate(root, _c.builders[i+1].mutation)
 				} else {
 					spec := &sqlgraph.BatchCreateSpec{Nodes: specs}
-					spec.OnConflict = tcb.conflict
+					spec.OnConflict = _c.conflict
 					// Invoke the actual operation on the latest mutation in the chain.
-					if err = sqlgraph.BatchCreate(ctx, tcb.driver, spec); err != nil {
+					if err = sqlgraph.BatchCreate(ctx, _c.driver, spec); err != nil {
 						if sqlgraph.IsConstraintError(err) {
 							err = &ConstraintError{msg: err.Error(), wrap: err}
 						}
@@ -261,7 +261,7 @@ func (tcb *TenantCreateBulk) Save(ctx context.Context) ([]*Tenant, error) {
 		}(i, ctx)
 	}
 	if len(mutators) > 0 {
-		if _, err := mutators[0].Mutate(ctx, tcb.builders[0].mutation); err != nil {
+		if _, err := mutators[0].Mutate(ctx, _c.builders[0].mutation); err != nil {
 			return nil, err
 		}
 	}
@@ -269,8 +269,8 @@ func (tcb *TenantCreateBulk) Save(ctx context.Context) ([]*Tenant, error) {
 }
 
 // SaveX is like Save, but panics if an error occurs.
-func (tcb *TenantCreateBulk) SaveX(ctx context.Context) []*Tenant {
-	v, err := tcb.Save(ctx)
+func (_c *TenantCreateBulk) SaveX(ctx context.Context) []*Tenant {
+	v, err := _c.Save(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -278,14 +278,14 @@ func (tcb *TenantCreateBulk) SaveX(ctx context.Context) []*Tenant {
 }
 
 // Exec executes the query.
-func (tcb *TenantCreateBulk) Exec(ctx context.Context) error {
-	_, err := tcb.Save(ctx)
+func (_c *TenantCreateBulk) Exec(ctx context.Context) error {
+	_, err := _c.Save(ctx)
 	return err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (tcb *TenantCreateBulk) ExecX(ctx context.Context) {
-	if err := tcb.Exec(ctx); err != nil {
+func (_c *TenantCreateBulk) ExecX(ctx context.Context) {
+	if err := _c.Exec(ctx); err != nil {
 		panic(err)
 	}
 }
@@ -300,10 +300,10 @@ func (tcb *TenantCreateBulk) ExecX(ctx context.Context) {
 //			sql.ResolveWithNewValues(),
 //		).
 //		Exec(ctx)
-func (tcb *TenantCreateBulk) OnConflict(opts ...sql.ConflictOption) *TenantUpsertBulk {
-	tcb.conflict = opts
+func (_c *TenantCreateBulk) OnConflict(opts ...sql.ConflictOption) *TenantUpsertBulk {
+	_c.conflict = opts
 	return &TenantUpsertBulk{
-		create: tcb,
+		create: _c,
 	}
 }
 
@@ -313,10 +313,10 @@ func (tcb *TenantCreateBulk) OnConflict(opts ...sql.ConflictOption) *TenantUpser
 //	client.Tenant.Create().
 //		OnConflict(sql.ConflictColumns(columns...)).
 //		Exec(ctx)
-func (tcb *TenantCreateBulk) OnConflictColumns(columns ...string) *TenantUpsertBulk {
-	tcb.conflict = append(tcb.conflict, sql.ConflictColumns(columns...))
+func (_c *TenantCreateBulk) OnConflictColumns(columns ...string) *TenantUpsertBulk {
+	_c.conflict = append(_c.conflict, sql.ConflictColumns(columns...))
 	return &TenantUpsertBulk{
-		create: tcb,
+		create: _c,
 	}
 }
 

@@ -103,7 +103,7 @@ func (*IncidentSeverity) scanValues(columns []string) ([]any, error) {
 
 // assignValues assigns the values that were returned from sql.Rows (after scanning)
 // to the IncidentSeverity fields.
-func (is *IncidentSeverity) assignValues(columns []string, values []any) error {
+func (_m *IncidentSeverity) assignValues(columns []string, values []any) error {
 	if m, n := len(values), len(columns); m < n {
 		return fmt.Errorf("mismatch number of scan values: %d != %d", m, n)
 	}
@@ -113,52 +113,52 @@ func (is *IncidentSeverity) assignValues(columns []string, values []any) error {
 			if value, ok := values[i].(*uuid.UUID); !ok {
 				return fmt.Errorf("unexpected type %T for field id", values[i])
 			} else if value != nil {
-				is.ID = *value
+				_m.ID = *value
 			}
 		case incidentseverity.FieldTenantID:
 			if value, ok := values[i].(*sql.NullInt64); !ok {
 				return fmt.Errorf("unexpected type %T for field tenant_id", values[i])
 			} else if value.Valid {
-				is.TenantID = int(value.Int64)
+				_m.TenantID = int(value.Int64)
 			}
 		case incidentseverity.FieldArchiveTime:
 			if value, ok := values[i].(*sql.NullTime); !ok {
 				return fmt.Errorf("unexpected type %T for field archive_time", values[i])
 			} else if value.Valid {
-				is.ArchiveTime = value.Time
+				_m.ArchiveTime = value.Time
 			}
 		case incidentseverity.FieldProviderID:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field provider_id", values[i])
 			} else if value.Valid {
-				is.ProviderID = value.String
+				_m.ProviderID = value.String
 			}
 		case incidentseverity.FieldName:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field name", values[i])
 			} else if value.Valid {
-				is.Name = value.String
+				_m.Name = value.String
 			}
 		case incidentseverity.FieldRank:
 			if value, ok := values[i].(*sql.NullInt64); !ok {
 				return fmt.Errorf("unexpected type %T for field rank", values[i])
 			} else if value.Valid {
-				is.Rank = int(value.Int64)
+				_m.Rank = int(value.Int64)
 			}
 		case incidentseverity.FieldColor:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field color", values[i])
 			} else if value.Valid {
-				is.Color = value.String
+				_m.Color = value.String
 			}
 		case incidentseverity.FieldDescription:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field description", values[i])
 			} else if value.Valid {
-				is.Description = value.String
+				_m.Description = value.String
 			}
 		default:
-			is.selectValues.Set(columns[i], values[i])
+			_m.selectValues.Set(columns[i], values[i])
 		}
 	}
 	return nil
@@ -166,68 +166,68 @@ func (is *IncidentSeverity) assignValues(columns []string, values []any) error {
 
 // Value returns the ent.Value that was dynamically selected and assigned to the IncidentSeverity.
 // This includes values selected through modifiers, order, etc.
-func (is *IncidentSeverity) Value(name string) (ent.Value, error) {
-	return is.selectValues.Get(name)
+func (_m *IncidentSeverity) Value(name string) (ent.Value, error) {
+	return _m.selectValues.Get(name)
 }
 
 // QueryTenant queries the "tenant" edge of the IncidentSeverity entity.
-func (is *IncidentSeverity) QueryTenant() *TenantQuery {
-	return NewIncidentSeverityClient(is.config).QueryTenant(is)
+func (_m *IncidentSeverity) QueryTenant() *TenantQuery {
+	return NewIncidentSeverityClient(_m.config).QueryTenant(_m)
 }
 
 // QueryIncidents queries the "incidents" edge of the IncidentSeverity entity.
-func (is *IncidentSeverity) QueryIncidents() *IncidentQuery {
-	return NewIncidentSeverityClient(is.config).QueryIncidents(is)
+func (_m *IncidentSeverity) QueryIncidents() *IncidentQuery {
+	return NewIncidentSeverityClient(_m.config).QueryIncidents(_m)
 }
 
 // QueryDebriefQuestions queries the "debrief_questions" edge of the IncidentSeverity entity.
-func (is *IncidentSeverity) QueryDebriefQuestions() *IncidentDebriefQuestionQuery {
-	return NewIncidentSeverityClient(is.config).QueryDebriefQuestions(is)
+func (_m *IncidentSeverity) QueryDebriefQuestions() *IncidentDebriefQuestionQuery {
+	return NewIncidentSeverityClient(_m.config).QueryDebriefQuestions(_m)
 }
 
 // Update returns a builder for updating this IncidentSeverity.
 // Note that you need to call IncidentSeverity.Unwrap() before calling this method if this IncidentSeverity
 // was returned from a transaction, and the transaction was committed or rolled back.
-func (is *IncidentSeverity) Update() *IncidentSeverityUpdateOne {
-	return NewIncidentSeverityClient(is.config).UpdateOne(is)
+func (_m *IncidentSeverity) Update() *IncidentSeverityUpdateOne {
+	return NewIncidentSeverityClient(_m.config).UpdateOne(_m)
 }
 
 // Unwrap unwraps the IncidentSeverity entity that was returned from a transaction after it was closed,
 // so that all future queries will be executed through the driver which created the transaction.
-func (is *IncidentSeverity) Unwrap() *IncidentSeverity {
-	_tx, ok := is.config.driver.(*txDriver)
+func (_m *IncidentSeverity) Unwrap() *IncidentSeverity {
+	_tx, ok := _m.config.driver.(*txDriver)
 	if !ok {
 		panic("ent: IncidentSeverity is not a transactional entity")
 	}
-	is.config.driver = _tx.drv
-	return is
+	_m.config.driver = _tx.drv
+	return _m
 }
 
 // String implements the fmt.Stringer.
-func (is *IncidentSeverity) String() string {
+func (_m *IncidentSeverity) String() string {
 	var builder strings.Builder
 	builder.WriteString("IncidentSeverity(")
-	builder.WriteString(fmt.Sprintf("id=%v, ", is.ID))
+	builder.WriteString(fmt.Sprintf("id=%v, ", _m.ID))
 	builder.WriteString("tenant_id=")
-	builder.WriteString(fmt.Sprintf("%v", is.TenantID))
+	builder.WriteString(fmt.Sprintf("%v", _m.TenantID))
 	builder.WriteString(", ")
 	builder.WriteString("archive_time=")
-	builder.WriteString(is.ArchiveTime.Format(time.ANSIC))
+	builder.WriteString(_m.ArchiveTime.Format(time.ANSIC))
 	builder.WriteString(", ")
 	builder.WriteString("provider_id=")
-	builder.WriteString(is.ProviderID)
+	builder.WriteString(_m.ProviderID)
 	builder.WriteString(", ")
 	builder.WriteString("name=")
-	builder.WriteString(is.Name)
+	builder.WriteString(_m.Name)
 	builder.WriteString(", ")
 	builder.WriteString("rank=")
-	builder.WriteString(fmt.Sprintf("%v", is.Rank))
+	builder.WriteString(fmt.Sprintf("%v", _m.Rank))
 	builder.WriteString(", ")
 	builder.WriteString("color=")
-	builder.WriteString(is.Color)
+	builder.WriteString(_m.Color)
 	builder.WriteString(", ")
 	builder.WriteString("description=")
-	builder.WriteString(is.Description)
+	builder.WriteString(_m.Description)
 	builder.WriteByte(')')
 	return builder.String()
 }

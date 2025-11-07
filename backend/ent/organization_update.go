@@ -24,72 +24,72 @@ type OrganizationUpdate struct {
 }
 
 // Where appends a list predicates to the OrganizationUpdate builder.
-func (ou *OrganizationUpdate) Where(ps ...predicate.Organization) *OrganizationUpdate {
-	ou.mutation.Where(ps...)
-	return ou
+func (_u *OrganizationUpdate) Where(ps ...predicate.Organization) *OrganizationUpdate {
+	_u.mutation.Where(ps...)
+	return _u
 }
 
 // SetProviderID sets the "provider_id" field.
-func (ou *OrganizationUpdate) SetProviderID(s string) *OrganizationUpdate {
-	ou.mutation.SetProviderID(s)
-	return ou
+func (_u *OrganizationUpdate) SetProviderID(v string) *OrganizationUpdate {
+	_u.mutation.SetProviderID(v)
+	return _u
 }
 
 // SetNillableProviderID sets the "provider_id" field if the given value is not nil.
-func (ou *OrganizationUpdate) SetNillableProviderID(s *string) *OrganizationUpdate {
-	if s != nil {
-		ou.SetProviderID(*s)
+func (_u *OrganizationUpdate) SetNillableProviderID(v *string) *OrganizationUpdate {
+	if v != nil {
+		_u.SetProviderID(*v)
 	}
-	return ou
+	return _u
 }
 
 // SetName sets the "name" field.
-func (ou *OrganizationUpdate) SetName(s string) *OrganizationUpdate {
-	ou.mutation.SetName(s)
-	return ou
+func (_u *OrganizationUpdate) SetName(v string) *OrganizationUpdate {
+	_u.mutation.SetName(v)
+	return _u
 }
 
 // SetNillableName sets the "name" field if the given value is not nil.
-func (ou *OrganizationUpdate) SetNillableName(s *string) *OrganizationUpdate {
-	if s != nil {
-		ou.SetName(*s)
+func (_u *OrganizationUpdate) SetNillableName(v *string) *OrganizationUpdate {
+	if v != nil {
+		_u.SetName(*v)
 	}
-	return ou
+	return _u
 }
 
 // SetInitialSetupAt sets the "initial_setup_at" field.
-func (ou *OrganizationUpdate) SetInitialSetupAt(t time.Time) *OrganizationUpdate {
-	ou.mutation.SetInitialSetupAt(t)
-	return ou
+func (_u *OrganizationUpdate) SetInitialSetupAt(v time.Time) *OrganizationUpdate {
+	_u.mutation.SetInitialSetupAt(v)
+	return _u
 }
 
 // SetNillableInitialSetupAt sets the "initial_setup_at" field if the given value is not nil.
-func (ou *OrganizationUpdate) SetNillableInitialSetupAt(t *time.Time) *OrganizationUpdate {
-	if t != nil {
-		ou.SetInitialSetupAt(*t)
+func (_u *OrganizationUpdate) SetNillableInitialSetupAt(v *time.Time) *OrganizationUpdate {
+	if v != nil {
+		_u.SetInitialSetupAt(*v)
 	}
-	return ou
+	return _u
 }
 
 // ClearInitialSetupAt clears the value of the "initial_setup_at" field.
-func (ou *OrganizationUpdate) ClearInitialSetupAt() *OrganizationUpdate {
-	ou.mutation.ClearInitialSetupAt()
-	return ou
+func (_u *OrganizationUpdate) ClearInitialSetupAt() *OrganizationUpdate {
+	_u.mutation.ClearInitialSetupAt()
+	return _u
 }
 
 // Mutation returns the OrganizationMutation object of the builder.
-func (ou *OrganizationUpdate) Mutation() *OrganizationMutation {
-	return ou.mutation
+func (_u *OrganizationUpdate) Mutation() *OrganizationMutation {
+	return _u.mutation
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
-func (ou *OrganizationUpdate) Save(ctx context.Context) (int, error) {
-	return withHooks(ctx, ou.sqlSave, ou.mutation, ou.hooks)
+func (_u *OrganizationUpdate) Save(ctx context.Context) (int, error) {
+	return withHooks(ctx, _u.sqlSave, _u.mutation, _u.hooks)
 }
 
 // SaveX is like Save, but panics if an error occurs.
-func (ou *OrganizationUpdate) SaveX(ctx context.Context) int {
-	affected, err := ou.Save(ctx)
+func (_u *OrganizationUpdate) SaveX(ctx context.Context) int {
+	affected, err := _u.Save(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -97,63 +97,63 @@ func (ou *OrganizationUpdate) SaveX(ctx context.Context) int {
 }
 
 // Exec executes the query.
-func (ou *OrganizationUpdate) Exec(ctx context.Context) error {
-	_, err := ou.Save(ctx)
+func (_u *OrganizationUpdate) Exec(ctx context.Context) error {
+	_, err := _u.Save(ctx)
 	return err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (ou *OrganizationUpdate) ExecX(ctx context.Context) {
-	if err := ou.Exec(ctx); err != nil {
+func (_u *OrganizationUpdate) ExecX(ctx context.Context) {
+	if err := _u.Exec(ctx); err != nil {
 		panic(err)
 	}
 }
 
 // check runs all checks and user-defined validators on the builder.
-func (ou *OrganizationUpdate) check() error {
-	if v, ok := ou.mutation.ProviderID(); ok {
+func (_u *OrganizationUpdate) check() error {
+	if v, ok := _u.mutation.ProviderID(); ok {
 		if err := organization.ProviderIDValidator(v); err != nil {
 			return &ValidationError{Name: "provider_id", err: fmt.Errorf(`ent: validator failed for field "Organization.provider_id": %w`, err)}
 		}
 	}
-	if ou.mutation.TenantCleared() && len(ou.mutation.TenantIDs()) > 0 {
+	if _u.mutation.TenantCleared() && len(_u.mutation.TenantIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "Organization.tenant"`)
 	}
 	return nil
 }
 
 // Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
-func (ou *OrganizationUpdate) Modify(modifiers ...func(u *sql.UpdateBuilder)) *OrganizationUpdate {
-	ou.modifiers = append(ou.modifiers, modifiers...)
-	return ou
+func (_u *OrganizationUpdate) Modify(modifiers ...func(u *sql.UpdateBuilder)) *OrganizationUpdate {
+	_u.modifiers = append(_u.modifiers, modifiers...)
+	return _u
 }
 
-func (ou *OrganizationUpdate) sqlSave(ctx context.Context) (n int, err error) {
-	if err := ou.check(); err != nil {
-		return n, err
+func (_u *OrganizationUpdate) sqlSave(ctx context.Context) (_node int, err error) {
+	if err := _u.check(); err != nil {
+		return _node, err
 	}
 	_spec := sqlgraph.NewUpdateSpec(organization.Table, organization.Columns, sqlgraph.NewFieldSpec(organization.FieldID, field.TypeUUID))
-	if ps := ou.mutation.predicates; len(ps) > 0 {
+	if ps := _u.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {
 				ps[i](selector)
 			}
 		}
 	}
-	if value, ok := ou.mutation.ProviderID(); ok {
+	if value, ok := _u.mutation.ProviderID(); ok {
 		_spec.SetField(organization.FieldProviderID, field.TypeString, value)
 	}
-	if value, ok := ou.mutation.Name(); ok {
+	if value, ok := _u.mutation.Name(); ok {
 		_spec.SetField(organization.FieldName, field.TypeString, value)
 	}
-	if value, ok := ou.mutation.InitialSetupAt(); ok {
+	if value, ok := _u.mutation.InitialSetupAt(); ok {
 		_spec.SetField(organization.FieldInitialSetupAt, field.TypeTime, value)
 	}
-	if ou.mutation.InitialSetupAtCleared() {
+	if _u.mutation.InitialSetupAtCleared() {
 		_spec.ClearField(organization.FieldInitialSetupAt, field.TypeTime)
 	}
-	_spec.AddModifiers(ou.modifiers...)
-	if n, err = sqlgraph.UpdateNodes(ctx, ou.driver, _spec); err != nil {
+	_spec.AddModifiers(_u.modifiers...)
+	if _node, err = sqlgraph.UpdateNodes(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{organization.Label}
 		} else if sqlgraph.IsConstraintError(err) {
@@ -161,8 +161,8 @@ func (ou *OrganizationUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		return 0, err
 	}
-	ou.mutation.done = true
-	return n, nil
+	_u.mutation.done = true
+	return _node, nil
 }
 
 // OrganizationUpdateOne is the builder for updating a single Organization entity.
@@ -175,79 +175,79 @@ type OrganizationUpdateOne struct {
 }
 
 // SetProviderID sets the "provider_id" field.
-func (ouo *OrganizationUpdateOne) SetProviderID(s string) *OrganizationUpdateOne {
-	ouo.mutation.SetProviderID(s)
-	return ouo
+func (_u *OrganizationUpdateOne) SetProviderID(v string) *OrganizationUpdateOne {
+	_u.mutation.SetProviderID(v)
+	return _u
 }
 
 // SetNillableProviderID sets the "provider_id" field if the given value is not nil.
-func (ouo *OrganizationUpdateOne) SetNillableProviderID(s *string) *OrganizationUpdateOne {
-	if s != nil {
-		ouo.SetProviderID(*s)
+func (_u *OrganizationUpdateOne) SetNillableProviderID(v *string) *OrganizationUpdateOne {
+	if v != nil {
+		_u.SetProviderID(*v)
 	}
-	return ouo
+	return _u
 }
 
 // SetName sets the "name" field.
-func (ouo *OrganizationUpdateOne) SetName(s string) *OrganizationUpdateOne {
-	ouo.mutation.SetName(s)
-	return ouo
+func (_u *OrganizationUpdateOne) SetName(v string) *OrganizationUpdateOne {
+	_u.mutation.SetName(v)
+	return _u
 }
 
 // SetNillableName sets the "name" field if the given value is not nil.
-func (ouo *OrganizationUpdateOne) SetNillableName(s *string) *OrganizationUpdateOne {
-	if s != nil {
-		ouo.SetName(*s)
+func (_u *OrganizationUpdateOne) SetNillableName(v *string) *OrganizationUpdateOne {
+	if v != nil {
+		_u.SetName(*v)
 	}
-	return ouo
+	return _u
 }
 
 // SetInitialSetupAt sets the "initial_setup_at" field.
-func (ouo *OrganizationUpdateOne) SetInitialSetupAt(t time.Time) *OrganizationUpdateOne {
-	ouo.mutation.SetInitialSetupAt(t)
-	return ouo
+func (_u *OrganizationUpdateOne) SetInitialSetupAt(v time.Time) *OrganizationUpdateOne {
+	_u.mutation.SetInitialSetupAt(v)
+	return _u
 }
 
 // SetNillableInitialSetupAt sets the "initial_setup_at" field if the given value is not nil.
-func (ouo *OrganizationUpdateOne) SetNillableInitialSetupAt(t *time.Time) *OrganizationUpdateOne {
-	if t != nil {
-		ouo.SetInitialSetupAt(*t)
+func (_u *OrganizationUpdateOne) SetNillableInitialSetupAt(v *time.Time) *OrganizationUpdateOne {
+	if v != nil {
+		_u.SetInitialSetupAt(*v)
 	}
-	return ouo
+	return _u
 }
 
 // ClearInitialSetupAt clears the value of the "initial_setup_at" field.
-func (ouo *OrganizationUpdateOne) ClearInitialSetupAt() *OrganizationUpdateOne {
-	ouo.mutation.ClearInitialSetupAt()
-	return ouo
+func (_u *OrganizationUpdateOne) ClearInitialSetupAt() *OrganizationUpdateOne {
+	_u.mutation.ClearInitialSetupAt()
+	return _u
 }
 
 // Mutation returns the OrganizationMutation object of the builder.
-func (ouo *OrganizationUpdateOne) Mutation() *OrganizationMutation {
-	return ouo.mutation
+func (_u *OrganizationUpdateOne) Mutation() *OrganizationMutation {
+	return _u.mutation
 }
 
 // Where appends a list predicates to the OrganizationUpdate builder.
-func (ouo *OrganizationUpdateOne) Where(ps ...predicate.Organization) *OrganizationUpdateOne {
-	ouo.mutation.Where(ps...)
-	return ouo
+func (_u *OrganizationUpdateOne) Where(ps ...predicate.Organization) *OrganizationUpdateOne {
+	_u.mutation.Where(ps...)
+	return _u
 }
 
 // Select allows selecting one or more fields (columns) of the returned entity.
 // The default is selecting all fields defined in the entity schema.
-func (ouo *OrganizationUpdateOne) Select(field string, fields ...string) *OrganizationUpdateOne {
-	ouo.fields = append([]string{field}, fields...)
-	return ouo
+func (_u *OrganizationUpdateOne) Select(field string, fields ...string) *OrganizationUpdateOne {
+	_u.fields = append([]string{field}, fields...)
+	return _u
 }
 
 // Save executes the query and returns the updated Organization entity.
-func (ouo *OrganizationUpdateOne) Save(ctx context.Context) (*Organization, error) {
-	return withHooks(ctx, ouo.sqlSave, ouo.mutation, ouo.hooks)
+func (_u *OrganizationUpdateOne) Save(ctx context.Context) (*Organization, error) {
+	return withHooks(ctx, _u.sqlSave, _u.mutation, _u.hooks)
 }
 
 // SaveX is like Save, but panics if an error occurs.
-func (ouo *OrganizationUpdateOne) SaveX(ctx context.Context) *Organization {
-	node, err := ouo.Save(ctx)
+func (_u *OrganizationUpdateOne) SaveX(ctx context.Context) *Organization {
+	node, err := _u.Save(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -255,48 +255,48 @@ func (ouo *OrganizationUpdateOne) SaveX(ctx context.Context) *Organization {
 }
 
 // Exec executes the query on the entity.
-func (ouo *OrganizationUpdateOne) Exec(ctx context.Context) error {
-	_, err := ouo.Save(ctx)
+func (_u *OrganizationUpdateOne) Exec(ctx context.Context) error {
+	_, err := _u.Save(ctx)
 	return err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (ouo *OrganizationUpdateOne) ExecX(ctx context.Context) {
-	if err := ouo.Exec(ctx); err != nil {
+func (_u *OrganizationUpdateOne) ExecX(ctx context.Context) {
+	if err := _u.Exec(ctx); err != nil {
 		panic(err)
 	}
 }
 
 // check runs all checks and user-defined validators on the builder.
-func (ouo *OrganizationUpdateOne) check() error {
-	if v, ok := ouo.mutation.ProviderID(); ok {
+func (_u *OrganizationUpdateOne) check() error {
+	if v, ok := _u.mutation.ProviderID(); ok {
 		if err := organization.ProviderIDValidator(v); err != nil {
 			return &ValidationError{Name: "provider_id", err: fmt.Errorf(`ent: validator failed for field "Organization.provider_id": %w`, err)}
 		}
 	}
-	if ouo.mutation.TenantCleared() && len(ouo.mutation.TenantIDs()) > 0 {
+	if _u.mutation.TenantCleared() && len(_u.mutation.TenantIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "Organization.tenant"`)
 	}
 	return nil
 }
 
 // Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
-func (ouo *OrganizationUpdateOne) Modify(modifiers ...func(u *sql.UpdateBuilder)) *OrganizationUpdateOne {
-	ouo.modifiers = append(ouo.modifiers, modifiers...)
-	return ouo
+func (_u *OrganizationUpdateOne) Modify(modifiers ...func(u *sql.UpdateBuilder)) *OrganizationUpdateOne {
+	_u.modifiers = append(_u.modifiers, modifiers...)
+	return _u
 }
 
-func (ouo *OrganizationUpdateOne) sqlSave(ctx context.Context) (_node *Organization, err error) {
-	if err := ouo.check(); err != nil {
+func (_u *OrganizationUpdateOne) sqlSave(ctx context.Context) (_node *Organization, err error) {
+	if err := _u.check(); err != nil {
 		return _node, err
 	}
 	_spec := sqlgraph.NewUpdateSpec(organization.Table, organization.Columns, sqlgraph.NewFieldSpec(organization.FieldID, field.TypeUUID))
-	id, ok := ouo.mutation.ID()
+	id, ok := _u.mutation.ID()
 	if !ok {
 		return nil, &ValidationError{Name: "id", err: errors.New(`ent: missing "Organization.id" for update`)}
 	}
 	_spec.Node.ID.Value = id
-	if fields := ouo.fields; len(fields) > 0 {
+	if fields := _u.fields; len(fields) > 0 {
 		_spec.Node.Columns = make([]string, 0, len(fields))
 		_spec.Node.Columns = append(_spec.Node.Columns, organization.FieldID)
 		for _, f := range fields {
@@ -308,30 +308,30 @@ func (ouo *OrganizationUpdateOne) sqlSave(ctx context.Context) (_node *Organizat
 			}
 		}
 	}
-	if ps := ouo.mutation.predicates; len(ps) > 0 {
+	if ps := _u.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {
 				ps[i](selector)
 			}
 		}
 	}
-	if value, ok := ouo.mutation.ProviderID(); ok {
+	if value, ok := _u.mutation.ProviderID(); ok {
 		_spec.SetField(organization.FieldProviderID, field.TypeString, value)
 	}
-	if value, ok := ouo.mutation.Name(); ok {
+	if value, ok := _u.mutation.Name(); ok {
 		_spec.SetField(organization.FieldName, field.TypeString, value)
 	}
-	if value, ok := ouo.mutation.InitialSetupAt(); ok {
+	if value, ok := _u.mutation.InitialSetupAt(); ok {
 		_spec.SetField(organization.FieldInitialSetupAt, field.TypeTime, value)
 	}
-	if ouo.mutation.InitialSetupAtCleared() {
+	if _u.mutation.InitialSetupAtCleared() {
 		_spec.ClearField(organization.FieldInitialSetupAt, field.TypeTime)
 	}
-	_spec.AddModifiers(ouo.modifiers...)
-	_node = &Organization{config: ouo.config}
+	_spec.AddModifiers(_u.modifiers...)
+	_node = &Organization{config: _u.config}
 	_spec.Assign = _node.assignValues
 	_spec.ScanValues = _node.scanValues
-	if err = sqlgraph.UpdateNode(ctx, ouo.driver, _spec); err != nil {
+	if err = sqlgraph.UpdateNode(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{organization.Label}
 		} else if sqlgraph.IsConstraintError(err) {
@@ -339,6 +339,6 @@ func (ouo *OrganizationUpdateOne) sqlSave(ctx context.Context) (_node *Organizat
 		}
 		return nil, err
 	}
-	ouo.mutation.done = true
+	_u.mutation.done = true
 	return _node, nil
 }

@@ -128,7 +128,7 @@ func (*SystemComponentRelationship) scanValues(columns []string) ([]any, error) 
 
 // assignValues assigns the values that were returned from sql.Rows (after scanning)
 // to the SystemComponentRelationship fields.
-func (scr *SystemComponentRelationship) assignValues(columns []string, values []any) error {
+func (_m *SystemComponentRelationship) assignValues(columns []string, values []any) error {
 	if m, n := len(values), len(columns); m < n {
 		return fmt.Errorf("mismatch number of scan values: %d != %d", m, n)
 	}
@@ -138,46 +138,46 @@ func (scr *SystemComponentRelationship) assignValues(columns []string, values []
 			if value, ok := values[i].(*uuid.UUID); !ok {
 				return fmt.Errorf("unexpected type %T for field id", values[i])
 			} else if value != nil {
-				scr.ID = *value
+				_m.ID = *value
 			}
 		case systemcomponentrelationship.FieldTenantID:
 			if value, ok := values[i].(*sql.NullInt64); !ok {
 				return fmt.Errorf("unexpected type %T for field tenant_id", values[i])
 			} else if value.Valid {
-				scr.TenantID = int(value.Int64)
+				_m.TenantID = int(value.Int64)
 			}
 		case systemcomponentrelationship.FieldProviderID:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field provider_id", values[i])
 			} else if value.Valid {
-				scr.ProviderID = value.String
+				_m.ProviderID = value.String
 			}
 		case systemcomponentrelationship.FieldSourceID:
 			if value, ok := values[i].(*uuid.UUID); !ok {
 				return fmt.Errorf("unexpected type %T for field source_id", values[i])
 			} else if value != nil {
-				scr.SourceID = *value
+				_m.SourceID = *value
 			}
 		case systemcomponentrelationship.FieldTargetID:
 			if value, ok := values[i].(*uuid.UUID); !ok {
 				return fmt.Errorf("unexpected type %T for field target_id", values[i])
 			} else if value != nil {
-				scr.TargetID = *value
+				_m.TargetID = *value
 			}
 		case systemcomponentrelationship.FieldDescription:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field description", values[i])
 			} else if value.Valid {
-				scr.Description = value.String
+				_m.Description = value.String
 			}
 		case systemcomponentrelationship.FieldCreatedAt:
 			if value, ok := values[i].(*sql.NullTime); !ok {
 				return fmt.Errorf("unexpected type %T for field created_at", values[i])
 			} else if value.Valid {
-				scr.CreatedAt = value.Time
+				_m.CreatedAt = value.Time
 			}
 		default:
-			scr.selectValues.Set(columns[i], values[i])
+			_m.selectValues.Set(columns[i], values[i])
 		}
 	}
 	return nil
@@ -185,75 +185,75 @@ func (scr *SystemComponentRelationship) assignValues(columns []string, values []
 
 // Value returns the ent.Value that was dynamically selected and assigned to the SystemComponentRelationship.
 // This includes values selected through modifiers, order, etc.
-func (scr *SystemComponentRelationship) Value(name string) (ent.Value, error) {
-	return scr.selectValues.Get(name)
+func (_m *SystemComponentRelationship) Value(name string) (ent.Value, error) {
+	return _m.selectValues.Get(name)
 }
 
 // QueryTenant queries the "tenant" edge of the SystemComponentRelationship entity.
-func (scr *SystemComponentRelationship) QueryTenant() *TenantQuery {
-	return NewSystemComponentRelationshipClient(scr.config).QueryTenant(scr)
+func (_m *SystemComponentRelationship) QueryTenant() *TenantQuery {
+	return NewSystemComponentRelationshipClient(_m.config).QueryTenant(_m)
 }
 
 // QuerySource queries the "source" edge of the SystemComponentRelationship entity.
-func (scr *SystemComponentRelationship) QuerySource() *SystemComponentQuery {
-	return NewSystemComponentRelationshipClient(scr.config).QuerySource(scr)
+func (_m *SystemComponentRelationship) QuerySource() *SystemComponentQuery {
+	return NewSystemComponentRelationshipClient(_m.config).QuerySource(_m)
 }
 
 // QueryTarget queries the "target" edge of the SystemComponentRelationship entity.
-func (scr *SystemComponentRelationship) QueryTarget() *SystemComponentQuery {
-	return NewSystemComponentRelationshipClient(scr.config).QueryTarget(scr)
+func (_m *SystemComponentRelationship) QueryTarget() *SystemComponentQuery {
+	return NewSystemComponentRelationshipClient(_m.config).QueryTarget(_m)
 }
 
 // QuerySystemAnalyses queries the "system_analyses" edge of the SystemComponentRelationship entity.
-func (scr *SystemComponentRelationship) QuerySystemAnalyses() *SystemAnalysisRelationshipQuery {
-	return NewSystemComponentRelationshipClient(scr.config).QuerySystemAnalyses(scr)
+func (_m *SystemComponentRelationship) QuerySystemAnalyses() *SystemAnalysisRelationshipQuery {
+	return NewSystemComponentRelationshipClient(_m.config).QuerySystemAnalyses(_m)
 }
 
 // QueryHazards queries the "hazards" edge of the SystemComponentRelationship entity.
-func (scr *SystemComponentRelationship) QueryHazards() *SystemHazardQuery {
-	return NewSystemComponentRelationshipClient(scr.config).QueryHazards(scr)
+func (_m *SystemComponentRelationship) QueryHazards() *SystemHazardQuery {
+	return NewSystemComponentRelationshipClient(_m.config).QueryHazards(_m)
 }
 
 // Update returns a builder for updating this SystemComponentRelationship.
 // Note that you need to call SystemComponentRelationship.Unwrap() before calling this method if this SystemComponentRelationship
 // was returned from a transaction, and the transaction was committed or rolled back.
-func (scr *SystemComponentRelationship) Update() *SystemComponentRelationshipUpdateOne {
-	return NewSystemComponentRelationshipClient(scr.config).UpdateOne(scr)
+func (_m *SystemComponentRelationship) Update() *SystemComponentRelationshipUpdateOne {
+	return NewSystemComponentRelationshipClient(_m.config).UpdateOne(_m)
 }
 
 // Unwrap unwraps the SystemComponentRelationship entity that was returned from a transaction after it was closed,
 // so that all future queries will be executed through the driver which created the transaction.
-func (scr *SystemComponentRelationship) Unwrap() *SystemComponentRelationship {
-	_tx, ok := scr.config.driver.(*txDriver)
+func (_m *SystemComponentRelationship) Unwrap() *SystemComponentRelationship {
+	_tx, ok := _m.config.driver.(*txDriver)
 	if !ok {
 		panic("ent: SystemComponentRelationship is not a transactional entity")
 	}
-	scr.config.driver = _tx.drv
-	return scr
+	_m.config.driver = _tx.drv
+	return _m
 }
 
 // String implements the fmt.Stringer.
-func (scr *SystemComponentRelationship) String() string {
+func (_m *SystemComponentRelationship) String() string {
 	var builder strings.Builder
 	builder.WriteString("SystemComponentRelationship(")
-	builder.WriteString(fmt.Sprintf("id=%v, ", scr.ID))
+	builder.WriteString(fmt.Sprintf("id=%v, ", _m.ID))
 	builder.WriteString("tenant_id=")
-	builder.WriteString(fmt.Sprintf("%v", scr.TenantID))
+	builder.WriteString(fmt.Sprintf("%v", _m.TenantID))
 	builder.WriteString(", ")
 	builder.WriteString("provider_id=")
-	builder.WriteString(scr.ProviderID)
+	builder.WriteString(_m.ProviderID)
 	builder.WriteString(", ")
 	builder.WriteString("source_id=")
-	builder.WriteString(fmt.Sprintf("%v", scr.SourceID))
+	builder.WriteString(fmt.Sprintf("%v", _m.SourceID))
 	builder.WriteString(", ")
 	builder.WriteString("target_id=")
-	builder.WriteString(fmt.Sprintf("%v", scr.TargetID))
+	builder.WriteString(fmt.Sprintf("%v", _m.TargetID))
 	builder.WriteString(", ")
 	builder.WriteString("description=")
-	builder.WriteString(scr.Description)
+	builder.WriteString(_m.Description)
 	builder.WriteString(", ")
 	builder.WriteString("created_at=")
-	builder.WriteString(scr.CreatedAt.Format(time.ANSIC))
+	builder.WriteString(_m.CreatedAt.Format(time.ANSIC))
 	builder.WriteByte(')')
 	return builder.String()
 }

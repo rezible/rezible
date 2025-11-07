@@ -105,7 +105,7 @@ func (*MeetingSession) scanValues(columns []string) ([]any, error) {
 
 // assignValues assigns the values that were returned from sql.Rows (after scanning)
 // to the MeetingSession fields.
-func (ms *MeetingSession) assignValues(columns []string, values []any) error {
+func (_m *MeetingSession) assignValues(columns []string, values []any) error {
 	if m, n := len(values), len(columns); m < n {
 		return fmt.Errorf("mismatch number of scan values: %d != %d", m, n)
 	}
@@ -115,47 +115,47 @@ func (ms *MeetingSession) assignValues(columns []string, values []any) error {
 			if value, ok := values[i].(*uuid.UUID); !ok {
 				return fmt.Errorf("unexpected type %T for field id", values[i])
 			} else if value != nil {
-				ms.ID = *value
+				_m.ID = *value
 			}
 		case meetingsession.FieldTenantID:
 			if value, ok := values[i].(*sql.NullInt64); !ok {
 				return fmt.Errorf("unexpected type %T for field tenant_id", values[i])
 			} else if value.Valid {
-				ms.TenantID = int(value.Int64)
+				_m.TenantID = int(value.Int64)
 			}
 		case meetingsession.FieldTitle:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field title", values[i])
 			} else if value.Valid {
-				ms.Title = value.String
+				_m.Title = value.String
 			}
 		case meetingsession.FieldStartedAt:
 			if value, ok := values[i].(*sql.NullTime); !ok {
 				return fmt.Errorf("unexpected type %T for field started_at", values[i])
 			} else if value.Valid {
-				ms.StartedAt = value.Time
+				_m.StartedAt = value.Time
 			}
 		case meetingsession.FieldEndedAt:
 			if value, ok := values[i].(*sql.NullTime); !ok {
 				return fmt.Errorf("unexpected type %T for field ended_at", values[i])
 			} else if value.Valid {
-				ms.EndedAt = value.Time
+				_m.EndedAt = value.Time
 			}
 		case meetingsession.FieldDocumentName:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field document_name", values[i])
 			} else if value.Valid {
-				ms.DocumentName = value.String
+				_m.DocumentName = value.String
 			}
 		case meetingsession.ForeignKeys[0]:
 			if value, ok := values[i].(*sql.NullScanner); !ok {
 				return fmt.Errorf("unexpected type %T for field meeting_session_schedule", values[i])
 			} else if value.Valid {
-				ms.meeting_session_schedule = new(uuid.UUID)
-				*ms.meeting_session_schedule = *value.S.(*uuid.UUID)
+				_m.meeting_session_schedule = new(uuid.UUID)
+				*_m.meeting_session_schedule = *value.S.(*uuid.UUID)
 			}
 		default:
-			ms.selectValues.Set(columns[i], values[i])
+			_m.selectValues.Set(columns[i], values[i])
 		}
 	}
 	return nil
@@ -163,62 +163,62 @@ func (ms *MeetingSession) assignValues(columns []string, values []any) error {
 
 // Value returns the ent.Value that was dynamically selected and assigned to the MeetingSession.
 // This includes values selected through modifiers, order, etc.
-func (ms *MeetingSession) Value(name string) (ent.Value, error) {
-	return ms.selectValues.Get(name)
+func (_m *MeetingSession) Value(name string) (ent.Value, error) {
+	return _m.selectValues.Get(name)
 }
 
 // QueryTenant queries the "tenant" edge of the MeetingSession entity.
-func (ms *MeetingSession) QueryTenant() *TenantQuery {
-	return NewMeetingSessionClient(ms.config).QueryTenant(ms)
+func (_m *MeetingSession) QueryTenant() *TenantQuery {
+	return NewMeetingSessionClient(_m.config).QueryTenant(_m)
 }
 
 // QueryIncidents queries the "incidents" edge of the MeetingSession entity.
-func (ms *MeetingSession) QueryIncidents() *IncidentQuery {
-	return NewMeetingSessionClient(ms.config).QueryIncidents(ms)
+func (_m *MeetingSession) QueryIncidents() *IncidentQuery {
+	return NewMeetingSessionClient(_m.config).QueryIncidents(_m)
 }
 
 // QuerySchedule queries the "schedule" edge of the MeetingSession entity.
-func (ms *MeetingSession) QuerySchedule() *MeetingScheduleQuery {
-	return NewMeetingSessionClient(ms.config).QuerySchedule(ms)
+func (_m *MeetingSession) QuerySchedule() *MeetingScheduleQuery {
+	return NewMeetingSessionClient(_m.config).QuerySchedule(_m)
 }
 
 // Update returns a builder for updating this MeetingSession.
 // Note that you need to call MeetingSession.Unwrap() before calling this method if this MeetingSession
 // was returned from a transaction, and the transaction was committed or rolled back.
-func (ms *MeetingSession) Update() *MeetingSessionUpdateOne {
-	return NewMeetingSessionClient(ms.config).UpdateOne(ms)
+func (_m *MeetingSession) Update() *MeetingSessionUpdateOne {
+	return NewMeetingSessionClient(_m.config).UpdateOne(_m)
 }
 
 // Unwrap unwraps the MeetingSession entity that was returned from a transaction after it was closed,
 // so that all future queries will be executed through the driver which created the transaction.
-func (ms *MeetingSession) Unwrap() *MeetingSession {
-	_tx, ok := ms.config.driver.(*txDriver)
+func (_m *MeetingSession) Unwrap() *MeetingSession {
+	_tx, ok := _m.config.driver.(*txDriver)
 	if !ok {
 		panic("ent: MeetingSession is not a transactional entity")
 	}
-	ms.config.driver = _tx.drv
-	return ms
+	_m.config.driver = _tx.drv
+	return _m
 }
 
 // String implements the fmt.Stringer.
-func (ms *MeetingSession) String() string {
+func (_m *MeetingSession) String() string {
 	var builder strings.Builder
 	builder.WriteString("MeetingSession(")
-	builder.WriteString(fmt.Sprintf("id=%v, ", ms.ID))
+	builder.WriteString(fmt.Sprintf("id=%v, ", _m.ID))
 	builder.WriteString("tenant_id=")
-	builder.WriteString(fmt.Sprintf("%v", ms.TenantID))
+	builder.WriteString(fmt.Sprintf("%v", _m.TenantID))
 	builder.WriteString(", ")
 	builder.WriteString("title=")
-	builder.WriteString(ms.Title)
+	builder.WriteString(_m.Title)
 	builder.WriteString(", ")
 	builder.WriteString("started_at=")
-	builder.WriteString(ms.StartedAt.Format(time.ANSIC))
+	builder.WriteString(_m.StartedAt.Format(time.ANSIC))
 	builder.WriteString(", ")
 	builder.WriteString("ended_at=")
-	builder.WriteString(ms.EndedAt.Format(time.ANSIC))
+	builder.WriteString(_m.EndedAt.Format(time.ANSIC))
 	builder.WriteString(", ")
 	builder.WriteString("document_name=")
-	builder.WriteString(ms.DocumentName)
+	builder.WriteString(_m.DocumentName)
 	builder.WriteByte(')')
 	return builder.String()
 }

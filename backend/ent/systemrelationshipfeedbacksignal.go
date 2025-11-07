@@ -107,7 +107,7 @@ func (*SystemRelationshipFeedbackSignal) scanValues(columns []string) ([]any, er
 
 // assignValues assigns the values that were returned from sql.Rows (after scanning)
 // to the SystemRelationshipFeedbackSignal fields.
-func (srfs *SystemRelationshipFeedbackSignal) assignValues(columns []string, values []any) error {
+func (_m *SystemRelationshipFeedbackSignal) assignValues(columns []string, values []any) error {
 	if m, n := len(values), len(columns); m < n {
 		return fmt.Errorf("mismatch number of scan values: %d != %d", m, n)
 	}
@@ -117,46 +117,46 @@ func (srfs *SystemRelationshipFeedbackSignal) assignValues(columns []string, val
 			if value, ok := values[i].(*uuid.UUID); !ok {
 				return fmt.Errorf("unexpected type %T for field id", values[i])
 			} else if value != nil {
-				srfs.ID = *value
+				_m.ID = *value
 			}
 		case systemrelationshipfeedbacksignal.FieldTenantID:
 			if value, ok := values[i].(*sql.NullInt64); !ok {
 				return fmt.Errorf("unexpected type %T for field tenant_id", values[i])
 			} else if value.Valid {
-				srfs.TenantID = int(value.Int64)
+				_m.TenantID = int(value.Int64)
 			}
 		case systemrelationshipfeedbacksignal.FieldRelationshipID:
 			if value, ok := values[i].(*uuid.UUID); !ok {
 				return fmt.Errorf("unexpected type %T for field relationship_id", values[i])
 			} else if value != nil {
-				srfs.RelationshipID = *value
+				_m.RelationshipID = *value
 			}
 		case systemrelationshipfeedbacksignal.FieldSignalID:
 			if value, ok := values[i].(*uuid.UUID); !ok {
 				return fmt.Errorf("unexpected type %T for field signal_id", values[i])
 			} else if value != nil {
-				srfs.SignalID = *value
+				_m.SignalID = *value
 			}
 		case systemrelationshipfeedbacksignal.FieldType:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field type", values[i])
 			} else if value.Valid {
-				srfs.Type = value.String
+				_m.Type = value.String
 			}
 		case systemrelationshipfeedbacksignal.FieldDescription:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field description", values[i])
 			} else if value.Valid {
-				srfs.Description = value.String
+				_m.Description = value.String
 			}
 		case systemrelationshipfeedbacksignal.FieldCreatedAt:
 			if value, ok := values[i].(*sql.NullTime); !ok {
 				return fmt.Errorf("unexpected type %T for field created_at", values[i])
 			} else if value.Valid {
-				srfs.CreatedAt = value.Time
+				_m.CreatedAt = value.Time
 			}
 		default:
-			srfs.selectValues.Set(columns[i], values[i])
+			_m.selectValues.Set(columns[i], values[i])
 		}
 	}
 	return nil
@@ -164,65 +164,65 @@ func (srfs *SystemRelationshipFeedbackSignal) assignValues(columns []string, val
 
 // Value returns the ent.Value that was dynamically selected and assigned to the SystemRelationshipFeedbackSignal.
 // This includes values selected through modifiers, order, etc.
-func (srfs *SystemRelationshipFeedbackSignal) Value(name string) (ent.Value, error) {
-	return srfs.selectValues.Get(name)
+func (_m *SystemRelationshipFeedbackSignal) Value(name string) (ent.Value, error) {
+	return _m.selectValues.Get(name)
 }
 
 // QueryTenant queries the "tenant" edge of the SystemRelationshipFeedbackSignal entity.
-func (srfs *SystemRelationshipFeedbackSignal) QueryTenant() *TenantQuery {
-	return NewSystemRelationshipFeedbackSignalClient(srfs.config).QueryTenant(srfs)
+func (_m *SystemRelationshipFeedbackSignal) QueryTenant() *TenantQuery {
+	return NewSystemRelationshipFeedbackSignalClient(_m.config).QueryTenant(_m)
 }
 
 // QueryRelationship queries the "relationship" edge of the SystemRelationshipFeedbackSignal entity.
-func (srfs *SystemRelationshipFeedbackSignal) QueryRelationship() *SystemAnalysisRelationshipQuery {
-	return NewSystemRelationshipFeedbackSignalClient(srfs.config).QueryRelationship(srfs)
+func (_m *SystemRelationshipFeedbackSignal) QueryRelationship() *SystemAnalysisRelationshipQuery {
+	return NewSystemRelationshipFeedbackSignalClient(_m.config).QueryRelationship(_m)
 }
 
 // QuerySignal queries the "signal" edge of the SystemRelationshipFeedbackSignal entity.
-func (srfs *SystemRelationshipFeedbackSignal) QuerySignal() *SystemComponentSignalQuery {
-	return NewSystemRelationshipFeedbackSignalClient(srfs.config).QuerySignal(srfs)
+func (_m *SystemRelationshipFeedbackSignal) QuerySignal() *SystemComponentSignalQuery {
+	return NewSystemRelationshipFeedbackSignalClient(_m.config).QuerySignal(_m)
 }
 
 // Update returns a builder for updating this SystemRelationshipFeedbackSignal.
 // Note that you need to call SystemRelationshipFeedbackSignal.Unwrap() before calling this method if this SystemRelationshipFeedbackSignal
 // was returned from a transaction, and the transaction was committed or rolled back.
-func (srfs *SystemRelationshipFeedbackSignal) Update() *SystemRelationshipFeedbackSignalUpdateOne {
-	return NewSystemRelationshipFeedbackSignalClient(srfs.config).UpdateOne(srfs)
+func (_m *SystemRelationshipFeedbackSignal) Update() *SystemRelationshipFeedbackSignalUpdateOne {
+	return NewSystemRelationshipFeedbackSignalClient(_m.config).UpdateOne(_m)
 }
 
 // Unwrap unwraps the SystemRelationshipFeedbackSignal entity that was returned from a transaction after it was closed,
 // so that all future queries will be executed through the driver which created the transaction.
-func (srfs *SystemRelationshipFeedbackSignal) Unwrap() *SystemRelationshipFeedbackSignal {
-	_tx, ok := srfs.config.driver.(*txDriver)
+func (_m *SystemRelationshipFeedbackSignal) Unwrap() *SystemRelationshipFeedbackSignal {
+	_tx, ok := _m.config.driver.(*txDriver)
 	if !ok {
 		panic("ent: SystemRelationshipFeedbackSignal is not a transactional entity")
 	}
-	srfs.config.driver = _tx.drv
-	return srfs
+	_m.config.driver = _tx.drv
+	return _m
 }
 
 // String implements the fmt.Stringer.
-func (srfs *SystemRelationshipFeedbackSignal) String() string {
+func (_m *SystemRelationshipFeedbackSignal) String() string {
 	var builder strings.Builder
 	builder.WriteString("SystemRelationshipFeedbackSignal(")
-	builder.WriteString(fmt.Sprintf("id=%v, ", srfs.ID))
+	builder.WriteString(fmt.Sprintf("id=%v, ", _m.ID))
 	builder.WriteString("tenant_id=")
-	builder.WriteString(fmt.Sprintf("%v", srfs.TenantID))
+	builder.WriteString(fmt.Sprintf("%v", _m.TenantID))
 	builder.WriteString(", ")
 	builder.WriteString("relationship_id=")
-	builder.WriteString(fmt.Sprintf("%v", srfs.RelationshipID))
+	builder.WriteString(fmt.Sprintf("%v", _m.RelationshipID))
 	builder.WriteString(", ")
 	builder.WriteString("signal_id=")
-	builder.WriteString(fmt.Sprintf("%v", srfs.SignalID))
+	builder.WriteString(fmt.Sprintf("%v", _m.SignalID))
 	builder.WriteString(", ")
 	builder.WriteString("type=")
-	builder.WriteString(srfs.Type)
+	builder.WriteString(_m.Type)
 	builder.WriteString(", ")
 	builder.WriteString("description=")
-	builder.WriteString(srfs.Description)
+	builder.WriteString(_m.Description)
 	builder.WriteString(", ")
 	builder.WriteString("created_at=")
-	builder.WriteString(srfs.CreatedAt.Format(time.ANSIC))
+	builder.WriteString(_m.CreatedAt.Format(time.ANSIC))
 	builder.WriteByte(')')
 	return builder.String()
 }

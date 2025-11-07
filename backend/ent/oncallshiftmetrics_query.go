@@ -35,44 +35,44 @@ type OncallShiftMetricsQuery struct {
 }
 
 // Where adds a new predicate for the OncallShiftMetricsQuery builder.
-func (osmq *OncallShiftMetricsQuery) Where(ps ...predicate.OncallShiftMetrics) *OncallShiftMetricsQuery {
-	osmq.predicates = append(osmq.predicates, ps...)
-	return osmq
+func (_q *OncallShiftMetricsQuery) Where(ps ...predicate.OncallShiftMetrics) *OncallShiftMetricsQuery {
+	_q.predicates = append(_q.predicates, ps...)
+	return _q
 }
 
 // Limit the number of records to be returned by this query.
-func (osmq *OncallShiftMetricsQuery) Limit(limit int) *OncallShiftMetricsQuery {
-	osmq.ctx.Limit = &limit
-	return osmq
+func (_q *OncallShiftMetricsQuery) Limit(limit int) *OncallShiftMetricsQuery {
+	_q.ctx.Limit = &limit
+	return _q
 }
 
 // Offset to start from.
-func (osmq *OncallShiftMetricsQuery) Offset(offset int) *OncallShiftMetricsQuery {
-	osmq.ctx.Offset = &offset
-	return osmq
+func (_q *OncallShiftMetricsQuery) Offset(offset int) *OncallShiftMetricsQuery {
+	_q.ctx.Offset = &offset
+	return _q
 }
 
 // Unique configures the query builder to filter duplicate records on query.
 // By default, unique is set to true, and can be disabled using this method.
-func (osmq *OncallShiftMetricsQuery) Unique(unique bool) *OncallShiftMetricsQuery {
-	osmq.ctx.Unique = &unique
-	return osmq
+func (_q *OncallShiftMetricsQuery) Unique(unique bool) *OncallShiftMetricsQuery {
+	_q.ctx.Unique = &unique
+	return _q
 }
 
 // Order specifies how the records should be ordered.
-func (osmq *OncallShiftMetricsQuery) Order(o ...oncallshiftmetrics.OrderOption) *OncallShiftMetricsQuery {
-	osmq.order = append(osmq.order, o...)
-	return osmq
+func (_q *OncallShiftMetricsQuery) Order(o ...oncallshiftmetrics.OrderOption) *OncallShiftMetricsQuery {
+	_q.order = append(_q.order, o...)
+	return _q
 }
 
 // QueryTenant chains the current query on the "tenant" edge.
-func (osmq *OncallShiftMetricsQuery) QueryTenant() *TenantQuery {
-	query := (&TenantClient{config: osmq.config}).Query()
+func (_q *OncallShiftMetricsQuery) QueryTenant() *TenantQuery {
+	query := (&TenantClient{config: _q.config}).Query()
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
-		if err := osmq.prepareQuery(ctx); err != nil {
+		if err := _q.prepareQuery(ctx); err != nil {
 			return nil, err
 		}
-		selector := osmq.sqlQuery(ctx)
+		selector := _q.sqlQuery(ctx)
 		if err := selector.Err(); err != nil {
 			return nil, err
 		}
@@ -81,20 +81,20 @@ func (osmq *OncallShiftMetricsQuery) QueryTenant() *TenantQuery {
 			sqlgraph.To(tenant.Table, tenant.FieldID),
 			sqlgraph.Edge(sqlgraph.M2O, false, oncallshiftmetrics.TenantTable, oncallshiftmetrics.TenantColumn),
 		)
-		fromU = sqlgraph.SetNeighbors(osmq.driver.Dialect(), step)
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
 	}
 	return query
 }
 
 // QueryShift chains the current query on the "shift" edge.
-func (osmq *OncallShiftMetricsQuery) QueryShift() *OncallShiftQuery {
-	query := (&OncallShiftClient{config: osmq.config}).Query()
+func (_q *OncallShiftMetricsQuery) QueryShift() *OncallShiftQuery {
+	query := (&OncallShiftClient{config: _q.config}).Query()
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
-		if err := osmq.prepareQuery(ctx); err != nil {
+		if err := _q.prepareQuery(ctx); err != nil {
 			return nil, err
 		}
-		selector := osmq.sqlQuery(ctx)
+		selector := _q.sqlQuery(ctx)
 		if err := selector.Err(); err != nil {
 			return nil, err
 		}
@@ -103,7 +103,7 @@ func (osmq *OncallShiftMetricsQuery) QueryShift() *OncallShiftQuery {
 			sqlgraph.To(oncallshift.Table, oncallshift.FieldID),
 			sqlgraph.Edge(sqlgraph.O2O, true, oncallshiftmetrics.ShiftTable, oncallshiftmetrics.ShiftColumn),
 		)
-		fromU = sqlgraph.SetNeighbors(osmq.driver.Dialect(), step)
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
 	}
 	return query
@@ -111,8 +111,8 @@ func (osmq *OncallShiftMetricsQuery) QueryShift() *OncallShiftQuery {
 
 // First returns the first OncallShiftMetrics entity from the query.
 // Returns a *NotFoundError when no OncallShiftMetrics was found.
-func (osmq *OncallShiftMetricsQuery) First(ctx context.Context) (*OncallShiftMetrics, error) {
-	nodes, err := osmq.Limit(1).All(setContextOp(ctx, osmq.ctx, ent.OpQueryFirst))
+func (_q *OncallShiftMetricsQuery) First(ctx context.Context) (*OncallShiftMetrics, error) {
+	nodes, err := _q.Limit(1).All(setContextOp(ctx, _q.ctx, ent.OpQueryFirst))
 	if err != nil {
 		return nil, err
 	}
@@ -123,8 +123,8 @@ func (osmq *OncallShiftMetricsQuery) First(ctx context.Context) (*OncallShiftMet
 }
 
 // FirstX is like First, but panics if an error occurs.
-func (osmq *OncallShiftMetricsQuery) FirstX(ctx context.Context) *OncallShiftMetrics {
-	node, err := osmq.First(ctx)
+func (_q *OncallShiftMetricsQuery) FirstX(ctx context.Context) *OncallShiftMetrics {
+	node, err := _q.First(ctx)
 	if err != nil && !IsNotFound(err) {
 		panic(err)
 	}
@@ -133,9 +133,9 @@ func (osmq *OncallShiftMetricsQuery) FirstX(ctx context.Context) *OncallShiftMet
 
 // FirstID returns the first OncallShiftMetrics ID from the query.
 // Returns a *NotFoundError when no OncallShiftMetrics ID was found.
-func (osmq *OncallShiftMetricsQuery) FirstID(ctx context.Context) (id uuid.UUID, err error) {
+func (_q *OncallShiftMetricsQuery) FirstID(ctx context.Context) (id uuid.UUID, err error) {
 	var ids []uuid.UUID
-	if ids, err = osmq.Limit(1).IDs(setContextOp(ctx, osmq.ctx, ent.OpQueryFirstID)); err != nil {
+	if ids, err = _q.Limit(1).IDs(setContextOp(ctx, _q.ctx, ent.OpQueryFirstID)); err != nil {
 		return
 	}
 	if len(ids) == 0 {
@@ -146,8 +146,8 @@ func (osmq *OncallShiftMetricsQuery) FirstID(ctx context.Context) (id uuid.UUID,
 }
 
 // FirstIDX is like FirstID, but panics if an error occurs.
-func (osmq *OncallShiftMetricsQuery) FirstIDX(ctx context.Context) uuid.UUID {
-	id, err := osmq.FirstID(ctx)
+func (_q *OncallShiftMetricsQuery) FirstIDX(ctx context.Context) uuid.UUID {
+	id, err := _q.FirstID(ctx)
 	if err != nil && !IsNotFound(err) {
 		panic(err)
 	}
@@ -157,8 +157,8 @@ func (osmq *OncallShiftMetricsQuery) FirstIDX(ctx context.Context) uuid.UUID {
 // Only returns a single OncallShiftMetrics entity found by the query, ensuring it only returns one.
 // Returns a *NotSingularError when more than one OncallShiftMetrics entity is found.
 // Returns a *NotFoundError when no OncallShiftMetrics entities are found.
-func (osmq *OncallShiftMetricsQuery) Only(ctx context.Context) (*OncallShiftMetrics, error) {
-	nodes, err := osmq.Limit(2).All(setContextOp(ctx, osmq.ctx, ent.OpQueryOnly))
+func (_q *OncallShiftMetricsQuery) Only(ctx context.Context) (*OncallShiftMetrics, error) {
+	nodes, err := _q.Limit(2).All(setContextOp(ctx, _q.ctx, ent.OpQueryOnly))
 	if err != nil {
 		return nil, err
 	}
@@ -173,8 +173,8 @@ func (osmq *OncallShiftMetricsQuery) Only(ctx context.Context) (*OncallShiftMetr
 }
 
 // OnlyX is like Only, but panics if an error occurs.
-func (osmq *OncallShiftMetricsQuery) OnlyX(ctx context.Context) *OncallShiftMetrics {
-	node, err := osmq.Only(ctx)
+func (_q *OncallShiftMetricsQuery) OnlyX(ctx context.Context) *OncallShiftMetrics {
+	node, err := _q.Only(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -184,9 +184,9 @@ func (osmq *OncallShiftMetricsQuery) OnlyX(ctx context.Context) *OncallShiftMetr
 // OnlyID is like Only, but returns the only OncallShiftMetrics ID in the query.
 // Returns a *NotSingularError when more than one OncallShiftMetrics ID is found.
 // Returns a *NotFoundError when no entities are found.
-func (osmq *OncallShiftMetricsQuery) OnlyID(ctx context.Context) (id uuid.UUID, err error) {
+func (_q *OncallShiftMetricsQuery) OnlyID(ctx context.Context) (id uuid.UUID, err error) {
 	var ids []uuid.UUID
-	if ids, err = osmq.Limit(2).IDs(setContextOp(ctx, osmq.ctx, ent.OpQueryOnlyID)); err != nil {
+	if ids, err = _q.Limit(2).IDs(setContextOp(ctx, _q.ctx, ent.OpQueryOnlyID)); err != nil {
 		return
 	}
 	switch len(ids) {
@@ -201,8 +201,8 @@ func (osmq *OncallShiftMetricsQuery) OnlyID(ctx context.Context) (id uuid.UUID, 
 }
 
 // OnlyIDX is like OnlyID, but panics if an error occurs.
-func (osmq *OncallShiftMetricsQuery) OnlyIDX(ctx context.Context) uuid.UUID {
-	id, err := osmq.OnlyID(ctx)
+func (_q *OncallShiftMetricsQuery) OnlyIDX(ctx context.Context) uuid.UUID {
+	id, err := _q.OnlyID(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -210,18 +210,18 @@ func (osmq *OncallShiftMetricsQuery) OnlyIDX(ctx context.Context) uuid.UUID {
 }
 
 // All executes the query and returns a list of OncallShiftMetricsSlice.
-func (osmq *OncallShiftMetricsQuery) All(ctx context.Context) ([]*OncallShiftMetrics, error) {
-	ctx = setContextOp(ctx, osmq.ctx, ent.OpQueryAll)
-	if err := osmq.prepareQuery(ctx); err != nil {
+func (_q *OncallShiftMetricsQuery) All(ctx context.Context) ([]*OncallShiftMetrics, error) {
+	ctx = setContextOp(ctx, _q.ctx, ent.OpQueryAll)
+	if err := _q.prepareQuery(ctx); err != nil {
 		return nil, err
 	}
 	qr := querierAll[[]*OncallShiftMetrics, *OncallShiftMetricsQuery]()
-	return withInterceptors[[]*OncallShiftMetrics](ctx, osmq, qr, osmq.inters)
+	return withInterceptors[[]*OncallShiftMetrics](ctx, _q, qr, _q.inters)
 }
 
 // AllX is like All, but panics if an error occurs.
-func (osmq *OncallShiftMetricsQuery) AllX(ctx context.Context) []*OncallShiftMetrics {
-	nodes, err := osmq.All(ctx)
+func (_q *OncallShiftMetricsQuery) AllX(ctx context.Context) []*OncallShiftMetrics {
+	nodes, err := _q.All(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -229,20 +229,20 @@ func (osmq *OncallShiftMetricsQuery) AllX(ctx context.Context) []*OncallShiftMet
 }
 
 // IDs executes the query and returns a list of OncallShiftMetrics IDs.
-func (osmq *OncallShiftMetricsQuery) IDs(ctx context.Context) (ids []uuid.UUID, err error) {
-	if osmq.ctx.Unique == nil && osmq.path != nil {
-		osmq.Unique(true)
+func (_q *OncallShiftMetricsQuery) IDs(ctx context.Context) (ids []uuid.UUID, err error) {
+	if _q.ctx.Unique == nil && _q.path != nil {
+		_q.Unique(true)
 	}
-	ctx = setContextOp(ctx, osmq.ctx, ent.OpQueryIDs)
-	if err = osmq.Select(oncallshiftmetrics.FieldID).Scan(ctx, &ids); err != nil {
+	ctx = setContextOp(ctx, _q.ctx, ent.OpQueryIDs)
+	if err = _q.Select(oncallshiftmetrics.FieldID).Scan(ctx, &ids); err != nil {
 		return nil, err
 	}
 	return ids, nil
 }
 
 // IDsX is like IDs, but panics if an error occurs.
-func (osmq *OncallShiftMetricsQuery) IDsX(ctx context.Context) []uuid.UUID {
-	ids, err := osmq.IDs(ctx)
+func (_q *OncallShiftMetricsQuery) IDsX(ctx context.Context) []uuid.UUID {
+	ids, err := _q.IDs(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -250,17 +250,17 @@ func (osmq *OncallShiftMetricsQuery) IDsX(ctx context.Context) []uuid.UUID {
 }
 
 // Count returns the count of the given query.
-func (osmq *OncallShiftMetricsQuery) Count(ctx context.Context) (int, error) {
-	ctx = setContextOp(ctx, osmq.ctx, ent.OpQueryCount)
-	if err := osmq.prepareQuery(ctx); err != nil {
+func (_q *OncallShiftMetricsQuery) Count(ctx context.Context) (int, error) {
+	ctx = setContextOp(ctx, _q.ctx, ent.OpQueryCount)
+	if err := _q.prepareQuery(ctx); err != nil {
 		return 0, err
 	}
-	return withInterceptors[int](ctx, osmq, querierCount[*OncallShiftMetricsQuery](), osmq.inters)
+	return withInterceptors[int](ctx, _q, querierCount[*OncallShiftMetricsQuery](), _q.inters)
 }
 
 // CountX is like Count, but panics if an error occurs.
-func (osmq *OncallShiftMetricsQuery) CountX(ctx context.Context) int {
-	count, err := osmq.Count(ctx)
+func (_q *OncallShiftMetricsQuery) CountX(ctx context.Context) int {
+	count, err := _q.Count(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -268,9 +268,9 @@ func (osmq *OncallShiftMetricsQuery) CountX(ctx context.Context) int {
 }
 
 // Exist returns true if the query has elements in the graph.
-func (osmq *OncallShiftMetricsQuery) Exist(ctx context.Context) (bool, error) {
-	ctx = setContextOp(ctx, osmq.ctx, ent.OpQueryExist)
-	switch _, err := osmq.FirstID(ctx); {
+func (_q *OncallShiftMetricsQuery) Exist(ctx context.Context) (bool, error) {
+	ctx = setContextOp(ctx, _q.ctx, ent.OpQueryExist)
+	switch _, err := _q.FirstID(ctx); {
 	case IsNotFound(err):
 		return false, nil
 	case err != nil:
@@ -281,8 +281,8 @@ func (osmq *OncallShiftMetricsQuery) Exist(ctx context.Context) (bool, error) {
 }
 
 // ExistX is like Exist, but panics if an error occurs.
-func (osmq *OncallShiftMetricsQuery) ExistX(ctx context.Context) bool {
-	exist, err := osmq.Exist(ctx)
+func (_q *OncallShiftMetricsQuery) ExistX(ctx context.Context) bool {
+	exist, err := _q.Exist(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -291,45 +291,45 @@ func (osmq *OncallShiftMetricsQuery) ExistX(ctx context.Context) bool {
 
 // Clone returns a duplicate of the OncallShiftMetricsQuery builder, including all associated steps. It can be
 // used to prepare common query builders and use them differently after the clone is made.
-func (osmq *OncallShiftMetricsQuery) Clone() *OncallShiftMetricsQuery {
-	if osmq == nil {
+func (_q *OncallShiftMetricsQuery) Clone() *OncallShiftMetricsQuery {
+	if _q == nil {
 		return nil
 	}
 	return &OncallShiftMetricsQuery{
-		config:     osmq.config,
-		ctx:        osmq.ctx.Clone(),
-		order:      append([]oncallshiftmetrics.OrderOption{}, osmq.order...),
-		inters:     append([]Interceptor{}, osmq.inters...),
-		predicates: append([]predicate.OncallShiftMetrics{}, osmq.predicates...),
-		withTenant: osmq.withTenant.Clone(),
-		withShift:  osmq.withShift.Clone(),
+		config:     _q.config,
+		ctx:        _q.ctx.Clone(),
+		order:      append([]oncallshiftmetrics.OrderOption{}, _q.order...),
+		inters:     append([]Interceptor{}, _q.inters...),
+		predicates: append([]predicate.OncallShiftMetrics{}, _q.predicates...),
+		withTenant: _q.withTenant.Clone(),
+		withShift:  _q.withShift.Clone(),
 		// clone intermediate query.
-		sql:       osmq.sql.Clone(),
-		path:      osmq.path,
-		modifiers: append([]func(*sql.Selector){}, osmq.modifiers...),
+		sql:       _q.sql.Clone(),
+		path:      _q.path,
+		modifiers: append([]func(*sql.Selector){}, _q.modifiers...),
 	}
 }
 
 // WithTenant tells the query-builder to eager-load the nodes that are connected to
 // the "tenant" edge. The optional arguments are used to configure the query builder of the edge.
-func (osmq *OncallShiftMetricsQuery) WithTenant(opts ...func(*TenantQuery)) *OncallShiftMetricsQuery {
-	query := (&TenantClient{config: osmq.config}).Query()
+func (_q *OncallShiftMetricsQuery) WithTenant(opts ...func(*TenantQuery)) *OncallShiftMetricsQuery {
+	query := (&TenantClient{config: _q.config}).Query()
 	for _, opt := range opts {
 		opt(query)
 	}
-	osmq.withTenant = query
-	return osmq
+	_q.withTenant = query
+	return _q
 }
 
 // WithShift tells the query-builder to eager-load the nodes that are connected to
 // the "shift" edge. The optional arguments are used to configure the query builder of the edge.
-func (osmq *OncallShiftMetricsQuery) WithShift(opts ...func(*OncallShiftQuery)) *OncallShiftMetricsQuery {
-	query := (&OncallShiftClient{config: osmq.config}).Query()
+func (_q *OncallShiftMetricsQuery) WithShift(opts ...func(*OncallShiftQuery)) *OncallShiftMetricsQuery {
+	query := (&OncallShiftClient{config: _q.config}).Query()
 	for _, opt := range opts {
 		opt(query)
 	}
-	osmq.withShift = query
-	return osmq
+	_q.withShift = query
+	return _q
 }
 
 // GroupBy is used to group vertices by one or more fields/columns.
@@ -346,10 +346,10 @@ func (osmq *OncallShiftMetricsQuery) WithShift(opts ...func(*OncallShiftQuery)) 
 //		GroupBy(oncallshiftmetrics.FieldTenantID).
 //		Aggregate(ent.Count()).
 //		Scan(ctx, &v)
-func (osmq *OncallShiftMetricsQuery) GroupBy(field string, fields ...string) *OncallShiftMetricsGroupBy {
-	osmq.ctx.Fields = append([]string{field}, fields...)
-	grbuild := &OncallShiftMetricsGroupBy{build: osmq}
-	grbuild.flds = &osmq.ctx.Fields
+func (_q *OncallShiftMetricsQuery) GroupBy(field string, fields ...string) *OncallShiftMetricsGroupBy {
+	_q.ctx.Fields = append([]string{field}, fields...)
+	grbuild := &OncallShiftMetricsGroupBy{build: _q}
+	grbuild.flds = &_q.ctx.Fields
 	grbuild.label = oncallshiftmetrics.Label
 	grbuild.scan = grbuild.Scan
 	return grbuild
@@ -367,89 +367,89 @@ func (osmq *OncallShiftMetricsQuery) GroupBy(field string, fields ...string) *On
 //	client.OncallShiftMetrics.Query().
 //		Select(oncallshiftmetrics.FieldTenantID).
 //		Scan(ctx, &v)
-func (osmq *OncallShiftMetricsQuery) Select(fields ...string) *OncallShiftMetricsSelect {
-	osmq.ctx.Fields = append(osmq.ctx.Fields, fields...)
-	sbuild := &OncallShiftMetricsSelect{OncallShiftMetricsQuery: osmq}
+func (_q *OncallShiftMetricsQuery) Select(fields ...string) *OncallShiftMetricsSelect {
+	_q.ctx.Fields = append(_q.ctx.Fields, fields...)
+	sbuild := &OncallShiftMetricsSelect{OncallShiftMetricsQuery: _q}
 	sbuild.label = oncallshiftmetrics.Label
-	sbuild.flds, sbuild.scan = &osmq.ctx.Fields, sbuild.Scan
+	sbuild.flds, sbuild.scan = &_q.ctx.Fields, sbuild.Scan
 	return sbuild
 }
 
 // Aggregate returns a OncallShiftMetricsSelect configured with the given aggregations.
-func (osmq *OncallShiftMetricsQuery) Aggregate(fns ...AggregateFunc) *OncallShiftMetricsSelect {
-	return osmq.Select().Aggregate(fns...)
+func (_q *OncallShiftMetricsQuery) Aggregate(fns ...AggregateFunc) *OncallShiftMetricsSelect {
+	return _q.Select().Aggregate(fns...)
 }
 
-func (osmq *OncallShiftMetricsQuery) prepareQuery(ctx context.Context) error {
-	for _, inter := range osmq.inters {
+func (_q *OncallShiftMetricsQuery) prepareQuery(ctx context.Context) error {
+	for _, inter := range _q.inters {
 		if inter == nil {
 			return fmt.Errorf("ent: uninitialized interceptor (forgotten import ent/runtime?)")
 		}
 		if trv, ok := inter.(Traverser); ok {
-			if err := trv.Traverse(ctx, osmq); err != nil {
+			if err := trv.Traverse(ctx, _q); err != nil {
 				return err
 			}
 		}
 	}
-	for _, f := range osmq.ctx.Fields {
+	for _, f := range _q.ctx.Fields {
 		if !oncallshiftmetrics.ValidColumn(f) {
 			return &ValidationError{Name: f, err: fmt.Errorf("ent: invalid field %q for query", f)}
 		}
 	}
-	if osmq.path != nil {
-		prev, err := osmq.path(ctx)
+	if _q.path != nil {
+		prev, err := _q.path(ctx)
 		if err != nil {
 			return err
 		}
-		osmq.sql = prev
+		_q.sql = prev
 	}
 	if oncallshiftmetrics.Policy == nil {
 		return errors.New("ent: uninitialized oncallshiftmetrics.Policy (forgotten import ent/runtime?)")
 	}
-	if err := oncallshiftmetrics.Policy.EvalQuery(ctx, osmq); err != nil {
+	if err := oncallshiftmetrics.Policy.EvalQuery(ctx, _q); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (osmq *OncallShiftMetricsQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*OncallShiftMetrics, error) {
+func (_q *OncallShiftMetricsQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*OncallShiftMetrics, error) {
 	var (
 		nodes       = []*OncallShiftMetrics{}
-		_spec       = osmq.querySpec()
+		_spec       = _q.querySpec()
 		loadedTypes = [2]bool{
-			osmq.withTenant != nil,
-			osmq.withShift != nil,
+			_q.withTenant != nil,
+			_q.withShift != nil,
 		}
 	)
 	_spec.ScanValues = func(columns []string) ([]any, error) {
 		return (*OncallShiftMetrics).scanValues(nil, columns)
 	}
 	_spec.Assign = func(columns []string, values []any) error {
-		node := &OncallShiftMetrics{config: osmq.config}
+		node := &OncallShiftMetrics{config: _q.config}
 		nodes = append(nodes, node)
 		node.Edges.loadedTypes = loadedTypes
 		return node.assignValues(columns, values)
 	}
-	if len(osmq.modifiers) > 0 {
-		_spec.Modifiers = osmq.modifiers
+	if len(_q.modifiers) > 0 {
+		_spec.Modifiers = _q.modifiers
 	}
 	for i := range hooks {
 		hooks[i](ctx, _spec)
 	}
-	if err := sqlgraph.QueryNodes(ctx, osmq.driver, _spec); err != nil {
+	if err := sqlgraph.QueryNodes(ctx, _q.driver, _spec); err != nil {
 		return nil, err
 	}
 	if len(nodes) == 0 {
 		return nodes, nil
 	}
-	if query := osmq.withTenant; query != nil {
-		if err := osmq.loadTenant(ctx, query, nodes, nil,
+	if query := _q.withTenant; query != nil {
+		if err := _q.loadTenant(ctx, query, nodes, nil,
 			func(n *OncallShiftMetrics, e *Tenant) { n.Edges.Tenant = e }); err != nil {
 			return nil, err
 		}
 	}
-	if query := osmq.withShift; query != nil {
-		if err := osmq.loadShift(ctx, query, nodes, nil,
+	if query := _q.withShift; query != nil {
+		if err := _q.loadShift(ctx, query, nodes, nil,
 			func(n *OncallShiftMetrics, e *OncallShift) { n.Edges.Shift = e }); err != nil {
 			return nil, err
 		}
@@ -457,7 +457,7 @@ func (osmq *OncallShiftMetricsQuery) sqlAll(ctx context.Context, hooks ...queryH
 	return nodes, nil
 }
 
-func (osmq *OncallShiftMetricsQuery) loadTenant(ctx context.Context, query *TenantQuery, nodes []*OncallShiftMetrics, init func(*OncallShiftMetrics), assign func(*OncallShiftMetrics, *Tenant)) error {
+func (_q *OncallShiftMetricsQuery) loadTenant(ctx context.Context, query *TenantQuery, nodes []*OncallShiftMetrics, init func(*OncallShiftMetrics), assign func(*OncallShiftMetrics, *Tenant)) error {
 	ids := make([]int, 0, len(nodes))
 	nodeids := make(map[int][]*OncallShiftMetrics)
 	for i := range nodes {
@@ -486,7 +486,7 @@ func (osmq *OncallShiftMetricsQuery) loadTenant(ctx context.Context, query *Tena
 	}
 	return nil
 }
-func (osmq *OncallShiftMetricsQuery) loadShift(ctx context.Context, query *OncallShiftQuery, nodes []*OncallShiftMetrics, init func(*OncallShiftMetrics), assign func(*OncallShiftMetrics, *OncallShift)) error {
+func (_q *OncallShiftMetricsQuery) loadShift(ctx context.Context, query *OncallShiftQuery, nodes []*OncallShiftMetrics, init func(*OncallShiftMetrics), assign func(*OncallShiftMetrics, *OncallShift)) error {
 	ids := make([]uuid.UUID, 0, len(nodes))
 	nodeids := make(map[uuid.UUID][]*OncallShiftMetrics)
 	for i := range nodes {
@@ -516,27 +516,27 @@ func (osmq *OncallShiftMetricsQuery) loadShift(ctx context.Context, query *Oncal
 	return nil
 }
 
-func (osmq *OncallShiftMetricsQuery) sqlCount(ctx context.Context) (int, error) {
-	_spec := osmq.querySpec()
-	if len(osmq.modifiers) > 0 {
-		_spec.Modifiers = osmq.modifiers
+func (_q *OncallShiftMetricsQuery) sqlCount(ctx context.Context) (int, error) {
+	_spec := _q.querySpec()
+	if len(_q.modifiers) > 0 {
+		_spec.Modifiers = _q.modifiers
 	}
-	_spec.Node.Columns = osmq.ctx.Fields
-	if len(osmq.ctx.Fields) > 0 {
-		_spec.Unique = osmq.ctx.Unique != nil && *osmq.ctx.Unique
+	_spec.Node.Columns = _q.ctx.Fields
+	if len(_q.ctx.Fields) > 0 {
+		_spec.Unique = _q.ctx.Unique != nil && *_q.ctx.Unique
 	}
-	return sqlgraph.CountNodes(ctx, osmq.driver, _spec)
+	return sqlgraph.CountNodes(ctx, _q.driver, _spec)
 }
 
-func (osmq *OncallShiftMetricsQuery) querySpec() *sqlgraph.QuerySpec {
+func (_q *OncallShiftMetricsQuery) querySpec() *sqlgraph.QuerySpec {
 	_spec := sqlgraph.NewQuerySpec(oncallshiftmetrics.Table, oncallshiftmetrics.Columns, sqlgraph.NewFieldSpec(oncallshiftmetrics.FieldID, field.TypeUUID))
-	_spec.From = osmq.sql
-	if unique := osmq.ctx.Unique; unique != nil {
+	_spec.From = _q.sql
+	if unique := _q.ctx.Unique; unique != nil {
 		_spec.Unique = *unique
-	} else if osmq.path != nil {
+	} else if _q.path != nil {
 		_spec.Unique = true
 	}
-	if fields := osmq.ctx.Fields; len(fields) > 0 {
+	if fields := _q.ctx.Fields; len(fields) > 0 {
 		_spec.Node.Columns = make([]string, 0, len(fields))
 		_spec.Node.Columns = append(_spec.Node.Columns, oncallshiftmetrics.FieldID)
 		for i := range fields {
@@ -544,27 +544,27 @@ func (osmq *OncallShiftMetricsQuery) querySpec() *sqlgraph.QuerySpec {
 				_spec.Node.Columns = append(_spec.Node.Columns, fields[i])
 			}
 		}
-		if osmq.withTenant != nil {
+		if _q.withTenant != nil {
 			_spec.Node.AddColumnOnce(oncallshiftmetrics.FieldTenantID)
 		}
-		if osmq.withShift != nil {
+		if _q.withShift != nil {
 			_spec.Node.AddColumnOnce(oncallshiftmetrics.FieldShiftID)
 		}
 	}
-	if ps := osmq.predicates; len(ps) > 0 {
+	if ps := _q.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {
 				ps[i](selector)
 			}
 		}
 	}
-	if limit := osmq.ctx.Limit; limit != nil {
+	if limit := _q.ctx.Limit; limit != nil {
 		_spec.Limit = *limit
 	}
-	if offset := osmq.ctx.Offset; offset != nil {
+	if offset := _q.ctx.Offset; offset != nil {
 		_spec.Offset = *offset
 	}
-	if ps := osmq.order; len(ps) > 0 {
+	if ps := _q.order; len(ps) > 0 {
 		_spec.Order = func(selector *sql.Selector) {
 			for i := range ps {
 				ps[i](selector)
@@ -574,45 +574,45 @@ func (osmq *OncallShiftMetricsQuery) querySpec() *sqlgraph.QuerySpec {
 	return _spec
 }
 
-func (osmq *OncallShiftMetricsQuery) sqlQuery(ctx context.Context) *sql.Selector {
-	builder := sql.Dialect(osmq.driver.Dialect())
+func (_q *OncallShiftMetricsQuery) sqlQuery(ctx context.Context) *sql.Selector {
+	builder := sql.Dialect(_q.driver.Dialect())
 	t1 := builder.Table(oncallshiftmetrics.Table)
-	columns := osmq.ctx.Fields
+	columns := _q.ctx.Fields
 	if len(columns) == 0 {
 		columns = oncallshiftmetrics.Columns
 	}
 	selector := builder.Select(t1.Columns(columns...)...).From(t1)
-	if osmq.sql != nil {
-		selector = osmq.sql
+	if _q.sql != nil {
+		selector = _q.sql
 		selector.Select(selector.Columns(columns...)...)
 	}
-	if osmq.ctx.Unique != nil && *osmq.ctx.Unique {
+	if _q.ctx.Unique != nil && *_q.ctx.Unique {
 		selector.Distinct()
 	}
-	for _, m := range osmq.modifiers {
+	for _, m := range _q.modifiers {
 		m(selector)
 	}
-	for _, p := range osmq.predicates {
+	for _, p := range _q.predicates {
 		p(selector)
 	}
-	for _, p := range osmq.order {
+	for _, p := range _q.order {
 		p(selector)
 	}
-	if offset := osmq.ctx.Offset; offset != nil {
+	if offset := _q.ctx.Offset; offset != nil {
 		// limit is mandatory for offset clause. We start
 		// with default value, and override it below if needed.
 		selector.Offset(*offset).Limit(math.MaxInt32)
 	}
-	if limit := osmq.ctx.Limit; limit != nil {
+	if limit := _q.ctx.Limit; limit != nil {
 		selector.Limit(*limit)
 	}
 	return selector
 }
 
 // Modify adds a query modifier for attaching custom logic to queries.
-func (osmq *OncallShiftMetricsQuery) Modify(modifiers ...func(s *sql.Selector)) *OncallShiftMetricsSelect {
-	osmq.modifiers = append(osmq.modifiers, modifiers...)
-	return osmq.Select()
+func (_q *OncallShiftMetricsQuery) Modify(modifiers ...func(s *sql.Selector)) *OncallShiftMetricsSelect {
+	_q.modifiers = append(_q.modifiers, modifiers...)
+	return _q.Select()
 }
 
 // OncallShiftMetricsGroupBy is the group-by builder for OncallShiftMetrics entities.
@@ -622,41 +622,41 @@ type OncallShiftMetricsGroupBy struct {
 }
 
 // Aggregate adds the given aggregation functions to the group-by query.
-func (osmgb *OncallShiftMetricsGroupBy) Aggregate(fns ...AggregateFunc) *OncallShiftMetricsGroupBy {
-	osmgb.fns = append(osmgb.fns, fns...)
-	return osmgb
+func (_g *OncallShiftMetricsGroupBy) Aggregate(fns ...AggregateFunc) *OncallShiftMetricsGroupBy {
+	_g.fns = append(_g.fns, fns...)
+	return _g
 }
 
 // Scan applies the selector query and scans the result into the given value.
-func (osmgb *OncallShiftMetricsGroupBy) Scan(ctx context.Context, v any) error {
-	ctx = setContextOp(ctx, osmgb.build.ctx, ent.OpQueryGroupBy)
-	if err := osmgb.build.prepareQuery(ctx); err != nil {
+func (_g *OncallShiftMetricsGroupBy) Scan(ctx context.Context, v any) error {
+	ctx = setContextOp(ctx, _g.build.ctx, ent.OpQueryGroupBy)
+	if err := _g.build.prepareQuery(ctx); err != nil {
 		return err
 	}
-	return scanWithInterceptors[*OncallShiftMetricsQuery, *OncallShiftMetricsGroupBy](ctx, osmgb.build, osmgb, osmgb.build.inters, v)
+	return scanWithInterceptors[*OncallShiftMetricsQuery, *OncallShiftMetricsGroupBy](ctx, _g.build, _g, _g.build.inters, v)
 }
 
-func (osmgb *OncallShiftMetricsGroupBy) sqlScan(ctx context.Context, root *OncallShiftMetricsQuery, v any) error {
+func (_g *OncallShiftMetricsGroupBy) sqlScan(ctx context.Context, root *OncallShiftMetricsQuery, v any) error {
 	selector := root.sqlQuery(ctx).Select()
-	aggregation := make([]string, 0, len(osmgb.fns))
-	for _, fn := range osmgb.fns {
+	aggregation := make([]string, 0, len(_g.fns))
+	for _, fn := range _g.fns {
 		aggregation = append(aggregation, fn(selector))
 	}
 	if len(selector.SelectedColumns()) == 0 {
-		columns := make([]string, 0, len(*osmgb.flds)+len(osmgb.fns))
-		for _, f := range *osmgb.flds {
+		columns := make([]string, 0, len(*_g.flds)+len(_g.fns))
+		for _, f := range *_g.flds {
 			columns = append(columns, selector.C(f))
 		}
 		columns = append(columns, aggregation...)
 		selector.Select(columns...)
 	}
-	selector.GroupBy(selector.Columns(*osmgb.flds...)...)
+	selector.GroupBy(selector.Columns(*_g.flds...)...)
 	if err := selector.Err(); err != nil {
 		return err
 	}
 	rows := &sql.Rows{}
 	query, args := selector.Query()
-	if err := osmgb.build.driver.Query(ctx, query, args, rows); err != nil {
+	if err := _g.build.driver.Query(ctx, query, args, rows); err != nil {
 		return err
 	}
 	defer rows.Close()
@@ -670,27 +670,27 @@ type OncallShiftMetricsSelect struct {
 }
 
 // Aggregate adds the given aggregation functions to the selector query.
-func (osms *OncallShiftMetricsSelect) Aggregate(fns ...AggregateFunc) *OncallShiftMetricsSelect {
-	osms.fns = append(osms.fns, fns...)
-	return osms
+func (_s *OncallShiftMetricsSelect) Aggregate(fns ...AggregateFunc) *OncallShiftMetricsSelect {
+	_s.fns = append(_s.fns, fns...)
+	return _s
 }
 
 // Scan applies the selector query and scans the result into the given value.
-func (osms *OncallShiftMetricsSelect) Scan(ctx context.Context, v any) error {
-	ctx = setContextOp(ctx, osms.ctx, ent.OpQuerySelect)
-	if err := osms.prepareQuery(ctx); err != nil {
+func (_s *OncallShiftMetricsSelect) Scan(ctx context.Context, v any) error {
+	ctx = setContextOp(ctx, _s.ctx, ent.OpQuerySelect)
+	if err := _s.prepareQuery(ctx); err != nil {
 		return err
 	}
-	return scanWithInterceptors[*OncallShiftMetricsQuery, *OncallShiftMetricsSelect](ctx, osms.OncallShiftMetricsQuery, osms, osms.inters, v)
+	return scanWithInterceptors[*OncallShiftMetricsQuery, *OncallShiftMetricsSelect](ctx, _s.OncallShiftMetricsQuery, _s, _s.inters, v)
 }
 
-func (osms *OncallShiftMetricsSelect) sqlScan(ctx context.Context, root *OncallShiftMetricsQuery, v any) error {
+func (_s *OncallShiftMetricsSelect) sqlScan(ctx context.Context, root *OncallShiftMetricsQuery, v any) error {
 	selector := root.sqlQuery(ctx)
-	aggregation := make([]string, 0, len(osms.fns))
-	for _, fn := range osms.fns {
+	aggregation := make([]string, 0, len(_s.fns))
+	for _, fn := range _s.fns {
 		aggregation = append(aggregation, fn(selector))
 	}
-	switch n := len(*osms.selector.flds); {
+	switch n := len(*_s.selector.flds); {
 	case n == 0 && len(aggregation) > 0:
 		selector.Select(aggregation...)
 	case n != 0 && len(aggregation) > 0:
@@ -698,7 +698,7 @@ func (osms *OncallShiftMetricsSelect) sqlScan(ctx context.Context, root *OncallS
 	}
 	rows := &sql.Rows{}
 	query, args := selector.Query()
-	if err := osms.driver.Query(ctx, query, args, rows); err != nil {
+	if err := _s.driver.Query(ctx, query, args, rows); err != nil {
 		return err
 	}
 	defer rows.Close()
@@ -706,7 +706,7 @@ func (osms *OncallShiftMetricsSelect) sqlScan(ctx context.Context, root *OncallS
 }
 
 // Modify adds a query modifier for attaching custom logic to queries.
-func (osms *OncallShiftMetricsSelect) Modify(modifiers ...func(s *sql.Selector)) *OncallShiftMetricsSelect {
-	osms.modifiers = append(osms.modifiers, modifiers...)
-	return osms
+func (_s *OncallShiftMetricsSelect) Modify(modifiers ...func(s *sql.Selector)) *OncallShiftMetricsSelect {
+	_s.modifiers = append(_s.modifiers, modifiers...)
+	return _s
 }

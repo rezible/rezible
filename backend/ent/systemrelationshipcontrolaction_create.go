@@ -28,102 +28,102 @@ type SystemRelationshipControlActionCreate struct {
 }
 
 // SetTenantID sets the "tenant_id" field.
-func (srcac *SystemRelationshipControlActionCreate) SetTenantID(i int) *SystemRelationshipControlActionCreate {
-	srcac.mutation.SetTenantID(i)
-	return srcac
+func (_c *SystemRelationshipControlActionCreate) SetTenantID(v int) *SystemRelationshipControlActionCreate {
+	_c.mutation.SetTenantID(v)
+	return _c
 }
 
 // SetRelationshipID sets the "relationship_id" field.
-func (srcac *SystemRelationshipControlActionCreate) SetRelationshipID(u uuid.UUID) *SystemRelationshipControlActionCreate {
-	srcac.mutation.SetRelationshipID(u)
-	return srcac
+func (_c *SystemRelationshipControlActionCreate) SetRelationshipID(v uuid.UUID) *SystemRelationshipControlActionCreate {
+	_c.mutation.SetRelationshipID(v)
+	return _c
 }
 
 // SetControlID sets the "control_id" field.
-func (srcac *SystemRelationshipControlActionCreate) SetControlID(u uuid.UUID) *SystemRelationshipControlActionCreate {
-	srcac.mutation.SetControlID(u)
-	return srcac
+func (_c *SystemRelationshipControlActionCreate) SetControlID(v uuid.UUID) *SystemRelationshipControlActionCreate {
+	_c.mutation.SetControlID(v)
+	return _c
 }
 
 // SetType sets the "type" field.
-func (srcac *SystemRelationshipControlActionCreate) SetType(s string) *SystemRelationshipControlActionCreate {
-	srcac.mutation.SetType(s)
-	return srcac
+func (_c *SystemRelationshipControlActionCreate) SetType(v string) *SystemRelationshipControlActionCreate {
+	_c.mutation.SetType(v)
+	return _c
 }
 
 // SetDescription sets the "description" field.
-func (srcac *SystemRelationshipControlActionCreate) SetDescription(s string) *SystemRelationshipControlActionCreate {
-	srcac.mutation.SetDescription(s)
-	return srcac
+func (_c *SystemRelationshipControlActionCreate) SetDescription(v string) *SystemRelationshipControlActionCreate {
+	_c.mutation.SetDescription(v)
+	return _c
 }
 
 // SetNillableDescription sets the "description" field if the given value is not nil.
-func (srcac *SystemRelationshipControlActionCreate) SetNillableDescription(s *string) *SystemRelationshipControlActionCreate {
-	if s != nil {
-		srcac.SetDescription(*s)
+func (_c *SystemRelationshipControlActionCreate) SetNillableDescription(v *string) *SystemRelationshipControlActionCreate {
+	if v != nil {
+		_c.SetDescription(*v)
 	}
-	return srcac
+	return _c
 }
 
 // SetCreatedAt sets the "created_at" field.
-func (srcac *SystemRelationshipControlActionCreate) SetCreatedAt(t time.Time) *SystemRelationshipControlActionCreate {
-	srcac.mutation.SetCreatedAt(t)
-	return srcac
+func (_c *SystemRelationshipControlActionCreate) SetCreatedAt(v time.Time) *SystemRelationshipControlActionCreate {
+	_c.mutation.SetCreatedAt(v)
+	return _c
 }
 
 // SetNillableCreatedAt sets the "created_at" field if the given value is not nil.
-func (srcac *SystemRelationshipControlActionCreate) SetNillableCreatedAt(t *time.Time) *SystemRelationshipControlActionCreate {
-	if t != nil {
-		srcac.SetCreatedAt(*t)
+func (_c *SystemRelationshipControlActionCreate) SetNillableCreatedAt(v *time.Time) *SystemRelationshipControlActionCreate {
+	if v != nil {
+		_c.SetCreatedAt(*v)
 	}
-	return srcac
+	return _c
 }
 
 // SetID sets the "id" field.
-func (srcac *SystemRelationshipControlActionCreate) SetID(u uuid.UUID) *SystemRelationshipControlActionCreate {
-	srcac.mutation.SetID(u)
-	return srcac
+func (_c *SystemRelationshipControlActionCreate) SetID(v uuid.UUID) *SystemRelationshipControlActionCreate {
+	_c.mutation.SetID(v)
+	return _c
 }
 
 // SetNillableID sets the "id" field if the given value is not nil.
-func (srcac *SystemRelationshipControlActionCreate) SetNillableID(u *uuid.UUID) *SystemRelationshipControlActionCreate {
-	if u != nil {
-		srcac.SetID(*u)
+func (_c *SystemRelationshipControlActionCreate) SetNillableID(v *uuid.UUID) *SystemRelationshipControlActionCreate {
+	if v != nil {
+		_c.SetID(*v)
 	}
-	return srcac
+	return _c
 }
 
 // SetTenant sets the "tenant" edge to the Tenant entity.
-func (srcac *SystemRelationshipControlActionCreate) SetTenant(t *Tenant) *SystemRelationshipControlActionCreate {
-	return srcac.SetTenantID(t.ID)
+func (_c *SystemRelationshipControlActionCreate) SetTenant(v *Tenant) *SystemRelationshipControlActionCreate {
+	return _c.SetTenantID(v.ID)
 }
 
 // SetRelationship sets the "relationship" edge to the SystemAnalysisRelationship entity.
-func (srcac *SystemRelationshipControlActionCreate) SetRelationship(s *SystemAnalysisRelationship) *SystemRelationshipControlActionCreate {
-	return srcac.SetRelationshipID(s.ID)
+func (_c *SystemRelationshipControlActionCreate) SetRelationship(v *SystemAnalysisRelationship) *SystemRelationshipControlActionCreate {
+	return _c.SetRelationshipID(v.ID)
 }
 
 // SetControl sets the "control" edge to the SystemComponentControl entity.
-func (srcac *SystemRelationshipControlActionCreate) SetControl(s *SystemComponentControl) *SystemRelationshipControlActionCreate {
-	return srcac.SetControlID(s.ID)
+func (_c *SystemRelationshipControlActionCreate) SetControl(v *SystemComponentControl) *SystemRelationshipControlActionCreate {
+	return _c.SetControlID(v.ID)
 }
 
 // Mutation returns the SystemRelationshipControlActionMutation object of the builder.
-func (srcac *SystemRelationshipControlActionCreate) Mutation() *SystemRelationshipControlActionMutation {
-	return srcac.mutation
+func (_c *SystemRelationshipControlActionCreate) Mutation() *SystemRelationshipControlActionMutation {
+	return _c.mutation
 }
 
 // Save creates the SystemRelationshipControlAction in the database.
-func (srcac *SystemRelationshipControlActionCreate) Save(ctx context.Context) (*SystemRelationshipControlAction, error) {
-	if err := srcac.defaults(); err != nil {
+func (_c *SystemRelationshipControlActionCreate) Save(ctx context.Context) (*SystemRelationshipControlAction, error) {
+	if err := _c.defaults(); err != nil {
 		return nil, err
 	}
-	return withHooks(ctx, srcac.sqlSave, srcac.mutation, srcac.hooks)
+	return withHooks(ctx, _c.sqlSave, _c.mutation, _c.hooks)
 }
 
 // SaveX calls Save and panics if Save returns an error.
-func (srcac *SystemRelationshipControlActionCreate) SaveX(ctx context.Context) *SystemRelationshipControlAction {
-	v, err := srcac.Save(ctx)
+func (_c *SystemRelationshipControlActionCreate) SaveX(ctx context.Context) *SystemRelationshipControlAction {
+	v, err := _c.Save(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -131,77 +131,77 @@ func (srcac *SystemRelationshipControlActionCreate) SaveX(ctx context.Context) *
 }
 
 // Exec executes the query.
-func (srcac *SystemRelationshipControlActionCreate) Exec(ctx context.Context) error {
-	_, err := srcac.Save(ctx)
+func (_c *SystemRelationshipControlActionCreate) Exec(ctx context.Context) error {
+	_, err := _c.Save(ctx)
 	return err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (srcac *SystemRelationshipControlActionCreate) ExecX(ctx context.Context) {
-	if err := srcac.Exec(ctx); err != nil {
+func (_c *SystemRelationshipControlActionCreate) ExecX(ctx context.Context) {
+	if err := _c.Exec(ctx); err != nil {
 		panic(err)
 	}
 }
 
 // defaults sets the default values of the builder before save.
-func (srcac *SystemRelationshipControlActionCreate) defaults() error {
-	if _, ok := srcac.mutation.CreatedAt(); !ok {
+func (_c *SystemRelationshipControlActionCreate) defaults() error {
+	if _, ok := _c.mutation.CreatedAt(); !ok {
 		if systemrelationshipcontrolaction.DefaultCreatedAt == nil {
 			return fmt.Errorf("ent: uninitialized systemrelationshipcontrolaction.DefaultCreatedAt (forgotten import ent/runtime?)")
 		}
 		v := systemrelationshipcontrolaction.DefaultCreatedAt()
-		srcac.mutation.SetCreatedAt(v)
+		_c.mutation.SetCreatedAt(v)
 	}
-	if _, ok := srcac.mutation.ID(); !ok {
+	if _, ok := _c.mutation.ID(); !ok {
 		if systemrelationshipcontrolaction.DefaultID == nil {
 			return fmt.Errorf("ent: uninitialized systemrelationshipcontrolaction.DefaultID (forgotten import ent/runtime?)")
 		}
 		v := systemrelationshipcontrolaction.DefaultID()
-		srcac.mutation.SetID(v)
+		_c.mutation.SetID(v)
 	}
 	return nil
 }
 
 // check runs all checks and user-defined validators on the builder.
-func (srcac *SystemRelationshipControlActionCreate) check() error {
-	if _, ok := srcac.mutation.TenantID(); !ok {
+func (_c *SystemRelationshipControlActionCreate) check() error {
+	if _, ok := _c.mutation.TenantID(); !ok {
 		return &ValidationError{Name: "tenant_id", err: errors.New(`ent: missing required field "SystemRelationshipControlAction.tenant_id"`)}
 	}
-	if _, ok := srcac.mutation.RelationshipID(); !ok {
+	if _, ok := _c.mutation.RelationshipID(); !ok {
 		return &ValidationError{Name: "relationship_id", err: errors.New(`ent: missing required field "SystemRelationshipControlAction.relationship_id"`)}
 	}
-	if _, ok := srcac.mutation.ControlID(); !ok {
+	if _, ok := _c.mutation.ControlID(); !ok {
 		return &ValidationError{Name: "control_id", err: errors.New(`ent: missing required field "SystemRelationshipControlAction.control_id"`)}
 	}
-	if _, ok := srcac.mutation.GetType(); !ok {
+	if _, ok := _c.mutation.GetType(); !ok {
 		return &ValidationError{Name: "type", err: errors.New(`ent: missing required field "SystemRelationshipControlAction.type"`)}
 	}
-	if v, ok := srcac.mutation.GetType(); ok {
+	if v, ok := _c.mutation.GetType(); ok {
 		if err := systemrelationshipcontrolaction.TypeValidator(v); err != nil {
 			return &ValidationError{Name: "type", err: fmt.Errorf(`ent: validator failed for field "SystemRelationshipControlAction.type": %w`, err)}
 		}
 	}
-	if _, ok := srcac.mutation.CreatedAt(); !ok {
+	if _, ok := _c.mutation.CreatedAt(); !ok {
 		return &ValidationError{Name: "created_at", err: errors.New(`ent: missing required field "SystemRelationshipControlAction.created_at"`)}
 	}
-	if len(srcac.mutation.TenantIDs()) == 0 {
+	if len(_c.mutation.TenantIDs()) == 0 {
 		return &ValidationError{Name: "tenant", err: errors.New(`ent: missing required edge "SystemRelationshipControlAction.tenant"`)}
 	}
-	if len(srcac.mutation.RelationshipIDs()) == 0 {
+	if len(_c.mutation.RelationshipIDs()) == 0 {
 		return &ValidationError{Name: "relationship", err: errors.New(`ent: missing required edge "SystemRelationshipControlAction.relationship"`)}
 	}
-	if len(srcac.mutation.ControlIDs()) == 0 {
+	if len(_c.mutation.ControlIDs()) == 0 {
 		return &ValidationError{Name: "control", err: errors.New(`ent: missing required edge "SystemRelationshipControlAction.control"`)}
 	}
 	return nil
 }
 
-func (srcac *SystemRelationshipControlActionCreate) sqlSave(ctx context.Context) (*SystemRelationshipControlAction, error) {
-	if err := srcac.check(); err != nil {
+func (_c *SystemRelationshipControlActionCreate) sqlSave(ctx context.Context) (*SystemRelationshipControlAction, error) {
+	if err := _c.check(); err != nil {
 		return nil, err
 	}
-	_node, _spec := srcac.createSpec()
-	if err := sqlgraph.CreateNode(ctx, srcac.driver, _spec); err != nil {
+	_node, _spec := _c.createSpec()
+	if err := sqlgraph.CreateNode(ctx, _c.driver, _spec); err != nil {
 		if sqlgraph.IsConstraintError(err) {
 			err = &ConstraintError{msg: err.Error(), wrap: err}
 		}
@@ -214,34 +214,34 @@ func (srcac *SystemRelationshipControlActionCreate) sqlSave(ctx context.Context)
 			return nil, err
 		}
 	}
-	srcac.mutation.id = &_node.ID
-	srcac.mutation.done = true
+	_c.mutation.id = &_node.ID
+	_c.mutation.done = true
 	return _node, nil
 }
 
-func (srcac *SystemRelationshipControlActionCreate) createSpec() (*SystemRelationshipControlAction, *sqlgraph.CreateSpec) {
+func (_c *SystemRelationshipControlActionCreate) createSpec() (*SystemRelationshipControlAction, *sqlgraph.CreateSpec) {
 	var (
-		_node = &SystemRelationshipControlAction{config: srcac.config}
+		_node = &SystemRelationshipControlAction{config: _c.config}
 		_spec = sqlgraph.NewCreateSpec(systemrelationshipcontrolaction.Table, sqlgraph.NewFieldSpec(systemrelationshipcontrolaction.FieldID, field.TypeUUID))
 	)
-	_spec.OnConflict = srcac.conflict
-	if id, ok := srcac.mutation.ID(); ok {
+	_spec.OnConflict = _c.conflict
+	if id, ok := _c.mutation.ID(); ok {
 		_node.ID = id
 		_spec.ID.Value = &id
 	}
-	if value, ok := srcac.mutation.GetType(); ok {
+	if value, ok := _c.mutation.GetType(); ok {
 		_spec.SetField(systemrelationshipcontrolaction.FieldType, field.TypeString, value)
 		_node.Type = value
 	}
-	if value, ok := srcac.mutation.Description(); ok {
+	if value, ok := _c.mutation.Description(); ok {
 		_spec.SetField(systemrelationshipcontrolaction.FieldDescription, field.TypeString, value)
 		_node.Description = value
 	}
-	if value, ok := srcac.mutation.CreatedAt(); ok {
+	if value, ok := _c.mutation.CreatedAt(); ok {
 		_spec.SetField(systemrelationshipcontrolaction.FieldCreatedAt, field.TypeTime, value)
 		_node.CreatedAt = value
 	}
-	if nodes := srcac.mutation.TenantIDs(); len(nodes) > 0 {
+	if nodes := _c.mutation.TenantIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
@@ -258,7 +258,7 @@ func (srcac *SystemRelationshipControlActionCreate) createSpec() (*SystemRelatio
 		_node.TenantID = nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
-	if nodes := srcac.mutation.RelationshipIDs(); len(nodes) > 0 {
+	if nodes := _c.mutation.RelationshipIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
@@ -275,7 +275,7 @@ func (srcac *SystemRelationshipControlActionCreate) createSpec() (*SystemRelatio
 		_node.RelationshipID = nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
-	if nodes := srcac.mutation.ControlIDs(); len(nodes) > 0 {
+	if nodes := _c.mutation.ControlIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
@@ -311,10 +311,10 @@ func (srcac *SystemRelationshipControlActionCreate) createSpec() (*SystemRelatio
 //			SetTenantID(v+v).
 //		}).
 //		Exec(ctx)
-func (srcac *SystemRelationshipControlActionCreate) OnConflict(opts ...sql.ConflictOption) *SystemRelationshipControlActionUpsertOne {
-	srcac.conflict = opts
+func (_c *SystemRelationshipControlActionCreate) OnConflict(opts ...sql.ConflictOption) *SystemRelationshipControlActionUpsertOne {
+	_c.conflict = opts
 	return &SystemRelationshipControlActionUpsertOne{
-		create: srcac,
+		create: _c,
 	}
 }
 
@@ -324,10 +324,10 @@ func (srcac *SystemRelationshipControlActionCreate) OnConflict(opts ...sql.Confl
 //	client.SystemRelationshipControlAction.Create().
 //		OnConflict(sql.ConflictColumns(columns...)).
 //		Exec(ctx)
-func (srcac *SystemRelationshipControlActionCreate) OnConflictColumns(columns ...string) *SystemRelationshipControlActionUpsertOne {
-	srcac.conflict = append(srcac.conflict, sql.ConflictColumns(columns...))
+func (_c *SystemRelationshipControlActionCreate) OnConflictColumns(columns ...string) *SystemRelationshipControlActionUpsertOne {
+	_c.conflict = append(_c.conflict, sql.ConflictColumns(columns...))
 	return &SystemRelationshipControlActionUpsertOne{
-		create: srcac,
+		create: _c,
 	}
 }
 
@@ -585,16 +585,16 @@ type SystemRelationshipControlActionCreateBulk struct {
 }
 
 // Save creates the SystemRelationshipControlAction entities in the database.
-func (srcacb *SystemRelationshipControlActionCreateBulk) Save(ctx context.Context) ([]*SystemRelationshipControlAction, error) {
-	if srcacb.err != nil {
-		return nil, srcacb.err
+func (_c *SystemRelationshipControlActionCreateBulk) Save(ctx context.Context) ([]*SystemRelationshipControlAction, error) {
+	if _c.err != nil {
+		return nil, _c.err
 	}
-	specs := make([]*sqlgraph.CreateSpec, len(srcacb.builders))
-	nodes := make([]*SystemRelationshipControlAction, len(srcacb.builders))
-	mutators := make([]Mutator, len(srcacb.builders))
-	for i := range srcacb.builders {
+	specs := make([]*sqlgraph.CreateSpec, len(_c.builders))
+	nodes := make([]*SystemRelationshipControlAction, len(_c.builders))
+	mutators := make([]Mutator, len(_c.builders))
+	for i := range _c.builders {
 		func(i int, root context.Context) {
-			builder := srcacb.builders[i]
+			builder := _c.builders[i]
 			builder.defaults()
 			var mut Mutator = MutateFunc(func(ctx context.Context, m Mutation) (Value, error) {
 				mutation, ok := m.(*SystemRelationshipControlActionMutation)
@@ -608,12 +608,12 @@ func (srcacb *SystemRelationshipControlActionCreateBulk) Save(ctx context.Contex
 				var err error
 				nodes[i], specs[i] = builder.createSpec()
 				if i < len(mutators)-1 {
-					_, err = mutators[i+1].Mutate(root, srcacb.builders[i+1].mutation)
+					_, err = mutators[i+1].Mutate(root, _c.builders[i+1].mutation)
 				} else {
 					spec := &sqlgraph.BatchCreateSpec{Nodes: specs}
-					spec.OnConflict = srcacb.conflict
+					spec.OnConflict = _c.conflict
 					// Invoke the actual operation on the latest mutation in the chain.
-					if err = sqlgraph.BatchCreate(ctx, srcacb.driver, spec); err != nil {
+					if err = sqlgraph.BatchCreate(ctx, _c.driver, spec); err != nil {
 						if sqlgraph.IsConstraintError(err) {
 							err = &ConstraintError{msg: err.Error(), wrap: err}
 						}
@@ -633,7 +633,7 @@ func (srcacb *SystemRelationshipControlActionCreateBulk) Save(ctx context.Contex
 		}(i, ctx)
 	}
 	if len(mutators) > 0 {
-		if _, err := mutators[0].Mutate(ctx, srcacb.builders[0].mutation); err != nil {
+		if _, err := mutators[0].Mutate(ctx, _c.builders[0].mutation); err != nil {
 			return nil, err
 		}
 	}
@@ -641,8 +641,8 @@ func (srcacb *SystemRelationshipControlActionCreateBulk) Save(ctx context.Contex
 }
 
 // SaveX is like Save, but panics if an error occurs.
-func (srcacb *SystemRelationshipControlActionCreateBulk) SaveX(ctx context.Context) []*SystemRelationshipControlAction {
-	v, err := srcacb.Save(ctx)
+func (_c *SystemRelationshipControlActionCreateBulk) SaveX(ctx context.Context) []*SystemRelationshipControlAction {
+	v, err := _c.Save(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -650,14 +650,14 @@ func (srcacb *SystemRelationshipControlActionCreateBulk) SaveX(ctx context.Conte
 }
 
 // Exec executes the query.
-func (srcacb *SystemRelationshipControlActionCreateBulk) Exec(ctx context.Context) error {
-	_, err := srcacb.Save(ctx)
+func (_c *SystemRelationshipControlActionCreateBulk) Exec(ctx context.Context) error {
+	_, err := _c.Save(ctx)
 	return err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (srcacb *SystemRelationshipControlActionCreateBulk) ExecX(ctx context.Context) {
-	if err := srcacb.Exec(ctx); err != nil {
+func (_c *SystemRelationshipControlActionCreateBulk) ExecX(ctx context.Context) {
+	if err := _c.Exec(ctx); err != nil {
 		panic(err)
 	}
 }
@@ -677,10 +677,10 @@ func (srcacb *SystemRelationshipControlActionCreateBulk) ExecX(ctx context.Conte
 //			SetTenantID(v+v).
 //		}).
 //		Exec(ctx)
-func (srcacb *SystemRelationshipControlActionCreateBulk) OnConflict(opts ...sql.ConflictOption) *SystemRelationshipControlActionUpsertBulk {
-	srcacb.conflict = opts
+func (_c *SystemRelationshipControlActionCreateBulk) OnConflict(opts ...sql.ConflictOption) *SystemRelationshipControlActionUpsertBulk {
+	_c.conflict = opts
 	return &SystemRelationshipControlActionUpsertBulk{
-		create: srcacb,
+		create: _c,
 	}
 }
 
@@ -690,10 +690,10 @@ func (srcacb *SystemRelationshipControlActionCreateBulk) OnConflict(opts ...sql.
 //	client.SystemRelationshipControlAction.Create().
 //		OnConflict(sql.ConflictColumns(columns...)).
 //		Exec(ctx)
-func (srcacb *SystemRelationshipControlActionCreateBulk) OnConflictColumns(columns ...string) *SystemRelationshipControlActionUpsertBulk {
-	srcacb.conflict = append(srcacb.conflict, sql.ConflictColumns(columns...))
+func (_c *SystemRelationshipControlActionCreateBulk) OnConflictColumns(columns ...string) *SystemRelationshipControlActionUpsertBulk {
+	_c.conflict = append(_c.conflict, sql.ConflictColumns(columns...))
 	return &SystemRelationshipControlActionUpsertBulk{
-		create: srcacb,
+		create: _c,
 	}
 }
 

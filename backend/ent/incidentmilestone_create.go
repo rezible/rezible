@@ -27,83 +27,83 @@ type IncidentMilestoneCreate struct {
 }
 
 // SetTenantID sets the "tenant_id" field.
-func (imc *IncidentMilestoneCreate) SetTenantID(i int) *IncidentMilestoneCreate {
-	imc.mutation.SetTenantID(i)
-	return imc
+func (_c *IncidentMilestoneCreate) SetTenantID(v int) *IncidentMilestoneCreate {
+	_c.mutation.SetTenantID(v)
+	return _c
 }
 
 // SetIncidentID sets the "incident_id" field.
-func (imc *IncidentMilestoneCreate) SetIncidentID(u uuid.UUID) *IncidentMilestoneCreate {
-	imc.mutation.SetIncidentID(u)
-	return imc
+func (_c *IncidentMilestoneCreate) SetIncidentID(v uuid.UUID) *IncidentMilestoneCreate {
+	_c.mutation.SetIncidentID(v)
+	return _c
 }
 
 // SetKind sets the "kind" field.
-func (imc *IncidentMilestoneCreate) SetKind(i incidentmilestone.Kind) *IncidentMilestoneCreate {
-	imc.mutation.SetKind(i)
-	return imc
+func (_c *IncidentMilestoneCreate) SetKind(v incidentmilestone.Kind) *IncidentMilestoneCreate {
+	_c.mutation.SetKind(v)
+	return _c
 }
 
 // SetDescription sets the "description" field.
-func (imc *IncidentMilestoneCreate) SetDescription(s string) *IncidentMilestoneCreate {
-	imc.mutation.SetDescription(s)
-	return imc
+func (_c *IncidentMilestoneCreate) SetDescription(v string) *IncidentMilestoneCreate {
+	_c.mutation.SetDescription(v)
+	return _c
 }
 
 // SetNillableDescription sets the "description" field if the given value is not nil.
-func (imc *IncidentMilestoneCreate) SetNillableDescription(s *string) *IncidentMilestoneCreate {
-	if s != nil {
-		imc.SetDescription(*s)
+func (_c *IncidentMilestoneCreate) SetNillableDescription(v *string) *IncidentMilestoneCreate {
+	if v != nil {
+		_c.SetDescription(*v)
 	}
-	return imc
+	return _c
 }
 
 // SetTime sets the "time" field.
-func (imc *IncidentMilestoneCreate) SetTime(t time.Time) *IncidentMilestoneCreate {
-	imc.mutation.SetTime(t)
-	return imc
+func (_c *IncidentMilestoneCreate) SetTime(v time.Time) *IncidentMilestoneCreate {
+	_c.mutation.SetTime(v)
+	return _c
 }
 
 // SetID sets the "id" field.
-func (imc *IncidentMilestoneCreate) SetID(u uuid.UUID) *IncidentMilestoneCreate {
-	imc.mutation.SetID(u)
-	return imc
+func (_c *IncidentMilestoneCreate) SetID(v uuid.UUID) *IncidentMilestoneCreate {
+	_c.mutation.SetID(v)
+	return _c
 }
 
 // SetNillableID sets the "id" field if the given value is not nil.
-func (imc *IncidentMilestoneCreate) SetNillableID(u *uuid.UUID) *IncidentMilestoneCreate {
-	if u != nil {
-		imc.SetID(*u)
+func (_c *IncidentMilestoneCreate) SetNillableID(v *uuid.UUID) *IncidentMilestoneCreate {
+	if v != nil {
+		_c.SetID(*v)
 	}
-	return imc
+	return _c
 }
 
 // SetTenant sets the "tenant" edge to the Tenant entity.
-func (imc *IncidentMilestoneCreate) SetTenant(t *Tenant) *IncidentMilestoneCreate {
-	return imc.SetTenantID(t.ID)
+func (_c *IncidentMilestoneCreate) SetTenant(v *Tenant) *IncidentMilestoneCreate {
+	return _c.SetTenantID(v.ID)
 }
 
 // SetIncident sets the "incident" edge to the Incident entity.
-func (imc *IncidentMilestoneCreate) SetIncident(i *Incident) *IncidentMilestoneCreate {
-	return imc.SetIncidentID(i.ID)
+func (_c *IncidentMilestoneCreate) SetIncident(v *Incident) *IncidentMilestoneCreate {
+	return _c.SetIncidentID(v.ID)
 }
 
 // Mutation returns the IncidentMilestoneMutation object of the builder.
-func (imc *IncidentMilestoneCreate) Mutation() *IncidentMilestoneMutation {
-	return imc.mutation
+func (_c *IncidentMilestoneCreate) Mutation() *IncidentMilestoneMutation {
+	return _c.mutation
 }
 
 // Save creates the IncidentMilestone in the database.
-func (imc *IncidentMilestoneCreate) Save(ctx context.Context) (*IncidentMilestone, error) {
-	if err := imc.defaults(); err != nil {
+func (_c *IncidentMilestoneCreate) Save(ctx context.Context) (*IncidentMilestone, error) {
+	if err := _c.defaults(); err != nil {
 		return nil, err
 	}
-	return withHooks(ctx, imc.sqlSave, imc.mutation, imc.hooks)
+	return withHooks(ctx, _c.sqlSave, _c.mutation, _c.hooks)
 }
 
 // SaveX calls Save and panics if Save returns an error.
-func (imc *IncidentMilestoneCreate) SaveX(ctx context.Context) *IncidentMilestone {
-	v, err := imc.Save(ctx)
+func (_c *IncidentMilestoneCreate) SaveX(ctx context.Context) *IncidentMilestone {
+	v, err := _c.Save(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -111,64 +111,64 @@ func (imc *IncidentMilestoneCreate) SaveX(ctx context.Context) *IncidentMileston
 }
 
 // Exec executes the query.
-func (imc *IncidentMilestoneCreate) Exec(ctx context.Context) error {
-	_, err := imc.Save(ctx)
+func (_c *IncidentMilestoneCreate) Exec(ctx context.Context) error {
+	_, err := _c.Save(ctx)
 	return err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (imc *IncidentMilestoneCreate) ExecX(ctx context.Context) {
-	if err := imc.Exec(ctx); err != nil {
+func (_c *IncidentMilestoneCreate) ExecX(ctx context.Context) {
+	if err := _c.Exec(ctx); err != nil {
 		panic(err)
 	}
 }
 
 // defaults sets the default values of the builder before save.
-func (imc *IncidentMilestoneCreate) defaults() error {
-	if _, ok := imc.mutation.ID(); !ok {
+func (_c *IncidentMilestoneCreate) defaults() error {
+	if _, ok := _c.mutation.ID(); !ok {
 		if incidentmilestone.DefaultID == nil {
 			return fmt.Errorf("ent: uninitialized incidentmilestone.DefaultID (forgotten import ent/runtime?)")
 		}
 		v := incidentmilestone.DefaultID()
-		imc.mutation.SetID(v)
+		_c.mutation.SetID(v)
 	}
 	return nil
 }
 
 // check runs all checks and user-defined validators on the builder.
-func (imc *IncidentMilestoneCreate) check() error {
-	if _, ok := imc.mutation.TenantID(); !ok {
+func (_c *IncidentMilestoneCreate) check() error {
+	if _, ok := _c.mutation.TenantID(); !ok {
 		return &ValidationError{Name: "tenant_id", err: errors.New(`ent: missing required field "IncidentMilestone.tenant_id"`)}
 	}
-	if _, ok := imc.mutation.IncidentID(); !ok {
+	if _, ok := _c.mutation.IncidentID(); !ok {
 		return &ValidationError{Name: "incident_id", err: errors.New(`ent: missing required field "IncidentMilestone.incident_id"`)}
 	}
-	if _, ok := imc.mutation.Kind(); !ok {
+	if _, ok := _c.mutation.Kind(); !ok {
 		return &ValidationError{Name: "kind", err: errors.New(`ent: missing required field "IncidentMilestone.kind"`)}
 	}
-	if v, ok := imc.mutation.Kind(); ok {
+	if v, ok := _c.mutation.Kind(); ok {
 		if err := incidentmilestone.KindValidator(v); err != nil {
 			return &ValidationError{Name: "kind", err: fmt.Errorf(`ent: validator failed for field "IncidentMilestone.kind": %w`, err)}
 		}
 	}
-	if _, ok := imc.mutation.Time(); !ok {
+	if _, ok := _c.mutation.Time(); !ok {
 		return &ValidationError{Name: "time", err: errors.New(`ent: missing required field "IncidentMilestone.time"`)}
 	}
-	if len(imc.mutation.TenantIDs()) == 0 {
+	if len(_c.mutation.TenantIDs()) == 0 {
 		return &ValidationError{Name: "tenant", err: errors.New(`ent: missing required edge "IncidentMilestone.tenant"`)}
 	}
-	if len(imc.mutation.IncidentIDs()) == 0 {
+	if len(_c.mutation.IncidentIDs()) == 0 {
 		return &ValidationError{Name: "incident", err: errors.New(`ent: missing required edge "IncidentMilestone.incident"`)}
 	}
 	return nil
 }
 
-func (imc *IncidentMilestoneCreate) sqlSave(ctx context.Context) (*IncidentMilestone, error) {
-	if err := imc.check(); err != nil {
+func (_c *IncidentMilestoneCreate) sqlSave(ctx context.Context) (*IncidentMilestone, error) {
+	if err := _c.check(); err != nil {
 		return nil, err
 	}
-	_node, _spec := imc.createSpec()
-	if err := sqlgraph.CreateNode(ctx, imc.driver, _spec); err != nil {
+	_node, _spec := _c.createSpec()
+	if err := sqlgraph.CreateNode(ctx, _c.driver, _spec); err != nil {
 		if sqlgraph.IsConstraintError(err) {
 			err = &ConstraintError{msg: err.Error(), wrap: err}
 		}
@@ -181,34 +181,34 @@ func (imc *IncidentMilestoneCreate) sqlSave(ctx context.Context) (*IncidentMiles
 			return nil, err
 		}
 	}
-	imc.mutation.id = &_node.ID
-	imc.mutation.done = true
+	_c.mutation.id = &_node.ID
+	_c.mutation.done = true
 	return _node, nil
 }
 
-func (imc *IncidentMilestoneCreate) createSpec() (*IncidentMilestone, *sqlgraph.CreateSpec) {
+func (_c *IncidentMilestoneCreate) createSpec() (*IncidentMilestone, *sqlgraph.CreateSpec) {
 	var (
-		_node = &IncidentMilestone{config: imc.config}
+		_node = &IncidentMilestone{config: _c.config}
 		_spec = sqlgraph.NewCreateSpec(incidentmilestone.Table, sqlgraph.NewFieldSpec(incidentmilestone.FieldID, field.TypeUUID))
 	)
-	_spec.OnConflict = imc.conflict
-	if id, ok := imc.mutation.ID(); ok {
+	_spec.OnConflict = _c.conflict
+	if id, ok := _c.mutation.ID(); ok {
 		_node.ID = id
 		_spec.ID.Value = &id
 	}
-	if value, ok := imc.mutation.Kind(); ok {
+	if value, ok := _c.mutation.Kind(); ok {
 		_spec.SetField(incidentmilestone.FieldKind, field.TypeEnum, value)
 		_node.Kind = value
 	}
-	if value, ok := imc.mutation.Description(); ok {
+	if value, ok := _c.mutation.Description(); ok {
 		_spec.SetField(incidentmilestone.FieldDescription, field.TypeString, value)
 		_node.Description = value
 	}
-	if value, ok := imc.mutation.Time(); ok {
+	if value, ok := _c.mutation.Time(); ok {
 		_spec.SetField(incidentmilestone.FieldTime, field.TypeTime, value)
 		_node.Time = value
 	}
-	if nodes := imc.mutation.TenantIDs(); len(nodes) > 0 {
+	if nodes := _c.mutation.TenantIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
@@ -225,7 +225,7 @@ func (imc *IncidentMilestoneCreate) createSpec() (*IncidentMilestone, *sqlgraph.
 		_node.TenantID = nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
-	if nodes := imc.mutation.IncidentIDs(); len(nodes) > 0 {
+	if nodes := _c.mutation.IncidentIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: true,
@@ -261,10 +261,10 @@ func (imc *IncidentMilestoneCreate) createSpec() (*IncidentMilestone, *sqlgraph.
 //			SetTenantID(v+v).
 //		}).
 //		Exec(ctx)
-func (imc *IncidentMilestoneCreate) OnConflict(opts ...sql.ConflictOption) *IncidentMilestoneUpsertOne {
-	imc.conflict = opts
+func (_c *IncidentMilestoneCreate) OnConflict(opts ...sql.ConflictOption) *IncidentMilestoneUpsertOne {
+	_c.conflict = opts
 	return &IncidentMilestoneUpsertOne{
-		create: imc,
+		create: _c,
 	}
 }
 
@@ -274,10 +274,10 @@ func (imc *IncidentMilestoneCreate) OnConflict(opts ...sql.ConflictOption) *Inci
 //	client.IncidentMilestone.Create().
 //		OnConflict(sql.ConflictColumns(columns...)).
 //		Exec(ctx)
-func (imc *IncidentMilestoneCreate) OnConflictColumns(columns ...string) *IncidentMilestoneUpsertOne {
-	imc.conflict = append(imc.conflict, sql.ConflictColumns(columns...))
+func (_c *IncidentMilestoneCreate) OnConflictColumns(columns ...string) *IncidentMilestoneUpsertOne {
+	_c.conflict = append(_c.conflict, sql.ConflictColumns(columns...))
 	return &IncidentMilestoneUpsertOne{
-		create: imc,
+		create: _c,
 	}
 }
 
@@ -509,16 +509,16 @@ type IncidentMilestoneCreateBulk struct {
 }
 
 // Save creates the IncidentMilestone entities in the database.
-func (imcb *IncidentMilestoneCreateBulk) Save(ctx context.Context) ([]*IncidentMilestone, error) {
-	if imcb.err != nil {
-		return nil, imcb.err
+func (_c *IncidentMilestoneCreateBulk) Save(ctx context.Context) ([]*IncidentMilestone, error) {
+	if _c.err != nil {
+		return nil, _c.err
 	}
-	specs := make([]*sqlgraph.CreateSpec, len(imcb.builders))
-	nodes := make([]*IncidentMilestone, len(imcb.builders))
-	mutators := make([]Mutator, len(imcb.builders))
-	for i := range imcb.builders {
+	specs := make([]*sqlgraph.CreateSpec, len(_c.builders))
+	nodes := make([]*IncidentMilestone, len(_c.builders))
+	mutators := make([]Mutator, len(_c.builders))
+	for i := range _c.builders {
 		func(i int, root context.Context) {
-			builder := imcb.builders[i]
+			builder := _c.builders[i]
 			builder.defaults()
 			var mut Mutator = MutateFunc(func(ctx context.Context, m Mutation) (Value, error) {
 				mutation, ok := m.(*IncidentMilestoneMutation)
@@ -532,12 +532,12 @@ func (imcb *IncidentMilestoneCreateBulk) Save(ctx context.Context) ([]*IncidentM
 				var err error
 				nodes[i], specs[i] = builder.createSpec()
 				if i < len(mutators)-1 {
-					_, err = mutators[i+1].Mutate(root, imcb.builders[i+1].mutation)
+					_, err = mutators[i+1].Mutate(root, _c.builders[i+1].mutation)
 				} else {
 					spec := &sqlgraph.BatchCreateSpec{Nodes: specs}
-					spec.OnConflict = imcb.conflict
+					spec.OnConflict = _c.conflict
 					// Invoke the actual operation on the latest mutation in the chain.
-					if err = sqlgraph.BatchCreate(ctx, imcb.driver, spec); err != nil {
+					if err = sqlgraph.BatchCreate(ctx, _c.driver, spec); err != nil {
 						if sqlgraph.IsConstraintError(err) {
 							err = &ConstraintError{msg: err.Error(), wrap: err}
 						}
@@ -557,7 +557,7 @@ func (imcb *IncidentMilestoneCreateBulk) Save(ctx context.Context) ([]*IncidentM
 		}(i, ctx)
 	}
 	if len(mutators) > 0 {
-		if _, err := mutators[0].Mutate(ctx, imcb.builders[0].mutation); err != nil {
+		if _, err := mutators[0].Mutate(ctx, _c.builders[0].mutation); err != nil {
 			return nil, err
 		}
 	}
@@ -565,8 +565,8 @@ func (imcb *IncidentMilestoneCreateBulk) Save(ctx context.Context) ([]*IncidentM
 }
 
 // SaveX is like Save, but panics if an error occurs.
-func (imcb *IncidentMilestoneCreateBulk) SaveX(ctx context.Context) []*IncidentMilestone {
-	v, err := imcb.Save(ctx)
+func (_c *IncidentMilestoneCreateBulk) SaveX(ctx context.Context) []*IncidentMilestone {
+	v, err := _c.Save(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -574,14 +574,14 @@ func (imcb *IncidentMilestoneCreateBulk) SaveX(ctx context.Context) []*IncidentM
 }
 
 // Exec executes the query.
-func (imcb *IncidentMilestoneCreateBulk) Exec(ctx context.Context) error {
-	_, err := imcb.Save(ctx)
+func (_c *IncidentMilestoneCreateBulk) Exec(ctx context.Context) error {
+	_, err := _c.Save(ctx)
 	return err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (imcb *IncidentMilestoneCreateBulk) ExecX(ctx context.Context) {
-	if err := imcb.Exec(ctx); err != nil {
+func (_c *IncidentMilestoneCreateBulk) ExecX(ctx context.Context) {
+	if err := _c.Exec(ctx); err != nil {
 		panic(err)
 	}
 }
@@ -601,10 +601,10 @@ func (imcb *IncidentMilestoneCreateBulk) ExecX(ctx context.Context) {
 //			SetTenantID(v+v).
 //		}).
 //		Exec(ctx)
-func (imcb *IncidentMilestoneCreateBulk) OnConflict(opts ...sql.ConflictOption) *IncidentMilestoneUpsertBulk {
-	imcb.conflict = opts
+func (_c *IncidentMilestoneCreateBulk) OnConflict(opts ...sql.ConflictOption) *IncidentMilestoneUpsertBulk {
+	_c.conflict = opts
 	return &IncidentMilestoneUpsertBulk{
-		create: imcb,
+		create: _c,
 	}
 }
 
@@ -614,10 +614,10 @@ func (imcb *IncidentMilestoneCreateBulk) OnConflict(opts ...sql.ConflictOption) 
 //	client.IncidentMilestone.Create().
 //		OnConflict(sql.ConflictColumns(columns...)).
 //		Exec(ctx)
-func (imcb *IncidentMilestoneCreateBulk) OnConflictColumns(columns ...string) *IncidentMilestoneUpsertBulk {
-	imcb.conflict = append(imcb.conflict, sql.ConflictColumns(columns...))
+func (_c *IncidentMilestoneCreateBulk) OnConflictColumns(columns ...string) *IncidentMilestoneUpsertBulk {
+	_c.conflict = append(_c.conflict, sql.ConflictColumns(columns...))
 	return &IncidentMilestoneUpsertBulk{
-		create: imcb,
+		create: _c,
 	}
 }
 

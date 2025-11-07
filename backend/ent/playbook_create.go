@@ -26,79 +26,79 @@ type PlaybookCreate struct {
 }
 
 // SetTenantID sets the "tenant_id" field.
-func (pc *PlaybookCreate) SetTenantID(i int) *PlaybookCreate {
-	pc.mutation.SetTenantID(i)
-	return pc
+func (_c *PlaybookCreate) SetTenantID(v int) *PlaybookCreate {
+	_c.mutation.SetTenantID(v)
+	return _c
 }
 
 // SetTitle sets the "title" field.
-func (pc *PlaybookCreate) SetTitle(s string) *PlaybookCreate {
-	pc.mutation.SetTitle(s)
-	return pc
+func (_c *PlaybookCreate) SetTitle(v string) *PlaybookCreate {
+	_c.mutation.SetTitle(v)
+	return _c
 }
 
 // SetProviderID sets the "provider_id" field.
-func (pc *PlaybookCreate) SetProviderID(s string) *PlaybookCreate {
-	pc.mutation.SetProviderID(s)
-	return pc
+func (_c *PlaybookCreate) SetProviderID(v string) *PlaybookCreate {
+	_c.mutation.SetProviderID(v)
+	return _c
 }
 
 // SetContent sets the "content" field.
-func (pc *PlaybookCreate) SetContent(b []byte) *PlaybookCreate {
-	pc.mutation.SetContent(b)
-	return pc
+func (_c *PlaybookCreate) SetContent(v []byte) *PlaybookCreate {
+	_c.mutation.SetContent(v)
+	return _c
 }
 
 // SetID sets the "id" field.
-func (pc *PlaybookCreate) SetID(u uuid.UUID) *PlaybookCreate {
-	pc.mutation.SetID(u)
-	return pc
+func (_c *PlaybookCreate) SetID(v uuid.UUID) *PlaybookCreate {
+	_c.mutation.SetID(v)
+	return _c
 }
 
 // SetNillableID sets the "id" field if the given value is not nil.
-func (pc *PlaybookCreate) SetNillableID(u *uuid.UUID) *PlaybookCreate {
-	if u != nil {
-		pc.SetID(*u)
+func (_c *PlaybookCreate) SetNillableID(v *uuid.UUID) *PlaybookCreate {
+	if v != nil {
+		_c.SetID(*v)
 	}
-	return pc
+	return _c
 }
 
 // SetTenant sets the "tenant" edge to the Tenant entity.
-func (pc *PlaybookCreate) SetTenant(t *Tenant) *PlaybookCreate {
-	return pc.SetTenantID(t.ID)
+func (_c *PlaybookCreate) SetTenant(v *Tenant) *PlaybookCreate {
+	return _c.SetTenantID(v.ID)
 }
 
 // AddAlertIDs adds the "alerts" edge to the Alert entity by IDs.
-func (pc *PlaybookCreate) AddAlertIDs(ids ...uuid.UUID) *PlaybookCreate {
-	pc.mutation.AddAlertIDs(ids...)
-	return pc
+func (_c *PlaybookCreate) AddAlertIDs(ids ...uuid.UUID) *PlaybookCreate {
+	_c.mutation.AddAlertIDs(ids...)
+	return _c
 }
 
 // AddAlerts adds the "alerts" edges to the Alert entity.
-func (pc *PlaybookCreate) AddAlerts(a ...*Alert) *PlaybookCreate {
-	ids := make([]uuid.UUID, len(a))
-	for i := range a {
-		ids[i] = a[i].ID
+func (_c *PlaybookCreate) AddAlerts(v ...*Alert) *PlaybookCreate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
 	}
-	return pc.AddAlertIDs(ids...)
+	return _c.AddAlertIDs(ids...)
 }
 
 // Mutation returns the PlaybookMutation object of the builder.
-func (pc *PlaybookCreate) Mutation() *PlaybookMutation {
-	return pc.mutation
+func (_c *PlaybookCreate) Mutation() *PlaybookMutation {
+	return _c.mutation
 }
 
 // Save creates the Playbook in the database.
-func (pc *PlaybookCreate) Save(ctx context.Context) (*Playbook, error) {
-	if err := pc.defaults(); err != nil {
+func (_c *PlaybookCreate) Save(ctx context.Context) (*Playbook, error) {
+	if err := _c.defaults(); err != nil {
 		return nil, err
 	}
-	return withHooks(ctx, pc.sqlSave, pc.mutation, pc.hooks)
+	return withHooks(ctx, _c.sqlSave, _c.mutation, _c.hooks)
 }
 
 // SaveX calls Save and panics if Save returns an error.
-func (pc *PlaybookCreate) SaveX(ctx context.Context) *Playbook {
-	v, err := pc.Save(ctx)
+func (_c *PlaybookCreate) SaveX(ctx context.Context) *Playbook {
+	v, err := _c.Save(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -106,56 +106,56 @@ func (pc *PlaybookCreate) SaveX(ctx context.Context) *Playbook {
 }
 
 // Exec executes the query.
-func (pc *PlaybookCreate) Exec(ctx context.Context) error {
-	_, err := pc.Save(ctx)
+func (_c *PlaybookCreate) Exec(ctx context.Context) error {
+	_, err := _c.Save(ctx)
 	return err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (pc *PlaybookCreate) ExecX(ctx context.Context) {
-	if err := pc.Exec(ctx); err != nil {
+func (_c *PlaybookCreate) ExecX(ctx context.Context) {
+	if err := _c.Exec(ctx); err != nil {
 		panic(err)
 	}
 }
 
 // defaults sets the default values of the builder before save.
-func (pc *PlaybookCreate) defaults() error {
-	if _, ok := pc.mutation.ID(); !ok {
+func (_c *PlaybookCreate) defaults() error {
+	if _, ok := _c.mutation.ID(); !ok {
 		if playbook.DefaultID == nil {
 			return fmt.Errorf("ent: uninitialized playbook.DefaultID (forgotten import ent/runtime?)")
 		}
 		v := playbook.DefaultID()
-		pc.mutation.SetID(v)
+		_c.mutation.SetID(v)
 	}
 	return nil
 }
 
 // check runs all checks and user-defined validators on the builder.
-func (pc *PlaybookCreate) check() error {
-	if _, ok := pc.mutation.TenantID(); !ok {
+func (_c *PlaybookCreate) check() error {
+	if _, ok := _c.mutation.TenantID(); !ok {
 		return &ValidationError{Name: "tenant_id", err: errors.New(`ent: missing required field "Playbook.tenant_id"`)}
 	}
-	if _, ok := pc.mutation.Title(); !ok {
+	if _, ok := _c.mutation.Title(); !ok {
 		return &ValidationError{Name: "title", err: errors.New(`ent: missing required field "Playbook.title"`)}
 	}
-	if _, ok := pc.mutation.ProviderID(); !ok {
+	if _, ok := _c.mutation.ProviderID(); !ok {
 		return &ValidationError{Name: "provider_id", err: errors.New(`ent: missing required field "Playbook.provider_id"`)}
 	}
-	if _, ok := pc.mutation.Content(); !ok {
+	if _, ok := _c.mutation.Content(); !ok {
 		return &ValidationError{Name: "content", err: errors.New(`ent: missing required field "Playbook.content"`)}
 	}
-	if len(pc.mutation.TenantIDs()) == 0 {
+	if len(_c.mutation.TenantIDs()) == 0 {
 		return &ValidationError{Name: "tenant", err: errors.New(`ent: missing required edge "Playbook.tenant"`)}
 	}
 	return nil
 }
 
-func (pc *PlaybookCreate) sqlSave(ctx context.Context) (*Playbook, error) {
-	if err := pc.check(); err != nil {
+func (_c *PlaybookCreate) sqlSave(ctx context.Context) (*Playbook, error) {
+	if err := _c.check(); err != nil {
 		return nil, err
 	}
-	_node, _spec := pc.createSpec()
-	if err := sqlgraph.CreateNode(ctx, pc.driver, _spec); err != nil {
+	_node, _spec := _c.createSpec()
+	if err := sqlgraph.CreateNode(ctx, _c.driver, _spec); err != nil {
 		if sqlgraph.IsConstraintError(err) {
 			err = &ConstraintError{msg: err.Error(), wrap: err}
 		}
@@ -168,34 +168,34 @@ func (pc *PlaybookCreate) sqlSave(ctx context.Context) (*Playbook, error) {
 			return nil, err
 		}
 	}
-	pc.mutation.id = &_node.ID
-	pc.mutation.done = true
+	_c.mutation.id = &_node.ID
+	_c.mutation.done = true
 	return _node, nil
 }
 
-func (pc *PlaybookCreate) createSpec() (*Playbook, *sqlgraph.CreateSpec) {
+func (_c *PlaybookCreate) createSpec() (*Playbook, *sqlgraph.CreateSpec) {
 	var (
-		_node = &Playbook{config: pc.config}
+		_node = &Playbook{config: _c.config}
 		_spec = sqlgraph.NewCreateSpec(playbook.Table, sqlgraph.NewFieldSpec(playbook.FieldID, field.TypeUUID))
 	)
-	_spec.OnConflict = pc.conflict
-	if id, ok := pc.mutation.ID(); ok {
+	_spec.OnConflict = _c.conflict
+	if id, ok := _c.mutation.ID(); ok {
 		_node.ID = id
 		_spec.ID.Value = &id
 	}
-	if value, ok := pc.mutation.Title(); ok {
+	if value, ok := _c.mutation.Title(); ok {
 		_spec.SetField(playbook.FieldTitle, field.TypeString, value)
 		_node.Title = value
 	}
-	if value, ok := pc.mutation.ProviderID(); ok {
+	if value, ok := _c.mutation.ProviderID(); ok {
 		_spec.SetField(playbook.FieldProviderID, field.TypeString, value)
 		_node.ProviderID = value
 	}
-	if value, ok := pc.mutation.Content(); ok {
+	if value, ok := _c.mutation.Content(); ok {
 		_spec.SetField(playbook.FieldContent, field.TypeBytes, value)
 		_node.Content = value
 	}
-	if nodes := pc.mutation.TenantIDs(); len(nodes) > 0 {
+	if nodes := _c.mutation.TenantIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
@@ -212,7 +212,7 @@ func (pc *PlaybookCreate) createSpec() (*Playbook, *sqlgraph.CreateSpec) {
 		_node.TenantID = nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
-	if nodes := pc.mutation.AlertsIDs(); len(nodes) > 0 {
+	if nodes := _c.mutation.AlertsIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
 			Inverse: false,
@@ -247,10 +247,10 @@ func (pc *PlaybookCreate) createSpec() (*Playbook, *sqlgraph.CreateSpec) {
 //			SetTenantID(v+v).
 //		}).
 //		Exec(ctx)
-func (pc *PlaybookCreate) OnConflict(opts ...sql.ConflictOption) *PlaybookUpsertOne {
-	pc.conflict = opts
+func (_c *PlaybookCreate) OnConflict(opts ...sql.ConflictOption) *PlaybookUpsertOne {
+	_c.conflict = opts
 	return &PlaybookUpsertOne{
-		create: pc,
+		create: _c,
 	}
 }
 
@@ -260,10 +260,10 @@ func (pc *PlaybookCreate) OnConflict(opts ...sql.ConflictOption) *PlaybookUpsert
 //	client.Playbook.Create().
 //		OnConflict(sql.ConflictColumns(columns...)).
 //		Exec(ctx)
-func (pc *PlaybookCreate) OnConflictColumns(columns ...string) *PlaybookUpsertOne {
-	pc.conflict = append(pc.conflict, sql.ConflictColumns(columns...))
+func (_c *PlaybookCreate) OnConflictColumns(columns ...string) *PlaybookUpsertOne {
+	_c.conflict = append(_c.conflict, sql.ConflictColumns(columns...))
 	return &PlaybookUpsertOne{
-		create: pc,
+		create: _c,
 	}
 }
 
@@ -456,16 +456,16 @@ type PlaybookCreateBulk struct {
 }
 
 // Save creates the Playbook entities in the database.
-func (pcb *PlaybookCreateBulk) Save(ctx context.Context) ([]*Playbook, error) {
-	if pcb.err != nil {
-		return nil, pcb.err
+func (_c *PlaybookCreateBulk) Save(ctx context.Context) ([]*Playbook, error) {
+	if _c.err != nil {
+		return nil, _c.err
 	}
-	specs := make([]*sqlgraph.CreateSpec, len(pcb.builders))
-	nodes := make([]*Playbook, len(pcb.builders))
-	mutators := make([]Mutator, len(pcb.builders))
-	for i := range pcb.builders {
+	specs := make([]*sqlgraph.CreateSpec, len(_c.builders))
+	nodes := make([]*Playbook, len(_c.builders))
+	mutators := make([]Mutator, len(_c.builders))
+	for i := range _c.builders {
 		func(i int, root context.Context) {
-			builder := pcb.builders[i]
+			builder := _c.builders[i]
 			builder.defaults()
 			var mut Mutator = MutateFunc(func(ctx context.Context, m Mutation) (Value, error) {
 				mutation, ok := m.(*PlaybookMutation)
@@ -479,12 +479,12 @@ func (pcb *PlaybookCreateBulk) Save(ctx context.Context) ([]*Playbook, error) {
 				var err error
 				nodes[i], specs[i] = builder.createSpec()
 				if i < len(mutators)-1 {
-					_, err = mutators[i+1].Mutate(root, pcb.builders[i+1].mutation)
+					_, err = mutators[i+1].Mutate(root, _c.builders[i+1].mutation)
 				} else {
 					spec := &sqlgraph.BatchCreateSpec{Nodes: specs}
-					spec.OnConflict = pcb.conflict
+					spec.OnConflict = _c.conflict
 					// Invoke the actual operation on the latest mutation in the chain.
-					if err = sqlgraph.BatchCreate(ctx, pcb.driver, spec); err != nil {
+					if err = sqlgraph.BatchCreate(ctx, _c.driver, spec); err != nil {
 						if sqlgraph.IsConstraintError(err) {
 							err = &ConstraintError{msg: err.Error(), wrap: err}
 						}
@@ -504,7 +504,7 @@ func (pcb *PlaybookCreateBulk) Save(ctx context.Context) ([]*Playbook, error) {
 		}(i, ctx)
 	}
 	if len(mutators) > 0 {
-		if _, err := mutators[0].Mutate(ctx, pcb.builders[0].mutation); err != nil {
+		if _, err := mutators[0].Mutate(ctx, _c.builders[0].mutation); err != nil {
 			return nil, err
 		}
 	}
@@ -512,8 +512,8 @@ func (pcb *PlaybookCreateBulk) Save(ctx context.Context) ([]*Playbook, error) {
 }
 
 // SaveX is like Save, but panics if an error occurs.
-func (pcb *PlaybookCreateBulk) SaveX(ctx context.Context) []*Playbook {
-	v, err := pcb.Save(ctx)
+func (_c *PlaybookCreateBulk) SaveX(ctx context.Context) []*Playbook {
+	v, err := _c.Save(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -521,14 +521,14 @@ func (pcb *PlaybookCreateBulk) SaveX(ctx context.Context) []*Playbook {
 }
 
 // Exec executes the query.
-func (pcb *PlaybookCreateBulk) Exec(ctx context.Context) error {
-	_, err := pcb.Save(ctx)
+func (_c *PlaybookCreateBulk) Exec(ctx context.Context) error {
+	_, err := _c.Save(ctx)
 	return err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (pcb *PlaybookCreateBulk) ExecX(ctx context.Context) {
-	if err := pcb.Exec(ctx); err != nil {
+func (_c *PlaybookCreateBulk) ExecX(ctx context.Context) {
+	if err := _c.Exec(ctx); err != nil {
 		panic(err)
 	}
 }
@@ -548,10 +548,10 @@ func (pcb *PlaybookCreateBulk) ExecX(ctx context.Context) {
 //			SetTenantID(v+v).
 //		}).
 //		Exec(ctx)
-func (pcb *PlaybookCreateBulk) OnConflict(opts ...sql.ConflictOption) *PlaybookUpsertBulk {
-	pcb.conflict = opts
+func (_c *PlaybookCreateBulk) OnConflict(opts ...sql.ConflictOption) *PlaybookUpsertBulk {
+	_c.conflict = opts
 	return &PlaybookUpsertBulk{
-		create: pcb,
+		create: _c,
 	}
 }
 
@@ -561,10 +561,10 @@ func (pcb *PlaybookCreateBulk) OnConflict(opts ...sql.ConflictOption) *PlaybookU
 //	client.Playbook.Create().
 //		OnConflict(sql.ConflictColumns(columns...)).
 //		Exec(ctx)
-func (pcb *PlaybookCreateBulk) OnConflictColumns(columns ...string) *PlaybookUpsertBulk {
-	pcb.conflict = append(pcb.conflict, sql.ConflictColumns(columns...))
+func (_c *PlaybookCreateBulk) OnConflictColumns(columns ...string) *PlaybookUpsertBulk {
+	_c.conflict = append(_c.conflict, sql.ConflictColumns(columns...))
 	return &PlaybookUpsertBulk{
-		create: pcb,
+		create: _c,
 	}
 }
 

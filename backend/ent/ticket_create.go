@@ -26,73 +26,73 @@ type TicketCreate struct {
 }
 
 // SetTenantID sets the "tenant_id" field.
-func (tc *TicketCreate) SetTenantID(i int) *TicketCreate {
-	tc.mutation.SetTenantID(i)
-	return tc
+func (_c *TicketCreate) SetTenantID(v int) *TicketCreate {
+	_c.mutation.SetTenantID(v)
+	return _c
 }
 
 // SetProviderID sets the "provider_id" field.
-func (tc *TicketCreate) SetProviderID(s string) *TicketCreate {
-	tc.mutation.SetProviderID(s)
-	return tc
+func (_c *TicketCreate) SetProviderID(v string) *TicketCreate {
+	_c.mutation.SetProviderID(v)
+	return _c
 }
 
 // SetTitle sets the "title" field.
-func (tc *TicketCreate) SetTitle(s string) *TicketCreate {
-	tc.mutation.SetTitle(s)
-	return tc
+func (_c *TicketCreate) SetTitle(v string) *TicketCreate {
+	_c.mutation.SetTitle(v)
+	return _c
 }
 
 // SetID sets the "id" field.
-func (tc *TicketCreate) SetID(u uuid.UUID) *TicketCreate {
-	tc.mutation.SetID(u)
-	return tc
+func (_c *TicketCreate) SetID(v uuid.UUID) *TicketCreate {
+	_c.mutation.SetID(v)
+	return _c
 }
 
 // SetNillableID sets the "id" field if the given value is not nil.
-func (tc *TicketCreate) SetNillableID(u *uuid.UUID) *TicketCreate {
-	if u != nil {
-		tc.SetID(*u)
+func (_c *TicketCreate) SetNillableID(v *uuid.UUID) *TicketCreate {
+	if v != nil {
+		_c.SetID(*v)
 	}
-	return tc
+	return _c
 }
 
 // SetTenant sets the "tenant" edge to the Tenant entity.
-func (tc *TicketCreate) SetTenant(t *Tenant) *TicketCreate {
-	return tc.SetTenantID(t.ID)
+func (_c *TicketCreate) SetTenant(v *Tenant) *TicketCreate {
+	return _c.SetTenantID(v.ID)
 }
 
 // AddTaskIDs adds the "tasks" edge to the Task entity by IDs.
-func (tc *TicketCreate) AddTaskIDs(ids ...uuid.UUID) *TicketCreate {
-	tc.mutation.AddTaskIDs(ids...)
-	return tc
+func (_c *TicketCreate) AddTaskIDs(ids ...uuid.UUID) *TicketCreate {
+	_c.mutation.AddTaskIDs(ids...)
+	return _c
 }
 
 // AddTasks adds the "tasks" edges to the Task entity.
-func (tc *TicketCreate) AddTasks(t ...*Task) *TicketCreate {
-	ids := make([]uuid.UUID, len(t))
-	for i := range t {
-		ids[i] = t[i].ID
+func (_c *TicketCreate) AddTasks(v ...*Task) *TicketCreate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
 	}
-	return tc.AddTaskIDs(ids...)
+	return _c.AddTaskIDs(ids...)
 }
 
 // Mutation returns the TicketMutation object of the builder.
-func (tc *TicketCreate) Mutation() *TicketMutation {
-	return tc.mutation
+func (_c *TicketCreate) Mutation() *TicketMutation {
+	return _c.mutation
 }
 
 // Save creates the Ticket in the database.
-func (tc *TicketCreate) Save(ctx context.Context) (*Ticket, error) {
-	if err := tc.defaults(); err != nil {
+func (_c *TicketCreate) Save(ctx context.Context) (*Ticket, error) {
+	if err := _c.defaults(); err != nil {
 		return nil, err
 	}
-	return withHooks(ctx, tc.sqlSave, tc.mutation, tc.hooks)
+	return withHooks(ctx, _c.sqlSave, _c.mutation, _c.hooks)
 }
 
 // SaveX calls Save and panics if Save returns an error.
-func (tc *TicketCreate) SaveX(ctx context.Context) *Ticket {
-	v, err := tc.Save(ctx)
+func (_c *TicketCreate) SaveX(ctx context.Context) *Ticket {
+	v, err := _c.Save(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -100,53 +100,53 @@ func (tc *TicketCreate) SaveX(ctx context.Context) *Ticket {
 }
 
 // Exec executes the query.
-func (tc *TicketCreate) Exec(ctx context.Context) error {
-	_, err := tc.Save(ctx)
+func (_c *TicketCreate) Exec(ctx context.Context) error {
+	_, err := _c.Save(ctx)
 	return err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (tc *TicketCreate) ExecX(ctx context.Context) {
-	if err := tc.Exec(ctx); err != nil {
+func (_c *TicketCreate) ExecX(ctx context.Context) {
+	if err := _c.Exec(ctx); err != nil {
 		panic(err)
 	}
 }
 
 // defaults sets the default values of the builder before save.
-func (tc *TicketCreate) defaults() error {
-	if _, ok := tc.mutation.ID(); !ok {
+func (_c *TicketCreate) defaults() error {
+	if _, ok := _c.mutation.ID(); !ok {
 		if ticket.DefaultID == nil {
 			return fmt.Errorf("ent: uninitialized ticket.DefaultID (forgotten import ent/runtime?)")
 		}
 		v := ticket.DefaultID()
-		tc.mutation.SetID(v)
+		_c.mutation.SetID(v)
 	}
 	return nil
 }
 
 // check runs all checks and user-defined validators on the builder.
-func (tc *TicketCreate) check() error {
-	if _, ok := tc.mutation.TenantID(); !ok {
+func (_c *TicketCreate) check() error {
+	if _, ok := _c.mutation.TenantID(); !ok {
 		return &ValidationError{Name: "tenant_id", err: errors.New(`ent: missing required field "Ticket.tenant_id"`)}
 	}
-	if _, ok := tc.mutation.ProviderID(); !ok {
+	if _, ok := _c.mutation.ProviderID(); !ok {
 		return &ValidationError{Name: "provider_id", err: errors.New(`ent: missing required field "Ticket.provider_id"`)}
 	}
-	if _, ok := tc.mutation.Title(); !ok {
+	if _, ok := _c.mutation.Title(); !ok {
 		return &ValidationError{Name: "title", err: errors.New(`ent: missing required field "Ticket.title"`)}
 	}
-	if len(tc.mutation.TenantIDs()) == 0 {
+	if len(_c.mutation.TenantIDs()) == 0 {
 		return &ValidationError{Name: "tenant", err: errors.New(`ent: missing required edge "Ticket.tenant"`)}
 	}
 	return nil
 }
 
-func (tc *TicketCreate) sqlSave(ctx context.Context) (*Ticket, error) {
-	if err := tc.check(); err != nil {
+func (_c *TicketCreate) sqlSave(ctx context.Context) (*Ticket, error) {
+	if err := _c.check(); err != nil {
 		return nil, err
 	}
-	_node, _spec := tc.createSpec()
-	if err := sqlgraph.CreateNode(ctx, tc.driver, _spec); err != nil {
+	_node, _spec := _c.createSpec()
+	if err := sqlgraph.CreateNode(ctx, _c.driver, _spec); err != nil {
 		if sqlgraph.IsConstraintError(err) {
 			err = &ConstraintError{msg: err.Error(), wrap: err}
 		}
@@ -159,30 +159,30 @@ func (tc *TicketCreate) sqlSave(ctx context.Context) (*Ticket, error) {
 			return nil, err
 		}
 	}
-	tc.mutation.id = &_node.ID
-	tc.mutation.done = true
+	_c.mutation.id = &_node.ID
+	_c.mutation.done = true
 	return _node, nil
 }
 
-func (tc *TicketCreate) createSpec() (*Ticket, *sqlgraph.CreateSpec) {
+func (_c *TicketCreate) createSpec() (*Ticket, *sqlgraph.CreateSpec) {
 	var (
-		_node = &Ticket{config: tc.config}
+		_node = &Ticket{config: _c.config}
 		_spec = sqlgraph.NewCreateSpec(ticket.Table, sqlgraph.NewFieldSpec(ticket.FieldID, field.TypeUUID))
 	)
-	_spec.OnConflict = tc.conflict
-	if id, ok := tc.mutation.ID(); ok {
+	_spec.OnConflict = _c.conflict
+	if id, ok := _c.mutation.ID(); ok {
 		_node.ID = id
 		_spec.ID.Value = &id
 	}
-	if value, ok := tc.mutation.ProviderID(); ok {
+	if value, ok := _c.mutation.ProviderID(); ok {
 		_spec.SetField(ticket.FieldProviderID, field.TypeString, value)
 		_node.ProviderID = value
 	}
-	if value, ok := tc.mutation.Title(); ok {
+	if value, ok := _c.mutation.Title(); ok {
 		_spec.SetField(ticket.FieldTitle, field.TypeString, value)
 		_node.Title = value
 	}
-	if nodes := tc.mutation.TenantIDs(); len(nodes) > 0 {
+	if nodes := _c.mutation.TenantIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
@@ -199,7 +199,7 @@ func (tc *TicketCreate) createSpec() (*Ticket, *sqlgraph.CreateSpec) {
 		_node.TenantID = nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
-	if nodes := tc.mutation.TasksIDs(); len(nodes) > 0 {
+	if nodes := _c.mutation.TasksIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
 			Inverse: true,
@@ -234,10 +234,10 @@ func (tc *TicketCreate) createSpec() (*Ticket, *sqlgraph.CreateSpec) {
 //			SetTenantID(v+v).
 //		}).
 //		Exec(ctx)
-func (tc *TicketCreate) OnConflict(opts ...sql.ConflictOption) *TicketUpsertOne {
-	tc.conflict = opts
+func (_c *TicketCreate) OnConflict(opts ...sql.ConflictOption) *TicketUpsertOne {
+	_c.conflict = opts
 	return &TicketUpsertOne{
-		create: tc,
+		create: _c,
 	}
 }
 
@@ -247,10 +247,10 @@ func (tc *TicketCreate) OnConflict(opts ...sql.ConflictOption) *TicketUpsertOne 
 //	client.Ticket.Create().
 //		OnConflict(sql.ConflictColumns(columns...)).
 //		Exec(ctx)
-func (tc *TicketCreate) OnConflictColumns(columns ...string) *TicketUpsertOne {
-	tc.conflict = append(tc.conflict, sql.ConflictColumns(columns...))
+func (_c *TicketCreate) OnConflictColumns(columns ...string) *TicketUpsertOne {
+	_c.conflict = append(_c.conflict, sql.ConflictColumns(columns...))
 	return &TicketUpsertOne{
-		create: tc,
+		create: _c,
 	}
 }
 
@@ -417,16 +417,16 @@ type TicketCreateBulk struct {
 }
 
 // Save creates the Ticket entities in the database.
-func (tcb *TicketCreateBulk) Save(ctx context.Context) ([]*Ticket, error) {
-	if tcb.err != nil {
-		return nil, tcb.err
+func (_c *TicketCreateBulk) Save(ctx context.Context) ([]*Ticket, error) {
+	if _c.err != nil {
+		return nil, _c.err
 	}
-	specs := make([]*sqlgraph.CreateSpec, len(tcb.builders))
-	nodes := make([]*Ticket, len(tcb.builders))
-	mutators := make([]Mutator, len(tcb.builders))
-	for i := range tcb.builders {
+	specs := make([]*sqlgraph.CreateSpec, len(_c.builders))
+	nodes := make([]*Ticket, len(_c.builders))
+	mutators := make([]Mutator, len(_c.builders))
+	for i := range _c.builders {
 		func(i int, root context.Context) {
-			builder := tcb.builders[i]
+			builder := _c.builders[i]
 			builder.defaults()
 			var mut Mutator = MutateFunc(func(ctx context.Context, m Mutation) (Value, error) {
 				mutation, ok := m.(*TicketMutation)
@@ -440,12 +440,12 @@ func (tcb *TicketCreateBulk) Save(ctx context.Context) ([]*Ticket, error) {
 				var err error
 				nodes[i], specs[i] = builder.createSpec()
 				if i < len(mutators)-1 {
-					_, err = mutators[i+1].Mutate(root, tcb.builders[i+1].mutation)
+					_, err = mutators[i+1].Mutate(root, _c.builders[i+1].mutation)
 				} else {
 					spec := &sqlgraph.BatchCreateSpec{Nodes: specs}
-					spec.OnConflict = tcb.conflict
+					spec.OnConflict = _c.conflict
 					// Invoke the actual operation on the latest mutation in the chain.
-					if err = sqlgraph.BatchCreate(ctx, tcb.driver, spec); err != nil {
+					if err = sqlgraph.BatchCreate(ctx, _c.driver, spec); err != nil {
 						if sqlgraph.IsConstraintError(err) {
 							err = &ConstraintError{msg: err.Error(), wrap: err}
 						}
@@ -465,7 +465,7 @@ func (tcb *TicketCreateBulk) Save(ctx context.Context) ([]*Ticket, error) {
 		}(i, ctx)
 	}
 	if len(mutators) > 0 {
-		if _, err := mutators[0].Mutate(ctx, tcb.builders[0].mutation); err != nil {
+		if _, err := mutators[0].Mutate(ctx, _c.builders[0].mutation); err != nil {
 			return nil, err
 		}
 	}
@@ -473,8 +473,8 @@ func (tcb *TicketCreateBulk) Save(ctx context.Context) ([]*Ticket, error) {
 }
 
 // SaveX is like Save, but panics if an error occurs.
-func (tcb *TicketCreateBulk) SaveX(ctx context.Context) []*Ticket {
-	v, err := tcb.Save(ctx)
+func (_c *TicketCreateBulk) SaveX(ctx context.Context) []*Ticket {
+	v, err := _c.Save(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -482,14 +482,14 @@ func (tcb *TicketCreateBulk) SaveX(ctx context.Context) []*Ticket {
 }
 
 // Exec executes the query.
-func (tcb *TicketCreateBulk) Exec(ctx context.Context) error {
-	_, err := tcb.Save(ctx)
+func (_c *TicketCreateBulk) Exec(ctx context.Context) error {
+	_, err := _c.Save(ctx)
 	return err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (tcb *TicketCreateBulk) ExecX(ctx context.Context) {
-	if err := tcb.Exec(ctx); err != nil {
+func (_c *TicketCreateBulk) ExecX(ctx context.Context) {
+	if err := _c.Exec(ctx); err != nil {
 		panic(err)
 	}
 }
@@ -509,10 +509,10 @@ func (tcb *TicketCreateBulk) ExecX(ctx context.Context) {
 //			SetTenantID(v+v).
 //		}).
 //		Exec(ctx)
-func (tcb *TicketCreateBulk) OnConflict(opts ...sql.ConflictOption) *TicketUpsertBulk {
-	tcb.conflict = opts
+func (_c *TicketCreateBulk) OnConflict(opts ...sql.ConflictOption) *TicketUpsertBulk {
+	_c.conflict = opts
 	return &TicketUpsertBulk{
-		create: tcb,
+		create: _c,
 	}
 }
 
@@ -522,10 +522,10 @@ func (tcb *TicketCreateBulk) OnConflict(opts ...sql.ConflictOption) *TicketUpser
 //	client.Ticket.Create().
 //		OnConflict(sql.ConflictColumns(columns...)).
 //		Exec(ctx)
-func (tcb *TicketCreateBulk) OnConflictColumns(columns ...string) *TicketUpsertBulk {
-	tcb.conflict = append(tcb.conflict, sql.ConflictColumns(columns...))
+func (_c *TicketCreateBulk) OnConflictColumns(columns ...string) *TicketUpsertBulk {
+	_c.conflict = append(_c.conflict, sql.ConflictColumns(columns...))
 	return &TicketUpsertBulk{
-		create: tcb,
+		create: _c,
 	}
 }
 

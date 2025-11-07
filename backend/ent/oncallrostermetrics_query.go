@@ -35,44 +35,44 @@ type OncallRosterMetricsQuery struct {
 }
 
 // Where adds a new predicate for the OncallRosterMetricsQuery builder.
-func (ormq *OncallRosterMetricsQuery) Where(ps ...predicate.OncallRosterMetrics) *OncallRosterMetricsQuery {
-	ormq.predicates = append(ormq.predicates, ps...)
-	return ormq
+func (_q *OncallRosterMetricsQuery) Where(ps ...predicate.OncallRosterMetrics) *OncallRosterMetricsQuery {
+	_q.predicates = append(_q.predicates, ps...)
+	return _q
 }
 
 // Limit the number of records to be returned by this query.
-func (ormq *OncallRosterMetricsQuery) Limit(limit int) *OncallRosterMetricsQuery {
-	ormq.ctx.Limit = &limit
-	return ormq
+func (_q *OncallRosterMetricsQuery) Limit(limit int) *OncallRosterMetricsQuery {
+	_q.ctx.Limit = &limit
+	return _q
 }
 
 // Offset to start from.
-func (ormq *OncallRosterMetricsQuery) Offset(offset int) *OncallRosterMetricsQuery {
-	ormq.ctx.Offset = &offset
-	return ormq
+func (_q *OncallRosterMetricsQuery) Offset(offset int) *OncallRosterMetricsQuery {
+	_q.ctx.Offset = &offset
+	return _q
 }
 
 // Unique configures the query builder to filter duplicate records on query.
 // By default, unique is set to true, and can be disabled using this method.
-func (ormq *OncallRosterMetricsQuery) Unique(unique bool) *OncallRosterMetricsQuery {
-	ormq.ctx.Unique = &unique
-	return ormq
+func (_q *OncallRosterMetricsQuery) Unique(unique bool) *OncallRosterMetricsQuery {
+	_q.ctx.Unique = &unique
+	return _q
 }
 
 // Order specifies how the records should be ordered.
-func (ormq *OncallRosterMetricsQuery) Order(o ...oncallrostermetrics.OrderOption) *OncallRosterMetricsQuery {
-	ormq.order = append(ormq.order, o...)
-	return ormq
+func (_q *OncallRosterMetricsQuery) Order(o ...oncallrostermetrics.OrderOption) *OncallRosterMetricsQuery {
+	_q.order = append(_q.order, o...)
+	return _q
 }
 
 // QueryTenant chains the current query on the "tenant" edge.
-func (ormq *OncallRosterMetricsQuery) QueryTenant() *TenantQuery {
-	query := (&TenantClient{config: ormq.config}).Query()
+func (_q *OncallRosterMetricsQuery) QueryTenant() *TenantQuery {
+	query := (&TenantClient{config: _q.config}).Query()
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
-		if err := ormq.prepareQuery(ctx); err != nil {
+		if err := _q.prepareQuery(ctx); err != nil {
 			return nil, err
 		}
-		selector := ormq.sqlQuery(ctx)
+		selector := _q.sqlQuery(ctx)
 		if err := selector.Err(); err != nil {
 			return nil, err
 		}
@@ -81,20 +81,20 @@ func (ormq *OncallRosterMetricsQuery) QueryTenant() *TenantQuery {
 			sqlgraph.To(tenant.Table, tenant.FieldID),
 			sqlgraph.Edge(sqlgraph.M2O, false, oncallrostermetrics.TenantTable, oncallrostermetrics.TenantColumn),
 		)
-		fromU = sqlgraph.SetNeighbors(ormq.driver.Dialect(), step)
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
 	}
 	return query
 }
 
 // QueryRoster chains the current query on the "roster" edge.
-func (ormq *OncallRosterMetricsQuery) QueryRoster() *OncallRosterQuery {
-	query := (&OncallRosterClient{config: ormq.config}).Query()
+func (_q *OncallRosterMetricsQuery) QueryRoster() *OncallRosterQuery {
+	query := (&OncallRosterClient{config: _q.config}).Query()
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
-		if err := ormq.prepareQuery(ctx); err != nil {
+		if err := _q.prepareQuery(ctx); err != nil {
 			return nil, err
 		}
-		selector := ormq.sqlQuery(ctx)
+		selector := _q.sqlQuery(ctx)
 		if err := selector.Err(); err != nil {
 			return nil, err
 		}
@@ -103,7 +103,7 @@ func (ormq *OncallRosterMetricsQuery) QueryRoster() *OncallRosterQuery {
 			sqlgraph.To(oncallroster.Table, oncallroster.FieldID),
 			sqlgraph.Edge(sqlgraph.M2O, false, oncallrostermetrics.RosterTable, oncallrostermetrics.RosterColumn),
 		)
-		fromU = sqlgraph.SetNeighbors(ormq.driver.Dialect(), step)
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
 	}
 	return query
@@ -111,8 +111,8 @@ func (ormq *OncallRosterMetricsQuery) QueryRoster() *OncallRosterQuery {
 
 // First returns the first OncallRosterMetrics entity from the query.
 // Returns a *NotFoundError when no OncallRosterMetrics was found.
-func (ormq *OncallRosterMetricsQuery) First(ctx context.Context) (*OncallRosterMetrics, error) {
-	nodes, err := ormq.Limit(1).All(setContextOp(ctx, ormq.ctx, ent.OpQueryFirst))
+func (_q *OncallRosterMetricsQuery) First(ctx context.Context) (*OncallRosterMetrics, error) {
+	nodes, err := _q.Limit(1).All(setContextOp(ctx, _q.ctx, ent.OpQueryFirst))
 	if err != nil {
 		return nil, err
 	}
@@ -123,8 +123,8 @@ func (ormq *OncallRosterMetricsQuery) First(ctx context.Context) (*OncallRosterM
 }
 
 // FirstX is like First, but panics if an error occurs.
-func (ormq *OncallRosterMetricsQuery) FirstX(ctx context.Context) *OncallRosterMetrics {
-	node, err := ormq.First(ctx)
+func (_q *OncallRosterMetricsQuery) FirstX(ctx context.Context) *OncallRosterMetrics {
+	node, err := _q.First(ctx)
 	if err != nil && !IsNotFound(err) {
 		panic(err)
 	}
@@ -133,9 +133,9 @@ func (ormq *OncallRosterMetricsQuery) FirstX(ctx context.Context) *OncallRosterM
 
 // FirstID returns the first OncallRosterMetrics ID from the query.
 // Returns a *NotFoundError when no OncallRosterMetrics ID was found.
-func (ormq *OncallRosterMetricsQuery) FirstID(ctx context.Context) (id uuid.UUID, err error) {
+func (_q *OncallRosterMetricsQuery) FirstID(ctx context.Context) (id uuid.UUID, err error) {
 	var ids []uuid.UUID
-	if ids, err = ormq.Limit(1).IDs(setContextOp(ctx, ormq.ctx, ent.OpQueryFirstID)); err != nil {
+	if ids, err = _q.Limit(1).IDs(setContextOp(ctx, _q.ctx, ent.OpQueryFirstID)); err != nil {
 		return
 	}
 	if len(ids) == 0 {
@@ -146,8 +146,8 @@ func (ormq *OncallRosterMetricsQuery) FirstID(ctx context.Context) (id uuid.UUID
 }
 
 // FirstIDX is like FirstID, but panics if an error occurs.
-func (ormq *OncallRosterMetricsQuery) FirstIDX(ctx context.Context) uuid.UUID {
-	id, err := ormq.FirstID(ctx)
+func (_q *OncallRosterMetricsQuery) FirstIDX(ctx context.Context) uuid.UUID {
+	id, err := _q.FirstID(ctx)
 	if err != nil && !IsNotFound(err) {
 		panic(err)
 	}
@@ -157,8 +157,8 @@ func (ormq *OncallRosterMetricsQuery) FirstIDX(ctx context.Context) uuid.UUID {
 // Only returns a single OncallRosterMetrics entity found by the query, ensuring it only returns one.
 // Returns a *NotSingularError when more than one OncallRosterMetrics entity is found.
 // Returns a *NotFoundError when no OncallRosterMetrics entities are found.
-func (ormq *OncallRosterMetricsQuery) Only(ctx context.Context) (*OncallRosterMetrics, error) {
-	nodes, err := ormq.Limit(2).All(setContextOp(ctx, ormq.ctx, ent.OpQueryOnly))
+func (_q *OncallRosterMetricsQuery) Only(ctx context.Context) (*OncallRosterMetrics, error) {
+	nodes, err := _q.Limit(2).All(setContextOp(ctx, _q.ctx, ent.OpQueryOnly))
 	if err != nil {
 		return nil, err
 	}
@@ -173,8 +173,8 @@ func (ormq *OncallRosterMetricsQuery) Only(ctx context.Context) (*OncallRosterMe
 }
 
 // OnlyX is like Only, but panics if an error occurs.
-func (ormq *OncallRosterMetricsQuery) OnlyX(ctx context.Context) *OncallRosterMetrics {
-	node, err := ormq.Only(ctx)
+func (_q *OncallRosterMetricsQuery) OnlyX(ctx context.Context) *OncallRosterMetrics {
+	node, err := _q.Only(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -184,9 +184,9 @@ func (ormq *OncallRosterMetricsQuery) OnlyX(ctx context.Context) *OncallRosterMe
 // OnlyID is like Only, but returns the only OncallRosterMetrics ID in the query.
 // Returns a *NotSingularError when more than one OncallRosterMetrics ID is found.
 // Returns a *NotFoundError when no entities are found.
-func (ormq *OncallRosterMetricsQuery) OnlyID(ctx context.Context) (id uuid.UUID, err error) {
+func (_q *OncallRosterMetricsQuery) OnlyID(ctx context.Context) (id uuid.UUID, err error) {
 	var ids []uuid.UUID
-	if ids, err = ormq.Limit(2).IDs(setContextOp(ctx, ormq.ctx, ent.OpQueryOnlyID)); err != nil {
+	if ids, err = _q.Limit(2).IDs(setContextOp(ctx, _q.ctx, ent.OpQueryOnlyID)); err != nil {
 		return
 	}
 	switch len(ids) {
@@ -201,8 +201,8 @@ func (ormq *OncallRosterMetricsQuery) OnlyID(ctx context.Context) (id uuid.UUID,
 }
 
 // OnlyIDX is like OnlyID, but panics if an error occurs.
-func (ormq *OncallRosterMetricsQuery) OnlyIDX(ctx context.Context) uuid.UUID {
-	id, err := ormq.OnlyID(ctx)
+func (_q *OncallRosterMetricsQuery) OnlyIDX(ctx context.Context) uuid.UUID {
+	id, err := _q.OnlyID(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -210,18 +210,18 @@ func (ormq *OncallRosterMetricsQuery) OnlyIDX(ctx context.Context) uuid.UUID {
 }
 
 // All executes the query and returns a list of OncallRosterMetricsSlice.
-func (ormq *OncallRosterMetricsQuery) All(ctx context.Context) ([]*OncallRosterMetrics, error) {
-	ctx = setContextOp(ctx, ormq.ctx, ent.OpQueryAll)
-	if err := ormq.prepareQuery(ctx); err != nil {
+func (_q *OncallRosterMetricsQuery) All(ctx context.Context) ([]*OncallRosterMetrics, error) {
+	ctx = setContextOp(ctx, _q.ctx, ent.OpQueryAll)
+	if err := _q.prepareQuery(ctx); err != nil {
 		return nil, err
 	}
 	qr := querierAll[[]*OncallRosterMetrics, *OncallRosterMetricsQuery]()
-	return withInterceptors[[]*OncallRosterMetrics](ctx, ormq, qr, ormq.inters)
+	return withInterceptors[[]*OncallRosterMetrics](ctx, _q, qr, _q.inters)
 }
 
 // AllX is like All, but panics if an error occurs.
-func (ormq *OncallRosterMetricsQuery) AllX(ctx context.Context) []*OncallRosterMetrics {
-	nodes, err := ormq.All(ctx)
+func (_q *OncallRosterMetricsQuery) AllX(ctx context.Context) []*OncallRosterMetrics {
+	nodes, err := _q.All(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -229,20 +229,20 @@ func (ormq *OncallRosterMetricsQuery) AllX(ctx context.Context) []*OncallRosterM
 }
 
 // IDs executes the query and returns a list of OncallRosterMetrics IDs.
-func (ormq *OncallRosterMetricsQuery) IDs(ctx context.Context) (ids []uuid.UUID, err error) {
-	if ormq.ctx.Unique == nil && ormq.path != nil {
-		ormq.Unique(true)
+func (_q *OncallRosterMetricsQuery) IDs(ctx context.Context) (ids []uuid.UUID, err error) {
+	if _q.ctx.Unique == nil && _q.path != nil {
+		_q.Unique(true)
 	}
-	ctx = setContextOp(ctx, ormq.ctx, ent.OpQueryIDs)
-	if err = ormq.Select(oncallrostermetrics.FieldID).Scan(ctx, &ids); err != nil {
+	ctx = setContextOp(ctx, _q.ctx, ent.OpQueryIDs)
+	if err = _q.Select(oncallrostermetrics.FieldID).Scan(ctx, &ids); err != nil {
 		return nil, err
 	}
 	return ids, nil
 }
 
 // IDsX is like IDs, but panics if an error occurs.
-func (ormq *OncallRosterMetricsQuery) IDsX(ctx context.Context) []uuid.UUID {
-	ids, err := ormq.IDs(ctx)
+func (_q *OncallRosterMetricsQuery) IDsX(ctx context.Context) []uuid.UUID {
+	ids, err := _q.IDs(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -250,17 +250,17 @@ func (ormq *OncallRosterMetricsQuery) IDsX(ctx context.Context) []uuid.UUID {
 }
 
 // Count returns the count of the given query.
-func (ormq *OncallRosterMetricsQuery) Count(ctx context.Context) (int, error) {
-	ctx = setContextOp(ctx, ormq.ctx, ent.OpQueryCount)
-	if err := ormq.prepareQuery(ctx); err != nil {
+func (_q *OncallRosterMetricsQuery) Count(ctx context.Context) (int, error) {
+	ctx = setContextOp(ctx, _q.ctx, ent.OpQueryCount)
+	if err := _q.prepareQuery(ctx); err != nil {
 		return 0, err
 	}
-	return withInterceptors[int](ctx, ormq, querierCount[*OncallRosterMetricsQuery](), ormq.inters)
+	return withInterceptors[int](ctx, _q, querierCount[*OncallRosterMetricsQuery](), _q.inters)
 }
 
 // CountX is like Count, but panics if an error occurs.
-func (ormq *OncallRosterMetricsQuery) CountX(ctx context.Context) int {
-	count, err := ormq.Count(ctx)
+func (_q *OncallRosterMetricsQuery) CountX(ctx context.Context) int {
+	count, err := _q.Count(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -268,9 +268,9 @@ func (ormq *OncallRosterMetricsQuery) CountX(ctx context.Context) int {
 }
 
 // Exist returns true if the query has elements in the graph.
-func (ormq *OncallRosterMetricsQuery) Exist(ctx context.Context) (bool, error) {
-	ctx = setContextOp(ctx, ormq.ctx, ent.OpQueryExist)
-	switch _, err := ormq.FirstID(ctx); {
+func (_q *OncallRosterMetricsQuery) Exist(ctx context.Context) (bool, error) {
+	ctx = setContextOp(ctx, _q.ctx, ent.OpQueryExist)
+	switch _, err := _q.FirstID(ctx); {
 	case IsNotFound(err):
 		return false, nil
 	case err != nil:
@@ -281,8 +281,8 @@ func (ormq *OncallRosterMetricsQuery) Exist(ctx context.Context) (bool, error) {
 }
 
 // ExistX is like Exist, but panics if an error occurs.
-func (ormq *OncallRosterMetricsQuery) ExistX(ctx context.Context) bool {
-	exist, err := ormq.Exist(ctx)
+func (_q *OncallRosterMetricsQuery) ExistX(ctx context.Context) bool {
+	exist, err := _q.Exist(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -291,45 +291,45 @@ func (ormq *OncallRosterMetricsQuery) ExistX(ctx context.Context) bool {
 
 // Clone returns a duplicate of the OncallRosterMetricsQuery builder, including all associated steps. It can be
 // used to prepare common query builders and use them differently after the clone is made.
-func (ormq *OncallRosterMetricsQuery) Clone() *OncallRosterMetricsQuery {
-	if ormq == nil {
+func (_q *OncallRosterMetricsQuery) Clone() *OncallRosterMetricsQuery {
+	if _q == nil {
 		return nil
 	}
 	return &OncallRosterMetricsQuery{
-		config:     ormq.config,
-		ctx:        ormq.ctx.Clone(),
-		order:      append([]oncallrostermetrics.OrderOption{}, ormq.order...),
-		inters:     append([]Interceptor{}, ormq.inters...),
-		predicates: append([]predicate.OncallRosterMetrics{}, ormq.predicates...),
-		withTenant: ormq.withTenant.Clone(),
-		withRoster: ormq.withRoster.Clone(),
+		config:     _q.config,
+		ctx:        _q.ctx.Clone(),
+		order:      append([]oncallrostermetrics.OrderOption{}, _q.order...),
+		inters:     append([]Interceptor{}, _q.inters...),
+		predicates: append([]predicate.OncallRosterMetrics{}, _q.predicates...),
+		withTenant: _q.withTenant.Clone(),
+		withRoster: _q.withRoster.Clone(),
 		// clone intermediate query.
-		sql:       ormq.sql.Clone(),
-		path:      ormq.path,
-		modifiers: append([]func(*sql.Selector){}, ormq.modifiers...),
+		sql:       _q.sql.Clone(),
+		path:      _q.path,
+		modifiers: append([]func(*sql.Selector){}, _q.modifiers...),
 	}
 }
 
 // WithTenant tells the query-builder to eager-load the nodes that are connected to
 // the "tenant" edge. The optional arguments are used to configure the query builder of the edge.
-func (ormq *OncallRosterMetricsQuery) WithTenant(opts ...func(*TenantQuery)) *OncallRosterMetricsQuery {
-	query := (&TenantClient{config: ormq.config}).Query()
+func (_q *OncallRosterMetricsQuery) WithTenant(opts ...func(*TenantQuery)) *OncallRosterMetricsQuery {
+	query := (&TenantClient{config: _q.config}).Query()
 	for _, opt := range opts {
 		opt(query)
 	}
-	ormq.withTenant = query
-	return ormq
+	_q.withTenant = query
+	return _q
 }
 
 // WithRoster tells the query-builder to eager-load the nodes that are connected to
 // the "roster" edge. The optional arguments are used to configure the query builder of the edge.
-func (ormq *OncallRosterMetricsQuery) WithRoster(opts ...func(*OncallRosterQuery)) *OncallRosterMetricsQuery {
-	query := (&OncallRosterClient{config: ormq.config}).Query()
+func (_q *OncallRosterMetricsQuery) WithRoster(opts ...func(*OncallRosterQuery)) *OncallRosterMetricsQuery {
+	query := (&OncallRosterClient{config: _q.config}).Query()
 	for _, opt := range opts {
 		opt(query)
 	}
-	ormq.withRoster = query
-	return ormq
+	_q.withRoster = query
+	return _q
 }
 
 // GroupBy is used to group vertices by one or more fields/columns.
@@ -346,10 +346,10 @@ func (ormq *OncallRosterMetricsQuery) WithRoster(opts ...func(*OncallRosterQuery
 //		GroupBy(oncallrostermetrics.FieldTenantID).
 //		Aggregate(ent.Count()).
 //		Scan(ctx, &v)
-func (ormq *OncallRosterMetricsQuery) GroupBy(field string, fields ...string) *OncallRosterMetricsGroupBy {
-	ormq.ctx.Fields = append([]string{field}, fields...)
-	grbuild := &OncallRosterMetricsGroupBy{build: ormq}
-	grbuild.flds = &ormq.ctx.Fields
+func (_q *OncallRosterMetricsQuery) GroupBy(field string, fields ...string) *OncallRosterMetricsGroupBy {
+	_q.ctx.Fields = append([]string{field}, fields...)
+	grbuild := &OncallRosterMetricsGroupBy{build: _q}
+	grbuild.flds = &_q.ctx.Fields
 	grbuild.label = oncallrostermetrics.Label
 	grbuild.scan = grbuild.Scan
 	return grbuild
@@ -367,89 +367,89 @@ func (ormq *OncallRosterMetricsQuery) GroupBy(field string, fields ...string) *O
 //	client.OncallRosterMetrics.Query().
 //		Select(oncallrostermetrics.FieldTenantID).
 //		Scan(ctx, &v)
-func (ormq *OncallRosterMetricsQuery) Select(fields ...string) *OncallRosterMetricsSelect {
-	ormq.ctx.Fields = append(ormq.ctx.Fields, fields...)
-	sbuild := &OncallRosterMetricsSelect{OncallRosterMetricsQuery: ormq}
+func (_q *OncallRosterMetricsQuery) Select(fields ...string) *OncallRosterMetricsSelect {
+	_q.ctx.Fields = append(_q.ctx.Fields, fields...)
+	sbuild := &OncallRosterMetricsSelect{OncallRosterMetricsQuery: _q}
 	sbuild.label = oncallrostermetrics.Label
-	sbuild.flds, sbuild.scan = &ormq.ctx.Fields, sbuild.Scan
+	sbuild.flds, sbuild.scan = &_q.ctx.Fields, sbuild.Scan
 	return sbuild
 }
 
 // Aggregate returns a OncallRosterMetricsSelect configured with the given aggregations.
-func (ormq *OncallRosterMetricsQuery) Aggregate(fns ...AggregateFunc) *OncallRosterMetricsSelect {
-	return ormq.Select().Aggregate(fns...)
+func (_q *OncallRosterMetricsQuery) Aggregate(fns ...AggregateFunc) *OncallRosterMetricsSelect {
+	return _q.Select().Aggregate(fns...)
 }
 
-func (ormq *OncallRosterMetricsQuery) prepareQuery(ctx context.Context) error {
-	for _, inter := range ormq.inters {
+func (_q *OncallRosterMetricsQuery) prepareQuery(ctx context.Context) error {
+	for _, inter := range _q.inters {
 		if inter == nil {
 			return fmt.Errorf("ent: uninitialized interceptor (forgotten import ent/runtime?)")
 		}
 		if trv, ok := inter.(Traverser); ok {
-			if err := trv.Traverse(ctx, ormq); err != nil {
+			if err := trv.Traverse(ctx, _q); err != nil {
 				return err
 			}
 		}
 	}
-	for _, f := range ormq.ctx.Fields {
+	for _, f := range _q.ctx.Fields {
 		if !oncallrostermetrics.ValidColumn(f) {
 			return &ValidationError{Name: f, err: fmt.Errorf("ent: invalid field %q for query", f)}
 		}
 	}
-	if ormq.path != nil {
-		prev, err := ormq.path(ctx)
+	if _q.path != nil {
+		prev, err := _q.path(ctx)
 		if err != nil {
 			return err
 		}
-		ormq.sql = prev
+		_q.sql = prev
 	}
 	if oncallrostermetrics.Policy == nil {
 		return errors.New("ent: uninitialized oncallrostermetrics.Policy (forgotten import ent/runtime?)")
 	}
-	if err := oncallrostermetrics.Policy.EvalQuery(ctx, ormq); err != nil {
+	if err := oncallrostermetrics.Policy.EvalQuery(ctx, _q); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (ormq *OncallRosterMetricsQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*OncallRosterMetrics, error) {
+func (_q *OncallRosterMetricsQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*OncallRosterMetrics, error) {
 	var (
 		nodes       = []*OncallRosterMetrics{}
-		_spec       = ormq.querySpec()
+		_spec       = _q.querySpec()
 		loadedTypes = [2]bool{
-			ormq.withTenant != nil,
-			ormq.withRoster != nil,
+			_q.withTenant != nil,
+			_q.withRoster != nil,
 		}
 	)
 	_spec.ScanValues = func(columns []string) ([]any, error) {
 		return (*OncallRosterMetrics).scanValues(nil, columns)
 	}
 	_spec.Assign = func(columns []string, values []any) error {
-		node := &OncallRosterMetrics{config: ormq.config}
+		node := &OncallRosterMetrics{config: _q.config}
 		nodes = append(nodes, node)
 		node.Edges.loadedTypes = loadedTypes
 		return node.assignValues(columns, values)
 	}
-	if len(ormq.modifiers) > 0 {
-		_spec.Modifiers = ormq.modifiers
+	if len(_q.modifiers) > 0 {
+		_spec.Modifiers = _q.modifiers
 	}
 	for i := range hooks {
 		hooks[i](ctx, _spec)
 	}
-	if err := sqlgraph.QueryNodes(ctx, ormq.driver, _spec); err != nil {
+	if err := sqlgraph.QueryNodes(ctx, _q.driver, _spec); err != nil {
 		return nil, err
 	}
 	if len(nodes) == 0 {
 		return nodes, nil
 	}
-	if query := ormq.withTenant; query != nil {
-		if err := ormq.loadTenant(ctx, query, nodes, nil,
+	if query := _q.withTenant; query != nil {
+		if err := _q.loadTenant(ctx, query, nodes, nil,
 			func(n *OncallRosterMetrics, e *Tenant) { n.Edges.Tenant = e }); err != nil {
 			return nil, err
 		}
 	}
-	if query := ormq.withRoster; query != nil {
-		if err := ormq.loadRoster(ctx, query, nodes, nil,
+	if query := _q.withRoster; query != nil {
+		if err := _q.loadRoster(ctx, query, nodes, nil,
 			func(n *OncallRosterMetrics, e *OncallRoster) { n.Edges.Roster = e }); err != nil {
 			return nil, err
 		}
@@ -457,7 +457,7 @@ func (ormq *OncallRosterMetricsQuery) sqlAll(ctx context.Context, hooks ...query
 	return nodes, nil
 }
 
-func (ormq *OncallRosterMetricsQuery) loadTenant(ctx context.Context, query *TenantQuery, nodes []*OncallRosterMetrics, init func(*OncallRosterMetrics), assign func(*OncallRosterMetrics, *Tenant)) error {
+func (_q *OncallRosterMetricsQuery) loadTenant(ctx context.Context, query *TenantQuery, nodes []*OncallRosterMetrics, init func(*OncallRosterMetrics), assign func(*OncallRosterMetrics, *Tenant)) error {
 	ids := make([]int, 0, len(nodes))
 	nodeids := make(map[int][]*OncallRosterMetrics)
 	for i := range nodes {
@@ -486,7 +486,7 @@ func (ormq *OncallRosterMetricsQuery) loadTenant(ctx context.Context, query *Ten
 	}
 	return nil
 }
-func (ormq *OncallRosterMetricsQuery) loadRoster(ctx context.Context, query *OncallRosterQuery, nodes []*OncallRosterMetrics, init func(*OncallRosterMetrics), assign func(*OncallRosterMetrics, *OncallRoster)) error {
+func (_q *OncallRosterMetricsQuery) loadRoster(ctx context.Context, query *OncallRosterQuery, nodes []*OncallRosterMetrics, init func(*OncallRosterMetrics), assign func(*OncallRosterMetrics, *OncallRoster)) error {
 	ids := make([]uuid.UUID, 0, len(nodes))
 	nodeids := make(map[uuid.UUID][]*OncallRosterMetrics)
 	for i := range nodes {
@@ -516,27 +516,27 @@ func (ormq *OncallRosterMetricsQuery) loadRoster(ctx context.Context, query *Onc
 	return nil
 }
 
-func (ormq *OncallRosterMetricsQuery) sqlCount(ctx context.Context) (int, error) {
-	_spec := ormq.querySpec()
-	if len(ormq.modifiers) > 0 {
-		_spec.Modifiers = ormq.modifiers
+func (_q *OncallRosterMetricsQuery) sqlCount(ctx context.Context) (int, error) {
+	_spec := _q.querySpec()
+	if len(_q.modifiers) > 0 {
+		_spec.Modifiers = _q.modifiers
 	}
-	_spec.Node.Columns = ormq.ctx.Fields
-	if len(ormq.ctx.Fields) > 0 {
-		_spec.Unique = ormq.ctx.Unique != nil && *ormq.ctx.Unique
+	_spec.Node.Columns = _q.ctx.Fields
+	if len(_q.ctx.Fields) > 0 {
+		_spec.Unique = _q.ctx.Unique != nil && *_q.ctx.Unique
 	}
-	return sqlgraph.CountNodes(ctx, ormq.driver, _spec)
+	return sqlgraph.CountNodes(ctx, _q.driver, _spec)
 }
 
-func (ormq *OncallRosterMetricsQuery) querySpec() *sqlgraph.QuerySpec {
+func (_q *OncallRosterMetricsQuery) querySpec() *sqlgraph.QuerySpec {
 	_spec := sqlgraph.NewQuerySpec(oncallrostermetrics.Table, oncallrostermetrics.Columns, sqlgraph.NewFieldSpec(oncallrostermetrics.FieldID, field.TypeUUID))
-	_spec.From = ormq.sql
-	if unique := ormq.ctx.Unique; unique != nil {
+	_spec.From = _q.sql
+	if unique := _q.ctx.Unique; unique != nil {
 		_spec.Unique = *unique
-	} else if ormq.path != nil {
+	} else if _q.path != nil {
 		_spec.Unique = true
 	}
-	if fields := ormq.ctx.Fields; len(fields) > 0 {
+	if fields := _q.ctx.Fields; len(fields) > 0 {
 		_spec.Node.Columns = make([]string, 0, len(fields))
 		_spec.Node.Columns = append(_spec.Node.Columns, oncallrostermetrics.FieldID)
 		for i := range fields {
@@ -544,27 +544,27 @@ func (ormq *OncallRosterMetricsQuery) querySpec() *sqlgraph.QuerySpec {
 				_spec.Node.Columns = append(_spec.Node.Columns, fields[i])
 			}
 		}
-		if ormq.withTenant != nil {
+		if _q.withTenant != nil {
 			_spec.Node.AddColumnOnce(oncallrostermetrics.FieldTenantID)
 		}
-		if ormq.withRoster != nil {
+		if _q.withRoster != nil {
 			_spec.Node.AddColumnOnce(oncallrostermetrics.FieldRosterID)
 		}
 	}
-	if ps := ormq.predicates; len(ps) > 0 {
+	if ps := _q.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {
 				ps[i](selector)
 			}
 		}
 	}
-	if limit := ormq.ctx.Limit; limit != nil {
+	if limit := _q.ctx.Limit; limit != nil {
 		_spec.Limit = *limit
 	}
-	if offset := ormq.ctx.Offset; offset != nil {
+	if offset := _q.ctx.Offset; offset != nil {
 		_spec.Offset = *offset
 	}
-	if ps := ormq.order; len(ps) > 0 {
+	if ps := _q.order; len(ps) > 0 {
 		_spec.Order = func(selector *sql.Selector) {
 			for i := range ps {
 				ps[i](selector)
@@ -574,45 +574,45 @@ func (ormq *OncallRosterMetricsQuery) querySpec() *sqlgraph.QuerySpec {
 	return _spec
 }
 
-func (ormq *OncallRosterMetricsQuery) sqlQuery(ctx context.Context) *sql.Selector {
-	builder := sql.Dialect(ormq.driver.Dialect())
+func (_q *OncallRosterMetricsQuery) sqlQuery(ctx context.Context) *sql.Selector {
+	builder := sql.Dialect(_q.driver.Dialect())
 	t1 := builder.Table(oncallrostermetrics.Table)
-	columns := ormq.ctx.Fields
+	columns := _q.ctx.Fields
 	if len(columns) == 0 {
 		columns = oncallrostermetrics.Columns
 	}
 	selector := builder.Select(t1.Columns(columns...)...).From(t1)
-	if ormq.sql != nil {
-		selector = ormq.sql
+	if _q.sql != nil {
+		selector = _q.sql
 		selector.Select(selector.Columns(columns...)...)
 	}
-	if ormq.ctx.Unique != nil && *ormq.ctx.Unique {
+	if _q.ctx.Unique != nil && *_q.ctx.Unique {
 		selector.Distinct()
 	}
-	for _, m := range ormq.modifiers {
+	for _, m := range _q.modifiers {
 		m(selector)
 	}
-	for _, p := range ormq.predicates {
+	for _, p := range _q.predicates {
 		p(selector)
 	}
-	for _, p := range ormq.order {
+	for _, p := range _q.order {
 		p(selector)
 	}
-	if offset := ormq.ctx.Offset; offset != nil {
+	if offset := _q.ctx.Offset; offset != nil {
 		// limit is mandatory for offset clause. We start
 		// with default value, and override it below if needed.
 		selector.Offset(*offset).Limit(math.MaxInt32)
 	}
-	if limit := ormq.ctx.Limit; limit != nil {
+	if limit := _q.ctx.Limit; limit != nil {
 		selector.Limit(*limit)
 	}
 	return selector
 }
 
 // Modify adds a query modifier for attaching custom logic to queries.
-func (ormq *OncallRosterMetricsQuery) Modify(modifiers ...func(s *sql.Selector)) *OncallRosterMetricsSelect {
-	ormq.modifiers = append(ormq.modifiers, modifiers...)
-	return ormq.Select()
+func (_q *OncallRosterMetricsQuery) Modify(modifiers ...func(s *sql.Selector)) *OncallRosterMetricsSelect {
+	_q.modifiers = append(_q.modifiers, modifiers...)
+	return _q.Select()
 }
 
 // OncallRosterMetricsGroupBy is the group-by builder for OncallRosterMetrics entities.
@@ -622,41 +622,41 @@ type OncallRosterMetricsGroupBy struct {
 }
 
 // Aggregate adds the given aggregation functions to the group-by query.
-func (ormgb *OncallRosterMetricsGroupBy) Aggregate(fns ...AggregateFunc) *OncallRosterMetricsGroupBy {
-	ormgb.fns = append(ormgb.fns, fns...)
-	return ormgb
+func (_g *OncallRosterMetricsGroupBy) Aggregate(fns ...AggregateFunc) *OncallRosterMetricsGroupBy {
+	_g.fns = append(_g.fns, fns...)
+	return _g
 }
 
 // Scan applies the selector query and scans the result into the given value.
-func (ormgb *OncallRosterMetricsGroupBy) Scan(ctx context.Context, v any) error {
-	ctx = setContextOp(ctx, ormgb.build.ctx, ent.OpQueryGroupBy)
-	if err := ormgb.build.prepareQuery(ctx); err != nil {
+func (_g *OncallRosterMetricsGroupBy) Scan(ctx context.Context, v any) error {
+	ctx = setContextOp(ctx, _g.build.ctx, ent.OpQueryGroupBy)
+	if err := _g.build.prepareQuery(ctx); err != nil {
 		return err
 	}
-	return scanWithInterceptors[*OncallRosterMetricsQuery, *OncallRosterMetricsGroupBy](ctx, ormgb.build, ormgb, ormgb.build.inters, v)
+	return scanWithInterceptors[*OncallRosterMetricsQuery, *OncallRosterMetricsGroupBy](ctx, _g.build, _g, _g.build.inters, v)
 }
 
-func (ormgb *OncallRosterMetricsGroupBy) sqlScan(ctx context.Context, root *OncallRosterMetricsQuery, v any) error {
+func (_g *OncallRosterMetricsGroupBy) sqlScan(ctx context.Context, root *OncallRosterMetricsQuery, v any) error {
 	selector := root.sqlQuery(ctx).Select()
-	aggregation := make([]string, 0, len(ormgb.fns))
-	for _, fn := range ormgb.fns {
+	aggregation := make([]string, 0, len(_g.fns))
+	for _, fn := range _g.fns {
 		aggregation = append(aggregation, fn(selector))
 	}
 	if len(selector.SelectedColumns()) == 0 {
-		columns := make([]string, 0, len(*ormgb.flds)+len(ormgb.fns))
-		for _, f := range *ormgb.flds {
+		columns := make([]string, 0, len(*_g.flds)+len(_g.fns))
+		for _, f := range *_g.flds {
 			columns = append(columns, selector.C(f))
 		}
 		columns = append(columns, aggregation...)
 		selector.Select(columns...)
 	}
-	selector.GroupBy(selector.Columns(*ormgb.flds...)...)
+	selector.GroupBy(selector.Columns(*_g.flds...)...)
 	if err := selector.Err(); err != nil {
 		return err
 	}
 	rows := &sql.Rows{}
 	query, args := selector.Query()
-	if err := ormgb.build.driver.Query(ctx, query, args, rows); err != nil {
+	if err := _g.build.driver.Query(ctx, query, args, rows); err != nil {
 		return err
 	}
 	defer rows.Close()
@@ -670,27 +670,27 @@ type OncallRosterMetricsSelect struct {
 }
 
 // Aggregate adds the given aggregation functions to the selector query.
-func (orms *OncallRosterMetricsSelect) Aggregate(fns ...AggregateFunc) *OncallRosterMetricsSelect {
-	orms.fns = append(orms.fns, fns...)
-	return orms
+func (_s *OncallRosterMetricsSelect) Aggregate(fns ...AggregateFunc) *OncallRosterMetricsSelect {
+	_s.fns = append(_s.fns, fns...)
+	return _s
 }
 
 // Scan applies the selector query and scans the result into the given value.
-func (orms *OncallRosterMetricsSelect) Scan(ctx context.Context, v any) error {
-	ctx = setContextOp(ctx, orms.ctx, ent.OpQuerySelect)
-	if err := orms.prepareQuery(ctx); err != nil {
+func (_s *OncallRosterMetricsSelect) Scan(ctx context.Context, v any) error {
+	ctx = setContextOp(ctx, _s.ctx, ent.OpQuerySelect)
+	if err := _s.prepareQuery(ctx); err != nil {
 		return err
 	}
-	return scanWithInterceptors[*OncallRosterMetricsQuery, *OncallRosterMetricsSelect](ctx, orms.OncallRosterMetricsQuery, orms, orms.inters, v)
+	return scanWithInterceptors[*OncallRosterMetricsQuery, *OncallRosterMetricsSelect](ctx, _s.OncallRosterMetricsQuery, _s, _s.inters, v)
 }
 
-func (orms *OncallRosterMetricsSelect) sqlScan(ctx context.Context, root *OncallRosterMetricsQuery, v any) error {
+func (_s *OncallRosterMetricsSelect) sqlScan(ctx context.Context, root *OncallRosterMetricsQuery, v any) error {
 	selector := root.sqlQuery(ctx)
-	aggregation := make([]string, 0, len(orms.fns))
-	for _, fn := range orms.fns {
+	aggregation := make([]string, 0, len(_s.fns))
+	for _, fn := range _s.fns {
 		aggregation = append(aggregation, fn(selector))
 	}
-	switch n := len(*orms.selector.flds); {
+	switch n := len(*_s.selector.flds); {
 	case n == 0 && len(aggregation) > 0:
 		selector.Select(aggregation...)
 	case n != 0 && len(aggregation) > 0:
@@ -698,7 +698,7 @@ func (orms *OncallRosterMetricsSelect) sqlScan(ctx context.Context, root *Oncall
 	}
 	rows := &sql.Rows{}
 	query, args := selector.Query()
-	if err := orms.driver.Query(ctx, query, args, rows); err != nil {
+	if err := _s.driver.Query(ctx, query, args, rows); err != nil {
 		return err
 	}
 	defer rows.Close()
@@ -706,7 +706,7 @@ func (orms *OncallRosterMetricsSelect) sqlScan(ctx context.Context, root *Oncall
 }
 
 // Modify adds a query modifier for attaching custom logic to queries.
-func (orms *OncallRosterMetricsSelect) Modify(modifiers ...func(s *sql.Selector)) *OncallRosterMetricsSelect {
-	orms.modifiers = append(orms.modifiers, modifiers...)
-	return orms
+func (_s *OncallRosterMetricsSelect) Modify(modifiers ...func(s *sql.Selector)) *OncallRosterMetricsSelect {
+	_s.modifiers = append(_s.modifiers, modifiers...)
+	return _s
 }

@@ -112,7 +112,7 @@ func (*Alert) scanValues(columns []string) ([]any, error) {
 
 // assignValues assigns the values that were returned from sql.Rows (after scanning)
 // to the Alert fields.
-func (a *Alert) assignValues(columns []string, values []any) error {
+func (_m *Alert) assignValues(columns []string, values []any) error {
 	if m, n := len(values), len(columns); m < n {
 		return fmt.Errorf("mismatch number of scan values: %d != %d", m, n)
 	}
@@ -122,46 +122,46 @@ func (a *Alert) assignValues(columns []string, values []any) error {
 			if value, ok := values[i].(*uuid.UUID); !ok {
 				return fmt.Errorf("unexpected type %T for field id", values[i])
 			} else if value != nil {
-				a.ID = *value
+				_m.ID = *value
 			}
 		case alert.FieldTenantID:
 			if value, ok := values[i].(*sql.NullInt64); !ok {
 				return fmt.Errorf("unexpected type %T for field tenant_id", values[i])
 			} else if value.Valid {
-				a.TenantID = int(value.Int64)
+				_m.TenantID = int(value.Int64)
 			}
 		case alert.FieldProviderID:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field provider_id", values[i])
 			} else if value.Valid {
-				a.ProviderID = value.String
+				_m.ProviderID = value.String
 			}
 		case alert.FieldTitle:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field title", values[i])
 			} else if value.Valid {
-				a.Title = value.String
+				_m.Title = value.String
 			}
 		case alert.FieldDescription:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field description", values[i])
 			} else if value.Valid {
-				a.Description = value.String
+				_m.Description = value.String
 			}
 		case alert.FieldDefinition:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field definition", values[i])
 			} else if value.Valid {
-				a.Definition = value.String
+				_m.Definition = value.String
 			}
 		case alert.FieldRosterID:
 			if value, ok := values[i].(*uuid.UUID); !ok {
 				return fmt.Errorf("unexpected type %T for field roster_id", values[i])
 			} else if value != nil {
-				a.RosterID = *value
+				_m.RosterID = *value
 			}
 		default:
-			a.selectValues.Set(columns[i], values[i])
+			_m.selectValues.Set(columns[i], values[i])
 		}
 	}
 	return nil
@@ -169,70 +169,70 @@ func (a *Alert) assignValues(columns []string, values []any) error {
 
 // Value returns the ent.Value that was dynamically selected and assigned to the Alert.
 // This includes values selected through modifiers, order, etc.
-func (a *Alert) Value(name string) (ent.Value, error) {
-	return a.selectValues.Get(name)
+func (_m *Alert) Value(name string) (ent.Value, error) {
+	return _m.selectValues.Get(name)
 }
 
 // QueryTenant queries the "tenant" edge of the Alert entity.
-func (a *Alert) QueryTenant() *TenantQuery {
-	return NewAlertClient(a.config).QueryTenant(a)
+func (_m *Alert) QueryTenant() *TenantQuery {
+	return NewAlertClient(_m.config).QueryTenant(_m)
 }
 
 // QueryPlaybooks queries the "playbooks" edge of the Alert entity.
-func (a *Alert) QueryPlaybooks() *PlaybookQuery {
-	return NewAlertClient(a.config).QueryPlaybooks(a)
+func (_m *Alert) QueryPlaybooks() *PlaybookQuery {
+	return NewAlertClient(_m.config).QueryPlaybooks(_m)
 }
 
 // QueryRoster queries the "roster" edge of the Alert entity.
-func (a *Alert) QueryRoster() *OncallRosterQuery {
-	return NewAlertClient(a.config).QueryRoster(a)
+func (_m *Alert) QueryRoster() *OncallRosterQuery {
+	return NewAlertClient(_m.config).QueryRoster(_m)
 }
 
 // QueryInstances queries the "instances" edge of the Alert entity.
-func (a *Alert) QueryInstances() *AlertInstanceQuery {
-	return NewAlertClient(a.config).QueryInstances(a)
+func (_m *Alert) QueryInstances() *AlertInstanceQuery {
+	return NewAlertClient(_m.config).QueryInstances(_m)
 }
 
 // Update returns a builder for updating this Alert.
 // Note that you need to call Alert.Unwrap() before calling this method if this Alert
 // was returned from a transaction, and the transaction was committed or rolled back.
-func (a *Alert) Update() *AlertUpdateOne {
-	return NewAlertClient(a.config).UpdateOne(a)
+func (_m *Alert) Update() *AlertUpdateOne {
+	return NewAlertClient(_m.config).UpdateOne(_m)
 }
 
 // Unwrap unwraps the Alert entity that was returned from a transaction after it was closed,
 // so that all future queries will be executed through the driver which created the transaction.
-func (a *Alert) Unwrap() *Alert {
-	_tx, ok := a.config.driver.(*txDriver)
+func (_m *Alert) Unwrap() *Alert {
+	_tx, ok := _m.config.driver.(*txDriver)
 	if !ok {
 		panic("ent: Alert is not a transactional entity")
 	}
-	a.config.driver = _tx.drv
-	return a
+	_m.config.driver = _tx.drv
+	return _m
 }
 
 // String implements the fmt.Stringer.
-func (a *Alert) String() string {
+func (_m *Alert) String() string {
 	var builder strings.Builder
 	builder.WriteString("Alert(")
-	builder.WriteString(fmt.Sprintf("id=%v, ", a.ID))
+	builder.WriteString(fmt.Sprintf("id=%v, ", _m.ID))
 	builder.WriteString("tenant_id=")
-	builder.WriteString(fmt.Sprintf("%v", a.TenantID))
+	builder.WriteString(fmt.Sprintf("%v", _m.TenantID))
 	builder.WriteString(", ")
 	builder.WriteString("provider_id=")
-	builder.WriteString(a.ProviderID)
+	builder.WriteString(_m.ProviderID)
 	builder.WriteString(", ")
 	builder.WriteString("title=")
-	builder.WriteString(a.Title)
+	builder.WriteString(_m.Title)
 	builder.WriteString(", ")
 	builder.WriteString("description=")
-	builder.WriteString(a.Description)
+	builder.WriteString(_m.Description)
 	builder.WriteString(", ")
 	builder.WriteString("definition=")
-	builder.WriteString(a.Definition)
+	builder.WriteString(_m.Definition)
 	builder.WriteString(", ")
 	builder.WriteString("roster_id=")
-	builder.WriteString(fmt.Sprintf("%v", a.RosterID))
+	builder.WriteString(fmt.Sprintf("%v", _m.RosterID))
 	builder.WriteByte(')')
 	return builder.String()
 }

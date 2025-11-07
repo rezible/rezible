@@ -26,128 +26,128 @@ type SystemComponentKindUpdate struct {
 }
 
 // Where appends a list predicates to the SystemComponentKindUpdate builder.
-func (scku *SystemComponentKindUpdate) Where(ps ...predicate.SystemComponentKind) *SystemComponentKindUpdate {
-	scku.mutation.Where(ps...)
-	return scku
+func (_u *SystemComponentKindUpdate) Where(ps ...predicate.SystemComponentKind) *SystemComponentKindUpdate {
+	_u.mutation.Where(ps...)
+	return _u
 }
 
 // SetProviderID sets the "provider_id" field.
-func (scku *SystemComponentKindUpdate) SetProviderID(s string) *SystemComponentKindUpdate {
-	scku.mutation.SetProviderID(s)
-	return scku
+func (_u *SystemComponentKindUpdate) SetProviderID(v string) *SystemComponentKindUpdate {
+	_u.mutation.SetProviderID(v)
+	return _u
 }
 
 // SetNillableProviderID sets the "provider_id" field if the given value is not nil.
-func (scku *SystemComponentKindUpdate) SetNillableProviderID(s *string) *SystemComponentKindUpdate {
-	if s != nil {
-		scku.SetProviderID(*s)
+func (_u *SystemComponentKindUpdate) SetNillableProviderID(v *string) *SystemComponentKindUpdate {
+	if v != nil {
+		_u.SetProviderID(*v)
 	}
-	return scku
+	return _u
 }
 
 // ClearProviderID clears the value of the "provider_id" field.
-func (scku *SystemComponentKindUpdate) ClearProviderID() *SystemComponentKindUpdate {
-	scku.mutation.ClearProviderID()
-	return scku
+func (_u *SystemComponentKindUpdate) ClearProviderID() *SystemComponentKindUpdate {
+	_u.mutation.ClearProviderID()
+	return _u
 }
 
 // SetLabel sets the "label" field.
-func (scku *SystemComponentKindUpdate) SetLabel(s string) *SystemComponentKindUpdate {
-	scku.mutation.SetLabel(s)
-	return scku
+func (_u *SystemComponentKindUpdate) SetLabel(v string) *SystemComponentKindUpdate {
+	_u.mutation.SetLabel(v)
+	return _u
 }
 
 // SetNillableLabel sets the "label" field if the given value is not nil.
-func (scku *SystemComponentKindUpdate) SetNillableLabel(s *string) *SystemComponentKindUpdate {
-	if s != nil {
-		scku.SetLabel(*s)
+func (_u *SystemComponentKindUpdate) SetNillableLabel(v *string) *SystemComponentKindUpdate {
+	if v != nil {
+		_u.SetLabel(*v)
 	}
-	return scku
+	return _u
 }
 
 // SetDescription sets the "description" field.
-func (scku *SystemComponentKindUpdate) SetDescription(s string) *SystemComponentKindUpdate {
-	scku.mutation.SetDescription(s)
-	return scku
+func (_u *SystemComponentKindUpdate) SetDescription(v string) *SystemComponentKindUpdate {
+	_u.mutation.SetDescription(v)
+	return _u
 }
 
 // SetNillableDescription sets the "description" field if the given value is not nil.
-func (scku *SystemComponentKindUpdate) SetNillableDescription(s *string) *SystemComponentKindUpdate {
-	if s != nil {
-		scku.SetDescription(*s)
+func (_u *SystemComponentKindUpdate) SetNillableDescription(v *string) *SystemComponentKindUpdate {
+	if v != nil {
+		_u.SetDescription(*v)
 	}
-	return scku
+	return _u
 }
 
 // ClearDescription clears the value of the "description" field.
-func (scku *SystemComponentKindUpdate) ClearDescription() *SystemComponentKindUpdate {
-	scku.mutation.ClearDescription()
-	return scku
+func (_u *SystemComponentKindUpdate) ClearDescription() *SystemComponentKindUpdate {
+	_u.mutation.ClearDescription()
+	return _u
 }
 
 // SetCreatedAt sets the "created_at" field.
-func (scku *SystemComponentKindUpdate) SetCreatedAt(t time.Time) *SystemComponentKindUpdate {
-	scku.mutation.SetCreatedAt(t)
-	return scku
+func (_u *SystemComponentKindUpdate) SetCreatedAt(v time.Time) *SystemComponentKindUpdate {
+	_u.mutation.SetCreatedAt(v)
+	return _u
 }
 
 // SetNillableCreatedAt sets the "created_at" field if the given value is not nil.
-func (scku *SystemComponentKindUpdate) SetNillableCreatedAt(t *time.Time) *SystemComponentKindUpdate {
-	if t != nil {
-		scku.SetCreatedAt(*t)
+func (_u *SystemComponentKindUpdate) SetNillableCreatedAt(v *time.Time) *SystemComponentKindUpdate {
+	if v != nil {
+		_u.SetCreatedAt(*v)
 	}
-	return scku
+	return _u
 }
 
 // AddComponentIDs adds the "components" edge to the SystemComponent entity by IDs.
-func (scku *SystemComponentKindUpdate) AddComponentIDs(ids ...uuid.UUID) *SystemComponentKindUpdate {
-	scku.mutation.AddComponentIDs(ids...)
-	return scku
+func (_u *SystemComponentKindUpdate) AddComponentIDs(ids ...uuid.UUID) *SystemComponentKindUpdate {
+	_u.mutation.AddComponentIDs(ids...)
+	return _u
 }
 
 // AddComponents adds the "components" edges to the SystemComponent entity.
-func (scku *SystemComponentKindUpdate) AddComponents(s ...*SystemComponent) *SystemComponentKindUpdate {
-	ids := make([]uuid.UUID, len(s))
-	for i := range s {
-		ids[i] = s[i].ID
+func (_u *SystemComponentKindUpdate) AddComponents(v ...*SystemComponent) *SystemComponentKindUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
 	}
-	return scku.AddComponentIDs(ids...)
+	return _u.AddComponentIDs(ids...)
 }
 
 // Mutation returns the SystemComponentKindMutation object of the builder.
-func (scku *SystemComponentKindUpdate) Mutation() *SystemComponentKindMutation {
-	return scku.mutation
+func (_u *SystemComponentKindUpdate) Mutation() *SystemComponentKindMutation {
+	return _u.mutation
 }
 
 // ClearComponents clears all "components" edges to the SystemComponent entity.
-func (scku *SystemComponentKindUpdate) ClearComponents() *SystemComponentKindUpdate {
-	scku.mutation.ClearComponents()
-	return scku
+func (_u *SystemComponentKindUpdate) ClearComponents() *SystemComponentKindUpdate {
+	_u.mutation.ClearComponents()
+	return _u
 }
 
 // RemoveComponentIDs removes the "components" edge to SystemComponent entities by IDs.
-func (scku *SystemComponentKindUpdate) RemoveComponentIDs(ids ...uuid.UUID) *SystemComponentKindUpdate {
-	scku.mutation.RemoveComponentIDs(ids...)
-	return scku
+func (_u *SystemComponentKindUpdate) RemoveComponentIDs(ids ...uuid.UUID) *SystemComponentKindUpdate {
+	_u.mutation.RemoveComponentIDs(ids...)
+	return _u
 }
 
 // RemoveComponents removes "components" edges to SystemComponent entities.
-func (scku *SystemComponentKindUpdate) RemoveComponents(s ...*SystemComponent) *SystemComponentKindUpdate {
-	ids := make([]uuid.UUID, len(s))
-	for i := range s {
-		ids[i] = s[i].ID
+func (_u *SystemComponentKindUpdate) RemoveComponents(v ...*SystemComponent) *SystemComponentKindUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
 	}
-	return scku.RemoveComponentIDs(ids...)
+	return _u.RemoveComponentIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
-func (scku *SystemComponentKindUpdate) Save(ctx context.Context) (int, error) {
-	return withHooks(ctx, scku.sqlSave, scku.mutation, scku.hooks)
+func (_u *SystemComponentKindUpdate) Save(ctx context.Context) (int, error) {
+	return withHooks(ctx, _u.sqlSave, _u.mutation, _u.hooks)
 }
 
 // SaveX is like Save, but panics if an error occurs.
-func (scku *SystemComponentKindUpdate) SaveX(ctx context.Context) int {
-	affected, err := scku.Save(ctx)
+func (_u *SystemComponentKindUpdate) SaveX(ctx context.Context) int {
+	affected, err := _u.Save(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -155,63 +155,63 @@ func (scku *SystemComponentKindUpdate) SaveX(ctx context.Context) int {
 }
 
 // Exec executes the query.
-func (scku *SystemComponentKindUpdate) Exec(ctx context.Context) error {
-	_, err := scku.Save(ctx)
+func (_u *SystemComponentKindUpdate) Exec(ctx context.Context) error {
+	_, err := _u.Save(ctx)
 	return err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (scku *SystemComponentKindUpdate) ExecX(ctx context.Context) {
-	if err := scku.Exec(ctx); err != nil {
+func (_u *SystemComponentKindUpdate) ExecX(ctx context.Context) {
+	if err := _u.Exec(ctx); err != nil {
 		panic(err)
 	}
 }
 
 // check runs all checks and user-defined validators on the builder.
-func (scku *SystemComponentKindUpdate) check() error {
-	if scku.mutation.TenantCleared() && len(scku.mutation.TenantIDs()) > 0 {
+func (_u *SystemComponentKindUpdate) check() error {
+	if _u.mutation.TenantCleared() && len(_u.mutation.TenantIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "SystemComponentKind.tenant"`)
 	}
 	return nil
 }
 
 // Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
-func (scku *SystemComponentKindUpdate) Modify(modifiers ...func(u *sql.UpdateBuilder)) *SystemComponentKindUpdate {
-	scku.modifiers = append(scku.modifiers, modifiers...)
-	return scku
+func (_u *SystemComponentKindUpdate) Modify(modifiers ...func(u *sql.UpdateBuilder)) *SystemComponentKindUpdate {
+	_u.modifiers = append(_u.modifiers, modifiers...)
+	return _u
 }
 
-func (scku *SystemComponentKindUpdate) sqlSave(ctx context.Context) (n int, err error) {
-	if err := scku.check(); err != nil {
-		return n, err
+func (_u *SystemComponentKindUpdate) sqlSave(ctx context.Context) (_node int, err error) {
+	if err := _u.check(); err != nil {
+		return _node, err
 	}
 	_spec := sqlgraph.NewUpdateSpec(systemcomponentkind.Table, systemcomponentkind.Columns, sqlgraph.NewFieldSpec(systemcomponentkind.FieldID, field.TypeUUID))
-	if ps := scku.mutation.predicates; len(ps) > 0 {
+	if ps := _u.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {
 				ps[i](selector)
 			}
 		}
 	}
-	if value, ok := scku.mutation.ProviderID(); ok {
+	if value, ok := _u.mutation.ProviderID(); ok {
 		_spec.SetField(systemcomponentkind.FieldProviderID, field.TypeString, value)
 	}
-	if scku.mutation.ProviderIDCleared() {
+	if _u.mutation.ProviderIDCleared() {
 		_spec.ClearField(systemcomponentkind.FieldProviderID, field.TypeString)
 	}
-	if value, ok := scku.mutation.Label(); ok {
+	if value, ok := _u.mutation.Label(); ok {
 		_spec.SetField(systemcomponentkind.FieldLabel, field.TypeString, value)
 	}
-	if value, ok := scku.mutation.Description(); ok {
+	if value, ok := _u.mutation.Description(); ok {
 		_spec.SetField(systemcomponentkind.FieldDescription, field.TypeString, value)
 	}
-	if scku.mutation.DescriptionCleared() {
+	if _u.mutation.DescriptionCleared() {
 		_spec.ClearField(systemcomponentkind.FieldDescription, field.TypeString)
 	}
-	if value, ok := scku.mutation.CreatedAt(); ok {
+	if value, ok := _u.mutation.CreatedAt(); ok {
 		_spec.SetField(systemcomponentkind.FieldCreatedAt, field.TypeTime, value)
 	}
-	if scku.mutation.ComponentsCleared() {
+	if _u.mutation.ComponentsCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: true,
@@ -224,7 +224,7 @@ func (scku *SystemComponentKindUpdate) sqlSave(ctx context.Context) (n int, err 
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := scku.mutation.RemovedComponentsIDs(); len(nodes) > 0 && !scku.mutation.ComponentsCleared() {
+	if nodes := _u.mutation.RemovedComponentsIDs(); len(nodes) > 0 && !_u.mutation.ComponentsCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: true,
@@ -240,7 +240,7 @@ func (scku *SystemComponentKindUpdate) sqlSave(ctx context.Context) (n int, err 
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := scku.mutation.ComponentsIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.ComponentsIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: true,
@@ -256,8 +256,8 @@ func (scku *SystemComponentKindUpdate) sqlSave(ctx context.Context) (n int, err 
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	_spec.AddModifiers(scku.modifiers...)
-	if n, err = sqlgraph.UpdateNodes(ctx, scku.driver, _spec); err != nil {
+	_spec.AddModifiers(_u.modifiers...)
+	if _node, err = sqlgraph.UpdateNodes(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{systemcomponentkind.Label}
 		} else if sqlgraph.IsConstraintError(err) {
@@ -265,8 +265,8 @@ func (scku *SystemComponentKindUpdate) sqlSave(ctx context.Context) (n int, err 
 		}
 		return 0, err
 	}
-	scku.mutation.done = true
-	return n, nil
+	_u.mutation.done = true
+	return _node, nil
 }
 
 // SystemComponentKindUpdateOne is the builder for updating a single SystemComponentKind entity.
@@ -279,135 +279,135 @@ type SystemComponentKindUpdateOne struct {
 }
 
 // SetProviderID sets the "provider_id" field.
-func (sckuo *SystemComponentKindUpdateOne) SetProviderID(s string) *SystemComponentKindUpdateOne {
-	sckuo.mutation.SetProviderID(s)
-	return sckuo
+func (_u *SystemComponentKindUpdateOne) SetProviderID(v string) *SystemComponentKindUpdateOne {
+	_u.mutation.SetProviderID(v)
+	return _u
 }
 
 // SetNillableProviderID sets the "provider_id" field if the given value is not nil.
-func (sckuo *SystemComponentKindUpdateOne) SetNillableProviderID(s *string) *SystemComponentKindUpdateOne {
-	if s != nil {
-		sckuo.SetProviderID(*s)
+func (_u *SystemComponentKindUpdateOne) SetNillableProviderID(v *string) *SystemComponentKindUpdateOne {
+	if v != nil {
+		_u.SetProviderID(*v)
 	}
-	return sckuo
+	return _u
 }
 
 // ClearProviderID clears the value of the "provider_id" field.
-func (sckuo *SystemComponentKindUpdateOne) ClearProviderID() *SystemComponentKindUpdateOne {
-	sckuo.mutation.ClearProviderID()
-	return sckuo
+func (_u *SystemComponentKindUpdateOne) ClearProviderID() *SystemComponentKindUpdateOne {
+	_u.mutation.ClearProviderID()
+	return _u
 }
 
 // SetLabel sets the "label" field.
-func (sckuo *SystemComponentKindUpdateOne) SetLabel(s string) *SystemComponentKindUpdateOne {
-	sckuo.mutation.SetLabel(s)
-	return sckuo
+func (_u *SystemComponentKindUpdateOne) SetLabel(v string) *SystemComponentKindUpdateOne {
+	_u.mutation.SetLabel(v)
+	return _u
 }
 
 // SetNillableLabel sets the "label" field if the given value is not nil.
-func (sckuo *SystemComponentKindUpdateOne) SetNillableLabel(s *string) *SystemComponentKindUpdateOne {
-	if s != nil {
-		sckuo.SetLabel(*s)
+func (_u *SystemComponentKindUpdateOne) SetNillableLabel(v *string) *SystemComponentKindUpdateOne {
+	if v != nil {
+		_u.SetLabel(*v)
 	}
-	return sckuo
+	return _u
 }
 
 // SetDescription sets the "description" field.
-func (sckuo *SystemComponentKindUpdateOne) SetDescription(s string) *SystemComponentKindUpdateOne {
-	sckuo.mutation.SetDescription(s)
-	return sckuo
+func (_u *SystemComponentKindUpdateOne) SetDescription(v string) *SystemComponentKindUpdateOne {
+	_u.mutation.SetDescription(v)
+	return _u
 }
 
 // SetNillableDescription sets the "description" field if the given value is not nil.
-func (sckuo *SystemComponentKindUpdateOne) SetNillableDescription(s *string) *SystemComponentKindUpdateOne {
-	if s != nil {
-		sckuo.SetDescription(*s)
+func (_u *SystemComponentKindUpdateOne) SetNillableDescription(v *string) *SystemComponentKindUpdateOne {
+	if v != nil {
+		_u.SetDescription(*v)
 	}
-	return sckuo
+	return _u
 }
 
 // ClearDescription clears the value of the "description" field.
-func (sckuo *SystemComponentKindUpdateOne) ClearDescription() *SystemComponentKindUpdateOne {
-	sckuo.mutation.ClearDescription()
-	return sckuo
+func (_u *SystemComponentKindUpdateOne) ClearDescription() *SystemComponentKindUpdateOne {
+	_u.mutation.ClearDescription()
+	return _u
 }
 
 // SetCreatedAt sets the "created_at" field.
-func (sckuo *SystemComponentKindUpdateOne) SetCreatedAt(t time.Time) *SystemComponentKindUpdateOne {
-	sckuo.mutation.SetCreatedAt(t)
-	return sckuo
+func (_u *SystemComponentKindUpdateOne) SetCreatedAt(v time.Time) *SystemComponentKindUpdateOne {
+	_u.mutation.SetCreatedAt(v)
+	return _u
 }
 
 // SetNillableCreatedAt sets the "created_at" field if the given value is not nil.
-func (sckuo *SystemComponentKindUpdateOne) SetNillableCreatedAt(t *time.Time) *SystemComponentKindUpdateOne {
-	if t != nil {
-		sckuo.SetCreatedAt(*t)
+func (_u *SystemComponentKindUpdateOne) SetNillableCreatedAt(v *time.Time) *SystemComponentKindUpdateOne {
+	if v != nil {
+		_u.SetCreatedAt(*v)
 	}
-	return sckuo
+	return _u
 }
 
 // AddComponentIDs adds the "components" edge to the SystemComponent entity by IDs.
-func (sckuo *SystemComponentKindUpdateOne) AddComponentIDs(ids ...uuid.UUID) *SystemComponentKindUpdateOne {
-	sckuo.mutation.AddComponentIDs(ids...)
-	return sckuo
+func (_u *SystemComponentKindUpdateOne) AddComponentIDs(ids ...uuid.UUID) *SystemComponentKindUpdateOne {
+	_u.mutation.AddComponentIDs(ids...)
+	return _u
 }
 
 // AddComponents adds the "components" edges to the SystemComponent entity.
-func (sckuo *SystemComponentKindUpdateOne) AddComponents(s ...*SystemComponent) *SystemComponentKindUpdateOne {
-	ids := make([]uuid.UUID, len(s))
-	for i := range s {
-		ids[i] = s[i].ID
+func (_u *SystemComponentKindUpdateOne) AddComponents(v ...*SystemComponent) *SystemComponentKindUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
 	}
-	return sckuo.AddComponentIDs(ids...)
+	return _u.AddComponentIDs(ids...)
 }
 
 // Mutation returns the SystemComponentKindMutation object of the builder.
-func (sckuo *SystemComponentKindUpdateOne) Mutation() *SystemComponentKindMutation {
-	return sckuo.mutation
+func (_u *SystemComponentKindUpdateOne) Mutation() *SystemComponentKindMutation {
+	return _u.mutation
 }
 
 // ClearComponents clears all "components" edges to the SystemComponent entity.
-func (sckuo *SystemComponentKindUpdateOne) ClearComponents() *SystemComponentKindUpdateOne {
-	sckuo.mutation.ClearComponents()
-	return sckuo
+func (_u *SystemComponentKindUpdateOne) ClearComponents() *SystemComponentKindUpdateOne {
+	_u.mutation.ClearComponents()
+	return _u
 }
 
 // RemoveComponentIDs removes the "components" edge to SystemComponent entities by IDs.
-func (sckuo *SystemComponentKindUpdateOne) RemoveComponentIDs(ids ...uuid.UUID) *SystemComponentKindUpdateOne {
-	sckuo.mutation.RemoveComponentIDs(ids...)
-	return sckuo
+func (_u *SystemComponentKindUpdateOne) RemoveComponentIDs(ids ...uuid.UUID) *SystemComponentKindUpdateOne {
+	_u.mutation.RemoveComponentIDs(ids...)
+	return _u
 }
 
 // RemoveComponents removes "components" edges to SystemComponent entities.
-func (sckuo *SystemComponentKindUpdateOne) RemoveComponents(s ...*SystemComponent) *SystemComponentKindUpdateOne {
-	ids := make([]uuid.UUID, len(s))
-	for i := range s {
-		ids[i] = s[i].ID
+func (_u *SystemComponentKindUpdateOne) RemoveComponents(v ...*SystemComponent) *SystemComponentKindUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
 	}
-	return sckuo.RemoveComponentIDs(ids...)
+	return _u.RemoveComponentIDs(ids...)
 }
 
 // Where appends a list predicates to the SystemComponentKindUpdate builder.
-func (sckuo *SystemComponentKindUpdateOne) Where(ps ...predicate.SystemComponentKind) *SystemComponentKindUpdateOne {
-	sckuo.mutation.Where(ps...)
-	return sckuo
+func (_u *SystemComponentKindUpdateOne) Where(ps ...predicate.SystemComponentKind) *SystemComponentKindUpdateOne {
+	_u.mutation.Where(ps...)
+	return _u
 }
 
 // Select allows selecting one or more fields (columns) of the returned entity.
 // The default is selecting all fields defined in the entity schema.
-func (sckuo *SystemComponentKindUpdateOne) Select(field string, fields ...string) *SystemComponentKindUpdateOne {
-	sckuo.fields = append([]string{field}, fields...)
-	return sckuo
+func (_u *SystemComponentKindUpdateOne) Select(field string, fields ...string) *SystemComponentKindUpdateOne {
+	_u.fields = append([]string{field}, fields...)
+	return _u
 }
 
 // Save executes the query and returns the updated SystemComponentKind entity.
-func (sckuo *SystemComponentKindUpdateOne) Save(ctx context.Context) (*SystemComponentKind, error) {
-	return withHooks(ctx, sckuo.sqlSave, sckuo.mutation, sckuo.hooks)
+func (_u *SystemComponentKindUpdateOne) Save(ctx context.Context) (*SystemComponentKind, error) {
+	return withHooks(ctx, _u.sqlSave, _u.mutation, _u.hooks)
 }
 
 // SaveX is like Save, but panics if an error occurs.
-func (sckuo *SystemComponentKindUpdateOne) SaveX(ctx context.Context) *SystemComponentKind {
-	node, err := sckuo.Save(ctx)
+func (_u *SystemComponentKindUpdateOne) SaveX(ctx context.Context) *SystemComponentKind {
+	node, err := _u.Save(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -415,43 +415,43 @@ func (sckuo *SystemComponentKindUpdateOne) SaveX(ctx context.Context) *SystemCom
 }
 
 // Exec executes the query on the entity.
-func (sckuo *SystemComponentKindUpdateOne) Exec(ctx context.Context) error {
-	_, err := sckuo.Save(ctx)
+func (_u *SystemComponentKindUpdateOne) Exec(ctx context.Context) error {
+	_, err := _u.Save(ctx)
 	return err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (sckuo *SystemComponentKindUpdateOne) ExecX(ctx context.Context) {
-	if err := sckuo.Exec(ctx); err != nil {
+func (_u *SystemComponentKindUpdateOne) ExecX(ctx context.Context) {
+	if err := _u.Exec(ctx); err != nil {
 		panic(err)
 	}
 }
 
 // check runs all checks and user-defined validators on the builder.
-func (sckuo *SystemComponentKindUpdateOne) check() error {
-	if sckuo.mutation.TenantCleared() && len(sckuo.mutation.TenantIDs()) > 0 {
+func (_u *SystemComponentKindUpdateOne) check() error {
+	if _u.mutation.TenantCleared() && len(_u.mutation.TenantIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "SystemComponentKind.tenant"`)
 	}
 	return nil
 }
 
 // Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
-func (sckuo *SystemComponentKindUpdateOne) Modify(modifiers ...func(u *sql.UpdateBuilder)) *SystemComponentKindUpdateOne {
-	sckuo.modifiers = append(sckuo.modifiers, modifiers...)
-	return sckuo
+func (_u *SystemComponentKindUpdateOne) Modify(modifiers ...func(u *sql.UpdateBuilder)) *SystemComponentKindUpdateOne {
+	_u.modifiers = append(_u.modifiers, modifiers...)
+	return _u
 }
 
-func (sckuo *SystemComponentKindUpdateOne) sqlSave(ctx context.Context) (_node *SystemComponentKind, err error) {
-	if err := sckuo.check(); err != nil {
+func (_u *SystemComponentKindUpdateOne) sqlSave(ctx context.Context) (_node *SystemComponentKind, err error) {
+	if err := _u.check(); err != nil {
 		return _node, err
 	}
 	_spec := sqlgraph.NewUpdateSpec(systemcomponentkind.Table, systemcomponentkind.Columns, sqlgraph.NewFieldSpec(systemcomponentkind.FieldID, field.TypeUUID))
-	id, ok := sckuo.mutation.ID()
+	id, ok := _u.mutation.ID()
 	if !ok {
 		return nil, &ValidationError{Name: "id", err: errors.New(`ent: missing "SystemComponentKind.id" for update`)}
 	}
 	_spec.Node.ID.Value = id
-	if fields := sckuo.fields; len(fields) > 0 {
+	if fields := _u.fields; len(fields) > 0 {
 		_spec.Node.Columns = make([]string, 0, len(fields))
 		_spec.Node.Columns = append(_spec.Node.Columns, systemcomponentkind.FieldID)
 		for _, f := range fields {
@@ -463,32 +463,32 @@ func (sckuo *SystemComponentKindUpdateOne) sqlSave(ctx context.Context) (_node *
 			}
 		}
 	}
-	if ps := sckuo.mutation.predicates; len(ps) > 0 {
+	if ps := _u.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {
 				ps[i](selector)
 			}
 		}
 	}
-	if value, ok := sckuo.mutation.ProviderID(); ok {
+	if value, ok := _u.mutation.ProviderID(); ok {
 		_spec.SetField(systemcomponentkind.FieldProviderID, field.TypeString, value)
 	}
-	if sckuo.mutation.ProviderIDCleared() {
+	if _u.mutation.ProviderIDCleared() {
 		_spec.ClearField(systemcomponentkind.FieldProviderID, field.TypeString)
 	}
-	if value, ok := sckuo.mutation.Label(); ok {
+	if value, ok := _u.mutation.Label(); ok {
 		_spec.SetField(systemcomponentkind.FieldLabel, field.TypeString, value)
 	}
-	if value, ok := sckuo.mutation.Description(); ok {
+	if value, ok := _u.mutation.Description(); ok {
 		_spec.SetField(systemcomponentkind.FieldDescription, field.TypeString, value)
 	}
-	if sckuo.mutation.DescriptionCleared() {
+	if _u.mutation.DescriptionCleared() {
 		_spec.ClearField(systemcomponentkind.FieldDescription, field.TypeString)
 	}
-	if value, ok := sckuo.mutation.CreatedAt(); ok {
+	if value, ok := _u.mutation.CreatedAt(); ok {
 		_spec.SetField(systemcomponentkind.FieldCreatedAt, field.TypeTime, value)
 	}
-	if sckuo.mutation.ComponentsCleared() {
+	if _u.mutation.ComponentsCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: true,
@@ -501,7 +501,7 @@ func (sckuo *SystemComponentKindUpdateOne) sqlSave(ctx context.Context) (_node *
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := sckuo.mutation.RemovedComponentsIDs(); len(nodes) > 0 && !sckuo.mutation.ComponentsCleared() {
+	if nodes := _u.mutation.RemovedComponentsIDs(); len(nodes) > 0 && !_u.mutation.ComponentsCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: true,
@@ -517,7 +517,7 @@ func (sckuo *SystemComponentKindUpdateOne) sqlSave(ctx context.Context) (_node *
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := sckuo.mutation.ComponentsIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.ComponentsIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: true,
@@ -533,11 +533,11 @@ func (sckuo *SystemComponentKindUpdateOne) sqlSave(ctx context.Context) (_node *
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	_spec.AddModifiers(sckuo.modifiers...)
-	_node = &SystemComponentKind{config: sckuo.config}
+	_spec.AddModifiers(_u.modifiers...)
+	_node = &SystemComponentKind{config: _u.config}
 	_spec.Assign = _node.assignValues
 	_spec.ScanValues = _node.scanValues
-	if err = sqlgraph.UpdateNode(ctx, sckuo.driver, _spec); err != nil {
+	if err = sqlgraph.UpdateNode(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{systemcomponentkind.Label}
 		} else if sqlgraph.IsConstraintError(err) {
@@ -545,6 +545,6 @@ func (sckuo *SystemComponentKindUpdateOne) sqlSave(ctx context.Context) (_node *
 		}
 		return nil, err
 	}
-	sckuo.mutation.done = true
+	_u.mutation.done = true
 	return _node, nil
 }

@@ -43,44 +43,44 @@ type OncallShiftQuery struct {
 }
 
 // Where adds a new predicate for the OncallShiftQuery builder.
-func (osq *OncallShiftQuery) Where(ps ...predicate.OncallShift) *OncallShiftQuery {
-	osq.predicates = append(osq.predicates, ps...)
-	return osq
+func (_q *OncallShiftQuery) Where(ps ...predicate.OncallShift) *OncallShiftQuery {
+	_q.predicates = append(_q.predicates, ps...)
+	return _q
 }
 
 // Limit the number of records to be returned by this query.
-func (osq *OncallShiftQuery) Limit(limit int) *OncallShiftQuery {
-	osq.ctx.Limit = &limit
-	return osq
+func (_q *OncallShiftQuery) Limit(limit int) *OncallShiftQuery {
+	_q.ctx.Limit = &limit
+	return _q
 }
 
 // Offset to start from.
-func (osq *OncallShiftQuery) Offset(offset int) *OncallShiftQuery {
-	osq.ctx.Offset = &offset
-	return osq
+func (_q *OncallShiftQuery) Offset(offset int) *OncallShiftQuery {
+	_q.ctx.Offset = &offset
+	return _q
 }
 
 // Unique configures the query builder to filter duplicate records on query.
 // By default, unique is set to true, and can be disabled using this method.
-func (osq *OncallShiftQuery) Unique(unique bool) *OncallShiftQuery {
-	osq.ctx.Unique = &unique
-	return osq
+func (_q *OncallShiftQuery) Unique(unique bool) *OncallShiftQuery {
+	_q.ctx.Unique = &unique
+	return _q
 }
 
 // Order specifies how the records should be ordered.
-func (osq *OncallShiftQuery) Order(o ...oncallshift.OrderOption) *OncallShiftQuery {
-	osq.order = append(osq.order, o...)
-	return osq
+func (_q *OncallShiftQuery) Order(o ...oncallshift.OrderOption) *OncallShiftQuery {
+	_q.order = append(_q.order, o...)
+	return _q
 }
 
 // QueryTenant chains the current query on the "tenant" edge.
-func (osq *OncallShiftQuery) QueryTenant() *TenantQuery {
-	query := (&TenantClient{config: osq.config}).Query()
+func (_q *OncallShiftQuery) QueryTenant() *TenantQuery {
+	query := (&TenantClient{config: _q.config}).Query()
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
-		if err := osq.prepareQuery(ctx); err != nil {
+		if err := _q.prepareQuery(ctx); err != nil {
 			return nil, err
 		}
-		selector := osq.sqlQuery(ctx)
+		selector := _q.sqlQuery(ctx)
 		if err := selector.Err(); err != nil {
 			return nil, err
 		}
@@ -89,20 +89,20 @@ func (osq *OncallShiftQuery) QueryTenant() *TenantQuery {
 			sqlgraph.To(tenant.Table, tenant.FieldID),
 			sqlgraph.Edge(sqlgraph.M2O, false, oncallshift.TenantTable, oncallshift.TenantColumn),
 		)
-		fromU = sqlgraph.SetNeighbors(osq.driver.Dialect(), step)
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
 	}
 	return query
 }
 
 // QueryUser chains the current query on the "user" edge.
-func (osq *OncallShiftQuery) QueryUser() *UserQuery {
-	query := (&UserClient{config: osq.config}).Query()
+func (_q *OncallShiftQuery) QueryUser() *UserQuery {
+	query := (&UserClient{config: _q.config}).Query()
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
-		if err := osq.prepareQuery(ctx); err != nil {
+		if err := _q.prepareQuery(ctx); err != nil {
 			return nil, err
 		}
-		selector := osq.sqlQuery(ctx)
+		selector := _q.sqlQuery(ctx)
 		if err := selector.Err(); err != nil {
 			return nil, err
 		}
@@ -111,20 +111,20 @@ func (osq *OncallShiftQuery) QueryUser() *UserQuery {
 			sqlgraph.To(user.Table, user.FieldID),
 			sqlgraph.Edge(sqlgraph.M2O, false, oncallshift.UserTable, oncallshift.UserColumn),
 		)
-		fromU = sqlgraph.SetNeighbors(osq.driver.Dialect(), step)
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
 	}
 	return query
 }
 
 // QueryRoster chains the current query on the "roster" edge.
-func (osq *OncallShiftQuery) QueryRoster() *OncallRosterQuery {
-	query := (&OncallRosterClient{config: osq.config}).Query()
+func (_q *OncallShiftQuery) QueryRoster() *OncallRosterQuery {
+	query := (&OncallRosterClient{config: _q.config}).Query()
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
-		if err := osq.prepareQuery(ctx); err != nil {
+		if err := _q.prepareQuery(ctx); err != nil {
 			return nil, err
 		}
-		selector := osq.sqlQuery(ctx)
+		selector := _q.sqlQuery(ctx)
 		if err := selector.Err(); err != nil {
 			return nil, err
 		}
@@ -133,20 +133,20 @@ func (osq *OncallShiftQuery) QueryRoster() *OncallRosterQuery {
 			sqlgraph.To(oncallroster.Table, oncallroster.FieldID),
 			sqlgraph.Edge(sqlgraph.M2O, false, oncallshift.RosterTable, oncallshift.RosterColumn),
 		)
-		fromU = sqlgraph.SetNeighbors(osq.driver.Dialect(), step)
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
 	}
 	return query
 }
 
 // QueryPrimaryShift chains the current query on the "primary_shift" edge.
-func (osq *OncallShiftQuery) QueryPrimaryShift() *OncallShiftQuery {
-	query := (&OncallShiftClient{config: osq.config}).Query()
+func (_q *OncallShiftQuery) QueryPrimaryShift() *OncallShiftQuery {
+	query := (&OncallShiftClient{config: _q.config}).Query()
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
-		if err := osq.prepareQuery(ctx); err != nil {
+		if err := _q.prepareQuery(ctx); err != nil {
 			return nil, err
 		}
-		selector := osq.sqlQuery(ctx)
+		selector := _q.sqlQuery(ctx)
 		if err := selector.Err(); err != nil {
 			return nil, err
 		}
@@ -155,20 +155,20 @@ func (osq *OncallShiftQuery) QueryPrimaryShift() *OncallShiftQuery {
 			sqlgraph.To(oncallshift.Table, oncallshift.FieldID),
 			sqlgraph.Edge(sqlgraph.O2O, false, oncallshift.PrimaryShiftTable, oncallshift.PrimaryShiftColumn),
 		)
-		fromU = sqlgraph.SetNeighbors(osq.driver.Dialect(), step)
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
 	}
 	return query
 }
 
 // QueryHandover chains the current query on the "handover" edge.
-func (osq *OncallShiftQuery) QueryHandover() *OncallShiftHandoverQuery {
-	query := (&OncallShiftHandoverClient{config: osq.config}).Query()
+func (_q *OncallShiftQuery) QueryHandover() *OncallShiftHandoverQuery {
+	query := (&OncallShiftHandoverClient{config: _q.config}).Query()
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
-		if err := osq.prepareQuery(ctx); err != nil {
+		if err := _q.prepareQuery(ctx); err != nil {
 			return nil, err
 		}
-		selector := osq.sqlQuery(ctx)
+		selector := _q.sqlQuery(ctx)
 		if err := selector.Err(); err != nil {
 			return nil, err
 		}
@@ -177,20 +177,20 @@ func (osq *OncallShiftQuery) QueryHandover() *OncallShiftHandoverQuery {
 			sqlgraph.To(oncallshifthandover.Table, oncallshifthandover.FieldID),
 			sqlgraph.Edge(sqlgraph.O2O, false, oncallshift.HandoverTable, oncallshift.HandoverColumn),
 		)
-		fromU = sqlgraph.SetNeighbors(osq.driver.Dialect(), step)
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
 	}
 	return query
 }
 
 // QueryMetrics chains the current query on the "metrics" edge.
-func (osq *OncallShiftQuery) QueryMetrics() *OncallShiftMetricsQuery {
-	query := (&OncallShiftMetricsClient{config: osq.config}).Query()
+func (_q *OncallShiftQuery) QueryMetrics() *OncallShiftMetricsQuery {
+	query := (&OncallShiftMetricsClient{config: _q.config}).Query()
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
-		if err := osq.prepareQuery(ctx); err != nil {
+		if err := _q.prepareQuery(ctx); err != nil {
 			return nil, err
 		}
-		selector := osq.sqlQuery(ctx)
+		selector := _q.sqlQuery(ctx)
 		if err := selector.Err(); err != nil {
 			return nil, err
 		}
@@ -199,7 +199,7 @@ func (osq *OncallShiftQuery) QueryMetrics() *OncallShiftMetricsQuery {
 			sqlgraph.To(oncallshiftmetrics.Table, oncallshiftmetrics.FieldID),
 			sqlgraph.Edge(sqlgraph.O2O, false, oncallshift.MetricsTable, oncallshift.MetricsColumn),
 		)
-		fromU = sqlgraph.SetNeighbors(osq.driver.Dialect(), step)
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
 	}
 	return query
@@ -207,8 +207,8 @@ func (osq *OncallShiftQuery) QueryMetrics() *OncallShiftMetricsQuery {
 
 // First returns the first OncallShift entity from the query.
 // Returns a *NotFoundError when no OncallShift was found.
-func (osq *OncallShiftQuery) First(ctx context.Context) (*OncallShift, error) {
-	nodes, err := osq.Limit(1).All(setContextOp(ctx, osq.ctx, ent.OpQueryFirst))
+func (_q *OncallShiftQuery) First(ctx context.Context) (*OncallShift, error) {
+	nodes, err := _q.Limit(1).All(setContextOp(ctx, _q.ctx, ent.OpQueryFirst))
 	if err != nil {
 		return nil, err
 	}
@@ -219,8 +219,8 @@ func (osq *OncallShiftQuery) First(ctx context.Context) (*OncallShift, error) {
 }
 
 // FirstX is like First, but panics if an error occurs.
-func (osq *OncallShiftQuery) FirstX(ctx context.Context) *OncallShift {
-	node, err := osq.First(ctx)
+func (_q *OncallShiftQuery) FirstX(ctx context.Context) *OncallShift {
+	node, err := _q.First(ctx)
 	if err != nil && !IsNotFound(err) {
 		panic(err)
 	}
@@ -229,9 +229,9 @@ func (osq *OncallShiftQuery) FirstX(ctx context.Context) *OncallShift {
 
 // FirstID returns the first OncallShift ID from the query.
 // Returns a *NotFoundError when no OncallShift ID was found.
-func (osq *OncallShiftQuery) FirstID(ctx context.Context) (id uuid.UUID, err error) {
+func (_q *OncallShiftQuery) FirstID(ctx context.Context) (id uuid.UUID, err error) {
 	var ids []uuid.UUID
-	if ids, err = osq.Limit(1).IDs(setContextOp(ctx, osq.ctx, ent.OpQueryFirstID)); err != nil {
+	if ids, err = _q.Limit(1).IDs(setContextOp(ctx, _q.ctx, ent.OpQueryFirstID)); err != nil {
 		return
 	}
 	if len(ids) == 0 {
@@ -242,8 +242,8 @@ func (osq *OncallShiftQuery) FirstID(ctx context.Context) (id uuid.UUID, err err
 }
 
 // FirstIDX is like FirstID, but panics if an error occurs.
-func (osq *OncallShiftQuery) FirstIDX(ctx context.Context) uuid.UUID {
-	id, err := osq.FirstID(ctx)
+func (_q *OncallShiftQuery) FirstIDX(ctx context.Context) uuid.UUID {
+	id, err := _q.FirstID(ctx)
 	if err != nil && !IsNotFound(err) {
 		panic(err)
 	}
@@ -253,8 +253,8 @@ func (osq *OncallShiftQuery) FirstIDX(ctx context.Context) uuid.UUID {
 // Only returns a single OncallShift entity found by the query, ensuring it only returns one.
 // Returns a *NotSingularError when more than one OncallShift entity is found.
 // Returns a *NotFoundError when no OncallShift entities are found.
-func (osq *OncallShiftQuery) Only(ctx context.Context) (*OncallShift, error) {
-	nodes, err := osq.Limit(2).All(setContextOp(ctx, osq.ctx, ent.OpQueryOnly))
+func (_q *OncallShiftQuery) Only(ctx context.Context) (*OncallShift, error) {
+	nodes, err := _q.Limit(2).All(setContextOp(ctx, _q.ctx, ent.OpQueryOnly))
 	if err != nil {
 		return nil, err
 	}
@@ -269,8 +269,8 @@ func (osq *OncallShiftQuery) Only(ctx context.Context) (*OncallShift, error) {
 }
 
 // OnlyX is like Only, but panics if an error occurs.
-func (osq *OncallShiftQuery) OnlyX(ctx context.Context) *OncallShift {
-	node, err := osq.Only(ctx)
+func (_q *OncallShiftQuery) OnlyX(ctx context.Context) *OncallShift {
+	node, err := _q.Only(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -280,9 +280,9 @@ func (osq *OncallShiftQuery) OnlyX(ctx context.Context) *OncallShift {
 // OnlyID is like Only, but returns the only OncallShift ID in the query.
 // Returns a *NotSingularError when more than one OncallShift ID is found.
 // Returns a *NotFoundError when no entities are found.
-func (osq *OncallShiftQuery) OnlyID(ctx context.Context) (id uuid.UUID, err error) {
+func (_q *OncallShiftQuery) OnlyID(ctx context.Context) (id uuid.UUID, err error) {
 	var ids []uuid.UUID
-	if ids, err = osq.Limit(2).IDs(setContextOp(ctx, osq.ctx, ent.OpQueryOnlyID)); err != nil {
+	if ids, err = _q.Limit(2).IDs(setContextOp(ctx, _q.ctx, ent.OpQueryOnlyID)); err != nil {
 		return
 	}
 	switch len(ids) {
@@ -297,8 +297,8 @@ func (osq *OncallShiftQuery) OnlyID(ctx context.Context) (id uuid.UUID, err erro
 }
 
 // OnlyIDX is like OnlyID, but panics if an error occurs.
-func (osq *OncallShiftQuery) OnlyIDX(ctx context.Context) uuid.UUID {
-	id, err := osq.OnlyID(ctx)
+func (_q *OncallShiftQuery) OnlyIDX(ctx context.Context) uuid.UUID {
+	id, err := _q.OnlyID(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -306,18 +306,18 @@ func (osq *OncallShiftQuery) OnlyIDX(ctx context.Context) uuid.UUID {
 }
 
 // All executes the query and returns a list of OncallShifts.
-func (osq *OncallShiftQuery) All(ctx context.Context) ([]*OncallShift, error) {
-	ctx = setContextOp(ctx, osq.ctx, ent.OpQueryAll)
-	if err := osq.prepareQuery(ctx); err != nil {
+func (_q *OncallShiftQuery) All(ctx context.Context) ([]*OncallShift, error) {
+	ctx = setContextOp(ctx, _q.ctx, ent.OpQueryAll)
+	if err := _q.prepareQuery(ctx); err != nil {
 		return nil, err
 	}
 	qr := querierAll[[]*OncallShift, *OncallShiftQuery]()
-	return withInterceptors[[]*OncallShift](ctx, osq, qr, osq.inters)
+	return withInterceptors[[]*OncallShift](ctx, _q, qr, _q.inters)
 }
 
 // AllX is like All, but panics if an error occurs.
-func (osq *OncallShiftQuery) AllX(ctx context.Context) []*OncallShift {
-	nodes, err := osq.All(ctx)
+func (_q *OncallShiftQuery) AllX(ctx context.Context) []*OncallShift {
+	nodes, err := _q.All(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -325,20 +325,20 @@ func (osq *OncallShiftQuery) AllX(ctx context.Context) []*OncallShift {
 }
 
 // IDs executes the query and returns a list of OncallShift IDs.
-func (osq *OncallShiftQuery) IDs(ctx context.Context) (ids []uuid.UUID, err error) {
-	if osq.ctx.Unique == nil && osq.path != nil {
-		osq.Unique(true)
+func (_q *OncallShiftQuery) IDs(ctx context.Context) (ids []uuid.UUID, err error) {
+	if _q.ctx.Unique == nil && _q.path != nil {
+		_q.Unique(true)
 	}
-	ctx = setContextOp(ctx, osq.ctx, ent.OpQueryIDs)
-	if err = osq.Select(oncallshift.FieldID).Scan(ctx, &ids); err != nil {
+	ctx = setContextOp(ctx, _q.ctx, ent.OpQueryIDs)
+	if err = _q.Select(oncallshift.FieldID).Scan(ctx, &ids); err != nil {
 		return nil, err
 	}
 	return ids, nil
 }
 
 // IDsX is like IDs, but panics if an error occurs.
-func (osq *OncallShiftQuery) IDsX(ctx context.Context) []uuid.UUID {
-	ids, err := osq.IDs(ctx)
+func (_q *OncallShiftQuery) IDsX(ctx context.Context) []uuid.UUID {
+	ids, err := _q.IDs(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -346,17 +346,17 @@ func (osq *OncallShiftQuery) IDsX(ctx context.Context) []uuid.UUID {
 }
 
 // Count returns the count of the given query.
-func (osq *OncallShiftQuery) Count(ctx context.Context) (int, error) {
-	ctx = setContextOp(ctx, osq.ctx, ent.OpQueryCount)
-	if err := osq.prepareQuery(ctx); err != nil {
+func (_q *OncallShiftQuery) Count(ctx context.Context) (int, error) {
+	ctx = setContextOp(ctx, _q.ctx, ent.OpQueryCount)
+	if err := _q.prepareQuery(ctx); err != nil {
 		return 0, err
 	}
-	return withInterceptors[int](ctx, osq, querierCount[*OncallShiftQuery](), osq.inters)
+	return withInterceptors[int](ctx, _q, querierCount[*OncallShiftQuery](), _q.inters)
 }
 
 // CountX is like Count, but panics if an error occurs.
-func (osq *OncallShiftQuery) CountX(ctx context.Context) int {
-	count, err := osq.Count(ctx)
+func (_q *OncallShiftQuery) CountX(ctx context.Context) int {
+	count, err := _q.Count(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -364,9 +364,9 @@ func (osq *OncallShiftQuery) CountX(ctx context.Context) int {
 }
 
 // Exist returns true if the query has elements in the graph.
-func (osq *OncallShiftQuery) Exist(ctx context.Context) (bool, error) {
-	ctx = setContextOp(ctx, osq.ctx, ent.OpQueryExist)
-	switch _, err := osq.FirstID(ctx); {
+func (_q *OncallShiftQuery) Exist(ctx context.Context) (bool, error) {
+	ctx = setContextOp(ctx, _q.ctx, ent.OpQueryExist)
+	switch _, err := _q.FirstID(ctx); {
 	case IsNotFound(err):
 		return false, nil
 	case err != nil:
@@ -377,8 +377,8 @@ func (osq *OncallShiftQuery) Exist(ctx context.Context) (bool, error) {
 }
 
 // ExistX is like Exist, but panics if an error occurs.
-func (osq *OncallShiftQuery) ExistX(ctx context.Context) bool {
-	exist, err := osq.Exist(ctx)
+func (_q *OncallShiftQuery) ExistX(ctx context.Context) bool {
+	exist, err := _q.Exist(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -387,93 +387,93 @@ func (osq *OncallShiftQuery) ExistX(ctx context.Context) bool {
 
 // Clone returns a duplicate of the OncallShiftQuery builder, including all associated steps. It can be
 // used to prepare common query builders and use them differently after the clone is made.
-func (osq *OncallShiftQuery) Clone() *OncallShiftQuery {
-	if osq == nil {
+func (_q *OncallShiftQuery) Clone() *OncallShiftQuery {
+	if _q == nil {
 		return nil
 	}
 	return &OncallShiftQuery{
-		config:           osq.config,
-		ctx:              osq.ctx.Clone(),
-		order:            append([]oncallshift.OrderOption{}, osq.order...),
-		inters:           append([]Interceptor{}, osq.inters...),
-		predicates:       append([]predicate.OncallShift{}, osq.predicates...),
-		withTenant:       osq.withTenant.Clone(),
-		withUser:         osq.withUser.Clone(),
-		withRoster:       osq.withRoster.Clone(),
-		withPrimaryShift: osq.withPrimaryShift.Clone(),
-		withHandover:     osq.withHandover.Clone(),
-		withMetrics:      osq.withMetrics.Clone(),
+		config:           _q.config,
+		ctx:              _q.ctx.Clone(),
+		order:            append([]oncallshift.OrderOption{}, _q.order...),
+		inters:           append([]Interceptor{}, _q.inters...),
+		predicates:       append([]predicate.OncallShift{}, _q.predicates...),
+		withTenant:       _q.withTenant.Clone(),
+		withUser:         _q.withUser.Clone(),
+		withRoster:       _q.withRoster.Clone(),
+		withPrimaryShift: _q.withPrimaryShift.Clone(),
+		withHandover:     _q.withHandover.Clone(),
+		withMetrics:      _q.withMetrics.Clone(),
 		// clone intermediate query.
-		sql:       osq.sql.Clone(),
-		path:      osq.path,
-		modifiers: append([]func(*sql.Selector){}, osq.modifiers...),
+		sql:       _q.sql.Clone(),
+		path:      _q.path,
+		modifiers: append([]func(*sql.Selector){}, _q.modifiers...),
 	}
 }
 
 // WithTenant tells the query-builder to eager-load the nodes that are connected to
 // the "tenant" edge. The optional arguments are used to configure the query builder of the edge.
-func (osq *OncallShiftQuery) WithTenant(opts ...func(*TenantQuery)) *OncallShiftQuery {
-	query := (&TenantClient{config: osq.config}).Query()
+func (_q *OncallShiftQuery) WithTenant(opts ...func(*TenantQuery)) *OncallShiftQuery {
+	query := (&TenantClient{config: _q.config}).Query()
 	for _, opt := range opts {
 		opt(query)
 	}
-	osq.withTenant = query
-	return osq
+	_q.withTenant = query
+	return _q
 }
 
 // WithUser tells the query-builder to eager-load the nodes that are connected to
 // the "user" edge. The optional arguments are used to configure the query builder of the edge.
-func (osq *OncallShiftQuery) WithUser(opts ...func(*UserQuery)) *OncallShiftQuery {
-	query := (&UserClient{config: osq.config}).Query()
+func (_q *OncallShiftQuery) WithUser(opts ...func(*UserQuery)) *OncallShiftQuery {
+	query := (&UserClient{config: _q.config}).Query()
 	for _, opt := range opts {
 		opt(query)
 	}
-	osq.withUser = query
-	return osq
+	_q.withUser = query
+	return _q
 }
 
 // WithRoster tells the query-builder to eager-load the nodes that are connected to
 // the "roster" edge. The optional arguments are used to configure the query builder of the edge.
-func (osq *OncallShiftQuery) WithRoster(opts ...func(*OncallRosterQuery)) *OncallShiftQuery {
-	query := (&OncallRosterClient{config: osq.config}).Query()
+func (_q *OncallShiftQuery) WithRoster(opts ...func(*OncallRosterQuery)) *OncallShiftQuery {
+	query := (&OncallRosterClient{config: _q.config}).Query()
 	for _, opt := range opts {
 		opt(query)
 	}
-	osq.withRoster = query
-	return osq
+	_q.withRoster = query
+	return _q
 }
 
 // WithPrimaryShift tells the query-builder to eager-load the nodes that are connected to
 // the "primary_shift" edge. The optional arguments are used to configure the query builder of the edge.
-func (osq *OncallShiftQuery) WithPrimaryShift(opts ...func(*OncallShiftQuery)) *OncallShiftQuery {
-	query := (&OncallShiftClient{config: osq.config}).Query()
+func (_q *OncallShiftQuery) WithPrimaryShift(opts ...func(*OncallShiftQuery)) *OncallShiftQuery {
+	query := (&OncallShiftClient{config: _q.config}).Query()
 	for _, opt := range opts {
 		opt(query)
 	}
-	osq.withPrimaryShift = query
-	return osq
+	_q.withPrimaryShift = query
+	return _q
 }
 
 // WithHandover tells the query-builder to eager-load the nodes that are connected to
 // the "handover" edge. The optional arguments are used to configure the query builder of the edge.
-func (osq *OncallShiftQuery) WithHandover(opts ...func(*OncallShiftHandoverQuery)) *OncallShiftQuery {
-	query := (&OncallShiftHandoverClient{config: osq.config}).Query()
+func (_q *OncallShiftQuery) WithHandover(opts ...func(*OncallShiftHandoverQuery)) *OncallShiftQuery {
+	query := (&OncallShiftHandoverClient{config: _q.config}).Query()
 	for _, opt := range opts {
 		opt(query)
 	}
-	osq.withHandover = query
-	return osq
+	_q.withHandover = query
+	return _q
 }
 
 // WithMetrics tells the query-builder to eager-load the nodes that are connected to
 // the "metrics" edge. The optional arguments are used to configure the query builder of the edge.
-func (osq *OncallShiftQuery) WithMetrics(opts ...func(*OncallShiftMetricsQuery)) *OncallShiftQuery {
-	query := (&OncallShiftMetricsClient{config: osq.config}).Query()
+func (_q *OncallShiftQuery) WithMetrics(opts ...func(*OncallShiftMetricsQuery)) *OncallShiftQuery {
+	query := (&OncallShiftMetricsClient{config: _q.config}).Query()
 	for _, opt := range opts {
 		opt(query)
 	}
-	osq.withMetrics = query
-	return osq
+	_q.withMetrics = query
+	return _q
 }
 
 // GroupBy is used to group vertices by one or more fields/columns.
@@ -490,10 +490,10 @@ func (osq *OncallShiftQuery) WithMetrics(opts ...func(*OncallShiftMetricsQuery))
 //		GroupBy(oncallshift.FieldTenantID).
 //		Aggregate(ent.Count()).
 //		Scan(ctx, &v)
-func (osq *OncallShiftQuery) GroupBy(field string, fields ...string) *OncallShiftGroupBy {
-	osq.ctx.Fields = append([]string{field}, fields...)
-	grbuild := &OncallShiftGroupBy{build: osq}
-	grbuild.flds = &osq.ctx.Fields
+func (_q *OncallShiftQuery) GroupBy(field string, fields ...string) *OncallShiftGroupBy {
+	_q.ctx.Fields = append([]string{field}, fields...)
+	grbuild := &OncallShiftGroupBy{build: _q}
+	grbuild.flds = &_q.ctx.Fields
 	grbuild.label = oncallshift.Label
 	grbuild.scan = grbuild.Scan
 	return grbuild
@@ -511,117 +511,117 @@ func (osq *OncallShiftQuery) GroupBy(field string, fields ...string) *OncallShif
 //	client.OncallShift.Query().
 //		Select(oncallshift.FieldTenantID).
 //		Scan(ctx, &v)
-func (osq *OncallShiftQuery) Select(fields ...string) *OncallShiftSelect {
-	osq.ctx.Fields = append(osq.ctx.Fields, fields...)
-	sbuild := &OncallShiftSelect{OncallShiftQuery: osq}
+func (_q *OncallShiftQuery) Select(fields ...string) *OncallShiftSelect {
+	_q.ctx.Fields = append(_q.ctx.Fields, fields...)
+	sbuild := &OncallShiftSelect{OncallShiftQuery: _q}
 	sbuild.label = oncallshift.Label
-	sbuild.flds, sbuild.scan = &osq.ctx.Fields, sbuild.Scan
+	sbuild.flds, sbuild.scan = &_q.ctx.Fields, sbuild.Scan
 	return sbuild
 }
 
 // Aggregate returns a OncallShiftSelect configured with the given aggregations.
-func (osq *OncallShiftQuery) Aggregate(fns ...AggregateFunc) *OncallShiftSelect {
-	return osq.Select().Aggregate(fns...)
+func (_q *OncallShiftQuery) Aggregate(fns ...AggregateFunc) *OncallShiftSelect {
+	return _q.Select().Aggregate(fns...)
 }
 
-func (osq *OncallShiftQuery) prepareQuery(ctx context.Context) error {
-	for _, inter := range osq.inters {
+func (_q *OncallShiftQuery) prepareQuery(ctx context.Context) error {
+	for _, inter := range _q.inters {
 		if inter == nil {
 			return fmt.Errorf("ent: uninitialized interceptor (forgotten import ent/runtime?)")
 		}
 		if trv, ok := inter.(Traverser); ok {
-			if err := trv.Traverse(ctx, osq); err != nil {
+			if err := trv.Traverse(ctx, _q); err != nil {
 				return err
 			}
 		}
 	}
-	for _, f := range osq.ctx.Fields {
+	for _, f := range _q.ctx.Fields {
 		if !oncallshift.ValidColumn(f) {
 			return &ValidationError{Name: f, err: fmt.Errorf("ent: invalid field %q for query", f)}
 		}
 	}
-	if osq.path != nil {
-		prev, err := osq.path(ctx)
+	if _q.path != nil {
+		prev, err := _q.path(ctx)
 		if err != nil {
 			return err
 		}
-		osq.sql = prev
+		_q.sql = prev
 	}
 	if oncallshift.Policy == nil {
 		return errors.New("ent: uninitialized oncallshift.Policy (forgotten import ent/runtime?)")
 	}
-	if err := oncallshift.Policy.EvalQuery(ctx, osq); err != nil {
+	if err := oncallshift.Policy.EvalQuery(ctx, _q); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (osq *OncallShiftQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*OncallShift, error) {
+func (_q *OncallShiftQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*OncallShift, error) {
 	var (
 		nodes       = []*OncallShift{}
-		_spec       = osq.querySpec()
+		_spec       = _q.querySpec()
 		loadedTypes = [6]bool{
-			osq.withTenant != nil,
-			osq.withUser != nil,
-			osq.withRoster != nil,
-			osq.withPrimaryShift != nil,
-			osq.withHandover != nil,
-			osq.withMetrics != nil,
+			_q.withTenant != nil,
+			_q.withUser != nil,
+			_q.withRoster != nil,
+			_q.withPrimaryShift != nil,
+			_q.withHandover != nil,
+			_q.withMetrics != nil,
 		}
 	)
 	_spec.ScanValues = func(columns []string) ([]any, error) {
 		return (*OncallShift).scanValues(nil, columns)
 	}
 	_spec.Assign = func(columns []string, values []any) error {
-		node := &OncallShift{config: osq.config}
+		node := &OncallShift{config: _q.config}
 		nodes = append(nodes, node)
 		node.Edges.loadedTypes = loadedTypes
 		return node.assignValues(columns, values)
 	}
-	if len(osq.modifiers) > 0 {
-		_spec.Modifiers = osq.modifiers
+	if len(_q.modifiers) > 0 {
+		_spec.Modifiers = _q.modifiers
 	}
 	for i := range hooks {
 		hooks[i](ctx, _spec)
 	}
-	if err := sqlgraph.QueryNodes(ctx, osq.driver, _spec); err != nil {
+	if err := sqlgraph.QueryNodes(ctx, _q.driver, _spec); err != nil {
 		return nil, err
 	}
 	if len(nodes) == 0 {
 		return nodes, nil
 	}
-	if query := osq.withTenant; query != nil {
-		if err := osq.loadTenant(ctx, query, nodes, nil,
+	if query := _q.withTenant; query != nil {
+		if err := _q.loadTenant(ctx, query, nodes, nil,
 			func(n *OncallShift, e *Tenant) { n.Edges.Tenant = e }); err != nil {
 			return nil, err
 		}
 	}
-	if query := osq.withUser; query != nil {
-		if err := osq.loadUser(ctx, query, nodes, nil,
+	if query := _q.withUser; query != nil {
+		if err := _q.loadUser(ctx, query, nodes, nil,
 			func(n *OncallShift, e *User) { n.Edges.User = e }); err != nil {
 			return nil, err
 		}
 	}
-	if query := osq.withRoster; query != nil {
-		if err := osq.loadRoster(ctx, query, nodes, nil,
+	if query := _q.withRoster; query != nil {
+		if err := _q.loadRoster(ctx, query, nodes, nil,
 			func(n *OncallShift, e *OncallRoster) { n.Edges.Roster = e }); err != nil {
 			return nil, err
 		}
 	}
-	if query := osq.withPrimaryShift; query != nil {
-		if err := osq.loadPrimaryShift(ctx, query, nodes, nil,
+	if query := _q.withPrimaryShift; query != nil {
+		if err := _q.loadPrimaryShift(ctx, query, nodes, nil,
 			func(n *OncallShift, e *OncallShift) { n.Edges.PrimaryShift = e }); err != nil {
 			return nil, err
 		}
 	}
-	if query := osq.withHandover; query != nil {
-		if err := osq.loadHandover(ctx, query, nodes, nil,
+	if query := _q.withHandover; query != nil {
+		if err := _q.loadHandover(ctx, query, nodes, nil,
 			func(n *OncallShift, e *OncallShiftHandover) { n.Edges.Handover = e }); err != nil {
 			return nil, err
 		}
 	}
-	if query := osq.withMetrics; query != nil {
-		if err := osq.loadMetrics(ctx, query, nodes, nil,
+	if query := _q.withMetrics; query != nil {
+		if err := _q.loadMetrics(ctx, query, nodes, nil,
 			func(n *OncallShift, e *OncallShiftMetrics) { n.Edges.Metrics = e }); err != nil {
 			return nil, err
 		}
@@ -629,7 +629,7 @@ func (osq *OncallShiftQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]
 	return nodes, nil
 }
 
-func (osq *OncallShiftQuery) loadTenant(ctx context.Context, query *TenantQuery, nodes []*OncallShift, init func(*OncallShift), assign func(*OncallShift, *Tenant)) error {
+func (_q *OncallShiftQuery) loadTenant(ctx context.Context, query *TenantQuery, nodes []*OncallShift, init func(*OncallShift), assign func(*OncallShift, *Tenant)) error {
 	ids := make([]int, 0, len(nodes))
 	nodeids := make(map[int][]*OncallShift)
 	for i := range nodes {
@@ -658,7 +658,7 @@ func (osq *OncallShiftQuery) loadTenant(ctx context.Context, query *TenantQuery,
 	}
 	return nil
 }
-func (osq *OncallShiftQuery) loadUser(ctx context.Context, query *UserQuery, nodes []*OncallShift, init func(*OncallShift), assign func(*OncallShift, *User)) error {
+func (_q *OncallShiftQuery) loadUser(ctx context.Context, query *UserQuery, nodes []*OncallShift, init func(*OncallShift), assign func(*OncallShift, *User)) error {
 	ids := make([]uuid.UUID, 0, len(nodes))
 	nodeids := make(map[uuid.UUID][]*OncallShift)
 	for i := range nodes {
@@ -687,7 +687,7 @@ func (osq *OncallShiftQuery) loadUser(ctx context.Context, query *UserQuery, nod
 	}
 	return nil
 }
-func (osq *OncallShiftQuery) loadRoster(ctx context.Context, query *OncallRosterQuery, nodes []*OncallShift, init func(*OncallShift), assign func(*OncallShift, *OncallRoster)) error {
+func (_q *OncallShiftQuery) loadRoster(ctx context.Context, query *OncallRosterQuery, nodes []*OncallShift, init func(*OncallShift), assign func(*OncallShift, *OncallRoster)) error {
 	ids := make([]uuid.UUID, 0, len(nodes))
 	nodeids := make(map[uuid.UUID][]*OncallShift)
 	for i := range nodes {
@@ -716,7 +716,7 @@ func (osq *OncallShiftQuery) loadRoster(ctx context.Context, query *OncallRoster
 	}
 	return nil
 }
-func (osq *OncallShiftQuery) loadPrimaryShift(ctx context.Context, query *OncallShiftQuery, nodes []*OncallShift, init func(*OncallShift), assign func(*OncallShift, *OncallShift)) error {
+func (_q *OncallShiftQuery) loadPrimaryShift(ctx context.Context, query *OncallShiftQuery, nodes []*OncallShift, init func(*OncallShift), assign func(*OncallShift, *OncallShift)) error {
 	ids := make([]uuid.UUID, 0, len(nodes))
 	nodeids := make(map[uuid.UUID][]*OncallShift)
 	for i := range nodes {
@@ -745,7 +745,7 @@ func (osq *OncallShiftQuery) loadPrimaryShift(ctx context.Context, query *Oncall
 	}
 	return nil
 }
-func (osq *OncallShiftQuery) loadHandover(ctx context.Context, query *OncallShiftHandoverQuery, nodes []*OncallShift, init func(*OncallShift), assign func(*OncallShift, *OncallShiftHandover)) error {
+func (_q *OncallShiftQuery) loadHandover(ctx context.Context, query *OncallShiftHandoverQuery, nodes []*OncallShift, init func(*OncallShift), assign func(*OncallShift, *OncallShiftHandover)) error {
 	fks := make([]driver.Value, 0, len(nodes))
 	nodeids := make(map[uuid.UUID]*OncallShift)
 	for i := range nodes {
@@ -772,7 +772,7 @@ func (osq *OncallShiftQuery) loadHandover(ctx context.Context, query *OncallShif
 	}
 	return nil
 }
-func (osq *OncallShiftQuery) loadMetrics(ctx context.Context, query *OncallShiftMetricsQuery, nodes []*OncallShift, init func(*OncallShift), assign func(*OncallShift, *OncallShiftMetrics)) error {
+func (_q *OncallShiftQuery) loadMetrics(ctx context.Context, query *OncallShiftMetricsQuery, nodes []*OncallShift, init func(*OncallShift), assign func(*OncallShift, *OncallShiftMetrics)) error {
 	fks := make([]driver.Value, 0, len(nodes))
 	nodeids := make(map[uuid.UUID]*OncallShift)
 	for i := range nodes {
@@ -800,27 +800,27 @@ func (osq *OncallShiftQuery) loadMetrics(ctx context.Context, query *OncallShift
 	return nil
 }
 
-func (osq *OncallShiftQuery) sqlCount(ctx context.Context) (int, error) {
-	_spec := osq.querySpec()
-	if len(osq.modifiers) > 0 {
-		_spec.Modifiers = osq.modifiers
+func (_q *OncallShiftQuery) sqlCount(ctx context.Context) (int, error) {
+	_spec := _q.querySpec()
+	if len(_q.modifiers) > 0 {
+		_spec.Modifiers = _q.modifiers
 	}
-	_spec.Node.Columns = osq.ctx.Fields
-	if len(osq.ctx.Fields) > 0 {
-		_spec.Unique = osq.ctx.Unique != nil && *osq.ctx.Unique
+	_spec.Node.Columns = _q.ctx.Fields
+	if len(_q.ctx.Fields) > 0 {
+		_spec.Unique = _q.ctx.Unique != nil && *_q.ctx.Unique
 	}
-	return sqlgraph.CountNodes(ctx, osq.driver, _spec)
+	return sqlgraph.CountNodes(ctx, _q.driver, _spec)
 }
 
-func (osq *OncallShiftQuery) querySpec() *sqlgraph.QuerySpec {
+func (_q *OncallShiftQuery) querySpec() *sqlgraph.QuerySpec {
 	_spec := sqlgraph.NewQuerySpec(oncallshift.Table, oncallshift.Columns, sqlgraph.NewFieldSpec(oncallshift.FieldID, field.TypeUUID))
-	_spec.From = osq.sql
-	if unique := osq.ctx.Unique; unique != nil {
+	_spec.From = _q.sql
+	if unique := _q.ctx.Unique; unique != nil {
 		_spec.Unique = *unique
-	} else if osq.path != nil {
+	} else if _q.path != nil {
 		_spec.Unique = true
 	}
-	if fields := osq.ctx.Fields; len(fields) > 0 {
+	if fields := _q.ctx.Fields; len(fields) > 0 {
 		_spec.Node.Columns = make([]string, 0, len(fields))
 		_spec.Node.Columns = append(_spec.Node.Columns, oncallshift.FieldID)
 		for i := range fields {
@@ -828,33 +828,33 @@ func (osq *OncallShiftQuery) querySpec() *sqlgraph.QuerySpec {
 				_spec.Node.Columns = append(_spec.Node.Columns, fields[i])
 			}
 		}
-		if osq.withTenant != nil {
+		if _q.withTenant != nil {
 			_spec.Node.AddColumnOnce(oncallshift.FieldTenantID)
 		}
-		if osq.withUser != nil {
+		if _q.withUser != nil {
 			_spec.Node.AddColumnOnce(oncallshift.FieldUserID)
 		}
-		if osq.withRoster != nil {
+		if _q.withRoster != nil {
 			_spec.Node.AddColumnOnce(oncallshift.FieldRosterID)
 		}
-		if osq.withPrimaryShift != nil {
+		if _q.withPrimaryShift != nil {
 			_spec.Node.AddColumnOnce(oncallshift.FieldPrimaryShiftID)
 		}
 	}
-	if ps := osq.predicates; len(ps) > 0 {
+	if ps := _q.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {
 				ps[i](selector)
 			}
 		}
 	}
-	if limit := osq.ctx.Limit; limit != nil {
+	if limit := _q.ctx.Limit; limit != nil {
 		_spec.Limit = *limit
 	}
-	if offset := osq.ctx.Offset; offset != nil {
+	if offset := _q.ctx.Offset; offset != nil {
 		_spec.Offset = *offset
 	}
-	if ps := osq.order; len(ps) > 0 {
+	if ps := _q.order; len(ps) > 0 {
 		_spec.Order = func(selector *sql.Selector) {
 			for i := range ps {
 				ps[i](selector)
@@ -864,45 +864,45 @@ func (osq *OncallShiftQuery) querySpec() *sqlgraph.QuerySpec {
 	return _spec
 }
 
-func (osq *OncallShiftQuery) sqlQuery(ctx context.Context) *sql.Selector {
-	builder := sql.Dialect(osq.driver.Dialect())
+func (_q *OncallShiftQuery) sqlQuery(ctx context.Context) *sql.Selector {
+	builder := sql.Dialect(_q.driver.Dialect())
 	t1 := builder.Table(oncallshift.Table)
-	columns := osq.ctx.Fields
+	columns := _q.ctx.Fields
 	if len(columns) == 0 {
 		columns = oncallshift.Columns
 	}
 	selector := builder.Select(t1.Columns(columns...)...).From(t1)
-	if osq.sql != nil {
-		selector = osq.sql
+	if _q.sql != nil {
+		selector = _q.sql
 		selector.Select(selector.Columns(columns...)...)
 	}
-	if osq.ctx.Unique != nil && *osq.ctx.Unique {
+	if _q.ctx.Unique != nil && *_q.ctx.Unique {
 		selector.Distinct()
 	}
-	for _, m := range osq.modifiers {
+	for _, m := range _q.modifiers {
 		m(selector)
 	}
-	for _, p := range osq.predicates {
+	for _, p := range _q.predicates {
 		p(selector)
 	}
-	for _, p := range osq.order {
+	for _, p := range _q.order {
 		p(selector)
 	}
-	if offset := osq.ctx.Offset; offset != nil {
+	if offset := _q.ctx.Offset; offset != nil {
 		// limit is mandatory for offset clause. We start
 		// with default value, and override it below if needed.
 		selector.Offset(*offset).Limit(math.MaxInt32)
 	}
-	if limit := osq.ctx.Limit; limit != nil {
+	if limit := _q.ctx.Limit; limit != nil {
 		selector.Limit(*limit)
 	}
 	return selector
 }
 
 // Modify adds a query modifier for attaching custom logic to queries.
-func (osq *OncallShiftQuery) Modify(modifiers ...func(s *sql.Selector)) *OncallShiftSelect {
-	osq.modifiers = append(osq.modifiers, modifiers...)
-	return osq.Select()
+func (_q *OncallShiftQuery) Modify(modifiers ...func(s *sql.Selector)) *OncallShiftSelect {
+	_q.modifiers = append(_q.modifiers, modifiers...)
+	return _q.Select()
 }
 
 // OncallShiftGroupBy is the group-by builder for OncallShift entities.
@@ -912,41 +912,41 @@ type OncallShiftGroupBy struct {
 }
 
 // Aggregate adds the given aggregation functions to the group-by query.
-func (osgb *OncallShiftGroupBy) Aggregate(fns ...AggregateFunc) *OncallShiftGroupBy {
-	osgb.fns = append(osgb.fns, fns...)
-	return osgb
+func (_g *OncallShiftGroupBy) Aggregate(fns ...AggregateFunc) *OncallShiftGroupBy {
+	_g.fns = append(_g.fns, fns...)
+	return _g
 }
 
 // Scan applies the selector query and scans the result into the given value.
-func (osgb *OncallShiftGroupBy) Scan(ctx context.Context, v any) error {
-	ctx = setContextOp(ctx, osgb.build.ctx, ent.OpQueryGroupBy)
-	if err := osgb.build.prepareQuery(ctx); err != nil {
+func (_g *OncallShiftGroupBy) Scan(ctx context.Context, v any) error {
+	ctx = setContextOp(ctx, _g.build.ctx, ent.OpQueryGroupBy)
+	if err := _g.build.prepareQuery(ctx); err != nil {
 		return err
 	}
-	return scanWithInterceptors[*OncallShiftQuery, *OncallShiftGroupBy](ctx, osgb.build, osgb, osgb.build.inters, v)
+	return scanWithInterceptors[*OncallShiftQuery, *OncallShiftGroupBy](ctx, _g.build, _g, _g.build.inters, v)
 }
 
-func (osgb *OncallShiftGroupBy) sqlScan(ctx context.Context, root *OncallShiftQuery, v any) error {
+func (_g *OncallShiftGroupBy) sqlScan(ctx context.Context, root *OncallShiftQuery, v any) error {
 	selector := root.sqlQuery(ctx).Select()
-	aggregation := make([]string, 0, len(osgb.fns))
-	for _, fn := range osgb.fns {
+	aggregation := make([]string, 0, len(_g.fns))
+	for _, fn := range _g.fns {
 		aggregation = append(aggregation, fn(selector))
 	}
 	if len(selector.SelectedColumns()) == 0 {
-		columns := make([]string, 0, len(*osgb.flds)+len(osgb.fns))
-		for _, f := range *osgb.flds {
+		columns := make([]string, 0, len(*_g.flds)+len(_g.fns))
+		for _, f := range *_g.flds {
 			columns = append(columns, selector.C(f))
 		}
 		columns = append(columns, aggregation...)
 		selector.Select(columns...)
 	}
-	selector.GroupBy(selector.Columns(*osgb.flds...)...)
+	selector.GroupBy(selector.Columns(*_g.flds...)...)
 	if err := selector.Err(); err != nil {
 		return err
 	}
 	rows := &sql.Rows{}
 	query, args := selector.Query()
-	if err := osgb.build.driver.Query(ctx, query, args, rows); err != nil {
+	if err := _g.build.driver.Query(ctx, query, args, rows); err != nil {
 		return err
 	}
 	defer rows.Close()
@@ -960,27 +960,27 @@ type OncallShiftSelect struct {
 }
 
 // Aggregate adds the given aggregation functions to the selector query.
-func (oss *OncallShiftSelect) Aggregate(fns ...AggregateFunc) *OncallShiftSelect {
-	oss.fns = append(oss.fns, fns...)
-	return oss
+func (_s *OncallShiftSelect) Aggregate(fns ...AggregateFunc) *OncallShiftSelect {
+	_s.fns = append(_s.fns, fns...)
+	return _s
 }
 
 // Scan applies the selector query and scans the result into the given value.
-func (oss *OncallShiftSelect) Scan(ctx context.Context, v any) error {
-	ctx = setContextOp(ctx, oss.ctx, ent.OpQuerySelect)
-	if err := oss.prepareQuery(ctx); err != nil {
+func (_s *OncallShiftSelect) Scan(ctx context.Context, v any) error {
+	ctx = setContextOp(ctx, _s.ctx, ent.OpQuerySelect)
+	if err := _s.prepareQuery(ctx); err != nil {
 		return err
 	}
-	return scanWithInterceptors[*OncallShiftQuery, *OncallShiftSelect](ctx, oss.OncallShiftQuery, oss, oss.inters, v)
+	return scanWithInterceptors[*OncallShiftQuery, *OncallShiftSelect](ctx, _s.OncallShiftQuery, _s, _s.inters, v)
 }
 
-func (oss *OncallShiftSelect) sqlScan(ctx context.Context, root *OncallShiftQuery, v any) error {
+func (_s *OncallShiftSelect) sqlScan(ctx context.Context, root *OncallShiftQuery, v any) error {
 	selector := root.sqlQuery(ctx)
-	aggregation := make([]string, 0, len(oss.fns))
-	for _, fn := range oss.fns {
+	aggregation := make([]string, 0, len(_s.fns))
+	for _, fn := range _s.fns {
 		aggregation = append(aggregation, fn(selector))
 	}
-	switch n := len(*oss.selector.flds); {
+	switch n := len(*_s.selector.flds); {
 	case n == 0 && len(aggregation) > 0:
 		selector.Select(aggregation...)
 	case n != 0 && len(aggregation) > 0:
@@ -988,7 +988,7 @@ func (oss *OncallShiftSelect) sqlScan(ctx context.Context, root *OncallShiftQuer
 	}
 	rows := &sql.Rows{}
 	query, args := selector.Query()
-	if err := oss.driver.Query(ctx, query, args, rows); err != nil {
+	if err := _s.driver.Query(ctx, query, args, rows); err != nil {
 		return err
 	}
 	defer rows.Close()
@@ -996,7 +996,7 @@ func (oss *OncallShiftSelect) sqlScan(ctx context.Context, root *OncallShiftQuer
 }
 
 // Modify adds a query modifier for attaching custom logic to queries.
-func (oss *OncallShiftSelect) Modify(modifiers ...func(s *sql.Selector)) *OncallShiftSelect {
-	oss.modifiers = append(oss.modifiers, modifiers...)
-	return oss
+func (_s *OncallShiftSelect) Modify(modifiers ...func(s *sql.Selector)) *OncallShiftSelect {
+	_s.modifiers = append(_s.modifiers, modifiers...)
+	return _s
 }

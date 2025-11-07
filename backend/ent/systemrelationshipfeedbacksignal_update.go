@@ -27,122 +27,122 @@ type SystemRelationshipFeedbackSignalUpdate struct {
 }
 
 // Where appends a list predicates to the SystemRelationshipFeedbackSignalUpdate builder.
-func (srfsu *SystemRelationshipFeedbackSignalUpdate) Where(ps ...predicate.SystemRelationshipFeedbackSignal) *SystemRelationshipFeedbackSignalUpdate {
-	srfsu.mutation.Where(ps...)
-	return srfsu
+func (_u *SystemRelationshipFeedbackSignalUpdate) Where(ps ...predicate.SystemRelationshipFeedbackSignal) *SystemRelationshipFeedbackSignalUpdate {
+	_u.mutation.Where(ps...)
+	return _u
 }
 
 // SetRelationshipID sets the "relationship_id" field.
-func (srfsu *SystemRelationshipFeedbackSignalUpdate) SetRelationshipID(u uuid.UUID) *SystemRelationshipFeedbackSignalUpdate {
-	srfsu.mutation.SetRelationshipID(u)
-	return srfsu
+func (_u *SystemRelationshipFeedbackSignalUpdate) SetRelationshipID(v uuid.UUID) *SystemRelationshipFeedbackSignalUpdate {
+	_u.mutation.SetRelationshipID(v)
+	return _u
 }
 
 // SetNillableRelationshipID sets the "relationship_id" field if the given value is not nil.
-func (srfsu *SystemRelationshipFeedbackSignalUpdate) SetNillableRelationshipID(u *uuid.UUID) *SystemRelationshipFeedbackSignalUpdate {
-	if u != nil {
-		srfsu.SetRelationshipID(*u)
+func (_u *SystemRelationshipFeedbackSignalUpdate) SetNillableRelationshipID(v *uuid.UUID) *SystemRelationshipFeedbackSignalUpdate {
+	if v != nil {
+		_u.SetRelationshipID(*v)
 	}
-	return srfsu
+	return _u
 }
 
 // SetSignalID sets the "signal_id" field.
-func (srfsu *SystemRelationshipFeedbackSignalUpdate) SetSignalID(u uuid.UUID) *SystemRelationshipFeedbackSignalUpdate {
-	srfsu.mutation.SetSignalID(u)
-	return srfsu
+func (_u *SystemRelationshipFeedbackSignalUpdate) SetSignalID(v uuid.UUID) *SystemRelationshipFeedbackSignalUpdate {
+	_u.mutation.SetSignalID(v)
+	return _u
 }
 
 // SetNillableSignalID sets the "signal_id" field if the given value is not nil.
-func (srfsu *SystemRelationshipFeedbackSignalUpdate) SetNillableSignalID(u *uuid.UUID) *SystemRelationshipFeedbackSignalUpdate {
-	if u != nil {
-		srfsu.SetSignalID(*u)
+func (_u *SystemRelationshipFeedbackSignalUpdate) SetNillableSignalID(v *uuid.UUID) *SystemRelationshipFeedbackSignalUpdate {
+	if v != nil {
+		_u.SetSignalID(*v)
 	}
-	return srfsu
+	return _u
 }
 
 // SetType sets the "type" field.
-func (srfsu *SystemRelationshipFeedbackSignalUpdate) SetType(s string) *SystemRelationshipFeedbackSignalUpdate {
-	srfsu.mutation.SetType(s)
-	return srfsu
+func (_u *SystemRelationshipFeedbackSignalUpdate) SetType(v string) *SystemRelationshipFeedbackSignalUpdate {
+	_u.mutation.SetType(v)
+	return _u
 }
 
 // SetNillableType sets the "type" field if the given value is not nil.
-func (srfsu *SystemRelationshipFeedbackSignalUpdate) SetNillableType(s *string) *SystemRelationshipFeedbackSignalUpdate {
-	if s != nil {
-		srfsu.SetType(*s)
+func (_u *SystemRelationshipFeedbackSignalUpdate) SetNillableType(v *string) *SystemRelationshipFeedbackSignalUpdate {
+	if v != nil {
+		_u.SetType(*v)
 	}
-	return srfsu
+	return _u
 }
 
 // SetDescription sets the "description" field.
-func (srfsu *SystemRelationshipFeedbackSignalUpdate) SetDescription(s string) *SystemRelationshipFeedbackSignalUpdate {
-	srfsu.mutation.SetDescription(s)
-	return srfsu
+func (_u *SystemRelationshipFeedbackSignalUpdate) SetDescription(v string) *SystemRelationshipFeedbackSignalUpdate {
+	_u.mutation.SetDescription(v)
+	return _u
 }
 
 // SetNillableDescription sets the "description" field if the given value is not nil.
-func (srfsu *SystemRelationshipFeedbackSignalUpdate) SetNillableDescription(s *string) *SystemRelationshipFeedbackSignalUpdate {
-	if s != nil {
-		srfsu.SetDescription(*s)
+func (_u *SystemRelationshipFeedbackSignalUpdate) SetNillableDescription(v *string) *SystemRelationshipFeedbackSignalUpdate {
+	if v != nil {
+		_u.SetDescription(*v)
 	}
-	return srfsu
+	return _u
 }
 
 // ClearDescription clears the value of the "description" field.
-func (srfsu *SystemRelationshipFeedbackSignalUpdate) ClearDescription() *SystemRelationshipFeedbackSignalUpdate {
-	srfsu.mutation.ClearDescription()
-	return srfsu
+func (_u *SystemRelationshipFeedbackSignalUpdate) ClearDescription() *SystemRelationshipFeedbackSignalUpdate {
+	_u.mutation.ClearDescription()
+	return _u
 }
 
 // SetCreatedAt sets the "created_at" field.
-func (srfsu *SystemRelationshipFeedbackSignalUpdate) SetCreatedAt(t time.Time) *SystemRelationshipFeedbackSignalUpdate {
-	srfsu.mutation.SetCreatedAt(t)
-	return srfsu
+func (_u *SystemRelationshipFeedbackSignalUpdate) SetCreatedAt(v time.Time) *SystemRelationshipFeedbackSignalUpdate {
+	_u.mutation.SetCreatedAt(v)
+	return _u
 }
 
 // SetNillableCreatedAt sets the "created_at" field if the given value is not nil.
-func (srfsu *SystemRelationshipFeedbackSignalUpdate) SetNillableCreatedAt(t *time.Time) *SystemRelationshipFeedbackSignalUpdate {
-	if t != nil {
-		srfsu.SetCreatedAt(*t)
+func (_u *SystemRelationshipFeedbackSignalUpdate) SetNillableCreatedAt(v *time.Time) *SystemRelationshipFeedbackSignalUpdate {
+	if v != nil {
+		_u.SetCreatedAt(*v)
 	}
-	return srfsu
+	return _u
 }
 
 // SetRelationship sets the "relationship" edge to the SystemAnalysisRelationship entity.
-func (srfsu *SystemRelationshipFeedbackSignalUpdate) SetRelationship(s *SystemAnalysisRelationship) *SystemRelationshipFeedbackSignalUpdate {
-	return srfsu.SetRelationshipID(s.ID)
+func (_u *SystemRelationshipFeedbackSignalUpdate) SetRelationship(v *SystemAnalysisRelationship) *SystemRelationshipFeedbackSignalUpdate {
+	return _u.SetRelationshipID(v.ID)
 }
 
 // SetSignal sets the "signal" edge to the SystemComponentSignal entity.
-func (srfsu *SystemRelationshipFeedbackSignalUpdate) SetSignal(s *SystemComponentSignal) *SystemRelationshipFeedbackSignalUpdate {
-	return srfsu.SetSignalID(s.ID)
+func (_u *SystemRelationshipFeedbackSignalUpdate) SetSignal(v *SystemComponentSignal) *SystemRelationshipFeedbackSignalUpdate {
+	return _u.SetSignalID(v.ID)
 }
 
 // Mutation returns the SystemRelationshipFeedbackSignalMutation object of the builder.
-func (srfsu *SystemRelationshipFeedbackSignalUpdate) Mutation() *SystemRelationshipFeedbackSignalMutation {
-	return srfsu.mutation
+func (_u *SystemRelationshipFeedbackSignalUpdate) Mutation() *SystemRelationshipFeedbackSignalMutation {
+	return _u.mutation
 }
 
 // ClearRelationship clears the "relationship" edge to the SystemAnalysisRelationship entity.
-func (srfsu *SystemRelationshipFeedbackSignalUpdate) ClearRelationship() *SystemRelationshipFeedbackSignalUpdate {
-	srfsu.mutation.ClearRelationship()
-	return srfsu
+func (_u *SystemRelationshipFeedbackSignalUpdate) ClearRelationship() *SystemRelationshipFeedbackSignalUpdate {
+	_u.mutation.ClearRelationship()
+	return _u
 }
 
 // ClearSignal clears the "signal" edge to the SystemComponentSignal entity.
-func (srfsu *SystemRelationshipFeedbackSignalUpdate) ClearSignal() *SystemRelationshipFeedbackSignalUpdate {
-	srfsu.mutation.ClearSignal()
-	return srfsu
+func (_u *SystemRelationshipFeedbackSignalUpdate) ClearSignal() *SystemRelationshipFeedbackSignalUpdate {
+	_u.mutation.ClearSignal()
+	return _u
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
-func (srfsu *SystemRelationshipFeedbackSignalUpdate) Save(ctx context.Context) (int, error) {
-	return withHooks(ctx, srfsu.sqlSave, srfsu.mutation, srfsu.hooks)
+func (_u *SystemRelationshipFeedbackSignalUpdate) Save(ctx context.Context) (int, error) {
+	return withHooks(ctx, _u.sqlSave, _u.mutation, _u.hooks)
 }
 
 // SaveX is like Save, but panics if an error occurs.
-func (srfsu *SystemRelationshipFeedbackSignalUpdate) SaveX(ctx context.Context) int {
-	affected, err := srfsu.Save(ctx)
+func (_u *SystemRelationshipFeedbackSignalUpdate) SaveX(ctx context.Context) int {
+	affected, err := _u.Save(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -150,68 +150,68 @@ func (srfsu *SystemRelationshipFeedbackSignalUpdate) SaveX(ctx context.Context) 
 }
 
 // Exec executes the query.
-func (srfsu *SystemRelationshipFeedbackSignalUpdate) Exec(ctx context.Context) error {
-	_, err := srfsu.Save(ctx)
+func (_u *SystemRelationshipFeedbackSignalUpdate) Exec(ctx context.Context) error {
+	_, err := _u.Save(ctx)
 	return err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (srfsu *SystemRelationshipFeedbackSignalUpdate) ExecX(ctx context.Context) {
-	if err := srfsu.Exec(ctx); err != nil {
+func (_u *SystemRelationshipFeedbackSignalUpdate) ExecX(ctx context.Context) {
+	if err := _u.Exec(ctx); err != nil {
 		panic(err)
 	}
 }
 
 // check runs all checks and user-defined validators on the builder.
-func (srfsu *SystemRelationshipFeedbackSignalUpdate) check() error {
-	if v, ok := srfsu.mutation.GetType(); ok {
+func (_u *SystemRelationshipFeedbackSignalUpdate) check() error {
+	if v, ok := _u.mutation.GetType(); ok {
 		if err := systemrelationshipfeedbacksignal.TypeValidator(v); err != nil {
 			return &ValidationError{Name: "type", err: fmt.Errorf(`ent: validator failed for field "SystemRelationshipFeedbackSignal.type": %w`, err)}
 		}
 	}
-	if srfsu.mutation.TenantCleared() && len(srfsu.mutation.TenantIDs()) > 0 {
+	if _u.mutation.TenantCleared() && len(_u.mutation.TenantIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "SystemRelationshipFeedbackSignal.tenant"`)
 	}
-	if srfsu.mutation.RelationshipCleared() && len(srfsu.mutation.RelationshipIDs()) > 0 {
+	if _u.mutation.RelationshipCleared() && len(_u.mutation.RelationshipIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "SystemRelationshipFeedbackSignal.relationship"`)
 	}
-	if srfsu.mutation.SignalCleared() && len(srfsu.mutation.SignalIDs()) > 0 {
+	if _u.mutation.SignalCleared() && len(_u.mutation.SignalIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "SystemRelationshipFeedbackSignal.signal"`)
 	}
 	return nil
 }
 
 // Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
-func (srfsu *SystemRelationshipFeedbackSignalUpdate) Modify(modifiers ...func(u *sql.UpdateBuilder)) *SystemRelationshipFeedbackSignalUpdate {
-	srfsu.modifiers = append(srfsu.modifiers, modifiers...)
-	return srfsu
+func (_u *SystemRelationshipFeedbackSignalUpdate) Modify(modifiers ...func(u *sql.UpdateBuilder)) *SystemRelationshipFeedbackSignalUpdate {
+	_u.modifiers = append(_u.modifiers, modifiers...)
+	return _u
 }
 
-func (srfsu *SystemRelationshipFeedbackSignalUpdate) sqlSave(ctx context.Context) (n int, err error) {
-	if err := srfsu.check(); err != nil {
-		return n, err
+func (_u *SystemRelationshipFeedbackSignalUpdate) sqlSave(ctx context.Context) (_node int, err error) {
+	if err := _u.check(); err != nil {
+		return _node, err
 	}
 	_spec := sqlgraph.NewUpdateSpec(systemrelationshipfeedbacksignal.Table, systemrelationshipfeedbacksignal.Columns, sqlgraph.NewFieldSpec(systemrelationshipfeedbacksignal.FieldID, field.TypeUUID))
-	if ps := srfsu.mutation.predicates; len(ps) > 0 {
+	if ps := _u.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {
 				ps[i](selector)
 			}
 		}
 	}
-	if value, ok := srfsu.mutation.GetType(); ok {
+	if value, ok := _u.mutation.GetType(); ok {
 		_spec.SetField(systemrelationshipfeedbacksignal.FieldType, field.TypeString, value)
 	}
-	if value, ok := srfsu.mutation.Description(); ok {
+	if value, ok := _u.mutation.Description(); ok {
 		_spec.SetField(systemrelationshipfeedbacksignal.FieldDescription, field.TypeString, value)
 	}
-	if srfsu.mutation.DescriptionCleared() {
+	if _u.mutation.DescriptionCleared() {
 		_spec.ClearField(systemrelationshipfeedbacksignal.FieldDescription, field.TypeString)
 	}
-	if value, ok := srfsu.mutation.CreatedAt(); ok {
+	if value, ok := _u.mutation.CreatedAt(); ok {
 		_spec.SetField(systemrelationshipfeedbacksignal.FieldCreatedAt, field.TypeTime, value)
 	}
-	if srfsu.mutation.RelationshipCleared() {
+	if _u.mutation.RelationshipCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
@@ -224,7 +224,7 @@ func (srfsu *SystemRelationshipFeedbackSignalUpdate) sqlSave(ctx context.Context
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := srfsu.mutation.RelationshipIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.RelationshipIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
@@ -240,7 +240,7 @@ func (srfsu *SystemRelationshipFeedbackSignalUpdate) sqlSave(ctx context.Context
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if srfsu.mutation.SignalCleared() {
+	if _u.mutation.SignalCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
@@ -253,7 +253,7 @@ func (srfsu *SystemRelationshipFeedbackSignalUpdate) sqlSave(ctx context.Context
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := srfsu.mutation.SignalIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.SignalIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
@@ -269,8 +269,8 @@ func (srfsu *SystemRelationshipFeedbackSignalUpdate) sqlSave(ctx context.Context
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	_spec.AddModifiers(srfsu.modifiers...)
-	if n, err = sqlgraph.UpdateNodes(ctx, srfsu.driver, _spec); err != nil {
+	_spec.AddModifiers(_u.modifiers...)
+	if _node, err = sqlgraph.UpdateNodes(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{systemrelationshipfeedbacksignal.Label}
 		} else if sqlgraph.IsConstraintError(err) {
@@ -278,8 +278,8 @@ func (srfsu *SystemRelationshipFeedbackSignalUpdate) sqlSave(ctx context.Context
 		}
 		return 0, err
 	}
-	srfsu.mutation.done = true
-	return n, nil
+	_u.mutation.done = true
+	return _node, nil
 }
 
 // SystemRelationshipFeedbackSignalUpdateOne is the builder for updating a single SystemRelationshipFeedbackSignal entity.
@@ -292,129 +292,129 @@ type SystemRelationshipFeedbackSignalUpdateOne struct {
 }
 
 // SetRelationshipID sets the "relationship_id" field.
-func (srfsuo *SystemRelationshipFeedbackSignalUpdateOne) SetRelationshipID(u uuid.UUID) *SystemRelationshipFeedbackSignalUpdateOne {
-	srfsuo.mutation.SetRelationshipID(u)
-	return srfsuo
+func (_u *SystemRelationshipFeedbackSignalUpdateOne) SetRelationshipID(v uuid.UUID) *SystemRelationshipFeedbackSignalUpdateOne {
+	_u.mutation.SetRelationshipID(v)
+	return _u
 }
 
 // SetNillableRelationshipID sets the "relationship_id" field if the given value is not nil.
-func (srfsuo *SystemRelationshipFeedbackSignalUpdateOne) SetNillableRelationshipID(u *uuid.UUID) *SystemRelationshipFeedbackSignalUpdateOne {
-	if u != nil {
-		srfsuo.SetRelationshipID(*u)
+func (_u *SystemRelationshipFeedbackSignalUpdateOne) SetNillableRelationshipID(v *uuid.UUID) *SystemRelationshipFeedbackSignalUpdateOne {
+	if v != nil {
+		_u.SetRelationshipID(*v)
 	}
-	return srfsuo
+	return _u
 }
 
 // SetSignalID sets the "signal_id" field.
-func (srfsuo *SystemRelationshipFeedbackSignalUpdateOne) SetSignalID(u uuid.UUID) *SystemRelationshipFeedbackSignalUpdateOne {
-	srfsuo.mutation.SetSignalID(u)
-	return srfsuo
+func (_u *SystemRelationshipFeedbackSignalUpdateOne) SetSignalID(v uuid.UUID) *SystemRelationshipFeedbackSignalUpdateOne {
+	_u.mutation.SetSignalID(v)
+	return _u
 }
 
 // SetNillableSignalID sets the "signal_id" field if the given value is not nil.
-func (srfsuo *SystemRelationshipFeedbackSignalUpdateOne) SetNillableSignalID(u *uuid.UUID) *SystemRelationshipFeedbackSignalUpdateOne {
-	if u != nil {
-		srfsuo.SetSignalID(*u)
+func (_u *SystemRelationshipFeedbackSignalUpdateOne) SetNillableSignalID(v *uuid.UUID) *SystemRelationshipFeedbackSignalUpdateOne {
+	if v != nil {
+		_u.SetSignalID(*v)
 	}
-	return srfsuo
+	return _u
 }
 
 // SetType sets the "type" field.
-func (srfsuo *SystemRelationshipFeedbackSignalUpdateOne) SetType(s string) *SystemRelationshipFeedbackSignalUpdateOne {
-	srfsuo.mutation.SetType(s)
-	return srfsuo
+func (_u *SystemRelationshipFeedbackSignalUpdateOne) SetType(v string) *SystemRelationshipFeedbackSignalUpdateOne {
+	_u.mutation.SetType(v)
+	return _u
 }
 
 // SetNillableType sets the "type" field if the given value is not nil.
-func (srfsuo *SystemRelationshipFeedbackSignalUpdateOne) SetNillableType(s *string) *SystemRelationshipFeedbackSignalUpdateOne {
-	if s != nil {
-		srfsuo.SetType(*s)
+func (_u *SystemRelationshipFeedbackSignalUpdateOne) SetNillableType(v *string) *SystemRelationshipFeedbackSignalUpdateOne {
+	if v != nil {
+		_u.SetType(*v)
 	}
-	return srfsuo
+	return _u
 }
 
 // SetDescription sets the "description" field.
-func (srfsuo *SystemRelationshipFeedbackSignalUpdateOne) SetDescription(s string) *SystemRelationshipFeedbackSignalUpdateOne {
-	srfsuo.mutation.SetDescription(s)
-	return srfsuo
+func (_u *SystemRelationshipFeedbackSignalUpdateOne) SetDescription(v string) *SystemRelationshipFeedbackSignalUpdateOne {
+	_u.mutation.SetDescription(v)
+	return _u
 }
 
 // SetNillableDescription sets the "description" field if the given value is not nil.
-func (srfsuo *SystemRelationshipFeedbackSignalUpdateOne) SetNillableDescription(s *string) *SystemRelationshipFeedbackSignalUpdateOne {
-	if s != nil {
-		srfsuo.SetDescription(*s)
+func (_u *SystemRelationshipFeedbackSignalUpdateOne) SetNillableDescription(v *string) *SystemRelationshipFeedbackSignalUpdateOne {
+	if v != nil {
+		_u.SetDescription(*v)
 	}
-	return srfsuo
+	return _u
 }
 
 // ClearDescription clears the value of the "description" field.
-func (srfsuo *SystemRelationshipFeedbackSignalUpdateOne) ClearDescription() *SystemRelationshipFeedbackSignalUpdateOne {
-	srfsuo.mutation.ClearDescription()
-	return srfsuo
+func (_u *SystemRelationshipFeedbackSignalUpdateOne) ClearDescription() *SystemRelationshipFeedbackSignalUpdateOne {
+	_u.mutation.ClearDescription()
+	return _u
 }
 
 // SetCreatedAt sets the "created_at" field.
-func (srfsuo *SystemRelationshipFeedbackSignalUpdateOne) SetCreatedAt(t time.Time) *SystemRelationshipFeedbackSignalUpdateOne {
-	srfsuo.mutation.SetCreatedAt(t)
-	return srfsuo
+func (_u *SystemRelationshipFeedbackSignalUpdateOne) SetCreatedAt(v time.Time) *SystemRelationshipFeedbackSignalUpdateOne {
+	_u.mutation.SetCreatedAt(v)
+	return _u
 }
 
 // SetNillableCreatedAt sets the "created_at" field if the given value is not nil.
-func (srfsuo *SystemRelationshipFeedbackSignalUpdateOne) SetNillableCreatedAt(t *time.Time) *SystemRelationshipFeedbackSignalUpdateOne {
-	if t != nil {
-		srfsuo.SetCreatedAt(*t)
+func (_u *SystemRelationshipFeedbackSignalUpdateOne) SetNillableCreatedAt(v *time.Time) *SystemRelationshipFeedbackSignalUpdateOne {
+	if v != nil {
+		_u.SetCreatedAt(*v)
 	}
-	return srfsuo
+	return _u
 }
 
 // SetRelationship sets the "relationship" edge to the SystemAnalysisRelationship entity.
-func (srfsuo *SystemRelationshipFeedbackSignalUpdateOne) SetRelationship(s *SystemAnalysisRelationship) *SystemRelationshipFeedbackSignalUpdateOne {
-	return srfsuo.SetRelationshipID(s.ID)
+func (_u *SystemRelationshipFeedbackSignalUpdateOne) SetRelationship(v *SystemAnalysisRelationship) *SystemRelationshipFeedbackSignalUpdateOne {
+	return _u.SetRelationshipID(v.ID)
 }
 
 // SetSignal sets the "signal" edge to the SystemComponentSignal entity.
-func (srfsuo *SystemRelationshipFeedbackSignalUpdateOne) SetSignal(s *SystemComponentSignal) *SystemRelationshipFeedbackSignalUpdateOne {
-	return srfsuo.SetSignalID(s.ID)
+func (_u *SystemRelationshipFeedbackSignalUpdateOne) SetSignal(v *SystemComponentSignal) *SystemRelationshipFeedbackSignalUpdateOne {
+	return _u.SetSignalID(v.ID)
 }
 
 // Mutation returns the SystemRelationshipFeedbackSignalMutation object of the builder.
-func (srfsuo *SystemRelationshipFeedbackSignalUpdateOne) Mutation() *SystemRelationshipFeedbackSignalMutation {
-	return srfsuo.mutation
+func (_u *SystemRelationshipFeedbackSignalUpdateOne) Mutation() *SystemRelationshipFeedbackSignalMutation {
+	return _u.mutation
 }
 
 // ClearRelationship clears the "relationship" edge to the SystemAnalysisRelationship entity.
-func (srfsuo *SystemRelationshipFeedbackSignalUpdateOne) ClearRelationship() *SystemRelationshipFeedbackSignalUpdateOne {
-	srfsuo.mutation.ClearRelationship()
-	return srfsuo
+func (_u *SystemRelationshipFeedbackSignalUpdateOne) ClearRelationship() *SystemRelationshipFeedbackSignalUpdateOne {
+	_u.mutation.ClearRelationship()
+	return _u
 }
 
 // ClearSignal clears the "signal" edge to the SystemComponentSignal entity.
-func (srfsuo *SystemRelationshipFeedbackSignalUpdateOne) ClearSignal() *SystemRelationshipFeedbackSignalUpdateOne {
-	srfsuo.mutation.ClearSignal()
-	return srfsuo
+func (_u *SystemRelationshipFeedbackSignalUpdateOne) ClearSignal() *SystemRelationshipFeedbackSignalUpdateOne {
+	_u.mutation.ClearSignal()
+	return _u
 }
 
 // Where appends a list predicates to the SystemRelationshipFeedbackSignalUpdate builder.
-func (srfsuo *SystemRelationshipFeedbackSignalUpdateOne) Where(ps ...predicate.SystemRelationshipFeedbackSignal) *SystemRelationshipFeedbackSignalUpdateOne {
-	srfsuo.mutation.Where(ps...)
-	return srfsuo
+func (_u *SystemRelationshipFeedbackSignalUpdateOne) Where(ps ...predicate.SystemRelationshipFeedbackSignal) *SystemRelationshipFeedbackSignalUpdateOne {
+	_u.mutation.Where(ps...)
+	return _u
 }
 
 // Select allows selecting one or more fields (columns) of the returned entity.
 // The default is selecting all fields defined in the entity schema.
-func (srfsuo *SystemRelationshipFeedbackSignalUpdateOne) Select(field string, fields ...string) *SystemRelationshipFeedbackSignalUpdateOne {
-	srfsuo.fields = append([]string{field}, fields...)
-	return srfsuo
+func (_u *SystemRelationshipFeedbackSignalUpdateOne) Select(field string, fields ...string) *SystemRelationshipFeedbackSignalUpdateOne {
+	_u.fields = append([]string{field}, fields...)
+	return _u
 }
 
 // Save executes the query and returns the updated SystemRelationshipFeedbackSignal entity.
-func (srfsuo *SystemRelationshipFeedbackSignalUpdateOne) Save(ctx context.Context) (*SystemRelationshipFeedbackSignal, error) {
-	return withHooks(ctx, srfsuo.sqlSave, srfsuo.mutation, srfsuo.hooks)
+func (_u *SystemRelationshipFeedbackSignalUpdateOne) Save(ctx context.Context) (*SystemRelationshipFeedbackSignal, error) {
+	return withHooks(ctx, _u.sqlSave, _u.mutation, _u.hooks)
 }
 
 // SaveX is like Save, but panics if an error occurs.
-func (srfsuo *SystemRelationshipFeedbackSignalUpdateOne) SaveX(ctx context.Context) *SystemRelationshipFeedbackSignal {
-	node, err := srfsuo.Save(ctx)
+func (_u *SystemRelationshipFeedbackSignalUpdateOne) SaveX(ctx context.Context) *SystemRelationshipFeedbackSignal {
+	node, err := _u.Save(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -422,54 +422,54 @@ func (srfsuo *SystemRelationshipFeedbackSignalUpdateOne) SaveX(ctx context.Conte
 }
 
 // Exec executes the query on the entity.
-func (srfsuo *SystemRelationshipFeedbackSignalUpdateOne) Exec(ctx context.Context) error {
-	_, err := srfsuo.Save(ctx)
+func (_u *SystemRelationshipFeedbackSignalUpdateOne) Exec(ctx context.Context) error {
+	_, err := _u.Save(ctx)
 	return err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (srfsuo *SystemRelationshipFeedbackSignalUpdateOne) ExecX(ctx context.Context) {
-	if err := srfsuo.Exec(ctx); err != nil {
+func (_u *SystemRelationshipFeedbackSignalUpdateOne) ExecX(ctx context.Context) {
+	if err := _u.Exec(ctx); err != nil {
 		panic(err)
 	}
 }
 
 // check runs all checks and user-defined validators on the builder.
-func (srfsuo *SystemRelationshipFeedbackSignalUpdateOne) check() error {
-	if v, ok := srfsuo.mutation.GetType(); ok {
+func (_u *SystemRelationshipFeedbackSignalUpdateOne) check() error {
+	if v, ok := _u.mutation.GetType(); ok {
 		if err := systemrelationshipfeedbacksignal.TypeValidator(v); err != nil {
 			return &ValidationError{Name: "type", err: fmt.Errorf(`ent: validator failed for field "SystemRelationshipFeedbackSignal.type": %w`, err)}
 		}
 	}
-	if srfsuo.mutation.TenantCleared() && len(srfsuo.mutation.TenantIDs()) > 0 {
+	if _u.mutation.TenantCleared() && len(_u.mutation.TenantIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "SystemRelationshipFeedbackSignal.tenant"`)
 	}
-	if srfsuo.mutation.RelationshipCleared() && len(srfsuo.mutation.RelationshipIDs()) > 0 {
+	if _u.mutation.RelationshipCleared() && len(_u.mutation.RelationshipIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "SystemRelationshipFeedbackSignal.relationship"`)
 	}
-	if srfsuo.mutation.SignalCleared() && len(srfsuo.mutation.SignalIDs()) > 0 {
+	if _u.mutation.SignalCleared() && len(_u.mutation.SignalIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "SystemRelationshipFeedbackSignal.signal"`)
 	}
 	return nil
 }
 
 // Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
-func (srfsuo *SystemRelationshipFeedbackSignalUpdateOne) Modify(modifiers ...func(u *sql.UpdateBuilder)) *SystemRelationshipFeedbackSignalUpdateOne {
-	srfsuo.modifiers = append(srfsuo.modifiers, modifiers...)
-	return srfsuo
+func (_u *SystemRelationshipFeedbackSignalUpdateOne) Modify(modifiers ...func(u *sql.UpdateBuilder)) *SystemRelationshipFeedbackSignalUpdateOne {
+	_u.modifiers = append(_u.modifiers, modifiers...)
+	return _u
 }
 
-func (srfsuo *SystemRelationshipFeedbackSignalUpdateOne) sqlSave(ctx context.Context) (_node *SystemRelationshipFeedbackSignal, err error) {
-	if err := srfsuo.check(); err != nil {
+func (_u *SystemRelationshipFeedbackSignalUpdateOne) sqlSave(ctx context.Context) (_node *SystemRelationshipFeedbackSignal, err error) {
+	if err := _u.check(); err != nil {
 		return _node, err
 	}
 	_spec := sqlgraph.NewUpdateSpec(systemrelationshipfeedbacksignal.Table, systemrelationshipfeedbacksignal.Columns, sqlgraph.NewFieldSpec(systemrelationshipfeedbacksignal.FieldID, field.TypeUUID))
-	id, ok := srfsuo.mutation.ID()
+	id, ok := _u.mutation.ID()
 	if !ok {
 		return nil, &ValidationError{Name: "id", err: errors.New(`ent: missing "SystemRelationshipFeedbackSignal.id" for update`)}
 	}
 	_spec.Node.ID.Value = id
-	if fields := srfsuo.fields; len(fields) > 0 {
+	if fields := _u.fields; len(fields) > 0 {
 		_spec.Node.Columns = make([]string, 0, len(fields))
 		_spec.Node.Columns = append(_spec.Node.Columns, systemrelationshipfeedbacksignal.FieldID)
 		for _, f := range fields {
@@ -481,26 +481,26 @@ func (srfsuo *SystemRelationshipFeedbackSignalUpdateOne) sqlSave(ctx context.Con
 			}
 		}
 	}
-	if ps := srfsuo.mutation.predicates; len(ps) > 0 {
+	if ps := _u.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {
 				ps[i](selector)
 			}
 		}
 	}
-	if value, ok := srfsuo.mutation.GetType(); ok {
+	if value, ok := _u.mutation.GetType(); ok {
 		_spec.SetField(systemrelationshipfeedbacksignal.FieldType, field.TypeString, value)
 	}
-	if value, ok := srfsuo.mutation.Description(); ok {
+	if value, ok := _u.mutation.Description(); ok {
 		_spec.SetField(systemrelationshipfeedbacksignal.FieldDescription, field.TypeString, value)
 	}
-	if srfsuo.mutation.DescriptionCleared() {
+	if _u.mutation.DescriptionCleared() {
 		_spec.ClearField(systemrelationshipfeedbacksignal.FieldDescription, field.TypeString)
 	}
-	if value, ok := srfsuo.mutation.CreatedAt(); ok {
+	if value, ok := _u.mutation.CreatedAt(); ok {
 		_spec.SetField(systemrelationshipfeedbacksignal.FieldCreatedAt, field.TypeTime, value)
 	}
-	if srfsuo.mutation.RelationshipCleared() {
+	if _u.mutation.RelationshipCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
@@ -513,7 +513,7 @@ func (srfsuo *SystemRelationshipFeedbackSignalUpdateOne) sqlSave(ctx context.Con
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := srfsuo.mutation.RelationshipIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.RelationshipIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
@@ -529,7 +529,7 @@ func (srfsuo *SystemRelationshipFeedbackSignalUpdateOne) sqlSave(ctx context.Con
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if srfsuo.mutation.SignalCleared() {
+	if _u.mutation.SignalCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
@@ -542,7 +542,7 @@ func (srfsuo *SystemRelationshipFeedbackSignalUpdateOne) sqlSave(ctx context.Con
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := srfsuo.mutation.SignalIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.SignalIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
@@ -558,11 +558,11 @@ func (srfsuo *SystemRelationshipFeedbackSignalUpdateOne) sqlSave(ctx context.Con
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	_spec.AddModifiers(srfsuo.modifiers...)
-	_node = &SystemRelationshipFeedbackSignal{config: srfsuo.config}
+	_spec.AddModifiers(_u.modifiers...)
+	_node = &SystemRelationshipFeedbackSignal{config: _u.config}
 	_spec.Assign = _node.assignValues
 	_spec.ScanValues = _node.scanValues
-	if err = sqlgraph.UpdateNode(ctx, srfsuo.driver, _spec); err != nil {
+	if err = sqlgraph.UpdateNode(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{systemrelationshipfeedbacksignal.Label}
 		} else if sqlgraph.IsConstraintError(err) {
@@ -570,6 +570,6 @@ func (srfsuo *SystemRelationshipFeedbackSignalUpdateOne) sqlSave(ctx context.Con
 		}
 		return nil, err
 	}
-	srfsuo.mutation.done = true
+	_u.mutation.done = true
 	return _node, nil
 }

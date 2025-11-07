@@ -27,220 +27,220 @@ type TeamUpdate struct {
 }
 
 // Where appends a list predicates to the TeamUpdate builder.
-func (tu *TeamUpdate) Where(ps ...predicate.Team) *TeamUpdate {
-	tu.mutation.Where(ps...)
-	return tu
+func (_u *TeamUpdate) Where(ps ...predicate.Team) *TeamUpdate {
+	_u.mutation.Where(ps...)
+	return _u
 }
 
 // SetSlug sets the "slug" field.
-func (tu *TeamUpdate) SetSlug(s string) *TeamUpdate {
-	tu.mutation.SetSlug(s)
-	return tu
+func (_u *TeamUpdate) SetSlug(v string) *TeamUpdate {
+	_u.mutation.SetSlug(v)
+	return _u
 }
 
 // SetNillableSlug sets the "slug" field if the given value is not nil.
-func (tu *TeamUpdate) SetNillableSlug(s *string) *TeamUpdate {
-	if s != nil {
-		tu.SetSlug(*s)
+func (_u *TeamUpdate) SetNillableSlug(v *string) *TeamUpdate {
+	if v != nil {
+		_u.SetSlug(*v)
 	}
-	return tu
+	return _u
 }
 
 // SetProviderID sets the "provider_id" field.
-func (tu *TeamUpdate) SetProviderID(s string) *TeamUpdate {
-	tu.mutation.SetProviderID(s)
-	return tu
+func (_u *TeamUpdate) SetProviderID(v string) *TeamUpdate {
+	_u.mutation.SetProviderID(v)
+	return _u
 }
 
 // SetNillableProviderID sets the "provider_id" field if the given value is not nil.
-func (tu *TeamUpdate) SetNillableProviderID(s *string) *TeamUpdate {
-	if s != nil {
-		tu.SetProviderID(*s)
+func (_u *TeamUpdate) SetNillableProviderID(v *string) *TeamUpdate {
+	if v != nil {
+		_u.SetProviderID(*v)
 	}
-	return tu
+	return _u
 }
 
 // ClearProviderID clears the value of the "provider_id" field.
-func (tu *TeamUpdate) ClearProviderID() *TeamUpdate {
-	tu.mutation.ClearProviderID()
-	return tu
+func (_u *TeamUpdate) ClearProviderID() *TeamUpdate {
+	_u.mutation.ClearProviderID()
+	return _u
 }
 
 // SetName sets the "name" field.
-func (tu *TeamUpdate) SetName(s string) *TeamUpdate {
-	tu.mutation.SetName(s)
-	return tu
+func (_u *TeamUpdate) SetName(v string) *TeamUpdate {
+	_u.mutation.SetName(v)
+	return _u
 }
 
 // SetNillableName sets the "name" field if the given value is not nil.
-func (tu *TeamUpdate) SetNillableName(s *string) *TeamUpdate {
-	if s != nil {
-		tu.SetName(*s)
+func (_u *TeamUpdate) SetNillableName(v *string) *TeamUpdate {
+	if v != nil {
+		_u.SetName(*v)
 	}
-	return tu
+	return _u
 }
 
 // SetChatChannelID sets the "chat_channel_id" field.
-func (tu *TeamUpdate) SetChatChannelID(s string) *TeamUpdate {
-	tu.mutation.SetChatChannelID(s)
-	return tu
+func (_u *TeamUpdate) SetChatChannelID(v string) *TeamUpdate {
+	_u.mutation.SetChatChannelID(v)
+	return _u
 }
 
 // SetNillableChatChannelID sets the "chat_channel_id" field if the given value is not nil.
-func (tu *TeamUpdate) SetNillableChatChannelID(s *string) *TeamUpdate {
-	if s != nil {
-		tu.SetChatChannelID(*s)
+func (_u *TeamUpdate) SetNillableChatChannelID(v *string) *TeamUpdate {
+	if v != nil {
+		_u.SetChatChannelID(*v)
 	}
-	return tu
+	return _u
 }
 
 // ClearChatChannelID clears the value of the "chat_channel_id" field.
-func (tu *TeamUpdate) ClearChatChannelID() *TeamUpdate {
-	tu.mutation.ClearChatChannelID()
-	return tu
+func (_u *TeamUpdate) ClearChatChannelID() *TeamUpdate {
+	_u.mutation.ClearChatChannelID()
+	return _u
 }
 
 // SetTimezone sets the "timezone" field.
-func (tu *TeamUpdate) SetTimezone(s string) *TeamUpdate {
-	tu.mutation.SetTimezone(s)
-	return tu
+func (_u *TeamUpdate) SetTimezone(v string) *TeamUpdate {
+	_u.mutation.SetTimezone(v)
+	return _u
 }
 
 // SetNillableTimezone sets the "timezone" field if the given value is not nil.
-func (tu *TeamUpdate) SetNillableTimezone(s *string) *TeamUpdate {
-	if s != nil {
-		tu.SetTimezone(*s)
+func (_u *TeamUpdate) SetNillableTimezone(v *string) *TeamUpdate {
+	if v != nil {
+		_u.SetTimezone(*v)
 	}
-	return tu
+	return _u
 }
 
 // ClearTimezone clears the value of the "timezone" field.
-func (tu *TeamUpdate) ClearTimezone() *TeamUpdate {
-	tu.mutation.ClearTimezone()
-	return tu
+func (_u *TeamUpdate) ClearTimezone() *TeamUpdate {
+	_u.mutation.ClearTimezone()
+	return _u
 }
 
 // AddUserIDs adds the "users" edge to the User entity by IDs.
-func (tu *TeamUpdate) AddUserIDs(ids ...uuid.UUID) *TeamUpdate {
-	tu.mutation.AddUserIDs(ids...)
-	return tu
+func (_u *TeamUpdate) AddUserIDs(ids ...uuid.UUID) *TeamUpdate {
+	_u.mutation.AddUserIDs(ids...)
+	return _u
 }
 
 // AddUsers adds the "users" edges to the User entity.
-func (tu *TeamUpdate) AddUsers(u ...*User) *TeamUpdate {
-	ids := make([]uuid.UUID, len(u))
-	for i := range u {
-		ids[i] = u[i].ID
+func (_u *TeamUpdate) AddUsers(v ...*User) *TeamUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
 	}
-	return tu.AddUserIDs(ids...)
+	return _u.AddUserIDs(ids...)
 }
 
 // AddOncallRosterIDs adds the "oncall_rosters" edge to the OncallRoster entity by IDs.
-func (tu *TeamUpdate) AddOncallRosterIDs(ids ...uuid.UUID) *TeamUpdate {
-	tu.mutation.AddOncallRosterIDs(ids...)
-	return tu
+func (_u *TeamUpdate) AddOncallRosterIDs(ids ...uuid.UUID) *TeamUpdate {
+	_u.mutation.AddOncallRosterIDs(ids...)
+	return _u
 }
 
 // AddOncallRosters adds the "oncall_rosters" edges to the OncallRoster entity.
-func (tu *TeamUpdate) AddOncallRosters(o ...*OncallRoster) *TeamUpdate {
-	ids := make([]uuid.UUID, len(o))
-	for i := range o {
-		ids[i] = o[i].ID
+func (_u *TeamUpdate) AddOncallRosters(v ...*OncallRoster) *TeamUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
 	}
-	return tu.AddOncallRosterIDs(ids...)
+	return _u.AddOncallRosterIDs(ids...)
 }
 
 // AddScheduledMeetingIDs adds the "scheduled_meetings" edge to the MeetingSchedule entity by IDs.
-func (tu *TeamUpdate) AddScheduledMeetingIDs(ids ...uuid.UUID) *TeamUpdate {
-	tu.mutation.AddScheduledMeetingIDs(ids...)
-	return tu
+func (_u *TeamUpdate) AddScheduledMeetingIDs(ids ...uuid.UUID) *TeamUpdate {
+	_u.mutation.AddScheduledMeetingIDs(ids...)
+	return _u
 }
 
 // AddScheduledMeetings adds the "scheduled_meetings" edges to the MeetingSchedule entity.
-func (tu *TeamUpdate) AddScheduledMeetings(m ...*MeetingSchedule) *TeamUpdate {
-	ids := make([]uuid.UUID, len(m))
-	for i := range m {
-		ids[i] = m[i].ID
+func (_u *TeamUpdate) AddScheduledMeetings(v ...*MeetingSchedule) *TeamUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
 	}
-	return tu.AddScheduledMeetingIDs(ids...)
+	return _u.AddScheduledMeetingIDs(ids...)
 }
 
 // Mutation returns the TeamMutation object of the builder.
-func (tu *TeamUpdate) Mutation() *TeamMutation {
-	return tu.mutation
+func (_u *TeamUpdate) Mutation() *TeamMutation {
+	return _u.mutation
 }
 
 // ClearUsers clears all "users" edges to the User entity.
-func (tu *TeamUpdate) ClearUsers() *TeamUpdate {
-	tu.mutation.ClearUsers()
-	return tu
+func (_u *TeamUpdate) ClearUsers() *TeamUpdate {
+	_u.mutation.ClearUsers()
+	return _u
 }
 
 // RemoveUserIDs removes the "users" edge to User entities by IDs.
-func (tu *TeamUpdate) RemoveUserIDs(ids ...uuid.UUID) *TeamUpdate {
-	tu.mutation.RemoveUserIDs(ids...)
-	return tu
+func (_u *TeamUpdate) RemoveUserIDs(ids ...uuid.UUID) *TeamUpdate {
+	_u.mutation.RemoveUserIDs(ids...)
+	return _u
 }
 
 // RemoveUsers removes "users" edges to User entities.
-func (tu *TeamUpdate) RemoveUsers(u ...*User) *TeamUpdate {
-	ids := make([]uuid.UUID, len(u))
-	for i := range u {
-		ids[i] = u[i].ID
+func (_u *TeamUpdate) RemoveUsers(v ...*User) *TeamUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
 	}
-	return tu.RemoveUserIDs(ids...)
+	return _u.RemoveUserIDs(ids...)
 }
 
 // ClearOncallRosters clears all "oncall_rosters" edges to the OncallRoster entity.
-func (tu *TeamUpdate) ClearOncallRosters() *TeamUpdate {
-	tu.mutation.ClearOncallRosters()
-	return tu
+func (_u *TeamUpdate) ClearOncallRosters() *TeamUpdate {
+	_u.mutation.ClearOncallRosters()
+	return _u
 }
 
 // RemoveOncallRosterIDs removes the "oncall_rosters" edge to OncallRoster entities by IDs.
-func (tu *TeamUpdate) RemoveOncallRosterIDs(ids ...uuid.UUID) *TeamUpdate {
-	tu.mutation.RemoveOncallRosterIDs(ids...)
-	return tu
+func (_u *TeamUpdate) RemoveOncallRosterIDs(ids ...uuid.UUID) *TeamUpdate {
+	_u.mutation.RemoveOncallRosterIDs(ids...)
+	return _u
 }
 
 // RemoveOncallRosters removes "oncall_rosters" edges to OncallRoster entities.
-func (tu *TeamUpdate) RemoveOncallRosters(o ...*OncallRoster) *TeamUpdate {
-	ids := make([]uuid.UUID, len(o))
-	for i := range o {
-		ids[i] = o[i].ID
+func (_u *TeamUpdate) RemoveOncallRosters(v ...*OncallRoster) *TeamUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
 	}
-	return tu.RemoveOncallRosterIDs(ids...)
+	return _u.RemoveOncallRosterIDs(ids...)
 }
 
 // ClearScheduledMeetings clears all "scheduled_meetings" edges to the MeetingSchedule entity.
-func (tu *TeamUpdate) ClearScheduledMeetings() *TeamUpdate {
-	tu.mutation.ClearScheduledMeetings()
-	return tu
+func (_u *TeamUpdate) ClearScheduledMeetings() *TeamUpdate {
+	_u.mutation.ClearScheduledMeetings()
+	return _u
 }
 
 // RemoveScheduledMeetingIDs removes the "scheduled_meetings" edge to MeetingSchedule entities by IDs.
-func (tu *TeamUpdate) RemoveScheduledMeetingIDs(ids ...uuid.UUID) *TeamUpdate {
-	tu.mutation.RemoveScheduledMeetingIDs(ids...)
-	return tu
+func (_u *TeamUpdate) RemoveScheduledMeetingIDs(ids ...uuid.UUID) *TeamUpdate {
+	_u.mutation.RemoveScheduledMeetingIDs(ids...)
+	return _u
 }
 
 // RemoveScheduledMeetings removes "scheduled_meetings" edges to MeetingSchedule entities.
-func (tu *TeamUpdate) RemoveScheduledMeetings(m ...*MeetingSchedule) *TeamUpdate {
-	ids := make([]uuid.UUID, len(m))
-	for i := range m {
-		ids[i] = m[i].ID
+func (_u *TeamUpdate) RemoveScheduledMeetings(v ...*MeetingSchedule) *TeamUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
 	}
-	return tu.RemoveScheduledMeetingIDs(ids...)
+	return _u.RemoveScheduledMeetingIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
-func (tu *TeamUpdate) Save(ctx context.Context) (int, error) {
-	return withHooks(ctx, tu.sqlSave, tu.mutation, tu.hooks)
+func (_u *TeamUpdate) Save(ctx context.Context) (int, error) {
+	return withHooks(ctx, _u.sqlSave, _u.mutation, _u.hooks)
 }
 
 // SaveX is like Save, but panics if an error occurs.
-func (tu *TeamUpdate) SaveX(ctx context.Context) int {
-	affected, err := tu.Save(ctx)
+func (_u *TeamUpdate) SaveX(ctx context.Context) int {
+	affected, err := _u.Save(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -248,69 +248,69 @@ func (tu *TeamUpdate) SaveX(ctx context.Context) int {
 }
 
 // Exec executes the query.
-func (tu *TeamUpdate) Exec(ctx context.Context) error {
-	_, err := tu.Save(ctx)
+func (_u *TeamUpdate) Exec(ctx context.Context) error {
+	_, err := _u.Save(ctx)
 	return err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (tu *TeamUpdate) ExecX(ctx context.Context) {
-	if err := tu.Exec(ctx); err != nil {
+func (_u *TeamUpdate) ExecX(ctx context.Context) {
+	if err := _u.Exec(ctx); err != nil {
 		panic(err)
 	}
 }
 
 // check runs all checks and user-defined validators on the builder.
-func (tu *TeamUpdate) check() error {
-	if tu.mutation.TenantCleared() && len(tu.mutation.TenantIDs()) > 0 {
+func (_u *TeamUpdate) check() error {
+	if _u.mutation.TenantCleared() && len(_u.mutation.TenantIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "Team.tenant"`)
 	}
 	return nil
 }
 
 // Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
-func (tu *TeamUpdate) Modify(modifiers ...func(u *sql.UpdateBuilder)) *TeamUpdate {
-	tu.modifiers = append(tu.modifiers, modifiers...)
-	return tu
+func (_u *TeamUpdate) Modify(modifiers ...func(u *sql.UpdateBuilder)) *TeamUpdate {
+	_u.modifiers = append(_u.modifiers, modifiers...)
+	return _u
 }
 
-func (tu *TeamUpdate) sqlSave(ctx context.Context) (n int, err error) {
-	if err := tu.check(); err != nil {
-		return n, err
+func (_u *TeamUpdate) sqlSave(ctx context.Context) (_node int, err error) {
+	if err := _u.check(); err != nil {
+		return _node, err
 	}
 	_spec := sqlgraph.NewUpdateSpec(team.Table, team.Columns, sqlgraph.NewFieldSpec(team.FieldID, field.TypeUUID))
-	if ps := tu.mutation.predicates; len(ps) > 0 {
+	if ps := _u.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {
 				ps[i](selector)
 			}
 		}
 	}
-	if value, ok := tu.mutation.Slug(); ok {
+	if value, ok := _u.mutation.Slug(); ok {
 		_spec.SetField(team.FieldSlug, field.TypeString, value)
 	}
-	if value, ok := tu.mutation.ProviderID(); ok {
+	if value, ok := _u.mutation.ProviderID(); ok {
 		_spec.SetField(team.FieldProviderID, field.TypeString, value)
 	}
-	if tu.mutation.ProviderIDCleared() {
+	if _u.mutation.ProviderIDCleared() {
 		_spec.ClearField(team.FieldProviderID, field.TypeString)
 	}
-	if value, ok := tu.mutation.Name(); ok {
+	if value, ok := _u.mutation.Name(); ok {
 		_spec.SetField(team.FieldName, field.TypeString, value)
 	}
-	if value, ok := tu.mutation.ChatChannelID(); ok {
+	if value, ok := _u.mutation.ChatChannelID(); ok {
 		_spec.SetField(team.FieldChatChannelID, field.TypeString, value)
 	}
-	if tu.mutation.ChatChannelIDCleared() {
+	if _u.mutation.ChatChannelIDCleared() {
 		_spec.ClearField(team.FieldChatChannelID, field.TypeString)
 	}
-	if value, ok := tu.mutation.Timezone(); ok {
+	if value, ok := _u.mutation.Timezone(); ok {
 		_spec.SetField(team.FieldTimezone, field.TypeString, value)
 	}
-	if tu.mutation.TimezoneCleared() {
+	if _u.mutation.TimezoneCleared() {
 		_spec.ClearField(team.FieldTimezone, field.TypeString)
 	}
-	if tu.mutation.UsersCleared() {
+	if _u.mutation.UsersCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
 			Inverse: false,
@@ -323,7 +323,7 @@ func (tu *TeamUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := tu.mutation.RemovedUsersIDs(); len(nodes) > 0 && !tu.mutation.UsersCleared() {
+	if nodes := _u.mutation.RemovedUsersIDs(); len(nodes) > 0 && !_u.mutation.UsersCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
 			Inverse: false,
@@ -339,7 +339,7 @@ func (tu *TeamUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := tu.mutation.UsersIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.UsersIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
 			Inverse: false,
@@ -355,7 +355,7 @@ func (tu *TeamUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if tu.mutation.OncallRostersCleared() {
+	if _u.mutation.OncallRostersCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
 			Inverse: false,
@@ -368,7 +368,7 @@ func (tu *TeamUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := tu.mutation.RemovedOncallRostersIDs(); len(nodes) > 0 && !tu.mutation.OncallRostersCleared() {
+	if nodes := _u.mutation.RemovedOncallRostersIDs(); len(nodes) > 0 && !_u.mutation.OncallRostersCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
 			Inverse: false,
@@ -384,7 +384,7 @@ func (tu *TeamUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := tu.mutation.OncallRostersIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.OncallRostersIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
 			Inverse: false,
@@ -400,7 +400,7 @@ func (tu *TeamUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if tu.mutation.ScheduledMeetingsCleared() {
+	if _u.mutation.ScheduledMeetingsCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
 			Inverse: true,
@@ -413,7 +413,7 @@ func (tu *TeamUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := tu.mutation.RemovedScheduledMeetingsIDs(); len(nodes) > 0 && !tu.mutation.ScheduledMeetingsCleared() {
+	if nodes := _u.mutation.RemovedScheduledMeetingsIDs(); len(nodes) > 0 && !_u.mutation.ScheduledMeetingsCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
 			Inverse: true,
@@ -429,7 +429,7 @@ func (tu *TeamUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := tu.mutation.ScheduledMeetingsIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.ScheduledMeetingsIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
 			Inverse: true,
@@ -445,8 +445,8 @@ func (tu *TeamUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	_spec.AddModifiers(tu.modifiers...)
-	if n, err = sqlgraph.UpdateNodes(ctx, tu.driver, _spec); err != nil {
+	_spec.AddModifiers(_u.modifiers...)
+	if _node, err = sqlgraph.UpdateNodes(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{team.Label}
 		} else if sqlgraph.IsConstraintError(err) {
@@ -454,8 +454,8 @@ func (tu *TeamUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		return 0, err
 	}
-	tu.mutation.done = true
-	return n, nil
+	_u.mutation.done = true
+	return _node, nil
 }
 
 // TeamUpdateOne is the builder for updating a single Team entity.
@@ -468,227 +468,227 @@ type TeamUpdateOne struct {
 }
 
 // SetSlug sets the "slug" field.
-func (tuo *TeamUpdateOne) SetSlug(s string) *TeamUpdateOne {
-	tuo.mutation.SetSlug(s)
-	return tuo
+func (_u *TeamUpdateOne) SetSlug(v string) *TeamUpdateOne {
+	_u.mutation.SetSlug(v)
+	return _u
 }
 
 // SetNillableSlug sets the "slug" field if the given value is not nil.
-func (tuo *TeamUpdateOne) SetNillableSlug(s *string) *TeamUpdateOne {
-	if s != nil {
-		tuo.SetSlug(*s)
+func (_u *TeamUpdateOne) SetNillableSlug(v *string) *TeamUpdateOne {
+	if v != nil {
+		_u.SetSlug(*v)
 	}
-	return tuo
+	return _u
 }
 
 // SetProviderID sets the "provider_id" field.
-func (tuo *TeamUpdateOne) SetProviderID(s string) *TeamUpdateOne {
-	tuo.mutation.SetProviderID(s)
-	return tuo
+func (_u *TeamUpdateOne) SetProviderID(v string) *TeamUpdateOne {
+	_u.mutation.SetProviderID(v)
+	return _u
 }
 
 // SetNillableProviderID sets the "provider_id" field if the given value is not nil.
-func (tuo *TeamUpdateOne) SetNillableProviderID(s *string) *TeamUpdateOne {
-	if s != nil {
-		tuo.SetProviderID(*s)
+func (_u *TeamUpdateOne) SetNillableProviderID(v *string) *TeamUpdateOne {
+	if v != nil {
+		_u.SetProviderID(*v)
 	}
-	return tuo
+	return _u
 }
 
 // ClearProviderID clears the value of the "provider_id" field.
-func (tuo *TeamUpdateOne) ClearProviderID() *TeamUpdateOne {
-	tuo.mutation.ClearProviderID()
-	return tuo
+func (_u *TeamUpdateOne) ClearProviderID() *TeamUpdateOne {
+	_u.mutation.ClearProviderID()
+	return _u
 }
 
 // SetName sets the "name" field.
-func (tuo *TeamUpdateOne) SetName(s string) *TeamUpdateOne {
-	tuo.mutation.SetName(s)
-	return tuo
+func (_u *TeamUpdateOne) SetName(v string) *TeamUpdateOne {
+	_u.mutation.SetName(v)
+	return _u
 }
 
 // SetNillableName sets the "name" field if the given value is not nil.
-func (tuo *TeamUpdateOne) SetNillableName(s *string) *TeamUpdateOne {
-	if s != nil {
-		tuo.SetName(*s)
+func (_u *TeamUpdateOne) SetNillableName(v *string) *TeamUpdateOne {
+	if v != nil {
+		_u.SetName(*v)
 	}
-	return tuo
+	return _u
 }
 
 // SetChatChannelID sets the "chat_channel_id" field.
-func (tuo *TeamUpdateOne) SetChatChannelID(s string) *TeamUpdateOne {
-	tuo.mutation.SetChatChannelID(s)
-	return tuo
+func (_u *TeamUpdateOne) SetChatChannelID(v string) *TeamUpdateOne {
+	_u.mutation.SetChatChannelID(v)
+	return _u
 }
 
 // SetNillableChatChannelID sets the "chat_channel_id" field if the given value is not nil.
-func (tuo *TeamUpdateOne) SetNillableChatChannelID(s *string) *TeamUpdateOne {
-	if s != nil {
-		tuo.SetChatChannelID(*s)
+func (_u *TeamUpdateOne) SetNillableChatChannelID(v *string) *TeamUpdateOne {
+	if v != nil {
+		_u.SetChatChannelID(*v)
 	}
-	return tuo
+	return _u
 }
 
 // ClearChatChannelID clears the value of the "chat_channel_id" field.
-func (tuo *TeamUpdateOne) ClearChatChannelID() *TeamUpdateOne {
-	tuo.mutation.ClearChatChannelID()
-	return tuo
+func (_u *TeamUpdateOne) ClearChatChannelID() *TeamUpdateOne {
+	_u.mutation.ClearChatChannelID()
+	return _u
 }
 
 // SetTimezone sets the "timezone" field.
-func (tuo *TeamUpdateOne) SetTimezone(s string) *TeamUpdateOne {
-	tuo.mutation.SetTimezone(s)
-	return tuo
+func (_u *TeamUpdateOne) SetTimezone(v string) *TeamUpdateOne {
+	_u.mutation.SetTimezone(v)
+	return _u
 }
 
 // SetNillableTimezone sets the "timezone" field if the given value is not nil.
-func (tuo *TeamUpdateOne) SetNillableTimezone(s *string) *TeamUpdateOne {
-	if s != nil {
-		tuo.SetTimezone(*s)
+func (_u *TeamUpdateOne) SetNillableTimezone(v *string) *TeamUpdateOne {
+	if v != nil {
+		_u.SetTimezone(*v)
 	}
-	return tuo
+	return _u
 }
 
 // ClearTimezone clears the value of the "timezone" field.
-func (tuo *TeamUpdateOne) ClearTimezone() *TeamUpdateOne {
-	tuo.mutation.ClearTimezone()
-	return tuo
+func (_u *TeamUpdateOne) ClearTimezone() *TeamUpdateOne {
+	_u.mutation.ClearTimezone()
+	return _u
 }
 
 // AddUserIDs adds the "users" edge to the User entity by IDs.
-func (tuo *TeamUpdateOne) AddUserIDs(ids ...uuid.UUID) *TeamUpdateOne {
-	tuo.mutation.AddUserIDs(ids...)
-	return tuo
+func (_u *TeamUpdateOne) AddUserIDs(ids ...uuid.UUID) *TeamUpdateOne {
+	_u.mutation.AddUserIDs(ids...)
+	return _u
 }
 
 // AddUsers adds the "users" edges to the User entity.
-func (tuo *TeamUpdateOne) AddUsers(u ...*User) *TeamUpdateOne {
-	ids := make([]uuid.UUID, len(u))
-	for i := range u {
-		ids[i] = u[i].ID
+func (_u *TeamUpdateOne) AddUsers(v ...*User) *TeamUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
 	}
-	return tuo.AddUserIDs(ids...)
+	return _u.AddUserIDs(ids...)
 }
 
 // AddOncallRosterIDs adds the "oncall_rosters" edge to the OncallRoster entity by IDs.
-func (tuo *TeamUpdateOne) AddOncallRosterIDs(ids ...uuid.UUID) *TeamUpdateOne {
-	tuo.mutation.AddOncallRosterIDs(ids...)
-	return tuo
+func (_u *TeamUpdateOne) AddOncallRosterIDs(ids ...uuid.UUID) *TeamUpdateOne {
+	_u.mutation.AddOncallRosterIDs(ids...)
+	return _u
 }
 
 // AddOncallRosters adds the "oncall_rosters" edges to the OncallRoster entity.
-func (tuo *TeamUpdateOne) AddOncallRosters(o ...*OncallRoster) *TeamUpdateOne {
-	ids := make([]uuid.UUID, len(o))
-	for i := range o {
-		ids[i] = o[i].ID
+func (_u *TeamUpdateOne) AddOncallRosters(v ...*OncallRoster) *TeamUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
 	}
-	return tuo.AddOncallRosterIDs(ids...)
+	return _u.AddOncallRosterIDs(ids...)
 }
 
 // AddScheduledMeetingIDs adds the "scheduled_meetings" edge to the MeetingSchedule entity by IDs.
-func (tuo *TeamUpdateOne) AddScheduledMeetingIDs(ids ...uuid.UUID) *TeamUpdateOne {
-	tuo.mutation.AddScheduledMeetingIDs(ids...)
-	return tuo
+func (_u *TeamUpdateOne) AddScheduledMeetingIDs(ids ...uuid.UUID) *TeamUpdateOne {
+	_u.mutation.AddScheduledMeetingIDs(ids...)
+	return _u
 }
 
 // AddScheduledMeetings adds the "scheduled_meetings" edges to the MeetingSchedule entity.
-func (tuo *TeamUpdateOne) AddScheduledMeetings(m ...*MeetingSchedule) *TeamUpdateOne {
-	ids := make([]uuid.UUID, len(m))
-	for i := range m {
-		ids[i] = m[i].ID
+func (_u *TeamUpdateOne) AddScheduledMeetings(v ...*MeetingSchedule) *TeamUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
 	}
-	return tuo.AddScheduledMeetingIDs(ids...)
+	return _u.AddScheduledMeetingIDs(ids...)
 }
 
 // Mutation returns the TeamMutation object of the builder.
-func (tuo *TeamUpdateOne) Mutation() *TeamMutation {
-	return tuo.mutation
+func (_u *TeamUpdateOne) Mutation() *TeamMutation {
+	return _u.mutation
 }
 
 // ClearUsers clears all "users" edges to the User entity.
-func (tuo *TeamUpdateOne) ClearUsers() *TeamUpdateOne {
-	tuo.mutation.ClearUsers()
-	return tuo
+func (_u *TeamUpdateOne) ClearUsers() *TeamUpdateOne {
+	_u.mutation.ClearUsers()
+	return _u
 }
 
 // RemoveUserIDs removes the "users" edge to User entities by IDs.
-func (tuo *TeamUpdateOne) RemoveUserIDs(ids ...uuid.UUID) *TeamUpdateOne {
-	tuo.mutation.RemoveUserIDs(ids...)
-	return tuo
+func (_u *TeamUpdateOne) RemoveUserIDs(ids ...uuid.UUID) *TeamUpdateOne {
+	_u.mutation.RemoveUserIDs(ids...)
+	return _u
 }
 
 // RemoveUsers removes "users" edges to User entities.
-func (tuo *TeamUpdateOne) RemoveUsers(u ...*User) *TeamUpdateOne {
-	ids := make([]uuid.UUID, len(u))
-	for i := range u {
-		ids[i] = u[i].ID
+func (_u *TeamUpdateOne) RemoveUsers(v ...*User) *TeamUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
 	}
-	return tuo.RemoveUserIDs(ids...)
+	return _u.RemoveUserIDs(ids...)
 }
 
 // ClearOncallRosters clears all "oncall_rosters" edges to the OncallRoster entity.
-func (tuo *TeamUpdateOne) ClearOncallRosters() *TeamUpdateOne {
-	tuo.mutation.ClearOncallRosters()
-	return tuo
+func (_u *TeamUpdateOne) ClearOncallRosters() *TeamUpdateOne {
+	_u.mutation.ClearOncallRosters()
+	return _u
 }
 
 // RemoveOncallRosterIDs removes the "oncall_rosters" edge to OncallRoster entities by IDs.
-func (tuo *TeamUpdateOne) RemoveOncallRosterIDs(ids ...uuid.UUID) *TeamUpdateOne {
-	tuo.mutation.RemoveOncallRosterIDs(ids...)
-	return tuo
+func (_u *TeamUpdateOne) RemoveOncallRosterIDs(ids ...uuid.UUID) *TeamUpdateOne {
+	_u.mutation.RemoveOncallRosterIDs(ids...)
+	return _u
 }
 
 // RemoveOncallRosters removes "oncall_rosters" edges to OncallRoster entities.
-func (tuo *TeamUpdateOne) RemoveOncallRosters(o ...*OncallRoster) *TeamUpdateOne {
-	ids := make([]uuid.UUID, len(o))
-	for i := range o {
-		ids[i] = o[i].ID
+func (_u *TeamUpdateOne) RemoveOncallRosters(v ...*OncallRoster) *TeamUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
 	}
-	return tuo.RemoveOncallRosterIDs(ids...)
+	return _u.RemoveOncallRosterIDs(ids...)
 }
 
 // ClearScheduledMeetings clears all "scheduled_meetings" edges to the MeetingSchedule entity.
-func (tuo *TeamUpdateOne) ClearScheduledMeetings() *TeamUpdateOne {
-	tuo.mutation.ClearScheduledMeetings()
-	return tuo
+func (_u *TeamUpdateOne) ClearScheduledMeetings() *TeamUpdateOne {
+	_u.mutation.ClearScheduledMeetings()
+	return _u
 }
 
 // RemoveScheduledMeetingIDs removes the "scheduled_meetings" edge to MeetingSchedule entities by IDs.
-func (tuo *TeamUpdateOne) RemoveScheduledMeetingIDs(ids ...uuid.UUID) *TeamUpdateOne {
-	tuo.mutation.RemoveScheduledMeetingIDs(ids...)
-	return tuo
+func (_u *TeamUpdateOne) RemoveScheduledMeetingIDs(ids ...uuid.UUID) *TeamUpdateOne {
+	_u.mutation.RemoveScheduledMeetingIDs(ids...)
+	return _u
 }
 
 // RemoveScheduledMeetings removes "scheduled_meetings" edges to MeetingSchedule entities.
-func (tuo *TeamUpdateOne) RemoveScheduledMeetings(m ...*MeetingSchedule) *TeamUpdateOne {
-	ids := make([]uuid.UUID, len(m))
-	for i := range m {
-		ids[i] = m[i].ID
+func (_u *TeamUpdateOne) RemoveScheduledMeetings(v ...*MeetingSchedule) *TeamUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
 	}
-	return tuo.RemoveScheduledMeetingIDs(ids...)
+	return _u.RemoveScheduledMeetingIDs(ids...)
 }
 
 // Where appends a list predicates to the TeamUpdate builder.
-func (tuo *TeamUpdateOne) Where(ps ...predicate.Team) *TeamUpdateOne {
-	tuo.mutation.Where(ps...)
-	return tuo
+func (_u *TeamUpdateOne) Where(ps ...predicate.Team) *TeamUpdateOne {
+	_u.mutation.Where(ps...)
+	return _u
 }
 
 // Select allows selecting one or more fields (columns) of the returned entity.
 // The default is selecting all fields defined in the entity schema.
-func (tuo *TeamUpdateOne) Select(field string, fields ...string) *TeamUpdateOne {
-	tuo.fields = append([]string{field}, fields...)
-	return tuo
+func (_u *TeamUpdateOne) Select(field string, fields ...string) *TeamUpdateOne {
+	_u.fields = append([]string{field}, fields...)
+	return _u
 }
 
 // Save executes the query and returns the updated Team entity.
-func (tuo *TeamUpdateOne) Save(ctx context.Context) (*Team, error) {
-	return withHooks(ctx, tuo.sqlSave, tuo.mutation, tuo.hooks)
+func (_u *TeamUpdateOne) Save(ctx context.Context) (*Team, error) {
+	return withHooks(ctx, _u.sqlSave, _u.mutation, _u.hooks)
 }
 
 // SaveX is like Save, but panics if an error occurs.
-func (tuo *TeamUpdateOne) SaveX(ctx context.Context) *Team {
-	node, err := tuo.Save(ctx)
+func (_u *TeamUpdateOne) SaveX(ctx context.Context) *Team {
+	node, err := _u.Save(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -696,43 +696,43 @@ func (tuo *TeamUpdateOne) SaveX(ctx context.Context) *Team {
 }
 
 // Exec executes the query on the entity.
-func (tuo *TeamUpdateOne) Exec(ctx context.Context) error {
-	_, err := tuo.Save(ctx)
+func (_u *TeamUpdateOne) Exec(ctx context.Context) error {
+	_, err := _u.Save(ctx)
 	return err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (tuo *TeamUpdateOne) ExecX(ctx context.Context) {
-	if err := tuo.Exec(ctx); err != nil {
+func (_u *TeamUpdateOne) ExecX(ctx context.Context) {
+	if err := _u.Exec(ctx); err != nil {
 		panic(err)
 	}
 }
 
 // check runs all checks and user-defined validators on the builder.
-func (tuo *TeamUpdateOne) check() error {
-	if tuo.mutation.TenantCleared() && len(tuo.mutation.TenantIDs()) > 0 {
+func (_u *TeamUpdateOne) check() error {
+	if _u.mutation.TenantCleared() && len(_u.mutation.TenantIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "Team.tenant"`)
 	}
 	return nil
 }
 
 // Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
-func (tuo *TeamUpdateOne) Modify(modifiers ...func(u *sql.UpdateBuilder)) *TeamUpdateOne {
-	tuo.modifiers = append(tuo.modifiers, modifiers...)
-	return tuo
+func (_u *TeamUpdateOne) Modify(modifiers ...func(u *sql.UpdateBuilder)) *TeamUpdateOne {
+	_u.modifiers = append(_u.modifiers, modifiers...)
+	return _u
 }
 
-func (tuo *TeamUpdateOne) sqlSave(ctx context.Context) (_node *Team, err error) {
-	if err := tuo.check(); err != nil {
+func (_u *TeamUpdateOne) sqlSave(ctx context.Context) (_node *Team, err error) {
+	if err := _u.check(); err != nil {
 		return _node, err
 	}
 	_spec := sqlgraph.NewUpdateSpec(team.Table, team.Columns, sqlgraph.NewFieldSpec(team.FieldID, field.TypeUUID))
-	id, ok := tuo.mutation.ID()
+	id, ok := _u.mutation.ID()
 	if !ok {
 		return nil, &ValidationError{Name: "id", err: errors.New(`ent: missing "Team.id" for update`)}
 	}
 	_spec.Node.ID.Value = id
-	if fields := tuo.fields; len(fields) > 0 {
+	if fields := _u.fields; len(fields) > 0 {
 		_spec.Node.Columns = make([]string, 0, len(fields))
 		_spec.Node.Columns = append(_spec.Node.Columns, team.FieldID)
 		for _, f := range fields {
@@ -744,38 +744,38 @@ func (tuo *TeamUpdateOne) sqlSave(ctx context.Context) (_node *Team, err error) 
 			}
 		}
 	}
-	if ps := tuo.mutation.predicates; len(ps) > 0 {
+	if ps := _u.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {
 				ps[i](selector)
 			}
 		}
 	}
-	if value, ok := tuo.mutation.Slug(); ok {
+	if value, ok := _u.mutation.Slug(); ok {
 		_spec.SetField(team.FieldSlug, field.TypeString, value)
 	}
-	if value, ok := tuo.mutation.ProviderID(); ok {
+	if value, ok := _u.mutation.ProviderID(); ok {
 		_spec.SetField(team.FieldProviderID, field.TypeString, value)
 	}
-	if tuo.mutation.ProviderIDCleared() {
+	if _u.mutation.ProviderIDCleared() {
 		_spec.ClearField(team.FieldProviderID, field.TypeString)
 	}
-	if value, ok := tuo.mutation.Name(); ok {
+	if value, ok := _u.mutation.Name(); ok {
 		_spec.SetField(team.FieldName, field.TypeString, value)
 	}
-	if value, ok := tuo.mutation.ChatChannelID(); ok {
+	if value, ok := _u.mutation.ChatChannelID(); ok {
 		_spec.SetField(team.FieldChatChannelID, field.TypeString, value)
 	}
-	if tuo.mutation.ChatChannelIDCleared() {
+	if _u.mutation.ChatChannelIDCleared() {
 		_spec.ClearField(team.FieldChatChannelID, field.TypeString)
 	}
-	if value, ok := tuo.mutation.Timezone(); ok {
+	if value, ok := _u.mutation.Timezone(); ok {
 		_spec.SetField(team.FieldTimezone, field.TypeString, value)
 	}
-	if tuo.mutation.TimezoneCleared() {
+	if _u.mutation.TimezoneCleared() {
 		_spec.ClearField(team.FieldTimezone, field.TypeString)
 	}
-	if tuo.mutation.UsersCleared() {
+	if _u.mutation.UsersCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
 			Inverse: false,
@@ -788,7 +788,7 @@ func (tuo *TeamUpdateOne) sqlSave(ctx context.Context) (_node *Team, err error) 
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := tuo.mutation.RemovedUsersIDs(); len(nodes) > 0 && !tuo.mutation.UsersCleared() {
+	if nodes := _u.mutation.RemovedUsersIDs(); len(nodes) > 0 && !_u.mutation.UsersCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
 			Inverse: false,
@@ -804,7 +804,7 @@ func (tuo *TeamUpdateOne) sqlSave(ctx context.Context) (_node *Team, err error) 
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := tuo.mutation.UsersIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.UsersIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
 			Inverse: false,
@@ -820,7 +820,7 @@ func (tuo *TeamUpdateOne) sqlSave(ctx context.Context) (_node *Team, err error) 
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if tuo.mutation.OncallRostersCleared() {
+	if _u.mutation.OncallRostersCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
 			Inverse: false,
@@ -833,7 +833,7 @@ func (tuo *TeamUpdateOne) sqlSave(ctx context.Context) (_node *Team, err error) 
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := tuo.mutation.RemovedOncallRostersIDs(); len(nodes) > 0 && !tuo.mutation.OncallRostersCleared() {
+	if nodes := _u.mutation.RemovedOncallRostersIDs(); len(nodes) > 0 && !_u.mutation.OncallRostersCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
 			Inverse: false,
@@ -849,7 +849,7 @@ func (tuo *TeamUpdateOne) sqlSave(ctx context.Context) (_node *Team, err error) 
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := tuo.mutation.OncallRostersIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.OncallRostersIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
 			Inverse: false,
@@ -865,7 +865,7 @@ func (tuo *TeamUpdateOne) sqlSave(ctx context.Context) (_node *Team, err error) 
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if tuo.mutation.ScheduledMeetingsCleared() {
+	if _u.mutation.ScheduledMeetingsCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
 			Inverse: true,
@@ -878,7 +878,7 @@ func (tuo *TeamUpdateOne) sqlSave(ctx context.Context) (_node *Team, err error) 
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := tuo.mutation.RemovedScheduledMeetingsIDs(); len(nodes) > 0 && !tuo.mutation.ScheduledMeetingsCleared() {
+	if nodes := _u.mutation.RemovedScheduledMeetingsIDs(); len(nodes) > 0 && !_u.mutation.ScheduledMeetingsCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
 			Inverse: true,
@@ -894,7 +894,7 @@ func (tuo *TeamUpdateOne) sqlSave(ctx context.Context) (_node *Team, err error) 
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := tuo.mutation.ScheduledMeetingsIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.ScheduledMeetingsIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
 			Inverse: true,
@@ -910,11 +910,11 @@ func (tuo *TeamUpdateOne) sqlSave(ctx context.Context) (_node *Team, err error) 
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	_spec.AddModifiers(tuo.modifiers...)
-	_node = &Team{config: tuo.config}
+	_spec.AddModifiers(_u.modifiers...)
+	_node = &Team{config: _u.config}
 	_spec.Assign = _node.assignValues
 	_spec.ScanValues = _node.scanValues
-	if err = sqlgraph.UpdateNode(ctx, tuo.driver, _spec); err != nil {
+	if err = sqlgraph.UpdateNode(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{team.Label}
 		} else if sqlgraph.IsConstraintError(err) {
@@ -922,6 +922,6 @@ func (tuo *TeamUpdateOne) sqlSave(ctx context.Context) (_node *Team, err error) 
 		}
 		return nil, err
 	}
-	tuo.mutation.done = true
+	_u.mutation.done = true
 	return _node, nil
 }

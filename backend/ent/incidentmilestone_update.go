@@ -26,97 +26,97 @@ type IncidentMilestoneUpdate struct {
 }
 
 // Where appends a list predicates to the IncidentMilestoneUpdate builder.
-func (imu *IncidentMilestoneUpdate) Where(ps ...predicate.IncidentMilestone) *IncidentMilestoneUpdate {
-	imu.mutation.Where(ps...)
-	return imu
+func (_u *IncidentMilestoneUpdate) Where(ps ...predicate.IncidentMilestone) *IncidentMilestoneUpdate {
+	_u.mutation.Where(ps...)
+	return _u
 }
 
 // SetIncidentID sets the "incident_id" field.
-func (imu *IncidentMilestoneUpdate) SetIncidentID(u uuid.UUID) *IncidentMilestoneUpdate {
-	imu.mutation.SetIncidentID(u)
-	return imu
+func (_u *IncidentMilestoneUpdate) SetIncidentID(v uuid.UUID) *IncidentMilestoneUpdate {
+	_u.mutation.SetIncidentID(v)
+	return _u
 }
 
 // SetNillableIncidentID sets the "incident_id" field if the given value is not nil.
-func (imu *IncidentMilestoneUpdate) SetNillableIncidentID(u *uuid.UUID) *IncidentMilestoneUpdate {
-	if u != nil {
-		imu.SetIncidentID(*u)
+func (_u *IncidentMilestoneUpdate) SetNillableIncidentID(v *uuid.UUID) *IncidentMilestoneUpdate {
+	if v != nil {
+		_u.SetIncidentID(*v)
 	}
-	return imu
+	return _u
 }
 
 // SetKind sets the "kind" field.
-func (imu *IncidentMilestoneUpdate) SetKind(i incidentmilestone.Kind) *IncidentMilestoneUpdate {
-	imu.mutation.SetKind(i)
-	return imu
+func (_u *IncidentMilestoneUpdate) SetKind(v incidentmilestone.Kind) *IncidentMilestoneUpdate {
+	_u.mutation.SetKind(v)
+	return _u
 }
 
 // SetNillableKind sets the "kind" field if the given value is not nil.
-func (imu *IncidentMilestoneUpdate) SetNillableKind(i *incidentmilestone.Kind) *IncidentMilestoneUpdate {
-	if i != nil {
-		imu.SetKind(*i)
+func (_u *IncidentMilestoneUpdate) SetNillableKind(v *incidentmilestone.Kind) *IncidentMilestoneUpdate {
+	if v != nil {
+		_u.SetKind(*v)
 	}
-	return imu
+	return _u
 }
 
 // SetDescription sets the "description" field.
-func (imu *IncidentMilestoneUpdate) SetDescription(s string) *IncidentMilestoneUpdate {
-	imu.mutation.SetDescription(s)
-	return imu
+func (_u *IncidentMilestoneUpdate) SetDescription(v string) *IncidentMilestoneUpdate {
+	_u.mutation.SetDescription(v)
+	return _u
 }
 
 // SetNillableDescription sets the "description" field if the given value is not nil.
-func (imu *IncidentMilestoneUpdate) SetNillableDescription(s *string) *IncidentMilestoneUpdate {
-	if s != nil {
-		imu.SetDescription(*s)
+func (_u *IncidentMilestoneUpdate) SetNillableDescription(v *string) *IncidentMilestoneUpdate {
+	if v != nil {
+		_u.SetDescription(*v)
 	}
-	return imu
+	return _u
 }
 
 // ClearDescription clears the value of the "description" field.
-func (imu *IncidentMilestoneUpdate) ClearDescription() *IncidentMilestoneUpdate {
-	imu.mutation.ClearDescription()
-	return imu
+func (_u *IncidentMilestoneUpdate) ClearDescription() *IncidentMilestoneUpdate {
+	_u.mutation.ClearDescription()
+	return _u
 }
 
 // SetTime sets the "time" field.
-func (imu *IncidentMilestoneUpdate) SetTime(t time.Time) *IncidentMilestoneUpdate {
-	imu.mutation.SetTime(t)
-	return imu
+func (_u *IncidentMilestoneUpdate) SetTime(v time.Time) *IncidentMilestoneUpdate {
+	_u.mutation.SetTime(v)
+	return _u
 }
 
 // SetNillableTime sets the "time" field if the given value is not nil.
-func (imu *IncidentMilestoneUpdate) SetNillableTime(t *time.Time) *IncidentMilestoneUpdate {
-	if t != nil {
-		imu.SetTime(*t)
+func (_u *IncidentMilestoneUpdate) SetNillableTime(v *time.Time) *IncidentMilestoneUpdate {
+	if v != nil {
+		_u.SetTime(*v)
 	}
-	return imu
+	return _u
 }
 
 // SetIncident sets the "incident" edge to the Incident entity.
-func (imu *IncidentMilestoneUpdate) SetIncident(i *Incident) *IncidentMilestoneUpdate {
-	return imu.SetIncidentID(i.ID)
+func (_u *IncidentMilestoneUpdate) SetIncident(v *Incident) *IncidentMilestoneUpdate {
+	return _u.SetIncidentID(v.ID)
 }
 
 // Mutation returns the IncidentMilestoneMutation object of the builder.
-func (imu *IncidentMilestoneUpdate) Mutation() *IncidentMilestoneMutation {
-	return imu.mutation
+func (_u *IncidentMilestoneUpdate) Mutation() *IncidentMilestoneMutation {
+	return _u.mutation
 }
 
 // ClearIncident clears the "incident" edge to the Incident entity.
-func (imu *IncidentMilestoneUpdate) ClearIncident() *IncidentMilestoneUpdate {
-	imu.mutation.ClearIncident()
-	return imu
+func (_u *IncidentMilestoneUpdate) ClearIncident() *IncidentMilestoneUpdate {
+	_u.mutation.ClearIncident()
+	return _u
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
-func (imu *IncidentMilestoneUpdate) Save(ctx context.Context) (int, error) {
-	return withHooks(ctx, imu.sqlSave, imu.mutation, imu.hooks)
+func (_u *IncidentMilestoneUpdate) Save(ctx context.Context) (int, error) {
+	return withHooks(ctx, _u.sqlSave, _u.mutation, _u.hooks)
 }
 
 // SaveX is like Save, but panics if an error occurs.
-func (imu *IncidentMilestoneUpdate) SaveX(ctx context.Context) int {
-	affected, err := imu.Save(ctx)
+func (_u *IncidentMilestoneUpdate) SaveX(ctx context.Context) int {
+	affected, err := _u.Save(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -124,65 +124,65 @@ func (imu *IncidentMilestoneUpdate) SaveX(ctx context.Context) int {
 }
 
 // Exec executes the query.
-func (imu *IncidentMilestoneUpdate) Exec(ctx context.Context) error {
-	_, err := imu.Save(ctx)
+func (_u *IncidentMilestoneUpdate) Exec(ctx context.Context) error {
+	_, err := _u.Save(ctx)
 	return err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (imu *IncidentMilestoneUpdate) ExecX(ctx context.Context) {
-	if err := imu.Exec(ctx); err != nil {
+func (_u *IncidentMilestoneUpdate) ExecX(ctx context.Context) {
+	if err := _u.Exec(ctx); err != nil {
 		panic(err)
 	}
 }
 
 // check runs all checks and user-defined validators on the builder.
-func (imu *IncidentMilestoneUpdate) check() error {
-	if v, ok := imu.mutation.Kind(); ok {
+func (_u *IncidentMilestoneUpdate) check() error {
+	if v, ok := _u.mutation.Kind(); ok {
 		if err := incidentmilestone.KindValidator(v); err != nil {
 			return &ValidationError{Name: "kind", err: fmt.Errorf(`ent: validator failed for field "IncidentMilestone.kind": %w`, err)}
 		}
 	}
-	if imu.mutation.TenantCleared() && len(imu.mutation.TenantIDs()) > 0 {
+	if _u.mutation.TenantCleared() && len(_u.mutation.TenantIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "IncidentMilestone.tenant"`)
 	}
-	if imu.mutation.IncidentCleared() && len(imu.mutation.IncidentIDs()) > 0 {
+	if _u.mutation.IncidentCleared() && len(_u.mutation.IncidentIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "IncidentMilestone.incident"`)
 	}
 	return nil
 }
 
 // Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
-func (imu *IncidentMilestoneUpdate) Modify(modifiers ...func(u *sql.UpdateBuilder)) *IncidentMilestoneUpdate {
-	imu.modifiers = append(imu.modifiers, modifiers...)
-	return imu
+func (_u *IncidentMilestoneUpdate) Modify(modifiers ...func(u *sql.UpdateBuilder)) *IncidentMilestoneUpdate {
+	_u.modifiers = append(_u.modifiers, modifiers...)
+	return _u
 }
 
-func (imu *IncidentMilestoneUpdate) sqlSave(ctx context.Context) (n int, err error) {
-	if err := imu.check(); err != nil {
-		return n, err
+func (_u *IncidentMilestoneUpdate) sqlSave(ctx context.Context) (_node int, err error) {
+	if err := _u.check(); err != nil {
+		return _node, err
 	}
 	_spec := sqlgraph.NewUpdateSpec(incidentmilestone.Table, incidentmilestone.Columns, sqlgraph.NewFieldSpec(incidentmilestone.FieldID, field.TypeUUID))
-	if ps := imu.mutation.predicates; len(ps) > 0 {
+	if ps := _u.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {
 				ps[i](selector)
 			}
 		}
 	}
-	if value, ok := imu.mutation.Kind(); ok {
+	if value, ok := _u.mutation.Kind(); ok {
 		_spec.SetField(incidentmilestone.FieldKind, field.TypeEnum, value)
 	}
-	if value, ok := imu.mutation.Description(); ok {
+	if value, ok := _u.mutation.Description(); ok {
 		_spec.SetField(incidentmilestone.FieldDescription, field.TypeString, value)
 	}
-	if imu.mutation.DescriptionCleared() {
+	if _u.mutation.DescriptionCleared() {
 		_spec.ClearField(incidentmilestone.FieldDescription, field.TypeString)
 	}
-	if value, ok := imu.mutation.Time(); ok {
+	if value, ok := _u.mutation.Time(); ok {
 		_spec.SetField(incidentmilestone.FieldTime, field.TypeTime, value)
 	}
-	if imu.mutation.IncidentCleared() {
+	if _u.mutation.IncidentCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: true,
@@ -195,7 +195,7 @@ func (imu *IncidentMilestoneUpdate) sqlSave(ctx context.Context) (n int, err err
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := imu.mutation.IncidentIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.IncidentIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: true,
@@ -211,8 +211,8 @@ func (imu *IncidentMilestoneUpdate) sqlSave(ctx context.Context) (n int, err err
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	_spec.AddModifiers(imu.modifiers...)
-	if n, err = sqlgraph.UpdateNodes(ctx, imu.driver, _spec); err != nil {
+	_spec.AddModifiers(_u.modifiers...)
+	if _node, err = sqlgraph.UpdateNodes(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{incidentmilestone.Label}
 		} else if sqlgraph.IsConstraintError(err) {
@@ -220,8 +220,8 @@ func (imu *IncidentMilestoneUpdate) sqlSave(ctx context.Context) (n int, err err
 		}
 		return 0, err
 	}
-	imu.mutation.done = true
-	return n, nil
+	_u.mutation.done = true
+	return _node, nil
 }
 
 // IncidentMilestoneUpdateOne is the builder for updating a single IncidentMilestone entity.
@@ -234,104 +234,104 @@ type IncidentMilestoneUpdateOne struct {
 }
 
 // SetIncidentID sets the "incident_id" field.
-func (imuo *IncidentMilestoneUpdateOne) SetIncidentID(u uuid.UUID) *IncidentMilestoneUpdateOne {
-	imuo.mutation.SetIncidentID(u)
-	return imuo
+func (_u *IncidentMilestoneUpdateOne) SetIncidentID(v uuid.UUID) *IncidentMilestoneUpdateOne {
+	_u.mutation.SetIncidentID(v)
+	return _u
 }
 
 // SetNillableIncidentID sets the "incident_id" field if the given value is not nil.
-func (imuo *IncidentMilestoneUpdateOne) SetNillableIncidentID(u *uuid.UUID) *IncidentMilestoneUpdateOne {
-	if u != nil {
-		imuo.SetIncidentID(*u)
+func (_u *IncidentMilestoneUpdateOne) SetNillableIncidentID(v *uuid.UUID) *IncidentMilestoneUpdateOne {
+	if v != nil {
+		_u.SetIncidentID(*v)
 	}
-	return imuo
+	return _u
 }
 
 // SetKind sets the "kind" field.
-func (imuo *IncidentMilestoneUpdateOne) SetKind(i incidentmilestone.Kind) *IncidentMilestoneUpdateOne {
-	imuo.mutation.SetKind(i)
-	return imuo
+func (_u *IncidentMilestoneUpdateOne) SetKind(v incidentmilestone.Kind) *IncidentMilestoneUpdateOne {
+	_u.mutation.SetKind(v)
+	return _u
 }
 
 // SetNillableKind sets the "kind" field if the given value is not nil.
-func (imuo *IncidentMilestoneUpdateOne) SetNillableKind(i *incidentmilestone.Kind) *IncidentMilestoneUpdateOne {
-	if i != nil {
-		imuo.SetKind(*i)
+func (_u *IncidentMilestoneUpdateOne) SetNillableKind(v *incidentmilestone.Kind) *IncidentMilestoneUpdateOne {
+	if v != nil {
+		_u.SetKind(*v)
 	}
-	return imuo
+	return _u
 }
 
 // SetDescription sets the "description" field.
-func (imuo *IncidentMilestoneUpdateOne) SetDescription(s string) *IncidentMilestoneUpdateOne {
-	imuo.mutation.SetDescription(s)
-	return imuo
+func (_u *IncidentMilestoneUpdateOne) SetDescription(v string) *IncidentMilestoneUpdateOne {
+	_u.mutation.SetDescription(v)
+	return _u
 }
 
 // SetNillableDescription sets the "description" field if the given value is not nil.
-func (imuo *IncidentMilestoneUpdateOne) SetNillableDescription(s *string) *IncidentMilestoneUpdateOne {
-	if s != nil {
-		imuo.SetDescription(*s)
+func (_u *IncidentMilestoneUpdateOne) SetNillableDescription(v *string) *IncidentMilestoneUpdateOne {
+	if v != nil {
+		_u.SetDescription(*v)
 	}
-	return imuo
+	return _u
 }
 
 // ClearDescription clears the value of the "description" field.
-func (imuo *IncidentMilestoneUpdateOne) ClearDescription() *IncidentMilestoneUpdateOne {
-	imuo.mutation.ClearDescription()
-	return imuo
+func (_u *IncidentMilestoneUpdateOne) ClearDescription() *IncidentMilestoneUpdateOne {
+	_u.mutation.ClearDescription()
+	return _u
 }
 
 // SetTime sets the "time" field.
-func (imuo *IncidentMilestoneUpdateOne) SetTime(t time.Time) *IncidentMilestoneUpdateOne {
-	imuo.mutation.SetTime(t)
-	return imuo
+func (_u *IncidentMilestoneUpdateOne) SetTime(v time.Time) *IncidentMilestoneUpdateOne {
+	_u.mutation.SetTime(v)
+	return _u
 }
 
 // SetNillableTime sets the "time" field if the given value is not nil.
-func (imuo *IncidentMilestoneUpdateOne) SetNillableTime(t *time.Time) *IncidentMilestoneUpdateOne {
-	if t != nil {
-		imuo.SetTime(*t)
+func (_u *IncidentMilestoneUpdateOne) SetNillableTime(v *time.Time) *IncidentMilestoneUpdateOne {
+	if v != nil {
+		_u.SetTime(*v)
 	}
-	return imuo
+	return _u
 }
 
 // SetIncident sets the "incident" edge to the Incident entity.
-func (imuo *IncidentMilestoneUpdateOne) SetIncident(i *Incident) *IncidentMilestoneUpdateOne {
-	return imuo.SetIncidentID(i.ID)
+func (_u *IncidentMilestoneUpdateOne) SetIncident(v *Incident) *IncidentMilestoneUpdateOne {
+	return _u.SetIncidentID(v.ID)
 }
 
 // Mutation returns the IncidentMilestoneMutation object of the builder.
-func (imuo *IncidentMilestoneUpdateOne) Mutation() *IncidentMilestoneMutation {
-	return imuo.mutation
+func (_u *IncidentMilestoneUpdateOne) Mutation() *IncidentMilestoneMutation {
+	return _u.mutation
 }
 
 // ClearIncident clears the "incident" edge to the Incident entity.
-func (imuo *IncidentMilestoneUpdateOne) ClearIncident() *IncidentMilestoneUpdateOne {
-	imuo.mutation.ClearIncident()
-	return imuo
+func (_u *IncidentMilestoneUpdateOne) ClearIncident() *IncidentMilestoneUpdateOne {
+	_u.mutation.ClearIncident()
+	return _u
 }
 
 // Where appends a list predicates to the IncidentMilestoneUpdate builder.
-func (imuo *IncidentMilestoneUpdateOne) Where(ps ...predicate.IncidentMilestone) *IncidentMilestoneUpdateOne {
-	imuo.mutation.Where(ps...)
-	return imuo
+func (_u *IncidentMilestoneUpdateOne) Where(ps ...predicate.IncidentMilestone) *IncidentMilestoneUpdateOne {
+	_u.mutation.Where(ps...)
+	return _u
 }
 
 // Select allows selecting one or more fields (columns) of the returned entity.
 // The default is selecting all fields defined in the entity schema.
-func (imuo *IncidentMilestoneUpdateOne) Select(field string, fields ...string) *IncidentMilestoneUpdateOne {
-	imuo.fields = append([]string{field}, fields...)
-	return imuo
+func (_u *IncidentMilestoneUpdateOne) Select(field string, fields ...string) *IncidentMilestoneUpdateOne {
+	_u.fields = append([]string{field}, fields...)
+	return _u
 }
 
 // Save executes the query and returns the updated IncidentMilestone entity.
-func (imuo *IncidentMilestoneUpdateOne) Save(ctx context.Context) (*IncidentMilestone, error) {
-	return withHooks(ctx, imuo.sqlSave, imuo.mutation, imuo.hooks)
+func (_u *IncidentMilestoneUpdateOne) Save(ctx context.Context) (*IncidentMilestone, error) {
+	return withHooks(ctx, _u.sqlSave, _u.mutation, _u.hooks)
 }
 
 // SaveX is like Save, but panics if an error occurs.
-func (imuo *IncidentMilestoneUpdateOne) SaveX(ctx context.Context) *IncidentMilestone {
-	node, err := imuo.Save(ctx)
+func (_u *IncidentMilestoneUpdateOne) SaveX(ctx context.Context) *IncidentMilestone {
+	node, err := _u.Save(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -339,51 +339,51 @@ func (imuo *IncidentMilestoneUpdateOne) SaveX(ctx context.Context) *IncidentMile
 }
 
 // Exec executes the query on the entity.
-func (imuo *IncidentMilestoneUpdateOne) Exec(ctx context.Context) error {
-	_, err := imuo.Save(ctx)
+func (_u *IncidentMilestoneUpdateOne) Exec(ctx context.Context) error {
+	_, err := _u.Save(ctx)
 	return err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (imuo *IncidentMilestoneUpdateOne) ExecX(ctx context.Context) {
-	if err := imuo.Exec(ctx); err != nil {
+func (_u *IncidentMilestoneUpdateOne) ExecX(ctx context.Context) {
+	if err := _u.Exec(ctx); err != nil {
 		panic(err)
 	}
 }
 
 // check runs all checks and user-defined validators on the builder.
-func (imuo *IncidentMilestoneUpdateOne) check() error {
-	if v, ok := imuo.mutation.Kind(); ok {
+func (_u *IncidentMilestoneUpdateOne) check() error {
+	if v, ok := _u.mutation.Kind(); ok {
 		if err := incidentmilestone.KindValidator(v); err != nil {
 			return &ValidationError{Name: "kind", err: fmt.Errorf(`ent: validator failed for field "IncidentMilestone.kind": %w`, err)}
 		}
 	}
-	if imuo.mutation.TenantCleared() && len(imuo.mutation.TenantIDs()) > 0 {
+	if _u.mutation.TenantCleared() && len(_u.mutation.TenantIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "IncidentMilestone.tenant"`)
 	}
-	if imuo.mutation.IncidentCleared() && len(imuo.mutation.IncidentIDs()) > 0 {
+	if _u.mutation.IncidentCleared() && len(_u.mutation.IncidentIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "IncidentMilestone.incident"`)
 	}
 	return nil
 }
 
 // Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
-func (imuo *IncidentMilestoneUpdateOne) Modify(modifiers ...func(u *sql.UpdateBuilder)) *IncidentMilestoneUpdateOne {
-	imuo.modifiers = append(imuo.modifiers, modifiers...)
-	return imuo
+func (_u *IncidentMilestoneUpdateOne) Modify(modifiers ...func(u *sql.UpdateBuilder)) *IncidentMilestoneUpdateOne {
+	_u.modifiers = append(_u.modifiers, modifiers...)
+	return _u
 }
 
-func (imuo *IncidentMilestoneUpdateOne) sqlSave(ctx context.Context) (_node *IncidentMilestone, err error) {
-	if err := imuo.check(); err != nil {
+func (_u *IncidentMilestoneUpdateOne) sqlSave(ctx context.Context) (_node *IncidentMilestone, err error) {
+	if err := _u.check(); err != nil {
 		return _node, err
 	}
 	_spec := sqlgraph.NewUpdateSpec(incidentmilestone.Table, incidentmilestone.Columns, sqlgraph.NewFieldSpec(incidentmilestone.FieldID, field.TypeUUID))
-	id, ok := imuo.mutation.ID()
+	id, ok := _u.mutation.ID()
 	if !ok {
 		return nil, &ValidationError{Name: "id", err: errors.New(`ent: missing "IncidentMilestone.id" for update`)}
 	}
 	_spec.Node.ID.Value = id
-	if fields := imuo.fields; len(fields) > 0 {
+	if fields := _u.fields; len(fields) > 0 {
 		_spec.Node.Columns = make([]string, 0, len(fields))
 		_spec.Node.Columns = append(_spec.Node.Columns, incidentmilestone.FieldID)
 		for _, f := range fields {
@@ -395,26 +395,26 @@ func (imuo *IncidentMilestoneUpdateOne) sqlSave(ctx context.Context) (_node *Inc
 			}
 		}
 	}
-	if ps := imuo.mutation.predicates; len(ps) > 0 {
+	if ps := _u.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {
 				ps[i](selector)
 			}
 		}
 	}
-	if value, ok := imuo.mutation.Kind(); ok {
+	if value, ok := _u.mutation.Kind(); ok {
 		_spec.SetField(incidentmilestone.FieldKind, field.TypeEnum, value)
 	}
-	if value, ok := imuo.mutation.Description(); ok {
+	if value, ok := _u.mutation.Description(); ok {
 		_spec.SetField(incidentmilestone.FieldDescription, field.TypeString, value)
 	}
-	if imuo.mutation.DescriptionCleared() {
+	if _u.mutation.DescriptionCleared() {
 		_spec.ClearField(incidentmilestone.FieldDescription, field.TypeString)
 	}
-	if value, ok := imuo.mutation.Time(); ok {
+	if value, ok := _u.mutation.Time(); ok {
 		_spec.SetField(incidentmilestone.FieldTime, field.TypeTime, value)
 	}
-	if imuo.mutation.IncidentCleared() {
+	if _u.mutation.IncidentCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: true,
@@ -427,7 +427,7 @@ func (imuo *IncidentMilestoneUpdateOne) sqlSave(ctx context.Context) (_node *Inc
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := imuo.mutation.IncidentIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.IncidentIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: true,
@@ -443,11 +443,11 @@ func (imuo *IncidentMilestoneUpdateOne) sqlSave(ctx context.Context) (_node *Inc
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	_spec.AddModifiers(imuo.modifiers...)
-	_node = &IncidentMilestone{config: imuo.config}
+	_spec.AddModifiers(_u.modifiers...)
+	_node = &IncidentMilestone{config: _u.config}
 	_spec.Assign = _node.assignValues
 	_spec.ScanValues = _node.scanValues
-	if err = sqlgraph.UpdateNode(ctx, imuo.driver, _spec); err != nil {
+	if err = sqlgraph.UpdateNode(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{incidentmilestone.Label}
 		} else if sqlgraph.IsConstraintError(err) {
@@ -455,6 +455,6 @@ func (imuo *IncidentMilestoneUpdateOne) sqlSave(ctx context.Context) (_node *Inc
 		}
 		return nil, err
 	}
-	imuo.mutation.done = true
+	_u.mutation.done = true
 	return _node, nil
 }

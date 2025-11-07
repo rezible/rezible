@@ -33,44 +33,44 @@ type ProviderSyncHistoryQuery struct {
 }
 
 // Where adds a new predicate for the ProviderSyncHistoryQuery builder.
-func (pshq *ProviderSyncHistoryQuery) Where(ps ...predicate.ProviderSyncHistory) *ProviderSyncHistoryQuery {
-	pshq.predicates = append(pshq.predicates, ps...)
-	return pshq
+func (_q *ProviderSyncHistoryQuery) Where(ps ...predicate.ProviderSyncHistory) *ProviderSyncHistoryQuery {
+	_q.predicates = append(_q.predicates, ps...)
+	return _q
 }
 
 // Limit the number of records to be returned by this query.
-func (pshq *ProviderSyncHistoryQuery) Limit(limit int) *ProviderSyncHistoryQuery {
-	pshq.ctx.Limit = &limit
-	return pshq
+func (_q *ProviderSyncHistoryQuery) Limit(limit int) *ProviderSyncHistoryQuery {
+	_q.ctx.Limit = &limit
+	return _q
 }
 
 // Offset to start from.
-func (pshq *ProviderSyncHistoryQuery) Offset(offset int) *ProviderSyncHistoryQuery {
-	pshq.ctx.Offset = &offset
-	return pshq
+func (_q *ProviderSyncHistoryQuery) Offset(offset int) *ProviderSyncHistoryQuery {
+	_q.ctx.Offset = &offset
+	return _q
 }
 
 // Unique configures the query builder to filter duplicate records on query.
 // By default, unique is set to true, and can be disabled using this method.
-func (pshq *ProviderSyncHistoryQuery) Unique(unique bool) *ProviderSyncHistoryQuery {
-	pshq.ctx.Unique = &unique
-	return pshq
+func (_q *ProviderSyncHistoryQuery) Unique(unique bool) *ProviderSyncHistoryQuery {
+	_q.ctx.Unique = &unique
+	return _q
 }
 
 // Order specifies how the records should be ordered.
-func (pshq *ProviderSyncHistoryQuery) Order(o ...providersynchistory.OrderOption) *ProviderSyncHistoryQuery {
-	pshq.order = append(pshq.order, o...)
-	return pshq
+func (_q *ProviderSyncHistoryQuery) Order(o ...providersynchistory.OrderOption) *ProviderSyncHistoryQuery {
+	_q.order = append(_q.order, o...)
+	return _q
 }
 
 // QueryTenant chains the current query on the "tenant" edge.
-func (pshq *ProviderSyncHistoryQuery) QueryTenant() *TenantQuery {
-	query := (&TenantClient{config: pshq.config}).Query()
+func (_q *ProviderSyncHistoryQuery) QueryTenant() *TenantQuery {
+	query := (&TenantClient{config: _q.config}).Query()
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
-		if err := pshq.prepareQuery(ctx); err != nil {
+		if err := _q.prepareQuery(ctx); err != nil {
 			return nil, err
 		}
-		selector := pshq.sqlQuery(ctx)
+		selector := _q.sqlQuery(ctx)
 		if err := selector.Err(); err != nil {
 			return nil, err
 		}
@@ -79,7 +79,7 @@ func (pshq *ProviderSyncHistoryQuery) QueryTenant() *TenantQuery {
 			sqlgraph.To(tenant.Table, tenant.FieldID),
 			sqlgraph.Edge(sqlgraph.M2O, false, providersynchistory.TenantTable, providersynchistory.TenantColumn),
 		)
-		fromU = sqlgraph.SetNeighbors(pshq.driver.Dialect(), step)
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
 	}
 	return query
@@ -87,8 +87,8 @@ func (pshq *ProviderSyncHistoryQuery) QueryTenant() *TenantQuery {
 
 // First returns the first ProviderSyncHistory entity from the query.
 // Returns a *NotFoundError when no ProviderSyncHistory was found.
-func (pshq *ProviderSyncHistoryQuery) First(ctx context.Context) (*ProviderSyncHistory, error) {
-	nodes, err := pshq.Limit(1).All(setContextOp(ctx, pshq.ctx, ent.OpQueryFirst))
+func (_q *ProviderSyncHistoryQuery) First(ctx context.Context) (*ProviderSyncHistory, error) {
+	nodes, err := _q.Limit(1).All(setContextOp(ctx, _q.ctx, ent.OpQueryFirst))
 	if err != nil {
 		return nil, err
 	}
@@ -99,8 +99,8 @@ func (pshq *ProviderSyncHistoryQuery) First(ctx context.Context) (*ProviderSyncH
 }
 
 // FirstX is like First, but panics if an error occurs.
-func (pshq *ProviderSyncHistoryQuery) FirstX(ctx context.Context) *ProviderSyncHistory {
-	node, err := pshq.First(ctx)
+func (_q *ProviderSyncHistoryQuery) FirstX(ctx context.Context) *ProviderSyncHistory {
+	node, err := _q.First(ctx)
 	if err != nil && !IsNotFound(err) {
 		panic(err)
 	}
@@ -109,9 +109,9 @@ func (pshq *ProviderSyncHistoryQuery) FirstX(ctx context.Context) *ProviderSyncH
 
 // FirstID returns the first ProviderSyncHistory ID from the query.
 // Returns a *NotFoundError when no ProviderSyncHistory ID was found.
-func (pshq *ProviderSyncHistoryQuery) FirstID(ctx context.Context) (id uuid.UUID, err error) {
+func (_q *ProviderSyncHistoryQuery) FirstID(ctx context.Context) (id uuid.UUID, err error) {
 	var ids []uuid.UUID
-	if ids, err = pshq.Limit(1).IDs(setContextOp(ctx, pshq.ctx, ent.OpQueryFirstID)); err != nil {
+	if ids, err = _q.Limit(1).IDs(setContextOp(ctx, _q.ctx, ent.OpQueryFirstID)); err != nil {
 		return
 	}
 	if len(ids) == 0 {
@@ -122,8 +122,8 @@ func (pshq *ProviderSyncHistoryQuery) FirstID(ctx context.Context) (id uuid.UUID
 }
 
 // FirstIDX is like FirstID, but panics if an error occurs.
-func (pshq *ProviderSyncHistoryQuery) FirstIDX(ctx context.Context) uuid.UUID {
-	id, err := pshq.FirstID(ctx)
+func (_q *ProviderSyncHistoryQuery) FirstIDX(ctx context.Context) uuid.UUID {
+	id, err := _q.FirstID(ctx)
 	if err != nil && !IsNotFound(err) {
 		panic(err)
 	}
@@ -133,8 +133,8 @@ func (pshq *ProviderSyncHistoryQuery) FirstIDX(ctx context.Context) uuid.UUID {
 // Only returns a single ProviderSyncHistory entity found by the query, ensuring it only returns one.
 // Returns a *NotSingularError when more than one ProviderSyncHistory entity is found.
 // Returns a *NotFoundError when no ProviderSyncHistory entities are found.
-func (pshq *ProviderSyncHistoryQuery) Only(ctx context.Context) (*ProviderSyncHistory, error) {
-	nodes, err := pshq.Limit(2).All(setContextOp(ctx, pshq.ctx, ent.OpQueryOnly))
+func (_q *ProviderSyncHistoryQuery) Only(ctx context.Context) (*ProviderSyncHistory, error) {
+	nodes, err := _q.Limit(2).All(setContextOp(ctx, _q.ctx, ent.OpQueryOnly))
 	if err != nil {
 		return nil, err
 	}
@@ -149,8 +149,8 @@ func (pshq *ProviderSyncHistoryQuery) Only(ctx context.Context) (*ProviderSyncHi
 }
 
 // OnlyX is like Only, but panics if an error occurs.
-func (pshq *ProviderSyncHistoryQuery) OnlyX(ctx context.Context) *ProviderSyncHistory {
-	node, err := pshq.Only(ctx)
+func (_q *ProviderSyncHistoryQuery) OnlyX(ctx context.Context) *ProviderSyncHistory {
+	node, err := _q.Only(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -160,9 +160,9 @@ func (pshq *ProviderSyncHistoryQuery) OnlyX(ctx context.Context) *ProviderSyncHi
 // OnlyID is like Only, but returns the only ProviderSyncHistory ID in the query.
 // Returns a *NotSingularError when more than one ProviderSyncHistory ID is found.
 // Returns a *NotFoundError when no entities are found.
-func (pshq *ProviderSyncHistoryQuery) OnlyID(ctx context.Context) (id uuid.UUID, err error) {
+func (_q *ProviderSyncHistoryQuery) OnlyID(ctx context.Context) (id uuid.UUID, err error) {
 	var ids []uuid.UUID
-	if ids, err = pshq.Limit(2).IDs(setContextOp(ctx, pshq.ctx, ent.OpQueryOnlyID)); err != nil {
+	if ids, err = _q.Limit(2).IDs(setContextOp(ctx, _q.ctx, ent.OpQueryOnlyID)); err != nil {
 		return
 	}
 	switch len(ids) {
@@ -177,8 +177,8 @@ func (pshq *ProviderSyncHistoryQuery) OnlyID(ctx context.Context) (id uuid.UUID,
 }
 
 // OnlyIDX is like OnlyID, but panics if an error occurs.
-func (pshq *ProviderSyncHistoryQuery) OnlyIDX(ctx context.Context) uuid.UUID {
-	id, err := pshq.OnlyID(ctx)
+func (_q *ProviderSyncHistoryQuery) OnlyIDX(ctx context.Context) uuid.UUID {
+	id, err := _q.OnlyID(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -186,18 +186,18 @@ func (pshq *ProviderSyncHistoryQuery) OnlyIDX(ctx context.Context) uuid.UUID {
 }
 
 // All executes the query and returns a list of ProviderSyncHistories.
-func (pshq *ProviderSyncHistoryQuery) All(ctx context.Context) ([]*ProviderSyncHistory, error) {
-	ctx = setContextOp(ctx, pshq.ctx, ent.OpQueryAll)
-	if err := pshq.prepareQuery(ctx); err != nil {
+func (_q *ProviderSyncHistoryQuery) All(ctx context.Context) ([]*ProviderSyncHistory, error) {
+	ctx = setContextOp(ctx, _q.ctx, ent.OpQueryAll)
+	if err := _q.prepareQuery(ctx); err != nil {
 		return nil, err
 	}
 	qr := querierAll[[]*ProviderSyncHistory, *ProviderSyncHistoryQuery]()
-	return withInterceptors[[]*ProviderSyncHistory](ctx, pshq, qr, pshq.inters)
+	return withInterceptors[[]*ProviderSyncHistory](ctx, _q, qr, _q.inters)
 }
 
 // AllX is like All, but panics if an error occurs.
-func (pshq *ProviderSyncHistoryQuery) AllX(ctx context.Context) []*ProviderSyncHistory {
-	nodes, err := pshq.All(ctx)
+func (_q *ProviderSyncHistoryQuery) AllX(ctx context.Context) []*ProviderSyncHistory {
+	nodes, err := _q.All(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -205,20 +205,20 @@ func (pshq *ProviderSyncHistoryQuery) AllX(ctx context.Context) []*ProviderSyncH
 }
 
 // IDs executes the query and returns a list of ProviderSyncHistory IDs.
-func (pshq *ProviderSyncHistoryQuery) IDs(ctx context.Context) (ids []uuid.UUID, err error) {
-	if pshq.ctx.Unique == nil && pshq.path != nil {
-		pshq.Unique(true)
+func (_q *ProviderSyncHistoryQuery) IDs(ctx context.Context) (ids []uuid.UUID, err error) {
+	if _q.ctx.Unique == nil && _q.path != nil {
+		_q.Unique(true)
 	}
-	ctx = setContextOp(ctx, pshq.ctx, ent.OpQueryIDs)
-	if err = pshq.Select(providersynchistory.FieldID).Scan(ctx, &ids); err != nil {
+	ctx = setContextOp(ctx, _q.ctx, ent.OpQueryIDs)
+	if err = _q.Select(providersynchistory.FieldID).Scan(ctx, &ids); err != nil {
 		return nil, err
 	}
 	return ids, nil
 }
 
 // IDsX is like IDs, but panics if an error occurs.
-func (pshq *ProviderSyncHistoryQuery) IDsX(ctx context.Context) []uuid.UUID {
-	ids, err := pshq.IDs(ctx)
+func (_q *ProviderSyncHistoryQuery) IDsX(ctx context.Context) []uuid.UUID {
+	ids, err := _q.IDs(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -226,17 +226,17 @@ func (pshq *ProviderSyncHistoryQuery) IDsX(ctx context.Context) []uuid.UUID {
 }
 
 // Count returns the count of the given query.
-func (pshq *ProviderSyncHistoryQuery) Count(ctx context.Context) (int, error) {
-	ctx = setContextOp(ctx, pshq.ctx, ent.OpQueryCount)
-	if err := pshq.prepareQuery(ctx); err != nil {
+func (_q *ProviderSyncHistoryQuery) Count(ctx context.Context) (int, error) {
+	ctx = setContextOp(ctx, _q.ctx, ent.OpQueryCount)
+	if err := _q.prepareQuery(ctx); err != nil {
 		return 0, err
 	}
-	return withInterceptors[int](ctx, pshq, querierCount[*ProviderSyncHistoryQuery](), pshq.inters)
+	return withInterceptors[int](ctx, _q, querierCount[*ProviderSyncHistoryQuery](), _q.inters)
 }
 
 // CountX is like Count, but panics if an error occurs.
-func (pshq *ProviderSyncHistoryQuery) CountX(ctx context.Context) int {
-	count, err := pshq.Count(ctx)
+func (_q *ProviderSyncHistoryQuery) CountX(ctx context.Context) int {
+	count, err := _q.Count(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -244,9 +244,9 @@ func (pshq *ProviderSyncHistoryQuery) CountX(ctx context.Context) int {
 }
 
 // Exist returns true if the query has elements in the graph.
-func (pshq *ProviderSyncHistoryQuery) Exist(ctx context.Context) (bool, error) {
-	ctx = setContextOp(ctx, pshq.ctx, ent.OpQueryExist)
-	switch _, err := pshq.FirstID(ctx); {
+func (_q *ProviderSyncHistoryQuery) Exist(ctx context.Context) (bool, error) {
+	ctx = setContextOp(ctx, _q.ctx, ent.OpQueryExist)
+	switch _, err := _q.FirstID(ctx); {
 	case IsNotFound(err):
 		return false, nil
 	case err != nil:
@@ -257,8 +257,8 @@ func (pshq *ProviderSyncHistoryQuery) Exist(ctx context.Context) (bool, error) {
 }
 
 // ExistX is like Exist, but panics if an error occurs.
-func (pshq *ProviderSyncHistoryQuery) ExistX(ctx context.Context) bool {
-	exist, err := pshq.Exist(ctx)
+func (_q *ProviderSyncHistoryQuery) ExistX(ctx context.Context) bool {
+	exist, err := _q.Exist(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -267,33 +267,33 @@ func (pshq *ProviderSyncHistoryQuery) ExistX(ctx context.Context) bool {
 
 // Clone returns a duplicate of the ProviderSyncHistoryQuery builder, including all associated steps. It can be
 // used to prepare common query builders and use them differently after the clone is made.
-func (pshq *ProviderSyncHistoryQuery) Clone() *ProviderSyncHistoryQuery {
-	if pshq == nil {
+func (_q *ProviderSyncHistoryQuery) Clone() *ProviderSyncHistoryQuery {
+	if _q == nil {
 		return nil
 	}
 	return &ProviderSyncHistoryQuery{
-		config:     pshq.config,
-		ctx:        pshq.ctx.Clone(),
-		order:      append([]providersynchistory.OrderOption{}, pshq.order...),
-		inters:     append([]Interceptor{}, pshq.inters...),
-		predicates: append([]predicate.ProviderSyncHistory{}, pshq.predicates...),
-		withTenant: pshq.withTenant.Clone(),
+		config:     _q.config,
+		ctx:        _q.ctx.Clone(),
+		order:      append([]providersynchistory.OrderOption{}, _q.order...),
+		inters:     append([]Interceptor{}, _q.inters...),
+		predicates: append([]predicate.ProviderSyncHistory{}, _q.predicates...),
+		withTenant: _q.withTenant.Clone(),
 		// clone intermediate query.
-		sql:       pshq.sql.Clone(),
-		path:      pshq.path,
-		modifiers: append([]func(*sql.Selector){}, pshq.modifiers...),
+		sql:       _q.sql.Clone(),
+		path:      _q.path,
+		modifiers: append([]func(*sql.Selector){}, _q.modifiers...),
 	}
 }
 
 // WithTenant tells the query-builder to eager-load the nodes that are connected to
 // the "tenant" edge. The optional arguments are used to configure the query builder of the edge.
-func (pshq *ProviderSyncHistoryQuery) WithTenant(opts ...func(*TenantQuery)) *ProviderSyncHistoryQuery {
-	query := (&TenantClient{config: pshq.config}).Query()
+func (_q *ProviderSyncHistoryQuery) WithTenant(opts ...func(*TenantQuery)) *ProviderSyncHistoryQuery {
+	query := (&TenantClient{config: _q.config}).Query()
 	for _, opt := range opts {
 		opt(query)
 	}
-	pshq.withTenant = query
-	return pshq
+	_q.withTenant = query
+	return _q
 }
 
 // GroupBy is used to group vertices by one or more fields/columns.
@@ -310,10 +310,10 @@ func (pshq *ProviderSyncHistoryQuery) WithTenant(opts ...func(*TenantQuery)) *Pr
 //		GroupBy(providersynchistory.FieldTenantID).
 //		Aggregate(ent.Count()).
 //		Scan(ctx, &v)
-func (pshq *ProviderSyncHistoryQuery) GroupBy(field string, fields ...string) *ProviderSyncHistoryGroupBy {
-	pshq.ctx.Fields = append([]string{field}, fields...)
-	grbuild := &ProviderSyncHistoryGroupBy{build: pshq}
-	grbuild.flds = &pshq.ctx.Fields
+func (_q *ProviderSyncHistoryQuery) GroupBy(field string, fields ...string) *ProviderSyncHistoryGroupBy {
+	_q.ctx.Fields = append([]string{field}, fields...)
+	grbuild := &ProviderSyncHistoryGroupBy{build: _q}
+	grbuild.flds = &_q.ctx.Fields
 	grbuild.label = providersynchistory.Label
 	grbuild.scan = grbuild.Scan
 	return grbuild
@@ -331,82 +331,82 @@ func (pshq *ProviderSyncHistoryQuery) GroupBy(field string, fields ...string) *P
 //	client.ProviderSyncHistory.Query().
 //		Select(providersynchistory.FieldTenantID).
 //		Scan(ctx, &v)
-func (pshq *ProviderSyncHistoryQuery) Select(fields ...string) *ProviderSyncHistorySelect {
-	pshq.ctx.Fields = append(pshq.ctx.Fields, fields...)
-	sbuild := &ProviderSyncHistorySelect{ProviderSyncHistoryQuery: pshq}
+func (_q *ProviderSyncHistoryQuery) Select(fields ...string) *ProviderSyncHistorySelect {
+	_q.ctx.Fields = append(_q.ctx.Fields, fields...)
+	sbuild := &ProviderSyncHistorySelect{ProviderSyncHistoryQuery: _q}
 	sbuild.label = providersynchistory.Label
-	sbuild.flds, sbuild.scan = &pshq.ctx.Fields, sbuild.Scan
+	sbuild.flds, sbuild.scan = &_q.ctx.Fields, sbuild.Scan
 	return sbuild
 }
 
 // Aggregate returns a ProviderSyncHistorySelect configured with the given aggregations.
-func (pshq *ProviderSyncHistoryQuery) Aggregate(fns ...AggregateFunc) *ProviderSyncHistorySelect {
-	return pshq.Select().Aggregate(fns...)
+func (_q *ProviderSyncHistoryQuery) Aggregate(fns ...AggregateFunc) *ProviderSyncHistorySelect {
+	return _q.Select().Aggregate(fns...)
 }
 
-func (pshq *ProviderSyncHistoryQuery) prepareQuery(ctx context.Context) error {
-	for _, inter := range pshq.inters {
+func (_q *ProviderSyncHistoryQuery) prepareQuery(ctx context.Context) error {
+	for _, inter := range _q.inters {
 		if inter == nil {
 			return fmt.Errorf("ent: uninitialized interceptor (forgotten import ent/runtime?)")
 		}
 		if trv, ok := inter.(Traverser); ok {
-			if err := trv.Traverse(ctx, pshq); err != nil {
+			if err := trv.Traverse(ctx, _q); err != nil {
 				return err
 			}
 		}
 	}
-	for _, f := range pshq.ctx.Fields {
+	for _, f := range _q.ctx.Fields {
 		if !providersynchistory.ValidColumn(f) {
 			return &ValidationError{Name: f, err: fmt.Errorf("ent: invalid field %q for query", f)}
 		}
 	}
-	if pshq.path != nil {
-		prev, err := pshq.path(ctx)
+	if _q.path != nil {
+		prev, err := _q.path(ctx)
 		if err != nil {
 			return err
 		}
-		pshq.sql = prev
+		_q.sql = prev
 	}
 	if providersynchistory.Policy == nil {
 		return errors.New("ent: uninitialized providersynchistory.Policy (forgotten import ent/runtime?)")
 	}
-	if err := providersynchistory.Policy.EvalQuery(ctx, pshq); err != nil {
+	if err := providersynchistory.Policy.EvalQuery(ctx, _q); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (pshq *ProviderSyncHistoryQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*ProviderSyncHistory, error) {
+func (_q *ProviderSyncHistoryQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*ProviderSyncHistory, error) {
 	var (
 		nodes       = []*ProviderSyncHistory{}
-		_spec       = pshq.querySpec()
+		_spec       = _q.querySpec()
 		loadedTypes = [1]bool{
-			pshq.withTenant != nil,
+			_q.withTenant != nil,
 		}
 	)
 	_spec.ScanValues = func(columns []string) ([]any, error) {
 		return (*ProviderSyncHistory).scanValues(nil, columns)
 	}
 	_spec.Assign = func(columns []string, values []any) error {
-		node := &ProviderSyncHistory{config: pshq.config}
+		node := &ProviderSyncHistory{config: _q.config}
 		nodes = append(nodes, node)
 		node.Edges.loadedTypes = loadedTypes
 		return node.assignValues(columns, values)
 	}
-	if len(pshq.modifiers) > 0 {
-		_spec.Modifiers = pshq.modifiers
+	if len(_q.modifiers) > 0 {
+		_spec.Modifiers = _q.modifiers
 	}
 	for i := range hooks {
 		hooks[i](ctx, _spec)
 	}
-	if err := sqlgraph.QueryNodes(ctx, pshq.driver, _spec); err != nil {
+	if err := sqlgraph.QueryNodes(ctx, _q.driver, _spec); err != nil {
 		return nil, err
 	}
 	if len(nodes) == 0 {
 		return nodes, nil
 	}
-	if query := pshq.withTenant; query != nil {
-		if err := pshq.loadTenant(ctx, query, nodes, nil,
+	if query := _q.withTenant; query != nil {
+		if err := _q.loadTenant(ctx, query, nodes, nil,
 			func(n *ProviderSyncHistory, e *Tenant) { n.Edges.Tenant = e }); err != nil {
 			return nil, err
 		}
@@ -414,7 +414,7 @@ func (pshq *ProviderSyncHistoryQuery) sqlAll(ctx context.Context, hooks ...query
 	return nodes, nil
 }
 
-func (pshq *ProviderSyncHistoryQuery) loadTenant(ctx context.Context, query *TenantQuery, nodes []*ProviderSyncHistory, init func(*ProviderSyncHistory), assign func(*ProviderSyncHistory, *Tenant)) error {
+func (_q *ProviderSyncHistoryQuery) loadTenant(ctx context.Context, query *TenantQuery, nodes []*ProviderSyncHistory, init func(*ProviderSyncHistory), assign func(*ProviderSyncHistory, *Tenant)) error {
 	ids := make([]int, 0, len(nodes))
 	nodeids := make(map[int][]*ProviderSyncHistory)
 	for i := range nodes {
@@ -444,27 +444,27 @@ func (pshq *ProviderSyncHistoryQuery) loadTenant(ctx context.Context, query *Ten
 	return nil
 }
 
-func (pshq *ProviderSyncHistoryQuery) sqlCount(ctx context.Context) (int, error) {
-	_spec := pshq.querySpec()
-	if len(pshq.modifiers) > 0 {
-		_spec.Modifiers = pshq.modifiers
+func (_q *ProviderSyncHistoryQuery) sqlCount(ctx context.Context) (int, error) {
+	_spec := _q.querySpec()
+	if len(_q.modifiers) > 0 {
+		_spec.Modifiers = _q.modifiers
 	}
-	_spec.Node.Columns = pshq.ctx.Fields
-	if len(pshq.ctx.Fields) > 0 {
-		_spec.Unique = pshq.ctx.Unique != nil && *pshq.ctx.Unique
+	_spec.Node.Columns = _q.ctx.Fields
+	if len(_q.ctx.Fields) > 0 {
+		_spec.Unique = _q.ctx.Unique != nil && *_q.ctx.Unique
 	}
-	return sqlgraph.CountNodes(ctx, pshq.driver, _spec)
+	return sqlgraph.CountNodes(ctx, _q.driver, _spec)
 }
 
-func (pshq *ProviderSyncHistoryQuery) querySpec() *sqlgraph.QuerySpec {
+func (_q *ProviderSyncHistoryQuery) querySpec() *sqlgraph.QuerySpec {
 	_spec := sqlgraph.NewQuerySpec(providersynchistory.Table, providersynchistory.Columns, sqlgraph.NewFieldSpec(providersynchistory.FieldID, field.TypeUUID))
-	_spec.From = pshq.sql
-	if unique := pshq.ctx.Unique; unique != nil {
+	_spec.From = _q.sql
+	if unique := _q.ctx.Unique; unique != nil {
 		_spec.Unique = *unique
-	} else if pshq.path != nil {
+	} else if _q.path != nil {
 		_spec.Unique = true
 	}
-	if fields := pshq.ctx.Fields; len(fields) > 0 {
+	if fields := _q.ctx.Fields; len(fields) > 0 {
 		_spec.Node.Columns = make([]string, 0, len(fields))
 		_spec.Node.Columns = append(_spec.Node.Columns, providersynchistory.FieldID)
 		for i := range fields {
@@ -472,24 +472,24 @@ func (pshq *ProviderSyncHistoryQuery) querySpec() *sqlgraph.QuerySpec {
 				_spec.Node.Columns = append(_spec.Node.Columns, fields[i])
 			}
 		}
-		if pshq.withTenant != nil {
+		if _q.withTenant != nil {
 			_spec.Node.AddColumnOnce(providersynchistory.FieldTenantID)
 		}
 	}
-	if ps := pshq.predicates; len(ps) > 0 {
+	if ps := _q.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {
 				ps[i](selector)
 			}
 		}
 	}
-	if limit := pshq.ctx.Limit; limit != nil {
+	if limit := _q.ctx.Limit; limit != nil {
 		_spec.Limit = *limit
 	}
-	if offset := pshq.ctx.Offset; offset != nil {
+	if offset := _q.ctx.Offset; offset != nil {
 		_spec.Offset = *offset
 	}
-	if ps := pshq.order; len(ps) > 0 {
+	if ps := _q.order; len(ps) > 0 {
 		_spec.Order = func(selector *sql.Selector) {
 			for i := range ps {
 				ps[i](selector)
@@ -499,45 +499,45 @@ func (pshq *ProviderSyncHistoryQuery) querySpec() *sqlgraph.QuerySpec {
 	return _spec
 }
 
-func (pshq *ProviderSyncHistoryQuery) sqlQuery(ctx context.Context) *sql.Selector {
-	builder := sql.Dialect(pshq.driver.Dialect())
+func (_q *ProviderSyncHistoryQuery) sqlQuery(ctx context.Context) *sql.Selector {
+	builder := sql.Dialect(_q.driver.Dialect())
 	t1 := builder.Table(providersynchistory.Table)
-	columns := pshq.ctx.Fields
+	columns := _q.ctx.Fields
 	if len(columns) == 0 {
 		columns = providersynchistory.Columns
 	}
 	selector := builder.Select(t1.Columns(columns...)...).From(t1)
-	if pshq.sql != nil {
-		selector = pshq.sql
+	if _q.sql != nil {
+		selector = _q.sql
 		selector.Select(selector.Columns(columns...)...)
 	}
-	if pshq.ctx.Unique != nil && *pshq.ctx.Unique {
+	if _q.ctx.Unique != nil && *_q.ctx.Unique {
 		selector.Distinct()
 	}
-	for _, m := range pshq.modifiers {
+	for _, m := range _q.modifiers {
 		m(selector)
 	}
-	for _, p := range pshq.predicates {
+	for _, p := range _q.predicates {
 		p(selector)
 	}
-	for _, p := range pshq.order {
+	for _, p := range _q.order {
 		p(selector)
 	}
-	if offset := pshq.ctx.Offset; offset != nil {
+	if offset := _q.ctx.Offset; offset != nil {
 		// limit is mandatory for offset clause. We start
 		// with default value, and override it below if needed.
 		selector.Offset(*offset).Limit(math.MaxInt32)
 	}
-	if limit := pshq.ctx.Limit; limit != nil {
+	if limit := _q.ctx.Limit; limit != nil {
 		selector.Limit(*limit)
 	}
 	return selector
 }
 
 // Modify adds a query modifier for attaching custom logic to queries.
-func (pshq *ProviderSyncHistoryQuery) Modify(modifiers ...func(s *sql.Selector)) *ProviderSyncHistorySelect {
-	pshq.modifiers = append(pshq.modifiers, modifiers...)
-	return pshq.Select()
+func (_q *ProviderSyncHistoryQuery) Modify(modifiers ...func(s *sql.Selector)) *ProviderSyncHistorySelect {
+	_q.modifiers = append(_q.modifiers, modifiers...)
+	return _q.Select()
 }
 
 // ProviderSyncHistoryGroupBy is the group-by builder for ProviderSyncHistory entities.
@@ -547,41 +547,41 @@ type ProviderSyncHistoryGroupBy struct {
 }
 
 // Aggregate adds the given aggregation functions to the group-by query.
-func (pshgb *ProviderSyncHistoryGroupBy) Aggregate(fns ...AggregateFunc) *ProviderSyncHistoryGroupBy {
-	pshgb.fns = append(pshgb.fns, fns...)
-	return pshgb
+func (_g *ProviderSyncHistoryGroupBy) Aggregate(fns ...AggregateFunc) *ProviderSyncHistoryGroupBy {
+	_g.fns = append(_g.fns, fns...)
+	return _g
 }
 
 // Scan applies the selector query and scans the result into the given value.
-func (pshgb *ProviderSyncHistoryGroupBy) Scan(ctx context.Context, v any) error {
-	ctx = setContextOp(ctx, pshgb.build.ctx, ent.OpQueryGroupBy)
-	if err := pshgb.build.prepareQuery(ctx); err != nil {
+func (_g *ProviderSyncHistoryGroupBy) Scan(ctx context.Context, v any) error {
+	ctx = setContextOp(ctx, _g.build.ctx, ent.OpQueryGroupBy)
+	if err := _g.build.prepareQuery(ctx); err != nil {
 		return err
 	}
-	return scanWithInterceptors[*ProviderSyncHistoryQuery, *ProviderSyncHistoryGroupBy](ctx, pshgb.build, pshgb, pshgb.build.inters, v)
+	return scanWithInterceptors[*ProviderSyncHistoryQuery, *ProviderSyncHistoryGroupBy](ctx, _g.build, _g, _g.build.inters, v)
 }
 
-func (pshgb *ProviderSyncHistoryGroupBy) sqlScan(ctx context.Context, root *ProviderSyncHistoryQuery, v any) error {
+func (_g *ProviderSyncHistoryGroupBy) sqlScan(ctx context.Context, root *ProviderSyncHistoryQuery, v any) error {
 	selector := root.sqlQuery(ctx).Select()
-	aggregation := make([]string, 0, len(pshgb.fns))
-	for _, fn := range pshgb.fns {
+	aggregation := make([]string, 0, len(_g.fns))
+	for _, fn := range _g.fns {
 		aggregation = append(aggregation, fn(selector))
 	}
 	if len(selector.SelectedColumns()) == 0 {
-		columns := make([]string, 0, len(*pshgb.flds)+len(pshgb.fns))
-		for _, f := range *pshgb.flds {
+		columns := make([]string, 0, len(*_g.flds)+len(_g.fns))
+		for _, f := range *_g.flds {
 			columns = append(columns, selector.C(f))
 		}
 		columns = append(columns, aggregation...)
 		selector.Select(columns...)
 	}
-	selector.GroupBy(selector.Columns(*pshgb.flds...)...)
+	selector.GroupBy(selector.Columns(*_g.flds...)...)
 	if err := selector.Err(); err != nil {
 		return err
 	}
 	rows := &sql.Rows{}
 	query, args := selector.Query()
-	if err := pshgb.build.driver.Query(ctx, query, args, rows); err != nil {
+	if err := _g.build.driver.Query(ctx, query, args, rows); err != nil {
 		return err
 	}
 	defer rows.Close()
@@ -595,27 +595,27 @@ type ProviderSyncHistorySelect struct {
 }
 
 // Aggregate adds the given aggregation functions to the selector query.
-func (pshs *ProviderSyncHistorySelect) Aggregate(fns ...AggregateFunc) *ProviderSyncHistorySelect {
-	pshs.fns = append(pshs.fns, fns...)
-	return pshs
+func (_s *ProviderSyncHistorySelect) Aggregate(fns ...AggregateFunc) *ProviderSyncHistorySelect {
+	_s.fns = append(_s.fns, fns...)
+	return _s
 }
 
 // Scan applies the selector query and scans the result into the given value.
-func (pshs *ProviderSyncHistorySelect) Scan(ctx context.Context, v any) error {
-	ctx = setContextOp(ctx, pshs.ctx, ent.OpQuerySelect)
-	if err := pshs.prepareQuery(ctx); err != nil {
+func (_s *ProviderSyncHistorySelect) Scan(ctx context.Context, v any) error {
+	ctx = setContextOp(ctx, _s.ctx, ent.OpQuerySelect)
+	if err := _s.prepareQuery(ctx); err != nil {
 		return err
 	}
-	return scanWithInterceptors[*ProviderSyncHistoryQuery, *ProviderSyncHistorySelect](ctx, pshs.ProviderSyncHistoryQuery, pshs, pshs.inters, v)
+	return scanWithInterceptors[*ProviderSyncHistoryQuery, *ProviderSyncHistorySelect](ctx, _s.ProviderSyncHistoryQuery, _s, _s.inters, v)
 }
 
-func (pshs *ProviderSyncHistorySelect) sqlScan(ctx context.Context, root *ProviderSyncHistoryQuery, v any) error {
+func (_s *ProviderSyncHistorySelect) sqlScan(ctx context.Context, root *ProviderSyncHistoryQuery, v any) error {
 	selector := root.sqlQuery(ctx)
-	aggregation := make([]string, 0, len(pshs.fns))
-	for _, fn := range pshs.fns {
+	aggregation := make([]string, 0, len(_s.fns))
+	for _, fn := range _s.fns {
 		aggregation = append(aggregation, fn(selector))
 	}
-	switch n := len(*pshs.selector.flds); {
+	switch n := len(*_s.selector.flds); {
 	case n == 0 && len(aggregation) > 0:
 		selector.Select(aggregation...)
 	case n != 0 && len(aggregation) > 0:
@@ -623,7 +623,7 @@ func (pshs *ProviderSyncHistorySelect) sqlScan(ctx context.Context, root *Provid
 	}
 	rows := &sql.Rows{}
 	query, args := selector.Query()
-	if err := pshs.driver.Query(ctx, query, args, rows); err != nil {
+	if err := _s.driver.Query(ctx, query, args, rows); err != nil {
 		return err
 	}
 	defer rows.Close()
@@ -631,7 +631,7 @@ func (pshs *ProviderSyncHistorySelect) sqlScan(ctx context.Context, root *Provid
 }
 
 // Modify adds a query modifier for attaching custom logic to queries.
-func (pshs *ProviderSyncHistorySelect) Modify(modifiers ...func(s *sql.Selector)) *ProviderSyncHistorySelect {
-	pshs.modifiers = append(pshs.modifiers, modifiers...)
-	return pshs
+func (_s *ProviderSyncHistorySelect) Modify(modifiers ...func(s *sql.Selector)) *ProviderSyncHistorySelect {
+	_s.modifiers = append(_s.modifiers, modifiers...)
+	return _s
 }

@@ -20,56 +20,56 @@ type SystemHazardDelete struct {
 }
 
 // Where appends a list predicates to the SystemHazardDelete builder.
-func (shd *SystemHazardDelete) Where(ps ...predicate.SystemHazard) *SystemHazardDelete {
-	shd.mutation.Where(ps...)
-	return shd
+func (_d *SystemHazardDelete) Where(ps ...predicate.SystemHazard) *SystemHazardDelete {
+	_d.mutation.Where(ps...)
+	return _d
 }
 
 // Exec executes the deletion query and returns how many vertices were deleted.
-func (shd *SystemHazardDelete) Exec(ctx context.Context) (int, error) {
-	return withHooks(ctx, shd.sqlExec, shd.mutation, shd.hooks)
+func (_d *SystemHazardDelete) Exec(ctx context.Context) (int, error) {
+	return withHooks(ctx, _d.sqlExec, _d.mutation, _d.hooks)
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (shd *SystemHazardDelete) ExecX(ctx context.Context) int {
-	n, err := shd.Exec(ctx)
+func (_d *SystemHazardDelete) ExecX(ctx context.Context) int {
+	n, err := _d.Exec(ctx)
 	if err != nil {
 		panic(err)
 	}
 	return n
 }
 
-func (shd *SystemHazardDelete) sqlExec(ctx context.Context) (int, error) {
+func (_d *SystemHazardDelete) sqlExec(ctx context.Context) (int, error) {
 	_spec := sqlgraph.NewDeleteSpec(systemhazard.Table, sqlgraph.NewFieldSpec(systemhazard.FieldID, field.TypeUUID))
-	if ps := shd.mutation.predicates; len(ps) > 0 {
+	if ps := _d.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {
 				ps[i](selector)
 			}
 		}
 	}
-	affected, err := sqlgraph.DeleteNodes(ctx, shd.driver, _spec)
+	affected, err := sqlgraph.DeleteNodes(ctx, _d.driver, _spec)
 	if err != nil && sqlgraph.IsConstraintError(err) {
 		err = &ConstraintError{msg: err.Error(), wrap: err}
 	}
-	shd.mutation.done = true
+	_d.mutation.done = true
 	return affected, err
 }
 
 // SystemHazardDeleteOne is the builder for deleting a single SystemHazard entity.
 type SystemHazardDeleteOne struct {
-	shd *SystemHazardDelete
+	_d *SystemHazardDelete
 }
 
 // Where appends a list predicates to the SystemHazardDelete builder.
-func (shdo *SystemHazardDeleteOne) Where(ps ...predicate.SystemHazard) *SystemHazardDeleteOne {
-	shdo.shd.mutation.Where(ps...)
-	return shdo
+func (_d *SystemHazardDeleteOne) Where(ps ...predicate.SystemHazard) *SystemHazardDeleteOne {
+	_d._d.mutation.Where(ps...)
+	return _d
 }
 
 // Exec executes the deletion query.
-func (shdo *SystemHazardDeleteOne) Exec(ctx context.Context) error {
-	n, err := shdo.shd.Exec(ctx)
+func (_d *SystemHazardDeleteOne) Exec(ctx context.Context) error {
+	n, err := _d._d.Exec(ctx)
 	switch {
 	case err != nil:
 		return err
@@ -81,8 +81,8 @@ func (shdo *SystemHazardDeleteOne) Exec(ctx context.Context) error {
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (shdo *SystemHazardDeleteOne) ExecX(ctx context.Context) {
-	if err := shdo.Exec(ctx); err != nil {
+func (_d *SystemHazardDeleteOne) ExecX(ctx context.Context) {
+	if err := _d.Exec(ctx); err != nil {
 		panic(err)
 	}
 }

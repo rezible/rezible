@@ -113,7 +113,7 @@ func (*OncallShiftMetrics) scanValues(columns []string) ([]any, error) {
 
 // assignValues assigns the values that were returned from sql.Rows (after scanning)
 // to the OncallShiftMetrics fields.
-func (osm *OncallShiftMetrics) assignValues(columns []string, values []any) error {
+func (_m *OncallShiftMetrics) assignValues(columns []string, values []any) error {
 	if m, n := len(values), len(columns); m < n {
 		return fmt.Errorf("mismatch number of scan values: %d != %d", m, n)
 	}
@@ -123,106 +123,106 @@ func (osm *OncallShiftMetrics) assignValues(columns []string, values []any) erro
 			if value, ok := values[i].(*uuid.UUID); !ok {
 				return fmt.Errorf("unexpected type %T for field id", values[i])
 			} else if value != nil {
-				osm.ID = *value
+				_m.ID = *value
 			}
 		case oncallshiftmetrics.FieldTenantID:
 			if value, ok := values[i].(*sql.NullInt64); !ok {
 				return fmt.Errorf("unexpected type %T for field tenant_id", values[i])
 			} else if value.Valid {
-				osm.TenantID = int(value.Int64)
+				_m.TenantID = int(value.Int64)
 			}
 		case oncallshiftmetrics.FieldShiftID:
 			if value, ok := values[i].(*uuid.UUID); !ok {
 				return fmt.Errorf("unexpected type %T for field shift_id", values[i])
 			} else if value != nil {
-				osm.ShiftID = *value
+				_m.ShiftID = *value
 			}
 		case oncallshiftmetrics.FieldUpdatedAt:
 			if value, ok := values[i].(*sql.NullTime); !ok {
 				return fmt.Errorf("unexpected type %T for field updated_at", values[i])
 			} else if value.Valid {
-				osm.UpdatedAt = value.Time
+				_m.UpdatedAt = value.Time
 			}
 		case oncallshiftmetrics.FieldBurdenScore:
 			if value, ok := values[i].(*sql.NullFloat64); !ok {
 				return fmt.Errorf("unexpected type %T for field burden_score", values[i])
 			} else if value.Valid {
-				osm.BurdenScore = float32(value.Float64)
+				_m.BurdenScore = float32(value.Float64)
 			}
 		case oncallshiftmetrics.FieldEventFrequency:
 			if value, ok := values[i].(*sql.NullFloat64); !ok {
 				return fmt.Errorf("unexpected type %T for field event_frequency", values[i])
 			} else if value.Valid {
-				osm.EventFrequency = float32(value.Float64)
+				_m.EventFrequency = float32(value.Float64)
 			}
 		case oncallshiftmetrics.FieldLifeImpact:
 			if value, ok := values[i].(*sql.NullFloat64); !ok {
 				return fmt.Errorf("unexpected type %T for field life_impact", values[i])
 			} else if value.Valid {
-				osm.LifeImpact = float32(value.Float64)
+				_m.LifeImpact = float32(value.Float64)
 			}
 		case oncallshiftmetrics.FieldTimeImpact:
 			if value, ok := values[i].(*sql.NullFloat64); !ok {
 				return fmt.Errorf("unexpected type %T for field time_impact", values[i])
 			} else if value.Valid {
-				osm.TimeImpact = float32(value.Float64)
+				_m.TimeImpact = float32(value.Float64)
 			}
 		case oncallshiftmetrics.FieldResponseRequirements:
 			if value, ok := values[i].(*sql.NullFloat64); !ok {
 				return fmt.Errorf("unexpected type %T for field response_requirements", values[i])
 			} else if value.Valid {
-				osm.ResponseRequirements = float32(value.Float64)
+				_m.ResponseRequirements = float32(value.Float64)
 			}
 		case oncallshiftmetrics.FieldIsolation:
 			if value, ok := values[i].(*sql.NullFloat64); !ok {
 				return fmt.Errorf("unexpected type %T for field isolation", values[i])
 			} else if value.Valid {
-				osm.Isolation = float32(value.Float64)
+				_m.Isolation = float32(value.Float64)
 			}
 		case oncallshiftmetrics.FieldIncidentsTotal:
 			if value, ok := values[i].(*sql.NullFloat64); !ok {
 				return fmt.Errorf("unexpected type %T for field incidents_total", values[i])
 			} else if value.Valid {
-				osm.IncidentsTotal = float32(value.Float64)
+				_m.IncidentsTotal = float32(value.Float64)
 			}
 		case oncallshiftmetrics.FieldIncidentResponseTime:
 			if value, ok := values[i].(*sql.NullFloat64); !ok {
 				return fmt.Errorf("unexpected type %T for field incident_response_time", values[i])
 			} else if value.Valid {
-				osm.IncidentResponseTime = float32(value.Float64)
+				_m.IncidentResponseTime = float32(value.Float64)
 			}
 		case oncallshiftmetrics.FieldEventsTotal:
 			if value, ok := values[i].(*sql.NullFloat64); !ok {
 				return fmt.Errorf("unexpected type %T for field events_total", values[i])
 			} else if value.Valid {
-				osm.EventsTotal = float32(value.Float64)
+				_m.EventsTotal = float32(value.Float64)
 			}
 		case oncallshiftmetrics.FieldAlertsTotal:
 			if value, ok := values[i].(*sql.NullFloat64); !ok {
 				return fmt.Errorf("unexpected type %T for field alerts_total", values[i])
 			} else if value.Valid {
-				osm.AlertsTotal = float32(value.Float64)
+				_m.AlertsTotal = float32(value.Float64)
 			}
 		case oncallshiftmetrics.FieldInterruptsTotal:
 			if value, ok := values[i].(*sql.NullFloat64); !ok {
 				return fmt.Errorf("unexpected type %T for field interrupts_total", values[i])
 			} else if value.Valid {
-				osm.InterruptsTotal = float32(value.Float64)
+				_m.InterruptsTotal = float32(value.Float64)
 			}
 		case oncallshiftmetrics.FieldInterruptsNight:
 			if value, ok := values[i].(*sql.NullFloat64); !ok {
 				return fmt.Errorf("unexpected type %T for field interrupts_night", values[i])
 			} else if value.Valid {
-				osm.InterruptsNight = float32(value.Float64)
+				_m.InterruptsNight = float32(value.Float64)
 			}
 		case oncallshiftmetrics.FieldInterruptsBusinessHours:
 			if value, ok := values[i].(*sql.NullFloat64); !ok {
 				return fmt.Errorf("unexpected type %T for field interrupts_business_hours", values[i])
 			} else if value.Valid {
-				osm.InterruptsBusinessHours = float32(value.Float64)
+				_m.InterruptsBusinessHours = float32(value.Float64)
 			}
 		default:
-			osm.selectValues.Set(columns[i], values[i])
+			_m.selectValues.Set(columns[i], values[i])
 		}
 	}
 	return nil
@@ -230,90 +230,90 @@ func (osm *OncallShiftMetrics) assignValues(columns []string, values []any) erro
 
 // Value returns the ent.Value that was dynamically selected and assigned to the OncallShiftMetrics.
 // This includes values selected through modifiers, order, etc.
-func (osm *OncallShiftMetrics) Value(name string) (ent.Value, error) {
-	return osm.selectValues.Get(name)
+func (_m *OncallShiftMetrics) Value(name string) (ent.Value, error) {
+	return _m.selectValues.Get(name)
 }
 
 // QueryTenant queries the "tenant" edge of the OncallShiftMetrics entity.
-func (osm *OncallShiftMetrics) QueryTenant() *TenantQuery {
-	return NewOncallShiftMetricsClient(osm.config).QueryTenant(osm)
+func (_m *OncallShiftMetrics) QueryTenant() *TenantQuery {
+	return NewOncallShiftMetricsClient(_m.config).QueryTenant(_m)
 }
 
 // QueryShift queries the "shift" edge of the OncallShiftMetrics entity.
-func (osm *OncallShiftMetrics) QueryShift() *OncallShiftQuery {
-	return NewOncallShiftMetricsClient(osm.config).QueryShift(osm)
+func (_m *OncallShiftMetrics) QueryShift() *OncallShiftQuery {
+	return NewOncallShiftMetricsClient(_m.config).QueryShift(_m)
 }
 
 // Update returns a builder for updating this OncallShiftMetrics.
 // Note that you need to call OncallShiftMetrics.Unwrap() before calling this method if this OncallShiftMetrics
 // was returned from a transaction, and the transaction was committed or rolled back.
-func (osm *OncallShiftMetrics) Update() *OncallShiftMetricsUpdateOne {
-	return NewOncallShiftMetricsClient(osm.config).UpdateOne(osm)
+func (_m *OncallShiftMetrics) Update() *OncallShiftMetricsUpdateOne {
+	return NewOncallShiftMetricsClient(_m.config).UpdateOne(_m)
 }
 
 // Unwrap unwraps the OncallShiftMetrics entity that was returned from a transaction after it was closed,
 // so that all future queries will be executed through the driver which created the transaction.
-func (osm *OncallShiftMetrics) Unwrap() *OncallShiftMetrics {
-	_tx, ok := osm.config.driver.(*txDriver)
+func (_m *OncallShiftMetrics) Unwrap() *OncallShiftMetrics {
+	_tx, ok := _m.config.driver.(*txDriver)
 	if !ok {
 		panic("ent: OncallShiftMetrics is not a transactional entity")
 	}
-	osm.config.driver = _tx.drv
-	return osm
+	_m.config.driver = _tx.drv
+	return _m
 }
 
 // String implements the fmt.Stringer.
-func (osm *OncallShiftMetrics) String() string {
+func (_m *OncallShiftMetrics) String() string {
 	var builder strings.Builder
 	builder.WriteString("OncallShiftMetrics(")
-	builder.WriteString(fmt.Sprintf("id=%v, ", osm.ID))
+	builder.WriteString(fmt.Sprintf("id=%v, ", _m.ID))
 	builder.WriteString("tenant_id=")
-	builder.WriteString(fmt.Sprintf("%v", osm.TenantID))
+	builder.WriteString(fmt.Sprintf("%v", _m.TenantID))
 	builder.WriteString(", ")
 	builder.WriteString("shift_id=")
-	builder.WriteString(fmt.Sprintf("%v", osm.ShiftID))
+	builder.WriteString(fmt.Sprintf("%v", _m.ShiftID))
 	builder.WriteString(", ")
 	builder.WriteString("updated_at=")
-	builder.WriteString(osm.UpdatedAt.Format(time.ANSIC))
+	builder.WriteString(_m.UpdatedAt.Format(time.ANSIC))
 	builder.WriteString(", ")
 	builder.WriteString("burden_score=")
-	builder.WriteString(fmt.Sprintf("%v", osm.BurdenScore))
+	builder.WriteString(fmt.Sprintf("%v", _m.BurdenScore))
 	builder.WriteString(", ")
 	builder.WriteString("event_frequency=")
-	builder.WriteString(fmt.Sprintf("%v", osm.EventFrequency))
+	builder.WriteString(fmt.Sprintf("%v", _m.EventFrequency))
 	builder.WriteString(", ")
 	builder.WriteString("life_impact=")
-	builder.WriteString(fmt.Sprintf("%v", osm.LifeImpact))
+	builder.WriteString(fmt.Sprintf("%v", _m.LifeImpact))
 	builder.WriteString(", ")
 	builder.WriteString("time_impact=")
-	builder.WriteString(fmt.Sprintf("%v", osm.TimeImpact))
+	builder.WriteString(fmt.Sprintf("%v", _m.TimeImpact))
 	builder.WriteString(", ")
 	builder.WriteString("response_requirements=")
-	builder.WriteString(fmt.Sprintf("%v", osm.ResponseRequirements))
+	builder.WriteString(fmt.Sprintf("%v", _m.ResponseRequirements))
 	builder.WriteString(", ")
 	builder.WriteString("isolation=")
-	builder.WriteString(fmt.Sprintf("%v", osm.Isolation))
+	builder.WriteString(fmt.Sprintf("%v", _m.Isolation))
 	builder.WriteString(", ")
 	builder.WriteString("incidents_total=")
-	builder.WriteString(fmt.Sprintf("%v", osm.IncidentsTotal))
+	builder.WriteString(fmt.Sprintf("%v", _m.IncidentsTotal))
 	builder.WriteString(", ")
 	builder.WriteString("incident_response_time=")
-	builder.WriteString(fmt.Sprintf("%v", osm.IncidentResponseTime))
+	builder.WriteString(fmt.Sprintf("%v", _m.IncidentResponseTime))
 	builder.WriteString(", ")
 	builder.WriteString("events_total=")
-	builder.WriteString(fmt.Sprintf("%v", osm.EventsTotal))
+	builder.WriteString(fmt.Sprintf("%v", _m.EventsTotal))
 	builder.WriteString(", ")
 	builder.WriteString("alerts_total=")
-	builder.WriteString(fmt.Sprintf("%v", osm.AlertsTotal))
+	builder.WriteString(fmt.Sprintf("%v", _m.AlertsTotal))
 	builder.WriteString(", ")
 	builder.WriteString("interrupts_total=")
-	builder.WriteString(fmt.Sprintf("%v", osm.InterruptsTotal))
+	builder.WriteString(fmt.Sprintf("%v", _m.InterruptsTotal))
 	builder.WriteString(", ")
 	builder.WriteString("interrupts_night=")
-	builder.WriteString(fmt.Sprintf("%v", osm.InterruptsNight))
+	builder.WriteString(fmt.Sprintf("%v", _m.InterruptsNight))
 	builder.WriteString(", ")
 	builder.WriteString("interrupts_business_hours=")
-	builder.WriteString(fmt.Sprintf("%v", osm.InterruptsBusinessHours))
+	builder.WriteString(fmt.Sprintf("%v", _m.InterruptsBusinessHours))
 	builder.WriteByte(')')
 	return builder.String()
 }

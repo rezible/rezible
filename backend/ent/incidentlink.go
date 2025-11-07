@@ -101,7 +101,7 @@ func (*IncidentLink) scanValues(columns []string) ([]any, error) {
 
 // assignValues assigns the values that were returned from sql.Rows (after scanning)
 // to the IncidentLink fields.
-func (il *IncidentLink) assignValues(columns []string, values []any) error {
+func (_m *IncidentLink) assignValues(columns []string, values []any) error {
 	if m, n := len(values), len(columns); m < n {
 		return fmt.Errorf("mismatch number of scan values: %d != %d", m, n)
 	}
@@ -112,39 +112,39 @@ func (il *IncidentLink) assignValues(columns []string, values []any) error {
 			if !ok {
 				return fmt.Errorf("unexpected type %T for field id", value)
 			}
-			il.ID = int(value.Int64)
+			_m.ID = int(value.Int64)
 		case incidentlink.FieldTenantID:
 			if value, ok := values[i].(*sql.NullInt64); !ok {
 				return fmt.Errorf("unexpected type %T for field tenant_id", values[i])
 			} else if value.Valid {
-				il.TenantID = int(value.Int64)
+				_m.TenantID = int(value.Int64)
 			}
 		case incidentlink.FieldIncidentID:
 			if value, ok := values[i].(*uuid.UUID); !ok {
 				return fmt.Errorf("unexpected type %T for field incident_id", values[i])
 			} else if value != nil {
-				il.IncidentID = *value
+				_m.IncidentID = *value
 			}
 		case incidentlink.FieldLinkedIncidentID:
 			if value, ok := values[i].(*uuid.UUID); !ok {
 				return fmt.Errorf("unexpected type %T for field linked_incident_id", values[i])
 			} else if value != nil {
-				il.LinkedIncidentID = *value
+				_m.LinkedIncidentID = *value
 			}
 		case incidentlink.FieldDescription:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field description", values[i])
 			} else if value.Valid {
-				il.Description = value.String
+				_m.Description = value.String
 			}
 		case incidentlink.FieldLinkType:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field link_type", values[i])
 			} else if value.Valid {
-				il.LinkType = incidentlink.LinkType(value.String)
+				_m.LinkType = incidentlink.LinkType(value.String)
 			}
 		default:
-			il.selectValues.Set(columns[i], values[i])
+			_m.selectValues.Set(columns[i], values[i])
 		}
 	}
 	return nil
@@ -152,62 +152,62 @@ func (il *IncidentLink) assignValues(columns []string, values []any) error {
 
 // Value returns the ent.Value that was dynamically selected and assigned to the IncidentLink.
 // This includes values selected through modifiers, order, etc.
-func (il *IncidentLink) Value(name string) (ent.Value, error) {
-	return il.selectValues.Get(name)
+func (_m *IncidentLink) Value(name string) (ent.Value, error) {
+	return _m.selectValues.Get(name)
 }
 
 // QueryTenant queries the "tenant" edge of the IncidentLink entity.
-func (il *IncidentLink) QueryTenant() *TenantQuery {
-	return NewIncidentLinkClient(il.config).QueryTenant(il)
+func (_m *IncidentLink) QueryTenant() *TenantQuery {
+	return NewIncidentLinkClient(_m.config).QueryTenant(_m)
 }
 
 // QueryIncident queries the "incident" edge of the IncidentLink entity.
-func (il *IncidentLink) QueryIncident() *IncidentQuery {
-	return NewIncidentLinkClient(il.config).QueryIncident(il)
+func (_m *IncidentLink) QueryIncident() *IncidentQuery {
+	return NewIncidentLinkClient(_m.config).QueryIncident(_m)
 }
 
 // QueryLinkedIncident queries the "linked_incident" edge of the IncidentLink entity.
-func (il *IncidentLink) QueryLinkedIncident() *IncidentQuery {
-	return NewIncidentLinkClient(il.config).QueryLinkedIncident(il)
+func (_m *IncidentLink) QueryLinkedIncident() *IncidentQuery {
+	return NewIncidentLinkClient(_m.config).QueryLinkedIncident(_m)
 }
 
 // Update returns a builder for updating this IncidentLink.
 // Note that you need to call IncidentLink.Unwrap() before calling this method if this IncidentLink
 // was returned from a transaction, and the transaction was committed or rolled back.
-func (il *IncidentLink) Update() *IncidentLinkUpdateOne {
-	return NewIncidentLinkClient(il.config).UpdateOne(il)
+func (_m *IncidentLink) Update() *IncidentLinkUpdateOne {
+	return NewIncidentLinkClient(_m.config).UpdateOne(_m)
 }
 
 // Unwrap unwraps the IncidentLink entity that was returned from a transaction after it was closed,
 // so that all future queries will be executed through the driver which created the transaction.
-func (il *IncidentLink) Unwrap() *IncidentLink {
-	_tx, ok := il.config.driver.(*txDriver)
+func (_m *IncidentLink) Unwrap() *IncidentLink {
+	_tx, ok := _m.config.driver.(*txDriver)
 	if !ok {
 		panic("ent: IncidentLink is not a transactional entity")
 	}
-	il.config.driver = _tx.drv
-	return il
+	_m.config.driver = _tx.drv
+	return _m
 }
 
 // String implements the fmt.Stringer.
-func (il *IncidentLink) String() string {
+func (_m *IncidentLink) String() string {
 	var builder strings.Builder
 	builder.WriteString("IncidentLink(")
-	builder.WriteString(fmt.Sprintf("id=%v, ", il.ID))
+	builder.WriteString(fmt.Sprintf("id=%v, ", _m.ID))
 	builder.WriteString("tenant_id=")
-	builder.WriteString(fmt.Sprintf("%v", il.TenantID))
+	builder.WriteString(fmt.Sprintf("%v", _m.TenantID))
 	builder.WriteString(", ")
 	builder.WriteString("incident_id=")
-	builder.WriteString(fmt.Sprintf("%v", il.IncidentID))
+	builder.WriteString(fmt.Sprintf("%v", _m.IncidentID))
 	builder.WriteString(", ")
 	builder.WriteString("linked_incident_id=")
-	builder.WriteString(fmt.Sprintf("%v", il.LinkedIncidentID))
+	builder.WriteString(fmt.Sprintf("%v", _m.LinkedIncidentID))
 	builder.WriteString(", ")
 	builder.WriteString("description=")
-	builder.WriteString(il.Description)
+	builder.WriteString(_m.Description)
 	builder.WriteString(", ")
 	builder.WriteString("link_type=")
-	builder.WriteString(fmt.Sprintf("%v", il.LinkType))
+	builder.WriteString(fmt.Sprintf("%v", _m.LinkType))
 	builder.WriteByte(')')
 	return builder.String()
 }

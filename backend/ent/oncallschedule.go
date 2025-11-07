@@ -104,7 +104,7 @@ func (*OncallSchedule) scanValues(columns []string) ([]any, error) {
 
 // assignValues assigns the values that were returned from sql.Rows (after scanning)
 // to the OncallSchedule fields.
-func (os *OncallSchedule) assignValues(columns []string, values []any) error {
+func (_m *OncallSchedule) assignValues(columns []string, values []any) error {
 	if m, n := len(values), len(columns); m < n {
 		return fmt.Errorf("mismatch number of scan values: %d != %d", m, n)
 	}
@@ -114,46 +114,46 @@ func (os *OncallSchedule) assignValues(columns []string, values []any) error {
 			if value, ok := values[i].(*uuid.UUID); !ok {
 				return fmt.Errorf("unexpected type %T for field id", values[i])
 			} else if value != nil {
-				os.ID = *value
+				_m.ID = *value
 			}
 		case oncallschedule.FieldTenantID:
 			if value, ok := values[i].(*sql.NullInt64); !ok {
 				return fmt.Errorf("unexpected type %T for field tenant_id", values[i])
 			} else if value.Valid {
-				os.TenantID = int(value.Int64)
+				_m.TenantID = int(value.Int64)
 			}
 		case oncallschedule.FieldArchiveTime:
 			if value, ok := values[i].(*sql.NullTime); !ok {
 				return fmt.Errorf("unexpected type %T for field archive_time", values[i])
 			} else if value.Valid {
-				os.ArchiveTime = value.Time
+				_m.ArchiveTime = value.Time
 			}
 		case oncallschedule.FieldName:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field name", values[i])
 			} else if value.Valid {
-				os.Name = value.String
+				_m.Name = value.String
 			}
 		case oncallschedule.FieldRosterID:
 			if value, ok := values[i].(*uuid.UUID); !ok {
 				return fmt.Errorf("unexpected type %T for field roster_id", values[i])
 			} else if value != nil {
-				os.RosterID = *value
+				_m.RosterID = *value
 			}
 		case oncallschedule.FieldTimezone:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field timezone", values[i])
 			} else if value.Valid {
-				os.Timezone = value.String
+				_m.Timezone = value.String
 			}
 		case oncallschedule.FieldProviderID:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field provider_id", values[i])
 			} else if value.Valid {
-				os.ProviderID = value.String
+				_m.ProviderID = value.String
 			}
 		default:
-			os.selectValues.Set(columns[i], values[i])
+			_m.selectValues.Set(columns[i], values[i])
 		}
 	}
 	return nil
@@ -161,65 +161,65 @@ func (os *OncallSchedule) assignValues(columns []string, values []any) error {
 
 // Value returns the ent.Value that was dynamically selected and assigned to the OncallSchedule.
 // This includes values selected through modifiers, order, etc.
-func (os *OncallSchedule) Value(name string) (ent.Value, error) {
-	return os.selectValues.Get(name)
+func (_m *OncallSchedule) Value(name string) (ent.Value, error) {
+	return _m.selectValues.Get(name)
 }
 
 // QueryTenant queries the "tenant" edge of the OncallSchedule entity.
-func (os *OncallSchedule) QueryTenant() *TenantQuery {
-	return NewOncallScheduleClient(os.config).QueryTenant(os)
+func (_m *OncallSchedule) QueryTenant() *TenantQuery {
+	return NewOncallScheduleClient(_m.config).QueryTenant(_m)
 }
 
 // QueryParticipants queries the "participants" edge of the OncallSchedule entity.
-func (os *OncallSchedule) QueryParticipants() *OncallScheduleParticipantQuery {
-	return NewOncallScheduleClient(os.config).QueryParticipants(os)
+func (_m *OncallSchedule) QueryParticipants() *OncallScheduleParticipantQuery {
+	return NewOncallScheduleClient(_m.config).QueryParticipants(_m)
 }
 
 // QueryRoster queries the "roster" edge of the OncallSchedule entity.
-func (os *OncallSchedule) QueryRoster() *OncallRosterQuery {
-	return NewOncallScheduleClient(os.config).QueryRoster(os)
+func (_m *OncallSchedule) QueryRoster() *OncallRosterQuery {
+	return NewOncallScheduleClient(_m.config).QueryRoster(_m)
 }
 
 // Update returns a builder for updating this OncallSchedule.
 // Note that you need to call OncallSchedule.Unwrap() before calling this method if this OncallSchedule
 // was returned from a transaction, and the transaction was committed or rolled back.
-func (os *OncallSchedule) Update() *OncallScheduleUpdateOne {
-	return NewOncallScheduleClient(os.config).UpdateOne(os)
+func (_m *OncallSchedule) Update() *OncallScheduleUpdateOne {
+	return NewOncallScheduleClient(_m.config).UpdateOne(_m)
 }
 
 // Unwrap unwraps the OncallSchedule entity that was returned from a transaction after it was closed,
 // so that all future queries will be executed through the driver which created the transaction.
-func (os *OncallSchedule) Unwrap() *OncallSchedule {
-	_tx, ok := os.config.driver.(*txDriver)
+func (_m *OncallSchedule) Unwrap() *OncallSchedule {
+	_tx, ok := _m.config.driver.(*txDriver)
 	if !ok {
 		panic("ent: OncallSchedule is not a transactional entity")
 	}
-	os.config.driver = _tx.drv
-	return os
+	_m.config.driver = _tx.drv
+	return _m
 }
 
 // String implements the fmt.Stringer.
-func (os *OncallSchedule) String() string {
+func (_m *OncallSchedule) String() string {
 	var builder strings.Builder
 	builder.WriteString("OncallSchedule(")
-	builder.WriteString(fmt.Sprintf("id=%v, ", os.ID))
+	builder.WriteString(fmt.Sprintf("id=%v, ", _m.ID))
 	builder.WriteString("tenant_id=")
-	builder.WriteString(fmt.Sprintf("%v", os.TenantID))
+	builder.WriteString(fmt.Sprintf("%v", _m.TenantID))
 	builder.WriteString(", ")
 	builder.WriteString("archive_time=")
-	builder.WriteString(os.ArchiveTime.Format(time.ANSIC))
+	builder.WriteString(_m.ArchiveTime.Format(time.ANSIC))
 	builder.WriteString(", ")
 	builder.WriteString("name=")
-	builder.WriteString(os.Name)
+	builder.WriteString(_m.Name)
 	builder.WriteString(", ")
 	builder.WriteString("roster_id=")
-	builder.WriteString(fmt.Sprintf("%v", os.RosterID))
+	builder.WriteString(fmt.Sprintf("%v", _m.RosterID))
 	builder.WriteString(", ")
 	builder.WriteString("timezone=")
-	builder.WriteString(os.Timezone)
+	builder.WriteString(_m.Timezone)
 	builder.WriteString(", ")
 	builder.WriteString("provider_id=")
-	builder.WriteString(os.ProviderID)
+	builder.WriteString(_m.ProviderID)
 	builder.WriteByte(')')
 	return builder.String()
 }

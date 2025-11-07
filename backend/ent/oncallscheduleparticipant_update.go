@@ -26,95 +26,95 @@ type OncallScheduleParticipantUpdate struct {
 }
 
 // Where appends a list predicates to the OncallScheduleParticipantUpdate builder.
-func (ospu *OncallScheduleParticipantUpdate) Where(ps ...predicate.OncallScheduleParticipant) *OncallScheduleParticipantUpdate {
-	ospu.mutation.Where(ps...)
-	return ospu
+func (_u *OncallScheduleParticipantUpdate) Where(ps ...predicate.OncallScheduleParticipant) *OncallScheduleParticipantUpdate {
+	_u.mutation.Where(ps...)
+	return _u
 }
 
 // SetScheduleID sets the "schedule_id" field.
-func (ospu *OncallScheduleParticipantUpdate) SetScheduleID(u uuid.UUID) *OncallScheduleParticipantUpdate {
-	ospu.mutation.SetScheduleID(u)
-	return ospu
+func (_u *OncallScheduleParticipantUpdate) SetScheduleID(v uuid.UUID) *OncallScheduleParticipantUpdate {
+	_u.mutation.SetScheduleID(v)
+	return _u
 }
 
 // SetNillableScheduleID sets the "schedule_id" field if the given value is not nil.
-func (ospu *OncallScheduleParticipantUpdate) SetNillableScheduleID(u *uuid.UUID) *OncallScheduleParticipantUpdate {
-	if u != nil {
-		ospu.SetScheduleID(*u)
+func (_u *OncallScheduleParticipantUpdate) SetNillableScheduleID(v *uuid.UUID) *OncallScheduleParticipantUpdate {
+	if v != nil {
+		_u.SetScheduleID(*v)
 	}
-	return ospu
+	return _u
 }
 
 // SetUserID sets the "user_id" field.
-func (ospu *OncallScheduleParticipantUpdate) SetUserID(u uuid.UUID) *OncallScheduleParticipantUpdate {
-	ospu.mutation.SetUserID(u)
-	return ospu
+func (_u *OncallScheduleParticipantUpdate) SetUserID(v uuid.UUID) *OncallScheduleParticipantUpdate {
+	_u.mutation.SetUserID(v)
+	return _u
 }
 
 // SetNillableUserID sets the "user_id" field if the given value is not nil.
-func (ospu *OncallScheduleParticipantUpdate) SetNillableUserID(u *uuid.UUID) *OncallScheduleParticipantUpdate {
-	if u != nil {
-		ospu.SetUserID(*u)
+func (_u *OncallScheduleParticipantUpdate) SetNillableUserID(v *uuid.UUID) *OncallScheduleParticipantUpdate {
+	if v != nil {
+		_u.SetUserID(*v)
 	}
-	return ospu
+	return _u
 }
 
 // SetIndex sets the "index" field.
-func (ospu *OncallScheduleParticipantUpdate) SetIndex(i int) *OncallScheduleParticipantUpdate {
-	ospu.mutation.ResetIndex()
-	ospu.mutation.SetIndex(i)
-	return ospu
+func (_u *OncallScheduleParticipantUpdate) SetIndex(v int) *OncallScheduleParticipantUpdate {
+	_u.mutation.ResetIndex()
+	_u.mutation.SetIndex(v)
+	return _u
 }
 
 // SetNillableIndex sets the "index" field if the given value is not nil.
-func (ospu *OncallScheduleParticipantUpdate) SetNillableIndex(i *int) *OncallScheduleParticipantUpdate {
-	if i != nil {
-		ospu.SetIndex(*i)
+func (_u *OncallScheduleParticipantUpdate) SetNillableIndex(v *int) *OncallScheduleParticipantUpdate {
+	if v != nil {
+		_u.SetIndex(*v)
 	}
-	return ospu
+	return _u
 }
 
-// AddIndex adds i to the "index" field.
-func (ospu *OncallScheduleParticipantUpdate) AddIndex(i int) *OncallScheduleParticipantUpdate {
-	ospu.mutation.AddIndex(i)
-	return ospu
+// AddIndex adds value to the "index" field.
+func (_u *OncallScheduleParticipantUpdate) AddIndex(v int) *OncallScheduleParticipantUpdate {
+	_u.mutation.AddIndex(v)
+	return _u
 }
 
 // SetSchedule sets the "schedule" edge to the OncallSchedule entity.
-func (ospu *OncallScheduleParticipantUpdate) SetSchedule(o *OncallSchedule) *OncallScheduleParticipantUpdate {
-	return ospu.SetScheduleID(o.ID)
+func (_u *OncallScheduleParticipantUpdate) SetSchedule(v *OncallSchedule) *OncallScheduleParticipantUpdate {
+	return _u.SetScheduleID(v.ID)
 }
 
 // SetUser sets the "user" edge to the User entity.
-func (ospu *OncallScheduleParticipantUpdate) SetUser(u *User) *OncallScheduleParticipantUpdate {
-	return ospu.SetUserID(u.ID)
+func (_u *OncallScheduleParticipantUpdate) SetUser(v *User) *OncallScheduleParticipantUpdate {
+	return _u.SetUserID(v.ID)
 }
 
 // Mutation returns the OncallScheduleParticipantMutation object of the builder.
-func (ospu *OncallScheduleParticipantUpdate) Mutation() *OncallScheduleParticipantMutation {
-	return ospu.mutation
+func (_u *OncallScheduleParticipantUpdate) Mutation() *OncallScheduleParticipantMutation {
+	return _u.mutation
 }
 
 // ClearSchedule clears the "schedule" edge to the OncallSchedule entity.
-func (ospu *OncallScheduleParticipantUpdate) ClearSchedule() *OncallScheduleParticipantUpdate {
-	ospu.mutation.ClearSchedule()
-	return ospu
+func (_u *OncallScheduleParticipantUpdate) ClearSchedule() *OncallScheduleParticipantUpdate {
+	_u.mutation.ClearSchedule()
+	return _u
 }
 
 // ClearUser clears the "user" edge to the User entity.
-func (ospu *OncallScheduleParticipantUpdate) ClearUser() *OncallScheduleParticipantUpdate {
-	ospu.mutation.ClearUser()
-	return ospu
+func (_u *OncallScheduleParticipantUpdate) ClearUser() *OncallScheduleParticipantUpdate {
+	_u.mutation.ClearUser()
+	return _u
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
-func (ospu *OncallScheduleParticipantUpdate) Save(ctx context.Context) (int, error) {
-	return withHooks(ctx, ospu.sqlSave, ospu.mutation, ospu.hooks)
+func (_u *OncallScheduleParticipantUpdate) Save(ctx context.Context) (int, error) {
+	return withHooks(ctx, _u.sqlSave, _u.mutation, _u.hooks)
 }
 
 // SaveX is like Save, but panics if an error occurs.
-func (ospu *OncallScheduleParticipantUpdate) SaveX(ctx context.Context) int {
-	affected, err := ospu.Save(ctx)
+func (_u *OncallScheduleParticipantUpdate) SaveX(ctx context.Context) int {
+	affected, err := _u.Save(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -122,57 +122,57 @@ func (ospu *OncallScheduleParticipantUpdate) SaveX(ctx context.Context) int {
 }
 
 // Exec executes the query.
-func (ospu *OncallScheduleParticipantUpdate) Exec(ctx context.Context) error {
-	_, err := ospu.Save(ctx)
+func (_u *OncallScheduleParticipantUpdate) Exec(ctx context.Context) error {
+	_, err := _u.Save(ctx)
 	return err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (ospu *OncallScheduleParticipantUpdate) ExecX(ctx context.Context) {
-	if err := ospu.Exec(ctx); err != nil {
+func (_u *OncallScheduleParticipantUpdate) ExecX(ctx context.Context) {
+	if err := _u.Exec(ctx); err != nil {
 		panic(err)
 	}
 }
 
 // check runs all checks and user-defined validators on the builder.
-func (ospu *OncallScheduleParticipantUpdate) check() error {
-	if ospu.mutation.TenantCleared() && len(ospu.mutation.TenantIDs()) > 0 {
+func (_u *OncallScheduleParticipantUpdate) check() error {
+	if _u.mutation.TenantCleared() && len(_u.mutation.TenantIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "OncallScheduleParticipant.tenant"`)
 	}
-	if ospu.mutation.ScheduleCleared() && len(ospu.mutation.ScheduleIDs()) > 0 {
+	if _u.mutation.ScheduleCleared() && len(_u.mutation.ScheduleIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "OncallScheduleParticipant.schedule"`)
 	}
-	if ospu.mutation.UserCleared() && len(ospu.mutation.UserIDs()) > 0 {
+	if _u.mutation.UserCleared() && len(_u.mutation.UserIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "OncallScheduleParticipant.user"`)
 	}
 	return nil
 }
 
 // Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
-func (ospu *OncallScheduleParticipantUpdate) Modify(modifiers ...func(u *sql.UpdateBuilder)) *OncallScheduleParticipantUpdate {
-	ospu.modifiers = append(ospu.modifiers, modifiers...)
-	return ospu
+func (_u *OncallScheduleParticipantUpdate) Modify(modifiers ...func(u *sql.UpdateBuilder)) *OncallScheduleParticipantUpdate {
+	_u.modifiers = append(_u.modifiers, modifiers...)
+	return _u
 }
 
-func (ospu *OncallScheduleParticipantUpdate) sqlSave(ctx context.Context) (n int, err error) {
-	if err := ospu.check(); err != nil {
-		return n, err
+func (_u *OncallScheduleParticipantUpdate) sqlSave(ctx context.Context) (_node int, err error) {
+	if err := _u.check(); err != nil {
+		return _node, err
 	}
 	_spec := sqlgraph.NewUpdateSpec(oncallscheduleparticipant.Table, oncallscheduleparticipant.Columns, sqlgraph.NewFieldSpec(oncallscheduleparticipant.FieldID, field.TypeUUID))
-	if ps := ospu.mutation.predicates; len(ps) > 0 {
+	if ps := _u.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {
 				ps[i](selector)
 			}
 		}
 	}
-	if value, ok := ospu.mutation.Index(); ok {
+	if value, ok := _u.mutation.Index(); ok {
 		_spec.SetField(oncallscheduleparticipant.FieldIndex, field.TypeInt, value)
 	}
-	if value, ok := ospu.mutation.AddedIndex(); ok {
+	if value, ok := _u.mutation.AddedIndex(); ok {
 		_spec.AddField(oncallscheduleparticipant.FieldIndex, field.TypeInt, value)
 	}
-	if ospu.mutation.ScheduleCleared() {
+	if _u.mutation.ScheduleCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: true,
@@ -185,7 +185,7 @@ func (ospu *OncallScheduleParticipantUpdate) sqlSave(ctx context.Context) (n int
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := ospu.mutation.ScheduleIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.ScheduleIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: true,
@@ -201,7 +201,7 @@ func (ospu *OncallScheduleParticipantUpdate) sqlSave(ctx context.Context) (n int
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if ospu.mutation.UserCleared() {
+	if _u.mutation.UserCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
@@ -214,7 +214,7 @@ func (ospu *OncallScheduleParticipantUpdate) sqlSave(ctx context.Context) (n int
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := ospu.mutation.UserIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.UserIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
@@ -230,8 +230,8 @@ func (ospu *OncallScheduleParticipantUpdate) sqlSave(ctx context.Context) (n int
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	_spec.AddModifiers(ospu.modifiers...)
-	if n, err = sqlgraph.UpdateNodes(ctx, ospu.driver, _spec); err != nil {
+	_spec.AddModifiers(_u.modifiers...)
+	if _node, err = sqlgraph.UpdateNodes(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{oncallscheduleparticipant.Label}
 		} else if sqlgraph.IsConstraintError(err) {
@@ -239,8 +239,8 @@ func (ospu *OncallScheduleParticipantUpdate) sqlSave(ctx context.Context) (n int
 		}
 		return 0, err
 	}
-	ospu.mutation.done = true
-	return n, nil
+	_u.mutation.done = true
+	return _node, nil
 }
 
 // OncallScheduleParticipantUpdateOne is the builder for updating a single OncallScheduleParticipant entity.
@@ -253,102 +253,102 @@ type OncallScheduleParticipantUpdateOne struct {
 }
 
 // SetScheduleID sets the "schedule_id" field.
-func (ospuo *OncallScheduleParticipantUpdateOne) SetScheduleID(u uuid.UUID) *OncallScheduleParticipantUpdateOne {
-	ospuo.mutation.SetScheduleID(u)
-	return ospuo
+func (_u *OncallScheduleParticipantUpdateOne) SetScheduleID(v uuid.UUID) *OncallScheduleParticipantUpdateOne {
+	_u.mutation.SetScheduleID(v)
+	return _u
 }
 
 // SetNillableScheduleID sets the "schedule_id" field if the given value is not nil.
-func (ospuo *OncallScheduleParticipantUpdateOne) SetNillableScheduleID(u *uuid.UUID) *OncallScheduleParticipantUpdateOne {
-	if u != nil {
-		ospuo.SetScheduleID(*u)
+func (_u *OncallScheduleParticipantUpdateOne) SetNillableScheduleID(v *uuid.UUID) *OncallScheduleParticipantUpdateOne {
+	if v != nil {
+		_u.SetScheduleID(*v)
 	}
-	return ospuo
+	return _u
 }
 
 // SetUserID sets the "user_id" field.
-func (ospuo *OncallScheduleParticipantUpdateOne) SetUserID(u uuid.UUID) *OncallScheduleParticipantUpdateOne {
-	ospuo.mutation.SetUserID(u)
-	return ospuo
+func (_u *OncallScheduleParticipantUpdateOne) SetUserID(v uuid.UUID) *OncallScheduleParticipantUpdateOne {
+	_u.mutation.SetUserID(v)
+	return _u
 }
 
 // SetNillableUserID sets the "user_id" field if the given value is not nil.
-func (ospuo *OncallScheduleParticipantUpdateOne) SetNillableUserID(u *uuid.UUID) *OncallScheduleParticipantUpdateOne {
-	if u != nil {
-		ospuo.SetUserID(*u)
+func (_u *OncallScheduleParticipantUpdateOne) SetNillableUserID(v *uuid.UUID) *OncallScheduleParticipantUpdateOne {
+	if v != nil {
+		_u.SetUserID(*v)
 	}
-	return ospuo
+	return _u
 }
 
 // SetIndex sets the "index" field.
-func (ospuo *OncallScheduleParticipantUpdateOne) SetIndex(i int) *OncallScheduleParticipantUpdateOne {
-	ospuo.mutation.ResetIndex()
-	ospuo.mutation.SetIndex(i)
-	return ospuo
+func (_u *OncallScheduleParticipantUpdateOne) SetIndex(v int) *OncallScheduleParticipantUpdateOne {
+	_u.mutation.ResetIndex()
+	_u.mutation.SetIndex(v)
+	return _u
 }
 
 // SetNillableIndex sets the "index" field if the given value is not nil.
-func (ospuo *OncallScheduleParticipantUpdateOne) SetNillableIndex(i *int) *OncallScheduleParticipantUpdateOne {
-	if i != nil {
-		ospuo.SetIndex(*i)
+func (_u *OncallScheduleParticipantUpdateOne) SetNillableIndex(v *int) *OncallScheduleParticipantUpdateOne {
+	if v != nil {
+		_u.SetIndex(*v)
 	}
-	return ospuo
+	return _u
 }
 
-// AddIndex adds i to the "index" field.
-func (ospuo *OncallScheduleParticipantUpdateOne) AddIndex(i int) *OncallScheduleParticipantUpdateOne {
-	ospuo.mutation.AddIndex(i)
-	return ospuo
+// AddIndex adds value to the "index" field.
+func (_u *OncallScheduleParticipantUpdateOne) AddIndex(v int) *OncallScheduleParticipantUpdateOne {
+	_u.mutation.AddIndex(v)
+	return _u
 }
 
 // SetSchedule sets the "schedule" edge to the OncallSchedule entity.
-func (ospuo *OncallScheduleParticipantUpdateOne) SetSchedule(o *OncallSchedule) *OncallScheduleParticipantUpdateOne {
-	return ospuo.SetScheduleID(o.ID)
+func (_u *OncallScheduleParticipantUpdateOne) SetSchedule(v *OncallSchedule) *OncallScheduleParticipantUpdateOne {
+	return _u.SetScheduleID(v.ID)
 }
 
 // SetUser sets the "user" edge to the User entity.
-func (ospuo *OncallScheduleParticipantUpdateOne) SetUser(u *User) *OncallScheduleParticipantUpdateOne {
-	return ospuo.SetUserID(u.ID)
+func (_u *OncallScheduleParticipantUpdateOne) SetUser(v *User) *OncallScheduleParticipantUpdateOne {
+	return _u.SetUserID(v.ID)
 }
 
 // Mutation returns the OncallScheduleParticipantMutation object of the builder.
-func (ospuo *OncallScheduleParticipantUpdateOne) Mutation() *OncallScheduleParticipantMutation {
-	return ospuo.mutation
+func (_u *OncallScheduleParticipantUpdateOne) Mutation() *OncallScheduleParticipantMutation {
+	return _u.mutation
 }
 
 // ClearSchedule clears the "schedule" edge to the OncallSchedule entity.
-func (ospuo *OncallScheduleParticipantUpdateOne) ClearSchedule() *OncallScheduleParticipantUpdateOne {
-	ospuo.mutation.ClearSchedule()
-	return ospuo
+func (_u *OncallScheduleParticipantUpdateOne) ClearSchedule() *OncallScheduleParticipantUpdateOne {
+	_u.mutation.ClearSchedule()
+	return _u
 }
 
 // ClearUser clears the "user" edge to the User entity.
-func (ospuo *OncallScheduleParticipantUpdateOne) ClearUser() *OncallScheduleParticipantUpdateOne {
-	ospuo.mutation.ClearUser()
-	return ospuo
+func (_u *OncallScheduleParticipantUpdateOne) ClearUser() *OncallScheduleParticipantUpdateOne {
+	_u.mutation.ClearUser()
+	return _u
 }
 
 // Where appends a list predicates to the OncallScheduleParticipantUpdate builder.
-func (ospuo *OncallScheduleParticipantUpdateOne) Where(ps ...predicate.OncallScheduleParticipant) *OncallScheduleParticipantUpdateOne {
-	ospuo.mutation.Where(ps...)
-	return ospuo
+func (_u *OncallScheduleParticipantUpdateOne) Where(ps ...predicate.OncallScheduleParticipant) *OncallScheduleParticipantUpdateOne {
+	_u.mutation.Where(ps...)
+	return _u
 }
 
 // Select allows selecting one or more fields (columns) of the returned entity.
 // The default is selecting all fields defined in the entity schema.
-func (ospuo *OncallScheduleParticipantUpdateOne) Select(field string, fields ...string) *OncallScheduleParticipantUpdateOne {
-	ospuo.fields = append([]string{field}, fields...)
-	return ospuo
+func (_u *OncallScheduleParticipantUpdateOne) Select(field string, fields ...string) *OncallScheduleParticipantUpdateOne {
+	_u.fields = append([]string{field}, fields...)
+	return _u
 }
 
 // Save executes the query and returns the updated OncallScheduleParticipant entity.
-func (ospuo *OncallScheduleParticipantUpdateOne) Save(ctx context.Context) (*OncallScheduleParticipant, error) {
-	return withHooks(ctx, ospuo.sqlSave, ospuo.mutation, ospuo.hooks)
+func (_u *OncallScheduleParticipantUpdateOne) Save(ctx context.Context) (*OncallScheduleParticipant, error) {
+	return withHooks(ctx, _u.sqlSave, _u.mutation, _u.hooks)
 }
 
 // SaveX is like Save, but panics if an error occurs.
-func (ospuo *OncallScheduleParticipantUpdateOne) SaveX(ctx context.Context) *OncallScheduleParticipant {
-	node, err := ospuo.Save(ctx)
+func (_u *OncallScheduleParticipantUpdateOne) SaveX(ctx context.Context) *OncallScheduleParticipant {
+	node, err := _u.Save(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -356,49 +356,49 @@ func (ospuo *OncallScheduleParticipantUpdateOne) SaveX(ctx context.Context) *Onc
 }
 
 // Exec executes the query on the entity.
-func (ospuo *OncallScheduleParticipantUpdateOne) Exec(ctx context.Context) error {
-	_, err := ospuo.Save(ctx)
+func (_u *OncallScheduleParticipantUpdateOne) Exec(ctx context.Context) error {
+	_, err := _u.Save(ctx)
 	return err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (ospuo *OncallScheduleParticipantUpdateOne) ExecX(ctx context.Context) {
-	if err := ospuo.Exec(ctx); err != nil {
+func (_u *OncallScheduleParticipantUpdateOne) ExecX(ctx context.Context) {
+	if err := _u.Exec(ctx); err != nil {
 		panic(err)
 	}
 }
 
 // check runs all checks and user-defined validators on the builder.
-func (ospuo *OncallScheduleParticipantUpdateOne) check() error {
-	if ospuo.mutation.TenantCleared() && len(ospuo.mutation.TenantIDs()) > 0 {
+func (_u *OncallScheduleParticipantUpdateOne) check() error {
+	if _u.mutation.TenantCleared() && len(_u.mutation.TenantIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "OncallScheduleParticipant.tenant"`)
 	}
-	if ospuo.mutation.ScheduleCleared() && len(ospuo.mutation.ScheduleIDs()) > 0 {
+	if _u.mutation.ScheduleCleared() && len(_u.mutation.ScheduleIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "OncallScheduleParticipant.schedule"`)
 	}
-	if ospuo.mutation.UserCleared() && len(ospuo.mutation.UserIDs()) > 0 {
+	if _u.mutation.UserCleared() && len(_u.mutation.UserIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "OncallScheduleParticipant.user"`)
 	}
 	return nil
 }
 
 // Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
-func (ospuo *OncallScheduleParticipantUpdateOne) Modify(modifiers ...func(u *sql.UpdateBuilder)) *OncallScheduleParticipantUpdateOne {
-	ospuo.modifiers = append(ospuo.modifiers, modifiers...)
-	return ospuo
+func (_u *OncallScheduleParticipantUpdateOne) Modify(modifiers ...func(u *sql.UpdateBuilder)) *OncallScheduleParticipantUpdateOne {
+	_u.modifiers = append(_u.modifiers, modifiers...)
+	return _u
 }
 
-func (ospuo *OncallScheduleParticipantUpdateOne) sqlSave(ctx context.Context) (_node *OncallScheduleParticipant, err error) {
-	if err := ospuo.check(); err != nil {
+func (_u *OncallScheduleParticipantUpdateOne) sqlSave(ctx context.Context) (_node *OncallScheduleParticipant, err error) {
+	if err := _u.check(); err != nil {
 		return _node, err
 	}
 	_spec := sqlgraph.NewUpdateSpec(oncallscheduleparticipant.Table, oncallscheduleparticipant.Columns, sqlgraph.NewFieldSpec(oncallscheduleparticipant.FieldID, field.TypeUUID))
-	id, ok := ospuo.mutation.ID()
+	id, ok := _u.mutation.ID()
 	if !ok {
 		return nil, &ValidationError{Name: "id", err: errors.New(`ent: missing "OncallScheduleParticipant.id" for update`)}
 	}
 	_spec.Node.ID.Value = id
-	if fields := ospuo.fields; len(fields) > 0 {
+	if fields := _u.fields; len(fields) > 0 {
 		_spec.Node.Columns = make([]string, 0, len(fields))
 		_spec.Node.Columns = append(_spec.Node.Columns, oncallscheduleparticipant.FieldID)
 		for _, f := range fields {
@@ -410,20 +410,20 @@ func (ospuo *OncallScheduleParticipantUpdateOne) sqlSave(ctx context.Context) (_
 			}
 		}
 	}
-	if ps := ospuo.mutation.predicates; len(ps) > 0 {
+	if ps := _u.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {
 				ps[i](selector)
 			}
 		}
 	}
-	if value, ok := ospuo.mutation.Index(); ok {
+	if value, ok := _u.mutation.Index(); ok {
 		_spec.SetField(oncallscheduleparticipant.FieldIndex, field.TypeInt, value)
 	}
-	if value, ok := ospuo.mutation.AddedIndex(); ok {
+	if value, ok := _u.mutation.AddedIndex(); ok {
 		_spec.AddField(oncallscheduleparticipant.FieldIndex, field.TypeInt, value)
 	}
-	if ospuo.mutation.ScheduleCleared() {
+	if _u.mutation.ScheduleCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: true,
@@ -436,7 +436,7 @@ func (ospuo *OncallScheduleParticipantUpdateOne) sqlSave(ctx context.Context) (_
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := ospuo.mutation.ScheduleIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.ScheduleIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: true,
@@ -452,7 +452,7 @@ func (ospuo *OncallScheduleParticipantUpdateOne) sqlSave(ctx context.Context) (_
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if ospuo.mutation.UserCleared() {
+	if _u.mutation.UserCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
@@ -465,7 +465,7 @@ func (ospuo *OncallScheduleParticipantUpdateOne) sqlSave(ctx context.Context) (_
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := ospuo.mutation.UserIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.UserIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
@@ -481,11 +481,11 @@ func (ospuo *OncallScheduleParticipantUpdateOne) sqlSave(ctx context.Context) (_
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	_spec.AddModifiers(ospuo.modifiers...)
-	_node = &OncallScheduleParticipant{config: ospuo.config}
+	_spec.AddModifiers(_u.modifiers...)
+	_node = &OncallScheduleParticipant{config: _u.config}
 	_spec.Assign = _node.assignValues
 	_spec.ScanValues = _node.scanValues
-	if err = sqlgraph.UpdateNode(ctx, ospuo.driver, _spec); err != nil {
+	if err = sqlgraph.UpdateNode(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{oncallscheduleparticipant.Label}
 		} else if sqlgraph.IsConstraintError(err) {
@@ -493,6 +493,6 @@ func (ospuo *OncallScheduleParticipantUpdateOne) sqlSave(ctx context.Context) (_
 		}
 		return nil, err
 	}
-	ospuo.mutation.done = true
+	_u.mutation.done = true
 	return _node, nil
 }

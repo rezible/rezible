@@ -33,229 +33,229 @@ type OncallRosterCreate struct {
 }
 
 // SetTenantID sets the "tenant_id" field.
-func (orc *OncallRosterCreate) SetTenantID(i int) *OncallRosterCreate {
-	orc.mutation.SetTenantID(i)
-	return orc
+func (_c *OncallRosterCreate) SetTenantID(v int) *OncallRosterCreate {
+	_c.mutation.SetTenantID(v)
+	return _c
 }
 
 // SetArchiveTime sets the "archive_time" field.
-func (orc *OncallRosterCreate) SetArchiveTime(t time.Time) *OncallRosterCreate {
-	orc.mutation.SetArchiveTime(t)
-	return orc
+func (_c *OncallRosterCreate) SetArchiveTime(v time.Time) *OncallRosterCreate {
+	_c.mutation.SetArchiveTime(v)
+	return _c
 }
 
 // SetNillableArchiveTime sets the "archive_time" field if the given value is not nil.
-func (orc *OncallRosterCreate) SetNillableArchiveTime(t *time.Time) *OncallRosterCreate {
-	if t != nil {
-		orc.SetArchiveTime(*t)
+func (_c *OncallRosterCreate) SetNillableArchiveTime(v *time.Time) *OncallRosterCreate {
+	if v != nil {
+		_c.SetArchiveTime(*v)
 	}
-	return orc
+	return _c
 }
 
 // SetName sets the "name" field.
-func (orc *OncallRosterCreate) SetName(s string) *OncallRosterCreate {
-	orc.mutation.SetName(s)
-	return orc
+func (_c *OncallRosterCreate) SetName(v string) *OncallRosterCreate {
+	_c.mutation.SetName(v)
+	return _c
 }
 
 // SetSlug sets the "slug" field.
-func (orc *OncallRosterCreate) SetSlug(s string) *OncallRosterCreate {
-	orc.mutation.SetSlug(s)
-	return orc
+func (_c *OncallRosterCreate) SetSlug(v string) *OncallRosterCreate {
+	_c.mutation.SetSlug(v)
+	return _c
 }
 
 // SetProviderID sets the "provider_id" field.
-func (orc *OncallRosterCreate) SetProviderID(s string) *OncallRosterCreate {
-	orc.mutation.SetProviderID(s)
-	return orc
+func (_c *OncallRosterCreate) SetProviderID(v string) *OncallRosterCreate {
+	_c.mutation.SetProviderID(v)
+	return _c
 }
 
 // SetTimezone sets the "timezone" field.
-func (orc *OncallRosterCreate) SetTimezone(s string) *OncallRosterCreate {
-	orc.mutation.SetTimezone(s)
-	return orc
+func (_c *OncallRosterCreate) SetTimezone(v string) *OncallRosterCreate {
+	_c.mutation.SetTimezone(v)
+	return _c
 }
 
 // SetNillableTimezone sets the "timezone" field if the given value is not nil.
-func (orc *OncallRosterCreate) SetNillableTimezone(s *string) *OncallRosterCreate {
-	if s != nil {
-		orc.SetTimezone(*s)
+func (_c *OncallRosterCreate) SetNillableTimezone(v *string) *OncallRosterCreate {
+	if v != nil {
+		_c.SetTimezone(*v)
 	}
-	return orc
+	return _c
 }
 
 // SetChatHandle sets the "chat_handle" field.
-func (orc *OncallRosterCreate) SetChatHandle(s string) *OncallRosterCreate {
-	orc.mutation.SetChatHandle(s)
-	return orc
+func (_c *OncallRosterCreate) SetChatHandle(v string) *OncallRosterCreate {
+	_c.mutation.SetChatHandle(v)
+	return _c
 }
 
 // SetNillableChatHandle sets the "chat_handle" field if the given value is not nil.
-func (orc *OncallRosterCreate) SetNillableChatHandle(s *string) *OncallRosterCreate {
-	if s != nil {
-		orc.SetChatHandle(*s)
+func (_c *OncallRosterCreate) SetNillableChatHandle(v *string) *OncallRosterCreate {
+	if v != nil {
+		_c.SetChatHandle(*v)
 	}
-	return orc
+	return _c
 }
 
 // SetChatChannelID sets the "chat_channel_id" field.
-func (orc *OncallRosterCreate) SetChatChannelID(s string) *OncallRosterCreate {
-	orc.mutation.SetChatChannelID(s)
-	return orc
+func (_c *OncallRosterCreate) SetChatChannelID(v string) *OncallRosterCreate {
+	_c.mutation.SetChatChannelID(v)
+	return _c
 }
 
 // SetNillableChatChannelID sets the "chat_channel_id" field if the given value is not nil.
-func (orc *OncallRosterCreate) SetNillableChatChannelID(s *string) *OncallRosterCreate {
-	if s != nil {
-		orc.SetChatChannelID(*s)
+func (_c *OncallRosterCreate) SetNillableChatChannelID(v *string) *OncallRosterCreate {
+	if v != nil {
+		_c.SetChatChannelID(*v)
 	}
-	return orc
+	return _c
 }
 
 // SetHandoverTemplateID sets the "handover_template_id" field.
-func (orc *OncallRosterCreate) SetHandoverTemplateID(u uuid.UUID) *OncallRosterCreate {
-	orc.mutation.SetHandoverTemplateID(u)
-	return orc
+func (_c *OncallRosterCreate) SetHandoverTemplateID(v uuid.UUID) *OncallRosterCreate {
+	_c.mutation.SetHandoverTemplateID(v)
+	return _c
 }
 
 // SetNillableHandoverTemplateID sets the "handover_template_id" field if the given value is not nil.
-func (orc *OncallRosterCreate) SetNillableHandoverTemplateID(u *uuid.UUID) *OncallRosterCreate {
-	if u != nil {
-		orc.SetHandoverTemplateID(*u)
+func (_c *OncallRosterCreate) SetNillableHandoverTemplateID(v *uuid.UUID) *OncallRosterCreate {
+	if v != nil {
+		_c.SetHandoverTemplateID(*v)
 	}
-	return orc
+	return _c
 }
 
 // SetID sets the "id" field.
-func (orc *OncallRosterCreate) SetID(u uuid.UUID) *OncallRosterCreate {
-	orc.mutation.SetID(u)
-	return orc
+func (_c *OncallRosterCreate) SetID(v uuid.UUID) *OncallRosterCreate {
+	_c.mutation.SetID(v)
+	return _c
 }
 
 // SetNillableID sets the "id" field if the given value is not nil.
-func (orc *OncallRosterCreate) SetNillableID(u *uuid.UUID) *OncallRosterCreate {
-	if u != nil {
-		orc.SetID(*u)
+func (_c *OncallRosterCreate) SetNillableID(v *uuid.UUID) *OncallRosterCreate {
+	if v != nil {
+		_c.SetID(*v)
 	}
-	return orc
+	return _c
 }
 
 // SetTenant sets the "tenant" edge to the Tenant entity.
-func (orc *OncallRosterCreate) SetTenant(t *Tenant) *OncallRosterCreate {
-	return orc.SetTenantID(t.ID)
+func (_c *OncallRosterCreate) SetTenant(v *Tenant) *OncallRosterCreate {
+	return _c.SetTenantID(v.ID)
 }
 
 // AddScheduleIDs adds the "schedules" edge to the OncallSchedule entity by IDs.
-func (orc *OncallRosterCreate) AddScheduleIDs(ids ...uuid.UUID) *OncallRosterCreate {
-	orc.mutation.AddScheduleIDs(ids...)
-	return orc
+func (_c *OncallRosterCreate) AddScheduleIDs(ids ...uuid.UUID) *OncallRosterCreate {
+	_c.mutation.AddScheduleIDs(ids...)
+	return _c
 }
 
 // AddSchedules adds the "schedules" edges to the OncallSchedule entity.
-func (orc *OncallRosterCreate) AddSchedules(o ...*OncallSchedule) *OncallRosterCreate {
-	ids := make([]uuid.UUID, len(o))
-	for i := range o {
-		ids[i] = o[i].ID
+func (_c *OncallRosterCreate) AddSchedules(v ...*OncallSchedule) *OncallRosterCreate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
 	}
-	return orc.AddScheduleIDs(ids...)
+	return _c.AddScheduleIDs(ids...)
 }
 
 // SetHandoverTemplate sets the "handover_template" edge to the OncallHandoverTemplate entity.
-func (orc *OncallRosterCreate) SetHandoverTemplate(o *OncallHandoverTemplate) *OncallRosterCreate {
-	return orc.SetHandoverTemplateID(o.ID)
+func (_c *OncallRosterCreate) SetHandoverTemplate(v *OncallHandoverTemplate) *OncallRosterCreate {
+	return _c.SetHandoverTemplateID(v.ID)
 }
 
 // AddAlertIDs adds the "alerts" edge to the Alert entity by IDs.
-func (orc *OncallRosterCreate) AddAlertIDs(ids ...uuid.UUID) *OncallRosterCreate {
-	orc.mutation.AddAlertIDs(ids...)
-	return orc
+func (_c *OncallRosterCreate) AddAlertIDs(ids ...uuid.UUID) *OncallRosterCreate {
+	_c.mutation.AddAlertIDs(ids...)
+	return _c
 }
 
 // AddAlerts adds the "alerts" edges to the Alert entity.
-func (orc *OncallRosterCreate) AddAlerts(a ...*Alert) *OncallRosterCreate {
-	ids := make([]uuid.UUID, len(a))
-	for i := range a {
-		ids[i] = a[i].ID
+func (_c *OncallRosterCreate) AddAlerts(v ...*Alert) *OncallRosterCreate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
 	}
-	return orc.AddAlertIDs(ids...)
+	return _c.AddAlertIDs(ids...)
 }
 
 // AddTeamIDs adds the "teams" edge to the Team entity by IDs.
-func (orc *OncallRosterCreate) AddTeamIDs(ids ...uuid.UUID) *OncallRosterCreate {
-	orc.mutation.AddTeamIDs(ids...)
-	return orc
+func (_c *OncallRosterCreate) AddTeamIDs(ids ...uuid.UUID) *OncallRosterCreate {
+	_c.mutation.AddTeamIDs(ids...)
+	return _c
 }
 
 // AddTeams adds the "teams" edges to the Team entity.
-func (orc *OncallRosterCreate) AddTeams(t ...*Team) *OncallRosterCreate {
-	ids := make([]uuid.UUID, len(t))
-	for i := range t {
-		ids[i] = t[i].ID
+func (_c *OncallRosterCreate) AddTeams(v ...*Team) *OncallRosterCreate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
 	}
-	return orc.AddTeamIDs(ids...)
+	return _c.AddTeamIDs(ids...)
 }
 
 // AddShiftIDs adds the "shifts" edge to the OncallShift entity by IDs.
-func (orc *OncallRosterCreate) AddShiftIDs(ids ...uuid.UUID) *OncallRosterCreate {
-	orc.mutation.AddShiftIDs(ids...)
-	return orc
+func (_c *OncallRosterCreate) AddShiftIDs(ids ...uuid.UUID) *OncallRosterCreate {
+	_c.mutation.AddShiftIDs(ids...)
+	return _c
 }
 
 // AddShifts adds the "shifts" edges to the OncallShift entity.
-func (orc *OncallRosterCreate) AddShifts(o ...*OncallShift) *OncallRosterCreate {
-	ids := make([]uuid.UUID, len(o))
-	for i := range o {
-		ids[i] = o[i].ID
+func (_c *OncallRosterCreate) AddShifts(v ...*OncallShift) *OncallRosterCreate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
 	}
-	return orc.AddShiftIDs(ids...)
+	return _c.AddShiftIDs(ids...)
 }
 
 // AddUserWatcherIDs adds the "user_watchers" edge to the User entity by IDs.
-func (orc *OncallRosterCreate) AddUserWatcherIDs(ids ...uuid.UUID) *OncallRosterCreate {
-	orc.mutation.AddUserWatcherIDs(ids...)
-	return orc
+func (_c *OncallRosterCreate) AddUserWatcherIDs(ids ...uuid.UUID) *OncallRosterCreate {
+	_c.mutation.AddUserWatcherIDs(ids...)
+	return _c
 }
 
 // AddUserWatchers adds the "user_watchers" edges to the User entity.
-func (orc *OncallRosterCreate) AddUserWatchers(u ...*User) *OncallRosterCreate {
-	ids := make([]uuid.UUID, len(u))
-	for i := range u {
-		ids[i] = u[i].ID
+func (_c *OncallRosterCreate) AddUserWatchers(v ...*User) *OncallRosterCreate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
 	}
-	return orc.AddUserWatcherIDs(ids...)
+	return _c.AddUserWatcherIDs(ids...)
 }
 
 // AddMetricIDs adds the "metrics" edge to the OncallRosterMetrics entity by IDs.
-func (orc *OncallRosterCreate) AddMetricIDs(ids ...uuid.UUID) *OncallRosterCreate {
-	orc.mutation.AddMetricIDs(ids...)
-	return orc
+func (_c *OncallRosterCreate) AddMetricIDs(ids ...uuid.UUID) *OncallRosterCreate {
+	_c.mutation.AddMetricIDs(ids...)
+	return _c
 }
 
 // AddMetrics adds the "metrics" edges to the OncallRosterMetrics entity.
-func (orc *OncallRosterCreate) AddMetrics(o ...*OncallRosterMetrics) *OncallRosterCreate {
-	ids := make([]uuid.UUID, len(o))
-	for i := range o {
-		ids[i] = o[i].ID
+func (_c *OncallRosterCreate) AddMetrics(v ...*OncallRosterMetrics) *OncallRosterCreate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
 	}
-	return orc.AddMetricIDs(ids...)
+	return _c.AddMetricIDs(ids...)
 }
 
 // Mutation returns the OncallRosterMutation object of the builder.
-func (orc *OncallRosterCreate) Mutation() *OncallRosterMutation {
-	return orc.mutation
+func (_c *OncallRosterCreate) Mutation() *OncallRosterMutation {
+	return _c.mutation
 }
 
 // Save creates the OncallRoster in the database.
-func (orc *OncallRosterCreate) Save(ctx context.Context) (*OncallRoster, error) {
-	if err := orc.defaults(); err != nil {
+func (_c *OncallRosterCreate) Save(ctx context.Context) (*OncallRoster, error) {
+	if err := _c.defaults(); err != nil {
 		return nil, err
 	}
-	return withHooks(ctx, orc.sqlSave, orc.mutation, orc.hooks)
+	return withHooks(ctx, _c.sqlSave, _c.mutation, _c.hooks)
 }
 
 // SaveX calls Save and panics if Save returns an error.
-func (orc *OncallRosterCreate) SaveX(ctx context.Context) *OncallRoster {
-	v, err := orc.Save(ctx)
+func (_c *OncallRosterCreate) SaveX(ctx context.Context) *OncallRoster {
+	v, err := _c.Save(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -263,56 +263,56 @@ func (orc *OncallRosterCreate) SaveX(ctx context.Context) *OncallRoster {
 }
 
 // Exec executes the query.
-func (orc *OncallRosterCreate) Exec(ctx context.Context) error {
-	_, err := orc.Save(ctx)
+func (_c *OncallRosterCreate) Exec(ctx context.Context) error {
+	_, err := _c.Save(ctx)
 	return err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (orc *OncallRosterCreate) ExecX(ctx context.Context) {
-	if err := orc.Exec(ctx); err != nil {
+func (_c *OncallRosterCreate) ExecX(ctx context.Context) {
+	if err := _c.Exec(ctx); err != nil {
 		panic(err)
 	}
 }
 
 // defaults sets the default values of the builder before save.
-func (orc *OncallRosterCreate) defaults() error {
-	if _, ok := orc.mutation.ID(); !ok {
+func (_c *OncallRosterCreate) defaults() error {
+	if _, ok := _c.mutation.ID(); !ok {
 		if oncallroster.DefaultID == nil {
 			return fmt.Errorf("ent: uninitialized oncallroster.DefaultID (forgotten import ent/runtime?)")
 		}
 		v := oncallroster.DefaultID()
-		orc.mutation.SetID(v)
+		_c.mutation.SetID(v)
 	}
 	return nil
 }
 
 // check runs all checks and user-defined validators on the builder.
-func (orc *OncallRosterCreate) check() error {
-	if _, ok := orc.mutation.TenantID(); !ok {
+func (_c *OncallRosterCreate) check() error {
+	if _, ok := _c.mutation.TenantID(); !ok {
 		return &ValidationError{Name: "tenant_id", err: errors.New(`ent: missing required field "OncallRoster.tenant_id"`)}
 	}
-	if _, ok := orc.mutation.Name(); !ok {
+	if _, ok := _c.mutation.Name(); !ok {
 		return &ValidationError{Name: "name", err: errors.New(`ent: missing required field "OncallRoster.name"`)}
 	}
-	if _, ok := orc.mutation.Slug(); !ok {
+	if _, ok := _c.mutation.Slug(); !ok {
 		return &ValidationError{Name: "slug", err: errors.New(`ent: missing required field "OncallRoster.slug"`)}
 	}
-	if _, ok := orc.mutation.ProviderID(); !ok {
+	if _, ok := _c.mutation.ProviderID(); !ok {
 		return &ValidationError{Name: "provider_id", err: errors.New(`ent: missing required field "OncallRoster.provider_id"`)}
 	}
-	if len(orc.mutation.TenantIDs()) == 0 {
+	if len(_c.mutation.TenantIDs()) == 0 {
 		return &ValidationError{Name: "tenant", err: errors.New(`ent: missing required edge "OncallRoster.tenant"`)}
 	}
 	return nil
 }
 
-func (orc *OncallRosterCreate) sqlSave(ctx context.Context) (*OncallRoster, error) {
-	if err := orc.check(); err != nil {
+func (_c *OncallRosterCreate) sqlSave(ctx context.Context) (*OncallRoster, error) {
+	if err := _c.check(); err != nil {
 		return nil, err
 	}
-	_node, _spec := orc.createSpec()
-	if err := sqlgraph.CreateNode(ctx, orc.driver, _spec); err != nil {
+	_node, _spec := _c.createSpec()
+	if err := sqlgraph.CreateNode(ctx, _c.driver, _spec); err != nil {
 		if sqlgraph.IsConstraintError(err) {
 			err = &ConstraintError{msg: err.Error(), wrap: err}
 		}
@@ -325,50 +325,50 @@ func (orc *OncallRosterCreate) sqlSave(ctx context.Context) (*OncallRoster, erro
 			return nil, err
 		}
 	}
-	orc.mutation.id = &_node.ID
-	orc.mutation.done = true
+	_c.mutation.id = &_node.ID
+	_c.mutation.done = true
 	return _node, nil
 }
 
-func (orc *OncallRosterCreate) createSpec() (*OncallRoster, *sqlgraph.CreateSpec) {
+func (_c *OncallRosterCreate) createSpec() (*OncallRoster, *sqlgraph.CreateSpec) {
 	var (
-		_node = &OncallRoster{config: orc.config}
+		_node = &OncallRoster{config: _c.config}
 		_spec = sqlgraph.NewCreateSpec(oncallroster.Table, sqlgraph.NewFieldSpec(oncallroster.FieldID, field.TypeUUID))
 	)
-	_spec.OnConflict = orc.conflict
-	if id, ok := orc.mutation.ID(); ok {
+	_spec.OnConflict = _c.conflict
+	if id, ok := _c.mutation.ID(); ok {
 		_node.ID = id
 		_spec.ID.Value = &id
 	}
-	if value, ok := orc.mutation.ArchiveTime(); ok {
+	if value, ok := _c.mutation.ArchiveTime(); ok {
 		_spec.SetField(oncallroster.FieldArchiveTime, field.TypeTime, value)
 		_node.ArchiveTime = value
 	}
-	if value, ok := orc.mutation.Name(); ok {
+	if value, ok := _c.mutation.Name(); ok {
 		_spec.SetField(oncallroster.FieldName, field.TypeString, value)
 		_node.Name = value
 	}
-	if value, ok := orc.mutation.Slug(); ok {
+	if value, ok := _c.mutation.Slug(); ok {
 		_spec.SetField(oncallroster.FieldSlug, field.TypeString, value)
 		_node.Slug = value
 	}
-	if value, ok := orc.mutation.ProviderID(); ok {
+	if value, ok := _c.mutation.ProviderID(); ok {
 		_spec.SetField(oncallroster.FieldProviderID, field.TypeString, value)
 		_node.ProviderID = value
 	}
-	if value, ok := orc.mutation.Timezone(); ok {
+	if value, ok := _c.mutation.Timezone(); ok {
 		_spec.SetField(oncallroster.FieldTimezone, field.TypeString, value)
 		_node.Timezone = value
 	}
-	if value, ok := orc.mutation.ChatHandle(); ok {
+	if value, ok := _c.mutation.ChatHandle(); ok {
 		_spec.SetField(oncallroster.FieldChatHandle, field.TypeString, value)
 		_node.ChatHandle = value
 	}
-	if value, ok := orc.mutation.ChatChannelID(); ok {
+	if value, ok := _c.mutation.ChatChannelID(); ok {
 		_spec.SetField(oncallroster.FieldChatChannelID, field.TypeString, value)
 		_node.ChatChannelID = value
 	}
-	if nodes := orc.mutation.TenantIDs(); len(nodes) > 0 {
+	if nodes := _c.mutation.TenantIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
@@ -385,7 +385,7 @@ func (orc *OncallRosterCreate) createSpec() (*OncallRoster, *sqlgraph.CreateSpec
 		_node.TenantID = nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
-	if nodes := orc.mutation.SchedulesIDs(); len(nodes) > 0 {
+	if nodes := _c.mutation.SchedulesIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
@@ -401,7 +401,7 @@ func (orc *OncallRosterCreate) createSpec() (*OncallRoster, *sqlgraph.CreateSpec
 		}
 		_spec.Edges = append(_spec.Edges, edge)
 	}
-	if nodes := orc.mutation.HandoverTemplateIDs(); len(nodes) > 0 {
+	if nodes := _c.mutation.HandoverTemplateIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: true,
@@ -418,7 +418,7 @@ func (orc *OncallRosterCreate) createSpec() (*OncallRoster, *sqlgraph.CreateSpec
 		_node.HandoverTemplateID = nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
-	if nodes := orc.mutation.AlertsIDs(); len(nodes) > 0 {
+	if nodes := _c.mutation.AlertsIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
@@ -434,7 +434,7 @@ func (orc *OncallRosterCreate) createSpec() (*OncallRoster, *sqlgraph.CreateSpec
 		}
 		_spec.Edges = append(_spec.Edges, edge)
 	}
-	if nodes := orc.mutation.TeamsIDs(); len(nodes) > 0 {
+	if nodes := _c.mutation.TeamsIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
 			Inverse: true,
@@ -450,7 +450,7 @@ func (orc *OncallRosterCreate) createSpec() (*OncallRoster, *sqlgraph.CreateSpec
 		}
 		_spec.Edges = append(_spec.Edges, edge)
 	}
-	if nodes := orc.mutation.ShiftsIDs(); len(nodes) > 0 {
+	if nodes := _c.mutation.ShiftsIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: true,
@@ -466,7 +466,7 @@ func (orc *OncallRosterCreate) createSpec() (*OncallRoster, *sqlgraph.CreateSpec
 		}
 		_spec.Edges = append(_spec.Edges, edge)
 	}
-	if nodes := orc.mutation.UserWatchersIDs(); len(nodes) > 0 {
+	if nodes := _c.mutation.UserWatchersIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
 			Inverse: true,
@@ -482,7 +482,7 @@ func (orc *OncallRosterCreate) createSpec() (*OncallRoster, *sqlgraph.CreateSpec
 		}
 		_spec.Edges = append(_spec.Edges, edge)
 	}
-	if nodes := orc.mutation.MetricsIDs(); len(nodes) > 0 {
+	if nodes := _c.mutation.MetricsIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: true,
@@ -517,10 +517,10 @@ func (orc *OncallRosterCreate) createSpec() (*OncallRoster, *sqlgraph.CreateSpec
 //			SetTenantID(v+v).
 //		}).
 //		Exec(ctx)
-func (orc *OncallRosterCreate) OnConflict(opts ...sql.ConflictOption) *OncallRosterUpsertOne {
-	orc.conflict = opts
+func (_c *OncallRosterCreate) OnConflict(opts ...sql.ConflictOption) *OncallRosterUpsertOne {
+	_c.conflict = opts
 	return &OncallRosterUpsertOne{
-		create: orc,
+		create: _c,
 	}
 }
 
@@ -530,10 +530,10 @@ func (orc *OncallRosterCreate) OnConflict(opts ...sql.ConflictOption) *OncallRos
 //	client.OncallRoster.Create().
 //		OnConflict(sql.ConflictColumns(columns...)).
 //		Exec(ctx)
-func (orc *OncallRosterCreate) OnConflictColumns(columns ...string) *OncallRosterUpsertOne {
-	orc.conflict = append(orc.conflict, sql.ConflictColumns(columns...))
+func (_c *OncallRosterCreate) OnConflictColumns(columns ...string) *OncallRosterUpsertOne {
+	_c.conflict = append(_c.conflict, sql.ConflictColumns(columns...))
 	return &OncallRosterUpsertOne{
-		create: orc,
+		create: _c,
 	}
 }
 
@@ -921,16 +921,16 @@ type OncallRosterCreateBulk struct {
 }
 
 // Save creates the OncallRoster entities in the database.
-func (orcb *OncallRosterCreateBulk) Save(ctx context.Context) ([]*OncallRoster, error) {
-	if orcb.err != nil {
-		return nil, orcb.err
+func (_c *OncallRosterCreateBulk) Save(ctx context.Context) ([]*OncallRoster, error) {
+	if _c.err != nil {
+		return nil, _c.err
 	}
-	specs := make([]*sqlgraph.CreateSpec, len(orcb.builders))
-	nodes := make([]*OncallRoster, len(orcb.builders))
-	mutators := make([]Mutator, len(orcb.builders))
-	for i := range orcb.builders {
+	specs := make([]*sqlgraph.CreateSpec, len(_c.builders))
+	nodes := make([]*OncallRoster, len(_c.builders))
+	mutators := make([]Mutator, len(_c.builders))
+	for i := range _c.builders {
 		func(i int, root context.Context) {
-			builder := orcb.builders[i]
+			builder := _c.builders[i]
 			builder.defaults()
 			var mut Mutator = MutateFunc(func(ctx context.Context, m Mutation) (Value, error) {
 				mutation, ok := m.(*OncallRosterMutation)
@@ -944,12 +944,12 @@ func (orcb *OncallRosterCreateBulk) Save(ctx context.Context) ([]*OncallRoster, 
 				var err error
 				nodes[i], specs[i] = builder.createSpec()
 				if i < len(mutators)-1 {
-					_, err = mutators[i+1].Mutate(root, orcb.builders[i+1].mutation)
+					_, err = mutators[i+1].Mutate(root, _c.builders[i+1].mutation)
 				} else {
 					spec := &sqlgraph.BatchCreateSpec{Nodes: specs}
-					spec.OnConflict = orcb.conflict
+					spec.OnConflict = _c.conflict
 					// Invoke the actual operation on the latest mutation in the chain.
-					if err = sqlgraph.BatchCreate(ctx, orcb.driver, spec); err != nil {
+					if err = sqlgraph.BatchCreate(ctx, _c.driver, spec); err != nil {
 						if sqlgraph.IsConstraintError(err) {
 							err = &ConstraintError{msg: err.Error(), wrap: err}
 						}
@@ -969,7 +969,7 @@ func (orcb *OncallRosterCreateBulk) Save(ctx context.Context) ([]*OncallRoster, 
 		}(i, ctx)
 	}
 	if len(mutators) > 0 {
-		if _, err := mutators[0].Mutate(ctx, orcb.builders[0].mutation); err != nil {
+		if _, err := mutators[0].Mutate(ctx, _c.builders[0].mutation); err != nil {
 			return nil, err
 		}
 	}
@@ -977,8 +977,8 @@ func (orcb *OncallRosterCreateBulk) Save(ctx context.Context) ([]*OncallRoster, 
 }
 
 // SaveX is like Save, but panics if an error occurs.
-func (orcb *OncallRosterCreateBulk) SaveX(ctx context.Context) []*OncallRoster {
-	v, err := orcb.Save(ctx)
+func (_c *OncallRosterCreateBulk) SaveX(ctx context.Context) []*OncallRoster {
+	v, err := _c.Save(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -986,14 +986,14 @@ func (orcb *OncallRosterCreateBulk) SaveX(ctx context.Context) []*OncallRoster {
 }
 
 // Exec executes the query.
-func (orcb *OncallRosterCreateBulk) Exec(ctx context.Context) error {
-	_, err := orcb.Save(ctx)
+func (_c *OncallRosterCreateBulk) Exec(ctx context.Context) error {
+	_, err := _c.Save(ctx)
 	return err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (orcb *OncallRosterCreateBulk) ExecX(ctx context.Context) {
-	if err := orcb.Exec(ctx); err != nil {
+func (_c *OncallRosterCreateBulk) ExecX(ctx context.Context) {
+	if err := _c.Exec(ctx); err != nil {
 		panic(err)
 	}
 }
@@ -1013,10 +1013,10 @@ func (orcb *OncallRosterCreateBulk) ExecX(ctx context.Context) {
 //			SetTenantID(v+v).
 //		}).
 //		Exec(ctx)
-func (orcb *OncallRosterCreateBulk) OnConflict(opts ...sql.ConflictOption) *OncallRosterUpsertBulk {
-	orcb.conflict = opts
+func (_c *OncallRosterCreateBulk) OnConflict(opts ...sql.ConflictOption) *OncallRosterUpsertBulk {
+	_c.conflict = opts
 	return &OncallRosterUpsertBulk{
-		create: orcb,
+		create: _c,
 	}
 }
 
@@ -1026,10 +1026,10 @@ func (orcb *OncallRosterCreateBulk) OnConflict(opts ...sql.ConflictOption) *Onca
 //	client.OncallRoster.Create().
 //		OnConflict(sql.ConflictColumns(columns...)).
 //		Exec(ctx)
-func (orcb *OncallRosterCreateBulk) OnConflictColumns(columns ...string) *OncallRosterUpsertBulk {
-	orcb.conflict = append(orcb.conflict, sql.ConflictColumns(columns...))
+func (_c *OncallRosterCreateBulk) OnConflictColumns(columns ...string) *OncallRosterUpsertBulk {
+	_c.conflict = append(_c.conflict, sql.ConflictColumns(columns...))
 	return &OncallRosterUpsertBulk{
-		create: orcb,
+		create: _c,
 	}
 }
 

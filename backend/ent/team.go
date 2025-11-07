@@ -109,7 +109,7 @@ func (*Team) scanValues(columns []string) ([]any, error) {
 
 // assignValues assigns the values that were returned from sql.Rows (after scanning)
 // to the Team fields.
-func (t *Team) assignValues(columns []string, values []any) error {
+func (_m *Team) assignValues(columns []string, values []any) error {
 	if m, n := len(values), len(columns); m < n {
 		return fmt.Errorf("mismatch number of scan values: %d != %d", m, n)
 	}
@@ -119,46 +119,46 @@ func (t *Team) assignValues(columns []string, values []any) error {
 			if value, ok := values[i].(*uuid.UUID); !ok {
 				return fmt.Errorf("unexpected type %T for field id", values[i])
 			} else if value != nil {
-				t.ID = *value
+				_m.ID = *value
 			}
 		case team.FieldTenantID:
 			if value, ok := values[i].(*sql.NullInt64); !ok {
 				return fmt.Errorf("unexpected type %T for field tenant_id", values[i])
 			} else if value.Valid {
-				t.TenantID = int(value.Int64)
+				_m.TenantID = int(value.Int64)
 			}
 		case team.FieldSlug:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field slug", values[i])
 			} else if value.Valid {
-				t.Slug = value.String
+				_m.Slug = value.String
 			}
 		case team.FieldProviderID:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field provider_id", values[i])
 			} else if value.Valid {
-				t.ProviderID = value.String
+				_m.ProviderID = value.String
 			}
 		case team.FieldName:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field name", values[i])
 			} else if value.Valid {
-				t.Name = value.String
+				_m.Name = value.String
 			}
 		case team.FieldChatChannelID:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field chat_channel_id", values[i])
 			} else if value.Valid {
-				t.ChatChannelID = value.String
+				_m.ChatChannelID = value.String
 			}
 		case team.FieldTimezone:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field timezone", values[i])
 			} else if value.Valid {
-				t.Timezone = value.String
+				_m.Timezone = value.String
 			}
 		default:
-			t.selectValues.Set(columns[i], values[i])
+			_m.selectValues.Set(columns[i], values[i])
 		}
 	}
 	return nil
@@ -166,70 +166,70 @@ func (t *Team) assignValues(columns []string, values []any) error {
 
 // Value returns the ent.Value that was dynamically selected and assigned to the Team.
 // This includes values selected through modifiers, order, etc.
-func (t *Team) Value(name string) (ent.Value, error) {
-	return t.selectValues.Get(name)
+func (_m *Team) Value(name string) (ent.Value, error) {
+	return _m.selectValues.Get(name)
 }
 
 // QueryTenant queries the "tenant" edge of the Team entity.
-func (t *Team) QueryTenant() *TenantQuery {
-	return NewTeamClient(t.config).QueryTenant(t)
+func (_m *Team) QueryTenant() *TenantQuery {
+	return NewTeamClient(_m.config).QueryTenant(_m)
 }
 
 // QueryUsers queries the "users" edge of the Team entity.
-func (t *Team) QueryUsers() *UserQuery {
-	return NewTeamClient(t.config).QueryUsers(t)
+func (_m *Team) QueryUsers() *UserQuery {
+	return NewTeamClient(_m.config).QueryUsers(_m)
 }
 
 // QueryOncallRosters queries the "oncall_rosters" edge of the Team entity.
-func (t *Team) QueryOncallRosters() *OncallRosterQuery {
-	return NewTeamClient(t.config).QueryOncallRosters(t)
+func (_m *Team) QueryOncallRosters() *OncallRosterQuery {
+	return NewTeamClient(_m.config).QueryOncallRosters(_m)
 }
 
 // QueryScheduledMeetings queries the "scheduled_meetings" edge of the Team entity.
-func (t *Team) QueryScheduledMeetings() *MeetingScheduleQuery {
-	return NewTeamClient(t.config).QueryScheduledMeetings(t)
+func (_m *Team) QueryScheduledMeetings() *MeetingScheduleQuery {
+	return NewTeamClient(_m.config).QueryScheduledMeetings(_m)
 }
 
 // Update returns a builder for updating this Team.
 // Note that you need to call Team.Unwrap() before calling this method if this Team
 // was returned from a transaction, and the transaction was committed or rolled back.
-func (t *Team) Update() *TeamUpdateOne {
-	return NewTeamClient(t.config).UpdateOne(t)
+func (_m *Team) Update() *TeamUpdateOne {
+	return NewTeamClient(_m.config).UpdateOne(_m)
 }
 
 // Unwrap unwraps the Team entity that was returned from a transaction after it was closed,
 // so that all future queries will be executed through the driver which created the transaction.
-func (t *Team) Unwrap() *Team {
-	_tx, ok := t.config.driver.(*txDriver)
+func (_m *Team) Unwrap() *Team {
+	_tx, ok := _m.config.driver.(*txDriver)
 	if !ok {
 		panic("ent: Team is not a transactional entity")
 	}
-	t.config.driver = _tx.drv
-	return t
+	_m.config.driver = _tx.drv
+	return _m
 }
 
 // String implements the fmt.Stringer.
-func (t *Team) String() string {
+func (_m *Team) String() string {
 	var builder strings.Builder
 	builder.WriteString("Team(")
-	builder.WriteString(fmt.Sprintf("id=%v, ", t.ID))
+	builder.WriteString(fmt.Sprintf("id=%v, ", _m.ID))
 	builder.WriteString("tenant_id=")
-	builder.WriteString(fmt.Sprintf("%v", t.TenantID))
+	builder.WriteString(fmt.Sprintf("%v", _m.TenantID))
 	builder.WriteString(", ")
 	builder.WriteString("slug=")
-	builder.WriteString(t.Slug)
+	builder.WriteString(_m.Slug)
 	builder.WriteString(", ")
 	builder.WriteString("provider_id=")
-	builder.WriteString(t.ProviderID)
+	builder.WriteString(_m.ProviderID)
 	builder.WriteString(", ")
 	builder.WriteString("name=")
-	builder.WriteString(t.Name)
+	builder.WriteString(_m.Name)
 	builder.WriteString(", ")
 	builder.WriteString("chat_channel_id=")
-	builder.WriteString(t.ChatChannelID)
+	builder.WriteString(_m.ChatChannelID)
 	builder.WriteString(", ")
 	builder.WriteString("timezone=")
-	builder.WriteString(t.Timezone)
+	builder.WriteString(_m.Timezone)
 	builder.WriteByte(')')
 	return builder.String()
 }

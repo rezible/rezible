@@ -20,56 +20,56 @@ type SystemRelationshipFeedbackSignalDelete struct {
 }
 
 // Where appends a list predicates to the SystemRelationshipFeedbackSignalDelete builder.
-func (srfsd *SystemRelationshipFeedbackSignalDelete) Where(ps ...predicate.SystemRelationshipFeedbackSignal) *SystemRelationshipFeedbackSignalDelete {
-	srfsd.mutation.Where(ps...)
-	return srfsd
+func (_d *SystemRelationshipFeedbackSignalDelete) Where(ps ...predicate.SystemRelationshipFeedbackSignal) *SystemRelationshipFeedbackSignalDelete {
+	_d.mutation.Where(ps...)
+	return _d
 }
 
 // Exec executes the deletion query and returns how many vertices were deleted.
-func (srfsd *SystemRelationshipFeedbackSignalDelete) Exec(ctx context.Context) (int, error) {
-	return withHooks(ctx, srfsd.sqlExec, srfsd.mutation, srfsd.hooks)
+func (_d *SystemRelationshipFeedbackSignalDelete) Exec(ctx context.Context) (int, error) {
+	return withHooks(ctx, _d.sqlExec, _d.mutation, _d.hooks)
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (srfsd *SystemRelationshipFeedbackSignalDelete) ExecX(ctx context.Context) int {
-	n, err := srfsd.Exec(ctx)
+func (_d *SystemRelationshipFeedbackSignalDelete) ExecX(ctx context.Context) int {
+	n, err := _d.Exec(ctx)
 	if err != nil {
 		panic(err)
 	}
 	return n
 }
 
-func (srfsd *SystemRelationshipFeedbackSignalDelete) sqlExec(ctx context.Context) (int, error) {
+func (_d *SystemRelationshipFeedbackSignalDelete) sqlExec(ctx context.Context) (int, error) {
 	_spec := sqlgraph.NewDeleteSpec(systemrelationshipfeedbacksignal.Table, sqlgraph.NewFieldSpec(systemrelationshipfeedbacksignal.FieldID, field.TypeUUID))
-	if ps := srfsd.mutation.predicates; len(ps) > 0 {
+	if ps := _d.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {
 				ps[i](selector)
 			}
 		}
 	}
-	affected, err := sqlgraph.DeleteNodes(ctx, srfsd.driver, _spec)
+	affected, err := sqlgraph.DeleteNodes(ctx, _d.driver, _spec)
 	if err != nil && sqlgraph.IsConstraintError(err) {
 		err = &ConstraintError{msg: err.Error(), wrap: err}
 	}
-	srfsd.mutation.done = true
+	_d.mutation.done = true
 	return affected, err
 }
 
 // SystemRelationshipFeedbackSignalDeleteOne is the builder for deleting a single SystemRelationshipFeedbackSignal entity.
 type SystemRelationshipFeedbackSignalDeleteOne struct {
-	srfsd *SystemRelationshipFeedbackSignalDelete
+	_d *SystemRelationshipFeedbackSignalDelete
 }
 
 // Where appends a list predicates to the SystemRelationshipFeedbackSignalDelete builder.
-func (srfsdo *SystemRelationshipFeedbackSignalDeleteOne) Where(ps ...predicate.SystemRelationshipFeedbackSignal) *SystemRelationshipFeedbackSignalDeleteOne {
-	srfsdo.srfsd.mutation.Where(ps...)
-	return srfsdo
+func (_d *SystemRelationshipFeedbackSignalDeleteOne) Where(ps ...predicate.SystemRelationshipFeedbackSignal) *SystemRelationshipFeedbackSignalDeleteOne {
+	_d._d.mutation.Where(ps...)
+	return _d
 }
 
 // Exec executes the deletion query.
-func (srfsdo *SystemRelationshipFeedbackSignalDeleteOne) Exec(ctx context.Context) error {
-	n, err := srfsdo.srfsd.Exec(ctx)
+func (_d *SystemRelationshipFeedbackSignalDeleteOne) Exec(ctx context.Context) error {
+	n, err := _d._d.Exec(ctx)
 	switch {
 	case err != nil:
 		return err
@@ -81,8 +81,8 @@ func (srfsdo *SystemRelationshipFeedbackSignalDeleteOne) Exec(ctx context.Contex
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (srfsdo *SystemRelationshipFeedbackSignalDeleteOne) ExecX(ctx context.Context) {
-	if err := srfsdo.Exec(ctx); err != nil {
+func (_d *SystemRelationshipFeedbackSignalDeleteOne) ExecX(ctx context.Context) {
+	if err := _d.Exec(ctx); err != nil {
 		panic(err)
 	}
 }

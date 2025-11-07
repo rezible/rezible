@@ -131,7 +131,7 @@ func (*RetrospectiveReview) scanValues(columns []string) ([]any, error) {
 
 // assignValues assigns the values that were returned from sql.Rows (after scanning)
 // to the RetrospectiveReview fields.
-func (rr *RetrospectiveReview) assignValues(columns []string, values []any) error {
+func (_m *RetrospectiveReview) assignValues(columns []string, values []any) error {
 	if m, n := len(values), len(columns); m < n {
 		return fmt.Errorf("mismatch number of scan values: %d != %d", m, n)
 	}
@@ -141,46 +141,46 @@ func (rr *RetrospectiveReview) assignValues(columns []string, values []any) erro
 			if value, ok := values[i].(*uuid.UUID); !ok {
 				return fmt.Errorf("unexpected type %T for field id", values[i])
 			} else if value != nil {
-				rr.ID = *value
+				_m.ID = *value
 			}
 		case retrospectivereview.FieldTenantID:
 			if value, ok := values[i].(*sql.NullInt64); !ok {
 				return fmt.Errorf("unexpected type %T for field tenant_id", values[i])
 			} else if value.Valid {
-				rr.TenantID = int(value.Int64)
+				_m.TenantID = int(value.Int64)
 			}
 		case retrospectivereview.FieldRetrospectiveID:
 			if value, ok := values[i].(*uuid.UUID); !ok {
 				return fmt.Errorf("unexpected type %T for field retrospective_id", values[i])
 			} else if value != nil {
-				rr.RetrospectiveID = *value
+				_m.RetrospectiveID = *value
 			}
 		case retrospectivereview.FieldCommentID:
 			if value, ok := values[i].(*uuid.UUID); !ok {
 				return fmt.Errorf("unexpected type %T for field comment_id", values[i])
 			} else if value != nil {
-				rr.CommentID = *value
+				_m.CommentID = *value
 			}
 		case retrospectivereview.FieldRequesterID:
 			if value, ok := values[i].(*uuid.UUID); !ok {
 				return fmt.Errorf("unexpected type %T for field requester_id", values[i])
 			} else if value != nil {
-				rr.RequesterID = *value
+				_m.RequesterID = *value
 			}
 		case retrospectivereview.FieldReviewerID:
 			if value, ok := values[i].(*uuid.UUID); !ok {
 				return fmt.Errorf("unexpected type %T for field reviewer_id", values[i])
 			} else if value != nil {
-				rr.ReviewerID = *value
+				_m.ReviewerID = *value
 			}
 		case retrospectivereview.FieldState:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field state", values[i])
 			} else if value.Valid {
-				rr.State = retrospectivereview.State(value.String)
+				_m.State = retrospectivereview.State(value.String)
 			}
 		default:
-			rr.selectValues.Set(columns[i], values[i])
+			_m.selectValues.Set(columns[i], values[i])
 		}
 	}
 	return nil
@@ -188,75 +188,75 @@ func (rr *RetrospectiveReview) assignValues(columns []string, values []any) erro
 
 // Value returns the ent.Value that was dynamically selected and assigned to the RetrospectiveReview.
 // This includes values selected through modifiers, order, etc.
-func (rr *RetrospectiveReview) Value(name string) (ent.Value, error) {
-	return rr.selectValues.Get(name)
+func (_m *RetrospectiveReview) Value(name string) (ent.Value, error) {
+	return _m.selectValues.Get(name)
 }
 
 // QueryTenant queries the "tenant" edge of the RetrospectiveReview entity.
-func (rr *RetrospectiveReview) QueryTenant() *TenantQuery {
-	return NewRetrospectiveReviewClient(rr.config).QueryTenant(rr)
+func (_m *RetrospectiveReview) QueryTenant() *TenantQuery {
+	return NewRetrospectiveReviewClient(_m.config).QueryTenant(_m)
 }
 
 // QueryRetrospective queries the "retrospective" edge of the RetrospectiveReview entity.
-func (rr *RetrospectiveReview) QueryRetrospective() *RetrospectiveQuery {
-	return NewRetrospectiveReviewClient(rr.config).QueryRetrospective(rr)
+func (_m *RetrospectiveReview) QueryRetrospective() *RetrospectiveQuery {
+	return NewRetrospectiveReviewClient(_m.config).QueryRetrospective(_m)
 }
 
 // QueryRequester queries the "requester" edge of the RetrospectiveReview entity.
-func (rr *RetrospectiveReview) QueryRequester() *UserQuery {
-	return NewRetrospectiveReviewClient(rr.config).QueryRequester(rr)
+func (_m *RetrospectiveReview) QueryRequester() *UserQuery {
+	return NewRetrospectiveReviewClient(_m.config).QueryRequester(_m)
 }
 
 // QueryReviewer queries the "reviewer" edge of the RetrospectiveReview entity.
-func (rr *RetrospectiveReview) QueryReviewer() *UserQuery {
-	return NewRetrospectiveReviewClient(rr.config).QueryReviewer(rr)
+func (_m *RetrospectiveReview) QueryReviewer() *UserQuery {
+	return NewRetrospectiveReviewClient(_m.config).QueryReviewer(_m)
 }
 
 // QueryComment queries the "comment" edge of the RetrospectiveReview entity.
-func (rr *RetrospectiveReview) QueryComment() *RetrospectiveCommentQuery {
-	return NewRetrospectiveReviewClient(rr.config).QueryComment(rr)
+func (_m *RetrospectiveReview) QueryComment() *RetrospectiveCommentQuery {
+	return NewRetrospectiveReviewClient(_m.config).QueryComment(_m)
 }
 
 // Update returns a builder for updating this RetrospectiveReview.
 // Note that you need to call RetrospectiveReview.Unwrap() before calling this method if this RetrospectiveReview
 // was returned from a transaction, and the transaction was committed or rolled back.
-func (rr *RetrospectiveReview) Update() *RetrospectiveReviewUpdateOne {
-	return NewRetrospectiveReviewClient(rr.config).UpdateOne(rr)
+func (_m *RetrospectiveReview) Update() *RetrospectiveReviewUpdateOne {
+	return NewRetrospectiveReviewClient(_m.config).UpdateOne(_m)
 }
 
 // Unwrap unwraps the RetrospectiveReview entity that was returned from a transaction after it was closed,
 // so that all future queries will be executed through the driver which created the transaction.
-func (rr *RetrospectiveReview) Unwrap() *RetrospectiveReview {
-	_tx, ok := rr.config.driver.(*txDriver)
+func (_m *RetrospectiveReview) Unwrap() *RetrospectiveReview {
+	_tx, ok := _m.config.driver.(*txDriver)
 	if !ok {
 		panic("ent: RetrospectiveReview is not a transactional entity")
 	}
-	rr.config.driver = _tx.drv
-	return rr
+	_m.config.driver = _tx.drv
+	return _m
 }
 
 // String implements the fmt.Stringer.
-func (rr *RetrospectiveReview) String() string {
+func (_m *RetrospectiveReview) String() string {
 	var builder strings.Builder
 	builder.WriteString("RetrospectiveReview(")
-	builder.WriteString(fmt.Sprintf("id=%v, ", rr.ID))
+	builder.WriteString(fmt.Sprintf("id=%v, ", _m.ID))
 	builder.WriteString("tenant_id=")
-	builder.WriteString(fmt.Sprintf("%v", rr.TenantID))
+	builder.WriteString(fmt.Sprintf("%v", _m.TenantID))
 	builder.WriteString(", ")
 	builder.WriteString("retrospective_id=")
-	builder.WriteString(fmt.Sprintf("%v", rr.RetrospectiveID))
+	builder.WriteString(fmt.Sprintf("%v", _m.RetrospectiveID))
 	builder.WriteString(", ")
 	builder.WriteString("comment_id=")
-	builder.WriteString(fmt.Sprintf("%v", rr.CommentID))
+	builder.WriteString(fmt.Sprintf("%v", _m.CommentID))
 	builder.WriteString(", ")
 	builder.WriteString("requester_id=")
-	builder.WriteString(fmt.Sprintf("%v", rr.RequesterID))
+	builder.WriteString(fmt.Sprintf("%v", _m.RequesterID))
 	builder.WriteString(", ")
 	builder.WriteString("reviewer_id=")
-	builder.WriteString(fmt.Sprintf("%v", rr.ReviewerID))
+	builder.WriteString(fmt.Sprintf("%v", _m.ReviewerID))
 	builder.WriteString(", ")
 	builder.WriteString("state=")
-	builder.WriteString(fmt.Sprintf("%v", rr.State))
+	builder.WriteString(fmt.Sprintf("%v", _m.State))
 	builder.WriteByte(')')
 	return builder.String()
 }

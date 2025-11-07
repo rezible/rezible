@@ -20,56 +20,56 @@ type SystemRelationshipControlActionDelete struct {
 }
 
 // Where appends a list predicates to the SystemRelationshipControlActionDelete builder.
-func (srcad *SystemRelationshipControlActionDelete) Where(ps ...predicate.SystemRelationshipControlAction) *SystemRelationshipControlActionDelete {
-	srcad.mutation.Where(ps...)
-	return srcad
+func (_d *SystemRelationshipControlActionDelete) Where(ps ...predicate.SystemRelationshipControlAction) *SystemRelationshipControlActionDelete {
+	_d.mutation.Where(ps...)
+	return _d
 }
 
 // Exec executes the deletion query and returns how many vertices were deleted.
-func (srcad *SystemRelationshipControlActionDelete) Exec(ctx context.Context) (int, error) {
-	return withHooks(ctx, srcad.sqlExec, srcad.mutation, srcad.hooks)
+func (_d *SystemRelationshipControlActionDelete) Exec(ctx context.Context) (int, error) {
+	return withHooks(ctx, _d.sqlExec, _d.mutation, _d.hooks)
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (srcad *SystemRelationshipControlActionDelete) ExecX(ctx context.Context) int {
-	n, err := srcad.Exec(ctx)
+func (_d *SystemRelationshipControlActionDelete) ExecX(ctx context.Context) int {
+	n, err := _d.Exec(ctx)
 	if err != nil {
 		panic(err)
 	}
 	return n
 }
 
-func (srcad *SystemRelationshipControlActionDelete) sqlExec(ctx context.Context) (int, error) {
+func (_d *SystemRelationshipControlActionDelete) sqlExec(ctx context.Context) (int, error) {
 	_spec := sqlgraph.NewDeleteSpec(systemrelationshipcontrolaction.Table, sqlgraph.NewFieldSpec(systemrelationshipcontrolaction.FieldID, field.TypeUUID))
-	if ps := srcad.mutation.predicates; len(ps) > 0 {
+	if ps := _d.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {
 				ps[i](selector)
 			}
 		}
 	}
-	affected, err := sqlgraph.DeleteNodes(ctx, srcad.driver, _spec)
+	affected, err := sqlgraph.DeleteNodes(ctx, _d.driver, _spec)
 	if err != nil && sqlgraph.IsConstraintError(err) {
 		err = &ConstraintError{msg: err.Error(), wrap: err}
 	}
-	srcad.mutation.done = true
+	_d.mutation.done = true
 	return affected, err
 }
 
 // SystemRelationshipControlActionDeleteOne is the builder for deleting a single SystemRelationshipControlAction entity.
 type SystemRelationshipControlActionDeleteOne struct {
-	srcad *SystemRelationshipControlActionDelete
+	_d *SystemRelationshipControlActionDelete
 }
 
 // Where appends a list predicates to the SystemRelationshipControlActionDelete builder.
-func (srcado *SystemRelationshipControlActionDeleteOne) Where(ps ...predicate.SystemRelationshipControlAction) *SystemRelationshipControlActionDeleteOne {
-	srcado.srcad.mutation.Where(ps...)
-	return srcado
+func (_d *SystemRelationshipControlActionDeleteOne) Where(ps ...predicate.SystemRelationshipControlAction) *SystemRelationshipControlActionDeleteOne {
+	_d._d.mutation.Where(ps...)
+	return _d
 }
 
 // Exec executes the deletion query.
-func (srcado *SystemRelationshipControlActionDeleteOne) Exec(ctx context.Context) error {
-	n, err := srcado.srcad.Exec(ctx)
+func (_d *SystemRelationshipControlActionDeleteOne) Exec(ctx context.Context) error {
+	n, err := _d._d.Exec(ctx)
 	switch {
 	case err != nil:
 		return err
@@ -81,8 +81,8 @@ func (srcado *SystemRelationshipControlActionDeleteOne) Exec(ctx context.Context
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (srcado *SystemRelationshipControlActionDeleteOne) ExecX(ctx context.Context) {
-	if err := srcado.Exec(ctx); err != nil {
+func (_d *SystemRelationshipControlActionDeleteOne) ExecX(ctx context.Context) {
+	if err := _d.Exec(ctx); err != nil {
 		panic(err)
 	}
 }

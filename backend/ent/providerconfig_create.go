@@ -26,92 +26,92 @@ type ProviderConfigCreate struct {
 }
 
 // SetTenantID sets the "tenant_id" field.
-func (pcc *ProviderConfigCreate) SetTenantID(i int) *ProviderConfigCreate {
-	pcc.mutation.SetTenantID(i)
-	return pcc
+func (_c *ProviderConfigCreate) SetTenantID(v int) *ProviderConfigCreate {
+	_c.mutation.SetTenantID(v)
+	return _c
 }
 
 // SetProviderType sets the "provider_type" field.
-func (pcc *ProviderConfigCreate) SetProviderType(pt providerconfig.ProviderType) *ProviderConfigCreate {
-	pcc.mutation.SetProviderType(pt)
-	return pcc
+func (_c *ProviderConfigCreate) SetProviderType(v providerconfig.ProviderType) *ProviderConfigCreate {
+	_c.mutation.SetProviderType(v)
+	return _c
 }
 
 // SetProviderID sets the "provider_id" field.
-func (pcc *ProviderConfigCreate) SetProviderID(s string) *ProviderConfigCreate {
-	pcc.mutation.SetProviderID(s)
-	return pcc
+func (_c *ProviderConfigCreate) SetProviderID(v string) *ProviderConfigCreate {
+	_c.mutation.SetProviderID(v)
+	return _c
 }
 
 // SetConfig sets the "config" field.
-func (pcc *ProviderConfigCreate) SetConfig(b []byte) *ProviderConfigCreate {
-	pcc.mutation.SetConfig(b)
-	return pcc
+func (_c *ProviderConfigCreate) SetConfig(v []byte) *ProviderConfigCreate {
+	_c.mutation.SetConfig(v)
+	return _c
 }
 
 // SetEnabled sets the "enabled" field.
-func (pcc *ProviderConfigCreate) SetEnabled(b bool) *ProviderConfigCreate {
-	pcc.mutation.SetEnabled(b)
-	return pcc
+func (_c *ProviderConfigCreate) SetEnabled(v bool) *ProviderConfigCreate {
+	_c.mutation.SetEnabled(v)
+	return _c
 }
 
 // SetNillableEnabled sets the "enabled" field if the given value is not nil.
-func (pcc *ProviderConfigCreate) SetNillableEnabled(b *bool) *ProviderConfigCreate {
-	if b != nil {
-		pcc.SetEnabled(*b)
+func (_c *ProviderConfigCreate) SetNillableEnabled(v *bool) *ProviderConfigCreate {
+	if v != nil {
+		_c.SetEnabled(*v)
 	}
-	return pcc
+	return _c
 }
 
 // SetUpdatedAt sets the "updated_at" field.
-func (pcc *ProviderConfigCreate) SetUpdatedAt(t time.Time) *ProviderConfigCreate {
-	pcc.mutation.SetUpdatedAt(t)
-	return pcc
+func (_c *ProviderConfigCreate) SetUpdatedAt(v time.Time) *ProviderConfigCreate {
+	_c.mutation.SetUpdatedAt(v)
+	return _c
 }
 
 // SetNillableUpdatedAt sets the "updated_at" field if the given value is not nil.
-func (pcc *ProviderConfigCreate) SetNillableUpdatedAt(t *time.Time) *ProviderConfigCreate {
-	if t != nil {
-		pcc.SetUpdatedAt(*t)
+func (_c *ProviderConfigCreate) SetNillableUpdatedAt(v *time.Time) *ProviderConfigCreate {
+	if v != nil {
+		_c.SetUpdatedAt(*v)
 	}
-	return pcc
+	return _c
 }
 
 // SetID sets the "id" field.
-func (pcc *ProviderConfigCreate) SetID(u uuid.UUID) *ProviderConfigCreate {
-	pcc.mutation.SetID(u)
-	return pcc
+func (_c *ProviderConfigCreate) SetID(v uuid.UUID) *ProviderConfigCreate {
+	_c.mutation.SetID(v)
+	return _c
 }
 
 // SetNillableID sets the "id" field if the given value is not nil.
-func (pcc *ProviderConfigCreate) SetNillableID(u *uuid.UUID) *ProviderConfigCreate {
-	if u != nil {
-		pcc.SetID(*u)
+func (_c *ProviderConfigCreate) SetNillableID(v *uuid.UUID) *ProviderConfigCreate {
+	if v != nil {
+		_c.SetID(*v)
 	}
-	return pcc
+	return _c
 }
 
 // SetTenant sets the "tenant" edge to the Tenant entity.
-func (pcc *ProviderConfigCreate) SetTenant(t *Tenant) *ProviderConfigCreate {
-	return pcc.SetTenantID(t.ID)
+func (_c *ProviderConfigCreate) SetTenant(v *Tenant) *ProviderConfigCreate {
+	return _c.SetTenantID(v.ID)
 }
 
 // Mutation returns the ProviderConfigMutation object of the builder.
-func (pcc *ProviderConfigCreate) Mutation() *ProviderConfigMutation {
-	return pcc.mutation
+func (_c *ProviderConfigCreate) Mutation() *ProviderConfigMutation {
+	return _c.mutation
 }
 
 // Save creates the ProviderConfig in the database.
-func (pcc *ProviderConfigCreate) Save(ctx context.Context) (*ProviderConfig, error) {
-	if err := pcc.defaults(); err != nil {
+func (_c *ProviderConfigCreate) Save(ctx context.Context) (*ProviderConfig, error) {
+	if err := _c.defaults(); err != nil {
 		return nil, err
 	}
-	return withHooks(ctx, pcc.sqlSave, pcc.mutation, pcc.hooks)
+	return withHooks(ctx, _c.sqlSave, _c.mutation, _c.hooks)
 }
 
 // SaveX calls Save and panics if Save returns an error.
-func (pcc *ProviderConfigCreate) SaveX(ctx context.Context) *ProviderConfig {
-	v, err := pcc.Save(ctx)
+func (_c *ProviderConfigCreate) SaveX(ctx context.Context) *ProviderConfig {
+	v, err := _c.Save(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -119,78 +119,78 @@ func (pcc *ProviderConfigCreate) SaveX(ctx context.Context) *ProviderConfig {
 }
 
 // Exec executes the query.
-func (pcc *ProviderConfigCreate) Exec(ctx context.Context) error {
-	_, err := pcc.Save(ctx)
+func (_c *ProviderConfigCreate) Exec(ctx context.Context) error {
+	_, err := _c.Save(ctx)
 	return err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (pcc *ProviderConfigCreate) ExecX(ctx context.Context) {
-	if err := pcc.Exec(ctx); err != nil {
+func (_c *ProviderConfigCreate) ExecX(ctx context.Context) {
+	if err := _c.Exec(ctx); err != nil {
 		panic(err)
 	}
 }
 
 // defaults sets the default values of the builder before save.
-func (pcc *ProviderConfigCreate) defaults() error {
-	if _, ok := pcc.mutation.Enabled(); !ok {
+func (_c *ProviderConfigCreate) defaults() error {
+	if _, ok := _c.mutation.Enabled(); !ok {
 		v := providerconfig.DefaultEnabled
-		pcc.mutation.SetEnabled(v)
+		_c.mutation.SetEnabled(v)
 	}
-	if _, ok := pcc.mutation.UpdatedAt(); !ok {
+	if _, ok := _c.mutation.UpdatedAt(); !ok {
 		if providerconfig.DefaultUpdatedAt == nil {
 			return fmt.Errorf("ent: uninitialized providerconfig.DefaultUpdatedAt (forgotten import ent/runtime?)")
 		}
 		v := providerconfig.DefaultUpdatedAt()
-		pcc.mutation.SetUpdatedAt(v)
+		_c.mutation.SetUpdatedAt(v)
 	}
-	if _, ok := pcc.mutation.ID(); !ok {
+	if _, ok := _c.mutation.ID(); !ok {
 		if providerconfig.DefaultID == nil {
 			return fmt.Errorf("ent: uninitialized providerconfig.DefaultID (forgotten import ent/runtime?)")
 		}
 		v := providerconfig.DefaultID()
-		pcc.mutation.SetID(v)
+		_c.mutation.SetID(v)
 	}
 	return nil
 }
 
 // check runs all checks and user-defined validators on the builder.
-func (pcc *ProviderConfigCreate) check() error {
-	if _, ok := pcc.mutation.TenantID(); !ok {
+func (_c *ProviderConfigCreate) check() error {
+	if _, ok := _c.mutation.TenantID(); !ok {
 		return &ValidationError{Name: "tenant_id", err: errors.New(`ent: missing required field "ProviderConfig.tenant_id"`)}
 	}
-	if _, ok := pcc.mutation.ProviderType(); !ok {
+	if _, ok := _c.mutation.ProviderType(); !ok {
 		return &ValidationError{Name: "provider_type", err: errors.New(`ent: missing required field "ProviderConfig.provider_type"`)}
 	}
-	if v, ok := pcc.mutation.ProviderType(); ok {
+	if v, ok := _c.mutation.ProviderType(); ok {
 		if err := providerconfig.ProviderTypeValidator(v); err != nil {
 			return &ValidationError{Name: "provider_type", err: fmt.Errorf(`ent: validator failed for field "ProviderConfig.provider_type": %w`, err)}
 		}
 	}
-	if _, ok := pcc.mutation.ProviderID(); !ok {
+	if _, ok := _c.mutation.ProviderID(); !ok {
 		return &ValidationError{Name: "provider_id", err: errors.New(`ent: missing required field "ProviderConfig.provider_id"`)}
 	}
-	if _, ok := pcc.mutation.Config(); !ok {
+	if _, ok := _c.mutation.Config(); !ok {
 		return &ValidationError{Name: "config", err: errors.New(`ent: missing required field "ProviderConfig.config"`)}
 	}
-	if _, ok := pcc.mutation.Enabled(); !ok {
+	if _, ok := _c.mutation.Enabled(); !ok {
 		return &ValidationError{Name: "enabled", err: errors.New(`ent: missing required field "ProviderConfig.enabled"`)}
 	}
-	if _, ok := pcc.mutation.UpdatedAt(); !ok {
+	if _, ok := _c.mutation.UpdatedAt(); !ok {
 		return &ValidationError{Name: "updated_at", err: errors.New(`ent: missing required field "ProviderConfig.updated_at"`)}
 	}
-	if len(pcc.mutation.TenantIDs()) == 0 {
+	if len(_c.mutation.TenantIDs()) == 0 {
 		return &ValidationError{Name: "tenant", err: errors.New(`ent: missing required edge "ProviderConfig.tenant"`)}
 	}
 	return nil
 }
 
-func (pcc *ProviderConfigCreate) sqlSave(ctx context.Context) (*ProviderConfig, error) {
-	if err := pcc.check(); err != nil {
+func (_c *ProviderConfigCreate) sqlSave(ctx context.Context) (*ProviderConfig, error) {
+	if err := _c.check(); err != nil {
 		return nil, err
 	}
-	_node, _spec := pcc.createSpec()
-	if err := sqlgraph.CreateNode(ctx, pcc.driver, _spec); err != nil {
+	_node, _spec := _c.createSpec()
+	if err := sqlgraph.CreateNode(ctx, _c.driver, _spec); err != nil {
 		if sqlgraph.IsConstraintError(err) {
 			err = &ConstraintError{msg: err.Error(), wrap: err}
 		}
@@ -203,42 +203,42 @@ func (pcc *ProviderConfigCreate) sqlSave(ctx context.Context) (*ProviderConfig, 
 			return nil, err
 		}
 	}
-	pcc.mutation.id = &_node.ID
-	pcc.mutation.done = true
+	_c.mutation.id = &_node.ID
+	_c.mutation.done = true
 	return _node, nil
 }
 
-func (pcc *ProviderConfigCreate) createSpec() (*ProviderConfig, *sqlgraph.CreateSpec) {
+func (_c *ProviderConfigCreate) createSpec() (*ProviderConfig, *sqlgraph.CreateSpec) {
 	var (
-		_node = &ProviderConfig{config: pcc.config}
+		_node = &ProviderConfig{config: _c.config}
 		_spec = sqlgraph.NewCreateSpec(providerconfig.Table, sqlgraph.NewFieldSpec(providerconfig.FieldID, field.TypeUUID))
 	)
-	_spec.OnConflict = pcc.conflict
-	if id, ok := pcc.mutation.ID(); ok {
+	_spec.OnConflict = _c.conflict
+	if id, ok := _c.mutation.ID(); ok {
 		_node.ID = id
 		_spec.ID.Value = &id
 	}
-	if value, ok := pcc.mutation.ProviderType(); ok {
+	if value, ok := _c.mutation.ProviderType(); ok {
 		_spec.SetField(providerconfig.FieldProviderType, field.TypeEnum, value)
 		_node.ProviderType = value
 	}
-	if value, ok := pcc.mutation.ProviderID(); ok {
+	if value, ok := _c.mutation.ProviderID(); ok {
 		_spec.SetField(providerconfig.FieldProviderID, field.TypeString, value)
 		_node.ProviderID = value
 	}
-	if value, ok := pcc.mutation.Config(); ok {
+	if value, ok := _c.mutation.Config(); ok {
 		_spec.SetField(providerconfig.FieldConfig, field.TypeBytes, value)
 		_node.Config = value
 	}
-	if value, ok := pcc.mutation.Enabled(); ok {
+	if value, ok := _c.mutation.Enabled(); ok {
 		_spec.SetField(providerconfig.FieldEnabled, field.TypeBool, value)
 		_node.Enabled = value
 	}
-	if value, ok := pcc.mutation.UpdatedAt(); ok {
+	if value, ok := _c.mutation.UpdatedAt(); ok {
 		_spec.SetField(providerconfig.FieldUpdatedAt, field.TypeTime, value)
 		_node.UpdatedAt = value
 	}
-	if nodes := pcc.mutation.TenantIDs(); len(nodes) > 0 {
+	if nodes := _c.mutation.TenantIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
@@ -274,10 +274,10 @@ func (pcc *ProviderConfigCreate) createSpec() (*ProviderConfig, *sqlgraph.Create
 //			SetTenantID(v+v).
 //		}).
 //		Exec(ctx)
-func (pcc *ProviderConfigCreate) OnConflict(opts ...sql.ConflictOption) *ProviderConfigUpsertOne {
-	pcc.conflict = opts
+func (_c *ProviderConfigCreate) OnConflict(opts ...sql.ConflictOption) *ProviderConfigUpsertOne {
+	_c.conflict = opts
 	return &ProviderConfigUpsertOne{
-		create: pcc,
+		create: _c,
 	}
 }
 
@@ -287,10 +287,10 @@ func (pcc *ProviderConfigCreate) OnConflict(opts ...sql.ConflictOption) *Provide
 //	client.ProviderConfig.Create().
 //		OnConflict(sql.ConflictColumns(columns...)).
 //		Exec(ctx)
-func (pcc *ProviderConfigCreate) OnConflictColumns(columns ...string) *ProviderConfigUpsertOne {
-	pcc.conflict = append(pcc.conflict, sql.ConflictColumns(columns...))
+func (_c *ProviderConfigCreate) OnConflictColumns(columns ...string) *ProviderConfigUpsertOne {
+	_c.conflict = append(_c.conflict, sql.ConflictColumns(columns...))
 	return &ProviderConfigUpsertOne{
-		create: pcc,
+		create: _c,
 	}
 }
 
@@ -535,16 +535,16 @@ type ProviderConfigCreateBulk struct {
 }
 
 // Save creates the ProviderConfig entities in the database.
-func (pccb *ProviderConfigCreateBulk) Save(ctx context.Context) ([]*ProviderConfig, error) {
-	if pccb.err != nil {
-		return nil, pccb.err
+func (_c *ProviderConfigCreateBulk) Save(ctx context.Context) ([]*ProviderConfig, error) {
+	if _c.err != nil {
+		return nil, _c.err
 	}
-	specs := make([]*sqlgraph.CreateSpec, len(pccb.builders))
-	nodes := make([]*ProviderConfig, len(pccb.builders))
-	mutators := make([]Mutator, len(pccb.builders))
-	for i := range pccb.builders {
+	specs := make([]*sqlgraph.CreateSpec, len(_c.builders))
+	nodes := make([]*ProviderConfig, len(_c.builders))
+	mutators := make([]Mutator, len(_c.builders))
+	for i := range _c.builders {
 		func(i int, root context.Context) {
-			builder := pccb.builders[i]
+			builder := _c.builders[i]
 			builder.defaults()
 			var mut Mutator = MutateFunc(func(ctx context.Context, m Mutation) (Value, error) {
 				mutation, ok := m.(*ProviderConfigMutation)
@@ -558,12 +558,12 @@ func (pccb *ProviderConfigCreateBulk) Save(ctx context.Context) ([]*ProviderConf
 				var err error
 				nodes[i], specs[i] = builder.createSpec()
 				if i < len(mutators)-1 {
-					_, err = mutators[i+1].Mutate(root, pccb.builders[i+1].mutation)
+					_, err = mutators[i+1].Mutate(root, _c.builders[i+1].mutation)
 				} else {
 					spec := &sqlgraph.BatchCreateSpec{Nodes: specs}
-					spec.OnConflict = pccb.conflict
+					spec.OnConflict = _c.conflict
 					// Invoke the actual operation on the latest mutation in the chain.
-					if err = sqlgraph.BatchCreate(ctx, pccb.driver, spec); err != nil {
+					if err = sqlgraph.BatchCreate(ctx, _c.driver, spec); err != nil {
 						if sqlgraph.IsConstraintError(err) {
 							err = &ConstraintError{msg: err.Error(), wrap: err}
 						}
@@ -583,7 +583,7 @@ func (pccb *ProviderConfigCreateBulk) Save(ctx context.Context) ([]*ProviderConf
 		}(i, ctx)
 	}
 	if len(mutators) > 0 {
-		if _, err := mutators[0].Mutate(ctx, pccb.builders[0].mutation); err != nil {
+		if _, err := mutators[0].Mutate(ctx, _c.builders[0].mutation); err != nil {
 			return nil, err
 		}
 	}
@@ -591,8 +591,8 @@ func (pccb *ProviderConfigCreateBulk) Save(ctx context.Context) ([]*ProviderConf
 }
 
 // SaveX is like Save, but panics if an error occurs.
-func (pccb *ProviderConfigCreateBulk) SaveX(ctx context.Context) []*ProviderConfig {
-	v, err := pccb.Save(ctx)
+func (_c *ProviderConfigCreateBulk) SaveX(ctx context.Context) []*ProviderConfig {
+	v, err := _c.Save(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -600,14 +600,14 @@ func (pccb *ProviderConfigCreateBulk) SaveX(ctx context.Context) []*ProviderConf
 }
 
 // Exec executes the query.
-func (pccb *ProviderConfigCreateBulk) Exec(ctx context.Context) error {
-	_, err := pccb.Save(ctx)
+func (_c *ProviderConfigCreateBulk) Exec(ctx context.Context) error {
+	_, err := _c.Save(ctx)
 	return err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (pccb *ProviderConfigCreateBulk) ExecX(ctx context.Context) {
-	if err := pccb.Exec(ctx); err != nil {
+func (_c *ProviderConfigCreateBulk) ExecX(ctx context.Context) {
+	if err := _c.Exec(ctx); err != nil {
 		panic(err)
 	}
 }
@@ -627,10 +627,10 @@ func (pccb *ProviderConfigCreateBulk) ExecX(ctx context.Context) {
 //			SetTenantID(v+v).
 //		}).
 //		Exec(ctx)
-func (pccb *ProviderConfigCreateBulk) OnConflict(opts ...sql.ConflictOption) *ProviderConfigUpsertBulk {
-	pccb.conflict = opts
+func (_c *ProviderConfigCreateBulk) OnConflict(opts ...sql.ConflictOption) *ProviderConfigUpsertBulk {
+	_c.conflict = opts
 	return &ProviderConfigUpsertBulk{
-		create: pccb,
+		create: _c,
 	}
 }
 
@@ -640,10 +640,10 @@ func (pccb *ProviderConfigCreateBulk) OnConflict(opts ...sql.ConflictOption) *Pr
 //	client.ProviderConfig.Create().
 //		OnConflict(sql.ConflictColumns(columns...)).
 //		Exec(ctx)
-func (pccb *ProviderConfigCreateBulk) OnConflictColumns(columns ...string) *ProviderConfigUpsertBulk {
-	pccb.conflict = append(pccb.conflict, sql.ConflictColumns(columns...))
+func (_c *ProviderConfigCreateBulk) OnConflictColumns(columns ...string) *ProviderConfigUpsertBulk {
+	_c.conflict = append(_c.conflict, sql.ConflictColumns(columns...))
 	return &ProviderConfigUpsertBulk{
-		create: pccb,
+		create: _c,
 	}
 }
 

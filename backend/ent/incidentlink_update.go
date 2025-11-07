@@ -25,108 +25,108 @@ type IncidentLinkUpdate struct {
 }
 
 // Where appends a list predicates to the IncidentLinkUpdate builder.
-func (ilu *IncidentLinkUpdate) Where(ps ...predicate.IncidentLink) *IncidentLinkUpdate {
-	ilu.mutation.Where(ps...)
-	return ilu
+func (_u *IncidentLinkUpdate) Where(ps ...predicate.IncidentLink) *IncidentLinkUpdate {
+	_u.mutation.Where(ps...)
+	return _u
 }
 
 // SetIncidentID sets the "incident_id" field.
-func (ilu *IncidentLinkUpdate) SetIncidentID(u uuid.UUID) *IncidentLinkUpdate {
-	ilu.mutation.SetIncidentID(u)
-	return ilu
+func (_u *IncidentLinkUpdate) SetIncidentID(v uuid.UUID) *IncidentLinkUpdate {
+	_u.mutation.SetIncidentID(v)
+	return _u
 }
 
 // SetNillableIncidentID sets the "incident_id" field if the given value is not nil.
-func (ilu *IncidentLinkUpdate) SetNillableIncidentID(u *uuid.UUID) *IncidentLinkUpdate {
-	if u != nil {
-		ilu.SetIncidentID(*u)
+func (_u *IncidentLinkUpdate) SetNillableIncidentID(v *uuid.UUID) *IncidentLinkUpdate {
+	if v != nil {
+		_u.SetIncidentID(*v)
 	}
-	return ilu
+	return _u
 }
 
 // SetLinkedIncidentID sets the "linked_incident_id" field.
-func (ilu *IncidentLinkUpdate) SetLinkedIncidentID(u uuid.UUID) *IncidentLinkUpdate {
-	ilu.mutation.SetLinkedIncidentID(u)
-	return ilu
+func (_u *IncidentLinkUpdate) SetLinkedIncidentID(v uuid.UUID) *IncidentLinkUpdate {
+	_u.mutation.SetLinkedIncidentID(v)
+	return _u
 }
 
 // SetNillableLinkedIncidentID sets the "linked_incident_id" field if the given value is not nil.
-func (ilu *IncidentLinkUpdate) SetNillableLinkedIncidentID(u *uuid.UUID) *IncidentLinkUpdate {
-	if u != nil {
-		ilu.SetLinkedIncidentID(*u)
+func (_u *IncidentLinkUpdate) SetNillableLinkedIncidentID(v *uuid.UUID) *IncidentLinkUpdate {
+	if v != nil {
+		_u.SetLinkedIncidentID(*v)
 	}
-	return ilu
+	return _u
 }
 
 // SetDescription sets the "description" field.
-func (ilu *IncidentLinkUpdate) SetDescription(s string) *IncidentLinkUpdate {
-	ilu.mutation.SetDescription(s)
-	return ilu
+func (_u *IncidentLinkUpdate) SetDescription(v string) *IncidentLinkUpdate {
+	_u.mutation.SetDescription(v)
+	return _u
 }
 
 // SetNillableDescription sets the "description" field if the given value is not nil.
-func (ilu *IncidentLinkUpdate) SetNillableDescription(s *string) *IncidentLinkUpdate {
-	if s != nil {
-		ilu.SetDescription(*s)
+func (_u *IncidentLinkUpdate) SetNillableDescription(v *string) *IncidentLinkUpdate {
+	if v != nil {
+		_u.SetDescription(*v)
 	}
-	return ilu
+	return _u
 }
 
 // ClearDescription clears the value of the "description" field.
-func (ilu *IncidentLinkUpdate) ClearDescription() *IncidentLinkUpdate {
-	ilu.mutation.ClearDescription()
-	return ilu
+func (_u *IncidentLinkUpdate) ClearDescription() *IncidentLinkUpdate {
+	_u.mutation.ClearDescription()
+	return _u
 }
 
 // SetLinkType sets the "link_type" field.
-func (ilu *IncidentLinkUpdate) SetLinkType(it incidentlink.LinkType) *IncidentLinkUpdate {
-	ilu.mutation.SetLinkType(it)
-	return ilu
+func (_u *IncidentLinkUpdate) SetLinkType(v incidentlink.LinkType) *IncidentLinkUpdate {
+	_u.mutation.SetLinkType(v)
+	return _u
 }
 
 // SetNillableLinkType sets the "link_type" field if the given value is not nil.
-func (ilu *IncidentLinkUpdate) SetNillableLinkType(it *incidentlink.LinkType) *IncidentLinkUpdate {
-	if it != nil {
-		ilu.SetLinkType(*it)
+func (_u *IncidentLinkUpdate) SetNillableLinkType(v *incidentlink.LinkType) *IncidentLinkUpdate {
+	if v != nil {
+		_u.SetLinkType(*v)
 	}
-	return ilu
+	return _u
 }
 
 // SetIncident sets the "incident" edge to the Incident entity.
-func (ilu *IncidentLinkUpdate) SetIncident(i *Incident) *IncidentLinkUpdate {
-	return ilu.SetIncidentID(i.ID)
+func (_u *IncidentLinkUpdate) SetIncident(v *Incident) *IncidentLinkUpdate {
+	return _u.SetIncidentID(v.ID)
 }
 
 // SetLinkedIncident sets the "linked_incident" edge to the Incident entity.
-func (ilu *IncidentLinkUpdate) SetLinkedIncident(i *Incident) *IncidentLinkUpdate {
-	return ilu.SetLinkedIncidentID(i.ID)
+func (_u *IncidentLinkUpdate) SetLinkedIncident(v *Incident) *IncidentLinkUpdate {
+	return _u.SetLinkedIncidentID(v.ID)
 }
 
 // Mutation returns the IncidentLinkMutation object of the builder.
-func (ilu *IncidentLinkUpdate) Mutation() *IncidentLinkMutation {
-	return ilu.mutation
+func (_u *IncidentLinkUpdate) Mutation() *IncidentLinkMutation {
+	return _u.mutation
 }
 
 // ClearIncident clears the "incident" edge to the Incident entity.
-func (ilu *IncidentLinkUpdate) ClearIncident() *IncidentLinkUpdate {
-	ilu.mutation.ClearIncident()
-	return ilu
+func (_u *IncidentLinkUpdate) ClearIncident() *IncidentLinkUpdate {
+	_u.mutation.ClearIncident()
+	return _u
 }
 
 // ClearLinkedIncident clears the "linked_incident" edge to the Incident entity.
-func (ilu *IncidentLinkUpdate) ClearLinkedIncident() *IncidentLinkUpdate {
-	ilu.mutation.ClearLinkedIncident()
-	return ilu
+func (_u *IncidentLinkUpdate) ClearLinkedIncident() *IncidentLinkUpdate {
+	_u.mutation.ClearLinkedIncident()
+	return _u
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
-func (ilu *IncidentLinkUpdate) Save(ctx context.Context) (int, error) {
-	return withHooks(ctx, ilu.sqlSave, ilu.mutation, ilu.hooks)
+func (_u *IncidentLinkUpdate) Save(ctx context.Context) (int, error) {
+	return withHooks(ctx, _u.sqlSave, _u.mutation, _u.hooks)
 }
 
 // SaveX is like Save, but panics if an error occurs.
-func (ilu *IncidentLinkUpdate) SaveX(ctx context.Context) int {
-	affected, err := ilu.Save(ctx)
+func (_u *IncidentLinkUpdate) SaveX(ctx context.Context) int {
+	affected, err := _u.Save(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -134,65 +134,65 @@ func (ilu *IncidentLinkUpdate) SaveX(ctx context.Context) int {
 }
 
 // Exec executes the query.
-func (ilu *IncidentLinkUpdate) Exec(ctx context.Context) error {
-	_, err := ilu.Save(ctx)
+func (_u *IncidentLinkUpdate) Exec(ctx context.Context) error {
+	_, err := _u.Save(ctx)
 	return err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (ilu *IncidentLinkUpdate) ExecX(ctx context.Context) {
-	if err := ilu.Exec(ctx); err != nil {
+func (_u *IncidentLinkUpdate) ExecX(ctx context.Context) {
+	if err := _u.Exec(ctx); err != nil {
 		panic(err)
 	}
 }
 
 // check runs all checks and user-defined validators on the builder.
-func (ilu *IncidentLinkUpdate) check() error {
-	if v, ok := ilu.mutation.LinkType(); ok {
+func (_u *IncidentLinkUpdate) check() error {
+	if v, ok := _u.mutation.LinkType(); ok {
 		if err := incidentlink.LinkTypeValidator(v); err != nil {
 			return &ValidationError{Name: "link_type", err: fmt.Errorf(`ent: validator failed for field "IncidentLink.link_type": %w`, err)}
 		}
 	}
-	if ilu.mutation.TenantCleared() && len(ilu.mutation.TenantIDs()) > 0 {
+	if _u.mutation.TenantCleared() && len(_u.mutation.TenantIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "IncidentLink.tenant"`)
 	}
-	if ilu.mutation.IncidentCleared() && len(ilu.mutation.IncidentIDs()) > 0 {
+	if _u.mutation.IncidentCleared() && len(_u.mutation.IncidentIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "IncidentLink.incident"`)
 	}
-	if ilu.mutation.LinkedIncidentCleared() && len(ilu.mutation.LinkedIncidentIDs()) > 0 {
+	if _u.mutation.LinkedIncidentCleared() && len(_u.mutation.LinkedIncidentIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "IncidentLink.linked_incident"`)
 	}
 	return nil
 }
 
 // Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
-func (ilu *IncidentLinkUpdate) Modify(modifiers ...func(u *sql.UpdateBuilder)) *IncidentLinkUpdate {
-	ilu.modifiers = append(ilu.modifiers, modifiers...)
-	return ilu
+func (_u *IncidentLinkUpdate) Modify(modifiers ...func(u *sql.UpdateBuilder)) *IncidentLinkUpdate {
+	_u.modifiers = append(_u.modifiers, modifiers...)
+	return _u
 }
 
-func (ilu *IncidentLinkUpdate) sqlSave(ctx context.Context) (n int, err error) {
-	if err := ilu.check(); err != nil {
-		return n, err
+func (_u *IncidentLinkUpdate) sqlSave(ctx context.Context) (_node int, err error) {
+	if err := _u.check(); err != nil {
+		return _node, err
 	}
 	_spec := sqlgraph.NewUpdateSpec(incidentlink.Table, incidentlink.Columns, sqlgraph.NewFieldSpec(incidentlink.FieldID, field.TypeInt))
-	if ps := ilu.mutation.predicates; len(ps) > 0 {
+	if ps := _u.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {
 				ps[i](selector)
 			}
 		}
 	}
-	if value, ok := ilu.mutation.Description(); ok {
+	if value, ok := _u.mutation.Description(); ok {
 		_spec.SetField(incidentlink.FieldDescription, field.TypeString, value)
 	}
-	if ilu.mutation.DescriptionCleared() {
+	if _u.mutation.DescriptionCleared() {
 		_spec.ClearField(incidentlink.FieldDescription, field.TypeString)
 	}
-	if value, ok := ilu.mutation.LinkType(); ok {
+	if value, ok := _u.mutation.LinkType(); ok {
 		_spec.SetField(incidentlink.FieldLinkType, field.TypeEnum, value)
 	}
-	if ilu.mutation.IncidentCleared() {
+	if _u.mutation.IncidentCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
@@ -205,7 +205,7 @@ func (ilu *IncidentLinkUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := ilu.mutation.IncidentIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.IncidentIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
@@ -221,7 +221,7 @@ func (ilu *IncidentLinkUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if ilu.mutation.LinkedIncidentCleared() {
+	if _u.mutation.LinkedIncidentCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
@@ -234,7 +234,7 @@ func (ilu *IncidentLinkUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := ilu.mutation.LinkedIncidentIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.LinkedIncidentIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
@@ -250,8 +250,8 @@ func (ilu *IncidentLinkUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	_spec.AddModifiers(ilu.modifiers...)
-	if n, err = sqlgraph.UpdateNodes(ctx, ilu.driver, _spec); err != nil {
+	_spec.AddModifiers(_u.modifiers...)
+	if _node, err = sqlgraph.UpdateNodes(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{incidentlink.Label}
 		} else if sqlgraph.IsConstraintError(err) {
@@ -259,8 +259,8 @@ func (ilu *IncidentLinkUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		return 0, err
 	}
-	ilu.mutation.done = true
-	return n, nil
+	_u.mutation.done = true
+	return _node, nil
 }
 
 // IncidentLinkUpdateOne is the builder for updating a single IncidentLink entity.
@@ -273,115 +273,115 @@ type IncidentLinkUpdateOne struct {
 }
 
 // SetIncidentID sets the "incident_id" field.
-func (iluo *IncidentLinkUpdateOne) SetIncidentID(u uuid.UUID) *IncidentLinkUpdateOne {
-	iluo.mutation.SetIncidentID(u)
-	return iluo
+func (_u *IncidentLinkUpdateOne) SetIncidentID(v uuid.UUID) *IncidentLinkUpdateOne {
+	_u.mutation.SetIncidentID(v)
+	return _u
 }
 
 // SetNillableIncidentID sets the "incident_id" field if the given value is not nil.
-func (iluo *IncidentLinkUpdateOne) SetNillableIncidentID(u *uuid.UUID) *IncidentLinkUpdateOne {
-	if u != nil {
-		iluo.SetIncidentID(*u)
+func (_u *IncidentLinkUpdateOne) SetNillableIncidentID(v *uuid.UUID) *IncidentLinkUpdateOne {
+	if v != nil {
+		_u.SetIncidentID(*v)
 	}
-	return iluo
+	return _u
 }
 
 // SetLinkedIncidentID sets the "linked_incident_id" field.
-func (iluo *IncidentLinkUpdateOne) SetLinkedIncidentID(u uuid.UUID) *IncidentLinkUpdateOne {
-	iluo.mutation.SetLinkedIncidentID(u)
-	return iluo
+func (_u *IncidentLinkUpdateOne) SetLinkedIncidentID(v uuid.UUID) *IncidentLinkUpdateOne {
+	_u.mutation.SetLinkedIncidentID(v)
+	return _u
 }
 
 // SetNillableLinkedIncidentID sets the "linked_incident_id" field if the given value is not nil.
-func (iluo *IncidentLinkUpdateOne) SetNillableLinkedIncidentID(u *uuid.UUID) *IncidentLinkUpdateOne {
-	if u != nil {
-		iluo.SetLinkedIncidentID(*u)
+func (_u *IncidentLinkUpdateOne) SetNillableLinkedIncidentID(v *uuid.UUID) *IncidentLinkUpdateOne {
+	if v != nil {
+		_u.SetLinkedIncidentID(*v)
 	}
-	return iluo
+	return _u
 }
 
 // SetDescription sets the "description" field.
-func (iluo *IncidentLinkUpdateOne) SetDescription(s string) *IncidentLinkUpdateOne {
-	iluo.mutation.SetDescription(s)
-	return iluo
+func (_u *IncidentLinkUpdateOne) SetDescription(v string) *IncidentLinkUpdateOne {
+	_u.mutation.SetDescription(v)
+	return _u
 }
 
 // SetNillableDescription sets the "description" field if the given value is not nil.
-func (iluo *IncidentLinkUpdateOne) SetNillableDescription(s *string) *IncidentLinkUpdateOne {
-	if s != nil {
-		iluo.SetDescription(*s)
+func (_u *IncidentLinkUpdateOne) SetNillableDescription(v *string) *IncidentLinkUpdateOne {
+	if v != nil {
+		_u.SetDescription(*v)
 	}
-	return iluo
+	return _u
 }
 
 // ClearDescription clears the value of the "description" field.
-func (iluo *IncidentLinkUpdateOne) ClearDescription() *IncidentLinkUpdateOne {
-	iluo.mutation.ClearDescription()
-	return iluo
+func (_u *IncidentLinkUpdateOne) ClearDescription() *IncidentLinkUpdateOne {
+	_u.mutation.ClearDescription()
+	return _u
 }
 
 // SetLinkType sets the "link_type" field.
-func (iluo *IncidentLinkUpdateOne) SetLinkType(it incidentlink.LinkType) *IncidentLinkUpdateOne {
-	iluo.mutation.SetLinkType(it)
-	return iluo
+func (_u *IncidentLinkUpdateOne) SetLinkType(v incidentlink.LinkType) *IncidentLinkUpdateOne {
+	_u.mutation.SetLinkType(v)
+	return _u
 }
 
 // SetNillableLinkType sets the "link_type" field if the given value is not nil.
-func (iluo *IncidentLinkUpdateOne) SetNillableLinkType(it *incidentlink.LinkType) *IncidentLinkUpdateOne {
-	if it != nil {
-		iluo.SetLinkType(*it)
+func (_u *IncidentLinkUpdateOne) SetNillableLinkType(v *incidentlink.LinkType) *IncidentLinkUpdateOne {
+	if v != nil {
+		_u.SetLinkType(*v)
 	}
-	return iluo
+	return _u
 }
 
 // SetIncident sets the "incident" edge to the Incident entity.
-func (iluo *IncidentLinkUpdateOne) SetIncident(i *Incident) *IncidentLinkUpdateOne {
-	return iluo.SetIncidentID(i.ID)
+func (_u *IncidentLinkUpdateOne) SetIncident(v *Incident) *IncidentLinkUpdateOne {
+	return _u.SetIncidentID(v.ID)
 }
 
 // SetLinkedIncident sets the "linked_incident" edge to the Incident entity.
-func (iluo *IncidentLinkUpdateOne) SetLinkedIncident(i *Incident) *IncidentLinkUpdateOne {
-	return iluo.SetLinkedIncidentID(i.ID)
+func (_u *IncidentLinkUpdateOne) SetLinkedIncident(v *Incident) *IncidentLinkUpdateOne {
+	return _u.SetLinkedIncidentID(v.ID)
 }
 
 // Mutation returns the IncidentLinkMutation object of the builder.
-func (iluo *IncidentLinkUpdateOne) Mutation() *IncidentLinkMutation {
-	return iluo.mutation
+func (_u *IncidentLinkUpdateOne) Mutation() *IncidentLinkMutation {
+	return _u.mutation
 }
 
 // ClearIncident clears the "incident" edge to the Incident entity.
-func (iluo *IncidentLinkUpdateOne) ClearIncident() *IncidentLinkUpdateOne {
-	iluo.mutation.ClearIncident()
-	return iluo
+func (_u *IncidentLinkUpdateOne) ClearIncident() *IncidentLinkUpdateOne {
+	_u.mutation.ClearIncident()
+	return _u
 }
 
 // ClearLinkedIncident clears the "linked_incident" edge to the Incident entity.
-func (iluo *IncidentLinkUpdateOne) ClearLinkedIncident() *IncidentLinkUpdateOne {
-	iluo.mutation.ClearLinkedIncident()
-	return iluo
+func (_u *IncidentLinkUpdateOne) ClearLinkedIncident() *IncidentLinkUpdateOne {
+	_u.mutation.ClearLinkedIncident()
+	return _u
 }
 
 // Where appends a list predicates to the IncidentLinkUpdate builder.
-func (iluo *IncidentLinkUpdateOne) Where(ps ...predicate.IncidentLink) *IncidentLinkUpdateOne {
-	iluo.mutation.Where(ps...)
-	return iluo
+func (_u *IncidentLinkUpdateOne) Where(ps ...predicate.IncidentLink) *IncidentLinkUpdateOne {
+	_u.mutation.Where(ps...)
+	return _u
 }
 
 // Select allows selecting one or more fields (columns) of the returned entity.
 // The default is selecting all fields defined in the entity schema.
-func (iluo *IncidentLinkUpdateOne) Select(field string, fields ...string) *IncidentLinkUpdateOne {
-	iluo.fields = append([]string{field}, fields...)
-	return iluo
+func (_u *IncidentLinkUpdateOne) Select(field string, fields ...string) *IncidentLinkUpdateOne {
+	_u.fields = append([]string{field}, fields...)
+	return _u
 }
 
 // Save executes the query and returns the updated IncidentLink entity.
-func (iluo *IncidentLinkUpdateOne) Save(ctx context.Context) (*IncidentLink, error) {
-	return withHooks(ctx, iluo.sqlSave, iluo.mutation, iluo.hooks)
+func (_u *IncidentLinkUpdateOne) Save(ctx context.Context) (*IncidentLink, error) {
+	return withHooks(ctx, _u.sqlSave, _u.mutation, _u.hooks)
 }
 
 // SaveX is like Save, but panics if an error occurs.
-func (iluo *IncidentLinkUpdateOne) SaveX(ctx context.Context) *IncidentLink {
-	node, err := iluo.Save(ctx)
+func (_u *IncidentLinkUpdateOne) SaveX(ctx context.Context) *IncidentLink {
+	node, err := _u.Save(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -389,54 +389,54 @@ func (iluo *IncidentLinkUpdateOne) SaveX(ctx context.Context) *IncidentLink {
 }
 
 // Exec executes the query on the entity.
-func (iluo *IncidentLinkUpdateOne) Exec(ctx context.Context) error {
-	_, err := iluo.Save(ctx)
+func (_u *IncidentLinkUpdateOne) Exec(ctx context.Context) error {
+	_, err := _u.Save(ctx)
 	return err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (iluo *IncidentLinkUpdateOne) ExecX(ctx context.Context) {
-	if err := iluo.Exec(ctx); err != nil {
+func (_u *IncidentLinkUpdateOne) ExecX(ctx context.Context) {
+	if err := _u.Exec(ctx); err != nil {
 		panic(err)
 	}
 }
 
 // check runs all checks and user-defined validators on the builder.
-func (iluo *IncidentLinkUpdateOne) check() error {
-	if v, ok := iluo.mutation.LinkType(); ok {
+func (_u *IncidentLinkUpdateOne) check() error {
+	if v, ok := _u.mutation.LinkType(); ok {
 		if err := incidentlink.LinkTypeValidator(v); err != nil {
 			return &ValidationError{Name: "link_type", err: fmt.Errorf(`ent: validator failed for field "IncidentLink.link_type": %w`, err)}
 		}
 	}
-	if iluo.mutation.TenantCleared() && len(iluo.mutation.TenantIDs()) > 0 {
+	if _u.mutation.TenantCleared() && len(_u.mutation.TenantIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "IncidentLink.tenant"`)
 	}
-	if iluo.mutation.IncidentCleared() && len(iluo.mutation.IncidentIDs()) > 0 {
+	if _u.mutation.IncidentCleared() && len(_u.mutation.IncidentIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "IncidentLink.incident"`)
 	}
-	if iluo.mutation.LinkedIncidentCleared() && len(iluo.mutation.LinkedIncidentIDs()) > 0 {
+	if _u.mutation.LinkedIncidentCleared() && len(_u.mutation.LinkedIncidentIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "IncidentLink.linked_incident"`)
 	}
 	return nil
 }
 
 // Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
-func (iluo *IncidentLinkUpdateOne) Modify(modifiers ...func(u *sql.UpdateBuilder)) *IncidentLinkUpdateOne {
-	iluo.modifiers = append(iluo.modifiers, modifiers...)
-	return iluo
+func (_u *IncidentLinkUpdateOne) Modify(modifiers ...func(u *sql.UpdateBuilder)) *IncidentLinkUpdateOne {
+	_u.modifiers = append(_u.modifiers, modifiers...)
+	return _u
 }
 
-func (iluo *IncidentLinkUpdateOne) sqlSave(ctx context.Context) (_node *IncidentLink, err error) {
-	if err := iluo.check(); err != nil {
+func (_u *IncidentLinkUpdateOne) sqlSave(ctx context.Context) (_node *IncidentLink, err error) {
+	if err := _u.check(); err != nil {
 		return _node, err
 	}
 	_spec := sqlgraph.NewUpdateSpec(incidentlink.Table, incidentlink.Columns, sqlgraph.NewFieldSpec(incidentlink.FieldID, field.TypeInt))
-	id, ok := iluo.mutation.ID()
+	id, ok := _u.mutation.ID()
 	if !ok {
 		return nil, &ValidationError{Name: "id", err: errors.New(`ent: missing "IncidentLink.id" for update`)}
 	}
 	_spec.Node.ID.Value = id
-	if fields := iluo.fields; len(fields) > 0 {
+	if fields := _u.fields; len(fields) > 0 {
 		_spec.Node.Columns = make([]string, 0, len(fields))
 		_spec.Node.Columns = append(_spec.Node.Columns, incidentlink.FieldID)
 		for _, f := range fields {
@@ -448,23 +448,23 @@ func (iluo *IncidentLinkUpdateOne) sqlSave(ctx context.Context) (_node *Incident
 			}
 		}
 	}
-	if ps := iluo.mutation.predicates; len(ps) > 0 {
+	if ps := _u.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {
 				ps[i](selector)
 			}
 		}
 	}
-	if value, ok := iluo.mutation.Description(); ok {
+	if value, ok := _u.mutation.Description(); ok {
 		_spec.SetField(incidentlink.FieldDescription, field.TypeString, value)
 	}
-	if iluo.mutation.DescriptionCleared() {
+	if _u.mutation.DescriptionCleared() {
 		_spec.ClearField(incidentlink.FieldDescription, field.TypeString)
 	}
-	if value, ok := iluo.mutation.LinkType(); ok {
+	if value, ok := _u.mutation.LinkType(); ok {
 		_spec.SetField(incidentlink.FieldLinkType, field.TypeEnum, value)
 	}
-	if iluo.mutation.IncidentCleared() {
+	if _u.mutation.IncidentCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
@@ -477,7 +477,7 @@ func (iluo *IncidentLinkUpdateOne) sqlSave(ctx context.Context) (_node *Incident
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := iluo.mutation.IncidentIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.IncidentIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
@@ -493,7 +493,7 @@ func (iluo *IncidentLinkUpdateOne) sqlSave(ctx context.Context) (_node *Incident
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if iluo.mutation.LinkedIncidentCleared() {
+	if _u.mutation.LinkedIncidentCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
@@ -506,7 +506,7 @@ func (iluo *IncidentLinkUpdateOne) sqlSave(ctx context.Context) (_node *Incident
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := iluo.mutation.LinkedIncidentIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.LinkedIncidentIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
@@ -522,11 +522,11 @@ func (iluo *IncidentLinkUpdateOne) sqlSave(ctx context.Context) (_node *Incident
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	_spec.AddModifiers(iluo.modifiers...)
-	_node = &IncidentLink{config: iluo.config}
+	_spec.AddModifiers(_u.modifiers...)
+	_node = &IncidentLink{config: _u.config}
 	_spec.Assign = _node.assignValues
 	_spec.ScanValues = _node.scanValues
-	if err = sqlgraph.UpdateNode(ctx, iluo.driver, _spec); err != nil {
+	if err = sqlgraph.UpdateNode(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{incidentlink.Label}
 		} else if sqlgraph.IsConstraintError(err) {
@@ -534,6 +534,6 @@ func (iluo *IncidentLinkUpdateOne) sqlSave(ctx context.Context) (_node *Incident
 		}
 		return nil, err
 	}
-	iluo.mutation.done = true
+	_u.mutation.done = true
 	return _node, nil
 }

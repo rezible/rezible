@@ -27,153 +27,153 @@ type OncallShiftHandoverUpdate struct {
 }
 
 // Where appends a list predicates to the OncallShiftHandoverUpdate builder.
-func (oshu *OncallShiftHandoverUpdate) Where(ps ...predicate.OncallShiftHandover) *OncallShiftHandoverUpdate {
-	oshu.mutation.Where(ps...)
-	return oshu
+func (_u *OncallShiftHandoverUpdate) Where(ps ...predicate.OncallShiftHandover) *OncallShiftHandoverUpdate {
+	_u.mutation.Where(ps...)
+	return _u
 }
 
 // SetShiftID sets the "shift_id" field.
-func (oshu *OncallShiftHandoverUpdate) SetShiftID(u uuid.UUID) *OncallShiftHandoverUpdate {
-	oshu.mutation.SetShiftID(u)
-	return oshu
+func (_u *OncallShiftHandoverUpdate) SetShiftID(v uuid.UUID) *OncallShiftHandoverUpdate {
+	_u.mutation.SetShiftID(v)
+	return _u
 }
 
 // SetNillableShiftID sets the "shift_id" field if the given value is not nil.
-func (oshu *OncallShiftHandoverUpdate) SetNillableShiftID(u *uuid.UUID) *OncallShiftHandoverUpdate {
-	if u != nil {
-		oshu.SetShiftID(*u)
+func (_u *OncallShiftHandoverUpdate) SetNillableShiftID(v *uuid.UUID) *OncallShiftHandoverUpdate {
+	if v != nil {
+		_u.SetShiftID(*v)
 	}
-	return oshu
+	return _u
 }
 
 // SetCreatedAt sets the "created_at" field.
-func (oshu *OncallShiftHandoverUpdate) SetCreatedAt(t time.Time) *OncallShiftHandoverUpdate {
-	oshu.mutation.SetCreatedAt(t)
-	return oshu
+func (_u *OncallShiftHandoverUpdate) SetCreatedAt(v time.Time) *OncallShiftHandoverUpdate {
+	_u.mutation.SetCreatedAt(v)
+	return _u
 }
 
 // SetNillableCreatedAt sets the "created_at" field if the given value is not nil.
-func (oshu *OncallShiftHandoverUpdate) SetNillableCreatedAt(t *time.Time) *OncallShiftHandoverUpdate {
-	if t != nil {
-		oshu.SetCreatedAt(*t)
+func (_u *OncallShiftHandoverUpdate) SetNillableCreatedAt(v *time.Time) *OncallShiftHandoverUpdate {
+	if v != nil {
+		_u.SetCreatedAt(*v)
 	}
-	return oshu
+	return _u
 }
 
 // SetReminderSent sets the "reminder_sent" field.
-func (oshu *OncallShiftHandoverUpdate) SetReminderSent(b bool) *OncallShiftHandoverUpdate {
-	oshu.mutation.SetReminderSent(b)
-	return oshu
+func (_u *OncallShiftHandoverUpdate) SetReminderSent(v bool) *OncallShiftHandoverUpdate {
+	_u.mutation.SetReminderSent(v)
+	return _u
 }
 
 // SetNillableReminderSent sets the "reminder_sent" field if the given value is not nil.
-func (oshu *OncallShiftHandoverUpdate) SetNillableReminderSent(b *bool) *OncallShiftHandoverUpdate {
-	if b != nil {
-		oshu.SetReminderSent(*b)
+func (_u *OncallShiftHandoverUpdate) SetNillableReminderSent(v *bool) *OncallShiftHandoverUpdate {
+	if v != nil {
+		_u.SetReminderSent(*v)
 	}
-	return oshu
+	return _u
 }
 
 // SetUpdatedAt sets the "updated_at" field.
-func (oshu *OncallShiftHandoverUpdate) SetUpdatedAt(t time.Time) *OncallShiftHandoverUpdate {
-	oshu.mutation.SetUpdatedAt(t)
-	return oshu
+func (_u *OncallShiftHandoverUpdate) SetUpdatedAt(v time.Time) *OncallShiftHandoverUpdate {
+	_u.mutation.SetUpdatedAt(v)
+	return _u
 }
 
 // SetNillableUpdatedAt sets the "updated_at" field if the given value is not nil.
-func (oshu *OncallShiftHandoverUpdate) SetNillableUpdatedAt(t *time.Time) *OncallShiftHandoverUpdate {
-	if t != nil {
-		oshu.SetUpdatedAt(*t)
+func (_u *OncallShiftHandoverUpdate) SetNillableUpdatedAt(v *time.Time) *OncallShiftHandoverUpdate {
+	if v != nil {
+		_u.SetUpdatedAt(*v)
 	}
-	return oshu
+	return _u
 }
 
 // SetSentAt sets the "sent_at" field.
-func (oshu *OncallShiftHandoverUpdate) SetSentAt(t time.Time) *OncallShiftHandoverUpdate {
-	oshu.mutation.SetSentAt(t)
-	return oshu
+func (_u *OncallShiftHandoverUpdate) SetSentAt(v time.Time) *OncallShiftHandoverUpdate {
+	_u.mutation.SetSentAt(v)
+	return _u
 }
 
 // SetNillableSentAt sets the "sent_at" field if the given value is not nil.
-func (oshu *OncallShiftHandoverUpdate) SetNillableSentAt(t *time.Time) *OncallShiftHandoverUpdate {
-	if t != nil {
-		oshu.SetSentAt(*t)
+func (_u *OncallShiftHandoverUpdate) SetNillableSentAt(v *time.Time) *OncallShiftHandoverUpdate {
+	if v != nil {
+		_u.SetSentAt(*v)
 	}
-	return oshu
+	return _u
 }
 
 // ClearSentAt clears the value of the "sent_at" field.
-func (oshu *OncallShiftHandoverUpdate) ClearSentAt() *OncallShiftHandoverUpdate {
-	oshu.mutation.ClearSentAt()
-	return oshu
+func (_u *OncallShiftHandoverUpdate) ClearSentAt() *OncallShiftHandoverUpdate {
+	_u.mutation.ClearSentAt()
+	return _u
 }
 
 // SetContents sets the "contents" field.
-func (oshu *OncallShiftHandoverUpdate) SetContents(b []byte) *OncallShiftHandoverUpdate {
-	oshu.mutation.SetContents(b)
-	return oshu
+func (_u *OncallShiftHandoverUpdate) SetContents(v []byte) *OncallShiftHandoverUpdate {
+	_u.mutation.SetContents(v)
+	return _u
 }
 
 // SetShift sets the "shift" edge to the OncallShift entity.
-func (oshu *OncallShiftHandoverUpdate) SetShift(o *OncallShift) *OncallShiftHandoverUpdate {
-	return oshu.SetShiftID(o.ID)
+func (_u *OncallShiftHandoverUpdate) SetShift(v *OncallShift) *OncallShiftHandoverUpdate {
+	return _u.SetShiftID(v.ID)
 }
 
 // AddPinnedAnnotationIDs adds the "pinned_annotations" edge to the EventAnnotation entity by IDs.
-func (oshu *OncallShiftHandoverUpdate) AddPinnedAnnotationIDs(ids ...uuid.UUID) *OncallShiftHandoverUpdate {
-	oshu.mutation.AddPinnedAnnotationIDs(ids...)
-	return oshu
+func (_u *OncallShiftHandoverUpdate) AddPinnedAnnotationIDs(ids ...uuid.UUID) *OncallShiftHandoverUpdate {
+	_u.mutation.AddPinnedAnnotationIDs(ids...)
+	return _u
 }
 
 // AddPinnedAnnotations adds the "pinned_annotations" edges to the EventAnnotation entity.
-func (oshu *OncallShiftHandoverUpdate) AddPinnedAnnotations(e ...*EventAnnotation) *OncallShiftHandoverUpdate {
-	ids := make([]uuid.UUID, len(e))
-	for i := range e {
-		ids[i] = e[i].ID
+func (_u *OncallShiftHandoverUpdate) AddPinnedAnnotations(v ...*EventAnnotation) *OncallShiftHandoverUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
 	}
-	return oshu.AddPinnedAnnotationIDs(ids...)
+	return _u.AddPinnedAnnotationIDs(ids...)
 }
 
 // Mutation returns the OncallShiftHandoverMutation object of the builder.
-func (oshu *OncallShiftHandoverUpdate) Mutation() *OncallShiftHandoverMutation {
-	return oshu.mutation
+func (_u *OncallShiftHandoverUpdate) Mutation() *OncallShiftHandoverMutation {
+	return _u.mutation
 }
 
 // ClearShift clears the "shift" edge to the OncallShift entity.
-func (oshu *OncallShiftHandoverUpdate) ClearShift() *OncallShiftHandoverUpdate {
-	oshu.mutation.ClearShift()
-	return oshu
+func (_u *OncallShiftHandoverUpdate) ClearShift() *OncallShiftHandoverUpdate {
+	_u.mutation.ClearShift()
+	return _u
 }
 
 // ClearPinnedAnnotations clears all "pinned_annotations" edges to the EventAnnotation entity.
-func (oshu *OncallShiftHandoverUpdate) ClearPinnedAnnotations() *OncallShiftHandoverUpdate {
-	oshu.mutation.ClearPinnedAnnotations()
-	return oshu
+func (_u *OncallShiftHandoverUpdate) ClearPinnedAnnotations() *OncallShiftHandoverUpdate {
+	_u.mutation.ClearPinnedAnnotations()
+	return _u
 }
 
 // RemovePinnedAnnotationIDs removes the "pinned_annotations" edge to EventAnnotation entities by IDs.
-func (oshu *OncallShiftHandoverUpdate) RemovePinnedAnnotationIDs(ids ...uuid.UUID) *OncallShiftHandoverUpdate {
-	oshu.mutation.RemovePinnedAnnotationIDs(ids...)
-	return oshu
+func (_u *OncallShiftHandoverUpdate) RemovePinnedAnnotationIDs(ids ...uuid.UUID) *OncallShiftHandoverUpdate {
+	_u.mutation.RemovePinnedAnnotationIDs(ids...)
+	return _u
 }
 
 // RemovePinnedAnnotations removes "pinned_annotations" edges to EventAnnotation entities.
-func (oshu *OncallShiftHandoverUpdate) RemovePinnedAnnotations(e ...*EventAnnotation) *OncallShiftHandoverUpdate {
-	ids := make([]uuid.UUID, len(e))
-	for i := range e {
-		ids[i] = e[i].ID
+func (_u *OncallShiftHandoverUpdate) RemovePinnedAnnotations(v ...*EventAnnotation) *OncallShiftHandoverUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
 	}
-	return oshu.RemovePinnedAnnotationIDs(ids...)
+	return _u.RemovePinnedAnnotationIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
-func (oshu *OncallShiftHandoverUpdate) Save(ctx context.Context) (int, error) {
-	return withHooks(ctx, oshu.sqlSave, oshu.mutation, oshu.hooks)
+func (_u *OncallShiftHandoverUpdate) Save(ctx context.Context) (int, error) {
+	return withHooks(ctx, _u.sqlSave, _u.mutation, _u.hooks)
 }
 
 // SaveX is like Save, but panics if an error occurs.
-func (oshu *OncallShiftHandoverUpdate) SaveX(ctx context.Context) int {
-	affected, err := oshu.Save(ctx)
+func (_u *OncallShiftHandoverUpdate) SaveX(ctx context.Context) int {
+	affected, err := _u.Save(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -181,66 +181,66 @@ func (oshu *OncallShiftHandoverUpdate) SaveX(ctx context.Context) int {
 }
 
 // Exec executes the query.
-func (oshu *OncallShiftHandoverUpdate) Exec(ctx context.Context) error {
-	_, err := oshu.Save(ctx)
+func (_u *OncallShiftHandoverUpdate) Exec(ctx context.Context) error {
+	_, err := _u.Save(ctx)
 	return err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (oshu *OncallShiftHandoverUpdate) ExecX(ctx context.Context) {
-	if err := oshu.Exec(ctx); err != nil {
+func (_u *OncallShiftHandoverUpdate) ExecX(ctx context.Context) {
+	if err := _u.Exec(ctx); err != nil {
 		panic(err)
 	}
 }
 
 // check runs all checks and user-defined validators on the builder.
-func (oshu *OncallShiftHandoverUpdate) check() error {
-	if oshu.mutation.TenantCleared() && len(oshu.mutation.TenantIDs()) > 0 {
+func (_u *OncallShiftHandoverUpdate) check() error {
+	if _u.mutation.TenantCleared() && len(_u.mutation.TenantIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "OncallShiftHandover.tenant"`)
 	}
-	if oshu.mutation.ShiftCleared() && len(oshu.mutation.ShiftIDs()) > 0 {
+	if _u.mutation.ShiftCleared() && len(_u.mutation.ShiftIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "OncallShiftHandover.shift"`)
 	}
 	return nil
 }
 
 // Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
-func (oshu *OncallShiftHandoverUpdate) Modify(modifiers ...func(u *sql.UpdateBuilder)) *OncallShiftHandoverUpdate {
-	oshu.modifiers = append(oshu.modifiers, modifiers...)
-	return oshu
+func (_u *OncallShiftHandoverUpdate) Modify(modifiers ...func(u *sql.UpdateBuilder)) *OncallShiftHandoverUpdate {
+	_u.modifiers = append(_u.modifiers, modifiers...)
+	return _u
 }
 
-func (oshu *OncallShiftHandoverUpdate) sqlSave(ctx context.Context) (n int, err error) {
-	if err := oshu.check(); err != nil {
-		return n, err
+func (_u *OncallShiftHandoverUpdate) sqlSave(ctx context.Context) (_node int, err error) {
+	if err := _u.check(); err != nil {
+		return _node, err
 	}
 	_spec := sqlgraph.NewUpdateSpec(oncallshifthandover.Table, oncallshifthandover.Columns, sqlgraph.NewFieldSpec(oncallshifthandover.FieldID, field.TypeUUID))
-	if ps := oshu.mutation.predicates; len(ps) > 0 {
+	if ps := _u.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {
 				ps[i](selector)
 			}
 		}
 	}
-	if value, ok := oshu.mutation.CreatedAt(); ok {
+	if value, ok := _u.mutation.CreatedAt(); ok {
 		_spec.SetField(oncallshifthandover.FieldCreatedAt, field.TypeTime, value)
 	}
-	if value, ok := oshu.mutation.ReminderSent(); ok {
+	if value, ok := _u.mutation.ReminderSent(); ok {
 		_spec.SetField(oncallshifthandover.FieldReminderSent, field.TypeBool, value)
 	}
-	if value, ok := oshu.mutation.UpdatedAt(); ok {
+	if value, ok := _u.mutation.UpdatedAt(); ok {
 		_spec.SetField(oncallshifthandover.FieldUpdatedAt, field.TypeTime, value)
 	}
-	if value, ok := oshu.mutation.SentAt(); ok {
+	if value, ok := _u.mutation.SentAt(); ok {
 		_spec.SetField(oncallshifthandover.FieldSentAt, field.TypeTime, value)
 	}
-	if oshu.mutation.SentAtCleared() {
+	if _u.mutation.SentAtCleared() {
 		_spec.ClearField(oncallshifthandover.FieldSentAt, field.TypeTime)
 	}
-	if value, ok := oshu.mutation.Contents(); ok {
+	if value, ok := _u.mutation.Contents(); ok {
 		_spec.SetField(oncallshifthandover.FieldContents, field.TypeBytes, value)
 	}
-	if oshu.mutation.ShiftCleared() {
+	if _u.mutation.ShiftCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2O,
 			Inverse: true,
@@ -253,7 +253,7 @@ func (oshu *OncallShiftHandoverUpdate) sqlSave(ctx context.Context) (n int, err 
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := oshu.mutation.ShiftIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.ShiftIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2O,
 			Inverse: true,
@@ -269,7 +269,7 @@ func (oshu *OncallShiftHandoverUpdate) sqlSave(ctx context.Context) (n int, err 
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if oshu.mutation.PinnedAnnotationsCleared() {
+	if _u.mutation.PinnedAnnotationsCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
 			Inverse: false,
@@ -282,7 +282,7 @@ func (oshu *OncallShiftHandoverUpdate) sqlSave(ctx context.Context) (n int, err 
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := oshu.mutation.RemovedPinnedAnnotationsIDs(); len(nodes) > 0 && !oshu.mutation.PinnedAnnotationsCleared() {
+	if nodes := _u.mutation.RemovedPinnedAnnotationsIDs(); len(nodes) > 0 && !_u.mutation.PinnedAnnotationsCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
 			Inverse: false,
@@ -298,7 +298,7 @@ func (oshu *OncallShiftHandoverUpdate) sqlSave(ctx context.Context) (n int, err 
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := oshu.mutation.PinnedAnnotationsIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.PinnedAnnotationsIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
 			Inverse: false,
@@ -314,8 +314,8 @@ func (oshu *OncallShiftHandoverUpdate) sqlSave(ctx context.Context) (n int, err 
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	_spec.AddModifiers(oshu.modifiers...)
-	if n, err = sqlgraph.UpdateNodes(ctx, oshu.driver, _spec); err != nil {
+	_spec.AddModifiers(_u.modifiers...)
+	if _node, err = sqlgraph.UpdateNodes(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{oncallshifthandover.Label}
 		} else if sqlgraph.IsConstraintError(err) {
@@ -323,8 +323,8 @@ func (oshu *OncallShiftHandoverUpdate) sqlSave(ctx context.Context) (n int, err 
 		}
 		return 0, err
 	}
-	oshu.mutation.done = true
-	return n, nil
+	_u.mutation.done = true
+	return _node, nil
 }
 
 // OncallShiftHandoverUpdateOne is the builder for updating a single OncallShiftHandover entity.
@@ -337,160 +337,160 @@ type OncallShiftHandoverUpdateOne struct {
 }
 
 // SetShiftID sets the "shift_id" field.
-func (oshuo *OncallShiftHandoverUpdateOne) SetShiftID(u uuid.UUID) *OncallShiftHandoverUpdateOne {
-	oshuo.mutation.SetShiftID(u)
-	return oshuo
+func (_u *OncallShiftHandoverUpdateOne) SetShiftID(v uuid.UUID) *OncallShiftHandoverUpdateOne {
+	_u.mutation.SetShiftID(v)
+	return _u
 }
 
 // SetNillableShiftID sets the "shift_id" field if the given value is not nil.
-func (oshuo *OncallShiftHandoverUpdateOne) SetNillableShiftID(u *uuid.UUID) *OncallShiftHandoverUpdateOne {
-	if u != nil {
-		oshuo.SetShiftID(*u)
+func (_u *OncallShiftHandoverUpdateOne) SetNillableShiftID(v *uuid.UUID) *OncallShiftHandoverUpdateOne {
+	if v != nil {
+		_u.SetShiftID(*v)
 	}
-	return oshuo
+	return _u
 }
 
 // SetCreatedAt sets the "created_at" field.
-func (oshuo *OncallShiftHandoverUpdateOne) SetCreatedAt(t time.Time) *OncallShiftHandoverUpdateOne {
-	oshuo.mutation.SetCreatedAt(t)
-	return oshuo
+func (_u *OncallShiftHandoverUpdateOne) SetCreatedAt(v time.Time) *OncallShiftHandoverUpdateOne {
+	_u.mutation.SetCreatedAt(v)
+	return _u
 }
 
 // SetNillableCreatedAt sets the "created_at" field if the given value is not nil.
-func (oshuo *OncallShiftHandoverUpdateOne) SetNillableCreatedAt(t *time.Time) *OncallShiftHandoverUpdateOne {
-	if t != nil {
-		oshuo.SetCreatedAt(*t)
+func (_u *OncallShiftHandoverUpdateOne) SetNillableCreatedAt(v *time.Time) *OncallShiftHandoverUpdateOne {
+	if v != nil {
+		_u.SetCreatedAt(*v)
 	}
-	return oshuo
+	return _u
 }
 
 // SetReminderSent sets the "reminder_sent" field.
-func (oshuo *OncallShiftHandoverUpdateOne) SetReminderSent(b bool) *OncallShiftHandoverUpdateOne {
-	oshuo.mutation.SetReminderSent(b)
-	return oshuo
+func (_u *OncallShiftHandoverUpdateOne) SetReminderSent(v bool) *OncallShiftHandoverUpdateOne {
+	_u.mutation.SetReminderSent(v)
+	return _u
 }
 
 // SetNillableReminderSent sets the "reminder_sent" field if the given value is not nil.
-func (oshuo *OncallShiftHandoverUpdateOne) SetNillableReminderSent(b *bool) *OncallShiftHandoverUpdateOne {
-	if b != nil {
-		oshuo.SetReminderSent(*b)
+func (_u *OncallShiftHandoverUpdateOne) SetNillableReminderSent(v *bool) *OncallShiftHandoverUpdateOne {
+	if v != nil {
+		_u.SetReminderSent(*v)
 	}
-	return oshuo
+	return _u
 }
 
 // SetUpdatedAt sets the "updated_at" field.
-func (oshuo *OncallShiftHandoverUpdateOne) SetUpdatedAt(t time.Time) *OncallShiftHandoverUpdateOne {
-	oshuo.mutation.SetUpdatedAt(t)
-	return oshuo
+func (_u *OncallShiftHandoverUpdateOne) SetUpdatedAt(v time.Time) *OncallShiftHandoverUpdateOne {
+	_u.mutation.SetUpdatedAt(v)
+	return _u
 }
 
 // SetNillableUpdatedAt sets the "updated_at" field if the given value is not nil.
-func (oshuo *OncallShiftHandoverUpdateOne) SetNillableUpdatedAt(t *time.Time) *OncallShiftHandoverUpdateOne {
-	if t != nil {
-		oshuo.SetUpdatedAt(*t)
+func (_u *OncallShiftHandoverUpdateOne) SetNillableUpdatedAt(v *time.Time) *OncallShiftHandoverUpdateOne {
+	if v != nil {
+		_u.SetUpdatedAt(*v)
 	}
-	return oshuo
+	return _u
 }
 
 // SetSentAt sets the "sent_at" field.
-func (oshuo *OncallShiftHandoverUpdateOne) SetSentAt(t time.Time) *OncallShiftHandoverUpdateOne {
-	oshuo.mutation.SetSentAt(t)
-	return oshuo
+func (_u *OncallShiftHandoverUpdateOne) SetSentAt(v time.Time) *OncallShiftHandoverUpdateOne {
+	_u.mutation.SetSentAt(v)
+	return _u
 }
 
 // SetNillableSentAt sets the "sent_at" field if the given value is not nil.
-func (oshuo *OncallShiftHandoverUpdateOne) SetNillableSentAt(t *time.Time) *OncallShiftHandoverUpdateOne {
-	if t != nil {
-		oshuo.SetSentAt(*t)
+func (_u *OncallShiftHandoverUpdateOne) SetNillableSentAt(v *time.Time) *OncallShiftHandoverUpdateOne {
+	if v != nil {
+		_u.SetSentAt(*v)
 	}
-	return oshuo
+	return _u
 }
 
 // ClearSentAt clears the value of the "sent_at" field.
-func (oshuo *OncallShiftHandoverUpdateOne) ClearSentAt() *OncallShiftHandoverUpdateOne {
-	oshuo.mutation.ClearSentAt()
-	return oshuo
+func (_u *OncallShiftHandoverUpdateOne) ClearSentAt() *OncallShiftHandoverUpdateOne {
+	_u.mutation.ClearSentAt()
+	return _u
 }
 
 // SetContents sets the "contents" field.
-func (oshuo *OncallShiftHandoverUpdateOne) SetContents(b []byte) *OncallShiftHandoverUpdateOne {
-	oshuo.mutation.SetContents(b)
-	return oshuo
+func (_u *OncallShiftHandoverUpdateOne) SetContents(v []byte) *OncallShiftHandoverUpdateOne {
+	_u.mutation.SetContents(v)
+	return _u
 }
 
 // SetShift sets the "shift" edge to the OncallShift entity.
-func (oshuo *OncallShiftHandoverUpdateOne) SetShift(o *OncallShift) *OncallShiftHandoverUpdateOne {
-	return oshuo.SetShiftID(o.ID)
+func (_u *OncallShiftHandoverUpdateOne) SetShift(v *OncallShift) *OncallShiftHandoverUpdateOne {
+	return _u.SetShiftID(v.ID)
 }
 
 // AddPinnedAnnotationIDs adds the "pinned_annotations" edge to the EventAnnotation entity by IDs.
-func (oshuo *OncallShiftHandoverUpdateOne) AddPinnedAnnotationIDs(ids ...uuid.UUID) *OncallShiftHandoverUpdateOne {
-	oshuo.mutation.AddPinnedAnnotationIDs(ids...)
-	return oshuo
+func (_u *OncallShiftHandoverUpdateOne) AddPinnedAnnotationIDs(ids ...uuid.UUID) *OncallShiftHandoverUpdateOne {
+	_u.mutation.AddPinnedAnnotationIDs(ids...)
+	return _u
 }
 
 // AddPinnedAnnotations adds the "pinned_annotations" edges to the EventAnnotation entity.
-func (oshuo *OncallShiftHandoverUpdateOne) AddPinnedAnnotations(e ...*EventAnnotation) *OncallShiftHandoverUpdateOne {
-	ids := make([]uuid.UUID, len(e))
-	for i := range e {
-		ids[i] = e[i].ID
+func (_u *OncallShiftHandoverUpdateOne) AddPinnedAnnotations(v ...*EventAnnotation) *OncallShiftHandoverUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
 	}
-	return oshuo.AddPinnedAnnotationIDs(ids...)
+	return _u.AddPinnedAnnotationIDs(ids...)
 }
 
 // Mutation returns the OncallShiftHandoverMutation object of the builder.
-func (oshuo *OncallShiftHandoverUpdateOne) Mutation() *OncallShiftHandoverMutation {
-	return oshuo.mutation
+func (_u *OncallShiftHandoverUpdateOne) Mutation() *OncallShiftHandoverMutation {
+	return _u.mutation
 }
 
 // ClearShift clears the "shift" edge to the OncallShift entity.
-func (oshuo *OncallShiftHandoverUpdateOne) ClearShift() *OncallShiftHandoverUpdateOne {
-	oshuo.mutation.ClearShift()
-	return oshuo
+func (_u *OncallShiftHandoverUpdateOne) ClearShift() *OncallShiftHandoverUpdateOne {
+	_u.mutation.ClearShift()
+	return _u
 }
 
 // ClearPinnedAnnotations clears all "pinned_annotations" edges to the EventAnnotation entity.
-func (oshuo *OncallShiftHandoverUpdateOne) ClearPinnedAnnotations() *OncallShiftHandoverUpdateOne {
-	oshuo.mutation.ClearPinnedAnnotations()
-	return oshuo
+func (_u *OncallShiftHandoverUpdateOne) ClearPinnedAnnotations() *OncallShiftHandoverUpdateOne {
+	_u.mutation.ClearPinnedAnnotations()
+	return _u
 }
 
 // RemovePinnedAnnotationIDs removes the "pinned_annotations" edge to EventAnnotation entities by IDs.
-func (oshuo *OncallShiftHandoverUpdateOne) RemovePinnedAnnotationIDs(ids ...uuid.UUID) *OncallShiftHandoverUpdateOne {
-	oshuo.mutation.RemovePinnedAnnotationIDs(ids...)
-	return oshuo
+func (_u *OncallShiftHandoverUpdateOne) RemovePinnedAnnotationIDs(ids ...uuid.UUID) *OncallShiftHandoverUpdateOne {
+	_u.mutation.RemovePinnedAnnotationIDs(ids...)
+	return _u
 }
 
 // RemovePinnedAnnotations removes "pinned_annotations" edges to EventAnnotation entities.
-func (oshuo *OncallShiftHandoverUpdateOne) RemovePinnedAnnotations(e ...*EventAnnotation) *OncallShiftHandoverUpdateOne {
-	ids := make([]uuid.UUID, len(e))
-	for i := range e {
-		ids[i] = e[i].ID
+func (_u *OncallShiftHandoverUpdateOne) RemovePinnedAnnotations(v ...*EventAnnotation) *OncallShiftHandoverUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
 	}
-	return oshuo.RemovePinnedAnnotationIDs(ids...)
+	return _u.RemovePinnedAnnotationIDs(ids...)
 }
 
 // Where appends a list predicates to the OncallShiftHandoverUpdate builder.
-func (oshuo *OncallShiftHandoverUpdateOne) Where(ps ...predicate.OncallShiftHandover) *OncallShiftHandoverUpdateOne {
-	oshuo.mutation.Where(ps...)
-	return oshuo
+func (_u *OncallShiftHandoverUpdateOne) Where(ps ...predicate.OncallShiftHandover) *OncallShiftHandoverUpdateOne {
+	_u.mutation.Where(ps...)
+	return _u
 }
 
 // Select allows selecting one or more fields (columns) of the returned entity.
 // The default is selecting all fields defined in the entity schema.
-func (oshuo *OncallShiftHandoverUpdateOne) Select(field string, fields ...string) *OncallShiftHandoverUpdateOne {
-	oshuo.fields = append([]string{field}, fields...)
-	return oshuo
+func (_u *OncallShiftHandoverUpdateOne) Select(field string, fields ...string) *OncallShiftHandoverUpdateOne {
+	_u.fields = append([]string{field}, fields...)
+	return _u
 }
 
 // Save executes the query and returns the updated OncallShiftHandover entity.
-func (oshuo *OncallShiftHandoverUpdateOne) Save(ctx context.Context) (*OncallShiftHandover, error) {
-	return withHooks(ctx, oshuo.sqlSave, oshuo.mutation, oshuo.hooks)
+func (_u *OncallShiftHandoverUpdateOne) Save(ctx context.Context) (*OncallShiftHandover, error) {
+	return withHooks(ctx, _u.sqlSave, _u.mutation, _u.hooks)
 }
 
 // SaveX is like Save, but panics if an error occurs.
-func (oshuo *OncallShiftHandoverUpdateOne) SaveX(ctx context.Context) *OncallShiftHandover {
-	node, err := oshuo.Save(ctx)
+func (_u *OncallShiftHandoverUpdateOne) SaveX(ctx context.Context) *OncallShiftHandover {
+	node, err := _u.Save(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -498,46 +498,46 @@ func (oshuo *OncallShiftHandoverUpdateOne) SaveX(ctx context.Context) *OncallShi
 }
 
 // Exec executes the query on the entity.
-func (oshuo *OncallShiftHandoverUpdateOne) Exec(ctx context.Context) error {
-	_, err := oshuo.Save(ctx)
+func (_u *OncallShiftHandoverUpdateOne) Exec(ctx context.Context) error {
+	_, err := _u.Save(ctx)
 	return err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (oshuo *OncallShiftHandoverUpdateOne) ExecX(ctx context.Context) {
-	if err := oshuo.Exec(ctx); err != nil {
+func (_u *OncallShiftHandoverUpdateOne) ExecX(ctx context.Context) {
+	if err := _u.Exec(ctx); err != nil {
 		panic(err)
 	}
 }
 
 // check runs all checks and user-defined validators on the builder.
-func (oshuo *OncallShiftHandoverUpdateOne) check() error {
-	if oshuo.mutation.TenantCleared() && len(oshuo.mutation.TenantIDs()) > 0 {
+func (_u *OncallShiftHandoverUpdateOne) check() error {
+	if _u.mutation.TenantCleared() && len(_u.mutation.TenantIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "OncallShiftHandover.tenant"`)
 	}
-	if oshuo.mutation.ShiftCleared() && len(oshuo.mutation.ShiftIDs()) > 0 {
+	if _u.mutation.ShiftCleared() && len(_u.mutation.ShiftIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "OncallShiftHandover.shift"`)
 	}
 	return nil
 }
 
 // Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
-func (oshuo *OncallShiftHandoverUpdateOne) Modify(modifiers ...func(u *sql.UpdateBuilder)) *OncallShiftHandoverUpdateOne {
-	oshuo.modifiers = append(oshuo.modifiers, modifiers...)
-	return oshuo
+func (_u *OncallShiftHandoverUpdateOne) Modify(modifiers ...func(u *sql.UpdateBuilder)) *OncallShiftHandoverUpdateOne {
+	_u.modifiers = append(_u.modifiers, modifiers...)
+	return _u
 }
 
-func (oshuo *OncallShiftHandoverUpdateOne) sqlSave(ctx context.Context) (_node *OncallShiftHandover, err error) {
-	if err := oshuo.check(); err != nil {
+func (_u *OncallShiftHandoverUpdateOne) sqlSave(ctx context.Context) (_node *OncallShiftHandover, err error) {
+	if err := _u.check(); err != nil {
 		return _node, err
 	}
 	_spec := sqlgraph.NewUpdateSpec(oncallshifthandover.Table, oncallshifthandover.Columns, sqlgraph.NewFieldSpec(oncallshifthandover.FieldID, field.TypeUUID))
-	id, ok := oshuo.mutation.ID()
+	id, ok := _u.mutation.ID()
 	if !ok {
 		return nil, &ValidationError{Name: "id", err: errors.New(`ent: missing "OncallShiftHandover.id" for update`)}
 	}
 	_spec.Node.ID.Value = id
-	if fields := oshuo.fields; len(fields) > 0 {
+	if fields := _u.fields; len(fields) > 0 {
 		_spec.Node.Columns = make([]string, 0, len(fields))
 		_spec.Node.Columns = append(_spec.Node.Columns, oncallshifthandover.FieldID)
 		for _, f := range fields {
@@ -549,32 +549,32 @@ func (oshuo *OncallShiftHandoverUpdateOne) sqlSave(ctx context.Context) (_node *
 			}
 		}
 	}
-	if ps := oshuo.mutation.predicates; len(ps) > 0 {
+	if ps := _u.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {
 				ps[i](selector)
 			}
 		}
 	}
-	if value, ok := oshuo.mutation.CreatedAt(); ok {
+	if value, ok := _u.mutation.CreatedAt(); ok {
 		_spec.SetField(oncallshifthandover.FieldCreatedAt, field.TypeTime, value)
 	}
-	if value, ok := oshuo.mutation.ReminderSent(); ok {
+	if value, ok := _u.mutation.ReminderSent(); ok {
 		_spec.SetField(oncallshifthandover.FieldReminderSent, field.TypeBool, value)
 	}
-	if value, ok := oshuo.mutation.UpdatedAt(); ok {
+	if value, ok := _u.mutation.UpdatedAt(); ok {
 		_spec.SetField(oncallshifthandover.FieldUpdatedAt, field.TypeTime, value)
 	}
-	if value, ok := oshuo.mutation.SentAt(); ok {
+	if value, ok := _u.mutation.SentAt(); ok {
 		_spec.SetField(oncallshifthandover.FieldSentAt, field.TypeTime, value)
 	}
-	if oshuo.mutation.SentAtCleared() {
+	if _u.mutation.SentAtCleared() {
 		_spec.ClearField(oncallshifthandover.FieldSentAt, field.TypeTime)
 	}
-	if value, ok := oshuo.mutation.Contents(); ok {
+	if value, ok := _u.mutation.Contents(); ok {
 		_spec.SetField(oncallshifthandover.FieldContents, field.TypeBytes, value)
 	}
-	if oshuo.mutation.ShiftCleared() {
+	if _u.mutation.ShiftCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2O,
 			Inverse: true,
@@ -587,7 +587,7 @@ func (oshuo *OncallShiftHandoverUpdateOne) sqlSave(ctx context.Context) (_node *
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := oshuo.mutation.ShiftIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.ShiftIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2O,
 			Inverse: true,
@@ -603,7 +603,7 @@ func (oshuo *OncallShiftHandoverUpdateOne) sqlSave(ctx context.Context) (_node *
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if oshuo.mutation.PinnedAnnotationsCleared() {
+	if _u.mutation.PinnedAnnotationsCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
 			Inverse: false,
@@ -616,7 +616,7 @@ func (oshuo *OncallShiftHandoverUpdateOne) sqlSave(ctx context.Context) (_node *
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := oshuo.mutation.RemovedPinnedAnnotationsIDs(); len(nodes) > 0 && !oshuo.mutation.PinnedAnnotationsCleared() {
+	if nodes := _u.mutation.RemovedPinnedAnnotationsIDs(); len(nodes) > 0 && !_u.mutation.PinnedAnnotationsCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
 			Inverse: false,
@@ -632,7 +632,7 @@ func (oshuo *OncallShiftHandoverUpdateOne) sqlSave(ctx context.Context) (_node *
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := oshuo.mutation.PinnedAnnotationsIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.PinnedAnnotationsIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
 			Inverse: false,
@@ -648,11 +648,11 @@ func (oshuo *OncallShiftHandoverUpdateOne) sqlSave(ctx context.Context) (_node *
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	_spec.AddModifiers(oshuo.modifiers...)
-	_node = &OncallShiftHandover{config: oshuo.config}
+	_spec.AddModifiers(_u.modifiers...)
+	_node = &OncallShiftHandover{config: _u.config}
 	_spec.Assign = _node.assignValues
 	_spec.ScanValues = _node.scanValues
-	if err = sqlgraph.UpdateNode(ctx, oshuo.driver, _spec); err != nil {
+	if err = sqlgraph.UpdateNode(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{oncallshifthandover.Label}
 		} else if sqlgraph.IsConstraintError(err) {
@@ -660,6 +660,6 @@ func (oshuo *OncallShiftHandoverUpdateOne) sqlSave(ctx context.Context) (_node *
 		}
 		return nil, err
 	}
-	oshuo.mutation.done = true
+	_u.mutation.done = true
 	return _node, nil
 }

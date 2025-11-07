@@ -28,126 +28,126 @@ type OncallShiftHandoverCreate struct {
 }
 
 // SetTenantID sets the "tenant_id" field.
-func (oshc *OncallShiftHandoverCreate) SetTenantID(i int) *OncallShiftHandoverCreate {
-	oshc.mutation.SetTenantID(i)
-	return oshc
+func (_c *OncallShiftHandoverCreate) SetTenantID(v int) *OncallShiftHandoverCreate {
+	_c.mutation.SetTenantID(v)
+	return _c
 }
 
 // SetShiftID sets the "shift_id" field.
-func (oshc *OncallShiftHandoverCreate) SetShiftID(u uuid.UUID) *OncallShiftHandoverCreate {
-	oshc.mutation.SetShiftID(u)
-	return oshc
+func (_c *OncallShiftHandoverCreate) SetShiftID(v uuid.UUID) *OncallShiftHandoverCreate {
+	_c.mutation.SetShiftID(v)
+	return _c
 }
 
 // SetCreatedAt sets the "created_at" field.
-func (oshc *OncallShiftHandoverCreate) SetCreatedAt(t time.Time) *OncallShiftHandoverCreate {
-	oshc.mutation.SetCreatedAt(t)
-	return oshc
+func (_c *OncallShiftHandoverCreate) SetCreatedAt(v time.Time) *OncallShiftHandoverCreate {
+	_c.mutation.SetCreatedAt(v)
+	return _c
 }
 
 // SetReminderSent sets the "reminder_sent" field.
-func (oshc *OncallShiftHandoverCreate) SetReminderSent(b bool) *OncallShiftHandoverCreate {
-	oshc.mutation.SetReminderSent(b)
-	return oshc
+func (_c *OncallShiftHandoverCreate) SetReminderSent(v bool) *OncallShiftHandoverCreate {
+	_c.mutation.SetReminderSent(v)
+	return _c
 }
 
 // SetNillableReminderSent sets the "reminder_sent" field if the given value is not nil.
-func (oshc *OncallShiftHandoverCreate) SetNillableReminderSent(b *bool) *OncallShiftHandoverCreate {
-	if b != nil {
-		oshc.SetReminderSent(*b)
+func (_c *OncallShiftHandoverCreate) SetNillableReminderSent(v *bool) *OncallShiftHandoverCreate {
+	if v != nil {
+		_c.SetReminderSent(*v)
 	}
-	return oshc
+	return _c
 }
 
 // SetUpdatedAt sets the "updated_at" field.
-func (oshc *OncallShiftHandoverCreate) SetUpdatedAt(t time.Time) *OncallShiftHandoverCreate {
-	oshc.mutation.SetUpdatedAt(t)
-	return oshc
+func (_c *OncallShiftHandoverCreate) SetUpdatedAt(v time.Time) *OncallShiftHandoverCreate {
+	_c.mutation.SetUpdatedAt(v)
+	return _c
 }
 
 // SetNillableUpdatedAt sets the "updated_at" field if the given value is not nil.
-func (oshc *OncallShiftHandoverCreate) SetNillableUpdatedAt(t *time.Time) *OncallShiftHandoverCreate {
-	if t != nil {
-		oshc.SetUpdatedAt(*t)
+func (_c *OncallShiftHandoverCreate) SetNillableUpdatedAt(v *time.Time) *OncallShiftHandoverCreate {
+	if v != nil {
+		_c.SetUpdatedAt(*v)
 	}
-	return oshc
+	return _c
 }
 
 // SetSentAt sets the "sent_at" field.
-func (oshc *OncallShiftHandoverCreate) SetSentAt(t time.Time) *OncallShiftHandoverCreate {
-	oshc.mutation.SetSentAt(t)
-	return oshc
+func (_c *OncallShiftHandoverCreate) SetSentAt(v time.Time) *OncallShiftHandoverCreate {
+	_c.mutation.SetSentAt(v)
+	return _c
 }
 
 // SetNillableSentAt sets the "sent_at" field if the given value is not nil.
-func (oshc *OncallShiftHandoverCreate) SetNillableSentAt(t *time.Time) *OncallShiftHandoverCreate {
-	if t != nil {
-		oshc.SetSentAt(*t)
+func (_c *OncallShiftHandoverCreate) SetNillableSentAt(v *time.Time) *OncallShiftHandoverCreate {
+	if v != nil {
+		_c.SetSentAt(*v)
 	}
-	return oshc
+	return _c
 }
 
 // SetContents sets the "contents" field.
-func (oshc *OncallShiftHandoverCreate) SetContents(b []byte) *OncallShiftHandoverCreate {
-	oshc.mutation.SetContents(b)
-	return oshc
+func (_c *OncallShiftHandoverCreate) SetContents(v []byte) *OncallShiftHandoverCreate {
+	_c.mutation.SetContents(v)
+	return _c
 }
 
 // SetID sets the "id" field.
-func (oshc *OncallShiftHandoverCreate) SetID(u uuid.UUID) *OncallShiftHandoverCreate {
-	oshc.mutation.SetID(u)
-	return oshc
+func (_c *OncallShiftHandoverCreate) SetID(v uuid.UUID) *OncallShiftHandoverCreate {
+	_c.mutation.SetID(v)
+	return _c
 }
 
 // SetNillableID sets the "id" field if the given value is not nil.
-func (oshc *OncallShiftHandoverCreate) SetNillableID(u *uuid.UUID) *OncallShiftHandoverCreate {
-	if u != nil {
-		oshc.SetID(*u)
+func (_c *OncallShiftHandoverCreate) SetNillableID(v *uuid.UUID) *OncallShiftHandoverCreate {
+	if v != nil {
+		_c.SetID(*v)
 	}
-	return oshc
+	return _c
 }
 
 // SetTenant sets the "tenant" edge to the Tenant entity.
-func (oshc *OncallShiftHandoverCreate) SetTenant(t *Tenant) *OncallShiftHandoverCreate {
-	return oshc.SetTenantID(t.ID)
+func (_c *OncallShiftHandoverCreate) SetTenant(v *Tenant) *OncallShiftHandoverCreate {
+	return _c.SetTenantID(v.ID)
 }
 
 // SetShift sets the "shift" edge to the OncallShift entity.
-func (oshc *OncallShiftHandoverCreate) SetShift(o *OncallShift) *OncallShiftHandoverCreate {
-	return oshc.SetShiftID(o.ID)
+func (_c *OncallShiftHandoverCreate) SetShift(v *OncallShift) *OncallShiftHandoverCreate {
+	return _c.SetShiftID(v.ID)
 }
 
 // AddPinnedAnnotationIDs adds the "pinned_annotations" edge to the EventAnnotation entity by IDs.
-func (oshc *OncallShiftHandoverCreate) AddPinnedAnnotationIDs(ids ...uuid.UUID) *OncallShiftHandoverCreate {
-	oshc.mutation.AddPinnedAnnotationIDs(ids...)
-	return oshc
+func (_c *OncallShiftHandoverCreate) AddPinnedAnnotationIDs(ids ...uuid.UUID) *OncallShiftHandoverCreate {
+	_c.mutation.AddPinnedAnnotationIDs(ids...)
+	return _c
 }
 
 // AddPinnedAnnotations adds the "pinned_annotations" edges to the EventAnnotation entity.
-func (oshc *OncallShiftHandoverCreate) AddPinnedAnnotations(e ...*EventAnnotation) *OncallShiftHandoverCreate {
-	ids := make([]uuid.UUID, len(e))
-	for i := range e {
-		ids[i] = e[i].ID
+func (_c *OncallShiftHandoverCreate) AddPinnedAnnotations(v ...*EventAnnotation) *OncallShiftHandoverCreate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
 	}
-	return oshc.AddPinnedAnnotationIDs(ids...)
+	return _c.AddPinnedAnnotationIDs(ids...)
 }
 
 // Mutation returns the OncallShiftHandoverMutation object of the builder.
-func (oshc *OncallShiftHandoverCreate) Mutation() *OncallShiftHandoverMutation {
-	return oshc.mutation
+func (_c *OncallShiftHandoverCreate) Mutation() *OncallShiftHandoverMutation {
+	return _c.mutation
 }
 
 // Save creates the OncallShiftHandover in the database.
-func (oshc *OncallShiftHandoverCreate) Save(ctx context.Context) (*OncallShiftHandover, error) {
-	if err := oshc.defaults(); err != nil {
+func (_c *OncallShiftHandoverCreate) Save(ctx context.Context) (*OncallShiftHandover, error) {
+	if err := _c.defaults(); err != nil {
 		return nil, err
 	}
-	return withHooks(ctx, oshc.sqlSave, oshc.mutation, oshc.hooks)
+	return withHooks(ctx, _c.sqlSave, _c.mutation, _c.hooks)
 }
 
 // SaveX calls Save and panics if Save returns an error.
-func (oshc *OncallShiftHandoverCreate) SaveX(ctx context.Context) *OncallShiftHandover {
-	v, err := oshc.Save(ctx)
+func (_c *OncallShiftHandoverCreate) SaveX(ctx context.Context) *OncallShiftHandover {
+	v, err := _c.Save(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -155,76 +155,76 @@ func (oshc *OncallShiftHandoverCreate) SaveX(ctx context.Context) *OncallShiftHa
 }
 
 // Exec executes the query.
-func (oshc *OncallShiftHandoverCreate) Exec(ctx context.Context) error {
-	_, err := oshc.Save(ctx)
+func (_c *OncallShiftHandoverCreate) Exec(ctx context.Context) error {
+	_, err := _c.Save(ctx)
 	return err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (oshc *OncallShiftHandoverCreate) ExecX(ctx context.Context) {
-	if err := oshc.Exec(ctx); err != nil {
+func (_c *OncallShiftHandoverCreate) ExecX(ctx context.Context) {
+	if err := _c.Exec(ctx); err != nil {
 		panic(err)
 	}
 }
 
 // defaults sets the default values of the builder before save.
-func (oshc *OncallShiftHandoverCreate) defaults() error {
-	if _, ok := oshc.mutation.ReminderSent(); !ok {
+func (_c *OncallShiftHandoverCreate) defaults() error {
+	if _, ok := _c.mutation.ReminderSent(); !ok {
 		v := oncallshifthandover.DefaultReminderSent
-		oshc.mutation.SetReminderSent(v)
+		_c.mutation.SetReminderSent(v)
 	}
-	if _, ok := oshc.mutation.UpdatedAt(); !ok {
+	if _, ok := _c.mutation.UpdatedAt(); !ok {
 		if oncallshifthandover.DefaultUpdatedAt == nil {
 			return fmt.Errorf("ent: uninitialized oncallshifthandover.DefaultUpdatedAt (forgotten import ent/runtime?)")
 		}
 		v := oncallshifthandover.DefaultUpdatedAt()
-		oshc.mutation.SetUpdatedAt(v)
+		_c.mutation.SetUpdatedAt(v)
 	}
-	if _, ok := oshc.mutation.ID(); !ok {
+	if _, ok := _c.mutation.ID(); !ok {
 		if oncallshifthandover.DefaultID == nil {
 			return fmt.Errorf("ent: uninitialized oncallshifthandover.DefaultID (forgotten import ent/runtime?)")
 		}
 		v := oncallshifthandover.DefaultID()
-		oshc.mutation.SetID(v)
+		_c.mutation.SetID(v)
 	}
 	return nil
 }
 
 // check runs all checks and user-defined validators on the builder.
-func (oshc *OncallShiftHandoverCreate) check() error {
-	if _, ok := oshc.mutation.TenantID(); !ok {
+func (_c *OncallShiftHandoverCreate) check() error {
+	if _, ok := _c.mutation.TenantID(); !ok {
 		return &ValidationError{Name: "tenant_id", err: errors.New(`ent: missing required field "OncallShiftHandover.tenant_id"`)}
 	}
-	if _, ok := oshc.mutation.ShiftID(); !ok {
+	if _, ok := _c.mutation.ShiftID(); !ok {
 		return &ValidationError{Name: "shift_id", err: errors.New(`ent: missing required field "OncallShiftHandover.shift_id"`)}
 	}
-	if _, ok := oshc.mutation.CreatedAt(); !ok {
+	if _, ok := _c.mutation.CreatedAt(); !ok {
 		return &ValidationError{Name: "created_at", err: errors.New(`ent: missing required field "OncallShiftHandover.created_at"`)}
 	}
-	if _, ok := oshc.mutation.ReminderSent(); !ok {
+	if _, ok := _c.mutation.ReminderSent(); !ok {
 		return &ValidationError{Name: "reminder_sent", err: errors.New(`ent: missing required field "OncallShiftHandover.reminder_sent"`)}
 	}
-	if _, ok := oshc.mutation.UpdatedAt(); !ok {
+	if _, ok := _c.mutation.UpdatedAt(); !ok {
 		return &ValidationError{Name: "updated_at", err: errors.New(`ent: missing required field "OncallShiftHandover.updated_at"`)}
 	}
-	if _, ok := oshc.mutation.Contents(); !ok {
+	if _, ok := _c.mutation.Contents(); !ok {
 		return &ValidationError{Name: "contents", err: errors.New(`ent: missing required field "OncallShiftHandover.contents"`)}
 	}
-	if len(oshc.mutation.TenantIDs()) == 0 {
+	if len(_c.mutation.TenantIDs()) == 0 {
 		return &ValidationError{Name: "tenant", err: errors.New(`ent: missing required edge "OncallShiftHandover.tenant"`)}
 	}
-	if len(oshc.mutation.ShiftIDs()) == 0 {
+	if len(_c.mutation.ShiftIDs()) == 0 {
 		return &ValidationError{Name: "shift", err: errors.New(`ent: missing required edge "OncallShiftHandover.shift"`)}
 	}
 	return nil
 }
 
-func (oshc *OncallShiftHandoverCreate) sqlSave(ctx context.Context) (*OncallShiftHandover, error) {
-	if err := oshc.check(); err != nil {
+func (_c *OncallShiftHandoverCreate) sqlSave(ctx context.Context) (*OncallShiftHandover, error) {
+	if err := _c.check(); err != nil {
 		return nil, err
 	}
-	_node, _spec := oshc.createSpec()
-	if err := sqlgraph.CreateNode(ctx, oshc.driver, _spec); err != nil {
+	_node, _spec := _c.createSpec()
+	if err := sqlgraph.CreateNode(ctx, _c.driver, _spec); err != nil {
 		if sqlgraph.IsConstraintError(err) {
 			err = &ConstraintError{msg: err.Error(), wrap: err}
 		}
@@ -237,42 +237,42 @@ func (oshc *OncallShiftHandoverCreate) sqlSave(ctx context.Context) (*OncallShif
 			return nil, err
 		}
 	}
-	oshc.mutation.id = &_node.ID
-	oshc.mutation.done = true
+	_c.mutation.id = &_node.ID
+	_c.mutation.done = true
 	return _node, nil
 }
 
-func (oshc *OncallShiftHandoverCreate) createSpec() (*OncallShiftHandover, *sqlgraph.CreateSpec) {
+func (_c *OncallShiftHandoverCreate) createSpec() (*OncallShiftHandover, *sqlgraph.CreateSpec) {
 	var (
-		_node = &OncallShiftHandover{config: oshc.config}
+		_node = &OncallShiftHandover{config: _c.config}
 		_spec = sqlgraph.NewCreateSpec(oncallshifthandover.Table, sqlgraph.NewFieldSpec(oncallshifthandover.FieldID, field.TypeUUID))
 	)
-	_spec.OnConflict = oshc.conflict
-	if id, ok := oshc.mutation.ID(); ok {
+	_spec.OnConflict = _c.conflict
+	if id, ok := _c.mutation.ID(); ok {
 		_node.ID = id
 		_spec.ID.Value = &id
 	}
-	if value, ok := oshc.mutation.CreatedAt(); ok {
+	if value, ok := _c.mutation.CreatedAt(); ok {
 		_spec.SetField(oncallshifthandover.FieldCreatedAt, field.TypeTime, value)
 		_node.CreatedAt = value
 	}
-	if value, ok := oshc.mutation.ReminderSent(); ok {
+	if value, ok := _c.mutation.ReminderSent(); ok {
 		_spec.SetField(oncallshifthandover.FieldReminderSent, field.TypeBool, value)
 		_node.ReminderSent = value
 	}
-	if value, ok := oshc.mutation.UpdatedAt(); ok {
+	if value, ok := _c.mutation.UpdatedAt(); ok {
 		_spec.SetField(oncallshifthandover.FieldUpdatedAt, field.TypeTime, value)
 		_node.UpdatedAt = value
 	}
-	if value, ok := oshc.mutation.SentAt(); ok {
+	if value, ok := _c.mutation.SentAt(); ok {
 		_spec.SetField(oncallshifthandover.FieldSentAt, field.TypeTime, value)
 		_node.SentAt = value
 	}
-	if value, ok := oshc.mutation.Contents(); ok {
+	if value, ok := _c.mutation.Contents(); ok {
 		_spec.SetField(oncallshifthandover.FieldContents, field.TypeBytes, value)
 		_node.Contents = value
 	}
-	if nodes := oshc.mutation.TenantIDs(); len(nodes) > 0 {
+	if nodes := _c.mutation.TenantIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
@@ -289,7 +289,7 @@ func (oshc *OncallShiftHandoverCreate) createSpec() (*OncallShiftHandover, *sqlg
 		_node.TenantID = nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
-	if nodes := oshc.mutation.ShiftIDs(); len(nodes) > 0 {
+	if nodes := _c.mutation.ShiftIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2O,
 			Inverse: true,
@@ -306,7 +306,7 @@ func (oshc *OncallShiftHandoverCreate) createSpec() (*OncallShiftHandover, *sqlg
 		_node.ShiftID = nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
-	if nodes := oshc.mutation.PinnedAnnotationsIDs(); len(nodes) > 0 {
+	if nodes := _c.mutation.PinnedAnnotationsIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
 			Inverse: false,
@@ -341,10 +341,10 @@ func (oshc *OncallShiftHandoverCreate) createSpec() (*OncallShiftHandover, *sqlg
 //			SetTenantID(v+v).
 //		}).
 //		Exec(ctx)
-func (oshc *OncallShiftHandoverCreate) OnConflict(opts ...sql.ConflictOption) *OncallShiftHandoverUpsertOne {
-	oshc.conflict = opts
+func (_c *OncallShiftHandoverCreate) OnConflict(opts ...sql.ConflictOption) *OncallShiftHandoverUpsertOne {
+	_c.conflict = opts
 	return &OncallShiftHandoverUpsertOne{
-		create: oshc,
+		create: _c,
 	}
 }
 
@@ -354,10 +354,10 @@ func (oshc *OncallShiftHandoverCreate) OnConflict(opts ...sql.ConflictOption) *O
 //	client.OncallShiftHandover.Create().
 //		OnConflict(sql.ConflictColumns(columns...)).
 //		Exec(ctx)
-func (oshc *OncallShiftHandoverCreate) OnConflictColumns(columns ...string) *OncallShiftHandoverUpsertOne {
-	oshc.conflict = append(oshc.conflict, sql.ConflictColumns(columns...))
+func (_c *OncallShiftHandoverCreate) OnConflictColumns(columns ...string) *OncallShiftHandoverUpsertOne {
+	_c.conflict = append(_c.conflict, sql.ConflictColumns(columns...))
 	return &OncallShiftHandoverUpsertOne{
-		create: oshc,
+		create: _c,
 	}
 }
 
@@ -641,16 +641,16 @@ type OncallShiftHandoverCreateBulk struct {
 }
 
 // Save creates the OncallShiftHandover entities in the database.
-func (oshcb *OncallShiftHandoverCreateBulk) Save(ctx context.Context) ([]*OncallShiftHandover, error) {
-	if oshcb.err != nil {
-		return nil, oshcb.err
+func (_c *OncallShiftHandoverCreateBulk) Save(ctx context.Context) ([]*OncallShiftHandover, error) {
+	if _c.err != nil {
+		return nil, _c.err
 	}
-	specs := make([]*sqlgraph.CreateSpec, len(oshcb.builders))
-	nodes := make([]*OncallShiftHandover, len(oshcb.builders))
-	mutators := make([]Mutator, len(oshcb.builders))
-	for i := range oshcb.builders {
+	specs := make([]*sqlgraph.CreateSpec, len(_c.builders))
+	nodes := make([]*OncallShiftHandover, len(_c.builders))
+	mutators := make([]Mutator, len(_c.builders))
+	for i := range _c.builders {
 		func(i int, root context.Context) {
-			builder := oshcb.builders[i]
+			builder := _c.builders[i]
 			builder.defaults()
 			var mut Mutator = MutateFunc(func(ctx context.Context, m Mutation) (Value, error) {
 				mutation, ok := m.(*OncallShiftHandoverMutation)
@@ -664,12 +664,12 @@ func (oshcb *OncallShiftHandoverCreateBulk) Save(ctx context.Context) ([]*Oncall
 				var err error
 				nodes[i], specs[i] = builder.createSpec()
 				if i < len(mutators)-1 {
-					_, err = mutators[i+1].Mutate(root, oshcb.builders[i+1].mutation)
+					_, err = mutators[i+1].Mutate(root, _c.builders[i+1].mutation)
 				} else {
 					spec := &sqlgraph.BatchCreateSpec{Nodes: specs}
-					spec.OnConflict = oshcb.conflict
+					spec.OnConflict = _c.conflict
 					// Invoke the actual operation on the latest mutation in the chain.
-					if err = sqlgraph.BatchCreate(ctx, oshcb.driver, spec); err != nil {
+					if err = sqlgraph.BatchCreate(ctx, _c.driver, spec); err != nil {
 						if sqlgraph.IsConstraintError(err) {
 							err = &ConstraintError{msg: err.Error(), wrap: err}
 						}
@@ -689,7 +689,7 @@ func (oshcb *OncallShiftHandoverCreateBulk) Save(ctx context.Context) ([]*Oncall
 		}(i, ctx)
 	}
 	if len(mutators) > 0 {
-		if _, err := mutators[0].Mutate(ctx, oshcb.builders[0].mutation); err != nil {
+		if _, err := mutators[0].Mutate(ctx, _c.builders[0].mutation); err != nil {
 			return nil, err
 		}
 	}
@@ -697,8 +697,8 @@ func (oshcb *OncallShiftHandoverCreateBulk) Save(ctx context.Context) ([]*Oncall
 }
 
 // SaveX is like Save, but panics if an error occurs.
-func (oshcb *OncallShiftHandoverCreateBulk) SaveX(ctx context.Context) []*OncallShiftHandover {
-	v, err := oshcb.Save(ctx)
+func (_c *OncallShiftHandoverCreateBulk) SaveX(ctx context.Context) []*OncallShiftHandover {
+	v, err := _c.Save(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -706,14 +706,14 @@ func (oshcb *OncallShiftHandoverCreateBulk) SaveX(ctx context.Context) []*Oncall
 }
 
 // Exec executes the query.
-func (oshcb *OncallShiftHandoverCreateBulk) Exec(ctx context.Context) error {
-	_, err := oshcb.Save(ctx)
+func (_c *OncallShiftHandoverCreateBulk) Exec(ctx context.Context) error {
+	_, err := _c.Save(ctx)
 	return err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (oshcb *OncallShiftHandoverCreateBulk) ExecX(ctx context.Context) {
-	if err := oshcb.Exec(ctx); err != nil {
+func (_c *OncallShiftHandoverCreateBulk) ExecX(ctx context.Context) {
+	if err := _c.Exec(ctx); err != nil {
 		panic(err)
 	}
 }
@@ -733,10 +733,10 @@ func (oshcb *OncallShiftHandoverCreateBulk) ExecX(ctx context.Context) {
 //			SetTenantID(v+v).
 //		}).
 //		Exec(ctx)
-func (oshcb *OncallShiftHandoverCreateBulk) OnConflict(opts ...sql.ConflictOption) *OncallShiftHandoverUpsertBulk {
-	oshcb.conflict = opts
+func (_c *OncallShiftHandoverCreateBulk) OnConflict(opts ...sql.ConflictOption) *OncallShiftHandoverUpsertBulk {
+	_c.conflict = opts
 	return &OncallShiftHandoverUpsertBulk{
-		create: oshcb,
+		create: _c,
 	}
 }
 
@@ -746,10 +746,10 @@ func (oshcb *OncallShiftHandoverCreateBulk) OnConflict(opts ...sql.ConflictOptio
 //	client.OncallShiftHandover.Create().
 //		OnConflict(sql.ConflictColumns(columns...)).
 //		Exec(ctx)
-func (oshcb *OncallShiftHandoverCreateBulk) OnConflictColumns(columns ...string) *OncallShiftHandoverUpsertBulk {
-	oshcb.conflict = append(oshcb.conflict, sql.ConflictColumns(columns...))
+func (_c *OncallShiftHandoverCreateBulk) OnConflictColumns(columns ...string) *OncallShiftHandoverUpsertBulk {
+	_c.conflict = append(_c.conflict, sql.ConflictColumns(columns...))
 	return &OncallShiftHandoverUpsertBulk{
-		create: oshcb,
+		create: _c,
 	}
 }
 

@@ -25,105 +25,105 @@ type AlertFeedbackUpdate struct {
 }
 
 // Where appends a list predicates to the AlertFeedbackUpdate builder.
-func (afu *AlertFeedbackUpdate) Where(ps ...predicate.AlertFeedback) *AlertFeedbackUpdate {
-	afu.mutation.Where(ps...)
-	return afu
+func (_u *AlertFeedbackUpdate) Where(ps ...predicate.AlertFeedback) *AlertFeedbackUpdate {
+	_u.mutation.Where(ps...)
+	return _u
 }
 
 // SetAlertInstanceID sets the "alert_instance_id" field.
-func (afu *AlertFeedbackUpdate) SetAlertInstanceID(u uuid.UUID) *AlertFeedbackUpdate {
-	afu.mutation.SetAlertInstanceID(u)
-	return afu
+func (_u *AlertFeedbackUpdate) SetAlertInstanceID(v uuid.UUID) *AlertFeedbackUpdate {
+	_u.mutation.SetAlertInstanceID(v)
+	return _u
 }
 
 // SetNillableAlertInstanceID sets the "alert_instance_id" field if the given value is not nil.
-func (afu *AlertFeedbackUpdate) SetNillableAlertInstanceID(u *uuid.UUID) *AlertFeedbackUpdate {
-	if u != nil {
-		afu.SetAlertInstanceID(*u)
+func (_u *AlertFeedbackUpdate) SetNillableAlertInstanceID(v *uuid.UUID) *AlertFeedbackUpdate {
+	if v != nil {
+		_u.SetAlertInstanceID(*v)
 	}
-	return afu
+	return _u
 }
 
 // SetActionable sets the "actionable" field.
-func (afu *AlertFeedbackUpdate) SetActionable(b bool) *AlertFeedbackUpdate {
-	afu.mutation.SetActionable(b)
-	return afu
+func (_u *AlertFeedbackUpdate) SetActionable(v bool) *AlertFeedbackUpdate {
+	_u.mutation.SetActionable(v)
+	return _u
 }
 
 // SetNillableActionable sets the "actionable" field if the given value is not nil.
-func (afu *AlertFeedbackUpdate) SetNillableActionable(b *bool) *AlertFeedbackUpdate {
-	if b != nil {
-		afu.SetActionable(*b)
+func (_u *AlertFeedbackUpdate) SetNillableActionable(v *bool) *AlertFeedbackUpdate {
+	if v != nil {
+		_u.SetActionable(*v)
 	}
-	return afu
+	return _u
 }
 
 // SetAccurate sets the "accurate" field.
-func (afu *AlertFeedbackUpdate) SetAccurate(a alertfeedback.Accurate) *AlertFeedbackUpdate {
-	afu.mutation.SetAccurate(a)
-	return afu
+func (_u *AlertFeedbackUpdate) SetAccurate(v alertfeedback.Accurate) *AlertFeedbackUpdate {
+	_u.mutation.SetAccurate(v)
+	return _u
 }
 
 // SetNillableAccurate sets the "accurate" field if the given value is not nil.
-func (afu *AlertFeedbackUpdate) SetNillableAccurate(a *alertfeedback.Accurate) *AlertFeedbackUpdate {
-	if a != nil {
-		afu.SetAccurate(*a)
+func (_u *AlertFeedbackUpdate) SetNillableAccurate(v *alertfeedback.Accurate) *AlertFeedbackUpdate {
+	if v != nil {
+		_u.SetAccurate(*v)
 	}
-	return afu
+	return _u
 }
 
 // SetDocumentationAvailable sets the "documentation_available" field.
-func (afu *AlertFeedbackUpdate) SetDocumentationAvailable(b bool) *AlertFeedbackUpdate {
-	afu.mutation.SetDocumentationAvailable(b)
-	return afu
+func (_u *AlertFeedbackUpdate) SetDocumentationAvailable(v bool) *AlertFeedbackUpdate {
+	_u.mutation.SetDocumentationAvailable(v)
+	return _u
 }
 
 // SetNillableDocumentationAvailable sets the "documentation_available" field if the given value is not nil.
-func (afu *AlertFeedbackUpdate) SetNillableDocumentationAvailable(b *bool) *AlertFeedbackUpdate {
-	if b != nil {
-		afu.SetDocumentationAvailable(*b)
+func (_u *AlertFeedbackUpdate) SetNillableDocumentationAvailable(v *bool) *AlertFeedbackUpdate {
+	if v != nil {
+		_u.SetDocumentationAvailable(*v)
 	}
-	return afu
+	return _u
 }
 
 // SetDocumentationNeedsUpdate sets the "documentation_needs_update" field.
-func (afu *AlertFeedbackUpdate) SetDocumentationNeedsUpdate(b bool) *AlertFeedbackUpdate {
-	afu.mutation.SetDocumentationNeedsUpdate(b)
-	return afu
+func (_u *AlertFeedbackUpdate) SetDocumentationNeedsUpdate(v bool) *AlertFeedbackUpdate {
+	_u.mutation.SetDocumentationNeedsUpdate(v)
+	return _u
 }
 
 // SetNillableDocumentationNeedsUpdate sets the "documentation_needs_update" field if the given value is not nil.
-func (afu *AlertFeedbackUpdate) SetNillableDocumentationNeedsUpdate(b *bool) *AlertFeedbackUpdate {
-	if b != nil {
-		afu.SetDocumentationNeedsUpdate(*b)
+func (_u *AlertFeedbackUpdate) SetNillableDocumentationNeedsUpdate(v *bool) *AlertFeedbackUpdate {
+	if v != nil {
+		_u.SetDocumentationNeedsUpdate(*v)
 	}
-	return afu
+	return _u
 }
 
 // SetAlertInstance sets the "alert_instance" edge to the AlertInstance entity.
-func (afu *AlertFeedbackUpdate) SetAlertInstance(a *AlertInstance) *AlertFeedbackUpdate {
-	return afu.SetAlertInstanceID(a.ID)
+func (_u *AlertFeedbackUpdate) SetAlertInstance(v *AlertInstance) *AlertFeedbackUpdate {
+	return _u.SetAlertInstanceID(v.ID)
 }
 
 // Mutation returns the AlertFeedbackMutation object of the builder.
-func (afu *AlertFeedbackUpdate) Mutation() *AlertFeedbackMutation {
-	return afu.mutation
+func (_u *AlertFeedbackUpdate) Mutation() *AlertFeedbackMutation {
+	return _u.mutation
 }
 
 // ClearAlertInstance clears the "alert_instance" edge to the AlertInstance entity.
-func (afu *AlertFeedbackUpdate) ClearAlertInstance() *AlertFeedbackUpdate {
-	afu.mutation.ClearAlertInstance()
-	return afu
+func (_u *AlertFeedbackUpdate) ClearAlertInstance() *AlertFeedbackUpdate {
+	_u.mutation.ClearAlertInstance()
+	return _u
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
-func (afu *AlertFeedbackUpdate) Save(ctx context.Context) (int, error) {
-	return withHooks(ctx, afu.sqlSave, afu.mutation, afu.hooks)
+func (_u *AlertFeedbackUpdate) Save(ctx context.Context) (int, error) {
+	return withHooks(ctx, _u.sqlSave, _u.mutation, _u.hooks)
 }
 
 // SaveX is like Save, but panics if an error occurs.
-func (afu *AlertFeedbackUpdate) SaveX(ctx context.Context) int {
-	affected, err := afu.Save(ctx)
+func (_u *AlertFeedbackUpdate) SaveX(ctx context.Context) int {
+	affected, err := _u.Save(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -131,65 +131,65 @@ func (afu *AlertFeedbackUpdate) SaveX(ctx context.Context) int {
 }
 
 // Exec executes the query.
-func (afu *AlertFeedbackUpdate) Exec(ctx context.Context) error {
-	_, err := afu.Save(ctx)
+func (_u *AlertFeedbackUpdate) Exec(ctx context.Context) error {
+	_, err := _u.Save(ctx)
 	return err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (afu *AlertFeedbackUpdate) ExecX(ctx context.Context) {
-	if err := afu.Exec(ctx); err != nil {
+func (_u *AlertFeedbackUpdate) ExecX(ctx context.Context) {
+	if err := _u.Exec(ctx); err != nil {
 		panic(err)
 	}
 }
 
 // check runs all checks and user-defined validators on the builder.
-func (afu *AlertFeedbackUpdate) check() error {
-	if v, ok := afu.mutation.Accurate(); ok {
+func (_u *AlertFeedbackUpdate) check() error {
+	if v, ok := _u.mutation.Accurate(); ok {
 		if err := alertfeedback.AccurateValidator(v); err != nil {
 			return &ValidationError{Name: "accurate", err: fmt.Errorf(`ent: validator failed for field "AlertFeedback.accurate": %w`, err)}
 		}
 	}
-	if afu.mutation.TenantCleared() && len(afu.mutation.TenantIDs()) > 0 {
+	if _u.mutation.TenantCleared() && len(_u.mutation.TenantIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "AlertFeedback.tenant"`)
 	}
-	if afu.mutation.AlertInstanceCleared() && len(afu.mutation.AlertInstanceIDs()) > 0 {
+	if _u.mutation.AlertInstanceCleared() && len(_u.mutation.AlertInstanceIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "AlertFeedback.alert_instance"`)
 	}
 	return nil
 }
 
 // Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
-func (afu *AlertFeedbackUpdate) Modify(modifiers ...func(u *sql.UpdateBuilder)) *AlertFeedbackUpdate {
-	afu.modifiers = append(afu.modifiers, modifiers...)
-	return afu
+func (_u *AlertFeedbackUpdate) Modify(modifiers ...func(u *sql.UpdateBuilder)) *AlertFeedbackUpdate {
+	_u.modifiers = append(_u.modifiers, modifiers...)
+	return _u
 }
 
-func (afu *AlertFeedbackUpdate) sqlSave(ctx context.Context) (n int, err error) {
-	if err := afu.check(); err != nil {
-		return n, err
+func (_u *AlertFeedbackUpdate) sqlSave(ctx context.Context) (_node int, err error) {
+	if err := _u.check(); err != nil {
+		return _node, err
 	}
 	_spec := sqlgraph.NewUpdateSpec(alertfeedback.Table, alertfeedback.Columns, sqlgraph.NewFieldSpec(alertfeedback.FieldID, field.TypeUUID))
-	if ps := afu.mutation.predicates; len(ps) > 0 {
+	if ps := _u.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {
 				ps[i](selector)
 			}
 		}
 	}
-	if value, ok := afu.mutation.Actionable(); ok {
+	if value, ok := _u.mutation.Actionable(); ok {
 		_spec.SetField(alertfeedback.FieldActionable, field.TypeBool, value)
 	}
-	if value, ok := afu.mutation.Accurate(); ok {
+	if value, ok := _u.mutation.Accurate(); ok {
 		_spec.SetField(alertfeedback.FieldAccurate, field.TypeEnum, value)
 	}
-	if value, ok := afu.mutation.DocumentationAvailable(); ok {
+	if value, ok := _u.mutation.DocumentationAvailable(); ok {
 		_spec.SetField(alertfeedback.FieldDocumentationAvailable, field.TypeBool, value)
 	}
-	if value, ok := afu.mutation.DocumentationNeedsUpdate(); ok {
+	if value, ok := _u.mutation.DocumentationNeedsUpdate(); ok {
 		_spec.SetField(alertfeedback.FieldDocumentationNeedsUpdate, field.TypeBool, value)
 	}
-	if afu.mutation.AlertInstanceCleared() {
+	if _u.mutation.AlertInstanceCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
@@ -202,7 +202,7 @@ func (afu *AlertFeedbackUpdate) sqlSave(ctx context.Context) (n int, err error) 
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := afu.mutation.AlertInstanceIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.AlertInstanceIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
@@ -218,8 +218,8 @@ func (afu *AlertFeedbackUpdate) sqlSave(ctx context.Context) (n int, err error) 
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	_spec.AddModifiers(afu.modifiers...)
-	if n, err = sqlgraph.UpdateNodes(ctx, afu.driver, _spec); err != nil {
+	_spec.AddModifiers(_u.modifiers...)
+	if _node, err = sqlgraph.UpdateNodes(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{alertfeedback.Label}
 		} else if sqlgraph.IsConstraintError(err) {
@@ -227,8 +227,8 @@ func (afu *AlertFeedbackUpdate) sqlSave(ctx context.Context) (n int, err error) 
 		}
 		return 0, err
 	}
-	afu.mutation.done = true
-	return n, nil
+	_u.mutation.done = true
+	return _node, nil
 }
 
 // AlertFeedbackUpdateOne is the builder for updating a single AlertFeedback entity.
@@ -241,112 +241,112 @@ type AlertFeedbackUpdateOne struct {
 }
 
 // SetAlertInstanceID sets the "alert_instance_id" field.
-func (afuo *AlertFeedbackUpdateOne) SetAlertInstanceID(u uuid.UUID) *AlertFeedbackUpdateOne {
-	afuo.mutation.SetAlertInstanceID(u)
-	return afuo
+func (_u *AlertFeedbackUpdateOne) SetAlertInstanceID(v uuid.UUID) *AlertFeedbackUpdateOne {
+	_u.mutation.SetAlertInstanceID(v)
+	return _u
 }
 
 // SetNillableAlertInstanceID sets the "alert_instance_id" field if the given value is not nil.
-func (afuo *AlertFeedbackUpdateOne) SetNillableAlertInstanceID(u *uuid.UUID) *AlertFeedbackUpdateOne {
-	if u != nil {
-		afuo.SetAlertInstanceID(*u)
+func (_u *AlertFeedbackUpdateOne) SetNillableAlertInstanceID(v *uuid.UUID) *AlertFeedbackUpdateOne {
+	if v != nil {
+		_u.SetAlertInstanceID(*v)
 	}
-	return afuo
+	return _u
 }
 
 // SetActionable sets the "actionable" field.
-func (afuo *AlertFeedbackUpdateOne) SetActionable(b bool) *AlertFeedbackUpdateOne {
-	afuo.mutation.SetActionable(b)
-	return afuo
+func (_u *AlertFeedbackUpdateOne) SetActionable(v bool) *AlertFeedbackUpdateOne {
+	_u.mutation.SetActionable(v)
+	return _u
 }
 
 // SetNillableActionable sets the "actionable" field if the given value is not nil.
-func (afuo *AlertFeedbackUpdateOne) SetNillableActionable(b *bool) *AlertFeedbackUpdateOne {
-	if b != nil {
-		afuo.SetActionable(*b)
+func (_u *AlertFeedbackUpdateOne) SetNillableActionable(v *bool) *AlertFeedbackUpdateOne {
+	if v != nil {
+		_u.SetActionable(*v)
 	}
-	return afuo
+	return _u
 }
 
 // SetAccurate sets the "accurate" field.
-func (afuo *AlertFeedbackUpdateOne) SetAccurate(a alertfeedback.Accurate) *AlertFeedbackUpdateOne {
-	afuo.mutation.SetAccurate(a)
-	return afuo
+func (_u *AlertFeedbackUpdateOne) SetAccurate(v alertfeedback.Accurate) *AlertFeedbackUpdateOne {
+	_u.mutation.SetAccurate(v)
+	return _u
 }
 
 // SetNillableAccurate sets the "accurate" field if the given value is not nil.
-func (afuo *AlertFeedbackUpdateOne) SetNillableAccurate(a *alertfeedback.Accurate) *AlertFeedbackUpdateOne {
-	if a != nil {
-		afuo.SetAccurate(*a)
+func (_u *AlertFeedbackUpdateOne) SetNillableAccurate(v *alertfeedback.Accurate) *AlertFeedbackUpdateOne {
+	if v != nil {
+		_u.SetAccurate(*v)
 	}
-	return afuo
+	return _u
 }
 
 // SetDocumentationAvailable sets the "documentation_available" field.
-func (afuo *AlertFeedbackUpdateOne) SetDocumentationAvailable(b bool) *AlertFeedbackUpdateOne {
-	afuo.mutation.SetDocumentationAvailable(b)
-	return afuo
+func (_u *AlertFeedbackUpdateOne) SetDocumentationAvailable(v bool) *AlertFeedbackUpdateOne {
+	_u.mutation.SetDocumentationAvailable(v)
+	return _u
 }
 
 // SetNillableDocumentationAvailable sets the "documentation_available" field if the given value is not nil.
-func (afuo *AlertFeedbackUpdateOne) SetNillableDocumentationAvailable(b *bool) *AlertFeedbackUpdateOne {
-	if b != nil {
-		afuo.SetDocumentationAvailable(*b)
+func (_u *AlertFeedbackUpdateOne) SetNillableDocumentationAvailable(v *bool) *AlertFeedbackUpdateOne {
+	if v != nil {
+		_u.SetDocumentationAvailable(*v)
 	}
-	return afuo
+	return _u
 }
 
 // SetDocumentationNeedsUpdate sets the "documentation_needs_update" field.
-func (afuo *AlertFeedbackUpdateOne) SetDocumentationNeedsUpdate(b bool) *AlertFeedbackUpdateOne {
-	afuo.mutation.SetDocumentationNeedsUpdate(b)
-	return afuo
+func (_u *AlertFeedbackUpdateOne) SetDocumentationNeedsUpdate(v bool) *AlertFeedbackUpdateOne {
+	_u.mutation.SetDocumentationNeedsUpdate(v)
+	return _u
 }
 
 // SetNillableDocumentationNeedsUpdate sets the "documentation_needs_update" field if the given value is not nil.
-func (afuo *AlertFeedbackUpdateOne) SetNillableDocumentationNeedsUpdate(b *bool) *AlertFeedbackUpdateOne {
-	if b != nil {
-		afuo.SetDocumentationNeedsUpdate(*b)
+func (_u *AlertFeedbackUpdateOne) SetNillableDocumentationNeedsUpdate(v *bool) *AlertFeedbackUpdateOne {
+	if v != nil {
+		_u.SetDocumentationNeedsUpdate(*v)
 	}
-	return afuo
+	return _u
 }
 
 // SetAlertInstance sets the "alert_instance" edge to the AlertInstance entity.
-func (afuo *AlertFeedbackUpdateOne) SetAlertInstance(a *AlertInstance) *AlertFeedbackUpdateOne {
-	return afuo.SetAlertInstanceID(a.ID)
+func (_u *AlertFeedbackUpdateOne) SetAlertInstance(v *AlertInstance) *AlertFeedbackUpdateOne {
+	return _u.SetAlertInstanceID(v.ID)
 }
 
 // Mutation returns the AlertFeedbackMutation object of the builder.
-func (afuo *AlertFeedbackUpdateOne) Mutation() *AlertFeedbackMutation {
-	return afuo.mutation
+func (_u *AlertFeedbackUpdateOne) Mutation() *AlertFeedbackMutation {
+	return _u.mutation
 }
 
 // ClearAlertInstance clears the "alert_instance" edge to the AlertInstance entity.
-func (afuo *AlertFeedbackUpdateOne) ClearAlertInstance() *AlertFeedbackUpdateOne {
-	afuo.mutation.ClearAlertInstance()
-	return afuo
+func (_u *AlertFeedbackUpdateOne) ClearAlertInstance() *AlertFeedbackUpdateOne {
+	_u.mutation.ClearAlertInstance()
+	return _u
 }
 
 // Where appends a list predicates to the AlertFeedbackUpdate builder.
-func (afuo *AlertFeedbackUpdateOne) Where(ps ...predicate.AlertFeedback) *AlertFeedbackUpdateOne {
-	afuo.mutation.Where(ps...)
-	return afuo
+func (_u *AlertFeedbackUpdateOne) Where(ps ...predicate.AlertFeedback) *AlertFeedbackUpdateOne {
+	_u.mutation.Where(ps...)
+	return _u
 }
 
 // Select allows selecting one or more fields (columns) of the returned entity.
 // The default is selecting all fields defined in the entity schema.
-func (afuo *AlertFeedbackUpdateOne) Select(field string, fields ...string) *AlertFeedbackUpdateOne {
-	afuo.fields = append([]string{field}, fields...)
-	return afuo
+func (_u *AlertFeedbackUpdateOne) Select(field string, fields ...string) *AlertFeedbackUpdateOne {
+	_u.fields = append([]string{field}, fields...)
+	return _u
 }
 
 // Save executes the query and returns the updated AlertFeedback entity.
-func (afuo *AlertFeedbackUpdateOne) Save(ctx context.Context) (*AlertFeedback, error) {
-	return withHooks(ctx, afuo.sqlSave, afuo.mutation, afuo.hooks)
+func (_u *AlertFeedbackUpdateOne) Save(ctx context.Context) (*AlertFeedback, error) {
+	return withHooks(ctx, _u.sqlSave, _u.mutation, _u.hooks)
 }
 
 // SaveX is like Save, but panics if an error occurs.
-func (afuo *AlertFeedbackUpdateOne) SaveX(ctx context.Context) *AlertFeedback {
-	node, err := afuo.Save(ctx)
+func (_u *AlertFeedbackUpdateOne) SaveX(ctx context.Context) *AlertFeedback {
+	node, err := _u.Save(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -354,51 +354,51 @@ func (afuo *AlertFeedbackUpdateOne) SaveX(ctx context.Context) *AlertFeedback {
 }
 
 // Exec executes the query on the entity.
-func (afuo *AlertFeedbackUpdateOne) Exec(ctx context.Context) error {
-	_, err := afuo.Save(ctx)
+func (_u *AlertFeedbackUpdateOne) Exec(ctx context.Context) error {
+	_, err := _u.Save(ctx)
 	return err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (afuo *AlertFeedbackUpdateOne) ExecX(ctx context.Context) {
-	if err := afuo.Exec(ctx); err != nil {
+func (_u *AlertFeedbackUpdateOne) ExecX(ctx context.Context) {
+	if err := _u.Exec(ctx); err != nil {
 		panic(err)
 	}
 }
 
 // check runs all checks and user-defined validators on the builder.
-func (afuo *AlertFeedbackUpdateOne) check() error {
-	if v, ok := afuo.mutation.Accurate(); ok {
+func (_u *AlertFeedbackUpdateOne) check() error {
+	if v, ok := _u.mutation.Accurate(); ok {
 		if err := alertfeedback.AccurateValidator(v); err != nil {
 			return &ValidationError{Name: "accurate", err: fmt.Errorf(`ent: validator failed for field "AlertFeedback.accurate": %w`, err)}
 		}
 	}
-	if afuo.mutation.TenantCleared() && len(afuo.mutation.TenantIDs()) > 0 {
+	if _u.mutation.TenantCleared() && len(_u.mutation.TenantIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "AlertFeedback.tenant"`)
 	}
-	if afuo.mutation.AlertInstanceCleared() && len(afuo.mutation.AlertInstanceIDs()) > 0 {
+	if _u.mutation.AlertInstanceCleared() && len(_u.mutation.AlertInstanceIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "AlertFeedback.alert_instance"`)
 	}
 	return nil
 }
 
 // Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
-func (afuo *AlertFeedbackUpdateOne) Modify(modifiers ...func(u *sql.UpdateBuilder)) *AlertFeedbackUpdateOne {
-	afuo.modifiers = append(afuo.modifiers, modifiers...)
-	return afuo
+func (_u *AlertFeedbackUpdateOne) Modify(modifiers ...func(u *sql.UpdateBuilder)) *AlertFeedbackUpdateOne {
+	_u.modifiers = append(_u.modifiers, modifiers...)
+	return _u
 }
 
-func (afuo *AlertFeedbackUpdateOne) sqlSave(ctx context.Context) (_node *AlertFeedback, err error) {
-	if err := afuo.check(); err != nil {
+func (_u *AlertFeedbackUpdateOne) sqlSave(ctx context.Context) (_node *AlertFeedback, err error) {
+	if err := _u.check(); err != nil {
 		return _node, err
 	}
 	_spec := sqlgraph.NewUpdateSpec(alertfeedback.Table, alertfeedback.Columns, sqlgraph.NewFieldSpec(alertfeedback.FieldID, field.TypeUUID))
-	id, ok := afuo.mutation.ID()
+	id, ok := _u.mutation.ID()
 	if !ok {
 		return nil, &ValidationError{Name: "id", err: errors.New(`ent: missing "AlertFeedback.id" for update`)}
 	}
 	_spec.Node.ID.Value = id
-	if fields := afuo.fields; len(fields) > 0 {
+	if fields := _u.fields; len(fields) > 0 {
 		_spec.Node.Columns = make([]string, 0, len(fields))
 		_spec.Node.Columns = append(_spec.Node.Columns, alertfeedback.FieldID)
 		for _, f := range fields {
@@ -410,26 +410,26 @@ func (afuo *AlertFeedbackUpdateOne) sqlSave(ctx context.Context) (_node *AlertFe
 			}
 		}
 	}
-	if ps := afuo.mutation.predicates; len(ps) > 0 {
+	if ps := _u.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {
 				ps[i](selector)
 			}
 		}
 	}
-	if value, ok := afuo.mutation.Actionable(); ok {
+	if value, ok := _u.mutation.Actionable(); ok {
 		_spec.SetField(alertfeedback.FieldActionable, field.TypeBool, value)
 	}
-	if value, ok := afuo.mutation.Accurate(); ok {
+	if value, ok := _u.mutation.Accurate(); ok {
 		_spec.SetField(alertfeedback.FieldAccurate, field.TypeEnum, value)
 	}
-	if value, ok := afuo.mutation.DocumentationAvailable(); ok {
+	if value, ok := _u.mutation.DocumentationAvailable(); ok {
 		_spec.SetField(alertfeedback.FieldDocumentationAvailable, field.TypeBool, value)
 	}
-	if value, ok := afuo.mutation.DocumentationNeedsUpdate(); ok {
+	if value, ok := _u.mutation.DocumentationNeedsUpdate(); ok {
 		_spec.SetField(alertfeedback.FieldDocumentationNeedsUpdate, field.TypeBool, value)
 	}
-	if afuo.mutation.AlertInstanceCleared() {
+	if _u.mutation.AlertInstanceCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
@@ -442,7 +442,7 @@ func (afuo *AlertFeedbackUpdateOne) sqlSave(ctx context.Context) (_node *AlertFe
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := afuo.mutation.AlertInstanceIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.AlertInstanceIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
@@ -458,11 +458,11 @@ func (afuo *AlertFeedbackUpdateOne) sqlSave(ctx context.Context) (_node *AlertFe
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	_spec.AddModifiers(afuo.modifiers...)
-	_node = &AlertFeedback{config: afuo.config}
+	_spec.AddModifiers(_u.modifiers...)
+	_node = &AlertFeedback{config: _u.config}
 	_spec.Assign = _node.assignValues
 	_spec.ScanValues = _node.scanValues
-	if err = sqlgraph.UpdateNode(ctx, afuo.driver, _spec); err != nil {
+	if err = sqlgraph.UpdateNode(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{alertfeedback.Label}
 		} else if sqlgraph.IsConstraintError(err) {
@@ -470,6 +470,6 @@ func (afuo *AlertFeedbackUpdateOne) sqlSave(ctx context.Context) (_node *AlertFe
 		}
 		return nil, err
 	}
-	afuo.mutation.done = true
+	_u.mutation.done = true
 	return _node, nil
 }

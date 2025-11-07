@@ -29,121 +29,121 @@ type SystemComponentSignalCreate struct {
 }
 
 // SetTenantID sets the "tenant_id" field.
-func (scsc *SystemComponentSignalCreate) SetTenantID(i int) *SystemComponentSignalCreate {
-	scsc.mutation.SetTenantID(i)
-	return scsc
+func (_c *SystemComponentSignalCreate) SetTenantID(v int) *SystemComponentSignalCreate {
+	_c.mutation.SetTenantID(v)
+	return _c
 }
 
 // SetComponentID sets the "component_id" field.
-func (scsc *SystemComponentSignalCreate) SetComponentID(u uuid.UUID) *SystemComponentSignalCreate {
-	scsc.mutation.SetComponentID(u)
-	return scsc
+func (_c *SystemComponentSignalCreate) SetComponentID(v uuid.UUID) *SystemComponentSignalCreate {
+	_c.mutation.SetComponentID(v)
+	return _c
 }
 
 // SetLabel sets the "label" field.
-func (scsc *SystemComponentSignalCreate) SetLabel(s string) *SystemComponentSignalCreate {
-	scsc.mutation.SetLabel(s)
-	return scsc
+func (_c *SystemComponentSignalCreate) SetLabel(v string) *SystemComponentSignalCreate {
+	_c.mutation.SetLabel(v)
+	return _c
 }
 
 // SetDescription sets the "description" field.
-func (scsc *SystemComponentSignalCreate) SetDescription(s string) *SystemComponentSignalCreate {
-	scsc.mutation.SetDescription(s)
-	return scsc
+func (_c *SystemComponentSignalCreate) SetDescription(v string) *SystemComponentSignalCreate {
+	_c.mutation.SetDescription(v)
+	return _c
 }
 
 // SetNillableDescription sets the "description" field if the given value is not nil.
-func (scsc *SystemComponentSignalCreate) SetNillableDescription(s *string) *SystemComponentSignalCreate {
-	if s != nil {
-		scsc.SetDescription(*s)
+func (_c *SystemComponentSignalCreate) SetNillableDescription(v *string) *SystemComponentSignalCreate {
+	if v != nil {
+		_c.SetDescription(*v)
 	}
-	return scsc
+	return _c
 }
 
 // SetCreatedAt sets the "created_at" field.
-func (scsc *SystemComponentSignalCreate) SetCreatedAt(t time.Time) *SystemComponentSignalCreate {
-	scsc.mutation.SetCreatedAt(t)
-	return scsc
+func (_c *SystemComponentSignalCreate) SetCreatedAt(v time.Time) *SystemComponentSignalCreate {
+	_c.mutation.SetCreatedAt(v)
+	return _c
 }
 
 // SetNillableCreatedAt sets the "created_at" field if the given value is not nil.
-func (scsc *SystemComponentSignalCreate) SetNillableCreatedAt(t *time.Time) *SystemComponentSignalCreate {
-	if t != nil {
-		scsc.SetCreatedAt(*t)
+func (_c *SystemComponentSignalCreate) SetNillableCreatedAt(v *time.Time) *SystemComponentSignalCreate {
+	if v != nil {
+		_c.SetCreatedAt(*v)
 	}
-	return scsc
+	return _c
 }
 
 // SetID sets the "id" field.
-func (scsc *SystemComponentSignalCreate) SetID(u uuid.UUID) *SystemComponentSignalCreate {
-	scsc.mutation.SetID(u)
-	return scsc
+func (_c *SystemComponentSignalCreate) SetID(v uuid.UUID) *SystemComponentSignalCreate {
+	_c.mutation.SetID(v)
+	return _c
 }
 
 // SetNillableID sets the "id" field if the given value is not nil.
-func (scsc *SystemComponentSignalCreate) SetNillableID(u *uuid.UUID) *SystemComponentSignalCreate {
-	if u != nil {
-		scsc.SetID(*u)
+func (_c *SystemComponentSignalCreate) SetNillableID(v *uuid.UUID) *SystemComponentSignalCreate {
+	if v != nil {
+		_c.SetID(*v)
 	}
-	return scsc
+	return _c
 }
 
 // SetTenant sets the "tenant" edge to the Tenant entity.
-func (scsc *SystemComponentSignalCreate) SetTenant(t *Tenant) *SystemComponentSignalCreate {
-	return scsc.SetTenantID(t.ID)
+func (_c *SystemComponentSignalCreate) SetTenant(v *Tenant) *SystemComponentSignalCreate {
+	return _c.SetTenantID(v.ID)
 }
 
 // SetComponent sets the "component" edge to the SystemComponent entity.
-func (scsc *SystemComponentSignalCreate) SetComponent(s *SystemComponent) *SystemComponentSignalCreate {
-	return scsc.SetComponentID(s.ID)
+func (_c *SystemComponentSignalCreate) SetComponent(v *SystemComponent) *SystemComponentSignalCreate {
+	return _c.SetComponentID(v.ID)
 }
 
 // AddRelationshipIDs adds the "relationships" edge to the SystemAnalysisRelationship entity by IDs.
-func (scsc *SystemComponentSignalCreate) AddRelationshipIDs(ids ...uuid.UUID) *SystemComponentSignalCreate {
-	scsc.mutation.AddRelationshipIDs(ids...)
-	return scsc
+func (_c *SystemComponentSignalCreate) AddRelationshipIDs(ids ...uuid.UUID) *SystemComponentSignalCreate {
+	_c.mutation.AddRelationshipIDs(ids...)
+	return _c
 }
 
 // AddRelationships adds the "relationships" edges to the SystemAnalysisRelationship entity.
-func (scsc *SystemComponentSignalCreate) AddRelationships(s ...*SystemAnalysisRelationship) *SystemComponentSignalCreate {
-	ids := make([]uuid.UUID, len(s))
-	for i := range s {
-		ids[i] = s[i].ID
+func (_c *SystemComponentSignalCreate) AddRelationships(v ...*SystemAnalysisRelationship) *SystemComponentSignalCreate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
 	}
-	return scsc.AddRelationshipIDs(ids...)
+	return _c.AddRelationshipIDs(ids...)
 }
 
 // AddFeedbackSignalIDs adds the "feedback_signals" edge to the SystemRelationshipFeedbackSignal entity by IDs.
-func (scsc *SystemComponentSignalCreate) AddFeedbackSignalIDs(ids ...uuid.UUID) *SystemComponentSignalCreate {
-	scsc.mutation.AddFeedbackSignalIDs(ids...)
-	return scsc
+func (_c *SystemComponentSignalCreate) AddFeedbackSignalIDs(ids ...uuid.UUID) *SystemComponentSignalCreate {
+	_c.mutation.AddFeedbackSignalIDs(ids...)
+	return _c
 }
 
 // AddFeedbackSignals adds the "feedback_signals" edges to the SystemRelationshipFeedbackSignal entity.
-func (scsc *SystemComponentSignalCreate) AddFeedbackSignals(s ...*SystemRelationshipFeedbackSignal) *SystemComponentSignalCreate {
-	ids := make([]uuid.UUID, len(s))
-	for i := range s {
-		ids[i] = s[i].ID
+func (_c *SystemComponentSignalCreate) AddFeedbackSignals(v ...*SystemRelationshipFeedbackSignal) *SystemComponentSignalCreate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
 	}
-	return scsc.AddFeedbackSignalIDs(ids...)
+	return _c.AddFeedbackSignalIDs(ids...)
 }
 
 // Mutation returns the SystemComponentSignalMutation object of the builder.
-func (scsc *SystemComponentSignalCreate) Mutation() *SystemComponentSignalMutation {
-	return scsc.mutation
+func (_c *SystemComponentSignalCreate) Mutation() *SystemComponentSignalMutation {
+	return _c.mutation
 }
 
 // Save creates the SystemComponentSignal in the database.
-func (scsc *SystemComponentSignalCreate) Save(ctx context.Context) (*SystemComponentSignal, error) {
-	if err := scsc.defaults(); err != nil {
+func (_c *SystemComponentSignalCreate) Save(ctx context.Context) (*SystemComponentSignal, error) {
+	if err := _c.defaults(); err != nil {
 		return nil, err
 	}
-	return withHooks(ctx, scsc.sqlSave, scsc.mutation, scsc.hooks)
+	return withHooks(ctx, _c.sqlSave, _c.mutation, _c.hooks)
 }
 
 // SaveX calls Save and panics if Save returns an error.
-func (scsc *SystemComponentSignalCreate) SaveX(ctx context.Context) *SystemComponentSignal {
-	v, err := scsc.Save(ctx)
+func (_c *SystemComponentSignalCreate) SaveX(ctx context.Context) *SystemComponentSignal {
+	v, err := _c.Save(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -151,66 +151,66 @@ func (scsc *SystemComponentSignalCreate) SaveX(ctx context.Context) *SystemCompo
 }
 
 // Exec executes the query.
-func (scsc *SystemComponentSignalCreate) Exec(ctx context.Context) error {
-	_, err := scsc.Save(ctx)
+func (_c *SystemComponentSignalCreate) Exec(ctx context.Context) error {
+	_, err := _c.Save(ctx)
 	return err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (scsc *SystemComponentSignalCreate) ExecX(ctx context.Context) {
-	if err := scsc.Exec(ctx); err != nil {
+func (_c *SystemComponentSignalCreate) ExecX(ctx context.Context) {
+	if err := _c.Exec(ctx); err != nil {
 		panic(err)
 	}
 }
 
 // defaults sets the default values of the builder before save.
-func (scsc *SystemComponentSignalCreate) defaults() error {
-	if _, ok := scsc.mutation.CreatedAt(); !ok {
+func (_c *SystemComponentSignalCreate) defaults() error {
+	if _, ok := _c.mutation.CreatedAt(); !ok {
 		if systemcomponentsignal.DefaultCreatedAt == nil {
 			return fmt.Errorf("ent: uninitialized systemcomponentsignal.DefaultCreatedAt (forgotten import ent/runtime?)")
 		}
 		v := systemcomponentsignal.DefaultCreatedAt()
-		scsc.mutation.SetCreatedAt(v)
+		_c.mutation.SetCreatedAt(v)
 	}
-	if _, ok := scsc.mutation.ID(); !ok {
+	if _, ok := _c.mutation.ID(); !ok {
 		if systemcomponentsignal.DefaultID == nil {
 			return fmt.Errorf("ent: uninitialized systemcomponentsignal.DefaultID (forgotten import ent/runtime?)")
 		}
 		v := systemcomponentsignal.DefaultID()
-		scsc.mutation.SetID(v)
+		_c.mutation.SetID(v)
 	}
 	return nil
 }
 
 // check runs all checks and user-defined validators on the builder.
-func (scsc *SystemComponentSignalCreate) check() error {
-	if _, ok := scsc.mutation.TenantID(); !ok {
+func (_c *SystemComponentSignalCreate) check() error {
+	if _, ok := _c.mutation.TenantID(); !ok {
 		return &ValidationError{Name: "tenant_id", err: errors.New(`ent: missing required field "SystemComponentSignal.tenant_id"`)}
 	}
-	if _, ok := scsc.mutation.ComponentID(); !ok {
+	if _, ok := _c.mutation.ComponentID(); !ok {
 		return &ValidationError{Name: "component_id", err: errors.New(`ent: missing required field "SystemComponentSignal.component_id"`)}
 	}
-	if _, ok := scsc.mutation.Label(); !ok {
+	if _, ok := _c.mutation.Label(); !ok {
 		return &ValidationError{Name: "label", err: errors.New(`ent: missing required field "SystemComponentSignal.label"`)}
 	}
-	if _, ok := scsc.mutation.CreatedAt(); !ok {
+	if _, ok := _c.mutation.CreatedAt(); !ok {
 		return &ValidationError{Name: "created_at", err: errors.New(`ent: missing required field "SystemComponentSignal.created_at"`)}
 	}
-	if len(scsc.mutation.TenantIDs()) == 0 {
+	if len(_c.mutation.TenantIDs()) == 0 {
 		return &ValidationError{Name: "tenant", err: errors.New(`ent: missing required edge "SystemComponentSignal.tenant"`)}
 	}
-	if len(scsc.mutation.ComponentIDs()) == 0 {
+	if len(_c.mutation.ComponentIDs()) == 0 {
 		return &ValidationError{Name: "component", err: errors.New(`ent: missing required edge "SystemComponentSignal.component"`)}
 	}
 	return nil
 }
 
-func (scsc *SystemComponentSignalCreate) sqlSave(ctx context.Context) (*SystemComponentSignal, error) {
-	if err := scsc.check(); err != nil {
+func (_c *SystemComponentSignalCreate) sqlSave(ctx context.Context) (*SystemComponentSignal, error) {
+	if err := _c.check(); err != nil {
 		return nil, err
 	}
-	_node, _spec := scsc.createSpec()
-	if err := sqlgraph.CreateNode(ctx, scsc.driver, _spec); err != nil {
+	_node, _spec := _c.createSpec()
+	if err := sqlgraph.CreateNode(ctx, _c.driver, _spec); err != nil {
 		if sqlgraph.IsConstraintError(err) {
 			err = &ConstraintError{msg: err.Error(), wrap: err}
 		}
@@ -223,34 +223,34 @@ func (scsc *SystemComponentSignalCreate) sqlSave(ctx context.Context) (*SystemCo
 			return nil, err
 		}
 	}
-	scsc.mutation.id = &_node.ID
-	scsc.mutation.done = true
+	_c.mutation.id = &_node.ID
+	_c.mutation.done = true
 	return _node, nil
 }
 
-func (scsc *SystemComponentSignalCreate) createSpec() (*SystemComponentSignal, *sqlgraph.CreateSpec) {
+func (_c *SystemComponentSignalCreate) createSpec() (*SystemComponentSignal, *sqlgraph.CreateSpec) {
 	var (
-		_node = &SystemComponentSignal{config: scsc.config}
+		_node = &SystemComponentSignal{config: _c.config}
 		_spec = sqlgraph.NewCreateSpec(systemcomponentsignal.Table, sqlgraph.NewFieldSpec(systemcomponentsignal.FieldID, field.TypeUUID))
 	)
-	_spec.OnConflict = scsc.conflict
-	if id, ok := scsc.mutation.ID(); ok {
+	_spec.OnConflict = _c.conflict
+	if id, ok := _c.mutation.ID(); ok {
 		_node.ID = id
 		_spec.ID.Value = &id
 	}
-	if value, ok := scsc.mutation.Label(); ok {
+	if value, ok := _c.mutation.Label(); ok {
 		_spec.SetField(systemcomponentsignal.FieldLabel, field.TypeString, value)
 		_node.Label = value
 	}
-	if value, ok := scsc.mutation.Description(); ok {
+	if value, ok := _c.mutation.Description(); ok {
 		_spec.SetField(systemcomponentsignal.FieldDescription, field.TypeString, value)
 		_node.Description = value
 	}
-	if value, ok := scsc.mutation.CreatedAt(); ok {
+	if value, ok := _c.mutation.CreatedAt(); ok {
 		_spec.SetField(systemcomponentsignal.FieldCreatedAt, field.TypeTime, value)
 		_node.CreatedAt = value
 	}
-	if nodes := scsc.mutation.TenantIDs(); len(nodes) > 0 {
+	if nodes := _c.mutation.TenantIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
@@ -267,7 +267,7 @@ func (scsc *SystemComponentSignalCreate) createSpec() (*SystemComponentSignal, *
 		_node.TenantID = nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
-	if nodes := scsc.mutation.ComponentIDs(); len(nodes) > 0 {
+	if nodes := _c.mutation.ComponentIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
@@ -284,7 +284,7 @@ func (scsc *SystemComponentSignalCreate) createSpec() (*SystemComponentSignal, *
 		_node.ComponentID = nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
-	if nodes := scsc.mutation.RelationshipsIDs(); len(nodes) > 0 {
+	if nodes := _c.mutation.RelationshipsIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
 			Inverse: true,
@@ -298,7 +298,7 @@ func (scsc *SystemComponentSignalCreate) createSpec() (*SystemComponentSignal, *
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
-		createE := &SystemRelationshipFeedbackSignalCreate{config: scsc.config, mutation: newSystemRelationshipFeedbackSignalMutation(scsc.config, OpCreate)}
+		createE := &SystemRelationshipFeedbackSignalCreate{config: _c.config, mutation: newSystemRelationshipFeedbackSignalMutation(_c.config, OpCreate)}
 		_ = createE.defaults()
 		_, specE := createE.createSpec()
 		edge.Target.Fields = specE.Fields
@@ -307,7 +307,7 @@ func (scsc *SystemComponentSignalCreate) createSpec() (*SystemComponentSignal, *
 		}
 		_spec.Edges = append(_spec.Edges, edge)
 	}
-	if nodes := scsc.mutation.FeedbackSignalsIDs(); len(nodes) > 0 {
+	if nodes := _c.mutation.FeedbackSignalsIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: true,
@@ -342,10 +342,10 @@ func (scsc *SystemComponentSignalCreate) createSpec() (*SystemComponentSignal, *
 //			SetTenantID(v+v).
 //		}).
 //		Exec(ctx)
-func (scsc *SystemComponentSignalCreate) OnConflict(opts ...sql.ConflictOption) *SystemComponentSignalUpsertOne {
-	scsc.conflict = opts
+func (_c *SystemComponentSignalCreate) OnConflict(opts ...sql.ConflictOption) *SystemComponentSignalUpsertOne {
+	_c.conflict = opts
 	return &SystemComponentSignalUpsertOne{
-		create: scsc,
+		create: _c,
 	}
 }
 
@@ -355,10 +355,10 @@ func (scsc *SystemComponentSignalCreate) OnConflict(opts ...sql.ConflictOption) 
 //	client.SystemComponentSignal.Create().
 //		OnConflict(sql.ConflictColumns(columns...)).
 //		Exec(ctx)
-func (scsc *SystemComponentSignalCreate) OnConflictColumns(columns ...string) *SystemComponentSignalUpsertOne {
-	scsc.conflict = append(scsc.conflict, sql.ConflictColumns(columns...))
+func (_c *SystemComponentSignalCreate) OnConflictColumns(columns ...string) *SystemComponentSignalUpsertOne {
+	_c.conflict = append(_c.conflict, sql.ConflictColumns(columns...))
 	return &SystemComponentSignalUpsertOne{
-		create: scsc,
+		create: _c,
 	}
 }
 
@@ -590,16 +590,16 @@ type SystemComponentSignalCreateBulk struct {
 }
 
 // Save creates the SystemComponentSignal entities in the database.
-func (scscb *SystemComponentSignalCreateBulk) Save(ctx context.Context) ([]*SystemComponentSignal, error) {
-	if scscb.err != nil {
-		return nil, scscb.err
+func (_c *SystemComponentSignalCreateBulk) Save(ctx context.Context) ([]*SystemComponentSignal, error) {
+	if _c.err != nil {
+		return nil, _c.err
 	}
-	specs := make([]*sqlgraph.CreateSpec, len(scscb.builders))
-	nodes := make([]*SystemComponentSignal, len(scscb.builders))
-	mutators := make([]Mutator, len(scscb.builders))
-	for i := range scscb.builders {
+	specs := make([]*sqlgraph.CreateSpec, len(_c.builders))
+	nodes := make([]*SystemComponentSignal, len(_c.builders))
+	mutators := make([]Mutator, len(_c.builders))
+	for i := range _c.builders {
 		func(i int, root context.Context) {
-			builder := scscb.builders[i]
+			builder := _c.builders[i]
 			builder.defaults()
 			var mut Mutator = MutateFunc(func(ctx context.Context, m Mutation) (Value, error) {
 				mutation, ok := m.(*SystemComponentSignalMutation)
@@ -613,12 +613,12 @@ func (scscb *SystemComponentSignalCreateBulk) Save(ctx context.Context) ([]*Syst
 				var err error
 				nodes[i], specs[i] = builder.createSpec()
 				if i < len(mutators)-1 {
-					_, err = mutators[i+1].Mutate(root, scscb.builders[i+1].mutation)
+					_, err = mutators[i+1].Mutate(root, _c.builders[i+1].mutation)
 				} else {
 					spec := &sqlgraph.BatchCreateSpec{Nodes: specs}
-					spec.OnConflict = scscb.conflict
+					spec.OnConflict = _c.conflict
 					// Invoke the actual operation on the latest mutation in the chain.
-					if err = sqlgraph.BatchCreate(ctx, scscb.driver, spec); err != nil {
+					if err = sqlgraph.BatchCreate(ctx, _c.driver, spec); err != nil {
 						if sqlgraph.IsConstraintError(err) {
 							err = &ConstraintError{msg: err.Error(), wrap: err}
 						}
@@ -638,7 +638,7 @@ func (scscb *SystemComponentSignalCreateBulk) Save(ctx context.Context) ([]*Syst
 		}(i, ctx)
 	}
 	if len(mutators) > 0 {
-		if _, err := mutators[0].Mutate(ctx, scscb.builders[0].mutation); err != nil {
+		if _, err := mutators[0].Mutate(ctx, _c.builders[0].mutation); err != nil {
 			return nil, err
 		}
 	}
@@ -646,8 +646,8 @@ func (scscb *SystemComponentSignalCreateBulk) Save(ctx context.Context) ([]*Syst
 }
 
 // SaveX is like Save, but panics if an error occurs.
-func (scscb *SystemComponentSignalCreateBulk) SaveX(ctx context.Context) []*SystemComponentSignal {
-	v, err := scscb.Save(ctx)
+func (_c *SystemComponentSignalCreateBulk) SaveX(ctx context.Context) []*SystemComponentSignal {
+	v, err := _c.Save(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -655,14 +655,14 @@ func (scscb *SystemComponentSignalCreateBulk) SaveX(ctx context.Context) []*Syst
 }
 
 // Exec executes the query.
-func (scscb *SystemComponentSignalCreateBulk) Exec(ctx context.Context) error {
-	_, err := scscb.Save(ctx)
+func (_c *SystemComponentSignalCreateBulk) Exec(ctx context.Context) error {
+	_, err := _c.Save(ctx)
 	return err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (scscb *SystemComponentSignalCreateBulk) ExecX(ctx context.Context) {
-	if err := scscb.Exec(ctx); err != nil {
+func (_c *SystemComponentSignalCreateBulk) ExecX(ctx context.Context) {
+	if err := _c.Exec(ctx); err != nil {
 		panic(err)
 	}
 }
@@ -682,10 +682,10 @@ func (scscb *SystemComponentSignalCreateBulk) ExecX(ctx context.Context) {
 //			SetTenantID(v+v).
 //		}).
 //		Exec(ctx)
-func (scscb *SystemComponentSignalCreateBulk) OnConflict(opts ...sql.ConflictOption) *SystemComponentSignalUpsertBulk {
-	scscb.conflict = opts
+func (_c *SystemComponentSignalCreateBulk) OnConflict(opts ...sql.ConflictOption) *SystemComponentSignalUpsertBulk {
+	_c.conflict = opts
 	return &SystemComponentSignalUpsertBulk{
-		create: scscb,
+		create: _c,
 	}
 }
 
@@ -695,10 +695,10 @@ func (scscb *SystemComponentSignalCreateBulk) OnConflict(opts ...sql.ConflictOpt
 //	client.SystemComponentSignal.Create().
 //		OnConflict(sql.ConflictColumns(columns...)).
 //		Exec(ctx)
-func (scscb *SystemComponentSignalCreateBulk) OnConflictColumns(columns ...string) *SystemComponentSignalUpsertBulk {
-	scscb.conflict = append(scscb.conflict, sql.ConflictColumns(columns...))
+func (_c *SystemComponentSignalCreateBulk) OnConflictColumns(columns ...string) *SystemComponentSignalUpsertBulk {
+	_c.conflict = append(_c.conflict, sql.ConflictColumns(columns...))
 	return &SystemComponentSignalUpsertBulk{
-		create: scscb,
+		create: _c,
 	}
 }
 

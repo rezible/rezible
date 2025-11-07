@@ -27,158 +27,158 @@ type IncidentRoleUpdate struct {
 }
 
 // Where appends a list predicates to the IncidentRoleUpdate builder.
-func (iru *IncidentRoleUpdate) Where(ps ...predicate.IncidentRole) *IncidentRoleUpdate {
-	iru.mutation.Where(ps...)
-	return iru
+func (_u *IncidentRoleUpdate) Where(ps ...predicate.IncidentRole) *IncidentRoleUpdate {
+	_u.mutation.Where(ps...)
+	return _u
 }
 
 // SetArchiveTime sets the "archive_time" field.
-func (iru *IncidentRoleUpdate) SetArchiveTime(t time.Time) *IncidentRoleUpdate {
-	iru.mutation.SetArchiveTime(t)
-	return iru
+func (_u *IncidentRoleUpdate) SetArchiveTime(v time.Time) *IncidentRoleUpdate {
+	_u.mutation.SetArchiveTime(v)
+	return _u
 }
 
 // SetNillableArchiveTime sets the "archive_time" field if the given value is not nil.
-func (iru *IncidentRoleUpdate) SetNillableArchiveTime(t *time.Time) *IncidentRoleUpdate {
-	if t != nil {
-		iru.SetArchiveTime(*t)
+func (_u *IncidentRoleUpdate) SetNillableArchiveTime(v *time.Time) *IncidentRoleUpdate {
+	if v != nil {
+		_u.SetArchiveTime(*v)
 	}
-	return iru
+	return _u
 }
 
 // ClearArchiveTime clears the value of the "archive_time" field.
-func (iru *IncidentRoleUpdate) ClearArchiveTime() *IncidentRoleUpdate {
-	iru.mutation.ClearArchiveTime()
-	return iru
+func (_u *IncidentRoleUpdate) ClearArchiveTime() *IncidentRoleUpdate {
+	_u.mutation.ClearArchiveTime()
+	return _u
 }
 
 // SetName sets the "name" field.
-func (iru *IncidentRoleUpdate) SetName(s string) *IncidentRoleUpdate {
-	iru.mutation.SetName(s)
-	return iru
+func (_u *IncidentRoleUpdate) SetName(v string) *IncidentRoleUpdate {
+	_u.mutation.SetName(v)
+	return _u
 }
 
 // SetNillableName sets the "name" field if the given value is not nil.
-func (iru *IncidentRoleUpdate) SetNillableName(s *string) *IncidentRoleUpdate {
-	if s != nil {
-		iru.SetName(*s)
+func (_u *IncidentRoleUpdate) SetNillableName(v *string) *IncidentRoleUpdate {
+	if v != nil {
+		_u.SetName(*v)
 	}
-	return iru
+	return _u
 }
 
 // SetProviderID sets the "provider_id" field.
-func (iru *IncidentRoleUpdate) SetProviderID(s string) *IncidentRoleUpdate {
-	iru.mutation.SetProviderID(s)
-	return iru
+func (_u *IncidentRoleUpdate) SetProviderID(v string) *IncidentRoleUpdate {
+	_u.mutation.SetProviderID(v)
+	return _u
 }
 
 // SetNillableProviderID sets the "provider_id" field if the given value is not nil.
-func (iru *IncidentRoleUpdate) SetNillableProviderID(s *string) *IncidentRoleUpdate {
-	if s != nil {
-		iru.SetProviderID(*s)
+func (_u *IncidentRoleUpdate) SetNillableProviderID(v *string) *IncidentRoleUpdate {
+	if v != nil {
+		_u.SetProviderID(*v)
 	}
-	return iru
+	return _u
 }
 
 // SetRequired sets the "required" field.
-func (iru *IncidentRoleUpdate) SetRequired(b bool) *IncidentRoleUpdate {
-	iru.mutation.SetRequired(b)
-	return iru
+func (_u *IncidentRoleUpdate) SetRequired(v bool) *IncidentRoleUpdate {
+	_u.mutation.SetRequired(v)
+	return _u
 }
 
 // SetNillableRequired sets the "required" field if the given value is not nil.
-func (iru *IncidentRoleUpdate) SetNillableRequired(b *bool) *IncidentRoleUpdate {
-	if b != nil {
-		iru.SetRequired(*b)
+func (_u *IncidentRoleUpdate) SetNillableRequired(v *bool) *IncidentRoleUpdate {
+	if v != nil {
+		_u.SetRequired(*v)
 	}
-	return iru
+	return _u
 }
 
 // AddAssignmentIDs adds the "assignments" edge to the IncidentRoleAssignment entity by IDs.
-func (iru *IncidentRoleUpdate) AddAssignmentIDs(ids ...uuid.UUID) *IncidentRoleUpdate {
-	iru.mutation.AddAssignmentIDs(ids...)
-	return iru
+func (_u *IncidentRoleUpdate) AddAssignmentIDs(ids ...uuid.UUID) *IncidentRoleUpdate {
+	_u.mutation.AddAssignmentIDs(ids...)
+	return _u
 }
 
 // AddAssignments adds the "assignments" edges to the IncidentRoleAssignment entity.
-func (iru *IncidentRoleUpdate) AddAssignments(i ...*IncidentRoleAssignment) *IncidentRoleUpdate {
-	ids := make([]uuid.UUID, len(i))
-	for j := range i {
-		ids[j] = i[j].ID
+func (_u *IncidentRoleUpdate) AddAssignments(v ...*IncidentRoleAssignment) *IncidentRoleUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
 	}
-	return iru.AddAssignmentIDs(ids...)
+	return _u.AddAssignmentIDs(ids...)
 }
 
 // AddDebriefQuestionIDs adds the "debrief_questions" edge to the IncidentDebriefQuestion entity by IDs.
-func (iru *IncidentRoleUpdate) AddDebriefQuestionIDs(ids ...uuid.UUID) *IncidentRoleUpdate {
-	iru.mutation.AddDebriefQuestionIDs(ids...)
-	return iru
+func (_u *IncidentRoleUpdate) AddDebriefQuestionIDs(ids ...uuid.UUID) *IncidentRoleUpdate {
+	_u.mutation.AddDebriefQuestionIDs(ids...)
+	return _u
 }
 
 // AddDebriefQuestions adds the "debrief_questions" edges to the IncidentDebriefQuestion entity.
-func (iru *IncidentRoleUpdate) AddDebriefQuestions(i ...*IncidentDebriefQuestion) *IncidentRoleUpdate {
-	ids := make([]uuid.UUID, len(i))
-	for j := range i {
-		ids[j] = i[j].ID
+func (_u *IncidentRoleUpdate) AddDebriefQuestions(v ...*IncidentDebriefQuestion) *IncidentRoleUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
 	}
-	return iru.AddDebriefQuestionIDs(ids...)
+	return _u.AddDebriefQuestionIDs(ids...)
 }
 
 // Mutation returns the IncidentRoleMutation object of the builder.
-func (iru *IncidentRoleUpdate) Mutation() *IncidentRoleMutation {
-	return iru.mutation
+func (_u *IncidentRoleUpdate) Mutation() *IncidentRoleMutation {
+	return _u.mutation
 }
 
 // ClearAssignments clears all "assignments" edges to the IncidentRoleAssignment entity.
-func (iru *IncidentRoleUpdate) ClearAssignments() *IncidentRoleUpdate {
-	iru.mutation.ClearAssignments()
-	return iru
+func (_u *IncidentRoleUpdate) ClearAssignments() *IncidentRoleUpdate {
+	_u.mutation.ClearAssignments()
+	return _u
 }
 
 // RemoveAssignmentIDs removes the "assignments" edge to IncidentRoleAssignment entities by IDs.
-func (iru *IncidentRoleUpdate) RemoveAssignmentIDs(ids ...uuid.UUID) *IncidentRoleUpdate {
-	iru.mutation.RemoveAssignmentIDs(ids...)
-	return iru
+func (_u *IncidentRoleUpdate) RemoveAssignmentIDs(ids ...uuid.UUID) *IncidentRoleUpdate {
+	_u.mutation.RemoveAssignmentIDs(ids...)
+	return _u
 }
 
 // RemoveAssignments removes "assignments" edges to IncidentRoleAssignment entities.
-func (iru *IncidentRoleUpdate) RemoveAssignments(i ...*IncidentRoleAssignment) *IncidentRoleUpdate {
-	ids := make([]uuid.UUID, len(i))
-	for j := range i {
-		ids[j] = i[j].ID
+func (_u *IncidentRoleUpdate) RemoveAssignments(v ...*IncidentRoleAssignment) *IncidentRoleUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
 	}
-	return iru.RemoveAssignmentIDs(ids...)
+	return _u.RemoveAssignmentIDs(ids...)
 }
 
 // ClearDebriefQuestions clears all "debrief_questions" edges to the IncidentDebriefQuestion entity.
-func (iru *IncidentRoleUpdate) ClearDebriefQuestions() *IncidentRoleUpdate {
-	iru.mutation.ClearDebriefQuestions()
-	return iru
+func (_u *IncidentRoleUpdate) ClearDebriefQuestions() *IncidentRoleUpdate {
+	_u.mutation.ClearDebriefQuestions()
+	return _u
 }
 
 // RemoveDebriefQuestionIDs removes the "debrief_questions" edge to IncidentDebriefQuestion entities by IDs.
-func (iru *IncidentRoleUpdate) RemoveDebriefQuestionIDs(ids ...uuid.UUID) *IncidentRoleUpdate {
-	iru.mutation.RemoveDebriefQuestionIDs(ids...)
-	return iru
+func (_u *IncidentRoleUpdate) RemoveDebriefQuestionIDs(ids ...uuid.UUID) *IncidentRoleUpdate {
+	_u.mutation.RemoveDebriefQuestionIDs(ids...)
+	return _u
 }
 
 // RemoveDebriefQuestions removes "debrief_questions" edges to IncidentDebriefQuestion entities.
-func (iru *IncidentRoleUpdate) RemoveDebriefQuestions(i ...*IncidentDebriefQuestion) *IncidentRoleUpdate {
-	ids := make([]uuid.UUID, len(i))
-	for j := range i {
-		ids[j] = i[j].ID
+func (_u *IncidentRoleUpdate) RemoveDebriefQuestions(v ...*IncidentDebriefQuestion) *IncidentRoleUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
 	}
-	return iru.RemoveDebriefQuestionIDs(ids...)
+	return _u.RemoveDebriefQuestionIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
-func (iru *IncidentRoleUpdate) Save(ctx context.Context) (int, error) {
-	return withHooks(ctx, iru.sqlSave, iru.mutation, iru.hooks)
+func (_u *IncidentRoleUpdate) Save(ctx context.Context) (int, error) {
+	return withHooks(ctx, _u.sqlSave, _u.mutation, _u.hooks)
 }
 
 // SaveX is like Save, but panics if an error occurs.
-func (iru *IncidentRoleUpdate) SaveX(ctx context.Context) int {
-	affected, err := iru.Save(ctx)
+func (_u *IncidentRoleUpdate) SaveX(ctx context.Context) int {
+	affected, err := _u.Save(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -186,60 +186,60 @@ func (iru *IncidentRoleUpdate) SaveX(ctx context.Context) int {
 }
 
 // Exec executes the query.
-func (iru *IncidentRoleUpdate) Exec(ctx context.Context) error {
-	_, err := iru.Save(ctx)
+func (_u *IncidentRoleUpdate) Exec(ctx context.Context) error {
+	_, err := _u.Save(ctx)
 	return err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (iru *IncidentRoleUpdate) ExecX(ctx context.Context) {
-	if err := iru.Exec(ctx); err != nil {
+func (_u *IncidentRoleUpdate) ExecX(ctx context.Context) {
+	if err := _u.Exec(ctx); err != nil {
 		panic(err)
 	}
 }
 
 // check runs all checks and user-defined validators on the builder.
-func (iru *IncidentRoleUpdate) check() error {
-	if iru.mutation.TenantCleared() && len(iru.mutation.TenantIDs()) > 0 {
+func (_u *IncidentRoleUpdate) check() error {
+	if _u.mutation.TenantCleared() && len(_u.mutation.TenantIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "IncidentRole.tenant"`)
 	}
 	return nil
 }
 
 // Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
-func (iru *IncidentRoleUpdate) Modify(modifiers ...func(u *sql.UpdateBuilder)) *IncidentRoleUpdate {
-	iru.modifiers = append(iru.modifiers, modifiers...)
-	return iru
+func (_u *IncidentRoleUpdate) Modify(modifiers ...func(u *sql.UpdateBuilder)) *IncidentRoleUpdate {
+	_u.modifiers = append(_u.modifiers, modifiers...)
+	return _u
 }
 
-func (iru *IncidentRoleUpdate) sqlSave(ctx context.Context) (n int, err error) {
-	if err := iru.check(); err != nil {
-		return n, err
+func (_u *IncidentRoleUpdate) sqlSave(ctx context.Context) (_node int, err error) {
+	if err := _u.check(); err != nil {
+		return _node, err
 	}
 	_spec := sqlgraph.NewUpdateSpec(incidentrole.Table, incidentrole.Columns, sqlgraph.NewFieldSpec(incidentrole.FieldID, field.TypeUUID))
-	if ps := iru.mutation.predicates; len(ps) > 0 {
+	if ps := _u.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {
 				ps[i](selector)
 			}
 		}
 	}
-	if value, ok := iru.mutation.ArchiveTime(); ok {
+	if value, ok := _u.mutation.ArchiveTime(); ok {
 		_spec.SetField(incidentrole.FieldArchiveTime, field.TypeTime, value)
 	}
-	if iru.mutation.ArchiveTimeCleared() {
+	if _u.mutation.ArchiveTimeCleared() {
 		_spec.ClearField(incidentrole.FieldArchiveTime, field.TypeTime)
 	}
-	if value, ok := iru.mutation.Name(); ok {
+	if value, ok := _u.mutation.Name(); ok {
 		_spec.SetField(incidentrole.FieldName, field.TypeString, value)
 	}
-	if value, ok := iru.mutation.ProviderID(); ok {
+	if value, ok := _u.mutation.ProviderID(); ok {
 		_spec.SetField(incidentrole.FieldProviderID, field.TypeString, value)
 	}
-	if value, ok := iru.mutation.Required(); ok {
+	if value, ok := _u.mutation.Required(); ok {
 		_spec.SetField(incidentrole.FieldRequired, field.TypeBool, value)
 	}
-	if iru.mutation.AssignmentsCleared() {
+	if _u.mutation.AssignmentsCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: true,
@@ -252,7 +252,7 @@ func (iru *IncidentRoleUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := iru.mutation.RemovedAssignmentsIDs(); len(nodes) > 0 && !iru.mutation.AssignmentsCleared() {
+	if nodes := _u.mutation.RemovedAssignmentsIDs(); len(nodes) > 0 && !_u.mutation.AssignmentsCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: true,
@@ -268,7 +268,7 @@ func (iru *IncidentRoleUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := iru.mutation.AssignmentsIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.AssignmentsIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: true,
@@ -284,7 +284,7 @@ func (iru *IncidentRoleUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if iru.mutation.DebriefQuestionsCleared() {
+	if _u.mutation.DebriefQuestionsCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
 			Inverse: true,
@@ -297,7 +297,7 @@ func (iru *IncidentRoleUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := iru.mutation.RemovedDebriefQuestionsIDs(); len(nodes) > 0 && !iru.mutation.DebriefQuestionsCleared() {
+	if nodes := _u.mutation.RemovedDebriefQuestionsIDs(); len(nodes) > 0 && !_u.mutation.DebriefQuestionsCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
 			Inverse: true,
@@ -313,7 +313,7 @@ func (iru *IncidentRoleUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := iru.mutation.DebriefQuestionsIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.DebriefQuestionsIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
 			Inverse: true,
@@ -329,8 +329,8 @@ func (iru *IncidentRoleUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	_spec.AddModifiers(iru.modifiers...)
-	if n, err = sqlgraph.UpdateNodes(ctx, iru.driver, _spec); err != nil {
+	_spec.AddModifiers(_u.modifiers...)
+	if _node, err = sqlgraph.UpdateNodes(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{incidentrole.Label}
 		} else if sqlgraph.IsConstraintError(err) {
@@ -338,8 +338,8 @@ func (iru *IncidentRoleUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		return 0, err
 	}
-	iru.mutation.done = true
-	return n, nil
+	_u.mutation.done = true
+	return _node, nil
 }
 
 // IncidentRoleUpdateOne is the builder for updating a single IncidentRole entity.
@@ -352,165 +352,165 @@ type IncidentRoleUpdateOne struct {
 }
 
 // SetArchiveTime sets the "archive_time" field.
-func (iruo *IncidentRoleUpdateOne) SetArchiveTime(t time.Time) *IncidentRoleUpdateOne {
-	iruo.mutation.SetArchiveTime(t)
-	return iruo
+func (_u *IncidentRoleUpdateOne) SetArchiveTime(v time.Time) *IncidentRoleUpdateOne {
+	_u.mutation.SetArchiveTime(v)
+	return _u
 }
 
 // SetNillableArchiveTime sets the "archive_time" field if the given value is not nil.
-func (iruo *IncidentRoleUpdateOne) SetNillableArchiveTime(t *time.Time) *IncidentRoleUpdateOne {
-	if t != nil {
-		iruo.SetArchiveTime(*t)
+func (_u *IncidentRoleUpdateOne) SetNillableArchiveTime(v *time.Time) *IncidentRoleUpdateOne {
+	if v != nil {
+		_u.SetArchiveTime(*v)
 	}
-	return iruo
+	return _u
 }
 
 // ClearArchiveTime clears the value of the "archive_time" field.
-func (iruo *IncidentRoleUpdateOne) ClearArchiveTime() *IncidentRoleUpdateOne {
-	iruo.mutation.ClearArchiveTime()
-	return iruo
+func (_u *IncidentRoleUpdateOne) ClearArchiveTime() *IncidentRoleUpdateOne {
+	_u.mutation.ClearArchiveTime()
+	return _u
 }
 
 // SetName sets the "name" field.
-func (iruo *IncidentRoleUpdateOne) SetName(s string) *IncidentRoleUpdateOne {
-	iruo.mutation.SetName(s)
-	return iruo
+func (_u *IncidentRoleUpdateOne) SetName(v string) *IncidentRoleUpdateOne {
+	_u.mutation.SetName(v)
+	return _u
 }
 
 // SetNillableName sets the "name" field if the given value is not nil.
-func (iruo *IncidentRoleUpdateOne) SetNillableName(s *string) *IncidentRoleUpdateOne {
-	if s != nil {
-		iruo.SetName(*s)
+func (_u *IncidentRoleUpdateOne) SetNillableName(v *string) *IncidentRoleUpdateOne {
+	if v != nil {
+		_u.SetName(*v)
 	}
-	return iruo
+	return _u
 }
 
 // SetProviderID sets the "provider_id" field.
-func (iruo *IncidentRoleUpdateOne) SetProviderID(s string) *IncidentRoleUpdateOne {
-	iruo.mutation.SetProviderID(s)
-	return iruo
+func (_u *IncidentRoleUpdateOne) SetProviderID(v string) *IncidentRoleUpdateOne {
+	_u.mutation.SetProviderID(v)
+	return _u
 }
 
 // SetNillableProviderID sets the "provider_id" field if the given value is not nil.
-func (iruo *IncidentRoleUpdateOne) SetNillableProviderID(s *string) *IncidentRoleUpdateOne {
-	if s != nil {
-		iruo.SetProviderID(*s)
+func (_u *IncidentRoleUpdateOne) SetNillableProviderID(v *string) *IncidentRoleUpdateOne {
+	if v != nil {
+		_u.SetProviderID(*v)
 	}
-	return iruo
+	return _u
 }
 
 // SetRequired sets the "required" field.
-func (iruo *IncidentRoleUpdateOne) SetRequired(b bool) *IncidentRoleUpdateOne {
-	iruo.mutation.SetRequired(b)
-	return iruo
+func (_u *IncidentRoleUpdateOne) SetRequired(v bool) *IncidentRoleUpdateOne {
+	_u.mutation.SetRequired(v)
+	return _u
 }
 
 // SetNillableRequired sets the "required" field if the given value is not nil.
-func (iruo *IncidentRoleUpdateOne) SetNillableRequired(b *bool) *IncidentRoleUpdateOne {
-	if b != nil {
-		iruo.SetRequired(*b)
+func (_u *IncidentRoleUpdateOne) SetNillableRequired(v *bool) *IncidentRoleUpdateOne {
+	if v != nil {
+		_u.SetRequired(*v)
 	}
-	return iruo
+	return _u
 }
 
 // AddAssignmentIDs adds the "assignments" edge to the IncidentRoleAssignment entity by IDs.
-func (iruo *IncidentRoleUpdateOne) AddAssignmentIDs(ids ...uuid.UUID) *IncidentRoleUpdateOne {
-	iruo.mutation.AddAssignmentIDs(ids...)
-	return iruo
+func (_u *IncidentRoleUpdateOne) AddAssignmentIDs(ids ...uuid.UUID) *IncidentRoleUpdateOne {
+	_u.mutation.AddAssignmentIDs(ids...)
+	return _u
 }
 
 // AddAssignments adds the "assignments" edges to the IncidentRoleAssignment entity.
-func (iruo *IncidentRoleUpdateOne) AddAssignments(i ...*IncidentRoleAssignment) *IncidentRoleUpdateOne {
-	ids := make([]uuid.UUID, len(i))
-	for j := range i {
-		ids[j] = i[j].ID
+func (_u *IncidentRoleUpdateOne) AddAssignments(v ...*IncidentRoleAssignment) *IncidentRoleUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
 	}
-	return iruo.AddAssignmentIDs(ids...)
+	return _u.AddAssignmentIDs(ids...)
 }
 
 // AddDebriefQuestionIDs adds the "debrief_questions" edge to the IncidentDebriefQuestion entity by IDs.
-func (iruo *IncidentRoleUpdateOne) AddDebriefQuestionIDs(ids ...uuid.UUID) *IncidentRoleUpdateOne {
-	iruo.mutation.AddDebriefQuestionIDs(ids...)
-	return iruo
+func (_u *IncidentRoleUpdateOne) AddDebriefQuestionIDs(ids ...uuid.UUID) *IncidentRoleUpdateOne {
+	_u.mutation.AddDebriefQuestionIDs(ids...)
+	return _u
 }
 
 // AddDebriefQuestions adds the "debrief_questions" edges to the IncidentDebriefQuestion entity.
-func (iruo *IncidentRoleUpdateOne) AddDebriefQuestions(i ...*IncidentDebriefQuestion) *IncidentRoleUpdateOne {
-	ids := make([]uuid.UUID, len(i))
-	for j := range i {
-		ids[j] = i[j].ID
+func (_u *IncidentRoleUpdateOne) AddDebriefQuestions(v ...*IncidentDebriefQuestion) *IncidentRoleUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
 	}
-	return iruo.AddDebriefQuestionIDs(ids...)
+	return _u.AddDebriefQuestionIDs(ids...)
 }
 
 // Mutation returns the IncidentRoleMutation object of the builder.
-func (iruo *IncidentRoleUpdateOne) Mutation() *IncidentRoleMutation {
-	return iruo.mutation
+func (_u *IncidentRoleUpdateOne) Mutation() *IncidentRoleMutation {
+	return _u.mutation
 }
 
 // ClearAssignments clears all "assignments" edges to the IncidentRoleAssignment entity.
-func (iruo *IncidentRoleUpdateOne) ClearAssignments() *IncidentRoleUpdateOne {
-	iruo.mutation.ClearAssignments()
-	return iruo
+func (_u *IncidentRoleUpdateOne) ClearAssignments() *IncidentRoleUpdateOne {
+	_u.mutation.ClearAssignments()
+	return _u
 }
 
 // RemoveAssignmentIDs removes the "assignments" edge to IncidentRoleAssignment entities by IDs.
-func (iruo *IncidentRoleUpdateOne) RemoveAssignmentIDs(ids ...uuid.UUID) *IncidentRoleUpdateOne {
-	iruo.mutation.RemoveAssignmentIDs(ids...)
-	return iruo
+func (_u *IncidentRoleUpdateOne) RemoveAssignmentIDs(ids ...uuid.UUID) *IncidentRoleUpdateOne {
+	_u.mutation.RemoveAssignmentIDs(ids...)
+	return _u
 }
 
 // RemoveAssignments removes "assignments" edges to IncidentRoleAssignment entities.
-func (iruo *IncidentRoleUpdateOne) RemoveAssignments(i ...*IncidentRoleAssignment) *IncidentRoleUpdateOne {
-	ids := make([]uuid.UUID, len(i))
-	for j := range i {
-		ids[j] = i[j].ID
+func (_u *IncidentRoleUpdateOne) RemoveAssignments(v ...*IncidentRoleAssignment) *IncidentRoleUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
 	}
-	return iruo.RemoveAssignmentIDs(ids...)
+	return _u.RemoveAssignmentIDs(ids...)
 }
 
 // ClearDebriefQuestions clears all "debrief_questions" edges to the IncidentDebriefQuestion entity.
-func (iruo *IncidentRoleUpdateOne) ClearDebriefQuestions() *IncidentRoleUpdateOne {
-	iruo.mutation.ClearDebriefQuestions()
-	return iruo
+func (_u *IncidentRoleUpdateOne) ClearDebriefQuestions() *IncidentRoleUpdateOne {
+	_u.mutation.ClearDebriefQuestions()
+	return _u
 }
 
 // RemoveDebriefQuestionIDs removes the "debrief_questions" edge to IncidentDebriefQuestion entities by IDs.
-func (iruo *IncidentRoleUpdateOne) RemoveDebriefQuestionIDs(ids ...uuid.UUID) *IncidentRoleUpdateOne {
-	iruo.mutation.RemoveDebriefQuestionIDs(ids...)
-	return iruo
+func (_u *IncidentRoleUpdateOne) RemoveDebriefQuestionIDs(ids ...uuid.UUID) *IncidentRoleUpdateOne {
+	_u.mutation.RemoveDebriefQuestionIDs(ids...)
+	return _u
 }
 
 // RemoveDebriefQuestions removes "debrief_questions" edges to IncidentDebriefQuestion entities.
-func (iruo *IncidentRoleUpdateOne) RemoveDebriefQuestions(i ...*IncidentDebriefQuestion) *IncidentRoleUpdateOne {
-	ids := make([]uuid.UUID, len(i))
-	for j := range i {
-		ids[j] = i[j].ID
+func (_u *IncidentRoleUpdateOne) RemoveDebriefQuestions(v ...*IncidentDebriefQuestion) *IncidentRoleUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
 	}
-	return iruo.RemoveDebriefQuestionIDs(ids...)
+	return _u.RemoveDebriefQuestionIDs(ids...)
 }
 
 // Where appends a list predicates to the IncidentRoleUpdate builder.
-func (iruo *IncidentRoleUpdateOne) Where(ps ...predicate.IncidentRole) *IncidentRoleUpdateOne {
-	iruo.mutation.Where(ps...)
-	return iruo
+func (_u *IncidentRoleUpdateOne) Where(ps ...predicate.IncidentRole) *IncidentRoleUpdateOne {
+	_u.mutation.Where(ps...)
+	return _u
 }
 
 // Select allows selecting one or more fields (columns) of the returned entity.
 // The default is selecting all fields defined in the entity schema.
-func (iruo *IncidentRoleUpdateOne) Select(field string, fields ...string) *IncidentRoleUpdateOne {
-	iruo.fields = append([]string{field}, fields...)
-	return iruo
+func (_u *IncidentRoleUpdateOne) Select(field string, fields ...string) *IncidentRoleUpdateOne {
+	_u.fields = append([]string{field}, fields...)
+	return _u
 }
 
 // Save executes the query and returns the updated IncidentRole entity.
-func (iruo *IncidentRoleUpdateOne) Save(ctx context.Context) (*IncidentRole, error) {
-	return withHooks(ctx, iruo.sqlSave, iruo.mutation, iruo.hooks)
+func (_u *IncidentRoleUpdateOne) Save(ctx context.Context) (*IncidentRole, error) {
+	return withHooks(ctx, _u.sqlSave, _u.mutation, _u.hooks)
 }
 
 // SaveX is like Save, but panics if an error occurs.
-func (iruo *IncidentRoleUpdateOne) SaveX(ctx context.Context) *IncidentRole {
-	node, err := iruo.Save(ctx)
+func (_u *IncidentRoleUpdateOne) SaveX(ctx context.Context) *IncidentRole {
+	node, err := _u.Save(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -518,43 +518,43 @@ func (iruo *IncidentRoleUpdateOne) SaveX(ctx context.Context) *IncidentRole {
 }
 
 // Exec executes the query on the entity.
-func (iruo *IncidentRoleUpdateOne) Exec(ctx context.Context) error {
-	_, err := iruo.Save(ctx)
+func (_u *IncidentRoleUpdateOne) Exec(ctx context.Context) error {
+	_, err := _u.Save(ctx)
 	return err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (iruo *IncidentRoleUpdateOne) ExecX(ctx context.Context) {
-	if err := iruo.Exec(ctx); err != nil {
+func (_u *IncidentRoleUpdateOne) ExecX(ctx context.Context) {
+	if err := _u.Exec(ctx); err != nil {
 		panic(err)
 	}
 }
 
 // check runs all checks and user-defined validators on the builder.
-func (iruo *IncidentRoleUpdateOne) check() error {
-	if iruo.mutation.TenantCleared() && len(iruo.mutation.TenantIDs()) > 0 {
+func (_u *IncidentRoleUpdateOne) check() error {
+	if _u.mutation.TenantCleared() && len(_u.mutation.TenantIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "IncidentRole.tenant"`)
 	}
 	return nil
 }
 
 // Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
-func (iruo *IncidentRoleUpdateOne) Modify(modifiers ...func(u *sql.UpdateBuilder)) *IncidentRoleUpdateOne {
-	iruo.modifiers = append(iruo.modifiers, modifiers...)
-	return iruo
+func (_u *IncidentRoleUpdateOne) Modify(modifiers ...func(u *sql.UpdateBuilder)) *IncidentRoleUpdateOne {
+	_u.modifiers = append(_u.modifiers, modifiers...)
+	return _u
 }
 
-func (iruo *IncidentRoleUpdateOne) sqlSave(ctx context.Context) (_node *IncidentRole, err error) {
-	if err := iruo.check(); err != nil {
+func (_u *IncidentRoleUpdateOne) sqlSave(ctx context.Context) (_node *IncidentRole, err error) {
+	if err := _u.check(); err != nil {
 		return _node, err
 	}
 	_spec := sqlgraph.NewUpdateSpec(incidentrole.Table, incidentrole.Columns, sqlgraph.NewFieldSpec(incidentrole.FieldID, field.TypeUUID))
-	id, ok := iruo.mutation.ID()
+	id, ok := _u.mutation.ID()
 	if !ok {
 		return nil, &ValidationError{Name: "id", err: errors.New(`ent: missing "IncidentRole.id" for update`)}
 	}
 	_spec.Node.ID.Value = id
-	if fields := iruo.fields; len(fields) > 0 {
+	if fields := _u.fields; len(fields) > 0 {
 		_spec.Node.Columns = make([]string, 0, len(fields))
 		_spec.Node.Columns = append(_spec.Node.Columns, incidentrole.FieldID)
 		for _, f := range fields {
@@ -566,29 +566,29 @@ func (iruo *IncidentRoleUpdateOne) sqlSave(ctx context.Context) (_node *Incident
 			}
 		}
 	}
-	if ps := iruo.mutation.predicates; len(ps) > 0 {
+	if ps := _u.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {
 				ps[i](selector)
 			}
 		}
 	}
-	if value, ok := iruo.mutation.ArchiveTime(); ok {
+	if value, ok := _u.mutation.ArchiveTime(); ok {
 		_spec.SetField(incidentrole.FieldArchiveTime, field.TypeTime, value)
 	}
-	if iruo.mutation.ArchiveTimeCleared() {
+	if _u.mutation.ArchiveTimeCleared() {
 		_spec.ClearField(incidentrole.FieldArchiveTime, field.TypeTime)
 	}
-	if value, ok := iruo.mutation.Name(); ok {
+	if value, ok := _u.mutation.Name(); ok {
 		_spec.SetField(incidentrole.FieldName, field.TypeString, value)
 	}
-	if value, ok := iruo.mutation.ProviderID(); ok {
+	if value, ok := _u.mutation.ProviderID(); ok {
 		_spec.SetField(incidentrole.FieldProviderID, field.TypeString, value)
 	}
-	if value, ok := iruo.mutation.Required(); ok {
+	if value, ok := _u.mutation.Required(); ok {
 		_spec.SetField(incidentrole.FieldRequired, field.TypeBool, value)
 	}
-	if iruo.mutation.AssignmentsCleared() {
+	if _u.mutation.AssignmentsCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: true,
@@ -601,7 +601,7 @@ func (iruo *IncidentRoleUpdateOne) sqlSave(ctx context.Context) (_node *Incident
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := iruo.mutation.RemovedAssignmentsIDs(); len(nodes) > 0 && !iruo.mutation.AssignmentsCleared() {
+	if nodes := _u.mutation.RemovedAssignmentsIDs(); len(nodes) > 0 && !_u.mutation.AssignmentsCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: true,
@@ -617,7 +617,7 @@ func (iruo *IncidentRoleUpdateOne) sqlSave(ctx context.Context) (_node *Incident
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := iruo.mutation.AssignmentsIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.AssignmentsIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: true,
@@ -633,7 +633,7 @@ func (iruo *IncidentRoleUpdateOne) sqlSave(ctx context.Context) (_node *Incident
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if iruo.mutation.DebriefQuestionsCleared() {
+	if _u.mutation.DebriefQuestionsCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
 			Inverse: true,
@@ -646,7 +646,7 @@ func (iruo *IncidentRoleUpdateOne) sqlSave(ctx context.Context) (_node *Incident
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := iruo.mutation.RemovedDebriefQuestionsIDs(); len(nodes) > 0 && !iruo.mutation.DebriefQuestionsCleared() {
+	if nodes := _u.mutation.RemovedDebriefQuestionsIDs(); len(nodes) > 0 && !_u.mutation.DebriefQuestionsCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
 			Inverse: true,
@@ -662,7 +662,7 @@ func (iruo *IncidentRoleUpdateOne) sqlSave(ctx context.Context) (_node *Incident
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := iruo.mutation.DebriefQuestionsIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.DebriefQuestionsIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
 			Inverse: true,
@@ -678,11 +678,11 @@ func (iruo *IncidentRoleUpdateOne) sqlSave(ctx context.Context) (_node *Incident
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	_spec.AddModifiers(iruo.modifiers...)
-	_node = &IncidentRole{config: iruo.config}
+	_spec.AddModifiers(_u.modifiers...)
+	_node = &IncidentRole{config: _u.config}
 	_spec.Assign = _node.assignValues
 	_spec.ScanValues = _node.scanValues
-	if err = sqlgraph.UpdateNode(ctx, iruo.driver, _spec); err != nil {
+	if err = sqlgraph.UpdateNode(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{incidentrole.Label}
 		} else if sqlgraph.IsConstraintError(err) {
@@ -690,6 +690,6 @@ func (iruo *IncidentRoleUpdateOne) sqlSave(ctx context.Context) (_node *Incident
 		}
 		return nil, err
 	}
-	iruo.mutation.done = true
+	_u.mutation.done = true
 	return _node, nil
 }

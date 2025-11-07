@@ -53,7 +53,7 @@ func (*AlertMetrics) scanValues(columns []string) ([]any, error) {
 
 // assignValues assigns the values that were returned from sql.Rows (after scanning)
 // to the AlertMetrics fields.
-func (am *AlertMetrics) assignValues(columns []string, values []any) error {
+func (_m *AlertMetrics) assignValues(columns []string, values []any) error {
 	if m, n := len(values), len(columns); m < n {
 		return fmt.Errorf("mismatch number of scan values: %d != %d", m, n)
 	}
@@ -63,64 +63,64 @@ func (am *AlertMetrics) assignValues(columns []string, values []any) error {
 			if value, ok := values[i].(*sql.NullInt64); !ok {
 				return fmt.Errorf("unexpected type %T for field event_count", values[i])
 			} else if value.Valid {
-				am.EventCount = int(value.Int64)
+				_m.EventCount = int(value.Int64)
 			}
 		case alertmetrics.FieldInterruptCount:
 			if value, ok := values[i].(*sql.NullInt64); !ok {
 				return fmt.Errorf("unexpected type %T for field interrupt_count", values[i])
 			} else if value.Valid {
-				am.InterruptCount = int(value.Int64)
+				_m.InterruptCount = int(value.Int64)
 			}
 		case alertmetrics.FieldNightInterruptCount:
 			if value, ok := values[i].(*sql.NullInt64); !ok {
 				return fmt.Errorf("unexpected type %T for field night_interrupt_count", values[i])
 			} else if value.Valid {
-				am.NightInterruptCount = int(value.Int64)
+				_m.NightInterruptCount = int(value.Int64)
 			}
 		case alertmetrics.FieldIncidents:
 			if value, ok := values[i].(*sql.NullInt64); !ok {
 				return fmt.Errorf("unexpected type %T for field incidents", values[i])
 			} else if value.Valid {
-				am.Incidents = int(value.Int64)
+				_m.Incidents = int(value.Int64)
 			}
 		case alertmetrics.FieldFeedbackCount:
 			if value, ok := values[i].(*sql.NullInt64); !ok {
 				return fmt.Errorf("unexpected type %T for field feedback_count", values[i])
 			} else if value.Valid {
-				am.FeedbackCount = int(value.Int64)
+				_m.FeedbackCount = int(value.Int64)
 			}
 		case alertmetrics.FieldFeedbackActionable:
 			if value, ok := values[i].(*sql.NullInt64); !ok {
 				return fmt.Errorf("unexpected type %T for field feedback_actionable", values[i])
 			} else if value.Valid {
-				am.FeedbackActionable = int(value.Int64)
+				_m.FeedbackActionable = int(value.Int64)
 			}
 		case alertmetrics.FieldFeedbackAccurate:
 			if value, ok := values[i].(*sql.NullInt64); !ok {
 				return fmt.Errorf("unexpected type %T for field feedback_accurate", values[i])
 			} else if value.Valid {
-				am.FeedbackAccurate = int(value.Int64)
+				_m.FeedbackAccurate = int(value.Int64)
 			}
 		case alertmetrics.FieldFeedbackAccurateUnknown:
 			if value, ok := values[i].(*sql.NullInt64); !ok {
 				return fmt.Errorf("unexpected type %T for field feedback_accurate_unknown", values[i])
 			} else if value.Valid {
-				am.FeedbackAccurateUnknown = int(value.Int64)
+				_m.FeedbackAccurateUnknown = int(value.Int64)
 			}
 		case alertmetrics.FieldFeedbackDocsAvailable:
 			if value, ok := values[i].(*sql.NullInt64); !ok {
 				return fmt.Errorf("unexpected type %T for field feedback_docs_available", values[i])
 			} else if value.Valid {
-				am.FeedbackDocsAvailable = int(value.Int64)
+				_m.FeedbackDocsAvailable = int(value.Int64)
 			}
 		case alertmetrics.FieldFeedbackDocsNeedUpdate:
 			if value, ok := values[i].(*sql.NullInt64); !ok {
 				return fmt.Errorf("unexpected type %T for field feedback_docs_need_update", values[i])
 			} else if value.Valid {
-				am.FeedbackDocsNeedUpdate = int(value.Int64)
+				_m.FeedbackDocsNeedUpdate = int(value.Int64)
 			}
 		default:
-			am.selectValues.Set(columns[i], values[i])
+			_m.selectValues.Set(columns[i], values[i])
 		}
 	}
 	return nil
@@ -128,54 +128,54 @@ func (am *AlertMetrics) assignValues(columns []string, values []any) error {
 
 // Value returns the ent.Value that was dynamically selected and assigned to the AlertMetrics.
 // This includes values selected through modifiers, order, etc.
-func (am *AlertMetrics) Value(name string) (ent.Value, error) {
-	return am.selectValues.Get(name)
+func (_m *AlertMetrics) Value(name string) (ent.Value, error) {
+	return _m.selectValues.Get(name)
 }
 
 // Unwrap unwraps the AlertMetrics entity that was returned from a transaction after it was closed,
 // so that all future queries will be executed through the driver which created the transaction.
-func (am *AlertMetrics) Unwrap() *AlertMetrics {
-	_tx, ok := am.config.driver.(*txDriver)
+func (_m *AlertMetrics) Unwrap() *AlertMetrics {
+	_tx, ok := _m.config.driver.(*txDriver)
 	if !ok {
 		panic("ent: AlertMetrics is not a transactional entity")
 	}
-	am.config.driver = _tx.drv
-	return am
+	_m.config.driver = _tx.drv
+	return _m
 }
 
 // String implements the fmt.Stringer.
-func (am *AlertMetrics) String() string {
+func (_m *AlertMetrics) String() string {
 	var builder strings.Builder
 	builder.WriteString("AlertMetrics(")
 	builder.WriteString("event_count=")
-	builder.WriteString(fmt.Sprintf("%v", am.EventCount))
+	builder.WriteString(fmt.Sprintf("%v", _m.EventCount))
 	builder.WriteString(", ")
 	builder.WriteString("interrupt_count=")
-	builder.WriteString(fmt.Sprintf("%v", am.InterruptCount))
+	builder.WriteString(fmt.Sprintf("%v", _m.InterruptCount))
 	builder.WriteString(", ")
 	builder.WriteString("night_interrupt_count=")
-	builder.WriteString(fmt.Sprintf("%v", am.NightInterruptCount))
+	builder.WriteString(fmt.Sprintf("%v", _m.NightInterruptCount))
 	builder.WriteString(", ")
 	builder.WriteString("incidents=")
-	builder.WriteString(fmt.Sprintf("%v", am.Incidents))
+	builder.WriteString(fmt.Sprintf("%v", _m.Incidents))
 	builder.WriteString(", ")
 	builder.WriteString("feedback_count=")
-	builder.WriteString(fmt.Sprintf("%v", am.FeedbackCount))
+	builder.WriteString(fmt.Sprintf("%v", _m.FeedbackCount))
 	builder.WriteString(", ")
 	builder.WriteString("feedback_actionable=")
-	builder.WriteString(fmt.Sprintf("%v", am.FeedbackActionable))
+	builder.WriteString(fmt.Sprintf("%v", _m.FeedbackActionable))
 	builder.WriteString(", ")
 	builder.WriteString("feedback_accurate=")
-	builder.WriteString(fmt.Sprintf("%v", am.FeedbackAccurate))
+	builder.WriteString(fmt.Sprintf("%v", _m.FeedbackAccurate))
 	builder.WriteString(", ")
 	builder.WriteString("feedback_accurate_unknown=")
-	builder.WriteString(fmt.Sprintf("%v", am.FeedbackAccurateUnknown))
+	builder.WriteString(fmt.Sprintf("%v", _m.FeedbackAccurateUnknown))
 	builder.WriteString(", ")
 	builder.WriteString("feedback_docs_available=")
-	builder.WriteString(fmt.Sprintf("%v", am.FeedbackDocsAvailable))
+	builder.WriteString(fmt.Sprintf("%v", _m.FeedbackDocsAvailable))
 	builder.WriteString(", ")
 	builder.WriteString("feedback_docs_need_update=")
-	builder.WriteString(fmt.Sprintf("%v", am.FeedbackDocsNeedUpdate))
+	builder.WriteString(fmt.Sprintf("%v", _m.FeedbackDocsNeedUpdate))
 	builder.WriteByte(')')
 	return builder.String()
 }

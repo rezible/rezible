@@ -113,7 +113,7 @@ func (*SystemComponentSignal) scanValues(columns []string) ([]any, error) {
 
 // assignValues assigns the values that were returned from sql.Rows (after scanning)
 // to the SystemComponentSignal fields.
-func (scs *SystemComponentSignal) assignValues(columns []string, values []any) error {
+func (_m *SystemComponentSignal) assignValues(columns []string, values []any) error {
 	if m, n := len(values), len(columns); m < n {
 		return fmt.Errorf("mismatch number of scan values: %d != %d", m, n)
 	}
@@ -123,40 +123,40 @@ func (scs *SystemComponentSignal) assignValues(columns []string, values []any) e
 			if value, ok := values[i].(*uuid.UUID); !ok {
 				return fmt.Errorf("unexpected type %T for field id", values[i])
 			} else if value != nil {
-				scs.ID = *value
+				_m.ID = *value
 			}
 		case systemcomponentsignal.FieldTenantID:
 			if value, ok := values[i].(*sql.NullInt64); !ok {
 				return fmt.Errorf("unexpected type %T for field tenant_id", values[i])
 			} else if value.Valid {
-				scs.TenantID = int(value.Int64)
+				_m.TenantID = int(value.Int64)
 			}
 		case systemcomponentsignal.FieldComponentID:
 			if value, ok := values[i].(*uuid.UUID); !ok {
 				return fmt.Errorf("unexpected type %T for field component_id", values[i])
 			} else if value != nil {
-				scs.ComponentID = *value
+				_m.ComponentID = *value
 			}
 		case systemcomponentsignal.FieldLabel:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field label", values[i])
 			} else if value.Valid {
-				scs.Label = value.String
+				_m.Label = value.String
 			}
 		case systemcomponentsignal.FieldDescription:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field description", values[i])
 			} else if value.Valid {
-				scs.Description = value.String
+				_m.Description = value.String
 			}
 		case systemcomponentsignal.FieldCreatedAt:
 			if value, ok := values[i].(*sql.NullTime); !ok {
 				return fmt.Errorf("unexpected type %T for field created_at", values[i])
 			} else if value.Valid {
-				scs.CreatedAt = value.Time
+				_m.CreatedAt = value.Time
 			}
 		default:
-			scs.selectValues.Set(columns[i], values[i])
+			_m.selectValues.Set(columns[i], values[i])
 		}
 	}
 	return nil
@@ -164,67 +164,67 @@ func (scs *SystemComponentSignal) assignValues(columns []string, values []any) e
 
 // Value returns the ent.Value that was dynamically selected and assigned to the SystemComponentSignal.
 // This includes values selected through modifiers, order, etc.
-func (scs *SystemComponentSignal) Value(name string) (ent.Value, error) {
-	return scs.selectValues.Get(name)
+func (_m *SystemComponentSignal) Value(name string) (ent.Value, error) {
+	return _m.selectValues.Get(name)
 }
 
 // QueryTenant queries the "tenant" edge of the SystemComponentSignal entity.
-func (scs *SystemComponentSignal) QueryTenant() *TenantQuery {
-	return NewSystemComponentSignalClient(scs.config).QueryTenant(scs)
+func (_m *SystemComponentSignal) QueryTenant() *TenantQuery {
+	return NewSystemComponentSignalClient(_m.config).QueryTenant(_m)
 }
 
 // QueryComponent queries the "component" edge of the SystemComponentSignal entity.
-func (scs *SystemComponentSignal) QueryComponent() *SystemComponentQuery {
-	return NewSystemComponentSignalClient(scs.config).QueryComponent(scs)
+func (_m *SystemComponentSignal) QueryComponent() *SystemComponentQuery {
+	return NewSystemComponentSignalClient(_m.config).QueryComponent(_m)
 }
 
 // QueryRelationships queries the "relationships" edge of the SystemComponentSignal entity.
-func (scs *SystemComponentSignal) QueryRelationships() *SystemAnalysisRelationshipQuery {
-	return NewSystemComponentSignalClient(scs.config).QueryRelationships(scs)
+func (_m *SystemComponentSignal) QueryRelationships() *SystemAnalysisRelationshipQuery {
+	return NewSystemComponentSignalClient(_m.config).QueryRelationships(_m)
 }
 
 // QueryFeedbackSignals queries the "feedback_signals" edge of the SystemComponentSignal entity.
-func (scs *SystemComponentSignal) QueryFeedbackSignals() *SystemRelationshipFeedbackSignalQuery {
-	return NewSystemComponentSignalClient(scs.config).QueryFeedbackSignals(scs)
+func (_m *SystemComponentSignal) QueryFeedbackSignals() *SystemRelationshipFeedbackSignalQuery {
+	return NewSystemComponentSignalClient(_m.config).QueryFeedbackSignals(_m)
 }
 
 // Update returns a builder for updating this SystemComponentSignal.
 // Note that you need to call SystemComponentSignal.Unwrap() before calling this method if this SystemComponentSignal
 // was returned from a transaction, and the transaction was committed or rolled back.
-func (scs *SystemComponentSignal) Update() *SystemComponentSignalUpdateOne {
-	return NewSystemComponentSignalClient(scs.config).UpdateOne(scs)
+func (_m *SystemComponentSignal) Update() *SystemComponentSignalUpdateOne {
+	return NewSystemComponentSignalClient(_m.config).UpdateOne(_m)
 }
 
 // Unwrap unwraps the SystemComponentSignal entity that was returned from a transaction after it was closed,
 // so that all future queries will be executed through the driver which created the transaction.
-func (scs *SystemComponentSignal) Unwrap() *SystemComponentSignal {
-	_tx, ok := scs.config.driver.(*txDriver)
+func (_m *SystemComponentSignal) Unwrap() *SystemComponentSignal {
+	_tx, ok := _m.config.driver.(*txDriver)
 	if !ok {
 		panic("ent: SystemComponentSignal is not a transactional entity")
 	}
-	scs.config.driver = _tx.drv
-	return scs
+	_m.config.driver = _tx.drv
+	return _m
 }
 
 // String implements the fmt.Stringer.
-func (scs *SystemComponentSignal) String() string {
+func (_m *SystemComponentSignal) String() string {
 	var builder strings.Builder
 	builder.WriteString("SystemComponentSignal(")
-	builder.WriteString(fmt.Sprintf("id=%v, ", scs.ID))
+	builder.WriteString(fmt.Sprintf("id=%v, ", _m.ID))
 	builder.WriteString("tenant_id=")
-	builder.WriteString(fmt.Sprintf("%v", scs.TenantID))
+	builder.WriteString(fmt.Sprintf("%v", _m.TenantID))
 	builder.WriteString(", ")
 	builder.WriteString("component_id=")
-	builder.WriteString(fmt.Sprintf("%v", scs.ComponentID))
+	builder.WriteString(fmt.Sprintf("%v", _m.ComponentID))
 	builder.WriteString(", ")
 	builder.WriteString("label=")
-	builder.WriteString(scs.Label)
+	builder.WriteString(_m.Label)
 	builder.WriteString(", ")
 	builder.WriteString("description=")
-	builder.WriteString(scs.Description)
+	builder.WriteString(_m.Description)
 	builder.WriteString(", ")
 	builder.WriteString("created_at=")
-	builder.WriteString(scs.CreatedAt.Format(time.ANSIC))
+	builder.WriteString(_m.CreatedAt.Format(time.ANSIC))
 	builder.WriteByte(')')
 	return builder.String()
 }

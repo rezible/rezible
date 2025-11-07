@@ -29,172 +29,172 @@ type SystemAnalysisUpdate struct {
 }
 
 // Where appends a list predicates to the SystemAnalysisUpdate builder.
-func (sau *SystemAnalysisUpdate) Where(ps ...predicate.SystemAnalysis) *SystemAnalysisUpdate {
-	sau.mutation.Where(ps...)
-	return sau
+func (_u *SystemAnalysisUpdate) Where(ps ...predicate.SystemAnalysis) *SystemAnalysisUpdate {
+	_u.mutation.Where(ps...)
+	return _u
 }
 
 // SetCreatedAt sets the "created_at" field.
-func (sau *SystemAnalysisUpdate) SetCreatedAt(t time.Time) *SystemAnalysisUpdate {
-	sau.mutation.SetCreatedAt(t)
-	return sau
+func (_u *SystemAnalysisUpdate) SetCreatedAt(v time.Time) *SystemAnalysisUpdate {
+	_u.mutation.SetCreatedAt(v)
+	return _u
 }
 
 // SetNillableCreatedAt sets the "created_at" field if the given value is not nil.
-func (sau *SystemAnalysisUpdate) SetNillableCreatedAt(t *time.Time) *SystemAnalysisUpdate {
-	if t != nil {
-		sau.SetCreatedAt(*t)
+func (_u *SystemAnalysisUpdate) SetNillableCreatedAt(v *time.Time) *SystemAnalysisUpdate {
+	if v != nil {
+		_u.SetCreatedAt(*v)
 	}
-	return sau
+	return _u
 }
 
 // SetUpdatedAt sets the "updated_at" field.
-func (sau *SystemAnalysisUpdate) SetUpdatedAt(t time.Time) *SystemAnalysisUpdate {
-	sau.mutation.SetUpdatedAt(t)
-	return sau
+func (_u *SystemAnalysisUpdate) SetUpdatedAt(v time.Time) *SystemAnalysisUpdate {
+	_u.mutation.SetUpdatedAt(v)
+	return _u
 }
 
 // SetRetrospectiveID sets the "retrospective" edge to the Retrospective entity by ID.
-func (sau *SystemAnalysisUpdate) SetRetrospectiveID(id uuid.UUID) *SystemAnalysisUpdate {
-	sau.mutation.SetRetrospectiveID(id)
-	return sau
+func (_u *SystemAnalysisUpdate) SetRetrospectiveID(id uuid.UUID) *SystemAnalysisUpdate {
+	_u.mutation.SetRetrospectiveID(id)
+	return _u
 }
 
 // SetRetrospective sets the "retrospective" edge to the Retrospective entity.
-func (sau *SystemAnalysisUpdate) SetRetrospective(r *Retrospective) *SystemAnalysisUpdate {
-	return sau.SetRetrospectiveID(r.ID)
+func (_u *SystemAnalysisUpdate) SetRetrospective(v *Retrospective) *SystemAnalysisUpdate {
+	return _u.SetRetrospectiveID(v.ID)
 }
 
 // AddComponentIDs adds the "components" edge to the SystemComponent entity by IDs.
-func (sau *SystemAnalysisUpdate) AddComponentIDs(ids ...uuid.UUID) *SystemAnalysisUpdate {
-	sau.mutation.AddComponentIDs(ids...)
-	return sau
+func (_u *SystemAnalysisUpdate) AddComponentIDs(ids ...uuid.UUID) *SystemAnalysisUpdate {
+	_u.mutation.AddComponentIDs(ids...)
+	return _u
 }
 
 // AddComponents adds the "components" edges to the SystemComponent entity.
-func (sau *SystemAnalysisUpdate) AddComponents(s ...*SystemComponent) *SystemAnalysisUpdate {
-	ids := make([]uuid.UUID, len(s))
-	for i := range s {
-		ids[i] = s[i].ID
+func (_u *SystemAnalysisUpdate) AddComponents(v ...*SystemComponent) *SystemAnalysisUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
 	}
-	return sau.AddComponentIDs(ids...)
+	return _u.AddComponentIDs(ids...)
 }
 
 // AddRelationshipIDs adds the "relationships" edge to the SystemAnalysisRelationship entity by IDs.
-func (sau *SystemAnalysisUpdate) AddRelationshipIDs(ids ...uuid.UUID) *SystemAnalysisUpdate {
-	sau.mutation.AddRelationshipIDs(ids...)
-	return sau
+func (_u *SystemAnalysisUpdate) AddRelationshipIDs(ids ...uuid.UUID) *SystemAnalysisUpdate {
+	_u.mutation.AddRelationshipIDs(ids...)
+	return _u
 }
 
 // AddRelationships adds the "relationships" edges to the SystemAnalysisRelationship entity.
-func (sau *SystemAnalysisUpdate) AddRelationships(s ...*SystemAnalysisRelationship) *SystemAnalysisUpdate {
-	ids := make([]uuid.UUID, len(s))
-	for i := range s {
-		ids[i] = s[i].ID
+func (_u *SystemAnalysisUpdate) AddRelationships(v ...*SystemAnalysisRelationship) *SystemAnalysisUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
 	}
-	return sau.AddRelationshipIDs(ids...)
+	return _u.AddRelationshipIDs(ids...)
 }
 
 // AddAnalysisComponentIDs adds the "analysis_components" edge to the SystemAnalysisComponent entity by IDs.
-func (sau *SystemAnalysisUpdate) AddAnalysisComponentIDs(ids ...uuid.UUID) *SystemAnalysisUpdate {
-	sau.mutation.AddAnalysisComponentIDs(ids...)
-	return sau
+func (_u *SystemAnalysisUpdate) AddAnalysisComponentIDs(ids ...uuid.UUID) *SystemAnalysisUpdate {
+	_u.mutation.AddAnalysisComponentIDs(ids...)
+	return _u
 }
 
 // AddAnalysisComponents adds the "analysis_components" edges to the SystemAnalysisComponent entity.
-func (sau *SystemAnalysisUpdate) AddAnalysisComponents(s ...*SystemAnalysisComponent) *SystemAnalysisUpdate {
-	ids := make([]uuid.UUID, len(s))
-	for i := range s {
-		ids[i] = s[i].ID
+func (_u *SystemAnalysisUpdate) AddAnalysisComponents(v ...*SystemAnalysisComponent) *SystemAnalysisUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
 	}
-	return sau.AddAnalysisComponentIDs(ids...)
+	return _u.AddAnalysisComponentIDs(ids...)
 }
 
 // Mutation returns the SystemAnalysisMutation object of the builder.
-func (sau *SystemAnalysisUpdate) Mutation() *SystemAnalysisMutation {
-	return sau.mutation
+func (_u *SystemAnalysisUpdate) Mutation() *SystemAnalysisMutation {
+	return _u.mutation
 }
 
 // ClearRetrospective clears the "retrospective" edge to the Retrospective entity.
-func (sau *SystemAnalysisUpdate) ClearRetrospective() *SystemAnalysisUpdate {
-	sau.mutation.ClearRetrospective()
-	return sau
+func (_u *SystemAnalysisUpdate) ClearRetrospective() *SystemAnalysisUpdate {
+	_u.mutation.ClearRetrospective()
+	return _u
 }
 
 // ClearComponents clears all "components" edges to the SystemComponent entity.
-func (sau *SystemAnalysisUpdate) ClearComponents() *SystemAnalysisUpdate {
-	sau.mutation.ClearComponents()
-	return sau
+func (_u *SystemAnalysisUpdate) ClearComponents() *SystemAnalysisUpdate {
+	_u.mutation.ClearComponents()
+	return _u
 }
 
 // RemoveComponentIDs removes the "components" edge to SystemComponent entities by IDs.
-func (sau *SystemAnalysisUpdate) RemoveComponentIDs(ids ...uuid.UUID) *SystemAnalysisUpdate {
-	sau.mutation.RemoveComponentIDs(ids...)
-	return sau
+func (_u *SystemAnalysisUpdate) RemoveComponentIDs(ids ...uuid.UUID) *SystemAnalysisUpdate {
+	_u.mutation.RemoveComponentIDs(ids...)
+	return _u
 }
 
 // RemoveComponents removes "components" edges to SystemComponent entities.
-func (sau *SystemAnalysisUpdate) RemoveComponents(s ...*SystemComponent) *SystemAnalysisUpdate {
-	ids := make([]uuid.UUID, len(s))
-	for i := range s {
-		ids[i] = s[i].ID
+func (_u *SystemAnalysisUpdate) RemoveComponents(v ...*SystemComponent) *SystemAnalysisUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
 	}
-	return sau.RemoveComponentIDs(ids...)
+	return _u.RemoveComponentIDs(ids...)
 }
 
 // ClearRelationships clears all "relationships" edges to the SystemAnalysisRelationship entity.
-func (sau *SystemAnalysisUpdate) ClearRelationships() *SystemAnalysisUpdate {
-	sau.mutation.ClearRelationships()
-	return sau
+func (_u *SystemAnalysisUpdate) ClearRelationships() *SystemAnalysisUpdate {
+	_u.mutation.ClearRelationships()
+	return _u
 }
 
 // RemoveRelationshipIDs removes the "relationships" edge to SystemAnalysisRelationship entities by IDs.
-func (sau *SystemAnalysisUpdate) RemoveRelationshipIDs(ids ...uuid.UUID) *SystemAnalysisUpdate {
-	sau.mutation.RemoveRelationshipIDs(ids...)
-	return sau
+func (_u *SystemAnalysisUpdate) RemoveRelationshipIDs(ids ...uuid.UUID) *SystemAnalysisUpdate {
+	_u.mutation.RemoveRelationshipIDs(ids...)
+	return _u
 }
 
 // RemoveRelationships removes "relationships" edges to SystemAnalysisRelationship entities.
-func (sau *SystemAnalysisUpdate) RemoveRelationships(s ...*SystemAnalysisRelationship) *SystemAnalysisUpdate {
-	ids := make([]uuid.UUID, len(s))
-	for i := range s {
-		ids[i] = s[i].ID
+func (_u *SystemAnalysisUpdate) RemoveRelationships(v ...*SystemAnalysisRelationship) *SystemAnalysisUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
 	}
-	return sau.RemoveRelationshipIDs(ids...)
+	return _u.RemoveRelationshipIDs(ids...)
 }
 
 // ClearAnalysisComponents clears all "analysis_components" edges to the SystemAnalysisComponent entity.
-func (sau *SystemAnalysisUpdate) ClearAnalysisComponents() *SystemAnalysisUpdate {
-	sau.mutation.ClearAnalysisComponents()
-	return sau
+func (_u *SystemAnalysisUpdate) ClearAnalysisComponents() *SystemAnalysisUpdate {
+	_u.mutation.ClearAnalysisComponents()
+	return _u
 }
 
 // RemoveAnalysisComponentIDs removes the "analysis_components" edge to SystemAnalysisComponent entities by IDs.
-func (sau *SystemAnalysisUpdate) RemoveAnalysisComponentIDs(ids ...uuid.UUID) *SystemAnalysisUpdate {
-	sau.mutation.RemoveAnalysisComponentIDs(ids...)
-	return sau
+func (_u *SystemAnalysisUpdate) RemoveAnalysisComponentIDs(ids ...uuid.UUID) *SystemAnalysisUpdate {
+	_u.mutation.RemoveAnalysisComponentIDs(ids...)
+	return _u
 }
 
 // RemoveAnalysisComponents removes "analysis_components" edges to SystemAnalysisComponent entities.
-func (sau *SystemAnalysisUpdate) RemoveAnalysisComponents(s ...*SystemAnalysisComponent) *SystemAnalysisUpdate {
-	ids := make([]uuid.UUID, len(s))
-	for i := range s {
-		ids[i] = s[i].ID
+func (_u *SystemAnalysisUpdate) RemoveAnalysisComponents(v ...*SystemAnalysisComponent) *SystemAnalysisUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
 	}
-	return sau.RemoveAnalysisComponentIDs(ids...)
+	return _u.RemoveAnalysisComponentIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
-func (sau *SystemAnalysisUpdate) Save(ctx context.Context) (int, error) {
-	if err := sau.defaults(); err != nil {
+func (_u *SystemAnalysisUpdate) Save(ctx context.Context) (int, error) {
+	if err := _u.defaults(); err != nil {
 		return 0, err
 	}
-	return withHooks(ctx, sau.sqlSave, sau.mutation, sau.hooks)
+	return withHooks(ctx, _u.sqlSave, _u.mutation, _u.hooks)
 }
 
 // SaveX is like Save, but panics if an error occurs.
-func (sau *SystemAnalysisUpdate) SaveX(ctx context.Context) int {
-	affected, err := sau.Save(ctx)
+func (_u *SystemAnalysisUpdate) SaveX(ctx context.Context) int {
+	affected, err := _u.Save(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -202,66 +202,66 @@ func (sau *SystemAnalysisUpdate) SaveX(ctx context.Context) int {
 }
 
 // Exec executes the query.
-func (sau *SystemAnalysisUpdate) Exec(ctx context.Context) error {
-	_, err := sau.Save(ctx)
+func (_u *SystemAnalysisUpdate) Exec(ctx context.Context) error {
+	_, err := _u.Save(ctx)
 	return err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (sau *SystemAnalysisUpdate) ExecX(ctx context.Context) {
-	if err := sau.Exec(ctx); err != nil {
+func (_u *SystemAnalysisUpdate) ExecX(ctx context.Context) {
+	if err := _u.Exec(ctx); err != nil {
 		panic(err)
 	}
 }
 
 // defaults sets the default values of the builder before save.
-func (sau *SystemAnalysisUpdate) defaults() error {
-	if _, ok := sau.mutation.UpdatedAt(); !ok {
+func (_u *SystemAnalysisUpdate) defaults() error {
+	if _, ok := _u.mutation.UpdatedAt(); !ok {
 		if systemanalysis.UpdateDefaultUpdatedAt == nil {
 			return fmt.Errorf("ent: uninitialized systemanalysis.UpdateDefaultUpdatedAt (forgotten import ent/runtime?)")
 		}
 		v := systemanalysis.UpdateDefaultUpdatedAt()
-		sau.mutation.SetUpdatedAt(v)
+		_u.mutation.SetUpdatedAt(v)
 	}
 	return nil
 }
 
 // check runs all checks and user-defined validators on the builder.
-func (sau *SystemAnalysisUpdate) check() error {
-	if sau.mutation.TenantCleared() && len(sau.mutation.TenantIDs()) > 0 {
+func (_u *SystemAnalysisUpdate) check() error {
+	if _u.mutation.TenantCleared() && len(_u.mutation.TenantIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "SystemAnalysis.tenant"`)
 	}
-	if sau.mutation.RetrospectiveCleared() && len(sau.mutation.RetrospectiveIDs()) > 0 {
+	if _u.mutation.RetrospectiveCleared() && len(_u.mutation.RetrospectiveIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "SystemAnalysis.retrospective"`)
 	}
 	return nil
 }
 
 // Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
-func (sau *SystemAnalysisUpdate) Modify(modifiers ...func(u *sql.UpdateBuilder)) *SystemAnalysisUpdate {
-	sau.modifiers = append(sau.modifiers, modifiers...)
-	return sau
+func (_u *SystemAnalysisUpdate) Modify(modifiers ...func(u *sql.UpdateBuilder)) *SystemAnalysisUpdate {
+	_u.modifiers = append(_u.modifiers, modifiers...)
+	return _u
 }
 
-func (sau *SystemAnalysisUpdate) sqlSave(ctx context.Context) (n int, err error) {
-	if err := sau.check(); err != nil {
-		return n, err
+func (_u *SystemAnalysisUpdate) sqlSave(ctx context.Context) (_node int, err error) {
+	if err := _u.check(); err != nil {
+		return _node, err
 	}
 	_spec := sqlgraph.NewUpdateSpec(systemanalysis.Table, systemanalysis.Columns, sqlgraph.NewFieldSpec(systemanalysis.FieldID, field.TypeUUID))
-	if ps := sau.mutation.predicates; len(ps) > 0 {
+	if ps := _u.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {
 				ps[i](selector)
 			}
 		}
 	}
-	if value, ok := sau.mutation.CreatedAt(); ok {
+	if value, ok := _u.mutation.CreatedAt(); ok {
 		_spec.SetField(systemanalysis.FieldCreatedAt, field.TypeTime, value)
 	}
-	if value, ok := sau.mutation.UpdatedAt(); ok {
+	if value, ok := _u.mutation.UpdatedAt(); ok {
 		_spec.SetField(systemanalysis.FieldUpdatedAt, field.TypeTime, value)
 	}
-	if sau.mutation.RetrospectiveCleared() {
+	if _u.mutation.RetrospectiveCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2O,
 			Inverse: false,
@@ -274,7 +274,7 @@ func (sau *SystemAnalysisUpdate) sqlSave(ctx context.Context) (n int, err error)
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := sau.mutation.RetrospectiveIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.RetrospectiveIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2O,
 			Inverse: false,
@@ -290,7 +290,7 @@ func (sau *SystemAnalysisUpdate) sqlSave(ctx context.Context) (n int, err error)
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if sau.mutation.ComponentsCleared() {
+	if _u.mutation.ComponentsCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
 			Inverse: true,
@@ -301,7 +301,7 @@ func (sau *SystemAnalysisUpdate) sqlSave(ctx context.Context) (n int, err error)
 				IDSpec: sqlgraph.NewFieldSpec(systemcomponent.FieldID, field.TypeUUID),
 			},
 		}
-		createE := &SystemAnalysisComponentCreate{config: sau.config, mutation: newSystemAnalysisComponentMutation(sau.config, OpCreate)}
+		createE := &SystemAnalysisComponentCreate{config: _u.config, mutation: newSystemAnalysisComponentMutation(_u.config, OpCreate)}
 		_ = createE.defaults()
 		_, specE := createE.createSpec()
 		edge.Target.Fields = specE.Fields
@@ -310,30 +310,7 @@ func (sau *SystemAnalysisUpdate) sqlSave(ctx context.Context) (n int, err error)
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := sau.mutation.RemovedComponentsIDs(); len(nodes) > 0 && !sau.mutation.ComponentsCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
-			Inverse: true,
-			Table:   systemanalysis.ComponentsTable,
-			Columns: systemanalysis.ComponentsPrimaryKey,
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(systemcomponent.FieldID, field.TypeUUID),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		createE := &SystemAnalysisComponentCreate{config: sau.config, mutation: newSystemAnalysisComponentMutation(sau.config, OpCreate)}
-		_ = createE.defaults()
-		_, specE := createE.createSpec()
-		edge.Target.Fields = specE.Fields
-		if specE.ID.Value != nil {
-			edge.Target.Fields = append(edge.Target.Fields, specE.ID)
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := sau.mutation.ComponentsIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.RemovedComponentsIDs(); len(nodes) > 0 && !_u.mutation.ComponentsCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
 			Inverse: true,
@@ -347,7 +324,30 @@ func (sau *SystemAnalysisUpdate) sqlSave(ctx context.Context) (n int, err error)
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
-		createE := &SystemAnalysisComponentCreate{config: sau.config, mutation: newSystemAnalysisComponentMutation(sau.config, OpCreate)}
+		createE := &SystemAnalysisComponentCreate{config: _u.config, mutation: newSystemAnalysisComponentMutation(_u.config, OpCreate)}
+		_ = createE.defaults()
+		_, specE := createE.createSpec()
+		edge.Target.Fields = specE.Fields
+		if specE.ID.Value != nil {
+			edge.Target.Fields = append(edge.Target.Fields, specE.ID)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.ComponentsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   systemanalysis.ComponentsTable,
+			Columns: systemanalysis.ComponentsPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(systemcomponent.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		createE := &SystemAnalysisComponentCreate{config: _u.config, mutation: newSystemAnalysisComponentMutation(_u.config, OpCreate)}
 		_ = createE.defaults()
 		_, specE := createE.createSpec()
 		edge.Target.Fields = specE.Fields
@@ -356,7 +356,7 @@ func (sau *SystemAnalysisUpdate) sqlSave(ctx context.Context) (n int, err error)
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if sau.mutation.RelationshipsCleared() {
+	if _u.mutation.RelationshipsCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: true,
@@ -369,7 +369,7 @@ func (sau *SystemAnalysisUpdate) sqlSave(ctx context.Context) (n int, err error)
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := sau.mutation.RemovedRelationshipsIDs(); len(nodes) > 0 && !sau.mutation.RelationshipsCleared() {
+	if nodes := _u.mutation.RemovedRelationshipsIDs(); len(nodes) > 0 && !_u.mutation.RelationshipsCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: true,
@@ -385,7 +385,7 @@ func (sau *SystemAnalysisUpdate) sqlSave(ctx context.Context) (n int, err error)
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := sau.mutation.RelationshipsIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.RelationshipsIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: true,
@@ -401,7 +401,7 @@ func (sau *SystemAnalysisUpdate) sqlSave(ctx context.Context) (n int, err error)
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if sau.mutation.AnalysisComponentsCleared() {
+	if _u.mutation.AnalysisComponentsCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: true,
@@ -414,7 +414,7 @@ func (sau *SystemAnalysisUpdate) sqlSave(ctx context.Context) (n int, err error)
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := sau.mutation.RemovedAnalysisComponentsIDs(); len(nodes) > 0 && !sau.mutation.AnalysisComponentsCleared() {
+	if nodes := _u.mutation.RemovedAnalysisComponentsIDs(); len(nodes) > 0 && !_u.mutation.AnalysisComponentsCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: true,
@@ -430,7 +430,7 @@ func (sau *SystemAnalysisUpdate) sqlSave(ctx context.Context) (n int, err error)
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := sau.mutation.AnalysisComponentsIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.AnalysisComponentsIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: true,
@@ -446,8 +446,8 @@ func (sau *SystemAnalysisUpdate) sqlSave(ctx context.Context) (n int, err error)
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	_spec.AddModifiers(sau.modifiers...)
-	if n, err = sqlgraph.UpdateNodes(ctx, sau.driver, _spec); err != nil {
+	_spec.AddModifiers(_u.modifiers...)
+	if _node, err = sqlgraph.UpdateNodes(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{systemanalysis.Label}
 		} else if sqlgraph.IsConstraintError(err) {
@@ -455,8 +455,8 @@ func (sau *SystemAnalysisUpdate) sqlSave(ctx context.Context) (n int, err error)
 		}
 		return 0, err
 	}
-	sau.mutation.done = true
-	return n, nil
+	_u.mutation.done = true
+	return _node, nil
 }
 
 // SystemAnalysisUpdateOne is the builder for updating a single SystemAnalysis entity.
@@ -469,179 +469,179 @@ type SystemAnalysisUpdateOne struct {
 }
 
 // SetCreatedAt sets the "created_at" field.
-func (sauo *SystemAnalysisUpdateOne) SetCreatedAt(t time.Time) *SystemAnalysisUpdateOne {
-	sauo.mutation.SetCreatedAt(t)
-	return sauo
+func (_u *SystemAnalysisUpdateOne) SetCreatedAt(v time.Time) *SystemAnalysisUpdateOne {
+	_u.mutation.SetCreatedAt(v)
+	return _u
 }
 
 // SetNillableCreatedAt sets the "created_at" field if the given value is not nil.
-func (sauo *SystemAnalysisUpdateOne) SetNillableCreatedAt(t *time.Time) *SystemAnalysisUpdateOne {
-	if t != nil {
-		sauo.SetCreatedAt(*t)
+func (_u *SystemAnalysisUpdateOne) SetNillableCreatedAt(v *time.Time) *SystemAnalysisUpdateOne {
+	if v != nil {
+		_u.SetCreatedAt(*v)
 	}
-	return sauo
+	return _u
 }
 
 // SetUpdatedAt sets the "updated_at" field.
-func (sauo *SystemAnalysisUpdateOne) SetUpdatedAt(t time.Time) *SystemAnalysisUpdateOne {
-	sauo.mutation.SetUpdatedAt(t)
-	return sauo
+func (_u *SystemAnalysisUpdateOne) SetUpdatedAt(v time.Time) *SystemAnalysisUpdateOne {
+	_u.mutation.SetUpdatedAt(v)
+	return _u
 }
 
 // SetRetrospectiveID sets the "retrospective" edge to the Retrospective entity by ID.
-func (sauo *SystemAnalysisUpdateOne) SetRetrospectiveID(id uuid.UUID) *SystemAnalysisUpdateOne {
-	sauo.mutation.SetRetrospectiveID(id)
-	return sauo
+func (_u *SystemAnalysisUpdateOne) SetRetrospectiveID(id uuid.UUID) *SystemAnalysisUpdateOne {
+	_u.mutation.SetRetrospectiveID(id)
+	return _u
 }
 
 // SetRetrospective sets the "retrospective" edge to the Retrospective entity.
-func (sauo *SystemAnalysisUpdateOne) SetRetrospective(r *Retrospective) *SystemAnalysisUpdateOne {
-	return sauo.SetRetrospectiveID(r.ID)
+func (_u *SystemAnalysisUpdateOne) SetRetrospective(v *Retrospective) *SystemAnalysisUpdateOne {
+	return _u.SetRetrospectiveID(v.ID)
 }
 
 // AddComponentIDs adds the "components" edge to the SystemComponent entity by IDs.
-func (sauo *SystemAnalysisUpdateOne) AddComponentIDs(ids ...uuid.UUID) *SystemAnalysisUpdateOne {
-	sauo.mutation.AddComponentIDs(ids...)
-	return sauo
+func (_u *SystemAnalysisUpdateOne) AddComponentIDs(ids ...uuid.UUID) *SystemAnalysisUpdateOne {
+	_u.mutation.AddComponentIDs(ids...)
+	return _u
 }
 
 // AddComponents adds the "components" edges to the SystemComponent entity.
-func (sauo *SystemAnalysisUpdateOne) AddComponents(s ...*SystemComponent) *SystemAnalysisUpdateOne {
-	ids := make([]uuid.UUID, len(s))
-	for i := range s {
-		ids[i] = s[i].ID
+func (_u *SystemAnalysisUpdateOne) AddComponents(v ...*SystemComponent) *SystemAnalysisUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
 	}
-	return sauo.AddComponentIDs(ids...)
+	return _u.AddComponentIDs(ids...)
 }
 
 // AddRelationshipIDs adds the "relationships" edge to the SystemAnalysisRelationship entity by IDs.
-func (sauo *SystemAnalysisUpdateOne) AddRelationshipIDs(ids ...uuid.UUID) *SystemAnalysisUpdateOne {
-	sauo.mutation.AddRelationshipIDs(ids...)
-	return sauo
+func (_u *SystemAnalysisUpdateOne) AddRelationshipIDs(ids ...uuid.UUID) *SystemAnalysisUpdateOne {
+	_u.mutation.AddRelationshipIDs(ids...)
+	return _u
 }
 
 // AddRelationships adds the "relationships" edges to the SystemAnalysisRelationship entity.
-func (sauo *SystemAnalysisUpdateOne) AddRelationships(s ...*SystemAnalysisRelationship) *SystemAnalysisUpdateOne {
-	ids := make([]uuid.UUID, len(s))
-	for i := range s {
-		ids[i] = s[i].ID
+func (_u *SystemAnalysisUpdateOne) AddRelationships(v ...*SystemAnalysisRelationship) *SystemAnalysisUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
 	}
-	return sauo.AddRelationshipIDs(ids...)
+	return _u.AddRelationshipIDs(ids...)
 }
 
 // AddAnalysisComponentIDs adds the "analysis_components" edge to the SystemAnalysisComponent entity by IDs.
-func (sauo *SystemAnalysisUpdateOne) AddAnalysisComponentIDs(ids ...uuid.UUID) *SystemAnalysisUpdateOne {
-	sauo.mutation.AddAnalysisComponentIDs(ids...)
-	return sauo
+func (_u *SystemAnalysisUpdateOne) AddAnalysisComponentIDs(ids ...uuid.UUID) *SystemAnalysisUpdateOne {
+	_u.mutation.AddAnalysisComponentIDs(ids...)
+	return _u
 }
 
 // AddAnalysisComponents adds the "analysis_components" edges to the SystemAnalysisComponent entity.
-func (sauo *SystemAnalysisUpdateOne) AddAnalysisComponents(s ...*SystemAnalysisComponent) *SystemAnalysisUpdateOne {
-	ids := make([]uuid.UUID, len(s))
-	for i := range s {
-		ids[i] = s[i].ID
+func (_u *SystemAnalysisUpdateOne) AddAnalysisComponents(v ...*SystemAnalysisComponent) *SystemAnalysisUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
 	}
-	return sauo.AddAnalysisComponentIDs(ids...)
+	return _u.AddAnalysisComponentIDs(ids...)
 }
 
 // Mutation returns the SystemAnalysisMutation object of the builder.
-func (sauo *SystemAnalysisUpdateOne) Mutation() *SystemAnalysisMutation {
-	return sauo.mutation
+func (_u *SystemAnalysisUpdateOne) Mutation() *SystemAnalysisMutation {
+	return _u.mutation
 }
 
 // ClearRetrospective clears the "retrospective" edge to the Retrospective entity.
-func (sauo *SystemAnalysisUpdateOne) ClearRetrospective() *SystemAnalysisUpdateOne {
-	sauo.mutation.ClearRetrospective()
-	return sauo
+func (_u *SystemAnalysisUpdateOne) ClearRetrospective() *SystemAnalysisUpdateOne {
+	_u.mutation.ClearRetrospective()
+	return _u
 }
 
 // ClearComponents clears all "components" edges to the SystemComponent entity.
-func (sauo *SystemAnalysisUpdateOne) ClearComponents() *SystemAnalysisUpdateOne {
-	sauo.mutation.ClearComponents()
-	return sauo
+func (_u *SystemAnalysisUpdateOne) ClearComponents() *SystemAnalysisUpdateOne {
+	_u.mutation.ClearComponents()
+	return _u
 }
 
 // RemoveComponentIDs removes the "components" edge to SystemComponent entities by IDs.
-func (sauo *SystemAnalysisUpdateOne) RemoveComponentIDs(ids ...uuid.UUID) *SystemAnalysisUpdateOne {
-	sauo.mutation.RemoveComponentIDs(ids...)
-	return sauo
+func (_u *SystemAnalysisUpdateOne) RemoveComponentIDs(ids ...uuid.UUID) *SystemAnalysisUpdateOne {
+	_u.mutation.RemoveComponentIDs(ids...)
+	return _u
 }
 
 // RemoveComponents removes "components" edges to SystemComponent entities.
-func (sauo *SystemAnalysisUpdateOne) RemoveComponents(s ...*SystemComponent) *SystemAnalysisUpdateOne {
-	ids := make([]uuid.UUID, len(s))
-	for i := range s {
-		ids[i] = s[i].ID
+func (_u *SystemAnalysisUpdateOne) RemoveComponents(v ...*SystemComponent) *SystemAnalysisUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
 	}
-	return sauo.RemoveComponentIDs(ids...)
+	return _u.RemoveComponentIDs(ids...)
 }
 
 // ClearRelationships clears all "relationships" edges to the SystemAnalysisRelationship entity.
-func (sauo *SystemAnalysisUpdateOne) ClearRelationships() *SystemAnalysisUpdateOne {
-	sauo.mutation.ClearRelationships()
-	return sauo
+func (_u *SystemAnalysisUpdateOne) ClearRelationships() *SystemAnalysisUpdateOne {
+	_u.mutation.ClearRelationships()
+	return _u
 }
 
 // RemoveRelationshipIDs removes the "relationships" edge to SystemAnalysisRelationship entities by IDs.
-func (sauo *SystemAnalysisUpdateOne) RemoveRelationshipIDs(ids ...uuid.UUID) *SystemAnalysisUpdateOne {
-	sauo.mutation.RemoveRelationshipIDs(ids...)
-	return sauo
+func (_u *SystemAnalysisUpdateOne) RemoveRelationshipIDs(ids ...uuid.UUID) *SystemAnalysisUpdateOne {
+	_u.mutation.RemoveRelationshipIDs(ids...)
+	return _u
 }
 
 // RemoveRelationships removes "relationships" edges to SystemAnalysisRelationship entities.
-func (sauo *SystemAnalysisUpdateOne) RemoveRelationships(s ...*SystemAnalysisRelationship) *SystemAnalysisUpdateOne {
-	ids := make([]uuid.UUID, len(s))
-	for i := range s {
-		ids[i] = s[i].ID
+func (_u *SystemAnalysisUpdateOne) RemoveRelationships(v ...*SystemAnalysisRelationship) *SystemAnalysisUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
 	}
-	return sauo.RemoveRelationshipIDs(ids...)
+	return _u.RemoveRelationshipIDs(ids...)
 }
 
 // ClearAnalysisComponents clears all "analysis_components" edges to the SystemAnalysisComponent entity.
-func (sauo *SystemAnalysisUpdateOne) ClearAnalysisComponents() *SystemAnalysisUpdateOne {
-	sauo.mutation.ClearAnalysisComponents()
-	return sauo
+func (_u *SystemAnalysisUpdateOne) ClearAnalysisComponents() *SystemAnalysisUpdateOne {
+	_u.mutation.ClearAnalysisComponents()
+	return _u
 }
 
 // RemoveAnalysisComponentIDs removes the "analysis_components" edge to SystemAnalysisComponent entities by IDs.
-func (sauo *SystemAnalysisUpdateOne) RemoveAnalysisComponentIDs(ids ...uuid.UUID) *SystemAnalysisUpdateOne {
-	sauo.mutation.RemoveAnalysisComponentIDs(ids...)
-	return sauo
+func (_u *SystemAnalysisUpdateOne) RemoveAnalysisComponentIDs(ids ...uuid.UUID) *SystemAnalysisUpdateOne {
+	_u.mutation.RemoveAnalysisComponentIDs(ids...)
+	return _u
 }
 
 // RemoveAnalysisComponents removes "analysis_components" edges to SystemAnalysisComponent entities.
-func (sauo *SystemAnalysisUpdateOne) RemoveAnalysisComponents(s ...*SystemAnalysisComponent) *SystemAnalysisUpdateOne {
-	ids := make([]uuid.UUID, len(s))
-	for i := range s {
-		ids[i] = s[i].ID
+func (_u *SystemAnalysisUpdateOne) RemoveAnalysisComponents(v ...*SystemAnalysisComponent) *SystemAnalysisUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
 	}
-	return sauo.RemoveAnalysisComponentIDs(ids...)
+	return _u.RemoveAnalysisComponentIDs(ids...)
 }
 
 // Where appends a list predicates to the SystemAnalysisUpdate builder.
-func (sauo *SystemAnalysisUpdateOne) Where(ps ...predicate.SystemAnalysis) *SystemAnalysisUpdateOne {
-	sauo.mutation.Where(ps...)
-	return sauo
+func (_u *SystemAnalysisUpdateOne) Where(ps ...predicate.SystemAnalysis) *SystemAnalysisUpdateOne {
+	_u.mutation.Where(ps...)
+	return _u
 }
 
 // Select allows selecting one or more fields (columns) of the returned entity.
 // The default is selecting all fields defined in the entity schema.
-func (sauo *SystemAnalysisUpdateOne) Select(field string, fields ...string) *SystemAnalysisUpdateOne {
-	sauo.fields = append([]string{field}, fields...)
-	return sauo
+func (_u *SystemAnalysisUpdateOne) Select(field string, fields ...string) *SystemAnalysisUpdateOne {
+	_u.fields = append([]string{field}, fields...)
+	return _u
 }
 
 // Save executes the query and returns the updated SystemAnalysis entity.
-func (sauo *SystemAnalysisUpdateOne) Save(ctx context.Context) (*SystemAnalysis, error) {
-	if err := sauo.defaults(); err != nil {
+func (_u *SystemAnalysisUpdateOne) Save(ctx context.Context) (*SystemAnalysis, error) {
+	if err := _u.defaults(); err != nil {
 		return nil, err
 	}
-	return withHooks(ctx, sauo.sqlSave, sauo.mutation, sauo.hooks)
+	return withHooks(ctx, _u.sqlSave, _u.mutation, _u.hooks)
 }
 
 // SaveX is like Save, but panics if an error occurs.
-func (sauo *SystemAnalysisUpdateOne) SaveX(ctx context.Context) *SystemAnalysis {
-	node, err := sauo.Save(ctx)
+func (_u *SystemAnalysisUpdateOne) SaveX(ctx context.Context) *SystemAnalysis {
+	node, err := _u.Save(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -649,58 +649,58 @@ func (sauo *SystemAnalysisUpdateOne) SaveX(ctx context.Context) *SystemAnalysis 
 }
 
 // Exec executes the query on the entity.
-func (sauo *SystemAnalysisUpdateOne) Exec(ctx context.Context) error {
-	_, err := sauo.Save(ctx)
+func (_u *SystemAnalysisUpdateOne) Exec(ctx context.Context) error {
+	_, err := _u.Save(ctx)
 	return err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (sauo *SystemAnalysisUpdateOne) ExecX(ctx context.Context) {
-	if err := sauo.Exec(ctx); err != nil {
+func (_u *SystemAnalysisUpdateOne) ExecX(ctx context.Context) {
+	if err := _u.Exec(ctx); err != nil {
 		panic(err)
 	}
 }
 
 // defaults sets the default values of the builder before save.
-func (sauo *SystemAnalysisUpdateOne) defaults() error {
-	if _, ok := sauo.mutation.UpdatedAt(); !ok {
+func (_u *SystemAnalysisUpdateOne) defaults() error {
+	if _, ok := _u.mutation.UpdatedAt(); !ok {
 		if systemanalysis.UpdateDefaultUpdatedAt == nil {
 			return fmt.Errorf("ent: uninitialized systemanalysis.UpdateDefaultUpdatedAt (forgotten import ent/runtime?)")
 		}
 		v := systemanalysis.UpdateDefaultUpdatedAt()
-		sauo.mutation.SetUpdatedAt(v)
+		_u.mutation.SetUpdatedAt(v)
 	}
 	return nil
 }
 
 // check runs all checks and user-defined validators on the builder.
-func (sauo *SystemAnalysisUpdateOne) check() error {
-	if sauo.mutation.TenantCleared() && len(sauo.mutation.TenantIDs()) > 0 {
+func (_u *SystemAnalysisUpdateOne) check() error {
+	if _u.mutation.TenantCleared() && len(_u.mutation.TenantIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "SystemAnalysis.tenant"`)
 	}
-	if sauo.mutation.RetrospectiveCleared() && len(sauo.mutation.RetrospectiveIDs()) > 0 {
+	if _u.mutation.RetrospectiveCleared() && len(_u.mutation.RetrospectiveIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "SystemAnalysis.retrospective"`)
 	}
 	return nil
 }
 
 // Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
-func (sauo *SystemAnalysisUpdateOne) Modify(modifiers ...func(u *sql.UpdateBuilder)) *SystemAnalysisUpdateOne {
-	sauo.modifiers = append(sauo.modifiers, modifiers...)
-	return sauo
+func (_u *SystemAnalysisUpdateOne) Modify(modifiers ...func(u *sql.UpdateBuilder)) *SystemAnalysisUpdateOne {
+	_u.modifiers = append(_u.modifiers, modifiers...)
+	return _u
 }
 
-func (sauo *SystemAnalysisUpdateOne) sqlSave(ctx context.Context) (_node *SystemAnalysis, err error) {
-	if err := sauo.check(); err != nil {
+func (_u *SystemAnalysisUpdateOne) sqlSave(ctx context.Context) (_node *SystemAnalysis, err error) {
+	if err := _u.check(); err != nil {
 		return _node, err
 	}
 	_spec := sqlgraph.NewUpdateSpec(systemanalysis.Table, systemanalysis.Columns, sqlgraph.NewFieldSpec(systemanalysis.FieldID, field.TypeUUID))
-	id, ok := sauo.mutation.ID()
+	id, ok := _u.mutation.ID()
 	if !ok {
 		return nil, &ValidationError{Name: "id", err: errors.New(`ent: missing "SystemAnalysis.id" for update`)}
 	}
 	_spec.Node.ID.Value = id
-	if fields := sauo.fields; len(fields) > 0 {
+	if fields := _u.fields; len(fields) > 0 {
 		_spec.Node.Columns = make([]string, 0, len(fields))
 		_spec.Node.Columns = append(_spec.Node.Columns, systemanalysis.FieldID)
 		for _, f := range fields {
@@ -712,20 +712,20 @@ func (sauo *SystemAnalysisUpdateOne) sqlSave(ctx context.Context) (_node *System
 			}
 		}
 	}
-	if ps := sauo.mutation.predicates; len(ps) > 0 {
+	if ps := _u.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {
 				ps[i](selector)
 			}
 		}
 	}
-	if value, ok := sauo.mutation.CreatedAt(); ok {
+	if value, ok := _u.mutation.CreatedAt(); ok {
 		_spec.SetField(systemanalysis.FieldCreatedAt, field.TypeTime, value)
 	}
-	if value, ok := sauo.mutation.UpdatedAt(); ok {
+	if value, ok := _u.mutation.UpdatedAt(); ok {
 		_spec.SetField(systemanalysis.FieldUpdatedAt, field.TypeTime, value)
 	}
-	if sauo.mutation.RetrospectiveCleared() {
+	if _u.mutation.RetrospectiveCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2O,
 			Inverse: false,
@@ -738,7 +738,7 @@ func (sauo *SystemAnalysisUpdateOne) sqlSave(ctx context.Context) (_node *System
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := sauo.mutation.RetrospectiveIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.RetrospectiveIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2O,
 			Inverse: false,
@@ -754,7 +754,7 @@ func (sauo *SystemAnalysisUpdateOne) sqlSave(ctx context.Context) (_node *System
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if sauo.mutation.ComponentsCleared() {
+	if _u.mutation.ComponentsCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
 			Inverse: true,
@@ -765,7 +765,7 @@ func (sauo *SystemAnalysisUpdateOne) sqlSave(ctx context.Context) (_node *System
 				IDSpec: sqlgraph.NewFieldSpec(systemcomponent.FieldID, field.TypeUUID),
 			},
 		}
-		createE := &SystemAnalysisComponentCreate{config: sauo.config, mutation: newSystemAnalysisComponentMutation(sauo.config, OpCreate)}
+		createE := &SystemAnalysisComponentCreate{config: _u.config, mutation: newSystemAnalysisComponentMutation(_u.config, OpCreate)}
 		_ = createE.defaults()
 		_, specE := createE.createSpec()
 		edge.Target.Fields = specE.Fields
@@ -774,30 +774,7 @@ func (sauo *SystemAnalysisUpdateOne) sqlSave(ctx context.Context) (_node *System
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := sauo.mutation.RemovedComponentsIDs(); len(nodes) > 0 && !sauo.mutation.ComponentsCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
-			Inverse: true,
-			Table:   systemanalysis.ComponentsTable,
-			Columns: systemanalysis.ComponentsPrimaryKey,
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(systemcomponent.FieldID, field.TypeUUID),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		createE := &SystemAnalysisComponentCreate{config: sauo.config, mutation: newSystemAnalysisComponentMutation(sauo.config, OpCreate)}
-		_ = createE.defaults()
-		_, specE := createE.createSpec()
-		edge.Target.Fields = specE.Fields
-		if specE.ID.Value != nil {
-			edge.Target.Fields = append(edge.Target.Fields, specE.ID)
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := sauo.mutation.ComponentsIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.RemovedComponentsIDs(); len(nodes) > 0 && !_u.mutation.ComponentsCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
 			Inverse: true,
@@ -811,7 +788,30 @@ func (sauo *SystemAnalysisUpdateOne) sqlSave(ctx context.Context) (_node *System
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
-		createE := &SystemAnalysisComponentCreate{config: sauo.config, mutation: newSystemAnalysisComponentMutation(sauo.config, OpCreate)}
+		createE := &SystemAnalysisComponentCreate{config: _u.config, mutation: newSystemAnalysisComponentMutation(_u.config, OpCreate)}
+		_ = createE.defaults()
+		_, specE := createE.createSpec()
+		edge.Target.Fields = specE.Fields
+		if specE.ID.Value != nil {
+			edge.Target.Fields = append(edge.Target.Fields, specE.ID)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.ComponentsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   systemanalysis.ComponentsTable,
+			Columns: systemanalysis.ComponentsPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(systemcomponent.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		createE := &SystemAnalysisComponentCreate{config: _u.config, mutation: newSystemAnalysisComponentMutation(_u.config, OpCreate)}
 		_ = createE.defaults()
 		_, specE := createE.createSpec()
 		edge.Target.Fields = specE.Fields
@@ -820,7 +820,7 @@ func (sauo *SystemAnalysisUpdateOne) sqlSave(ctx context.Context) (_node *System
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if sauo.mutation.RelationshipsCleared() {
+	if _u.mutation.RelationshipsCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: true,
@@ -833,7 +833,7 @@ func (sauo *SystemAnalysisUpdateOne) sqlSave(ctx context.Context) (_node *System
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := sauo.mutation.RemovedRelationshipsIDs(); len(nodes) > 0 && !sauo.mutation.RelationshipsCleared() {
+	if nodes := _u.mutation.RemovedRelationshipsIDs(); len(nodes) > 0 && !_u.mutation.RelationshipsCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: true,
@@ -849,7 +849,7 @@ func (sauo *SystemAnalysisUpdateOne) sqlSave(ctx context.Context) (_node *System
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := sauo.mutation.RelationshipsIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.RelationshipsIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: true,
@@ -865,7 +865,7 @@ func (sauo *SystemAnalysisUpdateOne) sqlSave(ctx context.Context) (_node *System
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if sauo.mutation.AnalysisComponentsCleared() {
+	if _u.mutation.AnalysisComponentsCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: true,
@@ -878,7 +878,7 @@ func (sauo *SystemAnalysisUpdateOne) sqlSave(ctx context.Context) (_node *System
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := sauo.mutation.RemovedAnalysisComponentsIDs(); len(nodes) > 0 && !sauo.mutation.AnalysisComponentsCleared() {
+	if nodes := _u.mutation.RemovedAnalysisComponentsIDs(); len(nodes) > 0 && !_u.mutation.AnalysisComponentsCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: true,
@@ -894,7 +894,7 @@ func (sauo *SystemAnalysisUpdateOne) sqlSave(ctx context.Context) (_node *System
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := sauo.mutation.AnalysisComponentsIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.AnalysisComponentsIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: true,
@@ -910,11 +910,11 @@ func (sauo *SystemAnalysisUpdateOne) sqlSave(ctx context.Context) (_node *System
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	_spec.AddModifiers(sauo.modifiers...)
-	_node = &SystemAnalysis{config: sauo.config}
+	_spec.AddModifiers(_u.modifiers...)
+	_node = &SystemAnalysis{config: _u.config}
 	_spec.Assign = _node.assignValues
 	_spec.ScanValues = _node.scanValues
-	if err = sqlgraph.UpdateNode(ctx, sauo.driver, _spec); err != nil {
+	if err = sqlgraph.UpdateNode(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{systemanalysis.Label}
 		} else if sqlgraph.IsConstraintError(err) {
@@ -922,6 +922,6 @@ func (sauo *SystemAnalysisUpdateOne) sqlSave(ctx context.Context) (_node *System
 		}
 		return nil, err
 	}
-	sauo.mutation.done = true
+	_u.mutation.done = true
 	return _node, nil
 }

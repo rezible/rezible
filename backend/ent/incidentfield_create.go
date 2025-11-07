@@ -28,96 +28,96 @@ type IncidentFieldCreate struct {
 }
 
 // SetTenantID sets the "tenant_id" field.
-func (ifc *IncidentFieldCreate) SetTenantID(i int) *IncidentFieldCreate {
-	ifc.mutation.SetTenantID(i)
-	return ifc
+func (_c *IncidentFieldCreate) SetTenantID(v int) *IncidentFieldCreate {
+	_c.mutation.SetTenantID(v)
+	return _c
 }
 
 // SetArchiveTime sets the "archive_time" field.
-func (ifc *IncidentFieldCreate) SetArchiveTime(t time.Time) *IncidentFieldCreate {
-	ifc.mutation.SetArchiveTime(t)
-	return ifc
+func (_c *IncidentFieldCreate) SetArchiveTime(v time.Time) *IncidentFieldCreate {
+	_c.mutation.SetArchiveTime(v)
+	return _c
 }
 
 // SetNillableArchiveTime sets the "archive_time" field if the given value is not nil.
-func (ifc *IncidentFieldCreate) SetNillableArchiveTime(t *time.Time) *IncidentFieldCreate {
-	if t != nil {
-		ifc.SetArchiveTime(*t)
+func (_c *IncidentFieldCreate) SetNillableArchiveTime(v *time.Time) *IncidentFieldCreate {
+	if v != nil {
+		_c.SetArchiveTime(*v)
 	}
-	return ifc
+	return _c
 }
 
 // SetName sets the "name" field.
-func (ifc *IncidentFieldCreate) SetName(s string) *IncidentFieldCreate {
-	ifc.mutation.SetName(s)
-	return ifc
+func (_c *IncidentFieldCreate) SetName(v string) *IncidentFieldCreate {
+	_c.mutation.SetName(v)
+	return _c
 }
 
 // SetID sets the "id" field.
-func (ifc *IncidentFieldCreate) SetID(u uuid.UUID) *IncidentFieldCreate {
-	ifc.mutation.SetID(u)
-	return ifc
+func (_c *IncidentFieldCreate) SetID(v uuid.UUID) *IncidentFieldCreate {
+	_c.mutation.SetID(v)
+	return _c
 }
 
 // SetNillableID sets the "id" field if the given value is not nil.
-func (ifc *IncidentFieldCreate) SetNillableID(u *uuid.UUID) *IncidentFieldCreate {
-	if u != nil {
-		ifc.SetID(*u)
+func (_c *IncidentFieldCreate) SetNillableID(v *uuid.UUID) *IncidentFieldCreate {
+	if v != nil {
+		_c.SetID(*v)
 	}
-	return ifc
+	return _c
 }
 
 // SetTenant sets the "tenant" edge to the Tenant entity.
-func (ifc *IncidentFieldCreate) SetTenant(t *Tenant) *IncidentFieldCreate {
-	return ifc.SetTenantID(t.ID)
+func (_c *IncidentFieldCreate) SetTenant(v *Tenant) *IncidentFieldCreate {
+	return _c.SetTenantID(v.ID)
 }
 
 // AddOptionIDs adds the "options" edge to the IncidentFieldOption entity by IDs.
-func (ifc *IncidentFieldCreate) AddOptionIDs(ids ...uuid.UUID) *IncidentFieldCreate {
-	ifc.mutation.AddOptionIDs(ids...)
-	return ifc
+func (_c *IncidentFieldCreate) AddOptionIDs(ids ...uuid.UUID) *IncidentFieldCreate {
+	_c.mutation.AddOptionIDs(ids...)
+	return _c
 }
 
 // AddOptions adds the "options" edges to the IncidentFieldOption entity.
-func (ifc *IncidentFieldCreate) AddOptions(i ...*IncidentFieldOption) *IncidentFieldCreate {
-	ids := make([]uuid.UUID, len(i))
-	for j := range i {
-		ids[j] = i[j].ID
+func (_c *IncidentFieldCreate) AddOptions(v ...*IncidentFieldOption) *IncidentFieldCreate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
 	}
-	return ifc.AddOptionIDs(ids...)
+	return _c.AddOptionIDs(ids...)
 }
 
 // AddDebriefQuestionIDs adds the "debrief_questions" edge to the IncidentDebriefQuestion entity by IDs.
-func (ifc *IncidentFieldCreate) AddDebriefQuestionIDs(ids ...uuid.UUID) *IncidentFieldCreate {
-	ifc.mutation.AddDebriefQuestionIDs(ids...)
-	return ifc
+func (_c *IncidentFieldCreate) AddDebriefQuestionIDs(ids ...uuid.UUID) *IncidentFieldCreate {
+	_c.mutation.AddDebriefQuestionIDs(ids...)
+	return _c
 }
 
 // AddDebriefQuestions adds the "debrief_questions" edges to the IncidentDebriefQuestion entity.
-func (ifc *IncidentFieldCreate) AddDebriefQuestions(i ...*IncidentDebriefQuestion) *IncidentFieldCreate {
-	ids := make([]uuid.UUID, len(i))
-	for j := range i {
-		ids[j] = i[j].ID
+func (_c *IncidentFieldCreate) AddDebriefQuestions(v ...*IncidentDebriefQuestion) *IncidentFieldCreate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
 	}
-	return ifc.AddDebriefQuestionIDs(ids...)
+	return _c.AddDebriefQuestionIDs(ids...)
 }
 
 // Mutation returns the IncidentFieldMutation object of the builder.
-func (ifc *IncidentFieldCreate) Mutation() *IncidentFieldMutation {
-	return ifc.mutation
+func (_c *IncidentFieldCreate) Mutation() *IncidentFieldMutation {
+	return _c.mutation
 }
 
 // Save creates the IncidentField in the database.
-func (ifc *IncidentFieldCreate) Save(ctx context.Context) (*IncidentField, error) {
-	if err := ifc.defaults(); err != nil {
+func (_c *IncidentFieldCreate) Save(ctx context.Context) (*IncidentField, error) {
+	if err := _c.defaults(); err != nil {
 		return nil, err
 	}
-	return withHooks(ctx, ifc.sqlSave, ifc.mutation, ifc.hooks)
+	return withHooks(ctx, _c.sqlSave, _c.mutation, _c.hooks)
 }
 
 // SaveX calls Save and panics if Save returns an error.
-func (ifc *IncidentFieldCreate) SaveX(ctx context.Context) *IncidentField {
-	v, err := ifc.Save(ctx)
+func (_c *IncidentFieldCreate) SaveX(ctx context.Context) *IncidentField {
+	v, err := _c.Save(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -125,50 +125,50 @@ func (ifc *IncidentFieldCreate) SaveX(ctx context.Context) *IncidentField {
 }
 
 // Exec executes the query.
-func (ifc *IncidentFieldCreate) Exec(ctx context.Context) error {
-	_, err := ifc.Save(ctx)
+func (_c *IncidentFieldCreate) Exec(ctx context.Context) error {
+	_, err := _c.Save(ctx)
 	return err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (ifc *IncidentFieldCreate) ExecX(ctx context.Context) {
-	if err := ifc.Exec(ctx); err != nil {
+func (_c *IncidentFieldCreate) ExecX(ctx context.Context) {
+	if err := _c.Exec(ctx); err != nil {
 		panic(err)
 	}
 }
 
 // defaults sets the default values of the builder before save.
-func (ifc *IncidentFieldCreate) defaults() error {
-	if _, ok := ifc.mutation.ID(); !ok {
+func (_c *IncidentFieldCreate) defaults() error {
+	if _, ok := _c.mutation.ID(); !ok {
 		if incidentfield.DefaultID == nil {
 			return fmt.Errorf("ent: uninitialized incidentfield.DefaultID (forgotten import ent/runtime?)")
 		}
 		v := incidentfield.DefaultID()
-		ifc.mutation.SetID(v)
+		_c.mutation.SetID(v)
 	}
 	return nil
 }
 
 // check runs all checks and user-defined validators on the builder.
-func (ifc *IncidentFieldCreate) check() error {
-	if _, ok := ifc.mutation.TenantID(); !ok {
+func (_c *IncidentFieldCreate) check() error {
+	if _, ok := _c.mutation.TenantID(); !ok {
 		return &ValidationError{Name: "tenant_id", err: errors.New(`ent: missing required field "IncidentField.tenant_id"`)}
 	}
-	if _, ok := ifc.mutation.Name(); !ok {
+	if _, ok := _c.mutation.Name(); !ok {
 		return &ValidationError{Name: "name", err: errors.New(`ent: missing required field "IncidentField.name"`)}
 	}
-	if len(ifc.mutation.TenantIDs()) == 0 {
+	if len(_c.mutation.TenantIDs()) == 0 {
 		return &ValidationError{Name: "tenant", err: errors.New(`ent: missing required edge "IncidentField.tenant"`)}
 	}
 	return nil
 }
 
-func (ifc *IncidentFieldCreate) sqlSave(ctx context.Context) (*IncidentField, error) {
-	if err := ifc.check(); err != nil {
+func (_c *IncidentFieldCreate) sqlSave(ctx context.Context) (*IncidentField, error) {
+	if err := _c.check(); err != nil {
 		return nil, err
 	}
-	_node, _spec := ifc.createSpec()
-	if err := sqlgraph.CreateNode(ctx, ifc.driver, _spec); err != nil {
+	_node, _spec := _c.createSpec()
+	if err := sqlgraph.CreateNode(ctx, _c.driver, _spec); err != nil {
 		if sqlgraph.IsConstraintError(err) {
 			err = &ConstraintError{msg: err.Error(), wrap: err}
 		}
@@ -181,30 +181,30 @@ func (ifc *IncidentFieldCreate) sqlSave(ctx context.Context) (*IncidentField, er
 			return nil, err
 		}
 	}
-	ifc.mutation.id = &_node.ID
-	ifc.mutation.done = true
+	_c.mutation.id = &_node.ID
+	_c.mutation.done = true
 	return _node, nil
 }
 
-func (ifc *IncidentFieldCreate) createSpec() (*IncidentField, *sqlgraph.CreateSpec) {
+func (_c *IncidentFieldCreate) createSpec() (*IncidentField, *sqlgraph.CreateSpec) {
 	var (
-		_node = &IncidentField{config: ifc.config}
+		_node = &IncidentField{config: _c.config}
 		_spec = sqlgraph.NewCreateSpec(incidentfield.Table, sqlgraph.NewFieldSpec(incidentfield.FieldID, field.TypeUUID))
 	)
-	_spec.OnConflict = ifc.conflict
-	if id, ok := ifc.mutation.ID(); ok {
+	_spec.OnConflict = _c.conflict
+	if id, ok := _c.mutation.ID(); ok {
 		_node.ID = id
 		_spec.ID.Value = &id
 	}
-	if value, ok := ifc.mutation.ArchiveTime(); ok {
+	if value, ok := _c.mutation.ArchiveTime(); ok {
 		_spec.SetField(incidentfield.FieldArchiveTime, field.TypeTime, value)
 		_node.ArchiveTime = value
 	}
-	if value, ok := ifc.mutation.Name(); ok {
+	if value, ok := _c.mutation.Name(); ok {
 		_spec.SetField(incidentfield.FieldName, field.TypeString, value)
 		_node.Name = value
 	}
-	if nodes := ifc.mutation.TenantIDs(); len(nodes) > 0 {
+	if nodes := _c.mutation.TenantIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
@@ -221,7 +221,7 @@ func (ifc *IncidentFieldCreate) createSpec() (*IncidentField, *sqlgraph.CreateSp
 		_node.TenantID = nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
-	if nodes := ifc.mutation.OptionsIDs(); len(nodes) > 0 {
+	if nodes := _c.mutation.OptionsIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
@@ -237,7 +237,7 @@ func (ifc *IncidentFieldCreate) createSpec() (*IncidentField, *sqlgraph.CreateSp
 		}
 		_spec.Edges = append(_spec.Edges, edge)
 	}
-	if nodes := ifc.mutation.DebriefQuestionsIDs(); len(nodes) > 0 {
+	if nodes := _c.mutation.DebriefQuestionsIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
 			Inverse: true,
@@ -272,10 +272,10 @@ func (ifc *IncidentFieldCreate) createSpec() (*IncidentField, *sqlgraph.CreateSp
 //			SetTenantID(v+v).
 //		}).
 //		Exec(ctx)
-func (ifc *IncidentFieldCreate) OnConflict(opts ...sql.ConflictOption) *IncidentFieldUpsertOne {
-	ifc.conflict = opts
+func (_c *IncidentFieldCreate) OnConflict(opts ...sql.ConflictOption) *IncidentFieldUpsertOne {
+	_c.conflict = opts
 	return &IncidentFieldUpsertOne{
-		create: ifc,
+		create: _c,
 	}
 }
 
@@ -285,10 +285,10 @@ func (ifc *IncidentFieldCreate) OnConflict(opts ...sql.ConflictOption) *Incident
 //	client.IncidentField.Create().
 //		OnConflict(sql.ConflictColumns(columns...)).
 //		Exec(ctx)
-func (ifc *IncidentFieldCreate) OnConflictColumns(columns ...string) *IncidentFieldUpsertOne {
-	ifc.conflict = append(ifc.conflict, sql.ConflictColumns(columns...))
+func (_c *IncidentFieldCreate) OnConflictColumns(columns ...string) *IncidentFieldUpsertOne {
+	_c.conflict = append(_c.conflict, sql.ConflictColumns(columns...))
 	return &IncidentFieldUpsertOne{
-		create: ifc,
+		create: _c,
 	}
 }
 
@@ -468,16 +468,16 @@ type IncidentFieldCreateBulk struct {
 }
 
 // Save creates the IncidentField entities in the database.
-func (ifcb *IncidentFieldCreateBulk) Save(ctx context.Context) ([]*IncidentField, error) {
-	if ifcb.err != nil {
-		return nil, ifcb.err
+func (_c *IncidentFieldCreateBulk) Save(ctx context.Context) ([]*IncidentField, error) {
+	if _c.err != nil {
+		return nil, _c.err
 	}
-	specs := make([]*sqlgraph.CreateSpec, len(ifcb.builders))
-	nodes := make([]*IncidentField, len(ifcb.builders))
-	mutators := make([]Mutator, len(ifcb.builders))
-	for i := range ifcb.builders {
+	specs := make([]*sqlgraph.CreateSpec, len(_c.builders))
+	nodes := make([]*IncidentField, len(_c.builders))
+	mutators := make([]Mutator, len(_c.builders))
+	for i := range _c.builders {
 		func(i int, root context.Context) {
-			builder := ifcb.builders[i]
+			builder := _c.builders[i]
 			builder.defaults()
 			var mut Mutator = MutateFunc(func(ctx context.Context, m Mutation) (Value, error) {
 				mutation, ok := m.(*IncidentFieldMutation)
@@ -491,12 +491,12 @@ func (ifcb *IncidentFieldCreateBulk) Save(ctx context.Context) ([]*IncidentField
 				var err error
 				nodes[i], specs[i] = builder.createSpec()
 				if i < len(mutators)-1 {
-					_, err = mutators[i+1].Mutate(root, ifcb.builders[i+1].mutation)
+					_, err = mutators[i+1].Mutate(root, _c.builders[i+1].mutation)
 				} else {
 					spec := &sqlgraph.BatchCreateSpec{Nodes: specs}
-					spec.OnConflict = ifcb.conflict
+					spec.OnConflict = _c.conflict
 					// Invoke the actual operation on the latest mutation in the chain.
-					if err = sqlgraph.BatchCreate(ctx, ifcb.driver, spec); err != nil {
+					if err = sqlgraph.BatchCreate(ctx, _c.driver, spec); err != nil {
 						if sqlgraph.IsConstraintError(err) {
 							err = &ConstraintError{msg: err.Error(), wrap: err}
 						}
@@ -516,7 +516,7 @@ func (ifcb *IncidentFieldCreateBulk) Save(ctx context.Context) ([]*IncidentField
 		}(i, ctx)
 	}
 	if len(mutators) > 0 {
-		if _, err := mutators[0].Mutate(ctx, ifcb.builders[0].mutation); err != nil {
+		if _, err := mutators[0].Mutate(ctx, _c.builders[0].mutation); err != nil {
 			return nil, err
 		}
 	}
@@ -524,8 +524,8 @@ func (ifcb *IncidentFieldCreateBulk) Save(ctx context.Context) ([]*IncidentField
 }
 
 // SaveX is like Save, but panics if an error occurs.
-func (ifcb *IncidentFieldCreateBulk) SaveX(ctx context.Context) []*IncidentField {
-	v, err := ifcb.Save(ctx)
+func (_c *IncidentFieldCreateBulk) SaveX(ctx context.Context) []*IncidentField {
+	v, err := _c.Save(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -533,14 +533,14 @@ func (ifcb *IncidentFieldCreateBulk) SaveX(ctx context.Context) []*IncidentField
 }
 
 // Exec executes the query.
-func (ifcb *IncidentFieldCreateBulk) Exec(ctx context.Context) error {
-	_, err := ifcb.Save(ctx)
+func (_c *IncidentFieldCreateBulk) Exec(ctx context.Context) error {
+	_, err := _c.Save(ctx)
 	return err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (ifcb *IncidentFieldCreateBulk) ExecX(ctx context.Context) {
-	if err := ifcb.Exec(ctx); err != nil {
+func (_c *IncidentFieldCreateBulk) ExecX(ctx context.Context) {
+	if err := _c.Exec(ctx); err != nil {
 		panic(err)
 	}
 }
@@ -560,10 +560,10 @@ func (ifcb *IncidentFieldCreateBulk) ExecX(ctx context.Context) {
 //			SetTenantID(v+v).
 //		}).
 //		Exec(ctx)
-func (ifcb *IncidentFieldCreateBulk) OnConflict(opts ...sql.ConflictOption) *IncidentFieldUpsertBulk {
-	ifcb.conflict = opts
+func (_c *IncidentFieldCreateBulk) OnConflict(opts ...sql.ConflictOption) *IncidentFieldUpsertBulk {
+	_c.conflict = opts
 	return &IncidentFieldUpsertBulk{
-		create: ifcb,
+		create: _c,
 	}
 }
 
@@ -573,10 +573,10 @@ func (ifcb *IncidentFieldCreateBulk) OnConflict(opts ...sql.ConflictOption) *Inc
 //	client.IncidentField.Create().
 //		OnConflict(sql.ConflictColumns(columns...)).
 //		Exec(ctx)
-func (ifcb *IncidentFieldCreateBulk) OnConflictColumns(columns ...string) *IncidentFieldUpsertBulk {
-	ifcb.conflict = append(ifcb.conflict, sql.ConflictColumns(columns...))
+func (_c *IncidentFieldCreateBulk) OnConflictColumns(columns ...string) *IncidentFieldUpsertBulk {
+	_c.conflict = append(_c.conflict, sql.ConflictColumns(columns...))
 	return &IncidentFieldUpsertBulk{
-		create: ifcb,
+		create: _c,
 	}
 }
 

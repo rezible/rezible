@@ -27,109 +27,109 @@ type OncallHandoverTemplateCreate struct {
 }
 
 // SetTenantID sets the "tenant_id" field.
-func (ohtc *OncallHandoverTemplateCreate) SetTenantID(i int) *OncallHandoverTemplateCreate {
-	ohtc.mutation.SetTenantID(i)
-	return ohtc
+func (_c *OncallHandoverTemplateCreate) SetTenantID(v int) *OncallHandoverTemplateCreate {
+	_c.mutation.SetTenantID(v)
+	return _c
 }
 
 // SetCreatedAt sets the "created_at" field.
-func (ohtc *OncallHandoverTemplateCreate) SetCreatedAt(t time.Time) *OncallHandoverTemplateCreate {
-	ohtc.mutation.SetCreatedAt(t)
-	return ohtc
+func (_c *OncallHandoverTemplateCreate) SetCreatedAt(v time.Time) *OncallHandoverTemplateCreate {
+	_c.mutation.SetCreatedAt(v)
+	return _c
 }
 
 // SetNillableCreatedAt sets the "created_at" field if the given value is not nil.
-func (ohtc *OncallHandoverTemplateCreate) SetNillableCreatedAt(t *time.Time) *OncallHandoverTemplateCreate {
-	if t != nil {
-		ohtc.SetCreatedAt(*t)
+func (_c *OncallHandoverTemplateCreate) SetNillableCreatedAt(v *time.Time) *OncallHandoverTemplateCreate {
+	if v != nil {
+		_c.SetCreatedAt(*v)
 	}
-	return ohtc
+	return _c
 }
 
 // SetUpdatedAt sets the "updated_at" field.
-func (ohtc *OncallHandoverTemplateCreate) SetUpdatedAt(t time.Time) *OncallHandoverTemplateCreate {
-	ohtc.mutation.SetUpdatedAt(t)
-	return ohtc
+func (_c *OncallHandoverTemplateCreate) SetUpdatedAt(v time.Time) *OncallHandoverTemplateCreate {
+	_c.mutation.SetUpdatedAt(v)
+	return _c
 }
 
 // SetNillableUpdatedAt sets the "updated_at" field if the given value is not nil.
-func (ohtc *OncallHandoverTemplateCreate) SetNillableUpdatedAt(t *time.Time) *OncallHandoverTemplateCreate {
-	if t != nil {
-		ohtc.SetUpdatedAt(*t)
+func (_c *OncallHandoverTemplateCreate) SetNillableUpdatedAt(v *time.Time) *OncallHandoverTemplateCreate {
+	if v != nil {
+		_c.SetUpdatedAt(*v)
 	}
-	return ohtc
+	return _c
 }
 
 // SetContents sets the "contents" field.
-func (ohtc *OncallHandoverTemplateCreate) SetContents(b []byte) *OncallHandoverTemplateCreate {
-	ohtc.mutation.SetContents(b)
-	return ohtc
+func (_c *OncallHandoverTemplateCreate) SetContents(v []byte) *OncallHandoverTemplateCreate {
+	_c.mutation.SetContents(v)
+	return _c
 }
 
 // SetIsDefault sets the "is_default" field.
-func (ohtc *OncallHandoverTemplateCreate) SetIsDefault(b bool) *OncallHandoverTemplateCreate {
-	ohtc.mutation.SetIsDefault(b)
-	return ohtc
+func (_c *OncallHandoverTemplateCreate) SetIsDefault(v bool) *OncallHandoverTemplateCreate {
+	_c.mutation.SetIsDefault(v)
+	return _c
 }
 
 // SetNillableIsDefault sets the "is_default" field if the given value is not nil.
-func (ohtc *OncallHandoverTemplateCreate) SetNillableIsDefault(b *bool) *OncallHandoverTemplateCreate {
-	if b != nil {
-		ohtc.SetIsDefault(*b)
+func (_c *OncallHandoverTemplateCreate) SetNillableIsDefault(v *bool) *OncallHandoverTemplateCreate {
+	if v != nil {
+		_c.SetIsDefault(*v)
 	}
-	return ohtc
+	return _c
 }
 
 // SetID sets the "id" field.
-func (ohtc *OncallHandoverTemplateCreate) SetID(u uuid.UUID) *OncallHandoverTemplateCreate {
-	ohtc.mutation.SetID(u)
-	return ohtc
+func (_c *OncallHandoverTemplateCreate) SetID(v uuid.UUID) *OncallHandoverTemplateCreate {
+	_c.mutation.SetID(v)
+	return _c
 }
 
 // SetNillableID sets the "id" field if the given value is not nil.
-func (ohtc *OncallHandoverTemplateCreate) SetNillableID(u *uuid.UUID) *OncallHandoverTemplateCreate {
-	if u != nil {
-		ohtc.SetID(*u)
+func (_c *OncallHandoverTemplateCreate) SetNillableID(v *uuid.UUID) *OncallHandoverTemplateCreate {
+	if v != nil {
+		_c.SetID(*v)
 	}
-	return ohtc
+	return _c
 }
 
 // SetTenant sets the "tenant" edge to the Tenant entity.
-func (ohtc *OncallHandoverTemplateCreate) SetTenant(t *Tenant) *OncallHandoverTemplateCreate {
-	return ohtc.SetTenantID(t.ID)
+func (_c *OncallHandoverTemplateCreate) SetTenant(v *Tenant) *OncallHandoverTemplateCreate {
+	return _c.SetTenantID(v.ID)
 }
 
 // AddRosterIDs adds the "roster" edge to the OncallRoster entity by IDs.
-func (ohtc *OncallHandoverTemplateCreate) AddRosterIDs(ids ...uuid.UUID) *OncallHandoverTemplateCreate {
-	ohtc.mutation.AddRosterIDs(ids...)
-	return ohtc
+func (_c *OncallHandoverTemplateCreate) AddRosterIDs(ids ...uuid.UUID) *OncallHandoverTemplateCreate {
+	_c.mutation.AddRosterIDs(ids...)
+	return _c
 }
 
 // AddRoster adds the "roster" edges to the OncallRoster entity.
-func (ohtc *OncallHandoverTemplateCreate) AddRoster(o ...*OncallRoster) *OncallHandoverTemplateCreate {
-	ids := make([]uuid.UUID, len(o))
-	for i := range o {
-		ids[i] = o[i].ID
+func (_c *OncallHandoverTemplateCreate) AddRoster(v ...*OncallRoster) *OncallHandoverTemplateCreate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
 	}
-	return ohtc.AddRosterIDs(ids...)
+	return _c.AddRosterIDs(ids...)
 }
 
 // Mutation returns the OncallHandoverTemplateMutation object of the builder.
-func (ohtc *OncallHandoverTemplateCreate) Mutation() *OncallHandoverTemplateMutation {
-	return ohtc.mutation
+func (_c *OncallHandoverTemplateCreate) Mutation() *OncallHandoverTemplateMutation {
+	return _c.mutation
 }
 
 // Save creates the OncallHandoverTemplate in the database.
-func (ohtc *OncallHandoverTemplateCreate) Save(ctx context.Context) (*OncallHandoverTemplate, error) {
-	if err := ohtc.defaults(); err != nil {
+func (_c *OncallHandoverTemplateCreate) Save(ctx context.Context) (*OncallHandoverTemplate, error) {
+	if err := _c.defaults(); err != nil {
 		return nil, err
 	}
-	return withHooks(ctx, ohtc.sqlSave, ohtc.mutation, ohtc.hooks)
+	return withHooks(ctx, _c.sqlSave, _c.mutation, _c.hooks)
 }
 
 // SaveX calls Save and panics if Save returns an error.
-func (ohtc *OncallHandoverTemplateCreate) SaveX(ctx context.Context) *OncallHandoverTemplate {
-	v, err := ohtc.Save(ctx)
+func (_c *OncallHandoverTemplateCreate) SaveX(ctx context.Context) *OncallHandoverTemplate {
+	v, err := _c.Save(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -137,77 +137,77 @@ func (ohtc *OncallHandoverTemplateCreate) SaveX(ctx context.Context) *OncallHand
 }
 
 // Exec executes the query.
-func (ohtc *OncallHandoverTemplateCreate) Exec(ctx context.Context) error {
-	_, err := ohtc.Save(ctx)
+func (_c *OncallHandoverTemplateCreate) Exec(ctx context.Context) error {
+	_, err := _c.Save(ctx)
 	return err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (ohtc *OncallHandoverTemplateCreate) ExecX(ctx context.Context) {
-	if err := ohtc.Exec(ctx); err != nil {
+func (_c *OncallHandoverTemplateCreate) ExecX(ctx context.Context) {
+	if err := _c.Exec(ctx); err != nil {
 		panic(err)
 	}
 }
 
 // defaults sets the default values of the builder before save.
-func (ohtc *OncallHandoverTemplateCreate) defaults() error {
-	if _, ok := ohtc.mutation.CreatedAt(); !ok {
+func (_c *OncallHandoverTemplateCreate) defaults() error {
+	if _, ok := _c.mutation.CreatedAt(); !ok {
 		if oncallhandovertemplate.DefaultCreatedAt == nil {
 			return fmt.Errorf("ent: uninitialized oncallhandovertemplate.DefaultCreatedAt (forgotten import ent/runtime?)")
 		}
 		v := oncallhandovertemplate.DefaultCreatedAt()
-		ohtc.mutation.SetCreatedAt(v)
+		_c.mutation.SetCreatedAt(v)
 	}
-	if _, ok := ohtc.mutation.UpdatedAt(); !ok {
+	if _, ok := _c.mutation.UpdatedAt(); !ok {
 		if oncallhandovertemplate.DefaultUpdatedAt == nil {
 			return fmt.Errorf("ent: uninitialized oncallhandovertemplate.DefaultUpdatedAt (forgotten import ent/runtime?)")
 		}
 		v := oncallhandovertemplate.DefaultUpdatedAt()
-		ohtc.mutation.SetUpdatedAt(v)
+		_c.mutation.SetUpdatedAt(v)
 	}
-	if _, ok := ohtc.mutation.IsDefault(); !ok {
+	if _, ok := _c.mutation.IsDefault(); !ok {
 		v := oncallhandovertemplate.DefaultIsDefault
-		ohtc.mutation.SetIsDefault(v)
+		_c.mutation.SetIsDefault(v)
 	}
-	if _, ok := ohtc.mutation.ID(); !ok {
+	if _, ok := _c.mutation.ID(); !ok {
 		if oncallhandovertemplate.DefaultID == nil {
 			return fmt.Errorf("ent: uninitialized oncallhandovertemplate.DefaultID (forgotten import ent/runtime?)")
 		}
 		v := oncallhandovertemplate.DefaultID()
-		ohtc.mutation.SetID(v)
+		_c.mutation.SetID(v)
 	}
 	return nil
 }
 
 // check runs all checks and user-defined validators on the builder.
-func (ohtc *OncallHandoverTemplateCreate) check() error {
-	if _, ok := ohtc.mutation.TenantID(); !ok {
+func (_c *OncallHandoverTemplateCreate) check() error {
+	if _, ok := _c.mutation.TenantID(); !ok {
 		return &ValidationError{Name: "tenant_id", err: errors.New(`ent: missing required field "OncallHandoverTemplate.tenant_id"`)}
 	}
-	if _, ok := ohtc.mutation.CreatedAt(); !ok {
+	if _, ok := _c.mutation.CreatedAt(); !ok {
 		return &ValidationError{Name: "created_at", err: errors.New(`ent: missing required field "OncallHandoverTemplate.created_at"`)}
 	}
-	if _, ok := ohtc.mutation.UpdatedAt(); !ok {
+	if _, ok := _c.mutation.UpdatedAt(); !ok {
 		return &ValidationError{Name: "updated_at", err: errors.New(`ent: missing required field "OncallHandoverTemplate.updated_at"`)}
 	}
-	if _, ok := ohtc.mutation.Contents(); !ok {
+	if _, ok := _c.mutation.Contents(); !ok {
 		return &ValidationError{Name: "contents", err: errors.New(`ent: missing required field "OncallHandoverTemplate.contents"`)}
 	}
-	if _, ok := ohtc.mutation.IsDefault(); !ok {
+	if _, ok := _c.mutation.IsDefault(); !ok {
 		return &ValidationError{Name: "is_default", err: errors.New(`ent: missing required field "OncallHandoverTemplate.is_default"`)}
 	}
-	if len(ohtc.mutation.TenantIDs()) == 0 {
+	if len(_c.mutation.TenantIDs()) == 0 {
 		return &ValidationError{Name: "tenant", err: errors.New(`ent: missing required edge "OncallHandoverTemplate.tenant"`)}
 	}
 	return nil
 }
 
-func (ohtc *OncallHandoverTemplateCreate) sqlSave(ctx context.Context) (*OncallHandoverTemplate, error) {
-	if err := ohtc.check(); err != nil {
+func (_c *OncallHandoverTemplateCreate) sqlSave(ctx context.Context) (*OncallHandoverTemplate, error) {
+	if err := _c.check(); err != nil {
 		return nil, err
 	}
-	_node, _spec := ohtc.createSpec()
-	if err := sqlgraph.CreateNode(ctx, ohtc.driver, _spec); err != nil {
+	_node, _spec := _c.createSpec()
+	if err := sqlgraph.CreateNode(ctx, _c.driver, _spec); err != nil {
 		if sqlgraph.IsConstraintError(err) {
 			err = &ConstraintError{msg: err.Error(), wrap: err}
 		}
@@ -220,38 +220,38 @@ func (ohtc *OncallHandoverTemplateCreate) sqlSave(ctx context.Context) (*OncallH
 			return nil, err
 		}
 	}
-	ohtc.mutation.id = &_node.ID
-	ohtc.mutation.done = true
+	_c.mutation.id = &_node.ID
+	_c.mutation.done = true
 	return _node, nil
 }
 
-func (ohtc *OncallHandoverTemplateCreate) createSpec() (*OncallHandoverTemplate, *sqlgraph.CreateSpec) {
+func (_c *OncallHandoverTemplateCreate) createSpec() (*OncallHandoverTemplate, *sqlgraph.CreateSpec) {
 	var (
-		_node = &OncallHandoverTemplate{config: ohtc.config}
+		_node = &OncallHandoverTemplate{config: _c.config}
 		_spec = sqlgraph.NewCreateSpec(oncallhandovertemplate.Table, sqlgraph.NewFieldSpec(oncallhandovertemplate.FieldID, field.TypeUUID))
 	)
-	_spec.OnConflict = ohtc.conflict
-	if id, ok := ohtc.mutation.ID(); ok {
+	_spec.OnConflict = _c.conflict
+	if id, ok := _c.mutation.ID(); ok {
 		_node.ID = id
 		_spec.ID.Value = &id
 	}
-	if value, ok := ohtc.mutation.CreatedAt(); ok {
+	if value, ok := _c.mutation.CreatedAt(); ok {
 		_spec.SetField(oncallhandovertemplate.FieldCreatedAt, field.TypeTime, value)
 		_node.CreatedAt = value
 	}
-	if value, ok := ohtc.mutation.UpdatedAt(); ok {
+	if value, ok := _c.mutation.UpdatedAt(); ok {
 		_spec.SetField(oncallhandovertemplate.FieldUpdatedAt, field.TypeTime, value)
 		_node.UpdatedAt = value
 	}
-	if value, ok := ohtc.mutation.Contents(); ok {
+	if value, ok := _c.mutation.Contents(); ok {
 		_spec.SetField(oncallhandovertemplate.FieldContents, field.TypeBytes, value)
 		_node.Contents = value
 	}
-	if value, ok := ohtc.mutation.IsDefault(); ok {
+	if value, ok := _c.mutation.IsDefault(); ok {
 		_spec.SetField(oncallhandovertemplate.FieldIsDefault, field.TypeBool, value)
 		_node.IsDefault = value
 	}
-	if nodes := ohtc.mutation.TenantIDs(); len(nodes) > 0 {
+	if nodes := _c.mutation.TenantIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
@@ -268,7 +268,7 @@ func (ohtc *OncallHandoverTemplateCreate) createSpec() (*OncallHandoverTemplate,
 		_node.TenantID = nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
-	if nodes := ohtc.mutation.RosterIDs(); len(nodes) > 0 {
+	if nodes := _c.mutation.RosterIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
@@ -303,10 +303,10 @@ func (ohtc *OncallHandoverTemplateCreate) createSpec() (*OncallHandoverTemplate,
 //			SetTenantID(v+v).
 //		}).
 //		Exec(ctx)
-func (ohtc *OncallHandoverTemplateCreate) OnConflict(opts ...sql.ConflictOption) *OncallHandoverTemplateUpsertOne {
-	ohtc.conflict = opts
+func (_c *OncallHandoverTemplateCreate) OnConflict(opts ...sql.ConflictOption) *OncallHandoverTemplateUpsertOne {
+	_c.conflict = opts
 	return &OncallHandoverTemplateUpsertOne{
-		create: ohtc,
+		create: _c,
 	}
 }
 
@@ -316,10 +316,10 @@ func (ohtc *OncallHandoverTemplateCreate) OnConflict(opts ...sql.ConflictOption)
 //	client.OncallHandoverTemplate.Create().
 //		OnConflict(sql.ConflictColumns(columns...)).
 //		Exec(ctx)
-func (ohtc *OncallHandoverTemplateCreate) OnConflictColumns(columns ...string) *OncallHandoverTemplateUpsertOne {
-	ohtc.conflict = append(ohtc.conflict, sql.ConflictColumns(columns...))
+func (_c *OncallHandoverTemplateCreate) OnConflictColumns(columns ...string) *OncallHandoverTemplateUpsertOne {
+	_c.conflict = append(_c.conflict, sql.ConflictColumns(columns...))
 	return &OncallHandoverTemplateUpsertOne{
-		create: ohtc,
+		create: _c,
 	}
 }
 
@@ -538,16 +538,16 @@ type OncallHandoverTemplateCreateBulk struct {
 }
 
 // Save creates the OncallHandoverTemplate entities in the database.
-func (ohtcb *OncallHandoverTemplateCreateBulk) Save(ctx context.Context) ([]*OncallHandoverTemplate, error) {
-	if ohtcb.err != nil {
-		return nil, ohtcb.err
+func (_c *OncallHandoverTemplateCreateBulk) Save(ctx context.Context) ([]*OncallHandoverTemplate, error) {
+	if _c.err != nil {
+		return nil, _c.err
 	}
-	specs := make([]*sqlgraph.CreateSpec, len(ohtcb.builders))
-	nodes := make([]*OncallHandoverTemplate, len(ohtcb.builders))
-	mutators := make([]Mutator, len(ohtcb.builders))
-	for i := range ohtcb.builders {
+	specs := make([]*sqlgraph.CreateSpec, len(_c.builders))
+	nodes := make([]*OncallHandoverTemplate, len(_c.builders))
+	mutators := make([]Mutator, len(_c.builders))
+	for i := range _c.builders {
 		func(i int, root context.Context) {
-			builder := ohtcb.builders[i]
+			builder := _c.builders[i]
 			builder.defaults()
 			var mut Mutator = MutateFunc(func(ctx context.Context, m Mutation) (Value, error) {
 				mutation, ok := m.(*OncallHandoverTemplateMutation)
@@ -561,12 +561,12 @@ func (ohtcb *OncallHandoverTemplateCreateBulk) Save(ctx context.Context) ([]*Onc
 				var err error
 				nodes[i], specs[i] = builder.createSpec()
 				if i < len(mutators)-1 {
-					_, err = mutators[i+1].Mutate(root, ohtcb.builders[i+1].mutation)
+					_, err = mutators[i+1].Mutate(root, _c.builders[i+1].mutation)
 				} else {
 					spec := &sqlgraph.BatchCreateSpec{Nodes: specs}
-					spec.OnConflict = ohtcb.conflict
+					spec.OnConflict = _c.conflict
 					// Invoke the actual operation on the latest mutation in the chain.
-					if err = sqlgraph.BatchCreate(ctx, ohtcb.driver, spec); err != nil {
+					if err = sqlgraph.BatchCreate(ctx, _c.driver, spec); err != nil {
 						if sqlgraph.IsConstraintError(err) {
 							err = &ConstraintError{msg: err.Error(), wrap: err}
 						}
@@ -586,7 +586,7 @@ func (ohtcb *OncallHandoverTemplateCreateBulk) Save(ctx context.Context) ([]*Onc
 		}(i, ctx)
 	}
 	if len(mutators) > 0 {
-		if _, err := mutators[0].Mutate(ctx, ohtcb.builders[0].mutation); err != nil {
+		if _, err := mutators[0].Mutate(ctx, _c.builders[0].mutation); err != nil {
 			return nil, err
 		}
 	}
@@ -594,8 +594,8 @@ func (ohtcb *OncallHandoverTemplateCreateBulk) Save(ctx context.Context) ([]*Onc
 }
 
 // SaveX is like Save, but panics if an error occurs.
-func (ohtcb *OncallHandoverTemplateCreateBulk) SaveX(ctx context.Context) []*OncallHandoverTemplate {
-	v, err := ohtcb.Save(ctx)
+func (_c *OncallHandoverTemplateCreateBulk) SaveX(ctx context.Context) []*OncallHandoverTemplate {
+	v, err := _c.Save(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -603,14 +603,14 @@ func (ohtcb *OncallHandoverTemplateCreateBulk) SaveX(ctx context.Context) []*Onc
 }
 
 // Exec executes the query.
-func (ohtcb *OncallHandoverTemplateCreateBulk) Exec(ctx context.Context) error {
-	_, err := ohtcb.Save(ctx)
+func (_c *OncallHandoverTemplateCreateBulk) Exec(ctx context.Context) error {
+	_, err := _c.Save(ctx)
 	return err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (ohtcb *OncallHandoverTemplateCreateBulk) ExecX(ctx context.Context) {
-	if err := ohtcb.Exec(ctx); err != nil {
+func (_c *OncallHandoverTemplateCreateBulk) ExecX(ctx context.Context) {
+	if err := _c.Exec(ctx); err != nil {
 		panic(err)
 	}
 }
@@ -630,10 +630,10 @@ func (ohtcb *OncallHandoverTemplateCreateBulk) ExecX(ctx context.Context) {
 //			SetTenantID(v+v).
 //		}).
 //		Exec(ctx)
-func (ohtcb *OncallHandoverTemplateCreateBulk) OnConflict(opts ...sql.ConflictOption) *OncallHandoverTemplateUpsertBulk {
-	ohtcb.conflict = opts
+func (_c *OncallHandoverTemplateCreateBulk) OnConflict(opts ...sql.ConflictOption) *OncallHandoverTemplateUpsertBulk {
+	_c.conflict = opts
 	return &OncallHandoverTemplateUpsertBulk{
-		create: ohtcb,
+		create: _c,
 	}
 }
 
@@ -643,10 +643,10 @@ func (ohtcb *OncallHandoverTemplateCreateBulk) OnConflict(opts ...sql.ConflictOp
 //	client.OncallHandoverTemplate.Create().
 //		OnConflict(sql.ConflictColumns(columns...)).
 //		Exec(ctx)
-func (ohtcb *OncallHandoverTemplateCreateBulk) OnConflictColumns(columns ...string) *OncallHandoverTemplateUpsertBulk {
-	ohtcb.conflict = append(ohtcb.conflict, sql.ConflictColumns(columns...))
+func (_c *OncallHandoverTemplateCreateBulk) OnConflictColumns(columns ...string) *OncallHandoverTemplateUpsertBulk {
+	_c.conflict = append(_c.conflict, sql.ConflictColumns(columns...))
 	return &OncallHandoverTemplateUpsertBulk{
-		create: ohtcb,
+		create: _c,
 	}
 }
 

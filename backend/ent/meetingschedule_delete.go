@@ -20,56 +20,56 @@ type MeetingScheduleDelete struct {
 }
 
 // Where appends a list predicates to the MeetingScheduleDelete builder.
-func (msd *MeetingScheduleDelete) Where(ps ...predicate.MeetingSchedule) *MeetingScheduleDelete {
-	msd.mutation.Where(ps...)
-	return msd
+func (_d *MeetingScheduleDelete) Where(ps ...predicate.MeetingSchedule) *MeetingScheduleDelete {
+	_d.mutation.Where(ps...)
+	return _d
 }
 
 // Exec executes the deletion query and returns how many vertices were deleted.
-func (msd *MeetingScheduleDelete) Exec(ctx context.Context) (int, error) {
-	return withHooks(ctx, msd.sqlExec, msd.mutation, msd.hooks)
+func (_d *MeetingScheduleDelete) Exec(ctx context.Context) (int, error) {
+	return withHooks(ctx, _d.sqlExec, _d.mutation, _d.hooks)
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (msd *MeetingScheduleDelete) ExecX(ctx context.Context) int {
-	n, err := msd.Exec(ctx)
+func (_d *MeetingScheduleDelete) ExecX(ctx context.Context) int {
+	n, err := _d.Exec(ctx)
 	if err != nil {
 		panic(err)
 	}
 	return n
 }
 
-func (msd *MeetingScheduleDelete) sqlExec(ctx context.Context) (int, error) {
+func (_d *MeetingScheduleDelete) sqlExec(ctx context.Context) (int, error) {
 	_spec := sqlgraph.NewDeleteSpec(meetingschedule.Table, sqlgraph.NewFieldSpec(meetingschedule.FieldID, field.TypeUUID))
-	if ps := msd.mutation.predicates; len(ps) > 0 {
+	if ps := _d.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {
 				ps[i](selector)
 			}
 		}
 	}
-	affected, err := sqlgraph.DeleteNodes(ctx, msd.driver, _spec)
+	affected, err := sqlgraph.DeleteNodes(ctx, _d.driver, _spec)
 	if err != nil && sqlgraph.IsConstraintError(err) {
 		err = &ConstraintError{msg: err.Error(), wrap: err}
 	}
-	msd.mutation.done = true
+	_d.mutation.done = true
 	return affected, err
 }
 
 // MeetingScheduleDeleteOne is the builder for deleting a single MeetingSchedule entity.
 type MeetingScheduleDeleteOne struct {
-	msd *MeetingScheduleDelete
+	_d *MeetingScheduleDelete
 }
 
 // Where appends a list predicates to the MeetingScheduleDelete builder.
-func (msdo *MeetingScheduleDeleteOne) Where(ps ...predicate.MeetingSchedule) *MeetingScheduleDeleteOne {
-	msdo.msd.mutation.Where(ps...)
-	return msdo
+func (_d *MeetingScheduleDeleteOne) Where(ps ...predicate.MeetingSchedule) *MeetingScheduleDeleteOne {
+	_d._d.mutation.Where(ps...)
+	return _d
 }
 
 // Exec executes the deletion query.
-func (msdo *MeetingScheduleDeleteOne) Exec(ctx context.Context) error {
-	n, err := msdo.msd.Exec(ctx)
+func (_d *MeetingScheduleDeleteOne) Exec(ctx context.Context) error {
+	n, err := _d._d.Exec(ctx)
 	switch {
 	case err != nil:
 		return err
@@ -81,8 +81,8 @@ func (msdo *MeetingScheduleDeleteOne) Exec(ctx context.Context) error {
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (msdo *MeetingScheduleDeleteOne) ExecX(ctx context.Context) {
-	if err := msdo.Exec(ctx); err != nil {
+func (_d *MeetingScheduleDeleteOne) ExecX(ctx context.Context) {
+	if err := _d.Exec(ctx); err != nil {
 		panic(err)
 	}
 }

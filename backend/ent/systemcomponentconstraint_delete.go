@@ -20,56 +20,56 @@ type SystemComponentConstraintDelete struct {
 }
 
 // Where appends a list predicates to the SystemComponentConstraintDelete builder.
-func (sccd *SystemComponentConstraintDelete) Where(ps ...predicate.SystemComponentConstraint) *SystemComponentConstraintDelete {
-	sccd.mutation.Where(ps...)
-	return sccd
+func (_d *SystemComponentConstraintDelete) Where(ps ...predicate.SystemComponentConstraint) *SystemComponentConstraintDelete {
+	_d.mutation.Where(ps...)
+	return _d
 }
 
 // Exec executes the deletion query and returns how many vertices were deleted.
-func (sccd *SystemComponentConstraintDelete) Exec(ctx context.Context) (int, error) {
-	return withHooks(ctx, sccd.sqlExec, sccd.mutation, sccd.hooks)
+func (_d *SystemComponentConstraintDelete) Exec(ctx context.Context) (int, error) {
+	return withHooks(ctx, _d.sqlExec, _d.mutation, _d.hooks)
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (sccd *SystemComponentConstraintDelete) ExecX(ctx context.Context) int {
-	n, err := sccd.Exec(ctx)
+func (_d *SystemComponentConstraintDelete) ExecX(ctx context.Context) int {
+	n, err := _d.Exec(ctx)
 	if err != nil {
 		panic(err)
 	}
 	return n
 }
 
-func (sccd *SystemComponentConstraintDelete) sqlExec(ctx context.Context) (int, error) {
+func (_d *SystemComponentConstraintDelete) sqlExec(ctx context.Context) (int, error) {
 	_spec := sqlgraph.NewDeleteSpec(systemcomponentconstraint.Table, sqlgraph.NewFieldSpec(systemcomponentconstraint.FieldID, field.TypeUUID))
-	if ps := sccd.mutation.predicates; len(ps) > 0 {
+	if ps := _d.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {
 				ps[i](selector)
 			}
 		}
 	}
-	affected, err := sqlgraph.DeleteNodes(ctx, sccd.driver, _spec)
+	affected, err := sqlgraph.DeleteNodes(ctx, _d.driver, _spec)
 	if err != nil && sqlgraph.IsConstraintError(err) {
 		err = &ConstraintError{msg: err.Error(), wrap: err}
 	}
-	sccd.mutation.done = true
+	_d.mutation.done = true
 	return affected, err
 }
 
 // SystemComponentConstraintDeleteOne is the builder for deleting a single SystemComponentConstraint entity.
 type SystemComponentConstraintDeleteOne struct {
-	sccd *SystemComponentConstraintDelete
+	_d *SystemComponentConstraintDelete
 }
 
 // Where appends a list predicates to the SystemComponentConstraintDelete builder.
-func (sccdo *SystemComponentConstraintDeleteOne) Where(ps ...predicate.SystemComponentConstraint) *SystemComponentConstraintDeleteOne {
-	sccdo.sccd.mutation.Where(ps...)
-	return sccdo
+func (_d *SystemComponentConstraintDeleteOne) Where(ps ...predicate.SystemComponentConstraint) *SystemComponentConstraintDeleteOne {
+	_d._d.mutation.Where(ps...)
+	return _d
 }
 
 // Exec executes the deletion query.
-func (sccdo *SystemComponentConstraintDeleteOne) Exec(ctx context.Context) error {
-	n, err := sccdo.sccd.Exec(ctx)
+func (_d *SystemComponentConstraintDeleteOne) Exec(ctx context.Context) error {
+	n, err := _d._d.Exec(ctx)
 	switch {
 	case err != nil:
 		return err
@@ -81,8 +81,8 @@ func (sccdo *SystemComponentConstraintDeleteOne) Exec(ctx context.Context) error
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (sccdo *SystemComponentConstraintDeleteOne) ExecX(ctx context.Context) {
-	if err := sccdo.Exec(ctx); err != nil {
+func (_d *SystemComponentConstraintDeleteOne) ExecX(ctx context.Context) {
+	if err := _d.Exec(ctx); err != nil {
 		panic(err)
 	}
 }

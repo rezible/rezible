@@ -20,56 +20,56 @@ type OncallHandoverTemplateDelete struct {
 }
 
 // Where appends a list predicates to the OncallHandoverTemplateDelete builder.
-func (ohtd *OncallHandoverTemplateDelete) Where(ps ...predicate.OncallHandoverTemplate) *OncallHandoverTemplateDelete {
-	ohtd.mutation.Where(ps...)
-	return ohtd
+func (_d *OncallHandoverTemplateDelete) Where(ps ...predicate.OncallHandoverTemplate) *OncallHandoverTemplateDelete {
+	_d.mutation.Where(ps...)
+	return _d
 }
 
 // Exec executes the deletion query and returns how many vertices were deleted.
-func (ohtd *OncallHandoverTemplateDelete) Exec(ctx context.Context) (int, error) {
-	return withHooks(ctx, ohtd.sqlExec, ohtd.mutation, ohtd.hooks)
+func (_d *OncallHandoverTemplateDelete) Exec(ctx context.Context) (int, error) {
+	return withHooks(ctx, _d.sqlExec, _d.mutation, _d.hooks)
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (ohtd *OncallHandoverTemplateDelete) ExecX(ctx context.Context) int {
-	n, err := ohtd.Exec(ctx)
+func (_d *OncallHandoverTemplateDelete) ExecX(ctx context.Context) int {
+	n, err := _d.Exec(ctx)
 	if err != nil {
 		panic(err)
 	}
 	return n
 }
 
-func (ohtd *OncallHandoverTemplateDelete) sqlExec(ctx context.Context) (int, error) {
+func (_d *OncallHandoverTemplateDelete) sqlExec(ctx context.Context) (int, error) {
 	_spec := sqlgraph.NewDeleteSpec(oncallhandovertemplate.Table, sqlgraph.NewFieldSpec(oncallhandovertemplate.FieldID, field.TypeUUID))
-	if ps := ohtd.mutation.predicates; len(ps) > 0 {
+	if ps := _d.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {
 				ps[i](selector)
 			}
 		}
 	}
-	affected, err := sqlgraph.DeleteNodes(ctx, ohtd.driver, _spec)
+	affected, err := sqlgraph.DeleteNodes(ctx, _d.driver, _spec)
 	if err != nil && sqlgraph.IsConstraintError(err) {
 		err = &ConstraintError{msg: err.Error(), wrap: err}
 	}
-	ohtd.mutation.done = true
+	_d.mutation.done = true
 	return affected, err
 }
 
 // OncallHandoverTemplateDeleteOne is the builder for deleting a single OncallHandoverTemplate entity.
 type OncallHandoverTemplateDeleteOne struct {
-	ohtd *OncallHandoverTemplateDelete
+	_d *OncallHandoverTemplateDelete
 }
 
 // Where appends a list predicates to the OncallHandoverTemplateDelete builder.
-func (ohtdo *OncallHandoverTemplateDeleteOne) Where(ps ...predicate.OncallHandoverTemplate) *OncallHandoverTemplateDeleteOne {
-	ohtdo.ohtd.mutation.Where(ps...)
-	return ohtdo
+func (_d *OncallHandoverTemplateDeleteOne) Where(ps ...predicate.OncallHandoverTemplate) *OncallHandoverTemplateDeleteOne {
+	_d._d.mutation.Where(ps...)
+	return _d
 }
 
 // Exec executes the deletion query.
-func (ohtdo *OncallHandoverTemplateDeleteOne) Exec(ctx context.Context) error {
-	n, err := ohtdo.ohtd.Exec(ctx)
+func (_d *OncallHandoverTemplateDeleteOne) Exec(ctx context.Context) error {
+	n, err := _d._d.Exec(ctx)
 	switch {
 	case err != nil:
 		return err
@@ -81,8 +81,8 @@ func (ohtdo *OncallHandoverTemplateDeleteOne) Exec(ctx context.Context) error {
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (ohtdo *OncallHandoverTemplateDeleteOne) ExecX(ctx context.Context) {
-	if err := ohtdo.Exec(ctx); err != nil {
+func (_d *OncallHandoverTemplateDeleteOne) ExecX(ctx context.Context) {
+	if err := _d.Exec(ctx); err != nil {
 		panic(err)
 	}
 }

@@ -20,56 +20,56 @@ type RetrospectiveCommentDelete struct {
 }
 
 // Where appends a list predicates to the RetrospectiveCommentDelete builder.
-func (rcd *RetrospectiveCommentDelete) Where(ps ...predicate.RetrospectiveComment) *RetrospectiveCommentDelete {
-	rcd.mutation.Where(ps...)
-	return rcd
+func (_d *RetrospectiveCommentDelete) Where(ps ...predicate.RetrospectiveComment) *RetrospectiveCommentDelete {
+	_d.mutation.Where(ps...)
+	return _d
 }
 
 // Exec executes the deletion query and returns how many vertices were deleted.
-func (rcd *RetrospectiveCommentDelete) Exec(ctx context.Context) (int, error) {
-	return withHooks(ctx, rcd.sqlExec, rcd.mutation, rcd.hooks)
+func (_d *RetrospectiveCommentDelete) Exec(ctx context.Context) (int, error) {
+	return withHooks(ctx, _d.sqlExec, _d.mutation, _d.hooks)
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (rcd *RetrospectiveCommentDelete) ExecX(ctx context.Context) int {
-	n, err := rcd.Exec(ctx)
+func (_d *RetrospectiveCommentDelete) ExecX(ctx context.Context) int {
+	n, err := _d.Exec(ctx)
 	if err != nil {
 		panic(err)
 	}
 	return n
 }
 
-func (rcd *RetrospectiveCommentDelete) sqlExec(ctx context.Context) (int, error) {
+func (_d *RetrospectiveCommentDelete) sqlExec(ctx context.Context) (int, error) {
 	_spec := sqlgraph.NewDeleteSpec(retrospectivecomment.Table, sqlgraph.NewFieldSpec(retrospectivecomment.FieldID, field.TypeUUID))
-	if ps := rcd.mutation.predicates; len(ps) > 0 {
+	if ps := _d.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {
 				ps[i](selector)
 			}
 		}
 	}
-	affected, err := sqlgraph.DeleteNodes(ctx, rcd.driver, _spec)
+	affected, err := sqlgraph.DeleteNodes(ctx, _d.driver, _spec)
 	if err != nil && sqlgraph.IsConstraintError(err) {
 		err = &ConstraintError{msg: err.Error(), wrap: err}
 	}
-	rcd.mutation.done = true
+	_d.mutation.done = true
 	return affected, err
 }
 
 // RetrospectiveCommentDeleteOne is the builder for deleting a single RetrospectiveComment entity.
 type RetrospectiveCommentDeleteOne struct {
-	rcd *RetrospectiveCommentDelete
+	_d *RetrospectiveCommentDelete
 }
 
 // Where appends a list predicates to the RetrospectiveCommentDelete builder.
-func (rcdo *RetrospectiveCommentDeleteOne) Where(ps ...predicate.RetrospectiveComment) *RetrospectiveCommentDeleteOne {
-	rcdo.rcd.mutation.Where(ps...)
-	return rcdo
+func (_d *RetrospectiveCommentDeleteOne) Where(ps ...predicate.RetrospectiveComment) *RetrospectiveCommentDeleteOne {
+	_d._d.mutation.Where(ps...)
+	return _d
 }
 
 // Exec executes the deletion query.
-func (rcdo *RetrospectiveCommentDeleteOne) Exec(ctx context.Context) error {
-	n, err := rcdo.rcd.Exec(ctx)
+func (_d *RetrospectiveCommentDeleteOne) Exec(ctx context.Context) error {
+	n, err := _d._d.Exec(ctx)
 	switch {
 	case err != nil:
 		return err
@@ -81,8 +81,8 @@ func (rcdo *RetrospectiveCommentDeleteOne) Exec(ctx context.Context) error {
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (rcdo *RetrospectiveCommentDeleteOne) ExecX(ctx context.Context) {
-	if err := rcdo.Exec(ctx); err != nil {
+func (_d *RetrospectiveCommentDeleteOne) ExecX(ctx context.Context) {
+	if err := _d.Exec(ctx); err != nil {
 		panic(err)
 	}
 }

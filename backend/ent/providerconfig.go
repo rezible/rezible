@@ -83,7 +83,7 @@ func (*ProviderConfig) scanValues(columns []string) ([]any, error) {
 
 // assignValues assigns the values that were returned from sql.Rows (after scanning)
 // to the ProviderConfig fields.
-func (pc *ProviderConfig) assignValues(columns []string, values []any) error {
+func (_m *ProviderConfig) assignValues(columns []string, values []any) error {
 	if m, n := len(values), len(columns); m < n {
 		return fmt.Errorf("mismatch number of scan values: %d != %d", m, n)
 	}
@@ -93,46 +93,46 @@ func (pc *ProviderConfig) assignValues(columns []string, values []any) error {
 			if value, ok := values[i].(*uuid.UUID); !ok {
 				return fmt.Errorf("unexpected type %T for field id", values[i])
 			} else if value != nil {
-				pc.ID = *value
+				_m.ID = *value
 			}
 		case providerconfig.FieldTenantID:
 			if value, ok := values[i].(*sql.NullInt64); !ok {
 				return fmt.Errorf("unexpected type %T for field tenant_id", values[i])
 			} else if value.Valid {
-				pc.TenantID = int(value.Int64)
+				_m.TenantID = int(value.Int64)
 			}
 		case providerconfig.FieldProviderType:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field provider_type", values[i])
 			} else if value.Valid {
-				pc.ProviderType = providerconfig.ProviderType(value.String)
+				_m.ProviderType = providerconfig.ProviderType(value.String)
 			}
 		case providerconfig.FieldProviderID:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field provider_id", values[i])
 			} else if value.Valid {
-				pc.ProviderID = value.String
+				_m.ProviderID = value.String
 			}
 		case providerconfig.FieldConfig:
 			if value, ok := values[i].(*[]byte); !ok {
 				return fmt.Errorf("unexpected type %T for field config", values[i])
 			} else if value != nil {
-				pc.Config = *value
+				_m.Config = *value
 			}
 		case providerconfig.FieldEnabled:
 			if value, ok := values[i].(*sql.NullBool); !ok {
 				return fmt.Errorf("unexpected type %T for field enabled", values[i])
 			} else if value.Valid {
-				pc.Enabled = value.Bool
+				_m.Enabled = value.Bool
 			}
 		case providerconfig.FieldUpdatedAt:
 			if value, ok := values[i].(*sql.NullTime); !ok {
 				return fmt.Errorf("unexpected type %T for field updated_at", values[i])
 			} else if value.Valid {
-				pc.UpdatedAt = value.Time
+				_m.UpdatedAt = value.Time
 			}
 		default:
-			pc.selectValues.Set(columns[i], values[i])
+			_m.selectValues.Set(columns[i], values[i])
 		}
 	}
 	return nil
@@ -140,55 +140,55 @@ func (pc *ProviderConfig) assignValues(columns []string, values []any) error {
 
 // Value returns the ent.Value that was dynamically selected and assigned to the ProviderConfig.
 // This includes values selected through modifiers, order, etc.
-func (pc *ProviderConfig) Value(name string) (ent.Value, error) {
-	return pc.selectValues.Get(name)
+func (_m *ProviderConfig) Value(name string) (ent.Value, error) {
+	return _m.selectValues.Get(name)
 }
 
 // QueryTenant queries the "tenant" edge of the ProviderConfig entity.
-func (pc *ProviderConfig) QueryTenant() *TenantQuery {
-	return NewProviderConfigClient(pc.config).QueryTenant(pc)
+func (_m *ProviderConfig) QueryTenant() *TenantQuery {
+	return NewProviderConfigClient(_m.config).QueryTenant(_m)
 }
 
 // Update returns a builder for updating this ProviderConfig.
 // Note that you need to call ProviderConfig.Unwrap() before calling this method if this ProviderConfig
 // was returned from a transaction, and the transaction was committed or rolled back.
-func (pc *ProviderConfig) Update() *ProviderConfigUpdateOne {
-	return NewProviderConfigClient(pc.config).UpdateOne(pc)
+func (_m *ProviderConfig) Update() *ProviderConfigUpdateOne {
+	return NewProviderConfigClient(_m.config).UpdateOne(_m)
 }
 
 // Unwrap unwraps the ProviderConfig entity that was returned from a transaction after it was closed,
 // so that all future queries will be executed through the driver which created the transaction.
-func (pc *ProviderConfig) Unwrap() *ProviderConfig {
-	_tx, ok := pc.config.driver.(*txDriver)
+func (_m *ProviderConfig) Unwrap() *ProviderConfig {
+	_tx, ok := _m.config.driver.(*txDriver)
 	if !ok {
 		panic("ent: ProviderConfig is not a transactional entity")
 	}
-	pc.config.driver = _tx.drv
-	return pc
+	_m.config.driver = _tx.drv
+	return _m
 }
 
 // String implements the fmt.Stringer.
-func (pc *ProviderConfig) String() string {
+func (_m *ProviderConfig) String() string {
 	var builder strings.Builder
 	builder.WriteString("ProviderConfig(")
-	builder.WriteString(fmt.Sprintf("id=%v, ", pc.ID))
+	builder.WriteString(fmt.Sprintf("id=%v, ", _m.ID))
 	builder.WriteString("tenant_id=")
-	builder.WriteString(fmt.Sprintf("%v", pc.TenantID))
+	builder.WriteString(fmt.Sprintf("%v", _m.TenantID))
 	builder.WriteString(", ")
 	builder.WriteString("provider_type=")
-	builder.WriteString(fmt.Sprintf("%v", pc.ProviderType))
+	builder.WriteString(fmt.Sprintf("%v", _m.ProviderType))
 	builder.WriteString(", ")
 	builder.WriteString("provider_id=")
-	builder.WriteString(pc.ProviderID)
+	builder.WriteString(_m.ProviderID)
 	builder.WriteString(", ")
 	builder.WriteString("config=")
-	builder.WriteString(fmt.Sprintf("%v", pc.Config))
+	builder.WriteString(fmt.Sprintf("%v", _m.Config))
 	builder.WriteString(", ")
 	builder.WriteString("enabled=")
-	builder.WriteString(fmt.Sprintf("%v", pc.Enabled))
+	builder.WriteString(fmt.Sprintf("%v", _m.Enabled))
 	builder.WriteString(", ")
 	builder.WriteString("updated_at=")
-	builder.WriteString(pc.UpdatedAt.Format(time.ANSIC))
+	builder.WriteString(_m.UpdatedAt.Format(time.ANSIC))
 	builder.WriteByte(')')
 	return builder.String()
 }

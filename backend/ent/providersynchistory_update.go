@@ -24,87 +24,87 @@ type ProviderSyncHistoryUpdate struct {
 }
 
 // Where appends a list predicates to the ProviderSyncHistoryUpdate builder.
-func (pshu *ProviderSyncHistoryUpdate) Where(ps ...predicate.ProviderSyncHistory) *ProviderSyncHistoryUpdate {
-	pshu.mutation.Where(ps...)
-	return pshu
+func (_u *ProviderSyncHistoryUpdate) Where(ps ...predicate.ProviderSyncHistory) *ProviderSyncHistoryUpdate {
+	_u.mutation.Where(ps...)
+	return _u
 }
 
 // SetDataType sets the "data_type" field.
-func (pshu *ProviderSyncHistoryUpdate) SetDataType(s string) *ProviderSyncHistoryUpdate {
-	pshu.mutation.SetDataType(s)
-	return pshu
+func (_u *ProviderSyncHistoryUpdate) SetDataType(v string) *ProviderSyncHistoryUpdate {
+	_u.mutation.SetDataType(v)
+	return _u
 }
 
 // SetNillableDataType sets the "data_type" field if the given value is not nil.
-func (pshu *ProviderSyncHistoryUpdate) SetNillableDataType(s *string) *ProviderSyncHistoryUpdate {
-	if s != nil {
-		pshu.SetDataType(*s)
+func (_u *ProviderSyncHistoryUpdate) SetNillableDataType(v *string) *ProviderSyncHistoryUpdate {
+	if v != nil {
+		_u.SetDataType(*v)
 	}
-	return pshu
+	return _u
 }
 
 // SetStartedAt sets the "started_at" field.
-func (pshu *ProviderSyncHistoryUpdate) SetStartedAt(t time.Time) *ProviderSyncHistoryUpdate {
-	pshu.mutation.SetStartedAt(t)
-	return pshu
+func (_u *ProviderSyncHistoryUpdate) SetStartedAt(v time.Time) *ProviderSyncHistoryUpdate {
+	_u.mutation.SetStartedAt(v)
+	return _u
 }
 
 // SetNillableStartedAt sets the "started_at" field if the given value is not nil.
-func (pshu *ProviderSyncHistoryUpdate) SetNillableStartedAt(t *time.Time) *ProviderSyncHistoryUpdate {
-	if t != nil {
-		pshu.SetStartedAt(*t)
+func (_u *ProviderSyncHistoryUpdate) SetNillableStartedAt(v *time.Time) *ProviderSyncHistoryUpdate {
+	if v != nil {
+		_u.SetStartedAt(*v)
 	}
-	return pshu
+	return _u
 }
 
 // SetFinishedAt sets the "finished_at" field.
-func (pshu *ProviderSyncHistoryUpdate) SetFinishedAt(t time.Time) *ProviderSyncHistoryUpdate {
-	pshu.mutation.SetFinishedAt(t)
-	return pshu
+func (_u *ProviderSyncHistoryUpdate) SetFinishedAt(v time.Time) *ProviderSyncHistoryUpdate {
+	_u.mutation.SetFinishedAt(v)
+	return _u
 }
 
 // SetNillableFinishedAt sets the "finished_at" field if the given value is not nil.
-func (pshu *ProviderSyncHistoryUpdate) SetNillableFinishedAt(t *time.Time) *ProviderSyncHistoryUpdate {
-	if t != nil {
-		pshu.SetFinishedAt(*t)
+func (_u *ProviderSyncHistoryUpdate) SetNillableFinishedAt(v *time.Time) *ProviderSyncHistoryUpdate {
+	if v != nil {
+		_u.SetFinishedAt(*v)
 	}
-	return pshu
+	return _u
 }
 
 // SetNumMutations sets the "num_mutations" field.
-func (pshu *ProviderSyncHistoryUpdate) SetNumMutations(i int) *ProviderSyncHistoryUpdate {
-	pshu.mutation.ResetNumMutations()
-	pshu.mutation.SetNumMutations(i)
-	return pshu
+func (_u *ProviderSyncHistoryUpdate) SetNumMutations(v int) *ProviderSyncHistoryUpdate {
+	_u.mutation.ResetNumMutations()
+	_u.mutation.SetNumMutations(v)
+	return _u
 }
 
 // SetNillableNumMutations sets the "num_mutations" field if the given value is not nil.
-func (pshu *ProviderSyncHistoryUpdate) SetNillableNumMutations(i *int) *ProviderSyncHistoryUpdate {
-	if i != nil {
-		pshu.SetNumMutations(*i)
+func (_u *ProviderSyncHistoryUpdate) SetNillableNumMutations(v *int) *ProviderSyncHistoryUpdate {
+	if v != nil {
+		_u.SetNumMutations(*v)
 	}
-	return pshu
+	return _u
 }
 
-// AddNumMutations adds i to the "num_mutations" field.
-func (pshu *ProviderSyncHistoryUpdate) AddNumMutations(i int) *ProviderSyncHistoryUpdate {
-	pshu.mutation.AddNumMutations(i)
-	return pshu
+// AddNumMutations adds value to the "num_mutations" field.
+func (_u *ProviderSyncHistoryUpdate) AddNumMutations(v int) *ProviderSyncHistoryUpdate {
+	_u.mutation.AddNumMutations(v)
+	return _u
 }
 
 // Mutation returns the ProviderSyncHistoryMutation object of the builder.
-func (pshu *ProviderSyncHistoryUpdate) Mutation() *ProviderSyncHistoryMutation {
-	return pshu.mutation
+func (_u *ProviderSyncHistoryUpdate) Mutation() *ProviderSyncHistoryMutation {
+	return _u.mutation
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
-func (pshu *ProviderSyncHistoryUpdate) Save(ctx context.Context) (int, error) {
-	return withHooks(ctx, pshu.sqlSave, pshu.mutation, pshu.hooks)
+func (_u *ProviderSyncHistoryUpdate) Save(ctx context.Context) (int, error) {
+	return withHooks(ctx, _u.sqlSave, _u.mutation, _u.hooks)
 }
 
 // SaveX is like Save, but panics if an error occurs.
-func (pshu *ProviderSyncHistoryUpdate) SaveX(ctx context.Context) int {
-	affected, err := pshu.Save(ctx)
+func (_u *ProviderSyncHistoryUpdate) SaveX(ctx context.Context) int {
+	affected, err := _u.Save(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -112,61 +112,61 @@ func (pshu *ProviderSyncHistoryUpdate) SaveX(ctx context.Context) int {
 }
 
 // Exec executes the query.
-func (pshu *ProviderSyncHistoryUpdate) Exec(ctx context.Context) error {
-	_, err := pshu.Save(ctx)
+func (_u *ProviderSyncHistoryUpdate) Exec(ctx context.Context) error {
+	_, err := _u.Save(ctx)
 	return err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (pshu *ProviderSyncHistoryUpdate) ExecX(ctx context.Context) {
-	if err := pshu.Exec(ctx); err != nil {
+func (_u *ProviderSyncHistoryUpdate) ExecX(ctx context.Context) {
+	if err := _u.Exec(ctx); err != nil {
 		panic(err)
 	}
 }
 
 // check runs all checks and user-defined validators on the builder.
-func (pshu *ProviderSyncHistoryUpdate) check() error {
-	if pshu.mutation.TenantCleared() && len(pshu.mutation.TenantIDs()) > 0 {
+func (_u *ProviderSyncHistoryUpdate) check() error {
+	if _u.mutation.TenantCleared() && len(_u.mutation.TenantIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "ProviderSyncHistory.tenant"`)
 	}
 	return nil
 }
 
 // Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
-func (pshu *ProviderSyncHistoryUpdate) Modify(modifiers ...func(u *sql.UpdateBuilder)) *ProviderSyncHistoryUpdate {
-	pshu.modifiers = append(pshu.modifiers, modifiers...)
-	return pshu
+func (_u *ProviderSyncHistoryUpdate) Modify(modifiers ...func(u *sql.UpdateBuilder)) *ProviderSyncHistoryUpdate {
+	_u.modifiers = append(_u.modifiers, modifiers...)
+	return _u
 }
 
-func (pshu *ProviderSyncHistoryUpdate) sqlSave(ctx context.Context) (n int, err error) {
-	if err := pshu.check(); err != nil {
-		return n, err
+func (_u *ProviderSyncHistoryUpdate) sqlSave(ctx context.Context) (_node int, err error) {
+	if err := _u.check(); err != nil {
+		return _node, err
 	}
 	_spec := sqlgraph.NewUpdateSpec(providersynchistory.Table, providersynchistory.Columns, sqlgraph.NewFieldSpec(providersynchistory.FieldID, field.TypeUUID))
-	if ps := pshu.mutation.predicates; len(ps) > 0 {
+	if ps := _u.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {
 				ps[i](selector)
 			}
 		}
 	}
-	if value, ok := pshu.mutation.DataType(); ok {
+	if value, ok := _u.mutation.DataType(); ok {
 		_spec.SetField(providersynchistory.FieldDataType, field.TypeString, value)
 	}
-	if value, ok := pshu.mutation.StartedAt(); ok {
+	if value, ok := _u.mutation.StartedAt(); ok {
 		_spec.SetField(providersynchistory.FieldStartedAt, field.TypeTime, value)
 	}
-	if value, ok := pshu.mutation.FinishedAt(); ok {
+	if value, ok := _u.mutation.FinishedAt(); ok {
 		_spec.SetField(providersynchistory.FieldFinishedAt, field.TypeTime, value)
 	}
-	if value, ok := pshu.mutation.NumMutations(); ok {
+	if value, ok := _u.mutation.NumMutations(); ok {
 		_spec.SetField(providersynchistory.FieldNumMutations, field.TypeInt, value)
 	}
-	if value, ok := pshu.mutation.AddedNumMutations(); ok {
+	if value, ok := _u.mutation.AddedNumMutations(); ok {
 		_spec.AddField(providersynchistory.FieldNumMutations, field.TypeInt, value)
 	}
-	_spec.AddModifiers(pshu.modifiers...)
-	if n, err = sqlgraph.UpdateNodes(ctx, pshu.driver, _spec); err != nil {
+	_spec.AddModifiers(_u.modifiers...)
+	if _node, err = sqlgraph.UpdateNodes(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{providersynchistory.Label}
 		} else if sqlgraph.IsConstraintError(err) {
@@ -174,8 +174,8 @@ func (pshu *ProviderSyncHistoryUpdate) sqlSave(ctx context.Context) (n int, err 
 		}
 		return 0, err
 	}
-	pshu.mutation.done = true
-	return n, nil
+	_u.mutation.done = true
+	return _node, nil
 }
 
 // ProviderSyncHistoryUpdateOne is the builder for updating a single ProviderSyncHistory entity.
@@ -188,94 +188,94 @@ type ProviderSyncHistoryUpdateOne struct {
 }
 
 // SetDataType sets the "data_type" field.
-func (pshuo *ProviderSyncHistoryUpdateOne) SetDataType(s string) *ProviderSyncHistoryUpdateOne {
-	pshuo.mutation.SetDataType(s)
-	return pshuo
+func (_u *ProviderSyncHistoryUpdateOne) SetDataType(v string) *ProviderSyncHistoryUpdateOne {
+	_u.mutation.SetDataType(v)
+	return _u
 }
 
 // SetNillableDataType sets the "data_type" field if the given value is not nil.
-func (pshuo *ProviderSyncHistoryUpdateOne) SetNillableDataType(s *string) *ProviderSyncHistoryUpdateOne {
-	if s != nil {
-		pshuo.SetDataType(*s)
+func (_u *ProviderSyncHistoryUpdateOne) SetNillableDataType(v *string) *ProviderSyncHistoryUpdateOne {
+	if v != nil {
+		_u.SetDataType(*v)
 	}
-	return pshuo
+	return _u
 }
 
 // SetStartedAt sets the "started_at" field.
-func (pshuo *ProviderSyncHistoryUpdateOne) SetStartedAt(t time.Time) *ProviderSyncHistoryUpdateOne {
-	pshuo.mutation.SetStartedAt(t)
-	return pshuo
+func (_u *ProviderSyncHistoryUpdateOne) SetStartedAt(v time.Time) *ProviderSyncHistoryUpdateOne {
+	_u.mutation.SetStartedAt(v)
+	return _u
 }
 
 // SetNillableStartedAt sets the "started_at" field if the given value is not nil.
-func (pshuo *ProviderSyncHistoryUpdateOne) SetNillableStartedAt(t *time.Time) *ProviderSyncHistoryUpdateOne {
-	if t != nil {
-		pshuo.SetStartedAt(*t)
+func (_u *ProviderSyncHistoryUpdateOne) SetNillableStartedAt(v *time.Time) *ProviderSyncHistoryUpdateOne {
+	if v != nil {
+		_u.SetStartedAt(*v)
 	}
-	return pshuo
+	return _u
 }
 
 // SetFinishedAt sets the "finished_at" field.
-func (pshuo *ProviderSyncHistoryUpdateOne) SetFinishedAt(t time.Time) *ProviderSyncHistoryUpdateOne {
-	pshuo.mutation.SetFinishedAt(t)
-	return pshuo
+func (_u *ProviderSyncHistoryUpdateOne) SetFinishedAt(v time.Time) *ProviderSyncHistoryUpdateOne {
+	_u.mutation.SetFinishedAt(v)
+	return _u
 }
 
 // SetNillableFinishedAt sets the "finished_at" field if the given value is not nil.
-func (pshuo *ProviderSyncHistoryUpdateOne) SetNillableFinishedAt(t *time.Time) *ProviderSyncHistoryUpdateOne {
-	if t != nil {
-		pshuo.SetFinishedAt(*t)
+func (_u *ProviderSyncHistoryUpdateOne) SetNillableFinishedAt(v *time.Time) *ProviderSyncHistoryUpdateOne {
+	if v != nil {
+		_u.SetFinishedAt(*v)
 	}
-	return pshuo
+	return _u
 }
 
 // SetNumMutations sets the "num_mutations" field.
-func (pshuo *ProviderSyncHistoryUpdateOne) SetNumMutations(i int) *ProviderSyncHistoryUpdateOne {
-	pshuo.mutation.ResetNumMutations()
-	pshuo.mutation.SetNumMutations(i)
-	return pshuo
+func (_u *ProviderSyncHistoryUpdateOne) SetNumMutations(v int) *ProviderSyncHistoryUpdateOne {
+	_u.mutation.ResetNumMutations()
+	_u.mutation.SetNumMutations(v)
+	return _u
 }
 
 // SetNillableNumMutations sets the "num_mutations" field if the given value is not nil.
-func (pshuo *ProviderSyncHistoryUpdateOne) SetNillableNumMutations(i *int) *ProviderSyncHistoryUpdateOne {
-	if i != nil {
-		pshuo.SetNumMutations(*i)
+func (_u *ProviderSyncHistoryUpdateOne) SetNillableNumMutations(v *int) *ProviderSyncHistoryUpdateOne {
+	if v != nil {
+		_u.SetNumMutations(*v)
 	}
-	return pshuo
+	return _u
 }
 
-// AddNumMutations adds i to the "num_mutations" field.
-func (pshuo *ProviderSyncHistoryUpdateOne) AddNumMutations(i int) *ProviderSyncHistoryUpdateOne {
-	pshuo.mutation.AddNumMutations(i)
-	return pshuo
+// AddNumMutations adds value to the "num_mutations" field.
+func (_u *ProviderSyncHistoryUpdateOne) AddNumMutations(v int) *ProviderSyncHistoryUpdateOne {
+	_u.mutation.AddNumMutations(v)
+	return _u
 }
 
 // Mutation returns the ProviderSyncHistoryMutation object of the builder.
-func (pshuo *ProviderSyncHistoryUpdateOne) Mutation() *ProviderSyncHistoryMutation {
-	return pshuo.mutation
+func (_u *ProviderSyncHistoryUpdateOne) Mutation() *ProviderSyncHistoryMutation {
+	return _u.mutation
 }
 
 // Where appends a list predicates to the ProviderSyncHistoryUpdate builder.
-func (pshuo *ProviderSyncHistoryUpdateOne) Where(ps ...predicate.ProviderSyncHistory) *ProviderSyncHistoryUpdateOne {
-	pshuo.mutation.Where(ps...)
-	return pshuo
+func (_u *ProviderSyncHistoryUpdateOne) Where(ps ...predicate.ProviderSyncHistory) *ProviderSyncHistoryUpdateOne {
+	_u.mutation.Where(ps...)
+	return _u
 }
 
 // Select allows selecting one or more fields (columns) of the returned entity.
 // The default is selecting all fields defined in the entity schema.
-func (pshuo *ProviderSyncHistoryUpdateOne) Select(field string, fields ...string) *ProviderSyncHistoryUpdateOne {
-	pshuo.fields = append([]string{field}, fields...)
-	return pshuo
+func (_u *ProviderSyncHistoryUpdateOne) Select(field string, fields ...string) *ProviderSyncHistoryUpdateOne {
+	_u.fields = append([]string{field}, fields...)
+	return _u
 }
 
 // Save executes the query and returns the updated ProviderSyncHistory entity.
-func (pshuo *ProviderSyncHistoryUpdateOne) Save(ctx context.Context) (*ProviderSyncHistory, error) {
-	return withHooks(ctx, pshuo.sqlSave, pshuo.mutation, pshuo.hooks)
+func (_u *ProviderSyncHistoryUpdateOne) Save(ctx context.Context) (*ProviderSyncHistory, error) {
+	return withHooks(ctx, _u.sqlSave, _u.mutation, _u.hooks)
 }
 
 // SaveX is like Save, but panics if an error occurs.
-func (pshuo *ProviderSyncHistoryUpdateOne) SaveX(ctx context.Context) *ProviderSyncHistory {
-	node, err := pshuo.Save(ctx)
+func (_u *ProviderSyncHistoryUpdateOne) SaveX(ctx context.Context) *ProviderSyncHistory {
+	node, err := _u.Save(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -283,43 +283,43 @@ func (pshuo *ProviderSyncHistoryUpdateOne) SaveX(ctx context.Context) *ProviderS
 }
 
 // Exec executes the query on the entity.
-func (pshuo *ProviderSyncHistoryUpdateOne) Exec(ctx context.Context) error {
-	_, err := pshuo.Save(ctx)
+func (_u *ProviderSyncHistoryUpdateOne) Exec(ctx context.Context) error {
+	_, err := _u.Save(ctx)
 	return err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (pshuo *ProviderSyncHistoryUpdateOne) ExecX(ctx context.Context) {
-	if err := pshuo.Exec(ctx); err != nil {
+func (_u *ProviderSyncHistoryUpdateOne) ExecX(ctx context.Context) {
+	if err := _u.Exec(ctx); err != nil {
 		panic(err)
 	}
 }
 
 // check runs all checks and user-defined validators on the builder.
-func (pshuo *ProviderSyncHistoryUpdateOne) check() error {
-	if pshuo.mutation.TenantCleared() && len(pshuo.mutation.TenantIDs()) > 0 {
+func (_u *ProviderSyncHistoryUpdateOne) check() error {
+	if _u.mutation.TenantCleared() && len(_u.mutation.TenantIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "ProviderSyncHistory.tenant"`)
 	}
 	return nil
 }
 
 // Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
-func (pshuo *ProviderSyncHistoryUpdateOne) Modify(modifiers ...func(u *sql.UpdateBuilder)) *ProviderSyncHistoryUpdateOne {
-	pshuo.modifiers = append(pshuo.modifiers, modifiers...)
-	return pshuo
+func (_u *ProviderSyncHistoryUpdateOne) Modify(modifiers ...func(u *sql.UpdateBuilder)) *ProviderSyncHistoryUpdateOne {
+	_u.modifiers = append(_u.modifiers, modifiers...)
+	return _u
 }
 
-func (pshuo *ProviderSyncHistoryUpdateOne) sqlSave(ctx context.Context) (_node *ProviderSyncHistory, err error) {
-	if err := pshuo.check(); err != nil {
+func (_u *ProviderSyncHistoryUpdateOne) sqlSave(ctx context.Context) (_node *ProviderSyncHistory, err error) {
+	if err := _u.check(); err != nil {
 		return _node, err
 	}
 	_spec := sqlgraph.NewUpdateSpec(providersynchistory.Table, providersynchistory.Columns, sqlgraph.NewFieldSpec(providersynchistory.FieldID, field.TypeUUID))
-	id, ok := pshuo.mutation.ID()
+	id, ok := _u.mutation.ID()
 	if !ok {
 		return nil, &ValidationError{Name: "id", err: errors.New(`ent: missing "ProviderSyncHistory.id" for update`)}
 	}
 	_spec.Node.ID.Value = id
-	if fields := pshuo.fields; len(fields) > 0 {
+	if fields := _u.fields; len(fields) > 0 {
 		_spec.Node.Columns = make([]string, 0, len(fields))
 		_spec.Node.Columns = append(_spec.Node.Columns, providersynchistory.FieldID)
 		for _, f := range fields {
@@ -331,33 +331,33 @@ func (pshuo *ProviderSyncHistoryUpdateOne) sqlSave(ctx context.Context) (_node *
 			}
 		}
 	}
-	if ps := pshuo.mutation.predicates; len(ps) > 0 {
+	if ps := _u.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {
 				ps[i](selector)
 			}
 		}
 	}
-	if value, ok := pshuo.mutation.DataType(); ok {
+	if value, ok := _u.mutation.DataType(); ok {
 		_spec.SetField(providersynchistory.FieldDataType, field.TypeString, value)
 	}
-	if value, ok := pshuo.mutation.StartedAt(); ok {
+	if value, ok := _u.mutation.StartedAt(); ok {
 		_spec.SetField(providersynchistory.FieldStartedAt, field.TypeTime, value)
 	}
-	if value, ok := pshuo.mutation.FinishedAt(); ok {
+	if value, ok := _u.mutation.FinishedAt(); ok {
 		_spec.SetField(providersynchistory.FieldFinishedAt, field.TypeTime, value)
 	}
-	if value, ok := pshuo.mutation.NumMutations(); ok {
+	if value, ok := _u.mutation.NumMutations(); ok {
 		_spec.SetField(providersynchistory.FieldNumMutations, field.TypeInt, value)
 	}
-	if value, ok := pshuo.mutation.AddedNumMutations(); ok {
+	if value, ok := _u.mutation.AddedNumMutations(); ok {
 		_spec.AddField(providersynchistory.FieldNumMutations, field.TypeInt, value)
 	}
-	_spec.AddModifiers(pshuo.modifiers...)
-	_node = &ProviderSyncHistory{config: pshuo.config}
+	_spec.AddModifiers(_u.modifiers...)
+	_node = &ProviderSyncHistory{config: _u.config}
 	_spec.Assign = _node.assignValues
 	_spec.ScanValues = _node.scanValues
-	if err = sqlgraph.UpdateNode(ctx, pshuo.driver, _spec); err != nil {
+	if err = sqlgraph.UpdateNode(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{providersynchistory.Label}
 		} else if sqlgraph.IsConstraintError(err) {
@@ -365,6 +365,6 @@ func (pshuo *ProviderSyncHistoryUpdateOne) sqlSave(ctx context.Context) (_node *
 		}
 		return nil, err
 	}
-	pshuo.mutation.done = true
+	_u.mutation.done = true
 	return _node, nil
 }

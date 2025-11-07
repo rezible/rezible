@@ -28,183 +28,183 @@ type SystemHazardUpdate struct {
 }
 
 // Where appends a list predicates to the SystemHazardUpdate builder.
-func (shu *SystemHazardUpdate) Where(ps ...predicate.SystemHazard) *SystemHazardUpdate {
-	shu.mutation.Where(ps...)
-	return shu
+func (_u *SystemHazardUpdate) Where(ps ...predicate.SystemHazard) *SystemHazardUpdate {
+	_u.mutation.Where(ps...)
+	return _u
 }
 
 // SetName sets the "name" field.
-func (shu *SystemHazardUpdate) SetName(s string) *SystemHazardUpdate {
-	shu.mutation.SetName(s)
-	return shu
+func (_u *SystemHazardUpdate) SetName(v string) *SystemHazardUpdate {
+	_u.mutation.SetName(v)
+	return _u
 }
 
 // SetNillableName sets the "name" field if the given value is not nil.
-func (shu *SystemHazardUpdate) SetNillableName(s *string) *SystemHazardUpdate {
-	if s != nil {
-		shu.SetName(*s)
+func (_u *SystemHazardUpdate) SetNillableName(v *string) *SystemHazardUpdate {
+	if v != nil {
+		_u.SetName(*v)
 	}
-	return shu
+	return _u
 }
 
 // SetDescription sets the "description" field.
-func (shu *SystemHazardUpdate) SetDescription(s string) *SystemHazardUpdate {
-	shu.mutation.SetDescription(s)
-	return shu
+func (_u *SystemHazardUpdate) SetDescription(v string) *SystemHazardUpdate {
+	_u.mutation.SetDescription(v)
+	return _u
 }
 
 // SetNillableDescription sets the "description" field if the given value is not nil.
-func (shu *SystemHazardUpdate) SetNillableDescription(s *string) *SystemHazardUpdate {
-	if s != nil {
-		shu.SetDescription(*s)
+func (_u *SystemHazardUpdate) SetNillableDescription(v *string) *SystemHazardUpdate {
+	if v != nil {
+		_u.SetDescription(*v)
 	}
-	return shu
+	return _u
 }
 
 // SetCreatedAt sets the "created_at" field.
-func (shu *SystemHazardUpdate) SetCreatedAt(t time.Time) *SystemHazardUpdate {
-	shu.mutation.SetCreatedAt(t)
-	return shu
+func (_u *SystemHazardUpdate) SetCreatedAt(v time.Time) *SystemHazardUpdate {
+	_u.mutation.SetCreatedAt(v)
+	return _u
 }
 
 // SetNillableCreatedAt sets the "created_at" field if the given value is not nil.
-func (shu *SystemHazardUpdate) SetNillableCreatedAt(t *time.Time) *SystemHazardUpdate {
-	if t != nil {
-		shu.SetCreatedAt(*t)
+func (_u *SystemHazardUpdate) SetNillableCreatedAt(v *time.Time) *SystemHazardUpdate {
+	if v != nil {
+		_u.SetCreatedAt(*v)
 	}
-	return shu
+	return _u
 }
 
 // SetUpdatedAt sets the "updated_at" field.
-func (shu *SystemHazardUpdate) SetUpdatedAt(t time.Time) *SystemHazardUpdate {
-	shu.mutation.SetUpdatedAt(t)
-	return shu
+func (_u *SystemHazardUpdate) SetUpdatedAt(v time.Time) *SystemHazardUpdate {
+	_u.mutation.SetUpdatedAt(v)
+	return _u
 }
 
 // AddComponentIDs adds the "components" edge to the SystemComponent entity by IDs.
-func (shu *SystemHazardUpdate) AddComponentIDs(ids ...uuid.UUID) *SystemHazardUpdate {
-	shu.mutation.AddComponentIDs(ids...)
-	return shu
+func (_u *SystemHazardUpdate) AddComponentIDs(ids ...uuid.UUID) *SystemHazardUpdate {
+	_u.mutation.AddComponentIDs(ids...)
+	return _u
 }
 
 // AddComponents adds the "components" edges to the SystemComponent entity.
-func (shu *SystemHazardUpdate) AddComponents(s ...*SystemComponent) *SystemHazardUpdate {
-	ids := make([]uuid.UUID, len(s))
-	for i := range s {
-		ids[i] = s[i].ID
+func (_u *SystemHazardUpdate) AddComponents(v ...*SystemComponent) *SystemHazardUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
 	}
-	return shu.AddComponentIDs(ids...)
+	return _u.AddComponentIDs(ids...)
 }
 
 // AddConstraintIDs adds the "constraints" edge to the SystemComponentConstraint entity by IDs.
-func (shu *SystemHazardUpdate) AddConstraintIDs(ids ...uuid.UUID) *SystemHazardUpdate {
-	shu.mutation.AddConstraintIDs(ids...)
-	return shu
+func (_u *SystemHazardUpdate) AddConstraintIDs(ids ...uuid.UUID) *SystemHazardUpdate {
+	_u.mutation.AddConstraintIDs(ids...)
+	return _u
 }
 
 // AddConstraints adds the "constraints" edges to the SystemComponentConstraint entity.
-func (shu *SystemHazardUpdate) AddConstraints(s ...*SystemComponentConstraint) *SystemHazardUpdate {
-	ids := make([]uuid.UUID, len(s))
-	for i := range s {
-		ids[i] = s[i].ID
+func (_u *SystemHazardUpdate) AddConstraints(v ...*SystemComponentConstraint) *SystemHazardUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
 	}
-	return shu.AddConstraintIDs(ids...)
+	return _u.AddConstraintIDs(ids...)
 }
 
 // AddRelationshipIDs adds the "relationships" edge to the SystemComponentRelationship entity by IDs.
-func (shu *SystemHazardUpdate) AddRelationshipIDs(ids ...uuid.UUID) *SystemHazardUpdate {
-	shu.mutation.AddRelationshipIDs(ids...)
-	return shu
+func (_u *SystemHazardUpdate) AddRelationshipIDs(ids ...uuid.UUID) *SystemHazardUpdate {
+	_u.mutation.AddRelationshipIDs(ids...)
+	return _u
 }
 
 // AddRelationships adds the "relationships" edges to the SystemComponentRelationship entity.
-func (shu *SystemHazardUpdate) AddRelationships(s ...*SystemComponentRelationship) *SystemHazardUpdate {
-	ids := make([]uuid.UUID, len(s))
-	for i := range s {
-		ids[i] = s[i].ID
+func (_u *SystemHazardUpdate) AddRelationships(v ...*SystemComponentRelationship) *SystemHazardUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
 	}
-	return shu.AddRelationshipIDs(ids...)
+	return _u.AddRelationshipIDs(ids...)
 }
 
 // Mutation returns the SystemHazardMutation object of the builder.
-func (shu *SystemHazardUpdate) Mutation() *SystemHazardMutation {
-	return shu.mutation
+func (_u *SystemHazardUpdate) Mutation() *SystemHazardMutation {
+	return _u.mutation
 }
 
 // ClearComponents clears all "components" edges to the SystemComponent entity.
-func (shu *SystemHazardUpdate) ClearComponents() *SystemHazardUpdate {
-	shu.mutation.ClearComponents()
-	return shu
+func (_u *SystemHazardUpdate) ClearComponents() *SystemHazardUpdate {
+	_u.mutation.ClearComponents()
+	return _u
 }
 
 // RemoveComponentIDs removes the "components" edge to SystemComponent entities by IDs.
-func (shu *SystemHazardUpdate) RemoveComponentIDs(ids ...uuid.UUID) *SystemHazardUpdate {
-	shu.mutation.RemoveComponentIDs(ids...)
-	return shu
+func (_u *SystemHazardUpdate) RemoveComponentIDs(ids ...uuid.UUID) *SystemHazardUpdate {
+	_u.mutation.RemoveComponentIDs(ids...)
+	return _u
 }
 
 // RemoveComponents removes "components" edges to SystemComponent entities.
-func (shu *SystemHazardUpdate) RemoveComponents(s ...*SystemComponent) *SystemHazardUpdate {
-	ids := make([]uuid.UUID, len(s))
-	for i := range s {
-		ids[i] = s[i].ID
+func (_u *SystemHazardUpdate) RemoveComponents(v ...*SystemComponent) *SystemHazardUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
 	}
-	return shu.RemoveComponentIDs(ids...)
+	return _u.RemoveComponentIDs(ids...)
 }
 
 // ClearConstraints clears all "constraints" edges to the SystemComponentConstraint entity.
-func (shu *SystemHazardUpdate) ClearConstraints() *SystemHazardUpdate {
-	shu.mutation.ClearConstraints()
-	return shu
+func (_u *SystemHazardUpdate) ClearConstraints() *SystemHazardUpdate {
+	_u.mutation.ClearConstraints()
+	return _u
 }
 
 // RemoveConstraintIDs removes the "constraints" edge to SystemComponentConstraint entities by IDs.
-func (shu *SystemHazardUpdate) RemoveConstraintIDs(ids ...uuid.UUID) *SystemHazardUpdate {
-	shu.mutation.RemoveConstraintIDs(ids...)
-	return shu
+func (_u *SystemHazardUpdate) RemoveConstraintIDs(ids ...uuid.UUID) *SystemHazardUpdate {
+	_u.mutation.RemoveConstraintIDs(ids...)
+	return _u
 }
 
 // RemoveConstraints removes "constraints" edges to SystemComponentConstraint entities.
-func (shu *SystemHazardUpdate) RemoveConstraints(s ...*SystemComponentConstraint) *SystemHazardUpdate {
-	ids := make([]uuid.UUID, len(s))
-	for i := range s {
-		ids[i] = s[i].ID
+func (_u *SystemHazardUpdate) RemoveConstraints(v ...*SystemComponentConstraint) *SystemHazardUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
 	}
-	return shu.RemoveConstraintIDs(ids...)
+	return _u.RemoveConstraintIDs(ids...)
 }
 
 // ClearRelationships clears all "relationships" edges to the SystemComponentRelationship entity.
-func (shu *SystemHazardUpdate) ClearRelationships() *SystemHazardUpdate {
-	shu.mutation.ClearRelationships()
-	return shu
+func (_u *SystemHazardUpdate) ClearRelationships() *SystemHazardUpdate {
+	_u.mutation.ClearRelationships()
+	return _u
 }
 
 // RemoveRelationshipIDs removes the "relationships" edge to SystemComponentRelationship entities by IDs.
-func (shu *SystemHazardUpdate) RemoveRelationshipIDs(ids ...uuid.UUID) *SystemHazardUpdate {
-	shu.mutation.RemoveRelationshipIDs(ids...)
-	return shu
+func (_u *SystemHazardUpdate) RemoveRelationshipIDs(ids ...uuid.UUID) *SystemHazardUpdate {
+	_u.mutation.RemoveRelationshipIDs(ids...)
+	return _u
 }
 
 // RemoveRelationships removes "relationships" edges to SystemComponentRelationship entities.
-func (shu *SystemHazardUpdate) RemoveRelationships(s ...*SystemComponentRelationship) *SystemHazardUpdate {
-	ids := make([]uuid.UUID, len(s))
-	for i := range s {
-		ids[i] = s[i].ID
+func (_u *SystemHazardUpdate) RemoveRelationships(v ...*SystemComponentRelationship) *SystemHazardUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
 	}
-	return shu.RemoveRelationshipIDs(ids...)
+	return _u.RemoveRelationshipIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
-func (shu *SystemHazardUpdate) Save(ctx context.Context) (int, error) {
-	if err := shu.defaults(); err != nil {
+func (_u *SystemHazardUpdate) Save(ctx context.Context) (int, error) {
+	if err := _u.defaults(); err != nil {
 		return 0, err
 	}
-	return withHooks(ctx, shu.sqlSave, shu.mutation, shu.hooks)
+	return withHooks(ctx, _u.sqlSave, _u.mutation, _u.hooks)
 }
 
 // SaveX is like Save, but panics if an error occurs.
-func (shu *SystemHazardUpdate) SaveX(ctx context.Context) int {
-	affected, err := shu.Save(ctx)
+func (_u *SystemHazardUpdate) SaveX(ctx context.Context) int {
+	affected, err := _u.Save(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -212,74 +212,74 @@ func (shu *SystemHazardUpdate) SaveX(ctx context.Context) int {
 }
 
 // Exec executes the query.
-func (shu *SystemHazardUpdate) Exec(ctx context.Context) error {
-	_, err := shu.Save(ctx)
+func (_u *SystemHazardUpdate) Exec(ctx context.Context) error {
+	_, err := _u.Save(ctx)
 	return err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (shu *SystemHazardUpdate) ExecX(ctx context.Context) {
-	if err := shu.Exec(ctx); err != nil {
+func (_u *SystemHazardUpdate) ExecX(ctx context.Context) {
+	if err := _u.Exec(ctx); err != nil {
 		panic(err)
 	}
 }
 
 // defaults sets the default values of the builder before save.
-func (shu *SystemHazardUpdate) defaults() error {
-	if _, ok := shu.mutation.UpdatedAt(); !ok {
+func (_u *SystemHazardUpdate) defaults() error {
+	if _, ok := _u.mutation.UpdatedAt(); !ok {
 		if systemhazard.UpdateDefaultUpdatedAt == nil {
 			return fmt.Errorf("ent: uninitialized systemhazard.UpdateDefaultUpdatedAt (forgotten import ent/runtime?)")
 		}
 		v := systemhazard.UpdateDefaultUpdatedAt()
-		shu.mutation.SetUpdatedAt(v)
+		_u.mutation.SetUpdatedAt(v)
 	}
 	return nil
 }
 
 // check runs all checks and user-defined validators on the builder.
-func (shu *SystemHazardUpdate) check() error {
-	if v, ok := shu.mutation.Name(); ok {
+func (_u *SystemHazardUpdate) check() error {
+	if v, ok := _u.mutation.Name(); ok {
 		if err := systemhazard.NameValidator(v); err != nil {
 			return &ValidationError{Name: "name", err: fmt.Errorf(`ent: validator failed for field "SystemHazard.name": %w`, err)}
 		}
 	}
-	if shu.mutation.TenantCleared() && len(shu.mutation.TenantIDs()) > 0 {
+	if _u.mutation.TenantCleared() && len(_u.mutation.TenantIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "SystemHazard.tenant"`)
 	}
 	return nil
 }
 
 // Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
-func (shu *SystemHazardUpdate) Modify(modifiers ...func(u *sql.UpdateBuilder)) *SystemHazardUpdate {
-	shu.modifiers = append(shu.modifiers, modifiers...)
-	return shu
+func (_u *SystemHazardUpdate) Modify(modifiers ...func(u *sql.UpdateBuilder)) *SystemHazardUpdate {
+	_u.modifiers = append(_u.modifiers, modifiers...)
+	return _u
 }
 
-func (shu *SystemHazardUpdate) sqlSave(ctx context.Context) (n int, err error) {
-	if err := shu.check(); err != nil {
-		return n, err
+func (_u *SystemHazardUpdate) sqlSave(ctx context.Context) (_node int, err error) {
+	if err := _u.check(); err != nil {
+		return _node, err
 	}
 	_spec := sqlgraph.NewUpdateSpec(systemhazard.Table, systemhazard.Columns, sqlgraph.NewFieldSpec(systemhazard.FieldID, field.TypeUUID))
-	if ps := shu.mutation.predicates; len(ps) > 0 {
+	if ps := _u.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {
 				ps[i](selector)
 			}
 		}
 	}
-	if value, ok := shu.mutation.Name(); ok {
+	if value, ok := _u.mutation.Name(); ok {
 		_spec.SetField(systemhazard.FieldName, field.TypeString, value)
 	}
-	if value, ok := shu.mutation.Description(); ok {
+	if value, ok := _u.mutation.Description(); ok {
 		_spec.SetField(systemhazard.FieldDescription, field.TypeString, value)
 	}
-	if value, ok := shu.mutation.CreatedAt(); ok {
+	if value, ok := _u.mutation.CreatedAt(); ok {
 		_spec.SetField(systemhazard.FieldCreatedAt, field.TypeTime, value)
 	}
-	if value, ok := shu.mutation.UpdatedAt(); ok {
+	if value, ok := _u.mutation.UpdatedAt(); ok {
 		_spec.SetField(systemhazard.FieldUpdatedAt, field.TypeTime, value)
 	}
-	if shu.mutation.ComponentsCleared() {
+	if _u.mutation.ComponentsCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
 			Inverse: false,
@@ -292,7 +292,7 @@ func (shu *SystemHazardUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := shu.mutation.RemovedComponentsIDs(); len(nodes) > 0 && !shu.mutation.ComponentsCleared() {
+	if nodes := _u.mutation.RemovedComponentsIDs(); len(nodes) > 0 && !_u.mutation.ComponentsCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
 			Inverse: false,
@@ -308,7 +308,7 @@ func (shu *SystemHazardUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := shu.mutation.ComponentsIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.ComponentsIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
 			Inverse: false,
@@ -324,7 +324,7 @@ func (shu *SystemHazardUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if shu.mutation.ConstraintsCleared() {
+	if _u.mutation.ConstraintsCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
 			Inverse: false,
@@ -337,7 +337,7 @@ func (shu *SystemHazardUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := shu.mutation.RemovedConstraintsIDs(); len(nodes) > 0 && !shu.mutation.ConstraintsCleared() {
+	if nodes := _u.mutation.RemovedConstraintsIDs(); len(nodes) > 0 && !_u.mutation.ConstraintsCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
 			Inverse: false,
@@ -353,7 +353,7 @@ func (shu *SystemHazardUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := shu.mutation.ConstraintsIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.ConstraintsIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
 			Inverse: false,
@@ -369,7 +369,7 @@ func (shu *SystemHazardUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if shu.mutation.RelationshipsCleared() {
+	if _u.mutation.RelationshipsCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
 			Inverse: false,
@@ -382,7 +382,7 @@ func (shu *SystemHazardUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := shu.mutation.RemovedRelationshipsIDs(); len(nodes) > 0 && !shu.mutation.RelationshipsCleared() {
+	if nodes := _u.mutation.RemovedRelationshipsIDs(); len(nodes) > 0 && !_u.mutation.RelationshipsCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
 			Inverse: false,
@@ -398,7 +398,7 @@ func (shu *SystemHazardUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := shu.mutation.RelationshipsIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.RelationshipsIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
 			Inverse: false,
@@ -414,8 +414,8 @@ func (shu *SystemHazardUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	_spec.AddModifiers(shu.modifiers...)
-	if n, err = sqlgraph.UpdateNodes(ctx, shu.driver, _spec); err != nil {
+	_spec.AddModifiers(_u.modifiers...)
+	if _node, err = sqlgraph.UpdateNodes(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{systemhazard.Label}
 		} else if sqlgraph.IsConstraintError(err) {
@@ -423,8 +423,8 @@ func (shu *SystemHazardUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		return 0, err
 	}
-	shu.mutation.done = true
-	return n, nil
+	_u.mutation.done = true
+	return _node, nil
 }
 
 // SystemHazardUpdateOne is the builder for updating a single SystemHazard entity.
@@ -437,190 +437,190 @@ type SystemHazardUpdateOne struct {
 }
 
 // SetName sets the "name" field.
-func (shuo *SystemHazardUpdateOne) SetName(s string) *SystemHazardUpdateOne {
-	shuo.mutation.SetName(s)
-	return shuo
+func (_u *SystemHazardUpdateOne) SetName(v string) *SystemHazardUpdateOne {
+	_u.mutation.SetName(v)
+	return _u
 }
 
 // SetNillableName sets the "name" field if the given value is not nil.
-func (shuo *SystemHazardUpdateOne) SetNillableName(s *string) *SystemHazardUpdateOne {
-	if s != nil {
-		shuo.SetName(*s)
+func (_u *SystemHazardUpdateOne) SetNillableName(v *string) *SystemHazardUpdateOne {
+	if v != nil {
+		_u.SetName(*v)
 	}
-	return shuo
+	return _u
 }
 
 // SetDescription sets the "description" field.
-func (shuo *SystemHazardUpdateOne) SetDescription(s string) *SystemHazardUpdateOne {
-	shuo.mutation.SetDescription(s)
-	return shuo
+func (_u *SystemHazardUpdateOne) SetDescription(v string) *SystemHazardUpdateOne {
+	_u.mutation.SetDescription(v)
+	return _u
 }
 
 // SetNillableDescription sets the "description" field if the given value is not nil.
-func (shuo *SystemHazardUpdateOne) SetNillableDescription(s *string) *SystemHazardUpdateOne {
-	if s != nil {
-		shuo.SetDescription(*s)
+func (_u *SystemHazardUpdateOne) SetNillableDescription(v *string) *SystemHazardUpdateOne {
+	if v != nil {
+		_u.SetDescription(*v)
 	}
-	return shuo
+	return _u
 }
 
 // SetCreatedAt sets the "created_at" field.
-func (shuo *SystemHazardUpdateOne) SetCreatedAt(t time.Time) *SystemHazardUpdateOne {
-	shuo.mutation.SetCreatedAt(t)
-	return shuo
+func (_u *SystemHazardUpdateOne) SetCreatedAt(v time.Time) *SystemHazardUpdateOne {
+	_u.mutation.SetCreatedAt(v)
+	return _u
 }
 
 // SetNillableCreatedAt sets the "created_at" field if the given value is not nil.
-func (shuo *SystemHazardUpdateOne) SetNillableCreatedAt(t *time.Time) *SystemHazardUpdateOne {
-	if t != nil {
-		shuo.SetCreatedAt(*t)
+func (_u *SystemHazardUpdateOne) SetNillableCreatedAt(v *time.Time) *SystemHazardUpdateOne {
+	if v != nil {
+		_u.SetCreatedAt(*v)
 	}
-	return shuo
+	return _u
 }
 
 // SetUpdatedAt sets the "updated_at" field.
-func (shuo *SystemHazardUpdateOne) SetUpdatedAt(t time.Time) *SystemHazardUpdateOne {
-	shuo.mutation.SetUpdatedAt(t)
-	return shuo
+func (_u *SystemHazardUpdateOne) SetUpdatedAt(v time.Time) *SystemHazardUpdateOne {
+	_u.mutation.SetUpdatedAt(v)
+	return _u
 }
 
 // AddComponentIDs adds the "components" edge to the SystemComponent entity by IDs.
-func (shuo *SystemHazardUpdateOne) AddComponentIDs(ids ...uuid.UUID) *SystemHazardUpdateOne {
-	shuo.mutation.AddComponentIDs(ids...)
-	return shuo
+func (_u *SystemHazardUpdateOne) AddComponentIDs(ids ...uuid.UUID) *SystemHazardUpdateOne {
+	_u.mutation.AddComponentIDs(ids...)
+	return _u
 }
 
 // AddComponents adds the "components" edges to the SystemComponent entity.
-func (shuo *SystemHazardUpdateOne) AddComponents(s ...*SystemComponent) *SystemHazardUpdateOne {
-	ids := make([]uuid.UUID, len(s))
-	for i := range s {
-		ids[i] = s[i].ID
+func (_u *SystemHazardUpdateOne) AddComponents(v ...*SystemComponent) *SystemHazardUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
 	}
-	return shuo.AddComponentIDs(ids...)
+	return _u.AddComponentIDs(ids...)
 }
 
 // AddConstraintIDs adds the "constraints" edge to the SystemComponentConstraint entity by IDs.
-func (shuo *SystemHazardUpdateOne) AddConstraintIDs(ids ...uuid.UUID) *SystemHazardUpdateOne {
-	shuo.mutation.AddConstraintIDs(ids...)
-	return shuo
+func (_u *SystemHazardUpdateOne) AddConstraintIDs(ids ...uuid.UUID) *SystemHazardUpdateOne {
+	_u.mutation.AddConstraintIDs(ids...)
+	return _u
 }
 
 // AddConstraints adds the "constraints" edges to the SystemComponentConstraint entity.
-func (shuo *SystemHazardUpdateOne) AddConstraints(s ...*SystemComponentConstraint) *SystemHazardUpdateOne {
-	ids := make([]uuid.UUID, len(s))
-	for i := range s {
-		ids[i] = s[i].ID
+func (_u *SystemHazardUpdateOne) AddConstraints(v ...*SystemComponentConstraint) *SystemHazardUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
 	}
-	return shuo.AddConstraintIDs(ids...)
+	return _u.AddConstraintIDs(ids...)
 }
 
 // AddRelationshipIDs adds the "relationships" edge to the SystemComponentRelationship entity by IDs.
-func (shuo *SystemHazardUpdateOne) AddRelationshipIDs(ids ...uuid.UUID) *SystemHazardUpdateOne {
-	shuo.mutation.AddRelationshipIDs(ids...)
-	return shuo
+func (_u *SystemHazardUpdateOne) AddRelationshipIDs(ids ...uuid.UUID) *SystemHazardUpdateOne {
+	_u.mutation.AddRelationshipIDs(ids...)
+	return _u
 }
 
 // AddRelationships adds the "relationships" edges to the SystemComponentRelationship entity.
-func (shuo *SystemHazardUpdateOne) AddRelationships(s ...*SystemComponentRelationship) *SystemHazardUpdateOne {
-	ids := make([]uuid.UUID, len(s))
-	for i := range s {
-		ids[i] = s[i].ID
+func (_u *SystemHazardUpdateOne) AddRelationships(v ...*SystemComponentRelationship) *SystemHazardUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
 	}
-	return shuo.AddRelationshipIDs(ids...)
+	return _u.AddRelationshipIDs(ids...)
 }
 
 // Mutation returns the SystemHazardMutation object of the builder.
-func (shuo *SystemHazardUpdateOne) Mutation() *SystemHazardMutation {
-	return shuo.mutation
+func (_u *SystemHazardUpdateOne) Mutation() *SystemHazardMutation {
+	return _u.mutation
 }
 
 // ClearComponents clears all "components" edges to the SystemComponent entity.
-func (shuo *SystemHazardUpdateOne) ClearComponents() *SystemHazardUpdateOne {
-	shuo.mutation.ClearComponents()
-	return shuo
+func (_u *SystemHazardUpdateOne) ClearComponents() *SystemHazardUpdateOne {
+	_u.mutation.ClearComponents()
+	return _u
 }
 
 // RemoveComponentIDs removes the "components" edge to SystemComponent entities by IDs.
-func (shuo *SystemHazardUpdateOne) RemoveComponentIDs(ids ...uuid.UUID) *SystemHazardUpdateOne {
-	shuo.mutation.RemoveComponentIDs(ids...)
-	return shuo
+func (_u *SystemHazardUpdateOne) RemoveComponentIDs(ids ...uuid.UUID) *SystemHazardUpdateOne {
+	_u.mutation.RemoveComponentIDs(ids...)
+	return _u
 }
 
 // RemoveComponents removes "components" edges to SystemComponent entities.
-func (shuo *SystemHazardUpdateOne) RemoveComponents(s ...*SystemComponent) *SystemHazardUpdateOne {
-	ids := make([]uuid.UUID, len(s))
-	for i := range s {
-		ids[i] = s[i].ID
+func (_u *SystemHazardUpdateOne) RemoveComponents(v ...*SystemComponent) *SystemHazardUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
 	}
-	return shuo.RemoveComponentIDs(ids...)
+	return _u.RemoveComponentIDs(ids...)
 }
 
 // ClearConstraints clears all "constraints" edges to the SystemComponentConstraint entity.
-func (shuo *SystemHazardUpdateOne) ClearConstraints() *SystemHazardUpdateOne {
-	shuo.mutation.ClearConstraints()
-	return shuo
+func (_u *SystemHazardUpdateOne) ClearConstraints() *SystemHazardUpdateOne {
+	_u.mutation.ClearConstraints()
+	return _u
 }
 
 // RemoveConstraintIDs removes the "constraints" edge to SystemComponentConstraint entities by IDs.
-func (shuo *SystemHazardUpdateOne) RemoveConstraintIDs(ids ...uuid.UUID) *SystemHazardUpdateOne {
-	shuo.mutation.RemoveConstraintIDs(ids...)
-	return shuo
+func (_u *SystemHazardUpdateOne) RemoveConstraintIDs(ids ...uuid.UUID) *SystemHazardUpdateOne {
+	_u.mutation.RemoveConstraintIDs(ids...)
+	return _u
 }
 
 // RemoveConstraints removes "constraints" edges to SystemComponentConstraint entities.
-func (shuo *SystemHazardUpdateOne) RemoveConstraints(s ...*SystemComponentConstraint) *SystemHazardUpdateOne {
-	ids := make([]uuid.UUID, len(s))
-	for i := range s {
-		ids[i] = s[i].ID
+func (_u *SystemHazardUpdateOne) RemoveConstraints(v ...*SystemComponentConstraint) *SystemHazardUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
 	}
-	return shuo.RemoveConstraintIDs(ids...)
+	return _u.RemoveConstraintIDs(ids...)
 }
 
 // ClearRelationships clears all "relationships" edges to the SystemComponentRelationship entity.
-func (shuo *SystemHazardUpdateOne) ClearRelationships() *SystemHazardUpdateOne {
-	shuo.mutation.ClearRelationships()
-	return shuo
+func (_u *SystemHazardUpdateOne) ClearRelationships() *SystemHazardUpdateOne {
+	_u.mutation.ClearRelationships()
+	return _u
 }
 
 // RemoveRelationshipIDs removes the "relationships" edge to SystemComponentRelationship entities by IDs.
-func (shuo *SystemHazardUpdateOne) RemoveRelationshipIDs(ids ...uuid.UUID) *SystemHazardUpdateOne {
-	shuo.mutation.RemoveRelationshipIDs(ids...)
-	return shuo
+func (_u *SystemHazardUpdateOne) RemoveRelationshipIDs(ids ...uuid.UUID) *SystemHazardUpdateOne {
+	_u.mutation.RemoveRelationshipIDs(ids...)
+	return _u
 }
 
 // RemoveRelationships removes "relationships" edges to SystemComponentRelationship entities.
-func (shuo *SystemHazardUpdateOne) RemoveRelationships(s ...*SystemComponentRelationship) *SystemHazardUpdateOne {
-	ids := make([]uuid.UUID, len(s))
-	for i := range s {
-		ids[i] = s[i].ID
+func (_u *SystemHazardUpdateOne) RemoveRelationships(v ...*SystemComponentRelationship) *SystemHazardUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
 	}
-	return shuo.RemoveRelationshipIDs(ids...)
+	return _u.RemoveRelationshipIDs(ids...)
 }
 
 // Where appends a list predicates to the SystemHazardUpdate builder.
-func (shuo *SystemHazardUpdateOne) Where(ps ...predicate.SystemHazard) *SystemHazardUpdateOne {
-	shuo.mutation.Where(ps...)
-	return shuo
+func (_u *SystemHazardUpdateOne) Where(ps ...predicate.SystemHazard) *SystemHazardUpdateOne {
+	_u.mutation.Where(ps...)
+	return _u
 }
 
 // Select allows selecting one or more fields (columns) of the returned entity.
 // The default is selecting all fields defined in the entity schema.
-func (shuo *SystemHazardUpdateOne) Select(field string, fields ...string) *SystemHazardUpdateOne {
-	shuo.fields = append([]string{field}, fields...)
-	return shuo
+func (_u *SystemHazardUpdateOne) Select(field string, fields ...string) *SystemHazardUpdateOne {
+	_u.fields = append([]string{field}, fields...)
+	return _u
 }
 
 // Save executes the query and returns the updated SystemHazard entity.
-func (shuo *SystemHazardUpdateOne) Save(ctx context.Context) (*SystemHazard, error) {
-	if err := shuo.defaults(); err != nil {
+func (_u *SystemHazardUpdateOne) Save(ctx context.Context) (*SystemHazard, error) {
+	if err := _u.defaults(); err != nil {
 		return nil, err
 	}
-	return withHooks(ctx, shuo.sqlSave, shuo.mutation, shuo.hooks)
+	return withHooks(ctx, _u.sqlSave, _u.mutation, _u.hooks)
 }
 
 // SaveX is like Save, but panics if an error occurs.
-func (shuo *SystemHazardUpdateOne) SaveX(ctx context.Context) *SystemHazard {
-	node, err := shuo.Save(ctx)
+func (_u *SystemHazardUpdateOne) SaveX(ctx context.Context) *SystemHazard {
+	node, err := _u.Save(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -628,60 +628,60 @@ func (shuo *SystemHazardUpdateOne) SaveX(ctx context.Context) *SystemHazard {
 }
 
 // Exec executes the query on the entity.
-func (shuo *SystemHazardUpdateOne) Exec(ctx context.Context) error {
-	_, err := shuo.Save(ctx)
+func (_u *SystemHazardUpdateOne) Exec(ctx context.Context) error {
+	_, err := _u.Save(ctx)
 	return err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (shuo *SystemHazardUpdateOne) ExecX(ctx context.Context) {
-	if err := shuo.Exec(ctx); err != nil {
+func (_u *SystemHazardUpdateOne) ExecX(ctx context.Context) {
+	if err := _u.Exec(ctx); err != nil {
 		panic(err)
 	}
 }
 
 // defaults sets the default values of the builder before save.
-func (shuo *SystemHazardUpdateOne) defaults() error {
-	if _, ok := shuo.mutation.UpdatedAt(); !ok {
+func (_u *SystemHazardUpdateOne) defaults() error {
+	if _, ok := _u.mutation.UpdatedAt(); !ok {
 		if systemhazard.UpdateDefaultUpdatedAt == nil {
 			return fmt.Errorf("ent: uninitialized systemhazard.UpdateDefaultUpdatedAt (forgotten import ent/runtime?)")
 		}
 		v := systemhazard.UpdateDefaultUpdatedAt()
-		shuo.mutation.SetUpdatedAt(v)
+		_u.mutation.SetUpdatedAt(v)
 	}
 	return nil
 }
 
 // check runs all checks and user-defined validators on the builder.
-func (shuo *SystemHazardUpdateOne) check() error {
-	if v, ok := shuo.mutation.Name(); ok {
+func (_u *SystemHazardUpdateOne) check() error {
+	if v, ok := _u.mutation.Name(); ok {
 		if err := systemhazard.NameValidator(v); err != nil {
 			return &ValidationError{Name: "name", err: fmt.Errorf(`ent: validator failed for field "SystemHazard.name": %w`, err)}
 		}
 	}
-	if shuo.mutation.TenantCleared() && len(shuo.mutation.TenantIDs()) > 0 {
+	if _u.mutation.TenantCleared() && len(_u.mutation.TenantIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "SystemHazard.tenant"`)
 	}
 	return nil
 }
 
 // Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
-func (shuo *SystemHazardUpdateOne) Modify(modifiers ...func(u *sql.UpdateBuilder)) *SystemHazardUpdateOne {
-	shuo.modifiers = append(shuo.modifiers, modifiers...)
-	return shuo
+func (_u *SystemHazardUpdateOne) Modify(modifiers ...func(u *sql.UpdateBuilder)) *SystemHazardUpdateOne {
+	_u.modifiers = append(_u.modifiers, modifiers...)
+	return _u
 }
 
-func (shuo *SystemHazardUpdateOne) sqlSave(ctx context.Context) (_node *SystemHazard, err error) {
-	if err := shuo.check(); err != nil {
+func (_u *SystemHazardUpdateOne) sqlSave(ctx context.Context) (_node *SystemHazard, err error) {
+	if err := _u.check(); err != nil {
 		return _node, err
 	}
 	_spec := sqlgraph.NewUpdateSpec(systemhazard.Table, systemhazard.Columns, sqlgraph.NewFieldSpec(systemhazard.FieldID, field.TypeUUID))
-	id, ok := shuo.mutation.ID()
+	id, ok := _u.mutation.ID()
 	if !ok {
 		return nil, &ValidationError{Name: "id", err: errors.New(`ent: missing "SystemHazard.id" for update`)}
 	}
 	_spec.Node.ID.Value = id
-	if fields := shuo.fields; len(fields) > 0 {
+	if fields := _u.fields; len(fields) > 0 {
 		_spec.Node.Columns = make([]string, 0, len(fields))
 		_spec.Node.Columns = append(_spec.Node.Columns, systemhazard.FieldID)
 		for _, f := range fields {
@@ -693,26 +693,26 @@ func (shuo *SystemHazardUpdateOne) sqlSave(ctx context.Context) (_node *SystemHa
 			}
 		}
 	}
-	if ps := shuo.mutation.predicates; len(ps) > 0 {
+	if ps := _u.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {
 				ps[i](selector)
 			}
 		}
 	}
-	if value, ok := shuo.mutation.Name(); ok {
+	if value, ok := _u.mutation.Name(); ok {
 		_spec.SetField(systemhazard.FieldName, field.TypeString, value)
 	}
-	if value, ok := shuo.mutation.Description(); ok {
+	if value, ok := _u.mutation.Description(); ok {
 		_spec.SetField(systemhazard.FieldDescription, field.TypeString, value)
 	}
-	if value, ok := shuo.mutation.CreatedAt(); ok {
+	if value, ok := _u.mutation.CreatedAt(); ok {
 		_spec.SetField(systemhazard.FieldCreatedAt, field.TypeTime, value)
 	}
-	if value, ok := shuo.mutation.UpdatedAt(); ok {
+	if value, ok := _u.mutation.UpdatedAt(); ok {
 		_spec.SetField(systemhazard.FieldUpdatedAt, field.TypeTime, value)
 	}
-	if shuo.mutation.ComponentsCleared() {
+	if _u.mutation.ComponentsCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
 			Inverse: false,
@@ -725,7 +725,7 @@ func (shuo *SystemHazardUpdateOne) sqlSave(ctx context.Context) (_node *SystemHa
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := shuo.mutation.RemovedComponentsIDs(); len(nodes) > 0 && !shuo.mutation.ComponentsCleared() {
+	if nodes := _u.mutation.RemovedComponentsIDs(); len(nodes) > 0 && !_u.mutation.ComponentsCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
 			Inverse: false,
@@ -741,7 +741,7 @@ func (shuo *SystemHazardUpdateOne) sqlSave(ctx context.Context) (_node *SystemHa
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := shuo.mutation.ComponentsIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.ComponentsIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
 			Inverse: false,
@@ -757,7 +757,7 @@ func (shuo *SystemHazardUpdateOne) sqlSave(ctx context.Context) (_node *SystemHa
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if shuo.mutation.ConstraintsCleared() {
+	if _u.mutation.ConstraintsCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
 			Inverse: false,
@@ -770,7 +770,7 @@ func (shuo *SystemHazardUpdateOne) sqlSave(ctx context.Context) (_node *SystemHa
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := shuo.mutation.RemovedConstraintsIDs(); len(nodes) > 0 && !shuo.mutation.ConstraintsCleared() {
+	if nodes := _u.mutation.RemovedConstraintsIDs(); len(nodes) > 0 && !_u.mutation.ConstraintsCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
 			Inverse: false,
@@ -786,7 +786,7 @@ func (shuo *SystemHazardUpdateOne) sqlSave(ctx context.Context) (_node *SystemHa
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := shuo.mutation.ConstraintsIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.ConstraintsIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
 			Inverse: false,
@@ -802,7 +802,7 @@ func (shuo *SystemHazardUpdateOne) sqlSave(ctx context.Context) (_node *SystemHa
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if shuo.mutation.RelationshipsCleared() {
+	if _u.mutation.RelationshipsCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
 			Inverse: false,
@@ -815,7 +815,7 @@ func (shuo *SystemHazardUpdateOne) sqlSave(ctx context.Context) (_node *SystemHa
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := shuo.mutation.RemovedRelationshipsIDs(); len(nodes) > 0 && !shuo.mutation.RelationshipsCleared() {
+	if nodes := _u.mutation.RemovedRelationshipsIDs(); len(nodes) > 0 && !_u.mutation.RelationshipsCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
 			Inverse: false,
@@ -831,7 +831,7 @@ func (shuo *SystemHazardUpdateOne) sqlSave(ctx context.Context) (_node *SystemHa
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := shuo.mutation.RelationshipsIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.RelationshipsIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
 			Inverse: false,
@@ -847,11 +847,11 @@ func (shuo *SystemHazardUpdateOne) sqlSave(ctx context.Context) (_node *SystemHa
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	_spec.AddModifiers(shuo.modifiers...)
-	_node = &SystemHazard{config: shuo.config}
+	_spec.AddModifiers(_u.modifiers...)
+	_node = &SystemHazard{config: _u.config}
 	_spec.Assign = _node.assignValues
 	_spec.ScanValues = _node.scanValues
-	if err = sqlgraph.UpdateNode(ctx, shuo.driver, _spec); err != nil {
+	if err = sqlgraph.UpdateNode(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{systemhazard.Label}
 		} else if sqlgraph.IsConstraintError(err) {
@@ -859,6 +859,6 @@ func (shuo *SystemHazardUpdateOne) sqlSave(ctx context.Context) (_node *SystemHa
 		}
 		return nil, err
 	}
-	shuo.mutation.done = true
+	_u.mutation.done = true
 	return _node, nil
 }

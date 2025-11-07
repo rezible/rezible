@@ -20,56 +20,56 @@ type IncidentFieldDelete struct {
 }
 
 // Where appends a list predicates to the IncidentFieldDelete builder.
-func (ifd *IncidentFieldDelete) Where(ps ...predicate.IncidentField) *IncidentFieldDelete {
-	ifd.mutation.Where(ps...)
-	return ifd
+func (_d *IncidentFieldDelete) Where(ps ...predicate.IncidentField) *IncidentFieldDelete {
+	_d.mutation.Where(ps...)
+	return _d
 }
 
 // Exec executes the deletion query and returns how many vertices were deleted.
-func (ifd *IncidentFieldDelete) Exec(ctx context.Context) (int, error) {
-	return withHooks(ctx, ifd.sqlExec, ifd.mutation, ifd.hooks)
+func (_d *IncidentFieldDelete) Exec(ctx context.Context) (int, error) {
+	return withHooks(ctx, _d.sqlExec, _d.mutation, _d.hooks)
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (ifd *IncidentFieldDelete) ExecX(ctx context.Context) int {
-	n, err := ifd.Exec(ctx)
+func (_d *IncidentFieldDelete) ExecX(ctx context.Context) int {
+	n, err := _d.Exec(ctx)
 	if err != nil {
 		panic(err)
 	}
 	return n
 }
 
-func (ifd *IncidentFieldDelete) sqlExec(ctx context.Context) (int, error) {
+func (_d *IncidentFieldDelete) sqlExec(ctx context.Context) (int, error) {
 	_spec := sqlgraph.NewDeleteSpec(incidentfield.Table, sqlgraph.NewFieldSpec(incidentfield.FieldID, field.TypeUUID))
-	if ps := ifd.mutation.predicates; len(ps) > 0 {
+	if ps := _d.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {
 				ps[i](selector)
 			}
 		}
 	}
-	affected, err := sqlgraph.DeleteNodes(ctx, ifd.driver, _spec)
+	affected, err := sqlgraph.DeleteNodes(ctx, _d.driver, _spec)
 	if err != nil && sqlgraph.IsConstraintError(err) {
 		err = &ConstraintError{msg: err.Error(), wrap: err}
 	}
-	ifd.mutation.done = true
+	_d.mutation.done = true
 	return affected, err
 }
 
 // IncidentFieldDeleteOne is the builder for deleting a single IncidentField entity.
 type IncidentFieldDeleteOne struct {
-	ifd *IncidentFieldDelete
+	_d *IncidentFieldDelete
 }
 
 // Where appends a list predicates to the IncidentFieldDelete builder.
-func (ifdo *IncidentFieldDeleteOne) Where(ps ...predicate.IncidentField) *IncidentFieldDeleteOne {
-	ifdo.ifd.mutation.Where(ps...)
-	return ifdo
+func (_d *IncidentFieldDeleteOne) Where(ps ...predicate.IncidentField) *IncidentFieldDeleteOne {
+	_d._d.mutation.Where(ps...)
+	return _d
 }
 
 // Exec executes the deletion query.
-func (ifdo *IncidentFieldDeleteOne) Exec(ctx context.Context) error {
-	n, err := ifdo.ifd.Exec(ctx)
+func (_d *IncidentFieldDeleteOne) Exec(ctx context.Context) error {
+	n, err := _d._d.Exec(ctx)
 	switch {
 	case err != nil:
 		return err
@@ -81,8 +81,8 @@ func (ifdo *IncidentFieldDeleteOne) Exec(ctx context.Context) error {
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (ifdo *IncidentFieldDeleteOne) ExecX(ctx context.Context) {
-	if err := ifdo.Exec(ctx); err != nil {
+func (_d *IncidentFieldDeleteOne) ExecX(ctx context.Context) {
+	if err := _d.Exec(ctx); err != nil {
 		panic(err)
 	}
 }

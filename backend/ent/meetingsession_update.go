@@ -27,147 +27,147 @@ type MeetingSessionUpdate struct {
 }
 
 // Where appends a list predicates to the MeetingSessionUpdate builder.
-func (msu *MeetingSessionUpdate) Where(ps ...predicate.MeetingSession) *MeetingSessionUpdate {
-	msu.mutation.Where(ps...)
-	return msu
+func (_u *MeetingSessionUpdate) Where(ps ...predicate.MeetingSession) *MeetingSessionUpdate {
+	_u.mutation.Where(ps...)
+	return _u
 }
 
 // SetTitle sets the "title" field.
-func (msu *MeetingSessionUpdate) SetTitle(s string) *MeetingSessionUpdate {
-	msu.mutation.SetTitle(s)
-	return msu
+func (_u *MeetingSessionUpdate) SetTitle(v string) *MeetingSessionUpdate {
+	_u.mutation.SetTitle(v)
+	return _u
 }
 
 // SetNillableTitle sets the "title" field if the given value is not nil.
-func (msu *MeetingSessionUpdate) SetNillableTitle(s *string) *MeetingSessionUpdate {
-	if s != nil {
-		msu.SetTitle(*s)
+func (_u *MeetingSessionUpdate) SetNillableTitle(v *string) *MeetingSessionUpdate {
+	if v != nil {
+		_u.SetTitle(*v)
 	}
-	return msu
+	return _u
 }
 
 // SetStartedAt sets the "started_at" field.
-func (msu *MeetingSessionUpdate) SetStartedAt(t time.Time) *MeetingSessionUpdate {
-	msu.mutation.SetStartedAt(t)
-	return msu
+func (_u *MeetingSessionUpdate) SetStartedAt(v time.Time) *MeetingSessionUpdate {
+	_u.mutation.SetStartedAt(v)
+	return _u
 }
 
 // SetNillableStartedAt sets the "started_at" field if the given value is not nil.
-func (msu *MeetingSessionUpdate) SetNillableStartedAt(t *time.Time) *MeetingSessionUpdate {
-	if t != nil {
-		msu.SetStartedAt(*t)
+func (_u *MeetingSessionUpdate) SetNillableStartedAt(v *time.Time) *MeetingSessionUpdate {
+	if v != nil {
+		_u.SetStartedAt(*v)
 	}
-	return msu
+	return _u
 }
 
 // SetEndedAt sets the "ended_at" field.
-func (msu *MeetingSessionUpdate) SetEndedAt(t time.Time) *MeetingSessionUpdate {
-	msu.mutation.SetEndedAt(t)
-	return msu
+func (_u *MeetingSessionUpdate) SetEndedAt(v time.Time) *MeetingSessionUpdate {
+	_u.mutation.SetEndedAt(v)
+	return _u
 }
 
 // SetNillableEndedAt sets the "ended_at" field if the given value is not nil.
-func (msu *MeetingSessionUpdate) SetNillableEndedAt(t *time.Time) *MeetingSessionUpdate {
-	if t != nil {
-		msu.SetEndedAt(*t)
+func (_u *MeetingSessionUpdate) SetNillableEndedAt(v *time.Time) *MeetingSessionUpdate {
+	if v != nil {
+		_u.SetEndedAt(*v)
 	}
-	return msu
+	return _u
 }
 
 // ClearEndedAt clears the value of the "ended_at" field.
-func (msu *MeetingSessionUpdate) ClearEndedAt() *MeetingSessionUpdate {
-	msu.mutation.ClearEndedAt()
-	return msu
+func (_u *MeetingSessionUpdate) ClearEndedAt() *MeetingSessionUpdate {
+	_u.mutation.ClearEndedAt()
+	return _u
 }
 
 // SetDocumentName sets the "document_name" field.
-func (msu *MeetingSessionUpdate) SetDocumentName(s string) *MeetingSessionUpdate {
-	msu.mutation.SetDocumentName(s)
-	return msu
+func (_u *MeetingSessionUpdate) SetDocumentName(v string) *MeetingSessionUpdate {
+	_u.mutation.SetDocumentName(v)
+	return _u
 }
 
 // SetNillableDocumentName sets the "document_name" field if the given value is not nil.
-func (msu *MeetingSessionUpdate) SetNillableDocumentName(s *string) *MeetingSessionUpdate {
-	if s != nil {
-		msu.SetDocumentName(*s)
+func (_u *MeetingSessionUpdate) SetNillableDocumentName(v *string) *MeetingSessionUpdate {
+	if v != nil {
+		_u.SetDocumentName(*v)
 	}
-	return msu
+	return _u
 }
 
 // AddIncidentIDs adds the "incidents" edge to the Incident entity by IDs.
-func (msu *MeetingSessionUpdate) AddIncidentIDs(ids ...uuid.UUID) *MeetingSessionUpdate {
-	msu.mutation.AddIncidentIDs(ids...)
-	return msu
+func (_u *MeetingSessionUpdate) AddIncidentIDs(ids ...uuid.UUID) *MeetingSessionUpdate {
+	_u.mutation.AddIncidentIDs(ids...)
+	return _u
 }
 
 // AddIncidents adds the "incidents" edges to the Incident entity.
-func (msu *MeetingSessionUpdate) AddIncidents(i ...*Incident) *MeetingSessionUpdate {
-	ids := make([]uuid.UUID, len(i))
-	for j := range i {
-		ids[j] = i[j].ID
+func (_u *MeetingSessionUpdate) AddIncidents(v ...*Incident) *MeetingSessionUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
 	}
-	return msu.AddIncidentIDs(ids...)
+	return _u.AddIncidentIDs(ids...)
 }
 
 // SetScheduleID sets the "schedule" edge to the MeetingSchedule entity by ID.
-func (msu *MeetingSessionUpdate) SetScheduleID(id uuid.UUID) *MeetingSessionUpdate {
-	msu.mutation.SetScheduleID(id)
-	return msu
+func (_u *MeetingSessionUpdate) SetScheduleID(id uuid.UUID) *MeetingSessionUpdate {
+	_u.mutation.SetScheduleID(id)
+	return _u
 }
 
 // SetNillableScheduleID sets the "schedule" edge to the MeetingSchedule entity by ID if the given value is not nil.
-func (msu *MeetingSessionUpdate) SetNillableScheduleID(id *uuid.UUID) *MeetingSessionUpdate {
+func (_u *MeetingSessionUpdate) SetNillableScheduleID(id *uuid.UUID) *MeetingSessionUpdate {
 	if id != nil {
-		msu = msu.SetScheduleID(*id)
+		_u = _u.SetScheduleID(*id)
 	}
-	return msu
+	return _u
 }
 
 // SetSchedule sets the "schedule" edge to the MeetingSchedule entity.
-func (msu *MeetingSessionUpdate) SetSchedule(m *MeetingSchedule) *MeetingSessionUpdate {
-	return msu.SetScheduleID(m.ID)
+func (_u *MeetingSessionUpdate) SetSchedule(v *MeetingSchedule) *MeetingSessionUpdate {
+	return _u.SetScheduleID(v.ID)
 }
 
 // Mutation returns the MeetingSessionMutation object of the builder.
-func (msu *MeetingSessionUpdate) Mutation() *MeetingSessionMutation {
-	return msu.mutation
+func (_u *MeetingSessionUpdate) Mutation() *MeetingSessionMutation {
+	return _u.mutation
 }
 
 // ClearIncidents clears all "incidents" edges to the Incident entity.
-func (msu *MeetingSessionUpdate) ClearIncidents() *MeetingSessionUpdate {
-	msu.mutation.ClearIncidents()
-	return msu
+func (_u *MeetingSessionUpdate) ClearIncidents() *MeetingSessionUpdate {
+	_u.mutation.ClearIncidents()
+	return _u
 }
 
 // RemoveIncidentIDs removes the "incidents" edge to Incident entities by IDs.
-func (msu *MeetingSessionUpdate) RemoveIncidentIDs(ids ...uuid.UUID) *MeetingSessionUpdate {
-	msu.mutation.RemoveIncidentIDs(ids...)
-	return msu
+func (_u *MeetingSessionUpdate) RemoveIncidentIDs(ids ...uuid.UUID) *MeetingSessionUpdate {
+	_u.mutation.RemoveIncidentIDs(ids...)
+	return _u
 }
 
 // RemoveIncidents removes "incidents" edges to Incident entities.
-func (msu *MeetingSessionUpdate) RemoveIncidents(i ...*Incident) *MeetingSessionUpdate {
-	ids := make([]uuid.UUID, len(i))
-	for j := range i {
-		ids[j] = i[j].ID
+func (_u *MeetingSessionUpdate) RemoveIncidents(v ...*Incident) *MeetingSessionUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
 	}
-	return msu.RemoveIncidentIDs(ids...)
+	return _u.RemoveIncidentIDs(ids...)
 }
 
 // ClearSchedule clears the "schedule" edge to the MeetingSchedule entity.
-func (msu *MeetingSessionUpdate) ClearSchedule() *MeetingSessionUpdate {
-	msu.mutation.ClearSchedule()
-	return msu
+func (_u *MeetingSessionUpdate) ClearSchedule() *MeetingSessionUpdate {
+	_u.mutation.ClearSchedule()
+	return _u
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
-func (msu *MeetingSessionUpdate) Save(ctx context.Context) (int, error) {
-	return withHooks(ctx, msu.sqlSave, msu.mutation, msu.hooks)
+func (_u *MeetingSessionUpdate) Save(ctx context.Context) (int, error) {
+	return withHooks(ctx, _u.sqlSave, _u.mutation, _u.hooks)
 }
 
 // SaveX is like Save, but panics if an error occurs.
-func (msu *MeetingSessionUpdate) SaveX(ctx context.Context) int {
-	affected, err := msu.Save(ctx)
+func (_u *MeetingSessionUpdate) SaveX(ctx context.Context) int {
+	affected, err := _u.Save(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -175,60 +175,60 @@ func (msu *MeetingSessionUpdate) SaveX(ctx context.Context) int {
 }
 
 // Exec executes the query.
-func (msu *MeetingSessionUpdate) Exec(ctx context.Context) error {
-	_, err := msu.Save(ctx)
+func (_u *MeetingSessionUpdate) Exec(ctx context.Context) error {
+	_, err := _u.Save(ctx)
 	return err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (msu *MeetingSessionUpdate) ExecX(ctx context.Context) {
-	if err := msu.Exec(ctx); err != nil {
+func (_u *MeetingSessionUpdate) ExecX(ctx context.Context) {
+	if err := _u.Exec(ctx); err != nil {
 		panic(err)
 	}
 }
 
 // check runs all checks and user-defined validators on the builder.
-func (msu *MeetingSessionUpdate) check() error {
-	if msu.mutation.TenantCleared() && len(msu.mutation.TenantIDs()) > 0 {
+func (_u *MeetingSessionUpdate) check() error {
+	if _u.mutation.TenantCleared() && len(_u.mutation.TenantIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "MeetingSession.tenant"`)
 	}
 	return nil
 }
 
 // Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
-func (msu *MeetingSessionUpdate) Modify(modifiers ...func(u *sql.UpdateBuilder)) *MeetingSessionUpdate {
-	msu.modifiers = append(msu.modifiers, modifiers...)
-	return msu
+func (_u *MeetingSessionUpdate) Modify(modifiers ...func(u *sql.UpdateBuilder)) *MeetingSessionUpdate {
+	_u.modifiers = append(_u.modifiers, modifiers...)
+	return _u
 }
 
-func (msu *MeetingSessionUpdate) sqlSave(ctx context.Context) (n int, err error) {
-	if err := msu.check(); err != nil {
-		return n, err
+func (_u *MeetingSessionUpdate) sqlSave(ctx context.Context) (_node int, err error) {
+	if err := _u.check(); err != nil {
+		return _node, err
 	}
 	_spec := sqlgraph.NewUpdateSpec(meetingsession.Table, meetingsession.Columns, sqlgraph.NewFieldSpec(meetingsession.FieldID, field.TypeUUID))
-	if ps := msu.mutation.predicates; len(ps) > 0 {
+	if ps := _u.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {
 				ps[i](selector)
 			}
 		}
 	}
-	if value, ok := msu.mutation.Title(); ok {
+	if value, ok := _u.mutation.Title(); ok {
 		_spec.SetField(meetingsession.FieldTitle, field.TypeString, value)
 	}
-	if value, ok := msu.mutation.StartedAt(); ok {
+	if value, ok := _u.mutation.StartedAt(); ok {
 		_spec.SetField(meetingsession.FieldStartedAt, field.TypeTime, value)
 	}
-	if value, ok := msu.mutation.EndedAt(); ok {
+	if value, ok := _u.mutation.EndedAt(); ok {
 		_spec.SetField(meetingsession.FieldEndedAt, field.TypeTime, value)
 	}
-	if msu.mutation.EndedAtCleared() {
+	if _u.mutation.EndedAtCleared() {
 		_spec.ClearField(meetingsession.FieldEndedAt, field.TypeTime)
 	}
-	if value, ok := msu.mutation.DocumentName(); ok {
+	if value, ok := _u.mutation.DocumentName(); ok {
 		_spec.SetField(meetingsession.FieldDocumentName, field.TypeString, value)
 	}
-	if msu.mutation.IncidentsCleared() {
+	if _u.mutation.IncidentsCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
 			Inverse: true,
@@ -241,7 +241,7 @@ func (msu *MeetingSessionUpdate) sqlSave(ctx context.Context) (n int, err error)
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := msu.mutation.RemovedIncidentsIDs(); len(nodes) > 0 && !msu.mutation.IncidentsCleared() {
+	if nodes := _u.mutation.RemovedIncidentsIDs(); len(nodes) > 0 && !_u.mutation.IncidentsCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
 			Inverse: true,
@@ -257,7 +257,7 @@ func (msu *MeetingSessionUpdate) sqlSave(ctx context.Context) (n int, err error)
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := msu.mutation.IncidentsIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.IncidentsIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
 			Inverse: true,
@@ -273,7 +273,7 @@ func (msu *MeetingSessionUpdate) sqlSave(ctx context.Context) (n int, err error)
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if msu.mutation.ScheduleCleared() {
+	if _u.mutation.ScheduleCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
@@ -286,7 +286,7 @@ func (msu *MeetingSessionUpdate) sqlSave(ctx context.Context) (n int, err error)
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := msu.mutation.ScheduleIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.ScheduleIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
@@ -302,8 +302,8 @@ func (msu *MeetingSessionUpdate) sqlSave(ctx context.Context) (n int, err error)
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	_spec.AddModifiers(msu.modifiers...)
-	if n, err = sqlgraph.UpdateNodes(ctx, msu.driver, _spec); err != nil {
+	_spec.AddModifiers(_u.modifiers...)
+	if _node, err = sqlgraph.UpdateNodes(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{meetingsession.Label}
 		} else if sqlgraph.IsConstraintError(err) {
@@ -311,8 +311,8 @@ func (msu *MeetingSessionUpdate) sqlSave(ctx context.Context) (n int, err error)
 		}
 		return 0, err
 	}
-	msu.mutation.done = true
-	return n, nil
+	_u.mutation.done = true
+	return _node, nil
 }
 
 // MeetingSessionUpdateOne is the builder for updating a single MeetingSession entity.
@@ -325,154 +325,154 @@ type MeetingSessionUpdateOne struct {
 }
 
 // SetTitle sets the "title" field.
-func (msuo *MeetingSessionUpdateOne) SetTitle(s string) *MeetingSessionUpdateOne {
-	msuo.mutation.SetTitle(s)
-	return msuo
+func (_u *MeetingSessionUpdateOne) SetTitle(v string) *MeetingSessionUpdateOne {
+	_u.mutation.SetTitle(v)
+	return _u
 }
 
 // SetNillableTitle sets the "title" field if the given value is not nil.
-func (msuo *MeetingSessionUpdateOne) SetNillableTitle(s *string) *MeetingSessionUpdateOne {
-	if s != nil {
-		msuo.SetTitle(*s)
+func (_u *MeetingSessionUpdateOne) SetNillableTitle(v *string) *MeetingSessionUpdateOne {
+	if v != nil {
+		_u.SetTitle(*v)
 	}
-	return msuo
+	return _u
 }
 
 // SetStartedAt sets the "started_at" field.
-func (msuo *MeetingSessionUpdateOne) SetStartedAt(t time.Time) *MeetingSessionUpdateOne {
-	msuo.mutation.SetStartedAt(t)
-	return msuo
+func (_u *MeetingSessionUpdateOne) SetStartedAt(v time.Time) *MeetingSessionUpdateOne {
+	_u.mutation.SetStartedAt(v)
+	return _u
 }
 
 // SetNillableStartedAt sets the "started_at" field if the given value is not nil.
-func (msuo *MeetingSessionUpdateOne) SetNillableStartedAt(t *time.Time) *MeetingSessionUpdateOne {
-	if t != nil {
-		msuo.SetStartedAt(*t)
+func (_u *MeetingSessionUpdateOne) SetNillableStartedAt(v *time.Time) *MeetingSessionUpdateOne {
+	if v != nil {
+		_u.SetStartedAt(*v)
 	}
-	return msuo
+	return _u
 }
 
 // SetEndedAt sets the "ended_at" field.
-func (msuo *MeetingSessionUpdateOne) SetEndedAt(t time.Time) *MeetingSessionUpdateOne {
-	msuo.mutation.SetEndedAt(t)
-	return msuo
+func (_u *MeetingSessionUpdateOne) SetEndedAt(v time.Time) *MeetingSessionUpdateOne {
+	_u.mutation.SetEndedAt(v)
+	return _u
 }
 
 // SetNillableEndedAt sets the "ended_at" field if the given value is not nil.
-func (msuo *MeetingSessionUpdateOne) SetNillableEndedAt(t *time.Time) *MeetingSessionUpdateOne {
-	if t != nil {
-		msuo.SetEndedAt(*t)
+func (_u *MeetingSessionUpdateOne) SetNillableEndedAt(v *time.Time) *MeetingSessionUpdateOne {
+	if v != nil {
+		_u.SetEndedAt(*v)
 	}
-	return msuo
+	return _u
 }
 
 // ClearEndedAt clears the value of the "ended_at" field.
-func (msuo *MeetingSessionUpdateOne) ClearEndedAt() *MeetingSessionUpdateOne {
-	msuo.mutation.ClearEndedAt()
-	return msuo
+func (_u *MeetingSessionUpdateOne) ClearEndedAt() *MeetingSessionUpdateOne {
+	_u.mutation.ClearEndedAt()
+	return _u
 }
 
 // SetDocumentName sets the "document_name" field.
-func (msuo *MeetingSessionUpdateOne) SetDocumentName(s string) *MeetingSessionUpdateOne {
-	msuo.mutation.SetDocumentName(s)
-	return msuo
+func (_u *MeetingSessionUpdateOne) SetDocumentName(v string) *MeetingSessionUpdateOne {
+	_u.mutation.SetDocumentName(v)
+	return _u
 }
 
 // SetNillableDocumentName sets the "document_name" field if the given value is not nil.
-func (msuo *MeetingSessionUpdateOne) SetNillableDocumentName(s *string) *MeetingSessionUpdateOne {
-	if s != nil {
-		msuo.SetDocumentName(*s)
+func (_u *MeetingSessionUpdateOne) SetNillableDocumentName(v *string) *MeetingSessionUpdateOne {
+	if v != nil {
+		_u.SetDocumentName(*v)
 	}
-	return msuo
+	return _u
 }
 
 // AddIncidentIDs adds the "incidents" edge to the Incident entity by IDs.
-func (msuo *MeetingSessionUpdateOne) AddIncidentIDs(ids ...uuid.UUID) *MeetingSessionUpdateOne {
-	msuo.mutation.AddIncidentIDs(ids...)
-	return msuo
+func (_u *MeetingSessionUpdateOne) AddIncidentIDs(ids ...uuid.UUID) *MeetingSessionUpdateOne {
+	_u.mutation.AddIncidentIDs(ids...)
+	return _u
 }
 
 // AddIncidents adds the "incidents" edges to the Incident entity.
-func (msuo *MeetingSessionUpdateOne) AddIncidents(i ...*Incident) *MeetingSessionUpdateOne {
-	ids := make([]uuid.UUID, len(i))
-	for j := range i {
-		ids[j] = i[j].ID
+func (_u *MeetingSessionUpdateOne) AddIncidents(v ...*Incident) *MeetingSessionUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
 	}
-	return msuo.AddIncidentIDs(ids...)
+	return _u.AddIncidentIDs(ids...)
 }
 
 // SetScheduleID sets the "schedule" edge to the MeetingSchedule entity by ID.
-func (msuo *MeetingSessionUpdateOne) SetScheduleID(id uuid.UUID) *MeetingSessionUpdateOne {
-	msuo.mutation.SetScheduleID(id)
-	return msuo
+func (_u *MeetingSessionUpdateOne) SetScheduleID(id uuid.UUID) *MeetingSessionUpdateOne {
+	_u.mutation.SetScheduleID(id)
+	return _u
 }
 
 // SetNillableScheduleID sets the "schedule" edge to the MeetingSchedule entity by ID if the given value is not nil.
-func (msuo *MeetingSessionUpdateOne) SetNillableScheduleID(id *uuid.UUID) *MeetingSessionUpdateOne {
+func (_u *MeetingSessionUpdateOne) SetNillableScheduleID(id *uuid.UUID) *MeetingSessionUpdateOne {
 	if id != nil {
-		msuo = msuo.SetScheduleID(*id)
+		_u = _u.SetScheduleID(*id)
 	}
-	return msuo
+	return _u
 }
 
 // SetSchedule sets the "schedule" edge to the MeetingSchedule entity.
-func (msuo *MeetingSessionUpdateOne) SetSchedule(m *MeetingSchedule) *MeetingSessionUpdateOne {
-	return msuo.SetScheduleID(m.ID)
+func (_u *MeetingSessionUpdateOne) SetSchedule(v *MeetingSchedule) *MeetingSessionUpdateOne {
+	return _u.SetScheduleID(v.ID)
 }
 
 // Mutation returns the MeetingSessionMutation object of the builder.
-func (msuo *MeetingSessionUpdateOne) Mutation() *MeetingSessionMutation {
-	return msuo.mutation
+func (_u *MeetingSessionUpdateOne) Mutation() *MeetingSessionMutation {
+	return _u.mutation
 }
 
 // ClearIncidents clears all "incidents" edges to the Incident entity.
-func (msuo *MeetingSessionUpdateOne) ClearIncidents() *MeetingSessionUpdateOne {
-	msuo.mutation.ClearIncidents()
-	return msuo
+func (_u *MeetingSessionUpdateOne) ClearIncidents() *MeetingSessionUpdateOne {
+	_u.mutation.ClearIncidents()
+	return _u
 }
 
 // RemoveIncidentIDs removes the "incidents" edge to Incident entities by IDs.
-func (msuo *MeetingSessionUpdateOne) RemoveIncidentIDs(ids ...uuid.UUID) *MeetingSessionUpdateOne {
-	msuo.mutation.RemoveIncidentIDs(ids...)
-	return msuo
+func (_u *MeetingSessionUpdateOne) RemoveIncidentIDs(ids ...uuid.UUID) *MeetingSessionUpdateOne {
+	_u.mutation.RemoveIncidentIDs(ids...)
+	return _u
 }
 
 // RemoveIncidents removes "incidents" edges to Incident entities.
-func (msuo *MeetingSessionUpdateOne) RemoveIncidents(i ...*Incident) *MeetingSessionUpdateOne {
-	ids := make([]uuid.UUID, len(i))
-	for j := range i {
-		ids[j] = i[j].ID
+func (_u *MeetingSessionUpdateOne) RemoveIncidents(v ...*Incident) *MeetingSessionUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
 	}
-	return msuo.RemoveIncidentIDs(ids...)
+	return _u.RemoveIncidentIDs(ids...)
 }
 
 // ClearSchedule clears the "schedule" edge to the MeetingSchedule entity.
-func (msuo *MeetingSessionUpdateOne) ClearSchedule() *MeetingSessionUpdateOne {
-	msuo.mutation.ClearSchedule()
-	return msuo
+func (_u *MeetingSessionUpdateOne) ClearSchedule() *MeetingSessionUpdateOne {
+	_u.mutation.ClearSchedule()
+	return _u
 }
 
 // Where appends a list predicates to the MeetingSessionUpdate builder.
-func (msuo *MeetingSessionUpdateOne) Where(ps ...predicate.MeetingSession) *MeetingSessionUpdateOne {
-	msuo.mutation.Where(ps...)
-	return msuo
+func (_u *MeetingSessionUpdateOne) Where(ps ...predicate.MeetingSession) *MeetingSessionUpdateOne {
+	_u.mutation.Where(ps...)
+	return _u
 }
 
 // Select allows selecting one or more fields (columns) of the returned entity.
 // The default is selecting all fields defined in the entity schema.
-func (msuo *MeetingSessionUpdateOne) Select(field string, fields ...string) *MeetingSessionUpdateOne {
-	msuo.fields = append([]string{field}, fields...)
-	return msuo
+func (_u *MeetingSessionUpdateOne) Select(field string, fields ...string) *MeetingSessionUpdateOne {
+	_u.fields = append([]string{field}, fields...)
+	return _u
 }
 
 // Save executes the query and returns the updated MeetingSession entity.
-func (msuo *MeetingSessionUpdateOne) Save(ctx context.Context) (*MeetingSession, error) {
-	return withHooks(ctx, msuo.sqlSave, msuo.mutation, msuo.hooks)
+func (_u *MeetingSessionUpdateOne) Save(ctx context.Context) (*MeetingSession, error) {
+	return withHooks(ctx, _u.sqlSave, _u.mutation, _u.hooks)
 }
 
 // SaveX is like Save, but panics if an error occurs.
-func (msuo *MeetingSessionUpdateOne) SaveX(ctx context.Context) *MeetingSession {
-	node, err := msuo.Save(ctx)
+func (_u *MeetingSessionUpdateOne) SaveX(ctx context.Context) *MeetingSession {
+	node, err := _u.Save(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -480,43 +480,43 @@ func (msuo *MeetingSessionUpdateOne) SaveX(ctx context.Context) *MeetingSession 
 }
 
 // Exec executes the query on the entity.
-func (msuo *MeetingSessionUpdateOne) Exec(ctx context.Context) error {
-	_, err := msuo.Save(ctx)
+func (_u *MeetingSessionUpdateOne) Exec(ctx context.Context) error {
+	_, err := _u.Save(ctx)
 	return err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (msuo *MeetingSessionUpdateOne) ExecX(ctx context.Context) {
-	if err := msuo.Exec(ctx); err != nil {
+func (_u *MeetingSessionUpdateOne) ExecX(ctx context.Context) {
+	if err := _u.Exec(ctx); err != nil {
 		panic(err)
 	}
 }
 
 // check runs all checks and user-defined validators on the builder.
-func (msuo *MeetingSessionUpdateOne) check() error {
-	if msuo.mutation.TenantCleared() && len(msuo.mutation.TenantIDs()) > 0 {
+func (_u *MeetingSessionUpdateOne) check() error {
+	if _u.mutation.TenantCleared() && len(_u.mutation.TenantIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "MeetingSession.tenant"`)
 	}
 	return nil
 }
 
 // Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
-func (msuo *MeetingSessionUpdateOne) Modify(modifiers ...func(u *sql.UpdateBuilder)) *MeetingSessionUpdateOne {
-	msuo.modifiers = append(msuo.modifiers, modifiers...)
-	return msuo
+func (_u *MeetingSessionUpdateOne) Modify(modifiers ...func(u *sql.UpdateBuilder)) *MeetingSessionUpdateOne {
+	_u.modifiers = append(_u.modifiers, modifiers...)
+	return _u
 }
 
-func (msuo *MeetingSessionUpdateOne) sqlSave(ctx context.Context) (_node *MeetingSession, err error) {
-	if err := msuo.check(); err != nil {
+func (_u *MeetingSessionUpdateOne) sqlSave(ctx context.Context) (_node *MeetingSession, err error) {
+	if err := _u.check(); err != nil {
 		return _node, err
 	}
 	_spec := sqlgraph.NewUpdateSpec(meetingsession.Table, meetingsession.Columns, sqlgraph.NewFieldSpec(meetingsession.FieldID, field.TypeUUID))
-	id, ok := msuo.mutation.ID()
+	id, ok := _u.mutation.ID()
 	if !ok {
 		return nil, &ValidationError{Name: "id", err: errors.New(`ent: missing "MeetingSession.id" for update`)}
 	}
 	_spec.Node.ID.Value = id
-	if fields := msuo.fields; len(fields) > 0 {
+	if fields := _u.fields; len(fields) > 0 {
 		_spec.Node.Columns = make([]string, 0, len(fields))
 		_spec.Node.Columns = append(_spec.Node.Columns, meetingsession.FieldID)
 		for _, f := range fields {
@@ -528,29 +528,29 @@ func (msuo *MeetingSessionUpdateOne) sqlSave(ctx context.Context) (_node *Meetin
 			}
 		}
 	}
-	if ps := msuo.mutation.predicates; len(ps) > 0 {
+	if ps := _u.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {
 				ps[i](selector)
 			}
 		}
 	}
-	if value, ok := msuo.mutation.Title(); ok {
+	if value, ok := _u.mutation.Title(); ok {
 		_spec.SetField(meetingsession.FieldTitle, field.TypeString, value)
 	}
-	if value, ok := msuo.mutation.StartedAt(); ok {
+	if value, ok := _u.mutation.StartedAt(); ok {
 		_spec.SetField(meetingsession.FieldStartedAt, field.TypeTime, value)
 	}
-	if value, ok := msuo.mutation.EndedAt(); ok {
+	if value, ok := _u.mutation.EndedAt(); ok {
 		_spec.SetField(meetingsession.FieldEndedAt, field.TypeTime, value)
 	}
-	if msuo.mutation.EndedAtCleared() {
+	if _u.mutation.EndedAtCleared() {
 		_spec.ClearField(meetingsession.FieldEndedAt, field.TypeTime)
 	}
-	if value, ok := msuo.mutation.DocumentName(); ok {
+	if value, ok := _u.mutation.DocumentName(); ok {
 		_spec.SetField(meetingsession.FieldDocumentName, field.TypeString, value)
 	}
-	if msuo.mutation.IncidentsCleared() {
+	if _u.mutation.IncidentsCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
 			Inverse: true,
@@ -563,7 +563,7 @@ func (msuo *MeetingSessionUpdateOne) sqlSave(ctx context.Context) (_node *Meetin
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := msuo.mutation.RemovedIncidentsIDs(); len(nodes) > 0 && !msuo.mutation.IncidentsCleared() {
+	if nodes := _u.mutation.RemovedIncidentsIDs(); len(nodes) > 0 && !_u.mutation.IncidentsCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
 			Inverse: true,
@@ -579,7 +579,7 @@ func (msuo *MeetingSessionUpdateOne) sqlSave(ctx context.Context) (_node *Meetin
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := msuo.mutation.IncidentsIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.IncidentsIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
 			Inverse: true,
@@ -595,7 +595,7 @@ func (msuo *MeetingSessionUpdateOne) sqlSave(ctx context.Context) (_node *Meetin
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if msuo.mutation.ScheduleCleared() {
+	if _u.mutation.ScheduleCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
@@ -608,7 +608,7 @@ func (msuo *MeetingSessionUpdateOne) sqlSave(ctx context.Context) (_node *Meetin
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := msuo.mutation.ScheduleIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.ScheduleIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
@@ -624,11 +624,11 @@ func (msuo *MeetingSessionUpdateOne) sqlSave(ctx context.Context) (_node *Meetin
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	_spec.AddModifiers(msuo.modifiers...)
-	_node = &MeetingSession{config: msuo.config}
+	_spec.AddModifiers(_u.modifiers...)
+	_node = &MeetingSession{config: _u.config}
 	_spec.Assign = _node.assignValues
 	_spec.ScanValues = _node.scanValues
-	if err = sqlgraph.UpdateNode(ctx, msuo.driver, _spec); err != nil {
+	if err = sqlgraph.UpdateNode(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{meetingsession.Label}
 		} else if sqlgraph.IsConstraintError(err) {
@@ -636,6 +636,6 @@ func (msuo *MeetingSessionUpdateOne) sqlSave(ctx context.Context) (_node *Meetin
 		}
 		return nil, err
 	}
-	msuo.mutation.done = true
+	_u.mutation.done = true
 	return _node, nil
 }

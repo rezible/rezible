@@ -28,169 +28,169 @@ type RetrospectiveUpdate struct {
 }
 
 // Where appends a list predicates to the RetrospectiveUpdate builder.
-func (ru *RetrospectiveUpdate) Where(ps ...predicate.Retrospective) *RetrospectiveUpdate {
-	ru.mutation.Where(ps...)
-	return ru
+func (_u *RetrospectiveUpdate) Where(ps ...predicate.Retrospective) *RetrospectiveUpdate {
+	_u.mutation.Where(ps...)
+	return _u
 }
 
 // SetIncidentID sets the "incident_id" field.
-func (ru *RetrospectiveUpdate) SetIncidentID(u uuid.UUID) *RetrospectiveUpdate {
-	ru.mutation.SetIncidentID(u)
-	return ru
+func (_u *RetrospectiveUpdate) SetIncidentID(v uuid.UUID) *RetrospectiveUpdate {
+	_u.mutation.SetIncidentID(v)
+	return _u
 }
 
 // SetNillableIncidentID sets the "incident_id" field if the given value is not nil.
-func (ru *RetrospectiveUpdate) SetNillableIncidentID(u *uuid.UUID) *RetrospectiveUpdate {
-	if u != nil {
-		ru.SetIncidentID(*u)
+func (_u *RetrospectiveUpdate) SetNillableIncidentID(v *uuid.UUID) *RetrospectiveUpdate {
+	if v != nil {
+		_u.SetIncidentID(*v)
 	}
-	return ru
+	return _u
 }
 
 // SetDocumentID sets the "document_id" field.
-func (ru *RetrospectiveUpdate) SetDocumentID(u uuid.UUID) *RetrospectiveUpdate {
-	ru.mutation.SetDocumentID(u)
-	return ru
+func (_u *RetrospectiveUpdate) SetDocumentID(v uuid.UUID) *RetrospectiveUpdate {
+	_u.mutation.SetDocumentID(v)
+	return _u
 }
 
 // SetNillableDocumentID sets the "document_id" field if the given value is not nil.
-func (ru *RetrospectiveUpdate) SetNillableDocumentID(u *uuid.UUID) *RetrospectiveUpdate {
-	if u != nil {
-		ru.SetDocumentID(*u)
+func (_u *RetrospectiveUpdate) SetNillableDocumentID(v *uuid.UUID) *RetrospectiveUpdate {
+	if v != nil {
+		_u.SetDocumentID(*v)
 	}
-	return ru
+	return _u
 }
 
 // SetSystemAnalysisID sets the "system_analysis_id" field.
-func (ru *RetrospectiveUpdate) SetSystemAnalysisID(u uuid.UUID) *RetrospectiveUpdate {
-	ru.mutation.SetSystemAnalysisID(u)
-	return ru
+func (_u *RetrospectiveUpdate) SetSystemAnalysisID(v uuid.UUID) *RetrospectiveUpdate {
+	_u.mutation.SetSystemAnalysisID(v)
+	return _u
 }
 
 // SetNillableSystemAnalysisID sets the "system_analysis_id" field if the given value is not nil.
-func (ru *RetrospectiveUpdate) SetNillableSystemAnalysisID(u *uuid.UUID) *RetrospectiveUpdate {
-	if u != nil {
-		ru.SetSystemAnalysisID(*u)
+func (_u *RetrospectiveUpdate) SetNillableSystemAnalysisID(v *uuid.UUID) *RetrospectiveUpdate {
+	if v != nil {
+		_u.SetSystemAnalysisID(*v)
 	}
-	return ru
+	return _u
 }
 
 // ClearSystemAnalysisID clears the value of the "system_analysis_id" field.
-func (ru *RetrospectiveUpdate) ClearSystemAnalysisID() *RetrospectiveUpdate {
-	ru.mutation.ClearSystemAnalysisID()
-	return ru
+func (_u *RetrospectiveUpdate) ClearSystemAnalysisID() *RetrospectiveUpdate {
+	_u.mutation.ClearSystemAnalysisID()
+	return _u
 }
 
 // SetType sets the "type" field.
-func (ru *RetrospectiveUpdate) SetType(r retrospective.Type) *RetrospectiveUpdate {
-	ru.mutation.SetType(r)
-	return ru
+func (_u *RetrospectiveUpdate) SetType(v retrospective.Type) *RetrospectiveUpdate {
+	_u.mutation.SetType(v)
+	return _u
 }
 
 // SetNillableType sets the "type" field if the given value is not nil.
-func (ru *RetrospectiveUpdate) SetNillableType(r *retrospective.Type) *RetrospectiveUpdate {
-	if r != nil {
-		ru.SetType(*r)
+func (_u *RetrospectiveUpdate) SetNillableType(v *retrospective.Type) *RetrospectiveUpdate {
+	if v != nil {
+		_u.SetType(*v)
 	}
-	return ru
+	return _u
 }
 
 // SetState sets the "state" field.
-func (ru *RetrospectiveUpdate) SetState(r retrospective.State) *RetrospectiveUpdate {
-	ru.mutation.SetState(r)
-	return ru
+func (_u *RetrospectiveUpdate) SetState(v retrospective.State) *RetrospectiveUpdate {
+	_u.mutation.SetState(v)
+	return _u
 }
 
 // SetNillableState sets the "state" field if the given value is not nil.
-func (ru *RetrospectiveUpdate) SetNillableState(r *retrospective.State) *RetrospectiveUpdate {
-	if r != nil {
-		ru.SetState(*r)
+func (_u *RetrospectiveUpdate) SetNillableState(v *retrospective.State) *RetrospectiveUpdate {
+	if v != nil {
+		_u.SetState(*v)
 	}
-	return ru
+	return _u
 }
 
 // SetIncident sets the "incident" edge to the Incident entity.
-func (ru *RetrospectiveUpdate) SetIncident(i *Incident) *RetrospectiveUpdate {
-	return ru.SetIncidentID(i.ID)
+func (_u *RetrospectiveUpdate) SetIncident(v *Incident) *RetrospectiveUpdate {
+	return _u.SetIncidentID(v.ID)
 }
 
 // SetDocument sets the "document" edge to the Document entity.
-func (ru *RetrospectiveUpdate) SetDocument(d *Document) *RetrospectiveUpdate {
-	return ru.SetDocumentID(d.ID)
+func (_u *RetrospectiveUpdate) SetDocument(v *Document) *RetrospectiveUpdate {
+	return _u.SetDocumentID(v.ID)
 }
 
 // AddCommentIDs adds the "comments" edge to the RetrospectiveComment entity by IDs.
-func (ru *RetrospectiveUpdate) AddCommentIDs(ids ...uuid.UUID) *RetrospectiveUpdate {
-	ru.mutation.AddCommentIDs(ids...)
-	return ru
+func (_u *RetrospectiveUpdate) AddCommentIDs(ids ...uuid.UUID) *RetrospectiveUpdate {
+	_u.mutation.AddCommentIDs(ids...)
+	return _u
 }
 
 // AddComments adds the "comments" edges to the RetrospectiveComment entity.
-func (ru *RetrospectiveUpdate) AddComments(r ...*RetrospectiveComment) *RetrospectiveUpdate {
-	ids := make([]uuid.UUID, len(r))
-	for i := range r {
-		ids[i] = r[i].ID
+func (_u *RetrospectiveUpdate) AddComments(v ...*RetrospectiveComment) *RetrospectiveUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
 	}
-	return ru.AddCommentIDs(ids...)
+	return _u.AddCommentIDs(ids...)
 }
 
 // SetSystemAnalysis sets the "system_analysis" edge to the SystemAnalysis entity.
-func (ru *RetrospectiveUpdate) SetSystemAnalysis(s *SystemAnalysis) *RetrospectiveUpdate {
-	return ru.SetSystemAnalysisID(s.ID)
+func (_u *RetrospectiveUpdate) SetSystemAnalysis(v *SystemAnalysis) *RetrospectiveUpdate {
+	return _u.SetSystemAnalysisID(v.ID)
 }
 
 // Mutation returns the RetrospectiveMutation object of the builder.
-func (ru *RetrospectiveUpdate) Mutation() *RetrospectiveMutation {
-	return ru.mutation
+func (_u *RetrospectiveUpdate) Mutation() *RetrospectiveMutation {
+	return _u.mutation
 }
 
 // ClearIncident clears the "incident" edge to the Incident entity.
-func (ru *RetrospectiveUpdate) ClearIncident() *RetrospectiveUpdate {
-	ru.mutation.ClearIncident()
-	return ru
+func (_u *RetrospectiveUpdate) ClearIncident() *RetrospectiveUpdate {
+	_u.mutation.ClearIncident()
+	return _u
 }
 
 // ClearDocument clears the "document" edge to the Document entity.
-func (ru *RetrospectiveUpdate) ClearDocument() *RetrospectiveUpdate {
-	ru.mutation.ClearDocument()
-	return ru
+func (_u *RetrospectiveUpdate) ClearDocument() *RetrospectiveUpdate {
+	_u.mutation.ClearDocument()
+	return _u
 }
 
 // ClearComments clears all "comments" edges to the RetrospectiveComment entity.
-func (ru *RetrospectiveUpdate) ClearComments() *RetrospectiveUpdate {
-	ru.mutation.ClearComments()
-	return ru
+func (_u *RetrospectiveUpdate) ClearComments() *RetrospectiveUpdate {
+	_u.mutation.ClearComments()
+	return _u
 }
 
 // RemoveCommentIDs removes the "comments" edge to RetrospectiveComment entities by IDs.
-func (ru *RetrospectiveUpdate) RemoveCommentIDs(ids ...uuid.UUID) *RetrospectiveUpdate {
-	ru.mutation.RemoveCommentIDs(ids...)
-	return ru
+func (_u *RetrospectiveUpdate) RemoveCommentIDs(ids ...uuid.UUID) *RetrospectiveUpdate {
+	_u.mutation.RemoveCommentIDs(ids...)
+	return _u
 }
 
 // RemoveComments removes "comments" edges to RetrospectiveComment entities.
-func (ru *RetrospectiveUpdate) RemoveComments(r ...*RetrospectiveComment) *RetrospectiveUpdate {
-	ids := make([]uuid.UUID, len(r))
-	for i := range r {
-		ids[i] = r[i].ID
+func (_u *RetrospectiveUpdate) RemoveComments(v ...*RetrospectiveComment) *RetrospectiveUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
 	}
-	return ru.RemoveCommentIDs(ids...)
+	return _u.RemoveCommentIDs(ids...)
 }
 
 // ClearSystemAnalysis clears the "system_analysis" edge to the SystemAnalysis entity.
-func (ru *RetrospectiveUpdate) ClearSystemAnalysis() *RetrospectiveUpdate {
-	ru.mutation.ClearSystemAnalysis()
-	return ru
+func (_u *RetrospectiveUpdate) ClearSystemAnalysis() *RetrospectiveUpdate {
+	_u.mutation.ClearSystemAnalysis()
+	return _u
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
-func (ru *RetrospectiveUpdate) Save(ctx context.Context) (int, error) {
-	return withHooks(ctx, ru.sqlSave, ru.mutation, ru.hooks)
+func (_u *RetrospectiveUpdate) Save(ctx context.Context) (int, error) {
+	return withHooks(ctx, _u.sqlSave, _u.mutation, _u.hooks)
 }
 
 // SaveX is like Save, but panics if an error occurs.
-func (ru *RetrospectiveUpdate) SaveX(ctx context.Context) int {
-	affected, err := ru.Save(ctx)
+func (_u *RetrospectiveUpdate) SaveX(ctx context.Context) int {
+	affected, err := _u.Save(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -198,67 +198,67 @@ func (ru *RetrospectiveUpdate) SaveX(ctx context.Context) int {
 }
 
 // Exec executes the query.
-func (ru *RetrospectiveUpdate) Exec(ctx context.Context) error {
-	_, err := ru.Save(ctx)
+func (_u *RetrospectiveUpdate) Exec(ctx context.Context) error {
+	_, err := _u.Save(ctx)
 	return err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (ru *RetrospectiveUpdate) ExecX(ctx context.Context) {
-	if err := ru.Exec(ctx); err != nil {
+func (_u *RetrospectiveUpdate) ExecX(ctx context.Context) {
+	if err := _u.Exec(ctx); err != nil {
 		panic(err)
 	}
 }
 
 // check runs all checks and user-defined validators on the builder.
-func (ru *RetrospectiveUpdate) check() error {
-	if v, ok := ru.mutation.GetType(); ok {
+func (_u *RetrospectiveUpdate) check() error {
+	if v, ok := _u.mutation.GetType(); ok {
 		if err := retrospective.TypeValidator(v); err != nil {
 			return &ValidationError{Name: "type", err: fmt.Errorf(`ent: validator failed for field "Retrospective.type": %w`, err)}
 		}
 	}
-	if v, ok := ru.mutation.State(); ok {
+	if v, ok := _u.mutation.State(); ok {
 		if err := retrospective.StateValidator(v); err != nil {
 			return &ValidationError{Name: "state", err: fmt.Errorf(`ent: validator failed for field "Retrospective.state": %w`, err)}
 		}
 	}
-	if ru.mutation.TenantCleared() && len(ru.mutation.TenantIDs()) > 0 {
+	if _u.mutation.TenantCleared() && len(_u.mutation.TenantIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "Retrospective.tenant"`)
 	}
-	if ru.mutation.IncidentCleared() && len(ru.mutation.IncidentIDs()) > 0 {
+	if _u.mutation.IncidentCleared() && len(_u.mutation.IncidentIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "Retrospective.incident"`)
 	}
-	if ru.mutation.DocumentCleared() && len(ru.mutation.DocumentIDs()) > 0 {
+	if _u.mutation.DocumentCleared() && len(_u.mutation.DocumentIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "Retrospective.document"`)
 	}
 	return nil
 }
 
 // Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
-func (ru *RetrospectiveUpdate) Modify(modifiers ...func(u *sql.UpdateBuilder)) *RetrospectiveUpdate {
-	ru.modifiers = append(ru.modifiers, modifiers...)
-	return ru
+func (_u *RetrospectiveUpdate) Modify(modifiers ...func(u *sql.UpdateBuilder)) *RetrospectiveUpdate {
+	_u.modifiers = append(_u.modifiers, modifiers...)
+	return _u
 }
 
-func (ru *RetrospectiveUpdate) sqlSave(ctx context.Context) (n int, err error) {
-	if err := ru.check(); err != nil {
-		return n, err
+func (_u *RetrospectiveUpdate) sqlSave(ctx context.Context) (_node int, err error) {
+	if err := _u.check(); err != nil {
+		return _node, err
 	}
 	_spec := sqlgraph.NewUpdateSpec(retrospective.Table, retrospective.Columns, sqlgraph.NewFieldSpec(retrospective.FieldID, field.TypeUUID))
-	if ps := ru.mutation.predicates; len(ps) > 0 {
+	if ps := _u.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {
 				ps[i](selector)
 			}
 		}
 	}
-	if value, ok := ru.mutation.GetType(); ok {
+	if value, ok := _u.mutation.GetType(); ok {
 		_spec.SetField(retrospective.FieldType, field.TypeEnum, value)
 	}
-	if value, ok := ru.mutation.State(); ok {
+	if value, ok := _u.mutation.State(); ok {
 		_spec.SetField(retrospective.FieldState, field.TypeEnum, value)
 	}
-	if ru.mutation.IncidentCleared() {
+	if _u.mutation.IncidentCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2O,
 			Inverse: true,
@@ -271,7 +271,7 @@ func (ru *RetrospectiveUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := ru.mutation.IncidentIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.IncidentIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2O,
 			Inverse: true,
@@ -287,7 +287,7 @@ func (ru *RetrospectiveUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if ru.mutation.DocumentCleared() {
+	if _u.mutation.DocumentCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2O,
 			Inverse: true,
@@ -300,7 +300,7 @@ func (ru *RetrospectiveUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := ru.mutation.DocumentIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.DocumentIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2O,
 			Inverse: true,
@@ -316,7 +316,7 @@ func (ru *RetrospectiveUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if ru.mutation.CommentsCleared() {
+	if _u.mutation.CommentsCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: true,
@@ -329,7 +329,7 @@ func (ru *RetrospectiveUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := ru.mutation.RemovedCommentsIDs(); len(nodes) > 0 && !ru.mutation.CommentsCleared() {
+	if nodes := _u.mutation.RemovedCommentsIDs(); len(nodes) > 0 && !_u.mutation.CommentsCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: true,
@@ -345,7 +345,7 @@ func (ru *RetrospectiveUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := ru.mutation.CommentsIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.CommentsIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: true,
@@ -361,7 +361,7 @@ func (ru *RetrospectiveUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if ru.mutation.SystemAnalysisCleared() {
+	if _u.mutation.SystemAnalysisCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2O,
 			Inverse: true,
@@ -374,7 +374,7 @@ func (ru *RetrospectiveUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := ru.mutation.SystemAnalysisIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.SystemAnalysisIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2O,
 			Inverse: true,
@@ -390,8 +390,8 @@ func (ru *RetrospectiveUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	_spec.AddModifiers(ru.modifiers...)
-	if n, err = sqlgraph.UpdateNodes(ctx, ru.driver, _spec); err != nil {
+	_spec.AddModifiers(_u.modifiers...)
+	if _node, err = sqlgraph.UpdateNodes(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{retrospective.Label}
 		} else if sqlgraph.IsConstraintError(err) {
@@ -399,8 +399,8 @@ func (ru *RetrospectiveUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		return 0, err
 	}
-	ru.mutation.done = true
-	return n, nil
+	_u.mutation.done = true
+	return _node, nil
 }
 
 // RetrospectiveUpdateOne is the builder for updating a single Retrospective entity.
@@ -413,176 +413,176 @@ type RetrospectiveUpdateOne struct {
 }
 
 // SetIncidentID sets the "incident_id" field.
-func (ruo *RetrospectiveUpdateOne) SetIncidentID(u uuid.UUID) *RetrospectiveUpdateOne {
-	ruo.mutation.SetIncidentID(u)
-	return ruo
+func (_u *RetrospectiveUpdateOne) SetIncidentID(v uuid.UUID) *RetrospectiveUpdateOne {
+	_u.mutation.SetIncidentID(v)
+	return _u
 }
 
 // SetNillableIncidentID sets the "incident_id" field if the given value is not nil.
-func (ruo *RetrospectiveUpdateOne) SetNillableIncidentID(u *uuid.UUID) *RetrospectiveUpdateOne {
-	if u != nil {
-		ruo.SetIncidentID(*u)
+func (_u *RetrospectiveUpdateOne) SetNillableIncidentID(v *uuid.UUID) *RetrospectiveUpdateOne {
+	if v != nil {
+		_u.SetIncidentID(*v)
 	}
-	return ruo
+	return _u
 }
 
 // SetDocumentID sets the "document_id" field.
-func (ruo *RetrospectiveUpdateOne) SetDocumentID(u uuid.UUID) *RetrospectiveUpdateOne {
-	ruo.mutation.SetDocumentID(u)
-	return ruo
+func (_u *RetrospectiveUpdateOne) SetDocumentID(v uuid.UUID) *RetrospectiveUpdateOne {
+	_u.mutation.SetDocumentID(v)
+	return _u
 }
 
 // SetNillableDocumentID sets the "document_id" field if the given value is not nil.
-func (ruo *RetrospectiveUpdateOne) SetNillableDocumentID(u *uuid.UUID) *RetrospectiveUpdateOne {
-	if u != nil {
-		ruo.SetDocumentID(*u)
+func (_u *RetrospectiveUpdateOne) SetNillableDocumentID(v *uuid.UUID) *RetrospectiveUpdateOne {
+	if v != nil {
+		_u.SetDocumentID(*v)
 	}
-	return ruo
+	return _u
 }
 
 // SetSystemAnalysisID sets the "system_analysis_id" field.
-func (ruo *RetrospectiveUpdateOne) SetSystemAnalysisID(u uuid.UUID) *RetrospectiveUpdateOne {
-	ruo.mutation.SetSystemAnalysisID(u)
-	return ruo
+func (_u *RetrospectiveUpdateOne) SetSystemAnalysisID(v uuid.UUID) *RetrospectiveUpdateOne {
+	_u.mutation.SetSystemAnalysisID(v)
+	return _u
 }
 
 // SetNillableSystemAnalysisID sets the "system_analysis_id" field if the given value is not nil.
-func (ruo *RetrospectiveUpdateOne) SetNillableSystemAnalysisID(u *uuid.UUID) *RetrospectiveUpdateOne {
-	if u != nil {
-		ruo.SetSystemAnalysisID(*u)
+func (_u *RetrospectiveUpdateOne) SetNillableSystemAnalysisID(v *uuid.UUID) *RetrospectiveUpdateOne {
+	if v != nil {
+		_u.SetSystemAnalysisID(*v)
 	}
-	return ruo
+	return _u
 }
 
 // ClearSystemAnalysisID clears the value of the "system_analysis_id" field.
-func (ruo *RetrospectiveUpdateOne) ClearSystemAnalysisID() *RetrospectiveUpdateOne {
-	ruo.mutation.ClearSystemAnalysisID()
-	return ruo
+func (_u *RetrospectiveUpdateOne) ClearSystemAnalysisID() *RetrospectiveUpdateOne {
+	_u.mutation.ClearSystemAnalysisID()
+	return _u
 }
 
 // SetType sets the "type" field.
-func (ruo *RetrospectiveUpdateOne) SetType(r retrospective.Type) *RetrospectiveUpdateOne {
-	ruo.mutation.SetType(r)
-	return ruo
+func (_u *RetrospectiveUpdateOne) SetType(v retrospective.Type) *RetrospectiveUpdateOne {
+	_u.mutation.SetType(v)
+	return _u
 }
 
 // SetNillableType sets the "type" field if the given value is not nil.
-func (ruo *RetrospectiveUpdateOne) SetNillableType(r *retrospective.Type) *RetrospectiveUpdateOne {
-	if r != nil {
-		ruo.SetType(*r)
+func (_u *RetrospectiveUpdateOne) SetNillableType(v *retrospective.Type) *RetrospectiveUpdateOne {
+	if v != nil {
+		_u.SetType(*v)
 	}
-	return ruo
+	return _u
 }
 
 // SetState sets the "state" field.
-func (ruo *RetrospectiveUpdateOne) SetState(r retrospective.State) *RetrospectiveUpdateOne {
-	ruo.mutation.SetState(r)
-	return ruo
+func (_u *RetrospectiveUpdateOne) SetState(v retrospective.State) *RetrospectiveUpdateOne {
+	_u.mutation.SetState(v)
+	return _u
 }
 
 // SetNillableState sets the "state" field if the given value is not nil.
-func (ruo *RetrospectiveUpdateOne) SetNillableState(r *retrospective.State) *RetrospectiveUpdateOne {
-	if r != nil {
-		ruo.SetState(*r)
+func (_u *RetrospectiveUpdateOne) SetNillableState(v *retrospective.State) *RetrospectiveUpdateOne {
+	if v != nil {
+		_u.SetState(*v)
 	}
-	return ruo
+	return _u
 }
 
 // SetIncident sets the "incident" edge to the Incident entity.
-func (ruo *RetrospectiveUpdateOne) SetIncident(i *Incident) *RetrospectiveUpdateOne {
-	return ruo.SetIncidentID(i.ID)
+func (_u *RetrospectiveUpdateOne) SetIncident(v *Incident) *RetrospectiveUpdateOne {
+	return _u.SetIncidentID(v.ID)
 }
 
 // SetDocument sets the "document" edge to the Document entity.
-func (ruo *RetrospectiveUpdateOne) SetDocument(d *Document) *RetrospectiveUpdateOne {
-	return ruo.SetDocumentID(d.ID)
+func (_u *RetrospectiveUpdateOne) SetDocument(v *Document) *RetrospectiveUpdateOne {
+	return _u.SetDocumentID(v.ID)
 }
 
 // AddCommentIDs adds the "comments" edge to the RetrospectiveComment entity by IDs.
-func (ruo *RetrospectiveUpdateOne) AddCommentIDs(ids ...uuid.UUID) *RetrospectiveUpdateOne {
-	ruo.mutation.AddCommentIDs(ids...)
-	return ruo
+func (_u *RetrospectiveUpdateOne) AddCommentIDs(ids ...uuid.UUID) *RetrospectiveUpdateOne {
+	_u.mutation.AddCommentIDs(ids...)
+	return _u
 }
 
 // AddComments adds the "comments" edges to the RetrospectiveComment entity.
-func (ruo *RetrospectiveUpdateOne) AddComments(r ...*RetrospectiveComment) *RetrospectiveUpdateOne {
-	ids := make([]uuid.UUID, len(r))
-	for i := range r {
-		ids[i] = r[i].ID
+func (_u *RetrospectiveUpdateOne) AddComments(v ...*RetrospectiveComment) *RetrospectiveUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
 	}
-	return ruo.AddCommentIDs(ids...)
+	return _u.AddCommentIDs(ids...)
 }
 
 // SetSystemAnalysis sets the "system_analysis" edge to the SystemAnalysis entity.
-func (ruo *RetrospectiveUpdateOne) SetSystemAnalysis(s *SystemAnalysis) *RetrospectiveUpdateOne {
-	return ruo.SetSystemAnalysisID(s.ID)
+func (_u *RetrospectiveUpdateOne) SetSystemAnalysis(v *SystemAnalysis) *RetrospectiveUpdateOne {
+	return _u.SetSystemAnalysisID(v.ID)
 }
 
 // Mutation returns the RetrospectiveMutation object of the builder.
-func (ruo *RetrospectiveUpdateOne) Mutation() *RetrospectiveMutation {
-	return ruo.mutation
+func (_u *RetrospectiveUpdateOne) Mutation() *RetrospectiveMutation {
+	return _u.mutation
 }
 
 // ClearIncident clears the "incident" edge to the Incident entity.
-func (ruo *RetrospectiveUpdateOne) ClearIncident() *RetrospectiveUpdateOne {
-	ruo.mutation.ClearIncident()
-	return ruo
+func (_u *RetrospectiveUpdateOne) ClearIncident() *RetrospectiveUpdateOne {
+	_u.mutation.ClearIncident()
+	return _u
 }
 
 // ClearDocument clears the "document" edge to the Document entity.
-func (ruo *RetrospectiveUpdateOne) ClearDocument() *RetrospectiveUpdateOne {
-	ruo.mutation.ClearDocument()
-	return ruo
+func (_u *RetrospectiveUpdateOne) ClearDocument() *RetrospectiveUpdateOne {
+	_u.mutation.ClearDocument()
+	return _u
 }
 
 // ClearComments clears all "comments" edges to the RetrospectiveComment entity.
-func (ruo *RetrospectiveUpdateOne) ClearComments() *RetrospectiveUpdateOne {
-	ruo.mutation.ClearComments()
-	return ruo
+func (_u *RetrospectiveUpdateOne) ClearComments() *RetrospectiveUpdateOne {
+	_u.mutation.ClearComments()
+	return _u
 }
 
 // RemoveCommentIDs removes the "comments" edge to RetrospectiveComment entities by IDs.
-func (ruo *RetrospectiveUpdateOne) RemoveCommentIDs(ids ...uuid.UUID) *RetrospectiveUpdateOne {
-	ruo.mutation.RemoveCommentIDs(ids...)
-	return ruo
+func (_u *RetrospectiveUpdateOne) RemoveCommentIDs(ids ...uuid.UUID) *RetrospectiveUpdateOne {
+	_u.mutation.RemoveCommentIDs(ids...)
+	return _u
 }
 
 // RemoveComments removes "comments" edges to RetrospectiveComment entities.
-func (ruo *RetrospectiveUpdateOne) RemoveComments(r ...*RetrospectiveComment) *RetrospectiveUpdateOne {
-	ids := make([]uuid.UUID, len(r))
-	for i := range r {
-		ids[i] = r[i].ID
+func (_u *RetrospectiveUpdateOne) RemoveComments(v ...*RetrospectiveComment) *RetrospectiveUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
 	}
-	return ruo.RemoveCommentIDs(ids...)
+	return _u.RemoveCommentIDs(ids...)
 }
 
 // ClearSystemAnalysis clears the "system_analysis" edge to the SystemAnalysis entity.
-func (ruo *RetrospectiveUpdateOne) ClearSystemAnalysis() *RetrospectiveUpdateOne {
-	ruo.mutation.ClearSystemAnalysis()
-	return ruo
+func (_u *RetrospectiveUpdateOne) ClearSystemAnalysis() *RetrospectiveUpdateOne {
+	_u.mutation.ClearSystemAnalysis()
+	return _u
 }
 
 // Where appends a list predicates to the RetrospectiveUpdate builder.
-func (ruo *RetrospectiveUpdateOne) Where(ps ...predicate.Retrospective) *RetrospectiveUpdateOne {
-	ruo.mutation.Where(ps...)
-	return ruo
+func (_u *RetrospectiveUpdateOne) Where(ps ...predicate.Retrospective) *RetrospectiveUpdateOne {
+	_u.mutation.Where(ps...)
+	return _u
 }
 
 // Select allows selecting one or more fields (columns) of the returned entity.
 // The default is selecting all fields defined in the entity schema.
-func (ruo *RetrospectiveUpdateOne) Select(field string, fields ...string) *RetrospectiveUpdateOne {
-	ruo.fields = append([]string{field}, fields...)
-	return ruo
+func (_u *RetrospectiveUpdateOne) Select(field string, fields ...string) *RetrospectiveUpdateOne {
+	_u.fields = append([]string{field}, fields...)
+	return _u
 }
 
 // Save executes the query and returns the updated Retrospective entity.
-func (ruo *RetrospectiveUpdateOne) Save(ctx context.Context) (*Retrospective, error) {
-	return withHooks(ctx, ruo.sqlSave, ruo.mutation, ruo.hooks)
+func (_u *RetrospectiveUpdateOne) Save(ctx context.Context) (*Retrospective, error) {
+	return withHooks(ctx, _u.sqlSave, _u.mutation, _u.hooks)
 }
 
 // SaveX is like Save, but panics if an error occurs.
-func (ruo *RetrospectiveUpdateOne) SaveX(ctx context.Context) *Retrospective {
-	node, err := ruo.Save(ctx)
+func (_u *RetrospectiveUpdateOne) SaveX(ctx context.Context) *Retrospective {
+	node, err := _u.Save(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -590,59 +590,59 @@ func (ruo *RetrospectiveUpdateOne) SaveX(ctx context.Context) *Retrospective {
 }
 
 // Exec executes the query on the entity.
-func (ruo *RetrospectiveUpdateOne) Exec(ctx context.Context) error {
-	_, err := ruo.Save(ctx)
+func (_u *RetrospectiveUpdateOne) Exec(ctx context.Context) error {
+	_, err := _u.Save(ctx)
 	return err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (ruo *RetrospectiveUpdateOne) ExecX(ctx context.Context) {
-	if err := ruo.Exec(ctx); err != nil {
+func (_u *RetrospectiveUpdateOne) ExecX(ctx context.Context) {
+	if err := _u.Exec(ctx); err != nil {
 		panic(err)
 	}
 }
 
 // check runs all checks and user-defined validators on the builder.
-func (ruo *RetrospectiveUpdateOne) check() error {
-	if v, ok := ruo.mutation.GetType(); ok {
+func (_u *RetrospectiveUpdateOne) check() error {
+	if v, ok := _u.mutation.GetType(); ok {
 		if err := retrospective.TypeValidator(v); err != nil {
 			return &ValidationError{Name: "type", err: fmt.Errorf(`ent: validator failed for field "Retrospective.type": %w`, err)}
 		}
 	}
-	if v, ok := ruo.mutation.State(); ok {
+	if v, ok := _u.mutation.State(); ok {
 		if err := retrospective.StateValidator(v); err != nil {
 			return &ValidationError{Name: "state", err: fmt.Errorf(`ent: validator failed for field "Retrospective.state": %w`, err)}
 		}
 	}
-	if ruo.mutation.TenantCleared() && len(ruo.mutation.TenantIDs()) > 0 {
+	if _u.mutation.TenantCleared() && len(_u.mutation.TenantIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "Retrospective.tenant"`)
 	}
-	if ruo.mutation.IncidentCleared() && len(ruo.mutation.IncidentIDs()) > 0 {
+	if _u.mutation.IncidentCleared() && len(_u.mutation.IncidentIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "Retrospective.incident"`)
 	}
-	if ruo.mutation.DocumentCleared() && len(ruo.mutation.DocumentIDs()) > 0 {
+	if _u.mutation.DocumentCleared() && len(_u.mutation.DocumentIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "Retrospective.document"`)
 	}
 	return nil
 }
 
 // Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
-func (ruo *RetrospectiveUpdateOne) Modify(modifiers ...func(u *sql.UpdateBuilder)) *RetrospectiveUpdateOne {
-	ruo.modifiers = append(ruo.modifiers, modifiers...)
-	return ruo
+func (_u *RetrospectiveUpdateOne) Modify(modifiers ...func(u *sql.UpdateBuilder)) *RetrospectiveUpdateOne {
+	_u.modifiers = append(_u.modifiers, modifiers...)
+	return _u
 }
 
-func (ruo *RetrospectiveUpdateOne) sqlSave(ctx context.Context) (_node *Retrospective, err error) {
-	if err := ruo.check(); err != nil {
+func (_u *RetrospectiveUpdateOne) sqlSave(ctx context.Context) (_node *Retrospective, err error) {
+	if err := _u.check(); err != nil {
 		return _node, err
 	}
 	_spec := sqlgraph.NewUpdateSpec(retrospective.Table, retrospective.Columns, sqlgraph.NewFieldSpec(retrospective.FieldID, field.TypeUUID))
-	id, ok := ruo.mutation.ID()
+	id, ok := _u.mutation.ID()
 	if !ok {
 		return nil, &ValidationError{Name: "id", err: errors.New(`ent: missing "Retrospective.id" for update`)}
 	}
 	_spec.Node.ID.Value = id
-	if fields := ruo.fields; len(fields) > 0 {
+	if fields := _u.fields; len(fields) > 0 {
 		_spec.Node.Columns = make([]string, 0, len(fields))
 		_spec.Node.Columns = append(_spec.Node.Columns, retrospective.FieldID)
 		for _, f := range fields {
@@ -654,20 +654,20 @@ func (ruo *RetrospectiveUpdateOne) sqlSave(ctx context.Context) (_node *Retrospe
 			}
 		}
 	}
-	if ps := ruo.mutation.predicates; len(ps) > 0 {
+	if ps := _u.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {
 				ps[i](selector)
 			}
 		}
 	}
-	if value, ok := ruo.mutation.GetType(); ok {
+	if value, ok := _u.mutation.GetType(); ok {
 		_spec.SetField(retrospective.FieldType, field.TypeEnum, value)
 	}
-	if value, ok := ruo.mutation.State(); ok {
+	if value, ok := _u.mutation.State(); ok {
 		_spec.SetField(retrospective.FieldState, field.TypeEnum, value)
 	}
-	if ruo.mutation.IncidentCleared() {
+	if _u.mutation.IncidentCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2O,
 			Inverse: true,
@@ -680,7 +680,7 @@ func (ruo *RetrospectiveUpdateOne) sqlSave(ctx context.Context) (_node *Retrospe
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := ruo.mutation.IncidentIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.IncidentIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2O,
 			Inverse: true,
@@ -696,7 +696,7 @@ func (ruo *RetrospectiveUpdateOne) sqlSave(ctx context.Context) (_node *Retrospe
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if ruo.mutation.DocumentCleared() {
+	if _u.mutation.DocumentCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2O,
 			Inverse: true,
@@ -709,7 +709,7 @@ func (ruo *RetrospectiveUpdateOne) sqlSave(ctx context.Context) (_node *Retrospe
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := ruo.mutation.DocumentIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.DocumentIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2O,
 			Inverse: true,
@@ -725,7 +725,7 @@ func (ruo *RetrospectiveUpdateOne) sqlSave(ctx context.Context) (_node *Retrospe
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if ruo.mutation.CommentsCleared() {
+	if _u.mutation.CommentsCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: true,
@@ -738,7 +738,7 @@ func (ruo *RetrospectiveUpdateOne) sqlSave(ctx context.Context) (_node *Retrospe
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := ruo.mutation.RemovedCommentsIDs(); len(nodes) > 0 && !ruo.mutation.CommentsCleared() {
+	if nodes := _u.mutation.RemovedCommentsIDs(); len(nodes) > 0 && !_u.mutation.CommentsCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: true,
@@ -754,7 +754,7 @@ func (ruo *RetrospectiveUpdateOne) sqlSave(ctx context.Context) (_node *Retrospe
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := ruo.mutation.CommentsIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.CommentsIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: true,
@@ -770,7 +770,7 @@ func (ruo *RetrospectiveUpdateOne) sqlSave(ctx context.Context) (_node *Retrospe
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if ruo.mutation.SystemAnalysisCleared() {
+	if _u.mutation.SystemAnalysisCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2O,
 			Inverse: true,
@@ -783,7 +783,7 @@ func (ruo *RetrospectiveUpdateOne) sqlSave(ctx context.Context) (_node *Retrospe
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := ruo.mutation.SystemAnalysisIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.SystemAnalysisIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2O,
 			Inverse: true,
@@ -799,11 +799,11 @@ func (ruo *RetrospectiveUpdateOne) sqlSave(ctx context.Context) (_node *Retrospe
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	_spec.AddModifiers(ruo.modifiers...)
-	_node = &Retrospective{config: ruo.config}
+	_spec.AddModifiers(_u.modifiers...)
+	_node = &Retrospective{config: _u.config}
 	_spec.Assign = _node.assignValues
 	_spec.ScanValues = _node.scanValues
-	if err = sqlgraph.UpdateNode(ctx, ruo.driver, _spec); err != nil {
+	if err = sqlgraph.UpdateNode(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{retrospective.Label}
 		} else if sqlgraph.IsConstraintError(err) {
@@ -811,6 +811,6 @@ func (ruo *RetrospectiveUpdateOne) sqlSave(ctx context.Context) (_node *Retrospe
 		}
 		return nil, err
 	}
-	ruo.mutation.done = true
+	_u.mutation.done = true
 	return _node, nil
 }

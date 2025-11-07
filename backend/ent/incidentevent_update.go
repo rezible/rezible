@@ -32,397 +32,397 @@ type IncidentEventUpdate struct {
 }
 
 // Where appends a list predicates to the IncidentEventUpdate builder.
-func (ieu *IncidentEventUpdate) Where(ps ...predicate.IncidentEvent) *IncidentEventUpdate {
-	ieu.mutation.Where(ps...)
-	return ieu
+func (_u *IncidentEventUpdate) Where(ps ...predicate.IncidentEvent) *IncidentEventUpdate {
+	_u.mutation.Where(ps...)
+	return _u
 }
 
 // SetIncidentID sets the "incident_id" field.
-func (ieu *IncidentEventUpdate) SetIncidentID(u uuid.UUID) *IncidentEventUpdate {
-	ieu.mutation.SetIncidentID(u)
-	return ieu
+func (_u *IncidentEventUpdate) SetIncidentID(v uuid.UUID) *IncidentEventUpdate {
+	_u.mutation.SetIncidentID(v)
+	return _u
 }
 
 // SetNillableIncidentID sets the "incident_id" field if the given value is not nil.
-func (ieu *IncidentEventUpdate) SetNillableIncidentID(u *uuid.UUID) *IncidentEventUpdate {
-	if u != nil {
-		ieu.SetIncidentID(*u)
+func (_u *IncidentEventUpdate) SetNillableIncidentID(v *uuid.UUID) *IncidentEventUpdate {
+	if v != nil {
+		_u.SetIncidentID(*v)
 	}
-	return ieu
+	return _u
 }
 
 // SetEventID sets the "event_id" field.
-func (ieu *IncidentEventUpdate) SetEventID(u uuid.UUID) *IncidentEventUpdate {
-	ieu.mutation.SetEventID(u)
-	return ieu
+func (_u *IncidentEventUpdate) SetEventID(v uuid.UUID) *IncidentEventUpdate {
+	_u.mutation.SetEventID(v)
+	return _u
 }
 
 // SetNillableEventID sets the "event_id" field if the given value is not nil.
-func (ieu *IncidentEventUpdate) SetNillableEventID(u *uuid.UUID) *IncidentEventUpdate {
-	if u != nil {
-		ieu.SetEventID(*u)
+func (_u *IncidentEventUpdate) SetNillableEventID(v *uuid.UUID) *IncidentEventUpdate {
+	if v != nil {
+		_u.SetEventID(*v)
 	}
-	return ieu
+	return _u
 }
 
 // ClearEventID clears the value of the "event_id" field.
-func (ieu *IncidentEventUpdate) ClearEventID() *IncidentEventUpdate {
-	ieu.mutation.ClearEventID()
-	return ieu
+func (_u *IncidentEventUpdate) ClearEventID() *IncidentEventUpdate {
+	_u.mutation.ClearEventID()
+	return _u
 }
 
 // SetTimestamp sets the "timestamp" field.
-func (ieu *IncidentEventUpdate) SetTimestamp(t time.Time) *IncidentEventUpdate {
-	ieu.mutation.SetTimestamp(t)
-	return ieu
+func (_u *IncidentEventUpdate) SetTimestamp(v time.Time) *IncidentEventUpdate {
+	_u.mutation.SetTimestamp(v)
+	return _u
 }
 
 // SetNillableTimestamp sets the "timestamp" field if the given value is not nil.
-func (ieu *IncidentEventUpdate) SetNillableTimestamp(t *time.Time) *IncidentEventUpdate {
-	if t != nil {
-		ieu.SetTimestamp(*t)
+func (_u *IncidentEventUpdate) SetNillableTimestamp(v *time.Time) *IncidentEventUpdate {
+	if v != nil {
+		_u.SetTimestamp(*v)
 	}
-	return ieu
+	return _u
 }
 
 // SetKind sets the "kind" field.
-func (ieu *IncidentEventUpdate) SetKind(i incidentevent.Kind) *IncidentEventUpdate {
-	ieu.mutation.SetKind(i)
-	return ieu
+func (_u *IncidentEventUpdate) SetKind(v incidentevent.Kind) *IncidentEventUpdate {
+	_u.mutation.SetKind(v)
+	return _u
 }
 
 // SetNillableKind sets the "kind" field if the given value is not nil.
-func (ieu *IncidentEventUpdate) SetNillableKind(i *incidentevent.Kind) *IncidentEventUpdate {
-	if i != nil {
-		ieu.SetKind(*i)
+func (_u *IncidentEventUpdate) SetNillableKind(v *incidentevent.Kind) *IncidentEventUpdate {
+	if v != nil {
+		_u.SetKind(*v)
 	}
-	return ieu
+	return _u
 }
 
 // SetTitle sets the "title" field.
-func (ieu *IncidentEventUpdate) SetTitle(s string) *IncidentEventUpdate {
-	ieu.mutation.SetTitle(s)
-	return ieu
+func (_u *IncidentEventUpdate) SetTitle(v string) *IncidentEventUpdate {
+	_u.mutation.SetTitle(v)
+	return _u
 }
 
 // SetNillableTitle sets the "title" field if the given value is not nil.
-func (ieu *IncidentEventUpdate) SetNillableTitle(s *string) *IncidentEventUpdate {
-	if s != nil {
-		ieu.SetTitle(*s)
+func (_u *IncidentEventUpdate) SetNillableTitle(v *string) *IncidentEventUpdate {
+	if v != nil {
+		_u.SetTitle(*v)
 	}
-	return ieu
+	return _u
 }
 
 // SetDescription sets the "description" field.
-func (ieu *IncidentEventUpdate) SetDescription(s string) *IncidentEventUpdate {
-	ieu.mutation.SetDescription(s)
-	return ieu
+func (_u *IncidentEventUpdate) SetDescription(v string) *IncidentEventUpdate {
+	_u.mutation.SetDescription(v)
+	return _u
 }
 
 // SetNillableDescription sets the "description" field if the given value is not nil.
-func (ieu *IncidentEventUpdate) SetNillableDescription(s *string) *IncidentEventUpdate {
-	if s != nil {
-		ieu.SetDescription(*s)
+func (_u *IncidentEventUpdate) SetNillableDescription(v *string) *IncidentEventUpdate {
+	if v != nil {
+		_u.SetDescription(*v)
 	}
-	return ieu
+	return _u
 }
 
 // ClearDescription clears the value of the "description" field.
-func (ieu *IncidentEventUpdate) ClearDescription() *IncidentEventUpdate {
-	ieu.mutation.ClearDescription()
-	return ieu
+func (_u *IncidentEventUpdate) ClearDescription() *IncidentEventUpdate {
+	_u.mutation.ClearDescription()
+	return _u
 }
 
 // SetIsKey sets the "is_key" field.
-func (ieu *IncidentEventUpdate) SetIsKey(b bool) *IncidentEventUpdate {
-	ieu.mutation.SetIsKey(b)
-	return ieu
+func (_u *IncidentEventUpdate) SetIsKey(v bool) *IncidentEventUpdate {
+	_u.mutation.SetIsKey(v)
+	return _u
 }
 
 // SetNillableIsKey sets the "is_key" field if the given value is not nil.
-func (ieu *IncidentEventUpdate) SetNillableIsKey(b *bool) *IncidentEventUpdate {
-	if b != nil {
-		ieu.SetIsKey(*b)
+func (_u *IncidentEventUpdate) SetNillableIsKey(v *bool) *IncidentEventUpdate {
+	if v != nil {
+		_u.SetIsKey(*v)
 	}
-	return ieu
+	return _u
 }
 
 // SetCreatedAt sets the "created_at" field.
-func (ieu *IncidentEventUpdate) SetCreatedAt(t time.Time) *IncidentEventUpdate {
-	ieu.mutation.SetCreatedAt(t)
-	return ieu
+func (_u *IncidentEventUpdate) SetCreatedAt(v time.Time) *IncidentEventUpdate {
+	_u.mutation.SetCreatedAt(v)
+	return _u
 }
 
 // SetNillableCreatedAt sets the "created_at" field if the given value is not nil.
-func (ieu *IncidentEventUpdate) SetNillableCreatedAt(t *time.Time) *IncidentEventUpdate {
-	if t != nil {
-		ieu.SetCreatedAt(*t)
+func (_u *IncidentEventUpdate) SetNillableCreatedAt(v *time.Time) *IncidentEventUpdate {
+	if v != nil {
+		_u.SetCreatedAt(*v)
 	}
-	return ieu
+	return _u
 }
 
 // SetUpdatedAt sets the "updated_at" field.
-func (ieu *IncidentEventUpdate) SetUpdatedAt(t time.Time) *IncidentEventUpdate {
-	ieu.mutation.SetUpdatedAt(t)
-	return ieu
+func (_u *IncidentEventUpdate) SetUpdatedAt(v time.Time) *IncidentEventUpdate {
+	_u.mutation.SetUpdatedAt(v)
+	return _u
 }
 
 // SetCreatedBy sets the "created_by" field.
-func (ieu *IncidentEventUpdate) SetCreatedBy(u uuid.UUID) *IncidentEventUpdate {
-	ieu.mutation.SetCreatedBy(u)
-	return ieu
+func (_u *IncidentEventUpdate) SetCreatedBy(v uuid.UUID) *IncidentEventUpdate {
+	_u.mutation.SetCreatedBy(v)
+	return _u
 }
 
 // SetNillableCreatedBy sets the "created_by" field if the given value is not nil.
-func (ieu *IncidentEventUpdate) SetNillableCreatedBy(u *uuid.UUID) *IncidentEventUpdate {
-	if u != nil {
-		ieu.SetCreatedBy(*u)
+func (_u *IncidentEventUpdate) SetNillableCreatedBy(v *uuid.UUID) *IncidentEventUpdate {
+	if v != nil {
+		_u.SetCreatedBy(*v)
 	}
-	return ieu
+	return _u
 }
 
 // SetSequence sets the "sequence" field.
-func (ieu *IncidentEventUpdate) SetSequence(i int) *IncidentEventUpdate {
-	ieu.mutation.ResetSequence()
-	ieu.mutation.SetSequence(i)
-	return ieu
+func (_u *IncidentEventUpdate) SetSequence(v int) *IncidentEventUpdate {
+	_u.mutation.ResetSequence()
+	_u.mutation.SetSequence(v)
+	return _u
 }
 
 // SetNillableSequence sets the "sequence" field if the given value is not nil.
-func (ieu *IncidentEventUpdate) SetNillableSequence(i *int) *IncidentEventUpdate {
-	if i != nil {
-		ieu.SetSequence(*i)
+func (_u *IncidentEventUpdate) SetNillableSequence(v *int) *IncidentEventUpdate {
+	if v != nil {
+		_u.SetSequence(*v)
 	}
-	return ieu
+	return _u
 }
 
-// AddSequence adds i to the "sequence" field.
-func (ieu *IncidentEventUpdate) AddSequence(i int) *IncidentEventUpdate {
-	ieu.mutation.AddSequence(i)
-	return ieu
+// AddSequence adds value to the "sequence" field.
+func (_u *IncidentEventUpdate) AddSequence(v int) *IncidentEventUpdate {
+	_u.mutation.AddSequence(v)
+	return _u
 }
 
 // SetIsDraft sets the "is_draft" field.
-func (ieu *IncidentEventUpdate) SetIsDraft(b bool) *IncidentEventUpdate {
-	ieu.mutation.SetIsDraft(b)
-	return ieu
+func (_u *IncidentEventUpdate) SetIsDraft(v bool) *IncidentEventUpdate {
+	_u.mutation.SetIsDraft(v)
+	return _u
 }
 
 // SetNillableIsDraft sets the "is_draft" field if the given value is not nil.
-func (ieu *IncidentEventUpdate) SetNillableIsDraft(b *bool) *IncidentEventUpdate {
-	if b != nil {
-		ieu.SetIsDraft(*b)
+func (_u *IncidentEventUpdate) SetNillableIsDraft(v *bool) *IncidentEventUpdate {
+	if v != nil {
+		_u.SetIsDraft(*v)
 	}
-	return ieu
+	return _u
 }
 
 // SetIncident sets the "incident" edge to the Incident entity.
-func (ieu *IncidentEventUpdate) SetIncident(i *Incident) *IncidentEventUpdate {
-	return ieu.SetIncidentID(i.ID)
+func (_u *IncidentEventUpdate) SetIncident(v *Incident) *IncidentEventUpdate {
+	return _u.SetIncidentID(v.ID)
 }
 
 // SetEvent sets the "event" edge to the Event entity.
-func (ieu *IncidentEventUpdate) SetEvent(e *Event) *IncidentEventUpdate {
-	return ieu.SetEventID(e.ID)
+func (_u *IncidentEventUpdate) SetEvent(v *Event) *IncidentEventUpdate {
+	return _u.SetEventID(v.ID)
 }
 
 // SetContextID sets the "context" edge to the IncidentEventContext entity by ID.
-func (ieu *IncidentEventUpdate) SetContextID(id uuid.UUID) *IncidentEventUpdate {
-	ieu.mutation.SetContextID(id)
-	return ieu
+func (_u *IncidentEventUpdate) SetContextID(id uuid.UUID) *IncidentEventUpdate {
+	_u.mutation.SetContextID(id)
+	return _u
 }
 
 // SetNillableContextID sets the "context" edge to the IncidentEventContext entity by ID if the given value is not nil.
-func (ieu *IncidentEventUpdate) SetNillableContextID(id *uuid.UUID) *IncidentEventUpdate {
+func (_u *IncidentEventUpdate) SetNillableContextID(id *uuid.UUID) *IncidentEventUpdate {
 	if id != nil {
-		ieu = ieu.SetContextID(*id)
+		_u = _u.SetContextID(*id)
 	}
-	return ieu
+	return _u
 }
 
 // SetContext sets the "context" edge to the IncidentEventContext entity.
-func (ieu *IncidentEventUpdate) SetContext(i *IncidentEventContext) *IncidentEventUpdate {
-	return ieu.SetContextID(i.ID)
+func (_u *IncidentEventUpdate) SetContext(v *IncidentEventContext) *IncidentEventUpdate {
+	return _u.SetContextID(v.ID)
 }
 
 // AddFactorIDs adds the "factors" edge to the IncidentEventContributingFactor entity by IDs.
-func (ieu *IncidentEventUpdate) AddFactorIDs(ids ...uuid.UUID) *IncidentEventUpdate {
-	ieu.mutation.AddFactorIDs(ids...)
-	return ieu
+func (_u *IncidentEventUpdate) AddFactorIDs(ids ...uuid.UUID) *IncidentEventUpdate {
+	_u.mutation.AddFactorIDs(ids...)
+	return _u
 }
 
 // AddFactors adds the "factors" edges to the IncidentEventContributingFactor entity.
-func (ieu *IncidentEventUpdate) AddFactors(i ...*IncidentEventContributingFactor) *IncidentEventUpdate {
-	ids := make([]uuid.UUID, len(i))
-	for j := range i {
-		ids[j] = i[j].ID
+func (_u *IncidentEventUpdate) AddFactors(v ...*IncidentEventContributingFactor) *IncidentEventUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
 	}
-	return ieu.AddFactorIDs(ids...)
+	return _u.AddFactorIDs(ids...)
 }
 
 // AddEvidenceIDs adds the "evidence" edge to the IncidentEventEvidence entity by IDs.
-func (ieu *IncidentEventUpdate) AddEvidenceIDs(ids ...uuid.UUID) *IncidentEventUpdate {
-	ieu.mutation.AddEvidenceIDs(ids...)
-	return ieu
+func (_u *IncidentEventUpdate) AddEvidenceIDs(ids ...uuid.UUID) *IncidentEventUpdate {
+	_u.mutation.AddEvidenceIDs(ids...)
+	return _u
 }
 
 // AddEvidence adds the "evidence" edges to the IncidentEventEvidence entity.
-func (ieu *IncidentEventUpdate) AddEvidence(i ...*IncidentEventEvidence) *IncidentEventUpdate {
-	ids := make([]uuid.UUID, len(i))
-	for j := range i {
-		ids[j] = i[j].ID
+func (_u *IncidentEventUpdate) AddEvidence(v ...*IncidentEventEvidence) *IncidentEventUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
 	}
-	return ieu.AddEvidenceIDs(ids...)
+	return _u.AddEvidenceIDs(ids...)
 }
 
 // AddSystemComponentIDs adds the "system_components" edge to the SystemComponent entity by IDs.
-func (ieu *IncidentEventUpdate) AddSystemComponentIDs(ids ...uuid.UUID) *IncidentEventUpdate {
-	ieu.mutation.AddSystemComponentIDs(ids...)
-	return ieu
+func (_u *IncidentEventUpdate) AddSystemComponentIDs(ids ...uuid.UUID) *IncidentEventUpdate {
+	_u.mutation.AddSystemComponentIDs(ids...)
+	return _u
 }
 
 // AddSystemComponents adds the "system_components" edges to the SystemComponent entity.
-func (ieu *IncidentEventUpdate) AddSystemComponents(s ...*SystemComponent) *IncidentEventUpdate {
-	ids := make([]uuid.UUID, len(s))
-	for i := range s {
-		ids[i] = s[i].ID
+func (_u *IncidentEventUpdate) AddSystemComponents(v ...*SystemComponent) *IncidentEventUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
 	}
-	return ieu.AddSystemComponentIDs(ids...)
+	return _u.AddSystemComponentIDs(ids...)
 }
 
 // AddEventComponentIDs adds the "event_components" edge to the IncidentEventSystemComponent entity by IDs.
-func (ieu *IncidentEventUpdate) AddEventComponentIDs(ids ...uuid.UUID) *IncidentEventUpdate {
-	ieu.mutation.AddEventComponentIDs(ids...)
-	return ieu
+func (_u *IncidentEventUpdate) AddEventComponentIDs(ids ...uuid.UUID) *IncidentEventUpdate {
+	_u.mutation.AddEventComponentIDs(ids...)
+	return _u
 }
 
 // AddEventComponents adds the "event_components" edges to the IncidentEventSystemComponent entity.
-func (ieu *IncidentEventUpdate) AddEventComponents(i ...*IncidentEventSystemComponent) *IncidentEventUpdate {
-	ids := make([]uuid.UUID, len(i))
-	for j := range i {
-		ids[j] = i[j].ID
+func (_u *IncidentEventUpdate) AddEventComponents(v ...*IncidentEventSystemComponent) *IncidentEventUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
 	}
-	return ieu.AddEventComponentIDs(ids...)
+	return _u.AddEventComponentIDs(ids...)
 }
 
 // Mutation returns the IncidentEventMutation object of the builder.
-func (ieu *IncidentEventUpdate) Mutation() *IncidentEventMutation {
-	return ieu.mutation
+func (_u *IncidentEventUpdate) Mutation() *IncidentEventMutation {
+	return _u.mutation
 }
 
 // ClearIncident clears the "incident" edge to the Incident entity.
-func (ieu *IncidentEventUpdate) ClearIncident() *IncidentEventUpdate {
-	ieu.mutation.ClearIncident()
-	return ieu
+func (_u *IncidentEventUpdate) ClearIncident() *IncidentEventUpdate {
+	_u.mutation.ClearIncident()
+	return _u
 }
 
 // ClearEvent clears the "event" edge to the Event entity.
-func (ieu *IncidentEventUpdate) ClearEvent() *IncidentEventUpdate {
-	ieu.mutation.ClearEvent()
-	return ieu
+func (_u *IncidentEventUpdate) ClearEvent() *IncidentEventUpdate {
+	_u.mutation.ClearEvent()
+	return _u
 }
 
 // ClearContext clears the "context" edge to the IncidentEventContext entity.
-func (ieu *IncidentEventUpdate) ClearContext() *IncidentEventUpdate {
-	ieu.mutation.ClearContext()
-	return ieu
+func (_u *IncidentEventUpdate) ClearContext() *IncidentEventUpdate {
+	_u.mutation.ClearContext()
+	return _u
 }
 
 // ClearFactors clears all "factors" edges to the IncidentEventContributingFactor entity.
-func (ieu *IncidentEventUpdate) ClearFactors() *IncidentEventUpdate {
-	ieu.mutation.ClearFactors()
-	return ieu
+func (_u *IncidentEventUpdate) ClearFactors() *IncidentEventUpdate {
+	_u.mutation.ClearFactors()
+	return _u
 }
 
 // RemoveFactorIDs removes the "factors" edge to IncidentEventContributingFactor entities by IDs.
-func (ieu *IncidentEventUpdate) RemoveFactorIDs(ids ...uuid.UUID) *IncidentEventUpdate {
-	ieu.mutation.RemoveFactorIDs(ids...)
-	return ieu
+func (_u *IncidentEventUpdate) RemoveFactorIDs(ids ...uuid.UUID) *IncidentEventUpdate {
+	_u.mutation.RemoveFactorIDs(ids...)
+	return _u
 }
 
 // RemoveFactors removes "factors" edges to IncidentEventContributingFactor entities.
-func (ieu *IncidentEventUpdate) RemoveFactors(i ...*IncidentEventContributingFactor) *IncidentEventUpdate {
-	ids := make([]uuid.UUID, len(i))
-	for j := range i {
-		ids[j] = i[j].ID
+func (_u *IncidentEventUpdate) RemoveFactors(v ...*IncidentEventContributingFactor) *IncidentEventUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
 	}
-	return ieu.RemoveFactorIDs(ids...)
+	return _u.RemoveFactorIDs(ids...)
 }
 
 // ClearEvidence clears all "evidence" edges to the IncidentEventEvidence entity.
-func (ieu *IncidentEventUpdate) ClearEvidence() *IncidentEventUpdate {
-	ieu.mutation.ClearEvidence()
-	return ieu
+func (_u *IncidentEventUpdate) ClearEvidence() *IncidentEventUpdate {
+	_u.mutation.ClearEvidence()
+	return _u
 }
 
 // RemoveEvidenceIDs removes the "evidence" edge to IncidentEventEvidence entities by IDs.
-func (ieu *IncidentEventUpdate) RemoveEvidenceIDs(ids ...uuid.UUID) *IncidentEventUpdate {
-	ieu.mutation.RemoveEvidenceIDs(ids...)
-	return ieu
+func (_u *IncidentEventUpdate) RemoveEvidenceIDs(ids ...uuid.UUID) *IncidentEventUpdate {
+	_u.mutation.RemoveEvidenceIDs(ids...)
+	return _u
 }
 
 // RemoveEvidence removes "evidence" edges to IncidentEventEvidence entities.
-func (ieu *IncidentEventUpdate) RemoveEvidence(i ...*IncidentEventEvidence) *IncidentEventUpdate {
-	ids := make([]uuid.UUID, len(i))
-	for j := range i {
-		ids[j] = i[j].ID
+func (_u *IncidentEventUpdate) RemoveEvidence(v ...*IncidentEventEvidence) *IncidentEventUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
 	}
-	return ieu.RemoveEvidenceIDs(ids...)
+	return _u.RemoveEvidenceIDs(ids...)
 }
 
 // ClearSystemComponents clears all "system_components" edges to the SystemComponent entity.
-func (ieu *IncidentEventUpdate) ClearSystemComponents() *IncidentEventUpdate {
-	ieu.mutation.ClearSystemComponents()
-	return ieu
+func (_u *IncidentEventUpdate) ClearSystemComponents() *IncidentEventUpdate {
+	_u.mutation.ClearSystemComponents()
+	return _u
 }
 
 // RemoveSystemComponentIDs removes the "system_components" edge to SystemComponent entities by IDs.
-func (ieu *IncidentEventUpdate) RemoveSystemComponentIDs(ids ...uuid.UUID) *IncidentEventUpdate {
-	ieu.mutation.RemoveSystemComponentIDs(ids...)
-	return ieu
+func (_u *IncidentEventUpdate) RemoveSystemComponentIDs(ids ...uuid.UUID) *IncidentEventUpdate {
+	_u.mutation.RemoveSystemComponentIDs(ids...)
+	return _u
 }
 
 // RemoveSystemComponents removes "system_components" edges to SystemComponent entities.
-func (ieu *IncidentEventUpdate) RemoveSystemComponents(s ...*SystemComponent) *IncidentEventUpdate {
-	ids := make([]uuid.UUID, len(s))
-	for i := range s {
-		ids[i] = s[i].ID
+func (_u *IncidentEventUpdate) RemoveSystemComponents(v ...*SystemComponent) *IncidentEventUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
 	}
-	return ieu.RemoveSystemComponentIDs(ids...)
+	return _u.RemoveSystemComponentIDs(ids...)
 }
 
 // ClearEventComponents clears all "event_components" edges to the IncidentEventSystemComponent entity.
-func (ieu *IncidentEventUpdate) ClearEventComponents() *IncidentEventUpdate {
-	ieu.mutation.ClearEventComponents()
-	return ieu
+func (_u *IncidentEventUpdate) ClearEventComponents() *IncidentEventUpdate {
+	_u.mutation.ClearEventComponents()
+	return _u
 }
 
 // RemoveEventComponentIDs removes the "event_components" edge to IncidentEventSystemComponent entities by IDs.
-func (ieu *IncidentEventUpdate) RemoveEventComponentIDs(ids ...uuid.UUID) *IncidentEventUpdate {
-	ieu.mutation.RemoveEventComponentIDs(ids...)
-	return ieu
+func (_u *IncidentEventUpdate) RemoveEventComponentIDs(ids ...uuid.UUID) *IncidentEventUpdate {
+	_u.mutation.RemoveEventComponentIDs(ids...)
+	return _u
 }
 
 // RemoveEventComponents removes "event_components" edges to IncidentEventSystemComponent entities.
-func (ieu *IncidentEventUpdate) RemoveEventComponents(i ...*IncidentEventSystemComponent) *IncidentEventUpdate {
-	ids := make([]uuid.UUID, len(i))
-	for j := range i {
-		ids[j] = i[j].ID
+func (_u *IncidentEventUpdate) RemoveEventComponents(v ...*IncidentEventSystemComponent) *IncidentEventUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
 	}
-	return ieu.RemoveEventComponentIDs(ids...)
+	return _u.RemoveEventComponentIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
-func (ieu *IncidentEventUpdate) Save(ctx context.Context) (int, error) {
-	if err := ieu.defaults(); err != nil {
+func (_u *IncidentEventUpdate) Save(ctx context.Context) (int, error) {
+	if err := _u.defaults(); err != nil {
 		return 0, err
 	}
-	return withHooks(ctx, ieu.sqlSave, ieu.mutation, ieu.hooks)
+	return withHooks(ctx, _u.sqlSave, _u.mutation, _u.hooks)
 }
 
 // SaveX is like Save, but panics if an error occurs.
-func (ieu *IncidentEventUpdate) SaveX(ctx context.Context) int {
-	affected, err := ieu.Save(ctx)
+func (_u *IncidentEventUpdate) SaveX(ctx context.Context) int {
+	affected, err := _u.Save(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -430,106 +430,106 @@ func (ieu *IncidentEventUpdate) SaveX(ctx context.Context) int {
 }
 
 // Exec executes the query.
-func (ieu *IncidentEventUpdate) Exec(ctx context.Context) error {
-	_, err := ieu.Save(ctx)
+func (_u *IncidentEventUpdate) Exec(ctx context.Context) error {
+	_, err := _u.Save(ctx)
 	return err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (ieu *IncidentEventUpdate) ExecX(ctx context.Context) {
-	if err := ieu.Exec(ctx); err != nil {
+func (_u *IncidentEventUpdate) ExecX(ctx context.Context) {
+	if err := _u.Exec(ctx); err != nil {
 		panic(err)
 	}
 }
 
 // defaults sets the default values of the builder before save.
-func (ieu *IncidentEventUpdate) defaults() error {
-	if _, ok := ieu.mutation.UpdatedAt(); !ok {
+func (_u *IncidentEventUpdate) defaults() error {
+	if _, ok := _u.mutation.UpdatedAt(); !ok {
 		if incidentevent.UpdateDefaultUpdatedAt == nil {
 			return fmt.Errorf("ent: uninitialized incidentevent.UpdateDefaultUpdatedAt (forgotten import ent/runtime?)")
 		}
 		v := incidentevent.UpdateDefaultUpdatedAt()
-		ieu.mutation.SetUpdatedAt(v)
+		_u.mutation.SetUpdatedAt(v)
 	}
 	return nil
 }
 
 // check runs all checks and user-defined validators on the builder.
-func (ieu *IncidentEventUpdate) check() error {
-	if v, ok := ieu.mutation.Kind(); ok {
+func (_u *IncidentEventUpdate) check() error {
+	if v, ok := _u.mutation.Kind(); ok {
 		if err := incidentevent.KindValidator(v); err != nil {
 			return &ValidationError{Name: "kind", err: fmt.Errorf(`ent: validator failed for field "IncidentEvent.kind": %w`, err)}
 		}
 	}
-	if v, ok := ieu.mutation.Title(); ok {
+	if v, ok := _u.mutation.Title(); ok {
 		if err := incidentevent.TitleValidator(v); err != nil {
 			return &ValidationError{Name: "title", err: fmt.Errorf(`ent: validator failed for field "IncidentEvent.title": %w`, err)}
 		}
 	}
-	if ieu.mutation.TenantCleared() && len(ieu.mutation.TenantIDs()) > 0 {
+	if _u.mutation.TenantCleared() && len(_u.mutation.TenantIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "IncidentEvent.tenant"`)
 	}
-	if ieu.mutation.IncidentCleared() && len(ieu.mutation.IncidentIDs()) > 0 {
+	if _u.mutation.IncidentCleared() && len(_u.mutation.IncidentIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "IncidentEvent.incident"`)
 	}
 	return nil
 }
 
 // Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
-func (ieu *IncidentEventUpdate) Modify(modifiers ...func(u *sql.UpdateBuilder)) *IncidentEventUpdate {
-	ieu.modifiers = append(ieu.modifiers, modifiers...)
-	return ieu
+func (_u *IncidentEventUpdate) Modify(modifiers ...func(u *sql.UpdateBuilder)) *IncidentEventUpdate {
+	_u.modifiers = append(_u.modifiers, modifiers...)
+	return _u
 }
 
-func (ieu *IncidentEventUpdate) sqlSave(ctx context.Context) (n int, err error) {
-	if err := ieu.check(); err != nil {
-		return n, err
+func (_u *IncidentEventUpdate) sqlSave(ctx context.Context) (_node int, err error) {
+	if err := _u.check(); err != nil {
+		return _node, err
 	}
 	_spec := sqlgraph.NewUpdateSpec(incidentevent.Table, incidentevent.Columns, sqlgraph.NewFieldSpec(incidentevent.FieldID, field.TypeUUID))
-	if ps := ieu.mutation.predicates; len(ps) > 0 {
+	if ps := _u.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {
 				ps[i](selector)
 			}
 		}
 	}
-	if value, ok := ieu.mutation.Timestamp(); ok {
+	if value, ok := _u.mutation.Timestamp(); ok {
 		_spec.SetField(incidentevent.FieldTimestamp, field.TypeTime, value)
 	}
-	if value, ok := ieu.mutation.Kind(); ok {
+	if value, ok := _u.mutation.Kind(); ok {
 		_spec.SetField(incidentevent.FieldKind, field.TypeEnum, value)
 	}
-	if value, ok := ieu.mutation.Title(); ok {
+	if value, ok := _u.mutation.Title(); ok {
 		_spec.SetField(incidentevent.FieldTitle, field.TypeString, value)
 	}
-	if value, ok := ieu.mutation.Description(); ok {
+	if value, ok := _u.mutation.Description(); ok {
 		_spec.SetField(incidentevent.FieldDescription, field.TypeString, value)
 	}
-	if ieu.mutation.DescriptionCleared() {
+	if _u.mutation.DescriptionCleared() {
 		_spec.ClearField(incidentevent.FieldDescription, field.TypeString)
 	}
-	if value, ok := ieu.mutation.IsKey(); ok {
+	if value, ok := _u.mutation.IsKey(); ok {
 		_spec.SetField(incidentevent.FieldIsKey, field.TypeBool, value)
 	}
-	if value, ok := ieu.mutation.CreatedAt(); ok {
+	if value, ok := _u.mutation.CreatedAt(); ok {
 		_spec.SetField(incidentevent.FieldCreatedAt, field.TypeTime, value)
 	}
-	if value, ok := ieu.mutation.UpdatedAt(); ok {
+	if value, ok := _u.mutation.UpdatedAt(); ok {
 		_spec.SetField(incidentevent.FieldUpdatedAt, field.TypeTime, value)
 	}
-	if value, ok := ieu.mutation.CreatedBy(); ok {
+	if value, ok := _u.mutation.CreatedBy(); ok {
 		_spec.SetField(incidentevent.FieldCreatedBy, field.TypeUUID, value)
 	}
-	if value, ok := ieu.mutation.Sequence(); ok {
+	if value, ok := _u.mutation.Sequence(); ok {
 		_spec.SetField(incidentevent.FieldSequence, field.TypeInt, value)
 	}
-	if value, ok := ieu.mutation.AddedSequence(); ok {
+	if value, ok := _u.mutation.AddedSequence(); ok {
 		_spec.AddField(incidentevent.FieldSequence, field.TypeInt, value)
 	}
-	if value, ok := ieu.mutation.IsDraft(); ok {
+	if value, ok := _u.mutation.IsDraft(); ok {
 		_spec.SetField(incidentevent.FieldIsDraft, field.TypeBool, value)
 	}
-	if ieu.mutation.IncidentCleared() {
+	if _u.mutation.IncidentCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: true,
@@ -542,7 +542,7 @@ func (ieu *IncidentEventUpdate) sqlSave(ctx context.Context) (n int, err error) 
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := ieu.mutation.IncidentIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.IncidentIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: true,
@@ -558,7 +558,7 @@ func (ieu *IncidentEventUpdate) sqlSave(ctx context.Context) (n int, err error) 
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if ieu.mutation.EventCleared() {
+	if _u.mutation.EventCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
@@ -571,7 +571,7 @@ func (ieu *IncidentEventUpdate) sqlSave(ctx context.Context) (n int, err error) 
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := ieu.mutation.EventIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.EventIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
@@ -587,7 +587,7 @@ func (ieu *IncidentEventUpdate) sqlSave(ctx context.Context) (n int, err error) 
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if ieu.mutation.ContextCleared() {
+	if _u.mutation.ContextCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2O,
 			Inverse: false,
@@ -600,7 +600,7 @@ func (ieu *IncidentEventUpdate) sqlSave(ctx context.Context) (n int, err error) 
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := ieu.mutation.ContextIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.ContextIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2O,
 			Inverse: false,
@@ -616,7 +616,7 @@ func (ieu *IncidentEventUpdate) sqlSave(ctx context.Context) (n int, err error) 
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if ieu.mutation.FactorsCleared() {
+	if _u.mutation.FactorsCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
@@ -629,23 +629,7 @@ func (ieu *IncidentEventUpdate) sqlSave(ctx context.Context) (n int, err error) 
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := ieu.mutation.RemovedFactorsIDs(); len(nodes) > 0 && !ieu.mutation.FactorsCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   incidentevent.FactorsTable,
-			Columns: []string{incidentevent.FactorsColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(incidenteventcontributingfactor.FieldID, field.TypeUUID),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := ieu.mutation.FactorsIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.RemovedFactorsIDs(); len(nodes) > 0 && !_u.mutation.FactorsCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
@@ -659,9 +643,25 @@ func (ieu *IncidentEventUpdate) sqlSave(ctx context.Context) (n int, err error) 
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.FactorsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   incidentevent.FactorsTable,
+			Columns: []string{incidentevent.FactorsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(incidenteventcontributingfactor.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if ieu.mutation.EvidenceCleared() {
+	if _u.mutation.EvidenceCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
@@ -674,7 +674,7 @@ func (ieu *IncidentEventUpdate) sqlSave(ctx context.Context) (n int, err error) 
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := ieu.mutation.RemovedEvidenceIDs(); len(nodes) > 0 && !ieu.mutation.EvidenceCleared() {
+	if nodes := _u.mutation.RemovedEvidenceIDs(); len(nodes) > 0 && !_u.mutation.EvidenceCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
@@ -690,7 +690,7 @@ func (ieu *IncidentEventUpdate) sqlSave(ctx context.Context) (n int, err error) 
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := ieu.mutation.EvidenceIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.EvidenceIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
@@ -706,7 +706,7 @@ func (ieu *IncidentEventUpdate) sqlSave(ctx context.Context) (n int, err error) 
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if ieu.mutation.SystemComponentsCleared() {
+	if _u.mutation.SystemComponentsCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
 			Inverse: false,
@@ -717,7 +717,7 @@ func (ieu *IncidentEventUpdate) sqlSave(ctx context.Context) (n int, err error) 
 				IDSpec: sqlgraph.NewFieldSpec(systemcomponent.FieldID, field.TypeUUID),
 			},
 		}
-		createE := &IncidentEventSystemComponentCreate{config: ieu.config, mutation: newIncidentEventSystemComponentMutation(ieu.config, OpCreate)}
+		createE := &IncidentEventSystemComponentCreate{config: _u.config, mutation: newIncidentEventSystemComponentMutation(_u.config, OpCreate)}
 		_ = createE.defaults()
 		_, specE := createE.createSpec()
 		edge.Target.Fields = specE.Fields
@@ -726,7 +726,7 @@ func (ieu *IncidentEventUpdate) sqlSave(ctx context.Context) (n int, err error) 
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := ieu.mutation.RemovedSystemComponentsIDs(); len(nodes) > 0 && !ieu.mutation.SystemComponentsCleared() {
+	if nodes := _u.mutation.RemovedSystemComponentsIDs(); len(nodes) > 0 && !_u.mutation.SystemComponentsCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
 			Inverse: false,
@@ -740,7 +740,7 @@ func (ieu *IncidentEventUpdate) sqlSave(ctx context.Context) (n int, err error) 
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
-		createE := &IncidentEventSystemComponentCreate{config: ieu.config, mutation: newIncidentEventSystemComponentMutation(ieu.config, OpCreate)}
+		createE := &IncidentEventSystemComponentCreate{config: _u.config, mutation: newIncidentEventSystemComponentMutation(_u.config, OpCreate)}
 		_ = createE.defaults()
 		_, specE := createE.createSpec()
 		edge.Target.Fields = specE.Fields
@@ -749,7 +749,7 @@ func (ieu *IncidentEventUpdate) sqlSave(ctx context.Context) (n int, err error) 
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := ieu.mutation.SystemComponentsIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.SystemComponentsIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
 			Inverse: false,
@@ -763,7 +763,7 @@ func (ieu *IncidentEventUpdate) sqlSave(ctx context.Context) (n int, err error) 
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
-		createE := &IncidentEventSystemComponentCreate{config: ieu.config, mutation: newIncidentEventSystemComponentMutation(ieu.config, OpCreate)}
+		createE := &IncidentEventSystemComponentCreate{config: _u.config, mutation: newIncidentEventSystemComponentMutation(_u.config, OpCreate)}
 		_ = createE.defaults()
 		_, specE := createE.createSpec()
 		edge.Target.Fields = specE.Fields
@@ -772,7 +772,7 @@ func (ieu *IncidentEventUpdate) sqlSave(ctx context.Context) (n int, err error) 
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if ieu.mutation.EventComponentsCleared() {
+	if _u.mutation.EventComponentsCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: true,
@@ -785,7 +785,7 @@ func (ieu *IncidentEventUpdate) sqlSave(ctx context.Context) (n int, err error) 
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := ieu.mutation.RemovedEventComponentsIDs(); len(nodes) > 0 && !ieu.mutation.EventComponentsCleared() {
+	if nodes := _u.mutation.RemovedEventComponentsIDs(); len(nodes) > 0 && !_u.mutation.EventComponentsCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: true,
@@ -801,7 +801,7 @@ func (ieu *IncidentEventUpdate) sqlSave(ctx context.Context) (n int, err error) 
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := ieu.mutation.EventComponentsIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.EventComponentsIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: true,
@@ -817,8 +817,8 @@ func (ieu *IncidentEventUpdate) sqlSave(ctx context.Context) (n int, err error) 
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	_spec.AddModifiers(ieu.modifiers...)
-	if n, err = sqlgraph.UpdateNodes(ctx, ieu.driver, _spec); err != nil {
+	_spec.AddModifiers(_u.modifiers...)
+	if _node, err = sqlgraph.UpdateNodes(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{incidentevent.Label}
 		} else if sqlgraph.IsConstraintError(err) {
@@ -826,8 +826,8 @@ func (ieu *IncidentEventUpdate) sqlSave(ctx context.Context) (n int, err error) 
 		}
 		return 0, err
 	}
-	ieu.mutation.done = true
-	return n, nil
+	_u.mutation.done = true
+	return _node, nil
 }
 
 // IncidentEventUpdateOne is the builder for updating a single IncidentEvent entity.
@@ -840,404 +840,404 @@ type IncidentEventUpdateOne struct {
 }
 
 // SetIncidentID sets the "incident_id" field.
-func (ieuo *IncidentEventUpdateOne) SetIncidentID(u uuid.UUID) *IncidentEventUpdateOne {
-	ieuo.mutation.SetIncidentID(u)
-	return ieuo
+func (_u *IncidentEventUpdateOne) SetIncidentID(v uuid.UUID) *IncidentEventUpdateOne {
+	_u.mutation.SetIncidentID(v)
+	return _u
 }
 
 // SetNillableIncidentID sets the "incident_id" field if the given value is not nil.
-func (ieuo *IncidentEventUpdateOne) SetNillableIncidentID(u *uuid.UUID) *IncidentEventUpdateOne {
-	if u != nil {
-		ieuo.SetIncidentID(*u)
+func (_u *IncidentEventUpdateOne) SetNillableIncidentID(v *uuid.UUID) *IncidentEventUpdateOne {
+	if v != nil {
+		_u.SetIncidentID(*v)
 	}
-	return ieuo
+	return _u
 }
 
 // SetEventID sets the "event_id" field.
-func (ieuo *IncidentEventUpdateOne) SetEventID(u uuid.UUID) *IncidentEventUpdateOne {
-	ieuo.mutation.SetEventID(u)
-	return ieuo
+func (_u *IncidentEventUpdateOne) SetEventID(v uuid.UUID) *IncidentEventUpdateOne {
+	_u.mutation.SetEventID(v)
+	return _u
 }
 
 // SetNillableEventID sets the "event_id" field if the given value is not nil.
-func (ieuo *IncidentEventUpdateOne) SetNillableEventID(u *uuid.UUID) *IncidentEventUpdateOne {
-	if u != nil {
-		ieuo.SetEventID(*u)
+func (_u *IncidentEventUpdateOne) SetNillableEventID(v *uuid.UUID) *IncidentEventUpdateOne {
+	if v != nil {
+		_u.SetEventID(*v)
 	}
-	return ieuo
+	return _u
 }
 
 // ClearEventID clears the value of the "event_id" field.
-func (ieuo *IncidentEventUpdateOne) ClearEventID() *IncidentEventUpdateOne {
-	ieuo.mutation.ClearEventID()
-	return ieuo
+func (_u *IncidentEventUpdateOne) ClearEventID() *IncidentEventUpdateOne {
+	_u.mutation.ClearEventID()
+	return _u
 }
 
 // SetTimestamp sets the "timestamp" field.
-func (ieuo *IncidentEventUpdateOne) SetTimestamp(t time.Time) *IncidentEventUpdateOne {
-	ieuo.mutation.SetTimestamp(t)
-	return ieuo
+func (_u *IncidentEventUpdateOne) SetTimestamp(v time.Time) *IncidentEventUpdateOne {
+	_u.mutation.SetTimestamp(v)
+	return _u
 }
 
 // SetNillableTimestamp sets the "timestamp" field if the given value is not nil.
-func (ieuo *IncidentEventUpdateOne) SetNillableTimestamp(t *time.Time) *IncidentEventUpdateOne {
-	if t != nil {
-		ieuo.SetTimestamp(*t)
+func (_u *IncidentEventUpdateOne) SetNillableTimestamp(v *time.Time) *IncidentEventUpdateOne {
+	if v != nil {
+		_u.SetTimestamp(*v)
 	}
-	return ieuo
+	return _u
 }
 
 // SetKind sets the "kind" field.
-func (ieuo *IncidentEventUpdateOne) SetKind(i incidentevent.Kind) *IncidentEventUpdateOne {
-	ieuo.mutation.SetKind(i)
-	return ieuo
+func (_u *IncidentEventUpdateOne) SetKind(v incidentevent.Kind) *IncidentEventUpdateOne {
+	_u.mutation.SetKind(v)
+	return _u
 }
 
 // SetNillableKind sets the "kind" field if the given value is not nil.
-func (ieuo *IncidentEventUpdateOne) SetNillableKind(i *incidentevent.Kind) *IncidentEventUpdateOne {
-	if i != nil {
-		ieuo.SetKind(*i)
+func (_u *IncidentEventUpdateOne) SetNillableKind(v *incidentevent.Kind) *IncidentEventUpdateOne {
+	if v != nil {
+		_u.SetKind(*v)
 	}
-	return ieuo
+	return _u
 }
 
 // SetTitle sets the "title" field.
-func (ieuo *IncidentEventUpdateOne) SetTitle(s string) *IncidentEventUpdateOne {
-	ieuo.mutation.SetTitle(s)
-	return ieuo
+func (_u *IncidentEventUpdateOne) SetTitle(v string) *IncidentEventUpdateOne {
+	_u.mutation.SetTitle(v)
+	return _u
 }
 
 // SetNillableTitle sets the "title" field if the given value is not nil.
-func (ieuo *IncidentEventUpdateOne) SetNillableTitle(s *string) *IncidentEventUpdateOne {
-	if s != nil {
-		ieuo.SetTitle(*s)
+func (_u *IncidentEventUpdateOne) SetNillableTitle(v *string) *IncidentEventUpdateOne {
+	if v != nil {
+		_u.SetTitle(*v)
 	}
-	return ieuo
+	return _u
 }
 
 // SetDescription sets the "description" field.
-func (ieuo *IncidentEventUpdateOne) SetDescription(s string) *IncidentEventUpdateOne {
-	ieuo.mutation.SetDescription(s)
-	return ieuo
+func (_u *IncidentEventUpdateOne) SetDescription(v string) *IncidentEventUpdateOne {
+	_u.mutation.SetDescription(v)
+	return _u
 }
 
 // SetNillableDescription sets the "description" field if the given value is not nil.
-func (ieuo *IncidentEventUpdateOne) SetNillableDescription(s *string) *IncidentEventUpdateOne {
-	if s != nil {
-		ieuo.SetDescription(*s)
+func (_u *IncidentEventUpdateOne) SetNillableDescription(v *string) *IncidentEventUpdateOne {
+	if v != nil {
+		_u.SetDescription(*v)
 	}
-	return ieuo
+	return _u
 }
 
 // ClearDescription clears the value of the "description" field.
-func (ieuo *IncidentEventUpdateOne) ClearDescription() *IncidentEventUpdateOne {
-	ieuo.mutation.ClearDescription()
-	return ieuo
+func (_u *IncidentEventUpdateOne) ClearDescription() *IncidentEventUpdateOne {
+	_u.mutation.ClearDescription()
+	return _u
 }
 
 // SetIsKey sets the "is_key" field.
-func (ieuo *IncidentEventUpdateOne) SetIsKey(b bool) *IncidentEventUpdateOne {
-	ieuo.mutation.SetIsKey(b)
-	return ieuo
+func (_u *IncidentEventUpdateOne) SetIsKey(v bool) *IncidentEventUpdateOne {
+	_u.mutation.SetIsKey(v)
+	return _u
 }
 
 // SetNillableIsKey sets the "is_key" field if the given value is not nil.
-func (ieuo *IncidentEventUpdateOne) SetNillableIsKey(b *bool) *IncidentEventUpdateOne {
-	if b != nil {
-		ieuo.SetIsKey(*b)
+func (_u *IncidentEventUpdateOne) SetNillableIsKey(v *bool) *IncidentEventUpdateOne {
+	if v != nil {
+		_u.SetIsKey(*v)
 	}
-	return ieuo
+	return _u
 }
 
 // SetCreatedAt sets the "created_at" field.
-func (ieuo *IncidentEventUpdateOne) SetCreatedAt(t time.Time) *IncidentEventUpdateOne {
-	ieuo.mutation.SetCreatedAt(t)
-	return ieuo
+func (_u *IncidentEventUpdateOne) SetCreatedAt(v time.Time) *IncidentEventUpdateOne {
+	_u.mutation.SetCreatedAt(v)
+	return _u
 }
 
 // SetNillableCreatedAt sets the "created_at" field if the given value is not nil.
-func (ieuo *IncidentEventUpdateOne) SetNillableCreatedAt(t *time.Time) *IncidentEventUpdateOne {
-	if t != nil {
-		ieuo.SetCreatedAt(*t)
+func (_u *IncidentEventUpdateOne) SetNillableCreatedAt(v *time.Time) *IncidentEventUpdateOne {
+	if v != nil {
+		_u.SetCreatedAt(*v)
 	}
-	return ieuo
+	return _u
 }
 
 // SetUpdatedAt sets the "updated_at" field.
-func (ieuo *IncidentEventUpdateOne) SetUpdatedAt(t time.Time) *IncidentEventUpdateOne {
-	ieuo.mutation.SetUpdatedAt(t)
-	return ieuo
+func (_u *IncidentEventUpdateOne) SetUpdatedAt(v time.Time) *IncidentEventUpdateOne {
+	_u.mutation.SetUpdatedAt(v)
+	return _u
 }
 
 // SetCreatedBy sets the "created_by" field.
-func (ieuo *IncidentEventUpdateOne) SetCreatedBy(u uuid.UUID) *IncidentEventUpdateOne {
-	ieuo.mutation.SetCreatedBy(u)
-	return ieuo
+func (_u *IncidentEventUpdateOne) SetCreatedBy(v uuid.UUID) *IncidentEventUpdateOne {
+	_u.mutation.SetCreatedBy(v)
+	return _u
 }
 
 // SetNillableCreatedBy sets the "created_by" field if the given value is not nil.
-func (ieuo *IncidentEventUpdateOne) SetNillableCreatedBy(u *uuid.UUID) *IncidentEventUpdateOne {
-	if u != nil {
-		ieuo.SetCreatedBy(*u)
+func (_u *IncidentEventUpdateOne) SetNillableCreatedBy(v *uuid.UUID) *IncidentEventUpdateOne {
+	if v != nil {
+		_u.SetCreatedBy(*v)
 	}
-	return ieuo
+	return _u
 }
 
 // SetSequence sets the "sequence" field.
-func (ieuo *IncidentEventUpdateOne) SetSequence(i int) *IncidentEventUpdateOne {
-	ieuo.mutation.ResetSequence()
-	ieuo.mutation.SetSequence(i)
-	return ieuo
+func (_u *IncidentEventUpdateOne) SetSequence(v int) *IncidentEventUpdateOne {
+	_u.mutation.ResetSequence()
+	_u.mutation.SetSequence(v)
+	return _u
 }
 
 // SetNillableSequence sets the "sequence" field if the given value is not nil.
-func (ieuo *IncidentEventUpdateOne) SetNillableSequence(i *int) *IncidentEventUpdateOne {
-	if i != nil {
-		ieuo.SetSequence(*i)
+func (_u *IncidentEventUpdateOne) SetNillableSequence(v *int) *IncidentEventUpdateOne {
+	if v != nil {
+		_u.SetSequence(*v)
 	}
-	return ieuo
+	return _u
 }
 
-// AddSequence adds i to the "sequence" field.
-func (ieuo *IncidentEventUpdateOne) AddSequence(i int) *IncidentEventUpdateOne {
-	ieuo.mutation.AddSequence(i)
-	return ieuo
+// AddSequence adds value to the "sequence" field.
+func (_u *IncidentEventUpdateOne) AddSequence(v int) *IncidentEventUpdateOne {
+	_u.mutation.AddSequence(v)
+	return _u
 }
 
 // SetIsDraft sets the "is_draft" field.
-func (ieuo *IncidentEventUpdateOne) SetIsDraft(b bool) *IncidentEventUpdateOne {
-	ieuo.mutation.SetIsDraft(b)
-	return ieuo
+func (_u *IncidentEventUpdateOne) SetIsDraft(v bool) *IncidentEventUpdateOne {
+	_u.mutation.SetIsDraft(v)
+	return _u
 }
 
 // SetNillableIsDraft sets the "is_draft" field if the given value is not nil.
-func (ieuo *IncidentEventUpdateOne) SetNillableIsDraft(b *bool) *IncidentEventUpdateOne {
-	if b != nil {
-		ieuo.SetIsDraft(*b)
+func (_u *IncidentEventUpdateOne) SetNillableIsDraft(v *bool) *IncidentEventUpdateOne {
+	if v != nil {
+		_u.SetIsDraft(*v)
 	}
-	return ieuo
+	return _u
 }
 
 // SetIncident sets the "incident" edge to the Incident entity.
-func (ieuo *IncidentEventUpdateOne) SetIncident(i *Incident) *IncidentEventUpdateOne {
-	return ieuo.SetIncidentID(i.ID)
+func (_u *IncidentEventUpdateOne) SetIncident(v *Incident) *IncidentEventUpdateOne {
+	return _u.SetIncidentID(v.ID)
 }
 
 // SetEvent sets the "event" edge to the Event entity.
-func (ieuo *IncidentEventUpdateOne) SetEvent(e *Event) *IncidentEventUpdateOne {
-	return ieuo.SetEventID(e.ID)
+func (_u *IncidentEventUpdateOne) SetEvent(v *Event) *IncidentEventUpdateOne {
+	return _u.SetEventID(v.ID)
 }
 
 // SetContextID sets the "context" edge to the IncidentEventContext entity by ID.
-func (ieuo *IncidentEventUpdateOne) SetContextID(id uuid.UUID) *IncidentEventUpdateOne {
-	ieuo.mutation.SetContextID(id)
-	return ieuo
+func (_u *IncidentEventUpdateOne) SetContextID(id uuid.UUID) *IncidentEventUpdateOne {
+	_u.mutation.SetContextID(id)
+	return _u
 }
 
 // SetNillableContextID sets the "context" edge to the IncidentEventContext entity by ID if the given value is not nil.
-func (ieuo *IncidentEventUpdateOne) SetNillableContextID(id *uuid.UUID) *IncidentEventUpdateOne {
+func (_u *IncidentEventUpdateOne) SetNillableContextID(id *uuid.UUID) *IncidentEventUpdateOne {
 	if id != nil {
-		ieuo = ieuo.SetContextID(*id)
+		_u = _u.SetContextID(*id)
 	}
-	return ieuo
+	return _u
 }
 
 // SetContext sets the "context" edge to the IncidentEventContext entity.
-func (ieuo *IncidentEventUpdateOne) SetContext(i *IncidentEventContext) *IncidentEventUpdateOne {
-	return ieuo.SetContextID(i.ID)
+func (_u *IncidentEventUpdateOne) SetContext(v *IncidentEventContext) *IncidentEventUpdateOne {
+	return _u.SetContextID(v.ID)
 }
 
 // AddFactorIDs adds the "factors" edge to the IncidentEventContributingFactor entity by IDs.
-func (ieuo *IncidentEventUpdateOne) AddFactorIDs(ids ...uuid.UUID) *IncidentEventUpdateOne {
-	ieuo.mutation.AddFactorIDs(ids...)
-	return ieuo
+func (_u *IncidentEventUpdateOne) AddFactorIDs(ids ...uuid.UUID) *IncidentEventUpdateOne {
+	_u.mutation.AddFactorIDs(ids...)
+	return _u
 }
 
 // AddFactors adds the "factors" edges to the IncidentEventContributingFactor entity.
-func (ieuo *IncidentEventUpdateOne) AddFactors(i ...*IncidentEventContributingFactor) *IncidentEventUpdateOne {
-	ids := make([]uuid.UUID, len(i))
-	for j := range i {
-		ids[j] = i[j].ID
+func (_u *IncidentEventUpdateOne) AddFactors(v ...*IncidentEventContributingFactor) *IncidentEventUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
 	}
-	return ieuo.AddFactorIDs(ids...)
+	return _u.AddFactorIDs(ids...)
 }
 
 // AddEvidenceIDs adds the "evidence" edge to the IncidentEventEvidence entity by IDs.
-func (ieuo *IncidentEventUpdateOne) AddEvidenceIDs(ids ...uuid.UUID) *IncidentEventUpdateOne {
-	ieuo.mutation.AddEvidenceIDs(ids...)
-	return ieuo
+func (_u *IncidentEventUpdateOne) AddEvidenceIDs(ids ...uuid.UUID) *IncidentEventUpdateOne {
+	_u.mutation.AddEvidenceIDs(ids...)
+	return _u
 }
 
 // AddEvidence adds the "evidence" edges to the IncidentEventEvidence entity.
-func (ieuo *IncidentEventUpdateOne) AddEvidence(i ...*IncidentEventEvidence) *IncidentEventUpdateOne {
-	ids := make([]uuid.UUID, len(i))
-	for j := range i {
-		ids[j] = i[j].ID
+func (_u *IncidentEventUpdateOne) AddEvidence(v ...*IncidentEventEvidence) *IncidentEventUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
 	}
-	return ieuo.AddEvidenceIDs(ids...)
+	return _u.AddEvidenceIDs(ids...)
 }
 
 // AddSystemComponentIDs adds the "system_components" edge to the SystemComponent entity by IDs.
-func (ieuo *IncidentEventUpdateOne) AddSystemComponentIDs(ids ...uuid.UUID) *IncidentEventUpdateOne {
-	ieuo.mutation.AddSystemComponentIDs(ids...)
-	return ieuo
+func (_u *IncidentEventUpdateOne) AddSystemComponentIDs(ids ...uuid.UUID) *IncidentEventUpdateOne {
+	_u.mutation.AddSystemComponentIDs(ids...)
+	return _u
 }
 
 // AddSystemComponents adds the "system_components" edges to the SystemComponent entity.
-func (ieuo *IncidentEventUpdateOne) AddSystemComponents(s ...*SystemComponent) *IncidentEventUpdateOne {
-	ids := make([]uuid.UUID, len(s))
-	for i := range s {
-		ids[i] = s[i].ID
+func (_u *IncidentEventUpdateOne) AddSystemComponents(v ...*SystemComponent) *IncidentEventUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
 	}
-	return ieuo.AddSystemComponentIDs(ids...)
+	return _u.AddSystemComponentIDs(ids...)
 }
 
 // AddEventComponentIDs adds the "event_components" edge to the IncidentEventSystemComponent entity by IDs.
-func (ieuo *IncidentEventUpdateOne) AddEventComponentIDs(ids ...uuid.UUID) *IncidentEventUpdateOne {
-	ieuo.mutation.AddEventComponentIDs(ids...)
-	return ieuo
+func (_u *IncidentEventUpdateOne) AddEventComponentIDs(ids ...uuid.UUID) *IncidentEventUpdateOne {
+	_u.mutation.AddEventComponentIDs(ids...)
+	return _u
 }
 
 // AddEventComponents adds the "event_components" edges to the IncidentEventSystemComponent entity.
-func (ieuo *IncidentEventUpdateOne) AddEventComponents(i ...*IncidentEventSystemComponent) *IncidentEventUpdateOne {
-	ids := make([]uuid.UUID, len(i))
-	for j := range i {
-		ids[j] = i[j].ID
+func (_u *IncidentEventUpdateOne) AddEventComponents(v ...*IncidentEventSystemComponent) *IncidentEventUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
 	}
-	return ieuo.AddEventComponentIDs(ids...)
+	return _u.AddEventComponentIDs(ids...)
 }
 
 // Mutation returns the IncidentEventMutation object of the builder.
-func (ieuo *IncidentEventUpdateOne) Mutation() *IncidentEventMutation {
-	return ieuo.mutation
+func (_u *IncidentEventUpdateOne) Mutation() *IncidentEventMutation {
+	return _u.mutation
 }
 
 // ClearIncident clears the "incident" edge to the Incident entity.
-func (ieuo *IncidentEventUpdateOne) ClearIncident() *IncidentEventUpdateOne {
-	ieuo.mutation.ClearIncident()
-	return ieuo
+func (_u *IncidentEventUpdateOne) ClearIncident() *IncidentEventUpdateOne {
+	_u.mutation.ClearIncident()
+	return _u
 }
 
 // ClearEvent clears the "event" edge to the Event entity.
-func (ieuo *IncidentEventUpdateOne) ClearEvent() *IncidentEventUpdateOne {
-	ieuo.mutation.ClearEvent()
-	return ieuo
+func (_u *IncidentEventUpdateOne) ClearEvent() *IncidentEventUpdateOne {
+	_u.mutation.ClearEvent()
+	return _u
 }
 
 // ClearContext clears the "context" edge to the IncidentEventContext entity.
-func (ieuo *IncidentEventUpdateOne) ClearContext() *IncidentEventUpdateOne {
-	ieuo.mutation.ClearContext()
-	return ieuo
+func (_u *IncidentEventUpdateOne) ClearContext() *IncidentEventUpdateOne {
+	_u.mutation.ClearContext()
+	return _u
 }
 
 // ClearFactors clears all "factors" edges to the IncidentEventContributingFactor entity.
-func (ieuo *IncidentEventUpdateOne) ClearFactors() *IncidentEventUpdateOne {
-	ieuo.mutation.ClearFactors()
-	return ieuo
+func (_u *IncidentEventUpdateOne) ClearFactors() *IncidentEventUpdateOne {
+	_u.mutation.ClearFactors()
+	return _u
 }
 
 // RemoveFactorIDs removes the "factors" edge to IncidentEventContributingFactor entities by IDs.
-func (ieuo *IncidentEventUpdateOne) RemoveFactorIDs(ids ...uuid.UUID) *IncidentEventUpdateOne {
-	ieuo.mutation.RemoveFactorIDs(ids...)
-	return ieuo
+func (_u *IncidentEventUpdateOne) RemoveFactorIDs(ids ...uuid.UUID) *IncidentEventUpdateOne {
+	_u.mutation.RemoveFactorIDs(ids...)
+	return _u
 }
 
 // RemoveFactors removes "factors" edges to IncidentEventContributingFactor entities.
-func (ieuo *IncidentEventUpdateOne) RemoveFactors(i ...*IncidentEventContributingFactor) *IncidentEventUpdateOne {
-	ids := make([]uuid.UUID, len(i))
-	for j := range i {
-		ids[j] = i[j].ID
+func (_u *IncidentEventUpdateOne) RemoveFactors(v ...*IncidentEventContributingFactor) *IncidentEventUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
 	}
-	return ieuo.RemoveFactorIDs(ids...)
+	return _u.RemoveFactorIDs(ids...)
 }
 
 // ClearEvidence clears all "evidence" edges to the IncidentEventEvidence entity.
-func (ieuo *IncidentEventUpdateOne) ClearEvidence() *IncidentEventUpdateOne {
-	ieuo.mutation.ClearEvidence()
-	return ieuo
+func (_u *IncidentEventUpdateOne) ClearEvidence() *IncidentEventUpdateOne {
+	_u.mutation.ClearEvidence()
+	return _u
 }
 
 // RemoveEvidenceIDs removes the "evidence" edge to IncidentEventEvidence entities by IDs.
-func (ieuo *IncidentEventUpdateOne) RemoveEvidenceIDs(ids ...uuid.UUID) *IncidentEventUpdateOne {
-	ieuo.mutation.RemoveEvidenceIDs(ids...)
-	return ieuo
+func (_u *IncidentEventUpdateOne) RemoveEvidenceIDs(ids ...uuid.UUID) *IncidentEventUpdateOne {
+	_u.mutation.RemoveEvidenceIDs(ids...)
+	return _u
 }
 
 // RemoveEvidence removes "evidence" edges to IncidentEventEvidence entities.
-func (ieuo *IncidentEventUpdateOne) RemoveEvidence(i ...*IncidentEventEvidence) *IncidentEventUpdateOne {
-	ids := make([]uuid.UUID, len(i))
-	for j := range i {
-		ids[j] = i[j].ID
+func (_u *IncidentEventUpdateOne) RemoveEvidence(v ...*IncidentEventEvidence) *IncidentEventUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
 	}
-	return ieuo.RemoveEvidenceIDs(ids...)
+	return _u.RemoveEvidenceIDs(ids...)
 }
 
 // ClearSystemComponents clears all "system_components" edges to the SystemComponent entity.
-func (ieuo *IncidentEventUpdateOne) ClearSystemComponents() *IncidentEventUpdateOne {
-	ieuo.mutation.ClearSystemComponents()
-	return ieuo
+func (_u *IncidentEventUpdateOne) ClearSystemComponents() *IncidentEventUpdateOne {
+	_u.mutation.ClearSystemComponents()
+	return _u
 }
 
 // RemoveSystemComponentIDs removes the "system_components" edge to SystemComponent entities by IDs.
-func (ieuo *IncidentEventUpdateOne) RemoveSystemComponentIDs(ids ...uuid.UUID) *IncidentEventUpdateOne {
-	ieuo.mutation.RemoveSystemComponentIDs(ids...)
-	return ieuo
+func (_u *IncidentEventUpdateOne) RemoveSystemComponentIDs(ids ...uuid.UUID) *IncidentEventUpdateOne {
+	_u.mutation.RemoveSystemComponentIDs(ids...)
+	return _u
 }
 
 // RemoveSystemComponents removes "system_components" edges to SystemComponent entities.
-func (ieuo *IncidentEventUpdateOne) RemoveSystemComponents(s ...*SystemComponent) *IncidentEventUpdateOne {
-	ids := make([]uuid.UUID, len(s))
-	for i := range s {
-		ids[i] = s[i].ID
+func (_u *IncidentEventUpdateOne) RemoveSystemComponents(v ...*SystemComponent) *IncidentEventUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
 	}
-	return ieuo.RemoveSystemComponentIDs(ids...)
+	return _u.RemoveSystemComponentIDs(ids...)
 }
 
 // ClearEventComponents clears all "event_components" edges to the IncidentEventSystemComponent entity.
-func (ieuo *IncidentEventUpdateOne) ClearEventComponents() *IncidentEventUpdateOne {
-	ieuo.mutation.ClearEventComponents()
-	return ieuo
+func (_u *IncidentEventUpdateOne) ClearEventComponents() *IncidentEventUpdateOne {
+	_u.mutation.ClearEventComponents()
+	return _u
 }
 
 // RemoveEventComponentIDs removes the "event_components" edge to IncidentEventSystemComponent entities by IDs.
-func (ieuo *IncidentEventUpdateOne) RemoveEventComponentIDs(ids ...uuid.UUID) *IncidentEventUpdateOne {
-	ieuo.mutation.RemoveEventComponentIDs(ids...)
-	return ieuo
+func (_u *IncidentEventUpdateOne) RemoveEventComponentIDs(ids ...uuid.UUID) *IncidentEventUpdateOne {
+	_u.mutation.RemoveEventComponentIDs(ids...)
+	return _u
 }
 
 // RemoveEventComponents removes "event_components" edges to IncidentEventSystemComponent entities.
-func (ieuo *IncidentEventUpdateOne) RemoveEventComponents(i ...*IncidentEventSystemComponent) *IncidentEventUpdateOne {
-	ids := make([]uuid.UUID, len(i))
-	for j := range i {
-		ids[j] = i[j].ID
+func (_u *IncidentEventUpdateOne) RemoveEventComponents(v ...*IncidentEventSystemComponent) *IncidentEventUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
 	}
-	return ieuo.RemoveEventComponentIDs(ids...)
+	return _u.RemoveEventComponentIDs(ids...)
 }
 
 // Where appends a list predicates to the IncidentEventUpdate builder.
-func (ieuo *IncidentEventUpdateOne) Where(ps ...predicate.IncidentEvent) *IncidentEventUpdateOne {
-	ieuo.mutation.Where(ps...)
-	return ieuo
+func (_u *IncidentEventUpdateOne) Where(ps ...predicate.IncidentEvent) *IncidentEventUpdateOne {
+	_u.mutation.Where(ps...)
+	return _u
 }
 
 // Select allows selecting one or more fields (columns) of the returned entity.
 // The default is selecting all fields defined in the entity schema.
-func (ieuo *IncidentEventUpdateOne) Select(field string, fields ...string) *IncidentEventUpdateOne {
-	ieuo.fields = append([]string{field}, fields...)
-	return ieuo
+func (_u *IncidentEventUpdateOne) Select(field string, fields ...string) *IncidentEventUpdateOne {
+	_u.fields = append([]string{field}, fields...)
+	return _u
 }
 
 // Save executes the query and returns the updated IncidentEvent entity.
-func (ieuo *IncidentEventUpdateOne) Save(ctx context.Context) (*IncidentEvent, error) {
-	if err := ieuo.defaults(); err != nil {
+func (_u *IncidentEventUpdateOne) Save(ctx context.Context) (*IncidentEvent, error) {
+	if err := _u.defaults(); err != nil {
 		return nil, err
 	}
-	return withHooks(ctx, ieuo.sqlSave, ieuo.mutation, ieuo.hooks)
+	return withHooks(ctx, _u.sqlSave, _u.mutation, _u.hooks)
 }
 
 // SaveX is like Save, but panics if an error occurs.
-func (ieuo *IncidentEventUpdateOne) SaveX(ctx context.Context) *IncidentEvent {
-	node, err := ieuo.Save(ctx)
+func (_u *IncidentEventUpdateOne) SaveX(ctx context.Context) *IncidentEvent {
+	node, err := _u.Save(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -1245,68 +1245,68 @@ func (ieuo *IncidentEventUpdateOne) SaveX(ctx context.Context) *IncidentEvent {
 }
 
 // Exec executes the query on the entity.
-func (ieuo *IncidentEventUpdateOne) Exec(ctx context.Context) error {
-	_, err := ieuo.Save(ctx)
+func (_u *IncidentEventUpdateOne) Exec(ctx context.Context) error {
+	_, err := _u.Save(ctx)
 	return err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (ieuo *IncidentEventUpdateOne) ExecX(ctx context.Context) {
-	if err := ieuo.Exec(ctx); err != nil {
+func (_u *IncidentEventUpdateOne) ExecX(ctx context.Context) {
+	if err := _u.Exec(ctx); err != nil {
 		panic(err)
 	}
 }
 
 // defaults sets the default values of the builder before save.
-func (ieuo *IncidentEventUpdateOne) defaults() error {
-	if _, ok := ieuo.mutation.UpdatedAt(); !ok {
+func (_u *IncidentEventUpdateOne) defaults() error {
+	if _, ok := _u.mutation.UpdatedAt(); !ok {
 		if incidentevent.UpdateDefaultUpdatedAt == nil {
 			return fmt.Errorf("ent: uninitialized incidentevent.UpdateDefaultUpdatedAt (forgotten import ent/runtime?)")
 		}
 		v := incidentevent.UpdateDefaultUpdatedAt()
-		ieuo.mutation.SetUpdatedAt(v)
+		_u.mutation.SetUpdatedAt(v)
 	}
 	return nil
 }
 
 // check runs all checks and user-defined validators on the builder.
-func (ieuo *IncidentEventUpdateOne) check() error {
-	if v, ok := ieuo.mutation.Kind(); ok {
+func (_u *IncidentEventUpdateOne) check() error {
+	if v, ok := _u.mutation.Kind(); ok {
 		if err := incidentevent.KindValidator(v); err != nil {
 			return &ValidationError{Name: "kind", err: fmt.Errorf(`ent: validator failed for field "IncidentEvent.kind": %w`, err)}
 		}
 	}
-	if v, ok := ieuo.mutation.Title(); ok {
+	if v, ok := _u.mutation.Title(); ok {
 		if err := incidentevent.TitleValidator(v); err != nil {
 			return &ValidationError{Name: "title", err: fmt.Errorf(`ent: validator failed for field "IncidentEvent.title": %w`, err)}
 		}
 	}
-	if ieuo.mutation.TenantCleared() && len(ieuo.mutation.TenantIDs()) > 0 {
+	if _u.mutation.TenantCleared() && len(_u.mutation.TenantIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "IncidentEvent.tenant"`)
 	}
-	if ieuo.mutation.IncidentCleared() && len(ieuo.mutation.IncidentIDs()) > 0 {
+	if _u.mutation.IncidentCleared() && len(_u.mutation.IncidentIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "IncidentEvent.incident"`)
 	}
 	return nil
 }
 
 // Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
-func (ieuo *IncidentEventUpdateOne) Modify(modifiers ...func(u *sql.UpdateBuilder)) *IncidentEventUpdateOne {
-	ieuo.modifiers = append(ieuo.modifiers, modifiers...)
-	return ieuo
+func (_u *IncidentEventUpdateOne) Modify(modifiers ...func(u *sql.UpdateBuilder)) *IncidentEventUpdateOne {
+	_u.modifiers = append(_u.modifiers, modifiers...)
+	return _u
 }
 
-func (ieuo *IncidentEventUpdateOne) sqlSave(ctx context.Context) (_node *IncidentEvent, err error) {
-	if err := ieuo.check(); err != nil {
+func (_u *IncidentEventUpdateOne) sqlSave(ctx context.Context) (_node *IncidentEvent, err error) {
+	if err := _u.check(); err != nil {
 		return _node, err
 	}
 	_spec := sqlgraph.NewUpdateSpec(incidentevent.Table, incidentevent.Columns, sqlgraph.NewFieldSpec(incidentevent.FieldID, field.TypeUUID))
-	id, ok := ieuo.mutation.ID()
+	id, ok := _u.mutation.ID()
 	if !ok {
 		return nil, &ValidationError{Name: "id", err: errors.New(`ent: missing "IncidentEvent.id" for update`)}
 	}
 	_spec.Node.ID.Value = id
-	if fields := ieuo.fields; len(fields) > 0 {
+	if fields := _u.fields; len(fields) > 0 {
 		_spec.Node.Columns = make([]string, 0, len(fields))
 		_spec.Node.Columns = append(_spec.Node.Columns, incidentevent.FieldID)
 		for _, f := range fields {
@@ -1318,50 +1318,50 @@ func (ieuo *IncidentEventUpdateOne) sqlSave(ctx context.Context) (_node *Inciden
 			}
 		}
 	}
-	if ps := ieuo.mutation.predicates; len(ps) > 0 {
+	if ps := _u.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {
 				ps[i](selector)
 			}
 		}
 	}
-	if value, ok := ieuo.mutation.Timestamp(); ok {
+	if value, ok := _u.mutation.Timestamp(); ok {
 		_spec.SetField(incidentevent.FieldTimestamp, field.TypeTime, value)
 	}
-	if value, ok := ieuo.mutation.Kind(); ok {
+	if value, ok := _u.mutation.Kind(); ok {
 		_spec.SetField(incidentevent.FieldKind, field.TypeEnum, value)
 	}
-	if value, ok := ieuo.mutation.Title(); ok {
+	if value, ok := _u.mutation.Title(); ok {
 		_spec.SetField(incidentevent.FieldTitle, field.TypeString, value)
 	}
-	if value, ok := ieuo.mutation.Description(); ok {
+	if value, ok := _u.mutation.Description(); ok {
 		_spec.SetField(incidentevent.FieldDescription, field.TypeString, value)
 	}
-	if ieuo.mutation.DescriptionCleared() {
+	if _u.mutation.DescriptionCleared() {
 		_spec.ClearField(incidentevent.FieldDescription, field.TypeString)
 	}
-	if value, ok := ieuo.mutation.IsKey(); ok {
+	if value, ok := _u.mutation.IsKey(); ok {
 		_spec.SetField(incidentevent.FieldIsKey, field.TypeBool, value)
 	}
-	if value, ok := ieuo.mutation.CreatedAt(); ok {
+	if value, ok := _u.mutation.CreatedAt(); ok {
 		_spec.SetField(incidentevent.FieldCreatedAt, field.TypeTime, value)
 	}
-	if value, ok := ieuo.mutation.UpdatedAt(); ok {
+	if value, ok := _u.mutation.UpdatedAt(); ok {
 		_spec.SetField(incidentevent.FieldUpdatedAt, field.TypeTime, value)
 	}
-	if value, ok := ieuo.mutation.CreatedBy(); ok {
+	if value, ok := _u.mutation.CreatedBy(); ok {
 		_spec.SetField(incidentevent.FieldCreatedBy, field.TypeUUID, value)
 	}
-	if value, ok := ieuo.mutation.Sequence(); ok {
+	if value, ok := _u.mutation.Sequence(); ok {
 		_spec.SetField(incidentevent.FieldSequence, field.TypeInt, value)
 	}
-	if value, ok := ieuo.mutation.AddedSequence(); ok {
+	if value, ok := _u.mutation.AddedSequence(); ok {
 		_spec.AddField(incidentevent.FieldSequence, field.TypeInt, value)
 	}
-	if value, ok := ieuo.mutation.IsDraft(); ok {
+	if value, ok := _u.mutation.IsDraft(); ok {
 		_spec.SetField(incidentevent.FieldIsDraft, field.TypeBool, value)
 	}
-	if ieuo.mutation.IncidentCleared() {
+	if _u.mutation.IncidentCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: true,
@@ -1374,7 +1374,7 @@ func (ieuo *IncidentEventUpdateOne) sqlSave(ctx context.Context) (_node *Inciden
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := ieuo.mutation.IncidentIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.IncidentIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: true,
@@ -1390,7 +1390,7 @@ func (ieuo *IncidentEventUpdateOne) sqlSave(ctx context.Context) (_node *Inciden
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if ieuo.mutation.EventCleared() {
+	if _u.mutation.EventCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
@@ -1403,7 +1403,7 @@ func (ieuo *IncidentEventUpdateOne) sqlSave(ctx context.Context) (_node *Inciden
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := ieuo.mutation.EventIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.EventIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
@@ -1419,7 +1419,7 @@ func (ieuo *IncidentEventUpdateOne) sqlSave(ctx context.Context) (_node *Inciden
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if ieuo.mutation.ContextCleared() {
+	if _u.mutation.ContextCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2O,
 			Inverse: false,
@@ -1432,7 +1432,7 @@ func (ieuo *IncidentEventUpdateOne) sqlSave(ctx context.Context) (_node *Inciden
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := ieuo.mutation.ContextIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.ContextIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2O,
 			Inverse: false,
@@ -1448,7 +1448,7 @@ func (ieuo *IncidentEventUpdateOne) sqlSave(ctx context.Context) (_node *Inciden
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if ieuo.mutation.FactorsCleared() {
+	if _u.mutation.FactorsCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
@@ -1461,23 +1461,7 @@ func (ieuo *IncidentEventUpdateOne) sqlSave(ctx context.Context) (_node *Inciden
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := ieuo.mutation.RemovedFactorsIDs(); len(nodes) > 0 && !ieuo.mutation.FactorsCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   incidentevent.FactorsTable,
-			Columns: []string{incidentevent.FactorsColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(incidenteventcontributingfactor.FieldID, field.TypeUUID),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := ieuo.mutation.FactorsIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.RemovedFactorsIDs(); len(nodes) > 0 && !_u.mutation.FactorsCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
@@ -1491,9 +1475,25 @@ func (ieuo *IncidentEventUpdateOne) sqlSave(ctx context.Context) (_node *Inciden
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.FactorsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   incidentevent.FactorsTable,
+			Columns: []string{incidentevent.FactorsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(incidenteventcontributingfactor.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if ieuo.mutation.EvidenceCleared() {
+	if _u.mutation.EvidenceCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
@@ -1506,7 +1506,7 @@ func (ieuo *IncidentEventUpdateOne) sqlSave(ctx context.Context) (_node *Inciden
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := ieuo.mutation.RemovedEvidenceIDs(); len(nodes) > 0 && !ieuo.mutation.EvidenceCleared() {
+	if nodes := _u.mutation.RemovedEvidenceIDs(); len(nodes) > 0 && !_u.mutation.EvidenceCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
@@ -1522,7 +1522,7 @@ func (ieuo *IncidentEventUpdateOne) sqlSave(ctx context.Context) (_node *Inciden
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := ieuo.mutation.EvidenceIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.EvidenceIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
@@ -1538,7 +1538,7 @@ func (ieuo *IncidentEventUpdateOne) sqlSave(ctx context.Context) (_node *Inciden
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if ieuo.mutation.SystemComponentsCleared() {
+	if _u.mutation.SystemComponentsCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
 			Inverse: false,
@@ -1549,7 +1549,7 @@ func (ieuo *IncidentEventUpdateOne) sqlSave(ctx context.Context) (_node *Inciden
 				IDSpec: sqlgraph.NewFieldSpec(systemcomponent.FieldID, field.TypeUUID),
 			},
 		}
-		createE := &IncidentEventSystemComponentCreate{config: ieuo.config, mutation: newIncidentEventSystemComponentMutation(ieuo.config, OpCreate)}
+		createE := &IncidentEventSystemComponentCreate{config: _u.config, mutation: newIncidentEventSystemComponentMutation(_u.config, OpCreate)}
 		_ = createE.defaults()
 		_, specE := createE.createSpec()
 		edge.Target.Fields = specE.Fields
@@ -1558,7 +1558,7 @@ func (ieuo *IncidentEventUpdateOne) sqlSave(ctx context.Context) (_node *Inciden
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := ieuo.mutation.RemovedSystemComponentsIDs(); len(nodes) > 0 && !ieuo.mutation.SystemComponentsCleared() {
+	if nodes := _u.mutation.RemovedSystemComponentsIDs(); len(nodes) > 0 && !_u.mutation.SystemComponentsCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
 			Inverse: false,
@@ -1572,7 +1572,7 @@ func (ieuo *IncidentEventUpdateOne) sqlSave(ctx context.Context) (_node *Inciden
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
-		createE := &IncidentEventSystemComponentCreate{config: ieuo.config, mutation: newIncidentEventSystemComponentMutation(ieuo.config, OpCreate)}
+		createE := &IncidentEventSystemComponentCreate{config: _u.config, mutation: newIncidentEventSystemComponentMutation(_u.config, OpCreate)}
 		_ = createE.defaults()
 		_, specE := createE.createSpec()
 		edge.Target.Fields = specE.Fields
@@ -1581,7 +1581,7 @@ func (ieuo *IncidentEventUpdateOne) sqlSave(ctx context.Context) (_node *Inciden
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := ieuo.mutation.SystemComponentsIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.SystemComponentsIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
 			Inverse: false,
@@ -1595,7 +1595,7 @@ func (ieuo *IncidentEventUpdateOne) sqlSave(ctx context.Context) (_node *Inciden
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
-		createE := &IncidentEventSystemComponentCreate{config: ieuo.config, mutation: newIncidentEventSystemComponentMutation(ieuo.config, OpCreate)}
+		createE := &IncidentEventSystemComponentCreate{config: _u.config, mutation: newIncidentEventSystemComponentMutation(_u.config, OpCreate)}
 		_ = createE.defaults()
 		_, specE := createE.createSpec()
 		edge.Target.Fields = specE.Fields
@@ -1604,7 +1604,7 @@ func (ieuo *IncidentEventUpdateOne) sqlSave(ctx context.Context) (_node *Inciden
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if ieuo.mutation.EventComponentsCleared() {
+	if _u.mutation.EventComponentsCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: true,
@@ -1617,7 +1617,7 @@ func (ieuo *IncidentEventUpdateOne) sqlSave(ctx context.Context) (_node *Inciden
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := ieuo.mutation.RemovedEventComponentsIDs(); len(nodes) > 0 && !ieuo.mutation.EventComponentsCleared() {
+	if nodes := _u.mutation.RemovedEventComponentsIDs(); len(nodes) > 0 && !_u.mutation.EventComponentsCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: true,
@@ -1633,7 +1633,7 @@ func (ieuo *IncidentEventUpdateOne) sqlSave(ctx context.Context) (_node *Inciden
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := ieuo.mutation.EventComponentsIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.EventComponentsIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: true,
@@ -1649,11 +1649,11 @@ func (ieuo *IncidentEventUpdateOne) sqlSave(ctx context.Context) (_node *Inciden
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	_spec.AddModifiers(ieuo.modifiers...)
-	_node = &IncidentEvent{config: ieuo.config}
+	_spec.AddModifiers(_u.modifiers...)
+	_node = &IncidentEvent{config: _u.config}
 	_spec.Assign = _node.assignValues
 	_spec.ScanValues = _node.scanValues
-	if err = sqlgraph.UpdateNode(ctx, ieuo.driver, _spec); err != nil {
+	if err = sqlgraph.UpdateNode(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{incidentevent.Label}
 		} else if sqlgraph.IsConstraintError(err) {
@@ -1661,6 +1661,6 @@ func (ieuo *IncidentEventUpdateOne) sqlSave(ctx context.Context) (_node *Inciden
 		}
 		return nil, err
 	}
-	ieuo.mutation.done = true
+	_u.mutation.done = true
 	return _node, nil
 }

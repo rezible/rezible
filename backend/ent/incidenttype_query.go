@@ -38,44 +38,44 @@ type IncidentTypeQuery struct {
 }
 
 // Where adds a new predicate for the IncidentTypeQuery builder.
-func (itq *IncidentTypeQuery) Where(ps ...predicate.IncidentType) *IncidentTypeQuery {
-	itq.predicates = append(itq.predicates, ps...)
-	return itq
+func (_q *IncidentTypeQuery) Where(ps ...predicate.IncidentType) *IncidentTypeQuery {
+	_q.predicates = append(_q.predicates, ps...)
+	return _q
 }
 
 // Limit the number of records to be returned by this query.
-func (itq *IncidentTypeQuery) Limit(limit int) *IncidentTypeQuery {
-	itq.ctx.Limit = &limit
-	return itq
+func (_q *IncidentTypeQuery) Limit(limit int) *IncidentTypeQuery {
+	_q.ctx.Limit = &limit
+	return _q
 }
 
 // Offset to start from.
-func (itq *IncidentTypeQuery) Offset(offset int) *IncidentTypeQuery {
-	itq.ctx.Offset = &offset
-	return itq
+func (_q *IncidentTypeQuery) Offset(offset int) *IncidentTypeQuery {
+	_q.ctx.Offset = &offset
+	return _q
 }
 
 // Unique configures the query builder to filter duplicate records on query.
 // By default, unique is set to true, and can be disabled using this method.
-func (itq *IncidentTypeQuery) Unique(unique bool) *IncidentTypeQuery {
-	itq.ctx.Unique = &unique
-	return itq
+func (_q *IncidentTypeQuery) Unique(unique bool) *IncidentTypeQuery {
+	_q.ctx.Unique = &unique
+	return _q
 }
 
 // Order specifies how the records should be ordered.
-func (itq *IncidentTypeQuery) Order(o ...incidenttype.OrderOption) *IncidentTypeQuery {
-	itq.order = append(itq.order, o...)
-	return itq
+func (_q *IncidentTypeQuery) Order(o ...incidenttype.OrderOption) *IncidentTypeQuery {
+	_q.order = append(_q.order, o...)
+	return _q
 }
 
 // QueryTenant chains the current query on the "tenant" edge.
-func (itq *IncidentTypeQuery) QueryTenant() *TenantQuery {
-	query := (&TenantClient{config: itq.config}).Query()
+func (_q *IncidentTypeQuery) QueryTenant() *TenantQuery {
+	query := (&TenantClient{config: _q.config}).Query()
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
-		if err := itq.prepareQuery(ctx); err != nil {
+		if err := _q.prepareQuery(ctx); err != nil {
 			return nil, err
 		}
-		selector := itq.sqlQuery(ctx)
+		selector := _q.sqlQuery(ctx)
 		if err := selector.Err(); err != nil {
 			return nil, err
 		}
@@ -84,20 +84,20 @@ func (itq *IncidentTypeQuery) QueryTenant() *TenantQuery {
 			sqlgraph.To(tenant.Table, tenant.FieldID),
 			sqlgraph.Edge(sqlgraph.M2O, false, incidenttype.TenantTable, incidenttype.TenantColumn),
 		)
-		fromU = sqlgraph.SetNeighbors(itq.driver.Dialect(), step)
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
 	}
 	return query
 }
 
 // QueryIncidents chains the current query on the "incidents" edge.
-func (itq *IncidentTypeQuery) QueryIncidents() *IncidentQuery {
-	query := (&IncidentClient{config: itq.config}).Query()
+func (_q *IncidentTypeQuery) QueryIncidents() *IncidentQuery {
+	query := (&IncidentClient{config: _q.config}).Query()
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
-		if err := itq.prepareQuery(ctx); err != nil {
+		if err := _q.prepareQuery(ctx); err != nil {
 			return nil, err
 		}
-		selector := itq.sqlQuery(ctx)
+		selector := _q.sqlQuery(ctx)
 		if err := selector.Err(); err != nil {
 			return nil, err
 		}
@@ -106,20 +106,20 @@ func (itq *IncidentTypeQuery) QueryIncidents() *IncidentQuery {
 			sqlgraph.To(incident.Table, incident.FieldID),
 			sqlgraph.Edge(sqlgraph.O2M, true, incidenttype.IncidentsTable, incidenttype.IncidentsColumn),
 		)
-		fromU = sqlgraph.SetNeighbors(itq.driver.Dialect(), step)
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
 	}
 	return query
 }
 
 // QueryDebriefQuestions chains the current query on the "debrief_questions" edge.
-func (itq *IncidentTypeQuery) QueryDebriefQuestions() *IncidentDebriefQuestionQuery {
-	query := (&IncidentDebriefQuestionClient{config: itq.config}).Query()
+func (_q *IncidentTypeQuery) QueryDebriefQuestions() *IncidentDebriefQuestionQuery {
+	query := (&IncidentDebriefQuestionClient{config: _q.config}).Query()
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
-		if err := itq.prepareQuery(ctx); err != nil {
+		if err := _q.prepareQuery(ctx); err != nil {
 			return nil, err
 		}
-		selector := itq.sqlQuery(ctx)
+		selector := _q.sqlQuery(ctx)
 		if err := selector.Err(); err != nil {
 			return nil, err
 		}
@@ -128,7 +128,7 @@ func (itq *IncidentTypeQuery) QueryDebriefQuestions() *IncidentDebriefQuestionQu
 			sqlgraph.To(incidentdebriefquestion.Table, incidentdebriefquestion.FieldID),
 			sqlgraph.Edge(sqlgraph.M2M, true, incidenttype.DebriefQuestionsTable, incidenttype.DebriefQuestionsPrimaryKey...),
 		)
-		fromU = sqlgraph.SetNeighbors(itq.driver.Dialect(), step)
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
 	}
 	return query
@@ -136,8 +136,8 @@ func (itq *IncidentTypeQuery) QueryDebriefQuestions() *IncidentDebriefQuestionQu
 
 // First returns the first IncidentType entity from the query.
 // Returns a *NotFoundError when no IncidentType was found.
-func (itq *IncidentTypeQuery) First(ctx context.Context) (*IncidentType, error) {
-	nodes, err := itq.Limit(1).All(setContextOp(ctx, itq.ctx, ent.OpQueryFirst))
+func (_q *IncidentTypeQuery) First(ctx context.Context) (*IncidentType, error) {
+	nodes, err := _q.Limit(1).All(setContextOp(ctx, _q.ctx, ent.OpQueryFirst))
 	if err != nil {
 		return nil, err
 	}
@@ -148,8 +148,8 @@ func (itq *IncidentTypeQuery) First(ctx context.Context) (*IncidentType, error) 
 }
 
 // FirstX is like First, but panics if an error occurs.
-func (itq *IncidentTypeQuery) FirstX(ctx context.Context) *IncidentType {
-	node, err := itq.First(ctx)
+func (_q *IncidentTypeQuery) FirstX(ctx context.Context) *IncidentType {
+	node, err := _q.First(ctx)
 	if err != nil && !IsNotFound(err) {
 		panic(err)
 	}
@@ -158,9 +158,9 @@ func (itq *IncidentTypeQuery) FirstX(ctx context.Context) *IncidentType {
 
 // FirstID returns the first IncidentType ID from the query.
 // Returns a *NotFoundError when no IncidentType ID was found.
-func (itq *IncidentTypeQuery) FirstID(ctx context.Context) (id uuid.UUID, err error) {
+func (_q *IncidentTypeQuery) FirstID(ctx context.Context) (id uuid.UUID, err error) {
 	var ids []uuid.UUID
-	if ids, err = itq.Limit(1).IDs(setContextOp(ctx, itq.ctx, ent.OpQueryFirstID)); err != nil {
+	if ids, err = _q.Limit(1).IDs(setContextOp(ctx, _q.ctx, ent.OpQueryFirstID)); err != nil {
 		return
 	}
 	if len(ids) == 0 {
@@ -171,8 +171,8 @@ func (itq *IncidentTypeQuery) FirstID(ctx context.Context) (id uuid.UUID, err er
 }
 
 // FirstIDX is like FirstID, but panics if an error occurs.
-func (itq *IncidentTypeQuery) FirstIDX(ctx context.Context) uuid.UUID {
-	id, err := itq.FirstID(ctx)
+func (_q *IncidentTypeQuery) FirstIDX(ctx context.Context) uuid.UUID {
+	id, err := _q.FirstID(ctx)
 	if err != nil && !IsNotFound(err) {
 		panic(err)
 	}
@@ -182,8 +182,8 @@ func (itq *IncidentTypeQuery) FirstIDX(ctx context.Context) uuid.UUID {
 // Only returns a single IncidentType entity found by the query, ensuring it only returns one.
 // Returns a *NotSingularError when more than one IncidentType entity is found.
 // Returns a *NotFoundError when no IncidentType entities are found.
-func (itq *IncidentTypeQuery) Only(ctx context.Context) (*IncidentType, error) {
-	nodes, err := itq.Limit(2).All(setContextOp(ctx, itq.ctx, ent.OpQueryOnly))
+func (_q *IncidentTypeQuery) Only(ctx context.Context) (*IncidentType, error) {
+	nodes, err := _q.Limit(2).All(setContextOp(ctx, _q.ctx, ent.OpQueryOnly))
 	if err != nil {
 		return nil, err
 	}
@@ -198,8 +198,8 @@ func (itq *IncidentTypeQuery) Only(ctx context.Context) (*IncidentType, error) {
 }
 
 // OnlyX is like Only, but panics if an error occurs.
-func (itq *IncidentTypeQuery) OnlyX(ctx context.Context) *IncidentType {
-	node, err := itq.Only(ctx)
+func (_q *IncidentTypeQuery) OnlyX(ctx context.Context) *IncidentType {
+	node, err := _q.Only(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -209,9 +209,9 @@ func (itq *IncidentTypeQuery) OnlyX(ctx context.Context) *IncidentType {
 // OnlyID is like Only, but returns the only IncidentType ID in the query.
 // Returns a *NotSingularError when more than one IncidentType ID is found.
 // Returns a *NotFoundError when no entities are found.
-func (itq *IncidentTypeQuery) OnlyID(ctx context.Context) (id uuid.UUID, err error) {
+func (_q *IncidentTypeQuery) OnlyID(ctx context.Context) (id uuid.UUID, err error) {
 	var ids []uuid.UUID
-	if ids, err = itq.Limit(2).IDs(setContextOp(ctx, itq.ctx, ent.OpQueryOnlyID)); err != nil {
+	if ids, err = _q.Limit(2).IDs(setContextOp(ctx, _q.ctx, ent.OpQueryOnlyID)); err != nil {
 		return
 	}
 	switch len(ids) {
@@ -226,8 +226,8 @@ func (itq *IncidentTypeQuery) OnlyID(ctx context.Context) (id uuid.UUID, err err
 }
 
 // OnlyIDX is like OnlyID, but panics if an error occurs.
-func (itq *IncidentTypeQuery) OnlyIDX(ctx context.Context) uuid.UUID {
-	id, err := itq.OnlyID(ctx)
+func (_q *IncidentTypeQuery) OnlyIDX(ctx context.Context) uuid.UUID {
+	id, err := _q.OnlyID(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -235,18 +235,18 @@ func (itq *IncidentTypeQuery) OnlyIDX(ctx context.Context) uuid.UUID {
 }
 
 // All executes the query and returns a list of IncidentTypes.
-func (itq *IncidentTypeQuery) All(ctx context.Context) ([]*IncidentType, error) {
-	ctx = setContextOp(ctx, itq.ctx, ent.OpQueryAll)
-	if err := itq.prepareQuery(ctx); err != nil {
+func (_q *IncidentTypeQuery) All(ctx context.Context) ([]*IncidentType, error) {
+	ctx = setContextOp(ctx, _q.ctx, ent.OpQueryAll)
+	if err := _q.prepareQuery(ctx); err != nil {
 		return nil, err
 	}
 	qr := querierAll[[]*IncidentType, *IncidentTypeQuery]()
-	return withInterceptors[[]*IncidentType](ctx, itq, qr, itq.inters)
+	return withInterceptors[[]*IncidentType](ctx, _q, qr, _q.inters)
 }
 
 // AllX is like All, but panics if an error occurs.
-func (itq *IncidentTypeQuery) AllX(ctx context.Context) []*IncidentType {
-	nodes, err := itq.All(ctx)
+func (_q *IncidentTypeQuery) AllX(ctx context.Context) []*IncidentType {
+	nodes, err := _q.All(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -254,20 +254,20 @@ func (itq *IncidentTypeQuery) AllX(ctx context.Context) []*IncidentType {
 }
 
 // IDs executes the query and returns a list of IncidentType IDs.
-func (itq *IncidentTypeQuery) IDs(ctx context.Context) (ids []uuid.UUID, err error) {
-	if itq.ctx.Unique == nil && itq.path != nil {
-		itq.Unique(true)
+func (_q *IncidentTypeQuery) IDs(ctx context.Context) (ids []uuid.UUID, err error) {
+	if _q.ctx.Unique == nil && _q.path != nil {
+		_q.Unique(true)
 	}
-	ctx = setContextOp(ctx, itq.ctx, ent.OpQueryIDs)
-	if err = itq.Select(incidenttype.FieldID).Scan(ctx, &ids); err != nil {
+	ctx = setContextOp(ctx, _q.ctx, ent.OpQueryIDs)
+	if err = _q.Select(incidenttype.FieldID).Scan(ctx, &ids); err != nil {
 		return nil, err
 	}
 	return ids, nil
 }
 
 // IDsX is like IDs, but panics if an error occurs.
-func (itq *IncidentTypeQuery) IDsX(ctx context.Context) []uuid.UUID {
-	ids, err := itq.IDs(ctx)
+func (_q *IncidentTypeQuery) IDsX(ctx context.Context) []uuid.UUID {
+	ids, err := _q.IDs(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -275,17 +275,17 @@ func (itq *IncidentTypeQuery) IDsX(ctx context.Context) []uuid.UUID {
 }
 
 // Count returns the count of the given query.
-func (itq *IncidentTypeQuery) Count(ctx context.Context) (int, error) {
-	ctx = setContextOp(ctx, itq.ctx, ent.OpQueryCount)
-	if err := itq.prepareQuery(ctx); err != nil {
+func (_q *IncidentTypeQuery) Count(ctx context.Context) (int, error) {
+	ctx = setContextOp(ctx, _q.ctx, ent.OpQueryCount)
+	if err := _q.prepareQuery(ctx); err != nil {
 		return 0, err
 	}
-	return withInterceptors[int](ctx, itq, querierCount[*IncidentTypeQuery](), itq.inters)
+	return withInterceptors[int](ctx, _q, querierCount[*IncidentTypeQuery](), _q.inters)
 }
 
 // CountX is like Count, but panics if an error occurs.
-func (itq *IncidentTypeQuery) CountX(ctx context.Context) int {
-	count, err := itq.Count(ctx)
+func (_q *IncidentTypeQuery) CountX(ctx context.Context) int {
+	count, err := _q.Count(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -293,9 +293,9 @@ func (itq *IncidentTypeQuery) CountX(ctx context.Context) int {
 }
 
 // Exist returns true if the query has elements in the graph.
-func (itq *IncidentTypeQuery) Exist(ctx context.Context) (bool, error) {
-	ctx = setContextOp(ctx, itq.ctx, ent.OpQueryExist)
-	switch _, err := itq.FirstID(ctx); {
+func (_q *IncidentTypeQuery) Exist(ctx context.Context) (bool, error) {
+	ctx = setContextOp(ctx, _q.ctx, ent.OpQueryExist)
+	switch _, err := _q.FirstID(ctx); {
 	case IsNotFound(err):
 		return false, nil
 	case err != nil:
@@ -306,8 +306,8 @@ func (itq *IncidentTypeQuery) Exist(ctx context.Context) (bool, error) {
 }
 
 // ExistX is like Exist, but panics if an error occurs.
-func (itq *IncidentTypeQuery) ExistX(ctx context.Context) bool {
-	exist, err := itq.Exist(ctx)
+func (_q *IncidentTypeQuery) ExistX(ctx context.Context) bool {
+	exist, err := _q.Exist(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -316,57 +316,57 @@ func (itq *IncidentTypeQuery) ExistX(ctx context.Context) bool {
 
 // Clone returns a duplicate of the IncidentTypeQuery builder, including all associated steps. It can be
 // used to prepare common query builders and use them differently after the clone is made.
-func (itq *IncidentTypeQuery) Clone() *IncidentTypeQuery {
-	if itq == nil {
+func (_q *IncidentTypeQuery) Clone() *IncidentTypeQuery {
+	if _q == nil {
 		return nil
 	}
 	return &IncidentTypeQuery{
-		config:               itq.config,
-		ctx:                  itq.ctx.Clone(),
-		order:                append([]incidenttype.OrderOption{}, itq.order...),
-		inters:               append([]Interceptor{}, itq.inters...),
-		predicates:           append([]predicate.IncidentType{}, itq.predicates...),
-		withTenant:           itq.withTenant.Clone(),
-		withIncidents:        itq.withIncidents.Clone(),
-		withDebriefQuestions: itq.withDebriefQuestions.Clone(),
+		config:               _q.config,
+		ctx:                  _q.ctx.Clone(),
+		order:                append([]incidenttype.OrderOption{}, _q.order...),
+		inters:               append([]Interceptor{}, _q.inters...),
+		predicates:           append([]predicate.IncidentType{}, _q.predicates...),
+		withTenant:           _q.withTenant.Clone(),
+		withIncidents:        _q.withIncidents.Clone(),
+		withDebriefQuestions: _q.withDebriefQuestions.Clone(),
 		// clone intermediate query.
-		sql:       itq.sql.Clone(),
-		path:      itq.path,
-		modifiers: append([]func(*sql.Selector){}, itq.modifiers...),
+		sql:       _q.sql.Clone(),
+		path:      _q.path,
+		modifiers: append([]func(*sql.Selector){}, _q.modifiers...),
 	}
 }
 
 // WithTenant tells the query-builder to eager-load the nodes that are connected to
 // the "tenant" edge. The optional arguments are used to configure the query builder of the edge.
-func (itq *IncidentTypeQuery) WithTenant(opts ...func(*TenantQuery)) *IncidentTypeQuery {
-	query := (&TenantClient{config: itq.config}).Query()
+func (_q *IncidentTypeQuery) WithTenant(opts ...func(*TenantQuery)) *IncidentTypeQuery {
+	query := (&TenantClient{config: _q.config}).Query()
 	for _, opt := range opts {
 		opt(query)
 	}
-	itq.withTenant = query
-	return itq
+	_q.withTenant = query
+	return _q
 }
 
 // WithIncidents tells the query-builder to eager-load the nodes that are connected to
 // the "incidents" edge. The optional arguments are used to configure the query builder of the edge.
-func (itq *IncidentTypeQuery) WithIncidents(opts ...func(*IncidentQuery)) *IncidentTypeQuery {
-	query := (&IncidentClient{config: itq.config}).Query()
+func (_q *IncidentTypeQuery) WithIncidents(opts ...func(*IncidentQuery)) *IncidentTypeQuery {
+	query := (&IncidentClient{config: _q.config}).Query()
 	for _, opt := range opts {
 		opt(query)
 	}
-	itq.withIncidents = query
-	return itq
+	_q.withIncidents = query
+	return _q
 }
 
 // WithDebriefQuestions tells the query-builder to eager-load the nodes that are connected to
 // the "debrief_questions" edge. The optional arguments are used to configure the query builder of the edge.
-func (itq *IncidentTypeQuery) WithDebriefQuestions(opts ...func(*IncidentDebriefQuestionQuery)) *IncidentTypeQuery {
-	query := (&IncidentDebriefQuestionClient{config: itq.config}).Query()
+func (_q *IncidentTypeQuery) WithDebriefQuestions(opts ...func(*IncidentDebriefQuestionQuery)) *IncidentTypeQuery {
+	query := (&IncidentDebriefQuestionClient{config: _q.config}).Query()
 	for _, opt := range opts {
 		opt(query)
 	}
-	itq.withDebriefQuestions = query
-	return itq
+	_q.withDebriefQuestions = query
+	return _q
 }
 
 // GroupBy is used to group vertices by one or more fields/columns.
@@ -383,10 +383,10 @@ func (itq *IncidentTypeQuery) WithDebriefQuestions(opts ...func(*IncidentDebrief
 //		GroupBy(incidenttype.FieldTenantID).
 //		Aggregate(ent.Count()).
 //		Scan(ctx, &v)
-func (itq *IncidentTypeQuery) GroupBy(field string, fields ...string) *IncidentTypeGroupBy {
-	itq.ctx.Fields = append([]string{field}, fields...)
-	grbuild := &IncidentTypeGroupBy{build: itq}
-	grbuild.flds = &itq.ctx.Fields
+func (_q *IncidentTypeQuery) GroupBy(field string, fields ...string) *IncidentTypeGroupBy {
+	_q.ctx.Fields = append([]string{field}, fields...)
+	grbuild := &IncidentTypeGroupBy{build: _q}
+	grbuild.flds = &_q.ctx.Fields
 	grbuild.label = incidenttype.Label
 	grbuild.scan = grbuild.Scan
 	return grbuild
@@ -404,97 +404,97 @@ func (itq *IncidentTypeQuery) GroupBy(field string, fields ...string) *IncidentT
 //	client.IncidentType.Query().
 //		Select(incidenttype.FieldTenantID).
 //		Scan(ctx, &v)
-func (itq *IncidentTypeQuery) Select(fields ...string) *IncidentTypeSelect {
-	itq.ctx.Fields = append(itq.ctx.Fields, fields...)
-	sbuild := &IncidentTypeSelect{IncidentTypeQuery: itq}
+func (_q *IncidentTypeQuery) Select(fields ...string) *IncidentTypeSelect {
+	_q.ctx.Fields = append(_q.ctx.Fields, fields...)
+	sbuild := &IncidentTypeSelect{IncidentTypeQuery: _q}
 	sbuild.label = incidenttype.Label
-	sbuild.flds, sbuild.scan = &itq.ctx.Fields, sbuild.Scan
+	sbuild.flds, sbuild.scan = &_q.ctx.Fields, sbuild.Scan
 	return sbuild
 }
 
 // Aggregate returns a IncidentTypeSelect configured with the given aggregations.
-func (itq *IncidentTypeQuery) Aggregate(fns ...AggregateFunc) *IncidentTypeSelect {
-	return itq.Select().Aggregate(fns...)
+func (_q *IncidentTypeQuery) Aggregate(fns ...AggregateFunc) *IncidentTypeSelect {
+	return _q.Select().Aggregate(fns...)
 }
 
-func (itq *IncidentTypeQuery) prepareQuery(ctx context.Context) error {
-	for _, inter := range itq.inters {
+func (_q *IncidentTypeQuery) prepareQuery(ctx context.Context) error {
+	for _, inter := range _q.inters {
 		if inter == nil {
 			return fmt.Errorf("ent: uninitialized interceptor (forgotten import ent/runtime?)")
 		}
 		if trv, ok := inter.(Traverser); ok {
-			if err := trv.Traverse(ctx, itq); err != nil {
+			if err := trv.Traverse(ctx, _q); err != nil {
 				return err
 			}
 		}
 	}
-	for _, f := range itq.ctx.Fields {
+	for _, f := range _q.ctx.Fields {
 		if !incidenttype.ValidColumn(f) {
 			return &ValidationError{Name: f, err: fmt.Errorf("ent: invalid field %q for query", f)}
 		}
 	}
-	if itq.path != nil {
-		prev, err := itq.path(ctx)
+	if _q.path != nil {
+		prev, err := _q.path(ctx)
 		if err != nil {
 			return err
 		}
-		itq.sql = prev
+		_q.sql = prev
 	}
 	if incidenttype.Policy == nil {
 		return errors.New("ent: uninitialized incidenttype.Policy (forgotten import ent/runtime?)")
 	}
-	if err := incidenttype.Policy.EvalQuery(ctx, itq); err != nil {
+	if err := incidenttype.Policy.EvalQuery(ctx, _q); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (itq *IncidentTypeQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*IncidentType, error) {
+func (_q *IncidentTypeQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*IncidentType, error) {
 	var (
 		nodes       = []*IncidentType{}
-		_spec       = itq.querySpec()
+		_spec       = _q.querySpec()
 		loadedTypes = [3]bool{
-			itq.withTenant != nil,
-			itq.withIncidents != nil,
-			itq.withDebriefQuestions != nil,
+			_q.withTenant != nil,
+			_q.withIncidents != nil,
+			_q.withDebriefQuestions != nil,
 		}
 	)
 	_spec.ScanValues = func(columns []string) ([]any, error) {
 		return (*IncidentType).scanValues(nil, columns)
 	}
 	_spec.Assign = func(columns []string, values []any) error {
-		node := &IncidentType{config: itq.config}
+		node := &IncidentType{config: _q.config}
 		nodes = append(nodes, node)
 		node.Edges.loadedTypes = loadedTypes
 		return node.assignValues(columns, values)
 	}
-	if len(itq.modifiers) > 0 {
-		_spec.Modifiers = itq.modifiers
+	if len(_q.modifiers) > 0 {
+		_spec.Modifiers = _q.modifiers
 	}
 	for i := range hooks {
 		hooks[i](ctx, _spec)
 	}
-	if err := sqlgraph.QueryNodes(ctx, itq.driver, _spec); err != nil {
+	if err := sqlgraph.QueryNodes(ctx, _q.driver, _spec); err != nil {
 		return nil, err
 	}
 	if len(nodes) == 0 {
 		return nodes, nil
 	}
-	if query := itq.withTenant; query != nil {
-		if err := itq.loadTenant(ctx, query, nodes, nil,
+	if query := _q.withTenant; query != nil {
+		if err := _q.loadTenant(ctx, query, nodes, nil,
 			func(n *IncidentType, e *Tenant) { n.Edges.Tenant = e }); err != nil {
 			return nil, err
 		}
 	}
-	if query := itq.withIncidents; query != nil {
-		if err := itq.loadIncidents(ctx, query, nodes,
+	if query := _q.withIncidents; query != nil {
+		if err := _q.loadIncidents(ctx, query, nodes,
 			func(n *IncidentType) { n.Edges.Incidents = []*Incident{} },
 			func(n *IncidentType, e *Incident) { n.Edges.Incidents = append(n.Edges.Incidents, e) }); err != nil {
 			return nil, err
 		}
 	}
-	if query := itq.withDebriefQuestions; query != nil {
-		if err := itq.loadDebriefQuestions(ctx, query, nodes,
+	if query := _q.withDebriefQuestions; query != nil {
+		if err := _q.loadDebriefQuestions(ctx, query, nodes,
 			func(n *IncidentType) { n.Edges.DebriefQuestions = []*IncidentDebriefQuestion{} },
 			func(n *IncidentType, e *IncidentDebriefQuestion) {
 				n.Edges.DebriefQuestions = append(n.Edges.DebriefQuestions, e)
@@ -505,7 +505,7 @@ func (itq *IncidentTypeQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([
 	return nodes, nil
 }
 
-func (itq *IncidentTypeQuery) loadTenant(ctx context.Context, query *TenantQuery, nodes []*IncidentType, init func(*IncidentType), assign func(*IncidentType, *Tenant)) error {
+func (_q *IncidentTypeQuery) loadTenant(ctx context.Context, query *TenantQuery, nodes []*IncidentType, init func(*IncidentType), assign func(*IncidentType, *Tenant)) error {
 	ids := make([]int, 0, len(nodes))
 	nodeids := make(map[int][]*IncidentType)
 	for i := range nodes {
@@ -534,7 +534,7 @@ func (itq *IncidentTypeQuery) loadTenant(ctx context.Context, query *TenantQuery
 	}
 	return nil
 }
-func (itq *IncidentTypeQuery) loadIncidents(ctx context.Context, query *IncidentQuery, nodes []*IncidentType, init func(*IncidentType), assign func(*IncidentType, *Incident)) error {
+func (_q *IncidentTypeQuery) loadIncidents(ctx context.Context, query *IncidentQuery, nodes []*IncidentType, init func(*IncidentType), assign func(*IncidentType, *Incident)) error {
 	fks := make([]driver.Value, 0, len(nodes))
 	nodeids := make(map[uuid.UUID]*IncidentType)
 	for i := range nodes {
@@ -564,7 +564,7 @@ func (itq *IncidentTypeQuery) loadIncidents(ctx context.Context, query *Incident
 	}
 	return nil
 }
-func (itq *IncidentTypeQuery) loadDebriefQuestions(ctx context.Context, query *IncidentDebriefQuestionQuery, nodes []*IncidentType, init func(*IncidentType), assign func(*IncidentType, *IncidentDebriefQuestion)) error {
+func (_q *IncidentTypeQuery) loadDebriefQuestions(ctx context.Context, query *IncidentDebriefQuestionQuery, nodes []*IncidentType, init func(*IncidentType), assign func(*IncidentType, *IncidentDebriefQuestion)) error {
 	edgeIDs := make([]driver.Value, len(nodes))
 	byID := make(map[uuid.UUID]*IncidentType)
 	nids := make(map[uuid.UUID]map[*IncidentType]struct{})
@@ -626,27 +626,27 @@ func (itq *IncidentTypeQuery) loadDebriefQuestions(ctx context.Context, query *I
 	return nil
 }
 
-func (itq *IncidentTypeQuery) sqlCount(ctx context.Context) (int, error) {
-	_spec := itq.querySpec()
-	if len(itq.modifiers) > 0 {
-		_spec.Modifiers = itq.modifiers
+func (_q *IncidentTypeQuery) sqlCount(ctx context.Context) (int, error) {
+	_spec := _q.querySpec()
+	if len(_q.modifiers) > 0 {
+		_spec.Modifiers = _q.modifiers
 	}
-	_spec.Node.Columns = itq.ctx.Fields
-	if len(itq.ctx.Fields) > 0 {
-		_spec.Unique = itq.ctx.Unique != nil && *itq.ctx.Unique
+	_spec.Node.Columns = _q.ctx.Fields
+	if len(_q.ctx.Fields) > 0 {
+		_spec.Unique = _q.ctx.Unique != nil && *_q.ctx.Unique
 	}
-	return sqlgraph.CountNodes(ctx, itq.driver, _spec)
+	return sqlgraph.CountNodes(ctx, _q.driver, _spec)
 }
 
-func (itq *IncidentTypeQuery) querySpec() *sqlgraph.QuerySpec {
+func (_q *IncidentTypeQuery) querySpec() *sqlgraph.QuerySpec {
 	_spec := sqlgraph.NewQuerySpec(incidenttype.Table, incidenttype.Columns, sqlgraph.NewFieldSpec(incidenttype.FieldID, field.TypeUUID))
-	_spec.From = itq.sql
-	if unique := itq.ctx.Unique; unique != nil {
+	_spec.From = _q.sql
+	if unique := _q.ctx.Unique; unique != nil {
 		_spec.Unique = *unique
-	} else if itq.path != nil {
+	} else if _q.path != nil {
 		_spec.Unique = true
 	}
-	if fields := itq.ctx.Fields; len(fields) > 0 {
+	if fields := _q.ctx.Fields; len(fields) > 0 {
 		_spec.Node.Columns = make([]string, 0, len(fields))
 		_spec.Node.Columns = append(_spec.Node.Columns, incidenttype.FieldID)
 		for i := range fields {
@@ -654,24 +654,24 @@ func (itq *IncidentTypeQuery) querySpec() *sqlgraph.QuerySpec {
 				_spec.Node.Columns = append(_spec.Node.Columns, fields[i])
 			}
 		}
-		if itq.withTenant != nil {
+		if _q.withTenant != nil {
 			_spec.Node.AddColumnOnce(incidenttype.FieldTenantID)
 		}
 	}
-	if ps := itq.predicates; len(ps) > 0 {
+	if ps := _q.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {
 				ps[i](selector)
 			}
 		}
 	}
-	if limit := itq.ctx.Limit; limit != nil {
+	if limit := _q.ctx.Limit; limit != nil {
 		_spec.Limit = *limit
 	}
-	if offset := itq.ctx.Offset; offset != nil {
+	if offset := _q.ctx.Offset; offset != nil {
 		_spec.Offset = *offset
 	}
-	if ps := itq.order; len(ps) > 0 {
+	if ps := _q.order; len(ps) > 0 {
 		_spec.Order = func(selector *sql.Selector) {
 			for i := range ps {
 				ps[i](selector)
@@ -681,45 +681,45 @@ func (itq *IncidentTypeQuery) querySpec() *sqlgraph.QuerySpec {
 	return _spec
 }
 
-func (itq *IncidentTypeQuery) sqlQuery(ctx context.Context) *sql.Selector {
-	builder := sql.Dialect(itq.driver.Dialect())
+func (_q *IncidentTypeQuery) sqlQuery(ctx context.Context) *sql.Selector {
+	builder := sql.Dialect(_q.driver.Dialect())
 	t1 := builder.Table(incidenttype.Table)
-	columns := itq.ctx.Fields
+	columns := _q.ctx.Fields
 	if len(columns) == 0 {
 		columns = incidenttype.Columns
 	}
 	selector := builder.Select(t1.Columns(columns...)...).From(t1)
-	if itq.sql != nil {
-		selector = itq.sql
+	if _q.sql != nil {
+		selector = _q.sql
 		selector.Select(selector.Columns(columns...)...)
 	}
-	if itq.ctx.Unique != nil && *itq.ctx.Unique {
+	if _q.ctx.Unique != nil && *_q.ctx.Unique {
 		selector.Distinct()
 	}
-	for _, m := range itq.modifiers {
+	for _, m := range _q.modifiers {
 		m(selector)
 	}
-	for _, p := range itq.predicates {
+	for _, p := range _q.predicates {
 		p(selector)
 	}
-	for _, p := range itq.order {
+	for _, p := range _q.order {
 		p(selector)
 	}
-	if offset := itq.ctx.Offset; offset != nil {
+	if offset := _q.ctx.Offset; offset != nil {
 		// limit is mandatory for offset clause. We start
 		// with default value, and override it below if needed.
 		selector.Offset(*offset).Limit(math.MaxInt32)
 	}
-	if limit := itq.ctx.Limit; limit != nil {
+	if limit := _q.ctx.Limit; limit != nil {
 		selector.Limit(*limit)
 	}
 	return selector
 }
 
 // Modify adds a query modifier for attaching custom logic to queries.
-func (itq *IncidentTypeQuery) Modify(modifiers ...func(s *sql.Selector)) *IncidentTypeSelect {
-	itq.modifiers = append(itq.modifiers, modifiers...)
-	return itq.Select()
+func (_q *IncidentTypeQuery) Modify(modifiers ...func(s *sql.Selector)) *IncidentTypeSelect {
+	_q.modifiers = append(_q.modifiers, modifiers...)
+	return _q.Select()
 }
 
 // IncidentTypeGroupBy is the group-by builder for IncidentType entities.
@@ -729,41 +729,41 @@ type IncidentTypeGroupBy struct {
 }
 
 // Aggregate adds the given aggregation functions to the group-by query.
-func (itgb *IncidentTypeGroupBy) Aggregate(fns ...AggregateFunc) *IncidentTypeGroupBy {
-	itgb.fns = append(itgb.fns, fns...)
-	return itgb
+func (_g *IncidentTypeGroupBy) Aggregate(fns ...AggregateFunc) *IncidentTypeGroupBy {
+	_g.fns = append(_g.fns, fns...)
+	return _g
 }
 
 // Scan applies the selector query and scans the result into the given value.
-func (itgb *IncidentTypeGroupBy) Scan(ctx context.Context, v any) error {
-	ctx = setContextOp(ctx, itgb.build.ctx, ent.OpQueryGroupBy)
-	if err := itgb.build.prepareQuery(ctx); err != nil {
+func (_g *IncidentTypeGroupBy) Scan(ctx context.Context, v any) error {
+	ctx = setContextOp(ctx, _g.build.ctx, ent.OpQueryGroupBy)
+	if err := _g.build.prepareQuery(ctx); err != nil {
 		return err
 	}
-	return scanWithInterceptors[*IncidentTypeQuery, *IncidentTypeGroupBy](ctx, itgb.build, itgb, itgb.build.inters, v)
+	return scanWithInterceptors[*IncidentTypeQuery, *IncidentTypeGroupBy](ctx, _g.build, _g, _g.build.inters, v)
 }
 
-func (itgb *IncidentTypeGroupBy) sqlScan(ctx context.Context, root *IncidentTypeQuery, v any) error {
+func (_g *IncidentTypeGroupBy) sqlScan(ctx context.Context, root *IncidentTypeQuery, v any) error {
 	selector := root.sqlQuery(ctx).Select()
-	aggregation := make([]string, 0, len(itgb.fns))
-	for _, fn := range itgb.fns {
+	aggregation := make([]string, 0, len(_g.fns))
+	for _, fn := range _g.fns {
 		aggregation = append(aggregation, fn(selector))
 	}
 	if len(selector.SelectedColumns()) == 0 {
-		columns := make([]string, 0, len(*itgb.flds)+len(itgb.fns))
-		for _, f := range *itgb.flds {
+		columns := make([]string, 0, len(*_g.flds)+len(_g.fns))
+		for _, f := range *_g.flds {
 			columns = append(columns, selector.C(f))
 		}
 		columns = append(columns, aggregation...)
 		selector.Select(columns...)
 	}
-	selector.GroupBy(selector.Columns(*itgb.flds...)...)
+	selector.GroupBy(selector.Columns(*_g.flds...)...)
 	if err := selector.Err(); err != nil {
 		return err
 	}
 	rows := &sql.Rows{}
 	query, args := selector.Query()
-	if err := itgb.build.driver.Query(ctx, query, args, rows); err != nil {
+	if err := _g.build.driver.Query(ctx, query, args, rows); err != nil {
 		return err
 	}
 	defer rows.Close()
@@ -777,27 +777,27 @@ type IncidentTypeSelect struct {
 }
 
 // Aggregate adds the given aggregation functions to the selector query.
-func (its *IncidentTypeSelect) Aggregate(fns ...AggregateFunc) *IncidentTypeSelect {
-	its.fns = append(its.fns, fns...)
-	return its
+func (_s *IncidentTypeSelect) Aggregate(fns ...AggregateFunc) *IncidentTypeSelect {
+	_s.fns = append(_s.fns, fns...)
+	return _s
 }
 
 // Scan applies the selector query and scans the result into the given value.
-func (its *IncidentTypeSelect) Scan(ctx context.Context, v any) error {
-	ctx = setContextOp(ctx, its.ctx, ent.OpQuerySelect)
-	if err := its.prepareQuery(ctx); err != nil {
+func (_s *IncidentTypeSelect) Scan(ctx context.Context, v any) error {
+	ctx = setContextOp(ctx, _s.ctx, ent.OpQuerySelect)
+	if err := _s.prepareQuery(ctx); err != nil {
 		return err
 	}
-	return scanWithInterceptors[*IncidentTypeQuery, *IncidentTypeSelect](ctx, its.IncidentTypeQuery, its, its.inters, v)
+	return scanWithInterceptors[*IncidentTypeQuery, *IncidentTypeSelect](ctx, _s.IncidentTypeQuery, _s, _s.inters, v)
 }
 
-func (its *IncidentTypeSelect) sqlScan(ctx context.Context, root *IncidentTypeQuery, v any) error {
+func (_s *IncidentTypeSelect) sqlScan(ctx context.Context, root *IncidentTypeQuery, v any) error {
 	selector := root.sqlQuery(ctx)
-	aggregation := make([]string, 0, len(its.fns))
-	for _, fn := range its.fns {
+	aggregation := make([]string, 0, len(_s.fns))
+	for _, fn := range _s.fns {
 		aggregation = append(aggregation, fn(selector))
 	}
-	switch n := len(*its.selector.flds); {
+	switch n := len(*_s.selector.flds); {
 	case n == 0 && len(aggregation) > 0:
 		selector.Select(aggregation...)
 	case n != 0 && len(aggregation) > 0:
@@ -805,7 +805,7 @@ func (its *IncidentTypeSelect) sqlScan(ctx context.Context, root *IncidentTypeQu
 	}
 	rows := &sql.Rows{}
 	query, args := selector.Query()
-	if err := its.driver.Query(ctx, query, args, rows); err != nil {
+	if err := _s.driver.Query(ctx, query, args, rows); err != nil {
 		return err
 	}
 	defer rows.Close()
@@ -813,7 +813,7 @@ func (its *IncidentTypeSelect) sqlScan(ctx context.Context, root *IncidentTypeQu
 }
 
 // Modify adds a query modifier for attaching custom logic to queries.
-func (its *IncidentTypeSelect) Modify(modifiers ...func(s *sql.Selector)) *IncidentTypeSelect {
-	its.modifiers = append(its.modifiers, modifiers...)
-	return its
+func (_s *IncidentTypeSelect) Modify(modifiers ...func(s *sql.Selector)) *IncidentTypeSelect {
+	_s.modifiers = append(_s.modifiers, modifiers...)
+	return _s
 }

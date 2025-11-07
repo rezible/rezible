@@ -29,107 +29,107 @@ type AlertInstanceCreate struct {
 }
 
 // SetTenantID sets the "tenant_id" field.
-func (aic *AlertInstanceCreate) SetTenantID(i int) *AlertInstanceCreate {
-	aic.mutation.SetTenantID(i)
-	return aic
+func (_c *AlertInstanceCreate) SetTenantID(v int) *AlertInstanceCreate {
+	_c.mutation.SetTenantID(v)
+	return _c
 }
 
 // SetAlertID sets the "alert_id" field.
-func (aic *AlertInstanceCreate) SetAlertID(u uuid.UUID) *AlertInstanceCreate {
-	aic.mutation.SetAlertID(u)
-	return aic
+func (_c *AlertInstanceCreate) SetAlertID(v uuid.UUID) *AlertInstanceCreate {
+	_c.mutation.SetAlertID(v)
+	return _c
 }
 
 // SetEventID sets the "event_id" field.
-func (aic *AlertInstanceCreate) SetEventID(u uuid.UUID) *AlertInstanceCreate {
-	aic.mutation.SetEventID(u)
-	return aic
+func (_c *AlertInstanceCreate) SetEventID(v uuid.UUID) *AlertInstanceCreate {
+	_c.mutation.SetEventID(v)
+	return _c
 }
 
 // SetProviderID sets the "provider_id" field.
-func (aic *AlertInstanceCreate) SetProviderID(s string) *AlertInstanceCreate {
-	aic.mutation.SetProviderID(s)
-	return aic
+func (_c *AlertInstanceCreate) SetProviderID(v string) *AlertInstanceCreate {
+	_c.mutation.SetProviderID(v)
+	return _c
 }
 
 // SetAcknowledgedAt sets the "acknowledged_at" field.
-func (aic *AlertInstanceCreate) SetAcknowledgedAt(t time.Time) *AlertInstanceCreate {
-	aic.mutation.SetAcknowledgedAt(t)
-	return aic
+func (_c *AlertInstanceCreate) SetAcknowledgedAt(v time.Time) *AlertInstanceCreate {
+	_c.mutation.SetAcknowledgedAt(v)
+	return _c
 }
 
 // SetNillableAcknowledgedAt sets the "acknowledged_at" field if the given value is not nil.
-func (aic *AlertInstanceCreate) SetNillableAcknowledgedAt(t *time.Time) *AlertInstanceCreate {
-	if t != nil {
-		aic.SetAcknowledgedAt(*t)
+func (_c *AlertInstanceCreate) SetNillableAcknowledgedAt(v *time.Time) *AlertInstanceCreate {
+	if v != nil {
+		_c.SetAcknowledgedAt(*v)
 	}
-	return aic
+	return _c
 }
 
 // SetID sets the "id" field.
-func (aic *AlertInstanceCreate) SetID(u uuid.UUID) *AlertInstanceCreate {
-	aic.mutation.SetID(u)
-	return aic
+func (_c *AlertInstanceCreate) SetID(v uuid.UUID) *AlertInstanceCreate {
+	_c.mutation.SetID(v)
+	return _c
 }
 
 // SetNillableID sets the "id" field if the given value is not nil.
-func (aic *AlertInstanceCreate) SetNillableID(u *uuid.UUID) *AlertInstanceCreate {
-	if u != nil {
-		aic.SetID(*u)
+func (_c *AlertInstanceCreate) SetNillableID(v *uuid.UUID) *AlertInstanceCreate {
+	if v != nil {
+		_c.SetID(*v)
 	}
-	return aic
+	return _c
 }
 
 // SetTenant sets the "tenant" edge to the Tenant entity.
-func (aic *AlertInstanceCreate) SetTenant(t *Tenant) *AlertInstanceCreate {
-	return aic.SetTenantID(t.ID)
+func (_c *AlertInstanceCreate) SetTenant(v *Tenant) *AlertInstanceCreate {
+	return _c.SetTenantID(v.ID)
 }
 
 // SetAlert sets the "alert" edge to the Alert entity.
-func (aic *AlertInstanceCreate) SetAlert(a *Alert) *AlertInstanceCreate {
-	return aic.SetAlertID(a.ID)
+func (_c *AlertInstanceCreate) SetAlert(v *Alert) *AlertInstanceCreate {
+	return _c.SetAlertID(v.ID)
 }
 
 // SetEvent sets the "event" edge to the Event entity.
-func (aic *AlertInstanceCreate) SetEvent(e *Event) *AlertInstanceCreate {
-	return aic.SetEventID(e.ID)
+func (_c *AlertInstanceCreate) SetEvent(v *Event) *AlertInstanceCreate {
+	return _c.SetEventID(v.ID)
 }
 
 // SetFeedbackID sets the "feedback" edge to the AlertFeedback entity by ID.
-func (aic *AlertInstanceCreate) SetFeedbackID(id uuid.UUID) *AlertInstanceCreate {
-	aic.mutation.SetFeedbackID(id)
-	return aic
+func (_c *AlertInstanceCreate) SetFeedbackID(id uuid.UUID) *AlertInstanceCreate {
+	_c.mutation.SetFeedbackID(id)
+	return _c
 }
 
 // SetNillableFeedbackID sets the "feedback" edge to the AlertFeedback entity by ID if the given value is not nil.
-func (aic *AlertInstanceCreate) SetNillableFeedbackID(id *uuid.UUID) *AlertInstanceCreate {
+func (_c *AlertInstanceCreate) SetNillableFeedbackID(id *uuid.UUID) *AlertInstanceCreate {
 	if id != nil {
-		aic = aic.SetFeedbackID(*id)
+		_c = _c.SetFeedbackID(*id)
 	}
-	return aic
+	return _c
 }
 
 // SetFeedback sets the "feedback" edge to the AlertFeedback entity.
-func (aic *AlertInstanceCreate) SetFeedback(a *AlertFeedback) *AlertInstanceCreate {
-	return aic.SetFeedbackID(a.ID)
+func (_c *AlertInstanceCreate) SetFeedback(v *AlertFeedback) *AlertInstanceCreate {
+	return _c.SetFeedbackID(v.ID)
 }
 
 // Mutation returns the AlertInstanceMutation object of the builder.
-func (aic *AlertInstanceCreate) Mutation() *AlertInstanceMutation {
-	return aic.mutation
+func (_c *AlertInstanceCreate) Mutation() *AlertInstanceMutation {
+	return _c.mutation
 }
 
 // Save creates the AlertInstance in the database.
-func (aic *AlertInstanceCreate) Save(ctx context.Context) (*AlertInstance, error) {
-	if err := aic.defaults(); err != nil {
+func (_c *AlertInstanceCreate) Save(ctx context.Context) (*AlertInstance, error) {
+	if err := _c.defaults(); err != nil {
 		return nil, err
 	}
-	return withHooks(ctx, aic.sqlSave, aic.mutation, aic.hooks)
+	return withHooks(ctx, _c.sqlSave, _c.mutation, _c.hooks)
 }
 
 // SaveX calls Save and panics if Save returns an error.
-func (aic *AlertInstanceCreate) SaveX(ctx context.Context) *AlertInstance {
-	v, err := aic.Save(ctx)
+func (_c *AlertInstanceCreate) SaveX(ctx context.Context) *AlertInstance {
+	v, err := _c.Save(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -137,62 +137,62 @@ func (aic *AlertInstanceCreate) SaveX(ctx context.Context) *AlertInstance {
 }
 
 // Exec executes the query.
-func (aic *AlertInstanceCreate) Exec(ctx context.Context) error {
-	_, err := aic.Save(ctx)
+func (_c *AlertInstanceCreate) Exec(ctx context.Context) error {
+	_, err := _c.Save(ctx)
 	return err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (aic *AlertInstanceCreate) ExecX(ctx context.Context) {
-	if err := aic.Exec(ctx); err != nil {
+func (_c *AlertInstanceCreate) ExecX(ctx context.Context) {
+	if err := _c.Exec(ctx); err != nil {
 		panic(err)
 	}
 }
 
 // defaults sets the default values of the builder before save.
-func (aic *AlertInstanceCreate) defaults() error {
-	if _, ok := aic.mutation.ID(); !ok {
+func (_c *AlertInstanceCreate) defaults() error {
+	if _, ok := _c.mutation.ID(); !ok {
 		if alertinstance.DefaultID == nil {
 			return fmt.Errorf("ent: uninitialized alertinstance.DefaultID (forgotten import ent/runtime?)")
 		}
 		v := alertinstance.DefaultID()
-		aic.mutation.SetID(v)
+		_c.mutation.SetID(v)
 	}
 	return nil
 }
 
 // check runs all checks and user-defined validators on the builder.
-func (aic *AlertInstanceCreate) check() error {
-	if _, ok := aic.mutation.TenantID(); !ok {
+func (_c *AlertInstanceCreate) check() error {
+	if _, ok := _c.mutation.TenantID(); !ok {
 		return &ValidationError{Name: "tenant_id", err: errors.New(`ent: missing required field "AlertInstance.tenant_id"`)}
 	}
-	if _, ok := aic.mutation.AlertID(); !ok {
+	if _, ok := _c.mutation.AlertID(); !ok {
 		return &ValidationError{Name: "alert_id", err: errors.New(`ent: missing required field "AlertInstance.alert_id"`)}
 	}
-	if _, ok := aic.mutation.EventID(); !ok {
+	if _, ok := _c.mutation.EventID(); !ok {
 		return &ValidationError{Name: "event_id", err: errors.New(`ent: missing required field "AlertInstance.event_id"`)}
 	}
-	if _, ok := aic.mutation.ProviderID(); !ok {
+	if _, ok := _c.mutation.ProviderID(); !ok {
 		return &ValidationError{Name: "provider_id", err: errors.New(`ent: missing required field "AlertInstance.provider_id"`)}
 	}
-	if len(aic.mutation.TenantIDs()) == 0 {
+	if len(_c.mutation.TenantIDs()) == 0 {
 		return &ValidationError{Name: "tenant", err: errors.New(`ent: missing required edge "AlertInstance.tenant"`)}
 	}
-	if len(aic.mutation.AlertIDs()) == 0 {
+	if len(_c.mutation.AlertIDs()) == 0 {
 		return &ValidationError{Name: "alert", err: errors.New(`ent: missing required edge "AlertInstance.alert"`)}
 	}
-	if len(aic.mutation.EventIDs()) == 0 {
+	if len(_c.mutation.EventIDs()) == 0 {
 		return &ValidationError{Name: "event", err: errors.New(`ent: missing required edge "AlertInstance.event"`)}
 	}
 	return nil
 }
 
-func (aic *AlertInstanceCreate) sqlSave(ctx context.Context) (*AlertInstance, error) {
-	if err := aic.check(); err != nil {
+func (_c *AlertInstanceCreate) sqlSave(ctx context.Context) (*AlertInstance, error) {
+	if err := _c.check(); err != nil {
 		return nil, err
 	}
-	_node, _spec := aic.createSpec()
-	if err := sqlgraph.CreateNode(ctx, aic.driver, _spec); err != nil {
+	_node, _spec := _c.createSpec()
+	if err := sqlgraph.CreateNode(ctx, _c.driver, _spec); err != nil {
 		if sqlgraph.IsConstraintError(err) {
 			err = &ConstraintError{msg: err.Error(), wrap: err}
 		}
@@ -205,30 +205,30 @@ func (aic *AlertInstanceCreate) sqlSave(ctx context.Context) (*AlertInstance, er
 			return nil, err
 		}
 	}
-	aic.mutation.id = &_node.ID
-	aic.mutation.done = true
+	_c.mutation.id = &_node.ID
+	_c.mutation.done = true
 	return _node, nil
 }
 
-func (aic *AlertInstanceCreate) createSpec() (*AlertInstance, *sqlgraph.CreateSpec) {
+func (_c *AlertInstanceCreate) createSpec() (*AlertInstance, *sqlgraph.CreateSpec) {
 	var (
-		_node = &AlertInstance{config: aic.config}
+		_node = &AlertInstance{config: _c.config}
 		_spec = sqlgraph.NewCreateSpec(alertinstance.Table, sqlgraph.NewFieldSpec(alertinstance.FieldID, field.TypeUUID))
 	)
-	_spec.OnConflict = aic.conflict
-	if id, ok := aic.mutation.ID(); ok {
+	_spec.OnConflict = _c.conflict
+	if id, ok := _c.mutation.ID(); ok {
 		_node.ID = id
 		_spec.ID.Value = &id
 	}
-	if value, ok := aic.mutation.ProviderID(); ok {
+	if value, ok := _c.mutation.ProviderID(); ok {
 		_spec.SetField(alertinstance.FieldProviderID, field.TypeString, value)
 		_node.ProviderID = value
 	}
-	if value, ok := aic.mutation.AcknowledgedAt(); ok {
+	if value, ok := _c.mutation.AcknowledgedAt(); ok {
 		_spec.SetField(alertinstance.FieldAcknowledgedAt, field.TypeTime, value)
 		_node.AcknowledgedAt = value
 	}
-	if nodes := aic.mutation.TenantIDs(); len(nodes) > 0 {
+	if nodes := _c.mutation.TenantIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
@@ -245,7 +245,7 @@ func (aic *AlertInstanceCreate) createSpec() (*AlertInstance, *sqlgraph.CreateSp
 		_node.TenantID = nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
-	if nodes := aic.mutation.AlertIDs(); len(nodes) > 0 {
+	if nodes := _c.mutation.AlertIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
@@ -262,7 +262,7 @@ func (aic *AlertInstanceCreate) createSpec() (*AlertInstance, *sqlgraph.CreateSp
 		_node.AlertID = nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
-	if nodes := aic.mutation.EventIDs(); len(nodes) > 0 {
+	if nodes := _c.mutation.EventIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
@@ -279,7 +279,7 @@ func (aic *AlertInstanceCreate) createSpec() (*AlertInstance, *sqlgraph.CreateSp
 		_node.EventID = nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
-	if nodes := aic.mutation.FeedbackIDs(); len(nodes) > 0 {
+	if nodes := _c.mutation.FeedbackIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
@@ -315,10 +315,10 @@ func (aic *AlertInstanceCreate) createSpec() (*AlertInstance, *sqlgraph.CreateSp
 //			SetTenantID(v+v).
 //		}).
 //		Exec(ctx)
-func (aic *AlertInstanceCreate) OnConflict(opts ...sql.ConflictOption) *AlertInstanceUpsertOne {
-	aic.conflict = opts
+func (_c *AlertInstanceCreate) OnConflict(opts ...sql.ConflictOption) *AlertInstanceUpsertOne {
+	_c.conflict = opts
 	return &AlertInstanceUpsertOne{
-		create: aic,
+		create: _c,
 	}
 }
 
@@ -328,10 +328,10 @@ func (aic *AlertInstanceCreate) OnConflict(opts ...sql.ConflictOption) *AlertIns
 //	client.AlertInstance.Create().
 //		OnConflict(sql.ConflictColumns(columns...)).
 //		Exec(ctx)
-func (aic *AlertInstanceCreate) OnConflictColumns(columns ...string) *AlertInstanceUpsertOne {
-	aic.conflict = append(aic.conflict, sql.ConflictColumns(columns...))
+func (_c *AlertInstanceCreate) OnConflictColumns(columns ...string) *AlertInstanceUpsertOne {
+	_c.conflict = append(_c.conflict, sql.ConflictColumns(columns...))
 	return &AlertInstanceUpsertOne{
-		create: aic,
+		create: _c,
 	}
 }
 
@@ -563,16 +563,16 @@ type AlertInstanceCreateBulk struct {
 }
 
 // Save creates the AlertInstance entities in the database.
-func (aicb *AlertInstanceCreateBulk) Save(ctx context.Context) ([]*AlertInstance, error) {
-	if aicb.err != nil {
-		return nil, aicb.err
+func (_c *AlertInstanceCreateBulk) Save(ctx context.Context) ([]*AlertInstance, error) {
+	if _c.err != nil {
+		return nil, _c.err
 	}
-	specs := make([]*sqlgraph.CreateSpec, len(aicb.builders))
-	nodes := make([]*AlertInstance, len(aicb.builders))
-	mutators := make([]Mutator, len(aicb.builders))
-	for i := range aicb.builders {
+	specs := make([]*sqlgraph.CreateSpec, len(_c.builders))
+	nodes := make([]*AlertInstance, len(_c.builders))
+	mutators := make([]Mutator, len(_c.builders))
+	for i := range _c.builders {
 		func(i int, root context.Context) {
-			builder := aicb.builders[i]
+			builder := _c.builders[i]
 			builder.defaults()
 			var mut Mutator = MutateFunc(func(ctx context.Context, m Mutation) (Value, error) {
 				mutation, ok := m.(*AlertInstanceMutation)
@@ -586,12 +586,12 @@ func (aicb *AlertInstanceCreateBulk) Save(ctx context.Context) ([]*AlertInstance
 				var err error
 				nodes[i], specs[i] = builder.createSpec()
 				if i < len(mutators)-1 {
-					_, err = mutators[i+1].Mutate(root, aicb.builders[i+1].mutation)
+					_, err = mutators[i+1].Mutate(root, _c.builders[i+1].mutation)
 				} else {
 					spec := &sqlgraph.BatchCreateSpec{Nodes: specs}
-					spec.OnConflict = aicb.conflict
+					spec.OnConflict = _c.conflict
 					// Invoke the actual operation on the latest mutation in the chain.
-					if err = sqlgraph.BatchCreate(ctx, aicb.driver, spec); err != nil {
+					if err = sqlgraph.BatchCreate(ctx, _c.driver, spec); err != nil {
 						if sqlgraph.IsConstraintError(err) {
 							err = &ConstraintError{msg: err.Error(), wrap: err}
 						}
@@ -611,7 +611,7 @@ func (aicb *AlertInstanceCreateBulk) Save(ctx context.Context) ([]*AlertInstance
 		}(i, ctx)
 	}
 	if len(mutators) > 0 {
-		if _, err := mutators[0].Mutate(ctx, aicb.builders[0].mutation); err != nil {
+		if _, err := mutators[0].Mutate(ctx, _c.builders[0].mutation); err != nil {
 			return nil, err
 		}
 	}
@@ -619,8 +619,8 @@ func (aicb *AlertInstanceCreateBulk) Save(ctx context.Context) ([]*AlertInstance
 }
 
 // SaveX is like Save, but panics if an error occurs.
-func (aicb *AlertInstanceCreateBulk) SaveX(ctx context.Context) []*AlertInstance {
-	v, err := aicb.Save(ctx)
+func (_c *AlertInstanceCreateBulk) SaveX(ctx context.Context) []*AlertInstance {
+	v, err := _c.Save(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -628,14 +628,14 @@ func (aicb *AlertInstanceCreateBulk) SaveX(ctx context.Context) []*AlertInstance
 }
 
 // Exec executes the query.
-func (aicb *AlertInstanceCreateBulk) Exec(ctx context.Context) error {
-	_, err := aicb.Save(ctx)
+func (_c *AlertInstanceCreateBulk) Exec(ctx context.Context) error {
+	_, err := _c.Save(ctx)
 	return err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (aicb *AlertInstanceCreateBulk) ExecX(ctx context.Context) {
-	if err := aicb.Exec(ctx); err != nil {
+func (_c *AlertInstanceCreateBulk) ExecX(ctx context.Context) {
+	if err := _c.Exec(ctx); err != nil {
 		panic(err)
 	}
 }
@@ -655,10 +655,10 @@ func (aicb *AlertInstanceCreateBulk) ExecX(ctx context.Context) {
 //			SetTenantID(v+v).
 //		}).
 //		Exec(ctx)
-func (aicb *AlertInstanceCreateBulk) OnConflict(opts ...sql.ConflictOption) *AlertInstanceUpsertBulk {
-	aicb.conflict = opts
+func (_c *AlertInstanceCreateBulk) OnConflict(opts ...sql.ConflictOption) *AlertInstanceUpsertBulk {
+	_c.conflict = opts
 	return &AlertInstanceUpsertBulk{
-		create: aicb,
+		create: _c,
 	}
 }
 
@@ -668,10 +668,10 @@ func (aicb *AlertInstanceCreateBulk) OnConflict(opts ...sql.ConflictOption) *Ale
 //	client.AlertInstance.Create().
 //		OnConflict(sql.ConflictColumns(columns...)).
 //		Exec(ctx)
-func (aicb *AlertInstanceCreateBulk) OnConflictColumns(columns ...string) *AlertInstanceUpsertBulk {
-	aicb.conflict = append(aicb.conflict, sql.ConflictColumns(columns...))
+func (_c *AlertInstanceCreateBulk) OnConflictColumns(columns ...string) *AlertInstanceUpsertBulk {
+	_c.conflict = append(_c.conflict, sql.ConflictColumns(columns...))
 	return &AlertInstanceUpsertBulk{
-		create: aicb,
+		create: _c,
 	}
 }
 

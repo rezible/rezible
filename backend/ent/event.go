@@ -114,7 +114,7 @@ func (*Event) scanValues(columns []string) ([]any, error) {
 
 // assignValues assigns the values that were returned from sql.Rows (after scanning)
 // to the Event fields.
-func (e *Event) assignValues(columns []string, values []any) error {
+func (_m *Event) assignValues(columns []string, values []any) error {
 	if m, n := len(values), len(columns); m < n {
 		return fmt.Errorf("mismatch number of scan values: %d != %d", m, n)
 	}
@@ -124,52 +124,52 @@ func (e *Event) assignValues(columns []string, values []any) error {
 			if value, ok := values[i].(*uuid.UUID); !ok {
 				return fmt.Errorf("unexpected type %T for field id", values[i])
 			} else if value != nil {
-				e.ID = *value
+				_m.ID = *value
 			}
 		case event.FieldTenantID:
 			if value, ok := values[i].(*sql.NullInt64); !ok {
 				return fmt.Errorf("unexpected type %T for field tenant_id", values[i])
 			} else if value.Valid {
-				e.TenantID = int(value.Int64)
+				_m.TenantID = int(value.Int64)
 			}
 		case event.FieldProviderID:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field provider_id", values[i])
 			} else if value.Valid {
-				e.ProviderID = value.String
+				_m.ProviderID = value.String
 			}
 		case event.FieldTimestamp:
 			if value, ok := values[i].(*sql.NullTime); !ok {
 				return fmt.Errorf("unexpected type %T for field timestamp", values[i])
 			} else if value.Valid {
-				e.Timestamp = value.Time
+				_m.Timestamp = value.Time
 			}
 		case event.FieldKind:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field kind", values[i])
 			} else if value.Valid {
-				e.Kind = event.Kind(value.String)
+				_m.Kind = event.Kind(value.String)
 			}
 		case event.FieldTitle:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field title", values[i])
 			} else if value.Valid {
-				e.Title = value.String
+				_m.Title = value.String
 			}
 		case event.FieldDescription:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field description", values[i])
 			} else if value.Valid {
-				e.Description = value.String
+				_m.Description = value.String
 			}
 		case event.FieldSource:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field source", values[i])
 			} else if value.Valid {
-				e.Source = value.String
+				_m.Source = value.String
 			}
 		default:
-			e.selectValues.Set(columns[i], values[i])
+			_m.selectValues.Set(columns[i], values[i])
 		}
 	}
 	return nil
@@ -177,73 +177,73 @@ func (e *Event) assignValues(columns []string, values []any) error {
 
 // Value returns the ent.Value that was dynamically selected and assigned to the Event.
 // This includes values selected through modifiers, order, etc.
-func (e *Event) Value(name string) (ent.Value, error) {
-	return e.selectValues.Get(name)
+func (_m *Event) Value(name string) (ent.Value, error) {
+	return _m.selectValues.Get(name)
 }
 
 // QueryTenant queries the "tenant" edge of the Event entity.
-func (e *Event) QueryTenant() *TenantQuery {
-	return NewEventClient(e.config).QueryTenant(e)
+func (_m *Event) QueryTenant() *TenantQuery {
+	return NewEventClient(_m.config).QueryTenant(_m)
 }
 
 // QueryAlertInstance queries the "alert_instance" edge of the Event entity.
-func (e *Event) QueryAlertInstance() *AlertInstanceQuery {
-	return NewEventClient(e.config).QueryAlertInstance(e)
+func (_m *Event) QueryAlertInstance() *AlertInstanceQuery {
+	return NewEventClient(_m.config).QueryAlertInstance(_m)
 }
 
 // QueryIncidentEvent queries the "incident_event" edge of the Event entity.
-func (e *Event) QueryIncidentEvent() *IncidentEventQuery {
-	return NewEventClient(e.config).QueryIncidentEvent(e)
+func (_m *Event) QueryIncidentEvent() *IncidentEventQuery {
+	return NewEventClient(_m.config).QueryIncidentEvent(_m)
 }
 
 // QueryAnnotations queries the "annotations" edge of the Event entity.
-func (e *Event) QueryAnnotations() *EventAnnotationQuery {
-	return NewEventClient(e.config).QueryAnnotations(e)
+func (_m *Event) QueryAnnotations() *EventAnnotationQuery {
+	return NewEventClient(_m.config).QueryAnnotations(_m)
 }
 
 // Update returns a builder for updating this Event.
 // Note that you need to call Event.Unwrap() before calling this method if this Event
 // was returned from a transaction, and the transaction was committed or rolled back.
-func (e *Event) Update() *EventUpdateOne {
-	return NewEventClient(e.config).UpdateOne(e)
+func (_m *Event) Update() *EventUpdateOne {
+	return NewEventClient(_m.config).UpdateOne(_m)
 }
 
 // Unwrap unwraps the Event entity that was returned from a transaction after it was closed,
 // so that all future queries will be executed through the driver which created the transaction.
-func (e *Event) Unwrap() *Event {
-	_tx, ok := e.config.driver.(*txDriver)
+func (_m *Event) Unwrap() *Event {
+	_tx, ok := _m.config.driver.(*txDriver)
 	if !ok {
 		panic("ent: Event is not a transactional entity")
 	}
-	e.config.driver = _tx.drv
-	return e
+	_m.config.driver = _tx.drv
+	return _m
 }
 
 // String implements the fmt.Stringer.
-func (e *Event) String() string {
+func (_m *Event) String() string {
 	var builder strings.Builder
 	builder.WriteString("Event(")
-	builder.WriteString(fmt.Sprintf("id=%v, ", e.ID))
+	builder.WriteString(fmt.Sprintf("id=%v, ", _m.ID))
 	builder.WriteString("tenant_id=")
-	builder.WriteString(fmt.Sprintf("%v", e.TenantID))
+	builder.WriteString(fmt.Sprintf("%v", _m.TenantID))
 	builder.WriteString(", ")
 	builder.WriteString("provider_id=")
-	builder.WriteString(e.ProviderID)
+	builder.WriteString(_m.ProviderID)
 	builder.WriteString(", ")
 	builder.WriteString("timestamp=")
-	builder.WriteString(e.Timestamp.Format(time.ANSIC))
+	builder.WriteString(_m.Timestamp.Format(time.ANSIC))
 	builder.WriteString(", ")
 	builder.WriteString("kind=")
-	builder.WriteString(fmt.Sprintf("%v", e.Kind))
+	builder.WriteString(fmt.Sprintf("%v", _m.Kind))
 	builder.WriteString(", ")
 	builder.WriteString("title=")
-	builder.WriteString(e.Title)
+	builder.WriteString(_m.Title)
 	builder.WriteString(", ")
 	builder.WriteString("description=")
-	builder.WriteString(e.Description)
+	builder.WriteString(_m.Description)
 	builder.WriteString(", ")
 	builder.WriteString("source=")
-	builder.WriteString(e.Source)
+	builder.WriteString(_m.Source)
 	builder.WriteByte(')')
 	return builder.String()
 }

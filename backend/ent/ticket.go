@@ -81,7 +81,7 @@ func (*Ticket) scanValues(columns []string) ([]any, error) {
 
 // assignValues assigns the values that were returned from sql.Rows (after scanning)
 // to the Ticket fields.
-func (t *Ticket) assignValues(columns []string, values []any) error {
+func (_m *Ticket) assignValues(columns []string, values []any) error {
 	if m, n := len(values), len(columns); m < n {
 		return fmt.Errorf("mismatch number of scan values: %d != %d", m, n)
 	}
@@ -91,28 +91,28 @@ func (t *Ticket) assignValues(columns []string, values []any) error {
 			if value, ok := values[i].(*uuid.UUID); !ok {
 				return fmt.Errorf("unexpected type %T for field id", values[i])
 			} else if value != nil {
-				t.ID = *value
+				_m.ID = *value
 			}
 		case ticket.FieldTenantID:
 			if value, ok := values[i].(*sql.NullInt64); !ok {
 				return fmt.Errorf("unexpected type %T for field tenant_id", values[i])
 			} else if value.Valid {
-				t.TenantID = int(value.Int64)
+				_m.TenantID = int(value.Int64)
 			}
 		case ticket.FieldProviderID:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field provider_id", values[i])
 			} else if value.Valid {
-				t.ProviderID = value.String
+				_m.ProviderID = value.String
 			}
 		case ticket.FieldTitle:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field title", values[i])
 			} else if value.Valid {
-				t.Title = value.String
+				_m.Title = value.String
 			}
 		default:
-			t.selectValues.Set(columns[i], values[i])
+			_m.selectValues.Set(columns[i], values[i])
 		}
 	}
 	return nil
@@ -120,51 +120,51 @@ func (t *Ticket) assignValues(columns []string, values []any) error {
 
 // Value returns the ent.Value that was dynamically selected and assigned to the Ticket.
 // This includes values selected through modifiers, order, etc.
-func (t *Ticket) Value(name string) (ent.Value, error) {
-	return t.selectValues.Get(name)
+func (_m *Ticket) Value(name string) (ent.Value, error) {
+	return _m.selectValues.Get(name)
 }
 
 // QueryTenant queries the "tenant" edge of the Ticket entity.
-func (t *Ticket) QueryTenant() *TenantQuery {
-	return NewTicketClient(t.config).QueryTenant(t)
+func (_m *Ticket) QueryTenant() *TenantQuery {
+	return NewTicketClient(_m.config).QueryTenant(_m)
 }
 
 // QueryTasks queries the "tasks" edge of the Ticket entity.
-func (t *Ticket) QueryTasks() *TaskQuery {
-	return NewTicketClient(t.config).QueryTasks(t)
+func (_m *Ticket) QueryTasks() *TaskQuery {
+	return NewTicketClient(_m.config).QueryTasks(_m)
 }
 
 // Update returns a builder for updating this Ticket.
 // Note that you need to call Ticket.Unwrap() before calling this method if this Ticket
 // was returned from a transaction, and the transaction was committed or rolled back.
-func (t *Ticket) Update() *TicketUpdateOne {
-	return NewTicketClient(t.config).UpdateOne(t)
+func (_m *Ticket) Update() *TicketUpdateOne {
+	return NewTicketClient(_m.config).UpdateOne(_m)
 }
 
 // Unwrap unwraps the Ticket entity that was returned from a transaction after it was closed,
 // so that all future queries will be executed through the driver which created the transaction.
-func (t *Ticket) Unwrap() *Ticket {
-	_tx, ok := t.config.driver.(*txDriver)
+func (_m *Ticket) Unwrap() *Ticket {
+	_tx, ok := _m.config.driver.(*txDriver)
 	if !ok {
 		panic("ent: Ticket is not a transactional entity")
 	}
-	t.config.driver = _tx.drv
-	return t
+	_m.config.driver = _tx.drv
+	return _m
 }
 
 // String implements the fmt.Stringer.
-func (t *Ticket) String() string {
+func (_m *Ticket) String() string {
 	var builder strings.Builder
 	builder.WriteString("Ticket(")
-	builder.WriteString(fmt.Sprintf("id=%v, ", t.ID))
+	builder.WriteString(fmt.Sprintf("id=%v, ", _m.ID))
 	builder.WriteString("tenant_id=")
-	builder.WriteString(fmt.Sprintf("%v", t.TenantID))
+	builder.WriteString(fmt.Sprintf("%v", _m.TenantID))
 	builder.WriteString(", ")
 	builder.WriteString("provider_id=")
-	builder.WriteString(t.ProviderID)
+	builder.WriteString(_m.ProviderID)
 	builder.WriteString(", ")
 	builder.WriteString("title=")
-	builder.WriteString(t.Title)
+	builder.WriteString(_m.Title)
 	builder.WriteByte(')')
 	return builder.String()
 }

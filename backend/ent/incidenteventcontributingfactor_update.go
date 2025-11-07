@@ -26,89 +26,89 @@ type IncidentEventContributingFactorUpdate struct {
 }
 
 // Where appends a list predicates to the IncidentEventContributingFactorUpdate builder.
-func (iecfu *IncidentEventContributingFactorUpdate) Where(ps ...predicate.IncidentEventContributingFactor) *IncidentEventContributingFactorUpdate {
-	iecfu.mutation.Where(ps...)
-	return iecfu
+func (_u *IncidentEventContributingFactorUpdate) Where(ps ...predicate.IncidentEventContributingFactor) *IncidentEventContributingFactorUpdate {
+	_u.mutation.Where(ps...)
+	return _u
 }
 
 // SetFactorType sets the "factor_type" field.
-func (iecfu *IncidentEventContributingFactorUpdate) SetFactorType(s string) *IncidentEventContributingFactorUpdate {
-	iecfu.mutation.SetFactorType(s)
-	return iecfu
+func (_u *IncidentEventContributingFactorUpdate) SetFactorType(v string) *IncidentEventContributingFactorUpdate {
+	_u.mutation.SetFactorType(v)
+	return _u
 }
 
 // SetNillableFactorType sets the "factor_type" field if the given value is not nil.
-func (iecfu *IncidentEventContributingFactorUpdate) SetNillableFactorType(s *string) *IncidentEventContributingFactorUpdate {
-	if s != nil {
-		iecfu.SetFactorType(*s)
+func (_u *IncidentEventContributingFactorUpdate) SetNillableFactorType(v *string) *IncidentEventContributingFactorUpdate {
+	if v != nil {
+		_u.SetFactorType(*v)
 	}
-	return iecfu
+	return _u
 }
 
 // SetDescription sets the "description" field.
-func (iecfu *IncidentEventContributingFactorUpdate) SetDescription(s string) *IncidentEventContributingFactorUpdate {
-	iecfu.mutation.SetDescription(s)
-	return iecfu
+func (_u *IncidentEventContributingFactorUpdate) SetDescription(v string) *IncidentEventContributingFactorUpdate {
+	_u.mutation.SetDescription(v)
+	return _u
 }
 
 // SetNillableDescription sets the "description" field if the given value is not nil.
-func (iecfu *IncidentEventContributingFactorUpdate) SetNillableDescription(s *string) *IncidentEventContributingFactorUpdate {
-	if s != nil {
-		iecfu.SetDescription(*s)
+func (_u *IncidentEventContributingFactorUpdate) SetNillableDescription(v *string) *IncidentEventContributingFactorUpdate {
+	if v != nil {
+		_u.SetDescription(*v)
 	}
-	return iecfu
+	return _u
 }
 
 // ClearDescription clears the value of the "description" field.
-func (iecfu *IncidentEventContributingFactorUpdate) ClearDescription() *IncidentEventContributingFactorUpdate {
-	iecfu.mutation.ClearDescription()
-	return iecfu
+func (_u *IncidentEventContributingFactorUpdate) ClearDescription() *IncidentEventContributingFactorUpdate {
+	_u.mutation.ClearDescription()
+	return _u
 }
 
 // SetCreatedAt sets the "created_at" field.
-func (iecfu *IncidentEventContributingFactorUpdate) SetCreatedAt(t time.Time) *IncidentEventContributingFactorUpdate {
-	iecfu.mutation.SetCreatedAt(t)
-	return iecfu
+func (_u *IncidentEventContributingFactorUpdate) SetCreatedAt(v time.Time) *IncidentEventContributingFactorUpdate {
+	_u.mutation.SetCreatedAt(v)
+	return _u
 }
 
 // SetNillableCreatedAt sets the "created_at" field if the given value is not nil.
-func (iecfu *IncidentEventContributingFactorUpdate) SetNillableCreatedAt(t *time.Time) *IncidentEventContributingFactorUpdate {
-	if t != nil {
-		iecfu.SetCreatedAt(*t)
+func (_u *IncidentEventContributingFactorUpdate) SetNillableCreatedAt(v *time.Time) *IncidentEventContributingFactorUpdate {
+	if v != nil {
+		_u.SetCreatedAt(*v)
 	}
-	return iecfu
+	return _u
 }
 
 // SetEventID sets the "event" edge to the IncidentEvent entity by ID.
-func (iecfu *IncidentEventContributingFactorUpdate) SetEventID(id uuid.UUID) *IncidentEventContributingFactorUpdate {
-	iecfu.mutation.SetEventID(id)
-	return iecfu
+func (_u *IncidentEventContributingFactorUpdate) SetEventID(id uuid.UUID) *IncidentEventContributingFactorUpdate {
+	_u.mutation.SetEventID(id)
+	return _u
 }
 
 // SetEvent sets the "event" edge to the IncidentEvent entity.
-func (iecfu *IncidentEventContributingFactorUpdate) SetEvent(i *IncidentEvent) *IncidentEventContributingFactorUpdate {
-	return iecfu.SetEventID(i.ID)
+func (_u *IncidentEventContributingFactorUpdate) SetEvent(v *IncidentEvent) *IncidentEventContributingFactorUpdate {
+	return _u.SetEventID(v.ID)
 }
 
 // Mutation returns the IncidentEventContributingFactorMutation object of the builder.
-func (iecfu *IncidentEventContributingFactorUpdate) Mutation() *IncidentEventContributingFactorMutation {
-	return iecfu.mutation
+func (_u *IncidentEventContributingFactorUpdate) Mutation() *IncidentEventContributingFactorMutation {
+	return _u.mutation
 }
 
 // ClearEvent clears the "event" edge to the IncidentEvent entity.
-func (iecfu *IncidentEventContributingFactorUpdate) ClearEvent() *IncidentEventContributingFactorUpdate {
-	iecfu.mutation.ClearEvent()
-	return iecfu
+func (_u *IncidentEventContributingFactorUpdate) ClearEvent() *IncidentEventContributingFactorUpdate {
+	_u.mutation.ClearEvent()
+	return _u
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
-func (iecfu *IncidentEventContributingFactorUpdate) Save(ctx context.Context) (int, error) {
-	return withHooks(ctx, iecfu.sqlSave, iecfu.mutation, iecfu.hooks)
+func (_u *IncidentEventContributingFactorUpdate) Save(ctx context.Context) (int, error) {
+	return withHooks(ctx, _u.sqlSave, _u.mutation, _u.hooks)
 }
 
 // SaveX is like Save, but panics if an error occurs.
-func (iecfu *IncidentEventContributingFactorUpdate) SaveX(ctx context.Context) int {
-	affected, err := iecfu.Save(ctx)
+func (_u *IncidentEventContributingFactorUpdate) SaveX(ctx context.Context) int {
+	affected, err := _u.Save(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -116,65 +116,65 @@ func (iecfu *IncidentEventContributingFactorUpdate) SaveX(ctx context.Context) i
 }
 
 // Exec executes the query.
-func (iecfu *IncidentEventContributingFactorUpdate) Exec(ctx context.Context) error {
-	_, err := iecfu.Save(ctx)
+func (_u *IncidentEventContributingFactorUpdate) Exec(ctx context.Context) error {
+	_, err := _u.Save(ctx)
 	return err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (iecfu *IncidentEventContributingFactorUpdate) ExecX(ctx context.Context) {
-	if err := iecfu.Exec(ctx); err != nil {
+func (_u *IncidentEventContributingFactorUpdate) ExecX(ctx context.Context) {
+	if err := _u.Exec(ctx); err != nil {
 		panic(err)
 	}
 }
 
 // check runs all checks and user-defined validators on the builder.
-func (iecfu *IncidentEventContributingFactorUpdate) check() error {
-	if v, ok := iecfu.mutation.FactorType(); ok {
+func (_u *IncidentEventContributingFactorUpdate) check() error {
+	if v, ok := _u.mutation.FactorType(); ok {
 		if err := incidenteventcontributingfactor.FactorTypeValidator(v); err != nil {
 			return &ValidationError{Name: "factor_type", err: fmt.Errorf(`ent: validator failed for field "IncidentEventContributingFactor.factor_type": %w`, err)}
 		}
 	}
-	if iecfu.mutation.TenantCleared() && len(iecfu.mutation.TenantIDs()) > 0 {
+	if _u.mutation.TenantCleared() && len(_u.mutation.TenantIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "IncidentEventContributingFactor.tenant"`)
 	}
-	if iecfu.mutation.EventCleared() && len(iecfu.mutation.EventIDs()) > 0 {
+	if _u.mutation.EventCleared() && len(_u.mutation.EventIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "IncidentEventContributingFactor.event"`)
 	}
 	return nil
 }
 
 // Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
-func (iecfu *IncidentEventContributingFactorUpdate) Modify(modifiers ...func(u *sql.UpdateBuilder)) *IncidentEventContributingFactorUpdate {
-	iecfu.modifiers = append(iecfu.modifiers, modifiers...)
-	return iecfu
+func (_u *IncidentEventContributingFactorUpdate) Modify(modifiers ...func(u *sql.UpdateBuilder)) *IncidentEventContributingFactorUpdate {
+	_u.modifiers = append(_u.modifiers, modifiers...)
+	return _u
 }
 
-func (iecfu *IncidentEventContributingFactorUpdate) sqlSave(ctx context.Context) (n int, err error) {
-	if err := iecfu.check(); err != nil {
-		return n, err
+func (_u *IncidentEventContributingFactorUpdate) sqlSave(ctx context.Context) (_node int, err error) {
+	if err := _u.check(); err != nil {
+		return _node, err
 	}
 	_spec := sqlgraph.NewUpdateSpec(incidenteventcontributingfactor.Table, incidenteventcontributingfactor.Columns, sqlgraph.NewFieldSpec(incidenteventcontributingfactor.FieldID, field.TypeUUID))
-	if ps := iecfu.mutation.predicates; len(ps) > 0 {
+	if ps := _u.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {
 				ps[i](selector)
 			}
 		}
 	}
-	if value, ok := iecfu.mutation.FactorType(); ok {
+	if value, ok := _u.mutation.FactorType(); ok {
 		_spec.SetField(incidenteventcontributingfactor.FieldFactorType, field.TypeString, value)
 	}
-	if value, ok := iecfu.mutation.Description(); ok {
+	if value, ok := _u.mutation.Description(); ok {
 		_spec.SetField(incidenteventcontributingfactor.FieldDescription, field.TypeString, value)
 	}
-	if iecfu.mutation.DescriptionCleared() {
+	if _u.mutation.DescriptionCleared() {
 		_spec.ClearField(incidenteventcontributingfactor.FieldDescription, field.TypeString)
 	}
-	if value, ok := iecfu.mutation.CreatedAt(); ok {
+	if value, ok := _u.mutation.CreatedAt(); ok {
 		_spec.SetField(incidenteventcontributingfactor.FieldCreatedAt, field.TypeTime, value)
 	}
-	if iecfu.mutation.EventCleared() {
+	if _u.mutation.EventCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: true,
@@ -187,7 +187,7 @@ func (iecfu *IncidentEventContributingFactorUpdate) sqlSave(ctx context.Context)
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := iecfu.mutation.EventIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.EventIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: true,
@@ -203,8 +203,8 @@ func (iecfu *IncidentEventContributingFactorUpdate) sqlSave(ctx context.Context)
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	_spec.AddModifiers(iecfu.modifiers...)
-	if n, err = sqlgraph.UpdateNodes(ctx, iecfu.driver, _spec); err != nil {
+	_spec.AddModifiers(_u.modifiers...)
+	if _node, err = sqlgraph.UpdateNodes(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{incidenteventcontributingfactor.Label}
 		} else if sqlgraph.IsConstraintError(err) {
@@ -212,8 +212,8 @@ func (iecfu *IncidentEventContributingFactorUpdate) sqlSave(ctx context.Context)
 		}
 		return 0, err
 	}
-	iecfu.mutation.done = true
-	return n, nil
+	_u.mutation.done = true
+	return _node, nil
 }
 
 // IncidentEventContributingFactorUpdateOne is the builder for updating a single IncidentEventContributingFactor entity.
@@ -226,96 +226,96 @@ type IncidentEventContributingFactorUpdateOne struct {
 }
 
 // SetFactorType sets the "factor_type" field.
-func (iecfuo *IncidentEventContributingFactorUpdateOne) SetFactorType(s string) *IncidentEventContributingFactorUpdateOne {
-	iecfuo.mutation.SetFactorType(s)
-	return iecfuo
+func (_u *IncidentEventContributingFactorUpdateOne) SetFactorType(v string) *IncidentEventContributingFactorUpdateOne {
+	_u.mutation.SetFactorType(v)
+	return _u
 }
 
 // SetNillableFactorType sets the "factor_type" field if the given value is not nil.
-func (iecfuo *IncidentEventContributingFactorUpdateOne) SetNillableFactorType(s *string) *IncidentEventContributingFactorUpdateOne {
-	if s != nil {
-		iecfuo.SetFactorType(*s)
+func (_u *IncidentEventContributingFactorUpdateOne) SetNillableFactorType(v *string) *IncidentEventContributingFactorUpdateOne {
+	if v != nil {
+		_u.SetFactorType(*v)
 	}
-	return iecfuo
+	return _u
 }
 
 // SetDescription sets the "description" field.
-func (iecfuo *IncidentEventContributingFactorUpdateOne) SetDescription(s string) *IncidentEventContributingFactorUpdateOne {
-	iecfuo.mutation.SetDescription(s)
-	return iecfuo
+func (_u *IncidentEventContributingFactorUpdateOne) SetDescription(v string) *IncidentEventContributingFactorUpdateOne {
+	_u.mutation.SetDescription(v)
+	return _u
 }
 
 // SetNillableDescription sets the "description" field if the given value is not nil.
-func (iecfuo *IncidentEventContributingFactorUpdateOne) SetNillableDescription(s *string) *IncidentEventContributingFactorUpdateOne {
-	if s != nil {
-		iecfuo.SetDescription(*s)
+func (_u *IncidentEventContributingFactorUpdateOne) SetNillableDescription(v *string) *IncidentEventContributingFactorUpdateOne {
+	if v != nil {
+		_u.SetDescription(*v)
 	}
-	return iecfuo
+	return _u
 }
 
 // ClearDescription clears the value of the "description" field.
-func (iecfuo *IncidentEventContributingFactorUpdateOne) ClearDescription() *IncidentEventContributingFactorUpdateOne {
-	iecfuo.mutation.ClearDescription()
-	return iecfuo
+func (_u *IncidentEventContributingFactorUpdateOne) ClearDescription() *IncidentEventContributingFactorUpdateOne {
+	_u.mutation.ClearDescription()
+	return _u
 }
 
 // SetCreatedAt sets the "created_at" field.
-func (iecfuo *IncidentEventContributingFactorUpdateOne) SetCreatedAt(t time.Time) *IncidentEventContributingFactorUpdateOne {
-	iecfuo.mutation.SetCreatedAt(t)
-	return iecfuo
+func (_u *IncidentEventContributingFactorUpdateOne) SetCreatedAt(v time.Time) *IncidentEventContributingFactorUpdateOne {
+	_u.mutation.SetCreatedAt(v)
+	return _u
 }
 
 // SetNillableCreatedAt sets the "created_at" field if the given value is not nil.
-func (iecfuo *IncidentEventContributingFactorUpdateOne) SetNillableCreatedAt(t *time.Time) *IncidentEventContributingFactorUpdateOne {
-	if t != nil {
-		iecfuo.SetCreatedAt(*t)
+func (_u *IncidentEventContributingFactorUpdateOne) SetNillableCreatedAt(v *time.Time) *IncidentEventContributingFactorUpdateOne {
+	if v != nil {
+		_u.SetCreatedAt(*v)
 	}
-	return iecfuo
+	return _u
 }
 
 // SetEventID sets the "event" edge to the IncidentEvent entity by ID.
-func (iecfuo *IncidentEventContributingFactorUpdateOne) SetEventID(id uuid.UUID) *IncidentEventContributingFactorUpdateOne {
-	iecfuo.mutation.SetEventID(id)
-	return iecfuo
+func (_u *IncidentEventContributingFactorUpdateOne) SetEventID(id uuid.UUID) *IncidentEventContributingFactorUpdateOne {
+	_u.mutation.SetEventID(id)
+	return _u
 }
 
 // SetEvent sets the "event" edge to the IncidentEvent entity.
-func (iecfuo *IncidentEventContributingFactorUpdateOne) SetEvent(i *IncidentEvent) *IncidentEventContributingFactorUpdateOne {
-	return iecfuo.SetEventID(i.ID)
+func (_u *IncidentEventContributingFactorUpdateOne) SetEvent(v *IncidentEvent) *IncidentEventContributingFactorUpdateOne {
+	return _u.SetEventID(v.ID)
 }
 
 // Mutation returns the IncidentEventContributingFactorMutation object of the builder.
-func (iecfuo *IncidentEventContributingFactorUpdateOne) Mutation() *IncidentEventContributingFactorMutation {
-	return iecfuo.mutation
+func (_u *IncidentEventContributingFactorUpdateOne) Mutation() *IncidentEventContributingFactorMutation {
+	return _u.mutation
 }
 
 // ClearEvent clears the "event" edge to the IncidentEvent entity.
-func (iecfuo *IncidentEventContributingFactorUpdateOne) ClearEvent() *IncidentEventContributingFactorUpdateOne {
-	iecfuo.mutation.ClearEvent()
-	return iecfuo
+func (_u *IncidentEventContributingFactorUpdateOne) ClearEvent() *IncidentEventContributingFactorUpdateOne {
+	_u.mutation.ClearEvent()
+	return _u
 }
 
 // Where appends a list predicates to the IncidentEventContributingFactorUpdate builder.
-func (iecfuo *IncidentEventContributingFactorUpdateOne) Where(ps ...predicate.IncidentEventContributingFactor) *IncidentEventContributingFactorUpdateOne {
-	iecfuo.mutation.Where(ps...)
-	return iecfuo
+func (_u *IncidentEventContributingFactorUpdateOne) Where(ps ...predicate.IncidentEventContributingFactor) *IncidentEventContributingFactorUpdateOne {
+	_u.mutation.Where(ps...)
+	return _u
 }
 
 // Select allows selecting one or more fields (columns) of the returned entity.
 // The default is selecting all fields defined in the entity schema.
-func (iecfuo *IncidentEventContributingFactorUpdateOne) Select(field string, fields ...string) *IncidentEventContributingFactorUpdateOne {
-	iecfuo.fields = append([]string{field}, fields...)
-	return iecfuo
+func (_u *IncidentEventContributingFactorUpdateOne) Select(field string, fields ...string) *IncidentEventContributingFactorUpdateOne {
+	_u.fields = append([]string{field}, fields...)
+	return _u
 }
 
 // Save executes the query and returns the updated IncidentEventContributingFactor entity.
-func (iecfuo *IncidentEventContributingFactorUpdateOne) Save(ctx context.Context) (*IncidentEventContributingFactor, error) {
-	return withHooks(ctx, iecfuo.sqlSave, iecfuo.mutation, iecfuo.hooks)
+func (_u *IncidentEventContributingFactorUpdateOne) Save(ctx context.Context) (*IncidentEventContributingFactor, error) {
+	return withHooks(ctx, _u.sqlSave, _u.mutation, _u.hooks)
 }
 
 // SaveX is like Save, but panics if an error occurs.
-func (iecfuo *IncidentEventContributingFactorUpdateOne) SaveX(ctx context.Context) *IncidentEventContributingFactor {
-	node, err := iecfuo.Save(ctx)
+func (_u *IncidentEventContributingFactorUpdateOne) SaveX(ctx context.Context) *IncidentEventContributingFactor {
+	node, err := _u.Save(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -323,51 +323,51 @@ func (iecfuo *IncidentEventContributingFactorUpdateOne) SaveX(ctx context.Contex
 }
 
 // Exec executes the query on the entity.
-func (iecfuo *IncidentEventContributingFactorUpdateOne) Exec(ctx context.Context) error {
-	_, err := iecfuo.Save(ctx)
+func (_u *IncidentEventContributingFactorUpdateOne) Exec(ctx context.Context) error {
+	_, err := _u.Save(ctx)
 	return err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (iecfuo *IncidentEventContributingFactorUpdateOne) ExecX(ctx context.Context) {
-	if err := iecfuo.Exec(ctx); err != nil {
+func (_u *IncidentEventContributingFactorUpdateOne) ExecX(ctx context.Context) {
+	if err := _u.Exec(ctx); err != nil {
 		panic(err)
 	}
 }
 
 // check runs all checks and user-defined validators on the builder.
-func (iecfuo *IncidentEventContributingFactorUpdateOne) check() error {
-	if v, ok := iecfuo.mutation.FactorType(); ok {
+func (_u *IncidentEventContributingFactorUpdateOne) check() error {
+	if v, ok := _u.mutation.FactorType(); ok {
 		if err := incidenteventcontributingfactor.FactorTypeValidator(v); err != nil {
 			return &ValidationError{Name: "factor_type", err: fmt.Errorf(`ent: validator failed for field "IncidentEventContributingFactor.factor_type": %w`, err)}
 		}
 	}
-	if iecfuo.mutation.TenantCleared() && len(iecfuo.mutation.TenantIDs()) > 0 {
+	if _u.mutation.TenantCleared() && len(_u.mutation.TenantIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "IncidentEventContributingFactor.tenant"`)
 	}
-	if iecfuo.mutation.EventCleared() && len(iecfuo.mutation.EventIDs()) > 0 {
+	if _u.mutation.EventCleared() && len(_u.mutation.EventIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "IncidentEventContributingFactor.event"`)
 	}
 	return nil
 }
 
 // Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
-func (iecfuo *IncidentEventContributingFactorUpdateOne) Modify(modifiers ...func(u *sql.UpdateBuilder)) *IncidentEventContributingFactorUpdateOne {
-	iecfuo.modifiers = append(iecfuo.modifiers, modifiers...)
-	return iecfuo
+func (_u *IncidentEventContributingFactorUpdateOne) Modify(modifiers ...func(u *sql.UpdateBuilder)) *IncidentEventContributingFactorUpdateOne {
+	_u.modifiers = append(_u.modifiers, modifiers...)
+	return _u
 }
 
-func (iecfuo *IncidentEventContributingFactorUpdateOne) sqlSave(ctx context.Context) (_node *IncidentEventContributingFactor, err error) {
-	if err := iecfuo.check(); err != nil {
+func (_u *IncidentEventContributingFactorUpdateOne) sqlSave(ctx context.Context) (_node *IncidentEventContributingFactor, err error) {
+	if err := _u.check(); err != nil {
 		return _node, err
 	}
 	_spec := sqlgraph.NewUpdateSpec(incidenteventcontributingfactor.Table, incidenteventcontributingfactor.Columns, sqlgraph.NewFieldSpec(incidenteventcontributingfactor.FieldID, field.TypeUUID))
-	id, ok := iecfuo.mutation.ID()
+	id, ok := _u.mutation.ID()
 	if !ok {
 		return nil, &ValidationError{Name: "id", err: errors.New(`ent: missing "IncidentEventContributingFactor.id" for update`)}
 	}
 	_spec.Node.ID.Value = id
-	if fields := iecfuo.fields; len(fields) > 0 {
+	if fields := _u.fields; len(fields) > 0 {
 		_spec.Node.Columns = make([]string, 0, len(fields))
 		_spec.Node.Columns = append(_spec.Node.Columns, incidenteventcontributingfactor.FieldID)
 		for _, f := range fields {
@@ -379,26 +379,26 @@ func (iecfuo *IncidentEventContributingFactorUpdateOne) sqlSave(ctx context.Cont
 			}
 		}
 	}
-	if ps := iecfuo.mutation.predicates; len(ps) > 0 {
+	if ps := _u.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {
 				ps[i](selector)
 			}
 		}
 	}
-	if value, ok := iecfuo.mutation.FactorType(); ok {
+	if value, ok := _u.mutation.FactorType(); ok {
 		_spec.SetField(incidenteventcontributingfactor.FieldFactorType, field.TypeString, value)
 	}
-	if value, ok := iecfuo.mutation.Description(); ok {
+	if value, ok := _u.mutation.Description(); ok {
 		_spec.SetField(incidenteventcontributingfactor.FieldDescription, field.TypeString, value)
 	}
-	if iecfuo.mutation.DescriptionCleared() {
+	if _u.mutation.DescriptionCleared() {
 		_spec.ClearField(incidenteventcontributingfactor.FieldDescription, field.TypeString)
 	}
-	if value, ok := iecfuo.mutation.CreatedAt(); ok {
+	if value, ok := _u.mutation.CreatedAt(); ok {
 		_spec.SetField(incidenteventcontributingfactor.FieldCreatedAt, field.TypeTime, value)
 	}
-	if iecfuo.mutation.EventCleared() {
+	if _u.mutation.EventCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: true,
@@ -411,7 +411,7 @@ func (iecfuo *IncidentEventContributingFactorUpdateOne) sqlSave(ctx context.Cont
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := iecfuo.mutation.EventIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.EventIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: true,
@@ -427,11 +427,11 @@ func (iecfuo *IncidentEventContributingFactorUpdateOne) sqlSave(ctx context.Cont
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	_spec.AddModifiers(iecfuo.modifiers...)
-	_node = &IncidentEventContributingFactor{config: iecfuo.config}
+	_spec.AddModifiers(_u.modifiers...)
+	_node = &IncidentEventContributingFactor{config: _u.config}
 	_spec.Assign = _node.assignValues
 	_spec.ScanValues = _node.scanValues
-	if err = sqlgraph.UpdateNode(ctx, iecfuo.driver, _spec); err != nil {
+	if err = sqlgraph.UpdateNode(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{incidenteventcontributingfactor.Label}
 		} else if sqlgraph.IsConstraintError(err) {
@@ -439,6 +439,6 @@ func (iecfuo *IncidentEventContributingFactorUpdateOne) sqlSave(ctx context.Cont
 		}
 		return nil, err
 	}
-	iecfuo.mutation.done = true
+	_u.mutation.done = true
 	return _node, nil
 }

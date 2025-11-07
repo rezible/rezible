@@ -20,56 +20,56 @@ type SystemComponentRelationshipDelete struct {
 }
 
 // Where appends a list predicates to the SystemComponentRelationshipDelete builder.
-func (scrd *SystemComponentRelationshipDelete) Where(ps ...predicate.SystemComponentRelationship) *SystemComponentRelationshipDelete {
-	scrd.mutation.Where(ps...)
-	return scrd
+func (_d *SystemComponentRelationshipDelete) Where(ps ...predicate.SystemComponentRelationship) *SystemComponentRelationshipDelete {
+	_d.mutation.Where(ps...)
+	return _d
 }
 
 // Exec executes the deletion query and returns how many vertices were deleted.
-func (scrd *SystemComponentRelationshipDelete) Exec(ctx context.Context) (int, error) {
-	return withHooks(ctx, scrd.sqlExec, scrd.mutation, scrd.hooks)
+func (_d *SystemComponentRelationshipDelete) Exec(ctx context.Context) (int, error) {
+	return withHooks(ctx, _d.sqlExec, _d.mutation, _d.hooks)
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (scrd *SystemComponentRelationshipDelete) ExecX(ctx context.Context) int {
-	n, err := scrd.Exec(ctx)
+func (_d *SystemComponentRelationshipDelete) ExecX(ctx context.Context) int {
+	n, err := _d.Exec(ctx)
 	if err != nil {
 		panic(err)
 	}
 	return n
 }
 
-func (scrd *SystemComponentRelationshipDelete) sqlExec(ctx context.Context) (int, error) {
+func (_d *SystemComponentRelationshipDelete) sqlExec(ctx context.Context) (int, error) {
 	_spec := sqlgraph.NewDeleteSpec(systemcomponentrelationship.Table, sqlgraph.NewFieldSpec(systemcomponentrelationship.FieldID, field.TypeUUID))
-	if ps := scrd.mutation.predicates; len(ps) > 0 {
+	if ps := _d.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {
 				ps[i](selector)
 			}
 		}
 	}
-	affected, err := sqlgraph.DeleteNodes(ctx, scrd.driver, _spec)
+	affected, err := sqlgraph.DeleteNodes(ctx, _d.driver, _spec)
 	if err != nil && sqlgraph.IsConstraintError(err) {
 		err = &ConstraintError{msg: err.Error(), wrap: err}
 	}
-	scrd.mutation.done = true
+	_d.mutation.done = true
 	return affected, err
 }
 
 // SystemComponentRelationshipDeleteOne is the builder for deleting a single SystemComponentRelationship entity.
 type SystemComponentRelationshipDeleteOne struct {
-	scrd *SystemComponentRelationshipDelete
+	_d *SystemComponentRelationshipDelete
 }
 
 // Where appends a list predicates to the SystemComponentRelationshipDelete builder.
-func (scrdo *SystemComponentRelationshipDeleteOne) Where(ps ...predicate.SystemComponentRelationship) *SystemComponentRelationshipDeleteOne {
-	scrdo.scrd.mutation.Where(ps...)
-	return scrdo
+func (_d *SystemComponentRelationshipDeleteOne) Where(ps ...predicate.SystemComponentRelationship) *SystemComponentRelationshipDeleteOne {
+	_d._d.mutation.Where(ps...)
+	return _d
 }
 
 // Exec executes the deletion query.
-func (scrdo *SystemComponentRelationshipDeleteOne) Exec(ctx context.Context) error {
-	n, err := scrdo.scrd.Exec(ctx)
+func (_d *SystemComponentRelationshipDeleteOne) Exec(ctx context.Context) error {
+	n, err := _d._d.Exec(ctx)
 	switch {
 	case err != nil:
 		return err
@@ -81,8 +81,8 @@ func (scrdo *SystemComponentRelationshipDeleteOne) Exec(ctx context.Context) err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (scrdo *SystemComponentRelationshipDeleteOne) ExecX(ctx context.Context) {
-	if err := scrdo.Exec(ctx); err != nil {
+func (_d *SystemComponentRelationshipDeleteOne) ExecX(ctx context.Context) {
+	if err := _d.Exec(ctx); err != nil {
 		panic(err)
 	}
 }

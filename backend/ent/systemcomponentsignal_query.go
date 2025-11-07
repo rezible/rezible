@@ -40,44 +40,44 @@ type SystemComponentSignalQuery struct {
 }
 
 // Where adds a new predicate for the SystemComponentSignalQuery builder.
-func (scsq *SystemComponentSignalQuery) Where(ps ...predicate.SystemComponentSignal) *SystemComponentSignalQuery {
-	scsq.predicates = append(scsq.predicates, ps...)
-	return scsq
+func (_q *SystemComponentSignalQuery) Where(ps ...predicate.SystemComponentSignal) *SystemComponentSignalQuery {
+	_q.predicates = append(_q.predicates, ps...)
+	return _q
 }
 
 // Limit the number of records to be returned by this query.
-func (scsq *SystemComponentSignalQuery) Limit(limit int) *SystemComponentSignalQuery {
-	scsq.ctx.Limit = &limit
-	return scsq
+func (_q *SystemComponentSignalQuery) Limit(limit int) *SystemComponentSignalQuery {
+	_q.ctx.Limit = &limit
+	return _q
 }
 
 // Offset to start from.
-func (scsq *SystemComponentSignalQuery) Offset(offset int) *SystemComponentSignalQuery {
-	scsq.ctx.Offset = &offset
-	return scsq
+func (_q *SystemComponentSignalQuery) Offset(offset int) *SystemComponentSignalQuery {
+	_q.ctx.Offset = &offset
+	return _q
 }
 
 // Unique configures the query builder to filter duplicate records on query.
 // By default, unique is set to true, and can be disabled using this method.
-func (scsq *SystemComponentSignalQuery) Unique(unique bool) *SystemComponentSignalQuery {
-	scsq.ctx.Unique = &unique
-	return scsq
+func (_q *SystemComponentSignalQuery) Unique(unique bool) *SystemComponentSignalQuery {
+	_q.ctx.Unique = &unique
+	return _q
 }
 
 // Order specifies how the records should be ordered.
-func (scsq *SystemComponentSignalQuery) Order(o ...systemcomponentsignal.OrderOption) *SystemComponentSignalQuery {
-	scsq.order = append(scsq.order, o...)
-	return scsq
+func (_q *SystemComponentSignalQuery) Order(o ...systemcomponentsignal.OrderOption) *SystemComponentSignalQuery {
+	_q.order = append(_q.order, o...)
+	return _q
 }
 
 // QueryTenant chains the current query on the "tenant" edge.
-func (scsq *SystemComponentSignalQuery) QueryTenant() *TenantQuery {
-	query := (&TenantClient{config: scsq.config}).Query()
+func (_q *SystemComponentSignalQuery) QueryTenant() *TenantQuery {
+	query := (&TenantClient{config: _q.config}).Query()
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
-		if err := scsq.prepareQuery(ctx); err != nil {
+		if err := _q.prepareQuery(ctx); err != nil {
 			return nil, err
 		}
-		selector := scsq.sqlQuery(ctx)
+		selector := _q.sqlQuery(ctx)
 		if err := selector.Err(); err != nil {
 			return nil, err
 		}
@@ -86,20 +86,20 @@ func (scsq *SystemComponentSignalQuery) QueryTenant() *TenantQuery {
 			sqlgraph.To(tenant.Table, tenant.FieldID),
 			sqlgraph.Edge(sqlgraph.M2O, false, systemcomponentsignal.TenantTable, systemcomponentsignal.TenantColumn),
 		)
-		fromU = sqlgraph.SetNeighbors(scsq.driver.Dialect(), step)
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
 	}
 	return query
 }
 
 // QueryComponent chains the current query on the "component" edge.
-func (scsq *SystemComponentSignalQuery) QueryComponent() *SystemComponentQuery {
-	query := (&SystemComponentClient{config: scsq.config}).Query()
+func (_q *SystemComponentSignalQuery) QueryComponent() *SystemComponentQuery {
+	query := (&SystemComponentClient{config: _q.config}).Query()
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
-		if err := scsq.prepareQuery(ctx); err != nil {
+		if err := _q.prepareQuery(ctx); err != nil {
 			return nil, err
 		}
-		selector := scsq.sqlQuery(ctx)
+		selector := _q.sqlQuery(ctx)
 		if err := selector.Err(); err != nil {
 			return nil, err
 		}
@@ -108,20 +108,20 @@ func (scsq *SystemComponentSignalQuery) QueryComponent() *SystemComponentQuery {
 			sqlgraph.To(systemcomponent.Table, systemcomponent.FieldID),
 			sqlgraph.Edge(sqlgraph.M2O, false, systemcomponentsignal.ComponentTable, systemcomponentsignal.ComponentColumn),
 		)
-		fromU = sqlgraph.SetNeighbors(scsq.driver.Dialect(), step)
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
 	}
 	return query
 }
 
 // QueryRelationships chains the current query on the "relationships" edge.
-func (scsq *SystemComponentSignalQuery) QueryRelationships() *SystemAnalysisRelationshipQuery {
-	query := (&SystemAnalysisRelationshipClient{config: scsq.config}).Query()
+func (_q *SystemComponentSignalQuery) QueryRelationships() *SystemAnalysisRelationshipQuery {
+	query := (&SystemAnalysisRelationshipClient{config: _q.config}).Query()
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
-		if err := scsq.prepareQuery(ctx); err != nil {
+		if err := _q.prepareQuery(ctx); err != nil {
 			return nil, err
 		}
-		selector := scsq.sqlQuery(ctx)
+		selector := _q.sqlQuery(ctx)
 		if err := selector.Err(); err != nil {
 			return nil, err
 		}
@@ -130,20 +130,20 @@ func (scsq *SystemComponentSignalQuery) QueryRelationships() *SystemAnalysisRela
 			sqlgraph.To(systemanalysisrelationship.Table, systemanalysisrelationship.FieldID),
 			sqlgraph.Edge(sqlgraph.M2M, true, systemcomponentsignal.RelationshipsTable, systemcomponentsignal.RelationshipsPrimaryKey...),
 		)
-		fromU = sqlgraph.SetNeighbors(scsq.driver.Dialect(), step)
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
 	}
 	return query
 }
 
 // QueryFeedbackSignals chains the current query on the "feedback_signals" edge.
-func (scsq *SystemComponentSignalQuery) QueryFeedbackSignals() *SystemRelationshipFeedbackSignalQuery {
-	query := (&SystemRelationshipFeedbackSignalClient{config: scsq.config}).Query()
+func (_q *SystemComponentSignalQuery) QueryFeedbackSignals() *SystemRelationshipFeedbackSignalQuery {
+	query := (&SystemRelationshipFeedbackSignalClient{config: _q.config}).Query()
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
-		if err := scsq.prepareQuery(ctx); err != nil {
+		if err := _q.prepareQuery(ctx); err != nil {
 			return nil, err
 		}
-		selector := scsq.sqlQuery(ctx)
+		selector := _q.sqlQuery(ctx)
 		if err := selector.Err(); err != nil {
 			return nil, err
 		}
@@ -152,7 +152,7 @@ func (scsq *SystemComponentSignalQuery) QueryFeedbackSignals() *SystemRelationsh
 			sqlgraph.To(systemrelationshipfeedbacksignal.Table, systemrelationshipfeedbacksignal.FieldID),
 			sqlgraph.Edge(sqlgraph.O2M, true, systemcomponentsignal.FeedbackSignalsTable, systemcomponentsignal.FeedbackSignalsColumn),
 		)
-		fromU = sqlgraph.SetNeighbors(scsq.driver.Dialect(), step)
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
 	}
 	return query
@@ -160,8 +160,8 @@ func (scsq *SystemComponentSignalQuery) QueryFeedbackSignals() *SystemRelationsh
 
 // First returns the first SystemComponentSignal entity from the query.
 // Returns a *NotFoundError when no SystemComponentSignal was found.
-func (scsq *SystemComponentSignalQuery) First(ctx context.Context) (*SystemComponentSignal, error) {
-	nodes, err := scsq.Limit(1).All(setContextOp(ctx, scsq.ctx, ent.OpQueryFirst))
+func (_q *SystemComponentSignalQuery) First(ctx context.Context) (*SystemComponentSignal, error) {
+	nodes, err := _q.Limit(1).All(setContextOp(ctx, _q.ctx, ent.OpQueryFirst))
 	if err != nil {
 		return nil, err
 	}
@@ -172,8 +172,8 @@ func (scsq *SystemComponentSignalQuery) First(ctx context.Context) (*SystemCompo
 }
 
 // FirstX is like First, but panics if an error occurs.
-func (scsq *SystemComponentSignalQuery) FirstX(ctx context.Context) *SystemComponentSignal {
-	node, err := scsq.First(ctx)
+func (_q *SystemComponentSignalQuery) FirstX(ctx context.Context) *SystemComponentSignal {
+	node, err := _q.First(ctx)
 	if err != nil && !IsNotFound(err) {
 		panic(err)
 	}
@@ -182,9 +182,9 @@ func (scsq *SystemComponentSignalQuery) FirstX(ctx context.Context) *SystemCompo
 
 // FirstID returns the first SystemComponentSignal ID from the query.
 // Returns a *NotFoundError when no SystemComponentSignal ID was found.
-func (scsq *SystemComponentSignalQuery) FirstID(ctx context.Context) (id uuid.UUID, err error) {
+func (_q *SystemComponentSignalQuery) FirstID(ctx context.Context) (id uuid.UUID, err error) {
 	var ids []uuid.UUID
-	if ids, err = scsq.Limit(1).IDs(setContextOp(ctx, scsq.ctx, ent.OpQueryFirstID)); err != nil {
+	if ids, err = _q.Limit(1).IDs(setContextOp(ctx, _q.ctx, ent.OpQueryFirstID)); err != nil {
 		return
 	}
 	if len(ids) == 0 {
@@ -195,8 +195,8 @@ func (scsq *SystemComponentSignalQuery) FirstID(ctx context.Context) (id uuid.UU
 }
 
 // FirstIDX is like FirstID, but panics if an error occurs.
-func (scsq *SystemComponentSignalQuery) FirstIDX(ctx context.Context) uuid.UUID {
-	id, err := scsq.FirstID(ctx)
+func (_q *SystemComponentSignalQuery) FirstIDX(ctx context.Context) uuid.UUID {
+	id, err := _q.FirstID(ctx)
 	if err != nil && !IsNotFound(err) {
 		panic(err)
 	}
@@ -206,8 +206,8 @@ func (scsq *SystemComponentSignalQuery) FirstIDX(ctx context.Context) uuid.UUID 
 // Only returns a single SystemComponentSignal entity found by the query, ensuring it only returns one.
 // Returns a *NotSingularError when more than one SystemComponentSignal entity is found.
 // Returns a *NotFoundError when no SystemComponentSignal entities are found.
-func (scsq *SystemComponentSignalQuery) Only(ctx context.Context) (*SystemComponentSignal, error) {
-	nodes, err := scsq.Limit(2).All(setContextOp(ctx, scsq.ctx, ent.OpQueryOnly))
+func (_q *SystemComponentSignalQuery) Only(ctx context.Context) (*SystemComponentSignal, error) {
+	nodes, err := _q.Limit(2).All(setContextOp(ctx, _q.ctx, ent.OpQueryOnly))
 	if err != nil {
 		return nil, err
 	}
@@ -222,8 +222,8 @@ func (scsq *SystemComponentSignalQuery) Only(ctx context.Context) (*SystemCompon
 }
 
 // OnlyX is like Only, but panics if an error occurs.
-func (scsq *SystemComponentSignalQuery) OnlyX(ctx context.Context) *SystemComponentSignal {
-	node, err := scsq.Only(ctx)
+func (_q *SystemComponentSignalQuery) OnlyX(ctx context.Context) *SystemComponentSignal {
+	node, err := _q.Only(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -233,9 +233,9 @@ func (scsq *SystemComponentSignalQuery) OnlyX(ctx context.Context) *SystemCompon
 // OnlyID is like Only, but returns the only SystemComponentSignal ID in the query.
 // Returns a *NotSingularError when more than one SystemComponentSignal ID is found.
 // Returns a *NotFoundError when no entities are found.
-func (scsq *SystemComponentSignalQuery) OnlyID(ctx context.Context) (id uuid.UUID, err error) {
+func (_q *SystemComponentSignalQuery) OnlyID(ctx context.Context) (id uuid.UUID, err error) {
 	var ids []uuid.UUID
-	if ids, err = scsq.Limit(2).IDs(setContextOp(ctx, scsq.ctx, ent.OpQueryOnlyID)); err != nil {
+	if ids, err = _q.Limit(2).IDs(setContextOp(ctx, _q.ctx, ent.OpQueryOnlyID)); err != nil {
 		return
 	}
 	switch len(ids) {
@@ -250,8 +250,8 @@ func (scsq *SystemComponentSignalQuery) OnlyID(ctx context.Context) (id uuid.UUI
 }
 
 // OnlyIDX is like OnlyID, but panics if an error occurs.
-func (scsq *SystemComponentSignalQuery) OnlyIDX(ctx context.Context) uuid.UUID {
-	id, err := scsq.OnlyID(ctx)
+func (_q *SystemComponentSignalQuery) OnlyIDX(ctx context.Context) uuid.UUID {
+	id, err := _q.OnlyID(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -259,18 +259,18 @@ func (scsq *SystemComponentSignalQuery) OnlyIDX(ctx context.Context) uuid.UUID {
 }
 
 // All executes the query and returns a list of SystemComponentSignals.
-func (scsq *SystemComponentSignalQuery) All(ctx context.Context) ([]*SystemComponentSignal, error) {
-	ctx = setContextOp(ctx, scsq.ctx, ent.OpQueryAll)
-	if err := scsq.prepareQuery(ctx); err != nil {
+func (_q *SystemComponentSignalQuery) All(ctx context.Context) ([]*SystemComponentSignal, error) {
+	ctx = setContextOp(ctx, _q.ctx, ent.OpQueryAll)
+	if err := _q.prepareQuery(ctx); err != nil {
 		return nil, err
 	}
 	qr := querierAll[[]*SystemComponentSignal, *SystemComponentSignalQuery]()
-	return withInterceptors[[]*SystemComponentSignal](ctx, scsq, qr, scsq.inters)
+	return withInterceptors[[]*SystemComponentSignal](ctx, _q, qr, _q.inters)
 }
 
 // AllX is like All, but panics if an error occurs.
-func (scsq *SystemComponentSignalQuery) AllX(ctx context.Context) []*SystemComponentSignal {
-	nodes, err := scsq.All(ctx)
+func (_q *SystemComponentSignalQuery) AllX(ctx context.Context) []*SystemComponentSignal {
+	nodes, err := _q.All(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -278,20 +278,20 @@ func (scsq *SystemComponentSignalQuery) AllX(ctx context.Context) []*SystemCompo
 }
 
 // IDs executes the query and returns a list of SystemComponentSignal IDs.
-func (scsq *SystemComponentSignalQuery) IDs(ctx context.Context) (ids []uuid.UUID, err error) {
-	if scsq.ctx.Unique == nil && scsq.path != nil {
-		scsq.Unique(true)
+func (_q *SystemComponentSignalQuery) IDs(ctx context.Context) (ids []uuid.UUID, err error) {
+	if _q.ctx.Unique == nil && _q.path != nil {
+		_q.Unique(true)
 	}
-	ctx = setContextOp(ctx, scsq.ctx, ent.OpQueryIDs)
-	if err = scsq.Select(systemcomponentsignal.FieldID).Scan(ctx, &ids); err != nil {
+	ctx = setContextOp(ctx, _q.ctx, ent.OpQueryIDs)
+	if err = _q.Select(systemcomponentsignal.FieldID).Scan(ctx, &ids); err != nil {
 		return nil, err
 	}
 	return ids, nil
 }
 
 // IDsX is like IDs, but panics if an error occurs.
-func (scsq *SystemComponentSignalQuery) IDsX(ctx context.Context) []uuid.UUID {
-	ids, err := scsq.IDs(ctx)
+func (_q *SystemComponentSignalQuery) IDsX(ctx context.Context) []uuid.UUID {
+	ids, err := _q.IDs(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -299,17 +299,17 @@ func (scsq *SystemComponentSignalQuery) IDsX(ctx context.Context) []uuid.UUID {
 }
 
 // Count returns the count of the given query.
-func (scsq *SystemComponentSignalQuery) Count(ctx context.Context) (int, error) {
-	ctx = setContextOp(ctx, scsq.ctx, ent.OpQueryCount)
-	if err := scsq.prepareQuery(ctx); err != nil {
+func (_q *SystemComponentSignalQuery) Count(ctx context.Context) (int, error) {
+	ctx = setContextOp(ctx, _q.ctx, ent.OpQueryCount)
+	if err := _q.prepareQuery(ctx); err != nil {
 		return 0, err
 	}
-	return withInterceptors[int](ctx, scsq, querierCount[*SystemComponentSignalQuery](), scsq.inters)
+	return withInterceptors[int](ctx, _q, querierCount[*SystemComponentSignalQuery](), _q.inters)
 }
 
 // CountX is like Count, but panics if an error occurs.
-func (scsq *SystemComponentSignalQuery) CountX(ctx context.Context) int {
-	count, err := scsq.Count(ctx)
+func (_q *SystemComponentSignalQuery) CountX(ctx context.Context) int {
+	count, err := _q.Count(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -317,9 +317,9 @@ func (scsq *SystemComponentSignalQuery) CountX(ctx context.Context) int {
 }
 
 // Exist returns true if the query has elements in the graph.
-func (scsq *SystemComponentSignalQuery) Exist(ctx context.Context) (bool, error) {
-	ctx = setContextOp(ctx, scsq.ctx, ent.OpQueryExist)
-	switch _, err := scsq.FirstID(ctx); {
+func (_q *SystemComponentSignalQuery) Exist(ctx context.Context) (bool, error) {
+	ctx = setContextOp(ctx, _q.ctx, ent.OpQueryExist)
+	switch _, err := _q.FirstID(ctx); {
 	case IsNotFound(err):
 		return false, nil
 	case err != nil:
@@ -330,8 +330,8 @@ func (scsq *SystemComponentSignalQuery) Exist(ctx context.Context) (bool, error)
 }
 
 // ExistX is like Exist, but panics if an error occurs.
-func (scsq *SystemComponentSignalQuery) ExistX(ctx context.Context) bool {
-	exist, err := scsq.Exist(ctx)
+func (_q *SystemComponentSignalQuery) ExistX(ctx context.Context) bool {
+	exist, err := _q.Exist(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -340,69 +340,69 @@ func (scsq *SystemComponentSignalQuery) ExistX(ctx context.Context) bool {
 
 // Clone returns a duplicate of the SystemComponentSignalQuery builder, including all associated steps. It can be
 // used to prepare common query builders and use them differently after the clone is made.
-func (scsq *SystemComponentSignalQuery) Clone() *SystemComponentSignalQuery {
-	if scsq == nil {
+func (_q *SystemComponentSignalQuery) Clone() *SystemComponentSignalQuery {
+	if _q == nil {
 		return nil
 	}
 	return &SystemComponentSignalQuery{
-		config:              scsq.config,
-		ctx:                 scsq.ctx.Clone(),
-		order:               append([]systemcomponentsignal.OrderOption{}, scsq.order...),
-		inters:              append([]Interceptor{}, scsq.inters...),
-		predicates:          append([]predicate.SystemComponentSignal{}, scsq.predicates...),
-		withTenant:          scsq.withTenant.Clone(),
-		withComponent:       scsq.withComponent.Clone(),
-		withRelationships:   scsq.withRelationships.Clone(),
-		withFeedbackSignals: scsq.withFeedbackSignals.Clone(),
+		config:              _q.config,
+		ctx:                 _q.ctx.Clone(),
+		order:               append([]systemcomponentsignal.OrderOption{}, _q.order...),
+		inters:              append([]Interceptor{}, _q.inters...),
+		predicates:          append([]predicate.SystemComponentSignal{}, _q.predicates...),
+		withTenant:          _q.withTenant.Clone(),
+		withComponent:       _q.withComponent.Clone(),
+		withRelationships:   _q.withRelationships.Clone(),
+		withFeedbackSignals: _q.withFeedbackSignals.Clone(),
 		// clone intermediate query.
-		sql:       scsq.sql.Clone(),
-		path:      scsq.path,
-		modifiers: append([]func(*sql.Selector){}, scsq.modifiers...),
+		sql:       _q.sql.Clone(),
+		path:      _q.path,
+		modifiers: append([]func(*sql.Selector){}, _q.modifiers...),
 	}
 }
 
 // WithTenant tells the query-builder to eager-load the nodes that are connected to
 // the "tenant" edge. The optional arguments are used to configure the query builder of the edge.
-func (scsq *SystemComponentSignalQuery) WithTenant(opts ...func(*TenantQuery)) *SystemComponentSignalQuery {
-	query := (&TenantClient{config: scsq.config}).Query()
+func (_q *SystemComponentSignalQuery) WithTenant(opts ...func(*TenantQuery)) *SystemComponentSignalQuery {
+	query := (&TenantClient{config: _q.config}).Query()
 	for _, opt := range opts {
 		opt(query)
 	}
-	scsq.withTenant = query
-	return scsq
+	_q.withTenant = query
+	return _q
 }
 
 // WithComponent tells the query-builder to eager-load the nodes that are connected to
 // the "component" edge. The optional arguments are used to configure the query builder of the edge.
-func (scsq *SystemComponentSignalQuery) WithComponent(opts ...func(*SystemComponentQuery)) *SystemComponentSignalQuery {
-	query := (&SystemComponentClient{config: scsq.config}).Query()
+func (_q *SystemComponentSignalQuery) WithComponent(opts ...func(*SystemComponentQuery)) *SystemComponentSignalQuery {
+	query := (&SystemComponentClient{config: _q.config}).Query()
 	for _, opt := range opts {
 		opt(query)
 	}
-	scsq.withComponent = query
-	return scsq
+	_q.withComponent = query
+	return _q
 }
 
 // WithRelationships tells the query-builder to eager-load the nodes that are connected to
 // the "relationships" edge. The optional arguments are used to configure the query builder of the edge.
-func (scsq *SystemComponentSignalQuery) WithRelationships(opts ...func(*SystemAnalysisRelationshipQuery)) *SystemComponentSignalQuery {
-	query := (&SystemAnalysisRelationshipClient{config: scsq.config}).Query()
+func (_q *SystemComponentSignalQuery) WithRelationships(opts ...func(*SystemAnalysisRelationshipQuery)) *SystemComponentSignalQuery {
+	query := (&SystemAnalysisRelationshipClient{config: _q.config}).Query()
 	for _, opt := range opts {
 		opt(query)
 	}
-	scsq.withRelationships = query
-	return scsq
+	_q.withRelationships = query
+	return _q
 }
 
 // WithFeedbackSignals tells the query-builder to eager-load the nodes that are connected to
 // the "feedback_signals" edge. The optional arguments are used to configure the query builder of the edge.
-func (scsq *SystemComponentSignalQuery) WithFeedbackSignals(opts ...func(*SystemRelationshipFeedbackSignalQuery)) *SystemComponentSignalQuery {
-	query := (&SystemRelationshipFeedbackSignalClient{config: scsq.config}).Query()
+func (_q *SystemComponentSignalQuery) WithFeedbackSignals(opts ...func(*SystemRelationshipFeedbackSignalQuery)) *SystemComponentSignalQuery {
+	query := (&SystemRelationshipFeedbackSignalClient{config: _q.config}).Query()
 	for _, opt := range opts {
 		opt(query)
 	}
-	scsq.withFeedbackSignals = query
-	return scsq
+	_q.withFeedbackSignals = query
+	return _q
 }
 
 // GroupBy is used to group vertices by one or more fields/columns.
@@ -419,10 +419,10 @@ func (scsq *SystemComponentSignalQuery) WithFeedbackSignals(opts ...func(*System
 //		GroupBy(systemcomponentsignal.FieldTenantID).
 //		Aggregate(ent.Count()).
 //		Scan(ctx, &v)
-func (scsq *SystemComponentSignalQuery) GroupBy(field string, fields ...string) *SystemComponentSignalGroupBy {
-	scsq.ctx.Fields = append([]string{field}, fields...)
-	grbuild := &SystemComponentSignalGroupBy{build: scsq}
-	grbuild.flds = &scsq.ctx.Fields
+func (_q *SystemComponentSignalQuery) GroupBy(field string, fields ...string) *SystemComponentSignalGroupBy {
+	_q.ctx.Fields = append([]string{field}, fields...)
+	grbuild := &SystemComponentSignalGroupBy{build: _q}
+	grbuild.flds = &_q.ctx.Fields
 	grbuild.label = systemcomponentsignal.Label
 	grbuild.scan = grbuild.Scan
 	return grbuild
@@ -440,97 +440,97 @@ func (scsq *SystemComponentSignalQuery) GroupBy(field string, fields ...string) 
 //	client.SystemComponentSignal.Query().
 //		Select(systemcomponentsignal.FieldTenantID).
 //		Scan(ctx, &v)
-func (scsq *SystemComponentSignalQuery) Select(fields ...string) *SystemComponentSignalSelect {
-	scsq.ctx.Fields = append(scsq.ctx.Fields, fields...)
-	sbuild := &SystemComponentSignalSelect{SystemComponentSignalQuery: scsq}
+func (_q *SystemComponentSignalQuery) Select(fields ...string) *SystemComponentSignalSelect {
+	_q.ctx.Fields = append(_q.ctx.Fields, fields...)
+	sbuild := &SystemComponentSignalSelect{SystemComponentSignalQuery: _q}
 	sbuild.label = systemcomponentsignal.Label
-	sbuild.flds, sbuild.scan = &scsq.ctx.Fields, sbuild.Scan
+	sbuild.flds, sbuild.scan = &_q.ctx.Fields, sbuild.Scan
 	return sbuild
 }
 
 // Aggregate returns a SystemComponentSignalSelect configured with the given aggregations.
-func (scsq *SystemComponentSignalQuery) Aggregate(fns ...AggregateFunc) *SystemComponentSignalSelect {
-	return scsq.Select().Aggregate(fns...)
+func (_q *SystemComponentSignalQuery) Aggregate(fns ...AggregateFunc) *SystemComponentSignalSelect {
+	return _q.Select().Aggregate(fns...)
 }
 
-func (scsq *SystemComponentSignalQuery) prepareQuery(ctx context.Context) error {
-	for _, inter := range scsq.inters {
+func (_q *SystemComponentSignalQuery) prepareQuery(ctx context.Context) error {
+	for _, inter := range _q.inters {
 		if inter == nil {
 			return fmt.Errorf("ent: uninitialized interceptor (forgotten import ent/runtime?)")
 		}
 		if trv, ok := inter.(Traverser); ok {
-			if err := trv.Traverse(ctx, scsq); err != nil {
+			if err := trv.Traverse(ctx, _q); err != nil {
 				return err
 			}
 		}
 	}
-	for _, f := range scsq.ctx.Fields {
+	for _, f := range _q.ctx.Fields {
 		if !systemcomponentsignal.ValidColumn(f) {
 			return &ValidationError{Name: f, err: fmt.Errorf("ent: invalid field %q for query", f)}
 		}
 	}
-	if scsq.path != nil {
-		prev, err := scsq.path(ctx)
+	if _q.path != nil {
+		prev, err := _q.path(ctx)
 		if err != nil {
 			return err
 		}
-		scsq.sql = prev
+		_q.sql = prev
 	}
 	if systemcomponentsignal.Policy == nil {
 		return errors.New("ent: uninitialized systemcomponentsignal.Policy (forgotten import ent/runtime?)")
 	}
-	if err := systemcomponentsignal.Policy.EvalQuery(ctx, scsq); err != nil {
+	if err := systemcomponentsignal.Policy.EvalQuery(ctx, _q); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (scsq *SystemComponentSignalQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*SystemComponentSignal, error) {
+func (_q *SystemComponentSignalQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*SystemComponentSignal, error) {
 	var (
 		nodes       = []*SystemComponentSignal{}
-		_spec       = scsq.querySpec()
+		_spec       = _q.querySpec()
 		loadedTypes = [4]bool{
-			scsq.withTenant != nil,
-			scsq.withComponent != nil,
-			scsq.withRelationships != nil,
-			scsq.withFeedbackSignals != nil,
+			_q.withTenant != nil,
+			_q.withComponent != nil,
+			_q.withRelationships != nil,
+			_q.withFeedbackSignals != nil,
 		}
 	)
 	_spec.ScanValues = func(columns []string) ([]any, error) {
 		return (*SystemComponentSignal).scanValues(nil, columns)
 	}
 	_spec.Assign = func(columns []string, values []any) error {
-		node := &SystemComponentSignal{config: scsq.config}
+		node := &SystemComponentSignal{config: _q.config}
 		nodes = append(nodes, node)
 		node.Edges.loadedTypes = loadedTypes
 		return node.assignValues(columns, values)
 	}
-	if len(scsq.modifiers) > 0 {
-		_spec.Modifiers = scsq.modifiers
+	if len(_q.modifiers) > 0 {
+		_spec.Modifiers = _q.modifiers
 	}
 	for i := range hooks {
 		hooks[i](ctx, _spec)
 	}
-	if err := sqlgraph.QueryNodes(ctx, scsq.driver, _spec); err != nil {
+	if err := sqlgraph.QueryNodes(ctx, _q.driver, _spec); err != nil {
 		return nil, err
 	}
 	if len(nodes) == 0 {
 		return nodes, nil
 	}
-	if query := scsq.withTenant; query != nil {
-		if err := scsq.loadTenant(ctx, query, nodes, nil,
+	if query := _q.withTenant; query != nil {
+		if err := _q.loadTenant(ctx, query, nodes, nil,
 			func(n *SystemComponentSignal, e *Tenant) { n.Edges.Tenant = e }); err != nil {
 			return nil, err
 		}
 	}
-	if query := scsq.withComponent; query != nil {
-		if err := scsq.loadComponent(ctx, query, nodes, nil,
+	if query := _q.withComponent; query != nil {
+		if err := _q.loadComponent(ctx, query, nodes, nil,
 			func(n *SystemComponentSignal, e *SystemComponent) { n.Edges.Component = e }); err != nil {
 			return nil, err
 		}
 	}
-	if query := scsq.withRelationships; query != nil {
-		if err := scsq.loadRelationships(ctx, query, nodes,
+	if query := _q.withRelationships; query != nil {
+		if err := _q.loadRelationships(ctx, query, nodes,
 			func(n *SystemComponentSignal) { n.Edges.Relationships = []*SystemAnalysisRelationship{} },
 			func(n *SystemComponentSignal, e *SystemAnalysisRelationship) {
 				n.Edges.Relationships = append(n.Edges.Relationships, e)
@@ -538,8 +538,8 @@ func (scsq *SystemComponentSignalQuery) sqlAll(ctx context.Context, hooks ...que
 			return nil, err
 		}
 	}
-	if query := scsq.withFeedbackSignals; query != nil {
-		if err := scsq.loadFeedbackSignals(ctx, query, nodes,
+	if query := _q.withFeedbackSignals; query != nil {
+		if err := _q.loadFeedbackSignals(ctx, query, nodes,
 			func(n *SystemComponentSignal) { n.Edges.FeedbackSignals = []*SystemRelationshipFeedbackSignal{} },
 			func(n *SystemComponentSignal, e *SystemRelationshipFeedbackSignal) {
 				n.Edges.FeedbackSignals = append(n.Edges.FeedbackSignals, e)
@@ -550,7 +550,7 @@ func (scsq *SystemComponentSignalQuery) sqlAll(ctx context.Context, hooks ...que
 	return nodes, nil
 }
 
-func (scsq *SystemComponentSignalQuery) loadTenant(ctx context.Context, query *TenantQuery, nodes []*SystemComponentSignal, init func(*SystemComponentSignal), assign func(*SystemComponentSignal, *Tenant)) error {
+func (_q *SystemComponentSignalQuery) loadTenant(ctx context.Context, query *TenantQuery, nodes []*SystemComponentSignal, init func(*SystemComponentSignal), assign func(*SystemComponentSignal, *Tenant)) error {
 	ids := make([]int, 0, len(nodes))
 	nodeids := make(map[int][]*SystemComponentSignal)
 	for i := range nodes {
@@ -579,7 +579,7 @@ func (scsq *SystemComponentSignalQuery) loadTenant(ctx context.Context, query *T
 	}
 	return nil
 }
-func (scsq *SystemComponentSignalQuery) loadComponent(ctx context.Context, query *SystemComponentQuery, nodes []*SystemComponentSignal, init func(*SystemComponentSignal), assign func(*SystemComponentSignal, *SystemComponent)) error {
+func (_q *SystemComponentSignalQuery) loadComponent(ctx context.Context, query *SystemComponentQuery, nodes []*SystemComponentSignal, init func(*SystemComponentSignal), assign func(*SystemComponentSignal, *SystemComponent)) error {
 	ids := make([]uuid.UUID, 0, len(nodes))
 	nodeids := make(map[uuid.UUID][]*SystemComponentSignal)
 	for i := range nodes {
@@ -608,7 +608,7 @@ func (scsq *SystemComponentSignalQuery) loadComponent(ctx context.Context, query
 	}
 	return nil
 }
-func (scsq *SystemComponentSignalQuery) loadRelationships(ctx context.Context, query *SystemAnalysisRelationshipQuery, nodes []*SystemComponentSignal, init func(*SystemComponentSignal), assign func(*SystemComponentSignal, *SystemAnalysisRelationship)) error {
+func (_q *SystemComponentSignalQuery) loadRelationships(ctx context.Context, query *SystemAnalysisRelationshipQuery, nodes []*SystemComponentSignal, init func(*SystemComponentSignal), assign func(*SystemComponentSignal, *SystemAnalysisRelationship)) error {
 	edgeIDs := make([]driver.Value, len(nodes))
 	byID := make(map[uuid.UUID]*SystemComponentSignal)
 	nids := make(map[uuid.UUID]map[*SystemComponentSignal]struct{})
@@ -669,7 +669,7 @@ func (scsq *SystemComponentSignalQuery) loadRelationships(ctx context.Context, q
 	}
 	return nil
 }
-func (scsq *SystemComponentSignalQuery) loadFeedbackSignals(ctx context.Context, query *SystemRelationshipFeedbackSignalQuery, nodes []*SystemComponentSignal, init func(*SystemComponentSignal), assign func(*SystemComponentSignal, *SystemRelationshipFeedbackSignal)) error {
+func (_q *SystemComponentSignalQuery) loadFeedbackSignals(ctx context.Context, query *SystemRelationshipFeedbackSignalQuery, nodes []*SystemComponentSignal, init func(*SystemComponentSignal), assign func(*SystemComponentSignal, *SystemRelationshipFeedbackSignal)) error {
 	fks := make([]driver.Value, 0, len(nodes))
 	nodeids := make(map[uuid.UUID]*SystemComponentSignal)
 	for i := range nodes {
@@ -700,27 +700,27 @@ func (scsq *SystemComponentSignalQuery) loadFeedbackSignals(ctx context.Context,
 	return nil
 }
 
-func (scsq *SystemComponentSignalQuery) sqlCount(ctx context.Context) (int, error) {
-	_spec := scsq.querySpec()
-	if len(scsq.modifiers) > 0 {
-		_spec.Modifiers = scsq.modifiers
+func (_q *SystemComponentSignalQuery) sqlCount(ctx context.Context) (int, error) {
+	_spec := _q.querySpec()
+	if len(_q.modifiers) > 0 {
+		_spec.Modifiers = _q.modifiers
 	}
-	_spec.Node.Columns = scsq.ctx.Fields
-	if len(scsq.ctx.Fields) > 0 {
-		_spec.Unique = scsq.ctx.Unique != nil && *scsq.ctx.Unique
+	_spec.Node.Columns = _q.ctx.Fields
+	if len(_q.ctx.Fields) > 0 {
+		_spec.Unique = _q.ctx.Unique != nil && *_q.ctx.Unique
 	}
-	return sqlgraph.CountNodes(ctx, scsq.driver, _spec)
+	return sqlgraph.CountNodes(ctx, _q.driver, _spec)
 }
 
-func (scsq *SystemComponentSignalQuery) querySpec() *sqlgraph.QuerySpec {
+func (_q *SystemComponentSignalQuery) querySpec() *sqlgraph.QuerySpec {
 	_spec := sqlgraph.NewQuerySpec(systemcomponentsignal.Table, systemcomponentsignal.Columns, sqlgraph.NewFieldSpec(systemcomponentsignal.FieldID, field.TypeUUID))
-	_spec.From = scsq.sql
-	if unique := scsq.ctx.Unique; unique != nil {
+	_spec.From = _q.sql
+	if unique := _q.ctx.Unique; unique != nil {
 		_spec.Unique = *unique
-	} else if scsq.path != nil {
+	} else if _q.path != nil {
 		_spec.Unique = true
 	}
-	if fields := scsq.ctx.Fields; len(fields) > 0 {
+	if fields := _q.ctx.Fields; len(fields) > 0 {
 		_spec.Node.Columns = make([]string, 0, len(fields))
 		_spec.Node.Columns = append(_spec.Node.Columns, systemcomponentsignal.FieldID)
 		for i := range fields {
@@ -728,27 +728,27 @@ func (scsq *SystemComponentSignalQuery) querySpec() *sqlgraph.QuerySpec {
 				_spec.Node.Columns = append(_spec.Node.Columns, fields[i])
 			}
 		}
-		if scsq.withTenant != nil {
+		if _q.withTenant != nil {
 			_spec.Node.AddColumnOnce(systemcomponentsignal.FieldTenantID)
 		}
-		if scsq.withComponent != nil {
+		if _q.withComponent != nil {
 			_spec.Node.AddColumnOnce(systemcomponentsignal.FieldComponentID)
 		}
 	}
-	if ps := scsq.predicates; len(ps) > 0 {
+	if ps := _q.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {
 				ps[i](selector)
 			}
 		}
 	}
-	if limit := scsq.ctx.Limit; limit != nil {
+	if limit := _q.ctx.Limit; limit != nil {
 		_spec.Limit = *limit
 	}
-	if offset := scsq.ctx.Offset; offset != nil {
+	if offset := _q.ctx.Offset; offset != nil {
 		_spec.Offset = *offset
 	}
-	if ps := scsq.order; len(ps) > 0 {
+	if ps := _q.order; len(ps) > 0 {
 		_spec.Order = func(selector *sql.Selector) {
 			for i := range ps {
 				ps[i](selector)
@@ -758,45 +758,45 @@ func (scsq *SystemComponentSignalQuery) querySpec() *sqlgraph.QuerySpec {
 	return _spec
 }
 
-func (scsq *SystemComponentSignalQuery) sqlQuery(ctx context.Context) *sql.Selector {
-	builder := sql.Dialect(scsq.driver.Dialect())
+func (_q *SystemComponentSignalQuery) sqlQuery(ctx context.Context) *sql.Selector {
+	builder := sql.Dialect(_q.driver.Dialect())
 	t1 := builder.Table(systemcomponentsignal.Table)
-	columns := scsq.ctx.Fields
+	columns := _q.ctx.Fields
 	if len(columns) == 0 {
 		columns = systemcomponentsignal.Columns
 	}
 	selector := builder.Select(t1.Columns(columns...)...).From(t1)
-	if scsq.sql != nil {
-		selector = scsq.sql
+	if _q.sql != nil {
+		selector = _q.sql
 		selector.Select(selector.Columns(columns...)...)
 	}
-	if scsq.ctx.Unique != nil && *scsq.ctx.Unique {
+	if _q.ctx.Unique != nil && *_q.ctx.Unique {
 		selector.Distinct()
 	}
-	for _, m := range scsq.modifiers {
+	for _, m := range _q.modifiers {
 		m(selector)
 	}
-	for _, p := range scsq.predicates {
+	for _, p := range _q.predicates {
 		p(selector)
 	}
-	for _, p := range scsq.order {
+	for _, p := range _q.order {
 		p(selector)
 	}
-	if offset := scsq.ctx.Offset; offset != nil {
+	if offset := _q.ctx.Offset; offset != nil {
 		// limit is mandatory for offset clause. We start
 		// with default value, and override it below if needed.
 		selector.Offset(*offset).Limit(math.MaxInt32)
 	}
-	if limit := scsq.ctx.Limit; limit != nil {
+	if limit := _q.ctx.Limit; limit != nil {
 		selector.Limit(*limit)
 	}
 	return selector
 }
 
 // Modify adds a query modifier for attaching custom logic to queries.
-func (scsq *SystemComponentSignalQuery) Modify(modifiers ...func(s *sql.Selector)) *SystemComponentSignalSelect {
-	scsq.modifiers = append(scsq.modifiers, modifiers...)
-	return scsq.Select()
+func (_q *SystemComponentSignalQuery) Modify(modifiers ...func(s *sql.Selector)) *SystemComponentSignalSelect {
+	_q.modifiers = append(_q.modifiers, modifiers...)
+	return _q.Select()
 }
 
 // SystemComponentSignalGroupBy is the group-by builder for SystemComponentSignal entities.
@@ -806,41 +806,41 @@ type SystemComponentSignalGroupBy struct {
 }
 
 // Aggregate adds the given aggregation functions to the group-by query.
-func (scsgb *SystemComponentSignalGroupBy) Aggregate(fns ...AggregateFunc) *SystemComponentSignalGroupBy {
-	scsgb.fns = append(scsgb.fns, fns...)
-	return scsgb
+func (_g *SystemComponentSignalGroupBy) Aggregate(fns ...AggregateFunc) *SystemComponentSignalGroupBy {
+	_g.fns = append(_g.fns, fns...)
+	return _g
 }
 
 // Scan applies the selector query and scans the result into the given value.
-func (scsgb *SystemComponentSignalGroupBy) Scan(ctx context.Context, v any) error {
-	ctx = setContextOp(ctx, scsgb.build.ctx, ent.OpQueryGroupBy)
-	if err := scsgb.build.prepareQuery(ctx); err != nil {
+func (_g *SystemComponentSignalGroupBy) Scan(ctx context.Context, v any) error {
+	ctx = setContextOp(ctx, _g.build.ctx, ent.OpQueryGroupBy)
+	if err := _g.build.prepareQuery(ctx); err != nil {
 		return err
 	}
-	return scanWithInterceptors[*SystemComponentSignalQuery, *SystemComponentSignalGroupBy](ctx, scsgb.build, scsgb, scsgb.build.inters, v)
+	return scanWithInterceptors[*SystemComponentSignalQuery, *SystemComponentSignalGroupBy](ctx, _g.build, _g, _g.build.inters, v)
 }
 
-func (scsgb *SystemComponentSignalGroupBy) sqlScan(ctx context.Context, root *SystemComponentSignalQuery, v any) error {
+func (_g *SystemComponentSignalGroupBy) sqlScan(ctx context.Context, root *SystemComponentSignalQuery, v any) error {
 	selector := root.sqlQuery(ctx).Select()
-	aggregation := make([]string, 0, len(scsgb.fns))
-	for _, fn := range scsgb.fns {
+	aggregation := make([]string, 0, len(_g.fns))
+	for _, fn := range _g.fns {
 		aggregation = append(aggregation, fn(selector))
 	}
 	if len(selector.SelectedColumns()) == 0 {
-		columns := make([]string, 0, len(*scsgb.flds)+len(scsgb.fns))
-		for _, f := range *scsgb.flds {
+		columns := make([]string, 0, len(*_g.flds)+len(_g.fns))
+		for _, f := range *_g.flds {
 			columns = append(columns, selector.C(f))
 		}
 		columns = append(columns, aggregation...)
 		selector.Select(columns...)
 	}
-	selector.GroupBy(selector.Columns(*scsgb.flds...)...)
+	selector.GroupBy(selector.Columns(*_g.flds...)...)
 	if err := selector.Err(); err != nil {
 		return err
 	}
 	rows := &sql.Rows{}
 	query, args := selector.Query()
-	if err := scsgb.build.driver.Query(ctx, query, args, rows); err != nil {
+	if err := _g.build.driver.Query(ctx, query, args, rows); err != nil {
 		return err
 	}
 	defer rows.Close()
@@ -854,27 +854,27 @@ type SystemComponentSignalSelect struct {
 }
 
 // Aggregate adds the given aggregation functions to the selector query.
-func (scss *SystemComponentSignalSelect) Aggregate(fns ...AggregateFunc) *SystemComponentSignalSelect {
-	scss.fns = append(scss.fns, fns...)
-	return scss
+func (_s *SystemComponentSignalSelect) Aggregate(fns ...AggregateFunc) *SystemComponentSignalSelect {
+	_s.fns = append(_s.fns, fns...)
+	return _s
 }
 
 // Scan applies the selector query and scans the result into the given value.
-func (scss *SystemComponentSignalSelect) Scan(ctx context.Context, v any) error {
-	ctx = setContextOp(ctx, scss.ctx, ent.OpQuerySelect)
-	if err := scss.prepareQuery(ctx); err != nil {
+func (_s *SystemComponentSignalSelect) Scan(ctx context.Context, v any) error {
+	ctx = setContextOp(ctx, _s.ctx, ent.OpQuerySelect)
+	if err := _s.prepareQuery(ctx); err != nil {
 		return err
 	}
-	return scanWithInterceptors[*SystemComponentSignalQuery, *SystemComponentSignalSelect](ctx, scss.SystemComponentSignalQuery, scss, scss.inters, v)
+	return scanWithInterceptors[*SystemComponentSignalQuery, *SystemComponentSignalSelect](ctx, _s.SystemComponentSignalQuery, _s, _s.inters, v)
 }
 
-func (scss *SystemComponentSignalSelect) sqlScan(ctx context.Context, root *SystemComponentSignalQuery, v any) error {
+func (_s *SystemComponentSignalSelect) sqlScan(ctx context.Context, root *SystemComponentSignalQuery, v any) error {
 	selector := root.sqlQuery(ctx)
-	aggregation := make([]string, 0, len(scss.fns))
-	for _, fn := range scss.fns {
+	aggregation := make([]string, 0, len(_s.fns))
+	for _, fn := range _s.fns {
 		aggregation = append(aggregation, fn(selector))
 	}
-	switch n := len(*scss.selector.flds); {
+	switch n := len(*_s.selector.flds); {
 	case n == 0 && len(aggregation) > 0:
 		selector.Select(aggregation...)
 	case n != 0 && len(aggregation) > 0:
@@ -882,7 +882,7 @@ func (scss *SystemComponentSignalSelect) sqlScan(ctx context.Context, root *Syst
 	}
 	rows := &sql.Rows{}
 	query, args := selector.Query()
-	if err := scss.driver.Query(ctx, query, args, rows); err != nil {
+	if err := _s.driver.Query(ctx, query, args, rows); err != nil {
 		return err
 	}
 	defer rows.Close()
@@ -890,7 +890,7 @@ func (scss *SystemComponentSignalSelect) sqlScan(ctx context.Context, root *Syst
 }
 
 // Modify adds a query modifier for attaching custom logic to queries.
-func (scss *SystemComponentSignalSelect) Modify(modifiers ...func(s *sql.Selector)) *SystemComponentSignalSelect {
-	scss.modifiers = append(scss.modifiers, modifiers...)
-	return scss
+func (_s *SystemComponentSignalSelect) Modify(modifiers ...func(s *sql.Selector)) *SystemComponentSignalSelect {
+	_s.modifiers = append(_s.modifiers, modifiers...)
+	return _s
 }

@@ -20,56 +20,56 @@ type RetrospectiveReviewDelete struct {
 }
 
 // Where appends a list predicates to the RetrospectiveReviewDelete builder.
-func (rrd *RetrospectiveReviewDelete) Where(ps ...predicate.RetrospectiveReview) *RetrospectiveReviewDelete {
-	rrd.mutation.Where(ps...)
-	return rrd
+func (_d *RetrospectiveReviewDelete) Where(ps ...predicate.RetrospectiveReview) *RetrospectiveReviewDelete {
+	_d.mutation.Where(ps...)
+	return _d
 }
 
 // Exec executes the deletion query and returns how many vertices were deleted.
-func (rrd *RetrospectiveReviewDelete) Exec(ctx context.Context) (int, error) {
-	return withHooks(ctx, rrd.sqlExec, rrd.mutation, rrd.hooks)
+func (_d *RetrospectiveReviewDelete) Exec(ctx context.Context) (int, error) {
+	return withHooks(ctx, _d.sqlExec, _d.mutation, _d.hooks)
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (rrd *RetrospectiveReviewDelete) ExecX(ctx context.Context) int {
-	n, err := rrd.Exec(ctx)
+func (_d *RetrospectiveReviewDelete) ExecX(ctx context.Context) int {
+	n, err := _d.Exec(ctx)
 	if err != nil {
 		panic(err)
 	}
 	return n
 }
 
-func (rrd *RetrospectiveReviewDelete) sqlExec(ctx context.Context) (int, error) {
+func (_d *RetrospectiveReviewDelete) sqlExec(ctx context.Context) (int, error) {
 	_spec := sqlgraph.NewDeleteSpec(retrospectivereview.Table, sqlgraph.NewFieldSpec(retrospectivereview.FieldID, field.TypeUUID))
-	if ps := rrd.mutation.predicates; len(ps) > 0 {
+	if ps := _d.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {
 				ps[i](selector)
 			}
 		}
 	}
-	affected, err := sqlgraph.DeleteNodes(ctx, rrd.driver, _spec)
+	affected, err := sqlgraph.DeleteNodes(ctx, _d.driver, _spec)
 	if err != nil && sqlgraph.IsConstraintError(err) {
 		err = &ConstraintError{msg: err.Error(), wrap: err}
 	}
-	rrd.mutation.done = true
+	_d.mutation.done = true
 	return affected, err
 }
 
 // RetrospectiveReviewDeleteOne is the builder for deleting a single RetrospectiveReview entity.
 type RetrospectiveReviewDeleteOne struct {
-	rrd *RetrospectiveReviewDelete
+	_d *RetrospectiveReviewDelete
 }
 
 // Where appends a list predicates to the RetrospectiveReviewDelete builder.
-func (rrdo *RetrospectiveReviewDeleteOne) Where(ps ...predicate.RetrospectiveReview) *RetrospectiveReviewDeleteOne {
-	rrdo.rrd.mutation.Where(ps...)
-	return rrdo
+func (_d *RetrospectiveReviewDeleteOne) Where(ps ...predicate.RetrospectiveReview) *RetrospectiveReviewDeleteOne {
+	_d._d.mutation.Where(ps...)
+	return _d
 }
 
 // Exec executes the deletion query.
-func (rrdo *RetrospectiveReviewDeleteOne) Exec(ctx context.Context) error {
-	n, err := rrdo.rrd.Exec(ctx)
+func (_d *RetrospectiveReviewDeleteOne) Exec(ctx context.Context) error {
+	n, err := _d._d.Exec(ctx)
 	switch {
 	case err != nil:
 		return err
@@ -81,8 +81,8 @@ func (rrdo *RetrospectiveReviewDeleteOne) Exec(ctx context.Context) error {
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (rrdo *RetrospectiveReviewDeleteOne) ExecX(ctx context.Context) {
-	if err := rrdo.Exec(ctx); err != nil {
+func (_d *RetrospectiveReviewDeleteOne) ExecX(ctx context.Context) {
+	if err := _d.Exec(ctx); err != nil {
 		panic(err)
 	}
 }

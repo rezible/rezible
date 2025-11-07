@@ -48,44 +48,44 @@ type OncallRosterQuery struct {
 }
 
 // Where adds a new predicate for the OncallRosterQuery builder.
-func (orq *OncallRosterQuery) Where(ps ...predicate.OncallRoster) *OncallRosterQuery {
-	orq.predicates = append(orq.predicates, ps...)
-	return orq
+func (_q *OncallRosterQuery) Where(ps ...predicate.OncallRoster) *OncallRosterQuery {
+	_q.predicates = append(_q.predicates, ps...)
+	return _q
 }
 
 // Limit the number of records to be returned by this query.
-func (orq *OncallRosterQuery) Limit(limit int) *OncallRosterQuery {
-	orq.ctx.Limit = &limit
-	return orq
+func (_q *OncallRosterQuery) Limit(limit int) *OncallRosterQuery {
+	_q.ctx.Limit = &limit
+	return _q
 }
 
 // Offset to start from.
-func (orq *OncallRosterQuery) Offset(offset int) *OncallRosterQuery {
-	orq.ctx.Offset = &offset
-	return orq
+func (_q *OncallRosterQuery) Offset(offset int) *OncallRosterQuery {
+	_q.ctx.Offset = &offset
+	return _q
 }
 
 // Unique configures the query builder to filter duplicate records on query.
 // By default, unique is set to true, and can be disabled using this method.
-func (orq *OncallRosterQuery) Unique(unique bool) *OncallRosterQuery {
-	orq.ctx.Unique = &unique
-	return orq
+func (_q *OncallRosterQuery) Unique(unique bool) *OncallRosterQuery {
+	_q.ctx.Unique = &unique
+	return _q
 }
 
 // Order specifies how the records should be ordered.
-func (orq *OncallRosterQuery) Order(o ...oncallroster.OrderOption) *OncallRosterQuery {
-	orq.order = append(orq.order, o...)
-	return orq
+func (_q *OncallRosterQuery) Order(o ...oncallroster.OrderOption) *OncallRosterQuery {
+	_q.order = append(_q.order, o...)
+	return _q
 }
 
 // QueryTenant chains the current query on the "tenant" edge.
-func (orq *OncallRosterQuery) QueryTenant() *TenantQuery {
-	query := (&TenantClient{config: orq.config}).Query()
+func (_q *OncallRosterQuery) QueryTenant() *TenantQuery {
+	query := (&TenantClient{config: _q.config}).Query()
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
-		if err := orq.prepareQuery(ctx); err != nil {
+		if err := _q.prepareQuery(ctx); err != nil {
 			return nil, err
 		}
-		selector := orq.sqlQuery(ctx)
+		selector := _q.sqlQuery(ctx)
 		if err := selector.Err(); err != nil {
 			return nil, err
 		}
@@ -94,20 +94,20 @@ func (orq *OncallRosterQuery) QueryTenant() *TenantQuery {
 			sqlgraph.To(tenant.Table, tenant.FieldID),
 			sqlgraph.Edge(sqlgraph.M2O, false, oncallroster.TenantTable, oncallroster.TenantColumn),
 		)
-		fromU = sqlgraph.SetNeighbors(orq.driver.Dialect(), step)
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
 	}
 	return query
 }
 
 // QuerySchedules chains the current query on the "schedules" edge.
-func (orq *OncallRosterQuery) QuerySchedules() *OncallScheduleQuery {
-	query := (&OncallScheduleClient{config: orq.config}).Query()
+func (_q *OncallRosterQuery) QuerySchedules() *OncallScheduleQuery {
+	query := (&OncallScheduleClient{config: _q.config}).Query()
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
-		if err := orq.prepareQuery(ctx); err != nil {
+		if err := _q.prepareQuery(ctx); err != nil {
 			return nil, err
 		}
-		selector := orq.sqlQuery(ctx)
+		selector := _q.sqlQuery(ctx)
 		if err := selector.Err(); err != nil {
 			return nil, err
 		}
@@ -116,20 +116,20 @@ func (orq *OncallRosterQuery) QuerySchedules() *OncallScheduleQuery {
 			sqlgraph.To(oncallschedule.Table, oncallschedule.FieldID),
 			sqlgraph.Edge(sqlgraph.O2M, false, oncallroster.SchedulesTable, oncallroster.SchedulesColumn),
 		)
-		fromU = sqlgraph.SetNeighbors(orq.driver.Dialect(), step)
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
 	}
 	return query
 }
 
 // QueryHandoverTemplate chains the current query on the "handover_template" edge.
-func (orq *OncallRosterQuery) QueryHandoverTemplate() *OncallHandoverTemplateQuery {
-	query := (&OncallHandoverTemplateClient{config: orq.config}).Query()
+func (_q *OncallRosterQuery) QueryHandoverTemplate() *OncallHandoverTemplateQuery {
+	query := (&OncallHandoverTemplateClient{config: _q.config}).Query()
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
-		if err := orq.prepareQuery(ctx); err != nil {
+		if err := _q.prepareQuery(ctx); err != nil {
 			return nil, err
 		}
-		selector := orq.sqlQuery(ctx)
+		selector := _q.sqlQuery(ctx)
 		if err := selector.Err(); err != nil {
 			return nil, err
 		}
@@ -138,20 +138,20 @@ func (orq *OncallRosterQuery) QueryHandoverTemplate() *OncallHandoverTemplateQue
 			sqlgraph.To(oncallhandovertemplate.Table, oncallhandovertemplate.FieldID),
 			sqlgraph.Edge(sqlgraph.M2O, true, oncallroster.HandoverTemplateTable, oncallroster.HandoverTemplateColumn),
 		)
-		fromU = sqlgraph.SetNeighbors(orq.driver.Dialect(), step)
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
 	}
 	return query
 }
 
 // QueryAlerts chains the current query on the "alerts" edge.
-func (orq *OncallRosterQuery) QueryAlerts() *AlertQuery {
-	query := (&AlertClient{config: orq.config}).Query()
+func (_q *OncallRosterQuery) QueryAlerts() *AlertQuery {
+	query := (&AlertClient{config: _q.config}).Query()
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
-		if err := orq.prepareQuery(ctx); err != nil {
+		if err := _q.prepareQuery(ctx); err != nil {
 			return nil, err
 		}
-		selector := orq.sqlQuery(ctx)
+		selector := _q.sqlQuery(ctx)
 		if err := selector.Err(); err != nil {
 			return nil, err
 		}
@@ -160,20 +160,20 @@ func (orq *OncallRosterQuery) QueryAlerts() *AlertQuery {
 			sqlgraph.To(alert.Table, alert.FieldID),
 			sqlgraph.Edge(sqlgraph.O2M, false, oncallroster.AlertsTable, oncallroster.AlertsColumn),
 		)
-		fromU = sqlgraph.SetNeighbors(orq.driver.Dialect(), step)
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
 	}
 	return query
 }
 
 // QueryTeams chains the current query on the "teams" edge.
-func (orq *OncallRosterQuery) QueryTeams() *TeamQuery {
-	query := (&TeamClient{config: orq.config}).Query()
+func (_q *OncallRosterQuery) QueryTeams() *TeamQuery {
+	query := (&TeamClient{config: _q.config}).Query()
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
-		if err := orq.prepareQuery(ctx); err != nil {
+		if err := _q.prepareQuery(ctx); err != nil {
 			return nil, err
 		}
-		selector := orq.sqlQuery(ctx)
+		selector := _q.sqlQuery(ctx)
 		if err := selector.Err(); err != nil {
 			return nil, err
 		}
@@ -182,20 +182,20 @@ func (orq *OncallRosterQuery) QueryTeams() *TeamQuery {
 			sqlgraph.To(team.Table, team.FieldID),
 			sqlgraph.Edge(sqlgraph.M2M, true, oncallroster.TeamsTable, oncallroster.TeamsPrimaryKey...),
 		)
-		fromU = sqlgraph.SetNeighbors(orq.driver.Dialect(), step)
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
 	}
 	return query
 }
 
 // QueryShifts chains the current query on the "shifts" edge.
-func (orq *OncallRosterQuery) QueryShifts() *OncallShiftQuery {
-	query := (&OncallShiftClient{config: orq.config}).Query()
+func (_q *OncallRosterQuery) QueryShifts() *OncallShiftQuery {
+	query := (&OncallShiftClient{config: _q.config}).Query()
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
-		if err := orq.prepareQuery(ctx); err != nil {
+		if err := _q.prepareQuery(ctx); err != nil {
 			return nil, err
 		}
-		selector := orq.sqlQuery(ctx)
+		selector := _q.sqlQuery(ctx)
 		if err := selector.Err(); err != nil {
 			return nil, err
 		}
@@ -204,20 +204,20 @@ func (orq *OncallRosterQuery) QueryShifts() *OncallShiftQuery {
 			sqlgraph.To(oncallshift.Table, oncallshift.FieldID),
 			sqlgraph.Edge(sqlgraph.O2M, true, oncallroster.ShiftsTable, oncallroster.ShiftsColumn),
 		)
-		fromU = sqlgraph.SetNeighbors(orq.driver.Dialect(), step)
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
 	}
 	return query
 }
 
 // QueryUserWatchers chains the current query on the "user_watchers" edge.
-func (orq *OncallRosterQuery) QueryUserWatchers() *UserQuery {
-	query := (&UserClient{config: orq.config}).Query()
+func (_q *OncallRosterQuery) QueryUserWatchers() *UserQuery {
+	query := (&UserClient{config: _q.config}).Query()
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
-		if err := orq.prepareQuery(ctx); err != nil {
+		if err := _q.prepareQuery(ctx); err != nil {
 			return nil, err
 		}
-		selector := orq.sqlQuery(ctx)
+		selector := _q.sqlQuery(ctx)
 		if err := selector.Err(); err != nil {
 			return nil, err
 		}
@@ -226,20 +226,20 @@ func (orq *OncallRosterQuery) QueryUserWatchers() *UserQuery {
 			sqlgraph.To(user.Table, user.FieldID),
 			sqlgraph.Edge(sqlgraph.M2M, true, oncallroster.UserWatchersTable, oncallroster.UserWatchersPrimaryKey...),
 		)
-		fromU = sqlgraph.SetNeighbors(orq.driver.Dialect(), step)
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
 	}
 	return query
 }
 
 // QueryMetrics chains the current query on the "metrics" edge.
-func (orq *OncallRosterQuery) QueryMetrics() *OncallRosterMetricsQuery {
-	query := (&OncallRosterMetricsClient{config: orq.config}).Query()
+func (_q *OncallRosterQuery) QueryMetrics() *OncallRosterMetricsQuery {
+	query := (&OncallRosterMetricsClient{config: _q.config}).Query()
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
-		if err := orq.prepareQuery(ctx); err != nil {
+		if err := _q.prepareQuery(ctx); err != nil {
 			return nil, err
 		}
-		selector := orq.sqlQuery(ctx)
+		selector := _q.sqlQuery(ctx)
 		if err := selector.Err(); err != nil {
 			return nil, err
 		}
@@ -248,7 +248,7 @@ func (orq *OncallRosterQuery) QueryMetrics() *OncallRosterMetricsQuery {
 			sqlgraph.To(oncallrostermetrics.Table, oncallrostermetrics.FieldID),
 			sqlgraph.Edge(sqlgraph.O2M, true, oncallroster.MetricsTable, oncallroster.MetricsColumn),
 		)
-		fromU = sqlgraph.SetNeighbors(orq.driver.Dialect(), step)
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
 	}
 	return query
@@ -256,8 +256,8 @@ func (orq *OncallRosterQuery) QueryMetrics() *OncallRosterMetricsQuery {
 
 // First returns the first OncallRoster entity from the query.
 // Returns a *NotFoundError when no OncallRoster was found.
-func (orq *OncallRosterQuery) First(ctx context.Context) (*OncallRoster, error) {
-	nodes, err := orq.Limit(1).All(setContextOp(ctx, orq.ctx, ent.OpQueryFirst))
+func (_q *OncallRosterQuery) First(ctx context.Context) (*OncallRoster, error) {
+	nodes, err := _q.Limit(1).All(setContextOp(ctx, _q.ctx, ent.OpQueryFirst))
 	if err != nil {
 		return nil, err
 	}
@@ -268,8 +268,8 @@ func (orq *OncallRosterQuery) First(ctx context.Context) (*OncallRoster, error) 
 }
 
 // FirstX is like First, but panics if an error occurs.
-func (orq *OncallRosterQuery) FirstX(ctx context.Context) *OncallRoster {
-	node, err := orq.First(ctx)
+func (_q *OncallRosterQuery) FirstX(ctx context.Context) *OncallRoster {
+	node, err := _q.First(ctx)
 	if err != nil && !IsNotFound(err) {
 		panic(err)
 	}
@@ -278,9 +278,9 @@ func (orq *OncallRosterQuery) FirstX(ctx context.Context) *OncallRoster {
 
 // FirstID returns the first OncallRoster ID from the query.
 // Returns a *NotFoundError when no OncallRoster ID was found.
-func (orq *OncallRosterQuery) FirstID(ctx context.Context) (id uuid.UUID, err error) {
+func (_q *OncallRosterQuery) FirstID(ctx context.Context) (id uuid.UUID, err error) {
 	var ids []uuid.UUID
-	if ids, err = orq.Limit(1).IDs(setContextOp(ctx, orq.ctx, ent.OpQueryFirstID)); err != nil {
+	if ids, err = _q.Limit(1).IDs(setContextOp(ctx, _q.ctx, ent.OpQueryFirstID)); err != nil {
 		return
 	}
 	if len(ids) == 0 {
@@ -291,8 +291,8 @@ func (orq *OncallRosterQuery) FirstID(ctx context.Context) (id uuid.UUID, err er
 }
 
 // FirstIDX is like FirstID, but panics if an error occurs.
-func (orq *OncallRosterQuery) FirstIDX(ctx context.Context) uuid.UUID {
-	id, err := orq.FirstID(ctx)
+func (_q *OncallRosterQuery) FirstIDX(ctx context.Context) uuid.UUID {
+	id, err := _q.FirstID(ctx)
 	if err != nil && !IsNotFound(err) {
 		panic(err)
 	}
@@ -302,8 +302,8 @@ func (orq *OncallRosterQuery) FirstIDX(ctx context.Context) uuid.UUID {
 // Only returns a single OncallRoster entity found by the query, ensuring it only returns one.
 // Returns a *NotSingularError when more than one OncallRoster entity is found.
 // Returns a *NotFoundError when no OncallRoster entities are found.
-func (orq *OncallRosterQuery) Only(ctx context.Context) (*OncallRoster, error) {
-	nodes, err := orq.Limit(2).All(setContextOp(ctx, orq.ctx, ent.OpQueryOnly))
+func (_q *OncallRosterQuery) Only(ctx context.Context) (*OncallRoster, error) {
+	nodes, err := _q.Limit(2).All(setContextOp(ctx, _q.ctx, ent.OpQueryOnly))
 	if err != nil {
 		return nil, err
 	}
@@ -318,8 +318,8 @@ func (orq *OncallRosterQuery) Only(ctx context.Context) (*OncallRoster, error) {
 }
 
 // OnlyX is like Only, but panics if an error occurs.
-func (orq *OncallRosterQuery) OnlyX(ctx context.Context) *OncallRoster {
-	node, err := orq.Only(ctx)
+func (_q *OncallRosterQuery) OnlyX(ctx context.Context) *OncallRoster {
+	node, err := _q.Only(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -329,9 +329,9 @@ func (orq *OncallRosterQuery) OnlyX(ctx context.Context) *OncallRoster {
 // OnlyID is like Only, but returns the only OncallRoster ID in the query.
 // Returns a *NotSingularError when more than one OncallRoster ID is found.
 // Returns a *NotFoundError when no entities are found.
-func (orq *OncallRosterQuery) OnlyID(ctx context.Context) (id uuid.UUID, err error) {
+func (_q *OncallRosterQuery) OnlyID(ctx context.Context) (id uuid.UUID, err error) {
 	var ids []uuid.UUID
-	if ids, err = orq.Limit(2).IDs(setContextOp(ctx, orq.ctx, ent.OpQueryOnlyID)); err != nil {
+	if ids, err = _q.Limit(2).IDs(setContextOp(ctx, _q.ctx, ent.OpQueryOnlyID)); err != nil {
 		return
 	}
 	switch len(ids) {
@@ -346,8 +346,8 @@ func (orq *OncallRosterQuery) OnlyID(ctx context.Context) (id uuid.UUID, err err
 }
 
 // OnlyIDX is like OnlyID, but panics if an error occurs.
-func (orq *OncallRosterQuery) OnlyIDX(ctx context.Context) uuid.UUID {
-	id, err := orq.OnlyID(ctx)
+func (_q *OncallRosterQuery) OnlyIDX(ctx context.Context) uuid.UUID {
+	id, err := _q.OnlyID(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -355,18 +355,18 @@ func (orq *OncallRosterQuery) OnlyIDX(ctx context.Context) uuid.UUID {
 }
 
 // All executes the query and returns a list of OncallRosters.
-func (orq *OncallRosterQuery) All(ctx context.Context) ([]*OncallRoster, error) {
-	ctx = setContextOp(ctx, orq.ctx, ent.OpQueryAll)
-	if err := orq.prepareQuery(ctx); err != nil {
+func (_q *OncallRosterQuery) All(ctx context.Context) ([]*OncallRoster, error) {
+	ctx = setContextOp(ctx, _q.ctx, ent.OpQueryAll)
+	if err := _q.prepareQuery(ctx); err != nil {
 		return nil, err
 	}
 	qr := querierAll[[]*OncallRoster, *OncallRosterQuery]()
-	return withInterceptors[[]*OncallRoster](ctx, orq, qr, orq.inters)
+	return withInterceptors[[]*OncallRoster](ctx, _q, qr, _q.inters)
 }
 
 // AllX is like All, but panics if an error occurs.
-func (orq *OncallRosterQuery) AllX(ctx context.Context) []*OncallRoster {
-	nodes, err := orq.All(ctx)
+func (_q *OncallRosterQuery) AllX(ctx context.Context) []*OncallRoster {
+	nodes, err := _q.All(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -374,20 +374,20 @@ func (orq *OncallRosterQuery) AllX(ctx context.Context) []*OncallRoster {
 }
 
 // IDs executes the query and returns a list of OncallRoster IDs.
-func (orq *OncallRosterQuery) IDs(ctx context.Context) (ids []uuid.UUID, err error) {
-	if orq.ctx.Unique == nil && orq.path != nil {
-		orq.Unique(true)
+func (_q *OncallRosterQuery) IDs(ctx context.Context) (ids []uuid.UUID, err error) {
+	if _q.ctx.Unique == nil && _q.path != nil {
+		_q.Unique(true)
 	}
-	ctx = setContextOp(ctx, orq.ctx, ent.OpQueryIDs)
-	if err = orq.Select(oncallroster.FieldID).Scan(ctx, &ids); err != nil {
+	ctx = setContextOp(ctx, _q.ctx, ent.OpQueryIDs)
+	if err = _q.Select(oncallroster.FieldID).Scan(ctx, &ids); err != nil {
 		return nil, err
 	}
 	return ids, nil
 }
 
 // IDsX is like IDs, but panics if an error occurs.
-func (orq *OncallRosterQuery) IDsX(ctx context.Context) []uuid.UUID {
-	ids, err := orq.IDs(ctx)
+func (_q *OncallRosterQuery) IDsX(ctx context.Context) []uuid.UUID {
+	ids, err := _q.IDs(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -395,17 +395,17 @@ func (orq *OncallRosterQuery) IDsX(ctx context.Context) []uuid.UUID {
 }
 
 // Count returns the count of the given query.
-func (orq *OncallRosterQuery) Count(ctx context.Context) (int, error) {
-	ctx = setContextOp(ctx, orq.ctx, ent.OpQueryCount)
-	if err := orq.prepareQuery(ctx); err != nil {
+func (_q *OncallRosterQuery) Count(ctx context.Context) (int, error) {
+	ctx = setContextOp(ctx, _q.ctx, ent.OpQueryCount)
+	if err := _q.prepareQuery(ctx); err != nil {
 		return 0, err
 	}
-	return withInterceptors[int](ctx, orq, querierCount[*OncallRosterQuery](), orq.inters)
+	return withInterceptors[int](ctx, _q, querierCount[*OncallRosterQuery](), _q.inters)
 }
 
 // CountX is like Count, but panics if an error occurs.
-func (orq *OncallRosterQuery) CountX(ctx context.Context) int {
-	count, err := orq.Count(ctx)
+func (_q *OncallRosterQuery) CountX(ctx context.Context) int {
+	count, err := _q.Count(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -413,9 +413,9 @@ func (orq *OncallRosterQuery) CountX(ctx context.Context) int {
 }
 
 // Exist returns true if the query has elements in the graph.
-func (orq *OncallRosterQuery) Exist(ctx context.Context) (bool, error) {
-	ctx = setContextOp(ctx, orq.ctx, ent.OpQueryExist)
-	switch _, err := orq.FirstID(ctx); {
+func (_q *OncallRosterQuery) Exist(ctx context.Context) (bool, error) {
+	ctx = setContextOp(ctx, _q.ctx, ent.OpQueryExist)
+	switch _, err := _q.FirstID(ctx); {
 	case IsNotFound(err):
 		return false, nil
 	case err != nil:
@@ -426,8 +426,8 @@ func (orq *OncallRosterQuery) Exist(ctx context.Context) (bool, error) {
 }
 
 // ExistX is like Exist, but panics if an error occurs.
-func (orq *OncallRosterQuery) ExistX(ctx context.Context) bool {
-	exist, err := orq.Exist(ctx)
+func (_q *OncallRosterQuery) ExistX(ctx context.Context) bool {
+	exist, err := _q.Exist(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -436,117 +436,117 @@ func (orq *OncallRosterQuery) ExistX(ctx context.Context) bool {
 
 // Clone returns a duplicate of the OncallRosterQuery builder, including all associated steps. It can be
 // used to prepare common query builders and use them differently after the clone is made.
-func (orq *OncallRosterQuery) Clone() *OncallRosterQuery {
-	if orq == nil {
+func (_q *OncallRosterQuery) Clone() *OncallRosterQuery {
+	if _q == nil {
 		return nil
 	}
 	return &OncallRosterQuery{
-		config:               orq.config,
-		ctx:                  orq.ctx.Clone(),
-		order:                append([]oncallroster.OrderOption{}, orq.order...),
-		inters:               append([]Interceptor{}, orq.inters...),
-		predicates:           append([]predicate.OncallRoster{}, orq.predicates...),
-		withTenant:           orq.withTenant.Clone(),
-		withSchedules:        orq.withSchedules.Clone(),
-		withHandoverTemplate: orq.withHandoverTemplate.Clone(),
-		withAlerts:           orq.withAlerts.Clone(),
-		withTeams:            orq.withTeams.Clone(),
-		withShifts:           orq.withShifts.Clone(),
-		withUserWatchers:     orq.withUserWatchers.Clone(),
-		withMetrics:          orq.withMetrics.Clone(),
+		config:               _q.config,
+		ctx:                  _q.ctx.Clone(),
+		order:                append([]oncallroster.OrderOption{}, _q.order...),
+		inters:               append([]Interceptor{}, _q.inters...),
+		predicates:           append([]predicate.OncallRoster{}, _q.predicates...),
+		withTenant:           _q.withTenant.Clone(),
+		withSchedules:        _q.withSchedules.Clone(),
+		withHandoverTemplate: _q.withHandoverTemplate.Clone(),
+		withAlerts:           _q.withAlerts.Clone(),
+		withTeams:            _q.withTeams.Clone(),
+		withShifts:           _q.withShifts.Clone(),
+		withUserWatchers:     _q.withUserWatchers.Clone(),
+		withMetrics:          _q.withMetrics.Clone(),
 		// clone intermediate query.
-		sql:       orq.sql.Clone(),
-		path:      orq.path,
-		modifiers: append([]func(*sql.Selector){}, orq.modifiers...),
+		sql:       _q.sql.Clone(),
+		path:      _q.path,
+		modifiers: append([]func(*sql.Selector){}, _q.modifiers...),
 	}
 }
 
 // WithTenant tells the query-builder to eager-load the nodes that are connected to
 // the "tenant" edge. The optional arguments are used to configure the query builder of the edge.
-func (orq *OncallRosterQuery) WithTenant(opts ...func(*TenantQuery)) *OncallRosterQuery {
-	query := (&TenantClient{config: orq.config}).Query()
+func (_q *OncallRosterQuery) WithTenant(opts ...func(*TenantQuery)) *OncallRosterQuery {
+	query := (&TenantClient{config: _q.config}).Query()
 	for _, opt := range opts {
 		opt(query)
 	}
-	orq.withTenant = query
-	return orq
+	_q.withTenant = query
+	return _q
 }
 
 // WithSchedules tells the query-builder to eager-load the nodes that are connected to
 // the "schedules" edge. The optional arguments are used to configure the query builder of the edge.
-func (orq *OncallRosterQuery) WithSchedules(opts ...func(*OncallScheduleQuery)) *OncallRosterQuery {
-	query := (&OncallScheduleClient{config: orq.config}).Query()
+func (_q *OncallRosterQuery) WithSchedules(opts ...func(*OncallScheduleQuery)) *OncallRosterQuery {
+	query := (&OncallScheduleClient{config: _q.config}).Query()
 	for _, opt := range opts {
 		opt(query)
 	}
-	orq.withSchedules = query
-	return orq
+	_q.withSchedules = query
+	return _q
 }
 
 // WithHandoverTemplate tells the query-builder to eager-load the nodes that are connected to
 // the "handover_template" edge. The optional arguments are used to configure the query builder of the edge.
-func (orq *OncallRosterQuery) WithHandoverTemplate(opts ...func(*OncallHandoverTemplateQuery)) *OncallRosterQuery {
-	query := (&OncallHandoverTemplateClient{config: orq.config}).Query()
+func (_q *OncallRosterQuery) WithHandoverTemplate(opts ...func(*OncallHandoverTemplateQuery)) *OncallRosterQuery {
+	query := (&OncallHandoverTemplateClient{config: _q.config}).Query()
 	for _, opt := range opts {
 		opt(query)
 	}
-	orq.withHandoverTemplate = query
-	return orq
+	_q.withHandoverTemplate = query
+	return _q
 }
 
 // WithAlerts tells the query-builder to eager-load the nodes that are connected to
 // the "alerts" edge. The optional arguments are used to configure the query builder of the edge.
-func (orq *OncallRosterQuery) WithAlerts(opts ...func(*AlertQuery)) *OncallRosterQuery {
-	query := (&AlertClient{config: orq.config}).Query()
+func (_q *OncallRosterQuery) WithAlerts(opts ...func(*AlertQuery)) *OncallRosterQuery {
+	query := (&AlertClient{config: _q.config}).Query()
 	for _, opt := range opts {
 		opt(query)
 	}
-	orq.withAlerts = query
-	return orq
+	_q.withAlerts = query
+	return _q
 }
 
 // WithTeams tells the query-builder to eager-load the nodes that are connected to
 // the "teams" edge. The optional arguments are used to configure the query builder of the edge.
-func (orq *OncallRosterQuery) WithTeams(opts ...func(*TeamQuery)) *OncallRosterQuery {
-	query := (&TeamClient{config: orq.config}).Query()
+func (_q *OncallRosterQuery) WithTeams(opts ...func(*TeamQuery)) *OncallRosterQuery {
+	query := (&TeamClient{config: _q.config}).Query()
 	for _, opt := range opts {
 		opt(query)
 	}
-	orq.withTeams = query
-	return orq
+	_q.withTeams = query
+	return _q
 }
 
 // WithShifts tells the query-builder to eager-load the nodes that are connected to
 // the "shifts" edge. The optional arguments are used to configure the query builder of the edge.
-func (orq *OncallRosterQuery) WithShifts(opts ...func(*OncallShiftQuery)) *OncallRosterQuery {
-	query := (&OncallShiftClient{config: orq.config}).Query()
+func (_q *OncallRosterQuery) WithShifts(opts ...func(*OncallShiftQuery)) *OncallRosterQuery {
+	query := (&OncallShiftClient{config: _q.config}).Query()
 	for _, opt := range opts {
 		opt(query)
 	}
-	orq.withShifts = query
-	return orq
+	_q.withShifts = query
+	return _q
 }
 
 // WithUserWatchers tells the query-builder to eager-load the nodes that are connected to
 // the "user_watchers" edge. The optional arguments are used to configure the query builder of the edge.
-func (orq *OncallRosterQuery) WithUserWatchers(opts ...func(*UserQuery)) *OncallRosterQuery {
-	query := (&UserClient{config: orq.config}).Query()
+func (_q *OncallRosterQuery) WithUserWatchers(opts ...func(*UserQuery)) *OncallRosterQuery {
+	query := (&UserClient{config: _q.config}).Query()
 	for _, opt := range opts {
 		opt(query)
 	}
-	orq.withUserWatchers = query
-	return orq
+	_q.withUserWatchers = query
+	return _q
 }
 
 // WithMetrics tells the query-builder to eager-load the nodes that are connected to
 // the "metrics" edge. The optional arguments are used to configure the query builder of the edge.
-func (orq *OncallRosterQuery) WithMetrics(opts ...func(*OncallRosterMetricsQuery)) *OncallRosterQuery {
-	query := (&OncallRosterMetricsClient{config: orq.config}).Query()
+func (_q *OncallRosterQuery) WithMetrics(opts ...func(*OncallRosterMetricsQuery)) *OncallRosterQuery {
+	query := (&OncallRosterMetricsClient{config: _q.config}).Query()
 	for _, opt := range opts {
 		opt(query)
 	}
-	orq.withMetrics = query
-	return orq
+	_q.withMetrics = query
+	return _q
 }
 
 // GroupBy is used to group vertices by one or more fields/columns.
@@ -563,10 +563,10 @@ func (orq *OncallRosterQuery) WithMetrics(opts ...func(*OncallRosterMetricsQuery
 //		GroupBy(oncallroster.FieldTenantID).
 //		Aggregate(ent.Count()).
 //		Scan(ctx, &v)
-func (orq *OncallRosterQuery) GroupBy(field string, fields ...string) *OncallRosterGroupBy {
-	orq.ctx.Fields = append([]string{field}, fields...)
-	grbuild := &OncallRosterGroupBy{build: orq}
-	grbuild.flds = &orq.ctx.Fields
+func (_q *OncallRosterQuery) GroupBy(field string, fields ...string) *OncallRosterGroupBy {
+	_q.ctx.Fields = append([]string{field}, fields...)
+	grbuild := &OncallRosterGroupBy{build: _q}
+	grbuild.flds = &_q.ctx.Fields
 	grbuild.label = oncallroster.Label
 	grbuild.scan = grbuild.Scan
 	return grbuild
@@ -584,136 +584,136 @@ func (orq *OncallRosterQuery) GroupBy(field string, fields ...string) *OncallRos
 //	client.OncallRoster.Query().
 //		Select(oncallroster.FieldTenantID).
 //		Scan(ctx, &v)
-func (orq *OncallRosterQuery) Select(fields ...string) *OncallRosterSelect {
-	orq.ctx.Fields = append(orq.ctx.Fields, fields...)
-	sbuild := &OncallRosterSelect{OncallRosterQuery: orq}
+func (_q *OncallRosterQuery) Select(fields ...string) *OncallRosterSelect {
+	_q.ctx.Fields = append(_q.ctx.Fields, fields...)
+	sbuild := &OncallRosterSelect{OncallRosterQuery: _q}
 	sbuild.label = oncallroster.Label
-	sbuild.flds, sbuild.scan = &orq.ctx.Fields, sbuild.Scan
+	sbuild.flds, sbuild.scan = &_q.ctx.Fields, sbuild.Scan
 	return sbuild
 }
 
 // Aggregate returns a OncallRosterSelect configured with the given aggregations.
-func (orq *OncallRosterQuery) Aggregate(fns ...AggregateFunc) *OncallRosterSelect {
-	return orq.Select().Aggregate(fns...)
+func (_q *OncallRosterQuery) Aggregate(fns ...AggregateFunc) *OncallRosterSelect {
+	return _q.Select().Aggregate(fns...)
 }
 
-func (orq *OncallRosterQuery) prepareQuery(ctx context.Context) error {
-	for _, inter := range orq.inters {
+func (_q *OncallRosterQuery) prepareQuery(ctx context.Context) error {
+	for _, inter := range _q.inters {
 		if inter == nil {
 			return fmt.Errorf("ent: uninitialized interceptor (forgotten import ent/runtime?)")
 		}
 		if trv, ok := inter.(Traverser); ok {
-			if err := trv.Traverse(ctx, orq); err != nil {
+			if err := trv.Traverse(ctx, _q); err != nil {
 				return err
 			}
 		}
 	}
-	for _, f := range orq.ctx.Fields {
+	for _, f := range _q.ctx.Fields {
 		if !oncallroster.ValidColumn(f) {
 			return &ValidationError{Name: f, err: fmt.Errorf("ent: invalid field %q for query", f)}
 		}
 	}
-	if orq.path != nil {
-		prev, err := orq.path(ctx)
+	if _q.path != nil {
+		prev, err := _q.path(ctx)
 		if err != nil {
 			return err
 		}
-		orq.sql = prev
+		_q.sql = prev
 	}
 	if oncallroster.Policy == nil {
 		return errors.New("ent: uninitialized oncallroster.Policy (forgotten import ent/runtime?)")
 	}
-	if err := oncallroster.Policy.EvalQuery(ctx, orq); err != nil {
+	if err := oncallroster.Policy.EvalQuery(ctx, _q); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (orq *OncallRosterQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*OncallRoster, error) {
+func (_q *OncallRosterQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*OncallRoster, error) {
 	var (
 		nodes       = []*OncallRoster{}
-		_spec       = orq.querySpec()
+		_spec       = _q.querySpec()
 		loadedTypes = [8]bool{
-			orq.withTenant != nil,
-			orq.withSchedules != nil,
-			orq.withHandoverTemplate != nil,
-			orq.withAlerts != nil,
-			orq.withTeams != nil,
-			orq.withShifts != nil,
-			orq.withUserWatchers != nil,
-			orq.withMetrics != nil,
+			_q.withTenant != nil,
+			_q.withSchedules != nil,
+			_q.withHandoverTemplate != nil,
+			_q.withAlerts != nil,
+			_q.withTeams != nil,
+			_q.withShifts != nil,
+			_q.withUserWatchers != nil,
+			_q.withMetrics != nil,
 		}
 	)
 	_spec.ScanValues = func(columns []string) ([]any, error) {
 		return (*OncallRoster).scanValues(nil, columns)
 	}
 	_spec.Assign = func(columns []string, values []any) error {
-		node := &OncallRoster{config: orq.config}
+		node := &OncallRoster{config: _q.config}
 		nodes = append(nodes, node)
 		node.Edges.loadedTypes = loadedTypes
 		return node.assignValues(columns, values)
 	}
-	if len(orq.modifiers) > 0 {
-		_spec.Modifiers = orq.modifiers
+	if len(_q.modifiers) > 0 {
+		_spec.Modifiers = _q.modifiers
 	}
 	for i := range hooks {
 		hooks[i](ctx, _spec)
 	}
-	if err := sqlgraph.QueryNodes(ctx, orq.driver, _spec); err != nil {
+	if err := sqlgraph.QueryNodes(ctx, _q.driver, _spec); err != nil {
 		return nil, err
 	}
 	if len(nodes) == 0 {
 		return nodes, nil
 	}
-	if query := orq.withTenant; query != nil {
-		if err := orq.loadTenant(ctx, query, nodes, nil,
+	if query := _q.withTenant; query != nil {
+		if err := _q.loadTenant(ctx, query, nodes, nil,
 			func(n *OncallRoster, e *Tenant) { n.Edges.Tenant = e }); err != nil {
 			return nil, err
 		}
 	}
-	if query := orq.withSchedules; query != nil {
-		if err := orq.loadSchedules(ctx, query, nodes,
+	if query := _q.withSchedules; query != nil {
+		if err := _q.loadSchedules(ctx, query, nodes,
 			func(n *OncallRoster) { n.Edges.Schedules = []*OncallSchedule{} },
 			func(n *OncallRoster, e *OncallSchedule) { n.Edges.Schedules = append(n.Edges.Schedules, e) }); err != nil {
 			return nil, err
 		}
 	}
-	if query := orq.withHandoverTemplate; query != nil {
-		if err := orq.loadHandoverTemplate(ctx, query, nodes, nil,
+	if query := _q.withHandoverTemplate; query != nil {
+		if err := _q.loadHandoverTemplate(ctx, query, nodes, nil,
 			func(n *OncallRoster, e *OncallHandoverTemplate) { n.Edges.HandoverTemplate = e }); err != nil {
 			return nil, err
 		}
 	}
-	if query := orq.withAlerts; query != nil {
-		if err := orq.loadAlerts(ctx, query, nodes,
+	if query := _q.withAlerts; query != nil {
+		if err := _q.loadAlerts(ctx, query, nodes,
 			func(n *OncallRoster) { n.Edges.Alerts = []*Alert{} },
 			func(n *OncallRoster, e *Alert) { n.Edges.Alerts = append(n.Edges.Alerts, e) }); err != nil {
 			return nil, err
 		}
 	}
-	if query := orq.withTeams; query != nil {
-		if err := orq.loadTeams(ctx, query, nodes,
+	if query := _q.withTeams; query != nil {
+		if err := _q.loadTeams(ctx, query, nodes,
 			func(n *OncallRoster) { n.Edges.Teams = []*Team{} },
 			func(n *OncallRoster, e *Team) { n.Edges.Teams = append(n.Edges.Teams, e) }); err != nil {
 			return nil, err
 		}
 	}
-	if query := orq.withShifts; query != nil {
-		if err := orq.loadShifts(ctx, query, nodes,
+	if query := _q.withShifts; query != nil {
+		if err := _q.loadShifts(ctx, query, nodes,
 			func(n *OncallRoster) { n.Edges.Shifts = []*OncallShift{} },
 			func(n *OncallRoster, e *OncallShift) { n.Edges.Shifts = append(n.Edges.Shifts, e) }); err != nil {
 			return nil, err
 		}
 	}
-	if query := orq.withUserWatchers; query != nil {
-		if err := orq.loadUserWatchers(ctx, query, nodes,
+	if query := _q.withUserWatchers; query != nil {
+		if err := _q.loadUserWatchers(ctx, query, nodes,
 			func(n *OncallRoster) { n.Edges.UserWatchers = []*User{} },
 			func(n *OncallRoster, e *User) { n.Edges.UserWatchers = append(n.Edges.UserWatchers, e) }); err != nil {
 			return nil, err
 		}
 	}
-	if query := orq.withMetrics; query != nil {
-		if err := orq.loadMetrics(ctx, query, nodes,
+	if query := _q.withMetrics; query != nil {
+		if err := _q.loadMetrics(ctx, query, nodes,
 			func(n *OncallRoster) { n.Edges.Metrics = []*OncallRosterMetrics{} },
 			func(n *OncallRoster, e *OncallRosterMetrics) { n.Edges.Metrics = append(n.Edges.Metrics, e) }); err != nil {
 			return nil, err
@@ -722,7 +722,7 @@ func (orq *OncallRosterQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([
 	return nodes, nil
 }
 
-func (orq *OncallRosterQuery) loadTenant(ctx context.Context, query *TenantQuery, nodes []*OncallRoster, init func(*OncallRoster), assign func(*OncallRoster, *Tenant)) error {
+func (_q *OncallRosterQuery) loadTenant(ctx context.Context, query *TenantQuery, nodes []*OncallRoster, init func(*OncallRoster), assign func(*OncallRoster, *Tenant)) error {
 	ids := make([]int, 0, len(nodes))
 	nodeids := make(map[int][]*OncallRoster)
 	for i := range nodes {
@@ -751,7 +751,7 @@ func (orq *OncallRosterQuery) loadTenant(ctx context.Context, query *TenantQuery
 	}
 	return nil
 }
-func (orq *OncallRosterQuery) loadSchedules(ctx context.Context, query *OncallScheduleQuery, nodes []*OncallRoster, init func(*OncallRoster), assign func(*OncallRoster, *OncallSchedule)) error {
+func (_q *OncallRosterQuery) loadSchedules(ctx context.Context, query *OncallScheduleQuery, nodes []*OncallRoster, init func(*OncallRoster), assign func(*OncallRoster, *OncallSchedule)) error {
 	fks := make([]driver.Value, 0, len(nodes))
 	nodeids := make(map[uuid.UUID]*OncallRoster)
 	for i := range nodes {
@@ -781,7 +781,7 @@ func (orq *OncallRosterQuery) loadSchedules(ctx context.Context, query *OncallSc
 	}
 	return nil
 }
-func (orq *OncallRosterQuery) loadHandoverTemplate(ctx context.Context, query *OncallHandoverTemplateQuery, nodes []*OncallRoster, init func(*OncallRoster), assign func(*OncallRoster, *OncallHandoverTemplate)) error {
+func (_q *OncallRosterQuery) loadHandoverTemplate(ctx context.Context, query *OncallHandoverTemplateQuery, nodes []*OncallRoster, init func(*OncallRoster), assign func(*OncallRoster, *OncallHandoverTemplate)) error {
 	ids := make([]uuid.UUID, 0, len(nodes))
 	nodeids := make(map[uuid.UUID][]*OncallRoster)
 	for i := range nodes {
@@ -810,7 +810,7 @@ func (orq *OncallRosterQuery) loadHandoverTemplate(ctx context.Context, query *O
 	}
 	return nil
 }
-func (orq *OncallRosterQuery) loadAlerts(ctx context.Context, query *AlertQuery, nodes []*OncallRoster, init func(*OncallRoster), assign func(*OncallRoster, *Alert)) error {
+func (_q *OncallRosterQuery) loadAlerts(ctx context.Context, query *AlertQuery, nodes []*OncallRoster, init func(*OncallRoster), assign func(*OncallRoster, *Alert)) error {
 	fks := make([]driver.Value, 0, len(nodes))
 	nodeids := make(map[uuid.UUID]*OncallRoster)
 	for i := range nodes {
@@ -840,7 +840,7 @@ func (orq *OncallRosterQuery) loadAlerts(ctx context.Context, query *AlertQuery,
 	}
 	return nil
 }
-func (orq *OncallRosterQuery) loadTeams(ctx context.Context, query *TeamQuery, nodes []*OncallRoster, init func(*OncallRoster), assign func(*OncallRoster, *Team)) error {
+func (_q *OncallRosterQuery) loadTeams(ctx context.Context, query *TeamQuery, nodes []*OncallRoster, init func(*OncallRoster), assign func(*OncallRoster, *Team)) error {
 	edgeIDs := make([]driver.Value, len(nodes))
 	byID := make(map[uuid.UUID]*OncallRoster)
 	nids := make(map[uuid.UUID]map[*OncallRoster]struct{})
@@ -901,7 +901,7 @@ func (orq *OncallRosterQuery) loadTeams(ctx context.Context, query *TeamQuery, n
 	}
 	return nil
 }
-func (orq *OncallRosterQuery) loadShifts(ctx context.Context, query *OncallShiftQuery, nodes []*OncallRoster, init func(*OncallRoster), assign func(*OncallRoster, *OncallShift)) error {
+func (_q *OncallRosterQuery) loadShifts(ctx context.Context, query *OncallShiftQuery, nodes []*OncallRoster, init func(*OncallRoster), assign func(*OncallRoster, *OncallShift)) error {
 	fks := make([]driver.Value, 0, len(nodes))
 	nodeids := make(map[uuid.UUID]*OncallRoster)
 	for i := range nodes {
@@ -931,7 +931,7 @@ func (orq *OncallRosterQuery) loadShifts(ctx context.Context, query *OncallShift
 	}
 	return nil
 }
-func (orq *OncallRosterQuery) loadUserWatchers(ctx context.Context, query *UserQuery, nodes []*OncallRoster, init func(*OncallRoster), assign func(*OncallRoster, *User)) error {
+func (_q *OncallRosterQuery) loadUserWatchers(ctx context.Context, query *UserQuery, nodes []*OncallRoster, init func(*OncallRoster), assign func(*OncallRoster, *User)) error {
 	edgeIDs := make([]driver.Value, len(nodes))
 	byID := make(map[uuid.UUID]*OncallRoster)
 	nids := make(map[uuid.UUID]map[*OncallRoster]struct{})
@@ -992,7 +992,7 @@ func (orq *OncallRosterQuery) loadUserWatchers(ctx context.Context, query *UserQ
 	}
 	return nil
 }
-func (orq *OncallRosterQuery) loadMetrics(ctx context.Context, query *OncallRosterMetricsQuery, nodes []*OncallRoster, init func(*OncallRoster), assign func(*OncallRoster, *OncallRosterMetrics)) error {
+func (_q *OncallRosterQuery) loadMetrics(ctx context.Context, query *OncallRosterMetricsQuery, nodes []*OncallRoster, init func(*OncallRoster), assign func(*OncallRoster, *OncallRosterMetrics)) error {
 	fks := make([]driver.Value, 0, len(nodes))
 	nodeids := make(map[uuid.UUID]*OncallRoster)
 	for i := range nodes {
@@ -1023,27 +1023,27 @@ func (orq *OncallRosterQuery) loadMetrics(ctx context.Context, query *OncallRost
 	return nil
 }
 
-func (orq *OncallRosterQuery) sqlCount(ctx context.Context) (int, error) {
-	_spec := orq.querySpec()
-	if len(orq.modifiers) > 0 {
-		_spec.Modifiers = orq.modifiers
+func (_q *OncallRosterQuery) sqlCount(ctx context.Context) (int, error) {
+	_spec := _q.querySpec()
+	if len(_q.modifiers) > 0 {
+		_spec.Modifiers = _q.modifiers
 	}
-	_spec.Node.Columns = orq.ctx.Fields
-	if len(orq.ctx.Fields) > 0 {
-		_spec.Unique = orq.ctx.Unique != nil && *orq.ctx.Unique
+	_spec.Node.Columns = _q.ctx.Fields
+	if len(_q.ctx.Fields) > 0 {
+		_spec.Unique = _q.ctx.Unique != nil && *_q.ctx.Unique
 	}
-	return sqlgraph.CountNodes(ctx, orq.driver, _spec)
+	return sqlgraph.CountNodes(ctx, _q.driver, _spec)
 }
 
-func (orq *OncallRosterQuery) querySpec() *sqlgraph.QuerySpec {
+func (_q *OncallRosterQuery) querySpec() *sqlgraph.QuerySpec {
 	_spec := sqlgraph.NewQuerySpec(oncallroster.Table, oncallroster.Columns, sqlgraph.NewFieldSpec(oncallroster.FieldID, field.TypeUUID))
-	_spec.From = orq.sql
-	if unique := orq.ctx.Unique; unique != nil {
+	_spec.From = _q.sql
+	if unique := _q.ctx.Unique; unique != nil {
 		_spec.Unique = *unique
-	} else if orq.path != nil {
+	} else if _q.path != nil {
 		_spec.Unique = true
 	}
-	if fields := orq.ctx.Fields; len(fields) > 0 {
+	if fields := _q.ctx.Fields; len(fields) > 0 {
 		_spec.Node.Columns = make([]string, 0, len(fields))
 		_spec.Node.Columns = append(_spec.Node.Columns, oncallroster.FieldID)
 		for i := range fields {
@@ -1051,27 +1051,27 @@ func (orq *OncallRosterQuery) querySpec() *sqlgraph.QuerySpec {
 				_spec.Node.Columns = append(_spec.Node.Columns, fields[i])
 			}
 		}
-		if orq.withTenant != nil {
+		if _q.withTenant != nil {
 			_spec.Node.AddColumnOnce(oncallroster.FieldTenantID)
 		}
-		if orq.withHandoverTemplate != nil {
+		if _q.withHandoverTemplate != nil {
 			_spec.Node.AddColumnOnce(oncallroster.FieldHandoverTemplateID)
 		}
 	}
-	if ps := orq.predicates; len(ps) > 0 {
+	if ps := _q.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {
 				ps[i](selector)
 			}
 		}
 	}
-	if limit := orq.ctx.Limit; limit != nil {
+	if limit := _q.ctx.Limit; limit != nil {
 		_spec.Limit = *limit
 	}
-	if offset := orq.ctx.Offset; offset != nil {
+	if offset := _q.ctx.Offset; offset != nil {
 		_spec.Offset = *offset
 	}
-	if ps := orq.order; len(ps) > 0 {
+	if ps := _q.order; len(ps) > 0 {
 		_spec.Order = func(selector *sql.Selector) {
 			for i := range ps {
 				ps[i](selector)
@@ -1081,45 +1081,45 @@ func (orq *OncallRosterQuery) querySpec() *sqlgraph.QuerySpec {
 	return _spec
 }
 
-func (orq *OncallRosterQuery) sqlQuery(ctx context.Context) *sql.Selector {
-	builder := sql.Dialect(orq.driver.Dialect())
+func (_q *OncallRosterQuery) sqlQuery(ctx context.Context) *sql.Selector {
+	builder := sql.Dialect(_q.driver.Dialect())
 	t1 := builder.Table(oncallroster.Table)
-	columns := orq.ctx.Fields
+	columns := _q.ctx.Fields
 	if len(columns) == 0 {
 		columns = oncallroster.Columns
 	}
 	selector := builder.Select(t1.Columns(columns...)...).From(t1)
-	if orq.sql != nil {
-		selector = orq.sql
+	if _q.sql != nil {
+		selector = _q.sql
 		selector.Select(selector.Columns(columns...)...)
 	}
-	if orq.ctx.Unique != nil && *orq.ctx.Unique {
+	if _q.ctx.Unique != nil && *_q.ctx.Unique {
 		selector.Distinct()
 	}
-	for _, m := range orq.modifiers {
+	for _, m := range _q.modifiers {
 		m(selector)
 	}
-	for _, p := range orq.predicates {
+	for _, p := range _q.predicates {
 		p(selector)
 	}
-	for _, p := range orq.order {
+	for _, p := range _q.order {
 		p(selector)
 	}
-	if offset := orq.ctx.Offset; offset != nil {
+	if offset := _q.ctx.Offset; offset != nil {
 		// limit is mandatory for offset clause. We start
 		// with default value, and override it below if needed.
 		selector.Offset(*offset).Limit(math.MaxInt32)
 	}
-	if limit := orq.ctx.Limit; limit != nil {
+	if limit := _q.ctx.Limit; limit != nil {
 		selector.Limit(*limit)
 	}
 	return selector
 }
 
 // Modify adds a query modifier for attaching custom logic to queries.
-func (orq *OncallRosterQuery) Modify(modifiers ...func(s *sql.Selector)) *OncallRosterSelect {
-	orq.modifiers = append(orq.modifiers, modifiers...)
-	return orq.Select()
+func (_q *OncallRosterQuery) Modify(modifiers ...func(s *sql.Selector)) *OncallRosterSelect {
+	_q.modifiers = append(_q.modifiers, modifiers...)
+	return _q.Select()
 }
 
 // OncallRosterGroupBy is the group-by builder for OncallRoster entities.
@@ -1129,41 +1129,41 @@ type OncallRosterGroupBy struct {
 }
 
 // Aggregate adds the given aggregation functions to the group-by query.
-func (orgb *OncallRosterGroupBy) Aggregate(fns ...AggregateFunc) *OncallRosterGroupBy {
-	orgb.fns = append(orgb.fns, fns...)
-	return orgb
+func (_g *OncallRosterGroupBy) Aggregate(fns ...AggregateFunc) *OncallRosterGroupBy {
+	_g.fns = append(_g.fns, fns...)
+	return _g
 }
 
 // Scan applies the selector query and scans the result into the given value.
-func (orgb *OncallRosterGroupBy) Scan(ctx context.Context, v any) error {
-	ctx = setContextOp(ctx, orgb.build.ctx, ent.OpQueryGroupBy)
-	if err := orgb.build.prepareQuery(ctx); err != nil {
+func (_g *OncallRosterGroupBy) Scan(ctx context.Context, v any) error {
+	ctx = setContextOp(ctx, _g.build.ctx, ent.OpQueryGroupBy)
+	if err := _g.build.prepareQuery(ctx); err != nil {
 		return err
 	}
-	return scanWithInterceptors[*OncallRosterQuery, *OncallRosterGroupBy](ctx, orgb.build, orgb, orgb.build.inters, v)
+	return scanWithInterceptors[*OncallRosterQuery, *OncallRosterGroupBy](ctx, _g.build, _g, _g.build.inters, v)
 }
 
-func (orgb *OncallRosterGroupBy) sqlScan(ctx context.Context, root *OncallRosterQuery, v any) error {
+func (_g *OncallRosterGroupBy) sqlScan(ctx context.Context, root *OncallRosterQuery, v any) error {
 	selector := root.sqlQuery(ctx).Select()
-	aggregation := make([]string, 0, len(orgb.fns))
-	for _, fn := range orgb.fns {
+	aggregation := make([]string, 0, len(_g.fns))
+	for _, fn := range _g.fns {
 		aggregation = append(aggregation, fn(selector))
 	}
 	if len(selector.SelectedColumns()) == 0 {
-		columns := make([]string, 0, len(*orgb.flds)+len(orgb.fns))
-		for _, f := range *orgb.flds {
+		columns := make([]string, 0, len(*_g.flds)+len(_g.fns))
+		for _, f := range *_g.flds {
 			columns = append(columns, selector.C(f))
 		}
 		columns = append(columns, aggregation...)
 		selector.Select(columns...)
 	}
-	selector.GroupBy(selector.Columns(*orgb.flds...)...)
+	selector.GroupBy(selector.Columns(*_g.flds...)...)
 	if err := selector.Err(); err != nil {
 		return err
 	}
 	rows := &sql.Rows{}
 	query, args := selector.Query()
-	if err := orgb.build.driver.Query(ctx, query, args, rows); err != nil {
+	if err := _g.build.driver.Query(ctx, query, args, rows); err != nil {
 		return err
 	}
 	defer rows.Close()
@@ -1177,27 +1177,27 @@ type OncallRosterSelect struct {
 }
 
 // Aggregate adds the given aggregation functions to the selector query.
-func (ors *OncallRosterSelect) Aggregate(fns ...AggregateFunc) *OncallRosterSelect {
-	ors.fns = append(ors.fns, fns...)
-	return ors
+func (_s *OncallRosterSelect) Aggregate(fns ...AggregateFunc) *OncallRosterSelect {
+	_s.fns = append(_s.fns, fns...)
+	return _s
 }
 
 // Scan applies the selector query and scans the result into the given value.
-func (ors *OncallRosterSelect) Scan(ctx context.Context, v any) error {
-	ctx = setContextOp(ctx, ors.ctx, ent.OpQuerySelect)
-	if err := ors.prepareQuery(ctx); err != nil {
+func (_s *OncallRosterSelect) Scan(ctx context.Context, v any) error {
+	ctx = setContextOp(ctx, _s.ctx, ent.OpQuerySelect)
+	if err := _s.prepareQuery(ctx); err != nil {
 		return err
 	}
-	return scanWithInterceptors[*OncallRosterQuery, *OncallRosterSelect](ctx, ors.OncallRosterQuery, ors, ors.inters, v)
+	return scanWithInterceptors[*OncallRosterQuery, *OncallRosterSelect](ctx, _s.OncallRosterQuery, _s, _s.inters, v)
 }
 
-func (ors *OncallRosterSelect) sqlScan(ctx context.Context, root *OncallRosterQuery, v any) error {
+func (_s *OncallRosterSelect) sqlScan(ctx context.Context, root *OncallRosterQuery, v any) error {
 	selector := root.sqlQuery(ctx)
-	aggregation := make([]string, 0, len(ors.fns))
-	for _, fn := range ors.fns {
+	aggregation := make([]string, 0, len(_s.fns))
+	for _, fn := range _s.fns {
 		aggregation = append(aggregation, fn(selector))
 	}
-	switch n := len(*ors.selector.flds); {
+	switch n := len(*_s.selector.flds); {
 	case n == 0 && len(aggregation) > 0:
 		selector.Select(aggregation...)
 	case n != 0 && len(aggregation) > 0:
@@ -1205,7 +1205,7 @@ func (ors *OncallRosterSelect) sqlScan(ctx context.Context, root *OncallRosterQu
 	}
 	rows := &sql.Rows{}
 	query, args := selector.Query()
-	if err := ors.driver.Query(ctx, query, args, rows); err != nil {
+	if err := _s.driver.Query(ctx, query, args, rows); err != nil {
 		return err
 	}
 	defer rows.Close()
@@ -1213,7 +1213,7 @@ func (ors *OncallRosterSelect) sqlScan(ctx context.Context, root *OncallRosterQu
 }
 
 // Modify adds a query modifier for attaching custom logic to queries.
-func (ors *OncallRosterSelect) Modify(modifiers ...func(s *sql.Selector)) *OncallRosterSelect {
-	ors.modifiers = append(ors.modifiers, modifiers...)
-	return ors
+func (_s *OncallRosterSelect) Modify(modifiers ...func(s *sql.Selector)) *OncallRosterSelect {
+	_s.modifiers = append(_s.modifiers, modifiers...)
+	return _s
 }

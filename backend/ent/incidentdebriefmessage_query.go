@@ -37,44 +37,44 @@ type IncidentDebriefMessageQuery struct {
 }
 
 // Where adds a new predicate for the IncidentDebriefMessageQuery builder.
-func (idmq *IncidentDebriefMessageQuery) Where(ps ...predicate.IncidentDebriefMessage) *IncidentDebriefMessageQuery {
-	idmq.predicates = append(idmq.predicates, ps...)
-	return idmq
+func (_q *IncidentDebriefMessageQuery) Where(ps ...predicate.IncidentDebriefMessage) *IncidentDebriefMessageQuery {
+	_q.predicates = append(_q.predicates, ps...)
+	return _q
 }
 
 // Limit the number of records to be returned by this query.
-func (idmq *IncidentDebriefMessageQuery) Limit(limit int) *IncidentDebriefMessageQuery {
-	idmq.ctx.Limit = &limit
-	return idmq
+func (_q *IncidentDebriefMessageQuery) Limit(limit int) *IncidentDebriefMessageQuery {
+	_q.ctx.Limit = &limit
+	return _q
 }
 
 // Offset to start from.
-func (idmq *IncidentDebriefMessageQuery) Offset(offset int) *IncidentDebriefMessageQuery {
-	idmq.ctx.Offset = &offset
-	return idmq
+func (_q *IncidentDebriefMessageQuery) Offset(offset int) *IncidentDebriefMessageQuery {
+	_q.ctx.Offset = &offset
+	return _q
 }
 
 // Unique configures the query builder to filter duplicate records on query.
 // By default, unique is set to true, and can be disabled using this method.
-func (idmq *IncidentDebriefMessageQuery) Unique(unique bool) *IncidentDebriefMessageQuery {
-	idmq.ctx.Unique = &unique
-	return idmq
+func (_q *IncidentDebriefMessageQuery) Unique(unique bool) *IncidentDebriefMessageQuery {
+	_q.ctx.Unique = &unique
+	return _q
 }
 
 // Order specifies how the records should be ordered.
-func (idmq *IncidentDebriefMessageQuery) Order(o ...incidentdebriefmessage.OrderOption) *IncidentDebriefMessageQuery {
-	idmq.order = append(idmq.order, o...)
-	return idmq
+func (_q *IncidentDebriefMessageQuery) Order(o ...incidentdebriefmessage.OrderOption) *IncidentDebriefMessageQuery {
+	_q.order = append(_q.order, o...)
+	return _q
 }
 
 // QueryTenant chains the current query on the "tenant" edge.
-func (idmq *IncidentDebriefMessageQuery) QueryTenant() *TenantQuery {
-	query := (&TenantClient{config: idmq.config}).Query()
+func (_q *IncidentDebriefMessageQuery) QueryTenant() *TenantQuery {
+	query := (&TenantClient{config: _q.config}).Query()
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
-		if err := idmq.prepareQuery(ctx); err != nil {
+		if err := _q.prepareQuery(ctx); err != nil {
 			return nil, err
 		}
-		selector := idmq.sqlQuery(ctx)
+		selector := _q.sqlQuery(ctx)
 		if err := selector.Err(); err != nil {
 			return nil, err
 		}
@@ -83,20 +83,20 @@ func (idmq *IncidentDebriefMessageQuery) QueryTenant() *TenantQuery {
 			sqlgraph.To(tenant.Table, tenant.FieldID),
 			sqlgraph.Edge(sqlgraph.M2O, false, incidentdebriefmessage.TenantTable, incidentdebriefmessage.TenantColumn),
 		)
-		fromU = sqlgraph.SetNeighbors(idmq.driver.Dialect(), step)
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
 	}
 	return query
 }
 
 // QueryDebrief chains the current query on the "debrief" edge.
-func (idmq *IncidentDebriefMessageQuery) QueryDebrief() *IncidentDebriefQuery {
-	query := (&IncidentDebriefClient{config: idmq.config}).Query()
+func (_q *IncidentDebriefMessageQuery) QueryDebrief() *IncidentDebriefQuery {
+	query := (&IncidentDebriefClient{config: _q.config}).Query()
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
-		if err := idmq.prepareQuery(ctx); err != nil {
+		if err := _q.prepareQuery(ctx); err != nil {
 			return nil, err
 		}
-		selector := idmq.sqlQuery(ctx)
+		selector := _q.sqlQuery(ctx)
 		if err := selector.Err(); err != nil {
 			return nil, err
 		}
@@ -105,20 +105,20 @@ func (idmq *IncidentDebriefMessageQuery) QueryDebrief() *IncidentDebriefQuery {
 			sqlgraph.To(incidentdebrief.Table, incidentdebrief.FieldID),
 			sqlgraph.Edge(sqlgraph.M2O, true, incidentdebriefmessage.DebriefTable, incidentdebriefmessage.DebriefColumn),
 		)
-		fromU = sqlgraph.SetNeighbors(idmq.driver.Dialect(), step)
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
 	}
 	return query
 }
 
 // QueryFromQuestion chains the current query on the "from_question" edge.
-func (idmq *IncidentDebriefMessageQuery) QueryFromQuestion() *IncidentDebriefQuestionQuery {
-	query := (&IncidentDebriefQuestionClient{config: idmq.config}).Query()
+func (_q *IncidentDebriefMessageQuery) QueryFromQuestion() *IncidentDebriefQuestionQuery {
+	query := (&IncidentDebriefQuestionClient{config: _q.config}).Query()
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
-		if err := idmq.prepareQuery(ctx); err != nil {
+		if err := _q.prepareQuery(ctx); err != nil {
 			return nil, err
 		}
-		selector := idmq.sqlQuery(ctx)
+		selector := _q.sqlQuery(ctx)
 		if err := selector.Err(); err != nil {
 			return nil, err
 		}
@@ -127,7 +127,7 @@ func (idmq *IncidentDebriefMessageQuery) QueryFromQuestion() *IncidentDebriefQue
 			sqlgraph.To(incidentdebriefquestion.Table, incidentdebriefquestion.FieldID),
 			sqlgraph.Edge(sqlgraph.M2O, false, incidentdebriefmessage.FromQuestionTable, incidentdebriefmessage.FromQuestionColumn),
 		)
-		fromU = sqlgraph.SetNeighbors(idmq.driver.Dialect(), step)
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
 	}
 	return query
@@ -135,8 +135,8 @@ func (idmq *IncidentDebriefMessageQuery) QueryFromQuestion() *IncidentDebriefQue
 
 // First returns the first IncidentDebriefMessage entity from the query.
 // Returns a *NotFoundError when no IncidentDebriefMessage was found.
-func (idmq *IncidentDebriefMessageQuery) First(ctx context.Context) (*IncidentDebriefMessage, error) {
-	nodes, err := idmq.Limit(1).All(setContextOp(ctx, idmq.ctx, ent.OpQueryFirst))
+func (_q *IncidentDebriefMessageQuery) First(ctx context.Context) (*IncidentDebriefMessage, error) {
+	nodes, err := _q.Limit(1).All(setContextOp(ctx, _q.ctx, ent.OpQueryFirst))
 	if err != nil {
 		return nil, err
 	}
@@ -147,8 +147,8 @@ func (idmq *IncidentDebriefMessageQuery) First(ctx context.Context) (*IncidentDe
 }
 
 // FirstX is like First, but panics if an error occurs.
-func (idmq *IncidentDebriefMessageQuery) FirstX(ctx context.Context) *IncidentDebriefMessage {
-	node, err := idmq.First(ctx)
+func (_q *IncidentDebriefMessageQuery) FirstX(ctx context.Context) *IncidentDebriefMessage {
+	node, err := _q.First(ctx)
 	if err != nil && !IsNotFound(err) {
 		panic(err)
 	}
@@ -157,9 +157,9 @@ func (idmq *IncidentDebriefMessageQuery) FirstX(ctx context.Context) *IncidentDe
 
 // FirstID returns the first IncidentDebriefMessage ID from the query.
 // Returns a *NotFoundError when no IncidentDebriefMessage ID was found.
-func (idmq *IncidentDebriefMessageQuery) FirstID(ctx context.Context) (id uuid.UUID, err error) {
+func (_q *IncidentDebriefMessageQuery) FirstID(ctx context.Context) (id uuid.UUID, err error) {
 	var ids []uuid.UUID
-	if ids, err = idmq.Limit(1).IDs(setContextOp(ctx, idmq.ctx, ent.OpQueryFirstID)); err != nil {
+	if ids, err = _q.Limit(1).IDs(setContextOp(ctx, _q.ctx, ent.OpQueryFirstID)); err != nil {
 		return
 	}
 	if len(ids) == 0 {
@@ -170,8 +170,8 @@ func (idmq *IncidentDebriefMessageQuery) FirstID(ctx context.Context) (id uuid.U
 }
 
 // FirstIDX is like FirstID, but panics if an error occurs.
-func (idmq *IncidentDebriefMessageQuery) FirstIDX(ctx context.Context) uuid.UUID {
-	id, err := idmq.FirstID(ctx)
+func (_q *IncidentDebriefMessageQuery) FirstIDX(ctx context.Context) uuid.UUID {
+	id, err := _q.FirstID(ctx)
 	if err != nil && !IsNotFound(err) {
 		panic(err)
 	}
@@ -181,8 +181,8 @@ func (idmq *IncidentDebriefMessageQuery) FirstIDX(ctx context.Context) uuid.UUID
 // Only returns a single IncidentDebriefMessage entity found by the query, ensuring it only returns one.
 // Returns a *NotSingularError when more than one IncidentDebriefMessage entity is found.
 // Returns a *NotFoundError when no IncidentDebriefMessage entities are found.
-func (idmq *IncidentDebriefMessageQuery) Only(ctx context.Context) (*IncidentDebriefMessage, error) {
-	nodes, err := idmq.Limit(2).All(setContextOp(ctx, idmq.ctx, ent.OpQueryOnly))
+func (_q *IncidentDebriefMessageQuery) Only(ctx context.Context) (*IncidentDebriefMessage, error) {
+	nodes, err := _q.Limit(2).All(setContextOp(ctx, _q.ctx, ent.OpQueryOnly))
 	if err != nil {
 		return nil, err
 	}
@@ -197,8 +197,8 @@ func (idmq *IncidentDebriefMessageQuery) Only(ctx context.Context) (*IncidentDeb
 }
 
 // OnlyX is like Only, but panics if an error occurs.
-func (idmq *IncidentDebriefMessageQuery) OnlyX(ctx context.Context) *IncidentDebriefMessage {
-	node, err := idmq.Only(ctx)
+func (_q *IncidentDebriefMessageQuery) OnlyX(ctx context.Context) *IncidentDebriefMessage {
+	node, err := _q.Only(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -208,9 +208,9 @@ func (idmq *IncidentDebriefMessageQuery) OnlyX(ctx context.Context) *IncidentDeb
 // OnlyID is like Only, but returns the only IncidentDebriefMessage ID in the query.
 // Returns a *NotSingularError when more than one IncidentDebriefMessage ID is found.
 // Returns a *NotFoundError when no entities are found.
-func (idmq *IncidentDebriefMessageQuery) OnlyID(ctx context.Context) (id uuid.UUID, err error) {
+func (_q *IncidentDebriefMessageQuery) OnlyID(ctx context.Context) (id uuid.UUID, err error) {
 	var ids []uuid.UUID
-	if ids, err = idmq.Limit(2).IDs(setContextOp(ctx, idmq.ctx, ent.OpQueryOnlyID)); err != nil {
+	if ids, err = _q.Limit(2).IDs(setContextOp(ctx, _q.ctx, ent.OpQueryOnlyID)); err != nil {
 		return
 	}
 	switch len(ids) {
@@ -225,8 +225,8 @@ func (idmq *IncidentDebriefMessageQuery) OnlyID(ctx context.Context) (id uuid.UU
 }
 
 // OnlyIDX is like OnlyID, but panics if an error occurs.
-func (idmq *IncidentDebriefMessageQuery) OnlyIDX(ctx context.Context) uuid.UUID {
-	id, err := idmq.OnlyID(ctx)
+func (_q *IncidentDebriefMessageQuery) OnlyIDX(ctx context.Context) uuid.UUID {
+	id, err := _q.OnlyID(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -234,18 +234,18 @@ func (idmq *IncidentDebriefMessageQuery) OnlyIDX(ctx context.Context) uuid.UUID 
 }
 
 // All executes the query and returns a list of IncidentDebriefMessages.
-func (idmq *IncidentDebriefMessageQuery) All(ctx context.Context) ([]*IncidentDebriefMessage, error) {
-	ctx = setContextOp(ctx, idmq.ctx, ent.OpQueryAll)
-	if err := idmq.prepareQuery(ctx); err != nil {
+func (_q *IncidentDebriefMessageQuery) All(ctx context.Context) ([]*IncidentDebriefMessage, error) {
+	ctx = setContextOp(ctx, _q.ctx, ent.OpQueryAll)
+	if err := _q.prepareQuery(ctx); err != nil {
 		return nil, err
 	}
 	qr := querierAll[[]*IncidentDebriefMessage, *IncidentDebriefMessageQuery]()
-	return withInterceptors[[]*IncidentDebriefMessage](ctx, idmq, qr, idmq.inters)
+	return withInterceptors[[]*IncidentDebriefMessage](ctx, _q, qr, _q.inters)
 }
 
 // AllX is like All, but panics if an error occurs.
-func (idmq *IncidentDebriefMessageQuery) AllX(ctx context.Context) []*IncidentDebriefMessage {
-	nodes, err := idmq.All(ctx)
+func (_q *IncidentDebriefMessageQuery) AllX(ctx context.Context) []*IncidentDebriefMessage {
+	nodes, err := _q.All(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -253,20 +253,20 @@ func (idmq *IncidentDebriefMessageQuery) AllX(ctx context.Context) []*IncidentDe
 }
 
 // IDs executes the query and returns a list of IncidentDebriefMessage IDs.
-func (idmq *IncidentDebriefMessageQuery) IDs(ctx context.Context) (ids []uuid.UUID, err error) {
-	if idmq.ctx.Unique == nil && idmq.path != nil {
-		idmq.Unique(true)
+func (_q *IncidentDebriefMessageQuery) IDs(ctx context.Context) (ids []uuid.UUID, err error) {
+	if _q.ctx.Unique == nil && _q.path != nil {
+		_q.Unique(true)
 	}
-	ctx = setContextOp(ctx, idmq.ctx, ent.OpQueryIDs)
-	if err = idmq.Select(incidentdebriefmessage.FieldID).Scan(ctx, &ids); err != nil {
+	ctx = setContextOp(ctx, _q.ctx, ent.OpQueryIDs)
+	if err = _q.Select(incidentdebriefmessage.FieldID).Scan(ctx, &ids); err != nil {
 		return nil, err
 	}
 	return ids, nil
 }
 
 // IDsX is like IDs, but panics if an error occurs.
-func (idmq *IncidentDebriefMessageQuery) IDsX(ctx context.Context) []uuid.UUID {
-	ids, err := idmq.IDs(ctx)
+func (_q *IncidentDebriefMessageQuery) IDsX(ctx context.Context) []uuid.UUID {
+	ids, err := _q.IDs(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -274,17 +274,17 @@ func (idmq *IncidentDebriefMessageQuery) IDsX(ctx context.Context) []uuid.UUID {
 }
 
 // Count returns the count of the given query.
-func (idmq *IncidentDebriefMessageQuery) Count(ctx context.Context) (int, error) {
-	ctx = setContextOp(ctx, idmq.ctx, ent.OpQueryCount)
-	if err := idmq.prepareQuery(ctx); err != nil {
+func (_q *IncidentDebriefMessageQuery) Count(ctx context.Context) (int, error) {
+	ctx = setContextOp(ctx, _q.ctx, ent.OpQueryCount)
+	if err := _q.prepareQuery(ctx); err != nil {
 		return 0, err
 	}
-	return withInterceptors[int](ctx, idmq, querierCount[*IncidentDebriefMessageQuery](), idmq.inters)
+	return withInterceptors[int](ctx, _q, querierCount[*IncidentDebriefMessageQuery](), _q.inters)
 }
 
 // CountX is like Count, but panics if an error occurs.
-func (idmq *IncidentDebriefMessageQuery) CountX(ctx context.Context) int {
-	count, err := idmq.Count(ctx)
+func (_q *IncidentDebriefMessageQuery) CountX(ctx context.Context) int {
+	count, err := _q.Count(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -292,9 +292,9 @@ func (idmq *IncidentDebriefMessageQuery) CountX(ctx context.Context) int {
 }
 
 // Exist returns true if the query has elements in the graph.
-func (idmq *IncidentDebriefMessageQuery) Exist(ctx context.Context) (bool, error) {
-	ctx = setContextOp(ctx, idmq.ctx, ent.OpQueryExist)
-	switch _, err := idmq.FirstID(ctx); {
+func (_q *IncidentDebriefMessageQuery) Exist(ctx context.Context) (bool, error) {
+	ctx = setContextOp(ctx, _q.ctx, ent.OpQueryExist)
+	switch _, err := _q.FirstID(ctx); {
 	case IsNotFound(err):
 		return false, nil
 	case err != nil:
@@ -305,8 +305,8 @@ func (idmq *IncidentDebriefMessageQuery) Exist(ctx context.Context) (bool, error
 }
 
 // ExistX is like Exist, but panics if an error occurs.
-func (idmq *IncidentDebriefMessageQuery) ExistX(ctx context.Context) bool {
-	exist, err := idmq.Exist(ctx)
+func (_q *IncidentDebriefMessageQuery) ExistX(ctx context.Context) bool {
+	exist, err := _q.Exist(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -315,57 +315,57 @@ func (idmq *IncidentDebriefMessageQuery) ExistX(ctx context.Context) bool {
 
 // Clone returns a duplicate of the IncidentDebriefMessageQuery builder, including all associated steps. It can be
 // used to prepare common query builders and use them differently after the clone is made.
-func (idmq *IncidentDebriefMessageQuery) Clone() *IncidentDebriefMessageQuery {
-	if idmq == nil {
+func (_q *IncidentDebriefMessageQuery) Clone() *IncidentDebriefMessageQuery {
+	if _q == nil {
 		return nil
 	}
 	return &IncidentDebriefMessageQuery{
-		config:           idmq.config,
-		ctx:              idmq.ctx.Clone(),
-		order:            append([]incidentdebriefmessage.OrderOption{}, idmq.order...),
-		inters:           append([]Interceptor{}, idmq.inters...),
-		predicates:       append([]predicate.IncidentDebriefMessage{}, idmq.predicates...),
-		withTenant:       idmq.withTenant.Clone(),
-		withDebrief:      idmq.withDebrief.Clone(),
-		withFromQuestion: idmq.withFromQuestion.Clone(),
+		config:           _q.config,
+		ctx:              _q.ctx.Clone(),
+		order:            append([]incidentdebriefmessage.OrderOption{}, _q.order...),
+		inters:           append([]Interceptor{}, _q.inters...),
+		predicates:       append([]predicate.IncidentDebriefMessage{}, _q.predicates...),
+		withTenant:       _q.withTenant.Clone(),
+		withDebrief:      _q.withDebrief.Clone(),
+		withFromQuestion: _q.withFromQuestion.Clone(),
 		// clone intermediate query.
-		sql:       idmq.sql.Clone(),
-		path:      idmq.path,
-		modifiers: append([]func(*sql.Selector){}, idmq.modifiers...),
+		sql:       _q.sql.Clone(),
+		path:      _q.path,
+		modifiers: append([]func(*sql.Selector){}, _q.modifiers...),
 	}
 }
 
 // WithTenant tells the query-builder to eager-load the nodes that are connected to
 // the "tenant" edge. The optional arguments are used to configure the query builder of the edge.
-func (idmq *IncidentDebriefMessageQuery) WithTenant(opts ...func(*TenantQuery)) *IncidentDebriefMessageQuery {
-	query := (&TenantClient{config: idmq.config}).Query()
+func (_q *IncidentDebriefMessageQuery) WithTenant(opts ...func(*TenantQuery)) *IncidentDebriefMessageQuery {
+	query := (&TenantClient{config: _q.config}).Query()
 	for _, opt := range opts {
 		opt(query)
 	}
-	idmq.withTenant = query
-	return idmq
+	_q.withTenant = query
+	return _q
 }
 
 // WithDebrief tells the query-builder to eager-load the nodes that are connected to
 // the "debrief" edge. The optional arguments are used to configure the query builder of the edge.
-func (idmq *IncidentDebriefMessageQuery) WithDebrief(opts ...func(*IncidentDebriefQuery)) *IncidentDebriefMessageQuery {
-	query := (&IncidentDebriefClient{config: idmq.config}).Query()
+func (_q *IncidentDebriefMessageQuery) WithDebrief(opts ...func(*IncidentDebriefQuery)) *IncidentDebriefMessageQuery {
+	query := (&IncidentDebriefClient{config: _q.config}).Query()
 	for _, opt := range opts {
 		opt(query)
 	}
-	idmq.withDebrief = query
-	return idmq
+	_q.withDebrief = query
+	return _q
 }
 
 // WithFromQuestion tells the query-builder to eager-load the nodes that are connected to
 // the "from_question" edge. The optional arguments are used to configure the query builder of the edge.
-func (idmq *IncidentDebriefMessageQuery) WithFromQuestion(opts ...func(*IncidentDebriefQuestionQuery)) *IncidentDebriefMessageQuery {
-	query := (&IncidentDebriefQuestionClient{config: idmq.config}).Query()
+func (_q *IncidentDebriefMessageQuery) WithFromQuestion(opts ...func(*IncidentDebriefQuestionQuery)) *IncidentDebriefMessageQuery {
+	query := (&IncidentDebriefQuestionClient{config: _q.config}).Query()
 	for _, opt := range opts {
 		opt(query)
 	}
-	idmq.withFromQuestion = query
-	return idmq
+	_q.withFromQuestion = query
+	return _q
 }
 
 // GroupBy is used to group vertices by one or more fields/columns.
@@ -382,10 +382,10 @@ func (idmq *IncidentDebriefMessageQuery) WithFromQuestion(opts ...func(*Incident
 //		GroupBy(incidentdebriefmessage.FieldTenantID).
 //		Aggregate(ent.Count()).
 //		Scan(ctx, &v)
-func (idmq *IncidentDebriefMessageQuery) GroupBy(field string, fields ...string) *IncidentDebriefMessageGroupBy {
-	idmq.ctx.Fields = append([]string{field}, fields...)
-	grbuild := &IncidentDebriefMessageGroupBy{build: idmq}
-	grbuild.flds = &idmq.ctx.Fields
+func (_q *IncidentDebriefMessageQuery) GroupBy(field string, fields ...string) *IncidentDebriefMessageGroupBy {
+	_q.ctx.Fields = append([]string{field}, fields...)
+	grbuild := &IncidentDebriefMessageGroupBy{build: _q}
+	grbuild.flds = &_q.ctx.Fields
 	grbuild.label = incidentdebriefmessage.Label
 	grbuild.scan = grbuild.Scan
 	return grbuild
@@ -403,96 +403,96 @@ func (idmq *IncidentDebriefMessageQuery) GroupBy(field string, fields ...string)
 //	client.IncidentDebriefMessage.Query().
 //		Select(incidentdebriefmessage.FieldTenantID).
 //		Scan(ctx, &v)
-func (idmq *IncidentDebriefMessageQuery) Select(fields ...string) *IncidentDebriefMessageSelect {
-	idmq.ctx.Fields = append(idmq.ctx.Fields, fields...)
-	sbuild := &IncidentDebriefMessageSelect{IncidentDebriefMessageQuery: idmq}
+func (_q *IncidentDebriefMessageQuery) Select(fields ...string) *IncidentDebriefMessageSelect {
+	_q.ctx.Fields = append(_q.ctx.Fields, fields...)
+	sbuild := &IncidentDebriefMessageSelect{IncidentDebriefMessageQuery: _q}
 	sbuild.label = incidentdebriefmessage.Label
-	sbuild.flds, sbuild.scan = &idmq.ctx.Fields, sbuild.Scan
+	sbuild.flds, sbuild.scan = &_q.ctx.Fields, sbuild.Scan
 	return sbuild
 }
 
 // Aggregate returns a IncidentDebriefMessageSelect configured with the given aggregations.
-func (idmq *IncidentDebriefMessageQuery) Aggregate(fns ...AggregateFunc) *IncidentDebriefMessageSelect {
-	return idmq.Select().Aggregate(fns...)
+func (_q *IncidentDebriefMessageQuery) Aggregate(fns ...AggregateFunc) *IncidentDebriefMessageSelect {
+	return _q.Select().Aggregate(fns...)
 }
 
-func (idmq *IncidentDebriefMessageQuery) prepareQuery(ctx context.Context) error {
-	for _, inter := range idmq.inters {
+func (_q *IncidentDebriefMessageQuery) prepareQuery(ctx context.Context) error {
+	for _, inter := range _q.inters {
 		if inter == nil {
 			return fmt.Errorf("ent: uninitialized interceptor (forgotten import ent/runtime?)")
 		}
 		if trv, ok := inter.(Traverser); ok {
-			if err := trv.Traverse(ctx, idmq); err != nil {
+			if err := trv.Traverse(ctx, _q); err != nil {
 				return err
 			}
 		}
 	}
-	for _, f := range idmq.ctx.Fields {
+	for _, f := range _q.ctx.Fields {
 		if !incidentdebriefmessage.ValidColumn(f) {
 			return &ValidationError{Name: f, err: fmt.Errorf("ent: invalid field %q for query", f)}
 		}
 	}
-	if idmq.path != nil {
-		prev, err := idmq.path(ctx)
+	if _q.path != nil {
+		prev, err := _q.path(ctx)
 		if err != nil {
 			return err
 		}
-		idmq.sql = prev
+		_q.sql = prev
 	}
 	if incidentdebriefmessage.Policy == nil {
 		return errors.New("ent: uninitialized incidentdebriefmessage.Policy (forgotten import ent/runtime?)")
 	}
-	if err := incidentdebriefmessage.Policy.EvalQuery(ctx, idmq); err != nil {
+	if err := incidentdebriefmessage.Policy.EvalQuery(ctx, _q); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (idmq *IncidentDebriefMessageQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*IncidentDebriefMessage, error) {
+func (_q *IncidentDebriefMessageQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*IncidentDebriefMessage, error) {
 	var (
 		nodes       = []*IncidentDebriefMessage{}
-		_spec       = idmq.querySpec()
+		_spec       = _q.querySpec()
 		loadedTypes = [3]bool{
-			idmq.withTenant != nil,
-			idmq.withDebrief != nil,
-			idmq.withFromQuestion != nil,
+			_q.withTenant != nil,
+			_q.withDebrief != nil,
+			_q.withFromQuestion != nil,
 		}
 	)
 	_spec.ScanValues = func(columns []string) ([]any, error) {
 		return (*IncidentDebriefMessage).scanValues(nil, columns)
 	}
 	_spec.Assign = func(columns []string, values []any) error {
-		node := &IncidentDebriefMessage{config: idmq.config}
+		node := &IncidentDebriefMessage{config: _q.config}
 		nodes = append(nodes, node)
 		node.Edges.loadedTypes = loadedTypes
 		return node.assignValues(columns, values)
 	}
-	if len(idmq.modifiers) > 0 {
-		_spec.Modifiers = idmq.modifiers
+	if len(_q.modifiers) > 0 {
+		_spec.Modifiers = _q.modifiers
 	}
 	for i := range hooks {
 		hooks[i](ctx, _spec)
 	}
-	if err := sqlgraph.QueryNodes(ctx, idmq.driver, _spec); err != nil {
+	if err := sqlgraph.QueryNodes(ctx, _q.driver, _spec); err != nil {
 		return nil, err
 	}
 	if len(nodes) == 0 {
 		return nodes, nil
 	}
-	if query := idmq.withTenant; query != nil {
-		if err := idmq.loadTenant(ctx, query, nodes, nil,
+	if query := _q.withTenant; query != nil {
+		if err := _q.loadTenant(ctx, query, nodes, nil,
 			func(n *IncidentDebriefMessage, e *Tenant) { n.Edges.Tenant = e }); err != nil {
 			return nil, err
 		}
 	}
-	if query := idmq.withDebrief; query != nil {
-		if err := idmq.loadDebrief(ctx, query, nodes, nil,
+	if query := _q.withDebrief; query != nil {
+		if err := _q.loadDebrief(ctx, query, nodes, nil,
 			func(n *IncidentDebriefMessage, e *IncidentDebrief) { n.Edges.Debrief = e }); err != nil {
 			return nil, err
 		}
 	}
-	if query := idmq.withFromQuestion; query != nil {
-		if err := idmq.loadFromQuestion(ctx, query, nodes, nil,
+	if query := _q.withFromQuestion; query != nil {
+		if err := _q.loadFromQuestion(ctx, query, nodes, nil,
 			func(n *IncidentDebriefMessage, e *IncidentDebriefQuestion) { n.Edges.FromQuestion = e }); err != nil {
 			return nil, err
 		}
@@ -500,7 +500,7 @@ func (idmq *IncidentDebriefMessageQuery) sqlAll(ctx context.Context, hooks ...qu
 	return nodes, nil
 }
 
-func (idmq *IncidentDebriefMessageQuery) loadTenant(ctx context.Context, query *TenantQuery, nodes []*IncidentDebriefMessage, init func(*IncidentDebriefMessage), assign func(*IncidentDebriefMessage, *Tenant)) error {
+func (_q *IncidentDebriefMessageQuery) loadTenant(ctx context.Context, query *TenantQuery, nodes []*IncidentDebriefMessage, init func(*IncidentDebriefMessage), assign func(*IncidentDebriefMessage, *Tenant)) error {
 	ids := make([]int, 0, len(nodes))
 	nodeids := make(map[int][]*IncidentDebriefMessage)
 	for i := range nodes {
@@ -529,7 +529,7 @@ func (idmq *IncidentDebriefMessageQuery) loadTenant(ctx context.Context, query *
 	}
 	return nil
 }
-func (idmq *IncidentDebriefMessageQuery) loadDebrief(ctx context.Context, query *IncidentDebriefQuery, nodes []*IncidentDebriefMessage, init func(*IncidentDebriefMessage), assign func(*IncidentDebriefMessage, *IncidentDebrief)) error {
+func (_q *IncidentDebriefMessageQuery) loadDebrief(ctx context.Context, query *IncidentDebriefQuery, nodes []*IncidentDebriefMessage, init func(*IncidentDebriefMessage), assign func(*IncidentDebriefMessage, *IncidentDebrief)) error {
 	ids := make([]uuid.UUID, 0, len(nodes))
 	nodeids := make(map[uuid.UUID][]*IncidentDebriefMessage)
 	for i := range nodes {
@@ -558,7 +558,7 @@ func (idmq *IncidentDebriefMessageQuery) loadDebrief(ctx context.Context, query 
 	}
 	return nil
 }
-func (idmq *IncidentDebriefMessageQuery) loadFromQuestion(ctx context.Context, query *IncidentDebriefQuestionQuery, nodes []*IncidentDebriefMessage, init func(*IncidentDebriefMessage), assign func(*IncidentDebriefMessage, *IncidentDebriefQuestion)) error {
+func (_q *IncidentDebriefMessageQuery) loadFromQuestion(ctx context.Context, query *IncidentDebriefQuestionQuery, nodes []*IncidentDebriefMessage, init func(*IncidentDebriefMessage), assign func(*IncidentDebriefMessage, *IncidentDebriefQuestion)) error {
 	ids := make([]uuid.UUID, 0, len(nodes))
 	nodeids := make(map[uuid.UUID][]*IncidentDebriefMessage)
 	for i := range nodes {
@@ -588,27 +588,27 @@ func (idmq *IncidentDebriefMessageQuery) loadFromQuestion(ctx context.Context, q
 	return nil
 }
 
-func (idmq *IncidentDebriefMessageQuery) sqlCount(ctx context.Context) (int, error) {
-	_spec := idmq.querySpec()
-	if len(idmq.modifiers) > 0 {
-		_spec.Modifiers = idmq.modifiers
+func (_q *IncidentDebriefMessageQuery) sqlCount(ctx context.Context) (int, error) {
+	_spec := _q.querySpec()
+	if len(_q.modifiers) > 0 {
+		_spec.Modifiers = _q.modifiers
 	}
-	_spec.Node.Columns = idmq.ctx.Fields
-	if len(idmq.ctx.Fields) > 0 {
-		_spec.Unique = idmq.ctx.Unique != nil && *idmq.ctx.Unique
+	_spec.Node.Columns = _q.ctx.Fields
+	if len(_q.ctx.Fields) > 0 {
+		_spec.Unique = _q.ctx.Unique != nil && *_q.ctx.Unique
 	}
-	return sqlgraph.CountNodes(ctx, idmq.driver, _spec)
+	return sqlgraph.CountNodes(ctx, _q.driver, _spec)
 }
 
-func (idmq *IncidentDebriefMessageQuery) querySpec() *sqlgraph.QuerySpec {
+func (_q *IncidentDebriefMessageQuery) querySpec() *sqlgraph.QuerySpec {
 	_spec := sqlgraph.NewQuerySpec(incidentdebriefmessage.Table, incidentdebriefmessage.Columns, sqlgraph.NewFieldSpec(incidentdebriefmessage.FieldID, field.TypeUUID))
-	_spec.From = idmq.sql
-	if unique := idmq.ctx.Unique; unique != nil {
+	_spec.From = _q.sql
+	if unique := _q.ctx.Unique; unique != nil {
 		_spec.Unique = *unique
-	} else if idmq.path != nil {
+	} else if _q.path != nil {
 		_spec.Unique = true
 	}
-	if fields := idmq.ctx.Fields; len(fields) > 0 {
+	if fields := _q.ctx.Fields; len(fields) > 0 {
 		_spec.Node.Columns = make([]string, 0, len(fields))
 		_spec.Node.Columns = append(_spec.Node.Columns, incidentdebriefmessage.FieldID)
 		for i := range fields {
@@ -616,30 +616,30 @@ func (idmq *IncidentDebriefMessageQuery) querySpec() *sqlgraph.QuerySpec {
 				_spec.Node.Columns = append(_spec.Node.Columns, fields[i])
 			}
 		}
-		if idmq.withTenant != nil {
+		if _q.withTenant != nil {
 			_spec.Node.AddColumnOnce(incidentdebriefmessage.FieldTenantID)
 		}
-		if idmq.withDebrief != nil {
+		if _q.withDebrief != nil {
 			_spec.Node.AddColumnOnce(incidentdebriefmessage.FieldDebriefID)
 		}
-		if idmq.withFromQuestion != nil {
+		if _q.withFromQuestion != nil {
 			_spec.Node.AddColumnOnce(incidentdebriefmessage.FieldQuestionID)
 		}
 	}
-	if ps := idmq.predicates; len(ps) > 0 {
+	if ps := _q.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {
 				ps[i](selector)
 			}
 		}
 	}
-	if limit := idmq.ctx.Limit; limit != nil {
+	if limit := _q.ctx.Limit; limit != nil {
 		_spec.Limit = *limit
 	}
-	if offset := idmq.ctx.Offset; offset != nil {
+	if offset := _q.ctx.Offset; offset != nil {
 		_spec.Offset = *offset
 	}
-	if ps := idmq.order; len(ps) > 0 {
+	if ps := _q.order; len(ps) > 0 {
 		_spec.Order = func(selector *sql.Selector) {
 			for i := range ps {
 				ps[i](selector)
@@ -649,45 +649,45 @@ func (idmq *IncidentDebriefMessageQuery) querySpec() *sqlgraph.QuerySpec {
 	return _spec
 }
 
-func (idmq *IncidentDebriefMessageQuery) sqlQuery(ctx context.Context) *sql.Selector {
-	builder := sql.Dialect(idmq.driver.Dialect())
+func (_q *IncidentDebriefMessageQuery) sqlQuery(ctx context.Context) *sql.Selector {
+	builder := sql.Dialect(_q.driver.Dialect())
 	t1 := builder.Table(incidentdebriefmessage.Table)
-	columns := idmq.ctx.Fields
+	columns := _q.ctx.Fields
 	if len(columns) == 0 {
 		columns = incidentdebriefmessage.Columns
 	}
 	selector := builder.Select(t1.Columns(columns...)...).From(t1)
-	if idmq.sql != nil {
-		selector = idmq.sql
+	if _q.sql != nil {
+		selector = _q.sql
 		selector.Select(selector.Columns(columns...)...)
 	}
-	if idmq.ctx.Unique != nil && *idmq.ctx.Unique {
+	if _q.ctx.Unique != nil && *_q.ctx.Unique {
 		selector.Distinct()
 	}
-	for _, m := range idmq.modifiers {
+	for _, m := range _q.modifiers {
 		m(selector)
 	}
-	for _, p := range idmq.predicates {
+	for _, p := range _q.predicates {
 		p(selector)
 	}
-	for _, p := range idmq.order {
+	for _, p := range _q.order {
 		p(selector)
 	}
-	if offset := idmq.ctx.Offset; offset != nil {
+	if offset := _q.ctx.Offset; offset != nil {
 		// limit is mandatory for offset clause. We start
 		// with default value, and override it below if needed.
 		selector.Offset(*offset).Limit(math.MaxInt32)
 	}
-	if limit := idmq.ctx.Limit; limit != nil {
+	if limit := _q.ctx.Limit; limit != nil {
 		selector.Limit(*limit)
 	}
 	return selector
 }
 
 // Modify adds a query modifier for attaching custom logic to queries.
-func (idmq *IncidentDebriefMessageQuery) Modify(modifiers ...func(s *sql.Selector)) *IncidentDebriefMessageSelect {
-	idmq.modifiers = append(idmq.modifiers, modifiers...)
-	return idmq.Select()
+func (_q *IncidentDebriefMessageQuery) Modify(modifiers ...func(s *sql.Selector)) *IncidentDebriefMessageSelect {
+	_q.modifiers = append(_q.modifiers, modifiers...)
+	return _q.Select()
 }
 
 // IncidentDebriefMessageGroupBy is the group-by builder for IncidentDebriefMessage entities.
@@ -697,41 +697,41 @@ type IncidentDebriefMessageGroupBy struct {
 }
 
 // Aggregate adds the given aggregation functions to the group-by query.
-func (idmgb *IncidentDebriefMessageGroupBy) Aggregate(fns ...AggregateFunc) *IncidentDebriefMessageGroupBy {
-	idmgb.fns = append(idmgb.fns, fns...)
-	return idmgb
+func (_g *IncidentDebriefMessageGroupBy) Aggregate(fns ...AggregateFunc) *IncidentDebriefMessageGroupBy {
+	_g.fns = append(_g.fns, fns...)
+	return _g
 }
 
 // Scan applies the selector query and scans the result into the given value.
-func (idmgb *IncidentDebriefMessageGroupBy) Scan(ctx context.Context, v any) error {
-	ctx = setContextOp(ctx, idmgb.build.ctx, ent.OpQueryGroupBy)
-	if err := idmgb.build.prepareQuery(ctx); err != nil {
+func (_g *IncidentDebriefMessageGroupBy) Scan(ctx context.Context, v any) error {
+	ctx = setContextOp(ctx, _g.build.ctx, ent.OpQueryGroupBy)
+	if err := _g.build.prepareQuery(ctx); err != nil {
 		return err
 	}
-	return scanWithInterceptors[*IncidentDebriefMessageQuery, *IncidentDebriefMessageGroupBy](ctx, idmgb.build, idmgb, idmgb.build.inters, v)
+	return scanWithInterceptors[*IncidentDebriefMessageQuery, *IncidentDebriefMessageGroupBy](ctx, _g.build, _g, _g.build.inters, v)
 }
 
-func (idmgb *IncidentDebriefMessageGroupBy) sqlScan(ctx context.Context, root *IncidentDebriefMessageQuery, v any) error {
+func (_g *IncidentDebriefMessageGroupBy) sqlScan(ctx context.Context, root *IncidentDebriefMessageQuery, v any) error {
 	selector := root.sqlQuery(ctx).Select()
-	aggregation := make([]string, 0, len(idmgb.fns))
-	for _, fn := range idmgb.fns {
+	aggregation := make([]string, 0, len(_g.fns))
+	for _, fn := range _g.fns {
 		aggregation = append(aggregation, fn(selector))
 	}
 	if len(selector.SelectedColumns()) == 0 {
-		columns := make([]string, 0, len(*idmgb.flds)+len(idmgb.fns))
-		for _, f := range *idmgb.flds {
+		columns := make([]string, 0, len(*_g.flds)+len(_g.fns))
+		for _, f := range *_g.flds {
 			columns = append(columns, selector.C(f))
 		}
 		columns = append(columns, aggregation...)
 		selector.Select(columns...)
 	}
-	selector.GroupBy(selector.Columns(*idmgb.flds...)...)
+	selector.GroupBy(selector.Columns(*_g.flds...)...)
 	if err := selector.Err(); err != nil {
 		return err
 	}
 	rows := &sql.Rows{}
 	query, args := selector.Query()
-	if err := idmgb.build.driver.Query(ctx, query, args, rows); err != nil {
+	if err := _g.build.driver.Query(ctx, query, args, rows); err != nil {
 		return err
 	}
 	defer rows.Close()
@@ -745,27 +745,27 @@ type IncidentDebriefMessageSelect struct {
 }
 
 // Aggregate adds the given aggregation functions to the selector query.
-func (idms *IncidentDebriefMessageSelect) Aggregate(fns ...AggregateFunc) *IncidentDebriefMessageSelect {
-	idms.fns = append(idms.fns, fns...)
-	return idms
+func (_s *IncidentDebriefMessageSelect) Aggregate(fns ...AggregateFunc) *IncidentDebriefMessageSelect {
+	_s.fns = append(_s.fns, fns...)
+	return _s
 }
 
 // Scan applies the selector query and scans the result into the given value.
-func (idms *IncidentDebriefMessageSelect) Scan(ctx context.Context, v any) error {
-	ctx = setContextOp(ctx, idms.ctx, ent.OpQuerySelect)
-	if err := idms.prepareQuery(ctx); err != nil {
+func (_s *IncidentDebriefMessageSelect) Scan(ctx context.Context, v any) error {
+	ctx = setContextOp(ctx, _s.ctx, ent.OpQuerySelect)
+	if err := _s.prepareQuery(ctx); err != nil {
 		return err
 	}
-	return scanWithInterceptors[*IncidentDebriefMessageQuery, *IncidentDebriefMessageSelect](ctx, idms.IncidentDebriefMessageQuery, idms, idms.inters, v)
+	return scanWithInterceptors[*IncidentDebriefMessageQuery, *IncidentDebriefMessageSelect](ctx, _s.IncidentDebriefMessageQuery, _s, _s.inters, v)
 }
 
-func (idms *IncidentDebriefMessageSelect) sqlScan(ctx context.Context, root *IncidentDebriefMessageQuery, v any) error {
+func (_s *IncidentDebriefMessageSelect) sqlScan(ctx context.Context, root *IncidentDebriefMessageQuery, v any) error {
 	selector := root.sqlQuery(ctx)
-	aggregation := make([]string, 0, len(idms.fns))
-	for _, fn := range idms.fns {
+	aggregation := make([]string, 0, len(_s.fns))
+	for _, fn := range _s.fns {
 		aggregation = append(aggregation, fn(selector))
 	}
-	switch n := len(*idms.selector.flds); {
+	switch n := len(*_s.selector.flds); {
 	case n == 0 && len(aggregation) > 0:
 		selector.Select(aggregation...)
 	case n != 0 && len(aggregation) > 0:
@@ -773,7 +773,7 @@ func (idms *IncidentDebriefMessageSelect) sqlScan(ctx context.Context, root *Inc
 	}
 	rows := &sql.Rows{}
 	query, args := selector.Query()
-	if err := idms.driver.Query(ctx, query, args, rows); err != nil {
+	if err := _s.driver.Query(ctx, query, args, rows); err != nil {
 		return err
 	}
 	defer rows.Close()
@@ -781,7 +781,7 @@ func (idms *IncidentDebriefMessageSelect) sqlScan(ctx context.Context, root *Inc
 }
 
 // Modify adds a query modifier for attaching custom logic to queries.
-func (idms *IncidentDebriefMessageSelect) Modify(modifiers ...func(s *sql.Selector)) *IncidentDebriefMessageSelect {
-	idms.modifiers = append(idms.modifiers, modifiers...)
-	return idms
+func (_s *IncidentDebriefMessageSelect) Modify(modifiers ...func(s *sql.Selector)) *IncidentDebriefMessageSelect {
+	_s.modifiers = append(_s.modifiers, modifiers...)
+	return _s
 }

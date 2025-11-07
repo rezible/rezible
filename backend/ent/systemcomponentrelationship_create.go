@@ -29,140 +29,140 @@ type SystemComponentRelationshipCreate struct {
 }
 
 // SetTenantID sets the "tenant_id" field.
-func (scrc *SystemComponentRelationshipCreate) SetTenantID(i int) *SystemComponentRelationshipCreate {
-	scrc.mutation.SetTenantID(i)
-	return scrc
+func (_c *SystemComponentRelationshipCreate) SetTenantID(v int) *SystemComponentRelationshipCreate {
+	_c.mutation.SetTenantID(v)
+	return _c
 }
 
 // SetProviderID sets the "provider_id" field.
-func (scrc *SystemComponentRelationshipCreate) SetProviderID(s string) *SystemComponentRelationshipCreate {
-	scrc.mutation.SetProviderID(s)
-	return scrc
+func (_c *SystemComponentRelationshipCreate) SetProviderID(v string) *SystemComponentRelationshipCreate {
+	_c.mutation.SetProviderID(v)
+	return _c
 }
 
 // SetNillableProviderID sets the "provider_id" field if the given value is not nil.
-func (scrc *SystemComponentRelationshipCreate) SetNillableProviderID(s *string) *SystemComponentRelationshipCreate {
-	if s != nil {
-		scrc.SetProviderID(*s)
+func (_c *SystemComponentRelationshipCreate) SetNillableProviderID(v *string) *SystemComponentRelationshipCreate {
+	if v != nil {
+		_c.SetProviderID(*v)
 	}
-	return scrc
+	return _c
 }
 
 // SetSourceID sets the "source_id" field.
-func (scrc *SystemComponentRelationshipCreate) SetSourceID(u uuid.UUID) *SystemComponentRelationshipCreate {
-	scrc.mutation.SetSourceID(u)
-	return scrc
+func (_c *SystemComponentRelationshipCreate) SetSourceID(v uuid.UUID) *SystemComponentRelationshipCreate {
+	_c.mutation.SetSourceID(v)
+	return _c
 }
 
 // SetTargetID sets the "target_id" field.
-func (scrc *SystemComponentRelationshipCreate) SetTargetID(u uuid.UUID) *SystemComponentRelationshipCreate {
-	scrc.mutation.SetTargetID(u)
-	return scrc
+func (_c *SystemComponentRelationshipCreate) SetTargetID(v uuid.UUID) *SystemComponentRelationshipCreate {
+	_c.mutation.SetTargetID(v)
+	return _c
 }
 
 // SetDescription sets the "description" field.
-func (scrc *SystemComponentRelationshipCreate) SetDescription(s string) *SystemComponentRelationshipCreate {
-	scrc.mutation.SetDescription(s)
-	return scrc
+func (_c *SystemComponentRelationshipCreate) SetDescription(v string) *SystemComponentRelationshipCreate {
+	_c.mutation.SetDescription(v)
+	return _c
 }
 
 // SetNillableDescription sets the "description" field if the given value is not nil.
-func (scrc *SystemComponentRelationshipCreate) SetNillableDescription(s *string) *SystemComponentRelationshipCreate {
-	if s != nil {
-		scrc.SetDescription(*s)
+func (_c *SystemComponentRelationshipCreate) SetNillableDescription(v *string) *SystemComponentRelationshipCreate {
+	if v != nil {
+		_c.SetDescription(*v)
 	}
-	return scrc
+	return _c
 }
 
 // SetCreatedAt sets the "created_at" field.
-func (scrc *SystemComponentRelationshipCreate) SetCreatedAt(t time.Time) *SystemComponentRelationshipCreate {
-	scrc.mutation.SetCreatedAt(t)
-	return scrc
+func (_c *SystemComponentRelationshipCreate) SetCreatedAt(v time.Time) *SystemComponentRelationshipCreate {
+	_c.mutation.SetCreatedAt(v)
+	return _c
 }
 
 // SetNillableCreatedAt sets the "created_at" field if the given value is not nil.
-func (scrc *SystemComponentRelationshipCreate) SetNillableCreatedAt(t *time.Time) *SystemComponentRelationshipCreate {
-	if t != nil {
-		scrc.SetCreatedAt(*t)
+func (_c *SystemComponentRelationshipCreate) SetNillableCreatedAt(v *time.Time) *SystemComponentRelationshipCreate {
+	if v != nil {
+		_c.SetCreatedAt(*v)
 	}
-	return scrc
+	return _c
 }
 
 // SetID sets the "id" field.
-func (scrc *SystemComponentRelationshipCreate) SetID(u uuid.UUID) *SystemComponentRelationshipCreate {
-	scrc.mutation.SetID(u)
-	return scrc
+func (_c *SystemComponentRelationshipCreate) SetID(v uuid.UUID) *SystemComponentRelationshipCreate {
+	_c.mutation.SetID(v)
+	return _c
 }
 
 // SetNillableID sets the "id" field if the given value is not nil.
-func (scrc *SystemComponentRelationshipCreate) SetNillableID(u *uuid.UUID) *SystemComponentRelationshipCreate {
-	if u != nil {
-		scrc.SetID(*u)
+func (_c *SystemComponentRelationshipCreate) SetNillableID(v *uuid.UUID) *SystemComponentRelationshipCreate {
+	if v != nil {
+		_c.SetID(*v)
 	}
-	return scrc
+	return _c
 }
 
 // SetTenant sets the "tenant" edge to the Tenant entity.
-func (scrc *SystemComponentRelationshipCreate) SetTenant(t *Tenant) *SystemComponentRelationshipCreate {
-	return scrc.SetTenantID(t.ID)
+func (_c *SystemComponentRelationshipCreate) SetTenant(v *Tenant) *SystemComponentRelationshipCreate {
+	return _c.SetTenantID(v.ID)
 }
 
 // SetSource sets the "source" edge to the SystemComponent entity.
-func (scrc *SystemComponentRelationshipCreate) SetSource(s *SystemComponent) *SystemComponentRelationshipCreate {
-	return scrc.SetSourceID(s.ID)
+func (_c *SystemComponentRelationshipCreate) SetSource(v *SystemComponent) *SystemComponentRelationshipCreate {
+	return _c.SetSourceID(v.ID)
 }
 
 // SetTarget sets the "target" edge to the SystemComponent entity.
-func (scrc *SystemComponentRelationshipCreate) SetTarget(s *SystemComponent) *SystemComponentRelationshipCreate {
-	return scrc.SetTargetID(s.ID)
+func (_c *SystemComponentRelationshipCreate) SetTarget(v *SystemComponent) *SystemComponentRelationshipCreate {
+	return _c.SetTargetID(v.ID)
 }
 
 // AddSystemAnalysisIDs adds the "system_analyses" edge to the SystemAnalysisRelationship entity by IDs.
-func (scrc *SystemComponentRelationshipCreate) AddSystemAnalysisIDs(ids ...uuid.UUID) *SystemComponentRelationshipCreate {
-	scrc.mutation.AddSystemAnalysisIDs(ids...)
-	return scrc
+func (_c *SystemComponentRelationshipCreate) AddSystemAnalysisIDs(ids ...uuid.UUID) *SystemComponentRelationshipCreate {
+	_c.mutation.AddSystemAnalysisIDs(ids...)
+	return _c
 }
 
 // AddSystemAnalyses adds the "system_analyses" edges to the SystemAnalysisRelationship entity.
-func (scrc *SystemComponentRelationshipCreate) AddSystemAnalyses(s ...*SystemAnalysisRelationship) *SystemComponentRelationshipCreate {
-	ids := make([]uuid.UUID, len(s))
-	for i := range s {
-		ids[i] = s[i].ID
+func (_c *SystemComponentRelationshipCreate) AddSystemAnalyses(v ...*SystemAnalysisRelationship) *SystemComponentRelationshipCreate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
 	}
-	return scrc.AddSystemAnalysisIDs(ids...)
+	return _c.AddSystemAnalysisIDs(ids...)
 }
 
 // AddHazardIDs adds the "hazards" edge to the SystemHazard entity by IDs.
-func (scrc *SystemComponentRelationshipCreate) AddHazardIDs(ids ...uuid.UUID) *SystemComponentRelationshipCreate {
-	scrc.mutation.AddHazardIDs(ids...)
-	return scrc
+func (_c *SystemComponentRelationshipCreate) AddHazardIDs(ids ...uuid.UUID) *SystemComponentRelationshipCreate {
+	_c.mutation.AddHazardIDs(ids...)
+	return _c
 }
 
 // AddHazards adds the "hazards" edges to the SystemHazard entity.
-func (scrc *SystemComponentRelationshipCreate) AddHazards(s ...*SystemHazard) *SystemComponentRelationshipCreate {
-	ids := make([]uuid.UUID, len(s))
-	for i := range s {
-		ids[i] = s[i].ID
+func (_c *SystemComponentRelationshipCreate) AddHazards(v ...*SystemHazard) *SystemComponentRelationshipCreate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
 	}
-	return scrc.AddHazardIDs(ids...)
+	return _c.AddHazardIDs(ids...)
 }
 
 // Mutation returns the SystemComponentRelationshipMutation object of the builder.
-func (scrc *SystemComponentRelationshipCreate) Mutation() *SystemComponentRelationshipMutation {
-	return scrc.mutation
+func (_c *SystemComponentRelationshipCreate) Mutation() *SystemComponentRelationshipMutation {
+	return _c.mutation
 }
 
 // Save creates the SystemComponentRelationship in the database.
-func (scrc *SystemComponentRelationshipCreate) Save(ctx context.Context) (*SystemComponentRelationship, error) {
-	if err := scrc.defaults(); err != nil {
+func (_c *SystemComponentRelationshipCreate) Save(ctx context.Context) (*SystemComponentRelationship, error) {
+	if err := _c.defaults(); err != nil {
 		return nil, err
 	}
-	return withHooks(ctx, scrc.sqlSave, scrc.mutation, scrc.hooks)
+	return withHooks(ctx, _c.sqlSave, _c.mutation, _c.hooks)
 }
 
 // SaveX calls Save and panics if Save returns an error.
-func (scrc *SystemComponentRelationshipCreate) SaveX(ctx context.Context) *SystemComponentRelationship {
-	v, err := scrc.Save(ctx)
+func (_c *SystemComponentRelationshipCreate) SaveX(ctx context.Context) *SystemComponentRelationship {
+	v, err := _c.Save(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -170,69 +170,69 @@ func (scrc *SystemComponentRelationshipCreate) SaveX(ctx context.Context) *Syste
 }
 
 // Exec executes the query.
-func (scrc *SystemComponentRelationshipCreate) Exec(ctx context.Context) error {
-	_, err := scrc.Save(ctx)
+func (_c *SystemComponentRelationshipCreate) Exec(ctx context.Context) error {
+	_, err := _c.Save(ctx)
 	return err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (scrc *SystemComponentRelationshipCreate) ExecX(ctx context.Context) {
-	if err := scrc.Exec(ctx); err != nil {
+func (_c *SystemComponentRelationshipCreate) ExecX(ctx context.Context) {
+	if err := _c.Exec(ctx); err != nil {
 		panic(err)
 	}
 }
 
 // defaults sets the default values of the builder before save.
-func (scrc *SystemComponentRelationshipCreate) defaults() error {
-	if _, ok := scrc.mutation.CreatedAt(); !ok {
+func (_c *SystemComponentRelationshipCreate) defaults() error {
+	if _, ok := _c.mutation.CreatedAt(); !ok {
 		if systemcomponentrelationship.DefaultCreatedAt == nil {
 			return fmt.Errorf("ent: uninitialized systemcomponentrelationship.DefaultCreatedAt (forgotten import ent/runtime?)")
 		}
 		v := systemcomponentrelationship.DefaultCreatedAt()
-		scrc.mutation.SetCreatedAt(v)
+		_c.mutation.SetCreatedAt(v)
 	}
-	if _, ok := scrc.mutation.ID(); !ok {
+	if _, ok := _c.mutation.ID(); !ok {
 		if systemcomponentrelationship.DefaultID == nil {
 			return fmt.Errorf("ent: uninitialized systemcomponentrelationship.DefaultID (forgotten import ent/runtime?)")
 		}
 		v := systemcomponentrelationship.DefaultID()
-		scrc.mutation.SetID(v)
+		_c.mutation.SetID(v)
 	}
 	return nil
 }
 
 // check runs all checks and user-defined validators on the builder.
-func (scrc *SystemComponentRelationshipCreate) check() error {
-	if _, ok := scrc.mutation.TenantID(); !ok {
+func (_c *SystemComponentRelationshipCreate) check() error {
+	if _, ok := _c.mutation.TenantID(); !ok {
 		return &ValidationError{Name: "tenant_id", err: errors.New(`ent: missing required field "SystemComponentRelationship.tenant_id"`)}
 	}
-	if _, ok := scrc.mutation.SourceID(); !ok {
+	if _, ok := _c.mutation.SourceID(); !ok {
 		return &ValidationError{Name: "source_id", err: errors.New(`ent: missing required field "SystemComponentRelationship.source_id"`)}
 	}
-	if _, ok := scrc.mutation.TargetID(); !ok {
+	if _, ok := _c.mutation.TargetID(); !ok {
 		return &ValidationError{Name: "target_id", err: errors.New(`ent: missing required field "SystemComponentRelationship.target_id"`)}
 	}
-	if _, ok := scrc.mutation.CreatedAt(); !ok {
+	if _, ok := _c.mutation.CreatedAt(); !ok {
 		return &ValidationError{Name: "created_at", err: errors.New(`ent: missing required field "SystemComponentRelationship.created_at"`)}
 	}
-	if len(scrc.mutation.TenantIDs()) == 0 {
+	if len(_c.mutation.TenantIDs()) == 0 {
 		return &ValidationError{Name: "tenant", err: errors.New(`ent: missing required edge "SystemComponentRelationship.tenant"`)}
 	}
-	if len(scrc.mutation.SourceIDs()) == 0 {
+	if len(_c.mutation.SourceIDs()) == 0 {
 		return &ValidationError{Name: "source", err: errors.New(`ent: missing required edge "SystemComponentRelationship.source"`)}
 	}
-	if len(scrc.mutation.TargetIDs()) == 0 {
+	if len(_c.mutation.TargetIDs()) == 0 {
 		return &ValidationError{Name: "target", err: errors.New(`ent: missing required edge "SystemComponentRelationship.target"`)}
 	}
 	return nil
 }
 
-func (scrc *SystemComponentRelationshipCreate) sqlSave(ctx context.Context) (*SystemComponentRelationship, error) {
-	if err := scrc.check(); err != nil {
+func (_c *SystemComponentRelationshipCreate) sqlSave(ctx context.Context) (*SystemComponentRelationship, error) {
+	if err := _c.check(); err != nil {
 		return nil, err
 	}
-	_node, _spec := scrc.createSpec()
-	if err := sqlgraph.CreateNode(ctx, scrc.driver, _spec); err != nil {
+	_node, _spec := _c.createSpec()
+	if err := sqlgraph.CreateNode(ctx, _c.driver, _spec); err != nil {
 		if sqlgraph.IsConstraintError(err) {
 			err = &ConstraintError{msg: err.Error(), wrap: err}
 		}
@@ -245,34 +245,34 @@ func (scrc *SystemComponentRelationshipCreate) sqlSave(ctx context.Context) (*Sy
 			return nil, err
 		}
 	}
-	scrc.mutation.id = &_node.ID
-	scrc.mutation.done = true
+	_c.mutation.id = &_node.ID
+	_c.mutation.done = true
 	return _node, nil
 }
 
-func (scrc *SystemComponentRelationshipCreate) createSpec() (*SystemComponentRelationship, *sqlgraph.CreateSpec) {
+func (_c *SystemComponentRelationshipCreate) createSpec() (*SystemComponentRelationship, *sqlgraph.CreateSpec) {
 	var (
-		_node = &SystemComponentRelationship{config: scrc.config}
+		_node = &SystemComponentRelationship{config: _c.config}
 		_spec = sqlgraph.NewCreateSpec(systemcomponentrelationship.Table, sqlgraph.NewFieldSpec(systemcomponentrelationship.FieldID, field.TypeUUID))
 	)
-	_spec.OnConflict = scrc.conflict
-	if id, ok := scrc.mutation.ID(); ok {
+	_spec.OnConflict = _c.conflict
+	if id, ok := _c.mutation.ID(); ok {
 		_node.ID = id
 		_spec.ID.Value = &id
 	}
-	if value, ok := scrc.mutation.ProviderID(); ok {
+	if value, ok := _c.mutation.ProviderID(); ok {
 		_spec.SetField(systemcomponentrelationship.FieldProviderID, field.TypeString, value)
 		_node.ProviderID = value
 	}
-	if value, ok := scrc.mutation.Description(); ok {
+	if value, ok := _c.mutation.Description(); ok {
 		_spec.SetField(systemcomponentrelationship.FieldDescription, field.TypeString, value)
 		_node.Description = value
 	}
-	if value, ok := scrc.mutation.CreatedAt(); ok {
+	if value, ok := _c.mutation.CreatedAt(); ok {
 		_spec.SetField(systemcomponentrelationship.FieldCreatedAt, field.TypeTime, value)
 		_node.CreatedAt = value
 	}
-	if nodes := scrc.mutation.TenantIDs(); len(nodes) > 0 {
+	if nodes := _c.mutation.TenantIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
@@ -289,7 +289,7 @@ func (scrc *SystemComponentRelationshipCreate) createSpec() (*SystemComponentRel
 		_node.TenantID = nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
-	if nodes := scrc.mutation.SourceIDs(); len(nodes) > 0 {
+	if nodes := _c.mutation.SourceIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
@@ -306,7 +306,7 @@ func (scrc *SystemComponentRelationshipCreate) createSpec() (*SystemComponentRel
 		_node.SourceID = nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
-	if nodes := scrc.mutation.TargetIDs(); len(nodes) > 0 {
+	if nodes := _c.mutation.TargetIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
@@ -323,7 +323,7 @@ func (scrc *SystemComponentRelationshipCreate) createSpec() (*SystemComponentRel
 		_node.TargetID = nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
-	if nodes := scrc.mutation.SystemAnalysesIDs(); len(nodes) > 0 {
+	if nodes := _c.mutation.SystemAnalysesIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: true,
@@ -339,7 +339,7 @@ func (scrc *SystemComponentRelationshipCreate) createSpec() (*SystemComponentRel
 		}
 		_spec.Edges = append(_spec.Edges, edge)
 	}
-	if nodes := scrc.mutation.HazardsIDs(); len(nodes) > 0 {
+	if nodes := _c.mutation.HazardsIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
 			Inverse: true,
@@ -374,10 +374,10 @@ func (scrc *SystemComponentRelationshipCreate) createSpec() (*SystemComponentRel
 //			SetTenantID(v+v).
 //		}).
 //		Exec(ctx)
-func (scrc *SystemComponentRelationshipCreate) OnConflict(opts ...sql.ConflictOption) *SystemComponentRelationshipUpsertOne {
-	scrc.conflict = opts
+func (_c *SystemComponentRelationshipCreate) OnConflict(opts ...sql.ConflictOption) *SystemComponentRelationshipUpsertOne {
+	_c.conflict = opts
 	return &SystemComponentRelationshipUpsertOne{
-		create: scrc,
+		create: _c,
 	}
 }
 
@@ -387,10 +387,10 @@ func (scrc *SystemComponentRelationshipCreate) OnConflict(opts ...sql.ConflictOp
 //	client.SystemComponentRelationship.Create().
 //		OnConflict(sql.ConflictColumns(columns...)).
 //		Exec(ctx)
-func (scrc *SystemComponentRelationshipCreate) OnConflictColumns(columns ...string) *SystemComponentRelationshipUpsertOne {
-	scrc.conflict = append(scrc.conflict, sql.ConflictColumns(columns...))
+func (_c *SystemComponentRelationshipCreate) OnConflictColumns(columns ...string) *SystemComponentRelationshipUpsertOne {
+	_c.conflict = append(_c.conflict, sql.ConflictColumns(columns...))
 	return &SystemComponentRelationshipUpsertOne{
-		create: scrc,
+		create: _c,
 	}
 }
 
@@ -661,16 +661,16 @@ type SystemComponentRelationshipCreateBulk struct {
 }
 
 // Save creates the SystemComponentRelationship entities in the database.
-func (scrcb *SystemComponentRelationshipCreateBulk) Save(ctx context.Context) ([]*SystemComponentRelationship, error) {
-	if scrcb.err != nil {
-		return nil, scrcb.err
+func (_c *SystemComponentRelationshipCreateBulk) Save(ctx context.Context) ([]*SystemComponentRelationship, error) {
+	if _c.err != nil {
+		return nil, _c.err
 	}
-	specs := make([]*sqlgraph.CreateSpec, len(scrcb.builders))
-	nodes := make([]*SystemComponentRelationship, len(scrcb.builders))
-	mutators := make([]Mutator, len(scrcb.builders))
-	for i := range scrcb.builders {
+	specs := make([]*sqlgraph.CreateSpec, len(_c.builders))
+	nodes := make([]*SystemComponentRelationship, len(_c.builders))
+	mutators := make([]Mutator, len(_c.builders))
+	for i := range _c.builders {
 		func(i int, root context.Context) {
-			builder := scrcb.builders[i]
+			builder := _c.builders[i]
 			builder.defaults()
 			var mut Mutator = MutateFunc(func(ctx context.Context, m Mutation) (Value, error) {
 				mutation, ok := m.(*SystemComponentRelationshipMutation)
@@ -684,12 +684,12 @@ func (scrcb *SystemComponentRelationshipCreateBulk) Save(ctx context.Context) ([
 				var err error
 				nodes[i], specs[i] = builder.createSpec()
 				if i < len(mutators)-1 {
-					_, err = mutators[i+1].Mutate(root, scrcb.builders[i+1].mutation)
+					_, err = mutators[i+1].Mutate(root, _c.builders[i+1].mutation)
 				} else {
 					spec := &sqlgraph.BatchCreateSpec{Nodes: specs}
-					spec.OnConflict = scrcb.conflict
+					spec.OnConflict = _c.conflict
 					// Invoke the actual operation on the latest mutation in the chain.
-					if err = sqlgraph.BatchCreate(ctx, scrcb.driver, spec); err != nil {
+					if err = sqlgraph.BatchCreate(ctx, _c.driver, spec); err != nil {
 						if sqlgraph.IsConstraintError(err) {
 							err = &ConstraintError{msg: err.Error(), wrap: err}
 						}
@@ -709,7 +709,7 @@ func (scrcb *SystemComponentRelationshipCreateBulk) Save(ctx context.Context) ([
 		}(i, ctx)
 	}
 	if len(mutators) > 0 {
-		if _, err := mutators[0].Mutate(ctx, scrcb.builders[0].mutation); err != nil {
+		if _, err := mutators[0].Mutate(ctx, _c.builders[0].mutation); err != nil {
 			return nil, err
 		}
 	}
@@ -717,8 +717,8 @@ func (scrcb *SystemComponentRelationshipCreateBulk) Save(ctx context.Context) ([
 }
 
 // SaveX is like Save, but panics if an error occurs.
-func (scrcb *SystemComponentRelationshipCreateBulk) SaveX(ctx context.Context) []*SystemComponentRelationship {
-	v, err := scrcb.Save(ctx)
+func (_c *SystemComponentRelationshipCreateBulk) SaveX(ctx context.Context) []*SystemComponentRelationship {
+	v, err := _c.Save(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -726,14 +726,14 @@ func (scrcb *SystemComponentRelationshipCreateBulk) SaveX(ctx context.Context) [
 }
 
 // Exec executes the query.
-func (scrcb *SystemComponentRelationshipCreateBulk) Exec(ctx context.Context) error {
-	_, err := scrcb.Save(ctx)
+func (_c *SystemComponentRelationshipCreateBulk) Exec(ctx context.Context) error {
+	_, err := _c.Save(ctx)
 	return err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (scrcb *SystemComponentRelationshipCreateBulk) ExecX(ctx context.Context) {
-	if err := scrcb.Exec(ctx); err != nil {
+func (_c *SystemComponentRelationshipCreateBulk) ExecX(ctx context.Context) {
+	if err := _c.Exec(ctx); err != nil {
 		panic(err)
 	}
 }
@@ -753,10 +753,10 @@ func (scrcb *SystemComponentRelationshipCreateBulk) ExecX(ctx context.Context) {
 //			SetTenantID(v+v).
 //		}).
 //		Exec(ctx)
-func (scrcb *SystemComponentRelationshipCreateBulk) OnConflict(opts ...sql.ConflictOption) *SystemComponentRelationshipUpsertBulk {
-	scrcb.conflict = opts
+func (_c *SystemComponentRelationshipCreateBulk) OnConflict(opts ...sql.ConflictOption) *SystemComponentRelationshipUpsertBulk {
+	_c.conflict = opts
 	return &SystemComponentRelationshipUpsertBulk{
-		create: scrcb,
+		create: _c,
 	}
 }
 
@@ -766,10 +766,10 @@ func (scrcb *SystemComponentRelationshipCreateBulk) OnConflict(opts ...sql.Confl
 //	client.SystemComponentRelationship.Create().
 //		OnConflict(sql.ConflictColumns(columns...)).
 //		Exec(ctx)
-func (scrcb *SystemComponentRelationshipCreateBulk) OnConflictColumns(columns ...string) *SystemComponentRelationshipUpsertBulk {
-	scrcb.conflict = append(scrcb.conflict, sql.ConflictColumns(columns...))
+func (_c *SystemComponentRelationshipCreateBulk) OnConflictColumns(columns ...string) *SystemComponentRelationshipUpsertBulk {
+	_c.conflict = append(_c.conflict, sql.ConflictColumns(columns...))
 	return &SystemComponentRelationshipUpsertBulk{
-		create: scrcb,
+		create: _c,
 	}
 }
 

@@ -28,133 +28,133 @@ type AlertInstanceUpdate struct {
 }
 
 // Where appends a list predicates to the AlertInstanceUpdate builder.
-func (aiu *AlertInstanceUpdate) Where(ps ...predicate.AlertInstance) *AlertInstanceUpdate {
-	aiu.mutation.Where(ps...)
-	return aiu
+func (_u *AlertInstanceUpdate) Where(ps ...predicate.AlertInstance) *AlertInstanceUpdate {
+	_u.mutation.Where(ps...)
+	return _u
 }
 
 // SetAlertID sets the "alert_id" field.
-func (aiu *AlertInstanceUpdate) SetAlertID(u uuid.UUID) *AlertInstanceUpdate {
-	aiu.mutation.SetAlertID(u)
-	return aiu
+func (_u *AlertInstanceUpdate) SetAlertID(v uuid.UUID) *AlertInstanceUpdate {
+	_u.mutation.SetAlertID(v)
+	return _u
 }
 
 // SetNillableAlertID sets the "alert_id" field if the given value is not nil.
-func (aiu *AlertInstanceUpdate) SetNillableAlertID(u *uuid.UUID) *AlertInstanceUpdate {
-	if u != nil {
-		aiu.SetAlertID(*u)
+func (_u *AlertInstanceUpdate) SetNillableAlertID(v *uuid.UUID) *AlertInstanceUpdate {
+	if v != nil {
+		_u.SetAlertID(*v)
 	}
-	return aiu
+	return _u
 }
 
 // SetEventID sets the "event_id" field.
-func (aiu *AlertInstanceUpdate) SetEventID(u uuid.UUID) *AlertInstanceUpdate {
-	aiu.mutation.SetEventID(u)
-	return aiu
+func (_u *AlertInstanceUpdate) SetEventID(v uuid.UUID) *AlertInstanceUpdate {
+	_u.mutation.SetEventID(v)
+	return _u
 }
 
 // SetNillableEventID sets the "event_id" field if the given value is not nil.
-func (aiu *AlertInstanceUpdate) SetNillableEventID(u *uuid.UUID) *AlertInstanceUpdate {
-	if u != nil {
-		aiu.SetEventID(*u)
+func (_u *AlertInstanceUpdate) SetNillableEventID(v *uuid.UUID) *AlertInstanceUpdate {
+	if v != nil {
+		_u.SetEventID(*v)
 	}
-	return aiu
+	return _u
 }
 
 // SetProviderID sets the "provider_id" field.
-func (aiu *AlertInstanceUpdate) SetProviderID(s string) *AlertInstanceUpdate {
-	aiu.mutation.SetProviderID(s)
-	return aiu
+func (_u *AlertInstanceUpdate) SetProviderID(v string) *AlertInstanceUpdate {
+	_u.mutation.SetProviderID(v)
+	return _u
 }
 
 // SetNillableProviderID sets the "provider_id" field if the given value is not nil.
-func (aiu *AlertInstanceUpdate) SetNillableProviderID(s *string) *AlertInstanceUpdate {
-	if s != nil {
-		aiu.SetProviderID(*s)
+func (_u *AlertInstanceUpdate) SetNillableProviderID(v *string) *AlertInstanceUpdate {
+	if v != nil {
+		_u.SetProviderID(*v)
 	}
-	return aiu
+	return _u
 }
 
 // SetAcknowledgedAt sets the "acknowledged_at" field.
-func (aiu *AlertInstanceUpdate) SetAcknowledgedAt(t time.Time) *AlertInstanceUpdate {
-	aiu.mutation.SetAcknowledgedAt(t)
-	return aiu
+func (_u *AlertInstanceUpdate) SetAcknowledgedAt(v time.Time) *AlertInstanceUpdate {
+	_u.mutation.SetAcknowledgedAt(v)
+	return _u
 }
 
 // SetNillableAcknowledgedAt sets the "acknowledged_at" field if the given value is not nil.
-func (aiu *AlertInstanceUpdate) SetNillableAcknowledgedAt(t *time.Time) *AlertInstanceUpdate {
-	if t != nil {
-		aiu.SetAcknowledgedAt(*t)
+func (_u *AlertInstanceUpdate) SetNillableAcknowledgedAt(v *time.Time) *AlertInstanceUpdate {
+	if v != nil {
+		_u.SetAcknowledgedAt(*v)
 	}
-	return aiu
+	return _u
 }
 
 // ClearAcknowledgedAt clears the value of the "acknowledged_at" field.
-func (aiu *AlertInstanceUpdate) ClearAcknowledgedAt() *AlertInstanceUpdate {
-	aiu.mutation.ClearAcknowledgedAt()
-	return aiu
+func (_u *AlertInstanceUpdate) ClearAcknowledgedAt() *AlertInstanceUpdate {
+	_u.mutation.ClearAcknowledgedAt()
+	return _u
 }
 
 // SetAlert sets the "alert" edge to the Alert entity.
-func (aiu *AlertInstanceUpdate) SetAlert(a *Alert) *AlertInstanceUpdate {
-	return aiu.SetAlertID(a.ID)
+func (_u *AlertInstanceUpdate) SetAlert(v *Alert) *AlertInstanceUpdate {
+	return _u.SetAlertID(v.ID)
 }
 
 // SetEvent sets the "event" edge to the Event entity.
-func (aiu *AlertInstanceUpdate) SetEvent(e *Event) *AlertInstanceUpdate {
-	return aiu.SetEventID(e.ID)
+func (_u *AlertInstanceUpdate) SetEvent(v *Event) *AlertInstanceUpdate {
+	return _u.SetEventID(v.ID)
 }
 
 // SetFeedbackID sets the "feedback" edge to the AlertFeedback entity by ID.
-func (aiu *AlertInstanceUpdate) SetFeedbackID(id uuid.UUID) *AlertInstanceUpdate {
-	aiu.mutation.SetFeedbackID(id)
-	return aiu
+func (_u *AlertInstanceUpdate) SetFeedbackID(id uuid.UUID) *AlertInstanceUpdate {
+	_u.mutation.SetFeedbackID(id)
+	return _u
 }
 
 // SetNillableFeedbackID sets the "feedback" edge to the AlertFeedback entity by ID if the given value is not nil.
-func (aiu *AlertInstanceUpdate) SetNillableFeedbackID(id *uuid.UUID) *AlertInstanceUpdate {
+func (_u *AlertInstanceUpdate) SetNillableFeedbackID(id *uuid.UUID) *AlertInstanceUpdate {
 	if id != nil {
-		aiu = aiu.SetFeedbackID(*id)
+		_u = _u.SetFeedbackID(*id)
 	}
-	return aiu
+	return _u
 }
 
 // SetFeedback sets the "feedback" edge to the AlertFeedback entity.
-func (aiu *AlertInstanceUpdate) SetFeedback(a *AlertFeedback) *AlertInstanceUpdate {
-	return aiu.SetFeedbackID(a.ID)
+func (_u *AlertInstanceUpdate) SetFeedback(v *AlertFeedback) *AlertInstanceUpdate {
+	return _u.SetFeedbackID(v.ID)
 }
 
 // Mutation returns the AlertInstanceMutation object of the builder.
-func (aiu *AlertInstanceUpdate) Mutation() *AlertInstanceMutation {
-	return aiu.mutation
+func (_u *AlertInstanceUpdate) Mutation() *AlertInstanceMutation {
+	return _u.mutation
 }
 
 // ClearAlert clears the "alert" edge to the Alert entity.
-func (aiu *AlertInstanceUpdate) ClearAlert() *AlertInstanceUpdate {
-	aiu.mutation.ClearAlert()
-	return aiu
+func (_u *AlertInstanceUpdate) ClearAlert() *AlertInstanceUpdate {
+	_u.mutation.ClearAlert()
+	return _u
 }
 
 // ClearEvent clears the "event" edge to the Event entity.
-func (aiu *AlertInstanceUpdate) ClearEvent() *AlertInstanceUpdate {
-	aiu.mutation.ClearEvent()
-	return aiu
+func (_u *AlertInstanceUpdate) ClearEvent() *AlertInstanceUpdate {
+	_u.mutation.ClearEvent()
+	return _u
 }
 
 // ClearFeedback clears the "feedback" edge to the AlertFeedback entity.
-func (aiu *AlertInstanceUpdate) ClearFeedback() *AlertInstanceUpdate {
-	aiu.mutation.ClearFeedback()
-	return aiu
+func (_u *AlertInstanceUpdate) ClearFeedback() *AlertInstanceUpdate {
+	_u.mutation.ClearFeedback()
+	return _u
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
-func (aiu *AlertInstanceUpdate) Save(ctx context.Context) (int, error) {
-	return withHooks(ctx, aiu.sqlSave, aiu.mutation, aiu.hooks)
+func (_u *AlertInstanceUpdate) Save(ctx context.Context) (int, error) {
+	return withHooks(ctx, _u.sqlSave, _u.mutation, _u.hooks)
 }
 
 // SaveX is like Save, but panics if an error occurs.
-func (aiu *AlertInstanceUpdate) SaveX(ctx context.Context) int {
-	affected, err := aiu.Save(ctx)
+func (_u *AlertInstanceUpdate) SaveX(ctx context.Context) int {
+	affected, err := _u.Save(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -162,60 +162,60 @@ func (aiu *AlertInstanceUpdate) SaveX(ctx context.Context) int {
 }
 
 // Exec executes the query.
-func (aiu *AlertInstanceUpdate) Exec(ctx context.Context) error {
-	_, err := aiu.Save(ctx)
+func (_u *AlertInstanceUpdate) Exec(ctx context.Context) error {
+	_, err := _u.Save(ctx)
 	return err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (aiu *AlertInstanceUpdate) ExecX(ctx context.Context) {
-	if err := aiu.Exec(ctx); err != nil {
+func (_u *AlertInstanceUpdate) ExecX(ctx context.Context) {
+	if err := _u.Exec(ctx); err != nil {
 		panic(err)
 	}
 }
 
 // check runs all checks and user-defined validators on the builder.
-func (aiu *AlertInstanceUpdate) check() error {
-	if aiu.mutation.TenantCleared() && len(aiu.mutation.TenantIDs()) > 0 {
+func (_u *AlertInstanceUpdate) check() error {
+	if _u.mutation.TenantCleared() && len(_u.mutation.TenantIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "AlertInstance.tenant"`)
 	}
-	if aiu.mutation.AlertCleared() && len(aiu.mutation.AlertIDs()) > 0 {
+	if _u.mutation.AlertCleared() && len(_u.mutation.AlertIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "AlertInstance.alert"`)
 	}
-	if aiu.mutation.EventCleared() && len(aiu.mutation.EventIDs()) > 0 {
+	if _u.mutation.EventCleared() && len(_u.mutation.EventIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "AlertInstance.event"`)
 	}
 	return nil
 }
 
 // Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
-func (aiu *AlertInstanceUpdate) Modify(modifiers ...func(u *sql.UpdateBuilder)) *AlertInstanceUpdate {
-	aiu.modifiers = append(aiu.modifiers, modifiers...)
-	return aiu
+func (_u *AlertInstanceUpdate) Modify(modifiers ...func(u *sql.UpdateBuilder)) *AlertInstanceUpdate {
+	_u.modifiers = append(_u.modifiers, modifiers...)
+	return _u
 }
 
-func (aiu *AlertInstanceUpdate) sqlSave(ctx context.Context) (n int, err error) {
-	if err := aiu.check(); err != nil {
-		return n, err
+func (_u *AlertInstanceUpdate) sqlSave(ctx context.Context) (_node int, err error) {
+	if err := _u.check(); err != nil {
+		return _node, err
 	}
 	_spec := sqlgraph.NewUpdateSpec(alertinstance.Table, alertinstance.Columns, sqlgraph.NewFieldSpec(alertinstance.FieldID, field.TypeUUID))
-	if ps := aiu.mutation.predicates; len(ps) > 0 {
+	if ps := _u.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {
 				ps[i](selector)
 			}
 		}
 	}
-	if value, ok := aiu.mutation.ProviderID(); ok {
+	if value, ok := _u.mutation.ProviderID(); ok {
 		_spec.SetField(alertinstance.FieldProviderID, field.TypeString, value)
 	}
-	if value, ok := aiu.mutation.AcknowledgedAt(); ok {
+	if value, ok := _u.mutation.AcknowledgedAt(); ok {
 		_spec.SetField(alertinstance.FieldAcknowledgedAt, field.TypeTime, value)
 	}
-	if aiu.mutation.AcknowledgedAtCleared() {
+	if _u.mutation.AcknowledgedAtCleared() {
 		_spec.ClearField(alertinstance.FieldAcknowledgedAt, field.TypeTime)
 	}
-	if aiu.mutation.AlertCleared() {
+	if _u.mutation.AlertCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
@@ -228,7 +228,7 @@ func (aiu *AlertInstanceUpdate) sqlSave(ctx context.Context) (n int, err error) 
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := aiu.mutation.AlertIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.AlertIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
@@ -244,7 +244,7 @@ func (aiu *AlertInstanceUpdate) sqlSave(ctx context.Context) (n int, err error) 
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if aiu.mutation.EventCleared() {
+	if _u.mutation.EventCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
@@ -257,7 +257,7 @@ func (aiu *AlertInstanceUpdate) sqlSave(ctx context.Context) (n int, err error) 
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := aiu.mutation.EventIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.EventIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
@@ -273,7 +273,7 @@ func (aiu *AlertInstanceUpdate) sqlSave(ctx context.Context) (n int, err error) 
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if aiu.mutation.FeedbackCleared() {
+	if _u.mutation.FeedbackCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
@@ -286,7 +286,7 @@ func (aiu *AlertInstanceUpdate) sqlSave(ctx context.Context) (n int, err error) 
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := aiu.mutation.FeedbackIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.FeedbackIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
@@ -302,8 +302,8 @@ func (aiu *AlertInstanceUpdate) sqlSave(ctx context.Context) (n int, err error) 
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	_spec.AddModifiers(aiu.modifiers...)
-	if n, err = sqlgraph.UpdateNodes(ctx, aiu.driver, _spec); err != nil {
+	_spec.AddModifiers(_u.modifiers...)
+	if _node, err = sqlgraph.UpdateNodes(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{alertinstance.Label}
 		} else if sqlgraph.IsConstraintError(err) {
@@ -311,8 +311,8 @@ func (aiu *AlertInstanceUpdate) sqlSave(ctx context.Context) (n int, err error) 
 		}
 		return 0, err
 	}
-	aiu.mutation.done = true
-	return n, nil
+	_u.mutation.done = true
+	return _node, nil
 }
 
 // AlertInstanceUpdateOne is the builder for updating a single AlertInstance entity.
@@ -325,140 +325,140 @@ type AlertInstanceUpdateOne struct {
 }
 
 // SetAlertID sets the "alert_id" field.
-func (aiuo *AlertInstanceUpdateOne) SetAlertID(u uuid.UUID) *AlertInstanceUpdateOne {
-	aiuo.mutation.SetAlertID(u)
-	return aiuo
+func (_u *AlertInstanceUpdateOne) SetAlertID(v uuid.UUID) *AlertInstanceUpdateOne {
+	_u.mutation.SetAlertID(v)
+	return _u
 }
 
 // SetNillableAlertID sets the "alert_id" field if the given value is not nil.
-func (aiuo *AlertInstanceUpdateOne) SetNillableAlertID(u *uuid.UUID) *AlertInstanceUpdateOne {
-	if u != nil {
-		aiuo.SetAlertID(*u)
+func (_u *AlertInstanceUpdateOne) SetNillableAlertID(v *uuid.UUID) *AlertInstanceUpdateOne {
+	if v != nil {
+		_u.SetAlertID(*v)
 	}
-	return aiuo
+	return _u
 }
 
 // SetEventID sets the "event_id" field.
-func (aiuo *AlertInstanceUpdateOne) SetEventID(u uuid.UUID) *AlertInstanceUpdateOne {
-	aiuo.mutation.SetEventID(u)
-	return aiuo
+func (_u *AlertInstanceUpdateOne) SetEventID(v uuid.UUID) *AlertInstanceUpdateOne {
+	_u.mutation.SetEventID(v)
+	return _u
 }
 
 // SetNillableEventID sets the "event_id" field if the given value is not nil.
-func (aiuo *AlertInstanceUpdateOne) SetNillableEventID(u *uuid.UUID) *AlertInstanceUpdateOne {
-	if u != nil {
-		aiuo.SetEventID(*u)
+func (_u *AlertInstanceUpdateOne) SetNillableEventID(v *uuid.UUID) *AlertInstanceUpdateOne {
+	if v != nil {
+		_u.SetEventID(*v)
 	}
-	return aiuo
+	return _u
 }
 
 // SetProviderID sets the "provider_id" field.
-func (aiuo *AlertInstanceUpdateOne) SetProviderID(s string) *AlertInstanceUpdateOne {
-	aiuo.mutation.SetProviderID(s)
-	return aiuo
+func (_u *AlertInstanceUpdateOne) SetProviderID(v string) *AlertInstanceUpdateOne {
+	_u.mutation.SetProviderID(v)
+	return _u
 }
 
 // SetNillableProviderID sets the "provider_id" field if the given value is not nil.
-func (aiuo *AlertInstanceUpdateOne) SetNillableProviderID(s *string) *AlertInstanceUpdateOne {
-	if s != nil {
-		aiuo.SetProviderID(*s)
+func (_u *AlertInstanceUpdateOne) SetNillableProviderID(v *string) *AlertInstanceUpdateOne {
+	if v != nil {
+		_u.SetProviderID(*v)
 	}
-	return aiuo
+	return _u
 }
 
 // SetAcknowledgedAt sets the "acknowledged_at" field.
-func (aiuo *AlertInstanceUpdateOne) SetAcknowledgedAt(t time.Time) *AlertInstanceUpdateOne {
-	aiuo.mutation.SetAcknowledgedAt(t)
-	return aiuo
+func (_u *AlertInstanceUpdateOne) SetAcknowledgedAt(v time.Time) *AlertInstanceUpdateOne {
+	_u.mutation.SetAcknowledgedAt(v)
+	return _u
 }
 
 // SetNillableAcknowledgedAt sets the "acknowledged_at" field if the given value is not nil.
-func (aiuo *AlertInstanceUpdateOne) SetNillableAcknowledgedAt(t *time.Time) *AlertInstanceUpdateOne {
-	if t != nil {
-		aiuo.SetAcknowledgedAt(*t)
+func (_u *AlertInstanceUpdateOne) SetNillableAcknowledgedAt(v *time.Time) *AlertInstanceUpdateOne {
+	if v != nil {
+		_u.SetAcknowledgedAt(*v)
 	}
-	return aiuo
+	return _u
 }
 
 // ClearAcknowledgedAt clears the value of the "acknowledged_at" field.
-func (aiuo *AlertInstanceUpdateOne) ClearAcknowledgedAt() *AlertInstanceUpdateOne {
-	aiuo.mutation.ClearAcknowledgedAt()
-	return aiuo
+func (_u *AlertInstanceUpdateOne) ClearAcknowledgedAt() *AlertInstanceUpdateOne {
+	_u.mutation.ClearAcknowledgedAt()
+	return _u
 }
 
 // SetAlert sets the "alert" edge to the Alert entity.
-func (aiuo *AlertInstanceUpdateOne) SetAlert(a *Alert) *AlertInstanceUpdateOne {
-	return aiuo.SetAlertID(a.ID)
+func (_u *AlertInstanceUpdateOne) SetAlert(v *Alert) *AlertInstanceUpdateOne {
+	return _u.SetAlertID(v.ID)
 }
 
 // SetEvent sets the "event" edge to the Event entity.
-func (aiuo *AlertInstanceUpdateOne) SetEvent(e *Event) *AlertInstanceUpdateOne {
-	return aiuo.SetEventID(e.ID)
+func (_u *AlertInstanceUpdateOne) SetEvent(v *Event) *AlertInstanceUpdateOne {
+	return _u.SetEventID(v.ID)
 }
 
 // SetFeedbackID sets the "feedback" edge to the AlertFeedback entity by ID.
-func (aiuo *AlertInstanceUpdateOne) SetFeedbackID(id uuid.UUID) *AlertInstanceUpdateOne {
-	aiuo.mutation.SetFeedbackID(id)
-	return aiuo
+func (_u *AlertInstanceUpdateOne) SetFeedbackID(id uuid.UUID) *AlertInstanceUpdateOne {
+	_u.mutation.SetFeedbackID(id)
+	return _u
 }
 
 // SetNillableFeedbackID sets the "feedback" edge to the AlertFeedback entity by ID if the given value is not nil.
-func (aiuo *AlertInstanceUpdateOne) SetNillableFeedbackID(id *uuid.UUID) *AlertInstanceUpdateOne {
+func (_u *AlertInstanceUpdateOne) SetNillableFeedbackID(id *uuid.UUID) *AlertInstanceUpdateOne {
 	if id != nil {
-		aiuo = aiuo.SetFeedbackID(*id)
+		_u = _u.SetFeedbackID(*id)
 	}
-	return aiuo
+	return _u
 }
 
 // SetFeedback sets the "feedback" edge to the AlertFeedback entity.
-func (aiuo *AlertInstanceUpdateOne) SetFeedback(a *AlertFeedback) *AlertInstanceUpdateOne {
-	return aiuo.SetFeedbackID(a.ID)
+func (_u *AlertInstanceUpdateOne) SetFeedback(v *AlertFeedback) *AlertInstanceUpdateOne {
+	return _u.SetFeedbackID(v.ID)
 }
 
 // Mutation returns the AlertInstanceMutation object of the builder.
-func (aiuo *AlertInstanceUpdateOne) Mutation() *AlertInstanceMutation {
-	return aiuo.mutation
+func (_u *AlertInstanceUpdateOne) Mutation() *AlertInstanceMutation {
+	return _u.mutation
 }
 
 // ClearAlert clears the "alert" edge to the Alert entity.
-func (aiuo *AlertInstanceUpdateOne) ClearAlert() *AlertInstanceUpdateOne {
-	aiuo.mutation.ClearAlert()
-	return aiuo
+func (_u *AlertInstanceUpdateOne) ClearAlert() *AlertInstanceUpdateOne {
+	_u.mutation.ClearAlert()
+	return _u
 }
 
 // ClearEvent clears the "event" edge to the Event entity.
-func (aiuo *AlertInstanceUpdateOne) ClearEvent() *AlertInstanceUpdateOne {
-	aiuo.mutation.ClearEvent()
-	return aiuo
+func (_u *AlertInstanceUpdateOne) ClearEvent() *AlertInstanceUpdateOne {
+	_u.mutation.ClearEvent()
+	return _u
 }
 
 // ClearFeedback clears the "feedback" edge to the AlertFeedback entity.
-func (aiuo *AlertInstanceUpdateOne) ClearFeedback() *AlertInstanceUpdateOne {
-	aiuo.mutation.ClearFeedback()
-	return aiuo
+func (_u *AlertInstanceUpdateOne) ClearFeedback() *AlertInstanceUpdateOne {
+	_u.mutation.ClearFeedback()
+	return _u
 }
 
 // Where appends a list predicates to the AlertInstanceUpdate builder.
-func (aiuo *AlertInstanceUpdateOne) Where(ps ...predicate.AlertInstance) *AlertInstanceUpdateOne {
-	aiuo.mutation.Where(ps...)
-	return aiuo
+func (_u *AlertInstanceUpdateOne) Where(ps ...predicate.AlertInstance) *AlertInstanceUpdateOne {
+	_u.mutation.Where(ps...)
+	return _u
 }
 
 // Select allows selecting one or more fields (columns) of the returned entity.
 // The default is selecting all fields defined in the entity schema.
-func (aiuo *AlertInstanceUpdateOne) Select(field string, fields ...string) *AlertInstanceUpdateOne {
-	aiuo.fields = append([]string{field}, fields...)
-	return aiuo
+func (_u *AlertInstanceUpdateOne) Select(field string, fields ...string) *AlertInstanceUpdateOne {
+	_u.fields = append([]string{field}, fields...)
+	return _u
 }
 
 // Save executes the query and returns the updated AlertInstance entity.
-func (aiuo *AlertInstanceUpdateOne) Save(ctx context.Context) (*AlertInstance, error) {
-	return withHooks(ctx, aiuo.sqlSave, aiuo.mutation, aiuo.hooks)
+func (_u *AlertInstanceUpdateOne) Save(ctx context.Context) (*AlertInstance, error) {
+	return withHooks(ctx, _u.sqlSave, _u.mutation, _u.hooks)
 }
 
 // SaveX is like Save, but panics if an error occurs.
-func (aiuo *AlertInstanceUpdateOne) SaveX(ctx context.Context) *AlertInstance {
-	node, err := aiuo.Save(ctx)
+func (_u *AlertInstanceUpdateOne) SaveX(ctx context.Context) *AlertInstance {
+	node, err := _u.Save(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -466,49 +466,49 @@ func (aiuo *AlertInstanceUpdateOne) SaveX(ctx context.Context) *AlertInstance {
 }
 
 // Exec executes the query on the entity.
-func (aiuo *AlertInstanceUpdateOne) Exec(ctx context.Context) error {
-	_, err := aiuo.Save(ctx)
+func (_u *AlertInstanceUpdateOne) Exec(ctx context.Context) error {
+	_, err := _u.Save(ctx)
 	return err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (aiuo *AlertInstanceUpdateOne) ExecX(ctx context.Context) {
-	if err := aiuo.Exec(ctx); err != nil {
+func (_u *AlertInstanceUpdateOne) ExecX(ctx context.Context) {
+	if err := _u.Exec(ctx); err != nil {
 		panic(err)
 	}
 }
 
 // check runs all checks and user-defined validators on the builder.
-func (aiuo *AlertInstanceUpdateOne) check() error {
-	if aiuo.mutation.TenantCleared() && len(aiuo.mutation.TenantIDs()) > 0 {
+func (_u *AlertInstanceUpdateOne) check() error {
+	if _u.mutation.TenantCleared() && len(_u.mutation.TenantIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "AlertInstance.tenant"`)
 	}
-	if aiuo.mutation.AlertCleared() && len(aiuo.mutation.AlertIDs()) > 0 {
+	if _u.mutation.AlertCleared() && len(_u.mutation.AlertIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "AlertInstance.alert"`)
 	}
-	if aiuo.mutation.EventCleared() && len(aiuo.mutation.EventIDs()) > 0 {
+	if _u.mutation.EventCleared() && len(_u.mutation.EventIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "AlertInstance.event"`)
 	}
 	return nil
 }
 
 // Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
-func (aiuo *AlertInstanceUpdateOne) Modify(modifiers ...func(u *sql.UpdateBuilder)) *AlertInstanceUpdateOne {
-	aiuo.modifiers = append(aiuo.modifiers, modifiers...)
-	return aiuo
+func (_u *AlertInstanceUpdateOne) Modify(modifiers ...func(u *sql.UpdateBuilder)) *AlertInstanceUpdateOne {
+	_u.modifiers = append(_u.modifiers, modifiers...)
+	return _u
 }
 
-func (aiuo *AlertInstanceUpdateOne) sqlSave(ctx context.Context) (_node *AlertInstance, err error) {
-	if err := aiuo.check(); err != nil {
+func (_u *AlertInstanceUpdateOne) sqlSave(ctx context.Context) (_node *AlertInstance, err error) {
+	if err := _u.check(); err != nil {
 		return _node, err
 	}
 	_spec := sqlgraph.NewUpdateSpec(alertinstance.Table, alertinstance.Columns, sqlgraph.NewFieldSpec(alertinstance.FieldID, field.TypeUUID))
-	id, ok := aiuo.mutation.ID()
+	id, ok := _u.mutation.ID()
 	if !ok {
 		return nil, &ValidationError{Name: "id", err: errors.New(`ent: missing "AlertInstance.id" for update`)}
 	}
 	_spec.Node.ID.Value = id
-	if fields := aiuo.fields; len(fields) > 0 {
+	if fields := _u.fields; len(fields) > 0 {
 		_spec.Node.Columns = make([]string, 0, len(fields))
 		_spec.Node.Columns = append(_spec.Node.Columns, alertinstance.FieldID)
 		for _, f := range fields {
@@ -520,23 +520,23 @@ func (aiuo *AlertInstanceUpdateOne) sqlSave(ctx context.Context) (_node *AlertIn
 			}
 		}
 	}
-	if ps := aiuo.mutation.predicates; len(ps) > 0 {
+	if ps := _u.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {
 				ps[i](selector)
 			}
 		}
 	}
-	if value, ok := aiuo.mutation.ProviderID(); ok {
+	if value, ok := _u.mutation.ProviderID(); ok {
 		_spec.SetField(alertinstance.FieldProviderID, field.TypeString, value)
 	}
-	if value, ok := aiuo.mutation.AcknowledgedAt(); ok {
+	if value, ok := _u.mutation.AcknowledgedAt(); ok {
 		_spec.SetField(alertinstance.FieldAcknowledgedAt, field.TypeTime, value)
 	}
-	if aiuo.mutation.AcknowledgedAtCleared() {
+	if _u.mutation.AcknowledgedAtCleared() {
 		_spec.ClearField(alertinstance.FieldAcknowledgedAt, field.TypeTime)
 	}
-	if aiuo.mutation.AlertCleared() {
+	if _u.mutation.AlertCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
@@ -549,7 +549,7 @@ func (aiuo *AlertInstanceUpdateOne) sqlSave(ctx context.Context) (_node *AlertIn
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := aiuo.mutation.AlertIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.AlertIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
@@ -565,7 +565,7 @@ func (aiuo *AlertInstanceUpdateOne) sqlSave(ctx context.Context) (_node *AlertIn
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if aiuo.mutation.EventCleared() {
+	if _u.mutation.EventCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
@@ -578,7 +578,7 @@ func (aiuo *AlertInstanceUpdateOne) sqlSave(ctx context.Context) (_node *AlertIn
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := aiuo.mutation.EventIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.EventIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
@@ -594,7 +594,7 @@ func (aiuo *AlertInstanceUpdateOne) sqlSave(ctx context.Context) (_node *AlertIn
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if aiuo.mutation.FeedbackCleared() {
+	if _u.mutation.FeedbackCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
@@ -607,7 +607,7 @@ func (aiuo *AlertInstanceUpdateOne) sqlSave(ctx context.Context) (_node *AlertIn
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := aiuo.mutation.FeedbackIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.FeedbackIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
@@ -623,11 +623,11 @@ func (aiuo *AlertInstanceUpdateOne) sqlSave(ctx context.Context) (_node *AlertIn
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	_spec.AddModifiers(aiuo.modifiers...)
-	_node = &AlertInstance{config: aiuo.config}
+	_spec.AddModifiers(_u.modifiers...)
+	_node = &AlertInstance{config: _u.config}
 	_spec.Assign = _node.assignValues
 	_spec.ScanValues = _node.scanValues
-	if err = sqlgraph.UpdateNode(ctx, aiuo.driver, _spec); err != nil {
+	if err = sqlgraph.UpdateNode(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{alertinstance.Label}
 		} else if sqlgraph.IsConstraintError(err) {
@@ -635,6 +635,6 @@ func (aiuo *AlertInstanceUpdateOne) sqlSave(ctx context.Context) (_node *AlertIn
 		}
 		return nil, err
 	}
-	aiuo.mutation.done = true
+	_u.mutation.done = true
 	return _node, nil
 }

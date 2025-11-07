@@ -28,216 +28,216 @@ type EventUpdate struct {
 }
 
 // Where appends a list predicates to the EventUpdate builder.
-func (eu *EventUpdate) Where(ps ...predicate.Event) *EventUpdate {
-	eu.mutation.Where(ps...)
-	return eu
+func (_u *EventUpdate) Where(ps ...predicate.Event) *EventUpdate {
+	_u.mutation.Where(ps...)
+	return _u
 }
 
 // SetProviderID sets the "provider_id" field.
-func (eu *EventUpdate) SetProviderID(s string) *EventUpdate {
-	eu.mutation.SetProviderID(s)
-	return eu
+func (_u *EventUpdate) SetProviderID(v string) *EventUpdate {
+	_u.mutation.SetProviderID(v)
+	return _u
 }
 
 // SetNillableProviderID sets the "provider_id" field if the given value is not nil.
-func (eu *EventUpdate) SetNillableProviderID(s *string) *EventUpdate {
-	if s != nil {
-		eu.SetProviderID(*s)
+func (_u *EventUpdate) SetNillableProviderID(v *string) *EventUpdate {
+	if v != nil {
+		_u.SetProviderID(*v)
 	}
-	return eu
+	return _u
 }
 
 // SetTimestamp sets the "timestamp" field.
-func (eu *EventUpdate) SetTimestamp(t time.Time) *EventUpdate {
-	eu.mutation.SetTimestamp(t)
-	return eu
+func (_u *EventUpdate) SetTimestamp(v time.Time) *EventUpdate {
+	_u.mutation.SetTimestamp(v)
+	return _u
 }
 
 // SetNillableTimestamp sets the "timestamp" field if the given value is not nil.
-func (eu *EventUpdate) SetNillableTimestamp(t *time.Time) *EventUpdate {
-	if t != nil {
-		eu.SetTimestamp(*t)
+func (_u *EventUpdate) SetNillableTimestamp(v *time.Time) *EventUpdate {
+	if v != nil {
+		_u.SetTimestamp(*v)
 	}
-	return eu
+	return _u
 }
 
 // SetKind sets the "kind" field.
-func (eu *EventUpdate) SetKind(e event.Kind) *EventUpdate {
-	eu.mutation.SetKind(e)
-	return eu
+func (_u *EventUpdate) SetKind(v event.Kind) *EventUpdate {
+	_u.mutation.SetKind(v)
+	return _u
 }
 
 // SetNillableKind sets the "kind" field if the given value is not nil.
-func (eu *EventUpdate) SetNillableKind(e *event.Kind) *EventUpdate {
-	if e != nil {
-		eu.SetKind(*e)
+func (_u *EventUpdate) SetNillableKind(v *event.Kind) *EventUpdate {
+	if v != nil {
+		_u.SetKind(*v)
 	}
-	return eu
+	return _u
 }
 
 // SetTitle sets the "title" field.
-func (eu *EventUpdate) SetTitle(s string) *EventUpdate {
-	eu.mutation.SetTitle(s)
-	return eu
+func (_u *EventUpdate) SetTitle(v string) *EventUpdate {
+	_u.mutation.SetTitle(v)
+	return _u
 }
 
 // SetNillableTitle sets the "title" field if the given value is not nil.
-func (eu *EventUpdate) SetNillableTitle(s *string) *EventUpdate {
-	if s != nil {
-		eu.SetTitle(*s)
+func (_u *EventUpdate) SetNillableTitle(v *string) *EventUpdate {
+	if v != nil {
+		_u.SetTitle(*v)
 	}
-	return eu
+	return _u
 }
 
 // SetDescription sets the "description" field.
-func (eu *EventUpdate) SetDescription(s string) *EventUpdate {
-	eu.mutation.SetDescription(s)
-	return eu
+func (_u *EventUpdate) SetDescription(v string) *EventUpdate {
+	_u.mutation.SetDescription(v)
+	return _u
 }
 
 // SetNillableDescription sets the "description" field if the given value is not nil.
-func (eu *EventUpdate) SetNillableDescription(s *string) *EventUpdate {
-	if s != nil {
-		eu.SetDescription(*s)
+func (_u *EventUpdate) SetNillableDescription(v *string) *EventUpdate {
+	if v != nil {
+		_u.SetDescription(*v)
 	}
-	return eu
+	return _u
 }
 
 // SetSource sets the "source" field.
-func (eu *EventUpdate) SetSource(s string) *EventUpdate {
-	eu.mutation.SetSource(s)
-	return eu
+func (_u *EventUpdate) SetSource(v string) *EventUpdate {
+	_u.mutation.SetSource(v)
+	return _u
 }
 
 // SetNillableSource sets the "source" field if the given value is not nil.
-func (eu *EventUpdate) SetNillableSource(s *string) *EventUpdate {
-	if s != nil {
-		eu.SetSource(*s)
+func (_u *EventUpdate) SetNillableSource(v *string) *EventUpdate {
+	if v != nil {
+		_u.SetSource(*v)
 	}
-	return eu
+	return _u
 }
 
 // AddAlertInstanceIDs adds the "alert_instance" edge to the AlertInstance entity by IDs.
-func (eu *EventUpdate) AddAlertInstanceIDs(ids ...uuid.UUID) *EventUpdate {
-	eu.mutation.AddAlertInstanceIDs(ids...)
-	return eu
+func (_u *EventUpdate) AddAlertInstanceIDs(ids ...uuid.UUID) *EventUpdate {
+	_u.mutation.AddAlertInstanceIDs(ids...)
+	return _u
 }
 
 // AddAlertInstance adds the "alert_instance" edges to the AlertInstance entity.
-func (eu *EventUpdate) AddAlertInstance(a ...*AlertInstance) *EventUpdate {
-	ids := make([]uuid.UUID, len(a))
-	for i := range a {
-		ids[i] = a[i].ID
+func (_u *EventUpdate) AddAlertInstance(v ...*AlertInstance) *EventUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
 	}
-	return eu.AddAlertInstanceIDs(ids...)
+	return _u.AddAlertInstanceIDs(ids...)
 }
 
 // AddIncidentEventIDs adds the "incident_event" edge to the IncidentEvent entity by IDs.
-func (eu *EventUpdate) AddIncidentEventIDs(ids ...uuid.UUID) *EventUpdate {
-	eu.mutation.AddIncidentEventIDs(ids...)
-	return eu
+func (_u *EventUpdate) AddIncidentEventIDs(ids ...uuid.UUID) *EventUpdate {
+	_u.mutation.AddIncidentEventIDs(ids...)
+	return _u
 }
 
 // AddIncidentEvent adds the "incident_event" edges to the IncidentEvent entity.
-func (eu *EventUpdate) AddIncidentEvent(i ...*IncidentEvent) *EventUpdate {
-	ids := make([]uuid.UUID, len(i))
-	for j := range i {
-		ids[j] = i[j].ID
+func (_u *EventUpdate) AddIncidentEvent(v ...*IncidentEvent) *EventUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
 	}
-	return eu.AddIncidentEventIDs(ids...)
+	return _u.AddIncidentEventIDs(ids...)
 }
 
 // AddAnnotationIDs adds the "annotations" edge to the EventAnnotation entity by IDs.
-func (eu *EventUpdate) AddAnnotationIDs(ids ...uuid.UUID) *EventUpdate {
-	eu.mutation.AddAnnotationIDs(ids...)
-	return eu
+func (_u *EventUpdate) AddAnnotationIDs(ids ...uuid.UUID) *EventUpdate {
+	_u.mutation.AddAnnotationIDs(ids...)
+	return _u
 }
 
 // AddAnnotations adds the "annotations" edges to the EventAnnotation entity.
-func (eu *EventUpdate) AddAnnotations(e ...*EventAnnotation) *EventUpdate {
-	ids := make([]uuid.UUID, len(e))
-	for i := range e {
-		ids[i] = e[i].ID
+func (_u *EventUpdate) AddAnnotations(v ...*EventAnnotation) *EventUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
 	}
-	return eu.AddAnnotationIDs(ids...)
+	return _u.AddAnnotationIDs(ids...)
 }
 
 // Mutation returns the EventMutation object of the builder.
-func (eu *EventUpdate) Mutation() *EventMutation {
-	return eu.mutation
+func (_u *EventUpdate) Mutation() *EventMutation {
+	return _u.mutation
 }
 
 // ClearAlertInstance clears all "alert_instance" edges to the AlertInstance entity.
-func (eu *EventUpdate) ClearAlertInstance() *EventUpdate {
-	eu.mutation.ClearAlertInstance()
-	return eu
+func (_u *EventUpdate) ClearAlertInstance() *EventUpdate {
+	_u.mutation.ClearAlertInstance()
+	return _u
 }
 
 // RemoveAlertInstanceIDs removes the "alert_instance" edge to AlertInstance entities by IDs.
-func (eu *EventUpdate) RemoveAlertInstanceIDs(ids ...uuid.UUID) *EventUpdate {
-	eu.mutation.RemoveAlertInstanceIDs(ids...)
-	return eu
+func (_u *EventUpdate) RemoveAlertInstanceIDs(ids ...uuid.UUID) *EventUpdate {
+	_u.mutation.RemoveAlertInstanceIDs(ids...)
+	return _u
 }
 
 // RemoveAlertInstance removes "alert_instance" edges to AlertInstance entities.
-func (eu *EventUpdate) RemoveAlertInstance(a ...*AlertInstance) *EventUpdate {
-	ids := make([]uuid.UUID, len(a))
-	for i := range a {
-		ids[i] = a[i].ID
+func (_u *EventUpdate) RemoveAlertInstance(v ...*AlertInstance) *EventUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
 	}
-	return eu.RemoveAlertInstanceIDs(ids...)
+	return _u.RemoveAlertInstanceIDs(ids...)
 }
 
 // ClearIncidentEvent clears all "incident_event" edges to the IncidentEvent entity.
-func (eu *EventUpdate) ClearIncidentEvent() *EventUpdate {
-	eu.mutation.ClearIncidentEvent()
-	return eu
+func (_u *EventUpdate) ClearIncidentEvent() *EventUpdate {
+	_u.mutation.ClearIncidentEvent()
+	return _u
 }
 
 // RemoveIncidentEventIDs removes the "incident_event" edge to IncidentEvent entities by IDs.
-func (eu *EventUpdate) RemoveIncidentEventIDs(ids ...uuid.UUID) *EventUpdate {
-	eu.mutation.RemoveIncidentEventIDs(ids...)
-	return eu
+func (_u *EventUpdate) RemoveIncidentEventIDs(ids ...uuid.UUID) *EventUpdate {
+	_u.mutation.RemoveIncidentEventIDs(ids...)
+	return _u
 }
 
 // RemoveIncidentEvent removes "incident_event" edges to IncidentEvent entities.
-func (eu *EventUpdate) RemoveIncidentEvent(i ...*IncidentEvent) *EventUpdate {
-	ids := make([]uuid.UUID, len(i))
-	for j := range i {
-		ids[j] = i[j].ID
+func (_u *EventUpdate) RemoveIncidentEvent(v ...*IncidentEvent) *EventUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
 	}
-	return eu.RemoveIncidentEventIDs(ids...)
+	return _u.RemoveIncidentEventIDs(ids...)
 }
 
 // ClearAnnotations clears all "annotations" edges to the EventAnnotation entity.
-func (eu *EventUpdate) ClearAnnotations() *EventUpdate {
-	eu.mutation.ClearAnnotations()
-	return eu
+func (_u *EventUpdate) ClearAnnotations() *EventUpdate {
+	_u.mutation.ClearAnnotations()
+	return _u
 }
 
 // RemoveAnnotationIDs removes the "annotations" edge to EventAnnotation entities by IDs.
-func (eu *EventUpdate) RemoveAnnotationIDs(ids ...uuid.UUID) *EventUpdate {
-	eu.mutation.RemoveAnnotationIDs(ids...)
-	return eu
+func (_u *EventUpdate) RemoveAnnotationIDs(ids ...uuid.UUID) *EventUpdate {
+	_u.mutation.RemoveAnnotationIDs(ids...)
+	return _u
 }
 
 // RemoveAnnotations removes "annotations" edges to EventAnnotation entities.
-func (eu *EventUpdate) RemoveAnnotations(e ...*EventAnnotation) *EventUpdate {
-	ids := make([]uuid.UUID, len(e))
-	for i := range e {
-		ids[i] = e[i].ID
+func (_u *EventUpdate) RemoveAnnotations(v ...*EventAnnotation) *EventUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
 	}
-	return eu.RemoveAnnotationIDs(ids...)
+	return _u.RemoveAnnotationIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
-func (eu *EventUpdate) Save(ctx context.Context) (int, error) {
-	return withHooks(ctx, eu.sqlSave, eu.mutation, eu.hooks)
+func (_u *EventUpdate) Save(ctx context.Context) (int, error) {
+	return withHooks(ctx, _u.sqlSave, _u.mutation, _u.hooks)
 }
 
 // SaveX is like Save, but panics if an error occurs.
-func (eu *EventUpdate) SaveX(ctx context.Context) int {
-	affected, err := eu.Save(ctx)
+func (_u *EventUpdate) SaveX(ctx context.Context) int {
+	affected, err := _u.Save(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -245,68 +245,68 @@ func (eu *EventUpdate) SaveX(ctx context.Context) int {
 }
 
 // Exec executes the query.
-func (eu *EventUpdate) Exec(ctx context.Context) error {
-	_, err := eu.Save(ctx)
+func (_u *EventUpdate) Exec(ctx context.Context) error {
+	_, err := _u.Save(ctx)
 	return err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (eu *EventUpdate) ExecX(ctx context.Context) {
-	if err := eu.Exec(ctx); err != nil {
+func (_u *EventUpdate) ExecX(ctx context.Context) {
+	if err := _u.Exec(ctx); err != nil {
 		panic(err)
 	}
 }
 
 // check runs all checks and user-defined validators on the builder.
-func (eu *EventUpdate) check() error {
-	if v, ok := eu.mutation.Kind(); ok {
+func (_u *EventUpdate) check() error {
+	if v, ok := _u.mutation.Kind(); ok {
 		if err := event.KindValidator(v); err != nil {
 			return &ValidationError{Name: "kind", err: fmt.Errorf(`ent: validator failed for field "Event.kind": %w`, err)}
 		}
 	}
-	if eu.mutation.TenantCleared() && len(eu.mutation.TenantIDs()) > 0 {
+	if _u.mutation.TenantCleared() && len(_u.mutation.TenantIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "Event.tenant"`)
 	}
 	return nil
 }
 
 // Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
-func (eu *EventUpdate) Modify(modifiers ...func(u *sql.UpdateBuilder)) *EventUpdate {
-	eu.modifiers = append(eu.modifiers, modifiers...)
-	return eu
+func (_u *EventUpdate) Modify(modifiers ...func(u *sql.UpdateBuilder)) *EventUpdate {
+	_u.modifiers = append(_u.modifiers, modifiers...)
+	return _u
 }
 
-func (eu *EventUpdate) sqlSave(ctx context.Context) (n int, err error) {
-	if err := eu.check(); err != nil {
-		return n, err
+func (_u *EventUpdate) sqlSave(ctx context.Context) (_node int, err error) {
+	if err := _u.check(); err != nil {
+		return _node, err
 	}
 	_spec := sqlgraph.NewUpdateSpec(event.Table, event.Columns, sqlgraph.NewFieldSpec(event.FieldID, field.TypeUUID))
-	if ps := eu.mutation.predicates; len(ps) > 0 {
+	if ps := _u.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {
 				ps[i](selector)
 			}
 		}
 	}
-	if value, ok := eu.mutation.ProviderID(); ok {
+	if value, ok := _u.mutation.ProviderID(); ok {
 		_spec.SetField(event.FieldProviderID, field.TypeString, value)
 	}
-	if value, ok := eu.mutation.Timestamp(); ok {
+	if value, ok := _u.mutation.Timestamp(); ok {
 		_spec.SetField(event.FieldTimestamp, field.TypeTime, value)
 	}
-	if value, ok := eu.mutation.Kind(); ok {
+	if value, ok := _u.mutation.Kind(); ok {
 		_spec.SetField(event.FieldKind, field.TypeEnum, value)
 	}
-	if value, ok := eu.mutation.Title(); ok {
+	if value, ok := _u.mutation.Title(); ok {
 		_spec.SetField(event.FieldTitle, field.TypeString, value)
 	}
-	if value, ok := eu.mutation.Description(); ok {
+	if value, ok := _u.mutation.Description(); ok {
 		_spec.SetField(event.FieldDescription, field.TypeString, value)
 	}
-	if value, ok := eu.mutation.Source(); ok {
+	if value, ok := _u.mutation.Source(); ok {
 		_spec.SetField(event.FieldSource, field.TypeString, value)
 	}
-	if eu.mutation.AlertInstanceCleared() {
+	if _u.mutation.AlertInstanceCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: true,
@@ -319,7 +319,7 @@ func (eu *EventUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := eu.mutation.RemovedAlertInstanceIDs(); len(nodes) > 0 && !eu.mutation.AlertInstanceCleared() {
+	if nodes := _u.mutation.RemovedAlertInstanceIDs(); len(nodes) > 0 && !_u.mutation.AlertInstanceCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: true,
@@ -335,7 +335,7 @@ func (eu *EventUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := eu.mutation.AlertInstanceIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.AlertInstanceIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: true,
@@ -351,7 +351,7 @@ func (eu *EventUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if eu.mutation.IncidentEventCleared() {
+	if _u.mutation.IncidentEventCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: true,
@@ -364,7 +364,7 @@ func (eu *EventUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := eu.mutation.RemovedIncidentEventIDs(); len(nodes) > 0 && !eu.mutation.IncidentEventCleared() {
+	if nodes := _u.mutation.RemovedIncidentEventIDs(); len(nodes) > 0 && !_u.mutation.IncidentEventCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: true,
@@ -380,7 +380,7 @@ func (eu *EventUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := eu.mutation.IncidentEventIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.IncidentEventIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: true,
@@ -396,7 +396,7 @@ func (eu *EventUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if eu.mutation.AnnotationsCleared() {
+	if _u.mutation.AnnotationsCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: true,
@@ -409,7 +409,7 @@ func (eu *EventUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := eu.mutation.RemovedAnnotationsIDs(); len(nodes) > 0 && !eu.mutation.AnnotationsCleared() {
+	if nodes := _u.mutation.RemovedAnnotationsIDs(); len(nodes) > 0 && !_u.mutation.AnnotationsCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: true,
@@ -425,7 +425,7 @@ func (eu *EventUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := eu.mutation.AnnotationsIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.AnnotationsIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: true,
@@ -441,8 +441,8 @@ func (eu *EventUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	_spec.AddModifiers(eu.modifiers...)
-	if n, err = sqlgraph.UpdateNodes(ctx, eu.driver, _spec); err != nil {
+	_spec.AddModifiers(_u.modifiers...)
+	if _node, err = sqlgraph.UpdateNodes(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{event.Label}
 		} else if sqlgraph.IsConstraintError(err) {
@@ -450,8 +450,8 @@ func (eu *EventUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		return 0, err
 	}
-	eu.mutation.done = true
-	return n, nil
+	_u.mutation.done = true
+	return _node, nil
 }
 
 // EventUpdateOne is the builder for updating a single Event entity.
@@ -464,223 +464,223 @@ type EventUpdateOne struct {
 }
 
 // SetProviderID sets the "provider_id" field.
-func (euo *EventUpdateOne) SetProviderID(s string) *EventUpdateOne {
-	euo.mutation.SetProviderID(s)
-	return euo
+func (_u *EventUpdateOne) SetProviderID(v string) *EventUpdateOne {
+	_u.mutation.SetProviderID(v)
+	return _u
 }
 
 // SetNillableProviderID sets the "provider_id" field if the given value is not nil.
-func (euo *EventUpdateOne) SetNillableProviderID(s *string) *EventUpdateOne {
-	if s != nil {
-		euo.SetProviderID(*s)
+func (_u *EventUpdateOne) SetNillableProviderID(v *string) *EventUpdateOne {
+	if v != nil {
+		_u.SetProviderID(*v)
 	}
-	return euo
+	return _u
 }
 
 // SetTimestamp sets the "timestamp" field.
-func (euo *EventUpdateOne) SetTimestamp(t time.Time) *EventUpdateOne {
-	euo.mutation.SetTimestamp(t)
-	return euo
+func (_u *EventUpdateOne) SetTimestamp(v time.Time) *EventUpdateOne {
+	_u.mutation.SetTimestamp(v)
+	return _u
 }
 
 // SetNillableTimestamp sets the "timestamp" field if the given value is not nil.
-func (euo *EventUpdateOne) SetNillableTimestamp(t *time.Time) *EventUpdateOne {
-	if t != nil {
-		euo.SetTimestamp(*t)
+func (_u *EventUpdateOne) SetNillableTimestamp(v *time.Time) *EventUpdateOne {
+	if v != nil {
+		_u.SetTimestamp(*v)
 	}
-	return euo
+	return _u
 }
 
 // SetKind sets the "kind" field.
-func (euo *EventUpdateOne) SetKind(e event.Kind) *EventUpdateOne {
-	euo.mutation.SetKind(e)
-	return euo
+func (_u *EventUpdateOne) SetKind(v event.Kind) *EventUpdateOne {
+	_u.mutation.SetKind(v)
+	return _u
 }
 
 // SetNillableKind sets the "kind" field if the given value is not nil.
-func (euo *EventUpdateOne) SetNillableKind(e *event.Kind) *EventUpdateOne {
-	if e != nil {
-		euo.SetKind(*e)
+func (_u *EventUpdateOne) SetNillableKind(v *event.Kind) *EventUpdateOne {
+	if v != nil {
+		_u.SetKind(*v)
 	}
-	return euo
+	return _u
 }
 
 // SetTitle sets the "title" field.
-func (euo *EventUpdateOne) SetTitle(s string) *EventUpdateOne {
-	euo.mutation.SetTitle(s)
-	return euo
+func (_u *EventUpdateOne) SetTitle(v string) *EventUpdateOne {
+	_u.mutation.SetTitle(v)
+	return _u
 }
 
 // SetNillableTitle sets the "title" field if the given value is not nil.
-func (euo *EventUpdateOne) SetNillableTitle(s *string) *EventUpdateOne {
-	if s != nil {
-		euo.SetTitle(*s)
+func (_u *EventUpdateOne) SetNillableTitle(v *string) *EventUpdateOne {
+	if v != nil {
+		_u.SetTitle(*v)
 	}
-	return euo
+	return _u
 }
 
 // SetDescription sets the "description" field.
-func (euo *EventUpdateOne) SetDescription(s string) *EventUpdateOne {
-	euo.mutation.SetDescription(s)
-	return euo
+func (_u *EventUpdateOne) SetDescription(v string) *EventUpdateOne {
+	_u.mutation.SetDescription(v)
+	return _u
 }
 
 // SetNillableDescription sets the "description" field if the given value is not nil.
-func (euo *EventUpdateOne) SetNillableDescription(s *string) *EventUpdateOne {
-	if s != nil {
-		euo.SetDescription(*s)
+func (_u *EventUpdateOne) SetNillableDescription(v *string) *EventUpdateOne {
+	if v != nil {
+		_u.SetDescription(*v)
 	}
-	return euo
+	return _u
 }
 
 // SetSource sets the "source" field.
-func (euo *EventUpdateOne) SetSource(s string) *EventUpdateOne {
-	euo.mutation.SetSource(s)
-	return euo
+func (_u *EventUpdateOne) SetSource(v string) *EventUpdateOne {
+	_u.mutation.SetSource(v)
+	return _u
 }
 
 // SetNillableSource sets the "source" field if the given value is not nil.
-func (euo *EventUpdateOne) SetNillableSource(s *string) *EventUpdateOne {
-	if s != nil {
-		euo.SetSource(*s)
+func (_u *EventUpdateOne) SetNillableSource(v *string) *EventUpdateOne {
+	if v != nil {
+		_u.SetSource(*v)
 	}
-	return euo
+	return _u
 }
 
 // AddAlertInstanceIDs adds the "alert_instance" edge to the AlertInstance entity by IDs.
-func (euo *EventUpdateOne) AddAlertInstanceIDs(ids ...uuid.UUID) *EventUpdateOne {
-	euo.mutation.AddAlertInstanceIDs(ids...)
-	return euo
+func (_u *EventUpdateOne) AddAlertInstanceIDs(ids ...uuid.UUID) *EventUpdateOne {
+	_u.mutation.AddAlertInstanceIDs(ids...)
+	return _u
 }
 
 // AddAlertInstance adds the "alert_instance" edges to the AlertInstance entity.
-func (euo *EventUpdateOne) AddAlertInstance(a ...*AlertInstance) *EventUpdateOne {
-	ids := make([]uuid.UUID, len(a))
-	for i := range a {
-		ids[i] = a[i].ID
+func (_u *EventUpdateOne) AddAlertInstance(v ...*AlertInstance) *EventUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
 	}
-	return euo.AddAlertInstanceIDs(ids...)
+	return _u.AddAlertInstanceIDs(ids...)
 }
 
 // AddIncidentEventIDs adds the "incident_event" edge to the IncidentEvent entity by IDs.
-func (euo *EventUpdateOne) AddIncidentEventIDs(ids ...uuid.UUID) *EventUpdateOne {
-	euo.mutation.AddIncidentEventIDs(ids...)
-	return euo
+func (_u *EventUpdateOne) AddIncidentEventIDs(ids ...uuid.UUID) *EventUpdateOne {
+	_u.mutation.AddIncidentEventIDs(ids...)
+	return _u
 }
 
 // AddIncidentEvent adds the "incident_event" edges to the IncidentEvent entity.
-func (euo *EventUpdateOne) AddIncidentEvent(i ...*IncidentEvent) *EventUpdateOne {
-	ids := make([]uuid.UUID, len(i))
-	for j := range i {
-		ids[j] = i[j].ID
+func (_u *EventUpdateOne) AddIncidentEvent(v ...*IncidentEvent) *EventUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
 	}
-	return euo.AddIncidentEventIDs(ids...)
+	return _u.AddIncidentEventIDs(ids...)
 }
 
 // AddAnnotationIDs adds the "annotations" edge to the EventAnnotation entity by IDs.
-func (euo *EventUpdateOne) AddAnnotationIDs(ids ...uuid.UUID) *EventUpdateOne {
-	euo.mutation.AddAnnotationIDs(ids...)
-	return euo
+func (_u *EventUpdateOne) AddAnnotationIDs(ids ...uuid.UUID) *EventUpdateOne {
+	_u.mutation.AddAnnotationIDs(ids...)
+	return _u
 }
 
 // AddAnnotations adds the "annotations" edges to the EventAnnotation entity.
-func (euo *EventUpdateOne) AddAnnotations(e ...*EventAnnotation) *EventUpdateOne {
-	ids := make([]uuid.UUID, len(e))
-	for i := range e {
-		ids[i] = e[i].ID
+func (_u *EventUpdateOne) AddAnnotations(v ...*EventAnnotation) *EventUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
 	}
-	return euo.AddAnnotationIDs(ids...)
+	return _u.AddAnnotationIDs(ids...)
 }
 
 // Mutation returns the EventMutation object of the builder.
-func (euo *EventUpdateOne) Mutation() *EventMutation {
-	return euo.mutation
+func (_u *EventUpdateOne) Mutation() *EventMutation {
+	return _u.mutation
 }
 
 // ClearAlertInstance clears all "alert_instance" edges to the AlertInstance entity.
-func (euo *EventUpdateOne) ClearAlertInstance() *EventUpdateOne {
-	euo.mutation.ClearAlertInstance()
-	return euo
+func (_u *EventUpdateOne) ClearAlertInstance() *EventUpdateOne {
+	_u.mutation.ClearAlertInstance()
+	return _u
 }
 
 // RemoveAlertInstanceIDs removes the "alert_instance" edge to AlertInstance entities by IDs.
-func (euo *EventUpdateOne) RemoveAlertInstanceIDs(ids ...uuid.UUID) *EventUpdateOne {
-	euo.mutation.RemoveAlertInstanceIDs(ids...)
-	return euo
+func (_u *EventUpdateOne) RemoveAlertInstanceIDs(ids ...uuid.UUID) *EventUpdateOne {
+	_u.mutation.RemoveAlertInstanceIDs(ids...)
+	return _u
 }
 
 // RemoveAlertInstance removes "alert_instance" edges to AlertInstance entities.
-func (euo *EventUpdateOne) RemoveAlertInstance(a ...*AlertInstance) *EventUpdateOne {
-	ids := make([]uuid.UUID, len(a))
-	for i := range a {
-		ids[i] = a[i].ID
+func (_u *EventUpdateOne) RemoveAlertInstance(v ...*AlertInstance) *EventUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
 	}
-	return euo.RemoveAlertInstanceIDs(ids...)
+	return _u.RemoveAlertInstanceIDs(ids...)
 }
 
 // ClearIncidentEvent clears all "incident_event" edges to the IncidentEvent entity.
-func (euo *EventUpdateOne) ClearIncidentEvent() *EventUpdateOne {
-	euo.mutation.ClearIncidentEvent()
-	return euo
+func (_u *EventUpdateOne) ClearIncidentEvent() *EventUpdateOne {
+	_u.mutation.ClearIncidentEvent()
+	return _u
 }
 
 // RemoveIncidentEventIDs removes the "incident_event" edge to IncidentEvent entities by IDs.
-func (euo *EventUpdateOne) RemoveIncidentEventIDs(ids ...uuid.UUID) *EventUpdateOne {
-	euo.mutation.RemoveIncidentEventIDs(ids...)
-	return euo
+func (_u *EventUpdateOne) RemoveIncidentEventIDs(ids ...uuid.UUID) *EventUpdateOne {
+	_u.mutation.RemoveIncidentEventIDs(ids...)
+	return _u
 }
 
 // RemoveIncidentEvent removes "incident_event" edges to IncidentEvent entities.
-func (euo *EventUpdateOne) RemoveIncidentEvent(i ...*IncidentEvent) *EventUpdateOne {
-	ids := make([]uuid.UUID, len(i))
-	for j := range i {
-		ids[j] = i[j].ID
+func (_u *EventUpdateOne) RemoveIncidentEvent(v ...*IncidentEvent) *EventUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
 	}
-	return euo.RemoveIncidentEventIDs(ids...)
+	return _u.RemoveIncidentEventIDs(ids...)
 }
 
 // ClearAnnotations clears all "annotations" edges to the EventAnnotation entity.
-func (euo *EventUpdateOne) ClearAnnotations() *EventUpdateOne {
-	euo.mutation.ClearAnnotations()
-	return euo
+func (_u *EventUpdateOne) ClearAnnotations() *EventUpdateOne {
+	_u.mutation.ClearAnnotations()
+	return _u
 }
 
 // RemoveAnnotationIDs removes the "annotations" edge to EventAnnotation entities by IDs.
-func (euo *EventUpdateOne) RemoveAnnotationIDs(ids ...uuid.UUID) *EventUpdateOne {
-	euo.mutation.RemoveAnnotationIDs(ids...)
-	return euo
+func (_u *EventUpdateOne) RemoveAnnotationIDs(ids ...uuid.UUID) *EventUpdateOne {
+	_u.mutation.RemoveAnnotationIDs(ids...)
+	return _u
 }
 
 // RemoveAnnotations removes "annotations" edges to EventAnnotation entities.
-func (euo *EventUpdateOne) RemoveAnnotations(e ...*EventAnnotation) *EventUpdateOne {
-	ids := make([]uuid.UUID, len(e))
-	for i := range e {
-		ids[i] = e[i].ID
+func (_u *EventUpdateOne) RemoveAnnotations(v ...*EventAnnotation) *EventUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
 	}
-	return euo.RemoveAnnotationIDs(ids...)
+	return _u.RemoveAnnotationIDs(ids...)
 }
 
 // Where appends a list predicates to the EventUpdate builder.
-func (euo *EventUpdateOne) Where(ps ...predicate.Event) *EventUpdateOne {
-	euo.mutation.Where(ps...)
-	return euo
+func (_u *EventUpdateOne) Where(ps ...predicate.Event) *EventUpdateOne {
+	_u.mutation.Where(ps...)
+	return _u
 }
 
 // Select allows selecting one or more fields (columns) of the returned entity.
 // The default is selecting all fields defined in the entity schema.
-func (euo *EventUpdateOne) Select(field string, fields ...string) *EventUpdateOne {
-	euo.fields = append([]string{field}, fields...)
-	return euo
+func (_u *EventUpdateOne) Select(field string, fields ...string) *EventUpdateOne {
+	_u.fields = append([]string{field}, fields...)
+	return _u
 }
 
 // Save executes the query and returns the updated Event entity.
-func (euo *EventUpdateOne) Save(ctx context.Context) (*Event, error) {
-	return withHooks(ctx, euo.sqlSave, euo.mutation, euo.hooks)
+func (_u *EventUpdateOne) Save(ctx context.Context) (*Event, error) {
+	return withHooks(ctx, _u.sqlSave, _u.mutation, _u.hooks)
 }
 
 // SaveX is like Save, but panics if an error occurs.
-func (euo *EventUpdateOne) SaveX(ctx context.Context) *Event {
-	node, err := euo.Save(ctx)
+func (_u *EventUpdateOne) SaveX(ctx context.Context) *Event {
+	node, err := _u.Save(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -688,48 +688,48 @@ func (euo *EventUpdateOne) SaveX(ctx context.Context) *Event {
 }
 
 // Exec executes the query on the entity.
-func (euo *EventUpdateOne) Exec(ctx context.Context) error {
-	_, err := euo.Save(ctx)
+func (_u *EventUpdateOne) Exec(ctx context.Context) error {
+	_, err := _u.Save(ctx)
 	return err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (euo *EventUpdateOne) ExecX(ctx context.Context) {
-	if err := euo.Exec(ctx); err != nil {
+func (_u *EventUpdateOne) ExecX(ctx context.Context) {
+	if err := _u.Exec(ctx); err != nil {
 		panic(err)
 	}
 }
 
 // check runs all checks and user-defined validators on the builder.
-func (euo *EventUpdateOne) check() error {
-	if v, ok := euo.mutation.Kind(); ok {
+func (_u *EventUpdateOne) check() error {
+	if v, ok := _u.mutation.Kind(); ok {
 		if err := event.KindValidator(v); err != nil {
 			return &ValidationError{Name: "kind", err: fmt.Errorf(`ent: validator failed for field "Event.kind": %w`, err)}
 		}
 	}
-	if euo.mutation.TenantCleared() && len(euo.mutation.TenantIDs()) > 0 {
+	if _u.mutation.TenantCleared() && len(_u.mutation.TenantIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "Event.tenant"`)
 	}
 	return nil
 }
 
 // Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
-func (euo *EventUpdateOne) Modify(modifiers ...func(u *sql.UpdateBuilder)) *EventUpdateOne {
-	euo.modifiers = append(euo.modifiers, modifiers...)
-	return euo
+func (_u *EventUpdateOne) Modify(modifiers ...func(u *sql.UpdateBuilder)) *EventUpdateOne {
+	_u.modifiers = append(_u.modifiers, modifiers...)
+	return _u
 }
 
-func (euo *EventUpdateOne) sqlSave(ctx context.Context) (_node *Event, err error) {
-	if err := euo.check(); err != nil {
+func (_u *EventUpdateOne) sqlSave(ctx context.Context) (_node *Event, err error) {
+	if err := _u.check(); err != nil {
 		return _node, err
 	}
 	_spec := sqlgraph.NewUpdateSpec(event.Table, event.Columns, sqlgraph.NewFieldSpec(event.FieldID, field.TypeUUID))
-	id, ok := euo.mutation.ID()
+	id, ok := _u.mutation.ID()
 	if !ok {
 		return nil, &ValidationError{Name: "id", err: errors.New(`ent: missing "Event.id" for update`)}
 	}
 	_spec.Node.ID.Value = id
-	if fields := euo.fields; len(fields) > 0 {
+	if fields := _u.fields; len(fields) > 0 {
 		_spec.Node.Columns = make([]string, 0, len(fields))
 		_spec.Node.Columns = append(_spec.Node.Columns, event.FieldID)
 		for _, f := range fields {
@@ -741,32 +741,32 @@ func (euo *EventUpdateOne) sqlSave(ctx context.Context) (_node *Event, err error
 			}
 		}
 	}
-	if ps := euo.mutation.predicates; len(ps) > 0 {
+	if ps := _u.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {
 				ps[i](selector)
 			}
 		}
 	}
-	if value, ok := euo.mutation.ProviderID(); ok {
+	if value, ok := _u.mutation.ProviderID(); ok {
 		_spec.SetField(event.FieldProviderID, field.TypeString, value)
 	}
-	if value, ok := euo.mutation.Timestamp(); ok {
+	if value, ok := _u.mutation.Timestamp(); ok {
 		_spec.SetField(event.FieldTimestamp, field.TypeTime, value)
 	}
-	if value, ok := euo.mutation.Kind(); ok {
+	if value, ok := _u.mutation.Kind(); ok {
 		_spec.SetField(event.FieldKind, field.TypeEnum, value)
 	}
-	if value, ok := euo.mutation.Title(); ok {
+	if value, ok := _u.mutation.Title(); ok {
 		_spec.SetField(event.FieldTitle, field.TypeString, value)
 	}
-	if value, ok := euo.mutation.Description(); ok {
+	if value, ok := _u.mutation.Description(); ok {
 		_spec.SetField(event.FieldDescription, field.TypeString, value)
 	}
-	if value, ok := euo.mutation.Source(); ok {
+	if value, ok := _u.mutation.Source(); ok {
 		_spec.SetField(event.FieldSource, field.TypeString, value)
 	}
-	if euo.mutation.AlertInstanceCleared() {
+	if _u.mutation.AlertInstanceCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: true,
@@ -779,7 +779,7 @@ func (euo *EventUpdateOne) sqlSave(ctx context.Context) (_node *Event, err error
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := euo.mutation.RemovedAlertInstanceIDs(); len(nodes) > 0 && !euo.mutation.AlertInstanceCleared() {
+	if nodes := _u.mutation.RemovedAlertInstanceIDs(); len(nodes) > 0 && !_u.mutation.AlertInstanceCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: true,
@@ -795,7 +795,7 @@ func (euo *EventUpdateOne) sqlSave(ctx context.Context) (_node *Event, err error
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := euo.mutation.AlertInstanceIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.AlertInstanceIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: true,
@@ -811,7 +811,7 @@ func (euo *EventUpdateOne) sqlSave(ctx context.Context) (_node *Event, err error
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if euo.mutation.IncidentEventCleared() {
+	if _u.mutation.IncidentEventCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: true,
@@ -824,7 +824,7 @@ func (euo *EventUpdateOne) sqlSave(ctx context.Context) (_node *Event, err error
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := euo.mutation.RemovedIncidentEventIDs(); len(nodes) > 0 && !euo.mutation.IncidentEventCleared() {
+	if nodes := _u.mutation.RemovedIncidentEventIDs(); len(nodes) > 0 && !_u.mutation.IncidentEventCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: true,
@@ -840,7 +840,7 @@ func (euo *EventUpdateOne) sqlSave(ctx context.Context) (_node *Event, err error
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := euo.mutation.IncidentEventIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.IncidentEventIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: true,
@@ -856,7 +856,7 @@ func (euo *EventUpdateOne) sqlSave(ctx context.Context) (_node *Event, err error
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if euo.mutation.AnnotationsCleared() {
+	if _u.mutation.AnnotationsCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: true,
@@ -869,7 +869,7 @@ func (euo *EventUpdateOne) sqlSave(ctx context.Context) (_node *Event, err error
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := euo.mutation.RemovedAnnotationsIDs(); len(nodes) > 0 && !euo.mutation.AnnotationsCleared() {
+	if nodes := _u.mutation.RemovedAnnotationsIDs(); len(nodes) > 0 && !_u.mutation.AnnotationsCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: true,
@@ -885,7 +885,7 @@ func (euo *EventUpdateOne) sqlSave(ctx context.Context) (_node *Event, err error
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := euo.mutation.AnnotationsIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.AnnotationsIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: true,
@@ -901,11 +901,11 @@ func (euo *EventUpdateOne) sqlSave(ctx context.Context) (_node *Event, err error
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	_spec.AddModifiers(euo.modifiers...)
-	_node = &Event{config: euo.config}
+	_spec.AddModifiers(_u.modifiers...)
+	_node = &Event{config: _u.config}
 	_spec.Assign = _node.assignValues
 	_spec.ScanValues = _node.scanValues
-	if err = sqlgraph.UpdateNode(ctx, euo.driver, _spec); err != nil {
+	if err = sqlgraph.UpdateNode(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{event.Label}
 		} else if sqlgraph.IsConstraintError(err) {
@@ -913,6 +913,6 @@ func (euo *EventUpdateOne) sqlSave(ctx context.Context) (_node *Event, err error
 		}
 		return nil, err
 	}
-	euo.mutation.done = true
+	_u.mutation.done = true
 	return _node, nil
 }

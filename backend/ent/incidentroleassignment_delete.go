@@ -20,56 +20,56 @@ type IncidentRoleAssignmentDelete struct {
 }
 
 // Where appends a list predicates to the IncidentRoleAssignmentDelete builder.
-func (irad *IncidentRoleAssignmentDelete) Where(ps ...predicate.IncidentRoleAssignment) *IncidentRoleAssignmentDelete {
-	irad.mutation.Where(ps...)
-	return irad
+func (_d *IncidentRoleAssignmentDelete) Where(ps ...predicate.IncidentRoleAssignment) *IncidentRoleAssignmentDelete {
+	_d.mutation.Where(ps...)
+	return _d
 }
 
 // Exec executes the deletion query and returns how many vertices were deleted.
-func (irad *IncidentRoleAssignmentDelete) Exec(ctx context.Context) (int, error) {
-	return withHooks(ctx, irad.sqlExec, irad.mutation, irad.hooks)
+func (_d *IncidentRoleAssignmentDelete) Exec(ctx context.Context) (int, error) {
+	return withHooks(ctx, _d.sqlExec, _d.mutation, _d.hooks)
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (irad *IncidentRoleAssignmentDelete) ExecX(ctx context.Context) int {
-	n, err := irad.Exec(ctx)
+func (_d *IncidentRoleAssignmentDelete) ExecX(ctx context.Context) int {
+	n, err := _d.Exec(ctx)
 	if err != nil {
 		panic(err)
 	}
 	return n
 }
 
-func (irad *IncidentRoleAssignmentDelete) sqlExec(ctx context.Context) (int, error) {
+func (_d *IncidentRoleAssignmentDelete) sqlExec(ctx context.Context) (int, error) {
 	_spec := sqlgraph.NewDeleteSpec(incidentroleassignment.Table, sqlgraph.NewFieldSpec(incidentroleassignment.FieldID, field.TypeUUID))
-	if ps := irad.mutation.predicates; len(ps) > 0 {
+	if ps := _d.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {
 				ps[i](selector)
 			}
 		}
 	}
-	affected, err := sqlgraph.DeleteNodes(ctx, irad.driver, _spec)
+	affected, err := sqlgraph.DeleteNodes(ctx, _d.driver, _spec)
 	if err != nil && sqlgraph.IsConstraintError(err) {
 		err = &ConstraintError{msg: err.Error(), wrap: err}
 	}
-	irad.mutation.done = true
+	_d.mutation.done = true
 	return affected, err
 }
 
 // IncidentRoleAssignmentDeleteOne is the builder for deleting a single IncidentRoleAssignment entity.
 type IncidentRoleAssignmentDeleteOne struct {
-	irad *IncidentRoleAssignmentDelete
+	_d *IncidentRoleAssignmentDelete
 }
 
 // Where appends a list predicates to the IncidentRoleAssignmentDelete builder.
-func (irado *IncidentRoleAssignmentDeleteOne) Where(ps ...predicate.IncidentRoleAssignment) *IncidentRoleAssignmentDeleteOne {
-	irado.irad.mutation.Where(ps...)
-	return irado
+func (_d *IncidentRoleAssignmentDeleteOne) Where(ps ...predicate.IncidentRoleAssignment) *IncidentRoleAssignmentDeleteOne {
+	_d._d.mutation.Where(ps...)
+	return _d
 }
 
 // Exec executes the deletion query.
-func (irado *IncidentRoleAssignmentDeleteOne) Exec(ctx context.Context) error {
-	n, err := irado.irad.Exec(ctx)
+func (_d *IncidentRoleAssignmentDeleteOne) Exec(ctx context.Context) error {
+	n, err := _d._d.Exec(ctx)
 	switch {
 	case err != nil:
 		return err
@@ -81,8 +81,8 @@ func (irado *IncidentRoleAssignmentDeleteOne) Exec(ctx context.Context) error {
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (irado *IncidentRoleAssignmentDeleteOne) ExecX(ctx context.Context) {
-	if err := irado.Exec(ctx); err != nil {
+func (_d *IncidentRoleAssignmentDeleteOne) ExecX(ctx context.Context) {
+	if err := _d.Exec(ctx); err != nil {
 		panic(err)
 	}
 }

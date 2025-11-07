@@ -31,142 +31,142 @@ type IncidentDebriefQuestionCreate struct {
 }
 
 // SetTenantID sets the "tenant_id" field.
-func (idqc *IncidentDebriefQuestionCreate) SetTenantID(i int) *IncidentDebriefQuestionCreate {
-	idqc.mutation.SetTenantID(i)
-	return idqc
+func (_c *IncidentDebriefQuestionCreate) SetTenantID(v int) *IncidentDebriefQuestionCreate {
+	_c.mutation.SetTenantID(v)
+	return _c
 }
 
 // SetContent sets the "content" field.
-func (idqc *IncidentDebriefQuestionCreate) SetContent(s string) *IncidentDebriefQuestionCreate {
-	idqc.mutation.SetContent(s)
-	return idqc
+func (_c *IncidentDebriefQuestionCreate) SetContent(v string) *IncidentDebriefQuestionCreate {
+	_c.mutation.SetContent(v)
+	return _c
 }
 
 // SetID sets the "id" field.
-func (idqc *IncidentDebriefQuestionCreate) SetID(u uuid.UUID) *IncidentDebriefQuestionCreate {
-	idqc.mutation.SetID(u)
-	return idqc
+func (_c *IncidentDebriefQuestionCreate) SetID(v uuid.UUID) *IncidentDebriefQuestionCreate {
+	_c.mutation.SetID(v)
+	return _c
 }
 
 // SetNillableID sets the "id" field if the given value is not nil.
-func (idqc *IncidentDebriefQuestionCreate) SetNillableID(u *uuid.UUID) *IncidentDebriefQuestionCreate {
-	if u != nil {
-		idqc.SetID(*u)
+func (_c *IncidentDebriefQuestionCreate) SetNillableID(v *uuid.UUID) *IncidentDebriefQuestionCreate {
+	if v != nil {
+		_c.SetID(*v)
 	}
-	return idqc
+	return _c
 }
 
 // SetTenant sets the "tenant" edge to the Tenant entity.
-func (idqc *IncidentDebriefQuestionCreate) SetTenant(t *Tenant) *IncidentDebriefQuestionCreate {
-	return idqc.SetTenantID(t.ID)
+func (_c *IncidentDebriefQuestionCreate) SetTenant(v *Tenant) *IncidentDebriefQuestionCreate {
+	return _c.SetTenantID(v.ID)
 }
 
 // AddMessageIDs adds the "messages" edge to the IncidentDebriefMessage entity by IDs.
-func (idqc *IncidentDebriefQuestionCreate) AddMessageIDs(ids ...uuid.UUID) *IncidentDebriefQuestionCreate {
-	idqc.mutation.AddMessageIDs(ids...)
-	return idqc
+func (_c *IncidentDebriefQuestionCreate) AddMessageIDs(ids ...uuid.UUID) *IncidentDebriefQuestionCreate {
+	_c.mutation.AddMessageIDs(ids...)
+	return _c
 }
 
 // AddMessages adds the "messages" edges to the IncidentDebriefMessage entity.
-func (idqc *IncidentDebriefQuestionCreate) AddMessages(i ...*IncidentDebriefMessage) *IncidentDebriefQuestionCreate {
-	ids := make([]uuid.UUID, len(i))
-	for j := range i {
-		ids[j] = i[j].ID
+func (_c *IncidentDebriefQuestionCreate) AddMessages(v ...*IncidentDebriefMessage) *IncidentDebriefQuestionCreate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
 	}
-	return idqc.AddMessageIDs(ids...)
+	return _c.AddMessageIDs(ids...)
 }
 
 // AddIncidentFieldIDs adds the "incident_fields" edge to the IncidentField entity by IDs.
-func (idqc *IncidentDebriefQuestionCreate) AddIncidentFieldIDs(ids ...uuid.UUID) *IncidentDebriefQuestionCreate {
-	idqc.mutation.AddIncidentFieldIDs(ids...)
-	return idqc
+func (_c *IncidentDebriefQuestionCreate) AddIncidentFieldIDs(ids ...uuid.UUID) *IncidentDebriefQuestionCreate {
+	_c.mutation.AddIncidentFieldIDs(ids...)
+	return _c
 }
 
 // AddIncidentFields adds the "incident_fields" edges to the IncidentField entity.
-func (idqc *IncidentDebriefQuestionCreate) AddIncidentFields(i ...*IncidentField) *IncidentDebriefQuestionCreate {
-	ids := make([]uuid.UUID, len(i))
-	for j := range i {
-		ids[j] = i[j].ID
+func (_c *IncidentDebriefQuestionCreate) AddIncidentFields(v ...*IncidentField) *IncidentDebriefQuestionCreate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
 	}
-	return idqc.AddIncidentFieldIDs(ids...)
+	return _c.AddIncidentFieldIDs(ids...)
 }
 
 // AddIncidentRoleIDs adds the "incident_roles" edge to the IncidentRole entity by IDs.
-func (idqc *IncidentDebriefQuestionCreate) AddIncidentRoleIDs(ids ...uuid.UUID) *IncidentDebriefQuestionCreate {
-	idqc.mutation.AddIncidentRoleIDs(ids...)
-	return idqc
+func (_c *IncidentDebriefQuestionCreate) AddIncidentRoleIDs(ids ...uuid.UUID) *IncidentDebriefQuestionCreate {
+	_c.mutation.AddIncidentRoleIDs(ids...)
+	return _c
 }
 
 // AddIncidentRoles adds the "incident_roles" edges to the IncidentRole entity.
-func (idqc *IncidentDebriefQuestionCreate) AddIncidentRoles(i ...*IncidentRole) *IncidentDebriefQuestionCreate {
-	ids := make([]uuid.UUID, len(i))
-	for j := range i {
-		ids[j] = i[j].ID
+func (_c *IncidentDebriefQuestionCreate) AddIncidentRoles(v ...*IncidentRole) *IncidentDebriefQuestionCreate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
 	}
-	return idqc.AddIncidentRoleIDs(ids...)
+	return _c.AddIncidentRoleIDs(ids...)
 }
 
 // AddIncidentSeverityIDs adds the "incident_severities" edge to the IncidentSeverity entity by IDs.
-func (idqc *IncidentDebriefQuestionCreate) AddIncidentSeverityIDs(ids ...uuid.UUID) *IncidentDebriefQuestionCreate {
-	idqc.mutation.AddIncidentSeverityIDs(ids...)
-	return idqc
+func (_c *IncidentDebriefQuestionCreate) AddIncidentSeverityIDs(ids ...uuid.UUID) *IncidentDebriefQuestionCreate {
+	_c.mutation.AddIncidentSeverityIDs(ids...)
+	return _c
 }
 
 // AddIncidentSeverities adds the "incident_severities" edges to the IncidentSeverity entity.
-func (idqc *IncidentDebriefQuestionCreate) AddIncidentSeverities(i ...*IncidentSeverity) *IncidentDebriefQuestionCreate {
-	ids := make([]uuid.UUID, len(i))
-	for j := range i {
-		ids[j] = i[j].ID
+func (_c *IncidentDebriefQuestionCreate) AddIncidentSeverities(v ...*IncidentSeverity) *IncidentDebriefQuestionCreate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
 	}
-	return idqc.AddIncidentSeverityIDs(ids...)
+	return _c.AddIncidentSeverityIDs(ids...)
 }
 
 // AddIncidentTagIDs adds the "incident_tags" edge to the IncidentTag entity by IDs.
-func (idqc *IncidentDebriefQuestionCreate) AddIncidentTagIDs(ids ...uuid.UUID) *IncidentDebriefQuestionCreate {
-	idqc.mutation.AddIncidentTagIDs(ids...)
-	return idqc
+func (_c *IncidentDebriefQuestionCreate) AddIncidentTagIDs(ids ...uuid.UUID) *IncidentDebriefQuestionCreate {
+	_c.mutation.AddIncidentTagIDs(ids...)
+	return _c
 }
 
 // AddIncidentTags adds the "incident_tags" edges to the IncidentTag entity.
-func (idqc *IncidentDebriefQuestionCreate) AddIncidentTags(i ...*IncidentTag) *IncidentDebriefQuestionCreate {
-	ids := make([]uuid.UUID, len(i))
-	for j := range i {
-		ids[j] = i[j].ID
+func (_c *IncidentDebriefQuestionCreate) AddIncidentTags(v ...*IncidentTag) *IncidentDebriefQuestionCreate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
 	}
-	return idqc.AddIncidentTagIDs(ids...)
+	return _c.AddIncidentTagIDs(ids...)
 }
 
 // AddIncidentTypeIDs adds the "incident_types" edge to the IncidentType entity by IDs.
-func (idqc *IncidentDebriefQuestionCreate) AddIncidentTypeIDs(ids ...uuid.UUID) *IncidentDebriefQuestionCreate {
-	idqc.mutation.AddIncidentTypeIDs(ids...)
-	return idqc
+func (_c *IncidentDebriefQuestionCreate) AddIncidentTypeIDs(ids ...uuid.UUID) *IncidentDebriefQuestionCreate {
+	_c.mutation.AddIncidentTypeIDs(ids...)
+	return _c
 }
 
 // AddIncidentTypes adds the "incident_types" edges to the IncidentType entity.
-func (idqc *IncidentDebriefQuestionCreate) AddIncidentTypes(i ...*IncidentType) *IncidentDebriefQuestionCreate {
-	ids := make([]uuid.UUID, len(i))
-	for j := range i {
-		ids[j] = i[j].ID
+func (_c *IncidentDebriefQuestionCreate) AddIncidentTypes(v ...*IncidentType) *IncidentDebriefQuestionCreate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
 	}
-	return idqc.AddIncidentTypeIDs(ids...)
+	return _c.AddIncidentTypeIDs(ids...)
 }
 
 // Mutation returns the IncidentDebriefQuestionMutation object of the builder.
-func (idqc *IncidentDebriefQuestionCreate) Mutation() *IncidentDebriefQuestionMutation {
-	return idqc.mutation
+func (_c *IncidentDebriefQuestionCreate) Mutation() *IncidentDebriefQuestionMutation {
+	return _c.mutation
 }
 
 // Save creates the IncidentDebriefQuestion in the database.
-func (idqc *IncidentDebriefQuestionCreate) Save(ctx context.Context) (*IncidentDebriefQuestion, error) {
-	if err := idqc.defaults(); err != nil {
+func (_c *IncidentDebriefQuestionCreate) Save(ctx context.Context) (*IncidentDebriefQuestion, error) {
+	if err := _c.defaults(); err != nil {
 		return nil, err
 	}
-	return withHooks(ctx, idqc.sqlSave, idqc.mutation, idqc.hooks)
+	return withHooks(ctx, _c.sqlSave, _c.mutation, _c.hooks)
 }
 
 // SaveX calls Save and panics if Save returns an error.
-func (idqc *IncidentDebriefQuestionCreate) SaveX(ctx context.Context) *IncidentDebriefQuestion {
-	v, err := idqc.Save(ctx)
+func (_c *IncidentDebriefQuestionCreate) SaveX(ctx context.Context) *IncidentDebriefQuestion {
+	v, err := _c.Save(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -174,50 +174,50 @@ func (idqc *IncidentDebriefQuestionCreate) SaveX(ctx context.Context) *IncidentD
 }
 
 // Exec executes the query.
-func (idqc *IncidentDebriefQuestionCreate) Exec(ctx context.Context) error {
-	_, err := idqc.Save(ctx)
+func (_c *IncidentDebriefQuestionCreate) Exec(ctx context.Context) error {
+	_, err := _c.Save(ctx)
 	return err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (idqc *IncidentDebriefQuestionCreate) ExecX(ctx context.Context) {
-	if err := idqc.Exec(ctx); err != nil {
+func (_c *IncidentDebriefQuestionCreate) ExecX(ctx context.Context) {
+	if err := _c.Exec(ctx); err != nil {
 		panic(err)
 	}
 }
 
 // defaults sets the default values of the builder before save.
-func (idqc *IncidentDebriefQuestionCreate) defaults() error {
-	if _, ok := idqc.mutation.ID(); !ok {
+func (_c *IncidentDebriefQuestionCreate) defaults() error {
+	if _, ok := _c.mutation.ID(); !ok {
 		if incidentdebriefquestion.DefaultID == nil {
 			return fmt.Errorf("ent: uninitialized incidentdebriefquestion.DefaultID (forgotten import ent/runtime?)")
 		}
 		v := incidentdebriefquestion.DefaultID()
-		idqc.mutation.SetID(v)
+		_c.mutation.SetID(v)
 	}
 	return nil
 }
 
 // check runs all checks and user-defined validators on the builder.
-func (idqc *IncidentDebriefQuestionCreate) check() error {
-	if _, ok := idqc.mutation.TenantID(); !ok {
+func (_c *IncidentDebriefQuestionCreate) check() error {
+	if _, ok := _c.mutation.TenantID(); !ok {
 		return &ValidationError{Name: "tenant_id", err: errors.New(`ent: missing required field "IncidentDebriefQuestion.tenant_id"`)}
 	}
-	if _, ok := idqc.mutation.Content(); !ok {
+	if _, ok := _c.mutation.Content(); !ok {
 		return &ValidationError{Name: "content", err: errors.New(`ent: missing required field "IncidentDebriefQuestion.content"`)}
 	}
-	if len(idqc.mutation.TenantIDs()) == 0 {
+	if len(_c.mutation.TenantIDs()) == 0 {
 		return &ValidationError{Name: "tenant", err: errors.New(`ent: missing required edge "IncidentDebriefQuestion.tenant"`)}
 	}
 	return nil
 }
 
-func (idqc *IncidentDebriefQuestionCreate) sqlSave(ctx context.Context) (*IncidentDebriefQuestion, error) {
-	if err := idqc.check(); err != nil {
+func (_c *IncidentDebriefQuestionCreate) sqlSave(ctx context.Context) (*IncidentDebriefQuestion, error) {
+	if err := _c.check(); err != nil {
 		return nil, err
 	}
-	_node, _spec := idqc.createSpec()
-	if err := sqlgraph.CreateNode(ctx, idqc.driver, _spec); err != nil {
+	_node, _spec := _c.createSpec()
+	if err := sqlgraph.CreateNode(ctx, _c.driver, _spec); err != nil {
 		if sqlgraph.IsConstraintError(err) {
 			err = &ConstraintError{msg: err.Error(), wrap: err}
 		}
@@ -230,26 +230,26 @@ func (idqc *IncidentDebriefQuestionCreate) sqlSave(ctx context.Context) (*Incide
 			return nil, err
 		}
 	}
-	idqc.mutation.id = &_node.ID
-	idqc.mutation.done = true
+	_c.mutation.id = &_node.ID
+	_c.mutation.done = true
 	return _node, nil
 }
 
-func (idqc *IncidentDebriefQuestionCreate) createSpec() (*IncidentDebriefQuestion, *sqlgraph.CreateSpec) {
+func (_c *IncidentDebriefQuestionCreate) createSpec() (*IncidentDebriefQuestion, *sqlgraph.CreateSpec) {
 	var (
-		_node = &IncidentDebriefQuestion{config: idqc.config}
+		_node = &IncidentDebriefQuestion{config: _c.config}
 		_spec = sqlgraph.NewCreateSpec(incidentdebriefquestion.Table, sqlgraph.NewFieldSpec(incidentdebriefquestion.FieldID, field.TypeUUID))
 	)
-	_spec.OnConflict = idqc.conflict
-	if id, ok := idqc.mutation.ID(); ok {
+	_spec.OnConflict = _c.conflict
+	if id, ok := _c.mutation.ID(); ok {
 		_node.ID = id
 		_spec.ID.Value = &id
 	}
-	if value, ok := idqc.mutation.Content(); ok {
+	if value, ok := _c.mutation.Content(); ok {
 		_spec.SetField(incidentdebriefquestion.FieldContent, field.TypeString, value)
 		_node.Content = value
 	}
-	if nodes := idqc.mutation.TenantIDs(); len(nodes) > 0 {
+	if nodes := _c.mutation.TenantIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
@@ -266,7 +266,7 @@ func (idqc *IncidentDebriefQuestionCreate) createSpec() (*IncidentDebriefQuestio
 		_node.TenantID = nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
-	if nodes := idqc.mutation.MessagesIDs(); len(nodes) > 0 {
+	if nodes := _c.mutation.MessagesIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: true,
@@ -282,7 +282,7 @@ func (idqc *IncidentDebriefQuestionCreate) createSpec() (*IncidentDebriefQuestio
 		}
 		_spec.Edges = append(_spec.Edges, edge)
 	}
-	if nodes := idqc.mutation.IncidentFieldsIDs(); len(nodes) > 0 {
+	if nodes := _c.mutation.IncidentFieldsIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
 			Inverse: false,
@@ -298,7 +298,7 @@ func (idqc *IncidentDebriefQuestionCreate) createSpec() (*IncidentDebriefQuestio
 		}
 		_spec.Edges = append(_spec.Edges, edge)
 	}
-	if nodes := idqc.mutation.IncidentRolesIDs(); len(nodes) > 0 {
+	if nodes := _c.mutation.IncidentRolesIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
 			Inverse: false,
@@ -314,7 +314,7 @@ func (idqc *IncidentDebriefQuestionCreate) createSpec() (*IncidentDebriefQuestio
 		}
 		_spec.Edges = append(_spec.Edges, edge)
 	}
-	if nodes := idqc.mutation.IncidentSeveritiesIDs(); len(nodes) > 0 {
+	if nodes := _c.mutation.IncidentSeveritiesIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
 			Inverse: false,
@@ -330,7 +330,7 @@ func (idqc *IncidentDebriefQuestionCreate) createSpec() (*IncidentDebriefQuestio
 		}
 		_spec.Edges = append(_spec.Edges, edge)
 	}
-	if nodes := idqc.mutation.IncidentTagsIDs(); len(nodes) > 0 {
+	if nodes := _c.mutation.IncidentTagsIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
 			Inverse: false,
@@ -346,7 +346,7 @@ func (idqc *IncidentDebriefQuestionCreate) createSpec() (*IncidentDebriefQuestio
 		}
 		_spec.Edges = append(_spec.Edges, edge)
 	}
-	if nodes := idqc.mutation.IncidentTypesIDs(); len(nodes) > 0 {
+	if nodes := _c.mutation.IncidentTypesIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
 			Inverse: false,
@@ -381,10 +381,10 @@ func (idqc *IncidentDebriefQuestionCreate) createSpec() (*IncidentDebriefQuestio
 //			SetTenantID(v+v).
 //		}).
 //		Exec(ctx)
-func (idqc *IncidentDebriefQuestionCreate) OnConflict(opts ...sql.ConflictOption) *IncidentDebriefQuestionUpsertOne {
-	idqc.conflict = opts
+func (_c *IncidentDebriefQuestionCreate) OnConflict(opts ...sql.ConflictOption) *IncidentDebriefQuestionUpsertOne {
+	_c.conflict = opts
 	return &IncidentDebriefQuestionUpsertOne{
-		create: idqc,
+		create: _c,
 	}
 }
 
@@ -394,10 +394,10 @@ func (idqc *IncidentDebriefQuestionCreate) OnConflict(opts ...sql.ConflictOption
 //	client.IncidentDebriefQuestion.Create().
 //		OnConflict(sql.ConflictColumns(columns...)).
 //		Exec(ctx)
-func (idqc *IncidentDebriefQuestionCreate) OnConflictColumns(columns ...string) *IncidentDebriefQuestionUpsertOne {
-	idqc.conflict = append(idqc.conflict, sql.ConflictColumns(columns...))
+func (_c *IncidentDebriefQuestionCreate) OnConflictColumns(columns ...string) *IncidentDebriefQuestionUpsertOne {
+	_c.conflict = append(_c.conflict, sql.ConflictColumns(columns...))
 	return &IncidentDebriefQuestionUpsertOne{
-		create: idqc,
+		create: _c,
 	}
 }
 
@@ -538,16 +538,16 @@ type IncidentDebriefQuestionCreateBulk struct {
 }
 
 // Save creates the IncidentDebriefQuestion entities in the database.
-func (idqcb *IncidentDebriefQuestionCreateBulk) Save(ctx context.Context) ([]*IncidentDebriefQuestion, error) {
-	if idqcb.err != nil {
-		return nil, idqcb.err
+func (_c *IncidentDebriefQuestionCreateBulk) Save(ctx context.Context) ([]*IncidentDebriefQuestion, error) {
+	if _c.err != nil {
+		return nil, _c.err
 	}
-	specs := make([]*sqlgraph.CreateSpec, len(idqcb.builders))
-	nodes := make([]*IncidentDebriefQuestion, len(idqcb.builders))
-	mutators := make([]Mutator, len(idqcb.builders))
-	for i := range idqcb.builders {
+	specs := make([]*sqlgraph.CreateSpec, len(_c.builders))
+	nodes := make([]*IncidentDebriefQuestion, len(_c.builders))
+	mutators := make([]Mutator, len(_c.builders))
+	for i := range _c.builders {
 		func(i int, root context.Context) {
-			builder := idqcb.builders[i]
+			builder := _c.builders[i]
 			builder.defaults()
 			var mut Mutator = MutateFunc(func(ctx context.Context, m Mutation) (Value, error) {
 				mutation, ok := m.(*IncidentDebriefQuestionMutation)
@@ -561,12 +561,12 @@ func (idqcb *IncidentDebriefQuestionCreateBulk) Save(ctx context.Context) ([]*In
 				var err error
 				nodes[i], specs[i] = builder.createSpec()
 				if i < len(mutators)-1 {
-					_, err = mutators[i+1].Mutate(root, idqcb.builders[i+1].mutation)
+					_, err = mutators[i+1].Mutate(root, _c.builders[i+1].mutation)
 				} else {
 					spec := &sqlgraph.BatchCreateSpec{Nodes: specs}
-					spec.OnConflict = idqcb.conflict
+					spec.OnConflict = _c.conflict
 					// Invoke the actual operation on the latest mutation in the chain.
-					if err = sqlgraph.BatchCreate(ctx, idqcb.driver, spec); err != nil {
+					if err = sqlgraph.BatchCreate(ctx, _c.driver, spec); err != nil {
 						if sqlgraph.IsConstraintError(err) {
 							err = &ConstraintError{msg: err.Error(), wrap: err}
 						}
@@ -586,7 +586,7 @@ func (idqcb *IncidentDebriefQuestionCreateBulk) Save(ctx context.Context) ([]*In
 		}(i, ctx)
 	}
 	if len(mutators) > 0 {
-		if _, err := mutators[0].Mutate(ctx, idqcb.builders[0].mutation); err != nil {
+		if _, err := mutators[0].Mutate(ctx, _c.builders[0].mutation); err != nil {
 			return nil, err
 		}
 	}
@@ -594,8 +594,8 @@ func (idqcb *IncidentDebriefQuestionCreateBulk) Save(ctx context.Context) ([]*In
 }
 
 // SaveX is like Save, but panics if an error occurs.
-func (idqcb *IncidentDebriefQuestionCreateBulk) SaveX(ctx context.Context) []*IncidentDebriefQuestion {
-	v, err := idqcb.Save(ctx)
+func (_c *IncidentDebriefQuestionCreateBulk) SaveX(ctx context.Context) []*IncidentDebriefQuestion {
+	v, err := _c.Save(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -603,14 +603,14 @@ func (idqcb *IncidentDebriefQuestionCreateBulk) SaveX(ctx context.Context) []*In
 }
 
 // Exec executes the query.
-func (idqcb *IncidentDebriefQuestionCreateBulk) Exec(ctx context.Context) error {
-	_, err := idqcb.Save(ctx)
+func (_c *IncidentDebriefQuestionCreateBulk) Exec(ctx context.Context) error {
+	_, err := _c.Save(ctx)
 	return err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (idqcb *IncidentDebriefQuestionCreateBulk) ExecX(ctx context.Context) {
-	if err := idqcb.Exec(ctx); err != nil {
+func (_c *IncidentDebriefQuestionCreateBulk) ExecX(ctx context.Context) {
+	if err := _c.Exec(ctx); err != nil {
 		panic(err)
 	}
 }
@@ -630,10 +630,10 @@ func (idqcb *IncidentDebriefQuestionCreateBulk) ExecX(ctx context.Context) {
 //			SetTenantID(v+v).
 //		}).
 //		Exec(ctx)
-func (idqcb *IncidentDebriefQuestionCreateBulk) OnConflict(opts ...sql.ConflictOption) *IncidentDebriefQuestionUpsertBulk {
-	idqcb.conflict = opts
+func (_c *IncidentDebriefQuestionCreateBulk) OnConflict(opts ...sql.ConflictOption) *IncidentDebriefQuestionUpsertBulk {
+	_c.conflict = opts
 	return &IncidentDebriefQuestionUpsertBulk{
-		create: idqcb,
+		create: _c,
 	}
 }
 
@@ -643,10 +643,10 @@ func (idqcb *IncidentDebriefQuestionCreateBulk) OnConflict(opts ...sql.ConflictO
 //	client.IncidentDebriefQuestion.Create().
 //		OnConflict(sql.ConflictColumns(columns...)).
 //		Exec(ctx)
-func (idqcb *IncidentDebriefQuestionCreateBulk) OnConflictColumns(columns ...string) *IncidentDebriefQuestionUpsertBulk {
-	idqcb.conflict = append(idqcb.conflict, sql.ConflictColumns(columns...))
+func (_c *IncidentDebriefQuestionCreateBulk) OnConflictColumns(columns ...string) *IncidentDebriefQuestionUpsertBulk {
+	_c.conflict = append(_c.conflict, sql.ConflictColumns(columns...))
 	return &IncidentDebriefQuestionUpsertBulk{
-		create: idqcb,
+		create: _c,
 	}
 }
 

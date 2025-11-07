@@ -20,56 +20,56 @@ type IncidentEventEvidenceDelete struct {
 }
 
 // Where appends a list predicates to the IncidentEventEvidenceDelete builder.
-func (ieed *IncidentEventEvidenceDelete) Where(ps ...predicate.IncidentEventEvidence) *IncidentEventEvidenceDelete {
-	ieed.mutation.Where(ps...)
-	return ieed
+func (_d *IncidentEventEvidenceDelete) Where(ps ...predicate.IncidentEventEvidence) *IncidentEventEvidenceDelete {
+	_d.mutation.Where(ps...)
+	return _d
 }
 
 // Exec executes the deletion query and returns how many vertices were deleted.
-func (ieed *IncidentEventEvidenceDelete) Exec(ctx context.Context) (int, error) {
-	return withHooks(ctx, ieed.sqlExec, ieed.mutation, ieed.hooks)
+func (_d *IncidentEventEvidenceDelete) Exec(ctx context.Context) (int, error) {
+	return withHooks(ctx, _d.sqlExec, _d.mutation, _d.hooks)
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (ieed *IncidentEventEvidenceDelete) ExecX(ctx context.Context) int {
-	n, err := ieed.Exec(ctx)
+func (_d *IncidentEventEvidenceDelete) ExecX(ctx context.Context) int {
+	n, err := _d.Exec(ctx)
 	if err != nil {
 		panic(err)
 	}
 	return n
 }
 
-func (ieed *IncidentEventEvidenceDelete) sqlExec(ctx context.Context) (int, error) {
+func (_d *IncidentEventEvidenceDelete) sqlExec(ctx context.Context) (int, error) {
 	_spec := sqlgraph.NewDeleteSpec(incidenteventevidence.Table, sqlgraph.NewFieldSpec(incidenteventevidence.FieldID, field.TypeUUID))
-	if ps := ieed.mutation.predicates; len(ps) > 0 {
+	if ps := _d.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {
 				ps[i](selector)
 			}
 		}
 	}
-	affected, err := sqlgraph.DeleteNodes(ctx, ieed.driver, _spec)
+	affected, err := sqlgraph.DeleteNodes(ctx, _d.driver, _spec)
 	if err != nil && sqlgraph.IsConstraintError(err) {
 		err = &ConstraintError{msg: err.Error(), wrap: err}
 	}
-	ieed.mutation.done = true
+	_d.mutation.done = true
 	return affected, err
 }
 
 // IncidentEventEvidenceDeleteOne is the builder for deleting a single IncidentEventEvidence entity.
 type IncidentEventEvidenceDeleteOne struct {
-	ieed *IncidentEventEvidenceDelete
+	_d *IncidentEventEvidenceDelete
 }
 
 // Where appends a list predicates to the IncidentEventEvidenceDelete builder.
-func (ieedo *IncidentEventEvidenceDeleteOne) Where(ps ...predicate.IncidentEventEvidence) *IncidentEventEvidenceDeleteOne {
-	ieedo.ieed.mutation.Where(ps...)
-	return ieedo
+func (_d *IncidentEventEvidenceDeleteOne) Where(ps ...predicate.IncidentEventEvidence) *IncidentEventEvidenceDeleteOne {
+	_d._d.mutation.Where(ps...)
+	return _d
 }
 
 // Exec executes the deletion query.
-func (ieedo *IncidentEventEvidenceDeleteOne) Exec(ctx context.Context) error {
-	n, err := ieedo.ieed.Exec(ctx)
+func (_d *IncidentEventEvidenceDeleteOne) Exec(ctx context.Context) error {
+	n, err := _d._d.Exec(ctx)
 	switch {
 	case err != nil:
 		return err
@@ -81,8 +81,8 @@ func (ieedo *IncidentEventEvidenceDeleteOne) Exec(ctx context.Context) error {
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (ieedo *IncidentEventEvidenceDeleteOne) ExecX(ctx context.Context) {
-	if err := ieedo.Exec(ctx); err != nil {
+func (_d *IncidentEventEvidenceDeleteOne) ExecX(ctx context.Context) {
+	if err := _d.Exec(ctx); err != nil {
 		panic(err)
 	}
 }

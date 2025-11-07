@@ -28,155 +28,155 @@ type RetrospectiveCommentCreate struct {
 }
 
 // SetTenantID sets the "tenant_id" field.
-func (rcc *RetrospectiveCommentCreate) SetTenantID(i int) *RetrospectiveCommentCreate {
-	rcc.mutation.SetTenantID(i)
-	return rcc
+func (_c *RetrospectiveCommentCreate) SetTenantID(v int) *RetrospectiveCommentCreate {
+	_c.mutation.SetTenantID(v)
+	return _c
 }
 
 // SetRetrospectiveID sets the "retrospective_id" field.
-func (rcc *RetrospectiveCommentCreate) SetRetrospectiveID(u uuid.UUID) *RetrospectiveCommentCreate {
-	rcc.mutation.SetRetrospectiveID(u)
-	return rcc
+func (_c *RetrospectiveCommentCreate) SetRetrospectiveID(v uuid.UUID) *RetrospectiveCommentCreate {
+	_c.mutation.SetRetrospectiveID(v)
+	return _c
 }
 
 // SetUserID sets the "user_id" field.
-func (rcc *RetrospectiveCommentCreate) SetUserID(u uuid.UUID) *RetrospectiveCommentCreate {
-	rcc.mutation.SetUserID(u)
-	return rcc
+func (_c *RetrospectiveCommentCreate) SetUserID(v uuid.UUID) *RetrospectiveCommentCreate {
+	_c.mutation.SetUserID(v)
+	return _c
 }
 
 // SetRetrospectiveReviewID sets the "retrospective_review_id" field.
-func (rcc *RetrospectiveCommentCreate) SetRetrospectiveReviewID(u uuid.UUID) *RetrospectiveCommentCreate {
-	rcc.mutation.SetRetrospectiveReviewID(u)
-	return rcc
+func (_c *RetrospectiveCommentCreate) SetRetrospectiveReviewID(v uuid.UUID) *RetrospectiveCommentCreate {
+	_c.mutation.SetRetrospectiveReviewID(v)
+	return _c
 }
 
 // SetNillableRetrospectiveReviewID sets the "retrospective_review_id" field if the given value is not nil.
-func (rcc *RetrospectiveCommentCreate) SetNillableRetrospectiveReviewID(u *uuid.UUID) *RetrospectiveCommentCreate {
-	if u != nil {
-		rcc.SetRetrospectiveReviewID(*u)
+func (_c *RetrospectiveCommentCreate) SetNillableRetrospectiveReviewID(v *uuid.UUID) *RetrospectiveCommentCreate {
+	if v != nil {
+		_c.SetRetrospectiveReviewID(*v)
 	}
-	return rcc
+	return _c
 }
 
 // SetParentReplyID sets the "parent_reply_id" field.
-func (rcc *RetrospectiveCommentCreate) SetParentReplyID(u uuid.UUID) *RetrospectiveCommentCreate {
-	rcc.mutation.SetParentReplyID(u)
-	return rcc
+func (_c *RetrospectiveCommentCreate) SetParentReplyID(v uuid.UUID) *RetrospectiveCommentCreate {
+	_c.mutation.SetParentReplyID(v)
+	return _c
 }
 
 // SetNillableParentReplyID sets the "parent_reply_id" field if the given value is not nil.
-func (rcc *RetrospectiveCommentCreate) SetNillableParentReplyID(u *uuid.UUID) *RetrospectiveCommentCreate {
-	if u != nil {
-		rcc.SetParentReplyID(*u)
+func (_c *RetrospectiveCommentCreate) SetNillableParentReplyID(v *uuid.UUID) *RetrospectiveCommentCreate {
+	if v != nil {
+		_c.SetParentReplyID(*v)
 	}
-	return rcc
+	return _c
 }
 
 // SetContent sets the "content" field.
-func (rcc *RetrospectiveCommentCreate) SetContent(b []byte) *RetrospectiveCommentCreate {
-	rcc.mutation.SetContent(b)
-	return rcc
+func (_c *RetrospectiveCommentCreate) SetContent(v []byte) *RetrospectiveCommentCreate {
+	_c.mutation.SetContent(v)
+	return _c
 }
 
 // SetID sets the "id" field.
-func (rcc *RetrospectiveCommentCreate) SetID(u uuid.UUID) *RetrospectiveCommentCreate {
-	rcc.mutation.SetID(u)
-	return rcc
+func (_c *RetrospectiveCommentCreate) SetID(v uuid.UUID) *RetrospectiveCommentCreate {
+	_c.mutation.SetID(v)
+	return _c
 }
 
 // SetNillableID sets the "id" field if the given value is not nil.
-func (rcc *RetrospectiveCommentCreate) SetNillableID(u *uuid.UUID) *RetrospectiveCommentCreate {
-	if u != nil {
-		rcc.SetID(*u)
+func (_c *RetrospectiveCommentCreate) SetNillableID(v *uuid.UUID) *RetrospectiveCommentCreate {
+	if v != nil {
+		_c.SetID(*v)
 	}
-	return rcc
+	return _c
 }
 
 // SetTenant sets the "tenant" edge to the Tenant entity.
-func (rcc *RetrospectiveCommentCreate) SetTenant(t *Tenant) *RetrospectiveCommentCreate {
-	return rcc.SetTenantID(t.ID)
+func (_c *RetrospectiveCommentCreate) SetTenant(v *Tenant) *RetrospectiveCommentCreate {
+	return _c.SetTenantID(v.ID)
 }
 
 // SetRetrospective sets the "retrospective" edge to the Retrospective entity.
-func (rcc *RetrospectiveCommentCreate) SetRetrospective(r *Retrospective) *RetrospectiveCommentCreate {
-	return rcc.SetRetrospectiveID(r.ID)
+func (_c *RetrospectiveCommentCreate) SetRetrospective(v *Retrospective) *RetrospectiveCommentCreate {
+	return _c.SetRetrospectiveID(v.ID)
 }
 
 // SetUser sets the "user" edge to the User entity.
-func (rcc *RetrospectiveCommentCreate) SetUser(u *User) *RetrospectiveCommentCreate {
-	return rcc.SetUserID(u.ID)
+func (_c *RetrospectiveCommentCreate) SetUser(v *User) *RetrospectiveCommentCreate {
+	return _c.SetUserID(v.ID)
 }
 
 // SetReviewID sets the "review" edge to the RetrospectiveReview entity by ID.
-func (rcc *RetrospectiveCommentCreate) SetReviewID(id uuid.UUID) *RetrospectiveCommentCreate {
-	rcc.mutation.SetReviewID(id)
-	return rcc
+func (_c *RetrospectiveCommentCreate) SetReviewID(id uuid.UUID) *RetrospectiveCommentCreate {
+	_c.mutation.SetReviewID(id)
+	return _c
 }
 
 // SetNillableReviewID sets the "review" edge to the RetrospectiveReview entity by ID if the given value is not nil.
-func (rcc *RetrospectiveCommentCreate) SetNillableReviewID(id *uuid.UUID) *RetrospectiveCommentCreate {
+func (_c *RetrospectiveCommentCreate) SetNillableReviewID(id *uuid.UUID) *RetrospectiveCommentCreate {
 	if id != nil {
-		rcc = rcc.SetReviewID(*id)
+		_c = _c.SetReviewID(*id)
 	}
-	return rcc
+	return _c
 }
 
 // SetReview sets the "review" edge to the RetrospectiveReview entity.
-func (rcc *RetrospectiveCommentCreate) SetReview(r *RetrospectiveReview) *RetrospectiveCommentCreate {
-	return rcc.SetReviewID(r.ID)
+func (_c *RetrospectiveCommentCreate) SetReview(v *RetrospectiveReview) *RetrospectiveCommentCreate {
+	return _c.SetReviewID(v.ID)
 }
 
 // SetParentID sets the "parent" edge to the RetrospectiveComment entity by ID.
-func (rcc *RetrospectiveCommentCreate) SetParentID(id uuid.UUID) *RetrospectiveCommentCreate {
-	rcc.mutation.SetParentID(id)
-	return rcc
+func (_c *RetrospectiveCommentCreate) SetParentID(id uuid.UUID) *RetrospectiveCommentCreate {
+	_c.mutation.SetParentID(id)
+	return _c
 }
 
 // SetNillableParentID sets the "parent" edge to the RetrospectiveComment entity by ID if the given value is not nil.
-func (rcc *RetrospectiveCommentCreate) SetNillableParentID(id *uuid.UUID) *RetrospectiveCommentCreate {
+func (_c *RetrospectiveCommentCreate) SetNillableParentID(id *uuid.UUID) *RetrospectiveCommentCreate {
 	if id != nil {
-		rcc = rcc.SetParentID(*id)
+		_c = _c.SetParentID(*id)
 	}
-	return rcc
+	return _c
 }
 
 // SetParent sets the "parent" edge to the RetrospectiveComment entity.
-func (rcc *RetrospectiveCommentCreate) SetParent(r *RetrospectiveComment) *RetrospectiveCommentCreate {
-	return rcc.SetParentID(r.ID)
+func (_c *RetrospectiveCommentCreate) SetParent(v *RetrospectiveComment) *RetrospectiveCommentCreate {
+	return _c.SetParentID(v.ID)
 }
 
 // AddReplyIDs adds the "replies" edge to the RetrospectiveComment entity by IDs.
-func (rcc *RetrospectiveCommentCreate) AddReplyIDs(ids ...uuid.UUID) *RetrospectiveCommentCreate {
-	rcc.mutation.AddReplyIDs(ids...)
-	return rcc
+func (_c *RetrospectiveCommentCreate) AddReplyIDs(ids ...uuid.UUID) *RetrospectiveCommentCreate {
+	_c.mutation.AddReplyIDs(ids...)
+	return _c
 }
 
 // AddReplies adds the "replies" edges to the RetrospectiveComment entity.
-func (rcc *RetrospectiveCommentCreate) AddReplies(r ...*RetrospectiveComment) *RetrospectiveCommentCreate {
-	ids := make([]uuid.UUID, len(r))
-	for i := range r {
-		ids[i] = r[i].ID
+func (_c *RetrospectiveCommentCreate) AddReplies(v ...*RetrospectiveComment) *RetrospectiveCommentCreate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
 	}
-	return rcc.AddReplyIDs(ids...)
+	return _c.AddReplyIDs(ids...)
 }
 
 // Mutation returns the RetrospectiveCommentMutation object of the builder.
-func (rcc *RetrospectiveCommentCreate) Mutation() *RetrospectiveCommentMutation {
-	return rcc.mutation
+func (_c *RetrospectiveCommentCreate) Mutation() *RetrospectiveCommentMutation {
+	return _c.mutation
 }
 
 // Save creates the RetrospectiveComment in the database.
-func (rcc *RetrospectiveCommentCreate) Save(ctx context.Context) (*RetrospectiveComment, error) {
-	if err := rcc.defaults(); err != nil {
+func (_c *RetrospectiveCommentCreate) Save(ctx context.Context) (*RetrospectiveComment, error) {
+	if err := _c.defaults(); err != nil {
 		return nil, err
 	}
-	return withHooks(ctx, rcc.sqlSave, rcc.mutation, rcc.hooks)
+	return withHooks(ctx, _c.sqlSave, _c.mutation, _c.hooks)
 }
 
 // SaveX calls Save and panics if Save returns an error.
-func (rcc *RetrospectiveCommentCreate) SaveX(ctx context.Context) *RetrospectiveComment {
-	v, err := rcc.Save(ctx)
+func (_c *RetrospectiveCommentCreate) SaveX(ctx context.Context) *RetrospectiveComment {
+	v, err := _c.Save(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -184,62 +184,62 @@ func (rcc *RetrospectiveCommentCreate) SaveX(ctx context.Context) *Retrospective
 }
 
 // Exec executes the query.
-func (rcc *RetrospectiveCommentCreate) Exec(ctx context.Context) error {
-	_, err := rcc.Save(ctx)
+func (_c *RetrospectiveCommentCreate) Exec(ctx context.Context) error {
+	_, err := _c.Save(ctx)
 	return err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (rcc *RetrospectiveCommentCreate) ExecX(ctx context.Context) {
-	if err := rcc.Exec(ctx); err != nil {
+func (_c *RetrospectiveCommentCreate) ExecX(ctx context.Context) {
+	if err := _c.Exec(ctx); err != nil {
 		panic(err)
 	}
 }
 
 // defaults sets the default values of the builder before save.
-func (rcc *RetrospectiveCommentCreate) defaults() error {
-	if _, ok := rcc.mutation.ID(); !ok {
+func (_c *RetrospectiveCommentCreate) defaults() error {
+	if _, ok := _c.mutation.ID(); !ok {
 		if retrospectivecomment.DefaultID == nil {
 			return fmt.Errorf("ent: uninitialized retrospectivecomment.DefaultID (forgotten import ent/runtime?)")
 		}
 		v := retrospectivecomment.DefaultID()
-		rcc.mutation.SetID(v)
+		_c.mutation.SetID(v)
 	}
 	return nil
 }
 
 // check runs all checks and user-defined validators on the builder.
-func (rcc *RetrospectiveCommentCreate) check() error {
-	if _, ok := rcc.mutation.TenantID(); !ok {
+func (_c *RetrospectiveCommentCreate) check() error {
+	if _, ok := _c.mutation.TenantID(); !ok {
 		return &ValidationError{Name: "tenant_id", err: errors.New(`ent: missing required field "RetrospectiveComment.tenant_id"`)}
 	}
-	if _, ok := rcc.mutation.RetrospectiveID(); !ok {
+	if _, ok := _c.mutation.RetrospectiveID(); !ok {
 		return &ValidationError{Name: "retrospective_id", err: errors.New(`ent: missing required field "RetrospectiveComment.retrospective_id"`)}
 	}
-	if _, ok := rcc.mutation.UserID(); !ok {
+	if _, ok := _c.mutation.UserID(); !ok {
 		return &ValidationError{Name: "user_id", err: errors.New(`ent: missing required field "RetrospectiveComment.user_id"`)}
 	}
-	if _, ok := rcc.mutation.Content(); !ok {
+	if _, ok := _c.mutation.Content(); !ok {
 		return &ValidationError{Name: "content", err: errors.New(`ent: missing required field "RetrospectiveComment.content"`)}
 	}
-	if len(rcc.mutation.TenantIDs()) == 0 {
+	if len(_c.mutation.TenantIDs()) == 0 {
 		return &ValidationError{Name: "tenant", err: errors.New(`ent: missing required edge "RetrospectiveComment.tenant"`)}
 	}
-	if len(rcc.mutation.RetrospectiveIDs()) == 0 {
+	if len(_c.mutation.RetrospectiveIDs()) == 0 {
 		return &ValidationError{Name: "retrospective", err: errors.New(`ent: missing required edge "RetrospectiveComment.retrospective"`)}
 	}
-	if len(rcc.mutation.UserIDs()) == 0 {
+	if len(_c.mutation.UserIDs()) == 0 {
 		return &ValidationError{Name: "user", err: errors.New(`ent: missing required edge "RetrospectiveComment.user"`)}
 	}
 	return nil
 }
 
-func (rcc *RetrospectiveCommentCreate) sqlSave(ctx context.Context) (*RetrospectiveComment, error) {
-	if err := rcc.check(); err != nil {
+func (_c *RetrospectiveCommentCreate) sqlSave(ctx context.Context) (*RetrospectiveComment, error) {
+	if err := _c.check(); err != nil {
 		return nil, err
 	}
-	_node, _spec := rcc.createSpec()
-	if err := sqlgraph.CreateNode(ctx, rcc.driver, _spec); err != nil {
+	_node, _spec := _c.createSpec()
+	if err := sqlgraph.CreateNode(ctx, _c.driver, _spec); err != nil {
 		if sqlgraph.IsConstraintError(err) {
 			err = &ConstraintError{msg: err.Error(), wrap: err}
 		}
@@ -252,26 +252,26 @@ func (rcc *RetrospectiveCommentCreate) sqlSave(ctx context.Context) (*Retrospect
 			return nil, err
 		}
 	}
-	rcc.mutation.id = &_node.ID
-	rcc.mutation.done = true
+	_c.mutation.id = &_node.ID
+	_c.mutation.done = true
 	return _node, nil
 }
 
-func (rcc *RetrospectiveCommentCreate) createSpec() (*RetrospectiveComment, *sqlgraph.CreateSpec) {
+func (_c *RetrospectiveCommentCreate) createSpec() (*RetrospectiveComment, *sqlgraph.CreateSpec) {
 	var (
-		_node = &RetrospectiveComment{config: rcc.config}
+		_node = &RetrospectiveComment{config: _c.config}
 		_spec = sqlgraph.NewCreateSpec(retrospectivecomment.Table, sqlgraph.NewFieldSpec(retrospectivecomment.FieldID, field.TypeUUID))
 	)
-	_spec.OnConflict = rcc.conflict
-	if id, ok := rcc.mutation.ID(); ok {
+	_spec.OnConflict = _c.conflict
+	if id, ok := _c.mutation.ID(); ok {
 		_node.ID = id
 		_spec.ID.Value = &id
 	}
-	if value, ok := rcc.mutation.Content(); ok {
+	if value, ok := _c.mutation.Content(); ok {
 		_spec.SetField(retrospectivecomment.FieldContent, field.TypeBytes, value)
 		_node.Content = value
 	}
-	if nodes := rcc.mutation.TenantIDs(); len(nodes) > 0 {
+	if nodes := _c.mutation.TenantIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
@@ -288,7 +288,7 @@ func (rcc *RetrospectiveCommentCreate) createSpec() (*RetrospectiveComment, *sql
 		_node.TenantID = nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
-	if nodes := rcc.mutation.RetrospectiveIDs(); len(nodes) > 0 {
+	if nodes := _c.mutation.RetrospectiveIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
@@ -305,7 +305,7 @@ func (rcc *RetrospectiveCommentCreate) createSpec() (*RetrospectiveComment, *sql
 		_node.RetrospectiveID = nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
-	if nodes := rcc.mutation.UserIDs(); len(nodes) > 0 {
+	if nodes := _c.mutation.UserIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
@@ -322,7 +322,7 @@ func (rcc *RetrospectiveCommentCreate) createSpec() (*RetrospectiveComment, *sql
 		_node.UserID = nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
-	if nodes := rcc.mutation.ReviewIDs(); len(nodes) > 0 {
+	if nodes := _c.mutation.ReviewIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
@@ -339,7 +339,7 @@ func (rcc *RetrospectiveCommentCreate) createSpec() (*RetrospectiveComment, *sql
 		_node.RetrospectiveReviewID = nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
-	if nodes := rcc.mutation.ParentIDs(); len(nodes) > 0 {
+	if nodes := _c.mutation.ParentIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: true,
@@ -356,7 +356,7 @@ func (rcc *RetrospectiveCommentCreate) createSpec() (*RetrospectiveComment, *sql
 		_node.ParentReplyID = nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
-	if nodes := rcc.mutation.RepliesIDs(); len(nodes) > 0 {
+	if nodes := _c.mutation.RepliesIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
@@ -391,10 +391,10 @@ func (rcc *RetrospectiveCommentCreate) createSpec() (*RetrospectiveComment, *sql
 //			SetTenantID(v+v).
 //		}).
 //		Exec(ctx)
-func (rcc *RetrospectiveCommentCreate) OnConflict(opts ...sql.ConflictOption) *RetrospectiveCommentUpsertOne {
-	rcc.conflict = opts
+func (_c *RetrospectiveCommentCreate) OnConflict(opts ...sql.ConflictOption) *RetrospectiveCommentUpsertOne {
+	_c.conflict = opts
 	return &RetrospectiveCommentUpsertOne{
-		create: rcc,
+		create: _c,
 	}
 }
 
@@ -404,10 +404,10 @@ func (rcc *RetrospectiveCommentCreate) OnConflict(opts ...sql.ConflictOption) *R
 //	client.RetrospectiveComment.Create().
 //		OnConflict(sql.ConflictColumns(columns...)).
 //		Exec(ctx)
-func (rcc *RetrospectiveCommentCreate) OnConflictColumns(columns ...string) *RetrospectiveCommentUpsertOne {
-	rcc.conflict = append(rcc.conflict, sql.ConflictColumns(columns...))
+func (_c *RetrospectiveCommentCreate) OnConflictColumns(columns ...string) *RetrospectiveCommentUpsertOne {
+	_c.conflict = append(_c.conflict, sql.ConflictColumns(columns...))
 	return &RetrospectiveCommentUpsertOne{
-		create: rcc,
+		create: _c,
 	}
 }
 
@@ -678,16 +678,16 @@ type RetrospectiveCommentCreateBulk struct {
 }
 
 // Save creates the RetrospectiveComment entities in the database.
-func (rccb *RetrospectiveCommentCreateBulk) Save(ctx context.Context) ([]*RetrospectiveComment, error) {
-	if rccb.err != nil {
-		return nil, rccb.err
+func (_c *RetrospectiveCommentCreateBulk) Save(ctx context.Context) ([]*RetrospectiveComment, error) {
+	if _c.err != nil {
+		return nil, _c.err
 	}
-	specs := make([]*sqlgraph.CreateSpec, len(rccb.builders))
-	nodes := make([]*RetrospectiveComment, len(rccb.builders))
-	mutators := make([]Mutator, len(rccb.builders))
-	for i := range rccb.builders {
+	specs := make([]*sqlgraph.CreateSpec, len(_c.builders))
+	nodes := make([]*RetrospectiveComment, len(_c.builders))
+	mutators := make([]Mutator, len(_c.builders))
+	for i := range _c.builders {
 		func(i int, root context.Context) {
-			builder := rccb.builders[i]
+			builder := _c.builders[i]
 			builder.defaults()
 			var mut Mutator = MutateFunc(func(ctx context.Context, m Mutation) (Value, error) {
 				mutation, ok := m.(*RetrospectiveCommentMutation)
@@ -701,12 +701,12 @@ func (rccb *RetrospectiveCommentCreateBulk) Save(ctx context.Context) ([]*Retros
 				var err error
 				nodes[i], specs[i] = builder.createSpec()
 				if i < len(mutators)-1 {
-					_, err = mutators[i+1].Mutate(root, rccb.builders[i+1].mutation)
+					_, err = mutators[i+1].Mutate(root, _c.builders[i+1].mutation)
 				} else {
 					spec := &sqlgraph.BatchCreateSpec{Nodes: specs}
-					spec.OnConflict = rccb.conflict
+					spec.OnConflict = _c.conflict
 					// Invoke the actual operation on the latest mutation in the chain.
-					if err = sqlgraph.BatchCreate(ctx, rccb.driver, spec); err != nil {
+					if err = sqlgraph.BatchCreate(ctx, _c.driver, spec); err != nil {
 						if sqlgraph.IsConstraintError(err) {
 							err = &ConstraintError{msg: err.Error(), wrap: err}
 						}
@@ -726,7 +726,7 @@ func (rccb *RetrospectiveCommentCreateBulk) Save(ctx context.Context) ([]*Retros
 		}(i, ctx)
 	}
 	if len(mutators) > 0 {
-		if _, err := mutators[0].Mutate(ctx, rccb.builders[0].mutation); err != nil {
+		if _, err := mutators[0].Mutate(ctx, _c.builders[0].mutation); err != nil {
 			return nil, err
 		}
 	}
@@ -734,8 +734,8 @@ func (rccb *RetrospectiveCommentCreateBulk) Save(ctx context.Context) ([]*Retros
 }
 
 // SaveX is like Save, but panics if an error occurs.
-func (rccb *RetrospectiveCommentCreateBulk) SaveX(ctx context.Context) []*RetrospectiveComment {
-	v, err := rccb.Save(ctx)
+func (_c *RetrospectiveCommentCreateBulk) SaveX(ctx context.Context) []*RetrospectiveComment {
+	v, err := _c.Save(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -743,14 +743,14 @@ func (rccb *RetrospectiveCommentCreateBulk) SaveX(ctx context.Context) []*Retros
 }
 
 // Exec executes the query.
-func (rccb *RetrospectiveCommentCreateBulk) Exec(ctx context.Context) error {
-	_, err := rccb.Save(ctx)
+func (_c *RetrospectiveCommentCreateBulk) Exec(ctx context.Context) error {
+	_, err := _c.Save(ctx)
 	return err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (rccb *RetrospectiveCommentCreateBulk) ExecX(ctx context.Context) {
-	if err := rccb.Exec(ctx); err != nil {
+func (_c *RetrospectiveCommentCreateBulk) ExecX(ctx context.Context) {
+	if err := _c.Exec(ctx); err != nil {
 		panic(err)
 	}
 }
@@ -770,10 +770,10 @@ func (rccb *RetrospectiveCommentCreateBulk) ExecX(ctx context.Context) {
 //			SetTenantID(v+v).
 //		}).
 //		Exec(ctx)
-func (rccb *RetrospectiveCommentCreateBulk) OnConflict(opts ...sql.ConflictOption) *RetrospectiveCommentUpsertBulk {
-	rccb.conflict = opts
+func (_c *RetrospectiveCommentCreateBulk) OnConflict(opts ...sql.ConflictOption) *RetrospectiveCommentUpsertBulk {
+	_c.conflict = opts
 	return &RetrospectiveCommentUpsertBulk{
-		create: rccb,
+		create: _c,
 	}
 }
 
@@ -783,10 +783,10 @@ func (rccb *RetrospectiveCommentCreateBulk) OnConflict(opts ...sql.ConflictOptio
 //	client.RetrospectiveComment.Create().
 //		OnConflict(sql.ConflictColumns(columns...)).
 //		Exec(ctx)
-func (rccb *RetrospectiveCommentCreateBulk) OnConflictColumns(columns ...string) *RetrospectiveCommentUpsertBulk {
-	rccb.conflict = append(rccb.conflict, sql.ConflictColumns(columns...))
+func (_c *RetrospectiveCommentCreateBulk) OnConflictColumns(columns ...string) *RetrospectiveCommentUpsertBulk {
+	_c.conflict = append(_c.conflict, sql.ConflictColumns(columns...))
 	return &RetrospectiveCommentUpsertBulk{
-		create: rccb,
+		create: _c,
 	}
 }
 

@@ -20,56 +20,56 @@ type IncidentDebriefSuggestionDelete struct {
 }
 
 // Where appends a list predicates to the IncidentDebriefSuggestionDelete builder.
-func (idsd *IncidentDebriefSuggestionDelete) Where(ps ...predicate.IncidentDebriefSuggestion) *IncidentDebriefSuggestionDelete {
-	idsd.mutation.Where(ps...)
-	return idsd
+func (_d *IncidentDebriefSuggestionDelete) Where(ps ...predicate.IncidentDebriefSuggestion) *IncidentDebriefSuggestionDelete {
+	_d.mutation.Where(ps...)
+	return _d
 }
 
 // Exec executes the deletion query and returns how many vertices were deleted.
-func (idsd *IncidentDebriefSuggestionDelete) Exec(ctx context.Context) (int, error) {
-	return withHooks(ctx, idsd.sqlExec, idsd.mutation, idsd.hooks)
+func (_d *IncidentDebriefSuggestionDelete) Exec(ctx context.Context) (int, error) {
+	return withHooks(ctx, _d.sqlExec, _d.mutation, _d.hooks)
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (idsd *IncidentDebriefSuggestionDelete) ExecX(ctx context.Context) int {
-	n, err := idsd.Exec(ctx)
+func (_d *IncidentDebriefSuggestionDelete) ExecX(ctx context.Context) int {
+	n, err := _d.Exec(ctx)
 	if err != nil {
 		panic(err)
 	}
 	return n
 }
 
-func (idsd *IncidentDebriefSuggestionDelete) sqlExec(ctx context.Context) (int, error) {
+func (_d *IncidentDebriefSuggestionDelete) sqlExec(ctx context.Context) (int, error) {
 	_spec := sqlgraph.NewDeleteSpec(incidentdebriefsuggestion.Table, sqlgraph.NewFieldSpec(incidentdebriefsuggestion.FieldID, field.TypeUUID))
-	if ps := idsd.mutation.predicates; len(ps) > 0 {
+	if ps := _d.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {
 				ps[i](selector)
 			}
 		}
 	}
-	affected, err := sqlgraph.DeleteNodes(ctx, idsd.driver, _spec)
+	affected, err := sqlgraph.DeleteNodes(ctx, _d.driver, _spec)
 	if err != nil && sqlgraph.IsConstraintError(err) {
 		err = &ConstraintError{msg: err.Error(), wrap: err}
 	}
-	idsd.mutation.done = true
+	_d.mutation.done = true
 	return affected, err
 }
 
 // IncidentDebriefSuggestionDeleteOne is the builder for deleting a single IncidentDebriefSuggestion entity.
 type IncidentDebriefSuggestionDeleteOne struct {
-	idsd *IncidentDebriefSuggestionDelete
+	_d *IncidentDebriefSuggestionDelete
 }
 
 // Where appends a list predicates to the IncidentDebriefSuggestionDelete builder.
-func (idsdo *IncidentDebriefSuggestionDeleteOne) Where(ps ...predicate.IncidentDebriefSuggestion) *IncidentDebriefSuggestionDeleteOne {
-	idsdo.idsd.mutation.Where(ps...)
-	return idsdo
+func (_d *IncidentDebriefSuggestionDeleteOne) Where(ps ...predicate.IncidentDebriefSuggestion) *IncidentDebriefSuggestionDeleteOne {
+	_d._d.mutation.Where(ps...)
+	return _d
 }
 
 // Exec executes the deletion query.
-func (idsdo *IncidentDebriefSuggestionDeleteOne) Exec(ctx context.Context) error {
-	n, err := idsdo.idsd.Exec(ctx)
+func (_d *IncidentDebriefSuggestionDeleteOne) Exec(ctx context.Context) error {
+	n, err := _d._d.Exec(ctx)
 	switch {
 	case err != nil:
 		return err
@@ -81,8 +81,8 @@ func (idsdo *IncidentDebriefSuggestionDeleteOne) Exec(ctx context.Context) error
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (idsdo *IncidentDebriefSuggestionDeleteOne) ExecX(ctx context.Context) {
-	if err := idsdo.Exec(ctx); err != nil {
+func (_d *IncidentDebriefSuggestionDeleteOne) ExecX(ctx context.Context) {
+	if err := _d.Exec(ctx); err != nil {
 		panic(err)
 	}
 }

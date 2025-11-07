@@ -36,44 +36,44 @@ type PlaybookQuery struct {
 }
 
 // Where adds a new predicate for the PlaybookQuery builder.
-func (pq *PlaybookQuery) Where(ps ...predicate.Playbook) *PlaybookQuery {
-	pq.predicates = append(pq.predicates, ps...)
-	return pq
+func (_q *PlaybookQuery) Where(ps ...predicate.Playbook) *PlaybookQuery {
+	_q.predicates = append(_q.predicates, ps...)
+	return _q
 }
 
 // Limit the number of records to be returned by this query.
-func (pq *PlaybookQuery) Limit(limit int) *PlaybookQuery {
-	pq.ctx.Limit = &limit
-	return pq
+func (_q *PlaybookQuery) Limit(limit int) *PlaybookQuery {
+	_q.ctx.Limit = &limit
+	return _q
 }
 
 // Offset to start from.
-func (pq *PlaybookQuery) Offset(offset int) *PlaybookQuery {
-	pq.ctx.Offset = &offset
-	return pq
+func (_q *PlaybookQuery) Offset(offset int) *PlaybookQuery {
+	_q.ctx.Offset = &offset
+	return _q
 }
 
 // Unique configures the query builder to filter duplicate records on query.
 // By default, unique is set to true, and can be disabled using this method.
-func (pq *PlaybookQuery) Unique(unique bool) *PlaybookQuery {
-	pq.ctx.Unique = &unique
-	return pq
+func (_q *PlaybookQuery) Unique(unique bool) *PlaybookQuery {
+	_q.ctx.Unique = &unique
+	return _q
 }
 
 // Order specifies how the records should be ordered.
-func (pq *PlaybookQuery) Order(o ...playbook.OrderOption) *PlaybookQuery {
-	pq.order = append(pq.order, o...)
-	return pq
+func (_q *PlaybookQuery) Order(o ...playbook.OrderOption) *PlaybookQuery {
+	_q.order = append(_q.order, o...)
+	return _q
 }
 
 // QueryTenant chains the current query on the "tenant" edge.
-func (pq *PlaybookQuery) QueryTenant() *TenantQuery {
-	query := (&TenantClient{config: pq.config}).Query()
+func (_q *PlaybookQuery) QueryTenant() *TenantQuery {
+	query := (&TenantClient{config: _q.config}).Query()
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
-		if err := pq.prepareQuery(ctx); err != nil {
+		if err := _q.prepareQuery(ctx); err != nil {
 			return nil, err
 		}
-		selector := pq.sqlQuery(ctx)
+		selector := _q.sqlQuery(ctx)
 		if err := selector.Err(); err != nil {
 			return nil, err
 		}
@@ -82,20 +82,20 @@ func (pq *PlaybookQuery) QueryTenant() *TenantQuery {
 			sqlgraph.To(tenant.Table, tenant.FieldID),
 			sqlgraph.Edge(sqlgraph.M2O, false, playbook.TenantTable, playbook.TenantColumn),
 		)
-		fromU = sqlgraph.SetNeighbors(pq.driver.Dialect(), step)
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
 	}
 	return query
 }
 
 // QueryAlerts chains the current query on the "alerts" edge.
-func (pq *PlaybookQuery) QueryAlerts() *AlertQuery {
-	query := (&AlertClient{config: pq.config}).Query()
+func (_q *PlaybookQuery) QueryAlerts() *AlertQuery {
+	query := (&AlertClient{config: _q.config}).Query()
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
-		if err := pq.prepareQuery(ctx); err != nil {
+		if err := _q.prepareQuery(ctx); err != nil {
 			return nil, err
 		}
-		selector := pq.sqlQuery(ctx)
+		selector := _q.sqlQuery(ctx)
 		if err := selector.Err(); err != nil {
 			return nil, err
 		}
@@ -104,7 +104,7 @@ func (pq *PlaybookQuery) QueryAlerts() *AlertQuery {
 			sqlgraph.To(alert.Table, alert.FieldID),
 			sqlgraph.Edge(sqlgraph.M2M, false, playbook.AlertsTable, playbook.AlertsPrimaryKey...),
 		)
-		fromU = sqlgraph.SetNeighbors(pq.driver.Dialect(), step)
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
 	}
 	return query
@@ -112,8 +112,8 @@ func (pq *PlaybookQuery) QueryAlerts() *AlertQuery {
 
 // First returns the first Playbook entity from the query.
 // Returns a *NotFoundError when no Playbook was found.
-func (pq *PlaybookQuery) First(ctx context.Context) (*Playbook, error) {
-	nodes, err := pq.Limit(1).All(setContextOp(ctx, pq.ctx, ent.OpQueryFirst))
+func (_q *PlaybookQuery) First(ctx context.Context) (*Playbook, error) {
+	nodes, err := _q.Limit(1).All(setContextOp(ctx, _q.ctx, ent.OpQueryFirst))
 	if err != nil {
 		return nil, err
 	}
@@ -124,8 +124,8 @@ func (pq *PlaybookQuery) First(ctx context.Context) (*Playbook, error) {
 }
 
 // FirstX is like First, but panics if an error occurs.
-func (pq *PlaybookQuery) FirstX(ctx context.Context) *Playbook {
-	node, err := pq.First(ctx)
+func (_q *PlaybookQuery) FirstX(ctx context.Context) *Playbook {
+	node, err := _q.First(ctx)
 	if err != nil && !IsNotFound(err) {
 		panic(err)
 	}
@@ -134,9 +134,9 @@ func (pq *PlaybookQuery) FirstX(ctx context.Context) *Playbook {
 
 // FirstID returns the first Playbook ID from the query.
 // Returns a *NotFoundError when no Playbook ID was found.
-func (pq *PlaybookQuery) FirstID(ctx context.Context) (id uuid.UUID, err error) {
+func (_q *PlaybookQuery) FirstID(ctx context.Context) (id uuid.UUID, err error) {
 	var ids []uuid.UUID
-	if ids, err = pq.Limit(1).IDs(setContextOp(ctx, pq.ctx, ent.OpQueryFirstID)); err != nil {
+	if ids, err = _q.Limit(1).IDs(setContextOp(ctx, _q.ctx, ent.OpQueryFirstID)); err != nil {
 		return
 	}
 	if len(ids) == 0 {
@@ -147,8 +147,8 @@ func (pq *PlaybookQuery) FirstID(ctx context.Context) (id uuid.UUID, err error) 
 }
 
 // FirstIDX is like FirstID, but panics if an error occurs.
-func (pq *PlaybookQuery) FirstIDX(ctx context.Context) uuid.UUID {
-	id, err := pq.FirstID(ctx)
+func (_q *PlaybookQuery) FirstIDX(ctx context.Context) uuid.UUID {
+	id, err := _q.FirstID(ctx)
 	if err != nil && !IsNotFound(err) {
 		panic(err)
 	}
@@ -158,8 +158,8 @@ func (pq *PlaybookQuery) FirstIDX(ctx context.Context) uuid.UUID {
 // Only returns a single Playbook entity found by the query, ensuring it only returns one.
 // Returns a *NotSingularError when more than one Playbook entity is found.
 // Returns a *NotFoundError when no Playbook entities are found.
-func (pq *PlaybookQuery) Only(ctx context.Context) (*Playbook, error) {
-	nodes, err := pq.Limit(2).All(setContextOp(ctx, pq.ctx, ent.OpQueryOnly))
+func (_q *PlaybookQuery) Only(ctx context.Context) (*Playbook, error) {
+	nodes, err := _q.Limit(2).All(setContextOp(ctx, _q.ctx, ent.OpQueryOnly))
 	if err != nil {
 		return nil, err
 	}
@@ -174,8 +174,8 @@ func (pq *PlaybookQuery) Only(ctx context.Context) (*Playbook, error) {
 }
 
 // OnlyX is like Only, but panics if an error occurs.
-func (pq *PlaybookQuery) OnlyX(ctx context.Context) *Playbook {
-	node, err := pq.Only(ctx)
+func (_q *PlaybookQuery) OnlyX(ctx context.Context) *Playbook {
+	node, err := _q.Only(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -185,9 +185,9 @@ func (pq *PlaybookQuery) OnlyX(ctx context.Context) *Playbook {
 // OnlyID is like Only, but returns the only Playbook ID in the query.
 // Returns a *NotSingularError when more than one Playbook ID is found.
 // Returns a *NotFoundError when no entities are found.
-func (pq *PlaybookQuery) OnlyID(ctx context.Context) (id uuid.UUID, err error) {
+func (_q *PlaybookQuery) OnlyID(ctx context.Context) (id uuid.UUID, err error) {
 	var ids []uuid.UUID
-	if ids, err = pq.Limit(2).IDs(setContextOp(ctx, pq.ctx, ent.OpQueryOnlyID)); err != nil {
+	if ids, err = _q.Limit(2).IDs(setContextOp(ctx, _q.ctx, ent.OpQueryOnlyID)); err != nil {
 		return
 	}
 	switch len(ids) {
@@ -202,8 +202,8 @@ func (pq *PlaybookQuery) OnlyID(ctx context.Context) (id uuid.UUID, err error) {
 }
 
 // OnlyIDX is like OnlyID, but panics if an error occurs.
-func (pq *PlaybookQuery) OnlyIDX(ctx context.Context) uuid.UUID {
-	id, err := pq.OnlyID(ctx)
+func (_q *PlaybookQuery) OnlyIDX(ctx context.Context) uuid.UUID {
+	id, err := _q.OnlyID(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -211,18 +211,18 @@ func (pq *PlaybookQuery) OnlyIDX(ctx context.Context) uuid.UUID {
 }
 
 // All executes the query and returns a list of Playbooks.
-func (pq *PlaybookQuery) All(ctx context.Context) ([]*Playbook, error) {
-	ctx = setContextOp(ctx, pq.ctx, ent.OpQueryAll)
-	if err := pq.prepareQuery(ctx); err != nil {
+func (_q *PlaybookQuery) All(ctx context.Context) ([]*Playbook, error) {
+	ctx = setContextOp(ctx, _q.ctx, ent.OpQueryAll)
+	if err := _q.prepareQuery(ctx); err != nil {
 		return nil, err
 	}
 	qr := querierAll[[]*Playbook, *PlaybookQuery]()
-	return withInterceptors[[]*Playbook](ctx, pq, qr, pq.inters)
+	return withInterceptors[[]*Playbook](ctx, _q, qr, _q.inters)
 }
 
 // AllX is like All, but panics if an error occurs.
-func (pq *PlaybookQuery) AllX(ctx context.Context) []*Playbook {
-	nodes, err := pq.All(ctx)
+func (_q *PlaybookQuery) AllX(ctx context.Context) []*Playbook {
+	nodes, err := _q.All(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -230,20 +230,20 @@ func (pq *PlaybookQuery) AllX(ctx context.Context) []*Playbook {
 }
 
 // IDs executes the query and returns a list of Playbook IDs.
-func (pq *PlaybookQuery) IDs(ctx context.Context) (ids []uuid.UUID, err error) {
-	if pq.ctx.Unique == nil && pq.path != nil {
-		pq.Unique(true)
+func (_q *PlaybookQuery) IDs(ctx context.Context) (ids []uuid.UUID, err error) {
+	if _q.ctx.Unique == nil && _q.path != nil {
+		_q.Unique(true)
 	}
-	ctx = setContextOp(ctx, pq.ctx, ent.OpQueryIDs)
-	if err = pq.Select(playbook.FieldID).Scan(ctx, &ids); err != nil {
+	ctx = setContextOp(ctx, _q.ctx, ent.OpQueryIDs)
+	if err = _q.Select(playbook.FieldID).Scan(ctx, &ids); err != nil {
 		return nil, err
 	}
 	return ids, nil
 }
 
 // IDsX is like IDs, but panics if an error occurs.
-func (pq *PlaybookQuery) IDsX(ctx context.Context) []uuid.UUID {
-	ids, err := pq.IDs(ctx)
+func (_q *PlaybookQuery) IDsX(ctx context.Context) []uuid.UUID {
+	ids, err := _q.IDs(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -251,17 +251,17 @@ func (pq *PlaybookQuery) IDsX(ctx context.Context) []uuid.UUID {
 }
 
 // Count returns the count of the given query.
-func (pq *PlaybookQuery) Count(ctx context.Context) (int, error) {
-	ctx = setContextOp(ctx, pq.ctx, ent.OpQueryCount)
-	if err := pq.prepareQuery(ctx); err != nil {
+func (_q *PlaybookQuery) Count(ctx context.Context) (int, error) {
+	ctx = setContextOp(ctx, _q.ctx, ent.OpQueryCount)
+	if err := _q.prepareQuery(ctx); err != nil {
 		return 0, err
 	}
-	return withInterceptors[int](ctx, pq, querierCount[*PlaybookQuery](), pq.inters)
+	return withInterceptors[int](ctx, _q, querierCount[*PlaybookQuery](), _q.inters)
 }
 
 // CountX is like Count, but panics if an error occurs.
-func (pq *PlaybookQuery) CountX(ctx context.Context) int {
-	count, err := pq.Count(ctx)
+func (_q *PlaybookQuery) CountX(ctx context.Context) int {
+	count, err := _q.Count(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -269,9 +269,9 @@ func (pq *PlaybookQuery) CountX(ctx context.Context) int {
 }
 
 // Exist returns true if the query has elements in the graph.
-func (pq *PlaybookQuery) Exist(ctx context.Context) (bool, error) {
-	ctx = setContextOp(ctx, pq.ctx, ent.OpQueryExist)
-	switch _, err := pq.FirstID(ctx); {
+func (_q *PlaybookQuery) Exist(ctx context.Context) (bool, error) {
+	ctx = setContextOp(ctx, _q.ctx, ent.OpQueryExist)
+	switch _, err := _q.FirstID(ctx); {
 	case IsNotFound(err):
 		return false, nil
 	case err != nil:
@@ -282,8 +282,8 @@ func (pq *PlaybookQuery) Exist(ctx context.Context) (bool, error) {
 }
 
 // ExistX is like Exist, but panics if an error occurs.
-func (pq *PlaybookQuery) ExistX(ctx context.Context) bool {
-	exist, err := pq.Exist(ctx)
+func (_q *PlaybookQuery) ExistX(ctx context.Context) bool {
+	exist, err := _q.Exist(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -292,45 +292,45 @@ func (pq *PlaybookQuery) ExistX(ctx context.Context) bool {
 
 // Clone returns a duplicate of the PlaybookQuery builder, including all associated steps. It can be
 // used to prepare common query builders and use them differently after the clone is made.
-func (pq *PlaybookQuery) Clone() *PlaybookQuery {
-	if pq == nil {
+func (_q *PlaybookQuery) Clone() *PlaybookQuery {
+	if _q == nil {
 		return nil
 	}
 	return &PlaybookQuery{
-		config:     pq.config,
-		ctx:        pq.ctx.Clone(),
-		order:      append([]playbook.OrderOption{}, pq.order...),
-		inters:     append([]Interceptor{}, pq.inters...),
-		predicates: append([]predicate.Playbook{}, pq.predicates...),
-		withTenant: pq.withTenant.Clone(),
-		withAlerts: pq.withAlerts.Clone(),
+		config:     _q.config,
+		ctx:        _q.ctx.Clone(),
+		order:      append([]playbook.OrderOption{}, _q.order...),
+		inters:     append([]Interceptor{}, _q.inters...),
+		predicates: append([]predicate.Playbook{}, _q.predicates...),
+		withTenant: _q.withTenant.Clone(),
+		withAlerts: _q.withAlerts.Clone(),
 		// clone intermediate query.
-		sql:       pq.sql.Clone(),
-		path:      pq.path,
-		modifiers: append([]func(*sql.Selector){}, pq.modifiers...),
+		sql:       _q.sql.Clone(),
+		path:      _q.path,
+		modifiers: append([]func(*sql.Selector){}, _q.modifiers...),
 	}
 }
 
 // WithTenant tells the query-builder to eager-load the nodes that are connected to
 // the "tenant" edge. The optional arguments are used to configure the query builder of the edge.
-func (pq *PlaybookQuery) WithTenant(opts ...func(*TenantQuery)) *PlaybookQuery {
-	query := (&TenantClient{config: pq.config}).Query()
+func (_q *PlaybookQuery) WithTenant(opts ...func(*TenantQuery)) *PlaybookQuery {
+	query := (&TenantClient{config: _q.config}).Query()
 	for _, opt := range opts {
 		opt(query)
 	}
-	pq.withTenant = query
-	return pq
+	_q.withTenant = query
+	return _q
 }
 
 // WithAlerts tells the query-builder to eager-load the nodes that are connected to
 // the "alerts" edge. The optional arguments are used to configure the query builder of the edge.
-func (pq *PlaybookQuery) WithAlerts(opts ...func(*AlertQuery)) *PlaybookQuery {
-	query := (&AlertClient{config: pq.config}).Query()
+func (_q *PlaybookQuery) WithAlerts(opts ...func(*AlertQuery)) *PlaybookQuery {
+	query := (&AlertClient{config: _q.config}).Query()
 	for _, opt := range opts {
 		opt(query)
 	}
-	pq.withAlerts = query
-	return pq
+	_q.withAlerts = query
+	return _q
 }
 
 // GroupBy is used to group vertices by one or more fields/columns.
@@ -347,10 +347,10 @@ func (pq *PlaybookQuery) WithAlerts(opts ...func(*AlertQuery)) *PlaybookQuery {
 //		GroupBy(playbook.FieldTenantID).
 //		Aggregate(ent.Count()).
 //		Scan(ctx, &v)
-func (pq *PlaybookQuery) GroupBy(field string, fields ...string) *PlaybookGroupBy {
-	pq.ctx.Fields = append([]string{field}, fields...)
-	grbuild := &PlaybookGroupBy{build: pq}
-	grbuild.flds = &pq.ctx.Fields
+func (_q *PlaybookQuery) GroupBy(field string, fields ...string) *PlaybookGroupBy {
+	_q.ctx.Fields = append([]string{field}, fields...)
+	grbuild := &PlaybookGroupBy{build: _q}
+	grbuild.flds = &_q.ctx.Fields
 	grbuild.label = playbook.Label
 	grbuild.scan = grbuild.Scan
 	return grbuild
@@ -368,89 +368,89 @@ func (pq *PlaybookQuery) GroupBy(field string, fields ...string) *PlaybookGroupB
 //	client.Playbook.Query().
 //		Select(playbook.FieldTenantID).
 //		Scan(ctx, &v)
-func (pq *PlaybookQuery) Select(fields ...string) *PlaybookSelect {
-	pq.ctx.Fields = append(pq.ctx.Fields, fields...)
-	sbuild := &PlaybookSelect{PlaybookQuery: pq}
+func (_q *PlaybookQuery) Select(fields ...string) *PlaybookSelect {
+	_q.ctx.Fields = append(_q.ctx.Fields, fields...)
+	sbuild := &PlaybookSelect{PlaybookQuery: _q}
 	sbuild.label = playbook.Label
-	sbuild.flds, sbuild.scan = &pq.ctx.Fields, sbuild.Scan
+	sbuild.flds, sbuild.scan = &_q.ctx.Fields, sbuild.Scan
 	return sbuild
 }
 
 // Aggregate returns a PlaybookSelect configured with the given aggregations.
-func (pq *PlaybookQuery) Aggregate(fns ...AggregateFunc) *PlaybookSelect {
-	return pq.Select().Aggregate(fns...)
+func (_q *PlaybookQuery) Aggregate(fns ...AggregateFunc) *PlaybookSelect {
+	return _q.Select().Aggregate(fns...)
 }
 
-func (pq *PlaybookQuery) prepareQuery(ctx context.Context) error {
-	for _, inter := range pq.inters {
+func (_q *PlaybookQuery) prepareQuery(ctx context.Context) error {
+	for _, inter := range _q.inters {
 		if inter == nil {
 			return fmt.Errorf("ent: uninitialized interceptor (forgotten import ent/runtime?)")
 		}
 		if trv, ok := inter.(Traverser); ok {
-			if err := trv.Traverse(ctx, pq); err != nil {
+			if err := trv.Traverse(ctx, _q); err != nil {
 				return err
 			}
 		}
 	}
-	for _, f := range pq.ctx.Fields {
+	for _, f := range _q.ctx.Fields {
 		if !playbook.ValidColumn(f) {
 			return &ValidationError{Name: f, err: fmt.Errorf("ent: invalid field %q for query", f)}
 		}
 	}
-	if pq.path != nil {
-		prev, err := pq.path(ctx)
+	if _q.path != nil {
+		prev, err := _q.path(ctx)
 		if err != nil {
 			return err
 		}
-		pq.sql = prev
+		_q.sql = prev
 	}
 	if playbook.Policy == nil {
 		return errors.New("ent: uninitialized playbook.Policy (forgotten import ent/runtime?)")
 	}
-	if err := playbook.Policy.EvalQuery(ctx, pq); err != nil {
+	if err := playbook.Policy.EvalQuery(ctx, _q); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (pq *PlaybookQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Playbook, error) {
+func (_q *PlaybookQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Playbook, error) {
 	var (
 		nodes       = []*Playbook{}
-		_spec       = pq.querySpec()
+		_spec       = _q.querySpec()
 		loadedTypes = [2]bool{
-			pq.withTenant != nil,
-			pq.withAlerts != nil,
+			_q.withTenant != nil,
+			_q.withAlerts != nil,
 		}
 	)
 	_spec.ScanValues = func(columns []string) ([]any, error) {
 		return (*Playbook).scanValues(nil, columns)
 	}
 	_spec.Assign = func(columns []string, values []any) error {
-		node := &Playbook{config: pq.config}
+		node := &Playbook{config: _q.config}
 		nodes = append(nodes, node)
 		node.Edges.loadedTypes = loadedTypes
 		return node.assignValues(columns, values)
 	}
-	if len(pq.modifiers) > 0 {
-		_spec.Modifiers = pq.modifiers
+	if len(_q.modifiers) > 0 {
+		_spec.Modifiers = _q.modifiers
 	}
 	for i := range hooks {
 		hooks[i](ctx, _spec)
 	}
-	if err := sqlgraph.QueryNodes(ctx, pq.driver, _spec); err != nil {
+	if err := sqlgraph.QueryNodes(ctx, _q.driver, _spec); err != nil {
 		return nil, err
 	}
 	if len(nodes) == 0 {
 		return nodes, nil
 	}
-	if query := pq.withTenant; query != nil {
-		if err := pq.loadTenant(ctx, query, nodes, nil,
+	if query := _q.withTenant; query != nil {
+		if err := _q.loadTenant(ctx, query, nodes, nil,
 			func(n *Playbook, e *Tenant) { n.Edges.Tenant = e }); err != nil {
 			return nil, err
 		}
 	}
-	if query := pq.withAlerts; query != nil {
-		if err := pq.loadAlerts(ctx, query, nodes,
+	if query := _q.withAlerts; query != nil {
+		if err := _q.loadAlerts(ctx, query, nodes,
 			func(n *Playbook) { n.Edges.Alerts = []*Alert{} },
 			func(n *Playbook, e *Alert) { n.Edges.Alerts = append(n.Edges.Alerts, e) }); err != nil {
 			return nil, err
@@ -459,7 +459,7 @@ func (pq *PlaybookQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Pla
 	return nodes, nil
 }
 
-func (pq *PlaybookQuery) loadTenant(ctx context.Context, query *TenantQuery, nodes []*Playbook, init func(*Playbook), assign func(*Playbook, *Tenant)) error {
+func (_q *PlaybookQuery) loadTenant(ctx context.Context, query *TenantQuery, nodes []*Playbook, init func(*Playbook), assign func(*Playbook, *Tenant)) error {
 	ids := make([]int, 0, len(nodes))
 	nodeids := make(map[int][]*Playbook)
 	for i := range nodes {
@@ -488,7 +488,7 @@ func (pq *PlaybookQuery) loadTenant(ctx context.Context, query *TenantQuery, nod
 	}
 	return nil
 }
-func (pq *PlaybookQuery) loadAlerts(ctx context.Context, query *AlertQuery, nodes []*Playbook, init func(*Playbook), assign func(*Playbook, *Alert)) error {
+func (_q *PlaybookQuery) loadAlerts(ctx context.Context, query *AlertQuery, nodes []*Playbook, init func(*Playbook), assign func(*Playbook, *Alert)) error {
 	edgeIDs := make([]driver.Value, len(nodes))
 	byID := make(map[uuid.UUID]*Playbook)
 	nids := make(map[uuid.UUID]map[*Playbook]struct{})
@@ -550,27 +550,27 @@ func (pq *PlaybookQuery) loadAlerts(ctx context.Context, query *AlertQuery, node
 	return nil
 }
 
-func (pq *PlaybookQuery) sqlCount(ctx context.Context) (int, error) {
-	_spec := pq.querySpec()
-	if len(pq.modifiers) > 0 {
-		_spec.Modifiers = pq.modifiers
+func (_q *PlaybookQuery) sqlCount(ctx context.Context) (int, error) {
+	_spec := _q.querySpec()
+	if len(_q.modifiers) > 0 {
+		_spec.Modifiers = _q.modifiers
 	}
-	_spec.Node.Columns = pq.ctx.Fields
-	if len(pq.ctx.Fields) > 0 {
-		_spec.Unique = pq.ctx.Unique != nil && *pq.ctx.Unique
+	_spec.Node.Columns = _q.ctx.Fields
+	if len(_q.ctx.Fields) > 0 {
+		_spec.Unique = _q.ctx.Unique != nil && *_q.ctx.Unique
 	}
-	return sqlgraph.CountNodes(ctx, pq.driver, _spec)
+	return sqlgraph.CountNodes(ctx, _q.driver, _spec)
 }
 
-func (pq *PlaybookQuery) querySpec() *sqlgraph.QuerySpec {
+func (_q *PlaybookQuery) querySpec() *sqlgraph.QuerySpec {
 	_spec := sqlgraph.NewQuerySpec(playbook.Table, playbook.Columns, sqlgraph.NewFieldSpec(playbook.FieldID, field.TypeUUID))
-	_spec.From = pq.sql
-	if unique := pq.ctx.Unique; unique != nil {
+	_spec.From = _q.sql
+	if unique := _q.ctx.Unique; unique != nil {
 		_spec.Unique = *unique
-	} else if pq.path != nil {
+	} else if _q.path != nil {
 		_spec.Unique = true
 	}
-	if fields := pq.ctx.Fields; len(fields) > 0 {
+	if fields := _q.ctx.Fields; len(fields) > 0 {
 		_spec.Node.Columns = make([]string, 0, len(fields))
 		_spec.Node.Columns = append(_spec.Node.Columns, playbook.FieldID)
 		for i := range fields {
@@ -578,24 +578,24 @@ func (pq *PlaybookQuery) querySpec() *sqlgraph.QuerySpec {
 				_spec.Node.Columns = append(_spec.Node.Columns, fields[i])
 			}
 		}
-		if pq.withTenant != nil {
+		if _q.withTenant != nil {
 			_spec.Node.AddColumnOnce(playbook.FieldTenantID)
 		}
 	}
-	if ps := pq.predicates; len(ps) > 0 {
+	if ps := _q.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {
 				ps[i](selector)
 			}
 		}
 	}
-	if limit := pq.ctx.Limit; limit != nil {
+	if limit := _q.ctx.Limit; limit != nil {
 		_spec.Limit = *limit
 	}
-	if offset := pq.ctx.Offset; offset != nil {
+	if offset := _q.ctx.Offset; offset != nil {
 		_spec.Offset = *offset
 	}
-	if ps := pq.order; len(ps) > 0 {
+	if ps := _q.order; len(ps) > 0 {
 		_spec.Order = func(selector *sql.Selector) {
 			for i := range ps {
 				ps[i](selector)
@@ -605,45 +605,45 @@ func (pq *PlaybookQuery) querySpec() *sqlgraph.QuerySpec {
 	return _spec
 }
 
-func (pq *PlaybookQuery) sqlQuery(ctx context.Context) *sql.Selector {
-	builder := sql.Dialect(pq.driver.Dialect())
+func (_q *PlaybookQuery) sqlQuery(ctx context.Context) *sql.Selector {
+	builder := sql.Dialect(_q.driver.Dialect())
 	t1 := builder.Table(playbook.Table)
-	columns := pq.ctx.Fields
+	columns := _q.ctx.Fields
 	if len(columns) == 0 {
 		columns = playbook.Columns
 	}
 	selector := builder.Select(t1.Columns(columns...)...).From(t1)
-	if pq.sql != nil {
-		selector = pq.sql
+	if _q.sql != nil {
+		selector = _q.sql
 		selector.Select(selector.Columns(columns...)...)
 	}
-	if pq.ctx.Unique != nil && *pq.ctx.Unique {
+	if _q.ctx.Unique != nil && *_q.ctx.Unique {
 		selector.Distinct()
 	}
-	for _, m := range pq.modifiers {
+	for _, m := range _q.modifiers {
 		m(selector)
 	}
-	for _, p := range pq.predicates {
+	for _, p := range _q.predicates {
 		p(selector)
 	}
-	for _, p := range pq.order {
+	for _, p := range _q.order {
 		p(selector)
 	}
-	if offset := pq.ctx.Offset; offset != nil {
+	if offset := _q.ctx.Offset; offset != nil {
 		// limit is mandatory for offset clause. We start
 		// with default value, and override it below if needed.
 		selector.Offset(*offset).Limit(math.MaxInt32)
 	}
-	if limit := pq.ctx.Limit; limit != nil {
+	if limit := _q.ctx.Limit; limit != nil {
 		selector.Limit(*limit)
 	}
 	return selector
 }
 
 // Modify adds a query modifier for attaching custom logic to queries.
-func (pq *PlaybookQuery) Modify(modifiers ...func(s *sql.Selector)) *PlaybookSelect {
-	pq.modifiers = append(pq.modifiers, modifiers...)
-	return pq.Select()
+func (_q *PlaybookQuery) Modify(modifiers ...func(s *sql.Selector)) *PlaybookSelect {
+	_q.modifiers = append(_q.modifiers, modifiers...)
+	return _q.Select()
 }
 
 // PlaybookGroupBy is the group-by builder for Playbook entities.
@@ -653,41 +653,41 @@ type PlaybookGroupBy struct {
 }
 
 // Aggregate adds the given aggregation functions to the group-by query.
-func (pgb *PlaybookGroupBy) Aggregate(fns ...AggregateFunc) *PlaybookGroupBy {
-	pgb.fns = append(pgb.fns, fns...)
-	return pgb
+func (_g *PlaybookGroupBy) Aggregate(fns ...AggregateFunc) *PlaybookGroupBy {
+	_g.fns = append(_g.fns, fns...)
+	return _g
 }
 
 // Scan applies the selector query and scans the result into the given value.
-func (pgb *PlaybookGroupBy) Scan(ctx context.Context, v any) error {
-	ctx = setContextOp(ctx, pgb.build.ctx, ent.OpQueryGroupBy)
-	if err := pgb.build.prepareQuery(ctx); err != nil {
+func (_g *PlaybookGroupBy) Scan(ctx context.Context, v any) error {
+	ctx = setContextOp(ctx, _g.build.ctx, ent.OpQueryGroupBy)
+	if err := _g.build.prepareQuery(ctx); err != nil {
 		return err
 	}
-	return scanWithInterceptors[*PlaybookQuery, *PlaybookGroupBy](ctx, pgb.build, pgb, pgb.build.inters, v)
+	return scanWithInterceptors[*PlaybookQuery, *PlaybookGroupBy](ctx, _g.build, _g, _g.build.inters, v)
 }
 
-func (pgb *PlaybookGroupBy) sqlScan(ctx context.Context, root *PlaybookQuery, v any) error {
+func (_g *PlaybookGroupBy) sqlScan(ctx context.Context, root *PlaybookQuery, v any) error {
 	selector := root.sqlQuery(ctx).Select()
-	aggregation := make([]string, 0, len(pgb.fns))
-	for _, fn := range pgb.fns {
+	aggregation := make([]string, 0, len(_g.fns))
+	for _, fn := range _g.fns {
 		aggregation = append(aggregation, fn(selector))
 	}
 	if len(selector.SelectedColumns()) == 0 {
-		columns := make([]string, 0, len(*pgb.flds)+len(pgb.fns))
-		for _, f := range *pgb.flds {
+		columns := make([]string, 0, len(*_g.flds)+len(_g.fns))
+		for _, f := range *_g.flds {
 			columns = append(columns, selector.C(f))
 		}
 		columns = append(columns, aggregation...)
 		selector.Select(columns...)
 	}
-	selector.GroupBy(selector.Columns(*pgb.flds...)...)
+	selector.GroupBy(selector.Columns(*_g.flds...)...)
 	if err := selector.Err(); err != nil {
 		return err
 	}
 	rows := &sql.Rows{}
 	query, args := selector.Query()
-	if err := pgb.build.driver.Query(ctx, query, args, rows); err != nil {
+	if err := _g.build.driver.Query(ctx, query, args, rows); err != nil {
 		return err
 	}
 	defer rows.Close()
@@ -701,27 +701,27 @@ type PlaybookSelect struct {
 }
 
 // Aggregate adds the given aggregation functions to the selector query.
-func (ps *PlaybookSelect) Aggregate(fns ...AggregateFunc) *PlaybookSelect {
-	ps.fns = append(ps.fns, fns...)
-	return ps
+func (_s *PlaybookSelect) Aggregate(fns ...AggregateFunc) *PlaybookSelect {
+	_s.fns = append(_s.fns, fns...)
+	return _s
 }
 
 // Scan applies the selector query and scans the result into the given value.
-func (ps *PlaybookSelect) Scan(ctx context.Context, v any) error {
-	ctx = setContextOp(ctx, ps.ctx, ent.OpQuerySelect)
-	if err := ps.prepareQuery(ctx); err != nil {
+func (_s *PlaybookSelect) Scan(ctx context.Context, v any) error {
+	ctx = setContextOp(ctx, _s.ctx, ent.OpQuerySelect)
+	if err := _s.prepareQuery(ctx); err != nil {
 		return err
 	}
-	return scanWithInterceptors[*PlaybookQuery, *PlaybookSelect](ctx, ps.PlaybookQuery, ps, ps.inters, v)
+	return scanWithInterceptors[*PlaybookQuery, *PlaybookSelect](ctx, _s.PlaybookQuery, _s, _s.inters, v)
 }
 
-func (ps *PlaybookSelect) sqlScan(ctx context.Context, root *PlaybookQuery, v any) error {
+func (_s *PlaybookSelect) sqlScan(ctx context.Context, root *PlaybookQuery, v any) error {
 	selector := root.sqlQuery(ctx)
-	aggregation := make([]string, 0, len(ps.fns))
-	for _, fn := range ps.fns {
+	aggregation := make([]string, 0, len(_s.fns))
+	for _, fn := range _s.fns {
 		aggregation = append(aggregation, fn(selector))
 	}
-	switch n := len(*ps.selector.flds); {
+	switch n := len(*_s.selector.flds); {
 	case n == 0 && len(aggregation) > 0:
 		selector.Select(aggregation...)
 	case n != 0 && len(aggregation) > 0:
@@ -729,7 +729,7 @@ func (ps *PlaybookSelect) sqlScan(ctx context.Context, root *PlaybookQuery, v an
 	}
 	rows := &sql.Rows{}
 	query, args := selector.Query()
-	if err := ps.driver.Query(ctx, query, args, rows); err != nil {
+	if err := _s.driver.Query(ctx, query, args, rows); err != nil {
 		return err
 	}
 	defer rows.Close()
@@ -737,7 +737,7 @@ func (ps *PlaybookSelect) sqlScan(ctx context.Context, root *PlaybookQuery, v an
 }
 
 // Modify adds a query modifier for attaching custom logic to queries.
-func (ps *PlaybookSelect) Modify(modifiers ...func(s *sql.Selector)) *PlaybookSelect {
-	ps.modifiers = append(ps.modifiers, modifiers...)
-	return ps
+func (_s *PlaybookSelect) Modify(modifiers ...func(s *sql.Selector)) *PlaybookSelect {
+	_s.modifiers = append(_s.modifiers, modifiers...)
+	return _s
 }

@@ -33,44 +33,44 @@ type ProviderConfigQuery struct {
 }
 
 // Where adds a new predicate for the ProviderConfigQuery builder.
-func (pcq *ProviderConfigQuery) Where(ps ...predicate.ProviderConfig) *ProviderConfigQuery {
-	pcq.predicates = append(pcq.predicates, ps...)
-	return pcq
+func (_q *ProviderConfigQuery) Where(ps ...predicate.ProviderConfig) *ProviderConfigQuery {
+	_q.predicates = append(_q.predicates, ps...)
+	return _q
 }
 
 // Limit the number of records to be returned by this query.
-func (pcq *ProviderConfigQuery) Limit(limit int) *ProviderConfigQuery {
-	pcq.ctx.Limit = &limit
-	return pcq
+func (_q *ProviderConfigQuery) Limit(limit int) *ProviderConfigQuery {
+	_q.ctx.Limit = &limit
+	return _q
 }
 
 // Offset to start from.
-func (pcq *ProviderConfigQuery) Offset(offset int) *ProviderConfigQuery {
-	pcq.ctx.Offset = &offset
-	return pcq
+func (_q *ProviderConfigQuery) Offset(offset int) *ProviderConfigQuery {
+	_q.ctx.Offset = &offset
+	return _q
 }
 
 // Unique configures the query builder to filter duplicate records on query.
 // By default, unique is set to true, and can be disabled using this method.
-func (pcq *ProviderConfigQuery) Unique(unique bool) *ProviderConfigQuery {
-	pcq.ctx.Unique = &unique
-	return pcq
+func (_q *ProviderConfigQuery) Unique(unique bool) *ProviderConfigQuery {
+	_q.ctx.Unique = &unique
+	return _q
 }
 
 // Order specifies how the records should be ordered.
-func (pcq *ProviderConfigQuery) Order(o ...providerconfig.OrderOption) *ProviderConfigQuery {
-	pcq.order = append(pcq.order, o...)
-	return pcq
+func (_q *ProviderConfigQuery) Order(o ...providerconfig.OrderOption) *ProviderConfigQuery {
+	_q.order = append(_q.order, o...)
+	return _q
 }
 
 // QueryTenant chains the current query on the "tenant" edge.
-func (pcq *ProviderConfigQuery) QueryTenant() *TenantQuery {
-	query := (&TenantClient{config: pcq.config}).Query()
+func (_q *ProviderConfigQuery) QueryTenant() *TenantQuery {
+	query := (&TenantClient{config: _q.config}).Query()
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
-		if err := pcq.prepareQuery(ctx); err != nil {
+		if err := _q.prepareQuery(ctx); err != nil {
 			return nil, err
 		}
-		selector := pcq.sqlQuery(ctx)
+		selector := _q.sqlQuery(ctx)
 		if err := selector.Err(); err != nil {
 			return nil, err
 		}
@@ -79,7 +79,7 @@ func (pcq *ProviderConfigQuery) QueryTenant() *TenantQuery {
 			sqlgraph.To(tenant.Table, tenant.FieldID),
 			sqlgraph.Edge(sqlgraph.M2O, false, providerconfig.TenantTable, providerconfig.TenantColumn),
 		)
-		fromU = sqlgraph.SetNeighbors(pcq.driver.Dialect(), step)
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
 	}
 	return query
@@ -87,8 +87,8 @@ func (pcq *ProviderConfigQuery) QueryTenant() *TenantQuery {
 
 // First returns the first ProviderConfig entity from the query.
 // Returns a *NotFoundError when no ProviderConfig was found.
-func (pcq *ProviderConfigQuery) First(ctx context.Context) (*ProviderConfig, error) {
-	nodes, err := pcq.Limit(1).All(setContextOp(ctx, pcq.ctx, ent.OpQueryFirst))
+func (_q *ProviderConfigQuery) First(ctx context.Context) (*ProviderConfig, error) {
+	nodes, err := _q.Limit(1).All(setContextOp(ctx, _q.ctx, ent.OpQueryFirst))
 	if err != nil {
 		return nil, err
 	}
@@ -99,8 +99,8 @@ func (pcq *ProviderConfigQuery) First(ctx context.Context) (*ProviderConfig, err
 }
 
 // FirstX is like First, but panics if an error occurs.
-func (pcq *ProviderConfigQuery) FirstX(ctx context.Context) *ProviderConfig {
-	node, err := pcq.First(ctx)
+func (_q *ProviderConfigQuery) FirstX(ctx context.Context) *ProviderConfig {
+	node, err := _q.First(ctx)
 	if err != nil && !IsNotFound(err) {
 		panic(err)
 	}
@@ -109,9 +109,9 @@ func (pcq *ProviderConfigQuery) FirstX(ctx context.Context) *ProviderConfig {
 
 // FirstID returns the first ProviderConfig ID from the query.
 // Returns a *NotFoundError when no ProviderConfig ID was found.
-func (pcq *ProviderConfigQuery) FirstID(ctx context.Context) (id uuid.UUID, err error) {
+func (_q *ProviderConfigQuery) FirstID(ctx context.Context) (id uuid.UUID, err error) {
 	var ids []uuid.UUID
-	if ids, err = pcq.Limit(1).IDs(setContextOp(ctx, pcq.ctx, ent.OpQueryFirstID)); err != nil {
+	if ids, err = _q.Limit(1).IDs(setContextOp(ctx, _q.ctx, ent.OpQueryFirstID)); err != nil {
 		return
 	}
 	if len(ids) == 0 {
@@ -122,8 +122,8 @@ func (pcq *ProviderConfigQuery) FirstID(ctx context.Context) (id uuid.UUID, err 
 }
 
 // FirstIDX is like FirstID, but panics if an error occurs.
-func (pcq *ProviderConfigQuery) FirstIDX(ctx context.Context) uuid.UUID {
-	id, err := pcq.FirstID(ctx)
+func (_q *ProviderConfigQuery) FirstIDX(ctx context.Context) uuid.UUID {
+	id, err := _q.FirstID(ctx)
 	if err != nil && !IsNotFound(err) {
 		panic(err)
 	}
@@ -133,8 +133,8 @@ func (pcq *ProviderConfigQuery) FirstIDX(ctx context.Context) uuid.UUID {
 // Only returns a single ProviderConfig entity found by the query, ensuring it only returns one.
 // Returns a *NotSingularError when more than one ProviderConfig entity is found.
 // Returns a *NotFoundError when no ProviderConfig entities are found.
-func (pcq *ProviderConfigQuery) Only(ctx context.Context) (*ProviderConfig, error) {
-	nodes, err := pcq.Limit(2).All(setContextOp(ctx, pcq.ctx, ent.OpQueryOnly))
+func (_q *ProviderConfigQuery) Only(ctx context.Context) (*ProviderConfig, error) {
+	nodes, err := _q.Limit(2).All(setContextOp(ctx, _q.ctx, ent.OpQueryOnly))
 	if err != nil {
 		return nil, err
 	}
@@ -149,8 +149,8 @@ func (pcq *ProviderConfigQuery) Only(ctx context.Context) (*ProviderConfig, erro
 }
 
 // OnlyX is like Only, but panics if an error occurs.
-func (pcq *ProviderConfigQuery) OnlyX(ctx context.Context) *ProviderConfig {
-	node, err := pcq.Only(ctx)
+func (_q *ProviderConfigQuery) OnlyX(ctx context.Context) *ProviderConfig {
+	node, err := _q.Only(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -160,9 +160,9 @@ func (pcq *ProviderConfigQuery) OnlyX(ctx context.Context) *ProviderConfig {
 // OnlyID is like Only, but returns the only ProviderConfig ID in the query.
 // Returns a *NotSingularError when more than one ProviderConfig ID is found.
 // Returns a *NotFoundError when no entities are found.
-func (pcq *ProviderConfigQuery) OnlyID(ctx context.Context) (id uuid.UUID, err error) {
+func (_q *ProviderConfigQuery) OnlyID(ctx context.Context) (id uuid.UUID, err error) {
 	var ids []uuid.UUID
-	if ids, err = pcq.Limit(2).IDs(setContextOp(ctx, pcq.ctx, ent.OpQueryOnlyID)); err != nil {
+	if ids, err = _q.Limit(2).IDs(setContextOp(ctx, _q.ctx, ent.OpQueryOnlyID)); err != nil {
 		return
 	}
 	switch len(ids) {
@@ -177,8 +177,8 @@ func (pcq *ProviderConfigQuery) OnlyID(ctx context.Context) (id uuid.UUID, err e
 }
 
 // OnlyIDX is like OnlyID, but panics if an error occurs.
-func (pcq *ProviderConfigQuery) OnlyIDX(ctx context.Context) uuid.UUID {
-	id, err := pcq.OnlyID(ctx)
+func (_q *ProviderConfigQuery) OnlyIDX(ctx context.Context) uuid.UUID {
+	id, err := _q.OnlyID(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -186,18 +186,18 @@ func (pcq *ProviderConfigQuery) OnlyIDX(ctx context.Context) uuid.UUID {
 }
 
 // All executes the query and returns a list of ProviderConfigs.
-func (pcq *ProviderConfigQuery) All(ctx context.Context) ([]*ProviderConfig, error) {
-	ctx = setContextOp(ctx, pcq.ctx, ent.OpQueryAll)
-	if err := pcq.prepareQuery(ctx); err != nil {
+func (_q *ProviderConfigQuery) All(ctx context.Context) ([]*ProviderConfig, error) {
+	ctx = setContextOp(ctx, _q.ctx, ent.OpQueryAll)
+	if err := _q.prepareQuery(ctx); err != nil {
 		return nil, err
 	}
 	qr := querierAll[[]*ProviderConfig, *ProviderConfigQuery]()
-	return withInterceptors[[]*ProviderConfig](ctx, pcq, qr, pcq.inters)
+	return withInterceptors[[]*ProviderConfig](ctx, _q, qr, _q.inters)
 }
 
 // AllX is like All, but panics if an error occurs.
-func (pcq *ProviderConfigQuery) AllX(ctx context.Context) []*ProviderConfig {
-	nodes, err := pcq.All(ctx)
+func (_q *ProviderConfigQuery) AllX(ctx context.Context) []*ProviderConfig {
+	nodes, err := _q.All(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -205,20 +205,20 @@ func (pcq *ProviderConfigQuery) AllX(ctx context.Context) []*ProviderConfig {
 }
 
 // IDs executes the query and returns a list of ProviderConfig IDs.
-func (pcq *ProviderConfigQuery) IDs(ctx context.Context) (ids []uuid.UUID, err error) {
-	if pcq.ctx.Unique == nil && pcq.path != nil {
-		pcq.Unique(true)
+func (_q *ProviderConfigQuery) IDs(ctx context.Context) (ids []uuid.UUID, err error) {
+	if _q.ctx.Unique == nil && _q.path != nil {
+		_q.Unique(true)
 	}
-	ctx = setContextOp(ctx, pcq.ctx, ent.OpQueryIDs)
-	if err = pcq.Select(providerconfig.FieldID).Scan(ctx, &ids); err != nil {
+	ctx = setContextOp(ctx, _q.ctx, ent.OpQueryIDs)
+	if err = _q.Select(providerconfig.FieldID).Scan(ctx, &ids); err != nil {
 		return nil, err
 	}
 	return ids, nil
 }
 
 // IDsX is like IDs, but panics if an error occurs.
-func (pcq *ProviderConfigQuery) IDsX(ctx context.Context) []uuid.UUID {
-	ids, err := pcq.IDs(ctx)
+func (_q *ProviderConfigQuery) IDsX(ctx context.Context) []uuid.UUID {
+	ids, err := _q.IDs(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -226,17 +226,17 @@ func (pcq *ProviderConfigQuery) IDsX(ctx context.Context) []uuid.UUID {
 }
 
 // Count returns the count of the given query.
-func (pcq *ProviderConfigQuery) Count(ctx context.Context) (int, error) {
-	ctx = setContextOp(ctx, pcq.ctx, ent.OpQueryCount)
-	if err := pcq.prepareQuery(ctx); err != nil {
+func (_q *ProviderConfigQuery) Count(ctx context.Context) (int, error) {
+	ctx = setContextOp(ctx, _q.ctx, ent.OpQueryCount)
+	if err := _q.prepareQuery(ctx); err != nil {
 		return 0, err
 	}
-	return withInterceptors[int](ctx, pcq, querierCount[*ProviderConfigQuery](), pcq.inters)
+	return withInterceptors[int](ctx, _q, querierCount[*ProviderConfigQuery](), _q.inters)
 }
 
 // CountX is like Count, but panics if an error occurs.
-func (pcq *ProviderConfigQuery) CountX(ctx context.Context) int {
-	count, err := pcq.Count(ctx)
+func (_q *ProviderConfigQuery) CountX(ctx context.Context) int {
+	count, err := _q.Count(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -244,9 +244,9 @@ func (pcq *ProviderConfigQuery) CountX(ctx context.Context) int {
 }
 
 // Exist returns true if the query has elements in the graph.
-func (pcq *ProviderConfigQuery) Exist(ctx context.Context) (bool, error) {
-	ctx = setContextOp(ctx, pcq.ctx, ent.OpQueryExist)
-	switch _, err := pcq.FirstID(ctx); {
+func (_q *ProviderConfigQuery) Exist(ctx context.Context) (bool, error) {
+	ctx = setContextOp(ctx, _q.ctx, ent.OpQueryExist)
+	switch _, err := _q.FirstID(ctx); {
 	case IsNotFound(err):
 		return false, nil
 	case err != nil:
@@ -257,8 +257,8 @@ func (pcq *ProviderConfigQuery) Exist(ctx context.Context) (bool, error) {
 }
 
 // ExistX is like Exist, but panics if an error occurs.
-func (pcq *ProviderConfigQuery) ExistX(ctx context.Context) bool {
-	exist, err := pcq.Exist(ctx)
+func (_q *ProviderConfigQuery) ExistX(ctx context.Context) bool {
+	exist, err := _q.Exist(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -267,33 +267,33 @@ func (pcq *ProviderConfigQuery) ExistX(ctx context.Context) bool {
 
 // Clone returns a duplicate of the ProviderConfigQuery builder, including all associated steps. It can be
 // used to prepare common query builders and use them differently after the clone is made.
-func (pcq *ProviderConfigQuery) Clone() *ProviderConfigQuery {
-	if pcq == nil {
+func (_q *ProviderConfigQuery) Clone() *ProviderConfigQuery {
+	if _q == nil {
 		return nil
 	}
 	return &ProviderConfigQuery{
-		config:     pcq.config,
-		ctx:        pcq.ctx.Clone(),
-		order:      append([]providerconfig.OrderOption{}, pcq.order...),
-		inters:     append([]Interceptor{}, pcq.inters...),
-		predicates: append([]predicate.ProviderConfig{}, pcq.predicates...),
-		withTenant: pcq.withTenant.Clone(),
+		config:     _q.config,
+		ctx:        _q.ctx.Clone(),
+		order:      append([]providerconfig.OrderOption{}, _q.order...),
+		inters:     append([]Interceptor{}, _q.inters...),
+		predicates: append([]predicate.ProviderConfig{}, _q.predicates...),
+		withTenant: _q.withTenant.Clone(),
 		// clone intermediate query.
-		sql:       pcq.sql.Clone(),
-		path:      pcq.path,
-		modifiers: append([]func(*sql.Selector){}, pcq.modifiers...),
+		sql:       _q.sql.Clone(),
+		path:      _q.path,
+		modifiers: append([]func(*sql.Selector){}, _q.modifiers...),
 	}
 }
 
 // WithTenant tells the query-builder to eager-load the nodes that are connected to
 // the "tenant" edge. The optional arguments are used to configure the query builder of the edge.
-func (pcq *ProviderConfigQuery) WithTenant(opts ...func(*TenantQuery)) *ProviderConfigQuery {
-	query := (&TenantClient{config: pcq.config}).Query()
+func (_q *ProviderConfigQuery) WithTenant(opts ...func(*TenantQuery)) *ProviderConfigQuery {
+	query := (&TenantClient{config: _q.config}).Query()
 	for _, opt := range opts {
 		opt(query)
 	}
-	pcq.withTenant = query
-	return pcq
+	_q.withTenant = query
+	return _q
 }
 
 // GroupBy is used to group vertices by one or more fields/columns.
@@ -310,10 +310,10 @@ func (pcq *ProviderConfigQuery) WithTenant(opts ...func(*TenantQuery)) *Provider
 //		GroupBy(providerconfig.FieldTenantID).
 //		Aggregate(ent.Count()).
 //		Scan(ctx, &v)
-func (pcq *ProviderConfigQuery) GroupBy(field string, fields ...string) *ProviderConfigGroupBy {
-	pcq.ctx.Fields = append([]string{field}, fields...)
-	grbuild := &ProviderConfigGroupBy{build: pcq}
-	grbuild.flds = &pcq.ctx.Fields
+func (_q *ProviderConfigQuery) GroupBy(field string, fields ...string) *ProviderConfigGroupBy {
+	_q.ctx.Fields = append([]string{field}, fields...)
+	grbuild := &ProviderConfigGroupBy{build: _q}
+	grbuild.flds = &_q.ctx.Fields
 	grbuild.label = providerconfig.Label
 	grbuild.scan = grbuild.Scan
 	return grbuild
@@ -331,82 +331,82 @@ func (pcq *ProviderConfigQuery) GroupBy(field string, fields ...string) *Provide
 //	client.ProviderConfig.Query().
 //		Select(providerconfig.FieldTenantID).
 //		Scan(ctx, &v)
-func (pcq *ProviderConfigQuery) Select(fields ...string) *ProviderConfigSelect {
-	pcq.ctx.Fields = append(pcq.ctx.Fields, fields...)
-	sbuild := &ProviderConfigSelect{ProviderConfigQuery: pcq}
+func (_q *ProviderConfigQuery) Select(fields ...string) *ProviderConfigSelect {
+	_q.ctx.Fields = append(_q.ctx.Fields, fields...)
+	sbuild := &ProviderConfigSelect{ProviderConfigQuery: _q}
 	sbuild.label = providerconfig.Label
-	sbuild.flds, sbuild.scan = &pcq.ctx.Fields, sbuild.Scan
+	sbuild.flds, sbuild.scan = &_q.ctx.Fields, sbuild.Scan
 	return sbuild
 }
 
 // Aggregate returns a ProviderConfigSelect configured with the given aggregations.
-func (pcq *ProviderConfigQuery) Aggregate(fns ...AggregateFunc) *ProviderConfigSelect {
-	return pcq.Select().Aggregate(fns...)
+func (_q *ProviderConfigQuery) Aggregate(fns ...AggregateFunc) *ProviderConfigSelect {
+	return _q.Select().Aggregate(fns...)
 }
 
-func (pcq *ProviderConfigQuery) prepareQuery(ctx context.Context) error {
-	for _, inter := range pcq.inters {
+func (_q *ProviderConfigQuery) prepareQuery(ctx context.Context) error {
+	for _, inter := range _q.inters {
 		if inter == nil {
 			return fmt.Errorf("ent: uninitialized interceptor (forgotten import ent/runtime?)")
 		}
 		if trv, ok := inter.(Traverser); ok {
-			if err := trv.Traverse(ctx, pcq); err != nil {
+			if err := trv.Traverse(ctx, _q); err != nil {
 				return err
 			}
 		}
 	}
-	for _, f := range pcq.ctx.Fields {
+	for _, f := range _q.ctx.Fields {
 		if !providerconfig.ValidColumn(f) {
 			return &ValidationError{Name: f, err: fmt.Errorf("ent: invalid field %q for query", f)}
 		}
 	}
-	if pcq.path != nil {
-		prev, err := pcq.path(ctx)
+	if _q.path != nil {
+		prev, err := _q.path(ctx)
 		if err != nil {
 			return err
 		}
-		pcq.sql = prev
+		_q.sql = prev
 	}
 	if providerconfig.Policy == nil {
 		return errors.New("ent: uninitialized providerconfig.Policy (forgotten import ent/runtime?)")
 	}
-	if err := providerconfig.Policy.EvalQuery(ctx, pcq); err != nil {
+	if err := providerconfig.Policy.EvalQuery(ctx, _q); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (pcq *ProviderConfigQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*ProviderConfig, error) {
+func (_q *ProviderConfigQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*ProviderConfig, error) {
 	var (
 		nodes       = []*ProviderConfig{}
-		_spec       = pcq.querySpec()
+		_spec       = _q.querySpec()
 		loadedTypes = [1]bool{
-			pcq.withTenant != nil,
+			_q.withTenant != nil,
 		}
 	)
 	_spec.ScanValues = func(columns []string) ([]any, error) {
 		return (*ProviderConfig).scanValues(nil, columns)
 	}
 	_spec.Assign = func(columns []string, values []any) error {
-		node := &ProviderConfig{config: pcq.config}
+		node := &ProviderConfig{config: _q.config}
 		nodes = append(nodes, node)
 		node.Edges.loadedTypes = loadedTypes
 		return node.assignValues(columns, values)
 	}
-	if len(pcq.modifiers) > 0 {
-		_spec.Modifiers = pcq.modifiers
+	if len(_q.modifiers) > 0 {
+		_spec.Modifiers = _q.modifiers
 	}
 	for i := range hooks {
 		hooks[i](ctx, _spec)
 	}
-	if err := sqlgraph.QueryNodes(ctx, pcq.driver, _spec); err != nil {
+	if err := sqlgraph.QueryNodes(ctx, _q.driver, _spec); err != nil {
 		return nil, err
 	}
 	if len(nodes) == 0 {
 		return nodes, nil
 	}
-	if query := pcq.withTenant; query != nil {
-		if err := pcq.loadTenant(ctx, query, nodes, nil,
+	if query := _q.withTenant; query != nil {
+		if err := _q.loadTenant(ctx, query, nodes, nil,
 			func(n *ProviderConfig, e *Tenant) { n.Edges.Tenant = e }); err != nil {
 			return nil, err
 		}
@@ -414,7 +414,7 @@ func (pcq *ProviderConfigQuery) sqlAll(ctx context.Context, hooks ...queryHook) 
 	return nodes, nil
 }
 
-func (pcq *ProviderConfigQuery) loadTenant(ctx context.Context, query *TenantQuery, nodes []*ProviderConfig, init func(*ProviderConfig), assign func(*ProviderConfig, *Tenant)) error {
+func (_q *ProviderConfigQuery) loadTenant(ctx context.Context, query *TenantQuery, nodes []*ProviderConfig, init func(*ProviderConfig), assign func(*ProviderConfig, *Tenant)) error {
 	ids := make([]int, 0, len(nodes))
 	nodeids := make(map[int][]*ProviderConfig)
 	for i := range nodes {
@@ -444,27 +444,27 @@ func (pcq *ProviderConfigQuery) loadTenant(ctx context.Context, query *TenantQue
 	return nil
 }
 
-func (pcq *ProviderConfigQuery) sqlCount(ctx context.Context) (int, error) {
-	_spec := pcq.querySpec()
-	if len(pcq.modifiers) > 0 {
-		_spec.Modifiers = pcq.modifiers
+func (_q *ProviderConfigQuery) sqlCount(ctx context.Context) (int, error) {
+	_spec := _q.querySpec()
+	if len(_q.modifiers) > 0 {
+		_spec.Modifiers = _q.modifiers
 	}
-	_spec.Node.Columns = pcq.ctx.Fields
-	if len(pcq.ctx.Fields) > 0 {
-		_spec.Unique = pcq.ctx.Unique != nil && *pcq.ctx.Unique
+	_spec.Node.Columns = _q.ctx.Fields
+	if len(_q.ctx.Fields) > 0 {
+		_spec.Unique = _q.ctx.Unique != nil && *_q.ctx.Unique
 	}
-	return sqlgraph.CountNodes(ctx, pcq.driver, _spec)
+	return sqlgraph.CountNodes(ctx, _q.driver, _spec)
 }
 
-func (pcq *ProviderConfigQuery) querySpec() *sqlgraph.QuerySpec {
+func (_q *ProviderConfigQuery) querySpec() *sqlgraph.QuerySpec {
 	_spec := sqlgraph.NewQuerySpec(providerconfig.Table, providerconfig.Columns, sqlgraph.NewFieldSpec(providerconfig.FieldID, field.TypeUUID))
-	_spec.From = pcq.sql
-	if unique := pcq.ctx.Unique; unique != nil {
+	_spec.From = _q.sql
+	if unique := _q.ctx.Unique; unique != nil {
 		_spec.Unique = *unique
-	} else if pcq.path != nil {
+	} else if _q.path != nil {
 		_spec.Unique = true
 	}
-	if fields := pcq.ctx.Fields; len(fields) > 0 {
+	if fields := _q.ctx.Fields; len(fields) > 0 {
 		_spec.Node.Columns = make([]string, 0, len(fields))
 		_spec.Node.Columns = append(_spec.Node.Columns, providerconfig.FieldID)
 		for i := range fields {
@@ -472,24 +472,24 @@ func (pcq *ProviderConfigQuery) querySpec() *sqlgraph.QuerySpec {
 				_spec.Node.Columns = append(_spec.Node.Columns, fields[i])
 			}
 		}
-		if pcq.withTenant != nil {
+		if _q.withTenant != nil {
 			_spec.Node.AddColumnOnce(providerconfig.FieldTenantID)
 		}
 	}
-	if ps := pcq.predicates; len(ps) > 0 {
+	if ps := _q.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {
 				ps[i](selector)
 			}
 		}
 	}
-	if limit := pcq.ctx.Limit; limit != nil {
+	if limit := _q.ctx.Limit; limit != nil {
 		_spec.Limit = *limit
 	}
-	if offset := pcq.ctx.Offset; offset != nil {
+	if offset := _q.ctx.Offset; offset != nil {
 		_spec.Offset = *offset
 	}
-	if ps := pcq.order; len(ps) > 0 {
+	if ps := _q.order; len(ps) > 0 {
 		_spec.Order = func(selector *sql.Selector) {
 			for i := range ps {
 				ps[i](selector)
@@ -499,45 +499,45 @@ func (pcq *ProviderConfigQuery) querySpec() *sqlgraph.QuerySpec {
 	return _spec
 }
 
-func (pcq *ProviderConfigQuery) sqlQuery(ctx context.Context) *sql.Selector {
-	builder := sql.Dialect(pcq.driver.Dialect())
+func (_q *ProviderConfigQuery) sqlQuery(ctx context.Context) *sql.Selector {
+	builder := sql.Dialect(_q.driver.Dialect())
 	t1 := builder.Table(providerconfig.Table)
-	columns := pcq.ctx.Fields
+	columns := _q.ctx.Fields
 	if len(columns) == 0 {
 		columns = providerconfig.Columns
 	}
 	selector := builder.Select(t1.Columns(columns...)...).From(t1)
-	if pcq.sql != nil {
-		selector = pcq.sql
+	if _q.sql != nil {
+		selector = _q.sql
 		selector.Select(selector.Columns(columns...)...)
 	}
-	if pcq.ctx.Unique != nil && *pcq.ctx.Unique {
+	if _q.ctx.Unique != nil && *_q.ctx.Unique {
 		selector.Distinct()
 	}
-	for _, m := range pcq.modifiers {
+	for _, m := range _q.modifiers {
 		m(selector)
 	}
-	for _, p := range pcq.predicates {
+	for _, p := range _q.predicates {
 		p(selector)
 	}
-	for _, p := range pcq.order {
+	for _, p := range _q.order {
 		p(selector)
 	}
-	if offset := pcq.ctx.Offset; offset != nil {
+	if offset := _q.ctx.Offset; offset != nil {
 		// limit is mandatory for offset clause. We start
 		// with default value, and override it below if needed.
 		selector.Offset(*offset).Limit(math.MaxInt32)
 	}
-	if limit := pcq.ctx.Limit; limit != nil {
+	if limit := _q.ctx.Limit; limit != nil {
 		selector.Limit(*limit)
 	}
 	return selector
 }
 
 // Modify adds a query modifier for attaching custom logic to queries.
-func (pcq *ProviderConfigQuery) Modify(modifiers ...func(s *sql.Selector)) *ProviderConfigSelect {
-	pcq.modifiers = append(pcq.modifiers, modifiers...)
-	return pcq.Select()
+func (_q *ProviderConfigQuery) Modify(modifiers ...func(s *sql.Selector)) *ProviderConfigSelect {
+	_q.modifiers = append(_q.modifiers, modifiers...)
+	return _q.Select()
 }
 
 // ProviderConfigGroupBy is the group-by builder for ProviderConfig entities.
@@ -547,41 +547,41 @@ type ProviderConfigGroupBy struct {
 }
 
 // Aggregate adds the given aggregation functions to the group-by query.
-func (pcgb *ProviderConfigGroupBy) Aggregate(fns ...AggregateFunc) *ProviderConfigGroupBy {
-	pcgb.fns = append(pcgb.fns, fns...)
-	return pcgb
+func (_g *ProviderConfigGroupBy) Aggregate(fns ...AggregateFunc) *ProviderConfigGroupBy {
+	_g.fns = append(_g.fns, fns...)
+	return _g
 }
 
 // Scan applies the selector query and scans the result into the given value.
-func (pcgb *ProviderConfigGroupBy) Scan(ctx context.Context, v any) error {
-	ctx = setContextOp(ctx, pcgb.build.ctx, ent.OpQueryGroupBy)
-	if err := pcgb.build.prepareQuery(ctx); err != nil {
+func (_g *ProviderConfigGroupBy) Scan(ctx context.Context, v any) error {
+	ctx = setContextOp(ctx, _g.build.ctx, ent.OpQueryGroupBy)
+	if err := _g.build.prepareQuery(ctx); err != nil {
 		return err
 	}
-	return scanWithInterceptors[*ProviderConfigQuery, *ProviderConfigGroupBy](ctx, pcgb.build, pcgb, pcgb.build.inters, v)
+	return scanWithInterceptors[*ProviderConfigQuery, *ProviderConfigGroupBy](ctx, _g.build, _g, _g.build.inters, v)
 }
 
-func (pcgb *ProviderConfigGroupBy) sqlScan(ctx context.Context, root *ProviderConfigQuery, v any) error {
+func (_g *ProviderConfigGroupBy) sqlScan(ctx context.Context, root *ProviderConfigQuery, v any) error {
 	selector := root.sqlQuery(ctx).Select()
-	aggregation := make([]string, 0, len(pcgb.fns))
-	for _, fn := range pcgb.fns {
+	aggregation := make([]string, 0, len(_g.fns))
+	for _, fn := range _g.fns {
 		aggregation = append(aggregation, fn(selector))
 	}
 	if len(selector.SelectedColumns()) == 0 {
-		columns := make([]string, 0, len(*pcgb.flds)+len(pcgb.fns))
-		for _, f := range *pcgb.flds {
+		columns := make([]string, 0, len(*_g.flds)+len(_g.fns))
+		for _, f := range *_g.flds {
 			columns = append(columns, selector.C(f))
 		}
 		columns = append(columns, aggregation...)
 		selector.Select(columns...)
 	}
-	selector.GroupBy(selector.Columns(*pcgb.flds...)...)
+	selector.GroupBy(selector.Columns(*_g.flds...)...)
 	if err := selector.Err(); err != nil {
 		return err
 	}
 	rows := &sql.Rows{}
 	query, args := selector.Query()
-	if err := pcgb.build.driver.Query(ctx, query, args, rows); err != nil {
+	if err := _g.build.driver.Query(ctx, query, args, rows); err != nil {
 		return err
 	}
 	defer rows.Close()
@@ -595,27 +595,27 @@ type ProviderConfigSelect struct {
 }
 
 // Aggregate adds the given aggregation functions to the selector query.
-func (pcs *ProviderConfigSelect) Aggregate(fns ...AggregateFunc) *ProviderConfigSelect {
-	pcs.fns = append(pcs.fns, fns...)
-	return pcs
+func (_s *ProviderConfigSelect) Aggregate(fns ...AggregateFunc) *ProviderConfigSelect {
+	_s.fns = append(_s.fns, fns...)
+	return _s
 }
 
 // Scan applies the selector query and scans the result into the given value.
-func (pcs *ProviderConfigSelect) Scan(ctx context.Context, v any) error {
-	ctx = setContextOp(ctx, pcs.ctx, ent.OpQuerySelect)
-	if err := pcs.prepareQuery(ctx); err != nil {
+func (_s *ProviderConfigSelect) Scan(ctx context.Context, v any) error {
+	ctx = setContextOp(ctx, _s.ctx, ent.OpQuerySelect)
+	if err := _s.prepareQuery(ctx); err != nil {
 		return err
 	}
-	return scanWithInterceptors[*ProviderConfigQuery, *ProviderConfigSelect](ctx, pcs.ProviderConfigQuery, pcs, pcs.inters, v)
+	return scanWithInterceptors[*ProviderConfigQuery, *ProviderConfigSelect](ctx, _s.ProviderConfigQuery, _s, _s.inters, v)
 }
 
-func (pcs *ProviderConfigSelect) sqlScan(ctx context.Context, root *ProviderConfigQuery, v any) error {
+func (_s *ProviderConfigSelect) sqlScan(ctx context.Context, root *ProviderConfigQuery, v any) error {
 	selector := root.sqlQuery(ctx)
-	aggregation := make([]string, 0, len(pcs.fns))
-	for _, fn := range pcs.fns {
+	aggregation := make([]string, 0, len(_s.fns))
+	for _, fn := range _s.fns {
 		aggregation = append(aggregation, fn(selector))
 	}
-	switch n := len(*pcs.selector.flds); {
+	switch n := len(*_s.selector.flds); {
 	case n == 0 && len(aggregation) > 0:
 		selector.Select(aggregation...)
 	case n != 0 && len(aggregation) > 0:
@@ -623,7 +623,7 @@ func (pcs *ProviderConfigSelect) sqlScan(ctx context.Context, root *ProviderConf
 	}
 	rows := &sql.Rows{}
 	query, args := selector.Query()
-	if err := pcs.driver.Query(ctx, query, args, rows); err != nil {
+	if err := _s.driver.Query(ctx, query, args, rows); err != nil {
 		return err
 	}
 	defer rows.Close()
@@ -631,7 +631,7 @@ func (pcs *ProviderConfigSelect) sqlScan(ctx context.Context, root *ProviderConf
 }
 
 // Modify adds a query modifier for attaching custom logic to queries.
-func (pcs *ProviderConfigSelect) Modify(modifiers ...func(s *sql.Selector)) *ProviderConfigSelect {
-	pcs.modifiers = append(pcs.modifiers, modifiers...)
-	return pcs
+func (_s *ProviderConfigSelect) Modify(modifiers ...func(s *sql.Selector)) *ProviderConfigSelect {
+	_s.modifiers = append(_s.modifiers, modifiers...)
+	return _s
 }

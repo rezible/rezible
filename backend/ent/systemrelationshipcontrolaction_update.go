@@ -27,122 +27,122 @@ type SystemRelationshipControlActionUpdate struct {
 }
 
 // Where appends a list predicates to the SystemRelationshipControlActionUpdate builder.
-func (srcau *SystemRelationshipControlActionUpdate) Where(ps ...predicate.SystemRelationshipControlAction) *SystemRelationshipControlActionUpdate {
-	srcau.mutation.Where(ps...)
-	return srcau
+func (_u *SystemRelationshipControlActionUpdate) Where(ps ...predicate.SystemRelationshipControlAction) *SystemRelationshipControlActionUpdate {
+	_u.mutation.Where(ps...)
+	return _u
 }
 
 // SetRelationshipID sets the "relationship_id" field.
-func (srcau *SystemRelationshipControlActionUpdate) SetRelationshipID(u uuid.UUID) *SystemRelationshipControlActionUpdate {
-	srcau.mutation.SetRelationshipID(u)
-	return srcau
+func (_u *SystemRelationshipControlActionUpdate) SetRelationshipID(v uuid.UUID) *SystemRelationshipControlActionUpdate {
+	_u.mutation.SetRelationshipID(v)
+	return _u
 }
 
 // SetNillableRelationshipID sets the "relationship_id" field if the given value is not nil.
-func (srcau *SystemRelationshipControlActionUpdate) SetNillableRelationshipID(u *uuid.UUID) *SystemRelationshipControlActionUpdate {
-	if u != nil {
-		srcau.SetRelationshipID(*u)
+func (_u *SystemRelationshipControlActionUpdate) SetNillableRelationshipID(v *uuid.UUID) *SystemRelationshipControlActionUpdate {
+	if v != nil {
+		_u.SetRelationshipID(*v)
 	}
-	return srcau
+	return _u
 }
 
 // SetControlID sets the "control_id" field.
-func (srcau *SystemRelationshipControlActionUpdate) SetControlID(u uuid.UUID) *SystemRelationshipControlActionUpdate {
-	srcau.mutation.SetControlID(u)
-	return srcau
+func (_u *SystemRelationshipControlActionUpdate) SetControlID(v uuid.UUID) *SystemRelationshipControlActionUpdate {
+	_u.mutation.SetControlID(v)
+	return _u
 }
 
 // SetNillableControlID sets the "control_id" field if the given value is not nil.
-func (srcau *SystemRelationshipControlActionUpdate) SetNillableControlID(u *uuid.UUID) *SystemRelationshipControlActionUpdate {
-	if u != nil {
-		srcau.SetControlID(*u)
+func (_u *SystemRelationshipControlActionUpdate) SetNillableControlID(v *uuid.UUID) *SystemRelationshipControlActionUpdate {
+	if v != nil {
+		_u.SetControlID(*v)
 	}
-	return srcau
+	return _u
 }
 
 // SetType sets the "type" field.
-func (srcau *SystemRelationshipControlActionUpdate) SetType(s string) *SystemRelationshipControlActionUpdate {
-	srcau.mutation.SetType(s)
-	return srcau
+func (_u *SystemRelationshipControlActionUpdate) SetType(v string) *SystemRelationshipControlActionUpdate {
+	_u.mutation.SetType(v)
+	return _u
 }
 
 // SetNillableType sets the "type" field if the given value is not nil.
-func (srcau *SystemRelationshipControlActionUpdate) SetNillableType(s *string) *SystemRelationshipControlActionUpdate {
-	if s != nil {
-		srcau.SetType(*s)
+func (_u *SystemRelationshipControlActionUpdate) SetNillableType(v *string) *SystemRelationshipControlActionUpdate {
+	if v != nil {
+		_u.SetType(*v)
 	}
-	return srcau
+	return _u
 }
 
 // SetDescription sets the "description" field.
-func (srcau *SystemRelationshipControlActionUpdate) SetDescription(s string) *SystemRelationshipControlActionUpdate {
-	srcau.mutation.SetDescription(s)
-	return srcau
+func (_u *SystemRelationshipControlActionUpdate) SetDescription(v string) *SystemRelationshipControlActionUpdate {
+	_u.mutation.SetDescription(v)
+	return _u
 }
 
 // SetNillableDescription sets the "description" field if the given value is not nil.
-func (srcau *SystemRelationshipControlActionUpdate) SetNillableDescription(s *string) *SystemRelationshipControlActionUpdate {
-	if s != nil {
-		srcau.SetDescription(*s)
+func (_u *SystemRelationshipControlActionUpdate) SetNillableDescription(v *string) *SystemRelationshipControlActionUpdate {
+	if v != nil {
+		_u.SetDescription(*v)
 	}
-	return srcau
+	return _u
 }
 
 // ClearDescription clears the value of the "description" field.
-func (srcau *SystemRelationshipControlActionUpdate) ClearDescription() *SystemRelationshipControlActionUpdate {
-	srcau.mutation.ClearDescription()
-	return srcau
+func (_u *SystemRelationshipControlActionUpdate) ClearDescription() *SystemRelationshipControlActionUpdate {
+	_u.mutation.ClearDescription()
+	return _u
 }
 
 // SetCreatedAt sets the "created_at" field.
-func (srcau *SystemRelationshipControlActionUpdate) SetCreatedAt(t time.Time) *SystemRelationshipControlActionUpdate {
-	srcau.mutation.SetCreatedAt(t)
-	return srcau
+func (_u *SystemRelationshipControlActionUpdate) SetCreatedAt(v time.Time) *SystemRelationshipControlActionUpdate {
+	_u.mutation.SetCreatedAt(v)
+	return _u
 }
 
 // SetNillableCreatedAt sets the "created_at" field if the given value is not nil.
-func (srcau *SystemRelationshipControlActionUpdate) SetNillableCreatedAt(t *time.Time) *SystemRelationshipControlActionUpdate {
-	if t != nil {
-		srcau.SetCreatedAt(*t)
+func (_u *SystemRelationshipControlActionUpdate) SetNillableCreatedAt(v *time.Time) *SystemRelationshipControlActionUpdate {
+	if v != nil {
+		_u.SetCreatedAt(*v)
 	}
-	return srcau
+	return _u
 }
 
 // SetRelationship sets the "relationship" edge to the SystemAnalysisRelationship entity.
-func (srcau *SystemRelationshipControlActionUpdate) SetRelationship(s *SystemAnalysisRelationship) *SystemRelationshipControlActionUpdate {
-	return srcau.SetRelationshipID(s.ID)
+func (_u *SystemRelationshipControlActionUpdate) SetRelationship(v *SystemAnalysisRelationship) *SystemRelationshipControlActionUpdate {
+	return _u.SetRelationshipID(v.ID)
 }
 
 // SetControl sets the "control" edge to the SystemComponentControl entity.
-func (srcau *SystemRelationshipControlActionUpdate) SetControl(s *SystemComponentControl) *SystemRelationshipControlActionUpdate {
-	return srcau.SetControlID(s.ID)
+func (_u *SystemRelationshipControlActionUpdate) SetControl(v *SystemComponentControl) *SystemRelationshipControlActionUpdate {
+	return _u.SetControlID(v.ID)
 }
 
 // Mutation returns the SystemRelationshipControlActionMutation object of the builder.
-func (srcau *SystemRelationshipControlActionUpdate) Mutation() *SystemRelationshipControlActionMutation {
-	return srcau.mutation
+func (_u *SystemRelationshipControlActionUpdate) Mutation() *SystemRelationshipControlActionMutation {
+	return _u.mutation
 }
 
 // ClearRelationship clears the "relationship" edge to the SystemAnalysisRelationship entity.
-func (srcau *SystemRelationshipControlActionUpdate) ClearRelationship() *SystemRelationshipControlActionUpdate {
-	srcau.mutation.ClearRelationship()
-	return srcau
+func (_u *SystemRelationshipControlActionUpdate) ClearRelationship() *SystemRelationshipControlActionUpdate {
+	_u.mutation.ClearRelationship()
+	return _u
 }
 
 // ClearControl clears the "control" edge to the SystemComponentControl entity.
-func (srcau *SystemRelationshipControlActionUpdate) ClearControl() *SystemRelationshipControlActionUpdate {
-	srcau.mutation.ClearControl()
-	return srcau
+func (_u *SystemRelationshipControlActionUpdate) ClearControl() *SystemRelationshipControlActionUpdate {
+	_u.mutation.ClearControl()
+	return _u
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
-func (srcau *SystemRelationshipControlActionUpdate) Save(ctx context.Context) (int, error) {
-	return withHooks(ctx, srcau.sqlSave, srcau.mutation, srcau.hooks)
+func (_u *SystemRelationshipControlActionUpdate) Save(ctx context.Context) (int, error) {
+	return withHooks(ctx, _u.sqlSave, _u.mutation, _u.hooks)
 }
 
 // SaveX is like Save, but panics if an error occurs.
-func (srcau *SystemRelationshipControlActionUpdate) SaveX(ctx context.Context) int {
-	affected, err := srcau.Save(ctx)
+func (_u *SystemRelationshipControlActionUpdate) SaveX(ctx context.Context) int {
+	affected, err := _u.Save(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -150,68 +150,68 @@ func (srcau *SystemRelationshipControlActionUpdate) SaveX(ctx context.Context) i
 }
 
 // Exec executes the query.
-func (srcau *SystemRelationshipControlActionUpdate) Exec(ctx context.Context) error {
-	_, err := srcau.Save(ctx)
+func (_u *SystemRelationshipControlActionUpdate) Exec(ctx context.Context) error {
+	_, err := _u.Save(ctx)
 	return err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (srcau *SystemRelationshipControlActionUpdate) ExecX(ctx context.Context) {
-	if err := srcau.Exec(ctx); err != nil {
+func (_u *SystemRelationshipControlActionUpdate) ExecX(ctx context.Context) {
+	if err := _u.Exec(ctx); err != nil {
 		panic(err)
 	}
 }
 
 // check runs all checks and user-defined validators on the builder.
-func (srcau *SystemRelationshipControlActionUpdate) check() error {
-	if v, ok := srcau.mutation.GetType(); ok {
+func (_u *SystemRelationshipControlActionUpdate) check() error {
+	if v, ok := _u.mutation.GetType(); ok {
 		if err := systemrelationshipcontrolaction.TypeValidator(v); err != nil {
 			return &ValidationError{Name: "type", err: fmt.Errorf(`ent: validator failed for field "SystemRelationshipControlAction.type": %w`, err)}
 		}
 	}
-	if srcau.mutation.TenantCleared() && len(srcau.mutation.TenantIDs()) > 0 {
+	if _u.mutation.TenantCleared() && len(_u.mutation.TenantIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "SystemRelationshipControlAction.tenant"`)
 	}
-	if srcau.mutation.RelationshipCleared() && len(srcau.mutation.RelationshipIDs()) > 0 {
+	if _u.mutation.RelationshipCleared() && len(_u.mutation.RelationshipIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "SystemRelationshipControlAction.relationship"`)
 	}
-	if srcau.mutation.ControlCleared() && len(srcau.mutation.ControlIDs()) > 0 {
+	if _u.mutation.ControlCleared() && len(_u.mutation.ControlIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "SystemRelationshipControlAction.control"`)
 	}
 	return nil
 }
 
 // Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
-func (srcau *SystemRelationshipControlActionUpdate) Modify(modifiers ...func(u *sql.UpdateBuilder)) *SystemRelationshipControlActionUpdate {
-	srcau.modifiers = append(srcau.modifiers, modifiers...)
-	return srcau
+func (_u *SystemRelationshipControlActionUpdate) Modify(modifiers ...func(u *sql.UpdateBuilder)) *SystemRelationshipControlActionUpdate {
+	_u.modifiers = append(_u.modifiers, modifiers...)
+	return _u
 }
 
-func (srcau *SystemRelationshipControlActionUpdate) sqlSave(ctx context.Context) (n int, err error) {
-	if err := srcau.check(); err != nil {
-		return n, err
+func (_u *SystemRelationshipControlActionUpdate) sqlSave(ctx context.Context) (_node int, err error) {
+	if err := _u.check(); err != nil {
+		return _node, err
 	}
 	_spec := sqlgraph.NewUpdateSpec(systemrelationshipcontrolaction.Table, systemrelationshipcontrolaction.Columns, sqlgraph.NewFieldSpec(systemrelationshipcontrolaction.FieldID, field.TypeUUID))
-	if ps := srcau.mutation.predicates; len(ps) > 0 {
+	if ps := _u.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {
 				ps[i](selector)
 			}
 		}
 	}
-	if value, ok := srcau.mutation.GetType(); ok {
+	if value, ok := _u.mutation.GetType(); ok {
 		_spec.SetField(systemrelationshipcontrolaction.FieldType, field.TypeString, value)
 	}
-	if value, ok := srcau.mutation.Description(); ok {
+	if value, ok := _u.mutation.Description(); ok {
 		_spec.SetField(systemrelationshipcontrolaction.FieldDescription, field.TypeString, value)
 	}
-	if srcau.mutation.DescriptionCleared() {
+	if _u.mutation.DescriptionCleared() {
 		_spec.ClearField(systemrelationshipcontrolaction.FieldDescription, field.TypeString)
 	}
-	if value, ok := srcau.mutation.CreatedAt(); ok {
+	if value, ok := _u.mutation.CreatedAt(); ok {
 		_spec.SetField(systemrelationshipcontrolaction.FieldCreatedAt, field.TypeTime, value)
 	}
-	if srcau.mutation.RelationshipCleared() {
+	if _u.mutation.RelationshipCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
@@ -224,7 +224,7 @@ func (srcau *SystemRelationshipControlActionUpdate) sqlSave(ctx context.Context)
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := srcau.mutation.RelationshipIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.RelationshipIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
@@ -240,7 +240,7 @@ func (srcau *SystemRelationshipControlActionUpdate) sqlSave(ctx context.Context)
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if srcau.mutation.ControlCleared() {
+	if _u.mutation.ControlCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
@@ -253,7 +253,7 @@ func (srcau *SystemRelationshipControlActionUpdate) sqlSave(ctx context.Context)
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := srcau.mutation.ControlIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.ControlIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
@@ -269,8 +269,8 @@ func (srcau *SystemRelationshipControlActionUpdate) sqlSave(ctx context.Context)
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	_spec.AddModifiers(srcau.modifiers...)
-	if n, err = sqlgraph.UpdateNodes(ctx, srcau.driver, _spec); err != nil {
+	_spec.AddModifiers(_u.modifiers...)
+	if _node, err = sqlgraph.UpdateNodes(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{systemrelationshipcontrolaction.Label}
 		} else if sqlgraph.IsConstraintError(err) {
@@ -278,8 +278,8 @@ func (srcau *SystemRelationshipControlActionUpdate) sqlSave(ctx context.Context)
 		}
 		return 0, err
 	}
-	srcau.mutation.done = true
-	return n, nil
+	_u.mutation.done = true
+	return _node, nil
 }
 
 // SystemRelationshipControlActionUpdateOne is the builder for updating a single SystemRelationshipControlAction entity.
@@ -292,129 +292,129 @@ type SystemRelationshipControlActionUpdateOne struct {
 }
 
 // SetRelationshipID sets the "relationship_id" field.
-func (srcauo *SystemRelationshipControlActionUpdateOne) SetRelationshipID(u uuid.UUID) *SystemRelationshipControlActionUpdateOne {
-	srcauo.mutation.SetRelationshipID(u)
-	return srcauo
+func (_u *SystemRelationshipControlActionUpdateOne) SetRelationshipID(v uuid.UUID) *SystemRelationshipControlActionUpdateOne {
+	_u.mutation.SetRelationshipID(v)
+	return _u
 }
 
 // SetNillableRelationshipID sets the "relationship_id" field if the given value is not nil.
-func (srcauo *SystemRelationshipControlActionUpdateOne) SetNillableRelationshipID(u *uuid.UUID) *SystemRelationshipControlActionUpdateOne {
-	if u != nil {
-		srcauo.SetRelationshipID(*u)
+func (_u *SystemRelationshipControlActionUpdateOne) SetNillableRelationshipID(v *uuid.UUID) *SystemRelationshipControlActionUpdateOne {
+	if v != nil {
+		_u.SetRelationshipID(*v)
 	}
-	return srcauo
+	return _u
 }
 
 // SetControlID sets the "control_id" field.
-func (srcauo *SystemRelationshipControlActionUpdateOne) SetControlID(u uuid.UUID) *SystemRelationshipControlActionUpdateOne {
-	srcauo.mutation.SetControlID(u)
-	return srcauo
+func (_u *SystemRelationshipControlActionUpdateOne) SetControlID(v uuid.UUID) *SystemRelationshipControlActionUpdateOne {
+	_u.mutation.SetControlID(v)
+	return _u
 }
 
 // SetNillableControlID sets the "control_id" field if the given value is not nil.
-func (srcauo *SystemRelationshipControlActionUpdateOne) SetNillableControlID(u *uuid.UUID) *SystemRelationshipControlActionUpdateOne {
-	if u != nil {
-		srcauo.SetControlID(*u)
+func (_u *SystemRelationshipControlActionUpdateOne) SetNillableControlID(v *uuid.UUID) *SystemRelationshipControlActionUpdateOne {
+	if v != nil {
+		_u.SetControlID(*v)
 	}
-	return srcauo
+	return _u
 }
 
 // SetType sets the "type" field.
-func (srcauo *SystemRelationshipControlActionUpdateOne) SetType(s string) *SystemRelationshipControlActionUpdateOne {
-	srcauo.mutation.SetType(s)
-	return srcauo
+func (_u *SystemRelationshipControlActionUpdateOne) SetType(v string) *SystemRelationshipControlActionUpdateOne {
+	_u.mutation.SetType(v)
+	return _u
 }
 
 // SetNillableType sets the "type" field if the given value is not nil.
-func (srcauo *SystemRelationshipControlActionUpdateOne) SetNillableType(s *string) *SystemRelationshipControlActionUpdateOne {
-	if s != nil {
-		srcauo.SetType(*s)
+func (_u *SystemRelationshipControlActionUpdateOne) SetNillableType(v *string) *SystemRelationshipControlActionUpdateOne {
+	if v != nil {
+		_u.SetType(*v)
 	}
-	return srcauo
+	return _u
 }
 
 // SetDescription sets the "description" field.
-func (srcauo *SystemRelationshipControlActionUpdateOne) SetDescription(s string) *SystemRelationshipControlActionUpdateOne {
-	srcauo.mutation.SetDescription(s)
-	return srcauo
+func (_u *SystemRelationshipControlActionUpdateOne) SetDescription(v string) *SystemRelationshipControlActionUpdateOne {
+	_u.mutation.SetDescription(v)
+	return _u
 }
 
 // SetNillableDescription sets the "description" field if the given value is not nil.
-func (srcauo *SystemRelationshipControlActionUpdateOne) SetNillableDescription(s *string) *SystemRelationshipControlActionUpdateOne {
-	if s != nil {
-		srcauo.SetDescription(*s)
+func (_u *SystemRelationshipControlActionUpdateOne) SetNillableDescription(v *string) *SystemRelationshipControlActionUpdateOne {
+	if v != nil {
+		_u.SetDescription(*v)
 	}
-	return srcauo
+	return _u
 }
 
 // ClearDescription clears the value of the "description" field.
-func (srcauo *SystemRelationshipControlActionUpdateOne) ClearDescription() *SystemRelationshipControlActionUpdateOne {
-	srcauo.mutation.ClearDescription()
-	return srcauo
+func (_u *SystemRelationshipControlActionUpdateOne) ClearDescription() *SystemRelationshipControlActionUpdateOne {
+	_u.mutation.ClearDescription()
+	return _u
 }
 
 // SetCreatedAt sets the "created_at" field.
-func (srcauo *SystemRelationshipControlActionUpdateOne) SetCreatedAt(t time.Time) *SystemRelationshipControlActionUpdateOne {
-	srcauo.mutation.SetCreatedAt(t)
-	return srcauo
+func (_u *SystemRelationshipControlActionUpdateOne) SetCreatedAt(v time.Time) *SystemRelationshipControlActionUpdateOne {
+	_u.mutation.SetCreatedAt(v)
+	return _u
 }
 
 // SetNillableCreatedAt sets the "created_at" field if the given value is not nil.
-func (srcauo *SystemRelationshipControlActionUpdateOne) SetNillableCreatedAt(t *time.Time) *SystemRelationshipControlActionUpdateOne {
-	if t != nil {
-		srcauo.SetCreatedAt(*t)
+func (_u *SystemRelationshipControlActionUpdateOne) SetNillableCreatedAt(v *time.Time) *SystemRelationshipControlActionUpdateOne {
+	if v != nil {
+		_u.SetCreatedAt(*v)
 	}
-	return srcauo
+	return _u
 }
 
 // SetRelationship sets the "relationship" edge to the SystemAnalysisRelationship entity.
-func (srcauo *SystemRelationshipControlActionUpdateOne) SetRelationship(s *SystemAnalysisRelationship) *SystemRelationshipControlActionUpdateOne {
-	return srcauo.SetRelationshipID(s.ID)
+func (_u *SystemRelationshipControlActionUpdateOne) SetRelationship(v *SystemAnalysisRelationship) *SystemRelationshipControlActionUpdateOne {
+	return _u.SetRelationshipID(v.ID)
 }
 
 // SetControl sets the "control" edge to the SystemComponentControl entity.
-func (srcauo *SystemRelationshipControlActionUpdateOne) SetControl(s *SystemComponentControl) *SystemRelationshipControlActionUpdateOne {
-	return srcauo.SetControlID(s.ID)
+func (_u *SystemRelationshipControlActionUpdateOne) SetControl(v *SystemComponentControl) *SystemRelationshipControlActionUpdateOne {
+	return _u.SetControlID(v.ID)
 }
 
 // Mutation returns the SystemRelationshipControlActionMutation object of the builder.
-func (srcauo *SystemRelationshipControlActionUpdateOne) Mutation() *SystemRelationshipControlActionMutation {
-	return srcauo.mutation
+func (_u *SystemRelationshipControlActionUpdateOne) Mutation() *SystemRelationshipControlActionMutation {
+	return _u.mutation
 }
 
 // ClearRelationship clears the "relationship" edge to the SystemAnalysisRelationship entity.
-func (srcauo *SystemRelationshipControlActionUpdateOne) ClearRelationship() *SystemRelationshipControlActionUpdateOne {
-	srcauo.mutation.ClearRelationship()
-	return srcauo
+func (_u *SystemRelationshipControlActionUpdateOne) ClearRelationship() *SystemRelationshipControlActionUpdateOne {
+	_u.mutation.ClearRelationship()
+	return _u
 }
 
 // ClearControl clears the "control" edge to the SystemComponentControl entity.
-func (srcauo *SystemRelationshipControlActionUpdateOne) ClearControl() *SystemRelationshipControlActionUpdateOne {
-	srcauo.mutation.ClearControl()
-	return srcauo
+func (_u *SystemRelationshipControlActionUpdateOne) ClearControl() *SystemRelationshipControlActionUpdateOne {
+	_u.mutation.ClearControl()
+	return _u
 }
 
 // Where appends a list predicates to the SystemRelationshipControlActionUpdate builder.
-func (srcauo *SystemRelationshipControlActionUpdateOne) Where(ps ...predicate.SystemRelationshipControlAction) *SystemRelationshipControlActionUpdateOne {
-	srcauo.mutation.Where(ps...)
-	return srcauo
+func (_u *SystemRelationshipControlActionUpdateOne) Where(ps ...predicate.SystemRelationshipControlAction) *SystemRelationshipControlActionUpdateOne {
+	_u.mutation.Where(ps...)
+	return _u
 }
 
 // Select allows selecting one or more fields (columns) of the returned entity.
 // The default is selecting all fields defined in the entity schema.
-func (srcauo *SystemRelationshipControlActionUpdateOne) Select(field string, fields ...string) *SystemRelationshipControlActionUpdateOne {
-	srcauo.fields = append([]string{field}, fields...)
-	return srcauo
+func (_u *SystemRelationshipControlActionUpdateOne) Select(field string, fields ...string) *SystemRelationshipControlActionUpdateOne {
+	_u.fields = append([]string{field}, fields...)
+	return _u
 }
 
 // Save executes the query and returns the updated SystemRelationshipControlAction entity.
-func (srcauo *SystemRelationshipControlActionUpdateOne) Save(ctx context.Context) (*SystemRelationshipControlAction, error) {
-	return withHooks(ctx, srcauo.sqlSave, srcauo.mutation, srcauo.hooks)
+func (_u *SystemRelationshipControlActionUpdateOne) Save(ctx context.Context) (*SystemRelationshipControlAction, error) {
+	return withHooks(ctx, _u.sqlSave, _u.mutation, _u.hooks)
 }
 
 // SaveX is like Save, but panics if an error occurs.
-func (srcauo *SystemRelationshipControlActionUpdateOne) SaveX(ctx context.Context) *SystemRelationshipControlAction {
-	node, err := srcauo.Save(ctx)
+func (_u *SystemRelationshipControlActionUpdateOne) SaveX(ctx context.Context) *SystemRelationshipControlAction {
+	node, err := _u.Save(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -422,54 +422,54 @@ func (srcauo *SystemRelationshipControlActionUpdateOne) SaveX(ctx context.Contex
 }
 
 // Exec executes the query on the entity.
-func (srcauo *SystemRelationshipControlActionUpdateOne) Exec(ctx context.Context) error {
-	_, err := srcauo.Save(ctx)
+func (_u *SystemRelationshipControlActionUpdateOne) Exec(ctx context.Context) error {
+	_, err := _u.Save(ctx)
 	return err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (srcauo *SystemRelationshipControlActionUpdateOne) ExecX(ctx context.Context) {
-	if err := srcauo.Exec(ctx); err != nil {
+func (_u *SystemRelationshipControlActionUpdateOne) ExecX(ctx context.Context) {
+	if err := _u.Exec(ctx); err != nil {
 		panic(err)
 	}
 }
 
 // check runs all checks and user-defined validators on the builder.
-func (srcauo *SystemRelationshipControlActionUpdateOne) check() error {
-	if v, ok := srcauo.mutation.GetType(); ok {
+func (_u *SystemRelationshipControlActionUpdateOne) check() error {
+	if v, ok := _u.mutation.GetType(); ok {
 		if err := systemrelationshipcontrolaction.TypeValidator(v); err != nil {
 			return &ValidationError{Name: "type", err: fmt.Errorf(`ent: validator failed for field "SystemRelationshipControlAction.type": %w`, err)}
 		}
 	}
-	if srcauo.mutation.TenantCleared() && len(srcauo.mutation.TenantIDs()) > 0 {
+	if _u.mutation.TenantCleared() && len(_u.mutation.TenantIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "SystemRelationshipControlAction.tenant"`)
 	}
-	if srcauo.mutation.RelationshipCleared() && len(srcauo.mutation.RelationshipIDs()) > 0 {
+	if _u.mutation.RelationshipCleared() && len(_u.mutation.RelationshipIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "SystemRelationshipControlAction.relationship"`)
 	}
-	if srcauo.mutation.ControlCleared() && len(srcauo.mutation.ControlIDs()) > 0 {
+	if _u.mutation.ControlCleared() && len(_u.mutation.ControlIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "SystemRelationshipControlAction.control"`)
 	}
 	return nil
 }
 
 // Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
-func (srcauo *SystemRelationshipControlActionUpdateOne) Modify(modifiers ...func(u *sql.UpdateBuilder)) *SystemRelationshipControlActionUpdateOne {
-	srcauo.modifiers = append(srcauo.modifiers, modifiers...)
-	return srcauo
+func (_u *SystemRelationshipControlActionUpdateOne) Modify(modifiers ...func(u *sql.UpdateBuilder)) *SystemRelationshipControlActionUpdateOne {
+	_u.modifiers = append(_u.modifiers, modifiers...)
+	return _u
 }
 
-func (srcauo *SystemRelationshipControlActionUpdateOne) sqlSave(ctx context.Context) (_node *SystemRelationshipControlAction, err error) {
-	if err := srcauo.check(); err != nil {
+func (_u *SystemRelationshipControlActionUpdateOne) sqlSave(ctx context.Context) (_node *SystemRelationshipControlAction, err error) {
+	if err := _u.check(); err != nil {
 		return _node, err
 	}
 	_spec := sqlgraph.NewUpdateSpec(systemrelationshipcontrolaction.Table, systemrelationshipcontrolaction.Columns, sqlgraph.NewFieldSpec(systemrelationshipcontrolaction.FieldID, field.TypeUUID))
-	id, ok := srcauo.mutation.ID()
+	id, ok := _u.mutation.ID()
 	if !ok {
 		return nil, &ValidationError{Name: "id", err: errors.New(`ent: missing "SystemRelationshipControlAction.id" for update`)}
 	}
 	_spec.Node.ID.Value = id
-	if fields := srcauo.fields; len(fields) > 0 {
+	if fields := _u.fields; len(fields) > 0 {
 		_spec.Node.Columns = make([]string, 0, len(fields))
 		_spec.Node.Columns = append(_spec.Node.Columns, systemrelationshipcontrolaction.FieldID)
 		for _, f := range fields {
@@ -481,26 +481,26 @@ func (srcauo *SystemRelationshipControlActionUpdateOne) sqlSave(ctx context.Cont
 			}
 		}
 	}
-	if ps := srcauo.mutation.predicates; len(ps) > 0 {
+	if ps := _u.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {
 				ps[i](selector)
 			}
 		}
 	}
-	if value, ok := srcauo.mutation.GetType(); ok {
+	if value, ok := _u.mutation.GetType(); ok {
 		_spec.SetField(systemrelationshipcontrolaction.FieldType, field.TypeString, value)
 	}
-	if value, ok := srcauo.mutation.Description(); ok {
+	if value, ok := _u.mutation.Description(); ok {
 		_spec.SetField(systemrelationshipcontrolaction.FieldDescription, field.TypeString, value)
 	}
-	if srcauo.mutation.DescriptionCleared() {
+	if _u.mutation.DescriptionCleared() {
 		_spec.ClearField(systemrelationshipcontrolaction.FieldDescription, field.TypeString)
 	}
-	if value, ok := srcauo.mutation.CreatedAt(); ok {
+	if value, ok := _u.mutation.CreatedAt(); ok {
 		_spec.SetField(systemrelationshipcontrolaction.FieldCreatedAt, field.TypeTime, value)
 	}
-	if srcauo.mutation.RelationshipCleared() {
+	if _u.mutation.RelationshipCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
@@ -513,7 +513,7 @@ func (srcauo *SystemRelationshipControlActionUpdateOne) sqlSave(ctx context.Cont
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := srcauo.mutation.RelationshipIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.RelationshipIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
@@ -529,7 +529,7 @@ func (srcauo *SystemRelationshipControlActionUpdateOne) sqlSave(ctx context.Cont
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if srcauo.mutation.ControlCleared() {
+	if _u.mutation.ControlCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
@@ -542,7 +542,7 @@ func (srcauo *SystemRelationshipControlActionUpdateOne) sqlSave(ctx context.Cont
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := srcauo.mutation.ControlIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.ControlIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
@@ -558,11 +558,11 @@ func (srcauo *SystemRelationshipControlActionUpdateOne) sqlSave(ctx context.Cont
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	_spec.AddModifiers(srcauo.modifiers...)
-	_node = &SystemRelationshipControlAction{config: srcauo.config}
+	_spec.AddModifiers(_u.modifiers...)
+	_node = &SystemRelationshipControlAction{config: _u.config}
 	_spec.Assign = _node.assignValues
 	_spec.ScanValues = _node.scanValues
-	if err = sqlgraph.UpdateNode(ctx, srcauo.driver, _spec); err != nil {
+	if err = sqlgraph.UpdateNode(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{systemrelationshipcontrolaction.Label}
 		} else if sqlgraph.IsConstraintError(err) {
@@ -570,6 +570,6 @@ func (srcauo *SystemRelationshipControlActionUpdateOne) sqlSave(ctx context.Cont
 		}
 		return nil, err
 	}
-	srcauo.mutation.done = true
+	_u.mutation.done = true
 	return _node, nil
 }

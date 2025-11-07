@@ -20,56 +20,56 @@ type AlertInstanceDelete struct {
 }
 
 // Where appends a list predicates to the AlertInstanceDelete builder.
-func (aid *AlertInstanceDelete) Where(ps ...predicate.AlertInstance) *AlertInstanceDelete {
-	aid.mutation.Where(ps...)
-	return aid
+func (_d *AlertInstanceDelete) Where(ps ...predicate.AlertInstance) *AlertInstanceDelete {
+	_d.mutation.Where(ps...)
+	return _d
 }
 
 // Exec executes the deletion query and returns how many vertices were deleted.
-func (aid *AlertInstanceDelete) Exec(ctx context.Context) (int, error) {
-	return withHooks(ctx, aid.sqlExec, aid.mutation, aid.hooks)
+func (_d *AlertInstanceDelete) Exec(ctx context.Context) (int, error) {
+	return withHooks(ctx, _d.sqlExec, _d.mutation, _d.hooks)
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (aid *AlertInstanceDelete) ExecX(ctx context.Context) int {
-	n, err := aid.Exec(ctx)
+func (_d *AlertInstanceDelete) ExecX(ctx context.Context) int {
+	n, err := _d.Exec(ctx)
 	if err != nil {
 		panic(err)
 	}
 	return n
 }
 
-func (aid *AlertInstanceDelete) sqlExec(ctx context.Context) (int, error) {
+func (_d *AlertInstanceDelete) sqlExec(ctx context.Context) (int, error) {
 	_spec := sqlgraph.NewDeleteSpec(alertinstance.Table, sqlgraph.NewFieldSpec(alertinstance.FieldID, field.TypeUUID))
-	if ps := aid.mutation.predicates; len(ps) > 0 {
+	if ps := _d.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {
 				ps[i](selector)
 			}
 		}
 	}
-	affected, err := sqlgraph.DeleteNodes(ctx, aid.driver, _spec)
+	affected, err := sqlgraph.DeleteNodes(ctx, _d.driver, _spec)
 	if err != nil && sqlgraph.IsConstraintError(err) {
 		err = &ConstraintError{msg: err.Error(), wrap: err}
 	}
-	aid.mutation.done = true
+	_d.mutation.done = true
 	return affected, err
 }
 
 // AlertInstanceDeleteOne is the builder for deleting a single AlertInstance entity.
 type AlertInstanceDeleteOne struct {
-	aid *AlertInstanceDelete
+	_d *AlertInstanceDelete
 }
 
 // Where appends a list predicates to the AlertInstanceDelete builder.
-func (aido *AlertInstanceDeleteOne) Where(ps ...predicate.AlertInstance) *AlertInstanceDeleteOne {
-	aido.aid.mutation.Where(ps...)
-	return aido
+func (_d *AlertInstanceDeleteOne) Where(ps ...predicate.AlertInstance) *AlertInstanceDeleteOne {
+	_d._d.mutation.Where(ps...)
+	return _d
 }
 
 // Exec executes the deletion query.
-func (aido *AlertInstanceDeleteOne) Exec(ctx context.Context) error {
-	n, err := aido.aid.Exec(ctx)
+func (_d *AlertInstanceDeleteOne) Exec(ctx context.Context) error {
+	n, err := _d._d.Exec(ctx)
 	switch {
 	case err != nil:
 		return err
@@ -81,8 +81,8 @@ func (aido *AlertInstanceDeleteOne) Exec(ctx context.Context) error {
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (aido *AlertInstanceDeleteOne) ExecX(ctx context.Context) {
-	if err := aido.Exec(ctx); err != nil {
+func (_d *AlertInstanceDeleteOne) ExecX(ctx context.Context) {
+	if err := _d.Exec(ctx); err != nil {
 		panic(err)
 	}
 }

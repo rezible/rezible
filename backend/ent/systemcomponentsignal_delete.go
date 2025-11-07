@@ -20,56 +20,56 @@ type SystemComponentSignalDelete struct {
 }
 
 // Where appends a list predicates to the SystemComponentSignalDelete builder.
-func (scsd *SystemComponentSignalDelete) Where(ps ...predicate.SystemComponentSignal) *SystemComponentSignalDelete {
-	scsd.mutation.Where(ps...)
-	return scsd
+func (_d *SystemComponentSignalDelete) Where(ps ...predicate.SystemComponentSignal) *SystemComponentSignalDelete {
+	_d.mutation.Where(ps...)
+	return _d
 }
 
 // Exec executes the deletion query and returns how many vertices were deleted.
-func (scsd *SystemComponentSignalDelete) Exec(ctx context.Context) (int, error) {
-	return withHooks(ctx, scsd.sqlExec, scsd.mutation, scsd.hooks)
+func (_d *SystemComponentSignalDelete) Exec(ctx context.Context) (int, error) {
+	return withHooks(ctx, _d.sqlExec, _d.mutation, _d.hooks)
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (scsd *SystemComponentSignalDelete) ExecX(ctx context.Context) int {
-	n, err := scsd.Exec(ctx)
+func (_d *SystemComponentSignalDelete) ExecX(ctx context.Context) int {
+	n, err := _d.Exec(ctx)
 	if err != nil {
 		panic(err)
 	}
 	return n
 }
 
-func (scsd *SystemComponentSignalDelete) sqlExec(ctx context.Context) (int, error) {
+func (_d *SystemComponentSignalDelete) sqlExec(ctx context.Context) (int, error) {
 	_spec := sqlgraph.NewDeleteSpec(systemcomponentsignal.Table, sqlgraph.NewFieldSpec(systemcomponentsignal.FieldID, field.TypeUUID))
-	if ps := scsd.mutation.predicates; len(ps) > 0 {
+	if ps := _d.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {
 				ps[i](selector)
 			}
 		}
 	}
-	affected, err := sqlgraph.DeleteNodes(ctx, scsd.driver, _spec)
+	affected, err := sqlgraph.DeleteNodes(ctx, _d.driver, _spec)
 	if err != nil && sqlgraph.IsConstraintError(err) {
 		err = &ConstraintError{msg: err.Error(), wrap: err}
 	}
-	scsd.mutation.done = true
+	_d.mutation.done = true
 	return affected, err
 }
 
 // SystemComponentSignalDeleteOne is the builder for deleting a single SystemComponentSignal entity.
 type SystemComponentSignalDeleteOne struct {
-	scsd *SystemComponentSignalDelete
+	_d *SystemComponentSignalDelete
 }
 
 // Where appends a list predicates to the SystemComponentSignalDelete builder.
-func (scsdo *SystemComponentSignalDeleteOne) Where(ps ...predicate.SystemComponentSignal) *SystemComponentSignalDeleteOne {
-	scsdo.scsd.mutation.Where(ps...)
-	return scsdo
+func (_d *SystemComponentSignalDeleteOne) Where(ps ...predicate.SystemComponentSignal) *SystemComponentSignalDeleteOne {
+	_d._d.mutation.Where(ps...)
+	return _d
 }
 
 // Exec executes the deletion query.
-func (scsdo *SystemComponentSignalDeleteOne) Exec(ctx context.Context) error {
-	n, err := scsdo.scsd.Exec(ctx)
+func (_d *SystemComponentSignalDeleteOne) Exec(ctx context.Context) error {
+	n, err := _d._d.Exec(ctx)
 	switch {
 	case err != nil:
 		return err
@@ -81,8 +81,8 @@ func (scsdo *SystemComponentSignalDeleteOne) Exec(ctx context.Context) error {
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (scsdo *SystemComponentSignalDeleteOne) ExecX(ctx context.Context) {
-	if err := scsdo.Exec(ctx); err != nil {
+func (_d *SystemComponentSignalDeleteOne) ExecX(ctx context.Context) {
+	if err := _d.Exec(ctx); err != nil {
 		panic(err)
 	}
 }

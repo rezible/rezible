@@ -20,56 +20,56 @@ type IncidentDebriefDelete struct {
 }
 
 // Where appends a list predicates to the IncidentDebriefDelete builder.
-func (idd *IncidentDebriefDelete) Where(ps ...predicate.IncidentDebrief) *IncidentDebriefDelete {
-	idd.mutation.Where(ps...)
-	return idd
+func (_d *IncidentDebriefDelete) Where(ps ...predicate.IncidentDebrief) *IncidentDebriefDelete {
+	_d.mutation.Where(ps...)
+	return _d
 }
 
 // Exec executes the deletion query and returns how many vertices were deleted.
-func (idd *IncidentDebriefDelete) Exec(ctx context.Context) (int, error) {
-	return withHooks(ctx, idd.sqlExec, idd.mutation, idd.hooks)
+func (_d *IncidentDebriefDelete) Exec(ctx context.Context) (int, error) {
+	return withHooks(ctx, _d.sqlExec, _d.mutation, _d.hooks)
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (idd *IncidentDebriefDelete) ExecX(ctx context.Context) int {
-	n, err := idd.Exec(ctx)
+func (_d *IncidentDebriefDelete) ExecX(ctx context.Context) int {
+	n, err := _d.Exec(ctx)
 	if err != nil {
 		panic(err)
 	}
 	return n
 }
 
-func (idd *IncidentDebriefDelete) sqlExec(ctx context.Context) (int, error) {
+func (_d *IncidentDebriefDelete) sqlExec(ctx context.Context) (int, error) {
 	_spec := sqlgraph.NewDeleteSpec(incidentdebrief.Table, sqlgraph.NewFieldSpec(incidentdebrief.FieldID, field.TypeUUID))
-	if ps := idd.mutation.predicates; len(ps) > 0 {
+	if ps := _d.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {
 				ps[i](selector)
 			}
 		}
 	}
-	affected, err := sqlgraph.DeleteNodes(ctx, idd.driver, _spec)
+	affected, err := sqlgraph.DeleteNodes(ctx, _d.driver, _spec)
 	if err != nil && sqlgraph.IsConstraintError(err) {
 		err = &ConstraintError{msg: err.Error(), wrap: err}
 	}
-	idd.mutation.done = true
+	_d.mutation.done = true
 	return affected, err
 }
 
 // IncidentDebriefDeleteOne is the builder for deleting a single IncidentDebrief entity.
 type IncidentDebriefDeleteOne struct {
-	idd *IncidentDebriefDelete
+	_d *IncidentDebriefDelete
 }
 
 // Where appends a list predicates to the IncidentDebriefDelete builder.
-func (iddo *IncidentDebriefDeleteOne) Where(ps ...predicate.IncidentDebrief) *IncidentDebriefDeleteOne {
-	iddo.idd.mutation.Where(ps...)
-	return iddo
+func (_d *IncidentDebriefDeleteOne) Where(ps ...predicate.IncidentDebrief) *IncidentDebriefDeleteOne {
+	_d._d.mutation.Where(ps...)
+	return _d
 }
 
 // Exec executes the deletion query.
-func (iddo *IncidentDebriefDeleteOne) Exec(ctx context.Context) error {
-	n, err := iddo.idd.Exec(ctx)
+func (_d *IncidentDebriefDeleteOne) Exec(ctx context.Context) error {
+	n, err := _d._d.Exec(ctx)
 	switch {
 	case err != nil:
 		return err
@@ -81,8 +81,8 @@ func (iddo *IncidentDebriefDeleteOne) Exec(ctx context.Context) error {
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (iddo *IncidentDebriefDeleteOne) ExecX(ctx context.Context) {
-	if err := iddo.Exec(ctx); err != nil {
+func (_d *IncidentDebriefDeleteOne) ExecX(ctx context.Context) {
+	if err := _d.Exec(ctx); err != nil {
 		panic(err)
 	}
 }

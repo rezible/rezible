@@ -27,130 +27,130 @@ type IncidentTypeUpdate struct {
 }
 
 // Where appends a list predicates to the IncidentTypeUpdate builder.
-func (itu *IncidentTypeUpdate) Where(ps ...predicate.IncidentType) *IncidentTypeUpdate {
-	itu.mutation.Where(ps...)
-	return itu
+func (_u *IncidentTypeUpdate) Where(ps ...predicate.IncidentType) *IncidentTypeUpdate {
+	_u.mutation.Where(ps...)
+	return _u
 }
 
 // SetArchiveTime sets the "archive_time" field.
-func (itu *IncidentTypeUpdate) SetArchiveTime(t time.Time) *IncidentTypeUpdate {
-	itu.mutation.SetArchiveTime(t)
-	return itu
+func (_u *IncidentTypeUpdate) SetArchiveTime(v time.Time) *IncidentTypeUpdate {
+	_u.mutation.SetArchiveTime(v)
+	return _u
 }
 
 // SetNillableArchiveTime sets the "archive_time" field if the given value is not nil.
-func (itu *IncidentTypeUpdate) SetNillableArchiveTime(t *time.Time) *IncidentTypeUpdate {
-	if t != nil {
-		itu.SetArchiveTime(*t)
+func (_u *IncidentTypeUpdate) SetNillableArchiveTime(v *time.Time) *IncidentTypeUpdate {
+	if v != nil {
+		_u.SetArchiveTime(*v)
 	}
-	return itu
+	return _u
 }
 
 // ClearArchiveTime clears the value of the "archive_time" field.
-func (itu *IncidentTypeUpdate) ClearArchiveTime() *IncidentTypeUpdate {
-	itu.mutation.ClearArchiveTime()
-	return itu
+func (_u *IncidentTypeUpdate) ClearArchiveTime() *IncidentTypeUpdate {
+	_u.mutation.ClearArchiveTime()
+	return _u
 }
 
 // SetName sets the "name" field.
-func (itu *IncidentTypeUpdate) SetName(s string) *IncidentTypeUpdate {
-	itu.mutation.SetName(s)
-	return itu
+func (_u *IncidentTypeUpdate) SetName(v string) *IncidentTypeUpdate {
+	_u.mutation.SetName(v)
+	return _u
 }
 
 // SetNillableName sets the "name" field if the given value is not nil.
-func (itu *IncidentTypeUpdate) SetNillableName(s *string) *IncidentTypeUpdate {
-	if s != nil {
-		itu.SetName(*s)
+func (_u *IncidentTypeUpdate) SetNillableName(v *string) *IncidentTypeUpdate {
+	if v != nil {
+		_u.SetName(*v)
 	}
-	return itu
+	return _u
 }
 
 // AddIncidentIDs adds the "incidents" edge to the Incident entity by IDs.
-func (itu *IncidentTypeUpdate) AddIncidentIDs(ids ...uuid.UUID) *IncidentTypeUpdate {
-	itu.mutation.AddIncidentIDs(ids...)
-	return itu
+func (_u *IncidentTypeUpdate) AddIncidentIDs(ids ...uuid.UUID) *IncidentTypeUpdate {
+	_u.mutation.AddIncidentIDs(ids...)
+	return _u
 }
 
 // AddIncidents adds the "incidents" edges to the Incident entity.
-func (itu *IncidentTypeUpdate) AddIncidents(i ...*Incident) *IncidentTypeUpdate {
-	ids := make([]uuid.UUID, len(i))
-	for j := range i {
-		ids[j] = i[j].ID
+func (_u *IncidentTypeUpdate) AddIncidents(v ...*Incident) *IncidentTypeUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
 	}
-	return itu.AddIncidentIDs(ids...)
+	return _u.AddIncidentIDs(ids...)
 }
 
 // AddDebriefQuestionIDs adds the "debrief_questions" edge to the IncidentDebriefQuestion entity by IDs.
-func (itu *IncidentTypeUpdate) AddDebriefQuestionIDs(ids ...uuid.UUID) *IncidentTypeUpdate {
-	itu.mutation.AddDebriefQuestionIDs(ids...)
-	return itu
+func (_u *IncidentTypeUpdate) AddDebriefQuestionIDs(ids ...uuid.UUID) *IncidentTypeUpdate {
+	_u.mutation.AddDebriefQuestionIDs(ids...)
+	return _u
 }
 
 // AddDebriefQuestions adds the "debrief_questions" edges to the IncidentDebriefQuestion entity.
-func (itu *IncidentTypeUpdate) AddDebriefQuestions(i ...*IncidentDebriefQuestion) *IncidentTypeUpdate {
-	ids := make([]uuid.UUID, len(i))
-	for j := range i {
-		ids[j] = i[j].ID
+func (_u *IncidentTypeUpdate) AddDebriefQuestions(v ...*IncidentDebriefQuestion) *IncidentTypeUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
 	}
-	return itu.AddDebriefQuestionIDs(ids...)
+	return _u.AddDebriefQuestionIDs(ids...)
 }
 
 // Mutation returns the IncidentTypeMutation object of the builder.
-func (itu *IncidentTypeUpdate) Mutation() *IncidentTypeMutation {
-	return itu.mutation
+func (_u *IncidentTypeUpdate) Mutation() *IncidentTypeMutation {
+	return _u.mutation
 }
 
 // ClearIncidents clears all "incidents" edges to the Incident entity.
-func (itu *IncidentTypeUpdate) ClearIncidents() *IncidentTypeUpdate {
-	itu.mutation.ClearIncidents()
-	return itu
+func (_u *IncidentTypeUpdate) ClearIncidents() *IncidentTypeUpdate {
+	_u.mutation.ClearIncidents()
+	return _u
 }
 
 // RemoveIncidentIDs removes the "incidents" edge to Incident entities by IDs.
-func (itu *IncidentTypeUpdate) RemoveIncidentIDs(ids ...uuid.UUID) *IncidentTypeUpdate {
-	itu.mutation.RemoveIncidentIDs(ids...)
-	return itu
+func (_u *IncidentTypeUpdate) RemoveIncidentIDs(ids ...uuid.UUID) *IncidentTypeUpdate {
+	_u.mutation.RemoveIncidentIDs(ids...)
+	return _u
 }
 
 // RemoveIncidents removes "incidents" edges to Incident entities.
-func (itu *IncidentTypeUpdate) RemoveIncidents(i ...*Incident) *IncidentTypeUpdate {
-	ids := make([]uuid.UUID, len(i))
-	for j := range i {
-		ids[j] = i[j].ID
+func (_u *IncidentTypeUpdate) RemoveIncidents(v ...*Incident) *IncidentTypeUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
 	}
-	return itu.RemoveIncidentIDs(ids...)
+	return _u.RemoveIncidentIDs(ids...)
 }
 
 // ClearDebriefQuestions clears all "debrief_questions" edges to the IncidentDebriefQuestion entity.
-func (itu *IncidentTypeUpdate) ClearDebriefQuestions() *IncidentTypeUpdate {
-	itu.mutation.ClearDebriefQuestions()
-	return itu
+func (_u *IncidentTypeUpdate) ClearDebriefQuestions() *IncidentTypeUpdate {
+	_u.mutation.ClearDebriefQuestions()
+	return _u
 }
 
 // RemoveDebriefQuestionIDs removes the "debrief_questions" edge to IncidentDebriefQuestion entities by IDs.
-func (itu *IncidentTypeUpdate) RemoveDebriefQuestionIDs(ids ...uuid.UUID) *IncidentTypeUpdate {
-	itu.mutation.RemoveDebriefQuestionIDs(ids...)
-	return itu
+func (_u *IncidentTypeUpdate) RemoveDebriefQuestionIDs(ids ...uuid.UUID) *IncidentTypeUpdate {
+	_u.mutation.RemoveDebriefQuestionIDs(ids...)
+	return _u
 }
 
 // RemoveDebriefQuestions removes "debrief_questions" edges to IncidentDebriefQuestion entities.
-func (itu *IncidentTypeUpdate) RemoveDebriefQuestions(i ...*IncidentDebriefQuestion) *IncidentTypeUpdate {
-	ids := make([]uuid.UUID, len(i))
-	for j := range i {
-		ids[j] = i[j].ID
+func (_u *IncidentTypeUpdate) RemoveDebriefQuestions(v ...*IncidentDebriefQuestion) *IncidentTypeUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
 	}
-	return itu.RemoveDebriefQuestionIDs(ids...)
+	return _u.RemoveDebriefQuestionIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
-func (itu *IncidentTypeUpdate) Save(ctx context.Context) (int, error) {
-	return withHooks(ctx, itu.sqlSave, itu.mutation, itu.hooks)
+func (_u *IncidentTypeUpdate) Save(ctx context.Context) (int, error) {
+	return withHooks(ctx, _u.sqlSave, _u.mutation, _u.hooks)
 }
 
 // SaveX is like Save, but panics if an error occurs.
-func (itu *IncidentTypeUpdate) SaveX(ctx context.Context) int {
-	affected, err := itu.Save(ctx)
+func (_u *IncidentTypeUpdate) SaveX(ctx context.Context) int {
+	affected, err := _u.Save(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -158,54 +158,54 @@ func (itu *IncidentTypeUpdate) SaveX(ctx context.Context) int {
 }
 
 // Exec executes the query.
-func (itu *IncidentTypeUpdate) Exec(ctx context.Context) error {
-	_, err := itu.Save(ctx)
+func (_u *IncidentTypeUpdate) Exec(ctx context.Context) error {
+	_, err := _u.Save(ctx)
 	return err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (itu *IncidentTypeUpdate) ExecX(ctx context.Context) {
-	if err := itu.Exec(ctx); err != nil {
+func (_u *IncidentTypeUpdate) ExecX(ctx context.Context) {
+	if err := _u.Exec(ctx); err != nil {
 		panic(err)
 	}
 }
 
 // check runs all checks and user-defined validators on the builder.
-func (itu *IncidentTypeUpdate) check() error {
-	if itu.mutation.TenantCleared() && len(itu.mutation.TenantIDs()) > 0 {
+func (_u *IncidentTypeUpdate) check() error {
+	if _u.mutation.TenantCleared() && len(_u.mutation.TenantIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "IncidentType.tenant"`)
 	}
 	return nil
 }
 
 // Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
-func (itu *IncidentTypeUpdate) Modify(modifiers ...func(u *sql.UpdateBuilder)) *IncidentTypeUpdate {
-	itu.modifiers = append(itu.modifiers, modifiers...)
-	return itu
+func (_u *IncidentTypeUpdate) Modify(modifiers ...func(u *sql.UpdateBuilder)) *IncidentTypeUpdate {
+	_u.modifiers = append(_u.modifiers, modifiers...)
+	return _u
 }
 
-func (itu *IncidentTypeUpdate) sqlSave(ctx context.Context) (n int, err error) {
-	if err := itu.check(); err != nil {
-		return n, err
+func (_u *IncidentTypeUpdate) sqlSave(ctx context.Context) (_node int, err error) {
+	if err := _u.check(); err != nil {
+		return _node, err
 	}
 	_spec := sqlgraph.NewUpdateSpec(incidenttype.Table, incidenttype.Columns, sqlgraph.NewFieldSpec(incidenttype.FieldID, field.TypeUUID))
-	if ps := itu.mutation.predicates; len(ps) > 0 {
+	if ps := _u.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {
 				ps[i](selector)
 			}
 		}
 	}
-	if value, ok := itu.mutation.ArchiveTime(); ok {
+	if value, ok := _u.mutation.ArchiveTime(); ok {
 		_spec.SetField(incidenttype.FieldArchiveTime, field.TypeTime, value)
 	}
-	if itu.mutation.ArchiveTimeCleared() {
+	if _u.mutation.ArchiveTimeCleared() {
 		_spec.ClearField(incidenttype.FieldArchiveTime, field.TypeTime)
 	}
-	if value, ok := itu.mutation.Name(); ok {
+	if value, ok := _u.mutation.Name(); ok {
 		_spec.SetField(incidenttype.FieldName, field.TypeString, value)
 	}
-	if itu.mutation.IncidentsCleared() {
+	if _u.mutation.IncidentsCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: true,
@@ -218,7 +218,7 @@ func (itu *IncidentTypeUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := itu.mutation.RemovedIncidentsIDs(); len(nodes) > 0 && !itu.mutation.IncidentsCleared() {
+	if nodes := _u.mutation.RemovedIncidentsIDs(); len(nodes) > 0 && !_u.mutation.IncidentsCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: true,
@@ -234,7 +234,7 @@ func (itu *IncidentTypeUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := itu.mutation.IncidentsIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.IncidentsIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: true,
@@ -250,7 +250,7 @@ func (itu *IncidentTypeUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if itu.mutation.DebriefQuestionsCleared() {
+	if _u.mutation.DebriefQuestionsCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
 			Inverse: true,
@@ -263,7 +263,7 @@ func (itu *IncidentTypeUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := itu.mutation.RemovedDebriefQuestionsIDs(); len(nodes) > 0 && !itu.mutation.DebriefQuestionsCleared() {
+	if nodes := _u.mutation.RemovedDebriefQuestionsIDs(); len(nodes) > 0 && !_u.mutation.DebriefQuestionsCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
 			Inverse: true,
@@ -279,7 +279,7 @@ func (itu *IncidentTypeUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := itu.mutation.DebriefQuestionsIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.DebriefQuestionsIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
 			Inverse: true,
@@ -295,8 +295,8 @@ func (itu *IncidentTypeUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	_spec.AddModifiers(itu.modifiers...)
-	if n, err = sqlgraph.UpdateNodes(ctx, itu.driver, _spec); err != nil {
+	_spec.AddModifiers(_u.modifiers...)
+	if _node, err = sqlgraph.UpdateNodes(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{incidenttype.Label}
 		} else if sqlgraph.IsConstraintError(err) {
@@ -304,8 +304,8 @@ func (itu *IncidentTypeUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		return 0, err
 	}
-	itu.mutation.done = true
-	return n, nil
+	_u.mutation.done = true
+	return _node, nil
 }
 
 // IncidentTypeUpdateOne is the builder for updating a single IncidentType entity.
@@ -318,137 +318,137 @@ type IncidentTypeUpdateOne struct {
 }
 
 // SetArchiveTime sets the "archive_time" field.
-func (ituo *IncidentTypeUpdateOne) SetArchiveTime(t time.Time) *IncidentTypeUpdateOne {
-	ituo.mutation.SetArchiveTime(t)
-	return ituo
+func (_u *IncidentTypeUpdateOne) SetArchiveTime(v time.Time) *IncidentTypeUpdateOne {
+	_u.mutation.SetArchiveTime(v)
+	return _u
 }
 
 // SetNillableArchiveTime sets the "archive_time" field if the given value is not nil.
-func (ituo *IncidentTypeUpdateOne) SetNillableArchiveTime(t *time.Time) *IncidentTypeUpdateOne {
-	if t != nil {
-		ituo.SetArchiveTime(*t)
+func (_u *IncidentTypeUpdateOne) SetNillableArchiveTime(v *time.Time) *IncidentTypeUpdateOne {
+	if v != nil {
+		_u.SetArchiveTime(*v)
 	}
-	return ituo
+	return _u
 }
 
 // ClearArchiveTime clears the value of the "archive_time" field.
-func (ituo *IncidentTypeUpdateOne) ClearArchiveTime() *IncidentTypeUpdateOne {
-	ituo.mutation.ClearArchiveTime()
-	return ituo
+func (_u *IncidentTypeUpdateOne) ClearArchiveTime() *IncidentTypeUpdateOne {
+	_u.mutation.ClearArchiveTime()
+	return _u
 }
 
 // SetName sets the "name" field.
-func (ituo *IncidentTypeUpdateOne) SetName(s string) *IncidentTypeUpdateOne {
-	ituo.mutation.SetName(s)
-	return ituo
+func (_u *IncidentTypeUpdateOne) SetName(v string) *IncidentTypeUpdateOne {
+	_u.mutation.SetName(v)
+	return _u
 }
 
 // SetNillableName sets the "name" field if the given value is not nil.
-func (ituo *IncidentTypeUpdateOne) SetNillableName(s *string) *IncidentTypeUpdateOne {
-	if s != nil {
-		ituo.SetName(*s)
+func (_u *IncidentTypeUpdateOne) SetNillableName(v *string) *IncidentTypeUpdateOne {
+	if v != nil {
+		_u.SetName(*v)
 	}
-	return ituo
+	return _u
 }
 
 // AddIncidentIDs adds the "incidents" edge to the Incident entity by IDs.
-func (ituo *IncidentTypeUpdateOne) AddIncidentIDs(ids ...uuid.UUID) *IncidentTypeUpdateOne {
-	ituo.mutation.AddIncidentIDs(ids...)
-	return ituo
+func (_u *IncidentTypeUpdateOne) AddIncidentIDs(ids ...uuid.UUID) *IncidentTypeUpdateOne {
+	_u.mutation.AddIncidentIDs(ids...)
+	return _u
 }
 
 // AddIncidents adds the "incidents" edges to the Incident entity.
-func (ituo *IncidentTypeUpdateOne) AddIncidents(i ...*Incident) *IncidentTypeUpdateOne {
-	ids := make([]uuid.UUID, len(i))
-	for j := range i {
-		ids[j] = i[j].ID
+func (_u *IncidentTypeUpdateOne) AddIncidents(v ...*Incident) *IncidentTypeUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
 	}
-	return ituo.AddIncidentIDs(ids...)
+	return _u.AddIncidentIDs(ids...)
 }
 
 // AddDebriefQuestionIDs adds the "debrief_questions" edge to the IncidentDebriefQuestion entity by IDs.
-func (ituo *IncidentTypeUpdateOne) AddDebriefQuestionIDs(ids ...uuid.UUID) *IncidentTypeUpdateOne {
-	ituo.mutation.AddDebriefQuestionIDs(ids...)
-	return ituo
+func (_u *IncidentTypeUpdateOne) AddDebriefQuestionIDs(ids ...uuid.UUID) *IncidentTypeUpdateOne {
+	_u.mutation.AddDebriefQuestionIDs(ids...)
+	return _u
 }
 
 // AddDebriefQuestions adds the "debrief_questions" edges to the IncidentDebriefQuestion entity.
-func (ituo *IncidentTypeUpdateOne) AddDebriefQuestions(i ...*IncidentDebriefQuestion) *IncidentTypeUpdateOne {
-	ids := make([]uuid.UUID, len(i))
-	for j := range i {
-		ids[j] = i[j].ID
+func (_u *IncidentTypeUpdateOne) AddDebriefQuestions(v ...*IncidentDebriefQuestion) *IncidentTypeUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
 	}
-	return ituo.AddDebriefQuestionIDs(ids...)
+	return _u.AddDebriefQuestionIDs(ids...)
 }
 
 // Mutation returns the IncidentTypeMutation object of the builder.
-func (ituo *IncidentTypeUpdateOne) Mutation() *IncidentTypeMutation {
-	return ituo.mutation
+func (_u *IncidentTypeUpdateOne) Mutation() *IncidentTypeMutation {
+	return _u.mutation
 }
 
 // ClearIncidents clears all "incidents" edges to the Incident entity.
-func (ituo *IncidentTypeUpdateOne) ClearIncidents() *IncidentTypeUpdateOne {
-	ituo.mutation.ClearIncidents()
-	return ituo
+func (_u *IncidentTypeUpdateOne) ClearIncidents() *IncidentTypeUpdateOne {
+	_u.mutation.ClearIncidents()
+	return _u
 }
 
 // RemoveIncidentIDs removes the "incidents" edge to Incident entities by IDs.
-func (ituo *IncidentTypeUpdateOne) RemoveIncidentIDs(ids ...uuid.UUID) *IncidentTypeUpdateOne {
-	ituo.mutation.RemoveIncidentIDs(ids...)
-	return ituo
+func (_u *IncidentTypeUpdateOne) RemoveIncidentIDs(ids ...uuid.UUID) *IncidentTypeUpdateOne {
+	_u.mutation.RemoveIncidentIDs(ids...)
+	return _u
 }
 
 // RemoveIncidents removes "incidents" edges to Incident entities.
-func (ituo *IncidentTypeUpdateOne) RemoveIncidents(i ...*Incident) *IncidentTypeUpdateOne {
-	ids := make([]uuid.UUID, len(i))
-	for j := range i {
-		ids[j] = i[j].ID
+func (_u *IncidentTypeUpdateOne) RemoveIncidents(v ...*Incident) *IncidentTypeUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
 	}
-	return ituo.RemoveIncidentIDs(ids...)
+	return _u.RemoveIncidentIDs(ids...)
 }
 
 // ClearDebriefQuestions clears all "debrief_questions" edges to the IncidentDebriefQuestion entity.
-func (ituo *IncidentTypeUpdateOne) ClearDebriefQuestions() *IncidentTypeUpdateOne {
-	ituo.mutation.ClearDebriefQuestions()
-	return ituo
+func (_u *IncidentTypeUpdateOne) ClearDebriefQuestions() *IncidentTypeUpdateOne {
+	_u.mutation.ClearDebriefQuestions()
+	return _u
 }
 
 // RemoveDebriefQuestionIDs removes the "debrief_questions" edge to IncidentDebriefQuestion entities by IDs.
-func (ituo *IncidentTypeUpdateOne) RemoveDebriefQuestionIDs(ids ...uuid.UUID) *IncidentTypeUpdateOne {
-	ituo.mutation.RemoveDebriefQuestionIDs(ids...)
-	return ituo
+func (_u *IncidentTypeUpdateOne) RemoveDebriefQuestionIDs(ids ...uuid.UUID) *IncidentTypeUpdateOne {
+	_u.mutation.RemoveDebriefQuestionIDs(ids...)
+	return _u
 }
 
 // RemoveDebriefQuestions removes "debrief_questions" edges to IncidentDebriefQuestion entities.
-func (ituo *IncidentTypeUpdateOne) RemoveDebriefQuestions(i ...*IncidentDebriefQuestion) *IncidentTypeUpdateOne {
-	ids := make([]uuid.UUID, len(i))
-	for j := range i {
-		ids[j] = i[j].ID
+func (_u *IncidentTypeUpdateOne) RemoveDebriefQuestions(v ...*IncidentDebriefQuestion) *IncidentTypeUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
 	}
-	return ituo.RemoveDebriefQuestionIDs(ids...)
+	return _u.RemoveDebriefQuestionIDs(ids...)
 }
 
 // Where appends a list predicates to the IncidentTypeUpdate builder.
-func (ituo *IncidentTypeUpdateOne) Where(ps ...predicate.IncidentType) *IncidentTypeUpdateOne {
-	ituo.mutation.Where(ps...)
-	return ituo
+func (_u *IncidentTypeUpdateOne) Where(ps ...predicate.IncidentType) *IncidentTypeUpdateOne {
+	_u.mutation.Where(ps...)
+	return _u
 }
 
 // Select allows selecting one or more fields (columns) of the returned entity.
 // The default is selecting all fields defined in the entity schema.
-func (ituo *IncidentTypeUpdateOne) Select(field string, fields ...string) *IncidentTypeUpdateOne {
-	ituo.fields = append([]string{field}, fields...)
-	return ituo
+func (_u *IncidentTypeUpdateOne) Select(field string, fields ...string) *IncidentTypeUpdateOne {
+	_u.fields = append([]string{field}, fields...)
+	return _u
 }
 
 // Save executes the query and returns the updated IncidentType entity.
-func (ituo *IncidentTypeUpdateOne) Save(ctx context.Context) (*IncidentType, error) {
-	return withHooks(ctx, ituo.sqlSave, ituo.mutation, ituo.hooks)
+func (_u *IncidentTypeUpdateOne) Save(ctx context.Context) (*IncidentType, error) {
+	return withHooks(ctx, _u.sqlSave, _u.mutation, _u.hooks)
 }
 
 // SaveX is like Save, but panics if an error occurs.
-func (ituo *IncidentTypeUpdateOne) SaveX(ctx context.Context) *IncidentType {
-	node, err := ituo.Save(ctx)
+func (_u *IncidentTypeUpdateOne) SaveX(ctx context.Context) *IncidentType {
+	node, err := _u.Save(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -456,43 +456,43 @@ func (ituo *IncidentTypeUpdateOne) SaveX(ctx context.Context) *IncidentType {
 }
 
 // Exec executes the query on the entity.
-func (ituo *IncidentTypeUpdateOne) Exec(ctx context.Context) error {
-	_, err := ituo.Save(ctx)
+func (_u *IncidentTypeUpdateOne) Exec(ctx context.Context) error {
+	_, err := _u.Save(ctx)
 	return err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (ituo *IncidentTypeUpdateOne) ExecX(ctx context.Context) {
-	if err := ituo.Exec(ctx); err != nil {
+func (_u *IncidentTypeUpdateOne) ExecX(ctx context.Context) {
+	if err := _u.Exec(ctx); err != nil {
 		panic(err)
 	}
 }
 
 // check runs all checks and user-defined validators on the builder.
-func (ituo *IncidentTypeUpdateOne) check() error {
-	if ituo.mutation.TenantCleared() && len(ituo.mutation.TenantIDs()) > 0 {
+func (_u *IncidentTypeUpdateOne) check() error {
+	if _u.mutation.TenantCleared() && len(_u.mutation.TenantIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "IncidentType.tenant"`)
 	}
 	return nil
 }
 
 // Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
-func (ituo *IncidentTypeUpdateOne) Modify(modifiers ...func(u *sql.UpdateBuilder)) *IncidentTypeUpdateOne {
-	ituo.modifiers = append(ituo.modifiers, modifiers...)
-	return ituo
+func (_u *IncidentTypeUpdateOne) Modify(modifiers ...func(u *sql.UpdateBuilder)) *IncidentTypeUpdateOne {
+	_u.modifiers = append(_u.modifiers, modifiers...)
+	return _u
 }
 
-func (ituo *IncidentTypeUpdateOne) sqlSave(ctx context.Context) (_node *IncidentType, err error) {
-	if err := ituo.check(); err != nil {
+func (_u *IncidentTypeUpdateOne) sqlSave(ctx context.Context) (_node *IncidentType, err error) {
+	if err := _u.check(); err != nil {
 		return _node, err
 	}
 	_spec := sqlgraph.NewUpdateSpec(incidenttype.Table, incidenttype.Columns, sqlgraph.NewFieldSpec(incidenttype.FieldID, field.TypeUUID))
-	id, ok := ituo.mutation.ID()
+	id, ok := _u.mutation.ID()
 	if !ok {
 		return nil, &ValidationError{Name: "id", err: errors.New(`ent: missing "IncidentType.id" for update`)}
 	}
 	_spec.Node.ID.Value = id
-	if fields := ituo.fields; len(fields) > 0 {
+	if fields := _u.fields; len(fields) > 0 {
 		_spec.Node.Columns = make([]string, 0, len(fields))
 		_spec.Node.Columns = append(_spec.Node.Columns, incidenttype.FieldID)
 		for _, f := range fields {
@@ -504,23 +504,23 @@ func (ituo *IncidentTypeUpdateOne) sqlSave(ctx context.Context) (_node *Incident
 			}
 		}
 	}
-	if ps := ituo.mutation.predicates; len(ps) > 0 {
+	if ps := _u.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {
 				ps[i](selector)
 			}
 		}
 	}
-	if value, ok := ituo.mutation.ArchiveTime(); ok {
+	if value, ok := _u.mutation.ArchiveTime(); ok {
 		_spec.SetField(incidenttype.FieldArchiveTime, field.TypeTime, value)
 	}
-	if ituo.mutation.ArchiveTimeCleared() {
+	if _u.mutation.ArchiveTimeCleared() {
 		_spec.ClearField(incidenttype.FieldArchiveTime, field.TypeTime)
 	}
-	if value, ok := ituo.mutation.Name(); ok {
+	if value, ok := _u.mutation.Name(); ok {
 		_spec.SetField(incidenttype.FieldName, field.TypeString, value)
 	}
-	if ituo.mutation.IncidentsCleared() {
+	if _u.mutation.IncidentsCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: true,
@@ -533,7 +533,7 @@ func (ituo *IncidentTypeUpdateOne) sqlSave(ctx context.Context) (_node *Incident
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := ituo.mutation.RemovedIncidentsIDs(); len(nodes) > 0 && !ituo.mutation.IncidentsCleared() {
+	if nodes := _u.mutation.RemovedIncidentsIDs(); len(nodes) > 0 && !_u.mutation.IncidentsCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: true,
@@ -549,7 +549,7 @@ func (ituo *IncidentTypeUpdateOne) sqlSave(ctx context.Context) (_node *Incident
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := ituo.mutation.IncidentsIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.IncidentsIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: true,
@@ -565,7 +565,7 @@ func (ituo *IncidentTypeUpdateOne) sqlSave(ctx context.Context) (_node *Incident
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if ituo.mutation.DebriefQuestionsCleared() {
+	if _u.mutation.DebriefQuestionsCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
 			Inverse: true,
@@ -578,7 +578,7 @@ func (ituo *IncidentTypeUpdateOne) sqlSave(ctx context.Context) (_node *Incident
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := ituo.mutation.RemovedDebriefQuestionsIDs(); len(nodes) > 0 && !ituo.mutation.DebriefQuestionsCleared() {
+	if nodes := _u.mutation.RemovedDebriefQuestionsIDs(); len(nodes) > 0 && !_u.mutation.DebriefQuestionsCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
 			Inverse: true,
@@ -594,7 +594,7 @@ func (ituo *IncidentTypeUpdateOne) sqlSave(ctx context.Context) (_node *Incident
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := ituo.mutation.DebriefQuestionsIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.DebriefQuestionsIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
 			Inverse: true,
@@ -610,11 +610,11 @@ func (ituo *IncidentTypeUpdateOne) sqlSave(ctx context.Context) (_node *Incident
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	_spec.AddModifiers(ituo.modifiers...)
-	_node = &IncidentType{config: ituo.config}
+	_spec.AddModifiers(_u.modifiers...)
+	_node = &IncidentType{config: _u.config}
 	_spec.Assign = _node.assignValues
 	_spec.ScanValues = _node.scanValues
-	if err = sqlgraph.UpdateNode(ctx, ituo.driver, _spec); err != nil {
+	if err = sqlgraph.UpdateNode(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{incidenttype.Label}
 		} else if sqlgraph.IsConstraintError(err) {
@@ -622,6 +622,6 @@ func (ituo *IncidentTypeUpdateOne) sqlSave(ctx context.Context) (_node *Incident
 		}
 		return nil, err
 	}
-	ituo.mutation.done = true
+	_u.mutation.done = true
 	return _node, nil
 }

@@ -29,171 +29,171 @@ type EventAnnotationUpdate struct {
 }
 
 // Where appends a list predicates to the EventAnnotationUpdate builder.
-func (eau *EventAnnotationUpdate) Where(ps ...predicate.EventAnnotation) *EventAnnotationUpdate {
-	eau.mutation.Where(ps...)
-	return eau
+func (_u *EventAnnotationUpdate) Where(ps ...predicate.EventAnnotation) *EventAnnotationUpdate {
+	_u.mutation.Where(ps...)
+	return _u
 }
 
 // SetEventID sets the "event_id" field.
-func (eau *EventAnnotationUpdate) SetEventID(u uuid.UUID) *EventAnnotationUpdate {
-	eau.mutation.SetEventID(u)
-	return eau
+func (_u *EventAnnotationUpdate) SetEventID(v uuid.UUID) *EventAnnotationUpdate {
+	_u.mutation.SetEventID(v)
+	return _u
 }
 
 // SetNillableEventID sets the "event_id" field if the given value is not nil.
-func (eau *EventAnnotationUpdate) SetNillableEventID(u *uuid.UUID) *EventAnnotationUpdate {
-	if u != nil {
-		eau.SetEventID(*u)
+func (_u *EventAnnotationUpdate) SetNillableEventID(v *uuid.UUID) *EventAnnotationUpdate {
+	if v != nil {
+		_u.SetEventID(*v)
 	}
-	return eau
+	return _u
 }
 
 // SetCreatorID sets the "creator_id" field.
-func (eau *EventAnnotationUpdate) SetCreatorID(u uuid.UUID) *EventAnnotationUpdate {
-	eau.mutation.SetCreatorID(u)
-	return eau
+func (_u *EventAnnotationUpdate) SetCreatorID(v uuid.UUID) *EventAnnotationUpdate {
+	_u.mutation.SetCreatorID(v)
+	return _u
 }
 
 // SetNillableCreatorID sets the "creator_id" field if the given value is not nil.
-func (eau *EventAnnotationUpdate) SetNillableCreatorID(u *uuid.UUID) *EventAnnotationUpdate {
-	if u != nil {
-		eau.SetCreatorID(*u)
+func (_u *EventAnnotationUpdate) SetNillableCreatorID(v *uuid.UUID) *EventAnnotationUpdate {
+	if v != nil {
+		_u.SetCreatorID(*v)
 	}
-	return eau
+	return _u
 }
 
 // SetCreatedAt sets the "created_at" field.
-func (eau *EventAnnotationUpdate) SetCreatedAt(t time.Time) *EventAnnotationUpdate {
-	eau.mutation.SetCreatedAt(t)
-	return eau
+func (_u *EventAnnotationUpdate) SetCreatedAt(v time.Time) *EventAnnotationUpdate {
+	_u.mutation.SetCreatedAt(v)
+	return _u
 }
 
 // SetNillableCreatedAt sets the "created_at" field if the given value is not nil.
-func (eau *EventAnnotationUpdate) SetNillableCreatedAt(t *time.Time) *EventAnnotationUpdate {
-	if t != nil {
-		eau.SetCreatedAt(*t)
+func (_u *EventAnnotationUpdate) SetNillableCreatedAt(v *time.Time) *EventAnnotationUpdate {
+	if v != nil {
+		_u.SetCreatedAt(*v)
 	}
-	return eau
+	return _u
 }
 
 // SetMinutesOccupied sets the "minutes_occupied" field.
-func (eau *EventAnnotationUpdate) SetMinutesOccupied(i int) *EventAnnotationUpdate {
-	eau.mutation.ResetMinutesOccupied()
-	eau.mutation.SetMinutesOccupied(i)
-	return eau
+func (_u *EventAnnotationUpdate) SetMinutesOccupied(v int) *EventAnnotationUpdate {
+	_u.mutation.ResetMinutesOccupied()
+	_u.mutation.SetMinutesOccupied(v)
+	return _u
 }
 
 // SetNillableMinutesOccupied sets the "minutes_occupied" field if the given value is not nil.
-func (eau *EventAnnotationUpdate) SetNillableMinutesOccupied(i *int) *EventAnnotationUpdate {
-	if i != nil {
-		eau.SetMinutesOccupied(*i)
+func (_u *EventAnnotationUpdate) SetNillableMinutesOccupied(v *int) *EventAnnotationUpdate {
+	if v != nil {
+		_u.SetMinutesOccupied(*v)
 	}
-	return eau
+	return _u
 }
 
-// AddMinutesOccupied adds i to the "minutes_occupied" field.
-func (eau *EventAnnotationUpdate) AddMinutesOccupied(i int) *EventAnnotationUpdate {
-	eau.mutation.AddMinutesOccupied(i)
-	return eau
+// AddMinutesOccupied adds value to the "minutes_occupied" field.
+func (_u *EventAnnotationUpdate) AddMinutesOccupied(v int) *EventAnnotationUpdate {
+	_u.mutation.AddMinutesOccupied(v)
+	return _u
 }
 
 // SetNotes sets the "notes" field.
-func (eau *EventAnnotationUpdate) SetNotes(s string) *EventAnnotationUpdate {
-	eau.mutation.SetNotes(s)
-	return eau
+func (_u *EventAnnotationUpdate) SetNotes(v string) *EventAnnotationUpdate {
+	_u.mutation.SetNotes(v)
+	return _u
 }
 
 // SetNillableNotes sets the "notes" field if the given value is not nil.
-func (eau *EventAnnotationUpdate) SetNillableNotes(s *string) *EventAnnotationUpdate {
-	if s != nil {
-		eau.SetNotes(*s)
+func (_u *EventAnnotationUpdate) SetNillableNotes(v *string) *EventAnnotationUpdate {
+	if v != nil {
+		_u.SetNotes(*v)
 	}
-	return eau
+	return _u
 }
 
 // SetTags sets the "tags" field.
-func (eau *EventAnnotationUpdate) SetTags(s []string) *EventAnnotationUpdate {
-	eau.mutation.SetTags(s)
-	return eau
+func (_u *EventAnnotationUpdate) SetTags(v []string) *EventAnnotationUpdate {
+	_u.mutation.SetTags(v)
+	return _u
 }
 
-// AppendTags appends s to the "tags" field.
-func (eau *EventAnnotationUpdate) AppendTags(s []string) *EventAnnotationUpdate {
-	eau.mutation.AppendTags(s)
-	return eau
+// AppendTags appends value to the "tags" field.
+func (_u *EventAnnotationUpdate) AppendTags(v []string) *EventAnnotationUpdate {
+	_u.mutation.AppendTags(v)
+	return _u
 }
 
 // SetEvent sets the "event" edge to the Event entity.
-func (eau *EventAnnotationUpdate) SetEvent(e *Event) *EventAnnotationUpdate {
-	return eau.SetEventID(e.ID)
+func (_u *EventAnnotationUpdate) SetEvent(v *Event) *EventAnnotationUpdate {
+	return _u.SetEventID(v.ID)
 }
 
 // SetCreator sets the "creator" edge to the User entity.
-func (eau *EventAnnotationUpdate) SetCreator(u *User) *EventAnnotationUpdate {
-	return eau.SetCreatorID(u.ID)
+func (_u *EventAnnotationUpdate) SetCreator(v *User) *EventAnnotationUpdate {
+	return _u.SetCreatorID(v.ID)
 }
 
 // AddHandoverIDs adds the "handovers" edge to the OncallShiftHandover entity by IDs.
-func (eau *EventAnnotationUpdate) AddHandoverIDs(ids ...uuid.UUID) *EventAnnotationUpdate {
-	eau.mutation.AddHandoverIDs(ids...)
-	return eau
+func (_u *EventAnnotationUpdate) AddHandoverIDs(ids ...uuid.UUID) *EventAnnotationUpdate {
+	_u.mutation.AddHandoverIDs(ids...)
+	return _u
 }
 
 // AddHandovers adds the "handovers" edges to the OncallShiftHandover entity.
-func (eau *EventAnnotationUpdate) AddHandovers(o ...*OncallShiftHandover) *EventAnnotationUpdate {
-	ids := make([]uuid.UUID, len(o))
-	for i := range o {
-		ids[i] = o[i].ID
+func (_u *EventAnnotationUpdate) AddHandovers(v ...*OncallShiftHandover) *EventAnnotationUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
 	}
-	return eau.AddHandoverIDs(ids...)
+	return _u.AddHandoverIDs(ids...)
 }
 
 // Mutation returns the EventAnnotationMutation object of the builder.
-func (eau *EventAnnotationUpdate) Mutation() *EventAnnotationMutation {
-	return eau.mutation
+func (_u *EventAnnotationUpdate) Mutation() *EventAnnotationMutation {
+	return _u.mutation
 }
 
 // ClearEvent clears the "event" edge to the Event entity.
-func (eau *EventAnnotationUpdate) ClearEvent() *EventAnnotationUpdate {
-	eau.mutation.ClearEvent()
-	return eau
+func (_u *EventAnnotationUpdate) ClearEvent() *EventAnnotationUpdate {
+	_u.mutation.ClearEvent()
+	return _u
 }
 
 // ClearCreator clears the "creator" edge to the User entity.
-func (eau *EventAnnotationUpdate) ClearCreator() *EventAnnotationUpdate {
-	eau.mutation.ClearCreator()
-	return eau
+func (_u *EventAnnotationUpdate) ClearCreator() *EventAnnotationUpdate {
+	_u.mutation.ClearCreator()
+	return _u
 }
 
 // ClearHandovers clears all "handovers" edges to the OncallShiftHandover entity.
-func (eau *EventAnnotationUpdate) ClearHandovers() *EventAnnotationUpdate {
-	eau.mutation.ClearHandovers()
-	return eau
+func (_u *EventAnnotationUpdate) ClearHandovers() *EventAnnotationUpdate {
+	_u.mutation.ClearHandovers()
+	return _u
 }
 
 // RemoveHandoverIDs removes the "handovers" edge to OncallShiftHandover entities by IDs.
-func (eau *EventAnnotationUpdate) RemoveHandoverIDs(ids ...uuid.UUID) *EventAnnotationUpdate {
-	eau.mutation.RemoveHandoverIDs(ids...)
-	return eau
+func (_u *EventAnnotationUpdate) RemoveHandoverIDs(ids ...uuid.UUID) *EventAnnotationUpdate {
+	_u.mutation.RemoveHandoverIDs(ids...)
+	return _u
 }
 
 // RemoveHandovers removes "handovers" edges to OncallShiftHandover entities.
-func (eau *EventAnnotationUpdate) RemoveHandovers(o ...*OncallShiftHandover) *EventAnnotationUpdate {
-	ids := make([]uuid.UUID, len(o))
-	for i := range o {
-		ids[i] = o[i].ID
+func (_u *EventAnnotationUpdate) RemoveHandovers(v ...*OncallShiftHandover) *EventAnnotationUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
 	}
-	return eau.RemoveHandoverIDs(ids...)
+	return _u.RemoveHandoverIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
-func (eau *EventAnnotationUpdate) Save(ctx context.Context) (int, error) {
-	return withHooks(ctx, eau.sqlSave, eau.mutation, eau.hooks)
+func (_u *EventAnnotationUpdate) Save(ctx context.Context) (int, error) {
+	return withHooks(ctx, _u.sqlSave, _u.mutation, _u.hooks)
 }
 
 // SaveX is like Save, but panics if an error occurs.
-func (eau *EventAnnotationUpdate) SaveX(ctx context.Context) int {
-	affected, err := eau.Save(ctx)
+func (_u *EventAnnotationUpdate) SaveX(ctx context.Context) int {
+	affected, err := _u.Save(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -201,71 +201,71 @@ func (eau *EventAnnotationUpdate) SaveX(ctx context.Context) int {
 }
 
 // Exec executes the query.
-func (eau *EventAnnotationUpdate) Exec(ctx context.Context) error {
-	_, err := eau.Save(ctx)
+func (_u *EventAnnotationUpdate) Exec(ctx context.Context) error {
+	_, err := _u.Save(ctx)
 	return err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (eau *EventAnnotationUpdate) ExecX(ctx context.Context) {
-	if err := eau.Exec(ctx); err != nil {
+func (_u *EventAnnotationUpdate) ExecX(ctx context.Context) {
+	if err := _u.Exec(ctx); err != nil {
 		panic(err)
 	}
 }
 
 // check runs all checks and user-defined validators on the builder.
-func (eau *EventAnnotationUpdate) check() error {
-	if eau.mutation.TenantCleared() && len(eau.mutation.TenantIDs()) > 0 {
+func (_u *EventAnnotationUpdate) check() error {
+	if _u.mutation.TenantCleared() && len(_u.mutation.TenantIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "EventAnnotation.tenant"`)
 	}
-	if eau.mutation.EventCleared() && len(eau.mutation.EventIDs()) > 0 {
+	if _u.mutation.EventCleared() && len(_u.mutation.EventIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "EventAnnotation.event"`)
 	}
-	if eau.mutation.CreatorCleared() && len(eau.mutation.CreatorIDs()) > 0 {
+	if _u.mutation.CreatorCleared() && len(_u.mutation.CreatorIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "EventAnnotation.creator"`)
 	}
 	return nil
 }
 
 // Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
-func (eau *EventAnnotationUpdate) Modify(modifiers ...func(u *sql.UpdateBuilder)) *EventAnnotationUpdate {
-	eau.modifiers = append(eau.modifiers, modifiers...)
-	return eau
+func (_u *EventAnnotationUpdate) Modify(modifiers ...func(u *sql.UpdateBuilder)) *EventAnnotationUpdate {
+	_u.modifiers = append(_u.modifiers, modifiers...)
+	return _u
 }
 
-func (eau *EventAnnotationUpdate) sqlSave(ctx context.Context) (n int, err error) {
-	if err := eau.check(); err != nil {
-		return n, err
+func (_u *EventAnnotationUpdate) sqlSave(ctx context.Context) (_node int, err error) {
+	if err := _u.check(); err != nil {
+		return _node, err
 	}
 	_spec := sqlgraph.NewUpdateSpec(eventannotation.Table, eventannotation.Columns, sqlgraph.NewFieldSpec(eventannotation.FieldID, field.TypeUUID))
-	if ps := eau.mutation.predicates; len(ps) > 0 {
+	if ps := _u.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {
 				ps[i](selector)
 			}
 		}
 	}
-	if value, ok := eau.mutation.CreatedAt(); ok {
+	if value, ok := _u.mutation.CreatedAt(); ok {
 		_spec.SetField(eventannotation.FieldCreatedAt, field.TypeTime, value)
 	}
-	if value, ok := eau.mutation.MinutesOccupied(); ok {
+	if value, ok := _u.mutation.MinutesOccupied(); ok {
 		_spec.SetField(eventannotation.FieldMinutesOccupied, field.TypeInt, value)
 	}
-	if value, ok := eau.mutation.AddedMinutesOccupied(); ok {
+	if value, ok := _u.mutation.AddedMinutesOccupied(); ok {
 		_spec.AddField(eventannotation.FieldMinutesOccupied, field.TypeInt, value)
 	}
-	if value, ok := eau.mutation.Notes(); ok {
+	if value, ok := _u.mutation.Notes(); ok {
 		_spec.SetField(eventannotation.FieldNotes, field.TypeString, value)
 	}
-	if value, ok := eau.mutation.Tags(); ok {
+	if value, ok := _u.mutation.Tags(); ok {
 		_spec.SetField(eventannotation.FieldTags, field.TypeJSON, value)
 	}
-	if value, ok := eau.mutation.AppendedTags(); ok {
+	if value, ok := _u.mutation.AppendedTags(); ok {
 		_spec.AddModifier(func(u *sql.UpdateBuilder) {
 			sqljson.Append(u, eventannotation.FieldTags, value)
 		})
 	}
-	if eau.mutation.EventCleared() {
+	if _u.mutation.EventCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
@@ -278,7 +278,7 @@ func (eau *EventAnnotationUpdate) sqlSave(ctx context.Context) (n int, err error
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := eau.mutation.EventIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.EventIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
@@ -294,7 +294,7 @@ func (eau *EventAnnotationUpdate) sqlSave(ctx context.Context) (n int, err error
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if eau.mutation.CreatorCleared() {
+	if _u.mutation.CreatorCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
@@ -307,7 +307,7 @@ func (eau *EventAnnotationUpdate) sqlSave(ctx context.Context) (n int, err error
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := eau.mutation.CreatorIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.CreatorIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
@@ -323,7 +323,7 @@ func (eau *EventAnnotationUpdate) sqlSave(ctx context.Context) (n int, err error
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if eau.mutation.HandoversCleared() {
+	if _u.mutation.HandoversCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
 			Inverse: true,
@@ -336,7 +336,7 @@ func (eau *EventAnnotationUpdate) sqlSave(ctx context.Context) (n int, err error
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := eau.mutation.RemovedHandoversIDs(); len(nodes) > 0 && !eau.mutation.HandoversCleared() {
+	if nodes := _u.mutation.RemovedHandoversIDs(); len(nodes) > 0 && !_u.mutation.HandoversCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
 			Inverse: true,
@@ -352,7 +352,7 @@ func (eau *EventAnnotationUpdate) sqlSave(ctx context.Context) (n int, err error
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := eau.mutation.HandoversIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.HandoversIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
 			Inverse: true,
@@ -368,8 +368,8 @@ func (eau *EventAnnotationUpdate) sqlSave(ctx context.Context) (n int, err error
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	_spec.AddModifiers(eau.modifiers...)
-	if n, err = sqlgraph.UpdateNodes(ctx, eau.driver, _spec); err != nil {
+	_spec.AddModifiers(_u.modifiers...)
+	if _node, err = sqlgraph.UpdateNodes(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{eventannotation.Label}
 		} else if sqlgraph.IsConstraintError(err) {
@@ -377,8 +377,8 @@ func (eau *EventAnnotationUpdate) sqlSave(ctx context.Context) (n int, err error
 		}
 		return 0, err
 	}
-	eau.mutation.done = true
-	return n, nil
+	_u.mutation.done = true
+	return _node, nil
 }
 
 // EventAnnotationUpdateOne is the builder for updating a single EventAnnotation entity.
@@ -391,178 +391,178 @@ type EventAnnotationUpdateOne struct {
 }
 
 // SetEventID sets the "event_id" field.
-func (eauo *EventAnnotationUpdateOne) SetEventID(u uuid.UUID) *EventAnnotationUpdateOne {
-	eauo.mutation.SetEventID(u)
-	return eauo
+func (_u *EventAnnotationUpdateOne) SetEventID(v uuid.UUID) *EventAnnotationUpdateOne {
+	_u.mutation.SetEventID(v)
+	return _u
 }
 
 // SetNillableEventID sets the "event_id" field if the given value is not nil.
-func (eauo *EventAnnotationUpdateOne) SetNillableEventID(u *uuid.UUID) *EventAnnotationUpdateOne {
-	if u != nil {
-		eauo.SetEventID(*u)
+func (_u *EventAnnotationUpdateOne) SetNillableEventID(v *uuid.UUID) *EventAnnotationUpdateOne {
+	if v != nil {
+		_u.SetEventID(*v)
 	}
-	return eauo
+	return _u
 }
 
 // SetCreatorID sets the "creator_id" field.
-func (eauo *EventAnnotationUpdateOne) SetCreatorID(u uuid.UUID) *EventAnnotationUpdateOne {
-	eauo.mutation.SetCreatorID(u)
-	return eauo
+func (_u *EventAnnotationUpdateOne) SetCreatorID(v uuid.UUID) *EventAnnotationUpdateOne {
+	_u.mutation.SetCreatorID(v)
+	return _u
 }
 
 // SetNillableCreatorID sets the "creator_id" field if the given value is not nil.
-func (eauo *EventAnnotationUpdateOne) SetNillableCreatorID(u *uuid.UUID) *EventAnnotationUpdateOne {
-	if u != nil {
-		eauo.SetCreatorID(*u)
+func (_u *EventAnnotationUpdateOne) SetNillableCreatorID(v *uuid.UUID) *EventAnnotationUpdateOne {
+	if v != nil {
+		_u.SetCreatorID(*v)
 	}
-	return eauo
+	return _u
 }
 
 // SetCreatedAt sets the "created_at" field.
-func (eauo *EventAnnotationUpdateOne) SetCreatedAt(t time.Time) *EventAnnotationUpdateOne {
-	eauo.mutation.SetCreatedAt(t)
-	return eauo
+func (_u *EventAnnotationUpdateOne) SetCreatedAt(v time.Time) *EventAnnotationUpdateOne {
+	_u.mutation.SetCreatedAt(v)
+	return _u
 }
 
 // SetNillableCreatedAt sets the "created_at" field if the given value is not nil.
-func (eauo *EventAnnotationUpdateOne) SetNillableCreatedAt(t *time.Time) *EventAnnotationUpdateOne {
-	if t != nil {
-		eauo.SetCreatedAt(*t)
+func (_u *EventAnnotationUpdateOne) SetNillableCreatedAt(v *time.Time) *EventAnnotationUpdateOne {
+	if v != nil {
+		_u.SetCreatedAt(*v)
 	}
-	return eauo
+	return _u
 }
 
 // SetMinutesOccupied sets the "minutes_occupied" field.
-func (eauo *EventAnnotationUpdateOne) SetMinutesOccupied(i int) *EventAnnotationUpdateOne {
-	eauo.mutation.ResetMinutesOccupied()
-	eauo.mutation.SetMinutesOccupied(i)
-	return eauo
+func (_u *EventAnnotationUpdateOne) SetMinutesOccupied(v int) *EventAnnotationUpdateOne {
+	_u.mutation.ResetMinutesOccupied()
+	_u.mutation.SetMinutesOccupied(v)
+	return _u
 }
 
 // SetNillableMinutesOccupied sets the "minutes_occupied" field if the given value is not nil.
-func (eauo *EventAnnotationUpdateOne) SetNillableMinutesOccupied(i *int) *EventAnnotationUpdateOne {
-	if i != nil {
-		eauo.SetMinutesOccupied(*i)
+func (_u *EventAnnotationUpdateOne) SetNillableMinutesOccupied(v *int) *EventAnnotationUpdateOne {
+	if v != nil {
+		_u.SetMinutesOccupied(*v)
 	}
-	return eauo
+	return _u
 }
 
-// AddMinutesOccupied adds i to the "minutes_occupied" field.
-func (eauo *EventAnnotationUpdateOne) AddMinutesOccupied(i int) *EventAnnotationUpdateOne {
-	eauo.mutation.AddMinutesOccupied(i)
-	return eauo
+// AddMinutesOccupied adds value to the "minutes_occupied" field.
+func (_u *EventAnnotationUpdateOne) AddMinutesOccupied(v int) *EventAnnotationUpdateOne {
+	_u.mutation.AddMinutesOccupied(v)
+	return _u
 }
 
 // SetNotes sets the "notes" field.
-func (eauo *EventAnnotationUpdateOne) SetNotes(s string) *EventAnnotationUpdateOne {
-	eauo.mutation.SetNotes(s)
-	return eauo
+func (_u *EventAnnotationUpdateOne) SetNotes(v string) *EventAnnotationUpdateOne {
+	_u.mutation.SetNotes(v)
+	return _u
 }
 
 // SetNillableNotes sets the "notes" field if the given value is not nil.
-func (eauo *EventAnnotationUpdateOne) SetNillableNotes(s *string) *EventAnnotationUpdateOne {
-	if s != nil {
-		eauo.SetNotes(*s)
+func (_u *EventAnnotationUpdateOne) SetNillableNotes(v *string) *EventAnnotationUpdateOne {
+	if v != nil {
+		_u.SetNotes(*v)
 	}
-	return eauo
+	return _u
 }
 
 // SetTags sets the "tags" field.
-func (eauo *EventAnnotationUpdateOne) SetTags(s []string) *EventAnnotationUpdateOne {
-	eauo.mutation.SetTags(s)
-	return eauo
+func (_u *EventAnnotationUpdateOne) SetTags(v []string) *EventAnnotationUpdateOne {
+	_u.mutation.SetTags(v)
+	return _u
 }
 
-// AppendTags appends s to the "tags" field.
-func (eauo *EventAnnotationUpdateOne) AppendTags(s []string) *EventAnnotationUpdateOne {
-	eauo.mutation.AppendTags(s)
-	return eauo
+// AppendTags appends value to the "tags" field.
+func (_u *EventAnnotationUpdateOne) AppendTags(v []string) *EventAnnotationUpdateOne {
+	_u.mutation.AppendTags(v)
+	return _u
 }
 
 // SetEvent sets the "event" edge to the Event entity.
-func (eauo *EventAnnotationUpdateOne) SetEvent(e *Event) *EventAnnotationUpdateOne {
-	return eauo.SetEventID(e.ID)
+func (_u *EventAnnotationUpdateOne) SetEvent(v *Event) *EventAnnotationUpdateOne {
+	return _u.SetEventID(v.ID)
 }
 
 // SetCreator sets the "creator" edge to the User entity.
-func (eauo *EventAnnotationUpdateOne) SetCreator(u *User) *EventAnnotationUpdateOne {
-	return eauo.SetCreatorID(u.ID)
+func (_u *EventAnnotationUpdateOne) SetCreator(v *User) *EventAnnotationUpdateOne {
+	return _u.SetCreatorID(v.ID)
 }
 
 // AddHandoverIDs adds the "handovers" edge to the OncallShiftHandover entity by IDs.
-func (eauo *EventAnnotationUpdateOne) AddHandoverIDs(ids ...uuid.UUID) *EventAnnotationUpdateOne {
-	eauo.mutation.AddHandoverIDs(ids...)
-	return eauo
+func (_u *EventAnnotationUpdateOne) AddHandoverIDs(ids ...uuid.UUID) *EventAnnotationUpdateOne {
+	_u.mutation.AddHandoverIDs(ids...)
+	return _u
 }
 
 // AddHandovers adds the "handovers" edges to the OncallShiftHandover entity.
-func (eauo *EventAnnotationUpdateOne) AddHandovers(o ...*OncallShiftHandover) *EventAnnotationUpdateOne {
-	ids := make([]uuid.UUID, len(o))
-	for i := range o {
-		ids[i] = o[i].ID
+func (_u *EventAnnotationUpdateOne) AddHandovers(v ...*OncallShiftHandover) *EventAnnotationUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
 	}
-	return eauo.AddHandoverIDs(ids...)
+	return _u.AddHandoverIDs(ids...)
 }
 
 // Mutation returns the EventAnnotationMutation object of the builder.
-func (eauo *EventAnnotationUpdateOne) Mutation() *EventAnnotationMutation {
-	return eauo.mutation
+func (_u *EventAnnotationUpdateOne) Mutation() *EventAnnotationMutation {
+	return _u.mutation
 }
 
 // ClearEvent clears the "event" edge to the Event entity.
-func (eauo *EventAnnotationUpdateOne) ClearEvent() *EventAnnotationUpdateOne {
-	eauo.mutation.ClearEvent()
-	return eauo
+func (_u *EventAnnotationUpdateOne) ClearEvent() *EventAnnotationUpdateOne {
+	_u.mutation.ClearEvent()
+	return _u
 }
 
 // ClearCreator clears the "creator" edge to the User entity.
-func (eauo *EventAnnotationUpdateOne) ClearCreator() *EventAnnotationUpdateOne {
-	eauo.mutation.ClearCreator()
-	return eauo
+func (_u *EventAnnotationUpdateOne) ClearCreator() *EventAnnotationUpdateOne {
+	_u.mutation.ClearCreator()
+	return _u
 }
 
 // ClearHandovers clears all "handovers" edges to the OncallShiftHandover entity.
-func (eauo *EventAnnotationUpdateOne) ClearHandovers() *EventAnnotationUpdateOne {
-	eauo.mutation.ClearHandovers()
-	return eauo
+func (_u *EventAnnotationUpdateOne) ClearHandovers() *EventAnnotationUpdateOne {
+	_u.mutation.ClearHandovers()
+	return _u
 }
 
 // RemoveHandoverIDs removes the "handovers" edge to OncallShiftHandover entities by IDs.
-func (eauo *EventAnnotationUpdateOne) RemoveHandoverIDs(ids ...uuid.UUID) *EventAnnotationUpdateOne {
-	eauo.mutation.RemoveHandoverIDs(ids...)
-	return eauo
+func (_u *EventAnnotationUpdateOne) RemoveHandoverIDs(ids ...uuid.UUID) *EventAnnotationUpdateOne {
+	_u.mutation.RemoveHandoverIDs(ids...)
+	return _u
 }
 
 // RemoveHandovers removes "handovers" edges to OncallShiftHandover entities.
-func (eauo *EventAnnotationUpdateOne) RemoveHandovers(o ...*OncallShiftHandover) *EventAnnotationUpdateOne {
-	ids := make([]uuid.UUID, len(o))
-	for i := range o {
-		ids[i] = o[i].ID
+func (_u *EventAnnotationUpdateOne) RemoveHandovers(v ...*OncallShiftHandover) *EventAnnotationUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
 	}
-	return eauo.RemoveHandoverIDs(ids...)
+	return _u.RemoveHandoverIDs(ids...)
 }
 
 // Where appends a list predicates to the EventAnnotationUpdate builder.
-func (eauo *EventAnnotationUpdateOne) Where(ps ...predicate.EventAnnotation) *EventAnnotationUpdateOne {
-	eauo.mutation.Where(ps...)
-	return eauo
+func (_u *EventAnnotationUpdateOne) Where(ps ...predicate.EventAnnotation) *EventAnnotationUpdateOne {
+	_u.mutation.Where(ps...)
+	return _u
 }
 
 // Select allows selecting one or more fields (columns) of the returned entity.
 // The default is selecting all fields defined in the entity schema.
-func (eauo *EventAnnotationUpdateOne) Select(field string, fields ...string) *EventAnnotationUpdateOne {
-	eauo.fields = append([]string{field}, fields...)
-	return eauo
+func (_u *EventAnnotationUpdateOne) Select(field string, fields ...string) *EventAnnotationUpdateOne {
+	_u.fields = append([]string{field}, fields...)
+	return _u
 }
 
 // Save executes the query and returns the updated EventAnnotation entity.
-func (eauo *EventAnnotationUpdateOne) Save(ctx context.Context) (*EventAnnotation, error) {
-	return withHooks(ctx, eauo.sqlSave, eauo.mutation, eauo.hooks)
+func (_u *EventAnnotationUpdateOne) Save(ctx context.Context) (*EventAnnotation, error) {
+	return withHooks(ctx, _u.sqlSave, _u.mutation, _u.hooks)
 }
 
 // SaveX is like Save, but panics if an error occurs.
-func (eauo *EventAnnotationUpdateOne) SaveX(ctx context.Context) *EventAnnotation {
-	node, err := eauo.Save(ctx)
+func (_u *EventAnnotationUpdateOne) SaveX(ctx context.Context) *EventAnnotation {
+	node, err := _u.Save(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -570,49 +570,49 @@ func (eauo *EventAnnotationUpdateOne) SaveX(ctx context.Context) *EventAnnotatio
 }
 
 // Exec executes the query on the entity.
-func (eauo *EventAnnotationUpdateOne) Exec(ctx context.Context) error {
-	_, err := eauo.Save(ctx)
+func (_u *EventAnnotationUpdateOne) Exec(ctx context.Context) error {
+	_, err := _u.Save(ctx)
 	return err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (eauo *EventAnnotationUpdateOne) ExecX(ctx context.Context) {
-	if err := eauo.Exec(ctx); err != nil {
+func (_u *EventAnnotationUpdateOne) ExecX(ctx context.Context) {
+	if err := _u.Exec(ctx); err != nil {
 		panic(err)
 	}
 }
 
 // check runs all checks and user-defined validators on the builder.
-func (eauo *EventAnnotationUpdateOne) check() error {
-	if eauo.mutation.TenantCleared() && len(eauo.mutation.TenantIDs()) > 0 {
+func (_u *EventAnnotationUpdateOne) check() error {
+	if _u.mutation.TenantCleared() && len(_u.mutation.TenantIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "EventAnnotation.tenant"`)
 	}
-	if eauo.mutation.EventCleared() && len(eauo.mutation.EventIDs()) > 0 {
+	if _u.mutation.EventCleared() && len(_u.mutation.EventIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "EventAnnotation.event"`)
 	}
-	if eauo.mutation.CreatorCleared() && len(eauo.mutation.CreatorIDs()) > 0 {
+	if _u.mutation.CreatorCleared() && len(_u.mutation.CreatorIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "EventAnnotation.creator"`)
 	}
 	return nil
 }
 
 // Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
-func (eauo *EventAnnotationUpdateOne) Modify(modifiers ...func(u *sql.UpdateBuilder)) *EventAnnotationUpdateOne {
-	eauo.modifiers = append(eauo.modifiers, modifiers...)
-	return eauo
+func (_u *EventAnnotationUpdateOne) Modify(modifiers ...func(u *sql.UpdateBuilder)) *EventAnnotationUpdateOne {
+	_u.modifiers = append(_u.modifiers, modifiers...)
+	return _u
 }
 
-func (eauo *EventAnnotationUpdateOne) sqlSave(ctx context.Context) (_node *EventAnnotation, err error) {
-	if err := eauo.check(); err != nil {
+func (_u *EventAnnotationUpdateOne) sqlSave(ctx context.Context) (_node *EventAnnotation, err error) {
+	if err := _u.check(); err != nil {
 		return _node, err
 	}
 	_spec := sqlgraph.NewUpdateSpec(eventannotation.Table, eventannotation.Columns, sqlgraph.NewFieldSpec(eventannotation.FieldID, field.TypeUUID))
-	id, ok := eauo.mutation.ID()
+	id, ok := _u.mutation.ID()
 	if !ok {
 		return nil, &ValidationError{Name: "id", err: errors.New(`ent: missing "EventAnnotation.id" for update`)}
 	}
 	_spec.Node.ID.Value = id
-	if fields := eauo.fields; len(fields) > 0 {
+	if fields := _u.fields; len(fields) > 0 {
 		_spec.Node.Columns = make([]string, 0, len(fields))
 		_spec.Node.Columns = append(_spec.Node.Columns, eventannotation.FieldID)
 		for _, f := range fields {
@@ -624,34 +624,34 @@ func (eauo *EventAnnotationUpdateOne) sqlSave(ctx context.Context) (_node *Event
 			}
 		}
 	}
-	if ps := eauo.mutation.predicates; len(ps) > 0 {
+	if ps := _u.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {
 				ps[i](selector)
 			}
 		}
 	}
-	if value, ok := eauo.mutation.CreatedAt(); ok {
+	if value, ok := _u.mutation.CreatedAt(); ok {
 		_spec.SetField(eventannotation.FieldCreatedAt, field.TypeTime, value)
 	}
-	if value, ok := eauo.mutation.MinutesOccupied(); ok {
+	if value, ok := _u.mutation.MinutesOccupied(); ok {
 		_spec.SetField(eventannotation.FieldMinutesOccupied, field.TypeInt, value)
 	}
-	if value, ok := eauo.mutation.AddedMinutesOccupied(); ok {
+	if value, ok := _u.mutation.AddedMinutesOccupied(); ok {
 		_spec.AddField(eventannotation.FieldMinutesOccupied, field.TypeInt, value)
 	}
-	if value, ok := eauo.mutation.Notes(); ok {
+	if value, ok := _u.mutation.Notes(); ok {
 		_spec.SetField(eventannotation.FieldNotes, field.TypeString, value)
 	}
-	if value, ok := eauo.mutation.Tags(); ok {
+	if value, ok := _u.mutation.Tags(); ok {
 		_spec.SetField(eventannotation.FieldTags, field.TypeJSON, value)
 	}
-	if value, ok := eauo.mutation.AppendedTags(); ok {
+	if value, ok := _u.mutation.AppendedTags(); ok {
 		_spec.AddModifier(func(u *sql.UpdateBuilder) {
 			sqljson.Append(u, eventannotation.FieldTags, value)
 		})
 	}
-	if eauo.mutation.EventCleared() {
+	if _u.mutation.EventCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
@@ -664,7 +664,7 @@ func (eauo *EventAnnotationUpdateOne) sqlSave(ctx context.Context) (_node *Event
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := eauo.mutation.EventIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.EventIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
@@ -680,7 +680,7 @@ func (eauo *EventAnnotationUpdateOne) sqlSave(ctx context.Context) (_node *Event
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if eauo.mutation.CreatorCleared() {
+	if _u.mutation.CreatorCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
@@ -693,7 +693,7 @@ func (eauo *EventAnnotationUpdateOne) sqlSave(ctx context.Context) (_node *Event
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := eauo.mutation.CreatorIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.CreatorIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
@@ -709,7 +709,7 @@ func (eauo *EventAnnotationUpdateOne) sqlSave(ctx context.Context) (_node *Event
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if eauo.mutation.HandoversCleared() {
+	if _u.mutation.HandoversCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
 			Inverse: true,
@@ -722,7 +722,7 @@ func (eauo *EventAnnotationUpdateOne) sqlSave(ctx context.Context) (_node *Event
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := eauo.mutation.RemovedHandoversIDs(); len(nodes) > 0 && !eauo.mutation.HandoversCleared() {
+	if nodes := _u.mutation.RemovedHandoversIDs(); len(nodes) > 0 && !_u.mutation.HandoversCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
 			Inverse: true,
@@ -738,7 +738,7 @@ func (eauo *EventAnnotationUpdateOne) sqlSave(ctx context.Context) (_node *Event
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := eauo.mutation.HandoversIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.HandoversIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
 			Inverse: true,
@@ -754,11 +754,11 @@ func (eauo *EventAnnotationUpdateOne) sqlSave(ctx context.Context) (_node *Event
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	_spec.AddModifiers(eauo.modifiers...)
-	_node = &EventAnnotation{config: eauo.config}
+	_spec.AddModifiers(_u.modifiers...)
+	_node = &EventAnnotation{config: _u.config}
 	_spec.Assign = _node.assignValues
 	_spec.ScanValues = _node.scanValues
-	if err = sqlgraph.UpdateNode(ctx, eauo.driver, _spec); err != nil {
+	if err = sqlgraph.UpdateNode(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{eventannotation.Label}
 		} else if sqlgraph.IsConstraintError(err) {
@@ -766,6 +766,6 @@ func (eauo *EventAnnotationUpdateOne) sqlSave(ctx context.Context) (_node *Event
 		}
 		return nil, err
 	}
-	eauo.mutation.done = true
+	_u.mutation.done = true
 	return _node, nil
 }

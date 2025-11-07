@@ -20,56 +20,56 @@ type ProviderSyncHistoryDelete struct {
 }
 
 // Where appends a list predicates to the ProviderSyncHistoryDelete builder.
-func (pshd *ProviderSyncHistoryDelete) Where(ps ...predicate.ProviderSyncHistory) *ProviderSyncHistoryDelete {
-	pshd.mutation.Where(ps...)
-	return pshd
+func (_d *ProviderSyncHistoryDelete) Where(ps ...predicate.ProviderSyncHistory) *ProviderSyncHistoryDelete {
+	_d.mutation.Where(ps...)
+	return _d
 }
 
 // Exec executes the deletion query and returns how many vertices were deleted.
-func (pshd *ProviderSyncHistoryDelete) Exec(ctx context.Context) (int, error) {
-	return withHooks(ctx, pshd.sqlExec, pshd.mutation, pshd.hooks)
+func (_d *ProviderSyncHistoryDelete) Exec(ctx context.Context) (int, error) {
+	return withHooks(ctx, _d.sqlExec, _d.mutation, _d.hooks)
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (pshd *ProviderSyncHistoryDelete) ExecX(ctx context.Context) int {
-	n, err := pshd.Exec(ctx)
+func (_d *ProviderSyncHistoryDelete) ExecX(ctx context.Context) int {
+	n, err := _d.Exec(ctx)
 	if err != nil {
 		panic(err)
 	}
 	return n
 }
 
-func (pshd *ProviderSyncHistoryDelete) sqlExec(ctx context.Context) (int, error) {
+func (_d *ProviderSyncHistoryDelete) sqlExec(ctx context.Context) (int, error) {
 	_spec := sqlgraph.NewDeleteSpec(providersynchistory.Table, sqlgraph.NewFieldSpec(providersynchistory.FieldID, field.TypeUUID))
-	if ps := pshd.mutation.predicates; len(ps) > 0 {
+	if ps := _d.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {
 				ps[i](selector)
 			}
 		}
 	}
-	affected, err := sqlgraph.DeleteNodes(ctx, pshd.driver, _spec)
+	affected, err := sqlgraph.DeleteNodes(ctx, _d.driver, _spec)
 	if err != nil && sqlgraph.IsConstraintError(err) {
 		err = &ConstraintError{msg: err.Error(), wrap: err}
 	}
-	pshd.mutation.done = true
+	_d.mutation.done = true
 	return affected, err
 }
 
 // ProviderSyncHistoryDeleteOne is the builder for deleting a single ProviderSyncHistory entity.
 type ProviderSyncHistoryDeleteOne struct {
-	pshd *ProviderSyncHistoryDelete
+	_d *ProviderSyncHistoryDelete
 }
 
 // Where appends a list predicates to the ProviderSyncHistoryDelete builder.
-func (pshdo *ProviderSyncHistoryDeleteOne) Where(ps ...predicate.ProviderSyncHistory) *ProviderSyncHistoryDeleteOne {
-	pshdo.pshd.mutation.Where(ps...)
-	return pshdo
+func (_d *ProviderSyncHistoryDeleteOne) Where(ps ...predicate.ProviderSyncHistory) *ProviderSyncHistoryDeleteOne {
+	_d._d.mutation.Where(ps...)
+	return _d
 }
 
 // Exec executes the deletion query.
-func (pshdo *ProviderSyncHistoryDeleteOne) Exec(ctx context.Context) error {
-	n, err := pshdo.pshd.Exec(ctx)
+func (_d *ProviderSyncHistoryDeleteOne) Exec(ctx context.Context) error {
+	n, err := _d._d.Exec(ctx)
 	switch {
 	case err != nil:
 		return err
@@ -81,8 +81,8 @@ func (pshdo *ProviderSyncHistoryDeleteOne) Exec(ctx context.Context) error {
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (pshdo *ProviderSyncHistoryDeleteOne) ExecX(ctx context.Context) {
-	if err := pshdo.Exec(ctx); err != nil {
+func (_d *ProviderSyncHistoryDeleteOne) ExecX(ctx context.Context) {
+	if err := _d.Exec(ctx); err != nil {
 		panic(err)
 	}
 }

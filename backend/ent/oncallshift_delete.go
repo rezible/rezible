@@ -20,56 +20,56 @@ type OncallShiftDelete struct {
 }
 
 // Where appends a list predicates to the OncallShiftDelete builder.
-func (osd *OncallShiftDelete) Where(ps ...predicate.OncallShift) *OncallShiftDelete {
-	osd.mutation.Where(ps...)
-	return osd
+func (_d *OncallShiftDelete) Where(ps ...predicate.OncallShift) *OncallShiftDelete {
+	_d.mutation.Where(ps...)
+	return _d
 }
 
 // Exec executes the deletion query and returns how many vertices were deleted.
-func (osd *OncallShiftDelete) Exec(ctx context.Context) (int, error) {
-	return withHooks(ctx, osd.sqlExec, osd.mutation, osd.hooks)
+func (_d *OncallShiftDelete) Exec(ctx context.Context) (int, error) {
+	return withHooks(ctx, _d.sqlExec, _d.mutation, _d.hooks)
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (osd *OncallShiftDelete) ExecX(ctx context.Context) int {
-	n, err := osd.Exec(ctx)
+func (_d *OncallShiftDelete) ExecX(ctx context.Context) int {
+	n, err := _d.Exec(ctx)
 	if err != nil {
 		panic(err)
 	}
 	return n
 }
 
-func (osd *OncallShiftDelete) sqlExec(ctx context.Context) (int, error) {
+func (_d *OncallShiftDelete) sqlExec(ctx context.Context) (int, error) {
 	_spec := sqlgraph.NewDeleteSpec(oncallshift.Table, sqlgraph.NewFieldSpec(oncallshift.FieldID, field.TypeUUID))
-	if ps := osd.mutation.predicates; len(ps) > 0 {
+	if ps := _d.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {
 				ps[i](selector)
 			}
 		}
 	}
-	affected, err := sqlgraph.DeleteNodes(ctx, osd.driver, _spec)
+	affected, err := sqlgraph.DeleteNodes(ctx, _d.driver, _spec)
 	if err != nil && sqlgraph.IsConstraintError(err) {
 		err = &ConstraintError{msg: err.Error(), wrap: err}
 	}
-	osd.mutation.done = true
+	_d.mutation.done = true
 	return affected, err
 }
 
 // OncallShiftDeleteOne is the builder for deleting a single OncallShift entity.
 type OncallShiftDeleteOne struct {
-	osd *OncallShiftDelete
+	_d *OncallShiftDelete
 }
 
 // Where appends a list predicates to the OncallShiftDelete builder.
-func (osdo *OncallShiftDeleteOne) Where(ps ...predicate.OncallShift) *OncallShiftDeleteOne {
-	osdo.osd.mutation.Where(ps...)
-	return osdo
+func (_d *OncallShiftDeleteOne) Where(ps ...predicate.OncallShift) *OncallShiftDeleteOne {
+	_d._d.mutation.Where(ps...)
+	return _d
 }
 
 // Exec executes the deletion query.
-func (osdo *OncallShiftDeleteOne) Exec(ctx context.Context) error {
-	n, err := osdo.osd.Exec(ctx)
+func (_d *OncallShiftDeleteOne) Exec(ctx context.Context) error {
+	n, err := _d._d.Exec(ctx)
 	switch {
 	case err != nil:
 		return err
@@ -81,8 +81,8 @@ func (osdo *OncallShiftDeleteOne) Exec(ctx context.Context) error {
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (osdo *OncallShiftDeleteOne) ExecX(ctx context.Context) {
-	if err := osdo.Exec(ctx); err != nil {
+func (_d *OncallShiftDeleteOne) ExecX(ctx context.Context) {
+	if err := _d.Exec(ctx); err != nil {
 		panic(err)
 	}
 }

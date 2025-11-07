@@ -33,263 +33,263 @@ type IncidentEventCreate struct {
 }
 
 // SetTenantID sets the "tenant_id" field.
-func (iec *IncidentEventCreate) SetTenantID(i int) *IncidentEventCreate {
-	iec.mutation.SetTenantID(i)
-	return iec
+func (_c *IncidentEventCreate) SetTenantID(v int) *IncidentEventCreate {
+	_c.mutation.SetTenantID(v)
+	return _c
 }
 
 // SetIncidentID sets the "incident_id" field.
-func (iec *IncidentEventCreate) SetIncidentID(u uuid.UUID) *IncidentEventCreate {
-	iec.mutation.SetIncidentID(u)
-	return iec
+func (_c *IncidentEventCreate) SetIncidentID(v uuid.UUID) *IncidentEventCreate {
+	_c.mutation.SetIncidentID(v)
+	return _c
 }
 
 // SetEventID sets the "event_id" field.
-func (iec *IncidentEventCreate) SetEventID(u uuid.UUID) *IncidentEventCreate {
-	iec.mutation.SetEventID(u)
-	return iec
+func (_c *IncidentEventCreate) SetEventID(v uuid.UUID) *IncidentEventCreate {
+	_c.mutation.SetEventID(v)
+	return _c
 }
 
 // SetNillableEventID sets the "event_id" field if the given value is not nil.
-func (iec *IncidentEventCreate) SetNillableEventID(u *uuid.UUID) *IncidentEventCreate {
-	if u != nil {
-		iec.SetEventID(*u)
+func (_c *IncidentEventCreate) SetNillableEventID(v *uuid.UUID) *IncidentEventCreate {
+	if v != nil {
+		_c.SetEventID(*v)
 	}
-	return iec
+	return _c
 }
 
 // SetTimestamp sets the "timestamp" field.
-func (iec *IncidentEventCreate) SetTimestamp(t time.Time) *IncidentEventCreate {
-	iec.mutation.SetTimestamp(t)
-	return iec
+func (_c *IncidentEventCreate) SetTimestamp(v time.Time) *IncidentEventCreate {
+	_c.mutation.SetTimestamp(v)
+	return _c
 }
 
 // SetKind sets the "kind" field.
-func (iec *IncidentEventCreate) SetKind(i incidentevent.Kind) *IncidentEventCreate {
-	iec.mutation.SetKind(i)
-	return iec
+func (_c *IncidentEventCreate) SetKind(v incidentevent.Kind) *IncidentEventCreate {
+	_c.mutation.SetKind(v)
+	return _c
 }
 
 // SetTitle sets the "title" field.
-func (iec *IncidentEventCreate) SetTitle(s string) *IncidentEventCreate {
-	iec.mutation.SetTitle(s)
-	return iec
+func (_c *IncidentEventCreate) SetTitle(v string) *IncidentEventCreate {
+	_c.mutation.SetTitle(v)
+	return _c
 }
 
 // SetDescription sets the "description" field.
-func (iec *IncidentEventCreate) SetDescription(s string) *IncidentEventCreate {
-	iec.mutation.SetDescription(s)
-	return iec
+func (_c *IncidentEventCreate) SetDescription(v string) *IncidentEventCreate {
+	_c.mutation.SetDescription(v)
+	return _c
 }
 
 // SetNillableDescription sets the "description" field if the given value is not nil.
-func (iec *IncidentEventCreate) SetNillableDescription(s *string) *IncidentEventCreate {
-	if s != nil {
-		iec.SetDescription(*s)
+func (_c *IncidentEventCreate) SetNillableDescription(v *string) *IncidentEventCreate {
+	if v != nil {
+		_c.SetDescription(*v)
 	}
-	return iec
+	return _c
 }
 
 // SetIsKey sets the "is_key" field.
-func (iec *IncidentEventCreate) SetIsKey(b bool) *IncidentEventCreate {
-	iec.mutation.SetIsKey(b)
-	return iec
+func (_c *IncidentEventCreate) SetIsKey(v bool) *IncidentEventCreate {
+	_c.mutation.SetIsKey(v)
+	return _c
 }
 
 // SetNillableIsKey sets the "is_key" field if the given value is not nil.
-func (iec *IncidentEventCreate) SetNillableIsKey(b *bool) *IncidentEventCreate {
-	if b != nil {
-		iec.SetIsKey(*b)
+func (_c *IncidentEventCreate) SetNillableIsKey(v *bool) *IncidentEventCreate {
+	if v != nil {
+		_c.SetIsKey(*v)
 	}
-	return iec
+	return _c
 }
 
 // SetCreatedAt sets the "created_at" field.
-func (iec *IncidentEventCreate) SetCreatedAt(t time.Time) *IncidentEventCreate {
-	iec.mutation.SetCreatedAt(t)
-	return iec
+func (_c *IncidentEventCreate) SetCreatedAt(v time.Time) *IncidentEventCreate {
+	_c.mutation.SetCreatedAt(v)
+	return _c
 }
 
 // SetNillableCreatedAt sets the "created_at" field if the given value is not nil.
-func (iec *IncidentEventCreate) SetNillableCreatedAt(t *time.Time) *IncidentEventCreate {
-	if t != nil {
-		iec.SetCreatedAt(*t)
+func (_c *IncidentEventCreate) SetNillableCreatedAt(v *time.Time) *IncidentEventCreate {
+	if v != nil {
+		_c.SetCreatedAt(*v)
 	}
-	return iec
+	return _c
 }
 
 // SetUpdatedAt sets the "updated_at" field.
-func (iec *IncidentEventCreate) SetUpdatedAt(t time.Time) *IncidentEventCreate {
-	iec.mutation.SetUpdatedAt(t)
-	return iec
+func (_c *IncidentEventCreate) SetUpdatedAt(v time.Time) *IncidentEventCreate {
+	_c.mutation.SetUpdatedAt(v)
+	return _c
 }
 
 // SetNillableUpdatedAt sets the "updated_at" field if the given value is not nil.
-func (iec *IncidentEventCreate) SetNillableUpdatedAt(t *time.Time) *IncidentEventCreate {
-	if t != nil {
-		iec.SetUpdatedAt(*t)
+func (_c *IncidentEventCreate) SetNillableUpdatedAt(v *time.Time) *IncidentEventCreate {
+	if v != nil {
+		_c.SetUpdatedAt(*v)
 	}
-	return iec
+	return _c
 }
 
 // SetCreatedBy sets the "created_by" field.
-func (iec *IncidentEventCreate) SetCreatedBy(u uuid.UUID) *IncidentEventCreate {
-	iec.mutation.SetCreatedBy(u)
-	return iec
+func (_c *IncidentEventCreate) SetCreatedBy(v uuid.UUID) *IncidentEventCreate {
+	_c.mutation.SetCreatedBy(v)
+	return _c
 }
 
 // SetSequence sets the "sequence" field.
-func (iec *IncidentEventCreate) SetSequence(i int) *IncidentEventCreate {
-	iec.mutation.SetSequence(i)
-	return iec
+func (_c *IncidentEventCreate) SetSequence(v int) *IncidentEventCreate {
+	_c.mutation.SetSequence(v)
+	return _c
 }
 
 // SetNillableSequence sets the "sequence" field if the given value is not nil.
-func (iec *IncidentEventCreate) SetNillableSequence(i *int) *IncidentEventCreate {
-	if i != nil {
-		iec.SetSequence(*i)
+func (_c *IncidentEventCreate) SetNillableSequence(v *int) *IncidentEventCreate {
+	if v != nil {
+		_c.SetSequence(*v)
 	}
-	return iec
+	return _c
 }
 
 // SetIsDraft sets the "is_draft" field.
-func (iec *IncidentEventCreate) SetIsDraft(b bool) *IncidentEventCreate {
-	iec.mutation.SetIsDraft(b)
-	return iec
+func (_c *IncidentEventCreate) SetIsDraft(v bool) *IncidentEventCreate {
+	_c.mutation.SetIsDraft(v)
+	return _c
 }
 
 // SetNillableIsDraft sets the "is_draft" field if the given value is not nil.
-func (iec *IncidentEventCreate) SetNillableIsDraft(b *bool) *IncidentEventCreate {
-	if b != nil {
-		iec.SetIsDraft(*b)
+func (_c *IncidentEventCreate) SetNillableIsDraft(v *bool) *IncidentEventCreate {
+	if v != nil {
+		_c.SetIsDraft(*v)
 	}
-	return iec
+	return _c
 }
 
 // SetID sets the "id" field.
-func (iec *IncidentEventCreate) SetID(u uuid.UUID) *IncidentEventCreate {
-	iec.mutation.SetID(u)
-	return iec
+func (_c *IncidentEventCreate) SetID(v uuid.UUID) *IncidentEventCreate {
+	_c.mutation.SetID(v)
+	return _c
 }
 
 // SetNillableID sets the "id" field if the given value is not nil.
-func (iec *IncidentEventCreate) SetNillableID(u *uuid.UUID) *IncidentEventCreate {
-	if u != nil {
-		iec.SetID(*u)
+func (_c *IncidentEventCreate) SetNillableID(v *uuid.UUID) *IncidentEventCreate {
+	if v != nil {
+		_c.SetID(*v)
 	}
-	return iec
+	return _c
 }
 
 // SetTenant sets the "tenant" edge to the Tenant entity.
-func (iec *IncidentEventCreate) SetTenant(t *Tenant) *IncidentEventCreate {
-	return iec.SetTenantID(t.ID)
+func (_c *IncidentEventCreate) SetTenant(v *Tenant) *IncidentEventCreate {
+	return _c.SetTenantID(v.ID)
 }
 
 // SetIncident sets the "incident" edge to the Incident entity.
-func (iec *IncidentEventCreate) SetIncident(i *Incident) *IncidentEventCreate {
-	return iec.SetIncidentID(i.ID)
+func (_c *IncidentEventCreate) SetIncident(v *Incident) *IncidentEventCreate {
+	return _c.SetIncidentID(v.ID)
 }
 
 // SetEvent sets the "event" edge to the Event entity.
-func (iec *IncidentEventCreate) SetEvent(e *Event) *IncidentEventCreate {
-	return iec.SetEventID(e.ID)
+func (_c *IncidentEventCreate) SetEvent(v *Event) *IncidentEventCreate {
+	return _c.SetEventID(v.ID)
 }
 
 // SetContextID sets the "context" edge to the IncidentEventContext entity by ID.
-func (iec *IncidentEventCreate) SetContextID(id uuid.UUID) *IncidentEventCreate {
-	iec.mutation.SetContextID(id)
-	return iec
+func (_c *IncidentEventCreate) SetContextID(id uuid.UUID) *IncidentEventCreate {
+	_c.mutation.SetContextID(id)
+	return _c
 }
 
 // SetNillableContextID sets the "context" edge to the IncidentEventContext entity by ID if the given value is not nil.
-func (iec *IncidentEventCreate) SetNillableContextID(id *uuid.UUID) *IncidentEventCreate {
+func (_c *IncidentEventCreate) SetNillableContextID(id *uuid.UUID) *IncidentEventCreate {
 	if id != nil {
-		iec = iec.SetContextID(*id)
+		_c = _c.SetContextID(*id)
 	}
-	return iec
+	return _c
 }
 
 // SetContext sets the "context" edge to the IncidentEventContext entity.
-func (iec *IncidentEventCreate) SetContext(i *IncidentEventContext) *IncidentEventCreate {
-	return iec.SetContextID(i.ID)
+func (_c *IncidentEventCreate) SetContext(v *IncidentEventContext) *IncidentEventCreate {
+	return _c.SetContextID(v.ID)
 }
 
 // AddFactorIDs adds the "factors" edge to the IncidentEventContributingFactor entity by IDs.
-func (iec *IncidentEventCreate) AddFactorIDs(ids ...uuid.UUID) *IncidentEventCreate {
-	iec.mutation.AddFactorIDs(ids...)
-	return iec
+func (_c *IncidentEventCreate) AddFactorIDs(ids ...uuid.UUID) *IncidentEventCreate {
+	_c.mutation.AddFactorIDs(ids...)
+	return _c
 }
 
 // AddFactors adds the "factors" edges to the IncidentEventContributingFactor entity.
-func (iec *IncidentEventCreate) AddFactors(i ...*IncidentEventContributingFactor) *IncidentEventCreate {
-	ids := make([]uuid.UUID, len(i))
-	for j := range i {
-		ids[j] = i[j].ID
+func (_c *IncidentEventCreate) AddFactors(v ...*IncidentEventContributingFactor) *IncidentEventCreate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
 	}
-	return iec.AddFactorIDs(ids...)
+	return _c.AddFactorIDs(ids...)
 }
 
 // AddEvidenceIDs adds the "evidence" edge to the IncidentEventEvidence entity by IDs.
-func (iec *IncidentEventCreate) AddEvidenceIDs(ids ...uuid.UUID) *IncidentEventCreate {
-	iec.mutation.AddEvidenceIDs(ids...)
-	return iec
+func (_c *IncidentEventCreate) AddEvidenceIDs(ids ...uuid.UUID) *IncidentEventCreate {
+	_c.mutation.AddEvidenceIDs(ids...)
+	return _c
 }
 
 // AddEvidence adds the "evidence" edges to the IncidentEventEvidence entity.
-func (iec *IncidentEventCreate) AddEvidence(i ...*IncidentEventEvidence) *IncidentEventCreate {
-	ids := make([]uuid.UUID, len(i))
-	for j := range i {
-		ids[j] = i[j].ID
+func (_c *IncidentEventCreate) AddEvidence(v ...*IncidentEventEvidence) *IncidentEventCreate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
 	}
-	return iec.AddEvidenceIDs(ids...)
+	return _c.AddEvidenceIDs(ids...)
 }
 
 // AddSystemComponentIDs adds the "system_components" edge to the SystemComponent entity by IDs.
-func (iec *IncidentEventCreate) AddSystemComponentIDs(ids ...uuid.UUID) *IncidentEventCreate {
-	iec.mutation.AddSystemComponentIDs(ids...)
-	return iec
+func (_c *IncidentEventCreate) AddSystemComponentIDs(ids ...uuid.UUID) *IncidentEventCreate {
+	_c.mutation.AddSystemComponentIDs(ids...)
+	return _c
 }
 
 // AddSystemComponents adds the "system_components" edges to the SystemComponent entity.
-func (iec *IncidentEventCreate) AddSystemComponents(s ...*SystemComponent) *IncidentEventCreate {
-	ids := make([]uuid.UUID, len(s))
-	for i := range s {
-		ids[i] = s[i].ID
+func (_c *IncidentEventCreate) AddSystemComponents(v ...*SystemComponent) *IncidentEventCreate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
 	}
-	return iec.AddSystemComponentIDs(ids...)
+	return _c.AddSystemComponentIDs(ids...)
 }
 
 // AddEventComponentIDs adds the "event_components" edge to the IncidentEventSystemComponent entity by IDs.
-func (iec *IncidentEventCreate) AddEventComponentIDs(ids ...uuid.UUID) *IncidentEventCreate {
-	iec.mutation.AddEventComponentIDs(ids...)
-	return iec
+func (_c *IncidentEventCreate) AddEventComponentIDs(ids ...uuid.UUID) *IncidentEventCreate {
+	_c.mutation.AddEventComponentIDs(ids...)
+	return _c
 }
 
 // AddEventComponents adds the "event_components" edges to the IncidentEventSystemComponent entity.
-func (iec *IncidentEventCreate) AddEventComponents(i ...*IncidentEventSystemComponent) *IncidentEventCreate {
-	ids := make([]uuid.UUID, len(i))
-	for j := range i {
-		ids[j] = i[j].ID
+func (_c *IncidentEventCreate) AddEventComponents(v ...*IncidentEventSystemComponent) *IncidentEventCreate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
 	}
-	return iec.AddEventComponentIDs(ids...)
+	return _c.AddEventComponentIDs(ids...)
 }
 
 // Mutation returns the IncidentEventMutation object of the builder.
-func (iec *IncidentEventCreate) Mutation() *IncidentEventMutation {
-	return iec.mutation
+func (_c *IncidentEventCreate) Mutation() *IncidentEventMutation {
+	return _c.mutation
 }
 
 // Save creates the IncidentEvent in the database.
-func (iec *IncidentEventCreate) Save(ctx context.Context) (*IncidentEvent, error) {
-	if err := iec.defaults(); err != nil {
+func (_c *IncidentEventCreate) Save(ctx context.Context) (*IncidentEvent, error) {
+	if err := _c.defaults(); err != nil {
 		return nil, err
 	}
-	return withHooks(ctx, iec.sqlSave, iec.mutation, iec.hooks)
+	return withHooks(ctx, _c.sqlSave, _c.mutation, _c.hooks)
 }
 
 // SaveX calls Save and panics if Save returns an error.
-func (iec *IncidentEventCreate) SaveX(ctx context.Context) *IncidentEvent {
-	v, err := iec.Save(ctx)
+func (_c *IncidentEventCreate) SaveX(ctx context.Context) *IncidentEvent {
+	v, err := _c.Save(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -297,116 +297,116 @@ func (iec *IncidentEventCreate) SaveX(ctx context.Context) *IncidentEvent {
 }
 
 // Exec executes the query.
-func (iec *IncidentEventCreate) Exec(ctx context.Context) error {
-	_, err := iec.Save(ctx)
+func (_c *IncidentEventCreate) Exec(ctx context.Context) error {
+	_, err := _c.Save(ctx)
 	return err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (iec *IncidentEventCreate) ExecX(ctx context.Context) {
-	if err := iec.Exec(ctx); err != nil {
+func (_c *IncidentEventCreate) ExecX(ctx context.Context) {
+	if err := _c.Exec(ctx); err != nil {
 		panic(err)
 	}
 }
 
 // defaults sets the default values of the builder before save.
-func (iec *IncidentEventCreate) defaults() error {
-	if _, ok := iec.mutation.IsKey(); !ok {
+func (_c *IncidentEventCreate) defaults() error {
+	if _, ok := _c.mutation.IsKey(); !ok {
 		v := incidentevent.DefaultIsKey
-		iec.mutation.SetIsKey(v)
+		_c.mutation.SetIsKey(v)
 	}
-	if _, ok := iec.mutation.CreatedAt(); !ok {
+	if _, ok := _c.mutation.CreatedAt(); !ok {
 		if incidentevent.DefaultCreatedAt == nil {
 			return fmt.Errorf("ent: uninitialized incidentevent.DefaultCreatedAt (forgotten import ent/runtime?)")
 		}
 		v := incidentevent.DefaultCreatedAt()
-		iec.mutation.SetCreatedAt(v)
+		_c.mutation.SetCreatedAt(v)
 	}
-	if _, ok := iec.mutation.UpdatedAt(); !ok {
+	if _, ok := _c.mutation.UpdatedAt(); !ok {
 		if incidentevent.DefaultUpdatedAt == nil {
 			return fmt.Errorf("ent: uninitialized incidentevent.DefaultUpdatedAt (forgotten import ent/runtime?)")
 		}
 		v := incidentevent.DefaultUpdatedAt()
-		iec.mutation.SetUpdatedAt(v)
+		_c.mutation.SetUpdatedAt(v)
 	}
-	if _, ok := iec.mutation.Sequence(); !ok {
+	if _, ok := _c.mutation.Sequence(); !ok {
 		v := incidentevent.DefaultSequence
-		iec.mutation.SetSequence(v)
+		_c.mutation.SetSequence(v)
 	}
-	if _, ok := iec.mutation.IsDraft(); !ok {
+	if _, ok := _c.mutation.IsDraft(); !ok {
 		v := incidentevent.DefaultIsDraft
-		iec.mutation.SetIsDraft(v)
+		_c.mutation.SetIsDraft(v)
 	}
-	if _, ok := iec.mutation.ID(); !ok {
+	if _, ok := _c.mutation.ID(); !ok {
 		if incidentevent.DefaultID == nil {
 			return fmt.Errorf("ent: uninitialized incidentevent.DefaultID (forgotten import ent/runtime?)")
 		}
 		v := incidentevent.DefaultID()
-		iec.mutation.SetID(v)
+		_c.mutation.SetID(v)
 	}
 	return nil
 }
 
 // check runs all checks and user-defined validators on the builder.
-func (iec *IncidentEventCreate) check() error {
-	if _, ok := iec.mutation.TenantID(); !ok {
+func (_c *IncidentEventCreate) check() error {
+	if _, ok := _c.mutation.TenantID(); !ok {
 		return &ValidationError{Name: "tenant_id", err: errors.New(`ent: missing required field "IncidentEvent.tenant_id"`)}
 	}
-	if _, ok := iec.mutation.IncidentID(); !ok {
+	if _, ok := _c.mutation.IncidentID(); !ok {
 		return &ValidationError{Name: "incident_id", err: errors.New(`ent: missing required field "IncidentEvent.incident_id"`)}
 	}
-	if _, ok := iec.mutation.Timestamp(); !ok {
+	if _, ok := _c.mutation.Timestamp(); !ok {
 		return &ValidationError{Name: "timestamp", err: errors.New(`ent: missing required field "IncidentEvent.timestamp"`)}
 	}
-	if _, ok := iec.mutation.Kind(); !ok {
+	if _, ok := _c.mutation.Kind(); !ok {
 		return &ValidationError{Name: "kind", err: errors.New(`ent: missing required field "IncidentEvent.kind"`)}
 	}
-	if v, ok := iec.mutation.Kind(); ok {
+	if v, ok := _c.mutation.Kind(); ok {
 		if err := incidentevent.KindValidator(v); err != nil {
 			return &ValidationError{Name: "kind", err: fmt.Errorf(`ent: validator failed for field "IncidentEvent.kind": %w`, err)}
 		}
 	}
-	if _, ok := iec.mutation.Title(); !ok {
+	if _, ok := _c.mutation.Title(); !ok {
 		return &ValidationError{Name: "title", err: errors.New(`ent: missing required field "IncidentEvent.title"`)}
 	}
-	if v, ok := iec.mutation.Title(); ok {
+	if v, ok := _c.mutation.Title(); ok {
 		if err := incidentevent.TitleValidator(v); err != nil {
 			return &ValidationError{Name: "title", err: fmt.Errorf(`ent: validator failed for field "IncidentEvent.title": %w`, err)}
 		}
 	}
-	if _, ok := iec.mutation.IsKey(); !ok {
+	if _, ok := _c.mutation.IsKey(); !ok {
 		return &ValidationError{Name: "is_key", err: errors.New(`ent: missing required field "IncidentEvent.is_key"`)}
 	}
-	if _, ok := iec.mutation.CreatedAt(); !ok {
+	if _, ok := _c.mutation.CreatedAt(); !ok {
 		return &ValidationError{Name: "created_at", err: errors.New(`ent: missing required field "IncidentEvent.created_at"`)}
 	}
-	if _, ok := iec.mutation.UpdatedAt(); !ok {
+	if _, ok := _c.mutation.UpdatedAt(); !ok {
 		return &ValidationError{Name: "updated_at", err: errors.New(`ent: missing required field "IncidentEvent.updated_at"`)}
 	}
-	if _, ok := iec.mutation.CreatedBy(); !ok {
+	if _, ok := _c.mutation.CreatedBy(); !ok {
 		return &ValidationError{Name: "created_by", err: errors.New(`ent: missing required field "IncidentEvent.created_by"`)}
 	}
-	if _, ok := iec.mutation.Sequence(); !ok {
+	if _, ok := _c.mutation.Sequence(); !ok {
 		return &ValidationError{Name: "sequence", err: errors.New(`ent: missing required field "IncidentEvent.sequence"`)}
 	}
-	if _, ok := iec.mutation.IsDraft(); !ok {
+	if _, ok := _c.mutation.IsDraft(); !ok {
 		return &ValidationError{Name: "is_draft", err: errors.New(`ent: missing required field "IncidentEvent.is_draft"`)}
 	}
-	if len(iec.mutation.TenantIDs()) == 0 {
+	if len(_c.mutation.TenantIDs()) == 0 {
 		return &ValidationError{Name: "tenant", err: errors.New(`ent: missing required edge "IncidentEvent.tenant"`)}
 	}
-	if len(iec.mutation.IncidentIDs()) == 0 {
+	if len(_c.mutation.IncidentIDs()) == 0 {
 		return &ValidationError{Name: "incident", err: errors.New(`ent: missing required edge "IncidentEvent.incident"`)}
 	}
 	return nil
 }
 
-func (iec *IncidentEventCreate) sqlSave(ctx context.Context) (*IncidentEvent, error) {
-	if err := iec.check(); err != nil {
+func (_c *IncidentEventCreate) sqlSave(ctx context.Context) (*IncidentEvent, error) {
+	if err := _c.check(); err != nil {
 		return nil, err
 	}
-	_node, _spec := iec.createSpec()
-	if err := sqlgraph.CreateNode(ctx, iec.driver, _spec); err != nil {
+	_node, _spec := _c.createSpec()
+	if err := sqlgraph.CreateNode(ctx, _c.driver, _spec); err != nil {
 		if sqlgraph.IsConstraintError(err) {
 			err = &ConstraintError{msg: err.Error(), wrap: err}
 		}
@@ -419,62 +419,62 @@ func (iec *IncidentEventCreate) sqlSave(ctx context.Context) (*IncidentEvent, er
 			return nil, err
 		}
 	}
-	iec.mutation.id = &_node.ID
-	iec.mutation.done = true
+	_c.mutation.id = &_node.ID
+	_c.mutation.done = true
 	return _node, nil
 }
 
-func (iec *IncidentEventCreate) createSpec() (*IncidentEvent, *sqlgraph.CreateSpec) {
+func (_c *IncidentEventCreate) createSpec() (*IncidentEvent, *sqlgraph.CreateSpec) {
 	var (
-		_node = &IncidentEvent{config: iec.config}
+		_node = &IncidentEvent{config: _c.config}
 		_spec = sqlgraph.NewCreateSpec(incidentevent.Table, sqlgraph.NewFieldSpec(incidentevent.FieldID, field.TypeUUID))
 	)
-	_spec.OnConflict = iec.conflict
-	if id, ok := iec.mutation.ID(); ok {
+	_spec.OnConflict = _c.conflict
+	if id, ok := _c.mutation.ID(); ok {
 		_node.ID = id
 		_spec.ID.Value = &id
 	}
-	if value, ok := iec.mutation.Timestamp(); ok {
+	if value, ok := _c.mutation.Timestamp(); ok {
 		_spec.SetField(incidentevent.FieldTimestamp, field.TypeTime, value)
 		_node.Timestamp = value
 	}
-	if value, ok := iec.mutation.Kind(); ok {
+	if value, ok := _c.mutation.Kind(); ok {
 		_spec.SetField(incidentevent.FieldKind, field.TypeEnum, value)
 		_node.Kind = value
 	}
-	if value, ok := iec.mutation.Title(); ok {
+	if value, ok := _c.mutation.Title(); ok {
 		_spec.SetField(incidentevent.FieldTitle, field.TypeString, value)
 		_node.Title = value
 	}
-	if value, ok := iec.mutation.Description(); ok {
+	if value, ok := _c.mutation.Description(); ok {
 		_spec.SetField(incidentevent.FieldDescription, field.TypeString, value)
 		_node.Description = value
 	}
-	if value, ok := iec.mutation.IsKey(); ok {
+	if value, ok := _c.mutation.IsKey(); ok {
 		_spec.SetField(incidentevent.FieldIsKey, field.TypeBool, value)
 		_node.IsKey = value
 	}
-	if value, ok := iec.mutation.CreatedAt(); ok {
+	if value, ok := _c.mutation.CreatedAt(); ok {
 		_spec.SetField(incidentevent.FieldCreatedAt, field.TypeTime, value)
 		_node.CreatedAt = value
 	}
-	if value, ok := iec.mutation.UpdatedAt(); ok {
+	if value, ok := _c.mutation.UpdatedAt(); ok {
 		_spec.SetField(incidentevent.FieldUpdatedAt, field.TypeTime, value)
 		_node.UpdatedAt = value
 	}
-	if value, ok := iec.mutation.CreatedBy(); ok {
+	if value, ok := _c.mutation.CreatedBy(); ok {
 		_spec.SetField(incidentevent.FieldCreatedBy, field.TypeUUID, value)
 		_node.CreatedBy = value
 	}
-	if value, ok := iec.mutation.Sequence(); ok {
+	if value, ok := _c.mutation.Sequence(); ok {
 		_spec.SetField(incidentevent.FieldSequence, field.TypeInt, value)
 		_node.Sequence = value
 	}
-	if value, ok := iec.mutation.IsDraft(); ok {
+	if value, ok := _c.mutation.IsDraft(); ok {
 		_spec.SetField(incidentevent.FieldIsDraft, field.TypeBool, value)
 		_node.IsDraft = value
 	}
-	if nodes := iec.mutation.TenantIDs(); len(nodes) > 0 {
+	if nodes := _c.mutation.TenantIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
@@ -491,7 +491,7 @@ func (iec *IncidentEventCreate) createSpec() (*IncidentEvent, *sqlgraph.CreateSp
 		_node.TenantID = nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
-	if nodes := iec.mutation.IncidentIDs(); len(nodes) > 0 {
+	if nodes := _c.mutation.IncidentIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: true,
@@ -508,7 +508,7 @@ func (iec *IncidentEventCreate) createSpec() (*IncidentEvent, *sqlgraph.CreateSp
 		_node.IncidentID = nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
-	if nodes := iec.mutation.EventIDs(); len(nodes) > 0 {
+	if nodes := _c.mutation.EventIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
@@ -525,7 +525,7 @@ func (iec *IncidentEventCreate) createSpec() (*IncidentEvent, *sqlgraph.CreateSp
 		_node.EventID = nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
-	if nodes := iec.mutation.ContextIDs(); len(nodes) > 0 {
+	if nodes := _c.mutation.ContextIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2O,
 			Inverse: false,
@@ -541,7 +541,7 @@ func (iec *IncidentEventCreate) createSpec() (*IncidentEvent, *sqlgraph.CreateSp
 		}
 		_spec.Edges = append(_spec.Edges, edge)
 	}
-	if nodes := iec.mutation.FactorsIDs(); len(nodes) > 0 {
+	if nodes := _c.mutation.FactorsIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
@@ -557,7 +557,7 @@ func (iec *IncidentEventCreate) createSpec() (*IncidentEvent, *sqlgraph.CreateSp
 		}
 		_spec.Edges = append(_spec.Edges, edge)
 	}
-	if nodes := iec.mutation.EvidenceIDs(); len(nodes) > 0 {
+	if nodes := _c.mutation.EvidenceIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
@@ -573,7 +573,7 @@ func (iec *IncidentEventCreate) createSpec() (*IncidentEvent, *sqlgraph.CreateSp
 		}
 		_spec.Edges = append(_spec.Edges, edge)
 	}
-	if nodes := iec.mutation.SystemComponentsIDs(); len(nodes) > 0 {
+	if nodes := _c.mutation.SystemComponentsIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
 			Inverse: false,
@@ -587,7 +587,7 @@ func (iec *IncidentEventCreate) createSpec() (*IncidentEvent, *sqlgraph.CreateSp
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
-		createE := &IncidentEventSystemComponentCreate{config: iec.config, mutation: newIncidentEventSystemComponentMutation(iec.config, OpCreate)}
+		createE := &IncidentEventSystemComponentCreate{config: _c.config, mutation: newIncidentEventSystemComponentMutation(_c.config, OpCreate)}
 		_ = createE.defaults()
 		_, specE := createE.createSpec()
 		edge.Target.Fields = specE.Fields
@@ -596,7 +596,7 @@ func (iec *IncidentEventCreate) createSpec() (*IncidentEvent, *sqlgraph.CreateSp
 		}
 		_spec.Edges = append(_spec.Edges, edge)
 	}
-	if nodes := iec.mutation.EventComponentsIDs(); len(nodes) > 0 {
+	if nodes := _c.mutation.EventComponentsIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: true,
@@ -631,10 +631,10 @@ func (iec *IncidentEventCreate) createSpec() (*IncidentEvent, *sqlgraph.CreateSp
 //			SetTenantID(v+v).
 //		}).
 //		Exec(ctx)
-func (iec *IncidentEventCreate) OnConflict(opts ...sql.ConflictOption) *IncidentEventUpsertOne {
-	iec.conflict = opts
+func (_c *IncidentEventCreate) OnConflict(opts ...sql.ConflictOption) *IncidentEventUpsertOne {
+	_c.conflict = opts
 	return &IncidentEventUpsertOne{
-		create: iec,
+		create: _c,
 	}
 }
 
@@ -644,10 +644,10 @@ func (iec *IncidentEventCreate) OnConflict(opts ...sql.ConflictOption) *Incident
 //	client.IncidentEvent.Create().
 //		OnConflict(sql.ConflictColumns(columns...)).
 //		Exec(ctx)
-func (iec *IncidentEventCreate) OnConflictColumns(columns ...string) *IncidentEventUpsertOne {
-	iec.conflict = append(iec.conflict, sql.ConflictColumns(columns...))
+func (_c *IncidentEventCreate) OnConflictColumns(columns ...string) *IncidentEventUpsertOne {
+	_c.conflict = append(_c.conflict, sql.ConflictColumns(columns...))
 	return &IncidentEventUpsertOne{
-		create: iec,
+		create: _c,
 	}
 }
 
@@ -1113,16 +1113,16 @@ type IncidentEventCreateBulk struct {
 }
 
 // Save creates the IncidentEvent entities in the database.
-func (iecb *IncidentEventCreateBulk) Save(ctx context.Context) ([]*IncidentEvent, error) {
-	if iecb.err != nil {
-		return nil, iecb.err
+func (_c *IncidentEventCreateBulk) Save(ctx context.Context) ([]*IncidentEvent, error) {
+	if _c.err != nil {
+		return nil, _c.err
 	}
-	specs := make([]*sqlgraph.CreateSpec, len(iecb.builders))
-	nodes := make([]*IncidentEvent, len(iecb.builders))
-	mutators := make([]Mutator, len(iecb.builders))
-	for i := range iecb.builders {
+	specs := make([]*sqlgraph.CreateSpec, len(_c.builders))
+	nodes := make([]*IncidentEvent, len(_c.builders))
+	mutators := make([]Mutator, len(_c.builders))
+	for i := range _c.builders {
 		func(i int, root context.Context) {
-			builder := iecb.builders[i]
+			builder := _c.builders[i]
 			builder.defaults()
 			var mut Mutator = MutateFunc(func(ctx context.Context, m Mutation) (Value, error) {
 				mutation, ok := m.(*IncidentEventMutation)
@@ -1136,12 +1136,12 @@ func (iecb *IncidentEventCreateBulk) Save(ctx context.Context) ([]*IncidentEvent
 				var err error
 				nodes[i], specs[i] = builder.createSpec()
 				if i < len(mutators)-1 {
-					_, err = mutators[i+1].Mutate(root, iecb.builders[i+1].mutation)
+					_, err = mutators[i+1].Mutate(root, _c.builders[i+1].mutation)
 				} else {
 					spec := &sqlgraph.BatchCreateSpec{Nodes: specs}
-					spec.OnConflict = iecb.conflict
+					spec.OnConflict = _c.conflict
 					// Invoke the actual operation on the latest mutation in the chain.
-					if err = sqlgraph.BatchCreate(ctx, iecb.driver, spec); err != nil {
+					if err = sqlgraph.BatchCreate(ctx, _c.driver, spec); err != nil {
 						if sqlgraph.IsConstraintError(err) {
 							err = &ConstraintError{msg: err.Error(), wrap: err}
 						}
@@ -1161,7 +1161,7 @@ func (iecb *IncidentEventCreateBulk) Save(ctx context.Context) ([]*IncidentEvent
 		}(i, ctx)
 	}
 	if len(mutators) > 0 {
-		if _, err := mutators[0].Mutate(ctx, iecb.builders[0].mutation); err != nil {
+		if _, err := mutators[0].Mutate(ctx, _c.builders[0].mutation); err != nil {
 			return nil, err
 		}
 	}
@@ -1169,8 +1169,8 @@ func (iecb *IncidentEventCreateBulk) Save(ctx context.Context) ([]*IncidentEvent
 }
 
 // SaveX is like Save, but panics if an error occurs.
-func (iecb *IncidentEventCreateBulk) SaveX(ctx context.Context) []*IncidentEvent {
-	v, err := iecb.Save(ctx)
+func (_c *IncidentEventCreateBulk) SaveX(ctx context.Context) []*IncidentEvent {
+	v, err := _c.Save(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -1178,14 +1178,14 @@ func (iecb *IncidentEventCreateBulk) SaveX(ctx context.Context) []*IncidentEvent
 }
 
 // Exec executes the query.
-func (iecb *IncidentEventCreateBulk) Exec(ctx context.Context) error {
-	_, err := iecb.Save(ctx)
+func (_c *IncidentEventCreateBulk) Exec(ctx context.Context) error {
+	_, err := _c.Save(ctx)
 	return err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (iecb *IncidentEventCreateBulk) ExecX(ctx context.Context) {
-	if err := iecb.Exec(ctx); err != nil {
+func (_c *IncidentEventCreateBulk) ExecX(ctx context.Context) {
+	if err := _c.Exec(ctx); err != nil {
 		panic(err)
 	}
 }
@@ -1205,10 +1205,10 @@ func (iecb *IncidentEventCreateBulk) ExecX(ctx context.Context) {
 //			SetTenantID(v+v).
 //		}).
 //		Exec(ctx)
-func (iecb *IncidentEventCreateBulk) OnConflict(opts ...sql.ConflictOption) *IncidentEventUpsertBulk {
-	iecb.conflict = opts
+func (_c *IncidentEventCreateBulk) OnConflict(opts ...sql.ConflictOption) *IncidentEventUpsertBulk {
+	_c.conflict = opts
 	return &IncidentEventUpsertBulk{
-		create: iecb,
+		create: _c,
 	}
 }
 
@@ -1218,10 +1218,10 @@ func (iecb *IncidentEventCreateBulk) OnConflict(opts ...sql.ConflictOption) *Inc
 //	client.IncidentEvent.Create().
 //		OnConflict(sql.ConflictColumns(columns...)).
 //		Exec(ctx)
-func (iecb *IncidentEventCreateBulk) OnConflictColumns(columns ...string) *IncidentEventUpsertBulk {
-	iecb.conflict = append(iecb.conflict, sql.ConflictColumns(columns...))
+func (_c *IncidentEventCreateBulk) OnConflictColumns(columns ...string) *IncidentEventUpsertBulk {
+	_c.conflict = append(_c.conflict, sql.ConflictColumns(columns...))
 	return &IncidentEventUpsertBulk{
-		create: iecb,
+		create: _c,
 	}
 }
 

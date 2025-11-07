@@ -95,7 +95,7 @@ func (*IncidentField) scanValues(columns []string) ([]any, error) {
 
 // assignValues assigns the values that were returned from sql.Rows (after scanning)
 // to the IncidentField fields.
-func (_if *IncidentField) assignValues(columns []string, values []any) error {
+func (_m *IncidentField) assignValues(columns []string, values []any) error {
 	if m, n := len(values), len(columns); m < n {
 		return fmt.Errorf("mismatch number of scan values: %d != %d", m, n)
 	}
@@ -105,28 +105,28 @@ func (_if *IncidentField) assignValues(columns []string, values []any) error {
 			if value, ok := values[i].(*uuid.UUID); !ok {
 				return fmt.Errorf("unexpected type %T for field id", values[i])
 			} else if value != nil {
-				_if.ID = *value
+				_m.ID = *value
 			}
 		case incidentfield.FieldTenantID:
 			if value, ok := values[i].(*sql.NullInt64); !ok {
 				return fmt.Errorf("unexpected type %T for field tenant_id", values[i])
 			} else if value.Valid {
-				_if.TenantID = int(value.Int64)
+				_m.TenantID = int(value.Int64)
 			}
 		case incidentfield.FieldArchiveTime:
 			if value, ok := values[i].(*sql.NullTime); !ok {
 				return fmt.Errorf("unexpected type %T for field archive_time", values[i])
 			} else if value.Valid {
-				_if.ArchiveTime = value.Time
+				_m.ArchiveTime = value.Time
 			}
 		case incidentfield.FieldName:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field name", values[i])
 			} else if value.Valid {
-				_if.Name = value.String
+				_m.Name = value.String
 			}
 		default:
-			_if.selectValues.Set(columns[i], values[i])
+			_m.selectValues.Set(columns[i], values[i])
 		}
 	}
 	return nil
@@ -134,56 +134,56 @@ func (_if *IncidentField) assignValues(columns []string, values []any) error {
 
 // Value returns the ent.Value that was dynamically selected and assigned to the IncidentField.
 // This includes values selected through modifiers, order, etc.
-func (_if *IncidentField) Value(name string) (ent.Value, error) {
-	return _if.selectValues.Get(name)
+func (_m *IncidentField) Value(name string) (ent.Value, error) {
+	return _m.selectValues.Get(name)
 }
 
 // QueryTenant queries the "tenant" edge of the IncidentField entity.
-func (_if *IncidentField) QueryTenant() *TenantQuery {
-	return NewIncidentFieldClient(_if.config).QueryTenant(_if)
+func (_m *IncidentField) QueryTenant() *TenantQuery {
+	return NewIncidentFieldClient(_m.config).QueryTenant(_m)
 }
 
 // QueryOptions queries the "options" edge of the IncidentField entity.
-func (_if *IncidentField) QueryOptions() *IncidentFieldOptionQuery {
-	return NewIncidentFieldClient(_if.config).QueryOptions(_if)
+func (_m *IncidentField) QueryOptions() *IncidentFieldOptionQuery {
+	return NewIncidentFieldClient(_m.config).QueryOptions(_m)
 }
 
 // QueryDebriefQuestions queries the "debrief_questions" edge of the IncidentField entity.
-func (_if *IncidentField) QueryDebriefQuestions() *IncidentDebriefQuestionQuery {
-	return NewIncidentFieldClient(_if.config).QueryDebriefQuestions(_if)
+func (_m *IncidentField) QueryDebriefQuestions() *IncidentDebriefQuestionQuery {
+	return NewIncidentFieldClient(_m.config).QueryDebriefQuestions(_m)
 }
 
 // Update returns a builder for updating this IncidentField.
 // Note that you need to call IncidentField.Unwrap() before calling this method if this IncidentField
 // was returned from a transaction, and the transaction was committed or rolled back.
-func (_if *IncidentField) Update() *IncidentFieldUpdateOne {
-	return NewIncidentFieldClient(_if.config).UpdateOne(_if)
+func (_m *IncidentField) Update() *IncidentFieldUpdateOne {
+	return NewIncidentFieldClient(_m.config).UpdateOne(_m)
 }
 
 // Unwrap unwraps the IncidentField entity that was returned from a transaction after it was closed,
 // so that all future queries will be executed through the driver which created the transaction.
-func (_if *IncidentField) Unwrap() *IncidentField {
-	_tx, ok := _if.config.driver.(*txDriver)
+func (_m *IncidentField) Unwrap() *IncidentField {
+	_tx, ok := _m.config.driver.(*txDriver)
 	if !ok {
 		panic("ent: IncidentField is not a transactional entity")
 	}
-	_if.config.driver = _tx.drv
-	return _if
+	_m.config.driver = _tx.drv
+	return _m
 }
 
 // String implements the fmt.Stringer.
-func (_if *IncidentField) String() string {
+func (_m *IncidentField) String() string {
 	var builder strings.Builder
 	builder.WriteString("IncidentField(")
-	builder.WriteString(fmt.Sprintf("id=%v, ", _if.ID))
+	builder.WriteString(fmt.Sprintf("id=%v, ", _m.ID))
 	builder.WriteString("tenant_id=")
-	builder.WriteString(fmt.Sprintf("%v", _if.TenantID))
+	builder.WriteString(fmt.Sprintf("%v", _m.TenantID))
 	builder.WriteString(", ")
 	builder.WriteString("archive_time=")
-	builder.WriteString(_if.ArchiveTime.Format(time.ANSIC))
+	builder.WriteString(_m.ArchiveTime.Format(time.ANSIC))
 	builder.WriteString(", ")
 	builder.WriteString("name=")
-	builder.WriteString(_if.Name)
+	builder.WriteString(_m.Name)
 	builder.WriteByte(')')
 	return builder.String()
 }

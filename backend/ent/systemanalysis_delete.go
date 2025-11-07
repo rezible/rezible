@@ -20,56 +20,56 @@ type SystemAnalysisDelete struct {
 }
 
 // Where appends a list predicates to the SystemAnalysisDelete builder.
-func (sad *SystemAnalysisDelete) Where(ps ...predicate.SystemAnalysis) *SystemAnalysisDelete {
-	sad.mutation.Where(ps...)
-	return sad
+func (_d *SystemAnalysisDelete) Where(ps ...predicate.SystemAnalysis) *SystemAnalysisDelete {
+	_d.mutation.Where(ps...)
+	return _d
 }
 
 // Exec executes the deletion query and returns how many vertices were deleted.
-func (sad *SystemAnalysisDelete) Exec(ctx context.Context) (int, error) {
-	return withHooks(ctx, sad.sqlExec, sad.mutation, sad.hooks)
+func (_d *SystemAnalysisDelete) Exec(ctx context.Context) (int, error) {
+	return withHooks(ctx, _d.sqlExec, _d.mutation, _d.hooks)
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (sad *SystemAnalysisDelete) ExecX(ctx context.Context) int {
-	n, err := sad.Exec(ctx)
+func (_d *SystemAnalysisDelete) ExecX(ctx context.Context) int {
+	n, err := _d.Exec(ctx)
 	if err != nil {
 		panic(err)
 	}
 	return n
 }
 
-func (sad *SystemAnalysisDelete) sqlExec(ctx context.Context) (int, error) {
+func (_d *SystemAnalysisDelete) sqlExec(ctx context.Context) (int, error) {
 	_spec := sqlgraph.NewDeleteSpec(systemanalysis.Table, sqlgraph.NewFieldSpec(systemanalysis.FieldID, field.TypeUUID))
-	if ps := sad.mutation.predicates; len(ps) > 0 {
+	if ps := _d.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {
 				ps[i](selector)
 			}
 		}
 	}
-	affected, err := sqlgraph.DeleteNodes(ctx, sad.driver, _spec)
+	affected, err := sqlgraph.DeleteNodes(ctx, _d.driver, _spec)
 	if err != nil && sqlgraph.IsConstraintError(err) {
 		err = &ConstraintError{msg: err.Error(), wrap: err}
 	}
-	sad.mutation.done = true
+	_d.mutation.done = true
 	return affected, err
 }
 
 // SystemAnalysisDeleteOne is the builder for deleting a single SystemAnalysis entity.
 type SystemAnalysisDeleteOne struct {
-	sad *SystemAnalysisDelete
+	_d *SystemAnalysisDelete
 }
 
 // Where appends a list predicates to the SystemAnalysisDelete builder.
-func (sado *SystemAnalysisDeleteOne) Where(ps ...predicate.SystemAnalysis) *SystemAnalysisDeleteOne {
-	sado.sad.mutation.Where(ps...)
-	return sado
+func (_d *SystemAnalysisDeleteOne) Where(ps ...predicate.SystemAnalysis) *SystemAnalysisDeleteOne {
+	_d._d.mutation.Where(ps...)
+	return _d
 }
 
 // Exec executes the deletion query.
-func (sado *SystemAnalysisDeleteOne) Exec(ctx context.Context) error {
-	n, err := sado.sad.Exec(ctx)
+func (_d *SystemAnalysisDeleteOne) Exec(ctx context.Context) error {
+	n, err := _d._d.Exec(ctx)
 	switch {
 	case err != nil:
 		return err
@@ -81,8 +81,8 @@ func (sado *SystemAnalysisDeleteOne) Exec(ctx context.Context) error {
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (sado *SystemAnalysisDeleteOne) ExecX(ctx context.Context) {
-	if err := sado.Exec(ctx); err != nil {
+func (_d *SystemAnalysisDeleteOne) ExecX(ctx context.Context) {
+	if err := _d.Exec(ctx); err != nil {
 		panic(err)
 	}
 }

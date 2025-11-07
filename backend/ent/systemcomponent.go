@@ -210,7 +210,7 @@ func (*SystemComponent) scanValues(columns []string) ([]any, error) {
 
 // assignValues assigns the values that were returned from sql.Rows (after scanning)
 // to the SystemComponent fields.
-func (sc *SystemComponent) assignValues(columns []string, values []any) error {
+func (_m *SystemComponent) assignValues(columns []string, values []any) error {
 	if m, n := len(values), len(columns); m < n {
 		return fmt.Errorf("mismatch number of scan values: %d != %d", m, n)
 	}
@@ -220,43 +220,43 @@ func (sc *SystemComponent) assignValues(columns []string, values []any) error {
 			if value, ok := values[i].(*uuid.UUID); !ok {
 				return fmt.Errorf("unexpected type %T for field id", values[i])
 			} else if value != nil {
-				sc.ID = *value
+				_m.ID = *value
 			}
 		case systemcomponent.FieldTenantID:
 			if value, ok := values[i].(*sql.NullInt64); !ok {
 				return fmt.Errorf("unexpected type %T for field tenant_id", values[i])
 			} else if value.Valid {
-				sc.TenantID = int(value.Int64)
+				_m.TenantID = int(value.Int64)
 			}
 		case systemcomponent.FieldName:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field name", values[i])
 			} else if value.Valid {
-				sc.Name = value.String
+				_m.Name = value.String
 			}
 		case systemcomponent.FieldProviderID:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field provider_id", values[i])
 			} else if value.Valid {
-				sc.ProviderID = value.String
+				_m.ProviderID = value.String
 			}
 		case systemcomponent.FieldKindID:
 			if value, ok := values[i].(*uuid.UUID); !ok {
 				return fmt.Errorf("unexpected type %T for field kind_id", values[i])
 			} else if value != nil {
-				sc.KindID = *value
+				_m.KindID = *value
 			}
 		case systemcomponent.FieldDescription:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field description", values[i])
 			} else if value.Valid {
-				sc.Description = value.String
+				_m.Description = value.String
 			}
 		case systemcomponent.FieldProperties:
 			if value, ok := values[i].(*[]byte); !ok {
 				return fmt.Errorf("unexpected type %T for field properties", values[i])
 			} else if value != nil && len(*value) > 0 {
-				if err := json.Unmarshal(*value, &sc.Properties); err != nil {
+				if err := json.Unmarshal(*value, &_m.Properties); err != nil {
 					return fmt.Errorf("unmarshal field properties: %w", err)
 				}
 			}
@@ -264,16 +264,16 @@ func (sc *SystemComponent) assignValues(columns []string, values []any) error {
 			if value, ok := values[i].(*sql.NullTime); !ok {
 				return fmt.Errorf("unexpected type %T for field created_at", values[i])
 			} else if value.Valid {
-				sc.CreatedAt = value.Time
+				_m.CreatedAt = value.Time
 			}
 		case systemcomponent.FieldUpdatedAt:
 			if value, ok := values[i].(*sql.NullTime); !ok {
 				return fmt.Errorf("unexpected type %T for field updated_at", values[i])
 			} else if value.Valid {
-				sc.UpdatedAt = value.Time
+				_m.UpdatedAt = value.Time
 			}
 		default:
-			sc.selectValues.Set(columns[i], values[i])
+			_m.selectValues.Set(columns[i], values[i])
 		}
 	}
 	return nil
@@ -281,116 +281,116 @@ func (sc *SystemComponent) assignValues(columns []string, values []any) error {
 
 // Value returns the ent.Value that was dynamically selected and assigned to the SystemComponent.
 // This includes values selected through modifiers, order, etc.
-func (sc *SystemComponent) Value(name string) (ent.Value, error) {
-	return sc.selectValues.Get(name)
+func (_m *SystemComponent) Value(name string) (ent.Value, error) {
+	return _m.selectValues.Get(name)
 }
 
 // QueryTenant queries the "tenant" edge of the SystemComponent entity.
-func (sc *SystemComponent) QueryTenant() *TenantQuery {
-	return NewSystemComponentClient(sc.config).QueryTenant(sc)
+func (_m *SystemComponent) QueryTenant() *TenantQuery {
+	return NewSystemComponentClient(_m.config).QueryTenant(_m)
 }
 
 // QueryKind queries the "kind" edge of the SystemComponent entity.
-func (sc *SystemComponent) QueryKind() *SystemComponentKindQuery {
-	return NewSystemComponentClient(sc.config).QueryKind(sc)
+func (_m *SystemComponent) QueryKind() *SystemComponentKindQuery {
+	return NewSystemComponentClient(_m.config).QueryKind(_m)
 }
 
 // QueryRelated queries the "related" edge of the SystemComponent entity.
-func (sc *SystemComponent) QueryRelated() *SystemComponentQuery {
-	return NewSystemComponentClient(sc.config).QueryRelated(sc)
+func (_m *SystemComponent) QueryRelated() *SystemComponentQuery {
+	return NewSystemComponentClient(_m.config).QueryRelated(_m)
 }
 
 // QuerySystemAnalyses queries the "system_analyses" edge of the SystemComponent entity.
-func (sc *SystemComponent) QuerySystemAnalyses() *SystemAnalysisQuery {
-	return NewSystemComponentClient(sc.config).QuerySystemAnalyses(sc)
+func (_m *SystemComponent) QuerySystemAnalyses() *SystemAnalysisQuery {
+	return NewSystemComponentClient(_m.config).QuerySystemAnalyses(_m)
 }
 
 // QueryEvents queries the "events" edge of the SystemComponent entity.
-func (sc *SystemComponent) QueryEvents() *IncidentEventQuery {
-	return NewSystemComponentClient(sc.config).QueryEvents(sc)
+func (_m *SystemComponent) QueryEvents() *IncidentEventQuery {
+	return NewSystemComponentClient(_m.config).QueryEvents(_m)
 }
 
 // QueryConstraints queries the "constraints" edge of the SystemComponent entity.
-func (sc *SystemComponent) QueryConstraints() *SystemComponentConstraintQuery {
-	return NewSystemComponentClient(sc.config).QueryConstraints(sc)
+func (_m *SystemComponent) QueryConstraints() *SystemComponentConstraintQuery {
+	return NewSystemComponentClient(_m.config).QueryConstraints(_m)
 }
 
 // QueryControls queries the "controls" edge of the SystemComponent entity.
-func (sc *SystemComponent) QueryControls() *SystemComponentControlQuery {
-	return NewSystemComponentClient(sc.config).QueryControls(sc)
+func (_m *SystemComponent) QueryControls() *SystemComponentControlQuery {
+	return NewSystemComponentClient(_m.config).QueryControls(_m)
 }
 
 // QuerySignals queries the "signals" edge of the SystemComponent entity.
-func (sc *SystemComponent) QuerySignals() *SystemComponentSignalQuery {
-	return NewSystemComponentClient(sc.config).QuerySignals(sc)
+func (_m *SystemComponent) QuerySignals() *SystemComponentSignalQuery {
+	return NewSystemComponentClient(_m.config).QuerySignals(_m)
 }
 
 // QueryHazards queries the "hazards" edge of the SystemComponent entity.
-func (sc *SystemComponent) QueryHazards() *SystemHazardQuery {
-	return NewSystemComponentClient(sc.config).QueryHazards(sc)
+func (_m *SystemComponent) QueryHazards() *SystemHazardQuery {
+	return NewSystemComponentClient(_m.config).QueryHazards(_m)
 }
 
 // QueryComponentRelationships queries the "component_relationships" edge of the SystemComponent entity.
-func (sc *SystemComponent) QueryComponentRelationships() *SystemComponentRelationshipQuery {
-	return NewSystemComponentClient(sc.config).QueryComponentRelationships(sc)
+func (_m *SystemComponent) QueryComponentRelationships() *SystemComponentRelationshipQuery {
+	return NewSystemComponentClient(_m.config).QueryComponentRelationships(_m)
 }
 
 // QuerySystemAnalysisComponents queries the "system_analysis_components" edge of the SystemComponent entity.
-func (sc *SystemComponent) QuerySystemAnalysisComponents() *SystemAnalysisComponentQuery {
-	return NewSystemComponentClient(sc.config).QuerySystemAnalysisComponents(sc)
+func (_m *SystemComponent) QuerySystemAnalysisComponents() *SystemAnalysisComponentQuery {
+	return NewSystemComponentClient(_m.config).QuerySystemAnalysisComponents(_m)
 }
 
 // QueryEventComponents queries the "event_components" edge of the SystemComponent entity.
-func (sc *SystemComponent) QueryEventComponents() *IncidentEventSystemComponentQuery {
-	return NewSystemComponentClient(sc.config).QueryEventComponents(sc)
+func (_m *SystemComponent) QueryEventComponents() *IncidentEventSystemComponentQuery {
+	return NewSystemComponentClient(_m.config).QueryEventComponents(_m)
 }
 
 // Update returns a builder for updating this SystemComponent.
 // Note that you need to call SystemComponent.Unwrap() before calling this method if this SystemComponent
 // was returned from a transaction, and the transaction was committed or rolled back.
-func (sc *SystemComponent) Update() *SystemComponentUpdateOne {
-	return NewSystemComponentClient(sc.config).UpdateOne(sc)
+func (_m *SystemComponent) Update() *SystemComponentUpdateOne {
+	return NewSystemComponentClient(_m.config).UpdateOne(_m)
 }
 
 // Unwrap unwraps the SystemComponent entity that was returned from a transaction after it was closed,
 // so that all future queries will be executed through the driver which created the transaction.
-func (sc *SystemComponent) Unwrap() *SystemComponent {
-	_tx, ok := sc.config.driver.(*txDriver)
+func (_m *SystemComponent) Unwrap() *SystemComponent {
+	_tx, ok := _m.config.driver.(*txDriver)
 	if !ok {
 		panic("ent: SystemComponent is not a transactional entity")
 	}
-	sc.config.driver = _tx.drv
-	return sc
+	_m.config.driver = _tx.drv
+	return _m
 }
 
 // String implements the fmt.Stringer.
-func (sc *SystemComponent) String() string {
+func (_m *SystemComponent) String() string {
 	var builder strings.Builder
 	builder.WriteString("SystemComponent(")
-	builder.WriteString(fmt.Sprintf("id=%v, ", sc.ID))
+	builder.WriteString(fmt.Sprintf("id=%v, ", _m.ID))
 	builder.WriteString("tenant_id=")
-	builder.WriteString(fmt.Sprintf("%v", sc.TenantID))
+	builder.WriteString(fmt.Sprintf("%v", _m.TenantID))
 	builder.WriteString(", ")
 	builder.WriteString("name=")
-	builder.WriteString(sc.Name)
+	builder.WriteString(_m.Name)
 	builder.WriteString(", ")
 	builder.WriteString("provider_id=")
-	builder.WriteString(sc.ProviderID)
+	builder.WriteString(_m.ProviderID)
 	builder.WriteString(", ")
 	builder.WriteString("kind_id=")
-	builder.WriteString(fmt.Sprintf("%v", sc.KindID))
+	builder.WriteString(fmt.Sprintf("%v", _m.KindID))
 	builder.WriteString(", ")
 	builder.WriteString("description=")
-	builder.WriteString(sc.Description)
+	builder.WriteString(_m.Description)
 	builder.WriteString(", ")
 	builder.WriteString("properties=")
-	builder.WriteString(fmt.Sprintf("%v", sc.Properties))
+	builder.WriteString(fmt.Sprintf("%v", _m.Properties))
 	builder.WriteString(", ")
 	builder.WriteString("created_at=")
-	builder.WriteString(sc.CreatedAt.Format(time.ANSIC))
+	builder.WriteString(_m.CreatedAt.Format(time.ANSIC))
 	builder.WriteString(", ")
 	builder.WriteString("updated_at=")
-	builder.WriteString(sc.UpdatedAt.Format(time.ANSIC))
+	builder.WriteString(_m.UpdatedAt.Format(time.ANSIC))
 	builder.WriteByte(')')
 	return builder.String()
 }

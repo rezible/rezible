@@ -96,7 +96,7 @@ func (*IncidentEventEvidence) scanValues(columns []string) ([]any, error) {
 
 // assignValues assigns the values that were returned from sql.Rows (after scanning)
 // to the IncidentEventEvidence fields.
-func (iee *IncidentEventEvidence) assignValues(columns []string, values []any) error {
+func (_m *IncidentEventEvidence) assignValues(columns []string, values []any) error {
 	if m, n := len(values), len(columns); m < n {
 		return fmt.Errorf("mismatch number of scan values: %d != %d", m, n)
 	}
@@ -106,53 +106,53 @@ func (iee *IncidentEventEvidence) assignValues(columns []string, values []any) e
 			if value, ok := values[i].(*uuid.UUID); !ok {
 				return fmt.Errorf("unexpected type %T for field id", values[i])
 			} else if value != nil {
-				iee.ID = *value
+				_m.ID = *value
 			}
 		case incidenteventevidence.FieldTenantID:
 			if value, ok := values[i].(*sql.NullInt64); !ok {
 				return fmt.Errorf("unexpected type %T for field tenant_id", values[i])
 			} else if value.Valid {
-				iee.TenantID = int(value.Int64)
+				_m.TenantID = int(value.Int64)
 			}
 		case incidenteventevidence.FieldEvidenceType:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field evidence_type", values[i])
 			} else if value.Valid {
-				iee.EvidenceType = incidenteventevidence.EvidenceType(value.String)
+				_m.EvidenceType = incidenteventevidence.EvidenceType(value.String)
 			}
 		case incidenteventevidence.FieldURL:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field url", values[i])
 			} else if value.Valid {
-				iee.URL = value.String
+				_m.URL = value.String
 			}
 		case incidenteventevidence.FieldTitle:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field title", values[i])
 			} else if value.Valid {
-				iee.Title = value.String
+				_m.Title = value.String
 			}
 		case incidenteventevidence.FieldDescription:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field description", values[i])
 			} else if value.Valid {
-				iee.Description = value.String
+				_m.Description = value.String
 			}
 		case incidenteventevidence.FieldCreatedAt:
 			if value, ok := values[i].(*sql.NullTime); !ok {
 				return fmt.Errorf("unexpected type %T for field created_at", values[i])
 			} else if value.Valid {
-				iee.CreatedAt = value.Time
+				_m.CreatedAt = value.Time
 			}
 		case incidenteventevidence.ForeignKeys[0]:
 			if value, ok := values[i].(*sql.NullScanner); !ok {
 				return fmt.Errorf("unexpected type %T for field incident_event_evidence", values[i])
 			} else if value.Valid {
-				iee.incident_event_evidence = new(uuid.UUID)
-				*iee.incident_event_evidence = *value.S.(*uuid.UUID)
+				_m.incident_event_evidence = new(uuid.UUID)
+				*_m.incident_event_evidence = *value.S.(*uuid.UUID)
 			}
 		default:
-			iee.selectValues.Set(columns[i], values[i])
+			_m.selectValues.Set(columns[i], values[i])
 		}
 	}
 	return nil
@@ -160,60 +160,60 @@ func (iee *IncidentEventEvidence) assignValues(columns []string, values []any) e
 
 // Value returns the ent.Value that was dynamically selected and assigned to the IncidentEventEvidence.
 // This includes values selected through modifiers, order, etc.
-func (iee *IncidentEventEvidence) Value(name string) (ent.Value, error) {
-	return iee.selectValues.Get(name)
+func (_m *IncidentEventEvidence) Value(name string) (ent.Value, error) {
+	return _m.selectValues.Get(name)
 }
 
 // QueryTenant queries the "tenant" edge of the IncidentEventEvidence entity.
-func (iee *IncidentEventEvidence) QueryTenant() *TenantQuery {
-	return NewIncidentEventEvidenceClient(iee.config).QueryTenant(iee)
+func (_m *IncidentEventEvidence) QueryTenant() *TenantQuery {
+	return NewIncidentEventEvidenceClient(_m.config).QueryTenant(_m)
 }
 
 // QueryEvent queries the "event" edge of the IncidentEventEvidence entity.
-func (iee *IncidentEventEvidence) QueryEvent() *IncidentEventQuery {
-	return NewIncidentEventEvidenceClient(iee.config).QueryEvent(iee)
+func (_m *IncidentEventEvidence) QueryEvent() *IncidentEventQuery {
+	return NewIncidentEventEvidenceClient(_m.config).QueryEvent(_m)
 }
 
 // Update returns a builder for updating this IncidentEventEvidence.
 // Note that you need to call IncidentEventEvidence.Unwrap() before calling this method if this IncidentEventEvidence
 // was returned from a transaction, and the transaction was committed or rolled back.
-func (iee *IncidentEventEvidence) Update() *IncidentEventEvidenceUpdateOne {
-	return NewIncidentEventEvidenceClient(iee.config).UpdateOne(iee)
+func (_m *IncidentEventEvidence) Update() *IncidentEventEvidenceUpdateOne {
+	return NewIncidentEventEvidenceClient(_m.config).UpdateOne(_m)
 }
 
 // Unwrap unwraps the IncidentEventEvidence entity that was returned from a transaction after it was closed,
 // so that all future queries will be executed through the driver which created the transaction.
-func (iee *IncidentEventEvidence) Unwrap() *IncidentEventEvidence {
-	_tx, ok := iee.config.driver.(*txDriver)
+func (_m *IncidentEventEvidence) Unwrap() *IncidentEventEvidence {
+	_tx, ok := _m.config.driver.(*txDriver)
 	if !ok {
 		panic("ent: IncidentEventEvidence is not a transactional entity")
 	}
-	iee.config.driver = _tx.drv
-	return iee
+	_m.config.driver = _tx.drv
+	return _m
 }
 
 // String implements the fmt.Stringer.
-func (iee *IncidentEventEvidence) String() string {
+func (_m *IncidentEventEvidence) String() string {
 	var builder strings.Builder
 	builder.WriteString("IncidentEventEvidence(")
-	builder.WriteString(fmt.Sprintf("id=%v, ", iee.ID))
+	builder.WriteString(fmt.Sprintf("id=%v, ", _m.ID))
 	builder.WriteString("tenant_id=")
-	builder.WriteString(fmt.Sprintf("%v", iee.TenantID))
+	builder.WriteString(fmt.Sprintf("%v", _m.TenantID))
 	builder.WriteString(", ")
 	builder.WriteString("evidence_type=")
-	builder.WriteString(fmt.Sprintf("%v", iee.EvidenceType))
+	builder.WriteString(fmt.Sprintf("%v", _m.EvidenceType))
 	builder.WriteString(", ")
 	builder.WriteString("url=")
-	builder.WriteString(iee.URL)
+	builder.WriteString(_m.URL)
 	builder.WriteString(", ")
 	builder.WriteString("title=")
-	builder.WriteString(iee.Title)
+	builder.WriteString(_m.Title)
 	builder.WriteString(", ")
 	builder.WriteString("description=")
-	builder.WriteString(iee.Description)
+	builder.WriteString(_m.Description)
 	builder.WriteString(", ")
 	builder.WriteString("created_at=")
-	builder.WriteString(iee.CreatedAt.Format(time.ANSIC))
+	builder.WriteString(_m.CreatedAt.Format(time.ANSIC))
 	builder.WriteByte(')')
 	return builder.String()
 }

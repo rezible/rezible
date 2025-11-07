@@ -142,7 +142,7 @@ func (*RetrospectiveComment) scanValues(columns []string) ([]any, error) {
 
 // assignValues assigns the values that were returned from sql.Rows (after scanning)
 // to the RetrospectiveComment fields.
-func (rc *RetrospectiveComment) assignValues(columns []string, values []any) error {
+func (_m *RetrospectiveComment) assignValues(columns []string, values []any) error {
 	if m, n := len(values), len(columns); m < n {
 		return fmt.Errorf("mismatch number of scan values: %d != %d", m, n)
 	}
@@ -152,46 +152,46 @@ func (rc *RetrospectiveComment) assignValues(columns []string, values []any) err
 			if value, ok := values[i].(*uuid.UUID); !ok {
 				return fmt.Errorf("unexpected type %T for field id", values[i])
 			} else if value != nil {
-				rc.ID = *value
+				_m.ID = *value
 			}
 		case retrospectivecomment.FieldTenantID:
 			if value, ok := values[i].(*sql.NullInt64); !ok {
 				return fmt.Errorf("unexpected type %T for field tenant_id", values[i])
 			} else if value.Valid {
-				rc.TenantID = int(value.Int64)
+				_m.TenantID = int(value.Int64)
 			}
 		case retrospectivecomment.FieldRetrospectiveID:
 			if value, ok := values[i].(*uuid.UUID); !ok {
 				return fmt.Errorf("unexpected type %T for field retrospective_id", values[i])
 			} else if value != nil {
-				rc.RetrospectiveID = *value
+				_m.RetrospectiveID = *value
 			}
 		case retrospectivecomment.FieldUserID:
 			if value, ok := values[i].(*uuid.UUID); !ok {
 				return fmt.Errorf("unexpected type %T for field user_id", values[i])
 			} else if value != nil {
-				rc.UserID = *value
+				_m.UserID = *value
 			}
 		case retrospectivecomment.FieldRetrospectiveReviewID:
 			if value, ok := values[i].(*uuid.UUID); !ok {
 				return fmt.Errorf("unexpected type %T for field retrospective_review_id", values[i])
 			} else if value != nil {
-				rc.RetrospectiveReviewID = *value
+				_m.RetrospectiveReviewID = *value
 			}
 		case retrospectivecomment.FieldParentReplyID:
 			if value, ok := values[i].(*uuid.UUID); !ok {
 				return fmt.Errorf("unexpected type %T for field parent_reply_id", values[i])
 			} else if value != nil {
-				rc.ParentReplyID = *value
+				_m.ParentReplyID = *value
 			}
 		case retrospectivecomment.FieldContent:
 			if value, ok := values[i].(*[]byte); !ok {
 				return fmt.Errorf("unexpected type %T for field content", values[i])
 			} else if value != nil {
-				rc.Content = *value
+				_m.Content = *value
 			}
 		default:
-			rc.selectValues.Set(columns[i], values[i])
+			_m.selectValues.Set(columns[i], values[i])
 		}
 	}
 	return nil
@@ -199,80 +199,80 @@ func (rc *RetrospectiveComment) assignValues(columns []string, values []any) err
 
 // Value returns the ent.Value that was dynamically selected and assigned to the RetrospectiveComment.
 // This includes values selected through modifiers, order, etc.
-func (rc *RetrospectiveComment) Value(name string) (ent.Value, error) {
-	return rc.selectValues.Get(name)
+func (_m *RetrospectiveComment) Value(name string) (ent.Value, error) {
+	return _m.selectValues.Get(name)
 }
 
 // QueryTenant queries the "tenant" edge of the RetrospectiveComment entity.
-func (rc *RetrospectiveComment) QueryTenant() *TenantQuery {
-	return NewRetrospectiveCommentClient(rc.config).QueryTenant(rc)
+func (_m *RetrospectiveComment) QueryTenant() *TenantQuery {
+	return NewRetrospectiveCommentClient(_m.config).QueryTenant(_m)
 }
 
 // QueryRetrospective queries the "retrospective" edge of the RetrospectiveComment entity.
-func (rc *RetrospectiveComment) QueryRetrospective() *RetrospectiveQuery {
-	return NewRetrospectiveCommentClient(rc.config).QueryRetrospective(rc)
+func (_m *RetrospectiveComment) QueryRetrospective() *RetrospectiveQuery {
+	return NewRetrospectiveCommentClient(_m.config).QueryRetrospective(_m)
 }
 
 // QueryUser queries the "user" edge of the RetrospectiveComment entity.
-func (rc *RetrospectiveComment) QueryUser() *UserQuery {
-	return NewRetrospectiveCommentClient(rc.config).QueryUser(rc)
+func (_m *RetrospectiveComment) QueryUser() *UserQuery {
+	return NewRetrospectiveCommentClient(_m.config).QueryUser(_m)
 }
 
 // QueryReview queries the "review" edge of the RetrospectiveComment entity.
-func (rc *RetrospectiveComment) QueryReview() *RetrospectiveReviewQuery {
-	return NewRetrospectiveCommentClient(rc.config).QueryReview(rc)
+func (_m *RetrospectiveComment) QueryReview() *RetrospectiveReviewQuery {
+	return NewRetrospectiveCommentClient(_m.config).QueryReview(_m)
 }
 
 // QueryParent queries the "parent" edge of the RetrospectiveComment entity.
-func (rc *RetrospectiveComment) QueryParent() *RetrospectiveCommentQuery {
-	return NewRetrospectiveCommentClient(rc.config).QueryParent(rc)
+func (_m *RetrospectiveComment) QueryParent() *RetrospectiveCommentQuery {
+	return NewRetrospectiveCommentClient(_m.config).QueryParent(_m)
 }
 
 // QueryReplies queries the "replies" edge of the RetrospectiveComment entity.
-func (rc *RetrospectiveComment) QueryReplies() *RetrospectiveCommentQuery {
-	return NewRetrospectiveCommentClient(rc.config).QueryReplies(rc)
+func (_m *RetrospectiveComment) QueryReplies() *RetrospectiveCommentQuery {
+	return NewRetrospectiveCommentClient(_m.config).QueryReplies(_m)
 }
 
 // Update returns a builder for updating this RetrospectiveComment.
 // Note that you need to call RetrospectiveComment.Unwrap() before calling this method if this RetrospectiveComment
 // was returned from a transaction, and the transaction was committed or rolled back.
-func (rc *RetrospectiveComment) Update() *RetrospectiveCommentUpdateOne {
-	return NewRetrospectiveCommentClient(rc.config).UpdateOne(rc)
+func (_m *RetrospectiveComment) Update() *RetrospectiveCommentUpdateOne {
+	return NewRetrospectiveCommentClient(_m.config).UpdateOne(_m)
 }
 
 // Unwrap unwraps the RetrospectiveComment entity that was returned from a transaction after it was closed,
 // so that all future queries will be executed through the driver which created the transaction.
-func (rc *RetrospectiveComment) Unwrap() *RetrospectiveComment {
-	_tx, ok := rc.config.driver.(*txDriver)
+func (_m *RetrospectiveComment) Unwrap() *RetrospectiveComment {
+	_tx, ok := _m.config.driver.(*txDriver)
 	if !ok {
 		panic("ent: RetrospectiveComment is not a transactional entity")
 	}
-	rc.config.driver = _tx.drv
-	return rc
+	_m.config.driver = _tx.drv
+	return _m
 }
 
 // String implements the fmt.Stringer.
-func (rc *RetrospectiveComment) String() string {
+func (_m *RetrospectiveComment) String() string {
 	var builder strings.Builder
 	builder.WriteString("RetrospectiveComment(")
-	builder.WriteString(fmt.Sprintf("id=%v, ", rc.ID))
+	builder.WriteString(fmt.Sprintf("id=%v, ", _m.ID))
 	builder.WriteString("tenant_id=")
-	builder.WriteString(fmt.Sprintf("%v", rc.TenantID))
+	builder.WriteString(fmt.Sprintf("%v", _m.TenantID))
 	builder.WriteString(", ")
 	builder.WriteString("retrospective_id=")
-	builder.WriteString(fmt.Sprintf("%v", rc.RetrospectiveID))
+	builder.WriteString(fmt.Sprintf("%v", _m.RetrospectiveID))
 	builder.WriteString(", ")
 	builder.WriteString("user_id=")
-	builder.WriteString(fmt.Sprintf("%v", rc.UserID))
+	builder.WriteString(fmt.Sprintf("%v", _m.UserID))
 	builder.WriteString(", ")
 	builder.WriteString("retrospective_review_id=")
-	builder.WriteString(fmt.Sprintf("%v", rc.RetrospectiveReviewID))
+	builder.WriteString(fmt.Sprintf("%v", _m.RetrospectiveReviewID))
 	builder.WriteString(", ")
 	builder.WriteString("parent_reply_id=")
-	builder.WriteString(fmt.Sprintf("%v", rc.ParentReplyID))
+	builder.WriteString(fmt.Sprintf("%v", _m.ParentReplyID))
 	builder.WriteString(", ")
 	builder.WriteString("content=")
-	builder.WriteString(fmt.Sprintf("%v", rc.Content))
+	builder.WriteString(fmt.Sprintf("%v", _m.Content))
 	builder.WriteByte(')')
 	return builder.String()
 }

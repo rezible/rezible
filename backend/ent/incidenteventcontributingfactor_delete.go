@@ -20,56 +20,56 @@ type IncidentEventContributingFactorDelete struct {
 }
 
 // Where appends a list predicates to the IncidentEventContributingFactorDelete builder.
-func (iecfd *IncidentEventContributingFactorDelete) Where(ps ...predicate.IncidentEventContributingFactor) *IncidentEventContributingFactorDelete {
-	iecfd.mutation.Where(ps...)
-	return iecfd
+func (_d *IncidentEventContributingFactorDelete) Where(ps ...predicate.IncidentEventContributingFactor) *IncidentEventContributingFactorDelete {
+	_d.mutation.Where(ps...)
+	return _d
 }
 
 // Exec executes the deletion query and returns how many vertices were deleted.
-func (iecfd *IncidentEventContributingFactorDelete) Exec(ctx context.Context) (int, error) {
-	return withHooks(ctx, iecfd.sqlExec, iecfd.mutation, iecfd.hooks)
+func (_d *IncidentEventContributingFactorDelete) Exec(ctx context.Context) (int, error) {
+	return withHooks(ctx, _d.sqlExec, _d.mutation, _d.hooks)
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (iecfd *IncidentEventContributingFactorDelete) ExecX(ctx context.Context) int {
-	n, err := iecfd.Exec(ctx)
+func (_d *IncidentEventContributingFactorDelete) ExecX(ctx context.Context) int {
+	n, err := _d.Exec(ctx)
 	if err != nil {
 		panic(err)
 	}
 	return n
 }
 
-func (iecfd *IncidentEventContributingFactorDelete) sqlExec(ctx context.Context) (int, error) {
+func (_d *IncidentEventContributingFactorDelete) sqlExec(ctx context.Context) (int, error) {
 	_spec := sqlgraph.NewDeleteSpec(incidenteventcontributingfactor.Table, sqlgraph.NewFieldSpec(incidenteventcontributingfactor.FieldID, field.TypeUUID))
-	if ps := iecfd.mutation.predicates; len(ps) > 0 {
+	if ps := _d.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {
 				ps[i](selector)
 			}
 		}
 	}
-	affected, err := sqlgraph.DeleteNodes(ctx, iecfd.driver, _spec)
+	affected, err := sqlgraph.DeleteNodes(ctx, _d.driver, _spec)
 	if err != nil && sqlgraph.IsConstraintError(err) {
 		err = &ConstraintError{msg: err.Error(), wrap: err}
 	}
-	iecfd.mutation.done = true
+	_d.mutation.done = true
 	return affected, err
 }
 
 // IncidentEventContributingFactorDeleteOne is the builder for deleting a single IncidentEventContributingFactor entity.
 type IncidentEventContributingFactorDeleteOne struct {
-	iecfd *IncidentEventContributingFactorDelete
+	_d *IncidentEventContributingFactorDelete
 }
 
 // Where appends a list predicates to the IncidentEventContributingFactorDelete builder.
-func (iecfdo *IncidentEventContributingFactorDeleteOne) Where(ps ...predicate.IncidentEventContributingFactor) *IncidentEventContributingFactorDeleteOne {
-	iecfdo.iecfd.mutation.Where(ps...)
-	return iecfdo
+func (_d *IncidentEventContributingFactorDeleteOne) Where(ps ...predicate.IncidentEventContributingFactor) *IncidentEventContributingFactorDeleteOne {
+	_d._d.mutation.Where(ps...)
+	return _d
 }
 
 // Exec executes the deletion query.
-func (iecfdo *IncidentEventContributingFactorDeleteOne) Exec(ctx context.Context) error {
-	n, err := iecfdo.iecfd.Exec(ctx)
+func (_d *IncidentEventContributingFactorDeleteOne) Exec(ctx context.Context) error {
+	n, err := _d._d.Exec(ctx)
 	switch {
 	case err != nil:
 		return err
@@ -81,8 +81,8 @@ func (iecfdo *IncidentEventContributingFactorDeleteOne) Exec(ctx context.Context
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (iecfdo *IncidentEventContributingFactorDeleteOne) ExecX(ctx context.Context) {
-	if err := iecfdo.Exec(ctx); err != nil {
+func (_d *IncidentEventContributingFactorDeleteOne) ExecX(ctx context.Context) {
+	if err := _d.Exec(ctx); err != nil {
 		panic(err)
 	}
 }

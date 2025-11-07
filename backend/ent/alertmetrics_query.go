@@ -28,40 +28,40 @@ type AlertMetricsQuery struct {
 }
 
 // Where adds a new predicate for the AlertMetricsQuery builder.
-func (amq *AlertMetricsQuery) Where(ps ...predicate.AlertMetrics) *AlertMetricsQuery {
-	amq.predicates = append(amq.predicates, ps...)
-	return amq
+func (_q *AlertMetricsQuery) Where(ps ...predicate.AlertMetrics) *AlertMetricsQuery {
+	_q.predicates = append(_q.predicates, ps...)
+	return _q
 }
 
 // Limit the number of records to be returned by this query.
-func (amq *AlertMetricsQuery) Limit(limit int) *AlertMetricsQuery {
-	amq.ctx.Limit = &limit
-	return amq
+func (_q *AlertMetricsQuery) Limit(limit int) *AlertMetricsQuery {
+	_q.ctx.Limit = &limit
+	return _q
 }
 
 // Offset to start from.
-func (amq *AlertMetricsQuery) Offset(offset int) *AlertMetricsQuery {
-	amq.ctx.Offset = &offset
-	return amq
+func (_q *AlertMetricsQuery) Offset(offset int) *AlertMetricsQuery {
+	_q.ctx.Offset = &offset
+	return _q
 }
 
 // Unique configures the query builder to filter duplicate records on query.
 // By default, unique is set to true, and can be disabled using this method.
-func (amq *AlertMetricsQuery) Unique(unique bool) *AlertMetricsQuery {
-	amq.ctx.Unique = &unique
-	return amq
+func (_q *AlertMetricsQuery) Unique(unique bool) *AlertMetricsQuery {
+	_q.ctx.Unique = &unique
+	return _q
 }
 
 // Order specifies how the records should be ordered.
-func (amq *AlertMetricsQuery) Order(o ...alertmetrics.OrderOption) *AlertMetricsQuery {
-	amq.order = append(amq.order, o...)
-	return amq
+func (_q *AlertMetricsQuery) Order(o ...alertmetrics.OrderOption) *AlertMetricsQuery {
+	_q.order = append(_q.order, o...)
+	return _q
 }
 
 // First returns the first AlertMetrics entity from the query.
 // Returns a *NotFoundError when no AlertMetrics was found.
-func (amq *AlertMetricsQuery) First(ctx context.Context) (*AlertMetrics, error) {
-	nodes, err := amq.Limit(1).All(setContextOp(ctx, amq.ctx, ent.OpQueryFirst))
+func (_q *AlertMetricsQuery) First(ctx context.Context) (*AlertMetrics, error) {
+	nodes, err := _q.Limit(1).All(setContextOp(ctx, _q.ctx, ent.OpQueryFirst))
 	if err != nil {
 		return nil, err
 	}
@@ -72,8 +72,8 @@ func (amq *AlertMetricsQuery) First(ctx context.Context) (*AlertMetrics, error) 
 }
 
 // FirstX is like First, but panics if an error occurs.
-func (amq *AlertMetricsQuery) FirstX(ctx context.Context) *AlertMetrics {
-	node, err := amq.First(ctx)
+func (_q *AlertMetricsQuery) FirstX(ctx context.Context) *AlertMetrics {
+	node, err := _q.First(ctx)
 	if err != nil && !IsNotFound(err) {
 		panic(err)
 	}
@@ -83,8 +83,8 @@ func (amq *AlertMetricsQuery) FirstX(ctx context.Context) *AlertMetrics {
 // Only returns a single AlertMetrics entity found by the query, ensuring it only returns one.
 // Returns a *NotSingularError when more than one AlertMetrics entity is found.
 // Returns a *NotFoundError when no AlertMetrics entities are found.
-func (amq *AlertMetricsQuery) Only(ctx context.Context) (*AlertMetrics, error) {
-	nodes, err := amq.Limit(2).All(setContextOp(ctx, amq.ctx, ent.OpQueryOnly))
+func (_q *AlertMetricsQuery) Only(ctx context.Context) (*AlertMetrics, error) {
+	nodes, err := _q.Limit(2).All(setContextOp(ctx, _q.ctx, ent.OpQueryOnly))
 	if err != nil {
 		return nil, err
 	}
@@ -99,8 +99,8 @@ func (amq *AlertMetricsQuery) Only(ctx context.Context) (*AlertMetrics, error) {
 }
 
 // OnlyX is like Only, but panics if an error occurs.
-func (amq *AlertMetricsQuery) OnlyX(ctx context.Context) *AlertMetrics {
-	node, err := amq.Only(ctx)
+func (_q *AlertMetricsQuery) OnlyX(ctx context.Context) *AlertMetrics {
+	node, err := _q.Only(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -108,18 +108,18 @@ func (amq *AlertMetricsQuery) OnlyX(ctx context.Context) *AlertMetrics {
 }
 
 // All executes the query and returns a list of AlertMetricsSlice.
-func (amq *AlertMetricsQuery) All(ctx context.Context) ([]*AlertMetrics, error) {
-	ctx = setContextOp(ctx, amq.ctx, ent.OpQueryAll)
-	if err := amq.prepareQuery(ctx); err != nil {
+func (_q *AlertMetricsQuery) All(ctx context.Context) ([]*AlertMetrics, error) {
+	ctx = setContextOp(ctx, _q.ctx, ent.OpQueryAll)
+	if err := _q.prepareQuery(ctx); err != nil {
 		return nil, err
 	}
 	qr := querierAll[[]*AlertMetrics, *AlertMetricsQuery]()
-	return withInterceptors[[]*AlertMetrics](ctx, amq, qr, amq.inters)
+	return withInterceptors[[]*AlertMetrics](ctx, _q, qr, _q.inters)
 }
 
 // AllX is like All, but panics if an error occurs.
-func (amq *AlertMetricsQuery) AllX(ctx context.Context) []*AlertMetrics {
-	nodes, err := amq.All(ctx)
+func (_q *AlertMetricsQuery) AllX(ctx context.Context) []*AlertMetrics {
+	nodes, err := _q.All(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -127,17 +127,17 @@ func (amq *AlertMetricsQuery) AllX(ctx context.Context) []*AlertMetrics {
 }
 
 // Count returns the count of the given query.
-func (amq *AlertMetricsQuery) Count(ctx context.Context) (int, error) {
-	ctx = setContextOp(ctx, amq.ctx, ent.OpQueryCount)
-	if err := amq.prepareQuery(ctx); err != nil {
+func (_q *AlertMetricsQuery) Count(ctx context.Context) (int, error) {
+	ctx = setContextOp(ctx, _q.ctx, ent.OpQueryCount)
+	if err := _q.prepareQuery(ctx); err != nil {
 		return 0, err
 	}
-	return withInterceptors[int](ctx, amq, querierCount[*AlertMetricsQuery](), amq.inters)
+	return withInterceptors[int](ctx, _q, querierCount[*AlertMetricsQuery](), _q.inters)
 }
 
 // CountX is like Count, but panics if an error occurs.
-func (amq *AlertMetricsQuery) CountX(ctx context.Context) int {
-	count, err := amq.Count(ctx)
+func (_q *AlertMetricsQuery) CountX(ctx context.Context) int {
+	count, err := _q.Count(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -145,9 +145,9 @@ func (amq *AlertMetricsQuery) CountX(ctx context.Context) int {
 }
 
 // Exist returns true if the query has elements in the graph.
-func (amq *AlertMetricsQuery) Exist(ctx context.Context) (bool, error) {
-	ctx = setContextOp(ctx, amq.ctx, ent.OpQueryExist)
-	switch _, err := amq.First(ctx); {
+func (_q *AlertMetricsQuery) Exist(ctx context.Context) (bool, error) {
+	ctx = setContextOp(ctx, _q.ctx, ent.OpQueryExist)
+	switch _, err := _q.First(ctx); {
 	case IsNotFound(err):
 		return false, nil
 	case err != nil:
@@ -158,8 +158,8 @@ func (amq *AlertMetricsQuery) Exist(ctx context.Context) (bool, error) {
 }
 
 // ExistX is like Exist, but panics if an error occurs.
-func (amq *AlertMetricsQuery) ExistX(ctx context.Context) bool {
-	exist, err := amq.Exist(ctx)
+func (_q *AlertMetricsQuery) ExistX(ctx context.Context) bool {
+	exist, err := _q.Exist(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -168,20 +168,20 @@ func (amq *AlertMetricsQuery) ExistX(ctx context.Context) bool {
 
 // Clone returns a duplicate of the AlertMetricsQuery builder, including all associated steps. It can be
 // used to prepare common query builders and use them differently after the clone is made.
-func (amq *AlertMetricsQuery) Clone() *AlertMetricsQuery {
-	if amq == nil {
+func (_q *AlertMetricsQuery) Clone() *AlertMetricsQuery {
+	if _q == nil {
 		return nil
 	}
 	return &AlertMetricsQuery{
-		config:     amq.config,
-		ctx:        amq.ctx.Clone(),
-		order:      append([]alertmetrics.OrderOption{}, amq.order...),
-		inters:     append([]Interceptor{}, amq.inters...),
-		predicates: append([]predicate.AlertMetrics{}, amq.predicates...),
+		config:     _q.config,
+		ctx:        _q.ctx.Clone(),
+		order:      append([]alertmetrics.OrderOption{}, _q.order...),
+		inters:     append([]Interceptor{}, _q.inters...),
+		predicates: append([]predicate.AlertMetrics{}, _q.predicates...),
 		// clone intermediate query.
-		sql:       amq.sql.Clone(),
-		path:      amq.path,
-		modifiers: append([]func(*sql.Selector){}, amq.modifiers...),
+		sql:       _q.sql.Clone(),
+		path:      _q.path,
+		modifiers: append([]func(*sql.Selector){}, _q.modifiers...),
 	}
 }
 
@@ -199,10 +199,10 @@ func (amq *AlertMetricsQuery) Clone() *AlertMetricsQuery {
 //		GroupBy(alertmetrics.FieldEventCount).
 //		Aggregate(ent.Count()).
 //		Scan(ctx, &v)
-func (amq *AlertMetricsQuery) GroupBy(field string, fields ...string) *AlertMetricsGroupBy {
-	amq.ctx.Fields = append([]string{field}, fields...)
-	grbuild := &AlertMetricsGroupBy{build: amq}
-	grbuild.flds = &amq.ctx.Fields
+func (_q *AlertMetricsQuery) GroupBy(field string, fields ...string) *AlertMetricsGroupBy {
+	_q.ctx.Fields = append([]string{field}, fields...)
+	grbuild := &AlertMetricsGroupBy{build: _q}
+	grbuild.flds = &_q.ctx.Fields
 	grbuild.label = alertmetrics.Label
 	grbuild.scan = grbuild.Scan
 	return grbuild
@@ -220,65 +220,65 @@ func (amq *AlertMetricsQuery) GroupBy(field string, fields ...string) *AlertMetr
 //	client.AlertMetrics.Query().
 //		Select(alertmetrics.FieldEventCount).
 //		Scan(ctx, &v)
-func (amq *AlertMetricsQuery) Select(fields ...string) *AlertMetricsSelect {
-	amq.ctx.Fields = append(amq.ctx.Fields, fields...)
-	sbuild := &AlertMetricsSelect{AlertMetricsQuery: amq}
+func (_q *AlertMetricsQuery) Select(fields ...string) *AlertMetricsSelect {
+	_q.ctx.Fields = append(_q.ctx.Fields, fields...)
+	sbuild := &AlertMetricsSelect{AlertMetricsQuery: _q}
 	sbuild.label = alertmetrics.Label
-	sbuild.flds, sbuild.scan = &amq.ctx.Fields, sbuild.Scan
+	sbuild.flds, sbuild.scan = &_q.ctx.Fields, sbuild.Scan
 	return sbuild
 }
 
 // Aggregate returns a AlertMetricsSelect configured with the given aggregations.
-func (amq *AlertMetricsQuery) Aggregate(fns ...AggregateFunc) *AlertMetricsSelect {
-	return amq.Select().Aggregate(fns...)
+func (_q *AlertMetricsQuery) Aggregate(fns ...AggregateFunc) *AlertMetricsSelect {
+	return _q.Select().Aggregate(fns...)
 }
 
-func (amq *AlertMetricsQuery) prepareQuery(ctx context.Context) error {
-	for _, inter := range amq.inters {
+func (_q *AlertMetricsQuery) prepareQuery(ctx context.Context) error {
+	for _, inter := range _q.inters {
 		if inter == nil {
 			return fmt.Errorf("ent: uninitialized interceptor (forgotten import ent/runtime?)")
 		}
 		if trv, ok := inter.(Traverser); ok {
-			if err := trv.Traverse(ctx, amq); err != nil {
+			if err := trv.Traverse(ctx, _q); err != nil {
 				return err
 			}
 		}
 	}
-	for _, f := range amq.ctx.Fields {
+	for _, f := range _q.ctx.Fields {
 		if !alertmetrics.ValidColumn(f) {
 			return &ValidationError{Name: f, err: fmt.Errorf("ent: invalid field %q for query", f)}
 		}
 	}
-	if amq.path != nil {
-		prev, err := amq.path(ctx)
+	if _q.path != nil {
+		prev, err := _q.path(ctx)
 		if err != nil {
 			return err
 		}
-		amq.sql = prev
+		_q.sql = prev
 	}
 	return nil
 }
 
-func (amq *AlertMetricsQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*AlertMetrics, error) {
+func (_q *AlertMetricsQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*AlertMetrics, error) {
 	var (
 		nodes = []*AlertMetrics{}
-		_spec = amq.querySpec()
+		_spec = _q.querySpec()
 	)
 	_spec.ScanValues = func(columns []string) ([]any, error) {
 		return (*AlertMetrics).scanValues(nil, columns)
 	}
 	_spec.Assign = func(columns []string, values []any) error {
-		node := &AlertMetrics{config: amq.config}
+		node := &AlertMetrics{config: _q.config}
 		nodes = append(nodes, node)
 		return node.assignValues(columns, values)
 	}
-	if len(amq.modifiers) > 0 {
-		_spec.Modifiers = amq.modifiers
+	if len(_q.modifiers) > 0 {
+		_spec.Modifiers = _q.modifiers
 	}
 	for i := range hooks {
 		hooks[i](ctx, _spec)
 	}
-	if err := sqlgraph.QueryNodes(ctx, amq.driver, _spec); err != nil {
+	if err := sqlgraph.QueryNodes(ctx, _q.driver, _spec); err != nil {
 		return nil, err
 	}
 	if len(nodes) == 0 {
@@ -287,46 +287,46 @@ func (amq *AlertMetricsQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([
 	return nodes, nil
 }
 
-func (amq *AlertMetricsQuery) sqlCount(ctx context.Context) (int, error) {
-	_spec := amq.querySpec()
-	if len(amq.modifiers) > 0 {
-		_spec.Modifiers = amq.modifiers
+func (_q *AlertMetricsQuery) sqlCount(ctx context.Context) (int, error) {
+	_spec := _q.querySpec()
+	if len(_q.modifiers) > 0 {
+		_spec.Modifiers = _q.modifiers
 	}
-	_spec.Node.Columns = amq.ctx.Fields
-	if len(amq.ctx.Fields) > 0 {
-		_spec.Unique = amq.ctx.Unique != nil && *amq.ctx.Unique
+	_spec.Node.Columns = _q.ctx.Fields
+	if len(_q.ctx.Fields) > 0 {
+		_spec.Unique = _q.ctx.Unique != nil && *_q.ctx.Unique
 	}
-	return sqlgraph.CountNodes(ctx, amq.driver, _spec)
+	return sqlgraph.CountNodes(ctx, _q.driver, _spec)
 }
 
-func (amq *AlertMetricsQuery) querySpec() *sqlgraph.QuerySpec {
+func (_q *AlertMetricsQuery) querySpec() *sqlgraph.QuerySpec {
 	_spec := sqlgraph.NewQuerySpec(alertmetrics.Table, alertmetrics.Columns, nil)
-	_spec.From = amq.sql
-	if unique := amq.ctx.Unique; unique != nil {
+	_spec.From = _q.sql
+	if unique := _q.ctx.Unique; unique != nil {
 		_spec.Unique = *unique
-	} else if amq.path != nil {
+	} else if _q.path != nil {
 		_spec.Unique = true
 	}
-	if fields := amq.ctx.Fields; len(fields) > 0 {
+	if fields := _q.ctx.Fields; len(fields) > 0 {
 		_spec.Node.Columns = make([]string, 0, len(fields))
 		for i := range fields {
 			_spec.Node.Columns = append(_spec.Node.Columns, fields[i])
 		}
 	}
-	if ps := amq.predicates; len(ps) > 0 {
+	if ps := _q.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {
 				ps[i](selector)
 			}
 		}
 	}
-	if limit := amq.ctx.Limit; limit != nil {
+	if limit := _q.ctx.Limit; limit != nil {
 		_spec.Limit = *limit
 	}
-	if offset := amq.ctx.Offset; offset != nil {
+	if offset := _q.ctx.Offset; offset != nil {
 		_spec.Offset = *offset
 	}
-	if ps := amq.order; len(ps) > 0 {
+	if ps := _q.order; len(ps) > 0 {
 		_spec.Order = func(selector *sql.Selector) {
 			for i := range ps {
 				ps[i](selector)
@@ -336,45 +336,45 @@ func (amq *AlertMetricsQuery) querySpec() *sqlgraph.QuerySpec {
 	return _spec
 }
 
-func (amq *AlertMetricsQuery) sqlQuery(ctx context.Context) *sql.Selector {
-	builder := sql.Dialect(amq.driver.Dialect())
+func (_q *AlertMetricsQuery) sqlQuery(ctx context.Context) *sql.Selector {
+	builder := sql.Dialect(_q.driver.Dialect())
 	t1 := builder.Table(alertmetrics.Table)
-	columns := amq.ctx.Fields
+	columns := _q.ctx.Fields
 	if len(columns) == 0 {
 		columns = alertmetrics.Columns
 	}
 	selector := builder.Select(t1.Columns(columns...)...).From(t1)
-	if amq.sql != nil {
-		selector = amq.sql
+	if _q.sql != nil {
+		selector = _q.sql
 		selector.Select(selector.Columns(columns...)...)
 	}
-	if amq.ctx.Unique != nil && *amq.ctx.Unique {
+	if _q.ctx.Unique != nil && *_q.ctx.Unique {
 		selector.Distinct()
 	}
-	for _, m := range amq.modifiers {
+	for _, m := range _q.modifiers {
 		m(selector)
 	}
-	for _, p := range amq.predicates {
+	for _, p := range _q.predicates {
 		p(selector)
 	}
-	for _, p := range amq.order {
+	for _, p := range _q.order {
 		p(selector)
 	}
-	if offset := amq.ctx.Offset; offset != nil {
+	if offset := _q.ctx.Offset; offset != nil {
 		// limit is mandatory for offset clause. We start
 		// with default value, and override it below if needed.
 		selector.Offset(*offset).Limit(math.MaxInt32)
 	}
-	if limit := amq.ctx.Limit; limit != nil {
+	if limit := _q.ctx.Limit; limit != nil {
 		selector.Limit(*limit)
 	}
 	return selector
 }
 
 // Modify adds a query modifier for attaching custom logic to queries.
-func (amq *AlertMetricsQuery) Modify(modifiers ...func(s *sql.Selector)) *AlertMetricsSelect {
-	amq.modifiers = append(amq.modifiers, modifiers...)
-	return amq.Select()
+func (_q *AlertMetricsQuery) Modify(modifiers ...func(s *sql.Selector)) *AlertMetricsSelect {
+	_q.modifiers = append(_q.modifiers, modifiers...)
+	return _q.Select()
 }
 
 // AlertMetricsGroupBy is the group-by builder for AlertMetrics entities.
@@ -384,41 +384,41 @@ type AlertMetricsGroupBy struct {
 }
 
 // Aggregate adds the given aggregation functions to the group-by query.
-func (amgb *AlertMetricsGroupBy) Aggregate(fns ...AggregateFunc) *AlertMetricsGroupBy {
-	amgb.fns = append(amgb.fns, fns...)
-	return amgb
+func (_g *AlertMetricsGroupBy) Aggregate(fns ...AggregateFunc) *AlertMetricsGroupBy {
+	_g.fns = append(_g.fns, fns...)
+	return _g
 }
 
 // Scan applies the selector query and scans the result into the given value.
-func (amgb *AlertMetricsGroupBy) Scan(ctx context.Context, v any) error {
-	ctx = setContextOp(ctx, amgb.build.ctx, ent.OpQueryGroupBy)
-	if err := amgb.build.prepareQuery(ctx); err != nil {
+func (_g *AlertMetricsGroupBy) Scan(ctx context.Context, v any) error {
+	ctx = setContextOp(ctx, _g.build.ctx, ent.OpQueryGroupBy)
+	if err := _g.build.prepareQuery(ctx); err != nil {
 		return err
 	}
-	return scanWithInterceptors[*AlertMetricsQuery, *AlertMetricsGroupBy](ctx, amgb.build, amgb, amgb.build.inters, v)
+	return scanWithInterceptors[*AlertMetricsQuery, *AlertMetricsGroupBy](ctx, _g.build, _g, _g.build.inters, v)
 }
 
-func (amgb *AlertMetricsGroupBy) sqlScan(ctx context.Context, root *AlertMetricsQuery, v any) error {
+func (_g *AlertMetricsGroupBy) sqlScan(ctx context.Context, root *AlertMetricsQuery, v any) error {
 	selector := root.sqlQuery(ctx).Select()
-	aggregation := make([]string, 0, len(amgb.fns))
-	for _, fn := range amgb.fns {
+	aggregation := make([]string, 0, len(_g.fns))
+	for _, fn := range _g.fns {
 		aggregation = append(aggregation, fn(selector))
 	}
 	if len(selector.SelectedColumns()) == 0 {
-		columns := make([]string, 0, len(*amgb.flds)+len(amgb.fns))
-		for _, f := range *amgb.flds {
+		columns := make([]string, 0, len(*_g.flds)+len(_g.fns))
+		for _, f := range *_g.flds {
 			columns = append(columns, selector.C(f))
 		}
 		columns = append(columns, aggregation...)
 		selector.Select(columns...)
 	}
-	selector.GroupBy(selector.Columns(*amgb.flds...)...)
+	selector.GroupBy(selector.Columns(*_g.flds...)...)
 	if err := selector.Err(); err != nil {
 		return err
 	}
 	rows := &sql.Rows{}
 	query, args := selector.Query()
-	if err := amgb.build.driver.Query(ctx, query, args, rows); err != nil {
+	if err := _g.build.driver.Query(ctx, query, args, rows); err != nil {
 		return err
 	}
 	defer rows.Close()
@@ -432,27 +432,27 @@ type AlertMetricsSelect struct {
 }
 
 // Aggregate adds the given aggregation functions to the selector query.
-func (ams *AlertMetricsSelect) Aggregate(fns ...AggregateFunc) *AlertMetricsSelect {
-	ams.fns = append(ams.fns, fns...)
-	return ams
+func (_s *AlertMetricsSelect) Aggregate(fns ...AggregateFunc) *AlertMetricsSelect {
+	_s.fns = append(_s.fns, fns...)
+	return _s
 }
 
 // Scan applies the selector query and scans the result into the given value.
-func (ams *AlertMetricsSelect) Scan(ctx context.Context, v any) error {
-	ctx = setContextOp(ctx, ams.ctx, ent.OpQuerySelect)
-	if err := ams.prepareQuery(ctx); err != nil {
+func (_s *AlertMetricsSelect) Scan(ctx context.Context, v any) error {
+	ctx = setContextOp(ctx, _s.ctx, ent.OpQuerySelect)
+	if err := _s.prepareQuery(ctx); err != nil {
 		return err
 	}
-	return scanWithInterceptors[*AlertMetricsQuery, *AlertMetricsSelect](ctx, ams.AlertMetricsQuery, ams, ams.inters, v)
+	return scanWithInterceptors[*AlertMetricsQuery, *AlertMetricsSelect](ctx, _s.AlertMetricsQuery, _s, _s.inters, v)
 }
 
-func (ams *AlertMetricsSelect) sqlScan(ctx context.Context, root *AlertMetricsQuery, v any) error {
+func (_s *AlertMetricsSelect) sqlScan(ctx context.Context, root *AlertMetricsQuery, v any) error {
 	selector := root.sqlQuery(ctx)
-	aggregation := make([]string, 0, len(ams.fns))
-	for _, fn := range ams.fns {
+	aggregation := make([]string, 0, len(_s.fns))
+	for _, fn := range _s.fns {
 		aggregation = append(aggregation, fn(selector))
 	}
-	switch n := len(*ams.selector.flds); {
+	switch n := len(*_s.selector.flds); {
 	case n == 0 && len(aggregation) > 0:
 		selector.Select(aggregation...)
 	case n != 0 && len(aggregation) > 0:
@@ -460,7 +460,7 @@ func (ams *AlertMetricsSelect) sqlScan(ctx context.Context, root *AlertMetricsQu
 	}
 	rows := &sql.Rows{}
 	query, args := selector.Query()
-	if err := ams.driver.Query(ctx, query, args, rows); err != nil {
+	if err := _s.driver.Query(ctx, query, args, rows); err != nil {
 		return err
 	}
 	defer rows.Close()
@@ -468,7 +468,7 @@ func (ams *AlertMetricsSelect) sqlScan(ctx context.Context, root *AlertMetricsQu
 }
 
 // Modify adds a query modifier for attaching custom logic to queries.
-func (ams *AlertMetricsSelect) Modify(modifiers ...func(s *sql.Selector)) *AlertMetricsSelect {
-	ams.modifiers = append(ams.modifiers, modifiers...)
-	return ams
+func (_s *AlertMetricsSelect) Modify(modifiers ...func(s *sql.Selector)) *AlertMetricsSelect {
+	_s.modifiers = append(_s.modifiers, modifiers...)
+	return _s
 }

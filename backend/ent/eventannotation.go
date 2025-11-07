@@ -123,7 +123,7 @@ func (*EventAnnotation) scanValues(columns []string) ([]any, error) {
 
 // assignValues assigns the values that were returned from sql.Rows (after scanning)
 // to the EventAnnotation fields.
-func (ea *EventAnnotation) assignValues(columns []string, values []any) error {
+func (_m *EventAnnotation) assignValues(columns []string, values []any) error {
 	if m, n := len(values), len(columns); m < n {
 		return fmt.Errorf("mismatch number of scan values: %d != %d", m, n)
 	}
@@ -133,54 +133,54 @@ func (ea *EventAnnotation) assignValues(columns []string, values []any) error {
 			if value, ok := values[i].(*uuid.UUID); !ok {
 				return fmt.Errorf("unexpected type %T for field id", values[i])
 			} else if value != nil {
-				ea.ID = *value
+				_m.ID = *value
 			}
 		case eventannotation.FieldTenantID:
 			if value, ok := values[i].(*sql.NullInt64); !ok {
 				return fmt.Errorf("unexpected type %T for field tenant_id", values[i])
 			} else if value.Valid {
-				ea.TenantID = int(value.Int64)
+				_m.TenantID = int(value.Int64)
 			}
 		case eventannotation.FieldEventID:
 			if value, ok := values[i].(*uuid.UUID); !ok {
 				return fmt.Errorf("unexpected type %T for field event_id", values[i])
 			} else if value != nil {
-				ea.EventID = *value
+				_m.EventID = *value
 			}
 		case eventannotation.FieldCreatorID:
 			if value, ok := values[i].(*uuid.UUID); !ok {
 				return fmt.Errorf("unexpected type %T for field creator_id", values[i])
 			} else if value != nil {
-				ea.CreatorID = *value
+				_m.CreatorID = *value
 			}
 		case eventannotation.FieldCreatedAt:
 			if value, ok := values[i].(*sql.NullTime); !ok {
 				return fmt.Errorf("unexpected type %T for field created_at", values[i])
 			} else if value.Valid {
-				ea.CreatedAt = value.Time
+				_m.CreatedAt = value.Time
 			}
 		case eventannotation.FieldMinutesOccupied:
 			if value, ok := values[i].(*sql.NullInt64); !ok {
 				return fmt.Errorf("unexpected type %T for field minutes_occupied", values[i])
 			} else if value.Valid {
-				ea.MinutesOccupied = int(value.Int64)
+				_m.MinutesOccupied = int(value.Int64)
 			}
 		case eventannotation.FieldNotes:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field notes", values[i])
 			} else if value.Valid {
-				ea.Notes = value.String
+				_m.Notes = value.String
 			}
 		case eventannotation.FieldTags:
 			if value, ok := values[i].(*[]byte); !ok {
 				return fmt.Errorf("unexpected type %T for field tags", values[i])
 			} else if value != nil && len(*value) > 0 {
-				if err := json.Unmarshal(*value, &ea.Tags); err != nil {
+				if err := json.Unmarshal(*value, &_m.Tags); err != nil {
 					return fmt.Errorf("unmarshal field tags: %w", err)
 				}
 			}
 		default:
-			ea.selectValues.Set(columns[i], values[i])
+			_m.selectValues.Set(columns[i], values[i])
 		}
 	}
 	return nil
@@ -188,73 +188,73 @@ func (ea *EventAnnotation) assignValues(columns []string, values []any) error {
 
 // Value returns the ent.Value that was dynamically selected and assigned to the EventAnnotation.
 // This includes values selected through modifiers, order, etc.
-func (ea *EventAnnotation) Value(name string) (ent.Value, error) {
-	return ea.selectValues.Get(name)
+func (_m *EventAnnotation) Value(name string) (ent.Value, error) {
+	return _m.selectValues.Get(name)
 }
 
 // QueryTenant queries the "tenant" edge of the EventAnnotation entity.
-func (ea *EventAnnotation) QueryTenant() *TenantQuery {
-	return NewEventAnnotationClient(ea.config).QueryTenant(ea)
+func (_m *EventAnnotation) QueryTenant() *TenantQuery {
+	return NewEventAnnotationClient(_m.config).QueryTenant(_m)
 }
 
 // QueryEvent queries the "event" edge of the EventAnnotation entity.
-func (ea *EventAnnotation) QueryEvent() *EventQuery {
-	return NewEventAnnotationClient(ea.config).QueryEvent(ea)
+func (_m *EventAnnotation) QueryEvent() *EventQuery {
+	return NewEventAnnotationClient(_m.config).QueryEvent(_m)
 }
 
 // QueryCreator queries the "creator" edge of the EventAnnotation entity.
-func (ea *EventAnnotation) QueryCreator() *UserQuery {
-	return NewEventAnnotationClient(ea.config).QueryCreator(ea)
+func (_m *EventAnnotation) QueryCreator() *UserQuery {
+	return NewEventAnnotationClient(_m.config).QueryCreator(_m)
 }
 
 // QueryHandovers queries the "handovers" edge of the EventAnnotation entity.
-func (ea *EventAnnotation) QueryHandovers() *OncallShiftHandoverQuery {
-	return NewEventAnnotationClient(ea.config).QueryHandovers(ea)
+func (_m *EventAnnotation) QueryHandovers() *OncallShiftHandoverQuery {
+	return NewEventAnnotationClient(_m.config).QueryHandovers(_m)
 }
 
 // Update returns a builder for updating this EventAnnotation.
 // Note that you need to call EventAnnotation.Unwrap() before calling this method if this EventAnnotation
 // was returned from a transaction, and the transaction was committed or rolled back.
-func (ea *EventAnnotation) Update() *EventAnnotationUpdateOne {
-	return NewEventAnnotationClient(ea.config).UpdateOne(ea)
+func (_m *EventAnnotation) Update() *EventAnnotationUpdateOne {
+	return NewEventAnnotationClient(_m.config).UpdateOne(_m)
 }
 
 // Unwrap unwraps the EventAnnotation entity that was returned from a transaction after it was closed,
 // so that all future queries will be executed through the driver which created the transaction.
-func (ea *EventAnnotation) Unwrap() *EventAnnotation {
-	_tx, ok := ea.config.driver.(*txDriver)
+func (_m *EventAnnotation) Unwrap() *EventAnnotation {
+	_tx, ok := _m.config.driver.(*txDriver)
 	if !ok {
 		panic("ent: EventAnnotation is not a transactional entity")
 	}
-	ea.config.driver = _tx.drv
-	return ea
+	_m.config.driver = _tx.drv
+	return _m
 }
 
 // String implements the fmt.Stringer.
-func (ea *EventAnnotation) String() string {
+func (_m *EventAnnotation) String() string {
 	var builder strings.Builder
 	builder.WriteString("EventAnnotation(")
-	builder.WriteString(fmt.Sprintf("id=%v, ", ea.ID))
+	builder.WriteString(fmt.Sprintf("id=%v, ", _m.ID))
 	builder.WriteString("tenant_id=")
-	builder.WriteString(fmt.Sprintf("%v", ea.TenantID))
+	builder.WriteString(fmt.Sprintf("%v", _m.TenantID))
 	builder.WriteString(", ")
 	builder.WriteString("event_id=")
-	builder.WriteString(fmt.Sprintf("%v", ea.EventID))
+	builder.WriteString(fmt.Sprintf("%v", _m.EventID))
 	builder.WriteString(", ")
 	builder.WriteString("creator_id=")
-	builder.WriteString(fmt.Sprintf("%v", ea.CreatorID))
+	builder.WriteString(fmt.Sprintf("%v", _m.CreatorID))
 	builder.WriteString(", ")
 	builder.WriteString("created_at=")
-	builder.WriteString(ea.CreatedAt.Format(time.ANSIC))
+	builder.WriteString(_m.CreatedAt.Format(time.ANSIC))
 	builder.WriteString(", ")
 	builder.WriteString("minutes_occupied=")
-	builder.WriteString(fmt.Sprintf("%v", ea.MinutesOccupied))
+	builder.WriteString(fmt.Sprintf("%v", _m.MinutesOccupied))
 	builder.WriteString(", ")
 	builder.WriteString("notes=")
-	builder.WriteString(ea.Notes)
+	builder.WriteString(_m.Notes)
 	builder.WriteString(", ")
 	builder.WriteString("tags=")
-	builder.WriteString(fmt.Sprintf("%v", ea.Tags))
+	builder.WriteString(fmt.Sprintf("%v", _m.Tags))
 	builder.WriteByte(')')
 	return builder.String()
 }

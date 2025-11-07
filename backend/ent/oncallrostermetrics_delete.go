@@ -20,56 +20,56 @@ type OncallRosterMetricsDelete struct {
 }
 
 // Where appends a list predicates to the OncallRosterMetricsDelete builder.
-func (ormd *OncallRosterMetricsDelete) Where(ps ...predicate.OncallRosterMetrics) *OncallRosterMetricsDelete {
-	ormd.mutation.Where(ps...)
-	return ormd
+func (_d *OncallRosterMetricsDelete) Where(ps ...predicate.OncallRosterMetrics) *OncallRosterMetricsDelete {
+	_d.mutation.Where(ps...)
+	return _d
 }
 
 // Exec executes the deletion query and returns how many vertices were deleted.
-func (ormd *OncallRosterMetricsDelete) Exec(ctx context.Context) (int, error) {
-	return withHooks(ctx, ormd.sqlExec, ormd.mutation, ormd.hooks)
+func (_d *OncallRosterMetricsDelete) Exec(ctx context.Context) (int, error) {
+	return withHooks(ctx, _d.sqlExec, _d.mutation, _d.hooks)
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (ormd *OncallRosterMetricsDelete) ExecX(ctx context.Context) int {
-	n, err := ormd.Exec(ctx)
+func (_d *OncallRosterMetricsDelete) ExecX(ctx context.Context) int {
+	n, err := _d.Exec(ctx)
 	if err != nil {
 		panic(err)
 	}
 	return n
 }
 
-func (ormd *OncallRosterMetricsDelete) sqlExec(ctx context.Context) (int, error) {
+func (_d *OncallRosterMetricsDelete) sqlExec(ctx context.Context) (int, error) {
 	_spec := sqlgraph.NewDeleteSpec(oncallrostermetrics.Table, sqlgraph.NewFieldSpec(oncallrostermetrics.FieldID, field.TypeUUID))
-	if ps := ormd.mutation.predicates; len(ps) > 0 {
+	if ps := _d.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {
 				ps[i](selector)
 			}
 		}
 	}
-	affected, err := sqlgraph.DeleteNodes(ctx, ormd.driver, _spec)
+	affected, err := sqlgraph.DeleteNodes(ctx, _d.driver, _spec)
 	if err != nil && sqlgraph.IsConstraintError(err) {
 		err = &ConstraintError{msg: err.Error(), wrap: err}
 	}
-	ormd.mutation.done = true
+	_d.mutation.done = true
 	return affected, err
 }
 
 // OncallRosterMetricsDeleteOne is the builder for deleting a single OncallRosterMetrics entity.
 type OncallRosterMetricsDeleteOne struct {
-	ormd *OncallRosterMetricsDelete
+	_d *OncallRosterMetricsDelete
 }
 
 // Where appends a list predicates to the OncallRosterMetricsDelete builder.
-func (ormdo *OncallRosterMetricsDeleteOne) Where(ps ...predicate.OncallRosterMetrics) *OncallRosterMetricsDeleteOne {
-	ormdo.ormd.mutation.Where(ps...)
-	return ormdo
+func (_d *OncallRosterMetricsDeleteOne) Where(ps ...predicate.OncallRosterMetrics) *OncallRosterMetricsDeleteOne {
+	_d._d.mutation.Where(ps...)
+	return _d
 }
 
 // Exec executes the deletion query.
-func (ormdo *OncallRosterMetricsDeleteOne) Exec(ctx context.Context) error {
-	n, err := ormdo.ormd.Exec(ctx)
+func (_d *OncallRosterMetricsDeleteOne) Exec(ctx context.Context) error {
+	n, err := _d._d.Exec(ctx)
 	switch {
 	case err != nil:
 		return err
@@ -81,8 +81,8 @@ func (ormdo *OncallRosterMetricsDeleteOne) Exec(ctx context.Context) error {
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (ormdo *OncallRosterMetricsDeleteOne) ExecX(ctx context.Context) {
-	if err := ormdo.Exec(ctx); err != nil {
+func (_d *OncallRosterMetricsDeleteOne) ExecX(ctx context.Context) {
+	if err := _d.Exec(ctx); err != nil {
 		panic(err)
 	}
 }

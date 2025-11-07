@@ -99,7 +99,7 @@ func (*IncidentEventContext) scanValues(columns []string) ([]any, error) {
 
 // assignValues assigns the values that were returned from sql.Rows (after scanning)
 // to the IncidentEventContext fields.
-func (iec *IncidentEventContext) assignValues(columns []string, values []any) error {
+func (_m *IncidentEventContext) assignValues(columns []string, values []any) error {
 	if m, n := len(values), len(columns); m < n {
 		return fmt.Errorf("mismatch number of scan values: %d != %d", m, n)
 	}
@@ -109,25 +109,25 @@ func (iec *IncidentEventContext) assignValues(columns []string, values []any) er
 			if value, ok := values[i].(*uuid.UUID); !ok {
 				return fmt.Errorf("unexpected type %T for field id", values[i])
 			} else if value != nil {
-				iec.ID = *value
+				_m.ID = *value
 			}
 		case incidenteventcontext.FieldTenantID:
 			if value, ok := values[i].(*sql.NullInt64); !ok {
 				return fmt.Errorf("unexpected type %T for field tenant_id", values[i])
 			} else if value.Valid {
-				iec.TenantID = int(value.Int64)
+				_m.TenantID = int(value.Int64)
 			}
 		case incidenteventcontext.FieldSystemState:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field system_state", values[i])
 			} else if value.Valid {
-				iec.SystemState = value.String
+				_m.SystemState = value.String
 			}
 		case incidenteventcontext.FieldDecisionOptions:
 			if value, ok := values[i].(*[]byte); !ok {
 				return fmt.Errorf("unexpected type %T for field decision_options", values[i])
 			} else if value != nil && len(*value) > 0 {
-				if err := json.Unmarshal(*value, &iec.DecisionOptions); err != nil {
+				if err := json.Unmarshal(*value, &_m.DecisionOptions); err != nil {
 					return fmt.Errorf("unmarshal field decision_options: %w", err)
 				}
 			}
@@ -135,13 +135,13 @@ func (iec *IncidentEventContext) assignValues(columns []string, values []any) er
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field decision_rationale", values[i])
 			} else if value.Valid {
-				iec.DecisionRationale = value.String
+				_m.DecisionRationale = value.String
 			}
 		case incidenteventcontext.FieldInvolvedPersonnel:
 			if value, ok := values[i].(*[]byte); !ok {
 				return fmt.Errorf("unexpected type %T for field involved_personnel", values[i])
 			} else if value != nil && len(*value) > 0 {
-				if err := json.Unmarshal(*value, &iec.InvolvedPersonnel); err != nil {
+				if err := json.Unmarshal(*value, &_m.InvolvedPersonnel); err != nil {
 					return fmt.Errorf("unmarshal field involved_personnel: %w", err)
 				}
 			}
@@ -149,17 +149,17 @@ func (iec *IncidentEventContext) assignValues(columns []string, values []any) er
 			if value, ok := values[i].(*sql.NullTime); !ok {
 				return fmt.Errorf("unexpected type %T for field created_at", values[i])
 			} else if value.Valid {
-				iec.CreatedAt = value.Time
+				_m.CreatedAt = value.Time
 			}
 		case incidenteventcontext.ForeignKeys[0]:
 			if value, ok := values[i].(*sql.NullScanner); !ok {
 				return fmt.Errorf("unexpected type %T for field incident_event_context", values[i])
 			} else if value.Valid {
-				iec.incident_event_context = new(uuid.UUID)
-				*iec.incident_event_context = *value.S.(*uuid.UUID)
+				_m.incident_event_context = new(uuid.UUID)
+				*_m.incident_event_context = *value.S.(*uuid.UUID)
 			}
 		default:
-			iec.selectValues.Set(columns[i], values[i])
+			_m.selectValues.Set(columns[i], values[i])
 		}
 	}
 	return nil
@@ -167,60 +167,60 @@ func (iec *IncidentEventContext) assignValues(columns []string, values []any) er
 
 // Value returns the ent.Value that was dynamically selected and assigned to the IncidentEventContext.
 // This includes values selected through modifiers, order, etc.
-func (iec *IncidentEventContext) Value(name string) (ent.Value, error) {
-	return iec.selectValues.Get(name)
+func (_m *IncidentEventContext) Value(name string) (ent.Value, error) {
+	return _m.selectValues.Get(name)
 }
 
 // QueryTenant queries the "tenant" edge of the IncidentEventContext entity.
-func (iec *IncidentEventContext) QueryTenant() *TenantQuery {
-	return NewIncidentEventContextClient(iec.config).QueryTenant(iec)
+func (_m *IncidentEventContext) QueryTenant() *TenantQuery {
+	return NewIncidentEventContextClient(_m.config).QueryTenant(_m)
 }
 
 // QueryEvent queries the "event" edge of the IncidentEventContext entity.
-func (iec *IncidentEventContext) QueryEvent() *IncidentEventQuery {
-	return NewIncidentEventContextClient(iec.config).QueryEvent(iec)
+func (_m *IncidentEventContext) QueryEvent() *IncidentEventQuery {
+	return NewIncidentEventContextClient(_m.config).QueryEvent(_m)
 }
 
 // Update returns a builder for updating this IncidentEventContext.
 // Note that you need to call IncidentEventContext.Unwrap() before calling this method if this IncidentEventContext
 // was returned from a transaction, and the transaction was committed or rolled back.
-func (iec *IncidentEventContext) Update() *IncidentEventContextUpdateOne {
-	return NewIncidentEventContextClient(iec.config).UpdateOne(iec)
+func (_m *IncidentEventContext) Update() *IncidentEventContextUpdateOne {
+	return NewIncidentEventContextClient(_m.config).UpdateOne(_m)
 }
 
 // Unwrap unwraps the IncidentEventContext entity that was returned from a transaction after it was closed,
 // so that all future queries will be executed through the driver which created the transaction.
-func (iec *IncidentEventContext) Unwrap() *IncidentEventContext {
-	_tx, ok := iec.config.driver.(*txDriver)
+func (_m *IncidentEventContext) Unwrap() *IncidentEventContext {
+	_tx, ok := _m.config.driver.(*txDriver)
 	if !ok {
 		panic("ent: IncidentEventContext is not a transactional entity")
 	}
-	iec.config.driver = _tx.drv
-	return iec
+	_m.config.driver = _tx.drv
+	return _m
 }
 
 // String implements the fmt.Stringer.
-func (iec *IncidentEventContext) String() string {
+func (_m *IncidentEventContext) String() string {
 	var builder strings.Builder
 	builder.WriteString("IncidentEventContext(")
-	builder.WriteString(fmt.Sprintf("id=%v, ", iec.ID))
+	builder.WriteString(fmt.Sprintf("id=%v, ", _m.ID))
 	builder.WriteString("tenant_id=")
-	builder.WriteString(fmt.Sprintf("%v", iec.TenantID))
+	builder.WriteString(fmt.Sprintf("%v", _m.TenantID))
 	builder.WriteString(", ")
 	builder.WriteString("system_state=")
-	builder.WriteString(iec.SystemState)
+	builder.WriteString(_m.SystemState)
 	builder.WriteString(", ")
 	builder.WriteString("decision_options=")
-	builder.WriteString(fmt.Sprintf("%v", iec.DecisionOptions))
+	builder.WriteString(fmt.Sprintf("%v", _m.DecisionOptions))
 	builder.WriteString(", ")
 	builder.WriteString("decision_rationale=")
-	builder.WriteString(iec.DecisionRationale)
+	builder.WriteString(_m.DecisionRationale)
 	builder.WriteString(", ")
 	builder.WriteString("involved_personnel=")
-	builder.WriteString(fmt.Sprintf("%v", iec.InvolvedPersonnel))
+	builder.WriteString(fmt.Sprintf("%v", _m.InvolvedPersonnel))
 	builder.WriteString(", ")
 	builder.WriteString("created_at=")
-	builder.WriteString(iec.CreatedAt.Format(time.ANSIC))
+	builder.WriteString(_m.CreatedAt.Format(time.ANSIC))
 	builder.WriteByte(')')
 	return builder.String()
 }

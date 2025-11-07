@@ -27,150 +27,150 @@ type SystemAnalysisComponentUpdate struct {
 }
 
 // Where appends a list predicates to the SystemAnalysisComponentUpdate builder.
-func (sacu *SystemAnalysisComponentUpdate) Where(ps ...predicate.SystemAnalysisComponent) *SystemAnalysisComponentUpdate {
-	sacu.mutation.Where(ps...)
-	return sacu
+func (_u *SystemAnalysisComponentUpdate) Where(ps ...predicate.SystemAnalysisComponent) *SystemAnalysisComponentUpdate {
+	_u.mutation.Where(ps...)
+	return _u
 }
 
 // SetAnalysisID sets the "analysis_id" field.
-func (sacu *SystemAnalysisComponentUpdate) SetAnalysisID(u uuid.UUID) *SystemAnalysisComponentUpdate {
-	sacu.mutation.SetAnalysisID(u)
-	return sacu
+func (_u *SystemAnalysisComponentUpdate) SetAnalysisID(v uuid.UUID) *SystemAnalysisComponentUpdate {
+	_u.mutation.SetAnalysisID(v)
+	return _u
 }
 
 // SetNillableAnalysisID sets the "analysis_id" field if the given value is not nil.
-func (sacu *SystemAnalysisComponentUpdate) SetNillableAnalysisID(u *uuid.UUID) *SystemAnalysisComponentUpdate {
-	if u != nil {
-		sacu.SetAnalysisID(*u)
+func (_u *SystemAnalysisComponentUpdate) SetNillableAnalysisID(v *uuid.UUID) *SystemAnalysisComponentUpdate {
+	if v != nil {
+		_u.SetAnalysisID(*v)
 	}
-	return sacu
+	return _u
 }
 
 // SetComponentID sets the "component_id" field.
-func (sacu *SystemAnalysisComponentUpdate) SetComponentID(u uuid.UUID) *SystemAnalysisComponentUpdate {
-	sacu.mutation.SetComponentID(u)
-	return sacu
+func (_u *SystemAnalysisComponentUpdate) SetComponentID(v uuid.UUID) *SystemAnalysisComponentUpdate {
+	_u.mutation.SetComponentID(v)
+	return _u
 }
 
 // SetNillableComponentID sets the "component_id" field if the given value is not nil.
-func (sacu *SystemAnalysisComponentUpdate) SetNillableComponentID(u *uuid.UUID) *SystemAnalysisComponentUpdate {
-	if u != nil {
-		sacu.SetComponentID(*u)
+func (_u *SystemAnalysisComponentUpdate) SetNillableComponentID(v *uuid.UUID) *SystemAnalysisComponentUpdate {
+	if v != nil {
+		_u.SetComponentID(*v)
 	}
-	return sacu
+	return _u
 }
 
 // SetDescription sets the "description" field.
-func (sacu *SystemAnalysisComponentUpdate) SetDescription(s string) *SystemAnalysisComponentUpdate {
-	sacu.mutation.SetDescription(s)
-	return sacu
+func (_u *SystemAnalysisComponentUpdate) SetDescription(v string) *SystemAnalysisComponentUpdate {
+	_u.mutation.SetDescription(v)
+	return _u
 }
 
 // SetNillableDescription sets the "description" field if the given value is not nil.
-func (sacu *SystemAnalysisComponentUpdate) SetNillableDescription(s *string) *SystemAnalysisComponentUpdate {
-	if s != nil {
-		sacu.SetDescription(*s)
+func (_u *SystemAnalysisComponentUpdate) SetNillableDescription(v *string) *SystemAnalysisComponentUpdate {
+	if v != nil {
+		_u.SetDescription(*v)
 	}
-	return sacu
+	return _u
 }
 
 // ClearDescription clears the value of the "description" field.
-func (sacu *SystemAnalysisComponentUpdate) ClearDescription() *SystemAnalysisComponentUpdate {
-	sacu.mutation.ClearDescription()
-	return sacu
+func (_u *SystemAnalysisComponentUpdate) ClearDescription() *SystemAnalysisComponentUpdate {
+	_u.mutation.ClearDescription()
+	return _u
 }
 
 // SetPosX sets the "pos_x" field.
-func (sacu *SystemAnalysisComponentUpdate) SetPosX(f float64) *SystemAnalysisComponentUpdate {
-	sacu.mutation.ResetPosX()
-	sacu.mutation.SetPosX(f)
-	return sacu
+func (_u *SystemAnalysisComponentUpdate) SetPosX(v float64) *SystemAnalysisComponentUpdate {
+	_u.mutation.ResetPosX()
+	_u.mutation.SetPosX(v)
+	return _u
 }
 
 // SetNillablePosX sets the "pos_x" field if the given value is not nil.
-func (sacu *SystemAnalysisComponentUpdate) SetNillablePosX(f *float64) *SystemAnalysisComponentUpdate {
-	if f != nil {
-		sacu.SetPosX(*f)
+func (_u *SystemAnalysisComponentUpdate) SetNillablePosX(v *float64) *SystemAnalysisComponentUpdate {
+	if v != nil {
+		_u.SetPosX(*v)
 	}
-	return sacu
+	return _u
 }
 
-// AddPosX adds f to the "pos_x" field.
-func (sacu *SystemAnalysisComponentUpdate) AddPosX(f float64) *SystemAnalysisComponentUpdate {
-	sacu.mutation.AddPosX(f)
-	return sacu
+// AddPosX adds value to the "pos_x" field.
+func (_u *SystemAnalysisComponentUpdate) AddPosX(v float64) *SystemAnalysisComponentUpdate {
+	_u.mutation.AddPosX(v)
+	return _u
 }
 
 // SetPosY sets the "pos_y" field.
-func (sacu *SystemAnalysisComponentUpdate) SetPosY(f float64) *SystemAnalysisComponentUpdate {
-	sacu.mutation.ResetPosY()
-	sacu.mutation.SetPosY(f)
-	return sacu
+func (_u *SystemAnalysisComponentUpdate) SetPosY(v float64) *SystemAnalysisComponentUpdate {
+	_u.mutation.ResetPosY()
+	_u.mutation.SetPosY(v)
+	return _u
 }
 
 // SetNillablePosY sets the "pos_y" field if the given value is not nil.
-func (sacu *SystemAnalysisComponentUpdate) SetNillablePosY(f *float64) *SystemAnalysisComponentUpdate {
-	if f != nil {
-		sacu.SetPosY(*f)
+func (_u *SystemAnalysisComponentUpdate) SetNillablePosY(v *float64) *SystemAnalysisComponentUpdate {
+	if v != nil {
+		_u.SetPosY(*v)
 	}
-	return sacu
+	return _u
 }
 
-// AddPosY adds f to the "pos_y" field.
-func (sacu *SystemAnalysisComponentUpdate) AddPosY(f float64) *SystemAnalysisComponentUpdate {
-	sacu.mutation.AddPosY(f)
-	return sacu
+// AddPosY adds value to the "pos_y" field.
+func (_u *SystemAnalysisComponentUpdate) AddPosY(v float64) *SystemAnalysisComponentUpdate {
+	_u.mutation.AddPosY(v)
+	return _u
 }
 
 // SetCreatedAt sets the "created_at" field.
-func (sacu *SystemAnalysisComponentUpdate) SetCreatedAt(t time.Time) *SystemAnalysisComponentUpdate {
-	sacu.mutation.SetCreatedAt(t)
-	return sacu
+func (_u *SystemAnalysisComponentUpdate) SetCreatedAt(v time.Time) *SystemAnalysisComponentUpdate {
+	_u.mutation.SetCreatedAt(v)
+	return _u
 }
 
 // SetNillableCreatedAt sets the "created_at" field if the given value is not nil.
-func (sacu *SystemAnalysisComponentUpdate) SetNillableCreatedAt(t *time.Time) *SystemAnalysisComponentUpdate {
-	if t != nil {
-		sacu.SetCreatedAt(*t)
+func (_u *SystemAnalysisComponentUpdate) SetNillableCreatedAt(v *time.Time) *SystemAnalysisComponentUpdate {
+	if v != nil {
+		_u.SetCreatedAt(*v)
 	}
-	return sacu
+	return _u
 }
 
 // SetAnalysis sets the "analysis" edge to the SystemAnalysis entity.
-func (sacu *SystemAnalysisComponentUpdate) SetAnalysis(s *SystemAnalysis) *SystemAnalysisComponentUpdate {
-	return sacu.SetAnalysisID(s.ID)
+func (_u *SystemAnalysisComponentUpdate) SetAnalysis(v *SystemAnalysis) *SystemAnalysisComponentUpdate {
+	return _u.SetAnalysisID(v.ID)
 }
 
 // SetComponent sets the "component" edge to the SystemComponent entity.
-func (sacu *SystemAnalysisComponentUpdate) SetComponent(s *SystemComponent) *SystemAnalysisComponentUpdate {
-	return sacu.SetComponentID(s.ID)
+func (_u *SystemAnalysisComponentUpdate) SetComponent(v *SystemComponent) *SystemAnalysisComponentUpdate {
+	return _u.SetComponentID(v.ID)
 }
 
 // Mutation returns the SystemAnalysisComponentMutation object of the builder.
-func (sacu *SystemAnalysisComponentUpdate) Mutation() *SystemAnalysisComponentMutation {
-	return sacu.mutation
+func (_u *SystemAnalysisComponentUpdate) Mutation() *SystemAnalysisComponentMutation {
+	return _u.mutation
 }
 
 // ClearAnalysis clears the "analysis" edge to the SystemAnalysis entity.
-func (sacu *SystemAnalysisComponentUpdate) ClearAnalysis() *SystemAnalysisComponentUpdate {
-	sacu.mutation.ClearAnalysis()
-	return sacu
+func (_u *SystemAnalysisComponentUpdate) ClearAnalysis() *SystemAnalysisComponentUpdate {
+	_u.mutation.ClearAnalysis()
+	return _u
 }
 
 // ClearComponent clears the "component" edge to the SystemComponent entity.
-func (sacu *SystemAnalysisComponentUpdate) ClearComponent() *SystemAnalysisComponentUpdate {
-	sacu.mutation.ClearComponent()
-	return sacu
+func (_u *SystemAnalysisComponentUpdate) ClearComponent() *SystemAnalysisComponentUpdate {
+	_u.mutation.ClearComponent()
+	return _u
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
-func (sacu *SystemAnalysisComponentUpdate) Save(ctx context.Context) (int, error) {
-	return withHooks(ctx, sacu.sqlSave, sacu.mutation, sacu.hooks)
+func (_u *SystemAnalysisComponentUpdate) Save(ctx context.Context) (int, error) {
+	return withHooks(ctx, _u.sqlSave, _u.mutation, _u.hooks)
 }
 
 // SaveX is like Save, but panics if an error occurs.
-func (sacu *SystemAnalysisComponentUpdate) SaveX(ctx context.Context) int {
-	affected, err := sacu.Save(ctx)
+func (_u *SystemAnalysisComponentUpdate) SaveX(ctx context.Context) int {
+	affected, err := _u.Save(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -178,72 +178,72 @@ func (sacu *SystemAnalysisComponentUpdate) SaveX(ctx context.Context) int {
 }
 
 // Exec executes the query.
-func (sacu *SystemAnalysisComponentUpdate) Exec(ctx context.Context) error {
-	_, err := sacu.Save(ctx)
+func (_u *SystemAnalysisComponentUpdate) Exec(ctx context.Context) error {
+	_, err := _u.Save(ctx)
 	return err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (sacu *SystemAnalysisComponentUpdate) ExecX(ctx context.Context) {
-	if err := sacu.Exec(ctx); err != nil {
+func (_u *SystemAnalysisComponentUpdate) ExecX(ctx context.Context) {
+	if err := _u.Exec(ctx); err != nil {
 		panic(err)
 	}
 }
 
 // check runs all checks and user-defined validators on the builder.
-func (sacu *SystemAnalysisComponentUpdate) check() error {
-	if sacu.mutation.TenantCleared() && len(sacu.mutation.TenantIDs()) > 0 {
+func (_u *SystemAnalysisComponentUpdate) check() error {
+	if _u.mutation.TenantCleared() && len(_u.mutation.TenantIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "SystemAnalysisComponent.tenant"`)
 	}
-	if sacu.mutation.AnalysisCleared() && len(sacu.mutation.AnalysisIDs()) > 0 {
+	if _u.mutation.AnalysisCleared() && len(_u.mutation.AnalysisIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "SystemAnalysisComponent.analysis"`)
 	}
-	if sacu.mutation.ComponentCleared() && len(sacu.mutation.ComponentIDs()) > 0 {
+	if _u.mutation.ComponentCleared() && len(_u.mutation.ComponentIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "SystemAnalysisComponent.component"`)
 	}
 	return nil
 }
 
 // Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
-func (sacu *SystemAnalysisComponentUpdate) Modify(modifiers ...func(u *sql.UpdateBuilder)) *SystemAnalysisComponentUpdate {
-	sacu.modifiers = append(sacu.modifiers, modifiers...)
-	return sacu
+func (_u *SystemAnalysisComponentUpdate) Modify(modifiers ...func(u *sql.UpdateBuilder)) *SystemAnalysisComponentUpdate {
+	_u.modifiers = append(_u.modifiers, modifiers...)
+	return _u
 }
 
-func (sacu *SystemAnalysisComponentUpdate) sqlSave(ctx context.Context) (n int, err error) {
-	if err := sacu.check(); err != nil {
-		return n, err
+func (_u *SystemAnalysisComponentUpdate) sqlSave(ctx context.Context) (_node int, err error) {
+	if err := _u.check(); err != nil {
+		return _node, err
 	}
 	_spec := sqlgraph.NewUpdateSpec(systemanalysiscomponent.Table, systemanalysiscomponent.Columns, sqlgraph.NewFieldSpec(systemanalysiscomponent.FieldID, field.TypeUUID))
-	if ps := sacu.mutation.predicates; len(ps) > 0 {
+	if ps := _u.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {
 				ps[i](selector)
 			}
 		}
 	}
-	if value, ok := sacu.mutation.Description(); ok {
+	if value, ok := _u.mutation.Description(); ok {
 		_spec.SetField(systemanalysiscomponent.FieldDescription, field.TypeString, value)
 	}
-	if sacu.mutation.DescriptionCleared() {
+	if _u.mutation.DescriptionCleared() {
 		_spec.ClearField(systemanalysiscomponent.FieldDescription, field.TypeString)
 	}
-	if value, ok := sacu.mutation.PosX(); ok {
+	if value, ok := _u.mutation.PosX(); ok {
 		_spec.SetField(systemanalysiscomponent.FieldPosX, field.TypeFloat64, value)
 	}
-	if value, ok := sacu.mutation.AddedPosX(); ok {
+	if value, ok := _u.mutation.AddedPosX(); ok {
 		_spec.AddField(systemanalysiscomponent.FieldPosX, field.TypeFloat64, value)
 	}
-	if value, ok := sacu.mutation.PosY(); ok {
+	if value, ok := _u.mutation.PosY(); ok {
 		_spec.SetField(systemanalysiscomponent.FieldPosY, field.TypeFloat64, value)
 	}
-	if value, ok := sacu.mutation.AddedPosY(); ok {
+	if value, ok := _u.mutation.AddedPosY(); ok {
 		_spec.AddField(systemanalysiscomponent.FieldPosY, field.TypeFloat64, value)
 	}
-	if value, ok := sacu.mutation.CreatedAt(); ok {
+	if value, ok := _u.mutation.CreatedAt(); ok {
 		_spec.SetField(systemanalysiscomponent.FieldCreatedAt, field.TypeTime, value)
 	}
-	if sacu.mutation.AnalysisCleared() {
+	if _u.mutation.AnalysisCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
@@ -256,7 +256,7 @@ func (sacu *SystemAnalysisComponentUpdate) sqlSave(ctx context.Context) (n int, 
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := sacu.mutation.AnalysisIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.AnalysisIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
@@ -272,7 +272,7 @@ func (sacu *SystemAnalysisComponentUpdate) sqlSave(ctx context.Context) (n int, 
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if sacu.mutation.ComponentCleared() {
+	if _u.mutation.ComponentCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
@@ -285,7 +285,7 @@ func (sacu *SystemAnalysisComponentUpdate) sqlSave(ctx context.Context) (n int, 
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := sacu.mutation.ComponentIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.ComponentIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
@@ -301,8 +301,8 @@ func (sacu *SystemAnalysisComponentUpdate) sqlSave(ctx context.Context) (n int, 
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	_spec.AddModifiers(sacu.modifiers...)
-	if n, err = sqlgraph.UpdateNodes(ctx, sacu.driver, _spec); err != nil {
+	_spec.AddModifiers(_u.modifiers...)
+	if _node, err = sqlgraph.UpdateNodes(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{systemanalysiscomponent.Label}
 		} else if sqlgraph.IsConstraintError(err) {
@@ -310,8 +310,8 @@ func (sacu *SystemAnalysisComponentUpdate) sqlSave(ctx context.Context) (n int, 
 		}
 		return 0, err
 	}
-	sacu.mutation.done = true
-	return n, nil
+	_u.mutation.done = true
+	return _node, nil
 }
 
 // SystemAnalysisComponentUpdateOne is the builder for updating a single SystemAnalysisComponent entity.
@@ -324,157 +324,157 @@ type SystemAnalysisComponentUpdateOne struct {
 }
 
 // SetAnalysisID sets the "analysis_id" field.
-func (sacuo *SystemAnalysisComponentUpdateOne) SetAnalysisID(u uuid.UUID) *SystemAnalysisComponentUpdateOne {
-	sacuo.mutation.SetAnalysisID(u)
-	return sacuo
+func (_u *SystemAnalysisComponentUpdateOne) SetAnalysisID(v uuid.UUID) *SystemAnalysisComponentUpdateOne {
+	_u.mutation.SetAnalysisID(v)
+	return _u
 }
 
 // SetNillableAnalysisID sets the "analysis_id" field if the given value is not nil.
-func (sacuo *SystemAnalysisComponentUpdateOne) SetNillableAnalysisID(u *uuid.UUID) *SystemAnalysisComponentUpdateOne {
-	if u != nil {
-		sacuo.SetAnalysisID(*u)
+func (_u *SystemAnalysisComponentUpdateOne) SetNillableAnalysisID(v *uuid.UUID) *SystemAnalysisComponentUpdateOne {
+	if v != nil {
+		_u.SetAnalysisID(*v)
 	}
-	return sacuo
+	return _u
 }
 
 // SetComponentID sets the "component_id" field.
-func (sacuo *SystemAnalysisComponentUpdateOne) SetComponentID(u uuid.UUID) *SystemAnalysisComponentUpdateOne {
-	sacuo.mutation.SetComponentID(u)
-	return sacuo
+func (_u *SystemAnalysisComponentUpdateOne) SetComponentID(v uuid.UUID) *SystemAnalysisComponentUpdateOne {
+	_u.mutation.SetComponentID(v)
+	return _u
 }
 
 // SetNillableComponentID sets the "component_id" field if the given value is not nil.
-func (sacuo *SystemAnalysisComponentUpdateOne) SetNillableComponentID(u *uuid.UUID) *SystemAnalysisComponentUpdateOne {
-	if u != nil {
-		sacuo.SetComponentID(*u)
+func (_u *SystemAnalysisComponentUpdateOne) SetNillableComponentID(v *uuid.UUID) *SystemAnalysisComponentUpdateOne {
+	if v != nil {
+		_u.SetComponentID(*v)
 	}
-	return sacuo
+	return _u
 }
 
 // SetDescription sets the "description" field.
-func (sacuo *SystemAnalysisComponentUpdateOne) SetDescription(s string) *SystemAnalysisComponentUpdateOne {
-	sacuo.mutation.SetDescription(s)
-	return sacuo
+func (_u *SystemAnalysisComponentUpdateOne) SetDescription(v string) *SystemAnalysisComponentUpdateOne {
+	_u.mutation.SetDescription(v)
+	return _u
 }
 
 // SetNillableDescription sets the "description" field if the given value is not nil.
-func (sacuo *SystemAnalysisComponentUpdateOne) SetNillableDescription(s *string) *SystemAnalysisComponentUpdateOne {
-	if s != nil {
-		sacuo.SetDescription(*s)
+func (_u *SystemAnalysisComponentUpdateOne) SetNillableDescription(v *string) *SystemAnalysisComponentUpdateOne {
+	if v != nil {
+		_u.SetDescription(*v)
 	}
-	return sacuo
+	return _u
 }
 
 // ClearDescription clears the value of the "description" field.
-func (sacuo *SystemAnalysisComponentUpdateOne) ClearDescription() *SystemAnalysisComponentUpdateOne {
-	sacuo.mutation.ClearDescription()
-	return sacuo
+func (_u *SystemAnalysisComponentUpdateOne) ClearDescription() *SystemAnalysisComponentUpdateOne {
+	_u.mutation.ClearDescription()
+	return _u
 }
 
 // SetPosX sets the "pos_x" field.
-func (sacuo *SystemAnalysisComponentUpdateOne) SetPosX(f float64) *SystemAnalysisComponentUpdateOne {
-	sacuo.mutation.ResetPosX()
-	sacuo.mutation.SetPosX(f)
-	return sacuo
+func (_u *SystemAnalysisComponentUpdateOne) SetPosX(v float64) *SystemAnalysisComponentUpdateOne {
+	_u.mutation.ResetPosX()
+	_u.mutation.SetPosX(v)
+	return _u
 }
 
 // SetNillablePosX sets the "pos_x" field if the given value is not nil.
-func (sacuo *SystemAnalysisComponentUpdateOne) SetNillablePosX(f *float64) *SystemAnalysisComponentUpdateOne {
-	if f != nil {
-		sacuo.SetPosX(*f)
+func (_u *SystemAnalysisComponentUpdateOne) SetNillablePosX(v *float64) *SystemAnalysisComponentUpdateOne {
+	if v != nil {
+		_u.SetPosX(*v)
 	}
-	return sacuo
+	return _u
 }
 
-// AddPosX adds f to the "pos_x" field.
-func (sacuo *SystemAnalysisComponentUpdateOne) AddPosX(f float64) *SystemAnalysisComponentUpdateOne {
-	sacuo.mutation.AddPosX(f)
-	return sacuo
+// AddPosX adds value to the "pos_x" field.
+func (_u *SystemAnalysisComponentUpdateOne) AddPosX(v float64) *SystemAnalysisComponentUpdateOne {
+	_u.mutation.AddPosX(v)
+	return _u
 }
 
 // SetPosY sets the "pos_y" field.
-func (sacuo *SystemAnalysisComponentUpdateOne) SetPosY(f float64) *SystemAnalysisComponentUpdateOne {
-	sacuo.mutation.ResetPosY()
-	sacuo.mutation.SetPosY(f)
-	return sacuo
+func (_u *SystemAnalysisComponentUpdateOne) SetPosY(v float64) *SystemAnalysisComponentUpdateOne {
+	_u.mutation.ResetPosY()
+	_u.mutation.SetPosY(v)
+	return _u
 }
 
 // SetNillablePosY sets the "pos_y" field if the given value is not nil.
-func (sacuo *SystemAnalysisComponentUpdateOne) SetNillablePosY(f *float64) *SystemAnalysisComponentUpdateOne {
-	if f != nil {
-		sacuo.SetPosY(*f)
+func (_u *SystemAnalysisComponentUpdateOne) SetNillablePosY(v *float64) *SystemAnalysisComponentUpdateOne {
+	if v != nil {
+		_u.SetPosY(*v)
 	}
-	return sacuo
+	return _u
 }
 
-// AddPosY adds f to the "pos_y" field.
-func (sacuo *SystemAnalysisComponentUpdateOne) AddPosY(f float64) *SystemAnalysisComponentUpdateOne {
-	sacuo.mutation.AddPosY(f)
-	return sacuo
+// AddPosY adds value to the "pos_y" field.
+func (_u *SystemAnalysisComponentUpdateOne) AddPosY(v float64) *SystemAnalysisComponentUpdateOne {
+	_u.mutation.AddPosY(v)
+	return _u
 }
 
 // SetCreatedAt sets the "created_at" field.
-func (sacuo *SystemAnalysisComponentUpdateOne) SetCreatedAt(t time.Time) *SystemAnalysisComponentUpdateOne {
-	sacuo.mutation.SetCreatedAt(t)
-	return sacuo
+func (_u *SystemAnalysisComponentUpdateOne) SetCreatedAt(v time.Time) *SystemAnalysisComponentUpdateOne {
+	_u.mutation.SetCreatedAt(v)
+	return _u
 }
 
 // SetNillableCreatedAt sets the "created_at" field if the given value is not nil.
-func (sacuo *SystemAnalysisComponentUpdateOne) SetNillableCreatedAt(t *time.Time) *SystemAnalysisComponentUpdateOne {
-	if t != nil {
-		sacuo.SetCreatedAt(*t)
+func (_u *SystemAnalysisComponentUpdateOne) SetNillableCreatedAt(v *time.Time) *SystemAnalysisComponentUpdateOne {
+	if v != nil {
+		_u.SetCreatedAt(*v)
 	}
-	return sacuo
+	return _u
 }
 
 // SetAnalysis sets the "analysis" edge to the SystemAnalysis entity.
-func (sacuo *SystemAnalysisComponentUpdateOne) SetAnalysis(s *SystemAnalysis) *SystemAnalysisComponentUpdateOne {
-	return sacuo.SetAnalysisID(s.ID)
+func (_u *SystemAnalysisComponentUpdateOne) SetAnalysis(v *SystemAnalysis) *SystemAnalysisComponentUpdateOne {
+	return _u.SetAnalysisID(v.ID)
 }
 
 // SetComponent sets the "component" edge to the SystemComponent entity.
-func (sacuo *SystemAnalysisComponentUpdateOne) SetComponent(s *SystemComponent) *SystemAnalysisComponentUpdateOne {
-	return sacuo.SetComponentID(s.ID)
+func (_u *SystemAnalysisComponentUpdateOne) SetComponent(v *SystemComponent) *SystemAnalysisComponentUpdateOne {
+	return _u.SetComponentID(v.ID)
 }
 
 // Mutation returns the SystemAnalysisComponentMutation object of the builder.
-func (sacuo *SystemAnalysisComponentUpdateOne) Mutation() *SystemAnalysisComponentMutation {
-	return sacuo.mutation
+func (_u *SystemAnalysisComponentUpdateOne) Mutation() *SystemAnalysisComponentMutation {
+	return _u.mutation
 }
 
 // ClearAnalysis clears the "analysis" edge to the SystemAnalysis entity.
-func (sacuo *SystemAnalysisComponentUpdateOne) ClearAnalysis() *SystemAnalysisComponentUpdateOne {
-	sacuo.mutation.ClearAnalysis()
-	return sacuo
+func (_u *SystemAnalysisComponentUpdateOne) ClearAnalysis() *SystemAnalysisComponentUpdateOne {
+	_u.mutation.ClearAnalysis()
+	return _u
 }
 
 // ClearComponent clears the "component" edge to the SystemComponent entity.
-func (sacuo *SystemAnalysisComponentUpdateOne) ClearComponent() *SystemAnalysisComponentUpdateOne {
-	sacuo.mutation.ClearComponent()
-	return sacuo
+func (_u *SystemAnalysisComponentUpdateOne) ClearComponent() *SystemAnalysisComponentUpdateOne {
+	_u.mutation.ClearComponent()
+	return _u
 }
 
 // Where appends a list predicates to the SystemAnalysisComponentUpdate builder.
-func (sacuo *SystemAnalysisComponentUpdateOne) Where(ps ...predicate.SystemAnalysisComponent) *SystemAnalysisComponentUpdateOne {
-	sacuo.mutation.Where(ps...)
-	return sacuo
+func (_u *SystemAnalysisComponentUpdateOne) Where(ps ...predicate.SystemAnalysisComponent) *SystemAnalysisComponentUpdateOne {
+	_u.mutation.Where(ps...)
+	return _u
 }
 
 // Select allows selecting one or more fields (columns) of the returned entity.
 // The default is selecting all fields defined in the entity schema.
-func (sacuo *SystemAnalysisComponentUpdateOne) Select(field string, fields ...string) *SystemAnalysisComponentUpdateOne {
-	sacuo.fields = append([]string{field}, fields...)
-	return sacuo
+func (_u *SystemAnalysisComponentUpdateOne) Select(field string, fields ...string) *SystemAnalysisComponentUpdateOne {
+	_u.fields = append([]string{field}, fields...)
+	return _u
 }
 
 // Save executes the query and returns the updated SystemAnalysisComponent entity.
-func (sacuo *SystemAnalysisComponentUpdateOne) Save(ctx context.Context) (*SystemAnalysisComponent, error) {
-	return withHooks(ctx, sacuo.sqlSave, sacuo.mutation, sacuo.hooks)
+func (_u *SystemAnalysisComponentUpdateOne) Save(ctx context.Context) (*SystemAnalysisComponent, error) {
+	return withHooks(ctx, _u.sqlSave, _u.mutation, _u.hooks)
 }
 
 // SaveX is like Save, but panics if an error occurs.
-func (sacuo *SystemAnalysisComponentUpdateOne) SaveX(ctx context.Context) *SystemAnalysisComponent {
-	node, err := sacuo.Save(ctx)
+func (_u *SystemAnalysisComponentUpdateOne) SaveX(ctx context.Context) *SystemAnalysisComponent {
+	node, err := _u.Save(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -482,49 +482,49 @@ func (sacuo *SystemAnalysisComponentUpdateOne) SaveX(ctx context.Context) *Syste
 }
 
 // Exec executes the query on the entity.
-func (sacuo *SystemAnalysisComponentUpdateOne) Exec(ctx context.Context) error {
-	_, err := sacuo.Save(ctx)
+func (_u *SystemAnalysisComponentUpdateOne) Exec(ctx context.Context) error {
+	_, err := _u.Save(ctx)
 	return err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (sacuo *SystemAnalysisComponentUpdateOne) ExecX(ctx context.Context) {
-	if err := sacuo.Exec(ctx); err != nil {
+func (_u *SystemAnalysisComponentUpdateOne) ExecX(ctx context.Context) {
+	if err := _u.Exec(ctx); err != nil {
 		panic(err)
 	}
 }
 
 // check runs all checks and user-defined validators on the builder.
-func (sacuo *SystemAnalysisComponentUpdateOne) check() error {
-	if sacuo.mutation.TenantCleared() && len(sacuo.mutation.TenantIDs()) > 0 {
+func (_u *SystemAnalysisComponentUpdateOne) check() error {
+	if _u.mutation.TenantCleared() && len(_u.mutation.TenantIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "SystemAnalysisComponent.tenant"`)
 	}
-	if sacuo.mutation.AnalysisCleared() && len(sacuo.mutation.AnalysisIDs()) > 0 {
+	if _u.mutation.AnalysisCleared() && len(_u.mutation.AnalysisIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "SystemAnalysisComponent.analysis"`)
 	}
-	if sacuo.mutation.ComponentCleared() && len(sacuo.mutation.ComponentIDs()) > 0 {
+	if _u.mutation.ComponentCleared() && len(_u.mutation.ComponentIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "SystemAnalysisComponent.component"`)
 	}
 	return nil
 }
 
 // Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
-func (sacuo *SystemAnalysisComponentUpdateOne) Modify(modifiers ...func(u *sql.UpdateBuilder)) *SystemAnalysisComponentUpdateOne {
-	sacuo.modifiers = append(sacuo.modifiers, modifiers...)
-	return sacuo
+func (_u *SystemAnalysisComponentUpdateOne) Modify(modifiers ...func(u *sql.UpdateBuilder)) *SystemAnalysisComponentUpdateOne {
+	_u.modifiers = append(_u.modifiers, modifiers...)
+	return _u
 }
 
-func (sacuo *SystemAnalysisComponentUpdateOne) sqlSave(ctx context.Context) (_node *SystemAnalysisComponent, err error) {
-	if err := sacuo.check(); err != nil {
+func (_u *SystemAnalysisComponentUpdateOne) sqlSave(ctx context.Context) (_node *SystemAnalysisComponent, err error) {
+	if err := _u.check(); err != nil {
 		return _node, err
 	}
 	_spec := sqlgraph.NewUpdateSpec(systemanalysiscomponent.Table, systemanalysiscomponent.Columns, sqlgraph.NewFieldSpec(systemanalysiscomponent.FieldID, field.TypeUUID))
-	id, ok := sacuo.mutation.ID()
+	id, ok := _u.mutation.ID()
 	if !ok {
 		return nil, &ValidationError{Name: "id", err: errors.New(`ent: missing "SystemAnalysisComponent.id" for update`)}
 	}
 	_spec.Node.ID.Value = id
-	if fields := sacuo.fields; len(fields) > 0 {
+	if fields := _u.fields; len(fields) > 0 {
 		_spec.Node.Columns = make([]string, 0, len(fields))
 		_spec.Node.Columns = append(_spec.Node.Columns, systemanalysiscomponent.FieldID)
 		for _, f := range fields {
@@ -536,35 +536,35 @@ func (sacuo *SystemAnalysisComponentUpdateOne) sqlSave(ctx context.Context) (_no
 			}
 		}
 	}
-	if ps := sacuo.mutation.predicates; len(ps) > 0 {
+	if ps := _u.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {
 				ps[i](selector)
 			}
 		}
 	}
-	if value, ok := sacuo.mutation.Description(); ok {
+	if value, ok := _u.mutation.Description(); ok {
 		_spec.SetField(systemanalysiscomponent.FieldDescription, field.TypeString, value)
 	}
-	if sacuo.mutation.DescriptionCleared() {
+	if _u.mutation.DescriptionCleared() {
 		_spec.ClearField(systemanalysiscomponent.FieldDescription, field.TypeString)
 	}
-	if value, ok := sacuo.mutation.PosX(); ok {
+	if value, ok := _u.mutation.PosX(); ok {
 		_spec.SetField(systemanalysiscomponent.FieldPosX, field.TypeFloat64, value)
 	}
-	if value, ok := sacuo.mutation.AddedPosX(); ok {
+	if value, ok := _u.mutation.AddedPosX(); ok {
 		_spec.AddField(systemanalysiscomponent.FieldPosX, field.TypeFloat64, value)
 	}
-	if value, ok := sacuo.mutation.PosY(); ok {
+	if value, ok := _u.mutation.PosY(); ok {
 		_spec.SetField(systemanalysiscomponent.FieldPosY, field.TypeFloat64, value)
 	}
-	if value, ok := sacuo.mutation.AddedPosY(); ok {
+	if value, ok := _u.mutation.AddedPosY(); ok {
 		_spec.AddField(systemanalysiscomponent.FieldPosY, field.TypeFloat64, value)
 	}
-	if value, ok := sacuo.mutation.CreatedAt(); ok {
+	if value, ok := _u.mutation.CreatedAt(); ok {
 		_spec.SetField(systemanalysiscomponent.FieldCreatedAt, field.TypeTime, value)
 	}
-	if sacuo.mutation.AnalysisCleared() {
+	if _u.mutation.AnalysisCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
@@ -577,7 +577,7 @@ func (sacuo *SystemAnalysisComponentUpdateOne) sqlSave(ctx context.Context) (_no
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := sacuo.mutation.AnalysisIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.AnalysisIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
@@ -593,7 +593,7 @@ func (sacuo *SystemAnalysisComponentUpdateOne) sqlSave(ctx context.Context) (_no
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if sacuo.mutation.ComponentCleared() {
+	if _u.mutation.ComponentCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
@@ -606,7 +606,7 @@ func (sacuo *SystemAnalysisComponentUpdateOne) sqlSave(ctx context.Context) (_no
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := sacuo.mutation.ComponentIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.ComponentIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
@@ -622,11 +622,11 @@ func (sacuo *SystemAnalysisComponentUpdateOne) sqlSave(ctx context.Context) (_no
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	_spec.AddModifiers(sacuo.modifiers...)
-	_node = &SystemAnalysisComponent{config: sacuo.config}
+	_spec.AddModifiers(_u.modifiers...)
+	_node = &SystemAnalysisComponent{config: _u.config}
 	_spec.Assign = _node.assignValues
 	_spec.ScanValues = _node.scanValues
-	if err = sqlgraph.UpdateNode(ctx, sacuo.driver, _spec); err != nil {
+	if err = sqlgraph.UpdateNode(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{systemanalysiscomponent.Label}
 		} else if sqlgraph.IsConstraintError(err) {
@@ -634,6 +634,6 @@ func (sacuo *SystemAnalysisComponentUpdateOne) sqlSave(ctx context.Context) (_no
 		}
 		return nil, err
 	}
-	sacuo.mutation.done = true
+	_u.mutation.done = true
 	return _node, nil
 }

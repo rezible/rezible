@@ -30,254 +30,254 @@ type IncidentDebriefQuestionUpdate struct {
 }
 
 // Where appends a list predicates to the IncidentDebriefQuestionUpdate builder.
-func (idqu *IncidentDebriefQuestionUpdate) Where(ps ...predicate.IncidentDebriefQuestion) *IncidentDebriefQuestionUpdate {
-	idqu.mutation.Where(ps...)
-	return idqu
+func (_u *IncidentDebriefQuestionUpdate) Where(ps ...predicate.IncidentDebriefQuestion) *IncidentDebriefQuestionUpdate {
+	_u.mutation.Where(ps...)
+	return _u
 }
 
 // SetContent sets the "content" field.
-func (idqu *IncidentDebriefQuestionUpdate) SetContent(s string) *IncidentDebriefQuestionUpdate {
-	idqu.mutation.SetContent(s)
-	return idqu
+func (_u *IncidentDebriefQuestionUpdate) SetContent(v string) *IncidentDebriefQuestionUpdate {
+	_u.mutation.SetContent(v)
+	return _u
 }
 
 // SetNillableContent sets the "content" field if the given value is not nil.
-func (idqu *IncidentDebriefQuestionUpdate) SetNillableContent(s *string) *IncidentDebriefQuestionUpdate {
-	if s != nil {
-		idqu.SetContent(*s)
+func (_u *IncidentDebriefQuestionUpdate) SetNillableContent(v *string) *IncidentDebriefQuestionUpdate {
+	if v != nil {
+		_u.SetContent(*v)
 	}
-	return idqu
+	return _u
 }
 
 // AddMessageIDs adds the "messages" edge to the IncidentDebriefMessage entity by IDs.
-func (idqu *IncidentDebriefQuestionUpdate) AddMessageIDs(ids ...uuid.UUID) *IncidentDebriefQuestionUpdate {
-	idqu.mutation.AddMessageIDs(ids...)
-	return idqu
+func (_u *IncidentDebriefQuestionUpdate) AddMessageIDs(ids ...uuid.UUID) *IncidentDebriefQuestionUpdate {
+	_u.mutation.AddMessageIDs(ids...)
+	return _u
 }
 
 // AddMessages adds the "messages" edges to the IncidentDebriefMessage entity.
-func (idqu *IncidentDebriefQuestionUpdate) AddMessages(i ...*IncidentDebriefMessage) *IncidentDebriefQuestionUpdate {
-	ids := make([]uuid.UUID, len(i))
-	for j := range i {
-		ids[j] = i[j].ID
+func (_u *IncidentDebriefQuestionUpdate) AddMessages(v ...*IncidentDebriefMessage) *IncidentDebriefQuestionUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
 	}
-	return idqu.AddMessageIDs(ids...)
+	return _u.AddMessageIDs(ids...)
 }
 
 // AddIncidentFieldIDs adds the "incident_fields" edge to the IncidentField entity by IDs.
-func (idqu *IncidentDebriefQuestionUpdate) AddIncidentFieldIDs(ids ...uuid.UUID) *IncidentDebriefQuestionUpdate {
-	idqu.mutation.AddIncidentFieldIDs(ids...)
-	return idqu
+func (_u *IncidentDebriefQuestionUpdate) AddIncidentFieldIDs(ids ...uuid.UUID) *IncidentDebriefQuestionUpdate {
+	_u.mutation.AddIncidentFieldIDs(ids...)
+	return _u
 }
 
 // AddIncidentFields adds the "incident_fields" edges to the IncidentField entity.
-func (idqu *IncidentDebriefQuestionUpdate) AddIncidentFields(i ...*IncidentField) *IncidentDebriefQuestionUpdate {
-	ids := make([]uuid.UUID, len(i))
-	for j := range i {
-		ids[j] = i[j].ID
+func (_u *IncidentDebriefQuestionUpdate) AddIncidentFields(v ...*IncidentField) *IncidentDebriefQuestionUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
 	}
-	return idqu.AddIncidentFieldIDs(ids...)
+	return _u.AddIncidentFieldIDs(ids...)
 }
 
 // AddIncidentRoleIDs adds the "incident_roles" edge to the IncidentRole entity by IDs.
-func (idqu *IncidentDebriefQuestionUpdate) AddIncidentRoleIDs(ids ...uuid.UUID) *IncidentDebriefQuestionUpdate {
-	idqu.mutation.AddIncidentRoleIDs(ids...)
-	return idqu
+func (_u *IncidentDebriefQuestionUpdate) AddIncidentRoleIDs(ids ...uuid.UUID) *IncidentDebriefQuestionUpdate {
+	_u.mutation.AddIncidentRoleIDs(ids...)
+	return _u
 }
 
 // AddIncidentRoles adds the "incident_roles" edges to the IncidentRole entity.
-func (idqu *IncidentDebriefQuestionUpdate) AddIncidentRoles(i ...*IncidentRole) *IncidentDebriefQuestionUpdate {
-	ids := make([]uuid.UUID, len(i))
-	for j := range i {
-		ids[j] = i[j].ID
+func (_u *IncidentDebriefQuestionUpdate) AddIncidentRoles(v ...*IncidentRole) *IncidentDebriefQuestionUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
 	}
-	return idqu.AddIncidentRoleIDs(ids...)
+	return _u.AddIncidentRoleIDs(ids...)
 }
 
 // AddIncidentSeverityIDs adds the "incident_severities" edge to the IncidentSeverity entity by IDs.
-func (idqu *IncidentDebriefQuestionUpdate) AddIncidentSeverityIDs(ids ...uuid.UUID) *IncidentDebriefQuestionUpdate {
-	idqu.mutation.AddIncidentSeverityIDs(ids...)
-	return idqu
+func (_u *IncidentDebriefQuestionUpdate) AddIncidentSeverityIDs(ids ...uuid.UUID) *IncidentDebriefQuestionUpdate {
+	_u.mutation.AddIncidentSeverityIDs(ids...)
+	return _u
 }
 
 // AddIncidentSeverities adds the "incident_severities" edges to the IncidentSeverity entity.
-func (idqu *IncidentDebriefQuestionUpdate) AddIncidentSeverities(i ...*IncidentSeverity) *IncidentDebriefQuestionUpdate {
-	ids := make([]uuid.UUID, len(i))
-	for j := range i {
-		ids[j] = i[j].ID
+func (_u *IncidentDebriefQuestionUpdate) AddIncidentSeverities(v ...*IncidentSeverity) *IncidentDebriefQuestionUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
 	}
-	return idqu.AddIncidentSeverityIDs(ids...)
+	return _u.AddIncidentSeverityIDs(ids...)
 }
 
 // AddIncidentTagIDs adds the "incident_tags" edge to the IncidentTag entity by IDs.
-func (idqu *IncidentDebriefQuestionUpdate) AddIncidentTagIDs(ids ...uuid.UUID) *IncidentDebriefQuestionUpdate {
-	idqu.mutation.AddIncidentTagIDs(ids...)
-	return idqu
+func (_u *IncidentDebriefQuestionUpdate) AddIncidentTagIDs(ids ...uuid.UUID) *IncidentDebriefQuestionUpdate {
+	_u.mutation.AddIncidentTagIDs(ids...)
+	return _u
 }
 
 // AddIncidentTags adds the "incident_tags" edges to the IncidentTag entity.
-func (idqu *IncidentDebriefQuestionUpdate) AddIncidentTags(i ...*IncidentTag) *IncidentDebriefQuestionUpdate {
-	ids := make([]uuid.UUID, len(i))
-	for j := range i {
-		ids[j] = i[j].ID
+func (_u *IncidentDebriefQuestionUpdate) AddIncidentTags(v ...*IncidentTag) *IncidentDebriefQuestionUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
 	}
-	return idqu.AddIncidentTagIDs(ids...)
+	return _u.AddIncidentTagIDs(ids...)
 }
 
 // AddIncidentTypeIDs adds the "incident_types" edge to the IncidentType entity by IDs.
-func (idqu *IncidentDebriefQuestionUpdate) AddIncidentTypeIDs(ids ...uuid.UUID) *IncidentDebriefQuestionUpdate {
-	idqu.mutation.AddIncidentTypeIDs(ids...)
-	return idqu
+func (_u *IncidentDebriefQuestionUpdate) AddIncidentTypeIDs(ids ...uuid.UUID) *IncidentDebriefQuestionUpdate {
+	_u.mutation.AddIncidentTypeIDs(ids...)
+	return _u
 }
 
 // AddIncidentTypes adds the "incident_types" edges to the IncidentType entity.
-func (idqu *IncidentDebriefQuestionUpdate) AddIncidentTypes(i ...*IncidentType) *IncidentDebriefQuestionUpdate {
-	ids := make([]uuid.UUID, len(i))
-	for j := range i {
-		ids[j] = i[j].ID
+func (_u *IncidentDebriefQuestionUpdate) AddIncidentTypes(v ...*IncidentType) *IncidentDebriefQuestionUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
 	}
-	return idqu.AddIncidentTypeIDs(ids...)
+	return _u.AddIncidentTypeIDs(ids...)
 }
 
 // Mutation returns the IncidentDebriefQuestionMutation object of the builder.
-func (idqu *IncidentDebriefQuestionUpdate) Mutation() *IncidentDebriefQuestionMutation {
-	return idqu.mutation
+func (_u *IncidentDebriefQuestionUpdate) Mutation() *IncidentDebriefQuestionMutation {
+	return _u.mutation
 }
 
 // ClearMessages clears all "messages" edges to the IncidentDebriefMessage entity.
-func (idqu *IncidentDebriefQuestionUpdate) ClearMessages() *IncidentDebriefQuestionUpdate {
-	idqu.mutation.ClearMessages()
-	return idqu
+func (_u *IncidentDebriefQuestionUpdate) ClearMessages() *IncidentDebriefQuestionUpdate {
+	_u.mutation.ClearMessages()
+	return _u
 }
 
 // RemoveMessageIDs removes the "messages" edge to IncidentDebriefMessage entities by IDs.
-func (idqu *IncidentDebriefQuestionUpdate) RemoveMessageIDs(ids ...uuid.UUID) *IncidentDebriefQuestionUpdate {
-	idqu.mutation.RemoveMessageIDs(ids...)
-	return idqu
+func (_u *IncidentDebriefQuestionUpdate) RemoveMessageIDs(ids ...uuid.UUID) *IncidentDebriefQuestionUpdate {
+	_u.mutation.RemoveMessageIDs(ids...)
+	return _u
 }
 
 // RemoveMessages removes "messages" edges to IncidentDebriefMessage entities.
-func (idqu *IncidentDebriefQuestionUpdate) RemoveMessages(i ...*IncidentDebriefMessage) *IncidentDebriefQuestionUpdate {
-	ids := make([]uuid.UUID, len(i))
-	for j := range i {
-		ids[j] = i[j].ID
+func (_u *IncidentDebriefQuestionUpdate) RemoveMessages(v ...*IncidentDebriefMessage) *IncidentDebriefQuestionUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
 	}
-	return idqu.RemoveMessageIDs(ids...)
+	return _u.RemoveMessageIDs(ids...)
 }
 
 // ClearIncidentFields clears all "incident_fields" edges to the IncidentField entity.
-func (idqu *IncidentDebriefQuestionUpdate) ClearIncidentFields() *IncidentDebriefQuestionUpdate {
-	idqu.mutation.ClearIncidentFields()
-	return idqu
+func (_u *IncidentDebriefQuestionUpdate) ClearIncidentFields() *IncidentDebriefQuestionUpdate {
+	_u.mutation.ClearIncidentFields()
+	return _u
 }
 
 // RemoveIncidentFieldIDs removes the "incident_fields" edge to IncidentField entities by IDs.
-func (idqu *IncidentDebriefQuestionUpdate) RemoveIncidentFieldIDs(ids ...uuid.UUID) *IncidentDebriefQuestionUpdate {
-	idqu.mutation.RemoveIncidentFieldIDs(ids...)
-	return idqu
+func (_u *IncidentDebriefQuestionUpdate) RemoveIncidentFieldIDs(ids ...uuid.UUID) *IncidentDebriefQuestionUpdate {
+	_u.mutation.RemoveIncidentFieldIDs(ids...)
+	return _u
 }
 
 // RemoveIncidentFields removes "incident_fields" edges to IncidentField entities.
-func (idqu *IncidentDebriefQuestionUpdate) RemoveIncidentFields(i ...*IncidentField) *IncidentDebriefQuestionUpdate {
-	ids := make([]uuid.UUID, len(i))
-	for j := range i {
-		ids[j] = i[j].ID
+func (_u *IncidentDebriefQuestionUpdate) RemoveIncidentFields(v ...*IncidentField) *IncidentDebriefQuestionUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
 	}
-	return idqu.RemoveIncidentFieldIDs(ids...)
+	return _u.RemoveIncidentFieldIDs(ids...)
 }
 
 // ClearIncidentRoles clears all "incident_roles" edges to the IncidentRole entity.
-func (idqu *IncidentDebriefQuestionUpdate) ClearIncidentRoles() *IncidentDebriefQuestionUpdate {
-	idqu.mutation.ClearIncidentRoles()
-	return idqu
+func (_u *IncidentDebriefQuestionUpdate) ClearIncidentRoles() *IncidentDebriefQuestionUpdate {
+	_u.mutation.ClearIncidentRoles()
+	return _u
 }
 
 // RemoveIncidentRoleIDs removes the "incident_roles" edge to IncidentRole entities by IDs.
-func (idqu *IncidentDebriefQuestionUpdate) RemoveIncidentRoleIDs(ids ...uuid.UUID) *IncidentDebriefQuestionUpdate {
-	idqu.mutation.RemoveIncidentRoleIDs(ids...)
-	return idqu
+func (_u *IncidentDebriefQuestionUpdate) RemoveIncidentRoleIDs(ids ...uuid.UUID) *IncidentDebriefQuestionUpdate {
+	_u.mutation.RemoveIncidentRoleIDs(ids...)
+	return _u
 }
 
 // RemoveIncidentRoles removes "incident_roles" edges to IncidentRole entities.
-func (idqu *IncidentDebriefQuestionUpdate) RemoveIncidentRoles(i ...*IncidentRole) *IncidentDebriefQuestionUpdate {
-	ids := make([]uuid.UUID, len(i))
-	for j := range i {
-		ids[j] = i[j].ID
+func (_u *IncidentDebriefQuestionUpdate) RemoveIncidentRoles(v ...*IncidentRole) *IncidentDebriefQuestionUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
 	}
-	return idqu.RemoveIncidentRoleIDs(ids...)
+	return _u.RemoveIncidentRoleIDs(ids...)
 }
 
 // ClearIncidentSeverities clears all "incident_severities" edges to the IncidentSeverity entity.
-func (idqu *IncidentDebriefQuestionUpdate) ClearIncidentSeverities() *IncidentDebriefQuestionUpdate {
-	idqu.mutation.ClearIncidentSeverities()
-	return idqu
+func (_u *IncidentDebriefQuestionUpdate) ClearIncidentSeverities() *IncidentDebriefQuestionUpdate {
+	_u.mutation.ClearIncidentSeverities()
+	return _u
 }
 
 // RemoveIncidentSeverityIDs removes the "incident_severities" edge to IncidentSeverity entities by IDs.
-func (idqu *IncidentDebriefQuestionUpdate) RemoveIncidentSeverityIDs(ids ...uuid.UUID) *IncidentDebriefQuestionUpdate {
-	idqu.mutation.RemoveIncidentSeverityIDs(ids...)
-	return idqu
+func (_u *IncidentDebriefQuestionUpdate) RemoveIncidentSeverityIDs(ids ...uuid.UUID) *IncidentDebriefQuestionUpdate {
+	_u.mutation.RemoveIncidentSeverityIDs(ids...)
+	return _u
 }
 
 // RemoveIncidentSeverities removes "incident_severities" edges to IncidentSeverity entities.
-func (idqu *IncidentDebriefQuestionUpdate) RemoveIncidentSeverities(i ...*IncidentSeverity) *IncidentDebriefQuestionUpdate {
-	ids := make([]uuid.UUID, len(i))
-	for j := range i {
-		ids[j] = i[j].ID
+func (_u *IncidentDebriefQuestionUpdate) RemoveIncidentSeverities(v ...*IncidentSeverity) *IncidentDebriefQuestionUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
 	}
-	return idqu.RemoveIncidentSeverityIDs(ids...)
+	return _u.RemoveIncidentSeverityIDs(ids...)
 }
 
 // ClearIncidentTags clears all "incident_tags" edges to the IncidentTag entity.
-func (idqu *IncidentDebriefQuestionUpdate) ClearIncidentTags() *IncidentDebriefQuestionUpdate {
-	idqu.mutation.ClearIncidentTags()
-	return idqu
+func (_u *IncidentDebriefQuestionUpdate) ClearIncidentTags() *IncidentDebriefQuestionUpdate {
+	_u.mutation.ClearIncidentTags()
+	return _u
 }
 
 // RemoveIncidentTagIDs removes the "incident_tags" edge to IncidentTag entities by IDs.
-func (idqu *IncidentDebriefQuestionUpdate) RemoveIncidentTagIDs(ids ...uuid.UUID) *IncidentDebriefQuestionUpdate {
-	idqu.mutation.RemoveIncidentTagIDs(ids...)
-	return idqu
+func (_u *IncidentDebriefQuestionUpdate) RemoveIncidentTagIDs(ids ...uuid.UUID) *IncidentDebriefQuestionUpdate {
+	_u.mutation.RemoveIncidentTagIDs(ids...)
+	return _u
 }
 
 // RemoveIncidentTags removes "incident_tags" edges to IncidentTag entities.
-func (idqu *IncidentDebriefQuestionUpdate) RemoveIncidentTags(i ...*IncidentTag) *IncidentDebriefQuestionUpdate {
-	ids := make([]uuid.UUID, len(i))
-	for j := range i {
-		ids[j] = i[j].ID
+func (_u *IncidentDebriefQuestionUpdate) RemoveIncidentTags(v ...*IncidentTag) *IncidentDebriefQuestionUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
 	}
-	return idqu.RemoveIncidentTagIDs(ids...)
+	return _u.RemoveIncidentTagIDs(ids...)
 }
 
 // ClearIncidentTypes clears all "incident_types" edges to the IncidentType entity.
-func (idqu *IncidentDebriefQuestionUpdate) ClearIncidentTypes() *IncidentDebriefQuestionUpdate {
-	idqu.mutation.ClearIncidentTypes()
-	return idqu
+func (_u *IncidentDebriefQuestionUpdate) ClearIncidentTypes() *IncidentDebriefQuestionUpdate {
+	_u.mutation.ClearIncidentTypes()
+	return _u
 }
 
 // RemoveIncidentTypeIDs removes the "incident_types" edge to IncidentType entities by IDs.
-func (idqu *IncidentDebriefQuestionUpdate) RemoveIncidentTypeIDs(ids ...uuid.UUID) *IncidentDebriefQuestionUpdate {
-	idqu.mutation.RemoveIncidentTypeIDs(ids...)
-	return idqu
+func (_u *IncidentDebriefQuestionUpdate) RemoveIncidentTypeIDs(ids ...uuid.UUID) *IncidentDebriefQuestionUpdate {
+	_u.mutation.RemoveIncidentTypeIDs(ids...)
+	return _u
 }
 
 // RemoveIncidentTypes removes "incident_types" edges to IncidentType entities.
-func (idqu *IncidentDebriefQuestionUpdate) RemoveIncidentTypes(i ...*IncidentType) *IncidentDebriefQuestionUpdate {
-	ids := make([]uuid.UUID, len(i))
-	for j := range i {
-		ids[j] = i[j].ID
+func (_u *IncidentDebriefQuestionUpdate) RemoveIncidentTypes(v ...*IncidentType) *IncidentDebriefQuestionUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
 	}
-	return idqu.RemoveIncidentTypeIDs(ids...)
+	return _u.RemoveIncidentTypeIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
-func (idqu *IncidentDebriefQuestionUpdate) Save(ctx context.Context) (int, error) {
-	return withHooks(ctx, idqu.sqlSave, idqu.mutation, idqu.hooks)
+func (_u *IncidentDebriefQuestionUpdate) Save(ctx context.Context) (int, error) {
+	return withHooks(ctx, _u.sqlSave, _u.mutation, _u.hooks)
 }
 
 // SaveX is like Save, but panics if an error occurs.
-func (idqu *IncidentDebriefQuestionUpdate) SaveX(ctx context.Context) int {
-	affected, err := idqu.Save(ctx)
+func (_u *IncidentDebriefQuestionUpdate) SaveX(ctx context.Context) int {
+	affected, err := _u.Save(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -285,48 +285,48 @@ func (idqu *IncidentDebriefQuestionUpdate) SaveX(ctx context.Context) int {
 }
 
 // Exec executes the query.
-func (idqu *IncidentDebriefQuestionUpdate) Exec(ctx context.Context) error {
-	_, err := idqu.Save(ctx)
+func (_u *IncidentDebriefQuestionUpdate) Exec(ctx context.Context) error {
+	_, err := _u.Save(ctx)
 	return err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (idqu *IncidentDebriefQuestionUpdate) ExecX(ctx context.Context) {
-	if err := idqu.Exec(ctx); err != nil {
+func (_u *IncidentDebriefQuestionUpdate) ExecX(ctx context.Context) {
+	if err := _u.Exec(ctx); err != nil {
 		panic(err)
 	}
 }
 
 // check runs all checks and user-defined validators on the builder.
-func (idqu *IncidentDebriefQuestionUpdate) check() error {
-	if idqu.mutation.TenantCleared() && len(idqu.mutation.TenantIDs()) > 0 {
+func (_u *IncidentDebriefQuestionUpdate) check() error {
+	if _u.mutation.TenantCleared() && len(_u.mutation.TenantIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "IncidentDebriefQuestion.tenant"`)
 	}
 	return nil
 }
 
 // Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
-func (idqu *IncidentDebriefQuestionUpdate) Modify(modifiers ...func(u *sql.UpdateBuilder)) *IncidentDebriefQuestionUpdate {
-	idqu.modifiers = append(idqu.modifiers, modifiers...)
-	return idqu
+func (_u *IncidentDebriefQuestionUpdate) Modify(modifiers ...func(u *sql.UpdateBuilder)) *IncidentDebriefQuestionUpdate {
+	_u.modifiers = append(_u.modifiers, modifiers...)
+	return _u
 }
 
-func (idqu *IncidentDebriefQuestionUpdate) sqlSave(ctx context.Context) (n int, err error) {
-	if err := idqu.check(); err != nil {
-		return n, err
+func (_u *IncidentDebriefQuestionUpdate) sqlSave(ctx context.Context) (_node int, err error) {
+	if err := _u.check(); err != nil {
+		return _node, err
 	}
 	_spec := sqlgraph.NewUpdateSpec(incidentdebriefquestion.Table, incidentdebriefquestion.Columns, sqlgraph.NewFieldSpec(incidentdebriefquestion.FieldID, field.TypeUUID))
-	if ps := idqu.mutation.predicates; len(ps) > 0 {
+	if ps := _u.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {
 				ps[i](selector)
 			}
 		}
 	}
-	if value, ok := idqu.mutation.Content(); ok {
+	if value, ok := _u.mutation.Content(); ok {
 		_spec.SetField(incidentdebriefquestion.FieldContent, field.TypeString, value)
 	}
-	if idqu.mutation.MessagesCleared() {
+	if _u.mutation.MessagesCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: true,
@@ -339,23 +339,7 @@ func (idqu *IncidentDebriefQuestionUpdate) sqlSave(ctx context.Context) (n int, 
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := idqu.mutation.RemovedMessagesIDs(); len(nodes) > 0 && !idqu.mutation.MessagesCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   incidentdebriefquestion.MessagesTable,
-			Columns: []string{incidentdebriefquestion.MessagesColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(incidentdebriefmessage.FieldID, field.TypeUUID),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := idqu.mutation.MessagesIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.RemovedMessagesIDs(); len(nodes) > 0 && !_u.mutation.MessagesCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: true,
@@ -369,9 +353,25 @@ func (idqu *IncidentDebriefQuestionUpdate) sqlSave(ctx context.Context) (n int, 
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.MessagesIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   incidentdebriefquestion.MessagesTable,
+			Columns: []string{incidentdebriefquestion.MessagesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(incidentdebriefmessage.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if idqu.mutation.IncidentFieldsCleared() {
+	if _u.mutation.IncidentFieldsCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
 			Inverse: false,
@@ -384,7 +384,7 @@ func (idqu *IncidentDebriefQuestionUpdate) sqlSave(ctx context.Context) (n int, 
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := idqu.mutation.RemovedIncidentFieldsIDs(); len(nodes) > 0 && !idqu.mutation.IncidentFieldsCleared() {
+	if nodes := _u.mutation.RemovedIncidentFieldsIDs(); len(nodes) > 0 && !_u.mutation.IncidentFieldsCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
 			Inverse: false,
@@ -400,7 +400,7 @@ func (idqu *IncidentDebriefQuestionUpdate) sqlSave(ctx context.Context) (n int, 
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := idqu.mutation.IncidentFieldsIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.IncidentFieldsIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
 			Inverse: false,
@@ -416,7 +416,7 @@ func (idqu *IncidentDebriefQuestionUpdate) sqlSave(ctx context.Context) (n int, 
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if idqu.mutation.IncidentRolesCleared() {
+	if _u.mutation.IncidentRolesCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
 			Inverse: false,
@@ -429,23 +429,7 @@ func (idqu *IncidentDebriefQuestionUpdate) sqlSave(ctx context.Context) (n int, 
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := idqu.mutation.RemovedIncidentRolesIDs(); len(nodes) > 0 && !idqu.mutation.IncidentRolesCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
-			Inverse: false,
-			Table:   incidentdebriefquestion.IncidentRolesTable,
-			Columns: incidentdebriefquestion.IncidentRolesPrimaryKey,
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(incidentrole.FieldID, field.TypeUUID),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := idqu.mutation.IncidentRolesIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.RemovedIncidentRolesIDs(); len(nodes) > 0 && !_u.mutation.IncidentRolesCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
 			Inverse: false,
@@ -459,9 +443,25 @@ func (idqu *IncidentDebriefQuestionUpdate) sqlSave(ctx context.Context) (n int, 
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.IncidentRolesIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   incidentdebriefquestion.IncidentRolesTable,
+			Columns: incidentdebriefquestion.IncidentRolesPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(incidentrole.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if idqu.mutation.IncidentSeveritiesCleared() {
+	if _u.mutation.IncidentSeveritiesCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
 			Inverse: false,
@@ -474,7 +474,7 @@ func (idqu *IncidentDebriefQuestionUpdate) sqlSave(ctx context.Context) (n int, 
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := idqu.mutation.RemovedIncidentSeveritiesIDs(); len(nodes) > 0 && !idqu.mutation.IncidentSeveritiesCleared() {
+	if nodes := _u.mutation.RemovedIncidentSeveritiesIDs(); len(nodes) > 0 && !_u.mutation.IncidentSeveritiesCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
 			Inverse: false,
@@ -490,7 +490,7 @@ func (idqu *IncidentDebriefQuestionUpdate) sqlSave(ctx context.Context) (n int, 
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := idqu.mutation.IncidentSeveritiesIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.IncidentSeveritiesIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
 			Inverse: false,
@@ -506,7 +506,7 @@ func (idqu *IncidentDebriefQuestionUpdate) sqlSave(ctx context.Context) (n int, 
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if idqu.mutation.IncidentTagsCleared() {
+	if _u.mutation.IncidentTagsCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
 			Inverse: false,
@@ -519,7 +519,7 @@ func (idqu *IncidentDebriefQuestionUpdate) sqlSave(ctx context.Context) (n int, 
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := idqu.mutation.RemovedIncidentTagsIDs(); len(nodes) > 0 && !idqu.mutation.IncidentTagsCleared() {
+	if nodes := _u.mutation.RemovedIncidentTagsIDs(); len(nodes) > 0 && !_u.mutation.IncidentTagsCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
 			Inverse: false,
@@ -535,7 +535,7 @@ func (idqu *IncidentDebriefQuestionUpdate) sqlSave(ctx context.Context) (n int, 
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := idqu.mutation.IncidentTagsIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.IncidentTagsIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
 			Inverse: false,
@@ -551,7 +551,7 @@ func (idqu *IncidentDebriefQuestionUpdate) sqlSave(ctx context.Context) (n int, 
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if idqu.mutation.IncidentTypesCleared() {
+	if _u.mutation.IncidentTypesCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
 			Inverse: false,
@@ -564,7 +564,7 @@ func (idqu *IncidentDebriefQuestionUpdate) sqlSave(ctx context.Context) (n int, 
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := idqu.mutation.RemovedIncidentTypesIDs(); len(nodes) > 0 && !idqu.mutation.IncidentTypesCleared() {
+	if nodes := _u.mutation.RemovedIncidentTypesIDs(); len(nodes) > 0 && !_u.mutation.IncidentTypesCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
 			Inverse: false,
@@ -580,7 +580,7 @@ func (idqu *IncidentDebriefQuestionUpdate) sqlSave(ctx context.Context) (n int, 
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := idqu.mutation.IncidentTypesIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.IncidentTypesIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
 			Inverse: false,
@@ -596,8 +596,8 @@ func (idqu *IncidentDebriefQuestionUpdate) sqlSave(ctx context.Context) (n int, 
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	_spec.AddModifiers(idqu.modifiers...)
-	if n, err = sqlgraph.UpdateNodes(ctx, idqu.driver, _spec); err != nil {
+	_spec.AddModifiers(_u.modifiers...)
+	if _node, err = sqlgraph.UpdateNodes(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{incidentdebriefquestion.Label}
 		} else if sqlgraph.IsConstraintError(err) {
@@ -605,8 +605,8 @@ func (idqu *IncidentDebriefQuestionUpdate) sqlSave(ctx context.Context) (n int, 
 		}
 		return 0, err
 	}
-	idqu.mutation.done = true
-	return n, nil
+	_u.mutation.done = true
+	return _node, nil
 }
 
 // IncidentDebriefQuestionUpdateOne is the builder for updating a single IncidentDebriefQuestion entity.
@@ -619,261 +619,261 @@ type IncidentDebriefQuestionUpdateOne struct {
 }
 
 // SetContent sets the "content" field.
-func (idquo *IncidentDebriefQuestionUpdateOne) SetContent(s string) *IncidentDebriefQuestionUpdateOne {
-	idquo.mutation.SetContent(s)
-	return idquo
+func (_u *IncidentDebriefQuestionUpdateOne) SetContent(v string) *IncidentDebriefQuestionUpdateOne {
+	_u.mutation.SetContent(v)
+	return _u
 }
 
 // SetNillableContent sets the "content" field if the given value is not nil.
-func (idquo *IncidentDebriefQuestionUpdateOne) SetNillableContent(s *string) *IncidentDebriefQuestionUpdateOne {
-	if s != nil {
-		idquo.SetContent(*s)
+func (_u *IncidentDebriefQuestionUpdateOne) SetNillableContent(v *string) *IncidentDebriefQuestionUpdateOne {
+	if v != nil {
+		_u.SetContent(*v)
 	}
-	return idquo
+	return _u
 }
 
 // AddMessageIDs adds the "messages" edge to the IncidentDebriefMessage entity by IDs.
-func (idquo *IncidentDebriefQuestionUpdateOne) AddMessageIDs(ids ...uuid.UUID) *IncidentDebriefQuestionUpdateOne {
-	idquo.mutation.AddMessageIDs(ids...)
-	return idquo
+func (_u *IncidentDebriefQuestionUpdateOne) AddMessageIDs(ids ...uuid.UUID) *IncidentDebriefQuestionUpdateOne {
+	_u.mutation.AddMessageIDs(ids...)
+	return _u
 }
 
 // AddMessages adds the "messages" edges to the IncidentDebriefMessage entity.
-func (idquo *IncidentDebriefQuestionUpdateOne) AddMessages(i ...*IncidentDebriefMessage) *IncidentDebriefQuestionUpdateOne {
-	ids := make([]uuid.UUID, len(i))
-	for j := range i {
-		ids[j] = i[j].ID
+func (_u *IncidentDebriefQuestionUpdateOne) AddMessages(v ...*IncidentDebriefMessage) *IncidentDebriefQuestionUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
 	}
-	return idquo.AddMessageIDs(ids...)
+	return _u.AddMessageIDs(ids...)
 }
 
 // AddIncidentFieldIDs adds the "incident_fields" edge to the IncidentField entity by IDs.
-func (idquo *IncidentDebriefQuestionUpdateOne) AddIncidentFieldIDs(ids ...uuid.UUID) *IncidentDebriefQuestionUpdateOne {
-	idquo.mutation.AddIncidentFieldIDs(ids...)
-	return idquo
+func (_u *IncidentDebriefQuestionUpdateOne) AddIncidentFieldIDs(ids ...uuid.UUID) *IncidentDebriefQuestionUpdateOne {
+	_u.mutation.AddIncidentFieldIDs(ids...)
+	return _u
 }
 
 // AddIncidentFields adds the "incident_fields" edges to the IncidentField entity.
-func (idquo *IncidentDebriefQuestionUpdateOne) AddIncidentFields(i ...*IncidentField) *IncidentDebriefQuestionUpdateOne {
-	ids := make([]uuid.UUID, len(i))
-	for j := range i {
-		ids[j] = i[j].ID
+func (_u *IncidentDebriefQuestionUpdateOne) AddIncidentFields(v ...*IncidentField) *IncidentDebriefQuestionUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
 	}
-	return idquo.AddIncidentFieldIDs(ids...)
+	return _u.AddIncidentFieldIDs(ids...)
 }
 
 // AddIncidentRoleIDs adds the "incident_roles" edge to the IncidentRole entity by IDs.
-func (idquo *IncidentDebriefQuestionUpdateOne) AddIncidentRoleIDs(ids ...uuid.UUID) *IncidentDebriefQuestionUpdateOne {
-	idquo.mutation.AddIncidentRoleIDs(ids...)
-	return idquo
+func (_u *IncidentDebriefQuestionUpdateOne) AddIncidentRoleIDs(ids ...uuid.UUID) *IncidentDebriefQuestionUpdateOne {
+	_u.mutation.AddIncidentRoleIDs(ids...)
+	return _u
 }
 
 // AddIncidentRoles adds the "incident_roles" edges to the IncidentRole entity.
-func (idquo *IncidentDebriefQuestionUpdateOne) AddIncidentRoles(i ...*IncidentRole) *IncidentDebriefQuestionUpdateOne {
-	ids := make([]uuid.UUID, len(i))
-	for j := range i {
-		ids[j] = i[j].ID
+func (_u *IncidentDebriefQuestionUpdateOne) AddIncidentRoles(v ...*IncidentRole) *IncidentDebriefQuestionUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
 	}
-	return idquo.AddIncidentRoleIDs(ids...)
+	return _u.AddIncidentRoleIDs(ids...)
 }
 
 // AddIncidentSeverityIDs adds the "incident_severities" edge to the IncidentSeverity entity by IDs.
-func (idquo *IncidentDebriefQuestionUpdateOne) AddIncidentSeverityIDs(ids ...uuid.UUID) *IncidentDebriefQuestionUpdateOne {
-	idquo.mutation.AddIncidentSeverityIDs(ids...)
-	return idquo
+func (_u *IncidentDebriefQuestionUpdateOne) AddIncidentSeverityIDs(ids ...uuid.UUID) *IncidentDebriefQuestionUpdateOne {
+	_u.mutation.AddIncidentSeverityIDs(ids...)
+	return _u
 }
 
 // AddIncidentSeverities adds the "incident_severities" edges to the IncidentSeverity entity.
-func (idquo *IncidentDebriefQuestionUpdateOne) AddIncidentSeverities(i ...*IncidentSeverity) *IncidentDebriefQuestionUpdateOne {
-	ids := make([]uuid.UUID, len(i))
-	for j := range i {
-		ids[j] = i[j].ID
+func (_u *IncidentDebriefQuestionUpdateOne) AddIncidentSeverities(v ...*IncidentSeverity) *IncidentDebriefQuestionUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
 	}
-	return idquo.AddIncidentSeverityIDs(ids...)
+	return _u.AddIncidentSeverityIDs(ids...)
 }
 
 // AddIncidentTagIDs adds the "incident_tags" edge to the IncidentTag entity by IDs.
-func (idquo *IncidentDebriefQuestionUpdateOne) AddIncidentTagIDs(ids ...uuid.UUID) *IncidentDebriefQuestionUpdateOne {
-	idquo.mutation.AddIncidentTagIDs(ids...)
-	return idquo
+func (_u *IncidentDebriefQuestionUpdateOne) AddIncidentTagIDs(ids ...uuid.UUID) *IncidentDebriefQuestionUpdateOne {
+	_u.mutation.AddIncidentTagIDs(ids...)
+	return _u
 }
 
 // AddIncidentTags adds the "incident_tags" edges to the IncidentTag entity.
-func (idquo *IncidentDebriefQuestionUpdateOne) AddIncidentTags(i ...*IncidentTag) *IncidentDebriefQuestionUpdateOne {
-	ids := make([]uuid.UUID, len(i))
-	for j := range i {
-		ids[j] = i[j].ID
+func (_u *IncidentDebriefQuestionUpdateOne) AddIncidentTags(v ...*IncidentTag) *IncidentDebriefQuestionUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
 	}
-	return idquo.AddIncidentTagIDs(ids...)
+	return _u.AddIncidentTagIDs(ids...)
 }
 
 // AddIncidentTypeIDs adds the "incident_types" edge to the IncidentType entity by IDs.
-func (idquo *IncidentDebriefQuestionUpdateOne) AddIncidentTypeIDs(ids ...uuid.UUID) *IncidentDebriefQuestionUpdateOne {
-	idquo.mutation.AddIncidentTypeIDs(ids...)
-	return idquo
+func (_u *IncidentDebriefQuestionUpdateOne) AddIncidentTypeIDs(ids ...uuid.UUID) *IncidentDebriefQuestionUpdateOne {
+	_u.mutation.AddIncidentTypeIDs(ids...)
+	return _u
 }
 
 // AddIncidentTypes adds the "incident_types" edges to the IncidentType entity.
-func (idquo *IncidentDebriefQuestionUpdateOne) AddIncidentTypes(i ...*IncidentType) *IncidentDebriefQuestionUpdateOne {
-	ids := make([]uuid.UUID, len(i))
-	for j := range i {
-		ids[j] = i[j].ID
+func (_u *IncidentDebriefQuestionUpdateOne) AddIncidentTypes(v ...*IncidentType) *IncidentDebriefQuestionUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
 	}
-	return idquo.AddIncidentTypeIDs(ids...)
+	return _u.AddIncidentTypeIDs(ids...)
 }
 
 // Mutation returns the IncidentDebriefQuestionMutation object of the builder.
-func (idquo *IncidentDebriefQuestionUpdateOne) Mutation() *IncidentDebriefQuestionMutation {
-	return idquo.mutation
+func (_u *IncidentDebriefQuestionUpdateOne) Mutation() *IncidentDebriefQuestionMutation {
+	return _u.mutation
 }
 
 // ClearMessages clears all "messages" edges to the IncidentDebriefMessage entity.
-func (idquo *IncidentDebriefQuestionUpdateOne) ClearMessages() *IncidentDebriefQuestionUpdateOne {
-	idquo.mutation.ClearMessages()
-	return idquo
+func (_u *IncidentDebriefQuestionUpdateOne) ClearMessages() *IncidentDebriefQuestionUpdateOne {
+	_u.mutation.ClearMessages()
+	return _u
 }
 
 // RemoveMessageIDs removes the "messages" edge to IncidentDebriefMessage entities by IDs.
-func (idquo *IncidentDebriefQuestionUpdateOne) RemoveMessageIDs(ids ...uuid.UUID) *IncidentDebriefQuestionUpdateOne {
-	idquo.mutation.RemoveMessageIDs(ids...)
-	return idquo
+func (_u *IncidentDebriefQuestionUpdateOne) RemoveMessageIDs(ids ...uuid.UUID) *IncidentDebriefQuestionUpdateOne {
+	_u.mutation.RemoveMessageIDs(ids...)
+	return _u
 }
 
 // RemoveMessages removes "messages" edges to IncidentDebriefMessage entities.
-func (idquo *IncidentDebriefQuestionUpdateOne) RemoveMessages(i ...*IncidentDebriefMessage) *IncidentDebriefQuestionUpdateOne {
-	ids := make([]uuid.UUID, len(i))
-	for j := range i {
-		ids[j] = i[j].ID
+func (_u *IncidentDebriefQuestionUpdateOne) RemoveMessages(v ...*IncidentDebriefMessage) *IncidentDebriefQuestionUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
 	}
-	return idquo.RemoveMessageIDs(ids...)
+	return _u.RemoveMessageIDs(ids...)
 }
 
 // ClearIncidentFields clears all "incident_fields" edges to the IncidentField entity.
-func (idquo *IncidentDebriefQuestionUpdateOne) ClearIncidentFields() *IncidentDebriefQuestionUpdateOne {
-	idquo.mutation.ClearIncidentFields()
-	return idquo
+func (_u *IncidentDebriefQuestionUpdateOne) ClearIncidentFields() *IncidentDebriefQuestionUpdateOne {
+	_u.mutation.ClearIncidentFields()
+	return _u
 }
 
 // RemoveIncidentFieldIDs removes the "incident_fields" edge to IncidentField entities by IDs.
-func (idquo *IncidentDebriefQuestionUpdateOne) RemoveIncidentFieldIDs(ids ...uuid.UUID) *IncidentDebriefQuestionUpdateOne {
-	idquo.mutation.RemoveIncidentFieldIDs(ids...)
-	return idquo
+func (_u *IncidentDebriefQuestionUpdateOne) RemoveIncidentFieldIDs(ids ...uuid.UUID) *IncidentDebriefQuestionUpdateOne {
+	_u.mutation.RemoveIncidentFieldIDs(ids...)
+	return _u
 }
 
 // RemoveIncidentFields removes "incident_fields" edges to IncidentField entities.
-func (idquo *IncidentDebriefQuestionUpdateOne) RemoveIncidentFields(i ...*IncidentField) *IncidentDebriefQuestionUpdateOne {
-	ids := make([]uuid.UUID, len(i))
-	for j := range i {
-		ids[j] = i[j].ID
+func (_u *IncidentDebriefQuestionUpdateOne) RemoveIncidentFields(v ...*IncidentField) *IncidentDebriefQuestionUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
 	}
-	return idquo.RemoveIncidentFieldIDs(ids...)
+	return _u.RemoveIncidentFieldIDs(ids...)
 }
 
 // ClearIncidentRoles clears all "incident_roles" edges to the IncidentRole entity.
-func (idquo *IncidentDebriefQuestionUpdateOne) ClearIncidentRoles() *IncidentDebriefQuestionUpdateOne {
-	idquo.mutation.ClearIncidentRoles()
-	return idquo
+func (_u *IncidentDebriefQuestionUpdateOne) ClearIncidentRoles() *IncidentDebriefQuestionUpdateOne {
+	_u.mutation.ClearIncidentRoles()
+	return _u
 }
 
 // RemoveIncidentRoleIDs removes the "incident_roles" edge to IncidentRole entities by IDs.
-func (idquo *IncidentDebriefQuestionUpdateOne) RemoveIncidentRoleIDs(ids ...uuid.UUID) *IncidentDebriefQuestionUpdateOne {
-	idquo.mutation.RemoveIncidentRoleIDs(ids...)
-	return idquo
+func (_u *IncidentDebriefQuestionUpdateOne) RemoveIncidentRoleIDs(ids ...uuid.UUID) *IncidentDebriefQuestionUpdateOne {
+	_u.mutation.RemoveIncidentRoleIDs(ids...)
+	return _u
 }
 
 // RemoveIncidentRoles removes "incident_roles" edges to IncidentRole entities.
-func (idquo *IncidentDebriefQuestionUpdateOne) RemoveIncidentRoles(i ...*IncidentRole) *IncidentDebriefQuestionUpdateOne {
-	ids := make([]uuid.UUID, len(i))
-	for j := range i {
-		ids[j] = i[j].ID
+func (_u *IncidentDebriefQuestionUpdateOne) RemoveIncidentRoles(v ...*IncidentRole) *IncidentDebriefQuestionUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
 	}
-	return idquo.RemoveIncidentRoleIDs(ids...)
+	return _u.RemoveIncidentRoleIDs(ids...)
 }
 
 // ClearIncidentSeverities clears all "incident_severities" edges to the IncidentSeverity entity.
-func (idquo *IncidentDebriefQuestionUpdateOne) ClearIncidentSeverities() *IncidentDebriefQuestionUpdateOne {
-	idquo.mutation.ClearIncidentSeverities()
-	return idquo
+func (_u *IncidentDebriefQuestionUpdateOne) ClearIncidentSeverities() *IncidentDebriefQuestionUpdateOne {
+	_u.mutation.ClearIncidentSeverities()
+	return _u
 }
 
 // RemoveIncidentSeverityIDs removes the "incident_severities" edge to IncidentSeverity entities by IDs.
-func (idquo *IncidentDebriefQuestionUpdateOne) RemoveIncidentSeverityIDs(ids ...uuid.UUID) *IncidentDebriefQuestionUpdateOne {
-	idquo.mutation.RemoveIncidentSeverityIDs(ids...)
-	return idquo
+func (_u *IncidentDebriefQuestionUpdateOne) RemoveIncidentSeverityIDs(ids ...uuid.UUID) *IncidentDebriefQuestionUpdateOne {
+	_u.mutation.RemoveIncidentSeverityIDs(ids...)
+	return _u
 }
 
 // RemoveIncidentSeverities removes "incident_severities" edges to IncidentSeverity entities.
-func (idquo *IncidentDebriefQuestionUpdateOne) RemoveIncidentSeverities(i ...*IncidentSeverity) *IncidentDebriefQuestionUpdateOne {
-	ids := make([]uuid.UUID, len(i))
-	for j := range i {
-		ids[j] = i[j].ID
+func (_u *IncidentDebriefQuestionUpdateOne) RemoveIncidentSeverities(v ...*IncidentSeverity) *IncidentDebriefQuestionUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
 	}
-	return idquo.RemoveIncidentSeverityIDs(ids...)
+	return _u.RemoveIncidentSeverityIDs(ids...)
 }
 
 // ClearIncidentTags clears all "incident_tags" edges to the IncidentTag entity.
-func (idquo *IncidentDebriefQuestionUpdateOne) ClearIncidentTags() *IncidentDebriefQuestionUpdateOne {
-	idquo.mutation.ClearIncidentTags()
-	return idquo
+func (_u *IncidentDebriefQuestionUpdateOne) ClearIncidentTags() *IncidentDebriefQuestionUpdateOne {
+	_u.mutation.ClearIncidentTags()
+	return _u
 }
 
 // RemoveIncidentTagIDs removes the "incident_tags" edge to IncidentTag entities by IDs.
-func (idquo *IncidentDebriefQuestionUpdateOne) RemoveIncidentTagIDs(ids ...uuid.UUID) *IncidentDebriefQuestionUpdateOne {
-	idquo.mutation.RemoveIncidentTagIDs(ids...)
-	return idquo
+func (_u *IncidentDebriefQuestionUpdateOne) RemoveIncidentTagIDs(ids ...uuid.UUID) *IncidentDebriefQuestionUpdateOne {
+	_u.mutation.RemoveIncidentTagIDs(ids...)
+	return _u
 }
 
 // RemoveIncidentTags removes "incident_tags" edges to IncidentTag entities.
-func (idquo *IncidentDebriefQuestionUpdateOne) RemoveIncidentTags(i ...*IncidentTag) *IncidentDebriefQuestionUpdateOne {
-	ids := make([]uuid.UUID, len(i))
-	for j := range i {
-		ids[j] = i[j].ID
+func (_u *IncidentDebriefQuestionUpdateOne) RemoveIncidentTags(v ...*IncidentTag) *IncidentDebriefQuestionUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
 	}
-	return idquo.RemoveIncidentTagIDs(ids...)
+	return _u.RemoveIncidentTagIDs(ids...)
 }
 
 // ClearIncidentTypes clears all "incident_types" edges to the IncidentType entity.
-func (idquo *IncidentDebriefQuestionUpdateOne) ClearIncidentTypes() *IncidentDebriefQuestionUpdateOne {
-	idquo.mutation.ClearIncidentTypes()
-	return idquo
+func (_u *IncidentDebriefQuestionUpdateOne) ClearIncidentTypes() *IncidentDebriefQuestionUpdateOne {
+	_u.mutation.ClearIncidentTypes()
+	return _u
 }
 
 // RemoveIncidentTypeIDs removes the "incident_types" edge to IncidentType entities by IDs.
-func (idquo *IncidentDebriefQuestionUpdateOne) RemoveIncidentTypeIDs(ids ...uuid.UUID) *IncidentDebriefQuestionUpdateOne {
-	idquo.mutation.RemoveIncidentTypeIDs(ids...)
-	return idquo
+func (_u *IncidentDebriefQuestionUpdateOne) RemoveIncidentTypeIDs(ids ...uuid.UUID) *IncidentDebriefQuestionUpdateOne {
+	_u.mutation.RemoveIncidentTypeIDs(ids...)
+	return _u
 }
 
 // RemoveIncidentTypes removes "incident_types" edges to IncidentType entities.
-func (idquo *IncidentDebriefQuestionUpdateOne) RemoveIncidentTypes(i ...*IncidentType) *IncidentDebriefQuestionUpdateOne {
-	ids := make([]uuid.UUID, len(i))
-	for j := range i {
-		ids[j] = i[j].ID
+func (_u *IncidentDebriefQuestionUpdateOne) RemoveIncidentTypes(v ...*IncidentType) *IncidentDebriefQuestionUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
 	}
-	return idquo.RemoveIncidentTypeIDs(ids...)
+	return _u.RemoveIncidentTypeIDs(ids...)
 }
 
 // Where appends a list predicates to the IncidentDebriefQuestionUpdate builder.
-func (idquo *IncidentDebriefQuestionUpdateOne) Where(ps ...predicate.IncidentDebriefQuestion) *IncidentDebriefQuestionUpdateOne {
-	idquo.mutation.Where(ps...)
-	return idquo
+func (_u *IncidentDebriefQuestionUpdateOne) Where(ps ...predicate.IncidentDebriefQuestion) *IncidentDebriefQuestionUpdateOne {
+	_u.mutation.Where(ps...)
+	return _u
 }
 
 // Select allows selecting one or more fields (columns) of the returned entity.
 // The default is selecting all fields defined in the entity schema.
-func (idquo *IncidentDebriefQuestionUpdateOne) Select(field string, fields ...string) *IncidentDebriefQuestionUpdateOne {
-	idquo.fields = append([]string{field}, fields...)
-	return idquo
+func (_u *IncidentDebriefQuestionUpdateOne) Select(field string, fields ...string) *IncidentDebriefQuestionUpdateOne {
+	_u.fields = append([]string{field}, fields...)
+	return _u
 }
 
 // Save executes the query and returns the updated IncidentDebriefQuestion entity.
-func (idquo *IncidentDebriefQuestionUpdateOne) Save(ctx context.Context) (*IncidentDebriefQuestion, error) {
-	return withHooks(ctx, idquo.sqlSave, idquo.mutation, idquo.hooks)
+func (_u *IncidentDebriefQuestionUpdateOne) Save(ctx context.Context) (*IncidentDebriefQuestion, error) {
+	return withHooks(ctx, _u.sqlSave, _u.mutation, _u.hooks)
 }
 
 // SaveX is like Save, but panics if an error occurs.
-func (idquo *IncidentDebriefQuestionUpdateOne) SaveX(ctx context.Context) *IncidentDebriefQuestion {
-	node, err := idquo.Save(ctx)
+func (_u *IncidentDebriefQuestionUpdateOne) SaveX(ctx context.Context) *IncidentDebriefQuestion {
+	node, err := _u.Save(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -881,43 +881,43 @@ func (idquo *IncidentDebriefQuestionUpdateOne) SaveX(ctx context.Context) *Incid
 }
 
 // Exec executes the query on the entity.
-func (idquo *IncidentDebriefQuestionUpdateOne) Exec(ctx context.Context) error {
-	_, err := idquo.Save(ctx)
+func (_u *IncidentDebriefQuestionUpdateOne) Exec(ctx context.Context) error {
+	_, err := _u.Save(ctx)
 	return err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (idquo *IncidentDebriefQuestionUpdateOne) ExecX(ctx context.Context) {
-	if err := idquo.Exec(ctx); err != nil {
+func (_u *IncidentDebriefQuestionUpdateOne) ExecX(ctx context.Context) {
+	if err := _u.Exec(ctx); err != nil {
 		panic(err)
 	}
 }
 
 // check runs all checks and user-defined validators on the builder.
-func (idquo *IncidentDebriefQuestionUpdateOne) check() error {
-	if idquo.mutation.TenantCleared() && len(idquo.mutation.TenantIDs()) > 0 {
+func (_u *IncidentDebriefQuestionUpdateOne) check() error {
+	if _u.mutation.TenantCleared() && len(_u.mutation.TenantIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "IncidentDebriefQuestion.tenant"`)
 	}
 	return nil
 }
 
 // Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
-func (idquo *IncidentDebriefQuestionUpdateOne) Modify(modifiers ...func(u *sql.UpdateBuilder)) *IncidentDebriefQuestionUpdateOne {
-	idquo.modifiers = append(idquo.modifiers, modifiers...)
-	return idquo
+func (_u *IncidentDebriefQuestionUpdateOne) Modify(modifiers ...func(u *sql.UpdateBuilder)) *IncidentDebriefQuestionUpdateOne {
+	_u.modifiers = append(_u.modifiers, modifiers...)
+	return _u
 }
 
-func (idquo *IncidentDebriefQuestionUpdateOne) sqlSave(ctx context.Context) (_node *IncidentDebriefQuestion, err error) {
-	if err := idquo.check(); err != nil {
+func (_u *IncidentDebriefQuestionUpdateOne) sqlSave(ctx context.Context) (_node *IncidentDebriefQuestion, err error) {
+	if err := _u.check(); err != nil {
 		return _node, err
 	}
 	_spec := sqlgraph.NewUpdateSpec(incidentdebriefquestion.Table, incidentdebriefquestion.Columns, sqlgraph.NewFieldSpec(incidentdebriefquestion.FieldID, field.TypeUUID))
-	id, ok := idquo.mutation.ID()
+	id, ok := _u.mutation.ID()
 	if !ok {
 		return nil, &ValidationError{Name: "id", err: errors.New(`ent: missing "IncidentDebriefQuestion.id" for update`)}
 	}
 	_spec.Node.ID.Value = id
-	if fields := idquo.fields; len(fields) > 0 {
+	if fields := _u.fields; len(fields) > 0 {
 		_spec.Node.Columns = make([]string, 0, len(fields))
 		_spec.Node.Columns = append(_spec.Node.Columns, incidentdebriefquestion.FieldID)
 		for _, f := range fields {
@@ -929,17 +929,17 @@ func (idquo *IncidentDebriefQuestionUpdateOne) sqlSave(ctx context.Context) (_no
 			}
 		}
 	}
-	if ps := idquo.mutation.predicates; len(ps) > 0 {
+	if ps := _u.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {
 				ps[i](selector)
 			}
 		}
 	}
-	if value, ok := idquo.mutation.Content(); ok {
+	if value, ok := _u.mutation.Content(); ok {
 		_spec.SetField(incidentdebriefquestion.FieldContent, field.TypeString, value)
 	}
-	if idquo.mutation.MessagesCleared() {
+	if _u.mutation.MessagesCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: true,
@@ -952,23 +952,7 @@ func (idquo *IncidentDebriefQuestionUpdateOne) sqlSave(ctx context.Context) (_no
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := idquo.mutation.RemovedMessagesIDs(); len(nodes) > 0 && !idquo.mutation.MessagesCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   incidentdebriefquestion.MessagesTable,
-			Columns: []string{incidentdebriefquestion.MessagesColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(incidentdebriefmessage.FieldID, field.TypeUUID),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := idquo.mutation.MessagesIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.RemovedMessagesIDs(); len(nodes) > 0 && !_u.mutation.MessagesCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: true,
@@ -982,9 +966,25 @@ func (idquo *IncidentDebriefQuestionUpdateOne) sqlSave(ctx context.Context) (_no
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.MessagesIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   incidentdebriefquestion.MessagesTable,
+			Columns: []string{incidentdebriefquestion.MessagesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(incidentdebriefmessage.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if idquo.mutation.IncidentFieldsCleared() {
+	if _u.mutation.IncidentFieldsCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
 			Inverse: false,
@@ -997,7 +997,7 @@ func (idquo *IncidentDebriefQuestionUpdateOne) sqlSave(ctx context.Context) (_no
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := idquo.mutation.RemovedIncidentFieldsIDs(); len(nodes) > 0 && !idquo.mutation.IncidentFieldsCleared() {
+	if nodes := _u.mutation.RemovedIncidentFieldsIDs(); len(nodes) > 0 && !_u.mutation.IncidentFieldsCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
 			Inverse: false,
@@ -1013,7 +1013,7 @@ func (idquo *IncidentDebriefQuestionUpdateOne) sqlSave(ctx context.Context) (_no
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := idquo.mutation.IncidentFieldsIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.IncidentFieldsIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
 			Inverse: false,
@@ -1029,7 +1029,7 @@ func (idquo *IncidentDebriefQuestionUpdateOne) sqlSave(ctx context.Context) (_no
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if idquo.mutation.IncidentRolesCleared() {
+	if _u.mutation.IncidentRolesCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
 			Inverse: false,
@@ -1042,23 +1042,7 @@ func (idquo *IncidentDebriefQuestionUpdateOne) sqlSave(ctx context.Context) (_no
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := idquo.mutation.RemovedIncidentRolesIDs(); len(nodes) > 0 && !idquo.mutation.IncidentRolesCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
-			Inverse: false,
-			Table:   incidentdebriefquestion.IncidentRolesTable,
-			Columns: incidentdebriefquestion.IncidentRolesPrimaryKey,
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(incidentrole.FieldID, field.TypeUUID),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := idquo.mutation.IncidentRolesIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.RemovedIncidentRolesIDs(); len(nodes) > 0 && !_u.mutation.IncidentRolesCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
 			Inverse: false,
@@ -1072,9 +1056,25 @@ func (idquo *IncidentDebriefQuestionUpdateOne) sqlSave(ctx context.Context) (_no
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.IncidentRolesIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   incidentdebriefquestion.IncidentRolesTable,
+			Columns: incidentdebriefquestion.IncidentRolesPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(incidentrole.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if idquo.mutation.IncidentSeveritiesCleared() {
+	if _u.mutation.IncidentSeveritiesCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
 			Inverse: false,
@@ -1087,7 +1087,7 @@ func (idquo *IncidentDebriefQuestionUpdateOne) sqlSave(ctx context.Context) (_no
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := idquo.mutation.RemovedIncidentSeveritiesIDs(); len(nodes) > 0 && !idquo.mutation.IncidentSeveritiesCleared() {
+	if nodes := _u.mutation.RemovedIncidentSeveritiesIDs(); len(nodes) > 0 && !_u.mutation.IncidentSeveritiesCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
 			Inverse: false,
@@ -1103,7 +1103,7 @@ func (idquo *IncidentDebriefQuestionUpdateOne) sqlSave(ctx context.Context) (_no
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := idquo.mutation.IncidentSeveritiesIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.IncidentSeveritiesIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
 			Inverse: false,
@@ -1119,7 +1119,7 @@ func (idquo *IncidentDebriefQuestionUpdateOne) sqlSave(ctx context.Context) (_no
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if idquo.mutation.IncidentTagsCleared() {
+	if _u.mutation.IncidentTagsCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
 			Inverse: false,
@@ -1132,7 +1132,7 @@ func (idquo *IncidentDebriefQuestionUpdateOne) sqlSave(ctx context.Context) (_no
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := idquo.mutation.RemovedIncidentTagsIDs(); len(nodes) > 0 && !idquo.mutation.IncidentTagsCleared() {
+	if nodes := _u.mutation.RemovedIncidentTagsIDs(); len(nodes) > 0 && !_u.mutation.IncidentTagsCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
 			Inverse: false,
@@ -1148,7 +1148,7 @@ func (idquo *IncidentDebriefQuestionUpdateOne) sqlSave(ctx context.Context) (_no
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := idquo.mutation.IncidentTagsIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.IncidentTagsIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
 			Inverse: false,
@@ -1164,7 +1164,7 @@ func (idquo *IncidentDebriefQuestionUpdateOne) sqlSave(ctx context.Context) (_no
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if idquo.mutation.IncidentTypesCleared() {
+	if _u.mutation.IncidentTypesCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
 			Inverse: false,
@@ -1177,7 +1177,7 @@ func (idquo *IncidentDebriefQuestionUpdateOne) sqlSave(ctx context.Context) (_no
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := idquo.mutation.RemovedIncidentTypesIDs(); len(nodes) > 0 && !idquo.mutation.IncidentTypesCleared() {
+	if nodes := _u.mutation.RemovedIncidentTypesIDs(); len(nodes) > 0 && !_u.mutation.IncidentTypesCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
 			Inverse: false,
@@ -1193,7 +1193,7 @@ func (idquo *IncidentDebriefQuestionUpdateOne) sqlSave(ctx context.Context) (_no
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := idquo.mutation.IncidentTypesIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.IncidentTypesIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
 			Inverse: false,
@@ -1209,11 +1209,11 @@ func (idquo *IncidentDebriefQuestionUpdateOne) sqlSave(ctx context.Context) (_no
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	_spec.AddModifiers(idquo.modifiers...)
-	_node = &IncidentDebriefQuestion{config: idquo.config}
+	_spec.AddModifiers(_u.modifiers...)
+	_node = &IncidentDebriefQuestion{config: _u.config}
 	_spec.Assign = _node.assignValues
 	_spec.ScanValues = _node.scanValues
-	if err = sqlgraph.UpdateNode(ctx, idquo.driver, _spec); err != nil {
+	if err = sqlgraph.UpdateNode(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{incidentdebriefquestion.Label}
 		} else if sqlgraph.IsConstraintError(err) {
@@ -1221,6 +1221,6 @@ func (idquo *IncidentDebriefQuestionUpdateOne) sqlSave(ctx context.Context) (_no
 		}
 		return nil, err
 	}
-	idquo.mutation.done = true
+	_u.mutation.done = true
 	return _node, nil
 }

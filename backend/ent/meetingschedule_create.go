@@ -28,196 +28,196 @@ type MeetingScheduleCreate struct {
 }
 
 // SetTenantID sets the "tenant_id" field.
-func (msc *MeetingScheduleCreate) SetTenantID(i int) *MeetingScheduleCreate {
-	msc.mutation.SetTenantID(i)
-	return msc
+func (_c *MeetingScheduleCreate) SetTenantID(v int) *MeetingScheduleCreate {
+	_c.mutation.SetTenantID(v)
+	return _c
 }
 
 // SetArchiveTime sets the "archive_time" field.
-func (msc *MeetingScheduleCreate) SetArchiveTime(t time.Time) *MeetingScheduleCreate {
-	msc.mutation.SetArchiveTime(t)
-	return msc
+func (_c *MeetingScheduleCreate) SetArchiveTime(v time.Time) *MeetingScheduleCreate {
+	_c.mutation.SetArchiveTime(v)
+	return _c
 }
 
 // SetNillableArchiveTime sets the "archive_time" field if the given value is not nil.
-func (msc *MeetingScheduleCreate) SetNillableArchiveTime(t *time.Time) *MeetingScheduleCreate {
-	if t != nil {
-		msc.SetArchiveTime(*t)
+func (_c *MeetingScheduleCreate) SetNillableArchiveTime(v *time.Time) *MeetingScheduleCreate {
+	if v != nil {
+		_c.SetArchiveTime(*v)
 	}
-	return msc
+	return _c
 }
 
 // SetName sets the "name" field.
-func (msc *MeetingScheduleCreate) SetName(s string) *MeetingScheduleCreate {
-	msc.mutation.SetName(s)
-	return msc
+func (_c *MeetingScheduleCreate) SetName(v string) *MeetingScheduleCreate {
+	_c.mutation.SetName(v)
+	return _c
 }
 
 // SetDescription sets the "description" field.
-func (msc *MeetingScheduleCreate) SetDescription(s string) *MeetingScheduleCreate {
-	msc.mutation.SetDescription(s)
-	return msc
+func (_c *MeetingScheduleCreate) SetDescription(v string) *MeetingScheduleCreate {
+	_c.mutation.SetDescription(v)
+	return _c
 }
 
 // SetNillableDescription sets the "description" field if the given value is not nil.
-func (msc *MeetingScheduleCreate) SetNillableDescription(s *string) *MeetingScheduleCreate {
-	if s != nil {
-		msc.SetDescription(*s)
+func (_c *MeetingScheduleCreate) SetNillableDescription(v *string) *MeetingScheduleCreate {
+	if v != nil {
+		_c.SetDescription(*v)
 	}
-	return msc
+	return _c
 }
 
 // SetBeginMinute sets the "begin_minute" field.
-func (msc *MeetingScheduleCreate) SetBeginMinute(i int) *MeetingScheduleCreate {
-	msc.mutation.SetBeginMinute(i)
-	return msc
+func (_c *MeetingScheduleCreate) SetBeginMinute(v int) *MeetingScheduleCreate {
+	_c.mutation.SetBeginMinute(v)
+	return _c
 }
 
 // SetDurationMinutes sets the "duration_minutes" field.
-func (msc *MeetingScheduleCreate) SetDurationMinutes(i int) *MeetingScheduleCreate {
-	msc.mutation.SetDurationMinutes(i)
-	return msc
+func (_c *MeetingScheduleCreate) SetDurationMinutes(v int) *MeetingScheduleCreate {
+	_c.mutation.SetDurationMinutes(v)
+	return _c
 }
 
 // SetStartDate sets the "start_date" field.
-func (msc *MeetingScheduleCreate) SetStartDate(t time.Time) *MeetingScheduleCreate {
-	msc.mutation.SetStartDate(t)
-	return msc
+func (_c *MeetingScheduleCreate) SetStartDate(v time.Time) *MeetingScheduleCreate {
+	_c.mutation.SetStartDate(v)
+	return _c
 }
 
 // SetRepeats sets the "repeats" field.
-func (msc *MeetingScheduleCreate) SetRepeats(m meetingschedule.Repeats) *MeetingScheduleCreate {
-	msc.mutation.SetRepeats(m)
-	return msc
+func (_c *MeetingScheduleCreate) SetRepeats(v meetingschedule.Repeats) *MeetingScheduleCreate {
+	_c.mutation.SetRepeats(v)
+	return _c
 }
 
 // SetRepetitionStep sets the "repetition_step" field.
-func (msc *MeetingScheduleCreate) SetRepetitionStep(i int) *MeetingScheduleCreate {
-	msc.mutation.SetRepetitionStep(i)
-	return msc
+func (_c *MeetingScheduleCreate) SetRepetitionStep(v int) *MeetingScheduleCreate {
+	_c.mutation.SetRepetitionStep(v)
+	return _c
 }
 
 // SetNillableRepetitionStep sets the "repetition_step" field if the given value is not nil.
-func (msc *MeetingScheduleCreate) SetNillableRepetitionStep(i *int) *MeetingScheduleCreate {
-	if i != nil {
-		msc.SetRepetitionStep(*i)
+func (_c *MeetingScheduleCreate) SetNillableRepetitionStep(v *int) *MeetingScheduleCreate {
+	if v != nil {
+		_c.SetRepetitionStep(*v)
 	}
-	return msc
+	return _c
 }
 
 // SetWeekDays sets the "week_days" field.
-func (msc *MeetingScheduleCreate) SetWeekDays(s []string) *MeetingScheduleCreate {
-	msc.mutation.SetWeekDays(s)
-	return msc
+func (_c *MeetingScheduleCreate) SetWeekDays(v []string) *MeetingScheduleCreate {
+	_c.mutation.SetWeekDays(v)
+	return _c
 }
 
 // SetMonthlyOn sets the "monthly_on" field.
-func (msc *MeetingScheduleCreate) SetMonthlyOn(mo meetingschedule.MonthlyOn) *MeetingScheduleCreate {
-	msc.mutation.SetMonthlyOn(mo)
-	return msc
+func (_c *MeetingScheduleCreate) SetMonthlyOn(v meetingschedule.MonthlyOn) *MeetingScheduleCreate {
+	_c.mutation.SetMonthlyOn(v)
+	return _c
 }
 
 // SetNillableMonthlyOn sets the "monthly_on" field if the given value is not nil.
-func (msc *MeetingScheduleCreate) SetNillableMonthlyOn(mo *meetingschedule.MonthlyOn) *MeetingScheduleCreate {
-	if mo != nil {
-		msc.SetMonthlyOn(*mo)
+func (_c *MeetingScheduleCreate) SetNillableMonthlyOn(v *meetingschedule.MonthlyOn) *MeetingScheduleCreate {
+	if v != nil {
+		_c.SetMonthlyOn(*v)
 	}
-	return msc
+	return _c
 }
 
 // SetUntilDate sets the "until_date" field.
-func (msc *MeetingScheduleCreate) SetUntilDate(t time.Time) *MeetingScheduleCreate {
-	msc.mutation.SetUntilDate(t)
-	return msc
+func (_c *MeetingScheduleCreate) SetUntilDate(v time.Time) *MeetingScheduleCreate {
+	_c.mutation.SetUntilDate(v)
+	return _c
 }
 
 // SetNillableUntilDate sets the "until_date" field if the given value is not nil.
-func (msc *MeetingScheduleCreate) SetNillableUntilDate(t *time.Time) *MeetingScheduleCreate {
-	if t != nil {
-		msc.SetUntilDate(*t)
+func (_c *MeetingScheduleCreate) SetNillableUntilDate(v *time.Time) *MeetingScheduleCreate {
+	if v != nil {
+		_c.SetUntilDate(*v)
 	}
-	return msc
+	return _c
 }
 
 // SetNumRepetitions sets the "num_repetitions" field.
-func (msc *MeetingScheduleCreate) SetNumRepetitions(i int) *MeetingScheduleCreate {
-	msc.mutation.SetNumRepetitions(i)
-	return msc
+func (_c *MeetingScheduleCreate) SetNumRepetitions(v int) *MeetingScheduleCreate {
+	_c.mutation.SetNumRepetitions(v)
+	return _c
 }
 
 // SetNillableNumRepetitions sets the "num_repetitions" field if the given value is not nil.
-func (msc *MeetingScheduleCreate) SetNillableNumRepetitions(i *int) *MeetingScheduleCreate {
-	if i != nil {
-		msc.SetNumRepetitions(*i)
+func (_c *MeetingScheduleCreate) SetNillableNumRepetitions(v *int) *MeetingScheduleCreate {
+	if v != nil {
+		_c.SetNumRepetitions(*v)
 	}
-	return msc
+	return _c
 }
 
 // SetID sets the "id" field.
-func (msc *MeetingScheduleCreate) SetID(u uuid.UUID) *MeetingScheduleCreate {
-	msc.mutation.SetID(u)
-	return msc
+func (_c *MeetingScheduleCreate) SetID(v uuid.UUID) *MeetingScheduleCreate {
+	_c.mutation.SetID(v)
+	return _c
 }
 
 // SetNillableID sets the "id" field if the given value is not nil.
-func (msc *MeetingScheduleCreate) SetNillableID(u *uuid.UUID) *MeetingScheduleCreate {
-	if u != nil {
-		msc.SetID(*u)
+func (_c *MeetingScheduleCreate) SetNillableID(v *uuid.UUID) *MeetingScheduleCreate {
+	if v != nil {
+		_c.SetID(*v)
 	}
-	return msc
+	return _c
 }
 
 // SetTenant sets the "tenant" edge to the Tenant entity.
-func (msc *MeetingScheduleCreate) SetTenant(t *Tenant) *MeetingScheduleCreate {
-	return msc.SetTenantID(t.ID)
+func (_c *MeetingScheduleCreate) SetTenant(v *Tenant) *MeetingScheduleCreate {
+	return _c.SetTenantID(v.ID)
 }
 
 // AddOwningTeamIDs adds the "owning_team" edge to the Team entity by IDs.
-func (msc *MeetingScheduleCreate) AddOwningTeamIDs(ids ...uuid.UUID) *MeetingScheduleCreate {
-	msc.mutation.AddOwningTeamIDs(ids...)
-	return msc
+func (_c *MeetingScheduleCreate) AddOwningTeamIDs(ids ...uuid.UUID) *MeetingScheduleCreate {
+	_c.mutation.AddOwningTeamIDs(ids...)
+	return _c
 }
 
 // AddOwningTeam adds the "owning_team" edges to the Team entity.
-func (msc *MeetingScheduleCreate) AddOwningTeam(t ...*Team) *MeetingScheduleCreate {
-	ids := make([]uuid.UUID, len(t))
-	for i := range t {
-		ids[i] = t[i].ID
+func (_c *MeetingScheduleCreate) AddOwningTeam(v ...*Team) *MeetingScheduleCreate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
 	}
-	return msc.AddOwningTeamIDs(ids...)
+	return _c.AddOwningTeamIDs(ids...)
 }
 
 // AddSessionIDs adds the "sessions" edge to the MeetingSession entity by IDs.
-func (msc *MeetingScheduleCreate) AddSessionIDs(ids ...uuid.UUID) *MeetingScheduleCreate {
-	msc.mutation.AddSessionIDs(ids...)
-	return msc
+func (_c *MeetingScheduleCreate) AddSessionIDs(ids ...uuid.UUID) *MeetingScheduleCreate {
+	_c.mutation.AddSessionIDs(ids...)
+	return _c
 }
 
 // AddSessions adds the "sessions" edges to the MeetingSession entity.
-func (msc *MeetingScheduleCreate) AddSessions(m ...*MeetingSession) *MeetingScheduleCreate {
-	ids := make([]uuid.UUID, len(m))
-	for i := range m {
-		ids[i] = m[i].ID
+func (_c *MeetingScheduleCreate) AddSessions(v ...*MeetingSession) *MeetingScheduleCreate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
 	}
-	return msc.AddSessionIDs(ids...)
+	return _c.AddSessionIDs(ids...)
 }
 
 // Mutation returns the MeetingScheduleMutation object of the builder.
-func (msc *MeetingScheduleCreate) Mutation() *MeetingScheduleMutation {
-	return msc.mutation
+func (_c *MeetingScheduleCreate) Mutation() *MeetingScheduleMutation {
+	return _c.mutation
 }
 
 // Save creates the MeetingSchedule in the database.
-func (msc *MeetingScheduleCreate) Save(ctx context.Context) (*MeetingSchedule, error) {
-	if err := msc.defaults(); err != nil {
+func (_c *MeetingScheduleCreate) Save(ctx context.Context) (*MeetingSchedule, error) {
+	if err := _c.defaults(); err != nil {
 		return nil, err
 	}
-	return withHooks(ctx, msc.sqlSave, msc.mutation, msc.hooks)
+	return withHooks(ctx, _c.sqlSave, _c.mutation, _c.hooks)
 }
 
 // SaveX calls Save and panics if Save returns an error.
-func (msc *MeetingScheduleCreate) SaveX(ctx context.Context) *MeetingSchedule {
-	v, err := msc.Save(ctx)
+func (_c *MeetingScheduleCreate) SaveX(ctx context.Context) *MeetingSchedule {
+	v, err := _c.Save(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -225,84 +225,84 @@ func (msc *MeetingScheduleCreate) SaveX(ctx context.Context) *MeetingSchedule {
 }
 
 // Exec executes the query.
-func (msc *MeetingScheduleCreate) Exec(ctx context.Context) error {
-	_, err := msc.Save(ctx)
+func (_c *MeetingScheduleCreate) Exec(ctx context.Context) error {
+	_, err := _c.Save(ctx)
 	return err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (msc *MeetingScheduleCreate) ExecX(ctx context.Context) {
-	if err := msc.Exec(ctx); err != nil {
+func (_c *MeetingScheduleCreate) ExecX(ctx context.Context) {
+	if err := _c.Exec(ctx); err != nil {
 		panic(err)
 	}
 }
 
 // defaults sets the default values of the builder before save.
-func (msc *MeetingScheduleCreate) defaults() error {
-	if _, ok := msc.mutation.RepetitionStep(); !ok {
+func (_c *MeetingScheduleCreate) defaults() error {
+	if _, ok := _c.mutation.RepetitionStep(); !ok {
 		v := meetingschedule.DefaultRepetitionStep
-		msc.mutation.SetRepetitionStep(v)
+		_c.mutation.SetRepetitionStep(v)
 	}
-	if _, ok := msc.mutation.ID(); !ok {
+	if _, ok := _c.mutation.ID(); !ok {
 		if meetingschedule.DefaultID == nil {
 			return fmt.Errorf("ent: uninitialized meetingschedule.DefaultID (forgotten import ent/runtime?)")
 		}
 		v := meetingschedule.DefaultID()
-		msc.mutation.SetID(v)
+		_c.mutation.SetID(v)
 	}
 	return nil
 }
 
 // check runs all checks and user-defined validators on the builder.
-func (msc *MeetingScheduleCreate) check() error {
-	if _, ok := msc.mutation.TenantID(); !ok {
+func (_c *MeetingScheduleCreate) check() error {
+	if _, ok := _c.mutation.TenantID(); !ok {
 		return &ValidationError{Name: "tenant_id", err: errors.New(`ent: missing required field "MeetingSchedule.tenant_id"`)}
 	}
-	if _, ok := msc.mutation.Name(); !ok {
+	if _, ok := _c.mutation.Name(); !ok {
 		return &ValidationError{Name: "name", err: errors.New(`ent: missing required field "MeetingSchedule.name"`)}
 	}
-	if _, ok := msc.mutation.BeginMinute(); !ok {
+	if _, ok := _c.mutation.BeginMinute(); !ok {
 		return &ValidationError{Name: "begin_minute", err: errors.New(`ent: missing required field "MeetingSchedule.begin_minute"`)}
 	}
-	if _, ok := msc.mutation.DurationMinutes(); !ok {
+	if _, ok := _c.mutation.DurationMinutes(); !ok {
 		return &ValidationError{Name: "duration_minutes", err: errors.New(`ent: missing required field "MeetingSchedule.duration_minutes"`)}
 	}
-	if _, ok := msc.mutation.StartDate(); !ok {
+	if _, ok := _c.mutation.StartDate(); !ok {
 		return &ValidationError{Name: "start_date", err: errors.New(`ent: missing required field "MeetingSchedule.start_date"`)}
 	}
-	if _, ok := msc.mutation.Repeats(); !ok {
+	if _, ok := _c.mutation.Repeats(); !ok {
 		return &ValidationError{Name: "repeats", err: errors.New(`ent: missing required field "MeetingSchedule.repeats"`)}
 	}
-	if v, ok := msc.mutation.Repeats(); ok {
+	if v, ok := _c.mutation.Repeats(); ok {
 		if err := meetingschedule.RepeatsValidator(v); err != nil {
 			return &ValidationError{Name: "repeats", err: fmt.Errorf(`ent: validator failed for field "MeetingSchedule.repeats": %w`, err)}
 		}
 	}
-	if _, ok := msc.mutation.RepetitionStep(); !ok {
+	if _, ok := _c.mutation.RepetitionStep(); !ok {
 		return &ValidationError{Name: "repetition_step", err: errors.New(`ent: missing required field "MeetingSchedule.repetition_step"`)}
 	}
-	if v, ok := msc.mutation.WeekDays(); ok {
+	if v, ok := _c.mutation.WeekDays(); ok {
 		if err := meetingschedule.WeekDaysValidator(v); err != nil {
 			return &ValidationError{Name: "week_days", err: fmt.Errorf(`ent: validator failed for field "MeetingSchedule.week_days": %w`, err)}
 		}
 	}
-	if v, ok := msc.mutation.MonthlyOn(); ok {
+	if v, ok := _c.mutation.MonthlyOn(); ok {
 		if err := meetingschedule.MonthlyOnValidator(v); err != nil {
 			return &ValidationError{Name: "monthly_on", err: fmt.Errorf(`ent: validator failed for field "MeetingSchedule.monthly_on": %w`, err)}
 		}
 	}
-	if len(msc.mutation.TenantIDs()) == 0 {
+	if len(_c.mutation.TenantIDs()) == 0 {
 		return &ValidationError{Name: "tenant", err: errors.New(`ent: missing required edge "MeetingSchedule.tenant"`)}
 	}
 	return nil
 }
 
-func (msc *MeetingScheduleCreate) sqlSave(ctx context.Context) (*MeetingSchedule, error) {
-	if err := msc.check(); err != nil {
+func (_c *MeetingScheduleCreate) sqlSave(ctx context.Context) (*MeetingSchedule, error) {
+	if err := _c.check(); err != nil {
 		return nil, err
 	}
-	_node, _spec := msc.createSpec()
-	if err := sqlgraph.CreateNode(ctx, msc.driver, _spec); err != nil {
+	_node, _spec := _c.createSpec()
+	if err := sqlgraph.CreateNode(ctx, _c.driver, _spec); err != nil {
 		if sqlgraph.IsConstraintError(err) {
 			err = &ConstraintError{msg: err.Error(), wrap: err}
 		}
@@ -315,70 +315,70 @@ func (msc *MeetingScheduleCreate) sqlSave(ctx context.Context) (*MeetingSchedule
 			return nil, err
 		}
 	}
-	msc.mutation.id = &_node.ID
-	msc.mutation.done = true
+	_c.mutation.id = &_node.ID
+	_c.mutation.done = true
 	return _node, nil
 }
 
-func (msc *MeetingScheduleCreate) createSpec() (*MeetingSchedule, *sqlgraph.CreateSpec) {
+func (_c *MeetingScheduleCreate) createSpec() (*MeetingSchedule, *sqlgraph.CreateSpec) {
 	var (
-		_node = &MeetingSchedule{config: msc.config}
+		_node = &MeetingSchedule{config: _c.config}
 		_spec = sqlgraph.NewCreateSpec(meetingschedule.Table, sqlgraph.NewFieldSpec(meetingschedule.FieldID, field.TypeUUID))
 	)
-	_spec.OnConflict = msc.conflict
-	if id, ok := msc.mutation.ID(); ok {
+	_spec.OnConflict = _c.conflict
+	if id, ok := _c.mutation.ID(); ok {
 		_node.ID = id
 		_spec.ID.Value = &id
 	}
-	if value, ok := msc.mutation.ArchiveTime(); ok {
+	if value, ok := _c.mutation.ArchiveTime(); ok {
 		_spec.SetField(meetingschedule.FieldArchiveTime, field.TypeTime, value)
 		_node.ArchiveTime = value
 	}
-	if value, ok := msc.mutation.Name(); ok {
+	if value, ok := _c.mutation.Name(); ok {
 		_spec.SetField(meetingschedule.FieldName, field.TypeString, value)
 		_node.Name = value
 	}
-	if value, ok := msc.mutation.Description(); ok {
+	if value, ok := _c.mutation.Description(); ok {
 		_spec.SetField(meetingschedule.FieldDescription, field.TypeString, value)
 		_node.Description = value
 	}
-	if value, ok := msc.mutation.BeginMinute(); ok {
+	if value, ok := _c.mutation.BeginMinute(); ok {
 		_spec.SetField(meetingschedule.FieldBeginMinute, field.TypeInt, value)
 		_node.BeginMinute = value
 	}
-	if value, ok := msc.mutation.DurationMinutes(); ok {
+	if value, ok := _c.mutation.DurationMinutes(); ok {
 		_spec.SetField(meetingschedule.FieldDurationMinutes, field.TypeInt, value)
 		_node.DurationMinutes = value
 	}
-	if value, ok := msc.mutation.StartDate(); ok {
+	if value, ok := _c.mutation.StartDate(); ok {
 		_spec.SetField(meetingschedule.FieldStartDate, field.TypeTime, value)
 		_node.StartDate = value
 	}
-	if value, ok := msc.mutation.Repeats(); ok {
+	if value, ok := _c.mutation.Repeats(); ok {
 		_spec.SetField(meetingschedule.FieldRepeats, field.TypeEnum, value)
 		_node.Repeats = value
 	}
-	if value, ok := msc.mutation.RepetitionStep(); ok {
+	if value, ok := _c.mutation.RepetitionStep(); ok {
 		_spec.SetField(meetingschedule.FieldRepetitionStep, field.TypeInt, value)
 		_node.RepetitionStep = value
 	}
-	if value, ok := msc.mutation.WeekDays(); ok {
+	if value, ok := _c.mutation.WeekDays(); ok {
 		_spec.SetField(meetingschedule.FieldWeekDays, field.TypeJSON, value)
 		_node.WeekDays = value
 	}
-	if value, ok := msc.mutation.MonthlyOn(); ok {
+	if value, ok := _c.mutation.MonthlyOn(); ok {
 		_spec.SetField(meetingschedule.FieldMonthlyOn, field.TypeEnum, value)
 		_node.MonthlyOn = value
 	}
-	if value, ok := msc.mutation.UntilDate(); ok {
+	if value, ok := _c.mutation.UntilDate(); ok {
 		_spec.SetField(meetingschedule.FieldUntilDate, field.TypeTime, value)
 		_node.UntilDate = value
 	}
-	if value, ok := msc.mutation.NumRepetitions(); ok {
+	if value, ok := _c.mutation.NumRepetitions(); ok {
 		_spec.SetField(meetingschedule.FieldNumRepetitions, field.TypeInt, value)
 		_node.NumRepetitions = value
 	}
-	if nodes := msc.mutation.TenantIDs(); len(nodes) > 0 {
+	if nodes := _c.mutation.TenantIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
@@ -395,7 +395,7 @@ func (msc *MeetingScheduleCreate) createSpec() (*MeetingSchedule, *sqlgraph.Crea
 		_node.TenantID = nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
-	if nodes := msc.mutation.OwningTeamIDs(); len(nodes) > 0 {
+	if nodes := _c.mutation.OwningTeamIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
 			Inverse: false,
@@ -411,7 +411,7 @@ func (msc *MeetingScheduleCreate) createSpec() (*MeetingSchedule, *sqlgraph.Crea
 		}
 		_spec.Edges = append(_spec.Edges, edge)
 	}
-	if nodes := msc.mutation.SessionsIDs(); len(nodes) > 0 {
+	if nodes := _c.mutation.SessionsIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: true,
@@ -446,10 +446,10 @@ func (msc *MeetingScheduleCreate) createSpec() (*MeetingSchedule, *sqlgraph.Crea
 //			SetTenantID(v+v).
 //		}).
 //		Exec(ctx)
-func (msc *MeetingScheduleCreate) OnConflict(opts ...sql.ConflictOption) *MeetingScheduleUpsertOne {
-	msc.conflict = opts
+func (_c *MeetingScheduleCreate) OnConflict(opts ...sql.ConflictOption) *MeetingScheduleUpsertOne {
+	_c.conflict = opts
 	return &MeetingScheduleUpsertOne{
-		create: msc,
+		create: _c,
 	}
 }
 
@@ -459,10 +459,10 @@ func (msc *MeetingScheduleCreate) OnConflict(opts ...sql.ConflictOption) *Meetin
 //	client.MeetingSchedule.Create().
 //		OnConflict(sql.ConflictColumns(columns...)).
 //		Exec(ctx)
-func (msc *MeetingScheduleCreate) OnConflictColumns(columns ...string) *MeetingScheduleUpsertOne {
-	msc.conflict = append(msc.conflict, sql.ConflictColumns(columns...))
+func (_c *MeetingScheduleCreate) OnConflictColumns(columns ...string) *MeetingScheduleUpsertOne {
+	_c.conflict = append(_c.conflict, sql.ConflictColumns(columns...))
 	return &MeetingScheduleUpsertOne{
-		create: msc,
+		create: _c,
 	}
 }
 
@@ -1019,16 +1019,16 @@ type MeetingScheduleCreateBulk struct {
 }
 
 // Save creates the MeetingSchedule entities in the database.
-func (mscb *MeetingScheduleCreateBulk) Save(ctx context.Context) ([]*MeetingSchedule, error) {
-	if mscb.err != nil {
-		return nil, mscb.err
+func (_c *MeetingScheduleCreateBulk) Save(ctx context.Context) ([]*MeetingSchedule, error) {
+	if _c.err != nil {
+		return nil, _c.err
 	}
-	specs := make([]*sqlgraph.CreateSpec, len(mscb.builders))
-	nodes := make([]*MeetingSchedule, len(mscb.builders))
-	mutators := make([]Mutator, len(mscb.builders))
-	for i := range mscb.builders {
+	specs := make([]*sqlgraph.CreateSpec, len(_c.builders))
+	nodes := make([]*MeetingSchedule, len(_c.builders))
+	mutators := make([]Mutator, len(_c.builders))
+	for i := range _c.builders {
 		func(i int, root context.Context) {
-			builder := mscb.builders[i]
+			builder := _c.builders[i]
 			builder.defaults()
 			var mut Mutator = MutateFunc(func(ctx context.Context, m Mutation) (Value, error) {
 				mutation, ok := m.(*MeetingScheduleMutation)
@@ -1042,12 +1042,12 @@ func (mscb *MeetingScheduleCreateBulk) Save(ctx context.Context) ([]*MeetingSche
 				var err error
 				nodes[i], specs[i] = builder.createSpec()
 				if i < len(mutators)-1 {
-					_, err = mutators[i+1].Mutate(root, mscb.builders[i+1].mutation)
+					_, err = mutators[i+1].Mutate(root, _c.builders[i+1].mutation)
 				} else {
 					spec := &sqlgraph.BatchCreateSpec{Nodes: specs}
-					spec.OnConflict = mscb.conflict
+					spec.OnConflict = _c.conflict
 					// Invoke the actual operation on the latest mutation in the chain.
-					if err = sqlgraph.BatchCreate(ctx, mscb.driver, spec); err != nil {
+					if err = sqlgraph.BatchCreate(ctx, _c.driver, spec); err != nil {
 						if sqlgraph.IsConstraintError(err) {
 							err = &ConstraintError{msg: err.Error(), wrap: err}
 						}
@@ -1067,7 +1067,7 @@ func (mscb *MeetingScheduleCreateBulk) Save(ctx context.Context) ([]*MeetingSche
 		}(i, ctx)
 	}
 	if len(mutators) > 0 {
-		if _, err := mutators[0].Mutate(ctx, mscb.builders[0].mutation); err != nil {
+		if _, err := mutators[0].Mutate(ctx, _c.builders[0].mutation); err != nil {
 			return nil, err
 		}
 	}
@@ -1075,8 +1075,8 @@ func (mscb *MeetingScheduleCreateBulk) Save(ctx context.Context) ([]*MeetingSche
 }
 
 // SaveX is like Save, but panics if an error occurs.
-func (mscb *MeetingScheduleCreateBulk) SaveX(ctx context.Context) []*MeetingSchedule {
-	v, err := mscb.Save(ctx)
+func (_c *MeetingScheduleCreateBulk) SaveX(ctx context.Context) []*MeetingSchedule {
+	v, err := _c.Save(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -1084,14 +1084,14 @@ func (mscb *MeetingScheduleCreateBulk) SaveX(ctx context.Context) []*MeetingSche
 }
 
 // Exec executes the query.
-func (mscb *MeetingScheduleCreateBulk) Exec(ctx context.Context) error {
-	_, err := mscb.Save(ctx)
+func (_c *MeetingScheduleCreateBulk) Exec(ctx context.Context) error {
+	_, err := _c.Save(ctx)
 	return err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (mscb *MeetingScheduleCreateBulk) ExecX(ctx context.Context) {
-	if err := mscb.Exec(ctx); err != nil {
+func (_c *MeetingScheduleCreateBulk) ExecX(ctx context.Context) {
+	if err := _c.Exec(ctx); err != nil {
 		panic(err)
 	}
 }
@@ -1111,10 +1111,10 @@ func (mscb *MeetingScheduleCreateBulk) ExecX(ctx context.Context) {
 //			SetTenantID(v+v).
 //		}).
 //		Exec(ctx)
-func (mscb *MeetingScheduleCreateBulk) OnConflict(opts ...sql.ConflictOption) *MeetingScheduleUpsertBulk {
-	mscb.conflict = opts
+func (_c *MeetingScheduleCreateBulk) OnConflict(opts ...sql.ConflictOption) *MeetingScheduleUpsertBulk {
+	_c.conflict = opts
 	return &MeetingScheduleUpsertBulk{
-		create: mscb,
+		create: _c,
 	}
 }
 
@@ -1124,10 +1124,10 @@ func (mscb *MeetingScheduleCreateBulk) OnConflict(opts ...sql.ConflictOption) *M
 //	client.MeetingSchedule.Create().
 //		OnConflict(sql.ConflictColumns(columns...)).
 //		Exec(ctx)
-func (mscb *MeetingScheduleCreateBulk) OnConflictColumns(columns ...string) *MeetingScheduleUpsertBulk {
-	mscb.conflict = append(mscb.conflict, sql.ConflictColumns(columns...))
+func (_c *MeetingScheduleCreateBulk) OnConflictColumns(columns ...string) *MeetingScheduleUpsertBulk {
+	_c.conflict = append(_c.conflict, sql.ConflictColumns(columns...))
 	return &MeetingScheduleUpsertBulk{
-		create: mscb,
+		create: _c,
 	}
 }
 

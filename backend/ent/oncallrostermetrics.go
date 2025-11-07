@@ -80,7 +80,7 @@ func (*OncallRosterMetrics) scanValues(columns []string) ([]any, error) {
 
 // assignValues assigns the values that were returned from sql.Rows (after scanning)
 // to the OncallRosterMetrics fields.
-func (orm *OncallRosterMetrics) assignValues(columns []string, values []any) error {
+func (_m *OncallRosterMetrics) assignValues(columns []string, values []any) error {
 	if m, n := len(values), len(columns); m < n {
 		return fmt.Errorf("mismatch number of scan values: %d != %d", m, n)
 	}
@@ -90,22 +90,22 @@ func (orm *OncallRosterMetrics) assignValues(columns []string, values []any) err
 			if value, ok := values[i].(*uuid.UUID); !ok {
 				return fmt.Errorf("unexpected type %T for field id", values[i])
 			} else if value != nil {
-				orm.ID = *value
+				_m.ID = *value
 			}
 		case oncallrostermetrics.FieldTenantID:
 			if value, ok := values[i].(*sql.NullInt64); !ok {
 				return fmt.Errorf("unexpected type %T for field tenant_id", values[i])
 			} else if value.Valid {
-				orm.TenantID = int(value.Int64)
+				_m.TenantID = int(value.Int64)
 			}
 		case oncallrostermetrics.FieldRosterID:
 			if value, ok := values[i].(*uuid.UUID); !ok {
 				return fmt.Errorf("unexpected type %T for field roster_id", values[i])
 			} else if value != nil {
-				orm.RosterID = *value
+				_m.RosterID = *value
 			}
 		default:
-			orm.selectValues.Set(columns[i], values[i])
+			_m.selectValues.Set(columns[i], values[i])
 		}
 	}
 	return nil
@@ -113,48 +113,48 @@ func (orm *OncallRosterMetrics) assignValues(columns []string, values []any) err
 
 // Value returns the ent.Value that was dynamically selected and assigned to the OncallRosterMetrics.
 // This includes values selected through modifiers, order, etc.
-func (orm *OncallRosterMetrics) Value(name string) (ent.Value, error) {
-	return orm.selectValues.Get(name)
+func (_m *OncallRosterMetrics) Value(name string) (ent.Value, error) {
+	return _m.selectValues.Get(name)
 }
 
 // QueryTenant queries the "tenant" edge of the OncallRosterMetrics entity.
-func (orm *OncallRosterMetrics) QueryTenant() *TenantQuery {
-	return NewOncallRosterMetricsClient(orm.config).QueryTenant(orm)
+func (_m *OncallRosterMetrics) QueryTenant() *TenantQuery {
+	return NewOncallRosterMetricsClient(_m.config).QueryTenant(_m)
 }
 
 // QueryRoster queries the "roster" edge of the OncallRosterMetrics entity.
-func (orm *OncallRosterMetrics) QueryRoster() *OncallRosterQuery {
-	return NewOncallRosterMetricsClient(orm.config).QueryRoster(orm)
+func (_m *OncallRosterMetrics) QueryRoster() *OncallRosterQuery {
+	return NewOncallRosterMetricsClient(_m.config).QueryRoster(_m)
 }
 
 // Update returns a builder for updating this OncallRosterMetrics.
 // Note that you need to call OncallRosterMetrics.Unwrap() before calling this method if this OncallRosterMetrics
 // was returned from a transaction, and the transaction was committed or rolled back.
-func (orm *OncallRosterMetrics) Update() *OncallRosterMetricsUpdateOne {
-	return NewOncallRosterMetricsClient(orm.config).UpdateOne(orm)
+func (_m *OncallRosterMetrics) Update() *OncallRosterMetricsUpdateOne {
+	return NewOncallRosterMetricsClient(_m.config).UpdateOne(_m)
 }
 
 // Unwrap unwraps the OncallRosterMetrics entity that was returned from a transaction after it was closed,
 // so that all future queries will be executed through the driver which created the transaction.
-func (orm *OncallRosterMetrics) Unwrap() *OncallRosterMetrics {
-	_tx, ok := orm.config.driver.(*txDriver)
+func (_m *OncallRosterMetrics) Unwrap() *OncallRosterMetrics {
+	_tx, ok := _m.config.driver.(*txDriver)
 	if !ok {
 		panic("ent: OncallRosterMetrics is not a transactional entity")
 	}
-	orm.config.driver = _tx.drv
-	return orm
+	_m.config.driver = _tx.drv
+	return _m
 }
 
 // String implements the fmt.Stringer.
-func (orm *OncallRosterMetrics) String() string {
+func (_m *OncallRosterMetrics) String() string {
 	var builder strings.Builder
 	builder.WriteString("OncallRosterMetrics(")
-	builder.WriteString(fmt.Sprintf("id=%v, ", orm.ID))
+	builder.WriteString(fmt.Sprintf("id=%v, ", _m.ID))
 	builder.WriteString("tenant_id=")
-	builder.WriteString(fmt.Sprintf("%v", orm.TenantID))
+	builder.WriteString(fmt.Sprintf("%v", _m.TenantID))
 	builder.WriteString(", ")
 	builder.WriteString("roster_id=")
-	builder.WriteString(fmt.Sprintf("%v", orm.RosterID))
+	builder.WriteString(fmt.Sprintf("%v", _m.RosterID))
 	builder.WriteByte(')')
 	return builder.String()
 }

@@ -41,44 +41,44 @@ type SystemComponentRelationshipQuery struct {
 }
 
 // Where adds a new predicate for the SystemComponentRelationshipQuery builder.
-func (scrq *SystemComponentRelationshipQuery) Where(ps ...predicate.SystemComponentRelationship) *SystemComponentRelationshipQuery {
-	scrq.predicates = append(scrq.predicates, ps...)
-	return scrq
+func (_q *SystemComponentRelationshipQuery) Where(ps ...predicate.SystemComponentRelationship) *SystemComponentRelationshipQuery {
+	_q.predicates = append(_q.predicates, ps...)
+	return _q
 }
 
 // Limit the number of records to be returned by this query.
-func (scrq *SystemComponentRelationshipQuery) Limit(limit int) *SystemComponentRelationshipQuery {
-	scrq.ctx.Limit = &limit
-	return scrq
+func (_q *SystemComponentRelationshipQuery) Limit(limit int) *SystemComponentRelationshipQuery {
+	_q.ctx.Limit = &limit
+	return _q
 }
 
 // Offset to start from.
-func (scrq *SystemComponentRelationshipQuery) Offset(offset int) *SystemComponentRelationshipQuery {
-	scrq.ctx.Offset = &offset
-	return scrq
+func (_q *SystemComponentRelationshipQuery) Offset(offset int) *SystemComponentRelationshipQuery {
+	_q.ctx.Offset = &offset
+	return _q
 }
 
 // Unique configures the query builder to filter duplicate records on query.
 // By default, unique is set to true, and can be disabled using this method.
-func (scrq *SystemComponentRelationshipQuery) Unique(unique bool) *SystemComponentRelationshipQuery {
-	scrq.ctx.Unique = &unique
-	return scrq
+func (_q *SystemComponentRelationshipQuery) Unique(unique bool) *SystemComponentRelationshipQuery {
+	_q.ctx.Unique = &unique
+	return _q
 }
 
 // Order specifies how the records should be ordered.
-func (scrq *SystemComponentRelationshipQuery) Order(o ...systemcomponentrelationship.OrderOption) *SystemComponentRelationshipQuery {
-	scrq.order = append(scrq.order, o...)
-	return scrq
+func (_q *SystemComponentRelationshipQuery) Order(o ...systemcomponentrelationship.OrderOption) *SystemComponentRelationshipQuery {
+	_q.order = append(_q.order, o...)
+	return _q
 }
 
 // QueryTenant chains the current query on the "tenant" edge.
-func (scrq *SystemComponentRelationshipQuery) QueryTenant() *TenantQuery {
-	query := (&TenantClient{config: scrq.config}).Query()
+func (_q *SystemComponentRelationshipQuery) QueryTenant() *TenantQuery {
+	query := (&TenantClient{config: _q.config}).Query()
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
-		if err := scrq.prepareQuery(ctx); err != nil {
+		if err := _q.prepareQuery(ctx); err != nil {
 			return nil, err
 		}
-		selector := scrq.sqlQuery(ctx)
+		selector := _q.sqlQuery(ctx)
 		if err := selector.Err(); err != nil {
 			return nil, err
 		}
@@ -87,20 +87,20 @@ func (scrq *SystemComponentRelationshipQuery) QueryTenant() *TenantQuery {
 			sqlgraph.To(tenant.Table, tenant.FieldID),
 			sqlgraph.Edge(sqlgraph.M2O, false, systemcomponentrelationship.TenantTable, systemcomponentrelationship.TenantColumn),
 		)
-		fromU = sqlgraph.SetNeighbors(scrq.driver.Dialect(), step)
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
 	}
 	return query
 }
 
 // QuerySource chains the current query on the "source" edge.
-func (scrq *SystemComponentRelationshipQuery) QuerySource() *SystemComponentQuery {
-	query := (&SystemComponentClient{config: scrq.config}).Query()
+func (_q *SystemComponentRelationshipQuery) QuerySource() *SystemComponentQuery {
+	query := (&SystemComponentClient{config: _q.config}).Query()
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
-		if err := scrq.prepareQuery(ctx); err != nil {
+		if err := _q.prepareQuery(ctx); err != nil {
 			return nil, err
 		}
-		selector := scrq.sqlQuery(ctx)
+		selector := _q.sqlQuery(ctx)
 		if err := selector.Err(); err != nil {
 			return nil, err
 		}
@@ -109,20 +109,20 @@ func (scrq *SystemComponentRelationshipQuery) QuerySource() *SystemComponentQuer
 			sqlgraph.To(systemcomponent.Table, systemcomponent.FieldID),
 			sqlgraph.Edge(sqlgraph.M2O, false, systemcomponentrelationship.SourceTable, systemcomponentrelationship.SourceColumn),
 		)
-		fromU = sqlgraph.SetNeighbors(scrq.driver.Dialect(), step)
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
 	}
 	return query
 }
 
 // QueryTarget chains the current query on the "target" edge.
-func (scrq *SystemComponentRelationshipQuery) QueryTarget() *SystemComponentQuery {
-	query := (&SystemComponentClient{config: scrq.config}).Query()
+func (_q *SystemComponentRelationshipQuery) QueryTarget() *SystemComponentQuery {
+	query := (&SystemComponentClient{config: _q.config}).Query()
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
-		if err := scrq.prepareQuery(ctx); err != nil {
+		if err := _q.prepareQuery(ctx); err != nil {
 			return nil, err
 		}
-		selector := scrq.sqlQuery(ctx)
+		selector := _q.sqlQuery(ctx)
 		if err := selector.Err(); err != nil {
 			return nil, err
 		}
@@ -131,20 +131,20 @@ func (scrq *SystemComponentRelationshipQuery) QueryTarget() *SystemComponentQuer
 			sqlgraph.To(systemcomponent.Table, systemcomponent.FieldID),
 			sqlgraph.Edge(sqlgraph.M2O, false, systemcomponentrelationship.TargetTable, systemcomponentrelationship.TargetColumn),
 		)
-		fromU = sqlgraph.SetNeighbors(scrq.driver.Dialect(), step)
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
 	}
 	return query
 }
 
 // QuerySystemAnalyses chains the current query on the "system_analyses" edge.
-func (scrq *SystemComponentRelationshipQuery) QuerySystemAnalyses() *SystemAnalysisRelationshipQuery {
-	query := (&SystemAnalysisRelationshipClient{config: scrq.config}).Query()
+func (_q *SystemComponentRelationshipQuery) QuerySystemAnalyses() *SystemAnalysisRelationshipQuery {
+	query := (&SystemAnalysisRelationshipClient{config: _q.config}).Query()
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
-		if err := scrq.prepareQuery(ctx); err != nil {
+		if err := _q.prepareQuery(ctx); err != nil {
 			return nil, err
 		}
-		selector := scrq.sqlQuery(ctx)
+		selector := _q.sqlQuery(ctx)
 		if err := selector.Err(); err != nil {
 			return nil, err
 		}
@@ -153,20 +153,20 @@ func (scrq *SystemComponentRelationshipQuery) QuerySystemAnalyses() *SystemAnaly
 			sqlgraph.To(systemanalysisrelationship.Table, systemanalysisrelationship.FieldID),
 			sqlgraph.Edge(sqlgraph.O2M, true, systemcomponentrelationship.SystemAnalysesTable, systemcomponentrelationship.SystemAnalysesColumn),
 		)
-		fromU = sqlgraph.SetNeighbors(scrq.driver.Dialect(), step)
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
 	}
 	return query
 }
 
 // QueryHazards chains the current query on the "hazards" edge.
-func (scrq *SystemComponentRelationshipQuery) QueryHazards() *SystemHazardQuery {
-	query := (&SystemHazardClient{config: scrq.config}).Query()
+func (_q *SystemComponentRelationshipQuery) QueryHazards() *SystemHazardQuery {
+	query := (&SystemHazardClient{config: _q.config}).Query()
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
-		if err := scrq.prepareQuery(ctx); err != nil {
+		if err := _q.prepareQuery(ctx); err != nil {
 			return nil, err
 		}
-		selector := scrq.sqlQuery(ctx)
+		selector := _q.sqlQuery(ctx)
 		if err := selector.Err(); err != nil {
 			return nil, err
 		}
@@ -175,7 +175,7 @@ func (scrq *SystemComponentRelationshipQuery) QueryHazards() *SystemHazardQuery 
 			sqlgraph.To(systemhazard.Table, systemhazard.FieldID),
 			sqlgraph.Edge(sqlgraph.M2M, true, systemcomponentrelationship.HazardsTable, systemcomponentrelationship.HazardsPrimaryKey...),
 		)
-		fromU = sqlgraph.SetNeighbors(scrq.driver.Dialect(), step)
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
 	}
 	return query
@@ -183,8 +183,8 @@ func (scrq *SystemComponentRelationshipQuery) QueryHazards() *SystemHazardQuery 
 
 // First returns the first SystemComponentRelationship entity from the query.
 // Returns a *NotFoundError when no SystemComponentRelationship was found.
-func (scrq *SystemComponentRelationshipQuery) First(ctx context.Context) (*SystemComponentRelationship, error) {
-	nodes, err := scrq.Limit(1).All(setContextOp(ctx, scrq.ctx, ent.OpQueryFirst))
+func (_q *SystemComponentRelationshipQuery) First(ctx context.Context) (*SystemComponentRelationship, error) {
+	nodes, err := _q.Limit(1).All(setContextOp(ctx, _q.ctx, ent.OpQueryFirst))
 	if err != nil {
 		return nil, err
 	}
@@ -195,8 +195,8 @@ func (scrq *SystemComponentRelationshipQuery) First(ctx context.Context) (*Syste
 }
 
 // FirstX is like First, but panics if an error occurs.
-func (scrq *SystemComponentRelationshipQuery) FirstX(ctx context.Context) *SystemComponentRelationship {
-	node, err := scrq.First(ctx)
+func (_q *SystemComponentRelationshipQuery) FirstX(ctx context.Context) *SystemComponentRelationship {
+	node, err := _q.First(ctx)
 	if err != nil && !IsNotFound(err) {
 		panic(err)
 	}
@@ -205,9 +205,9 @@ func (scrq *SystemComponentRelationshipQuery) FirstX(ctx context.Context) *Syste
 
 // FirstID returns the first SystemComponentRelationship ID from the query.
 // Returns a *NotFoundError when no SystemComponentRelationship ID was found.
-func (scrq *SystemComponentRelationshipQuery) FirstID(ctx context.Context) (id uuid.UUID, err error) {
+func (_q *SystemComponentRelationshipQuery) FirstID(ctx context.Context) (id uuid.UUID, err error) {
 	var ids []uuid.UUID
-	if ids, err = scrq.Limit(1).IDs(setContextOp(ctx, scrq.ctx, ent.OpQueryFirstID)); err != nil {
+	if ids, err = _q.Limit(1).IDs(setContextOp(ctx, _q.ctx, ent.OpQueryFirstID)); err != nil {
 		return
 	}
 	if len(ids) == 0 {
@@ -218,8 +218,8 @@ func (scrq *SystemComponentRelationshipQuery) FirstID(ctx context.Context) (id u
 }
 
 // FirstIDX is like FirstID, but panics if an error occurs.
-func (scrq *SystemComponentRelationshipQuery) FirstIDX(ctx context.Context) uuid.UUID {
-	id, err := scrq.FirstID(ctx)
+func (_q *SystemComponentRelationshipQuery) FirstIDX(ctx context.Context) uuid.UUID {
+	id, err := _q.FirstID(ctx)
 	if err != nil && !IsNotFound(err) {
 		panic(err)
 	}
@@ -229,8 +229,8 @@ func (scrq *SystemComponentRelationshipQuery) FirstIDX(ctx context.Context) uuid
 // Only returns a single SystemComponentRelationship entity found by the query, ensuring it only returns one.
 // Returns a *NotSingularError when more than one SystemComponentRelationship entity is found.
 // Returns a *NotFoundError when no SystemComponentRelationship entities are found.
-func (scrq *SystemComponentRelationshipQuery) Only(ctx context.Context) (*SystemComponentRelationship, error) {
-	nodes, err := scrq.Limit(2).All(setContextOp(ctx, scrq.ctx, ent.OpQueryOnly))
+func (_q *SystemComponentRelationshipQuery) Only(ctx context.Context) (*SystemComponentRelationship, error) {
+	nodes, err := _q.Limit(2).All(setContextOp(ctx, _q.ctx, ent.OpQueryOnly))
 	if err != nil {
 		return nil, err
 	}
@@ -245,8 +245,8 @@ func (scrq *SystemComponentRelationshipQuery) Only(ctx context.Context) (*System
 }
 
 // OnlyX is like Only, but panics if an error occurs.
-func (scrq *SystemComponentRelationshipQuery) OnlyX(ctx context.Context) *SystemComponentRelationship {
-	node, err := scrq.Only(ctx)
+func (_q *SystemComponentRelationshipQuery) OnlyX(ctx context.Context) *SystemComponentRelationship {
+	node, err := _q.Only(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -256,9 +256,9 @@ func (scrq *SystemComponentRelationshipQuery) OnlyX(ctx context.Context) *System
 // OnlyID is like Only, but returns the only SystemComponentRelationship ID in the query.
 // Returns a *NotSingularError when more than one SystemComponentRelationship ID is found.
 // Returns a *NotFoundError when no entities are found.
-func (scrq *SystemComponentRelationshipQuery) OnlyID(ctx context.Context) (id uuid.UUID, err error) {
+func (_q *SystemComponentRelationshipQuery) OnlyID(ctx context.Context) (id uuid.UUID, err error) {
 	var ids []uuid.UUID
-	if ids, err = scrq.Limit(2).IDs(setContextOp(ctx, scrq.ctx, ent.OpQueryOnlyID)); err != nil {
+	if ids, err = _q.Limit(2).IDs(setContextOp(ctx, _q.ctx, ent.OpQueryOnlyID)); err != nil {
 		return
 	}
 	switch len(ids) {
@@ -273,8 +273,8 @@ func (scrq *SystemComponentRelationshipQuery) OnlyID(ctx context.Context) (id uu
 }
 
 // OnlyIDX is like OnlyID, but panics if an error occurs.
-func (scrq *SystemComponentRelationshipQuery) OnlyIDX(ctx context.Context) uuid.UUID {
-	id, err := scrq.OnlyID(ctx)
+func (_q *SystemComponentRelationshipQuery) OnlyIDX(ctx context.Context) uuid.UUID {
+	id, err := _q.OnlyID(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -282,18 +282,18 @@ func (scrq *SystemComponentRelationshipQuery) OnlyIDX(ctx context.Context) uuid.
 }
 
 // All executes the query and returns a list of SystemComponentRelationships.
-func (scrq *SystemComponentRelationshipQuery) All(ctx context.Context) ([]*SystemComponentRelationship, error) {
-	ctx = setContextOp(ctx, scrq.ctx, ent.OpQueryAll)
-	if err := scrq.prepareQuery(ctx); err != nil {
+func (_q *SystemComponentRelationshipQuery) All(ctx context.Context) ([]*SystemComponentRelationship, error) {
+	ctx = setContextOp(ctx, _q.ctx, ent.OpQueryAll)
+	if err := _q.prepareQuery(ctx); err != nil {
 		return nil, err
 	}
 	qr := querierAll[[]*SystemComponentRelationship, *SystemComponentRelationshipQuery]()
-	return withInterceptors[[]*SystemComponentRelationship](ctx, scrq, qr, scrq.inters)
+	return withInterceptors[[]*SystemComponentRelationship](ctx, _q, qr, _q.inters)
 }
 
 // AllX is like All, but panics if an error occurs.
-func (scrq *SystemComponentRelationshipQuery) AllX(ctx context.Context) []*SystemComponentRelationship {
-	nodes, err := scrq.All(ctx)
+func (_q *SystemComponentRelationshipQuery) AllX(ctx context.Context) []*SystemComponentRelationship {
+	nodes, err := _q.All(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -301,20 +301,20 @@ func (scrq *SystemComponentRelationshipQuery) AllX(ctx context.Context) []*Syste
 }
 
 // IDs executes the query and returns a list of SystemComponentRelationship IDs.
-func (scrq *SystemComponentRelationshipQuery) IDs(ctx context.Context) (ids []uuid.UUID, err error) {
-	if scrq.ctx.Unique == nil && scrq.path != nil {
-		scrq.Unique(true)
+func (_q *SystemComponentRelationshipQuery) IDs(ctx context.Context) (ids []uuid.UUID, err error) {
+	if _q.ctx.Unique == nil && _q.path != nil {
+		_q.Unique(true)
 	}
-	ctx = setContextOp(ctx, scrq.ctx, ent.OpQueryIDs)
-	if err = scrq.Select(systemcomponentrelationship.FieldID).Scan(ctx, &ids); err != nil {
+	ctx = setContextOp(ctx, _q.ctx, ent.OpQueryIDs)
+	if err = _q.Select(systemcomponentrelationship.FieldID).Scan(ctx, &ids); err != nil {
 		return nil, err
 	}
 	return ids, nil
 }
 
 // IDsX is like IDs, but panics if an error occurs.
-func (scrq *SystemComponentRelationshipQuery) IDsX(ctx context.Context) []uuid.UUID {
-	ids, err := scrq.IDs(ctx)
+func (_q *SystemComponentRelationshipQuery) IDsX(ctx context.Context) []uuid.UUID {
+	ids, err := _q.IDs(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -322,17 +322,17 @@ func (scrq *SystemComponentRelationshipQuery) IDsX(ctx context.Context) []uuid.U
 }
 
 // Count returns the count of the given query.
-func (scrq *SystemComponentRelationshipQuery) Count(ctx context.Context) (int, error) {
-	ctx = setContextOp(ctx, scrq.ctx, ent.OpQueryCount)
-	if err := scrq.prepareQuery(ctx); err != nil {
+func (_q *SystemComponentRelationshipQuery) Count(ctx context.Context) (int, error) {
+	ctx = setContextOp(ctx, _q.ctx, ent.OpQueryCount)
+	if err := _q.prepareQuery(ctx); err != nil {
 		return 0, err
 	}
-	return withInterceptors[int](ctx, scrq, querierCount[*SystemComponentRelationshipQuery](), scrq.inters)
+	return withInterceptors[int](ctx, _q, querierCount[*SystemComponentRelationshipQuery](), _q.inters)
 }
 
 // CountX is like Count, but panics if an error occurs.
-func (scrq *SystemComponentRelationshipQuery) CountX(ctx context.Context) int {
-	count, err := scrq.Count(ctx)
+func (_q *SystemComponentRelationshipQuery) CountX(ctx context.Context) int {
+	count, err := _q.Count(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -340,9 +340,9 @@ func (scrq *SystemComponentRelationshipQuery) CountX(ctx context.Context) int {
 }
 
 // Exist returns true if the query has elements in the graph.
-func (scrq *SystemComponentRelationshipQuery) Exist(ctx context.Context) (bool, error) {
-	ctx = setContextOp(ctx, scrq.ctx, ent.OpQueryExist)
-	switch _, err := scrq.FirstID(ctx); {
+func (_q *SystemComponentRelationshipQuery) Exist(ctx context.Context) (bool, error) {
+	ctx = setContextOp(ctx, _q.ctx, ent.OpQueryExist)
+	switch _, err := _q.FirstID(ctx); {
 	case IsNotFound(err):
 		return false, nil
 	case err != nil:
@@ -353,8 +353,8 @@ func (scrq *SystemComponentRelationshipQuery) Exist(ctx context.Context) (bool, 
 }
 
 // ExistX is like Exist, but panics if an error occurs.
-func (scrq *SystemComponentRelationshipQuery) ExistX(ctx context.Context) bool {
-	exist, err := scrq.Exist(ctx)
+func (_q *SystemComponentRelationshipQuery) ExistX(ctx context.Context) bool {
+	exist, err := _q.Exist(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -363,81 +363,81 @@ func (scrq *SystemComponentRelationshipQuery) ExistX(ctx context.Context) bool {
 
 // Clone returns a duplicate of the SystemComponentRelationshipQuery builder, including all associated steps. It can be
 // used to prepare common query builders and use them differently after the clone is made.
-func (scrq *SystemComponentRelationshipQuery) Clone() *SystemComponentRelationshipQuery {
-	if scrq == nil {
+func (_q *SystemComponentRelationshipQuery) Clone() *SystemComponentRelationshipQuery {
+	if _q == nil {
 		return nil
 	}
 	return &SystemComponentRelationshipQuery{
-		config:             scrq.config,
-		ctx:                scrq.ctx.Clone(),
-		order:              append([]systemcomponentrelationship.OrderOption{}, scrq.order...),
-		inters:             append([]Interceptor{}, scrq.inters...),
-		predicates:         append([]predicate.SystemComponentRelationship{}, scrq.predicates...),
-		withTenant:         scrq.withTenant.Clone(),
-		withSource:         scrq.withSource.Clone(),
-		withTarget:         scrq.withTarget.Clone(),
-		withSystemAnalyses: scrq.withSystemAnalyses.Clone(),
-		withHazards:        scrq.withHazards.Clone(),
+		config:             _q.config,
+		ctx:                _q.ctx.Clone(),
+		order:              append([]systemcomponentrelationship.OrderOption{}, _q.order...),
+		inters:             append([]Interceptor{}, _q.inters...),
+		predicates:         append([]predicate.SystemComponentRelationship{}, _q.predicates...),
+		withTenant:         _q.withTenant.Clone(),
+		withSource:         _q.withSource.Clone(),
+		withTarget:         _q.withTarget.Clone(),
+		withSystemAnalyses: _q.withSystemAnalyses.Clone(),
+		withHazards:        _q.withHazards.Clone(),
 		// clone intermediate query.
-		sql:       scrq.sql.Clone(),
-		path:      scrq.path,
-		modifiers: append([]func(*sql.Selector){}, scrq.modifiers...),
+		sql:       _q.sql.Clone(),
+		path:      _q.path,
+		modifiers: append([]func(*sql.Selector){}, _q.modifiers...),
 	}
 }
 
 // WithTenant tells the query-builder to eager-load the nodes that are connected to
 // the "tenant" edge. The optional arguments are used to configure the query builder of the edge.
-func (scrq *SystemComponentRelationshipQuery) WithTenant(opts ...func(*TenantQuery)) *SystemComponentRelationshipQuery {
-	query := (&TenantClient{config: scrq.config}).Query()
+func (_q *SystemComponentRelationshipQuery) WithTenant(opts ...func(*TenantQuery)) *SystemComponentRelationshipQuery {
+	query := (&TenantClient{config: _q.config}).Query()
 	for _, opt := range opts {
 		opt(query)
 	}
-	scrq.withTenant = query
-	return scrq
+	_q.withTenant = query
+	return _q
 }
 
 // WithSource tells the query-builder to eager-load the nodes that are connected to
 // the "source" edge. The optional arguments are used to configure the query builder of the edge.
-func (scrq *SystemComponentRelationshipQuery) WithSource(opts ...func(*SystemComponentQuery)) *SystemComponentRelationshipQuery {
-	query := (&SystemComponentClient{config: scrq.config}).Query()
+func (_q *SystemComponentRelationshipQuery) WithSource(opts ...func(*SystemComponentQuery)) *SystemComponentRelationshipQuery {
+	query := (&SystemComponentClient{config: _q.config}).Query()
 	for _, opt := range opts {
 		opt(query)
 	}
-	scrq.withSource = query
-	return scrq
+	_q.withSource = query
+	return _q
 }
 
 // WithTarget tells the query-builder to eager-load the nodes that are connected to
 // the "target" edge. The optional arguments are used to configure the query builder of the edge.
-func (scrq *SystemComponentRelationshipQuery) WithTarget(opts ...func(*SystemComponentQuery)) *SystemComponentRelationshipQuery {
-	query := (&SystemComponentClient{config: scrq.config}).Query()
+func (_q *SystemComponentRelationshipQuery) WithTarget(opts ...func(*SystemComponentQuery)) *SystemComponentRelationshipQuery {
+	query := (&SystemComponentClient{config: _q.config}).Query()
 	for _, opt := range opts {
 		opt(query)
 	}
-	scrq.withTarget = query
-	return scrq
+	_q.withTarget = query
+	return _q
 }
 
 // WithSystemAnalyses tells the query-builder to eager-load the nodes that are connected to
 // the "system_analyses" edge. The optional arguments are used to configure the query builder of the edge.
-func (scrq *SystemComponentRelationshipQuery) WithSystemAnalyses(opts ...func(*SystemAnalysisRelationshipQuery)) *SystemComponentRelationshipQuery {
-	query := (&SystemAnalysisRelationshipClient{config: scrq.config}).Query()
+func (_q *SystemComponentRelationshipQuery) WithSystemAnalyses(opts ...func(*SystemAnalysisRelationshipQuery)) *SystemComponentRelationshipQuery {
+	query := (&SystemAnalysisRelationshipClient{config: _q.config}).Query()
 	for _, opt := range opts {
 		opt(query)
 	}
-	scrq.withSystemAnalyses = query
-	return scrq
+	_q.withSystemAnalyses = query
+	return _q
 }
 
 // WithHazards tells the query-builder to eager-load the nodes that are connected to
 // the "hazards" edge. The optional arguments are used to configure the query builder of the edge.
-func (scrq *SystemComponentRelationshipQuery) WithHazards(opts ...func(*SystemHazardQuery)) *SystemComponentRelationshipQuery {
-	query := (&SystemHazardClient{config: scrq.config}).Query()
+func (_q *SystemComponentRelationshipQuery) WithHazards(opts ...func(*SystemHazardQuery)) *SystemComponentRelationshipQuery {
+	query := (&SystemHazardClient{config: _q.config}).Query()
 	for _, opt := range opts {
 		opt(query)
 	}
-	scrq.withHazards = query
-	return scrq
+	_q.withHazards = query
+	return _q
 }
 
 // GroupBy is used to group vertices by one or more fields/columns.
@@ -454,10 +454,10 @@ func (scrq *SystemComponentRelationshipQuery) WithHazards(opts ...func(*SystemHa
 //		GroupBy(systemcomponentrelationship.FieldTenantID).
 //		Aggregate(ent.Count()).
 //		Scan(ctx, &v)
-func (scrq *SystemComponentRelationshipQuery) GroupBy(field string, fields ...string) *SystemComponentRelationshipGroupBy {
-	scrq.ctx.Fields = append([]string{field}, fields...)
-	grbuild := &SystemComponentRelationshipGroupBy{build: scrq}
-	grbuild.flds = &scrq.ctx.Fields
+func (_q *SystemComponentRelationshipQuery) GroupBy(field string, fields ...string) *SystemComponentRelationshipGroupBy {
+	_q.ctx.Fields = append([]string{field}, fields...)
+	grbuild := &SystemComponentRelationshipGroupBy{build: _q}
+	grbuild.flds = &_q.ctx.Fields
 	grbuild.label = systemcomponentrelationship.Label
 	grbuild.scan = grbuild.Scan
 	return grbuild
@@ -475,104 +475,104 @@ func (scrq *SystemComponentRelationshipQuery) GroupBy(field string, fields ...st
 //	client.SystemComponentRelationship.Query().
 //		Select(systemcomponentrelationship.FieldTenantID).
 //		Scan(ctx, &v)
-func (scrq *SystemComponentRelationshipQuery) Select(fields ...string) *SystemComponentRelationshipSelect {
-	scrq.ctx.Fields = append(scrq.ctx.Fields, fields...)
-	sbuild := &SystemComponentRelationshipSelect{SystemComponentRelationshipQuery: scrq}
+func (_q *SystemComponentRelationshipQuery) Select(fields ...string) *SystemComponentRelationshipSelect {
+	_q.ctx.Fields = append(_q.ctx.Fields, fields...)
+	sbuild := &SystemComponentRelationshipSelect{SystemComponentRelationshipQuery: _q}
 	sbuild.label = systemcomponentrelationship.Label
-	sbuild.flds, sbuild.scan = &scrq.ctx.Fields, sbuild.Scan
+	sbuild.flds, sbuild.scan = &_q.ctx.Fields, sbuild.Scan
 	return sbuild
 }
 
 // Aggregate returns a SystemComponentRelationshipSelect configured with the given aggregations.
-func (scrq *SystemComponentRelationshipQuery) Aggregate(fns ...AggregateFunc) *SystemComponentRelationshipSelect {
-	return scrq.Select().Aggregate(fns...)
+func (_q *SystemComponentRelationshipQuery) Aggregate(fns ...AggregateFunc) *SystemComponentRelationshipSelect {
+	return _q.Select().Aggregate(fns...)
 }
 
-func (scrq *SystemComponentRelationshipQuery) prepareQuery(ctx context.Context) error {
-	for _, inter := range scrq.inters {
+func (_q *SystemComponentRelationshipQuery) prepareQuery(ctx context.Context) error {
+	for _, inter := range _q.inters {
 		if inter == nil {
 			return fmt.Errorf("ent: uninitialized interceptor (forgotten import ent/runtime?)")
 		}
 		if trv, ok := inter.(Traverser); ok {
-			if err := trv.Traverse(ctx, scrq); err != nil {
+			if err := trv.Traverse(ctx, _q); err != nil {
 				return err
 			}
 		}
 	}
-	for _, f := range scrq.ctx.Fields {
+	for _, f := range _q.ctx.Fields {
 		if !systemcomponentrelationship.ValidColumn(f) {
 			return &ValidationError{Name: f, err: fmt.Errorf("ent: invalid field %q for query", f)}
 		}
 	}
-	if scrq.path != nil {
-		prev, err := scrq.path(ctx)
+	if _q.path != nil {
+		prev, err := _q.path(ctx)
 		if err != nil {
 			return err
 		}
-		scrq.sql = prev
+		_q.sql = prev
 	}
 	if systemcomponentrelationship.Policy == nil {
 		return errors.New("ent: uninitialized systemcomponentrelationship.Policy (forgotten import ent/runtime?)")
 	}
-	if err := systemcomponentrelationship.Policy.EvalQuery(ctx, scrq); err != nil {
+	if err := systemcomponentrelationship.Policy.EvalQuery(ctx, _q); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (scrq *SystemComponentRelationshipQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*SystemComponentRelationship, error) {
+func (_q *SystemComponentRelationshipQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*SystemComponentRelationship, error) {
 	var (
 		nodes       = []*SystemComponentRelationship{}
-		_spec       = scrq.querySpec()
+		_spec       = _q.querySpec()
 		loadedTypes = [5]bool{
-			scrq.withTenant != nil,
-			scrq.withSource != nil,
-			scrq.withTarget != nil,
-			scrq.withSystemAnalyses != nil,
-			scrq.withHazards != nil,
+			_q.withTenant != nil,
+			_q.withSource != nil,
+			_q.withTarget != nil,
+			_q.withSystemAnalyses != nil,
+			_q.withHazards != nil,
 		}
 	)
 	_spec.ScanValues = func(columns []string) ([]any, error) {
 		return (*SystemComponentRelationship).scanValues(nil, columns)
 	}
 	_spec.Assign = func(columns []string, values []any) error {
-		node := &SystemComponentRelationship{config: scrq.config}
+		node := &SystemComponentRelationship{config: _q.config}
 		nodes = append(nodes, node)
 		node.Edges.loadedTypes = loadedTypes
 		return node.assignValues(columns, values)
 	}
-	if len(scrq.modifiers) > 0 {
-		_spec.Modifiers = scrq.modifiers
+	if len(_q.modifiers) > 0 {
+		_spec.Modifiers = _q.modifiers
 	}
 	for i := range hooks {
 		hooks[i](ctx, _spec)
 	}
-	if err := sqlgraph.QueryNodes(ctx, scrq.driver, _spec); err != nil {
+	if err := sqlgraph.QueryNodes(ctx, _q.driver, _spec); err != nil {
 		return nil, err
 	}
 	if len(nodes) == 0 {
 		return nodes, nil
 	}
-	if query := scrq.withTenant; query != nil {
-		if err := scrq.loadTenant(ctx, query, nodes, nil,
+	if query := _q.withTenant; query != nil {
+		if err := _q.loadTenant(ctx, query, nodes, nil,
 			func(n *SystemComponentRelationship, e *Tenant) { n.Edges.Tenant = e }); err != nil {
 			return nil, err
 		}
 	}
-	if query := scrq.withSource; query != nil {
-		if err := scrq.loadSource(ctx, query, nodes, nil,
+	if query := _q.withSource; query != nil {
+		if err := _q.loadSource(ctx, query, nodes, nil,
 			func(n *SystemComponentRelationship, e *SystemComponent) { n.Edges.Source = e }); err != nil {
 			return nil, err
 		}
 	}
-	if query := scrq.withTarget; query != nil {
-		if err := scrq.loadTarget(ctx, query, nodes, nil,
+	if query := _q.withTarget; query != nil {
+		if err := _q.loadTarget(ctx, query, nodes, nil,
 			func(n *SystemComponentRelationship, e *SystemComponent) { n.Edges.Target = e }); err != nil {
 			return nil, err
 		}
 	}
-	if query := scrq.withSystemAnalyses; query != nil {
-		if err := scrq.loadSystemAnalyses(ctx, query, nodes,
+	if query := _q.withSystemAnalyses; query != nil {
+		if err := _q.loadSystemAnalyses(ctx, query, nodes,
 			func(n *SystemComponentRelationship) { n.Edges.SystemAnalyses = []*SystemAnalysisRelationship{} },
 			func(n *SystemComponentRelationship, e *SystemAnalysisRelationship) {
 				n.Edges.SystemAnalyses = append(n.Edges.SystemAnalyses, e)
@@ -580,8 +580,8 @@ func (scrq *SystemComponentRelationshipQuery) sqlAll(ctx context.Context, hooks 
 			return nil, err
 		}
 	}
-	if query := scrq.withHazards; query != nil {
-		if err := scrq.loadHazards(ctx, query, nodes,
+	if query := _q.withHazards; query != nil {
+		if err := _q.loadHazards(ctx, query, nodes,
 			func(n *SystemComponentRelationship) { n.Edges.Hazards = []*SystemHazard{} },
 			func(n *SystemComponentRelationship, e *SystemHazard) { n.Edges.Hazards = append(n.Edges.Hazards, e) }); err != nil {
 			return nil, err
@@ -590,7 +590,7 @@ func (scrq *SystemComponentRelationshipQuery) sqlAll(ctx context.Context, hooks 
 	return nodes, nil
 }
 
-func (scrq *SystemComponentRelationshipQuery) loadTenant(ctx context.Context, query *TenantQuery, nodes []*SystemComponentRelationship, init func(*SystemComponentRelationship), assign func(*SystemComponentRelationship, *Tenant)) error {
+func (_q *SystemComponentRelationshipQuery) loadTenant(ctx context.Context, query *TenantQuery, nodes []*SystemComponentRelationship, init func(*SystemComponentRelationship), assign func(*SystemComponentRelationship, *Tenant)) error {
 	ids := make([]int, 0, len(nodes))
 	nodeids := make(map[int][]*SystemComponentRelationship)
 	for i := range nodes {
@@ -619,7 +619,7 @@ func (scrq *SystemComponentRelationshipQuery) loadTenant(ctx context.Context, qu
 	}
 	return nil
 }
-func (scrq *SystemComponentRelationshipQuery) loadSource(ctx context.Context, query *SystemComponentQuery, nodes []*SystemComponentRelationship, init func(*SystemComponentRelationship), assign func(*SystemComponentRelationship, *SystemComponent)) error {
+func (_q *SystemComponentRelationshipQuery) loadSource(ctx context.Context, query *SystemComponentQuery, nodes []*SystemComponentRelationship, init func(*SystemComponentRelationship), assign func(*SystemComponentRelationship, *SystemComponent)) error {
 	ids := make([]uuid.UUID, 0, len(nodes))
 	nodeids := make(map[uuid.UUID][]*SystemComponentRelationship)
 	for i := range nodes {
@@ -648,7 +648,7 @@ func (scrq *SystemComponentRelationshipQuery) loadSource(ctx context.Context, qu
 	}
 	return nil
 }
-func (scrq *SystemComponentRelationshipQuery) loadTarget(ctx context.Context, query *SystemComponentQuery, nodes []*SystemComponentRelationship, init func(*SystemComponentRelationship), assign func(*SystemComponentRelationship, *SystemComponent)) error {
+func (_q *SystemComponentRelationshipQuery) loadTarget(ctx context.Context, query *SystemComponentQuery, nodes []*SystemComponentRelationship, init func(*SystemComponentRelationship), assign func(*SystemComponentRelationship, *SystemComponent)) error {
 	ids := make([]uuid.UUID, 0, len(nodes))
 	nodeids := make(map[uuid.UUID][]*SystemComponentRelationship)
 	for i := range nodes {
@@ -677,7 +677,7 @@ func (scrq *SystemComponentRelationshipQuery) loadTarget(ctx context.Context, qu
 	}
 	return nil
 }
-func (scrq *SystemComponentRelationshipQuery) loadSystemAnalyses(ctx context.Context, query *SystemAnalysisRelationshipQuery, nodes []*SystemComponentRelationship, init func(*SystemComponentRelationship), assign func(*SystemComponentRelationship, *SystemAnalysisRelationship)) error {
+func (_q *SystemComponentRelationshipQuery) loadSystemAnalyses(ctx context.Context, query *SystemAnalysisRelationshipQuery, nodes []*SystemComponentRelationship, init func(*SystemComponentRelationship), assign func(*SystemComponentRelationship, *SystemAnalysisRelationship)) error {
 	fks := make([]driver.Value, 0, len(nodes))
 	nodeids := make(map[uuid.UUID]*SystemComponentRelationship)
 	for i := range nodes {
@@ -707,7 +707,7 @@ func (scrq *SystemComponentRelationshipQuery) loadSystemAnalyses(ctx context.Con
 	}
 	return nil
 }
-func (scrq *SystemComponentRelationshipQuery) loadHazards(ctx context.Context, query *SystemHazardQuery, nodes []*SystemComponentRelationship, init func(*SystemComponentRelationship), assign func(*SystemComponentRelationship, *SystemHazard)) error {
+func (_q *SystemComponentRelationshipQuery) loadHazards(ctx context.Context, query *SystemHazardQuery, nodes []*SystemComponentRelationship, init func(*SystemComponentRelationship), assign func(*SystemComponentRelationship, *SystemHazard)) error {
 	edgeIDs := make([]driver.Value, len(nodes))
 	byID := make(map[uuid.UUID]*SystemComponentRelationship)
 	nids := make(map[uuid.UUID]map[*SystemComponentRelationship]struct{})
@@ -769,27 +769,27 @@ func (scrq *SystemComponentRelationshipQuery) loadHazards(ctx context.Context, q
 	return nil
 }
 
-func (scrq *SystemComponentRelationshipQuery) sqlCount(ctx context.Context) (int, error) {
-	_spec := scrq.querySpec()
-	if len(scrq.modifiers) > 0 {
-		_spec.Modifiers = scrq.modifiers
+func (_q *SystemComponentRelationshipQuery) sqlCount(ctx context.Context) (int, error) {
+	_spec := _q.querySpec()
+	if len(_q.modifiers) > 0 {
+		_spec.Modifiers = _q.modifiers
 	}
-	_spec.Node.Columns = scrq.ctx.Fields
-	if len(scrq.ctx.Fields) > 0 {
-		_spec.Unique = scrq.ctx.Unique != nil && *scrq.ctx.Unique
+	_spec.Node.Columns = _q.ctx.Fields
+	if len(_q.ctx.Fields) > 0 {
+		_spec.Unique = _q.ctx.Unique != nil && *_q.ctx.Unique
 	}
-	return sqlgraph.CountNodes(ctx, scrq.driver, _spec)
+	return sqlgraph.CountNodes(ctx, _q.driver, _spec)
 }
 
-func (scrq *SystemComponentRelationshipQuery) querySpec() *sqlgraph.QuerySpec {
+func (_q *SystemComponentRelationshipQuery) querySpec() *sqlgraph.QuerySpec {
 	_spec := sqlgraph.NewQuerySpec(systemcomponentrelationship.Table, systemcomponentrelationship.Columns, sqlgraph.NewFieldSpec(systemcomponentrelationship.FieldID, field.TypeUUID))
-	_spec.From = scrq.sql
-	if unique := scrq.ctx.Unique; unique != nil {
+	_spec.From = _q.sql
+	if unique := _q.ctx.Unique; unique != nil {
 		_spec.Unique = *unique
-	} else if scrq.path != nil {
+	} else if _q.path != nil {
 		_spec.Unique = true
 	}
-	if fields := scrq.ctx.Fields; len(fields) > 0 {
+	if fields := _q.ctx.Fields; len(fields) > 0 {
 		_spec.Node.Columns = make([]string, 0, len(fields))
 		_spec.Node.Columns = append(_spec.Node.Columns, systemcomponentrelationship.FieldID)
 		for i := range fields {
@@ -797,30 +797,30 @@ func (scrq *SystemComponentRelationshipQuery) querySpec() *sqlgraph.QuerySpec {
 				_spec.Node.Columns = append(_spec.Node.Columns, fields[i])
 			}
 		}
-		if scrq.withTenant != nil {
+		if _q.withTenant != nil {
 			_spec.Node.AddColumnOnce(systemcomponentrelationship.FieldTenantID)
 		}
-		if scrq.withSource != nil {
+		if _q.withSource != nil {
 			_spec.Node.AddColumnOnce(systemcomponentrelationship.FieldSourceID)
 		}
-		if scrq.withTarget != nil {
+		if _q.withTarget != nil {
 			_spec.Node.AddColumnOnce(systemcomponentrelationship.FieldTargetID)
 		}
 	}
-	if ps := scrq.predicates; len(ps) > 0 {
+	if ps := _q.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {
 				ps[i](selector)
 			}
 		}
 	}
-	if limit := scrq.ctx.Limit; limit != nil {
+	if limit := _q.ctx.Limit; limit != nil {
 		_spec.Limit = *limit
 	}
-	if offset := scrq.ctx.Offset; offset != nil {
+	if offset := _q.ctx.Offset; offset != nil {
 		_spec.Offset = *offset
 	}
-	if ps := scrq.order; len(ps) > 0 {
+	if ps := _q.order; len(ps) > 0 {
 		_spec.Order = func(selector *sql.Selector) {
 			for i := range ps {
 				ps[i](selector)
@@ -830,45 +830,45 @@ func (scrq *SystemComponentRelationshipQuery) querySpec() *sqlgraph.QuerySpec {
 	return _spec
 }
 
-func (scrq *SystemComponentRelationshipQuery) sqlQuery(ctx context.Context) *sql.Selector {
-	builder := sql.Dialect(scrq.driver.Dialect())
+func (_q *SystemComponentRelationshipQuery) sqlQuery(ctx context.Context) *sql.Selector {
+	builder := sql.Dialect(_q.driver.Dialect())
 	t1 := builder.Table(systemcomponentrelationship.Table)
-	columns := scrq.ctx.Fields
+	columns := _q.ctx.Fields
 	if len(columns) == 0 {
 		columns = systemcomponentrelationship.Columns
 	}
 	selector := builder.Select(t1.Columns(columns...)...).From(t1)
-	if scrq.sql != nil {
-		selector = scrq.sql
+	if _q.sql != nil {
+		selector = _q.sql
 		selector.Select(selector.Columns(columns...)...)
 	}
-	if scrq.ctx.Unique != nil && *scrq.ctx.Unique {
+	if _q.ctx.Unique != nil && *_q.ctx.Unique {
 		selector.Distinct()
 	}
-	for _, m := range scrq.modifiers {
+	for _, m := range _q.modifiers {
 		m(selector)
 	}
-	for _, p := range scrq.predicates {
+	for _, p := range _q.predicates {
 		p(selector)
 	}
-	for _, p := range scrq.order {
+	for _, p := range _q.order {
 		p(selector)
 	}
-	if offset := scrq.ctx.Offset; offset != nil {
+	if offset := _q.ctx.Offset; offset != nil {
 		// limit is mandatory for offset clause. We start
 		// with default value, and override it below if needed.
 		selector.Offset(*offset).Limit(math.MaxInt32)
 	}
-	if limit := scrq.ctx.Limit; limit != nil {
+	if limit := _q.ctx.Limit; limit != nil {
 		selector.Limit(*limit)
 	}
 	return selector
 }
 
 // Modify adds a query modifier for attaching custom logic to queries.
-func (scrq *SystemComponentRelationshipQuery) Modify(modifiers ...func(s *sql.Selector)) *SystemComponentRelationshipSelect {
-	scrq.modifiers = append(scrq.modifiers, modifiers...)
-	return scrq.Select()
+func (_q *SystemComponentRelationshipQuery) Modify(modifiers ...func(s *sql.Selector)) *SystemComponentRelationshipSelect {
+	_q.modifiers = append(_q.modifiers, modifiers...)
+	return _q.Select()
 }
 
 // SystemComponentRelationshipGroupBy is the group-by builder for SystemComponentRelationship entities.
@@ -878,41 +878,41 @@ type SystemComponentRelationshipGroupBy struct {
 }
 
 // Aggregate adds the given aggregation functions to the group-by query.
-func (scrgb *SystemComponentRelationshipGroupBy) Aggregate(fns ...AggregateFunc) *SystemComponentRelationshipGroupBy {
-	scrgb.fns = append(scrgb.fns, fns...)
-	return scrgb
+func (_g *SystemComponentRelationshipGroupBy) Aggregate(fns ...AggregateFunc) *SystemComponentRelationshipGroupBy {
+	_g.fns = append(_g.fns, fns...)
+	return _g
 }
 
 // Scan applies the selector query and scans the result into the given value.
-func (scrgb *SystemComponentRelationshipGroupBy) Scan(ctx context.Context, v any) error {
-	ctx = setContextOp(ctx, scrgb.build.ctx, ent.OpQueryGroupBy)
-	if err := scrgb.build.prepareQuery(ctx); err != nil {
+func (_g *SystemComponentRelationshipGroupBy) Scan(ctx context.Context, v any) error {
+	ctx = setContextOp(ctx, _g.build.ctx, ent.OpQueryGroupBy)
+	if err := _g.build.prepareQuery(ctx); err != nil {
 		return err
 	}
-	return scanWithInterceptors[*SystemComponentRelationshipQuery, *SystemComponentRelationshipGroupBy](ctx, scrgb.build, scrgb, scrgb.build.inters, v)
+	return scanWithInterceptors[*SystemComponentRelationshipQuery, *SystemComponentRelationshipGroupBy](ctx, _g.build, _g, _g.build.inters, v)
 }
 
-func (scrgb *SystemComponentRelationshipGroupBy) sqlScan(ctx context.Context, root *SystemComponentRelationshipQuery, v any) error {
+func (_g *SystemComponentRelationshipGroupBy) sqlScan(ctx context.Context, root *SystemComponentRelationshipQuery, v any) error {
 	selector := root.sqlQuery(ctx).Select()
-	aggregation := make([]string, 0, len(scrgb.fns))
-	for _, fn := range scrgb.fns {
+	aggregation := make([]string, 0, len(_g.fns))
+	for _, fn := range _g.fns {
 		aggregation = append(aggregation, fn(selector))
 	}
 	if len(selector.SelectedColumns()) == 0 {
-		columns := make([]string, 0, len(*scrgb.flds)+len(scrgb.fns))
-		for _, f := range *scrgb.flds {
+		columns := make([]string, 0, len(*_g.flds)+len(_g.fns))
+		for _, f := range *_g.flds {
 			columns = append(columns, selector.C(f))
 		}
 		columns = append(columns, aggregation...)
 		selector.Select(columns...)
 	}
-	selector.GroupBy(selector.Columns(*scrgb.flds...)...)
+	selector.GroupBy(selector.Columns(*_g.flds...)...)
 	if err := selector.Err(); err != nil {
 		return err
 	}
 	rows := &sql.Rows{}
 	query, args := selector.Query()
-	if err := scrgb.build.driver.Query(ctx, query, args, rows); err != nil {
+	if err := _g.build.driver.Query(ctx, query, args, rows); err != nil {
 		return err
 	}
 	defer rows.Close()
@@ -926,27 +926,27 @@ type SystemComponentRelationshipSelect struct {
 }
 
 // Aggregate adds the given aggregation functions to the selector query.
-func (scrs *SystemComponentRelationshipSelect) Aggregate(fns ...AggregateFunc) *SystemComponentRelationshipSelect {
-	scrs.fns = append(scrs.fns, fns...)
-	return scrs
+func (_s *SystemComponentRelationshipSelect) Aggregate(fns ...AggregateFunc) *SystemComponentRelationshipSelect {
+	_s.fns = append(_s.fns, fns...)
+	return _s
 }
 
 // Scan applies the selector query and scans the result into the given value.
-func (scrs *SystemComponentRelationshipSelect) Scan(ctx context.Context, v any) error {
-	ctx = setContextOp(ctx, scrs.ctx, ent.OpQuerySelect)
-	if err := scrs.prepareQuery(ctx); err != nil {
+func (_s *SystemComponentRelationshipSelect) Scan(ctx context.Context, v any) error {
+	ctx = setContextOp(ctx, _s.ctx, ent.OpQuerySelect)
+	if err := _s.prepareQuery(ctx); err != nil {
 		return err
 	}
-	return scanWithInterceptors[*SystemComponentRelationshipQuery, *SystemComponentRelationshipSelect](ctx, scrs.SystemComponentRelationshipQuery, scrs, scrs.inters, v)
+	return scanWithInterceptors[*SystemComponentRelationshipQuery, *SystemComponentRelationshipSelect](ctx, _s.SystemComponentRelationshipQuery, _s, _s.inters, v)
 }
 
-func (scrs *SystemComponentRelationshipSelect) sqlScan(ctx context.Context, root *SystemComponentRelationshipQuery, v any) error {
+func (_s *SystemComponentRelationshipSelect) sqlScan(ctx context.Context, root *SystemComponentRelationshipQuery, v any) error {
 	selector := root.sqlQuery(ctx)
-	aggregation := make([]string, 0, len(scrs.fns))
-	for _, fn := range scrs.fns {
+	aggregation := make([]string, 0, len(_s.fns))
+	for _, fn := range _s.fns {
 		aggregation = append(aggregation, fn(selector))
 	}
-	switch n := len(*scrs.selector.flds); {
+	switch n := len(*_s.selector.flds); {
 	case n == 0 && len(aggregation) > 0:
 		selector.Select(aggregation...)
 	case n != 0 && len(aggregation) > 0:
@@ -954,7 +954,7 @@ func (scrs *SystemComponentRelationshipSelect) sqlScan(ctx context.Context, root
 	}
 	rows := &sql.Rows{}
 	query, args := selector.Query()
-	if err := scrs.driver.Query(ctx, query, args, rows); err != nil {
+	if err := _s.driver.Query(ctx, query, args, rows); err != nil {
 		return err
 	}
 	defer rows.Close()
@@ -962,7 +962,7 @@ func (scrs *SystemComponentRelationshipSelect) sqlScan(ctx context.Context, root
 }
 
 // Modify adds a query modifier for attaching custom logic to queries.
-func (scrs *SystemComponentRelationshipSelect) Modify(modifiers ...func(s *sql.Selector)) *SystemComponentRelationshipSelect {
-	scrs.modifiers = append(scrs.modifiers, modifiers...)
-	return scrs
+func (_s *SystemComponentRelationshipSelect) Modify(modifiers ...func(s *sql.Selector)) *SystemComponentRelationshipSelect {
+	_s.modifiers = append(_s.modifiers, modifiers...)
+	return _s
 }

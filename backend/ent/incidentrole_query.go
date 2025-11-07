@@ -38,44 +38,44 @@ type IncidentRoleQuery struct {
 }
 
 // Where adds a new predicate for the IncidentRoleQuery builder.
-func (irq *IncidentRoleQuery) Where(ps ...predicate.IncidentRole) *IncidentRoleQuery {
-	irq.predicates = append(irq.predicates, ps...)
-	return irq
+func (_q *IncidentRoleQuery) Where(ps ...predicate.IncidentRole) *IncidentRoleQuery {
+	_q.predicates = append(_q.predicates, ps...)
+	return _q
 }
 
 // Limit the number of records to be returned by this query.
-func (irq *IncidentRoleQuery) Limit(limit int) *IncidentRoleQuery {
-	irq.ctx.Limit = &limit
-	return irq
+func (_q *IncidentRoleQuery) Limit(limit int) *IncidentRoleQuery {
+	_q.ctx.Limit = &limit
+	return _q
 }
 
 // Offset to start from.
-func (irq *IncidentRoleQuery) Offset(offset int) *IncidentRoleQuery {
-	irq.ctx.Offset = &offset
-	return irq
+func (_q *IncidentRoleQuery) Offset(offset int) *IncidentRoleQuery {
+	_q.ctx.Offset = &offset
+	return _q
 }
 
 // Unique configures the query builder to filter duplicate records on query.
 // By default, unique is set to true, and can be disabled using this method.
-func (irq *IncidentRoleQuery) Unique(unique bool) *IncidentRoleQuery {
-	irq.ctx.Unique = &unique
-	return irq
+func (_q *IncidentRoleQuery) Unique(unique bool) *IncidentRoleQuery {
+	_q.ctx.Unique = &unique
+	return _q
 }
 
 // Order specifies how the records should be ordered.
-func (irq *IncidentRoleQuery) Order(o ...incidentrole.OrderOption) *IncidentRoleQuery {
-	irq.order = append(irq.order, o...)
-	return irq
+func (_q *IncidentRoleQuery) Order(o ...incidentrole.OrderOption) *IncidentRoleQuery {
+	_q.order = append(_q.order, o...)
+	return _q
 }
 
 // QueryTenant chains the current query on the "tenant" edge.
-func (irq *IncidentRoleQuery) QueryTenant() *TenantQuery {
-	query := (&TenantClient{config: irq.config}).Query()
+func (_q *IncidentRoleQuery) QueryTenant() *TenantQuery {
+	query := (&TenantClient{config: _q.config}).Query()
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
-		if err := irq.prepareQuery(ctx); err != nil {
+		if err := _q.prepareQuery(ctx); err != nil {
 			return nil, err
 		}
-		selector := irq.sqlQuery(ctx)
+		selector := _q.sqlQuery(ctx)
 		if err := selector.Err(); err != nil {
 			return nil, err
 		}
@@ -84,20 +84,20 @@ func (irq *IncidentRoleQuery) QueryTenant() *TenantQuery {
 			sqlgraph.To(tenant.Table, tenant.FieldID),
 			sqlgraph.Edge(sqlgraph.M2O, false, incidentrole.TenantTable, incidentrole.TenantColumn),
 		)
-		fromU = sqlgraph.SetNeighbors(irq.driver.Dialect(), step)
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
 	}
 	return query
 }
 
 // QueryAssignments chains the current query on the "assignments" edge.
-func (irq *IncidentRoleQuery) QueryAssignments() *IncidentRoleAssignmentQuery {
-	query := (&IncidentRoleAssignmentClient{config: irq.config}).Query()
+func (_q *IncidentRoleQuery) QueryAssignments() *IncidentRoleAssignmentQuery {
+	query := (&IncidentRoleAssignmentClient{config: _q.config}).Query()
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
-		if err := irq.prepareQuery(ctx); err != nil {
+		if err := _q.prepareQuery(ctx); err != nil {
 			return nil, err
 		}
-		selector := irq.sqlQuery(ctx)
+		selector := _q.sqlQuery(ctx)
 		if err := selector.Err(); err != nil {
 			return nil, err
 		}
@@ -106,20 +106,20 @@ func (irq *IncidentRoleQuery) QueryAssignments() *IncidentRoleAssignmentQuery {
 			sqlgraph.To(incidentroleassignment.Table, incidentroleassignment.FieldID),
 			sqlgraph.Edge(sqlgraph.O2M, true, incidentrole.AssignmentsTable, incidentrole.AssignmentsColumn),
 		)
-		fromU = sqlgraph.SetNeighbors(irq.driver.Dialect(), step)
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
 	}
 	return query
 }
 
 // QueryDebriefQuestions chains the current query on the "debrief_questions" edge.
-func (irq *IncidentRoleQuery) QueryDebriefQuestions() *IncidentDebriefQuestionQuery {
-	query := (&IncidentDebriefQuestionClient{config: irq.config}).Query()
+func (_q *IncidentRoleQuery) QueryDebriefQuestions() *IncidentDebriefQuestionQuery {
+	query := (&IncidentDebriefQuestionClient{config: _q.config}).Query()
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
-		if err := irq.prepareQuery(ctx); err != nil {
+		if err := _q.prepareQuery(ctx); err != nil {
 			return nil, err
 		}
-		selector := irq.sqlQuery(ctx)
+		selector := _q.sqlQuery(ctx)
 		if err := selector.Err(); err != nil {
 			return nil, err
 		}
@@ -128,7 +128,7 @@ func (irq *IncidentRoleQuery) QueryDebriefQuestions() *IncidentDebriefQuestionQu
 			sqlgraph.To(incidentdebriefquestion.Table, incidentdebriefquestion.FieldID),
 			sqlgraph.Edge(sqlgraph.M2M, true, incidentrole.DebriefQuestionsTable, incidentrole.DebriefQuestionsPrimaryKey...),
 		)
-		fromU = sqlgraph.SetNeighbors(irq.driver.Dialect(), step)
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
 	}
 	return query
@@ -136,8 +136,8 @@ func (irq *IncidentRoleQuery) QueryDebriefQuestions() *IncidentDebriefQuestionQu
 
 // First returns the first IncidentRole entity from the query.
 // Returns a *NotFoundError when no IncidentRole was found.
-func (irq *IncidentRoleQuery) First(ctx context.Context) (*IncidentRole, error) {
-	nodes, err := irq.Limit(1).All(setContextOp(ctx, irq.ctx, ent.OpQueryFirst))
+func (_q *IncidentRoleQuery) First(ctx context.Context) (*IncidentRole, error) {
+	nodes, err := _q.Limit(1).All(setContextOp(ctx, _q.ctx, ent.OpQueryFirst))
 	if err != nil {
 		return nil, err
 	}
@@ -148,8 +148,8 @@ func (irq *IncidentRoleQuery) First(ctx context.Context) (*IncidentRole, error) 
 }
 
 // FirstX is like First, but panics if an error occurs.
-func (irq *IncidentRoleQuery) FirstX(ctx context.Context) *IncidentRole {
-	node, err := irq.First(ctx)
+func (_q *IncidentRoleQuery) FirstX(ctx context.Context) *IncidentRole {
+	node, err := _q.First(ctx)
 	if err != nil && !IsNotFound(err) {
 		panic(err)
 	}
@@ -158,9 +158,9 @@ func (irq *IncidentRoleQuery) FirstX(ctx context.Context) *IncidentRole {
 
 // FirstID returns the first IncidentRole ID from the query.
 // Returns a *NotFoundError when no IncidentRole ID was found.
-func (irq *IncidentRoleQuery) FirstID(ctx context.Context) (id uuid.UUID, err error) {
+func (_q *IncidentRoleQuery) FirstID(ctx context.Context) (id uuid.UUID, err error) {
 	var ids []uuid.UUID
-	if ids, err = irq.Limit(1).IDs(setContextOp(ctx, irq.ctx, ent.OpQueryFirstID)); err != nil {
+	if ids, err = _q.Limit(1).IDs(setContextOp(ctx, _q.ctx, ent.OpQueryFirstID)); err != nil {
 		return
 	}
 	if len(ids) == 0 {
@@ -171,8 +171,8 @@ func (irq *IncidentRoleQuery) FirstID(ctx context.Context) (id uuid.UUID, err er
 }
 
 // FirstIDX is like FirstID, but panics if an error occurs.
-func (irq *IncidentRoleQuery) FirstIDX(ctx context.Context) uuid.UUID {
-	id, err := irq.FirstID(ctx)
+func (_q *IncidentRoleQuery) FirstIDX(ctx context.Context) uuid.UUID {
+	id, err := _q.FirstID(ctx)
 	if err != nil && !IsNotFound(err) {
 		panic(err)
 	}
@@ -182,8 +182,8 @@ func (irq *IncidentRoleQuery) FirstIDX(ctx context.Context) uuid.UUID {
 // Only returns a single IncidentRole entity found by the query, ensuring it only returns one.
 // Returns a *NotSingularError when more than one IncidentRole entity is found.
 // Returns a *NotFoundError when no IncidentRole entities are found.
-func (irq *IncidentRoleQuery) Only(ctx context.Context) (*IncidentRole, error) {
-	nodes, err := irq.Limit(2).All(setContextOp(ctx, irq.ctx, ent.OpQueryOnly))
+func (_q *IncidentRoleQuery) Only(ctx context.Context) (*IncidentRole, error) {
+	nodes, err := _q.Limit(2).All(setContextOp(ctx, _q.ctx, ent.OpQueryOnly))
 	if err != nil {
 		return nil, err
 	}
@@ -198,8 +198,8 @@ func (irq *IncidentRoleQuery) Only(ctx context.Context) (*IncidentRole, error) {
 }
 
 // OnlyX is like Only, but panics if an error occurs.
-func (irq *IncidentRoleQuery) OnlyX(ctx context.Context) *IncidentRole {
-	node, err := irq.Only(ctx)
+func (_q *IncidentRoleQuery) OnlyX(ctx context.Context) *IncidentRole {
+	node, err := _q.Only(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -209,9 +209,9 @@ func (irq *IncidentRoleQuery) OnlyX(ctx context.Context) *IncidentRole {
 // OnlyID is like Only, but returns the only IncidentRole ID in the query.
 // Returns a *NotSingularError when more than one IncidentRole ID is found.
 // Returns a *NotFoundError when no entities are found.
-func (irq *IncidentRoleQuery) OnlyID(ctx context.Context) (id uuid.UUID, err error) {
+func (_q *IncidentRoleQuery) OnlyID(ctx context.Context) (id uuid.UUID, err error) {
 	var ids []uuid.UUID
-	if ids, err = irq.Limit(2).IDs(setContextOp(ctx, irq.ctx, ent.OpQueryOnlyID)); err != nil {
+	if ids, err = _q.Limit(2).IDs(setContextOp(ctx, _q.ctx, ent.OpQueryOnlyID)); err != nil {
 		return
 	}
 	switch len(ids) {
@@ -226,8 +226,8 @@ func (irq *IncidentRoleQuery) OnlyID(ctx context.Context) (id uuid.UUID, err err
 }
 
 // OnlyIDX is like OnlyID, but panics if an error occurs.
-func (irq *IncidentRoleQuery) OnlyIDX(ctx context.Context) uuid.UUID {
-	id, err := irq.OnlyID(ctx)
+func (_q *IncidentRoleQuery) OnlyIDX(ctx context.Context) uuid.UUID {
+	id, err := _q.OnlyID(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -235,18 +235,18 @@ func (irq *IncidentRoleQuery) OnlyIDX(ctx context.Context) uuid.UUID {
 }
 
 // All executes the query and returns a list of IncidentRoles.
-func (irq *IncidentRoleQuery) All(ctx context.Context) ([]*IncidentRole, error) {
-	ctx = setContextOp(ctx, irq.ctx, ent.OpQueryAll)
-	if err := irq.prepareQuery(ctx); err != nil {
+func (_q *IncidentRoleQuery) All(ctx context.Context) ([]*IncidentRole, error) {
+	ctx = setContextOp(ctx, _q.ctx, ent.OpQueryAll)
+	if err := _q.prepareQuery(ctx); err != nil {
 		return nil, err
 	}
 	qr := querierAll[[]*IncidentRole, *IncidentRoleQuery]()
-	return withInterceptors[[]*IncidentRole](ctx, irq, qr, irq.inters)
+	return withInterceptors[[]*IncidentRole](ctx, _q, qr, _q.inters)
 }
 
 // AllX is like All, but panics if an error occurs.
-func (irq *IncidentRoleQuery) AllX(ctx context.Context) []*IncidentRole {
-	nodes, err := irq.All(ctx)
+func (_q *IncidentRoleQuery) AllX(ctx context.Context) []*IncidentRole {
+	nodes, err := _q.All(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -254,20 +254,20 @@ func (irq *IncidentRoleQuery) AllX(ctx context.Context) []*IncidentRole {
 }
 
 // IDs executes the query and returns a list of IncidentRole IDs.
-func (irq *IncidentRoleQuery) IDs(ctx context.Context) (ids []uuid.UUID, err error) {
-	if irq.ctx.Unique == nil && irq.path != nil {
-		irq.Unique(true)
+func (_q *IncidentRoleQuery) IDs(ctx context.Context) (ids []uuid.UUID, err error) {
+	if _q.ctx.Unique == nil && _q.path != nil {
+		_q.Unique(true)
 	}
-	ctx = setContextOp(ctx, irq.ctx, ent.OpQueryIDs)
-	if err = irq.Select(incidentrole.FieldID).Scan(ctx, &ids); err != nil {
+	ctx = setContextOp(ctx, _q.ctx, ent.OpQueryIDs)
+	if err = _q.Select(incidentrole.FieldID).Scan(ctx, &ids); err != nil {
 		return nil, err
 	}
 	return ids, nil
 }
 
 // IDsX is like IDs, but panics if an error occurs.
-func (irq *IncidentRoleQuery) IDsX(ctx context.Context) []uuid.UUID {
-	ids, err := irq.IDs(ctx)
+func (_q *IncidentRoleQuery) IDsX(ctx context.Context) []uuid.UUID {
+	ids, err := _q.IDs(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -275,17 +275,17 @@ func (irq *IncidentRoleQuery) IDsX(ctx context.Context) []uuid.UUID {
 }
 
 // Count returns the count of the given query.
-func (irq *IncidentRoleQuery) Count(ctx context.Context) (int, error) {
-	ctx = setContextOp(ctx, irq.ctx, ent.OpQueryCount)
-	if err := irq.prepareQuery(ctx); err != nil {
+func (_q *IncidentRoleQuery) Count(ctx context.Context) (int, error) {
+	ctx = setContextOp(ctx, _q.ctx, ent.OpQueryCount)
+	if err := _q.prepareQuery(ctx); err != nil {
 		return 0, err
 	}
-	return withInterceptors[int](ctx, irq, querierCount[*IncidentRoleQuery](), irq.inters)
+	return withInterceptors[int](ctx, _q, querierCount[*IncidentRoleQuery](), _q.inters)
 }
 
 // CountX is like Count, but panics if an error occurs.
-func (irq *IncidentRoleQuery) CountX(ctx context.Context) int {
-	count, err := irq.Count(ctx)
+func (_q *IncidentRoleQuery) CountX(ctx context.Context) int {
+	count, err := _q.Count(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -293,9 +293,9 @@ func (irq *IncidentRoleQuery) CountX(ctx context.Context) int {
 }
 
 // Exist returns true if the query has elements in the graph.
-func (irq *IncidentRoleQuery) Exist(ctx context.Context) (bool, error) {
-	ctx = setContextOp(ctx, irq.ctx, ent.OpQueryExist)
-	switch _, err := irq.FirstID(ctx); {
+func (_q *IncidentRoleQuery) Exist(ctx context.Context) (bool, error) {
+	ctx = setContextOp(ctx, _q.ctx, ent.OpQueryExist)
+	switch _, err := _q.FirstID(ctx); {
 	case IsNotFound(err):
 		return false, nil
 	case err != nil:
@@ -306,8 +306,8 @@ func (irq *IncidentRoleQuery) Exist(ctx context.Context) (bool, error) {
 }
 
 // ExistX is like Exist, but panics if an error occurs.
-func (irq *IncidentRoleQuery) ExistX(ctx context.Context) bool {
-	exist, err := irq.Exist(ctx)
+func (_q *IncidentRoleQuery) ExistX(ctx context.Context) bool {
+	exist, err := _q.Exist(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -316,57 +316,57 @@ func (irq *IncidentRoleQuery) ExistX(ctx context.Context) bool {
 
 // Clone returns a duplicate of the IncidentRoleQuery builder, including all associated steps. It can be
 // used to prepare common query builders and use them differently after the clone is made.
-func (irq *IncidentRoleQuery) Clone() *IncidentRoleQuery {
-	if irq == nil {
+func (_q *IncidentRoleQuery) Clone() *IncidentRoleQuery {
+	if _q == nil {
 		return nil
 	}
 	return &IncidentRoleQuery{
-		config:               irq.config,
-		ctx:                  irq.ctx.Clone(),
-		order:                append([]incidentrole.OrderOption{}, irq.order...),
-		inters:               append([]Interceptor{}, irq.inters...),
-		predicates:           append([]predicate.IncidentRole{}, irq.predicates...),
-		withTenant:           irq.withTenant.Clone(),
-		withAssignments:      irq.withAssignments.Clone(),
-		withDebriefQuestions: irq.withDebriefQuestions.Clone(),
+		config:               _q.config,
+		ctx:                  _q.ctx.Clone(),
+		order:                append([]incidentrole.OrderOption{}, _q.order...),
+		inters:               append([]Interceptor{}, _q.inters...),
+		predicates:           append([]predicate.IncidentRole{}, _q.predicates...),
+		withTenant:           _q.withTenant.Clone(),
+		withAssignments:      _q.withAssignments.Clone(),
+		withDebriefQuestions: _q.withDebriefQuestions.Clone(),
 		// clone intermediate query.
-		sql:       irq.sql.Clone(),
-		path:      irq.path,
-		modifiers: append([]func(*sql.Selector){}, irq.modifiers...),
+		sql:       _q.sql.Clone(),
+		path:      _q.path,
+		modifiers: append([]func(*sql.Selector){}, _q.modifiers...),
 	}
 }
 
 // WithTenant tells the query-builder to eager-load the nodes that are connected to
 // the "tenant" edge. The optional arguments are used to configure the query builder of the edge.
-func (irq *IncidentRoleQuery) WithTenant(opts ...func(*TenantQuery)) *IncidentRoleQuery {
-	query := (&TenantClient{config: irq.config}).Query()
+func (_q *IncidentRoleQuery) WithTenant(opts ...func(*TenantQuery)) *IncidentRoleQuery {
+	query := (&TenantClient{config: _q.config}).Query()
 	for _, opt := range opts {
 		opt(query)
 	}
-	irq.withTenant = query
-	return irq
+	_q.withTenant = query
+	return _q
 }
 
 // WithAssignments tells the query-builder to eager-load the nodes that are connected to
 // the "assignments" edge. The optional arguments are used to configure the query builder of the edge.
-func (irq *IncidentRoleQuery) WithAssignments(opts ...func(*IncidentRoleAssignmentQuery)) *IncidentRoleQuery {
-	query := (&IncidentRoleAssignmentClient{config: irq.config}).Query()
+func (_q *IncidentRoleQuery) WithAssignments(opts ...func(*IncidentRoleAssignmentQuery)) *IncidentRoleQuery {
+	query := (&IncidentRoleAssignmentClient{config: _q.config}).Query()
 	for _, opt := range opts {
 		opt(query)
 	}
-	irq.withAssignments = query
-	return irq
+	_q.withAssignments = query
+	return _q
 }
 
 // WithDebriefQuestions tells the query-builder to eager-load the nodes that are connected to
 // the "debrief_questions" edge. The optional arguments are used to configure the query builder of the edge.
-func (irq *IncidentRoleQuery) WithDebriefQuestions(opts ...func(*IncidentDebriefQuestionQuery)) *IncidentRoleQuery {
-	query := (&IncidentDebriefQuestionClient{config: irq.config}).Query()
+func (_q *IncidentRoleQuery) WithDebriefQuestions(opts ...func(*IncidentDebriefQuestionQuery)) *IncidentRoleQuery {
+	query := (&IncidentDebriefQuestionClient{config: _q.config}).Query()
 	for _, opt := range opts {
 		opt(query)
 	}
-	irq.withDebriefQuestions = query
-	return irq
+	_q.withDebriefQuestions = query
+	return _q
 }
 
 // GroupBy is used to group vertices by one or more fields/columns.
@@ -383,10 +383,10 @@ func (irq *IncidentRoleQuery) WithDebriefQuestions(opts ...func(*IncidentDebrief
 //		GroupBy(incidentrole.FieldTenantID).
 //		Aggregate(ent.Count()).
 //		Scan(ctx, &v)
-func (irq *IncidentRoleQuery) GroupBy(field string, fields ...string) *IncidentRoleGroupBy {
-	irq.ctx.Fields = append([]string{field}, fields...)
-	grbuild := &IncidentRoleGroupBy{build: irq}
-	grbuild.flds = &irq.ctx.Fields
+func (_q *IncidentRoleQuery) GroupBy(field string, fields ...string) *IncidentRoleGroupBy {
+	_q.ctx.Fields = append([]string{field}, fields...)
+	grbuild := &IncidentRoleGroupBy{build: _q}
+	grbuild.flds = &_q.ctx.Fields
 	grbuild.label = incidentrole.Label
 	grbuild.scan = grbuild.Scan
 	return grbuild
@@ -404,97 +404,97 @@ func (irq *IncidentRoleQuery) GroupBy(field string, fields ...string) *IncidentR
 //	client.IncidentRole.Query().
 //		Select(incidentrole.FieldTenantID).
 //		Scan(ctx, &v)
-func (irq *IncidentRoleQuery) Select(fields ...string) *IncidentRoleSelect {
-	irq.ctx.Fields = append(irq.ctx.Fields, fields...)
-	sbuild := &IncidentRoleSelect{IncidentRoleQuery: irq}
+func (_q *IncidentRoleQuery) Select(fields ...string) *IncidentRoleSelect {
+	_q.ctx.Fields = append(_q.ctx.Fields, fields...)
+	sbuild := &IncidentRoleSelect{IncidentRoleQuery: _q}
 	sbuild.label = incidentrole.Label
-	sbuild.flds, sbuild.scan = &irq.ctx.Fields, sbuild.Scan
+	sbuild.flds, sbuild.scan = &_q.ctx.Fields, sbuild.Scan
 	return sbuild
 }
 
 // Aggregate returns a IncidentRoleSelect configured with the given aggregations.
-func (irq *IncidentRoleQuery) Aggregate(fns ...AggregateFunc) *IncidentRoleSelect {
-	return irq.Select().Aggregate(fns...)
+func (_q *IncidentRoleQuery) Aggregate(fns ...AggregateFunc) *IncidentRoleSelect {
+	return _q.Select().Aggregate(fns...)
 }
 
-func (irq *IncidentRoleQuery) prepareQuery(ctx context.Context) error {
-	for _, inter := range irq.inters {
+func (_q *IncidentRoleQuery) prepareQuery(ctx context.Context) error {
+	for _, inter := range _q.inters {
 		if inter == nil {
 			return fmt.Errorf("ent: uninitialized interceptor (forgotten import ent/runtime?)")
 		}
 		if trv, ok := inter.(Traverser); ok {
-			if err := trv.Traverse(ctx, irq); err != nil {
+			if err := trv.Traverse(ctx, _q); err != nil {
 				return err
 			}
 		}
 	}
-	for _, f := range irq.ctx.Fields {
+	for _, f := range _q.ctx.Fields {
 		if !incidentrole.ValidColumn(f) {
 			return &ValidationError{Name: f, err: fmt.Errorf("ent: invalid field %q for query", f)}
 		}
 	}
-	if irq.path != nil {
-		prev, err := irq.path(ctx)
+	if _q.path != nil {
+		prev, err := _q.path(ctx)
 		if err != nil {
 			return err
 		}
-		irq.sql = prev
+		_q.sql = prev
 	}
 	if incidentrole.Policy == nil {
 		return errors.New("ent: uninitialized incidentrole.Policy (forgotten import ent/runtime?)")
 	}
-	if err := incidentrole.Policy.EvalQuery(ctx, irq); err != nil {
+	if err := incidentrole.Policy.EvalQuery(ctx, _q); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (irq *IncidentRoleQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*IncidentRole, error) {
+func (_q *IncidentRoleQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*IncidentRole, error) {
 	var (
 		nodes       = []*IncidentRole{}
-		_spec       = irq.querySpec()
+		_spec       = _q.querySpec()
 		loadedTypes = [3]bool{
-			irq.withTenant != nil,
-			irq.withAssignments != nil,
-			irq.withDebriefQuestions != nil,
+			_q.withTenant != nil,
+			_q.withAssignments != nil,
+			_q.withDebriefQuestions != nil,
 		}
 	)
 	_spec.ScanValues = func(columns []string) ([]any, error) {
 		return (*IncidentRole).scanValues(nil, columns)
 	}
 	_spec.Assign = func(columns []string, values []any) error {
-		node := &IncidentRole{config: irq.config}
+		node := &IncidentRole{config: _q.config}
 		nodes = append(nodes, node)
 		node.Edges.loadedTypes = loadedTypes
 		return node.assignValues(columns, values)
 	}
-	if len(irq.modifiers) > 0 {
-		_spec.Modifiers = irq.modifiers
+	if len(_q.modifiers) > 0 {
+		_spec.Modifiers = _q.modifiers
 	}
 	for i := range hooks {
 		hooks[i](ctx, _spec)
 	}
-	if err := sqlgraph.QueryNodes(ctx, irq.driver, _spec); err != nil {
+	if err := sqlgraph.QueryNodes(ctx, _q.driver, _spec); err != nil {
 		return nil, err
 	}
 	if len(nodes) == 0 {
 		return nodes, nil
 	}
-	if query := irq.withTenant; query != nil {
-		if err := irq.loadTenant(ctx, query, nodes, nil,
+	if query := _q.withTenant; query != nil {
+		if err := _q.loadTenant(ctx, query, nodes, nil,
 			func(n *IncidentRole, e *Tenant) { n.Edges.Tenant = e }); err != nil {
 			return nil, err
 		}
 	}
-	if query := irq.withAssignments; query != nil {
-		if err := irq.loadAssignments(ctx, query, nodes,
+	if query := _q.withAssignments; query != nil {
+		if err := _q.loadAssignments(ctx, query, nodes,
 			func(n *IncidentRole) { n.Edges.Assignments = []*IncidentRoleAssignment{} },
 			func(n *IncidentRole, e *IncidentRoleAssignment) { n.Edges.Assignments = append(n.Edges.Assignments, e) }); err != nil {
 			return nil, err
 		}
 	}
-	if query := irq.withDebriefQuestions; query != nil {
-		if err := irq.loadDebriefQuestions(ctx, query, nodes,
+	if query := _q.withDebriefQuestions; query != nil {
+		if err := _q.loadDebriefQuestions(ctx, query, nodes,
 			func(n *IncidentRole) { n.Edges.DebriefQuestions = []*IncidentDebriefQuestion{} },
 			func(n *IncidentRole, e *IncidentDebriefQuestion) {
 				n.Edges.DebriefQuestions = append(n.Edges.DebriefQuestions, e)
@@ -505,7 +505,7 @@ func (irq *IncidentRoleQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([
 	return nodes, nil
 }
 
-func (irq *IncidentRoleQuery) loadTenant(ctx context.Context, query *TenantQuery, nodes []*IncidentRole, init func(*IncidentRole), assign func(*IncidentRole, *Tenant)) error {
+func (_q *IncidentRoleQuery) loadTenant(ctx context.Context, query *TenantQuery, nodes []*IncidentRole, init func(*IncidentRole), assign func(*IncidentRole, *Tenant)) error {
 	ids := make([]int, 0, len(nodes))
 	nodeids := make(map[int][]*IncidentRole)
 	for i := range nodes {
@@ -534,7 +534,7 @@ func (irq *IncidentRoleQuery) loadTenant(ctx context.Context, query *TenantQuery
 	}
 	return nil
 }
-func (irq *IncidentRoleQuery) loadAssignments(ctx context.Context, query *IncidentRoleAssignmentQuery, nodes []*IncidentRole, init func(*IncidentRole), assign func(*IncidentRole, *IncidentRoleAssignment)) error {
+func (_q *IncidentRoleQuery) loadAssignments(ctx context.Context, query *IncidentRoleAssignmentQuery, nodes []*IncidentRole, init func(*IncidentRole), assign func(*IncidentRole, *IncidentRoleAssignment)) error {
 	fks := make([]driver.Value, 0, len(nodes))
 	nodeids := make(map[uuid.UUID]*IncidentRole)
 	for i := range nodes {
@@ -564,7 +564,7 @@ func (irq *IncidentRoleQuery) loadAssignments(ctx context.Context, query *Incide
 	}
 	return nil
 }
-func (irq *IncidentRoleQuery) loadDebriefQuestions(ctx context.Context, query *IncidentDebriefQuestionQuery, nodes []*IncidentRole, init func(*IncidentRole), assign func(*IncidentRole, *IncidentDebriefQuestion)) error {
+func (_q *IncidentRoleQuery) loadDebriefQuestions(ctx context.Context, query *IncidentDebriefQuestionQuery, nodes []*IncidentRole, init func(*IncidentRole), assign func(*IncidentRole, *IncidentDebriefQuestion)) error {
 	edgeIDs := make([]driver.Value, len(nodes))
 	byID := make(map[uuid.UUID]*IncidentRole)
 	nids := make(map[uuid.UUID]map[*IncidentRole]struct{})
@@ -626,27 +626,27 @@ func (irq *IncidentRoleQuery) loadDebriefQuestions(ctx context.Context, query *I
 	return nil
 }
 
-func (irq *IncidentRoleQuery) sqlCount(ctx context.Context) (int, error) {
-	_spec := irq.querySpec()
-	if len(irq.modifiers) > 0 {
-		_spec.Modifiers = irq.modifiers
+func (_q *IncidentRoleQuery) sqlCount(ctx context.Context) (int, error) {
+	_spec := _q.querySpec()
+	if len(_q.modifiers) > 0 {
+		_spec.Modifiers = _q.modifiers
 	}
-	_spec.Node.Columns = irq.ctx.Fields
-	if len(irq.ctx.Fields) > 0 {
-		_spec.Unique = irq.ctx.Unique != nil && *irq.ctx.Unique
+	_spec.Node.Columns = _q.ctx.Fields
+	if len(_q.ctx.Fields) > 0 {
+		_spec.Unique = _q.ctx.Unique != nil && *_q.ctx.Unique
 	}
-	return sqlgraph.CountNodes(ctx, irq.driver, _spec)
+	return sqlgraph.CountNodes(ctx, _q.driver, _spec)
 }
 
-func (irq *IncidentRoleQuery) querySpec() *sqlgraph.QuerySpec {
+func (_q *IncidentRoleQuery) querySpec() *sqlgraph.QuerySpec {
 	_spec := sqlgraph.NewQuerySpec(incidentrole.Table, incidentrole.Columns, sqlgraph.NewFieldSpec(incidentrole.FieldID, field.TypeUUID))
-	_spec.From = irq.sql
-	if unique := irq.ctx.Unique; unique != nil {
+	_spec.From = _q.sql
+	if unique := _q.ctx.Unique; unique != nil {
 		_spec.Unique = *unique
-	} else if irq.path != nil {
+	} else if _q.path != nil {
 		_spec.Unique = true
 	}
-	if fields := irq.ctx.Fields; len(fields) > 0 {
+	if fields := _q.ctx.Fields; len(fields) > 0 {
 		_spec.Node.Columns = make([]string, 0, len(fields))
 		_spec.Node.Columns = append(_spec.Node.Columns, incidentrole.FieldID)
 		for i := range fields {
@@ -654,24 +654,24 @@ func (irq *IncidentRoleQuery) querySpec() *sqlgraph.QuerySpec {
 				_spec.Node.Columns = append(_spec.Node.Columns, fields[i])
 			}
 		}
-		if irq.withTenant != nil {
+		if _q.withTenant != nil {
 			_spec.Node.AddColumnOnce(incidentrole.FieldTenantID)
 		}
 	}
-	if ps := irq.predicates; len(ps) > 0 {
+	if ps := _q.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {
 				ps[i](selector)
 			}
 		}
 	}
-	if limit := irq.ctx.Limit; limit != nil {
+	if limit := _q.ctx.Limit; limit != nil {
 		_spec.Limit = *limit
 	}
-	if offset := irq.ctx.Offset; offset != nil {
+	if offset := _q.ctx.Offset; offset != nil {
 		_spec.Offset = *offset
 	}
-	if ps := irq.order; len(ps) > 0 {
+	if ps := _q.order; len(ps) > 0 {
 		_spec.Order = func(selector *sql.Selector) {
 			for i := range ps {
 				ps[i](selector)
@@ -681,45 +681,45 @@ func (irq *IncidentRoleQuery) querySpec() *sqlgraph.QuerySpec {
 	return _spec
 }
 
-func (irq *IncidentRoleQuery) sqlQuery(ctx context.Context) *sql.Selector {
-	builder := sql.Dialect(irq.driver.Dialect())
+func (_q *IncidentRoleQuery) sqlQuery(ctx context.Context) *sql.Selector {
+	builder := sql.Dialect(_q.driver.Dialect())
 	t1 := builder.Table(incidentrole.Table)
-	columns := irq.ctx.Fields
+	columns := _q.ctx.Fields
 	if len(columns) == 0 {
 		columns = incidentrole.Columns
 	}
 	selector := builder.Select(t1.Columns(columns...)...).From(t1)
-	if irq.sql != nil {
-		selector = irq.sql
+	if _q.sql != nil {
+		selector = _q.sql
 		selector.Select(selector.Columns(columns...)...)
 	}
-	if irq.ctx.Unique != nil && *irq.ctx.Unique {
+	if _q.ctx.Unique != nil && *_q.ctx.Unique {
 		selector.Distinct()
 	}
-	for _, m := range irq.modifiers {
+	for _, m := range _q.modifiers {
 		m(selector)
 	}
-	for _, p := range irq.predicates {
+	for _, p := range _q.predicates {
 		p(selector)
 	}
-	for _, p := range irq.order {
+	for _, p := range _q.order {
 		p(selector)
 	}
-	if offset := irq.ctx.Offset; offset != nil {
+	if offset := _q.ctx.Offset; offset != nil {
 		// limit is mandatory for offset clause. We start
 		// with default value, and override it below if needed.
 		selector.Offset(*offset).Limit(math.MaxInt32)
 	}
-	if limit := irq.ctx.Limit; limit != nil {
+	if limit := _q.ctx.Limit; limit != nil {
 		selector.Limit(*limit)
 	}
 	return selector
 }
 
 // Modify adds a query modifier for attaching custom logic to queries.
-func (irq *IncidentRoleQuery) Modify(modifiers ...func(s *sql.Selector)) *IncidentRoleSelect {
-	irq.modifiers = append(irq.modifiers, modifiers...)
-	return irq.Select()
+func (_q *IncidentRoleQuery) Modify(modifiers ...func(s *sql.Selector)) *IncidentRoleSelect {
+	_q.modifiers = append(_q.modifiers, modifiers...)
+	return _q.Select()
 }
 
 // IncidentRoleGroupBy is the group-by builder for IncidentRole entities.
@@ -729,41 +729,41 @@ type IncidentRoleGroupBy struct {
 }
 
 // Aggregate adds the given aggregation functions to the group-by query.
-func (irgb *IncidentRoleGroupBy) Aggregate(fns ...AggregateFunc) *IncidentRoleGroupBy {
-	irgb.fns = append(irgb.fns, fns...)
-	return irgb
+func (_g *IncidentRoleGroupBy) Aggregate(fns ...AggregateFunc) *IncidentRoleGroupBy {
+	_g.fns = append(_g.fns, fns...)
+	return _g
 }
 
 // Scan applies the selector query and scans the result into the given value.
-func (irgb *IncidentRoleGroupBy) Scan(ctx context.Context, v any) error {
-	ctx = setContextOp(ctx, irgb.build.ctx, ent.OpQueryGroupBy)
-	if err := irgb.build.prepareQuery(ctx); err != nil {
+func (_g *IncidentRoleGroupBy) Scan(ctx context.Context, v any) error {
+	ctx = setContextOp(ctx, _g.build.ctx, ent.OpQueryGroupBy)
+	if err := _g.build.prepareQuery(ctx); err != nil {
 		return err
 	}
-	return scanWithInterceptors[*IncidentRoleQuery, *IncidentRoleGroupBy](ctx, irgb.build, irgb, irgb.build.inters, v)
+	return scanWithInterceptors[*IncidentRoleQuery, *IncidentRoleGroupBy](ctx, _g.build, _g, _g.build.inters, v)
 }
 
-func (irgb *IncidentRoleGroupBy) sqlScan(ctx context.Context, root *IncidentRoleQuery, v any) error {
+func (_g *IncidentRoleGroupBy) sqlScan(ctx context.Context, root *IncidentRoleQuery, v any) error {
 	selector := root.sqlQuery(ctx).Select()
-	aggregation := make([]string, 0, len(irgb.fns))
-	for _, fn := range irgb.fns {
+	aggregation := make([]string, 0, len(_g.fns))
+	for _, fn := range _g.fns {
 		aggregation = append(aggregation, fn(selector))
 	}
 	if len(selector.SelectedColumns()) == 0 {
-		columns := make([]string, 0, len(*irgb.flds)+len(irgb.fns))
-		for _, f := range *irgb.flds {
+		columns := make([]string, 0, len(*_g.flds)+len(_g.fns))
+		for _, f := range *_g.flds {
 			columns = append(columns, selector.C(f))
 		}
 		columns = append(columns, aggregation...)
 		selector.Select(columns...)
 	}
-	selector.GroupBy(selector.Columns(*irgb.flds...)...)
+	selector.GroupBy(selector.Columns(*_g.flds...)...)
 	if err := selector.Err(); err != nil {
 		return err
 	}
 	rows := &sql.Rows{}
 	query, args := selector.Query()
-	if err := irgb.build.driver.Query(ctx, query, args, rows); err != nil {
+	if err := _g.build.driver.Query(ctx, query, args, rows); err != nil {
 		return err
 	}
 	defer rows.Close()
@@ -777,27 +777,27 @@ type IncidentRoleSelect struct {
 }
 
 // Aggregate adds the given aggregation functions to the selector query.
-func (irs *IncidentRoleSelect) Aggregate(fns ...AggregateFunc) *IncidentRoleSelect {
-	irs.fns = append(irs.fns, fns...)
-	return irs
+func (_s *IncidentRoleSelect) Aggregate(fns ...AggregateFunc) *IncidentRoleSelect {
+	_s.fns = append(_s.fns, fns...)
+	return _s
 }
 
 // Scan applies the selector query and scans the result into the given value.
-func (irs *IncidentRoleSelect) Scan(ctx context.Context, v any) error {
-	ctx = setContextOp(ctx, irs.ctx, ent.OpQuerySelect)
-	if err := irs.prepareQuery(ctx); err != nil {
+func (_s *IncidentRoleSelect) Scan(ctx context.Context, v any) error {
+	ctx = setContextOp(ctx, _s.ctx, ent.OpQuerySelect)
+	if err := _s.prepareQuery(ctx); err != nil {
 		return err
 	}
-	return scanWithInterceptors[*IncidentRoleQuery, *IncidentRoleSelect](ctx, irs.IncidentRoleQuery, irs, irs.inters, v)
+	return scanWithInterceptors[*IncidentRoleQuery, *IncidentRoleSelect](ctx, _s.IncidentRoleQuery, _s, _s.inters, v)
 }
 
-func (irs *IncidentRoleSelect) sqlScan(ctx context.Context, root *IncidentRoleQuery, v any) error {
+func (_s *IncidentRoleSelect) sqlScan(ctx context.Context, root *IncidentRoleQuery, v any) error {
 	selector := root.sqlQuery(ctx)
-	aggregation := make([]string, 0, len(irs.fns))
-	for _, fn := range irs.fns {
+	aggregation := make([]string, 0, len(_s.fns))
+	for _, fn := range _s.fns {
 		aggregation = append(aggregation, fn(selector))
 	}
-	switch n := len(*irs.selector.flds); {
+	switch n := len(*_s.selector.flds); {
 	case n == 0 && len(aggregation) > 0:
 		selector.Select(aggregation...)
 	case n != 0 && len(aggregation) > 0:
@@ -805,7 +805,7 @@ func (irs *IncidentRoleSelect) sqlScan(ctx context.Context, root *IncidentRoleQu
 	}
 	rows := &sql.Rows{}
 	query, args := selector.Query()
-	if err := irs.driver.Query(ctx, query, args, rows); err != nil {
+	if err := _s.driver.Query(ctx, query, args, rows); err != nil {
 		return err
 	}
 	defer rows.Close()
@@ -813,7 +813,7 @@ func (irs *IncidentRoleSelect) sqlScan(ctx context.Context, root *IncidentRoleQu
 }
 
 // Modify adds a query modifier for attaching custom logic to queries.
-func (irs *IncidentRoleSelect) Modify(modifiers ...func(s *sql.Selector)) *IncidentRoleSelect {
-	irs.modifiers = append(irs.modifiers, modifiers...)
-	return irs
+func (_s *IncidentRoleSelect) Modify(modifiers ...func(s *sql.Selector)) *IncidentRoleSelect {
+	_s.modifiers = append(_s.modifiers, modifiers...)
+	return _s
 }

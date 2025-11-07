@@ -165,7 +165,7 @@ func (*OncallRoster) scanValues(columns []string) ([]any, error) {
 
 // assignValues assigns the values that were returned from sql.Rows (after scanning)
 // to the OncallRoster fields.
-func (or *OncallRoster) assignValues(columns []string, values []any) error {
+func (_m *OncallRoster) assignValues(columns []string, values []any) error {
 	if m, n := len(values), len(columns); m < n {
 		return fmt.Errorf("mismatch number of scan values: %d != %d", m, n)
 	}
@@ -175,64 +175,64 @@ func (or *OncallRoster) assignValues(columns []string, values []any) error {
 			if value, ok := values[i].(*uuid.UUID); !ok {
 				return fmt.Errorf("unexpected type %T for field id", values[i])
 			} else if value != nil {
-				or.ID = *value
+				_m.ID = *value
 			}
 		case oncallroster.FieldTenantID:
 			if value, ok := values[i].(*sql.NullInt64); !ok {
 				return fmt.Errorf("unexpected type %T for field tenant_id", values[i])
 			} else if value.Valid {
-				or.TenantID = int(value.Int64)
+				_m.TenantID = int(value.Int64)
 			}
 		case oncallroster.FieldArchiveTime:
 			if value, ok := values[i].(*sql.NullTime); !ok {
 				return fmt.Errorf("unexpected type %T for field archive_time", values[i])
 			} else if value.Valid {
-				or.ArchiveTime = value.Time
+				_m.ArchiveTime = value.Time
 			}
 		case oncallroster.FieldName:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field name", values[i])
 			} else if value.Valid {
-				or.Name = value.String
+				_m.Name = value.String
 			}
 		case oncallroster.FieldSlug:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field slug", values[i])
 			} else if value.Valid {
-				or.Slug = value.String
+				_m.Slug = value.String
 			}
 		case oncallroster.FieldProviderID:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field provider_id", values[i])
 			} else if value.Valid {
-				or.ProviderID = value.String
+				_m.ProviderID = value.String
 			}
 		case oncallroster.FieldTimezone:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field timezone", values[i])
 			} else if value.Valid {
-				or.Timezone = value.String
+				_m.Timezone = value.String
 			}
 		case oncallroster.FieldChatHandle:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field chat_handle", values[i])
 			} else if value.Valid {
-				or.ChatHandle = value.String
+				_m.ChatHandle = value.String
 			}
 		case oncallroster.FieldChatChannelID:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field chat_channel_id", values[i])
 			} else if value.Valid {
-				or.ChatChannelID = value.String
+				_m.ChatChannelID = value.String
 			}
 		case oncallroster.FieldHandoverTemplateID:
 			if value, ok := values[i].(*uuid.UUID); !ok {
 				return fmt.Errorf("unexpected type %T for field handover_template_id", values[i])
 			} else if value != nil {
-				or.HandoverTemplateID = *value
+				_m.HandoverTemplateID = *value
 			}
 		default:
-			or.selectValues.Set(columns[i], values[i])
+			_m.selectValues.Set(columns[i], values[i])
 		}
 	}
 	return nil
@@ -240,99 +240,99 @@ func (or *OncallRoster) assignValues(columns []string, values []any) error {
 
 // Value returns the ent.Value that was dynamically selected and assigned to the OncallRoster.
 // This includes values selected through modifiers, order, etc.
-func (or *OncallRoster) Value(name string) (ent.Value, error) {
-	return or.selectValues.Get(name)
+func (_m *OncallRoster) Value(name string) (ent.Value, error) {
+	return _m.selectValues.Get(name)
 }
 
 // QueryTenant queries the "tenant" edge of the OncallRoster entity.
-func (or *OncallRoster) QueryTenant() *TenantQuery {
-	return NewOncallRosterClient(or.config).QueryTenant(or)
+func (_m *OncallRoster) QueryTenant() *TenantQuery {
+	return NewOncallRosterClient(_m.config).QueryTenant(_m)
 }
 
 // QuerySchedules queries the "schedules" edge of the OncallRoster entity.
-func (or *OncallRoster) QuerySchedules() *OncallScheduleQuery {
-	return NewOncallRosterClient(or.config).QuerySchedules(or)
+func (_m *OncallRoster) QuerySchedules() *OncallScheduleQuery {
+	return NewOncallRosterClient(_m.config).QuerySchedules(_m)
 }
 
 // QueryHandoverTemplate queries the "handover_template" edge of the OncallRoster entity.
-func (or *OncallRoster) QueryHandoverTemplate() *OncallHandoverTemplateQuery {
-	return NewOncallRosterClient(or.config).QueryHandoverTemplate(or)
+func (_m *OncallRoster) QueryHandoverTemplate() *OncallHandoverTemplateQuery {
+	return NewOncallRosterClient(_m.config).QueryHandoverTemplate(_m)
 }
 
 // QueryAlerts queries the "alerts" edge of the OncallRoster entity.
-func (or *OncallRoster) QueryAlerts() *AlertQuery {
-	return NewOncallRosterClient(or.config).QueryAlerts(or)
+func (_m *OncallRoster) QueryAlerts() *AlertQuery {
+	return NewOncallRosterClient(_m.config).QueryAlerts(_m)
 }
 
 // QueryTeams queries the "teams" edge of the OncallRoster entity.
-func (or *OncallRoster) QueryTeams() *TeamQuery {
-	return NewOncallRosterClient(or.config).QueryTeams(or)
+func (_m *OncallRoster) QueryTeams() *TeamQuery {
+	return NewOncallRosterClient(_m.config).QueryTeams(_m)
 }
 
 // QueryShifts queries the "shifts" edge of the OncallRoster entity.
-func (or *OncallRoster) QueryShifts() *OncallShiftQuery {
-	return NewOncallRosterClient(or.config).QueryShifts(or)
+func (_m *OncallRoster) QueryShifts() *OncallShiftQuery {
+	return NewOncallRosterClient(_m.config).QueryShifts(_m)
 }
 
 // QueryUserWatchers queries the "user_watchers" edge of the OncallRoster entity.
-func (or *OncallRoster) QueryUserWatchers() *UserQuery {
-	return NewOncallRosterClient(or.config).QueryUserWatchers(or)
+func (_m *OncallRoster) QueryUserWatchers() *UserQuery {
+	return NewOncallRosterClient(_m.config).QueryUserWatchers(_m)
 }
 
 // QueryMetrics queries the "metrics" edge of the OncallRoster entity.
-func (or *OncallRoster) QueryMetrics() *OncallRosterMetricsQuery {
-	return NewOncallRosterClient(or.config).QueryMetrics(or)
+func (_m *OncallRoster) QueryMetrics() *OncallRosterMetricsQuery {
+	return NewOncallRosterClient(_m.config).QueryMetrics(_m)
 }
 
 // Update returns a builder for updating this OncallRoster.
 // Note that you need to call OncallRoster.Unwrap() before calling this method if this OncallRoster
 // was returned from a transaction, and the transaction was committed or rolled back.
-func (or *OncallRoster) Update() *OncallRosterUpdateOne {
-	return NewOncallRosterClient(or.config).UpdateOne(or)
+func (_m *OncallRoster) Update() *OncallRosterUpdateOne {
+	return NewOncallRosterClient(_m.config).UpdateOne(_m)
 }
 
 // Unwrap unwraps the OncallRoster entity that was returned from a transaction after it was closed,
 // so that all future queries will be executed through the driver which created the transaction.
-func (or *OncallRoster) Unwrap() *OncallRoster {
-	_tx, ok := or.config.driver.(*txDriver)
+func (_m *OncallRoster) Unwrap() *OncallRoster {
+	_tx, ok := _m.config.driver.(*txDriver)
 	if !ok {
 		panic("ent: OncallRoster is not a transactional entity")
 	}
-	or.config.driver = _tx.drv
-	return or
+	_m.config.driver = _tx.drv
+	return _m
 }
 
 // String implements the fmt.Stringer.
-func (or *OncallRoster) String() string {
+func (_m *OncallRoster) String() string {
 	var builder strings.Builder
 	builder.WriteString("OncallRoster(")
-	builder.WriteString(fmt.Sprintf("id=%v, ", or.ID))
+	builder.WriteString(fmt.Sprintf("id=%v, ", _m.ID))
 	builder.WriteString("tenant_id=")
-	builder.WriteString(fmt.Sprintf("%v", or.TenantID))
+	builder.WriteString(fmt.Sprintf("%v", _m.TenantID))
 	builder.WriteString(", ")
 	builder.WriteString("archive_time=")
-	builder.WriteString(or.ArchiveTime.Format(time.ANSIC))
+	builder.WriteString(_m.ArchiveTime.Format(time.ANSIC))
 	builder.WriteString(", ")
 	builder.WriteString("name=")
-	builder.WriteString(or.Name)
+	builder.WriteString(_m.Name)
 	builder.WriteString(", ")
 	builder.WriteString("slug=")
-	builder.WriteString(or.Slug)
+	builder.WriteString(_m.Slug)
 	builder.WriteString(", ")
 	builder.WriteString("provider_id=")
-	builder.WriteString(or.ProviderID)
+	builder.WriteString(_m.ProviderID)
 	builder.WriteString(", ")
 	builder.WriteString("timezone=")
-	builder.WriteString(or.Timezone)
+	builder.WriteString(_m.Timezone)
 	builder.WriteString(", ")
 	builder.WriteString("chat_handle=")
-	builder.WriteString(or.ChatHandle)
+	builder.WriteString(_m.ChatHandle)
 	builder.WriteString(", ")
 	builder.WriteString("chat_channel_id=")
-	builder.WriteString(or.ChatChannelID)
+	builder.WriteString(_m.ChatChannelID)
 	builder.WriteString(", ")
 	builder.WriteString("handover_template_id=")
-	builder.WriteString(fmt.Sprintf("%v", or.HandoverTemplateID))
+	builder.WriteString(fmt.Sprintf("%v", _m.HandoverTemplateID))
 	builder.WriteByte(')')
 	return builder.String()
 }

@@ -102,7 +102,7 @@ func (*IncidentFieldOption) scanValues(columns []string) ([]any, error) {
 
 // assignValues assigns the values that were returned from sql.Rows (after scanning)
 // to the IncidentFieldOption fields.
-func (ifo *IncidentFieldOption) assignValues(columns []string, values []any) error {
+func (_m *IncidentFieldOption) assignValues(columns []string, values []any) error {
 	if m, n := len(values), len(columns); m < n {
 		return fmt.Errorf("mismatch number of scan values: %d != %d", m, n)
 	}
@@ -112,40 +112,40 @@ func (ifo *IncidentFieldOption) assignValues(columns []string, values []any) err
 			if value, ok := values[i].(*uuid.UUID); !ok {
 				return fmt.Errorf("unexpected type %T for field id", values[i])
 			} else if value != nil {
-				ifo.ID = *value
+				_m.ID = *value
 			}
 		case incidentfieldoption.FieldTenantID:
 			if value, ok := values[i].(*sql.NullInt64); !ok {
 				return fmt.Errorf("unexpected type %T for field tenant_id", values[i])
 			} else if value.Valid {
-				ifo.TenantID = int(value.Int64)
+				_m.TenantID = int(value.Int64)
 			}
 		case incidentfieldoption.FieldArchiveTime:
 			if value, ok := values[i].(*sql.NullTime); !ok {
 				return fmt.Errorf("unexpected type %T for field archive_time", values[i])
 			} else if value.Valid {
-				ifo.ArchiveTime = value.Time
+				_m.ArchiveTime = value.Time
 			}
 		case incidentfieldoption.FieldIncidentFieldID:
 			if value, ok := values[i].(*uuid.UUID); !ok {
 				return fmt.Errorf("unexpected type %T for field incident_field_id", values[i])
 			} else if value != nil {
-				ifo.IncidentFieldID = *value
+				_m.IncidentFieldID = *value
 			}
 		case incidentfieldoption.FieldType:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field type", values[i])
 			} else if value.Valid {
-				ifo.Type = incidentfieldoption.Type(value.String)
+				_m.Type = incidentfieldoption.Type(value.String)
 			}
 		case incidentfieldoption.FieldValue:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field value", values[i])
 			} else if value.Valid {
-				ifo.Value = value.String
+				_m.Value = value.String
 			}
 		default:
-			ifo.selectValues.Set(columns[i], values[i])
+			_m.selectValues.Set(columns[i], values[i])
 		}
 	}
 	return nil
@@ -153,62 +153,62 @@ func (ifo *IncidentFieldOption) assignValues(columns []string, values []any) err
 
 // GetValue returns the ent.Value that was dynamically selected and assigned to the IncidentFieldOption.
 // This includes values selected through modifiers, order, etc.
-func (ifo *IncidentFieldOption) GetValue(name string) (ent.Value, error) {
-	return ifo.selectValues.Get(name)
+func (_m *IncidentFieldOption) GetValue(name string) (ent.Value, error) {
+	return _m.selectValues.Get(name)
 }
 
 // QueryTenant queries the "tenant" edge of the IncidentFieldOption entity.
-func (ifo *IncidentFieldOption) QueryTenant() *TenantQuery {
-	return NewIncidentFieldOptionClient(ifo.config).QueryTenant(ifo)
+func (_m *IncidentFieldOption) QueryTenant() *TenantQuery {
+	return NewIncidentFieldOptionClient(_m.config).QueryTenant(_m)
 }
 
 // QueryIncidentField queries the "incident_field" edge of the IncidentFieldOption entity.
-func (ifo *IncidentFieldOption) QueryIncidentField() *IncidentFieldQuery {
-	return NewIncidentFieldOptionClient(ifo.config).QueryIncidentField(ifo)
+func (_m *IncidentFieldOption) QueryIncidentField() *IncidentFieldQuery {
+	return NewIncidentFieldOptionClient(_m.config).QueryIncidentField(_m)
 }
 
 // QueryIncidents queries the "incidents" edge of the IncidentFieldOption entity.
-func (ifo *IncidentFieldOption) QueryIncidents() *IncidentQuery {
-	return NewIncidentFieldOptionClient(ifo.config).QueryIncidents(ifo)
+func (_m *IncidentFieldOption) QueryIncidents() *IncidentQuery {
+	return NewIncidentFieldOptionClient(_m.config).QueryIncidents(_m)
 }
 
 // Update returns a builder for updating this IncidentFieldOption.
 // Note that you need to call IncidentFieldOption.Unwrap() before calling this method if this IncidentFieldOption
 // was returned from a transaction, and the transaction was committed or rolled back.
-func (ifo *IncidentFieldOption) Update() *IncidentFieldOptionUpdateOne {
-	return NewIncidentFieldOptionClient(ifo.config).UpdateOne(ifo)
+func (_m *IncidentFieldOption) Update() *IncidentFieldOptionUpdateOne {
+	return NewIncidentFieldOptionClient(_m.config).UpdateOne(_m)
 }
 
 // Unwrap unwraps the IncidentFieldOption entity that was returned from a transaction after it was closed,
 // so that all future queries will be executed through the driver which created the transaction.
-func (ifo *IncidentFieldOption) Unwrap() *IncidentFieldOption {
-	_tx, ok := ifo.config.driver.(*txDriver)
+func (_m *IncidentFieldOption) Unwrap() *IncidentFieldOption {
+	_tx, ok := _m.config.driver.(*txDriver)
 	if !ok {
 		panic("ent: IncidentFieldOption is not a transactional entity")
 	}
-	ifo.config.driver = _tx.drv
-	return ifo
+	_m.config.driver = _tx.drv
+	return _m
 }
 
 // String implements the fmt.Stringer.
-func (ifo *IncidentFieldOption) String() string {
+func (_m *IncidentFieldOption) String() string {
 	var builder strings.Builder
 	builder.WriteString("IncidentFieldOption(")
-	builder.WriteString(fmt.Sprintf("id=%v, ", ifo.ID))
+	builder.WriteString(fmt.Sprintf("id=%v, ", _m.ID))
 	builder.WriteString("tenant_id=")
-	builder.WriteString(fmt.Sprintf("%v", ifo.TenantID))
+	builder.WriteString(fmt.Sprintf("%v", _m.TenantID))
 	builder.WriteString(", ")
 	builder.WriteString("archive_time=")
-	builder.WriteString(ifo.ArchiveTime.Format(time.ANSIC))
+	builder.WriteString(_m.ArchiveTime.Format(time.ANSIC))
 	builder.WriteString(", ")
 	builder.WriteString("incident_field_id=")
-	builder.WriteString(fmt.Sprintf("%v", ifo.IncidentFieldID))
+	builder.WriteString(fmt.Sprintf("%v", _m.IncidentFieldID))
 	builder.WriteString(", ")
 	builder.WriteString("type=")
-	builder.WriteString(fmt.Sprintf("%v", ifo.Type))
+	builder.WriteString(fmt.Sprintf("%v", _m.Type))
 	builder.WriteString(", ")
 	builder.WriteString("value=")
-	builder.WriteString(ifo.Value)
+	builder.WriteString(_m.Value)
 	builder.WriteByte(')')
 	return builder.String()
 }

@@ -36,44 +36,44 @@ type IncidentLinkQuery struct {
 }
 
 // Where adds a new predicate for the IncidentLinkQuery builder.
-func (ilq *IncidentLinkQuery) Where(ps ...predicate.IncidentLink) *IncidentLinkQuery {
-	ilq.predicates = append(ilq.predicates, ps...)
-	return ilq
+func (_q *IncidentLinkQuery) Where(ps ...predicate.IncidentLink) *IncidentLinkQuery {
+	_q.predicates = append(_q.predicates, ps...)
+	return _q
 }
 
 // Limit the number of records to be returned by this query.
-func (ilq *IncidentLinkQuery) Limit(limit int) *IncidentLinkQuery {
-	ilq.ctx.Limit = &limit
-	return ilq
+func (_q *IncidentLinkQuery) Limit(limit int) *IncidentLinkQuery {
+	_q.ctx.Limit = &limit
+	return _q
 }
 
 // Offset to start from.
-func (ilq *IncidentLinkQuery) Offset(offset int) *IncidentLinkQuery {
-	ilq.ctx.Offset = &offset
-	return ilq
+func (_q *IncidentLinkQuery) Offset(offset int) *IncidentLinkQuery {
+	_q.ctx.Offset = &offset
+	return _q
 }
 
 // Unique configures the query builder to filter duplicate records on query.
 // By default, unique is set to true, and can be disabled using this method.
-func (ilq *IncidentLinkQuery) Unique(unique bool) *IncidentLinkQuery {
-	ilq.ctx.Unique = &unique
-	return ilq
+func (_q *IncidentLinkQuery) Unique(unique bool) *IncidentLinkQuery {
+	_q.ctx.Unique = &unique
+	return _q
 }
 
 // Order specifies how the records should be ordered.
-func (ilq *IncidentLinkQuery) Order(o ...incidentlink.OrderOption) *IncidentLinkQuery {
-	ilq.order = append(ilq.order, o...)
-	return ilq
+func (_q *IncidentLinkQuery) Order(o ...incidentlink.OrderOption) *IncidentLinkQuery {
+	_q.order = append(_q.order, o...)
+	return _q
 }
 
 // QueryTenant chains the current query on the "tenant" edge.
-func (ilq *IncidentLinkQuery) QueryTenant() *TenantQuery {
-	query := (&TenantClient{config: ilq.config}).Query()
+func (_q *IncidentLinkQuery) QueryTenant() *TenantQuery {
+	query := (&TenantClient{config: _q.config}).Query()
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
-		if err := ilq.prepareQuery(ctx); err != nil {
+		if err := _q.prepareQuery(ctx); err != nil {
 			return nil, err
 		}
-		selector := ilq.sqlQuery(ctx)
+		selector := _q.sqlQuery(ctx)
 		if err := selector.Err(); err != nil {
 			return nil, err
 		}
@@ -82,20 +82,20 @@ func (ilq *IncidentLinkQuery) QueryTenant() *TenantQuery {
 			sqlgraph.To(tenant.Table, tenant.FieldID),
 			sqlgraph.Edge(sqlgraph.M2O, false, incidentlink.TenantTable, incidentlink.TenantColumn),
 		)
-		fromU = sqlgraph.SetNeighbors(ilq.driver.Dialect(), step)
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
 	}
 	return query
 }
 
 // QueryIncident chains the current query on the "incident" edge.
-func (ilq *IncidentLinkQuery) QueryIncident() *IncidentQuery {
-	query := (&IncidentClient{config: ilq.config}).Query()
+func (_q *IncidentLinkQuery) QueryIncident() *IncidentQuery {
+	query := (&IncidentClient{config: _q.config}).Query()
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
-		if err := ilq.prepareQuery(ctx); err != nil {
+		if err := _q.prepareQuery(ctx); err != nil {
 			return nil, err
 		}
-		selector := ilq.sqlQuery(ctx)
+		selector := _q.sqlQuery(ctx)
 		if err := selector.Err(); err != nil {
 			return nil, err
 		}
@@ -104,20 +104,20 @@ func (ilq *IncidentLinkQuery) QueryIncident() *IncidentQuery {
 			sqlgraph.To(incident.Table, incident.FieldID),
 			sqlgraph.Edge(sqlgraph.M2O, false, incidentlink.IncidentTable, incidentlink.IncidentColumn),
 		)
-		fromU = sqlgraph.SetNeighbors(ilq.driver.Dialect(), step)
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
 	}
 	return query
 }
 
 // QueryLinkedIncident chains the current query on the "linked_incident" edge.
-func (ilq *IncidentLinkQuery) QueryLinkedIncident() *IncidentQuery {
-	query := (&IncidentClient{config: ilq.config}).Query()
+func (_q *IncidentLinkQuery) QueryLinkedIncident() *IncidentQuery {
+	query := (&IncidentClient{config: _q.config}).Query()
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
-		if err := ilq.prepareQuery(ctx); err != nil {
+		if err := _q.prepareQuery(ctx); err != nil {
 			return nil, err
 		}
-		selector := ilq.sqlQuery(ctx)
+		selector := _q.sqlQuery(ctx)
 		if err := selector.Err(); err != nil {
 			return nil, err
 		}
@@ -126,7 +126,7 @@ func (ilq *IncidentLinkQuery) QueryLinkedIncident() *IncidentQuery {
 			sqlgraph.To(incident.Table, incident.FieldID),
 			sqlgraph.Edge(sqlgraph.M2O, false, incidentlink.LinkedIncidentTable, incidentlink.LinkedIncidentColumn),
 		)
-		fromU = sqlgraph.SetNeighbors(ilq.driver.Dialect(), step)
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
 	}
 	return query
@@ -134,8 +134,8 @@ func (ilq *IncidentLinkQuery) QueryLinkedIncident() *IncidentQuery {
 
 // First returns the first IncidentLink entity from the query.
 // Returns a *NotFoundError when no IncidentLink was found.
-func (ilq *IncidentLinkQuery) First(ctx context.Context) (*IncidentLink, error) {
-	nodes, err := ilq.Limit(1).All(setContextOp(ctx, ilq.ctx, ent.OpQueryFirst))
+func (_q *IncidentLinkQuery) First(ctx context.Context) (*IncidentLink, error) {
+	nodes, err := _q.Limit(1).All(setContextOp(ctx, _q.ctx, ent.OpQueryFirst))
 	if err != nil {
 		return nil, err
 	}
@@ -146,8 +146,8 @@ func (ilq *IncidentLinkQuery) First(ctx context.Context) (*IncidentLink, error) 
 }
 
 // FirstX is like First, but panics if an error occurs.
-func (ilq *IncidentLinkQuery) FirstX(ctx context.Context) *IncidentLink {
-	node, err := ilq.First(ctx)
+func (_q *IncidentLinkQuery) FirstX(ctx context.Context) *IncidentLink {
+	node, err := _q.First(ctx)
 	if err != nil && !IsNotFound(err) {
 		panic(err)
 	}
@@ -156,9 +156,9 @@ func (ilq *IncidentLinkQuery) FirstX(ctx context.Context) *IncidentLink {
 
 // FirstID returns the first IncidentLink ID from the query.
 // Returns a *NotFoundError when no IncidentLink ID was found.
-func (ilq *IncidentLinkQuery) FirstID(ctx context.Context) (id int, err error) {
+func (_q *IncidentLinkQuery) FirstID(ctx context.Context) (id int, err error) {
 	var ids []int
-	if ids, err = ilq.Limit(1).IDs(setContextOp(ctx, ilq.ctx, ent.OpQueryFirstID)); err != nil {
+	if ids, err = _q.Limit(1).IDs(setContextOp(ctx, _q.ctx, ent.OpQueryFirstID)); err != nil {
 		return
 	}
 	if len(ids) == 0 {
@@ -169,8 +169,8 @@ func (ilq *IncidentLinkQuery) FirstID(ctx context.Context) (id int, err error) {
 }
 
 // FirstIDX is like FirstID, but panics if an error occurs.
-func (ilq *IncidentLinkQuery) FirstIDX(ctx context.Context) int {
-	id, err := ilq.FirstID(ctx)
+func (_q *IncidentLinkQuery) FirstIDX(ctx context.Context) int {
+	id, err := _q.FirstID(ctx)
 	if err != nil && !IsNotFound(err) {
 		panic(err)
 	}
@@ -180,8 +180,8 @@ func (ilq *IncidentLinkQuery) FirstIDX(ctx context.Context) int {
 // Only returns a single IncidentLink entity found by the query, ensuring it only returns one.
 // Returns a *NotSingularError when more than one IncidentLink entity is found.
 // Returns a *NotFoundError when no IncidentLink entities are found.
-func (ilq *IncidentLinkQuery) Only(ctx context.Context) (*IncidentLink, error) {
-	nodes, err := ilq.Limit(2).All(setContextOp(ctx, ilq.ctx, ent.OpQueryOnly))
+func (_q *IncidentLinkQuery) Only(ctx context.Context) (*IncidentLink, error) {
+	nodes, err := _q.Limit(2).All(setContextOp(ctx, _q.ctx, ent.OpQueryOnly))
 	if err != nil {
 		return nil, err
 	}
@@ -196,8 +196,8 @@ func (ilq *IncidentLinkQuery) Only(ctx context.Context) (*IncidentLink, error) {
 }
 
 // OnlyX is like Only, but panics if an error occurs.
-func (ilq *IncidentLinkQuery) OnlyX(ctx context.Context) *IncidentLink {
-	node, err := ilq.Only(ctx)
+func (_q *IncidentLinkQuery) OnlyX(ctx context.Context) *IncidentLink {
+	node, err := _q.Only(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -207,9 +207,9 @@ func (ilq *IncidentLinkQuery) OnlyX(ctx context.Context) *IncidentLink {
 // OnlyID is like Only, but returns the only IncidentLink ID in the query.
 // Returns a *NotSingularError when more than one IncidentLink ID is found.
 // Returns a *NotFoundError when no entities are found.
-func (ilq *IncidentLinkQuery) OnlyID(ctx context.Context) (id int, err error) {
+func (_q *IncidentLinkQuery) OnlyID(ctx context.Context) (id int, err error) {
 	var ids []int
-	if ids, err = ilq.Limit(2).IDs(setContextOp(ctx, ilq.ctx, ent.OpQueryOnlyID)); err != nil {
+	if ids, err = _q.Limit(2).IDs(setContextOp(ctx, _q.ctx, ent.OpQueryOnlyID)); err != nil {
 		return
 	}
 	switch len(ids) {
@@ -224,8 +224,8 @@ func (ilq *IncidentLinkQuery) OnlyID(ctx context.Context) (id int, err error) {
 }
 
 // OnlyIDX is like OnlyID, but panics if an error occurs.
-func (ilq *IncidentLinkQuery) OnlyIDX(ctx context.Context) int {
-	id, err := ilq.OnlyID(ctx)
+func (_q *IncidentLinkQuery) OnlyIDX(ctx context.Context) int {
+	id, err := _q.OnlyID(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -233,18 +233,18 @@ func (ilq *IncidentLinkQuery) OnlyIDX(ctx context.Context) int {
 }
 
 // All executes the query and returns a list of IncidentLinks.
-func (ilq *IncidentLinkQuery) All(ctx context.Context) ([]*IncidentLink, error) {
-	ctx = setContextOp(ctx, ilq.ctx, ent.OpQueryAll)
-	if err := ilq.prepareQuery(ctx); err != nil {
+func (_q *IncidentLinkQuery) All(ctx context.Context) ([]*IncidentLink, error) {
+	ctx = setContextOp(ctx, _q.ctx, ent.OpQueryAll)
+	if err := _q.prepareQuery(ctx); err != nil {
 		return nil, err
 	}
 	qr := querierAll[[]*IncidentLink, *IncidentLinkQuery]()
-	return withInterceptors[[]*IncidentLink](ctx, ilq, qr, ilq.inters)
+	return withInterceptors[[]*IncidentLink](ctx, _q, qr, _q.inters)
 }
 
 // AllX is like All, but panics if an error occurs.
-func (ilq *IncidentLinkQuery) AllX(ctx context.Context) []*IncidentLink {
-	nodes, err := ilq.All(ctx)
+func (_q *IncidentLinkQuery) AllX(ctx context.Context) []*IncidentLink {
+	nodes, err := _q.All(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -252,20 +252,20 @@ func (ilq *IncidentLinkQuery) AllX(ctx context.Context) []*IncidentLink {
 }
 
 // IDs executes the query and returns a list of IncidentLink IDs.
-func (ilq *IncidentLinkQuery) IDs(ctx context.Context) (ids []int, err error) {
-	if ilq.ctx.Unique == nil && ilq.path != nil {
-		ilq.Unique(true)
+func (_q *IncidentLinkQuery) IDs(ctx context.Context) (ids []int, err error) {
+	if _q.ctx.Unique == nil && _q.path != nil {
+		_q.Unique(true)
 	}
-	ctx = setContextOp(ctx, ilq.ctx, ent.OpQueryIDs)
-	if err = ilq.Select(incidentlink.FieldID).Scan(ctx, &ids); err != nil {
+	ctx = setContextOp(ctx, _q.ctx, ent.OpQueryIDs)
+	if err = _q.Select(incidentlink.FieldID).Scan(ctx, &ids); err != nil {
 		return nil, err
 	}
 	return ids, nil
 }
 
 // IDsX is like IDs, but panics if an error occurs.
-func (ilq *IncidentLinkQuery) IDsX(ctx context.Context) []int {
-	ids, err := ilq.IDs(ctx)
+func (_q *IncidentLinkQuery) IDsX(ctx context.Context) []int {
+	ids, err := _q.IDs(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -273,17 +273,17 @@ func (ilq *IncidentLinkQuery) IDsX(ctx context.Context) []int {
 }
 
 // Count returns the count of the given query.
-func (ilq *IncidentLinkQuery) Count(ctx context.Context) (int, error) {
-	ctx = setContextOp(ctx, ilq.ctx, ent.OpQueryCount)
-	if err := ilq.prepareQuery(ctx); err != nil {
+func (_q *IncidentLinkQuery) Count(ctx context.Context) (int, error) {
+	ctx = setContextOp(ctx, _q.ctx, ent.OpQueryCount)
+	if err := _q.prepareQuery(ctx); err != nil {
 		return 0, err
 	}
-	return withInterceptors[int](ctx, ilq, querierCount[*IncidentLinkQuery](), ilq.inters)
+	return withInterceptors[int](ctx, _q, querierCount[*IncidentLinkQuery](), _q.inters)
 }
 
 // CountX is like Count, but panics if an error occurs.
-func (ilq *IncidentLinkQuery) CountX(ctx context.Context) int {
-	count, err := ilq.Count(ctx)
+func (_q *IncidentLinkQuery) CountX(ctx context.Context) int {
+	count, err := _q.Count(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -291,9 +291,9 @@ func (ilq *IncidentLinkQuery) CountX(ctx context.Context) int {
 }
 
 // Exist returns true if the query has elements in the graph.
-func (ilq *IncidentLinkQuery) Exist(ctx context.Context) (bool, error) {
-	ctx = setContextOp(ctx, ilq.ctx, ent.OpQueryExist)
-	switch _, err := ilq.FirstID(ctx); {
+func (_q *IncidentLinkQuery) Exist(ctx context.Context) (bool, error) {
+	ctx = setContextOp(ctx, _q.ctx, ent.OpQueryExist)
+	switch _, err := _q.FirstID(ctx); {
 	case IsNotFound(err):
 		return false, nil
 	case err != nil:
@@ -304,8 +304,8 @@ func (ilq *IncidentLinkQuery) Exist(ctx context.Context) (bool, error) {
 }
 
 // ExistX is like Exist, but panics if an error occurs.
-func (ilq *IncidentLinkQuery) ExistX(ctx context.Context) bool {
-	exist, err := ilq.Exist(ctx)
+func (_q *IncidentLinkQuery) ExistX(ctx context.Context) bool {
+	exist, err := _q.Exist(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -314,57 +314,57 @@ func (ilq *IncidentLinkQuery) ExistX(ctx context.Context) bool {
 
 // Clone returns a duplicate of the IncidentLinkQuery builder, including all associated steps. It can be
 // used to prepare common query builders and use them differently after the clone is made.
-func (ilq *IncidentLinkQuery) Clone() *IncidentLinkQuery {
-	if ilq == nil {
+func (_q *IncidentLinkQuery) Clone() *IncidentLinkQuery {
+	if _q == nil {
 		return nil
 	}
 	return &IncidentLinkQuery{
-		config:             ilq.config,
-		ctx:                ilq.ctx.Clone(),
-		order:              append([]incidentlink.OrderOption{}, ilq.order...),
-		inters:             append([]Interceptor{}, ilq.inters...),
-		predicates:         append([]predicate.IncidentLink{}, ilq.predicates...),
-		withTenant:         ilq.withTenant.Clone(),
-		withIncident:       ilq.withIncident.Clone(),
-		withLinkedIncident: ilq.withLinkedIncident.Clone(),
+		config:             _q.config,
+		ctx:                _q.ctx.Clone(),
+		order:              append([]incidentlink.OrderOption{}, _q.order...),
+		inters:             append([]Interceptor{}, _q.inters...),
+		predicates:         append([]predicate.IncidentLink{}, _q.predicates...),
+		withTenant:         _q.withTenant.Clone(),
+		withIncident:       _q.withIncident.Clone(),
+		withLinkedIncident: _q.withLinkedIncident.Clone(),
 		// clone intermediate query.
-		sql:       ilq.sql.Clone(),
-		path:      ilq.path,
-		modifiers: append([]func(*sql.Selector){}, ilq.modifiers...),
+		sql:       _q.sql.Clone(),
+		path:      _q.path,
+		modifiers: append([]func(*sql.Selector){}, _q.modifiers...),
 	}
 }
 
 // WithTenant tells the query-builder to eager-load the nodes that are connected to
 // the "tenant" edge. The optional arguments are used to configure the query builder of the edge.
-func (ilq *IncidentLinkQuery) WithTenant(opts ...func(*TenantQuery)) *IncidentLinkQuery {
-	query := (&TenantClient{config: ilq.config}).Query()
+func (_q *IncidentLinkQuery) WithTenant(opts ...func(*TenantQuery)) *IncidentLinkQuery {
+	query := (&TenantClient{config: _q.config}).Query()
 	for _, opt := range opts {
 		opt(query)
 	}
-	ilq.withTenant = query
-	return ilq
+	_q.withTenant = query
+	return _q
 }
 
 // WithIncident tells the query-builder to eager-load the nodes that are connected to
 // the "incident" edge. The optional arguments are used to configure the query builder of the edge.
-func (ilq *IncidentLinkQuery) WithIncident(opts ...func(*IncidentQuery)) *IncidentLinkQuery {
-	query := (&IncidentClient{config: ilq.config}).Query()
+func (_q *IncidentLinkQuery) WithIncident(opts ...func(*IncidentQuery)) *IncidentLinkQuery {
+	query := (&IncidentClient{config: _q.config}).Query()
 	for _, opt := range opts {
 		opt(query)
 	}
-	ilq.withIncident = query
-	return ilq
+	_q.withIncident = query
+	return _q
 }
 
 // WithLinkedIncident tells the query-builder to eager-load the nodes that are connected to
 // the "linked_incident" edge. The optional arguments are used to configure the query builder of the edge.
-func (ilq *IncidentLinkQuery) WithLinkedIncident(opts ...func(*IncidentQuery)) *IncidentLinkQuery {
-	query := (&IncidentClient{config: ilq.config}).Query()
+func (_q *IncidentLinkQuery) WithLinkedIncident(opts ...func(*IncidentQuery)) *IncidentLinkQuery {
+	query := (&IncidentClient{config: _q.config}).Query()
 	for _, opt := range opts {
 		opt(query)
 	}
-	ilq.withLinkedIncident = query
-	return ilq
+	_q.withLinkedIncident = query
+	return _q
 }
 
 // GroupBy is used to group vertices by one or more fields/columns.
@@ -381,10 +381,10 @@ func (ilq *IncidentLinkQuery) WithLinkedIncident(opts ...func(*IncidentQuery)) *
 //		GroupBy(incidentlink.FieldTenantID).
 //		Aggregate(ent.Count()).
 //		Scan(ctx, &v)
-func (ilq *IncidentLinkQuery) GroupBy(field string, fields ...string) *IncidentLinkGroupBy {
-	ilq.ctx.Fields = append([]string{field}, fields...)
-	grbuild := &IncidentLinkGroupBy{build: ilq}
-	grbuild.flds = &ilq.ctx.Fields
+func (_q *IncidentLinkQuery) GroupBy(field string, fields ...string) *IncidentLinkGroupBy {
+	_q.ctx.Fields = append([]string{field}, fields...)
+	grbuild := &IncidentLinkGroupBy{build: _q}
+	grbuild.flds = &_q.ctx.Fields
 	grbuild.label = incidentlink.Label
 	grbuild.scan = grbuild.Scan
 	return grbuild
@@ -402,96 +402,96 @@ func (ilq *IncidentLinkQuery) GroupBy(field string, fields ...string) *IncidentL
 //	client.IncidentLink.Query().
 //		Select(incidentlink.FieldTenantID).
 //		Scan(ctx, &v)
-func (ilq *IncidentLinkQuery) Select(fields ...string) *IncidentLinkSelect {
-	ilq.ctx.Fields = append(ilq.ctx.Fields, fields...)
-	sbuild := &IncidentLinkSelect{IncidentLinkQuery: ilq}
+func (_q *IncidentLinkQuery) Select(fields ...string) *IncidentLinkSelect {
+	_q.ctx.Fields = append(_q.ctx.Fields, fields...)
+	sbuild := &IncidentLinkSelect{IncidentLinkQuery: _q}
 	sbuild.label = incidentlink.Label
-	sbuild.flds, sbuild.scan = &ilq.ctx.Fields, sbuild.Scan
+	sbuild.flds, sbuild.scan = &_q.ctx.Fields, sbuild.Scan
 	return sbuild
 }
 
 // Aggregate returns a IncidentLinkSelect configured with the given aggregations.
-func (ilq *IncidentLinkQuery) Aggregate(fns ...AggregateFunc) *IncidentLinkSelect {
-	return ilq.Select().Aggregate(fns...)
+func (_q *IncidentLinkQuery) Aggregate(fns ...AggregateFunc) *IncidentLinkSelect {
+	return _q.Select().Aggregate(fns...)
 }
 
-func (ilq *IncidentLinkQuery) prepareQuery(ctx context.Context) error {
-	for _, inter := range ilq.inters {
+func (_q *IncidentLinkQuery) prepareQuery(ctx context.Context) error {
+	for _, inter := range _q.inters {
 		if inter == nil {
 			return fmt.Errorf("ent: uninitialized interceptor (forgotten import ent/runtime?)")
 		}
 		if trv, ok := inter.(Traverser); ok {
-			if err := trv.Traverse(ctx, ilq); err != nil {
+			if err := trv.Traverse(ctx, _q); err != nil {
 				return err
 			}
 		}
 	}
-	for _, f := range ilq.ctx.Fields {
+	for _, f := range _q.ctx.Fields {
 		if !incidentlink.ValidColumn(f) {
 			return &ValidationError{Name: f, err: fmt.Errorf("ent: invalid field %q for query", f)}
 		}
 	}
-	if ilq.path != nil {
-		prev, err := ilq.path(ctx)
+	if _q.path != nil {
+		prev, err := _q.path(ctx)
 		if err != nil {
 			return err
 		}
-		ilq.sql = prev
+		_q.sql = prev
 	}
 	if incidentlink.Policy == nil {
 		return errors.New("ent: uninitialized incidentlink.Policy (forgotten import ent/runtime?)")
 	}
-	if err := incidentlink.Policy.EvalQuery(ctx, ilq); err != nil {
+	if err := incidentlink.Policy.EvalQuery(ctx, _q); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (ilq *IncidentLinkQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*IncidentLink, error) {
+func (_q *IncidentLinkQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*IncidentLink, error) {
 	var (
 		nodes       = []*IncidentLink{}
-		_spec       = ilq.querySpec()
+		_spec       = _q.querySpec()
 		loadedTypes = [3]bool{
-			ilq.withTenant != nil,
-			ilq.withIncident != nil,
-			ilq.withLinkedIncident != nil,
+			_q.withTenant != nil,
+			_q.withIncident != nil,
+			_q.withLinkedIncident != nil,
 		}
 	)
 	_spec.ScanValues = func(columns []string) ([]any, error) {
 		return (*IncidentLink).scanValues(nil, columns)
 	}
 	_spec.Assign = func(columns []string, values []any) error {
-		node := &IncidentLink{config: ilq.config}
+		node := &IncidentLink{config: _q.config}
 		nodes = append(nodes, node)
 		node.Edges.loadedTypes = loadedTypes
 		return node.assignValues(columns, values)
 	}
-	if len(ilq.modifiers) > 0 {
-		_spec.Modifiers = ilq.modifiers
+	if len(_q.modifiers) > 0 {
+		_spec.Modifiers = _q.modifiers
 	}
 	for i := range hooks {
 		hooks[i](ctx, _spec)
 	}
-	if err := sqlgraph.QueryNodes(ctx, ilq.driver, _spec); err != nil {
+	if err := sqlgraph.QueryNodes(ctx, _q.driver, _spec); err != nil {
 		return nil, err
 	}
 	if len(nodes) == 0 {
 		return nodes, nil
 	}
-	if query := ilq.withTenant; query != nil {
-		if err := ilq.loadTenant(ctx, query, nodes, nil,
+	if query := _q.withTenant; query != nil {
+		if err := _q.loadTenant(ctx, query, nodes, nil,
 			func(n *IncidentLink, e *Tenant) { n.Edges.Tenant = e }); err != nil {
 			return nil, err
 		}
 	}
-	if query := ilq.withIncident; query != nil {
-		if err := ilq.loadIncident(ctx, query, nodes, nil,
+	if query := _q.withIncident; query != nil {
+		if err := _q.loadIncident(ctx, query, nodes, nil,
 			func(n *IncidentLink, e *Incident) { n.Edges.Incident = e }); err != nil {
 			return nil, err
 		}
 	}
-	if query := ilq.withLinkedIncident; query != nil {
-		if err := ilq.loadLinkedIncident(ctx, query, nodes, nil,
+	if query := _q.withLinkedIncident; query != nil {
+		if err := _q.loadLinkedIncident(ctx, query, nodes, nil,
 			func(n *IncidentLink, e *Incident) { n.Edges.LinkedIncident = e }); err != nil {
 			return nil, err
 		}
@@ -499,7 +499,7 @@ func (ilq *IncidentLinkQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([
 	return nodes, nil
 }
 
-func (ilq *IncidentLinkQuery) loadTenant(ctx context.Context, query *TenantQuery, nodes []*IncidentLink, init func(*IncidentLink), assign func(*IncidentLink, *Tenant)) error {
+func (_q *IncidentLinkQuery) loadTenant(ctx context.Context, query *TenantQuery, nodes []*IncidentLink, init func(*IncidentLink), assign func(*IncidentLink, *Tenant)) error {
 	ids := make([]int, 0, len(nodes))
 	nodeids := make(map[int][]*IncidentLink)
 	for i := range nodes {
@@ -528,7 +528,7 @@ func (ilq *IncidentLinkQuery) loadTenant(ctx context.Context, query *TenantQuery
 	}
 	return nil
 }
-func (ilq *IncidentLinkQuery) loadIncident(ctx context.Context, query *IncidentQuery, nodes []*IncidentLink, init func(*IncidentLink), assign func(*IncidentLink, *Incident)) error {
+func (_q *IncidentLinkQuery) loadIncident(ctx context.Context, query *IncidentQuery, nodes []*IncidentLink, init func(*IncidentLink), assign func(*IncidentLink, *Incident)) error {
 	ids := make([]uuid.UUID, 0, len(nodes))
 	nodeids := make(map[uuid.UUID][]*IncidentLink)
 	for i := range nodes {
@@ -557,7 +557,7 @@ func (ilq *IncidentLinkQuery) loadIncident(ctx context.Context, query *IncidentQ
 	}
 	return nil
 }
-func (ilq *IncidentLinkQuery) loadLinkedIncident(ctx context.Context, query *IncidentQuery, nodes []*IncidentLink, init func(*IncidentLink), assign func(*IncidentLink, *Incident)) error {
+func (_q *IncidentLinkQuery) loadLinkedIncident(ctx context.Context, query *IncidentQuery, nodes []*IncidentLink, init func(*IncidentLink), assign func(*IncidentLink, *Incident)) error {
 	ids := make([]uuid.UUID, 0, len(nodes))
 	nodeids := make(map[uuid.UUID][]*IncidentLink)
 	for i := range nodes {
@@ -587,27 +587,27 @@ func (ilq *IncidentLinkQuery) loadLinkedIncident(ctx context.Context, query *Inc
 	return nil
 }
 
-func (ilq *IncidentLinkQuery) sqlCount(ctx context.Context) (int, error) {
-	_spec := ilq.querySpec()
-	if len(ilq.modifiers) > 0 {
-		_spec.Modifiers = ilq.modifiers
+func (_q *IncidentLinkQuery) sqlCount(ctx context.Context) (int, error) {
+	_spec := _q.querySpec()
+	if len(_q.modifiers) > 0 {
+		_spec.Modifiers = _q.modifiers
 	}
-	_spec.Node.Columns = ilq.ctx.Fields
-	if len(ilq.ctx.Fields) > 0 {
-		_spec.Unique = ilq.ctx.Unique != nil && *ilq.ctx.Unique
+	_spec.Node.Columns = _q.ctx.Fields
+	if len(_q.ctx.Fields) > 0 {
+		_spec.Unique = _q.ctx.Unique != nil && *_q.ctx.Unique
 	}
-	return sqlgraph.CountNodes(ctx, ilq.driver, _spec)
+	return sqlgraph.CountNodes(ctx, _q.driver, _spec)
 }
 
-func (ilq *IncidentLinkQuery) querySpec() *sqlgraph.QuerySpec {
+func (_q *IncidentLinkQuery) querySpec() *sqlgraph.QuerySpec {
 	_spec := sqlgraph.NewQuerySpec(incidentlink.Table, incidentlink.Columns, sqlgraph.NewFieldSpec(incidentlink.FieldID, field.TypeInt))
-	_spec.From = ilq.sql
-	if unique := ilq.ctx.Unique; unique != nil {
+	_spec.From = _q.sql
+	if unique := _q.ctx.Unique; unique != nil {
 		_spec.Unique = *unique
-	} else if ilq.path != nil {
+	} else if _q.path != nil {
 		_spec.Unique = true
 	}
-	if fields := ilq.ctx.Fields; len(fields) > 0 {
+	if fields := _q.ctx.Fields; len(fields) > 0 {
 		_spec.Node.Columns = make([]string, 0, len(fields))
 		_spec.Node.Columns = append(_spec.Node.Columns, incidentlink.FieldID)
 		for i := range fields {
@@ -615,30 +615,30 @@ func (ilq *IncidentLinkQuery) querySpec() *sqlgraph.QuerySpec {
 				_spec.Node.Columns = append(_spec.Node.Columns, fields[i])
 			}
 		}
-		if ilq.withTenant != nil {
+		if _q.withTenant != nil {
 			_spec.Node.AddColumnOnce(incidentlink.FieldTenantID)
 		}
-		if ilq.withIncident != nil {
+		if _q.withIncident != nil {
 			_spec.Node.AddColumnOnce(incidentlink.FieldIncidentID)
 		}
-		if ilq.withLinkedIncident != nil {
+		if _q.withLinkedIncident != nil {
 			_spec.Node.AddColumnOnce(incidentlink.FieldLinkedIncidentID)
 		}
 	}
-	if ps := ilq.predicates; len(ps) > 0 {
+	if ps := _q.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {
 				ps[i](selector)
 			}
 		}
 	}
-	if limit := ilq.ctx.Limit; limit != nil {
+	if limit := _q.ctx.Limit; limit != nil {
 		_spec.Limit = *limit
 	}
-	if offset := ilq.ctx.Offset; offset != nil {
+	if offset := _q.ctx.Offset; offset != nil {
 		_spec.Offset = *offset
 	}
-	if ps := ilq.order; len(ps) > 0 {
+	if ps := _q.order; len(ps) > 0 {
 		_spec.Order = func(selector *sql.Selector) {
 			for i := range ps {
 				ps[i](selector)
@@ -648,45 +648,45 @@ func (ilq *IncidentLinkQuery) querySpec() *sqlgraph.QuerySpec {
 	return _spec
 }
 
-func (ilq *IncidentLinkQuery) sqlQuery(ctx context.Context) *sql.Selector {
-	builder := sql.Dialect(ilq.driver.Dialect())
+func (_q *IncidentLinkQuery) sqlQuery(ctx context.Context) *sql.Selector {
+	builder := sql.Dialect(_q.driver.Dialect())
 	t1 := builder.Table(incidentlink.Table)
-	columns := ilq.ctx.Fields
+	columns := _q.ctx.Fields
 	if len(columns) == 0 {
 		columns = incidentlink.Columns
 	}
 	selector := builder.Select(t1.Columns(columns...)...).From(t1)
-	if ilq.sql != nil {
-		selector = ilq.sql
+	if _q.sql != nil {
+		selector = _q.sql
 		selector.Select(selector.Columns(columns...)...)
 	}
-	if ilq.ctx.Unique != nil && *ilq.ctx.Unique {
+	if _q.ctx.Unique != nil && *_q.ctx.Unique {
 		selector.Distinct()
 	}
-	for _, m := range ilq.modifiers {
+	for _, m := range _q.modifiers {
 		m(selector)
 	}
-	for _, p := range ilq.predicates {
+	for _, p := range _q.predicates {
 		p(selector)
 	}
-	for _, p := range ilq.order {
+	for _, p := range _q.order {
 		p(selector)
 	}
-	if offset := ilq.ctx.Offset; offset != nil {
+	if offset := _q.ctx.Offset; offset != nil {
 		// limit is mandatory for offset clause. We start
 		// with default value, and override it below if needed.
 		selector.Offset(*offset).Limit(math.MaxInt32)
 	}
-	if limit := ilq.ctx.Limit; limit != nil {
+	if limit := _q.ctx.Limit; limit != nil {
 		selector.Limit(*limit)
 	}
 	return selector
 }
 
 // Modify adds a query modifier for attaching custom logic to queries.
-func (ilq *IncidentLinkQuery) Modify(modifiers ...func(s *sql.Selector)) *IncidentLinkSelect {
-	ilq.modifiers = append(ilq.modifiers, modifiers...)
-	return ilq.Select()
+func (_q *IncidentLinkQuery) Modify(modifiers ...func(s *sql.Selector)) *IncidentLinkSelect {
+	_q.modifiers = append(_q.modifiers, modifiers...)
+	return _q.Select()
 }
 
 // IncidentLinkGroupBy is the group-by builder for IncidentLink entities.
@@ -696,41 +696,41 @@ type IncidentLinkGroupBy struct {
 }
 
 // Aggregate adds the given aggregation functions to the group-by query.
-func (ilgb *IncidentLinkGroupBy) Aggregate(fns ...AggregateFunc) *IncidentLinkGroupBy {
-	ilgb.fns = append(ilgb.fns, fns...)
-	return ilgb
+func (_g *IncidentLinkGroupBy) Aggregate(fns ...AggregateFunc) *IncidentLinkGroupBy {
+	_g.fns = append(_g.fns, fns...)
+	return _g
 }
 
 // Scan applies the selector query and scans the result into the given value.
-func (ilgb *IncidentLinkGroupBy) Scan(ctx context.Context, v any) error {
-	ctx = setContextOp(ctx, ilgb.build.ctx, ent.OpQueryGroupBy)
-	if err := ilgb.build.prepareQuery(ctx); err != nil {
+func (_g *IncidentLinkGroupBy) Scan(ctx context.Context, v any) error {
+	ctx = setContextOp(ctx, _g.build.ctx, ent.OpQueryGroupBy)
+	if err := _g.build.prepareQuery(ctx); err != nil {
 		return err
 	}
-	return scanWithInterceptors[*IncidentLinkQuery, *IncidentLinkGroupBy](ctx, ilgb.build, ilgb, ilgb.build.inters, v)
+	return scanWithInterceptors[*IncidentLinkQuery, *IncidentLinkGroupBy](ctx, _g.build, _g, _g.build.inters, v)
 }
 
-func (ilgb *IncidentLinkGroupBy) sqlScan(ctx context.Context, root *IncidentLinkQuery, v any) error {
+func (_g *IncidentLinkGroupBy) sqlScan(ctx context.Context, root *IncidentLinkQuery, v any) error {
 	selector := root.sqlQuery(ctx).Select()
-	aggregation := make([]string, 0, len(ilgb.fns))
-	for _, fn := range ilgb.fns {
+	aggregation := make([]string, 0, len(_g.fns))
+	for _, fn := range _g.fns {
 		aggregation = append(aggregation, fn(selector))
 	}
 	if len(selector.SelectedColumns()) == 0 {
-		columns := make([]string, 0, len(*ilgb.flds)+len(ilgb.fns))
-		for _, f := range *ilgb.flds {
+		columns := make([]string, 0, len(*_g.flds)+len(_g.fns))
+		for _, f := range *_g.flds {
 			columns = append(columns, selector.C(f))
 		}
 		columns = append(columns, aggregation...)
 		selector.Select(columns...)
 	}
-	selector.GroupBy(selector.Columns(*ilgb.flds...)...)
+	selector.GroupBy(selector.Columns(*_g.flds...)...)
 	if err := selector.Err(); err != nil {
 		return err
 	}
 	rows := &sql.Rows{}
 	query, args := selector.Query()
-	if err := ilgb.build.driver.Query(ctx, query, args, rows); err != nil {
+	if err := _g.build.driver.Query(ctx, query, args, rows); err != nil {
 		return err
 	}
 	defer rows.Close()
@@ -744,27 +744,27 @@ type IncidentLinkSelect struct {
 }
 
 // Aggregate adds the given aggregation functions to the selector query.
-func (ils *IncidentLinkSelect) Aggregate(fns ...AggregateFunc) *IncidentLinkSelect {
-	ils.fns = append(ils.fns, fns...)
-	return ils
+func (_s *IncidentLinkSelect) Aggregate(fns ...AggregateFunc) *IncidentLinkSelect {
+	_s.fns = append(_s.fns, fns...)
+	return _s
 }
 
 // Scan applies the selector query and scans the result into the given value.
-func (ils *IncidentLinkSelect) Scan(ctx context.Context, v any) error {
-	ctx = setContextOp(ctx, ils.ctx, ent.OpQuerySelect)
-	if err := ils.prepareQuery(ctx); err != nil {
+func (_s *IncidentLinkSelect) Scan(ctx context.Context, v any) error {
+	ctx = setContextOp(ctx, _s.ctx, ent.OpQuerySelect)
+	if err := _s.prepareQuery(ctx); err != nil {
 		return err
 	}
-	return scanWithInterceptors[*IncidentLinkQuery, *IncidentLinkSelect](ctx, ils.IncidentLinkQuery, ils, ils.inters, v)
+	return scanWithInterceptors[*IncidentLinkQuery, *IncidentLinkSelect](ctx, _s.IncidentLinkQuery, _s, _s.inters, v)
 }
 
-func (ils *IncidentLinkSelect) sqlScan(ctx context.Context, root *IncidentLinkQuery, v any) error {
+func (_s *IncidentLinkSelect) sqlScan(ctx context.Context, root *IncidentLinkQuery, v any) error {
 	selector := root.sqlQuery(ctx)
-	aggregation := make([]string, 0, len(ils.fns))
-	for _, fn := range ils.fns {
+	aggregation := make([]string, 0, len(_s.fns))
+	for _, fn := range _s.fns {
 		aggregation = append(aggregation, fn(selector))
 	}
-	switch n := len(*ils.selector.flds); {
+	switch n := len(*_s.selector.flds); {
 	case n == 0 && len(aggregation) > 0:
 		selector.Select(aggregation...)
 	case n != 0 && len(aggregation) > 0:
@@ -772,7 +772,7 @@ func (ils *IncidentLinkSelect) sqlScan(ctx context.Context, root *IncidentLinkQu
 	}
 	rows := &sql.Rows{}
 	query, args := selector.Query()
-	if err := ils.driver.Query(ctx, query, args, rows); err != nil {
+	if err := _s.driver.Query(ctx, query, args, rows); err != nil {
 		return err
 	}
 	defer rows.Close()
@@ -780,7 +780,7 @@ func (ils *IncidentLinkSelect) sqlScan(ctx context.Context, root *IncidentLinkQu
 }
 
 // Modify adds a query modifier for attaching custom logic to queries.
-func (ils *IncidentLinkSelect) Modify(modifiers ...func(s *sql.Selector)) *IncidentLinkSelect {
-	ils.modifiers = append(ils.modifiers, modifiers...)
-	return ils
+func (_s *IncidentLinkSelect) Modify(modifiers ...func(s *sql.Selector)) *IncidentLinkSelect {
+	_s.modifiers = append(_s.modifiers, modifiers...)
+	return _s
 }

@@ -29,114 +29,114 @@ type RetrospectiveCreate struct {
 }
 
 // SetTenantID sets the "tenant_id" field.
-func (rc *RetrospectiveCreate) SetTenantID(i int) *RetrospectiveCreate {
-	rc.mutation.SetTenantID(i)
-	return rc
+func (_c *RetrospectiveCreate) SetTenantID(v int) *RetrospectiveCreate {
+	_c.mutation.SetTenantID(v)
+	return _c
 }
 
 // SetIncidentID sets the "incident_id" field.
-func (rc *RetrospectiveCreate) SetIncidentID(u uuid.UUID) *RetrospectiveCreate {
-	rc.mutation.SetIncidentID(u)
-	return rc
+func (_c *RetrospectiveCreate) SetIncidentID(v uuid.UUID) *RetrospectiveCreate {
+	_c.mutation.SetIncidentID(v)
+	return _c
 }
 
 // SetDocumentID sets the "document_id" field.
-func (rc *RetrospectiveCreate) SetDocumentID(u uuid.UUID) *RetrospectiveCreate {
-	rc.mutation.SetDocumentID(u)
-	return rc
+func (_c *RetrospectiveCreate) SetDocumentID(v uuid.UUID) *RetrospectiveCreate {
+	_c.mutation.SetDocumentID(v)
+	return _c
 }
 
 // SetSystemAnalysisID sets the "system_analysis_id" field.
-func (rc *RetrospectiveCreate) SetSystemAnalysisID(u uuid.UUID) *RetrospectiveCreate {
-	rc.mutation.SetSystemAnalysisID(u)
-	return rc
+func (_c *RetrospectiveCreate) SetSystemAnalysisID(v uuid.UUID) *RetrospectiveCreate {
+	_c.mutation.SetSystemAnalysisID(v)
+	return _c
 }
 
 // SetNillableSystemAnalysisID sets the "system_analysis_id" field if the given value is not nil.
-func (rc *RetrospectiveCreate) SetNillableSystemAnalysisID(u *uuid.UUID) *RetrospectiveCreate {
-	if u != nil {
-		rc.SetSystemAnalysisID(*u)
+func (_c *RetrospectiveCreate) SetNillableSystemAnalysisID(v *uuid.UUID) *RetrospectiveCreate {
+	if v != nil {
+		_c.SetSystemAnalysisID(*v)
 	}
-	return rc
+	return _c
 }
 
 // SetType sets the "type" field.
-func (rc *RetrospectiveCreate) SetType(r retrospective.Type) *RetrospectiveCreate {
-	rc.mutation.SetType(r)
-	return rc
+func (_c *RetrospectiveCreate) SetType(v retrospective.Type) *RetrospectiveCreate {
+	_c.mutation.SetType(v)
+	return _c
 }
 
 // SetState sets the "state" field.
-func (rc *RetrospectiveCreate) SetState(r retrospective.State) *RetrospectiveCreate {
-	rc.mutation.SetState(r)
-	return rc
+func (_c *RetrospectiveCreate) SetState(v retrospective.State) *RetrospectiveCreate {
+	_c.mutation.SetState(v)
+	return _c
 }
 
 // SetID sets the "id" field.
-func (rc *RetrospectiveCreate) SetID(u uuid.UUID) *RetrospectiveCreate {
-	rc.mutation.SetID(u)
-	return rc
+func (_c *RetrospectiveCreate) SetID(v uuid.UUID) *RetrospectiveCreate {
+	_c.mutation.SetID(v)
+	return _c
 }
 
 // SetNillableID sets the "id" field if the given value is not nil.
-func (rc *RetrospectiveCreate) SetNillableID(u *uuid.UUID) *RetrospectiveCreate {
-	if u != nil {
-		rc.SetID(*u)
+func (_c *RetrospectiveCreate) SetNillableID(v *uuid.UUID) *RetrospectiveCreate {
+	if v != nil {
+		_c.SetID(*v)
 	}
-	return rc
+	return _c
 }
 
 // SetTenant sets the "tenant" edge to the Tenant entity.
-func (rc *RetrospectiveCreate) SetTenant(t *Tenant) *RetrospectiveCreate {
-	return rc.SetTenantID(t.ID)
+func (_c *RetrospectiveCreate) SetTenant(v *Tenant) *RetrospectiveCreate {
+	return _c.SetTenantID(v.ID)
 }
 
 // SetIncident sets the "incident" edge to the Incident entity.
-func (rc *RetrospectiveCreate) SetIncident(i *Incident) *RetrospectiveCreate {
-	return rc.SetIncidentID(i.ID)
+func (_c *RetrospectiveCreate) SetIncident(v *Incident) *RetrospectiveCreate {
+	return _c.SetIncidentID(v.ID)
 }
 
 // SetDocument sets the "document" edge to the Document entity.
-func (rc *RetrospectiveCreate) SetDocument(d *Document) *RetrospectiveCreate {
-	return rc.SetDocumentID(d.ID)
+func (_c *RetrospectiveCreate) SetDocument(v *Document) *RetrospectiveCreate {
+	return _c.SetDocumentID(v.ID)
 }
 
 // AddCommentIDs adds the "comments" edge to the RetrospectiveComment entity by IDs.
-func (rc *RetrospectiveCreate) AddCommentIDs(ids ...uuid.UUID) *RetrospectiveCreate {
-	rc.mutation.AddCommentIDs(ids...)
-	return rc
+func (_c *RetrospectiveCreate) AddCommentIDs(ids ...uuid.UUID) *RetrospectiveCreate {
+	_c.mutation.AddCommentIDs(ids...)
+	return _c
 }
 
 // AddComments adds the "comments" edges to the RetrospectiveComment entity.
-func (rc *RetrospectiveCreate) AddComments(r ...*RetrospectiveComment) *RetrospectiveCreate {
-	ids := make([]uuid.UUID, len(r))
-	for i := range r {
-		ids[i] = r[i].ID
+func (_c *RetrospectiveCreate) AddComments(v ...*RetrospectiveComment) *RetrospectiveCreate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
 	}
-	return rc.AddCommentIDs(ids...)
+	return _c.AddCommentIDs(ids...)
 }
 
 // SetSystemAnalysis sets the "system_analysis" edge to the SystemAnalysis entity.
-func (rc *RetrospectiveCreate) SetSystemAnalysis(s *SystemAnalysis) *RetrospectiveCreate {
-	return rc.SetSystemAnalysisID(s.ID)
+func (_c *RetrospectiveCreate) SetSystemAnalysis(v *SystemAnalysis) *RetrospectiveCreate {
+	return _c.SetSystemAnalysisID(v.ID)
 }
 
 // Mutation returns the RetrospectiveMutation object of the builder.
-func (rc *RetrospectiveCreate) Mutation() *RetrospectiveMutation {
-	return rc.mutation
+func (_c *RetrospectiveCreate) Mutation() *RetrospectiveMutation {
+	return _c.mutation
 }
 
 // Save creates the Retrospective in the database.
-func (rc *RetrospectiveCreate) Save(ctx context.Context) (*Retrospective, error) {
-	if err := rc.defaults(); err != nil {
+func (_c *RetrospectiveCreate) Save(ctx context.Context) (*Retrospective, error) {
+	if err := _c.defaults(); err != nil {
 		return nil, err
 	}
-	return withHooks(ctx, rc.sqlSave, rc.mutation, rc.hooks)
+	return withHooks(ctx, _c.sqlSave, _c.mutation, _c.hooks)
 }
 
 // SaveX calls Save and panics if Save returns an error.
-func (rc *RetrospectiveCreate) SaveX(ctx context.Context) *Retrospective {
-	v, err := rc.Save(ctx)
+func (_c *RetrospectiveCreate) SaveX(ctx context.Context) *Retrospective {
+	v, err := _c.Save(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -144,75 +144,75 @@ func (rc *RetrospectiveCreate) SaveX(ctx context.Context) *Retrospective {
 }
 
 // Exec executes the query.
-func (rc *RetrospectiveCreate) Exec(ctx context.Context) error {
-	_, err := rc.Save(ctx)
+func (_c *RetrospectiveCreate) Exec(ctx context.Context) error {
+	_, err := _c.Save(ctx)
 	return err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (rc *RetrospectiveCreate) ExecX(ctx context.Context) {
-	if err := rc.Exec(ctx); err != nil {
+func (_c *RetrospectiveCreate) ExecX(ctx context.Context) {
+	if err := _c.Exec(ctx); err != nil {
 		panic(err)
 	}
 }
 
 // defaults sets the default values of the builder before save.
-func (rc *RetrospectiveCreate) defaults() error {
-	if _, ok := rc.mutation.ID(); !ok {
+func (_c *RetrospectiveCreate) defaults() error {
+	if _, ok := _c.mutation.ID(); !ok {
 		if retrospective.DefaultID == nil {
 			return fmt.Errorf("ent: uninitialized retrospective.DefaultID (forgotten import ent/runtime?)")
 		}
 		v := retrospective.DefaultID()
-		rc.mutation.SetID(v)
+		_c.mutation.SetID(v)
 	}
 	return nil
 }
 
 // check runs all checks and user-defined validators on the builder.
-func (rc *RetrospectiveCreate) check() error {
-	if _, ok := rc.mutation.TenantID(); !ok {
+func (_c *RetrospectiveCreate) check() error {
+	if _, ok := _c.mutation.TenantID(); !ok {
 		return &ValidationError{Name: "tenant_id", err: errors.New(`ent: missing required field "Retrospective.tenant_id"`)}
 	}
-	if _, ok := rc.mutation.IncidentID(); !ok {
+	if _, ok := _c.mutation.IncidentID(); !ok {
 		return &ValidationError{Name: "incident_id", err: errors.New(`ent: missing required field "Retrospective.incident_id"`)}
 	}
-	if _, ok := rc.mutation.DocumentID(); !ok {
+	if _, ok := _c.mutation.DocumentID(); !ok {
 		return &ValidationError{Name: "document_id", err: errors.New(`ent: missing required field "Retrospective.document_id"`)}
 	}
-	if _, ok := rc.mutation.GetType(); !ok {
+	if _, ok := _c.mutation.GetType(); !ok {
 		return &ValidationError{Name: "type", err: errors.New(`ent: missing required field "Retrospective.type"`)}
 	}
-	if v, ok := rc.mutation.GetType(); ok {
+	if v, ok := _c.mutation.GetType(); ok {
 		if err := retrospective.TypeValidator(v); err != nil {
 			return &ValidationError{Name: "type", err: fmt.Errorf(`ent: validator failed for field "Retrospective.type": %w`, err)}
 		}
 	}
-	if _, ok := rc.mutation.State(); !ok {
+	if _, ok := _c.mutation.State(); !ok {
 		return &ValidationError{Name: "state", err: errors.New(`ent: missing required field "Retrospective.state"`)}
 	}
-	if v, ok := rc.mutation.State(); ok {
+	if v, ok := _c.mutation.State(); ok {
 		if err := retrospective.StateValidator(v); err != nil {
 			return &ValidationError{Name: "state", err: fmt.Errorf(`ent: validator failed for field "Retrospective.state": %w`, err)}
 		}
 	}
-	if len(rc.mutation.TenantIDs()) == 0 {
+	if len(_c.mutation.TenantIDs()) == 0 {
 		return &ValidationError{Name: "tenant", err: errors.New(`ent: missing required edge "Retrospective.tenant"`)}
 	}
-	if len(rc.mutation.IncidentIDs()) == 0 {
+	if len(_c.mutation.IncidentIDs()) == 0 {
 		return &ValidationError{Name: "incident", err: errors.New(`ent: missing required edge "Retrospective.incident"`)}
 	}
-	if len(rc.mutation.DocumentIDs()) == 0 {
+	if len(_c.mutation.DocumentIDs()) == 0 {
 		return &ValidationError{Name: "document", err: errors.New(`ent: missing required edge "Retrospective.document"`)}
 	}
 	return nil
 }
 
-func (rc *RetrospectiveCreate) sqlSave(ctx context.Context) (*Retrospective, error) {
-	if err := rc.check(); err != nil {
+func (_c *RetrospectiveCreate) sqlSave(ctx context.Context) (*Retrospective, error) {
+	if err := _c.check(); err != nil {
 		return nil, err
 	}
-	_node, _spec := rc.createSpec()
-	if err := sqlgraph.CreateNode(ctx, rc.driver, _spec); err != nil {
+	_node, _spec := _c.createSpec()
+	if err := sqlgraph.CreateNode(ctx, _c.driver, _spec); err != nil {
 		if sqlgraph.IsConstraintError(err) {
 			err = &ConstraintError{msg: err.Error(), wrap: err}
 		}
@@ -225,30 +225,30 @@ func (rc *RetrospectiveCreate) sqlSave(ctx context.Context) (*Retrospective, err
 			return nil, err
 		}
 	}
-	rc.mutation.id = &_node.ID
-	rc.mutation.done = true
+	_c.mutation.id = &_node.ID
+	_c.mutation.done = true
 	return _node, nil
 }
 
-func (rc *RetrospectiveCreate) createSpec() (*Retrospective, *sqlgraph.CreateSpec) {
+func (_c *RetrospectiveCreate) createSpec() (*Retrospective, *sqlgraph.CreateSpec) {
 	var (
-		_node = &Retrospective{config: rc.config}
+		_node = &Retrospective{config: _c.config}
 		_spec = sqlgraph.NewCreateSpec(retrospective.Table, sqlgraph.NewFieldSpec(retrospective.FieldID, field.TypeUUID))
 	)
-	_spec.OnConflict = rc.conflict
-	if id, ok := rc.mutation.ID(); ok {
+	_spec.OnConflict = _c.conflict
+	if id, ok := _c.mutation.ID(); ok {
 		_node.ID = id
 		_spec.ID.Value = &id
 	}
-	if value, ok := rc.mutation.GetType(); ok {
+	if value, ok := _c.mutation.GetType(); ok {
 		_spec.SetField(retrospective.FieldType, field.TypeEnum, value)
 		_node.Type = value
 	}
-	if value, ok := rc.mutation.State(); ok {
+	if value, ok := _c.mutation.State(); ok {
 		_spec.SetField(retrospective.FieldState, field.TypeEnum, value)
 		_node.State = value
 	}
-	if nodes := rc.mutation.TenantIDs(); len(nodes) > 0 {
+	if nodes := _c.mutation.TenantIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
@@ -265,7 +265,7 @@ func (rc *RetrospectiveCreate) createSpec() (*Retrospective, *sqlgraph.CreateSpe
 		_node.TenantID = nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
-	if nodes := rc.mutation.IncidentIDs(); len(nodes) > 0 {
+	if nodes := _c.mutation.IncidentIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2O,
 			Inverse: true,
@@ -282,7 +282,7 @@ func (rc *RetrospectiveCreate) createSpec() (*Retrospective, *sqlgraph.CreateSpe
 		_node.IncidentID = nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
-	if nodes := rc.mutation.DocumentIDs(); len(nodes) > 0 {
+	if nodes := _c.mutation.DocumentIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2O,
 			Inverse: true,
@@ -299,7 +299,7 @@ func (rc *RetrospectiveCreate) createSpec() (*Retrospective, *sqlgraph.CreateSpe
 		_node.DocumentID = nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
-	if nodes := rc.mutation.CommentsIDs(); len(nodes) > 0 {
+	if nodes := _c.mutation.CommentsIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: true,
@@ -315,7 +315,7 @@ func (rc *RetrospectiveCreate) createSpec() (*Retrospective, *sqlgraph.CreateSpe
 		}
 		_spec.Edges = append(_spec.Edges, edge)
 	}
-	if nodes := rc.mutation.SystemAnalysisIDs(); len(nodes) > 0 {
+	if nodes := _c.mutation.SystemAnalysisIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2O,
 			Inverse: true,
@@ -351,10 +351,10 @@ func (rc *RetrospectiveCreate) createSpec() (*Retrospective, *sqlgraph.CreateSpe
 //			SetTenantID(v+v).
 //		}).
 //		Exec(ctx)
-func (rc *RetrospectiveCreate) OnConflict(opts ...sql.ConflictOption) *RetrospectiveUpsertOne {
-	rc.conflict = opts
+func (_c *RetrospectiveCreate) OnConflict(opts ...sql.ConflictOption) *RetrospectiveUpsertOne {
+	_c.conflict = opts
 	return &RetrospectiveUpsertOne{
-		create: rc,
+		create: _c,
 	}
 }
 
@@ -364,10 +364,10 @@ func (rc *RetrospectiveCreate) OnConflict(opts ...sql.ConflictOption) *Retrospec
 //	client.Retrospective.Create().
 //		OnConflict(sql.ConflictColumns(columns...)).
 //		Exec(ctx)
-func (rc *RetrospectiveCreate) OnConflictColumns(columns ...string) *RetrospectiveUpsertOne {
-	rc.conflict = append(rc.conflict, sql.ConflictColumns(columns...))
+func (_c *RetrospectiveCreate) OnConflictColumns(columns ...string) *RetrospectiveUpsertOne {
+	_c.conflict = append(_c.conflict, sql.ConflictColumns(columns...))
 	return &RetrospectiveUpsertOne{
-		create: rc,
+		create: _c,
 	}
 }
 
@@ -625,16 +625,16 @@ type RetrospectiveCreateBulk struct {
 }
 
 // Save creates the Retrospective entities in the database.
-func (rcb *RetrospectiveCreateBulk) Save(ctx context.Context) ([]*Retrospective, error) {
-	if rcb.err != nil {
-		return nil, rcb.err
+func (_c *RetrospectiveCreateBulk) Save(ctx context.Context) ([]*Retrospective, error) {
+	if _c.err != nil {
+		return nil, _c.err
 	}
-	specs := make([]*sqlgraph.CreateSpec, len(rcb.builders))
-	nodes := make([]*Retrospective, len(rcb.builders))
-	mutators := make([]Mutator, len(rcb.builders))
-	for i := range rcb.builders {
+	specs := make([]*sqlgraph.CreateSpec, len(_c.builders))
+	nodes := make([]*Retrospective, len(_c.builders))
+	mutators := make([]Mutator, len(_c.builders))
+	for i := range _c.builders {
 		func(i int, root context.Context) {
-			builder := rcb.builders[i]
+			builder := _c.builders[i]
 			builder.defaults()
 			var mut Mutator = MutateFunc(func(ctx context.Context, m Mutation) (Value, error) {
 				mutation, ok := m.(*RetrospectiveMutation)
@@ -648,12 +648,12 @@ func (rcb *RetrospectiveCreateBulk) Save(ctx context.Context) ([]*Retrospective,
 				var err error
 				nodes[i], specs[i] = builder.createSpec()
 				if i < len(mutators)-1 {
-					_, err = mutators[i+1].Mutate(root, rcb.builders[i+1].mutation)
+					_, err = mutators[i+1].Mutate(root, _c.builders[i+1].mutation)
 				} else {
 					spec := &sqlgraph.BatchCreateSpec{Nodes: specs}
-					spec.OnConflict = rcb.conflict
+					spec.OnConflict = _c.conflict
 					// Invoke the actual operation on the latest mutation in the chain.
-					if err = sqlgraph.BatchCreate(ctx, rcb.driver, spec); err != nil {
+					if err = sqlgraph.BatchCreate(ctx, _c.driver, spec); err != nil {
 						if sqlgraph.IsConstraintError(err) {
 							err = &ConstraintError{msg: err.Error(), wrap: err}
 						}
@@ -673,7 +673,7 @@ func (rcb *RetrospectiveCreateBulk) Save(ctx context.Context) ([]*Retrospective,
 		}(i, ctx)
 	}
 	if len(mutators) > 0 {
-		if _, err := mutators[0].Mutate(ctx, rcb.builders[0].mutation); err != nil {
+		if _, err := mutators[0].Mutate(ctx, _c.builders[0].mutation); err != nil {
 			return nil, err
 		}
 	}
@@ -681,8 +681,8 @@ func (rcb *RetrospectiveCreateBulk) Save(ctx context.Context) ([]*Retrospective,
 }
 
 // SaveX is like Save, but panics if an error occurs.
-func (rcb *RetrospectiveCreateBulk) SaveX(ctx context.Context) []*Retrospective {
-	v, err := rcb.Save(ctx)
+func (_c *RetrospectiveCreateBulk) SaveX(ctx context.Context) []*Retrospective {
+	v, err := _c.Save(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -690,14 +690,14 @@ func (rcb *RetrospectiveCreateBulk) SaveX(ctx context.Context) []*Retrospective 
 }
 
 // Exec executes the query.
-func (rcb *RetrospectiveCreateBulk) Exec(ctx context.Context) error {
-	_, err := rcb.Save(ctx)
+func (_c *RetrospectiveCreateBulk) Exec(ctx context.Context) error {
+	_, err := _c.Save(ctx)
 	return err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (rcb *RetrospectiveCreateBulk) ExecX(ctx context.Context) {
-	if err := rcb.Exec(ctx); err != nil {
+func (_c *RetrospectiveCreateBulk) ExecX(ctx context.Context) {
+	if err := _c.Exec(ctx); err != nil {
 		panic(err)
 	}
 }
@@ -717,10 +717,10 @@ func (rcb *RetrospectiveCreateBulk) ExecX(ctx context.Context) {
 //			SetTenantID(v+v).
 //		}).
 //		Exec(ctx)
-func (rcb *RetrospectiveCreateBulk) OnConflict(opts ...sql.ConflictOption) *RetrospectiveUpsertBulk {
-	rcb.conflict = opts
+func (_c *RetrospectiveCreateBulk) OnConflict(opts ...sql.ConflictOption) *RetrospectiveUpsertBulk {
+	_c.conflict = opts
 	return &RetrospectiveUpsertBulk{
-		create: rcb,
+		create: _c,
 	}
 }
 
@@ -730,10 +730,10 @@ func (rcb *RetrospectiveCreateBulk) OnConflict(opts ...sql.ConflictOption) *Retr
 //	client.Retrospective.Create().
 //		OnConflict(sql.ConflictColumns(columns...)).
 //		Exec(ctx)
-func (rcb *RetrospectiveCreateBulk) OnConflictColumns(columns ...string) *RetrospectiveUpsertBulk {
-	rcb.conflict = append(rcb.conflict, sql.ConflictColumns(columns...))
+func (_c *RetrospectiveCreateBulk) OnConflictColumns(columns ...string) *RetrospectiveUpsertBulk {
+	_c.conflict = append(_c.conflict, sql.ConflictColumns(columns...))
 	return &RetrospectiveUpsertBulk{
-		create: rcb,
+		create: _c,
 	}
 }
 

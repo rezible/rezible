@@ -27,131 +27,131 @@ type IncidentEventContextUpdate struct {
 }
 
 // Where appends a list predicates to the IncidentEventContextUpdate builder.
-func (iecu *IncidentEventContextUpdate) Where(ps ...predicate.IncidentEventContext) *IncidentEventContextUpdate {
-	iecu.mutation.Where(ps...)
-	return iecu
+func (_u *IncidentEventContextUpdate) Where(ps ...predicate.IncidentEventContext) *IncidentEventContextUpdate {
+	_u.mutation.Where(ps...)
+	return _u
 }
 
 // SetSystemState sets the "system_state" field.
-func (iecu *IncidentEventContextUpdate) SetSystemState(s string) *IncidentEventContextUpdate {
-	iecu.mutation.SetSystemState(s)
-	return iecu
+func (_u *IncidentEventContextUpdate) SetSystemState(v string) *IncidentEventContextUpdate {
+	_u.mutation.SetSystemState(v)
+	return _u
 }
 
 // SetNillableSystemState sets the "system_state" field if the given value is not nil.
-func (iecu *IncidentEventContextUpdate) SetNillableSystemState(s *string) *IncidentEventContextUpdate {
-	if s != nil {
-		iecu.SetSystemState(*s)
+func (_u *IncidentEventContextUpdate) SetNillableSystemState(v *string) *IncidentEventContextUpdate {
+	if v != nil {
+		_u.SetSystemState(*v)
 	}
-	return iecu
+	return _u
 }
 
 // ClearSystemState clears the value of the "system_state" field.
-func (iecu *IncidentEventContextUpdate) ClearSystemState() *IncidentEventContextUpdate {
-	iecu.mutation.ClearSystemState()
-	return iecu
+func (_u *IncidentEventContextUpdate) ClearSystemState() *IncidentEventContextUpdate {
+	_u.mutation.ClearSystemState()
+	return _u
 }
 
 // SetDecisionOptions sets the "decision_options" field.
-func (iecu *IncidentEventContextUpdate) SetDecisionOptions(s []string) *IncidentEventContextUpdate {
-	iecu.mutation.SetDecisionOptions(s)
-	return iecu
+func (_u *IncidentEventContextUpdate) SetDecisionOptions(v []string) *IncidentEventContextUpdate {
+	_u.mutation.SetDecisionOptions(v)
+	return _u
 }
 
-// AppendDecisionOptions appends s to the "decision_options" field.
-func (iecu *IncidentEventContextUpdate) AppendDecisionOptions(s []string) *IncidentEventContextUpdate {
-	iecu.mutation.AppendDecisionOptions(s)
-	return iecu
+// AppendDecisionOptions appends value to the "decision_options" field.
+func (_u *IncidentEventContextUpdate) AppendDecisionOptions(v []string) *IncidentEventContextUpdate {
+	_u.mutation.AppendDecisionOptions(v)
+	return _u
 }
 
 // ClearDecisionOptions clears the value of the "decision_options" field.
-func (iecu *IncidentEventContextUpdate) ClearDecisionOptions() *IncidentEventContextUpdate {
-	iecu.mutation.ClearDecisionOptions()
-	return iecu
+func (_u *IncidentEventContextUpdate) ClearDecisionOptions() *IncidentEventContextUpdate {
+	_u.mutation.ClearDecisionOptions()
+	return _u
 }
 
 // SetDecisionRationale sets the "decision_rationale" field.
-func (iecu *IncidentEventContextUpdate) SetDecisionRationale(s string) *IncidentEventContextUpdate {
-	iecu.mutation.SetDecisionRationale(s)
-	return iecu
+func (_u *IncidentEventContextUpdate) SetDecisionRationale(v string) *IncidentEventContextUpdate {
+	_u.mutation.SetDecisionRationale(v)
+	return _u
 }
 
 // SetNillableDecisionRationale sets the "decision_rationale" field if the given value is not nil.
-func (iecu *IncidentEventContextUpdate) SetNillableDecisionRationale(s *string) *IncidentEventContextUpdate {
-	if s != nil {
-		iecu.SetDecisionRationale(*s)
+func (_u *IncidentEventContextUpdate) SetNillableDecisionRationale(v *string) *IncidentEventContextUpdate {
+	if v != nil {
+		_u.SetDecisionRationale(*v)
 	}
-	return iecu
+	return _u
 }
 
 // ClearDecisionRationale clears the value of the "decision_rationale" field.
-func (iecu *IncidentEventContextUpdate) ClearDecisionRationale() *IncidentEventContextUpdate {
-	iecu.mutation.ClearDecisionRationale()
-	return iecu
+func (_u *IncidentEventContextUpdate) ClearDecisionRationale() *IncidentEventContextUpdate {
+	_u.mutation.ClearDecisionRationale()
+	return _u
 }
 
 // SetInvolvedPersonnel sets the "involved_personnel" field.
-func (iecu *IncidentEventContextUpdate) SetInvolvedPersonnel(s []string) *IncidentEventContextUpdate {
-	iecu.mutation.SetInvolvedPersonnel(s)
-	return iecu
+func (_u *IncidentEventContextUpdate) SetInvolvedPersonnel(v []string) *IncidentEventContextUpdate {
+	_u.mutation.SetInvolvedPersonnel(v)
+	return _u
 }
 
-// AppendInvolvedPersonnel appends s to the "involved_personnel" field.
-func (iecu *IncidentEventContextUpdate) AppendInvolvedPersonnel(s []string) *IncidentEventContextUpdate {
-	iecu.mutation.AppendInvolvedPersonnel(s)
-	return iecu
+// AppendInvolvedPersonnel appends value to the "involved_personnel" field.
+func (_u *IncidentEventContextUpdate) AppendInvolvedPersonnel(v []string) *IncidentEventContextUpdate {
+	_u.mutation.AppendInvolvedPersonnel(v)
+	return _u
 }
 
 // ClearInvolvedPersonnel clears the value of the "involved_personnel" field.
-func (iecu *IncidentEventContextUpdate) ClearInvolvedPersonnel() *IncidentEventContextUpdate {
-	iecu.mutation.ClearInvolvedPersonnel()
-	return iecu
+func (_u *IncidentEventContextUpdate) ClearInvolvedPersonnel() *IncidentEventContextUpdate {
+	_u.mutation.ClearInvolvedPersonnel()
+	return _u
 }
 
 // SetCreatedAt sets the "created_at" field.
-func (iecu *IncidentEventContextUpdate) SetCreatedAt(t time.Time) *IncidentEventContextUpdate {
-	iecu.mutation.SetCreatedAt(t)
-	return iecu
+func (_u *IncidentEventContextUpdate) SetCreatedAt(v time.Time) *IncidentEventContextUpdate {
+	_u.mutation.SetCreatedAt(v)
+	return _u
 }
 
 // SetNillableCreatedAt sets the "created_at" field if the given value is not nil.
-func (iecu *IncidentEventContextUpdate) SetNillableCreatedAt(t *time.Time) *IncidentEventContextUpdate {
-	if t != nil {
-		iecu.SetCreatedAt(*t)
+func (_u *IncidentEventContextUpdate) SetNillableCreatedAt(v *time.Time) *IncidentEventContextUpdate {
+	if v != nil {
+		_u.SetCreatedAt(*v)
 	}
-	return iecu
+	return _u
 }
 
 // SetEventID sets the "event" edge to the IncidentEvent entity by ID.
-func (iecu *IncidentEventContextUpdate) SetEventID(id uuid.UUID) *IncidentEventContextUpdate {
-	iecu.mutation.SetEventID(id)
-	return iecu
+func (_u *IncidentEventContextUpdate) SetEventID(id uuid.UUID) *IncidentEventContextUpdate {
+	_u.mutation.SetEventID(id)
+	return _u
 }
 
 // SetEvent sets the "event" edge to the IncidentEvent entity.
-func (iecu *IncidentEventContextUpdate) SetEvent(i *IncidentEvent) *IncidentEventContextUpdate {
-	return iecu.SetEventID(i.ID)
+func (_u *IncidentEventContextUpdate) SetEvent(v *IncidentEvent) *IncidentEventContextUpdate {
+	return _u.SetEventID(v.ID)
 }
 
 // Mutation returns the IncidentEventContextMutation object of the builder.
-func (iecu *IncidentEventContextUpdate) Mutation() *IncidentEventContextMutation {
-	return iecu.mutation
+func (_u *IncidentEventContextUpdate) Mutation() *IncidentEventContextMutation {
+	return _u.mutation
 }
 
 // ClearEvent clears the "event" edge to the IncidentEvent entity.
-func (iecu *IncidentEventContextUpdate) ClearEvent() *IncidentEventContextUpdate {
-	iecu.mutation.ClearEvent()
-	return iecu
+func (_u *IncidentEventContextUpdate) ClearEvent() *IncidentEventContextUpdate {
+	_u.mutation.ClearEvent()
+	return _u
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
-func (iecu *IncidentEventContextUpdate) Save(ctx context.Context) (int, error) {
-	return withHooks(ctx, iecu.sqlSave, iecu.mutation, iecu.hooks)
+func (_u *IncidentEventContextUpdate) Save(ctx context.Context) (int, error) {
+	return withHooks(ctx, _u.sqlSave, _u.mutation, _u.hooks)
 }
 
 // SaveX is like Save, but panics if an error occurs.
-func (iecu *IncidentEventContextUpdate) SaveX(ctx context.Context) int {
-	affected, err := iecu.Save(ctx)
+func (_u *IncidentEventContextUpdate) SaveX(ctx context.Context) int {
+	affected, err := _u.Save(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -159,85 +159,85 @@ func (iecu *IncidentEventContextUpdate) SaveX(ctx context.Context) int {
 }
 
 // Exec executes the query.
-func (iecu *IncidentEventContextUpdate) Exec(ctx context.Context) error {
-	_, err := iecu.Save(ctx)
+func (_u *IncidentEventContextUpdate) Exec(ctx context.Context) error {
+	_, err := _u.Save(ctx)
 	return err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (iecu *IncidentEventContextUpdate) ExecX(ctx context.Context) {
-	if err := iecu.Exec(ctx); err != nil {
+func (_u *IncidentEventContextUpdate) ExecX(ctx context.Context) {
+	if err := _u.Exec(ctx); err != nil {
 		panic(err)
 	}
 }
 
 // check runs all checks and user-defined validators on the builder.
-func (iecu *IncidentEventContextUpdate) check() error {
-	if iecu.mutation.TenantCleared() && len(iecu.mutation.TenantIDs()) > 0 {
+func (_u *IncidentEventContextUpdate) check() error {
+	if _u.mutation.TenantCleared() && len(_u.mutation.TenantIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "IncidentEventContext.tenant"`)
 	}
-	if iecu.mutation.EventCleared() && len(iecu.mutation.EventIDs()) > 0 {
+	if _u.mutation.EventCleared() && len(_u.mutation.EventIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "IncidentEventContext.event"`)
 	}
 	return nil
 }
 
 // Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
-func (iecu *IncidentEventContextUpdate) Modify(modifiers ...func(u *sql.UpdateBuilder)) *IncidentEventContextUpdate {
-	iecu.modifiers = append(iecu.modifiers, modifiers...)
-	return iecu
+func (_u *IncidentEventContextUpdate) Modify(modifiers ...func(u *sql.UpdateBuilder)) *IncidentEventContextUpdate {
+	_u.modifiers = append(_u.modifiers, modifiers...)
+	return _u
 }
 
-func (iecu *IncidentEventContextUpdate) sqlSave(ctx context.Context) (n int, err error) {
-	if err := iecu.check(); err != nil {
-		return n, err
+func (_u *IncidentEventContextUpdate) sqlSave(ctx context.Context) (_node int, err error) {
+	if err := _u.check(); err != nil {
+		return _node, err
 	}
 	_spec := sqlgraph.NewUpdateSpec(incidenteventcontext.Table, incidenteventcontext.Columns, sqlgraph.NewFieldSpec(incidenteventcontext.FieldID, field.TypeUUID))
-	if ps := iecu.mutation.predicates; len(ps) > 0 {
+	if ps := _u.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {
 				ps[i](selector)
 			}
 		}
 	}
-	if value, ok := iecu.mutation.SystemState(); ok {
+	if value, ok := _u.mutation.SystemState(); ok {
 		_spec.SetField(incidenteventcontext.FieldSystemState, field.TypeString, value)
 	}
-	if iecu.mutation.SystemStateCleared() {
+	if _u.mutation.SystemStateCleared() {
 		_spec.ClearField(incidenteventcontext.FieldSystemState, field.TypeString)
 	}
-	if value, ok := iecu.mutation.DecisionOptions(); ok {
+	if value, ok := _u.mutation.DecisionOptions(); ok {
 		_spec.SetField(incidenteventcontext.FieldDecisionOptions, field.TypeJSON, value)
 	}
-	if value, ok := iecu.mutation.AppendedDecisionOptions(); ok {
+	if value, ok := _u.mutation.AppendedDecisionOptions(); ok {
 		_spec.AddModifier(func(u *sql.UpdateBuilder) {
 			sqljson.Append(u, incidenteventcontext.FieldDecisionOptions, value)
 		})
 	}
-	if iecu.mutation.DecisionOptionsCleared() {
+	if _u.mutation.DecisionOptionsCleared() {
 		_spec.ClearField(incidenteventcontext.FieldDecisionOptions, field.TypeJSON)
 	}
-	if value, ok := iecu.mutation.DecisionRationale(); ok {
+	if value, ok := _u.mutation.DecisionRationale(); ok {
 		_spec.SetField(incidenteventcontext.FieldDecisionRationale, field.TypeString, value)
 	}
-	if iecu.mutation.DecisionRationaleCleared() {
+	if _u.mutation.DecisionRationaleCleared() {
 		_spec.ClearField(incidenteventcontext.FieldDecisionRationale, field.TypeString)
 	}
-	if value, ok := iecu.mutation.InvolvedPersonnel(); ok {
+	if value, ok := _u.mutation.InvolvedPersonnel(); ok {
 		_spec.SetField(incidenteventcontext.FieldInvolvedPersonnel, field.TypeJSON, value)
 	}
-	if value, ok := iecu.mutation.AppendedInvolvedPersonnel(); ok {
+	if value, ok := _u.mutation.AppendedInvolvedPersonnel(); ok {
 		_spec.AddModifier(func(u *sql.UpdateBuilder) {
 			sqljson.Append(u, incidenteventcontext.FieldInvolvedPersonnel, value)
 		})
 	}
-	if iecu.mutation.InvolvedPersonnelCleared() {
+	if _u.mutation.InvolvedPersonnelCleared() {
 		_spec.ClearField(incidenteventcontext.FieldInvolvedPersonnel, field.TypeJSON)
 	}
-	if value, ok := iecu.mutation.CreatedAt(); ok {
+	if value, ok := _u.mutation.CreatedAt(); ok {
 		_spec.SetField(incidenteventcontext.FieldCreatedAt, field.TypeTime, value)
 	}
-	if iecu.mutation.EventCleared() {
+	if _u.mutation.EventCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2O,
 			Inverse: true,
@@ -250,7 +250,7 @@ func (iecu *IncidentEventContextUpdate) sqlSave(ctx context.Context) (n int, err
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := iecu.mutation.EventIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.EventIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2O,
 			Inverse: true,
@@ -266,8 +266,8 @@ func (iecu *IncidentEventContextUpdate) sqlSave(ctx context.Context) (n int, err
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	_spec.AddModifiers(iecu.modifiers...)
-	if n, err = sqlgraph.UpdateNodes(ctx, iecu.driver, _spec); err != nil {
+	_spec.AddModifiers(_u.modifiers...)
+	if _node, err = sqlgraph.UpdateNodes(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{incidenteventcontext.Label}
 		} else if sqlgraph.IsConstraintError(err) {
@@ -275,8 +275,8 @@ func (iecu *IncidentEventContextUpdate) sqlSave(ctx context.Context) (n int, err
 		}
 		return 0, err
 	}
-	iecu.mutation.done = true
-	return n, nil
+	_u.mutation.done = true
+	return _node, nil
 }
 
 // IncidentEventContextUpdateOne is the builder for updating a single IncidentEventContext entity.
@@ -289,138 +289,138 @@ type IncidentEventContextUpdateOne struct {
 }
 
 // SetSystemState sets the "system_state" field.
-func (iecuo *IncidentEventContextUpdateOne) SetSystemState(s string) *IncidentEventContextUpdateOne {
-	iecuo.mutation.SetSystemState(s)
-	return iecuo
+func (_u *IncidentEventContextUpdateOne) SetSystemState(v string) *IncidentEventContextUpdateOne {
+	_u.mutation.SetSystemState(v)
+	return _u
 }
 
 // SetNillableSystemState sets the "system_state" field if the given value is not nil.
-func (iecuo *IncidentEventContextUpdateOne) SetNillableSystemState(s *string) *IncidentEventContextUpdateOne {
-	if s != nil {
-		iecuo.SetSystemState(*s)
+func (_u *IncidentEventContextUpdateOne) SetNillableSystemState(v *string) *IncidentEventContextUpdateOne {
+	if v != nil {
+		_u.SetSystemState(*v)
 	}
-	return iecuo
+	return _u
 }
 
 // ClearSystemState clears the value of the "system_state" field.
-func (iecuo *IncidentEventContextUpdateOne) ClearSystemState() *IncidentEventContextUpdateOne {
-	iecuo.mutation.ClearSystemState()
-	return iecuo
+func (_u *IncidentEventContextUpdateOne) ClearSystemState() *IncidentEventContextUpdateOne {
+	_u.mutation.ClearSystemState()
+	return _u
 }
 
 // SetDecisionOptions sets the "decision_options" field.
-func (iecuo *IncidentEventContextUpdateOne) SetDecisionOptions(s []string) *IncidentEventContextUpdateOne {
-	iecuo.mutation.SetDecisionOptions(s)
-	return iecuo
+func (_u *IncidentEventContextUpdateOne) SetDecisionOptions(v []string) *IncidentEventContextUpdateOne {
+	_u.mutation.SetDecisionOptions(v)
+	return _u
 }
 
-// AppendDecisionOptions appends s to the "decision_options" field.
-func (iecuo *IncidentEventContextUpdateOne) AppendDecisionOptions(s []string) *IncidentEventContextUpdateOne {
-	iecuo.mutation.AppendDecisionOptions(s)
-	return iecuo
+// AppendDecisionOptions appends value to the "decision_options" field.
+func (_u *IncidentEventContextUpdateOne) AppendDecisionOptions(v []string) *IncidentEventContextUpdateOne {
+	_u.mutation.AppendDecisionOptions(v)
+	return _u
 }
 
 // ClearDecisionOptions clears the value of the "decision_options" field.
-func (iecuo *IncidentEventContextUpdateOne) ClearDecisionOptions() *IncidentEventContextUpdateOne {
-	iecuo.mutation.ClearDecisionOptions()
-	return iecuo
+func (_u *IncidentEventContextUpdateOne) ClearDecisionOptions() *IncidentEventContextUpdateOne {
+	_u.mutation.ClearDecisionOptions()
+	return _u
 }
 
 // SetDecisionRationale sets the "decision_rationale" field.
-func (iecuo *IncidentEventContextUpdateOne) SetDecisionRationale(s string) *IncidentEventContextUpdateOne {
-	iecuo.mutation.SetDecisionRationale(s)
-	return iecuo
+func (_u *IncidentEventContextUpdateOne) SetDecisionRationale(v string) *IncidentEventContextUpdateOne {
+	_u.mutation.SetDecisionRationale(v)
+	return _u
 }
 
 // SetNillableDecisionRationale sets the "decision_rationale" field if the given value is not nil.
-func (iecuo *IncidentEventContextUpdateOne) SetNillableDecisionRationale(s *string) *IncidentEventContextUpdateOne {
-	if s != nil {
-		iecuo.SetDecisionRationale(*s)
+func (_u *IncidentEventContextUpdateOne) SetNillableDecisionRationale(v *string) *IncidentEventContextUpdateOne {
+	if v != nil {
+		_u.SetDecisionRationale(*v)
 	}
-	return iecuo
+	return _u
 }
 
 // ClearDecisionRationale clears the value of the "decision_rationale" field.
-func (iecuo *IncidentEventContextUpdateOne) ClearDecisionRationale() *IncidentEventContextUpdateOne {
-	iecuo.mutation.ClearDecisionRationale()
-	return iecuo
+func (_u *IncidentEventContextUpdateOne) ClearDecisionRationale() *IncidentEventContextUpdateOne {
+	_u.mutation.ClearDecisionRationale()
+	return _u
 }
 
 // SetInvolvedPersonnel sets the "involved_personnel" field.
-func (iecuo *IncidentEventContextUpdateOne) SetInvolvedPersonnel(s []string) *IncidentEventContextUpdateOne {
-	iecuo.mutation.SetInvolvedPersonnel(s)
-	return iecuo
+func (_u *IncidentEventContextUpdateOne) SetInvolvedPersonnel(v []string) *IncidentEventContextUpdateOne {
+	_u.mutation.SetInvolvedPersonnel(v)
+	return _u
 }
 
-// AppendInvolvedPersonnel appends s to the "involved_personnel" field.
-func (iecuo *IncidentEventContextUpdateOne) AppendInvolvedPersonnel(s []string) *IncidentEventContextUpdateOne {
-	iecuo.mutation.AppendInvolvedPersonnel(s)
-	return iecuo
+// AppendInvolvedPersonnel appends value to the "involved_personnel" field.
+func (_u *IncidentEventContextUpdateOne) AppendInvolvedPersonnel(v []string) *IncidentEventContextUpdateOne {
+	_u.mutation.AppendInvolvedPersonnel(v)
+	return _u
 }
 
 // ClearInvolvedPersonnel clears the value of the "involved_personnel" field.
-func (iecuo *IncidentEventContextUpdateOne) ClearInvolvedPersonnel() *IncidentEventContextUpdateOne {
-	iecuo.mutation.ClearInvolvedPersonnel()
-	return iecuo
+func (_u *IncidentEventContextUpdateOne) ClearInvolvedPersonnel() *IncidentEventContextUpdateOne {
+	_u.mutation.ClearInvolvedPersonnel()
+	return _u
 }
 
 // SetCreatedAt sets the "created_at" field.
-func (iecuo *IncidentEventContextUpdateOne) SetCreatedAt(t time.Time) *IncidentEventContextUpdateOne {
-	iecuo.mutation.SetCreatedAt(t)
-	return iecuo
+func (_u *IncidentEventContextUpdateOne) SetCreatedAt(v time.Time) *IncidentEventContextUpdateOne {
+	_u.mutation.SetCreatedAt(v)
+	return _u
 }
 
 // SetNillableCreatedAt sets the "created_at" field if the given value is not nil.
-func (iecuo *IncidentEventContextUpdateOne) SetNillableCreatedAt(t *time.Time) *IncidentEventContextUpdateOne {
-	if t != nil {
-		iecuo.SetCreatedAt(*t)
+func (_u *IncidentEventContextUpdateOne) SetNillableCreatedAt(v *time.Time) *IncidentEventContextUpdateOne {
+	if v != nil {
+		_u.SetCreatedAt(*v)
 	}
-	return iecuo
+	return _u
 }
 
 // SetEventID sets the "event" edge to the IncidentEvent entity by ID.
-func (iecuo *IncidentEventContextUpdateOne) SetEventID(id uuid.UUID) *IncidentEventContextUpdateOne {
-	iecuo.mutation.SetEventID(id)
-	return iecuo
+func (_u *IncidentEventContextUpdateOne) SetEventID(id uuid.UUID) *IncidentEventContextUpdateOne {
+	_u.mutation.SetEventID(id)
+	return _u
 }
 
 // SetEvent sets the "event" edge to the IncidentEvent entity.
-func (iecuo *IncidentEventContextUpdateOne) SetEvent(i *IncidentEvent) *IncidentEventContextUpdateOne {
-	return iecuo.SetEventID(i.ID)
+func (_u *IncidentEventContextUpdateOne) SetEvent(v *IncidentEvent) *IncidentEventContextUpdateOne {
+	return _u.SetEventID(v.ID)
 }
 
 // Mutation returns the IncidentEventContextMutation object of the builder.
-func (iecuo *IncidentEventContextUpdateOne) Mutation() *IncidentEventContextMutation {
-	return iecuo.mutation
+func (_u *IncidentEventContextUpdateOne) Mutation() *IncidentEventContextMutation {
+	return _u.mutation
 }
 
 // ClearEvent clears the "event" edge to the IncidentEvent entity.
-func (iecuo *IncidentEventContextUpdateOne) ClearEvent() *IncidentEventContextUpdateOne {
-	iecuo.mutation.ClearEvent()
-	return iecuo
+func (_u *IncidentEventContextUpdateOne) ClearEvent() *IncidentEventContextUpdateOne {
+	_u.mutation.ClearEvent()
+	return _u
 }
 
 // Where appends a list predicates to the IncidentEventContextUpdate builder.
-func (iecuo *IncidentEventContextUpdateOne) Where(ps ...predicate.IncidentEventContext) *IncidentEventContextUpdateOne {
-	iecuo.mutation.Where(ps...)
-	return iecuo
+func (_u *IncidentEventContextUpdateOne) Where(ps ...predicate.IncidentEventContext) *IncidentEventContextUpdateOne {
+	_u.mutation.Where(ps...)
+	return _u
 }
 
 // Select allows selecting one or more fields (columns) of the returned entity.
 // The default is selecting all fields defined in the entity schema.
-func (iecuo *IncidentEventContextUpdateOne) Select(field string, fields ...string) *IncidentEventContextUpdateOne {
-	iecuo.fields = append([]string{field}, fields...)
-	return iecuo
+func (_u *IncidentEventContextUpdateOne) Select(field string, fields ...string) *IncidentEventContextUpdateOne {
+	_u.fields = append([]string{field}, fields...)
+	return _u
 }
 
 // Save executes the query and returns the updated IncidentEventContext entity.
-func (iecuo *IncidentEventContextUpdateOne) Save(ctx context.Context) (*IncidentEventContext, error) {
-	return withHooks(ctx, iecuo.sqlSave, iecuo.mutation, iecuo.hooks)
+func (_u *IncidentEventContextUpdateOne) Save(ctx context.Context) (*IncidentEventContext, error) {
+	return withHooks(ctx, _u.sqlSave, _u.mutation, _u.hooks)
 }
 
 // SaveX is like Save, but panics if an error occurs.
-func (iecuo *IncidentEventContextUpdateOne) SaveX(ctx context.Context) *IncidentEventContext {
-	node, err := iecuo.Save(ctx)
+func (_u *IncidentEventContextUpdateOne) SaveX(ctx context.Context) *IncidentEventContext {
+	node, err := _u.Save(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -428,46 +428,46 @@ func (iecuo *IncidentEventContextUpdateOne) SaveX(ctx context.Context) *Incident
 }
 
 // Exec executes the query on the entity.
-func (iecuo *IncidentEventContextUpdateOne) Exec(ctx context.Context) error {
-	_, err := iecuo.Save(ctx)
+func (_u *IncidentEventContextUpdateOne) Exec(ctx context.Context) error {
+	_, err := _u.Save(ctx)
 	return err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (iecuo *IncidentEventContextUpdateOne) ExecX(ctx context.Context) {
-	if err := iecuo.Exec(ctx); err != nil {
+func (_u *IncidentEventContextUpdateOne) ExecX(ctx context.Context) {
+	if err := _u.Exec(ctx); err != nil {
 		panic(err)
 	}
 }
 
 // check runs all checks and user-defined validators on the builder.
-func (iecuo *IncidentEventContextUpdateOne) check() error {
-	if iecuo.mutation.TenantCleared() && len(iecuo.mutation.TenantIDs()) > 0 {
+func (_u *IncidentEventContextUpdateOne) check() error {
+	if _u.mutation.TenantCleared() && len(_u.mutation.TenantIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "IncidentEventContext.tenant"`)
 	}
-	if iecuo.mutation.EventCleared() && len(iecuo.mutation.EventIDs()) > 0 {
+	if _u.mutation.EventCleared() && len(_u.mutation.EventIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "IncidentEventContext.event"`)
 	}
 	return nil
 }
 
 // Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
-func (iecuo *IncidentEventContextUpdateOne) Modify(modifiers ...func(u *sql.UpdateBuilder)) *IncidentEventContextUpdateOne {
-	iecuo.modifiers = append(iecuo.modifiers, modifiers...)
-	return iecuo
+func (_u *IncidentEventContextUpdateOne) Modify(modifiers ...func(u *sql.UpdateBuilder)) *IncidentEventContextUpdateOne {
+	_u.modifiers = append(_u.modifiers, modifiers...)
+	return _u
 }
 
-func (iecuo *IncidentEventContextUpdateOne) sqlSave(ctx context.Context) (_node *IncidentEventContext, err error) {
-	if err := iecuo.check(); err != nil {
+func (_u *IncidentEventContextUpdateOne) sqlSave(ctx context.Context) (_node *IncidentEventContext, err error) {
+	if err := _u.check(); err != nil {
 		return _node, err
 	}
 	_spec := sqlgraph.NewUpdateSpec(incidenteventcontext.Table, incidenteventcontext.Columns, sqlgraph.NewFieldSpec(incidenteventcontext.FieldID, field.TypeUUID))
-	id, ok := iecuo.mutation.ID()
+	id, ok := _u.mutation.ID()
 	if !ok {
 		return nil, &ValidationError{Name: "id", err: errors.New(`ent: missing "IncidentEventContext.id" for update`)}
 	}
 	_spec.Node.ID.Value = id
-	if fields := iecuo.fields; len(fields) > 0 {
+	if fields := _u.fields; len(fields) > 0 {
 		_spec.Node.Columns = make([]string, 0, len(fields))
 		_spec.Node.Columns = append(_spec.Node.Columns, incidenteventcontext.FieldID)
 		for _, f := range fields {
@@ -479,51 +479,51 @@ func (iecuo *IncidentEventContextUpdateOne) sqlSave(ctx context.Context) (_node 
 			}
 		}
 	}
-	if ps := iecuo.mutation.predicates; len(ps) > 0 {
+	if ps := _u.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {
 				ps[i](selector)
 			}
 		}
 	}
-	if value, ok := iecuo.mutation.SystemState(); ok {
+	if value, ok := _u.mutation.SystemState(); ok {
 		_spec.SetField(incidenteventcontext.FieldSystemState, field.TypeString, value)
 	}
-	if iecuo.mutation.SystemStateCleared() {
+	if _u.mutation.SystemStateCleared() {
 		_spec.ClearField(incidenteventcontext.FieldSystemState, field.TypeString)
 	}
-	if value, ok := iecuo.mutation.DecisionOptions(); ok {
+	if value, ok := _u.mutation.DecisionOptions(); ok {
 		_spec.SetField(incidenteventcontext.FieldDecisionOptions, field.TypeJSON, value)
 	}
-	if value, ok := iecuo.mutation.AppendedDecisionOptions(); ok {
+	if value, ok := _u.mutation.AppendedDecisionOptions(); ok {
 		_spec.AddModifier(func(u *sql.UpdateBuilder) {
 			sqljson.Append(u, incidenteventcontext.FieldDecisionOptions, value)
 		})
 	}
-	if iecuo.mutation.DecisionOptionsCleared() {
+	if _u.mutation.DecisionOptionsCleared() {
 		_spec.ClearField(incidenteventcontext.FieldDecisionOptions, field.TypeJSON)
 	}
-	if value, ok := iecuo.mutation.DecisionRationale(); ok {
+	if value, ok := _u.mutation.DecisionRationale(); ok {
 		_spec.SetField(incidenteventcontext.FieldDecisionRationale, field.TypeString, value)
 	}
-	if iecuo.mutation.DecisionRationaleCleared() {
+	if _u.mutation.DecisionRationaleCleared() {
 		_spec.ClearField(incidenteventcontext.FieldDecisionRationale, field.TypeString)
 	}
-	if value, ok := iecuo.mutation.InvolvedPersonnel(); ok {
+	if value, ok := _u.mutation.InvolvedPersonnel(); ok {
 		_spec.SetField(incidenteventcontext.FieldInvolvedPersonnel, field.TypeJSON, value)
 	}
-	if value, ok := iecuo.mutation.AppendedInvolvedPersonnel(); ok {
+	if value, ok := _u.mutation.AppendedInvolvedPersonnel(); ok {
 		_spec.AddModifier(func(u *sql.UpdateBuilder) {
 			sqljson.Append(u, incidenteventcontext.FieldInvolvedPersonnel, value)
 		})
 	}
-	if iecuo.mutation.InvolvedPersonnelCleared() {
+	if _u.mutation.InvolvedPersonnelCleared() {
 		_spec.ClearField(incidenteventcontext.FieldInvolvedPersonnel, field.TypeJSON)
 	}
-	if value, ok := iecuo.mutation.CreatedAt(); ok {
+	if value, ok := _u.mutation.CreatedAt(); ok {
 		_spec.SetField(incidenteventcontext.FieldCreatedAt, field.TypeTime, value)
 	}
-	if iecuo.mutation.EventCleared() {
+	if _u.mutation.EventCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2O,
 			Inverse: true,
@@ -536,7 +536,7 @@ func (iecuo *IncidentEventContextUpdateOne) sqlSave(ctx context.Context) (_node 
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := iecuo.mutation.EventIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.EventIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2O,
 			Inverse: true,
@@ -552,11 +552,11 @@ func (iecuo *IncidentEventContextUpdateOne) sqlSave(ctx context.Context) (_node 
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	_spec.AddModifiers(iecuo.modifiers...)
-	_node = &IncidentEventContext{config: iecuo.config}
+	_spec.AddModifiers(_u.modifiers...)
+	_node = &IncidentEventContext{config: _u.config}
 	_spec.Assign = _node.assignValues
 	_spec.ScanValues = _node.scanValues
-	if err = sqlgraph.UpdateNode(ctx, iecuo.driver, _spec); err != nil {
+	if err = sqlgraph.UpdateNode(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{incidenteventcontext.Label}
 		} else if sqlgraph.IsConstraintError(err) {
@@ -564,6 +564,6 @@ func (iecuo *IncidentEventContextUpdateOne) sqlSave(ctx context.Context) (_node 
 		}
 		return nil, err
 	}
-	iecuo.mutation.done = true
+	_u.mutation.done = true
 	return _node, nil
 }

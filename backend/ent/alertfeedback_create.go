@@ -26,81 +26,81 @@ type AlertFeedbackCreate struct {
 }
 
 // SetTenantID sets the "tenant_id" field.
-func (afc *AlertFeedbackCreate) SetTenantID(i int) *AlertFeedbackCreate {
-	afc.mutation.SetTenantID(i)
-	return afc
+func (_c *AlertFeedbackCreate) SetTenantID(v int) *AlertFeedbackCreate {
+	_c.mutation.SetTenantID(v)
+	return _c
 }
 
 // SetAlertInstanceID sets the "alert_instance_id" field.
-func (afc *AlertFeedbackCreate) SetAlertInstanceID(u uuid.UUID) *AlertFeedbackCreate {
-	afc.mutation.SetAlertInstanceID(u)
-	return afc
+func (_c *AlertFeedbackCreate) SetAlertInstanceID(v uuid.UUID) *AlertFeedbackCreate {
+	_c.mutation.SetAlertInstanceID(v)
+	return _c
 }
 
 // SetActionable sets the "actionable" field.
-func (afc *AlertFeedbackCreate) SetActionable(b bool) *AlertFeedbackCreate {
-	afc.mutation.SetActionable(b)
-	return afc
+func (_c *AlertFeedbackCreate) SetActionable(v bool) *AlertFeedbackCreate {
+	_c.mutation.SetActionable(v)
+	return _c
 }
 
 // SetAccurate sets the "accurate" field.
-func (afc *AlertFeedbackCreate) SetAccurate(a alertfeedback.Accurate) *AlertFeedbackCreate {
-	afc.mutation.SetAccurate(a)
-	return afc
+func (_c *AlertFeedbackCreate) SetAccurate(v alertfeedback.Accurate) *AlertFeedbackCreate {
+	_c.mutation.SetAccurate(v)
+	return _c
 }
 
 // SetDocumentationAvailable sets the "documentation_available" field.
-func (afc *AlertFeedbackCreate) SetDocumentationAvailable(b bool) *AlertFeedbackCreate {
-	afc.mutation.SetDocumentationAvailable(b)
-	return afc
+func (_c *AlertFeedbackCreate) SetDocumentationAvailable(v bool) *AlertFeedbackCreate {
+	_c.mutation.SetDocumentationAvailable(v)
+	return _c
 }
 
 // SetDocumentationNeedsUpdate sets the "documentation_needs_update" field.
-func (afc *AlertFeedbackCreate) SetDocumentationNeedsUpdate(b bool) *AlertFeedbackCreate {
-	afc.mutation.SetDocumentationNeedsUpdate(b)
-	return afc
+func (_c *AlertFeedbackCreate) SetDocumentationNeedsUpdate(v bool) *AlertFeedbackCreate {
+	_c.mutation.SetDocumentationNeedsUpdate(v)
+	return _c
 }
 
 // SetID sets the "id" field.
-func (afc *AlertFeedbackCreate) SetID(u uuid.UUID) *AlertFeedbackCreate {
-	afc.mutation.SetID(u)
-	return afc
+func (_c *AlertFeedbackCreate) SetID(v uuid.UUID) *AlertFeedbackCreate {
+	_c.mutation.SetID(v)
+	return _c
 }
 
 // SetNillableID sets the "id" field if the given value is not nil.
-func (afc *AlertFeedbackCreate) SetNillableID(u *uuid.UUID) *AlertFeedbackCreate {
-	if u != nil {
-		afc.SetID(*u)
+func (_c *AlertFeedbackCreate) SetNillableID(v *uuid.UUID) *AlertFeedbackCreate {
+	if v != nil {
+		_c.SetID(*v)
 	}
-	return afc
+	return _c
 }
 
 // SetTenant sets the "tenant" edge to the Tenant entity.
-func (afc *AlertFeedbackCreate) SetTenant(t *Tenant) *AlertFeedbackCreate {
-	return afc.SetTenantID(t.ID)
+func (_c *AlertFeedbackCreate) SetTenant(v *Tenant) *AlertFeedbackCreate {
+	return _c.SetTenantID(v.ID)
 }
 
 // SetAlertInstance sets the "alert_instance" edge to the AlertInstance entity.
-func (afc *AlertFeedbackCreate) SetAlertInstance(a *AlertInstance) *AlertFeedbackCreate {
-	return afc.SetAlertInstanceID(a.ID)
+func (_c *AlertFeedbackCreate) SetAlertInstance(v *AlertInstance) *AlertFeedbackCreate {
+	return _c.SetAlertInstanceID(v.ID)
 }
 
 // Mutation returns the AlertFeedbackMutation object of the builder.
-func (afc *AlertFeedbackCreate) Mutation() *AlertFeedbackMutation {
-	return afc.mutation
+func (_c *AlertFeedbackCreate) Mutation() *AlertFeedbackMutation {
+	return _c.mutation
 }
 
 // Save creates the AlertFeedback in the database.
-func (afc *AlertFeedbackCreate) Save(ctx context.Context) (*AlertFeedback, error) {
-	if err := afc.defaults(); err != nil {
+func (_c *AlertFeedbackCreate) Save(ctx context.Context) (*AlertFeedback, error) {
+	if err := _c.defaults(); err != nil {
 		return nil, err
 	}
-	return withHooks(ctx, afc.sqlSave, afc.mutation, afc.hooks)
+	return withHooks(ctx, _c.sqlSave, _c.mutation, _c.hooks)
 }
 
 // SaveX calls Save and panics if Save returns an error.
-func (afc *AlertFeedbackCreate) SaveX(ctx context.Context) *AlertFeedback {
-	v, err := afc.Save(ctx)
+func (_c *AlertFeedbackCreate) SaveX(ctx context.Context) *AlertFeedback {
+	v, err := _c.Save(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -108,70 +108,70 @@ func (afc *AlertFeedbackCreate) SaveX(ctx context.Context) *AlertFeedback {
 }
 
 // Exec executes the query.
-func (afc *AlertFeedbackCreate) Exec(ctx context.Context) error {
-	_, err := afc.Save(ctx)
+func (_c *AlertFeedbackCreate) Exec(ctx context.Context) error {
+	_, err := _c.Save(ctx)
 	return err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (afc *AlertFeedbackCreate) ExecX(ctx context.Context) {
-	if err := afc.Exec(ctx); err != nil {
+func (_c *AlertFeedbackCreate) ExecX(ctx context.Context) {
+	if err := _c.Exec(ctx); err != nil {
 		panic(err)
 	}
 }
 
 // defaults sets the default values of the builder before save.
-func (afc *AlertFeedbackCreate) defaults() error {
-	if _, ok := afc.mutation.ID(); !ok {
+func (_c *AlertFeedbackCreate) defaults() error {
+	if _, ok := _c.mutation.ID(); !ok {
 		if alertfeedback.DefaultID == nil {
 			return fmt.Errorf("ent: uninitialized alertfeedback.DefaultID (forgotten import ent/runtime?)")
 		}
 		v := alertfeedback.DefaultID()
-		afc.mutation.SetID(v)
+		_c.mutation.SetID(v)
 	}
 	return nil
 }
 
 // check runs all checks and user-defined validators on the builder.
-func (afc *AlertFeedbackCreate) check() error {
-	if _, ok := afc.mutation.TenantID(); !ok {
+func (_c *AlertFeedbackCreate) check() error {
+	if _, ok := _c.mutation.TenantID(); !ok {
 		return &ValidationError{Name: "tenant_id", err: errors.New(`ent: missing required field "AlertFeedback.tenant_id"`)}
 	}
-	if _, ok := afc.mutation.AlertInstanceID(); !ok {
+	if _, ok := _c.mutation.AlertInstanceID(); !ok {
 		return &ValidationError{Name: "alert_instance_id", err: errors.New(`ent: missing required field "AlertFeedback.alert_instance_id"`)}
 	}
-	if _, ok := afc.mutation.Actionable(); !ok {
+	if _, ok := _c.mutation.Actionable(); !ok {
 		return &ValidationError{Name: "actionable", err: errors.New(`ent: missing required field "AlertFeedback.actionable"`)}
 	}
-	if _, ok := afc.mutation.Accurate(); !ok {
+	if _, ok := _c.mutation.Accurate(); !ok {
 		return &ValidationError{Name: "accurate", err: errors.New(`ent: missing required field "AlertFeedback.accurate"`)}
 	}
-	if v, ok := afc.mutation.Accurate(); ok {
+	if v, ok := _c.mutation.Accurate(); ok {
 		if err := alertfeedback.AccurateValidator(v); err != nil {
 			return &ValidationError{Name: "accurate", err: fmt.Errorf(`ent: validator failed for field "AlertFeedback.accurate": %w`, err)}
 		}
 	}
-	if _, ok := afc.mutation.DocumentationAvailable(); !ok {
+	if _, ok := _c.mutation.DocumentationAvailable(); !ok {
 		return &ValidationError{Name: "documentation_available", err: errors.New(`ent: missing required field "AlertFeedback.documentation_available"`)}
 	}
-	if _, ok := afc.mutation.DocumentationNeedsUpdate(); !ok {
+	if _, ok := _c.mutation.DocumentationNeedsUpdate(); !ok {
 		return &ValidationError{Name: "documentation_needs_update", err: errors.New(`ent: missing required field "AlertFeedback.documentation_needs_update"`)}
 	}
-	if len(afc.mutation.TenantIDs()) == 0 {
+	if len(_c.mutation.TenantIDs()) == 0 {
 		return &ValidationError{Name: "tenant", err: errors.New(`ent: missing required edge "AlertFeedback.tenant"`)}
 	}
-	if len(afc.mutation.AlertInstanceIDs()) == 0 {
+	if len(_c.mutation.AlertInstanceIDs()) == 0 {
 		return &ValidationError{Name: "alert_instance", err: errors.New(`ent: missing required edge "AlertFeedback.alert_instance"`)}
 	}
 	return nil
 }
 
-func (afc *AlertFeedbackCreate) sqlSave(ctx context.Context) (*AlertFeedback, error) {
-	if err := afc.check(); err != nil {
+func (_c *AlertFeedbackCreate) sqlSave(ctx context.Context) (*AlertFeedback, error) {
+	if err := _c.check(); err != nil {
 		return nil, err
 	}
-	_node, _spec := afc.createSpec()
-	if err := sqlgraph.CreateNode(ctx, afc.driver, _spec); err != nil {
+	_node, _spec := _c.createSpec()
+	if err := sqlgraph.CreateNode(ctx, _c.driver, _spec); err != nil {
 		if sqlgraph.IsConstraintError(err) {
 			err = &ConstraintError{msg: err.Error(), wrap: err}
 		}
@@ -184,38 +184,38 @@ func (afc *AlertFeedbackCreate) sqlSave(ctx context.Context) (*AlertFeedback, er
 			return nil, err
 		}
 	}
-	afc.mutation.id = &_node.ID
-	afc.mutation.done = true
+	_c.mutation.id = &_node.ID
+	_c.mutation.done = true
 	return _node, nil
 }
 
-func (afc *AlertFeedbackCreate) createSpec() (*AlertFeedback, *sqlgraph.CreateSpec) {
+func (_c *AlertFeedbackCreate) createSpec() (*AlertFeedback, *sqlgraph.CreateSpec) {
 	var (
-		_node = &AlertFeedback{config: afc.config}
+		_node = &AlertFeedback{config: _c.config}
 		_spec = sqlgraph.NewCreateSpec(alertfeedback.Table, sqlgraph.NewFieldSpec(alertfeedback.FieldID, field.TypeUUID))
 	)
-	_spec.OnConflict = afc.conflict
-	if id, ok := afc.mutation.ID(); ok {
+	_spec.OnConflict = _c.conflict
+	if id, ok := _c.mutation.ID(); ok {
 		_node.ID = id
 		_spec.ID.Value = &id
 	}
-	if value, ok := afc.mutation.Actionable(); ok {
+	if value, ok := _c.mutation.Actionable(); ok {
 		_spec.SetField(alertfeedback.FieldActionable, field.TypeBool, value)
 		_node.Actionable = value
 	}
-	if value, ok := afc.mutation.Accurate(); ok {
+	if value, ok := _c.mutation.Accurate(); ok {
 		_spec.SetField(alertfeedback.FieldAccurate, field.TypeEnum, value)
 		_node.Accurate = value
 	}
-	if value, ok := afc.mutation.DocumentationAvailable(); ok {
+	if value, ok := _c.mutation.DocumentationAvailable(); ok {
 		_spec.SetField(alertfeedback.FieldDocumentationAvailable, field.TypeBool, value)
 		_node.DocumentationAvailable = value
 	}
-	if value, ok := afc.mutation.DocumentationNeedsUpdate(); ok {
+	if value, ok := _c.mutation.DocumentationNeedsUpdate(); ok {
 		_spec.SetField(alertfeedback.FieldDocumentationNeedsUpdate, field.TypeBool, value)
 		_node.DocumentationNeedsUpdate = value
 	}
-	if nodes := afc.mutation.TenantIDs(); len(nodes) > 0 {
+	if nodes := _c.mutation.TenantIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
@@ -232,7 +232,7 @@ func (afc *AlertFeedbackCreate) createSpec() (*AlertFeedback, *sqlgraph.CreateSp
 		_node.TenantID = nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
-	if nodes := afc.mutation.AlertInstanceIDs(); len(nodes) > 0 {
+	if nodes := _c.mutation.AlertInstanceIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
@@ -268,10 +268,10 @@ func (afc *AlertFeedbackCreate) createSpec() (*AlertFeedback, *sqlgraph.CreateSp
 //			SetTenantID(v+v).
 //		}).
 //		Exec(ctx)
-func (afc *AlertFeedbackCreate) OnConflict(opts ...sql.ConflictOption) *AlertFeedbackUpsertOne {
-	afc.conflict = opts
+func (_c *AlertFeedbackCreate) OnConflict(opts ...sql.ConflictOption) *AlertFeedbackUpsertOne {
+	_c.conflict = opts
 	return &AlertFeedbackUpsertOne{
-		create: afc,
+		create: _c,
 	}
 }
 
@@ -281,10 +281,10 @@ func (afc *AlertFeedbackCreate) OnConflict(opts ...sql.ConflictOption) *AlertFee
 //	client.AlertFeedback.Create().
 //		OnConflict(sql.ConflictColumns(columns...)).
 //		Exec(ctx)
-func (afc *AlertFeedbackCreate) OnConflictColumns(columns ...string) *AlertFeedbackUpsertOne {
-	afc.conflict = append(afc.conflict, sql.ConflictColumns(columns...))
+func (_c *AlertFeedbackCreate) OnConflictColumns(columns ...string) *AlertFeedbackUpsertOne {
+	_c.conflict = append(_c.conflict, sql.ConflictColumns(columns...))
 	return &AlertFeedbackUpsertOne{
-		create: afc,
+		create: _c,
 	}
 }
 
@@ -529,16 +529,16 @@ type AlertFeedbackCreateBulk struct {
 }
 
 // Save creates the AlertFeedback entities in the database.
-func (afcb *AlertFeedbackCreateBulk) Save(ctx context.Context) ([]*AlertFeedback, error) {
-	if afcb.err != nil {
-		return nil, afcb.err
+func (_c *AlertFeedbackCreateBulk) Save(ctx context.Context) ([]*AlertFeedback, error) {
+	if _c.err != nil {
+		return nil, _c.err
 	}
-	specs := make([]*sqlgraph.CreateSpec, len(afcb.builders))
-	nodes := make([]*AlertFeedback, len(afcb.builders))
-	mutators := make([]Mutator, len(afcb.builders))
-	for i := range afcb.builders {
+	specs := make([]*sqlgraph.CreateSpec, len(_c.builders))
+	nodes := make([]*AlertFeedback, len(_c.builders))
+	mutators := make([]Mutator, len(_c.builders))
+	for i := range _c.builders {
 		func(i int, root context.Context) {
-			builder := afcb.builders[i]
+			builder := _c.builders[i]
 			builder.defaults()
 			var mut Mutator = MutateFunc(func(ctx context.Context, m Mutation) (Value, error) {
 				mutation, ok := m.(*AlertFeedbackMutation)
@@ -552,12 +552,12 @@ func (afcb *AlertFeedbackCreateBulk) Save(ctx context.Context) ([]*AlertFeedback
 				var err error
 				nodes[i], specs[i] = builder.createSpec()
 				if i < len(mutators)-1 {
-					_, err = mutators[i+1].Mutate(root, afcb.builders[i+1].mutation)
+					_, err = mutators[i+1].Mutate(root, _c.builders[i+1].mutation)
 				} else {
 					spec := &sqlgraph.BatchCreateSpec{Nodes: specs}
-					spec.OnConflict = afcb.conflict
+					spec.OnConflict = _c.conflict
 					// Invoke the actual operation on the latest mutation in the chain.
-					if err = sqlgraph.BatchCreate(ctx, afcb.driver, spec); err != nil {
+					if err = sqlgraph.BatchCreate(ctx, _c.driver, spec); err != nil {
 						if sqlgraph.IsConstraintError(err) {
 							err = &ConstraintError{msg: err.Error(), wrap: err}
 						}
@@ -577,7 +577,7 @@ func (afcb *AlertFeedbackCreateBulk) Save(ctx context.Context) ([]*AlertFeedback
 		}(i, ctx)
 	}
 	if len(mutators) > 0 {
-		if _, err := mutators[0].Mutate(ctx, afcb.builders[0].mutation); err != nil {
+		if _, err := mutators[0].Mutate(ctx, _c.builders[0].mutation); err != nil {
 			return nil, err
 		}
 	}
@@ -585,8 +585,8 @@ func (afcb *AlertFeedbackCreateBulk) Save(ctx context.Context) ([]*AlertFeedback
 }
 
 // SaveX is like Save, but panics if an error occurs.
-func (afcb *AlertFeedbackCreateBulk) SaveX(ctx context.Context) []*AlertFeedback {
-	v, err := afcb.Save(ctx)
+func (_c *AlertFeedbackCreateBulk) SaveX(ctx context.Context) []*AlertFeedback {
+	v, err := _c.Save(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -594,14 +594,14 @@ func (afcb *AlertFeedbackCreateBulk) SaveX(ctx context.Context) []*AlertFeedback
 }
 
 // Exec executes the query.
-func (afcb *AlertFeedbackCreateBulk) Exec(ctx context.Context) error {
-	_, err := afcb.Save(ctx)
+func (_c *AlertFeedbackCreateBulk) Exec(ctx context.Context) error {
+	_, err := _c.Save(ctx)
 	return err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (afcb *AlertFeedbackCreateBulk) ExecX(ctx context.Context) {
-	if err := afcb.Exec(ctx); err != nil {
+func (_c *AlertFeedbackCreateBulk) ExecX(ctx context.Context) {
+	if err := _c.Exec(ctx); err != nil {
 		panic(err)
 	}
 }
@@ -621,10 +621,10 @@ func (afcb *AlertFeedbackCreateBulk) ExecX(ctx context.Context) {
 //			SetTenantID(v+v).
 //		}).
 //		Exec(ctx)
-func (afcb *AlertFeedbackCreateBulk) OnConflict(opts ...sql.ConflictOption) *AlertFeedbackUpsertBulk {
-	afcb.conflict = opts
+func (_c *AlertFeedbackCreateBulk) OnConflict(opts ...sql.ConflictOption) *AlertFeedbackUpsertBulk {
+	_c.conflict = opts
 	return &AlertFeedbackUpsertBulk{
-		create: afcb,
+		create: _c,
 	}
 }
 
@@ -634,10 +634,10 @@ func (afcb *AlertFeedbackCreateBulk) OnConflict(opts ...sql.ConflictOption) *Ale
 //	client.AlertFeedback.Create().
 //		OnConflict(sql.ConflictColumns(columns...)).
 //		Exec(ctx)
-func (afcb *AlertFeedbackCreateBulk) OnConflictColumns(columns ...string) *AlertFeedbackUpsertBulk {
-	afcb.conflict = append(afcb.conflict, sql.ConflictColumns(columns...))
+func (_c *AlertFeedbackCreateBulk) OnConflictColumns(columns ...string) *AlertFeedbackUpsertBulk {
+	_c.conflict = append(_c.conflict, sql.ConflictColumns(columns...))
 	return &AlertFeedbackUpsertBulk{
-		create: afcb,
+		create: _c,
 	}
 }
 

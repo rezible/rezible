@@ -104,7 +104,7 @@ func (*IncidentEventSystemComponent) scanValues(columns []string) ([]any, error)
 
 // assignValues assigns the values that were returned from sql.Rows (after scanning)
 // to the IncidentEventSystemComponent fields.
-func (iesc *IncidentEventSystemComponent) assignValues(columns []string, values []any) error {
+func (_m *IncidentEventSystemComponent) assignValues(columns []string, values []any) error {
 	if m, n := len(values), len(columns); m < n {
 		return fmt.Errorf("mismatch number of scan values: %d != %d", m, n)
 	}
@@ -114,40 +114,40 @@ func (iesc *IncidentEventSystemComponent) assignValues(columns []string, values 
 			if value, ok := values[i].(*uuid.UUID); !ok {
 				return fmt.Errorf("unexpected type %T for field id", values[i])
 			} else if value != nil {
-				iesc.ID = *value
+				_m.ID = *value
 			}
 		case incidenteventsystemcomponent.FieldTenantID:
 			if value, ok := values[i].(*sql.NullInt64); !ok {
 				return fmt.Errorf("unexpected type %T for field tenant_id", values[i])
 			} else if value.Valid {
-				iesc.TenantID = int(value.Int64)
+				_m.TenantID = int(value.Int64)
 			}
 		case incidenteventsystemcomponent.FieldIncidentEventID:
 			if value, ok := values[i].(*uuid.UUID); !ok {
 				return fmt.Errorf("unexpected type %T for field incident_event_id", values[i])
 			} else if value != nil {
-				iesc.IncidentEventID = *value
+				_m.IncidentEventID = *value
 			}
 		case incidenteventsystemcomponent.FieldSystemComponentID:
 			if value, ok := values[i].(*uuid.UUID); !ok {
 				return fmt.Errorf("unexpected type %T for field system_component_id", values[i])
 			} else if value != nil {
-				iesc.SystemComponentID = *value
+				_m.SystemComponentID = *value
 			}
 		case incidenteventsystemcomponent.FieldRelationship:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field relationship", values[i])
 			} else if value.Valid {
-				iesc.Relationship = incidenteventsystemcomponent.Relationship(value.String)
+				_m.Relationship = incidenteventsystemcomponent.Relationship(value.String)
 			}
 		case incidenteventsystemcomponent.FieldCreatedAt:
 			if value, ok := values[i].(*sql.NullTime); !ok {
 				return fmt.Errorf("unexpected type %T for field created_at", values[i])
 			} else if value.Valid {
-				iesc.CreatedAt = value.Time
+				_m.CreatedAt = value.Time
 			}
 		default:
-			iesc.selectValues.Set(columns[i], values[i])
+			_m.selectValues.Set(columns[i], values[i])
 		}
 	}
 	return nil
@@ -155,62 +155,62 @@ func (iesc *IncidentEventSystemComponent) assignValues(columns []string, values 
 
 // Value returns the ent.Value that was dynamically selected and assigned to the IncidentEventSystemComponent.
 // This includes values selected through modifiers, order, etc.
-func (iesc *IncidentEventSystemComponent) Value(name string) (ent.Value, error) {
-	return iesc.selectValues.Get(name)
+func (_m *IncidentEventSystemComponent) Value(name string) (ent.Value, error) {
+	return _m.selectValues.Get(name)
 }
 
 // QueryTenant queries the "tenant" edge of the IncidentEventSystemComponent entity.
-func (iesc *IncidentEventSystemComponent) QueryTenant() *TenantQuery {
-	return NewIncidentEventSystemComponentClient(iesc.config).QueryTenant(iesc)
+func (_m *IncidentEventSystemComponent) QueryTenant() *TenantQuery {
+	return NewIncidentEventSystemComponentClient(_m.config).QueryTenant(_m)
 }
 
 // QueryEvent queries the "event" edge of the IncidentEventSystemComponent entity.
-func (iesc *IncidentEventSystemComponent) QueryEvent() *IncidentEventSystemComponentQuery {
-	return NewIncidentEventSystemComponentClient(iesc.config).QueryEvent(iesc)
+func (_m *IncidentEventSystemComponent) QueryEvent() *IncidentEventSystemComponentQuery {
+	return NewIncidentEventSystemComponentClient(_m.config).QueryEvent(_m)
 }
 
 // QuerySystemComponent queries the "system_component" edge of the IncidentEventSystemComponent entity.
-func (iesc *IncidentEventSystemComponent) QuerySystemComponent() *SystemComponentQuery {
-	return NewIncidentEventSystemComponentClient(iesc.config).QuerySystemComponent(iesc)
+func (_m *IncidentEventSystemComponent) QuerySystemComponent() *SystemComponentQuery {
+	return NewIncidentEventSystemComponentClient(_m.config).QuerySystemComponent(_m)
 }
 
 // Update returns a builder for updating this IncidentEventSystemComponent.
 // Note that you need to call IncidentEventSystemComponent.Unwrap() before calling this method if this IncidentEventSystemComponent
 // was returned from a transaction, and the transaction was committed or rolled back.
-func (iesc *IncidentEventSystemComponent) Update() *IncidentEventSystemComponentUpdateOne {
-	return NewIncidentEventSystemComponentClient(iesc.config).UpdateOne(iesc)
+func (_m *IncidentEventSystemComponent) Update() *IncidentEventSystemComponentUpdateOne {
+	return NewIncidentEventSystemComponentClient(_m.config).UpdateOne(_m)
 }
 
 // Unwrap unwraps the IncidentEventSystemComponent entity that was returned from a transaction after it was closed,
 // so that all future queries will be executed through the driver which created the transaction.
-func (iesc *IncidentEventSystemComponent) Unwrap() *IncidentEventSystemComponent {
-	_tx, ok := iesc.config.driver.(*txDriver)
+func (_m *IncidentEventSystemComponent) Unwrap() *IncidentEventSystemComponent {
+	_tx, ok := _m.config.driver.(*txDriver)
 	if !ok {
 		panic("ent: IncidentEventSystemComponent is not a transactional entity")
 	}
-	iesc.config.driver = _tx.drv
-	return iesc
+	_m.config.driver = _tx.drv
+	return _m
 }
 
 // String implements the fmt.Stringer.
-func (iesc *IncidentEventSystemComponent) String() string {
+func (_m *IncidentEventSystemComponent) String() string {
 	var builder strings.Builder
 	builder.WriteString("IncidentEventSystemComponent(")
-	builder.WriteString(fmt.Sprintf("id=%v, ", iesc.ID))
+	builder.WriteString(fmt.Sprintf("id=%v, ", _m.ID))
 	builder.WriteString("tenant_id=")
-	builder.WriteString(fmt.Sprintf("%v", iesc.TenantID))
+	builder.WriteString(fmt.Sprintf("%v", _m.TenantID))
 	builder.WriteString(", ")
 	builder.WriteString("incident_event_id=")
-	builder.WriteString(fmt.Sprintf("%v", iesc.IncidentEventID))
+	builder.WriteString(fmt.Sprintf("%v", _m.IncidentEventID))
 	builder.WriteString(", ")
 	builder.WriteString("system_component_id=")
-	builder.WriteString(fmt.Sprintf("%v", iesc.SystemComponentID))
+	builder.WriteString(fmt.Sprintf("%v", _m.SystemComponentID))
 	builder.WriteString(", ")
 	builder.WriteString("relationship=")
-	builder.WriteString(fmt.Sprintf("%v", iesc.Relationship))
+	builder.WriteString(fmt.Sprintf("%v", _m.Relationship))
 	builder.WriteString(", ")
 	builder.WriteString("created_at=")
-	builder.WriteString(iesc.CreatedAt.Format(time.ANSIC))
+	builder.WriteString(_m.CreatedAt.Format(time.ANSIC))
 	builder.WriteByte(')')
 	return builder.String()
 }

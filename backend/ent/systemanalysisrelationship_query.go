@@ -46,44 +46,44 @@ type SystemAnalysisRelationshipQuery struct {
 }
 
 // Where adds a new predicate for the SystemAnalysisRelationshipQuery builder.
-func (sarq *SystemAnalysisRelationshipQuery) Where(ps ...predicate.SystemAnalysisRelationship) *SystemAnalysisRelationshipQuery {
-	sarq.predicates = append(sarq.predicates, ps...)
-	return sarq
+func (_q *SystemAnalysisRelationshipQuery) Where(ps ...predicate.SystemAnalysisRelationship) *SystemAnalysisRelationshipQuery {
+	_q.predicates = append(_q.predicates, ps...)
+	return _q
 }
 
 // Limit the number of records to be returned by this query.
-func (sarq *SystemAnalysisRelationshipQuery) Limit(limit int) *SystemAnalysisRelationshipQuery {
-	sarq.ctx.Limit = &limit
-	return sarq
+func (_q *SystemAnalysisRelationshipQuery) Limit(limit int) *SystemAnalysisRelationshipQuery {
+	_q.ctx.Limit = &limit
+	return _q
 }
 
 // Offset to start from.
-func (sarq *SystemAnalysisRelationshipQuery) Offset(offset int) *SystemAnalysisRelationshipQuery {
-	sarq.ctx.Offset = &offset
-	return sarq
+func (_q *SystemAnalysisRelationshipQuery) Offset(offset int) *SystemAnalysisRelationshipQuery {
+	_q.ctx.Offset = &offset
+	return _q
 }
 
 // Unique configures the query builder to filter duplicate records on query.
 // By default, unique is set to true, and can be disabled using this method.
-func (sarq *SystemAnalysisRelationshipQuery) Unique(unique bool) *SystemAnalysisRelationshipQuery {
-	sarq.ctx.Unique = &unique
-	return sarq
+func (_q *SystemAnalysisRelationshipQuery) Unique(unique bool) *SystemAnalysisRelationshipQuery {
+	_q.ctx.Unique = &unique
+	return _q
 }
 
 // Order specifies how the records should be ordered.
-func (sarq *SystemAnalysisRelationshipQuery) Order(o ...systemanalysisrelationship.OrderOption) *SystemAnalysisRelationshipQuery {
-	sarq.order = append(sarq.order, o...)
-	return sarq
+func (_q *SystemAnalysisRelationshipQuery) Order(o ...systemanalysisrelationship.OrderOption) *SystemAnalysisRelationshipQuery {
+	_q.order = append(_q.order, o...)
+	return _q
 }
 
 // QueryTenant chains the current query on the "tenant" edge.
-func (sarq *SystemAnalysisRelationshipQuery) QueryTenant() *TenantQuery {
-	query := (&TenantClient{config: sarq.config}).Query()
+func (_q *SystemAnalysisRelationshipQuery) QueryTenant() *TenantQuery {
+	query := (&TenantClient{config: _q.config}).Query()
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
-		if err := sarq.prepareQuery(ctx); err != nil {
+		if err := _q.prepareQuery(ctx); err != nil {
 			return nil, err
 		}
-		selector := sarq.sqlQuery(ctx)
+		selector := _q.sqlQuery(ctx)
 		if err := selector.Err(); err != nil {
 			return nil, err
 		}
@@ -92,20 +92,20 @@ func (sarq *SystemAnalysisRelationshipQuery) QueryTenant() *TenantQuery {
 			sqlgraph.To(tenant.Table, tenant.FieldID),
 			sqlgraph.Edge(sqlgraph.M2O, false, systemanalysisrelationship.TenantTable, systemanalysisrelationship.TenantColumn),
 		)
-		fromU = sqlgraph.SetNeighbors(sarq.driver.Dialect(), step)
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
 	}
 	return query
 }
 
 // QuerySystemAnalysis chains the current query on the "system_analysis" edge.
-func (sarq *SystemAnalysisRelationshipQuery) QuerySystemAnalysis() *SystemAnalysisQuery {
-	query := (&SystemAnalysisClient{config: sarq.config}).Query()
+func (_q *SystemAnalysisRelationshipQuery) QuerySystemAnalysis() *SystemAnalysisQuery {
+	query := (&SystemAnalysisClient{config: _q.config}).Query()
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
-		if err := sarq.prepareQuery(ctx); err != nil {
+		if err := _q.prepareQuery(ctx); err != nil {
 			return nil, err
 		}
-		selector := sarq.sqlQuery(ctx)
+		selector := _q.sqlQuery(ctx)
 		if err := selector.Err(); err != nil {
 			return nil, err
 		}
@@ -114,20 +114,20 @@ func (sarq *SystemAnalysisRelationshipQuery) QuerySystemAnalysis() *SystemAnalys
 			sqlgraph.To(systemanalysis.Table, systemanalysis.FieldID),
 			sqlgraph.Edge(sqlgraph.M2O, false, systemanalysisrelationship.SystemAnalysisTable, systemanalysisrelationship.SystemAnalysisColumn),
 		)
-		fromU = sqlgraph.SetNeighbors(sarq.driver.Dialect(), step)
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
 	}
 	return query
 }
 
 // QueryComponentRelationship chains the current query on the "component_relationship" edge.
-func (sarq *SystemAnalysisRelationshipQuery) QueryComponentRelationship() *SystemComponentRelationshipQuery {
-	query := (&SystemComponentRelationshipClient{config: sarq.config}).Query()
+func (_q *SystemAnalysisRelationshipQuery) QueryComponentRelationship() *SystemComponentRelationshipQuery {
+	query := (&SystemComponentRelationshipClient{config: _q.config}).Query()
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
-		if err := sarq.prepareQuery(ctx); err != nil {
+		if err := _q.prepareQuery(ctx); err != nil {
 			return nil, err
 		}
-		selector := sarq.sqlQuery(ctx)
+		selector := _q.sqlQuery(ctx)
 		if err := selector.Err(); err != nil {
 			return nil, err
 		}
@@ -136,20 +136,20 @@ func (sarq *SystemAnalysisRelationshipQuery) QueryComponentRelationship() *Syste
 			sqlgraph.To(systemcomponentrelationship.Table, systemcomponentrelationship.FieldID),
 			sqlgraph.Edge(sqlgraph.M2O, false, systemanalysisrelationship.ComponentRelationshipTable, systemanalysisrelationship.ComponentRelationshipColumn),
 		)
-		fromU = sqlgraph.SetNeighbors(sarq.driver.Dialect(), step)
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
 	}
 	return query
 }
 
 // QueryControls chains the current query on the "controls" edge.
-func (sarq *SystemAnalysisRelationshipQuery) QueryControls() *SystemComponentControlQuery {
-	query := (&SystemComponentControlClient{config: sarq.config}).Query()
+func (_q *SystemAnalysisRelationshipQuery) QueryControls() *SystemComponentControlQuery {
+	query := (&SystemComponentControlClient{config: _q.config}).Query()
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
-		if err := sarq.prepareQuery(ctx); err != nil {
+		if err := _q.prepareQuery(ctx); err != nil {
 			return nil, err
 		}
-		selector := sarq.sqlQuery(ctx)
+		selector := _q.sqlQuery(ctx)
 		if err := selector.Err(); err != nil {
 			return nil, err
 		}
@@ -158,20 +158,20 @@ func (sarq *SystemAnalysisRelationshipQuery) QueryControls() *SystemComponentCon
 			sqlgraph.To(systemcomponentcontrol.Table, systemcomponentcontrol.FieldID),
 			sqlgraph.Edge(sqlgraph.M2M, false, systemanalysisrelationship.ControlsTable, systemanalysisrelationship.ControlsPrimaryKey...),
 		)
-		fromU = sqlgraph.SetNeighbors(sarq.driver.Dialect(), step)
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
 	}
 	return query
 }
 
 // QuerySignals chains the current query on the "signals" edge.
-func (sarq *SystemAnalysisRelationshipQuery) QuerySignals() *SystemComponentSignalQuery {
-	query := (&SystemComponentSignalClient{config: sarq.config}).Query()
+func (_q *SystemAnalysisRelationshipQuery) QuerySignals() *SystemComponentSignalQuery {
+	query := (&SystemComponentSignalClient{config: _q.config}).Query()
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
-		if err := sarq.prepareQuery(ctx); err != nil {
+		if err := _q.prepareQuery(ctx); err != nil {
 			return nil, err
 		}
-		selector := sarq.sqlQuery(ctx)
+		selector := _q.sqlQuery(ctx)
 		if err := selector.Err(); err != nil {
 			return nil, err
 		}
@@ -180,20 +180,20 @@ func (sarq *SystemAnalysisRelationshipQuery) QuerySignals() *SystemComponentSign
 			sqlgraph.To(systemcomponentsignal.Table, systemcomponentsignal.FieldID),
 			sqlgraph.Edge(sqlgraph.M2M, false, systemanalysisrelationship.SignalsTable, systemanalysisrelationship.SignalsPrimaryKey...),
 		)
-		fromU = sqlgraph.SetNeighbors(sarq.driver.Dialect(), step)
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
 	}
 	return query
 }
 
 // QueryControlActions chains the current query on the "control_actions" edge.
-func (sarq *SystemAnalysisRelationshipQuery) QueryControlActions() *SystemRelationshipControlActionQuery {
-	query := (&SystemRelationshipControlActionClient{config: sarq.config}).Query()
+func (_q *SystemAnalysisRelationshipQuery) QueryControlActions() *SystemRelationshipControlActionQuery {
+	query := (&SystemRelationshipControlActionClient{config: _q.config}).Query()
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
-		if err := sarq.prepareQuery(ctx); err != nil {
+		if err := _q.prepareQuery(ctx); err != nil {
 			return nil, err
 		}
-		selector := sarq.sqlQuery(ctx)
+		selector := _q.sqlQuery(ctx)
 		if err := selector.Err(); err != nil {
 			return nil, err
 		}
@@ -202,20 +202,20 @@ func (sarq *SystemAnalysisRelationshipQuery) QueryControlActions() *SystemRelati
 			sqlgraph.To(systemrelationshipcontrolaction.Table, systemrelationshipcontrolaction.FieldID),
 			sqlgraph.Edge(sqlgraph.O2M, true, systemanalysisrelationship.ControlActionsTable, systemanalysisrelationship.ControlActionsColumn),
 		)
-		fromU = sqlgraph.SetNeighbors(sarq.driver.Dialect(), step)
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
 	}
 	return query
 }
 
 // QueryFeedbackSignals chains the current query on the "feedback_signals" edge.
-func (sarq *SystemAnalysisRelationshipQuery) QueryFeedbackSignals() *SystemRelationshipFeedbackSignalQuery {
-	query := (&SystemRelationshipFeedbackSignalClient{config: sarq.config}).Query()
+func (_q *SystemAnalysisRelationshipQuery) QueryFeedbackSignals() *SystemRelationshipFeedbackSignalQuery {
+	query := (&SystemRelationshipFeedbackSignalClient{config: _q.config}).Query()
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
-		if err := sarq.prepareQuery(ctx); err != nil {
+		if err := _q.prepareQuery(ctx); err != nil {
 			return nil, err
 		}
-		selector := sarq.sqlQuery(ctx)
+		selector := _q.sqlQuery(ctx)
 		if err := selector.Err(); err != nil {
 			return nil, err
 		}
@@ -224,7 +224,7 @@ func (sarq *SystemAnalysisRelationshipQuery) QueryFeedbackSignals() *SystemRelat
 			sqlgraph.To(systemrelationshipfeedbacksignal.Table, systemrelationshipfeedbacksignal.FieldID),
 			sqlgraph.Edge(sqlgraph.O2M, true, systemanalysisrelationship.FeedbackSignalsTable, systemanalysisrelationship.FeedbackSignalsColumn),
 		)
-		fromU = sqlgraph.SetNeighbors(sarq.driver.Dialect(), step)
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
 	}
 	return query
@@ -232,8 +232,8 @@ func (sarq *SystemAnalysisRelationshipQuery) QueryFeedbackSignals() *SystemRelat
 
 // First returns the first SystemAnalysisRelationship entity from the query.
 // Returns a *NotFoundError when no SystemAnalysisRelationship was found.
-func (sarq *SystemAnalysisRelationshipQuery) First(ctx context.Context) (*SystemAnalysisRelationship, error) {
-	nodes, err := sarq.Limit(1).All(setContextOp(ctx, sarq.ctx, ent.OpQueryFirst))
+func (_q *SystemAnalysisRelationshipQuery) First(ctx context.Context) (*SystemAnalysisRelationship, error) {
+	nodes, err := _q.Limit(1).All(setContextOp(ctx, _q.ctx, ent.OpQueryFirst))
 	if err != nil {
 		return nil, err
 	}
@@ -244,8 +244,8 @@ func (sarq *SystemAnalysisRelationshipQuery) First(ctx context.Context) (*System
 }
 
 // FirstX is like First, but panics if an error occurs.
-func (sarq *SystemAnalysisRelationshipQuery) FirstX(ctx context.Context) *SystemAnalysisRelationship {
-	node, err := sarq.First(ctx)
+func (_q *SystemAnalysisRelationshipQuery) FirstX(ctx context.Context) *SystemAnalysisRelationship {
+	node, err := _q.First(ctx)
 	if err != nil && !IsNotFound(err) {
 		panic(err)
 	}
@@ -254,9 +254,9 @@ func (sarq *SystemAnalysisRelationshipQuery) FirstX(ctx context.Context) *System
 
 // FirstID returns the first SystemAnalysisRelationship ID from the query.
 // Returns a *NotFoundError when no SystemAnalysisRelationship ID was found.
-func (sarq *SystemAnalysisRelationshipQuery) FirstID(ctx context.Context) (id uuid.UUID, err error) {
+func (_q *SystemAnalysisRelationshipQuery) FirstID(ctx context.Context) (id uuid.UUID, err error) {
 	var ids []uuid.UUID
-	if ids, err = sarq.Limit(1).IDs(setContextOp(ctx, sarq.ctx, ent.OpQueryFirstID)); err != nil {
+	if ids, err = _q.Limit(1).IDs(setContextOp(ctx, _q.ctx, ent.OpQueryFirstID)); err != nil {
 		return
 	}
 	if len(ids) == 0 {
@@ -267,8 +267,8 @@ func (sarq *SystemAnalysisRelationshipQuery) FirstID(ctx context.Context) (id uu
 }
 
 // FirstIDX is like FirstID, but panics if an error occurs.
-func (sarq *SystemAnalysisRelationshipQuery) FirstIDX(ctx context.Context) uuid.UUID {
-	id, err := sarq.FirstID(ctx)
+func (_q *SystemAnalysisRelationshipQuery) FirstIDX(ctx context.Context) uuid.UUID {
+	id, err := _q.FirstID(ctx)
 	if err != nil && !IsNotFound(err) {
 		panic(err)
 	}
@@ -278,8 +278,8 @@ func (sarq *SystemAnalysisRelationshipQuery) FirstIDX(ctx context.Context) uuid.
 // Only returns a single SystemAnalysisRelationship entity found by the query, ensuring it only returns one.
 // Returns a *NotSingularError when more than one SystemAnalysisRelationship entity is found.
 // Returns a *NotFoundError when no SystemAnalysisRelationship entities are found.
-func (sarq *SystemAnalysisRelationshipQuery) Only(ctx context.Context) (*SystemAnalysisRelationship, error) {
-	nodes, err := sarq.Limit(2).All(setContextOp(ctx, sarq.ctx, ent.OpQueryOnly))
+func (_q *SystemAnalysisRelationshipQuery) Only(ctx context.Context) (*SystemAnalysisRelationship, error) {
+	nodes, err := _q.Limit(2).All(setContextOp(ctx, _q.ctx, ent.OpQueryOnly))
 	if err != nil {
 		return nil, err
 	}
@@ -294,8 +294,8 @@ func (sarq *SystemAnalysisRelationshipQuery) Only(ctx context.Context) (*SystemA
 }
 
 // OnlyX is like Only, but panics if an error occurs.
-func (sarq *SystemAnalysisRelationshipQuery) OnlyX(ctx context.Context) *SystemAnalysisRelationship {
-	node, err := sarq.Only(ctx)
+func (_q *SystemAnalysisRelationshipQuery) OnlyX(ctx context.Context) *SystemAnalysisRelationship {
+	node, err := _q.Only(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -305,9 +305,9 @@ func (sarq *SystemAnalysisRelationshipQuery) OnlyX(ctx context.Context) *SystemA
 // OnlyID is like Only, but returns the only SystemAnalysisRelationship ID in the query.
 // Returns a *NotSingularError when more than one SystemAnalysisRelationship ID is found.
 // Returns a *NotFoundError when no entities are found.
-func (sarq *SystemAnalysisRelationshipQuery) OnlyID(ctx context.Context) (id uuid.UUID, err error) {
+func (_q *SystemAnalysisRelationshipQuery) OnlyID(ctx context.Context) (id uuid.UUID, err error) {
 	var ids []uuid.UUID
-	if ids, err = sarq.Limit(2).IDs(setContextOp(ctx, sarq.ctx, ent.OpQueryOnlyID)); err != nil {
+	if ids, err = _q.Limit(2).IDs(setContextOp(ctx, _q.ctx, ent.OpQueryOnlyID)); err != nil {
 		return
 	}
 	switch len(ids) {
@@ -322,8 +322,8 @@ func (sarq *SystemAnalysisRelationshipQuery) OnlyID(ctx context.Context) (id uui
 }
 
 // OnlyIDX is like OnlyID, but panics if an error occurs.
-func (sarq *SystemAnalysisRelationshipQuery) OnlyIDX(ctx context.Context) uuid.UUID {
-	id, err := sarq.OnlyID(ctx)
+func (_q *SystemAnalysisRelationshipQuery) OnlyIDX(ctx context.Context) uuid.UUID {
+	id, err := _q.OnlyID(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -331,18 +331,18 @@ func (sarq *SystemAnalysisRelationshipQuery) OnlyIDX(ctx context.Context) uuid.U
 }
 
 // All executes the query and returns a list of SystemAnalysisRelationships.
-func (sarq *SystemAnalysisRelationshipQuery) All(ctx context.Context) ([]*SystemAnalysisRelationship, error) {
-	ctx = setContextOp(ctx, sarq.ctx, ent.OpQueryAll)
-	if err := sarq.prepareQuery(ctx); err != nil {
+func (_q *SystemAnalysisRelationshipQuery) All(ctx context.Context) ([]*SystemAnalysisRelationship, error) {
+	ctx = setContextOp(ctx, _q.ctx, ent.OpQueryAll)
+	if err := _q.prepareQuery(ctx); err != nil {
 		return nil, err
 	}
 	qr := querierAll[[]*SystemAnalysisRelationship, *SystemAnalysisRelationshipQuery]()
-	return withInterceptors[[]*SystemAnalysisRelationship](ctx, sarq, qr, sarq.inters)
+	return withInterceptors[[]*SystemAnalysisRelationship](ctx, _q, qr, _q.inters)
 }
 
 // AllX is like All, but panics if an error occurs.
-func (sarq *SystemAnalysisRelationshipQuery) AllX(ctx context.Context) []*SystemAnalysisRelationship {
-	nodes, err := sarq.All(ctx)
+func (_q *SystemAnalysisRelationshipQuery) AllX(ctx context.Context) []*SystemAnalysisRelationship {
+	nodes, err := _q.All(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -350,20 +350,20 @@ func (sarq *SystemAnalysisRelationshipQuery) AllX(ctx context.Context) []*System
 }
 
 // IDs executes the query and returns a list of SystemAnalysisRelationship IDs.
-func (sarq *SystemAnalysisRelationshipQuery) IDs(ctx context.Context) (ids []uuid.UUID, err error) {
-	if sarq.ctx.Unique == nil && sarq.path != nil {
-		sarq.Unique(true)
+func (_q *SystemAnalysisRelationshipQuery) IDs(ctx context.Context) (ids []uuid.UUID, err error) {
+	if _q.ctx.Unique == nil && _q.path != nil {
+		_q.Unique(true)
 	}
-	ctx = setContextOp(ctx, sarq.ctx, ent.OpQueryIDs)
-	if err = sarq.Select(systemanalysisrelationship.FieldID).Scan(ctx, &ids); err != nil {
+	ctx = setContextOp(ctx, _q.ctx, ent.OpQueryIDs)
+	if err = _q.Select(systemanalysisrelationship.FieldID).Scan(ctx, &ids); err != nil {
 		return nil, err
 	}
 	return ids, nil
 }
 
 // IDsX is like IDs, but panics if an error occurs.
-func (sarq *SystemAnalysisRelationshipQuery) IDsX(ctx context.Context) []uuid.UUID {
-	ids, err := sarq.IDs(ctx)
+func (_q *SystemAnalysisRelationshipQuery) IDsX(ctx context.Context) []uuid.UUID {
+	ids, err := _q.IDs(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -371,17 +371,17 @@ func (sarq *SystemAnalysisRelationshipQuery) IDsX(ctx context.Context) []uuid.UU
 }
 
 // Count returns the count of the given query.
-func (sarq *SystemAnalysisRelationshipQuery) Count(ctx context.Context) (int, error) {
-	ctx = setContextOp(ctx, sarq.ctx, ent.OpQueryCount)
-	if err := sarq.prepareQuery(ctx); err != nil {
+func (_q *SystemAnalysisRelationshipQuery) Count(ctx context.Context) (int, error) {
+	ctx = setContextOp(ctx, _q.ctx, ent.OpQueryCount)
+	if err := _q.prepareQuery(ctx); err != nil {
 		return 0, err
 	}
-	return withInterceptors[int](ctx, sarq, querierCount[*SystemAnalysisRelationshipQuery](), sarq.inters)
+	return withInterceptors[int](ctx, _q, querierCount[*SystemAnalysisRelationshipQuery](), _q.inters)
 }
 
 // CountX is like Count, but panics if an error occurs.
-func (sarq *SystemAnalysisRelationshipQuery) CountX(ctx context.Context) int {
-	count, err := sarq.Count(ctx)
+func (_q *SystemAnalysisRelationshipQuery) CountX(ctx context.Context) int {
+	count, err := _q.Count(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -389,9 +389,9 @@ func (sarq *SystemAnalysisRelationshipQuery) CountX(ctx context.Context) int {
 }
 
 // Exist returns true if the query has elements in the graph.
-func (sarq *SystemAnalysisRelationshipQuery) Exist(ctx context.Context) (bool, error) {
-	ctx = setContextOp(ctx, sarq.ctx, ent.OpQueryExist)
-	switch _, err := sarq.FirstID(ctx); {
+func (_q *SystemAnalysisRelationshipQuery) Exist(ctx context.Context) (bool, error) {
+	ctx = setContextOp(ctx, _q.ctx, ent.OpQueryExist)
+	switch _, err := _q.FirstID(ctx); {
 	case IsNotFound(err):
 		return false, nil
 	case err != nil:
@@ -402,8 +402,8 @@ func (sarq *SystemAnalysisRelationshipQuery) Exist(ctx context.Context) (bool, e
 }
 
 // ExistX is like Exist, but panics if an error occurs.
-func (sarq *SystemAnalysisRelationshipQuery) ExistX(ctx context.Context) bool {
-	exist, err := sarq.Exist(ctx)
+func (_q *SystemAnalysisRelationshipQuery) ExistX(ctx context.Context) bool {
+	exist, err := _q.Exist(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -412,105 +412,105 @@ func (sarq *SystemAnalysisRelationshipQuery) ExistX(ctx context.Context) bool {
 
 // Clone returns a duplicate of the SystemAnalysisRelationshipQuery builder, including all associated steps. It can be
 // used to prepare common query builders and use them differently after the clone is made.
-func (sarq *SystemAnalysisRelationshipQuery) Clone() *SystemAnalysisRelationshipQuery {
-	if sarq == nil {
+func (_q *SystemAnalysisRelationshipQuery) Clone() *SystemAnalysisRelationshipQuery {
+	if _q == nil {
 		return nil
 	}
 	return &SystemAnalysisRelationshipQuery{
-		config:                    sarq.config,
-		ctx:                       sarq.ctx.Clone(),
-		order:                     append([]systemanalysisrelationship.OrderOption{}, sarq.order...),
-		inters:                    append([]Interceptor{}, sarq.inters...),
-		predicates:                append([]predicate.SystemAnalysisRelationship{}, sarq.predicates...),
-		withTenant:                sarq.withTenant.Clone(),
-		withSystemAnalysis:        sarq.withSystemAnalysis.Clone(),
-		withComponentRelationship: sarq.withComponentRelationship.Clone(),
-		withControls:              sarq.withControls.Clone(),
-		withSignals:               sarq.withSignals.Clone(),
-		withControlActions:        sarq.withControlActions.Clone(),
-		withFeedbackSignals:       sarq.withFeedbackSignals.Clone(),
+		config:                    _q.config,
+		ctx:                       _q.ctx.Clone(),
+		order:                     append([]systemanalysisrelationship.OrderOption{}, _q.order...),
+		inters:                    append([]Interceptor{}, _q.inters...),
+		predicates:                append([]predicate.SystemAnalysisRelationship{}, _q.predicates...),
+		withTenant:                _q.withTenant.Clone(),
+		withSystemAnalysis:        _q.withSystemAnalysis.Clone(),
+		withComponentRelationship: _q.withComponentRelationship.Clone(),
+		withControls:              _q.withControls.Clone(),
+		withSignals:               _q.withSignals.Clone(),
+		withControlActions:        _q.withControlActions.Clone(),
+		withFeedbackSignals:       _q.withFeedbackSignals.Clone(),
 		// clone intermediate query.
-		sql:       sarq.sql.Clone(),
-		path:      sarq.path,
-		modifiers: append([]func(*sql.Selector){}, sarq.modifiers...),
+		sql:       _q.sql.Clone(),
+		path:      _q.path,
+		modifiers: append([]func(*sql.Selector){}, _q.modifiers...),
 	}
 }
 
 // WithTenant tells the query-builder to eager-load the nodes that are connected to
 // the "tenant" edge. The optional arguments are used to configure the query builder of the edge.
-func (sarq *SystemAnalysisRelationshipQuery) WithTenant(opts ...func(*TenantQuery)) *SystemAnalysisRelationshipQuery {
-	query := (&TenantClient{config: sarq.config}).Query()
+func (_q *SystemAnalysisRelationshipQuery) WithTenant(opts ...func(*TenantQuery)) *SystemAnalysisRelationshipQuery {
+	query := (&TenantClient{config: _q.config}).Query()
 	for _, opt := range opts {
 		opt(query)
 	}
-	sarq.withTenant = query
-	return sarq
+	_q.withTenant = query
+	return _q
 }
 
 // WithSystemAnalysis tells the query-builder to eager-load the nodes that are connected to
 // the "system_analysis" edge. The optional arguments are used to configure the query builder of the edge.
-func (sarq *SystemAnalysisRelationshipQuery) WithSystemAnalysis(opts ...func(*SystemAnalysisQuery)) *SystemAnalysisRelationshipQuery {
-	query := (&SystemAnalysisClient{config: sarq.config}).Query()
+func (_q *SystemAnalysisRelationshipQuery) WithSystemAnalysis(opts ...func(*SystemAnalysisQuery)) *SystemAnalysisRelationshipQuery {
+	query := (&SystemAnalysisClient{config: _q.config}).Query()
 	for _, opt := range opts {
 		opt(query)
 	}
-	sarq.withSystemAnalysis = query
-	return sarq
+	_q.withSystemAnalysis = query
+	return _q
 }
 
 // WithComponentRelationship tells the query-builder to eager-load the nodes that are connected to
 // the "component_relationship" edge. The optional arguments are used to configure the query builder of the edge.
-func (sarq *SystemAnalysisRelationshipQuery) WithComponentRelationship(opts ...func(*SystemComponentRelationshipQuery)) *SystemAnalysisRelationshipQuery {
-	query := (&SystemComponentRelationshipClient{config: sarq.config}).Query()
+func (_q *SystemAnalysisRelationshipQuery) WithComponentRelationship(opts ...func(*SystemComponentRelationshipQuery)) *SystemAnalysisRelationshipQuery {
+	query := (&SystemComponentRelationshipClient{config: _q.config}).Query()
 	for _, opt := range opts {
 		opt(query)
 	}
-	sarq.withComponentRelationship = query
-	return sarq
+	_q.withComponentRelationship = query
+	return _q
 }
 
 // WithControls tells the query-builder to eager-load the nodes that are connected to
 // the "controls" edge. The optional arguments are used to configure the query builder of the edge.
-func (sarq *SystemAnalysisRelationshipQuery) WithControls(opts ...func(*SystemComponentControlQuery)) *SystemAnalysisRelationshipQuery {
-	query := (&SystemComponentControlClient{config: sarq.config}).Query()
+func (_q *SystemAnalysisRelationshipQuery) WithControls(opts ...func(*SystemComponentControlQuery)) *SystemAnalysisRelationshipQuery {
+	query := (&SystemComponentControlClient{config: _q.config}).Query()
 	for _, opt := range opts {
 		opt(query)
 	}
-	sarq.withControls = query
-	return sarq
+	_q.withControls = query
+	return _q
 }
 
 // WithSignals tells the query-builder to eager-load the nodes that are connected to
 // the "signals" edge. The optional arguments are used to configure the query builder of the edge.
-func (sarq *SystemAnalysisRelationshipQuery) WithSignals(opts ...func(*SystemComponentSignalQuery)) *SystemAnalysisRelationshipQuery {
-	query := (&SystemComponentSignalClient{config: sarq.config}).Query()
+func (_q *SystemAnalysisRelationshipQuery) WithSignals(opts ...func(*SystemComponentSignalQuery)) *SystemAnalysisRelationshipQuery {
+	query := (&SystemComponentSignalClient{config: _q.config}).Query()
 	for _, opt := range opts {
 		opt(query)
 	}
-	sarq.withSignals = query
-	return sarq
+	_q.withSignals = query
+	return _q
 }
 
 // WithControlActions tells the query-builder to eager-load the nodes that are connected to
 // the "control_actions" edge. The optional arguments are used to configure the query builder of the edge.
-func (sarq *SystemAnalysisRelationshipQuery) WithControlActions(opts ...func(*SystemRelationshipControlActionQuery)) *SystemAnalysisRelationshipQuery {
-	query := (&SystemRelationshipControlActionClient{config: sarq.config}).Query()
+func (_q *SystemAnalysisRelationshipQuery) WithControlActions(opts ...func(*SystemRelationshipControlActionQuery)) *SystemAnalysisRelationshipQuery {
+	query := (&SystemRelationshipControlActionClient{config: _q.config}).Query()
 	for _, opt := range opts {
 		opt(query)
 	}
-	sarq.withControlActions = query
-	return sarq
+	_q.withControlActions = query
+	return _q
 }
 
 // WithFeedbackSignals tells the query-builder to eager-load the nodes that are connected to
 // the "feedback_signals" edge. The optional arguments are used to configure the query builder of the edge.
-func (sarq *SystemAnalysisRelationshipQuery) WithFeedbackSignals(opts ...func(*SystemRelationshipFeedbackSignalQuery)) *SystemAnalysisRelationshipQuery {
-	query := (&SystemRelationshipFeedbackSignalClient{config: sarq.config}).Query()
+func (_q *SystemAnalysisRelationshipQuery) WithFeedbackSignals(opts ...func(*SystemRelationshipFeedbackSignalQuery)) *SystemAnalysisRelationshipQuery {
+	query := (&SystemRelationshipFeedbackSignalClient{config: _q.config}).Query()
 	for _, opt := range opts {
 		opt(query)
 	}
-	sarq.withFeedbackSignals = query
-	return sarq
+	_q.withFeedbackSignals = query
+	return _q
 }
 
 // GroupBy is used to group vertices by one or more fields/columns.
@@ -527,10 +527,10 @@ func (sarq *SystemAnalysisRelationshipQuery) WithFeedbackSignals(opts ...func(*S
 //		GroupBy(systemanalysisrelationship.FieldTenantID).
 //		Aggregate(ent.Count()).
 //		Scan(ctx, &v)
-func (sarq *SystemAnalysisRelationshipQuery) GroupBy(field string, fields ...string) *SystemAnalysisRelationshipGroupBy {
-	sarq.ctx.Fields = append([]string{field}, fields...)
-	grbuild := &SystemAnalysisRelationshipGroupBy{build: sarq}
-	grbuild.flds = &sarq.ctx.Fields
+func (_q *SystemAnalysisRelationshipQuery) GroupBy(field string, fields ...string) *SystemAnalysisRelationshipGroupBy {
+	_q.ctx.Fields = append([]string{field}, fields...)
+	grbuild := &SystemAnalysisRelationshipGroupBy{build: _q}
+	grbuild.flds = &_q.ctx.Fields
 	grbuild.label = systemanalysisrelationship.Label
 	grbuild.scan = grbuild.Scan
 	return grbuild
@@ -548,106 +548,106 @@ func (sarq *SystemAnalysisRelationshipQuery) GroupBy(field string, fields ...str
 //	client.SystemAnalysisRelationship.Query().
 //		Select(systemanalysisrelationship.FieldTenantID).
 //		Scan(ctx, &v)
-func (sarq *SystemAnalysisRelationshipQuery) Select(fields ...string) *SystemAnalysisRelationshipSelect {
-	sarq.ctx.Fields = append(sarq.ctx.Fields, fields...)
-	sbuild := &SystemAnalysisRelationshipSelect{SystemAnalysisRelationshipQuery: sarq}
+func (_q *SystemAnalysisRelationshipQuery) Select(fields ...string) *SystemAnalysisRelationshipSelect {
+	_q.ctx.Fields = append(_q.ctx.Fields, fields...)
+	sbuild := &SystemAnalysisRelationshipSelect{SystemAnalysisRelationshipQuery: _q}
 	sbuild.label = systemanalysisrelationship.Label
-	sbuild.flds, sbuild.scan = &sarq.ctx.Fields, sbuild.Scan
+	sbuild.flds, sbuild.scan = &_q.ctx.Fields, sbuild.Scan
 	return sbuild
 }
 
 // Aggregate returns a SystemAnalysisRelationshipSelect configured with the given aggregations.
-func (sarq *SystemAnalysisRelationshipQuery) Aggregate(fns ...AggregateFunc) *SystemAnalysisRelationshipSelect {
-	return sarq.Select().Aggregate(fns...)
+func (_q *SystemAnalysisRelationshipQuery) Aggregate(fns ...AggregateFunc) *SystemAnalysisRelationshipSelect {
+	return _q.Select().Aggregate(fns...)
 }
 
-func (sarq *SystemAnalysisRelationshipQuery) prepareQuery(ctx context.Context) error {
-	for _, inter := range sarq.inters {
+func (_q *SystemAnalysisRelationshipQuery) prepareQuery(ctx context.Context) error {
+	for _, inter := range _q.inters {
 		if inter == nil {
 			return fmt.Errorf("ent: uninitialized interceptor (forgotten import ent/runtime?)")
 		}
 		if trv, ok := inter.(Traverser); ok {
-			if err := trv.Traverse(ctx, sarq); err != nil {
+			if err := trv.Traverse(ctx, _q); err != nil {
 				return err
 			}
 		}
 	}
-	for _, f := range sarq.ctx.Fields {
+	for _, f := range _q.ctx.Fields {
 		if !systemanalysisrelationship.ValidColumn(f) {
 			return &ValidationError{Name: f, err: fmt.Errorf("ent: invalid field %q for query", f)}
 		}
 	}
-	if sarq.path != nil {
-		prev, err := sarq.path(ctx)
+	if _q.path != nil {
+		prev, err := _q.path(ctx)
 		if err != nil {
 			return err
 		}
-		sarq.sql = prev
+		_q.sql = prev
 	}
 	if systemanalysisrelationship.Policy == nil {
 		return errors.New("ent: uninitialized systemanalysisrelationship.Policy (forgotten import ent/runtime?)")
 	}
-	if err := systemanalysisrelationship.Policy.EvalQuery(ctx, sarq); err != nil {
+	if err := systemanalysisrelationship.Policy.EvalQuery(ctx, _q); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (sarq *SystemAnalysisRelationshipQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*SystemAnalysisRelationship, error) {
+func (_q *SystemAnalysisRelationshipQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*SystemAnalysisRelationship, error) {
 	var (
 		nodes       = []*SystemAnalysisRelationship{}
-		_spec       = sarq.querySpec()
+		_spec       = _q.querySpec()
 		loadedTypes = [7]bool{
-			sarq.withTenant != nil,
-			sarq.withSystemAnalysis != nil,
-			sarq.withComponentRelationship != nil,
-			sarq.withControls != nil,
-			sarq.withSignals != nil,
-			sarq.withControlActions != nil,
-			sarq.withFeedbackSignals != nil,
+			_q.withTenant != nil,
+			_q.withSystemAnalysis != nil,
+			_q.withComponentRelationship != nil,
+			_q.withControls != nil,
+			_q.withSignals != nil,
+			_q.withControlActions != nil,
+			_q.withFeedbackSignals != nil,
 		}
 	)
 	_spec.ScanValues = func(columns []string) ([]any, error) {
 		return (*SystemAnalysisRelationship).scanValues(nil, columns)
 	}
 	_spec.Assign = func(columns []string, values []any) error {
-		node := &SystemAnalysisRelationship{config: sarq.config}
+		node := &SystemAnalysisRelationship{config: _q.config}
 		nodes = append(nodes, node)
 		node.Edges.loadedTypes = loadedTypes
 		return node.assignValues(columns, values)
 	}
-	if len(sarq.modifiers) > 0 {
-		_spec.Modifiers = sarq.modifiers
+	if len(_q.modifiers) > 0 {
+		_spec.Modifiers = _q.modifiers
 	}
 	for i := range hooks {
 		hooks[i](ctx, _spec)
 	}
-	if err := sqlgraph.QueryNodes(ctx, sarq.driver, _spec); err != nil {
+	if err := sqlgraph.QueryNodes(ctx, _q.driver, _spec); err != nil {
 		return nil, err
 	}
 	if len(nodes) == 0 {
 		return nodes, nil
 	}
-	if query := sarq.withTenant; query != nil {
-		if err := sarq.loadTenant(ctx, query, nodes, nil,
+	if query := _q.withTenant; query != nil {
+		if err := _q.loadTenant(ctx, query, nodes, nil,
 			func(n *SystemAnalysisRelationship, e *Tenant) { n.Edges.Tenant = e }); err != nil {
 			return nil, err
 		}
 	}
-	if query := sarq.withSystemAnalysis; query != nil {
-		if err := sarq.loadSystemAnalysis(ctx, query, nodes, nil,
+	if query := _q.withSystemAnalysis; query != nil {
+		if err := _q.loadSystemAnalysis(ctx, query, nodes, nil,
 			func(n *SystemAnalysisRelationship, e *SystemAnalysis) { n.Edges.SystemAnalysis = e }); err != nil {
 			return nil, err
 		}
 	}
-	if query := sarq.withComponentRelationship; query != nil {
-		if err := sarq.loadComponentRelationship(ctx, query, nodes, nil,
+	if query := _q.withComponentRelationship; query != nil {
+		if err := _q.loadComponentRelationship(ctx, query, nodes, nil,
 			func(n *SystemAnalysisRelationship, e *SystemComponentRelationship) { n.Edges.ComponentRelationship = e }); err != nil {
 			return nil, err
 		}
 	}
-	if query := sarq.withControls; query != nil {
-		if err := sarq.loadControls(ctx, query, nodes,
+	if query := _q.withControls; query != nil {
+		if err := _q.loadControls(ctx, query, nodes,
 			func(n *SystemAnalysisRelationship) { n.Edges.Controls = []*SystemComponentControl{} },
 			func(n *SystemAnalysisRelationship, e *SystemComponentControl) {
 				n.Edges.Controls = append(n.Edges.Controls, e)
@@ -655,8 +655,8 @@ func (sarq *SystemAnalysisRelationshipQuery) sqlAll(ctx context.Context, hooks .
 			return nil, err
 		}
 	}
-	if query := sarq.withSignals; query != nil {
-		if err := sarq.loadSignals(ctx, query, nodes,
+	if query := _q.withSignals; query != nil {
+		if err := _q.loadSignals(ctx, query, nodes,
 			func(n *SystemAnalysisRelationship) { n.Edges.Signals = []*SystemComponentSignal{} },
 			func(n *SystemAnalysisRelationship, e *SystemComponentSignal) {
 				n.Edges.Signals = append(n.Edges.Signals, e)
@@ -664,8 +664,8 @@ func (sarq *SystemAnalysisRelationshipQuery) sqlAll(ctx context.Context, hooks .
 			return nil, err
 		}
 	}
-	if query := sarq.withControlActions; query != nil {
-		if err := sarq.loadControlActions(ctx, query, nodes,
+	if query := _q.withControlActions; query != nil {
+		if err := _q.loadControlActions(ctx, query, nodes,
 			func(n *SystemAnalysisRelationship) { n.Edges.ControlActions = []*SystemRelationshipControlAction{} },
 			func(n *SystemAnalysisRelationship, e *SystemRelationshipControlAction) {
 				n.Edges.ControlActions = append(n.Edges.ControlActions, e)
@@ -673,8 +673,8 @@ func (sarq *SystemAnalysisRelationshipQuery) sqlAll(ctx context.Context, hooks .
 			return nil, err
 		}
 	}
-	if query := sarq.withFeedbackSignals; query != nil {
-		if err := sarq.loadFeedbackSignals(ctx, query, nodes,
+	if query := _q.withFeedbackSignals; query != nil {
+		if err := _q.loadFeedbackSignals(ctx, query, nodes,
 			func(n *SystemAnalysisRelationship) { n.Edges.FeedbackSignals = []*SystemRelationshipFeedbackSignal{} },
 			func(n *SystemAnalysisRelationship, e *SystemRelationshipFeedbackSignal) {
 				n.Edges.FeedbackSignals = append(n.Edges.FeedbackSignals, e)
@@ -685,7 +685,7 @@ func (sarq *SystemAnalysisRelationshipQuery) sqlAll(ctx context.Context, hooks .
 	return nodes, nil
 }
 
-func (sarq *SystemAnalysisRelationshipQuery) loadTenant(ctx context.Context, query *TenantQuery, nodes []*SystemAnalysisRelationship, init func(*SystemAnalysisRelationship), assign func(*SystemAnalysisRelationship, *Tenant)) error {
+func (_q *SystemAnalysisRelationshipQuery) loadTenant(ctx context.Context, query *TenantQuery, nodes []*SystemAnalysisRelationship, init func(*SystemAnalysisRelationship), assign func(*SystemAnalysisRelationship, *Tenant)) error {
 	ids := make([]int, 0, len(nodes))
 	nodeids := make(map[int][]*SystemAnalysisRelationship)
 	for i := range nodes {
@@ -714,7 +714,7 @@ func (sarq *SystemAnalysisRelationshipQuery) loadTenant(ctx context.Context, que
 	}
 	return nil
 }
-func (sarq *SystemAnalysisRelationshipQuery) loadSystemAnalysis(ctx context.Context, query *SystemAnalysisQuery, nodes []*SystemAnalysisRelationship, init func(*SystemAnalysisRelationship), assign func(*SystemAnalysisRelationship, *SystemAnalysis)) error {
+func (_q *SystemAnalysisRelationshipQuery) loadSystemAnalysis(ctx context.Context, query *SystemAnalysisQuery, nodes []*SystemAnalysisRelationship, init func(*SystemAnalysisRelationship), assign func(*SystemAnalysisRelationship, *SystemAnalysis)) error {
 	ids := make([]uuid.UUID, 0, len(nodes))
 	nodeids := make(map[uuid.UUID][]*SystemAnalysisRelationship)
 	for i := range nodes {
@@ -743,7 +743,7 @@ func (sarq *SystemAnalysisRelationshipQuery) loadSystemAnalysis(ctx context.Cont
 	}
 	return nil
 }
-func (sarq *SystemAnalysisRelationshipQuery) loadComponentRelationship(ctx context.Context, query *SystemComponentRelationshipQuery, nodes []*SystemAnalysisRelationship, init func(*SystemAnalysisRelationship), assign func(*SystemAnalysisRelationship, *SystemComponentRelationship)) error {
+func (_q *SystemAnalysisRelationshipQuery) loadComponentRelationship(ctx context.Context, query *SystemComponentRelationshipQuery, nodes []*SystemAnalysisRelationship, init func(*SystemAnalysisRelationship), assign func(*SystemAnalysisRelationship, *SystemComponentRelationship)) error {
 	ids := make([]uuid.UUID, 0, len(nodes))
 	nodeids := make(map[uuid.UUID][]*SystemAnalysisRelationship)
 	for i := range nodes {
@@ -772,7 +772,7 @@ func (sarq *SystemAnalysisRelationshipQuery) loadComponentRelationship(ctx conte
 	}
 	return nil
 }
-func (sarq *SystemAnalysisRelationshipQuery) loadControls(ctx context.Context, query *SystemComponentControlQuery, nodes []*SystemAnalysisRelationship, init func(*SystemAnalysisRelationship), assign func(*SystemAnalysisRelationship, *SystemComponentControl)) error {
+func (_q *SystemAnalysisRelationshipQuery) loadControls(ctx context.Context, query *SystemComponentControlQuery, nodes []*SystemAnalysisRelationship, init func(*SystemAnalysisRelationship), assign func(*SystemAnalysisRelationship, *SystemComponentControl)) error {
 	edgeIDs := make([]driver.Value, len(nodes))
 	byID := make(map[uuid.UUID]*SystemAnalysisRelationship)
 	nids := make(map[uuid.UUID]map[*SystemAnalysisRelationship]struct{})
@@ -833,7 +833,7 @@ func (sarq *SystemAnalysisRelationshipQuery) loadControls(ctx context.Context, q
 	}
 	return nil
 }
-func (sarq *SystemAnalysisRelationshipQuery) loadSignals(ctx context.Context, query *SystemComponentSignalQuery, nodes []*SystemAnalysisRelationship, init func(*SystemAnalysisRelationship), assign func(*SystemAnalysisRelationship, *SystemComponentSignal)) error {
+func (_q *SystemAnalysisRelationshipQuery) loadSignals(ctx context.Context, query *SystemComponentSignalQuery, nodes []*SystemAnalysisRelationship, init func(*SystemAnalysisRelationship), assign func(*SystemAnalysisRelationship, *SystemComponentSignal)) error {
 	edgeIDs := make([]driver.Value, len(nodes))
 	byID := make(map[uuid.UUID]*SystemAnalysisRelationship)
 	nids := make(map[uuid.UUID]map[*SystemAnalysisRelationship]struct{})
@@ -894,7 +894,7 @@ func (sarq *SystemAnalysisRelationshipQuery) loadSignals(ctx context.Context, qu
 	}
 	return nil
 }
-func (sarq *SystemAnalysisRelationshipQuery) loadControlActions(ctx context.Context, query *SystemRelationshipControlActionQuery, nodes []*SystemAnalysisRelationship, init func(*SystemAnalysisRelationship), assign func(*SystemAnalysisRelationship, *SystemRelationshipControlAction)) error {
+func (_q *SystemAnalysisRelationshipQuery) loadControlActions(ctx context.Context, query *SystemRelationshipControlActionQuery, nodes []*SystemAnalysisRelationship, init func(*SystemAnalysisRelationship), assign func(*SystemAnalysisRelationship, *SystemRelationshipControlAction)) error {
 	fks := make([]driver.Value, 0, len(nodes))
 	nodeids := make(map[uuid.UUID]*SystemAnalysisRelationship)
 	for i := range nodes {
@@ -924,7 +924,7 @@ func (sarq *SystemAnalysisRelationshipQuery) loadControlActions(ctx context.Cont
 	}
 	return nil
 }
-func (sarq *SystemAnalysisRelationshipQuery) loadFeedbackSignals(ctx context.Context, query *SystemRelationshipFeedbackSignalQuery, nodes []*SystemAnalysisRelationship, init func(*SystemAnalysisRelationship), assign func(*SystemAnalysisRelationship, *SystemRelationshipFeedbackSignal)) error {
+func (_q *SystemAnalysisRelationshipQuery) loadFeedbackSignals(ctx context.Context, query *SystemRelationshipFeedbackSignalQuery, nodes []*SystemAnalysisRelationship, init func(*SystemAnalysisRelationship), assign func(*SystemAnalysisRelationship, *SystemRelationshipFeedbackSignal)) error {
 	fks := make([]driver.Value, 0, len(nodes))
 	nodeids := make(map[uuid.UUID]*SystemAnalysisRelationship)
 	for i := range nodes {
@@ -955,27 +955,27 @@ func (sarq *SystemAnalysisRelationshipQuery) loadFeedbackSignals(ctx context.Con
 	return nil
 }
 
-func (sarq *SystemAnalysisRelationshipQuery) sqlCount(ctx context.Context) (int, error) {
-	_spec := sarq.querySpec()
-	if len(sarq.modifiers) > 0 {
-		_spec.Modifiers = sarq.modifiers
+func (_q *SystemAnalysisRelationshipQuery) sqlCount(ctx context.Context) (int, error) {
+	_spec := _q.querySpec()
+	if len(_q.modifiers) > 0 {
+		_spec.Modifiers = _q.modifiers
 	}
-	_spec.Node.Columns = sarq.ctx.Fields
-	if len(sarq.ctx.Fields) > 0 {
-		_spec.Unique = sarq.ctx.Unique != nil && *sarq.ctx.Unique
+	_spec.Node.Columns = _q.ctx.Fields
+	if len(_q.ctx.Fields) > 0 {
+		_spec.Unique = _q.ctx.Unique != nil && *_q.ctx.Unique
 	}
-	return sqlgraph.CountNodes(ctx, sarq.driver, _spec)
+	return sqlgraph.CountNodes(ctx, _q.driver, _spec)
 }
 
-func (sarq *SystemAnalysisRelationshipQuery) querySpec() *sqlgraph.QuerySpec {
+func (_q *SystemAnalysisRelationshipQuery) querySpec() *sqlgraph.QuerySpec {
 	_spec := sqlgraph.NewQuerySpec(systemanalysisrelationship.Table, systemanalysisrelationship.Columns, sqlgraph.NewFieldSpec(systemanalysisrelationship.FieldID, field.TypeUUID))
-	_spec.From = sarq.sql
-	if unique := sarq.ctx.Unique; unique != nil {
+	_spec.From = _q.sql
+	if unique := _q.ctx.Unique; unique != nil {
 		_spec.Unique = *unique
-	} else if sarq.path != nil {
+	} else if _q.path != nil {
 		_spec.Unique = true
 	}
-	if fields := sarq.ctx.Fields; len(fields) > 0 {
+	if fields := _q.ctx.Fields; len(fields) > 0 {
 		_spec.Node.Columns = make([]string, 0, len(fields))
 		_spec.Node.Columns = append(_spec.Node.Columns, systemanalysisrelationship.FieldID)
 		for i := range fields {
@@ -983,30 +983,30 @@ func (sarq *SystemAnalysisRelationshipQuery) querySpec() *sqlgraph.QuerySpec {
 				_spec.Node.Columns = append(_spec.Node.Columns, fields[i])
 			}
 		}
-		if sarq.withTenant != nil {
+		if _q.withTenant != nil {
 			_spec.Node.AddColumnOnce(systemanalysisrelationship.FieldTenantID)
 		}
-		if sarq.withSystemAnalysis != nil {
+		if _q.withSystemAnalysis != nil {
 			_spec.Node.AddColumnOnce(systemanalysisrelationship.FieldAnalysisID)
 		}
-		if sarq.withComponentRelationship != nil {
+		if _q.withComponentRelationship != nil {
 			_spec.Node.AddColumnOnce(systemanalysisrelationship.FieldComponentRelationshipID)
 		}
 	}
-	if ps := sarq.predicates; len(ps) > 0 {
+	if ps := _q.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {
 				ps[i](selector)
 			}
 		}
 	}
-	if limit := sarq.ctx.Limit; limit != nil {
+	if limit := _q.ctx.Limit; limit != nil {
 		_spec.Limit = *limit
 	}
-	if offset := sarq.ctx.Offset; offset != nil {
+	if offset := _q.ctx.Offset; offset != nil {
 		_spec.Offset = *offset
 	}
-	if ps := sarq.order; len(ps) > 0 {
+	if ps := _q.order; len(ps) > 0 {
 		_spec.Order = func(selector *sql.Selector) {
 			for i := range ps {
 				ps[i](selector)
@@ -1016,45 +1016,45 @@ func (sarq *SystemAnalysisRelationshipQuery) querySpec() *sqlgraph.QuerySpec {
 	return _spec
 }
 
-func (sarq *SystemAnalysisRelationshipQuery) sqlQuery(ctx context.Context) *sql.Selector {
-	builder := sql.Dialect(sarq.driver.Dialect())
+func (_q *SystemAnalysisRelationshipQuery) sqlQuery(ctx context.Context) *sql.Selector {
+	builder := sql.Dialect(_q.driver.Dialect())
 	t1 := builder.Table(systemanalysisrelationship.Table)
-	columns := sarq.ctx.Fields
+	columns := _q.ctx.Fields
 	if len(columns) == 0 {
 		columns = systemanalysisrelationship.Columns
 	}
 	selector := builder.Select(t1.Columns(columns...)...).From(t1)
-	if sarq.sql != nil {
-		selector = sarq.sql
+	if _q.sql != nil {
+		selector = _q.sql
 		selector.Select(selector.Columns(columns...)...)
 	}
-	if sarq.ctx.Unique != nil && *sarq.ctx.Unique {
+	if _q.ctx.Unique != nil && *_q.ctx.Unique {
 		selector.Distinct()
 	}
-	for _, m := range sarq.modifiers {
+	for _, m := range _q.modifiers {
 		m(selector)
 	}
-	for _, p := range sarq.predicates {
+	for _, p := range _q.predicates {
 		p(selector)
 	}
-	for _, p := range sarq.order {
+	for _, p := range _q.order {
 		p(selector)
 	}
-	if offset := sarq.ctx.Offset; offset != nil {
+	if offset := _q.ctx.Offset; offset != nil {
 		// limit is mandatory for offset clause. We start
 		// with default value, and override it below if needed.
 		selector.Offset(*offset).Limit(math.MaxInt32)
 	}
-	if limit := sarq.ctx.Limit; limit != nil {
+	if limit := _q.ctx.Limit; limit != nil {
 		selector.Limit(*limit)
 	}
 	return selector
 }
 
 // Modify adds a query modifier for attaching custom logic to queries.
-func (sarq *SystemAnalysisRelationshipQuery) Modify(modifiers ...func(s *sql.Selector)) *SystemAnalysisRelationshipSelect {
-	sarq.modifiers = append(sarq.modifiers, modifiers...)
-	return sarq.Select()
+func (_q *SystemAnalysisRelationshipQuery) Modify(modifiers ...func(s *sql.Selector)) *SystemAnalysisRelationshipSelect {
+	_q.modifiers = append(_q.modifiers, modifiers...)
+	return _q.Select()
 }
 
 // SystemAnalysisRelationshipGroupBy is the group-by builder for SystemAnalysisRelationship entities.
@@ -1064,41 +1064,41 @@ type SystemAnalysisRelationshipGroupBy struct {
 }
 
 // Aggregate adds the given aggregation functions to the group-by query.
-func (sargb *SystemAnalysisRelationshipGroupBy) Aggregate(fns ...AggregateFunc) *SystemAnalysisRelationshipGroupBy {
-	sargb.fns = append(sargb.fns, fns...)
-	return sargb
+func (_g *SystemAnalysisRelationshipGroupBy) Aggregate(fns ...AggregateFunc) *SystemAnalysisRelationshipGroupBy {
+	_g.fns = append(_g.fns, fns...)
+	return _g
 }
 
 // Scan applies the selector query and scans the result into the given value.
-func (sargb *SystemAnalysisRelationshipGroupBy) Scan(ctx context.Context, v any) error {
-	ctx = setContextOp(ctx, sargb.build.ctx, ent.OpQueryGroupBy)
-	if err := sargb.build.prepareQuery(ctx); err != nil {
+func (_g *SystemAnalysisRelationshipGroupBy) Scan(ctx context.Context, v any) error {
+	ctx = setContextOp(ctx, _g.build.ctx, ent.OpQueryGroupBy)
+	if err := _g.build.prepareQuery(ctx); err != nil {
 		return err
 	}
-	return scanWithInterceptors[*SystemAnalysisRelationshipQuery, *SystemAnalysisRelationshipGroupBy](ctx, sargb.build, sargb, sargb.build.inters, v)
+	return scanWithInterceptors[*SystemAnalysisRelationshipQuery, *SystemAnalysisRelationshipGroupBy](ctx, _g.build, _g, _g.build.inters, v)
 }
 
-func (sargb *SystemAnalysisRelationshipGroupBy) sqlScan(ctx context.Context, root *SystemAnalysisRelationshipQuery, v any) error {
+func (_g *SystemAnalysisRelationshipGroupBy) sqlScan(ctx context.Context, root *SystemAnalysisRelationshipQuery, v any) error {
 	selector := root.sqlQuery(ctx).Select()
-	aggregation := make([]string, 0, len(sargb.fns))
-	for _, fn := range sargb.fns {
+	aggregation := make([]string, 0, len(_g.fns))
+	for _, fn := range _g.fns {
 		aggregation = append(aggregation, fn(selector))
 	}
 	if len(selector.SelectedColumns()) == 0 {
-		columns := make([]string, 0, len(*sargb.flds)+len(sargb.fns))
-		for _, f := range *sargb.flds {
+		columns := make([]string, 0, len(*_g.flds)+len(_g.fns))
+		for _, f := range *_g.flds {
 			columns = append(columns, selector.C(f))
 		}
 		columns = append(columns, aggregation...)
 		selector.Select(columns...)
 	}
-	selector.GroupBy(selector.Columns(*sargb.flds...)...)
+	selector.GroupBy(selector.Columns(*_g.flds...)...)
 	if err := selector.Err(); err != nil {
 		return err
 	}
 	rows := &sql.Rows{}
 	query, args := selector.Query()
-	if err := sargb.build.driver.Query(ctx, query, args, rows); err != nil {
+	if err := _g.build.driver.Query(ctx, query, args, rows); err != nil {
 		return err
 	}
 	defer rows.Close()
@@ -1112,27 +1112,27 @@ type SystemAnalysisRelationshipSelect struct {
 }
 
 // Aggregate adds the given aggregation functions to the selector query.
-func (sars *SystemAnalysisRelationshipSelect) Aggregate(fns ...AggregateFunc) *SystemAnalysisRelationshipSelect {
-	sars.fns = append(sars.fns, fns...)
-	return sars
+func (_s *SystemAnalysisRelationshipSelect) Aggregate(fns ...AggregateFunc) *SystemAnalysisRelationshipSelect {
+	_s.fns = append(_s.fns, fns...)
+	return _s
 }
 
 // Scan applies the selector query and scans the result into the given value.
-func (sars *SystemAnalysisRelationshipSelect) Scan(ctx context.Context, v any) error {
-	ctx = setContextOp(ctx, sars.ctx, ent.OpQuerySelect)
-	if err := sars.prepareQuery(ctx); err != nil {
+func (_s *SystemAnalysisRelationshipSelect) Scan(ctx context.Context, v any) error {
+	ctx = setContextOp(ctx, _s.ctx, ent.OpQuerySelect)
+	if err := _s.prepareQuery(ctx); err != nil {
 		return err
 	}
-	return scanWithInterceptors[*SystemAnalysisRelationshipQuery, *SystemAnalysisRelationshipSelect](ctx, sars.SystemAnalysisRelationshipQuery, sars, sars.inters, v)
+	return scanWithInterceptors[*SystemAnalysisRelationshipQuery, *SystemAnalysisRelationshipSelect](ctx, _s.SystemAnalysisRelationshipQuery, _s, _s.inters, v)
 }
 
-func (sars *SystemAnalysisRelationshipSelect) sqlScan(ctx context.Context, root *SystemAnalysisRelationshipQuery, v any) error {
+func (_s *SystemAnalysisRelationshipSelect) sqlScan(ctx context.Context, root *SystemAnalysisRelationshipQuery, v any) error {
 	selector := root.sqlQuery(ctx)
-	aggregation := make([]string, 0, len(sars.fns))
-	for _, fn := range sars.fns {
+	aggregation := make([]string, 0, len(_s.fns))
+	for _, fn := range _s.fns {
 		aggregation = append(aggregation, fn(selector))
 	}
-	switch n := len(*sars.selector.flds); {
+	switch n := len(*_s.selector.flds); {
 	case n == 0 && len(aggregation) > 0:
 		selector.Select(aggregation...)
 	case n != 0 && len(aggregation) > 0:
@@ -1140,7 +1140,7 @@ func (sars *SystemAnalysisRelationshipSelect) sqlScan(ctx context.Context, root 
 	}
 	rows := &sql.Rows{}
 	query, args := selector.Query()
-	if err := sars.driver.Query(ctx, query, args, rows); err != nil {
+	if err := _s.driver.Query(ctx, query, args, rows); err != nil {
 		return err
 	}
 	defer rows.Close()
@@ -1148,7 +1148,7 @@ func (sars *SystemAnalysisRelationshipSelect) sqlScan(ctx context.Context, root 
 }
 
 // Modify adds a query modifier for attaching custom logic to queries.
-func (sars *SystemAnalysisRelationshipSelect) Modify(modifiers ...func(s *sql.Selector)) *SystemAnalysisRelationshipSelect {
-	sars.modifiers = append(sars.modifiers, modifiers...)
-	return sars
+func (_s *SystemAnalysisRelationshipSelect) Modify(modifiers ...func(s *sql.Selector)) *SystemAnalysisRelationshipSelect {
+	_s.modifiers = append(_s.modifiers, modifiers...)
+	return _s
 }

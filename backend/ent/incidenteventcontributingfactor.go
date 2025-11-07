@@ -92,7 +92,7 @@ func (*IncidentEventContributingFactor) scanValues(columns []string) ([]any, err
 
 // assignValues assigns the values that were returned from sql.Rows (after scanning)
 // to the IncidentEventContributingFactor fields.
-func (iecf *IncidentEventContributingFactor) assignValues(columns []string, values []any) error {
+func (_m *IncidentEventContributingFactor) assignValues(columns []string, values []any) error {
 	if m, n := len(values), len(columns); m < n {
 		return fmt.Errorf("mismatch number of scan values: %d != %d", m, n)
 	}
@@ -102,41 +102,41 @@ func (iecf *IncidentEventContributingFactor) assignValues(columns []string, valu
 			if value, ok := values[i].(*uuid.UUID); !ok {
 				return fmt.Errorf("unexpected type %T for field id", values[i])
 			} else if value != nil {
-				iecf.ID = *value
+				_m.ID = *value
 			}
 		case incidenteventcontributingfactor.FieldTenantID:
 			if value, ok := values[i].(*sql.NullInt64); !ok {
 				return fmt.Errorf("unexpected type %T for field tenant_id", values[i])
 			} else if value.Valid {
-				iecf.TenantID = int(value.Int64)
+				_m.TenantID = int(value.Int64)
 			}
 		case incidenteventcontributingfactor.FieldFactorType:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field factor_type", values[i])
 			} else if value.Valid {
-				iecf.FactorType = value.String
+				_m.FactorType = value.String
 			}
 		case incidenteventcontributingfactor.FieldDescription:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field description", values[i])
 			} else if value.Valid {
-				iecf.Description = value.String
+				_m.Description = value.String
 			}
 		case incidenteventcontributingfactor.FieldCreatedAt:
 			if value, ok := values[i].(*sql.NullTime); !ok {
 				return fmt.Errorf("unexpected type %T for field created_at", values[i])
 			} else if value.Valid {
-				iecf.CreatedAt = value.Time
+				_m.CreatedAt = value.Time
 			}
 		case incidenteventcontributingfactor.ForeignKeys[0]:
 			if value, ok := values[i].(*sql.NullScanner); !ok {
 				return fmt.Errorf("unexpected type %T for field incident_event_factors", values[i])
 			} else if value.Valid {
-				iecf.incident_event_factors = new(uuid.UUID)
-				*iecf.incident_event_factors = *value.S.(*uuid.UUID)
+				_m.incident_event_factors = new(uuid.UUID)
+				*_m.incident_event_factors = *value.S.(*uuid.UUID)
 			}
 		default:
-			iecf.selectValues.Set(columns[i], values[i])
+			_m.selectValues.Set(columns[i], values[i])
 		}
 	}
 	return nil
@@ -144,54 +144,54 @@ func (iecf *IncidentEventContributingFactor) assignValues(columns []string, valu
 
 // Value returns the ent.Value that was dynamically selected and assigned to the IncidentEventContributingFactor.
 // This includes values selected through modifiers, order, etc.
-func (iecf *IncidentEventContributingFactor) Value(name string) (ent.Value, error) {
-	return iecf.selectValues.Get(name)
+func (_m *IncidentEventContributingFactor) Value(name string) (ent.Value, error) {
+	return _m.selectValues.Get(name)
 }
 
 // QueryTenant queries the "tenant" edge of the IncidentEventContributingFactor entity.
-func (iecf *IncidentEventContributingFactor) QueryTenant() *TenantQuery {
-	return NewIncidentEventContributingFactorClient(iecf.config).QueryTenant(iecf)
+func (_m *IncidentEventContributingFactor) QueryTenant() *TenantQuery {
+	return NewIncidentEventContributingFactorClient(_m.config).QueryTenant(_m)
 }
 
 // QueryEvent queries the "event" edge of the IncidentEventContributingFactor entity.
-func (iecf *IncidentEventContributingFactor) QueryEvent() *IncidentEventQuery {
-	return NewIncidentEventContributingFactorClient(iecf.config).QueryEvent(iecf)
+func (_m *IncidentEventContributingFactor) QueryEvent() *IncidentEventQuery {
+	return NewIncidentEventContributingFactorClient(_m.config).QueryEvent(_m)
 }
 
 // Update returns a builder for updating this IncidentEventContributingFactor.
 // Note that you need to call IncidentEventContributingFactor.Unwrap() before calling this method if this IncidentEventContributingFactor
 // was returned from a transaction, and the transaction was committed or rolled back.
-func (iecf *IncidentEventContributingFactor) Update() *IncidentEventContributingFactorUpdateOne {
-	return NewIncidentEventContributingFactorClient(iecf.config).UpdateOne(iecf)
+func (_m *IncidentEventContributingFactor) Update() *IncidentEventContributingFactorUpdateOne {
+	return NewIncidentEventContributingFactorClient(_m.config).UpdateOne(_m)
 }
 
 // Unwrap unwraps the IncidentEventContributingFactor entity that was returned from a transaction after it was closed,
 // so that all future queries will be executed through the driver which created the transaction.
-func (iecf *IncidentEventContributingFactor) Unwrap() *IncidentEventContributingFactor {
-	_tx, ok := iecf.config.driver.(*txDriver)
+func (_m *IncidentEventContributingFactor) Unwrap() *IncidentEventContributingFactor {
+	_tx, ok := _m.config.driver.(*txDriver)
 	if !ok {
 		panic("ent: IncidentEventContributingFactor is not a transactional entity")
 	}
-	iecf.config.driver = _tx.drv
-	return iecf
+	_m.config.driver = _tx.drv
+	return _m
 }
 
 // String implements the fmt.Stringer.
-func (iecf *IncidentEventContributingFactor) String() string {
+func (_m *IncidentEventContributingFactor) String() string {
 	var builder strings.Builder
 	builder.WriteString("IncidentEventContributingFactor(")
-	builder.WriteString(fmt.Sprintf("id=%v, ", iecf.ID))
+	builder.WriteString(fmt.Sprintf("id=%v, ", _m.ID))
 	builder.WriteString("tenant_id=")
-	builder.WriteString(fmt.Sprintf("%v", iecf.TenantID))
+	builder.WriteString(fmt.Sprintf("%v", _m.TenantID))
 	builder.WriteString(", ")
 	builder.WriteString("factor_type=")
-	builder.WriteString(iecf.FactorType)
+	builder.WriteString(_m.FactorType)
 	builder.WriteString(", ")
 	builder.WriteString("description=")
-	builder.WriteString(iecf.Description)
+	builder.WriteString(_m.Description)
 	builder.WriteString(", ")
 	builder.WriteString("created_at=")
-	builder.WriteString(iecf.CreatedAt.Format(time.ANSIC))
+	builder.WriteString(_m.CreatedAt.Format(time.ANSIC))
 	builder.WriteByte(')')
 	return builder.String()
 }

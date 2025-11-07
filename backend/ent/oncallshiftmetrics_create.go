@@ -27,149 +27,149 @@ type OncallShiftMetricsCreate struct {
 }
 
 // SetTenantID sets the "tenant_id" field.
-func (osmc *OncallShiftMetricsCreate) SetTenantID(i int) *OncallShiftMetricsCreate {
-	osmc.mutation.SetTenantID(i)
-	return osmc
+func (_c *OncallShiftMetricsCreate) SetTenantID(v int) *OncallShiftMetricsCreate {
+	_c.mutation.SetTenantID(v)
+	return _c
 }
 
 // SetShiftID sets the "shift_id" field.
-func (osmc *OncallShiftMetricsCreate) SetShiftID(u uuid.UUID) *OncallShiftMetricsCreate {
-	osmc.mutation.SetShiftID(u)
-	return osmc
+func (_c *OncallShiftMetricsCreate) SetShiftID(v uuid.UUID) *OncallShiftMetricsCreate {
+	_c.mutation.SetShiftID(v)
+	return _c
 }
 
 // SetUpdatedAt sets the "updated_at" field.
-func (osmc *OncallShiftMetricsCreate) SetUpdatedAt(t time.Time) *OncallShiftMetricsCreate {
-	osmc.mutation.SetUpdatedAt(t)
-	return osmc
+func (_c *OncallShiftMetricsCreate) SetUpdatedAt(v time.Time) *OncallShiftMetricsCreate {
+	_c.mutation.SetUpdatedAt(v)
+	return _c
 }
 
 // SetNillableUpdatedAt sets the "updated_at" field if the given value is not nil.
-func (osmc *OncallShiftMetricsCreate) SetNillableUpdatedAt(t *time.Time) *OncallShiftMetricsCreate {
-	if t != nil {
-		osmc.SetUpdatedAt(*t)
+func (_c *OncallShiftMetricsCreate) SetNillableUpdatedAt(v *time.Time) *OncallShiftMetricsCreate {
+	if v != nil {
+		_c.SetUpdatedAt(*v)
 	}
-	return osmc
+	return _c
 }
 
 // SetBurdenScore sets the "burden_score" field.
-func (osmc *OncallShiftMetricsCreate) SetBurdenScore(f float32) *OncallShiftMetricsCreate {
-	osmc.mutation.SetBurdenScore(f)
-	return osmc
+func (_c *OncallShiftMetricsCreate) SetBurdenScore(v float32) *OncallShiftMetricsCreate {
+	_c.mutation.SetBurdenScore(v)
+	return _c
 }
 
 // SetEventFrequency sets the "event_frequency" field.
-func (osmc *OncallShiftMetricsCreate) SetEventFrequency(f float32) *OncallShiftMetricsCreate {
-	osmc.mutation.SetEventFrequency(f)
-	return osmc
+func (_c *OncallShiftMetricsCreate) SetEventFrequency(v float32) *OncallShiftMetricsCreate {
+	_c.mutation.SetEventFrequency(v)
+	return _c
 }
 
 // SetLifeImpact sets the "life_impact" field.
-func (osmc *OncallShiftMetricsCreate) SetLifeImpact(f float32) *OncallShiftMetricsCreate {
-	osmc.mutation.SetLifeImpact(f)
-	return osmc
+func (_c *OncallShiftMetricsCreate) SetLifeImpact(v float32) *OncallShiftMetricsCreate {
+	_c.mutation.SetLifeImpact(v)
+	return _c
 }
 
 // SetTimeImpact sets the "time_impact" field.
-func (osmc *OncallShiftMetricsCreate) SetTimeImpact(f float32) *OncallShiftMetricsCreate {
-	osmc.mutation.SetTimeImpact(f)
-	return osmc
+func (_c *OncallShiftMetricsCreate) SetTimeImpact(v float32) *OncallShiftMetricsCreate {
+	_c.mutation.SetTimeImpact(v)
+	return _c
 }
 
 // SetResponseRequirements sets the "response_requirements" field.
-func (osmc *OncallShiftMetricsCreate) SetResponseRequirements(f float32) *OncallShiftMetricsCreate {
-	osmc.mutation.SetResponseRequirements(f)
-	return osmc
+func (_c *OncallShiftMetricsCreate) SetResponseRequirements(v float32) *OncallShiftMetricsCreate {
+	_c.mutation.SetResponseRequirements(v)
+	return _c
 }
 
 // SetIsolation sets the "isolation" field.
-func (osmc *OncallShiftMetricsCreate) SetIsolation(f float32) *OncallShiftMetricsCreate {
-	osmc.mutation.SetIsolation(f)
-	return osmc
+func (_c *OncallShiftMetricsCreate) SetIsolation(v float32) *OncallShiftMetricsCreate {
+	_c.mutation.SetIsolation(v)
+	return _c
 }
 
 // SetIncidentsTotal sets the "incidents_total" field.
-func (osmc *OncallShiftMetricsCreate) SetIncidentsTotal(f float32) *OncallShiftMetricsCreate {
-	osmc.mutation.SetIncidentsTotal(f)
-	return osmc
+func (_c *OncallShiftMetricsCreate) SetIncidentsTotal(v float32) *OncallShiftMetricsCreate {
+	_c.mutation.SetIncidentsTotal(v)
+	return _c
 }
 
 // SetIncidentResponseTime sets the "incident_response_time" field.
-func (osmc *OncallShiftMetricsCreate) SetIncidentResponseTime(f float32) *OncallShiftMetricsCreate {
-	osmc.mutation.SetIncidentResponseTime(f)
-	return osmc
+func (_c *OncallShiftMetricsCreate) SetIncidentResponseTime(v float32) *OncallShiftMetricsCreate {
+	_c.mutation.SetIncidentResponseTime(v)
+	return _c
 }
 
 // SetEventsTotal sets the "events_total" field.
-func (osmc *OncallShiftMetricsCreate) SetEventsTotal(f float32) *OncallShiftMetricsCreate {
-	osmc.mutation.SetEventsTotal(f)
-	return osmc
+func (_c *OncallShiftMetricsCreate) SetEventsTotal(v float32) *OncallShiftMetricsCreate {
+	_c.mutation.SetEventsTotal(v)
+	return _c
 }
 
 // SetAlertsTotal sets the "alerts_total" field.
-func (osmc *OncallShiftMetricsCreate) SetAlertsTotal(f float32) *OncallShiftMetricsCreate {
-	osmc.mutation.SetAlertsTotal(f)
-	return osmc
+func (_c *OncallShiftMetricsCreate) SetAlertsTotal(v float32) *OncallShiftMetricsCreate {
+	_c.mutation.SetAlertsTotal(v)
+	return _c
 }
 
 // SetInterruptsTotal sets the "interrupts_total" field.
-func (osmc *OncallShiftMetricsCreate) SetInterruptsTotal(f float32) *OncallShiftMetricsCreate {
-	osmc.mutation.SetInterruptsTotal(f)
-	return osmc
+func (_c *OncallShiftMetricsCreate) SetInterruptsTotal(v float32) *OncallShiftMetricsCreate {
+	_c.mutation.SetInterruptsTotal(v)
+	return _c
 }
 
 // SetInterruptsNight sets the "interrupts_night" field.
-func (osmc *OncallShiftMetricsCreate) SetInterruptsNight(f float32) *OncallShiftMetricsCreate {
-	osmc.mutation.SetInterruptsNight(f)
-	return osmc
+func (_c *OncallShiftMetricsCreate) SetInterruptsNight(v float32) *OncallShiftMetricsCreate {
+	_c.mutation.SetInterruptsNight(v)
+	return _c
 }
 
 // SetInterruptsBusinessHours sets the "interrupts_business_hours" field.
-func (osmc *OncallShiftMetricsCreate) SetInterruptsBusinessHours(f float32) *OncallShiftMetricsCreate {
-	osmc.mutation.SetInterruptsBusinessHours(f)
-	return osmc
+func (_c *OncallShiftMetricsCreate) SetInterruptsBusinessHours(v float32) *OncallShiftMetricsCreate {
+	_c.mutation.SetInterruptsBusinessHours(v)
+	return _c
 }
 
 // SetID sets the "id" field.
-func (osmc *OncallShiftMetricsCreate) SetID(u uuid.UUID) *OncallShiftMetricsCreate {
-	osmc.mutation.SetID(u)
-	return osmc
+func (_c *OncallShiftMetricsCreate) SetID(v uuid.UUID) *OncallShiftMetricsCreate {
+	_c.mutation.SetID(v)
+	return _c
 }
 
 // SetNillableID sets the "id" field if the given value is not nil.
-func (osmc *OncallShiftMetricsCreate) SetNillableID(u *uuid.UUID) *OncallShiftMetricsCreate {
-	if u != nil {
-		osmc.SetID(*u)
+func (_c *OncallShiftMetricsCreate) SetNillableID(v *uuid.UUID) *OncallShiftMetricsCreate {
+	if v != nil {
+		_c.SetID(*v)
 	}
-	return osmc
+	return _c
 }
 
 // SetTenant sets the "tenant" edge to the Tenant entity.
-func (osmc *OncallShiftMetricsCreate) SetTenant(t *Tenant) *OncallShiftMetricsCreate {
-	return osmc.SetTenantID(t.ID)
+func (_c *OncallShiftMetricsCreate) SetTenant(v *Tenant) *OncallShiftMetricsCreate {
+	return _c.SetTenantID(v.ID)
 }
 
 // SetShift sets the "shift" edge to the OncallShift entity.
-func (osmc *OncallShiftMetricsCreate) SetShift(o *OncallShift) *OncallShiftMetricsCreate {
-	return osmc.SetShiftID(o.ID)
+func (_c *OncallShiftMetricsCreate) SetShift(v *OncallShift) *OncallShiftMetricsCreate {
+	return _c.SetShiftID(v.ID)
 }
 
 // Mutation returns the OncallShiftMetricsMutation object of the builder.
-func (osmc *OncallShiftMetricsCreate) Mutation() *OncallShiftMetricsMutation {
-	return osmc.mutation
+func (_c *OncallShiftMetricsCreate) Mutation() *OncallShiftMetricsMutation {
+	return _c.mutation
 }
 
 // Save creates the OncallShiftMetrics in the database.
-func (osmc *OncallShiftMetricsCreate) Save(ctx context.Context) (*OncallShiftMetrics, error) {
-	if err := osmc.defaults(); err != nil {
+func (_c *OncallShiftMetricsCreate) Save(ctx context.Context) (*OncallShiftMetrics, error) {
+	if err := _c.defaults(); err != nil {
 		return nil, err
 	}
-	return withHooks(ctx, osmc.sqlSave, osmc.mutation, osmc.hooks)
+	return withHooks(ctx, _c.sqlSave, _c.mutation, _c.hooks)
 }
 
 // SaveX calls Save and panics if Save returns an error.
-func (osmc *OncallShiftMetricsCreate) SaveX(ctx context.Context) *OncallShiftMetrics {
-	v, err := osmc.Save(ctx)
+func (_c *OncallShiftMetricsCreate) SaveX(ctx context.Context) *OncallShiftMetrics {
+	v, err := _c.Save(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -177,102 +177,102 @@ func (osmc *OncallShiftMetricsCreate) SaveX(ctx context.Context) *OncallShiftMet
 }
 
 // Exec executes the query.
-func (osmc *OncallShiftMetricsCreate) Exec(ctx context.Context) error {
-	_, err := osmc.Save(ctx)
+func (_c *OncallShiftMetricsCreate) Exec(ctx context.Context) error {
+	_, err := _c.Save(ctx)
 	return err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (osmc *OncallShiftMetricsCreate) ExecX(ctx context.Context) {
-	if err := osmc.Exec(ctx); err != nil {
+func (_c *OncallShiftMetricsCreate) ExecX(ctx context.Context) {
+	if err := _c.Exec(ctx); err != nil {
 		panic(err)
 	}
 }
 
 // defaults sets the default values of the builder before save.
-func (osmc *OncallShiftMetricsCreate) defaults() error {
-	if _, ok := osmc.mutation.UpdatedAt(); !ok {
+func (_c *OncallShiftMetricsCreate) defaults() error {
+	if _, ok := _c.mutation.UpdatedAt(); !ok {
 		if oncallshiftmetrics.DefaultUpdatedAt == nil {
 			return fmt.Errorf("ent: uninitialized oncallshiftmetrics.DefaultUpdatedAt (forgotten import ent/runtime?)")
 		}
 		v := oncallshiftmetrics.DefaultUpdatedAt()
-		osmc.mutation.SetUpdatedAt(v)
+		_c.mutation.SetUpdatedAt(v)
 	}
-	if _, ok := osmc.mutation.ID(); !ok {
+	if _, ok := _c.mutation.ID(); !ok {
 		if oncallshiftmetrics.DefaultID == nil {
 			return fmt.Errorf("ent: uninitialized oncallshiftmetrics.DefaultID (forgotten import ent/runtime?)")
 		}
 		v := oncallshiftmetrics.DefaultID()
-		osmc.mutation.SetID(v)
+		_c.mutation.SetID(v)
 	}
 	return nil
 }
 
 // check runs all checks and user-defined validators on the builder.
-func (osmc *OncallShiftMetricsCreate) check() error {
-	if _, ok := osmc.mutation.TenantID(); !ok {
+func (_c *OncallShiftMetricsCreate) check() error {
+	if _, ok := _c.mutation.TenantID(); !ok {
 		return &ValidationError{Name: "tenant_id", err: errors.New(`ent: missing required field "OncallShiftMetrics.tenant_id"`)}
 	}
-	if _, ok := osmc.mutation.ShiftID(); !ok {
+	if _, ok := _c.mutation.ShiftID(); !ok {
 		return &ValidationError{Name: "shift_id", err: errors.New(`ent: missing required field "OncallShiftMetrics.shift_id"`)}
 	}
-	if _, ok := osmc.mutation.UpdatedAt(); !ok {
+	if _, ok := _c.mutation.UpdatedAt(); !ok {
 		return &ValidationError{Name: "updated_at", err: errors.New(`ent: missing required field "OncallShiftMetrics.updated_at"`)}
 	}
-	if _, ok := osmc.mutation.BurdenScore(); !ok {
+	if _, ok := _c.mutation.BurdenScore(); !ok {
 		return &ValidationError{Name: "burden_score", err: errors.New(`ent: missing required field "OncallShiftMetrics.burden_score"`)}
 	}
-	if _, ok := osmc.mutation.EventFrequency(); !ok {
+	if _, ok := _c.mutation.EventFrequency(); !ok {
 		return &ValidationError{Name: "event_frequency", err: errors.New(`ent: missing required field "OncallShiftMetrics.event_frequency"`)}
 	}
-	if _, ok := osmc.mutation.LifeImpact(); !ok {
+	if _, ok := _c.mutation.LifeImpact(); !ok {
 		return &ValidationError{Name: "life_impact", err: errors.New(`ent: missing required field "OncallShiftMetrics.life_impact"`)}
 	}
-	if _, ok := osmc.mutation.TimeImpact(); !ok {
+	if _, ok := _c.mutation.TimeImpact(); !ok {
 		return &ValidationError{Name: "time_impact", err: errors.New(`ent: missing required field "OncallShiftMetrics.time_impact"`)}
 	}
-	if _, ok := osmc.mutation.ResponseRequirements(); !ok {
+	if _, ok := _c.mutation.ResponseRequirements(); !ok {
 		return &ValidationError{Name: "response_requirements", err: errors.New(`ent: missing required field "OncallShiftMetrics.response_requirements"`)}
 	}
-	if _, ok := osmc.mutation.Isolation(); !ok {
+	if _, ok := _c.mutation.Isolation(); !ok {
 		return &ValidationError{Name: "isolation", err: errors.New(`ent: missing required field "OncallShiftMetrics.isolation"`)}
 	}
-	if _, ok := osmc.mutation.IncidentsTotal(); !ok {
+	if _, ok := _c.mutation.IncidentsTotal(); !ok {
 		return &ValidationError{Name: "incidents_total", err: errors.New(`ent: missing required field "OncallShiftMetrics.incidents_total"`)}
 	}
-	if _, ok := osmc.mutation.IncidentResponseTime(); !ok {
+	if _, ok := _c.mutation.IncidentResponseTime(); !ok {
 		return &ValidationError{Name: "incident_response_time", err: errors.New(`ent: missing required field "OncallShiftMetrics.incident_response_time"`)}
 	}
-	if _, ok := osmc.mutation.EventsTotal(); !ok {
+	if _, ok := _c.mutation.EventsTotal(); !ok {
 		return &ValidationError{Name: "events_total", err: errors.New(`ent: missing required field "OncallShiftMetrics.events_total"`)}
 	}
-	if _, ok := osmc.mutation.AlertsTotal(); !ok {
+	if _, ok := _c.mutation.AlertsTotal(); !ok {
 		return &ValidationError{Name: "alerts_total", err: errors.New(`ent: missing required field "OncallShiftMetrics.alerts_total"`)}
 	}
-	if _, ok := osmc.mutation.InterruptsTotal(); !ok {
+	if _, ok := _c.mutation.InterruptsTotal(); !ok {
 		return &ValidationError{Name: "interrupts_total", err: errors.New(`ent: missing required field "OncallShiftMetrics.interrupts_total"`)}
 	}
-	if _, ok := osmc.mutation.InterruptsNight(); !ok {
+	if _, ok := _c.mutation.InterruptsNight(); !ok {
 		return &ValidationError{Name: "interrupts_night", err: errors.New(`ent: missing required field "OncallShiftMetrics.interrupts_night"`)}
 	}
-	if _, ok := osmc.mutation.InterruptsBusinessHours(); !ok {
+	if _, ok := _c.mutation.InterruptsBusinessHours(); !ok {
 		return &ValidationError{Name: "interrupts_business_hours", err: errors.New(`ent: missing required field "OncallShiftMetrics.interrupts_business_hours"`)}
 	}
-	if len(osmc.mutation.TenantIDs()) == 0 {
+	if len(_c.mutation.TenantIDs()) == 0 {
 		return &ValidationError{Name: "tenant", err: errors.New(`ent: missing required edge "OncallShiftMetrics.tenant"`)}
 	}
-	if len(osmc.mutation.ShiftIDs()) == 0 {
+	if len(_c.mutation.ShiftIDs()) == 0 {
 		return &ValidationError{Name: "shift", err: errors.New(`ent: missing required edge "OncallShiftMetrics.shift"`)}
 	}
 	return nil
 }
 
-func (osmc *OncallShiftMetricsCreate) sqlSave(ctx context.Context) (*OncallShiftMetrics, error) {
-	if err := osmc.check(); err != nil {
+func (_c *OncallShiftMetricsCreate) sqlSave(ctx context.Context) (*OncallShiftMetrics, error) {
+	if err := _c.check(); err != nil {
 		return nil, err
 	}
-	_node, _spec := osmc.createSpec()
-	if err := sqlgraph.CreateNode(ctx, osmc.driver, _spec); err != nil {
+	_node, _spec := _c.createSpec()
+	if err := sqlgraph.CreateNode(ctx, _c.driver, _spec); err != nil {
 		if sqlgraph.IsConstraintError(err) {
 			err = &ConstraintError{msg: err.Error(), wrap: err}
 		}
@@ -285,78 +285,78 @@ func (osmc *OncallShiftMetricsCreate) sqlSave(ctx context.Context) (*OncallShift
 			return nil, err
 		}
 	}
-	osmc.mutation.id = &_node.ID
-	osmc.mutation.done = true
+	_c.mutation.id = &_node.ID
+	_c.mutation.done = true
 	return _node, nil
 }
 
-func (osmc *OncallShiftMetricsCreate) createSpec() (*OncallShiftMetrics, *sqlgraph.CreateSpec) {
+func (_c *OncallShiftMetricsCreate) createSpec() (*OncallShiftMetrics, *sqlgraph.CreateSpec) {
 	var (
-		_node = &OncallShiftMetrics{config: osmc.config}
+		_node = &OncallShiftMetrics{config: _c.config}
 		_spec = sqlgraph.NewCreateSpec(oncallshiftmetrics.Table, sqlgraph.NewFieldSpec(oncallshiftmetrics.FieldID, field.TypeUUID))
 	)
-	_spec.OnConflict = osmc.conflict
-	if id, ok := osmc.mutation.ID(); ok {
+	_spec.OnConflict = _c.conflict
+	if id, ok := _c.mutation.ID(); ok {
 		_node.ID = id
 		_spec.ID.Value = &id
 	}
-	if value, ok := osmc.mutation.UpdatedAt(); ok {
+	if value, ok := _c.mutation.UpdatedAt(); ok {
 		_spec.SetField(oncallshiftmetrics.FieldUpdatedAt, field.TypeTime, value)
 		_node.UpdatedAt = value
 	}
-	if value, ok := osmc.mutation.BurdenScore(); ok {
+	if value, ok := _c.mutation.BurdenScore(); ok {
 		_spec.SetField(oncallshiftmetrics.FieldBurdenScore, field.TypeFloat32, value)
 		_node.BurdenScore = value
 	}
-	if value, ok := osmc.mutation.EventFrequency(); ok {
+	if value, ok := _c.mutation.EventFrequency(); ok {
 		_spec.SetField(oncallshiftmetrics.FieldEventFrequency, field.TypeFloat32, value)
 		_node.EventFrequency = value
 	}
-	if value, ok := osmc.mutation.LifeImpact(); ok {
+	if value, ok := _c.mutation.LifeImpact(); ok {
 		_spec.SetField(oncallshiftmetrics.FieldLifeImpact, field.TypeFloat32, value)
 		_node.LifeImpact = value
 	}
-	if value, ok := osmc.mutation.TimeImpact(); ok {
+	if value, ok := _c.mutation.TimeImpact(); ok {
 		_spec.SetField(oncallshiftmetrics.FieldTimeImpact, field.TypeFloat32, value)
 		_node.TimeImpact = value
 	}
-	if value, ok := osmc.mutation.ResponseRequirements(); ok {
+	if value, ok := _c.mutation.ResponseRequirements(); ok {
 		_spec.SetField(oncallshiftmetrics.FieldResponseRequirements, field.TypeFloat32, value)
 		_node.ResponseRequirements = value
 	}
-	if value, ok := osmc.mutation.Isolation(); ok {
+	if value, ok := _c.mutation.Isolation(); ok {
 		_spec.SetField(oncallshiftmetrics.FieldIsolation, field.TypeFloat32, value)
 		_node.Isolation = value
 	}
-	if value, ok := osmc.mutation.IncidentsTotal(); ok {
+	if value, ok := _c.mutation.IncidentsTotal(); ok {
 		_spec.SetField(oncallshiftmetrics.FieldIncidentsTotal, field.TypeFloat32, value)
 		_node.IncidentsTotal = value
 	}
-	if value, ok := osmc.mutation.IncidentResponseTime(); ok {
+	if value, ok := _c.mutation.IncidentResponseTime(); ok {
 		_spec.SetField(oncallshiftmetrics.FieldIncidentResponseTime, field.TypeFloat32, value)
 		_node.IncidentResponseTime = value
 	}
-	if value, ok := osmc.mutation.EventsTotal(); ok {
+	if value, ok := _c.mutation.EventsTotal(); ok {
 		_spec.SetField(oncallshiftmetrics.FieldEventsTotal, field.TypeFloat32, value)
 		_node.EventsTotal = value
 	}
-	if value, ok := osmc.mutation.AlertsTotal(); ok {
+	if value, ok := _c.mutation.AlertsTotal(); ok {
 		_spec.SetField(oncallshiftmetrics.FieldAlertsTotal, field.TypeFloat32, value)
 		_node.AlertsTotal = value
 	}
-	if value, ok := osmc.mutation.InterruptsTotal(); ok {
+	if value, ok := _c.mutation.InterruptsTotal(); ok {
 		_spec.SetField(oncallshiftmetrics.FieldInterruptsTotal, field.TypeFloat32, value)
 		_node.InterruptsTotal = value
 	}
-	if value, ok := osmc.mutation.InterruptsNight(); ok {
+	if value, ok := _c.mutation.InterruptsNight(); ok {
 		_spec.SetField(oncallshiftmetrics.FieldInterruptsNight, field.TypeFloat32, value)
 		_node.InterruptsNight = value
 	}
-	if value, ok := osmc.mutation.InterruptsBusinessHours(); ok {
+	if value, ok := _c.mutation.InterruptsBusinessHours(); ok {
 		_spec.SetField(oncallshiftmetrics.FieldInterruptsBusinessHours, field.TypeFloat32, value)
 		_node.InterruptsBusinessHours = value
 	}
-	if nodes := osmc.mutation.TenantIDs(); len(nodes) > 0 {
+	if nodes := _c.mutation.TenantIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
@@ -373,7 +373,7 @@ func (osmc *OncallShiftMetricsCreate) createSpec() (*OncallShiftMetrics, *sqlgra
 		_node.TenantID = nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
-	if nodes := osmc.mutation.ShiftIDs(); len(nodes) > 0 {
+	if nodes := _c.mutation.ShiftIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2O,
 			Inverse: true,
@@ -409,10 +409,10 @@ func (osmc *OncallShiftMetricsCreate) createSpec() (*OncallShiftMetrics, *sqlgra
 //			SetTenantID(v+v).
 //		}).
 //		Exec(ctx)
-func (osmc *OncallShiftMetricsCreate) OnConflict(opts ...sql.ConflictOption) *OncallShiftMetricsUpsertOne {
-	osmc.conflict = opts
+func (_c *OncallShiftMetricsCreate) OnConflict(opts ...sql.ConflictOption) *OncallShiftMetricsUpsertOne {
+	_c.conflict = opts
 	return &OncallShiftMetricsUpsertOne{
-		create: osmc,
+		create: _c,
 	}
 }
 
@@ -422,10 +422,10 @@ func (osmc *OncallShiftMetricsCreate) OnConflict(opts ...sql.ConflictOption) *On
 //	client.OncallShiftMetrics.Create().
 //		OnConflict(sql.ConflictColumns(columns...)).
 //		Exec(ctx)
-func (osmc *OncallShiftMetricsCreate) OnConflictColumns(columns ...string) *OncallShiftMetricsUpsertOne {
-	osmc.conflict = append(osmc.conflict, sql.ConflictColumns(columns...))
+func (_c *OncallShiftMetricsCreate) OnConflictColumns(columns ...string) *OncallShiftMetricsUpsertOne {
+	_c.conflict = append(_c.conflict, sql.ConflictColumns(columns...))
 	return &OncallShiftMetricsUpsertOne{
-		create: osmc,
+		create: _c,
 	}
 }
 
@@ -1099,16 +1099,16 @@ type OncallShiftMetricsCreateBulk struct {
 }
 
 // Save creates the OncallShiftMetrics entities in the database.
-func (osmcb *OncallShiftMetricsCreateBulk) Save(ctx context.Context) ([]*OncallShiftMetrics, error) {
-	if osmcb.err != nil {
-		return nil, osmcb.err
+func (_c *OncallShiftMetricsCreateBulk) Save(ctx context.Context) ([]*OncallShiftMetrics, error) {
+	if _c.err != nil {
+		return nil, _c.err
 	}
-	specs := make([]*sqlgraph.CreateSpec, len(osmcb.builders))
-	nodes := make([]*OncallShiftMetrics, len(osmcb.builders))
-	mutators := make([]Mutator, len(osmcb.builders))
-	for i := range osmcb.builders {
+	specs := make([]*sqlgraph.CreateSpec, len(_c.builders))
+	nodes := make([]*OncallShiftMetrics, len(_c.builders))
+	mutators := make([]Mutator, len(_c.builders))
+	for i := range _c.builders {
 		func(i int, root context.Context) {
-			builder := osmcb.builders[i]
+			builder := _c.builders[i]
 			builder.defaults()
 			var mut Mutator = MutateFunc(func(ctx context.Context, m Mutation) (Value, error) {
 				mutation, ok := m.(*OncallShiftMetricsMutation)
@@ -1122,12 +1122,12 @@ func (osmcb *OncallShiftMetricsCreateBulk) Save(ctx context.Context) ([]*OncallS
 				var err error
 				nodes[i], specs[i] = builder.createSpec()
 				if i < len(mutators)-1 {
-					_, err = mutators[i+1].Mutate(root, osmcb.builders[i+1].mutation)
+					_, err = mutators[i+1].Mutate(root, _c.builders[i+1].mutation)
 				} else {
 					spec := &sqlgraph.BatchCreateSpec{Nodes: specs}
-					spec.OnConflict = osmcb.conflict
+					spec.OnConflict = _c.conflict
 					// Invoke the actual operation on the latest mutation in the chain.
-					if err = sqlgraph.BatchCreate(ctx, osmcb.driver, spec); err != nil {
+					if err = sqlgraph.BatchCreate(ctx, _c.driver, spec); err != nil {
 						if sqlgraph.IsConstraintError(err) {
 							err = &ConstraintError{msg: err.Error(), wrap: err}
 						}
@@ -1147,7 +1147,7 @@ func (osmcb *OncallShiftMetricsCreateBulk) Save(ctx context.Context) ([]*OncallS
 		}(i, ctx)
 	}
 	if len(mutators) > 0 {
-		if _, err := mutators[0].Mutate(ctx, osmcb.builders[0].mutation); err != nil {
+		if _, err := mutators[0].Mutate(ctx, _c.builders[0].mutation); err != nil {
 			return nil, err
 		}
 	}
@@ -1155,8 +1155,8 @@ func (osmcb *OncallShiftMetricsCreateBulk) Save(ctx context.Context) ([]*OncallS
 }
 
 // SaveX is like Save, but panics if an error occurs.
-func (osmcb *OncallShiftMetricsCreateBulk) SaveX(ctx context.Context) []*OncallShiftMetrics {
-	v, err := osmcb.Save(ctx)
+func (_c *OncallShiftMetricsCreateBulk) SaveX(ctx context.Context) []*OncallShiftMetrics {
+	v, err := _c.Save(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -1164,14 +1164,14 @@ func (osmcb *OncallShiftMetricsCreateBulk) SaveX(ctx context.Context) []*OncallS
 }
 
 // Exec executes the query.
-func (osmcb *OncallShiftMetricsCreateBulk) Exec(ctx context.Context) error {
-	_, err := osmcb.Save(ctx)
+func (_c *OncallShiftMetricsCreateBulk) Exec(ctx context.Context) error {
+	_, err := _c.Save(ctx)
 	return err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (osmcb *OncallShiftMetricsCreateBulk) ExecX(ctx context.Context) {
-	if err := osmcb.Exec(ctx); err != nil {
+func (_c *OncallShiftMetricsCreateBulk) ExecX(ctx context.Context) {
+	if err := _c.Exec(ctx); err != nil {
 		panic(err)
 	}
 }
@@ -1191,10 +1191,10 @@ func (osmcb *OncallShiftMetricsCreateBulk) ExecX(ctx context.Context) {
 //			SetTenantID(v+v).
 //		}).
 //		Exec(ctx)
-func (osmcb *OncallShiftMetricsCreateBulk) OnConflict(opts ...sql.ConflictOption) *OncallShiftMetricsUpsertBulk {
-	osmcb.conflict = opts
+func (_c *OncallShiftMetricsCreateBulk) OnConflict(opts ...sql.ConflictOption) *OncallShiftMetricsUpsertBulk {
+	_c.conflict = opts
 	return &OncallShiftMetricsUpsertBulk{
-		create: osmcb,
+		create: _c,
 	}
 }
 
@@ -1204,10 +1204,10 @@ func (osmcb *OncallShiftMetricsCreateBulk) OnConflict(opts ...sql.ConflictOption
 //	client.OncallShiftMetrics.Create().
 //		OnConflict(sql.ConflictColumns(columns...)).
 //		Exec(ctx)
-func (osmcb *OncallShiftMetricsCreateBulk) OnConflictColumns(columns ...string) *OncallShiftMetricsUpsertBulk {
-	osmcb.conflict = append(osmcb.conflict, sql.ConflictColumns(columns...))
+func (_c *OncallShiftMetricsCreateBulk) OnConflictColumns(columns ...string) *OncallShiftMetricsUpsertBulk {
+	_c.conflict = append(_c.conflict, sql.ConflictColumns(columns...))
 	return &OncallShiftMetricsUpsertBulk{
-		create: osmcb,
+		create: _c,
 	}
 }
 

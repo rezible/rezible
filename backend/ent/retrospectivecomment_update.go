@@ -27,206 +27,206 @@ type RetrospectiveCommentUpdate struct {
 }
 
 // Where appends a list predicates to the RetrospectiveCommentUpdate builder.
-func (rcu *RetrospectiveCommentUpdate) Where(ps ...predicate.RetrospectiveComment) *RetrospectiveCommentUpdate {
-	rcu.mutation.Where(ps...)
-	return rcu
+func (_u *RetrospectiveCommentUpdate) Where(ps ...predicate.RetrospectiveComment) *RetrospectiveCommentUpdate {
+	_u.mutation.Where(ps...)
+	return _u
 }
 
 // SetRetrospectiveID sets the "retrospective_id" field.
-func (rcu *RetrospectiveCommentUpdate) SetRetrospectiveID(u uuid.UUID) *RetrospectiveCommentUpdate {
-	rcu.mutation.SetRetrospectiveID(u)
-	return rcu
+func (_u *RetrospectiveCommentUpdate) SetRetrospectiveID(v uuid.UUID) *RetrospectiveCommentUpdate {
+	_u.mutation.SetRetrospectiveID(v)
+	return _u
 }
 
 // SetNillableRetrospectiveID sets the "retrospective_id" field if the given value is not nil.
-func (rcu *RetrospectiveCommentUpdate) SetNillableRetrospectiveID(u *uuid.UUID) *RetrospectiveCommentUpdate {
-	if u != nil {
-		rcu.SetRetrospectiveID(*u)
+func (_u *RetrospectiveCommentUpdate) SetNillableRetrospectiveID(v *uuid.UUID) *RetrospectiveCommentUpdate {
+	if v != nil {
+		_u.SetRetrospectiveID(*v)
 	}
-	return rcu
+	return _u
 }
 
 // SetUserID sets the "user_id" field.
-func (rcu *RetrospectiveCommentUpdate) SetUserID(u uuid.UUID) *RetrospectiveCommentUpdate {
-	rcu.mutation.SetUserID(u)
-	return rcu
+func (_u *RetrospectiveCommentUpdate) SetUserID(v uuid.UUID) *RetrospectiveCommentUpdate {
+	_u.mutation.SetUserID(v)
+	return _u
 }
 
 // SetNillableUserID sets the "user_id" field if the given value is not nil.
-func (rcu *RetrospectiveCommentUpdate) SetNillableUserID(u *uuid.UUID) *RetrospectiveCommentUpdate {
-	if u != nil {
-		rcu.SetUserID(*u)
+func (_u *RetrospectiveCommentUpdate) SetNillableUserID(v *uuid.UUID) *RetrospectiveCommentUpdate {
+	if v != nil {
+		_u.SetUserID(*v)
 	}
-	return rcu
+	return _u
 }
 
 // SetRetrospectiveReviewID sets the "retrospective_review_id" field.
-func (rcu *RetrospectiveCommentUpdate) SetRetrospectiveReviewID(u uuid.UUID) *RetrospectiveCommentUpdate {
-	rcu.mutation.SetRetrospectiveReviewID(u)
-	return rcu
+func (_u *RetrospectiveCommentUpdate) SetRetrospectiveReviewID(v uuid.UUID) *RetrospectiveCommentUpdate {
+	_u.mutation.SetRetrospectiveReviewID(v)
+	return _u
 }
 
 // SetNillableRetrospectiveReviewID sets the "retrospective_review_id" field if the given value is not nil.
-func (rcu *RetrospectiveCommentUpdate) SetNillableRetrospectiveReviewID(u *uuid.UUID) *RetrospectiveCommentUpdate {
-	if u != nil {
-		rcu.SetRetrospectiveReviewID(*u)
+func (_u *RetrospectiveCommentUpdate) SetNillableRetrospectiveReviewID(v *uuid.UUID) *RetrospectiveCommentUpdate {
+	if v != nil {
+		_u.SetRetrospectiveReviewID(*v)
 	}
-	return rcu
+	return _u
 }
 
 // ClearRetrospectiveReviewID clears the value of the "retrospective_review_id" field.
-func (rcu *RetrospectiveCommentUpdate) ClearRetrospectiveReviewID() *RetrospectiveCommentUpdate {
-	rcu.mutation.ClearRetrospectiveReviewID()
-	return rcu
+func (_u *RetrospectiveCommentUpdate) ClearRetrospectiveReviewID() *RetrospectiveCommentUpdate {
+	_u.mutation.ClearRetrospectiveReviewID()
+	return _u
 }
 
 // SetParentReplyID sets the "parent_reply_id" field.
-func (rcu *RetrospectiveCommentUpdate) SetParentReplyID(u uuid.UUID) *RetrospectiveCommentUpdate {
-	rcu.mutation.SetParentReplyID(u)
-	return rcu
+func (_u *RetrospectiveCommentUpdate) SetParentReplyID(v uuid.UUID) *RetrospectiveCommentUpdate {
+	_u.mutation.SetParentReplyID(v)
+	return _u
 }
 
 // SetNillableParentReplyID sets the "parent_reply_id" field if the given value is not nil.
-func (rcu *RetrospectiveCommentUpdate) SetNillableParentReplyID(u *uuid.UUID) *RetrospectiveCommentUpdate {
-	if u != nil {
-		rcu.SetParentReplyID(*u)
+func (_u *RetrospectiveCommentUpdate) SetNillableParentReplyID(v *uuid.UUID) *RetrospectiveCommentUpdate {
+	if v != nil {
+		_u.SetParentReplyID(*v)
 	}
-	return rcu
+	return _u
 }
 
 // ClearParentReplyID clears the value of the "parent_reply_id" field.
-func (rcu *RetrospectiveCommentUpdate) ClearParentReplyID() *RetrospectiveCommentUpdate {
-	rcu.mutation.ClearParentReplyID()
-	return rcu
+func (_u *RetrospectiveCommentUpdate) ClearParentReplyID() *RetrospectiveCommentUpdate {
+	_u.mutation.ClearParentReplyID()
+	return _u
 }
 
 // SetContent sets the "content" field.
-func (rcu *RetrospectiveCommentUpdate) SetContent(b []byte) *RetrospectiveCommentUpdate {
-	rcu.mutation.SetContent(b)
-	return rcu
+func (_u *RetrospectiveCommentUpdate) SetContent(v []byte) *RetrospectiveCommentUpdate {
+	_u.mutation.SetContent(v)
+	return _u
 }
 
 // SetRetrospective sets the "retrospective" edge to the Retrospective entity.
-func (rcu *RetrospectiveCommentUpdate) SetRetrospective(r *Retrospective) *RetrospectiveCommentUpdate {
-	return rcu.SetRetrospectiveID(r.ID)
+func (_u *RetrospectiveCommentUpdate) SetRetrospective(v *Retrospective) *RetrospectiveCommentUpdate {
+	return _u.SetRetrospectiveID(v.ID)
 }
 
 // SetUser sets the "user" edge to the User entity.
-func (rcu *RetrospectiveCommentUpdate) SetUser(u *User) *RetrospectiveCommentUpdate {
-	return rcu.SetUserID(u.ID)
+func (_u *RetrospectiveCommentUpdate) SetUser(v *User) *RetrospectiveCommentUpdate {
+	return _u.SetUserID(v.ID)
 }
 
 // SetReviewID sets the "review" edge to the RetrospectiveReview entity by ID.
-func (rcu *RetrospectiveCommentUpdate) SetReviewID(id uuid.UUID) *RetrospectiveCommentUpdate {
-	rcu.mutation.SetReviewID(id)
-	return rcu
+func (_u *RetrospectiveCommentUpdate) SetReviewID(id uuid.UUID) *RetrospectiveCommentUpdate {
+	_u.mutation.SetReviewID(id)
+	return _u
 }
 
 // SetNillableReviewID sets the "review" edge to the RetrospectiveReview entity by ID if the given value is not nil.
-func (rcu *RetrospectiveCommentUpdate) SetNillableReviewID(id *uuid.UUID) *RetrospectiveCommentUpdate {
+func (_u *RetrospectiveCommentUpdate) SetNillableReviewID(id *uuid.UUID) *RetrospectiveCommentUpdate {
 	if id != nil {
-		rcu = rcu.SetReviewID(*id)
+		_u = _u.SetReviewID(*id)
 	}
-	return rcu
+	return _u
 }
 
 // SetReview sets the "review" edge to the RetrospectiveReview entity.
-func (rcu *RetrospectiveCommentUpdate) SetReview(r *RetrospectiveReview) *RetrospectiveCommentUpdate {
-	return rcu.SetReviewID(r.ID)
+func (_u *RetrospectiveCommentUpdate) SetReview(v *RetrospectiveReview) *RetrospectiveCommentUpdate {
+	return _u.SetReviewID(v.ID)
 }
 
 // SetParentID sets the "parent" edge to the RetrospectiveComment entity by ID.
-func (rcu *RetrospectiveCommentUpdate) SetParentID(id uuid.UUID) *RetrospectiveCommentUpdate {
-	rcu.mutation.SetParentID(id)
-	return rcu
+func (_u *RetrospectiveCommentUpdate) SetParentID(id uuid.UUID) *RetrospectiveCommentUpdate {
+	_u.mutation.SetParentID(id)
+	return _u
 }
 
 // SetNillableParentID sets the "parent" edge to the RetrospectiveComment entity by ID if the given value is not nil.
-func (rcu *RetrospectiveCommentUpdate) SetNillableParentID(id *uuid.UUID) *RetrospectiveCommentUpdate {
+func (_u *RetrospectiveCommentUpdate) SetNillableParentID(id *uuid.UUID) *RetrospectiveCommentUpdate {
 	if id != nil {
-		rcu = rcu.SetParentID(*id)
+		_u = _u.SetParentID(*id)
 	}
-	return rcu
+	return _u
 }
 
 // SetParent sets the "parent" edge to the RetrospectiveComment entity.
-func (rcu *RetrospectiveCommentUpdate) SetParent(r *RetrospectiveComment) *RetrospectiveCommentUpdate {
-	return rcu.SetParentID(r.ID)
+func (_u *RetrospectiveCommentUpdate) SetParent(v *RetrospectiveComment) *RetrospectiveCommentUpdate {
+	return _u.SetParentID(v.ID)
 }
 
 // AddReplyIDs adds the "replies" edge to the RetrospectiveComment entity by IDs.
-func (rcu *RetrospectiveCommentUpdate) AddReplyIDs(ids ...uuid.UUID) *RetrospectiveCommentUpdate {
-	rcu.mutation.AddReplyIDs(ids...)
-	return rcu
+func (_u *RetrospectiveCommentUpdate) AddReplyIDs(ids ...uuid.UUID) *RetrospectiveCommentUpdate {
+	_u.mutation.AddReplyIDs(ids...)
+	return _u
 }
 
 // AddReplies adds the "replies" edges to the RetrospectiveComment entity.
-func (rcu *RetrospectiveCommentUpdate) AddReplies(r ...*RetrospectiveComment) *RetrospectiveCommentUpdate {
-	ids := make([]uuid.UUID, len(r))
-	for i := range r {
-		ids[i] = r[i].ID
+func (_u *RetrospectiveCommentUpdate) AddReplies(v ...*RetrospectiveComment) *RetrospectiveCommentUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
 	}
-	return rcu.AddReplyIDs(ids...)
+	return _u.AddReplyIDs(ids...)
 }
 
 // Mutation returns the RetrospectiveCommentMutation object of the builder.
-func (rcu *RetrospectiveCommentUpdate) Mutation() *RetrospectiveCommentMutation {
-	return rcu.mutation
+func (_u *RetrospectiveCommentUpdate) Mutation() *RetrospectiveCommentMutation {
+	return _u.mutation
 }
 
 // ClearRetrospective clears the "retrospective" edge to the Retrospective entity.
-func (rcu *RetrospectiveCommentUpdate) ClearRetrospective() *RetrospectiveCommentUpdate {
-	rcu.mutation.ClearRetrospective()
-	return rcu
+func (_u *RetrospectiveCommentUpdate) ClearRetrospective() *RetrospectiveCommentUpdate {
+	_u.mutation.ClearRetrospective()
+	return _u
 }
 
 // ClearUser clears the "user" edge to the User entity.
-func (rcu *RetrospectiveCommentUpdate) ClearUser() *RetrospectiveCommentUpdate {
-	rcu.mutation.ClearUser()
-	return rcu
+func (_u *RetrospectiveCommentUpdate) ClearUser() *RetrospectiveCommentUpdate {
+	_u.mutation.ClearUser()
+	return _u
 }
 
 // ClearReview clears the "review" edge to the RetrospectiveReview entity.
-func (rcu *RetrospectiveCommentUpdate) ClearReview() *RetrospectiveCommentUpdate {
-	rcu.mutation.ClearReview()
-	return rcu
+func (_u *RetrospectiveCommentUpdate) ClearReview() *RetrospectiveCommentUpdate {
+	_u.mutation.ClearReview()
+	return _u
 }
 
 // ClearParent clears the "parent" edge to the RetrospectiveComment entity.
-func (rcu *RetrospectiveCommentUpdate) ClearParent() *RetrospectiveCommentUpdate {
-	rcu.mutation.ClearParent()
-	return rcu
+func (_u *RetrospectiveCommentUpdate) ClearParent() *RetrospectiveCommentUpdate {
+	_u.mutation.ClearParent()
+	return _u
 }
 
 // ClearReplies clears all "replies" edges to the RetrospectiveComment entity.
-func (rcu *RetrospectiveCommentUpdate) ClearReplies() *RetrospectiveCommentUpdate {
-	rcu.mutation.ClearReplies()
-	return rcu
+func (_u *RetrospectiveCommentUpdate) ClearReplies() *RetrospectiveCommentUpdate {
+	_u.mutation.ClearReplies()
+	return _u
 }
 
 // RemoveReplyIDs removes the "replies" edge to RetrospectiveComment entities by IDs.
-func (rcu *RetrospectiveCommentUpdate) RemoveReplyIDs(ids ...uuid.UUID) *RetrospectiveCommentUpdate {
-	rcu.mutation.RemoveReplyIDs(ids...)
-	return rcu
+func (_u *RetrospectiveCommentUpdate) RemoveReplyIDs(ids ...uuid.UUID) *RetrospectiveCommentUpdate {
+	_u.mutation.RemoveReplyIDs(ids...)
+	return _u
 }
 
 // RemoveReplies removes "replies" edges to RetrospectiveComment entities.
-func (rcu *RetrospectiveCommentUpdate) RemoveReplies(r ...*RetrospectiveComment) *RetrospectiveCommentUpdate {
-	ids := make([]uuid.UUID, len(r))
-	for i := range r {
-		ids[i] = r[i].ID
+func (_u *RetrospectiveCommentUpdate) RemoveReplies(v ...*RetrospectiveComment) *RetrospectiveCommentUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
 	}
-	return rcu.RemoveReplyIDs(ids...)
+	return _u.RemoveReplyIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
-func (rcu *RetrospectiveCommentUpdate) Save(ctx context.Context) (int, error) {
-	return withHooks(ctx, rcu.sqlSave, rcu.mutation, rcu.hooks)
+func (_u *RetrospectiveCommentUpdate) Save(ctx context.Context) (int, error) {
+	return withHooks(ctx, _u.sqlSave, _u.mutation, _u.hooks)
 }
 
 // SaveX is like Save, but panics if an error occurs.
-func (rcu *RetrospectiveCommentUpdate) SaveX(ctx context.Context) int {
-	affected, err := rcu.Save(ctx)
+func (_u *RetrospectiveCommentUpdate) SaveX(ctx context.Context) int {
+	affected, err := _u.Save(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -234,54 +234,54 @@ func (rcu *RetrospectiveCommentUpdate) SaveX(ctx context.Context) int {
 }
 
 // Exec executes the query.
-func (rcu *RetrospectiveCommentUpdate) Exec(ctx context.Context) error {
-	_, err := rcu.Save(ctx)
+func (_u *RetrospectiveCommentUpdate) Exec(ctx context.Context) error {
+	_, err := _u.Save(ctx)
 	return err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (rcu *RetrospectiveCommentUpdate) ExecX(ctx context.Context) {
-	if err := rcu.Exec(ctx); err != nil {
+func (_u *RetrospectiveCommentUpdate) ExecX(ctx context.Context) {
+	if err := _u.Exec(ctx); err != nil {
 		panic(err)
 	}
 }
 
 // check runs all checks and user-defined validators on the builder.
-func (rcu *RetrospectiveCommentUpdate) check() error {
-	if rcu.mutation.TenantCleared() && len(rcu.mutation.TenantIDs()) > 0 {
+func (_u *RetrospectiveCommentUpdate) check() error {
+	if _u.mutation.TenantCleared() && len(_u.mutation.TenantIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "RetrospectiveComment.tenant"`)
 	}
-	if rcu.mutation.RetrospectiveCleared() && len(rcu.mutation.RetrospectiveIDs()) > 0 {
+	if _u.mutation.RetrospectiveCleared() && len(_u.mutation.RetrospectiveIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "RetrospectiveComment.retrospective"`)
 	}
-	if rcu.mutation.UserCleared() && len(rcu.mutation.UserIDs()) > 0 {
+	if _u.mutation.UserCleared() && len(_u.mutation.UserIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "RetrospectiveComment.user"`)
 	}
 	return nil
 }
 
 // Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
-func (rcu *RetrospectiveCommentUpdate) Modify(modifiers ...func(u *sql.UpdateBuilder)) *RetrospectiveCommentUpdate {
-	rcu.modifiers = append(rcu.modifiers, modifiers...)
-	return rcu
+func (_u *RetrospectiveCommentUpdate) Modify(modifiers ...func(u *sql.UpdateBuilder)) *RetrospectiveCommentUpdate {
+	_u.modifiers = append(_u.modifiers, modifiers...)
+	return _u
 }
 
-func (rcu *RetrospectiveCommentUpdate) sqlSave(ctx context.Context) (n int, err error) {
-	if err := rcu.check(); err != nil {
-		return n, err
+func (_u *RetrospectiveCommentUpdate) sqlSave(ctx context.Context) (_node int, err error) {
+	if err := _u.check(); err != nil {
+		return _node, err
 	}
 	_spec := sqlgraph.NewUpdateSpec(retrospectivecomment.Table, retrospectivecomment.Columns, sqlgraph.NewFieldSpec(retrospectivecomment.FieldID, field.TypeUUID))
-	if ps := rcu.mutation.predicates; len(ps) > 0 {
+	if ps := _u.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {
 				ps[i](selector)
 			}
 		}
 	}
-	if value, ok := rcu.mutation.Content(); ok {
+	if value, ok := _u.mutation.Content(); ok {
 		_spec.SetField(retrospectivecomment.FieldContent, field.TypeBytes, value)
 	}
-	if rcu.mutation.RetrospectiveCleared() {
+	if _u.mutation.RetrospectiveCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
@@ -294,7 +294,7 @@ func (rcu *RetrospectiveCommentUpdate) sqlSave(ctx context.Context) (n int, err 
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := rcu.mutation.RetrospectiveIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.RetrospectiveIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
@@ -310,7 +310,7 @@ func (rcu *RetrospectiveCommentUpdate) sqlSave(ctx context.Context) (n int, err 
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if rcu.mutation.UserCleared() {
+	if _u.mutation.UserCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
@@ -323,7 +323,7 @@ func (rcu *RetrospectiveCommentUpdate) sqlSave(ctx context.Context) (n int, err 
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := rcu.mutation.UserIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.UserIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
@@ -339,7 +339,7 @@ func (rcu *RetrospectiveCommentUpdate) sqlSave(ctx context.Context) (n int, err 
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if rcu.mutation.ReviewCleared() {
+	if _u.mutation.ReviewCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
@@ -352,7 +352,7 @@ func (rcu *RetrospectiveCommentUpdate) sqlSave(ctx context.Context) (n int, err 
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := rcu.mutation.ReviewIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.ReviewIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
@@ -368,7 +368,7 @@ func (rcu *RetrospectiveCommentUpdate) sqlSave(ctx context.Context) (n int, err 
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if rcu.mutation.ParentCleared() {
+	if _u.mutation.ParentCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: true,
@@ -381,7 +381,7 @@ func (rcu *RetrospectiveCommentUpdate) sqlSave(ctx context.Context) (n int, err 
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := rcu.mutation.ParentIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.ParentIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: true,
@@ -397,7 +397,7 @@ func (rcu *RetrospectiveCommentUpdate) sqlSave(ctx context.Context) (n int, err 
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if rcu.mutation.RepliesCleared() {
+	if _u.mutation.RepliesCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
@@ -410,7 +410,7 @@ func (rcu *RetrospectiveCommentUpdate) sqlSave(ctx context.Context) (n int, err 
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := rcu.mutation.RemovedRepliesIDs(); len(nodes) > 0 && !rcu.mutation.RepliesCleared() {
+	if nodes := _u.mutation.RemovedRepliesIDs(); len(nodes) > 0 && !_u.mutation.RepliesCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
@@ -426,7 +426,7 @@ func (rcu *RetrospectiveCommentUpdate) sqlSave(ctx context.Context) (n int, err 
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := rcu.mutation.RepliesIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.RepliesIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
@@ -442,8 +442,8 @@ func (rcu *RetrospectiveCommentUpdate) sqlSave(ctx context.Context) (n int, err 
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	_spec.AddModifiers(rcu.modifiers...)
-	if n, err = sqlgraph.UpdateNodes(ctx, rcu.driver, _spec); err != nil {
+	_spec.AddModifiers(_u.modifiers...)
+	if _node, err = sqlgraph.UpdateNodes(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{retrospectivecomment.Label}
 		} else if sqlgraph.IsConstraintError(err) {
@@ -451,8 +451,8 @@ func (rcu *RetrospectiveCommentUpdate) sqlSave(ctx context.Context) (n int, err 
 		}
 		return 0, err
 	}
-	rcu.mutation.done = true
-	return n, nil
+	_u.mutation.done = true
+	return _node, nil
 }
 
 // RetrospectiveCommentUpdateOne is the builder for updating a single RetrospectiveComment entity.
@@ -465,213 +465,213 @@ type RetrospectiveCommentUpdateOne struct {
 }
 
 // SetRetrospectiveID sets the "retrospective_id" field.
-func (rcuo *RetrospectiveCommentUpdateOne) SetRetrospectiveID(u uuid.UUID) *RetrospectiveCommentUpdateOne {
-	rcuo.mutation.SetRetrospectiveID(u)
-	return rcuo
+func (_u *RetrospectiveCommentUpdateOne) SetRetrospectiveID(v uuid.UUID) *RetrospectiveCommentUpdateOne {
+	_u.mutation.SetRetrospectiveID(v)
+	return _u
 }
 
 // SetNillableRetrospectiveID sets the "retrospective_id" field if the given value is not nil.
-func (rcuo *RetrospectiveCommentUpdateOne) SetNillableRetrospectiveID(u *uuid.UUID) *RetrospectiveCommentUpdateOne {
-	if u != nil {
-		rcuo.SetRetrospectiveID(*u)
+func (_u *RetrospectiveCommentUpdateOne) SetNillableRetrospectiveID(v *uuid.UUID) *RetrospectiveCommentUpdateOne {
+	if v != nil {
+		_u.SetRetrospectiveID(*v)
 	}
-	return rcuo
+	return _u
 }
 
 // SetUserID sets the "user_id" field.
-func (rcuo *RetrospectiveCommentUpdateOne) SetUserID(u uuid.UUID) *RetrospectiveCommentUpdateOne {
-	rcuo.mutation.SetUserID(u)
-	return rcuo
+func (_u *RetrospectiveCommentUpdateOne) SetUserID(v uuid.UUID) *RetrospectiveCommentUpdateOne {
+	_u.mutation.SetUserID(v)
+	return _u
 }
 
 // SetNillableUserID sets the "user_id" field if the given value is not nil.
-func (rcuo *RetrospectiveCommentUpdateOne) SetNillableUserID(u *uuid.UUID) *RetrospectiveCommentUpdateOne {
-	if u != nil {
-		rcuo.SetUserID(*u)
+func (_u *RetrospectiveCommentUpdateOne) SetNillableUserID(v *uuid.UUID) *RetrospectiveCommentUpdateOne {
+	if v != nil {
+		_u.SetUserID(*v)
 	}
-	return rcuo
+	return _u
 }
 
 // SetRetrospectiveReviewID sets the "retrospective_review_id" field.
-func (rcuo *RetrospectiveCommentUpdateOne) SetRetrospectiveReviewID(u uuid.UUID) *RetrospectiveCommentUpdateOne {
-	rcuo.mutation.SetRetrospectiveReviewID(u)
-	return rcuo
+func (_u *RetrospectiveCommentUpdateOne) SetRetrospectiveReviewID(v uuid.UUID) *RetrospectiveCommentUpdateOne {
+	_u.mutation.SetRetrospectiveReviewID(v)
+	return _u
 }
 
 // SetNillableRetrospectiveReviewID sets the "retrospective_review_id" field if the given value is not nil.
-func (rcuo *RetrospectiveCommentUpdateOne) SetNillableRetrospectiveReviewID(u *uuid.UUID) *RetrospectiveCommentUpdateOne {
-	if u != nil {
-		rcuo.SetRetrospectiveReviewID(*u)
+func (_u *RetrospectiveCommentUpdateOne) SetNillableRetrospectiveReviewID(v *uuid.UUID) *RetrospectiveCommentUpdateOne {
+	if v != nil {
+		_u.SetRetrospectiveReviewID(*v)
 	}
-	return rcuo
+	return _u
 }
 
 // ClearRetrospectiveReviewID clears the value of the "retrospective_review_id" field.
-func (rcuo *RetrospectiveCommentUpdateOne) ClearRetrospectiveReviewID() *RetrospectiveCommentUpdateOne {
-	rcuo.mutation.ClearRetrospectiveReviewID()
-	return rcuo
+func (_u *RetrospectiveCommentUpdateOne) ClearRetrospectiveReviewID() *RetrospectiveCommentUpdateOne {
+	_u.mutation.ClearRetrospectiveReviewID()
+	return _u
 }
 
 // SetParentReplyID sets the "parent_reply_id" field.
-func (rcuo *RetrospectiveCommentUpdateOne) SetParentReplyID(u uuid.UUID) *RetrospectiveCommentUpdateOne {
-	rcuo.mutation.SetParentReplyID(u)
-	return rcuo
+func (_u *RetrospectiveCommentUpdateOne) SetParentReplyID(v uuid.UUID) *RetrospectiveCommentUpdateOne {
+	_u.mutation.SetParentReplyID(v)
+	return _u
 }
 
 // SetNillableParentReplyID sets the "parent_reply_id" field if the given value is not nil.
-func (rcuo *RetrospectiveCommentUpdateOne) SetNillableParentReplyID(u *uuid.UUID) *RetrospectiveCommentUpdateOne {
-	if u != nil {
-		rcuo.SetParentReplyID(*u)
+func (_u *RetrospectiveCommentUpdateOne) SetNillableParentReplyID(v *uuid.UUID) *RetrospectiveCommentUpdateOne {
+	if v != nil {
+		_u.SetParentReplyID(*v)
 	}
-	return rcuo
+	return _u
 }
 
 // ClearParentReplyID clears the value of the "parent_reply_id" field.
-func (rcuo *RetrospectiveCommentUpdateOne) ClearParentReplyID() *RetrospectiveCommentUpdateOne {
-	rcuo.mutation.ClearParentReplyID()
-	return rcuo
+func (_u *RetrospectiveCommentUpdateOne) ClearParentReplyID() *RetrospectiveCommentUpdateOne {
+	_u.mutation.ClearParentReplyID()
+	return _u
 }
 
 // SetContent sets the "content" field.
-func (rcuo *RetrospectiveCommentUpdateOne) SetContent(b []byte) *RetrospectiveCommentUpdateOne {
-	rcuo.mutation.SetContent(b)
-	return rcuo
+func (_u *RetrospectiveCommentUpdateOne) SetContent(v []byte) *RetrospectiveCommentUpdateOne {
+	_u.mutation.SetContent(v)
+	return _u
 }
 
 // SetRetrospective sets the "retrospective" edge to the Retrospective entity.
-func (rcuo *RetrospectiveCommentUpdateOne) SetRetrospective(r *Retrospective) *RetrospectiveCommentUpdateOne {
-	return rcuo.SetRetrospectiveID(r.ID)
+func (_u *RetrospectiveCommentUpdateOne) SetRetrospective(v *Retrospective) *RetrospectiveCommentUpdateOne {
+	return _u.SetRetrospectiveID(v.ID)
 }
 
 // SetUser sets the "user" edge to the User entity.
-func (rcuo *RetrospectiveCommentUpdateOne) SetUser(u *User) *RetrospectiveCommentUpdateOne {
-	return rcuo.SetUserID(u.ID)
+func (_u *RetrospectiveCommentUpdateOne) SetUser(v *User) *RetrospectiveCommentUpdateOne {
+	return _u.SetUserID(v.ID)
 }
 
 // SetReviewID sets the "review" edge to the RetrospectiveReview entity by ID.
-func (rcuo *RetrospectiveCommentUpdateOne) SetReviewID(id uuid.UUID) *RetrospectiveCommentUpdateOne {
-	rcuo.mutation.SetReviewID(id)
-	return rcuo
+func (_u *RetrospectiveCommentUpdateOne) SetReviewID(id uuid.UUID) *RetrospectiveCommentUpdateOne {
+	_u.mutation.SetReviewID(id)
+	return _u
 }
 
 // SetNillableReviewID sets the "review" edge to the RetrospectiveReview entity by ID if the given value is not nil.
-func (rcuo *RetrospectiveCommentUpdateOne) SetNillableReviewID(id *uuid.UUID) *RetrospectiveCommentUpdateOne {
+func (_u *RetrospectiveCommentUpdateOne) SetNillableReviewID(id *uuid.UUID) *RetrospectiveCommentUpdateOne {
 	if id != nil {
-		rcuo = rcuo.SetReviewID(*id)
+		_u = _u.SetReviewID(*id)
 	}
-	return rcuo
+	return _u
 }
 
 // SetReview sets the "review" edge to the RetrospectiveReview entity.
-func (rcuo *RetrospectiveCommentUpdateOne) SetReview(r *RetrospectiveReview) *RetrospectiveCommentUpdateOne {
-	return rcuo.SetReviewID(r.ID)
+func (_u *RetrospectiveCommentUpdateOne) SetReview(v *RetrospectiveReview) *RetrospectiveCommentUpdateOne {
+	return _u.SetReviewID(v.ID)
 }
 
 // SetParentID sets the "parent" edge to the RetrospectiveComment entity by ID.
-func (rcuo *RetrospectiveCommentUpdateOne) SetParentID(id uuid.UUID) *RetrospectiveCommentUpdateOne {
-	rcuo.mutation.SetParentID(id)
-	return rcuo
+func (_u *RetrospectiveCommentUpdateOne) SetParentID(id uuid.UUID) *RetrospectiveCommentUpdateOne {
+	_u.mutation.SetParentID(id)
+	return _u
 }
 
 // SetNillableParentID sets the "parent" edge to the RetrospectiveComment entity by ID if the given value is not nil.
-func (rcuo *RetrospectiveCommentUpdateOne) SetNillableParentID(id *uuid.UUID) *RetrospectiveCommentUpdateOne {
+func (_u *RetrospectiveCommentUpdateOne) SetNillableParentID(id *uuid.UUID) *RetrospectiveCommentUpdateOne {
 	if id != nil {
-		rcuo = rcuo.SetParentID(*id)
+		_u = _u.SetParentID(*id)
 	}
-	return rcuo
+	return _u
 }
 
 // SetParent sets the "parent" edge to the RetrospectiveComment entity.
-func (rcuo *RetrospectiveCommentUpdateOne) SetParent(r *RetrospectiveComment) *RetrospectiveCommentUpdateOne {
-	return rcuo.SetParentID(r.ID)
+func (_u *RetrospectiveCommentUpdateOne) SetParent(v *RetrospectiveComment) *RetrospectiveCommentUpdateOne {
+	return _u.SetParentID(v.ID)
 }
 
 // AddReplyIDs adds the "replies" edge to the RetrospectiveComment entity by IDs.
-func (rcuo *RetrospectiveCommentUpdateOne) AddReplyIDs(ids ...uuid.UUID) *RetrospectiveCommentUpdateOne {
-	rcuo.mutation.AddReplyIDs(ids...)
-	return rcuo
+func (_u *RetrospectiveCommentUpdateOne) AddReplyIDs(ids ...uuid.UUID) *RetrospectiveCommentUpdateOne {
+	_u.mutation.AddReplyIDs(ids...)
+	return _u
 }
 
 // AddReplies adds the "replies" edges to the RetrospectiveComment entity.
-func (rcuo *RetrospectiveCommentUpdateOne) AddReplies(r ...*RetrospectiveComment) *RetrospectiveCommentUpdateOne {
-	ids := make([]uuid.UUID, len(r))
-	for i := range r {
-		ids[i] = r[i].ID
+func (_u *RetrospectiveCommentUpdateOne) AddReplies(v ...*RetrospectiveComment) *RetrospectiveCommentUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
 	}
-	return rcuo.AddReplyIDs(ids...)
+	return _u.AddReplyIDs(ids...)
 }
 
 // Mutation returns the RetrospectiveCommentMutation object of the builder.
-func (rcuo *RetrospectiveCommentUpdateOne) Mutation() *RetrospectiveCommentMutation {
-	return rcuo.mutation
+func (_u *RetrospectiveCommentUpdateOne) Mutation() *RetrospectiveCommentMutation {
+	return _u.mutation
 }
 
 // ClearRetrospective clears the "retrospective" edge to the Retrospective entity.
-func (rcuo *RetrospectiveCommentUpdateOne) ClearRetrospective() *RetrospectiveCommentUpdateOne {
-	rcuo.mutation.ClearRetrospective()
-	return rcuo
+func (_u *RetrospectiveCommentUpdateOne) ClearRetrospective() *RetrospectiveCommentUpdateOne {
+	_u.mutation.ClearRetrospective()
+	return _u
 }
 
 // ClearUser clears the "user" edge to the User entity.
-func (rcuo *RetrospectiveCommentUpdateOne) ClearUser() *RetrospectiveCommentUpdateOne {
-	rcuo.mutation.ClearUser()
-	return rcuo
+func (_u *RetrospectiveCommentUpdateOne) ClearUser() *RetrospectiveCommentUpdateOne {
+	_u.mutation.ClearUser()
+	return _u
 }
 
 // ClearReview clears the "review" edge to the RetrospectiveReview entity.
-func (rcuo *RetrospectiveCommentUpdateOne) ClearReview() *RetrospectiveCommentUpdateOne {
-	rcuo.mutation.ClearReview()
-	return rcuo
+func (_u *RetrospectiveCommentUpdateOne) ClearReview() *RetrospectiveCommentUpdateOne {
+	_u.mutation.ClearReview()
+	return _u
 }
 
 // ClearParent clears the "parent" edge to the RetrospectiveComment entity.
-func (rcuo *RetrospectiveCommentUpdateOne) ClearParent() *RetrospectiveCommentUpdateOne {
-	rcuo.mutation.ClearParent()
-	return rcuo
+func (_u *RetrospectiveCommentUpdateOne) ClearParent() *RetrospectiveCommentUpdateOne {
+	_u.mutation.ClearParent()
+	return _u
 }
 
 // ClearReplies clears all "replies" edges to the RetrospectiveComment entity.
-func (rcuo *RetrospectiveCommentUpdateOne) ClearReplies() *RetrospectiveCommentUpdateOne {
-	rcuo.mutation.ClearReplies()
-	return rcuo
+func (_u *RetrospectiveCommentUpdateOne) ClearReplies() *RetrospectiveCommentUpdateOne {
+	_u.mutation.ClearReplies()
+	return _u
 }
 
 // RemoveReplyIDs removes the "replies" edge to RetrospectiveComment entities by IDs.
-func (rcuo *RetrospectiveCommentUpdateOne) RemoveReplyIDs(ids ...uuid.UUID) *RetrospectiveCommentUpdateOne {
-	rcuo.mutation.RemoveReplyIDs(ids...)
-	return rcuo
+func (_u *RetrospectiveCommentUpdateOne) RemoveReplyIDs(ids ...uuid.UUID) *RetrospectiveCommentUpdateOne {
+	_u.mutation.RemoveReplyIDs(ids...)
+	return _u
 }
 
 // RemoveReplies removes "replies" edges to RetrospectiveComment entities.
-func (rcuo *RetrospectiveCommentUpdateOne) RemoveReplies(r ...*RetrospectiveComment) *RetrospectiveCommentUpdateOne {
-	ids := make([]uuid.UUID, len(r))
-	for i := range r {
-		ids[i] = r[i].ID
+func (_u *RetrospectiveCommentUpdateOne) RemoveReplies(v ...*RetrospectiveComment) *RetrospectiveCommentUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
 	}
-	return rcuo.RemoveReplyIDs(ids...)
+	return _u.RemoveReplyIDs(ids...)
 }
 
 // Where appends a list predicates to the RetrospectiveCommentUpdate builder.
-func (rcuo *RetrospectiveCommentUpdateOne) Where(ps ...predicate.RetrospectiveComment) *RetrospectiveCommentUpdateOne {
-	rcuo.mutation.Where(ps...)
-	return rcuo
+func (_u *RetrospectiveCommentUpdateOne) Where(ps ...predicate.RetrospectiveComment) *RetrospectiveCommentUpdateOne {
+	_u.mutation.Where(ps...)
+	return _u
 }
 
 // Select allows selecting one or more fields (columns) of the returned entity.
 // The default is selecting all fields defined in the entity schema.
-func (rcuo *RetrospectiveCommentUpdateOne) Select(field string, fields ...string) *RetrospectiveCommentUpdateOne {
-	rcuo.fields = append([]string{field}, fields...)
-	return rcuo
+func (_u *RetrospectiveCommentUpdateOne) Select(field string, fields ...string) *RetrospectiveCommentUpdateOne {
+	_u.fields = append([]string{field}, fields...)
+	return _u
 }
 
 // Save executes the query and returns the updated RetrospectiveComment entity.
-func (rcuo *RetrospectiveCommentUpdateOne) Save(ctx context.Context) (*RetrospectiveComment, error) {
-	return withHooks(ctx, rcuo.sqlSave, rcuo.mutation, rcuo.hooks)
+func (_u *RetrospectiveCommentUpdateOne) Save(ctx context.Context) (*RetrospectiveComment, error) {
+	return withHooks(ctx, _u.sqlSave, _u.mutation, _u.hooks)
 }
 
 // SaveX is like Save, but panics if an error occurs.
-func (rcuo *RetrospectiveCommentUpdateOne) SaveX(ctx context.Context) *RetrospectiveComment {
-	node, err := rcuo.Save(ctx)
+func (_u *RetrospectiveCommentUpdateOne) SaveX(ctx context.Context) *RetrospectiveComment {
+	node, err := _u.Save(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -679,49 +679,49 @@ func (rcuo *RetrospectiveCommentUpdateOne) SaveX(ctx context.Context) *Retrospec
 }
 
 // Exec executes the query on the entity.
-func (rcuo *RetrospectiveCommentUpdateOne) Exec(ctx context.Context) error {
-	_, err := rcuo.Save(ctx)
+func (_u *RetrospectiveCommentUpdateOne) Exec(ctx context.Context) error {
+	_, err := _u.Save(ctx)
 	return err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (rcuo *RetrospectiveCommentUpdateOne) ExecX(ctx context.Context) {
-	if err := rcuo.Exec(ctx); err != nil {
+func (_u *RetrospectiveCommentUpdateOne) ExecX(ctx context.Context) {
+	if err := _u.Exec(ctx); err != nil {
 		panic(err)
 	}
 }
 
 // check runs all checks and user-defined validators on the builder.
-func (rcuo *RetrospectiveCommentUpdateOne) check() error {
-	if rcuo.mutation.TenantCleared() && len(rcuo.mutation.TenantIDs()) > 0 {
+func (_u *RetrospectiveCommentUpdateOne) check() error {
+	if _u.mutation.TenantCleared() && len(_u.mutation.TenantIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "RetrospectiveComment.tenant"`)
 	}
-	if rcuo.mutation.RetrospectiveCleared() && len(rcuo.mutation.RetrospectiveIDs()) > 0 {
+	if _u.mutation.RetrospectiveCleared() && len(_u.mutation.RetrospectiveIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "RetrospectiveComment.retrospective"`)
 	}
-	if rcuo.mutation.UserCleared() && len(rcuo.mutation.UserIDs()) > 0 {
+	if _u.mutation.UserCleared() && len(_u.mutation.UserIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "RetrospectiveComment.user"`)
 	}
 	return nil
 }
 
 // Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
-func (rcuo *RetrospectiveCommentUpdateOne) Modify(modifiers ...func(u *sql.UpdateBuilder)) *RetrospectiveCommentUpdateOne {
-	rcuo.modifiers = append(rcuo.modifiers, modifiers...)
-	return rcuo
+func (_u *RetrospectiveCommentUpdateOne) Modify(modifiers ...func(u *sql.UpdateBuilder)) *RetrospectiveCommentUpdateOne {
+	_u.modifiers = append(_u.modifiers, modifiers...)
+	return _u
 }
 
-func (rcuo *RetrospectiveCommentUpdateOne) sqlSave(ctx context.Context) (_node *RetrospectiveComment, err error) {
-	if err := rcuo.check(); err != nil {
+func (_u *RetrospectiveCommentUpdateOne) sqlSave(ctx context.Context) (_node *RetrospectiveComment, err error) {
+	if err := _u.check(); err != nil {
 		return _node, err
 	}
 	_spec := sqlgraph.NewUpdateSpec(retrospectivecomment.Table, retrospectivecomment.Columns, sqlgraph.NewFieldSpec(retrospectivecomment.FieldID, field.TypeUUID))
-	id, ok := rcuo.mutation.ID()
+	id, ok := _u.mutation.ID()
 	if !ok {
 		return nil, &ValidationError{Name: "id", err: errors.New(`ent: missing "RetrospectiveComment.id" for update`)}
 	}
 	_spec.Node.ID.Value = id
-	if fields := rcuo.fields; len(fields) > 0 {
+	if fields := _u.fields; len(fields) > 0 {
 		_spec.Node.Columns = make([]string, 0, len(fields))
 		_spec.Node.Columns = append(_spec.Node.Columns, retrospectivecomment.FieldID)
 		for _, f := range fields {
@@ -733,17 +733,17 @@ func (rcuo *RetrospectiveCommentUpdateOne) sqlSave(ctx context.Context) (_node *
 			}
 		}
 	}
-	if ps := rcuo.mutation.predicates; len(ps) > 0 {
+	if ps := _u.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {
 				ps[i](selector)
 			}
 		}
 	}
-	if value, ok := rcuo.mutation.Content(); ok {
+	if value, ok := _u.mutation.Content(); ok {
 		_spec.SetField(retrospectivecomment.FieldContent, field.TypeBytes, value)
 	}
-	if rcuo.mutation.RetrospectiveCleared() {
+	if _u.mutation.RetrospectiveCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
@@ -756,7 +756,7 @@ func (rcuo *RetrospectiveCommentUpdateOne) sqlSave(ctx context.Context) (_node *
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := rcuo.mutation.RetrospectiveIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.RetrospectiveIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
@@ -772,7 +772,7 @@ func (rcuo *RetrospectiveCommentUpdateOne) sqlSave(ctx context.Context) (_node *
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if rcuo.mutation.UserCleared() {
+	if _u.mutation.UserCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
@@ -785,7 +785,7 @@ func (rcuo *RetrospectiveCommentUpdateOne) sqlSave(ctx context.Context) (_node *
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := rcuo.mutation.UserIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.UserIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
@@ -801,7 +801,7 @@ func (rcuo *RetrospectiveCommentUpdateOne) sqlSave(ctx context.Context) (_node *
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if rcuo.mutation.ReviewCleared() {
+	if _u.mutation.ReviewCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
@@ -814,7 +814,7 @@ func (rcuo *RetrospectiveCommentUpdateOne) sqlSave(ctx context.Context) (_node *
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := rcuo.mutation.ReviewIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.ReviewIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
@@ -830,7 +830,7 @@ func (rcuo *RetrospectiveCommentUpdateOne) sqlSave(ctx context.Context) (_node *
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if rcuo.mutation.ParentCleared() {
+	if _u.mutation.ParentCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: true,
@@ -843,7 +843,7 @@ func (rcuo *RetrospectiveCommentUpdateOne) sqlSave(ctx context.Context) (_node *
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := rcuo.mutation.ParentIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.ParentIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: true,
@@ -859,7 +859,7 @@ func (rcuo *RetrospectiveCommentUpdateOne) sqlSave(ctx context.Context) (_node *
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if rcuo.mutation.RepliesCleared() {
+	if _u.mutation.RepliesCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
@@ -872,7 +872,7 @@ func (rcuo *RetrospectiveCommentUpdateOne) sqlSave(ctx context.Context) (_node *
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := rcuo.mutation.RemovedRepliesIDs(); len(nodes) > 0 && !rcuo.mutation.RepliesCleared() {
+	if nodes := _u.mutation.RemovedRepliesIDs(); len(nodes) > 0 && !_u.mutation.RepliesCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
@@ -888,7 +888,7 @@ func (rcuo *RetrospectiveCommentUpdateOne) sqlSave(ctx context.Context) (_node *
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := rcuo.mutation.RepliesIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.RepliesIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
@@ -904,11 +904,11 @@ func (rcuo *RetrospectiveCommentUpdateOne) sqlSave(ctx context.Context) (_node *
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	_spec.AddModifiers(rcuo.modifiers...)
-	_node = &RetrospectiveComment{config: rcuo.config}
+	_spec.AddModifiers(_u.modifiers...)
+	_node = &RetrospectiveComment{config: _u.config}
 	_spec.Assign = _node.assignValues
 	_spec.ScanValues = _node.scanValues
-	if err = sqlgraph.UpdateNode(ctx, rcuo.driver, _spec); err != nil {
+	if err = sqlgraph.UpdateNode(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{retrospectivecomment.Label}
 		} else if sqlgraph.IsConstraintError(err) {
@@ -916,6 +916,6 @@ func (rcuo *RetrospectiveCommentUpdateOne) sqlSave(ctx context.Context) (_node *
 		}
 		return nil, err
 	}
-	rcuo.mutation.done = true
+	_u.mutation.done = true
 	return _node, nil
 }

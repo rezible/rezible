@@ -40,44 +40,44 @@ type RetrospectiveReviewQuery struct {
 }
 
 // Where adds a new predicate for the RetrospectiveReviewQuery builder.
-func (rrq *RetrospectiveReviewQuery) Where(ps ...predicate.RetrospectiveReview) *RetrospectiveReviewQuery {
-	rrq.predicates = append(rrq.predicates, ps...)
-	return rrq
+func (_q *RetrospectiveReviewQuery) Where(ps ...predicate.RetrospectiveReview) *RetrospectiveReviewQuery {
+	_q.predicates = append(_q.predicates, ps...)
+	return _q
 }
 
 // Limit the number of records to be returned by this query.
-func (rrq *RetrospectiveReviewQuery) Limit(limit int) *RetrospectiveReviewQuery {
-	rrq.ctx.Limit = &limit
-	return rrq
+func (_q *RetrospectiveReviewQuery) Limit(limit int) *RetrospectiveReviewQuery {
+	_q.ctx.Limit = &limit
+	return _q
 }
 
 // Offset to start from.
-func (rrq *RetrospectiveReviewQuery) Offset(offset int) *RetrospectiveReviewQuery {
-	rrq.ctx.Offset = &offset
-	return rrq
+func (_q *RetrospectiveReviewQuery) Offset(offset int) *RetrospectiveReviewQuery {
+	_q.ctx.Offset = &offset
+	return _q
 }
 
 // Unique configures the query builder to filter duplicate records on query.
 // By default, unique is set to true, and can be disabled using this method.
-func (rrq *RetrospectiveReviewQuery) Unique(unique bool) *RetrospectiveReviewQuery {
-	rrq.ctx.Unique = &unique
-	return rrq
+func (_q *RetrospectiveReviewQuery) Unique(unique bool) *RetrospectiveReviewQuery {
+	_q.ctx.Unique = &unique
+	return _q
 }
 
 // Order specifies how the records should be ordered.
-func (rrq *RetrospectiveReviewQuery) Order(o ...retrospectivereview.OrderOption) *RetrospectiveReviewQuery {
-	rrq.order = append(rrq.order, o...)
-	return rrq
+func (_q *RetrospectiveReviewQuery) Order(o ...retrospectivereview.OrderOption) *RetrospectiveReviewQuery {
+	_q.order = append(_q.order, o...)
+	return _q
 }
 
 // QueryTenant chains the current query on the "tenant" edge.
-func (rrq *RetrospectiveReviewQuery) QueryTenant() *TenantQuery {
-	query := (&TenantClient{config: rrq.config}).Query()
+func (_q *RetrospectiveReviewQuery) QueryTenant() *TenantQuery {
+	query := (&TenantClient{config: _q.config}).Query()
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
-		if err := rrq.prepareQuery(ctx); err != nil {
+		if err := _q.prepareQuery(ctx); err != nil {
 			return nil, err
 		}
-		selector := rrq.sqlQuery(ctx)
+		selector := _q.sqlQuery(ctx)
 		if err := selector.Err(); err != nil {
 			return nil, err
 		}
@@ -86,20 +86,20 @@ func (rrq *RetrospectiveReviewQuery) QueryTenant() *TenantQuery {
 			sqlgraph.To(tenant.Table, tenant.FieldID),
 			sqlgraph.Edge(sqlgraph.M2O, false, retrospectivereview.TenantTable, retrospectivereview.TenantColumn),
 		)
-		fromU = sqlgraph.SetNeighbors(rrq.driver.Dialect(), step)
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
 	}
 	return query
 }
 
 // QueryRetrospective chains the current query on the "retrospective" edge.
-func (rrq *RetrospectiveReviewQuery) QueryRetrospective() *RetrospectiveQuery {
-	query := (&RetrospectiveClient{config: rrq.config}).Query()
+func (_q *RetrospectiveReviewQuery) QueryRetrospective() *RetrospectiveQuery {
+	query := (&RetrospectiveClient{config: _q.config}).Query()
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
-		if err := rrq.prepareQuery(ctx); err != nil {
+		if err := _q.prepareQuery(ctx); err != nil {
 			return nil, err
 		}
-		selector := rrq.sqlQuery(ctx)
+		selector := _q.sqlQuery(ctx)
 		if err := selector.Err(); err != nil {
 			return nil, err
 		}
@@ -108,20 +108,20 @@ func (rrq *RetrospectiveReviewQuery) QueryRetrospective() *RetrospectiveQuery {
 			sqlgraph.To(retrospective.Table, retrospective.FieldID),
 			sqlgraph.Edge(sqlgraph.M2O, false, retrospectivereview.RetrospectiveTable, retrospectivereview.RetrospectiveColumn),
 		)
-		fromU = sqlgraph.SetNeighbors(rrq.driver.Dialect(), step)
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
 	}
 	return query
 }
 
 // QueryRequester chains the current query on the "requester" edge.
-func (rrq *RetrospectiveReviewQuery) QueryRequester() *UserQuery {
-	query := (&UserClient{config: rrq.config}).Query()
+func (_q *RetrospectiveReviewQuery) QueryRequester() *UserQuery {
+	query := (&UserClient{config: _q.config}).Query()
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
-		if err := rrq.prepareQuery(ctx); err != nil {
+		if err := _q.prepareQuery(ctx); err != nil {
 			return nil, err
 		}
-		selector := rrq.sqlQuery(ctx)
+		selector := _q.sqlQuery(ctx)
 		if err := selector.Err(); err != nil {
 			return nil, err
 		}
@@ -130,20 +130,20 @@ func (rrq *RetrospectiveReviewQuery) QueryRequester() *UserQuery {
 			sqlgraph.To(user.Table, user.FieldID),
 			sqlgraph.Edge(sqlgraph.M2O, false, retrospectivereview.RequesterTable, retrospectivereview.RequesterColumn),
 		)
-		fromU = sqlgraph.SetNeighbors(rrq.driver.Dialect(), step)
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
 	}
 	return query
 }
 
 // QueryReviewer chains the current query on the "reviewer" edge.
-func (rrq *RetrospectiveReviewQuery) QueryReviewer() *UserQuery {
-	query := (&UserClient{config: rrq.config}).Query()
+func (_q *RetrospectiveReviewQuery) QueryReviewer() *UserQuery {
+	query := (&UserClient{config: _q.config}).Query()
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
-		if err := rrq.prepareQuery(ctx); err != nil {
+		if err := _q.prepareQuery(ctx); err != nil {
 			return nil, err
 		}
-		selector := rrq.sqlQuery(ctx)
+		selector := _q.sqlQuery(ctx)
 		if err := selector.Err(); err != nil {
 			return nil, err
 		}
@@ -152,20 +152,20 @@ func (rrq *RetrospectiveReviewQuery) QueryReviewer() *UserQuery {
 			sqlgraph.To(user.Table, user.FieldID),
 			sqlgraph.Edge(sqlgraph.M2O, false, retrospectivereview.ReviewerTable, retrospectivereview.ReviewerColumn),
 		)
-		fromU = sqlgraph.SetNeighbors(rrq.driver.Dialect(), step)
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
 	}
 	return query
 }
 
 // QueryComment chains the current query on the "comment" edge.
-func (rrq *RetrospectiveReviewQuery) QueryComment() *RetrospectiveCommentQuery {
-	query := (&RetrospectiveCommentClient{config: rrq.config}).Query()
+func (_q *RetrospectiveReviewQuery) QueryComment() *RetrospectiveCommentQuery {
+	query := (&RetrospectiveCommentClient{config: _q.config}).Query()
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
-		if err := rrq.prepareQuery(ctx); err != nil {
+		if err := _q.prepareQuery(ctx); err != nil {
 			return nil, err
 		}
-		selector := rrq.sqlQuery(ctx)
+		selector := _q.sqlQuery(ctx)
 		if err := selector.Err(); err != nil {
 			return nil, err
 		}
@@ -174,7 +174,7 @@ func (rrq *RetrospectiveReviewQuery) QueryComment() *RetrospectiveCommentQuery {
 			sqlgraph.To(retrospectivecomment.Table, retrospectivecomment.FieldID),
 			sqlgraph.Edge(sqlgraph.M2O, false, retrospectivereview.CommentTable, retrospectivereview.CommentColumn),
 		)
-		fromU = sqlgraph.SetNeighbors(rrq.driver.Dialect(), step)
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
 	}
 	return query
@@ -182,8 +182,8 @@ func (rrq *RetrospectiveReviewQuery) QueryComment() *RetrospectiveCommentQuery {
 
 // First returns the first RetrospectiveReview entity from the query.
 // Returns a *NotFoundError when no RetrospectiveReview was found.
-func (rrq *RetrospectiveReviewQuery) First(ctx context.Context) (*RetrospectiveReview, error) {
-	nodes, err := rrq.Limit(1).All(setContextOp(ctx, rrq.ctx, ent.OpQueryFirst))
+func (_q *RetrospectiveReviewQuery) First(ctx context.Context) (*RetrospectiveReview, error) {
+	nodes, err := _q.Limit(1).All(setContextOp(ctx, _q.ctx, ent.OpQueryFirst))
 	if err != nil {
 		return nil, err
 	}
@@ -194,8 +194,8 @@ func (rrq *RetrospectiveReviewQuery) First(ctx context.Context) (*RetrospectiveR
 }
 
 // FirstX is like First, but panics if an error occurs.
-func (rrq *RetrospectiveReviewQuery) FirstX(ctx context.Context) *RetrospectiveReview {
-	node, err := rrq.First(ctx)
+func (_q *RetrospectiveReviewQuery) FirstX(ctx context.Context) *RetrospectiveReview {
+	node, err := _q.First(ctx)
 	if err != nil && !IsNotFound(err) {
 		panic(err)
 	}
@@ -204,9 +204,9 @@ func (rrq *RetrospectiveReviewQuery) FirstX(ctx context.Context) *RetrospectiveR
 
 // FirstID returns the first RetrospectiveReview ID from the query.
 // Returns a *NotFoundError when no RetrospectiveReview ID was found.
-func (rrq *RetrospectiveReviewQuery) FirstID(ctx context.Context) (id uuid.UUID, err error) {
+func (_q *RetrospectiveReviewQuery) FirstID(ctx context.Context) (id uuid.UUID, err error) {
 	var ids []uuid.UUID
-	if ids, err = rrq.Limit(1).IDs(setContextOp(ctx, rrq.ctx, ent.OpQueryFirstID)); err != nil {
+	if ids, err = _q.Limit(1).IDs(setContextOp(ctx, _q.ctx, ent.OpQueryFirstID)); err != nil {
 		return
 	}
 	if len(ids) == 0 {
@@ -217,8 +217,8 @@ func (rrq *RetrospectiveReviewQuery) FirstID(ctx context.Context) (id uuid.UUID,
 }
 
 // FirstIDX is like FirstID, but panics if an error occurs.
-func (rrq *RetrospectiveReviewQuery) FirstIDX(ctx context.Context) uuid.UUID {
-	id, err := rrq.FirstID(ctx)
+func (_q *RetrospectiveReviewQuery) FirstIDX(ctx context.Context) uuid.UUID {
+	id, err := _q.FirstID(ctx)
 	if err != nil && !IsNotFound(err) {
 		panic(err)
 	}
@@ -228,8 +228,8 @@ func (rrq *RetrospectiveReviewQuery) FirstIDX(ctx context.Context) uuid.UUID {
 // Only returns a single RetrospectiveReview entity found by the query, ensuring it only returns one.
 // Returns a *NotSingularError when more than one RetrospectiveReview entity is found.
 // Returns a *NotFoundError when no RetrospectiveReview entities are found.
-func (rrq *RetrospectiveReviewQuery) Only(ctx context.Context) (*RetrospectiveReview, error) {
-	nodes, err := rrq.Limit(2).All(setContextOp(ctx, rrq.ctx, ent.OpQueryOnly))
+func (_q *RetrospectiveReviewQuery) Only(ctx context.Context) (*RetrospectiveReview, error) {
+	nodes, err := _q.Limit(2).All(setContextOp(ctx, _q.ctx, ent.OpQueryOnly))
 	if err != nil {
 		return nil, err
 	}
@@ -244,8 +244,8 @@ func (rrq *RetrospectiveReviewQuery) Only(ctx context.Context) (*RetrospectiveRe
 }
 
 // OnlyX is like Only, but panics if an error occurs.
-func (rrq *RetrospectiveReviewQuery) OnlyX(ctx context.Context) *RetrospectiveReview {
-	node, err := rrq.Only(ctx)
+func (_q *RetrospectiveReviewQuery) OnlyX(ctx context.Context) *RetrospectiveReview {
+	node, err := _q.Only(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -255,9 +255,9 @@ func (rrq *RetrospectiveReviewQuery) OnlyX(ctx context.Context) *RetrospectiveRe
 // OnlyID is like Only, but returns the only RetrospectiveReview ID in the query.
 // Returns a *NotSingularError when more than one RetrospectiveReview ID is found.
 // Returns a *NotFoundError when no entities are found.
-func (rrq *RetrospectiveReviewQuery) OnlyID(ctx context.Context) (id uuid.UUID, err error) {
+func (_q *RetrospectiveReviewQuery) OnlyID(ctx context.Context) (id uuid.UUID, err error) {
 	var ids []uuid.UUID
-	if ids, err = rrq.Limit(2).IDs(setContextOp(ctx, rrq.ctx, ent.OpQueryOnlyID)); err != nil {
+	if ids, err = _q.Limit(2).IDs(setContextOp(ctx, _q.ctx, ent.OpQueryOnlyID)); err != nil {
 		return
 	}
 	switch len(ids) {
@@ -272,8 +272,8 @@ func (rrq *RetrospectiveReviewQuery) OnlyID(ctx context.Context) (id uuid.UUID, 
 }
 
 // OnlyIDX is like OnlyID, but panics if an error occurs.
-func (rrq *RetrospectiveReviewQuery) OnlyIDX(ctx context.Context) uuid.UUID {
-	id, err := rrq.OnlyID(ctx)
+func (_q *RetrospectiveReviewQuery) OnlyIDX(ctx context.Context) uuid.UUID {
+	id, err := _q.OnlyID(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -281,18 +281,18 @@ func (rrq *RetrospectiveReviewQuery) OnlyIDX(ctx context.Context) uuid.UUID {
 }
 
 // All executes the query and returns a list of RetrospectiveReviews.
-func (rrq *RetrospectiveReviewQuery) All(ctx context.Context) ([]*RetrospectiveReview, error) {
-	ctx = setContextOp(ctx, rrq.ctx, ent.OpQueryAll)
-	if err := rrq.prepareQuery(ctx); err != nil {
+func (_q *RetrospectiveReviewQuery) All(ctx context.Context) ([]*RetrospectiveReview, error) {
+	ctx = setContextOp(ctx, _q.ctx, ent.OpQueryAll)
+	if err := _q.prepareQuery(ctx); err != nil {
 		return nil, err
 	}
 	qr := querierAll[[]*RetrospectiveReview, *RetrospectiveReviewQuery]()
-	return withInterceptors[[]*RetrospectiveReview](ctx, rrq, qr, rrq.inters)
+	return withInterceptors[[]*RetrospectiveReview](ctx, _q, qr, _q.inters)
 }
 
 // AllX is like All, but panics if an error occurs.
-func (rrq *RetrospectiveReviewQuery) AllX(ctx context.Context) []*RetrospectiveReview {
-	nodes, err := rrq.All(ctx)
+func (_q *RetrospectiveReviewQuery) AllX(ctx context.Context) []*RetrospectiveReview {
+	nodes, err := _q.All(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -300,20 +300,20 @@ func (rrq *RetrospectiveReviewQuery) AllX(ctx context.Context) []*RetrospectiveR
 }
 
 // IDs executes the query and returns a list of RetrospectiveReview IDs.
-func (rrq *RetrospectiveReviewQuery) IDs(ctx context.Context) (ids []uuid.UUID, err error) {
-	if rrq.ctx.Unique == nil && rrq.path != nil {
-		rrq.Unique(true)
+func (_q *RetrospectiveReviewQuery) IDs(ctx context.Context) (ids []uuid.UUID, err error) {
+	if _q.ctx.Unique == nil && _q.path != nil {
+		_q.Unique(true)
 	}
-	ctx = setContextOp(ctx, rrq.ctx, ent.OpQueryIDs)
-	if err = rrq.Select(retrospectivereview.FieldID).Scan(ctx, &ids); err != nil {
+	ctx = setContextOp(ctx, _q.ctx, ent.OpQueryIDs)
+	if err = _q.Select(retrospectivereview.FieldID).Scan(ctx, &ids); err != nil {
 		return nil, err
 	}
 	return ids, nil
 }
 
 // IDsX is like IDs, but panics if an error occurs.
-func (rrq *RetrospectiveReviewQuery) IDsX(ctx context.Context) []uuid.UUID {
-	ids, err := rrq.IDs(ctx)
+func (_q *RetrospectiveReviewQuery) IDsX(ctx context.Context) []uuid.UUID {
+	ids, err := _q.IDs(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -321,17 +321,17 @@ func (rrq *RetrospectiveReviewQuery) IDsX(ctx context.Context) []uuid.UUID {
 }
 
 // Count returns the count of the given query.
-func (rrq *RetrospectiveReviewQuery) Count(ctx context.Context) (int, error) {
-	ctx = setContextOp(ctx, rrq.ctx, ent.OpQueryCount)
-	if err := rrq.prepareQuery(ctx); err != nil {
+func (_q *RetrospectiveReviewQuery) Count(ctx context.Context) (int, error) {
+	ctx = setContextOp(ctx, _q.ctx, ent.OpQueryCount)
+	if err := _q.prepareQuery(ctx); err != nil {
 		return 0, err
 	}
-	return withInterceptors[int](ctx, rrq, querierCount[*RetrospectiveReviewQuery](), rrq.inters)
+	return withInterceptors[int](ctx, _q, querierCount[*RetrospectiveReviewQuery](), _q.inters)
 }
 
 // CountX is like Count, but panics if an error occurs.
-func (rrq *RetrospectiveReviewQuery) CountX(ctx context.Context) int {
-	count, err := rrq.Count(ctx)
+func (_q *RetrospectiveReviewQuery) CountX(ctx context.Context) int {
+	count, err := _q.Count(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -339,9 +339,9 @@ func (rrq *RetrospectiveReviewQuery) CountX(ctx context.Context) int {
 }
 
 // Exist returns true if the query has elements in the graph.
-func (rrq *RetrospectiveReviewQuery) Exist(ctx context.Context) (bool, error) {
-	ctx = setContextOp(ctx, rrq.ctx, ent.OpQueryExist)
-	switch _, err := rrq.FirstID(ctx); {
+func (_q *RetrospectiveReviewQuery) Exist(ctx context.Context) (bool, error) {
+	ctx = setContextOp(ctx, _q.ctx, ent.OpQueryExist)
+	switch _, err := _q.FirstID(ctx); {
 	case IsNotFound(err):
 		return false, nil
 	case err != nil:
@@ -352,8 +352,8 @@ func (rrq *RetrospectiveReviewQuery) Exist(ctx context.Context) (bool, error) {
 }
 
 // ExistX is like Exist, but panics if an error occurs.
-func (rrq *RetrospectiveReviewQuery) ExistX(ctx context.Context) bool {
-	exist, err := rrq.Exist(ctx)
+func (_q *RetrospectiveReviewQuery) ExistX(ctx context.Context) bool {
+	exist, err := _q.Exist(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -362,81 +362,81 @@ func (rrq *RetrospectiveReviewQuery) ExistX(ctx context.Context) bool {
 
 // Clone returns a duplicate of the RetrospectiveReviewQuery builder, including all associated steps. It can be
 // used to prepare common query builders and use them differently after the clone is made.
-func (rrq *RetrospectiveReviewQuery) Clone() *RetrospectiveReviewQuery {
-	if rrq == nil {
+func (_q *RetrospectiveReviewQuery) Clone() *RetrospectiveReviewQuery {
+	if _q == nil {
 		return nil
 	}
 	return &RetrospectiveReviewQuery{
-		config:            rrq.config,
-		ctx:               rrq.ctx.Clone(),
-		order:             append([]retrospectivereview.OrderOption{}, rrq.order...),
-		inters:            append([]Interceptor{}, rrq.inters...),
-		predicates:        append([]predicate.RetrospectiveReview{}, rrq.predicates...),
-		withTenant:        rrq.withTenant.Clone(),
-		withRetrospective: rrq.withRetrospective.Clone(),
-		withRequester:     rrq.withRequester.Clone(),
-		withReviewer:      rrq.withReviewer.Clone(),
-		withComment:       rrq.withComment.Clone(),
+		config:            _q.config,
+		ctx:               _q.ctx.Clone(),
+		order:             append([]retrospectivereview.OrderOption{}, _q.order...),
+		inters:            append([]Interceptor{}, _q.inters...),
+		predicates:        append([]predicate.RetrospectiveReview{}, _q.predicates...),
+		withTenant:        _q.withTenant.Clone(),
+		withRetrospective: _q.withRetrospective.Clone(),
+		withRequester:     _q.withRequester.Clone(),
+		withReviewer:      _q.withReviewer.Clone(),
+		withComment:       _q.withComment.Clone(),
 		// clone intermediate query.
-		sql:       rrq.sql.Clone(),
-		path:      rrq.path,
-		modifiers: append([]func(*sql.Selector){}, rrq.modifiers...),
+		sql:       _q.sql.Clone(),
+		path:      _q.path,
+		modifiers: append([]func(*sql.Selector){}, _q.modifiers...),
 	}
 }
 
 // WithTenant tells the query-builder to eager-load the nodes that are connected to
 // the "tenant" edge. The optional arguments are used to configure the query builder of the edge.
-func (rrq *RetrospectiveReviewQuery) WithTenant(opts ...func(*TenantQuery)) *RetrospectiveReviewQuery {
-	query := (&TenantClient{config: rrq.config}).Query()
+func (_q *RetrospectiveReviewQuery) WithTenant(opts ...func(*TenantQuery)) *RetrospectiveReviewQuery {
+	query := (&TenantClient{config: _q.config}).Query()
 	for _, opt := range opts {
 		opt(query)
 	}
-	rrq.withTenant = query
-	return rrq
+	_q.withTenant = query
+	return _q
 }
 
 // WithRetrospective tells the query-builder to eager-load the nodes that are connected to
 // the "retrospective" edge. The optional arguments are used to configure the query builder of the edge.
-func (rrq *RetrospectiveReviewQuery) WithRetrospective(opts ...func(*RetrospectiveQuery)) *RetrospectiveReviewQuery {
-	query := (&RetrospectiveClient{config: rrq.config}).Query()
+func (_q *RetrospectiveReviewQuery) WithRetrospective(opts ...func(*RetrospectiveQuery)) *RetrospectiveReviewQuery {
+	query := (&RetrospectiveClient{config: _q.config}).Query()
 	for _, opt := range opts {
 		opt(query)
 	}
-	rrq.withRetrospective = query
-	return rrq
+	_q.withRetrospective = query
+	return _q
 }
 
 // WithRequester tells the query-builder to eager-load the nodes that are connected to
 // the "requester" edge. The optional arguments are used to configure the query builder of the edge.
-func (rrq *RetrospectiveReviewQuery) WithRequester(opts ...func(*UserQuery)) *RetrospectiveReviewQuery {
-	query := (&UserClient{config: rrq.config}).Query()
+func (_q *RetrospectiveReviewQuery) WithRequester(opts ...func(*UserQuery)) *RetrospectiveReviewQuery {
+	query := (&UserClient{config: _q.config}).Query()
 	for _, opt := range opts {
 		opt(query)
 	}
-	rrq.withRequester = query
-	return rrq
+	_q.withRequester = query
+	return _q
 }
 
 // WithReviewer tells the query-builder to eager-load the nodes that are connected to
 // the "reviewer" edge. The optional arguments are used to configure the query builder of the edge.
-func (rrq *RetrospectiveReviewQuery) WithReviewer(opts ...func(*UserQuery)) *RetrospectiveReviewQuery {
-	query := (&UserClient{config: rrq.config}).Query()
+func (_q *RetrospectiveReviewQuery) WithReviewer(opts ...func(*UserQuery)) *RetrospectiveReviewQuery {
+	query := (&UserClient{config: _q.config}).Query()
 	for _, opt := range opts {
 		opt(query)
 	}
-	rrq.withReviewer = query
-	return rrq
+	_q.withReviewer = query
+	return _q
 }
 
 // WithComment tells the query-builder to eager-load the nodes that are connected to
 // the "comment" edge. The optional arguments are used to configure the query builder of the edge.
-func (rrq *RetrospectiveReviewQuery) WithComment(opts ...func(*RetrospectiveCommentQuery)) *RetrospectiveReviewQuery {
-	query := (&RetrospectiveCommentClient{config: rrq.config}).Query()
+func (_q *RetrospectiveReviewQuery) WithComment(opts ...func(*RetrospectiveCommentQuery)) *RetrospectiveReviewQuery {
+	query := (&RetrospectiveCommentClient{config: _q.config}).Query()
 	for _, opt := range opts {
 		opt(query)
 	}
-	rrq.withComment = query
-	return rrq
+	_q.withComment = query
+	return _q
 }
 
 // GroupBy is used to group vertices by one or more fields/columns.
@@ -453,10 +453,10 @@ func (rrq *RetrospectiveReviewQuery) WithComment(opts ...func(*RetrospectiveComm
 //		GroupBy(retrospectivereview.FieldTenantID).
 //		Aggregate(ent.Count()).
 //		Scan(ctx, &v)
-func (rrq *RetrospectiveReviewQuery) GroupBy(field string, fields ...string) *RetrospectiveReviewGroupBy {
-	rrq.ctx.Fields = append([]string{field}, fields...)
-	grbuild := &RetrospectiveReviewGroupBy{build: rrq}
-	grbuild.flds = &rrq.ctx.Fields
+func (_q *RetrospectiveReviewQuery) GroupBy(field string, fields ...string) *RetrospectiveReviewGroupBy {
+	_q.ctx.Fields = append([]string{field}, fields...)
+	grbuild := &RetrospectiveReviewGroupBy{build: _q}
+	grbuild.flds = &_q.ctx.Fields
 	grbuild.label = retrospectivereview.Label
 	grbuild.scan = grbuild.Scan
 	return grbuild
@@ -474,110 +474,110 @@ func (rrq *RetrospectiveReviewQuery) GroupBy(field string, fields ...string) *Re
 //	client.RetrospectiveReview.Query().
 //		Select(retrospectivereview.FieldTenantID).
 //		Scan(ctx, &v)
-func (rrq *RetrospectiveReviewQuery) Select(fields ...string) *RetrospectiveReviewSelect {
-	rrq.ctx.Fields = append(rrq.ctx.Fields, fields...)
-	sbuild := &RetrospectiveReviewSelect{RetrospectiveReviewQuery: rrq}
+func (_q *RetrospectiveReviewQuery) Select(fields ...string) *RetrospectiveReviewSelect {
+	_q.ctx.Fields = append(_q.ctx.Fields, fields...)
+	sbuild := &RetrospectiveReviewSelect{RetrospectiveReviewQuery: _q}
 	sbuild.label = retrospectivereview.Label
-	sbuild.flds, sbuild.scan = &rrq.ctx.Fields, sbuild.Scan
+	sbuild.flds, sbuild.scan = &_q.ctx.Fields, sbuild.Scan
 	return sbuild
 }
 
 // Aggregate returns a RetrospectiveReviewSelect configured with the given aggregations.
-func (rrq *RetrospectiveReviewQuery) Aggregate(fns ...AggregateFunc) *RetrospectiveReviewSelect {
-	return rrq.Select().Aggregate(fns...)
+func (_q *RetrospectiveReviewQuery) Aggregate(fns ...AggregateFunc) *RetrospectiveReviewSelect {
+	return _q.Select().Aggregate(fns...)
 }
 
-func (rrq *RetrospectiveReviewQuery) prepareQuery(ctx context.Context) error {
-	for _, inter := range rrq.inters {
+func (_q *RetrospectiveReviewQuery) prepareQuery(ctx context.Context) error {
+	for _, inter := range _q.inters {
 		if inter == nil {
 			return fmt.Errorf("ent: uninitialized interceptor (forgotten import ent/runtime?)")
 		}
 		if trv, ok := inter.(Traverser); ok {
-			if err := trv.Traverse(ctx, rrq); err != nil {
+			if err := trv.Traverse(ctx, _q); err != nil {
 				return err
 			}
 		}
 	}
-	for _, f := range rrq.ctx.Fields {
+	for _, f := range _q.ctx.Fields {
 		if !retrospectivereview.ValidColumn(f) {
 			return &ValidationError{Name: f, err: fmt.Errorf("ent: invalid field %q for query", f)}
 		}
 	}
-	if rrq.path != nil {
-		prev, err := rrq.path(ctx)
+	if _q.path != nil {
+		prev, err := _q.path(ctx)
 		if err != nil {
 			return err
 		}
-		rrq.sql = prev
+		_q.sql = prev
 	}
 	if retrospectivereview.Policy == nil {
 		return errors.New("ent: uninitialized retrospectivereview.Policy (forgotten import ent/runtime?)")
 	}
-	if err := retrospectivereview.Policy.EvalQuery(ctx, rrq); err != nil {
+	if err := retrospectivereview.Policy.EvalQuery(ctx, _q); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (rrq *RetrospectiveReviewQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*RetrospectiveReview, error) {
+func (_q *RetrospectiveReviewQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*RetrospectiveReview, error) {
 	var (
 		nodes       = []*RetrospectiveReview{}
-		_spec       = rrq.querySpec()
+		_spec       = _q.querySpec()
 		loadedTypes = [5]bool{
-			rrq.withTenant != nil,
-			rrq.withRetrospective != nil,
-			rrq.withRequester != nil,
-			rrq.withReviewer != nil,
-			rrq.withComment != nil,
+			_q.withTenant != nil,
+			_q.withRetrospective != nil,
+			_q.withRequester != nil,
+			_q.withReviewer != nil,
+			_q.withComment != nil,
 		}
 	)
 	_spec.ScanValues = func(columns []string) ([]any, error) {
 		return (*RetrospectiveReview).scanValues(nil, columns)
 	}
 	_spec.Assign = func(columns []string, values []any) error {
-		node := &RetrospectiveReview{config: rrq.config}
+		node := &RetrospectiveReview{config: _q.config}
 		nodes = append(nodes, node)
 		node.Edges.loadedTypes = loadedTypes
 		return node.assignValues(columns, values)
 	}
-	if len(rrq.modifiers) > 0 {
-		_spec.Modifiers = rrq.modifiers
+	if len(_q.modifiers) > 0 {
+		_spec.Modifiers = _q.modifiers
 	}
 	for i := range hooks {
 		hooks[i](ctx, _spec)
 	}
-	if err := sqlgraph.QueryNodes(ctx, rrq.driver, _spec); err != nil {
+	if err := sqlgraph.QueryNodes(ctx, _q.driver, _spec); err != nil {
 		return nil, err
 	}
 	if len(nodes) == 0 {
 		return nodes, nil
 	}
-	if query := rrq.withTenant; query != nil {
-		if err := rrq.loadTenant(ctx, query, nodes, nil,
+	if query := _q.withTenant; query != nil {
+		if err := _q.loadTenant(ctx, query, nodes, nil,
 			func(n *RetrospectiveReview, e *Tenant) { n.Edges.Tenant = e }); err != nil {
 			return nil, err
 		}
 	}
-	if query := rrq.withRetrospective; query != nil {
-		if err := rrq.loadRetrospective(ctx, query, nodes, nil,
+	if query := _q.withRetrospective; query != nil {
+		if err := _q.loadRetrospective(ctx, query, nodes, nil,
 			func(n *RetrospectiveReview, e *Retrospective) { n.Edges.Retrospective = e }); err != nil {
 			return nil, err
 		}
 	}
-	if query := rrq.withRequester; query != nil {
-		if err := rrq.loadRequester(ctx, query, nodes, nil,
+	if query := _q.withRequester; query != nil {
+		if err := _q.loadRequester(ctx, query, nodes, nil,
 			func(n *RetrospectiveReview, e *User) { n.Edges.Requester = e }); err != nil {
 			return nil, err
 		}
 	}
-	if query := rrq.withReviewer; query != nil {
-		if err := rrq.loadReviewer(ctx, query, nodes, nil,
+	if query := _q.withReviewer; query != nil {
+		if err := _q.loadReviewer(ctx, query, nodes, nil,
 			func(n *RetrospectiveReview, e *User) { n.Edges.Reviewer = e }); err != nil {
 			return nil, err
 		}
 	}
-	if query := rrq.withComment; query != nil {
-		if err := rrq.loadComment(ctx, query, nodes, nil,
+	if query := _q.withComment; query != nil {
+		if err := _q.loadComment(ctx, query, nodes, nil,
 			func(n *RetrospectiveReview, e *RetrospectiveComment) { n.Edges.Comment = e }); err != nil {
 			return nil, err
 		}
@@ -585,7 +585,7 @@ func (rrq *RetrospectiveReviewQuery) sqlAll(ctx context.Context, hooks ...queryH
 	return nodes, nil
 }
 
-func (rrq *RetrospectiveReviewQuery) loadTenant(ctx context.Context, query *TenantQuery, nodes []*RetrospectiveReview, init func(*RetrospectiveReview), assign func(*RetrospectiveReview, *Tenant)) error {
+func (_q *RetrospectiveReviewQuery) loadTenant(ctx context.Context, query *TenantQuery, nodes []*RetrospectiveReview, init func(*RetrospectiveReview), assign func(*RetrospectiveReview, *Tenant)) error {
 	ids := make([]int, 0, len(nodes))
 	nodeids := make(map[int][]*RetrospectiveReview)
 	for i := range nodes {
@@ -614,7 +614,7 @@ func (rrq *RetrospectiveReviewQuery) loadTenant(ctx context.Context, query *Tena
 	}
 	return nil
 }
-func (rrq *RetrospectiveReviewQuery) loadRetrospective(ctx context.Context, query *RetrospectiveQuery, nodes []*RetrospectiveReview, init func(*RetrospectiveReview), assign func(*RetrospectiveReview, *Retrospective)) error {
+func (_q *RetrospectiveReviewQuery) loadRetrospective(ctx context.Context, query *RetrospectiveQuery, nodes []*RetrospectiveReview, init func(*RetrospectiveReview), assign func(*RetrospectiveReview, *Retrospective)) error {
 	ids := make([]uuid.UUID, 0, len(nodes))
 	nodeids := make(map[uuid.UUID][]*RetrospectiveReview)
 	for i := range nodes {
@@ -643,7 +643,7 @@ func (rrq *RetrospectiveReviewQuery) loadRetrospective(ctx context.Context, quer
 	}
 	return nil
 }
-func (rrq *RetrospectiveReviewQuery) loadRequester(ctx context.Context, query *UserQuery, nodes []*RetrospectiveReview, init func(*RetrospectiveReview), assign func(*RetrospectiveReview, *User)) error {
+func (_q *RetrospectiveReviewQuery) loadRequester(ctx context.Context, query *UserQuery, nodes []*RetrospectiveReview, init func(*RetrospectiveReview), assign func(*RetrospectiveReview, *User)) error {
 	ids := make([]uuid.UUID, 0, len(nodes))
 	nodeids := make(map[uuid.UUID][]*RetrospectiveReview)
 	for i := range nodes {
@@ -672,7 +672,7 @@ func (rrq *RetrospectiveReviewQuery) loadRequester(ctx context.Context, query *U
 	}
 	return nil
 }
-func (rrq *RetrospectiveReviewQuery) loadReviewer(ctx context.Context, query *UserQuery, nodes []*RetrospectiveReview, init func(*RetrospectiveReview), assign func(*RetrospectiveReview, *User)) error {
+func (_q *RetrospectiveReviewQuery) loadReviewer(ctx context.Context, query *UserQuery, nodes []*RetrospectiveReview, init func(*RetrospectiveReview), assign func(*RetrospectiveReview, *User)) error {
 	ids := make([]uuid.UUID, 0, len(nodes))
 	nodeids := make(map[uuid.UUID][]*RetrospectiveReview)
 	for i := range nodes {
@@ -701,7 +701,7 @@ func (rrq *RetrospectiveReviewQuery) loadReviewer(ctx context.Context, query *Us
 	}
 	return nil
 }
-func (rrq *RetrospectiveReviewQuery) loadComment(ctx context.Context, query *RetrospectiveCommentQuery, nodes []*RetrospectiveReview, init func(*RetrospectiveReview), assign func(*RetrospectiveReview, *RetrospectiveComment)) error {
+func (_q *RetrospectiveReviewQuery) loadComment(ctx context.Context, query *RetrospectiveCommentQuery, nodes []*RetrospectiveReview, init func(*RetrospectiveReview), assign func(*RetrospectiveReview, *RetrospectiveComment)) error {
 	ids := make([]uuid.UUID, 0, len(nodes))
 	nodeids := make(map[uuid.UUID][]*RetrospectiveReview)
 	for i := range nodes {
@@ -731,27 +731,27 @@ func (rrq *RetrospectiveReviewQuery) loadComment(ctx context.Context, query *Ret
 	return nil
 }
 
-func (rrq *RetrospectiveReviewQuery) sqlCount(ctx context.Context) (int, error) {
-	_spec := rrq.querySpec()
-	if len(rrq.modifiers) > 0 {
-		_spec.Modifiers = rrq.modifiers
+func (_q *RetrospectiveReviewQuery) sqlCount(ctx context.Context) (int, error) {
+	_spec := _q.querySpec()
+	if len(_q.modifiers) > 0 {
+		_spec.Modifiers = _q.modifiers
 	}
-	_spec.Node.Columns = rrq.ctx.Fields
-	if len(rrq.ctx.Fields) > 0 {
-		_spec.Unique = rrq.ctx.Unique != nil && *rrq.ctx.Unique
+	_spec.Node.Columns = _q.ctx.Fields
+	if len(_q.ctx.Fields) > 0 {
+		_spec.Unique = _q.ctx.Unique != nil && *_q.ctx.Unique
 	}
-	return sqlgraph.CountNodes(ctx, rrq.driver, _spec)
+	return sqlgraph.CountNodes(ctx, _q.driver, _spec)
 }
 
-func (rrq *RetrospectiveReviewQuery) querySpec() *sqlgraph.QuerySpec {
+func (_q *RetrospectiveReviewQuery) querySpec() *sqlgraph.QuerySpec {
 	_spec := sqlgraph.NewQuerySpec(retrospectivereview.Table, retrospectivereview.Columns, sqlgraph.NewFieldSpec(retrospectivereview.FieldID, field.TypeUUID))
-	_spec.From = rrq.sql
-	if unique := rrq.ctx.Unique; unique != nil {
+	_spec.From = _q.sql
+	if unique := _q.ctx.Unique; unique != nil {
 		_spec.Unique = *unique
-	} else if rrq.path != nil {
+	} else if _q.path != nil {
 		_spec.Unique = true
 	}
-	if fields := rrq.ctx.Fields; len(fields) > 0 {
+	if fields := _q.ctx.Fields; len(fields) > 0 {
 		_spec.Node.Columns = make([]string, 0, len(fields))
 		_spec.Node.Columns = append(_spec.Node.Columns, retrospectivereview.FieldID)
 		for i := range fields {
@@ -759,36 +759,36 @@ func (rrq *RetrospectiveReviewQuery) querySpec() *sqlgraph.QuerySpec {
 				_spec.Node.Columns = append(_spec.Node.Columns, fields[i])
 			}
 		}
-		if rrq.withTenant != nil {
+		if _q.withTenant != nil {
 			_spec.Node.AddColumnOnce(retrospectivereview.FieldTenantID)
 		}
-		if rrq.withRetrospective != nil {
+		if _q.withRetrospective != nil {
 			_spec.Node.AddColumnOnce(retrospectivereview.FieldRetrospectiveID)
 		}
-		if rrq.withRequester != nil {
+		if _q.withRequester != nil {
 			_spec.Node.AddColumnOnce(retrospectivereview.FieldRequesterID)
 		}
-		if rrq.withReviewer != nil {
+		if _q.withReviewer != nil {
 			_spec.Node.AddColumnOnce(retrospectivereview.FieldReviewerID)
 		}
-		if rrq.withComment != nil {
+		if _q.withComment != nil {
 			_spec.Node.AddColumnOnce(retrospectivereview.FieldCommentID)
 		}
 	}
-	if ps := rrq.predicates; len(ps) > 0 {
+	if ps := _q.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {
 				ps[i](selector)
 			}
 		}
 	}
-	if limit := rrq.ctx.Limit; limit != nil {
+	if limit := _q.ctx.Limit; limit != nil {
 		_spec.Limit = *limit
 	}
-	if offset := rrq.ctx.Offset; offset != nil {
+	if offset := _q.ctx.Offset; offset != nil {
 		_spec.Offset = *offset
 	}
-	if ps := rrq.order; len(ps) > 0 {
+	if ps := _q.order; len(ps) > 0 {
 		_spec.Order = func(selector *sql.Selector) {
 			for i := range ps {
 				ps[i](selector)
@@ -798,45 +798,45 @@ func (rrq *RetrospectiveReviewQuery) querySpec() *sqlgraph.QuerySpec {
 	return _spec
 }
 
-func (rrq *RetrospectiveReviewQuery) sqlQuery(ctx context.Context) *sql.Selector {
-	builder := sql.Dialect(rrq.driver.Dialect())
+func (_q *RetrospectiveReviewQuery) sqlQuery(ctx context.Context) *sql.Selector {
+	builder := sql.Dialect(_q.driver.Dialect())
 	t1 := builder.Table(retrospectivereview.Table)
-	columns := rrq.ctx.Fields
+	columns := _q.ctx.Fields
 	if len(columns) == 0 {
 		columns = retrospectivereview.Columns
 	}
 	selector := builder.Select(t1.Columns(columns...)...).From(t1)
-	if rrq.sql != nil {
-		selector = rrq.sql
+	if _q.sql != nil {
+		selector = _q.sql
 		selector.Select(selector.Columns(columns...)...)
 	}
-	if rrq.ctx.Unique != nil && *rrq.ctx.Unique {
+	if _q.ctx.Unique != nil && *_q.ctx.Unique {
 		selector.Distinct()
 	}
-	for _, m := range rrq.modifiers {
+	for _, m := range _q.modifiers {
 		m(selector)
 	}
-	for _, p := range rrq.predicates {
+	for _, p := range _q.predicates {
 		p(selector)
 	}
-	for _, p := range rrq.order {
+	for _, p := range _q.order {
 		p(selector)
 	}
-	if offset := rrq.ctx.Offset; offset != nil {
+	if offset := _q.ctx.Offset; offset != nil {
 		// limit is mandatory for offset clause. We start
 		// with default value, and override it below if needed.
 		selector.Offset(*offset).Limit(math.MaxInt32)
 	}
-	if limit := rrq.ctx.Limit; limit != nil {
+	if limit := _q.ctx.Limit; limit != nil {
 		selector.Limit(*limit)
 	}
 	return selector
 }
 
 // Modify adds a query modifier for attaching custom logic to queries.
-func (rrq *RetrospectiveReviewQuery) Modify(modifiers ...func(s *sql.Selector)) *RetrospectiveReviewSelect {
-	rrq.modifiers = append(rrq.modifiers, modifiers...)
-	return rrq.Select()
+func (_q *RetrospectiveReviewQuery) Modify(modifiers ...func(s *sql.Selector)) *RetrospectiveReviewSelect {
+	_q.modifiers = append(_q.modifiers, modifiers...)
+	return _q.Select()
 }
 
 // RetrospectiveReviewGroupBy is the group-by builder for RetrospectiveReview entities.
@@ -846,41 +846,41 @@ type RetrospectiveReviewGroupBy struct {
 }
 
 // Aggregate adds the given aggregation functions to the group-by query.
-func (rrgb *RetrospectiveReviewGroupBy) Aggregate(fns ...AggregateFunc) *RetrospectiveReviewGroupBy {
-	rrgb.fns = append(rrgb.fns, fns...)
-	return rrgb
+func (_g *RetrospectiveReviewGroupBy) Aggregate(fns ...AggregateFunc) *RetrospectiveReviewGroupBy {
+	_g.fns = append(_g.fns, fns...)
+	return _g
 }
 
 // Scan applies the selector query and scans the result into the given value.
-func (rrgb *RetrospectiveReviewGroupBy) Scan(ctx context.Context, v any) error {
-	ctx = setContextOp(ctx, rrgb.build.ctx, ent.OpQueryGroupBy)
-	if err := rrgb.build.prepareQuery(ctx); err != nil {
+func (_g *RetrospectiveReviewGroupBy) Scan(ctx context.Context, v any) error {
+	ctx = setContextOp(ctx, _g.build.ctx, ent.OpQueryGroupBy)
+	if err := _g.build.prepareQuery(ctx); err != nil {
 		return err
 	}
-	return scanWithInterceptors[*RetrospectiveReviewQuery, *RetrospectiveReviewGroupBy](ctx, rrgb.build, rrgb, rrgb.build.inters, v)
+	return scanWithInterceptors[*RetrospectiveReviewQuery, *RetrospectiveReviewGroupBy](ctx, _g.build, _g, _g.build.inters, v)
 }
 
-func (rrgb *RetrospectiveReviewGroupBy) sqlScan(ctx context.Context, root *RetrospectiveReviewQuery, v any) error {
+func (_g *RetrospectiveReviewGroupBy) sqlScan(ctx context.Context, root *RetrospectiveReviewQuery, v any) error {
 	selector := root.sqlQuery(ctx).Select()
-	aggregation := make([]string, 0, len(rrgb.fns))
-	for _, fn := range rrgb.fns {
+	aggregation := make([]string, 0, len(_g.fns))
+	for _, fn := range _g.fns {
 		aggregation = append(aggregation, fn(selector))
 	}
 	if len(selector.SelectedColumns()) == 0 {
-		columns := make([]string, 0, len(*rrgb.flds)+len(rrgb.fns))
-		for _, f := range *rrgb.flds {
+		columns := make([]string, 0, len(*_g.flds)+len(_g.fns))
+		for _, f := range *_g.flds {
 			columns = append(columns, selector.C(f))
 		}
 		columns = append(columns, aggregation...)
 		selector.Select(columns...)
 	}
-	selector.GroupBy(selector.Columns(*rrgb.flds...)...)
+	selector.GroupBy(selector.Columns(*_g.flds...)...)
 	if err := selector.Err(); err != nil {
 		return err
 	}
 	rows := &sql.Rows{}
 	query, args := selector.Query()
-	if err := rrgb.build.driver.Query(ctx, query, args, rows); err != nil {
+	if err := _g.build.driver.Query(ctx, query, args, rows); err != nil {
 		return err
 	}
 	defer rows.Close()
@@ -894,27 +894,27 @@ type RetrospectiveReviewSelect struct {
 }
 
 // Aggregate adds the given aggregation functions to the selector query.
-func (rrs *RetrospectiveReviewSelect) Aggregate(fns ...AggregateFunc) *RetrospectiveReviewSelect {
-	rrs.fns = append(rrs.fns, fns...)
-	return rrs
+func (_s *RetrospectiveReviewSelect) Aggregate(fns ...AggregateFunc) *RetrospectiveReviewSelect {
+	_s.fns = append(_s.fns, fns...)
+	return _s
 }
 
 // Scan applies the selector query and scans the result into the given value.
-func (rrs *RetrospectiveReviewSelect) Scan(ctx context.Context, v any) error {
-	ctx = setContextOp(ctx, rrs.ctx, ent.OpQuerySelect)
-	if err := rrs.prepareQuery(ctx); err != nil {
+func (_s *RetrospectiveReviewSelect) Scan(ctx context.Context, v any) error {
+	ctx = setContextOp(ctx, _s.ctx, ent.OpQuerySelect)
+	if err := _s.prepareQuery(ctx); err != nil {
 		return err
 	}
-	return scanWithInterceptors[*RetrospectiveReviewQuery, *RetrospectiveReviewSelect](ctx, rrs.RetrospectiveReviewQuery, rrs, rrs.inters, v)
+	return scanWithInterceptors[*RetrospectiveReviewQuery, *RetrospectiveReviewSelect](ctx, _s.RetrospectiveReviewQuery, _s, _s.inters, v)
 }
 
-func (rrs *RetrospectiveReviewSelect) sqlScan(ctx context.Context, root *RetrospectiveReviewQuery, v any) error {
+func (_s *RetrospectiveReviewSelect) sqlScan(ctx context.Context, root *RetrospectiveReviewQuery, v any) error {
 	selector := root.sqlQuery(ctx)
-	aggregation := make([]string, 0, len(rrs.fns))
-	for _, fn := range rrs.fns {
+	aggregation := make([]string, 0, len(_s.fns))
+	for _, fn := range _s.fns {
 		aggregation = append(aggregation, fn(selector))
 	}
-	switch n := len(*rrs.selector.flds); {
+	switch n := len(*_s.selector.flds); {
 	case n == 0 && len(aggregation) > 0:
 		selector.Select(aggregation...)
 	case n != 0 && len(aggregation) > 0:
@@ -922,7 +922,7 @@ func (rrs *RetrospectiveReviewSelect) sqlScan(ctx context.Context, root *Retrosp
 	}
 	rows := &sql.Rows{}
 	query, args := selector.Query()
-	if err := rrs.driver.Query(ctx, query, args, rows); err != nil {
+	if err := _s.driver.Query(ctx, query, args, rows); err != nil {
 		return err
 	}
 	defer rows.Close()
@@ -930,7 +930,7 @@ func (rrs *RetrospectiveReviewSelect) sqlScan(ctx context.Context, root *Retrosp
 }
 
 // Modify adds a query modifier for attaching custom logic to queries.
-func (rrs *RetrospectiveReviewSelect) Modify(modifiers ...func(s *sql.Selector)) *RetrospectiveReviewSelect {
-	rrs.modifiers = append(rrs.modifiers, modifiers...)
-	return rrs
+func (_s *RetrospectiveReviewSelect) Modify(modifiers ...func(s *sql.Selector)) *RetrospectiveReviewSelect {
+	_s.modifiers = append(_s.modifiers, modifiers...)
+	return _s
 }

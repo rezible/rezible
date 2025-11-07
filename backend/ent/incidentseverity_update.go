@@ -27,211 +27,211 @@ type IncidentSeverityUpdate struct {
 }
 
 // Where appends a list predicates to the IncidentSeverityUpdate builder.
-func (isu *IncidentSeverityUpdate) Where(ps ...predicate.IncidentSeverity) *IncidentSeverityUpdate {
-	isu.mutation.Where(ps...)
-	return isu
+func (_u *IncidentSeverityUpdate) Where(ps ...predicate.IncidentSeverity) *IncidentSeverityUpdate {
+	_u.mutation.Where(ps...)
+	return _u
 }
 
 // SetArchiveTime sets the "archive_time" field.
-func (isu *IncidentSeverityUpdate) SetArchiveTime(t time.Time) *IncidentSeverityUpdate {
-	isu.mutation.SetArchiveTime(t)
-	return isu
+func (_u *IncidentSeverityUpdate) SetArchiveTime(v time.Time) *IncidentSeverityUpdate {
+	_u.mutation.SetArchiveTime(v)
+	return _u
 }
 
 // SetNillableArchiveTime sets the "archive_time" field if the given value is not nil.
-func (isu *IncidentSeverityUpdate) SetNillableArchiveTime(t *time.Time) *IncidentSeverityUpdate {
-	if t != nil {
-		isu.SetArchiveTime(*t)
+func (_u *IncidentSeverityUpdate) SetNillableArchiveTime(v *time.Time) *IncidentSeverityUpdate {
+	if v != nil {
+		_u.SetArchiveTime(*v)
 	}
-	return isu
+	return _u
 }
 
 // ClearArchiveTime clears the value of the "archive_time" field.
-func (isu *IncidentSeverityUpdate) ClearArchiveTime() *IncidentSeverityUpdate {
-	isu.mutation.ClearArchiveTime()
-	return isu
+func (_u *IncidentSeverityUpdate) ClearArchiveTime() *IncidentSeverityUpdate {
+	_u.mutation.ClearArchiveTime()
+	return _u
 }
 
 // SetProviderID sets the "provider_id" field.
-func (isu *IncidentSeverityUpdate) SetProviderID(s string) *IncidentSeverityUpdate {
-	isu.mutation.SetProviderID(s)
-	return isu
+func (_u *IncidentSeverityUpdate) SetProviderID(v string) *IncidentSeverityUpdate {
+	_u.mutation.SetProviderID(v)
+	return _u
 }
 
 // SetNillableProviderID sets the "provider_id" field if the given value is not nil.
-func (isu *IncidentSeverityUpdate) SetNillableProviderID(s *string) *IncidentSeverityUpdate {
-	if s != nil {
-		isu.SetProviderID(*s)
+func (_u *IncidentSeverityUpdate) SetNillableProviderID(v *string) *IncidentSeverityUpdate {
+	if v != nil {
+		_u.SetProviderID(*v)
 	}
-	return isu
+	return _u
 }
 
 // ClearProviderID clears the value of the "provider_id" field.
-func (isu *IncidentSeverityUpdate) ClearProviderID() *IncidentSeverityUpdate {
-	isu.mutation.ClearProviderID()
-	return isu
+func (_u *IncidentSeverityUpdate) ClearProviderID() *IncidentSeverityUpdate {
+	_u.mutation.ClearProviderID()
+	return _u
 }
 
 // SetName sets the "name" field.
-func (isu *IncidentSeverityUpdate) SetName(s string) *IncidentSeverityUpdate {
-	isu.mutation.SetName(s)
-	return isu
+func (_u *IncidentSeverityUpdate) SetName(v string) *IncidentSeverityUpdate {
+	_u.mutation.SetName(v)
+	return _u
 }
 
 // SetNillableName sets the "name" field if the given value is not nil.
-func (isu *IncidentSeverityUpdate) SetNillableName(s *string) *IncidentSeverityUpdate {
-	if s != nil {
-		isu.SetName(*s)
+func (_u *IncidentSeverityUpdate) SetNillableName(v *string) *IncidentSeverityUpdate {
+	if v != nil {
+		_u.SetName(*v)
 	}
-	return isu
+	return _u
 }
 
 // SetRank sets the "rank" field.
-func (isu *IncidentSeverityUpdate) SetRank(i int) *IncidentSeverityUpdate {
-	isu.mutation.ResetRank()
-	isu.mutation.SetRank(i)
-	return isu
+func (_u *IncidentSeverityUpdate) SetRank(v int) *IncidentSeverityUpdate {
+	_u.mutation.ResetRank()
+	_u.mutation.SetRank(v)
+	return _u
 }
 
 // SetNillableRank sets the "rank" field if the given value is not nil.
-func (isu *IncidentSeverityUpdate) SetNillableRank(i *int) *IncidentSeverityUpdate {
-	if i != nil {
-		isu.SetRank(*i)
+func (_u *IncidentSeverityUpdate) SetNillableRank(v *int) *IncidentSeverityUpdate {
+	if v != nil {
+		_u.SetRank(*v)
 	}
-	return isu
+	return _u
 }
 
-// AddRank adds i to the "rank" field.
-func (isu *IncidentSeverityUpdate) AddRank(i int) *IncidentSeverityUpdate {
-	isu.mutation.AddRank(i)
-	return isu
+// AddRank adds value to the "rank" field.
+func (_u *IncidentSeverityUpdate) AddRank(v int) *IncidentSeverityUpdate {
+	_u.mutation.AddRank(v)
+	return _u
 }
 
 // SetColor sets the "color" field.
-func (isu *IncidentSeverityUpdate) SetColor(s string) *IncidentSeverityUpdate {
-	isu.mutation.SetColor(s)
-	return isu
+func (_u *IncidentSeverityUpdate) SetColor(v string) *IncidentSeverityUpdate {
+	_u.mutation.SetColor(v)
+	return _u
 }
 
 // SetNillableColor sets the "color" field if the given value is not nil.
-func (isu *IncidentSeverityUpdate) SetNillableColor(s *string) *IncidentSeverityUpdate {
-	if s != nil {
-		isu.SetColor(*s)
+func (_u *IncidentSeverityUpdate) SetNillableColor(v *string) *IncidentSeverityUpdate {
+	if v != nil {
+		_u.SetColor(*v)
 	}
-	return isu
+	return _u
 }
 
 // ClearColor clears the value of the "color" field.
-func (isu *IncidentSeverityUpdate) ClearColor() *IncidentSeverityUpdate {
-	isu.mutation.ClearColor()
-	return isu
+func (_u *IncidentSeverityUpdate) ClearColor() *IncidentSeverityUpdate {
+	_u.mutation.ClearColor()
+	return _u
 }
 
 // SetDescription sets the "description" field.
-func (isu *IncidentSeverityUpdate) SetDescription(s string) *IncidentSeverityUpdate {
-	isu.mutation.SetDescription(s)
-	return isu
+func (_u *IncidentSeverityUpdate) SetDescription(v string) *IncidentSeverityUpdate {
+	_u.mutation.SetDescription(v)
+	return _u
 }
 
 // SetNillableDescription sets the "description" field if the given value is not nil.
-func (isu *IncidentSeverityUpdate) SetNillableDescription(s *string) *IncidentSeverityUpdate {
-	if s != nil {
-		isu.SetDescription(*s)
+func (_u *IncidentSeverityUpdate) SetNillableDescription(v *string) *IncidentSeverityUpdate {
+	if v != nil {
+		_u.SetDescription(*v)
 	}
-	return isu
+	return _u
 }
 
 // ClearDescription clears the value of the "description" field.
-func (isu *IncidentSeverityUpdate) ClearDescription() *IncidentSeverityUpdate {
-	isu.mutation.ClearDescription()
-	return isu
+func (_u *IncidentSeverityUpdate) ClearDescription() *IncidentSeverityUpdate {
+	_u.mutation.ClearDescription()
+	return _u
 }
 
 // AddIncidentIDs adds the "incidents" edge to the Incident entity by IDs.
-func (isu *IncidentSeverityUpdate) AddIncidentIDs(ids ...uuid.UUID) *IncidentSeverityUpdate {
-	isu.mutation.AddIncidentIDs(ids...)
-	return isu
+func (_u *IncidentSeverityUpdate) AddIncidentIDs(ids ...uuid.UUID) *IncidentSeverityUpdate {
+	_u.mutation.AddIncidentIDs(ids...)
+	return _u
 }
 
 // AddIncidents adds the "incidents" edges to the Incident entity.
-func (isu *IncidentSeverityUpdate) AddIncidents(i ...*Incident) *IncidentSeverityUpdate {
-	ids := make([]uuid.UUID, len(i))
-	for j := range i {
-		ids[j] = i[j].ID
+func (_u *IncidentSeverityUpdate) AddIncidents(v ...*Incident) *IncidentSeverityUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
 	}
-	return isu.AddIncidentIDs(ids...)
+	return _u.AddIncidentIDs(ids...)
 }
 
 // AddDebriefQuestionIDs adds the "debrief_questions" edge to the IncidentDebriefQuestion entity by IDs.
-func (isu *IncidentSeverityUpdate) AddDebriefQuestionIDs(ids ...uuid.UUID) *IncidentSeverityUpdate {
-	isu.mutation.AddDebriefQuestionIDs(ids...)
-	return isu
+func (_u *IncidentSeverityUpdate) AddDebriefQuestionIDs(ids ...uuid.UUID) *IncidentSeverityUpdate {
+	_u.mutation.AddDebriefQuestionIDs(ids...)
+	return _u
 }
 
 // AddDebriefQuestions adds the "debrief_questions" edges to the IncidentDebriefQuestion entity.
-func (isu *IncidentSeverityUpdate) AddDebriefQuestions(i ...*IncidentDebriefQuestion) *IncidentSeverityUpdate {
-	ids := make([]uuid.UUID, len(i))
-	for j := range i {
-		ids[j] = i[j].ID
+func (_u *IncidentSeverityUpdate) AddDebriefQuestions(v ...*IncidentDebriefQuestion) *IncidentSeverityUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
 	}
-	return isu.AddDebriefQuestionIDs(ids...)
+	return _u.AddDebriefQuestionIDs(ids...)
 }
 
 // Mutation returns the IncidentSeverityMutation object of the builder.
-func (isu *IncidentSeverityUpdate) Mutation() *IncidentSeverityMutation {
-	return isu.mutation
+func (_u *IncidentSeverityUpdate) Mutation() *IncidentSeverityMutation {
+	return _u.mutation
 }
 
 // ClearIncidents clears all "incidents" edges to the Incident entity.
-func (isu *IncidentSeverityUpdate) ClearIncidents() *IncidentSeverityUpdate {
-	isu.mutation.ClearIncidents()
-	return isu
+func (_u *IncidentSeverityUpdate) ClearIncidents() *IncidentSeverityUpdate {
+	_u.mutation.ClearIncidents()
+	return _u
 }
 
 // RemoveIncidentIDs removes the "incidents" edge to Incident entities by IDs.
-func (isu *IncidentSeverityUpdate) RemoveIncidentIDs(ids ...uuid.UUID) *IncidentSeverityUpdate {
-	isu.mutation.RemoveIncidentIDs(ids...)
-	return isu
+func (_u *IncidentSeverityUpdate) RemoveIncidentIDs(ids ...uuid.UUID) *IncidentSeverityUpdate {
+	_u.mutation.RemoveIncidentIDs(ids...)
+	return _u
 }
 
 // RemoveIncidents removes "incidents" edges to Incident entities.
-func (isu *IncidentSeverityUpdate) RemoveIncidents(i ...*Incident) *IncidentSeverityUpdate {
-	ids := make([]uuid.UUID, len(i))
-	for j := range i {
-		ids[j] = i[j].ID
+func (_u *IncidentSeverityUpdate) RemoveIncidents(v ...*Incident) *IncidentSeverityUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
 	}
-	return isu.RemoveIncidentIDs(ids...)
+	return _u.RemoveIncidentIDs(ids...)
 }
 
 // ClearDebriefQuestions clears all "debrief_questions" edges to the IncidentDebriefQuestion entity.
-func (isu *IncidentSeverityUpdate) ClearDebriefQuestions() *IncidentSeverityUpdate {
-	isu.mutation.ClearDebriefQuestions()
-	return isu
+func (_u *IncidentSeverityUpdate) ClearDebriefQuestions() *IncidentSeverityUpdate {
+	_u.mutation.ClearDebriefQuestions()
+	return _u
 }
 
 // RemoveDebriefQuestionIDs removes the "debrief_questions" edge to IncidentDebriefQuestion entities by IDs.
-func (isu *IncidentSeverityUpdate) RemoveDebriefQuestionIDs(ids ...uuid.UUID) *IncidentSeverityUpdate {
-	isu.mutation.RemoveDebriefQuestionIDs(ids...)
-	return isu
+func (_u *IncidentSeverityUpdate) RemoveDebriefQuestionIDs(ids ...uuid.UUID) *IncidentSeverityUpdate {
+	_u.mutation.RemoveDebriefQuestionIDs(ids...)
+	return _u
 }
 
 // RemoveDebriefQuestions removes "debrief_questions" edges to IncidentDebriefQuestion entities.
-func (isu *IncidentSeverityUpdate) RemoveDebriefQuestions(i ...*IncidentDebriefQuestion) *IncidentSeverityUpdate {
-	ids := make([]uuid.UUID, len(i))
-	for j := range i {
-		ids[j] = i[j].ID
+func (_u *IncidentSeverityUpdate) RemoveDebriefQuestions(v ...*IncidentDebriefQuestion) *IncidentSeverityUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
 	}
-	return isu.RemoveDebriefQuestionIDs(ids...)
+	return _u.RemoveDebriefQuestionIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
-func (isu *IncidentSeverityUpdate) Save(ctx context.Context) (int, error) {
-	return withHooks(ctx, isu.sqlSave, isu.mutation, isu.hooks)
+func (_u *IncidentSeverityUpdate) Save(ctx context.Context) (int, error) {
+	return withHooks(ctx, _u.sqlSave, _u.mutation, _u.hooks)
 }
 
 // SaveX is like Save, but panics if an error occurs.
-func (isu *IncidentSeverityUpdate) SaveX(ctx context.Context) int {
-	affected, err := isu.Save(ctx)
+func (_u *IncidentSeverityUpdate) SaveX(ctx context.Context) int {
+	affected, err := _u.Save(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -239,78 +239,78 @@ func (isu *IncidentSeverityUpdate) SaveX(ctx context.Context) int {
 }
 
 // Exec executes the query.
-func (isu *IncidentSeverityUpdate) Exec(ctx context.Context) error {
-	_, err := isu.Save(ctx)
+func (_u *IncidentSeverityUpdate) Exec(ctx context.Context) error {
+	_, err := _u.Save(ctx)
 	return err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (isu *IncidentSeverityUpdate) ExecX(ctx context.Context) {
-	if err := isu.Exec(ctx); err != nil {
+func (_u *IncidentSeverityUpdate) ExecX(ctx context.Context) {
+	if err := _u.Exec(ctx); err != nil {
 		panic(err)
 	}
 }
 
 // check runs all checks and user-defined validators on the builder.
-func (isu *IncidentSeverityUpdate) check() error {
-	if isu.mutation.TenantCleared() && len(isu.mutation.TenantIDs()) > 0 {
+func (_u *IncidentSeverityUpdate) check() error {
+	if _u.mutation.TenantCleared() && len(_u.mutation.TenantIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "IncidentSeverity.tenant"`)
 	}
 	return nil
 }
 
 // Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
-func (isu *IncidentSeverityUpdate) Modify(modifiers ...func(u *sql.UpdateBuilder)) *IncidentSeverityUpdate {
-	isu.modifiers = append(isu.modifiers, modifiers...)
-	return isu
+func (_u *IncidentSeverityUpdate) Modify(modifiers ...func(u *sql.UpdateBuilder)) *IncidentSeverityUpdate {
+	_u.modifiers = append(_u.modifiers, modifiers...)
+	return _u
 }
 
-func (isu *IncidentSeverityUpdate) sqlSave(ctx context.Context) (n int, err error) {
-	if err := isu.check(); err != nil {
-		return n, err
+func (_u *IncidentSeverityUpdate) sqlSave(ctx context.Context) (_node int, err error) {
+	if err := _u.check(); err != nil {
+		return _node, err
 	}
 	_spec := sqlgraph.NewUpdateSpec(incidentseverity.Table, incidentseverity.Columns, sqlgraph.NewFieldSpec(incidentseverity.FieldID, field.TypeUUID))
-	if ps := isu.mutation.predicates; len(ps) > 0 {
+	if ps := _u.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {
 				ps[i](selector)
 			}
 		}
 	}
-	if value, ok := isu.mutation.ArchiveTime(); ok {
+	if value, ok := _u.mutation.ArchiveTime(); ok {
 		_spec.SetField(incidentseverity.FieldArchiveTime, field.TypeTime, value)
 	}
-	if isu.mutation.ArchiveTimeCleared() {
+	if _u.mutation.ArchiveTimeCleared() {
 		_spec.ClearField(incidentseverity.FieldArchiveTime, field.TypeTime)
 	}
-	if value, ok := isu.mutation.ProviderID(); ok {
+	if value, ok := _u.mutation.ProviderID(); ok {
 		_spec.SetField(incidentseverity.FieldProviderID, field.TypeString, value)
 	}
-	if isu.mutation.ProviderIDCleared() {
+	if _u.mutation.ProviderIDCleared() {
 		_spec.ClearField(incidentseverity.FieldProviderID, field.TypeString)
 	}
-	if value, ok := isu.mutation.Name(); ok {
+	if value, ok := _u.mutation.Name(); ok {
 		_spec.SetField(incidentseverity.FieldName, field.TypeString, value)
 	}
-	if value, ok := isu.mutation.Rank(); ok {
+	if value, ok := _u.mutation.Rank(); ok {
 		_spec.SetField(incidentseverity.FieldRank, field.TypeInt, value)
 	}
-	if value, ok := isu.mutation.AddedRank(); ok {
+	if value, ok := _u.mutation.AddedRank(); ok {
 		_spec.AddField(incidentseverity.FieldRank, field.TypeInt, value)
 	}
-	if value, ok := isu.mutation.Color(); ok {
+	if value, ok := _u.mutation.Color(); ok {
 		_spec.SetField(incidentseverity.FieldColor, field.TypeString, value)
 	}
-	if isu.mutation.ColorCleared() {
+	if _u.mutation.ColorCleared() {
 		_spec.ClearField(incidentseverity.FieldColor, field.TypeString)
 	}
-	if value, ok := isu.mutation.Description(); ok {
+	if value, ok := _u.mutation.Description(); ok {
 		_spec.SetField(incidentseverity.FieldDescription, field.TypeString, value)
 	}
-	if isu.mutation.DescriptionCleared() {
+	if _u.mutation.DescriptionCleared() {
 		_spec.ClearField(incidentseverity.FieldDescription, field.TypeString)
 	}
-	if isu.mutation.IncidentsCleared() {
+	if _u.mutation.IncidentsCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: true,
@@ -323,7 +323,7 @@ func (isu *IncidentSeverityUpdate) sqlSave(ctx context.Context) (n int, err erro
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := isu.mutation.RemovedIncidentsIDs(); len(nodes) > 0 && !isu.mutation.IncidentsCleared() {
+	if nodes := _u.mutation.RemovedIncidentsIDs(); len(nodes) > 0 && !_u.mutation.IncidentsCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: true,
@@ -339,7 +339,7 @@ func (isu *IncidentSeverityUpdate) sqlSave(ctx context.Context) (n int, err erro
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := isu.mutation.IncidentsIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.IncidentsIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: true,
@@ -355,7 +355,7 @@ func (isu *IncidentSeverityUpdate) sqlSave(ctx context.Context) (n int, err erro
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if isu.mutation.DebriefQuestionsCleared() {
+	if _u.mutation.DebriefQuestionsCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
 			Inverse: true,
@@ -368,7 +368,7 @@ func (isu *IncidentSeverityUpdate) sqlSave(ctx context.Context) (n int, err erro
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := isu.mutation.RemovedDebriefQuestionsIDs(); len(nodes) > 0 && !isu.mutation.DebriefQuestionsCleared() {
+	if nodes := _u.mutation.RemovedDebriefQuestionsIDs(); len(nodes) > 0 && !_u.mutation.DebriefQuestionsCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
 			Inverse: true,
@@ -384,7 +384,7 @@ func (isu *IncidentSeverityUpdate) sqlSave(ctx context.Context) (n int, err erro
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := isu.mutation.DebriefQuestionsIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.DebriefQuestionsIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
 			Inverse: true,
@@ -400,8 +400,8 @@ func (isu *IncidentSeverityUpdate) sqlSave(ctx context.Context) (n int, err erro
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	_spec.AddModifiers(isu.modifiers...)
-	if n, err = sqlgraph.UpdateNodes(ctx, isu.driver, _spec); err != nil {
+	_spec.AddModifiers(_u.modifiers...)
+	if _node, err = sqlgraph.UpdateNodes(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{incidentseverity.Label}
 		} else if sqlgraph.IsConstraintError(err) {
@@ -409,8 +409,8 @@ func (isu *IncidentSeverityUpdate) sqlSave(ctx context.Context) (n int, err erro
 		}
 		return 0, err
 	}
-	isu.mutation.done = true
-	return n, nil
+	_u.mutation.done = true
+	return _node, nil
 }
 
 // IncidentSeverityUpdateOne is the builder for updating a single IncidentSeverity entity.
@@ -423,218 +423,218 @@ type IncidentSeverityUpdateOne struct {
 }
 
 // SetArchiveTime sets the "archive_time" field.
-func (isuo *IncidentSeverityUpdateOne) SetArchiveTime(t time.Time) *IncidentSeverityUpdateOne {
-	isuo.mutation.SetArchiveTime(t)
-	return isuo
+func (_u *IncidentSeverityUpdateOne) SetArchiveTime(v time.Time) *IncidentSeverityUpdateOne {
+	_u.mutation.SetArchiveTime(v)
+	return _u
 }
 
 // SetNillableArchiveTime sets the "archive_time" field if the given value is not nil.
-func (isuo *IncidentSeverityUpdateOne) SetNillableArchiveTime(t *time.Time) *IncidentSeverityUpdateOne {
-	if t != nil {
-		isuo.SetArchiveTime(*t)
+func (_u *IncidentSeverityUpdateOne) SetNillableArchiveTime(v *time.Time) *IncidentSeverityUpdateOne {
+	if v != nil {
+		_u.SetArchiveTime(*v)
 	}
-	return isuo
+	return _u
 }
 
 // ClearArchiveTime clears the value of the "archive_time" field.
-func (isuo *IncidentSeverityUpdateOne) ClearArchiveTime() *IncidentSeverityUpdateOne {
-	isuo.mutation.ClearArchiveTime()
-	return isuo
+func (_u *IncidentSeverityUpdateOne) ClearArchiveTime() *IncidentSeverityUpdateOne {
+	_u.mutation.ClearArchiveTime()
+	return _u
 }
 
 // SetProviderID sets the "provider_id" field.
-func (isuo *IncidentSeverityUpdateOne) SetProviderID(s string) *IncidentSeverityUpdateOne {
-	isuo.mutation.SetProviderID(s)
-	return isuo
+func (_u *IncidentSeverityUpdateOne) SetProviderID(v string) *IncidentSeverityUpdateOne {
+	_u.mutation.SetProviderID(v)
+	return _u
 }
 
 // SetNillableProviderID sets the "provider_id" field if the given value is not nil.
-func (isuo *IncidentSeverityUpdateOne) SetNillableProviderID(s *string) *IncidentSeverityUpdateOne {
-	if s != nil {
-		isuo.SetProviderID(*s)
+func (_u *IncidentSeverityUpdateOne) SetNillableProviderID(v *string) *IncidentSeverityUpdateOne {
+	if v != nil {
+		_u.SetProviderID(*v)
 	}
-	return isuo
+	return _u
 }
 
 // ClearProviderID clears the value of the "provider_id" field.
-func (isuo *IncidentSeverityUpdateOne) ClearProviderID() *IncidentSeverityUpdateOne {
-	isuo.mutation.ClearProviderID()
-	return isuo
+func (_u *IncidentSeverityUpdateOne) ClearProviderID() *IncidentSeverityUpdateOne {
+	_u.mutation.ClearProviderID()
+	return _u
 }
 
 // SetName sets the "name" field.
-func (isuo *IncidentSeverityUpdateOne) SetName(s string) *IncidentSeverityUpdateOne {
-	isuo.mutation.SetName(s)
-	return isuo
+func (_u *IncidentSeverityUpdateOne) SetName(v string) *IncidentSeverityUpdateOne {
+	_u.mutation.SetName(v)
+	return _u
 }
 
 // SetNillableName sets the "name" field if the given value is not nil.
-func (isuo *IncidentSeverityUpdateOne) SetNillableName(s *string) *IncidentSeverityUpdateOne {
-	if s != nil {
-		isuo.SetName(*s)
+func (_u *IncidentSeverityUpdateOne) SetNillableName(v *string) *IncidentSeverityUpdateOne {
+	if v != nil {
+		_u.SetName(*v)
 	}
-	return isuo
+	return _u
 }
 
 // SetRank sets the "rank" field.
-func (isuo *IncidentSeverityUpdateOne) SetRank(i int) *IncidentSeverityUpdateOne {
-	isuo.mutation.ResetRank()
-	isuo.mutation.SetRank(i)
-	return isuo
+func (_u *IncidentSeverityUpdateOne) SetRank(v int) *IncidentSeverityUpdateOne {
+	_u.mutation.ResetRank()
+	_u.mutation.SetRank(v)
+	return _u
 }
 
 // SetNillableRank sets the "rank" field if the given value is not nil.
-func (isuo *IncidentSeverityUpdateOne) SetNillableRank(i *int) *IncidentSeverityUpdateOne {
-	if i != nil {
-		isuo.SetRank(*i)
+func (_u *IncidentSeverityUpdateOne) SetNillableRank(v *int) *IncidentSeverityUpdateOne {
+	if v != nil {
+		_u.SetRank(*v)
 	}
-	return isuo
+	return _u
 }
 
-// AddRank adds i to the "rank" field.
-func (isuo *IncidentSeverityUpdateOne) AddRank(i int) *IncidentSeverityUpdateOne {
-	isuo.mutation.AddRank(i)
-	return isuo
+// AddRank adds value to the "rank" field.
+func (_u *IncidentSeverityUpdateOne) AddRank(v int) *IncidentSeverityUpdateOne {
+	_u.mutation.AddRank(v)
+	return _u
 }
 
 // SetColor sets the "color" field.
-func (isuo *IncidentSeverityUpdateOne) SetColor(s string) *IncidentSeverityUpdateOne {
-	isuo.mutation.SetColor(s)
-	return isuo
+func (_u *IncidentSeverityUpdateOne) SetColor(v string) *IncidentSeverityUpdateOne {
+	_u.mutation.SetColor(v)
+	return _u
 }
 
 // SetNillableColor sets the "color" field if the given value is not nil.
-func (isuo *IncidentSeverityUpdateOne) SetNillableColor(s *string) *IncidentSeverityUpdateOne {
-	if s != nil {
-		isuo.SetColor(*s)
+func (_u *IncidentSeverityUpdateOne) SetNillableColor(v *string) *IncidentSeverityUpdateOne {
+	if v != nil {
+		_u.SetColor(*v)
 	}
-	return isuo
+	return _u
 }
 
 // ClearColor clears the value of the "color" field.
-func (isuo *IncidentSeverityUpdateOne) ClearColor() *IncidentSeverityUpdateOne {
-	isuo.mutation.ClearColor()
-	return isuo
+func (_u *IncidentSeverityUpdateOne) ClearColor() *IncidentSeverityUpdateOne {
+	_u.mutation.ClearColor()
+	return _u
 }
 
 // SetDescription sets the "description" field.
-func (isuo *IncidentSeverityUpdateOne) SetDescription(s string) *IncidentSeverityUpdateOne {
-	isuo.mutation.SetDescription(s)
-	return isuo
+func (_u *IncidentSeverityUpdateOne) SetDescription(v string) *IncidentSeverityUpdateOne {
+	_u.mutation.SetDescription(v)
+	return _u
 }
 
 // SetNillableDescription sets the "description" field if the given value is not nil.
-func (isuo *IncidentSeverityUpdateOne) SetNillableDescription(s *string) *IncidentSeverityUpdateOne {
-	if s != nil {
-		isuo.SetDescription(*s)
+func (_u *IncidentSeverityUpdateOne) SetNillableDescription(v *string) *IncidentSeverityUpdateOne {
+	if v != nil {
+		_u.SetDescription(*v)
 	}
-	return isuo
+	return _u
 }
 
 // ClearDescription clears the value of the "description" field.
-func (isuo *IncidentSeverityUpdateOne) ClearDescription() *IncidentSeverityUpdateOne {
-	isuo.mutation.ClearDescription()
-	return isuo
+func (_u *IncidentSeverityUpdateOne) ClearDescription() *IncidentSeverityUpdateOne {
+	_u.mutation.ClearDescription()
+	return _u
 }
 
 // AddIncidentIDs adds the "incidents" edge to the Incident entity by IDs.
-func (isuo *IncidentSeverityUpdateOne) AddIncidentIDs(ids ...uuid.UUID) *IncidentSeverityUpdateOne {
-	isuo.mutation.AddIncidentIDs(ids...)
-	return isuo
+func (_u *IncidentSeverityUpdateOne) AddIncidentIDs(ids ...uuid.UUID) *IncidentSeverityUpdateOne {
+	_u.mutation.AddIncidentIDs(ids...)
+	return _u
 }
 
 // AddIncidents adds the "incidents" edges to the Incident entity.
-func (isuo *IncidentSeverityUpdateOne) AddIncidents(i ...*Incident) *IncidentSeverityUpdateOne {
-	ids := make([]uuid.UUID, len(i))
-	for j := range i {
-		ids[j] = i[j].ID
+func (_u *IncidentSeverityUpdateOne) AddIncidents(v ...*Incident) *IncidentSeverityUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
 	}
-	return isuo.AddIncidentIDs(ids...)
+	return _u.AddIncidentIDs(ids...)
 }
 
 // AddDebriefQuestionIDs adds the "debrief_questions" edge to the IncidentDebriefQuestion entity by IDs.
-func (isuo *IncidentSeverityUpdateOne) AddDebriefQuestionIDs(ids ...uuid.UUID) *IncidentSeverityUpdateOne {
-	isuo.mutation.AddDebriefQuestionIDs(ids...)
-	return isuo
+func (_u *IncidentSeverityUpdateOne) AddDebriefQuestionIDs(ids ...uuid.UUID) *IncidentSeverityUpdateOne {
+	_u.mutation.AddDebriefQuestionIDs(ids...)
+	return _u
 }
 
 // AddDebriefQuestions adds the "debrief_questions" edges to the IncidentDebriefQuestion entity.
-func (isuo *IncidentSeverityUpdateOne) AddDebriefQuestions(i ...*IncidentDebriefQuestion) *IncidentSeverityUpdateOne {
-	ids := make([]uuid.UUID, len(i))
-	for j := range i {
-		ids[j] = i[j].ID
+func (_u *IncidentSeverityUpdateOne) AddDebriefQuestions(v ...*IncidentDebriefQuestion) *IncidentSeverityUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
 	}
-	return isuo.AddDebriefQuestionIDs(ids...)
+	return _u.AddDebriefQuestionIDs(ids...)
 }
 
 // Mutation returns the IncidentSeverityMutation object of the builder.
-func (isuo *IncidentSeverityUpdateOne) Mutation() *IncidentSeverityMutation {
-	return isuo.mutation
+func (_u *IncidentSeverityUpdateOne) Mutation() *IncidentSeverityMutation {
+	return _u.mutation
 }
 
 // ClearIncidents clears all "incidents" edges to the Incident entity.
-func (isuo *IncidentSeverityUpdateOne) ClearIncidents() *IncidentSeverityUpdateOne {
-	isuo.mutation.ClearIncidents()
-	return isuo
+func (_u *IncidentSeverityUpdateOne) ClearIncidents() *IncidentSeverityUpdateOne {
+	_u.mutation.ClearIncidents()
+	return _u
 }
 
 // RemoveIncidentIDs removes the "incidents" edge to Incident entities by IDs.
-func (isuo *IncidentSeverityUpdateOne) RemoveIncidentIDs(ids ...uuid.UUID) *IncidentSeverityUpdateOne {
-	isuo.mutation.RemoveIncidentIDs(ids...)
-	return isuo
+func (_u *IncidentSeverityUpdateOne) RemoveIncidentIDs(ids ...uuid.UUID) *IncidentSeverityUpdateOne {
+	_u.mutation.RemoveIncidentIDs(ids...)
+	return _u
 }
 
 // RemoveIncidents removes "incidents" edges to Incident entities.
-func (isuo *IncidentSeverityUpdateOne) RemoveIncidents(i ...*Incident) *IncidentSeverityUpdateOne {
-	ids := make([]uuid.UUID, len(i))
-	for j := range i {
-		ids[j] = i[j].ID
+func (_u *IncidentSeverityUpdateOne) RemoveIncidents(v ...*Incident) *IncidentSeverityUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
 	}
-	return isuo.RemoveIncidentIDs(ids...)
+	return _u.RemoveIncidentIDs(ids...)
 }
 
 // ClearDebriefQuestions clears all "debrief_questions" edges to the IncidentDebriefQuestion entity.
-func (isuo *IncidentSeverityUpdateOne) ClearDebriefQuestions() *IncidentSeverityUpdateOne {
-	isuo.mutation.ClearDebriefQuestions()
-	return isuo
+func (_u *IncidentSeverityUpdateOne) ClearDebriefQuestions() *IncidentSeverityUpdateOne {
+	_u.mutation.ClearDebriefQuestions()
+	return _u
 }
 
 // RemoveDebriefQuestionIDs removes the "debrief_questions" edge to IncidentDebriefQuestion entities by IDs.
-func (isuo *IncidentSeverityUpdateOne) RemoveDebriefQuestionIDs(ids ...uuid.UUID) *IncidentSeverityUpdateOne {
-	isuo.mutation.RemoveDebriefQuestionIDs(ids...)
-	return isuo
+func (_u *IncidentSeverityUpdateOne) RemoveDebriefQuestionIDs(ids ...uuid.UUID) *IncidentSeverityUpdateOne {
+	_u.mutation.RemoveDebriefQuestionIDs(ids...)
+	return _u
 }
 
 // RemoveDebriefQuestions removes "debrief_questions" edges to IncidentDebriefQuestion entities.
-func (isuo *IncidentSeverityUpdateOne) RemoveDebriefQuestions(i ...*IncidentDebriefQuestion) *IncidentSeverityUpdateOne {
-	ids := make([]uuid.UUID, len(i))
-	for j := range i {
-		ids[j] = i[j].ID
+func (_u *IncidentSeverityUpdateOne) RemoveDebriefQuestions(v ...*IncidentDebriefQuestion) *IncidentSeverityUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
 	}
-	return isuo.RemoveDebriefQuestionIDs(ids...)
+	return _u.RemoveDebriefQuestionIDs(ids...)
 }
 
 // Where appends a list predicates to the IncidentSeverityUpdate builder.
-func (isuo *IncidentSeverityUpdateOne) Where(ps ...predicate.IncidentSeverity) *IncidentSeverityUpdateOne {
-	isuo.mutation.Where(ps...)
-	return isuo
+func (_u *IncidentSeverityUpdateOne) Where(ps ...predicate.IncidentSeverity) *IncidentSeverityUpdateOne {
+	_u.mutation.Where(ps...)
+	return _u
 }
 
 // Select allows selecting one or more fields (columns) of the returned entity.
 // The default is selecting all fields defined in the entity schema.
-func (isuo *IncidentSeverityUpdateOne) Select(field string, fields ...string) *IncidentSeverityUpdateOne {
-	isuo.fields = append([]string{field}, fields...)
-	return isuo
+func (_u *IncidentSeverityUpdateOne) Select(field string, fields ...string) *IncidentSeverityUpdateOne {
+	_u.fields = append([]string{field}, fields...)
+	return _u
 }
 
 // Save executes the query and returns the updated IncidentSeverity entity.
-func (isuo *IncidentSeverityUpdateOne) Save(ctx context.Context) (*IncidentSeverity, error) {
-	return withHooks(ctx, isuo.sqlSave, isuo.mutation, isuo.hooks)
+func (_u *IncidentSeverityUpdateOne) Save(ctx context.Context) (*IncidentSeverity, error) {
+	return withHooks(ctx, _u.sqlSave, _u.mutation, _u.hooks)
 }
 
 // SaveX is like Save, but panics if an error occurs.
-func (isuo *IncidentSeverityUpdateOne) SaveX(ctx context.Context) *IncidentSeverity {
-	node, err := isuo.Save(ctx)
+func (_u *IncidentSeverityUpdateOne) SaveX(ctx context.Context) *IncidentSeverity {
+	node, err := _u.Save(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -642,43 +642,43 @@ func (isuo *IncidentSeverityUpdateOne) SaveX(ctx context.Context) *IncidentSever
 }
 
 // Exec executes the query on the entity.
-func (isuo *IncidentSeverityUpdateOne) Exec(ctx context.Context) error {
-	_, err := isuo.Save(ctx)
+func (_u *IncidentSeverityUpdateOne) Exec(ctx context.Context) error {
+	_, err := _u.Save(ctx)
 	return err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (isuo *IncidentSeverityUpdateOne) ExecX(ctx context.Context) {
-	if err := isuo.Exec(ctx); err != nil {
+func (_u *IncidentSeverityUpdateOne) ExecX(ctx context.Context) {
+	if err := _u.Exec(ctx); err != nil {
 		panic(err)
 	}
 }
 
 // check runs all checks and user-defined validators on the builder.
-func (isuo *IncidentSeverityUpdateOne) check() error {
-	if isuo.mutation.TenantCleared() && len(isuo.mutation.TenantIDs()) > 0 {
+func (_u *IncidentSeverityUpdateOne) check() error {
+	if _u.mutation.TenantCleared() && len(_u.mutation.TenantIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "IncidentSeverity.tenant"`)
 	}
 	return nil
 }
 
 // Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
-func (isuo *IncidentSeverityUpdateOne) Modify(modifiers ...func(u *sql.UpdateBuilder)) *IncidentSeverityUpdateOne {
-	isuo.modifiers = append(isuo.modifiers, modifiers...)
-	return isuo
+func (_u *IncidentSeverityUpdateOne) Modify(modifiers ...func(u *sql.UpdateBuilder)) *IncidentSeverityUpdateOne {
+	_u.modifiers = append(_u.modifiers, modifiers...)
+	return _u
 }
 
-func (isuo *IncidentSeverityUpdateOne) sqlSave(ctx context.Context) (_node *IncidentSeverity, err error) {
-	if err := isuo.check(); err != nil {
+func (_u *IncidentSeverityUpdateOne) sqlSave(ctx context.Context) (_node *IncidentSeverity, err error) {
+	if err := _u.check(); err != nil {
 		return _node, err
 	}
 	_spec := sqlgraph.NewUpdateSpec(incidentseverity.Table, incidentseverity.Columns, sqlgraph.NewFieldSpec(incidentseverity.FieldID, field.TypeUUID))
-	id, ok := isuo.mutation.ID()
+	id, ok := _u.mutation.ID()
 	if !ok {
 		return nil, &ValidationError{Name: "id", err: errors.New(`ent: missing "IncidentSeverity.id" for update`)}
 	}
 	_spec.Node.ID.Value = id
-	if fields := isuo.fields; len(fields) > 0 {
+	if fields := _u.fields; len(fields) > 0 {
 		_spec.Node.Columns = make([]string, 0, len(fields))
 		_spec.Node.Columns = append(_spec.Node.Columns, incidentseverity.FieldID)
 		for _, f := range fields {
@@ -690,47 +690,47 @@ func (isuo *IncidentSeverityUpdateOne) sqlSave(ctx context.Context) (_node *Inci
 			}
 		}
 	}
-	if ps := isuo.mutation.predicates; len(ps) > 0 {
+	if ps := _u.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {
 				ps[i](selector)
 			}
 		}
 	}
-	if value, ok := isuo.mutation.ArchiveTime(); ok {
+	if value, ok := _u.mutation.ArchiveTime(); ok {
 		_spec.SetField(incidentseverity.FieldArchiveTime, field.TypeTime, value)
 	}
-	if isuo.mutation.ArchiveTimeCleared() {
+	if _u.mutation.ArchiveTimeCleared() {
 		_spec.ClearField(incidentseverity.FieldArchiveTime, field.TypeTime)
 	}
-	if value, ok := isuo.mutation.ProviderID(); ok {
+	if value, ok := _u.mutation.ProviderID(); ok {
 		_spec.SetField(incidentseverity.FieldProviderID, field.TypeString, value)
 	}
-	if isuo.mutation.ProviderIDCleared() {
+	if _u.mutation.ProviderIDCleared() {
 		_spec.ClearField(incidentseverity.FieldProviderID, field.TypeString)
 	}
-	if value, ok := isuo.mutation.Name(); ok {
+	if value, ok := _u.mutation.Name(); ok {
 		_spec.SetField(incidentseverity.FieldName, field.TypeString, value)
 	}
-	if value, ok := isuo.mutation.Rank(); ok {
+	if value, ok := _u.mutation.Rank(); ok {
 		_spec.SetField(incidentseverity.FieldRank, field.TypeInt, value)
 	}
-	if value, ok := isuo.mutation.AddedRank(); ok {
+	if value, ok := _u.mutation.AddedRank(); ok {
 		_spec.AddField(incidentseverity.FieldRank, field.TypeInt, value)
 	}
-	if value, ok := isuo.mutation.Color(); ok {
+	if value, ok := _u.mutation.Color(); ok {
 		_spec.SetField(incidentseverity.FieldColor, field.TypeString, value)
 	}
-	if isuo.mutation.ColorCleared() {
+	if _u.mutation.ColorCleared() {
 		_spec.ClearField(incidentseverity.FieldColor, field.TypeString)
 	}
-	if value, ok := isuo.mutation.Description(); ok {
+	if value, ok := _u.mutation.Description(); ok {
 		_spec.SetField(incidentseverity.FieldDescription, field.TypeString, value)
 	}
-	if isuo.mutation.DescriptionCleared() {
+	if _u.mutation.DescriptionCleared() {
 		_spec.ClearField(incidentseverity.FieldDescription, field.TypeString)
 	}
-	if isuo.mutation.IncidentsCleared() {
+	if _u.mutation.IncidentsCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: true,
@@ -743,7 +743,7 @@ func (isuo *IncidentSeverityUpdateOne) sqlSave(ctx context.Context) (_node *Inci
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := isuo.mutation.RemovedIncidentsIDs(); len(nodes) > 0 && !isuo.mutation.IncidentsCleared() {
+	if nodes := _u.mutation.RemovedIncidentsIDs(); len(nodes) > 0 && !_u.mutation.IncidentsCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: true,
@@ -759,7 +759,7 @@ func (isuo *IncidentSeverityUpdateOne) sqlSave(ctx context.Context) (_node *Inci
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := isuo.mutation.IncidentsIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.IncidentsIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: true,
@@ -775,7 +775,7 @@ func (isuo *IncidentSeverityUpdateOne) sqlSave(ctx context.Context) (_node *Inci
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if isuo.mutation.DebriefQuestionsCleared() {
+	if _u.mutation.DebriefQuestionsCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
 			Inverse: true,
@@ -788,7 +788,7 @@ func (isuo *IncidentSeverityUpdateOne) sqlSave(ctx context.Context) (_node *Inci
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := isuo.mutation.RemovedDebriefQuestionsIDs(); len(nodes) > 0 && !isuo.mutation.DebriefQuestionsCleared() {
+	if nodes := _u.mutation.RemovedDebriefQuestionsIDs(); len(nodes) > 0 && !_u.mutation.DebriefQuestionsCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
 			Inverse: true,
@@ -804,7 +804,7 @@ func (isuo *IncidentSeverityUpdateOne) sqlSave(ctx context.Context) (_node *Inci
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := isuo.mutation.DebriefQuestionsIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.DebriefQuestionsIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
 			Inverse: true,
@@ -820,11 +820,11 @@ func (isuo *IncidentSeverityUpdateOne) sqlSave(ctx context.Context) (_node *Inci
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	_spec.AddModifiers(isuo.modifiers...)
-	_node = &IncidentSeverity{config: isuo.config}
+	_spec.AddModifiers(_u.modifiers...)
+	_node = &IncidentSeverity{config: _u.config}
 	_spec.Assign = _node.assignValues
 	_spec.ScanValues = _node.scanValues
-	if err = sqlgraph.UpdateNode(ctx, isuo.driver, _spec); err != nil {
+	if err = sqlgraph.UpdateNode(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{incidentseverity.Label}
 		} else if sqlgraph.IsConstraintError(err) {
@@ -832,6 +832,6 @@ func (isuo *IncidentSeverityUpdateOne) sqlSave(ctx context.Context) (_node *Inci
 		}
 		return nil, err
 	}
-	isuo.mutation.done = true
+	_u.mutation.done = true
 	return _node, nil
 }

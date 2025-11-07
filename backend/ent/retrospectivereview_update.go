@@ -27,138 +27,138 @@ type RetrospectiveReviewUpdate struct {
 }
 
 // Where appends a list predicates to the RetrospectiveReviewUpdate builder.
-func (rru *RetrospectiveReviewUpdate) Where(ps ...predicate.RetrospectiveReview) *RetrospectiveReviewUpdate {
-	rru.mutation.Where(ps...)
-	return rru
+func (_u *RetrospectiveReviewUpdate) Where(ps ...predicate.RetrospectiveReview) *RetrospectiveReviewUpdate {
+	_u.mutation.Where(ps...)
+	return _u
 }
 
 // SetRetrospectiveID sets the "retrospective_id" field.
-func (rru *RetrospectiveReviewUpdate) SetRetrospectiveID(u uuid.UUID) *RetrospectiveReviewUpdate {
-	rru.mutation.SetRetrospectiveID(u)
-	return rru
+func (_u *RetrospectiveReviewUpdate) SetRetrospectiveID(v uuid.UUID) *RetrospectiveReviewUpdate {
+	_u.mutation.SetRetrospectiveID(v)
+	return _u
 }
 
 // SetNillableRetrospectiveID sets the "retrospective_id" field if the given value is not nil.
-func (rru *RetrospectiveReviewUpdate) SetNillableRetrospectiveID(u *uuid.UUID) *RetrospectiveReviewUpdate {
-	if u != nil {
-		rru.SetRetrospectiveID(*u)
+func (_u *RetrospectiveReviewUpdate) SetNillableRetrospectiveID(v *uuid.UUID) *RetrospectiveReviewUpdate {
+	if v != nil {
+		_u.SetRetrospectiveID(*v)
 	}
-	return rru
+	return _u
 }
 
 // SetCommentID sets the "comment_id" field.
-func (rru *RetrospectiveReviewUpdate) SetCommentID(u uuid.UUID) *RetrospectiveReviewUpdate {
-	rru.mutation.SetCommentID(u)
-	return rru
+func (_u *RetrospectiveReviewUpdate) SetCommentID(v uuid.UUID) *RetrospectiveReviewUpdate {
+	_u.mutation.SetCommentID(v)
+	return _u
 }
 
 // SetNillableCommentID sets the "comment_id" field if the given value is not nil.
-func (rru *RetrospectiveReviewUpdate) SetNillableCommentID(u *uuid.UUID) *RetrospectiveReviewUpdate {
-	if u != nil {
-		rru.SetCommentID(*u)
+func (_u *RetrospectiveReviewUpdate) SetNillableCommentID(v *uuid.UUID) *RetrospectiveReviewUpdate {
+	if v != nil {
+		_u.SetCommentID(*v)
 	}
-	return rru
+	return _u
 }
 
 // SetRequesterID sets the "requester_id" field.
-func (rru *RetrospectiveReviewUpdate) SetRequesterID(u uuid.UUID) *RetrospectiveReviewUpdate {
-	rru.mutation.SetRequesterID(u)
-	return rru
+func (_u *RetrospectiveReviewUpdate) SetRequesterID(v uuid.UUID) *RetrospectiveReviewUpdate {
+	_u.mutation.SetRequesterID(v)
+	return _u
 }
 
 // SetNillableRequesterID sets the "requester_id" field if the given value is not nil.
-func (rru *RetrospectiveReviewUpdate) SetNillableRequesterID(u *uuid.UUID) *RetrospectiveReviewUpdate {
-	if u != nil {
-		rru.SetRequesterID(*u)
+func (_u *RetrospectiveReviewUpdate) SetNillableRequesterID(v *uuid.UUID) *RetrospectiveReviewUpdate {
+	if v != nil {
+		_u.SetRequesterID(*v)
 	}
-	return rru
+	return _u
 }
 
 // SetReviewerID sets the "reviewer_id" field.
-func (rru *RetrospectiveReviewUpdate) SetReviewerID(u uuid.UUID) *RetrospectiveReviewUpdate {
-	rru.mutation.SetReviewerID(u)
-	return rru
+func (_u *RetrospectiveReviewUpdate) SetReviewerID(v uuid.UUID) *RetrospectiveReviewUpdate {
+	_u.mutation.SetReviewerID(v)
+	return _u
 }
 
 // SetNillableReviewerID sets the "reviewer_id" field if the given value is not nil.
-func (rru *RetrospectiveReviewUpdate) SetNillableReviewerID(u *uuid.UUID) *RetrospectiveReviewUpdate {
-	if u != nil {
-		rru.SetReviewerID(*u)
+func (_u *RetrospectiveReviewUpdate) SetNillableReviewerID(v *uuid.UUID) *RetrospectiveReviewUpdate {
+	if v != nil {
+		_u.SetReviewerID(*v)
 	}
-	return rru
+	return _u
 }
 
 // SetState sets the "state" field.
-func (rru *RetrospectiveReviewUpdate) SetState(r retrospectivereview.State) *RetrospectiveReviewUpdate {
-	rru.mutation.SetState(r)
-	return rru
+func (_u *RetrospectiveReviewUpdate) SetState(v retrospectivereview.State) *RetrospectiveReviewUpdate {
+	_u.mutation.SetState(v)
+	return _u
 }
 
 // SetNillableState sets the "state" field if the given value is not nil.
-func (rru *RetrospectiveReviewUpdate) SetNillableState(r *retrospectivereview.State) *RetrospectiveReviewUpdate {
-	if r != nil {
-		rru.SetState(*r)
+func (_u *RetrospectiveReviewUpdate) SetNillableState(v *retrospectivereview.State) *RetrospectiveReviewUpdate {
+	if v != nil {
+		_u.SetState(*v)
 	}
-	return rru
+	return _u
 }
 
 // SetRetrospective sets the "retrospective" edge to the Retrospective entity.
-func (rru *RetrospectiveReviewUpdate) SetRetrospective(r *Retrospective) *RetrospectiveReviewUpdate {
-	return rru.SetRetrospectiveID(r.ID)
+func (_u *RetrospectiveReviewUpdate) SetRetrospective(v *Retrospective) *RetrospectiveReviewUpdate {
+	return _u.SetRetrospectiveID(v.ID)
 }
 
 // SetRequester sets the "requester" edge to the User entity.
-func (rru *RetrospectiveReviewUpdate) SetRequester(u *User) *RetrospectiveReviewUpdate {
-	return rru.SetRequesterID(u.ID)
+func (_u *RetrospectiveReviewUpdate) SetRequester(v *User) *RetrospectiveReviewUpdate {
+	return _u.SetRequesterID(v.ID)
 }
 
 // SetReviewer sets the "reviewer" edge to the User entity.
-func (rru *RetrospectiveReviewUpdate) SetReviewer(u *User) *RetrospectiveReviewUpdate {
-	return rru.SetReviewerID(u.ID)
+func (_u *RetrospectiveReviewUpdate) SetReviewer(v *User) *RetrospectiveReviewUpdate {
+	return _u.SetReviewerID(v.ID)
 }
 
 // SetComment sets the "comment" edge to the RetrospectiveComment entity.
-func (rru *RetrospectiveReviewUpdate) SetComment(r *RetrospectiveComment) *RetrospectiveReviewUpdate {
-	return rru.SetCommentID(r.ID)
+func (_u *RetrospectiveReviewUpdate) SetComment(v *RetrospectiveComment) *RetrospectiveReviewUpdate {
+	return _u.SetCommentID(v.ID)
 }
 
 // Mutation returns the RetrospectiveReviewMutation object of the builder.
-func (rru *RetrospectiveReviewUpdate) Mutation() *RetrospectiveReviewMutation {
-	return rru.mutation
+func (_u *RetrospectiveReviewUpdate) Mutation() *RetrospectiveReviewMutation {
+	return _u.mutation
 }
 
 // ClearRetrospective clears the "retrospective" edge to the Retrospective entity.
-func (rru *RetrospectiveReviewUpdate) ClearRetrospective() *RetrospectiveReviewUpdate {
-	rru.mutation.ClearRetrospective()
-	return rru
+func (_u *RetrospectiveReviewUpdate) ClearRetrospective() *RetrospectiveReviewUpdate {
+	_u.mutation.ClearRetrospective()
+	return _u
 }
 
 // ClearRequester clears the "requester" edge to the User entity.
-func (rru *RetrospectiveReviewUpdate) ClearRequester() *RetrospectiveReviewUpdate {
-	rru.mutation.ClearRequester()
-	return rru
+func (_u *RetrospectiveReviewUpdate) ClearRequester() *RetrospectiveReviewUpdate {
+	_u.mutation.ClearRequester()
+	return _u
 }
 
 // ClearReviewer clears the "reviewer" edge to the User entity.
-func (rru *RetrospectiveReviewUpdate) ClearReviewer() *RetrospectiveReviewUpdate {
-	rru.mutation.ClearReviewer()
-	return rru
+func (_u *RetrospectiveReviewUpdate) ClearReviewer() *RetrospectiveReviewUpdate {
+	_u.mutation.ClearReviewer()
+	return _u
 }
 
 // ClearComment clears the "comment" edge to the RetrospectiveComment entity.
-func (rru *RetrospectiveReviewUpdate) ClearComment() *RetrospectiveReviewUpdate {
-	rru.mutation.ClearComment()
-	return rru
+func (_u *RetrospectiveReviewUpdate) ClearComment() *RetrospectiveReviewUpdate {
+	_u.mutation.ClearComment()
+	return _u
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
-func (rru *RetrospectiveReviewUpdate) Save(ctx context.Context) (int, error) {
-	return withHooks(ctx, rru.sqlSave, rru.mutation, rru.hooks)
+func (_u *RetrospectiveReviewUpdate) Save(ctx context.Context) (int, error) {
+	return withHooks(ctx, _u.sqlSave, _u.mutation, _u.hooks)
 }
 
 // SaveX is like Save, but panics if an error occurs.
-func (rru *RetrospectiveReviewUpdate) SaveX(ctx context.Context) int {
-	affected, err := rru.Save(ctx)
+func (_u *RetrospectiveReviewUpdate) SaveX(ctx context.Context) int {
+	affected, err := _u.Save(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -166,65 +166,65 @@ func (rru *RetrospectiveReviewUpdate) SaveX(ctx context.Context) int {
 }
 
 // Exec executes the query.
-func (rru *RetrospectiveReviewUpdate) Exec(ctx context.Context) error {
-	_, err := rru.Save(ctx)
+func (_u *RetrospectiveReviewUpdate) Exec(ctx context.Context) error {
+	_, err := _u.Save(ctx)
 	return err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (rru *RetrospectiveReviewUpdate) ExecX(ctx context.Context) {
-	if err := rru.Exec(ctx); err != nil {
+func (_u *RetrospectiveReviewUpdate) ExecX(ctx context.Context) {
+	if err := _u.Exec(ctx); err != nil {
 		panic(err)
 	}
 }
 
 // check runs all checks and user-defined validators on the builder.
-func (rru *RetrospectiveReviewUpdate) check() error {
-	if v, ok := rru.mutation.State(); ok {
+func (_u *RetrospectiveReviewUpdate) check() error {
+	if v, ok := _u.mutation.State(); ok {
 		if err := retrospectivereview.StateValidator(v); err != nil {
 			return &ValidationError{Name: "state", err: fmt.Errorf(`ent: validator failed for field "RetrospectiveReview.state": %w`, err)}
 		}
 	}
-	if rru.mutation.TenantCleared() && len(rru.mutation.TenantIDs()) > 0 {
+	if _u.mutation.TenantCleared() && len(_u.mutation.TenantIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "RetrospectiveReview.tenant"`)
 	}
-	if rru.mutation.RetrospectiveCleared() && len(rru.mutation.RetrospectiveIDs()) > 0 {
+	if _u.mutation.RetrospectiveCleared() && len(_u.mutation.RetrospectiveIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "RetrospectiveReview.retrospective"`)
 	}
-	if rru.mutation.RequesterCleared() && len(rru.mutation.RequesterIDs()) > 0 {
+	if _u.mutation.RequesterCleared() && len(_u.mutation.RequesterIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "RetrospectiveReview.requester"`)
 	}
-	if rru.mutation.ReviewerCleared() && len(rru.mutation.ReviewerIDs()) > 0 {
+	if _u.mutation.ReviewerCleared() && len(_u.mutation.ReviewerIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "RetrospectiveReview.reviewer"`)
 	}
-	if rru.mutation.CommentCleared() && len(rru.mutation.CommentIDs()) > 0 {
+	if _u.mutation.CommentCleared() && len(_u.mutation.CommentIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "RetrospectiveReview.comment"`)
 	}
 	return nil
 }
 
 // Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
-func (rru *RetrospectiveReviewUpdate) Modify(modifiers ...func(u *sql.UpdateBuilder)) *RetrospectiveReviewUpdate {
-	rru.modifiers = append(rru.modifiers, modifiers...)
-	return rru
+func (_u *RetrospectiveReviewUpdate) Modify(modifiers ...func(u *sql.UpdateBuilder)) *RetrospectiveReviewUpdate {
+	_u.modifiers = append(_u.modifiers, modifiers...)
+	return _u
 }
 
-func (rru *RetrospectiveReviewUpdate) sqlSave(ctx context.Context) (n int, err error) {
-	if err := rru.check(); err != nil {
-		return n, err
+func (_u *RetrospectiveReviewUpdate) sqlSave(ctx context.Context) (_node int, err error) {
+	if err := _u.check(); err != nil {
+		return _node, err
 	}
 	_spec := sqlgraph.NewUpdateSpec(retrospectivereview.Table, retrospectivereview.Columns, sqlgraph.NewFieldSpec(retrospectivereview.FieldID, field.TypeUUID))
-	if ps := rru.mutation.predicates; len(ps) > 0 {
+	if ps := _u.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {
 				ps[i](selector)
 			}
 		}
 	}
-	if value, ok := rru.mutation.State(); ok {
+	if value, ok := _u.mutation.State(); ok {
 		_spec.SetField(retrospectivereview.FieldState, field.TypeEnum, value)
 	}
-	if rru.mutation.RetrospectiveCleared() {
+	if _u.mutation.RetrospectiveCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
@@ -237,7 +237,7 @@ func (rru *RetrospectiveReviewUpdate) sqlSave(ctx context.Context) (n int, err e
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := rru.mutation.RetrospectiveIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.RetrospectiveIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
@@ -253,7 +253,7 @@ func (rru *RetrospectiveReviewUpdate) sqlSave(ctx context.Context) (n int, err e
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if rru.mutation.RequesterCleared() {
+	if _u.mutation.RequesterCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
@@ -266,7 +266,7 @@ func (rru *RetrospectiveReviewUpdate) sqlSave(ctx context.Context) (n int, err e
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := rru.mutation.RequesterIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.RequesterIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
@@ -282,7 +282,7 @@ func (rru *RetrospectiveReviewUpdate) sqlSave(ctx context.Context) (n int, err e
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if rru.mutation.ReviewerCleared() {
+	if _u.mutation.ReviewerCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
@@ -295,7 +295,7 @@ func (rru *RetrospectiveReviewUpdate) sqlSave(ctx context.Context) (n int, err e
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := rru.mutation.ReviewerIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.ReviewerIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
@@ -311,7 +311,7 @@ func (rru *RetrospectiveReviewUpdate) sqlSave(ctx context.Context) (n int, err e
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if rru.mutation.CommentCleared() {
+	if _u.mutation.CommentCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
@@ -324,7 +324,7 @@ func (rru *RetrospectiveReviewUpdate) sqlSave(ctx context.Context) (n int, err e
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := rru.mutation.CommentIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.CommentIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
@@ -340,8 +340,8 @@ func (rru *RetrospectiveReviewUpdate) sqlSave(ctx context.Context) (n int, err e
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	_spec.AddModifiers(rru.modifiers...)
-	if n, err = sqlgraph.UpdateNodes(ctx, rru.driver, _spec); err != nil {
+	_spec.AddModifiers(_u.modifiers...)
+	if _node, err = sqlgraph.UpdateNodes(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{retrospectivereview.Label}
 		} else if sqlgraph.IsConstraintError(err) {
@@ -349,8 +349,8 @@ func (rru *RetrospectiveReviewUpdate) sqlSave(ctx context.Context) (n int, err e
 		}
 		return 0, err
 	}
-	rru.mutation.done = true
-	return n, nil
+	_u.mutation.done = true
+	return _node, nil
 }
 
 // RetrospectiveReviewUpdateOne is the builder for updating a single RetrospectiveReview entity.
@@ -363,145 +363,145 @@ type RetrospectiveReviewUpdateOne struct {
 }
 
 // SetRetrospectiveID sets the "retrospective_id" field.
-func (rruo *RetrospectiveReviewUpdateOne) SetRetrospectiveID(u uuid.UUID) *RetrospectiveReviewUpdateOne {
-	rruo.mutation.SetRetrospectiveID(u)
-	return rruo
+func (_u *RetrospectiveReviewUpdateOne) SetRetrospectiveID(v uuid.UUID) *RetrospectiveReviewUpdateOne {
+	_u.mutation.SetRetrospectiveID(v)
+	return _u
 }
 
 // SetNillableRetrospectiveID sets the "retrospective_id" field if the given value is not nil.
-func (rruo *RetrospectiveReviewUpdateOne) SetNillableRetrospectiveID(u *uuid.UUID) *RetrospectiveReviewUpdateOne {
-	if u != nil {
-		rruo.SetRetrospectiveID(*u)
+func (_u *RetrospectiveReviewUpdateOne) SetNillableRetrospectiveID(v *uuid.UUID) *RetrospectiveReviewUpdateOne {
+	if v != nil {
+		_u.SetRetrospectiveID(*v)
 	}
-	return rruo
+	return _u
 }
 
 // SetCommentID sets the "comment_id" field.
-func (rruo *RetrospectiveReviewUpdateOne) SetCommentID(u uuid.UUID) *RetrospectiveReviewUpdateOne {
-	rruo.mutation.SetCommentID(u)
-	return rruo
+func (_u *RetrospectiveReviewUpdateOne) SetCommentID(v uuid.UUID) *RetrospectiveReviewUpdateOne {
+	_u.mutation.SetCommentID(v)
+	return _u
 }
 
 // SetNillableCommentID sets the "comment_id" field if the given value is not nil.
-func (rruo *RetrospectiveReviewUpdateOne) SetNillableCommentID(u *uuid.UUID) *RetrospectiveReviewUpdateOne {
-	if u != nil {
-		rruo.SetCommentID(*u)
+func (_u *RetrospectiveReviewUpdateOne) SetNillableCommentID(v *uuid.UUID) *RetrospectiveReviewUpdateOne {
+	if v != nil {
+		_u.SetCommentID(*v)
 	}
-	return rruo
+	return _u
 }
 
 // SetRequesterID sets the "requester_id" field.
-func (rruo *RetrospectiveReviewUpdateOne) SetRequesterID(u uuid.UUID) *RetrospectiveReviewUpdateOne {
-	rruo.mutation.SetRequesterID(u)
-	return rruo
+func (_u *RetrospectiveReviewUpdateOne) SetRequesterID(v uuid.UUID) *RetrospectiveReviewUpdateOne {
+	_u.mutation.SetRequesterID(v)
+	return _u
 }
 
 // SetNillableRequesterID sets the "requester_id" field if the given value is not nil.
-func (rruo *RetrospectiveReviewUpdateOne) SetNillableRequesterID(u *uuid.UUID) *RetrospectiveReviewUpdateOne {
-	if u != nil {
-		rruo.SetRequesterID(*u)
+func (_u *RetrospectiveReviewUpdateOne) SetNillableRequesterID(v *uuid.UUID) *RetrospectiveReviewUpdateOne {
+	if v != nil {
+		_u.SetRequesterID(*v)
 	}
-	return rruo
+	return _u
 }
 
 // SetReviewerID sets the "reviewer_id" field.
-func (rruo *RetrospectiveReviewUpdateOne) SetReviewerID(u uuid.UUID) *RetrospectiveReviewUpdateOne {
-	rruo.mutation.SetReviewerID(u)
-	return rruo
+func (_u *RetrospectiveReviewUpdateOne) SetReviewerID(v uuid.UUID) *RetrospectiveReviewUpdateOne {
+	_u.mutation.SetReviewerID(v)
+	return _u
 }
 
 // SetNillableReviewerID sets the "reviewer_id" field if the given value is not nil.
-func (rruo *RetrospectiveReviewUpdateOne) SetNillableReviewerID(u *uuid.UUID) *RetrospectiveReviewUpdateOne {
-	if u != nil {
-		rruo.SetReviewerID(*u)
+func (_u *RetrospectiveReviewUpdateOne) SetNillableReviewerID(v *uuid.UUID) *RetrospectiveReviewUpdateOne {
+	if v != nil {
+		_u.SetReviewerID(*v)
 	}
-	return rruo
+	return _u
 }
 
 // SetState sets the "state" field.
-func (rruo *RetrospectiveReviewUpdateOne) SetState(r retrospectivereview.State) *RetrospectiveReviewUpdateOne {
-	rruo.mutation.SetState(r)
-	return rruo
+func (_u *RetrospectiveReviewUpdateOne) SetState(v retrospectivereview.State) *RetrospectiveReviewUpdateOne {
+	_u.mutation.SetState(v)
+	return _u
 }
 
 // SetNillableState sets the "state" field if the given value is not nil.
-func (rruo *RetrospectiveReviewUpdateOne) SetNillableState(r *retrospectivereview.State) *RetrospectiveReviewUpdateOne {
-	if r != nil {
-		rruo.SetState(*r)
+func (_u *RetrospectiveReviewUpdateOne) SetNillableState(v *retrospectivereview.State) *RetrospectiveReviewUpdateOne {
+	if v != nil {
+		_u.SetState(*v)
 	}
-	return rruo
+	return _u
 }
 
 // SetRetrospective sets the "retrospective" edge to the Retrospective entity.
-func (rruo *RetrospectiveReviewUpdateOne) SetRetrospective(r *Retrospective) *RetrospectiveReviewUpdateOne {
-	return rruo.SetRetrospectiveID(r.ID)
+func (_u *RetrospectiveReviewUpdateOne) SetRetrospective(v *Retrospective) *RetrospectiveReviewUpdateOne {
+	return _u.SetRetrospectiveID(v.ID)
 }
 
 // SetRequester sets the "requester" edge to the User entity.
-func (rruo *RetrospectiveReviewUpdateOne) SetRequester(u *User) *RetrospectiveReviewUpdateOne {
-	return rruo.SetRequesterID(u.ID)
+func (_u *RetrospectiveReviewUpdateOne) SetRequester(v *User) *RetrospectiveReviewUpdateOne {
+	return _u.SetRequesterID(v.ID)
 }
 
 // SetReviewer sets the "reviewer" edge to the User entity.
-func (rruo *RetrospectiveReviewUpdateOne) SetReviewer(u *User) *RetrospectiveReviewUpdateOne {
-	return rruo.SetReviewerID(u.ID)
+func (_u *RetrospectiveReviewUpdateOne) SetReviewer(v *User) *RetrospectiveReviewUpdateOne {
+	return _u.SetReviewerID(v.ID)
 }
 
 // SetComment sets the "comment" edge to the RetrospectiveComment entity.
-func (rruo *RetrospectiveReviewUpdateOne) SetComment(r *RetrospectiveComment) *RetrospectiveReviewUpdateOne {
-	return rruo.SetCommentID(r.ID)
+func (_u *RetrospectiveReviewUpdateOne) SetComment(v *RetrospectiveComment) *RetrospectiveReviewUpdateOne {
+	return _u.SetCommentID(v.ID)
 }
 
 // Mutation returns the RetrospectiveReviewMutation object of the builder.
-func (rruo *RetrospectiveReviewUpdateOne) Mutation() *RetrospectiveReviewMutation {
-	return rruo.mutation
+func (_u *RetrospectiveReviewUpdateOne) Mutation() *RetrospectiveReviewMutation {
+	return _u.mutation
 }
 
 // ClearRetrospective clears the "retrospective" edge to the Retrospective entity.
-func (rruo *RetrospectiveReviewUpdateOne) ClearRetrospective() *RetrospectiveReviewUpdateOne {
-	rruo.mutation.ClearRetrospective()
-	return rruo
+func (_u *RetrospectiveReviewUpdateOne) ClearRetrospective() *RetrospectiveReviewUpdateOne {
+	_u.mutation.ClearRetrospective()
+	return _u
 }
 
 // ClearRequester clears the "requester" edge to the User entity.
-func (rruo *RetrospectiveReviewUpdateOne) ClearRequester() *RetrospectiveReviewUpdateOne {
-	rruo.mutation.ClearRequester()
-	return rruo
+func (_u *RetrospectiveReviewUpdateOne) ClearRequester() *RetrospectiveReviewUpdateOne {
+	_u.mutation.ClearRequester()
+	return _u
 }
 
 // ClearReviewer clears the "reviewer" edge to the User entity.
-func (rruo *RetrospectiveReviewUpdateOne) ClearReviewer() *RetrospectiveReviewUpdateOne {
-	rruo.mutation.ClearReviewer()
-	return rruo
+func (_u *RetrospectiveReviewUpdateOne) ClearReviewer() *RetrospectiveReviewUpdateOne {
+	_u.mutation.ClearReviewer()
+	return _u
 }
 
 // ClearComment clears the "comment" edge to the RetrospectiveComment entity.
-func (rruo *RetrospectiveReviewUpdateOne) ClearComment() *RetrospectiveReviewUpdateOne {
-	rruo.mutation.ClearComment()
-	return rruo
+func (_u *RetrospectiveReviewUpdateOne) ClearComment() *RetrospectiveReviewUpdateOne {
+	_u.mutation.ClearComment()
+	return _u
 }
 
 // Where appends a list predicates to the RetrospectiveReviewUpdate builder.
-func (rruo *RetrospectiveReviewUpdateOne) Where(ps ...predicate.RetrospectiveReview) *RetrospectiveReviewUpdateOne {
-	rruo.mutation.Where(ps...)
-	return rruo
+func (_u *RetrospectiveReviewUpdateOne) Where(ps ...predicate.RetrospectiveReview) *RetrospectiveReviewUpdateOne {
+	_u.mutation.Where(ps...)
+	return _u
 }
 
 // Select allows selecting one or more fields (columns) of the returned entity.
 // The default is selecting all fields defined in the entity schema.
-func (rruo *RetrospectiveReviewUpdateOne) Select(field string, fields ...string) *RetrospectiveReviewUpdateOne {
-	rruo.fields = append([]string{field}, fields...)
-	return rruo
+func (_u *RetrospectiveReviewUpdateOne) Select(field string, fields ...string) *RetrospectiveReviewUpdateOne {
+	_u.fields = append([]string{field}, fields...)
+	return _u
 }
 
 // Save executes the query and returns the updated RetrospectiveReview entity.
-func (rruo *RetrospectiveReviewUpdateOne) Save(ctx context.Context) (*RetrospectiveReview, error) {
-	return withHooks(ctx, rruo.sqlSave, rruo.mutation, rruo.hooks)
+func (_u *RetrospectiveReviewUpdateOne) Save(ctx context.Context) (*RetrospectiveReview, error) {
+	return withHooks(ctx, _u.sqlSave, _u.mutation, _u.hooks)
 }
 
 // SaveX is like Save, but panics if an error occurs.
-func (rruo *RetrospectiveReviewUpdateOne) SaveX(ctx context.Context) *RetrospectiveReview {
-	node, err := rruo.Save(ctx)
+func (_u *RetrospectiveReviewUpdateOne) SaveX(ctx context.Context) *RetrospectiveReview {
+	node, err := _u.Save(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -509,60 +509,60 @@ func (rruo *RetrospectiveReviewUpdateOne) SaveX(ctx context.Context) *Retrospect
 }
 
 // Exec executes the query on the entity.
-func (rruo *RetrospectiveReviewUpdateOne) Exec(ctx context.Context) error {
-	_, err := rruo.Save(ctx)
+func (_u *RetrospectiveReviewUpdateOne) Exec(ctx context.Context) error {
+	_, err := _u.Save(ctx)
 	return err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (rruo *RetrospectiveReviewUpdateOne) ExecX(ctx context.Context) {
-	if err := rruo.Exec(ctx); err != nil {
+func (_u *RetrospectiveReviewUpdateOne) ExecX(ctx context.Context) {
+	if err := _u.Exec(ctx); err != nil {
 		panic(err)
 	}
 }
 
 // check runs all checks and user-defined validators on the builder.
-func (rruo *RetrospectiveReviewUpdateOne) check() error {
-	if v, ok := rruo.mutation.State(); ok {
+func (_u *RetrospectiveReviewUpdateOne) check() error {
+	if v, ok := _u.mutation.State(); ok {
 		if err := retrospectivereview.StateValidator(v); err != nil {
 			return &ValidationError{Name: "state", err: fmt.Errorf(`ent: validator failed for field "RetrospectiveReview.state": %w`, err)}
 		}
 	}
-	if rruo.mutation.TenantCleared() && len(rruo.mutation.TenantIDs()) > 0 {
+	if _u.mutation.TenantCleared() && len(_u.mutation.TenantIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "RetrospectiveReview.tenant"`)
 	}
-	if rruo.mutation.RetrospectiveCleared() && len(rruo.mutation.RetrospectiveIDs()) > 0 {
+	if _u.mutation.RetrospectiveCleared() && len(_u.mutation.RetrospectiveIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "RetrospectiveReview.retrospective"`)
 	}
-	if rruo.mutation.RequesterCleared() && len(rruo.mutation.RequesterIDs()) > 0 {
+	if _u.mutation.RequesterCleared() && len(_u.mutation.RequesterIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "RetrospectiveReview.requester"`)
 	}
-	if rruo.mutation.ReviewerCleared() && len(rruo.mutation.ReviewerIDs()) > 0 {
+	if _u.mutation.ReviewerCleared() && len(_u.mutation.ReviewerIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "RetrospectiveReview.reviewer"`)
 	}
-	if rruo.mutation.CommentCleared() && len(rruo.mutation.CommentIDs()) > 0 {
+	if _u.mutation.CommentCleared() && len(_u.mutation.CommentIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "RetrospectiveReview.comment"`)
 	}
 	return nil
 }
 
 // Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
-func (rruo *RetrospectiveReviewUpdateOne) Modify(modifiers ...func(u *sql.UpdateBuilder)) *RetrospectiveReviewUpdateOne {
-	rruo.modifiers = append(rruo.modifiers, modifiers...)
-	return rruo
+func (_u *RetrospectiveReviewUpdateOne) Modify(modifiers ...func(u *sql.UpdateBuilder)) *RetrospectiveReviewUpdateOne {
+	_u.modifiers = append(_u.modifiers, modifiers...)
+	return _u
 }
 
-func (rruo *RetrospectiveReviewUpdateOne) sqlSave(ctx context.Context) (_node *RetrospectiveReview, err error) {
-	if err := rruo.check(); err != nil {
+func (_u *RetrospectiveReviewUpdateOne) sqlSave(ctx context.Context) (_node *RetrospectiveReview, err error) {
+	if err := _u.check(); err != nil {
 		return _node, err
 	}
 	_spec := sqlgraph.NewUpdateSpec(retrospectivereview.Table, retrospectivereview.Columns, sqlgraph.NewFieldSpec(retrospectivereview.FieldID, field.TypeUUID))
-	id, ok := rruo.mutation.ID()
+	id, ok := _u.mutation.ID()
 	if !ok {
 		return nil, &ValidationError{Name: "id", err: errors.New(`ent: missing "RetrospectiveReview.id" for update`)}
 	}
 	_spec.Node.ID.Value = id
-	if fields := rruo.fields; len(fields) > 0 {
+	if fields := _u.fields; len(fields) > 0 {
 		_spec.Node.Columns = make([]string, 0, len(fields))
 		_spec.Node.Columns = append(_spec.Node.Columns, retrospectivereview.FieldID)
 		for _, f := range fields {
@@ -574,17 +574,17 @@ func (rruo *RetrospectiveReviewUpdateOne) sqlSave(ctx context.Context) (_node *R
 			}
 		}
 	}
-	if ps := rruo.mutation.predicates; len(ps) > 0 {
+	if ps := _u.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {
 				ps[i](selector)
 			}
 		}
 	}
-	if value, ok := rruo.mutation.State(); ok {
+	if value, ok := _u.mutation.State(); ok {
 		_spec.SetField(retrospectivereview.FieldState, field.TypeEnum, value)
 	}
-	if rruo.mutation.RetrospectiveCleared() {
+	if _u.mutation.RetrospectiveCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
@@ -597,7 +597,7 @@ func (rruo *RetrospectiveReviewUpdateOne) sqlSave(ctx context.Context) (_node *R
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := rruo.mutation.RetrospectiveIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.RetrospectiveIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
@@ -613,7 +613,7 @@ func (rruo *RetrospectiveReviewUpdateOne) sqlSave(ctx context.Context) (_node *R
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if rruo.mutation.RequesterCleared() {
+	if _u.mutation.RequesterCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
@@ -626,7 +626,7 @@ func (rruo *RetrospectiveReviewUpdateOne) sqlSave(ctx context.Context) (_node *R
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := rruo.mutation.RequesterIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.RequesterIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
@@ -642,7 +642,7 @@ func (rruo *RetrospectiveReviewUpdateOne) sqlSave(ctx context.Context) (_node *R
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if rruo.mutation.ReviewerCleared() {
+	if _u.mutation.ReviewerCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
@@ -655,7 +655,7 @@ func (rruo *RetrospectiveReviewUpdateOne) sqlSave(ctx context.Context) (_node *R
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := rruo.mutation.ReviewerIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.ReviewerIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
@@ -671,7 +671,7 @@ func (rruo *RetrospectiveReviewUpdateOne) sqlSave(ctx context.Context) (_node *R
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if rruo.mutation.CommentCleared() {
+	if _u.mutation.CommentCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
@@ -684,7 +684,7 @@ func (rruo *RetrospectiveReviewUpdateOne) sqlSave(ctx context.Context) (_node *R
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := rruo.mutation.CommentIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.CommentIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
@@ -700,11 +700,11 @@ func (rruo *RetrospectiveReviewUpdateOne) sqlSave(ctx context.Context) (_node *R
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	_spec.AddModifiers(rruo.modifiers...)
-	_node = &RetrospectiveReview{config: rruo.config}
+	_spec.AddModifiers(_u.modifiers...)
+	_node = &RetrospectiveReview{config: _u.config}
 	_spec.Assign = _node.assignValues
 	_spec.ScanValues = _node.scanValues
-	if err = sqlgraph.UpdateNode(ctx, rruo.driver, _spec); err != nil {
+	if err = sqlgraph.UpdateNode(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{retrospectivereview.Label}
 		} else if sqlgraph.IsConstraintError(err) {
@@ -712,6 +712,6 @@ func (rruo *RetrospectiveReviewUpdateOne) sqlSave(ctx context.Context) (_node *R
 		}
 		return nil, err
 	}
-	rruo.mutation.done = true
+	_u.mutation.done = true
 	return _node, nil
 }

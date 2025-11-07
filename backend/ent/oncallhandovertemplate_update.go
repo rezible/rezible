@@ -26,108 +26,108 @@ type OncallHandoverTemplateUpdate struct {
 }
 
 // Where appends a list predicates to the OncallHandoverTemplateUpdate builder.
-func (ohtu *OncallHandoverTemplateUpdate) Where(ps ...predicate.OncallHandoverTemplate) *OncallHandoverTemplateUpdate {
-	ohtu.mutation.Where(ps...)
-	return ohtu
+func (_u *OncallHandoverTemplateUpdate) Where(ps ...predicate.OncallHandoverTemplate) *OncallHandoverTemplateUpdate {
+	_u.mutation.Where(ps...)
+	return _u
 }
 
 // SetCreatedAt sets the "created_at" field.
-func (ohtu *OncallHandoverTemplateUpdate) SetCreatedAt(t time.Time) *OncallHandoverTemplateUpdate {
-	ohtu.mutation.SetCreatedAt(t)
-	return ohtu
+func (_u *OncallHandoverTemplateUpdate) SetCreatedAt(v time.Time) *OncallHandoverTemplateUpdate {
+	_u.mutation.SetCreatedAt(v)
+	return _u
 }
 
 // SetNillableCreatedAt sets the "created_at" field if the given value is not nil.
-func (ohtu *OncallHandoverTemplateUpdate) SetNillableCreatedAt(t *time.Time) *OncallHandoverTemplateUpdate {
-	if t != nil {
-		ohtu.SetCreatedAt(*t)
+func (_u *OncallHandoverTemplateUpdate) SetNillableCreatedAt(v *time.Time) *OncallHandoverTemplateUpdate {
+	if v != nil {
+		_u.SetCreatedAt(*v)
 	}
-	return ohtu
+	return _u
 }
 
 // SetUpdatedAt sets the "updated_at" field.
-func (ohtu *OncallHandoverTemplateUpdate) SetUpdatedAt(t time.Time) *OncallHandoverTemplateUpdate {
-	ohtu.mutation.SetUpdatedAt(t)
-	return ohtu
+func (_u *OncallHandoverTemplateUpdate) SetUpdatedAt(v time.Time) *OncallHandoverTemplateUpdate {
+	_u.mutation.SetUpdatedAt(v)
+	return _u
 }
 
 // SetNillableUpdatedAt sets the "updated_at" field if the given value is not nil.
-func (ohtu *OncallHandoverTemplateUpdate) SetNillableUpdatedAt(t *time.Time) *OncallHandoverTemplateUpdate {
-	if t != nil {
-		ohtu.SetUpdatedAt(*t)
+func (_u *OncallHandoverTemplateUpdate) SetNillableUpdatedAt(v *time.Time) *OncallHandoverTemplateUpdate {
+	if v != nil {
+		_u.SetUpdatedAt(*v)
 	}
-	return ohtu
+	return _u
 }
 
 // SetContents sets the "contents" field.
-func (ohtu *OncallHandoverTemplateUpdate) SetContents(b []byte) *OncallHandoverTemplateUpdate {
-	ohtu.mutation.SetContents(b)
-	return ohtu
+func (_u *OncallHandoverTemplateUpdate) SetContents(v []byte) *OncallHandoverTemplateUpdate {
+	_u.mutation.SetContents(v)
+	return _u
 }
 
 // SetIsDefault sets the "is_default" field.
-func (ohtu *OncallHandoverTemplateUpdate) SetIsDefault(b bool) *OncallHandoverTemplateUpdate {
-	ohtu.mutation.SetIsDefault(b)
-	return ohtu
+func (_u *OncallHandoverTemplateUpdate) SetIsDefault(v bool) *OncallHandoverTemplateUpdate {
+	_u.mutation.SetIsDefault(v)
+	return _u
 }
 
 // SetNillableIsDefault sets the "is_default" field if the given value is not nil.
-func (ohtu *OncallHandoverTemplateUpdate) SetNillableIsDefault(b *bool) *OncallHandoverTemplateUpdate {
-	if b != nil {
-		ohtu.SetIsDefault(*b)
+func (_u *OncallHandoverTemplateUpdate) SetNillableIsDefault(v *bool) *OncallHandoverTemplateUpdate {
+	if v != nil {
+		_u.SetIsDefault(*v)
 	}
-	return ohtu
+	return _u
 }
 
 // AddRosterIDs adds the "roster" edge to the OncallRoster entity by IDs.
-func (ohtu *OncallHandoverTemplateUpdate) AddRosterIDs(ids ...uuid.UUID) *OncallHandoverTemplateUpdate {
-	ohtu.mutation.AddRosterIDs(ids...)
-	return ohtu
+func (_u *OncallHandoverTemplateUpdate) AddRosterIDs(ids ...uuid.UUID) *OncallHandoverTemplateUpdate {
+	_u.mutation.AddRosterIDs(ids...)
+	return _u
 }
 
 // AddRoster adds the "roster" edges to the OncallRoster entity.
-func (ohtu *OncallHandoverTemplateUpdate) AddRoster(o ...*OncallRoster) *OncallHandoverTemplateUpdate {
-	ids := make([]uuid.UUID, len(o))
-	for i := range o {
-		ids[i] = o[i].ID
+func (_u *OncallHandoverTemplateUpdate) AddRoster(v ...*OncallRoster) *OncallHandoverTemplateUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
 	}
-	return ohtu.AddRosterIDs(ids...)
+	return _u.AddRosterIDs(ids...)
 }
 
 // Mutation returns the OncallHandoverTemplateMutation object of the builder.
-func (ohtu *OncallHandoverTemplateUpdate) Mutation() *OncallHandoverTemplateMutation {
-	return ohtu.mutation
+func (_u *OncallHandoverTemplateUpdate) Mutation() *OncallHandoverTemplateMutation {
+	return _u.mutation
 }
 
 // ClearRoster clears all "roster" edges to the OncallRoster entity.
-func (ohtu *OncallHandoverTemplateUpdate) ClearRoster() *OncallHandoverTemplateUpdate {
-	ohtu.mutation.ClearRoster()
-	return ohtu
+func (_u *OncallHandoverTemplateUpdate) ClearRoster() *OncallHandoverTemplateUpdate {
+	_u.mutation.ClearRoster()
+	return _u
 }
 
 // RemoveRosterIDs removes the "roster" edge to OncallRoster entities by IDs.
-func (ohtu *OncallHandoverTemplateUpdate) RemoveRosterIDs(ids ...uuid.UUID) *OncallHandoverTemplateUpdate {
-	ohtu.mutation.RemoveRosterIDs(ids...)
-	return ohtu
+func (_u *OncallHandoverTemplateUpdate) RemoveRosterIDs(ids ...uuid.UUID) *OncallHandoverTemplateUpdate {
+	_u.mutation.RemoveRosterIDs(ids...)
+	return _u
 }
 
 // RemoveRoster removes "roster" edges to OncallRoster entities.
-func (ohtu *OncallHandoverTemplateUpdate) RemoveRoster(o ...*OncallRoster) *OncallHandoverTemplateUpdate {
-	ids := make([]uuid.UUID, len(o))
-	for i := range o {
-		ids[i] = o[i].ID
+func (_u *OncallHandoverTemplateUpdate) RemoveRoster(v ...*OncallRoster) *OncallHandoverTemplateUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
 	}
-	return ohtu.RemoveRosterIDs(ids...)
+	return _u.RemoveRosterIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
-func (ohtu *OncallHandoverTemplateUpdate) Save(ctx context.Context) (int, error) {
-	return withHooks(ctx, ohtu.sqlSave, ohtu.mutation, ohtu.hooks)
+func (_u *OncallHandoverTemplateUpdate) Save(ctx context.Context) (int, error) {
+	return withHooks(ctx, _u.sqlSave, _u.mutation, _u.hooks)
 }
 
 // SaveX is like Save, but panics if an error occurs.
-func (ohtu *OncallHandoverTemplateUpdate) SaveX(ctx context.Context) int {
-	affected, err := ohtu.Save(ctx)
+func (_u *OncallHandoverTemplateUpdate) SaveX(ctx context.Context) int {
+	affected, err := _u.Save(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -135,57 +135,57 @@ func (ohtu *OncallHandoverTemplateUpdate) SaveX(ctx context.Context) int {
 }
 
 // Exec executes the query.
-func (ohtu *OncallHandoverTemplateUpdate) Exec(ctx context.Context) error {
-	_, err := ohtu.Save(ctx)
+func (_u *OncallHandoverTemplateUpdate) Exec(ctx context.Context) error {
+	_, err := _u.Save(ctx)
 	return err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (ohtu *OncallHandoverTemplateUpdate) ExecX(ctx context.Context) {
-	if err := ohtu.Exec(ctx); err != nil {
+func (_u *OncallHandoverTemplateUpdate) ExecX(ctx context.Context) {
+	if err := _u.Exec(ctx); err != nil {
 		panic(err)
 	}
 }
 
 // check runs all checks and user-defined validators on the builder.
-func (ohtu *OncallHandoverTemplateUpdate) check() error {
-	if ohtu.mutation.TenantCleared() && len(ohtu.mutation.TenantIDs()) > 0 {
+func (_u *OncallHandoverTemplateUpdate) check() error {
+	if _u.mutation.TenantCleared() && len(_u.mutation.TenantIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "OncallHandoverTemplate.tenant"`)
 	}
 	return nil
 }
 
 // Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
-func (ohtu *OncallHandoverTemplateUpdate) Modify(modifiers ...func(u *sql.UpdateBuilder)) *OncallHandoverTemplateUpdate {
-	ohtu.modifiers = append(ohtu.modifiers, modifiers...)
-	return ohtu
+func (_u *OncallHandoverTemplateUpdate) Modify(modifiers ...func(u *sql.UpdateBuilder)) *OncallHandoverTemplateUpdate {
+	_u.modifiers = append(_u.modifiers, modifiers...)
+	return _u
 }
 
-func (ohtu *OncallHandoverTemplateUpdate) sqlSave(ctx context.Context) (n int, err error) {
-	if err := ohtu.check(); err != nil {
-		return n, err
+func (_u *OncallHandoverTemplateUpdate) sqlSave(ctx context.Context) (_node int, err error) {
+	if err := _u.check(); err != nil {
+		return _node, err
 	}
 	_spec := sqlgraph.NewUpdateSpec(oncallhandovertemplate.Table, oncallhandovertemplate.Columns, sqlgraph.NewFieldSpec(oncallhandovertemplate.FieldID, field.TypeUUID))
-	if ps := ohtu.mutation.predicates; len(ps) > 0 {
+	if ps := _u.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {
 				ps[i](selector)
 			}
 		}
 	}
-	if value, ok := ohtu.mutation.CreatedAt(); ok {
+	if value, ok := _u.mutation.CreatedAt(); ok {
 		_spec.SetField(oncallhandovertemplate.FieldCreatedAt, field.TypeTime, value)
 	}
-	if value, ok := ohtu.mutation.UpdatedAt(); ok {
+	if value, ok := _u.mutation.UpdatedAt(); ok {
 		_spec.SetField(oncallhandovertemplate.FieldUpdatedAt, field.TypeTime, value)
 	}
-	if value, ok := ohtu.mutation.Contents(); ok {
+	if value, ok := _u.mutation.Contents(); ok {
 		_spec.SetField(oncallhandovertemplate.FieldContents, field.TypeBytes, value)
 	}
-	if value, ok := ohtu.mutation.IsDefault(); ok {
+	if value, ok := _u.mutation.IsDefault(); ok {
 		_spec.SetField(oncallhandovertemplate.FieldIsDefault, field.TypeBool, value)
 	}
-	if ohtu.mutation.RosterCleared() {
+	if _u.mutation.RosterCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
@@ -198,7 +198,7 @@ func (ohtu *OncallHandoverTemplateUpdate) sqlSave(ctx context.Context) (n int, e
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := ohtu.mutation.RemovedRosterIDs(); len(nodes) > 0 && !ohtu.mutation.RosterCleared() {
+	if nodes := _u.mutation.RemovedRosterIDs(); len(nodes) > 0 && !_u.mutation.RosterCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
@@ -214,7 +214,7 @@ func (ohtu *OncallHandoverTemplateUpdate) sqlSave(ctx context.Context) (n int, e
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := ohtu.mutation.RosterIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.RosterIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
@@ -230,8 +230,8 @@ func (ohtu *OncallHandoverTemplateUpdate) sqlSave(ctx context.Context) (n int, e
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	_spec.AddModifiers(ohtu.modifiers...)
-	if n, err = sqlgraph.UpdateNodes(ctx, ohtu.driver, _spec); err != nil {
+	_spec.AddModifiers(_u.modifiers...)
+	if _node, err = sqlgraph.UpdateNodes(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{oncallhandovertemplate.Label}
 		} else if sqlgraph.IsConstraintError(err) {
@@ -239,8 +239,8 @@ func (ohtu *OncallHandoverTemplateUpdate) sqlSave(ctx context.Context) (n int, e
 		}
 		return 0, err
 	}
-	ohtu.mutation.done = true
-	return n, nil
+	_u.mutation.done = true
+	return _node, nil
 }
 
 // OncallHandoverTemplateUpdateOne is the builder for updating a single OncallHandoverTemplate entity.
@@ -253,115 +253,115 @@ type OncallHandoverTemplateUpdateOne struct {
 }
 
 // SetCreatedAt sets the "created_at" field.
-func (ohtuo *OncallHandoverTemplateUpdateOne) SetCreatedAt(t time.Time) *OncallHandoverTemplateUpdateOne {
-	ohtuo.mutation.SetCreatedAt(t)
-	return ohtuo
+func (_u *OncallHandoverTemplateUpdateOne) SetCreatedAt(v time.Time) *OncallHandoverTemplateUpdateOne {
+	_u.mutation.SetCreatedAt(v)
+	return _u
 }
 
 // SetNillableCreatedAt sets the "created_at" field if the given value is not nil.
-func (ohtuo *OncallHandoverTemplateUpdateOne) SetNillableCreatedAt(t *time.Time) *OncallHandoverTemplateUpdateOne {
-	if t != nil {
-		ohtuo.SetCreatedAt(*t)
+func (_u *OncallHandoverTemplateUpdateOne) SetNillableCreatedAt(v *time.Time) *OncallHandoverTemplateUpdateOne {
+	if v != nil {
+		_u.SetCreatedAt(*v)
 	}
-	return ohtuo
+	return _u
 }
 
 // SetUpdatedAt sets the "updated_at" field.
-func (ohtuo *OncallHandoverTemplateUpdateOne) SetUpdatedAt(t time.Time) *OncallHandoverTemplateUpdateOne {
-	ohtuo.mutation.SetUpdatedAt(t)
-	return ohtuo
+func (_u *OncallHandoverTemplateUpdateOne) SetUpdatedAt(v time.Time) *OncallHandoverTemplateUpdateOne {
+	_u.mutation.SetUpdatedAt(v)
+	return _u
 }
 
 // SetNillableUpdatedAt sets the "updated_at" field if the given value is not nil.
-func (ohtuo *OncallHandoverTemplateUpdateOne) SetNillableUpdatedAt(t *time.Time) *OncallHandoverTemplateUpdateOne {
-	if t != nil {
-		ohtuo.SetUpdatedAt(*t)
+func (_u *OncallHandoverTemplateUpdateOne) SetNillableUpdatedAt(v *time.Time) *OncallHandoverTemplateUpdateOne {
+	if v != nil {
+		_u.SetUpdatedAt(*v)
 	}
-	return ohtuo
+	return _u
 }
 
 // SetContents sets the "contents" field.
-func (ohtuo *OncallHandoverTemplateUpdateOne) SetContents(b []byte) *OncallHandoverTemplateUpdateOne {
-	ohtuo.mutation.SetContents(b)
-	return ohtuo
+func (_u *OncallHandoverTemplateUpdateOne) SetContents(v []byte) *OncallHandoverTemplateUpdateOne {
+	_u.mutation.SetContents(v)
+	return _u
 }
 
 // SetIsDefault sets the "is_default" field.
-func (ohtuo *OncallHandoverTemplateUpdateOne) SetIsDefault(b bool) *OncallHandoverTemplateUpdateOne {
-	ohtuo.mutation.SetIsDefault(b)
-	return ohtuo
+func (_u *OncallHandoverTemplateUpdateOne) SetIsDefault(v bool) *OncallHandoverTemplateUpdateOne {
+	_u.mutation.SetIsDefault(v)
+	return _u
 }
 
 // SetNillableIsDefault sets the "is_default" field if the given value is not nil.
-func (ohtuo *OncallHandoverTemplateUpdateOne) SetNillableIsDefault(b *bool) *OncallHandoverTemplateUpdateOne {
-	if b != nil {
-		ohtuo.SetIsDefault(*b)
+func (_u *OncallHandoverTemplateUpdateOne) SetNillableIsDefault(v *bool) *OncallHandoverTemplateUpdateOne {
+	if v != nil {
+		_u.SetIsDefault(*v)
 	}
-	return ohtuo
+	return _u
 }
 
 // AddRosterIDs adds the "roster" edge to the OncallRoster entity by IDs.
-func (ohtuo *OncallHandoverTemplateUpdateOne) AddRosterIDs(ids ...uuid.UUID) *OncallHandoverTemplateUpdateOne {
-	ohtuo.mutation.AddRosterIDs(ids...)
-	return ohtuo
+func (_u *OncallHandoverTemplateUpdateOne) AddRosterIDs(ids ...uuid.UUID) *OncallHandoverTemplateUpdateOne {
+	_u.mutation.AddRosterIDs(ids...)
+	return _u
 }
 
 // AddRoster adds the "roster" edges to the OncallRoster entity.
-func (ohtuo *OncallHandoverTemplateUpdateOne) AddRoster(o ...*OncallRoster) *OncallHandoverTemplateUpdateOne {
-	ids := make([]uuid.UUID, len(o))
-	for i := range o {
-		ids[i] = o[i].ID
+func (_u *OncallHandoverTemplateUpdateOne) AddRoster(v ...*OncallRoster) *OncallHandoverTemplateUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
 	}
-	return ohtuo.AddRosterIDs(ids...)
+	return _u.AddRosterIDs(ids...)
 }
 
 // Mutation returns the OncallHandoverTemplateMutation object of the builder.
-func (ohtuo *OncallHandoverTemplateUpdateOne) Mutation() *OncallHandoverTemplateMutation {
-	return ohtuo.mutation
+func (_u *OncallHandoverTemplateUpdateOne) Mutation() *OncallHandoverTemplateMutation {
+	return _u.mutation
 }
 
 // ClearRoster clears all "roster" edges to the OncallRoster entity.
-func (ohtuo *OncallHandoverTemplateUpdateOne) ClearRoster() *OncallHandoverTemplateUpdateOne {
-	ohtuo.mutation.ClearRoster()
-	return ohtuo
+func (_u *OncallHandoverTemplateUpdateOne) ClearRoster() *OncallHandoverTemplateUpdateOne {
+	_u.mutation.ClearRoster()
+	return _u
 }
 
 // RemoveRosterIDs removes the "roster" edge to OncallRoster entities by IDs.
-func (ohtuo *OncallHandoverTemplateUpdateOne) RemoveRosterIDs(ids ...uuid.UUID) *OncallHandoverTemplateUpdateOne {
-	ohtuo.mutation.RemoveRosterIDs(ids...)
-	return ohtuo
+func (_u *OncallHandoverTemplateUpdateOne) RemoveRosterIDs(ids ...uuid.UUID) *OncallHandoverTemplateUpdateOne {
+	_u.mutation.RemoveRosterIDs(ids...)
+	return _u
 }
 
 // RemoveRoster removes "roster" edges to OncallRoster entities.
-func (ohtuo *OncallHandoverTemplateUpdateOne) RemoveRoster(o ...*OncallRoster) *OncallHandoverTemplateUpdateOne {
-	ids := make([]uuid.UUID, len(o))
-	for i := range o {
-		ids[i] = o[i].ID
+func (_u *OncallHandoverTemplateUpdateOne) RemoveRoster(v ...*OncallRoster) *OncallHandoverTemplateUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
 	}
-	return ohtuo.RemoveRosterIDs(ids...)
+	return _u.RemoveRosterIDs(ids...)
 }
 
 // Where appends a list predicates to the OncallHandoverTemplateUpdate builder.
-func (ohtuo *OncallHandoverTemplateUpdateOne) Where(ps ...predicate.OncallHandoverTemplate) *OncallHandoverTemplateUpdateOne {
-	ohtuo.mutation.Where(ps...)
-	return ohtuo
+func (_u *OncallHandoverTemplateUpdateOne) Where(ps ...predicate.OncallHandoverTemplate) *OncallHandoverTemplateUpdateOne {
+	_u.mutation.Where(ps...)
+	return _u
 }
 
 // Select allows selecting one or more fields (columns) of the returned entity.
 // The default is selecting all fields defined in the entity schema.
-func (ohtuo *OncallHandoverTemplateUpdateOne) Select(field string, fields ...string) *OncallHandoverTemplateUpdateOne {
-	ohtuo.fields = append([]string{field}, fields...)
-	return ohtuo
+func (_u *OncallHandoverTemplateUpdateOne) Select(field string, fields ...string) *OncallHandoverTemplateUpdateOne {
+	_u.fields = append([]string{field}, fields...)
+	return _u
 }
 
 // Save executes the query and returns the updated OncallHandoverTemplate entity.
-func (ohtuo *OncallHandoverTemplateUpdateOne) Save(ctx context.Context) (*OncallHandoverTemplate, error) {
-	return withHooks(ctx, ohtuo.sqlSave, ohtuo.mutation, ohtuo.hooks)
+func (_u *OncallHandoverTemplateUpdateOne) Save(ctx context.Context) (*OncallHandoverTemplate, error) {
+	return withHooks(ctx, _u.sqlSave, _u.mutation, _u.hooks)
 }
 
 // SaveX is like Save, but panics if an error occurs.
-func (ohtuo *OncallHandoverTemplateUpdateOne) SaveX(ctx context.Context) *OncallHandoverTemplate {
-	node, err := ohtuo.Save(ctx)
+func (_u *OncallHandoverTemplateUpdateOne) SaveX(ctx context.Context) *OncallHandoverTemplate {
+	node, err := _u.Save(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -369,43 +369,43 @@ func (ohtuo *OncallHandoverTemplateUpdateOne) SaveX(ctx context.Context) *Oncall
 }
 
 // Exec executes the query on the entity.
-func (ohtuo *OncallHandoverTemplateUpdateOne) Exec(ctx context.Context) error {
-	_, err := ohtuo.Save(ctx)
+func (_u *OncallHandoverTemplateUpdateOne) Exec(ctx context.Context) error {
+	_, err := _u.Save(ctx)
 	return err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (ohtuo *OncallHandoverTemplateUpdateOne) ExecX(ctx context.Context) {
-	if err := ohtuo.Exec(ctx); err != nil {
+func (_u *OncallHandoverTemplateUpdateOne) ExecX(ctx context.Context) {
+	if err := _u.Exec(ctx); err != nil {
 		panic(err)
 	}
 }
 
 // check runs all checks and user-defined validators on the builder.
-func (ohtuo *OncallHandoverTemplateUpdateOne) check() error {
-	if ohtuo.mutation.TenantCleared() && len(ohtuo.mutation.TenantIDs()) > 0 {
+func (_u *OncallHandoverTemplateUpdateOne) check() error {
+	if _u.mutation.TenantCleared() && len(_u.mutation.TenantIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "OncallHandoverTemplate.tenant"`)
 	}
 	return nil
 }
 
 // Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
-func (ohtuo *OncallHandoverTemplateUpdateOne) Modify(modifiers ...func(u *sql.UpdateBuilder)) *OncallHandoverTemplateUpdateOne {
-	ohtuo.modifiers = append(ohtuo.modifiers, modifiers...)
-	return ohtuo
+func (_u *OncallHandoverTemplateUpdateOne) Modify(modifiers ...func(u *sql.UpdateBuilder)) *OncallHandoverTemplateUpdateOne {
+	_u.modifiers = append(_u.modifiers, modifiers...)
+	return _u
 }
 
-func (ohtuo *OncallHandoverTemplateUpdateOne) sqlSave(ctx context.Context) (_node *OncallHandoverTemplate, err error) {
-	if err := ohtuo.check(); err != nil {
+func (_u *OncallHandoverTemplateUpdateOne) sqlSave(ctx context.Context) (_node *OncallHandoverTemplate, err error) {
+	if err := _u.check(); err != nil {
 		return _node, err
 	}
 	_spec := sqlgraph.NewUpdateSpec(oncallhandovertemplate.Table, oncallhandovertemplate.Columns, sqlgraph.NewFieldSpec(oncallhandovertemplate.FieldID, field.TypeUUID))
-	id, ok := ohtuo.mutation.ID()
+	id, ok := _u.mutation.ID()
 	if !ok {
 		return nil, &ValidationError{Name: "id", err: errors.New(`ent: missing "OncallHandoverTemplate.id" for update`)}
 	}
 	_spec.Node.ID.Value = id
-	if fields := ohtuo.fields; len(fields) > 0 {
+	if fields := _u.fields; len(fields) > 0 {
 		_spec.Node.Columns = make([]string, 0, len(fields))
 		_spec.Node.Columns = append(_spec.Node.Columns, oncallhandovertemplate.FieldID)
 		for _, f := range fields {
@@ -417,26 +417,26 @@ func (ohtuo *OncallHandoverTemplateUpdateOne) sqlSave(ctx context.Context) (_nod
 			}
 		}
 	}
-	if ps := ohtuo.mutation.predicates; len(ps) > 0 {
+	if ps := _u.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {
 				ps[i](selector)
 			}
 		}
 	}
-	if value, ok := ohtuo.mutation.CreatedAt(); ok {
+	if value, ok := _u.mutation.CreatedAt(); ok {
 		_spec.SetField(oncallhandovertemplate.FieldCreatedAt, field.TypeTime, value)
 	}
-	if value, ok := ohtuo.mutation.UpdatedAt(); ok {
+	if value, ok := _u.mutation.UpdatedAt(); ok {
 		_spec.SetField(oncallhandovertemplate.FieldUpdatedAt, field.TypeTime, value)
 	}
-	if value, ok := ohtuo.mutation.Contents(); ok {
+	if value, ok := _u.mutation.Contents(); ok {
 		_spec.SetField(oncallhandovertemplate.FieldContents, field.TypeBytes, value)
 	}
-	if value, ok := ohtuo.mutation.IsDefault(); ok {
+	if value, ok := _u.mutation.IsDefault(); ok {
 		_spec.SetField(oncallhandovertemplate.FieldIsDefault, field.TypeBool, value)
 	}
-	if ohtuo.mutation.RosterCleared() {
+	if _u.mutation.RosterCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
@@ -449,7 +449,7 @@ func (ohtuo *OncallHandoverTemplateUpdateOne) sqlSave(ctx context.Context) (_nod
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := ohtuo.mutation.RemovedRosterIDs(); len(nodes) > 0 && !ohtuo.mutation.RosterCleared() {
+	if nodes := _u.mutation.RemovedRosterIDs(); len(nodes) > 0 && !_u.mutation.RosterCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
@@ -465,7 +465,7 @@ func (ohtuo *OncallHandoverTemplateUpdateOne) sqlSave(ctx context.Context) (_nod
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := ohtuo.mutation.RosterIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.RosterIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
@@ -481,11 +481,11 @@ func (ohtuo *OncallHandoverTemplateUpdateOne) sqlSave(ctx context.Context) (_nod
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	_spec.AddModifiers(ohtuo.modifiers...)
-	_node = &OncallHandoverTemplate{config: ohtuo.config}
+	_spec.AddModifiers(_u.modifiers...)
+	_node = &OncallHandoverTemplate{config: _u.config}
 	_spec.Assign = _node.assignValues
 	_spec.ScanValues = _node.scanValues
-	if err = sqlgraph.UpdateNode(ctx, ohtuo.driver, _spec); err != nil {
+	if err = sqlgraph.UpdateNode(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{oncallhandovertemplate.Label}
 		} else if sqlgraph.IsConstraintError(err) {
@@ -493,6 +493,6 @@ func (ohtuo *OncallHandoverTemplateUpdateOne) sqlSave(ctx context.Context) (_nod
 		}
 		return nil, err
 	}
-	ohtuo.mutation.done = true
+	_u.mutation.done = true
 	return _node, nil
 }

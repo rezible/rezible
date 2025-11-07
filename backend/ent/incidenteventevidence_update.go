@@ -26,117 +26,117 @@ type IncidentEventEvidenceUpdate struct {
 }
 
 // Where appends a list predicates to the IncidentEventEvidenceUpdate builder.
-func (ieeu *IncidentEventEvidenceUpdate) Where(ps ...predicate.IncidentEventEvidence) *IncidentEventEvidenceUpdate {
-	ieeu.mutation.Where(ps...)
-	return ieeu
+func (_u *IncidentEventEvidenceUpdate) Where(ps ...predicate.IncidentEventEvidence) *IncidentEventEvidenceUpdate {
+	_u.mutation.Where(ps...)
+	return _u
 }
 
 // SetEvidenceType sets the "evidence_type" field.
-func (ieeu *IncidentEventEvidenceUpdate) SetEvidenceType(it incidenteventevidence.EvidenceType) *IncidentEventEvidenceUpdate {
-	ieeu.mutation.SetEvidenceType(it)
-	return ieeu
+func (_u *IncidentEventEvidenceUpdate) SetEvidenceType(v incidenteventevidence.EvidenceType) *IncidentEventEvidenceUpdate {
+	_u.mutation.SetEvidenceType(v)
+	return _u
 }
 
 // SetNillableEvidenceType sets the "evidence_type" field if the given value is not nil.
-func (ieeu *IncidentEventEvidenceUpdate) SetNillableEvidenceType(it *incidenteventevidence.EvidenceType) *IncidentEventEvidenceUpdate {
-	if it != nil {
-		ieeu.SetEvidenceType(*it)
+func (_u *IncidentEventEvidenceUpdate) SetNillableEvidenceType(v *incidenteventevidence.EvidenceType) *IncidentEventEvidenceUpdate {
+	if v != nil {
+		_u.SetEvidenceType(*v)
 	}
-	return ieeu
+	return _u
 }
 
 // SetURL sets the "url" field.
-func (ieeu *IncidentEventEvidenceUpdate) SetURL(s string) *IncidentEventEvidenceUpdate {
-	ieeu.mutation.SetURL(s)
-	return ieeu
+func (_u *IncidentEventEvidenceUpdate) SetURL(v string) *IncidentEventEvidenceUpdate {
+	_u.mutation.SetURL(v)
+	return _u
 }
 
 // SetNillableURL sets the "url" field if the given value is not nil.
-func (ieeu *IncidentEventEvidenceUpdate) SetNillableURL(s *string) *IncidentEventEvidenceUpdate {
-	if s != nil {
-		ieeu.SetURL(*s)
+func (_u *IncidentEventEvidenceUpdate) SetNillableURL(v *string) *IncidentEventEvidenceUpdate {
+	if v != nil {
+		_u.SetURL(*v)
 	}
-	return ieeu
+	return _u
 }
 
 // SetTitle sets the "title" field.
-func (ieeu *IncidentEventEvidenceUpdate) SetTitle(s string) *IncidentEventEvidenceUpdate {
-	ieeu.mutation.SetTitle(s)
-	return ieeu
+func (_u *IncidentEventEvidenceUpdate) SetTitle(v string) *IncidentEventEvidenceUpdate {
+	_u.mutation.SetTitle(v)
+	return _u
 }
 
 // SetNillableTitle sets the "title" field if the given value is not nil.
-func (ieeu *IncidentEventEvidenceUpdate) SetNillableTitle(s *string) *IncidentEventEvidenceUpdate {
-	if s != nil {
-		ieeu.SetTitle(*s)
+func (_u *IncidentEventEvidenceUpdate) SetNillableTitle(v *string) *IncidentEventEvidenceUpdate {
+	if v != nil {
+		_u.SetTitle(*v)
 	}
-	return ieeu
+	return _u
 }
 
 // SetDescription sets the "description" field.
-func (ieeu *IncidentEventEvidenceUpdate) SetDescription(s string) *IncidentEventEvidenceUpdate {
-	ieeu.mutation.SetDescription(s)
-	return ieeu
+func (_u *IncidentEventEvidenceUpdate) SetDescription(v string) *IncidentEventEvidenceUpdate {
+	_u.mutation.SetDescription(v)
+	return _u
 }
 
 // SetNillableDescription sets the "description" field if the given value is not nil.
-func (ieeu *IncidentEventEvidenceUpdate) SetNillableDescription(s *string) *IncidentEventEvidenceUpdate {
-	if s != nil {
-		ieeu.SetDescription(*s)
+func (_u *IncidentEventEvidenceUpdate) SetNillableDescription(v *string) *IncidentEventEvidenceUpdate {
+	if v != nil {
+		_u.SetDescription(*v)
 	}
-	return ieeu
+	return _u
 }
 
 // ClearDescription clears the value of the "description" field.
-func (ieeu *IncidentEventEvidenceUpdate) ClearDescription() *IncidentEventEvidenceUpdate {
-	ieeu.mutation.ClearDescription()
-	return ieeu
+func (_u *IncidentEventEvidenceUpdate) ClearDescription() *IncidentEventEvidenceUpdate {
+	_u.mutation.ClearDescription()
+	return _u
 }
 
 // SetCreatedAt sets the "created_at" field.
-func (ieeu *IncidentEventEvidenceUpdate) SetCreatedAt(t time.Time) *IncidentEventEvidenceUpdate {
-	ieeu.mutation.SetCreatedAt(t)
-	return ieeu
+func (_u *IncidentEventEvidenceUpdate) SetCreatedAt(v time.Time) *IncidentEventEvidenceUpdate {
+	_u.mutation.SetCreatedAt(v)
+	return _u
 }
 
 // SetNillableCreatedAt sets the "created_at" field if the given value is not nil.
-func (ieeu *IncidentEventEvidenceUpdate) SetNillableCreatedAt(t *time.Time) *IncidentEventEvidenceUpdate {
-	if t != nil {
-		ieeu.SetCreatedAt(*t)
+func (_u *IncidentEventEvidenceUpdate) SetNillableCreatedAt(v *time.Time) *IncidentEventEvidenceUpdate {
+	if v != nil {
+		_u.SetCreatedAt(*v)
 	}
-	return ieeu
+	return _u
 }
 
 // SetEventID sets the "event" edge to the IncidentEvent entity by ID.
-func (ieeu *IncidentEventEvidenceUpdate) SetEventID(id uuid.UUID) *IncidentEventEvidenceUpdate {
-	ieeu.mutation.SetEventID(id)
-	return ieeu
+func (_u *IncidentEventEvidenceUpdate) SetEventID(id uuid.UUID) *IncidentEventEvidenceUpdate {
+	_u.mutation.SetEventID(id)
+	return _u
 }
 
 // SetEvent sets the "event" edge to the IncidentEvent entity.
-func (ieeu *IncidentEventEvidenceUpdate) SetEvent(i *IncidentEvent) *IncidentEventEvidenceUpdate {
-	return ieeu.SetEventID(i.ID)
+func (_u *IncidentEventEvidenceUpdate) SetEvent(v *IncidentEvent) *IncidentEventEvidenceUpdate {
+	return _u.SetEventID(v.ID)
 }
 
 // Mutation returns the IncidentEventEvidenceMutation object of the builder.
-func (ieeu *IncidentEventEvidenceUpdate) Mutation() *IncidentEventEvidenceMutation {
-	return ieeu.mutation
+func (_u *IncidentEventEvidenceUpdate) Mutation() *IncidentEventEvidenceMutation {
+	return _u.mutation
 }
 
 // ClearEvent clears the "event" edge to the IncidentEvent entity.
-func (ieeu *IncidentEventEvidenceUpdate) ClearEvent() *IncidentEventEvidenceUpdate {
-	ieeu.mutation.ClearEvent()
-	return ieeu
+func (_u *IncidentEventEvidenceUpdate) ClearEvent() *IncidentEventEvidenceUpdate {
+	_u.mutation.ClearEvent()
+	return _u
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
-func (ieeu *IncidentEventEvidenceUpdate) Save(ctx context.Context) (int, error) {
-	return withHooks(ctx, ieeu.sqlSave, ieeu.mutation, ieeu.hooks)
+func (_u *IncidentEventEvidenceUpdate) Save(ctx context.Context) (int, error) {
+	return withHooks(ctx, _u.sqlSave, _u.mutation, _u.hooks)
 }
 
 // SaveX is like Save, but panics if an error occurs.
-func (ieeu *IncidentEventEvidenceUpdate) SaveX(ctx context.Context) int {
-	affected, err := ieeu.Save(ctx)
+func (_u *IncidentEventEvidenceUpdate) SaveX(ctx context.Context) int {
+	affected, err := _u.Save(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -144,81 +144,81 @@ func (ieeu *IncidentEventEvidenceUpdate) SaveX(ctx context.Context) int {
 }
 
 // Exec executes the query.
-func (ieeu *IncidentEventEvidenceUpdate) Exec(ctx context.Context) error {
-	_, err := ieeu.Save(ctx)
+func (_u *IncidentEventEvidenceUpdate) Exec(ctx context.Context) error {
+	_, err := _u.Save(ctx)
 	return err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (ieeu *IncidentEventEvidenceUpdate) ExecX(ctx context.Context) {
-	if err := ieeu.Exec(ctx); err != nil {
+func (_u *IncidentEventEvidenceUpdate) ExecX(ctx context.Context) {
+	if err := _u.Exec(ctx); err != nil {
 		panic(err)
 	}
 }
 
 // check runs all checks and user-defined validators on the builder.
-func (ieeu *IncidentEventEvidenceUpdate) check() error {
-	if v, ok := ieeu.mutation.EvidenceType(); ok {
+func (_u *IncidentEventEvidenceUpdate) check() error {
+	if v, ok := _u.mutation.EvidenceType(); ok {
 		if err := incidenteventevidence.EvidenceTypeValidator(v); err != nil {
 			return &ValidationError{Name: "evidence_type", err: fmt.Errorf(`ent: validator failed for field "IncidentEventEvidence.evidence_type": %w`, err)}
 		}
 	}
-	if v, ok := ieeu.mutation.URL(); ok {
+	if v, ok := _u.mutation.URL(); ok {
 		if err := incidenteventevidence.URLValidator(v); err != nil {
 			return &ValidationError{Name: "url", err: fmt.Errorf(`ent: validator failed for field "IncidentEventEvidence.url": %w`, err)}
 		}
 	}
-	if v, ok := ieeu.mutation.Title(); ok {
+	if v, ok := _u.mutation.Title(); ok {
 		if err := incidenteventevidence.TitleValidator(v); err != nil {
 			return &ValidationError{Name: "title", err: fmt.Errorf(`ent: validator failed for field "IncidentEventEvidence.title": %w`, err)}
 		}
 	}
-	if ieeu.mutation.TenantCleared() && len(ieeu.mutation.TenantIDs()) > 0 {
+	if _u.mutation.TenantCleared() && len(_u.mutation.TenantIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "IncidentEventEvidence.tenant"`)
 	}
-	if ieeu.mutation.EventCleared() && len(ieeu.mutation.EventIDs()) > 0 {
+	if _u.mutation.EventCleared() && len(_u.mutation.EventIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "IncidentEventEvidence.event"`)
 	}
 	return nil
 }
 
 // Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
-func (ieeu *IncidentEventEvidenceUpdate) Modify(modifiers ...func(u *sql.UpdateBuilder)) *IncidentEventEvidenceUpdate {
-	ieeu.modifiers = append(ieeu.modifiers, modifiers...)
-	return ieeu
+func (_u *IncidentEventEvidenceUpdate) Modify(modifiers ...func(u *sql.UpdateBuilder)) *IncidentEventEvidenceUpdate {
+	_u.modifiers = append(_u.modifiers, modifiers...)
+	return _u
 }
 
-func (ieeu *IncidentEventEvidenceUpdate) sqlSave(ctx context.Context) (n int, err error) {
-	if err := ieeu.check(); err != nil {
-		return n, err
+func (_u *IncidentEventEvidenceUpdate) sqlSave(ctx context.Context) (_node int, err error) {
+	if err := _u.check(); err != nil {
+		return _node, err
 	}
 	_spec := sqlgraph.NewUpdateSpec(incidenteventevidence.Table, incidenteventevidence.Columns, sqlgraph.NewFieldSpec(incidenteventevidence.FieldID, field.TypeUUID))
-	if ps := ieeu.mutation.predicates; len(ps) > 0 {
+	if ps := _u.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {
 				ps[i](selector)
 			}
 		}
 	}
-	if value, ok := ieeu.mutation.EvidenceType(); ok {
+	if value, ok := _u.mutation.EvidenceType(); ok {
 		_spec.SetField(incidenteventevidence.FieldEvidenceType, field.TypeEnum, value)
 	}
-	if value, ok := ieeu.mutation.URL(); ok {
+	if value, ok := _u.mutation.URL(); ok {
 		_spec.SetField(incidenteventevidence.FieldURL, field.TypeString, value)
 	}
-	if value, ok := ieeu.mutation.Title(); ok {
+	if value, ok := _u.mutation.Title(); ok {
 		_spec.SetField(incidenteventevidence.FieldTitle, field.TypeString, value)
 	}
-	if value, ok := ieeu.mutation.Description(); ok {
+	if value, ok := _u.mutation.Description(); ok {
 		_spec.SetField(incidenteventevidence.FieldDescription, field.TypeString, value)
 	}
-	if ieeu.mutation.DescriptionCleared() {
+	if _u.mutation.DescriptionCleared() {
 		_spec.ClearField(incidenteventevidence.FieldDescription, field.TypeString)
 	}
-	if value, ok := ieeu.mutation.CreatedAt(); ok {
+	if value, ok := _u.mutation.CreatedAt(); ok {
 		_spec.SetField(incidenteventevidence.FieldCreatedAt, field.TypeTime, value)
 	}
-	if ieeu.mutation.EventCleared() {
+	if _u.mutation.EventCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: true,
@@ -231,7 +231,7 @@ func (ieeu *IncidentEventEvidenceUpdate) sqlSave(ctx context.Context) (n int, er
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := ieeu.mutation.EventIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.EventIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: true,
@@ -247,8 +247,8 @@ func (ieeu *IncidentEventEvidenceUpdate) sqlSave(ctx context.Context) (n int, er
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	_spec.AddModifiers(ieeu.modifiers...)
-	if n, err = sqlgraph.UpdateNodes(ctx, ieeu.driver, _spec); err != nil {
+	_spec.AddModifiers(_u.modifiers...)
+	if _node, err = sqlgraph.UpdateNodes(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{incidenteventevidence.Label}
 		} else if sqlgraph.IsConstraintError(err) {
@@ -256,8 +256,8 @@ func (ieeu *IncidentEventEvidenceUpdate) sqlSave(ctx context.Context) (n int, er
 		}
 		return 0, err
 	}
-	ieeu.mutation.done = true
-	return n, nil
+	_u.mutation.done = true
+	return _node, nil
 }
 
 // IncidentEventEvidenceUpdateOne is the builder for updating a single IncidentEventEvidence entity.
@@ -270,124 +270,124 @@ type IncidentEventEvidenceUpdateOne struct {
 }
 
 // SetEvidenceType sets the "evidence_type" field.
-func (ieeuo *IncidentEventEvidenceUpdateOne) SetEvidenceType(it incidenteventevidence.EvidenceType) *IncidentEventEvidenceUpdateOne {
-	ieeuo.mutation.SetEvidenceType(it)
-	return ieeuo
+func (_u *IncidentEventEvidenceUpdateOne) SetEvidenceType(v incidenteventevidence.EvidenceType) *IncidentEventEvidenceUpdateOne {
+	_u.mutation.SetEvidenceType(v)
+	return _u
 }
 
 // SetNillableEvidenceType sets the "evidence_type" field if the given value is not nil.
-func (ieeuo *IncidentEventEvidenceUpdateOne) SetNillableEvidenceType(it *incidenteventevidence.EvidenceType) *IncidentEventEvidenceUpdateOne {
-	if it != nil {
-		ieeuo.SetEvidenceType(*it)
+func (_u *IncidentEventEvidenceUpdateOne) SetNillableEvidenceType(v *incidenteventevidence.EvidenceType) *IncidentEventEvidenceUpdateOne {
+	if v != nil {
+		_u.SetEvidenceType(*v)
 	}
-	return ieeuo
+	return _u
 }
 
 // SetURL sets the "url" field.
-func (ieeuo *IncidentEventEvidenceUpdateOne) SetURL(s string) *IncidentEventEvidenceUpdateOne {
-	ieeuo.mutation.SetURL(s)
-	return ieeuo
+func (_u *IncidentEventEvidenceUpdateOne) SetURL(v string) *IncidentEventEvidenceUpdateOne {
+	_u.mutation.SetURL(v)
+	return _u
 }
 
 // SetNillableURL sets the "url" field if the given value is not nil.
-func (ieeuo *IncidentEventEvidenceUpdateOne) SetNillableURL(s *string) *IncidentEventEvidenceUpdateOne {
-	if s != nil {
-		ieeuo.SetURL(*s)
+func (_u *IncidentEventEvidenceUpdateOne) SetNillableURL(v *string) *IncidentEventEvidenceUpdateOne {
+	if v != nil {
+		_u.SetURL(*v)
 	}
-	return ieeuo
+	return _u
 }
 
 // SetTitle sets the "title" field.
-func (ieeuo *IncidentEventEvidenceUpdateOne) SetTitle(s string) *IncidentEventEvidenceUpdateOne {
-	ieeuo.mutation.SetTitle(s)
-	return ieeuo
+func (_u *IncidentEventEvidenceUpdateOne) SetTitle(v string) *IncidentEventEvidenceUpdateOne {
+	_u.mutation.SetTitle(v)
+	return _u
 }
 
 // SetNillableTitle sets the "title" field if the given value is not nil.
-func (ieeuo *IncidentEventEvidenceUpdateOne) SetNillableTitle(s *string) *IncidentEventEvidenceUpdateOne {
-	if s != nil {
-		ieeuo.SetTitle(*s)
+func (_u *IncidentEventEvidenceUpdateOne) SetNillableTitle(v *string) *IncidentEventEvidenceUpdateOne {
+	if v != nil {
+		_u.SetTitle(*v)
 	}
-	return ieeuo
+	return _u
 }
 
 // SetDescription sets the "description" field.
-func (ieeuo *IncidentEventEvidenceUpdateOne) SetDescription(s string) *IncidentEventEvidenceUpdateOne {
-	ieeuo.mutation.SetDescription(s)
-	return ieeuo
+func (_u *IncidentEventEvidenceUpdateOne) SetDescription(v string) *IncidentEventEvidenceUpdateOne {
+	_u.mutation.SetDescription(v)
+	return _u
 }
 
 // SetNillableDescription sets the "description" field if the given value is not nil.
-func (ieeuo *IncidentEventEvidenceUpdateOne) SetNillableDescription(s *string) *IncidentEventEvidenceUpdateOne {
-	if s != nil {
-		ieeuo.SetDescription(*s)
+func (_u *IncidentEventEvidenceUpdateOne) SetNillableDescription(v *string) *IncidentEventEvidenceUpdateOne {
+	if v != nil {
+		_u.SetDescription(*v)
 	}
-	return ieeuo
+	return _u
 }
 
 // ClearDescription clears the value of the "description" field.
-func (ieeuo *IncidentEventEvidenceUpdateOne) ClearDescription() *IncidentEventEvidenceUpdateOne {
-	ieeuo.mutation.ClearDescription()
-	return ieeuo
+func (_u *IncidentEventEvidenceUpdateOne) ClearDescription() *IncidentEventEvidenceUpdateOne {
+	_u.mutation.ClearDescription()
+	return _u
 }
 
 // SetCreatedAt sets the "created_at" field.
-func (ieeuo *IncidentEventEvidenceUpdateOne) SetCreatedAt(t time.Time) *IncidentEventEvidenceUpdateOne {
-	ieeuo.mutation.SetCreatedAt(t)
-	return ieeuo
+func (_u *IncidentEventEvidenceUpdateOne) SetCreatedAt(v time.Time) *IncidentEventEvidenceUpdateOne {
+	_u.mutation.SetCreatedAt(v)
+	return _u
 }
 
 // SetNillableCreatedAt sets the "created_at" field if the given value is not nil.
-func (ieeuo *IncidentEventEvidenceUpdateOne) SetNillableCreatedAt(t *time.Time) *IncidentEventEvidenceUpdateOne {
-	if t != nil {
-		ieeuo.SetCreatedAt(*t)
+func (_u *IncidentEventEvidenceUpdateOne) SetNillableCreatedAt(v *time.Time) *IncidentEventEvidenceUpdateOne {
+	if v != nil {
+		_u.SetCreatedAt(*v)
 	}
-	return ieeuo
+	return _u
 }
 
 // SetEventID sets the "event" edge to the IncidentEvent entity by ID.
-func (ieeuo *IncidentEventEvidenceUpdateOne) SetEventID(id uuid.UUID) *IncidentEventEvidenceUpdateOne {
-	ieeuo.mutation.SetEventID(id)
-	return ieeuo
+func (_u *IncidentEventEvidenceUpdateOne) SetEventID(id uuid.UUID) *IncidentEventEvidenceUpdateOne {
+	_u.mutation.SetEventID(id)
+	return _u
 }
 
 // SetEvent sets the "event" edge to the IncidentEvent entity.
-func (ieeuo *IncidentEventEvidenceUpdateOne) SetEvent(i *IncidentEvent) *IncidentEventEvidenceUpdateOne {
-	return ieeuo.SetEventID(i.ID)
+func (_u *IncidentEventEvidenceUpdateOne) SetEvent(v *IncidentEvent) *IncidentEventEvidenceUpdateOne {
+	return _u.SetEventID(v.ID)
 }
 
 // Mutation returns the IncidentEventEvidenceMutation object of the builder.
-func (ieeuo *IncidentEventEvidenceUpdateOne) Mutation() *IncidentEventEvidenceMutation {
-	return ieeuo.mutation
+func (_u *IncidentEventEvidenceUpdateOne) Mutation() *IncidentEventEvidenceMutation {
+	return _u.mutation
 }
 
 // ClearEvent clears the "event" edge to the IncidentEvent entity.
-func (ieeuo *IncidentEventEvidenceUpdateOne) ClearEvent() *IncidentEventEvidenceUpdateOne {
-	ieeuo.mutation.ClearEvent()
-	return ieeuo
+func (_u *IncidentEventEvidenceUpdateOne) ClearEvent() *IncidentEventEvidenceUpdateOne {
+	_u.mutation.ClearEvent()
+	return _u
 }
 
 // Where appends a list predicates to the IncidentEventEvidenceUpdate builder.
-func (ieeuo *IncidentEventEvidenceUpdateOne) Where(ps ...predicate.IncidentEventEvidence) *IncidentEventEvidenceUpdateOne {
-	ieeuo.mutation.Where(ps...)
-	return ieeuo
+func (_u *IncidentEventEvidenceUpdateOne) Where(ps ...predicate.IncidentEventEvidence) *IncidentEventEvidenceUpdateOne {
+	_u.mutation.Where(ps...)
+	return _u
 }
 
 // Select allows selecting one or more fields (columns) of the returned entity.
 // The default is selecting all fields defined in the entity schema.
-func (ieeuo *IncidentEventEvidenceUpdateOne) Select(field string, fields ...string) *IncidentEventEvidenceUpdateOne {
-	ieeuo.fields = append([]string{field}, fields...)
-	return ieeuo
+func (_u *IncidentEventEvidenceUpdateOne) Select(field string, fields ...string) *IncidentEventEvidenceUpdateOne {
+	_u.fields = append([]string{field}, fields...)
+	return _u
 }
 
 // Save executes the query and returns the updated IncidentEventEvidence entity.
-func (ieeuo *IncidentEventEvidenceUpdateOne) Save(ctx context.Context) (*IncidentEventEvidence, error) {
-	return withHooks(ctx, ieeuo.sqlSave, ieeuo.mutation, ieeuo.hooks)
+func (_u *IncidentEventEvidenceUpdateOne) Save(ctx context.Context) (*IncidentEventEvidence, error) {
+	return withHooks(ctx, _u.sqlSave, _u.mutation, _u.hooks)
 }
 
 // SaveX is like Save, but panics if an error occurs.
-func (ieeuo *IncidentEventEvidenceUpdateOne) SaveX(ctx context.Context) *IncidentEventEvidence {
-	node, err := ieeuo.Save(ctx)
+func (_u *IncidentEventEvidenceUpdateOne) SaveX(ctx context.Context) *IncidentEventEvidence {
+	node, err := _u.Save(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -395,61 +395,61 @@ func (ieeuo *IncidentEventEvidenceUpdateOne) SaveX(ctx context.Context) *Inciden
 }
 
 // Exec executes the query on the entity.
-func (ieeuo *IncidentEventEvidenceUpdateOne) Exec(ctx context.Context) error {
-	_, err := ieeuo.Save(ctx)
+func (_u *IncidentEventEvidenceUpdateOne) Exec(ctx context.Context) error {
+	_, err := _u.Save(ctx)
 	return err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (ieeuo *IncidentEventEvidenceUpdateOne) ExecX(ctx context.Context) {
-	if err := ieeuo.Exec(ctx); err != nil {
+func (_u *IncidentEventEvidenceUpdateOne) ExecX(ctx context.Context) {
+	if err := _u.Exec(ctx); err != nil {
 		panic(err)
 	}
 }
 
 // check runs all checks and user-defined validators on the builder.
-func (ieeuo *IncidentEventEvidenceUpdateOne) check() error {
-	if v, ok := ieeuo.mutation.EvidenceType(); ok {
+func (_u *IncidentEventEvidenceUpdateOne) check() error {
+	if v, ok := _u.mutation.EvidenceType(); ok {
 		if err := incidenteventevidence.EvidenceTypeValidator(v); err != nil {
 			return &ValidationError{Name: "evidence_type", err: fmt.Errorf(`ent: validator failed for field "IncidentEventEvidence.evidence_type": %w`, err)}
 		}
 	}
-	if v, ok := ieeuo.mutation.URL(); ok {
+	if v, ok := _u.mutation.URL(); ok {
 		if err := incidenteventevidence.URLValidator(v); err != nil {
 			return &ValidationError{Name: "url", err: fmt.Errorf(`ent: validator failed for field "IncidentEventEvidence.url": %w`, err)}
 		}
 	}
-	if v, ok := ieeuo.mutation.Title(); ok {
+	if v, ok := _u.mutation.Title(); ok {
 		if err := incidenteventevidence.TitleValidator(v); err != nil {
 			return &ValidationError{Name: "title", err: fmt.Errorf(`ent: validator failed for field "IncidentEventEvidence.title": %w`, err)}
 		}
 	}
-	if ieeuo.mutation.TenantCleared() && len(ieeuo.mutation.TenantIDs()) > 0 {
+	if _u.mutation.TenantCleared() && len(_u.mutation.TenantIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "IncidentEventEvidence.tenant"`)
 	}
-	if ieeuo.mutation.EventCleared() && len(ieeuo.mutation.EventIDs()) > 0 {
+	if _u.mutation.EventCleared() && len(_u.mutation.EventIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "IncidentEventEvidence.event"`)
 	}
 	return nil
 }
 
 // Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
-func (ieeuo *IncidentEventEvidenceUpdateOne) Modify(modifiers ...func(u *sql.UpdateBuilder)) *IncidentEventEvidenceUpdateOne {
-	ieeuo.modifiers = append(ieeuo.modifiers, modifiers...)
-	return ieeuo
+func (_u *IncidentEventEvidenceUpdateOne) Modify(modifiers ...func(u *sql.UpdateBuilder)) *IncidentEventEvidenceUpdateOne {
+	_u.modifiers = append(_u.modifiers, modifiers...)
+	return _u
 }
 
-func (ieeuo *IncidentEventEvidenceUpdateOne) sqlSave(ctx context.Context) (_node *IncidentEventEvidence, err error) {
-	if err := ieeuo.check(); err != nil {
+func (_u *IncidentEventEvidenceUpdateOne) sqlSave(ctx context.Context) (_node *IncidentEventEvidence, err error) {
+	if err := _u.check(); err != nil {
 		return _node, err
 	}
 	_spec := sqlgraph.NewUpdateSpec(incidenteventevidence.Table, incidenteventevidence.Columns, sqlgraph.NewFieldSpec(incidenteventevidence.FieldID, field.TypeUUID))
-	id, ok := ieeuo.mutation.ID()
+	id, ok := _u.mutation.ID()
 	if !ok {
 		return nil, &ValidationError{Name: "id", err: errors.New(`ent: missing "IncidentEventEvidence.id" for update`)}
 	}
 	_spec.Node.ID.Value = id
-	if fields := ieeuo.fields; len(fields) > 0 {
+	if fields := _u.fields; len(fields) > 0 {
 		_spec.Node.Columns = make([]string, 0, len(fields))
 		_spec.Node.Columns = append(_spec.Node.Columns, incidenteventevidence.FieldID)
 		for _, f := range fields {
@@ -461,32 +461,32 @@ func (ieeuo *IncidentEventEvidenceUpdateOne) sqlSave(ctx context.Context) (_node
 			}
 		}
 	}
-	if ps := ieeuo.mutation.predicates; len(ps) > 0 {
+	if ps := _u.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {
 				ps[i](selector)
 			}
 		}
 	}
-	if value, ok := ieeuo.mutation.EvidenceType(); ok {
+	if value, ok := _u.mutation.EvidenceType(); ok {
 		_spec.SetField(incidenteventevidence.FieldEvidenceType, field.TypeEnum, value)
 	}
-	if value, ok := ieeuo.mutation.URL(); ok {
+	if value, ok := _u.mutation.URL(); ok {
 		_spec.SetField(incidenteventevidence.FieldURL, field.TypeString, value)
 	}
-	if value, ok := ieeuo.mutation.Title(); ok {
+	if value, ok := _u.mutation.Title(); ok {
 		_spec.SetField(incidenteventevidence.FieldTitle, field.TypeString, value)
 	}
-	if value, ok := ieeuo.mutation.Description(); ok {
+	if value, ok := _u.mutation.Description(); ok {
 		_spec.SetField(incidenteventevidence.FieldDescription, field.TypeString, value)
 	}
-	if ieeuo.mutation.DescriptionCleared() {
+	if _u.mutation.DescriptionCleared() {
 		_spec.ClearField(incidenteventevidence.FieldDescription, field.TypeString)
 	}
-	if value, ok := ieeuo.mutation.CreatedAt(); ok {
+	if value, ok := _u.mutation.CreatedAt(); ok {
 		_spec.SetField(incidenteventevidence.FieldCreatedAt, field.TypeTime, value)
 	}
-	if ieeuo.mutation.EventCleared() {
+	if _u.mutation.EventCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: true,
@@ -499,7 +499,7 @@ func (ieeuo *IncidentEventEvidenceUpdateOne) sqlSave(ctx context.Context) (_node
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := ieeuo.mutation.EventIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.EventIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: true,
@@ -515,11 +515,11 @@ func (ieeuo *IncidentEventEvidenceUpdateOne) sqlSave(ctx context.Context) (_node
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	_spec.AddModifiers(ieeuo.modifiers...)
-	_node = &IncidentEventEvidence{config: ieeuo.config}
+	_spec.AddModifiers(_u.modifiers...)
+	_node = &IncidentEventEvidence{config: _u.config}
 	_spec.Assign = _node.assignValues
 	_spec.ScanValues = _node.scanValues
-	if err = sqlgraph.UpdateNode(ctx, ieeuo.driver, _spec); err != nil {
+	if err = sqlgraph.UpdateNode(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{incidenteventevidence.Label}
 		} else if sqlgraph.IsConstraintError(err) {
@@ -527,6 +527,6 @@ func (ieeuo *IncidentEventEvidenceUpdateOne) sqlSave(ctx context.Context) (_node
 		}
 		return nil, err
 	}
-	ieeuo.mutation.done = true
+	_u.mutation.done = true
 	return _node, nil
 }

@@ -118,7 +118,7 @@ func (*MeetingSchedule) scanValues(columns []string) ([]any, error) {
 
 // assignValues assigns the values that were returned from sql.Rows (after scanning)
 // to the MeetingSchedule fields.
-func (ms *MeetingSchedule) assignValues(columns []string, values []any) error {
+func (_m *MeetingSchedule) assignValues(columns []string, values []any) error {
 	if m, n := len(values), len(columns); m < n {
 		return fmt.Errorf("mismatch number of scan values: %d != %d", m, n)
 	}
@@ -128,67 +128,67 @@ func (ms *MeetingSchedule) assignValues(columns []string, values []any) error {
 			if value, ok := values[i].(*uuid.UUID); !ok {
 				return fmt.Errorf("unexpected type %T for field id", values[i])
 			} else if value != nil {
-				ms.ID = *value
+				_m.ID = *value
 			}
 		case meetingschedule.FieldTenantID:
 			if value, ok := values[i].(*sql.NullInt64); !ok {
 				return fmt.Errorf("unexpected type %T for field tenant_id", values[i])
 			} else if value.Valid {
-				ms.TenantID = int(value.Int64)
+				_m.TenantID = int(value.Int64)
 			}
 		case meetingschedule.FieldArchiveTime:
 			if value, ok := values[i].(*sql.NullTime); !ok {
 				return fmt.Errorf("unexpected type %T for field archive_time", values[i])
 			} else if value.Valid {
-				ms.ArchiveTime = value.Time
+				_m.ArchiveTime = value.Time
 			}
 		case meetingschedule.FieldName:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field name", values[i])
 			} else if value.Valid {
-				ms.Name = value.String
+				_m.Name = value.String
 			}
 		case meetingschedule.FieldDescription:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field description", values[i])
 			} else if value.Valid {
-				ms.Description = value.String
+				_m.Description = value.String
 			}
 		case meetingschedule.FieldBeginMinute:
 			if value, ok := values[i].(*sql.NullInt64); !ok {
 				return fmt.Errorf("unexpected type %T for field begin_minute", values[i])
 			} else if value.Valid {
-				ms.BeginMinute = int(value.Int64)
+				_m.BeginMinute = int(value.Int64)
 			}
 		case meetingschedule.FieldDurationMinutes:
 			if value, ok := values[i].(*sql.NullInt64); !ok {
 				return fmt.Errorf("unexpected type %T for field duration_minutes", values[i])
 			} else if value.Valid {
-				ms.DurationMinutes = int(value.Int64)
+				_m.DurationMinutes = int(value.Int64)
 			}
 		case meetingschedule.FieldStartDate:
 			if value, ok := values[i].(*sql.NullTime); !ok {
 				return fmt.Errorf("unexpected type %T for field start_date", values[i])
 			} else if value.Valid {
-				ms.StartDate = value.Time
+				_m.StartDate = value.Time
 			}
 		case meetingschedule.FieldRepeats:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field repeats", values[i])
 			} else if value.Valid {
-				ms.Repeats = meetingschedule.Repeats(value.String)
+				_m.Repeats = meetingschedule.Repeats(value.String)
 			}
 		case meetingschedule.FieldRepetitionStep:
 			if value, ok := values[i].(*sql.NullInt64); !ok {
 				return fmt.Errorf("unexpected type %T for field repetition_step", values[i])
 			} else if value.Valid {
-				ms.RepetitionStep = int(value.Int64)
+				_m.RepetitionStep = int(value.Int64)
 			}
 		case meetingschedule.FieldWeekDays:
 			if value, ok := values[i].(*[]byte); !ok {
 				return fmt.Errorf("unexpected type %T for field week_days", values[i])
 			} else if value != nil && len(*value) > 0 {
-				if err := json.Unmarshal(*value, &ms.WeekDays); err != nil {
+				if err := json.Unmarshal(*value, &_m.WeekDays); err != nil {
 					return fmt.Errorf("unmarshal field week_days: %w", err)
 				}
 			}
@@ -196,22 +196,22 @@ func (ms *MeetingSchedule) assignValues(columns []string, values []any) error {
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field monthly_on", values[i])
 			} else if value.Valid {
-				ms.MonthlyOn = meetingschedule.MonthlyOn(value.String)
+				_m.MonthlyOn = meetingschedule.MonthlyOn(value.String)
 			}
 		case meetingschedule.FieldUntilDate:
 			if value, ok := values[i].(*sql.NullTime); !ok {
 				return fmt.Errorf("unexpected type %T for field until_date", values[i])
 			} else if value.Valid {
-				ms.UntilDate = value.Time
+				_m.UntilDate = value.Time
 			}
 		case meetingschedule.FieldNumRepetitions:
 			if value, ok := values[i].(*sql.NullInt64); !ok {
 				return fmt.Errorf("unexpected type %T for field num_repetitions", values[i])
 			} else if value.Valid {
-				ms.NumRepetitions = int(value.Int64)
+				_m.NumRepetitions = int(value.Int64)
 			}
 		default:
-			ms.selectValues.Set(columns[i], values[i])
+			_m.selectValues.Set(columns[i], values[i])
 		}
 	}
 	return nil
@@ -219,86 +219,86 @@ func (ms *MeetingSchedule) assignValues(columns []string, values []any) error {
 
 // Value returns the ent.Value that was dynamically selected and assigned to the MeetingSchedule.
 // This includes values selected through modifiers, order, etc.
-func (ms *MeetingSchedule) Value(name string) (ent.Value, error) {
-	return ms.selectValues.Get(name)
+func (_m *MeetingSchedule) Value(name string) (ent.Value, error) {
+	return _m.selectValues.Get(name)
 }
 
 // QueryTenant queries the "tenant" edge of the MeetingSchedule entity.
-func (ms *MeetingSchedule) QueryTenant() *TenantQuery {
-	return NewMeetingScheduleClient(ms.config).QueryTenant(ms)
+func (_m *MeetingSchedule) QueryTenant() *TenantQuery {
+	return NewMeetingScheduleClient(_m.config).QueryTenant(_m)
 }
 
 // QueryOwningTeam queries the "owning_team" edge of the MeetingSchedule entity.
-func (ms *MeetingSchedule) QueryOwningTeam() *TeamQuery {
-	return NewMeetingScheduleClient(ms.config).QueryOwningTeam(ms)
+func (_m *MeetingSchedule) QueryOwningTeam() *TeamQuery {
+	return NewMeetingScheduleClient(_m.config).QueryOwningTeam(_m)
 }
 
 // QuerySessions queries the "sessions" edge of the MeetingSchedule entity.
-func (ms *MeetingSchedule) QuerySessions() *MeetingSessionQuery {
-	return NewMeetingScheduleClient(ms.config).QuerySessions(ms)
+func (_m *MeetingSchedule) QuerySessions() *MeetingSessionQuery {
+	return NewMeetingScheduleClient(_m.config).QuerySessions(_m)
 }
 
 // Update returns a builder for updating this MeetingSchedule.
 // Note that you need to call MeetingSchedule.Unwrap() before calling this method if this MeetingSchedule
 // was returned from a transaction, and the transaction was committed or rolled back.
-func (ms *MeetingSchedule) Update() *MeetingScheduleUpdateOne {
-	return NewMeetingScheduleClient(ms.config).UpdateOne(ms)
+func (_m *MeetingSchedule) Update() *MeetingScheduleUpdateOne {
+	return NewMeetingScheduleClient(_m.config).UpdateOne(_m)
 }
 
 // Unwrap unwraps the MeetingSchedule entity that was returned from a transaction after it was closed,
 // so that all future queries will be executed through the driver which created the transaction.
-func (ms *MeetingSchedule) Unwrap() *MeetingSchedule {
-	_tx, ok := ms.config.driver.(*txDriver)
+func (_m *MeetingSchedule) Unwrap() *MeetingSchedule {
+	_tx, ok := _m.config.driver.(*txDriver)
 	if !ok {
 		panic("ent: MeetingSchedule is not a transactional entity")
 	}
-	ms.config.driver = _tx.drv
-	return ms
+	_m.config.driver = _tx.drv
+	return _m
 }
 
 // String implements the fmt.Stringer.
-func (ms *MeetingSchedule) String() string {
+func (_m *MeetingSchedule) String() string {
 	var builder strings.Builder
 	builder.WriteString("MeetingSchedule(")
-	builder.WriteString(fmt.Sprintf("id=%v, ", ms.ID))
+	builder.WriteString(fmt.Sprintf("id=%v, ", _m.ID))
 	builder.WriteString("tenant_id=")
-	builder.WriteString(fmt.Sprintf("%v", ms.TenantID))
+	builder.WriteString(fmt.Sprintf("%v", _m.TenantID))
 	builder.WriteString(", ")
 	builder.WriteString("archive_time=")
-	builder.WriteString(ms.ArchiveTime.Format(time.ANSIC))
+	builder.WriteString(_m.ArchiveTime.Format(time.ANSIC))
 	builder.WriteString(", ")
 	builder.WriteString("name=")
-	builder.WriteString(ms.Name)
+	builder.WriteString(_m.Name)
 	builder.WriteString(", ")
 	builder.WriteString("description=")
-	builder.WriteString(ms.Description)
+	builder.WriteString(_m.Description)
 	builder.WriteString(", ")
 	builder.WriteString("begin_minute=")
-	builder.WriteString(fmt.Sprintf("%v", ms.BeginMinute))
+	builder.WriteString(fmt.Sprintf("%v", _m.BeginMinute))
 	builder.WriteString(", ")
 	builder.WriteString("duration_minutes=")
-	builder.WriteString(fmt.Sprintf("%v", ms.DurationMinutes))
+	builder.WriteString(fmt.Sprintf("%v", _m.DurationMinutes))
 	builder.WriteString(", ")
 	builder.WriteString("start_date=")
-	builder.WriteString(ms.StartDate.Format(time.ANSIC))
+	builder.WriteString(_m.StartDate.Format(time.ANSIC))
 	builder.WriteString(", ")
 	builder.WriteString("repeats=")
-	builder.WriteString(fmt.Sprintf("%v", ms.Repeats))
+	builder.WriteString(fmt.Sprintf("%v", _m.Repeats))
 	builder.WriteString(", ")
 	builder.WriteString("repetition_step=")
-	builder.WriteString(fmt.Sprintf("%v", ms.RepetitionStep))
+	builder.WriteString(fmt.Sprintf("%v", _m.RepetitionStep))
 	builder.WriteString(", ")
 	builder.WriteString("week_days=")
-	builder.WriteString(fmt.Sprintf("%v", ms.WeekDays))
+	builder.WriteString(fmt.Sprintf("%v", _m.WeekDays))
 	builder.WriteString(", ")
 	builder.WriteString("monthly_on=")
-	builder.WriteString(fmt.Sprintf("%v", ms.MonthlyOn))
+	builder.WriteString(fmt.Sprintf("%v", _m.MonthlyOn))
 	builder.WriteString(", ")
 	builder.WriteString("until_date=")
-	builder.WriteString(ms.UntilDate.Format(time.ANSIC))
+	builder.WriteString(_m.UntilDate.Format(time.ANSIC))
 	builder.WriteString(", ")
 	builder.WriteString("num_repetitions=")
-	builder.WriteString(fmt.Sprintf("%v", ms.NumRepetitions))
+	builder.WriteString(fmt.Sprintf("%v", _m.NumRepetitions))
 	builder.WriteByte(')')
 	return builder.String()
 }

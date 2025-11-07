@@ -20,56 +20,56 @@ type OncallShiftHandoverDelete struct {
 }
 
 // Where appends a list predicates to the OncallShiftHandoverDelete builder.
-func (oshd *OncallShiftHandoverDelete) Where(ps ...predicate.OncallShiftHandover) *OncallShiftHandoverDelete {
-	oshd.mutation.Where(ps...)
-	return oshd
+func (_d *OncallShiftHandoverDelete) Where(ps ...predicate.OncallShiftHandover) *OncallShiftHandoverDelete {
+	_d.mutation.Where(ps...)
+	return _d
 }
 
 // Exec executes the deletion query and returns how many vertices were deleted.
-func (oshd *OncallShiftHandoverDelete) Exec(ctx context.Context) (int, error) {
-	return withHooks(ctx, oshd.sqlExec, oshd.mutation, oshd.hooks)
+func (_d *OncallShiftHandoverDelete) Exec(ctx context.Context) (int, error) {
+	return withHooks(ctx, _d.sqlExec, _d.mutation, _d.hooks)
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (oshd *OncallShiftHandoverDelete) ExecX(ctx context.Context) int {
-	n, err := oshd.Exec(ctx)
+func (_d *OncallShiftHandoverDelete) ExecX(ctx context.Context) int {
+	n, err := _d.Exec(ctx)
 	if err != nil {
 		panic(err)
 	}
 	return n
 }
 
-func (oshd *OncallShiftHandoverDelete) sqlExec(ctx context.Context) (int, error) {
+func (_d *OncallShiftHandoverDelete) sqlExec(ctx context.Context) (int, error) {
 	_spec := sqlgraph.NewDeleteSpec(oncallshifthandover.Table, sqlgraph.NewFieldSpec(oncallshifthandover.FieldID, field.TypeUUID))
-	if ps := oshd.mutation.predicates; len(ps) > 0 {
+	if ps := _d.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {
 				ps[i](selector)
 			}
 		}
 	}
-	affected, err := sqlgraph.DeleteNodes(ctx, oshd.driver, _spec)
+	affected, err := sqlgraph.DeleteNodes(ctx, _d.driver, _spec)
 	if err != nil && sqlgraph.IsConstraintError(err) {
 		err = &ConstraintError{msg: err.Error(), wrap: err}
 	}
-	oshd.mutation.done = true
+	_d.mutation.done = true
 	return affected, err
 }
 
 // OncallShiftHandoverDeleteOne is the builder for deleting a single OncallShiftHandover entity.
 type OncallShiftHandoverDeleteOne struct {
-	oshd *OncallShiftHandoverDelete
+	_d *OncallShiftHandoverDelete
 }
 
 // Where appends a list predicates to the OncallShiftHandoverDelete builder.
-func (oshdo *OncallShiftHandoverDeleteOne) Where(ps ...predicate.OncallShiftHandover) *OncallShiftHandoverDeleteOne {
-	oshdo.oshd.mutation.Where(ps...)
-	return oshdo
+func (_d *OncallShiftHandoverDeleteOne) Where(ps ...predicate.OncallShiftHandover) *OncallShiftHandoverDeleteOne {
+	_d._d.mutation.Where(ps...)
+	return _d
 }
 
 // Exec executes the deletion query.
-func (oshdo *OncallShiftHandoverDeleteOne) Exec(ctx context.Context) error {
-	n, err := oshdo.oshd.Exec(ctx)
+func (_d *OncallShiftHandoverDeleteOne) Exec(ctx context.Context) error {
+	n, err := _d._d.Exec(ctx)
 	switch {
 	case err != nil:
 		return err
@@ -81,8 +81,8 @@ func (oshdo *OncallShiftHandoverDeleteOne) Exec(ctx context.Context) error {
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (oshdo *OncallShiftHandoverDeleteOne) ExecX(ctx context.Context) {
-	if err := oshdo.Exec(ctx); err != nil {
+func (_d *OncallShiftHandoverDeleteOne) ExecX(ctx context.Context) {
+	if err := _d.Exec(ctx); err != nil {
 		panic(err)
 	}
 }

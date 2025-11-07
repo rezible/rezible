@@ -29,131 +29,131 @@ type SystemHazardCreate struct {
 }
 
 // SetTenantID sets the "tenant_id" field.
-func (shc *SystemHazardCreate) SetTenantID(i int) *SystemHazardCreate {
-	shc.mutation.SetTenantID(i)
-	return shc
+func (_c *SystemHazardCreate) SetTenantID(v int) *SystemHazardCreate {
+	_c.mutation.SetTenantID(v)
+	return _c
 }
 
 // SetName sets the "name" field.
-func (shc *SystemHazardCreate) SetName(s string) *SystemHazardCreate {
-	shc.mutation.SetName(s)
-	return shc
+func (_c *SystemHazardCreate) SetName(v string) *SystemHazardCreate {
+	_c.mutation.SetName(v)
+	return _c
 }
 
 // SetDescription sets the "description" field.
-func (shc *SystemHazardCreate) SetDescription(s string) *SystemHazardCreate {
-	shc.mutation.SetDescription(s)
-	return shc
+func (_c *SystemHazardCreate) SetDescription(v string) *SystemHazardCreate {
+	_c.mutation.SetDescription(v)
+	return _c
 }
 
 // SetCreatedAt sets the "created_at" field.
-func (shc *SystemHazardCreate) SetCreatedAt(t time.Time) *SystemHazardCreate {
-	shc.mutation.SetCreatedAt(t)
-	return shc
+func (_c *SystemHazardCreate) SetCreatedAt(v time.Time) *SystemHazardCreate {
+	_c.mutation.SetCreatedAt(v)
+	return _c
 }
 
 // SetNillableCreatedAt sets the "created_at" field if the given value is not nil.
-func (shc *SystemHazardCreate) SetNillableCreatedAt(t *time.Time) *SystemHazardCreate {
-	if t != nil {
-		shc.SetCreatedAt(*t)
+func (_c *SystemHazardCreate) SetNillableCreatedAt(v *time.Time) *SystemHazardCreate {
+	if v != nil {
+		_c.SetCreatedAt(*v)
 	}
-	return shc
+	return _c
 }
 
 // SetUpdatedAt sets the "updated_at" field.
-func (shc *SystemHazardCreate) SetUpdatedAt(t time.Time) *SystemHazardCreate {
-	shc.mutation.SetUpdatedAt(t)
-	return shc
+func (_c *SystemHazardCreate) SetUpdatedAt(v time.Time) *SystemHazardCreate {
+	_c.mutation.SetUpdatedAt(v)
+	return _c
 }
 
 // SetNillableUpdatedAt sets the "updated_at" field if the given value is not nil.
-func (shc *SystemHazardCreate) SetNillableUpdatedAt(t *time.Time) *SystemHazardCreate {
-	if t != nil {
-		shc.SetUpdatedAt(*t)
+func (_c *SystemHazardCreate) SetNillableUpdatedAt(v *time.Time) *SystemHazardCreate {
+	if v != nil {
+		_c.SetUpdatedAt(*v)
 	}
-	return shc
+	return _c
 }
 
 // SetID sets the "id" field.
-func (shc *SystemHazardCreate) SetID(u uuid.UUID) *SystemHazardCreate {
-	shc.mutation.SetID(u)
-	return shc
+func (_c *SystemHazardCreate) SetID(v uuid.UUID) *SystemHazardCreate {
+	_c.mutation.SetID(v)
+	return _c
 }
 
 // SetNillableID sets the "id" field if the given value is not nil.
-func (shc *SystemHazardCreate) SetNillableID(u *uuid.UUID) *SystemHazardCreate {
-	if u != nil {
-		shc.SetID(*u)
+func (_c *SystemHazardCreate) SetNillableID(v *uuid.UUID) *SystemHazardCreate {
+	if v != nil {
+		_c.SetID(*v)
 	}
-	return shc
+	return _c
 }
 
 // SetTenant sets the "tenant" edge to the Tenant entity.
-func (shc *SystemHazardCreate) SetTenant(t *Tenant) *SystemHazardCreate {
-	return shc.SetTenantID(t.ID)
+func (_c *SystemHazardCreate) SetTenant(v *Tenant) *SystemHazardCreate {
+	return _c.SetTenantID(v.ID)
 }
 
 // AddComponentIDs adds the "components" edge to the SystemComponent entity by IDs.
-func (shc *SystemHazardCreate) AddComponentIDs(ids ...uuid.UUID) *SystemHazardCreate {
-	shc.mutation.AddComponentIDs(ids...)
-	return shc
+func (_c *SystemHazardCreate) AddComponentIDs(ids ...uuid.UUID) *SystemHazardCreate {
+	_c.mutation.AddComponentIDs(ids...)
+	return _c
 }
 
 // AddComponents adds the "components" edges to the SystemComponent entity.
-func (shc *SystemHazardCreate) AddComponents(s ...*SystemComponent) *SystemHazardCreate {
-	ids := make([]uuid.UUID, len(s))
-	for i := range s {
-		ids[i] = s[i].ID
+func (_c *SystemHazardCreate) AddComponents(v ...*SystemComponent) *SystemHazardCreate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
 	}
-	return shc.AddComponentIDs(ids...)
+	return _c.AddComponentIDs(ids...)
 }
 
 // AddConstraintIDs adds the "constraints" edge to the SystemComponentConstraint entity by IDs.
-func (shc *SystemHazardCreate) AddConstraintIDs(ids ...uuid.UUID) *SystemHazardCreate {
-	shc.mutation.AddConstraintIDs(ids...)
-	return shc
+func (_c *SystemHazardCreate) AddConstraintIDs(ids ...uuid.UUID) *SystemHazardCreate {
+	_c.mutation.AddConstraintIDs(ids...)
+	return _c
 }
 
 // AddConstraints adds the "constraints" edges to the SystemComponentConstraint entity.
-func (shc *SystemHazardCreate) AddConstraints(s ...*SystemComponentConstraint) *SystemHazardCreate {
-	ids := make([]uuid.UUID, len(s))
-	for i := range s {
-		ids[i] = s[i].ID
+func (_c *SystemHazardCreate) AddConstraints(v ...*SystemComponentConstraint) *SystemHazardCreate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
 	}
-	return shc.AddConstraintIDs(ids...)
+	return _c.AddConstraintIDs(ids...)
 }
 
 // AddRelationshipIDs adds the "relationships" edge to the SystemComponentRelationship entity by IDs.
-func (shc *SystemHazardCreate) AddRelationshipIDs(ids ...uuid.UUID) *SystemHazardCreate {
-	shc.mutation.AddRelationshipIDs(ids...)
-	return shc
+func (_c *SystemHazardCreate) AddRelationshipIDs(ids ...uuid.UUID) *SystemHazardCreate {
+	_c.mutation.AddRelationshipIDs(ids...)
+	return _c
 }
 
 // AddRelationships adds the "relationships" edges to the SystemComponentRelationship entity.
-func (shc *SystemHazardCreate) AddRelationships(s ...*SystemComponentRelationship) *SystemHazardCreate {
-	ids := make([]uuid.UUID, len(s))
-	for i := range s {
-		ids[i] = s[i].ID
+func (_c *SystemHazardCreate) AddRelationships(v ...*SystemComponentRelationship) *SystemHazardCreate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
 	}
-	return shc.AddRelationshipIDs(ids...)
+	return _c.AddRelationshipIDs(ids...)
 }
 
 // Mutation returns the SystemHazardMutation object of the builder.
-func (shc *SystemHazardCreate) Mutation() *SystemHazardMutation {
-	return shc.mutation
+func (_c *SystemHazardCreate) Mutation() *SystemHazardMutation {
+	return _c.mutation
 }
 
 // Save creates the SystemHazard in the database.
-func (shc *SystemHazardCreate) Save(ctx context.Context) (*SystemHazard, error) {
-	if err := shc.defaults(); err != nil {
+func (_c *SystemHazardCreate) Save(ctx context.Context) (*SystemHazard, error) {
+	if err := _c.defaults(); err != nil {
 		return nil, err
 	}
-	return withHooks(ctx, shc.sqlSave, shc.mutation, shc.hooks)
+	return withHooks(ctx, _c.sqlSave, _c.mutation, _c.hooks)
 }
 
 // SaveX calls Save and panics if Save returns an error.
-func (shc *SystemHazardCreate) SaveX(ctx context.Context) *SystemHazard {
-	v, err := shc.Save(ctx)
+func (_c *SystemHazardCreate) SaveX(ctx context.Context) *SystemHazard {
+	v, err := _c.Save(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -161,78 +161,78 @@ func (shc *SystemHazardCreate) SaveX(ctx context.Context) *SystemHazard {
 }
 
 // Exec executes the query.
-func (shc *SystemHazardCreate) Exec(ctx context.Context) error {
-	_, err := shc.Save(ctx)
+func (_c *SystemHazardCreate) Exec(ctx context.Context) error {
+	_, err := _c.Save(ctx)
 	return err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (shc *SystemHazardCreate) ExecX(ctx context.Context) {
-	if err := shc.Exec(ctx); err != nil {
+func (_c *SystemHazardCreate) ExecX(ctx context.Context) {
+	if err := _c.Exec(ctx); err != nil {
 		panic(err)
 	}
 }
 
 // defaults sets the default values of the builder before save.
-func (shc *SystemHazardCreate) defaults() error {
-	if _, ok := shc.mutation.CreatedAt(); !ok {
+func (_c *SystemHazardCreate) defaults() error {
+	if _, ok := _c.mutation.CreatedAt(); !ok {
 		if systemhazard.DefaultCreatedAt == nil {
 			return fmt.Errorf("ent: uninitialized systemhazard.DefaultCreatedAt (forgotten import ent/runtime?)")
 		}
 		v := systemhazard.DefaultCreatedAt()
-		shc.mutation.SetCreatedAt(v)
+		_c.mutation.SetCreatedAt(v)
 	}
-	if _, ok := shc.mutation.UpdatedAt(); !ok {
+	if _, ok := _c.mutation.UpdatedAt(); !ok {
 		if systemhazard.DefaultUpdatedAt == nil {
 			return fmt.Errorf("ent: uninitialized systemhazard.DefaultUpdatedAt (forgotten import ent/runtime?)")
 		}
 		v := systemhazard.DefaultUpdatedAt()
-		shc.mutation.SetUpdatedAt(v)
+		_c.mutation.SetUpdatedAt(v)
 	}
-	if _, ok := shc.mutation.ID(); !ok {
+	if _, ok := _c.mutation.ID(); !ok {
 		if systemhazard.DefaultID == nil {
 			return fmt.Errorf("ent: uninitialized systemhazard.DefaultID (forgotten import ent/runtime?)")
 		}
 		v := systemhazard.DefaultID()
-		shc.mutation.SetID(v)
+		_c.mutation.SetID(v)
 	}
 	return nil
 }
 
 // check runs all checks and user-defined validators on the builder.
-func (shc *SystemHazardCreate) check() error {
-	if _, ok := shc.mutation.TenantID(); !ok {
+func (_c *SystemHazardCreate) check() error {
+	if _, ok := _c.mutation.TenantID(); !ok {
 		return &ValidationError{Name: "tenant_id", err: errors.New(`ent: missing required field "SystemHazard.tenant_id"`)}
 	}
-	if _, ok := shc.mutation.Name(); !ok {
+	if _, ok := _c.mutation.Name(); !ok {
 		return &ValidationError{Name: "name", err: errors.New(`ent: missing required field "SystemHazard.name"`)}
 	}
-	if v, ok := shc.mutation.Name(); ok {
+	if v, ok := _c.mutation.Name(); ok {
 		if err := systemhazard.NameValidator(v); err != nil {
 			return &ValidationError{Name: "name", err: fmt.Errorf(`ent: validator failed for field "SystemHazard.name": %w`, err)}
 		}
 	}
-	if _, ok := shc.mutation.Description(); !ok {
+	if _, ok := _c.mutation.Description(); !ok {
 		return &ValidationError{Name: "description", err: errors.New(`ent: missing required field "SystemHazard.description"`)}
 	}
-	if _, ok := shc.mutation.CreatedAt(); !ok {
+	if _, ok := _c.mutation.CreatedAt(); !ok {
 		return &ValidationError{Name: "created_at", err: errors.New(`ent: missing required field "SystemHazard.created_at"`)}
 	}
-	if _, ok := shc.mutation.UpdatedAt(); !ok {
+	if _, ok := _c.mutation.UpdatedAt(); !ok {
 		return &ValidationError{Name: "updated_at", err: errors.New(`ent: missing required field "SystemHazard.updated_at"`)}
 	}
-	if len(shc.mutation.TenantIDs()) == 0 {
+	if len(_c.mutation.TenantIDs()) == 0 {
 		return &ValidationError{Name: "tenant", err: errors.New(`ent: missing required edge "SystemHazard.tenant"`)}
 	}
 	return nil
 }
 
-func (shc *SystemHazardCreate) sqlSave(ctx context.Context) (*SystemHazard, error) {
-	if err := shc.check(); err != nil {
+func (_c *SystemHazardCreate) sqlSave(ctx context.Context) (*SystemHazard, error) {
+	if err := _c.check(); err != nil {
 		return nil, err
 	}
-	_node, _spec := shc.createSpec()
-	if err := sqlgraph.CreateNode(ctx, shc.driver, _spec); err != nil {
+	_node, _spec := _c.createSpec()
+	if err := sqlgraph.CreateNode(ctx, _c.driver, _spec); err != nil {
 		if sqlgraph.IsConstraintError(err) {
 			err = &ConstraintError{msg: err.Error(), wrap: err}
 		}
@@ -245,38 +245,38 @@ func (shc *SystemHazardCreate) sqlSave(ctx context.Context) (*SystemHazard, erro
 			return nil, err
 		}
 	}
-	shc.mutation.id = &_node.ID
-	shc.mutation.done = true
+	_c.mutation.id = &_node.ID
+	_c.mutation.done = true
 	return _node, nil
 }
 
-func (shc *SystemHazardCreate) createSpec() (*SystemHazard, *sqlgraph.CreateSpec) {
+func (_c *SystemHazardCreate) createSpec() (*SystemHazard, *sqlgraph.CreateSpec) {
 	var (
-		_node = &SystemHazard{config: shc.config}
+		_node = &SystemHazard{config: _c.config}
 		_spec = sqlgraph.NewCreateSpec(systemhazard.Table, sqlgraph.NewFieldSpec(systemhazard.FieldID, field.TypeUUID))
 	)
-	_spec.OnConflict = shc.conflict
-	if id, ok := shc.mutation.ID(); ok {
+	_spec.OnConflict = _c.conflict
+	if id, ok := _c.mutation.ID(); ok {
 		_node.ID = id
 		_spec.ID.Value = &id
 	}
-	if value, ok := shc.mutation.Name(); ok {
+	if value, ok := _c.mutation.Name(); ok {
 		_spec.SetField(systemhazard.FieldName, field.TypeString, value)
 		_node.Name = value
 	}
-	if value, ok := shc.mutation.Description(); ok {
+	if value, ok := _c.mutation.Description(); ok {
 		_spec.SetField(systemhazard.FieldDescription, field.TypeString, value)
 		_node.Description = value
 	}
-	if value, ok := shc.mutation.CreatedAt(); ok {
+	if value, ok := _c.mutation.CreatedAt(); ok {
 		_spec.SetField(systemhazard.FieldCreatedAt, field.TypeTime, value)
 		_node.CreatedAt = value
 	}
-	if value, ok := shc.mutation.UpdatedAt(); ok {
+	if value, ok := _c.mutation.UpdatedAt(); ok {
 		_spec.SetField(systemhazard.FieldUpdatedAt, field.TypeTime, value)
 		_node.UpdatedAt = value
 	}
-	if nodes := shc.mutation.TenantIDs(); len(nodes) > 0 {
+	if nodes := _c.mutation.TenantIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
@@ -293,7 +293,7 @@ func (shc *SystemHazardCreate) createSpec() (*SystemHazard, *sqlgraph.CreateSpec
 		_node.TenantID = nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
-	if nodes := shc.mutation.ComponentsIDs(); len(nodes) > 0 {
+	if nodes := _c.mutation.ComponentsIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
 			Inverse: false,
@@ -309,7 +309,7 @@ func (shc *SystemHazardCreate) createSpec() (*SystemHazard, *sqlgraph.CreateSpec
 		}
 		_spec.Edges = append(_spec.Edges, edge)
 	}
-	if nodes := shc.mutation.ConstraintsIDs(); len(nodes) > 0 {
+	if nodes := _c.mutation.ConstraintsIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
 			Inverse: false,
@@ -325,7 +325,7 @@ func (shc *SystemHazardCreate) createSpec() (*SystemHazard, *sqlgraph.CreateSpec
 		}
 		_spec.Edges = append(_spec.Edges, edge)
 	}
-	if nodes := shc.mutation.RelationshipsIDs(); len(nodes) > 0 {
+	if nodes := _c.mutation.RelationshipsIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
 			Inverse: false,
@@ -360,10 +360,10 @@ func (shc *SystemHazardCreate) createSpec() (*SystemHazard, *sqlgraph.CreateSpec
 //			SetTenantID(v+v).
 //		}).
 //		Exec(ctx)
-func (shc *SystemHazardCreate) OnConflict(opts ...sql.ConflictOption) *SystemHazardUpsertOne {
-	shc.conflict = opts
+func (_c *SystemHazardCreate) OnConflict(opts ...sql.ConflictOption) *SystemHazardUpsertOne {
+	_c.conflict = opts
 	return &SystemHazardUpsertOne{
-		create: shc,
+		create: _c,
 	}
 }
 
@@ -373,10 +373,10 @@ func (shc *SystemHazardCreate) OnConflict(opts ...sql.ConflictOption) *SystemHaz
 //	client.SystemHazard.Create().
 //		OnConflict(sql.ConflictColumns(columns...)).
 //		Exec(ctx)
-func (shc *SystemHazardCreate) OnConflictColumns(columns ...string) *SystemHazardUpsertOne {
-	shc.conflict = append(shc.conflict, sql.ConflictColumns(columns...))
+func (_c *SystemHazardCreate) OnConflictColumns(columns ...string) *SystemHazardUpsertOne {
+	_c.conflict = append(_c.conflict, sql.ConflictColumns(columns...))
 	return &SystemHazardUpsertOne{
-		create: shc,
+		create: _c,
 	}
 }
 
@@ -595,16 +595,16 @@ type SystemHazardCreateBulk struct {
 }
 
 // Save creates the SystemHazard entities in the database.
-func (shcb *SystemHazardCreateBulk) Save(ctx context.Context) ([]*SystemHazard, error) {
-	if shcb.err != nil {
-		return nil, shcb.err
+func (_c *SystemHazardCreateBulk) Save(ctx context.Context) ([]*SystemHazard, error) {
+	if _c.err != nil {
+		return nil, _c.err
 	}
-	specs := make([]*sqlgraph.CreateSpec, len(shcb.builders))
-	nodes := make([]*SystemHazard, len(shcb.builders))
-	mutators := make([]Mutator, len(shcb.builders))
-	for i := range shcb.builders {
+	specs := make([]*sqlgraph.CreateSpec, len(_c.builders))
+	nodes := make([]*SystemHazard, len(_c.builders))
+	mutators := make([]Mutator, len(_c.builders))
+	for i := range _c.builders {
 		func(i int, root context.Context) {
-			builder := shcb.builders[i]
+			builder := _c.builders[i]
 			builder.defaults()
 			var mut Mutator = MutateFunc(func(ctx context.Context, m Mutation) (Value, error) {
 				mutation, ok := m.(*SystemHazardMutation)
@@ -618,12 +618,12 @@ func (shcb *SystemHazardCreateBulk) Save(ctx context.Context) ([]*SystemHazard, 
 				var err error
 				nodes[i], specs[i] = builder.createSpec()
 				if i < len(mutators)-1 {
-					_, err = mutators[i+1].Mutate(root, shcb.builders[i+1].mutation)
+					_, err = mutators[i+1].Mutate(root, _c.builders[i+1].mutation)
 				} else {
 					spec := &sqlgraph.BatchCreateSpec{Nodes: specs}
-					spec.OnConflict = shcb.conflict
+					spec.OnConflict = _c.conflict
 					// Invoke the actual operation on the latest mutation in the chain.
-					if err = sqlgraph.BatchCreate(ctx, shcb.driver, spec); err != nil {
+					if err = sqlgraph.BatchCreate(ctx, _c.driver, spec); err != nil {
 						if sqlgraph.IsConstraintError(err) {
 							err = &ConstraintError{msg: err.Error(), wrap: err}
 						}
@@ -643,7 +643,7 @@ func (shcb *SystemHazardCreateBulk) Save(ctx context.Context) ([]*SystemHazard, 
 		}(i, ctx)
 	}
 	if len(mutators) > 0 {
-		if _, err := mutators[0].Mutate(ctx, shcb.builders[0].mutation); err != nil {
+		if _, err := mutators[0].Mutate(ctx, _c.builders[0].mutation); err != nil {
 			return nil, err
 		}
 	}
@@ -651,8 +651,8 @@ func (shcb *SystemHazardCreateBulk) Save(ctx context.Context) ([]*SystemHazard, 
 }
 
 // SaveX is like Save, but panics if an error occurs.
-func (shcb *SystemHazardCreateBulk) SaveX(ctx context.Context) []*SystemHazard {
-	v, err := shcb.Save(ctx)
+func (_c *SystemHazardCreateBulk) SaveX(ctx context.Context) []*SystemHazard {
+	v, err := _c.Save(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -660,14 +660,14 @@ func (shcb *SystemHazardCreateBulk) SaveX(ctx context.Context) []*SystemHazard {
 }
 
 // Exec executes the query.
-func (shcb *SystemHazardCreateBulk) Exec(ctx context.Context) error {
-	_, err := shcb.Save(ctx)
+func (_c *SystemHazardCreateBulk) Exec(ctx context.Context) error {
+	_, err := _c.Save(ctx)
 	return err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (shcb *SystemHazardCreateBulk) ExecX(ctx context.Context) {
-	if err := shcb.Exec(ctx); err != nil {
+func (_c *SystemHazardCreateBulk) ExecX(ctx context.Context) {
+	if err := _c.Exec(ctx); err != nil {
 		panic(err)
 	}
 }
@@ -687,10 +687,10 @@ func (shcb *SystemHazardCreateBulk) ExecX(ctx context.Context) {
 //			SetTenantID(v+v).
 //		}).
 //		Exec(ctx)
-func (shcb *SystemHazardCreateBulk) OnConflict(opts ...sql.ConflictOption) *SystemHazardUpsertBulk {
-	shcb.conflict = opts
+func (_c *SystemHazardCreateBulk) OnConflict(opts ...sql.ConflictOption) *SystemHazardUpsertBulk {
+	_c.conflict = opts
 	return &SystemHazardUpsertBulk{
-		create: shcb,
+		create: _c,
 	}
 }
 
@@ -700,10 +700,10 @@ func (shcb *SystemHazardCreateBulk) OnConflict(opts ...sql.ConflictOption) *Syst
 //	client.SystemHazard.Create().
 //		OnConflict(sql.ConflictColumns(columns...)).
 //		Exec(ctx)
-func (shcb *SystemHazardCreateBulk) OnConflictColumns(columns ...string) *SystemHazardUpsertBulk {
-	shcb.conflict = append(shcb.conflict, sql.ConflictColumns(columns...))
+func (_c *SystemHazardCreateBulk) OnConflictColumns(columns ...string) *SystemHazardUpsertBulk {
+	_c.conflict = append(_c.conflict, sql.ConflictColumns(columns...))
 	return &SystemHazardUpsertBulk{
-		create: shcb,
+		create: _c,
 	}
 }
 

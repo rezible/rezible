@@ -28,144 +28,144 @@ type IncidentSeverityCreate struct {
 }
 
 // SetTenantID sets the "tenant_id" field.
-func (isc *IncidentSeverityCreate) SetTenantID(i int) *IncidentSeverityCreate {
-	isc.mutation.SetTenantID(i)
-	return isc
+func (_c *IncidentSeverityCreate) SetTenantID(v int) *IncidentSeverityCreate {
+	_c.mutation.SetTenantID(v)
+	return _c
 }
 
 // SetArchiveTime sets the "archive_time" field.
-func (isc *IncidentSeverityCreate) SetArchiveTime(t time.Time) *IncidentSeverityCreate {
-	isc.mutation.SetArchiveTime(t)
-	return isc
+func (_c *IncidentSeverityCreate) SetArchiveTime(v time.Time) *IncidentSeverityCreate {
+	_c.mutation.SetArchiveTime(v)
+	return _c
 }
 
 // SetNillableArchiveTime sets the "archive_time" field if the given value is not nil.
-func (isc *IncidentSeverityCreate) SetNillableArchiveTime(t *time.Time) *IncidentSeverityCreate {
-	if t != nil {
-		isc.SetArchiveTime(*t)
+func (_c *IncidentSeverityCreate) SetNillableArchiveTime(v *time.Time) *IncidentSeverityCreate {
+	if v != nil {
+		_c.SetArchiveTime(*v)
 	}
-	return isc
+	return _c
 }
 
 // SetProviderID sets the "provider_id" field.
-func (isc *IncidentSeverityCreate) SetProviderID(s string) *IncidentSeverityCreate {
-	isc.mutation.SetProviderID(s)
-	return isc
+func (_c *IncidentSeverityCreate) SetProviderID(v string) *IncidentSeverityCreate {
+	_c.mutation.SetProviderID(v)
+	return _c
 }
 
 // SetNillableProviderID sets the "provider_id" field if the given value is not nil.
-func (isc *IncidentSeverityCreate) SetNillableProviderID(s *string) *IncidentSeverityCreate {
-	if s != nil {
-		isc.SetProviderID(*s)
+func (_c *IncidentSeverityCreate) SetNillableProviderID(v *string) *IncidentSeverityCreate {
+	if v != nil {
+		_c.SetProviderID(*v)
 	}
-	return isc
+	return _c
 }
 
 // SetName sets the "name" field.
-func (isc *IncidentSeverityCreate) SetName(s string) *IncidentSeverityCreate {
-	isc.mutation.SetName(s)
-	return isc
+func (_c *IncidentSeverityCreate) SetName(v string) *IncidentSeverityCreate {
+	_c.mutation.SetName(v)
+	return _c
 }
 
 // SetRank sets the "rank" field.
-func (isc *IncidentSeverityCreate) SetRank(i int) *IncidentSeverityCreate {
-	isc.mutation.SetRank(i)
-	return isc
+func (_c *IncidentSeverityCreate) SetRank(v int) *IncidentSeverityCreate {
+	_c.mutation.SetRank(v)
+	return _c
 }
 
 // SetColor sets the "color" field.
-func (isc *IncidentSeverityCreate) SetColor(s string) *IncidentSeverityCreate {
-	isc.mutation.SetColor(s)
-	return isc
+func (_c *IncidentSeverityCreate) SetColor(v string) *IncidentSeverityCreate {
+	_c.mutation.SetColor(v)
+	return _c
 }
 
 // SetNillableColor sets the "color" field if the given value is not nil.
-func (isc *IncidentSeverityCreate) SetNillableColor(s *string) *IncidentSeverityCreate {
-	if s != nil {
-		isc.SetColor(*s)
+func (_c *IncidentSeverityCreate) SetNillableColor(v *string) *IncidentSeverityCreate {
+	if v != nil {
+		_c.SetColor(*v)
 	}
-	return isc
+	return _c
 }
 
 // SetDescription sets the "description" field.
-func (isc *IncidentSeverityCreate) SetDescription(s string) *IncidentSeverityCreate {
-	isc.mutation.SetDescription(s)
-	return isc
+func (_c *IncidentSeverityCreate) SetDescription(v string) *IncidentSeverityCreate {
+	_c.mutation.SetDescription(v)
+	return _c
 }
 
 // SetNillableDescription sets the "description" field if the given value is not nil.
-func (isc *IncidentSeverityCreate) SetNillableDescription(s *string) *IncidentSeverityCreate {
-	if s != nil {
-		isc.SetDescription(*s)
+func (_c *IncidentSeverityCreate) SetNillableDescription(v *string) *IncidentSeverityCreate {
+	if v != nil {
+		_c.SetDescription(*v)
 	}
-	return isc
+	return _c
 }
 
 // SetID sets the "id" field.
-func (isc *IncidentSeverityCreate) SetID(u uuid.UUID) *IncidentSeverityCreate {
-	isc.mutation.SetID(u)
-	return isc
+func (_c *IncidentSeverityCreate) SetID(v uuid.UUID) *IncidentSeverityCreate {
+	_c.mutation.SetID(v)
+	return _c
 }
 
 // SetNillableID sets the "id" field if the given value is not nil.
-func (isc *IncidentSeverityCreate) SetNillableID(u *uuid.UUID) *IncidentSeverityCreate {
-	if u != nil {
-		isc.SetID(*u)
+func (_c *IncidentSeverityCreate) SetNillableID(v *uuid.UUID) *IncidentSeverityCreate {
+	if v != nil {
+		_c.SetID(*v)
 	}
-	return isc
+	return _c
 }
 
 // SetTenant sets the "tenant" edge to the Tenant entity.
-func (isc *IncidentSeverityCreate) SetTenant(t *Tenant) *IncidentSeverityCreate {
-	return isc.SetTenantID(t.ID)
+func (_c *IncidentSeverityCreate) SetTenant(v *Tenant) *IncidentSeverityCreate {
+	return _c.SetTenantID(v.ID)
 }
 
 // AddIncidentIDs adds the "incidents" edge to the Incident entity by IDs.
-func (isc *IncidentSeverityCreate) AddIncidentIDs(ids ...uuid.UUID) *IncidentSeverityCreate {
-	isc.mutation.AddIncidentIDs(ids...)
-	return isc
+func (_c *IncidentSeverityCreate) AddIncidentIDs(ids ...uuid.UUID) *IncidentSeverityCreate {
+	_c.mutation.AddIncidentIDs(ids...)
+	return _c
 }
 
 // AddIncidents adds the "incidents" edges to the Incident entity.
-func (isc *IncidentSeverityCreate) AddIncidents(i ...*Incident) *IncidentSeverityCreate {
-	ids := make([]uuid.UUID, len(i))
-	for j := range i {
-		ids[j] = i[j].ID
+func (_c *IncidentSeverityCreate) AddIncidents(v ...*Incident) *IncidentSeverityCreate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
 	}
-	return isc.AddIncidentIDs(ids...)
+	return _c.AddIncidentIDs(ids...)
 }
 
 // AddDebriefQuestionIDs adds the "debrief_questions" edge to the IncidentDebriefQuestion entity by IDs.
-func (isc *IncidentSeverityCreate) AddDebriefQuestionIDs(ids ...uuid.UUID) *IncidentSeverityCreate {
-	isc.mutation.AddDebriefQuestionIDs(ids...)
-	return isc
+func (_c *IncidentSeverityCreate) AddDebriefQuestionIDs(ids ...uuid.UUID) *IncidentSeverityCreate {
+	_c.mutation.AddDebriefQuestionIDs(ids...)
+	return _c
 }
 
 // AddDebriefQuestions adds the "debrief_questions" edges to the IncidentDebriefQuestion entity.
-func (isc *IncidentSeverityCreate) AddDebriefQuestions(i ...*IncidentDebriefQuestion) *IncidentSeverityCreate {
-	ids := make([]uuid.UUID, len(i))
-	for j := range i {
-		ids[j] = i[j].ID
+func (_c *IncidentSeverityCreate) AddDebriefQuestions(v ...*IncidentDebriefQuestion) *IncidentSeverityCreate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
 	}
-	return isc.AddDebriefQuestionIDs(ids...)
+	return _c.AddDebriefQuestionIDs(ids...)
 }
 
 // Mutation returns the IncidentSeverityMutation object of the builder.
-func (isc *IncidentSeverityCreate) Mutation() *IncidentSeverityMutation {
-	return isc.mutation
+func (_c *IncidentSeverityCreate) Mutation() *IncidentSeverityMutation {
+	return _c.mutation
 }
 
 // Save creates the IncidentSeverity in the database.
-func (isc *IncidentSeverityCreate) Save(ctx context.Context) (*IncidentSeverity, error) {
-	if err := isc.defaults(); err != nil {
+func (_c *IncidentSeverityCreate) Save(ctx context.Context) (*IncidentSeverity, error) {
+	if err := _c.defaults(); err != nil {
 		return nil, err
 	}
-	return withHooks(ctx, isc.sqlSave, isc.mutation, isc.hooks)
+	return withHooks(ctx, _c.sqlSave, _c.mutation, _c.hooks)
 }
 
 // SaveX calls Save and panics if Save returns an error.
-func (isc *IncidentSeverityCreate) SaveX(ctx context.Context) *IncidentSeverity {
-	v, err := isc.Save(ctx)
+func (_c *IncidentSeverityCreate) SaveX(ctx context.Context) *IncidentSeverity {
+	v, err := _c.Save(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -173,53 +173,53 @@ func (isc *IncidentSeverityCreate) SaveX(ctx context.Context) *IncidentSeverity 
 }
 
 // Exec executes the query.
-func (isc *IncidentSeverityCreate) Exec(ctx context.Context) error {
-	_, err := isc.Save(ctx)
+func (_c *IncidentSeverityCreate) Exec(ctx context.Context) error {
+	_, err := _c.Save(ctx)
 	return err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (isc *IncidentSeverityCreate) ExecX(ctx context.Context) {
-	if err := isc.Exec(ctx); err != nil {
+func (_c *IncidentSeverityCreate) ExecX(ctx context.Context) {
+	if err := _c.Exec(ctx); err != nil {
 		panic(err)
 	}
 }
 
 // defaults sets the default values of the builder before save.
-func (isc *IncidentSeverityCreate) defaults() error {
-	if _, ok := isc.mutation.ID(); !ok {
+func (_c *IncidentSeverityCreate) defaults() error {
+	if _, ok := _c.mutation.ID(); !ok {
 		if incidentseverity.DefaultID == nil {
 			return fmt.Errorf("ent: uninitialized incidentseverity.DefaultID (forgotten import ent/runtime?)")
 		}
 		v := incidentseverity.DefaultID()
-		isc.mutation.SetID(v)
+		_c.mutation.SetID(v)
 	}
 	return nil
 }
 
 // check runs all checks and user-defined validators on the builder.
-func (isc *IncidentSeverityCreate) check() error {
-	if _, ok := isc.mutation.TenantID(); !ok {
+func (_c *IncidentSeverityCreate) check() error {
+	if _, ok := _c.mutation.TenantID(); !ok {
 		return &ValidationError{Name: "tenant_id", err: errors.New(`ent: missing required field "IncidentSeverity.tenant_id"`)}
 	}
-	if _, ok := isc.mutation.Name(); !ok {
+	if _, ok := _c.mutation.Name(); !ok {
 		return &ValidationError{Name: "name", err: errors.New(`ent: missing required field "IncidentSeverity.name"`)}
 	}
-	if _, ok := isc.mutation.Rank(); !ok {
+	if _, ok := _c.mutation.Rank(); !ok {
 		return &ValidationError{Name: "rank", err: errors.New(`ent: missing required field "IncidentSeverity.rank"`)}
 	}
-	if len(isc.mutation.TenantIDs()) == 0 {
+	if len(_c.mutation.TenantIDs()) == 0 {
 		return &ValidationError{Name: "tenant", err: errors.New(`ent: missing required edge "IncidentSeverity.tenant"`)}
 	}
 	return nil
 }
 
-func (isc *IncidentSeverityCreate) sqlSave(ctx context.Context) (*IncidentSeverity, error) {
-	if err := isc.check(); err != nil {
+func (_c *IncidentSeverityCreate) sqlSave(ctx context.Context) (*IncidentSeverity, error) {
+	if err := _c.check(); err != nil {
 		return nil, err
 	}
-	_node, _spec := isc.createSpec()
-	if err := sqlgraph.CreateNode(ctx, isc.driver, _spec); err != nil {
+	_node, _spec := _c.createSpec()
+	if err := sqlgraph.CreateNode(ctx, _c.driver, _spec); err != nil {
 		if sqlgraph.IsConstraintError(err) {
 			err = &ConstraintError{msg: err.Error(), wrap: err}
 		}
@@ -232,46 +232,46 @@ func (isc *IncidentSeverityCreate) sqlSave(ctx context.Context) (*IncidentSeveri
 			return nil, err
 		}
 	}
-	isc.mutation.id = &_node.ID
-	isc.mutation.done = true
+	_c.mutation.id = &_node.ID
+	_c.mutation.done = true
 	return _node, nil
 }
 
-func (isc *IncidentSeverityCreate) createSpec() (*IncidentSeverity, *sqlgraph.CreateSpec) {
+func (_c *IncidentSeverityCreate) createSpec() (*IncidentSeverity, *sqlgraph.CreateSpec) {
 	var (
-		_node = &IncidentSeverity{config: isc.config}
+		_node = &IncidentSeverity{config: _c.config}
 		_spec = sqlgraph.NewCreateSpec(incidentseverity.Table, sqlgraph.NewFieldSpec(incidentseverity.FieldID, field.TypeUUID))
 	)
-	_spec.OnConflict = isc.conflict
-	if id, ok := isc.mutation.ID(); ok {
+	_spec.OnConflict = _c.conflict
+	if id, ok := _c.mutation.ID(); ok {
 		_node.ID = id
 		_spec.ID.Value = &id
 	}
-	if value, ok := isc.mutation.ArchiveTime(); ok {
+	if value, ok := _c.mutation.ArchiveTime(); ok {
 		_spec.SetField(incidentseverity.FieldArchiveTime, field.TypeTime, value)
 		_node.ArchiveTime = value
 	}
-	if value, ok := isc.mutation.ProviderID(); ok {
+	if value, ok := _c.mutation.ProviderID(); ok {
 		_spec.SetField(incidentseverity.FieldProviderID, field.TypeString, value)
 		_node.ProviderID = value
 	}
-	if value, ok := isc.mutation.Name(); ok {
+	if value, ok := _c.mutation.Name(); ok {
 		_spec.SetField(incidentseverity.FieldName, field.TypeString, value)
 		_node.Name = value
 	}
-	if value, ok := isc.mutation.Rank(); ok {
+	if value, ok := _c.mutation.Rank(); ok {
 		_spec.SetField(incidentseverity.FieldRank, field.TypeInt, value)
 		_node.Rank = value
 	}
-	if value, ok := isc.mutation.Color(); ok {
+	if value, ok := _c.mutation.Color(); ok {
 		_spec.SetField(incidentseverity.FieldColor, field.TypeString, value)
 		_node.Color = value
 	}
-	if value, ok := isc.mutation.Description(); ok {
+	if value, ok := _c.mutation.Description(); ok {
 		_spec.SetField(incidentseverity.FieldDescription, field.TypeString, value)
 		_node.Description = value
 	}
-	if nodes := isc.mutation.TenantIDs(); len(nodes) > 0 {
+	if nodes := _c.mutation.TenantIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
@@ -288,7 +288,7 @@ func (isc *IncidentSeverityCreate) createSpec() (*IncidentSeverity, *sqlgraph.Cr
 		_node.TenantID = nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
-	if nodes := isc.mutation.IncidentsIDs(); len(nodes) > 0 {
+	if nodes := _c.mutation.IncidentsIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: true,
@@ -304,7 +304,7 @@ func (isc *IncidentSeverityCreate) createSpec() (*IncidentSeverity, *sqlgraph.Cr
 		}
 		_spec.Edges = append(_spec.Edges, edge)
 	}
-	if nodes := isc.mutation.DebriefQuestionsIDs(); len(nodes) > 0 {
+	if nodes := _c.mutation.DebriefQuestionsIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
 			Inverse: true,
@@ -339,10 +339,10 @@ func (isc *IncidentSeverityCreate) createSpec() (*IncidentSeverity, *sqlgraph.Cr
 //			SetTenantID(v+v).
 //		}).
 //		Exec(ctx)
-func (isc *IncidentSeverityCreate) OnConflict(opts ...sql.ConflictOption) *IncidentSeverityUpsertOne {
-	isc.conflict = opts
+func (_c *IncidentSeverityCreate) OnConflict(opts ...sql.ConflictOption) *IncidentSeverityUpsertOne {
+	_c.conflict = opts
 	return &IncidentSeverityUpsertOne{
-		create: isc,
+		create: _c,
 	}
 }
 
@@ -352,10 +352,10 @@ func (isc *IncidentSeverityCreate) OnConflict(opts ...sql.ConflictOption) *Incid
 //	client.IncidentSeverity.Create().
 //		OnConflict(sql.ConflictColumns(columns...)).
 //		Exec(ctx)
-func (isc *IncidentSeverityCreate) OnConflictColumns(columns ...string) *IncidentSeverityUpsertOne {
-	isc.conflict = append(isc.conflict, sql.ConflictColumns(columns...))
+func (_c *IncidentSeverityCreate) OnConflictColumns(columns ...string) *IncidentSeverityUpsertOne {
+	_c.conflict = append(_c.conflict, sql.ConflictColumns(columns...))
 	return &IncidentSeverityUpsertOne{
-		create: isc,
+		create: _c,
 	}
 }
 
@@ -691,16 +691,16 @@ type IncidentSeverityCreateBulk struct {
 }
 
 // Save creates the IncidentSeverity entities in the database.
-func (iscb *IncidentSeverityCreateBulk) Save(ctx context.Context) ([]*IncidentSeverity, error) {
-	if iscb.err != nil {
-		return nil, iscb.err
+func (_c *IncidentSeverityCreateBulk) Save(ctx context.Context) ([]*IncidentSeverity, error) {
+	if _c.err != nil {
+		return nil, _c.err
 	}
-	specs := make([]*sqlgraph.CreateSpec, len(iscb.builders))
-	nodes := make([]*IncidentSeverity, len(iscb.builders))
-	mutators := make([]Mutator, len(iscb.builders))
-	for i := range iscb.builders {
+	specs := make([]*sqlgraph.CreateSpec, len(_c.builders))
+	nodes := make([]*IncidentSeverity, len(_c.builders))
+	mutators := make([]Mutator, len(_c.builders))
+	for i := range _c.builders {
 		func(i int, root context.Context) {
-			builder := iscb.builders[i]
+			builder := _c.builders[i]
 			builder.defaults()
 			var mut Mutator = MutateFunc(func(ctx context.Context, m Mutation) (Value, error) {
 				mutation, ok := m.(*IncidentSeverityMutation)
@@ -714,12 +714,12 @@ func (iscb *IncidentSeverityCreateBulk) Save(ctx context.Context) ([]*IncidentSe
 				var err error
 				nodes[i], specs[i] = builder.createSpec()
 				if i < len(mutators)-1 {
-					_, err = mutators[i+1].Mutate(root, iscb.builders[i+1].mutation)
+					_, err = mutators[i+1].Mutate(root, _c.builders[i+1].mutation)
 				} else {
 					spec := &sqlgraph.BatchCreateSpec{Nodes: specs}
-					spec.OnConflict = iscb.conflict
+					spec.OnConflict = _c.conflict
 					// Invoke the actual operation on the latest mutation in the chain.
-					if err = sqlgraph.BatchCreate(ctx, iscb.driver, spec); err != nil {
+					if err = sqlgraph.BatchCreate(ctx, _c.driver, spec); err != nil {
 						if sqlgraph.IsConstraintError(err) {
 							err = &ConstraintError{msg: err.Error(), wrap: err}
 						}
@@ -739,7 +739,7 @@ func (iscb *IncidentSeverityCreateBulk) Save(ctx context.Context) ([]*IncidentSe
 		}(i, ctx)
 	}
 	if len(mutators) > 0 {
-		if _, err := mutators[0].Mutate(ctx, iscb.builders[0].mutation); err != nil {
+		if _, err := mutators[0].Mutate(ctx, _c.builders[0].mutation); err != nil {
 			return nil, err
 		}
 	}
@@ -747,8 +747,8 @@ func (iscb *IncidentSeverityCreateBulk) Save(ctx context.Context) ([]*IncidentSe
 }
 
 // SaveX is like Save, but panics if an error occurs.
-func (iscb *IncidentSeverityCreateBulk) SaveX(ctx context.Context) []*IncidentSeverity {
-	v, err := iscb.Save(ctx)
+func (_c *IncidentSeverityCreateBulk) SaveX(ctx context.Context) []*IncidentSeverity {
+	v, err := _c.Save(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -756,14 +756,14 @@ func (iscb *IncidentSeverityCreateBulk) SaveX(ctx context.Context) []*IncidentSe
 }
 
 // Exec executes the query.
-func (iscb *IncidentSeverityCreateBulk) Exec(ctx context.Context) error {
-	_, err := iscb.Save(ctx)
+func (_c *IncidentSeverityCreateBulk) Exec(ctx context.Context) error {
+	_, err := _c.Save(ctx)
 	return err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (iscb *IncidentSeverityCreateBulk) ExecX(ctx context.Context) {
-	if err := iscb.Exec(ctx); err != nil {
+func (_c *IncidentSeverityCreateBulk) ExecX(ctx context.Context) {
+	if err := _c.Exec(ctx); err != nil {
 		panic(err)
 	}
 }
@@ -783,10 +783,10 @@ func (iscb *IncidentSeverityCreateBulk) ExecX(ctx context.Context) {
 //			SetTenantID(v+v).
 //		}).
 //		Exec(ctx)
-func (iscb *IncidentSeverityCreateBulk) OnConflict(opts ...sql.ConflictOption) *IncidentSeverityUpsertBulk {
-	iscb.conflict = opts
+func (_c *IncidentSeverityCreateBulk) OnConflict(opts ...sql.ConflictOption) *IncidentSeverityUpsertBulk {
+	_c.conflict = opts
 	return &IncidentSeverityUpsertBulk{
-		create: iscb,
+		create: _c,
 	}
 }
 
@@ -796,10 +796,10 @@ func (iscb *IncidentSeverityCreateBulk) OnConflict(opts ...sql.ConflictOption) *
 //	client.IncidentSeverity.Create().
 //		OnConflict(sql.ConflictColumns(columns...)).
 //		Exec(ctx)
-func (iscb *IncidentSeverityCreateBulk) OnConflictColumns(columns ...string) *IncidentSeverityUpsertBulk {
-	iscb.conflict = append(iscb.conflict, sql.ConflictColumns(columns...))
+func (_c *IncidentSeverityCreateBulk) OnConflictColumns(columns ...string) *IncidentSeverityUpsertBulk {
+	_c.conflict = append(_c.conflict, sql.ConflictColumns(columns...))
 	return &IncidentSeverityUpsertBulk{
-		create: iscb,
+		create: _c,
 	}
 }
 

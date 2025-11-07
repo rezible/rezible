@@ -29,223 +29,223 @@ type OncallShiftUpdate struct {
 }
 
 // Where appends a list predicates to the OncallShiftUpdate builder.
-func (osu *OncallShiftUpdate) Where(ps ...predicate.OncallShift) *OncallShiftUpdate {
-	osu.mutation.Where(ps...)
-	return osu
+func (_u *OncallShiftUpdate) Where(ps ...predicate.OncallShift) *OncallShiftUpdate {
+	_u.mutation.Where(ps...)
+	return _u
 }
 
 // SetUserID sets the "user_id" field.
-func (osu *OncallShiftUpdate) SetUserID(u uuid.UUID) *OncallShiftUpdate {
-	osu.mutation.SetUserID(u)
-	return osu
+func (_u *OncallShiftUpdate) SetUserID(v uuid.UUID) *OncallShiftUpdate {
+	_u.mutation.SetUserID(v)
+	return _u
 }
 
 // SetNillableUserID sets the "user_id" field if the given value is not nil.
-func (osu *OncallShiftUpdate) SetNillableUserID(u *uuid.UUID) *OncallShiftUpdate {
-	if u != nil {
-		osu.SetUserID(*u)
+func (_u *OncallShiftUpdate) SetNillableUserID(v *uuid.UUID) *OncallShiftUpdate {
+	if v != nil {
+		_u.SetUserID(*v)
 	}
-	return osu
+	return _u
 }
 
 // SetRosterID sets the "roster_id" field.
-func (osu *OncallShiftUpdate) SetRosterID(u uuid.UUID) *OncallShiftUpdate {
-	osu.mutation.SetRosterID(u)
-	return osu
+func (_u *OncallShiftUpdate) SetRosterID(v uuid.UUID) *OncallShiftUpdate {
+	_u.mutation.SetRosterID(v)
+	return _u
 }
 
 // SetNillableRosterID sets the "roster_id" field if the given value is not nil.
-func (osu *OncallShiftUpdate) SetNillableRosterID(u *uuid.UUID) *OncallShiftUpdate {
-	if u != nil {
-		osu.SetRosterID(*u)
+func (_u *OncallShiftUpdate) SetNillableRosterID(v *uuid.UUID) *OncallShiftUpdate {
+	if v != nil {
+		_u.SetRosterID(*v)
 	}
-	return osu
+	return _u
 }
 
 // SetProviderID sets the "provider_id" field.
-func (osu *OncallShiftUpdate) SetProviderID(s string) *OncallShiftUpdate {
-	osu.mutation.SetProviderID(s)
-	return osu
+func (_u *OncallShiftUpdate) SetProviderID(v string) *OncallShiftUpdate {
+	_u.mutation.SetProviderID(v)
+	return _u
 }
 
 // SetNillableProviderID sets the "provider_id" field if the given value is not nil.
-func (osu *OncallShiftUpdate) SetNillableProviderID(s *string) *OncallShiftUpdate {
-	if s != nil {
-		osu.SetProviderID(*s)
+func (_u *OncallShiftUpdate) SetNillableProviderID(v *string) *OncallShiftUpdate {
+	if v != nil {
+		_u.SetProviderID(*v)
 	}
-	return osu
+	return _u
 }
 
 // ClearProviderID clears the value of the "provider_id" field.
-func (osu *OncallShiftUpdate) ClearProviderID() *OncallShiftUpdate {
-	osu.mutation.ClearProviderID()
-	return osu
+func (_u *OncallShiftUpdate) ClearProviderID() *OncallShiftUpdate {
+	_u.mutation.ClearProviderID()
+	return _u
 }
 
 // SetRole sets the "role" field.
-func (osu *OncallShiftUpdate) SetRole(o oncallshift.Role) *OncallShiftUpdate {
-	osu.mutation.SetRole(o)
-	return osu
+func (_u *OncallShiftUpdate) SetRole(v oncallshift.Role) *OncallShiftUpdate {
+	_u.mutation.SetRole(v)
+	return _u
 }
 
 // SetNillableRole sets the "role" field if the given value is not nil.
-func (osu *OncallShiftUpdate) SetNillableRole(o *oncallshift.Role) *OncallShiftUpdate {
-	if o != nil {
-		osu.SetRole(*o)
+func (_u *OncallShiftUpdate) SetNillableRole(v *oncallshift.Role) *OncallShiftUpdate {
+	if v != nil {
+		_u.SetRole(*v)
 	}
-	return osu
+	return _u
 }
 
 // ClearRole clears the value of the "role" field.
-func (osu *OncallShiftUpdate) ClearRole() *OncallShiftUpdate {
-	osu.mutation.ClearRole()
-	return osu
+func (_u *OncallShiftUpdate) ClearRole() *OncallShiftUpdate {
+	_u.mutation.ClearRole()
+	return _u
 }
 
 // SetPrimaryShiftID sets the "primary_shift_id" field.
-func (osu *OncallShiftUpdate) SetPrimaryShiftID(u uuid.UUID) *OncallShiftUpdate {
-	osu.mutation.SetPrimaryShiftID(u)
-	return osu
+func (_u *OncallShiftUpdate) SetPrimaryShiftID(v uuid.UUID) *OncallShiftUpdate {
+	_u.mutation.SetPrimaryShiftID(v)
+	return _u
 }
 
 // SetNillablePrimaryShiftID sets the "primary_shift_id" field if the given value is not nil.
-func (osu *OncallShiftUpdate) SetNillablePrimaryShiftID(u *uuid.UUID) *OncallShiftUpdate {
-	if u != nil {
-		osu.SetPrimaryShiftID(*u)
+func (_u *OncallShiftUpdate) SetNillablePrimaryShiftID(v *uuid.UUID) *OncallShiftUpdate {
+	if v != nil {
+		_u.SetPrimaryShiftID(*v)
 	}
-	return osu
+	return _u
 }
 
 // ClearPrimaryShiftID clears the value of the "primary_shift_id" field.
-func (osu *OncallShiftUpdate) ClearPrimaryShiftID() *OncallShiftUpdate {
-	osu.mutation.ClearPrimaryShiftID()
-	return osu
+func (_u *OncallShiftUpdate) ClearPrimaryShiftID() *OncallShiftUpdate {
+	_u.mutation.ClearPrimaryShiftID()
+	return _u
 }
 
 // SetStartAt sets the "start_at" field.
-func (osu *OncallShiftUpdate) SetStartAt(t time.Time) *OncallShiftUpdate {
-	osu.mutation.SetStartAt(t)
-	return osu
+func (_u *OncallShiftUpdate) SetStartAt(v time.Time) *OncallShiftUpdate {
+	_u.mutation.SetStartAt(v)
+	return _u
 }
 
 // SetNillableStartAt sets the "start_at" field if the given value is not nil.
-func (osu *OncallShiftUpdate) SetNillableStartAt(t *time.Time) *OncallShiftUpdate {
-	if t != nil {
-		osu.SetStartAt(*t)
+func (_u *OncallShiftUpdate) SetNillableStartAt(v *time.Time) *OncallShiftUpdate {
+	if v != nil {
+		_u.SetStartAt(*v)
 	}
-	return osu
+	return _u
 }
 
 // SetEndAt sets the "end_at" field.
-func (osu *OncallShiftUpdate) SetEndAt(t time.Time) *OncallShiftUpdate {
-	osu.mutation.SetEndAt(t)
-	return osu
+func (_u *OncallShiftUpdate) SetEndAt(v time.Time) *OncallShiftUpdate {
+	_u.mutation.SetEndAt(v)
+	return _u
 }
 
 // SetNillableEndAt sets the "end_at" field if the given value is not nil.
-func (osu *OncallShiftUpdate) SetNillableEndAt(t *time.Time) *OncallShiftUpdate {
-	if t != nil {
-		osu.SetEndAt(*t)
+func (_u *OncallShiftUpdate) SetNillableEndAt(v *time.Time) *OncallShiftUpdate {
+	if v != nil {
+		_u.SetEndAt(*v)
 	}
-	return osu
+	return _u
 }
 
 // SetUser sets the "user" edge to the User entity.
-func (osu *OncallShiftUpdate) SetUser(u *User) *OncallShiftUpdate {
-	return osu.SetUserID(u.ID)
+func (_u *OncallShiftUpdate) SetUser(v *User) *OncallShiftUpdate {
+	return _u.SetUserID(v.ID)
 }
 
 // SetRoster sets the "roster" edge to the OncallRoster entity.
-func (osu *OncallShiftUpdate) SetRoster(o *OncallRoster) *OncallShiftUpdate {
-	return osu.SetRosterID(o.ID)
+func (_u *OncallShiftUpdate) SetRoster(v *OncallRoster) *OncallShiftUpdate {
+	return _u.SetRosterID(v.ID)
 }
 
 // SetPrimaryShift sets the "primary_shift" edge to the OncallShift entity.
-func (osu *OncallShiftUpdate) SetPrimaryShift(o *OncallShift) *OncallShiftUpdate {
-	return osu.SetPrimaryShiftID(o.ID)
+func (_u *OncallShiftUpdate) SetPrimaryShift(v *OncallShift) *OncallShiftUpdate {
+	return _u.SetPrimaryShiftID(v.ID)
 }
 
 // SetHandoverID sets the "handover" edge to the OncallShiftHandover entity by ID.
-func (osu *OncallShiftUpdate) SetHandoverID(id uuid.UUID) *OncallShiftUpdate {
-	osu.mutation.SetHandoverID(id)
-	return osu
+func (_u *OncallShiftUpdate) SetHandoverID(id uuid.UUID) *OncallShiftUpdate {
+	_u.mutation.SetHandoverID(id)
+	return _u
 }
 
 // SetNillableHandoverID sets the "handover" edge to the OncallShiftHandover entity by ID if the given value is not nil.
-func (osu *OncallShiftUpdate) SetNillableHandoverID(id *uuid.UUID) *OncallShiftUpdate {
+func (_u *OncallShiftUpdate) SetNillableHandoverID(id *uuid.UUID) *OncallShiftUpdate {
 	if id != nil {
-		osu = osu.SetHandoverID(*id)
+		_u = _u.SetHandoverID(*id)
 	}
-	return osu
+	return _u
 }
 
 // SetHandover sets the "handover" edge to the OncallShiftHandover entity.
-func (osu *OncallShiftUpdate) SetHandover(o *OncallShiftHandover) *OncallShiftUpdate {
-	return osu.SetHandoverID(o.ID)
+func (_u *OncallShiftUpdate) SetHandover(v *OncallShiftHandover) *OncallShiftUpdate {
+	return _u.SetHandoverID(v.ID)
 }
 
 // SetMetricsID sets the "metrics" edge to the OncallShiftMetrics entity by ID.
-func (osu *OncallShiftUpdate) SetMetricsID(id uuid.UUID) *OncallShiftUpdate {
-	osu.mutation.SetMetricsID(id)
-	return osu
+func (_u *OncallShiftUpdate) SetMetricsID(id uuid.UUID) *OncallShiftUpdate {
+	_u.mutation.SetMetricsID(id)
+	return _u
 }
 
 // SetNillableMetricsID sets the "metrics" edge to the OncallShiftMetrics entity by ID if the given value is not nil.
-func (osu *OncallShiftUpdate) SetNillableMetricsID(id *uuid.UUID) *OncallShiftUpdate {
+func (_u *OncallShiftUpdate) SetNillableMetricsID(id *uuid.UUID) *OncallShiftUpdate {
 	if id != nil {
-		osu = osu.SetMetricsID(*id)
+		_u = _u.SetMetricsID(*id)
 	}
-	return osu
+	return _u
 }
 
 // SetMetrics sets the "metrics" edge to the OncallShiftMetrics entity.
-func (osu *OncallShiftUpdate) SetMetrics(o *OncallShiftMetrics) *OncallShiftUpdate {
-	return osu.SetMetricsID(o.ID)
+func (_u *OncallShiftUpdate) SetMetrics(v *OncallShiftMetrics) *OncallShiftUpdate {
+	return _u.SetMetricsID(v.ID)
 }
 
 // Mutation returns the OncallShiftMutation object of the builder.
-func (osu *OncallShiftUpdate) Mutation() *OncallShiftMutation {
-	return osu.mutation
+func (_u *OncallShiftUpdate) Mutation() *OncallShiftMutation {
+	return _u.mutation
 }
 
 // ClearUser clears the "user" edge to the User entity.
-func (osu *OncallShiftUpdate) ClearUser() *OncallShiftUpdate {
-	osu.mutation.ClearUser()
-	return osu
+func (_u *OncallShiftUpdate) ClearUser() *OncallShiftUpdate {
+	_u.mutation.ClearUser()
+	return _u
 }
 
 // ClearRoster clears the "roster" edge to the OncallRoster entity.
-func (osu *OncallShiftUpdate) ClearRoster() *OncallShiftUpdate {
-	osu.mutation.ClearRoster()
-	return osu
+func (_u *OncallShiftUpdate) ClearRoster() *OncallShiftUpdate {
+	_u.mutation.ClearRoster()
+	return _u
 }
 
 // ClearPrimaryShift clears the "primary_shift" edge to the OncallShift entity.
-func (osu *OncallShiftUpdate) ClearPrimaryShift() *OncallShiftUpdate {
-	osu.mutation.ClearPrimaryShift()
-	return osu
+func (_u *OncallShiftUpdate) ClearPrimaryShift() *OncallShiftUpdate {
+	_u.mutation.ClearPrimaryShift()
+	return _u
 }
 
 // ClearHandover clears the "handover" edge to the OncallShiftHandover entity.
-func (osu *OncallShiftUpdate) ClearHandover() *OncallShiftUpdate {
-	osu.mutation.ClearHandover()
-	return osu
+func (_u *OncallShiftUpdate) ClearHandover() *OncallShiftUpdate {
+	_u.mutation.ClearHandover()
+	return _u
 }
 
 // ClearMetrics clears the "metrics" edge to the OncallShiftMetrics entity.
-func (osu *OncallShiftUpdate) ClearMetrics() *OncallShiftUpdate {
-	osu.mutation.ClearMetrics()
-	return osu
+func (_u *OncallShiftUpdate) ClearMetrics() *OncallShiftUpdate {
+	_u.mutation.ClearMetrics()
+	return _u
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
-func (osu *OncallShiftUpdate) Save(ctx context.Context) (int, error) {
-	return withHooks(ctx, osu.sqlSave, osu.mutation, osu.hooks)
+func (_u *OncallShiftUpdate) Save(ctx context.Context) (int, error) {
+	return withHooks(ctx, _u.sqlSave, _u.mutation, _u.hooks)
 }
 
 // SaveX is like Save, but panics if an error occurs.
-func (osu *OncallShiftUpdate) SaveX(ctx context.Context) int {
-	affected, err := osu.Save(ctx)
+func (_u *OncallShiftUpdate) SaveX(ctx context.Context) int {
+	affected, err := _u.Save(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -253,74 +253,74 @@ func (osu *OncallShiftUpdate) SaveX(ctx context.Context) int {
 }
 
 // Exec executes the query.
-func (osu *OncallShiftUpdate) Exec(ctx context.Context) error {
-	_, err := osu.Save(ctx)
+func (_u *OncallShiftUpdate) Exec(ctx context.Context) error {
+	_, err := _u.Save(ctx)
 	return err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (osu *OncallShiftUpdate) ExecX(ctx context.Context) {
-	if err := osu.Exec(ctx); err != nil {
+func (_u *OncallShiftUpdate) ExecX(ctx context.Context) {
+	if err := _u.Exec(ctx); err != nil {
 		panic(err)
 	}
 }
 
 // check runs all checks and user-defined validators on the builder.
-func (osu *OncallShiftUpdate) check() error {
-	if v, ok := osu.mutation.Role(); ok {
+func (_u *OncallShiftUpdate) check() error {
+	if v, ok := _u.mutation.Role(); ok {
 		if err := oncallshift.RoleValidator(v); err != nil {
 			return &ValidationError{Name: "role", err: fmt.Errorf(`ent: validator failed for field "OncallShift.role": %w`, err)}
 		}
 	}
-	if osu.mutation.TenantCleared() && len(osu.mutation.TenantIDs()) > 0 {
+	if _u.mutation.TenantCleared() && len(_u.mutation.TenantIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "OncallShift.tenant"`)
 	}
-	if osu.mutation.UserCleared() && len(osu.mutation.UserIDs()) > 0 {
+	if _u.mutation.UserCleared() && len(_u.mutation.UserIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "OncallShift.user"`)
 	}
-	if osu.mutation.RosterCleared() && len(osu.mutation.RosterIDs()) > 0 {
+	if _u.mutation.RosterCleared() && len(_u.mutation.RosterIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "OncallShift.roster"`)
 	}
 	return nil
 }
 
 // Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
-func (osu *OncallShiftUpdate) Modify(modifiers ...func(u *sql.UpdateBuilder)) *OncallShiftUpdate {
-	osu.modifiers = append(osu.modifiers, modifiers...)
-	return osu
+func (_u *OncallShiftUpdate) Modify(modifiers ...func(u *sql.UpdateBuilder)) *OncallShiftUpdate {
+	_u.modifiers = append(_u.modifiers, modifiers...)
+	return _u
 }
 
-func (osu *OncallShiftUpdate) sqlSave(ctx context.Context) (n int, err error) {
-	if err := osu.check(); err != nil {
-		return n, err
+func (_u *OncallShiftUpdate) sqlSave(ctx context.Context) (_node int, err error) {
+	if err := _u.check(); err != nil {
+		return _node, err
 	}
 	_spec := sqlgraph.NewUpdateSpec(oncallshift.Table, oncallshift.Columns, sqlgraph.NewFieldSpec(oncallshift.FieldID, field.TypeUUID))
-	if ps := osu.mutation.predicates; len(ps) > 0 {
+	if ps := _u.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {
 				ps[i](selector)
 			}
 		}
 	}
-	if value, ok := osu.mutation.ProviderID(); ok {
+	if value, ok := _u.mutation.ProviderID(); ok {
 		_spec.SetField(oncallshift.FieldProviderID, field.TypeString, value)
 	}
-	if osu.mutation.ProviderIDCleared() {
+	if _u.mutation.ProviderIDCleared() {
 		_spec.ClearField(oncallshift.FieldProviderID, field.TypeString)
 	}
-	if value, ok := osu.mutation.Role(); ok {
+	if value, ok := _u.mutation.Role(); ok {
 		_spec.SetField(oncallshift.FieldRole, field.TypeEnum, value)
 	}
-	if osu.mutation.RoleCleared() {
+	if _u.mutation.RoleCleared() {
 		_spec.ClearField(oncallshift.FieldRole, field.TypeEnum)
 	}
-	if value, ok := osu.mutation.StartAt(); ok {
+	if value, ok := _u.mutation.StartAt(); ok {
 		_spec.SetField(oncallshift.FieldStartAt, field.TypeTime, value)
 	}
-	if value, ok := osu.mutation.EndAt(); ok {
+	if value, ok := _u.mutation.EndAt(); ok {
 		_spec.SetField(oncallshift.FieldEndAt, field.TypeTime, value)
 	}
-	if osu.mutation.UserCleared() {
+	if _u.mutation.UserCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
@@ -333,7 +333,7 @@ func (osu *OncallShiftUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := osu.mutation.UserIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.UserIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
@@ -349,7 +349,7 @@ func (osu *OncallShiftUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if osu.mutation.RosterCleared() {
+	if _u.mutation.RosterCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
@@ -362,7 +362,7 @@ func (osu *OncallShiftUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := osu.mutation.RosterIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.RosterIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
@@ -378,7 +378,7 @@ func (osu *OncallShiftUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if osu.mutation.PrimaryShiftCleared() {
+	if _u.mutation.PrimaryShiftCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2O,
 			Inverse: false,
@@ -391,7 +391,7 @@ func (osu *OncallShiftUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := osu.mutation.PrimaryShiftIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.PrimaryShiftIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2O,
 			Inverse: false,
@@ -407,7 +407,7 @@ func (osu *OncallShiftUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if osu.mutation.HandoverCleared() {
+	if _u.mutation.HandoverCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2O,
 			Inverse: false,
@@ -420,7 +420,7 @@ func (osu *OncallShiftUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := osu.mutation.HandoverIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.HandoverIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2O,
 			Inverse: false,
@@ -436,7 +436,7 @@ func (osu *OncallShiftUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if osu.mutation.MetricsCleared() {
+	if _u.mutation.MetricsCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2O,
 			Inverse: false,
@@ -449,7 +449,7 @@ func (osu *OncallShiftUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := osu.mutation.MetricsIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.MetricsIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2O,
 			Inverse: false,
@@ -465,8 +465,8 @@ func (osu *OncallShiftUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	_spec.AddModifiers(osu.modifiers...)
-	if n, err = sqlgraph.UpdateNodes(ctx, osu.driver, _spec); err != nil {
+	_spec.AddModifiers(_u.modifiers...)
+	if _node, err = sqlgraph.UpdateNodes(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{oncallshift.Label}
 		} else if sqlgraph.IsConstraintError(err) {
@@ -474,8 +474,8 @@ func (osu *OncallShiftUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		return 0, err
 	}
-	osu.mutation.done = true
-	return n, nil
+	_u.mutation.done = true
+	return _node, nil
 }
 
 // OncallShiftUpdateOne is the builder for updating a single OncallShift entity.
@@ -488,230 +488,230 @@ type OncallShiftUpdateOne struct {
 }
 
 // SetUserID sets the "user_id" field.
-func (osuo *OncallShiftUpdateOne) SetUserID(u uuid.UUID) *OncallShiftUpdateOne {
-	osuo.mutation.SetUserID(u)
-	return osuo
+func (_u *OncallShiftUpdateOne) SetUserID(v uuid.UUID) *OncallShiftUpdateOne {
+	_u.mutation.SetUserID(v)
+	return _u
 }
 
 // SetNillableUserID sets the "user_id" field if the given value is not nil.
-func (osuo *OncallShiftUpdateOne) SetNillableUserID(u *uuid.UUID) *OncallShiftUpdateOne {
-	if u != nil {
-		osuo.SetUserID(*u)
+func (_u *OncallShiftUpdateOne) SetNillableUserID(v *uuid.UUID) *OncallShiftUpdateOne {
+	if v != nil {
+		_u.SetUserID(*v)
 	}
-	return osuo
+	return _u
 }
 
 // SetRosterID sets the "roster_id" field.
-func (osuo *OncallShiftUpdateOne) SetRosterID(u uuid.UUID) *OncallShiftUpdateOne {
-	osuo.mutation.SetRosterID(u)
-	return osuo
+func (_u *OncallShiftUpdateOne) SetRosterID(v uuid.UUID) *OncallShiftUpdateOne {
+	_u.mutation.SetRosterID(v)
+	return _u
 }
 
 // SetNillableRosterID sets the "roster_id" field if the given value is not nil.
-func (osuo *OncallShiftUpdateOne) SetNillableRosterID(u *uuid.UUID) *OncallShiftUpdateOne {
-	if u != nil {
-		osuo.SetRosterID(*u)
+func (_u *OncallShiftUpdateOne) SetNillableRosterID(v *uuid.UUID) *OncallShiftUpdateOne {
+	if v != nil {
+		_u.SetRosterID(*v)
 	}
-	return osuo
+	return _u
 }
 
 // SetProviderID sets the "provider_id" field.
-func (osuo *OncallShiftUpdateOne) SetProviderID(s string) *OncallShiftUpdateOne {
-	osuo.mutation.SetProviderID(s)
-	return osuo
+func (_u *OncallShiftUpdateOne) SetProviderID(v string) *OncallShiftUpdateOne {
+	_u.mutation.SetProviderID(v)
+	return _u
 }
 
 // SetNillableProviderID sets the "provider_id" field if the given value is not nil.
-func (osuo *OncallShiftUpdateOne) SetNillableProviderID(s *string) *OncallShiftUpdateOne {
-	if s != nil {
-		osuo.SetProviderID(*s)
+func (_u *OncallShiftUpdateOne) SetNillableProviderID(v *string) *OncallShiftUpdateOne {
+	if v != nil {
+		_u.SetProviderID(*v)
 	}
-	return osuo
+	return _u
 }
 
 // ClearProviderID clears the value of the "provider_id" field.
-func (osuo *OncallShiftUpdateOne) ClearProviderID() *OncallShiftUpdateOne {
-	osuo.mutation.ClearProviderID()
-	return osuo
+func (_u *OncallShiftUpdateOne) ClearProviderID() *OncallShiftUpdateOne {
+	_u.mutation.ClearProviderID()
+	return _u
 }
 
 // SetRole sets the "role" field.
-func (osuo *OncallShiftUpdateOne) SetRole(o oncallshift.Role) *OncallShiftUpdateOne {
-	osuo.mutation.SetRole(o)
-	return osuo
+func (_u *OncallShiftUpdateOne) SetRole(v oncallshift.Role) *OncallShiftUpdateOne {
+	_u.mutation.SetRole(v)
+	return _u
 }
 
 // SetNillableRole sets the "role" field if the given value is not nil.
-func (osuo *OncallShiftUpdateOne) SetNillableRole(o *oncallshift.Role) *OncallShiftUpdateOne {
-	if o != nil {
-		osuo.SetRole(*o)
+func (_u *OncallShiftUpdateOne) SetNillableRole(v *oncallshift.Role) *OncallShiftUpdateOne {
+	if v != nil {
+		_u.SetRole(*v)
 	}
-	return osuo
+	return _u
 }
 
 // ClearRole clears the value of the "role" field.
-func (osuo *OncallShiftUpdateOne) ClearRole() *OncallShiftUpdateOne {
-	osuo.mutation.ClearRole()
-	return osuo
+func (_u *OncallShiftUpdateOne) ClearRole() *OncallShiftUpdateOne {
+	_u.mutation.ClearRole()
+	return _u
 }
 
 // SetPrimaryShiftID sets the "primary_shift_id" field.
-func (osuo *OncallShiftUpdateOne) SetPrimaryShiftID(u uuid.UUID) *OncallShiftUpdateOne {
-	osuo.mutation.SetPrimaryShiftID(u)
-	return osuo
+func (_u *OncallShiftUpdateOne) SetPrimaryShiftID(v uuid.UUID) *OncallShiftUpdateOne {
+	_u.mutation.SetPrimaryShiftID(v)
+	return _u
 }
 
 // SetNillablePrimaryShiftID sets the "primary_shift_id" field if the given value is not nil.
-func (osuo *OncallShiftUpdateOne) SetNillablePrimaryShiftID(u *uuid.UUID) *OncallShiftUpdateOne {
-	if u != nil {
-		osuo.SetPrimaryShiftID(*u)
+func (_u *OncallShiftUpdateOne) SetNillablePrimaryShiftID(v *uuid.UUID) *OncallShiftUpdateOne {
+	if v != nil {
+		_u.SetPrimaryShiftID(*v)
 	}
-	return osuo
+	return _u
 }
 
 // ClearPrimaryShiftID clears the value of the "primary_shift_id" field.
-func (osuo *OncallShiftUpdateOne) ClearPrimaryShiftID() *OncallShiftUpdateOne {
-	osuo.mutation.ClearPrimaryShiftID()
-	return osuo
+func (_u *OncallShiftUpdateOne) ClearPrimaryShiftID() *OncallShiftUpdateOne {
+	_u.mutation.ClearPrimaryShiftID()
+	return _u
 }
 
 // SetStartAt sets the "start_at" field.
-func (osuo *OncallShiftUpdateOne) SetStartAt(t time.Time) *OncallShiftUpdateOne {
-	osuo.mutation.SetStartAt(t)
-	return osuo
+func (_u *OncallShiftUpdateOne) SetStartAt(v time.Time) *OncallShiftUpdateOne {
+	_u.mutation.SetStartAt(v)
+	return _u
 }
 
 // SetNillableStartAt sets the "start_at" field if the given value is not nil.
-func (osuo *OncallShiftUpdateOne) SetNillableStartAt(t *time.Time) *OncallShiftUpdateOne {
-	if t != nil {
-		osuo.SetStartAt(*t)
+func (_u *OncallShiftUpdateOne) SetNillableStartAt(v *time.Time) *OncallShiftUpdateOne {
+	if v != nil {
+		_u.SetStartAt(*v)
 	}
-	return osuo
+	return _u
 }
 
 // SetEndAt sets the "end_at" field.
-func (osuo *OncallShiftUpdateOne) SetEndAt(t time.Time) *OncallShiftUpdateOne {
-	osuo.mutation.SetEndAt(t)
-	return osuo
+func (_u *OncallShiftUpdateOne) SetEndAt(v time.Time) *OncallShiftUpdateOne {
+	_u.mutation.SetEndAt(v)
+	return _u
 }
 
 // SetNillableEndAt sets the "end_at" field if the given value is not nil.
-func (osuo *OncallShiftUpdateOne) SetNillableEndAt(t *time.Time) *OncallShiftUpdateOne {
-	if t != nil {
-		osuo.SetEndAt(*t)
+func (_u *OncallShiftUpdateOne) SetNillableEndAt(v *time.Time) *OncallShiftUpdateOne {
+	if v != nil {
+		_u.SetEndAt(*v)
 	}
-	return osuo
+	return _u
 }
 
 // SetUser sets the "user" edge to the User entity.
-func (osuo *OncallShiftUpdateOne) SetUser(u *User) *OncallShiftUpdateOne {
-	return osuo.SetUserID(u.ID)
+func (_u *OncallShiftUpdateOne) SetUser(v *User) *OncallShiftUpdateOne {
+	return _u.SetUserID(v.ID)
 }
 
 // SetRoster sets the "roster" edge to the OncallRoster entity.
-func (osuo *OncallShiftUpdateOne) SetRoster(o *OncallRoster) *OncallShiftUpdateOne {
-	return osuo.SetRosterID(o.ID)
+func (_u *OncallShiftUpdateOne) SetRoster(v *OncallRoster) *OncallShiftUpdateOne {
+	return _u.SetRosterID(v.ID)
 }
 
 // SetPrimaryShift sets the "primary_shift" edge to the OncallShift entity.
-func (osuo *OncallShiftUpdateOne) SetPrimaryShift(o *OncallShift) *OncallShiftUpdateOne {
-	return osuo.SetPrimaryShiftID(o.ID)
+func (_u *OncallShiftUpdateOne) SetPrimaryShift(v *OncallShift) *OncallShiftUpdateOne {
+	return _u.SetPrimaryShiftID(v.ID)
 }
 
 // SetHandoverID sets the "handover" edge to the OncallShiftHandover entity by ID.
-func (osuo *OncallShiftUpdateOne) SetHandoverID(id uuid.UUID) *OncallShiftUpdateOne {
-	osuo.mutation.SetHandoverID(id)
-	return osuo
+func (_u *OncallShiftUpdateOne) SetHandoverID(id uuid.UUID) *OncallShiftUpdateOne {
+	_u.mutation.SetHandoverID(id)
+	return _u
 }
 
 // SetNillableHandoverID sets the "handover" edge to the OncallShiftHandover entity by ID if the given value is not nil.
-func (osuo *OncallShiftUpdateOne) SetNillableHandoverID(id *uuid.UUID) *OncallShiftUpdateOne {
+func (_u *OncallShiftUpdateOne) SetNillableHandoverID(id *uuid.UUID) *OncallShiftUpdateOne {
 	if id != nil {
-		osuo = osuo.SetHandoverID(*id)
+		_u = _u.SetHandoverID(*id)
 	}
-	return osuo
+	return _u
 }
 
 // SetHandover sets the "handover" edge to the OncallShiftHandover entity.
-func (osuo *OncallShiftUpdateOne) SetHandover(o *OncallShiftHandover) *OncallShiftUpdateOne {
-	return osuo.SetHandoverID(o.ID)
+func (_u *OncallShiftUpdateOne) SetHandover(v *OncallShiftHandover) *OncallShiftUpdateOne {
+	return _u.SetHandoverID(v.ID)
 }
 
 // SetMetricsID sets the "metrics" edge to the OncallShiftMetrics entity by ID.
-func (osuo *OncallShiftUpdateOne) SetMetricsID(id uuid.UUID) *OncallShiftUpdateOne {
-	osuo.mutation.SetMetricsID(id)
-	return osuo
+func (_u *OncallShiftUpdateOne) SetMetricsID(id uuid.UUID) *OncallShiftUpdateOne {
+	_u.mutation.SetMetricsID(id)
+	return _u
 }
 
 // SetNillableMetricsID sets the "metrics" edge to the OncallShiftMetrics entity by ID if the given value is not nil.
-func (osuo *OncallShiftUpdateOne) SetNillableMetricsID(id *uuid.UUID) *OncallShiftUpdateOne {
+func (_u *OncallShiftUpdateOne) SetNillableMetricsID(id *uuid.UUID) *OncallShiftUpdateOne {
 	if id != nil {
-		osuo = osuo.SetMetricsID(*id)
+		_u = _u.SetMetricsID(*id)
 	}
-	return osuo
+	return _u
 }
 
 // SetMetrics sets the "metrics" edge to the OncallShiftMetrics entity.
-func (osuo *OncallShiftUpdateOne) SetMetrics(o *OncallShiftMetrics) *OncallShiftUpdateOne {
-	return osuo.SetMetricsID(o.ID)
+func (_u *OncallShiftUpdateOne) SetMetrics(v *OncallShiftMetrics) *OncallShiftUpdateOne {
+	return _u.SetMetricsID(v.ID)
 }
 
 // Mutation returns the OncallShiftMutation object of the builder.
-func (osuo *OncallShiftUpdateOne) Mutation() *OncallShiftMutation {
-	return osuo.mutation
+func (_u *OncallShiftUpdateOne) Mutation() *OncallShiftMutation {
+	return _u.mutation
 }
 
 // ClearUser clears the "user" edge to the User entity.
-func (osuo *OncallShiftUpdateOne) ClearUser() *OncallShiftUpdateOne {
-	osuo.mutation.ClearUser()
-	return osuo
+func (_u *OncallShiftUpdateOne) ClearUser() *OncallShiftUpdateOne {
+	_u.mutation.ClearUser()
+	return _u
 }
 
 // ClearRoster clears the "roster" edge to the OncallRoster entity.
-func (osuo *OncallShiftUpdateOne) ClearRoster() *OncallShiftUpdateOne {
-	osuo.mutation.ClearRoster()
-	return osuo
+func (_u *OncallShiftUpdateOne) ClearRoster() *OncallShiftUpdateOne {
+	_u.mutation.ClearRoster()
+	return _u
 }
 
 // ClearPrimaryShift clears the "primary_shift" edge to the OncallShift entity.
-func (osuo *OncallShiftUpdateOne) ClearPrimaryShift() *OncallShiftUpdateOne {
-	osuo.mutation.ClearPrimaryShift()
-	return osuo
+func (_u *OncallShiftUpdateOne) ClearPrimaryShift() *OncallShiftUpdateOne {
+	_u.mutation.ClearPrimaryShift()
+	return _u
 }
 
 // ClearHandover clears the "handover" edge to the OncallShiftHandover entity.
-func (osuo *OncallShiftUpdateOne) ClearHandover() *OncallShiftUpdateOne {
-	osuo.mutation.ClearHandover()
-	return osuo
+func (_u *OncallShiftUpdateOne) ClearHandover() *OncallShiftUpdateOne {
+	_u.mutation.ClearHandover()
+	return _u
 }
 
 // ClearMetrics clears the "metrics" edge to the OncallShiftMetrics entity.
-func (osuo *OncallShiftUpdateOne) ClearMetrics() *OncallShiftUpdateOne {
-	osuo.mutation.ClearMetrics()
-	return osuo
+func (_u *OncallShiftUpdateOne) ClearMetrics() *OncallShiftUpdateOne {
+	_u.mutation.ClearMetrics()
+	return _u
 }
 
 // Where appends a list predicates to the OncallShiftUpdate builder.
-func (osuo *OncallShiftUpdateOne) Where(ps ...predicate.OncallShift) *OncallShiftUpdateOne {
-	osuo.mutation.Where(ps...)
-	return osuo
+func (_u *OncallShiftUpdateOne) Where(ps ...predicate.OncallShift) *OncallShiftUpdateOne {
+	_u.mutation.Where(ps...)
+	return _u
 }
 
 // Select allows selecting one or more fields (columns) of the returned entity.
 // The default is selecting all fields defined in the entity schema.
-func (osuo *OncallShiftUpdateOne) Select(field string, fields ...string) *OncallShiftUpdateOne {
-	osuo.fields = append([]string{field}, fields...)
-	return osuo
+func (_u *OncallShiftUpdateOne) Select(field string, fields ...string) *OncallShiftUpdateOne {
+	_u.fields = append([]string{field}, fields...)
+	return _u
 }
 
 // Save executes the query and returns the updated OncallShift entity.
-func (osuo *OncallShiftUpdateOne) Save(ctx context.Context) (*OncallShift, error) {
-	return withHooks(ctx, osuo.sqlSave, osuo.mutation, osuo.hooks)
+func (_u *OncallShiftUpdateOne) Save(ctx context.Context) (*OncallShift, error) {
+	return withHooks(ctx, _u.sqlSave, _u.mutation, _u.hooks)
 }
 
 // SaveX is like Save, but panics if an error occurs.
-func (osuo *OncallShiftUpdateOne) SaveX(ctx context.Context) *OncallShift {
-	node, err := osuo.Save(ctx)
+func (_u *OncallShiftUpdateOne) SaveX(ctx context.Context) *OncallShift {
+	node, err := _u.Save(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -719,54 +719,54 @@ func (osuo *OncallShiftUpdateOne) SaveX(ctx context.Context) *OncallShift {
 }
 
 // Exec executes the query on the entity.
-func (osuo *OncallShiftUpdateOne) Exec(ctx context.Context) error {
-	_, err := osuo.Save(ctx)
+func (_u *OncallShiftUpdateOne) Exec(ctx context.Context) error {
+	_, err := _u.Save(ctx)
 	return err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (osuo *OncallShiftUpdateOne) ExecX(ctx context.Context) {
-	if err := osuo.Exec(ctx); err != nil {
+func (_u *OncallShiftUpdateOne) ExecX(ctx context.Context) {
+	if err := _u.Exec(ctx); err != nil {
 		panic(err)
 	}
 }
 
 // check runs all checks and user-defined validators on the builder.
-func (osuo *OncallShiftUpdateOne) check() error {
-	if v, ok := osuo.mutation.Role(); ok {
+func (_u *OncallShiftUpdateOne) check() error {
+	if v, ok := _u.mutation.Role(); ok {
 		if err := oncallshift.RoleValidator(v); err != nil {
 			return &ValidationError{Name: "role", err: fmt.Errorf(`ent: validator failed for field "OncallShift.role": %w`, err)}
 		}
 	}
-	if osuo.mutation.TenantCleared() && len(osuo.mutation.TenantIDs()) > 0 {
+	if _u.mutation.TenantCleared() && len(_u.mutation.TenantIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "OncallShift.tenant"`)
 	}
-	if osuo.mutation.UserCleared() && len(osuo.mutation.UserIDs()) > 0 {
+	if _u.mutation.UserCleared() && len(_u.mutation.UserIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "OncallShift.user"`)
 	}
-	if osuo.mutation.RosterCleared() && len(osuo.mutation.RosterIDs()) > 0 {
+	if _u.mutation.RosterCleared() && len(_u.mutation.RosterIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "OncallShift.roster"`)
 	}
 	return nil
 }
 
 // Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
-func (osuo *OncallShiftUpdateOne) Modify(modifiers ...func(u *sql.UpdateBuilder)) *OncallShiftUpdateOne {
-	osuo.modifiers = append(osuo.modifiers, modifiers...)
-	return osuo
+func (_u *OncallShiftUpdateOne) Modify(modifiers ...func(u *sql.UpdateBuilder)) *OncallShiftUpdateOne {
+	_u.modifiers = append(_u.modifiers, modifiers...)
+	return _u
 }
 
-func (osuo *OncallShiftUpdateOne) sqlSave(ctx context.Context) (_node *OncallShift, err error) {
-	if err := osuo.check(); err != nil {
+func (_u *OncallShiftUpdateOne) sqlSave(ctx context.Context) (_node *OncallShift, err error) {
+	if err := _u.check(); err != nil {
 		return _node, err
 	}
 	_spec := sqlgraph.NewUpdateSpec(oncallshift.Table, oncallshift.Columns, sqlgraph.NewFieldSpec(oncallshift.FieldID, field.TypeUUID))
-	id, ok := osuo.mutation.ID()
+	id, ok := _u.mutation.ID()
 	if !ok {
 		return nil, &ValidationError{Name: "id", err: errors.New(`ent: missing "OncallShift.id" for update`)}
 	}
 	_spec.Node.ID.Value = id
-	if fields := osuo.fields; len(fields) > 0 {
+	if fields := _u.fields; len(fields) > 0 {
 		_spec.Node.Columns = make([]string, 0, len(fields))
 		_spec.Node.Columns = append(_spec.Node.Columns, oncallshift.FieldID)
 		for _, f := range fields {
@@ -778,32 +778,32 @@ func (osuo *OncallShiftUpdateOne) sqlSave(ctx context.Context) (_node *OncallShi
 			}
 		}
 	}
-	if ps := osuo.mutation.predicates; len(ps) > 0 {
+	if ps := _u.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {
 				ps[i](selector)
 			}
 		}
 	}
-	if value, ok := osuo.mutation.ProviderID(); ok {
+	if value, ok := _u.mutation.ProviderID(); ok {
 		_spec.SetField(oncallshift.FieldProviderID, field.TypeString, value)
 	}
-	if osuo.mutation.ProviderIDCleared() {
+	if _u.mutation.ProviderIDCleared() {
 		_spec.ClearField(oncallshift.FieldProviderID, field.TypeString)
 	}
-	if value, ok := osuo.mutation.Role(); ok {
+	if value, ok := _u.mutation.Role(); ok {
 		_spec.SetField(oncallshift.FieldRole, field.TypeEnum, value)
 	}
-	if osuo.mutation.RoleCleared() {
+	if _u.mutation.RoleCleared() {
 		_spec.ClearField(oncallshift.FieldRole, field.TypeEnum)
 	}
-	if value, ok := osuo.mutation.StartAt(); ok {
+	if value, ok := _u.mutation.StartAt(); ok {
 		_spec.SetField(oncallshift.FieldStartAt, field.TypeTime, value)
 	}
-	if value, ok := osuo.mutation.EndAt(); ok {
+	if value, ok := _u.mutation.EndAt(); ok {
 		_spec.SetField(oncallshift.FieldEndAt, field.TypeTime, value)
 	}
-	if osuo.mutation.UserCleared() {
+	if _u.mutation.UserCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
@@ -816,7 +816,7 @@ func (osuo *OncallShiftUpdateOne) sqlSave(ctx context.Context) (_node *OncallShi
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := osuo.mutation.UserIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.UserIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
@@ -832,7 +832,7 @@ func (osuo *OncallShiftUpdateOne) sqlSave(ctx context.Context) (_node *OncallShi
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if osuo.mutation.RosterCleared() {
+	if _u.mutation.RosterCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
@@ -845,7 +845,7 @@ func (osuo *OncallShiftUpdateOne) sqlSave(ctx context.Context) (_node *OncallShi
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := osuo.mutation.RosterIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.RosterIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
@@ -861,7 +861,7 @@ func (osuo *OncallShiftUpdateOne) sqlSave(ctx context.Context) (_node *OncallShi
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if osuo.mutation.PrimaryShiftCleared() {
+	if _u.mutation.PrimaryShiftCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2O,
 			Inverse: false,
@@ -874,7 +874,7 @@ func (osuo *OncallShiftUpdateOne) sqlSave(ctx context.Context) (_node *OncallShi
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := osuo.mutation.PrimaryShiftIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.PrimaryShiftIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2O,
 			Inverse: false,
@@ -890,7 +890,7 @@ func (osuo *OncallShiftUpdateOne) sqlSave(ctx context.Context) (_node *OncallShi
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if osuo.mutation.HandoverCleared() {
+	if _u.mutation.HandoverCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2O,
 			Inverse: false,
@@ -903,7 +903,7 @@ func (osuo *OncallShiftUpdateOne) sqlSave(ctx context.Context) (_node *OncallShi
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := osuo.mutation.HandoverIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.HandoverIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2O,
 			Inverse: false,
@@ -919,7 +919,7 @@ func (osuo *OncallShiftUpdateOne) sqlSave(ctx context.Context) (_node *OncallShi
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if osuo.mutation.MetricsCleared() {
+	if _u.mutation.MetricsCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2O,
 			Inverse: false,
@@ -932,7 +932,7 @@ func (osuo *OncallShiftUpdateOne) sqlSave(ctx context.Context) (_node *OncallShi
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := osuo.mutation.MetricsIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.MetricsIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2O,
 			Inverse: false,
@@ -948,11 +948,11 @@ func (osuo *OncallShiftUpdateOne) sqlSave(ctx context.Context) (_node *OncallShi
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	_spec.AddModifiers(osuo.modifiers...)
-	_node = &OncallShift{config: osuo.config}
+	_spec.AddModifiers(_u.modifiers...)
+	_node = &OncallShift{config: _u.config}
 	_spec.Assign = _node.assignValues
 	_spec.ScanValues = _node.scanValues
-	if err = sqlgraph.UpdateNode(ctx, osuo.driver, _spec); err != nil {
+	if err = sqlgraph.UpdateNode(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{oncallshift.Label}
 		} else if sqlgraph.IsConstraintError(err) {
@@ -960,6 +960,6 @@ func (osuo *OncallShiftUpdateOne) sqlSave(ctx context.Context) (_node *OncallShi
 		}
 		return nil, err
 	}
-	osuo.mutation.done = true
+	_u.mutation.done = true
 	return _node, nil
 }

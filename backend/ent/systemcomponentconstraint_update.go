@@ -27,133 +27,133 @@ type SystemComponentConstraintUpdate struct {
 }
 
 // Where appends a list predicates to the SystemComponentConstraintUpdate builder.
-func (sccu *SystemComponentConstraintUpdate) Where(ps ...predicate.SystemComponentConstraint) *SystemComponentConstraintUpdate {
-	sccu.mutation.Where(ps...)
-	return sccu
+func (_u *SystemComponentConstraintUpdate) Where(ps ...predicate.SystemComponentConstraint) *SystemComponentConstraintUpdate {
+	_u.mutation.Where(ps...)
+	return _u
 }
 
 // SetComponentID sets the "component_id" field.
-func (sccu *SystemComponentConstraintUpdate) SetComponentID(u uuid.UUID) *SystemComponentConstraintUpdate {
-	sccu.mutation.SetComponentID(u)
-	return sccu
+func (_u *SystemComponentConstraintUpdate) SetComponentID(v uuid.UUID) *SystemComponentConstraintUpdate {
+	_u.mutation.SetComponentID(v)
+	return _u
 }
 
 // SetNillableComponentID sets the "component_id" field if the given value is not nil.
-func (sccu *SystemComponentConstraintUpdate) SetNillableComponentID(u *uuid.UUID) *SystemComponentConstraintUpdate {
-	if u != nil {
-		sccu.SetComponentID(*u)
+func (_u *SystemComponentConstraintUpdate) SetNillableComponentID(v *uuid.UUID) *SystemComponentConstraintUpdate {
+	if v != nil {
+		_u.SetComponentID(*v)
 	}
-	return sccu
+	return _u
 }
 
 // SetLabel sets the "label" field.
-func (sccu *SystemComponentConstraintUpdate) SetLabel(s string) *SystemComponentConstraintUpdate {
-	sccu.mutation.SetLabel(s)
-	return sccu
+func (_u *SystemComponentConstraintUpdate) SetLabel(v string) *SystemComponentConstraintUpdate {
+	_u.mutation.SetLabel(v)
+	return _u
 }
 
 // SetNillableLabel sets the "label" field if the given value is not nil.
-func (sccu *SystemComponentConstraintUpdate) SetNillableLabel(s *string) *SystemComponentConstraintUpdate {
-	if s != nil {
-		sccu.SetLabel(*s)
+func (_u *SystemComponentConstraintUpdate) SetNillableLabel(v *string) *SystemComponentConstraintUpdate {
+	if v != nil {
+		_u.SetLabel(*v)
 	}
-	return sccu
+	return _u
 }
 
 // SetDescription sets the "description" field.
-func (sccu *SystemComponentConstraintUpdate) SetDescription(s string) *SystemComponentConstraintUpdate {
-	sccu.mutation.SetDescription(s)
-	return sccu
+func (_u *SystemComponentConstraintUpdate) SetDescription(v string) *SystemComponentConstraintUpdate {
+	_u.mutation.SetDescription(v)
+	return _u
 }
 
 // SetNillableDescription sets the "description" field if the given value is not nil.
-func (sccu *SystemComponentConstraintUpdate) SetNillableDescription(s *string) *SystemComponentConstraintUpdate {
-	if s != nil {
-		sccu.SetDescription(*s)
+func (_u *SystemComponentConstraintUpdate) SetNillableDescription(v *string) *SystemComponentConstraintUpdate {
+	if v != nil {
+		_u.SetDescription(*v)
 	}
-	return sccu
+	return _u
 }
 
 // ClearDescription clears the value of the "description" field.
-func (sccu *SystemComponentConstraintUpdate) ClearDescription() *SystemComponentConstraintUpdate {
-	sccu.mutation.ClearDescription()
-	return sccu
+func (_u *SystemComponentConstraintUpdate) ClearDescription() *SystemComponentConstraintUpdate {
+	_u.mutation.ClearDescription()
+	return _u
 }
 
 // SetCreatedAt sets the "created_at" field.
-func (sccu *SystemComponentConstraintUpdate) SetCreatedAt(t time.Time) *SystemComponentConstraintUpdate {
-	sccu.mutation.SetCreatedAt(t)
-	return sccu
+func (_u *SystemComponentConstraintUpdate) SetCreatedAt(v time.Time) *SystemComponentConstraintUpdate {
+	_u.mutation.SetCreatedAt(v)
+	return _u
 }
 
 // SetNillableCreatedAt sets the "created_at" field if the given value is not nil.
-func (sccu *SystemComponentConstraintUpdate) SetNillableCreatedAt(t *time.Time) *SystemComponentConstraintUpdate {
-	if t != nil {
-		sccu.SetCreatedAt(*t)
+func (_u *SystemComponentConstraintUpdate) SetNillableCreatedAt(v *time.Time) *SystemComponentConstraintUpdate {
+	if v != nil {
+		_u.SetCreatedAt(*v)
 	}
-	return sccu
+	return _u
 }
 
 // SetComponent sets the "component" edge to the SystemComponent entity.
-func (sccu *SystemComponentConstraintUpdate) SetComponent(s *SystemComponent) *SystemComponentConstraintUpdate {
-	return sccu.SetComponentID(s.ID)
+func (_u *SystemComponentConstraintUpdate) SetComponent(v *SystemComponent) *SystemComponentConstraintUpdate {
+	return _u.SetComponentID(v.ID)
 }
 
 // AddHazardIDs adds the "hazards" edge to the SystemHazard entity by IDs.
-func (sccu *SystemComponentConstraintUpdate) AddHazardIDs(ids ...uuid.UUID) *SystemComponentConstraintUpdate {
-	sccu.mutation.AddHazardIDs(ids...)
-	return sccu
+func (_u *SystemComponentConstraintUpdate) AddHazardIDs(ids ...uuid.UUID) *SystemComponentConstraintUpdate {
+	_u.mutation.AddHazardIDs(ids...)
+	return _u
 }
 
 // AddHazards adds the "hazards" edges to the SystemHazard entity.
-func (sccu *SystemComponentConstraintUpdate) AddHazards(s ...*SystemHazard) *SystemComponentConstraintUpdate {
-	ids := make([]uuid.UUID, len(s))
-	for i := range s {
-		ids[i] = s[i].ID
+func (_u *SystemComponentConstraintUpdate) AddHazards(v ...*SystemHazard) *SystemComponentConstraintUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
 	}
-	return sccu.AddHazardIDs(ids...)
+	return _u.AddHazardIDs(ids...)
 }
 
 // Mutation returns the SystemComponentConstraintMutation object of the builder.
-func (sccu *SystemComponentConstraintUpdate) Mutation() *SystemComponentConstraintMutation {
-	return sccu.mutation
+func (_u *SystemComponentConstraintUpdate) Mutation() *SystemComponentConstraintMutation {
+	return _u.mutation
 }
 
 // ClearComponent clears the "component" edge to the SystemComponent entity.
-func (sccu *SystemComponentConstraintUpdate) ClearComponent() *SystemComponentConstraintUpdate {
-	sccu.mutation.ClearComponent()
-	return sccu
+func (_u *SystemComponentConstraintUpdate) ClearComponent() *SystemComponentConstraintUpdate {
+	_u.mutation.ClearComponent()
+	return _u
 }
 
 // ClearHazards clears all "hazards" edges to the SystemHazard entity.
-func (sccu *SystemComponentConstraintUpdate) ClearHazards() *SystemComponentConstraintUpdate {
-	sccu.mutation.ClearHazards()
-	return sccu
+func (_u *SystemComponentConstraintUpdate) ClearHazards() *SystemComponentConstraintUpdate {
+	_u.mutation.ClearHazards()
+	return _u
 }
 
 // RemoveHazardIDs removes the "hazards" edge to SystemHazard entities by IDs.
-func (sccu *SystemComponentConstraintUpdate) RemoveHazardIDs(ids ...uuid.UUID) *SystemComponentConstraintUpdate {
-	sccu.mutation.RemoveHazardIDs(ids...)
-	return sccu
+func (_u *SystemComponentConstraintUpdate) RemoveHazardIDs(ids ...uuid.UUID) *SystemComponentConstraintUpdate {
+	_u.mutation.RemoveHazardIDs(ids...)
+	return _u
 }
 
 // RemoveHazards removes "hazards" edges to SystemHazard entities.
-func (sccu *SystemComponentConstraintUpdate) RemoveHazards(s ...*SystemHazard) *SystemComponentConstraintUpdate {
-	ids := make([]uuid.UUID, len(s))
-	for i := range s {
-		ids[i] = s[i].ID
+func (_u *SystemComponentConstraintUpdate) RemoveHazards(v ...*SystemHazard) *SystemComponentConstraintUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
 	}
-	return sccu.RemoveHazardIDs(ids...)
+	return _u.RemoveHazardIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
-func (sccu *SystemComponentConstraintUpdate) Save(ctx context.Context) (int, error) {
-	return withHooks(ctx, sccu.sqlSave, sccu.mutation, sccu.hooks)
+func (_u *SystemComponentConstraintUpdate) Save(ctx context.Context) (int, error) {
+	return withHooks(ctx, _u.sqlSave, _u.mutation, _u.hooks)
 }
 
 // SaveX is like Save, but panics if an error occurs.
-func (sccu *SystemComponentConstraintUpdate) SaveX(ctx context.Context) int {
-	affected, err := sccu.Save(ctx)
+func (_u *SystemComponentConstraintUpdate) SaveX(ctx context.Context) int {
+	affected, err := _u.Save(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -161,60 +161,60 @@ func (sccu *SystemComponentConstraintUpdate) SaveX(ctx context.Context) int {
 }
 
 // Exec executes the query.
-func (sccu *SystemComponentConstraintUpdate) Exec(ctx context.Context) error {
-	_, err := sccu.Save(ctx)
+func (_u *SystemComponentConstraintUpdate) Exec(ctx context.Context) error {
+	_, err := _u.Save(ctx)
 	return err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (sccu *SystemComponentConstraintUpdate) ExecX(ctx context.Context) {
-	if err := sccu.Exec(ctx); err != nil {
+func (_u *SystemComponentConstraintUpdate) ExecX(ctx context.Context) {
+	if err := _u.Exec(ctx); err != nil {
 		panic(err)
 	}
 }
 
 // check runs all checks and user-defined validators on the builder.
-func (sccu *SystemComponentConstraintUpdate) check() error {
-	if sccu.mutation.TenantCleared() && len(sccu.mutation.TenantIDs()) > 0 {
+func (_u *SystemComponentConstraintUpdate) check() error {
+	if _u.mutation.TenantCleared() && len(_u.mutation.TenantIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "SystemComponentConstraint.tenant"`)
 	}
-	if sccu.mutation.ComponentCleared() && len(sccu.mutation.ComponentIDs()) > 0 {
+	if _u.mutation.ComponentCleared() && len(_u.mutation.ComponentIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "SystemComponentConstraint.component"`)
 	}
 	return nil
 }
 
 // Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
-func (sccu *SystemComponentConstraintUpdate) Modify(modifiers ...func(u *sql.UpdateBuilder)) *SystemComponentConstraintUpdate {
-	sccu.modifiers = append(sccu.modifiers, modifiers...)
-	return sccu
+func (_u *SystemComponentConstraintUpdate) Modify(modifiers ...func(u *sql.UpdateBuilder)) *SystemComponentConstraintUpdate {
+	_u.modifiers = append(_u.modifiers, modifiers...)
+	return _u
 }
 
-func (sccu *SystemComponentConstraintUpdate) sqlSave(ctx context.Context) (n int, err error) {
-	if err := sccu.check(); err != nil {
-		return n, err
+func (_u *SystemComponentConstraintUpdate) sqlSave(ctx context.Context) (_node int, err error) {
+	if err := _u.check(); err != nil {
+		return _node, err
 	}
 	_spec := sqlgraph.NewUpdateSpec(systemcomponentconstraint.Table, systemcomponentconstraint.Columns, sqlgraph.NewFieldSpec(systemcomponentconstraint.FieldID, field.TypeUUID))
-	if ps := sccu.mutation.predicates; len(ps) > 0 {
+	if ps := _u.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {
 				ps[i](selector)
 			}
 		}
 	}
-	if value, ok := sccu.mutation.Label(); ok {
+	if value, ok := _u.mutation.Label(); ok {
 		_spec.SetField(systemcomponentconstraint.FieldLabel, field.TypeString, value)
 	}
-	if value, ok := sccu.mutation.Description(); ok {
+	if value, ok := _u.mutation.Description(); ok {
 		_spec.SetField(systemcomponentconstraint.FieldDescription, field.TypeString, value)
 	}
-	if sccu.mutation.DescriptionCleared() {
+	if _u.mutation.DescriptionCleared() {
 		_spec.ClearField(systemcomponentconstraint.FieldDescription, field.TypeString)
 	}
-	if value, ok := sccu.mutation.CreatedAt(); ok {
+	if value, ok := _u.mutation.CreatedAt(); ok {
 		_spec.SetField(systemcomponentconstraint.FieldCreatedAt, field.TypeTime, value)
 	}
-	if sccu.mutation.ComponentCleared() {
+	if _u.mutation.ComponentCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
@@ -227,7 +227,7 @@ func (sccu *SystemComponentConstraintUpdate) sqlSave(ctx context.Context) (n int
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := sccu.mutation.ComponentIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.ComponentIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
@@ -243,7 +243,7 @@ func (sccu *SystemComponentConstraintUpdate) sqlSave(ctx context.Context) (n int
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if sccu.mutation.HazardsCleared() {
+	if _u.mutation.HazardsCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
 			Inverse: true,
@@ -256,7 +256,7 @@ func (sccu *SystemComponentConstraintUpdate) sqlSave(ctx context.Context) (n int
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := sccu.mutation.RemovedHazardsIDs(); len(nodes) > 0 && !sccu.mutation.HazardsCleared() {
+	if nodes := _u.mutation.RemovedHazardsIDs(); len(nodes) > 0 && !_u.mutation.HazardsCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
 			Inverse: true,
@@ -272,7 +272,7 @@ func (sccu *SystemComponentConstraintUpdate) sqlSave(ctx context.Context) (n int
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := sccu.mutation.HazardsIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.HazardsIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
 			Inverse: true,
@@ -288,8 +288,8 @@ func (sccu *SystemComponentConstraintUpdate) sqlSave(ctx context.Context) (n int
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	_spec.AddModifiers(sccu.modifiers...)
-	if n, err = sqlgraph.UpdateNodes(ctx, sccu.driver, _spec); err != nil {
+	_spec.AddModifiers(_u.modifiers...)
+	if _node, err = sqlgraph.UpdateNodes(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{systemcomponentconstraint.Label}
 		} else if sqlgraph.IsConstraintError(err) {
@@ -297,8 +297,8 @@ func (sccu *SystemComponentConstraintUpdate) sqlSave(ctx context.Context) (n int
 		}
 		return 0, err
 	}
-	sccu.mutation.done = true
-	return n, nil
+	_u.mutation.done = true
+	return _node, nil
 }
 
 // SystemComponentConstraintUpdateOne is the builder for updating a single SystemComponentConstraint entity.
@@ -311,140 +311,140 @@ type SystemComponentConstraintUpdateOne struct {
 }
 
 // SetComponentID sets the "component_id" field.
-func (sccuo *SystemComponentConstraintUpdateOne) SetComponentID(u uuid.UUID) *SystemComponentConstraintUpdateOne {
-	sccuo.mutation.SetComponentID(u)
-	return sccuo
+func (_u *SystemComponentConstraintUpdateOne) SetComponentID(v uuid.UUID) *SystemComponentConstraintUpdateOne {
+	_u.mutation.SetComponentID(v)
+	return _u
 }
 
 // SetNillableComponentID sets the "component_id" field if the given value is not nil.
-func (sccuo *SystemComponentConstraintUpdateOne) SetNillableComponentID(u *uuid.UUID) *SystemComponentConstraintUpdateOne {
-	if u != nil {
-		sccuo.SetComponentID(*u)
+func (_u *SystemComponentConstraintUpdateOne) SetNillableComponentID(v *uuid.UUID) *SystemComponentConstraintUpdateOne {
+	if v != nil {
+		_u.SetComponentID(*v)
 	}
-	return sccuo
+	return _u
 }
 
 // SetLabel sets the "label" field.
-func (sccuo *SystemComponentConstraintUpdateOne) SetLabel(s string) *SystemComponentConstraintUpdateOne {
-	sccuo.mutation.SetLabel(s)
-	return sccuo
+func (_u *SystemComponentConstraintUpdateOne) SetLabel(v string) *SystemComponentConstraintUpdateOne {
+	_u.mutation.SetLabel(v)
+	return _u
 }
 
 // SetNillableLabel sets the "label" field if the given value is not nil.
-func (sccuo *SystemComponentConstraintUpdateOne) SetNillableLabel(s *string) *SystemComponentConstraintUpdateOne {
-	if s != nil {
-		sccuo.SetLabel(*s)
+func (_u *SystemComponentConstraintUpdateOne) SetNillableLabel(v *string) *SystemComponentConstraintUpdateOne {
+	if v != nil {
+		_u.SetLabel(*v)
 	}
-	return sccuo
+	return _u
 }
 
 // SetDescription sets the "description" field.
-func (sccuo *SystemComponentConstraintUpdateOne) SetDescription(s string) *SystemComponentConstraintUpdateOne {
-	sccuo.mutation.SetDescription(s)
-	return sccuo
+func (_u *SystemComponentConstraintUpdateOne) SetDescription(v string) *SystemComponentConstraintUpdateOne {
+	_u.mutation.SetDescription(v)
+	return _u
 }
 
 // SetNillableDescription sets the "description" field if the given value is not nil.
-func (sccuo *SystemComponentConstraintUpdateOne) SetNillableDescription(s *string) *SystemComponentConstraintUpdateOne {
-	if s != nil {
-		sccuo.SetDescription(*s)
+func (_u *SystemComponentConstraintUpdateOne) SetNillableDescription(v *string) *SystemComponentConstraintUpdateOne {
+	if v != nil {
+		_u.SetDescription(*v)
 	}
-	return sccuo
+	return _u
 }
 
 // ClearDescription clears the value of the "description" field.
-func (sccuo *SystemComponentConstraintUpdateOne) ClearDescription() *SystemComponentConstraintUpdateOne {
-	sccuo.mutation.ClearDescription()
-	return sccuo
+func (_u *SystemComponentConstraintUpdateOne) ClearDescription() *SystemComponentConstraintUpdateOne {
+	_u.mutation.ClearDescription()
+	return _u
 }
 
 // SetCreatedAt sets the "created_at" field.
-func (sccuo *SystemComponentConstraintUpdateOne) SetCreatedAt(t time.Time) *SystemComponentConstraintUpdateOne {
-	sccuo.mutation.SetCreatedAt(t)
-	return sccuo
+func (_u *SystemComponentConstraintUpdateOne) SetCreatedAt(v time.Time) *SystemComponentConstraintUpdateOne {
+	_u.mutation.SetCreatedAt(v)
+	return _u
 }
 
 // SetNillableCreatedAt sets the "created_at" field if the given value is not nil.
-func (sccuo *SystemComponentConstraintUpdateOne) SetNillableCreatedAt(t *time.Time) *SystemComponentConstraintUpdateOne {
-	if t != nil {
-		sccuo.SetCreatedAt(*t)
+func (_u *SystemComponentConstraintUpdateOne) SetNillableCreatedAt(v *time.Time) *SystemComponentConstraintUpdateOne {
+	if v != nil {
+		_u.SetCreatedAt(*v)
 	}
-	return sccuo
+	return _u
 }
 
 // SetComponent sets the "component" edge to the SystemComponent entity.
-func (sccuo *SystemComponentConstraintUpdateOne) SetComponent(s *SystemComponent) *SystemComponentConstraintUpdateOne {
-	return sccuo.SetComponentID(s.ID)
+func (_u *SystemComponentConstraintUpdateOne) SetComponent(v *SystemComponent) *SystemComponentConstraintUpdateOne {
+	return _u.SetComponentID(v.ID)
 }
 
 // AddHazardIDs adds the "hazards" edge to the SystemHazard entity by IDs.
-func (sccuo *SystemComponentConstraintUpdateOne) AddHazardIDs(ids ...uuid.UUID) *SystemComponentConstraintUpdateOne {
-	sccuo.mutation.AddHazardIDs(ids...)
-	return sccuo
+func (_u *SystemComponentConstraintUpdateOne) AddHazardIDs(ids ...uuid.UUID) *SystemComponentConstraintUpdateOne {
+	_u.mutation.AddHazardIDs(ids...)
+	return _u
 }
 
 // AddHazards adds the "hazards" edges to the SystemHazard entity.
-func (sccuo *SystemComponentConstraintUpdateOne) AddHazards(s ...*SystemHazard) *SystemComponentConstraintUpdateOne {
-	ids := make([]uuid.UUID, len(s))
-	for i := range s {
-		ids[i] = s[i].ID
+func (_u *SystemComponentConstraintUpdateOne) AddHazards(v ...*SystemHazard) *SystemComponentConstraintUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
 	}
-	return sccuo.AddHazardIDs(ids...)
+	return _u.AddHazardIDs(ids...)
 }
 
 // Mutation returns the SystemComponentConstraintMutation object of the builder.
-func (sccuo *SystemComponentConstraintUpdateOne) Mutation() *SystemComponentConstraintMutation {
-	return sccuo.mutation
+func (_u *SystemComponentConstraintUpdateOne) Mutation() *SystemComponentConstraintMutation {
+	return _u.mutation
 }
 
 // ClearComponent clears the "component" edge to the SystemComponent entity.
-func (sccuo *SystemComponentConstraintUpdateOne) ClearComponent() *SystemComponentConstraintUpdateOne {
-	sccuo.mutation.ClearComponent()
-	return sccuo
+func (_u *SystemComponentConstraintUpdateOne) ClearComponent() *SystemComponentConstraintUpdateOne {
+	_u.mutation.ClearComponent()
+	return _u
 }
 
 // ClearHazards clears all "hazards" edges to the SystemHazard entity.
-func (sccuo *SystemComponentConstraintUpdateOne) ClearHazards() *SystemComponentConstraintUpdateOne {
-	sccuo.mutation.ClearHazards()
-	return sccuo
+func (_u *SystemComponentConstraintUpdateOne) ClearHazards() *SystemComponentConstraintUpdateOne {
+	_u.mutation.ClearHazards()
+	return _u
 }
 
 // RemoveHazardIDs removes the "hazards" edge to SystemHazard entities by IDs.
-func (sccuo *SystemComponentConstraintUpdateOne) RemoveHazardIDs(ids ...uuid.UUID) *SystemComponentConstraintUpdateOne {
-	sccuo.mutation.RemoveHazardIDs(ids...)
-	return sccuo
+func (_u *SystemComponentConstraintUpdateOne) RemoveHazardIDs(ids ...uuid.UUID) *SystemComponentConstraintUpdateOne {
+	_u.mutation.RemoveHazardIDs(ids...)
+	return _u
 }
 
 // RemoveHazards removes "hazards" edges to SystemHazard entities.
-func (sccuo *SystemComponentConstraintUpdateOne) RemoveHazards(s ...*SystemHazard) *SystemComponentConstraintUpdateOne {
-	ids := make([]uuid.UUID, len(s))
-	for i := range s {
-		ids[i] = s[i].ID
+func (_u *SystemComponentConstraintUpdateOne) RemoveHazards(v ...*SystemHazard) *SystemComponentConstraintUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
 	}
-	return sccuo.RemoveHazardIDs(ids...)
+	return _u.RemoveHazardIDs(ids...)
 }
 
 // Where appends a list predicates to the SystemComponentConstraintUpdate builder.
-func (sccuo *SystemComponentConstraintUpdateOne) Where(ps ...predicate.SystemComponentConstraint) *SystemComponentConstraintUpdateOne {
-	sccuo.mutation.Where(ps...)
-	return sccuo
+func (_u *SystemComponentConstraintUpdateOne) Where(ps ...predicate.SystemComponentConstraint) *SystemComponentConstraintUpdateOne {
+	_u.mutation.Where(ps...)
+	return _u
 }
 
 // Select allows selecting one or more fields (columns) of the returned entity.
 // The default is selecting all fields defined in the entity schema.
-func (sccuo *SystemComponentConstraintUpdateOne) Select(field string, fields ...string) *SystemComponentConstraintUpdateOne {
-	sccuo.fields = append([]string{field}, fields...)
-	return sccuo
+func (_u *SystemComponentConstraintUpdateOne) Select(field string, fields ...string) *SystemComponentConstraintUpdateOne {
+	_u.fields = append([]string{field}, fields...)
+	return _u
 }
 
 // Save executes the query and returns the updated SystemComponentConstraint entity.
-func (sccuo *SystemComponentConstraintUpdateOne) Save(ctx context.Context) (*SystemComponentConstraint, error) {
-	return withHooks(ctx, sccuo.sqlSave, sccuo.mutation, sccuo.hooks)
+func (_u *SystemComponentConstraintUpdateOne) Save(ctx context.Context) (*SystemComponentConstraint, error) {
+	return withHooks(ctx, _u.sqlSave, _u.mutation, _u.hooks)
 }
 
 // SaveX is like Save, but panics if an error occurs.
-func (sccuo *SystemComponentConstraintUpdateOne) SaveX(ctx context.Context) *SystemComponentConstraint {
-	node, err := sccuo.Save(ctx)
+func (_u *SystemComponentConstraintUpdateOne) SaveX(ctx context.Context) *SystemComponentConstraint {
+	node, err := _u.Save(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -452,46 +452,46 @@ func (sccuo *SystemComponentConstraintUpdateOne) SaveX(ctx context.Context) *Sys
 }
 
 // Exec executes the query on the entity.
-func (sccuo *SystemComponentConstraintUpdateOne) Exec(ctx context.Context) error {
-	_, err := sccuo.Save(ctx)
+func (_u *SystemComponentConstraintUpdateOne) Exec(ctx context.Context) error {
+	_, err := _u.Save(ctx)
 	return err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (sccuo *SystemComponentConstraintUpdateOne) ExecX(ctx context.Context) {
-	if err := sccuo.Exec(ctx); err != nil {
+func (_u *SystemComponentConstraintUpdateOne) ExecX(ctx context.Context) {
+	if err := _u.Exec(ctx); err != nil {
 		panic(err)
 	}
 }
 
 // check runs all checks and user-defined validators on the builder.
-func (sccuo *SystemComponentConstraintUpdateOne) check() error {
-	if sccuo.mutation.TenantCleared() && len(sccuo.mutation.TenantIDs()) > 0 {
+func (_u *SystemComponentConstraintUpdateOne) check() error {
+	if _u.mutation.TenantCleared() && len(_u.mutation.TenantIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "SystemComponentConstraint.tenant"`)
 	}
-	if sccuo.mutation.ComponentCleared() && len(sccuo.mutation.ComponentIDs()) > 0 {
+	if _u.mutation.ComponentCleared() && len(_u.mutation.ComponentIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "SystemComponentConstraint.component"`)
 	}
 	return nil
 }
 
 // Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
-func (sccuo *SystemComponentConstraintUpdateOne) Modify(modifiers ...func(u *sql.UpdateBuilder)) *SystemComponentConstraintUpdateOne {
-	sccuo.modifiers = append(sccuo.modifiers, modifiers...)
-	return sccuo
+func (_u *SystemComponentConstraintUpdateOne) Modify(modifiers ...func(u *sql.UpdateBuilder)) *SystemComponentConstraintUpdateOne {
+	_u.modifiers = append(_u.modifiers, modifiers...)
+	return _u
 }
 
-func (sccuo *SystemComponentConstraintUpdateOne) sqlSave(ctx context.Context) (_node *SystemComponentConstraint, err error) {
-	if err := sccuo.check(); err != nil {
+func (_u *SystemComponentConstraintUpdateOne) sqlSave(ctx context.Context) (_node *SystemComponentConstraint, err error) {
+	if err := _u.check(); err != nil {
 		return _node, err
 	}
 	_spec := sqlgraph.NewUpdateSpec(systemcomponentconstraint.Table, systemcomponentconstraint.Columns, sqlgraph.NewFieldSpec(systemcomponentconstraint.FieldID, field.TypeUUID))
-	id, ok := sccuo.mutation.ID()
+	id, ok := _u.mutation.ID()
 	if !ok {
 		return nil, &ValidationError{Name: "id", err: errors.New(`ent: missing "SystemComponentConstraint.id" for update`)}
 	}
 	_spec.Node.ID.Value = id
-	if fields := sccuo.fields; len(fields) > 0 {
+	if fields := _u.fields; len(fields) > 0 {
 		_spec.Node.Columns = make([]string, 0, len(fields))
 		_spec.Node.Columns = append(_spec.Node.Columns, systemcomponentconstraint.FieldID)
 		for _, f := range fields {
@@ -503,26 +503,26 @@ func (sccuo *SystemComponentConstraintUpdateOne) sqlSave(ctx context.Context) (_
 			}
 		}
 	}
-	if ps := sccuo.mutation.predicates; len(ps) > 0 {
+	if ps := _u.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {
 				ps[i](selector)
 			}
 		}
 	}
-	if value, ok := sccuo.mutation.Label(); ok {
+	if value, ok := _u.mutation.Label(); ok {
 		_spec.SetField(systemcomponentconstraint.FieldLabel, field.TypeString, value)
 	}
-	if value, ok := sccuo.mutation.Description(); ok {
+	if value, ok := _u.mutation.Description(); ok {
 		_spec.SetField(systemcomponentconstraint.FieldDescription, field.TypeString, value)
 	}
-	if sccuo.mutation.DescriptionCleared() {
+	if _u.mutation.DescriptionCleared() {
 		_spec.ClearField(systemcomponentconstraint.FieldDescription, field.TypeString)
 	}
-	if value, ok := sccuo.mutation.CreatedAt(); ok {
+	if value, ok := _u.mutation.CreatedAt(); ok {
 		_spec.SetField(systemcomponentconstraint.FieldCreatedAt, field.TypeTime, value)
 	}
-	if sccuo.mutation.ComponentCleared() {
+	if _u.mutation.ComponentCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
@@ -535,7 +535,7 @@ func (sccuo *SystemComponentConstraintUpdateOne) sqlSave(ctx context.Context) (_
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := sccuo.mutation.ComponentIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.ComponentIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
@@ -551,7 +551,7 @@ func (sccuo *SystemComponentConstraintUpdateOne) sqlSave(ctx context.Context) (_
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if sccuo.mutation.HazardsCleared() {
+	if _u.mutation.HazardsCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
 			Inverse: true,
@@ -564,7 +564,7 @@ func (sccuo *SystemComponentConstraintUpdateOne) sqlSave(ctx context.Context) (_
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := sccuo.mutation.RemovedHazardsIDs(); len(nodes) > 0 && !sccuo.mutation.HazardsCleared() {
+	if nodes := _u.mutation.RemovedHazardsIDs(); len(nodes) > 0 && !_u.mutation.HazardsCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
 			Inverse: true,
@@ -580,7 +580,7 @@ func (sccuo *SystemComponentConstraintUpdateOne) sqlSave(ctx context.Context) (_
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := sccuo.mutation.HazardsIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.HazardsIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
 			Inverse: true,
@@ -596,11 +596,11 @@ func (sccuo *SystemComponentConstraintUpdateOne) sqlSave(ctx context.Context) (_
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	_spec.AddModifiers(sccuo.modifiers...)
-	_node = &SystemComponentConstraint{config: sccuo.config}
+	_spec.AddModifiers(_u.modifiers...)
+	_node = &SystemComponentConstraint{config: _u.config}
 	_spec.Assign = _node.assignValues
 	_spec.ScanValues = _node.scanValues
-	if err = sqlgraph.UpdateNode(ctx, sccuo.driver, _spec); err != nil {
+	if err = sqlgraph.UpdateNode(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{systemcomponentconstraint.Label}
 		} else if sqlgraph.IsConstraintError(err) {
@@ -608,6 +608,6 @@ func (sccuo *SystemComponentConstraintUpdateOne) sqlSave(ctx context.Context) (_
 		}
 		return nil, err
 	}
-	sccuo.mutation.done = true
+	_u.mutation.done = true
 	return _node, nil
 }

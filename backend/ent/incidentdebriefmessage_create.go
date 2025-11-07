@@ -28,130 +28,130 @@ type IncidentDebriefMessageCreate struct {
 }
 
 // SetTenantID sets the "tenant_id" field.
-func (idmc *IncidentDebriefMessageCreate) SetTenantID(i int) *IncidentDebriefMessageCreate {
-	idmc.mutation.SetTenantID(i)
-	return idmc
+func (_c *IncidentDebriefMessageCreate) SetTenantID(v int) *IncidentDebriefMessageCreate {
+	_c.mutation.SetTenantID(v)
+	return _c
 }
 
 // SetDebriefID sets the "debrief_id" field.
-func (idmc *IncidentDebriefMessageCreate) SetDebriefID(u uuid.UUID) *IncidentDebriefMessageCreate {
-	idmc.mutation.SetDebriefID(u)
-	return idmc
+func (_c *IncidentDebriefMessageCreate) SetDebriefID(v uuid.UUID) *IncidentDebriefMessageCreate {
+	_c.mutation.SetDebriefID(v)
+	return _c
 }
 
 // SetQuestionID sets the "question_id" field.
-func (idmc *IncidentDebriefMessageCreate) SetQuestionID(u uuid.UUID) *IncidentDebriefMessageCreate {
-	idmc.mutation.SetQuestionID(u)
-	return idmc
+func (_c *IncidentDebriefMessageCreate) SetQuestionID(v uuid.UUID) *IncidentDebriefMessageCreate {
+	_c.mutation.SetQuestionID(v)
+	return _c
 }
 
 // SetNillableQuestionID sets the "question_id" field if the given value is not nil.
-func (idmc *IncidentDebriefMessageCreate) SetNillableQuestionID(u *uuid.UUID) *IncidentDebriefMessageCreate {
-	if u != nil {
-		idmc.SetQuestionID(*u)
+func (_c *IncidentDebriefMessageCreate) SetNillableQuestionID(v *uuid.UUID) *IncidentDebriefMessageCreate {
+	if v != nil {
+		_c.SetQuestionID(*v)
 	}
-	return idmc
+	return _c
 }
 
 // SetCreatedAt sets the "created_at" field.
-func (idmc *IncidentDebriefMessageCreate) SetCreatedAt(t time.Time) *IncidentDebriefMessageCreate {
-	idmc.mutation.SetCreatedAt(t)
-	return idmc
+func (_c *IncidentDebriefMessageCreate) SetCreatedAt(v time.Time) *IncidentDebriefMessageCreate {
+	_c.mutation.SetCreatedAt(v)
+	return _c
 }
 
 // SetNillableCreatedAt sets the "created_at" field if the given value is not nil.
-func (idmc *IncidentDebriefMessageCreate) SetNillableCreatedAt(t *time.Time) *IncidentDebriefMessageCreate {
-	if t != nil {
-		idmc.SetCreatedAt(*t)
+func (_c *IncidentDebriefMessageCreate) SetNillableCreatedAt(v *time.Time) *IncidentDebriefMessageCreate {
+	if v != nil {
+		_c.SetCreatedAt(*v)
 	}
-	return idmc
+	return _c
 }
 
 // SetType sets the "type" field.
-func (idmc *IncidentDebriefMessageCreate) SetType(i incidentdebriefmessage.Type) *IncidentDebriefMessageCreate {
-	idmc.mutation.SetType(i)
-	return idmc
+func (_c *IncidentDebriefMessageCreate) SetType(v incidentdebriefmessage.Type) *IncidentDebriefMessageCreate {
+	_c.mutation.SetType(v)
+	return _c
 }
 
 // SetRequestedTool sets the "requested_tool" field.
-func (idmc *IncidentDebriefMessageCreate) SetRequestedTool(it incidentdebriefmessage.RequestedTool) *IncidentDebriefMessageCreate {
-	idmc.mutation.SetRequestedTool(it)
-	return idmc
+func (_c *IncidentDebriefMessageCreate) SetRequestedTool(v incidentdebriefmessage.RequestedTool) *IncidentDebriefMessageCreate {
+	_c.mutation.SetRequestedTool(v)
+	return _c
 }
 
 // SetNillableRequestedTool sets the "requested_tool" field if the given value is not nil.
-func (idmc *IncidentDebriefMessageCreate) SetNillableRequestedTool(it *incidentdebriefmessage.RequestedTool) *IncidentDebriefMessageCreate {
-	if it != nil {
-		idmc.SetRequestedTool(*it)
+func (_c *IncidentDebriefMessageCreate) SetNillableRequestedTool(v *incidentdebriefmessage.RequestedTool) *IncidentDebriefMessageCreate {
+	if v != nil {
+		_c.SetRequestedTool(*v)
 	}
-	return idmc
+	return _c
 }
 
 // SetBody sets the "body" field.
-func (idmc *IncidentDebriefMessageCreate) SetBody(s string) *IncidentDebriefMessageCreate {
-	idmc.mutation.SetBody(s)
-	return idmc
+func (_c *IncidentDebriefMessageCreate) SetBody(v string) *IncidentDebriefMessageCreate {
+	_c.mutation.SetBody(v)
+	return _c
 }
 
 // SetID sets the "id" field.
-func (idmc *IncidentDebriefMessageCreate) SetID(u uuid.UUID) *IncidentDebriefMessageCreate {
-	idmc.mutation.SetID(u)
-	return idmc
+func (_c *IncidentDebriefMessageCreate) SetID(v uuid.UUID) *IncidentDebriefMessageCreate {
+	_c.mutation.SetID(v)
+	return _c
 }
 
 // SetNillableID sets the "id" field if the given value is not nil.
-func (idmc *IncidentDebriefMessageCreate) SetNillableID(u *uuid.UUID) *IncidentDebriefMessageCreate {
-	if u != nil {
-		idmc.SetID(*u)
+func (_c *IncidentDebriefMessageCreate) SetNillableID(v *uuid.UUID) *IncidentDebriefMessageCreate {
+	if v != nil {
+		_c.SetID(*v)
 	}
-	return idmc
+	return _c
 }
 
 // SetTenant sets the "tenant" edge to the Tenant entity.
-func (idmc *IncidentDebriefMessageCreate) SetTenant(t *Tenant) *IncidentDebriefMessageCreate {
-	return idmc.SetTenantID(t.ID)
+func (_c *IncidentDebriefMessageCreate) SetTenant(v *Tenant) *IncidentDebriefMessageCreate {
+	return _c.SetTenantID(v.ID)
 }
 
 // SetDebrief sets the "debrief" edge to the IncidentDebrief entity.
-func (idmc *IncidentDebriefMessageCreate) SetDebrief(i *IncidentDebrief) *IncidentDebriefMessageCreate {
-	return idmc.SetDebriefID(i.ID)
+func (_c *IncidentDebriefMessageCreate) SetDebrief(v *IncidentDebrief) *IncidentDebriefMessageCreate {
+	return _c.SetDebriefID(v.ID)
 }
 
 // SetFromQuestionID sets the "from_question" edge to the IncidentDebriefQuestion entity by ID.
-func (idmc *IncidentDebriefMessageCreate) SetFromQuestionID(id uuid.UUID) *IncidentDebriefMessageCreate {
-	idmc.mutation.SetFromQuestionID(id)
-	return idmc
+func (_c *IncidentDebriefMessageCreate) SetFromQuestionID(id uuid.UUID) *IncidentDebriefMessageCreate {
+	_c.mutation.SetFromQuestionID(id)
+	return _c
 }
 
 // SetNillableFromQuestionID sets the "from_question" edge to the IncidentDebriefQuestion entity by ID if the given value is not nil.
-func (idmc *IncidentDebriefMessageCreate) SetNillableFromQuestionID(id *uuid.UUID) *IncidentDebriefMessageCreate {
+func (_c *IncidentDebriefMessageCreate) SetNillableFromQuestionID(id *uuid.UUID) *IncidentDebriefMessageCreate {
 	if id != nil {
-		idmc = idmc.SetFromQuestionID(*id)
+		_c = _c.SetFromQuestionID(*id)
 	}
-	return idmc
+	return _c
 }
 
 // SetFromQuestion sets the "from_question" edge to the IncidentDebriefQuestion entity.
-func (idmc *IncidentDebriefMessageCreate) SetFromQuestion(i *IncidentDebriefQuestion) *IncidentDebriefMessageCreate {
-	return idmc.SetFromQuestionID(i.ID)
+func (_c *IncidentDebriefMessageCreate) SetFromQuestion(v *IncidentDebriefQuestion) *IncidentDebriefMessageCreate {
+	return _c.SetFromQuestionID(v.ID)
 }
 
 // Mutation returns the IncidentDebriefMessageMutation object of the builder.
-func (idmc *IncidentDebriefMessageCreate) Mutation() *IncidentDebriefMessageMutation {
-	return idmc.mutation
+func (_c *IncidentDebriefMessageCreate) Mutation() *IncidentDebriefMessageMutation {
+	return _c.mutation
 }
 
 // Save creates the IncidentDebriefMessage in the database.
-func (idmc *IncidentDebriefMessageCreate) Save(ctx context.Context) (*IncidentDebriefMessage, error) {
-	if err := idmc.defaults(); err != nil {
+func (_c *IncidentDebriefMessageCreate) Save(ctx context.Context) (*IncidentDebriefMessage, error) {
+	if err := _c.defaults(); err != nil {
 		return nil, err
 	}
-	return withHooks(ctx, idmc.sqlSave, idmc.mutation, idmc.hooks)
+	return withHooks(ctx, _c.sqlSave, _c.mutation, _c.hooks)
 }
 
 // SaveX calls Save and panics if Save returns an error.
-func (idmc *IncidentDebriefMessageCreate) SaveX(ctx context.Context) *IncidentDebriefMessage {
-	v, err := idmc.Save(ctx)
+func (_c *IncidentDebriefMessageCreate) SaveX(ctx context.Context) *IncidentDebriefMessage {
+	v, err := _c.Save(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -159,79 +159,79 @@ func (idmc *IncidentDebriefMessageCreate) SaveX(ctx context.Context) *IncidentDe
 }
 
 // Exec executes the query.
-func (idmc *IncidentDebriefMessageCreate) Exec(ctx context.Context) error {
-	_, err := idmc.Save(ctx)
+func (_c *IncidentDebriefMessageCreate) Exec(ctx context.Context) error {
+	_, err := _c.Save(ctx)
 	return err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (idmc *IncidentDebriefMessageCreate) ExecX(ctx context.Context) {
-	if err := idmc.Exec(ctx); err != nil {
+func (_c *IncidentDebriefMessageCreate) ExecX(ctx context.Context) {
+	if err := _c.Exec(ctx); err != nil {
 		panic(err)
 	}
 }
 
 // defaults sets the default values of the builder before save.
-func (idmc *IncidentDebriefMessageCreate) defaults() error {
-	if _, ok := idmc.mutation.CreatedAt(); !ok {
+func (_c *IncidentDebriefMessageCreate) defaults() error {
+	if _, ok := _c.mutation.CreatedAt(); !ok {
 		if incidentdebriefmessage.DefaultCreatedAt == nil {
 			return fmt.Errorf("ent: uninitialized incidentdebriefmessage.DefaultCreatedAt (forgotten import ent/runtime?)")
 		}
 		v := incidentdebriefmessage.DefaultCreatedAt()
-		idmc.mutation.SetCreatedAt(v)
+		_c.mutation.SetCreatedAt(v)
 	}
-	if _, ok := idmc.mutation.ID(); !ok {
+	if _, ok := _c.mutation.ID(); !ok {
 		if incidentdebriefmessage.DefaultID == nil {
 			return fmt.Errorf("ent: uninitialized incidentdebriefmessage.DefaultID (forgotten import ent/runtime?)")
 		}
 		v := incidentdebriefmessage.DefaultID()
-		idmc.mutation.SetID(v)
+		_c.mutation.SetID(v)
 	}
 	return nil
 }
 
 // check runs all checks and user-defined validators on the builder.
-func (idmc *IncidentDebriefMessageCreate) check() error {
-	if _, ok := idmc.mutation.TenantID(); !ok {
+func (_c *IncidentDebriefMessageCreate) check() error {
+	if _, ok := _c.mutation.TenantID(); !ok {
 		return &ValidationError{Name: "tenant_id", err: errors.New(`ent: missing required field "IncidentDebriefMessage.tenant_id"`)}
 	}
-	if _, ok := idmc.mutation.DebriefID(); !ok {
+	if _, ok := _c.mutation.DebriefID(); !ok {
 		return &ValidationError{Name: "debrief_id", err: errors.New(`ent: missing required field "IncidentDebriefMessage.debrief_id"`)}
 	}
-	if _, ok := idmc.mutation.CreatedAt(); !ok {
+	if _, ok := _c.mutation.CreatedAt(); !ok {
 		return &ValidationError{Name: "created_at", err: errors.New(`ent: missing required field "IncidentDebriefMessage.created_at"`)}
 	}
-	if _, ok := idmc.mutation.GetType(); !ok {
+	if _, ok := _c.mutation.GetType(); !ok {
 		return &ValidationError{Name: "type", err: errors.New(`ent: missing required field "IncidentDebriefMessage.type"`)}
 	}
-	if v, ok := idmc.mutation.GetType(); ok {
+	if v, ok := _c.mutation.GetType(); ok {
 		if err := incidentdebriefmessage.TypeValidator(v); err != nil {
 			return &ValidationError{Name: "type", err: fmt.Errorf(`ent: validator failed for field "IncidentDebriefMessage.type": %w`, err)}
 		}
 	}
-	if v, ok := idmc.mutation.RequestedTool(); ok {
+	if v, ok := _c.mutation.RequestedTool(); ok {
 		if err := incidentdebriefmessage.RequestedToolValidator(v); err != nil {
 			return &ValidationError{Name: "requested_tool", err: fmt.Errorf(`ent: validator failed for field "IncidentDebriefMessage.requested_tool": %w`, err)}
 		}
 	}
-	if _, ok := idmc.mutation.Body(); !ok {
+	if _, ok := _c.mutation.Body(); !ok {
 		return &ValidationError{Name: "body", err: errors.New(`ent: missing required field "IncidentDebriefMessage.body"`)}
 	}
-	if len(idmc.mutation.TenantIDs()) == 0 {
+	if len(_c.mutation.TenantIDs()) == 0 {
 		return &ValidationError{Name: "tenant", err: errors.New(`ent: missing required edge "IncidentDebriefMessage.tenant"`)}
 	}
-	if len(idmc.mutation.DebriefIDs()) == 0 {
+	if len(_c.mutation.DebriefIDs()) == 0 {
 		return &ValidationError{Name: "debrief", err: errors.New(`ent: missing required edge "IncidentDebriefMessage.debrief"`)}
 	}
 	return nil
 }
 
-func (idmc *IncidentDebriefMessageCreate) sqlSave(ctx context.Context) (*IncidentDebriefMessage, error) {
-	if err := idmc.check(); err != nil {
+func (_c *IncidentDebriefMessageCreate) sqlSave(ctx context.Context) (*IncidentDebriefMessage, error) {
+	if err := _c.check(); err != nil {
 		return nil, err
 	}
-	_node, _spec := idmc.createSpec()
-	if err := sqlgraph.CreateNode(ctx, idmc.driver, _spec); err != nil {
+	_node, _spec := _c.createSpec()
+	if err := sqlgraph.CreateNode(ctx, _c.driver, _spec); err != nil {
 		if sqlgraph.IsConstraintError(err) {
 			err = &ConstraintError{msg: err.Error(), wrap: err}
 		}
@@ -244,38 +244,38 @@ func (idmc *IncidentDebriefMessageCreate) sqlSave(ctx context.Context) (*Inciden
 			return nil, err
 		}
 	}
-	idmc.mutation.id = &_node.ID
-	idmc.mutation.done = true
+	_c.mutation.id = &_node.ID
+	_c.mutation.done = true
 	return _node, nil
 }
 
-func (idmc *IncidentDebriefMessageCreate) createSpec() (*IncidentDebriefMessage, *sqlgraph.CreateSpec) {
+func (_c *IncidentDebriefMessageCreate) createSpec() (*IncidentDebriefMessage, *sqlgraph.CreateSpec) {
 	var (
-		_node = &IncidentDebriefMessage{config: idmc.config}
+		_node = &IncidentDebriefMessage{config: _c.config}
 		_spec = sqlgraph.NewCreateSpec(incidentdebriefmessage.Table, sqlgraph.NewFieldSpec(incidentdebriefmessage.FieldID, field.TypeUUID))
 	)
-	_spec.OnConflict = idmc.conflict
-	if id, ok := idmc.mutation.ID(); ok {
+	_spec.OnConflict = _c.conflict
+	if id, ok := _c.mutation.ID(); ok {
 		_node.ID = id
 		_spec.ID.Value = &id
 	}
-	if value, ok := idmc.mutation.CreatedAt(); ok {
+	if value, ok := _c.mutation.CreatedAt(); ok {
 		_spec.SetField(incidentdebriefmessage.FieldCreatedAt, field.TypeTime, value)
 		_node.CreatedAt = value
 	}
-	if value, ok := idmc.mutation.GetType(); ok {
+	if value, ok := _c.mutation.GetType(); ok {
 		_spec.SetField(incidentdebriefmessage.FieldType, field.TypeEnum, value)
 		_node.Type = value
 	}
-	if value, ok := idmc.mutation.RequestedTool(); ok {
+	if value, ok := _c.mutation.RequestedTool(); ok {
 		_spec.SetField(incidentdebriefmessage.FieldRequestedTool, field.TypeEnum, value)
 		_node.RequestedTool = value
 	}
-	if value, ok := idmc.mutation.Body(); ok {
+	if value, ok := _c.mutation.Body(); ok {
 		_spec.SetField(incidentdebriefmessage.FieldBody, field.TypeString, value)
 		_node.Body = value
 	}
-	if nodes := idmc.mutation.TenantIDs(); len(nodes) > 0 {
+	if nodes := _c.mutation.TenantIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
@@ -292,7 +292,7 @@ func (idmc *IncidentDebriefMessageCreate) createSpec() (*IncidentDebriefMessage,
 		_node.TenantID = nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
-	if nodes := idmc.mutation.DebriefIDs(); len(nodes) > 0 {
+	if nodes := _c.mutation.DebriefIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: true,
@@ -309,7 +309,7 @@ func (idmc *IncidentDebriefMessageCreate) createSpec() (*IncidentDebriefMessage,
 		_node.DebriefID = nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
-	if nodes := idmc.mutation.FromQuestionIDs(); len(nodes) > 0 {
+	if nodes := _c.mutation.FromQuestionIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
@@ -345,10 +345,10 @@ func (idmc *IncidentDebriefMessageCreate) createSpec() (*IncidentDebriefMessage,
 //			SetTenantID(v+v).
 //		}).
 //		Exec(ctx)
-func (idmc *IncidentDebriefMessageCreate) OnConflict(opts ...sql.ConflictOption) *IncidentDebriefMessageUpsertOne {
-	idmc.conflict = opts
+func (_c *IncidentDebriefMessageCreate) OnConflict(opts ...sql.ConflictOption) *IncidentDebriefMessageUpsertOne {
+	_c.conflict = opts
 	return &IncidentDebriefMessageUpsertOne{
-		create: idmc,
+		create: _c,
 	}
 }
 
@@ -358,10 +358,10 @@ func (idmc *IncidentDebriefMessageCreate) OnConflict(opts ...sql.ConflictOption)
 //	client.IncidentDebriefMessage.Create().
 //		OnConflict(sql.ConflictColumns(columns...)).
 //		Exec(ctx)
-func (idmc *IncidentDebriefMessageCreate) OnConflictColumns(columns ...string) *IncidentDebriefMessageUpsertOne {
-	idmc.conflict = append(idmc.conflict, sql.ConflictColumns(columns...))
+func (_c *IncidentDebriefMessageCreate) OnConflictColumns(columns ...string) *IncidentDebriefMessageUpsertOne {
+	_c.conflict = append(_c.conflict, sql.ConflictColumns(columns...))
 	return &IncidentDebriefMessageUpsertOne{
-		create: idmc,
+		create: _c,
 	}
 }
 
@@ -658,16 +658,16 @@ type IncidentDebriefMessageCreateBulk struct {
 }
 
 // Save creates the IncidentDebriefMessage entities in the database.
-func (idmcb *IncidentDebriefMessageCreateBulk) Save(ctx context.Context) ([]*IncidentDebriefMessage, error) {
-	if idmcb.err != nil {
-		return nil, idmcb.err
+func (_c *IncidentDebriefMessageCreateBulk) Save(ctx context.Context) ([]*IncidentDebriefMessage, error) {
+	if _c.err != nil {
+		return nil, _c.err
 	}
-	specs := make([]*sqlgraph.CreateSpec, len(idmcb.builders))
-	nodes := make([]*IncidentDebriefMessage, len(idmcb.builders))
-	mutators := make([]Mutator, len(idmcb.builders))
-	for i := range idmcb.builders {
+	specs := make([]*sqlgraph.CreateSpec, len(_c.builders))
+	nodes := make([]*IncidentDebriefMessage, len(_c.builders))
+	mutators := make([]Mutator, len(_c.builders))
+	for i := range _c.builders {
 		func(i int, root context.Context) {
-			builder := idmcb.builders[i]
+			builder := _c.builders[i]
 			builder.defaults()
 			var mut Mutator = MutateFunc(func(ctx context.Context, m Mutation) (Value, error) {
 				mutation, ok := m.(*IncidentDebriefMessageMutation)
@@ -681,12 +681,12 @@ func (idmcb *IncidentDebriefMessageCreateBulk) Save(ctx context.Context) ([]*Inc
 				var err error
 				nodes[i], specs[i] = builder.createSpec()
 				if i < len(mutators)-1 {
-					_, err = mutators[i+1].Mutate(root, idmcb.builders[i+1].mutation)
+					_, err = mutators[i+1].Mutate(root, _c.builders[i+1].mutation)
 				} else {
 					spec := &sqlgraph.BatchCreateSpec{Nodes: specs}
-					spec.OnConflict = idmcb.conflict
+					spec.OnConflict = _c.conflict
 					// Invoke the actual operation on the latest mutation in the chain.
-					if err = sqlgraph.BatchCreate(ctx, idmcb.driver, spec); err != nil {
+					if err = sqlgraph.BatchCreate(ctx, _c.driver, spec); err != nil {
 						if sqlgraph.IsConstraintError(err) {
 							err = &ConstraintError{msg: err.Error(), wrap: err}
 						}
@@ -706,7 +706,7 @@ func (idmcb *IncidentDebriefMessageCreateBulk) Save(ctx context.Context) ([]*Inc
 		}(i, ctx)
 	}
 	if len(mutators) > 0 {
-		if _, err := mutators[0].Mutate(ctx, idmcb.builders[0].mutation); err != nil {
+		if _, err := mutators[0].Mutate(ctx, _c.builders[0].mutation); err != nil {
 			return nil, err
 		}
 	}
@@ -714,8 +714,8 @@ func (idmcb *IncidentDebriefMessageCreateBulk) Save(ctx context.Context) ([]*Inc
 }
 
 // SaveX is like Save, but panics if an error occurs.
-func (idmcb *IncidentDebriefMessageCreateBulk) SaveX(ctx context.Context) []*IncidentDebriefMessage {
-	v, err := idmcb.Save(ctx)
+func (_c *IncidentDebriefMessageCreateBulk) SaveX(ctx context.Context) []*IncidentDebriefMessage {
+	v, err := _c.Save(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -723,14 +723,14 @@ func (idmcb *IncidentDebriefMessageCreateBulk) SaveX(ctx context.Context) []*Inc
 }
 
 // Exec executes the query.
-func (idmcb *IncidentDebriefMessageCreateBulk) Exec(ctx context.Context) error {
-	_, err := idmcb.Save(ctx)
+func (_c *IncidentDebriefMessageCreateBulk) Exec(ctx context.Context) error {
+	_, err := _c.Save(ctx)
 	return err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (idmcb *IncidentDebriefMessageCreateBulk) ExecX(ctx context.Context) {
-	if err := idmcb.Exec(ctx); err != nil {
+func (_c *IncidentDebriefMessageCreateBulk) ExecX(ctx context.Context) {
+	if err := _c.Exec(ctx); err != nil {
 		panic(err)
 	}
 }
@@ -750,10 +750,10 @@ func (idmcb *IncidentDebriefMessageCreateBulk) ExecX(ctx context.Context) {
 //			SetTenantID(v+v).
 //		}).
 //		Exec(ctx)
-func (idmcb *IncidentDebriefMessageCreateBulk) OnConflict(opts ...sql.ConflictOption) *IncidentDebriefMessageUpsertBulk {
-	idmcb.conflict = opts
+func (_c *IncidentDebriefMessageCreateBulk) OnConflict(opts ...sql.ConflictOption) *IncidentDebriefMessageUpsertBulk {
+	_c.conflict = opts
 	return &IncidentDebriefMessageUpsertBulk{
-		create: idmcb,
+		create: _c,
 	}
 }
 
@@ -763,10 +763,10 @@ func (idmcb *IncidentDebriefMessageCreateBulk) OnConflict(opts ...sql.ConflictOp
 //	client.IncidentDebriefMessage.Create().
 //		OnConflict(sql.ConflictColumns(columns...)).
 //		Exec(ctx)
-func (idmcb *IncidentDebriefMessageCreateBulk) OnConflictColumns(columns ...string) *IncidentDebriefMessageUpsertBulk {
-	idmcb.conflict = append(idmcb.conflict, sql.ConflictColumns(columns...))
+func (_c *IncidentDebriefMessageCreateBulk) OnConflictColumns(columns ...string) *IncidentDebriefMessageUpsertBulk {
+	_c.conflict = append(_c.conflict, sql.ConflictColumns(columns...))
 	return &IncidentDebriefMessageUpsertBulk{
-		create: idmcb,
+		create: _c,
 	}
 }
 

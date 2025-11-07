@@ -27,94 +27,94 @@ type IncidentEventSystemComponentCreate struct {
 }
 
 // SetTenantID sets the "tenant_id" field.
-func (iescc *IncidentEventSystemComponentCreate) SetTenantID(i int) *IncidentEventSystemComponentCreate {
-	iescc.mutation.SetTenantID(i)
-	return iescc
+func (_c *IncidentEventSystemComponentCreate) SetTenantID(v int) *IncidentEventSystemComponentCreate {
+	_c.mutation.SetTenantID(v)
+	return _c
 }
 
 // SetIncidentEventID sets the "incident_event_id" field.
-func (iescc *IncidentEventSystemComponentCreate) SetIncidentEventID(u uuid.UUID) *IncidentEventSystemComponentCreate {
-	iescc.mutation.SetIncidentEventID(u)
-	return iescc
+func (_c *IncidentEventSystemComponentCreate) SetIncidentEventID(v uuid.UUID) *IncidentEventSystemComponentCreate {
+	_c.mutation.SetIncidentEventID(v)
+	return _c
 }
 
 // SetSystemComponentID sets the "system_component_id" field.
-func (iescc *IncidentEventSystemComponentCreate) SetSystemComponentID(u uuid.UUID) *IncidentEventSystemComponentCreate {
-	iescc.mutation.SetSystemComponentID(u)
-	return iescc
+func (_c *IncidentEventSystemComponentCreate) SetSystemComponentID(v uuid.UUID) *IncidentEventSystemComponentCreate {
+	_c.mutation.SetSystemComponentID(v)
+	return _c
 }
 
 // SetRelationship sets the "relationship" field.
-func (iescc *IncidentEventSystemComponentCreate) SetRelationship(i incidenteventsystemcomponent.Relationship) *IncidentEventSystemComponentCreate {
-	iescc.mutation.SetRelationship(i)
-	return iescc
+func (_c *IncidentEventSystemComponentCreate) SetRelationship(v incidenteventsystemcomponent.Relationship) *IncidentEventSystemComponentCreate {
+	_c.mutation.SetRelationship(v)
+	return _c
 }
 
 // SetCreatedAt sets the "created_at" field.
-func (iescc *IncidentEventSystemComponentCreate) SetCreatedAt(t time.Time) *IncidentEventSystemComponentCreate {
-	iescc.mutation.SetCreatedAt(t)
-	return iescc
+func (_c *IncidentEventSystemComponentCreate) SetCreatedAt(v time.Time) *IncidentEventSystemComponentCreate {
+	_c.mutation.SetCreatedAt(v)
+	return _c
 }
 
 // SetNillableCreatedAt sets the "created_at" field if the given value is not nil.
-func (iescc *IncidentEventSystemComponentCreate) SetNillableCreatedAt(t *time.Time) *IncidentEventSystemComponentCreate {
-	if t != nil {
-		iescc.SetCreatedAt(*t)
+func (_c *IncidentEventSystemComponentCreate) SetNillableCreatedAt(v *time.Time) *IncidentEventSystemComponentCreate {
+	if v != nil {
+		_c.SetCreatedAt(*v)
 	}
-	return iescc
+	return _c
 }
 
 // SetID sets the "id" field.
-func (iescc *IncidentEventSystemComponentCreate) SetID(u uuid.UUID) *IncidentEventSystemComponentCreate {
-	iescc.mutation.SetID(u)
-	return iescc
+func (_c *IncidentEventSystemComponentCreate) SetID(v uuid.UUID) *IncidentEventSystemComponentCreate {
+	_c.mutation.SetID(v)
+	return _c
 }
 
 // SetNillableID sets the "id" field if the given value is not nil.
-func (iescc *IncidentEventSystemComponentCreate) SetNillableID(u *uuid.UUID) *IncidentEventSystemComponentCreate {
-	if u != nil {
-		iescc.SetID(*u)
+func (_c *IncidentEventSystemComponentCreate) SetNillableID(v *uuid.UUID) *IncidentEventSystemComponentCreate {
+	if v != nil {
+		_c.SetID(*v)
 	}
-	return iescc
+	return _c
 }
 
 // SetTenant sets the "tenant" edge to the Tenant entity.
-func (iescc *IncidentEventSystemComponentCreate) SetTenant(t *Tenant) *IncidentEventSystemComponentCreate {
-	return iescc.SetTenantID(t.ID)
+func (_c *IncidentEventSystemComponentCreate) SetTenant(v *Tenant) *IncidentEventSystemComponentCreate {
+	return _c.SetTenantID(v.ID)
 }
 
 // SetEventID sets the "event" edge to the IncidentEventSystemComponent entity by ID.
-func (iescc *IncidentEventSystemComponentCreate) SetEventID(id uuid.UUID) *IncidentEventSystemComponentCreate {
-	iescc.mutation.SetEventID(id)
-	return iescc
+func (_c *IncidentEventSystemComponentCreate) SetEventID(id uuid.UUID) *IncidentEventSystemComponentCreate {
+	_c.mutation.SetEventID(id)
+	return _c
 }
 
 // SetEvent sets the "event" edge to the IncidentEventSystemComponent entity.
-func (iescc *IncidentEventSystemComponentCreate) SetEvent(i *IncidentEventSystemComponent) *IncidentEventSystemComponentCreate {
-	return iescc.SetEventID(i.ID)
+func (_c *IncidentEventSystemComponentCreate) SetEvent(v *IncidentEventSystemComponent) *IncidentEventSystemComponentCreate {
+	return _c.SetEventID(v.ID)
 }
 
 // SetSystemComponent sets the "system_component" edge to the SystemComponent entity.
-func (iescc *IncidentEventSystemComponentCreate) SetSystemComponent(s *SystemComponent) *IncidentEventSystemComponentCreate {
-	return iescc.SetSystemComponentID(s.ID)
+func (_c *IncidentEventSystemComponentCreate) SetSystemComponent(v *SystemComponent) *IncidentEventSystemComponentCreate {
+	return _c.SetSystemComponentID(v.ID)
 }
 
 // Mutation returns the IncidentEventSystemComponentMutation object of the builder.
-func (iescc *IncidentEventSystemComponentCreate) Mutation() *IncidentEventSystemComponentMutation {
-	return iescc.mutation
+func (_c *IncidentEventSystemComponentCreate) Mutation() *IncidentEventSystemComponentMutation {
+	return _c.mutation
 }
 
 // Save creates the IncidentEventSystemComponent in the database.
-func (iescc *IncidentEventSystemComponentCreate) Save(ctx context.Context) (*IncidentEventSystemComponent, error) {
-	if err := iescc.defaults(); err != nil {
+func (_c *IncidentEventSystemComponentCreate) Save(ctx context.Context) (*IncidentEventSystemComponent, error) {
+	if err := _c.defaults(); err != nil {
 		return nil, err
 	}
-	return withHooks(ctx, iescc.sqlSave, iescc.mutation, iescc.hooks)
+	return withHooks(ctx, _c.sqlSave, _c.mutation, _c.hooks)
 }
 
 // SaveX calls Save and panics if Save returns an error.
-func (iescc *IncidentEventSystemComponentCreate) SaveX(ctx context.Context) *IncidentEventSystemComponent {
-	v, err := iescc.Save(ctx)
+func (_c *IncidentEventSystemComponentCreate) SaveX(ctx context.Context) *IncidentEventSystemComponent {
+	v, err := _c.Save(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -122,77 +122,77 @@ func (iescc *IncidentEventSystemComponentCreate) SaveX(ctx context.Context) *Inc
 }
 
 // Exec executes the query.
-func (iescc *IncidentEventSystemComponentCreate) Exec(ctx context.Context) error {
-	_, err := iescc.Save(ctx)
+func (_c *IncidentEventSystemComponentCreate) Exec(ctx context.Context) error {
+	_, err := _c.Save(ctx)
 	return err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (iescc *IncidentEventSystemComponentCreate) ExecX(ctx context.Context) {
-	if err := iescc.Exec(ctx); err != nil {
+func (_c *IncidentEventSystemComponentCreate) ExecX(ctx context.Context) {
+	if err := _c.Exec(ctx); err != nil {
 		panic(err)
 	}
 }
 
 // defaults sets the default values of the builder before save.
-func (iescc *IncidentEventSystemComponentCreate) defaults() error {
-	if _, ok := iescc.mutation.CreatedAt(); !ok {
+func (_c *IncidentEventSystemComponentCreate) defaults() error {
+	if _, ok := _c.mutation.CreatedAt(); !ok {
 		if incidenteventsystemcomponent.DefaultCreatedAt == nil {
 			return fmt.Errorf("ent: uninitialized incidenteventsystemcomponent.DefaultCreatedAt (forgotten import ent/runtime?)")
 		}
 		v := incidenteventsystemcomponent.DefaultCreatedAt()
-		iescc.mutation.SetCreatedAt(v)
+		_c.mutation.SetCreatedAt(v)
 	}
-	if _, ok := iescc.mutation.ID(); !ok {
+	if _, ok := _c.mutation.ID(); !ok {
 		if incidenteventsystemcomponent.DefaultID == nil {
 			return fmt.Errorf("ent: uninitialized incidenteventsystemcomponent.DefaultID (forgotten import ent/runtime?)")
 		}
 		v := incidenteventsystemcomponent.DefaultID()
-		iescc.mutation.SetID(v)
+		_c.mutation.SetID(v)
 	}
 	return nil
 }
 
 // check runs all checks and user-defined validators on the builder.
-func (iescc *IncidentEventSystemComponentCreate) check() error {
-	if _, ok := iescc.mutation.TenantID(); !ok {
+func (_c *IncidentEventSystemComponentCreate) check() error {
+	if _, ok := _c.mutation.TenantID(); !ok {
 		return &ValidationError{Name: "tenant_id", err: errors.New(`ent: missing required field "IncidentEventSystemComponent.tenant_id"`)}
 	}
-	if _, ok := iescc.mutation.IncidentEventID(); !ok {
+	if _, ok := _c.mutation.IncidentEventID(); !ok {
 		return &ValidationError{Name: "incident_event_id", err: errors.New(`ent: missing required field "IncidentEventSystemComponent.incident_event_id"`)}
 	}
-	if _, ok := iescc.mutation.SystemComponentID(); !ok {
+	if _, ok := _c.mutation.SystemComponentID(); !ok {
 		return &ValidationError{Name: "system_component_id", err: errors.New(`ent: missing required field "IncidentEventSystemComponent.system_component_id"`)}
 	}
-	if _, ok := iescc.mutation.Relationship(); !ok {
+	if _, ok := _c.mutation.Relationship(); !ok {
 		return &ValidationError{Name: "relationship", err: errors.New(`ent: missing required field "IncidentEventSystemComponent.relationship"`)}
 	}
-	if v, ok := iescc.mutation.Relationship(); ok {
+	if v, ok := _c.mutation.Relationship(); ok {
 		if err := incidenteventsystemcomponent.RelationshipValidator(v); err != nil {
 			return &ValidationError{Name: "relationship", err: fmt.Errorf(`ent: validator failed for field "IncidentEventSystemComponent.relationship": %w`, err)}
 		}
 	}
-	if _, ok := iescc.mutation.CreatedAt(); !ok {
+	if _, ok := _c.mutation.CreatedAt(); !ok {
 		return &ValidationError{Name: "created_at", err: errors.New(`ent: missing required field "IncidentEventSystemComponent.created_at"`)}
 	}
-	if len(iescc.mutation.TenantIDs()) == 0 {
+	if len(_c.mutation.TenantIDs()) == 0 {
 		return &ValidationError{Name: "tenant", err: errors.New(`ent: missing required edge "IncidentEventSystemComponent.tenant"`)}
 	}
-	if len(iescc.mutation.EventIDs()) == 0 {
+	if len(_c.mutation.EventIDs()) == 0 {
 		return &ValidationError{Name: "event", err: errors.New(`ent: missing required edge "IncidentEventSystemComponent.event"`)}
 	}
-	if len(iescc.mutation.SystemComponentIDs()) == 0 {
+	if len(_c.mutation.SystemComponentIDs()) == 0 {
 		return &ValidationError{Name: "system_component", err: errors.New(`ent: missing required edge "IncidentEventSystemComponent.system_component"`)}
 	}
 	return nil
 }
 
-func (iescc *IncidentEventSystemComponentCreate) sqlSave(ctx context.Context) (*IncidentEventSystemComponent, error) {
-	if err := iescc.check(); err != nil {
+func (_c *IncidentEventSystemComponentCreate) sqlSave(ctx context.Context) (*IncidentEventSystemComponent, error) {
+	if err := _c.check(); err != nil {
 		return nil, err
 	}
-	_node, _spec := iescc.createSpec()
-	if err := sqlgraph.CreateNode(ctx, iescc.driver, _spec); err != nil {
+	_node, _spec := _c.createSpec()
+	if err := sqlgraph.CreateNode(ctx, _c.driver, _spec); err != nil {
 		if sqlgraph.IsConstraintError(err) {
 			err = &ConstraintError{msg: err.Error(), wrap: err}
 		}
@@ -205,30 +205,30 @@ func (iescc *IncidentEventSystemComponentCreate) sqlSave(ctx context.Context) (*
 			return nil, err
 		}
 	}
-	iescc.mutation.id = &_node.ID
-	iescc.mutation.done = true
+	_c.mutation.id = &_node.ID
+	_c.mutation.done = true
 	return _node, nil
 }
 
-func (iescc *IncidentEventSystemComponentCreate) createSpec() (*IncidentEventSystemComponent, *sqlgraph.CreateSpec) {
+func (_c *IncidentEventSystemComponentCreate) createSpec() (*IncidentEventSystemComponent, *sqlgraph.CreateSpec) {
 	var (
-		_node = &IncidentEventSystemComponent{config: iescc.config}
+		_node = &IncidentEventSystemComponent{config: _c.config}
 		_spec = sqlgraph.NewCreateSpec(incidenteventsystemcomponent.Table, sqlgraph.NewFieldSpec(incidenteventsystemcomponent.FieldID, field.TypeUUID))
 	)
-	_spec.OnConflict = iescc.conflict
-	if id, ok := iescc.mutation.ID(); ok {
+	_spec.OnConflict = _c.conflict
+	if id, ok := _c.mutation.ID(); ok {
 		_node.ID = id
 		_spec.ID.Value = &id
 	}
-	if value, ok := iescc.mutation.Relationship(); ok {
+	if value, ok := _c.mutation.Relationship(); ok {
 		_spec.SetField(incidenteventsystemcomponent.FieldRelationship, field.TypeEnum, value)
 		_node.Relationship = value
 	}
-	if value, ok := iescc.mutation.CreatedAt(); ok {
+	if value, ok := _c.mutation.CreatedAt(); ok {
 		_spec.SetField(incidenteventsystemcomponent.FieldCreatedAt, field.TypeTime, value)
 		_node.CreatedAt = value
 	}
-	if nodes := iescc.mutation.TenantIDs(); len(nodes) > 0 {
+	if nodes := _c.mutation.TenantIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
@@ -245,7 +245,7 @@ func (iescc *IncidentEventSystemComponentCreate) createSpec() (*IncidentEventSys
 		_node.TenantID = nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
-	if nodes := iescc.mutation.EventIDs(); len(nodes) > 0 {
+	if nodes := _c.mutation.EventIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2O,
 			Inverse: false,
@@ -262,7 +262,7 @@ func (iescc *IncidentEventSystemComponentCreate) createSpec() (*IncidentEventSys
 		_node.IncidentEventID = nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
-	if nodes := iescc.mutation.SystemComponentIDs(); len(nodes) > 0 {
+	if nodes := _c.mutation.SystemComponentIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
@@ -298,10 +298,10 @@ func (iescc *IncidentEventSystemComponentCreate) createSpec() (*IncidentEventSys
 //			SetTenantID(v+v).
 //		}).
 //		Exec(ctx)
-func (iescc *IncidentEventSystemComponentCreate) OnConflict(opts ...sql.ConflictOption) *IncidentEventSystemComponentUpsertOne {
-	iescc.conflict = opts
+func (_c *IncidentEventSystemComponentCreate) OnConflict(opts ...sql.ConflictOption) *IncidentEventSystemComponentUpsertOne {
+	_c.conflict = opts
 	return &IncidentEventSystemComponentUpsertOne{
-		create: iescc,
+		create: _c,
 	}
 }
 
@@ -311,10 +311,10 @@ func (iescc *IncidentEventSystemComponentCreate) OnConflict(opts ...sql.Conflict
 //	client.IncidentEventSystemComponent.Create().
 //		OnConflict(sql.ConflictColumns(columns...)).
 //		Exec(ctx)
-func (iescc *IncidentEventSystemComponentCreate) OnConflictColumns(columns ...string) *IncidentEventSystemComponentUpsertOne {
-	iescc.conflict = append(iescc.conflict, sql.ConflictColumns(columns...))
+func (_c *IncidentEventSystemComponentCreate) OnConflictColumns(columns ...string) *IncidentEventSystemComponentUpsertOne {
+	_c.conflict = append(_c.conflict, sql.ConflictColumns(columns...))
 	return &IncidentEventSystemComponentUpsertOne{
-		create: iescc,
+		create: _c,
 	}
 }
 
@@ -533,16 +533,16 @@ type IncidentEventSystemComponentCreateBulk struct {
 }
 
 // Save creates the IncidentEventSystemComponent entities in the database.
-func (iesccb *IncidentEventSystemComponentCreateBulk) Save(ctx context.Context) ([]*IncidentEventSystemComponent, error) {
-	if iesccb.err != nil {
-		return nil, iesccb.err
+func (_c *IncidentEventSystemComponentCreateBulk) Save(ctx context.Context) ([]*IncidentEventSystemComponent, error) {
+	if _c.err != nil {
+		return nil, _c.err
 	}
-	specs := make([]*sqlgraph.CreateSpec, len(iesccb.builders))
-	nodes := make([]*IncidentEventSystemComponent, len(iesccb.builders))
-	mutators := make([]Mutator, len(iesccb.builders))
-	for i := range iesccb.builders {
+	specs := make([]*sqlgraph.CreateSpec, len(_c.builders))
+	nodes := make([]*IncidentEventSystemComponent, len(_c.builders))
+	mutators := make([]Mutator, len(_c.builders))
+	for i := range _c.builders {
 		func(i int, root context.Context) {
-			builder := iesccb.builders[i]
+			builder := _c.builders[i]
 			builder.defaults()
 			var mut Mutator = MutateFunc(func(ctx context.Context, m Mutation) (Value, error) {
 				mutation, ok := m.(*IncidentEventSystemComponentMutation)
@@ -556,12 +556,12 @@ func (iesccb *IncidentEventSystemComponentCreateBulk) Save(ctx context.Context) 
 				var err error
 				nodes[i], specs[i] = builder.createSpec()
 				if i < len(mutators)-1 {
-					_, err = mutators[i+1].Mutate(root, iesccb.builders[i+1].mutation)
+					_, err = mutators[i+1].Mutate(root, _c.builders[i+1].mutation)
 				} else {
 					spec := &sqlgraph.BatchCreateSpec{Nodes: specs}
-					spec.OnConflict = iesccb.conflict
+					spec.OnConflict = _c.conflict
 					// Invoke the actual operation on the latest mutation in the chain.
-					if err = sqlgraph.BatchCreate(ctx, iesccb.driver, spec); err != nil {
+					if err = sqlgraph.BatchCreate(ctx, _c.driver, spec); err != nil {
 						if sqlgraph.IsConstraintError(err) {
 							err = &ConstraintError{msg: err.Error(), wrap: err}
 						}
@@ -581,7 +581,7 @@ func (iesccb *IncidentEventSystemComponentCreateBulk) Save(ctx context.Context) 
 		}(i, ctx)
 	}
 	if len(mutators) > 0 {
-		if _, err := mutators[0].Mutate(ctx, iesccb.builders[0].mutation); err != nil {
+		if _, err := mutators[0].Mutate(ctx, _c.builders[0].mutation); err != nil {
 			return nil, err
 		}
 	}
@@ -589,8 +589,8 @@ func (iesccb *IncidentEventSystemComponentCreateBulk) Save(ctx context.Context) 
 }
 
 // SaveX is like Save, but panics if an error occurs.
-func (iesccb *IncidentEventSystemComponentCreateBulk) SaveX(ctx context.Context) []*IncidentEventSystemComponent {
-	v, err := iesccb.Save(ctx)
+func (_c *IncidentEventSystemComponentCreateBulk) SaveX(ctx context.Context) []*IncidentEventSystemComponent {
+	v, err := _c.Save(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -598,14 +598,14 @@ func (iesccb *IncidentEventSystemComponentCreateBulk) SaveX(ctx context.Context)
 }
 
 // Exec executes the query.
-func (iesccb *IncidentEventSystemComponentCreateBulk) Exec(ctx context.Context) error {
-	_, err := iesccb.Save(ctx)
+func (_c *IncidentEventSystemComponentCreateBulk) Exec(ctx context.Context) error {
+	_, err := _c.Save(ctx)
 	return err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (iesccb *IncidentEventSystemComponentCreateBulk) ExecX(ctx context.Context) {
-	if err := iesccb.Exec(ctx); err != nil {
+func (_c *IncidentEventSystemComponentCreateBulk) ExecX(ctx context.Context) {
+	if err := _c.Exec(ctx); err != nil {
 		panic(err)
 	}
 }
@@ -625,10 +625,10 @@ func (iesccb *IncidentEventSystemComponentCreateBulk) ExecX(ctx context.Context)
 //			SetTenantID(v+v).
 //		}).
 //		Exec(ctx)
-func (iesccb *IncidentEventSystemComponentCreateBulk) OnConflict(opts ...sql.ConflictOption) *IncidentEventSystemComponentUpsertBulk {
-	iesccb.conflict = opts
+func (_c *IncidentEventSystemComponentCreateBulk) OnConflict(opts ...sql.ConflictOption) *IncidentEventSystemComponentUpsertBulk {
+	_c.conflict = opts
 	return &IncidentEventSystemComponentUpsertBulk{
-		create: iesccb,
+		create: _c,
 	}
 }
 
@@ -638,10 +638,10 @@ func (iesccb *IncidentEventSystemComponentCreateBulk) OnConflict(opts ...sql.Con
 //	client.IncidentEventSystemComponent.Create().
 //		OnConflict(sql.ConflictColumns(columns...)).
 //		Exec(ctx)
-func (iesccb *IncidentEventSystemComponentCreateBulk) OnConflictColumns(columns ...string) *IncidentEventSystemComponentUpsertBulk {
-	iesccb.conflict = append(iesccb.conflict, sql.ConflictColumns(columns...))
+func (_c *IncidentEventSystemComponentCreateBulk) OnConflictColumns(columns ...string) *IncidentEventSystemComponentUpsertBulk {
+	_c.conflict = append(_c.conflict, sql.ConflictColumns(columns...))
 	return &IncidentEventSystemComponentUpsertBulk{
-		create: iesccb,
+		create: _c,
 	}
 }
 

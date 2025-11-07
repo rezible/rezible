@@ -125,7 +125,7 @@ func (*AlertInstance) scanValues(columns []string) ([]any, error) {
 
 // assignValues assigns the values that were returned from sql.Rows (after scanning)
 // to the AlertInstance fields.
-func (ai *AlertInstance) assignValues(columns []string, values []any) error {
+func (_m *AlertInstance) assignValues(columns []string, values []any) error {
 	if m, n := len(values), len(columns); m < n {
 		return fmt.Errorf("mismatch number of scan values: %d != %d", m, n)
 	}
@@ -135,54 +135,54 @@ func (ai *AlertInstance) assignValues(columns []string, values []any) error {
 			if value, ok := values[i].(*uuid.UUID); !ok {
 				return fmt.Errorf("unexpected type %T for field id", values[i])
 			} else if value != nil {
-				ai.ID = *value
+				_m.ID = *value
 			}
 		case alertinstance.FieldTenantID:
 			if value, ok := values[i].(*sql.NullInt64); !ok {
 				return fmt.Errorf("unexpected type %T for field tenant_id", values[i])
 			} else if value.Valid {
-				ai.TenantID = int(value.Int64)
+				_m.TenantID = int(value.Int64)
 			}
 		case alertinstance.FieldAlertID:
 			if value, ok := values[i].(*uuid.UUID); !ok {
 				return fmt.Errorf("unexpected type %T for field alert_id", values[i])
 			} else if value != nil {
-				ai.AlertID = *value
+				_m.AlertID = *value
 			}
 		case alertinstance.FieldEventID:
 			if value, ok := values[i].(*uuid.UUID); !ok {
 				return fmt.Errorf("unexpected type %T for field event_id", values[i])
 			} else if value != nil {
-				ai.EventID = *value
+				_m.EventID = *value
 			}
 		case alertinstance.FieldProviderID:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field provider_id", values[i])
 			} else if value.Valid {
-				ai.ProviderID = value.String
+				_m.ProviderID = value.String
 			}
 		case alertinstance.FieldAcknowledgedAt:
 			if value, ok := values[i].(*sql.NullTime); !ok {
 				return fmt.Errorf("unexpected type %T for field acknowledged_at", values[i])
 			} else if value.Valid {
-				ai.AcknowledgedAt = value.Time
+				_m.AcknowledgedAt = value.Time
 			}
 		case alertinstance.ForeignKeys[0]:
 			if value, ok := values[i].(*sql.NullScanner); !ok {
 				return fmt.Errorf("unexpected type %T for field alert_instances", values[i])
 			} else if value.Valid {
-				ai.alert_instances = new(uuid.UUID)
-				*ai.alert_instances = *value.S.(*uuid.UUID)
+				_m.alert_instances = new(uuid.UUID)
+				*_m.alert_instances = *value.S.(*uuid.UUID)
 			}
 		case alertinstance.ForeignKeys[1]:
 			if value, ok := values[i].(*sql.NullScanner); !ok {
 				return fmt.Errorf("unexpected type %T for field alert_instance_feedback", values[i])
 			} else if value.Valid {
-				ai.alert_instance_feedback = new(uuid.UUID)
-				*ai.alert_instance_feedback = *value.S.(*uuid.UUID)
+				_m.alert_instance_feedback = new(uuid.UUID)
+				*_m.alert_instance_feedback = *value.S.(*uuid.UUID)
 			}
 		default:
-			ai.selectValues.Set(columns[i], values[i])
+			_m.selectValues.Set(columns[i], values[i])
 		}
 	}
 	return nil
@@ -190,67 +190,67 @@ func (ai *AlertInstance) assignValues(columns []string, values []any) error {
 
 // Value returns the ent.Value that was dynamically selected and assigned to the AlertInstance.
 // This includes values selected through modifiers, order, etc.
-func (ai *AlertInstance) Value(name string) (ent.Value, error) {
-	return ai.selectValues.Get(name)
+func (_m *AlertInstance) Value(name string) (ent.Value, error) {
+	return _m.selectValues.Get(name)
 }
 
 // QueryTenant queries the "tenant" edge of the AlertInstance entity.
-func (ai *AlertInstance) QueryTenant() *TenantQuery {
-	return NewAlertInstanceClient(ai.config).QueryTenant(ai)
+func (_m *AlertInstance) QueryTenant() *TenantQuery {
+	return NewAlertInstanceClient(_m.config).QueryTenant(_m)
 }
 
 // QueryAlert queries the "alert" edge of the AlertInstance entity.
-func (ai *AlertInstance) QueryAlert() *AlertQuery {
-	return NewAlertInstanceClient(ai.config).QueryAlert(ai)
+func (_m *AlertInstance) QueryAlert() *AlertQuery {
+	return NewAlertInstanceClient(_m.config).QueryAlert(_m)
 }
 
 // QueryEvent queries the "event" edge of the AlertInstance entity.
-func (ai *AlertInstance) QueryEvent() *EventQuery {
-	return NewAlertInstanceClient(ai.config).QueryEvent(ai)
+func (_m *AlertInstance) QueryEvent() *EventQuery {
+	return NewAlertInstanceClient(_m.config).QueryEvent(_m)
 }
 
 // QueryFeedback queries the "feedback" edge of the AlertInstance entity.
-func (ai *AlertInstance) QueryFeedback() *AlertFeedbackQuery {
-	return NewAlertInstanceClient(ai.config).QueryFeedback(ai)
+func (_m *AlertInstance) QueryFeedback() *AlertFeedbackQuery {
+	return NewAlertInstanceClient(_m.config).QueryFeedback(_m)
 }
 
 // Update returns a builder for updating this AlertInstance.
 // Note that you need to call AlertInstance.Unwrap() before calling this method if this AlertInstance
 // was returned from a transaction, and the transaction was committed or rolled back.
-func (ai *AlertInstance) Update() *AlertInstanceUpdateOne {
-	return NewAlertInstanceClient(ai.config).UpdateOne(ai)
+func (_m *AlertInstance) Update() *AlertInstanceUpdateOne {
+	return NewAlertInstanceClient(_m.config).UpdateOne(_m)
 }
 
 // Unwrap unwraps the AlertInstance entity that was returned from a transaction after it was closed,
 // so that all future queries will be executed through the driver which created the transaction.
-func (ai *AlertInstance) Unwrap() *AlertInstance {
-	_tx, ok := ai.config.driver.(*txDriver)
+func (_m *AlertInstance) Unwrap() *AlertInstance {
+	_tx, ok := _m.config.driver.(*txDriver)
 	if !ok {
 		panic("ent: AlertInstance is not a transactional entity")
 	}
-	ai.config.driver = _tx.drv
-	return ai
+	_m.config.driver = _tx.drv
+	return _m
 }
 
 // String implements the fmt.Stringer.
-func (ai *AlertInstance) String() string {
+func (_m *AlertInstance) String() string {
 	var builder strings.Builder
 	builder.WriteString("AlertInstance(")
-	builder.WriteString(fmt.Sprintf("id=%v, ", ai.ID))
+	builder.WriteString(fmt.Sprintf("id=%v, ", _m.ID))
 	builder.WriteString("tenant_id=")
-	builder.WriteString(fmt.Sprintf("%v", ai.TenantID))
+	builder.WriteString(fmt.Sprintf("%v", _m.TenantID))
 	builder.WriteString(", ")
 	builder.WriteString("alert_id=")
-	builder.WriteString(fmt.Sprintf("%v", ai.AlertID))
+	builder.WriteString(fmt.Sprintf("%v", _m.AlertID))
 	builder.WriteString(", ")
 	builder.WriteString("event_id=")
-	builder.WriteString(fmt.Sprintf("%v", ai.EventID))
+	builder.WriteString(fmt.Sprintf("%v", _m.EventID))
 	builder.WriteString(", ")
 	builder.WriteString("provider_id=")
-	builder.WriteString(ai.ProviderID)
+	builder.WriteString(_m.ProviderID)
 	builder.WriteString(", ")
 	builder.WriteString("acknowledged_at=")
-	builder.WriteString(ai.AcknowledgedAt.Format(time.ANSIC))
+	builder.WriteString(_m.AcknowledgedAt.Format(time.ANSIC))
 	builder.WriteByte(')')
 	return builder.String()
 }

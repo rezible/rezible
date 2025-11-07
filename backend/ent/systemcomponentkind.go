@@ -88,7 +88,7 @@ func (*SystemComponentKind) scanValues(columns []string) ([]any, error) {
 
 // assignValues assigns the values that were returned from sql.Rows (after scanning)
 // to the SystemComponentKind fields.
-func (sck *SystemComponentKind) assignValues(columns []string, values []any) error {
+func (_m *SystemComponentKind) assignValues(columns []string, values []any) error {
 	if m, n := len(values), len(columns); m < n {
 		return fmt.Errorf("mismatch number of scan values: %d != %d", m, n)
 	}
@@ -98,40 +98,40 @@ func (sck *SystemComponentKind) assignValues(columns []string, values []any) err
 			if value, ok := values[i].(*uuid.UUID); !ok {
 				return fmt.Errorf("unexpected type %T for field id", values[i])
 			} else if value != nil {
-				sck.ID = *value
+				_m.ID = *value
 			}
 		case systemcomponentkind.FieldTenantID:
 			if value, ok := values[i].(*sql.NullInt64); !ok {
 				return fmt.Errorf("unexpected type %T for field tenant_id", values[i])
 			} else if value.Valid {
-				sck.TenantID = int(value.Int64)
+				_m.TenantID = int(value.Int64)
 			}
 		case systemcomponentkind.FieldProviderID:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field provider_id", values[i])
 			} else if value.Valid {
-				sck.ProviderID = value.String
+				_m.ProviderID = value.String
 			}
 		case systemcomponentkind.FieldLabel:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field label", values[i])
 			} else if value.Valid {
-				sck.Label = value.String
+				_m.Label = value.String
 			}
 		case systemcomponentkind.FieldDescription:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field description", values[i])
 			} else if value.Valid {
-				sck.Description = value.String
+				_m.Description = value.String
 			}
 		case systemcomponentkind.FieldCreatedAt:
 			if value, ok := values[i].(*sql.NullTime); !ok {
 				return fmt.Errorf("unexpected type %T for field created_at", values[i])
 			} else if value.Valid {
-				sck.CreatedAt = value.Time
+				_m.CreatedAt = value.Time
 			}
 		default:
-			sck.selectValues.Set(columns[i], values[i])
+			_m.selectValues.Set(columns[i], values[i])
 		}
 	}
 	return nil
@@ -139,57 +139,57 @@ func (sck *SystemComponentKind) assignValues(columns []string, values []any) err
 
 // Value returns the ent.Value that was dynamically selected and assigned to the SystemComponentKind.
 // This includes values selected through modifiers, order, etc.
-func (sck *SystemComponentKind) Value(name string) (ent.Value, error) {
-	return sck.selectValues.Get(name)
+func (_m *SystemComponentKind) Value(name string) (ent.Value, error) {
+	return _m.selectValues.Get(name)
 }
 
 // QueryTenant queries the "tenant" edge of the SystemComponentKind entity.
-func (sck *SystemComponentKind) QueryTenant() *TenantQuery {
-	return NewSystemComponentKindClient(sck.config).QueryTenant(sck)
+func (_m *SystemComponentKind) QueryTenant() *TenantQuery {
+	return NewSystemComponentKindClient(_m.config).QueryTenant(_m)
 }
 
 // QueryComponents queries the "components" edge of the SystemComponentKind entity.
-func (sck *SystemComponentKind) QueryComponents() *SystemComponentQuery {
-	return NewSystemComponentKindClient(sck.config).QueryComponents(sck)
+func (_m *SystemComponentKind) QueryComponents() *SystemComponentQuery {
+	return NewSystemComponentKindClient(_m.config).QueryComponents(_m)
 }
 
 // Update returns a builder for updating this SystemComponentKind.
 // Note that you need to call SystemComponentKind.Unwrap() before calling this method if this SystemComponentKind
 // was returned from a transaction, and the transaction was committed or rolled back.
-func (sck *SystemComponentKind) Update() *SystemComponentKindUpdateOne {
-	return NewSystemComponentKindClient(sck.config).UpdateOne(sck)
+func (_m *SystemComponentKind) Update() *SystemComponentKindUpdateOne {
+	return NewSystemComponentKindClient(_m.config).UpdateOne(_m)
 }
 
 // Unwrap unwraps the SystemComponentKind entity that was returned from a transaction after it was closed,
 // so that all future queries will be executed through the driver which created the transaction.
-func (sck *SystemComponentKind) Unwrap() *SystemComponentKind {
-	_tx, ok := sck.config.driver.(*txDriver)
+func (_m *SystemComponentKind) Unwrap() *SystemComponentKind {
+	_tx, ok := _m.config.driver.(*txDriver)
 	if !ok {
 		panic("ent: SystemComponentKind is not a transactional entity")
 	}
-	sck.config.driver = _tx.drv
-	return sck
+	_m.config.driver = _tx.drv
+	return _m
 }
 
 // String implements the fmt.Stringer.
-func (sck *SystemComponentKind) String() string {
+func (_m *SystemComponentKind) String() string {
 	var builder strings.Builder
 	builder.WriteString("SystemComponentKind(")
-	builder.WriteString(fmt.Sprintf("id=%v, ", sck.ID))
+	builder.WriteString(fmt.Sprintf("id=%v, ", _m.ID))
 	builder.WriteString("tenant_id=")
-	builder.WriteString(fmt.Sprintf("%v", sck.TenantID))
+	builder.WriteString(fmt.Sprintf("%v", _m.TenantID))
 	builder.WriteString(", ")
 	builder.WriteString("provider_id=")
-	builder.WriteString(sck.ProviderID)
+	builder.WriteString(_m.ProviderID)
 	builder.WriteString(", ")
 	builder.WriteString("label=")
-	builder.WriteString(sck.Label)
+	builder.WriteString(_m.Label)
 	builder.WriteString(", ")
 	builder.WriteString("description=")
-	builder.WriteString(sck.Description)
+	builder.WriteString(_m.Description)
 	builder.WriteString(", ")
 	builder.WriteString("created_at=")
-	builder.WriteString(sck.CreatedAt.Format(time.ANSIC))
+	builder.WriteString(_m.CreatedAt.Format(time.ANSIC))
 	builder.WriteByte(')')
 	return builder.String()
 }

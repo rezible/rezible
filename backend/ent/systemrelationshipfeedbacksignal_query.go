@@ -37,44 +37,44 @@ type SystemRelationshipFeedbackSignalQuery struct {
 }
 
 // Where adds a new predicate for the SystemRelationshipFeedbackSignalQuery builder.
-func (srfsq *SystemRelationshipFeedbackSignalQuery) Where(ps ...predicate.SystemRelationshipFeedbackSignal) *SystemRelationshipFeedbackSignalQuery {
-	srfsq.predicates = append(srfsq.predicates, ps...)
-	return srfsq
+func (_q *SystemRelationshipFeedbackSignalQuery) Where(ps ...predicate.SystemRelationshipFeedbackSignal) *SystemRelationshipFeedbackSignalQuery {
+	_q.predicates = append(_q.predicates, ps...)
+	return _q
 }
 
 // Limit the number of records to be returned by this query.
-func (srfsq *SystemRelationshipFeedbackSignalQuery) Limit(limit int) *SystemRelationshipFeedbackSignalQuery {
-	srfsq.ctx.Limit = &limit
-	return srfsq
+func (_q *SystemRelationshipFeedbackSignalQuery) Limit(limit int) *SystemRelationshipFeedbackSignalQuery {
+	_q.ctx.Limit = &limit
+	return _q
 }
 
 // Offset to start from.
-func (srfsq *SystemRelationshipFeedbackSignalQuery) Offset(offset int) *SystemRelationshipFeedbackSignalQuery {
-	srfsq.ctx.Offset = &offset
-	return srfsq
+func (_q *SystemRelationshipFeedbackSignalQuery) Offset(offset int) *SystemRelationshipFeedbackSignalQuery {
+	_q.ctx.Offset = &offset
+	return _q
 }
 
 // Unique configures the query builder to filter duplicate records on query.
 // By default, unique is set to true, and can be disabled using this method.
-func (srfsq *SystemRelationshipFeedbackSignalQuery) Unique(unique bool) *SystemRelationshipFeedbackSignalQuery {
-	srfsq.ctx.Unique = &unique
-	return srfsq
+func (_q *SystemRelationshipFeedbackSignalQuery) Unique(unique bool) *SystemRelationshipFeedbackSignalQuery {
+	_q.ctx.Unique = &unique
+	return _q
 }
 
 // Order specifies how the records should be ordered.
-func (srfsq *SystemRelationshipFeedbackSignalQuery) Order(o ...systemrelationshipfeedbacksignal.OrderOption) *SystemRelationshipFeedbackSignalQuery {
-	srfsq.order = append(srfsq.order, o...)
-	return srfsq
+func (_q *SystemRelationshipFeedbackSignalQuery) Order(o ...systemrelationshipfeedbacksignal.OrderOption) *SystemRelationshipFeedbackSignalQuery {
+	_q.order = append(_q.order, o...)
+	return _q
 }
 
 // QueryTenant chains the current query on the "tenant" edge.
-func (srfsq *SystemRelationshipFeedbackSignalQuery) QueryTenant() *TenantQuery {
-	query := (&TenantClient{config: srfsq.config}).Query()
+func (_q *SystemRelationshipFeedbackSignalQuery) QueryTenant() *TenantQuery {
+	query := (&TenantClient{config: _q.config}).Query()
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
-		if err := srfsq.prepareQuery(ctx); err != nil {
+		if err := _q.prepareQuery(ctx); err != nil {
 			return nil, err
 		}
-		selector := srfsq.sqlQuery(ctx)
+		selector := _q.sqlQuery(ctx)
 		if err := selector.Err(); err != nil {
 			return nil, err
 		}
@@ -83,20 +83,20 @@ func (srfsq *SystemRelationshipFeedbackSignalQuery) QueryTenant() *TenantQuery {
 			sqlgraph.To(tenant.Table, tenant.FieldID),
 			sqlgraph.Edge(sqlgraph.M2O, false, systemrelationshipfeedbacksignal.TenantTable, systemrelationshipfeedbacksignal.TenantColumn),
 		)
-		fromU = sqlgraph.SetNeighbors(srfsq.driver.Dialect(), step)
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
 	}
 	return query
 }
 
 // QueryRelationship chains the current query on the "relationship" edge.
-func (srfsq *SystemRelationshipFeedbackSignalQuery) QueryRelationship() *SystemAnalysisRelationshipQuery {
-	query := (&SystemAnalysisRelationshipClient{config: srfsq.config}).Query()
+func (_q *SystemRelationshipFeedbackSignalQuery) QueryRelationship() *SystemAnalysisRelationshipQuery {
+	query := (&SystemAnalysisRelationshipClient{config: _q.config}).Query()
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
-		if err := srfsq.prepareQuery(ctx); err != nil {
+		if err := _q.prepareQuery(ctx); err != nil {
 			return nil, err
 		}
-		selector := srfsq.sqlQuery(ctx)
+		selector := _q.sqlQuery(ctx)
 		if err := selector.Err(); err != nil {
 			return nil, err
 		}
@@ -105,20 +105,20 @@ func (srfsq *SystemRelationshipFeedbackSignalQuery) QueryRelationship() *SystemA
 			sqlgraph.To(systemanalysisrelationship.Table, systemanalysisrelationship.FieldID),
 			sqlgraph.Edge(sqlgraph.M2O, false, systemrelationshipfeedbacksignal.RelationshipTable, systemrelationshipfeedbacksignal.RelationshipColumn),
 		)
-		fromU = sqlgraph.SetNeighbors(srfsq.driver.Dialect(), step)
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
 	}
 	return query
 }
 
 // QuerySignal chains the current query on the "signal" edge.
-func (srfsq *SystemRelationshipFeedbackSignalQuery) QuerySignal() *SystemComponentSignalQuery {
-	query := (&SystemComponentSignalClient{config: srfsq.config}).Query()
+func (_q *SystemRelationshipFeedbackSignalQuery) QuerySignal() *SystemComponentSignalQuery {
+	query := (&SystemComponentSignalClient{config: _q.config}).Query()
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
-		if err := srfsq.prepareQuery(ctx); err != nil {
+		if err := _q.prepareQuery(ctx); err != nil {
 			return nil, err
 		}
-		selector := srfsq.sqlQuery(ctx)
+		selector := _q.sqlQuery(ctx)
 		if err := selector.Err(); err != nil {
 			return nil, err
 		}
@@ -127,7 +127,7 @@ func (srfsq *SystemRelationshipFeedbackSignalQuery) QuerySignal() *SystemCompone
 			sqlgraph.To(systemcomponentsignal.Table, systemcomponentsignal.FieldID),
 			sqlgraph.Edge(sqlgraph.M2O, false, systemrelationshipfeedbacksignal.SignalTable, systemrelationshipfeedbacksignal.SignalColumn),
 		)
-		fromU = sqlgraph.SetNeighbors(srfsq.driver.Dialect(), step)
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
 	}
 	return query
@@ -135,8 +135,8 @@ func (srfsq *SystemRelationshipFeedbackSignalQuery) QuerySignal() *SystemCompone
 
 // First returns the first SystemRelationshipFeedbackSignal entity from the query.
 // Returns a *NotFoundError when no SystemRelationshipFeedbackSignal was found.
-func (srfsq *SystemRelationshipFeedbackSignalQuery) First(ctx context.Context) (*SystemRelationshipFeedbackSignal, error) {
-	nodes, err := srfsq.Limit(1).All(setContextOp(ctx, srfsq.ctx, ent.OpQueryFirst))
+func (_q *SystemRelationshipFeedbackSignalQuery) First(ctx context.Context) (*SystemRelationshipFeedbackSignal, error) {
+	nodes, err := _q.Limit(1).All(setContextOp(ctx, _q.ctx, ent.OpQueryFirst))
 	if err != nil {
 		return nil, err
 	}
@@ -147,8 +147,8 @@ func (srfsq *SystemRelationshipFeedbackSignalQuery) First(ctx context.Context) (
 }
 
 // FirstX is like First, but panics if an error occurs.
-func (srfsq *SystemRelationshipFeedbackSignalQuery) FirstX(ctx context.Context) *SystemRelationshipFeedbackSignal {
-	node, err := srfsq.First(ctx)
+func (_q *SystemRelationshipFeedbackSignalQuery) FirstX(ctx context.Context) *SystemRelationshipFeedbackSignal {
+	node, err := _q.First(ctx)
 	if err != nil && !IsNotFound(err) {
 		panic(err)
 	}
@@ -157,9 +157,9 @@ func (srfsq *SystemRelationshipFeedbackSignalQuery) FirstX(ctx context.Context) 
 
 // FirstID returns the first SystemRelationshipFeedbackSignal ID from the query.
 // Returns a *NotFoundError when no SystemRelationshipFeedbackSignal ID was found.
-func (srfsq *SystemRelationshipFeedbackSignalQuery) FirstID(ctx context.Context) (id uuid.UUID, err error) {
+func (_q *SystemRelationshipFeedbackSignalQuery) FirstID(ctx context.Context) (id uuid.UUID, err error) {
 	var ids []uuid.UUID
-	if ids, err = srfsq.Limit(1).IDs(setContextOp(ctx, srfsq.ctx, ent.OpQueryFirstID)); err != nil {
+	if ids, err = _q.Limit(1).IDs(setContextOp(ctx, _q.ctx, ent.OpQueryFirstID)); err != nil {
 		return
 	}
 	if len(ids) == 0 {
@@ -170,8 +170,8 @@ func (srfsq *SystemRelationshipFeedbackSignalQuery) FirstID(ctx context.Context)
 }
 
 // FirstIDX is like FirstID, but panics if an error occurs.
-func (srfsq *SystemRelationshipFeedbackSignalQuery) FirstIDX(ctx context.Context) uuid.UUID {
-	id, err := srfsq.FirstID(ctx)
+func (_q *SystemRelationshipFeedbackSignalQuery) FirstIDX(ctx context.Context) uuid.UUID {
+	id, err := _q.FirstID(ctx)
 	if err != nil && !IsNotFound(err) {
 		panic(err)
 	}
@@ -181,8 +181,8 @@ func (srfsq *SystemRelationshipFeedbackSignalQuery) FirstIDX(ctx context.Context
 // Only returns a single SystemRelationshipFeedbackSignal entity found by the query, ensuring it only returns one.
 // Returns a *NotSingularError when more than one SystemRelationshipFeedbackSignal entity is found.
 // Returns a *NotFoundError when no SystemRelationshipFeedbackSignal entities are found.
-func (srfsq *SystemRelationshipFeedbackSignalQuery) Only(ctx context.Context) (*SystemRelationshipFeedbackSignal, error) {
-	nodes, err := srfsq.Limit(2).All(setContextOp(ctx, srfsq.ctx, ent.OpQueryOnly))
+func (_q *SystemRelationshipFeedbackSignalQuery) Only(ctx context.Context) (*SystemRelationshipFeedbackSignal, error) {
+	nodes, err := _q.Limit(2).All(setContextOp(ctx, _q.ctx, ent.OpQueryOnly))
 	if err != nil {
 		return nil, err
 	}
@@ -197,8 +197,8 @@ func (srfsq *SystemRelationshipFeedbackSignalQuery) Only(ctx context.Context) (*
 }
 
 // OnlyX is like Only, but panics if an error occurs.
-func (srfsq *SystemRelationshipFeedbackSignalQuery) OnlyX(ctx context.Context) *SystemRelationshipFeedbackSignal {
-	node, err := srfsq.Only(ctx)
+func (_q *SystemRelationshipFeedbackSignalQuery) OnlyX(ctx context.Context) *SystemRelationshipFeedbackSignal {
+	node, err := _q.Only(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -208,9 +208,9 @@ func (srfsq *SystemRelationshipFeedbackSignalQuery) OnlyX(ctx context.Context) *
 // OnlyID is like Only, but returns the only SystemRelationshipFeedbackSignal ID in the query.
 // Returns a *NotSingularError when more than one SystemRelationshipFeedbackSignal ID is found.
 // Returns a *NotFoundError when no entities are found.
-func (srfsq *SystemRelationshipFeedbackSignalQuery) OnlyID(ctx context.Context) (id uuid.UUID, err error) {
+func (_q *SystemRelationshipFeedbackSignalQuery) OnlyID(ctx context.Context) (id uuid.UUID, err error) {
 	var ids []uuid.UUID
-	if ids, err = srfsq.Limit(2).IDs(setContextOp(ctx, srfsq.ctx, ent.OpQueryOnlyID)); err != nil {
+	if ids, err = _q.Limit(2).IDs(setContextOp(ctx, _q.ctx, ent.OpQueryOnlyID)); err != nil {
 		return
 	}
 	switch len(ids) {
@@ -225,8 +225,8 @@ func (srfsq *SystemRelationshipFeedbackSignalQuery) OnlyID(ctx context.Context) 
 }
 
 // OnlyIDX is like OnlyID, but panics if an error occurs.
-func (srfsq *SystemRelationshipFeedbackSignalQuery) OnlyIDX(ctx context.Context) uuid.UUID {
-	id, err := srfsq.OnlyID(ctx)
+func (_q *SystemRelationshipFeedbackSignalQuery) OnlyIDX(ctx context.Context) uuid.UUID {
+	id, err := _q.OnlyID(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -234,18 +234,18 @@ func (srfsq *SystemRelationshipFeedbackSignalQuery) OnlyIDX(ctx context.Context)
 }
 
 // All executes the query and returns a list of SystemRelationshipFeedbackSignals.
-func (srfsq *SystemRelationshipFeedbackSignalQuery) All(ctx context.Context) ([]*SystemRelationshipFeedbackSignal, error) {
-	ctx = setContextOp(ctx, srfsq.ctx, ent.OpQueryAll)
-	if err := srfsq.prepareQuery(ctx); err != nil {
+func (_q *SystemRelationshipFeedbackSignalQuery) All(ctx context.Context) ([]*SystemRelationshipFeedbackSignal, error) {
+	ctx = setContextOp(ctx, _q.ctx, ent.OpQueryAll)
+	if err := _q.prepareQuery(ctx); err != nil {
 		return nil, err
 	}
 	qr := querierAll[[]*SystemRelationshipFeedbackSignal, *SystemRelationshipFeedbackSignalQuery]()
-	return withInterceptors[[]*SystemRelationshipFeedbackSignal](ctx, srfsq, qr, srfsq.inters)
+	return withInterceptors[[]*SystemRelationshipFeedbackSignal](ctx, _q, qr, _q.inters)
 }
 
 // AllX is like All, but panics if an error occurs.
-func (srfsq *SystemRelationshipFeedbackSignalQuery) AllX(ctx context.Context) []*SystemRelationshipFeedbackSignal {
-	nodes, err := srfsq.All(ctx)
+func (_q *SystemRelationshipFeedbackSignalQuery) AllX(ctx context.Context) []*SystemRelationshipFeedbackSignal {
+	nodes, err := _q.All(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -253,20 +253,20 @@ func (srfsq *SystemRelationshipFeedbackSignalQuery) AllX(ctx context.Context) []
 }
 
 // IDs executes the query and returns a list of SystemRelationshipFeedbackSignal IDs.
-func (srfsq *SystemRelationshipFeedbackSignalQuery) IDs(ctx context.Context) (ids []uuid.UUID, err error) {
-	if srfsq.ctx.Unique == nil && srfsq.path != nil {
-		srfsq.Unique(true)
+func (_q *SystemRelationshipFeedbackSignalQuery) IDs(ctx context.Context) (ids []uuid.UUID, err error) {
+	if _q.ctx.Unique == nil && _q.path != nil {
+		_q.Unique(true)
 	}
-	ctx = setContextOp(ctx, srfsq.ctx, ent.OpQueryIDs)
-	if err = srfsq.Select(systemrelationshipfeedbacksignal.FieldID).Scan(ctx, &ids); err != nil {
+	ctx = setContextOp(ctx, _q.ctx, ent.OpQueryIDs)
+	if err = _q.Select(systemrelationshipfeedbacksignal.FieldID).Scan(ctx, &ids); err != nil {
 		return nil, err
 	}
 	return ids, nil
 }
 
 // IDsX is like IDs, but panics if an error occurs.
-func (srfsq *SystemRelationshipFeedbackSignalQuery) IDsX(ctx context.Context) []uuid.UUID {
-	ids, err := srfsq.IDs(ctx)
+func (_q *SystemRelationshipFeedbackSignalQuery) IDsX(ctx context.Context) []uuid.UUID {
+	ids, err := _q.IDs(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -274,17 +274,17 @@ func (srfsq *SystemRelationshipFeedbackSignalQuery) IDsX(ctx context.Context) []
 }
 
 // Count returns the count of the given query.
-func (srfsq *SystemRelationshipFeedbackSignalQuery) Count(ctx context.Context) (int, error) {
-	ctx = setContextOp(ctx, srfsq.ctx, ent.OpQueryCount)
-	if err := srfsq.prepareQuery(ctx); err != nil {
+func (_q *SystemRelationshipFeedbackSignalQuery) Count(ctx context.Context) (int, error) {
+	ctx = setContextOp(ctx, _q.ctx, ent.OpQueryCount)
+	if err := _q.prepareQuery(ctx); err != nil {
 		return 0, err
 	}
-	return withInterceptors[int](ctx, srfsq, querierCount[*SystemRelationshipFeedbackSignalQuery](), srfsq.inters)
+	return withInterceptors[int](ctx, _q, querierCount[*SystemRelationshipFeedbackSignalQuery](), _q.inters)
 }
 
 // CountX is like Count, but panics if an error occurs.
-func (srfsq *SystemRelationshipFeedbackSignalQuery) CountX(ctx context.Context) int {
-	count, err := srfsq.Count(ctx)
+func (_q *SystemRelationshipFeedbackSignalQuery) CountX(ctx context.Context) int {
+	count, err := _q.Count(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -292,9 +292,9 @@ func (srfsq *SystemRelationshipFeedbackSignalQuery) CountX(ctx context.Context) 
 }
 
 // Exist returns true if the query has elements in the graph.
-func (srfsq *SystemRelationshipFeedbackSignalQuery) Exist(ctx context.Context) (bool, error) {
-	ctx = setContextOp(ctx, srfsq.ctx, ent.OpQueryExist)
-	switch _, err := srfsq.FirstID(ctx); {
+func (_q *SystemRelationshipFeedbackSignalQuery) Exist(ctx context.Context) (bool, error) {
+	ctx = setContextOp(ctx, _q.ctx, ent.OpQueryExist)
+	switch _, err := _q.FirstID(ctx); {
 	case IsNotFound(err):
 		return false, nil
 	case err != nil:
@@ -305,8 +305,8 @@ func (srfsq *SystemRelationshipFeedbackSignalQuery) Exist(ctx context.Context) (
 }
 
 // ExistX is like Exist, but panics if an error occurs.
-func (srfsq *SystemRelationshipFeedbackSignalQuery) ExistX(ctx context.Context) bool {
-	exist, err := srfsq.Exist(ctx)
+func (_q *SystemRelationshipFeedbackSignalQuery) ExistX(ctx context.Context) bool {
+	exist, err := _q.Exist(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -315,57 +315,57 @@ func (srfsq *SystemRelationshipFeedbackSignalQuery) ExistX(ctx context.Context) 
 
 // Clone returns a duplicate of the SystemRelationshipFeedbackSignalQuery builder, including all associated steps. It can be
 // used to prepare common query builders and use them differently after the clone is made.
-func (srfsq *SystemRelationshipFeedbackSignalQuery) Clone() *SystemRelationshipFeedbackSignalQuery {
-	if srfsq == nil {
+func (_q *SystemRelationshipFeedbackSignalQuery) Clone() *SystemRelationshipFeedbackSignalQuery {
+	if _q == nil {
 		return nil
 	}
 	return &SystemRelationshipFeedbackSignalQuery{
-		config:           srfsq.config,
-		ctx:              srfsq.ctx.Clone(),
-		order:            append([]systemrelationshipfeedbacksignal.OrderOption{}, srfsq.order...),
-		inters:           append([]Interceptor{}, srfsq.inters...),
-		predicates:       append([]predicate.SystemRelationshipFeedbackSignal{}, srfsq.predicates...),
-		withTenant:       srfsq.withTenant.Clone(),
-		withRelationship: srfsq.withRelationship.Clone(),
-		withSignal:       srfsq.withSignal.Clone(),
+		config:           _q.config,
+		ctx:              _q.ctx.Clone(),
+		order:            append([]systemrelationshipfeedbacksignal.OrderOption{}, _q.order...),
+		inters:           append([]Interceptor{}, _q.inters...),
+		predicates:       append([]predicate.SystemRelationshipFeedbackSignal{}, _q.predicates...),
+		withTenant:       _q.withTenant.Clone(),
+		withRelationship: _q.withRelationship.Clone(),
+		withSignal:       _q.withSignal.Clone(),
 		// clone intermediate query.
-		sql:       srfsq.sql.Clone(),
-		path:      srfsq.path,
-		modifiers: append([]func(*sql.Selector){}, srfsq.modifiers...),
+		sql:       _q.sql.Clone(),
+		path:      _q.path,
+		modifiers: append([]func(*sql.Selector){}, _q.modifiers...),
 	}
 }
 
 // WithTenant tells the query-builder to eager-load the nodes that are connected to
 // the "tenant" edge. The optional arguments are used to configure the query builder of the edge.
-func (srfsq *SystemRelationshipFeedbackSignalQuery) WithTenant(opts ...func(*TenantQuery)) *SystemRelationshipFeedbackSignalQuery {
-	query := (&TenantClient{config: srfsq.config}).Query()
+func (_q *SystemRelationshipFeedbackSignalQuery) WithTenant(opts ...func(*TenantQuery)) *SystemRelationshipFeedbackSignalQuery {
+	query := (&TenantClient{config: _q.config}).Query()
 	for _, opt := range opts {
 		opt(query)
 	}
-	srfsq.withTenant = query
-	return srfsq
+	_q.withTenant = query
+	return _q
 }
 
 // WithRelationship tells the query-builder to eager-load the nodes that are connected to
 // the "relationship" edge. The optional arguments are used to configure the query builder of the edge.
-func (srfsq *SystemRelationshipFeedbackSignalQuery) WithRelationship(opts ...func(*SystemAnalysisRelationshipQuery)) *SystemRelationshipFeedbackSignalQuery {
-	query := (&SystemAnalysisRelationshipClient{config: srfsq.config}).Query()
+func (_q *SystemRelationshipFeedbackSignalQuery) WithRelationship(opts ...func(*SystemAnalysisRelationshipQuery)) *SystemRelationshipFeedbackSignalQuery {
+	query := (&SystemAnalysisRelationshipClient{config: _q.config}).Query()
 	for _, opt := range opts {
 		opt(query)
 	}
-	srfsq.withRelationship = query
-	return srfsq
+	_q.withRelationship = query
+	return _q
 }
 
 // WithSignal tells the query-builder to eager-load the nodes that are connected to
 // the "signal" edge. The optional arguments are used to configure the query builder of the edge.
-func (srfsq *SystemRelationshipFeedbackSignalQuery) WithSignal(opts ...func(*SystemComponentSignalQuery)) *SystemRelationshipFeedbackSignalQuery {
-	query := (&SystemComponentSignalClient{config: srfsq.config}).Query()
+func (_q *SystemRelationshipFeedbackSignalQuery) WithSignal(opts ...func(*SystemComponentSignalQuery)) *SystemRelationshipFeedbackSignalQuery {
+	query := (&SystemComponentSignalClient{config: _q.config}).Query()
 	for _, opt := range opts {
 		opt(query)
 	}
-	srfsq.withSignal = query
-	return srfsq
+	_q.withSignal = query
+	return _q
 }
 
 // GroupBy is used to group vertices by one or more fields/columns.
@@ -382,10 +382,10 @@ func (srfsq *SystemRelationshipFeedbackSignalQuery) WithSignal(opts ...func(*Sys
 //		GroupBy(systemrelationshipfeedbacksignal.FieldTenantID).
 //		Aggregate(ent.Count()).
 //		Scan(ctx, &v)
-func (srfsq *SystemRelationshipFeedbackSignalQuery) GroupBy(field string, fields ...string) *SystemRelationshipFeedbackSignalGroupBy {
-	srfsq.ctx.Fields = append([]string{field}, fields...)
-	grbuild := &SystemRelationshipFeedbackSignalGroupBy{build: srfsq}
-	grbuild.flds = &srfsq.ctx.Fields
+func (_q *SystemRelationshipFeedbackSignalQuery) GroupBy(field string, fields ...string) *SystemRelationshipFeedbackSignalGroupBy {
+	_q.ctx.Fields = append([]string{field}, fields...)
+	grbuild := &SystemRelationshipFeedbackSignalGroupBy{build: _q}
+	grbuild.flds = &_q.ctx.Fields
 	grbuild.label = systemrelationshipfeedbacksignal.Label
 	grbuild.scan = grbuild.Scan
 	return grbuild
@@ -403,96 +403,96 @@ func (srfsq *SystemRelationshipFeedbackSignalQuery) GroupBy(field string, fields
 //	client.SystemRelationshipFeedbackSignal.Query().
 //		Select(systemrelationshipfeedbacksignal.FieldTenantID).
 //		Scan(ctx, &v)
-func (srfsq *SystemRelationshipFeedbackSignalQuery) Select(fields ...string) *SystemRelationshipFeedbackSignalSelect {
-	srfsq.ctx.Fields = append(srfsq.ctx.Fields, fields...)
-	sbuild := &SystemRelationshipFeedbackSignalSelect{SystemRelationshipFeedbackSignalQuery: srfsq}
+func (_q *SystemRelationshipFeedbackSignalQuery) Select(fields ...string) *SystemRelationshipFeedbackSignalSelect {
+	_q.ctx.Fields = append(_q.ctx.Fields, fields...)
+	sbuild := &SystemRelationshipFeedbackSignalSelect{SystemRelationshipFeedbackSignalQuery: _q}
 	sbuild.label = systemrelationshipfeedbacksignal.Label
-	sbuild.flds, sbuild.scan = &srfsq.ctx.Fields, sbuild.Scan
+	sbuild.flds, sbuild.scan = &_q.ctx.Fields, sbuild.Scan
 	return sbuild
 }
 
 // Aggregate returns a SystemRelationshipFeedbackSignalSelect configured with the given aggregations.
-func (srfsq *SystemRelationshipFeedbackSignalQuery) Aggregate(fns ...AggregateFunc) *SystemRelationshipFeedbackSignalSelect {
-	return srfsq.Select().Aggregate(fns...)
+func (_q *SystemRelationshipFeedbackSignalQuery) Aggregate(fns ...AggregateFunc) *SystemRelationshipFeedbackSignalSelect {
+	return _q.Select().Aggregate(fns...)
 }
 
-func (srfsq *SystemRelationshipFeedbackSignalQuery) prepareQuery(ctx context.Context) error {
-	for _, inter := range srfsq.inters {
+func (_q *SystemRelationshipFeedbackSignalQuery) prepareQuery(ctx context.Context) error {
+	for _, inter := range _q.inters {
 		if inter == nil {
 			return fmt.Errorf("ent: uninitialized interceptor (forgotten import ent/runtime?)")
 		}
 		if trv, ok := inter.(Traverser); ok {
-			if err := trv.Traverse(ctx, srfsq); err != nil {
+			if err := trv.Traverse(ctx, _q); err != nil {
 				return err
 			}
 		}
 	}
-	for _, f := range srfsq.ctx.Fields {
+	for _, f := range _q.ctx.Fields {
 		if !systemrelationshipfeedbacksignal.ValidColumn(f) {
 			return &ValidationError{Name: f, err: fmt.Errorf("ent: invalid field %q for query", f)}
 		}
 	}
-	if srfsq.path != nil {
-		prev, err := srfsq.path(ctx)
+	if _q.path != nil {
+		prev, err := _q.path(ctx)
 		if err != nil {
 			return err
 		}
-		srfsq.sql = prev
+		_q.sql = prev
 	}
 	if systemrelationshipfeedbacksignal.Policy == nil {
 		return errors.New("ent: uninitialized systemrelationshipfeedbacksignal.Policy (forgotten import ent/runtime?)")
 	}
-	if err := systemrelationshipfeedbacksignal.Policy.EvalQuery(ctx, srfsq); err != nil {
+	if err := systemrelationshipfeedbacksignal.Policy.EvalQuery(ctx, _q); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (srfsq *SystemRelationshipFeedbackSignalQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*SystemRelationshipFeedbackSignal, error) {
+func (_q *SystemRelationshipFeedbackSignalQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*SystemRelationshipFeedbackSignal, error) {
 	var (
 		nodes       = []*SystemRelationshipFeedbackSignal{}
-		_spec       = srfsq.querySpec()
+		_spec       = _q.querySpec()
 		loadedTypes = [3]bool{
-			srfsq.withTenant != nil,
-			srfsq.withRelationship != nil,
-			srfsq.withSignal != nil,
+			_q.withTenant != nil,
+			_q.withRelationship != nil,
+			_q.withSignal != nil,
 		}
 	)
 	_spec.ScanValues = func(columns []string) ([]any, error) {
 		return (*SystemRelationshipFeedbackSignal).scanValues(nil, columns)
 	}
 	_spec.Assign = func(columns []string, values []any) error {
-		node := &SystemRelationshipFeedbackSignal{config: srfsq.config}
+		node := &SystemRelationshipFeedbackSignal{config: _q.config}
 		nodes = append(nodes, node)
 		node.Edges.loadedTypes = loadedTypes
 		return node.assignValues(columns, values)
 	}
-	if len(srfsq.modifiers) > 0 {
-		_spec.Modifiers = srfsq.modifiers
+	if len(_q.modifiers) > 0 {
+		_spec.Modifiers = _q.modifiers
 	}
 	for i := range hooks {
 		hooks[i](ctx, _spec)
 	}
-	if err := sqlgraph.QueryNodes(ctx, srfsq.driver, _spec); err != nil {
+	if err := sqlgraph.QueryNodes(ctx, _q.driver, _spec); err != nil {
 		return nil, err
 	}
 	if len(nodes) == 0 {
 		return nodes, nil
 	}
-	if query := srfsq.withTenant; query != nil {
-		if err := srfsq.loadTenant(ctx, query, nodes, nil,
+	if query := _q.withTenant; query != nil {
+		if err := _q.loadTenant(ctx, query, nodes, nil,
 			func(n *SystemRelationshipFeedbackSignal, e *Tenant) { n.Edges.Tenant = e }); err != nil {
 			return nil, err
 		}
 	}
-	if query := srfsq.withRelationship; query != nil {
-		if err := srfsq.loadRelationship(ctx, query, nodes, nil,
+	if query := _q.withRelationship; query != nil {
+		if err := _q.loadRelationship(ctx, query, nodes, nil,
 			func(n *SystemRelationshipFeedbackSignal, e *SystemAnalysisRelationship) { n.Edges.Relationship = e }); err != nil {
 			return nil, err
 		}
 	}
-	if query := srfsq.withSignal; query != nil {
-		if err := srfsq.loadSignal(ctx, query, nodes, nil,
+	if query := _q.withSignal; query != nil {
+		if err := _q.loadSignal(ctx, query, nodes, nil,
 			func(n *SystemRelationshipFeedbackSignal, e *SystemComponentSignal) { n.Edges.Signal = e }); err != nil {
 			return nil, err
 		}
@@ -500,7 +500,7 @@ func (srfsq *SystemRelationshipFeedbackSignalQuery) sqlAll(ctx context.Context, 
 	return nodes, nil
 }
 
-func (srfsq *SystemRelationshipFeedbackSignalQuery) loadTenant(ctx context.Context, query *TenantQuery, nodes []*SystemRelationshipFeedbackSignal, init func(*SystemRelationshipFeedbackSignal), assign func(*SystemRelationshipFeedbackSignal, *Tenant)) error {
+func (_q *SystemRelationshipFeedbackSignalQuery) loadTenant(ctx context.Context, query *TenantQuery, nodes []*SystemRelationshipFeedbackSignal, init func(*SystemRelationshipFeedbackSignal), assign func(*SystemRelationshipFeedbackSignal, *Tenant)) error {
 	ids := make([]int, 0, len(nodes))
 	nodeids := make(map[int][]*SystemRelationshipFeedbackSignal)
 	for i := range nodes {
@@ -529,7 +529,7 @@ func (srfsq *SystemRelationshipFeedbackSignalQuery) loadTenant(ctx context.Conte
 	}
 	return nil
 }
-func (srfsq *SystemRelationshipFeedbackSignalQuery) loadRelationship(ctx context.Context, query *SystemAnalysisRelationshipQuery, nodes []*SystemRelationshipFeedbackSignal, init func(*SystemRelationshipFeedbackSignal), assign func(*SystemRelationshipFeedbackSignal, *SystemAnalysisRelationship)) error {
+func (_q *SystemRelationshipFeedbackSignalQuery) loadRelationship(ctx context.Context, query *SystemAnalysisRelationshipQuery, nodes []*SystemRelationshipFeedbackSignal, init func(*SystemRelationshipFeedbackSignal), assign func(*SystemRelationshipFeedbackSignal, *SystemAnalysisRelationship)) error {
 	ids := make([]uuid.UUID, 0, len(nodes))
 	nodeids := make(map[uuid.UUID][]*SystemRelationshipFeedbackSignal)
 	for i := range nodes {
@@ -558,7 +558,7 @@ func (srfsq *SystemRelationshipFeedbackSignalQuery) loadRelationship(ctx context
 	}
 	return nil
 }
-func (srfsq *SystemRelationshipFeedbackSignalQuery) loadSignal(ctx context.Context, query *SystemComponentSignalQuery, nodes []*SystemRelationshipFeedbackSignal, init func(*SystemRelationshipFeedbackSignal), assign func(*SystemRelationshipFeedbackSignal, *SystemComponentSignal)) error {
+func (_q *SystemRelationshipFeedbackSignalQuery) loadSignal(ctx context.Context, query *SystemComponentSignalQuery, nodes []*SystemRelationshipFeedbackSignal, init func(*SystemRelationshipFeedbackSignal), assign func(*SystemRelationshipFeedbackSignal, *SystemComponentSignal)) error {
 	ids := make([]uuid.UUID, 0, len(nodes))
 	nodeids := make(map[uuid.UUID][]*SystemRelationshipFeedbackSignal)
 	for i := range nodes {
@@ -588,27 +588,27 @@ func (srfsq *SystemRelationshipFeedbackSignalQuery) loadSignal(ctx context.Conte
 	return nil
 }
 
-func (srfsq *SystemRelationshipFeedbackSignalQuery) sqlCount(ctx context.Context) (int, error) {
-	_spec := srfsq.querySpec()
-	if len(srfsq.modifiers) > 0 {
-		_spec.Modifiers = srfsq.modifiers
+func (_q *SystemRelationshipFeedbackSignalQuery) sqlCount(ctx context.Context) (int, error) {
+	_spec := _q.querySpec()
+	if len(_q.modifiers) > 0 {
+		_spec.Modifiers = _q.modifiers
 	}
-	_spec.Node.Columns = srfsq.ctx.Fields
-	if len(srfsq.ctx.Fields) > 0 {
-		_spec.Unique = srfsq.ctx.Unique != nil && *srfsq.ctx.Unique
+	_spec.Node.Columns = _q.ctx.Fields
+	if len(_q.ctx.Fields) > 0 {
+		_spec.Unique = _q.ctx.Unique != nil && *_q.ctx.Unique
 	}
-	return sqlgraph.CountNodes(ctx, srfsq.driver, _spec)
+	return sqlgraph.CountNodes(ctx, _q.driver, _spec)
 }
 
-func (srfsq *SystemRelationshipFeedbackSignalQuery) querySpec() *sqlgraph.QuerySpec {
+func (_q *SystemRelationshipFeedbackSignalQuery) querySpec() *sqlgraph.QuerySpec {
 	_spec := sqlgraph.NewQuerySpec(systemrelationshipfeedbacksignal.Table, systemrelationshipfeedbacksignal.Columns, sqlgraph.NewFieldSpec(systemrelationshipfeedbacksignal.FieldID, field.TypeUUID))
-	_spec.From = srfsq.sql
-	if unique := srfsq.ctx.Unique; unique != nil {
+	_spec.From = _q.sql
+	if unique := _q.ctx.Unique; unique != nil {
 		_spec.Unique = *unique
-	} else if srfsq.path != nil {
+	} else if _q.path != nil {
 		_spec.Unique = true
 	}
-	if fields := srfsq.ctx.Fields; len(fields) > 0 {
+	if fields := _q.ctx.Fields; len(fields) > 0 {
 		_spec.Node.Columns = make([]string, 0, len(fields))
 		_spec.Node.Columns = append(_spec.Node.Columns, systemrelationshipfeedbacksignal.FieldID)
 		for i := range fields {
@@ -616,30 +616,30 @@ func (srfsq *SystemRelationshipFeedbackSignalQuery) querySpec() *sqlgraph.QueryS
 				_spec.Node.Columns = append(_spec.Node.Columns, fields[i])
 			}
 		}
-		if srfsq.withTenant != nil {
+		if _q.withTenant != nil {
 			_spec.Node.AddColumnOnce(systemrelationshipfeedbacksignal.FieldTenantID)
 		}
-		if srfsq.withRelationship != nil {
+		if _q.withRelationship != nil {
 			_spec.Node.AddColumnOnce(systemrelationshipfeedbacksignal.FieldRelationshipID)
 		}
-		if srfsq.withSignal != nil {
+		if _q.withSignal != nil {
 			_spec.Node.AddColumnOnce(systemrelationshipfeedbacksignal.FieldSignalID)
 		}
 	}
-	if ps := srfsq.predicates; len(ps) > 0 {
+	if ps := _q.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {
 				ps[i](selector)
 			}
 		}
 	}
-	if limit := srfsq.ctx.Limit; limit != nil {
+	if limit := _q.ctx.Limit; limit != nil {
 		_spec.Limit = *limit
 	}
-	if offset := srfsq.ctx.Offset; offset != nil {
+	if offset := _q.ctx.Offset; offset != nil {
 		_spec.Offset = *offset
 	}
-	if ps := srfsq.order; len(ps) > 0 {
+	if ps := _q.order; len(ps) > 0 {
 		_spec.Order = func(selector *sql.Selector) {
 			for i := range ps {
 				ps[i](selector)
@@ -649,45 +649,45 @@ func (srfsq *SystemRelationshipFeedbackSignalQuery) querySpec() *sqlgraph.QueryS
 	return _spec
 }
 
-func (srfsq *SystemRelationshipFeedbackSignalQuery) sqlQuery(ctx context.Context) *sql.Selector {
-	builder := sql.Dialect(srfsq.driver.Dialect())
+func (_q *SystemRelationshipFeedbackSignalQuery) sqlQuery(ctx context.Context) *sql.Selector {
+	builder := sql.Dialect(_q.driver.Dialect())
 	t1 := builder.Table(systemrelationshipfeedbacksignal.Table)
-	columns := srfsq.ctx.Fields
+	columns := _q.ctx.Fields
 	if len(columns) == 0 {
 		columns = systemrelationshipfeedbacksignal.Columns
 	}
 	selector := builder.Select(t1.Columns(columns...)...).From(t1)
-	if srfsq.sql != nil {
-		selector = srfsq.sql
+	if _q.sql != nil {
+		selector = _q.sql
 		selector.Select(selector.Columns(columns...)...)
 	}
-	if srfsq.ctx.Unique != nil && *srfsq.ctx.Unique {
+	if _q.ctx.Unique != nil && *_q.ctx.Unique {
 		selector.Distinct()
 	}
-	for _, m := range srfsq.modifiers {
+	for _, m := range _q.modifiers {
 		m(selector)
 	}
-	for _, p := range srfsq.predicates {
+	for _, p := range _q.predicates {
 		p(selector)
 	}
-	for _, p := range srfsq.order {
+	for _, p := range _q.order {
 		p(selector)
 	}
-	if offset := srfsq.ctx.Offset; offset != nil {
+	if offset := _q.ctx.Offset; offset != nil {
 		// limit is mandatory for offset clause. We start
 		// with default value, and override it below if needed.
 		selector.Offset(*offset).Limit(math.MaxInt32)
 	}
-	if limit := srfsq.ctx.Limit; limit != nil {
+	if limit := _q.ctx.Limit; limit != nil {
 		selector.Limit(*limit)
 	}
 	return selector
 }
 
 // Modify adds a query modifier for attaching custom logic to queries.
-func (srfsq *SystemRelationshipFeedbackSignalQuery) Modify(modifiers ...func(s *sql.Selector)) *SystemRelationshipFeedbackSignalSelect {
-	srfsq.modifiers = append(srfsq.modifiers, modifiers...)
-	return srfsq.Select()
+func (_q *SystemRelationshipFeedbackSignalQuery) Modify(modifiers ...func(s *sql.Selector)) *SystemRelationshipFeedbackSignalSelect {
+	_q.modifiers = append(_q.modifiers, modifiers...)
+	return _q.Select()
 }
 
 // SystemRelationshipFeedbackSignalGroupBy is the group-by builder for SystemRelationshipFeedbackSignal entities.
@@ -697,41 +697,41 @@ type SystemRelationshipFeedbackSignalGroupBy struct {
 }
 
 // Aggregate adds the given aggregation functions to the group-by query.
-func (srfsgb *SystemRelationshipFeedbackSignalGroupBy) Aggregate(fns ...AggregateFunc) *SystemRelationshipFeedbackSignalGroupBy {
-	srfsgb.fns = append(srfsgb.fns, fns...)
-	return srfsgb
+func (_g *SystemRelationshipFeedbackSignalGroupBy) Aggregate(fns ...AggregateFunc) *SystemRelationshipFeedbackSignalGroupBy {
+	_g.fns = append(_g.fns, fns...)
+	return _g
 }
 
 // Scan applies the selector query and scans the result into the given value.
-func (srfsgb *SystemRelationshipFeedbackSignalGroupBy) Scan(ctx context.Context, v any) error {
-	ctx = setContextOp(ctx, srfsgb.build.ctx, ent.OpQueryGroupBy)
-	if err := srfsgb.build.prepareQuery(ctx); err != nil {
+func (_g *SystemRelationshipFeedbackSignalGroupBy) Scan(ctx context.Context, v any) error {
+	ctx = setContextOp(ctx, _g.build.ctx, ent.OpQueryGroupBy)
+	if err := _g.build.prepareQuery(ctx); err != nil {
 		return err
 	}
-	return scanWithInterceptors[*SystemRelationshipFeedbackSignalQuery, *SystemRelationshipFeedbackSignalGroupBy](ctx, srfsgb.build, srfsgb, srfsgb.build.inters, v)
+	return scanWithInterceptors[*SystemRelationshipFeedbackSignalQuery, *SystemRelationshipFeedbackSignalGroupBy](ctx, _g.build, _g, _g.build.inters, v)
 }
 
-func (srfsgb *SystemRelationshipFeedbackSignalGroupBy) sqlScan(ctx context.Context, root *SystemRelationshipFeedbackSignalQuery, v any) error {
+func (_g *SystemRelationshipFeedbackSignalGroupBy) sqlScan(ctx context.Context, root *SystemRelationshipFeedbackSignalQuery, v any) error {
 	selector := root.sqlQuery(ctx).Select()
-	aggregation := make([]string, 0, len(srfsgb.fns))
-	for _, fn := range srfsgb.fns {
+	aggregation := make([]string, 0, len(_g.fns))
+	for _, fn := range _g.fns {
 		aggregation = append(aggregation, fn(selector))
 	}
 	if len(selector.SelectedColumns()) == 0 {
-		columns := make([]string, 0, len(*srfsgb.flds)+len(srfsgb.fns))
-		for _, f := range *srfsgb.flds {
+		columns := make([]string, 0, len(*_g.flds)+len(_g.fns))
+		for _, f := range *_g.flds {
 			columns = append(columns, selector.C(f))
 		}
 		columns = append(columns, aggregation...)
 		selector.Select(columns...)
 	}
-	selector.GroupBy(selector.Columns(*srfsgb.flds...)...)
+	selector.GroupBy(selector.Columns(*_g.flds...)...)
 	if err := selector.Err(); err != nil {
 		return err
 	}
 	rows := &sql.Rows{}
 	query, args := selector.Query()
-	if err := srfsgb.build.driver.Query(ctx, query, args, rows); err != nil {
+	if err := _g.build.driver.Query(ctx, query, args, rows); err != nil {
 		return err
 	}
 	defer rows.Close()
@@ -745,27 +745,27 @@ type SystemRelationshipFeedbackSignalSelect struct {
 }
 
 // Aggregate adds the given aggregation functions to the selector query.
-func (srfss *SystemRelationshipFeedbackSignalSelect) Aggregate(fns ...AggregateFunc) *SystemRelationshipFeedbackSignalSelect {
-	srfss.fns = append(srfss.fns, fns...)
-	return srfss
+func (_s *SystemRelationshipFeedbackSignalSelect) Aggregate(fns ...AggregateFunc) *SystemRelationshipFeedbackSignalSelect {
+	_s.fns = append(_s.fns, fns...)
+	return _s
 }
 
 // Scan applies the selector query and scans the result into the given value.
-func (srfss *SystemRelationshipFeedbackSignalSelect) Scan(ctx context.Context, v any) error {
-	ctx = setContextOp(ctx, srfss.ctx, ent.OpQuerySelect)
-	if err := srfss.prepareQuery(ctx); err != nil {
+func (_s *SystemRelationshipFeedbackSignalSelect) Scan(ctx context.Context, v any) error {
+	ctx = setContextOp(ctx, _s.ctx, ent.OpQuerySelect)
+	if err := _s.prepareQuery(ctx); err != nil {
 		return err
 	}
-	return scanWithInterceptors[*SystemRelationshipFeedbackSignalQuery, *SystemRelationshipFeedbackSignalSelect](ctx, srfss.SystemRelationshipFeedbackSignalQuery, srfss, srfss.inters, v)
+	return scanWithInterceptors[*SystemRelationshipFeedbackSignalQuery, *SystemRelationshipFeedbackSignalSelect](ctx, _s.SystemRelationshipFeedbackSignalQuery, _s, _s.inters, v)
 }
 
-func (srfss *SystemRelationshipFeedbackSignalSelect) sqlScan(ctx context.Context, root *SystemRelationshipFeedbackSignalQuery, v any) error {
+func (_s *SystemRelationshipFeedbackSignalSelect) sqlScan(ctx context.Context, root *SystemRelationshipFeedbackSignalQuery, v any) error {
 	selector := root.sqlQuery(ctx)
-	aggregation := make([]string, 0, len(srfss.fns))
-	for _, fn := range srfss.fns {
+	aggregation := make([]string, 0, len(_s.fns))
+	for _, fn := range _s.fns {
 		aggregation = append(aggregation, fn(selector))
 	}
-	switch n := len(*srfss.selector.flds); {
+	switch n := len(*_s.selector.flds); {
 	case n == 0 && len(aggregation) > 0:
 		selector.Select(aggregation...)
 	case n != 0 && len(aggregation) > 0:
@@ -773,7 +773,7 @@ func (srfss *SystemRelationshipFeedbackSignalSelect) sqlScan(ctx context.Context
 	}
 	rows := &sql.Rows{}
 	query, args := selector.Query()
-	if err := srfss.driver.Query(ctx, query, args, rows); err != nil {
+	if err := _s.driver.Query(ctx, query, args, rows); err != nil {
 		return err
 	}
 	defer rows.Close()
@@ -781,7 +781,7 @@ func (srfss *SystemRelationshipFeedbackSignalSelect) sqlScan(ctx context.Context
 }
 
 // Modify adds a query modifier for attaching custom logic to queries.
-func (srfss *SystemRelationshipFeedbackSignalSelect) Modify(modifiers ...func(s *sql.Selector)) *SystemRelationshipFeedbackSignalSelect {
-	srfss.modifiers = append(srfss.modifiers, modifiers...)
-	return srfss
+func (_s *SystemRelationshipFeedbackSignalSelect) Modify(modifiers ...func(s *sql.Selector)) *SystemRelationshipFeedbackSignalSelect {
+	_s.modifiers = append(_s.modifiers, modifiers...)
+	return _s
 }

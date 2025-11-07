@@ -25,55 +25,55 @@ type IncidentDebriefSuggestionUpdate struct {
 }
 
 // Where appends a list predicates to the IncidentDebriefSuggestionUpdate builder.
-func (idsu *IncidentDebriefSuggestionUpdate) Where(ps ...predicate.IncidentDebriefSuggestion) *IncidentDebriefSuggestionUpdate {
-	idsu.mutation.Where(ps...)
-	return idsu
+func (_u *IncidentDebriefSuggestionUpdate) Where(ps ...predicate.IncidentDebriefSuggestion) *IncidentDebriefSuggestionUpdate {
+	_u.mutation.Where(ps...)
+	return _u
 }
 
 // SetContent sets the "content" field.
-func (idsu *IncidentDebriefSuggestionUpdate) SetContent(s string) *IncidentDebriefSuggestionUpdate {
-	idsu.mutation.SetContent(s)
-	return idsu
+func (_u *IncidentDebriefSuggestionUpdate) SetContent(v string) *IncidentDebriefSuggestionUpdate {
+	_u.mutation.SetContent(v)
+	return _u
 }
 
 // SetNillableContent sets the "content" field if the given value is not nil.
-func (idsu *IncidentDebriefSuggestionUpdate) SetNillableContent(s *string) *IncidentDebriefSuggestionUpdate {
-	if s != nil {
-		idsu.SetContent(*s)
+func (_u *IncidentDebriefSuggestionUpdate) SetNillableContent(v *string) *IncidentDebriefSuggestionUpdate {
+	if v != nil {
+		_u.SetContent(*v)
 	}
-	return idsu
+	return _u
 }
 
 // SetDebriefID sets the "debrief" edge to the IncidentDebrief entity by ID.
-func (idsu *IncidentDebriefSuggestionUpdate) SetDebriefID(id uuid.UUID) *IncidentDebriefSuggestionUpdate {
-	idsu.mutation.SetDebriefID(id)
-	return idsu
+func (_u *IncidentDebriefSuggestionUpdate) SetDebriefID(id uuid.UUID) *IncidentDebriefSuggestionUpdate {
+	_u.mutation.SetDebriefID(id)
+	return _u
 }
 
 // SetDebrief sets the "debrief" edge to the IncidentDebrief entity.
-func (idsu *IncidentDebriefSuggestionUpdate) SetDebrief(i *IncidentDebrief) *IncidentDebriefSuggestionUpdate {
-	return idsu.SetDebriefID(i.ID)
+func (_u *IncidentDebriefSuggestionUpdate) SetDebrief(v *IncidentDebrief) *IncidentDebriefSuggestionUpdate {
+	return _u.SetDebriefID(v.ID)
 }
 
 // Mutation returns the IncidentDebriefSuggestionMutation object of the builder.
-func (idsu *IncidentDebriefSuggestionUpdate) Mutation() *IncidentDebriefSuggestionMutation {
-	return idsu.mutation
+func (_u *IncidentDebriefSuggestionUpdate) Mutation() *IncidentDebriefSuggestionMutation {
+	return _u.mutation
 }
 
 // ClearDebrief clears the "debrief" edge to the IncidentDebrief entity.
-func (idsu *IncidentDebriefSuggestionUpdate) ClearDebrief() *IncidentDebriefSuggestionUpdate {
-	idsu.mutation.ClearDebrief()
-	return idsu
+func (_u *IncidentDebriefSuggestionUpdate) ClearDebrief() *IncidentDebriefSuggestionUpdate {
+	_u.mutation.ClearDebrief()
+	return _u
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
-func (idsu *IncidentDebriefSuggestionUpdate) Save(ctx context.Context) (int, error) {
-	return withHooks(ctx, idsu.sqlSave, idsu.mutation, idsu.hooks)
+func (_u *IncidentDebriefSuggestionUpdate) Save(ctx context.Context) (int, error) {
+	return withHooks(ctx, _u.sqlSave, _u.mutation, _u.hooks)
 }
 
 // SaveX is like Save, but panics if an error occurs.
-func (idsu *IncidentDebriefSuggestionUpdate) SaveX(ctx context.Context) int {
-	affected, err := idsu.Save(ctx)
+func (_u *IncidentDebriefSuggestionUpdate) SaveX(ctx context.Context) int {
+	affected, err := _u.Save(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -81,51 +81,51 @@ func (idsu *IncidentDebriefSuggestionUpdate) SaveX(ctx context.Context) int {
 }
 
 // Exec executes the query.
-func (idsu *IncidentDebriefSuggestionUpdate) Exec(ctx context.Context) error {
-	_, err := idsu.Save(ctx)
+func (_u *IncidentDebriefSuggestionUpdate) Exec(ctx context.Context) error {
+	_, err := _u.Save(ctx)
 	return err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (idsu *IncidentDebriefSuggestionUpdate) ExecX(ctx context.Context) {
-	if err := idsu.Exec(ctx); err != nil {
+func (_u *IncidentDebriefSuggestionUpdate) ExecX(ctx context.Context) {
+	if err := _u.Exec(ctx); err != nil {
 		panic(err)
 	}
 }
 
 // check runs all checks and user-defined validators on the builder.
-func (idsu *IncidentDebriefSuggestionUpdate) check() error {
-	if idsu.mutation.TenantCleared() && len(idsu.mutation.TenantIDs()) > 0 {
+func (_u *IncidentDebriefSuggestionUpdate) check() error {
+	if _u.mutation.TenantCleared() && len(_u.mutation.TenantIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "IncidentDebriefSuggestion.tenant"`)
 	}
-	if idsu.mutation.DebriefCleared() && len(idsu.mutation.DebriefIDs()) > 0 {
+	if _u.mutation.DebriefCleared() && len(_u.mutation.DebriefIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "IncidentDebriefSuggestion.debrief"`)
 	}
 	return nil
 }
 
 // Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
-func (idsu *IncidentDebriefSuggestionUpdate) Modify(modifiers ...func(u *sql.UpdateBuilder)) *IncidentDebriefSuggestionUpdate {
-	idsu.modifiers = append(idsu.modifiers, modifiers...)
-	return idsu
+func (_u *IncidentDebriefSuggestionUpdate) Modify(modifiers ...func(u *sql.UpdateBuilder)) *IncidentDebriefSuggestionUpdate {
+	_u.modifiers = append(_u.modifiers, modifiers...)
+	return _u
 }
 
-func (idsu *IncidentDebriefSuggestionUpdate) sqlSave(ctx context.Context) (n int, err error) {
-	if err := idsu.check(); err != nil {
-		return n, err
+func (_u *IncidentDebriefSuggestionUpdate) sqlSave(ctx context.Context) (_node int, err error) {
+	if err := _u.check(); err != nil {
+		return _node, err
 	}
 	_spec := sqlgraph.NewUpdateSpec(incidentdebriefsuggestion.Table, incidentdebriefsuggestion.Columns, sqlgraph.NewFieldSpec(incidentdebriefsuggestion.FieldID, field.TypeUUID))
-	if ps := idsu.mutation.predicates; len(ps) > 0 {
+	if ps := _u.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {
 				ps[i](selector)
 			}
 		}
 	}
-	if value, ok := idsu.mutation.Content(); ok {
+	if value, ok := _u.mutation.Content(); ok {
 		_spec.SetField(incidentdebriefsuggestion.FieldContent, field.TypeString, value)
 	}
-	if idsu.mutation.DebriefCleared() {
+	if _u.mutation.DebriefCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: true,
@@ -138,7 +138,7 @@ func (idsu *IncidentDebriefSuggestionUpdate) sqlSave(ctx context.Context) (n int
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := idsu.mutation.DebriefIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.DebriefIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: true,
@@ -154,8 +154,8 @@ func (idsu *IncidentDebriefSuggestionUpdate) sqlSave(ctx context.Context) (n int
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	_spec.AddModifiers(idsu.modifiers...)
-	if n, err = sqlgraph.UpdateNodes(ctx, idsu.driver, _spec); err != nil {
+	_spec.AddModifiers(_u.modifiers...)
+	if _node, err = sqlgraph.UpdateNodes(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{incidentdebriefsuggestion.Label}
 		} else if sqlgraph.IsConstraintError(err) {
@@ -163,8 +163,8 @@ func (idsu *IncidentDebriefSuggestionUpdate) sqlSave(ctx context.Context) (n int
 		}
 		return 0, err
 	}
-	idsu.mutation.done = true
-	return n, nil
+	_u.mutation.done = true
+	return _node, nil
 }
 
 // IncidentDebriefSuggestionUpdateOne is the builder for updating a single IncidentDebriefSuggestion entity.
@@ -177,62 +177,62 @@ type IncidentDebriefSuggestionUpdateOne struct {
 }
 
 // SetContent sets the "content" field.
-func (idsuo *IncidentDebriefSuggestionUpdateOne) SetContent(s string) *IncidentDebriefSuggestionUpdateOne {
-	idsuo.mutation.SetContent(s)
-	return idsuo
+func (_u *IncidentDebriefSuggestionUpdateOne) SetContent(v string) *IncidentDebriefSuggestionUpdateOne {
+	_u.mutation.SetContent(v)
+	return _u
 }
 
 // SetNillableContent sets the "content" field if the given value is not nil.
-func (idsuo *IncidentDebriefSuggestionUpdateOne) SetNillableContent(s *string) *IncidentDebriefSuggestionUpdateOne {
-	if s != nil {
-		idsuo.SetContent(*s)
+func (_u *IncidentDebriefSuggestionUpdateOne) SetNillableContent(v *string) *IncidentDebriefSuggestionUpdateOne {
+	if v != nil {
+		_u.SetContent(*v)
 	}
-	return idsuo
+	return _u
 }
 
 // SetDebriefID sets the "debrief" edge to the IncidentDebrief entity by ID.
-func (idsuo *IncidentDebriefSuggestionUpdateOne) SetDebriefID(id uuid.UUID) *IncidentDebriefSuggestionUpdateOne {
-	idsuo.mutation.SetDebriefID(id)
-	return idsuo
+func (_u *IncidentDebriefSuggestionUpdateOne) SetDebriefID(id uuid.UUID) *IncidentDebriefSuggestionUpdateOne {
+	_u.mutation.SetDebriefID(id)
+	return _u
 }
 
 // SetDebrief sets the "debrief" edge to the IncidentDebrief entity.
-func (idsuo *IncidentDebriefSuggestionUpdateOne) SetDebrief(i *IncidentDebrief) *IncidentDebriefSuggestionUpdateOne {
-	return idsuo.SetDebriefID(i.ID)
+func (_u *IncidentDebriefSuggestionUpdateOne) SetDebrief(v *IncidentDebrief) *IncidentDebriefSuggestionUpdateOne {
+	return _u.SetDebriefID(v.ID)
 }
 
 // Mutation returns the IncidentDebriefSuggestionMutation object of the builder.
-func (idsuo *IncidentDebriefSuggestionUpdateOne) Mutation() *IncidentDebriefSuggestionMutation {
-	return idsuo.mutation
+func (_u *IncidentDebriefSuggestionUpdateOne) Mutation() *IncidentDebriefSuggestionMutation {
+	return _u.mutation
 }
 
 // ClearDebrief clears the "debrief" edge to the IncidentDebrief entity.
-func (idsuo *IncidentDebriefSuggestionUpdateOne) ClearDebrief() *IncidentDebriefSuggestionUpdateOne {
-	idsuo.mutation.ClearDebrief()
-	return idsuo
+func (_u *IncidentDebriefSuggestionUpdateOne) ClearDebrief() *IncidentDebriefSuggestionUpdateOne {
+	_u.mutation.ClearDebrief()
+	return _u
 }
 
 // Where appends a list predicates to the IncidentDebriefSuggestionUpdate builder.
-func (idsuo *IncidentDebriefSuggestionUpdateOne) Where(ps ...predicate.IncidentDebriefSuggestion) *IncidentDebriefSuggestionUpdateOne {
-	idsuo.mutation.Where(ps...)
-	return idsuo
+func (_u *IncidentDebriefSuggestionUpdateOne) Where(ps ...predicate.IncidentDebriefSuggestion) *IncidentDebriefSuggestionUpdateOne {
+	_u.mutation.Where(ps...)
+	return _u
 }
 
 // Select allows selecting one or more fields (columns) of the returned entity.
 // The default is selecting all fields defined in the entity schema.
-func (idsuo *IncidentDebriefSuggestionUpdateOne) Select(field string, fields ...string) *IncidentDebriefSuggestionUpdateOne {
-	idsuo.fields = append([]string{field}, fields...)
-	return idsuo
+func (_u *IncidentDebriefSuggestionUpdateOne) Select(field string, fields ...string) *IncidentDebriefSuggestionUpdateOne {
+	_u.fields = append([]string{field}, fields...)
+	return _u
 }
 
 // Save executes the query and returns the updated IncidentDebriefSuggestion entity.
-func (idsuo *IncidentDebriefSuggestionUpdateOne) Save(ctx context.Context) (*IncidentDebriefSuggestion, error) {
-	return withHooks(ctx, idsuo.sqlSave, idsuo.mutation, idsuo.hooks)
+func (_u *IncidentDebriefSuggestionUpdateOne) Save(ctx context.Context) (*IncidentDebriefSuggestion, error) {
+	return withHooks(ctx, _u.sqlSave, _u.mutation, _u.hooks)
 }
 
 // SaveX is like Save, but panics if an error occurs.
-func (idsuo *IncidentDebriefSuggestionUpdateOne) SaveX(ctx context.Context) *IncidentDebriefSuggestion {
-	node, err := idsuo.Save(ctx)
+func (_u *IncidentDebriefSuggestionUpdateOne) SaveX(ctx context.Context) *IncidentDebriefSuggestion {
+	node, err := _u.Save(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -240,46 +240,46 @@ func (idsuo *IncidentDebriefSuggestionUpdateOne) SaveX(ctx context.Context) *Inc
 }
 
 // Exec executes the query on the entity.
-func (idsuo *IncidentDebriefSuggestionUpdateOne) Exec(ctx context.Context) error {
-	_, err := idsuo.Save(ctx)
+func (_u *IncidentDebriefSuggestionUpdateOne) Exec(ctx context.Context) error {
+	_, err := _u.Save(ctx)
 	return err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (idsuo *IncidentDebriefSuggestionUpdateOne) ExecX(ctx context.Context) {
-	if err := idsuo.Exec(ctx); err != nil {
+func (_u *IncidentDebriefSuggestionUpdateOne) ExecX(ctx context.Context) {
+	if err := _u.Exec(ctx); err != nil {
 		panic(err)
 	}
 }
 
 // check runs all checks and user-defined validators on the builder.
-func (idsuo *IncidentDebriefSuggestionUpdateOne) check() error {
-	if idsuo.mutation.TenantCleared() && len(idsuo.mutation.TenantIDs()) > 0 {
+func (_u *IncidentDebriefSuggestionUpdateOne) check() error {
+	if _u.mutation.TenantCleared() && len(_u.mutation.TenantIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "IncidentDebriefSuggestion.tenant"`)
 	}
-	if idsuo.mutation.DebriefCleared() && len(idsuo.mutation.DebriefIDs()) > 0 {
+	if _u.mutation.DebriefCleared() && len(_u.mutation.DebriefIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "IncidentDebriefSuggestion.debrief"`)
 	}
 	return nil
 }
 
 // Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
-func (idsuo *IncidentDebriefSuggestionUpdateOne) Modify(modifiers ...func(u *sql.UpdateBuilder)) *IncidentDebriefSuggestionUpdateOne {
-	idsuo.modifiers = append(idsuo.modifiers, modifiers...)
-	return idsuo
+func (_u *IncidentDebriefSuggestionUpdateOne) Modify(modifiers ...func(u *sql.UpdateBuilder)) *IncidentDebriefSuggestionUpdateOne {
+	_u.modifiers = append(_u.modifiers, modifiers...)
+	return _u
 }
 
-func (idsuo *IncidentDebriefSuggestionUpdateOne) sqlSave(ctx context.Context) (_node *IncidentDebriefSuggestion, err error) {
-	if err := idsuo.check(); err != nil {
+func (_u *IncidentDebriefSuggestionUpdateOne) sqlSave(ctx context.Context) (_node *IncidentDebriefSuggestion, err error) {
+	if err := _u.check(); err != nil {
 		return _node, err
 	}
 	_spec := sqlgraph.NewUpdateSpec(incidentdebriefsuggestion.Table, incidentdebriefsuggestion.Columns, sqlgraph.NewFieldSpec(incidentdebriefsuggestion.FieldID, field.TypeUUID))
-	id, ok := idsuo.mutation.ID()
+	id, ok := _u.mutation.ID()
 	if !ok {
 		return nil, &ValidationError{Name: "id", err: errors.New(`ent: missing "IncidentDebriefSuggestion.id" for update`)}
 	}
 	_spec.Node.ID.Value = id
-	if fields := idsuo.fields; len(fields) > 0 {
+	if fields := _u.fields; len(fields) > 0 {
 		_spec.Node.Columns = make([]string, 0, len(fields))
 		_spec.Node.Columns = append(_spec.Node.Columns, incidentdebriefsuggestion.FieldID)
 		for _, f := range fields {
@@ -291,17 +291,17 @@ func (idsuo *IncidentDebriefSuggestionUpdateOne) sqlSave(ctx context.Context) (_
 			}
 		}
 	}
-	if ps := idsuo.mutation.predicates; len(ps) > 0 {
+	if ps := _u.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {
 				ps[i](selector)
 			}
 		}
 	}
-	if value, ok := idsuo.mutation.Content(); ok {
+	if value, ok := _u.mutation.Content(); ok {
 		_spec.SetField(incidentdebriefsuggestion.FieldContent, field.TypeString, value)
 	}
-	if idsuo.mutation.DebriefCleared() {
+	if _u.mutation.DebriefCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: true,
@@ -314,7 +314,7 @@ func (idsuo *IncidentDebriefSuggestionUpdateOne) sqlSave(ctx context.Context) (_
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := idsuo.mutation.DebriefIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.DebriefIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: true,
@@ -330,11 +330,11 @@ func (idsuo *IncidentDebriefSuggestionUpdateOne) sqlSave(ctx context.Context) (_
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	_spec.AddModifiers(idsuo.modifiers...)
-	_node = &IncidentDebriefSuggestion{config: idsuo.config}
+	_spec.AddModifiers(_u.modifiers...)
+	_node = &IncidentDebriefSuggestion{config: _u.config}
 	_spec.Assign = _node.assignValues
 	_spec.ScanValues = _node.scanValues
-	if err = sqlgraph.UpdateNode(ctx, idsuo.driver, _spec); err != nil {
+	if err = sqlgraph.UpdateNode(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{incidentdebriefsuggestion.Label}
 		} else if sqlgraph.IsConstraintError(err) {
@@ -342,6 +342,6 @@ func (idsuo *IncidentDebriefSuggestionUpdateOne) sqlSave(ctx context.Context) (_
 		}
 		return nil, err
 	}
-	idsuo.mutation.done = true
+	_u.mutation.done = true
 	return _node, nil
 }

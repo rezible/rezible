@@ -20,56 +20,56 @@ type IncidentLinkDelete struct {
 }
 
 // Where appends a list predicates to the IncidentLinkDelete builder.
-func (ild *IncidentLinkDelete) Where(ps ...predicate.IncidentLink) *IncidentLinkDelete {
-	ild.mutation.Where(ps...)
-	return ild
+func (_d *IncidentLinkDelete) Where(ps ...predicate.IncidentLink) *IncidentLinkDelete {
+	_d.mutation.Where(ps...)
+	return _d
 }
 
 // Exec executes the deletion query and returns how many vertices were deleted.
-func (ild *IncidentLinkDelete) Exec(ctx context.Context) (int, error) {
-	return withHooks(ctx, ild.sqlExec, ild.mutation, ild.hooks)
+func (_d *IncidentLinkDelete) Exec(ctx context.Context) (int, error) {
+	return withHooks(ctx, _d.sqlExec, _d.mutation, _d.hooks)
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (ild *IncidentLinkDelete) ExecX(ctx context.Context) int {
-	n, err := ild.Exec(ctx)
+func (_d *IncidentLinkDelete) ExecX(ctx context.Context) int {
+	n, err := _d.Exec(ctx)
 	if err != nil {
 		panic(err)
 	}
 	return n
 }
 
-func (ild *IncidentLinkDelete) sqlExec(ctx context.Context) (int, error) {
+func (_d *IncidentLinkDelete) sqlExec(ctx context.Context) (int, error) {
 	_spec := sqlgraph.NewDeleteSpec(incidentlink.Table, sqlgraph.NewFieldSpec(incidentlink.FieldID, field.TypeInt))
-	if ps := ild.mutation.predicates; len(ps) > 0 {
+	if ps := _d.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {
 				ps[i](selector)
 			}
 		}
 	}
-	affected, err := sqlgraph.DeleteNodes(ctx, ild.driver, _spec)
+	affected, err := sqlgraph.DeleteNodes(ctx, _d.driver, _spec)
 	if err != nil && sqlgraph.IsConstraintError(err) {
 		err = &ConstraintError{msg: err.Error(), wrap: err}
 	}
-	ild.mutation.done = true
+	_d.mutation.done = true
 	return affected, err
 }
 
 // IncidentLinkDeleteOne is the builder for deleting a single IncidentLink entity.
 type IncidentLinkDeleteOne struct {
-	ild *IncidentLinkDelete
+	_d *IncidentLinkDelete
 }
 
 // Where appends a list predicates to the IncidentLinkDelete builder.
-func (ildo *IncidentLinkDeleteOne) Where(ps ...predicate.IncidentLink) *IncidentLinkDeleteOne {
-	ildo.ild.mutation.Where(ps...)
-	return ildo
+func (_d *IncidentLinkDeleteOne) Where(ps ...predicate.IncidentLink) *IncidentLinkDeleteOne {
+	_d._d.mutation.Where(ps...)
+	return _d
 }
 
 // Exec executes the deletion query.
-func (ildo *IncidentLinkDeleteOne) Exec(ctx context.Context) error {
-	n, err := ildo.ild.Exec(ctx)
+func (_d *IncidentLinkDeleteOne) Exec(ctx context.Context) error {
+	n, err := _d._d.Exec(ctx)
 	switch {
 	case err != nil:
 		return err
@@ -81,8 +81,8 @@ func (ildo *IncidentLinkDeleteOne) Exec(ctx context.Context) error {
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (ildo *IncidentLinkDeleteOne) ExecX(ctx context.Context) {
-	if err := ildo.Exec(ctx); err != nil {
+func (_d *IncidentLinkDeleteOne) ExecX(ctx context.Context) {
+	if err := _d.Exec(ctx); err != nil {
 		panic(err)
 	}
 }

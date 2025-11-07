@@ -25,49 +25,49 @@ type OncallRosterMetricsUpdate struct {
 }
 
 // Where appends a list predicates to the OncallRosterMetricsUpdate builder.
-func (ormu *OncallRosterMetricsUpdate) Where(ps ...predicate.OncallRosterMetrics) *OncallRosterMetricsUpdate {
-	ormu.mutation.Where(ps...)
-	return ormu
+func (_u *OncallRosterMetricsUpdate) Where(ps ...predicate.OncallRosterMetrics) *OncallRosterMetricsUpdate {
+	_u.mutation.Where(ps...)
+	return _u
 }
 
 // SetRosterID sets the "roster_id" field.
-func (ormu *OncallRosterMetricsUpdate) SetRosterID(u uuid.UUID) *OncallRosterMetricsUpdate {
-	ormu.mutation.SetRosterID(u)
-	return ormu
+func (_u *OncallRosterMetricsUpdate) SetRosterID(v uuid.UUID) *OncallRosterMetricsUpdate {
+	_u.mutation.SetRosterID(v)
+	return _u
 }
 
 // SetNillableRosterID sets the "roster_id" field if the given value is not nil.
-func (ormu *OncallRosterMetricsUpdate) SetNillableRosterID(u *uuid.UUID) *OncallRosterMetricsUpdate {
-	if u != nil {
-		ormu.SetRosterID(*u)
+func (_u *OncallRosterMetricsUpdate) SetNillableRosterID(v *uuid.UUID) *OncallRosterMetricsUpdate {
+	if v != nil {
+		_u.SetRosterID(*v)
 	}
-	return ormu
+	return _u
 }
 
 // SetRoster sets the "roster" edge to the OncallRoster entity.
-func (ormu *OncallRosterMetricsUpdate) SetRoster(o *OncallRoster) *OncallRosterMetricsUpdate {
-	return ormu.SetRosterID(o.ID)
+func (_u *OncallRosterMetricsUpdate) SetRoster(v *OncallRoster) *OncallRosterMetricsUpdate {
+	return _u.SetRosterID(v.ID)
 }
 
 // Mutation returns the OncallRosterMetricsMutation object of the builder.
-func (ormu *OncallRosterMetricsUpdate) Mutation() *OncallRosterMetricsMutation {
-	return ormu.mutation
+func (_u *OncallRosterMetricsUpdate) Mutation() *OncallRosterMetricsMutation {
+	return _u.mutation
 }
 
 // ClearRoster clears the "roster" edge to the OncallRoster entity.
-func (ormu *OncallRosterMetricsUpdate) ClearRoster() *OncallRosterMetricsUpdate {
-	ormu.mutation.ClearRoster()
-	return ormu
+func (_u *OncallRosterMetricsUpdate) ClearRoster() *OncallRosterMetricsUpdate {
+	_u.mutation.ClearRoster()
+	return _u
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
-func (ormu *OncallRosterMetricsUpdate) Save(ctx context.Context) (int, error) {
-	return withHooks(ctx, ormu.sqlSave, ormu.mutation, ormu.hooks)
+func (_u *OncallRosterMetricsUpdate) Save(ctx context.Context) (int, error) {
+	return withHooks(ctx, _u.sqlSave, _u.mutation, _u.hooks)
 }
 
 // SaveX is like Save, but panics if an error occurs.
-func (ormu *OncallRosterMetricsUpdate) SaveX(ctx context.Context) int {
-	affected, err := ormu.Save(ctx)
+func (_u *OncallRosterMetricsUpdate) SaveX(ctx context.Context) int {
+	affected, err := _u.Save(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -75,48 +75,48 @@ func (ormu *OncallRosterMetricsUpdate) SaveX(ctx context.Context) int {
 }
 
 // Exec executes the query.
-func (ormu *OncallRosterMetricsUpdate) Exec(ctx context.Context) error {
-	_, err := ormu.Save(ctx)
+func (_u *OncallRosterMetricsUpdate) Exec(ctx context.Context) error {
+	_, err := _u.Save(ctx)
 	return err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (ormu *OncallRosterMetricsUpdate) ExecX(ctx context.Context) {
-	if err := ormu.Exec(ctx); err != nil {
+func (_u *OncallRosterMetricsUpdate) ExecX(ctx context.Context) {
+	if err := _u.Exec(ctx); err != nil {
 		panic(err)
 	}
 }
 
 // check runs all checks and user-defined validators on the builder.
-func (ormu *OncallRosterMetricsUpdate) check() error {
-	if ormu.mutation.TenantCleared() && len(ormu.mutation.TenantIDs()) > 0 {
+func (_u *OncallRosterMetricsUpdate) check() error {
+	if _u.mutation.TenantCleared() && len(_u.mutation.TenantIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "OncallRosterMetrics.tenant"`)
 	}
-	if ormu.mutation.RosterCleared() && len(ormu.mutation.RosterIDs()) > 0 {
+	if _u.mutation.RosterCleared() && len(_u.mutation.RosterIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "OncallRosterMetrics.roster"`)
 	}
 	return nil
 }
 
 // Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
-func (ormu *OncallRosterMetricsUpdate) Modify(modifiers ...func(u *sql.UpdateBuilder)) *OncallRosterMetricsUpdate {
-	ormu.modifiers = append(ormu.modifiers, modifiers...)
-	return ormu
+func (_u *OncallRosterMetricsUpdate) Modify(modifiers ...func(u *sql.UpdateBuilder)) *OncallRosterMetricsUpdate {
+	_u.modifiers = append(_u.modifiers, modifiers...)
+	return _u
 }
 
-func (ormu *OncallRosterMetricsUpdate) sqlSave(ctx context.Context) (n int, err error) {
-	if err := ormu.check(); err != nil {
-		return n, err
+func (_u *OncallRosterMetricsUpdate) sqlSave(ctx context.Context) (_node int, err error) {
+	if err := _u.check(); err != nil {
+		return _node, err
 	}
 	_spec := sqlgraph.NewUpdateSpec(oncallrostermetrics.Table, oncallrostermetrics.Columns, sqlgraph.NewFieldSpec(oncallrostermetrics.FieldID, field.TypeUUID))
-	if ps := ormu.mutation.predicates; len(ps) > 0 {
+	if ps := _u.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {
 				ps[i](selector)
 			}
 		}
 	}
-	if ormu.mutation.RosterCleared() {
+	if _u.mutation.RosterCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
@@ -129,7 +129,7 @@ func (ormu *OncallRosterMetricsUpdate) sqlSave(ctx context.Context) (n int, err 
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := ormu.mutation.RosterIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.RosterIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
@@ -145,8 +145,8 @@ func (ormu *OncallRosterMetricsUpdate) sqlSave(ctx context.Context) (n int, err 
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	_spec.AddModifiers(ormu.modifiers...)
-	if n, err = sqlgraph.UpdateNodes(ctx, ormu.driver, _spec); err != nil {
+	_spec.AddModifiers(_u.modifiers...)
+	if _node, err = sqlgraph.UpdateNodes(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{oncallrostermetrics.Label}
 		} else if sqlgraph.IsConstraintError(err) {
@@ -154,8 +154,8 @@ func (ormu *OncallRosterMetricsUpdate) sqlSave(ctx context.Context) (n int, err 
 		}
 		return 0, err
 	}
-	ormu.mutation.done = true
-	return n, nil
+	_u.mutation.done = true
+	return _node, nil
 }
 
 // OncallRosterMetricsUpdateOne is the builder for updating a single OncallRosterMetrics entity.
@@ -168,56 +168,56 @@ type OncallRosterMetricsUpdateOne struct {
 }
 
 // SetRosterID sets the "roster_id" field.
-func (ormuo *OncallRosterMetricsUpdateOne) SetRosterID(u uuid.UUID) *OncallRosterMetricsUpdateOne {
-	ormuo.mutation.SetRosterID(u)
-	return ormuo
+func (_u *OncallRosterMetricsUpdateOne) SetRosterID(v uuid.UUID) *OncallRosterMetricsUpdateOne {
+	_u.mutation.SetRosterID(v)
+	return _u
 }
 
 // SetNillableRosterID sets the "roster_id" field if the given value is not nil.
-func (ormuo *OncallRosterMetricsUpdateOne) SetNillableRosterID(u *uuid.UUID) *OncallRosterMetricsUpdateOne {
-	if u != nil {
-		ormuo.SetRosterID(*u)
+func (_u *OncallRosterMetricsUpdateOne) SetNillableRosterID(v *uuid.UUID) *OncallRosterMetricsUpdateOne {
+	if v != nil {
+		_u.SetRosterID(*v)
 	}
-	return ormuo
+	return _u
 }
 
 // SetRoster sets the "roster" edge to the OncallRoster entity.
-func (ormuo *OncallRosterMetricsUpdateOne) SetRoster(o *OncallRoster) *OncallRosterMetricsUpdateOne {
-	return ormuo.SetRosterID(o.ID)
+func (_u *OncallRosterMetricsUpdateOne) SetRoster(v *OncallRoster) *OncallRosterMetricsUpdateOne {
+	return _u.SetRosterID(v.ID)
 }
 
 // Mutation returns the OncallRosterMetricsMutation object of the builder.
-func (ormuo *OncallRosterMetricsUpdateOne) Mutation() *OncallRosterMetricsMutation {
-	return ormuo.mutation
+func (_u *OncallRosterMetricsUpdateOne) Mutation() *OncallRosterMetricsMutation {
+	return _u.mutation
 }
 
 // ClearRoster clears the "roster" edge to the OncallRoster entity.
-func (ormuo *OncallRosterMetricsUpdateOne) ClearRoster() *OncallRosterMetricsUpdateOne {
-	ormuo.mutation.ClearRoster()
-	return ormuo
+func (_u *OncallRosterMetricsUpdateOne) ClearRoster() *OncallRosterMetricsUpdateOne {
+	_u.mutation.ClearRoster()
+	return _u
 }
 
 // Where appends a list predicates to the OncallRosterMetricsUpdate builder.
-func (ormuo *OncallRosterMetricsUpdateOne) Where(ps ...predicate.OncallRosterMetrics) *OncallRosterMetricsUpdateOne {
-	ormuo.mutation.Where(ps...)
-	return ormuo
+func (_u *OncallRosterMetricsUpdateOne) Where(ps ...predicate.OncallRosterMetrics) *OncallRosterMetricsUpdateOne {
+	_u.mutation.Where(ps...)
+	return _u
 }
 
 // Select allows selecting one or more fields (columns) of the returned entity.
 // The default is selecting all fields defined in the entity schema.
-func (ormuo *OncallRosterMetricsUpdateOne) Select(field string, fields ...string) *OncallRosterMetricsUpdateOne {
-	ormuo.fields = append([]string{field}, fields...)
-	return ormuo
+func (_u *OncallRosterMetricsUpdateOne) Select(field string, fields ...string) *OncallRosterMetricsUpdateOne {
+	_u.fields = append([]string{field}, fields...)
+	return _u
 }
 
 // Save executes the query and returns the updated OncallRosterMetrics entity.
-func (ormuo *OncallRosterMetricsUpdateOne) Save(ctx context.Context) (*OncallRosterMetrics, error) {
-	return withHooks(ctx, ormuo.sqlSave, ormuo.mutation, ormuo.hooks)
+func (_u *OncallRosterMetricsUpdateOne) Save(ctx context.Context) (*OncallRosterMetrics, error) {
+	return withHooks(ctx, _u.sqlSave, _u.mutation, _u.hooks)
 }
 
 // SaveX is like Save, but panics if an error occurs.
-func (ormuo *OncallRosterMetricsUpdateOne) SaveX(ctx context.Context) *OncallRosterMetrics {
-	node, err := ormuo.Save(ctx)
+func (_u *OncallRosterMetricsUpdateOne) SaveX(ctx context.Context) *OncallRosterMetrics {
+	node, err := _u.Save(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -225,46 +225,46 @@ func (ormuo *OncallRosterMetricsUpdateOne) SaveX(ctx context.Context) *OncallRos
 }
 
 // Exec executes the query on the entity.
-func (ormuo *OncallRosterMetricsUpdateOne) Exec(ctx context.Context) error {
-	_, err := ormuo.Save(ctx)
+func (_u *OncallRosterMetricsUpdateOne) Exec(ctx context.Context) error {
+	_, err := _u.Save(ctx)
 	return err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (ormuo *OncallRosterMetricsUpdateOne) ExecX(ctx context.Context) {
-	if err := ormuo.Exec(ctx); err != nil {
+func (_u *OncallRosterMetricsUpdateOne) ExecX(ctx context.Context) {
+	if err := _u.Exec(ctx); err != nil {
 		panic(err)
 	}
 }
 
 // check runs all checks and user-defined validators on the builder.
-func (ormuo *OncallRosterMetricsUpdateOne) check() error {
-	if ormuo.mutation.TenantCleared() && len(ormuo.mutation.TenantIDs()) > 0 {
+func (_u *OncallRosterMetricsUpdateOne) check() error {
+	if _u.mutation.TenantCleared() && len(_u.mutation.TenantIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "OncallRosterMetrics.tenant"`)
 	}
-	if ormuo.mutation.RosterCleared() && len(ormuo.mutation.RosterIDs()) > 0 {
+	if _u.mutation.RosterCleared() && len(_u.mutation.RosterIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "OncallRosterMetrics.roster"`)
 	}
 	return nil
 }
 
 // Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
-func (ormuo *OncallRosterMetricsUpdateOne) Modify(modifiers ...func(u *sql.UpdateBuilder)) *OncallRosterMetricsUpdateOne {
-	ormuo.modifiers = append(ormuo.modifiers, modifiers...)
-	return ormuo
+func (_u *OncallRosterMetricsUpdateOne) Modify(modifiers ...func(u *sql.UpdateBuilder)) *OncallRosterMetricsUpdateOne {
+	_u.modifiers = append(_u.modifiers, modifiers...)
+	return _u
 }
 
-func (ormuo *OncallRosterMetricsUpdateOne) sqlSave(ctx context.Context) (_node *OncallRosterMetrics, err error) {
-	if err := ormuo.check(); err != nil {
+func (_u *OncallRosterMetricsUpdateOne) sqlSave(ctx context.Context) (_node *OncallRosterMetrics, err error) {
+	if err := _u.check(); err != nil {
 		return _node, err
 	}
 	_spec := sqlgraph.NewUpdateSpec(oncallrostermetrics.Table, oncallrostermetrics.Columns, sqlgraph.NewFieldSpec(oncallrostermetrics.FieldID, field.TypeUUID))
-	id, ok := ormuo.mutation.ID()
+	id, ok := _u.mutation.ID()
 	if !ok {
 		return nil, &ValidationError{Name: "id", err: errors.New(`ent: missing "OncallRosterMetrics.id" for update`)}
 	}
 	_spec.Node.ID.Value = id
-	if fields := ormuo.fields; len(fields) > 0 {
+	if fields := _u.fields; len(fields) > 0 {
 		_spec.Node.Columns = make([]string, 0, len(fields))
 		_spec.Node.Columns = append(_spec.Node.Columns, oncallrostermetrics.FieldID)
 		for _, f := range fields {
@@ -276,14 +276,14 @@ func (ormuo *OncallRosterMetricsUpdateOne) sqlSave(ctx context.Context) (_node *
 			}
 		}
 	}
-	if ps := ormuo.mutation.predicates; len(ps) > 0 {
+	if ps := _u.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {
 				ps[i](selector)
 			}
 		}
 	}
-	if ormuo.mutation.RosterCleared() {
+	if _u.mutation.RosterCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
@@ -296,7 +296,7 @@ func (ormuo *OncallRosterMetricsUpdateOne) sqlSave(ctx context.Context) (_node *
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := ormuo.mutation.RosterIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.RosterIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
@@ -312,11 +312,11 @@ func (ormuo *OncallRosterMetricsUpdateOne) sqlSave(ctx context.Context) (_node *
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	_spec.AddModifiers(ormuo.modifiers...)
-	_node = &OncallRosterMetrics{config: ormuo.config}
+	_spec.AddModifiers(_u.modifiers...)
+	_node = &OncallRosterMetrics{config: _u.config}
 	_spec.Assign = _node.assignValues
 	_spec.ScanValues = _node.scanValues
-	if err = sqlgraph.UpdateNode(ctx, ormuo.driver, _spec); err != nil {
+	if err = sqlgraph.UpdateNode(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{oncallrostermetrics.Label}
 		} else if sqlgraph.IsConstraintError(err) {
@@ -324,6 +324,6 @@ func (ormuo *OncallRosterMetricsUpdateOne) sqlSave(ctx context.Context) (_node *
 		}
 		return nil, err
 	}
-	ormuo.mutation.done = true
+	_u.mutation.done = true
 	return _node, nil
 }

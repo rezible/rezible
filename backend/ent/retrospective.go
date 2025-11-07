@@ -129,7 +129,7 @@ func (*Retrospective) scanValues(columns []string) ([]any, error) {
 
 // assignValues assigns the values that were returned from sql.Rows (after scanning)
 // to the Retrospective fields.
-func (r *Retrospective) assignValues(columns []string, values []any) error {
+func (_m *Retrospective) assignValues(columns []string, values []any) error {
 	if m, n := len(values), len(columns); m < n {
 		return fmt.Errorf("mismatch number of scan values: %d != %d", m, n)
 	}
@@ -139,46 +139,46 @@ func (r *Retrospective) assignValues(columns []string, values []any) error {
 			if value, ok := values[i].(*uuid.UUID); !ok {
 				return fmt.Errorf("unexpected type %T for field id", values[i])
 			} else if value != nil {
-				r.ID = *value
+				_m.ID = *value
 			}
 		case retrospective.FieldTenantID:
 			if value, ok := values[i].(*sql.NullInt64); !ok {
 				return fmt.Errorf("unexpected type %T for field tenant_id", values[i])
 			} else if value.Valid {
-				r.TenantID = int(value.Int64)
+				_m.TenantID = int(value.Int64)
 			}
 		case retrospective.FieldIncidentID:
 			if value, ok := values[i].(*uuid.UUID); !ok {
 				return fmt.Errorf("unexpected type %T for field incident_id", values[i])
 			} else if value != nil {
-				r.IncidentID = *value
+				_m.IncidentID = *value
 			}
 		case retrospective.FieldDocumentID:
 			if value, ok := values[i].(*uuid.UUID); !ok {
 				return fmt.Errorf("unexpected type %T for field document_id", values[i])
 			} else if value != nil {
-				r.DocumentID = *value
+				_m.DocumentID = *value
 			}
 		case retrospective.FieldSystemAnalysisID:
 			if value, ok := values[i].(*uuid.UUID); !ok {
 				return fmt.Errorf("unexpected type %T for field system_analysis_id", values[i])
 			} else if value != nil {
-				r.SystemAnalysisID = *value
+				_m.SystemAnalysisID = *value
 			}
 		case retrospective.FieldType:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field type", values[i])
 			} else if value.Valid {
-				r.Type = retrospective.Type(value.String)
+				_m.Type = retrospective.Type(value.String)
 			}
 		case retrospective.FieldState:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field state", values[i])
 			} else if value.Valid {
-				r.State = retrospective.State(value.String)
+				_m.State = retrospective.State(value.String)
 			}
 		default:
-			r.selectValues.Set(columns[i], values[i])
+			_m.selectValues.Set(columns[i], values[i])
 		}
 	}
 	return nil
@@ -186,75 +186,75 @@ func (r *Retrospective) assignValues(columns []string, values []any) error {
 
 // Value returns the ent.Value that was dynamically selected and assigned to the Retrospective.
 // This includes values selected through modifiers, order, etc.
-func (r *Retrospective) Value(name string) (ent.Value, error) {
-	return r.selectValues.Get(name)
+func (_m *Retrospective) Value(name string) (ent.Value, error) {
+	return _m.selectValues.Get(name)
 }
 
 // QueryTenant queries the "tenant" edge of the Retrospective entity.
-func (r *Retrospective) QueryTenant() *TenantQuery {
-	return NewRetrospectiveClient(r.config).QueryTenant(r)
+func (_m *Retrospective) QueryTenant() *TenantQuery {
+	return NewRetrospectiveClient(_m.config).QueryTenant(_m)
 }
 
 // QueryIncident queries the "incident" edge of the Retrospective entity.
-func (r *Retrospective) QueryIncident() *IncidentQuery {
-	return NewRetrospectiveClient(r.config).QueryIncident(r)
+func (_m *Retrospective) QueryIncident() *IncidentQuery {
+	return NewRetrospectiveClient(_m.config).QueryIncident(_m)
 }
 
 // QueryDocument queries the "document" edge of the Retrospective entity.
-func (r *Retrospective) QueryDocument() *DocumentQuery {
-	return NewRetrospectiveClient(r.config).QueryDocument(r)
+func (_m *Retrospective) QueryDocument() *DocumentQuery {
+	return NewRetrospectiveClient(_m.config).QueryDocument(_m)
 }
 
 // QueryComments queries the "comments" edge of the Retrospective entity.
-func (r *Retrospective) QueryComments() *RetrospectiveCommentQuery {
-	return NewRetrospectiveClient(r.config).QueryComments(r)
+func (_m *Retrospective) QueryComments() *RetrospectiveCommentQuery {
+	return NewRetrospectiveClient(_m.config).QueryComments(_m)
 }
 
 // QuerySystemAnalysis queries the "system_analysis" edge of the Retrospective entity.
-func (r *Retrospective) QuerySystemAnalysis() *SystemAnalysisQuery {
-	return NewRetrospectiveClient(r.config).QuerySystemAnalysis(r)
+func (_m *Retrospective) QuerySystemAnalysis() *SystemAnalysisQuery {
+	return NewRetrospectiveClient(_m.config).QuerySystemAnalysis(_m)
 }
 
 // Update returns a builder for updating this Retrospective.
 // Note that you need to call Retrospective.Unwrap() before calling this method if this Retrospective
 // was returned from a transaction, and the transaction was committed or rolled back.
-func (r *Retrospective) Update() *RetrospectiveUpdateOne {
-	return NewRetrospectiveClient(r.config).UpdateOne(r)
+func (_m *Retrospective) Update() *RetrospectiveUpdateOne {
+	return NewRetrospectiveClient(_m.config).UpdateOne(_m)
 }
 
 // Unwrap unwraps the Retrospective entity that was returned from a transaction after it was closed,
 // so that all future queries will be executed through the driver which created the transaction.
-func (r *Retrospective) Unwrap() *Retrospective {
-	_tx, ok := r.config.driver.(*txDriver)
+func (_m *Retrospective) Unwrap() *Retrospective {
+	_tx, ok := _m.config.driver.(*txDriver)
 	if !ok {
 		panic("ent: Retrospective is not a transactional entity")
 	}
-	r.config.driver = _tx.drv
-	return r
+	_m.config.driver = _tx.drv
+	return _m
 }
 
 // String implements the fmt.Stringer.
-func (r *Retrospective) String() string {
+func (_m *Retrospective) String() string {
 	var builder strings.Builder
 	builder.WriteString("Retrospective(")
-	builder.WriteString(fmt.Sprintf("id=%v, ", r.ID))
+	builder.WriteString(fmt.Sprintf("id=%v, ", _m.ID))
 	builder.WriteString("tenant_id=")
-	builder.WriteString(fmt.Sprintf("%v", r.TenantID))
+	builder.WriteString(fmt.Sprintf("%v", _m.TenantID))
 	builder.WriteString(", ")
 	builder.WriteString("incident_id=")
-	builder.WriteString(fmt.Sprintf("%v", r.IncidentID))
+	builder.WriteString(fmt.Sprintf("%v", _m.IncidentID))
 	builder.WriteString(", ")
 	builder.WriteString("document_id=")
-	builder.WriteString(fmt.Sprintf("%v", r.DocumentID))
+	builder.WriteString(fmt.Sprintf("%v", _m.DocumentID))
 	builder.WriteString(", ")
 	builder.WriteString("system_analysis_id=")
-	builder.WriteString(fmt.Sprintf("%v", r.SystemAnalysisID))
+	builder.WriteString(fmt.Sprintf("%v", _m.SystemAnalysisID))
 	builder.WriteString(", ")
 	builder.WriteString("type=")
-	builder.WriteString(fmt.Sprintf("%v", r.Type))
+	builder.WriteString(fmt.Sprintf("%v", _m.Type))
 	builder.WriteString(", ")
 	builder.WriteString("state=")
-	builder.WriteString(fmt.Sprintf("%v", r.State))
+	builder.WriteString(fmt.Sprintf("%v", _m.State))
 	builder.WriteByte(')')
 	return builder.String()
 }

@@ -28,174 +28,174 @@ type IncidentDebriefUpdate struct {
 }
 
 // Where appends a list predicates to the IncidentDebriefUpdate builder.
-func (idu *IncidentDebriefUpdate) Where(ps ...predicate.IncidentDebrief) *IncidentDebriefUpdate {
-	idu.mutation.Where(ps...)
-	return idu
+func (_u *IncidentDebriefUpdate) Where(ps ...predicate.IncidentDebrief) *IncidentDebriefUpdate {
+	_u.mutation.Where(ps...)
+	return _u
 }
 
 // SetIncidentID sets the "incident_id" field.
-func (idu *IncidentDebriefUpdate) SetIncidentID(u uuid.UUID) *IncidentDebriefUpdate {
-	idu.mutation.SetIncidentID(u)
-	return idu
+func (_u *IncidentDebriefUpdate) SetIncidentID(v uuid.UUID) *IncidentDebriefUpdate {
+	_u.mutation.SetIncidentID(v)
+	return _u
 }
 
 // SetNillableIncidentID sets the "incident_id" field if the given value is not nil.
-func (idu *IncidentDebriefUpdate) SetNillableIncidentID(u *uuid.UUID) *IncidentDebriefUpdate {
-	if u != nil {
-		idu.SetIncidentID(*u)
+func (_u *IncidentDebriefUpdate) SetNillableIncidentID(v *uuid.UUID) *IncidentDebriefUpdate {
+	if v != nil {
+		_u.SetIncidentID(*v)
 	}
-	return idu
+	return _u
 }
 
 // SetUserID sets the "user_id" field.
-func (idu *IncidentDebriefUpdate) SetUserID(u uuid.UUID) *IncidentDebriefUpdate {
-	idu.mutation.SetUserID(u)
-	return idu
+func (_u *IncidentDebriefUpdate) SetUserID(v uuid.UUID) *IncidentDebriefUpdate {
+	_u.mutation.SetUserID(v)
+	return _u
 }
 
 // SetNillableUserID sets the "user_id" field if the given value is not nil.
-func (idu *IncidentDebriefUpdate) SetNillableUserID(u *uuid.UUID) *IncidentDebriefUpdate {
-	if u != nil {
-		idu.SetUserID(*u)
+func (_u *IncidentDebriefUpdate) SetNillableUserID(v *uuid.UUID) *IncidentDebriefUpdate {
+	if v != nil {
+		_u.SetUserID(*v)
 	}
-	return idu
+	return _u
 }
 
 // SetRequired sets the "required" field.
-func (idu *IncidentDebriefUpdate) SetRequired(b bool) *IncidentDebriefUpdate {
-	idu.mutation.SetRequired(b)
-	return idu
+func (_u *IncidentDebriefUpdate) SetRequired(v bool) *IncidentDebriefUpdate {
+	_u.mutation.SetRequired(v)
+	return _u
 }
 
 // SetNillableRequired sets the "required" field if the given value is not nil.
-func (idu *IncidentDebriefUpdate) SetNillableRequired(b *bool) *IncidentDebriefUpdate {
-	if b != nil {
-		idu.SetRequired(*b)
+func (_u *IncidentDebriefUpdate) SetNillableRequired(v *bool) *IncidentDebriefUpdate {
+	if v != nil {
+		_u.SetRequired(*v)
 	}
-	return idu
+	return _u
 }
 
 // SetStarted sets the "started" field.
-func (idu *IncidentDebriefUpdate) SetStarted(b bool) *IncidentDebriefUpdate {
-	idu.mutation.SetStarted(b)
-	return idu
+func (_u *IncidentDebriefUpdate) SetStarted(v bool) *IncidentDebriefUpdate {
+	_u.mutation.SetStarted(v)
+	return _u
 }
 
 // SetNillableStarted sets the "started" field if the given value is not nil.
-func (idu *IncidentDebriefUpdate) SetNillableStarted(b *bool) *IncidentDebriefUpdate {
-	if b != nil {
-		idu.SetStarted(*b)
+func (_u *IncidentDebriefUpdate) SetNillableStarted(v *bool) *IncidentDebriefUpdate {
+	if v != nil {
+		_u.SetStarted(*v)
 	}
-	return idu
+	return _u
 }
 
 // SetIncident sets the "incident" edge to the Incident entity.
-func (idu *IncidentDebriefUpdate) SetIncident(i *Incident) *IncidentDebriefUpdate {
-	return idu.SetIncidentID(i.ID)
+func (_u *IncidentDebriefUpdate) SetIncident(v *Incident) *IncidentDebriefUpdate {
+	return _u.SetIncidentID(v.ID)
 }
 
 // SetUser sets the "user" edge to the User entity.
-func (idu *IncidentDebriefUpdate) SetUser(u *User) *IncidentDebriefUpdate {
-	return idu.SetUserID(u.ID)
+func (_u *IncidentDebriefUpdate) SetUser(v *User) *IncidentDebriefUpdate {
+	return _u.SetUserID(v.ID)
 }
 
 // AddMessageIDs adds the "messages" edge to the IncidentDebriefMessage entity by IDs.
-func (idu *IncidentDebriefUpdate) AddMessageIDs(ids ...uuid.UUID) *IncidentDebriefUpdate {
-	idu.mutation.AddMessageIDs(ids...)
-	return idu
+func (_u *IncidentDebriefUpdate) AddMessageIDs(ids ...uuid.UUID) *IncidentDebriefUpdate {
+	_u.mutation.AddMessageIDs(ids...)
+	return _u
 }
 
 // AddMessages adds the "messages" edges to the IncidentDebriefMessage entity.
-func (idu *IncidentDebriefUpdate) AddMessages(i ...*IncidentDebriefMessage) *IncidentDebriefUpdate {
-	ids := make([]uuid.UUID, len(i))
-	for j := range i {
-		ids[j] = i[j].ID
+func (_u *IncidentDebriefUpdate) AddMessages(v ...*IncidentDebriefMessage) *IncidentDebriefUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
 	}
-	return idu.AddMessageIDs(ids...)
+	return _u.AddMessageIDs(ids...)
 }
 
 // AddSuggestionIDs adds the "suggestions" edge to the IncidentDebriefSuggestion entity by IDs.
-func (idu *IncidentDebriefUpdate) AddSuggestionIDs(ids ...uuid.UUID) *IncidentDebriefUpdate {
-	idu.mutation.AddSuggestionIDs(ids...)
-	return idu
+func (_u *IncidentDebriefUpdate) AddSuggestionIDs(ids ...uuid.UUID) *IncidentDebriefUpdate {
+	_u.mutation.AddSuggestionIDs(ids...)
+	return _u
 }
 
 // AddSuggestions adds the "suggestions" edges to the IncidentDebriefSuggestion entity.
-func (idu *IncidentDebriefUpdate) AddSuggestions(i ...*IncidentDebriefSuggestion) *IncidentDebriefUpdate {
-	ids := make([]uuid.UUID, len(i))
-	for j := range i {
-		ids[j] = i[j].ID
+func (_u *IncidentDebriefUpdate) AddSuggestions(v ...*IncidentDebriefSuggestion) *IncidentDebriefUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
 	}
-	return idu.AddSuggestionIDs(ids...)
+	return _u.AddSuggestionIDs(ids...)
 }
 
 // Mutation returns the IncidentDebriefMutation object of the builder.
-func (idu *IncidentDebriefUpdate) Mutation() *IncidentDebriefMutation {
-	return idu.mutation
+func (_u *IncidentDebriefUpdate) Mutation() *IncidentDebriefMutation {
+	return _u.mutation
 }
 
 // ClearIncident clears the "incident" edge to the Incident entity.
-func (idu *IncidentDebriefUpdate) ClearIncident() *IncidentDebriefUpdate {
-	idu.mutation.ClearIncident()
-	return idu
+func (_u *IncidentDebriefUpdate) ClearIncident() *IncidentDebriefUpdate {
+	_u.mutation.ClearIncident()
+	return _u
 }
 
 // ClearUser clears the "user" edge to the User entity.
-func (idu *IncidentDebriefUpdate) ClearUser() *IncidentDebriefUpdate {
-	idu.mutation.ClearUser()
-	return idu
+func (_u *IncidentDebriefUpdate) ClearUser() *IncidentDebriefUpdate {
+	_u.mutation.ClearUser()
+	return _u
 }
 
 // ClearMessages clears all "messages" edges to the IncidentDebriefMessage entity.
-func (idu *IncidentDebriefUpdate) ClearMessages() *IncidentDebriefUpdate {
-	idu.mutation.ClearMessages()
-	return idu
+func (_u *IncidentDebriefUpdate) ClearMessages() *IncidentDebriefUpdate {
+	_u.mutation.ClearMessages()
+	return _u
 }
 
 // RemoveMessageIDs removes the "messages" edge to IncidentDebriefMessage entities by IDs.
-func (idu *IncidentDebriefUpdate) RemoveMessageIDs(ids ...uuid.UUID) *IncidentDebriefUpdate {
-	idu.mutation.RemoveMessageIDs(ids...)
-	return idu
+func (_u *IncidentDebriefUpdate) RemoveMessageIDs(ids ...uuid.UUID) *IncidentDebriefUpdate {
+	_u.mutation.RemoveMessageIDs(ids...)
+	return _u
 }
 
 // RemoveMessages removes "messages" edges to IncidentDebriefMessage entities.
-func (idu *IncidentDebriefUpdate) RemoveMessages(i ...*IncidentDebriefMessage) *IncidentDebriefUpdate {
-	ids := make([]uuid.UUID, len(i))
-	for j := range i {
-		ids[j] = i[j].ID
+func (_u *IncidentDebriefUpdate) RemoveMessages(v ...*IncidentDebriefMessage) *IncidentDebriefUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
 	}
-	return idu.RemoveMessageIDs(ids...)
+	return _u.RemoveMessageIDs(ids...)
 }
 
 // ClearSuggestions clears all "suggestions" edges to the IncidentDebriefSuggestion entity.
-func (idu *IncidentDebriefUpdate) ClearSuggestions() *IncidentDebriefUpdate {
-	idu.mutation.ClearSuggestions()
-	return idu
+func (_u *IncidentDebriefUpdate) ClearSuggestions() *IncidentDebriefUpdate {
+	_u.mutation.ClearSuggestions()
+	return _u
 }
 
 // RemoveSuggestionIDs removes the "suggestions" edge to IncidentDebriefSuggestion entities by IDs.
-func (idu *IncidentDebriefUpdate) RemoveSuggestionIDs(ids ...uuid.UUID) *IncidentDebriefUpdate {
-	idu.mutation.RemoveSuggestionIDs(ids...)
-	return idu
+func (_u *IncidentDebriefUpdate) RemoveSuggestionIDs(ids ...uuid.UUID) *IncidentDebriefUpdate {
+	_u.mutation.RemoveSuggestionIDs(ids...)
+	return _u
 }
 
 // RemoveSuggestions removes "suggestions" edges to IncidentDebriefSuggestion entities.
-func (idu *IncidentDebriefUpdate) RemoveSuggestions(i ...*IncidentDebriefSuggestion) *IncidentDebriefUpdate {
-	ids := make([]uuid.UUID, len(i))
-	for j := range i {
-		ids[j] = i[j].ID
+func (_u *IncidentDebriefUpdate) RemoveSuggestions(v ...*IncidentDebriefSuggestion) *IncidentDebriefUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
 	}
-	return idu.RemoveSuggestionIDs(ids...)
+	return _u.RemoveSuggestionIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
-func (idu *IncidentDebriefUpdate) Save(ctx context.Context) (int, error) {
-	return withHooks(ctx, idu.sqlSave, idu.mutation, idu.hooks)
+func (_u *IncidentDebriefUpdate) Save(ctx context.Context) (int, error) {
+	return withHooks(ctx, _u.sqlSave, _u.mutation, _u.hooks)
 }
 
 // SaveX is like Save, but panics if an error occurs.
-func (idu *IncidentDebriefUpdate) SaveX(ctx context.Context) int {
-	affected, err := idu.Save(ctx)
+func (_u *IncidentDebriefUpdate) SaveX(ctx context.Context) int {
+	affected, err := _u.Save(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -203,57 +203,57 @@ func (idu *IncidentDebriefUpdate) SaveX(ctx context.Context) int {
 }
 
 // Exec executes the query.
-func (idu *IncidentDebriefUpdate) Exec(ctx context.Context) error {
-	_, err := idu.Save(ctx)
+func (_u *IncidentDebriefUpdate) Exec(ctx context.Context) error {
+	_, err := _u.Save(ctx)
 	return err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (idu *IncidentDebriefUpdate) ExecX(ctx context.Context) {
-	if err := idu.Exec(ctx); err != nil {
+func (_u *IncidentDebriefUpdate) ExecX(ctx context.Context) {
+	if err := _u.Exec(ctx); err != nil {
 		panic(err)
 	}
 }
 
 // check runs all checks and user-defined validators on the builder.
-func (idu *IncidentDebriefUpdate) check() error {
-	if idu.mutation.TenantCleared() && len(idu.mutation.TenantIDs()) > 0 {
+func (_u *IncidentDebriefUpdate) check() error {
+	if _u.mutation.TenantCleared() && len(_u.mutation.TenantIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "IncidentDebrief.tenant"`)
 	}
-	if idu.mutation.IncidentCleared() && len(idu.mutation.IncidentIDs()) > 0 {
+	if _u.mutation.IncidentCleared() && len(_u.mutation.IncidentIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "IncidentDebrief.incident"`)
 	}
-	if idu.mutation.UserCleared() && len(idu.mutation.UserIDs()) > 0 {
+	if _u.mutation.UserCleared() && len(_u.mutation.UserIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "IncidentDebrief.user"`)
 	}
 	return nil
 }
 
 // Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
-func (idu *IncidentDebriefUpdate) Modify(modifiers ...func(u *sql.UpdateBuilder)) *IncidentDebriefUpdate {
-	idu.modifiers = append(idu.modifiers, modifiers...)
-	return idu
+func (_u *IncidentDebriefUpdate) Modify(modifiers ...func(u *sql.UpdateBuilder)) *IncidentDebriefUpdate {
+	_u.modifiers = append(_u.modifiers, modifiers...)
+	return _u
 }
 
-func (idu *IncidentDebriefUpdate) sqlSave(ctx context.Context) (n int, err error) {
-	if err := idu.check(); err != nil {
-		return n, err
+func (_u *IncidentDebriefUpdate) sqlSave(ctx context.Context) (_node int, err error) {
+	if err := _u.check(); err != nil {
+		return _node, err
 	}
 	_spec := sqlgraph.NewUpdateSpec(incidentdebrief.Table, incidentdebrief.Columns, sqlgraph.NewFieldSpec(incidentdebrief.FieldID, field.TypeUUID))
-	if ps := idu.mutation.predicates; len(ps) > 0 {
+	if ps := _u.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {
 				ps[i](selector)
 			}
 		}
 	}
-	if value, ok := idu.mutation.Required(); ok {
+	if value, ok := _u.mutation.Required(); ok {
 		_spec.SetField(incidentdebrief.FieldRequired, field.TypeBool, value)
 	}
-	if value, ok := idu.mutation.Started(); ok {
+	if value, ok := _u.mutation.Started(); ok {
 		_spec.SetField(incidentdebrief.FieldStarted, field.TypeBool, value)
 	}
-	if idu.mutation.IncidentCleared() {
+	if _u.mutation.IncidentCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: true,
@@ -266,7 +266,7 @@ func (idu *IncidentDebriefUpdate) sqlSave(ctx context.Context) (n int, err error
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := idu.mutation.IncidentIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.IncidentIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: true,
@@ -282,7 +282,7 @@ func (idu *IncidentDebriefUpdate) sqlSave(ctx context.Context) (n int, err error
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if idu.mutation.UserCleared() {
+	if _u.mutation.UserCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: true,
@@ -295,7 +295,7 @@ func (idu *IncidentDebriefUpdate) sqlSave(ctx context.Context) (n int, err error
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := idu.mutation.UserIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.UserIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: true,
@@ -311,7 +311,7 @@ func (idu *IncidentDebriefUpdate) sqlSave(ctx context.Context) (n int, err error
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if idu.mutation.MessagesCleared() {
+	if _u.mutation.MessagesCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
@@ -324,7 +324,7 @@ func (idu *IncidentDebriefUpdate) sqlSave(ctx context.Context) (n int, err error
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := idu.mutation.RemovedMessagesIDs(); len(nodes) > 0 && !idu.mutation.MessagesCleared() {
+	if nodes := _u.mutation.RemovedMessagesIDs(); len(nodes) > 0 && !_u.mutation.MessagesCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
@@ -340,7 +340,7 @@ func (idu *IncidentDebriefUpdate) sqlSave(ctx context.Context) (n int, err error
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := idu.mutation.MessagesIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.MessagesIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
@@ -356,7 +356,7 @@ func (idu *IncidentDebriefUpdate) sqlSave(ctx context.Context) (n int, err error
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if idu.mutation.SuggestionsCleared() {
+	if _u.mutation.SuggestionsCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
@@ -369,7 +369,7 @@ func (idu *IncidentDebriefUpdate) sqlSave(ctx context.Context) (n int, err error
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := idu.mutation.RemovedSuggestionsIDs(); len(nodes) > 0 && !idu.mutation.SuggestionsCleared() {
+	if nodes := _u.mutation.RemovedSuggestionsIDs(); len(nodes) > 0 && !_u.mutation.SuggestionsCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
@@ -385,7 +385,7 @@ func (idu *IncidentDebriefUpdate) sqlSave(ctx context.Context) (n int, err error
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := idu.mutation.SuggestionsIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.SuggestionsIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
@@ -401,8 +401,8 @@ func (idu *IncidentDebriefUpdate) sqlSave(ctx context.Context) (n int, err error
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	_spec.AddModifiers(idu.modifiers...)
-	if n, err = sqlgraph.UpdateNodes(ctx, idu.driver, _spec); err != nil {
+	_spec.AddModifiers(_u.modifiers...)
+	if _node, err = sqlgraph.UpdateNodes(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{incidentdebrief.Label}
 		} else if sqlgraph.IsConstraintError(err) {
@@ -410,8 +410,8 @@ func (idu *IncidentDebriefUpdate) sqlSave(ctx context.Context) (n int, err error
 		}
 		return 0, err
 	}
-	idu.mutation.done = true
-	return n, nil
+	_u.mutation.done = true
+	return _node, nil
 }
 
 // IncidentDebriefUpdateOne is the builder for updating a single IncidentDebrief entity.
@@ -424,181 +424,181 @@ type IncidentDebriefUpdateOne struct {
 }
 
 // SetIncidentID sets the "incident_id" field.
-func (iduo *IncidentDebriefUpdateOne) SetIncidentID(u uuid.UUID) *IncidentDebriefUpdateOne {
-	iduo.mutation.SetIncidentID(u)
-	return iduo
+func (_u *IncidentDebriefUpdateOne) SetIncidentID(v uuid.UUID) *IncidentDebriefUpdateOne {
+	_u.mutation.SetIncidentID(v)
+	return _u
 }
 
 // SetNillableIncidentID sets the "incident_id" field if the given value is not nil.
-func (iduo *IncidentDebriefUpdateOne) SetNillableIncidentID(u *uuid.UUID) *IncidentDebriefUpdateOne {
-	if u != nil {
-		iduo.SetIncidentID(*u)
+func (_u *IncidentDebriefUpdateOne) SetNillableIncidentID(v *uuid.UUID) *IncidentDebriefUpdateOne {
+	if v != nil {
+		_u.SetIncidentID(*v)
 	}
-	return iduo
+	return _u
 }
 
 // SetUserID sets the "user_id" field.
-func (iduo *IncidentDebriefUpdateOne) SetUserID(u uuid.UUID) *IncidentDebriefUpdateOne {
-	iduo.mutation.SetUserID(u)
-	return iduo
+func (_u *IncidentDebriefUpdateOne) SetUserID(v uuid.UUID) *IncidentDebriefUpdateOne {
+	_u.mutation.SetUserID(v)
+	return _u
 }
 
 // SetNillableUserID sets the "user_id" field if the given value is not nil.
-func (iduo *IncidentDebriefUpdateOne) SetNillableUserID(u *uuid.UUID) *IncidentDebriefUpdateOne {
-	if u != nil {
-		iduo.SetUserID(*u)
+func (_u *IncidentDebriefUpdateOne) SetNillableUserID(v *uuid.UUID) *IncidentDebriefUpdateOne {
+	if v != nil {
+		_u.SetUserID(*v)
 	}
-	return iduo
+	return _u
 }
 
 // SetRequired sets the "required" field.
-func (iduo *IncidentDebriefUpdateOne) SetRequired(b bool) *IncidentDebriefUpdateOne {
-	iduo.mutation.SetRequired(b)
-	return iduo
+func (_u *IncidentDebriefUpdateOne) SetRequired(v bool) *IncidentDebriefUpdateOne {
+	_u.mutation.SetRequired(v)
+	return _u
 }
 
 // SetNillableRequired sets the "required" field if the given value is not nil.
-func (iduo *IncidentDebriefUpdateOne) SetNillableRequired(b *bool) *IncidentDebriefUpdateOne {
-	if b != nil {
-		iduo.SetRequired(*b)
+func (_u *IncidentDebriefUpdateOne) SetNillableRequired(v *bool) *IncidentDebriefUpdateOne {
+	if v != nil {
+		_u.SetRequired(*v)
 	}
-	return iduo
+	return _u
 }
 
 // SetStarted sets the "started" field.
-func (iduo *IncidentDebriefUpdateOne) SetStarted(b bool) *IncidentDebriefUpdateOne {
-	iduo.mutation.SetStarted(b)
-	return iduo
+func (_u *IncidentDebriefUpdateOne) SetStarted(v bool) *IncidentDebriefUpdateOne {
+	_u.mutation.SetStarted(v)
+	return _u
 }
 
 // SetNillableStarted sets the "started" field if the given value is not nil.
-func (iduo *IncidentDebriefUpdateOne) SetNillableStarted(b *bool) *IncidentDebriefUpdateOne {
-	if b != nil {
-		iduo.SetStarted(*b)
+func (_u *IncidentDebriefUpdateOne) SetNillableStarted(v *bool) *IncidentDebriefUpdateOne {
+	if v != nil {
+		_u.SetStarted(*v)
 	}
-	return iduo
+	return _u
 }
 
 // SetIncident sets the "incident" edge to the Incident entity.
-func (iduo *IncidentDebriefUpdateOne) SetIncident(i *Incident) *IncidentDebriefUpdateOne {
-	return iduo.SetIncidentID(i.ID)
+func (_u *IncidentDebriefUpdateOne) SetIncident(v *Incident) *IncidentDebriefUpdateOne {
+	return _u.SetIncidentID(v.ID)
 }
 
 // SetUser sets the "user" edge to the User entity.
-func (iduo *IncidentDebriefUpdateOne) SetUser(u *User) *IncidentDebriefUpdateOne {
-	return iduo.SetUserID(u.ID)
+func (_u *IncidentDebriefUpdateOne) SetUser(v *User) *IncidentDebriefUpdateOne {
+	return _u.SetUserID(v.ID)
 }
 
 // AddMessageIDs adds the "messages" edge to the IncidentDebriefMessage entity by IDs.
-func (iduo *IncidentDebriefUpdateOne) AddMessageIDs(ids ...uuid.UUID) *IncidentDebriefUpdateOne {
-	iduo.mutation.AddMessageIDs(ids...)
-	return iduo
+func (_u *IncidentDebriefUpdateOne) AddMessageIDs(ids ...uuid.UUID) *IncidentDebriefUpdateOne {
+	_u.mutation.AddMessageIDs(ids...)
+	return _u
 }
 
 // AddMessages adds the "messages" edges to the IncidentDebriefMessage entity.
-func (iduo *IncidentDebriefUpdateOne) AddMessages(i ...*IncidentDebriefMessage) *IncidentDebriefUpdateOne {
-	ids := make([]uuid.UUID, len(i))
-	for j := range i {
-		ids[j] = i[j].ID
+func (_u *IncidentDebriefUpdateOne) AddMessages(v ...*IncidentDebriefMessage) *IncidentDebriefUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
 	}
-	return iduo.AddMessageIDs(ids...)
+	return _u.AddMessageIDs(ids...)
 }
 
 // AddSuggestionIDs adds the "suggestions" edge to the IncidentDebriefSuggestion entity by IDs.
-func (iduo *IncidentDebriefUpdateOne) AddSuggestionIDs(ids ...uuid.UUID) *IncidentDebriefUpdateOne {
-	iduo.mutation.AddSuggestionIDs(ids...)
-	return iduo
+func (_u *IncidentDebriefUpdateOne) AddSuggestionIDs(ids ...uuid.UUID) *IncidentDebriefUpdateOne {
+	_u.mutation.AddSuggestionIDs(ids...)
+	return _u
 }
 
 // AddSuggestions adds the "suggestions" edges to the IncidentDebriefSuggestion entity.
-func (iduo *IncidentDebriefUpdateOne) AddSuggestions(i ...*IncidentDebriefSuggestion) *IncidentDebriefUpdateOne {
-	ids := make([]uuid.UUID, len(i))
-	for j := range i {
-		ids[j] = i[j].ID
+func (_u *IncidentDebriefUpdateOne) AddSuggestions(v ...*IncidentDebriefSuggestion) *IncidentDebriefUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
 	}
-	return iduo.AddSuggestionIDs(ids...)
+	return _u.AddSuggestionIDs(ids...)
 }
 
 // Mutation returns the IncidentDebriefMutation object of the builder.
-func (iduo *IncidentDebriefUpdateOne) Mutation() *IncidentDebriefMutation {
-	return iduo.mutation
+func (_u *IncidentDebriefUpdateOne) Mutation() *IncidentDebriefMutation {
+	return _u.mutation
 }
 
 // ClearIncident clears the "incident" edge to the Incident entity.
-func (iduo *IncidentDebriefUpdateOne) ClearIncident() *IncidentDebriefUpdateOne {
-	iduo.mutation.ClearIncident()
-	return iduo
+func (_u *IncidentDebriefUpdateOne) ClearIncident() *IncidentDebriefUpdateOne {
+	_u.mutation.ClearIncident()
+	return _u
 }
 
 // ClearUser clears the "user" edge to the User entity.
-func (iduo *IncidentDebriefUpdateOne) ClearUser() *IncidentDebriefUpdateOne {
-	iduo.mutation.ClearUser()
-	return iduo
+func (_u *IncidentDebriefUpdateOne) ClearUser() *IncidentDebriefUpdateOne {
+	_u.mutation.ClearUser()
+	return _u
 }
 
 // ClearMessages clears all "messages" edges to the IncidentDebriefMessage entity.
-func (iduo *IncidentDebriefUpdateOne) ClearMessages() *IncidentDebriefUpdateOne {
-	iduo.mutation.ClearMessages()
-	return iduo
+func (_u *IncidentDebriefUpdateOne) ClearMessages() *IncidentDebriefUpdateOne {
+	_u.mutation.ClearMessages()
+	return _u
 }
 
 // RemoveMessageIDs removes the "messages" edge to IncidentDebriefMessage entities by IDs.
-func (iduo *IncidentDebriefUpdateOne) RemoveMessageIDs(ids ...uuid.UUID) *IncidentDebriefUpdateOne {
-	iduo.mutation.RemoveMessageIDs(ids...)
-	return iduo
+func (_u *IncidentDebriefUpdateOne) RemoveMessageIDs(ids ...uuid.UUID) *IncidentDebriefUpdateOne {
+	_u.mutation.RemoveMessageIDs(ids...)
+	return _u
 }
 
 // RemoveMessages removes "messages" edges to IncidentDebriefMessage entities.
-func (iduo *IncidentDebriefUpdateOne) RemoveMessages(i ...*IncidentDebriefMessage) *IncidentDebriefUpdateOne {
-	ids := make([]uuid.UUID, len(i))
-	for j := range i {
-		ids[j] = i[j].ID
+func (_u *IncidentDebriefUpdateOne) RemoveMessages(v ...*IncidentDebriefMessage) *IncidentDebriefUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
 	}
-	return iduo.RemoveMessageIDs(ids...)
+	return _u.RemoveMessageIDs(ids...)
 }
 
 // ClearSuggestions clears all "suggestions" edges to the IncidentDebriefSuggestion entity.
-func (iduo *IncidentDebriefUpdateOne) ClearSuggestions() *IncidentDebriefUpdateOne {
-	iduo.mutation.ClearSuggestions()
-	return iduo
+func (_u *IncidentDebriefUpdateOne) ClearSuggestions() *IncidentDebriefUpdateOne {
+	_u.mutation.ClearSuggestions()
+	return _u
 }
 
 // RemoveSuggestionIDs removes the "suggestions" edge to IncidentDebriefSuggestion entities by IDs.
-func (iduo *IncidentDebriefUpdateOne) RemoveSuggestionIDs(ids ...uuid.UUID) *IncidentDebriefUpdateOne {
-	iduo.mutation.RemoveSuggestionIDs(ids...)
-	return iduo
+func (_u *IncidentDebriefUpdateOne) RemoveSuggestionIDs(ids ...uuid.UUID) *IncidentDebriefUpdateOne {
+	_u.mutation.RemoveSuggestionIDs(ids...)
+	return _u
 }
 
 // RemoveSuggestions removes "suggestions" edges to IncidentDebriefSuggestion entities.
-func (iduo *IncidentDebriefUpdateOne) RemoveSuggestions(i ...*IncidentDebriefSuggestion) *IncidentDebriefUpdateOne {
-	ids := make([]uuid.UUID, len(i))
-	for j := range i {
-		ids[j] = i[j].ID
+func (_u *IncidentDebriefUpdateOne) RemoveSuggestions(v ...*IncidentDebriefSuggestion) *IncidentDebriefUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
 	}
-	return iduo.RemoveSuggestionIDs(ids...)
+	return _u.RemoveSuggestionIDs(ids...)
 }
 
 // Where appends a list predicates to the IncidentDebriefUpdate builder.
-func (iduo *IncidentDebriefUpdateOne) Where(ps ...predicate.IncidentDebrief) *IncidentDebriefUpdateOne {
-	iduo.mutation.Where(ps...)
-	return iduo
+func (_u *IncidentDebriefUpdateOne) Where(ps ...predicate.IncidentDebrief) *IncidentDebriefUpdateOne {
+	_u.mutation.Where(ps...)
+	return _u
 }
 
 // Select allows selecting one or more fields (columns) of the returned entity.
 // The default is selecting all fields defined in the entity schema.
-func (iduo *IncidentDebriefUpdateOne) Select(field string, fields ...string) *IncidentDebriefUpdateOne {
-	iduo.fields = append([]string{field}, fields...)
-	return iduo
+func (_u *IncidentDebriefUpdateOne) Select(field string, fields ...string) *IncidentDebriefUpdateOne {
+	_u.fields = append([]string{field}, fields...)
+	return _u
 }
 
 // Save executes the query and returns the updated IncidentDebrief entity.
-func (iduo *IncidentDebriefUpdateOne) Save(ctx context.Context) (*IncidentDebrief, error) {
-	return withHooks(ctx, iduo.sqlSave, iduo.mutation, iduo.hooks)
+func (_u *IncidentDebriefUpdateOne) Save(ctx context.Context) (*IncidentDebrief, error) {
+	return withHooks(ctx, _u.sqlSave, _u.mutation, _u.hooks)
 }
 
 // SaveX is like Save, but panics if an error occurs.
-func (iduo *IncidentDebriefUpdateOne) SaveX(ctx context.Context) *IncidentDebrief {
-	node, err := iduo.Save(ctx)
+func (_u *IncidentDebriefUpdateOne) SaveX(ctx context.Context) *IncidentDebrief {
+	node, err := _u.Save(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -606,49 +606,49 @@ func (iduo *IncidentDebriefUpdateOne) SaveX(ctx context.Context) *IncidentDebrie
 }
 
 // Exec executes the query on the entity.
-func (iduo *IncidentDebriefUpdateOne) Exec(ctx context.Context) error {
-	_, err := iduo.Save(ctx)
+func (_u *IncidentDebriefUpdateOne) Exec(ctx context.Context) error {
+	_, err := _u.Save(ctx)
 	return err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (iduo *IncidentDebriefUpdateOne) ExecX(ctx context.Context) {
-	if err := iduo.Exec(ctx); err != nil {
+func (_u *IncidentDebriefUpdateOne) ExecX(ctx context.Context) {
+	if err := _u.Exec(ctx); err != nil {
 		panic(err)
 	}
 }
 
 // check runs all checks and user-defined validators on the builder.
-func (iduo *IncidentDebriefUpdateOne) check() error {
-	if iduo.mutation.TenantCleared() && len(iduo.mutation.TenantIDs()) > 0 {
+func (_u *IncidentDebriefUpdateOne) check() error {
+	if _u.mutation.TenantCleared() && len(_u.mutation.TenantIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "IncidentDebrief.tenant"`)
 	}
-	if iduo.mutation.IncidentCleared() && len(iduo.mutation.IncidentIDs()) > 0 {
+	if _u.mutation.IncidentCleared() && len(_u.mutation.IncidentIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "IncidentDebrief.incident"`)
 	}
-	if iduo.mutation.UserCleared() && len(iduo.mutation.UserIDs()) > 0 {
+	if _u.mutation.UserCleared() && len(_u.mutation.UserIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "IncidentDebrief.user"`)
 	}
 	return nil
 }
 
 // Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
-func (iduo *IncidentDebriefUpdateOne) Modify(modifiers ...func(u *sql.UpdateBuilder)) *IncidentDebriefUpdateOne {
-	iduo.modifiers = append(iduo.modifiers, modifiers...)
-	return iduo
+func (_u *IncidentDebriefUpdateOne) Modify(modifiers ...func(u *sql.UpdateBuilder)) *IncidentDebriefUpdateOne {
+	_u.modifiers = append(_u.modifiers, modifiers...)
+	return _u
 }
 
-func (iduo *IncidentDebriefUpdateOne) sqlSave(ctx context.Context) (_node *IncidentDebrief, err error) {
-	if err := iduo.check(); err != nil {
+func (_u *IncidentDebriefUpdateOne) sqlSave(ctx context.Context) (_node *IncidentDebrief, err error) {
+	if err := _u.check(); err != nil {
 		return _node, err
 	}
 	_spec := sqlgraph.NewUpdateSpec(incidentdebrief.Table, incidentdebrief.Columns, sqlgraph.NewFieldSpec(incidentdebrief.FieldID, field.TypeUUID))
-	id, ok := iduo.mutation.ID()
+	id, ok := _u.mutation.ID()
 	if !ok {
 		return nil, &ValidationError{Name: "id", err: errors.New(`ent: missing "IncidentDebrief.id" for update`)}
 	}
 	_spec.Node.ID.Value = id
-	if fields := iduo.fields; len(fields) > 0 {
+	if fields := _u.fields; len(fields) > 0 {
 		_spec.Node.Columns = make([]string, 0, len(fields))
 		_spec.Node.Columns = append(_spec.Node.Columns, incidentdebrief.FieldID)
 		for _, f := range fields {
@@ -660,20 +660,20 @@ func (iduo *IncidentDebriefUpdateOne) sqlSave(ctx context.Context) (_node *Incid
 			}
 		}
 	}
-	if ps := iduo.mutation.predicates; len(ps) > 0 {
+	if ps := _u.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {
 				ps[i](selector)
 			}
 		}
 	}
-	if value, ok := iduo.mutation.Required(); ok {
+	if value, ok := _u.mutation.Required(); ok {
 		_spec.SetField(incidentdebrief.FieldRequired, field.TypeBool, value)
 	}
-	if value, ok := iduo.mutation.Started(); ok {
+	if value, ok := _u.mutation.Started(); ok {
 		_spec.SetField(incidentdebrief.FieldStarted, field.TypeBool, value)
 	}
-	if iduo.mutation.IncidentCleared() {
+	if _u.mutation.IncidentCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: true,
@@ -686,7 +686,7 @@ func (iduo *IncidentDebriefUpdateOne) sqlSave(ctx context.Context) (_node *Incid
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := iduo.mutation.IncidentIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.IncidentIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: true,
@@ -702,7 +702,7 @@ func (iduo *IncidentDebriefUpdateOne) sqlSave(ctx context.Context) (_node *Incid
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if iduo.mutation.UserCleared() {
+	if _u.mutation.UserCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: true,
@@ -715,7 +715,7 @@ func (iduo *IncidentDebriefUpdateOne) sqlSave(ctx context.Context) (_node *Incid
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := iduo.mutation.UserIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.UserIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: true,
@@ -731,7 +731,7 @@ func (iduo *IncidentDebriefUpdateOne) sqlSave(ctx context.Context) (_node *Incid
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if iduo.mutation.MessagesCleared() {
+	if _u.mutation.MessagesCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
@@ -744,7 +744,7 @@ func (iduo *IncidentDebriefUpdateOne) sqlSave(ctx context.Context) (_node *Incid
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := iduo.mutation.RemovedMessagesIDs(); len(nodes) > 0 && !iduo.mutation.MessagesCleared() {
+	if nodes := _u.mutation.RemovedMessagesIDs(); len(nodes) > 0 && !_u.mutation.MessagesCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
@@ -760,7 +760,7 @@ func (iduo *IncidentDebriefUpdateOne) sqlSave(ctx context.Context) (_node *Incid
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := iduo.mutation.MessagesIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.MessagesIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
@@ -776,7 +776,7 @@ func (iduo *IncidentDebriefUpdateOne) sqlSave(ctx context.Context) (_node *Incid
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if iduo.mutation.SuggestionsCleared() {
+	if _u.mutation.SuggestionsCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
@@ -789,7 +789,7 @@ func (iduo *IncidentDebriefUpdateOne) sqlSave(ctx context.Context) (_node *Incid
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := iduo.mutation.RemovedSuggestionsIDs(); len(nodes) > 0 && !iduo.mutation.SuggestionsCleared() {
+	if nodes := _u.mutation.RemovedSuggestionsIDs(); len(nodes) > 0 && !_u.mutation.SuggestionsCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
@@ -805,7 +805,7 @@ func (iduo *IncidentDebriefUpdateOne) sqlSave(ctx context.Context) (_node *Incid
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := iduo.mutation.SuggestionsIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.SuggestionsIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
@@ -821,11 +821,11 @@ func (iduo *IncidentDebriefUpdateOne) sqlSave(ctx context.Context) (_node *Incid
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	_spec.AddModifiers(iduo.modifiers...)
-	_node = &IncidentDebrief{config: iduo.config}
+	_spec.AddModifiers(_u.modifiers...)
+	_node = &IncidentDebrief{config: _u.config}
 	_spec.Assign = _node.assignValues
 	_spec.ScanValues = _node.scanValues
-	if err = sqlgraph.UpdateNode(ctx, iduo.driver, _spec); err != nil {
+	if err = sqlgraph.UpdateNode(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{incidentdebrief.Label}
 		} else if sqlgraph.IsConstraintError(err) {
@@ -833,6 +833,6 @@ func (iduo *IncidentDebriefUpdateOne) sqlSave(ctx context.Context) (_node *Incid
 		}
 		return nil, err
 	}
-	iduo.mutation.done = true
+	_u.mutation.done = true
 	return _node, nil
 }

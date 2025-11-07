@@ -28,98 +28,98 @@ type IncidentFieldOptionCreate struct {
 }
 
 // SetTenantID sets the "tenant_id" field.
-func (ifoc *IncidentFieldOptionCreate) SetTenantID(i int) *IncidentFieldOptionCreate {
-	ifoc.mutation.SetTenantID(i)
-	return ifoc
+func (_c *IncidentFieldOptionCreate) SetTenantID(v int) *IncidentFieldOptionCreate {
+	_c.mutation.SetTenantID(v)
+	return _c
 }
 
 // SetArchiveTime sets the "archive_time" field.
-func (ifoc *IncidentFieldOptionCreate) SetArchiveTime(t time.Time) *IncidentFieldOptionCreate {
-	ifoc.mutation.SetArchiveTime(t)
-	return ifoc
+func (_c *IncidentFieldOptionCreate) SetArchiveTime(v time.Time) *IncidentFieldOptionCreate {
+	_c.mutation.SetArchiveTime(v)
+	return _c
 }
 
 // SetNillableArchiveTime sets the "archive_time" field if the given value is not nil.
-func (ifoc *IncidentFieldOptionCreate) SetNillableArchiveTime(t *time.Time) *IncidentFieldOptionCreate {
-	if t != nil {
-		ifoc.SetArchiveTime(*t)
+func (_c *IncidentFieldOptionCreate) SetNillableArchiveTime(v *time.Time) *IncidentFieldOptionCreate {
+	if v != nil {
+		_c.SetArchiveTime(*v)
 	}
-	return ifoc
+	return _c
 }
 
 // SetIncidentFieldID sets the "incident_field_id" field.
-func (ifoc *IncidentFieldOptionCreate) SetIncidentFieldID(u uuid.UUID) *IncidentFieldOptionCreate {
-	ifoc.mutation.SetIncidentFieldID(u)
-	return ifoc
+func (_c *IncidentFieldOptionCreate) SetIncidentFieldID(v uuid.UUID) *IncidentFieldOptionCreate {
+	_c.mutation.SetIncidentFieldID(v)
+	return _c
 }
 
 // SetType sets the "type" field.
-func (ifoc *IncidentFieldOptionCreate) SetType(i incidentfieldoption.Type) *IncidentFieldOptionCreate {
-	ifoc.mutation.SetType(i)
-	return ifoc
+func (_c *IncidentFieldOptionCreate) SetType(v incidentfieldoption.Type) *IncidentFieldOptionCreate {
+	_c.mutation.SetType(v)
+	return _c
 }
 
 // SetValue sets the "value" field.
-func (ifoc *IncidentFieldOptionCreate) SetValue(s string) *IncidentFieldOptionCreate {
-	ifoc.mutation.SetValue(s)
-	return ifoc
+func (_c *IncidentFieldOptionCreate) SetValue(v string) *IncidentFieldOptionCreate {
+	_c.mutation.SetValue(v)
+	return _c
 }
 
 // SetID sets the "id" field.
-func (ifoc *IncidentFieldOptionCreate) SetID(u uuid.UUID) *IncidentFieldOptionCreate {
-	ifoc.mutation.SetID(u)
-	return ifoc
+func (_c *IncidentFieldOptionCreate) SetID(v uuid.UUID) *IncidentFieldOptionCreate {
+	_c.mutation.SetID(v)
+	return _c
 }
 
 // SetNillableID sets the "id" field if the given value is not nil.
-func (ifoc *IncidentFieldOptionCreate) SetNillableID(u *uuid.UUID) *IncidentFieldOptionCreate {
-	if u != nil {
-		ifoc.SetID(*u)
+func (_c *IncidentFieldOptionCreate) SetNillableID(v *uuid.UUID) *IncidentFieldOptionCreate {
+	if v != nil {
+		_c.SetID(*v)
 	}
-	return ifoc
+	return _c
 }
 
 // SetTenant sets the "tenant" edge to the Tenant entity.
-func (ifoc *IncidentFieldOptionCreate) SetTenant(t *Tenant) *IncidentFieldOptionCreate {
-	return ifoc.SetTenantID(t.ID)
+func (_c *IncidentFieldOptionCreate) SetTenant(v *Tenant) *IncidentFieldOptionCreate {
+	return _c.SetTenantID(v.ID)
 }
 
 // SetIncidentField sets the "incident_field" edge to the IncidentField entity.
-func (ifoc *IncidentFieldOptionCreate) SetIncidentField(i *IncidentField) *IncidentFieldOptionCreate {
-	return ifoc.SetIncidentFieldID(i.ID)
+func (_c *IncidentFieldOptionCreate) SetIncidentField(v *IncidentField) *IncidentFieldOptionCreate {
+	return _c.SetIncidentFieldID(v.ID)
 }
 
 // AddIncidentIDs adds the "incidents" edge to the Incident entity by IDs.
-func (ifoc *IncidentFieldOptionCreate) AddIncidentIDs(ids ...uuid.UUID) *IncidentFieldOptionCreate {
-	ifoc.mutation.AddIncidentIDs(ids...)
-	return ifoc
+func (_c *IncidentFieldOptionCreate) AddIncidentIDs(ids ...uuid.UUID) *IncidentFieldOptionCreate {
+	_c.mutation.AddIncidentIDs(ids...)
+	return _c
 }
 
 // AddIncidents adds the "incidents" edges to the Incident entity.
-func (ifoc *IncidentFieldOptionCreate) AddIncidents(i ...*Incident) *IncidentFieldOptionCreate {
-	ids := make([]uuid.UUID, len(i))
-	for j := range i {
-		ids[j] = i[j].ID
+func (_c *IncidentFieldOptionCreate) AddIncidents(v ...*Incident) *IncidentFieldOptionCreate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
 	}
-	return ifoc.AddIncidentIDs(ids...)
+	return _c.AddIncidentIDs(ids...)
 }
 
 // Mutation returns the IncidentFieldOptionMutation object of the builder.
-func (ifoc *IncidentFieldOptionCreate) Mutation() *IncidentFieldOptionMutation {
-	return ifoc.mutation
+func (_c *IncidentFieldOptionCreate) Mutation() *IncidentFieldOptionMutation {
+	return _c.mutation
 }
 
 // Save creates the IncidentFieldOption in the database.
-func (ifoc *IncidentFieldOptionCreate) Save(ctx context.Context) (*IncidentFieldOption, error) {
-	if err := ifoc.defaults(); err != nil {
+func (_c *IncidentFieldOptionCreate) Save(ctx context.Context) (*IncidentFieldOption, error) {
+	if err := _c.defaults(); err != nil {
 		return nil, err
 	}
-	return withHooks(ctx, ifoc.sqlSave, ifoc.mutation, ifoc.hooks)
+	return withHooks(ctx, _c.sqlSave, _c.mutation, _c.hooks)
 }
 
 // SaveX calls Save and panics if Save returns an error.
-func (ifoc *IncidentFieldOptionCreate) SaveX(ctx context.Context) *IncidentFieldOption {
-	v, err := ifoc.Save(ctx)
+func (_c *IncidentFieldOptionCreate) SaveX(ctx context.Context) *IncidentFieldOption {
+	v, err := _c.Save(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -127,64 +127,64 @@ func (ifoc *IncidentFieldOptionCreate) SaveX(ctx context.Context) *IncidentField
 }
 
 // Exec executes the query.
-func (ifoc *IncidentFieldOptionCreate) Exec(ctx context.Context) error {
-	_, err := ifoc.Save(ctx)
+func (_c *IncidentFieldOptionCreate) Exec(ctx context.Context) error {
+	_, err := _c.Save(ctx)
 	return err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (ifoc *IncidentFieldOptionCreate) ExecX(ctx context.Context) {
-	if err := ifoc.Exec(ctx); err != nil {
+func (_c *IncidentFieldOptionCreate) ExecX(ctx context.Context) {
+	if err := _c.Exec(ctx); err != nil {
 		panic(err)
 	}
 }
 
 // defaults sets the default values of the builder before save.
-func (ifoc *IncidentFieldOptionCreate) defaults() error {
-	if _, ok := ifoc.mutation.ID(); !ok {
+func (_c *IncidentFieldOptionCreate) defaults() error {
+	if _, ok := _c.mutation.ID(); !ok {
 		if incidentfieldoption.DefaultID == nil {
 			return fmt.Errorf("ent: uninitialized incidentfieldoption.DefaultID (forgotten import ent/runtime?)")
 		}
 		v := incidentfieldoption.DefaultID()
-		ifoc.mutation.SetID(v)
+		_c.mutation.SetID(v)
 	}
 	return nil
 }
 
 // check runs all checks and user-defined validators on the builder.
-func (ifoc *IncidentFieldOptionCreate) check() error {
-	if _, ok := ifoc.mutation.TenantID(); !ok {
+func (_c *IncidentFieldOptionCreate) check() error {
+	if _, ok := _c.mutation.TenantID(); !ok {
 		return &ValidationError{Name: "tenant_id", err: errors.New(`ent: missing required field "IncidentFieldOption.tenant_id"`)}
 	}
-	if _, ok := ifoc.mutation.IncidentFieldID(); !ok {
+	if _, ok := _c.mutation.IncidentFieldID(); !ok {
 		return &ValidationError{Name: "incident_field_id", err: errors.New(`ent: missing required field "IncidentFieldOption.incident_field_id"`)}
 	}
-	if _, ok := ifoc.mutation.GetType(); !ok {
+	if _, ok := _c.mutation.GetType(); !ok {
 		return &ValidationError{Name: "type", err: errors.New(`ent: missing required field "IncidentFieldOption.type"`)}
 	}
-	if v, ok := ifoc.mutation.GetType(); ok {
+	if v, ok := _c.mutation.GetType(); ok {
 		if err := incidentfieldoption.TypeValidator(v); err != nil {
 			return &ValidationError{Name: "type", err: fmt.Errorf(`ent: validator failed for field "IncidentFieldOption.type": %w`, err)}
 		}
 	}
-	if _, ok := ifoc.mutation.Value(); !ok {
+	if _, ok := _c.mutation.Value(); !ok {
 		return &ValidationError{Name: "value", err: errors.New(`ent: missing required field "IncidentFieldOption.value"`)}
 	}
-	if len(ifoc.mutation.TenantIDs()) == 0 {
+	if len(_c.mutation.TenantIDs()) == 0 {
 		return &ValidationError{Name: "tenant", err: errors.New(`ent: missing required edge "IncidentFieldOption.tenant"`)}
 	}
-	if len(ifoc.mutation.IncidentFieldIDs()) == 0 {
+	if len(_c.mutation.IncidentFieldIDs()) == 0 {
 		return &ValidationError{Name: "incident_field", err: errors.New(`ent: missing required edge "IncidentFieldOption.incident_field"`)}
 	}
 	return nil
 }
 
-func (ifoc *IncidentFieldOptionCreate) sqlSave(ctx context.Context) (*IncidentFieldOption, error) {
-	if err := ifoc.check(); err != nil {
+func (_c *IncidentFieldOptionCreate) sqlSave(ctx context.Context) (*IncidentFieldOption, error) {
+	if err := _c.check(); err != nil {
 		return nil, err
 	}
-	_node, _spec := ifoc.createSpec()
-	if err := sqlgraph.CreateNode(ctx, ifoc.driver, _spec); err != nil {
+	_node, _spec := _c.createSpec()
+	if err := sqlgraph.CreateNode(ctx, _c.driver, _spec); err != nil {
 		if sqlgraph.IsConstraintError(err) {
 			err = &ConstraintError{msg: err.Error(), wrap: err}
 		}
@@ -197,34 +197,34 @@ func (ifoc *IncidentFieldOptionCreate) sqlSave(ctx context.Context) (*IncidentFi
 			return nil, err
 		}
 	}
-	ifoc.mutation.id = &_node.ID
-	ifoc.mutation.done = true
+	_c.mutation.id = &_node.ID
+	_c.mutation.done = true
 	return _node, nil
 }
 
-func (ifoc *IncidentFieldOptionCreate) createSpec() (*IncidentFieldOption, *sqlgraph.CreateSpec) {
+func (_c *IncidentFieldOptionCreate) createSpec() (*IncidentFieldOption, *sqlgraph.CreateSpec) {
 	var (
-		_node = &IncidentFieldOption{config: ifoc.config}
+		_node = &IncidentFieldOption{config: _c.config}
 		_spec = sqlgraph.NewCreateSpec(incidentfieldoption.Table, sqlgraph.NewFieldSpec(incidentfieldoption.FieldID, field.TypeUUID))
 	)
-	_spec.OnConflict = ifoc.conflict
-	if id, ok := ifoc.mutation.ID(); ok {
+	_spec.OnConflict = _c.conflict
+	if id, ok := _c.mutation.ID(); ok {
 		_node.ID = id
 		_spec.ID.Value = &id
 	}
-	if value, ok := ifoc.mutation.ArchiveTime(); ok {
+	if value, ok := _c.mutation.ArchiveTime(); ok {
 		_spec.SetField(incidentfieldoption.FieldArchiveTime, field.TypeTime, value)
 		_node.ArchiveTime = value
 	}
-	if value, ok := ifoc.mutation.GetType(); ok {
+	if value, ok := _c.mutation.GetType(); ok {
 		_spec.SetField(incidentfieldoption.FieldType, field.TypeEnum, value)
 		_node.Type = value
 	}
-	if value, ok := ifoc.mutation.Value(); ok {
+	if value, ok := _c.mutation.Value(); ok {
 		_spec.SetField(incidentfieldoption.FieldValue, field.TypeString, value)
 		_node.Value = value
 	}
-	if nodes := ifoc.mutation.TenantIDs(); len(nodes) > 0 {
+	if nodes := _c.mutation.TenantIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
@@ -241,7 +241,7 @@ func (ifoc *IncidentFieldOptionCreate) createSpec() (*IncidentFieldOption, *sqlg
 		_node.TenantID = nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
-	if nodes := ifoc.mutation.IncidentFieldIDs(); len(nodes) > 0 {
+	if nodes := _c.mutation.IncidentFieldIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: true,
@@ -258,7 +258,7 @@ func (ifoc *IncidentFieldOptionCreate) createSpec() (*IncidentFieldOption, *sqlg
 		_node.IncidentFieldID = nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
-	if nodes := ifoc.mutation.IncidentsIDs(); len(nodes) > 0 {
+	if nodes := _c.mutation.IncidentsIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
 			Inverse: true,
@@ -293,10 +293,10 @@ func (ifoc *IncidentFieldOptionCreate) createSpec() (*IncidentFieldOption, *sqlg
 //			SetTenantID(v+v).
 //		}).
 //		Exec(ctx)
-func (ifoc *IncidentFieldOptionCreate) OnConflict(opts ...sql.ConflictOption) *IncidentFieldOptionUpsertOne {
-	ifoc.conflict = opts
+func (_c *IncidentFieldOptionCreate) OnConflict(opts ...sql.ConflictOption) *IncidentFieldOptionUpsertOne {
+	_c.conflict = opts
 	return &IncidentFieldOptionUpsertOne{
-		create: ifoc,
+		create: _c,
 	}
 }
 
@@ -306,10 +306,10 @@ func (ifoc *IncidentFieldOptionCreate) OnConflict(opts ...sql.ConflictOption) *I
 //	client.IncidentFieldOption.Create().
 //		OnConflict(sql.ConflictColumns(columns...)).
 //		Exec(ctx)
-func (ifoc *IncidentFieldOptionCreate) OnConflictColumns(columns ...string) *IncidentFieldOptionUpsertOne {
-	ifoc.conflict = append(ifoc.conflict, sql.ConflictColumns(columns...))
+func (_c *IncidentFieldOptionCreate) OnConflictColumns(columns ...string) *IncidentFieldOptionUpsertOne {
+	_c.conflict = append(_c.conflict, sql.ConflictColumns(columns...))
 	return &IncidentFieldOptionUpsertOne{
-		create: ifoc,
+		create: _c,
 	}
 }
 
@@ -541,16 +541,16 @@ type IncidentFieldOptionCreateBulk struct {
 }
 
 // Save creates the IncidentFieldOption entities in the database.
-func (ifocb *IncidentFieldOptionCreateBulk) Save(ctx context.Context) ([]*IncidentFieldOption, error) {
-	if ifocb.err != nil {
-		return nil, ifocb.err
+func (_c *IncidentFieldOptionCreateBulk) Save(ctx context.Context) ([]*IncidentFieldOption, error) {
+	if _c.err != nil {
+		return nil, _c.err
 	}
-	specs := make([]*sqlgraph.CreateSpec, len(ifocb.builders))
-	nodes := make([]*IncidentFieldOption, len(ifocb.builders))
-	mutators := make([]Mutator, len(ifocb.builders))
-	for i := range ifocb.builders {
+	specs := make([]*sqlgraph.CreateSpec, len(_c.builders))
+	nodes := make([]*IncidentFieldOption, len(_c.builders))
+	mutators := make([]Mutator, len(_c.builders))
+	for i := range _c.builders {
 		func(i int, root context.Context) {
-			builder := ifocb.builders[i]
+			builder := _c.builders[i]
 			builder.defaults()
 			var mut Mutator = MutateFunc(func(ctx context.Context, m Mutation) (Value, error) {
 				mutation, ok := m.(*IncidentFieldOptionMutation)
@@ -564,12 +564,12 @@ func (ifocb *IncidentFieldOptionCreateBulk) Save(ctx context.Context) ([]*Incide
 				var err error
 				nodes[i], specs[i] = builder.createSpec()
 				if i < len(mutators)-1 {
-					_, err = mutators[i+1].Mutate(root, ifocb.builders[i+1].mutation)
+					_, err = mutators[i+1].Mutate(root, _c.builders[i+1].mutation)
 				} else {
 					spec := &sqlgraph.BatchCreateSpec{Nodes: specs}
-					spec.OnConflict = ifocb.conflict
+					spec.OnConflict = _c.conflict
 					// Invoke the actual operation on the latest mutation in the chain.
-					if err = sqlgraph.BatchCreate(ctx, ifocb.driver, spec); err != nil {
+					if err = sqlgraph.BatchCreate(ctx, _c.driver, spec); err != nil {
 						if sqlgraph.IsConstraintError(err) {
 							err = &ConstraintError{msg: err.Error(), wrap: err}
 						}
@@ -589,7 +589,7 @@ func (ifocb *IncidentFieldOptionCreateBulk) Save(ctx context.Context) ([]*Incide
 		}(i, ctx)
 	}
 	if len(mutators) > 0 {
-		if _, err := mutators[0].Mutate(ctx, ifocb.builders[0].mutation); err != nil {
+		if _, err := mutators[0].Mutate(ctx, _c.builders[0].mutation); err != nil {
 			return nil, err
 		}
 	}
@@ -597,8 +597,8 @@ func (ifocb *IncidentFieldOptionCreateBulk) Save(ctx context.Context) ([]*Incide
 }
 
 // SaveX is like Save, but panics if an error occurs.
-func (ifocb *IncidentFieldOptionCreateBulk) SaveX(ctx context.Context) []*IncidentFieldOption {
-	v, err := ifocb.Save(ctx)
+func (_c *IncidentFieldOptionCreateBulk) SaveX(ctx context.Context) []*IncidentFieldOption {
+	v, err := _c.Save(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -606,14 +606,14 @@ func (ifocb *IncidentFieldOptionCreateBulk) SaveX(ctx context.Context) []*Incide
 }
 
 // Exec executes the query.
-func (ifocb *IncidentFieldOptionCreateBulk) Exec(ctx context.Context) error {
-	_, err := ifocb.Save(ctx)
+func (_c *IncidentFieldOptionCreateBulk) Exec(ctx context.Context) error {
+	_, err := _c.Save(ctx)
 	return err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (ifocb *IncidentFieldOptionCreateBulk) ExecX(ctx context.Context) {
-	if err := ifocb.Exec(ctx); err != nil {
+func (_c *IncidentFieldOptionCreateBulk) ExecX(ctx context.Context) {
+	if err := _c.Exec(ctx); err != nil {
 		panic(err)
 	}
 }
@@ -633,10 +633,10 @@ func (ifocb *IncidentFieldOptionCreateBulk) ExecX(ctx context.Context) {
 //			SetTenantID(v+v).
 //		}).
 //		Exec(ctx)
-func (ifocb *IncidentFieldOptionCreateBulk) OnConflict(opts ...sql.ConflictOption) *IncidentFieldOptionUpsertBulk {
-	ifocb.conflict = opts
+func (_c *IncidentFieldOptionCreateBulk) OnConflict(opts ...sql.ConflictOption) *IncidentFieldOptionUpsertBulk {
+	_c.conflict = opts
 	return &IncidentFieldOptionUpsertBulk{
-		create: ifocb,
+		create: _c,
 	}
 }
 
@@ -646,10 +646,10 @@ func (ifocb *IncidentFieldOptionCreateBulk) OnConflict(opts ...sql.ConflictOptio
 //	client.IncidentFieldOption.Create().
 //		OnConflict(sql.ConflictColumns(columns...)).
 //		Exec(ctx)
-func (ifocb *IncidentFieldOptionCreateBulk) OnConflictColumns(columns ...string) *IncidentFieldOptionUpsertBulk {
-	ifocb.conflict = append(ifocb.conflict, sql.ConflictColumns(columns...))
+func (_c *IncidentFieldOptionCreateBulk) OnConflictColumns(columns ...string) *IncidentFieldOptionUpsertBulk {
+	_c.conflict = append(_c.conflict, sql.ConflictColumns(columns...))
 	return &IncidentFieldOptionUpsertBulk{
-		create: ifocb,
+		create: _c,
 	}
 }
 

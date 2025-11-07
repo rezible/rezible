@@ -20,56 +20,56 @@ type IncidentEventContextDelete struct {
 }
 
 // Where appends a list predicates to the IncidentEventContextDelete builder.
-func (iecd *IncidentEventContextDelete) Where(ps ...predicate.IncidentEventContext) *IncidentEventContextDelete {
-	iecd.mutation.Where(ps...)
-	return iecd
+func (_d *IncidentEventContextDelete) Where(ps ...predicate.IncidentEventContext) *IncidentEventContextDelete {
+	_d.mutation.Where(ps...)
+	return _d
 }
 
 // Exec executes the deletion query and returns how many vertices were deleted.
-func (iecd *IncidentEventContextDelete) Exec(ctx context.Context) (int, error) {
-	return withHooks(ctx, iecd.sqlExec, iecd.mutation, iecd.hooks)
+func (_d *IncidentEventContextDelete) Exec(ctx context.Context) (int, error) {
+	return withHooks(ctx, _d.sqlExec, _d.mutation, _d.hooks)
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (iecd *IncidentEventContextDelete) ExecX(ctx context.Context) int {
-	n, err := iecd.Exec(ctx)
+func (_d *IncidentEventContextDelete) ExecX(ctx context.Context) int {
+	n, err := _d.Exec(ctx)
 	if err != nil {
 		panic(err)
 	}
 	return n
 }
 
-func (iecd *IncidentEventContextDelete) sqlExec(ctx context.Context) (int, error) {
+func (_d *IncidentEventContextDelete) sqlExec(ctx context.Context) (int, error) {
 	_spec := sqlgraph.NewDeleteSpec(incidenteventcontext.Table, sqlgraph.NewFieldSpec(incidenteventcontext.FieldID, field.TypeUUID))
-	if ps := iecd.mutation.predicates; len(ps) > 0 {
+	if ps := _d.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {
 				ps[i](selector)
 			}
 		}
 	}
-	affected, err := sqlgraph.DeleteNodes(ctx, iecd.driver, _spec)
+	affected, err := sqlgraph.DeleteNodes(ctx, _d.driver, _spec)
 	if err != nil && sqlgraph.IsConstraintError(err) {
 		err = &ConstraintError{msg: err.Error(), wrap: err}
 	}
-	iecd.mutation.done = true
+	_d.mutation.done = true
 	return affected, err
 }
 
 // IncidentEventContextDeleteOne is the builder for deleting a single IncidentEventContext entity.
 type IncidentEventContextDeleteOne struct {
-	iecd *IncidentEventContextDelete
+	_d *IncidentEventContextDelete
 }
 
 // Where appends a list predicates to the IncidentEventContextDelete builder.
-func (iecdo *IncidentEventContextDeleteOne) Where(ps ...predicate.IncidentEventContext) *IncidentEventContextDeleteOne {
-	iecdo.iecd.mutation.Where(ps...)
-	return iecdo
+func (_d *IncidentEventContextDeleteOne) Where(ps ...predicate.IncidentEventContext) *IncidentEventContextDeleteOne {
+	_d._d.mutation.Where(ps...)
+	return _d
 }
 
 // Exec executes the deletion query.
-func (iecdo *IncidentEventContextDeleteOne) Exec(ctx context.Context) error {
-	n, err := iecdo.iecd.Exec(ctx)
+func (_d *IncidentEventContextDeleteOne) Exec(ctx context.Context) error {
+	n, err := _d._d.Exec(ctx)
 	switch {
 	case err != nil:
 		return err
@@ -81,8 +81,8 @@ func (iecdo *IncidentEventContextDeleteOne) Exec(ctx context.Context) error {
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (iecdo *IncidentEventContextDeleteOne) ExecX(ctx context.Context) {
-	if err := iecdo.Exec(ctx); err != nil {
+func (_d *IncidentEventContextDeleteOne) ExecX(ctx context.Context) {
+	if err := _d.Exec(ctx); err != nil {
 		panic(err)
 	}
 }

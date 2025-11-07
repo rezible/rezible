@@ -31,258 +31,258 @@ type SystemAnalysisRelationshipUpdate struct {
 }
 
 // Where appends a list predicates to the SystemAnalysisRelationshipUpdate builder.
-func (saru *SystemAnalysisRelationshipUpdate) Where(ps ...predicate.SystemAnalysisRelationship) *SystemAnalysisRelationshipUpdate {
-	saru.mutation.Where(ps...)
-	return saru
+func (_u *SystemAnalysisRelationshipUpdate) Where(ps ...predicate.SystemAnalysisRelationship) *SystemAnalysisRelationshipUpdate {
+	_u.mutation.Where(ps...)
+	return _u
 }
 
 // SetAnalysisID sets the "analysis_id" field.
-func (saru *SystemAnalysisRelationshipUpdate) SetAnalysisID(u uuid.UUID) *SystemAnalysisRelationshipUpdate {
-	saru.mutation.SetAnalysisID(u)
-	return saru
+func (_u *SystemAnalysisRelationshipUpdate) SetAnalysisID(v uuid.UUID) *SystemAnalysisRelationshipUpdate {
+	_u.mutation.SetAnalysisID(v)
+	return _u
 }
 
 // SetNillableAnalysisID sets the "analysis_id" field if the given value is not nil.
-func (saru *SystemAnalysisRelationshipUpdate) SetNillableAnalysisID(u *uuid.UUID) *SystemAnalysisRelationshipUpdate {
-	if u != nil {
-		saru.SetAnalysisID(*u)
+func (_u *SystemAnalysisRelationshipUpdate) SetNillableAnalysisID(v *uuid.UUID) *SystemAnalysisRelationshipUpdate {
+	if v != nil {
+		_u.SetAnalysisID(*v)
 	}
-	return saru
+	return _u
 }
 
 // SetComponentRelationshipID sets the "component_relationship_id" field.
-func (saru *SystemAnalysisRelationshipUpdate) SetComponentRelationshipID(u uuid.UUID) *SystemAnalysisRelationshipUpdate {
-	saru.mutation.SetComponentRelationshipID(u)
-	return saru
+func (_u *SystemAnalysisRelationshipUpdate) SetComponentRelationshipID(v uuid.UUID) *SystemAnalysisRelationshipUpdate {
+	_u.mutation.SetComponentRelationshipID(v)
+	return _u
 }
 
 // SetNillableComponentRelationshipID sets the "component_relationship_id" field if the given value is not nil.
-func (saru *SystemAnalysisRelationshipUpdate) SetNillableComponentRelationshipID(u *uuid.UUID) *SystemAnalysisRelationshipUpdate {
-	if u != nil {
-		saru.SetComponentRelationshipID(*u)
+func (_u *SystemAnalysisRelationshipUpdate) SetNillableComponentRelationshipID(v *uuid.UUID) *SystemAnalysisRelationshipUpdate {
+	if v != nil {
+		_u.SetComponentRelationshipID(*v)
 	}
-	return saru
+	return _u
 }
 
 // SetDescription sets the "description" field.
-func (saru *SystemAnalysisRelationshipUpdate) SetDescription(s string) *SystemAnalysisRelationshipUpdate {
-	saru.mutation.SetDescription(s)
-	return saru
+func (_u *SystemAnalysisRelationshipUpdate) SetDescription(v string) *SystemAnalysisRelationshipUpdate {
+	_u.mutation.SetDescription(v)
+	return _u
 }
 
 // SetNillableDescription sets the "description" field if the given value is not nil.
-func (saru *SystemAnalysisRelationshipUpdate) SetNillableDescription(s *string) *SystemAnalysisRelationshipUpdate {
-	if s != nil {
-		saru.SetDescription(*s)
+func (_u *SystemAnalysisRelationshipUpdate) SetNillableDescription(v *string) *SystemAnalysisRelationshipUpdate {
+	if v != nil {
+		_u.SetDescription(*v)
 	}
-	return saru
+	return _u
 }
 
 // ClearDescription clears the value of the "description" field.
-func (saru *SystemAnalysisRelationshipUpdate) ClearDescription() *SystemAnalysisRelationshipUpdate {
-	saru.mutation.ClearDescription()
-	return saru
+func (_u *SystemAnalysisRelationshipUpdate) ClearDescription() *SystemAnalysisRelationshipUpdate {
+	_u.mutation.ClearDescription()
+	return _u
 }
 
 // SetCreatedAt sets the "created_at" field.
-func (saru *SystemAnalysisRelationshipUpdate) SetCreatedAt(t time.Time) *SystemAnalysisRelationshipUpdate {
-	saru.mutation.SetCreatedAt(t)
-	return saru
+func (_u *SystemAnalysisRelationshipUpdate) SetCreatedAt(v time.Time) *SystemAnalysisRelationshipUpdate {
+	_u.mutation.SetCreatedAt(v)
+	return _u
 }
 
 // SetNillableCreatedAt sets the "created_at" field if the given value is not nil.
-func (saru *SystemAnalysisRelationshipUpdate) SetNillableCreatedAt(t *time.Time) *SystemAnalysisRelationshipUpdate {
-	if t != nil {
-		saru.SetCreatedAt(*t)
+func (_u *SystemAnalysisRelationshipUpdate) SetNillableCreatedAt(v *time.Time) *SystemAnalysisRelationshipUpdate {
+	if v != nil {
+		_u.SetCreatedAt(*v)
 	}
-	return saru
+	return _u
 }
 
 // SetSystemAnalysisID sets the "system_analysis" edge to the SystemAnalysis entity by ID.
-func (saru *SystemAnalysisRelationshipUpdate) SetSystemAnalysisID(id uuid.UUID) *SystemAnalysisRelationshipUpdate {
-	saru.mutation.SetSystemAnalysisID(id)
-	return saru
+func (_u *SystemAnalysisRelationshipUpdate) SetSystemAnalysisID(id uuid.UUID) *SystemAnalysisRelationshipUpdate {
+	_u.mutation.SetSystemAnalysisID(id)
+	return _u
 }
 
 // SetSystemAnalysis sets the "system_analysis" edge to the SystemAnalysis entity.
-func (saru *SystemAnalysisRelationshipUpdate) SetSystemAnalysis(s *SystemAnalysis) *SystemAnalysisRelationshipUpdate {
-	return saru.SetSystemAnalysisID(s.ID)
+func (_u *SystemAnalysisRelationshipUpdate) SetSystemAnalysis(v *SystemAnalysis) *SystemAnalysisRelationshipUpdate {
+	return _u.SetSystemAnalysisID(v.ID)
 }
 
 // SetComponentRelationship sets the "component_relationship" edge to the SystemComponentRelationship entity.
-func (saru *SystemAnalysisRelationshipUpdate) SetComponentRelationship(s *SystemComponentRelationship) *SystemAnalysisRelationshipUpdate {
-	return saru.SetComponentRelationshipID(s.ID)
+func (_u *SystemAnalysisRelationshipUpdate) SetComponentRelationship(v *SystemComponentRelationship) *SystemAnalysisRelationshipUpdate {
+	return _u.SetComponentRelationshipID(v.ID)
 }
 
 // AddControlIDs adds the "controls" edge to the SystemComponentControl entity by IDs.
-func (saru *SystemAnalysisRelationshipUpdate) AddControlIDs(ids ...uuid.UUID) *SystemAnalysisRelationshipUpdate {
-	saru.mutation.AddControlIDs(ids...)
-	return saru
+func (_u *SystemAnalysisRelationshipUpdate) AddControlIDs(ids ...uuid.UUID) *SystemAnalysisRelationshipUpdate {
+	_u.mutation.AddControlIDs(ids...)
+	return _u
 }
 
 // AddControls adds the "controls" edges to the SystemComponentControl entity.
-func (saru *SystemAnalysisRelationshipUpdate) AddControls(s ...*SystemComponentControl) *SystemAnalysisRelationshipUpdate {
-	ids := make([]uuid.UUID, len(s))
-	for i := range s {
-		ids[i] = s[i].ID
+func (_u *SystemAnalysisRelationshipUpdate) AddControls(v ...*SystemComponentControl) *SystemAnalysisRelationshipUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
 	}
-	return saru.AddControlIDs(ids...)
+	return _u.AddControlIDs(ids...)
 }
 
 // AddSignalIDs adds the "signals" edge to the SystemComponentSignal entity by IDs.
-func (saru *SystemAnalysisRelationshipUpdate) AddSignalIDs(ids ...uuid.UUID) *SystemAnalysisRelationshipUpdate {
-	saru.mutation.AddSignalIDs(ids...)
-	return saru
+func (_u *SystemAnalysisRelationshipUpdate) AddSignalIDs(ids ...uuid.UUID) *SystemAnalysisRelationshipUpdate {
+	_u.mutation.AddSignalIDs(ids...)
+	return _u
 }
 
 // AddSignals adds the "signals" edges to the SystemComponentSignal entity.
-func (saru *SystemAnalysisRelationshipUpdate) AddSignals(s ...*SystemComponentSignal) *SystemAnalysisRelationshipUpdate {
-	ids := make([]uuid.UUID, len(s))
-	for i := range s {
-		ids[i] = s[i].ID
+func (_u *SystemAnalysisRelationshipUpdate) AddSignals(v ...*SystemComponentSignal) *SystemAnalysisRelationshipUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
 	}
-	return saru.AddSignalIDs(ids...)
+	return _u.AddSignalIDs(ids...)
 }
 
 // AddControlActionIDs adds the "control_actions" edge to the SystemRelationshipControlAction entity by IDs.
-func (saru *SystemAnalysisRelationshipUpdate) AddControlActionIDs(ids ...uuid.UUID) *SystemAnalysisRelationshipUpdate {
-	saru.mutation.AddControlActionIDs(ids...)
-	return saru
+func (_u *SystemAnalysisRelationshipUpdate) AddControlActionIDs(ids ...uuid.UUID) *SystemAnalysisRelationshipUpdate {
+	_u.mutation.AddControlActionIDs(ids...)
+	return _u
 }
 
 // AddControlActions adds the "control_actions" edges to the SystemRelationshipControlAction entity.
-func (saru *SystemAnalysisRelationshipUpdate) AddControlActions(s ...*SystemRelationshipControlAction) *SystemAnalysisRelationshipUpdate {
-	ids := make([]uuid.UUID, len(s))
-	for i := range s {
-		ids[i] = s[i].ID
+func (_u *SystemAnalysisRelationshipUpdate) AddControlActions(v ...*SystemRelationshipControlAction) *SystemAnalysisRelationshipUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
 	}
-	return saru.AddControlActionIDs(ids...)
+	return _u.AddControlActionIDs(ids...)
 }
 
 // AddFeedbackSignalIDs adds the "feedback_signals" edge to the SystemRelationshipFeedbackSignal entity by IDs.
-func (saru *SystemAnalysisRelationshipUpdate) AddFeedbackSignalIDs(ids ...uuid.UUID) *SystemAnalysisRelationshipUpdate {
-	saru.mutation.AddFeedbackSignalIDs(ids...)
-	return saru
+func (_u *SystemAnalysisRelationshipUpdate) AddFeedbackSignalIDs(ids ...uuid.UUID) *SystemAnalysisRelationshipUpdate {
+	_u.mutation.AddFeedbackSignalIDs(ids...)
+	return _u
 }
 
 // AddFeedbackSignals adds the "feedback_signals" edges to the SystemRelationshipFeedbackSignal entity.
-func (saru *SystemAnalysisRelationshipUpdate) AddFeedbackSignals(s ...*SystemRelationshipFeedbackSignal) *SystemAnalysisRelationshipUpdate {
-	ids := make([]uuid.UUID, len(s))
-	for i := range s {
-		ids[i] = s[i].ID
+func (_u *SystemAnalysisRelationshipUpdate) AddFeedbackSignals(v ...*SystemRelationshipFeedbackSignal) *SystemAnalysisRelationshipUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
 	}
-	return saru.AddFeedbackSignalIDs(ids...)
+	return _u.AddFeedbackSignalIDs(ids...)
 }
 
 // Mutation returns the SystemAnalysisRelationshipMutation object of the builder.
-func (saru *SystemAnalysisRelationshipUpdate) Mutation() *SystemAnalysisRelationshipMutation {
-	return saru.mutation
+func (_u *SystemAnalysisRelationshipUpdate) Mutation() *SystemAnalysisRelationshipMutation {
+	return _u.mutation
 }
 
 // ClearSystemAnalysis clears the "system_analysis" edge to the SystemAnalysis entity.
-func (saru *SystemAnalysisRelationshipUpdate) ClearSystemAnalysis() *SystemAnalysisRelationshipUpdate {
-	saru.mutation.ClearSystemAnalysis()
-	return saru
+func (_u *SystemAnalysisRelationshipUpdate) ClearSystemAnalysis() *SystemAnalysisRelationshipUpdate {
+	_u.mutation.ClearSystemAnalysis()
+	return _u
 }
 
 // ClearComponentRelationship clears the "component_relationship" edge to the SystemComponentRelationship entity.
-func (saru *SystemAnalysisRelationshipUpdate) ClearComponentRelationship() *SystemAnalysisRelationshipUpdate {
-	saru.mutation.ClearComponentRelationship()
-	return saru
+func (_u *SystemAnalysisRelationshipUpdate) ClearComponentRelationship() *SystemAnalysisRelationshipUpdate {
+	_u.mutation.ClearComponentRelationship()
+	return _u
 }
 
 // ClearControls clears all "controls" edges to the SystemComponentControl entity.
-func (saru *SystemAnalysisRelationshipUpdate) ClearControls() *SystemAnalysisRelationshipUpdate {
-	saru.mutation.ClearControls()
-	return saru
+func (_u *SystemAnalysisRelationshipUpdate) ClearControls() *SystemAnalysisRelationshipUpdate {
+	_u.mutation.ClearControls()
+	return _u
 }
 
 // RemoveControlIDs removes the "controls" edge to SystemComponentControl entities by IDs.
-func (saru *SystemAnalysisRelationshipUpdate) RemoveControlIDs(ids ...uuid.UUID) *SystemAnalysisRelationshipUpdate {
-	saru.mutation.RemoveControlIDs(ids...)
-	return saru
+func (_u *SystemAnalysisRelationshipUpdate) RemoveControlIDs(ids ...uuid.UUID) *SystemAnalysisRelationshipUpdate {
+	_u.mutation.RemoveControlIDs(ids...)
+	return _u
 }
 
 // RemoveControls removes "controls" edges to SystemComponentControl entities.
-func (saru *SystemAnalysisRelationshipUpdate) RemoveControls(s ...*SystemComponentControl) *SystemAnalysisRelationshipUpdate {
-	ids := make([]uuid.UUID, len(s))
-	for i := range s {
-		ids[i] = s[i].ID
+func (_u *SystemAnalysisRelationshipUpdate) RemoveControls(v ...*SystemComponentControl) *SystemAnalysisRelationshipUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
 	}
-	return saru.RemoveControlIDs(ids...)
+	return _u.RemoveControlIDs(ids...)
 }
 
 // ClearSignals clears all "signals" edges to the SystemComponentSignal entity.
-func (saru *SystemAnalysisRelationshipUpdate) ClearSignals() *SystemAnalysisRelationshipUpdate {
-	saru.mutation.ClearSignals()
-	return saru
+func (_u *SystemAnalysisRelationshipUpdate) ClearSignals() *SystemAnalysisRelationshipUpdate {
+	_u.mutation.ClearSignals()
+	return _u
 }
 
 // RemoveSignalIDs removes the "signals" edge to SystemComponentSignal entities by IDs.
-func (saru *SystemAnalysisRelationshipUpdate) RemoveSignalIDs(ids ...uuid.UUID) *SystemAnalysisRelationshipUpdate {
-	saru.mutation.RemoveSignalIDs(ids...)
-	return saru
+func (_u *SystemAnalysisRelationshipUpdate) RemoveSignalIDs(ids ...uuid.UUID) *SystemAnalysisRelationshipUpdate {
+	_u.mutation.RemoveSignalIDs(ids...)
+	return _u
 }
 
 // RemoveSignals removes "signals" edges to SystemComponentSignal entities.
-func (saru *SystemAnalysisRelationshipUpdate) RemoveSignals(s ...*SystemComponentSignal) *SystemAnalysisRelationshipUpdate {
-	ids := make([]uuid.UUID, len(s))
-	for i := range s {
-		ids[i] = s[i].ID
+func (_u *SystemAnalysisRelationshipUpdate) RemoveSignals(v ...*SystemComponentSignal) *SystemAnalysisRelationshipUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
 	}
-	return saru.RemoveSignalIDs(ids...)
+	return _u.RemoveSignalIDs(ids...)
 }
 
 // ClearControlActions clears all "control_actions" edges to the SystemRelationshipControlAction entity.
-func (saru *SystemAnalysisRelationshipUpdate) ClearControlActions() *SystemAnalysisRelationshipUpdate {
-	saru.mutation.ClearControlActions()
-	return saru
+func (_u *SystemAnalysisRelationshipUpdate) ClearControlActions() *SystemAnalysisRelationshipUpdate {
+	_u.mutation.ClearControlActions()
+	return _u
 }
 
 // RemoveControlActionIDs removes the "control_actions" edge to SystemRelationshipControlAction entities by IDs.
-func (saru *SystemAnalysisRelationshipUpdate) RemoveControlActionIDs(ids ...uuid.UUID) *SystemAnalysisRelationshipUpdate {
-	saru.mutation.RemoveControlActionIDs(ids...)
-	return saru
+func (_u *SystemAnalysisRelationshipUpdate) RemoveControlActionIDs(ids ...uuid.UUID) *SystemAnalysisRelationshipUpdate {
+	_u.mutation.RemoveControlActionIDs(ids...)
+	return _u
 }
 
 // RemoveControlActions removes "control_actions" edges to SystemRelationshipControlAction entities.
-func (saru *SystemAnalysisRelationshipUpdate) RemoveControlActions(s ...*SystemRelationshipControlAction) *SystemAnalysisRelationshipUpdate {
-	ids := make([]uuid.UUID, len(s))
-	for i := range s {
-		ids[i] = s[i].ID
+func (_u *SystemAnalysisRelationshipUpdate) RemoveControlActions(v ...*SystemRelationshipControlAction) *SystemAnalysisRelationshipUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
 	}
-	return saru.RemoveControlActionIDs(ids...)
+	return _u.RemoveControlActionIDs(ids...)
 }
 
 // ClearFeedbackSignals clears all "feedback_signals" edges to the SystemRelationshipFeedbackSignal entity.
-func (saru *SystemAnalysisRelationshipUpdate) ClearFeedbackSignals() *SystemAnalysisRelationshipUpdate {
-	saru.mutation.ClearFeedbackSignals()
-	return saru
+func (_u *SystemAnalysisRelationshipUpdate) ClearFeedbackSignals() *SystemAnalysisRelationshipUpdate {
+	_u.mutation.ClearFeedbackSignals()
+	return _u
 }
 
 // RemoveFeedbackSignalIDs removes the "feedback_signals" edge to SystemRelationshipFeedbackSignal entities by IDs.
-func (saru *SystemAnalysisRelationshipUpdate) RemoveFeedbackSignalIDs(ids ...uuid.UUID) *SystemAnalysisRelationshipUpdate {
-	saru.mutation.RemoveFeedbackSignalIDs(ids...)
-	return saru
+func (_u *SystemAnalysisRelationshipUpdate) RemoveFeedbackSignalIDs(ids ...uuid.UUID) *SystemAnalysisRelationshipUpdate {
+	_u.mutation.RemoveFeedbackSignalIDs(ids...)
+	return _u
 }
 
 // RemoveFeedbackSignals removes "feedback_signals" edges to SystemRelationshipFeedbackSignal entities.
-func (saru *SystemAnalysisRelationshipUpdate) RemoveFeedbackSignals(s ...*SystemRelationshipFeedbackSignal) *SystemAnalysisRelationshipUpdate {
-	ids := make([]uuid.UUID, len(s))
-	for i := range s {
-		ids[i] = s[i].ID
+func (_u *SystemAnalysisRelationshipUpdate) RemoveFeedbackSignals(v ...*SystemRelationshipFeedbackSignal) *SystemAnalysisRelationshipUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
 	}
-	return saru.RemoveFeedbackSignalIDs(ids...)
+	return _u.RemoveFeedbackSignalIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
-func (saru *SystemAnalysisRelationshipUpdate) Save(ctx context.Context) (int, error) {
-	return withHooks(ctx, saru.sqlSave, saru.mutation, saru.hooks)
+func (_u *SystemAnalysisRelationshipUpdate) Save(ctx context.Context) (int, error) {
+	return withHooks(ctx, _u.sqlSave, _u.mutation, _u.hooks)
 }
 
 // SaveX is like Save, but panics if an error occurs.
-func (saru *SystemAnalysisRelationshipUpdate) SaveX(ctx context.Context) int {
-	affected, err := saru.Save(ctx)
+func (_u *SystemAnalysisRelationshipUpdate) SaveX(ctx context.Context) int {
+	affected, err := _u.Save(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -290,60 +290,60 @@ func (saru *SystemAnalysisRelationshipUpdate) SaveX(ctx context.Context) int {
 }
 
 // Exec executes the query.
-func (saru *SystemAnalysisRelationshipUpdate) Exec(ctx context.Context) error {
-	_, err := saru.Save(ctx)
+func (_u *SystemAnalysisRelationshipUpdate) Exec(ctx context.Context) error {
+	_, err := _u.Save(ctx)
 	return err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (saru *SystemAnalysisRelationshipUpdate) ExecX(ctx context.Context) {
-	if err := saru.Exec(ctx); err != nil {
+func (_u *SystemAnalysisRelationshipUpdate) ExecX(ctx context.Context) {
+	if err := _u.Exec(ctx); err != nil {
 		panic(err)
 	}
 }
 
 // check runs all checks and user-defined validators on the builder.
-func (saru *SystemAnalysisRelationshipUpdate) check() error {
-	if saru.mutation.TenantCleared() && len(saru.mutation.TenantIDs()) > 0 {
+func (_u *SystemAnalysisRelationshipUpdate) check() error {
+	if _u.mutation.TenantCleared() && len(_u.mutation.TenantIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "SystemAnalysisRelationship.tenant"`)
 	}
-	if saru.mutation.SystemAnalysisCleared() && len(saru.mutation.SystemAnalysisIDs()) > 0 {
+	if _u.mutation.SystemAnalysisCleared() && len(_u.mutation.SystemAnalysisIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "SystemAnalysisRelationship.system_analysis"`)
 	}
-	if saru.mutation.ComponentRelationshipCleared() && len(saru.mutation.ComponentRelationshipIDs()) > 0 {
+	if _u.mutation.ComponentRelationshipCleared() && len(_u.mutation.ComponentRelationshipIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "SystemAnalysisRelationship.component_relationship"`)
 	}
 	return nil
 }
 
 // Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
-func (saru *SystemAnalysisRelationshipUpdate) Modify(modifiers ...func(u *sql.UpdateBuilder)) *SystemAnalysisRelationshipUpdate {
-	saru.modifiers = append(saru.modifiers, modifiers...)
-	return saru
+func (_u *SystemAnalysisRelationshipUpdate) Modify(modifiers ...func(u *sql.UpdateBuilder)) *SystemAnalysisRelationshipUpdate {
+	_u.modifiers = append(_u.modifiers, modifiers...)
+	return _u
 }
 
-func (saru *SystemAnalysisRelationshipUpdate) sqlSave(ctx context.Context) (n int, err error) {
-	if err := saru.check(); err != nil {
-		return n, err
+func (_u *SystemAnalysisRelationshipUpdate) sqlSave(ctx context.Context) (_node int, err error) {
+	if err := _u.check(); err != nil {
+		return _node, err
 	}
 	_spec := sqlgraph.NewUpdateSpec(systemanalysisrelationship.Table, systemanalysisrelationship.Columns, sqlgraph.NewFieldSpec(systemanalysisrelationship.FieldID, field.TypeUUID))
-	if ps := saru.mutation.predicates; len(ps) > 0 {
+	if ps := _u.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {
 				ps[i](selector)
 			}
 		}
 	}
-	if value, ok := saru.mutation.Description(); ok {
+	if value, ok := _u.mutation.Description(); ok {
 		_spec.SetField(systemanalysisrelationship.FieldDescription, field.TypeString, value)
 	}
-	if saru.mutation.DescriptionCleared() {
+	if _u.mutation.DescriptionCleared() {
 		_spec.ClearField(systemanalysisrelationship.FieldDescription, field.TypeString)
 	}
-	if value, ok := saru.mutation.CreatedAt(); ok {
+	if value, ok := _u.mutation.CreatedAt(); ok {
 		_spec.SetField(systemanalysisrelationship.FieldCreatedAt, field.TypeTime, value)
 	}
-	if saru.mutation.SystemAnalysisCleared() {
+	if _u.mutation.SystemAnalysisCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
@@ -356,7 +356,7 @@ func (saru *SystemAnalysisRelationshipUpdate) sqlSave(ctx context.Context) (n in
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := saru.mutation.SystemAnalysisIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.SystemAnalysisIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
@@ -372,7 +372,7 @@ func (saru *SystemAnalysisRelationshipUpdate) sqlSave(ctx context.Context) (n in
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if saru.mutation.ComponentRelationshipCleared() {
+	if _u.mutation.ComponentRelationshipCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
@@ -385,7 +385,7 @@ func (saru *SystemAnalysisRelationshipUpdate) sqlSave(ctx context.Context) (n in
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := saru.mutation.ComponentRelationshipIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.ComponentRelationshipIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
@@ -401,7 +401,7 @@ func (saru *SystemAnalysisRelationshipUpdate) sqlSave(ctx context.Context) (n in
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if saru.mutation.ControlsCleared() {
+	if _u.mutation.ControlsCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
 			Inverse: false,
@@ -412,7 +412,7 @@ func (saru *SystemAnalysisRelationshipUpdate) sqlSave(ctx context.Context) (n in
 				IDSpec: sqlgraph.NewFieldSpec(systemcomponentcontrol.FieldID, field.TypeUUID),
 			},
 		}
-		createE := &SystemRelationshipControlActionCreate{config: saru.config, mutation: newSystemRelationshipControlActionMutation(saru.config, OpCreate)}
+		createE := &SystemRelationshipControlActionCreate{config: _u.config, mutation: newSystemRelationshipControlActionMutation(_u.config, OpCreate)}
 		_ = createE.defaults()
 		_, specE := createE.createSpec()
 		edge.Target.Fields = specE.Fields
@@ -421,30 +421,7 @@ func (saru *SystemAnalysisRelationshipUpdate) sqlSave(ctx context.Context) (n in
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := saru.mutation.RemovedControlsIDs(); len(nodes) > 0 && !saru.mutation.ControlsCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
-			Inverse: false,
-			Table:   systemanalysisrelationship.ControlsTable,
-			Columns: systemanalysisrelationship.ControlsPrimaryKey,
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(systemcomponentcontrol.FieldID, field.TypeUUID),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		createE := &SystemRelationshipControlActionCreate{config: saru.config, mutation: newSystemRelationshipControlActionMutation(saru.config, OpCreate)}
-		_ = createE.defaults()
-		_, specE := createE.createSpec()
-		edge.Target.Fields = specE.Fields
-		if specE.ID.Value != nil {
-			edge.Target.Fields = append(edge.Target.Fields, specE.ID)
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := saru.mutation.ControlsIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.RemovedControlsIDs(); len(nodes) > 0 && !_u.mutation.ControlsCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
 			Inverse: false,
@@ -458,7 +435,30 @@ func (saru *SystemAnalysisRelationshipUpdate) sqlSave(ctx context.Context) (n in
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
-		createE := &SystemRelationshipControlActionCreate{config: saru.config, mutation: newSystemRelationshipControlActionMutation(saru.config, OpCreate)}
+		createE := &SystemRelationshipControlActionCreate{config: _u.config, mutation: newSystemRelationshipControlActionMutation(_u.config, OpCreate)}
+		_ = createE.defaults()
+		_, specE := createE.createSpec()
+		edge.Target.Fields = specE.Fields
+		if specE.ID.Value != nil {
+			edge.Target.Fields = append(edge.Target.Fields, specE.ID)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.ControlsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   systemanalysisrelationship.ControlsTable,
+			Columns: systemanalysisrelationship.ControlsPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(systemcomponentcontrol.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		createE := &SystemRelationshipControlActionCreate{config: _u.config, mutation: newSystemRelationshipControlActionMutation(_u.config, OpCreate)}
 		_ = createE.defaults()
 		_, specE := createE.createSpec()
 		edge.Target.Fields = specE.Fields
@@ -467,7 +467,7 @@ func (saru *SystemAnalysisRelationshipUpdate) sqlSave(ctx context.Context) (n in
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if saru.mutation.SignalsCleared() {
+	if _u.mutation.SignalsCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
 			Inverse: false,
@@ -478,7 +478,7 @@ func (saru *SystemAnalysisRelationshipUpdate) sqlSave(ctx context.Context) (n in
 				IDSpec: sqlgraph.NewFieldSpec(systemcomponentsignal.FieldID, field.TypeUUID),
 			},
 		}
-		createE := &SystemRelationshipFeedbackSignalCreate{config: saru.config, mutation: newSystemRelationshipFeedbackSignalMutation(saru.config, OpCreate)}
+		createE := &SystemRelationshipFeedbackSignalCreate{config: _u.config, mutation: newSystemRelationshipFeedbackSignalMutation(_u.config, OpCreate)}
 		_ = createE.defaults()
 		_, specE := createE.createSpec()
 		edge.Target.Fields = specE.Fields
@@ -487,7 +487,7 @@ func (saru *SystemAnalysisRelationshipUpdate) sqlSave(ctx context.Context) (n in
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := saru.mutation.RemovedSignalsIDs(); len(nodes) > 0 && !saru.mutation.SignalsCleared() {
+	if nodes := _u.mutation.RemovedSignalsIDs(); len(nodes) > 0 && !_u.mutation.SignalsCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
 			Inverse: false,
@@ -501,7 +501,7 @@ func (saru *SystemAnalysisRelationshipUpdate) sqlSave(ctx context.Context) (n in
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
-		createE := &SystemRelationshipFeedbackSignalCreate{config: saru.config, mutation: newSystemRelationshipFeedbackSignalMutation(saru.config, OpCreate)}
+		createE := &SystemRelationshipFeedbackSignalCreate{config: _u.config, mutation: newSystemRelationshipFeedbackSignalMutation(_u.config, OpCreate)}
 		_ = createE.defaults()
 		_, specE := createE.createSpec()
 		edge.Target.Fields = specE.Fields
@@ -510,7 +510,7 @@ func (saru *SystemAnalysisRelationshipUpdate) sqlSave(ctx context.Context) (n in
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := saru.mutation.SignalsIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.SignalsIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
 			Inverse: false,
@@ -524,7 +524,7 @@ func (saru *SystemAnalysisRelationshipUpdate) sqlSave(ctx context.Context) (n in
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
-		createE := &SystemRelationshipFeedbackSignalCreate{config: saru.config, mutation: newSystemRelationshipFeedbackSignalMutation(saru.config, OpCreate)}
+		createE := &SystemRelationshipFeedbackSignalCreate{config: _u.config, mutation: newSystemRelationshipFeedbackSignalMutation(_u.config, OpCreate)}
 		_ = createE.defaults()
 		_, specE := createE.createSpec()
 		edge.Target.Fields = specE.Fields
@@ -533,7 +533,7 @@ func (saru *SystemAnalysisRelationshipUpdate) sqlSave(ctx context.Context) (n in
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if saru.mutation.ControlActionsCleared() {
+	if _u.mutation.ControlActionsCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: true,
@@ -546,7 +546,7 @@ func (saru *SystemAnalysisRelationshipUpdate) sqlSave(ctx context.Context) (n in
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := saru.mutation.RemovedControlActionsIDs(); len(nodes) > 0 && !saru.mutation.ControlActionsCleared() {
+	if nodes := _u.mutation.RemovedControlActionsIDs(); len(nodes) > 0 && !_u.mutation.ControlActionsCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: true,
@@ -562,7 +562,7 @@ func (saru *SystemAnalysisRelationshipUpdate) sqlSave(ctx context.Context) (n in
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := saru.mutation.ControlActionsIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.ControlActionsIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: true,
@@ -578,7 +578,7 @@ func (saru *SystemAnalysisRelationshipUpdate) sqlSave(ctx context.Context) (n in
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if saru.mutation.FeedbackSignalsCleared() {
+	if _u.mutation.FeedbackSignalsCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: true,
@@ -591,7 +591,7 @@ func (saru *SystemAnalysisRelationshipUpdate) sqlSave(ctx context.Context) (n in
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := saru.mutation.RemovedFeedbackSignalsIDs(); len(nodes) > 0 && !saru.mutation.FeedbackSignalsCleared() {
+	if nodes := _u.mutation.RemovedFeedbackSignalsIDs(); len(nodes) > 0 && !_u.mutation.FeedbackSignalsCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: true,
@@ -607,7 +607,7 @@ func (saru *SystemAnalysisRelationshipUpdate) sqlSave(ctx context.Context) (n in
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := saru.mutation.FeedbackSignalsIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.FeedbackSignalsIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: true,
@@ -623,8 +623,8 @@ func (saru *SystemAnalysisRelationshipUpdate) sqlSave(ctx context.Context) (n in
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	_spec.AddModifiers(saru.modifiers...)
-	if n, err = sqlgraph.UpdateNodes(ctx, saru.driver, _spec); err != nil {
+	_spec.AddModifiers(_u.modifiers...)
+	if _node, err = sqlgraph.UpdateNodes(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{systemanalysisrelationship.Label}
 		} else if sqlgraph.IsConstraintError(err) {
@@ -632,8 +632,8 @@ func (saru *SystemAnalysisRelationshipUpdate) sqlSave(ctx context.Context) (n in
 		}
 		return 0, err
 	}
-	saru.mutation.done = true
-	return n, nil
+	_u.mutation.done = true
+	return _node, nil
 }
 
 // SystemAnalysisRelationshipUpdateOne is the builder for updating a single SystemAnalysisRelationship entity.
@@ -646,265 +646,265 @@ type SystemAnalysisRelationshipUpdateOne struct {
 }
 
 // SetAnalysisID sets the "analysis_id" field.
-func (saruo *SystemAnalysisRelationshipUpdateOne) SetAnalysisID(u uuid.UUID) *SystemAnalysisRelationshipUpdateOne {
-	saruo.mutation.SetAnalysisID(u)
-	return saruo
+func (_u *SystemAnalysisRelationshipUpdateOne) SetAnalysisID(v uuid.UUID) *SystemAnalysisRelationshipUpdateOne {
+	_u.mutation.SetAnalysisID(v)
+	return _u
 }
 
 // SetNillableAnalysisID sets the "analysis_id" field if the given value is not nil.
-func (saruo *SystemAnalysisRelationshipUpdateOne) SetNillableAnalysisID(u *uuid.UUID) *SystemAnalysisRelationshipUpdateOne {
-	if u != nil {
-		saruo.SetAnalysisID(*u)
+func (_u *SystemAnalysisRelationshipUpdateOne) SetNillableAnalysisID(v *uuid.UUID) *SystemAnalysisRelationshipUpdateOne {
+	if v != nil {
+		_u.SetAnalysisID(*v)
 	}
-	return saruo
+	return _u
 }
 
 // SetComponentRelationshipID sets the "component_relationship_id" field.
-func (saruo *SystemAnalysisRelationshipUpdateOne) SetComponentRelationshipID(u uuid.UUID) *SystemAnalysisRelationshipUpdateOne {
-	saruo.mutation.SetComponentRelationshipID(u)
-	return saruo
+func (_u *SystemAnalysisRelationshipUpdateOne) SetComponentRelationshipID(v uuid.UUID) *SystemAnalysisRelationshipUpdateOne {
+	_u.mutation.SetComponentRelationshipID(v)
+	return _u
 }
 
 // SetNillableComponentRelationshipID sets the "component_relationship_id" field if the given value is not nil.
-func (saruo *SystemAnalysisRelationshipUpdateOne) SetNillableComponentRelationshipID(u *uuid.UUID) *SystemAnalysisRelationshipUpdateOne {
-	if u != nil {
-		saruo.SetComponentRelationshipID(*u)
+func (_u *SystemAnalysisRelationshipUpdateOne) SetNillableComponentRelationshipID(v *uuid.UUID) *SystemAnalysisRelationshipUpdateOne {
+	if v != nil {
+		_u.SetComponentRelationshipID(*v)
 	}
-	return saruo
+	return _u
 }
 
 // SetDescription sets the "description" field.
-func (saruo *SystemAnalysisRelationshipUpdateOne) SetDescription(s string) *SystemAnalysisRelationshipUpdateOne {
-	saruo.mutation.SetDescription(s)
-	return saruo
+func (_u *SystemAnalysisRelationshipUpdateOne) SetDescription(v string) *SystemAnalysisRelationshipUpdateOne {
+	_u.mutation.SetDescription(v)
+	return _u
 }
 
 // SetNillableDescription sets the "description" field if the given value is not nil.
-func (saruo *SystemAnalysisRelationshipUpdateOne) SetNillableDescription(s *string) *SystemAnalysisRelationshipUpdateOne {
-	if s != nil {
-		saruo.SetDescription(*s)
+func (_u *SystemAnalysisRelationshipUpdateOne) SetNillableDescription(v *string) *SystemAnalysisRelationshipUpdateOne {
+	if v != nil {
+		_u.SetDescription(*v)
 	}
-	return saruo
+	return _u
 }
 
 // ClearDescription clears the value of the "description" field.
-func (saruo *SystemAnalysisRelationshipUpdateOne) ClearDescription() *SystemAnalysisRelationshipUpdateOne {
-	saruo.mutation.ClearDescription()
-	return saruo
+func (_u *SystemAnalysisRelationshipUpdateOne) ClearDescription() *SystemAnalysisRelationshipUpdateOne {
+	_u.mutation.ClearDescription()
+	return _u
 }
 
 // SetCreatedAt sets the "created_at" field.
-func (saruo *SystemAnalysisRelationshipUpdateOne) SetCreatedAt(t time.Time) *SystemAnalysisRelationshipUpdateOne {
-	saruo.mutation.SetCreatedAt(t)
-	return saruo
+func (_u *SystemAnalysisRelationshipUpdateOne) SetCreatedAt(v time.Time) *SystemAnalysisRelationshipUpdateOne {
+	_u.mutation.SetCreatedAt(v)
+	return _u
 }
 
 // SetNillableCreatedAt sets the "created_at" field if the given value is not nil.
-func (saruo *SystemAnalysisRelationshipUpdateOne) SetNillableCreatedAt(t *time.Time) *SystemAnalysisRelationshipUpdateOne {
-	if t != nil {
-		saruo.SetCreatedAt(*t)
+func (_u *SystemAnalysisRelationshipUpdateOne) SetNillableCreatedAt(v *time.Time) *SystemAnalysisRelationshipUpdateOne {
+	if v != nil {
+		_u.SetCreatedAt(*v)
 	}
-	return saruo
+	return _u
 }
 
 // SetSystemAnalysisID sets the "system_analysis" edge to the SystemAnalysis entity by ID.
-func (saruo *SystemAnalysisRelationshipUpdateOne) SetSystemAnalysisID(id uuid.UUID) *SystemAnalysisRelationshipUpdateOne {
-	saruo.mutation.SetSystemAnalysisID(id)
-	return saruo
+func (_u *SystemAnalysisRelationshipUpdateOne) SetSystemAnalysisID(id uuid.UUID) *SystemAnalysisRelationshipUpdateOne {
+	_u.mutation.SetSystemAnalysisID(id)
+	return _u
 }
 
 // SetSystemAnalysis sets the "system_analysis" edge to the SystemAnalysis entity.
-func (saruo *SystemAnalysisRelationshipUpdateOne) SetSystemAnalysis(s *SystemAnalysis) *SystemAnalysisRelationshipUpdateOne {
-	return saruo.SetSystemAnalysisID(s.ID)
+func (_u *SystemAnalysisRelationshipUpdateOne) SetSystemAnalysis(v *SystemAnalysis) *SystemAnalysisRelationshipUpdateOne {
+	return _u.SetSystemAnalysisID(v.ID)
 }
 
 // SetComponentRelationship sets the "component_relationship" edge to the SystemComponentRelationship entity.
-func (saruo *SystemAnalysisRelationshipUpdateOne) SetComponentRelationship(s *SystemComponentRelationship) *SystemAnalysisRelationshipUpdateOne {
-	return saruo.SetComponentRelationshipID(s.ID)
+func (_u *SystemAnalysisRelationshipUpdateOne) SetComponentRelationship(v *SystemComponentRelationship) *SystemAnalysisRelationshipUpdateOne {
+	return _u.SetComponentRelationshipID(v.ID)
 }
 
 // AddControlIDs adds the "controls" edge to the SystemComponentControl entity by IDs.
-func (saruo *SystemAnalysisRelationshipUpdateOne) AddControlIDs(ids ...uuid.UUID) *SystemAnalysisRelationshipUpdateOne {
-	saruo.mutation.AddControlIDs(ids...)
-	return saruo
+func (_u *SystemAnalysisRelationshipUpdateOne) AddControlIDs(ids ...uuid.UUID) *SystemAnalysisRelationshipUpdateOne {
+	_u.mutation.AddControlIDs(ids...)
+	return _u
 }
 
 // AddControls adds the "controls" edges to the SystemComponentControl entity.
-func (saruo *SystemAnalysisRelationshipUpdateOne) AddControls(s ...*SystemComponentControl) *SystemAnalysisRelationshipUpdateOne {
-	ids := make([]uuid.UUID, len(s))
-	for i := range s {
-		ids[i] = s[i].ID
+func (_u *SystemAnalysisRelationshipUpdateOne) AddControls(v ...*SystemComponentControl) *SystemAnalysisRelationshipUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
 	}
-	return saruo.AddControlIDs(ids...)
+	return _u.AddControlIDs(ids...)
 }
 
 // AddSignalIDs adds the "signals" edge to the SystemComponentSignal entity by IDs.
-func (saruo *SystemAnalysisRelationshipUpdateOne) AddSignalIDs(ids ...uuid.UUID) *SystemAnalysisRelationshipUpdateOne {
-	saruo.mutation.AddSignalIDs(ids...)
-	return saruo
+func (_u *SystemAnalysisRelationshipUpdateOne) AddSignalIDs(ids ...uuid.UUID) *SystemAnalysisRelationshipUpdateOne {
+	_u.mutation.AddSignalIDs(ids...)
+	return _u
 }
 
 // AddSignals adds the "signals" edges to the SystemComponentSignal entity.
-func (saruo *SystemAnalysisRelationshipUpdateOne) AddSignals(s ...*SystemComponentSignal) *SystemAnalysisRelationshipUpdateOne {
-	ids := make([]uuid.UUID, len(s))
-	for i := range s {
-		ids[i] = s[i].ID
+func (_u *SystemAnalysisRelationshipUpdateOne) AddSignals(v ...*SystemComponentSignal) *SystemAnalysisRelationshipUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
 	}
-	return saruo.AddSignalIDs(ids...)
+	return _u.AddSignalIDs(ids...)
 }
 
 // AddControlActionIDs adds the "control_actions" edge to the SystemRelationshipControlAction entity by IDs.
-func (saruo *SystemAnalysisRelationshipUpdateOne) AddControlActionIDs(ids ...uuid.UUID) *SystemAnalysisRelationshipUpdateOne {
-	saruo.mutation.AddControlActionIDs(ids...)
-	return saruo
+func (_u *SystemAnalysisRelationshipUpdateOne) AddControlActionIDs(ids ...uuid.UUID) *SystemAnalysisRelationshipUpdateOne {
+	_u.mutation.AddControlActionIDs(ids...)
+	return _u
 }
 
 // AddControlActions adds the "control_actions" edges to the SystemRelationshipControlAction entity.
-func (saruo *SystemAnalysisRelationshipUpdateOne) AddControlActions(s ...*SystemRelationshipControlAction) *SystemAnalysisRelationshipUpdateOne {
-	ids := make([]uuid.UUID, len(s))
-	for i := range s {
-		ids[i] = s[i].ID
+func (_u *SystemAnalysisRelationshipUpdateOne) AddControlActions(v ...*SystemRelationshipControlAction) *SystemAnalysisRelationshipUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
 	}
-	return saruo.AddControlActionIDs(ids...)
+	return _u.AddControlActionIDs(ids...)
 }
 
 // AddFeedbackSignalIDs adds the "feedback_signals" edge to the SystemRelationshipFeedbackSignal entity by IDs.
-func (saruo *SystemAnalysisRelationshipUpdateOne) AddFeedbackSignalIDs(ids ...uuid.UUID) *SystemAnalysisRelationshipUpdateOne {
-	saruo.mutation.AddFeedbackSignalIDs(ids...)
-	return saruo
+func (_u *SystemAnalysisRelationshipUpdateOne) AddFeedbackSignalIDs(ids ...uuid.UUID) *SystemAnalysisRelationshipUpdateOne {
+	_u.mutation.AddFeedbackSignalIDs(ids...)
+	return _u
 }
 
 // AddFeedbackSignals adds the "feedback_signals" edges to the SystemRelationshipFeedbackSignal entity.
-func (saruo *SystemAnalysisRelationshipUpdateOne) AddFeedbackSignals(s ...*SystemRelationshipFeedbackSignal) *SystemAnalysisRelationshipUpdateOne {
-	ids := make([]uuid.UUID, len(s))
-	for i := range s {
-		ids[i] = s[i].ID
+func (_u *SystemAnalysisRelationshipUpdateOne) AddFeedbackSignals(v ...*SystemRelationshipFeedbackSignal) *SystemAnalysisRelationshipUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
 	}
-	return saruo.AddFeedbackSignalIDs(ids...)
+	return _u.AddFeedbackSignalIDs(ids...)
 }
 
 // Mutation returns the SystemAnalysisRelationshipMutation object of the builder.
-func (saruo *SystemAnalysisRelationshipUpdateOne) Mutation() *SystemAnalysisRelationshipMutation {
-	return saruo.mutation
+func (_u *SystemAnalysisRelationshipUpdateOne) Mutation() *SystemAnalysisRelationshipMutation {
+	return _u.mutation
 }
 
 // ClearSystemAnalysis clears the "system_analysis" edge to the SystemAnalysis entity.
-func (saruo *SystemAnalysisRelationshipUpdateOne) ClearSystemAnalysis() *SystemAnalysisRelationshipUpdateOne {
-	saruo.mutation.ClearSystemAnalysis()
-	return saruo
+func (_u *SystemAnalysisRelationshipUpdateOne) ClearSystemAnalysis() *SystemAnalysisRelationshipUpdateOne {
+	_u.mutation.ClearSystemAnalysis()
+	return _u
 }
 
 // ClearComponentRelationship clears the "component_relationship" edge to the SystemComponentRelationship entity.
-func (saruo *SystemAnalysisRelationshipUpdateOne) ClearComponentRelationship() *SystemAnalysisRelationshipUpdateOne {
-	saruo.mutation.ClearComponentRelationship()
-	return saruo
+func (_u *SystemAnalysisRelationshipUpdateOne) ClearComponentRelationship() *SystemAnalysisRelationshipUpdateOne {
+	_u.mutation.ClearComponentRelationship()
+	return _u
 }
 
 // ClearControls clears all "controls" edges to the SystemComponentControl entity.
-func (saruo *SystemAnalysisRelationshipUpdateOne) ClearControls() *SystemAnalysisRelationshipUpdateOne {
-	saruo.mutation.ClearControls()
-	return saruo
+func (_u *SystemAnalysisRelationshipUpdateOne) ClearControls() *SystemAnalysisRelationshipUpdateOne {
+	_u.mutation.ClearControls()
+	return _u
 }
 
 // RemoveControlIDs removes the "controls" edge to SystemComponentControl entities by IDs.
-func (saruo *SystemAnalysisRelationshipUpdateOne) RemoveControlIDs(ids ...uuid.UUID) *SystemAnalysisRelationshipUpdateOne {
-	saruo.mutation.RemoveControlIDs(ids...)
-	return saruo
+func (_u *SystemAnalysisRelationshipUpdateOne) RemoveControlIDs(ids ...uuid.UUID) *SystemAnalysisRelationshipUpdateOne {
+	_u.mutation.RemoveControlIDs(ids...)
+	return _u
 }
 
 // RemoveControls removes "controls" edges to SystemComponentControl entities.
-func (saruo *SystemAnalysisRelationshipUpdateOne) RemoveControls(s ...*SystemComponentControl) *SystemAnalysisRelationshipUpdateOne {
-	ids := make([]uuid.UUID, len(s))
-	for i := range s {
-		ids[i] = s[i].ID
+func (_u *SystemAnalysisRelationshipUpdateOne) RemoveControls(v ...*SystemComponentControl) *SystemAnalysisRelationshipUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
 	}
-	return saruo.RemoveControlIDs(ids...)
+	return _u.RemoveControlIDs(ids...)
 }
 
 // ClearSignals clears all "signals" edges to the SystemComponentSignal entity.
-func (saruo *SystemAnalysisRelationshipUpdateOne) ClearSignals() *SystemAnalysisRelationshipUpdateOne {
-	saruo.mutation.ClearSignals()
-	return saruo
+func (_u *SystemAnalysisRelationshipUpdateOne) ClearSignals() *SystemAnalysisRelationshipUpdateOne {
+	_u.mutation.ClearSignals()
+	return _u
 }
 
 // RemoveSignalIDs removes the "signals" edge to SystemComponentSignal entities by IDs.
-func (saruo *SystemAnalysisRelationshipUpdateOne) RemoveSignalIDs(ids ...uuid.UUID) *SystemAnalysisRelationshipUpdateOne {
-	saruo.mutation.RemoveSignalIDs(ids...)
-	return saruo
+func (_u *SystemAnalysisRelationshipUpdateOne) RemoveSignalIDs(ids ...uuid.UUID) *SystemAnalysisRelationshipUpdateOne {
+	_u.mutation.RemoveSignalIDs(ids...)
+	return _u
 }
 
 // RemoveSignals removes "signals" edges to SystemComponentSignal entities.
-func (saruo *SystemAnalysisRelationshipUpdateOne) RemoveSignals(s ...*SystemComponentSignal) *SystemAnalysisRelationshipUpdateOne {
-	ids := make([]uuid.UUID, len(s))
-	for i := range s {
-		ids[i] = s[i].ID
+func (_u *SystemAnalysisRelationshipUpdateOne) RemoveSignals(v ...*SystemComponentSignal) *SystemAnalysisRelationshipUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
 	}
-	return saruo.RemoveSignalIDs(ids...)
+	return _u.RemoveSignalIDs(ids...)
 }
 
 // ClearControlActions clears all "control_actions" edges to the SystemRelationshipControlAction entity.
-func (saruo *SystemAnalysisRelationshipUpdateOne) ClearControlActions() *SystemAnalysisRelationshipUpdateOne {
-	saruo.mutation.ClearControlActions()
-	return saruo
+func (_u *SystemAnalysisRelationshipUpdateOne) ClearControlActions() *SystemAnalysisRelationshipUpdateOne {
+	_u.mutation.ClearControlActions()
+	return _u
 }
 
 // RemoveControlActionIDs removes the "control_actions" edge to SystemRelationshipControlAction entities by IDs.
-func (saruo *SystemAnalysisRelationshipUpdateOne) RemoveControlActionIDs(ids ...uuid.UUID) *SystemAnalysisRelationshipUpdateOne {
-	saruo.mutation.RemoveControlActionIDs(ids...)
-	return saruo
+func (_u *SystemAnalysisRelationshipUpdateOne) RemoveControlActionIDs(ids ...uuid.UUID) *SystemAnalysisRelationshipUpdateOne {
+	_u.mutation.RemoveControlActionIDs(ids...)
+	return _u
 }
 
 // RemoveControlActions removes "control_actions" edges to SystemRelationshipControlAction entities.
-func (saruo *SystemAnalysisRelationshipUpdateOne) RemoveControlActions(s ...*SystemRelationshipControlAction) *SystemAnalysisRelationshipUpdateOne {
-	ids := make([]uuid.UUID, len(s))
-	for i := range s {
-		ids[i] = s[i].ID
+func (_u *SystemAnalysisRelationshipUpdateOne) RemoveControlActions(v ...*SystemRelationshipControlAction) *SystemAnalysisRelationshipUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
 	}
-	return saruo.RemoveControlActionIDs(ids...)
+	return _u.RemoveControlActionIDs(ids...)
 }
 
 // ClearFeedbackSignals clears all "feedback_signals" edges to the SystemRelationshipFeedbackSignal entity.
-func (saruo *SystemAnalysisRelationshipUpdateOne) ClearFeedbackSignals() *SystemAnalysisRelationshipUpdateOne {
-	saruo.mutation.ClearFeedbackSignals()
-	return saruo
+func (_u *SystemAnalysisRelationshipUpdateOne) ClearFeedbackSignals() *SystemAnalysisRelationshipUpdateOne {
+	_u.mutation.ClearFeedbackSignals()
+	return _u
 }
 
 // RemoveFeedbackSignalIDs removes the "feedback_signals" edge to SystemRelationshipFeedbackSignal entities by IDs.
-func (saruo *SystemAnalysisRelationshipUpdateOne) RemoveFeedbackSignalIDs(ids ...uuid.UUID) *SystemAnalysisRelationshipUpdateOne {
-	saruo.mutation.RemoveFeedbackSignalIDs(ids...)
-	return saruo
+func (_u *SystemAnalysisRelationshipUpdateOne) RemoveFeedbackSignalIDs(ids ...uuid.UUID) *SystemAnalysisRelationshipUpdateOne {
+	_u.mutation.RemoveFeedbackSignalIDs(ids...)
+	return _u
 }
 
 // RemoveFeedbackSignals removes "feedback_signals" edges to SystemRelationshipFeedbackSignal entities.
-func (saruo *SystemAnalysisRelationshipUpdateOne) RemoveFeedbackSignals(s ...*SystemRelationshipFeedbackSignal) *SystemAnalysisRelationshipUpdateOne {
-	ids := make([]uuid.UUID, len(s))
-	for i := range s {
-		ids[i] = s[i].ID
+func (_u *SystemAnalysisRelationshipUpdateOne) RemoveFeedbackSignals(v ...*SystemRelationshipFeedbackSignal) *SystemAnalysisRelationshipUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
 	}
-	return saruo.RemoveFeedbackSignalIDs(ids...)
+	return _u.RemoveFeedbackSignalIDs(ids...)
 }
 
 // Where appends a list predicates to the SystemAnalysisRelationshipUpdate builder.
-func (saruo *SystemAnalysisRelationshipUpdateOne) Where(ps ...predicate.SystemAnalysisRelationship) *SystemAnalysisRelationshipUpdateOne {
-	saruo.mutation.Where(ps...)
-	return saruo
+func (_u *SystemAnalysisRelationshipUpdateOne) Where(ps ...predicate.SystemAnalysisRelationship) *SystemAnalysisRelationshipUpdateOne {
+	_u.mutation.Where(ps...)
+	return _u
 }
 
 // Select allows selecting one or more fields (columns) of the returned entity.
 // The default is selecting all fields defined in the entity schema.
-func (saruo *SystemAnalysisRelationshipUpdateOne) Select(field string, fields ...string) *SystemAnalysisRelationshipUpdateOne {
-	saruo.fields = append([]string{field}, fields...)
-	return saruo
+func (_u *SystemAnalysisRelationshipUpdateOne) Select(field string, fields ...string) *SystemAnalysisRelationshipUpdateOne {
+	_u.fields = append([]string{field}, fields...)
+	return _u
 }
 
 // Save executes the query and returns the updated SystemAnalysisRelationship entity.
-func (saruo *SystemAnalysisRelationshipUpdateOne) Save(ctx context.Context) (*SystemAnalysisRelationship, error) {
-	return withHooks(ctx, saruo.sqlSave, saruo.mutation, saruo.hooks)
+func (_u *SystemAnalysisRelationshipUpdateOne) Save(ctx context.Context) (*SystemAnalysisRelationship, error) {
+	return withHooks(ctx, _u.sqlSave, _u.mutation, _u.hooks)
 }
 
 // SaveX is like Save, but panics if an error occurs.
-func (saruo *SystemAnalysisRelationshipUpdateOne) SaveX(ctx context.Context) *SystemAnalysisRelationship {
-	node, err := saruo.Save(ctx)
+func (_u *SystemAnalysisRelationshipUpdateOne) SaveX(ctx context.Context) *SystemAnalysisRelationship {
+	node, err := _u.Save(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -912,49 +912,49 @@ func (saruo *SystemAnalysisRelationshipUpdateOne) SaveX(ctx context.Context) *Sy
 }
 
 // Exec executes the query on the entity.
-func (saruo *SystemAnalysisRelationshipUpdateOne) Exec(ctx context.Context) error {
-	_, err := saruo.Save(ctx)
+func (_u *SystemAnalysisRelationshipUpdateOne) Exec(ctx context.Context) error {
+	_, err := _u.Save(ctx)
 	return err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (saruo *SystemAnalysisRelationshipUpdateOne) ExecX(ctx context.Context) {
-	if err := saruo.Exec(ctx); err != nil {
+func (_u *SystemAnalysisRelationshipUpdateOne) ExecX(ctx context.Context) {
+	if err := _u.Exec(ctx); err != nil {
 		panic(err)
 	}
 }
 
 // check runs all checks and user-defined validators on the builder.
-func (saruo *SystemAnalysisRelationshipUpdateOne) check() error {
-	if saruo.mutation.TenantCleared() && len(saruo.mutation.TenantIDs()) > 0 {
+func (_u *SystemAnalysisRelationshipUpdateOne) check() error {
+	if _u.mutation.TenantCleared() && len(_u.mutation.TenantIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "SystemAnalysisRelationship.tenant"`)
 	}
-	if saruo.mutation.SystemAnalysisCleared() && len(saruo.mutation.SystemAnalysisIDs()) > 0 {
+	if _u.mutation.SystemAnalysisCleared() && len(_u.mutation.SystemAnalysisIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "SystemAnalysisRelationship.system_analysis"`)
 	}
-	if saruo.mutation.ComponentRelationshipCleared() && len(saruo.mutation.ComponentRelationshipIDs()) > 0 {
+	if _u.mutation.ComponentRelationshipCleared() && len(_u.mutation.ComponentRelationshipIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "SystemAnalysisRelationship.component_relationship"`)
 	}
 	return nil
 }
 
 // Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
-func (saruo *SystemAnalysisRelationshipUpdateOne) Modify(modifiers ...func(u *sql.UpdateBuilder)) *SystemAnalysisRelationshipUpdateOne {
-	saruo.modifiers = append(saruo.modifiers, modifiers...)
-	return saruo
+func (_u *SystemAnalysisRelationshipUpdateOne) Modify(modifiers ...func(u *sql.UpdateBuilder)) *SystemAnalysisRelationshipUpdateOne {
+	_u.modifiers = append(_u.modifiers, modifiers...)
+	return _u
 }
 
-func (saruo *SystemAnalysisRelationshipUpdateOne) sqlSave(ctx context.Context) (_node *SystemAnalysisRelationship, err error) {
-	if err := saruo.check(); err != nil {
+func (_u *SystemAnalysisRelationshipUpdateOne) sqlSave(ctx context.Context) (_node *SystemAnalysisRelationship, err error) {
+	if err := _u.check(); err != nil {
 		return _node, err
 	}
 	_spec := sqlgraph.NewUpdateSpec(systemanalysisrelationship.Table, systemanalysisrelationship.Columns, sqlgraph.NewFieldSpec(systemanalysisrelationship.FieldID, field.TypeUUID))
-	id, ok := saruo.mutation.ID()
+	id, ok := _u.mutation.ID()
 	if !ok {
 		return nil, &ValidationError{Name: "id", err: errors.New(`ent: missing "SystemAnalysisRelationship.id" for update`)}
 	}
 	_spec.Node.ID.Value = id
-	if fields := saruo.fields; len(fields) > 0 {
+	if fields := _u.fields; len(fields) > 0 {
 		_spec.Node.Columns = make([]string, 0, len(fields))
 		_spec.Node.Columns = append(_spec.Node.Columns, systemanalysisrelationship.FieldID)
 		for _, f := range fields {
@@ -966,23 +966,23 @@ func (saruo *SystemAnalysisRelationshipUpdateOne) sqlSave(ctx context.Context) (
 			}
 		}
 	}
-	if ps := saruo.mutation.predicates; len(ps) > 0 {
+	if ps := _u.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {
 				ps[i](selector)
 			}
 		}
 	}
-	if value, ok := saruo.mutation.Description(); ok {
+	if value, ok := _u.mutation.Description(); ok {
 		_spec.SetField(systemanalysisrelationship.FieldDescription, field.TypeString, value)
 	}
-	if saruo.mutation.DescriptionCleared() {
+	if _u.mutation.DescriptionCleared() {
 		_spec.ClearField(systemanalysisrelationship.FieldDescription, field.TypeString)
 	}
-	if value, ok := saruo.mutation.CreatedAt(); ok {
+	if value, ok := _u.mutation.CreatedAt(); ok {
 		_spec.SetField(systemanalysisrelationship.FieldCreatedAt, field.TypeTime, value)
 	}
-	if saruo.mutation.SystemAnalysisCleared() {
+	if _u.mutation.SystemAnalysisCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
@@ -995,7 +995,7 @@ func (saruo *SystemAnalysisRelationshipUpdateOne) sqlSave(ctx context.Context) (
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := saruo.mutation.SystemAnalysisIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.SystemAnalysisIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
@@ -1011,7 +1011,7 @@ func (saruo *SystemAnalysisRelationshipUpdateOne) sqlSave(ctx context.Context) (
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if saruo.mutation.ComponentRelationshipCleared() {
+	if _u.mutation.ComponentRelationshipCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
@@ -1024,7 +1024,7 @@ func (saruo *SystemAnalysisRelationshipUpdateOne) sqlSave(ctx context.Context) (
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := saruo.mutation.ComponentRelationshipIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.ComponentRelationshipIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
@@ -1040,7 +1040,7 @@ func (saruo *SystemAnalysisRelationshipUpdateOne) sqlSave(ctx context.Context) (
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if saruo.mutation.ControlsCleared() {
+	if _u.mutation.ControlsCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
 			Inverse: false,
@@ -1051,7 +1051,7 @@ func (saruo *SystemAnalysisRelationshipUpdateOne) sqlSave(ctx context.Context) (
 				IDSpec: sqlgraph.NewFieldSpec(systemcomponentcontrol.FieldID, field.TypeUUID),
 			},
 		}
-		createE := &SystemRelationshipControlActionCreate{config: saruo.config, mutation: newSystemRelationshipControlActionMutation(saruo.config, OpCreate)}
+		createE := &SystemRelationshipControlActionCreate{config: _u.config, mutation: newSystemRelationshipControlActionMutation(_u.config, OpCreate)}
 		_ = createE.defaults()
 		_, specE := createE.createSpec()
 		edge.Target.Fields = specE.Fields
@@ -1060,30 +1060,7 @@ func (saruo *SystemAnalysisRelationshipUpdateOne) sqlSave(ctx context.Context) (
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := saruo.mutation.RemovedControlsIDs(); len(nodes) > 0 && !saruo.mutation.ControlsCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
-			Inverse: false,
-			Table:   systemanalysisrelationship.ControlsTable,
-			Columns: systemanalysisrelationship.ControlsPrimaryKey,
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(systemcomponentcontrol.FieldID, field.TypeUUID),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		createE := &SystemRelationshipControlActionCreate{config: saruo.config, mutation: newSystemRelationshipControlActionMutation(saruo.config, OpCreate)}
-		_ = createE.defaults()
-		_, specE := createE.createSpec()
-		edge.Target.Fields = specE.Fields
-		if specE.ID.Value != nil {
-			edge.Target.Fields = append(edge.Target.Fields, specE.ID)
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := saruo.mutation.ControlsIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.RemovedControlsIDs(); len(nodes) > 0 && !_u.mutation.ControlsCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
 			Inverse: false,
@@ -1097,7 +1074,30 @@ func (saruo *SystemAnalysisRelationshipUpdateOne) sqlSave(ctx context.Context) (
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
-		createE := &SystemRelationshipControlActionCreate{config: saruo.config, mutation: newSystemRelationshipControlActionMutation(saruo.config, OpCreate)}
+		createE := &SystemRelationshipControlActionCreate{config: _u.config, mutation: newSystemRelationshipControlActionMutation(_u.config, OpCreate)}
+		_ = createE.defaults()
+		_, specE := createE.createSpec()
+		edge.Target.Fields = specE.Fields
+		if specE.ID.Value != nil {
+			edge.Target.Fields = append(edge.Target.Fields, specE.ID)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.ControlsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   systemanalysisrelationship.ControlsTable,
+			Columns: systemanalysisrelationship.ControlsPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(systemcomponentcontrol.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		createE := &SystemRelationshipControlActionCreate{config: _u.config, mutation: newSystemRelationshipControlActionMutation(_u.config, OpCreate)}
 		_ = createE.defaults()
 		_, specE := createE.createSpec()
 		edge.Target.Fields = specE.Fields
@@ -1106,7 +1106,7 @@ func (saruo *SystemAnalysisRelationshipUpdateOne) sqlSave(ctx context.Context) (
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if saruo.mutation.SignalsCleared() {
+	if _u.mutation.SignalsCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
 			Inverse: false,
@@ -1117,7 +1117,7 @@ func (saruo *SystemAnalysisRelationshipUpdateOne) sqlSave(ctx context.Context) (
 				IDSpec: sqlgraph.NewFieldSpec(systemcomponentsignal.FieldID, field.TypeUUID),
 			},
 		}
-		createE := &SystemRelationshipFeedbackSignalCreate{config: saruo.config, mutation: newSystemRelationshipFeedbackSignalMutation(saruo.config, OpCreate)}
+		createE := &SystemRelationshipFeedbackSignalCreate{config: _u.config, mutation: newSystemRelationshipFeedbackSignalMutation(_u.config, OpCreate)}
 		_ = createE.defaults()
 		_, specE := createE.createSpec()
 		edge.Target.Fields = specE.Fields
@@ -1126,7 +1126,7 @@ func (saruo *SystemAnalysisRelationshipUpdateOne) sqlSave(ctx context.Context) (
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := saruo.mutation.RemovedSignalsIDs(); len(nodes) > 0 && !saruo.mutation.SignalsCleared() {
+	if nodes := _u.mutation.RemovedSignalsIDs(); len(nodes) > 0 && !_u.mutation.SignalsCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
 			Inverse: false,
@@ -1140,7 +1140,7 @@ func (saruo *SystemAnalysisRelationshipUpdateOne) sqlSave(ctx context.Context) (
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
-		createE := &SystemRelationshipFeedbackSignalCreate{config: saruo.config, mutation: newSystemRelationshipFeedbackSignalMutation(saruo.config, OpCreate)}
+		createE := &SystemRelationshipFeedbackSignalCreate{config: _u.config, mutation: newSystemRelationshipFeedbackSignalMutation(_u.config, OpCreate)}
 		_ = createE.defaults()
 		_, specE := createE.createSpec()
 		edge.Target.Fields = specE.Fields
@@ -1149,7 +1149,7 @@ func (saruo *SystemAnalysisRelationshipUpdateOne) sqlSave(ctx context.Context) (
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := saruo.mutation.SignalsIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.SignalsIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
 			Inverse: false,
@@ -1163,7 +1163,7 @@ func (saruo *SystemAnalysisRelationshipUpdateOne) sqlSave(ctx context.Context) (
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
-		createE := &SystemRelationshipFeedbackSignalCreate{config: saruo.config, mutation: newSystemRelationshipFeedbackSignalMutation(saruo.config, OpCreate)}
+		createE := &SystemRelationshipFeedbackSignalCreate{config: _u.config, mutation: newSystemRelationshipFeedbackSignalMutation(_u.config, OpCreate)}
 		_ = createE.defaults()
 		_, specE := createE.createSpec()
 		edge.Target.Fields = specE.Fields
@@ -1172,7 +1172,7 @@ func (saruo *SystemAnalysisRelationshipUpdateOne) sqlSave(ctx context.Context) (
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if saruo.mutation.ControlActionsCleared() {
+	if _u.mutation.ControlActionsCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: true,
@@ -1185,7 +1185,7 @@ func (saruo *SystemAnalysisRelationshipUpdateOne) sqlSave(ctx context.Context) (
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := saruo.mutation.RemovedControlActionsIDs(); len(nodes) > 0 && !saruo.mutation.ControlActionsCleared() {
+	if nodes := _u.mutation.RemovedControlActionsIDs(); len(nodes) > 0 && !_u.mutation.ControlActionsCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: true,
@@ -1201,7 +1201,7 @@ func (saruo *SystemAnalysisRelationshipUpdateOne) sqlSave(ctx context.Context) (
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := saruo.mutation.ControlActionsIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.ControlActionsIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: true,
@@ -1217,7 +1217,7 @@ func (saruo *SystemAnalysisRelationshipUpdateOne) sqlSave(ctx context.Context) (
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if saruo.mutation.FeedbackSignalsCleared() {
+	if _u.mutation.FeedbackSignalsCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: true,
@@ -1230,7 +1230,7 @@ func (saruo *SystemAnalysisRelationshipUpdateOne) sqlSave(ctx context.Context) (
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := saruo.mutation.RemovedFeedbackSignalsIDs(); len(nodes) > 0 && !saruo.mutation.FeedbackSignalsCleared() {
+	if nodes := _u.mutation.RemovedFeedbackSignalsIDs(); len(nodes) > 0 && !_u.mutation.FeedbackSignalsCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: true,
@@ -1246,7 +1246,7 @@ func (saruo *SystemAnalysisRelationshipUpdateOne) sqlSave(ctx context.Context) (
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := saruo.mutation.FeedbackSignalsIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.FeedbackSignalsIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: true,
@@ -1262,11 +1262,11 @@ func (saruo *SystemAnalysisRelationshipUpdateOne) sqlSave(ctx context.Context) (
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	_spec.AddModifiers(saruo.modifiers...)
-	_node = &SystemAnalysisRelationship{config: saruo.config}
+	_spec.AddModifiers(_u.modifiers...)
+	_node = &SystemAnalysisRelationship{config: _u.config}
 	_spec.Assign = _node.assignValues
 	_spec.ScanValues = _node.scanValues
-	if err = sqlgraph.UpdateNode(ctx, saruo.driver, _spec); err != nil {
+	if err = sqlgraph.UpdateNode(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{systemanalysisrelationship.Label}
 		} else if sqlgraph.IsConstraintError(err) {
@@ -1274,6 +1274,6 @@ func (saruo *SystemAnalysisRelationshipUpdateOne) sqlSave(ctx context.Context) (
 		}
 		return nil, err
 	}
-	saruo.mutation.done = true
+	_u.mutation.done = true
 	return _node, nil
 }

@@ -28,79 +28,79 @@ type IncidentRoleAssignmentCreate struct {
 }
 
 // SetTenantID sets the "tenant_id" field.
-func (irac *IncidentRoleAssignmentCreate) SetTenantID(i int) *IncidentRoleAssignmentCreate {
-	irac.mutation.SetTenantID(i)
-	return irac
+func (_c *IncidentRoleAssignmentCreate) SetTenantID(v int) *IncidentRoleAssignmentCreate {
+	_c.mutation.SetTenantID(v)
+	return _c
 }
 
 // SetIncidentID sets the "incident_id" field.
-func (irac *IncidentRoleAssignmentCreate) SetIncidentID(u uuid.UUID) *IncidentRoleAssignmentCreate {
-	irac.mutation.SetIncidentID(u)
-	return irac
+func (_c *IncidentRoleAssignmentCreate) SetIncidentID(v uuid.UUID) *IncidentRoleAssignmentCreate {
+	_c.mutation.SetIncidentID(v)
+	return _c
 }
 
 // SetUserID sets the "user_id" field.
-func (irac *IncidentRoleAssignmentCreate) SetUserID(u uuid.UUID) *IncidentRoleAssignmentCreate {
-	irac.mutation.SetUserID(u)
-	return irac
+func (_c *IncidentRoleAssignmentCreate) SetUserID(v uuid.UUID) *IncidentRoleAssignmentCreate {
+	_c.mutation.SetUserID(v)
+	return _c
 }
 
 // SetRoleID sets the "role_id" field.
-func (irac *IncidentRoleAssignmentCreate) SetRoleID(u uuid.UUID) *IncidentRoleAssignmentCreate {
-	irac.mutation.SetRoleID(u)
-	return irac
+func (_c *IncidentRoleAssignmentCreate) SetRoleID(v uuid.UUID) *IncidentRoleAssignmentCreate {
+	_c.mutation.SetRoleID(v)
+	return _c
 }
 
 // SetID sets the "id" field.
-func (irac *IncidentRoleAssignmentCreate) SetID(u uuid.UUID) *IncidentRoleAssignmentCreate {
-	irac.mutation.SetID(u)
-	return irac
+func (_c *IncidentRoleAssignmentCreate) SetID(v uuid.UUID) *IncidentRoleAssignmentCreate {
+	_c.mutation.SetID(v)
+	return _c
 }
 
 // SetNillableID sets the "id" field if the given value is not nil.
-func (irac *IncidentRoleAssignmentCreate) SetNillableID(u *uuid.UUID) *IncidentRoleAssignmentCreate {
-	if u != nil {
-		irac.SetID(*u)
+func (_c *IncidentRoleAssignmentCreate) SetNillableID(v *uuid.UUID) *IncidentRoleAssignmentCreate {
+	if v != nil {
+		_c.SetID(*v)
 	}
-	return irac
+	return _c
 }
 
 // SetTenant sets the "tenant" edge to the Tenant entity.
-func (irac *IncidentRoleAssignmentCreate) SetTenant(t *Tenant) *IncidentRoleAssignmentCreate {
-	return irac.SetTenantID(t.ID)
+func (_c *IncidentRoleAssignmentCreate) SetTenant(v *Tenant) *IncidentRoleAssignmentCreate {
+	return _c.SetTenantID(v.ID)
 }
 
 // SetIncident sets the "incident" edge to the Incident entity.
-func (irac *IncidentRoleAssignmentCreate) SetIncident(i *Incident) *IncidentRoleAssignmentCreate {
-	return irac.SetIncidentID(i.ID)
+func (_c *IncidentRoleAssignmentCreate) SetIncident(v *Incident) *IncidentRoleAssignmentCreate {
+	return _c.SetIncidentID(v.ID)
 }
 
 // SetUser sets the "user" edge to the User entity.
-func (irac *IncidentRoleAssignmentCreate) SetUser(u *User) *IncidentRoleAssignmentCreate {
-	return irac.SetUserID(u.ID)
+func (_c *IncidentRoleAssignmentCreate) SetUser(v *User) *IncidentRoleAssignmentCreate {
+	return _c.SetUserID(v.ID)
 }
 
 // SetRole sets the "role" edge to the IncidentRole entity.
-func (irac *IncidentRoleAssignmentCreate) SetRole(i *IncidentRole) *IncidentRoleAssignmentCreate {
-	return irac.SetRoleID(i.ID)
+func (_c *IncidentRoleAssignmentCreate) SetRole(v *IncidentRole) *IncidentRoleAssignmentCreate {
+	return _c.SetRoleID(v.ID)
 }
 
 // Mutation returns the IncidentRoleAssignmentMutation object of the builder.
-func (irac *IncidentRoleAssignmentCreate) Mutation() *IncidentRoleAssignmentMutation {
-	return irac.mutation
+func (_c *IncidentRoleAssignmentCreate) Mutation() *IncidentRoleAssignmentMutation {
+	return _c.mutation
 }
 
 // Save creates the IncidentRoleAssignment in the database.
-func (irac *IncidentRoleAssignmentCreate) Save(ctx context.Context) (*IncidentRoleAssignment, error) {
-	if err := irac.defaults(); err != nil {
+func (_c *IncidentRoleAssignmentCreate) Save(ctx context.Context) (*IncidentRoleAssignment, error) {
+	if err := _c.defaults(); err != nil {
 		return nil, err
 	}
-	return withHooks(ctx, irac.sqlSave, irac.mutation, irac.hooks)
+	return withHooks(ctx, _c.sqlSave, _c.mutation, _c.hooks)
 }
 
 // SaveX calls Save and panics if Save returns an error.
-func (irac *IncidentRoleAssignmentCreate) SaveX(ctx context.Context) *IncidentRoleAssignment {
-	v, err := irac.Save(ctx)
+func (_c *IncidentRoleAssignmentCreate) SaveX(ctx context.Context) *IncidentRoleAssignment {
+	v, err := _c.Save(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -108,65 +108,65 @@ func (irac *IncidentRoleAssignmentCreate) SaveX(ctx context.Context) *IncidentRo
 }
 
 // Exec executes the query.
-func (irac *IncidentRoleAssignmentCreate) Exec(ctx context.Context) error {
-	_, err := irac.Save(ctx)
+func (_c *IncidentRoleAssignmentCreate) Exec(ctx context.Context) error {
+	_, err := _c.Save(ctx)
 	return err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (irac *IncidentRoleAssignmentCreate) ExecX(ctx context.Context) {
-	if err := irac.Exec(ctx); err != nil {
+func (_c *IncidentRoleAssignmentCreate) ExecX(ctx context.Context) {
+	if err := _c.Exec(ctx); err != nil {
 		panic(err)
 	}
 }
 
 // defaults sets the default values of the builder before save.
-func (irac *IncidentRoleAssignmentCreate) defaults() error {
-	if _, ok := irac.mutation.ID(); !ok {
+func (_c *IncidentRoleAssignmentCreate) defaults() error {
+	if _, ok := _c.mutation.ID(); !ok {
 		if incidentroleassignment.DefaultID == nil {
 			return fmt.Errorf("ent: uninitialized incidentroleassignment.DefaultID (forgotten import ent/runtime?)")
 		}
 		v := incidentroleassignment.DefaultID()
-		irac.mutation.SetID(v)
+		_c.mutation.SetID(v)
 	}
 	return nil
 }
 
 // check runs all checks and user-defined validators on the builder.
-func (irac *IncidentRoleAssignmentCreate) check() error {
-	if _, ok := irac.mutation.TenantID(); !ok {
+func (_c *IncidentRoleAssignmentCreate) check() error {
+	if _, ok := _c.mutation.TenantID(); !ok {
 		return &ValidationError{Name: "tenant_id", err: errors.New(`ent: missing required field "IncidentRoleAssignment.tenant_id"`)}
 	}
-	if _, ok := irac.mutation.IncidentID(); !ok {
+	if _, ok := _c.mutation.IncidentID(); !ok {
 		return &ValidationError{Name: "incident_id", err: errors.New(`ent: missing required field "IncidentRoleAssignment.incident_id"`)}
 	}
-	if _, ok := irac.mutation.UserID(); !ok {
+	if _, ok := _c.mutation.UserID(); !ok {
 		return &ValidationError{Name: "user_id", err: errors.New(`ent: missing required field "IncidentRoleAssignment.user_id"`)}
 	}
-	if _, ok := irac.mutation.RoleID(); !ok {
+	if _, ok := _c.mutation.RoleID(); !ok {
 		return &ValidationError{Name: "role_id", err: errors.New(`ent: missing required field "IncidentRoleAssignment.role_id"`)}
 	}
-	if len(irac.mutation.TenantIDs()) == 0 {
+	if len(_c.mutation.TenantIDs()) == 0 {
 		return &ValidationError{Name: "tenant", err: errors.New(`ent: missing required edge "IncidentRoleAssignment.tenant"`)}
 	}
-	if len(irac.mutation.IncidentIDs()) == 0 {
+	if len(_c.mutation.IncidentIDs()) == 0 {
 		return &ValidationError{Name: "incident", err: errors.New(`ent: missing required edge "IncidentRoleAssignment.incident"`)}
 	}
-	if len(irac.mutation.UserIDs()) == 0 {
+	if len(_c.mutation.UserIDs()) == 0 {
 		return &ValidationError{Name: "user", err: errors.New(`ent: missing required edge "IncidentRoleAssignment.user"`)}
 	}
-	if len(irac.mutation.RoleIDs()) == 0 {
+	if len(_c.mutation.RoleIDs()) == 0 {
 		return &ValidationError{Name: "role", err: errors.New(`ent: missing required edge "IncidentRoleAssignment.role"`)}
 	}
 	return nil
 }
 
-func (irac *IncidentRoleAssignmentCreate) sqlSave(ctx context.Context) (*IncidentRoleAssignment, error) {
-	if err := irac.check(); err != nil {
+func (_c *IncidentRoleAssignmentCreate) sqlSave(ctx context.Context) (*IncidentRoleAssignment, error) {
+	if err := _c.check(); err != nil {
 		return nil, err
 	}
-	_node, _spec := irac.createSpec()
-	if err := sqlgraph.CreateNode(ctx, irac.driver, _spec); err != nil {
+	_node, _spec := _c.createSpec()
+	if err := sqlgraph.CreateNode(ctx, _c.driver, _spec); err != nil {
 		if sqlgraph.IsConstraintError(err) {
 			err = &ConstraintError{msg: err.Error(), wrap: err}
 		}
@@ -179,22 +179,22 @@ func (irac *IncidentRoleAssignmentCreate) sqlSave(ctx context.Context) (*Inciden
 			return nil, err
 		}
 	}
-	irac.mutation.id = &_node.ID
-	irac.mutation.done = true
+	_c.mutation.id = &_node.ID
+	_c.mutation.done = true
 	return _node, nil
 }
 
-func (irac *IncidentRoleAssignmentCreate) createSpec() (*IncidentRoleAssignment, *sqlgraph.CreateSpec) {
+func (_c *IncidentRoleAssignmentCreate) createSpec() (*IncidentRoleAssignment, *sqlgraph.CreateSpec) {
 	var (
-		_node = &IncidentRoleAssignment{config: irac.config}
+		_node = &IncidentRoleAssignment{config: _c.config}
 		_spec = sqlgraph.NewCreateSpec(incidentroleassignment.Table, sqlgraph.NewFieldSpec(incidentroleassignment.FieldID, field.TypeUUID))
 	)
-	_spec.OnConflict = irac.conflict
-	if id, ok := irac.mutation.ID(); ok {
+	_spec.OnConflict = _c.conflict
+	if id, ok := _c.mutation.ID(); ok {
 		_node.ID = id
 		_spec.ID.Value = &id
 	}
-	if nodes := irac.mutation.TenantIDs(); len(nodes) > 0 {
+	if nodes := _c.mutation.TenantIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
@@ -211,7 +211,7 @@ func (irac *IncidentRoleAssignmentCreate) createSpec() (*IncidentRoleAssignment,
 		_node.TenantID = nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
-	if nodes := irac.mutation.IncidentIDs(); len(nodes) > 0 {
+	if nodes := _c.mutation.IncidentIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
@@ -228,7 +228,7 @@ func (irac *IncidentRoleAssignmentCreate) createSpec() (*IncidentRoleAssignment,
 		_node.IncidentID = nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
-	if nodes := irac.mutation.UserIDs(); len(nodes) > 0 {
+	if nodes := _c.mutation.UserIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
@@ -245,7 +245,7 @@ func (irac *IncidentRoleAssignmentCreate) createSpec() (*IncidentRoleAssignment,
 		_node.UserID = nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
-	if nodes := irac.mutation.RoleIDs(); len(nodes) > 0 {
+	if nodes := _c.mutation.RoleIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
@@ -281,10 +281,10 @@ func (irac *IncidentRoleAssignmentCreate) createSpec() (*IncidentRoleAssignment,
 //			SetTenantID(v+v).
 //		}).
 //		Exec(ctx)
-func (irac *IncidentRoleAssignmentCreate) OnConflict(opts ...sql.ConflictOption) *IncidentRoleAssignmentUpsertOne {
-	irac.conflict = opts
+func (_c *IncidentRoleAssignmentCreate) OnConflict(opts ...sql.ConflictOption) *IncidentRoleAssignmentUpsertOne {
+	_c.conflict = opts
 	return &IncidentRoleAssignmentUpsertOne{
-		create: irac,
+		create: _c,
 	}
 }
 
@@ -294,10 +294,10 @@ func (irac *IncidentRoleAssignmentCreate) OnConflict(opts ...sql.ConflictOption)
 //	client.IncidentRoleAssignment.Create().
 //		OnConflict(sql.ConflictColumns(columns...)).
 //		Exec(ctx)
-func (irac *IncidentRoleAssignmentCreate) OnConflictColumns(columns ...string) *IncidentRoleAssignmentUpsertOne {
-	irac.conflict = append(irac.conflict, sql.ConflictColumns(columns...))
+func (_c *IncidentRoleAssignmentCreate) OnConflictColumns(columns ...string) *IncidentRoleAssignmentUpsertOne {
+	_c.conflict = append(_c.conflict, sql.ConflictColumns(columns...))
 	return &IncidentRoleAssignmentUpsertOne{
-		create: irac,
+		create: _c,
 	}
 }
 
@@ -490,16 +490,16 @@ type IncidentRoleAssignmentCreateBulk struct {
 }
 
 // Save creates the IncidentRoleAssignment entities in the database.
-func (iracb *IncidentRoleAssignmentCreateBulk) Save(ctx context.Context) ([]*IncidentRoleAssignment, error) {
-	if iracb.err != nil {
-		return nil, iracb.err
+func (_c *IncidentRoleAssignmentCreateBulk) Save(ctx context.Context) ([]*IncidentRoleAssignment, error) {
+	if _c.err != nil {
+		return nil, _c.err
 	}
-	specs := make([]*sqlgraph.CreateSpec, len(iracb.builders))
-	nodes := make([]*IncidentRoleAssignment, len(iracb.builders))
-	mutators := make([]Mutator, len(iracb.builders))
-	for i := range iracb.builders {
+	specs := make([]*sqlgraph.CreateSpec, len(_c.builders))
+	nodes := make([]*IncidentRoleAssignment, len(_c.builders))
+	mutators := make([]Mutator, len(_c.builders))
+	for i := range _c.builders {
 		func(i int, root context.Context) {
-			builder := iracb.builders[i]
+			builder := _c.builders[i]
 			builder.defaults()
 			var mut Mutator = MutateFunc(func(ctx context.Context, m Mutation) (Value, error) {
 				mutation, ok := m.(*IncidentRoleAssignmentMutation)
@@ -513,12 +513,12 @@ func (iracb *IncidentRoleAssignmentCreateBulk) Save(ctx context.Context) ([]*Inc
 				var err error
 				nodes[i], specs[i] = builder.createSpec()
 				if i < len(mutators)-1 {
-					_, err = mutators[i+1].Mutate(root, iracb.builders[i+1].mutation)
+					_, err = mutators[i+1].Mutate(root, _c.builders[i+1].mutation)
 				} else {
 					spec := &sqlgraph.BatchCreateSpec{Nodes: specs}
-					spec.OnConflict = iracb.conflict
+					spec.OnConflict = _c.conflict
 					// Invoke the actual operation on the latest mutation in the chain.
-					if err = sqlgraph.BatchCreate(ctx, iracb.driver, spec); err != nil {
+					if err = sqlgraph.BatchCreate(ctx, _c.driver, spec); err != nil {
 						if sqlgraph.IsConstraintError(err) {
 							err = &ConstraintError{msg: err.Error(), wrap: err}
 						}
@@ -538,7 +538,7 @@ func (iracb *IncidentRoleAssignmentCreateBulk) Save(ctx context.Context) ([]*Inc
 		}(i, ctx)
 	}
 	if len(mutators) > 0 {
-		if _, err := mutators[0].Mutate(ctx, iracb.builders[0].mutation); err != nil {
+		if _, err := mutators[0].Mutate(ctx, _c.builders[0].mutation); err != nil {
 			return nil, err
 		}
 	}
@@ -546,8 +546,8 @@ func (iracb *IncidentRoleAssignmentCreateBulk) Save(ctx context.Context) ([]*Inc
 }
 
 // SaveX is like Save, but panics if an error occurs.
-func (iracb *IncidentRoleAssignmentCreateBulk) SaveX(ctx context.Context) []*IncidentRoleAssignment {
-	v, err := iracb.Save(ctx)
+func (_c *IncidentRoleAssignmentCreateBulk) SaveX(ctx context.Context) []*IncidentRoleAssignment {
+	v, err := _c.Save(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -555,14 +555,14 @@ func (iracb *IncidentRoleAssignmentCreateBulk) SaveX(ctx context.Context) []*Inc
 }
 
 // Exec executes the query.
-func (iracb *IncidentRoleAssignmentCreateBulk) Exec(ctx context.Context) error {
-	_, err := iracb.Save(ctx)
+func (_c *IncidentRoleAssignmentCreateBulk) Exec(ctx context.Context) error {
+	_, err := _c.Save(ctx)
 	return err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (iracb *IncidentRoleAssignmentCreateBulk) ExecX(ctx context.Context) {
-	if err := iracb.Exec(ctx); err != nil {
+func (_c *IncidentRoleAssignmentCreateBulk) ExecX(ctx context.Context) {
+	if err := _c.Exec(ctx); err != nil {
 		panic(err)
 	}
 }
@@ -582,10 +582,10 @@ func (iracb *IncidentRoleAssignmentCreateBulk) ExecX(ctx context.Context) {
 //			SetTenantID(v+v).
 //		}).
 //		Exec(ctx)
-func (iracb *IncidentRoleAssignmentCreateBulk) OnConflict(opts ...sql.ConflictOption) *IncidentRoleAssignmentUpsertBulk {
-	iracb.conflict = opts
+func (_c *IncidentRoleAssignmentCreateBulk) OnConflict(opts ...sql.ConflictOption) *IncidentRoleAssignmentUpsertBulk {
+	_c.conflict = opts
 	return &IncidentRoleAssignmentUpsertBulk{
-		create: iracb,
+		create: _c,
 	}
 }
 
@@ -595,10 +595,10 @@ func (iracb *IncidentRoleAssignmentCreateBulk) OnConflict(opts ...sql.ConflictOp
 //	client.IncidentRoleAssignment.Create().
 //		OnConflict(sql.ConflictColumns(columns...)).
 //		Exec(ctx)
-func (iracb *IncidentRoleAssignmentCreateBulk) OnConflictColumns(columns ...string) *IncidentRoleAssignmentUpsertBulk {
-	iracb.conflict = append(iracb.conflict, sql.ConflictColumns(columns...))
+func (_c *IncidentRoleAssignmentCreateBulk) OnConflictColumns(columns ...string) *IncidentRoleAssignmentUpsertBulk {
+	_c.conflict = append(_c.conflict, sql.ConflictColumns(columns...))
 	return &IncidentRoleAssignmentUpsertBulk{
-		create: iracb,
+		create: _c,
 	}
 }
 

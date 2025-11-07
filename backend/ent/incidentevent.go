@@ -181,7 +181,7 @@ func (*IncidentEvent) scanValues(columns []string) ([]any, error) {
 
 // assignValues assigns the values that were returned from sql.Rows (after scanning)
 // to the IncidentEvent fields.
-func (ie *IncidentEvent) assignValues(columns []string, values []any) error {
+func (_m *IncidentEvent) assignValues(columns []string, values []any) error {
 	if m, n := len(values), len(columns); m < n {
 		return fmt.Errorf("mismatch number of scan values: %d != %d", m, n)
 	}
@@ -191,88 +191,88 @@ func (ie *IncidentEvent) assignValues(columns []string, values []any) error {
 			if value, ok := values[i].(*uuid.UUID); !ok {
 				return fmt.Errorf("unexpected type %T for field id", values[i])
 			} else if value != nil {
-				ie.ID = *value
+				_m.ID = *value
 			}
 		case incidentevent.FieldTenantID:
 			if value, ok := values[i].(*sql.NullInt64); !ok {
 				return fmt.Errorf("unexpected type %T for field tenant_id", values[i])
 			} else if value.Valid {
-				ie.TenantID = int(value.Int64)
+				_m.TenantID = int(value.Int64)
 			}
 		case incidentevent.FieldIncidentID:
 			if value, ok := values[i].(*uuid.UUID); !ok {
 				return fmt.Errorf("unexpected type %T for field incident_id", values[i])
 			} else if value != nil {
-				ie.IncidentID = *value
+				_m.IncidentID = *value
 			}
 		case incidentevent.FieldEventID:
 			if value, ok := values[i].(*uuid.UUID); !ok {
 				return fmt.Errorf("unexpected type %T for field event_id", values[i])
 			} else if value != nil {
-				ie.EventID = *value
+				_m.EventID = *value
 			}
 		case incidentevent.FieldTimestamp:
 			if value, ok := values[i].(*sql.NullTime); !ok {
 				return fmt.Errorf("unexpected type %T for field timestamp", values[i])
 			} else if value.Valid {
-				ie.Timestamp = value.Time
+				_m.Timestamp = value.Time
 			}
 		case incidentevent.FieldKind:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field kind", values[i])
 			} else if value.Valid {
-				ie.Kind = incidentevent.Kind(value.String)
+				_m.Kind = incidentevent.Kind(value.String)
 			}
 		case incidentevent.FieldTitle:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field title", values[i])
 			} else if value.Valid {
-				ie.Title = value.String
+				_m.Title = value.String
 			}
 		case incidentevent.FieldDescription:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field description", values[i])
 			} else if value.Valid {
-				ie.Description = value.String
+				_m.Description = value.String
 			}
 		case incidentevent.FieldIsKey:
 			if value, ok := values[i].(*sql.NullBool); !ok {
 				return fmt.Errorf("unexpected type %T for field is_key", values[i])
 			} else if value.Valid {
-				ie.IsKey = value.Bool
+				_m.IsKey = value.Bool
 			}
 		case incidentevent.FieldCreatedAt:
 			if value, ok := values[i].(*sql.NullTime); !ok {
 				return fmt.Errorf("unexpected type %T for field created_at", values[i])
 			} else if value.Valid {
-				ie.CreatedAt = value.Time
+				_m.CreatedAt = value.Time
 			}
 		case incidentevent.FieldUpdatedAt:
 			if value, ok := values[i].(*sql.NullTime); !ok {
 				return fmt.Errorf("unexpected type %T for field updated_at", values[i])
 			} else if value.Valid {
-				ie.UpdatedAt = value.Time
+				_m.UpdatedAt = value.Time
 			}
 		case incidentevent.FieldCreatedBy:
 			if value, ok := values[i].(*uuid.UUID); !ok {
 				return fmt.Errorf("unexpected type %T for field created_by", values[i])
 			} else if value != nil {
-				ie.CreatedBy = *value
+				_m.CreatedBy = *value
 			}
 		case incidentevent.FieldSequence:
 			if value, ok := values[i].(*sql.NullInt64); !ok {
 				return fmt.Errorf("unexpected type %T for field sequence", values[i])
 			} else if value.Valid {
-				ie.Sequence = int(value.Int64)
+				_m.Sequence = int(value.Int64)
 			}
 		case incidentevent.FieldIsDraft:
 			if value, ok := values[i].(*sql.NullBool); !ok {
 				return fmt.Errorf("unexpected type %T for field is_draft", values[i])
 			} else if value.Valid {
-				ie.IsDraft = value.Bool
+				_m.IsDraft = value.Bool
 			}
 		default:
-			ie.selectValues.Set(columns[i], values[i])
+			_m.selectValues.Set(columns[i], values[i])
 		}
 	}
 	return nil
@@ -280,111 +280,111 @@ func (ie *IncidentEvent) assignValues(columns []string, values []any) error {
 
 // Value returns the ent.Value that was dynamically selected and assigned to the IncidentEvent.
 // This includes values selected through modifiers, order, etc.
-func (ie *IncidentEvent) Value(name string) (ent.Value, error) {
-	return ie.selectValues.Get(name)
+func (_m *IncidentEvent) Value(name string) (ent.Value, error) {
+	return _m.selectValues.Get(name)
 }
 
 // QueryTenant queries the "tenant" edge of the IncidentEvent entity.
-func (ie *IncidentEvent) QueryTenant() *TenantQuery {
-	return NewIncidentEventClient(ie.config).QueryTenant(ie)
+func (_m *IncidentEvent) QueryTenant() *TenantQuery {
+	return NewIncidentEventClient(_m.config).QueryTenant(_m)
 }
 
 // QueryIncident queries the "incident" edge of the IncidentEvent entity.
-func (ie *IncidentEvent) QueryIncident() *IncidentQuery {
-	return NewIncidentEventClient(ie.config).QueryIncident(ie)
+func (_m *IncidentEvent) QueryIncident() *IncidentQuery {
+	return NewIncidentEventClient(_m.config).QueryIncident(_m)
 }
 
 // QueryEvent queries the "event" edge of the IncidentEvent entity.
-func (ie *IncidentEvent) QueryEvent() *EventQuery {
-	return NewIncidentEventClient(ie.config).QueryEvent(ie)
+func (_m *IncidentEvent) QueryEvent() *EventQuery {
+	return NewIncidentEventClient(_m.config).QueryEvent(_m)
 }
 
 // QueryContext queries the "context" edge of the IncidentEvent entity.
-func (ie *IncidentEvent) QueryContext() *IncidentEventContextQuery {
-	return NewIncidentEventClient(ie.config).QueryContext(ie)
+func (_m *IncidentEvent) QueryContext() *IncidentEventContextQuery {
+	return NewIncidentEventClient(_m.config).QueryContext(_m)
 }
 
 // QueryFactors queries the "factors" edge of the IncidentEvent entity.
-func (ie *IncidentEvent) QueryFactors() *IncidentEventContributingFactorQuery {
-	return NewIncidentEventClient(ie.config).QueryFactors(ie)
+func (_m *IncidentEvent) QueryFactors() *IncidentEventContributingFactorQuery {
+	return NewIncidentEventClient(_m.config).QueryFactors(_m)
 }
 
 // QueryEvidence queries the "evidence" edge of the IncidentEvent entity.
-func (ie *IncidentEvent) QueryEvidence() *IncidentEventEvidenceQuery {
-	return NewIncidentEventClient(ie.config).QueryEvidence(ie)
+func (_m *IncidentEvent) QueryEvidence() *IncidentEventEvidenceQuery {
+	return NewIncidentEventClient(_m.config).QueryEvidence(_m)
 }
 
 // QuerySystemComponents queries the "system_components" edge of the IncidentEvent entity.
-func (ie *IncidentEvent) QuerySystemComponents() *SystemComponentQuery {
-	return NewIncidentEventClient(ie.config).QuerySystemComponents(ie)
+func (_m *IncidentEvent) QuerySystemComponents() *SystemComponentQuery {
+	return NewIncidentEventClient(_m.config).QuerySystemComponents(_m)
 }
 
 // QueryEventComponents queries the "event_components" edge of the IncidentEvent entity.
-func (ie *IncidentEvent) QueryEventComponents() *IncidentEventSystemComponentQuery {
-	return NewIncidentEventClient(ie.config).QueryEventComponents(ie)
+func (_m *IncidentEvent) QueryEventComponents() *IncidentEventSystemComponentQuery {
+	return NewIncidentEventClient(_m.config).QueryEventComponents(_m)
 }
 
 // Update returns a builder for updating this IncidentEvent.
 // Note that you need to call IncidentEvent.Unwrap() before calling this method if this IncidentEvent
 // was returned from a transaction, and the transaction was committed or rolled back.
-func (ie *IncidentEvent) Update() *IncidentEventUpdateOne {
-	return NewIncidentEventClient(ie.config).UpdateOne(ie)
+func (_m *IncidentEvent) Update() *IncidentEventUpdateOne {
+	return NewIncidentEventClient(_m.config).UpdateOne(_m)
 }
 
 // Unwrap unwraps the IncidentEvent entity that was returned from a transaction after it was closed,
 // so that all future queries will be executed through the driver which created the transaction.
-func (ie *IncidentEvent) Unwrap() *IncidentEvent {
-	_tx, ok := ie.config.driver.(*txDriver)
+func (_m *IncidentEvent) Unwrap() *IncidentEvent {
+	_tx, ok := _m.config.driver.(*txDriver)
 	if !ok {
 		panic("ent: IncidentEvent is not a transactional entity")
 	}
-	ie.config.driver = _tx.drv
-	return ie
+	_m.config.driver = _tx.drv
+	return _m
 }
 
 // String implements the fmt.Stringer.
-func (ie *IncidentEvent) String() string {
+func (_m *IncidentEvent) String() string {
 	var builder strings.Builder
 	builder.WriteString("IncidentEvent(")
-	builder.WriteString(fmt.Sprintf("id=%v, ", ie.ID))
+	builder.WriteString(fmt.Sprintf("id=%v, ", _m.ID))
 	builder.WriteString("tenant_id=")
-	builder.WriteString(fmt.Sprintf("%v", ie.TenantID))
+	builder.WriteString(fmt.Sprintf("%v", _m.TenantID))
 	builder.WriteString(", ")
 	builder.WriteString("incident_id=")
-	builder.WriteString(fmt.Sprintf("%v", ie.IncidentID))
+	builder.WriteString(fmt.Sprintf("%v", _m.IncidentID))
 	builder.WriteString(", ")
 	builder.WriteString("event_id=")
-	builder.WriteString(fmt.Sprintf("%v", ie.EventID))
+	builder.WriteString(fmt.Sprintf("%v", _m.EventID))
 	builder.WriteString(", ")
 	builder.WriteString("timestamp=")
-	builder.WriteString(ie.Timestamp.Format(time.ANSIC))
+	builder.WriteString(_m.Timestamp.Format(time.ANSIC))
 	builder.WriteString(", ")
 	builder.WriteString("kind=")
-	builder.WriteString(fmt.Sprintf("%v", ie.Kind))
+	builder.WriteString(fmt.Sprintf("%v", _m.Kind))
 	builder.WriteString(", ")
 	builder.WriteString("title=")
-	builder.WriteString(ie.Title)
+	builder.WriteString(_m.Title)
 	builder.WriteString(", ")
 	builder.WriteString("description=")
-	builder.WriteString(ie.Description)
+	builder.WriteString(_m.Description)
 	builder.WriteString(", ")
 	builder.WriteString("is_key=")
-	builder.WriteString(fmt.Sprintf("%v", ie.IsKey))
+	builder.WriteString(fmt.Sprintf("%v", _m.IsKey))
 	builder.WriteString(", ")
 	builder.WriteString("created_at=")
-	builder.WriteString(ie.CreatedAt.Format(time.ANSIC))
+	builder.WriteString(_m.CreatedAt.Format(time.ANSIC))
 	builder.WriteString(", ")
 	builder.WriteString("updated_at=")
-	builder.WriteString(ie.UpdatedAt.Format(time.ANSIC))
+	builder.WriteString(_m.UpdatedAt.Format(time.ANSIC))
 	builder.WriteString(", ")
 	builder.WriteString("created_by=")
-	builder.WriteString(fmt.Sprintf("%v", ie.CreatedBy))
+	builder.WriteString(fmt.Sprintf("%v", _m.CreatedBy))
 	builder.WriteString(", ")
 	builder.WriteString("sequence=")
-	builder.WriteString(fmt.Sprintf("%v", ie.Sequence))
+	builder.WriteString(fmt.Sprintf("%v", _m.Sequence))
 	builder.WriteString(", ")
 	builder.WriteString("is_draft=")
-	builder.WriteString(fmt.Sprintf("%v", ie.IsDraft))
+	builder.WriteString(fmt.Sprintf("%v", _m.IsDraft))
 	builder.WriteByte(')')
 	return builder.String()
 }

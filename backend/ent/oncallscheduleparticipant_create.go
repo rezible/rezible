@@ -27,74 +27,74 @@ type OncallScheduleParticipantCreate struct {
 }
 
 // SetTenantID sets the "tenant_id" field.
-func (ospc *OncallScheduleParticipantCreate) SetTenantID(i int) *OncallScheduleParticipantCreate {
-	ospc.mutation.SetTenantID(i)
-	return ospc
+func (_c *OncallScheduleParticipantCreate) SetTenantID(v int) *OncallScheduleParticipantCreate {
+	_c.mutation.SetTenantID(v)
+	return _c
 }
 
 // SetScheduleID sets the "schedule_id" field.
-func (ospc *OncallScheduleParticipantCreate) SetScheduleID(u uuid.UUID) *OncallScheduleParticipantCreate {
-	ospc.mutation.SetScheduleID(u)
-	return ospc
+func (_c *OncallScheduleParticipantCreate) SetScheduleID(v uuid.UUID) *OncallScheduleParticipantCreate {
+	_c.mutation.SetScheduleID(v)
+	return _c
 }
 
 // SetUserID sets the "user_id" field.
-func (ospc *OncallScheduleParticipantCreate) SetUserID(u uuid.UUID) *OncallScheduleParticipantCreate {
-	ospc.mutation.SetUserID(u)
-	return ospc
+func (_c *OncallScheduleParticipantCreate) SetUserID(v uuid.UUID) *OncallScheduleParticipantCreate {
+	_c.mutation.SetUserID(v)
+	return _c
 }
 
 // SetIndex sets the "index" field.
-func (ospc *OncallScheduleParticipantCreate) SetIndex(i int) *OncallScheduleParticipantCreate {
-	ospc.mutation.SetIndex(i)
-	return ospc
+func (_c *OncallScheduleParticipantCreate) SetIndex(v int) *OncallScheduleParticipantCreate {
+	_c.mutation.SetIndex(v)
+	return _c
 }
 
 // SetID sets the "id" field.
-func (ospc *OncallScheduleParticipantCreate) SetID(u uuid.UUID) *OncallScheduleParticipantCreate {
-	ospc.mutation.SetID(u)
-	return ospc
+func (_c *OncallScheduleParticipantCreate) SetID(v uuid.UUID) *OncallScheduleParticipantCreate {
+	_c.mutation.SetID(v)
+	return _c
 }
 
 // SetNillableID sets the "id" field if the given value is not nil.
-func (ospc *OncallScheduleParticipantCreate) SetNillableID(u *uuid.UUID) *OncallScheduleParticipantCreate {
-	if u != nil {
-		ospc.SetID(*u)
+func (_c *OncallScheduleParticipantCreate) SetNillableID(v *uuid.UUID) *OncallScheduleParticipantCreate {
+	if v != nil {
+		_c.SetID(*v)
 	}
-	return ospc
+	return _c
 }
 
 // SetTenant sets the "tenant" edge to the Tenant entity.
-func (ospc *OncallScheduleParticipantCreate) SetTenant(t *Tenant) *OncallScheduleParticipantCreate {
-	return ospc.SetTenantID(t.ID)
+func (_c *OncallScheduleParticipantCreate) SetTenant(v *Tenant) *OncallScheduleParticipantCreate {
+	return _c.SetTenantID(v.ID)
 }
 
 // SetSchedule sets the "schedule" edge to the OncallSchedule entity.
-func (ospc *OncallScheduleParticipantCreate) SetSchedule(o *OncallSchedule) *OncallScheduleParticipantCreate {
-	return ospc.SetScheduleID(o.ID)
+func (_c *OncallScheduleParticipantCreate) SetSchedule(v *OncallSchedule) *OncallScheduleParticipantCreate {
+	return _c.SetScheduleID(v.ID)
 }
 
 // SetUser sets the "user" edge to the User entity.
-func (ospc *OncallScheduleParticipantCreate) SetUser(u *User) *OncallScheduleParticipantCreate {
-	return ospc.SetUserID(u.ID)
+func (_c *OncallScheduleParticipantCreate) SetUser(v *User) *OncallScheduleParticipantCreate {
+	return _c.SetUserID(v.ID)
 }
 
 // Mutation returns the OncallScheduleParticipantMutation object of the builder.
-func (ospc *OncallScheduleParticipantCreate) Mutation() *OncallScheduleParticipantMutation {
-	return ospc.mutation
+func (_c *OncallScheduleParticipantCreate) Mutation() *OncallScheduleParticipantMutation {
+	return _c.mutation
 }
 
 // Save creates the OncallScheduleParticipant in the database.
-func (ospc *OncallScheduleParticipantCreate) Save(ctx context.Context) (*OncallScheduleParticipant, error) {
-	if err := ospc.defaults(); err != nil {
+func (_c *OncallScheduleParticipantCreate) Save(ctx context.Context) (*OncallScheduleParticipant, error) {
+	if err := _c.defaults(); err != nil {
 		return nil, err
 	}
-	return withHooks(ctx, ospc.sqlSave, ospc.mutation, ospc.hooks)
+	return withHooks(ctx, _c.sqlSave, _c.mutation, _c.hooks)
 }
 
 // SaveX calls Save and panics if Save returns an error.
-func (ospc *OncallScheduleParticipantCreate) SaveX(ctx context.Context) *OncallScheduleParticipant {
-	v, err := ospc.Save(ctx)
+func (_c *OncallScheduleParticipantCreate) SaveX(ctx context.Context) *OncallScheduleParticipant {
+	v, err := _c.Save(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -102,62 +102,62 @@ func (ospc *OncallScheduleParticipantCreate) SaveX(ctx context.Context) *OncallS
 }
 
 // Exec executes the query.
-func (ospc *OncallScheduleParticipantCreate) Exec(ctx context.Context) error {
-	_, err := ospc.Save(ctx)
+func (_c *OncallScheduleParticipantCreate) Exec(ctx context.Context) error {
+	_, err := _c.Save(ctx)
 	return err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (ospc *OncallScheduleParticipantCreate) ExecX(ctx context.Context) {
-	if err := ospc.Exec(ctx); err != nil {
+func (_c *OncallScheduleParticipantCreate) ExecX(ctx context.Context) {
+	if err := _c.Exec(ctx); err != nil {
 		panic(err)
 	}
 }
 
 // defaults sets the default values of the builder before save.
-func (ospc *OncallScheduleParticipantCreate) defaults() error {
-	if _, ok := ospc.mutation.ID(); !ok {
+func (_c *OncallScheduleParticipantCreate) defaults() error {
+	if _, ok := _c.mutation.ID(); !ok {
 		if oncallscheduleparticipant.DefaultID == nil {
 			return fmt.Errorf("ent: uninitialized oncallscheduleparticipant.DefaultID (forgotten import ent/runtime?)")
 		}
 		v := oncallscheduleparticipant.DefaultID()
-		ospc.mutation.SetID(v)
+		_c.mutation.SetID(v)
 	}
 	return nil
 }
 
 // check runs all checks and user-defined validators on the builder.
-func (ospc *OncallScheduleParticipantCreate) check() error {
-	if _, ok := ospc.mutation.TenantID(); !ok {
+func (_c *OncallScheduleParticipantCreate) check() error {
+	if _, ok := _c.mutation.TenantID(); !ok {
 		return &ValidationError{Name: "tenant_id", err: errors.New(`ent: missing required field "OncallScheduleParticipant.tenant_id"`)}
 	}
-	if _, ok := ospc.mutation.ScheduleID(); !ok {
+	if _, ok := _c.mutation.ScheduleID(); !ok {
 		return &ValidationError{Name: "schedule_id", err: errors.New(`ent: missing required field "OncallScheduleParticipant.schedule_id"`)}
 	}
-	if _, ok := ospc.mutation.UserID(); !ok {
+	if _, ok := _c.mutation.UserID(); !ok {
 		return &ValidationError{Name: "user_id", err: errors.New(`ent: missing required field "OncallScheduleParticipant.user_id"`)}
 	}
-	if _, ok := ospc.mutation.Index(); !ok {
+	if _, ok := _c.mutation.Index(); !ok {
 		return &ValidationError{Name: "index", err: errors.New(`ent: missing required field "OncallScheduleParticipant.index"`)}
 	}
-	if len(ospc.mutation.TenantIDs()) == 0 {
+	if len(_c.mutation.TenantIDs()) == 0 {
 		return &ValidationError{Name: "tenant", err: errors.New(`ent: missing required edge "OncallScheduleParticipant.tenant"`)}
 	}
-	if len(ospc.mutation.ScheduleIDs()) == 0 {
+	if len(_c.mutation.ScheduleIDs()) == 0 {
 		return &ValidationError{Name: "schedule", err: errors.New(`ent: missing required edge "OncallScheduleParticipant.schedule"`)}
 	}
-	if len(ospc.mutation.UserIDs()) == 0 {
+	if len(_c.mutation.UserIDs()) == 0 {
 		return &ValidationError{Name: "user", err: errors.New(`ent: missing required edge "OncallScheduleParticipant.user"`)}
 	}
 	return nil
 }
 
-func (ospc *OncallScheduleParticipantCreate) sqlSave(ctx context.Context) (*OncallScheduleParticipant, error) {
-	if err := ospc.check(); err != nil {
+func (_c *OncallScheduleParticipantCreate) sqlSave(ctx context.Context) (*OncallScheduleParticipant, error) {
+	if err := _c.check(); err != nil {
 		return nil, err
 	}
-	_node, _spec := ospc.createSpec()
-	if err := sqlgraph.CreateNode(ctx, ospc.driver, _spec); err != nil {
+	_node, _spec := _c.createSpec()
+	if err := sqlgraph.CreateNode(ctx, _c.driver, _spec); err != nil {
 		if sqlgraph.IsConstraintError(err) {
 			err = &ConstraintError{msg: err.Error(), wrap: err}
 		}
@@ -170,26 +170,26 @@ func (ospc *OncallScheduleParticipantCreate) sqlSave(ctx context.Context) (*Onca
 			return nil, err
 		}
 	}
-	ospc.mutation.id = &_node.ID
-	ospc.mutation.done = true
+	_c.mutation.id = &_node.ID
+	_c.mutation.done = true
 	return _node, nil
 }
 
-func (ospc *OncallScheduleParticipantCreate) createSpec() (*OncallScheduleParticipant, *sqlgraph.CreateSpec) {
+func (_c *OncallScheduleParticipantCreate) createSpec() (*OncallScheduleParticipant, *sqlgraph.CreateSpec) {
 	var (
-		_node = &OncallScheduleParticipant{config: ospc.config}
+		_node = &OncallScheduleParticipant{config: _c.config}
 		_spec = sqlgraph.NewCreateSpec(oncallscheduleparticipant.Table, sqlgraph.NewFieldSpec(oncallscheduleparticipant.FieldID, field.TypeUUID))
 	)
-	_spec.OnConflict = ospc.conflict
-	if id, ok := ospc.mutation.ID(); ok {
+	_spec.OnConflict = _c.conflict
+	if id, ok := _c.mutation.ID(); ok {
 		_node.ID = id
 		_spec.ID.Value = &id
 	}
-	if value, ok := ospc.mutation.Index(); ok {
+	if value, ok := _c.mutation.Index(); ok {
 		_spec.SetField(oncallscheduleparticipant.FieldIndex, field.TypeInt, value)
 		_node.Index = value
 	}
-	if nodes := ospc.mutation.TenantIDs(); len(nodes) > 0 {
+	if nodes := _c.mutation.TenantIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
@@ -206,7 +206,7 @@ func (ospc *OncallScheduleParticipantCreate) createSpec() (*OncallSchedulePartic
 		_node.TenantID = nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
-	if nodes := ospc.mutation.ScheduleIDs(); len(nodes) > 0 {
+	if nodes := _c.mutation.ScheduleIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: true,
@@ -223,7 +223,7 @@ func (ospc *OncallScheduleParticipantCreate) createSpec() (*OncallSchedulePartic
 		_node.ScheduleID = nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
-	if nodes := ospc.mutation.UserIDs(); len(nodes) > 0 {
+	if nodes := _c.mutation.UserIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
@@ -259,10 +259,10 @@ func (ospc *OncallScheduleParticipantCreate) createSpec() (*OncallSchedulePartic
 //			SetTenantID(v+v).
 //		}).
 //		Exec(ctx)
-func (ospc *OncallScheduleParticipantCreate) OnConflict(opts ...sql.ConflictOption) *OncallScheduleParticipantUpsertOne {
-	ospc.conflict = opts
+func (_c *OncallScheduleParticipantCreate) OnConflict(opts ...sql.ConflictOption) *OncallScheduleParticipantUpsertOne {
+	_c.conflict = opts
 	return &OncallScheduleParticipantUpsertOne{
-		create: ospc,
+		create: _c,
 	}
 }
 
@@ -272,10 +272,10 @@ func (ospc *OncallScheduleParticipantCreate) OnConflict(opts ...sql.ConflictOpti
 //	client.OncallScheduleParticipant.Create().
 //		OnConflict(sql.ConflictColumns(columns...)).
 //		Exec(ctx)
-func (ospc *OncallScheduleParticipantCreate) OnConflictColumns(columns ...string) *OncallScheduleParticipantUpsertOne {
-	ospc.conflict = append(ospc.conflict, sql.ConflictColumns(columns...))
+func (_c *OncallScheduleParticipantCreate) OnConflictColumns(columns ...string) *OncallScheduleParticipantUpsertOne {
+	_c.conflict = append(_c.conflict, sql.ConflictColumns(columns...))
 	return &OncallScheduleParticipantUpsertOne{
-		create: ospc,
+		create: _c,
 	}
 }
 
@@ -481,16 +481,16 @@ type OncallScheduleParticipantCreateBulk struct {
 }
 
 // Save creates the OncallScheduleParticipant entities in the database.
-func (ospcb *OncallScheduleParticipantCreateBulk) Save(ctx context.Context) ([]*OncallScheduleParticipant, error) {
-	if ospcb.err != nil {
-		return nil, ospcb.err
+func (_c *OncallScheduleParticipantCreateBulk) Save(ctx context.Context) ([]*OncallScheduleParticipant, error) {
+	if _c.err != nil {
+		return nil, _c.err
 	}
-	specs := make([]*sqlgraph.CreateSpec, len(ospcb.builders))
-	nodes := make([]*OncallScheduleParticipant, len(ospcb.builders))
-	mutators := make([]Mutator, len(ospcb.builders))
-	for i := range ospcb.builders {
+	specs := make([]*sqlgraph.CreateSpec, len(_c.builders))
+	nodes := make([]*OncallScheduleParticipant, len(_c.builders))
+	mutators := make([]Mutator, len(_c.builders))
+	for i := range _c.builders {
 		func(i int, root context.Context) {
-			builder := ospcb.builders[i]
+			builder := _c.builders[i]
 			builder.defaults()
 			var mut Mutator = MutateFunc(func(ctx context.Context, m Mutation) (Value, error) {
 				mutation, ok := m.(*OncallScheduleParticipantMutation)
@@ -504,12 +504,12 @@ func (ospcb *OncallScheduleParticipantCreateBulk) Save(ctx context.Context) ([]*
 				var err error
 				nodes[i], specs[i] = builder.createSpec()
 				if i < len(mutators)-1 {
-					_, err = mutators[i+1].Mutate(root, ospcb.builders[i+1].mutation)
+					_, err = mutators[i+1].Mutate(root, _c.builders[i+1].mutation)
 				} else {
 					spec := &sqlgraph.BatchCreateSpec{Nodes: specs}
-					spec.OnConflict = ospcb.conflict
+					spec.OnConflict = _c.conflict
 					// Invoke the actual operation on the latest mutation in the chain.
-					if err = sqlgraph.BatchCreate(ctx, ospcb.driver, spec); err != nil {
+					if err = sqlgraph.BatchCreate(ctx, _c.driver, spec); err != nil {
 						if sqlgraph.IsConstraintError(err) {
 							err = &ConstraintError{msg: err.Error(), wrap: err}
 						}
@@ -529,7 +529,7 @@ func (ospcb *OncallScheduleParticipantCreateBulk) Save(ctx context.Context) ([]*
 		}(i, ctx)
 	}
 	if len(mutators) > 0 {
-		if _, err := mutators[0].Mutate(ctx, ospcb.builders[0].mutation); err != nil {
+		if _, err := mutators[0].Mutate(ctx, _c.builders[0].mutation); err != nil {
 			return nil, err
 		}
 	}
@@ -537,8 +537,8 @@ func (ospcb *OncallScheduleParticipantCreateBulk) Save(ctx context.Context) ([]*
 }
 
 // SaveX is like Save, but panics if an error occurs.
-func (ospcb *OncallScheduleParticipantCreateBulk) SaveX(ctx context.Context) []*OncallScheduleParticipant {
-	v, err := ospcb.Save(ctx)
+func (_c *OncallScheduleParticipantCreateBulk) SaveX(ctx context.Context) []*OncallScheduleParticipant {
+	v, err := _c.Save(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -546,14 +546,14 @@ func (ospcb *OncallScheduleParticipantCreateBulk) SaveX(ctx context.Context) []*
 }
 
 // Exec executes the query.
-func (ospcb *OncallScheduleParticipantCreateBulk) Exec(ctx context.Context) error {
-	_, err := ospcb.Save(ctx)
+func (_c *OncallScheduleParticipantCreateBulk) Exec(ctx context.Context) error {
+	_, err := _c.Save(ctx)
 	return err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (ospcb *OncallScheduleParticipantCreateBulk) ExecX(ctx context.Context) {
-	if err := ospcb.Exec(ctx); err != nil {
+func (_c *OncallScheduleParticipantCreateBulk) ExecX(ctx context.Context) {
+	if err := _c.Exec(ctx); err != nil {
 		panic(err)
 	}
 }
@@ -573,10 +573,10 @@ func (ospcb *OncallScheduleParticipantCreateBulk) ExecX(ctx context.Context) {
 //			SetTenantID(v+v).
 //		}).
 //		Exec(ctx)
-func (ospcb *OncallScheduleParticipantCreateBulk) OnConflict(opts ...sql.ConflictOption) *OncallScheduleParticipantUpsertBulk {
-	ospcb.conflict = opts
+func (_c *OncallScheduleParticipantCreateBulk) OnConflict(opts ...sql.ConflictOption) *OncallScheduleParticipantUpsertBulk {
+	_c.conflict = opts
 	return &OncallScheduleParticipantUpsertBulk{
-		create: ospcb,
+		create: _c,
 	}
 }
 
@@ -586,10 +586,10 @@ func (ospcb *OncallScheduleParticipantCreateBulk) OnConflict(opts ...sql.Conflic
 //	client.OncallScheduleParticipant.Create().
 //		OnConflict(sql.ConflictColumns(columns...)).
 //		Exec(ctx)
-func (ospcb *OncallScheduleParticipantCreateBulk) OnConflictColumns(columns ...string) *OncallScheduleParticipantUpsertBulk {
-	ospcb.conflict = append(ospcb.conflict, sql.ConflictColumns(columns...))
+func (_c *OncallScheduleParticipantCreateBulk) OnConflictColumns(columns ...string) *OncallScheduleParticipantUpsertBulk {
+	_c.conflict = append(_c.conflict, sql.ConflictColumns(columns...))
 	return &OncallScheduleParticipantUpsertBulk{
-		create: ospcb,
+		create: _c,
 	}
 }
 

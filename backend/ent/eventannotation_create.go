@@ -29,115 +29,115 @@ type EventAnnotationCreate struct {
 }
 
 // SetTenantID sets the "tenant_id" field.
-func (eac *EventAnnotationCreate) SetTenantID(i int) *EventAnnotationCreate {
-	eac.mutation.SetTenantID(i)
-	return eac
+func (_c *EventAnnotationCreate) SetTenantID(v int) *EventAnnotationCreate {
+	_c.mutation.SetTenantID(v)
+	return _c
 }
 
 // SetEventID sets the "event_id" field.
-func (eac *EventAnnotationCreate) SetEventID(u uuid.UUID) *EventAnnotationCreate {
-	eac.mutation.SetEventID(u)
-	return eac
+func (_c *EventAnnotationCreate) SetEventID(v uuid.UUID) *EventAnnotationCreate {
+	_c.mutation.SetEventID(v)
+	return _c
 }
 
 // SetCreatorID sets the "creator_id" field.
-func (eac *EventAnnotationCreate) SetCreatorID(u uuid.UUID) *EventAnnotationCreate {
-	eac.mutation.SetCreatorID(u)
-	return eac
+func (_c *EventAnnotationCreate) SetCreatorID(v uuid.UUID) *EventAnnotationCreate {
+	_c.mutation.SetCreatorID(v)
+	return _c
 }
 
 // SetCreatedAt sets the "created_at" field.
-func (eac *EventAnnotationCreate) SetCreatedAt(t time.Time) *EventAnnotationCreate {
-	eac.mutation.SetCreatedAt(t)
-	return eac
+func (_c *EventAnnotationCreate) SetCreatedAt(v time.Time) *EventAnnotationCreate {
+	_c.mutation.SetCreatedAt(v)
+	return _c
 }
 
 // SetNillableCreatedAt sets the "created_at" field if the given value is not nil.
-func (eac *EventAnnotationCreate) SetNillableCreatedAt(t *time.Time) *EventAnnotationCreate {
-	if t != nil {
-		eac.SetCreatedAt(*t)
+func (_c *EventAnnotationCreate) SetNillableCreatedAt(v *time.Time) *EventAnnotationCreate {
+	if v != nil {
+		_c.SetCreatedAt(*v)
 	}
-	return eac
+	return _c
 }
 
 // SetMinutesOccupied sets the "minutes_occupied" field.
-func (eac *EventAnnotationCreate) SetMinutesOccupied(i int) *EventAnnotationCreate {
-	eac.mutation.SetMinutesOccupied(i)
-	return eac
+func (_c *EventAnnotationCreate) SetMinutesOccupied(v int) *EventAnnotationCreate {
+	_c.mutation.SetMinutesOccupied(v)
+	return _c
 }
 
 // SetNotes sets the "notes" field.
-func (eac *EventAnnotationCreate) SetNotes(s string) *EventAnnotationCreate {
-	eac.mutation.SetNotes(s)
-	return eac
+func (_c *EventAnnotationCreate) SetNotes(v string) *EventAnnotationCreate {
+	_c.mutation.SetNotes(v)
+	return _c
 }
 
 // SetTags sets the "tags" field.
-func (eac *EventAnnotationCreate) SetTags(s []string) *EventAnnotationCreate {
-	eac.mutation.SetTags(s)
-	return eac
+func (_c *EventAnnotationCreate) SetTags(v []string) *EventAnnotationCreate {
+	_c.mutation.SetTags(v)
+	return _c
 }
 
 // SetID sets the "id" field.
-func (eac *EventAnnotationCreate) SetID(u uuid.UUID) *EventAnnotationCreate {
-	eac.mutation.SetID(u)
-	return eac
+func (_c *EventAnnotationCreate) SetID(v uuid.UUID) *EventAnnotationCreate {
+	_c.mutation.SetID(v)
+	return _c
 }
 
 // SetNillableID sets the "id" field if the given value is not nil.
-func (eac *EventAnnotationCreate) SetNillableID(u *uuid.UUID) *EventAnnotationCreate {
-	if u != nil {
-		eac.SetID(*u)
+func (_c *EventAnnotationCreate) SetNillableID(v *uuid.UUID) *EventAnnotationCreate {
+	if v != nil {
+		_c.SetID(*v)
 	}
-	return eac
+	return _c
 }
 
 // SetTenant sets the "tenant" edge to the Tenant entity.
-func (eac *EventAnnotationCreate) SetTenant(t *Tenant) *EventAnnotationCreate {
-	return eac.SetTenantID(t.ID)
+func (_c *EventAnnotationCreate) SetTenant(v *Tenant) *EventAnnotationCreate {
+	return _c.SetTenantID(v.ID)
 }
 
 // SetEvent sets the "event" edge to the Event entity.
-func (eac *EventAnnotationCreate) SetEvent(e *Event) *EventAnnotationCreate {
-	return eac.SetEventID(e.ID)
+func (_c *EventAnnotationCreate) SetEvent(v *Event) *EventAnnotationCreate {
+	return _c.SetEventID(v.ID)
 }
 
 // SetCreator sets the "creator" edge to the User entity.
-func (eac *EventAnnotationCreate) SetCreator(u *User) *EventAnnotationCreate {
-	return eac.SetCreatorID(u.ID)
+func (_c *EventAnnotationCreate) SetCreator(v *User) *EventAnnotationCreate {
+	return _c.SetCreatorID(v.ID)
 }
 
 // AddHandoverIDs adds the "handovers" edge to the OncallShiftHandover entity by IDs.
-func (eac *EventAnnotationCreate) AddHandoverIDs(ids ...uuid.UUID) *EventAnnotationCreate {
-	eac.mutation.AddHandoverIDs(ids...)
-	return eac
+func (_c *EventAnnotationCreate) AddHandoverIDs(ids ...uuid.UUID) *EventAnnotationCreate {
+	_c.mutation.AddHandoverIDs(ids...)
+	return _c
 }
 
 // AddHandovers adds the "handovers" edges to the OncallShiftHandover entity.
-func (eac *EventAnnotationCreate) AddHandovers(o ...*OncallShiftHandover) *EventAnnotationCreate {
-	ids := make([]uuid.UUID, len(o))
-	for i := range o {
-		ids[i] = o[i].ID
+func (_c *EventAnnotationCreate) AddHandovers(v ...*OncallShiftHandover) *EventAnnotationCreate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
 	}
-	return eac.AddHandoverIDs(ids...)
+	return _c.AddHandoverIDs(ids...)
 }
 
 // Mutation returns the EventAnnotationMutation object of the builder.
-func (eac *EventAnnotationCreate) Mutation() *EventAnnotationMutation {
-	return eac.mutation
+func (_c *EventAnnotationCreate) Mutation() *EventAnnotationMutation {
+	return _c.mutation
 }
 
 // Save creates the EventAnnotation in the database.
-func (eac *EventAnnotationCreate) Save(ctx context.Context) (*EventAnnotation, error) {
-	if err := eac.defaults(); err != nil {
+func (_c *EventAnnotationCreate) Save(ctx context.Context) (*EventAnnotation, error) {
+	if err := _c.defaults(); err != nil {
 		return nil, err
 	}
-	return withHooks(ctx, eac.sqlSave, eac.mutation, eac.hooks)
+	return withHooks(ctx, _c.sqlSave, _c.mutation, _c.hooks)
 }
 
 // SaveX calls Save and panics if Save returns an error.
-func (eac *EventAnnotationCreate) SaveX(ctx context.Context) *EventAnnotation {
-	v, err := eac.Save(ctx)
+func (_c *EventAnnotationCreate) SaveX(ctx context.Context) *EventAnnotation {
+	v, err := _c.Save(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -145,78 +145,78 @@ func (eac *EventAnnotationCreate) SaveX(ctx context.Context) *EventAnnotation {
 }
 
 // Exec executes the query.
-func (eac *EventAnnotationCreate) Exec(ctx context.Context) error {
-	_, err := eac.Save(ctx)
+func (_c *EventAnnotationCreate) Exec(ctx context.Context) error {
+	_, err := _c.Save(ctx)
 	return err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (eac *EventAnnotationCreate) ExecX(ctx context.Context) {
-	if err := eac.Exec(ctx); err != nil {
+func (_c *EventAnnotationCreate) ExecX(ctx context.Context) {
+	if err := _c.Exec(ctx); err != nil {
 		panic(err)
 	}
 }
 
 // defaults sets the default values of the builder before save.
-func (eac *EventAnnotationCreate) defaults() error {
-	if _, ok := eac.mutation.CreatedAt(); !ok {
+func (_c *EventAnnotationCreate) defaults() error {
+	if _, ok := _c.mutation.CreatedAt(); !ok {
 		if eventannotation.DefaultCreatedAt == nil {
 			return fmt.Errorf("ent: uninitialized eventannotation.DefaultCreatedAt (forgotten import ent/runtime?)")
 		}
 		v := eventannotation.DefaultCreatedAt()
-		eac.mutation.SetCreatedAt(v)
+		_c.mutation.SetCreatedAt(v)
 	}
-	if _, ok := eac.mutation.ID(); !ok {
+	if _, ok := _c.mutation.ID(); !ok {
 		if eventannotation.DefaultID == nil {
 			return fmt.Errorf("ent: uninitialized eventannotation.DefaultID (forgotten import ent/runtime?)")
 		}
 		v := eventannotation.DefaultID()
-		eac.mutation.SetID(v)
+		_c.mutation.SetID(v)
 	}
 	return nil
 }
 
 // check runs all checks and user-defined validators on the builder.
-func (eac *EventAnnotationCreate) check() error {
-	if _, ok := eac.mutation.TenantID(); !ok {
+func (_c *EventAnnotationCreate) check() error {
+	if _, ok := _c.mutation.TenantID(); !ok {
 		return &ValidationError{Name: "tenant_id", err: errors.New(`ent: missing required field "EventAnnotation.tenant_id"`)}
 	}
-	if _, ok := eac.mutation.EventID(); !ok {
+	if _, ok := _c.mutation.EventID(); !ok {
 		return &ValidationError{Name: "event_id", err: errors.New(`ent: missing required field "EventAnnotation.event_id"`)}
 	}
-	if _, ok := eac.mutation.CreatorID(); !ok {
+	if _, ok := _c.mutation.CreatorID(); !ok {
 		return &ValidationError{Name: "creator_id", err: errors.New(`ent: missing required field "EventAnnotation.creator_id"`)}
 	}
-	if _, ok := eac.mutation.CreatedAt(); !ok {
+	if _, ok := _c.mutation.CreatedAt(); !ok {
 		return &ValidationError{Name: "created_at", err: errors.New(`ent: missing required field "EventAnnotation.created_at"`)}
 	}
-	if _, ok := eac.mutation.MinutesOccupied(); !ok {
+	if _, ok := _c.mutation.MinutesOccupied(); !ok {
 		return &ValidationError{Name: "minutes_occupied", err: errors.New(`ent: missing required field "EventAnnotation.minutes_occupied"`)}
 	}
-	if _, ok := eac.mutation.Notes(); !ok {
+	if _, ok := _c.mutation.Notes(); !ok {
 		return &ValidationError{Name: "notes", err: errors.New(`ent: missing required field "EventAnnotation.notes"`)}
 	}
-	if _, ok := eac.mutation.Tags(); !ok {
+	if _, ok := _c.mutation.Tags(); !ok {
 		return &ValidationError{Name: "tags", err: errors.New(`ent: missing required field "EventAnnotation.tags"`)}
 	}
-	if len(eac.mutation.TenantIDs()) == 0 {
+	if len(_c.mutation.TenantIDs()) == 0 {
 		return &ValidationError{Name: "tenant", err: errors.New(`ent: missing required edge "EventAnnotation.tenant"`)}
 	}
-	if len(eac.mutation.EventIDs()) == 0 {
+	if len(_c.mutation.EventIDs()) == 0 {
 		return &ValidationError{Name: "event", err: errors.New(`ent: missing required edge "EventAnnotation.event"`)}
 	}
-	if len(eac.mutation.CreatorIDs()) == 0 {
+	if len(_c.mutation.CreatorIDs()) == 0 {
 		return &ValidationError{Name: "creator", err: errors.New(`ent: missing required edge "EventAnnotation.creator"`)}
 	}
 	return nil
 }
 
-func (eac *EventAnnotationCreate) sqlSave(ctx context.Context) (*EventAnnotation, error) {
-	if err := eac.check(); err != nil {
+func (_c *EventAnnotationCreate) sqlSave(ctx context.Context) (*EventAnnotation, error) {
+	if err := _c.check(); err != nil {
 		return nil, err
 	}
-	_node, _spec := eac.createSpec()
-	if err := sqlgraph.CreateNode(ctx, eac.driver, _spec); err != nil {
+	_node, _spec := _c.createSpec()
+	if err := sqlgraph.CreateNode(ctx, _c.driver, _spec); err != nil {
 		if sqlgraph.IsConstraintError(err) {
 			err = &ConstraintError{msg: err.Error(), wrap: err}
 		}
@@ -229,38 +229,38 @@ func (eac *EventAnnotationCreate) sqlSave(ctx context.Context) (*EventAnnotation
 			return nil, err
 		}
 	}
-	eac.mutation.id = &_node.ID
-	eac.mutation.done = true
+	_c.mutation.id = &_node.ID
+	_c.mutation.done = true
 	return _node, nil
 }
 
-func (eac *EventAnnotationCreate) createSpec() (*EventAnnotation, *sqlgraph.CreateSpec) {
+func (_c *EventAnnotationCreate) createSpec() (*EventAnnotation, *sqlgraph.CreateSpec) {
 	var (
-		_node = &EventAnnotation{config: eac.config}
+		_node = &EventAnnotation{config: _c.config}
 		_spec = sqlgraph.NewCreateSpec(eventannotation.Table, sqlgraph.NewFieldSpec(eventannotation.FieldID, field.TypeUUID))
 	)
-	_spec.OnConflict = eac.conflict
-	if id, ok := eac.mutation.ID(); ok {
+	_spec.OnConflict = _c.conflict
+	if id, ok := _c.mutation.ID(); ok {
 		_node.ID = id
 		_spec.ID.Value = &id
 	}
-	if value, ok := eac.mutation.CreatedAt(); ok {
+	if value, ok := _c.mutation.CreatedAt(); ok {
 		_spec.SetField(eventannotation.FieldCreatedAt, field.TypeTime, value)
 		_node.CreatedAt = value
 	}
-	if value, ok := eac.mutation.MinutesOccupied(); ok {
+	if value, ok := _c.mutation.MinutesOccupied(); ok {
 		_spec.SetField(eventannotation.FieldMinutesOccupied, field.TypeInt, value)
 		_node.MinutesOccupied = value
 	}
-	if value, ok := eac.mutation.Notes(); ok {
+	if value, ok := _c.mutation.Notes(); ok {
 		_spec.SetField(eventannotation.FieldNotes, field.TypeString, value)
 		_node.Notes = value
 	}
-	if value, ok := eac.mutation.Tags(); ok {
+	if value, ok := _c.mutation.Tags(); ok {
 		_spec.SetField(eventannotation.FieldTags, field.TypeJSON, value)
 		_node.Tags = value
 	}
-	if nodes := eac.mutation.TenantIDs(); len(nodes) > 0 {
+	if nodes := _c.mutation.TenantIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
@@ -277,7 +277,7 @@ func (eac *EventAnnotationCreate) createSpec() (*EventAnnotation, *sqlgraph.Crea
 		_node.TenantID = nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
-	if nodes := eac.mutation.EventIDs(); len(nodes) > 0 {
+	if nodes := _c.mutation.EventIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
@@ -294,7 +294,7 @@ func (eac *EventAnnotationCreate) createSpec() (*EventAnnotation, *sqlgraph.Crea
 		_node.EventID = nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
-	if nodes := eac.mutation.CreatorIDs(); len(nodes) > 0 {
+	if nodes := _c.mutation.CreatorIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
@@ -311,7 +311,7 @@ func (eac *EventAnnotationCreate) createSpec() (*EventAnnotation, *sqlgraph.Crea
 		_node.CreatorID = nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
-	if nodes := eac.mutation.HandoversIDs(); len(nodes) > 0 {
+	if nodes := _c.mutation.HandoversIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
 			Inverse: true,
@@ -346,10 +346,10 @@ func (eac *EventAnnotationCreate) createSpec() (*EventAnnotation, *sqlgraph.Crea
 //			SetTenantID(v+v).
 //		}).
 //		Exec(ctx)
-func (eac *EventAnnotationCreate) OnConflict(opts ...sql.ConflictOption) *EventAnnotationUpsertOne {
-	eac.conflict = opts
+func (_c *EventAnnotationCreate) OnConflict(opts ...sql.ConflictOption) *EventAnnotationUpsertOne {
+	_c.conflict = opts
 	return &EventAnnotationUpsertOne{
-		create: eac,
+		create: _c,
 	}
 }
 
@@ -359,10 +359,10 @@ func (eac *EventAnnotationCreate) OnConflict(opts ...sql.ConflictOption) *EventA
 //	client.EventAnnotation.Create().
 //		OnConflict(sql.ConflictColumns(columns...)).
 //		Exec(ctx)
-func (eac *EventAnnotationCreate) OnConflictColumns(columns ...string) *EventAnnotationUpsertOne {
-	eac.conflict = append(eac.conflict, sql.ConflictColumns(columns...))
+func (_c *EventAnnotationCreate) OnConflictColumns(columns ...string) *EventAnnotationUpsertOne {
+	_c.conflict = append(_c.conflict, sql.ConflictColumns(columns...))
 	return &EventAnnotationUpsertOne{
-		create: eac,
+		create: _c,
 	}
 }
 
@@ -646,16 +646,16 @@ type EventAnnotationCreateBulk struct {
 }
 
 // Save creates the EventAnnotation entities in the database.
-func (eacb *EventAnnotationCreateBulk) Save(ctx context.Context) ([]*EventAnnotation, error) {
-	if eacb.err != nil {
-		return nil, eacb.err
+func (_c *EventAnnotationCreateBulk) Save(ctx context.Context) ([]*EventAnnotation, error) {
+	if _c.err != nil {
+		return nil, _c.err
 	}
-	specs := make([]*sqlgraph.CreateSpec, len(eacb.builders))
-	nodes := make([]*EventAnnotation, len(eacb.builders))
-	mutators := make([]Mutator, len(eacb.builders))
-	for i := range eacb.builders {
+	specs := make([]*sqlgraph.CreateSpec, len(_c.builders))
+	nodes := make([]*EventAnnotation, len(_c.builders))
+	mutators := make([]Mutator, len(_c.builders))
+	for i := range _c.builders {
 		func(i int, root context.Context) {
-			builder := eacb.builders[i]
+			builder := _c.builders[i]
 			builder.defaults()
 			var mut Mutator = MutateFunc(func(ctx context.Context, m Mutation) (Value, error) {
 				mutation, ok := m.(*EventAnnotationMutation)
@@ -669,12 +669,12 @@ func (eacb *EventAnnotationCreateBulk) Save(ctx context.Context) ([]*EventAnnota
 				var err error
 				nodes[i], specs[i] = builder.createSpec()
 				if i < len(mutators)-1 {
-					_, err = mutators[i+1].Mutate(root, eacb.builders[i+1].mutation)
+					_, err = mutators[i+1].Mutate(root, _c.builders[i+1].mutation)
 				} else {
 					spec := &sqlgraph.BatchCreateSpec{Nodes: specs}
-					spec.OnConflict = eacb.conflict
+					spec.OnConflict = _c.conflict
 					// Invoke the actual operation on the latest mutation in the chain.
-					if err = sqlgraph.BatchCreate(ctx, eacb.driver, spec); err != nil {
+					if err = sqlgraph.BatchCreate(ctx, _c.driver, spec); err != nil {
 						if sqlgraph.IsConstraintError(err) {
 							err = &ConstraintError{msg: err.Error(), wrap: err}
 						}
@@ -694,7 +694,7 @@ func (eacb *EventAnnotationCreateBulk) Save(ctx context.Context) ([]*EventAnnota
 		}(i, ctx)
 	}
 	if len(mutators) > 0 {
-		if _, err := mutators[0].Mutate(ctx, eacb.builders[0].mutation); err != nil {
+		if _, err := mutators[0].Mutate(ctx, _c.builders[0].mutation); err != nil {
 			return nil, err
 		}
 	}
@@ -702,8 +702,8 @@ func (eacb *EventAnnotationCreateBulk) Save(ctx context.Context) ([]*EventAnnota
 }
 
 // SaveX is like Save, but panics if an error occurs.
-func (eacb *EventAnnotationCreateBulk) SaveX(ctx context.Context) []*EventAnnotation {
-	v, err := eacb.Save(ctx)
+func (_c *EventAnnotationCreateBulk) SaveX(ctx context.Context) []*EventAnnotation {
+	v, err := _c.Save(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -711,14 +711,14 @@ func (eacb *EventAnnotationCreateBulk) SaveX(ctx context.Context) []*EventAnnota
 }
 
 // Exec executes the query.
-func (eacb *EventAnnotationCreateBulk) Exec(ctx context.Context) error {
-	_, err := eacb.Save(ctx)
+func (_c *EventAnnotationCreateBulk) Exec(ctx context.Context) error {
+	_, err := _c.Save(ctx)
 	return err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (eacb *EventAnnotationCreateBulk) ExecX(ctx context.Context) {
-	if err := eacb.Exec(ctx); err != nil {
+func (_c *EventAnnotationCreateBulk) ExecX(ctx context.Context) {
+	if err := _c.Exec(ctx); err != nil {
 		panic(err)
 	}
 }
@@ -738,10 +738,10 @@ func (eacb *EventAnnotationCreateBulk) ExecX(ctx context.Context) {
 //			SetTenantID(v+v).
 //		}).
 //		Exec(ctx)
-func (eacb *EventAnnotationCreateBulk) OnConflict(opts ...sql.ConflictOption) *EventAnnotationUpsertBulk {
-	eacb.conflict = opts
+func (_c *EventAnnotationCreateBulk) OnConflict(opts ...sql.ConflictOption) *EventAnnotationUpsertBulk {
+	_c.conflict = opts
 	return &EventAnnotationUpsertBulk{
-		create: eacb,
+		create: _c,
 	}
 }
 
@@ -751,10 +751,10 @@ func (eacb *EventAnnotationCreateBulk) OnConflict(opts ...sql.ConflictOption) *E
 //	client.EventAnnotation.Create().
 //		OnConflict(sql.ConflictColumns(columns...)).
 //		Exec(ctx)
-func (eacb *EventAnnotationCreateBulk) OnConflictColumns(columns ...string) *EventAnnotationUpsertBulk {
-	eacb.conflict = append(eacb.conflict, sql.ConflictColumns(columns...))
+func (_c *EventAnnotationCreateBulk) OnConflictColumns(columns ...string) *EventAnnotationUpsertBulk {
+	_c.conflict = append(_c.conflict, sql.ConflictColumns(columns...))
 	return &EventAnnotationUpsertBulk{
-		create: eacb,
+		create: _c,
 	}
 }
 

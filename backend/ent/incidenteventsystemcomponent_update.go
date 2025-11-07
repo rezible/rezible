@@ -26,108 +26,108 @@ type IncidentEventSystemComponentUpdate struct {
 }
 
 // Where appends a list predicates to the IncidentEventSystemComponentUpdate builder.
-func (iescu *IncidentEventSystemComponentUpdate) Where(ps ...predicate.IncidentEventSystemComponent) *IncidentEventSystemComponentUpdate {
-	iescu.mutation.Where(ps...)
-	return iescu
+func (_u *IncidentEventSystemComponentUpdate) Where(ps ...predicate.IncidentEventSystemComponent) *IncidentEventSystemComponentUpdate {
+	_u.mutation.Where(ps...)
+	return _u
 }
 
 // SetIncidentEventID sets the "incident_event_id" field.
-func (iescu *IncidentEventSystemComponentUpdate) SetIncidentEventID(u uuid.UUID) *IncidentEventSystemComponentUpdate {
-	iescu.mutation.SetIncidentEventID(u)
-	return iescu
+func (_u *IncidentEventSystemComponentUpdate) SetIncidentEventID(v uuid.UUID) *IncidentEventSystemComponentUpdate {
+	_u.mutation.SetIncidentEventID(v)
+	return _u
 }
 
 // SetNillableIncidentEventID sets the "incident_event_id" field if the given value is not nil.
-func (iescu *IncidentEventSystemComponentUpdate) SetNillableIncidentEventID(u *uuid.UUID) *IncidentEventSystemComponentUpdate {
-	if u != nil {
-		iescu.SetIncidentEventID(*u)
+func (_u *IncidentEventSystemComponentUpdate) SetNillableIncidentEventID(v *uuid.UUID) *IncidentEventSystemComponentUpdate {
+	if v != nil {
+		_u.SetIncidentEventID(*v)
 	}
-	return iescu
+	return _u
 }
 
 // SetSystemComponentID sets the "system_component_id" field.
-func (iescu *IncidentEventSystemComponentUpdate) SetSystemComponentID(u uuid.UUID) *IncidentEventSystemComponentUpdate {
-	iescu.mutation.SetSystemComponentID(u)
-	return iescu
+func (_u *IncidentEventSystemComponentUpdate) SetSystemComponentID(v uuid.UUID) *IncidentEventSystemComponentUpdate {
+	_u.mutation.SetSystemComponentID(v)
+	return _u
 }
 
 // SetNillableSystemComponentID sets the "system_component_id" field if the given value is not nil.
-func (iescu *IncidentEventSystemComponentUpdate) SetNillableSystemComponentID(u *uuid.UUID) *IncidentEventSystemComponentUpdate {
-	if u != nil {
-		iescu.SetSystemComponentID(*u)
+func (_u *IncidentEventSystemComponentUpdate) SetNillableSystemComponentID(v *uuid.UUID) *IncidentEventSystemComponentUpdate {
+	if v != nil {
+		_u.SetSystemComponentID(*v)
 	}
-	return iescu
+	return _u
 }
 
 // SetRelationship sets the "relationship" field.
-func (iescu *IncidentEventSystemComponentUpdate) SetRelationship(i incidenteventsystemcomponent.Relationship) *IncidentEventSystemComponentUpdate {
-	iescu.mutation.SetRelationship(i)
-	return iescu
+func (_u *IncidentEventSystemComponentUpdate) SetRelationship(v incidenteventsystemcomponent.Relationship) *IncidentEventSystemComponentUpdate {
+	_u.mutation.SetRelationship(v)
+	return _u
 }
 
 // SetNillableRelationship sets the "relationship" field if the given value is not nil.
-func (iescu *IncidentEventSystemComponentUpdate) SetNillableRelationship(i *incidenteventsystemcomponent.Relationship) *IncidentEventSystemComponentUpdate {
-	if i != nil {
-		iescu.SetRelationship(*i)
+func (_u *IncidentEventSystemComponentUpdate) SetNillableRelationship(v *incidenteventsystemcomponent.Relationship) *IncidentEventSystemComponentUpdate {
+	if v != nil {
+		_u.SetRelationship(*v)
 	}
-	return iescu
+	return _u
 }
 
 // SetCreatedAt sets the "created_at" field.
-func (iescu *IncidentEventSystemComponentUpdate) SetCreatedAt(t time.Time) *IncidentEventSystemComponentUpdate {
-	iescu.mutation.SetCreatedAt(t)
-	return iescu
+func (_u *IncidentEventSystemComponentUpdate) SetCreatedAt(v time.Time) *IncidentEventSystemComponentUpdate {
+	_u.mutation.SetCreatedAt(v)
+	return _u
 }
 
 // SetNillableCreatedAt sets the "created_at" field if the given value is not nil.
-func (iescu *IncidentEventSystemComponentUpdate) SetNillableCreatedAt(t *time.Time) *IncidentEventSystemComponentUpdate {
-	if t != nil {
-		iescu.SetCreatedAt(*t)
+func (_u *IncidentEventSystemComponentUpdate) SetNillableCreatedAt(v *time.Time) *IncidentEventSystemComponentUpdate {
+	if v != nil {
+		_u.SetCreatedAt(*v)
 	}
-	return iescu
+	return _u
 }
 
 // SetEventID sets the "event" edge to the IncidentEventSystemComponent entity by ID.
-func (iescu *IncidentEventSystemComponentUpdate) SetEventID(id uuid.UUID) *IncidentEventSystemComponentUpdate {
-	iescu.mutation.SetEventID(id)
-	return iescu
+func (_u *IncidentEventSystemComponentUpdate) SetEventID(id uuid.UUID) *IncidentEventSystemComponentUpdate {
+	_u.mutation.SetEventID(id)
+	return _u
 }
 
 // SetEvent sets the "event" edge to the IncidentEventSystemComponent entity.
-func (iescu *IncidentEventSystemComponentUpdate) SetEvent(i *IncidentEventSystemComponent) *IncidentEventSystemComponentUpdate {
-	return iescu.SetEventID(i.ID)
+func (_u *IncidentEventSystemComponentUpdate) SetEvent(v *IncidentEventSystemComponent) *IncidentEventSystemComponentUpdate {
+	return _u.SetEventID(v.ID)
 }
 
 // SetSystemComponent sets the "system_component" edge to the SystemComponent entity.
-func (iescu *IncidentEventSystemComponentUpdate) SetSystemComponent(s *SystemComponent) *IncidentEventSystemComponentUpdate {
-	return iescu.SetSystemComponentID(s.ID)
+func (_u *IncidentEventSystemComponentUpdate) SetSystemComponent(v *SystemComponent) *IncidentEventSystemComponentUpdate {
+	return _u.SetSystemComponentID(v.ID)
 }
 
 // Mutation returns the IncidentEventSystemComponentMutation object of the builder.
-func (iescu *IncidentEventSystemComponentUpdate) Mutation() *IncidentEventSystemComponentMutation {
-	return iescu.mutation
+func (_u *IncidentEventSystemComponentUpdate) Mutation() *IncidentEventSystemComponentMutation {
+	return _u.mutation
 }
 
 // ClearEvent clears the "event" edge to the IncidentEventSystemComponent entity.
-func (iescu *IncidentEventSystemComponentUpdate) ClearEvent() *IncidentEventSystemComponentUpdate {
-	iescu.mutation.ClearEvent()
-	return iescu
+func (_u *IncidentEventSystemComponentUpdate) ClearEvent() *IncidentEventSystemComponentUpdate {
+	_u.mutation.ClearEvent()
+	return _u
 }
 
 // ClearSystemComponent clears the "system_component" edge to the SystemComponent entity.
-func (iescu *IncidentEventSystemComponentUpdate) ClearSystemComponent() *IncidentEventSystemComponentUpdate {
-	iescu.mutation.ClearSystemComponent()
-	return iescu
+func (_u *IncidentEventSystemComponentUpdate) ClearSystemComponent() *IncidentEventSystemComponentUpdate {
+	_u.mutation.ClearSystemComponent()
+	return _u
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
-func (iescu *IncidentEventSystemComponentUpdate) Save(ctx context.Context) (int, error) {
-	return withHooks(ctx, iescu.sqlSave, iescu.mutation, iescu.hooks)
+func (_u *IncidentEventSystemComponentUpdate) Save(ctx context.Context) (int, error) {
+	return withHooks(ctx, _u.sqlSave, _u.mutation, _u.hooks)
 }
 
 // SaveX is like Save, but panics if an error occurs.
-func (iescu *IncidentEventSystemComponentUpdate) SaveX(ctx context.Context) int {
-	affected, err := iescu.Save(ctx)
+func (_u *IncidentEventSystemComponentUpdate) SaveX(ctx context.Context) int {
+	affected, err := _u.Save(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -135,62 +135,62 @@ func (iescu *IncidentEventSystemComponentUpdate) SaveX(ctx context.Context) int 
 }
 
 // Exec executes the query.
-func (iescu *IncidentEventSystemComponentUpdate) Exec(ctx context.Context) error {
-	_, err := iescu.Save(ctx)
+func (_u *IncidentEventSystemComponentUpdate) Exec(ctx context.Context) error {
+	_, err := _u.Save(ctx)
 	return err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (iescu *IncidentEventSystemComponentUpdate) ExecX(ctx context.Context) {
-	if err := iescu.Exec(ctx); err != nil {
+func (_u *IncidentEventSystemComponentUpdate) ExecX(ctx context.Context) {
+	if err := _u.Exec(ctx); err != nil {
 		panic(err)
 	}
 }
 
 // check runs all checks and user-defined validators on the builder.
-func (iescu *IncidentEventSystemComponentUpdate) check() error {
-	if v, ok := iescu.mutation.Relationship(); ok {
+func (_u *IncidentEventSystemComponentUpdate) check() error {
+	if v, ok := _u.mutation.Relationship(); ok {
 		if err := incidenteventsystemcomponent.RelationshipValidator(v); err != nil {
 			return &ValidationError{Name: "relationship", err: fmt.Errorf(`ent: validator failed for field "IncidentEventSystemComponent.relationship": %w`, err)}
 		}
 	}
-	if iescu.mutation.TenantCleared() && len(iescu.mutation.TenantIDs()) > 0 {
+	if _u.mutation.TenantCleared() && len(_u.mutation.TenantIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "IncidentEventSystemComponent.tenant"`)
 	}
-	if iescu.mutation.EventCleared() && len(iescu.mutation.EventIDs()) > 0 {
+	if _u.mutation.EventCleared() && len(_u.mutation.EventIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "IncidentEventSystemComponent.event"`)
 	}
-	if iescu.mutation.SystemComponentCleared() && len(iescu.mutation.SystemComponentIDs()) > 0 {
+	if _u.mutation.SystemComponentCleared() && len(_u.mutation.SystemComponentIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "IncidentEventSystemComponent.system_component"`)
 	}
 	return nil
 }
 
 // Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
-func (iescu *IncidentEventSystemComponentUpdate) Modify(modifiers ...func(u *sql.UpdateBuilder)) *IncidentEventSystemComponentUpdate {
-	iescu.modifiers = append(iescu.modifiers, modifiers...)
-	return iescu
+func (_u *IncidentEventSystemComponentUpdate) Modify(modifiers ...func(u *sql.UpdateBuilder)) *IncidentEventSystemComponentUpdate {
+	_u.modifiers = append(_u.modifiers, modifiers...)
+	return _u
 }
 
-func (iescu *IncidentEventSystemComponentUpdate) sqlSave(ctx context.Context) (n int, err error) {
-	if err := iescu.check(); err != nil {
-		return n, err
+func (_u *IncidentEventSystemComponentUpdate) sqlSave(ctx context.Context) (_node int, err error) {
+	if err := _u.check(); err != nil {
+		return _node, err
 	}
 	_spec := sqlgraph.NewUpdateSpec(incidenteventsystemcomponent.Table, incidenteventsystemcomponent.Columns, sqlgraph.NewFieldSpec(incidenteventsystemcomponent.FieldID, field.TypeUUID))
-	if ps := iescu.mutation.predicates; len(ps) > 0 {
+	if ps := _u.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {
 				ps[i](selector)
 			}
 		}
 	}
-	if value, ok := iescu.mutation.Relationship(); ok {
+	if value, ok := _u.mutation.Relationship(); ok {
 		_spec.SetField(incidenteventsystemcomponent.FieldRelationship, field.TypeEnum, value)
 	}
-	if value, ok := iescu.mutation.CreatedAt(); ok {
+	if value, ok := _u.mutation.CreatedAt(); ok {
 		_spec.SetField(incidenteventsystemcomponent.FieldCreatedAt, field.TypeTime, value)
 	}
-	if iescu.mutation.EventCleared() {
+	if _u.mutation.EventCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2O,
 			Inverse: false,
@@ -203,7 +203,7 @@ func (iescu *IncidentEventSystemComponentUpdate) sqlSave(ctx context.Context) (n
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := iescu.mutation.EventIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.EventIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2O,
 			Inverse: false,
@@ -219,7 +219,7 @@ func (iescu *IncidentEventSystemComponentUpdate) sqlSave(ctx context.Context) (n
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if iescu.mutation.SystemComponentCleared() {
+	if _u.mutation.SystemComponentCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
@@ -232,7 +232,7 @@ func (iescu *IncidentEventSystemComponentUpdate) sqlSave(ctx context.Context) (n
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := iescu.mutation.SystemComponentIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.SystemComponentIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
@@ -248,8 +248,8 @@ func (iescu *IncidentEventSystemComponentUpdate) sqlSave(ctx context.Context) (n
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	_spec.AddModifiers(iescu.modifiers...)
-	if n, err = sqlgraph.UpdateNodes(ctx, iescu.driver, _spec); err != nil {
+	_spec.AddModifiers(_u.modifiers...)
+	if _node, err = sqlgraph.UpdateNodes(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{incidenteventsystemcomponent.Label}
 		} else if sqlgraph.IsConstraintError(err) {
@@ -257,8 +257,8 @@ func (iescu *IncidentEventSystemComponentUpdate) sqlSave(ctx context.Context) (n
 		}
 		return 0, err
 	}
-	iescu.mutation.done = true
-	return n, nil
+	_u.mutation.done = true
+	return _node, nil
 }
 
 // IncidentEventSystemComponentUpdateOne is the builder for updating a single IncidentEventSystemComponent entity.
@@ -271,115 +271,115 @@ type IncidentEventSystemComponentUpdateOne struct {
 }
 
 // SetIncidentEventID sets the "incident_event_id" field.
-func (iescuo *IncidentEventSystemComponentUpdateOne) SetIncidentEventID(u uuid.UUID) *IncidentEventSystemComponentUpdateOne {
-	iescuo.mutation.SetIncidentEventID(u)
-	return iescuo
+func (_u *IncidentEventSystemComponentUpdateOne) SetIncidentEventID(v uuid.UUID) *IncidentEventSystemComponentUpdateOne {
+	_u.mutation.SetIncidentEventID(v)
+	return _u
 }
 
 // SetNillableIncidentEventID sets the "incident_event_id" field if the given value is not nil.
-func (iescuo *IncidentEventSystemComponentUpdateOne) SetNillableIncidentEventID(u *uuid.UUID) *IncidentEventSystemComponentUpdateOne {
-	if u != nil {
-		iescuo.SetIncidentEventID(*u)
+func (_u *IncidentEventSystemComponentUpdateOne) SetNillableIncidentEventID(v *uuid.UUID) *IncidentEventSystemComponentUpdateOne {
+	if v != nil {
+		_u.SetIncidentEventID(*v)
 	}
-	return iescuo
+	return _u
 }
 
 // SetSystemComponentID sets the "system_component_id" field.
-func (iescuo *IncidentEventSystemComponentUpdateOne) SetSystemComponentID(u uuid.UUID) *IncidentEventSystemComponentUpdateOne {
-	iescuo.mutation.SetSystemComponentID(u)
-	return iescuo
+func (_u *IncidentEventSystemComponentUpdateOne) SetSystemComponentID(v uuid.UUID) *IncidentEventSystemComponentUpdateOne {
+	_u.mutation.SetSystemComponentID(v)
+	return _u
 }
 
 // SetNillableSystemComponentID sets the "system_component_id" field if the given value is not nil.
-func (iescuo *IncidentEventSystemComponentUpdateOne) SetNillableSystemComponentID(u *uuid.UUID) *IncidentEventSystemComponentUpdateOne {
-	if u != nil {
-		iescuo.SetSystemComponentID(*u)
+func (_u *IncidentEventSystemComponentUpdateOne) SetNillableSystemComponentID(v *uuid.UUID) *IncidentEventSystemComponentUpdateOne {
+	if v != nil {
+		_u.SetSystemComponentID(*v)
 	}
-	return iescuo
+	return _u
 }
 
 // SetRelationship sets the "relationship" field.
-func (iescuo *IncidentEventSystemComponentUpdateOne) SetRelationship(i incidenteventsystemcomponent.Relationship) *IncidentEventSystemComponentUpdateOne {
-	iescuo.mutation.SetRelationship(i)
-	return iescuo
+func (_u *IncidentEventSystemComponentUpdateOne) SetRelationship(v incidenteventsystemcomponent.Relationship) *IncidentEventSystemComponentUpdateOne {
+	_u.mutation.SetRelationship(v)
+	return _u
 }
 
 // SetNillableRelationship sets the "relationship" field if the given value is not nil.
-func (iescuo *IncidentEventSystemComponentUpdateOne) SetNillableRelationship(i *incidenteventsystemcomponent.Relationship) *IncidentEventSystemComponentUpdateOne {
-	if i != nil {
-		iescuo.SetRelationship(*i)
+func (_u *IncidentEventSystemComponentUpdateOne) SetNillableRelationship(v *incidenteventsystemcomponent.Relationship) *IncidentEventSystemComponentUpdateOne {
+	if v != nil {
+		_u.SetRelationship(*v)
 	}
-	return iescuo
+	return _u
 }
 
 // SetCreatedAt sets the "created_at" field.
-func (iescuo *IncidentEventSystemComponentUpdateOne) SetCreatedAt(t time.Time) *IncidentEventSystemComponentUpdateOne {
-	iescuo.mutation.SetCreatedAt(t)
-	return iescuo
+func (_u *IncidentEventSystemComponentUpdateOne) SetCreatedAt(v time.Time) *IncidentEventSystemComponentUpdateOne {
+	_u.mutation.SetCreatedAt(v)
+	return _u
 }
 
 // SetNillableCreatedAt sets the "created_at" field if the given value is not nil.
-func (iescuo *IncidentEventSystemComponentUpdateOne) SetNillableCreatedAt(t *time.Time) *IncidentEventSystemComponentUpdateOne {
-	if t != nil {
-		iescuo.SetCreatedAt(*t)
+func (_u *IncidentEventSystemComponentUpdateOne) SetNillableCreatedAt(v *time.Time) *IncidentEventSystemComponentUpdateOne {
+	if v != nil {
+		_u.SetCreatedAt(*v)
 	}
-	return iescuo
+	return _u
 }
 
 // SetEventID sets the "event" edge to the IncidentEventSystemComponent entity by ID.
-func (iescuo *IncidentEventSystemComponentUpdateOne) SetEventID(id uuid.UUID) *IncidentEventSystemComponentUpdateOne {
-	iescuo.mutation.SetEventID(id)
-	return iescuo
+func (_u *IncidentEventSystemComponentUpdateOne) SetEventID(id uuid.UUID) *IncidentEventSystemComponentUpdateOne {
+	_u.mutation.SetEventID(id)
+	return _u
 }
 
 // SetEvent sets the "event" edge to the IncidentEventSystemComponent entity.
-func (iescuo *IncidentEventSystemComponentUpdateOne) SetEvent(i *IncidentEventSystemComponent) *IncidentEventSystemComponentUpdateOne {
-	return iescuo.SetEventID(i.ID)
+func (_u *IncidentEventSystemComponentUpdateOne) SetEvent(v *IncidentEventSystemComponent) *IncidentEventSystemComponentUpdateOne {
+	return _u.SetEventID(v.ID)
 }
 
 // SetSystemComponent sets the "system_component" edge to the SystemComponent entity.
-func (iescuo *IncidentEventSystemComponentUpdateOne) SetSystemComponent(s *SystemComponent) *IncidentEventSystemComponentUpdateOne {
-	return iescuo.SetSystemComponentID(s.ID)
+func (_u *IncidentEventSystemComponentUpdateOne) SetSystemComponent(v *SystemComponent) *IncidentEventSystemComponentUpdateOne {
+	return _u.SetSystemComponentID(v.ID)
 }
 
 // Mutation returns the IncidentEventSystemComponentMutation object of the builder.
-func (iescuo *IncidentEventSystemComponentUpdateOne) Mutation() *IncidentEventSystemComponentMutation {
-	return iescuo.mutation
+func (_u *IncidentEventSystemComponentUpdateOne) Mutation() *IncidentEventSystemComponentMutation {
+	return _u.mutation
 }
 
 // ClearEvent clears the "event" edge to the IncidentEventSystemComponent entity.
-func (iescuo *IncidentEventSystemComponentUpdateOne) ClearEvent() *IncidentEventSystemComponentUpdateOne {
-	iescuo.mutation.ClearEvent()
-	return iescuo
+func (_u *IncidentEventSystemComponentUpdateOne) ClearEvent() *IncidentEventSystemComponentUpdateOne {
+	_u.mutation.ClearEvent()
+	return _u
 }
 
 // ClearSystemComponent clears the "system_component" edge to the SystemComponent entity.
-func (iescuo *IncidentEventSystemComponentUpdateOne) ClearSystemComponent() *IncidentEventSystemComponentUpdateOne {
-	iescuo.mutation.ClearSystemComponent()
-	return iescuo
+func (_u *IncidentEventSystemComponentUpdateOne) ClearSystemComponent() *IncidentEventSystemComponentUpdateOne {
+	_u.mutation.ClearSystemComponent()
+	return _u
 }
 
 // Where appends a list predicates to the IncidentEventSystemComponentUpdate builder.
-func (iescuo *IncidentEventSystemComponentUpdateOne) Where(ps ...predicate.IncidentEventSystemComponent) *IncidentEventSystemComponentUpdateOne {
-	iescuo.mutation.Where(ps...)
-	return iescuo
+func (_u *IncidentEventSystemComponentUpdateOne) Where(ps ...predicate.IncidentEventSystemComponent) *IncidentEventSystemComponentUpdateOne {
+	_u.mutation.Where(ps...)
+	return _u
 }
 
 // Select allows selecting one or more fields (columns) of the returned entity.
 // The default is selecting all fields defined in the entity schema.
-func (iescuo *IncidentEventSystemComponentUpdateOne) Select(field string, fields ...string) *IncidentEventSystemComponentUpdateOne {
-	iescuo.fields = append([]string{field}, fields...)
-	return iescuo
+func (_u *IncidentEventSystemComponentUpdateOne) Select(field string, fields ...string) *IncidentEventSystemComponentUpdateOne {
+	_u.fields = append([]string{field}, fields...)
+	return _u
 }
 
 // Save executes the query and returns the updated IncidentEventSystemComponent entity.
-func (iescuo *IncidentEventSystemComponentUpdateOne) Save(ctx context.Context) (*IncidentEventSystemComponent, error) {
-	return withHooks(ctx, iescuo.sqlSave, iescuo.mutation, iescuo.hooks)
+func (_u *IncidentEventSystemComponentUpdateOne) Save(ctx context.Context) (*IncidentEventSystemComponent, error) {
+	return withHooks(ctx, _u.sqlSave, _u.mutation, _u.hooks)
 }
 
 // SaveX is like Save, but panics if an error occurs.
-func (iescuo *IncidentEventSystemComponentUpdateOne) SaveX(ctx context.Context) *IncidentEventSystemComponent {
-	node, err := iescuo.Save(ctx)
+func (_u *IncidentEventSystemComponentUpdateOne) SaveX(ctx context.Context) *IncidentEventSystemComponent {
+	node, err := _u.Save(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -387,54 +387,54 @@ func (iescuo *IncidentEventSystemComponentUpdateOne) SaveX(ctx context.Context) 
 }
 
 // Exec executes the query on the entity.
-func (iescuo *IncidentEventSystemComponentUpdateOne) Exec(ctx context.Context) error {
-	_, err := iescuo.Save(ctx)
+func (_u *IncidentEventSystemComponentUpdateOne) Exec(ctx context.Context) error {
+	_, err := _u.Save(ctx)
 	return err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (iescuo *IncidentEventSystemComponentUpdateOne) ExecX(ctx context.Context) {
-	if err := iescuo.Exec(ctx); err != nil {
+func (_u *IncidentEventSystemComponentUpdateOne) ExecX(ctx context.Context) {
+	if err := _u.Exec(ctx); err != nil {
 		panic(err)
 	}
 }
 
 // check runs all checks and user-defined validators on the builder.
-func (iescuo *IncidentEventSystemComponentUpdateOne) check() error {
-	if v, ok := iescuo.mutation.Relationship(); ok {
+func (_u *IncidentEventSystemComponentUpdateOne) check() error {
+	if v, ok := _u.mutation.Relationship(); ok {
 		if err := incidenteventsystemcomponent.RelationshipValidator(v); err != nil {
 			return &ValidationError{Name: "relationship", err: fmt.Errorf(`ent: validator failed for field "IncidentEventSystemComponent.relationship": %w`, err)}
 		}
 	}
-	if iescuo.mutation.TenantCleared() && len(iescuo.mutation.TenantIDs()) > 0 {
+	if _u.mutation.TenantCleared() && len(_u.mutation.TenantIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "IncidentEventSystemComponent.tenant"`)
 	}
-	if iescuo.mutation.EventCleared() && len(iescuo.mutation.EventIDs()) > 0 {
+	if _u.mutation.EventCleared() && len(_u.mutation.EventIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "IncidentEventSystemComponent.event"`)
 	}
-	if iescuo.mutation.SystemComponentCleared() && len(iescuo.mutation.SystemComponentIDs()) > 0 {
+	if _u.mutation.SystemComponentCleared() && len(_u.mutation.SystemComponentIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "IncidentEventSystemComponent.system_component"`)
 	}
 	return nil
 }
 
 // Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
-func (iescuo *IncidentEventSystemComponentUpdateOne) Modify(modifiers ...func(u *sql.UpdateBuilder)) *IncidentEventSystemComponentUpdateOne {
-	iescuo.modifiers = append(iescuo.modifiers, modifiers...)
-	return iescuo
+func (_u *IncidentEventSystemComponentUpdateOne) Modify(modifiers ...func(u *sql.UpdateBuilder)) *IncidentEventSystemComponentUpdateOne {
+	_u.modifiers = append(_u.modifiers, modifiers...)
+	return _u
 }
 
-func (iescuo *IncidentEventSystemComponentUpdateOne) sqlSave(ctx context.Context) (_node *IncidentEventSystemComponent, err error) {
-	if err := iescuo.check(); err != nil {
+func (_u *IncidentEventSystemComponentUpdateOne) sqlSave(ctx context.Context) (_node *IncidentEventSystemComponent, err error) {
+	if err := _u.check(); err != nil {
 		return _node, err
 	}
 	_spec := sqlgraph.NewUpdateSpec(incidenteventsystemcomponent.Table, incidenteventsystemcomponent.Columns, sqlgraph.NewFieldSpec(incidenteventsystemcomponent.FieldID, field.TypeUUID))
-	id, ok := iescuo.mutation.ID()
+	id, ok := _u.mutation.ID()
 	if !ok {
 		return nil, &ValidationError{Name: "id", err: errors.New(`ent: missing "IncidentEventSystemComponent.id" for update`)}
 	}
 	_spec.Node.ID.Value = id
-	if fields := iescuo.fields; len(fields) > 0 {
+	if fields := _u.fields; len(fields) > 0 {
 		_spec.Node.Columns = make([]string, 0, len(fields))
 		_spec.Node.Columns = append(_spec.Node.Columns, incidenteventsystemcomponent.FieldID)
 		for _, f := range fields {
@@ -446,20 +446,20 @@ func (iescuo *IncidentEventSystemComponentUpdateOne) sqlSave(ctx context.Context
 			}
 		}
 	}
-	if ps := iescuo.mutation.predicates; len(ps) > 0 {
+	if ps := _u.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {
 				ps[i](selector)
 			}
 		}
 	}
-	if value, ok := iescuo.mutation.Relationship(); ok {
+	if value, ok := _u.mutation.Relationship(); ok {
 		_spec.SetField(incidenteventsystemcomponent.FieldRelationship, field.TypeEnum, value)
 	}
-	if value, ok := iescuo.mutation.CreatedAt(); ok {
+	if value, ok := _u.mutation.CreatedAt(); ok {
 		_spec.SetField(incidenteventsystemcomponent.FieldCreatedAt, field.TypeTime, value)
 	}
-	if iescuo.mutation.EventCleared() {
+	if _u.mutation.EventCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2O,
 			Inverse: false,
@@ -472,7 +472,7 @@ func (iescuo *IncidentEventSystemComponentUpdateOne) sqlSave(ctx context.Context
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := iescuo.mutation.EventIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.EventIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2O,
 			Inverse: false,
@@ -488,7 +488,7 @@ func (iescuo *IncidentEventSystemComponentUpdateOne) sqlSave(ctx context.Context
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if iescuo.mutation.SystemComponentCleared() {
+	if _u.mutation.SystemComponentCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
@@ -501,7 +501,7 @@ func (iescuo *IncidentEventSystemComponentUpdateOne) sqlSave(ctx context.Context
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := iescuo.mutation.SystemComponentIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.SystemComponentIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
@@ -517,11 +517,11 @@ func (iescuo *IncidentEventSystemComponentUpdateOne) sqlSave(ctx context.Context
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	_spec.AddModifiers(iescuo.modifiers...)
-	_node = &IncidentEventSystemComponent{config: iescuo.config}
+	_spec.AddModifiers(_u.modifiers...)
+	_node = &IncidentEventSystemComponent{config: _u.config}
 	_spec.Assign = _node.assignValues
 	_spec.ScanValues = _node.scanValues
-	if err = sqlgraph.UpdateNode(ctx, iescuo.driver, _spec); err != nil {
+	if err = sqlgraph.UpdateNode(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{incidenteventsystemcomponent.Label}
 		} else if sqlgraph.IsConstraintError(err) {
@@ -529,6 +529,6 @@ func (iescuo *IncidentEventSystemComponentUpdateOne) sqlSave(ctx context.Context
 		}
 		return nil, err
 	}
-	iescuo.mutation.done = true
+	_u.mutation.done = true
 	return _node, nil
 }

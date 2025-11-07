@@ -42,44 +42,44 @@ type SystemAnalysisQuery struct {
 }
 
 // Where adds a new predicate for the SystemAnalysisQuery builder.
-func (saq *SystemAnalysisQuery) Where(ps ...predicate.SystemAnalysis) *SystemAnalysisQuery {
-	saq.predicates = append(saq.predicates, ps...)
-	return saq
+func (_q *SystemAnalysisQuery) Where(ps ...predicate.SystemAnalysis) *SystemAnalysisQuery {
+	_q.predicates = append(_q.predicates, ps...)
+	return _q
 }
 
 // Limit the number of records to be returned by this query.
-func (saq *SystemAnalysisQuery) Limit(limit int) *SystemAnalysisQuery {
-	saq.ctx.Limit = &limit
-	return saq
+func (_q *SystemAnalysisQuery) Limit(limit int) *SystemAnalysisQuery {
+	_q.ctx.Limit = &limit
+	return _q
 }
 
 // Offset to start from.
-func (saq *SystemAnalysisQuery) Offset(offset int) *SystemAnalysisQuery {
-	saq.ctx.Offset = &offset
-	return saq
+func (_q *SystemAnalysisQuery) Offset(offset int) *SystemAnalysisQuery {
+	_q.ctx.Offset = &offset
+	return _q
 }
 
 // Unique configures the query builder to filter duplicate records on query.
 // By default, unique is set to true, and can be disabled using this method.
-func (saq *SystemAnalysisQuery) Unique(unique bool) *SystemAnalysisQuery {
-	saq.ctx.Unique = &unique
-	return saq
+func (_q *SystemAnalysisQuery) Unique(unique bool) *SystemAnalysisQuery {
+	_q.ctx.Unique = &unique
+	return _q
 }
 
 // Order specifies how the records should be ordered.
-func (saq *SystemAnalysisQuery) Order(o ...systemanalysis.OrderOption) *SystemAnalysisQuery {
-	saq.order = append(saq.order, o...)
-	return saq
+func (_q *SystemAnalysisQuery) Order(o ...systemanalysis.OrderOption) *SystemAnalysisQuery {
+	_q.order = append(_q.order, o...)
+	return _q
 }
 
 // QueryTenant chains the current query on the "tenant" edge.
-func (saq *SystemAnalysisQuery) QueryTenant() *TenantQuery {
-	query := (&TenantClient{config: saq.config}).Query()
+func (_q *SystemAnalysisQuery) QueryTenant() *TenantQuery {
+	query := (&TenantClient{config: _q.config}).Query()
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
-		if err := saq.prepareQuery(ctx); err != nil {
+		if err := _q.prepareQuery(ctx); err != nil {
 			return nil, err
 		}
-		selector := saq.sqlQuery(ctx)
+		selector := _q.sqlQuery(ctx)
 		if err := selector.Err(); err != nil {
 			return nil, err
 		}
@@ -88,20 +88,20 @@ func (saq *SystemAnalysisQuery) QueryTenant() *TenantQuery {
 			sqlgraph.To(tenant.Table, tenant.FieldID),
 			sqlgraph.Edge(sqlgraph.M2O, false, systemanalysis.TenantTable, systemanalysis.TenantColumn),
 		)
-		fromU = sqlgraph.SetNeighbors(saq.driver.Dialect(), step)
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
 	}
 	return query
 }
 
 // QueryRetrospective chains the current query on the "retrospective" edge.
-func (saq *SystemAnalysisQuery) QueryRetrospective() *RetrospectiveQuery {
-	query := (&RetrospectiveClient{config: saq.config}).Query()
+func (_q *SystemAnalysisQuery) QueryRetrospective() *RetrospectiveQuery {
+	query := (&RetrospectiveClient{config: _q.config}).Query()
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
-		if err := saq.prepareQuery(ctx); err != nil {
+		if err := _q.prepareQuery(ctx); err != nil {
 			return nil, err
 		}
-		selector := saq.sqlQuery(ctx)
+		selector := _q.sqlQuery(ctx)
 		if err := selector.Err(); err != nil {
 			return nil, err
 		}
@@ -110,20 +110,20 @@ func (saq *SystemAnalysisQuery) QueryRetrospective() *RetrospectiveQuery {
 			sqlgraph.To(retrospective.Table, retrospective.FieldID),
 			sqlgraph.Edge(sqlgraph.O2O, false, systemanalysis.RetrospectiveTable, systemanalysis.RetrospectiveColumn),
 		)
-		fromU = sqlgraph.SetNeighbors(saq.driver.Dialect(), step)
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
 	}
 	return query
 }
 
 // QueryComponents chains the current query on the "components" edge.
-func (saq *SystemAnalysisQuery) QueryComponents() *SystemComponentQuery {
-	query := (&SystemComponentClient{config: saq.config}).Query()
+func (_q *SystemAnalysisQuery) QueryComponents() *SystemComponentQuery {
+	query := (&SystemComponentClient{config: _q.config}).Query()
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
-		if err := saq.prepareQuery(ctx); err != nil {
+		if err := _q.prepareQuery(ctx); err != nil {
 			return nil, err
 		}
-		selector := saq.sqlQuery(ctx)
+		selector := _q.sqlQuery(ctx)
 		if err := selector.Err(); err != nil {
 			return nil, err
 		}
@@ -132,20 +132,20 @@ func (saq *SystemAnalysisQuery) QueryComponents() *SystemComponentQuery {
 			sqlgraph.To(systemcomponent.Table, systemcomponent.FieldID),
 			sqlgraph.Edge(sqlgraph.M2M, true, systemanalysis.ComponentsTable, systemanalysis.ComponentsPrimaryKey...),
 		)
-		fromU = sqlgraph.SetNeighbors(saq.driver.Dialect(), step)
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
 	}
 	return query
 }
 
 // QueryRelationships chains the current query on the "relationships" edge.
-func (saq *SystemAnalysisQuery) QueryRelationships() *SystemAnalysisRelationshipQuery {
-	query := (&SystemAnalysisRelationshipClient{config: saq.config}).Query()
+func (_q *SystemAnalysisQuery) QueryRelationships() *SystemAnalysisRelationshipQuery {
+	query := (&SystemAnalysisRelationshipClient{config: _q.config}).Query()
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
-		if err := saq.prepareQuery(ctx); err != nil {
+		if err := _q.prepareQuery(ctx); err != nil {
 			return nil, err
 		}
-		selector := saq.sqlQuery(ctx)
+		selector := _q.sqlQuery(ctx)
 		if err := selector.Err(); err != nil {
 			return nil, err
 		}
@@ -154,20 +154,20 @@ func (saq *SystemAnalysisQuery) QueryRelationships() *SystemAnalysisRelationship
 			sqlgraph.To(systemanalysisrelationship.Table, systemanalysisrelationship.FieldID),
 			sqlgraph.Edge(sqlgraph.O2M, true, systemanalysis.RelationshipsTable, systemanalysis.RelationshipsColumn),
 		)
-		fromU = sqlgraph.SetNeighbors(saq.driver.Dialect(), step)
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
 	}
 	return query
 }
 
 // QueryAnalysisComponents chains the current query on the "analysis_components" edge.
-func (saq *SystemAnalysisQuery) QueryAnalysisComponents() *SystemAnalysisComponentQuery {
-	query := (&SystemAnalysisComponentClient{config: saq.config}).Query()
+func (_q *SystemAnalysisQuery) QueryAnalysisComponents() *SystemAnalysisComponentQuery {
+	query := (&SystemAnalysisComponentClient{config: _q.config}).Query()
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
-		if err := saq.prepareQuery(ctx); err != nil {
+		if err := _q.prepareQuery(ctx); err != nil {
 			return nil, err
 		}
-		selector := saq.sqlQuery(ctx)
+		selector := _q.sqlQuery(ctx)
 		if err := selector.Err(); err != nil {
 			return nil, err
 		}
@@ -176,7 +176,7 @@ func (saq *SystemAnalysisQuery) QueryAnalysisComponents() *SystemAnalysisCompone
 			sqlgraph.To(systemanalysiscomponent.Table, systemanalysiscomponent.FieldID),
 			sqlgraph.Edge(sqlgraph.O2M, true, systemanalysis.AnalysisComponentsTable, systemanalysis.AnalysisComponentsColumn),
 		)
-		fromU = sqlgraph.SetNeighbors(saq.driver.Dialect(), step)
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
 	}
 	return query
@@ -184,8 +184,8 @@ func (saq *SystemAnalysisQuery) QueryAnalysisComponents() *SystemAnalysisCompone
 
 // First returns the first SystemAnalysis entity from the query.
 // Returns a *NotFoundError when no SystemAnalysis was found.
-func (saq *SystemAnalysisQuery) First(ctx context.Context) (*SystemAnalysis, error) {
-	nodes, err := saq.Limit(1).All(setContextOp(ctx, saq.ctx, ent.OpQueryFirst))
+func (_q *SystemAnalysisQuery) First(ctx context.Context) (*SystemAnalysis, error) {
+	nodes, err := _q.Limit(1).All(setContextOp(ctx, _q.ctx, ent.OpQueryFirst))
 	if err != nil {
 		return nil, err
 	}
@@ -196,8 +196,8 @@ func (saq *SystemAnalysisQuery) First(ctx context.Context) (*SystemAnalysis, err
 }
 
 // FirstX is like First, but panics if an error occurs.
-func (saq *SystemAnalysisQuery) FirstX(ctx context.Context) *SystemAnalysis {
-	node, err := saq.First(ctx)
+func (_q *SystemAnalysisQuery) FirstX(ctx context.Context) *SystemAnalysis {
+	node, err := _q.First(ctx)
 	if err != nil && !IsNotFound(err) {
 		panic(err)
 	}
@@ -206,9 +206,9 @@ func (saq *SystemAnalysisQuery) FirstX(ctx context.Context) *SystemAnalysis {
 
 // FirstID returns the first SystemAnalysis ID from the query.
 // Returns a *NotFoundError when no SystemAnalysis ID was found.
-func (saq *SystemAnalysisQuery) FirstID(ctx context.Context) (id uuid.UUID, err error) {
+func (_q *SystemAnalysisQuery) FirstID(ctx context.Context) (id uuid.UUID, err error) {
 	var ids []uuid.UUID
-	if ids, err = saq.Limit(1).IDs(setContextOp(ctx, saq.ctx, ent.OpQueryFirstID)); err != nil {
+	if ids, err = _q.Limit(1).IDs(setContextOp(ctx, _q.ctx, ent.OpQueryFirstID)); err != nil {
 		return
 	}
 	if len(ids) == 0 {
@@ -219,8 +219,8 @@ func (saq *SystemAnalysisQuery) FirstID(ctx context.Context) (id uuid.UUID, err 
 }
 
 // FirstIDX is like FirstID, but panics if an error occurs.
-func (saq *SystemAnalysisQuery) FirstIDX(ctx context.Context) uuid.UUID {
-	id, err := saq.FirstID(ctx)
+func (_q *SystemAnalysisQuery) FirstIDX(ctx context.Context) uuid.UUID {
+	id, err := _q.FirstID(ctx)
 	if err != nil && !IsNotFound(err) {
 		panic(err)
 	}
@@ -230,8 +230,8 @@ func (saq *SystemAnalysisQuery) FirstIDX(ctx context.Context) uuid.UUID {
 // Only returns a single SystemAnalysis entity found by the query, ensuring it only returns one.
 // Returns a *NotSingularError when more than one SystemAnalysis entity is found.
 // Returns a *NotFoundError when no SystemAnalysis entities are found.
-func (saq *SystemAnalysisQuery) Only(ctx context.Context) (*SystemAnalysis, error) {
-	nodes, err := saq.Limit(2).All(setContextOp(ctx, saq.ctx, ent.OpQueryOnly))
+func (_q *SystemAnalysisQuery) Only(ctx context.Context) (*SystemAnalysis, error) {
+	nodes, err := _q.Limit(2).All(setContextOp(ctx, _q.ctx, ent.OpQueryOnly))
 	if err != nil {
 		return nil, err
 	}
@@ -246,8 +246,8 @@ func (saq *SystemAnalysisQuery) Only(ctx context.Context) (*SystemAnalysis, erro
 }
 
 // OnlyX is like Only, but panics if an error occurs.
-func (saq *SystemAnalysisQuery) OnlyX(ctx context.Context) *SystemAnalysis {
-	node, err := saq.Only(ctx)
+func (_q *SystemAnalysisQuery) OnlyX(ctx context.Context) *SystemAnalysis {
+	node, err := _q.Only(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -257,9 +257,9 @@ func (saq *SystemAnalysisQuery) OnlyX(ctx context.Context) *SystemAnalysis {
 // OnlyID is like Only, but returns the only SystemAnalysis ID in the query.
 // Returns a *NotSingularError when more than one SystemAnalysis ID is found.
 // Returns a *NotFoundError when no entities are found.
-func (saq *SystemAnalysisQuery) OnlyID(ctx context.Context) (id uuid.UUID, err error) {
+func (_q *SystemAnalysisQuery) OnlyID(ctx context.Context) (id uuid.UUID, err error) {
 	var ids []uuid.UUID
-	if ids, err = saq.Limit(2).IDs(setContextOp(ctx, saq.ctx, ent.OpQueryOnlyID)); err != nil {
+	if ids, err = _q.Limit(2).IDs(setContextOp(ctx, _q.ctx, ent.OpQueryOnlyID)); err != nil {
 		return
 	}
 	switch len(ids) {
@@ -274,8 +274,8 @@ func (saq *SystemAnalysisQuery) OnlyID(ctx context.Context) (id uuid.UUID, err e
 }
 
 // OnlyIDX is like OnlyID, but panics if an error occurs.
-func (saq *SystemAnalysisQuery) OnlyIDX(ctx context.Context) uuid.UUID {
-	id, err := saq.OnlyID(ctx)
+func (_q *SystemAnalysisQuery) OnlyIDX(ctx context.Context) uuid.UUID {
+	id, err := _q.OnlyID(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -283,18 +283,18 @@ func (saq *SystemAnalysisQuery) OnlyIDX(ctx context.Context) uuid.UUID {
 }
 
 // All executes the query and returns a list of SystemAnalyses.
-func (saq *SystemAnalysisQuery) All(ctx context.Context) ([]*SystemAnalysis, error) {
-	ctx = setContextOp(ctx, saq.ctx, ent.OpQueryAll)
-	if err := saq.prepareQuery(ctx); err != nil {
+func (_q *SystemAnalysisQuery) All(ctx context.Context) ([]*SystemAnalysis, error) {
+	ctx = setContextOp(ctx, _q.ctx, ent.OpQueryAll)
+	if err := _q.prepareQuery(ctx); err != nil {
 		return nil, err
 	}
 	qr := querierAll[[]*SystemAnalysis, *SystemAnalysisQuery]()
-	return withInterceptors[[]*SystemAnalysis](ctx, saq, qr, saq.inters)
+	return withInterceptors[[]*SystemAnalysis](ctx, _q, qr, _q.inters)
 }
 
 // AllX is like All, but panics if an error occurs.
-func (saq *SystemAnalysisQuery) AllX(ctx context.Context) []*SystemAnalysis {
-	nodes, err := saq.All(ctx)
+func (_q *SystemAnalysisQuery) AllX(ctx context.Context) []*SystemAnalysis {
+	nodes, err := _q.All(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -302,20 +302,20 @@ func (saq *SystemAnalysisQuery) AllX(ctx context.Context) []*SystemAnalysis {
 }
 
 // IDs executes the query and returns a list of SystemAnalysis IDs.
-func (saq *SystemAnalysisQuery) IDs(ctx context.Context) (ids []uuid.UUID, err error) {
-	if saq.ctx.Unique == nil && saq.path != nil {
-		saq.Unique(true)
+func (_q *SystemAnalysisQuery) IDs(ctx context.Context) (ids []uuid.UUID, err error) {
+	if _q.ctx.Unique == nil && _q.path != nil {
+		_q.Unique(true)
 	}
-	ctx = setContextOp(ctx, saq.ctx, ent.OpQueryIDs)
-	if err = saq.Select(systemanalysis.FieldID).Scan(ctx, &ids); err != nil {
+	ctx = setContextOp(ctx, _q.ctx, ent.OpQueryIDs)
+	if err = _q.Select(systemanalysis.FieldID).Scan(ctx, &ids); err != nil {
 		return nil, err
 	}
 	return ids, nil
 }
 
 // IDsX is like IDs, but panics if an error occurs.
-func (saq *SystemAnalysisQuery) IDsX(ctx context.Context) []uuid.UUID {
-	ids, err := saq.IDs(ctx)
+func (_q *SystemAnalysisQuery) IDsX(ctx context.Context) []uuid.UUID {
+	ids, err := _q.IDs(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -323,17 +323,17 @@ func (saq *SystemAnalysisQuery) IDsX(ctx context.Context) []uuid.UUID {
 }
 
 // Count returns the count of the given query.
-func (saq *SystemAnalysisQuery) Count(ctx context.Context) (int, error) {
-	ctx = setContextOp(ctx, saq.ctx, ent.OpQueryCount)
-	if err := saq.prepareQuery(ctx); err != nil {
+func (_q *SystemAnalysisQuery) Count(ctx context.Context) (int, error) {
+	ctx = setContextOp(ctx, _q.ctx, ent.OpQueryCount)
+	if err := _q.prepareQuery(ctx); err != nil {
 		return 0, err
 	}
-	return withInterceptors[int](ctx, saq, querierCount[*SystemAnalysisQuery](), saq.inters)
+	return withInterceptors[int](ctx, _q, querierCount[*SystemAnalysisQuery](), _q.inters)
 }
 
 // CountX is like Count, but panics if an error occurs.
-func (saq *SystemAnalysisQuery) CountX(ctx context.Context) int {
-	count, err := saq.Count(ctx)
+func (_q *SystemAnalysisQuery) CountX(ctx context.Context) int {
+	count, err := _q.Count(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -341,9 +341,9 @@ func (saq *SystemAnalysisQuery) CountX(ctx context.Context) int {
 }
 
 // Exist returns true if the query has elements in the graph.
-func (saq *SystemAnalysisQuery) Exist(ctx context.Context) (bool, error) {
-	ctx = setContextOp(ctx, saq.ctx, ent.OpQueryExist)
-	switch _, err := saq.FirstID(ctx); {
+func (_q *SystemAnalysisQuery) Exist(ctx context.Context) (bool, error) {
+	ctx = setContextOp(ctx, _q.ctx, ent.OpQueryExist)
+	switch _, err := _q.FirstID(ctx); {
 	case IsNotFound(err):
 		return false, nil
 	case err != nil:
@@ -354,8 +354,8 @@ func (saq *SystemAnalysisQuery) Exist(ctx context.Context) (bool, error) {
 }
 
 // ExistX is like Exist, but panics if an error occurs.
-func (saq *SystemAnalysisQuery) ExistX(ctx context.Context) bool {
-	exist, err := saq.Exist(ctx)
+func (_q *SystemAnalysisQuery) ExistX(ctx context.Context) bool {
+	exist, err := _q.Exist(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -364,81 +364,81 @@ func (saq *SystemAnalysisQuery) ExistX(ctx context.Context) bool {
 
 // Clone returns a duplicate of the SystemAnalysisQuery builder, including all associated steps. It can be
 // used to prepare common query builders and use them differently after the clone is made.
-func (saq *SystemAnalysisQuery) Clone() *SystemAnalysisQuery {
-	if saq == nil {
+func (_q *SystemAnalysisQuery) Clone() *SystemAnalysisQuery {
+	if _q == nil {
 		return nil
 	}
 	return &SystemAnalysisQuery{
-		config:                 saq.config,
-		ctx:                    saq.ctx.Clone(),
-		order:                  append([]systemanalysis.OrderOption{}, saq.order...),
-		inters:                 append([]Interceptor{}, saq.inters...),
-		predicates:             append([]predicate.SystemAnalysis{}, saq.predicates...),
-		withTenant:             saq.withTenant.Clone(),
-		withRetrospective:      saq.withRetrospective.Clone(),
-		withComponents:         saq.withComponents.Clone(),
-		withRelationships:      saq.withRelationships.Clone(),
-		withAnalysisComponents: saq.withAnalysisComponents.Clone(),
+		config:                 _q.config,
+		ctx:                    _q.ctx.Clone(),
+		order:                  append([]systemanalysis.OrderOption{}, _q.order...),
+		inters:                 append([]Interceptor{}, _q.inters...),
+		predicates:             append([]predicate.SystemAnalysis{}, _q.predicates...),
+		withTenant:             _q.withTenant.Clone(),
+		withRetrospective:      _q.withRetrospective.Clone(),
+		withComponents:         _q.withComponents.Clone(),
+		withRelationships:      _q.withRelationships.Clone(),
+		withAnalysisComponents: _q.withAnalysisComponents.Clone(),
 		// clone intermediate query.
-		sql:       saq.sql.Clone(),
-		path:      saq.path,
-		modifiers: append([]func(*sql.Selector){}, saq.modifiers...),
+		sql:       _q.sql.Clone(),
+		path:      _q.path,
+		modifiers: append([]func(*sql.Selector){}, _q.modifiers...),
 	}
 }
 
 // WithTenant tells the query-builder to eager-load the nodes that are connected to
 // the "tenant" edge. The optional arguments are used to configure the query builder of the edge.
-func (saq *SystemAnalysisQuery) WithTenant(opts ...func(*TenantQuery)) *SystemAnalysisQuery {
-	query := (&TenantClient{config: saq.config}).Query()
+func (_q *SystemAnalysisQuery) WithTenant(opts ...func(*TenantQuery)) *SystemAnalysisQuery {
+	query := (&TenantClient{config: _q.config}).Query()
 	for _, opt := range opts {
 		opt(query)
 	}
-	saq.withTenant = query
-	return saq
+	_q.withTenant = query
+	return _q
 }
 
 // WithRetrospective tells the query-builder to eager-load the nodes that are connected to
 // the "retrospective" edge. The optional arguments are used to configure the query builder of the edge.
-func (saq *SystemAnalysisQuery) WithRetrospective(opts ...func(*RetrospectiveQuery)) *SystemAnalysisQuery {
-	query := (&RetrospectiveClient{config: saq.config}).Query()
+func (_q *SystemAnalysisQuery) WithRetrospective(opts ...func(*RetrospectiveQuery)) *SystemAnalysisQuery {
+	query := (&RetrospectiveClient{config: _q.config}).Query()
 	for _, opt := range opts {
 		opt(query)
 	}
-	saq.withRetrospective = query
-	return saq
+	_q.withRetrospective = query
+	return _q
 }
 
 // WithComponents tells the query-builder to eager-load the nodes that are connected to
 // the "components" edge. The optional arguments are used to configure the query builder of the edge.
-func (saq *SystemAnalysisQuery) WithComponents(opts ...func(*SystemComponentQuery)) *SystemAnalysisQuery {
-	query := (&SystemComponentClient{config: saq.config}).Query()
+func (_q *SystemAnalysisQuery) WithComponents(opts ...func(*SystemComponentQuery)) *SystemAnalysisQuery {
+	query := (&SystemComponentClient{config: _q.config}).Query()
 	for _, opt := range opts {
 		opt(query)
 	}
-	saq.withComponents = query
-	return saq
+	_q.withComponents = query
+	return _q
 }
 
 // WithRelationships tells the query-builder to eager-load the nodes that are connected to
 // the "relationships" edge. The optional arguments are used to configure the query builder of the edge.
-func (saq *SystemAnalysisQuery) WithRelationships(opts ...func(*SystemAnalysisRelationshipQuery)) *SystemAnalysisQuery {
-	query := (&SystemAnalysisRelationshipClient{config: saq.config}).Query()
+func (_q *SystemAnalysisQuery) WithRelationships(opts ...func(*SystemAnalysisRelationshipQuery)) *SystemAnalysisQuery {
+	query := (&SystemAnalysisRelationshipClient{config: _q.config}).Query()
 	for _, opt := range opts {
 		opt(query)
 	}
-	saq.withRelationships = query
-	return saq
+	_q.withRelationships = query
+	return _q
 }
 
 // WithAnalysisComponents tells the query-builder to eager-load the nodes that are connected to
 // the "analysis_components" edge. The optional arguments are used to configure the query builder of the edge.
-func (saq *SystemAnalysisQuery) WithAnalysisComponents(opts ...func(*SystemAnalysisComponentQuery)) *SystemAnalysisQuery {
-	query := (&SystemAnalysisComponentClient{config: saq.config}).Query()
+func (_q *SystemAnalysisQuery) WithAnalysisComponents(opts ...func(*SystemAnalysisComponentQuery)) *SystemAnalysisQuery {
+	query := (&SystemAnalysisComponentClient{config: _q.config}).Query()
 	for _, opt := range opts {
 		opt(query)
 	}
-	saq.withAnalysisComponents = query
-	return saq
+	_q.withAnalysisComponents = query
+	return _q
 }
 
 // GroupBy is used to group vertices by one or more fields/columns.
@@ -455,10 +455,10 @@ func (saq *SystemAnalysisQuery) WithAnalysisComponents(opts ...func(*SystemAnaly
 //		GroupBy(systemanalysis.FieldTenantID).
 //		Aggregate(ent.Count()).
 //		Scan(ctx, &v)
-func (saq *SystemAnalysisQuery) GroupBy(field string, fields ...string) *SystemAnalysisGroupBy {
-	saq.ctx.Fields = append([]string{field}, fields...)
-	grbuild := &SystemAnalysisGroupBy{build: saq}
-	grbuild.flds = &saq.ctx.Fields
+func (_q *SystemAnalysisQuery) GroupBy(field string, fields ...string) *SystemAnalysisGroupBy {
+	_q.ctx.Fields = append([]string{field}, fields...)
+	grbuild := &SystemAnalysisGroupBy{build: _q}
+	grbuild.flds = &_q.ctx.Fields
 	grbuild.label = systemanalysis.Label
 	grbuild.scan = grbuild.Scan
 	return grbuild
@@ -476,105 +476,105 @@ func (saq *SystemAnalysisQuery) GroupBy(field string, fields ...string) *SystemA
 //	client.SystemAnalysis.Query().
 //		Select(systemanalysis.FieldTenantID).
 //		Scan(ctx, &v)
-func (saq *SystemAnalysisQuery) Select(fields ...string) *SystemAnalysisSelect {
-	saq.ctx.Fields = append(saq.ctx.Fields, fields...)
-	sbuild := &SystemAnalysisSelect{SystemAnalysisQuery: saq}
+func (_q *SystemAnalysisQuery) Select(fields ...string) *SystemAnalysisSelect {
+	_q.ctx.Fields = append(_q.ctx.Fields, fields...)
+	sbuild := &SystemAnalysisSelect{SystemAnalysisQuery: _q}
 	sbuild.label = systemanalysis.Label
-	sbuild.flds, sbuild.scan = &saq.ctx.Fields, sbuild.Scan
+	sbuild.flds, sbuild.scan = &_q.ctx.Fields, sbuild.Scan
 	return sbuild
 }
 
 // Aggregate returns a SystemAnalysisSelect configured with the given aggregations.
-func (saq *SystemAnalysisQuery) Aggregate(fns ...AggregateFunc) *SystemAnalysisSelect {
-	return saq.Select().Aggregate(fns...)
+func (_q *SystemAnalysisQuery) Aggregate(fns ...AggregateFunc) *SystemAnalysisSelect {
+	return _q.Select().Aggregate(fns...)
 }
 
-func (saq *SystemAnalysisQuery) prepareQuery(ctx context.Context) error {
-	for _, inter := range saq.inters {
+func (_q *SystemAnalysisQuery) prepareQuery(ctx context.Context) error {
+	for _, inter := range _q.inters {
 		if inter == nil {
 			return fmt.Errorf("ent: uninitialized interceptor (forgotten import ent/runtime?)")
 		}
 		if trv, ok := inter.(Traverser); ok {
-			if err := trv.Traverse(ctx, saq); err != nil {
+			if err := trv.Traverse(ctx, _q); err != nil {
 				return err
 			}
 		}
 	}
-	for _, f := range saq.ctx.Fields {
+	for _, f := range _q.ctx.Fields {
 		if !systemanalysis.ValidColumn(f) {
 			return &ValidationError{Name: f, err: fmt.Errorf("ent: invalid field %q for query", f)}
 		}
 	}
-	if saq.path != nil {
-		prev, err := saq.path(ctx)
+	if _q.path != nil {
+		prev, err := _q.path(ctx)
 		if err != nil {
 			return err
 		}
-		saq.sql = prev
+		_q.sql = prev
 	}
 	if systemanalysis.Policy == nil {
 		return errors.New("ent: uninitialized systemanalysis.Policy (forgotten import ent/runtime?)")
 	}
-	if err := systemanalysis.Policy.EvalQuery(ctx, saq); err != nil {
+	if err := systemanalysis.Policy.EvalQuery(ctx, _q); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (saq *SystemAnalysisQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*SystemAnalysis, error) {
+func (_q *SystemAnalysisQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*SystemAnalysis, error) {
 	var (
 		nodes       = []*SystemAnalysis{}
-		_spec       = saq.querySpec()
+		_spec       = _q.querySpec()
 		loadedTypes = [5]bool{
-			saq.withTenant != nil,
-			saq.withRetrospective != nil,
-			saq.withComponents != nil,
-			saq.withRelationships != nil,
-			saq.withAnalysisComponents != nil,
+			_q.withTenant != nil,
+			_q.withRetrospective != nil,
+			_q.withComponents != nil,
+			_q.withRelationships != nil,
+			_q.withAnalysisComponents != nil,
 		}
 	)
 	_spec.ScanValues = func(columns []string) ([]any, error) {
 		return (*SystemAnalysis).scanValues(nil, columns)
 	}
 	_spec.Assign = func(columns []string, values []any) error {
-		node := &SystemAnalysis{config: saq.config}
+		node := &SystemAnalysis{config: _q.config}
 		nodes = append(nodes, node)
 		node.Edges.loadedTypes = loadedTypes
 		return node.assignValues(columns, values)
 	}
-	if len(saq.modifiers) > 0 {
-		_spec.Modifiers = saq.modifiers
+	if len(_q.modifiers) > 0 {
+		_spec.Modifiers = _q.modifiers
 	}
 	for i := range hooks {
 		hooks[i](ctx, _spec)
 	}
-	if err := sqlgraph.QueryNodes(ctx, saq.driver, _spec); err != nil {
+	if err := sqlgraph.QueryNodes(ctx, _q.driver, _spec); err != nil {
 		return nil, err
 	}
 	if len(nodes) == 0 {
 		return nodes, nil
 	}
-	if query := saq.withTenant; query != nil {
-		if err := saq.loadTenant(ctx, query, nodes, nil,
+	if query := _q.withTenant; query != nil {
+		if err := _q.loadTenant(ctx, query, nodes, nil,
 			func(n *SystemAnalysis, e *Tenant) { n.Edges.Tenant = e }); err != nil {
 			return nil, err
 		}
 	}
-	if query := saq.withRetrospective; query != nil {
-		if err := saq.loadRetrospective(ctx, query, nodes, nil,
+	if query := _q.withRetrospective; query != nil {
+		if err := _q.loadRetrospective(ctx, query, nodes, nil,
 			func(n *SystemAnalysis, e *Retrospective) { n.Edges.Retrospective = e }); err != nil {
 			return nil, err
 		}
 	}
-	if query := saq.withComponents; query != nil {
-		if err := saq.loadComponents(ctx, query, nodes,
+	if query := _q.withComponents; query != nil {
+		if err := _q.loadComponents(ctx, query, nodes,
 			func(n *SystemAnalysis) { n.Edges.Components = []*SystemComponent{} },
 			func(n *SystemAnalysis, e *SystemComponent) { n.Edges.Components = append(n.Edges.Components, e) }); err != nil {
 			return nil, err
 		}
 	}
-	if query := saq.withRelationships; query != nil {
-		if err := saq.loadRelationships(ctx, query, nodes,
+	if query := _q.withRelationships; query != nil {
+		if err := _q.loadRelationships(ctx, query, nodes,
 			func(n *SystemAnalysis) { n.Edges.Relationships = []*SystemAnalysisRelationship{} },
 			func(n *SystemAnalysis, e *SystemAnalysisRelationship) {
 				n.Edges.Relationships = append(n.Edges.Relationships, e)
@@ -582,8 +582,8 @@ func (saq *SystemAnalysisQuery) sqlAll(ctx context.Context, hooks ...queryHook) 
 			return nil, err
 		}
 	}
-	if query := saq.withAnalysisComponents; query != nil {
-		if err := saq.loadAnalysisComponents(ctx, query, nodes,
+	if query := _q.withAnalysisComponents; query != nil {
+		if err := _q.loadAnalysisComponents(ctx, query, nodes,
 			func(n *SystemAnalysis) { n.Edges.AnalysisComponents = []*SystemAnalysisComponent{} },
 			func(n *SystemAnalysis, e *SystemAnalysisComponent) {
 				n.Edges.AnalysisComponents = append(n.Edges.AnalysisComponents, e)
@@ -594,7 +594,7 @@ func (saq *SystemAnalysisQuery) sqlAll(ctx context.Context, hooks ...queryHook) 
 	return nodes, nil
 }
 
-func (saq *SystemAnalysisQuery) loadTenant(ctx context.Context, query *TenantQuery, nodes []*SystemAnalysis, init func(*SystemAnalysis), assign func(*SystemAnalysis, *Tenant)) error {
+func (_q *SystemAnalysisQuery) loadTenant(ctx context.Context, query *TenantQuery, nodes []*SystemAnalysis, init func(*SystemAnalysis), assign func(*SystemAnalysis, *Tenant)) error {
 	ids := make([]int, 0, len(nodes))
 	nodeids := make(map[int][]*SystemAnalysis)
 	for i := range nodes {
@@ -623,7 +623,7 @@ func (saq *SystemAnalysisQuery) loadTenant(ctx context.Context, query *TenantQue
 	}
 	return nil
 }
-func (saq *SystemAnalysisQuery) loadRetrospective(ctx context.Context, query *RetrospectiveQuery, nodes []*SystemAnalysis, init func(*SystemAnalysis), assign func(*SystemAnalysis, *Retrospective)) error {
+func (_q *SystemAnalysisQuery) loadRetrospective(ctx context.Context, query *RetrospectiveQuery, nodes []*SystemAnalysis, init func(*SystemAnalysis), assign func(*SystemAnalysis, *Retrospective)) error {
 	fks := make([]driver.Value, 0, len(nodes))
 	nodeids := make(map[uuid.UUID]*SystemAnalysis)
 	for i := range nodes {
@@ -650,7 +650,7 @@ func (saq *SystemAnalysisQuery) loadRetrospective(ctx context.Context, query *Re
 	}
 	return nil
 }
-func (saq *SystemAnalysisQuery) loadComponents(ctx context.Context, query *SystemComponentQuery, nodes []*SystemAnalysis, init func(*SystemAnalysis), assign func(*SystemAnalysis, *SystemComponent)) error {
+func (_q *SystemAnalysisQuery) loadComponents(ctx context.Context, query *SystemComponentQuery, nodes []*SystemAnalysis, init func(*SystemAnalysis), assign func(*SystemAnalysis, *SystemComponent)) error {
 	edgeIDs := make([]driver.Value, len(nodes))
 	byID := make(map[uuid.UUID]*SystemAnalysis)
 	nids := make(map[uuid.UUID]map[*SystemAnalysis]struct{})
@@ -711,7 +711,7 @@ func (saq *SystemAnalysisQuery) loadComponents(ctx context.Context, query *Syste
 	}
 	return nil
 }
-func (saq *SystemAnalysisQuery) loadRelationships(ctx context.Context, query *SystemAnalysisRelationshipQuery, nodes []*SystemAnalysis, init func(*SystemAnalysis), assign func(*SystemAnalysis, *SystemAnalysisRelationship)) error {
+func (_q *SystemAnalysisQuery) loadRelationships(ctx context.Context, query *SystemAnalysisRelationshipQuery, nodes []*SystemAnalysis, init func(*SystemAnalysis), assign func(*SystemAnalysis, *SystemAnalysisRelationship)) error {
 	fks := make([]driver.Value, 0, len(nodes))
 	nodeids := make(map[uuid.UUID]*SystemAnalysis)
 	for i := range nodes {
@@ -741,7 +741,7 @@ func (saq *SystemAnalysisQuery) loadRelationships(ctx context.Context, query *Sy
 	}
 	return nil
 }
-func (saq *SystemAnalysisQuery) loadAnalysisComponents(ctx context.Context, query *SystemAnalysisComponentQuery, nodes []*SystemAnalysis, init func(*SystemAnalysis), assign func(*SystemAnalysis, *SystemAnalysisComponent)) error {
+func (_q *SystemAnalysisQuery) loadAnalysisComponents(ctx context.Context, query *SystemAnalysisComponentQuery, nodes []*SystemAnalysis, init func(*SystemAnalysis), assign func(*SystemAnalysis, *SystemAnalysisComponent)) error {
 	fks := make([]driver.Value, 0, len(nodes))
 	nodeids := make(map[uuid.UUID]*SystemAnalysis)
 	for i := range nodes {
@@ -772,27 +772,27 @@ func (saq *SystemAnalysisQuery) loadAnalysisComponents(ctx context.Context, quer
 	return nil
 }
 
-func (saq *SystemAnalysisQuery) sqlCount(ctx context.Context) (int, error) {
-	_spec := saq.querySpec()
-	if len(saq.modifiers) > 0 {
-		_spec.Modifiers = saq.modifiers
+func (_q *SystemAnalysisQuery) sqlCount(ctx context.Context) (int, error) {
+	_spec := _q.querySpec()
+	if len(_q.modifiers) > 0 {
+		_spec.Modifiers = _q.modifiers
 	}
-	_spec.Node.Columns = saq.ctx.Fields
-	if len(saq.ctx.Fields) > 0 {
-		_spec.Unique = saq.ctx.Unique != nil && *saq.ctx.Unique
+	_spec.Node.Columns = _q.ctx.Fields
+	if len(_q.ctx.Fields) > 0 {
+		_spec.Unique = _q.ctx.Unique != nil && *_q.ctx.Unique
 	}
-	return sqlgraph.CountNodes(ctx, saq.driver, _spec)
+	return sqlgraph.CountNodes(ctx, _q.driver, _spec)
 }
 
-func (saq *SystemAnalysisQuery) querySpec() *sqlgraph.QuerySpec {
+func (_q *SystemAnalysisQuery) querySpec() *sqlgraph.QuerySpec {
 	_spec := sqlgraph.NewQuerySpec(systemanalysis.Table, systemanalysis.Columns, sqlgraph.NewFieldSpec(systemanalysis.FieldID, field.TypeUUID))
-	_spec.From = saq.sql
-	if unique := saq.ctx.Unique; unique != nil {
+	_spec.From = _q.sql
+	if unique := _q.ctx.Unique; unique != nil {
 		_spec.Unique = *unique
-	} else if saq.path != nil {
+	} else if _q.path != nil {
 		_spec.Unique = true
 	}
-	if fields := saq.ctx.Fields; len(fields) > 0 {
+	if fields := _q.ctx.Fields; len(fields) > 0 {
 		_spec.Node.Columns = make([]string, 0, len(fields))
 		_spec.Node.Columns = append(_spec.Node.Columns, systemanalysis.FieldID)
 		for i := range fields {
@@ -800,24 +800,24 @@ func (saq *SystemAnalysisQuery) querySpec() *sqlgraph.QuerySpec {
 				_spec.Node.Columns = append(_spec.Node.Columns, fields[i])
 			}
 		}
-		if saq.withTenant != nil {
+		if _q.withTenant != nil {
 			_spec.Node.AddColumnOnce(systemanalysis.FieldTenantID)
 		}
 	}
-	if ps := saq.predicates; len(ps) > 0 {
+	if ps := _q.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {
 				ps[i](selector)
 			}
 		}
 	}
-	if limit := saq.ctx.Limit; limit != nil {
+	if limit := _q.ctx.Limit; limit != nil {
 		_spec.Limit = *limit
 	}
-	if offset := saq.ctx.Offset; offset != nil {
+	if offset := _q.ctx.Offset; offset != nil {
 		_spec.Offset = *offset
 	}
-	if ps := saq.order; len(ps) > 0 {
+	if ps := _q.order; len(ps) > 0 {
 		_spec.Order = func(selector *sql.Selector) {
 			for i := range ps {
 				ps[i](selector)
@@ -827,45 +827,45 @@ func (saq *SystemAnalysisQuery) querySpec() *sqlgraph.QuerySpec {
 	return _spec
 }
 
-func (saq *SystemAnalysisQuery) sqlQuery(ctx context.Context) *sql.Selector {
-	builder := sql.Dialect(saq.driver.Dialect())
+func (_q *SystemAnalysisQuery) sqlQuery(ctx context.Context) *sql.Selector {
+	builder := sql.Dialect(_q.driver.Dialect())
 	t1 := builder.Table(systemanalysis.Table)
-	columns := saq.ctx.Fields
+	columns := _q.ctx.Fields
 	if len(columns) == 0 {
 		columns = systemanalysis.Columns
 	}
 	selector := builder.Select(t1.Columns(columns...)...).From(t1)
-	if saq.sql != nil {
-		selector = saq.sql
+	if _q.sql != nil {
+		selector = _q.sql
 		selector.Select(selector.Columns(columns...)...)
 	}
-	if saq.ctx.Unique != nil && *saq.ctx.Unique {
+	if _q.ctx.Unique != nil && *_q.ctx.Unique {
 		selector.Distinct()
 	}
-	for _, m := range saq.modifiers {
+	for _, m := range _q.modifiers {
 		m(selector)
 	}
-	for _, p := range saq.predicates {
+	for _, p := range _q.predicates {
 		p(selector)
 	}
-	for _, p := range saq.order {
+	for _, p := range _q.order {
 		p(selector)
 	}
-	if offset := saq.ctx.Offset; offset != nil {
+	if offset := _q.ctx.Offset; offset != nil {
 		// limit is mandatory for offset clause. We start
 		// with default value, and override it below if needed.
 		selector.Offset(*offset).Limit(math.MaxInt32)
 	}
-	if limit := saq.ctx.Limit; limit != nil {
+	if limit := _q.ctx.Limit; limit != nil {
 		selector.Limit(*limit)
 	}
 	return selector
 }
 
 // Modify adds a query modifier for attaching custom logic to queries.
-func (saq *SystemAnalysisQuery) Modify(modifiers ...func(s *sql.Selector)) *SystemAnalysisSelect {
-	saq.modifiers = append(saq.modifiers, modifiers...)
-	return saq.Select()
+func (_q *SystemAnalysisQuery) Modify(modifiers ...func(s *sql.Selector)) *SystemAnalysisSelect {
+	_q.modifiers = append(_q.modifiers, modifiers...)
+	return _q.Select()
 }
 
 // SystemAnalysisGroupBy is the group-by builder for SystemAnalysis entities.
@@ -875,41 +875,41 @@ type SystemAnalysisGroupBy struct {
 }
 
 // Aggregate adds the given aggregation functions to the group-by query.
-func (sagb *SystemAnalysisGroupBy) Aggregate(fns ...AggregateFunc) *SystemAnalysisGroupBy {
-	sagb.fns = append(sagb.fns, fns...)
-	return sagb
+func (_g *SystemAnalysisGroupBy) Aggregate(fns ...AggregateFunc) *SystemAnalysisGroupBy {
+	_g.fns = append(_g.fns, fns...)
+	return _g
 }
 
 // Scan applies the selector query and scans the result into the given value.
-func (sagb *SystemAnalysisGroupBy) Scan(ctx context.Context, v any) error {
-	ctx = setContextOp(ctx, sagb.build.ctx, ent.OpQueryGroupBy)
-	if err := sagb.build.prepareQuery(ctx); err != nil {
+func (_g *SystemAnalysisGroupBy) Scan(ctx context.Context, v any) error {
+	ctx = setContextOp(ctx, _g.build.ctx, ent.OpQueryGroupBy)
+	if err := _g.build.prepareQuery(ctx); err != nil {
 		return err
 	}
-	return scanWithInterceptors[*SystemAnalysisQuery, *SystemAnalysisGroupBy](ctx, sagb.build, sagb, sagb.build.inters, v)
+	return scanWithInterceptors[*SystemAnalysisQuery, *SystemAnalysisGroupBy](ctx, _g.build, _g, _g.build.inters, v)
 }
 
-func (sagb *SystemAnalysisGroupBy) sqlScan(ctx context.Context, root *SystemAnalysisQuery, v any) error {
+func (_g *SystemAnalysisGroupBy) sqlScan(ctx context.Context, root *SystemAnalysisQuery, v any) error {
 	selector := root.sqlQuery(ctx).Select()
-	aggregation := make([]string, 0, len(sagb.fns))
-	for _, fn := range sagb.fns {
+	aggregation := make([]string, 0, len(_g.fns))
+	for _, fn := range _g.fns {
 		aggregation = append(aggregation, fn(selector))
 	}
 	if len(selector.SelectedColumns()) == 0 {
-		columns := make([]string, 0, len(*sagb.flds)+len(sagb.fns))
-		for _, f := range *sagb.flds {
+		columns := make([]string, 0, len(*_g.flds)+len(_g.fns))
+		for _, f := range *_g.flds {
 			columns = append(columns, selector.C(f))
 		}
 		columns = append(columns, aggregation...)
 		selector.Select(columns...)
 	}
-	selector.GroupBy(selector.Columns(*sagb.flds...)...)
+	selector.GroupBy(selector.Columns(*_g.flds...)...)
 	if err := selector.Err(); err != nil {
 		return err
 	}
 	rows := &sql.Rows{}
 	query, args := selector.Query()
-	if err := sagb.build.driver.Query(ctx, query, args, rows); err != nil {
+	if err := _g.build.driver.Query(ctx, query, args, rows); err != nil {
 		return err
 	}
 	defer rows.Close()
@@ -923,27 +923,27 @@ type SystemAnalysisSelect struct {
 }
 
 // Aggregate adds the given aggregation functions to the selector query.
-func (sas *SystemAnalysisSelect) Aggregate(fns ...AggregateFunc) *SystemAnalysisSelect {
-	sas.fns = append(sas.fns, fns...)
-	return sas
+func (_s *SystemAnalysisSelect) Aggregate(fns ...AggregateFunc) *SystemAnalysisSelect {
+	_s.fns = append(_s.fns, fns...)
+	return _s
 }
 
 // Scan applies the selector query and scans the result into the given value.
-func (sas *SystemAnalysisSelect) Scan(ctx context.Context, v any) error {
-	ctx = setContextOp(ctx, sas.ctx, ent.OpQuerySelect)
-	if err := sas.prepareQuery(ctx); err != nil {
+func (_s *SystemAnalysisSelect) Scan(ctx context.Context, v any) error {
+	ctx = setContextOp(ctx, _s.ctx, ent.OpQuerySelect)
+	if err := _s.prepareQuery(ctx); err != nil {
 		return err
 	}
-	return scanWithInterceptors[*SystemAnalysisQuery, *SystemAnalysisSelect](ctx, sas.SystemAnalysisQuery, sas, sas.inters, v)
+	return scanWithInterceptors[*SystemAnalysisQuery, *SystemAnalysisSelect](ctx, _s.SystemAnalysisQuery, _s, _s.inters, v)
 }
 
-func (sas *SystemAnalysisSelect) sqlScan(ctx context.Context, root *SystemAnalysisQuery, v any) error {
+func (_s *SystemAnalysisSelect) sqlScan(ctx context.Context, root *SystemAnalysisQuery, v any) error {
 	selector := root.sqlQuery(ctx)
-	aggregation := make([]string, 0, len(sas.fns))
-	for _, fn := range sas.fns {
+	aggregation := make([]string, 0, len(_s.fns))
+	for _, fn := range _s.fns {
 		aggregation = append(aggregation, fn(selector))
 	}
-	switch n := len(*sas.selector.flds); {
+	switch n := len(*_s.selector.flds); {
 	case n == 0 && len(aggregation) > 0:
 		selector.Select(aggregation...)
 	case n != 0 && len(aggregation) > 0:
@@ -951,7 +951,7 @@ func (sas *SystemAnalysisSelect) sqlScan(ctx context.Context, root *SystemAnalys
 	}
 	rows := &sql.Rows{}
 	query, args := selector.Query()
-	if err := sas.driver.Query(ctx, query, args, rows); err != nil {
+	if err := _s.driver.Query(ctx, query, args, rows); err != nil {
 		return err
 	}
 	defer rows.Close()
@@ -959,7 +959,7 @@ func (sas *SystemAnalysisSelect) sqlScan(ctx context.Context, root *SystemAnalys
 }
 
 // Modify adds a query modifier for attaching custom logic to queries.
-func (sas *SystemAnalysisSelect) Modify(modifiers ...func(s *sql.Selector)) *SystemAnalysisSelect {
-	sas.modifiers = append(sas.modifiers, modifiers...)
-	return sas
+func (_s *SystemAnalysisSelect) Modify(modifiers ...func(s *sql.Selector)) *SystemAnalysisSelect {
+	_s.modifiers = append(_s.modifiers, modifiers...)
+	return _s
 }

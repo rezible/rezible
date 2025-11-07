@@ -40,44 +40,44 @@ type SystemHazardQuery struct {
 }
 
 // Where adds a new predicate for the SystemHazardQuery builder.
-func (shq *SystemHazardQuery) Where(ps ...predicate.SystemHazard) *SystemHazardQuery {
-	shq.predicates = append(shq.predicates, ps...)
-	return shq
+func (_q *SystemHazardQuery) Where(ps ...predicate.SystemHazard) *SystemHazardQuery {
+	_q.predicates = append(_q.predicates, ps...)
+	return _q
 }
 
 // Limit the number of records to be returned by this query.
-func (shq *SystemHazardQuery) Limit(limit int) *SystemHazardQuery {
-	shq.ctx.Limit = &limit
-	return shq
+func (_q *SystemHazardQuery) Limit(limit int) *SystemHazardQuery {
+	_q.ctx.Limit = &limit
+	return _q
 }
 
 // Offset to start from.
-func (shq *SystemHazardQuery) Offset(offset int) *SystemHazardQuery {
-	shq.ctx.Offset = &offset
-	return shq
+func (_q *SystemHazardQuery) Offset(offset int) *SystemHazardQuery {
+	_q.ctx.Offset = &offset
+	return _q
 }
 
 // Unique configures the query builder to filter duplicate records on query.
 // By default, unique is set to true, and can be disabled using this method.
-func (shq *SystemHazardQuery) Unique(unique bool) *SystemHazardQuery {
-	shq.ctx.Unique = &unique
-	return shq
+func (_q *SystemHazardQuery) Unique(unique bool) *SystemHazardQuery {
+	_q.ctx.Unique = &unique
+	return _q
 }
 
 // Order specifies how the records should be ordered.
-func (shq *SystemHazardQuery) Order(o ...systemhazard.OrderOption) *SystemHazardQuery {
-	shq.order = append(shq.order, o...)
-	return shq
+func (_q *SystemHazardQuery) Order(o ...systemhazard.OrderOption) *SystemHazardQuery {
+	_q.order = append(_q.order, o...)
+	return _q
 }
 
 // QueryTenant chains the current query on the "tenant" edge.
-func (shq *SystemHazardQuery) QueryTenant() *TenantQuery {
-	query := (&TenantClient{config: shq.config}).Query()
+func (_q *SystemHazardQuery) QueryTenant() *TenantQuery {
+	query := (&TenantClient{config: _q.config}).Query()
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
-		if err := shq.prepareQuery(ctx); err != nil {
+		if err := _q.prepareQuery(ctx); err != nil {
 			return nil, err
 		}
-		selector := shq.sqlQuery(ctx)
+		selector := _q.sqlQuery(ctx)
 		if err := selector.Err(); err != nil {
 			return nil, err
 		}
@@ -86,20 +86,20 @@ func (shq *SystemHazardQuery) QueryTenant() *TenantQuery {
 			sqlgraph.To(tenant.Table, tenant.FieldID),
 			sqlgraph.Edge(sqlgraph.M2O, false, systemhazard.TenantTable, systemhazard.TenantColumn),
 		)
-		fromU = sqlgraph.SetNeighbors(shq.driver.Dialect(), step)
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
 	}
 	return query
 }
 
 // QueryComponents chains the current query on the "components" edge.
-func (shq *SystemHazardQuery) QueryComponents() *SystemComponentQuery {
-	query := (&SystemComponentClient{config: shq.config}).Query()
+func (_q *SystemHazardQuery) QueryComponents() *SystemComponentQuery {
+	query := (&SystemComponentClient{config: _q.config}).Query()
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
-		if err := shq.prepareQuery(ctx); err != nil {
+		if err := _q.prepareQuery(ctx); err != nil {
 			return nil, err
 		}
-		selector := shq.sqlQuery(ctx)
+		selector := _q.sqlQuery(ctx)
 		if err := selector.Err(); err != nil {
 			return nil, err
 		}
@@ -108,20 +108,20 @@ func (shq *SystemHazardQuery) QueryComponents() *SystemComponentQuery {
 			sqlgraph.To(systemcomponent.Table, systemcomponent.FieldID),
 			sqlgraph.Edge(sqlgraph.M2M, false, systemhazard.ComponentsTable, systemhazard.ComponentsPrimaryKey...),
 		)
-		fromU = sqlgraph.SetNeighbors(shq.driver.Dialect(), step)
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
 	}
 	return query
 }
 
 // QueryConstraints chains the current query on the "constraints" edge.
-func (shq *SystemHazardQuery) QueryConstraints() *SystemComponentConstraintQuery {
-	query := (&SystemComponentConstraintClient{config: shq.config}).Query()
+func (_q *SystemHazardQuery) QueryConstraints() *SystemComponentConstraintQuery {
+	query := (&SystemComponentConstraintClient{config: _q.config}).Query()
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
-		if err := shq.prepareQuery(ctx); err != nil {
+		if err := _q.prepareQuery(ctx); err != nil {
 			return nil, err
 		}
-		selector := shq.sqlQuery(ctx)
+		selector := _q.sqlQuery(ctx)
 		if err := selector.Err(); err != nil {
 			return nil, err
 		}
@@ -130,20 +130,20 @@ func (shq *SystemHazardQuery) QueryConstraints() *SystemComponentConstraintQuery
 			sqlgraph.To(systemcomponentconstraint.Table, systemcomponentconstraint.FieldID),
 			sqlgraph.Edge(sqlgraph.M2M, false, systemhazard.ConstraintsTable, systemhazard.ConstraintsPrimaryKey...),
 		)
-		fromU = sqlgraph.SetNeighbors(shq.driver.Dialect(), step)
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
 	}
 	return query
 }
 
 // QueryRelationships chains the current query on the "relationships" edge.
-func (shq *SystemHazardQuery) QueryRelationships() *SystemComponentRelationshipQuery {
-	query := (&SystemComponentRelationshipClient{config: shq.config}).Query()
+func (_q *SystemHazardQuery) QueryRelationships() *SystemComponentRelationshipQuery {
+	query := (&SystemComponentRelationshipClient{config: _q.config}).Query()
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
-		if err := shq.prepareQuery(ctx); err != nil {
+		if err := _q.prepareQuery(ctx); err != nil {
 			return nil, err
 		}
-		selector := shq.sqlQuery(ctx)
+		selector := _q.sqlQuery(ctx)
 		if err := selector.Err(); err != nil {
 			return nil, err
 		}
@@ -152,7 +152,7 @@ func (shq *SystemHazardQuery) QueryRelationships() *SystemComponentRelationshipQ
 			sqlgraph.To(systemcomponentrelationship.Table, systemcomponentrelationship.FieldID),
 			sqlgraph.Edge(sqlgraph.M2M, false, systemhazard.RelationshipsTable, systemhazard.RelationshipsPrimaryKey...),
 		)
-		fromU = sqlgraph.SetNeighbors(shq.driver.Dialect(), step)
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
 	}
 	return query
@@ -160,8 +160,8 @@ func (shq *SystemHazardQuery) QueryRelationships() *SystemComponentRelationshipQ
 
 // First returns the first SystemHazard entity from the query.
 // Returns a *NotFoundError when no SystemHazard was found.
-func (shq *SystemHazardQuery) First(ctx context.Context) (*SystemHazard, error) {
-	nodes, err := shq.Limit(1).All(setContextOp(ctx, shq.ctx, ent.OpQueryFirst))
+func (_q *SystemHazardQuery) First(ctx context.Context) (*SystemHazard, error) {
+	nodes, err := _q.Limit(1).All(setContextOp(ctx, _q.ctx, ent.OpQueryFirst))
 	if err != nil {
 		return nil, err
 	}
@@ -172,8 +172,8 @@ func (shq *SystemHazardQuery) First(ctx context.Context) (*SystemHazard, error) 
 }
 
 // FirstX is like First, but panics if an error occurs.
-func (shq *SystemHazardQuery) FirstX(ctx context.Context) *SystemHazard {
-	node, err := shq.First(ctx)
+func (_q *SystemHazardQuery) FirstX(ctx context.Context) *SystemHazard {
+	node, err := _q.First(ctx)
 	if err != nil && !IsNotFound(err) {
 		panic(err)
 	}
@@ -182,9 +182,9 @@ func (shq *SystemHazardQuery) FirstX(ctx context.Context) *SystemHazard {
 
 // FirstID returns the first SystemHazard ID from the query.
 // Returns a *NotFoundError when no SystemHazard ID was found.
-func (shq *SystemHazardQuery) FirstID(ctx context.Context) (id uuid.UUID, err error) {
+func (_q *SystemHazardQuery) FirstID(ctx context.Context) (id uuid.UUID, err error) {
 	var ids []uuid.UUID
-	if ids, err = shq.Limit(1).IDs(setContextOp(ctx, shq.ctx, ent.OpQueryFirstID)); err != nil {
+	if ids, err = _q.Limit(1).IDs(setContextOp(ctx, _q.ctx, ent.OpQueryFirstID)); err != nil {
 		return
 	}
 	if len(ids) == 0 {
@@ -195,8 +195,8 @@ func (shq *SystemHazardQuery) FirstID(ctx context.Context) (id uuid.UUID, err er
 }
 
 // FirstIDX is like FirstID, but panics if an error occurs.
-func (shq *SystemHazardQuery) FirstIDX(ctx context.Context) uuid.UUID {
-	id, err := shq.FirstID(ctx)
+func (_q *SystemHazardQuery) FirstIDX(ctx context.Context) uuid.UUID {
+	id, err := _q.FirstID(ctx)
 	if err != nil && !IsNotFound(err) {
 		panic(err)
 	}
@@ -206,8 +206,8 @@ func (shq *SystemHazardQuery) FirstIDX(ctx context.Context) uuid.UUID {
 // Only returns a single SystemHazard entity found by the query, ensuring it only returns one.
 // Returns a *NotSingularError when more than one SystemHazard entity is found.
 // Returns a *NotFoundError when no SystemHazard entities are found.
-func (shq *SystemHazardQuery) Only(ctx context.Context) (*SystemHazard, error) {
-	nodes, err := shq.Limit(2).All(setContextOp(ctx, shq.ctx, ent.OpQueryOnly))
+func (_q *SystemHazardQuery) Only(ctx context.Context) (*SystemHazard, error) {
+	nodes, err := _q.Limit(2).All(setContextOp(ctx, _q.ctx, ent.OpQueryOnly))
 	if err != nil {
 		return nil, err
 	}
@@ -222,8 +222,8 @@ func (shq *SystemHazardQuery) Only(ctx context.Context) (*SystemHazard, error) {
 }
 
 // OnlyX is like Only, but panics if an error occurs.
-func (shq *SystemHazardQuery) OnlyX(ctx context.Context) *SystemHazard {
-	node, err := shq.Only(ctx)
+func (_q *SystemHazardQuery) OnlyX(ctx context.Context) *SystemHazard {
+	node, err := _q.Only(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -233,9 +233,9 @@ func (shq *SystemHazardQuery) OnlyX(ctx context.Context) *SystemHazard {
 // OnlyID is like Only, but returns the only SystemHazard ID in the query.
 // Returns a *NotSingularError when more than one SystemHazard ID is found.
 // Returns a *NotFoundError when no entities are found.
-func (shq *SystemHazardQuery) OnlyID(ctx context.Context) (id uuid.UUID, err error) {
+func (_q *SystemHazardQuery) OnlyID(ctx context.Context) (id uuid.UUID, err error) {
 	var ids []uuid.UUID
-	if ids, err = shq.Limit(2).IDs(setContextOp(ctx, shq.ctx, ent.OpQueryOnlyID)); err != nil {
+	if ids, err = _q.Limit(2).IDs(setContextOp(ctx, _q.ctx, ent.OpQueryOnlyID)); err != nil {
 		return
 	}
 	switch len(ids) {
@@ -250,8 +250,8 @@ func (shq *SystemHazardQuery) OnlyID(ctx context.Context) (id uuid.UUID, err err
 }
 
 // OnlyIDX is like OnlyID, but panics if an error occurs.
-func (shq *SystemHazardQuery) OnlyIDX(ctx context.Context) uuid.UUID {
-	id, err := shq.OnlyID(ctx)
+func (_q *SystemHazardQuery) OnlyIDX(ctx context.Context) uuid.UUID {
+	id, err := _q.OnlyID(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -259,18 +259,18 @@ func (shq *SystemHazardQuery) OnlyIDX(ctx context.Context) uuid.UUID {
 }
 
 // All executes the query and returns a list of SystemHazards.
-func (shq *SystemHazardQuery) All(ctx context.Context) ([]*SystemHazard, error) {
-	ctx = setContextOp(ctx, shq.ctx, ent.OpQueryAll)
-	if err := shq.prepareQuery(ctx); err != nil {
+func (_q *SystemHazardQuery) All(ctx context.Context) ([]*SystemHazard, error) {
+	ctx = setContextOp(ctx, _q.ctx, ent.OpQueryAll)
+	if err := _q.prepareQuery(ctx); err != nil {
 		return nil, err
 	}
 	qr := querierAll[[]*SystemHazard, *SystemHazardQuery]()
-	return withInterceptors[[]*SystemHazard](ctx, shq, qr, shq.inters)
+	return withInterceptors[[]*SystemHazard](ctx, _q, qr, _q.inters)
 }
 
 // AllX is like All, but panics if an error occurs.
-func (shq *SystemHazardQuery) AllX(ctx context.Context) []*SystemHazard {
-	nodes, err := shq.All(ctx)
+func (_q *SystemHazardQuery) AllX(ctx context.Context) []*SystemHazard {
+	nodes, err := _q.All(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -278,20 +278,20 @@ func (shq *SystemHazardQuery) AllX(ctx context.Context) []*SystemHazard {
 }
 
 // IDs executes the query and returns a list of SystemHazard IDs.
-func (shq *SystemHazardQuery) IDs(ctx context.Context) (ids []uuid.UUID, err error) {
-	if shq.ctx.Unique == nil && shq.path != nil {
-		shq.Unique(true)
+func (_q *SystemHazardQuery) IDs(ctx context.Context) (ids []uuid.UUID, err error) {
+	if _q.ctx.Unique == nil && _q.path != nil {
+		_q.Unique(true)
 	}
-	ctx = setContextOp(ctx, shq.ctx, ent.OpQueryIDs)
-	if err = shq.Select(systemhazard.FieldID).Scan(ctx, &ids); err != nil {
+	ctx = setContextOp(ctx, _q.ctx, ent.OpQueryIDs)
+	if err = _q.Select(systemhazard.FieldID).Scan(ctx, &ids); err != nil {
 		return nil, err
 	}
 	return ids, nil
 }
 
 // IDsX is like IDs, but panics if an error occurs.
-func (shq *SystemHazardQuery) IDsX(ctx context.Context) []uuid.UUID {
-	ids, err := shq.IDs(ctx)
+func (_q *SystemHazardQuery) IDsX(ctx context.Context) []uuid.UUID {
+	ids, err := _q.IDs(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -299,17 +299,17 @@ func (shq *SystemHazardQuery) IDsX(ctx context.Context) []uuid.UUID {
 }
 
 // Count returns the count of the given query.
-func (shq *SystemHazardQuery) Count(ctx context.Context) (int, error) {
-	ctx = setContextOp(ctx, shq.ctx, ent.OpQueryCount)
-	if err := shq.prepareQuery(ctx); err != nil {
+func (_q *SystemHazardQuery) Count(ctx context.Context) (int, error) {
+	ctx = setContextOp(ctx, _q.ctx, ent.OpQueryCount)
+	if err := _q.prepareQuery(ctx); err != nil {
 		return 0, err
 	}
-	return withInterceptors[int](ctx, shq, querierCount[*SystemHazardQuery](), shq.inters)
+	return withInterceptors[int](ctx, _q, querierCount[*SystemHazardQuery](), _q.inters)
 }
 
 // CountX is like Count, but panics if an error occurs.
-func (shq *SystemHazardQuery) CountX(ctx context.Context) int {
-	count, err := shq.Count(ctx)
+func (_q *SystemHazardQuery) CountX(ctx context.Context) int {
+	count, err := _q.Count(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -317,9 +317,9 @@ func (shq *SystemHazardQuery) CountX(ctx context.Context) int {
 }
 
 // Exist returns true if the query has elements in the graph.
-func (shq *SystemHazardQuery) Exist(ctx context.Context) (bool, error) {
-	ctx = setContextOp(ctx, shq.ctx, ent.OpQueryExist)
-	switch _, err := shq.FirstID(ctx); {
+func (_q *SystemHazardQuery) Exist(ctx context.Context) (bool, error) {
+	ctx = setContextOp(ctx, _q.ctx, ent.OpQueryExist)
+	switch _, err := _q.FirstID(ctx); {
 	case IsNotFound(err):
 		return false, nil
 	case err != nil:
@@ -330,8 +330,8 @@ func (shq *SystemHazardQuery) Exist(ctx context.Context) (bool, error) {
 }
 
 // ExistX is like Exist, but panics if an error occurs.
-func (shq *SystemHazardQuery) ExistX(ctx context.Context) bool {
-	exist, err := shq.Exist(ctx)
+func (_q *SystemHazardQuery) ExistX(ctx context.Context) bool {
+	exist, err := _q.Exist(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -340,69 +340,69 @@ func (shq *SystemHazardQuery) ExistX(ctx context.Context) bool {
 
 // Clone returns a duplicate of the SystemHazardQuery builder, including all associated steps. It can be
 // used to prepare common query builders and use them differently after the clone is made.
-func (shq *SystemHazardQuery) Clone() *SystemHazardQuery {
-	if shq == nil {
+func (_q *SystemHazardQuery) Clone() *SystemHazardQuery {
+	if _q == nil {
 		return nil
 	}
 	return &SystemHazardQuery{
-		config:            shq.config,
-		ctx:               shq.ctx.Clone(),
-		order:             append([]systemhazard.OrderOption{}, shq.order...),
-		inters:            append([]Interceptor{}, shq.inters...),
-		predicates:        append([]predicate.SystemHazard{}, shq.predicates...),
-		withTenant:        shq.withTenant.Clone(),
-		withComponents:    shq.withComponents.Clone(),
-		withConstraints:   shq.withConstraints.Clone(),
-		withRelationships: shq.withRelationships.Clone(),
+		config:            _q.config,
+		ctx:               _q.ctx.Clone(),
+		order:             append([]systemhazard.OrderOption{}, _q.order...),
+		inters:            append([]Interceptor{}, _q.inters...),
+		predicates:        append([]predicate.SystemHazard{}, _q.predicates...),
+		withTenant:        _q.withTenant.Clone(),
+		withComponents:    _q.withComponents.Clone(),
+		withConstraints:   _q.withConstraints.Clone(),
+		withRelationships: _q.withRelationships.Clone(),
 		// clone intermediate query.
-		sql:       shq.sql.Clone(),
-		path:      shq.path,
-		modifiers: append([]func(*sql.Selector){}, shq.modifiers...),
+		sql:       _q.sql.Clone(),
+		path:      _q.path,
+		modifiers: append([]func(*sql.Selector){}, _q.modifiers...),
 	}
 }
 
 // WithTenant tells the query-builder to eager-load the nodes that are connected to
 // the "tenant" edge. The optional arguments are used to configure the query builder of the edge.
-func (shq *SystemHazardQuery) WithTenant(opts ...func(*TenantQuery)) *SystemHazardQuery {
-	query := (&TenantClient{config: shq.config}).Query()
+func (_q *SystemHazardQuery) WithTenant(opts ...func(*TenantQuery)) *SystemHazardQuery {
+	query := (&TenantClient{config: _q.config}).Query()
 	for _, opt := range opts {
 		opt(query)
 	}
-	shq.withTenant = query
-	return shq
+	_q.withTenant = query
+	return _q
 }
 
 // WithComponents tells the query-builder to eager-load the nodes that are connected to
 // the "components" edge. The optional arguments are used to configure the query builder of the edge.
-func (shq *SystemHazardQuery) WithComponents(opts ...func(*SystemComponentQuery)) *SystemHazardQuery {
-	query := (&SystemComponentClient{config: shq.config}).Query()
+func (_q *SystemHazardQuery) WithComponents(opts ...func(*SystemComponentQuery)) *SystemHazardQuery {
+	query := (&SystemComponentClient{config: _q.config}).Query()
 	for _, opt := range opts {
 		opt(query)
 	}
-	shq.withComponents = query
-	return shq
+	_q.withComponents = query
+	return _q
 }
 
 // WithConstraints tells the query-builder to eager-load the nodes that are connected to
 // the "constraints" edge. The optional arguments are used to configure the query builder of the edge.
-func (shq *SystemHazardQuery) WithConstraints(opts ...func(*SystemComponentConstraintQuery)) *SystemHazardQuery {
-	query := (&SystemComponentConstraintClient{config: shq.config}).Query()
+func (_q *SystemHazardQuery) WithConstraints(opts ...func(*SystemComponentConstraintQuery)) *SystemHazardQuery {
+	query := (&SystemComponentConstraintClient{config: _q.config}).Query()
 	for _, opt := range opts {
 		opt(query)
 	}
-	shq.withConstraints = query
-	return shq
+	_q.withConstraints = query
+	return _q
 }
 
 // WithRelationships tells the query-builder to eager-load the nodes that are connected to
 // the "relationships" edge. The optional arguments are used to configure the query builder of the edge.
-func (shq *SystemHazardQuery) WithRelationships(opts ...func(*SystemComponentRelationshipQuery)) *SystemHazardQuery {
-	query := (&SystemComponentRelationshipClient{config: shq.config}).Query()
+func (_q *SystemHazardQuery) WithRelationships(opts ...func(*SystemComponentRelationshipQuery)) *SystemHazardQuery {
+	query := (&SystemComponentRelationshipClient{config: _q.config}).Query()
 	for _, opt := range opts {
 		opt(query)
 	}
-	shq.withRelationships = query
-	return shq
+	_q.withRelationships = query
+	return _q
 }
 
 // GroupBy is used to group vertices by one or more fields/columns.
@@ -419,10 +419,10 @@ func (shq *SystemHazardQuery) WithRelationships(opts ...func(*SystemComponentRel
 //		GroupBy(systemhazard.FieldTenantID).
 //		Aggregate(ent.Count()).
 //		Scan(ctx, &v)
-func (shq *SystemHazardQuery) GroupBy(field string, fields ...string) *SystemHazardGroupBy {
-	shq.ctx.Fields = append([]string{field}, fields...)
-	grbuild := &SystemHazardGroupBy{build: shq}
-	grbuild.flds = &shq.ctx.Fields
+func (_q *SystemHazardQuery) GroupBy(field string, fields ...string) *SystemHazardGroupBy {
+	_q.ctx.Fields = append([]string{field}, fields...)
+	grbuild := &SystemHazardGroupBy{build: _q}
+	grbuild.flds = &_q.ctx.Fields
 	grbuild.label = systemhazard.Label
 	grbuild.scan = grbuild.Scan
 	return grbuild
@@ -440,98 +440,98 @@ func (shq *SystemHazardQuery) GroupBy(field string, fields ...string) *SystemHaz
 //	client.SystemHazard.Query().
 //		Select(systemhazard.FieldTenantID).
 //		Scan(ctx, &v)
-func (shq *SystemHazardQuery) Select(fields ...string) *SystemHazardSelect {
-	shq.ctx.Fields = append(shq.ctx.Fields, fields...)
-	sbuild := &SystemHazardSelect{SystemHazardQuery: shq}
+func (_q *SystemHazardQuery) Select(fields ...string) *SystemHazardSelect {
+	_q.ctx.Fields = append(_q.ctx.Fields, fields...)
+	sbuild := &SystemHazardSelect{SystemHazardQuery: _q}
 	sbuild.label = systemhazard.Label
-	sbuild.flds, sbuild.scan = &shq.ctx.Fields, sbuild.Scan
+	sbuild.flds, sbuild.scan = &_q.ctx.Fields, sbuild.Scan
 	return sbuild
 }
 
 // Aggregate returns a SystemHazardSelect configured with the given aggregations.
-func (shq *SystemHazardQuery) Aggregate(fns ...AggregateFunc) *SystemHazardSelect {
-	return shq.Select().Aggregate(fns...)
+func (_q *SystemHazardQuery) Aggregate(fns ...AggregateFunc) *SystemHazardSelect {
+	return _q.Select().Aggregate(fns...)
 }
 
-func (shq *SystemHazardQuery) prepareQuery(ctx context.Context) error {
-	for _, inter := range shq.inters {
+func (_q *SystemHazardQuery) prepareQuery(ctx context.Context) error {
+	for _, inter := range _q.inters {
 		if inter == nil {
 			return fmt.Errorf("ent: uninitialized interceptor (forgotten import ent/runtime?)")
 		}
 		if trv, ok := inter.(Traverser); ok {
-			if err := trv.Traverse(ctx, shq); err != nil {
+			if err := trv.Traverse(ctx, _q); err != nil {
 				return err
 			}
 		}
 	}
-	for _, f := range shq.ctx.Fields {
+	for _, f := range _q.ctx.Fields {
 		if !systemhazard.ValidColumn(f) {
 			return &ValidationError{Name: f, err: fmt.Errorf("ent: invalid field %q for query", f)}
 		}
 	}
-	if shq.path != nil {
-		prev, err := shq.path(ctx)
+	if _q.path != nil {
+		prev, err := _q.path(ctx)
 		if err != nil {
 			return err
 		}
-		shq.sql = prev
+		_q.sql = prev
 	}
 	if systemhazard.Policy == nil {
 		return errors.New("ent: uninitialized systemhazard.Policy (forgotten import ent/runtime?)")
 	}
-	if err := systemhazard.Policy.EvalQuery(ctx, shq); err != nil {
+	if err := systemhazard.Policy.EvalQuery(ctx, _q); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (shq *SystemHazardQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*SystemHazard, error) {
+func (_q *SystemHazardQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*SystemHazard, error) {
 	var (
 		nodes       = []*SystemHazard{}
-		_spec       = shq.querySpec()
+		_spec       = _q.querySpec()
 		loadedTypes = [4]bool{
-			shq.withTenant != nil,
-			shq.withComponents != nil,
-			shq.withConstraints != nil,
-			shq.withRelationships != nil,
+			_q.withTenant != nil,
+			_q.withComponents != nil,
+			_q.withConstraints != nil,
+			_q.withRelationships != nil,
 		}
 	)
 	_spec.ScanValues = func(columns []string) ([]any, error) {
 		return (*SystemHazard).scanValues(nil, columns)
 	}
 	_spec.Assign = func(columns []string, values []any) error {
-		node := &SystemHazard{config: shq.config}
+		node := &SystemHazard{config: _q.config}
 		nodes = append(nodes, node)
 		node.Edges.loadedTypes = loadedTypes
 		return node.assignValues(columns, values)
 	}
-	if len(shq.modifiers) > 0 {
-		_spec.Modifiers = shq.modifiers
+	if len(_q.modifiers) > 0 {
+		_spec.Modifiers = _q.modifiers
 	}
 	for i := range hooks {
 		hooks[i](ctx, _spec)
 	}
-	if err := sqlgraph.QueryNodes(ctx, shq.driver, _spec); err != nil {
+	if err := sqlgraph.QueryNodes(ctx, _q.driver, _spec); err != nil {
 		return nil, err
 	}
 	if len(nodes) == 0 {
 		return nodes, nil
 	}
-	if query := shq.withTenant; query != nil {
-		if err := shq.loadTenant(ctx, query, nodes, nil,
+	if query := _q.withTenant; query != nil {
+		if err := _q.loadTenant(ctx, query, nodes, nil,
 			func(n *SystemHazard, e *Tenant) { n.Edges.Tenant = e }); err != nil {
 			return nil, err
 		}
 	}
-	if query := shq.withComponents; query != nil {
-		if err := shq.loadComponents(ctx, query, nodes,
+	if query := _q.withComponents; query != nil {
+		if err := _q.loadComponents(ctx, query, nodes,
 			func(n *SystemHazard) { n.Edges.Components = []*SystemComponent{} },
 			func(n *SystemHazard, e *SystemComponent) { n.Edges.Components = append(n.Edges.Components, e) }); err != nil {
 			return nil, err
 		}
 	}
-	if query := shq.withConstraints; query != nil {
-		if err := shq.loadConstraints(ctx, query, nodes,
+	if query := _q.withConstraints; query != nil {
+		if err := _q.loadConstraints(ctx, query, nodes,
 			func(n *SystemHazard) { n.Edges.Constraints = []*SystemComponentConstraint{} },
 			func(n *SystemHazard, e *SystemComponentConstraint) {
 				n.Edges.Constraints = append(n.Edges.Constraints, e)
@@ -539,8 +539,8 @@ func (shq *SystemHazardQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([
 			return nil, err
 		}
 	}
-	if query := shq.withRelationships; query != nil {
-		if err := shq.loadRelationships(ctx, query, nodes,
+	if query := _q.withRelationships; query != nil {
+		if err := _q.loadRelationships(ctx, query, nodes,
 			func(n *SystemHazard) { n.Edges.Relationships = []*SystemComponentRelationship{} },
 			func(n *SystemHazard, e *SystemComponentRelationship) {
 				n.Edges.Relationships = append(n.Edges.Relationships, e)
@@ -551,7 +551,7 @@ func (shq *SystemHazardQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([
 	return nodes, nil
 }
 
-func (shq *SystemHazardQuery) loadTenant(ctx context.Context, query *TenantQuery, nodes []*SystemHazard, init func(*SystemHazard), assign func(*SystemHazard, *Tenant)) error {
+func (_q *SystemHazardQuery) loadTenant(ctx context.Context, query *TenantQuery, nodes []*SystemHazard, init func(*SystemHazard), assign func(*SystemHazard, *Tenant)) error {
 	ids := make([]int, 0, len(nodes))
 	nodeids := make(map[int][]*SystemHazard)
 	for i := range nodes {
@@ -580,7 +580,7 @@ func (shq *SystemHazardQuery) loadTenant(ctx context.Context, query *TenantQuery
 	}
 	return nil
 }
-func (shq *SystemHazardQuery) loadComponents(ctx context.Context, query *SystemComponentQuery, nodes []*SystemHazard, init func(*SystemHazard), assign func(*SystemHazard, *SystemComponent)) error {
+func (_q *SystemHazardQuery) loadComponents(ctx context.Context, query *SystemComponentQuery, nodes []*SystemHazard, init func(*SystemHazard), assign func(*SystemHazard, *SystemComponent)) error {
 	edgeIDs := make([]driver.Value, len(nodes))
 	byID := make(map[uuid.UUID]*SystemHazard)
 	nids := make(map[uuid.UUID]map[*SystemHazard]struct{})
@@ -641,7 +641,7 @@ func (shq *SystemHazardQuery) loadComponents(ctx context.Context, query *SystemC
 	}
 	return nil
 }
-func (shq *SystemHazardQuery) loadConstraints(ctx context.Context, query *SystemComponentConstraintQuery, nodes []*SystemHazard, init func(*SystemHazard), assign func(*SystemHazard, *SystemComponentConstraint)) error {
+func (_q *SystemHazardQuery) loadConstraints(ctx context.Context, query *SystemComponentConstraintQuery, nodes []*SystemHazard, init func(*SystemHazard), assign func(*SystemHazard, *SystemComponentConstraint)) error {
 	edgeIDs := make([]driver.Value, len(nodes))
 	byID := make(map[uuid.UUID]*SystemHazard)
 	nids := make(map[uuid.UUID]map[*SystemHazard]struct{})
@@ -702,7 +702,7 @@ func (shq *SystemHazardQuery) loadConstraints(ctx context.Context, query *System
 	}
 	return nil
 }
-func (shq *SystemHazardQuery) loadRelationships(ctx context.Context, query *SystemComponentRelationshipQuery, nodes []*SystemHazard, init func(*SystemHazard), assign func(*SystemHazard, *SystemComponentRelationship)) error {
+func (_q *SystemHazardQuery) loadRelationships(ctx context.Context, query *SystemComponentRelationshipQuery, nodes []*SystemHazard, init func(*SystemHazard), assign func(*SystemHazard, *SystemComponentRelationship)) error {
 	edgeIDs := make([]driver.Value, len(nodes))
 	byID := make(map[uuid.UUID]*SystemHazard)
 	nids := make(map[uuid.UUID]map[*SystemHazard]struct{})
@@ -764,27 +764,27 @@ func (shq *SystemHazardQuery) loadRelationships(ctx context.Context, query *Syst
 	return nil
 }
 
-func (shq *SystemHazardQuery) sqlCount(ctx context.Context) (int, error) {
-	_spec := shq.querySpec()
-	if len(shq.modifiers) > 0 {
-		_spec.Modifiers = shq.modifiers
+func (_q *SystemHazardQuery) sqlCount(ctx context.Context) (int, error) {
+	_spec := _q.querySpec()
+	if len(_q.modifiers) > 0 {
+		_spec.Modifiers = _q.modifiers
 	}
-	_spec.Node.Columns = shq.ctx.Fields
-	if len(shq.ctx.Fields) > 0 {
-		_spec.Unique = shq.ctx.Unique != nil && *shq.ctx.Unique
+	_spec.Node.Columns = _q.ctx.Fields
+	if len(_q.ctx.Fields) > 0 {
+		_spec.Unique = _q.ctx.Unique != nil && *_q.ctx.Unique
 	}
-	return sqlgraph.CountNodes(ctx, shq.driver, _spec)
+	return sqlgraph.CountNodes(ctx, _q.driver, _spec)
 }
 
-func (shq *SystemHazardQuery) querySpec() *sqlgraph.QuerySpec {
+func (_q *SystemHazardQuery) querySpec() *sqlgraph.QuerySpec {
 	_spec := sqlgraph.NewQuerySpec(systemhazard.Table, systemhazard.Columns, sqlgraph.NewFieldSpec(systemhazard.FieldID, field.TypeUUID))
-	_spec.From = shq.sql
-	if unique := shq.ctx.Unique; unique != nil {
+	_spec.From = _q.sql
+	if unique := _q.ctx.Unique; unique != nil {
 		_spec.Unique = *unique
-	} else if shq.path != nil {
+	} else if _q.path != nil {
 		_spec.Unique = true
 	}
-	if fields := shq.ctx.Fields; len(fields) > 0 {
+	if fields := _q.ctx.Fields; len(fields) > 0 {
 		_spec.Node.Columns = make([]string, 0, len(fields))
 		_spec.Node.Columns = append(_spec.Node.Columns, systemhazard.FieldID)
 		for i := range fields {
@@ -792,24 +792,24 @@ func (shq *SystemHazardQuery) querySpec() *sqlgraph.QuerySpec {
 				_spec.Node.Columns = append(_spec.Node.Columns, fields[i])
 			}
 		}
-		if shq.withTenant != nil {
+		if _q.withTenant != nil {
 			_spec.Node.AddColumnOnce(systemhazard.FieldTenantID)
 		}
 	}
-	if ps := shq.predicates; len(ps) > 0 {
+	if ps := _q.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {
 				ps[i](selector)
 			}
 		}
 	}
-	if limit := shq.ctx.Limit; limit != nil {
+	if limit := _q.ctx.Limit; limit != nil {
 		_spec.Limit = *limit
 	}
-	if offset := shq.ctx.Offset; offset != nil {
+	if offset := _q.ctx.Offset; offset != nil {
 		_spec.Offset = *offset
 	}
-	if ps := shq.order; len(ps) > 0 {
+	if ps := _q.order; len(ps) > 0 {
 		_spec.Order = func(selector *sql.Selector) {
 			for i := range ps {
 				ps[i](selector)
@@ -819,45 +819,45 @@ func (shq *SystemHazardQuery) querySpec() *sqlgraph.QuerySpec {
 	return _spec
 }
 
-func (shq *SystemHazardQuery) sqlQuery(ctx context.Context) *sql.Selector {
-	builder := sql.Dialect(shq.driver.Dialect())
+func (_q *SystemHazardQuery) sqlQuery(ctx context.Context) *sql.Selector {
+	builder := sql.Dialect(_q.driver.Dialect())
 	t1 := builder.Table(systemhazard.Table)
-	columns := shq.ctx.Fields
+	columns := _q.ctx.Fields
 	if len(columns) == 0 {
 		columns = systemhazard.Columns
 	}
 	selector := builder.Select(t1.Columns(columns...)...).From(t1)
-	if shq.sql != nil {
-		selector = shq.sql
+	if _q.sql != nil {
+		selector = _q.sql
 		selector.Select(selector.Columns(columns...)...)
 	}
-	if shq.ctx.Unique != nil && *shq.ctx.Unique {
+	if _q.ctx.Unique != nil && *_q.ctx.Unique {
 		selector.Distinct()
 	}
-	for _, m := range shq.modifiers {
+	for _, m := range _q.modifiers {
 		m(selector)
 	}
-	for _, p := range shq.predicates {
+	for _, p := range _q.predicates {
 		p(selector)
 	}
-	for _, p := range shq.order {
+	for _, p := range _q.order {
 		p(selector)
 	}
-	if offset := shq.ctx.Offset; offset != nil {
+	if offset := _q.ctx.Offset; offset != nil {
 		// limit is mandatory for offset clause. We start
 		// with default value, and override it below if needed.
 		selector.Offset(*offset).Limit(math.MaxInt32)
 	}
-	if limit := shq.ctx.Limit; limit != nil {
+	if limit := _q.ctx.Limit; limit != nil {
 		selector.Limit(*limit)
 	}
 	return selector
 }
 
 // Modify adds a query modifier for attaching custom logic to queries.
-func (shq *SystemHazardQuery) Modify(modifiers ...func(s *sql.Selector)) *SystemHazardSelect {
-	shq.modifiers = append(shq.modifiers, modifiers...)
-	return shq.Select()
+func (_q *SystemHazardQuery) Modify(modifiers ...func(s *sql.Selector)) *SystemHazardSelect {
+	_q.modifiers = append(_q.modifiers, modifiers...)
+	return _q.Select()
 }
 
 // SystemHazardGroupBy is the group-by builder for SystemHazard entities.
@@ -867,41 +867,41 @@ type SystemHazardGroupBy struct {
 }
 
 // Aggregate adds the given aggregation functions to the group-by query.
-func (shgb *SystemHazardGroupBy) Aggregate(fns ...AggregateFunc) *SystemHazardGroupBy {
-	shgb.fns = append(shgb.fns, fns...)
-	return shgb
+func (_g *SystemHazardGroupBy) Aggregate(fns ...AggregateFunc) *SystemHazardGroupBy {
+	_g.fns = append(_g.fns, fns...)
+	return _g
 }
 
 // Scan applies the selector query and scans the result into the given value.
-func (shgb *SystemHazardGroupBy) Scan(ctx context.Context, v any) error {
-	ctx = setContextOp(ctx, shgb.build.ctx, ent.OpQueryGroupBy)
-	if err := shgb.build.prepareQuery(ctx); err != nil {
+func (_g *SystemHazardGroupBy) Scan(ctx context.Context, v any) error {
+	ctx = setContextOp(ctx, _g.build.ctx, ent.OpQueryGroupBy)
+	if err := _g.build.prepareQuery(ctx); err != nil {
 		return err
 	}
-	return scanWithInterceptors[*SystemHazardQuery, *SystemHazardGroupBy](ctx, shgb.build, shgb, shgb.build.inters, v)
+	return scanWithInterceptors[*SystemHazardQuery, *SystemHazardGroupBy](ctx, _g.build, _g, _g.build.inters, v)
 }
 
-func (shgb *SystemHazardGroupBy) sqlScan(ctx context.Context, root *SystemHazardQuery, v any) error {
+func (_g *SystemHazardGroupBy) sqlScan(ctx context.Context, root *SystemHazardQuery, v any) error {
 	selector := root.sqlQuery(ctx).Select()
-	aggregation := make([]string, 0, len(shgb.fns))
-	for _, fn := range shgb.fns {
+	aggregation := make([]string, 0, len(_g.fns))
+	for _, fn := range _g.fns {
 		aggregation = append(aggregation, fn(selector))
 	}
 	if len(selector.SelectedColumns()) == 0 {
-		columns := make([]string, 0, len(*shgb.flds)+len(shgb.fns))
-		for _, f := range *shgb.flds {
+		columns := make([]string, 0, len(*_g.flds)+len(_g.fns))
+		for _, f := range *_g.flds {
 			columns = append(columns, selector.C(f))
 		}
 		columns = append(columns, aggregation...)
 		selector.Select(columns...)
 	}
-	selector.GroupBy(selector.Columns(*shgb.flds...)...)
+	selector.GroupBy(selector.Columns(*_g.flds...)...)
 	if err := selector.Err(); err != nil {
 		return err
 	}
 	rows := &sql.Rows{}
 	query, args := selector.Query()
-	if err := shgb.build.driver.Query(ctx, query, args, rows); err != nil {
+	if err := _g.build.driver.Query(ctx, query, args, rows); err != nil {
 		return err
 	}
 	defer rows.Close()
@@ -915,27 +915,27 @@ type SystemHazardSelect struct {
 }
 
 // Aggregate adds the given aggregation functions to the selector query.
-func (shs *SystemHazardSelect) Aggregate(fns ...AggregateFunc) *SystemHazardSelect {
-	shs.fns = append(shs.fns, fns...)
-	return shs
+func (_s *SystemHazardSelect) Aggregate(fns ...AggregateFunc) *SystemHazardSelect {
+	_s.fns = append(_s.fns, fns...)
+	return _s
 }
 
 // Scan applies the selector query and scans the result into the given value.
-func (shs *SystemHazardSelect) Scan(ctx context.Context, v any) error {
-	ctx = setContextOp(ctx, shs.ctx, ent.OpQuerySelect)
-	if err := shs.prepareQuery(ctx); err != nil {
+func (_s *SystemHazardSelect) Scan(ctx context.Context, v any) error {
+	ctx = setContextOp(ctx, _s.ctx, ent.OpQuerySelect)
+	if err := _s.prepareQuery(ctx); err != nil {
 		return err
 	}
-	return scanWithInterceptors[*SystemHazardQuery, *SystemHazardSelect](ctx, shs.SystemHazardQuery, shs, shs.inters, v)
+	return scanWithInterceptors[*SystemHazardQuery, *SystemHazardSelect](ctx, _s.SystemHazardQuery, _s, _s.inters, v)
 }
 
-func (shs *SystemHazardSelect) sqlScan(ctx context.Context, root *SystemHazardQuery, v any) error {
+func (_s *SystemHazardSelect) sqlScan(ctx context.Context, root *SystemHazardQuery, v any) error {
 	selector := root.sqlQuery(ctx)
-	aggregation := make([]string, 0, len(shs.fns))
-	for _, fn := range shs.fns {
+	aggregation := make([]string, 0, len(_s.fns))
+	for _, fn := range _s.fns {
 		aggregation = append(aggregation, fn(selector))
 	}
-	switch n := len(*shs.selector.flds); {
+	switch n := len(*_s.selector.flds); {
 	case n == 0 && len(aggregation) > 0:
 		selector.Select(aggregation...)
 	case n != 0 && len(aggregation) > 0:
@@ -943,7 +943,7 @@ func (shs *SystemHazardSelect) sqlScan(ctx context.Context, root *SystemHazardQu
 	}
 	rows := &sql.Rows{}
 	query, args := selector.Query()
-	if err := shs.driver.Query(ctx, query, args, rows); err != nil {
+	if err := _s.driver.Query(ctx, query, args, rows); err != nil {
 		return err
 	}
 	defer rows.Close()
@@ -951,7 +951,7 @@ func (shs *SystemHazardSelect) sqlScan(ctx context.Context, root *SystemHazardQu
 }
 
 // Modify adds a query modifier for attaching custom logic to queries.
-func (shs *SystemHazardSelect) Modify(modifiers ...func(s *sql.Selector)) *SystemHazardSelect {
-	shs.modifiers = append(shs.modifiers, modifiers...)
-	return shs
+func (_s *SystemHazardSelect) Modify(modifiers ...func(s *sql.Selector)) *SystemHazardSelect {
+	_s.modifiers = append(_s.modifiers, modifiers...)
+	return _s
 }

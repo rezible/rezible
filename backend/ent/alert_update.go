@@ -27,195 +27,195 @@ type AlertUpdate struct {
 }
 
 // Where appends a list predicates to the AlertUpdate builder.
-func (au *AlertUpdate) Where(ps ...predicate.Alert) *AlertUpdate {
-	au.mutation.Where(ps...)
-	return au
+func (_u *AlertUpdate) Where(ps ...predicate.Alert) *AlertUpdate {
+	_u.mutation.Where(ps...)
+	return _u
 }
 
 // SetProviderID sets the "provider_id" field.
-func (au *AlertUpdate) SetProviderID(s string) *AlertUpdate {
-	au.mutation.SetProviderID(s)
-	return au
+func (_u *AlertUpdate) SetProviderID(v string) *AlertUpdate {
+	_u.mutation.SetProviderID(v)
+	return _u
 }
 
 // SetNillableProviderID sets the "provider_id" field if the given value is not nil.
-func (au *AlertUpdate) SetNillableProviderID(s *string) *AlertUpdate {
-	if s != nil {
-		au.SetProviderID(*s)
+func (_u *AlertUpdate) SetNillableProviderID(v *string) *AlertUpdate {
+	if v != nil {
+		_u.SetProviderID(*v)
 	}
-	return au
+	return _u
 }
 
 // SetTitle sets the "title" field.
-func (au *AlertUpdate) SetTitle(s string) *AlertUpdate {
-	au.mutation.SetTitle(s)
-	return au
+func (_u *AlertUpdate) SetTitle(v string) *AlertUpdate {
+	_u.mutation.SetTitle(v)
+	return _u
 }
 
 // SetNillableTitle sets the "title" field if the given value is not nil.
-func (au *AlertUpdate) SetNillableTitle(s *string) *AlertUpdate {
-	if s != nil {
-		au.SetTitle(*s)
+func (_u *AlertUpdate) SetNillableTitle(v *string) *AlertUpdate {
+	if v != nil {
+		_u.SetTitle(*v)
 	}
-	return au
+	return _u
 }
 
 // SetDescription sets the "description" field.
-func (au *AlertUpdate) SetDescription(s string) *AlertUpdate {
-	au.mutation.SetDescription(s)
-	return au
+func (_u *AlertUpdate) SetDescription(v string) *AlertUpdate {
+	_u.mutation.SetDescription(v)
+	return _u
 }
 
 // SetNillableDescription sets the "description" field if the given value is not nil.
-func (au *AlertUpdate) SetNillableDescription(s *string) *AlertUpdate {
-	if s != nil {
-		au.SetDescription(*s)
+func (_u *AlertUpdate) SetNillableDescription(v *string) *AlertUpdate {
+	if v != nil {
+		_u.SetDescription(*v)
 	}
-	return au
+	return _u
 }
 
 // ClearDescription clears the value of the "description" field.
-func (au *AlertUpdate) ClearDescription() *AlertUpdate {
-	au.mutation.ClearDescription()
-	return au
+func (_u *AlertUpdate) ClearDescription() *AlertUpdate {
+	_u.mutation.ClearDescription()
+	return _u
 }
 
 // SetDefinition sets the "definition" field.
-func (au *AlertUpdate) SetDefinition(s string) *AlertUpdate {
-	au.mutation.SetDefinition(s)
-	return au
+func (_u *AlertUpdate) SetDefinition(v string) *AlertUpdate {
+	_u.mutation.SetDefinition(v)
+	return _u
 }
 
 // SetNillableDefinition sets the "definition" field if the given value is not nil.
-func (au *AlertUpdate) SetNillableDefinition(s *string) *AlertUpdate {
-	if s != nil {
-		au.SetDefinition(*s)
+func (_u *AlertUpdate) SetNillableDefinition(v *string) *AlertUpdate {
+	if v != nil {
+		_u.SetDefinition(*v)
 	}
-	return au
+	return _u
 }
 
 // ClearDefinition clears the value of the "definition" field.
-func (au *AlertUpdate) ClearDefinition() *AlertUpdate {
-	au.mutation.ClearDefinition()
-	return au
+func (_u *AlertUpdate) ClearDefinition() *AlertUpdate {
+	_u.mutation.ClearDefinition()
+	return _u
 }
 
 // SetRosterID sets the "roster_id" field.
-func (au *AlertUpdate) SetRosterID(u uuid.UUID) *AlertUpdate {
-	au.mutation.SetRosterID(u)
-	return au
+func (_u *AlertUpdate) SetRosterID(v uuid.UUID) *AlertUpdate {
+	_u.mutation.SetRosterID(v)
+	return _u
 }
 
 // SetNillableRosterID sets the "roster_id" field if the given value is not nil.
-func (au *AlertUpdate) SetNillableRosterID(u *uuid.UUID) *AlertUpdate {
-	if u != nil {
-		au.SetRosterID(*u)
+func (_u *AlertUpdate) SetNillableRosterID(v *uuid.UUID) *AlertUpdate {
+	if v != nil {
+		_u.SetRosterID(*v)
 	}
-	return au
+	return _u
 }
 
 // ClearRosterID clears the value of the "roster_id" field.
-func (au *AlertUpdate) ClearRosterID() *AlertUpdate {
-	au.mutation.ClearRosterID()
-	return au
+func (_u *AlertUpdate) ClearRosterID() *AlertUpdate {
+	_u.mutation.ClearRosterID()
+	return _u
 }
 
 // AddPlaybookIDs adds the "playbooks" edge to the Playbook entity by IDs.
-func (au *AlertUpdate) AddPlaybookIDs(ids ...uuid.UUID) *AlertUpdate {
-	au.mutation.AddPlaybookIDs(ids...)
-	return au
+func (_u *AlertUpdate) AddPlaybookIDs(ids ...uuid.UUID) *AlertUpdate {
+	_u.mutation.AddPlaybookIDs(ids...)
+	return _u
 }
 
 // AddPlaybooks adds the "playbooks" edges to the Playbook entity.
-func (au *AlertUpdate) AddPlaybooks(p ...*Playbook) *AlertUpdate {
-	ids := make([]uuid.UUID, len(p))
-	for i := range p {
-		ids[i] = p[i].ID
+func (_u *AlertUpdate) AddPlaybooks(v ...*Playbook) *AlertUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
 	}
-	return au.AddPlaybookIDs(ids...)
+	return _u.AddPlaybookIDs(ids...)
 }
 
 // SetRoster sets the "roster" edge to the OncallRoster entity.
-func (au *AlertUpdate) SetRoster(o *OncallRoster) *AlertUpdate {
-	return au.SetRosterID(o.ID)
+func (_u *AlertUpdate) SetRoster(v *OncallRoster) *AlertUpdate {
+	return _u.SetRosterID(v.ID)
 }
 
 // AddInstanceIDs adds the "instances" edge to the AlertInstance entity by IDs.
-func (au *AlertUpdate) AddInstanceIDs(ids ...uuid.UUID) *AlertUpdate {
-	au.mutation.AddInstanceIDs(ids...)
-	return au
+func (_u *AlertUpdate) AddInstanceIDs(ids ...uuid.UUID) *AlertUpdate {
+	_u.mutation.AddInstanceIDs(ids...)
+	return _u
 }
 
 // AddInstances adds the "instances" edges to the AlertInstance entity.
-func (au *AlertUpdate) AddInstances(a ...*AlertInstance) *AlertUpdate {
-	ids := make([]uuid.UUID, len(a))
-	for i := range a {
-		ids[i] = a[i].ID
+func (_u *AlertUpdate) AddInstances(v ...*AlertInstance) *AlertUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
 	}
-	return au.AddInstanceIDs(ids...)
+	return _u.AddInstanceIDs(ids...)
 }
 
 // Mutation returns the AlertMutation object of the builder.
-func (au *AlertUpdate) Mutation() *AlertMutation {
-	return au.mutation
+func (_u *AlertUpdate) Mutation() *AlertMutation {
+	return _u.mutation
 }
 
 // ClearPlaybooks clears all "playbooks" edges to the Playbook entity.
-func (au *AlertUpdate) ClearPlaybooks() *AlertUpdate {
-	au.mutation.ClearPlaybooks()
-	return au
+func (_u *AlertUpdate) ClearPlaybooks() *AlertUpdate {
+	_u.mutation.ClearPlaybooks()
+	return _u
 }
 
 // RemovePlaybookIDs removes the "playbooks" edge to Playbook entities by IDs.
-func (au *AlertUpdate) RemovePlaybookIDs(ids ...uuid.UUID) *AlertUpdate {
-	au.mutation.RemovePlaybookIDs(ids...)
-	return au
+func (_u *AlertUpdate) RemovePlaybookIDs(ids ...uuid.UUID) *AlertUpdate {
+	_u.mutation.RemovePlaybookIDs(ids...)
+	return _u
 }
 
 // RemovePlaybooks removes "playbooks" edges to Playbook entities.
-func (au *AlertUpdate) RemovePlaybooks(p ...*Playbook) *AlertUpdate {
-	ids := make([]uuid.UUID, len(p))
-	for i := range p {
-		ids[i] = p[i].ID
+func (_u *AlertUpdate) RemovePlaybooks(v ...*Playbook) *AlertUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
 	}
-	return au.RemovePlaybookIDs(ids...)
+	return _u.RemovePlaybookIDs(ids...)
 }
 
 // ClearRoster clears the "roster" edge to the OncallRoster entity.
-func (au *AlertUpdate) ClearRoster() *AlertUpdate {
-	au.mutation.ClearRoster()
-	return au
+func (_u *AlertUpdate) ClearRoster() *AlertUpdate {
+	_u.mutation.ClearRoster()
+	return _u
 }
 
 // ClearInstances clears all "instances" edges to the AlertInstance entity.
-func (au *AlertUpdate) ClearInstances() *AlertUpdate {
-	au.mutation.ClearInstances()
-	return au
+func (_u *AlertUpdate) ClearInstances() *AlertUpdate {
+	_u.mutation.ClearInstances()
+	return _u
 }
 
 // RemoveInstanceIDs removes the "instances" edge to AlertInstance entities by IDs.
-func (au *AlertUpdate) RemoveInstanceIDs(ids ...uuid.UUID) *AlertUpdate {
-	au.mutation.RemoveInstanceIDs(ids...)
-	return au
+func (_u *AlertUpdate) RemoveInstanceIDs(ids ...uuid.UUID) *AlertUpdate {
+	_u.mutation.RemoveInstanceIDs(ids...)
+	return _u
 }
 
 // RemoveInstances removes "instances" edges to AlertInstance entities.
-func (au *AlertUpdate) RemoveInstances(a ...*AlertInstance) *AlertUpdate {
-	ids := make([]uuid.UUID, len(a))
-	for i := range a {
-		ids[i] = a[i].ID
+func (_u *AlertUpdate) RemoveInstances(v ...*AlertInstance) *AlertUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
 	}
-	return au.RemoveInstanceIDs(ids...)
+	return _u.RemoveInstanceIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
-func (au *AlertUpdate) Save(ctx context.Context) (int, error) {
-	return withHooks(ctx, au.sqlSave, au.mutation, au.hooks)
+func (_u *AlertUpdate) Save(ctx context.Context) (int, error) {
+	return withHooks(ctx, _u.sqlSave, _u.mutation, _u.hooks)
 }
 
 // SaveX is like Save, but panics if an error occurs.
-func (au *AlertUpdate) SaveX(ctx context.Context) int {
-	affected, err := au.Save(ctx)
+func (_u *AlertUpdate) SaveX(ctx context.Context) int {
+	affected, err := _u.Save(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -223,63 +223,63 @@ func (au *AlertUpdate) SaveX(ctx context.Context) int {
 }
 
 // Exec executes the query.
-func (au *AlertUpdate) Exec(ctx context.Context) error {
-	_, err := au.Save(ctx)
+func (_u *AlertUpdate) Exec(ctx context.Context) error {
+	_, err := _u.Save(ctx)
 	return err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (au *AlertUpdate) ExecX(ctx context.Context) {
-	if err := au.Exec(ctx); err != nil {
+func (_u *AlertUpdate) ExecX(ctx context.Context) {
+	if err := _u.Exec(ctx); err != nil {
 		panic(err)
 	}
 }
 
 // check runs all checks and user-defined validators on the builder.
-func (au *AlertUpdate) check() error {
-	if au.mutation.TenantCleared() && len(au.mutation.TenantIDs()) > 0 {
+func (_u *AlertUpdate) check() error {
+	if _u.mutation.TenantCleared() && len(_u.mutation.TenantIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "Alert.tenant"`)
 	}
 	return nil
 }
 
 // Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
-func (au *AlertUpdate) Modify(modifiers ...func(u *sql.UpdateBuilder)) *AlertUpdate {
-	au.modifiers = append(au.modifiers, modifiers...)
-	return au
+func (_u *AlertUpdate) Modify(modifiers ...func(u *sql.UpdateBuilder)) *AlertUpdate {
+	_u.modifiers = append(_u.modifiers, modifiers...)
+	return _u
 }
 
-func (au *AlertUpdate) sqlSave(ctx context.Context) (n int, err error) {
-	if err := au.check(); err != nil {
-		return n, err
+func (_u *AlertUpdate) sqlSave(ctx context.Context) (_node int, err error) {
+	if err := _u.check(); err != nil {
+		return _node, err
 	}
 	_spec := sqlgraph.NewUpdateSpec(alert.Table, alert.Columns, sqlgraph.NewFieldSpec(alert.FieldID, field.TypeUUID))
-	if ps := au.mutation.predicates; len(ps) > 0 {
+	if ps := _u.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {
 				ps[i](selector)
 			}
 		}
 	}
-	if value, ok := au.mutation.ProviderID(); ok {
+	if value, ok := _u.mutation.ProviderID(); ok {
 		_spec.SetField(alert.FieldProviderID, field.TypeString, value)
 	}
-	if value, ok := au.mutation.Title(); ok {
+	if value, ok := _u.mutation.Title(); ok {
 		_spec.SetField(alert.FieldTitle, field.TypeString, value)
 	}
-	if value, ok := au.mutation.Description(); ok {
+	if value, ok := _u.mutation.Description(); ok {
 		_spec.SetField(alert.FieldDescription, field.TypeString, value)
 	}
-	if au.mutation.DescriptionCleared() {
+	if _u.mutation.DescriptionCleared() {
 		_spec.ClearField(alert.FieldDescription, field.TypeString)
 	}
-	if value, ok := au.mutation.Definition(); ok {
+	if value, ok := _u.mutation.Definition(); ok {
 		_spec.SetField(alert.FieldDefinition, field.TypeString, value)
 	}
-	if au.mutation.DefinitionCleared() {
+	if _u.mutation.DefinitionCleared() {
 		_spec.ClearField(alert.FieldDefinition, field.TypeString)
 	}
-	if au.mutation.PlaybooksCleared() {
+	if _u.mutation.PlaybooksCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
 			Inverse: true,
@@ -292,7 +292,7 @@ func (au *AlertUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := au.mutation.RemovedPlaybooksIDs(); len(nodes) > 0 && !au.mutation.PlaybooksCleared() {
+	if nodes := _u.mutation.RemovedPlaybooksIDs(); len(nodes) > 0 && !_u.mutation.PlaybooksCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
 			Inverse: true,
@@ -308,7 +308,7 @@ func (au *AlertUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := au.mutation.PlaybooksIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.PlaybooksIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
 			Inverse: true,
@@ -324,7 +324,7 @@ func (au *AlertUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if au.mutation.RosterCleared() {
+	if _u.mutation.RosterCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: true,
@@ -337,7 +337,7 @@ func (au *AlertUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := au.mutation.RosterIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.RosterIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: true,
@@ -353,7 +353,7 @@ func (au *AlertUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if au.mutation.InstancesCleared() {
+	if _u.mutation.InstancesCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
@@ -366,7 +366,7 @@ func (au *AlertUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := au.mutation.RemovedInstancesIDs(); len(nodes) > 0 && !au.mutation.InstancesCleared() {
+	if nodes := _u.mutation.RemovedInstancesIDs(); len(nodes) > 0 && !_u.mutation.InstancesCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
@@ -382,7 +382,7 @@ func (au *AlertUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := au.mutation.InstancesIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.InstancesIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
@@ -398,8 +398,8 @@ func (au *AlertUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	_spec.AddModifiers(au.modifiers...)
-	if n, err = sqlgraph.UpdateNodes(ctx, au.driver, _spec); err != nil {
+	_spec.AddModifiers(_u.modifiers...)
+	if _node, err = sqlgraph.UpdateNodes(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{alert.Label}
 		} else if sqlgraph.IsConstraintError(err) {
@@ -407,8 +407,8 @@ func (au *AlertUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		return 0, err
 	}
-	au.mutation.done = true
-	return n, nil
+	_u.mutation.done = true
+	return _node, nil
 }
 
 // AlertUpdateOne is the builder for updating a single Alert entity.
@@ -421,202 +421,202 @@ type AlertUpdateOne struct {
 }
 
 // SetProviderID sets the "provider_id" field.
-func (auo *AlertUpdateOne) SetProviderID(s string) *AlertUpdateOne {
-	auo.mutation.SetProviderID(s)
-	return auo
+func (_u *AlertUpdateOne) SetProviderID(v string) *AlertUpdateOne {
+	_u.mutation.SetProviderID(v)
+	return _u
 }
 
 // SetNillableProviderID sets the "provider_id" field if the given value is not nil.
-func (auo *AlertUpdateOne) SetNillableProviderID(s *string) *AlertUpdateOne {
-	if s != nil {
-		auo.SetProviderID(*s)
+func (_u *AlertUpdateOne) SetNillableProviderID(v *string) *AlertUpdateOne {
+	if v != nil {
+		_u.SetProviderID(*v)
 	}
-	return auo
+	return _u
 }
 
 // SetTitle sets the "title" field.
-func (auo *AlertUpdateOne) SetTitle(s string) *AlertUpdateOne {
-	auo.mutation.SetTitle(s)
-	return auo
+func (_u *AlertUpdateOne) SetTitle(v string) *AlertUpdateOne {
+	_u.mutation.SetTitle(v)
+	return _u
 }
 
 // SetNillableTitle sets the "title" field if the given value is not nil.
-func (auo *AlertUpdateOne) SetNillableTitle(s *string) *AlertUpdateOne {
-	if s != nil {
-		auo.SetTitle(*s)
+func (_u *AlertUpdateOne) SetNillableTitle(v *string) *AlertUpdateOne {
+	if v != nil {
+		_u.SetTitle(*v)
 	}
-	return auo
+	return _u
 }
 
 // SetDescription sets the "description" field.
-func (auo *AlertUpdateOne) SetDescription(s string) *AlertUpdateOne {
-	auo.mutation.SetDescription(s)
-	return auo
+func (_u *AlertUpdateOne) SetDescription(v string) *AlertUpdateOne {
+	_u.mutation.SetDescription(v)
+	return _u
 }
 
 // SetNillableDescription sets the "description" field if the given value is not nil.
-func (auo *AlertUpdateOne) SetNillableDescription(s *string) *AlertUpdateOne {
-	if s != nil {
-		auo.SetDescription(*s)
+func (_u *AlertUpdateOne) SetNillableDescription(v *string) *AlertUpdateOne {
+	if v != nil {
+		_u.SetDescription(*v)
 	}
-	return auo
+	return _u
 }
 
 // ClearDescription clears the value of the "description" field.
-func (auo *AlertUpdateOne) ClearDescription() *AlertUpdateOne {
-	auo.mutation.ClearDescription()
-	return auo
+func (_u *AlertUpdateOne) ClearDescription() *AlertUpdateOne {
+	_u.mutation.ClearDescription()
+	return _u
 }
 
 // SetDefinition sets the "definition" field.
-func (auo *AlertUpdateOne) SetDefinition(s string) *AlertUpdateOne {
-	auo.mutation.SetDefinition(s)
-	return auo
+func (_u *AlertUpdateOne) SetDefinition(v string) *AlertUpdateOne {
+	_u.mutation.SetDefinition(v)
+	return _u
 }
 
 // SetNillableDefinition sets the "definition" field if the given value is not nil.
-func (auo *AlertUpdateOne) SetNillableDefinition(s *string) *AlertUpdateOne {
-	if s != nil {
-		auo.SetDefinition(*s)
+func (_u *AlertUpdateOne) SetNillableDefinition(v *string) *AlertUpdateOne {
+	if v != nil {
+		_u.SetDefinition(*v)
 	}
-	return auo
+	return _u
 }
 
 // ClearDefinition clears the value of the "definition" field.
-func (auo *AlertUpdateOne) ClearDefinition() *AlertUpdateOne {
-	auo.mutation.ClearDefinition()
-	return auo
+func (_u *AlertUpdateOne) ClearDefinition() *AlertUpdateOne {
+	_u.mutation.ClearDefinition()
+	return _u
 }
 
 // SetRosterID sets the "roster_id" field.
-func (auo *AlertUpdateOne) SetRosterID(u uuid.UUID) *AlertUpdateOne {
-	auo.mutation.SetRosterID(u)
-	return auo
+func (_u *AlertUpdateOne) SetRosterID(v uuid.UUID) *AlertUpdateOne {
+	_u.mutation.SetRosterID(v)
+	return _u
 }
 
 // SetNillableRosterID sets the "roster_id" field if the given value is not nil.
-func (auo *AlertUpdateOne) SetNillableRosterID(u *uuid.UUID) *AlertUpdateOne {
-	if u != nil {
-		auo.SetRosterID(*u)
+func (_u *AlertUpdateOne) SetNillableRosterID(v *uuid.UUID) *AlertUpdateOne {
+	if v != nil {
+		_u.SetRosterID(*v)
 	}
-	return auo
+	return _u
 }
 
 // ClearRosterID clears the value of the "roster_id" field.
-func (auo *AlertUpdateOne) ClearRosterID() *AlertUpdateOne {
-	auo.mutation.ClearRosterID()
-	return auo
+func (_u *AlertUpdateOne) ClearRosterID() *AlertUpdateOne {
+	_u.mutation.ClearRosterID()
+	return _u
 }
 
 // AddPlaybookIDs adds the "playbooks" edge to the Playbook entity by IDs.
-func (auo *AlertUpdateOne) AddPlaybookIDs(ids ...uuid.UUID) *AlertUpdateOne {
-	auo.mutation.AddPlaybookIDs(ids...)
-	return auo
+func (_u *AlertUpdateOne) AddPlaybookIDs(ids ...uuid.UUID) *AlertUpdateOne {
+	_u.mutation.AddPlaybookIDs(ids...)
+	return _u
 }
 
 // AddPlaybooks adds the "playbooks" edges to the Playbook entity.
-func (auo *AlertUpdateOne) AddPlaybooks(p ...*Playbook) *AlertUpdateOne {
-	ids := make([]uuid.UUID, len(p))
-	for i := range p {
-		ids[i] = p[i].ID
+func (_u *AlertUpdateOne) AddPlaybooks(v ...*Playbook) *AlertUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
 	}
-	return auo.AddPlaybookIDs(ids...)
+	return _u.AddPlaybookIDs(ids...)
 }
 
 // SetRoster sets the "roster" edge to the OncallRoster entity.
-func (auo *AlertUpdateOne) SetRoster(o *OncallRoster) *AlertUpdateOne {
-	return auo.SetRosterID(o.ID)
+func (_u *AlertUpdateOne) SetRoster(v *OncallRoster) *AlertUpdateOne {
+	return _u.SetRosterID(v.ID)
 }
 
 // AddInstanceIDs adds the "instances" edge to the AlertInstance entity by IDs.
-func (auo *AlertUpdateOne) AddInstanceIDs(ids ...uuid.UUID) *AlertUpdateOne {
-	auo.mutation.AddInstanceIDs(ids...)
-	return auo
+func (_u *AlertUpdateOne) AddInstanceIDs(ids ...uuid.UUID) *AlertUpdateOne {
+	_u.mutation.AddInstanceIDs(ids...)
+	return _u
 }
 
 // AddInstances adds the "instances" edges to the AlertInstance entity.
-func (auo *AlertUpdateOne) AddInstances(a ...*AlertInstance) *AlertUpdateOne {
-	ids := make([]uuid.UUID, len(a))
-	for i := range a {
-		ids[i] = a[i].ID
+func (_u *AlertUpdateOne) AddInstances(v ...*AlertInstance) *AlertUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
 	}
-	return auo.AddInstanceIDs(ids...)
+	return _u.AddInstanceIDs(ids...)
 }
 
 // Mutation returns the AlertMutation object of the builder.
-func (auo *AlertUpdateOne) Mutation() *AlertMutation {
-	return auo.mutation
+func (_u *AlertUpdateOne) Mutation() *AlertMutation {
+	return _u.mutation
 }
 
 // ClearPlaybooks clears all "playbooks" edges to the Playbook entity.
-func (auo *AlertUpdateOne) ClearPlaybooks() *AlertUpdateOne {
-	auo.mutation.ClearPlaybooks()
-	return auo
+func (_u *AlertUpdateOne) ClearPlaybooks() *AlertUpdateOne {
+	_u.mutation.ClearPlaybooks()
+	return _u
 }
 
 // RemovePlaybookIDs removes the "playbooks" edge to Playbook entities by IDs.
-func (auo *AlertUpdateOne) RemovePlaybookIDs(ids ...uuid.UUID) *AlertUpdateOne {
-	auo.mutation.RemovePlaybookIDs(ids...)
-	return auo
+func (_u *AlertUpdateOne) RemovePlaybookIDs(ids ...uuid.UUID) *AlertUpdateOne {
+	_u.mutation.RemovePlaybookIDs(ids...)
+	return _u
 }
 
 // RemovePlaybooks removes "playbooks" edges to Playbook entities.
-func (auo *AlertUpdateOne) RemovePlaybooks(p ...*Playbook) *AlertUpdateOne {
-	ids := make([]uuid.UUID, len(p))
-	for i := range p {
-		ids[i] = p[i].ID
+func (_u *AlertUpdateOne) RemovePlaybooks(v ...*Playbook) *AlertUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
 	}
-	return auo.RemovePlaybookIDs(ids...)
+	return _u.RemovePlaybookIDs(ids...)
 }
 
 // ClearRoster clears the "roster" edge to the OncallRoster entity.
-func (auo *AlertUpdateOne) ClearRoster() *AlertUpdateOne {
-	auo.mutation.ClearRoster()
-	return auo
+func (_u *AlertUpdateOne) ClearRoster() *AlertUpdateOne {
+	_u.mutation.ClearRoster()
+	return _u
 }
 
 // ClearInstances clears all "instances" edges to the AlertInstance entity.
-func (auo *AlertUpdateOne) ClearInstances() *AlertUpdateOne {
-	auo.mutation.ClearInstances()
-	return auo
+func (_u *AlertUpdateOne) ClearInstances() *AlertUpdateOne {
+	_u.mutation.ClearInstances()
+	return _u
 }
 
 // RemoveInstanceIDs removes the "instances" edge to AlertInstance entities by IDs.
-func (auo *AlertUpdateOne) RemoveInstanceIDs(ids ...uuid.UUID) *AlertUpdateOne {
-	auo.mutation.RemoveInstanceIDs(ids...)
-	return auo
+func (_u *AlertUpdateOne) RemoveInstanceIDs(ids ...uuid.UUID) *AlertUpdateOne {
+	_u.mutation.RemoveInstanceIDs(ids...)
+	return _u
 }
 
 // RemoveInstances removes "instances" edges to AlertInstance entities.
-func (auo *AlertUpdateOne) RemoveInstances(a ...*AlertInstance) *AlertUpdateOne {
-	ids := make([]uuid.UUID, len(a))
-	for i := range a {
-		ids[i] = a[i].ID
+func (_u *AlertUpdateOne) RemoveInstances(v ...*AlertInstance) *AlertUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
 	}
-	return auo.RemoveInstanceIDs(ids...)
+	return _u.RemoveInstanceIDs(ids...)
 }
 
 // Where appends a list predicates to the AlertUpdate builder.
-func (auo *AlertUpdateOne) Where(ps ...predicate.Alert) *AlertUpdateOne {
-	auo.mutation.Where(ps...)
-	return auo
+func (_u *AlertUpdateOne) Where(ps ...predicate.Alert) *AlertUpdateOne {
+	_u.mutation.Where(ps...)
+	return _u
 }
 
 // Select allows selecting one or more fields (columns) of the returned entity.
 // The default is selecting all fields defined in the entity schema.
-func (auo *AlertUpdateOne) Select(field string, fields ...string) *AlertUpdateOne {
-	auo.fields = append([]string{field}, fields...)
-	return auo
+func (_u *AlertUpdateOne) Select(field string, fields ...string) *AlertUpdateOne {
+	_u.fields = append([]string{field}, fields...)
+	return _u
 }
 
 // Save executes the query and returns the updated Alert entity.
-func (auo *AlertUpdateOne) Save(ctx context.Context) (*Alert, error) {
-	return withHooks(ctx, auo.sqlSave, auo.mutation, auo.hooks)
+func (_u *AlertUpdateOne) Save(ctx context.Context) (*Alert, error) {
+	return withHooks(ctx, _u.sqlSave, _u.mutation, _u.hooks)
 }
 
 // SaveX is like Save, but panics if an error occurs.
-func (auo *AlertUpdateOne) SaveX(ctx context.Context) *Alert {
-	node, err := auo.Save(ctx)
+func (_u *AlertUpdateOne) SaveX(ctx context.Context) *Alert {
+	node, err := _u.Save(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -624,43 +624,43 @@ func (auo *AlertUpdateOne) SaveX(ctx context.Context) *Alert {
 }
 
 // Exec executes the query on the entity.
-func (auo *AlertUpdateOne) Exec(ctx context.Context) error {
-	_, err := auo.Save(ctx)
+func (_u *AlertUpdateOne) Exec(ctx context.Context) error {
+	_, err := _u.Save(ctx)
 	return err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (auo *AlertUpdateOne) ExecX(ctx context.Context) {
-	if err := auo.Exec(ctx); err != nil {
+func (_u *AlertUpdateOne) ExecX(ctx context.Context) {
+	if err := _u.Exec(ctx); err != nil {
 		panic(err)
 	}
 }
 
 // check runs all checks and user-defined validators on the builder.
-func (auo *AlertUpdateOne) check() error {
-	if auo.mutation.TenantCleared() && len(auo.mutation.TenantIDs()) > 0 {
+func (_u *AlertUpdateOne) check() error {
+	if _u.mutation.TenantCleared() && len(_u.mutation.TenantIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "Alert.tenant"`)
 	}
 	return nil
 }
 
 // Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
-func (auo *AlertUpdateOne) Modify(modifiers ...func(u *sql.UpdateBuilder)) *AlertUpdateOne {
-	auo.modifiers = append(auo.modifiers, modifiers...)
-	return auo
+func (_u *AlertUpdateOne) Modify(modifiers ...func(u *sql.UpdateBuilder)) *AlertUpdateOne {
+	_u.modifiers = append(_u.modifiers, modifiers...)
+	return _u
 }
 
-func (auo *AlertUpdateOne) sqlSave(ctx context.Context) (_node *Alert, err error) {
-	if err := auo.check(); err != nil {
+func (_u *AlertUpdateOne) sqlSave(ctx context.Context) (_node *Alert, err error) {
+	if err := _u.check(); err != nil {
 		return _node, err
 	}
 	_spec := sqlgraph.NewUpdateSpec(alert.Table, alert.Columns, sqlgraph.NewFieldSpec(alert.FieldID, field.TypeUUID))
-	id, ok := auo.mutation.ID()
+	id, ok := _u.mutation.ID()
 	if !ok {
 		return nil, &ValidationError{Name: "id", err: errors.New(`ent: missing "Alert.id" for update`)}
 	}
 	_spec.Node.ID.Value = id
-	if fields := auo.fields; len(fields) > 0 {
+	if fields := _u.fields; len(fields) > 0 {
 		_spec.Node.Columns = make([]string, 0, len(fields))
 		_spec.Node.Columns = append(_spec.Node.Columns, alert.FieldID)
 		for _, f := range fields {
@@ -672,32 +672,32 @@ func (auo *AlertUpdateOne) sqlSave(ctx context.Context) (_node *Alert, err error
 			}
 		}
 	}
-	if ps := auo.mutation.predicates; len(ps) > 0 {
+	if ps := _u.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {
 				ps[i](selector)
 			}
 		}
 	}
-	if value, ok := auo.mutation.ProviderID(); ok {
+	if value, ok := _u.mutation.ProviderID(); ok {
 		_spec.SetField(alert.FieldProviderID, field.TypeString, value)
 	}
-	if value, ok := auo.mutation.Title(); ok {
+	if value, ok := _u.mutation.Title(); ok {
 		_spec.SetField(alert.FieldTitle, field.TypeString, value)
 	}
-	if value, ok := auo.mutation.Description(); ok {
+	if value, ok := _u.mutation.Description(); ok {
 		_spec.SetField(alert.FieldDescription, field.TypeString, value)
 	}
-	if auo.mutation.DescriptionCleared() {
+	if _u.mutation.DescriptionCleared() {
 		_spec.ClearField(alert.FieldDescription, field.TypeString)
 	}
-	if value, ok := auo.mutation.Definition(); ok {
+	if value, ok := _u.mutation.Definition(); ok {
 		_spec.SetField(alert.FieldDefinition, field.TypeString, value)
 	}
-	if auo.mutation.DefinitionCleared() {
+	if _u.mutation.DefinitionCleared() {
 		_spec.ClearField(alert.FieldDefinition, field.TypeString)
 	}
-	if auo.mutation.PlaybooksCleared() {
+	if _u.mutation.PlaybooksCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
 			Inverse: true,
@@ -710,7 +710,7 @@ func (auo *AlertUpdateOne) sqlSave(ctx context.Context) (_node *Alert, err error
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := auo.mutation.RemovedPlaybooksIDs(); len(nodes) > 0 && !auo.mutation.PlaybooksCleared() {
+	if nodes := _u.mutation.RemovedPlaybooksIDs(); len(nodes) > 0 && !_u.mutation.PlaybooksCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
 			Inverse: true,
@@ -726,7 +726,7 @@ func (auo *AlertUpdateOne) sqlSave(ctx context.Context) (_node *Alert, err error
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := auo.mutation.PlaybooksIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.PlaybooksIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
 			Inverse: true,
@@ -742,7 +742,7 @@ func (auo *AlertUpdateOne) sqlSave(ctx context.Context) (_node *Alert, err error
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if auo.mutation.RosterCleared() {
+	if _u.mutation.RosterCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: true,
@@ -755,7 +755,7 @@ func (auo *AlertUpdateOne) sqlSave(ctx context.Context) (_node *Alert, err error
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := auo.mutation.RosterIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.RosterIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: true,
@@ -771,7 +771,7 @@ func (auo *AlertUpdateOne) sqlSave(ctx context.Context) (_node *Alert, err error
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if auo.mutation.InstancesCleared() {
+	if _u.mutation.InstancesCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
@@ -784,7 +784,7 @@ func (auo *AlertUpdateOne) sqlSave(ctx context.Context) (_node *Alert, err error
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := auo.mutation.RemovedInstancesIDs(); len(nodes) > 0 && !auo.mutation.InstancesCleared() {
+	if nodes := _u.mutation.RemovedInstancesIDs(); len(nodes) > 0 && !_u.mutation.InstancesCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
@@ -800,7 +800,7 @@ func (auo *AlertUpdateOne) sqlSave(ctx context.Context) (_node *Alert, err error
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := auo.mutation.InstancesIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.InstancesIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
@@ -816,11 +816,11 @@ func (auo *AlertUpdateOne) sqlSave(ctx context.Context) (_node *Alert, err error
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	_spec.AddModifiers(auo.modifiers...)
-	_node = &Alert{config: auo.config}
+	_spec.AddModifiers(_u.modifiers...)
+	_node = &Alert{config: _u.config}
 	_spec.Assign = _node.assignValues
 	_spec.ScanValues = _node.scanValues
-	if err = sqlgraph.UpdateNode(ctx, auo.driver, _spec); err != nil {
+	if err = sqlgraph.UpdateNode(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{alert.Label}
 		} else if sqlgraph.IsConstraintError(err) {
@@ -828,6 +828,6 @@ func (auo *AlertUpdateOne) sqlSave(ctx context.Context) (_node *Alert, err error
 		}
 		return nil, err
 	}
-	auo.mutation.done = true
+	_u.mutation.done = true
 	return _node, nil
 }

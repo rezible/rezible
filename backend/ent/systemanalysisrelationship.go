@@ -149,7 +149,7 @@ func (*SystemAnalysisRelationship) scanValues(columns []string) ([]any, error) {
 
 // assignValues assigns the values that were returned from sql.Rows (after scanning)
 // to the SystemAnalysisRelationship fields.
-func (sar *SystemAnalysisRelationship) assignValues(columns []string, values []any) error {
+func (_m *SystemAnalysisRelationship) assignValues(columns []string, values []any) error {
 	if m, n := len(values), len(columns); m < n {
 		return fmt.Errorf("mismatch number of scan values: %d != %d", m, n)
 	}
@@ -159,40 +159,40 @@ func (sar *SystemAnalysisRelationship) assignValues(columns []string, values []a
 			if value, ok := values[i].(*uuid.UUID); !ok {
 				return fmt.Errorf("unexpected type %T for field id", values[i])
 			} else if value != nil {
-				sar.ID = *value
+				_m.ID = *value
 			}
 		case systemanalysisrelationship.FieldTenantID:
 			if value, ok := values[i].(*sql.NullInt64); !ok {
 				return fmt.Errorf("unexpected type %T for field tenant_id", values[i])
 			} else if value.Valid {
-				sar.TenantID = int(value.Int64)
+				_m.TenantID = int(value.Int64)
 			}
 		case systemanalysisrelationship.FieldAnalysisID:
 			if value, ok := values[i].(*uuid.UUID); !ok {
 				return fmt.Errorf("unexpected type %T for field analysis_id", values[i])
 			} else if value != nil {
-				sar.AnalysisID = *value
+				_m.AnalysisID = *value
 			}
 		case systemanalysisrelationship.FieldComponentRelationshipID:
 			if value, ok := values[i].(*uuid.UUID); !ok {
 				return fmt.Errorf("unexpected type %T for field component_relationship_id", values[i])
 			} else if value != nil {
-				sar.ComponentRelationshipID = *value
+				_m.ComponentRelationshipID = *value
 			}
 		case systemanalysisrelationship.FieldDescription:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field description", values[i])
 			} else if value.Valid {
-				sar.Description = value.String
+				_m.Description = value.String
 			}
 		case systemanalysisrelationship.FieldCreatedAt:
 			if value, ok := values[i].(*sql.NullTime); !ok {
 				return fmt.Errorf("unexpected type %T for field created_at", values[i])
 			} else if value.Valid {
-				sar.CreatedAt = value.Time
+				_m.CreatedAt = value.Time
 			}
 		default:
-			sar.selectValues.Set(columns[i], values[i])
+			_m.selectValues.Set(columns[i], values[i])
 		}
 	}
 	return nil
@@ -200,82 +200,82 @@ func (sar *SystemAnalysisRelationship) assignValues(columns []string, values []a
 
 // Value returns the ent.Value that was dynamically selected and assigned to the SystemAnalysisRelationship.
 // This includes values selected through modifiers, order, etc.
-func (sar *SystemAnalysisRelationship) Value(name string) (ent.Value, error) {
-	return sar.selectValues.Get(name)
+func (_m *SystemAnalysisRelationship) Value(name string) (ent.Value, error) {
+	return _m.selectValues.Get(name)
 }
 
 // QueryTenant queries the "tenant" edge of the SystemAnalysisRelationship entity.
-func (sar *SystemAnalysisRelationship) QueryTenant() *TenantQuery {
-	return NewSystemAnalysisRelationshipClient(sar.config).QueryTenant(sar)
+func (_m *SystemAnalysisRelationship) QueryTenant() *TenantQuery {
+	return NewSystemAnalysisRelationshipClient(_m.config).QueryTenant(_m)
 }
 
 // QuerySystemAnalysis queries the "system_analysis" edge of the SystemAnalysisRelationship entity.
-func (sar *SystemAnalysisRelationship) QuerySystemAnalysis() *SystemAnalysisQuery {
-	return NewSystemAnalysisRelationshipClient(sar.config).QuerySystemAnalysis(sar)
+func (_m *SystemAnalysisRelationship) QuerySystemAnalysis() *SystemAnalysisQuery {
+	return NewSystemAnalysisRelationshipClient(_m.config).QuerySystemAnalysis(_m)
 }
 
 // QueryComponentRelationship queries the "component_relationship" edge of the SystemAnalysisRelationship entity.
-func (sar *SystemAnalysisRelationship) QueryComponentRelationship() *SystemComponentRelationshipQuery {
-	return NewSystemAnalysisRelationshipClient(sar.config).QueryComponentRelationship(sar)
+func (_m *SystemAnalysisRelationship) QueryComponentRelationship() *SystemComponentRelationshipQuery {
+	return NewSystemAnalysisRelationshipClient(_m.config).QueryComponentRelationship(_m)
 }
 
 // QueryControls queries the "controls" edge of the SystemAnalysisRelationship entity.
-func (sar *SystemAnalysisRelationship) QueryControls() *SystemComponentControlQuery {
-	return NewSystemAnalysisRelationshipClient(sar.config).QueryControls(sar)
+func (_m *SystemAnalysisRelationship) QueryControls() *SystemComponentControlQuery {
+	return NewSystemAnalysisRelationshipClient(_m.config).QueryControls(_m)
 }
 
 // QuerySignals queries the "signals" edge of the SystemAnalysisRelationship entity.
-func (sar *SystemAnalysisRelationship) QuerySignals() *SystemComponentSignalQuery {
-	return NewSystemAnalysisRelationshipClient(sar.config).QuerySignals(sar)
+func (_m *SystemAnalysisRelationship) QuerySignals() *SystemComponentSignalQuery {
+	return NewSystemAnalysisRelationshipClient(_m.config).QuerySignals(_m)
 }
 
 // QueryControlActions queries the "control_actions" edge of the SystemAnalysisRelationship entity.
-func (sar *SystemAnalysisRelationship) QueryControlActions() *SystemRelationshipControlActionQuery {
-	return NewSystemAnalysisRelationshipClient(sar.config).QueryControlActions(sar)
+func (_m *SystemAnalysisRelationship) QueryControlActions() *SystemRelationshipControlActionQuery {
+	return NewSystemAnalysisRelationshipClient(_m.config).QueryControlActions(_m)
 }
 
 // QueryFeedbackSignals queries the "feedback_signals" edge of the SystemAnalysisRelationship entity.
-func (sar *SystemAnalysisRelationship) QueryFeedbackSignals() *SystemRelationshipFeedbackSignalQuery {
-	return NewSystemAnalysisRelationshipClient(sar.config).QueryFeedbackSignals(sar)
+func (_m *SystemAnalysisRelationship) QueryFeedbackSignals() *SystemRelationshipFeedbackSignalQuery {
+	return NewSystemAnalysisRelationshipClient(_m.config).QueryFeedbackSignals(_m)
 }
 
 // Update returns a builder for updating this SystemAnalysisRelationship.
 // Note that you need to call SystemAnalysisRelationship.Unwrap() before calling this method if this SystemAnalysisRelationship
 // was returned from a transaction, and the transaction was committed or rolled back.
-func (sar *SystemAnalysisRelationship) Update() *SystemAnalysisRelationshipUpdateOne {
-	return NewSystemAnalysisRelationshipClient(sar.config).UpdateOne(sar)
+func (_m *SystemAnalysisRelationship) Update() *SystemAnalysisRelationshipUpdateOne {
+	return NewSystemAnalysisRelationshipClient(_m.config).UpdateOne(_m)
 }
 
 // Unwrap unwraps the SystemAnalysisRelationship entity that was returned from a transaction after it was closed,
 // so that all future queries will be executed through the driver which created the transaction.
-func (sar *SystemAnalysisRelationship) Unwrap() *SystemAnalysisRelationship {
-	_tx, ok := sar.config.driver.(*txDriver)
+func (_m *SystemAnalysisRelationship) Unwrap() *SystemAnalysisRelationship {
+	_tx, ok := _m.config.driver.(*txDriver)
 	if !ok {
 		panic("ent: SystemAnalysisRelationship is not a transactional entity")
 	}
-	sar.config.driver = _tx.drv
-	return sar
+	_m.config.driver = _tx.drv
+	return _m
 }
 
 // String implements the fmt.Stringer.
-func (sar *SystemAnalysisRelationship) String() string {
+func (_m *SystemAnalysisRelationship) String() string {
 	var builder strings.Builder
 	builder.WriteString("SystemAnalysisRelationship(")
-	builder.WriteString(fmt.Sprintf("id=%v, ", sar.ID))
+	builder.WriteString(fmt.Sprintf("id=%v, ", _m.ID))
 	builder.WriteString("tenant_id=")
-	builder.WriteString(fmt.Sprintf("%v", sar.TenantID))
+	builder.WriteString(fmt.Sprintf("%v", _m.TenantID))
 	builder.WriteString(", ")
 	builder.WriteString("analysis_id=")
-	builder.WriteString(fmt.Sprintf("%v", sar.AnalysisID))
+	builder.WriteString(fmt.Sprintf("%v", _m.AnalysisID))
 	builder.WriteString(", ")
 	builder.WriteString("component_relationship_id=")
-	builder.WriteString(fmt.Sprintf("%v", sar.ComponentRelationshipID))
+	builder.WriteString(fmt.Sprintf("%v", _m.ComponentRelationshipID))
 	builder.WriteString(", ")
 	builder.WriteString("description=")
-	builder.WriteString(sar.Description)
+	builder.WriteString(_m.Description)
 	builder.WriteString(", ")
 	builder.WriteString("created_at=")
-	builder.WriteString(sar.CreatedAt.Format(time.ANSIC))
+	builder.WriteString(_m.CreatedAt.Format(time.ANSIC))
 	builder.WriteByte(')')
 	return builder.String()
 }

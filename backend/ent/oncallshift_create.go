@@ -30,165 +30,165 @@ type OncallShiftCreate struct {
 }
 
 // SetTenantID sets the "tenant_id" field.
-func (osc *OncallShiftCreate) SetTenantID(i int) *OncallShiftCreate {
-	osc.mutation.SetTenantID(i)
-	return osc
+func (_c *OncallShiftCreate) SetTenantID(v int) *OncallShiftCreate {
+	_c.mutation.SetTenantID(v)
+	return _c
 }
 
 // SetUserID sets the "user_id" field.
-func (osc *OncallShiftCreate) SetUserID(u uuid.UUID) *OncallShiftCreate {
-	osc.mutation.SetUserID(u)
-	return osc
+func (_c *OncallShiftCreate) SetUserID(v uuid.UUID) *OncallShiftCreate {
+	_c.mutation.SetUserID(v)
+	return _c
 }
 
 // SetRosterID sets the "roster_id" field.
-func (osc *OncallShiftCreate) SetRosterID(u uuid.UUID) *OncallShiftCreate {
-	osc.mutation.SetRosterID(u)
-	return osc
+func (_c *OncallShiftCreate) SetRosterID(v uuid.UUID) *OncallShiftCreate {
+	_c.mutation.SetRosterID(v)
+	return _c
 }
 
 // SetProviderID sets the "provider_id" field.
-func (osc *OncallShiftCreate) SetProviderID(s string) *OncallShiftCreate {
-	osc.mutation.SetProviderID(s)
-	return osc
+func (_c *OncallShiftCreate) SetProviderID(v string) *OncallShiftCreate {
+	_c.mutation.SetProviderID(v)
+	return _c
 }
 
 // SetNillableProviderID sets the "provider_id" field if the given value is not nil.
-func (osc *OncallShiftCreate) SetNillableProviderID(s *string) *OncallShiftCreate {
-	if s != nil {
-		osc.SetProviderID(*s)
+func (_c *OncallShiftCreate) SetNillableProviderID(v *string) *OncallShiftCreate {
+	if v != nil {
+		_c.SetProviderID(*v)
 	}
-	return osc
+	return _c
 }
 
 // SetRole sets the "role" field.
-func (osc *OncallShiftCreate) SetRole(o oncallshift.Role) *OncallShiftCreate {
-	osc.mutation.SetRole(o)
-	return osc
+func (_c *OncallShiftCreate) SetRole(v oncallshift.Role) *OncallShiftCreate {
+	_c.mutation.SetRole(v)
+	return _c
 }
 
 // SetNillableRole sets the "role" field if the given value is not nil.
-func (osc *OncallShiftCreate) SetNillableRole(o *oncallshift.Role) *OncallShiftCreate {
-	if o != nil {
-		osc.SetRole(*o)
+func (_c *OncallShiftCreate) SetNillableRole(v *oncallshift.Role) *OncallShiftCreate {
+	if v != nil {
+		_c.SetRole(*v)
 	}
-	return osc
+	return _c
 }
 
 // SetPrimaryShiftID sets the "primary_shift_id" field.
-func (osc *OncallShiftCreate) SetPrimaryShiftID(u uuid.UUID) *OncallShiftCreate {
-	osc.mutation.SetPrimaryShiftID(u)
-	return osc
+func (_c *OncallShiftCreate) SetPrimaryShiftID(v uuid.UUID) *OncallShiftCreate {
+	_c.mutation.SetPrimaryShiftID(v)
+	return _c
 }
 
 // SetNillablePrimaryShiftID sets the "primary_shift_id" field if the given value is not nil.
-func (osc *OncallShiftCreate) SetNillablePrimaryShiftID(u *uuid.UUID) *OncallShiftCreate {
-	if u != nil {
-		osc.SetPrimaryShiftID(*u)
+func (_c *OncallShiftCreate) SetNillablePrimaryShiftID(v *uuid.UUID) *OncallShiftCreate {
+	if v != nil {
+		_c.SetPrimaryShiftID(*v)
 	}
-	return osc
+	return _c
 }
 
 // SetStartAt sets the "start_at" field.
-func (osc *OncallShiftCreate) SetStartAt(t time.Time) *OncallShiftCreate {
-	osc.mutation.SetStartAt(t)
-	return osc
+func (_c *OncallShiftCreate) SetStartAt(v time.Time) *OncallShiftCreate {
+	_c.mutation.SetStartAt(v)
+	return _c
 }
 
 // SetEndAt sets the "end_at" field.
-func (osc *OncallShiftCreate) SetEndAt(t time.Time) *OncallShiftCreate {
-	osc.mutation.SetEndAt(t)
-	return osc
+func (_c *OncallShiftCreate) SetEndAt(v time.Time) *OncallShiftCreate {
+	_c.mutation.SetEndAt(v)
+	return _c
 }
 
 // SetID sets the "id" field.
-func (osc *OncallShiftCreate) SetID(u uuid.UUID) *OncallShiftCreate {
-	osc.mutation.SetID(u)
-	return osc
+func (_c *OncallShiftCreate) SetID(v uuid.UUID) *OncallShiftCreate {
+	_c.mutation.SetID(v)
+	return _c
 }
 
 // SetNillableID sets the "id" field if the given value is not nil.
-func (osc *OncallShiftCreate) SetNillableID(u *uuid.UUID) *OncallShiftCreate {
-	if u != nil {
-		osc.SetID(*u)
+func (_c *OncallShiftCreate) SetNillableID(v *uuid.UUID) *OncallShiftCreate {
+	if v != nil {
+		_c.SetID(*v)
 	}
-	return osc
+	return _c
 }
 
 // SetTenant sets the "tenant" edge to the Tenant entity.
-func (osc *OncallShiftCreate) SetTenant(t *Tenant) *OncallShiftCreate {
-	return osc.SetTenantID(t.ID)
+func (_c *OncallShiftCreate) SetTenant(v *Tenant) *OncallShiftCreate {
+	return _c.SetTenantID(v.ID)
 }
 
 // SetUser sets the "user" edge to the User entity.
-func (osc *OncallShiftCreate) SetUser(u *User) *OncallShiftCreate {
-	return osc.SetUserID(u.ID)
+func (_c *OncallShiftCreate) SetUser(v *User) *OncallShiftCreate {
+	return _c.SetUserID(v.ID)
 }
 
 // SetRoster sets the "roster" edge to the OncallRoster entity.
-func (osc *OncallShiftCreate) SetRoster(o *OncallRoster) *OncallShiftCreate {
-	return osc.SetRosterID(o.ID)
+func (_c *OncallShiftCreate) SetRoster(v *OncallRoster) *OncallShiftCreate {
+	return _c.SetRosterID(v.ID)
 }
 
 // SetPrimaryShift sets the "primary_shift" edge to the OncallShift entity.
-func (osc *OncallShiftCreate) SetPrimaryShift(o *OncallShift) *OncallShiftCreate {
-	return osc.SetPrimaryShiftID(o.ID)
+func (_c *OncallShiftCreate) SetPrimaryShift(v *OncallShift) *OncallShiftCreate {
+	return _c.SetPrimaryShiftID(v.ID)
 }
 
 // SetHandoverID sets the "handover" edge to the OncallShiftHandover entity by ID.
-func (osc *OncallShiftCreate) SetHandoverID(id uuid.UUID) *OncallShiftCreate {
-	osc.mutation.SetHandoverID(id)
-	return osc
+func (_c *OncallShiftCreate) SetHandoverID(id uuid.UUID) *OncallShiftCreate {
+	_c.mutation.SetHandoverID(id)
+	return _c
 }
 
 // SetNillableHandoverID sets the "handover" edge to the OncallShiftHandover entity by ID if the given value is not nil.
-func (osc *OncallShiftCreate) SetNillableHandoverID(id *uuid.UUID) *OncallShiftCreate {
+func (_c *OncallShiftCreate) SetNillableHandoverID(id *uuid.UUID) *OncallShiftCreate {
 	if id != nil {
-		osc = osc.SetHandoverID(*id)
+		_c = _c.SetHandoverID(*id)
 	}
-	return osc
+	return _c
 }
 
 // SetHandover sets the "handover" edge to the OncallShiftHandover entity.
-func (osc *OncallShiftCreate) SetHandover(o *OncallShiftHandover) *OncallShiftCreate {
-	return osc.SetHandoverID(o.ID)
+func (_c *OncallShiftCreate) SetHandover(v *OncallShiftHandover) *OncallShiftCreate {
+	return _c.SetHandoverID(v.ID)
 }
 
 // SetMetricsID sets the "metrics" edge to the OncallShiftMetrics entity by ID.
-func (osc *OncallShiftCreate) SetMetricsID(id uuid.UUID) *OncallShiftCreate {
-	osc.mutation.SetMetricsID(id)
-	return osc
+func (_c *OncallShiftCreate) SetMetricsID(id uuid.UUID) *OncallShiftCreate {
+	_c.mutation.SetMetricsID(id)
+	return _c
 }
 
 // SetNillableMetricsID sets the "metrics" edge to the OncallShiftMetrics entity by ID if the given value is not nil.
-func (osc *OncallShiftCreate) SetNillableMetricsID(id *uuid.UUID) *OncallShiftCreate {
+func (_c *OncallShiftCreate) SetNillableMetricsID(id *uuid.UUID) *OncallShiftCreate {
 	if id != nil {
-		osc = osc.SetMetricsID(*id)
+		_c = _c.SetMetricsID(*id)
 	}
-	return osc
+	return _c
 }
 
 // SetMetrics sets the "metrics" edge to the OncallShiftMetrics entity.
-func (osc *OncallShiftCreate) SetMetrics(o *OncallShiftMetrics) *OncallShiftCreate {
-	return osc.SetMetricsID(o.ID)
+func (_c *OncallShiftCreate) SetMetrics(v *OncallShiftMetrics) *OncallShiftCreate {
+	return _c.SetMetricsID(v.ID)
 }
 
 // Mutation returns the OncallShiftMutation object of the builder.
-func (osc *OncallShiftCreate) Mutation() *OncallShiftMutation {
-	return osc.mutation
+func (_c *OncallShiftCreate) Mutation() *OncallShiftMutation {
+	return _c.mutation
 }
 
 // Save creates the OncallShift in the database.
-func (osc *OncallShiftCreate) Save(ctx context.Context) (*OncallShift, error) {
-	if err := osc.defaults(); err != nil {
+func (_c *OncallShiftCreate) Save(ctx context.Context) (*OncallShift, error) {
+	if err := _c.defaults(); err != nil {
 		return nil, err
 	}
-	return withHooks(ctx, osc.sqlSave, osc.mutation, osc.hooks)
+	return withHooks(ctx, _c.sqlSave, _c.mutation, _c.hooks)
 }
 
 // SaveX calls Save and panics if Save returns an error.
-func (osc *OncallShiftCreate) SaveX(ctx context.Context) *OncallShift {
-	v, err := osc.Save(ctx)
+func (_c *OncallShiftCreate) SaveX(ctx context.Context) *OncallShift {
+	v, err := _c.Save(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -196,74 +196,74 @@ func (osc *OncallShiftCreate) SaveX(ctx context.Context) *OncallShift {
 }
 
 // Exec executes the query.
-func (osc *OncallShiftCreate) Exec(ctx context.Context) error {
-	_, err := osc.Save(ctx)
+func (_c *OncallShiftCreate) Exec(ctx context.Context) error {
+	_, err := _c.Save(ctx)
 	return err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (osc *OncallShiftCreate) ExecX(ctx context.Context) {
-	if err := osc.Exec(ctx); err != nil {
+func (_c *OncallShiftCreate) ExecX(ctx context.Context) {
+	if err := _c.Exec(ctx); err != nil {
 		panic(err)
 	}
 }
 
 // defaults sets the default values of the builder before save.
-func (osc *OncallShiftCreate) defaults() error {
-	if _, ok := osc.mutation.Role(); !ok {
+func (_c *OncallShiftCreate) defaults() error {
+	if _, ok := _c.mutation.Role(); !ok {
 		v := oncallshift.DefaultRole
-		osc.mutation.SetRole(v)
+		_c.mutation.SetRole(v)
 	}
-	if _, ok := osc.mutation.ID(); !ok {
+	if _, ok := _c.mutation.ID(); !ok {
 		if oncallshift.DefaultID == nil {
 			return fmt.Errorf("ent: uninitialized oncallshift.DefaultID (forgotten import ent/runtime?)")
 		}
 		v := oncallshift.DefaultID()
-		osc.mutation.SetID(v)
+		_c.mutation.SetID(v)
 	}
 	return nil
 }
 
 // check runs all checks and user-defined validators on the builder.
-func (osc *OncallShiftCreate) check() error {
-	if _, ok := osc.mutation.TenantID(); !ok {
+func (_c *OncallShiftCreate) check() error {
+	if _, ok := _c.mutation.TenantID(); !ok {
 		return &ValidationError{Name: "tenant_id", err: errors.New(`ent: missing required field "OncallShift.tenant_id"`)}
 	}
-	if _, ok := osc.mutation.UserID(); !ok {
+	if _, ok := _c.mutation.UserID(); !ok {
 		return &ValidationError{Name: "user_id", err: errors.New(`ent: missing required field "OncallShift.user_id"`)}
 	}
-	if _, ok := osc.mutation.RosterID(); !ok {
+	if _, ok := _c.mutation.RosterID(); !ok {
 		return &ValidationError{Name: "roster_id", err: errors.New(`ent: missing required field "OncallShift.roster_id"`)}
 	}
-	if v, ok := osc.mutation.Role(); ok {
+	if v, ok := _c.mutation.Role(); ok {
 		if err := oncallshift.RoleValidator(v); err != nil {
 			return &ValidationError{Name: "role", err: fmt.Errorf(`ent: validator failed for field "OncallShift.role": %w`, err)}
 		}
 	}
-	if _, ok := osc.mutation.StartAt(); !ok {
+	if _, ok := _c.mutation.StartAt(); !ok {
 		return &ValidationError{Name: "start_at", err: errors.New(`ent: missing required field "OncallShift.start_at"`)}
 	}
-	if _, ok := osc.mutation.EndAt(); !ok {
+	if _, ok := _c.mutation.EndAt(); !ok {
 		return &ValidationError{Name: "end_at", err: errors.New(`ent: missing required field "OncallShift.end_at"`)}
 	}
-	if len(osc.mutation.TenantIDs()) == 0 {
+	if len(_c.mutation.TenantIDs()) == 0 {
 		return &ValidationError{Name: "tenant", err: errors.New(`ent: missing required edge "OncallShift.tenant"`)}
 	}
-	if len(osc.mutation.UserIDs()) == 0 {
+	if len(_c.mutation.UserIDs()) == 0 {
 		return &ValidationError{Name: "user", err: errors.New(`ent: missing required edge "OncallShift.user"`)}
 	}
-	if len(osc.mutation.RosterIDs()) == 0 {
+	if len(_c.mutation.RosterIDs()) == 0 {
 		return &ValidationError{Name: "roster", err: errors.New(`ent: missing required edge "OncallShift.roster"`)}
 	}
 	return nil
 }
 
-func (osc *OncallShiftCreate) sqlSave(ctx context.Context) (*OncallShift, error) {
-	if err := osc.check(); err != nil {
+func (_c *OncallShiftCreate) sqlSave(ctx context.Context) (*OncallShift, error) {
+	if err := _c.check(); err != nil {
 		return nil, err
 	}
-	_node, _spec := osc.createSpec()
-	if err := sqlgraph.CreateNode(ctx, osc.driver, _spec); err != nil {
+	_node, _spec := _c.createSpec()
+	if err := sqlgraph.CreateNode(ctx, _c.driver, _spec); err != nil {
 		if sqlgraph.IsConstraintError(err) {
 			err = &ConstraintError{msg: err.Error(), wrap: err}
 		}
@@ -276,38 +276,38 @@ func (osc *OncallShiftCreate) sqlSave(ctx context.Context) (*OncallShift, error)
 			return nil, err
 		}
 	}
-	osc.mutation.id = &_node.ID
-	osc.mutation.done = true
+	_c.mutation.id = &_node.ID
+	_c.mutation.done = true
 	return _node, nil
 }
 
-func (osc *OncallShiftCreate) createSpec() (*OncallShift, *sqlgraph.CreateSpec) {
+func (_c *OncallShiftCreate) createSpec() (*OncallShift, *sqlgraph.CreateSpec) {
 	var (
-		_node = &OncallShift{config: osc.config}
+		_node = &OncallShift{config: _c.config}
 		_spec = sqlgraph.NewCreateSpec(oncallshift.Table, sqlgraph.NewFieldSpec(oncallshift.FieldID, field.TypeUUID))
 	)
-	_spec.OnConflict = osc.conflict
-	if id, ok := osc.mutation.ID(); ok {
+	_spec.OnConflict = _c.conflict
+	if id, ok := _c.mutation.ID(); ok {
 		_node.ID = id
 		_spec.ID.Value = &id
 	}
-	if value, ok := osc.mutation.ProviderID(); ok {
+	if value, ok := _c.mutation.ProviderID(); ok {
 		_spec.SetField(oncallshift.FieldProviderID, field.TypeString, value)
 		_node.ProviderID = value
 	}
-	if value, ok := osc.mutation.Role(); ok {
+	if value, ok := _c.mutation.Role(); ok {
 		_spec.SetField(oncallshift.FieldRole, field.TypeEnum, value)
 		_node.Role = value
 	}
-	if value, ok := osc.mutation.StartAt(); ok {
+	if value, ok := _c.mutation.StartAt(); ok {
 		_spec.SetField(oncallshift.FieldStartAt, field.TypeTime, value)
 		_node.StartAt = value
 	}
-	if value, ok := osc.mutation.EndAt(); ok {
+	if value, ok := _c.mutation.EndAt(); ok {
 		_spec.SetField(oncallshift.FieldEndAt, field.TypeTime, value)
 		_node.EndAt = value
 	}
-	if nodes := osc.mutation.TenantIDs(); len(nodes) > 0 {
+	if nodes := _c.mutation.TenantIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
@@ -324,7 +324,7 @@ func (osc *OncallShiftCreate) createSpec() (*OncallShift, *sqlgraph.CreateSpec) 
 		_node.TenantID = nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
-	if nodes := osc.mutation.UserIDs(); len(nodes) > 0 {
+	if nodes := _c.mutation.UserIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
@@ -341,7 +341,7 @@ func (osc *OncallShiftCreate) createSpec() (*OncallShift, *sqlgraph.CreateSpec) 
 		_node.UserID = nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
-	if nodes := osc.mutation.RosterIDs(); len(nodes) > 0 {
+	if nodes := _c.mutation.RosterIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
@@ -358,7 +358,7 @@ func (osc *OncallShiftCreate) createSpec() (*OncallShift, *sqlgraph.CreateSpec) 
 		_node.RosterID = nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
-	if nodes := osc.mutation.PrimaryShiftIDs(); len(nodes) > 0 {
+	if nodes := _c.mutation.PrimaryShiftIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2O,
 			Inverse: false,
@@ -375,7 +375,7 @@ func (osc *OncallShiftCreate) createSpec() (*OncallShift, *sqlgraph.CreateSpec) 
 		_node.PrimaryShiftID = nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
-	if nodes := osc.mutation.HandoverIDs(); len(nodes) > 0 {
+	if nodes := _c.mutation.HandoverIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2O,
 			Inverse: false,
@@ -391,7 +391,7 @@ func (osc *OncallShiftCreate) createSpec() (*OncallShift, *sqlgraph.CreateSpec) 
 		}
 		_spec.Edges = append(_spec.Edges, edge)
 	}
-	if nodes := osc.mutation.MetricsIDs(); len(nodes) > 0 {
+	if nodes := _c.mutation.MetricsIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2O,
 			Inverse: false,
@@ -426,10 +426,10 @@ func (osc *OncallShiftCreate) createSpec() (*OncallShift, *sqlgraph.CreateSpec) 
 //			SetTenantID(v+v).
 //		}).
 //		Exec(ctx)
-func (osc *OncallShiftCreate) OnConflict(opts ...sql.ConflictOption) *OncallShiftUpsertOne {
-	osc.conflict = opts
+func (_c *OncallShiftCreate) OnConflict(opts ...sql.ConflictOption) *OncallShiftUpsertOne {
+	_c.conflict = opts
 	return &OncallShiftUpsertOne{
-		create: osc,
+		create: _c,
 	}
 }
 
@@ -439,10 +439,10 @@ func (osc *OncallShiftCreate) OnConflict(opts ...sql.ConflictOption) *OncallShif
 //	client.OncallShift.Create().
 //		OnConflict(sql.ConflictColumns(columns...)).
 //		Exec(ctx)
-func (osc *OncallShiftCreate) OnConflictColumns(columns ...string) *OncallShiftUpsertOne {
-	osc.conflict = append(osc.conflict, sql.ConflictColumns(columns...))
+func (_c *OncallShiftCreate) OnConflictColumns(columns ...string) *OncallShiftUpsertOne {
+	_c.conflict = append(_c.conflict, sql.ConflictColumns(columns...))
 	return &OncallShiftUpsertOne{
-		create: osc,
+		create: _c,
 	}
 }
 
@@ -778,16 +778,16 @@ type OncallShiftCreateBulk struct {
 }
 
 // Save creates the OncallShift entities in the database.
-func (oscb *OncallShiftCreateBulk) Save(ctx context.Context) ([]*OncallShift, error) {
-	if oscb.err != nil {
-		return nil, oscb.err
+func (_c *OncallShiftCreateBulk) Save(ctx context.Context) ([]*OncallShift, error) {
+	if _c.err != nil {
+		return nil, _c.err
 	}
-	specs := make([]*sqlgraph.CreateSpec, len(oscb.builders))
-	nodes := make([]*OncallShift, len(oscb.builders))
-	mutators := make([]Mutator, len(oscb.builders))
-	for i := range oscb.builders {
+	specs := make([]*sqlgraph.CreateSpec, len(_c.builders))
+	nodes := make([]*OncallShift, len(_c.builders))
+	mutators := make([]Mutator, len(_c.builders))
+	for i := range _c.builders {
 		func(i int, root context.Context) {
-			builder := oscb.builders[i]
+			builder := _c.builders[i]
 			builder.defaults()
 			var mut Mutator = MutateFunc(func(ctx context.Context, m Mutation) (Value, error) {
 				mutation, ok := m.(*OncallShiftMutation)
@@ -801,12 +801,12 @@ func (oscb *OncallShiftCreateBulk) Save(ctx context.Context) ([]*OncallShift, er
 				var err error
 				nodes[i], specs[i] = builder.createSpec()
 				if i < len(mutators)-1 {
-					_, err = mutators[i+1].Mutate(root, oscb.builders[i+1].mutation)
+					_, err = mutators[i+1].Mutate(root, _c.builders[i+1].mutation)
 				} else {
 					spec := &sqlgraph.BatchCreateSpec{Nodes: specs}
-					spec.OnConflict = oscb.conflict
+					spec.OnConflict = _c.conflict
 					// Invoke the actual operation on the latest mutation in the chain.
-					if err = sqlgraph.BatchCreate(ctx, oscb.driver, spec); err != nil {
+					if err = sqlgraph.BatchCreate(ctx, _c.driver, spec); err != nil {
 						if sqlgraph.IsConstraintError(err) {
 							err = &ConstraintError{msg: err.Error(), wrap: err}
 						}
@@ -826,7 +826,7 @@ func (oscb *OncallShiftCreateBulk) Save(ctx context.Context) ([]*OncallShift, er
 		}(i, ctx)
 	}
 	if len(mutators) > 0 {
-		if _, err := mutators[0].Mutate(ctx, oscb.builders[0].mutation); err != nil {
+		if _, err := mutators[0].Mutate(ctx, _c.builders[0].mutation); err != nil {
 			return nil, err
 		}
 	}
@@ -834,8 +834,8 @@ func (oscb *OncallShiftCreateBulk) Save(ctx context.Context) ([]*OncallShift, er
 }
 
 // SaveX is like Save, but panics if an error occurs.
-func (oscb *OncallShiftCreateBulk) SaveX(ctx context.Context) []*OncallShift {
-	v, err := oscb.Save(ctx)
+func (_c *OncallShiftCreateBulk) SaveX(ctx context.Context) []*OncallShift {
+	v, err := _c.Save(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -843,14 +843,14 @@ func (oscb *OncallShiftCreateBulk) SaveX(ctx context.Context) []*OncallShift {
 }
 
 // Exec executes the query.
-func (oscb *OncallShiftCreateBulk) Exec(ctx context.Context) error {
-	_, err := oscb.Save(ctx)
+func (_c *OncallShiftCreateBulk) Exec(ctx context.Context) error {
+	_, err := _c.Save(ctx)
 	return err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (oscb *OncallShiftCreateBulk) ExecX(ctx context.Context) {
-	if err := oscb.Exec(ctx); err != nil {
+func (_c *OncallShiftCreateBulk) ExecX(ctx context.Context) {
+	if err := _c.Exec(ctx); err != nil {
 		panic(err)
 	}
 }
@@ -870,10 +870,10 @@ func (oscb *OncallShiftCreateBulk) ExecX(ctx context.Context) {
 //			SetTenantID(v+v).
 //		}).
 //		Exec(ctx)
-func (oscb *OncallShiftCreateBulk) OnConflict(opts ...sql.ConflictOption) *OncallShiftUpsertBulk {
-	oscb.conflict = opts
+func (_c *OncallShiftCreateBulk) OnConflict(opts ...sql.ConflictOption) *OncallShiftUpsertBulk {
+	_c.conflict = opts
 	return &OncallShiftUpsertBulk{
-		create: oscb,
+		create: _c,
 	}
 }
 
@@ -883,10 +883,10 @@ func (oscb *OncallShiftCreateBulk) OnConflict(opts ...sql.ConflictOption) *Oncal
 //	client.OncallShift.Create().
 //		OnConflict(sql.ConflictColumns(columns...)).
 //		Exec(ctx)
-func (oscb *OncallShiftCreateBulk) OnConflictColumns(columns ...string) *OncallShiftUpsertBulk {
-	oscb.conflict = append(oscb.conflict, sql.ConflictColumns(columns...))
+func (_c *OncallShiftCreateBulk) OnConflictColumns(columns ...string) *OncallShiftUpsertBulk {
+	_c.conflict = append(_c.conflict, sql.ConflictColumns(columns...))
 	return &OncallShiftUpsertBulk{
-		create: oscb,
+		create: _c,
 	}
 }
 

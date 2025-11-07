@@ -85,7 +85,7 @@ func (*Playbook) scanValues(columns []string) ([]any, error) {
 
 // assignValues assigns the values that were returned from sql.Rows (after scanning)
 // to the Playbook fields.
-func (pl *Playbook) assignValues(columns []string, values []any) error {
+func (_m *Playbook) assignValues(columns []string, values []any) error {
 	if m, n := len(values), len(columns); m < n {
 		return fmt.Errorf("mismatch number of scan values: %d != %d", m, n)
 	}
@@ -95,34 +95,34 @@ func (pl *Playbook) assignValues(columns []string, values []any) error {
 			if value, ok := values[i].(*uuid.UUID); !ok {
 				return fmt.Errorf("unexpected type %T for field id", values[i])
 			} else if value != nil {
-				pl.ID = *value
+				_m.ID = *value
 			}
 		case playbook.FieldTenantID:
 			if value, ok := values[i].(*sql.NullInt64); !ok {
 				return fmt.Errorf("unexpected type %T for field tenant_id", values[i])
 			} else if value.Valid {
-				pl.TenantID = int(value.Int64)
+				_m.TenantID = int(value.Int64)
 			}
 		case playbook.FieldTitle:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field title", values[i])
 			} else if value.Valid {
-				pl.Title = value.String
+				_m.Title = value.String
 			}
 		case playbook.FieldProviderID:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field provider_id", values[i])
 			} else if value.Valid {
-				pl.ProviderID = value.String
+				_m.ProviderID = value.String
 			}
 		case playbook.FieldContent:
 			if value, ok := values[i].(*[]byte); !ok {
 				return fmt.Errorf("unexpected type %T for field content", values[i])
 			} else if value != nil {
-				pl.Content = *value
+				_m.Content = *value
 			}
 		default:
-			pl.selectValues.Set(columns[i], values[i])
+			_m.selectValues.Set(columns[i], values[i])
 		}
 	}
 	return nil
@@ -130,54 +130,54 @@ func (pl *Playbook) assignValues(columns []string, values []any) error {
 
 // Value returns the ent.Value that was dynamically selected and assigned to the Playbook.
 // This includes values selected through modifiers, order, etc.
-func (pl *Playbook) Value(name string) (ent.Value, error) {
-	return pl.selectValues.Get(name)
+func (_m *Playbook) Value(name string) (ent.Value, error) {
+	return _m.selectValues.Get(name)
 }
 
 // QueryTenant queries the "tenant" edge of the Playbook entity.
-func (pl *Playbook) QueryTenant() *TenantQuery {
-	return NewPlaybookClient(pl.config).QueryTenant(pl)
+func (_m *Playbook) QueryTenant() *TenantQuery {
+	return NewPlaybookClient(_m.config).QueryTenant(_m)
 }
 
 // QueryAlerts queries the "alerts" edge of the Playbook entity.
-func (pl *Playbook) QueryAlerts() *AlertQuery {
-	return NewPlaybookClient(pl.config).QueryAlerts(pl)
+func (_m *Playbook) QueryAlerts() *AlertQuery {
+	return NewPlaybookClient(_m.config).QueryAlerts(_m)
 }
 
 // Update returns a builder for updating this Playbook.
 // Note that you need to call Playbook.Unwrap() before calling this method if this Playbook
 // was returned from a transaction, and the transaction was committed or rolled back.
-func (pl *Playbook) Update() *PlaybookUpdateOne {
-	return NewPlaybookClient(pl.config).UpdateOne(pl)
+func (_m *Playbook) Update() *PlaybookUpdateOne {
+	return NewPlaybookClient(_m.config).UpdateOne(_m)
 }
 
 // Unwrap unwraps the Playbook entity that was returned from a transaction after it was closed,
 // so that all future queries will be executed through the driver which created the transaction.
-func (pl *Playbook) Unwrap() *Playbook {
-	_tx, ok := pl.config.driver.(*txDriver)
+func (_m *Playbook) Unwrap() *Playbook {
+	_tx, ok := _m.config.driver.(*txDriver)
 	if !ok {
 		panic("ent: Playbook is not a transactional entity")
 	}
-	pl.config.driver = _tx.drv
-	return pl
+	_m.config.driver = _tx.drv
+	return _m
 }
 
 // String implements the fmt.Stringer.
-func (pl *Playbook) String() string {
+func (_m *Playbook) String() string {
 	var builder strings.Builder
 	builder.WriteString("Playbook(")
-	builder.WriteString(fmt.Sprintf("id=%v, ", pl.ID))
+	builder.WriteString(fmt.Sprintf("id=%v, ", _m.ID))
 	builder.WriteString("tenant_id=")
-	builder.WriteString(fmt.Sprintf("%v", pl.TenantID))
+	builder.WriteString(fmt.Sprintf("%v", _m.TenantID))
 	builder.WriteString(", ")
 	builder.WriteString("title=")
-	builder.WriteString(pl.Title)
+	builder.WriteString(_m.Title)
 	builder.WriteString(", ")
 	builder.WriteString("provider_id=")
-	builder.WriteString(pl.ProviderID)
+	builder.WriteString(_m.ProviderID)
 	builder.WriteString(", ")
 	builder.WriteString("content=")
-	builder.WriteString(fmt.Sprintf("%v", pl.Content))
+	builder.WriteString(fmt.Sprintf("%v", _m.Content))
 	builder.WriteByte(')')
 	return builder.String()
 }

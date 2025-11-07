@@ -28,124 +28,124 @@ type SystemAnalysisComponentCreate struct {
 }
 
 // SetTenantID sets the "tenant_id" field.
-func (sacc *SystemAnalysisComponentCreate) SetTenantID(i int) *SystemAnalysisComponentCreate {
-	sacc.mutation.SetTenantID(i)
-	return sacc
+func (_c *SystemAnalysisComponentCreate) SetTenantID(v int) *SystemAnalysisComponentCreate {
+	_c.mutation.SetTenantID(v)
+	return _c
 }
 
 // SetAnalysisID sets the "analysis_id" field.
-func (sacc *SystemAnalysisComponentCreate) SetAnalysisID(u uuid.UUID) *SystemAnalysisComponentCreate {
-	sacc.mutation.SetAnalysisID(u)
-	return sacc
+func (_c *SystemAnalysisComponentCreate) SetAnalysisID(v uuid.UUID) *SystemAnalysisComponentCreate {
+	_c.mutation.SetAnalysisID(v)
+	return _c
 }
 
 // SetComponentID sets the "component_id" field.
-func (sacc *SystemAnalysisComponentCreate) SetComponentID(u uuid.UUID) *SystemAnalysisComponentCreate {
-	sacc.mutation.SetComponentID(u)
-	return sacc
+func (_c *SystemAnalysisComponentCreate) SetComponentID(v uuid.UUID) *SystemAnalysisComponentCreate {
+	_c.mutation.SetComponentID(v)
+	return _c
 }
 
 // SetDescription sets the "description" field.
-func (sacc *SystemAnalysisComponentCreate) SetDescription(s string) *SystemAnalysisComponentCreate {
-	sacc.mutation.SetDescription(s)
-	return sacc
+func (_c *SystemAnalysisComponentCreate) SetDescription(v string) *SystemAnalysisComponentCreate {
+	_c.mutation.SetDescription(v)
+	return _c
 }
 
 // SetNillableDescription sets the "description" field if the given value is not nil.
-func (sacc *SystemAnalysisComponentCreate) SetNillableDescription(s *string) *SystemAnalysisComponentCreate {
-	if s != nil {
-		sacc.SetDescription(*s)
+func (_c *SystemAnalysisComponentCreate) SetNillableDescription(v *string) *SystemAnalysisComponentCreate {
+	if v != nil {
+		_c.SetDescription(*v)
 	}
-	return sacc
+	return _c
 }
 
 // SetPosX sets the "pos_x" field.
-func (sacc *SystemAnalysisComponentCreate) SetPosX(f float64) *SystemAnalysisComponentCreate {
-	sacc.mutation.SetPosX(f)
-	return sacc
+func (_c *SystemAnalysisComponentCreate) SetPosX(v float64) *SystemAnalysisComponentCreate {
+	_c.mutation.SetPosX(v)
+	return _c
 }
 
 // SetNillablePosX sets the "pos_x" field if the given value is not nil.
-func (sacc *SystemAnalysisComponentCreate) SetNillablePosX(f *float64) *SystemAnalysisComponentCreate {
-	if f != nil {
-		sacc.SetPosX(*f)
+func (_c *SystemAnalysisComponentCreate) SetNillablePosX(v *float64) *SystemAnalysisComponentCreate {
+	if v != nil {
+		_c.SetPosX(*v)
 	}
-	return sacc
+	return _c
 }
 
 // SetPosY sets the "pos_y" field.
-func (sacc *SystemAnalysisComponentCreate) SetPosY(f float64) *SystemAnalysisComponentCreate {
-	sacc.mutation.SetPosY(f)
-	return sacc
+func (_c *SystemAnalysisComponentCreate) SetPosY(v float64) *SystemAnalysisComponentCreate {
+	_c.mutation.SetPosY(v)
+	return _c
 }
 
 // SetNillablePosY sets the "pos_y" field if the given value is not nil.
-func (sacc *SystemAnalysisComponentCreate) SetNillablePosY(f *float64) *SystemAnalysisComponentCreate {
-	if f != nil {
-		sacc.SetPosY(*f)
+func (_c *SystemAnalysisComponentCreate) SetNillablePosY(v *float64) *SystemAnalysisComponentCreate {
+	if v != nil {
+		_c.SetPosY(*v)
 	}
-	return sacc
+	return _c
 }
 
 // SetCreatedAt sets the "created_at" field.
-func (sacc *SystemAnalysisComponentCreate) SetCreatedAt(t time.Time) *SystemAnalysisComponentCreate {
-	sacc.mutation.SetCreatedAt(t)
-	return sacc
+func (_c *SystemAnalysisComponentCreate) SetCreatedAt(v time.Time) *SystemAnalysisComponentCreate {
+	_c.mutation.SetCreatedAt(v)
+	return _c
 }
 
 // SetNillableCreatedAt sets the "created_at" field if the given value is not nil.
-func (sacc *SystemAnalysisComponentCreate) SetNillableCreatedAt(t *time.Time) *SystemAnalysisComponentCreate {
-	if t != nil {
-		sacc.SetCreatedAt(*t)
+func (_c *SystemAnalysisComponentCreate) SetNillableCreatedAt(v *time.Time) *SystemAnalysisComponentCreate {
+	if v != nil {
+		_c.SetCreatedAt(*v)
 	}
-	return sacc
+	return _c
 }
 
 // SetID sets the "id" field.
-func (sacc *SystemAnalysisComponentCreate) SetID(u uuid.UUID) *SystemAnalysisComponentCreate {
-	sacc.mutation.SetID(u)
-	return sacc
+func (_c *SystemAnalysisComponentCreate) SetID(v uuid.UUID) *SystemAnalysisComponentCreate {
+	_c.mutation.SetID(v)
+	return _c
 }
 
 // SetNillableID sets the "id" field if the given value is not nil.
-func (sacc *SystemAnalysisComponentCreate) SetNillableID(u *uuid.UUID) *SystemAnalysisComponentCreate {
-	if u != nil {
-		sacc.SetID(*u)
+func (_c *SystemAnalysisComponentCreate) SetNillableID(v *uuid.UUID) *SystemAnalysisComponentCreate {
+	if v != nil {
+		_c.SetID(*v)
 	}
-	return sacc
+	return _c
 }
 
 // SetTenant sets the "tenant" edge to the Tenant entity.
-func (sacc *SystemAnalysisComponentCreate) SetTenant(t *Tenant) *SystemAnalysisComponentCreate {
-	return sacc.SetTenantID(t.ID)
+func (_c *SystemAnalysisComponentCreate) SetTenant(v *Tenant) *SystemAnalysisComponentCreate {
+	return _c.SetTenantID(v.ID)
 }
 
 // SetAnalysis sets the "analysis" edge to the SystemAnalysis entity.
-func (sacc *SystemAnalysisComponentCreate) SetAnalysis(s *SystemAnalysis) *SystemAnalysisComponentCreate {
-	return sacc.SetAnalysisID(s.ID)
+func (_c *SystemAnalysisComponentCreate) SetAnalysis(v *SystemAnalysis) *SystemAnalysisComponentCreate {
+	return _c.SetAnalysisID(v.ID)
 }
 
 // SetComponent sets the "component" edge to the SystemComponent entity.
-func (sacc *SystemAnalysisComponentCreate) SetComponent(s *SystemComponent) *SystemAnalysisComponentCreate {
-	return sacc.SetComponentID(s.ID)
+func (_c *SystemAnalysisComponentCreate) SetComponent(v *SystemComponent) *SystemAnalysisComponentCreate {
+	return _c.SetComponentID(v.ID)
 }
 
 // Mutation returns the SystemAnalysisComponentMutation object of the builder.
-func (sacc *SystemAnalysisComponentCreate) Mutation() *SystemAnalysisComponentMutation {
-	return sacc.mutation
+func (_c *SystemAnalysisComponentCreate) Mutation() *SystemAnalysisComponentMutation {
+	return _c.mutation
 }
 
 // Save creates the SystemAnalysisComponent in the database.
-func (sacc *SystemAnalysisComponentCreate) Save(ctx context.Context) (*SystemAnalysisComponent, error) {
-	if err := sacc.defaults(); err != nil {
+func (_c *SystemAnalysisComponentCreate) Save(ctx context.Context) (*SystemAnalysisComponent, error) {
+	if err := _c.defaults(); err != nil {
 		return nil, err
 	}
-	return withHooks(ctx, sacc.sqlSave, sacc.mutation, sacc.hooks)
+	return withHooks(ctx, _c.sqlSave, _c.mutation, _c.hooks)
 }
 
 // SaveX calls Save and panics if Save returns an error.
-func (sacc *SystemAnalysisComponentCreate) SaveX(ctx context.Context) *SystemAnalysisComponent {
-	v, err := sacc.Save(ctx)
+func (_c *SystemAnalysisComponentCreate) SaveX(ctx context.Context) *SystemAnalysisComponent {
+	v, err := _c.Save(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -153,83 +153,83 @@ func (sacc *SystemAnalysisComponentCreate) SaveX(ctx context.Context) *SystemAna
 }
 
 // Exec executes the query.
-func (sacc *SystemAnalysisComponentCreate) Exec(ctx context.Context) error {
-	_, err := sacc.Save(ctx)
+func (_c *SystemAnalysisComponentCreate) Exec(ctx context.Context) error {
+	_, err := _c.Save(ctx)
 	return err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (sacc *SystemAnalysisComponentCreate) ExecX(ctx context.Context) {
-	if err := sacc.Exec(ctx); err != nil {
+func (_c *SystemAnalysisComponentCreate) ExecX(ctx context.Context) {
+	if err := _c.Exec(ctx); err != nil {
 		panic(err)
 	}
 }
 
 // defaults sets the default values of the builder before save.
-func (sacc *SystemAnalysisComponentCreate) defaults() error {
-	if _, ok := sacc.mutation.PosX(); !ok {
+func (_c *SystemAnalysisComponentCreate) defaults() error {
+	if _, ok := _c.mutation.PosX(); !ok {
 		v := systemanalysiscomponent.DefaultPosX
-		sacc.mutation.SetPosX(v)
+		_c.mutation.SetPosX(v)
 	}
-	if _, ok := sacc.mutation.PosY(); !ok {
+	if _, ok := _c.mutation.PosY(); !ok {
 		v := systemanalysiscomponent.DefaultPosY
-		sacc.mutation.SetPosY(v)
+		_c.mutation.SetPosY(v)
 	}
-	if _, ok := sacc.mutation.CreatedAt(); !ok {
+	if _, ok := _c.mutation.CreatedAt(); !ok {
 		if systemanalysiscomponent.DefaultCreatedAt == nil {
 			return fmt.Errorf("ent: uninitialized systemanalysiscomponent.DefaultCreatedAt (forgotten import ent/runtime?)")
 		}
 		v := systemanalysiscomponent.DefaultCreatedAt()
-		sacc.mutation.SetCreatedAt(v)
+		_c.mutation.SetCreatedAt(v)
 	}
-	if _, ok := sacc.mutation.ID(); !ok {
+	if _, ok := _c.mutation.ID(); !ok {
 		if systemanalysiscomponent.DefaultID == nil {
 			return fmt.Errorf("ent: uninitialized systemanalysiscomponent.DefaultID (forgotten import ent/runtime?)")
 		}
 		v := systemanalysiscomponent.DefaultID()
-		sacc.mutation.SetID(v)
+		_c.mutation.SetID(v)
 	}
 	return nil
 }
 
 // check runs all checks and user-defined validators on the builder.
-func (sacc *SystemAnalysisComponentCreate) check() error {
-	if _, ok := sacc.mutation.TenantID(); !ok {
+func (_c *SystemAnalysisComponentCreate) check() error {
+	if _, ok := _c.mutation.TenantID(); !ok {
 		return &ValidationError{Name: "tenant_id", err: errors.New(`ent: missing required field "SystemAnalysisComponent.tenant_id"`)}
 	}
-	if _, ok := sacc.mutation.AnalysisID(); !ok {
+	if _, ok := _c.mutation.AnalysisID(); !ok {
 		return &ValidationError{Name: "analysis_id", err: errors.New(`ent: missing required field "SystemAnalysisComponent.analysis_id"`)}
 	}
-	if _, ok := sacc.mutation.ComponentID(); !ok {
+	if _, ok := _c.mutation.ComponentID(); !ok {
 		return &ValidationError{Name: "component_id", err: errors.New(`ent: missing required field "SystemAnalysisComponent.component_id"`)}
 	}
-	if _, ok := sacc.mutation.PosX(); !ok {
+	if _, ok := _c.mutation.PosX(); !ok {
 		return &ValidationError{Name: "pos_x", err: errors.New(`ent: missing required field "SystemAnalysisComponent.pos_x"`)}
 	}
-	if _, ok := sacc.mutation.PosY(); !ok {
+	if _, ok := _c.mutation.PosY(); !ok {
 		return &ValidationError{Name: "pos_y", err: errors.New(`ent: missing required field "SystemAnalysisComponent.pos_y"`)}
 	}
-	if _, ok := sacc.mutation.CreatedAt(); !ok {
+	if _, ok := _c.mutation.CreatedAt(); !ok {
 		return &ValidationError{Name: "created_at", err: errors.New(`ent: missing required field "SystemAnalysisComponent.created_at"`)}
 	}
-	if len(sacc.mutation.TenantIDs()) == 0 {
+	if len(_c.mutation.TenantIDs()) == 0 {
 		return &ValidationError{Name: "tenant", err: errors.New(`ent: missing required edge "SystemAnalysisComponent.tenant"`)}
 	}
-	if len(sacc.mutation.AnalysisIDs()) == 0 {
+	if len(_c.mutation.AnalysisIDs()) == 0 {
 		return &ValidationError{Name: "analysis", err: errors.New(`ent: missing required edge "SystemAnalysisComponent.analysis"`)}
 	}
-	if len(sacc.mutation.ComponentIDs()) == 0 {
+	if len(_c.mutation.ComponentIDs()) == 0 {
 		return &ValidationError{Name: "component", err: errors.New(`ent: missing required edge "SystemAnalysisComponent.component"`)}
 	}
 	return nil
 }
 
-func (sacc *SystemAnalysisComponentCreate) sqlSave(ctx context.Context) (*SystemAnalysisComponent, error) {
-	if err := sacc.check(); err != nil {
+func (_c *SystemAnalysisComponentCreate) sqlSave(ctx context.Context) (*SystemAnalysisComponent, error) {
+	if err := _c.check(); err != nil {
 		return nil, err
 	}
-	_node, _spec := sacc.createSpec()
-	if err := sqlgraph.CreateNode(ctx, sacc.driver, _spec); err != nil {
+	_node, _spec := _c.createSpec()
+	if err := sqlgraph.CreateNode(ctx, _c.driver, _spec); err != nil {
 		if sqlgraph.IsConstraintError(err) {
 			err = &ConstraintError{msg: err.Error(), wrap: err}
 		}
@@ -242,38 +242,38 @@ func (sacc *SystemAnalysisComponentCreate) sqlSave(ctx context.Context) (*System
 			return nil, err
 		}
 	}
-	sacc.mutation.id = &_node.ID
-	sacc.mutation.done = true
+	_c.mutation.id = &_node.ID
+	_c.mutation.done = true
 	return _node, nil
 }
 
-func (sacc *SystemAnalysisComponentCreate) createSpec() (*SystemAnalysisComponent, *sqlgraph.CreateSpec) {
+func (_c *SystemAnalysisComponentCreate) createSpec() (*SystemAnalysisComponent, *sqlgraph.CreateSpec) {
 	var (
-		_node = &SystemAnalysisComponent{config: sacc.config}
+		_node = &SystemAnalysisComponent{config: _c.config}
 		_spec = sqlgraph.NewCreateSpec(systemanalysiscomponent.Table, sqlgraph.NewFieldSpec(systemanalysiscomponent.FieldID, field.TypeUUID))
 	)
-	_spec.OnConflict = sacc.conflict
-	if id, ok := sacc.mutation.ID(); ok {
+	_spec.OnConflict = _c.conflict
+	if id, ok := _c.mutation.ID(); ok {
 		_node.ID = id
 		_spec.ID.Value = &id
 	}
-	if value, ok := sacc.mutation.Description(); ok {
+	if value, ok := _c.mutation.Description(); ok {
 		_spec.SetField(systemanalysiscomponent.FieldDescription, field.TypeString, value)
 		_node.Description = value
 	}
-	if value, ok := sacc.mutation.PosX(); ok {
+	if value, ok := _c.mutation.PosX(); ok {
 		_spec.SetField(systemanalysiscomponent.FieldPosX, field.TypeFloat64, value)
 		_node.PosX = value
 	}
-	if value, ok := sacc.mutation.PosY(); ok {
+	if value, ok := _c.mutation.PosY(); ok {
 		_spec.SetField(systemanalysiscomponent.FieldPosY, field.TypeFloat64, value)
 		_node.PosY = value
 	}
-	if value, ok := sacc.mutation.CreatedAt(); ok {
+	if value, ok := _c.mutation.CreatedAt(); ok {
 		_spec.SetField(systemanalysiscomponent.FieldCreatedAt, field.TypeTime, value)
 		_node.CreatedAt = value
 	}
-	if nodes := sacc.mutation.TenantIDs(); len(nodes) > 0 {
+	if nodes := _c.mutation.TenantIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
@@ -290,7 +290,7 @@ func (sacc *SystemAnalysisComponentCreate) createSpec() (*SystemAnalysisComponen
 		_node.TenantID = nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
-	if nodes := sacc.mutation.AnalysisIDs(); len(nodes) > 0 {
+	if nodes := _c.mutation.AnalysisIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
@@ -307,7 +307,7 @@ func (sacc *SystemAnalysisComponentCreate) createSpec() (*SystemAnalysisComponen
 		_node.AnalysisID = nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
-	if nodes := sacc.mutation.ComponentIDs(); len(nodes) > 0 {
+	if nodes := _c.mutation.ComponentIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
@@ -343,10 +343,10 @@ func (sacc *SystemAnalysisComponentCreate) createSpec() (*SystemAnalysisComponen
 //			SetTenantID(v+v).
 //		}).
 //		Exec(ctx)
-func (sacc *SystemAnalysisComponentCreate) OnConflict(opts ...sql.ConflictOption) *SystemAnalysisComponentUpsertOne {
-	sacc.conflict = opts
+func (_c *SystemAnalysisComponentCreate) OnConflict(opts ...sql.ConflictOption) *SystemAnalysisComponentUpsertOne {
+	_c.conflict = opts
 	return &SystemAnalysisComponentUpsertOne{
-		create: sacc,
+		create: _c,
 	}
 }
 
@@ -356,10 +356,10 @@ func (sacc *SystemAnalysisComponentCreate) OnConflict(opts ...sql.ConflictOption
 //	client.SystemAnalysisComponent.Create().
 //		OnConflict(sql.ConflictColumns(columns...)).
 //		Exec(ctx)
-func (sacc *SystemAnalysisComponentCreate) OnConflictColumns(columns ...string) *SystemAnalysisComponentUpsertOne {
-	sacc.conflict = append(sacc.conflict, sql.ConflictColumns(columns...))
+func (_c *SystemAnalysisComponentCreate) OnConflictColumns(columns ...string) *SystemAnalysisComponentUpsertOne {
+	_c.conflict = append(_c.conflict, sql.ConflictColumns(columns...))
 	return &SystemAnalysisComponentUpsertOne{
-		create: sacc,
+		create: _c,
 	}
 }
 
@@ -669,16 +669,16 @@ type SystemAnalysisComponentCreateBulk struct {
 }
 
 // Save creates the SystemAnalysisComponent entities in the database.
-func (saccb *SystemAnalysisComponentCreateBulk) Save(ctx context.Context) ([]*SystemAnalysisComponent, error) {
-	if saccb.err != nil {
-		return nil, saccb.err
+func (_c *SystemAnalysisComponentCreateBulk) Save(ctx context.Context) ([]*SystemAnalysisComponent, error) {
+	if _c.err != nil {
+		return nil, _c.err
 	}
-	specs := make([]*sqlgraph.CreateSpec, len(saccb.builders))
-	nodes := make([]*SystemAnalysisComponent, len(saccb.builders))
-	mutators := make([]Mutator, len(saccb.builders))
-	for i := range saccb.builders {
+	specs := make([]*sqlgraph.CreateSpec, len(_c.builders))
+	nodes := make([]*SystemAnalysisComponent, len(_c.builders))
+	mutators := make([]Mutator, len(_c.builders))
+	for i := range _c.builders {
 		func(i int, root context.Context) {
-			builder := saccb.builders[i]
+			builder := _c.builders[i]
 			builder.defaults()
 			var mut Mutator = MutateFunc(func(ctx context.Context, m Mutation) (Value, error) {
 				mutation, ok := m.(*SystemAnalysisComponentMutation)
@@ -692,12 +692,12 @@ func (saccb *SystemAnalysisComponentCreateBulk) Save(ctx context.Context) ([]*Sy
 				var err error
 				nodes[i], specs[i] = builder.createSpec()
 				if i < len(mutators)-1 {
-					_, err = mutators[i+1].Mutate(root, saccb.builders[i+1].mutation)
+					_, err = mutators[i+1].Mutate(root, _c.builders[i+1].mutation)
 				} else {
 					spec := &sqlgraph.BatchCreateSpec{Nodes: specs}
-					spec.OnConflict = saccb.conflict
+					spec.OnConflict = _c.conflict
 					// Invoke the actual operation on the latest mutation in the chain.
-					if err = sqlgraph.BatchCreate(ctx, saccb.driver, spec); err != nil {
+					if err = sqlgraph.BatchCreate(ctx, _c.driver, spec); err != nil {
 						if sqlgraph.IsConstraintError(err) {
 							err = &ConstraintError{msg: err.Error(), wrap: err}
 						}
@@ -717,7 +717,7 @@ func (saccb *SystemAnalysisComponentCreateBulk) Save(ctx context.Context) ([]*Sy
 		}(i, ctx)
 	}
 	if len(mutators) > 0 {
-		if _, err := mutators[0].Mutate(ctx, saccb.builders[0].mutation); err != nil {
+		if _, err := mutators[0].Mutate(ctx, _c.builders[0].mutation); err != nil {
 			return nil, err
 		}
 	}
@@ -725,8 +725,8 @@ func (saccb *SystemAnalysisComponentCreateBulk) Save(ctx context.Context) ([]*Sy
 }
 
 // SaveX is like Save, but panics if an error occurs.
-func (saccb *SystemAnalysisComponentCreateBulk) SaveX(ctx context.Context) []*SystemAnalysisComponent {
-	v, err := saccb.Save(ctx)
+func (_c *SystemAnalysisComponentCreateBulk) SaveX(ctx context.Context) []*SystemAnalysisComponent {
+	v, err := _c.Save(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -734,14 +734,14 @@ func (saccb *SystemAnalysisComponentCreateBulk) SaveX(ctx context.Context) []*Sy
 }
 
 // Exec executes the query.
-func (saccb *SystemAnalysisComponentCreateBulk) Exec(ctx context.Context) error {
-	_, err := saccb.Save(ctx)
+func (_c *SystemAnalysisComponentCreateBulk) Exec(ctx context.Context) error {
+	_, err := _c.Save(ctx)
 	return err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (saccb *SystemAnalysisComponentCreateBulk) ExecX(ctx context.Context) {
-	if err := saccb.Exec(ctx); err != nil {
+func (_c *SystemAnalysisComponentCreateBulk) ExecX(ctx context.Context) {
+	if err := _c.Exec(ctx); err != nil {
 		panic(err)
 	}
 }
@@ -761,10 +761,10 @@ func (saccb *SystemAnalysisComponentCreateBulk) ExecX(ctx context.Context) {
 //			SetTenantID(v+v).
 //		}).
 //		Exec(ctx)
-func (saccb *SystemAnalysisComponentCreateBulk) OnConflict(opts ...sql.ConflictOption) *SystemAnalysisComponentUpsertBulk {
-	saccb.conflict = opts
+func (_c *SystemAnalysisComponentCreateBulk) OnConflict(opts ...sql.ConflictOption) *SystemAnalysisComponentUpsertBulk {
+	_c.conflict = opts
 	return &SystemAnalysisComponentUpsertBulk{
-		create: saccb,
+		create: _c,
 	}
 }
 
@@ -774,10 +774,10 @@ func (saccb *SystemAnalysisComponentCreateBulk) OnConflict(opts ...sql.ConflictO
 //	client.SystemAnalysisComponent.Create().
 //		OnConflict(sql.ConflictColumns(columns...)).
 //		Exec(ctx)
-func (saccb *SystemAnalysisComponentCreateBulk) OnConflictColumns(columns ...string) *SystemAnalysisComponentUpsertBulk {
-	saccb.conflict = append(saccb.conflict, sql.ConflictColumns(columns...))
+func (_c *SystemAnalysisComponentCreateBulk) OnConflictColumns(columns ...string) *SystemAnalysisComponentUpsertBulk {
+	_c.conflict = append(_c.conflict, sql.ConflictColumns(columns...))
 	return &SystemAnalysisComponentUpsertBulk{
-		create: saccb,
+		create: _c,
 	}
 }
 

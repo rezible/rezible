@@ -28,169 +28,169 @@ type SystemComponentControlUpdate struct {
 }
 
 // Where appends a list predicates to the SystemComponentControlUpdate builder.
-func (sccu *SystemComponentControlUpdate) Where(ps ...predicate.SystemComponentControl) *SystemComponentControlUpdate {
-	sccu.mutation.Where(ps...)
-	return sccu
+func (_u *SystemComponentControlUpdate) Where(ps ...predicate.SystemComponentControl) *SystemComponentControlUpdate {
+	_u.mutation.Where(ps...)
+	return _u
 }
 
 // SetComponentID sets the "component_id" field.
-func (sccu *SystemComponentControlUpdate) SetComponentID(u uuid.UUID) *SystemComponentControlUpdate {
-	sccu.mutation.SetComponentID(u)
-	return sccu
+func (_u *SystemComponentControlUpdate) SetComponentID(v uuid.UUID) *SystemComponentControlUpdate {
+	_u.mutation.SetComponentID(v)
+	return _u
 }
 
 // SetNillableComponentID sets the "component_id" field if the given value is not nil.
-func (sccu *SystemComponentControlUpdate) SetNillableComponentID(u *uuid.UUID) *SystemComponentControlUpdate {
-	if u != nil {
-		sccu.SetComponentID(*u)
+func (_u *SystemComponentControlUpdate) SetNillableComponentID(v *uuid.UUID) *SystemComponentControlUpdate {
+	if v != nil {
+		_u.SetComponentID(*v)
 	}
-	return sccu
+	return _u
 }
 
 // SetLabel sets the "label" field.
-func (sccu *SystemComponentControlUpdate) SetLabel(s string) *SystemComponentControlUpdate {
-	sccu.mutation.SetLabel(s)
-	return sccu
+func (_u *SystemComponentControlUpdate) SetLabel(v string) *SystemComponentControlUpdate {
+	_u.mutation.SetLabel(v)
+	return _u
 }
 
 // SetNillableLabel sets the "label" field if the given value is not nil.
-func (sccu *SystemComponentControlUpdate) SetNillableLabel(s *string) *SystemComponentControlUpdate {
-	if s != nil {
-		sccu.SetLabel(*s)
+func (_u *SystemComponentControlUpdate) SetNillableLabel(v *string) *SystemComponentControlUpdate {
+	if v != nil {
+		_u.SetLabel(*v)
 	}
-	return sccu
+	return _u
 }
 
 // SetDescription sets the "description" field.
-func (sccu *SystemComponentControlUpdate) SetDescription(s string) *SystemComponentControlUpdate {
-	sccu.mutation.SetDescription(s)
-	return sccu
+func (_u *SystemComponentControlUpdate) SetDescription(v string) *SystemComponentControlUpdate {
+	_u.mutation.SetDescription(v)
+	return _u
 }
 
 // SetNillableDescription sets the "description" field if the given value is not nil.
-func (sccu *SystemComponentControlUpdate) SetNillableDescription(s *string) *SystemComponentControlUpdate {
-	if s != nil {
-		sccu.SetDescription(*s)
+func (_u *SystemComponentControlUpdate) SetNillableDescription(v *string) *SystemComponentControlUpdate {
+	if v != nil {
+		_u.SetDescription(*v)
 	}
-	return sccu
+	return _u
 }
 
 // ClearDescription clears the value of the "description" field.
-func (sccu *SystemComponentControlUpdate) ClearDescription() *SystemComponentControlUpdate {
-	sccu.mutation.ClearDescription()
-	return sccu
+func (_u *SystemComponentControlUpdate) ClearDescription() *SystemComponentControlUpdate {
+	_u.mutation.ClearDescription()
+	return _u
 }
 
 // SetCreatedAt sets the "created_at" field.
-func (sccu *SystemComponentControlUpdate) SetCreatedAt(t time.Time) *SystemComponentControlUpdate {
-	sccu.mutation.SetCreatedAt(t)
-	return sccu
+func (_u *SystemComponentControlUpdate) SetCreatedAt(v time.Time) *SystemComponentControlUpdate {
+	_u.mutation.SetCreatedAt(v)
+	return _u
 }
 
 // SetNillableCreatedAt sets the "created_at" field if the given value is not nil.
-func (sccu *SystemComponentControlUpdate) SetNillableCreatedAt(t *time.Time) *SystemComponentControlUpdate {
-	if t != nil {
-		sccu.SetCreatedAt(*t)
+func (_u *SystemComponentControlUpdate) SetNillableCreatedAt(v *time.Time) *SystemComponentControlUpdate {
+	if v != nil {
+		_u.SetCreatedAt(*v)
 	}
-	return sccu
+	return _u
 }
 
 // SetComponent sets the "component" edge to the SystemComponent entity.
-func (sccu *SystemComponentControlUpdate) SetComponent(s *SystemComponent) *SystemComponentControlUpdate {
-	return sccu.SetComponentID(s.ID)
+func (_u *SystemComponentControlUpdate) SetComponent(v *SystemComponent) *SystemComponentControlUpdate {
+	return _u.SetComponentID(v.ID)
 }
 
 // AddRelationshipIDs adds the "relationships" edge to the SystemAnalysisRelationship entity by IDs.
-func (sccu *SystemComponentControlUpdate) AddRelationshipIDs(ids ...uuid.UUID) *SystemComponentControlUpdate {
-	sccu.mutation.AddRelationshipIDs(ids...)
-	return sccu
+func (_u *SystemComponentControlUpdate) AddRelationshipIDs(ids ...uuid.UUID) *SystemComponentControlUpdate {
+	_u.mutation.AddRelationshipIDs(ids...)
+	return _u
 }
 
 // AddRelationships adds the "relationships" edges to the SystemAnalysisRelationship entity.
-func (sccu *SystemComponentControlUpdate) AddRelationships(s ...*SystemAnalysisRelationship) *SystemComponentControlUpdate {
-	ids := make([]uuid.UUID, len(s))
-	for i := range s {
-		ids[i] = s[i].ID
+func (_u *SystemComponentControlUpdate) AddRelationships(v ...*SystemAnalysisRelationship) *SystemComponentControlUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
 	}
-	return sccu.AddRelationshipIDs(ids...)
+	return _u.AddRelationshipIDs(ids...)
 }
 
 // AddControlActionIDs adds the "control_actions" edge to the SystemRelationshipControlAction entity by IDs.
-func (sccu *SystemComponentControlUpdate) AddControlActionIDs(ids ...uuid.UUID) *SystemComponentControlUpdate {
-	sccu.mutation.AddControlActionIDs(ids...)
-	return sccu
+func (_u *SystemComponentControlUpdate) AddControlActionIDs(ids ...uuid.UUID) *SystemComponentControlUpdate {
+	_u.mutation.AddControlActionIDs(ids...)
+	return _u
 }
 
 // AddControlActions adds the "control_actions" edges to the SystemRelationshipControlAction entity.
-func (sccu *SystemComponentControlUpdate) AddControlActions(s ...*SystemRelationshipControlAction) *SystemComponentControlUpdate {
-	ids := make([]uuid.UUID, len(s))
-	for i := range s {
-		ids[i] = s[i].ID
+func (_u *SystemComponentControlUpdate) AddControlActions(v ...*SystemRelationshipControlAction) *SystemComponentControlUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
 	}
-	return sccu.AddControlActionIDs(ids...)
+	return _u.AddControlActionIDs(ids...)
 }
 
 // Mutation returns the SystemComponentControlMutation object of the builder.
-func (sccu *SystemComponentControlUpdate) Mutation() *SystemComponentControlMutation {
-	return sccu.mutation
+func (_u *SystemComponentControlUpdate) Mutation() *SystemComponentControlMutation {
+	return _u.mutation
 }
 
 // ClearComponent clears the "component" edge to the SystemComponent entity.
-func (sccu *SystemComponentControlUpdate) ClearComponent() *SystemComponentControlUpdate {
-	sccu.mutation.ClearComponent()
-	return sccu
+func (_u *SystemComponentControlUpdate) ClearComponent() *SystemComponentControlUpdate {
+	_u.mutation.ClearComponent()
+	return _u
 }
 
 // ClearRelationships clears all "relationships" edges to the SystemAnalysisRelationship entity.
-func (sccu *SystemComponentControlUpdate) ClearRelationships() *SystemComponentControlUpdate {
-	sccu.mutation.ClearRelationships()
-	return sccu
+func (_u *SystemComponentControlUpdate) ClearRelationships() *SystemComponentControlUpdate {
+	_u.mutation.ClearRelationships()
+	return _u
 }
 
 // RemoveRelationshipIDs removes the "relationships" edge to SystemAnalysisRelationship entities by IDs.
-func (sccu *SystemComponentControlUpdate) RemoveRelationshipIDs(ids ...uuid.UUID) *SystemComponentControlUpdate {
-	sccu.mutation.RemoveRelationshipIDs(ids...)
-	return sccu
+func (_u *SystemComponentControlUpdate) RemoveRelationshipIDs(ids ...uuid.UUID) *SystemComponentControlUpdate {
+	_u.mutation.RemoveRelationshipIDs(ids...)
+	return _u
 }
 
 // RemoveRelationships removes "relationships" edges to SystemAnalysisRelationship entities.
-func (sccu *SystemComponentControlUpdate) RemoveRelationships(s ...*SystemAnalysisRelationship) *SystemComponentControlUpdate {
-	ids := make([]uuid.UUID, len(s))
-	for i := range s {
-		ids[i] = s[i].ID
+func (_u *SystemComponentControlUpdate) RemoveRelationships(v ...*SystemAnalysisRelationship) *SystemComponentControlUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
 	}
-	return sccu.RemoveRelationshipIDs(ids...)
+	return _u.RemoveRelationshipIDs(ids...)
 }
 
 // ClearControlActions clears all "control_actions" edges to the SystemRelationshipControlAction entity.
-func (sccu *SystemComponentControlUpdate) ClearControlActions() *SystemComponentControlUpdate {
-	sccu.mutation.ClearControlActions()
-	return sccu
+func (_u *SystemComponentControlUpdate) ClearControlActions() *SystemComponentControlUpdate {
+	_u.mutation.ClearControlActions()
+	return _u
 }
 
 // RemoveControlActionIDs removes the "control_actions" edge to SystemRelationshipControlAction entities by IDs.
-func (sccu *SystemComponentControlUpdate) RemoveControlActionIDs(ids ...uuid.UUID) *SystemComponentControlUpdate {
-	sccu.mutation.RemoveControlActionIDs(ids...)
-	return sccu
+func (_u *SystemComponentControlUpdate) RemoveControlActionIDs(ids ...uuid.UUID) *SystemComponentControlUpdate {
+	_u.mutation.RemoveControlActionIDs(ids...)
+	return _u
 }
 
 // RemoveControlActions removes "control_actions" edges to SystemRelationshipControlAction entities.
-func (sccu *SystemComponentControlUpdate) RemoveControlActions(s ...*SystemRelationshipControlAction) *SystemComponentControlUpdate {
-	ids := make([]uuid.UUID, len(s))
-	for i := range s {
-		ids[i] = s[i].ID
+func (_u *SystemComponentControlUpdate) RemoveControlActions(v ...*SystemRelationshipControlAction) *SystemComponentControlUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
 	}
-	return sccu.RemoveControlActionIDs(ids...)
+	return _u.RemoveControlActionIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
-func (sccu *SystemComponentControlUpdate) Save(ctx context.Context) (int, error) {
-	return withHooks(ctx, sccu.sqlSave, sccu.mutation, sccu.hooks)
+func (_u *SystemComponentControlUpdate) Save(ctx context.Context) (int, error) {
+	return withHooks(ctx, _u.sqlSave, _u.mutation, _u.hooks)
 }
 
 // SaveX is like Save, but panics if an error occurs.
-func (sccu *SystemComponentControlUpdate) SaveX(ctx context.Context) int {
-	affected, err := sccu.Save(ctx)
+func (_u *SystemComponentControlUpdate) SaveX(ctx context.Context) int {
+	affected, err := _u.Save(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -198,60 +198,60 @@ func (sccu *SystemComponentControlUpdate) SaveX(ctx context.Context) int {
 }
 
 // Exec executes the query.
-func (sccu *SystemComponentControlUpdate) Exec(ctx context.Context) error {
-	_, err := sccu.Save(ctx)
+func (_u *SystemComponentControlUpdate) Exec(ctx context.Context) error {
+	_, err := _u.Save(ctx)
 	return err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (sccu *SystemComponentControlUpdate) ExecX(ctx context.Context) {
-	if err := sccu.Exec(ctx); err != nil {
+func (_u *SystemComponentControlUpdate) ExecX(ctx context.Context) {
+	if err := _u.Exec(ctx); err != nil {
 		panic(err)
 	}
 }
 
 // check runs all checks and user-defined validators on the builder.
-func (sccu *SystemComponentControlUpdate) check() error {
-	if sccu.mutation.TenantCleared() && len(sccu.mutation.TenantIDs()) > 0 {
+func (_u *SystemComponentControlUpdate) check() error {
+	if _u.mutation.TenantCleared() && len(_u.mutation.TenantIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "SystemComponentControl.tenant"`)
 	}
-	if sccu.mutation.ComponentCleared() && len(sccu.mutation.ComponentIDs()) > 0 {
+	if _u.mutation.ComponentCleared() && len(_u.mutation.ComponentIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "SystemComponentControl.component"`)
 	}
 	return nil
 }
 
 // Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
-func (sccu *SystemComponentControlUpdate) Modify(modifiers ...func(u *sql.UpdateBuilder)) *SystemComponentControlUpdate {
-	sccu.modifiers = append(sccu.modifiers, modifiers...)
-	return sccu
+func (_u *SystemComponentControlUpdate) Modify(modifiers ...func(u *sql.UpdateBuilder)) *SystemComponentControlUpdate {
+	_u.modifiers = append(_u.modifiers, modifiers...)
+	return _u
 }
 
-func (sccu *SystemComponentControlUpdate) sqlSave(ctx context.Context) (n int, err error) {
-	if err := sccu.check(); err != nil {
-		return n, err
+func (_u *SystemComponentControlUpdate) sqlSave(ctx context.Context) (_node int, err error) {
+	if err := _u.check(); err != nil {
+		return _node, err
 	}
 	_spec := sqlgraph.NewUpdateSpec(systemcomponentcontrol.Table, systemcomponentcontrol.Columns, sqlgraph.NewFieldSpec(systemcomponentcontrol.FieldID, field.TypeUUID))
-	if ps := sccu.mutation.predicates; len(ps) > 0 {
+	if ps := _u.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {
 				ps[i](selector)
 			}
 		}
 	}
-	if value, ok := sccu.mutation.Label(); ok {
+	if value, ok := _u.mutation.Label(); ok {
 		_spec.SetField(systemcomponentcontrol.FieldLabel, field.TypeString, value)
 	}
-	if value, ok := sccu.mutation.Description(); ok {
+	if value, ok := _u.mutation.Description(); ok {
 		_spec.SetField(systemcomponentcontrol.FieldDescription, field.TypeString, value)
 	}
-	if sccu.mutation.DescriptionCleared() {
+	if _u.mutation.DescriptionCleared() {
 		_spec.ClearField(systemcomponentcontrol.FieldDescription, field.TypeString)
 	}
-	if value, ok := sccu.mutation.CreatedAt(); ok {
+	if value, ok := _u.mutation.CreatedAt(); ok {
 		_spec.SetField(systemcomponentcontrol.FieldCreatedAt, field.TypeTime, value)
 	}
-	if sccu.mutation.ComponentCleared() {
+	if _u.mutation.ComponentCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
@@ -264,7 +264,7 @@ func (sccu *SystemComponentControlUpdate) sqlSave(ctx context.Context) (n int, e
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := sccu.mutation.ComponentIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.ComponentIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
@@ -280,7 +280,7 @@ func (sccu *SystemComponentControlUpdate) sqlSave(ctx context.Context) (n int, e
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if sccu.mutation.RelationshipsCleared() {
+	if _u.mutation.RelationshipsCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
 			Inverse: true,
@@ -291,7 +291,7 @@ func (sccu *SystemComponentControlUpdate) sqlSave(ctx context.Context) (n int, e
 				IDSpec: sqlgraph.NewFieldSpec(systemanalysisrelationship.FieldID, field.TypeUUID),
 			},
 		}
-		createE := &SystemRelationshipControlActionCreate{config: sccu.config, mutation: newSystemRelationshipControlActionMutation(sccu.config, OpCreate)}
+		createE := &SystemRelationshipControlActionCreate{config: _u.config, mutation: newSystemRelationshipControlActionMutation(_u.config, OpCreate)}
 		_ = createE.defaults()
 		_, specE := createE.createSpec()
 		edge.Target.Fields = specE.Fields
@@ -300,7 +300,7 @@ func (sccu *SystemComponentControlUpdate) sqlSave(ctx context.Context) (n int, e
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := sccu.mutation.RemovedRelationshipsIDs(); len(nodes) > 0 && !sccu.mutation.RelationshipsCleared() {
+	if nodes := _u.mutation.RemovedRelationshipsIDs(); len(nodes) > 0 && !_u.mutation.RelationshipsCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
 			Inverse: true,
@@ -314,7 +314,7 @@ func (sccu *SystemComponentControlUpdate) sqlSave(ctx context.Context) (n int, e
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
-		createE := &SystemRelationshipControlActionCreate{config: sccu.config, mutation: newSystemRelationshipControlActionMutation(sccu.config, OpCreate)}
+		createE := &SystemRelationshipControlActionCreate{config: _u.config, mutation: newSystemRelationshipControlActionMutation(_u.config, OpCreate)}
 		_ = createE.defaults()
 		_, specE := createE.createSpec()
 		edge.Target.Fields = specE.Fields
@@ -323,7 +323,7 @@ func (sccu *SystemComponentControlUpdate) sqlSave(ctx context.Context) (n int, e
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := sccu.mutation.RelationshipsIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.RelationshipsIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
 			Inverse: true,
@@ -337,7 +337,7 @@ func (sccu *SystemComponentControlUpdate) sqlSave(ctx context.Context) (n int, e
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
-		createE := &SystemRelationshipControlActionCreate{config: sccu.config, mutation: newSystemRelationshipControlActionMutation(sccu.config, OpCreate)}
+		createE := &SystemRelationshipControlActionCreate{config: _u.config, mutation: newSystemRelationshipControlActionMutation(_u.config, OpCreate)}
 		_ = createE.defaults()
 		_, specE := createE.createSpec()
 		edge.Target.Fields = specE.Fields
@@ -346,7 +346,7 @@ func (sccu *SystemComponentControlUpdate) sqlSave(ctx context.Context) (n int, e
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if sccu.mutation.ControlActionsCleared() {
+	if _u.mutation.ControlActionsCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: true,
@@ -359,7 +359,7 @@ func (sccu *SystemComponentControlUpdate) sqlSave(ctx context.Context) (n int, e
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := sccu.mutation.RemovedControlActionsIDs(); len(nodes) > 0 && !sccu.mutation.ControlActionsCleared() {
+	if nodes := _u.mutation.RemovedControlActionsIDs(); len(nodes) > 0 && !_u.mutation.ControlActionsCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: true,
@@ -375,7 +375,7 @@ func (sccu *SystemComponentControlUpdate) sqlSave(ctx context.Context) (n int, e
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := sccu.mutation.ControlActionsIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.ControlActionsIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: true,
@@ -391,8 +391,8 @@ func (sccu *SystemComponentControlUpdate) sqlSave(ctx context.Context) (n int, e
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	_spec.AddModifiers(sccu.modifiers...)
-	if n, err = sqlgraph.UpdateNodes(ctx, sccu.driver, _spec); err != nil {
+	_spec.AddModifiers(_u.modifiers...)
+	if _node, err = sqlgraph.UpdateNodes(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{systemcomponentcontrol.Label}
 		} else if sqlgraph.IsConstraintError(err) {
@@ -400,8 +400,8 @@ func (sccu *SystemComponentControlUpdate) sqlSave(ctx context.Context) (n int, e
 		}
 		return 0, err
 	}
-	sccu.mutation.done = true
-	return n, nil
+	_u.mutation.done = true
+	return _node, nil
 }
 
 // SystemComponentControlUpdateOne is the builder for updating a single SystemComponentControl entity.
@@ -414,176 +414,176 @@ type SystemComponentControlUpdateOne struct {
 }
 
 // SetComponentID sets the "component_id" field.
-func (sccuo *SystemComponentControlUpdateOne) SetComponentID(u uuid.UUID) *SystemComponentControlUpdateOne {
-	sccuo.mutation.SetComponentID(u)
-	return sccuo
+func (_u *SystemComponentControlUpdateOne) SetComponentID(v uuid.UUID) *SystemComponentControlUpdateOne {
+	_u.mutation.SetComponentID(v)
+	return _u
 }
 
 // SetNillableComponentID sets the "component_id" field if the given value is not nil.
-func (sccuo *SystemComponentControlUpdateOne) SetNillableComponentID(u *uuid.UUID) *SystemComponentControlUpdateOne {
-	if u != nil {
-		sccuo.SetComponentID(*u)
+func (_u *SystemComponentControlUpdateOne) SetNillableComponentID(v *uuid.UUID) *SystemComponentControlUpdateOne {
+	if v != nil {
+		_u.SetComponentID(*v)
 	}
-	return sccuo
+	return _u
 }
 
 // SetLabel sets the "label" field.
-func (sccuo *SystemComponentControlUpdateOne) SetLabel(s string) *SystemComponentControlUpdateOne {
-	sccuo.mutation.SetLabel(s)
-	return sccuo
+func (_u *SystemComponentControlUpdateOne) SetLabel(v string) *SystemComponentControlUpdateOne {
+	_u.mutation.SetLabel(v)
+	return _u
 }
 
 // SetNillableLabel sets the "label" field if the given value is not nil.
-func (sccuo *SystemComponentControlUpdateOne) SetNillableLabel(s *string) *SystemComponentControlUpdateOne {
-	if s != nil {
-		sccuo.SetLabel(*s)
+func (_u *SystemComponentControlUpdateOne) SetNillableLabel(v *string) *SystemComponentControlUpdateOne {
+	if v != nil {
+		_u.SetLabel(*v)
 	}
-	return sccuo
+	return _u
 }
 
 // SetDescription sets the "description" field.
-func (sccuo *SystemComponentControlUpdateOne) SetDescription(s string) *SystemComponentControlUpdateOne {
-	sccuo.mutation.SetDescription(s)
-	return sccuo
+func (_u *SystemComponentControlUpdateOne) SetDescription(v string) *SystemComponentControlUpdateOne {
+	_u.mutation.SetDescription(v)
+	return _u
 }
 
 // SetNillableDescription sets the "description" field if the given value is not nil.
-func (sccuo *SystemComponentControlUpdateOne) SetNillableDescription(s *string) *SystemComponentControlUpdateOne {
-	if s != nil {
-		sccuo.SetDescription(*s)
+func (_u *SystemComponentControlUpdateOne) SetNillableDescription(v *string) *SystemComponentControlUpdateOne {
+	if v != nil {
+		_u.SetDescription(*v)
 	}
-	return sccuo
+	return _u
 }
 
 // ClearDescription clears the value of the "description" field.
-func (sccuo *SystemComponentControlUpdateOne) ClearDescription() *SystemComponentControlUpdateOne {
-	sccuo.mutation.ClearDescription()
-	return sccuo
+func (_u *SystemComponentControlUpdateOne) ClearDescription() *SystemComponentControlUpdateOne {
+	_u.mutation.ClearDescription()
+	return _u
 }
 
 // SetCreatedAt sets the "created_at" field.
-func (sccuo *SystemComponentControlUpdateOne) SetCreatedAt(t time.Time) *SystemComponentControlUpdateOne {
-	sccuo.mutation.SetCreatedAt(t)
-	return sccuo
+func (_u *SystemComponentControlUpdateOne) SetCreatedAt(v time.Time) *SystemComponentControlUpdateOne {
+	_u.mutation.SetCreatedAt(v)
+	return _u
 }
 
 // SetNillableCreatedAt sets the "created_at" field if the given value is not nil.
-func (sccuo *SystemComponentControlUpdateOne) SetNillableCreatedAt(t *time.Time) *SystemComponentControlUpdateOne {
-	if t != nil {
-		sccuo.SetCreatedAt(*t)
+func (_u *SystemComponentControlUpdateOne) SetNillableCreatedAt(v *time.Time) *SystemComponentControlUpdateOne {
+	if v != nil {
+		_u.SetCreatedAt(*v)
 	}
-	return sccuo
+	return _u
 }
 
 // SetComponent sets the "component" edge to the SystemComponent entity.
-func (sccuo *SystemComponentControlUpdateOne) SetComponent(s *SystemComponent) *SystemComponentControlUpdateOne {
-	return sccuo.SetComponentID(s.ID)
+func (_u *SystemComponentControlUpdateOne) SetComponent(v *SystemComponent) *SystemComponentControlUpdateOne {
+	return _u.SetComponentID(v.ID)
 }
 
 // AddRelationshipIDs adds the "relationships" edge to the SystemAnalysisRelationship entity by IDs.
-func (sccuo *SystemComponentControlUpdateOne) AddRelationshipIDs(ids ...uuid.UUID) *SystemComponentControlUpdateOne {
-	sccuo.mutation.AddRelationshipIDs(ids...)
-	return sccuo
+func (_u *SystemComponentControlUpdateOne) AddRelationshipIDs(ids ...uuid.UUID) *SystemComponentControlUpdateOne {
+	_u.mutation.AddRelationshipIDs(ids...)
+	return _u
 }
 
 // AddRelationships adds the "relationships" edges to the SystemAnalysisRelationship entity.
-func (sccuo *SystemComponentControlUpdateOne) AddRelationships(s ...*SystemAnalysisRelationship) *SystemComponentControlUpdateOne {
-	ids := make([]uuid.UUID, len(s))
-	for i := range s {
-		ids[i] = s[i].ID
+func (_u *SystemComponentControlUpdateOne) AddRelationships(v ...*SystemAnalysisRelationship) *SystemComponentControlUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
 	}
-	return sccuo.AddRelationshipIDs(ids...)
+	return _u.AddRelationshipIDs(ids...)
 }
 
 // AddControlActionIDs adds the "control_actions" edge to the SystemRelationshipControlAction entity by IDs.
-func (sccuo *SystemComponentControlUpdateOne) AddControlActionIDs(ids ...uuid.UUID) *SystemComponentControlUpdateOne {
-	sccuo.mutation.AddControlActionIDs(ids...)
-	return sccuo
+func (_u *SystemComponentControlUpdateOne) AddControlActionIDs(ids ...uuid.UUID) *SystemComponentControlUpdateOne {
+	_u.mutation.AddControlActionIDs(ids...)
+	return _u
 }
 
 // AddControlActions adds the "control_actions" edges to the SystemRelationshipControlAction entity.
-func (sccuo *SystemComponentControlUpdateOne) AddControlActions(s ...*SystemRelationshipControlAction) *SystemComponentControlUpdateOne {
-	ids := make([]uuid.UUID, len(s))
-	for i := range s {
-		ids[i] = s[i].ID
+func (_u *SystemComponentControlUpdateOne) AddControlActions(v ...*SystemRelationshipControlAction) *SystemComponentControlUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
 	}
-	return sccuo.AddControlActionIDs(ids...)
+	return _u.AddControlActionIDs(ids...)
 }
 
 // Mutation returns the SystemComponentControlMutation object of the builder.
-func (sccuo *SystemComponentControlUpdateOne) Mutation() *SystemComponentControlMutation {
-	return sccuo.mutation
+func (_u *SystemComponentControlUpdateOne) Mutation() *SystemComponentControlMutation {
+	return _u.mutation
 }
 
 // ClearComponent clears the "component" edge to the SystemComponent entity.
-func (sccuo *SystemComponentControlUpdateOne) ClearComponent() *SystemComponentControlUpdateOne {
-	sccuo.mutation.ClearComponent()
-	return sccuo
+func (_u *SystemComponentControlUpdateOne) ClearComponent() *SystemComponentControlUpdateOne {
+	_u.mutation.ClearComponent()
+	return _u
 }
 
 // ClearRelationships clears all "relationships" edges to the SystemAnalysisRelationship entity.
-func (sccuo *SystemComponentControlUpdateOne) ClearRelationships() *SystemComponentControlUpdateOne {
-	sccuo.mutation.ClearRelationships()
-	return sccuo
+func (_u *SystemComponentControlUpdateOne) ClearRelationships() *SystemComponentControlUpdateOne {
+	_u.mutation.ClearRelationships()
+	return _u
 }
 
 // RemoveRelationshipIDs removes the "relationships" edge to SystemAnalysisRelationship entities by IDs.
-func (sccuo *SystemComponentControlUpdateOne) RemoveRelationshipIDs(ids ...uuid.UUID) *SystemComponentControlUpdateOne {
-	sccuo.mutation.RemoveRelationshipIDs(ids...)
-	return sccuo
+func (_u *SystemComponentControlUpdateOne) RemoveRelationshipIDs(ids ...uuid.UUID) *SystemComponentControlUpdateOne {
+	_u.mutation.RemoveRelationshipIDs(ids...)
+	return _u
 }
 
 // RemoveRelationships removes "relationships" edges to SystemAnalysisRelationship entities.
-func (sccuo *SystemComponentControlUpdateOne) RemoveRelationships(s ...*SystemAnalysisRelationship) *SystemComponentControlUpdateOne {
-	ids := make([]uuid.UUID, len(s))
-	for i := range s {
-		ids[i] = s[i].ID
+func (_u *SystemComponentControlUpdateOne) RemoveRelationships(v ...*SystemAnalysisRelationship) *SystemComponentControlUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
 	}
-	return sccuo.RemoveRelationshipIDs(ids...)
+	return _u.RemoveRelationshipIDs(ids...)
 }
 
 // ClearControlActions clears all "control_actions" edges to the SystemRelationshipControlAction entity.
-func (sccuo *SystemComponentControlUpdateOne) ClearControlActions() *SystemComponentControlUpdateOne {
-	sccuo.mutation.ClearControlActions()
-	return sccuo
+func (_u *SystemComponentControlUpdateOne) ClearControlActions() *SystemComponentControlUpdateOne {
+	_u.mutation.ClearControlActions()
+	return _u
 }
 
 // RemoveControlActionIDs removes the "control_actions" edge to SystemRelationshipControlAction entities by IDs.
-func (sccuo *SystemComponentControlUpdateOne) RemoveControlActionIDs(ids ...uuid.UUID) *SystemComponentControlUpdateOne {
-	sccuo.mutation.RemoveControlActionIDs(ids...)
-	return sccuo
+func (_u *SystemComponentControlUpdateOne) RemoveControlActionIDs(ids ...uuid.UUID) *SystemComponentControlUpdateOne {
+	_u.mutation.RemoveControlActionIDs(ids...)
+	return _u
 }
 
 // RemoveControlActions removes "control_actions" edges to SystemRelationshipControlAction entities.
-func (sccuo *SystemComponentControlUpdateOne) RemoveControlActions(s ...*SystemRelationshipControlAction) *SystemComponentControlUpdateOne {
-	ids := make([]uuid.UUID, len(s))
-	for i := range s {
-		ids[i] = s[i].ID
+func (_u *SystemComponentControlUpdateOne) RemoveControlActions(v ...*SystemRelationshipControlAction) *SystemComponentControlUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
 	}
-	return sccuo.RemoveControlActionIDs(ids...)
+	return _u.RemoveControlActionIDs(ids...)
 }
 
 // Where appends a list predicates to the SystemComponentControlUpdate builder.
-func (sccuo *SystemComponentControlUpdateOne) Where(ps ...predicate.SystemComponentControl) *SystemComponentControlUpdateOne {
-	sccuo.mutation.Where(ps...)
-	return sccuo
+func (_u *SystemComponentControlUpdateOne) Where(ps ...predicate.SystemComponentControl) *SystemComponentControlUpdateOne {
+	_u.mutation.Where(ps...)
+	return _u
 }
 
 // Select allows selecting one or more fields (columns) of the returned entity.
 // The default is selecting all fields defined in the entity schema.
-func (sccuo *SystemComponentControlUpdateOne) Select(field string, fields ...string) *SystemComponentControlUpdateOne {
-	sccuo.fields = append([]string{field}, fields...)
-	return sccuo
+func (_u *SystemComponentControlUpdateOne) Select(field string, fields ...string) *SystemComponentControlUpdateOne {
+	_u.fields = append([]string{field}, fields...)
+	return _u
 }
 
 // Save executes the query and returns the updated SystemComponentControl entity.
-func (sccuo *SystemComponentControlUpdateOne) Save(ctx context.Context) (*SystemComponentControl, error) {
-	return withHooks(ctx, sccuo.sqlSave, sccuo.mutation, sccuo.hooks)
+func (_u *SystemComponentControlUpdateOne) Save(ctx context.Context) (*SystemComponentControl, error) {
+	return withHooks(ctx, _u.sqlSave, _u.mutation, _u.hooks)
 }
 
 // SaveX is like Save, but panics if an error occurs.
-func (sccuo *SystemComponentControlUpdateOne) SaveX(ctx context.Context) *SystemComponentControl {
-	node, err := sccuo.Save(ctx)
+func (_u *SystemComponentControlUpdateOne) SaveX(ctx context.Context) *SystemComponentControl {
+	node, err := _u.Save(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -591,46 +591,46 @@ func (sccuo *SystemComponentControlUpdateOne) SaveX(ctx context.Context) *System
 }
 
 // Exec executes the query on the entity.
-func (sccuo *SystemComponentControlUpdateOne) Exec(ctx context.Context) error {
-	_, err := sccuo.Save(ctx)
+func (_u *SystemComponentControlUpdateOne) Exec(ctx context.Context) error {
+	_, err := _u.Save(ctx)
 	return err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (sccuo *SystemComponentControlUpdateOne) ExecX(ctx context.Context) {
-	if err := sccuo.Exec(ctx); err != nil {
+func (_u *SystemComponentControlUpdateOne) ExecX(ctx context.Context) {
+	if err := _u.Exec(ctx); err != nil {
 		panic(err)
 	}
 }
 
 // check runs all checks and user-defined validators on the builder.
-func (sccuo *SystemComponentControlUpdateOne) check() error {
-	if sccuo.mutation.TenantCleared() && len(sccuo.mutation.TenantIDs()) > 0 {
+func (_u *SystemComponentControlUpdateOne) check() error {
+	if _u.mutation.TenantCleared() && len(_u.mutation.TenantIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "SystemComponentControl.tenant"`)
 	}
-	if sccuo.mutation.ComponentCleared() && len(sccuo.mutation.ComponentIDs()) > 0 {
+	if _u.mutation.ComponentCleared() && len(_u.mutation.ComponentIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "SystemComponentControl.component"`)
 	}
 	return nil
 }
 
 // Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
-func (sccuo *SystemComponentControlUpdateOne) Modify(modifiers ...func(u *sql.UpdateBuilder)) *SystemComponentControlUpdateOne {
-	sccuo.modifiers = append(sccuo.modifiers, modifiers...)
-	return sccuo
+func (_u *SystemComponentControlUpdateOne) Modify(modifiers ...func(u *sql.UpdateBuilder)) *SystemComponentControlUpdateOne {
+	_u.modifiers = append(_u.modifiers, modifiers...)
+	return _u
 }
 
-func (sccuo *SystemComponentControlUpdateOne) sqlSave(ctx context.Context) (_node *SystemComponentControl, err error) {
-	if err := sccuo.check(); err != nil {
+func (_u *SystemComponentControlUpdateOne) sqlSave(ctx context.Context) (_node *SystemComponentControl, err error) {
+	if err := _u.check(); err != nil {
 		return _node, err
 	}
 	_spec := sqlgraph.NewUpdateSpec(systemcomponentcontrol.Table, systemcomponentcontrol.Columns, sqlgraph.NewFieldSpec(systemcomponentcontrol.FieldID, field.TypeUUID))
-	id, ok := sccuo.mutation.ID()
+	id, ok := _u.mutation.ID()
 	if !ok {
 		return nil, &ValidationError{Name: "id", err: errors.New(`ent: missing "SystemComponentControl.id" for update`)}
 	}
 	_spec.Node.ID.Value = id
-	if fields := sccuo.fields; len(fields) > 0 {
+	if fields := _u.fields; len(fields) > 0 {
 		_spec.Node.Columns = make([]string, 0, len(fields))
 		_spec.Node.Columns = append(_spec.Node.Columns, systemcomponentcontrol.FieldID)
 		for _, f := range fields {
@@ -642,26 +642,26 @@ func (sccuo *SystemComponentControlUpdateOne) sqlSave(ctx context.Context) (_nod
 			}
 		}
 	}
-	if ps := sccuo.mutation.predicates; len(ps) > 0 {
+	if ps := _u.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {
 				ps[i](selector)
 			}
 		}
 	}
-	if value, ok := sccuo.mutation.Label(); ok {
+	if value, ok := _u.mutation.Label(); ok {
 		_spec.SetField(systemcomponentcontrol.FieldLabel, field.TypeString, value)
 	}
-	if value, ok := sccuo.mutation.Description(); ok {
+	if value, ok := _u.mutation.Description(); ok {
 		_spec.SetField(systemcomponentcontrol.FieldDescription, field.TypeString, value)
 	}
-	if sccuo.mutation.DescriptionCleared() {
+	if _u.mutation.DescriptionCleared() {
 		_spec.ClearField(systemcomponentcontrol.FieldDescription, field.TypeString)
 	}
-	if value, ok := sccuo.mutation.CreatedAt(); ok {
+	if value, ok := _u.mutation.CreatedAt(); ok {
 		_spec.SetField(systemcomponentcontrol.FieldCreatedAt, field.TypeTime, value)
 	}
-	if sccuo.mutation.ComponentCleared() {
+	if _u.mutation.ComponentCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
@@ -674,7 +674,7 @@ func (sccuo *SystemComponentControlUpdateOne) sqlSave(ctx context.Context) (_nod
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := sccuo.mutation.ComponentIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.ComponentIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
@@ -690,7 +690,7 @@ func (sccuo *SystemComponentControlUpdateOne) sqlSave(ctx context.Context) (_nod
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if sccuo.mutation.RelationshipsCleared() {
+	if _u.mutation.RelationshipsCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
 			Inverse: true,
@@ -701,7 +701,7 @@ func (sccuo *SystemComponentControlUpdateOne) sqlSave(ctx context.Context) (_nod
 				IDSpec: sqlgraph.NewFieldSpec(systemanalysisrelationship.FieldID, field.TypeUUID),
 			},
 		}
-		createE := &SystemRelationshipControlActionCreate{config: sccuo.config, mutation: newSystemRelationshipControlActionMutation(sccuo.config, OpCreate)}
+		createE := &SystemRelationshipControlActionCreate{config: _u.config, mutation: newSystemRelationshipControlActionMutation(_u.config, OpCreate)}
 		_ = createE.defaults()
 		_, specE := createE.createSpec()
 		edge.Target.Fields = specE.Fields
@@ -710,7 +710,7 @@ func (sccuo *SystemComponentControlUpdateOne) sqlSave(ctx context.Context) (_nod
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := sccuo.mutation.RemovedRelationshipsIDs(); len(nodes) > 0 && !sccuo.mutation.RelationshipsCleared() {
+	if nodes := _u.mutation.RemovedRelationshipsIDs(); len(nodes) > 0 && !_u.mutation.RelationshipsCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
 			Inverse: true,
@@ -724,7 +724,7 @@ func (sccuo *SystemComponentControlUpdateOne) sqlSave(ctx context.Context) (_nod
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
-		createE := &SystemRelationshipControlActionCreate{config: sccuo.config, mutation: newSystemRelationshipControlActionMutation(sccuo.config, OpCreate)}
+		createE := &SystemRelationshipControlActionCreate{config: _u.config, mutation: newSystemRelationshipControlActionMutation(_u.config, OpCreate)}
 		_ = createE.defaults()
 		_, specE := createE.createSpec()
 		edge.Target.Fields = specE.Fields
@@ -733,7 +733,7 @@ func (sccuo *SystemComponentControlUpdateOne) sqlSave(ctx context.Context) (_nod
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := sccuo.mutation.RelationshipsIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.RelationshipsIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
 			Inverse: true,
@@ -747,7 +747,7 @@ func (sccuo *SystemComponentControlUpdateOne) sqlSave(ctx context.Context) (_nod
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
-		createE := &SystemRelationshipControlActionCreate{config: sccuo.config, mutation: newSystemRelationshipControlActionMutation(sccuo.config, OpCreate)}
+		createE := &SystemRelationshipControlActionCreate{config: _u.config, mutation: newSystemRelationshipControlActionMutation(_u.config, OpCreate)}
 		_ = createE.defaults()
 		_, specE := createE.createSpec()
 		edge.Target.Fields = specE.Fields
@@ -756,7 +756,7 @@ func (sccuo *SystemComponentControlUpdateOne) sqlSave(ctx context.Context) (_nod
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if sccuo.mutation.ControlActionsCleared() {
+	if _u.mutation.ControlActionsCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: true,
@@ -769,7 +769,7 @@ func (sccuo *SystemComponentControlUpdateOne) sqlSave(ctx context.Context) (_nod
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := sccuo.mutation.RemovedControlActionsIDs(); len(nodes) > 0 && !sccuo.mutation.ControlActionsCleared() {
+	if nodes := _u.mutation.RemovedControlActionsIDs(); len(nodes) > 0 && !_u.mutation.ControlActionsCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: true,
@@ -785,7 +785,7 @@ func (sccuo *SystemComponentControlUpdateOne) sqlSave(ctx context.Context) (_nod
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := sccuo.mutation.ControlActionsIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.ControlActionsIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: true,
@@ -801,11 +801,11 @@ func (sccuo *SystemComponentControlUpdateOne) sqlSave(ctx context.Context) (_nod
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	_spec.AddModifiers(sccuo.modifiers...)
-	_node = &SystemComponentControl{config: sccuo.config}
+	_spec.AddModifiers(_u.modifiers...)
+	_node = &SystemComponentControl{config: _u.config}
 	_spec.Assign = _node.assignValues
 	_spec.ScanValues = _node.scanValues
-	if err = sqlgraph.UpdateNode(ctx, sccuo.driver, _spec); err != nil {
+	if err = sqlgraph.UpdateNode(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{systemcomponentcontrol.Label}
 		} else if sqlgraph.IsConstraintError(err) {
@@ -813,6 +813,6 @@ func (sccuo *SystemComponentControlUpdateOne) sqlSave(ctx context.Context) (_nod
 		}
 		return nil, err
 	}
-	sccuo.mutation.done = true
+	_u.mutation.done = true
 	return _node, nil
 }

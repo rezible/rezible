@@ -267,92 +267,92 @@ func (*Incident) scanValues(columns []string) ([]any, error) {
 
 // assignValues assigns the values that were returned from sql.Rows (after scanning)
 // to the Incident fields.
-func (i *Incident) assignValues(columns []string, values []any) error {
+func (_m *Incident) assignValues(columns []string, values []any) error {
 	if m, n := len(values), len(columns); m < n {
 		return fmt.Errorf("mismatch number of scan values: %d != %d", m, n)
 	}
-	for j := range columns {
-		switch columns[j] {
+	for i := range columns {
+		switch columns[i] {
 		case incident.FieldID:
-			if value, ok := values[j].(*uuid.UUID); !ok {
-				return fmt.Errorf("unexpected type %T for field id", values[j])
+			if value, ok := values[i].(*uuid.UUID); !ok {
+				return fmt.Errorf("unexpected type %T for field id", values[i])
 			} else if value != nil {
-				i.ID = *value
+				_m.ID = *value
 			}
 		case incident.FieldTenantID:
-			if value, ok := values[j].(*sql.NullInt64); !ok {
-				return fmt.Errorf("unexpected type %T for field tenant_id", values[j])
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for field tenant_id", values[i])
 			} else if value.Valid {
-				i.TenantID = int(value.Int64)
+				_m.TenantID = int(value.Int64)
 			}
 		case incident.FieldSlug:
-			if value, ok := values[j].(*sql.NullString); !ok {
-				return fmt.Errorf("unexpected type %T for field slug", values[j])
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field slug", values[i])
 			} else if value.Valid {
-				i.Slug = value.String
+				_m.Slug = value.String
 			}
 		case incident.FieldTitle:
-			if value, ok := values[j].(*sql.NullString); !ok {
-				return fmt.Errorf("unexpected type %T for field title", values[j])
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field title", values[i])
 			} else if value.Valid {
-				i.Title = value.String
+				_m.Title = value.String
 			}
 		case incident.FieldPrivate:
-			if value, ok := values[j].(*sql.NullBool); !ok {
-				return fmt.Errorf("unexpected type %T for field private", values[j])
+			if value, ok := values[i].(*sql.NullBool); !ok {
+				return fmt.Errorf("unexpected type %T for field private", values[i])
 			} else if value.Valid {
-				i.Private = value.Bool
+				_m.Private = value.Bool
 			}
 		case incident.FieldSummary:
-			if value, ok := values[j].(*sql.NullString); !ok {
-				return fmt.Errorf("unexpected type %T for field summary", values[j])
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field summary", values[i])
 			} else if value.Valid {
-				i.Summary = value.String
+				_m.Summary = value.String
 			}
 		case incident.FieldOpenedAt:
-			if value, ok := values[j].(*sql.NullTime); !ok {
-				return fmt.Errorf("unexpected type %T for field opened_at", values[j])
+			if value, ok := values[i].(*sql.NullTime); !ok {
+				return fmt.Errorf("unexpected type %T for field opened_at", values[i])
 			} else if value.Valid {
-				i.OpenedAt = value.Time
+				_m.OpenedAt = value.Time
 			}
 		case incident.FieldModifiedAt:
-			if value, ok := values[j].(*sql.NullTime); !ok {
-				return fmt.Errorf("unexpected type %T for field modified_at", values[j])
+			if value, ok := values[i].(*sql.NullTime); !ok {
+				return fmt.Errorf("unexpected type %T for field modified_at", values[i])
 			} else if value.Valid {
-				i.ModifiedAt = value.Time
+				_m.ModifiedAt = value.Time
 			}
 		case incident.FieldClosedAt:
-			if value, ok := values[j].(*sql.NullTime); !ok {
-				return fmt.Errorf("unexpected type %T for field closed_at", values[j])
+			if value, ok := values[i].(*sql.NullTime); !ok {
+				return fmt.Errorf("unexpected type %T for field closed_at", values[i])
 			} else if value.Valid {
-				i.ClosedAt = value.Time
+				_m.ClosedAt = value.Time
 			}
 		case incident.FieldProviderID:
-			if value, ok := values[j].(*sql.NullString); !ok {
-				return fmt.Errorf("unexpected type %T for field provider_id", values[j])
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field provider_id", values[i])
 			} else if value.Valid {
-				i.ProviderID = value.String
+				_m.ProviderID = value.String
 			}
 		case incident.FieldChatChannelID:
-			if value, ok := values[j].(*sql.NullString); !ok {
-				return fmt.Errorf("unexpected type %T for field chat_channel_id", values[j])
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field chat_channel_id", values[i])
 			} else if value.Valid {
-				i.ChatChannelID = value.String
+				_m.ChatChannelID = value.String
 			}
 		case incident.FieldSeverityID:
-			if value, ok := values[j].(*uuid.UUID); !ok {
-				return fmt.Errorf("unexpected type %T for field severity_id", values[j])
+			if value, ok := values[i].(*uuid.UUID); !ok {
+				return fmt.Errorf("unexpected type %T for field severity_id", values[i])
 			} else if value != nil {
-				i.SeverityID = *value
+				_m.SeverityID = *value
 			}
 		case incident.FieldTypeID:
-			if value, ok := values[j].(*uuid.UUID); !ok {
-				return fmt.Errorf("unexpected type %T for field type_id", values[j])
+			if value, ok := values[i].(*uuid.UUID); !ok {
+				return fmt.Errorf("unexpected type %T for field type_id", values[i])
 			} else if value != nil {
-				i.TypeID = *value
+				_m.TypeID = *value
 			}
 		default:
-			i.selectValues.Set(columns[j], values[j])
+			_m.selectValues.Set(columns[i], values[i])
 		}
 	}
 	return nil
@@ -360,148 +360,148 @@ func (i *Incident) assignValues(columns []string, values []any) error {
 
 // Value returns the ent.Value that was dynamically selected and assigned to the Incident.
 // This includes values selected through modifiers, order, etc.
-func (i *Incident) Value(name string) (ent.Value, error) {
-	return i.selectValues.Get(name)
+func (_m *Incident) Value(name string) (ent.Value, error) {
+	return _m.selectValues.Get(name)
 }
 
 // QueryTenant queries the "tenant" edge of the Incident entity.
-func (i *Incident) QueryTenant() *TenantQuery {
-	return NewIncidentClient(i.config).QueryTenant(i)
+func (_m *Incident) QueryTenant() *TenantQuery {
+	return NewIncidentClient(_m.config).QueryTenant(_m)
 }
 
 // QuerySeverity queries the "severity" edge of the Incident entity.
-func (i *Incident) QuerySeverity() *IncidentSeverityQuery {
-	return NewIncidentClient(i.config).QuerySeverity(i)
+func (_m *Incident) QuerySeverity() *IncidentSeverityQuery {
+	return NewIncidentClient(_m.config).QuerySeverity(_m)
 }
 
 // QueryType queries the "type" edge of the Incident entity.
-func (i *Incident) QueryType() *IncidentTypeQuery {
-	return NewIncidentClient(i.config).QueryType(i)
+func (_m *Incident) QueryType() *IncidentTypeQuery {
+	return NewIncidentClient(_m.config).QueryType(_m)
 }
 
 // QueryMilestones queries the "milestones" edge of the Incident entity.
-func (i *Incident) QueryMilestones() *IncidentMilestoneQuery {
-	return NewIncidentClient(i.config).QueryMilestones(i)
+func (_m *Incident) QueryMilestones() *IncidentMilestoneQuery {
+	return NewIncidentClient(_m.config).QueryMilestones(_m)
 }
 
 // QueryEvents queries the "events" edge of the Incident entity.
-func (i *Incident) QueryEvents() *IncidentEventQuery {
-	return NewIncidentClient(i.config).QueryEvents(i)
+func (_m *Incident) QueryEvents() *IncidentEventQuery {
+	return NewIncidentClient(_m.config).QueryEvents(_m)
 }
 
 // QueryRetrospective queries the "retrospective" edge of the Incident entity.
-func (i *Incident) QueryRetrospective() *RetrospectiveQuery {
-	return NewIncidentClient(i.config).QueryRetrospective(i)
+func (_m *Incident) QueryRetrospective() *RetrospectiveQuery {
+	return NewIncidentClient(_m.config).QueryRetrospective(_m)
 }
 
 // QueryUsers queries the "users" edge of the Incident entity.
-func (i *Incident) QueryUsers() *UserQuery {
-	return NewIncidentClient(i.config).QueryUsers(i)
+func (_m *Incident) QueryUsers() *UserQuery {
+	return NewIncidentClient(_m.config).QueryUsers(_m)
 }
 
 // QueryRoleAssignments queries the "role_assignments" edge of the Incident entity.
-func (i *Incident) QueryRoleAssignments() *IncidentRoleAssignmentQuery {
-	return NewIncidentClient(i.config).QueryRoleAssignments(i)
+func (_m *Incident) QueryRoleAssignments() *IncidentRoleAssignmentQuery {
+	return NewIncidentClient(_m.config).QueryRoleAssignments(_m)
 }
 
 // QueryLinkedIncidents queries the "linked_incidents" edge of the Incident entity.
-func (i *Incident) QueryLinkedIncidents() *IncidentQuery {
-	return NewIncidentClient(i.config).QueryLinkedIncidents(i)
+func (_m *Incident) QueryLinkedIncidents() *IncidentQuery {
+	return NewIncidentClient(_m.config).QueryLinkedIncidents(_m)
 }
 
 // QueryFieldSelections queries the "field_selections" edge of the Incident entity.
-func (i *Incident) QueryFieldSelections() *IncidentFieldOptionQuery {
-	return NewIncidentClient(i.config).QueryFieldSelections(i)
+func (_m *Incident) QueryFieldSelections() *IncidentFieldOptionQuery {
+	return NewIncidentClient(_m.config).QueryFieldSelections(_m)
 }
 
 // QueryTasks queries the "tasks" edge of the Incident entity.
-func (i *Incident) QueryTasks() *TaskQuery {
-	return NewIncidentClient(i.config).QueryTasks(i)
+func (_m *Incident) QueryTasks() *TaskQuery {
+	return NewIncidentClient(_m.config).QueryTasks(_m)
 }
 
 // QueryTagAssignments queries the "tag_assignments" edge of the Incident entity.
-func (i *Incident) QueryTagAssignments() *IncidentTagQuery {
-	return NewIncidentClient(i.config).QueryTagAssignments(i)
+func (_m *Incident) QueryTagAssignments() *IncidentTagQuery {
+	return NewIncidentClient(_m.config).QueryTagAssignments(_m)
 }
 
 // QueryDebriefs queries the "debriefs" edge of the Incident entity.
-func (i *Incident) QueryDebriefs() *IncidentDebriefQuery {
-	return NewIncidentClient(i.config).QueryDebriefs(i)
+func (_m *Incident) QueryDebriefs() *IncidentDebriefQuery {
+	return NewIncidentClient(_m.config).QueryDebriefs(_m)
 }
 
 // QueryReviewSessions queries the "review_sessions" edge of the Incident entity.
-func (i *Incident) QueryReviewSessions() *MeetingSessionQuery {
-	return NewIncidentClient(i.config).QueryReviewSessions(i)
+func (_m *Incident) QueryReviewSessions() *MeetingSessionQuery {
+	return NewIncidentClient(_m.config).QueryReviewSessions(_m)
 }
 
 // QueryUserRoles queries the "user_roles" edge of the Incident entity.
-func (i *Incident) QueryUserRoles() *IncidentRoleAssignmentQuery {
-	return NewIncidentClient(i.config).QueryUserRoles(i)
+func (_m *Incident) QueryUserRoles() *IncidentRoleAssignmentQuery {
+	return NewIncidentClient(_m.config).QueryUserRoles(_m)
 }
 
 // QueryIncidentLinks queries the "incident_links" edge of the Incident entity.
-func (i *Incident) QueryIncidentLinks() *IncidentLinkQuery {
-	return NewIncidentClient(i.config).QueryIncidentLinks(i)
+func (_m *Incident) QueryIncidentLinks() *IncidentLinkQuery {
+	return NewIncidentClient(_m.config).QueryIncidentLinks(_m)
 }
 
 // Update returns a builder for updating this Incident.
 // Note that you need to call Incident.Unwrap() before calling this method if this Incident
 // was returned from a transaction, and the transaction was committed or rolled back.
-func (i *Incident) Update() *IncidentUpdateOne {
-	return NewIncidentClient(i.config).UpdateOne(i)
+func (_m *Incident) Update() *IncidentUpdateOne {
+	return NewIncidentClient(_m.config).UpdateOne(_m)
 }
 
 // Unwrap unwraps the Incident entity that was returned from a transaction after it was closed,
 // so that all future queries will be executed through the driver which created the transaction.
-func (i *Incident) Unwrap() *Incident {
-	_tx, ok := i.config.driver.(*txDriver)
+func (_m *Incident) Unwrap() *Incident {
+	_tx, ok := _m.config.driver.(*txDriver)
 	if !ok {
 		panic("ent: Incident is not a transactional entity")
 	}
-	i.config.driver = _tx.drv
-	return i
+	_m.config.driver = _tx.drv
+	return _m
 }
 
 // String implements the fmt.Stringer.
-func (i *Incident) String() string {
+func (_m *Incident) String() string {
 	var builder strings.Builder
 	builder.WriteString("Incident(")
-	builder.WriteString(fmt.Sprintf("id=%v, ", i.ID))
+	builder.WriteString(fmt.Sprintf("id=%v, ", _m.ID))
 	builder.WriteString("tenant_id=")
-	builder.WriteString(fmt.Sprintf("%v", i.TenantID))
+	builder.WriteString(fmt.Sprintf("%v", _m.TenantID))
 	builder.WriteString(", ")
 	builder.WriteString("slug=")
-	builder.WriteString(i.Slug)
+	builder.WriteString(_m.Slug)
 	builder.WriteString(", ")
 	builder.WriteString("title=")
-	builder.WriteString(i.Title)
+	builder.WriteString(_m.Title)
 	builder.WriteString(", ")
 	builder.WriteString("private=")
-	builder.WriteString(fmt.Sprintf("%v", i.Private))
+	builder.WriteString(fmt.Sprintf("%v", _m.Private))
 	builder.WriteString(", ")
 	builder.WriteString("summary=")
-	builder.WriteString(i.Summary)
+	builder.WriteString(_m.Summary)
 	builder.WriteString(", ")
 	builder.WriteString("opened_at=")
-	builder.WriteString(i.OpenedAt.Format(time.ANSIC))
+	builder.WriteString(_m.OpenedAt.Format(time.ANSIC))
 	builder.WriteString(", ")
 	builder.WriteString("modified_at=")
-	builder.WriteString(i.ModifiedAt.Format(time.ANSIC))
+	builder.WriteString(_m.ModifiedAt.Format(time.ANSIC))
 	builder.WriteString(", ")
 	builder.WriteString("closed_at=")
-	builder.WriteString(i.ClosedAt.Format(time.ANSIC))
+	builder.WriteString(_m.ClosedAt.Format(time.ANSIC))
 	builder.WriteString(", ")
 	builder.WriteString("provider_id=")
-	builder.WriteString(i.ProviderID)
+	builder.WriteString(_m.ProviderID)
 	builder.WriteString(", ")
 	builder.WriteString("chat_channel_id=")
-	builder.WriteString(i.ChatChannelID)
+	builder.WriteString(_m.ChatChannelID)
 	builder.WriteString(", ")
 	builder.WriteString("severity_id=")
-	builder.WriteString(fmt.Sprintf("%v", i.SeverityID))
+	builder.WriteString(fmt.Sprintf("%v", _m.SeverityID))
 	builder.WriteString(", ")
 	builder.WriteString("type_id=")
-	builder.WriteString(fmt.Sprintf("%v", i.TypeID))
+	builder.WriteString(fmt.Sprintf("%v", _m.TypeID))
 	builder.WriteByte(')')
 	return builder.String()
 }

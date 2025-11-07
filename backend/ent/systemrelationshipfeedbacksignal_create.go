@@ -28,102 +28,102 @@ type SystemRelationshipFeedbackSignalCreate struct {
 }
 
 // SetTenantID sets the "tenant_id" field.
-func (srfsc *SystemRelationshipFeedbackSignalCreate) SetTenantID(i int) *SystemRelationshipFeedbackSignalCreate {
-	srfsc.mutation.SetTenantID(i)
-	return srfsc
+func (_c *SystemRelationshipFeedbackSignalCreate) SetTenantID(v int) *SystemRelationshipFeedbackSignalCreate {
+	_c.mutation.SetTenantID(v)
+	return _c
 }
 
 // SetRelationshipID sets the "relationship_id" field.
-func (srfsc *SystemRelationshipFeedbackSignalCreate) SetRelationshipID(u uuid.UUID) *SystemRelationshipFeedbackSignalCreate {
-	srfsc.mutation.SetRelationshipID(u)
-	return srfsc
+func (_c *SystemRelationshipFeedbackSignalCreate) SetRelationshipID(v uuid.UUID) *SystemRelationshipFeedbackSignalCreate {
+	_c.mutation.SetRelationshipID(v)
+	return _c
 }
 
 // SetSignalID sets the "signal_id" field.
-func (srfsc *SystemRelationshipFeedbackSignalCreate) SetSignalID(u uuid.UUID) *SystemRelationshipFeedbackSignalCreate {
-	srfsc.mutation.SetSignalID(u)
-	return srfsc
+func (_c *SystemRelationshipFeedbackSignalCreate) SetSignalID(v uuid.UUID) *SystemRelationshipFeedbackSignalCreate {
+	_c.mutation.SetSignalID(v)
+	return _c
 }
 
 // SetType sets the "type" field.
-func (srfsc *SystemRelationshipFeedbackSignalCreate) SetType(s string) *SystemRelationshipFeedbackSignalCreate {
-	srfsc.mutation.SetType(s)
-	return srfsc
+func (_c *SystemRelationshipFeedbackSignalCreate) SetType(v string) *SystemRelationshipFeedbackSignalCreate {
+	_c.mutation.SetType(v)
+	return _c
 }
 
 // SetDescription sets the "description" field.
-func (srfsc *SystemRelationshipFeedbackSignalCreate) SetDescription(s string) *SystemRelationshipFeedbackSignalCreate {
-	srfsc.mutation.SetDescription(s)
-	return srfsc
+func (_c *SystemRelationshipFeedbackSignalCreate) SetDescription(v string) *SystemRelationshipFeedbackSignalCreate {
+	_c.mutation.SetDescription(v)
+	return _c
 }
 
 // SetNillableDescription sets the "description" field if the given value is not nil.
-func (srfsc *SystemRelationshipFeedbackSignalCreate) SetNillableDescription(s *string) *SystemRelationshipFeedbackSignalCreate {
-	if s != nil {
-		srfsc.SetDescription(*s)
+func (_c *SystemRelationshipFeedbackSignalCreate) SetNillableDescription(v *string) *SystemRelationshipFeedbackSignalCreate {
+	if v != nil {
+		_c.SetDescription(*v)
 	}
-	return srfsc
+	return _c
 }
 
 // SetCreatedAt sets the "created_at" field.
-func (srfsc *SystemRelationshipFeedbackSignalCreate) SetCreatedAt(t time.Time) *SystemRelationshipFeedbackSignalCreate {
-	srfsc.mutation.SetCreatedAt(t)
-	return srfsc
+func (_c *SystemRelationshipFeedbackSignalCreate) SetCreatedAt(v time.Time) *SystemRelationshipFeedbackSignalCreate {
+	_c.mutation.SetCreatedAt(v)
+	return _c
 }
 
 // SetNillableCreatedAt sets the "created_at" field if the given value is not nil.
-func (srfsc *SystemRelationshipFeedbackSignalCreate) SetNillableCreatedAt(t *time.Time) *SystemRelationshipFeedbackSignalCreate {
-	if t != nil {
-		srfsc.SetCreatedAt(*t)
+func (_c *SystemRelationshipFeedbackSignalCreate) SetNillableCreatedAt(v *time.Time) *SystemRelationshipFeedbackSignalCreate {
+	if v != nil {
+		_c.SetCreatedAt(*v)
 	}
-	return srfsc
+	return _c
 }
 
 // SetID sets the "id" field.
-func (srfsc *SystemRelationshipFeedbackSignalCreate) SetID(u uuid.UUID) *SystemRelationshipFeedbackSignalCreate {
-	srfsc.mutation.SetID(u)
-	return srfsc
+func (_c *SystemRelationshipFeedbackSignalCreate) SetID(v uuid.UUID) *SystemRelationshipFeedbackSignalCreate {
+	_c.mutation.SetID(v)
+	return _c
 }
 
 // SetNillableID sets the "id" field if the given value is not nil.
-func (srfsc *SystemRelationshipFeedbackSignalCreate) SetNillableID(u *uuid.UUID) *SystemRelationshipFeedbackSignalCreate {
-	if u != nil {
-		srfsc.SetID(*u)
+func (_c *SystemRelationshipFeedbackSignalCreate) SetNillableID(v *uuid.UUID) *SystemRelationshipFeedbackSignalCreate {
+	if v != nil {
+		_c.SetID(*v)
 	}
-	return srfsc
+	return _c
 }
 
 // SetTenant sets the "tenant" edge to the Tenant entity.
-func (srfsc *SystemRelationshipFeedbackSignalCreate) SetTenant(t *Tenant) *SystemRelationshipFeedbackSignalCreate {
-	return srfsc.SetTenantID(t.ID)
+func (_c *SystemRelationshipFeedbackSignalCreate) SetTenant(v *Tenant) *SystemRelationshipFeedbackSignalCreate {
+	return _c.SetTenantID(v.ID)
 }
 
 // SetRelationship sets the "relationship" edge to the SystemAnalysisRelationship entity.
-func (srfsc *SystemRelationshipFeedbackSignalCreate) SetRelationship(s *SystemAnalysisRelationship) *SystemRelationshipFeedbackSignalCreate {
-	return srfsc.SetRelationshipID(s.ID)
+func (_c *SystemRelationshipFeedbackSignalCreate) SetRelationship(v *SystemAnalysisRelationship) *SystemRelationshipFeedbackSignalCreate {
+	return _c.SetRelationshipID(v.ID)
 }
 
 // SetSignal sets the "signal" edge to the SystemComponentSignal entity.
-func (srfsc *SystemRelationshipFeedbackSignalCreate) SetSignal(s *SystemComponentSignal) *SystemRelationshipFeedbackSignalCreate {
-	return srfsc.SetSignalID(s.ID)
+func (_c *SystemRelationshipFeedbackSignalCreate) SetSignal(v *SystemComponentSignal) *SystemRelationshipFeedbackSignalCreate {
+	return _c.SetSignalID(v.ID)
 }
 
 // Mutation returns the SystemRelationshipFeedbackSignalMutation object of the builder.
-func (srfsc *SystemRelationshipFeedbackSignalCreate) Mutation() *SystemRelationshipFeedbackSignalMutation {
-	return srfsc.mutation
+func (_c *SystemRelationshipFeedbackSignalCreate) Mutation() *SystemRelationshipFeedbackSignalMutation {
+	return _c.mutation
 }
 
 // Save creates the SystemRelationshipFeedbackSignal in the database.
-func (srfsc *SystemRelationshipFeedbackSignalCreate) Save(ctx context.Context) (*SystemRelationshipFeedbackSignal, error) {
-	if err := srfsc.defaults(); err != nil {
+func (_c *SystemRelationshipFeedbackSignalCreate) Save(ctx context.Context) (*SystemRelationshipFeedbackSignal, error) {
+	if err := _c.defaults(); err != nil {
 		return nil, err
 	}
-	return withHooks(ctx, srfsc.sqlSave, srfsc.mutation, srfsc.hooks)
+	return withHooks(ctx, _c.sqlSave, _c.mutation, _c.hooks)
 }
 
 // SaveX calls Save and panics if Save returns an error.
-func (srfsc *SystemRelationshipFeedbackSignalCreate) SaveX(ctx context.Context) *SystemRelationshipFeedbackSignal {
-	v, err := srfsc.Save(ctx)
+func (_c *SystemRelationshipFeedbackSignalCreate) SaveX(ctx context.Context) *SystemRelationshipFeedbackSignal {
+	v, err := _c.Save(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -131,77 +131,77 @@ func (srfsc *SystemRelationshipFeedbackSignalCreate) SaveX(ctx context.Context) 
 }
 
 // Exec executes the query.
-func (srfsc *SystemRelationshipFeedbackSignalCreate) Exec(ctx context.Context) error {
-	_, err := srfsc.Save(ctx)
+func (_c *SystemRelationshipFeedbackSignalCreate) Exec(ctx context.Context) error {
+	_, err := _c.Save(ctx)
 	return err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (srfsc *SystemRelationshipFeedbackSignalCreate) ExecX(ctx context.Context) {
-	if err := srfsc.Exec(ctx); err != nil {
+func (_c *SystemRelationshipFeedbackSignalCreate) ExecX(ctx context.Context) {
+	if err := _c.Exec(ctx); err != nil {
 		panic(err)
 	}
 }
 
 // defaults sets the default values of the builder before save.
-func (srfsc *SystemRelationshipFeedbackSignalCreate) defaults() error {
-	if _, ok := srfsc.mutation.CreatedAt(); !ok {
+func (_c *SystemRelationshipFeedbackSignalCreate) defaults() error {
+	if _, ok := _c.mutation.CreatedAt(); !ok {
 		if systemrelationshipfeedbacksignal.DefaultCreatedAt == nil {
 			return fmt.Errorf("ent: uninitialized systemrelationshipfeedbacksignal.DefaultCreatedAt (forgotten import ent/runtime?)")
 		}
 		v := systemrelationshipfeedbacksignal.DefaultCreatedAt()
-		srfsc.mutation.SetCreatedAt(v)
+		_c.mutation.SetCreatedAt(v)
 	}
-	if _, ok := srfsc.mutation.ID(); !ok {
+	if _, ok := _c.mutation.ID(); !ok {
 		if systemrelationshipfeedbacksignal.DefaultID == nil {
 			return fmt.Errorf("ent: uninitialized systemrelationshipfeedbacksignal.DefaultID (forgotten import ent/runtime?)")
 		}
 		v := systemrelationshipfeedbacksignal.DefaultID()
-		srfsc.mutation.SetID(v)
+		_c.mutation.SetID(v)
 	}
 	return nil
 }
 
 // check runs all checks and user-defined validators on the builder.
-func (srfsc *SystemRelationshipFeedbackSignalCreate) check() error {
-	if _, ok := srfsc.mutation.TenantID(); !ok {
+func (_c *SystemRelationshipFeedbackSignalCreate) check() error {
+	if _, ok := _c.mutation.TenantID(); !ok {
 		return &ValidationError{Name: "tenant_id", err: errors.New(`ent: missing required field "SystemRelationshipFeedbackSignal.tenant_id"`)}
 	}
-	if _, ok := srfsc.mutation.RelationshipID(); !ok {
+	if _, ok := _c.mutation.RelationshipID(); !ok {
 		return &ValidationError{Name: "relationship_id", err: errors.New(`ent: missing required field "SystemRelationshipFeedbackSignal.relationship_id"`)}
 	}
-	if _, ok := srfsc.mutation.SignalID(); !ok {
+	if _, ok := _c.mutation.SignalID(); !ok {
 		return &ValidationError{Name: "signal_id", err: errors.New(`ent: missing required field "SystemRelationshipFeedbackSignal.signal_id"`)}
 	}
-	if _, ok := srfsc.mutation.GetType(); !ok {
+	if _, ok := _c.mutation.GetType(); !ok {
 		return &ValidationError{Name: "type", err: errors.New(`ent: missing required field "SystemRelationshipFeedbackSignal.type"`)}
 	}
-	if v, ok := srfsc.mutation.GetType(); ok {
+	if v, ok := _c.mutation.GetType(); ok {
 		if err := systemrelationshipfeedbacksignal.TypeValidator(v); err != nil {
 			return &ValidationError{Name: "type", err: fmt.Errorf(`ent: validator failed for field "SystemRelationshipFeedbackSignal.type": %w`, err)}
 		}
 	}
-	if _, ok := srfsc.mutation.CreatedAt(); !ok {
+	if _, ok := _c.mutation.CreatedAt(); !ok {
 		return &ValidationError{Name: "created_at", err: errors.New(`ent: missing required field "SystemRelationshipFeedbackSignal.created_at"`)}
 	}
-	if len(srfsc.mutation.TenantIDs()) == 0 {
+	if len(_c.mutation.TenantIDs()) == 0 {
 		return &ValidationError{Name: "tenant", err: errors.New(`ent: missing required edge "SystemRelationshipFeedbackSignal.tenant"`)}
 	}
-	if len(srfsc.mutation.RelationshipIDs()) == 0 {
+	if len(_c.mutation.RelationshipIDs()) == 0 {
 		return &ValidationError{Name: "relationship", err: errors.New(`ent: missing required edge "SystemRelationshipFeedbackSignal.relationship"`)}
 	}
-	if len(srfsc.mutation.SignalIDs()) == 0 {
+	if len(_c.mutation.SignalIDs()) == 0 {
 		return &ValidationError{Name: "signal", err: errors.New(`ent: missing required edge "SystemRelationshipFeedbackSignal.signal"`)}
 	}
 	return nil
 }
 
-func (srfsc *SystemRelationshipFeedbackSignalCreate) sqlSave(ctx context.Context) (*SystemRelationshipFeedbackSignal, error) {
-	if err := srfsc.check(); err != nil {
+func (_c *SystemRelationshipFeedbackSignalCreate) sqlSave(ctx context.Context) (*SystemRelationshipFeedbackSignal, error) {
+	if err := _c.check(); err != nil {
 		return nil, err
 	}
-	_node, _spec := srfsc.createSpec()
-	if err := sqlgraph.CreateNode(ctx, srfsc.driver, _spec); err != nil {
+	_node, _spec := _c.createSpec()
+	if err := sqlgraph.CreateNode(ctx, _c.driver, _spec); err != nil {
 		if sqlgraph.IsConstraintError(err) {
 			err = &ConstraintError{msg: err.Error(), wrap: err}
 		}
@@ -214,34 +214,34 @@ func (srfsc *SystemRelationshipFeedbackSignalCreate) sqlSave(ctx context.Context
 			return nil, err
 		}
 	}
-	srfsc.mutation.id = &_node.ID
-	srfsc.mutation.done = true
+	_c.mutation.id = &_node.ID
+	_c.mutation.done = true
 	return _node, nil
 }
 
-func (srfsc *SystemRelationshipFeedbackSignalCreate) createSpec() (*SystemRelationshipFeedbackSignal, *sqlgraph.CreateSpec) {
+func (_c *SystemRelationshipFeedbackSignalCreate) createSpec() (*SystemRelationshipFeedbackSignal, *sqlgraph.CreateSpec) {
 	var (
-		_node = &SystemRelationshipFeedbackSignal{config: srfsc.config}
+		_node = &SystemRelationshipFeedbackSignal{config: _c.config}
 		_spec = sqlgraph.NewCreateSpec(systemrelationshipfeedbacksignal.Table, sqlgraph.NewFieldSpec(systemrelationshipfeedbacksignal.FieldID, field.TypeUUID))
 	)
-	_spec.OnConflict = srfsc.conflict
-	if id, ok := srfsc.mutation.ID(); ok {
+	_spec.OnConflict = _c.conflict
+	if id, ok := _c.mutation.ID(); ok {
 		_node.ID = id
 		_spec.ID.Value = &id
 	}
-	if value, ok := srfsc.mutation.GetType(); ok {
+	if value, ok := _c.mutation.GetType(); ok {
 		_spec.SetField(systemrelationshipfeedbacksignal.FieldType, field.TypeString, value)
 		_node.Type = value
 	}
-	if value, ok := srfsc.mutation.Description(); ok {
+	if value, ok := _c.mutation.Description(); ok {
 		_spec.SetField(systemrelationshipfeedbacksignal.FieldDescription, field.TypeString, value)
 		_node.Description = value
 	}
-	if value, ok := srfsc.mutation.CreatedAt(); ok {
+	if value, ok := _c.mutation.CreatedAt(); ok {
 		_spec.SetField(systemrelationshipfeedbacksignal.FieldCreatedAt, field.TypeTime, value)
 		_node.CreatedAt = value
 	}
-	if nodes := srfsc.mutation.TenantIDs(); len(nodes) > 0 {
+	if nodes := _c.mutation.TenantIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
@@ -258,7 +258,7 @@ func (srfsc *SystemRelationshipFeedbackSignalCreate) createSpec() (*SystemRelati
 		_node.TenantID = nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
-	if nodes := srfsc.mutation.RelationshipIDs(); len(nodes) > 0 {
+	if nodes := _c.mutation.RelationshipIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
@@ -275,7 +275,7 @@ func (srfsc *SystemRelationshipFeedbackSignalCreate) createSpec() (*SystemRelati
 		_node.RelationshipID = nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
-	if nodes := srfsc.mutation.SignalIDs(); len(nodes) > 0 {
+	if nodes := _c.mutation.SignalIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
@@ -311,10 +311,10 @@ func (srfsc *SystemRelationshipFeedbackSignalCreate) createSpec() (*SystemRelati
 //			SetTenantID(v+v).
 //		}).
 //		Exec(ctx)
-func (srfsc *SystemRelationshipFeedbackSignalCreate) OnConflict(opts ...sql.ConflictOption) *SystemRelationshipFeedbackSignalUpsertOne {
-	srfsc.conflict = opts
+func (_c *SystemRelationshipFeedbackSignalCreate) OnConflict(opts ...sql.ConflictOption) *SystemRelationshipFeedbackSignalUpsertOne {
+	_c.conflict = opts
 	return &SystemRelationshipFeedbackSignalUpsertOne{
-		create: srfsc,
+		create: _c,
 	}
 }
 
@@ -324,10 +324,10 @@ func (srfsc *SystemRelationshipFeedbackSignalCreate) OnConflict(opts ...sql.Conf
 //	client.SystemRelationshipFeedbackSignal.Create().
 //		OnConflict(sql.ConflictColumns(columns...)).
 //		Exec(ctx)
-func (srfsc *SystemRelationshipFeedbackSignalCreate) OnConflictColumns(columns ...string) *SystemRelationshipFeedbackSignalUpsertOne {
-	srfsc.conflict = append(srfsc.conflict, sql.ConflictColumns(columns...))
+func (_c *SystemRelationshipFeedbackSignalCreate) OnConflictColumns(columns ...string) *SystemRelationshipFeedbackSignalUpsertOne {
+	_c.conflict = append(_c.conflict, sql.ConflictColumns(columns...))
 	return &SystemRelationshipFeedbackSignalUpsertOne{
-		create: srfsc,
+		create: _c,
 	}
 }
 
@@ -585,16 +585,16 @@ type SystemRelationshipFeedbackSignalCreateBulk struct {
 }
 
 // Save creates the SystemRelationshipFeedbackSignal entities in the database.
-func (srfscb *SystemRelationshipFeedbackSignalCreateBulk) Save(ctx context.Context) ([]*SystemRelationshipFeedbackSignal, error) {
-	if srfscb.err != nil {
-		return nil, srfscb.err
+func (_c *SystemRelationshipFeedbackSignalCreateBulk) Save(ctx context.Context) ([]*SystemRelationshipFeedbackSignal, error) {
+	if _c.err != nil {
+		return nil, _c.err
 	}
-	specs := make([]*sqlgraph.CreateSpec, len(srfscb.builders))
-	nodes := make([]*SystemRelationshipFeedbackSignal, len(srfscb.builders))
-	mutators := make([]Mutator, len(srfscb.builders))
-	for i := range srfscb.builders {
+	specs := make([]*sqlgraph.CreateSpec, len(_c.builders))
+	nodes := make([]*SystemRelationshipFeedbackSignal, len(_c.builders))
+	mutators := make([]Mutator, len(_c.builders))
+	for i := range _c.builders {
 		func(i int, root context.Context) {
-			builder := srfscb.builders[i]
+			builder := _c.builders[i]
 			builder.defaults()
 			var mut Mutator = MutateFunc(func(ctx context.Context, m Mutation) (Value, error) {
 				mutation, ok := m.(*SystemRelationshipFeedbackSignalMutation)
@@ -608,12 +608,12 @@ func (srfscb *SystemRelationshipFeedbackSignalCreateBulk) Save(ctx context.Conte
 				var err error
 				nodes[i], specs[i] = builder.createSpec()
 				if i < len(mutators)-1 {
-					_, err = mutators[i+1].Mutate(root, srfscb.builders[i+1].mutation)
+					_, err = mutators[i+1].Mutate(root, _c.builders[i+1].mutation)
 				} else {
 					spec := &sqlgraph.BatchCreateSpec{Nodes: specs}
-					spec.OnConflict = srfscb.conflict
+					spec.OnConflict = _c.conflict
 					// Invoke the actual operation on the latest mutation in the chain.
-					if err = sqlgraph.BatchCreate(ctx, srfscb.driver, spec); err != nil {
+					if err = sqlgraph.BatchCreate(ctx, _c.driver, spec); err != nil {
 						if sqlgraph.IsConstraintError(err) {
 							err = &ConstraintError{msg: err.Error(), wrap: err}
 						}
@@ -633,7 +633,7 @@ func (srfscb *SystemRelationshipFeedbackSignalCreateBulk) Save(ctx context.Conte
 		}(i, ctx)
 	}
 	if len(mutators) > 0 {
-		if _, err := mutators[0].Mutate(ctx, srfscb.builders[0].mutation); err != nil {
+		if _, err := mutators[0].Mutate(ctx, _c.builders[0].mutation); err != nil {
 			return nil, err
 		}
 	}
@@ -641,8 +641,8 @@ func (srfscb *SystemRelationshipFeedbackSignalCreateBulk) Save(ctx context.Conte
 }
 
 // SaveX is like Save, but panics if an error occurs.
-func (srfscb *SystemRelationshipFeedbackSignalCreateBulk) SaveX(ctx context.Context) []*SystemRelationshipFeedbackSignal {
-	v, err := srfscb.Save(ctx)
+func (_c *SystemRelationshipFeedbackSignalCreateBulk) SaveX(ctx context.Context) []*SystemRelationshipFeedbackSignal {
+	v, err := _c.Save(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -650,14 +650,14 @@ func (srfscb *SystemRelationshipFeedbackSignalCreateBulk) SaveX(ctx context.Cont
 }
 
 // Exec executes the query.
-func (srfscb *SystemRelationshipFeedbackSignalCreateBulk) Exec(ctx context.Context) error {
-	_, err := srfscb.Save(ctx)
+func (_c *SystemRelationshipFeedbackSignalCreateBulk) Exec(ctx context.Context) error {
+	_, err := _c.Save(ctx)
 	return err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (srfscb *SystemRelationshipFeedbackSignalCreateBulk) ExecX(ctx context.Context) {
-	if err := srfscb.Exec(ctx); err != nil {
+func (_c *SystemRelationshipFeedbackSignalCreateBulk) ExecX(ctx context.Context) {
+	if err := _c.Exec(ctx); err != nil {
 		panic(err)
 	}
 }
@@ -677,10 +677,10 @@ func (srfscb *SystemRelationshipFeedbackSignalCreateBulk) ExecX(ctx context.Cont
 //			SetTenantID(v+v).
 //		}).
 //		Exec(ctx)
-func (srfscb *SystemRelationshipFeedbackSignalCreateBulk) OnConflict(opts ...sql.ConflictOption) *SystemRelationshipFeedbackSignalUpsertBulk {
-	srfscb.conflict = opts
+func (_c *SystemRelationshipFeedbackSignalCreateBulk) OnConflict(opts ...sql.ConflictOption) *SystemRelationshipFeedbackSignalUpsertBulk {
+	_c.conflict = opts
 	return &SystemRelationshipFeedbackSignalUpsertBulk{
-		create: srfscb,
+		create: _c,
 	}
 }
 
@@ -690,10 +690,10 @@ func (srfscb *SystemRelationshipFeedbackSignalCreateBulk) OnConflict(opts ...sql
 //	client.SystemRelationshipFeedbackSignal.Create().
 //		OnConflict(sql.ConflictColumns(columns...)).
 //		Exec(ctx)
-func (srfscb *SystemRelationshipFeedbackSignalCreateBulk) OnConflictColumns(columns ...string) *SystemRelationshipFeedbackSignalUpsertBulk {
-	srfscb.conflict = append(srfscb.conflict, sql.ConflictColumns(columns...))
+func (_c *SystemRelationshipFeedbackSignalCreateBulk) OnConflictColumns(columns ...string) *SystemRelationshipFeedbackSignalUpsertBulk {
+	_c.conflict = append(_c.conflict, sql.ConflictColumns(columns...))
 	return &SystemRelationshipFeedbackSignalUpsertBulk{
-		create: srfscb,
+		create: _c,
 	}
 }
 

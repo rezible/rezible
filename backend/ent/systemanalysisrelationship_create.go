@@ -32,162 +32,162 @@ type SystemAnalysisRelationshipCreate struct {
 }
 
 // SetTenantID sets the "tenant_id" field.
-func (sarc *SystemAnalysisRelationshipCreate) SetTenantID(i int) *SystemAnalysisRelationshipCreate {
-	sarc.mutation.SetTenantID(i)
-	return sarc
+func (_c *SystemAnalysisRelationshipCreate) SetTenantID(v int) *SystemAnalysisRelationshipCreate {
+	_c.mutation.SetTenantID(v)
+	return _c
 }
 
 // SetAnalysisID sets the "analysis_id" field.
-func (sarc *SystemAnalysisRelationshipCreate) SetAnalysisID(u uuid.UUID) *SystemAnalysisRelationshipCreate {
-	sarc.mutation.SetAnalysisID(u)
-	return sarc
+func (_c *SystemAnalysisRelationshipCreate) SetAnalysisID(v uuid.UUID) *SystemAnalysisRelationshipCreate {
+	_c.mutation.SetAnalysisID(v)
+	return _c
 }
 
 // SetComponentRelationshipID sets the "component_relationship_id" field.
-func (sarc *SystemAnalysisRelationshipCreate) SetComponentRelationshipID(u uuid.UUID) *SystemAnalysisRelationshipCreate {
-	sarc.mutation.SetComponentRelationshipID(u)
-	return sarc
+func (_c *SystemAnalysisRelationshipCreate) SetComponentRelationshipID(v uuid.UUID) *SystemAnalysisRelationshipCreate {
+	_c.mutation.SetComponentRelationshipID(v)
+	return _c
 }
 
 // SetDescription sets the "description" field.
-func (sarc *SystemAnalysisRelationshipCreate) SetDescription(s string) *SystemAnalysisRelationshipCreate {
-	sarc.mutation.SetDescription(s)
-	return sarc
+func (_c *SystemAnalysisRelationshipCreate) SetDescription(v string) *SystemAnalysisRelationshipCreate {
+	_c.mutation.SetDescription(v)
+	return _c
 }
 
 // SetNillableDescription sets the "description" field if the given value is not nil.
-func (sarc *SystemAnalysisRelationshipCreate) SetNillableDescription(s *string) *SystemAnalysisRelationshipCreate {
-	if s != nil {
-		sarc.SetDescription(*s)
+func (_c *SystemAnalysisRelationshipCreate) SetNillableDescription(v *string) *SystemAnalysisRelationshipCreate {
+	if v != nil {
+		_c.SetDescription(*v)
 	}
-	return sarc
+	return _c
 }
 
 // SetCreatedAt sets the "created_at" field.
-func (sarc *SystemAnalysisRelationshipCreate) SetCreatedAt(t time.Time) *SystemAnalysisRelationshipCreate {
-	sarc.mutation.SetCreatedAt(t)
-	return sarc
+func (_c *SystemAnalysisRelationshipCreate) SetCreatedAt(v time.Time) *SystemAnalysisRelationshipCreate {
+	_c.mutation.SetCreatedAt(v)
+	return _c
 }
 
 // SetNillableCreatedAt sets the "created_at" field if the given value is not nil.
-func (sarc *SystemAnalysisRelationshipCreate) SetNillableCreatedAt(t *time.Time) *SystemAnalysisRelationshipCreate {
-	if t != nil {
-		sarc.SetCreatedAt(*t)
+func (_c *SystemAnalysisRelationshipCreate) SetNillableCreatedAt(v *time.Time) *SystemAnalysisRelationshipCreate {
+	if v != nil {
+		_c.SetCreatedAt(*v)
 	}
-	return sarc
+	return _c
 }
 
 // SetID sets the "id" field.
-func (sarc *SystemAnalysisRelationshipCreate) SetID(u uuid.UUID) *SystemAnalysisRelationshipCreate {
-	sarc.mutation.SetID(u)
-	return sarc
+func (_c *SystemAnalysisRelationshipCreate) SetID(v uuid.UUID) *SystemAnalysisRelationshipCreate {
+	_c.mutation.SetID(v)
+	return _c
 }
 
 // SetNillableID sets the "id" field if the given value is not nil.
-func (sarc *SystemAnalysisRelationshipCreate) SetNillableID(u *uuid.UUID) *SystemAnalysisRelationshipCreate {
-	if u != nil {
-		sarc.SetID(*u)
+func (_c *SystemAnalysisRelationshipCreate) SetNillableID(v *uuid.UUID) *SystemAnalysisRelationshipCreate {
+	if v != nil {
+		_c.SetID(*v)
 	}
-	return sarc
+	return _c
 }
 
 // SetTenant sets the "tenant" edge to the Tenant entity.
-func (sarc *SystemAnalysisRelationshipCreate) SetTenant(t *Tenant) *SystemAnalysisRelationshipCreate {
-	return sarc.SetTenantID(t.ID)
+func (_c *SystemAnalysisRelationshipCreate) SetTenant(v *Tenant) *SystemAnalysisRelationshipCreate {
+	return _c.SetTenantID(v.ID)
 }
 
 // SetSystemAnalysisID sets the "system_analysis" edge to the SystemAnalysis entity by ID.
-func (sarc *SystemAnalysisRelationshipCreate) SetSystemAnalysisID(id uuid.UUID) *SystemAnalysisRelationshipCreate {
-	sarc.mutation.SetSystemAnalysisID(id)
-	return sarc
+func (_c *SystemAnalysisRelationshipCreate) SetSystemAnalysisID(id uuid.UUID) *SystemAnalysisRelationshipCreate {
+	_c.mutation.SetSystemAnalysisID(id)
+	return _c
 }
 
 // SetSystemAnalysis sets the "system_analysis" edge to the SystemAnalysis entity.
-func (sarc *SystemAnalysisRelationshipCreate) SetSystemAnalysis(s *SystemAnalysis) *SystemAnalysisRelationshipCreate {
-	return sarc.SetSystemAnalysisID(s.ID)
+func (_c *SystemAnalysisRelationshipCreate) SetSystemAnalysis(v *SystemAnalysis) *SystemAnalysisRelationshipCreate {
+	return _c.SetSystemAnalysisID(v.ID)
 }
 
 // SetComponentRelationship sets the "component_relationship" edge to the SystemComponentRelationship entity.
-func (sarc *SystemAnalysisRelationshipCreate) SetComponentRelationship(s *SystemComponentRelationship) *SystemAnalysisRelationshipCreate {
-	return sarc.SetComponentRelationshipID(s.ID)
+func (_c *SystemAnalysisRelationshipCreate) SetComponentRelationship(v *SystemComponentRelationship) *SystemAnalysisRelationshipCreate {
+	return _c.SetComponentRelationshipID(v.ID)
 }
 
 // AddControlIDs adds the "controls" edge to the SystemComponentControl entity by IDs.
-func (sarc *SystemAnalysisRelationshipCreate) AddControlIDs(ids ...uuid.UUID) *SystemAnalysisRelationshipCreate {
-	sarc.mutation.AddControlIDs(ids...)
-	return sarc
+func (_c *SystemAnalysisRelationshipCreate) AddControlIDs(ids ...uuid.UUID) *SystemAnalysisRelationshipCreate {
+	_c.mutation.AddControlIDs(ids...)
+	return _c
 }
 
 // AddControls adds the "controls" edges to the SystemComponentControl entity.
-func (sarc *SystemAnalysisRelationshipCreate) AddControls(s ...*SystemComponentControl) *SystemAnalysisRelationshipCreate {
-	ids := make([]uuid.UUID, len(s))
-	for i := range s {
-		ids[i] = s[i].ID
+func (_c *SystemAnalysisRelationshipCreate) AddControls(v ...*SystemComponentControl) *SystemAnalysisRelationshipCreate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
 	}
-	return sarc.AddControlIDs(ids...)
+	return _c.AddControlIDs(ids...)
 }
 
 // AddSignalIDs adds the "signals" edge to the SystemComponentSignal entity by IDs.
-func (sarc *SystemAnalysisRelationshipCreate) AddSignalIDs(ids ...uuid.UUID) *SystemAnalysisRelationshipCreate {
-	sarc.mutation.AddSignalIDs(ids...)
-	return sarc
+func (_c *SystemAnalysisRelationshipCreate) AddSignalIDs(ids ...uuid.UUID) *SystemAnalysisRelationshipCreate {
+	_c.mutation.AddSignalIDs(ids...)
+	return _c
 }
 
 // AddSignals adds the "signals" edges to the SystemComponentSignal entity.
-func (sarc *SystemAnalysisRelationshipCreate) AddSignals(s ...*SystemComponentSignal) *SystemAnalysisRelationshipCreate {
-	ids := make([]uuid.UUID, len(s))
-	for i := range s {
-		ids[i] = s[i].ID
+func (_c *SystemAnalysisRelationshipCreate) AddSignals(v ...*SystemComponentSignal) *SystemAnalysisRelationshipCreate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
 	}
-	return sarc.AddSignalIDs(ids...)
+	return _c.AddSignalIDs(ids...)
 }
 
 // AddControlActionIDs adds the "control_actions" edge to the SystemRelationshipControlAction entity by IDs.
-func (sarc *SystemAnalysisRelationshipCreate) AddControlActionIDs(ids ...uuid.UUID) *SystemAnalysisRelationshipCreate {
-	sarc.mutation.AddControlActionIDs(ids...)
-	return sarc
+func (_c *SystemAnalysisRelationshipCreate) AddControlActionIDs(ids ...uuid.UUID) *SystemAnalysisRelationshipCreate {
+	_c.mutation.AddControlActionIDs(ids...)
+	return _c
 }
 
 // AddControlActions adds the "control_actions" edges to the SystemRelationshipControlAction entity.
-func (sarc *SystemAnalysisRelationshipCreate) AddControlActions(s ...*SystemRelationshipControlAction) *SystemAnalysisRelationshipCreate {
-	ids := make([]uuid.UUID, len(s))
-	for i := range s {
-		ids[i] = s[i].ID
+func (_c *SystemAnalysisRelationshipCreate) AddControlActions(v ...*SystemRelationshipControlAction) *SystemAnalysisRelationshipCreate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
 	}
-	return sarc.AddControlActionIDs(ids...)
+	return _c.AddControlActionIDs(ids...)
 }
 
 // AddFeedbackSignalIDs adds the "feedback_signals" edge to the SystemRelationshipFeedbackSignal entity by IDs.
-func (sarc *SystemAnalysisRelationshipCreate) AddFeedbackSignalIDs(ids ...uuid.UUID) *SystemAnalysisRelationshipCreate {
-	sarc.mutation.AddFeedbackSignalIDs(ids...)
-	return sarc
+func (_c *SystemAnalysisRelationshipCreate) AddFeedbackSignalIDs(ids ...uuid.UUID) *SystemAnalysisRelationshipCreate {
+	_c.mutation.AddFeedbackSignalIDs(ids...)
+	return _c
 }
 
 // AddFeedbackSignals adds the "feedback_signals" edges to the SystemRelationshipFeedbackSignal entity.
-func (sarc *SystemAnalysisRelationshipCreate) AddFeedbackSignals(s ...*SystemRelationshipFeedbackSignal) *SystemAnalysisRelationshipCreate {
-	ids := make([]uuid.UUID, len(s))
-	for i := range s {
-		ids[i] = s[i].ID
+func (_c *SystemAnalysisRelationshipCreate) AddFeedbackSignals(v ...*SystemRelationshipFeedbackSignal) *SystemAnalysisRelationshipCreate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
 	}
-	return sarc.AddFeedbackSignalIDs(ids...)
+	return _c.AddFeedbackSignalIDs(ids...)
 }
 
 // Mutation returns the SystemAnalysisRelationshipMutation object of the builder.
-func (sarc *SystemAnalysisRelationshipCreate) Mutation() *SystemAnalysisRelationshipMutation {
-	return sarc.mutation
+func (_c *SystemAnalysisRelationshipCreate) Mutation() *SystemAnalysisRelationshipMutation {
+	return _c.mutation
 }
 
 // Save creates the SystemAnalysisRelationship in the database.
-func (sarc *SystemAnalysisRelationshipCreate) Save(ctx context.Context) (*SystemAnalysisRelationship, error) {
-	if err := sarc.defaults(); err != nil {
+func (_c *SystemAnalysisRelationshipCreate) Save(ctx context.Context) (*SystemAnalysisRelationship, error) {
+	if err := _c.defaults(); err != nil {
 		return nil, err
 	}
-	return withHooks(ctx, sarc.sqlSave, sarc.mutation, sarc.hooks)
+	return withHooks(ctx, _c.sqlSave, _c.mutation, _c.hooks)
 }
 
 // SaveX calls Save and panics if Save returns an error.
-func (sarc *SystemAnalysisRelationshipCreate) SaveX(ctx context.Context) *SystemAnalysisRelationship {
-	v, err := sarc.Save(ctx)
+func (_c *SystemAnalysisRelationshipCreate) SaveX(ctx context.Context) *SystemAnalysisRelationship {
+	v, err := _c.Save(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -195,69 +195,69 @@ func (sarc *SystemAnalysisRelationshipCreate) SaveX(ctx context.Context) *System
 }
 
 // Exec executes the query.
-func (sarc *SystemAnalysisRelationshipCreate) Exec(ctx context.Context) error {
-	_, err := sarc.Save(ctx)
+func (_c *SystemAnalysisRelationshipCreate) Exec(ctx context.Context) error {
+	_, err := _c.Save(ctx)
 	return err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (sarc *SystemAnalysisRelationshipCreate) ExecX(ctx context.Context) {
-	if err := sarc.Exec(ctx); err != nil {
+func (_c *SystemAnalysisRelationshipCreate) ExecX(ctx context.Context) {
+	if err := _c.Exec(ctx); err != nil {
 		panic(err)
 	}
 }
 
 // defaults sets the default values of the builder before save.
-func (sarc *SystemAnalysisRelationshipCreate) defaults() error {
-	if _, ok := sarc.mutation.CreatedAt(); !ok {
+func (_c *SystemAnalysisRelationshipCreate) defaults() error {
+	if _, ok := _c.mutation.CreatedAt(); !ok {
 		if systemanalysisrelationship.DefaultCreatedAt == nil {
 			return fmt.Errorf("ent: uninitialized systemanalysisrelationship.DefaultCreatedAt (forgotten import ent/runtime?)")
 		}
 		v := systemanalysisrelationship.DefaultCreatedAt()
-		sarc.mutation.SetCreatedAt(v)
+		_c.mutation.SetCreatedAt(v)
 	}
-	if _, ok := sarc.mutation.ID(); !ok {
+	if _, ok := _c.mutation.ID(); !ok {
 		if systemanalysisrelationship.DefaultID == nil {
 			return fmt.Errorf("ent: uninitialized systemanalysisrelationship.DefaultID (forgotten import ent/runtime?)")
 		}
 		v := systemanalysisrelationship.DefaultID()
-		sarc.mutation.SetID(v)
+		_c.mutation.SetID(v)
 	}
 	return nil
 }
 
 // check runs all checks and user-defined validators on the builder.
-func (sarc *SystemAnalysisRelationshipCreate) check() error {
-	if _, ok := sarc.mutation.TenantID(); !ok {
+func (_c *SystemAnalysisRelationshipCreate) check() error {
+	if _, ok := _c.mutation.TenantID(); !ok {
 		return &ValidationError{Name: "tenant_id", err: errors.New(`ent: missing required field "SystemAnalysisRelationship.tenant_id"`)}
 	}
-	if _, ok := sarc.mutation.AnalysisID(); !ok {
+	if _, ok := _c.mutation.AnalysisID(); !ok {
 		return &ValidationError{Name: "analysis_id", err: errors.New(`ent: missing required field "SystemAnalysisRelationship.analysis_id"`)}
 	}
-	if _, ok := sarc.mutation.ComponentRelationshipID(); !ok {
+	if _, ok := _c.mutation.ComponentRelationshipID(); !ok {
 		return &ValidationError{Name: "component_relationship_id", err: errors.New(`ent: missing required field "SystemAnalysisRelationship.component_relationship_id"`)}
 	}
-	if _, ok := sarc.mutation.CreatedAt(); !ok {
+	if _, ok := _c.mutation.CreatedAt(); !ok {
 		return &ValidationError{Name: "created_at", err: errors.New(`ent: missing required field "SystemAnalysisRelationship.created_at"`)}
 	}
-	if len(sarc.mutation.TenantIDs()) == 0 {
+	if len(_c.mutation.TenantIDs()) == 0 {
 		return &ValidationError{Name: "tenant", err: errors.New(`ent: missing required edge "SystemAnalysisRelationship.tenant"`)}
 	}
-	if len(sarc.mutation.SystemAnalysisIDs()) == 0 {
+	if len(_c.mutation.SystemAnalysisIDs()) == 0 {
 		return &ValidationError{Name: "system_analysis", err: errors.New(`ent: missing required edge "SystemAnalysisRelationship.system_analysis"`)}
 	}
-	if len(sarc.mutation.ComponentRelationshipIDs()) == 0 {
+	if len(_c.mutation.ComponentRelationshipIDs()) == 0 {
 		return &ValidationError{Name: "component_relationship", err: errors.New(`ent: missing required edge "SystemAnalysisRelationship.component_relationship"`)}
 	}
 	return nil
 }
 
-func (sarc *SystemAnalysisRelationshipCreate) sqlSave(ctx context.Context) (*SystemAnalysisRelationship, error) {
-	if err := sarc.check(); err != nil {
+func (_c *SystemAnalysisRelationshipCreate) sqlSave(ctx context.Context) (*SystemAnalysisRelationship, error) {
+	if err := _c.check(); err != nil {
 		return nil, err
 	}
-	_node, _spec := sarc.createSpec()
-	if err := sqlgraph.CreateNode(ctx, sarc.driver, _spec); err != nil {
+	_node, _spec := _c.createSpec()
+	if err := sqlgraph.CreateNode(ctx, _c.driver, _spec); err != nil {
 		if sqlgraph.IsConstraintError(err) {
 			err = &ConstraintError{msg: err.Error(), wrap: err}
 		}
@@ -270,30 +270,30 @@ func (sarc *SystemAnalysisRelationshipCreate) sqlSave(ctx context.Context) (*Sys
 			return nil, err
 		}
 	}
-	sarc.mutation.id = &_node.ID
-	sarc.mutation.done = true
+	_c.mutation.id = &_node.ID
+	_c.mutation.done = true
 	return _node, nil
 }
 
-func (sarc *SystemAnalysisRelationshipCreate) createSpec() (*SystemAnalysisRelationship, *sqlgraph.CreateSpec) {
+func (_c *SystemAnalysisRelationshipCreate) createSpec() (*SystemAnalysisRelationship, *sqlgraph.CreateSpec) {
 	var (
-		_node = &SystemAnalysisRelationship{config: sarc.config}
+		_node = &SystemAnalysisRelationship{config: _c.config}
 		_spec = sqlgraph.NewCreateSpec(systemanalysisrelationship.Table, sqlgraph.NewFieldSpec(systemanalysisrelationship.FieldID, field.TypeUUID))
 	)
-	_spec.OnConflict = sarc.conflict
-	if id, ok := sarc.mutation.ID(); ok {
+	_spec.OnConflict = _c.conflict
+	if id, ok := _c.mutation.ID(); ok {
 		_node.ID = id
 		_spec.ID.Value = &id
 	}
-	if value, ok := sarc.mutation.Description(); ok {
+	if value, ok := _c.mutation.Description(); ok {
 		_spec.SetField(systemanalysisrelationship.FieldDescription, field.TypeString, value)
 		_node.Description = value
 	}
-	if value, ok := sarc.mutation.CreatedAt(); ok {
+	if value, ok := _c.mutation.CreatedAt(); ok {
 		_spec.SetField(systemanalysisrelationship.FieldCreatedAt, field.TypeTime, value)
 		_node.CreatedAt = value
 	}
-	if nodes := sarc.mutation.TenantIDs(); len(nodes) > 0 {
+	if nodes := _c.mutation.TenantIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
@@ -310,7 +310,7 @@ func (sarc *SystemAnalysisRelationshipCreate) createSpec() (*SystemAnalysisRelat
 		_node.TenantID = nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
-	if nodes := sarc.mutation.SystemAnalysisIDs(); len(nodes) > 0 {
+	if nodes := _c.mutation.SystemAnalysisIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
@@ -327,7 +327,7 @@ func (sarc *SystemAnalysisRelationshipCreate) createSpec() (*SystemAnalysisRelat
 		_node.AnalysisID = nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
-	if nodes := sarc.mutation.ComponentRelationshipIDs(); len(nodes) > 0 {
+	if nodes := _c.mutation.ComponentRelationshipIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
@@ -344,7 +344,7 @@ func (sarc *SystemAnalysisRelationshipCreate) createSpec() (*SystemAnalysisRelat
 		_node.ComponentRelationshipID = nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
-	if nodes := sarc.mutation.ControlsIDs(); len(nodes) > 0 {
+	if nodes := _c.mutation.ControlsIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
 			Inverse: false,
@@ -358,7 +358,7 @@ func (sarc *SystemAnalysisRelationshipCreate) createSpec() (*SystemAnalysisRelat
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
-		createE := &SystemRelationshipControlActionCreate{config: sarc.config, mutation: newSystemRelationshipControlActionMutation(sarc.config, OpCreate)}
+		createE := &SystemRelationshipControlActionCreate{config: _c.config, mutation: newSystemRelationshipControlActionMutation(_c.config, OpCreate)}
 		_ = createE.defaults()
 		_, specE := createE.createSpec()
 		edge.Target.Fields = specE.Fields
@@ -367,7 +367,7 @@ func (sarc *SystemAnalysisRelationshipCreate) createSpec() (*SystemAnalysisRelat
 		}
 		_spec.Edges = append(_spec.Edges, edge)
 	}
-	if nodes := sarc.mutation.SignalsIDs(); len(nodes) > 0 {
+	if nodes := _c.mutation.SignalsIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
 			Inverse: false,
@@ -381,7 +381,7 @@ func (sarc *SystemAnalysisRelationshipCreate) createSpec() (*SystemAnalysisRelat
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
-		createE := &SystemRelationshipFeedbackSignalCreate{config: sarc.config, mutation: newSystemRelationshipFeedbackSignalMutation(sarc.config, OpCreate)}
+		createE := &SystemRelationshipFeedbackSignalCreate{config: _c.config, mutation: newSystemRelationshipFeedbackSignalMutation(_c.config, OpCreate)}
 		_ = createE.defaults()
 		_, specE := createE.createSpec()
 		edge.Target.Fields = specE.Fields
@@ -390,7 +390,7 @@ func (sarc *SystemAnalysisRelationshipCreate) createSpec() (*SystemAnalysisRelat
 		}
 		_spec.Edges = append(_spec.Edges, edge)
 	}
-	if nodes := sarc.mutation.ControlActionsIDs(); len(nodes) > 0 {
+	if nodes := _c.mutation.ControlActionsIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: true,
@@ -406,7 +406,7 @@ func (sarc *SystemAnalysisRelationshipCreate) createSpec() (*SystemAnalysisRelat
 		}
 		_spec.Edges = append(_spec.Edges, edge)
 	}
-	if nodes := sarc.mutation.FeedbackSignalsIDs(); len(nodes) > 0 {
+	if nodes := _c.mutation.FeedbackSignalsIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: true,
@@ -441,10 +441,10 @@ func (sarc *SystemAnalysisRelationshipCreate) createSpec() (*SystemAnalysisRelat
 //			SetTenantID(v+v).
 //		}).
 //		Exec(ctx)
-func (sarc *SystemAnalysisRelationshipCreate) OnConflict(opts ...sql.ConflictOption) *SystemAnalysisRelationshipUpsertOne {
-	sarc.conflict = opts
+func (_c *SystemAnalysisRelationshipCreate) OnConflict(opts ...sql.ConflictOption) *SystemAnalysisRelationshipUpsertOne {
+	_c.conflict = opts
 	return &SystemAnalysisRelationshipUpsertOne{
-		create: sarc,
+		create: _c,
 	}
 }
 
@@ -454,10 +454,10 @@ func (sarc *SystemAnalysisRelationshipCreate) OnConflict(opts ...sql.ConflictOpt
 //	client.SystemAnalysisRelationship.Create().
 //		OnConflict(sql.ConflictColumns(columns...)).
 //		Exec(ctx)
-func (sarc *SystemAnalysisRelationshipCreate) OnConflictColumns(columns ...string) *SystemAnalysisRelationshipUpsertOne {
-	sarc.conflict = append(sarc.conflict, sql.ConflictColumns(columns...))
+func (_c *SystemAnalysisRelationshipCreate) OnConflictColumns(columns ...string) *SystemAnalysisRelationshipUpsertOne {
+	_c.conflict = append(_c.conflict, sql.ConflictColumns(columns...))
 	return &SystemAnalysisRelationshipUpsertOne{
-		create: sarc,
+		create: _c,
 	}
 }
 
@@ -689,16 +689,16 @@ type SystemAnalysisRelationshipCreateBulk struct {
 }
 
 // Save creates the SystemAnalysisRelationship entities in the database.
-func (sarcb *SystemAnalysisRelationshipCreateBulk) Save(ctx context.Context) ([]*SystemAnalysisRelationship, error) {
-	if sarcb.err != nil {
-		return nil, sarcb.err
+func (_c *SystemAnalysisRelationshipCreateBulk) Save(ctx context.Context) ([]*SystemAnalysisRelationship, error) {
+	if _c.err != nil {
+		return nil, _c.err
 	}
-	specs := make([]*sqlgraph.CreateSpec, len(sarcb.builders))
-	nodes := make([]*SystemAnalysisRelationship, len(sarcb.builders))
-	mutators := make([]Mutator, len(sarcb.builders))
-	for i := range sarcb.builders {
+	specs := make([]*sqlgraph.CreateSpec, len(_c.builders))
+	nodes := make([]*SystemAnalysisRelationship, len(_c.builders))
+	mutators := make([]Mutator, len(_c.builders))
+	for i := range _c.builders {
 		func(i int, root context.Context) {
-			builder := sarcb.builders[i]
+			builder := _c.builders[i]
 			builder.defaults()
 			var mut Mutator = MutateFunc(func(ctx context.Context, m Mutation) (Value, error) {
 				mutation, ok := m.(*SystemAnalysisRelationshipMutation)
@@ -712,12 +712,12 @@ func (sarcb *SystemAnalysisRelationshipCreateBulk) Save(ctx context.Context) ([]
 				var err error
 				nodes[i], specs[i] = builder.createSpec()
 				if i < len(mutators)-1 {
-					_, err = mutators[i+1].Mutate(root, sarcb.builders[i+1].mutation)
+					_, err = mutators[i+1].Mutate(root, _c.builders[i+1].mutation)
 				} else {
 					spec := &sqlgraph.BatchCreateSpec{Nodes: specs}
-					spec.OnConflict = sarcb.conflict
+					spec.OnConflict = _c.conflict
 					// Invoke the actual operation on the latest mutation in the chain.
-					if err = sqlgraph.BatchCreate(ctx, sarcb.driver, spec); err != nil {
+					if err = sqlgraph.BatchCreate(ctx, _c.driver, spec); err != nil {
 						if sqlgraph.IsConstraintError(err) {
 							err = &ConstraintError{msg: err.Error(), wrap: err}
 						}
@@ -737,7 +737,7 @@ func (sarcb *SystemAnalysisRelationshipCreateBulk) Save(ctx context.Context) ([]
 		}(i, ctx)
 	}
 	if len(mutators) > 0 {
-		if _, err := mutators[0].Mutate(ctx, sarcb.builders[0].mutation); err != nil {
+		if _, err := mutators[0].Mutate(ctx, _c.builders[0].mutation); err != nil {
 			return nil, err
 		}
 	}
@@ -745,8 +745,8 @@ func (sarcb *SystemAnalysisRelationshipCreateBulk) Save(ctx context.Context) ([]
 }
 
 // SaveX is like Save, but panics if an error occurs.
-func (sarcb *SystemAnalysisRelationshipCreateBulk) SaveX(ctx context.Context) []*SystemAnalysisRelationship {
-	v, err := sarcb.Save(ctx)
+func (_c *SystemAnalysisRelationshipCreateBulk) SaveX(ctx context.Context) []*SystemAnalysisRelationship {
+	v, err := _c.Save(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -754,14 +754,14 @@ func (sarcb *SystemAnalysisRelationshipCreateBulk) SaveX(ctx context.Context) []
 }
 
 // Exec executes the query.
-func (sarcb *SystemAnalysisRelationshipCreateBulk) Exec(ctx context.Context) error {
-	_, err := sarcb.Save(ctx)
+func (_c *SystemAnalysisRelationshipCreateBulk) Exec(ctx context.Context) error {
+	_, err := _c.Save(ctx)
 	return err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (sarcb *SystemAnalysisRelationshipCreateBulk) ExecX(ctx context.Context) {
-	if err := sarcb.Exec(ctx); err != nil {
+func (_c *SystemAnalysisRelationshipCreateBulk) ExecX(ctx context.Context) {
+	if err := _c.Exec(ctx); err != nil {
 		panic(err)
 	}
 }
@@ -781,10 +781,10 @@ func (sarcb *SystemAnalysisRelationshipCreateBulk) ExecX(ctx context.Context) {
 //			SetTenantID(v+v).
 //		}).
 //		Exec(ctx)
-func (sarcb *SystemAnalysisRelationshipCreateBulk) OnConflict(opts ...sql.ConflictOption) *SystemAnalysisRelationshipUpsertBulk {
-	sarcb.conflict = opts
+func (_c *SystemAnalysisRelationshipCreateBulk) OnConflict(opts ...sql.ConflictOption) *SystemAnalysisRelationshipUpsertBulk {
+	_c.conflict = opts
 	return &SystemAnalysisRelationshipUpsertBulk{
-		create: sarcb,
+		create: _c,
 	}
 }
 
@@ -794,10 +794,10 @@ func (sarcb *SystemAnalysisRelationshipCreateBulk) OnConflict(opts ...sql.Confli
 //	client.SystemAnalysisRelationship.Create().
 //		OnConflict(sql.ConflictColumns(columns...)).
 //		Exec(ctx)
-func (sarcb *SystemAnalysisRelationshipCreateBulk) OnConflictColumns(columns ...string) *SystemAnalysisRelationshipUpsertBulk {
-	sarcb.conflict = append(sarcb.conflict, sql.ConflictColumns(columns...))
+func (_c *SystemAnalysisRelationshipCreateBulk) OnConflictColumns(columns ...string) *SystemAnalysisRelationshipUpsertBulk {
+	_c.conflict = append(_c.conflict, sql.ConflictColumns(columns...))
 	return &SystemAnalysisRelationshipUpsertBulk{
-		create: sarcb,
+		create: _c,
 	}
 }
 

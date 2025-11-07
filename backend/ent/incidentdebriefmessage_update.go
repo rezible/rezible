@@ -27,156 +27,156 @@ type IncidentDebriefMessageUpdate struct {
 }
 
 // Where appends a list predicates to the IncidentDebriefMessageUpdate builder.
-func (idmu *IncidentDebriefMessageUpdate) Where(ps ...predicate.IncidentDebriefMessage) *IncidentDebriefMessageUpdate {
-	idmu.mutation.Where(ps...)
-	return idmu
+func (_u *IncidentDebriefMessageUpdate) Where(ps ...predicate.IncidentDebriefMessage) *IncidentDebriefMessageUpdate {
+	_u.mutation.Where(ps...)
+	return _u
 }
 
 // SetDebriefID sets the "debrief_id" field.
-func (idmu *IncidentDebriefMessageUpdate) SetDebriefID(u uuid.UUID) *IncidentDebriefMessageUpdate {
-	idmu.mutation.SetDebriefID(u)
-	return idmu
+func (_u *IncidentDebriefMessageUpdate) SetDebriefID(v uuid.UUID) *IncidentDebriefMessageUpdate {
+	_u.mutation.SetDebriefID(v)
+	return _u
 }
 
 // SetNillableDebriefID sets the "debrief_id" field if the given value is not nil.
-func (idmu *IncidentDebriefMessageUpdate) SetNillableDebriefID(u *uuid.UUID) *IncidentDebriefMessageUpdate {
-	if u != nil {
-		idmu.SetDebriefID(*u)
+func (_u *IncidentDebriefMessageUpdate) SetNillableDebriefID(v *uuid.UUID) *IncidentDebriefMessageUpdate {
+	if v != nil {
+		_u.SetDebriefID(*v)
 	}
-	return idmu
+	return _u
 }
 
 // SetQuestionID sets the "question_id" field.
-func (idmu *IncidentDebriefMessageUpdate) SetQuestionID(u uuid.UUID) *IncidentDebriefMessageUpdate {
-	idmu.mutation.SetQuestionID(u)
-	return idmu
+func (_u *IncidentDebriefMessageUpdate) SetQuestionID(v uuid.UUID) *IncidentDebriefMessageUpdate {
+	_u.mutation.SetQuestionID(v)
+	return _u
 }
 
 // SetNillableQuestionID sets the "question_id" field if the given value is not nil.
-func (idmu *IncidentDebriefMessageUpdate) SetNillableQuestionID(u *uuid.UUID) *IncidentDebriefMessageUpdate {
-	if u != nil {
-		idmu.SetQuestionID(*u)
+func (_u *IncidentDebriefMessageUpdate) SetNillableQuestionID(v *uuid.UUID) *IncidentDebriefMessageUpdate {
+	if v != nil {
+		_u.SetQuestionID(*v)
 	}
-	return idmu
+	return _u
 }
 
 // ClearQuestionID clears the value of the "question_id" field.
-func (idmu *IncidentDebriefMessageUpdate) ClearQuestionID() *IncidentDebriefMessageUpdate {
-	idmu.mutation.ClearQuestionID()
-	return idmu
+func (_u *IncidentDebriefMessageUpdate) ClearQuestionID() *IncidentDebriefMessageUpdate {
+	_u.mutation.ClearQuestionID()
+	return _u
 }
 
 // SetCreatedAt sets the "created_at" field.
-func (idmu *IncidentDebriefMessageUpdate) SetCreatedAt(t time.Time) *IncidentDebriefMessageUpdate {
-	idmu.mutation.SetCreatedAt(t)
-	return idmu
+func (_u *IncidentDebriefMessageUpdate) SetCreatedAt(v time.Time) *IncidentDebriefMessageUpdate {
+	_u.mutation.SetCreatedAt(v)
+	return _u
 }
 
 // SetNillableCreatedAt sets the "created_at" field if the given value is not nil.
-func (idmu *IncidentDebriefMessageUpdate) SetNillableCreatedAt(t *time.Time) *IncidentDebriefMessageUpdate {
-	if t != nil {
-		idmu.SetCreatedAt(*t)
+func (_u *IncidentDebriefMessageUpdate) SetNillableCreatedAt(v *time.Time) *IncidentDebriefMessageUpdate {
+	if v != nil {
+		_u.SetCreatedAt(*v)
 	}
-	return idmu
+	return _u
 }
 
 // SetType sets the "type" field.
-func (idmu *IncidentDebriefMessageUpdate) SetType(i incidentdebriefmessage.Type) *IncidentDebriefMessageUpdate {
-	idmu.mutation.SetType(i)
-	return idmu
+func (_u *IncidentDebriefMessageUpdate) SetType(v incidentdebriefmessage.Type) *IncidentDebriefMessageUpdate {
+	_u.mutation.SetType(v)
+	return _u
 }
 
 // SetNillableType sets the "type" field if the given value is not nil.
-func (idmu *IncidentDebriefMessageUpdate) SetNillableType(i *incidentdebriefmessage.Type) *IncidentDebriefMessageUpdate {
-	if i != nil {
-		idmu.SetType(*i)
+func (_u *IncidentDebriefMessageUpdate) SetNillableType(v *incidentdebriefmessage.Type) *IncidentDebriefMessageUpdate {
+	if v != nil {
+		_u.SetType(*v)
 	}
-	return idmu
+	return _u
 }
 
 // SetRequestedTool sets the "requested_tool" field.
-func (idmu *IncidentDebriefMessageUpdate) SetRequestedTool(it incidentdebriefmessage.RequestedTool) *IncidentDebriefMessageUpdate {
-	idmu.mutation.SetRequestedTool(it)
-	return idmu
+func (_u *IncidentDebriefMessageUpdate) SetRequestedTool(v incidentdebriefmessage.RequestedTool) *IncidentDebriefMessageUpdate {
+	_u.mutation.SetRequestedTool(v)
+	return _u
 }
 
 // SetNillableRequestedTool sets the "requested_tool" field if the given value is not nil.
-func (idmu *IncidentDebriefMessageUpdate) SetNillableRequestedTool(it *incidentdebriefmessage.RequestedTool) *IncidentDebriefMessageUpdate {
-	if it != nil {
-		idmu.SetRequestedTool(*it)
+func (_u *IncidentDebriefMessageUpdate) SetNillableRequestedTool(v *incidentdebriefmessage.RequestedTool) *IncidentDebriefMessageUpdate {
+	if v != nil {
+		_u.SetRequestedTool(*v)
 	}
-	return idmu
+	return _u
 }
 
 // ClearRequestedTool clears the value of the "requested_tool" field.
-func (idmu *IncidentDebriefMessageUpdate) ClearRequestedTool() *IncidentDebriefMessageUpdate {
-	idmu.mutation.ClearRequestedTool()
-	return idmu
+func (_u *IncidentDebriefMessageUpdate) ClearRequestedTool() *IncidentDebriefMessageUpdate {
+	_u.mutation.ClearRequestedTool()
+	return _u
 }
 
 // SetBody sets the "body" field.
-func (idmu *IncidentDebriefMessageUpdate) SetBody(s string) *IncidentDebriefMessageUpdate {
-	idmu.mutation.SetBody(s)
-	return idmu
+func (_u *IncidentDebriefMessageUpdate) SetBody(v string) *IncidentDebriefMessageUpdate {
+	_u.mutation.SetBody(v)
+	return _u
 }
 
 // SetNillableBody sets the "body" field if the given value is not nil.
-func (idmu *IncidentDebriefMessageUpdate) SetNillableBody(s *string) *IncidentDebriefMessageUpdate {
-	if s != nil {
-		idmu.SetBody(*s)
+func (_u *IncidentDebriefMessageUpdate) SetNillableBody(v *string) *IncidentDebriefMessageUpdate {
+	if v != nil {
+		_u.SetBody(*v)
 	}
-	return idmu
+	return _u
 }
 
 // SetDebrief sets the "debrief" edge to the IncidentDebrief entity.
-func (idmu *IncidentDebriefMessageUpdate) SetDebrief(i *IncidentDebrief) *IncidentDebriefMessageUpdate {
-	return idmu.SetDebriefID(i.ID)
+func (_u *IncidentDebriefMessageUpdate) SetDebrief(v *IncidentDebrief) *IncidentDebriefMessageUpdate {
+	return _u.SetDebriefID(v.ID)
 }
 
 // SetFromQuestionID sets the "from_question" edge to the IncidentDebriefQuestion entity by ID.
-func (idmu *IncidentDebriefMessageUpdate) SetFromQuestionID(id uuid.UUID) *IncidentDebriefMessageUpdate {
-	idmu.mutation.SetFromQuestionID(id)
-	return idmu
+func (_u *IncidentDebriefMessageUpdate) SetFromQuestionID(id uuid.UUID) *IncidentDebriefMessageUpdate {
+	_u.mutation.SetFromQuestionID(id)
+	return _u
 }
 
 // SetNillableFromQuestionID sets the "from_question" edge to the IncidentDebriefQuestion entity by ID if the given value is not nil.
-func (idmu *IncidentDebriefMessageUpdate) SetNillableFromQuestionID(id *uuid.UUID) *IncidentDebriefMessageUpdate {
+func (_u *IncidentDebriefMessageUpdate) SetNillableFromQuestionID(id *uuid.UUID) *IncidentDebriefMessageUpdate {
 	if id != nil {
-		idmu = idmu.SetFromQuestionID(*id)
+		_u = _u.SetFromQuestionID(*id)
 	}
-	return idmu
+	return _u
 }
 
 // SetFromQuestion sets the "from_question" edge to the IncidentDebriefQuestion entity.
-func (idmu *IncidentDebriefMessageUpdate) SetFromQuestion(i *IncidentDebriefQuestion) *IncidentDebriefMessageUpdate {
-	return idmu.SetFromQuestionID(i.ID)
+func (_u *IncidentDebriefMessageUpdate) SetFromQuestion(v *IncidentDebriefQuestion) *IncidentDebriefMessageUpdate {
+	return _u.SetFromQuestionID(v.ID)
 }
 
 // Mutation returns the IncidentDebriefMessageMutation object of the builder.
-func (idmu *IncidentDebriefMessageUpdate) Mutation() *IncidentDebriefMessageMutation {
-	return idmu.mutation
+func (_u *IncidentDebriefMessageUpdate) Mutation() *IncidentDebriefMessageMutation {
+	return _u.mutation
 }
 
 // ClearDebrief clears the "debrief" edge to the IncidentDebrief entity.
-func (idmu *IncidentDebriefMessageUpdate) ClearDebrief() *IncidentDebriefMessageUpdate {
-	idmu.mutation.ClearDebrief()
-	return idmu
+func (_u *IncidentDebriefMessageUpdate) ClearDebrief() *IncidentDebriefMessageUpdate {
+	_u.mutation.ClearDebrief()
+	return _u
 }
 
 // ClearFromQuestion clears the "from_question" edge to the IncidentDebriefQuestion entity.
-func (idmu *IncidentDebriefMessageUpdate) ClearFromQuestion() *IncidentDebriefMessageUpdate {
-	idmu.mutation.ClearFromQuestion()
-	return idmu
+func (_u *IncidentDebriefMessageUpdate) ClearFromQuestion() *IncidentDebriefMessageUpdate {
+	_u.mutation.ClearFromQuestion()
+	return _u
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
-func (idmu *IncidentDebriefMessageUpdate) Save(ctx context.Context) (int, error) {
-	return withHooks(ctx, idmu.sqlSave, idmu.mutation, idmu.hooks)
+func (_u *IncidentDebriefMessageUpdate) Save(ctx context.Context) (int, error) {
+	return withHooks(ctx, _u.sqlSave, _u.mutation, _u.hooks)
 }
 
 // SaveX is like Save, but panics if an error occurs.
-func (idmu *IncidentDebriefMessageUpdate) SaveX(ctx context.Context) int {
-	affected, err := idmu.Save(ctx)
+func (_u *IncidentDebriefMessageUpdate) SaveX(ctx context.Context) int {
+	affected, err := _u.Save(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -184,73 +184,73 @@ func (idmu *IncidentDebriefMessageUpdate) SaveX(ctx context.Context) int {
 }
 
 // Exec executes the query.
-func (idmu *IncidentDebriefMessageUpdate) Exec(ctx context.Context) error {
-	_, err := idmu.Save(ctx)
+func (_u *IncidentDebriefMessageUpdate) Exec(ctx context.Context) error {
+	_, err := _u.Save(ctx)
 	return err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (idmu *IncidentDebriefMessageUpdate) ExecX(ctx context.Context) {
-	if err := idmu.Exec(ctx); err != nil {
+func (_u *IncidentDebriefMessageUpdate) ExecX(ctx context.Context) {
+	if err := _u.Exec(ctx); err != nil {
 		panic(err)
 	}
 }
 
 // check runs all checks and user-defined validators on the builder.
-func (idmu *IncidentDebriefMessageUpdate) check() error {
-	if v, ok := idmu.mutation.GetType(); ok {
+func (_u *IncidentDebriefMessageUpdate) check() error {
+	if v, ok := _u.mutation.GetType(); ok {
 		if err := incidentdebriefmessage.TypeValidator(v); err != nil {
 			return &ValidationError{Name: "type", err: fmt.Errorf(`ent: validator failed for field "IncidentDebriefMessage.type": %w`, err)}
 		}
 	}
-	if v, ok := idmu.mutation.RequestedTool(); ok {
+	if v, ok := _u.mutation.RequestedTool(); ok {
 		if err := incidentdebriefmessage.RequestedToolValidator(v); err != nil {
 			return &ValidationError{Name: "requested_tool", err: fmt.Errorf(`ent: validator failed for field "IncidentDebriefMessage.requested_tool": %w`, err)}
 		}
 	}
-	if idmu.mutation.TenantCleared() && len(idmu.mutation.TenantIDs()) > 0 {
+	if _u.mutation.TenantCleared() && len(_u.mutation.TenantIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "IncidentDebriefMessage.tenant"`)
 	}
-	if idmu.mutation.DebriefCleared() && len(idmu.mutation.DebriefIDs()) > 0 {
+	if _u.mutation.DebriefCleared() && len(_u.mutation.DebriefIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "IncidentDebriefMessage.debrief"`)
 	}
 	return nil
 }
 
 // Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
-func (idmu *IncidentDebriefMessageUpdate) Modify(modifiers ...func(u *sql.UpdateBuilder)) *IncidentDebriefMessageUpdate {
-	idmu.modifiers = append(idmu.modifiers, modifiers...)
-	return idmu
+func (_u *IncidentDebriefMessageUpdate) Modify(modifiers ...func(u *sql.UpdateBuilder)) *IncidentDebriefMessageUpdate {
+	_u.modifiers = append(_u.modifiers, modifiers...)
+	return _u
 }
 
-func (idmu *IncidentDebriefMessageUpdate) sqlSave(ctx context.Context) (n int, err error) {
-	if err := idmu.check(); err != nil {
-		return n, err
+func (_u *IncidentDebriefMessageUpdate) sqlSave(ctx context.Context) (_node int, err error) {
+	if err := _u.check(); err != nil {
+		return _node, err
 	}
 	_spec := sqlgraph.NewUpdateSpec(incidentdebriefmessage.Table, incidentdebriefmessage.Columns, sqlgraph.NewFieldSpec(incidentdebriefmessage.FieldID, field.TypeUUID))
-	if ps := idmu.mutation.predicates; len(ps) > 0 {
+	if ps := _u.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {
 				ps[i](selector)
 			}
 		}
 	}
-	if value, ok := idmu.mutation.CreatedAt(); ok {
+	if value, ok := _u.mutation.CreatedAt(); ok {
 		_spec.SetField(incidentdebriefmessage.FieldCreatedAt, field.TypeTime, value)
 	}
-	if value, ok := idmu.mutation.GetType(); ok {
+	if value, ok := _u.mutation.GetType(); ok {
 		_spec.SetField(incidentdebriefmessage.FieldType, field.TypeEnum, value)
 	}
-	if value, ok := idmu.mutation.RequestedTool(); ok {
+	if value, ok := _u.mutation.RequestedTool(); ok {
 		_spec.SetField(incidentdebriefmessage.FieldRequestedTool, field.TypeEnum, value)
 	}
-	if idmu.mutation.RequestedToolCleared() {
+	if _u.mutation.RequestedToolCleared() {
 		_spec.ClearField(incidentdebriefmessage.FieldRequestedTool, field.TypeEnum)
 	}
-	if value, ok := idmu.mutation.Body(); ok {
+	if value, ok := _u.mutation.Body(); ok {
 		_spec.SetField(incidentdebriefmessage.FieldBody, field.TypeString, value)
 	}
-	if idmu.mutation.DebriefCleared() {
+	if _u.mutation.DebriefCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: true,
@@ -263,7 +263,7 @@ func (idmu *IncidentDebriefMessageUpdate) sqlSave(ctx context.Context) (n int, e
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := idmu.mutation.DebriefIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.DebriefIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: true,
@@ -279,7 +279,7 @@ func (idmu *IncidentDebriefMessageUpdate) sqlSave(ctx context.Context) (n int, e
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if idmu.mutation.FromQuestionCleared() {
+	if _u.mutation.FromQuestionCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
@@ -292,7 +292,7 @@ func (idmu *IncidentDebriefMessageUpdate) sqlSave(ctx context.Context) (n int, e
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := idmu.mutation.FromQuestionIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.FromQuestionIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
@@ -308,8 +308,8 @@ func (idmu *IncidentDebriefMessageUpdate) sqlSave(ctx context.Context) (n int, e
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	_spec.AddModifiers(idmu.modifiers...)
-	if n, err = sqlgraph.UpdateNodes(ctx, idmu.driver, _spec); err != nil {
+	_spec.AddModifiers(_u.modifiers...)
+	if _node, err = sqlgraph.UpdateNodes(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{incidentdebriefmessage.Label}
 		} else if sqlgraph.IsConstraintError(err) {
@@ -317,8 +317,8 @@ func (idmu *IncidentDebriefMessageUpdate) sqlSave(ctx context.Context) (n int, e
 		}
 		return 0, err
 	}
-	idmu.mutation.done = true
-	return n, nil
+	_u.mutation.done = true
+	return _node, nil
 }
 
 // IncidentDebriefMessageUpdateOne is the builder for updating a single IncidentDebriefMessage entity.
@@ -331,163 +331,163 @@ type IncidentDebriefMessageUpdateOne struct {
 }
 
 // SetDebriefID sets the "debrief_id" field.
-func (idmuo *IncidentDebriefMessageUpdateOne) SetDebriefID(u uuid.UUID) *IncidentDebriefMessageUpdateOne {
-	idmuo.mutation.SetDebriefID(u)
-	return idmuo
+func (_u *IncidentDebriefMessageUpdateOne) SetDebriefID(v uuid.UUID) *IncidentDebriefMessageUpdateOne {
+	_u.mutation.SetDebriefID(v)
+	return _u
 }
 
 // SetNillableDebriefID sets the "debrief_id" field if the given value is not nil.
-func (idmuo *IncidentDebriefMessageUpdateOne) SetNillableDebriefID(u *uuid.UUID) *IncidentDebriefMessageUpdateOne {
-	if u != nil {
-		idmuo.SetDebriefID(*u)
+func (_u *IncidentDebriefMessageUpdateOne) SetNillableDebriefID(v *uuid.UUID) *IncidentDebriefMessageUpdateOne {
+	if v != nil {
+		_u.SetDebriefID(*v)
 	}
-	return idmuo
+	return _u
 }
 
 // SetQuestionID sets the "question_id" field.
-func (idmuo *IncidentDebriefMessageUpdateOne) SetQuestionID(u uuid.UUID) *IncidentDebriefMessageUpdateOne {
-	idmuo.mutation.SetQuestionID(u)
-	return idmuo
+func (_u *IncidentDebriefMessageUpdateOne) SetQuestionID(v uuid.UUID) *IncidentDebriefMessageUpdateOne {
+	_u.mutation.SetQuestionID(v)
+	return _u
 }
 
 // SetNillableQuestionID sets the "question_id" field if the given value is not nil.
-func (idmuo *IncidentDebriefMessageUpdateOne) SetNillableQuestionID(u *uuid.UUID) *IncidentDebriefMessageUpdateOne {
-	if u != nil {
-		idmuo.SetQuestionID(*u)
+func (_u *IncidentDebriefMessageUpdateOne) SetNillableQuestionID(v *uuid.UUID) *IncidentDebriefMessageUpdateOne {
+	if v != nil {
+		_u.SetQuestionID(*v)
 	}
-	return idmuo
+	return _u
 }
 
 // ClearQuestionID clears the value of the "question_id" field.
-func (idmuo *IncidentDebriefMessageUpdateOne) ClearQuestionID() *IncidentDebriefMessageUpdateOne {
-	idmuo.mutation.ClearQuestionID()
-	return idmuo
+func (_u *IncidentDebriefMessageUpdateOne) ClearQuestionID() *IncidentDebriefMessageUpdateOne {
+	_u.mutation.ClearQuestionID()
+	return _u
 }
 
 // SetCreatedAt sets the "created_at" field.
-func (idmuo *IncidentDebriefMessageUpdateOne) SetCreatedAt(t time.Time) *IncidentDebriefMessageUpdateOne {
-	idmuo.mutation.SetCreatedAt(t)
-	return idmuo
+func (_u *IncidentDebriefMessageUpdateOne) SetCreatedAt(v time.Time) *IncidentDebriefMessageUpdateOne {
+	_u.mutation.SetCreatedAt(v)
+	return _u
 }
 
 // SetNillableCreatedAt sets the "created_at" field if the given value is not nil.
-func (idmuo *IncidentDebriefMessageUpdateOne) SetNillableCreatedAt(t *time.Time) *IncidentDebriefMessageUpdateOne {
-	if t != nil {
-		idmuo.SetCreatedAt(*t)
+func (_u *IncidentDebriefMessageUpdateOne) SetNillableCreatedAt(v *time.Time) *IncidentDebriefMessageUpdateOne {
+	if v != nil {
+		_u.SetCreatedAt(*v)
 	}
-	return idmuo
+	return _u
 }
 
 // SetType sets the "type" field.
-func (idmuo *IncidentDebriefMessageUpdateOne) SetType(i incidentdebriefmessage.Type) *IncidentDebriefMessageUpdateOne {
-	idmuo.mutation.SetType(i)
-	return idmuo
+func (_u *IncidentDebriefMessageUpdateOne) SetType(v incidentdebriefmessage.Type) *IncidentDebriefMessageUpdateOne {
+	_u.mutation.SetType(v)
+	return _u
 }
 
 // SetNillableType sets the "type" field if the given value is not nil.
-func (idmuo *IncidentDebriefMessageUpdateOne) SetNillableType(i *incidentdebriefmessage.Type) *IncidentDebriefMessageUpdateOne {
-	if i != nil {
-		idmuo.SetType(*i)
+func (_u *IncidentDebriefMessageUpdateOne) SetNillableType(v *incidentdebriefmessage.Type) *IncidentDebriefMessageUpdateOne {
+	if v != nil {
+		_u.SetType(*v)
 	}
-	return idmuo
+	return _u
 }
 
 // SetRequestedTool sets the "requested_tool" field.
-func (idmuo *IncidentDebriefMessageUpdateOne) SetRequestedTool(it incidentdebriefmessage.RequestedTool) *IncidentDebriefMessageUpdateOne {
-	idmuo.mutation.SetRequestedTool(it)
-	return idmuo
+func (_u *IncidentDebriefMessageUpdateOne) SetRequestedTool(v incidentdebriefmessage.RequestedTool) *IncidentDebriefMessageUpdateOne {
+	_u.mutation.SetRequestedTool(v)
+	return _u
 }
 
 // SetNillableRequestedTool sets the "requested_tool" field if the given value is not nil.
-func (idmuo *IncidentDebriefMessageUpdateOne) SetNillableRequestedTool(it *incidentdebriefmessage.RequestedTool) *IncidentDebriefMessageUpdateOne {
-	if it != nil {
-		idmuo.SetRequestedTool(*it)
+func (_u *IncidentDebriefMessageUpdateOne) SetNillableRequestedTool(v *incidentdebriefmessage.RequestedTool) *IncidentDebriefMessageUpdateOne {
+	if v != nil {
+		_u.SetRequestedTool(*v)
 	}
-	return idmuo
+	return _u
 }
 
 // ClearRequestedTool clears the value of the "requested_tool" field.
-func (idmuo *IncidentDebriefMessageUpdateOne) ClearRequestedTool() *IncidentDebriefMessageUpdateOne {
-	idmuo.mutation.ClearRequestedTool()
-	return idmuo
+func (_u *IncidentDebriefMessageUpdateOne) ClearRequestedTool() *IncidentDebriefMessageUpdateOne {
+	_u.mutation.ClearRequestedTool()
+	return _u
 }
 
 // SetBody sets the "body" field.
-func (idmuo *IncidentDebriefMessageUpdateOne) SetBody(s string) *IncidentDebriefMessageUpdateOne {
-	idmuo.mutation.SetBody(s)
-	return idmuo
+func (_u *IncidentDebriefMessageUpdateOne) SetBody(v string) *IncidentDebriefMessageUpdateOne {
+	_u.mutation.SetBody(v)
+	return _u
 }
 
 // SetNillableBody sets the "body" field if the given value is not nil.
-func (idmuo *IncidentDebriefMessageUpdateOne) SetNillableBody(s *string) *IncidentDebriefMessageUpdateOne {
-	if s != nil {
-		idmuo.SetBody(*s)
+func (_u *IncidentDebriefMessageUpdateOne) SetNillableBody(v *string) *IncidentDebriefMessageUpdateOne {
+	if v != nil {
+		_u.SetBody(*v)
 	}
-	return idmuo
+	return _u
 }
 
 // SetDebrief sets the "debrief" edge to the IncidentDebrief entity.
-func (idmuo *IncidentDebriefMessageUpdateOne) SetDebrief(i *IncidentDebrief) *IncidentDebriefMessageUpdateOne {
-	return idmuo.SetDebriefID(i.ID)
+func (_u *IncidentDebriefMessageUpdateOne) SetDebrief(v *IncidentDebrief) *IncidentDebriefMessageUpdateOne {
+	return _u.SetDebriefID(v.ID)
 }
 
 // SetFromQuestionID sets the "from_question" edge to the IncidentDebriefQuestion entity by ID.
-func (idmuo *IncidentDebriefMessageUpdateOne) SetFromQuestionID(id uuid.UUID) *IncidentDebriefMessageUpdateOne {
-	idmuo.mutation.SetFromQuestionID(id)
-	return idmuo
+func (_u *IncidentDebriefMessageUpdateOne) SetFromQuestionID(id uuid.UUID) *IncidentDebriefMessageUpdateOne {
+	_u.mutation.SetFromQuestionID(id)
+	return _u
 }
 
 // SetNillableFromQuestionID sets the "from_question" edge to the IncidentDebriefQuestion entity by ID if the given value is not nil.
-func (idmuo *IncidentDebriefMessageUpdateOne) SetNillableFromQuestionID(id *uuid.UUID) *IncidentDebriefMessageUpdateOne {
+func (_u *IncidentDebriefMessageUpdateOne) SetNillableFromQuestionID(id *uuid.UUID) *IncidentDebriefMessageUpdateOne {
 	if id != nil {
-		idmuo = idmuo.SetFromQuestionID(*id)
+		_u = _u.SetFromQuestionID(*id)
 	}
-	return idmuo
+	return _u
 }
 
 // SetFromQuestion sets the "from_question" edge to the IncidentDebriefQuestion entity.
-func (idmuo *IncidentDebriefMessageUpdateOne) SetFromQuestion(i *IncidentDebriefQuestion) *IncidentDebriefMessageUpdateOne {
-	return idmuo.SetFromQuestionID(i.ID)
+func (_u *IncidentDebriefMessageUpdateOne) SetFromQuestion(v *IncidentDebriefQuestion) *IncidentDebriefMessageUpdateOne {
+	return _u.SetFromQuestionID(v.ID)
 }
 
 // Mutation returns the IncidentDebriefMessageMutation object of the builder.
-func (idmuo *IncidentDebriefMessageUpdateOne) Mutation() *IncidentDebriefMessageMutation {
-	return idmuo.mutation
+func (_u *IncidentDebriefMessageUpdateOne) Mutation() *IncidentDebriefMessageMutation {
+	return _u.mutation
 }
 
 // ClearDebrief clears the "debrief" edge to the IncidentDebrief entity.
-func (idmuo *IncidentDebriefMessageUpdateOne) ClearDebrief() *IncidentDebriefMessageUpdateOne {
-	idmuo.mutation.ClearDebrief()
-	return idmuo
+func (_u *IncidentDebriefMessageUpdateOne) ClearDebrief() *IncidentDebriefMessageUpdateOne {
+	_u.mutation.ClearDebrief()
+	return _u
 }
 
 // ClearFromQuestion clears the "from_question" edge to the IncidentDebriefQuestion entity.
-func (idmuo *IncidentDebriefMessageUpdateOne) ClearFromQuestion() *IncidentDebriefMessageUpdateOne {
-	idmuo.mutation.ClearFromQuestion()
-	return idmuo
+func (_u *IncidentDebriefMessageUpdateOne) ClearFromQuestion() *IncidentDebriefMessageUpdateOne {
+	_u.mutation.ClearFromQuestion()
+	return _u
 }
 
 // Where appends a list predicates to the IncidentDebriefMessageUpdate builder.
-func (idmuo *IncidentDebriefMessageUpdateOne) Where(ps ...predicate.IncidentDebriefMessage) *IncidentDebriefMessageUpdateOne {
-	idmuo.mutation.Where(ps...)
-	return idmuo
+func (_u *IncidentDebriefMessageUpdateOne) Where(ps ...predicate.IncidentDebriefMessage) *IncidentDebriefMessageUpdateOne {
+	_u.mutation.Where(ps...)
+	return _u
 }
 
 // Select allows selecting one or more fields (columns) of the returned entity.
 // The default is selecting all fields defined in the entity schema.
-func (idmuo *IncidentDebriefMessageUpdateOne) Select(field string, fields ...string) *IncidentDebriefMessageUpdateOne {
-	idmuo.fields = append([]string{field}, fields...)
-	return idmuo
+func (_u *IncidentDebriefMessageUpdateOne) Select(field string, fields ...string) *IncidentDebriefMessageUpdateOne {
+	_u.fields = append([]string{field}, fields...)
+	return _u
 }
 
 // Save executes the query and returns the updated IncidentDebriefMessage entity.
-func (idmuo *IncidentDebriefMessageUpdateOne) Save(ctx context.Context) (*IncidentDebriefMessage, error) {
-	return withHooks(ctx, idmuo.sqlSave, idmuo.mutation, idmuo.hooks)
+func (_u *IncidentDebriefMessageUpdateOne) Save(ctx context.Context) (*IncidentDebriefMessage, error) {
+	return withHooks(ctx, _u.sqlSave, _u.mutation, _u.hooks)
 }
 
 // SaveX is like Save, but panics if an error occurs.
-func (idmuo *IncidentDebriefMessageUpdateOne) SaveX(ctx context.Context) *IncidentDebriefMessage {
-	node, err := idmuo.Save(ctx)
+func (_u *IncidentDebriefMessageUpdateOne) SaveX(ctx context.Context) *IncidentDebriefMessage {
+	node, err := _u.Save(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -495,56 +495,56 @@ func (idmuo *IncidentDebriefMessageUpdateOne) SaveX(ctx context.Context) *Incide
 }
 
 // Exec executes the query on the entity.
-func (idmuo *IncidentDebriefMessageUpdateOne) Exec(ctx context.Context) error {
-	_, err := idmuo.Save(ctx)
+func (_u *IncidentDebriefMessageUpdateOne) Exec(ctx context.Context) error {
+	_, err := _u.Save(ctx)
 	return err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (idmuo *IncidentDebriefMessageUpdateOne) ExecX(ctx context.Context) {
-	if err := idmuo.Exec(ctx); err != nil {
+func (_u *IncidentDebriefMessageUpdateOne) ExecX(ctx context.Context) {
+	if err := _u.Exec(ctx); err != nil {
 		panic(err)
 	}
 }
 
 // check runs all checks and user-defined validators on the builder.
-func (idmuo *IncidentDebriefMessageUpdateOne) check() error {
-	if v, ok := idmuo.mutation.GetType(); ok {
+func (_u *IncidentDebriefMessageUpdateOne) check() error {
+	if v, ok := _u.mutation.GetType(); ok {
 		if err := incidentdebriefmessage.TypeValidator(v); err != nil {
 			return &ValidationError{Name: "type", err: fmt.Errorf(`ent: validator failed for field "IncidentDebriefMessage.type": %w`, err)}
 		}
 	}
-	if v, ok := idmuo.mutation.RequestedTool(); ok {
+	if v, ok := _u.mutation.RequestedTool(); ok {
 		if err := incidentdebriefmessage.RequestedToolValidator(v); err != nil {
 			return &ValidationError{Name: "requested_tool", err: fmt.Errorf(`ent: validator failed for field "IncidentDebriefMessage.requested_tool": %w`, err)}
 		}
 	}
-	if idmuo.mutation.TenantCleared() && len(idmuo.mutation.TenantIDs()) > 0 {
+	if _u.mutation.TenantCleared() && len(_u.mutation.TenantIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "IncidentDebriefMessage.tenant"`)
 	}
-	if idmuo.mutation.DebriefCleared() && len(idmuo.mutation.DebriefIDs()) > 0 {
+	if _u.mutation.DebriefCleared() && len(_u.mutation.DebriefIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "IncidentDebriefMessage.debrief"`)
 	}
 	return nil
 }
 
 // Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
-func (idmuo *IncidentDebriefMessageUpdateOne) Modify(modifiers ...func(u *sql.UpdateBuilder)) *IncidentDebriefMessageUpdateOne {
-	idmuo.modifiers = append(idmuo.modifiers, modifiers...)
-	return idmuo
+func (_u *IncidentDebriefMessageUpdateOne) Modify(modifiers ...func(u *sql.UpdateBuilder)) *IncidentDebriefMessageUpdateOne {
+	_u.modifiers = append(_u.modifiers, modifiers...)
+	return _u
 }
 
-func (idmuo *IncidentDebriefMessageUpdateOne) sqlSave(ctx context.Context) (_node *IncidentDebriefMessage, err error) {
-	if err := idmuo.check(); err != nil {
+func (_u *IncidentDebriefMessageUpdateOne) sqlSave(ctx context.Context) (_node *IncidentDebriefMessage, err error) {
+	if err := _u.check(); err != nil {
 		return _node, err
 	}
 	_spec := sqlgraph.NewUpdateSpec(incidentdebriefmessage.Table, incidentdebriefmessage.Columns, sqlgraph.NewFieldSpec(incidentdebriefmessage.FieldID, field.TypeUUID))
-	id, ok := idmuo.mutation.ID()
+	id, ok := _u.mutation.ID()
 	if !ok {
 		return nil, &ValidationError{Name: "id", err: errors.New(`ent: missing "IncidentDebriefMessage.id" for update`)}
 	}
 	_spec.Node.ID.Value = id
-	if fields := idmuo.fields; len(fields) > 0 {
+	if fields := _u.fields; len(fields) > 0 {
 		_spec.Node.Columns = make([]string, 0, len(fields))
 		_spec.Node.Columns = append(_spec.Node.Columns, incidentdebriefmessage.FieldID)
 		for _, f := range fields {
@@ -556,29 +556,29 @@ func (idmuo *IncidentDebriefMessageUpdateOne) sqlSave(ctx context.Context) (_nod
 			}
 		}
 	}
-	if ps := idmuo.mutation.predicates; len(ps) > 0 {
+	if ps := _u.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {
 				ps[i](selector)
 			}
 		}
 	}
-	if value, ok := idmuo.mutation.CreatedAt(); ok {
+	if value, ok := _u.mutation.CreatedAt(); ok {
 		_spec.SetField(incidentdebriefmessage.FieldCreatedAt, field.TypeTime, value)
 	}
-	if value, ok := idmuo.mutation.GetType(); ok {
+	if value, ok := _u.mutation.GetType(); ok {
 		_spec.SetField(incidentdebriefmessage.FieldType, field.TypeEnum, value)
 	}
-	if value, ok := idmuo.mutation.RequestedTool(); ok {
+	if value, ok := _u.mutation.RequestedTool(); ok {
 		_spec.SetField(incidentdebriefmessage.FieldRequestedTool, field.TypeEnum, value)
 	}
-	if idmuo.mutation.RequestedToolCleared() {
+	if _u.mutation.RequestedToolCleared() {
 		_spec.ClearField(incidentdebriefmessage.FieldRequestedTool, field.TypeEnum)
 	}
-	if value, ok := idmuo.mutation.Body(); ok {
+	if value, ok := _u.mutation.Body(); ok {
 		_spec.SetField(incidentdebriefmessage.FieldBody, field.TypeString, value)
 	}
-	if idmuo.mutation.DebriefCleared() {
+	if _u.mutation.DebriefCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: true,
@@ -591,7 +591,7 @@ func (idmuo *IncidentDebriefMessageUpdateOne) sqlSave(ctx context.Context) (_nod
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := idmuo.mutation.DebriefIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.DebriefIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: true,
@@ -607,7 +607,7 @@ func (idmuo *IncidentDebriefMessageUpdateOne) sqlSave(ctx context.Context) (_nod
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if idmuo.mutation.FromQuestionCleared() {
+	if _u.mutation.FromQuestionCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
@@ -620,7 +620,7 @@ func (idmuo *IncidentDebriefMessageUpdateOne) sqlSave(ctx context.Context) (_nod
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := idmuo.mutation.FromQuestionIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.FromQuestionIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
@@ -636,11 +636,11 @@ func (idmuo *IncidentDebriefMessageUpdateOne) sqlSave(ctx context.Context) (_nod
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	_spec.AddModifiers(idmuo.modifiers...)
-	_node = &IncidentDebriefMessage{config: idmuo.config}
+	_spec.AddModifiers(_u.modifiers...)
+	_node = &IncidentDebriefMessage{config: _u.config}
 	_spec.Assign = _node.assignValues
 	_spec.ScanValues = _node.scanValues
-	if err = sqlgraph.UpdateNode(ctx, idmuo.driver, _spec); err != nil {
+	if err = sqlgraph.UpdateNode(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{incidentdebriefmessage.Label}
 		} else if sqlgraph.IsConstraintError(err) {
@@ -648,6 +648,6 @@ func (idmuo *IncidentDebriefMessageUpdateOne) sqlSave(ctx context.Context) (_nod
 		}
 		return nil, err
 	}
-	idmuo.mutation.done = true
+	_u.mutation.done = true
 	return _node, nil
 }

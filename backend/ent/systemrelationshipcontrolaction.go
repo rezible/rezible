@@ -107,7 +107,7 @@ func (*SystemRelationshipControlAction) scanValues(columns []string) ([]any, err
 
 // assignValues assigns the values that were returned from sql.Rows (after scanning)
 // to the SystemRelationshipControlAction fields.
-func (srca *SystemRelationshipControlAction) assignValues(columns []string, values []any) error {
+func (_m *SystemRelationshipControlAction) assignValues(columns []string, values []any) error {
 	if m, n := len(values), len(columns); m < n {
 		return fmt.Errorf("mismatch number of scan values: %d != %d", m, n)
 	}
@@ -117,46 +117,46 @@ func (srca *SystemRelationshipControlAction) assignValues(columns []string, valu
 			if value, ok := values[i].(*uuid.UUID); !ok {
 				return fmt.Errorf("unexpected type %T for field id", values[i])
 			} else if value != nil {
-				srca.ID = *value
+				_m.ID = *value
 			}
 		case systemrelationshipcontrolaction.FieldTenantID:
 			if value, ok := values[i].(*sql.NullInt64); !ok {
 				return fmt.Errorf("unexpected type %T for field tenant_id", values[i])
 			} else if value.Valid {
-				srca.TenantID = int(value.Int64)
+				_m.TenantID = int(value.Int64)
 			}
 		case systemrelationshipcontrolaction.FieldRelationshipID:
 			if value, ok := values[i].(*uuid.UUID); !ok {
 				return fmt.Errorf("unexpected type %T for field relationship_id", values[i])
 			} else if value != nil {
-				srca.RelationshipID = *value
+				_m.RelationshipID = *value
 			}
 		case systemrelationshipcontrolaction.FieldControlID:
 			if value, ok := values[i].(*uuid.UUID); !ok {
 				return fmt.Errorf("unexpected type %T for field control_id", values[i])
 			} else if value != nil {
-				srca.ControlID = *value
+				_m.ControlID = *value
 			}
 		case systemrelationshipcontrolaction.FieldType:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field type", values[i])
 			} else if value.Valid {
-				srca.Type = value.String
+				_m.Type = value.String
 			}
 		case systemrelationshipcontrolaction.FieldDescription:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field description", values[i])
 			} else if value.Valid {
-				srca.Description = value.String
+				_m.Description = value.String
 			}
 		case systemrelationshipcontrolaction.FieldCreatedAt:
 			if value, ok := values[i].(*sql.NullTime); !ok {
 				return fmt.Errorf("unexpected type %T for field created_at", values[i])
 			} else if value.Valid {
-				srca.CreatedAt = value.Time
+				_m.CreatedAt = value.Time
 			}
 		default:
-			srca.selectValues.Set(columns[i], values[i])
+			_m.selectValues.Set(columns[i], values[i])
 		}
 	}
 	return nil
@@ -164,65 +164,65 @@ func (srca *SystemRelationshipControlAction) assignValues(columns []string, valu
 
 // Value returns the ent.Value that was dynamically selected and assigned to the SystemRelationshipControlAction.
 // This includes values selected through modifiers, order, etc.
-func (srca *SystemRelationshipControlAction) Value(name string) (ent.Value, error) {
-	return srca.selectValues.Get(name)
+func (_m *SystemRelationshipControlAction) Value(name string) (ent.Value, error) {
+	return _m.selectValues.Get(name)
 }
 
 // QueryTenant queries the "tenant" edge of the SystemRelationshipControlAction entity.
-func (srca *SystemRelationshipControlAction) QueryTenant() *TenantQuery {
-	return NewSystemRelationshipControlActionClient(srca.config).QueryTenant(srca)
+func (_m *SystemRelationshipControlAction) QueryTenant() *TenantQuery {
+	return NewSystemRelationshipControlActionClient(_m.config).QueryTenant(_m)
 }
 
 // QueryRelationship queries the "relationship" edge of the SystemRelationshipControlAction entity.
-func (srca *SystemRelationshipControlAction) QueryRelationship() *SystemAnalysisRelationshipQuery {
-	return NewSystemRelationshipControlActionClient(srca.config).QueryRelationship(srca)
+func (_m *SystemRelationshipControlAction) QueryRelationship() *SystemAnalysisRelationshipQuery {
+	return NewSystemRelationshipControlActionClient(_m.config).QueryRelationship(_m)
 }
 
 // QueryControl queries the "control" edge of the SystemRelationshipControlAction entity.
-func (srca *SystemRelationshipControlAction) QueryControl() *SystemComponentControlQuery {
-	return NewSystemRelationshipControlActionClient(srca.config).QueryControl(srca)
+func (_m *SystemRelationshipControlAction) QueryControl() *SystemComponentControlQuery {
+	return NewSystemRelationshipControlActionClient(_m.config).QueryControl(_m)
 }
 
 // Update returns a builder for updating this SystemRelationshipControlAction.
 // Note that you need to call SystemRelationshipControlAction.Unwrap() before calling this method if this SystemRelationshipControlAction
 // was returned from a transaction, and the transaction was committed or rolled back.
-func (srca *SystemRelationshipControlAction) Update() *SystemRelationshipControlActionUpdateOne {
-	return NewSystemRelationshipControlActionClient(srca.config).UpdateOne(srca)
+func (_m *SystemRelationshipControlAction) Update() *SystemRelationshipControlActionUpdateOne {
+	return NewSystemRelationshipControlActionClient(_m.config).UpdateOne(_m)
 }
 
 // Unwrap unwraps the SystemRelationshipControlAction entity that was returned from a transaction after it was closed,
 // so that all future queries will be executed through the driver which created the transaction.
-func (srca *SystemRelationshipControlAction) Unwrap() *SystemRelationshipControlAction {
-	_tx, ok := srca.config.driver.(*txDriver)
+func (_m *SystemRelationshipControlAction) Unwrap() *SystemRelationshipControlAction {
+	_tx, ok := _m.config.driver.(*txDriver)
 	if !ok {
 		panic("ent: SystemRelationshipControlAction is not a transactional entity")
 	}
-	srca.config.driver = _tx.drv
-	return srca
+	_m.config.driver = _tx.drv
+	return _m
 }
 
 // String implements the fmt.Stringer.
-func (srca *SystemRelationshipControlAction) String() string {
+func (_m *SystemRelationshipControlAction) String() string {
 	var builder strings.Builder
 	builder.WriteString("SystemRelationshipControlAction(")
-	builder.WriteString(fmt.Sprintf("id=%v, ", srca.ID))
+	builder.WriteString(fmt.Sprintf("id=%v, ", _m.ID))
 	builder.WriteString("tenant_id=")
-	builder.WriteString(fmt.Sprintf("%v", srca.TenantID))
+	builder.WriteString(fmt.Sprintf("%v", _m.TenantID))
 	builder.WriteString(", ")
 	builder.WriteString("relationship_id=")
-	builder.WriteString(fmt.Sprintf("%v", srca.RelationshipID))
+	builder.WriteString(fmt.Sprintf("%v", _m.RelationshipID))
 	builder.WriteString(", ")
 	builder.WriteString("control_id=")
-	builder.WriteString(fmt.Sprintf("%v", srca.ControlID))
+	builder.WriteString(fmt.Sprintf("%v", _m.ControlID))
 	builder.WriteString(", ")
 	builder.WriteString("type=")
-	builder.WriteString(srca.Type)
+	builder.WriteString(_m.Type)
 	builder.WriteString(", ")
 	builder.WriteString("description=")
-	builder.WriteString(srca.Description)
+	builder.WriteString(_m.Description)
 	builder.WriteString(", ")
 	builder.WriteString("created_at=")
-	builder.WriteString(srca.CreatedAt.Format(time.ANSIC))
+	builder.WriteString(_m.CreatedAt.Format(time.ANSIC))
 	builder.WriteByte(')')
 	return builder.String()
 }

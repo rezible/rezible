@@ -36,44 +36,44 @@ type OncallHandoverTemplateQuery struct {
 }
 
 // Where adds a new predicate for the OncallHandoverTemplateQuery builder.
-func (ohtq *OncallHandoverTemplateQuery) Where(ps ...predicate.OncallHandoverTemplate) *OncallHandoverTemplateQuery {
-	ohtq.predicates = append(ohtq.predicates, ps...)
-	return ohtq
+func (_q *OncallHandoverTemplateQuery) Where(ps ...predicate.OncallHandoverTemplate) *OncallHandoverTemplateQuery {
+	_q.predicates = append(_q.predicates, ps...)
+	return _q
 }
 
 // Limit the number of records to be returned by this query.
-func (ohtq *OncallHandoverTemplateQuery) Limit(limit int) *OncallHandoverTemplateQuery {
-	ohtq.ctx.Limit = &limit
-	return ohtq
+func (_q *OncallHandoverTemplateQuery) Limit(limit int) *OncallHandoverTemplateQuery {
+	_q.ctx.Limit = &limit
+	return _q
 }
 
 // Offset to start from.
-func (ohtq *OncallHandoverTemplateQuery) Offset(offset int) *OncallHandoverTemplateQuery {
-	ohtq.ctx.Offset = &offset
-	return ohtq
+func (_q *OncallHandoverTemplateQuery) Offset(offset int) *OncallHandoverTemplateQuery {
+	_q.ctx.Offset = &offset
+	return _q
 }
 
 // Unique configures the query builder to filter duplicate records on query.
 // By default, unique is set to true, and can be disabled using this method.
-func (ohtq *OncallHandoverTemplateQuery) Unique(unique bool) *OncallHandoverTemplateQuery {
-	ohtq.ctx.Unique = &unique
-	return ohtq
+func (_q *OncallHandoverTemplateQuery) Unique(unique bool) *OncallHandoverTemplateQuery {
+	_q.ctx.Unique = &unique
+	return _q
 }
 
 // Order specifies how the records should be ordered.
-func (ohtq *OncallHandoverTemplateQuery) Order(o ...oncallhandovertemplate.OrderOption) *OncallHandoverTemplateQuery {
-	ohtq.order = append(ohtq.order, o...)
-	return ohtq
+func (_q *OncallHandoverTemplateQuery) Order(o ...oncallhandovertemplate.OrderOption) *OncallHandoverTemplateQuery {
+	_q.order = append(_q.order, o...)
+	return _q
 }
 
 // QueryTenant chains the current query on the "tenant" edge.
-func (ohtq *OncallHandoverTemplateQuery) QueryTenant() *TenantQuery {
-	query := (&TenantClient{config: ohtq.config}).Query()
+func (_q *OncallHandoverTemplateQuery) QueryTenant() *TenantQuery {
+	query := (&TenantClient{config: _q.config}).Query()
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
-		if err := ohtq.prepareQuery(ctx); err != nil {
+		if err := _q.prepareQuery(ctx); err != nil {
 			return nil, err
 		}
-		selector := ohtq.sqlQuery(ctx)
+		selector := _q.sqlQuery(ctx)
 		if err := selector.Err(); err != nil {
 			return nil, err
 		}
@@ -82,20 +82,20 @@ func (ohtq *OncallHandoverTemplateQuery) QueryTenant() *TenantQuery {
 			sqlgraph.To(tenant.Table, tenant.FieldID),
 			sqlgraph.Edge(sqlgraph.M2O, false, oncallhandovertemplate.TenantTable, oncallhandovertemplate.TenantColumn),
 		)
-		fromU = sqlgraph.SetNeighbors(ohtq.driver.Dialect(), step)
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
 	}
 	return query
 }
 
 // QueryRoster chains the current query on the "roster" edge.
-func (ohtq *OncallHandoverTemplateQuery) QueryRoster() *OncallRosterQuery {
-	query := (&OncallRosterClient{config: ohtq.config}).Query()
+func (_q *OncallHandoverTemplateQuery) QueryRoster() *OncallRosterQuery {
+	query := (&OncallRosterClient{config: _q.config}).Query()
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
-		if err := ohtq.prepareQuery(ctx); err != nil {
+		if err := _q.prepareQuery(ctx); err != nil {
 			return nil, err
 		}
-		selector := ohtq.sqlQuery(ctx)
+		selector := _q.sqlQuery(ctx)
 		if err := selector.Err(); err != nil {
 			return nil, err
 		}
@@ -104,7 +104,7 @@ func (ohtq *OncallHandoverTemplateQuery) QueryRoster() *OncallRosterQuery {
 			sqlgraph.To(oncallroster.Table, oncallroster.FieldID),
 			sqlgraph.Edge(sqlgraph.O2M, false, oncallhandovertemplate.RosterTable, oncallhandovertemplate.RosterColumn),
 		)
-		fromU = sqlgraph.SetNeighbors(ohtq.driver.Dialect(), step)
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
 	}
 	return query
@@ -112,8 +112,8 @@ func (ohtq *OncallHandoverTemplateQuery) QueryRoster() *OncallRosterQuery {
 
 // First returns the first OncallHandoverTemplate entity from the query.
 // Returns a *NotFoundError when no OncallHandoverTemplate was found.
-func (ohtq *OncallHandoverTemplateQuery) First(ctx context.Context) (*OncallHandoverTemplate, error) {
-	nodes, err := ohtq.Limit(1).All(setContextOp(ctx, ohtq.ctx, ent.OpQueryFirst))
+func (_q *OncallHandoverTemplateQuery) First(ctx context.Context) (*OncallHandoverTemplate, error) {
+	nodes, err := _q.Limit(1).All(setContextOp(ctx, _q.ctx, ent.OpQueryFirst))
 	if err != nil {
 		return nil, err
 	}
@@ -124,8 +124,8 @@ func (ohtq *OncallHandoverTemplateQuery) First(ctx context.Context) (*OncallHand
 }
 
 // FirstX is like First, but panics if an error occurs.
-func (ohtq *OncallHandoverTemplateQuery) FirstX(ctx context.Context) *OncallHandoverTemplate {
-	node, err := ohtq.First(ctx)
+func (_q *OncallHandoverTemplateQuery) FirstX(ctx context.Context) *OncallHandoverTemplate {
+	node, err := _q.First(ctx)
 	if err != nil && !IsNotFound(err) {
 		panic(err)
 	}
@@ -134,9 +134,9 @@ func (ohtq *OncallHandoverTemplateQuery) FirstX(ctx context.Context) *OncallHand
 
 // FirstID returns the first OncallHandoverTemplate ID from the query.
 // Returns a *NotFoundError when no OncallHandoverTemplate ID was found.
-func (ohtq *OncallHandoverTemplateQuery) FirstID(ctx context.Context) (id uuid.UUID, err error) {
+func (_q *OncallHandoverTemplateQuery) FirstID(ctx context.Context) (id uuid.UUID, err error) {
 	var ids []uuid.UUID
-	if ids, err = ohtq.Limit(1).IDs(setContextOp(ctx, ohtq.ctx, ent.OpQueryFirstID)); err != nil {
+	if ids, err = _q.Limit(1).IDs(setContextOp(ctx, _q.ctx, ent.OpQueryFirstID)); err != nil {
 		return
 	}
 	if len(ids) == 0 {
@@ -147,8 +147,8 @@ func (ohtq *OncallHandoverTemplateQuery) FirstID(ctx context.Context) (id uuid.U
 }
 
 // FirstIDX is like FirstID, but panics if an error occurs.
-func (ohtq *OncallHandoverTemplateQuery) FirstIDX(ctx context.Context) uuid.UUID {
-	id, err := ohtq.FirstID(ctx)
+func (_q *OncallHandoverTemplateQuery) FirstIDX(ctx context.Context) uuid.UUID {
+	id, err := _q.FirstID(ctx)
 	if err != nil && !IsNotFound(err) {
 		panic(err)
 	}
@@ -158,8 +158,8 @@ func (ohtq *OncallHandoverTemplateQuery) FirstIDX(ctx context.Context) uuid.UUID
 // Only returns a single OncallHandoverTemplate entity found by the query, ensuring it only returns one.
 // Returns a *NotSingularError when more than one OncallHandoverTemplate entity is found.
 // Returns a *NotFoundError when no OncallHandoverTemplate entities are found.
-func (ohtq *OncallHandoverTemplateQuery) Only(ctx context.Context) (*OncallHandoverTemplate, error) {
-	nodes, err := ohtq.Limit(2).All(setContextOp(ctx, ohtq.ctx, ent.OpQueryOnly))
+func (_q *OncallHandoverTemplateQuery) Only(ctx context.Context) (*OncallHandoverTemplate, error) {
+	nodes, err := _q.Limit(2).All(setContextOp(ctx, _q.ctx, ent.OpQueryOnly))
 	if err != nil {
 		return nil, err
 	}
@@ -174,8 +174,8 @@ func (ohtq *OncallHandoverTemplateQuery) Only(ctx context.Context) (*OncallHando
 }
 
 // OnlyX is like Only, but panics if an error occurs.
-func (ohtq *OncallHandoverTemplateQuery) OnlyX(ctx context.Context) *OncallHandoverTemplate {
-	node, err := ohtq.Only(ctx)
+func (_q *OncallHandoverTemplateQuery) OnlyX(ctx context.Context) *OncallHandoverTemplate {
+	node, err := _q.Only(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -185,9 +185,9 @@ func (ohtq *OncallHandoverTemplateQuery) OnlyX(ctx context.Context) *OncallHando
 // OnlyID is like Only, but returns the only OncallHandoverTemplate ID in the query.
 // Returns a *NotSingularError when more than one OncallHandoverTemplate ID is found.
 // Returns a *NotFoundError when no entities are found.
-func (ohtq *OncallHandoverTemplateQuery) OnlyID(ctx context.Context) (id uuid.UUID, err error) {
+func (_q *OncallHandoverTemplateQuery) OnlyID(ctx context.Context) (id uuid.UUID, err error) {
 	var ids []uuid.UUID
-	if ids, err = ohtq.Limit(2).IDs(setContextOp(ctx, ohtq.ctx, ent.OpQueryOnlyID)); err != nil {
+	if ids, err = _q.Limit(2).IDs(setContextOp(ctx, _q.ctx, ent.OpQueryOnlyID)); err != nil {
 		return
 	}
 	switch len(ids) {
@@ -202,8 +202,8 @@ func (ohtq *OncallHandoverTemplateQuery) OnlyID(ctx context.Context) (id uuid.UU
 }
 
 // OnlyIDX is like OnlyID, but panics if an error occurs.
-func (ohtq *OncallHandoverTemplateQuery) OnlyIDX(ctx context.Context) uuid.UUID {
-	id, err := ohtq.OnlyID(ctx)
+func (_q *OncallHandoverTemplateQuery) OnlyIDX(ctx context.Context) uuid.UUID {
+	id, err := _q.OnlyID(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -211,18 +211,18 @@ func (ohtq *OncallHandoverTemplateQuery) OnlyIDX(ctx context.Context) uuid.UUID 
 }
 
 // All executes the query and returns a list of OncallHandoverTemplates.
-func (ohtq *OncallHandoverTemplateQuery) All(ctx context.Context) ([]*OncallHandoverTemplate, error) {
-	ctx = setContextOp(ctx, ohtq.ctx, ent.OpQueryAll)
-	if err := ohtq.prepareQuery(ctx); err != nil {
+func (_q *OncallHandoverTemplateQuery) All(ctx context.Context) ([]*OncallHandoverTemplate, error) {
+	ctx = setContextOp(ctx, _q.ctx, ent.OpQueryAll)
+	if err := _q.prepareQuery(ctx); err != nil {
 		return nil, err
 	}
 	qr := querierAll[[]*OncallHandoverTemplate, *OncallHandoverTemplateQuery]()
-	return withInterceptors[[]*OncallHandoverTemplate](ctx, ohtq, qr, ohtq.inters)
+	return withInterceptors[[]*OncallHandoverTemplate](ctx, _q, qr, _q.inters)
 }
 
 // AllX is like All, but panics if an error occurs.
-func (ohtq *OncallHandoverTemplateQuery) AllX(ctx context.Context) []*OncallHandoverTemplate {
-	nodes, err := ohtq.All(ctx)
+func (_q *OncallHandoverTemplateQuery) AllX(ctx context.Context) []*OncallHandoverTemplate {
+	nodes, err := _q.All(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -230,20 +230,20 @@ func (ohtq *OncallHandoverTemplateQuery) AllX(ctx context.Context) []*OncallHand
 }
 
 // IDs executes the query and returns a list of OncallHandoverTemplate IDs.
-func (ohtq *OncallHandoverTemplateQuery) IDs(ctx context.Context) (ids []uuid.UUID, err error) {
-	if ohtq.ctx.Unique == nil && ohtq.path != nil {
-		ohtq.Unique(true)
+func (_q *OncallHandoverTemplateQuery) IDs(ctx context.Context) (ids []uuid.UUID, err error) {
+	if _q.ctx.Unique == nil && _q.path != nil {
+		_q.Unique(true)
 	}
-	ctx = setContextOp(ctx, ohtq.ctx, ent.OpQueryIDs)
-	if err = ohtq.Select(oncallhandovertemplate.FieldID).Scan(ctx, &ids); err != nil {
+	ctx = setContextOp(ctx, _q.ctx, ent.OpQueryIDs)
+	if err = _q.Select(oncallhandovertemplate.FieldID).Scan(ctx, &ids); err != nil {
 		return nil, err
 	}
 	return ids, nil
 }
 
 // IDsX is like IDs, but panics if an error occurs.
-func (ohtq *OncallHandoverTemplateQuery) IDsX(ctx context.Context) []uuid.UUID {
-	ids, err := ohtq.IDs(ctx)
+func (_q *OncallHandoverTemplateQuery) IDsX(ctx context.Context) []uuid.UUID {
+	ids, err := _q.IDs(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -251,17 +251,17 @@ func (ohtq *OncallHandoverTemplateQuery) IDsX(ctx context.Context) []uuid.UUID {
 }
 
 // Count returns the count of the given query.
-func (ohtq *OncallHandoverTemplateQuery) Count(ctx context.Context) (int, error) {
-	ctx = setContextOp(ctx, ohtq.ctx, ent.OpQueryCount)
-	if err := ohtq.prepareQuery(ctx); err != nil {
+func (_q *OncallHandoverTemplateQuery) Count(ctx context.Context) (int, error) {
+	ctx = setContextOp(ctx, _q.ctx, ent.OpQueryCount)
+	if err := _q.prepareQuery(ctx); err != nil {
 		return 0, err
 	}
-	return withInterceptors[int](ctx, ohtq, querierCount[*OncallHandoverTemplateQuery](), ohtq.inters)
+	return withInterceptors[int](ctx, _q, querierCount[*OncallHandoverTemplateQuery](), _q.inters)
 }
 
 // CountX is like Count, but panics if an error occurs.
-func (ohtq *OncallHandoverTemplateQuery) CountX(ctx context.Context) int {
-	count, err := ohtq.Count(ctx)
+func (_q *OncallHandoverTemplateQuery) CountX(ctx context.Context) int {
+	count, err := _q.Count(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -269,9 +269,9 @@ func (ohtq *OncallHandoverTemplateQuery) CountX(ctx context.Context) int {
 }
 
 // Exist returns true if the query has elements in the graph.
-func (ohtq *OncallHandoverTemplateQuery) Exist(ctx context.Context) (bool, error) {
-	ctx = setContextOp(ctx, ohtq.ctx, ent.OpQueryExist)
-	switch _, err := ohtq.FirstID(ctx); {
+func (_q *OncallHandoverTemplateQuery) Exist(ctx context.Context) (bool, error) {
+	ctx = setContextOp(ctx, _q.ctx, ent.OpQueryExist)
+	switch _, err := _q.FirstID(ctx); {
 	case IsNotFound(err):
 		return false, nil
 	case err != nil:
@@ -282,8 +282,8 @@ func (ohtq *OncallHandoverTemplateQuery) Exist(ctx context.Context) (bool, error
 }
 
 // ExistX is like Exist, but panics if an error occurs.
-func (ohtq *OncallHandoverTemplateQuery) ExistX(ctx context.Context) bool {
-	exist, err := ohtq.Exist(ctx)
+func (_q *OncallHandoverTemplateQuery) ExistX(ctx context.Context) bool {
+	exist, err := _q.Exist(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -292,45 +292,45 @@ func (ohtq *OncallHandoverTemplateQuery) ExistX(ctx context.Context) bool {
 
 // Clone returns a duplicate of the OncallHandoverTemplateQuery builder, including all associated steps. It can be
 // used to prepare common query builders and use them differently after the clone is made.
-func (ohtq *OncallHandoverTemplateQuery) Clone() *OncallHandoverTemplateQuery {
-	if ohtq == nil {
+func (_q *OncallHandoverTemplateQuery) Clone() *OncallHandoverTemplateQuery {
+	if _q == nil {
 		return nil
 	}
 	return &OncallHandoverTemplateQuery{
-		config:     ohtq.config,
-		ctx:        ohtq.ctx.Clone(),
-		order:      append([]oncallhandovertemplate.OrderOption{}, ohtq.order...),
-		inters:     append([]Interceptor{}, ohtq.inters...),
-		predicates: append([]predicate.OncallHandoverTemplate{}, ohtq.predicates...),
-		withTenant: ohtq.withTenant.Clone(),
-		withRoster: ohtq.withRoster.Clone(),
+		config:     _q.config,
+		ctx:        _q.ctx.Clone(),
+		order:      append([]oncallhandovertemplate.OrderOption{}, _q.order...),
+		inters:     append([]Interceptor{}, _q.inters...),
+		predicates: append([]predicate.OncallHandoverTemplate{}, _q.predicates...),
+		withTenant: _q.withTenant.Clone(),
+		withRoster: _q.withRoster.Clone(),
 		// clone intermediate query.
-		sql:       ohtq.sql.Clone(),
-		path:      ohtq.path,
-		modifiers: append([]func(*sql.Selector){}, ohtq.modifiers...),
+		sql:       _q.sql.Clone(),
+		path:      _q.path,
+		modifiers: append([]func(*sql.Selector){}, _q.modifiers...),
 	}
 }
 
 // WithTenant tells the query-builder to eager-load the nodes that are connected to
 // the "tenant" edge. The optional arguments are used to configure the query builder of the edge.
-func (ohtq *OncallHandoverTemplateQuery) WithTenant(opts ...func(*TenantQuery)) *OncallHandoverTemplateQuery {
-	query := (&TenantClient{config: ohtq.config}).Query()
+func (_q *OncallHandoverTemplateQuery) WithTenant(opts ...func(*TenantQuery)) *OncallHandoverTemplateQuery {
+	query := (&TenantClient{config: _q.config}).Query()
 	for _, opt := range opts {
 		opt(query)
 	}
-	ohtq.withTenant = query
-	return ohtq
+	_q.withTenant = query
+	return _q
 }
 
 // WithRoster tells the query-builder to eager-load the nodes that are connected to
 // the "roster" edge. The optional arguments are used to configure the query builder of the edge.
-func (ohtq *OncallHandoverTemplateQuery) WithRoster(opts ...func(*OncallRosterQuery)) *OncallHandoverTemplateQuery {
-	query := (&OncallRosterClient{config: ohtq.config}).Query()
+func (_q *OncallHandoverTemplateQuery) WithRoster(opts ...func(*OncallRosterQuery)) *OncallHandoverTemplateQuery {
+	query := (&OncallRosterClient{config: _q.config}).Query()
 	for _, opt := range opts {
 		opt(query)
 	}
-	ohtq.withRoster = query
-	return ohtq
+	_q.withRoster = query
+	return _q
 }
 
 // GroupBy is used to group vertices by one or more fields/columns.
@@ -347,10 +347,10 @@ func (ohtq *OncallHandoverTemplateQuery) WithRoster(opts ...func(*OncallRosterQu
 //		GroupBy(oncallhandovertemplate.FieldTenantID).
 //		Aggregate(ent.Count()).
 //		Scan(ctx, &v)
-func (ohtq *OncallHandoverTemplateQuery) GroupBy(field string, fields ...string) *OncallHandoverTemplateGroupBy {
-	ohtq.ctx.Fields = append([]string{field}, fields...)
-	grbuild := &OncallHandoverTemplateGroupBy{build: ohtq}
-	grbuild.flds = &ohtq.ctx.Fields
+func (_q *OncallHandoverTemplateQuery) GroupBy(field string, fields ...string) *OncallHandoverTemplateGroupBy {
+	_q.ctx.Fields = append([]string{field}, fields...)
+	grbuild := &OncallHandoverTemplateGroupBy{build: _q}
+	grbuild.flds = &_q.ctx.Fields
 	grbuild.label = oncallhandovertemplate.Label
 	grbuild.scan = grbuild.Scan
 	return grbuild
@@ -368,89 +368,89 @@ func (ohtq *OncallHandoverTemplateQuery) GroupBy(field string, fields ...string)
 //	client.OncallHandoverTemplate.Query().
 //		Select(oncallhandovertemplate.FieldTenantID).
 //		Scan(ctx, &v)
-func (ohtq *OncallHandoverTemplateQuery) Select(fields ...string) *OncallHandoverTemplateSelect {
-	ohtq.ctx.Fields = append(ohtq.ctx.Fields, fields...)
-	sbuild := &OncallHandoverTemplateSelect{OncallHandoverTemplateQuery: ohtq}
+func (_q *OncallHandoverTemplateQuery) Select(fields ...string) *OncallHandoverTemplateSelect {
+	_q.ctx.Fields = append(_q.ctx.Fields, fields...)
+	sbuild := &OncallHandoverTemplateSelect{OncallHandoverTemplateQuery: _q}
 	sbuild.label = oncallhandovertemplate.Label
-	sbuild.flds, sbuild.scan = &ohtq.ctx.Fields, sbuild.Scan
+	sbuild.flds, sbuild.scan = &_q.ctx.Fields, sbuild.Scan
 	return sbuild
 }
 
 // Aggregate returns a OncallHandoverTemplateSelect configured with the given aggregations.
-func (ohtq *OncallHandoverTemplateQuery) Aggregate(fns ...AggregateFunc) *OncallHandoverTemplateSelect {
-	return ohtq.Select().Aggregate(fns...)
+func (_q *OncallHandoverTemplateQuery) Aggregate(fns ...AggregateFunc) *OncallHandoverTemplateSelect {
+	return _q.Select().Aggregate(fns...)
 }
 
-func (ohtq *OncallHandoverTemplateQuery) prepareQuery(ctx context.Context) error {
-	for _, inter := range ohtq.inters {
+func (_q *OncallHandoverTemplateQuery) prepareQuery(ctx context.Context) error {
+	for _, inter := range _q.inters {
 		if inter == nil {
 			return fmt.Errorf("ent: uninitialized interceptor (forgotten import ent/runtime?)")
 		}
 		if trv, ok := inter.(Traverser); ok {
-			if err := trv.Traverse(ctx, ohtq); err != nil {
+			if err := trv.Traverse(ctx, _q); err != nil {
 				return err
 			}
 		}
 	}
-	for _, f := range ohtq.ctx.Fields {
+	for _, f := range _q.ctx.Fields {
 		if !oncallhandovertemplate.ValidColumn(f) {
 			return &ValidationError{Name: f, err: fmt.Errorf("ent: invalid field %q for query", f)}
 		}
 	}
-	if ohtq.path != nil {
-		prev, err := ohtq.path(ctx)
+	if _q.path != nil {
+		prev, err := _q.path(ctx)
 		if err != nil {
 			return err
 		}
-		ohtq.sql = prev
+		_q.sql = prev
 	}
 	if oncallhandovertemplate.Policy == nil {
 		return errors.New("ent: uninitialized oncallhandovertemplate.Policy (forgotten import ent/runtime?)")
 	}
-	if err := oncallhandovertemplate.Policy.EvalQuery(ctx, ohtq); err != nil {
+	if err := oncallhandovertemplate.Policy.EvalQuery(ctx, _q); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (ohtq *OncallHandoverTemplateQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*OncallHandoverTemplate, error) {
+func (_q *OncallHandoverTemplateQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*OncallHandoverTemplate, error) {
 	var (
 		nodes       = []*OncallHandoverTemplate{}
-		_spec       = ohtq.querySpec()
+		_spec       = _q.querySpec()
 		loadedTypes = [2]bool{
-			ohtq.withTenant != nil,
-			ohtq.withRoster != nil,
+			_q.withTenant != nil,
+			_q.withRoster != nil,
 		}
 	)
 	_spec.ScanValues = func(columns []string) ([]any, error) {
 		return (*OncallHandoverTemplate).scanValues(nil, columns)
 	}
 	_spec.Assign = func(columns []string, values []any) error {
-		node := &OncallHandoverTemplate{config: ohtq.config}
+		node := &OncallHandoverTemplate{config: _q.config}
 		nodes = append(nodes, node)
 		node.Edges.loadedTypes = loadedTypes
 		return node.assignValues(columns, values)
 	}
-	if len(ohtq.modifiers) > 0 {
-		_spec.Modifiers = ohtq.modifiers
+	if len(_q.modifiers) > 0 {
+		_spec.Modifiers = _q.modifiers
 	}
 	for i := range hooks {
 		hooks[i](ctx, _spec)
 	}
-	if err := sqlgraph.QueryNodes(ctx, ohtq.driver, _spec); err != nil {
+	if err := sqlgraph.QueryNodes(ctx, _q.driver, _spec); err != nil {
 		return nil, err
 	}
 	if len(nodes) == 0 {
 		return nodes, nil
 	}
-	if query := ohtq.withTenant; query != nil {
-		if err := ohtq.loadTenant(ctx, query, nodes, nil,
+	if query := _q.withTenant; query != nil {
+		if err := _q.loadTenant(ctx, query, nodes, nil,
 			func(n *OncallHandoverTemplate, e *Tenant) { n.Edges.Tenant = e }); err != nil {
 			return nil, err
 		}
 	}
-	if query := ohtq.withRoster; query != nil {
-		if err := ohtq.loadRoster(ctx, query, nodes,
+	if query := _q.withRoster; query != nil {
+		if err := _q.loadRoster(ctx, query, nodes,
 			func(n *OncallHandoverTemplate) { n.Edges.Roster = []*OncallRoster{} },
 			func(n *OncallHandoverTemplate, e *OncallRoster) { n.Edges.Roster = append(n.Edges.Roster, e) }); err != nil {
 			return nil, err
@@ -459,7 +459,7 @@ func (ohtq *OncallHandoverTemplateQuery) sqlAll(ctx context.Context, hooks ...qu
 	return nodes, nil
 }
 
-func (ohtq *OncallHandoverTemplateQuery) loadTenant(ctx context.Context, query *TenantQuery, nodes []*OncallHandoverTemplate, init func(*OncallHandoverTemplate), assign func(*OncallHandoverTemplate, *Tenant)) error {
+func (_q *OncallHandoverTemplateQuery) loadTenant(ctx context.Context, query *TenantQuery, nodes []*OncallHandoverTemplate, init func(*OncallHandoverTemplate), assign func(*OncallHandoverTemplate, *Tenant)) error {
 	ids := make([]int, 0, len(nodes))
 	nodeids := make(map[int][]*OncallHandoverTemplate)
 	for i := range nodes {
@@ -488,7 +488,7 @@ func (ohtq *OncallHandoverTemplateQuery) loadTenant(ctx context.Context, query *
 	}
 	return nil
 }
-func (ohtq *OncallHandoverTemplateQuery) loadRoster(ctx context.Context, query *OncallRosterQuery, nodes []*OncallHandoverTemplate, init func(*OncallHandoverTemplate), assign func(*OncallHandoverTemplate, *OncallRoster)) error {
+func (_q *OncallHandoverTemplateQuery) loadRoster(ctx context.Context, query *OncallRosterQuery, nodes []*OncallHandoverTemplate, init func(*OncallHandoverTemplate), assign func(*OncallHandoverTemplate, *OncallRoster)) error {
 	fks := make([]driver.Value, 0, len(nodes))
 	nodeids := make(map[uuid.UUID]*OncallHandoverTemplate)
 	for i := range nodes {
@@ -519,27 +519,27 @@ func (ohtq *OncallHandoverTemplateQuery) loadRoster(ctx context.Context, query *
 	return nil
 }
 
-func (ohtq *OncallHandoverTemplateQuery) sqlCount(ctx context.Context) (int, error) {
-	_spec := ohtq.querySpec()
-	if len(ohtq.modifiers) > 0 {
-		_spec.Modifiers = ohtq.modifiers
+func (_q *OncallHandoverTemplateQuery) sqlCount(ctx context.Context) (int, error) {
+	_spec := _q.querySpec()
+	if len(_q.modifiers) > 0 {
+		_spec.Modifiers = _q.modifiers
 	}
-	_spec.Node.Columns = ohtq.ctx.Fields
-	if len(ohtq.ctx.Fields) > 0 {
-		_spec.Unique = ohtq.ctx.Unique != nil && *ohtq.ctx.Unique
+	_spec.Node.Columns = _q.ctx.Fields
+	if len(_q.ctx.Fields) > 0 {
+		_spec.Unique = _q.ctx.Unique != nil && *_q.ctx.Unique
 	}
-	return sqlgraph.CountNodes(ctx, ohtq.driver, _spec)
+	return sqlgraph.CountNodes(ctx, _q.driver, _spec)
 }
 
-func (ohtq *OncallHandoverTemplateQuery) querySpec() *sqlgraph.QuerySpec {
+func (_q *OncallHandoverTemplateQuery) querySpec() *sqlgraph.QuerySpec {
 	_spec := sqlgraph.NewQuerySpec(oncallhandovertemplate.Table, oncallhandovertemplate.Columns, sqlgraph.NewFieldSpec(oncallhandovertemplate.FieldID, field.TypeUUID))
-	_spec.From = ohtq.sql
-	if unique := ohtq.ctx.Unique; unique != nil {
+	_spec.From = _q.sql
+	if unique := _q.ctx.Unique; unique != nil {
 		_spec.Unique = *unique
-	} else if ohtq.path != nil {
+	} else if _q.path != nil {
 		_spec.Unique = true
 	}
-	if fields := ohtq.ctx.Fields; len(fields) > 0 {
+	if fields := _q.ctx.Fields; len(fields) > 0 {
 		_spec.Node.Columns = make([]string, 0, len(fields))
 		_spec.Node.Columns = append(_spec.Node.Columns, oncallhandovertemplate.FieldID)
 		for i := range fields {
@@ -547,24 +547,24 @@ func (ohtq *OncallHandoverTemplateQuery) querySpec() *sqlgraph.QuerySpec {
 				_spec.Node.Columns = append(_spec.Node.Columns, fields[i])
 			}
 		}
-		if ohtq.withTenant != nil {
+		if _q.withTenant != nil {
 			_spec.Node.AddColumnOnce(oncallhandovertemplate.FieldTenantID)
 		}
 	}
-	if ps := ohtq.predicates; len(ps) > 0 {
+	if ps := _q.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {
 				ps[i](selector)
 			}
 		}
 	}
-	if limit := ohtq.ctx.Limit; limit != nil {
+	if limit := _q.ctx.Limit; limit != nil {
 		_spec.Limit = *limit
 	}
-	if offset := ohtq.ctx.Offset; offset != nil {
+	if offset := _q.ctx.Offset; offset != nil {
 		_spec.Offset = *offset
 	}
-	if ps := ohtq.order; len(ps) > 0 {
+	if ps := _q.order; len(ps) > 0 {
 		_spec.Order = func(selector *sql.Selector) {
 			for i := range ps {
 				ps[i](selector)
@@ -574,45 +574,45 @@ func (ohtq *OncallHandoverTemplateQuery) querySpec() *sqlgraph.QuerySpec {
 	return _spec
 }
 
-func (ohtq *OncallHandoverTemplateQuery) sqlQuery(ctx context.Context) *sql.Selector {
-	builder := sql.Dialect(ohtq.driver.Dialect())
+func (_q *OncallHandoverTemplateQuery) sqlQuery(ctx context.Context) *sql.Selector {
+	builder := sql.Dialect(_q.driver.Dialect())
 	t1 := builder.Table(oncallhandovertemplate.Table)
-	columns := ohtq.ctx.Fields
+	columns := _q.ctx.Fields
 	if len(columns) == 0 {
 		columns = oncallhandovertemplate.Columns
 	}
 	selector := builder.Select(t1.Columns(columns...)...).From(t1)
-	if ohtq.sql != nil {
-		selector = ohtq.sql
+	if _q.sql != nil {
+		selector = _q.sql
 		selector.Select(selector.Columns(columns...)...)
 	}
-	if ohtq.ctx.Unique != nil && *ohtq.ctx.Unique {
+	if _q.ctx.Unique != nil && *_q.ctx.Unique {
 		selector.Distinct()
 	}
-	for _, m := range ohtq.modifiers {
+	for _, m := range _q.modifiers {
 		m(selector)
 	}
-	for _, p := range ohtq.predicates {
+	for _, p := range _q.predicates {
 		p(selector)
 	}
-	for _, p := range ohtq.order {
+	for _, p := range _q.order {
 		p(selector)
 	}
-	if offset := ohtq.ctx.Offset; offset != nil {
+	if offset := _q.ctx.Offset; offset != nil {
 		// limit is mandatory for offset clause. We start
 		// with default value, and override it below if needed.
 		selector.Offset(*offset).Limit(math.MaxInt32)
 	}
-	if limit := ohtq.ctx.Limit; limit != nil {
+	if limit := _q.ctx.Limit; limit != nil {
 		selector.Limit(*limit)
 	}
 	return selector
 }
 
 // Modify adds a query modifier for attaching custom logic to queries.
-func (ohtq *OncallHandoverTemplateQuery) Modify(modifiers ...func(s *sql.Selector)) *OncallHandoverTemplateSelect {
-	ohtq.modifiers = append(ohtq.modifiers, modifiers...)
-	return ohtq.Select()
+func (_q *OncallHandoverTemplateQuery) Modify(modifiers ...func(s *sql.Selector)) *OncallHandoverTemplateSelect {
+	_q.modifiers = append(_q.modifiers, modifiers...)
+	return _q.Select()
 }
 
 // OncallHandoverTemplateGroupBy is the group-by builder for OncallHandoverTemplate entities.
@@ -622,41 +622,41 @@ type OncallHandoverTemplateGroupBy struct {
 }
 
 // Aggregate adds the given aggregation functions to the group-by query.
-func (ohtgb *OncallHandoverTemplateGroupBy) Aggregate(fns ...AggregateFunc) *OncallHandoverTemplateGroupBy {
-	ohtgb.fns = append(ohtgb.fns, fns...)
-	return ohtgb
+func (_g *OncallHandoverTemplateGroupBy) Aggregate(fns ...AggregateFunc) *OncallHandoverTemplateGroupBy {
+	_g.fns = append(_g.fns, fns...)
+	return _g
 }
 
 // Scan applies the selector query and scans the result into the given value.
-func (ohtgb *OncallHandoverTemplateGroupBy) Scan(ctx context.Context, v any) error {
-	ctx = setContextOp(ctx, ohtgb.build.ctx, ent.OpQueryGroupBy)
-	if err := ohtgb.build.prepareQuery(ctx); err != nil {
+func (_g *OncallHandoverTemplateGroupBy) Scan(ctx context.Context, v any) error {
+	ctx = setContextOp(ctx, _g.build.ctx, ent.OpQueryGroupBy)
+	if err := _g.build.prepareQuery(ctx); err != nil {
 		return err
 	}
-	return scanWithInterceptors[*OncallHandoverTemplateQuery, *OncallHandoverTemplateGroupBy](ctx, ohtgb.build, ohtgb, ohtgb.build.inters, v)
+	return scanWithInterceptors[*OncallHandoverTemplateQuery, *OncallHandoverTemplateGroupBy](ctx, _g.build, _g, _g.build.inters, v)
 }
 
-func (ohtgb *OncallHandoverTemplateGroupBy) sqlScan(ctx context.Context, root *OncallHandoverTemplateQuery, v any) error {
+func (_g *OncallHandoverTemplateGroupBy) sqlScan(ctx context.Context, root *OncallHandoverTemplateQuery, v any) error {
 	selector := root.sqlQuery(ctx).Select()
-	aggregation := make([]string, 0, len(ohtgb.fns))
-	for _, fn := range ohtgb.fns {
+	aggregation := make([]string, 0, len(_g.fns))
+	for _, fn := range _g.fns {
 		aggregation = append(aggregation, fn(selector))
 	}
 	if len(selector.SelectedColumns()) == 0 {
-		columns := make([]string, 0, len(*ohtgb.flds)+len(ohtgb.fns))
-		for _, f := range *ohtgb.flds {
+		columns := make([]string, 0, len(*_g.flds)+len(_g.fns))
+		for _, f := range *_g.flds {
 			columns = append(columns, selector.C(f))
 		}
 		columns = append(columns, aggregation...)
 		selector.Select(columns...)
 	}
-	selector.GroupBy(selector.Columns(*ohtgb.flds...)...)
+	selector.GroupBy(selector.Columns(*_g.flds...)...)
 	if err := selector.Err(); err != nil {
 		return err
 	}
 	rows := &sql.Rows{}
 	query, args := selector.Query()
-	if err := ohtgb.build.driver.Query(ctx, query, args, rows); err != nil {
+	if err := _g.build.driver.Query(ctx, query, args, rows); err != nil {
 		return err
 	}
 	defer rows.Close()
@@ -670,27 +670,27 @@ type OncallHandoverTemplateSelect struct {
 }
 
 // Aggregate adds the given aggregation functions to the selector query.
-func (ohts *OncallHandoverTemplateSelect) Aggregate(fns ...AggregateFunc) *OncallHandoverTemplateSelect {
-	ohts.fns = append(ohts.fns, fns...)
-	return ohts
+func (_s *OncallHandoverTemplateSelect) Aggregate(fns ...AggregateFunc) *OncallHandoverTemplateSelect {
+	_s.fns = append(_s.fns, fns...)
+	return _s
 }
 
 // Scan applies the selector query and scans the result into the given value.
-func (ohts *OncallHandoverTemplateSelect) Scan(ctx context.Context, v any) error {
-	ctx = setContextOp(ctx, ohts.ctx, ent.OpQuerySelect)
-	if err := ohts.prepareQuery(ctx); err != nil {
+func (_s *OncallHandoverTemplateSelect) Scan(ctx context.Context, v any) error {
+	ctx = setContextOp(ctx, _s.ctx, ent.OpQuerySelect)
+	if err := _s.prepareQuery(ctx); err != nil {
 		return err
 	}
-	return scanWithInterceptors[*OncallHandoverTemplateQuery, *OncallHandoverTemplateSelect](ctx, ohts.OncallHandoverTemplateQuery, ohts, ohts.inters, v)
+	return scanWithInterceptors[*OncallHandoverTemplateQuery, *OncallHandoverTemplateSelect](ctx, _s.OncallHandoverTemplateQuery, _s, _s.inters, v)
 }
 
-func (ohts *OncallHandoverTemplateSelect) sqlScan(ctx context.Context, root *OncallHandoverTemplateQuery, v any) error {
+func (_s *OncallHandoverTemplateSelect) sqlScan(ctx context.Context, root *OncallHandoverTemplateQuery, v any) error {
 	selector := root.sqlQuery(ctx)
-	aggregation := make([]string, 0, len(ohts.fns))
-	for _, fn := range ohts.fns {
+	aggregation := make([]string, 0, len(_s.fns))
+	for _, fn := range _s.fns {
 		aggregation = append(aggregation, fn(selector))
 	}
-	switch n := len(*ohts.selector.flds); {
+	switch n := len(*_s.selector.flds); {
 	case n == 0 && len(aggregation) > 0:
 		selector.Select(aggregation...)
 	case n != 0 && len(aggregation) > 0:
@@ -698,7 +698,7 @@ func (ohts *OncallHandoverTemplateSelect) sqlScan(ctx context.Context, root *Onc
 	}
 	rows := &sql.Rows{}
 	query, args := selector.Query()
-	if err := ohts.driver.Query(ctx, query, args, rows); err != nil {
+	if err := _s.driver.Query(ctx, query, args, rows); err != nil {
 		return err
 	}
 	defer rows.Close()
@@ -706,7 +706,7 @@ func (ohts *OncallHandoverTemplateSelect) sqlScan(ctx context.Context, root *Onc
 }
 
 // Modify adds a query modifier for attaching custom logic to queries.
-func (ohts *OncallHandoverTemplateSelect) Modify(modifiers ...func(s *sql.Selector)) *OncallHandoverTemplateSelect {
-	ohts.modifiers = append(ohts.modifiers, modifiers...)
-	return ohts
+func (_s *OncallHandoverTemplateSelect) Modify(modifiers ...func(s *sql.Selector)) *OncallHandoverTemplateSelect {
+	_s.modifiers = append(_s.modifiers, modifiers...)
+	return _s
 }

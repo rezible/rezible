@@ -26,63 +26,63 @@ type IncidentDebriefSuggestionCreate struct {
 }
 
 // SetTenantID sets the "tenant_id" field.
-func (idsc *IncidentDebriefSuggestionCreate) SetTenantID(i int) *IncidentDebriefSuggestionCreate {
-	idsc.mutation.SetTenantID(i)
-	return idsc
+func (_c *IncidentDebriefSuggestionCreate) SetTenantID(v int) *IncidentDebriefSuggestionCreate {
+	_c.mutation.SetTenantID(v)
+	return _c
 }
 
 // SetContent sets the "content" field.
-func (idsc *IncidentDebriefSuggestionCreate) SetContent(s string) *IncidentDebriefSuggestionCreate {
-	idsc.mutation.SetContent(s)
-	return idsc
+func (_c *IncidentDebriefSuggestionCreate) SetContent(v string) *IncidentDebriefSuggestionCreate {
+	_c.mutation.SetContent(v)
+	return _c
 }
 
 // SetID sets the "id" field.
-func (idsc *IncidentDebriefSuggestionCreate) SetID(u uuid.UUID) *IncidentDebriefSuggestionCreate {
-	idsc.mutation.SetID(u)
-	return idsc
+func (_c *IncidentDebriefSuggestionCreate) SetID(v uuid.UUID) *IncidentDebriefSuggestionCreate {
+	_c.mutation.SetID(v)
+	return _c
 }
 
 // SetNillableID sets the "id" field if the given value is not nil.
-func (idsc *IncidentDebriefSuggestionCreate) SetNillableID(u *uuid.UUID) *IncidentDebriefSuggestionCreate {
-	if u != nil {
-		idsc.SetID(*u)
+func (_c *IncidentDebriefSuggestionCreate) SetNillableID(v *uuid.UUID) *IncidentDebriefSuggestionCreate {
+	if v != nil {
+		_c.SetID(*v)
 	}
-	return idsc
+	return _c
 }
 
 // SetTenant sets the "tenant" edge to the Tenant entity.
-func (idsc *IncidentDebriefSuggestionCreate) SetTenant(t *Tenant) *IncidentDebriefSuggestionCreate {
-	return idsc.SetTenantID(t.ID)
+func (_c *IncidentDebriefSuggestionCreate) SetTenant(v *Tenant) *IncidentDebriefSuggestionCreate {
+	return _c.SetTenantID(v.ID)
 }
 
 // SetDebriefID sets the "debrief" edge to the IncidentDebrief entity by ID.
-func (idsc *IncidentDebriefSuggestionCreate) SetDebriefID(id uuid.UUID) *IncidentDebriefSuggestionCreate {
-	idsc.mutation.SetDebriefID(id)
-	return idsc
+func (_c *IncidentDebriefSuggestionCreate) SetDebriefID(id uuid.UUID) *IncidentDebriefSuggestionCreate {
+	_c.mutation.SetDebriefID(id)
+	return _c
 }
 
 // SetDebrief sets the "debrief" edge to the IncidentDebrief entity.
-func (idsc *IncidentDebriefSuggestionCreate) SetDebrief(i *IncidentDebrief) *IncidentDebriefSuggestionCreate {
-	return idsc.SetDebriefID(i.ID)
+func (_c *IncidentDebriefSuggestionCreate) SetDebrief(v *IncidentDebrief) *IncidentDebriefSuggestionCreate {
+	return _c.SetDebriefID(v.ID)
 }
 
 // Mutation returns the IncidentDebriefSuggestionMutation object of the builder.
-func (idsc *IncidentDebriefSuggestionCreate) Mutation() *IncidentDebriefSuggestionMutation {
-	return idsc.mutation
+func (_c *IncidentDebriefSuggestionCreate) Mutation() *IncidentDebriefSuggestionMutation {
+	return _c.mutation
 }
 
 // Save creates the IncidentDebriefSuggestion in the database.
-func (idsc *IncidentDebriefSuggestionCreate) Save(ctx context.Context) (*IncidentDebriefSuggestion, error) {
-	if err := idsc.defaults(); err != nil {
+func (_c *IncidentDebriefSuggestionCreate) Save(ctx context.Context) (*IncidentDebriefSuggestion, error) {
+	if err := _c.defaults(); err != nil {
 		return nil, err
 	}
-	return withHooks(ctx, idsc.sqlSave, idsc.mutation, idsc.hooks)
+	return withHooks(ctx, _c.sqlSave, _c.mutation, _c.hooks)
 }
 
 // SaveX calls Save and panics if Save returns an error.
-func (idsc *IncidentDebriefSuggestionCreate) SaveX(ctx context.Context) *IncidentDebriefSuggestion {
-	v, err := idsc.Save(ctx)
+func (_c *IncidentDebriefSuggestionCreate) SaveX(ctx context.Context) *IncidentDebriefSuggestion {
+	v, err := _c.Save(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -90,53 +90,53 @@ func (idsc *IncidentDebriefSuggestionCreate) SaveX(ctx context.Context) *Inciden
 }
 
 // Exec executes the query.
-func (idsc *IncidentDebriefSuggestionCreate) Exec(ctx context.Context) error {
-	_, err := idsc.Save(ctx)
+func (_c *IncidentDebriefSuggestionCreate) Exec(ctx context.Context) error {
+	_, err := _c.Save(ctx)
 	return err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (idsc *IncidentDebriefSuggestionCreate) ExecX(ctx context.Context) {
-	if err := idsc.Exec(ctx); err != nil {
+func (_c *IncidentDebriefSuggestionCreate) ExecX(ctx context.Context) {
+	if err := _c.Exec(ctx); err != nil {
 		panic(err)
 	}
 }
 
 // defaults sets the default values of the builder before save.
-func (idsc *IncidentDebriefSuggestionCreate) defaults() error {
-	if _, ok := idsc.mutation.ID(); !ok {
+func (_c *IncidentDebriefSuggestionCreate) defaults() error {
+	if _, ok := _c.mutation.ID(); !ok {
 		if incidentdebriefsuggestion.DefaultID == nil {
 			return fmt.Errorf("ent: uninitialized incidentdebriefsuggestion.DefaultID (forgotten import ent/runtime?)")
 		}
 		v := incidentdebriefsuggestion.DefaultID()
-		idsc.mutation.SetID(v)
+		_c.mutation.SetID(v)
 	}
 	return nil
 }
 
 // check runs all checks and user-defined validators on the builder.
-func (idsc *IncidentDebriefSuggestionCreate) check() error {
-	if _, ok := idsc.mutation.TenantID(); !ok {
+func (_c *IncidentDebriefSuggestionCreate) check() error {
+	if _, ok := _c.mutation.TenantID(); !ok {
 		return &ValidationError{Name: "tenant_id", err: errors.New(`ent: missing required field "IncidentDebriefSuggestion.tenant_id"`)}
 	}
-	if _, ok := idsc.mutation.Content(); !ok {
+	if _, ok := _c.mutation.Content(); !ok {
 		return &ValidationError{Name: "content", err: errors.New(`ent: missing required field "IncidentDebriefSuggestion.content"`)}
 	}
-	if len(idsc.mutation.TenantIDs()) == 0 {
+	if len(_c.mutation.TenantIDs()) == 0 {
 		return &ValidationError{Name: "tenant", err: errors.New(`ent: missing required edge "IncidentDebriefSuggestion.tenant"`)}
 	}
-	if len(idsc.mutation.DebriefIDs()) == 0 {
+	if len(_c.mutation.DebriefIDs()) == 0 {
 		return &ValidationError{Name: "debrief", err: errors.New(`ent: missing required edge "IncidentDebriefSuggestion.debrief"`)}
 	}
 	return nil
 }
 
-func (idsc *IncidentDebriefSuggestionCreate) sqlSave(ctx context.Context) (*IncidentDebriefSuggestion, error) {
-	if err := idsc.check(); err != nil {
+func (_c *IncidentDebriefSuggestionCreate) sqlSave(ctx context.Context) (*IncidentDebriefSuggestion, error) {
+	if err := _c.check(); err != nil {
 		return nil, err
 	}
-	_node, _spec := idsc.createSpec()
-	if err := sqlgraph.CreateNode(ctx, idsc.driver, _spec); err != nil {
+	_node, _spec := _c.createSpec()
+	if err := sqlgraph.CreateNode(ctx, _c.driver, _spec); err != nil {
 		if sqlgraph.IsConstraintError(err) {
 			err = &ConstraintError{msg: err.Error(), wrap: err}
 		}
@@ -149,26 +149,26 @@ func (idsc *IncidentDebriefSuggestionCreate) sqlSave(ctx context.Context) (*Inci
 			return nil, err
 		}
 	}
-	idsc.mutation.id = &_node.ID
-	idsc.mutation.done = true
+	_c.mutation.id = &_node.ID
+	_c.mutation.done = true
 	return _node, nil
 }
 
-func (idsc *IncidentDebriefSuggestionCreate) createSpec() (*IncidentDebriefSuggestion, *sqlgraph.CreateSpec) {
+func (_c *IncidentDebriefSuggestionCreate) createSpec() (*IncidentDebriefSuggestion, *sqlgraph.CreateSpec) {
 	var (
-		_node = &IncidentDebriefSuggestion{config: idsc.config}
+		_node = &IncidentDebriefSuggestion{config: _c.config}
 		_spec = sqlgraph.NewCreateSpec(incidentdebriefsuggestion.Table, sqlgraph.NewFieldSpec(incidentdebriefsuggestion.FieldID, field.TypeUUID))
 	)
-	_spec.OnConflict = idsc.conflict
-	if id, ok := idsc.mutation.ID(); ok {
+	_spec.OnConflict = _c.conflict
+	if id, ok := _c.mutation.ID(); ok {
 		_node.ID = id
 		_spec.ID.Value = &id
 	}
-	if value, ok := idsc.mutation.Content(); ok {
+	if value, ok := _c.mutation.Content(); ok {
 		_spec.SetField(incidentdebriefsuggestion.FieldContent, field.TypeString, value)
 		_node.Content = value
 	}
-	if nodes := idsc.mutation.TenantIDs(); len(nodes) > 0 {
+	if nodes := _c.mutation.TenantIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
@@ -185,7 +185,7 @@ func (idsc *IncidentDebriefSuggestionCreate) createSpec() (*IncidentDebriefSugge
 		_node.TenantID = nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
-	if nodes := idsc.mutation.DebriefIDs(); len(nodes) > 0 {
+	if nodes := _c.mutation.DebriefIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: true,
@@ -221,10 +221,10 @@ func (idsc *IncidentDebriefSuggestionCreate) createSpec() (*IncidentDebriefSugge
 //			SetTenantID(v+v).
 //		}).
 //		Exec(ctx)
-func (idsc *IncidentDebriefSuggestionCreate) OnConflict(opts ...sql.ConflictOption) *IncidentDebriefSuggestionUpsertOne {
-	idsc.conflict = opts
+func (_c *IncidentDebriefSuggestionCreate) OnConflict(opts ...sql.ConflictOption) *IncidentDebriefSuggestionUpsertOne {
+	_c.conflict = opts
 	return &IncidentDebriefSuggestionUpsertOne{
-		create: idsc,
+		create: _c,
 	}
 }
 
@@ -234,10 +234,10 @@ func (idsc *IncidentDebriefSuggestionCreate) OnConflict(opts ...sql.ConflictOpti
 //	client.IncidentDebriefSuggestion.Create().
 //		OnConflict(sql.ConflictColumns(columns...)).
 //		Exec(ctx)
-func (idsc *IncidentDebriefSuggestionCreate) OnConflictColumns(columns ...string) *IncidentDebriefSuggestionUpsertOne {
-	idsc.conflict = append(idsc.conflict, sql.ConflictColumns(columns...))
+func (_c *IncidentDebriefSuggestionCreate) OnConflictColumns(columns ...string) *IncidentDebriefSuggestionUpsertOne {
+	_c.conflict = append(_c.conflict, sql.ConflictColumns(columns...))
 	return &IncidentDebriefSuggestionUpsertOne{
-		create: idsc,
+		create: _c,
 	}
 }
 
@@ -378,16 +378,16 @@ type IncidentDebriefSuggestionCreateBulk struct {
 }
 
 // Save creates the IncidentDebriefSuggestion entities in the database.
-func (idscb *IncidentDebriefSuggestionCreateBulk) Save(ctx context.Context) ([]*IncidentDebriefSuggestion, error) {
-	if idscb.err != nil {
-		return nil, idscb.err
+func (_c *IncidentDebriefSuggestionCreateBulk) Save(ctx context.Context) ([]*IncidentDebriefSuggestion, error) {
+	if _c.err != nil {
+		return nil, _c.err
 	}
-	specs := make([]*sqlgraph.CreateSpec, len(idscb.builders))
-	nodes := make([]*IncidentDebriefSuggestion, len(idscb.builders))
-	mutators := make([]Mutator, len(idscb.builders))
-	for i := range idscb.builders {
+	specs := make([]*sqlgraph.CreateSpec, len(_c.builders))
+	nodes := make([]*IncidentDebriefSuggestion, len(_c.builders))
+	mutators := make([]Mutator, len(_c.builders))
+	for i := range _c.builders {
 		func(i int, root context.Context) {
-			builder := idscb.builders[i]
+			builder := _c.builders[i]
 			builder.defaults()
 			var mut Mutator = MutateFunc(func(ctx context.Context, m Mutation) (Value, error) {
 				mutation, ok := m.(*IncidentDebriefSuggestionMutation)
@@ -401,12 +401,12 @@ func (idscb *IncidentDebriefSuggestionCreateBulk) Save(ctx context.Context) ([]*
 				var err error
 				nodes[i], specs[i] = builder.createSpec()
 				if i < len(mutators)-1 {
-					_, err = mutators[i+1].Mutate(root, idscb.builders[i+1].mutation)
+					_, err = mutators[i+1].Mutate(root, _c.builders[i+1].mutation)
 				} else {
 					spec := &sqlgraph.BatchCreateSpec{Nodes: specs}
-					spec.OnConflict = idscb.conflict
+					spec.OnConflict = _c.conflict
 					// Invoke the actual operation on the latest mutation in the chain.
-					if err = sqlgraph.BatchCreate(ctx, idscb.driver, spec); err != nil {
+					if err = sqlgraph.BatchCreate(ctx, _c.driver, spec); err != nil {
 						if sqlgraph.IsConstraintError(err) {
 							err = &ConstraintError{msg: err.Error(), wrap: err}
 						}
@@ -426,7 +426,7 @@ func (idscb *IncidentDebriefSuggestionCreateBulk) Save(ctx context.Context) ([]*
 		}(i, ctx)
 	}
 	if len(mutators) > 0 {
-		if _, err := mutators[0].Mutate(ctx, idscb.builders[0].mutation); err != nil {
+		if _, err := mutators[0].Mutate(ctx, _c.builders[0].mutation); err != nil {
 			return nil, err
 		}
 	}
@@ -434,8 +434,8 @@ func (idscb *IncidentDebriefSuggestionCreateBulk) Save(ctx context.Context) ([]*
 }
 
 // SaveX is like Save, but panics if an error occurs.
-func (idscb *IncidentDebriefSuggestionCreateBulk) SaveX(ctx context.Context) []*IncidentDebriefSuggestion {
-	v, err := idscb.Save(ctx)
+func (_c *IncidentDebriefSuggestionCreateBulk) SaveX(ctx context.Context) []*IncidentDebriefSuggestion {
+	v, err := _c.Save(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -443,14 +443,14 @@ func (idscb *IncidentDebriefSuggestionCreateBulk) SaveX(ctx context.Context) []*
 }
 
 // Exec executes the query.
-func (idscb *IncidentDebriefSuggestionCreateBulk) Exec(ctx context.Context) error {
-	_, err := idscb.Save(ctx)
+func (_c *IncidentDebriefSuggestionCreateBulk) Exec(ctx context.Context) error {
+	_, err := _c.Save(ctx)
 	return err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (idscb *IncidentDebriefSuggestionCreateBulk) ExecX(ctx context.Context) {
-	if err := idscb.Exec(ctx); err != nil {
+func (_c *IncidentDebriefSuggestionCreateBulk) ExecX(ctx context.Context) {
+	if err := _c.Exec(ctx); err != nil {
 		panic(err)
 	}
 }
@@ -470,10 +470,10 @@ func (idscb *IncidentDebriefSuggestionCreateBulk) ExecX(ctx context.Context) {
 //			SetTenantID(v+v).
 //		}).
 //		Exec(ctx)
-func (idscb *IncidentDebriefSuggestionCreateBulk) OnConflict(opts ...sql.ConflictOption) *IncidentDebriefSuggestionUpsertBulk {
-	idscb.conflict = opts
+func (_c *IncidentDebriefSuggestionCreateBulk) OnConflict(opts ...sql.ConflictOption) *IncidentDebriefSuggestionUpsertBulk {
+	_c.conflict = opts
 	return &IncidentDebriefSuggestionUpsertBulk{
-		create: idscb,
+		create: _c,
 	}
 }
 
@@ -483,10 +483,10 @@ func (idscb *IncidentDebriefSuggestionCreateBulk) OnConflict(opts ...sql.Conflic
 //	client.IncidentDebriefSuggestion.Create().
 //		OnConflict(sql.ConflictColumns(columns...)).
 //		Exec(ctx)
-func (idscb *IncidentDebriefSuggestionCreateBulk) OnConflictColumns(columns ...string) *IncidentDebriefSuggestionUpsertBulk {
-	idscb.conflict = append(idscb.conflict, sql.ConflictColumns(columns...))
+func (_c *IncidentDebriefSuggestionCreateBulk) OnConflictColumns(columns ...string) *IncidentDebriefSuggestionUpsertBulk {
+	_c.conflict = append(_c.conflict, sql.ConflictColumns(columns...))
 	return &IncidentDebriefSuggestionUpsertBulk{
-		create: idscb,
+		create: _c,
 	}
 }
 

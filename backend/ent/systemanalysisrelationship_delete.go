@@ -20,56 +20,56 @@ type SystemAnalysisRelationshipDelete struct {
 }
 
 // Where appends a list predicates to the SystemAnalysisRelationshipDelete builder.
-func (sard *SystemAnalysisRelationshipDelete) Where(ps ...predicate.SystemAnalysisRelationship) *SystemAnalysisRelationshipDelete {
-	sard.mutation.Where(ps...)
-	return sard
+func (_d *SystemAnalysisRelationshipDelete) Where(ps ...predicate.SystemAnalysisRelationship) *SystemAnalysisRelationshipDelete {
+	_d.mutation.Where(ps...)
+	return _d
 }
 
 // Exec executes the deletion query and returns how many vertices were deleted.
-func (sard *SystemAnalysisRelationshipDelete) Exec(ctx context.Context) (int, error) {
-	return withHooks(ctx, sard.sqlExec, sard.mutation, sard.hooks)
+func (_d *SystemAnalysisRelationshipDelete) Exec(ctx context.Context) (int, error) {
+	return withHooks(ctx, _d.sqlExec, _d.mutation, _d.hooks)
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (sard *SystemAnalysisRelationshipDelete) ExecX(ctx context.Context) int {
-	n, err := sard.Exec(ctx)
+func (_d *SystemAnalysisRelationshipDelete) ExecX(ctx context.Context) int {
+	n, err := _d.Exec(ctx)
 	if err != nil {
 		panic(err)
 	}
 	return n
 }
 
-func (sard *SystemAnalysisRelationshipDelete) sqlExec(ctx context.Context) (int, error) {
+func (_d *SystemAnalysisRelationshipDelete) sqlExec(ctx context.Context) (int, error) {
 	_spec := sqlgraph.NewDeleteSpec(systemanalysisrelationship.Table, sqlgraph.NewFieldSpec(systemanalysisrelationship.FieldID, field.TypeUUID))
-	if ps := sard.mutation.predicates; len(ps) > 0 {
+	if ps := _d.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {
 				ps[i](selector)
 			}
 		}
 	}
-	affected, err := sqlgraph.DeleteNodes(ctx, sard.driver, _spec)
+	affected, err := sqlgraph.DeleteNodes(ctx, _d.driver, _spec)
 	if err != nil && sqlgraph.IsConstraintError(err) {
 		err = &ConstraintError{msg: err.Error(), wrap: err}
 	}
-	sard.mutation.done = true
+	_d.mutation.done = true
 	return affected, err
 }
 
 // SystemAnalysisRelationshipDeleteOne is the builder for deleting a single SystemAnalysisRelationship entity.
 type SystemAnalysisRelationshipDeleteOne struct {
-	sard *SystemAnalysisRelationshipDelete
+	_d *SystemAnalysisRelationshipDelete
 }
 
 // Where appends a list predicates to the SystemAnalysisRelationshipDelete builder.
-func (sardo *SystemAnalysisRelationshipDeleteOne) Where(ps ...predicate.SystemAnalysisRelationship) *SystemAnalysisRelationshipDeleteOne {
-	sardo.sard.mutation.Where(ps...)
-	return sardo
+func (_d *SystemAnalysisRelationshipDeleteOne) Where(ps ...predicate.SystemAnalysisRelationship) *SystemAnalysisRelationshipDeleteOne {
+	_d._d.mutation.Where(ps...)
+	return _d
 }
 
 // Exec executes the deletion query.
-func (sardo *SystemAnalysisRelationshipDeleteOne) Exec(ctx context.Context) error {
-	n, err := sardo.sard.Exec(ctx)
+func (_d *SystemAnalysisRelationshipDeleteOne) Exec(ctx context.Context) error {
+	n, err := _d._d.Exec(ctx)
 	switch {
 	case err != nil:
 		return err
@@ -81,8 +81,8 @@ func (sardo *SystemAnalysisRelationshipDeleteOne) Exec(ctx context.Context) erro
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (sardo *SystemAnalysisRelationshipDeleteOne) ExecX(ctx context.Context) {
-	if err := sardo.Exec(ctx); err != nil {
+func (_d *SystemAnalysisRelationshipDeleteOne) ExecX(ctx context.Context) {
+	if err := _d.Exec(ctx); err != nil {
 		panic(err)
 	}
 }

@@ -26,57 +26,57 @@ type OncallRosterMetricsCreate struct {
 }
 
 // SetTenantID sets the "tenant_id" field.
-func (ormc *OncallRosterMetricsCreate) SetTenantID(i int) *OncallRosterMetricsCreate {
-	ormc.mutation.SetTenantID(i)
-	return ormc
+func (_c *OncallRosterMetricsCreate) SetTenantID(v int) *OncallRosterMetricsCreate {
+	_c.mutation.SetTenantID(v)
+	return _c
 }
 
 // SetRosterID sets the "roster_id" field.
-func (ormc *OncallRosterMetricsCreate) SetRosterID(u uuid.UUID) *OncallRosterMetricsCreate {
-	ormc.mutation.SetRosterID(u)
-	return ormc
+func (_c *OncallRosterMetricsCreate) SetRosterID(v uuid.UUID) *OncallRosterMetricsCreate {
+	_c.mutation.SetRosterID(v)
+	return _c
 }
 
 // SetID sets the "id" field.
-func (ormc *OncallRosterMetricsCreate) SetID(u uuid.UUID) *OncallRosterMetricsCreate {
-	ormc.mutation.SetID(u)
-	return ormc
+func (_c *OncallRosterMetricsCreate) SetID(v uuid.UUID) *OncallRosterMetricsCreate {
+	_c.mutation.SetID(v)
+	return _c
 }
 
 // SetNillableID sets the "id" field if the given value is not nil.
-func (ormc *OncallRosterMetricsCreate) SetNillableID(u *uuid.UUID) *OncallRosterMetricsCreate {
-	if u != nil {
-		ormc.SetID(*u)
+func (_c *OncallRosterMetricsCreate) SetNillableID(v *uuid.UUID) *OncallRosterMetricsCreate {
+	if v != nil {
+		_c.SetID(*v)
 	}
-	return ormc
+	return _c
 }
 
 // SetTenant sets the "tenant" edge to the Tenant entity.
-func (ormc *OncallRosterMetricsCreate) SetTenant(t *Tenant) *OncallRosterMetricsCreate {
-	return ormc.SetTenantID(t.ID)
+func (_c *OncallRosterMetricsCreate) SetTenant(v *Tenant) *OncallRosterMetricsCreate {
+	return _c.SetTenantID(v.ID)
 }
 
 // SetRoster sets the "roster" edge to the OncallRoster entity.
-func (ormc *OncallRosterMetricsCreate) SetRoster(o *OncallRoster) *OncallRosterMetricsCreate {
-	return ormc.SetRosterID(o.ID)
+func (_c *OncallRosterMetricsCreate) SetRoster(v *OncallRoster) *OncallRosterMetricsCreate {
+	return _c.SetRosterID(v.ID)
 }
 
 // Mutation returns the OncallRosterMetricsMutation object of the builder.
-func (ormc *OncallRosterMetricsCreate) Mutation() *OncallRosterMetricsMutation {
-	return ormc.mutation
+func (_c *OncallRosterMetricsCreate) Mutation() *OncallRosterMetricsMutation {
+	return _c.mutation
 }
 
 // Save creates the OncallRosterMetrics in the database.
-func (ormc *OncallRosterMetricsCreate) Save(ctx context.Context) (*OncallRosterMetrics, error) {
-	if err := ormc.defaults(); err != nil {
+func (_c *OncallRosterMetricsCreate) Save(ctx context.Context) (*OncallRosterMetrics, error) {
+	if err := _c.defaults(); err != nil {
 		return nil, err
 	}
-	return withHooks(ctx, ormc.sqlSave, ormc.mutation, ormc.hooks)
+	return withHooks(ctx, _c.sqlSave, _c.mutation, _c.hooks)
 }
 
 // SaveX calls Save and panics if Save returns an error.
-func (ormc *OncallRosterMetricsCreate) SaveX(ctx context.Context) *OncallRosterMetrics {
-	v, err := ormc.Save(ctx)
+func (_c *OncallRosterMetricsCreate) SaveX(ctx context.Context) *OncallRosterMetrics {
+	v, err := _c.Save(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -84,53 +84,53 @@ func (ormc *OncallRosterMetricsCreate) SaveX(ctx context.Context) *OncallRosterM
 }
 
 // Exec executes the query.
-func (ormc *OncallRosterMetricsCreate) Exec(ctx context.Context) error {
-	_, err := ormc.Save(ctx)
+func (_c *OncallRosterMetricsCreate) Exec(ctx context.Context) error {
+	_, err := _c.Save(ctx)
 	return err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (ormc *OncallRosterMetricsCreate) ExecX(ctx context.Context) {
-	if err := ormc.Exec(ctx); err != nil {
+func (_c *OncallRosterMetricsCreate) ExecX(ctx context.Context) {
+	if err := _c.Exec(ctx); err != nil {
 		panic(err)
 	}
 }
 
 // defaults sets the default values of the builder before save.
-func (ormc *OncallRosterMetricsCreate) defaults() error {
-	if _, ok := ormc.mutation.ID(); !ok {
+func (_c *OncallRosterMetricsCreate) defaults() error {
+	if _, ok := _c.mutation.ID(); !ok {
 		if oncallrostermetrics.DefaultID == nil {
 			return fmt.Errorf("ent: uninitialized oncallrostermetrics.DefaultID (forgotten import ent/runtime?)")
 		}
 		v := oncallrostermetrics.DefaultID()
-		ormc.mutation.SetID(v)
+		_c.mutation.SetID(v)
 	}
 	return nil
 }
 
 // check runs all checks and user-defined validators on the builder.
-func (ormc *OncallRosterMetricsCreate) check() error {
-	if _, ok := ormc.mutation.TenantID(); !ok {
+func (_c *OncallRosterMetricsCreate) check() error {
+	if _, ok := _c.mutation.TenantID(); !ok {
 		return &ValidationError{Name: "tenant_id", err: errors.New(`ent: missing required field "OncallRosterMetrics.tenant_id"`)}
 	}
-	if _, ok := ormc.mutation.RosterID(); !ok {
+	if _, ok := _c.mutation.RosterID(); !ok {
 		return &ValidationError{Name: "roster_id", err: errors.New(`ent: missing required field "OncallRosterMetrics.roster_id"`)}
 	}
-	if len(ormc.mutation.TenantIDs()) == 0 {
+	if len(_c.mutation.TenantIDs()) == 0 {
 		return &ValidationError{Name: "tenant", err: errors.New(`ent: missing required edge "OncallRosterMetrics.tenant"`)}
 	}
-	if len(ormc.mutation.RosterIDs()) == 0 {
+	if len(_c.mutation.RosterIDs()) == 0 {
 		return &ValidationError{Name: "roster", err: errors.New(`ent: missing required edge "OncallRosterMetrics.roster"`)}
 	}
 	return nil
 }
 
-func (ormc *OncallRosterMetricsCreate) sqlSave(ctx context.Context) (*OncallRosterMetrics, error) {
-	if err := ormc.check(); err != nil {
+func (_c *OncallRosterMetricsCreate) sqlSave(ctx context.Context) (*OncallRosterMetrics, error) {
+	if err := _c.check(); err != nil {
 		return nil, err
 	}
-	_node, _spec := ormc.createSpec()
-	if err := sqlgraph.CreateNode(ctx, ormc.driver, _spec); err != nil {
+	_node, _spec := _c.createSpec()
+	if err := sqlgraph.CreateNode(ctx, _c.driver, _spec); err != nil {
 		if sqlgraph.IsConstraintError(err) {
 			err = &ConstraintError{msg: err.Error(), wrap: err}
 		}
@@ -143,22 +143,22 @@ func (ormc *OncallRosterMetricsCreate) sqlSave(ctx context.Context) (*OncallRost
 			return nil, err
 		}
 	}
-	ormc.mutation.id = &_node.ID
-	ormc.mutation.done = true
+	_c.mutation.id = &_node.ID
+	_c.mutation.done = true
 	return _node, nil
 }
 
-func (ormc *OncallRosterMetricsCreate) createSpec() (*OncallRosterMetrics, *sqlgraph.CreateSpec) {
+func (_c *OncallRosterMetricsCreate) createSpec() (*OncallRosterMetrics, *sqlgraph.CreateSpec) {
 	var (
-		_node = &OncallRosterMetrics{config: ormc.config}
+		_node = &OncallRosterMetrics{config: _c.config}
 		_spec = sqlgraph.NewCreateSpec(oncallrostermetrics.Table, sqlgraph.NewFieldSpec(oncallrostermetrics.FieldID, field.TypeUUID))
 	)
-	_spec.OnConflict = ormc.conflict
-	if id, ok := ormc.mutation.ID(); ok {
+	_spec.OnConflict = _c.conflict
+	if id, ok := _c.mutation.ID(); ok {
 		_node.ID = id
 		_spec.ID.Value = &id
 	}
-	if nodes := ormc.mutation.TenantIDs(); len(nodes) > 0 {
+	if nodes := _c.mutation.TenantIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
@@ -175,7 +175,7 @@ func (ormc *OncallRosterMetricsCreate) createSpec() (*OncallRosterMetrics, *sqlg
 		_node.TenantID = nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
-	if nodes := ormc.mutation.RosterIDs(); len(nodes) > 0 {
+	if nodes := _c.mutation.RosterIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
@@ -211,10 +211,10 @@ func (ormc *OncallRosterMetricsCreate) createSpec() (*OncallRosterMetrics, *sqlg
 //			SetTenantID(v+v).
 //		}).
 //		Exec(ctx)
-func (ormc *OncallRosterMetricsCreate) OnConflict(opts ...sql.ConflictOption) *OncallRosterMetricsUpsertOne {
-	ormc.conflict = opts
+func (_c *OncallRosterMetricsCreate) OnConflict(opts ...sql.ConflictOption) *OncallRosterMetricsUpsertOne {
+	_c.conflict = opts
 	return &OncallRosterMetricsUpsertOne{
-		create: ormc,
+		create: _c,
 	}
 }
 
@@ -224,10 +224,10 @@ func (ormc *OncallRosterMetricsCreate) OnConflict(opts ...sql.ConflictOption) *O
 //	client.OncallRosterMetrics.Create().
 //		OnConflict(sql.ConflictColumns(columns...)).
 //		Exec(ctx)
-func (ormc *OncallRosterMetricsCreate) OnConflictColumns(columns ...string) *OncallRosterMetricsUpsertOne {
-	ormc.conflict = append(ormc.conflict, sql.ConflictColumns(columns...))
+func (_c *OncallRosterMetricsCreate) OnConflictColumns(columns ...string) *OncallRosterMetricsUpsertOne {
+	_c.conflict = append(_c.conflict, sql.ConflictColumns(columns...))
 	return &OncallRosterMetricsUpsertOne{
-		create: ormc,
+		create: _c,
 	}
 }
 
@@ -368,16 +368,16 @@ type OncallRosterMetricsCreateBulk struct {
 }
 
 // Save creates the OncallRosterMetrics entities in the database.
-func (ormcb *OncallRosterMetricsCreateBulk) Save(ctx context.Context) ([]*OncallRosterMetrics, error) {
-	if ormcb.err != nil {
-		return nil, ormcb.err
+func (_c *OncallRosterMetricsCreateBulk) Save(ctx context.Context) ([]*OncallRosterMetrics, error) {
+	if _c.err != nil {
+		return nil, _c.err
 	}
-	specs := make([]*sqlgraph.CreateSpec, len(ormcb.builders))
-	nodes := make([]*OncallRosterMetrics, len(ormcb.builders))
-	mutators := make([]Mutator, len(ormcb.builders))
-	for i := range ormcb.builders {
+	specs := make([]*sqlgraph.CreateSpec, len(_c.builders))
+	nodes := make([]*OncallRosterMetrics, len(_c.builders))
+	mutators := make([]Mutator, len(_c.builders))
+	for i := range _c.builders {
 		func(i int, root context.Context) {
-			builder := ormcb.builders[i]
+			builder := _c.builders[i]
 			builder.defaults()
 			var mut Mutator = MutateFunc(func(ctx context.Context, m Mutation) (Value, error) {
 				mutation, ok := m.(*OncallRosterMetricsMutation)
@@ -391,12 +391,12 @@ func (ormcb *OncallRosterMetricsCreateBulk) Save(ctx context.Context) ([]*Oncall
 				var err error
 				nodes[i], specs[i] = builder.createSpec()
 				if i < len(mutators)-1 {
-					_, err = mutators[i+1].Mutate(root, ormcb.builders[i+1].mutation)
+					_, err = mutators[i+1].Mutate(root, _c.builders[i+1].mutation)
 				} else {
 					spec := &sqlgraph.BatchCreateSpec{Nodes: specs}
-					spec.OnConflict = ormcb.conflict
+					spec.OnConflict = _c.conflict
 					// Invoke the actual operation on the latest mutation in the chain.
-					if err = sqlgraph.BatchCreate(ctx, ormcb.driver, spec); err != nil {
+					if err = sqlgraph.BatchCreate(ctx, _c.driver, spec); err != nil {
 						if sqlgraph.IsConstraintError(err) {
 							err = &ConstraintError{msg: err.Error(), wrap: err}
 						}
@@ -416,7 +416,7 @@ func (ormcb *OncallRosterMetricsCreateBulk) Save(ctx context.Context) ([]*Oncall
 		}(i, ctx)
 	}
 	if len(mutators) > 0 {
-		if _, err := mutators[0].Mutate(ctx, ormcb.builders[0].mutation); err != nil {
+		if _, err := mutators[0].Mutate(ctx, _c.builders[0].mutation); err != nil {
 			return nil, err
 		}
 	}
@@ -424,8 +424,8 @@ func (ormcb *OncallRosterMetricsCreateBulk) Save(ctx context.Context) ([]*Oncall
 }
 
 // SaveX is like Save, but panics if an error occurs.
-func (ormcb *OncallRosterMetricsCreateBulk) SaveX(ctx context.Context) []*OncallRosterMetrics {
-	v, err := ormcb.Save(ctx)
+func (_c *OncallRosterMetricsCreateBulk) SaveX(ctx context.Context) []*OncallRosterMetrics {
+	v, err := _c.Save(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -433,14 +433,14 @@ func (ormcb *OncallRosterMetricsCreateBulk) SaveX(ctx context.Context) []*Oncall
 }
 
 // Exec executes the query.
-func (ormcb *OncallRosterMetricsCreateBulk) Exec(ctx context.Context) error {
-	_, err := ormcb.Save(ctx)
+func (_c *OncallRosterMetricsCreateBulk) Exec(ctx context.Context) error {
+	_, err := _c.Save(ctx)
 	return err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (ormcb *OncallRosterMetricsCreateBulk) ExecX(ctx context.Context) {
-	if err := ormcb.Exec(ctx); err != nil {
+func (_c *OncallRosterMetricsCreateBulk) ExecX(ctx context.Context) {
+	if err := _c.Exec(ctx); err != nil {
 		panic(err)
 	}
 }
@@ -460,10 +460,10 @@ func (ormcb *OncallRosterMetricsCreateBulk) ExecX(ctx context.Context) {
 //			SetTenantID(v+v).
 //		}).
 //		Exec(ctx)
-func (ormcb *OncallRosterMetricsCreateBulk) OnConflict(opts ...sql.ConflictOption) *OncallRosterMetricsUpsertBulk {
-	ormcb.conflict = opts
+func (_c *OncallRosterMetricsCreateBulk) OnConflict(opts ...sql.ConflictOption) *OncallRosterMetricsUpsertBulk {
+	_c.conflict = opts
 	return &OncallRosterMetricsUpsertBulk{
-		create: ormcb,
+		create: _c,
 	}
 }
 
@@ -473,10 +473,10 @@ func (ormcb *OncallRosterMetricsCreateBulk) OnConflict(opts ...sql.ConflictOptio
 //	client.OncallRosterMetrics.Create().
 //		OnConflict(sql.ConflictColumns(columns...)).
 //		Exec(ctx)
-func (ormcb *OncallRosterMetricsCreateBulk) OnConflictColumns(columns ...string) *OncallRosterMetricsUpsertBulk {
-	ormcb.conflict = append(ormcb.conflict, sql.ConflictColumns(columns...))
+func (_c *OncallRosterMetricsCreateBulk) OnConflictColumns(columns ...string) *OncallRosterMetricsUpsertBulk {
+	_c.conflict = append(_c.conflict, sql.ConflictColumns(columns...))
 	return &OncallRosterMetricsUpsertBulk{
-		create: ormcb,
+		create: _c,
 	}
 }
 

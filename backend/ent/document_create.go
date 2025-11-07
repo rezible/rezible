@@ -26,71 +26,71 @@ type DocumentCreate struct {
 }
 
 // SetTenantID sets the "tenant_id" field.
-func (dc *DocumentCreate) SetTenantID(i int) *DocumentCreate {
-	dc.mutation.SetTenantID(i)
-	return dc
+func (_c *DocumentCreate) SetTenantID(v int) *DocumentCreate {
+	_c.mutation.SetTenantID(v)
+	return _c
 }
 
 // SetContent sets the "content" field.
-func (dc *DocumentCreate) SetContent(b []byte) *DocumentCreate {
-	dc.mutation.SetContent(b)
-	return dc
+func (_c *DocumentCreate) SetContent(v []byte) *DocumentCreate {
+	_c.mutation.SetContent(v)
+	return _c
 }
 
 // SetID sets the "id" field.
-func (dc *DocumentCreate) SetID(u uuid.UUID) *DocumentCreate {
-	dc.mutation.SetID(u)
-	return dc
+func (_c *DocumentCreate) SetID(v uuid.UUID) *DocumentCreate {
+	_c.mutation.SetID(v)
+	return _c
 }
 
 // SetNillableID sets the "id" field if the given value is not nil.
-func (dc *DocumentCreate) SetNillableID(u *uuid.UUID) *DocumentCreate {
-	if u != nil {
-		dc.SetID(*u)
+func (_c *DocumentCreate) SetNillableID(v *uuid.UUID) *DocumentCreate {
+	if v != nil {
+		_c.SetID(*v)
 	}
-	return dc
+	return _c
 }
 
 // SetTenant sets the "tenant" edge to the Tenant entity.
-func (dc *DocumentCreate) SetTenant(t *Tenant) *DocumentCreate {
-	return dc.SetTenantID(t.ID)
+func (_c *DocumentCreate) SetTenant(v *Tenant) *DocumentCreate {
+	return _c.SetTenantID(v.ID)
 }
 
 // SetRetrospectiveID sets the "retrospective" edge to the Retrospective entity by ID.
-func (dc *DocumentCreate) SetRetrospectiveID(id uuid.UUID) *DocumentCreate {
-	dc.mutation.SetRetrospectiveID(id)
-	return dc
+func (_c *DocumentCreate) SetRetrospectiveID(id uuid.UUID) *DocumentCreate {
+	_c.mutation.SetRetrospectiveID(id)
+	return _c
 }
 
 // SetNillableRetrospectiveID sets the "retrospective" edge to the Retrospective entity by ID if the given value is not nil.
-func (dc *DocumentCreate) SetNillableRetrospectiveID(id *uuid.UUID) *DocumentCreate {
+func (_c *DocumentCreate) SetNillableRetrospectiveID(id *uuid.UUID) *DocumentCreate {
 	if id != nil {
-		dc = dc.SetRetrospectiveID(*id)
+		_c = _c.SetRetrospectiveID(*id)
 	}
-	return dc
+	return _c
 }
 
 // SetRetrospective sets the "retrospective" edge to the Retrospective entity.
-func (dc *DocumentCreate) SetRetrospective(r *Retrospective) *DocumentCreate {
-	return dc.SetRetrospectiveID(r.ID)
+func (_c *DocumentCreate) SetRetrospective(v *Retrospective) *DocumentCreate {
+	return _c.SetRetrospectiveID(v.ID)
 }
 
 // Mutation returns the DocumentMutation object of the builder.
-func (dc *DocumentCreate) Mutation() *DocumentMutation {
-	return dc.mutation
+func (_c *DocumentCreate) Mutation() *DocumentMutation {
+	return _c.mutation
 }
 
 // Save creates the Document in the database.
-func (dc *DocumentCreate) Save(ctx context.Context) (*Document, error) {
-	if err := dc.defaults(); err != nil {
+func (_c *DocumentCreate) Save(ctx context.Context) (*Document, error) {
+	if err := _c.defaults(); err != nil {
 		return nil, err
 	}
-	return withHooks(ctx, dc.sqlSave, dc.mutation, dc.hooks)
+	return withHooks(ctx, _c.sqlSave, _c.mutation, _c.hooks)
 }
 
 // SaveX calls Save and panics if Save returns an error.
-func (dc *DocumentCreate) SaveX(ctx context.Context) *Document {
-	v, err := dc.Save(ctx)
+func (_c *DocumentCreate) SaveX(ctx context.Context) *Document {
+	v, err := _c.Save(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -98,50 +98,50 @@ func (dc *DocumentCreate) SaveX(ctx context.Context) *Document {
 }
 
 // Exec executes the query.
-func (dc *DocumentCreate) Exec(ctx context.Context) error {
-	_, err := dc.Save(ctx)
+func (_c *DocumentCreate) Exec(ctx context.Context) error {
+	_, err := _c.Save(ctx)
 	return err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (dc *DocumentCreate) ExecX(ctx context.Context) {
-	if err := dc.Exec(ctx); err != nil {
+func (_c *DocumentCreate) ExecX(ctx context.Context) {
+	if err := _c.Exec(ctx); err != nil {
 		panic(err)
 	}
 }
 
 // defaults sets the default values of the builder before save.
-func (dc *DocumentCreate) defaults() error {
-	if _, ok := dc.mutation.ID(); !ok {
+func (_c *DocumentCreate) defaults() error {
+	if _, ok := _c.mutation.ID(); !ok {
 		if document.DefaultID == nil {
 			return fmt.Errorf("ent: uninitialized document.DefaultID (forgotten import ent/runtime?)")
 		}
 		v := document.DefaultID()
-		dc.mutation.SetID(v)
+		_c.mutation.SetID(v)
 	}
 	return nil
 }
 
 // check runs all checks and user-defined validators on the builder.
-func (dc *DocumentCreate) check() error {
-	if _, ok := dc.mutation.TenantID(); !ok {
+func (_c *DocumentCreate) check() error {
+	if _, ok := _c.mutation.TenantID(); !ok {
 		return &ValidationError{Name: "tenant_id", err: errors.New(`ent: missing required field "Document.tenant_id"`)}
 	}
-	if _, ok := dc.mutation.Content(); !ok {
+	if _, ok := _c.mutation.Content(); !ok {
 		return &ValidationError{Name: "content", err: errors.New(`ent: missing required field "Document.content"`)}
 	}
-	if len(dc.mutation.TenantIDs()) == 0 {
+	if len(_c.mutation.TenantIDs()) == 0 {
 		return &ValidationError{Name: "tenant", err: errors.New(`ent: missing required edge "Document.tenant"`)}
 	}
 	return nil
 }
 
-func (dc *DocumentCreate) sqlSave(ctx context.Context) (*Document, error) {
-	if err := dc.check(); err != nil {
+func (_c *DocumentCreate) sqlSave(ctx context.Context) (*Document, error) {
+	if err := _c.check(); err != nil {
 		return nil, err
 	}
-	_node, _spec := dc.createSpec()
-	if err := sqlgraph.CreateNode(ctx, dc.driver, _spec); err != nil {
+	_node, _spec := _c.createSpec()
+	if err := sqlgraph.CreateNode(ctx, _c.driver, _spec); err != nil {
 		if sqlgraph.IsConstraintError(err) {
 			err = &ConstraintError{msg: err.Error(), wrap: err}
 		}
@@ -154,26 +154,26 @@ func (dc *DocumentCreate) sqlSave(ctx context.Context) (*Document, error) {
 			return nil, err
 		}
 	}
-	dc.mutation.id = &_node.ID
-	dc.mutation.done = true
+	_c.mutation.id = &_node.ID
+	_c.mutation.done = true
 	return _node, nil
 }
 
-func (dc *DocumentCreate) createSpec() (*Document, *sqlgraph.CreateSpec) {
+func (_c *DocumentCreate) createSpec() (*Document, *sqlgraph.CreateSpec) {
 	var (
-		_node = &Document{config: dc.config}
+		_node = &Document{config: _c.config}
 		_spec = sqlgraph.NewCreateSpec(document.Table, sqlgraph.NewFieldSpec(document.FieldID, field.TypeUUID))
 	)
-	_spec.OnConflict = dc.conflict
-	if id, ok := dc.mutation.ID(); ok {
+	_spec.OnConflict = _c.conflict
+	if id, ok := _c.mutation.ID(); ok {
 		_node.ID = id
 		_spec.ID.Value = &id
 	}
-	if value, ok := dc.mutation.Content(); ok {
+	if value, ok := _c.mutation.Content(); ok {
 		_spec.SetField(document.FieldContent, field.TypeBytes, value)
 		_node.Content = value
 	}
-	if nodes := dc.mutation.TenantIDs(); len(nodes) > 0 {
+	if nodes := _c.mutation.TenantIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
@@ -190,7 +190,7 @@ func (dc *DocumentCreate) createSpec() (*Document, *sqlgraph.CreateSpec) {
 		_node.TenantID = nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
-	if nodes := dc.mutation.RetrospectiveIDs(); len(nodes) > 0 {
+	if nodes := _c.mutation.RetrospectiveIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2O,
 			Inverse: false,
@@ -225,10 +225,10 @@ func (dc *DocumentCreate) createSpec() (*Document, *sqlgraph.CreateSpec) {
 //			SetTenantID(v+v).
 //		}).
 //		Exec(ctx)
-func (dc *DocumentCreate) OnConflict(opts ...sql.ConflictOption) *DocumentUpsertOne {
-	dc.conflict = opts
+func (_c *DocumentCreate) OnConflict(opts ...sql.ConflictOption) *DocumentUpsertOne {
+	_c.conflict = opts
 	return &DocumentUpsertOne{
-		create: dc,
+		create: _c,
 	}
 }
 
@@ -238,10 +238,10 @@ func (dc *DocumentCreate) OnConflict(opts ...sql.ConflictOption) *DocumentUpsert
 //	client.Document.Create().
 //		OnConflict(sql.ConflictColumns(columns...)).
 //		Exec(ctx)
-func (dc *DocumentCreate) OnConflictColumns(columns ...string) *DocumentUpsertOne {
-	dc.conflict = append(dc.conflict, sql.ConflictColumns(columns...))
+func (_c *DocumentCreate) OnConflictColumns(columns ...string) *DocumentUpsertOne {
+	_c.conflict = append(_c.conflict, sql.ConflictColumns(columns...))
 	return &DocumentUpsertOne{
-		create: dc,
+		create: _c,
 	}
 }
 
@@ -382,16 +382,16 @@ type DocumentCreateBulk struct {
 }
 
 // Save creates the Document entities in the database.
-func (dcb *DocumentCreateBulk) Save(ctx context.Context) ([]*Document, error) {
-	if dcb.err != nil {
-		return nil, dcb.err
+func (_c *DocumentCreateBulk) Save(ctx context.Context) ([]*Document, error) {
+	if _c.err != nil {
+		return nil, _c.err
 	}
-	specs := make([]*sqlgraph.CreateSpec, len(dcb.builders))
-	nodes := make([]*Document, len(dcb.builders))
-	mutators := make([]Mutator, len(dcb.builders))
-	for i := range dcb.builders {
+	specs := make([]*sqlgraph.CreateSpec, len(_c.builders))
+	nodes := make([]*Document, len(_c.builders))
+	mutators := make([]Mutator, len(_c.builders))
+	for i := range _c.builders {
 		func(i int, root context.Context) {
-			builder := dcb.builders[i]
+			builder := _c.builders[i]
 			builder.defaults()
 			var mut Mutator = MutateFunc(func(ctx context.Context, m Mutation) (Value, error) {
 				mutation, ok := m.(*DocumentMutation)
@@ -405,12 +405,12 @@ func (dcb *DocumentCreateBulk) Save(ctx context.Context) ([]*Document, error) {
 				var err error
 				nodes[i], specs[i] = builder.createSpec()
 				if i < len(mutators)-1 {
-					_, err = mutators[i+1].Mutate(root, dcb.builders[i+1].mutation)
+					_, err = mutators[i+1].Mutate(root, _c.builders[i+1].mutation)
 				} else {
 					spec := &sqlgraph.BatchCreateSpec{Nodes: specs}
-					spec.OnConflict = dcb.conflict
+					spec.OnConflict = _c.conflict
 					// Invoke the actual operation on the latest mutation in the chain.
-					if err = sqlgraph.BatchCreate(ctx, dcb.driver, spec); err != nil {
+					if err = sqlgraph.BatchCreate(ctx, _c.driver, spec); err != nil {
 						if sqlgraph.IsConstraintError(err) {
 							err = &ConstraintError{msg: err.Error(), wrap: err}
 						}
@@ -430,7 +430,7 @@ func (dcb *DocumentCreateBulk) Save(ctx context.Context) ([]*Document, error) {
 		}(i, ctx)
 	}
 	if len(mutators) > 0 {
-		if _, err := mutators[0].Mutate(ctx, dcb.builders[0].mutation); err != nil {
+		if _, err := mutators[0].Mutate(ctx, _c.builders[0].mutation); err != nil {
 			return nil, err
 		}
 	}
@@ -438,8 +438,8 @@ func (dcb *DocumentCreateBulk) Save(ctx context.Context) ([]*Document, error) {
 }
 
 // SaveX is like Save, but panics if an error occurs.
-func (dcb *DocumentCreateBulk) SaveX(ctx context.Context) []*Document {
-	v, err := dcb.Save(ctx)
+func (_c *DocumentCreateBulk) SaveX(ctx context.Context) []*Document {
+	v, err := _c.Save(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -447,14 +447,14 @@ func (dcb *DocumentCreateBulk) SaveX(ctx context.Context) []*Document {
 }
 
 // Exec executes the query.
-func (dcb *DocumentCreateBulk) Exec(ctx context.Context) error {
-	_, err := dcb.Save(ctx)
+func (_c *DocumentCreateBulk) Exec(ctx context.Context) error {
+	_, err := _c.Save(ctx)
 	return err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (dcb *DocumentCreateBulk) ExecX(ctx context.Context) {
-	if err := dcb.Exec(ctx); err != nil {
+func (_c *DocumentCreateBulk) ExecX(ctx context.Context) {
+	if err := _c.Exec(ctx); err != nil {
 		panic(err)
 	}
 }
@@ -474,10 +474,10 @@ func (dcb *DocumentCreateBulk) ExecX(ctx context.Context) {
 //			SetTenantID(v+v).
 //		}).
 //		Exec(ctx)
-func (dcb *DocumentCreateBulk) OnConflict(opts ...sql.ConflictOption) *DocumentUpsertBulk {
-	dcb.conflict = opts
+func (_c *DocumentCreateBulk) OnConflict(opts ...sql.ConflictOption) *DocumentUpsertBulk {
+	_c.conflict = opts
 	return &DocumentUpsertBulk{
-		create: dcb,
+		create: _c,
 	}
 }
 
@@ -487,10 +487,10 @@ func (dcb *DocumentCreateBulk) OnConflict(opts ...sql.ConflictOption) *DocumentU
 //	client.Document.Create().
 //		OnConflict(sql.ConflictColumns(columns...)).
 //		Exec(ctx)
-func (dcb *DocumentCreateBulk) OnConflictColumns(columns ...string) *DocumentUpsertBulk {
-	dcb.conflict = append(dcb.conflict, sql.ConflictColumns(columns...))
+func (_c *DocumentCreateBulk) OnConflictColumns(columns ...string) *DocumentUpsertBulk {
+	_c.conflict = append(_c.conflict, sql.ConflictColumns(columns...))
 	return &DocumentUpsertBulk{
-		create: dcb,
+		create: _c,
 	}
 }
 

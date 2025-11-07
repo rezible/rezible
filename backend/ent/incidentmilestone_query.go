@@ -35,44 +35,44 @@ type IncidentMilestoneQuery struct {
 }
 
 // Where adds a new predicate for the IncidentMilestoneQuery builder.
-func (imq *IncidentMilestoneQuery) Where(ps ...predicate.IncidentMilestone) *IncidentMilestoneQuery {
-	imq.predicates = append(imq.predicates, ps...)
-	return imq
+func (_q *IncidentMilestoneQuery) Where(ps ...predicate.IncidentMilestone) *IncidentMilestoneQuery {
+	_q.predicates = append(_q.predicates, ps...)
+	return _q
 }
 
 // Limit the number of records to be returned by this query.
-func (imq *IncidentMilestoneQuery) Limit(limit int) *IncidentMilestoneQuery {
-	imq.ctx.Limit = &limit
-	return imq
+func (_q *IncidentMilestoneQuery) Limit(limit int) *IncidentMilestoneQuery {
+	_q.ctx.Limit = &limit
+	return _q
 }
 
 // Offset to start from.
-func (imq *IncidentMilestoneQuery) Offset(offset int) *IncidentMilestoneQuery {
-	imq.ctx.Offset = &offset
-	return imq
+func (_q *IncidentMilestoneQuery) Offset(offset int) *IncidentMilestoneQuery {
+	_q.ctx.Offset = &offset
+	return _q
 }
 
 // Unique configures the query builder to filter duplicate records on query.
 // By default, unique is set to true, and can be disabled using this method.
-func (imq *IncidentMilestoneQuery) Unique(unique bool) *IncidentMilestoneQuery {
-	imq.ctx.Unique = &unique
-	return imq
+func (_q *IncidentMilestoneQuery) Unique(unique bool) *IncidentMilestoneQuery {
+	_q.ctx.Unique = &unique
+	return _q
 }
 
 // Order specifies how the records should be ordered.
-func (imq *IncidentMilestoneQuery) Order(o ...incidentmilestone.OrderOption) *IncidentMilestoneQuery {
-	imq.order = append(imq.order, o...)
-	return imq
+func (_q *IncidentMilestoneQuery) Order(o ...incidentmilestone.OrderOption) *IncidentMilestoneQuery {
+	_q.order = append(_q.order, o...)
+	return _q
 }
 
 // QueryTenant chains the current query on the "tenant" edge.
-func (imq *IncidentMilestoneQuery) QueryTenant() *TenantQuery {
-	query := (&TenantClient{config: imq.config}).Query()
+func (_q *IncidentMilestoneQuery) QueryTenant() *TenantQuery {
+	query := (&TenantClient{config: _q.config}).Query()
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
-		if err := imq.prepareQuery(ctx); err != nil {
+		if err := _q.prepareQuery(ctx); err != nil {
 			return nil, err
 		}
-		selector := imq.sqlQuery(ctx)
+		selector := _q.sqlQuery(ctx)
 		if err := selector.Err(); err != nil {
 			return nil, err
 		}
@@ -81,20 +81,20 @@ func (imq *IncidentMilestoneQuery) QueryTenant() *TenantQuery {
 			sqlgraph.To(tenant.Table, tenant.FieldID),
 			sqlgraph.Edge(sqlgraph.M2O, false, incidentmilestone.TenantTable, incidentmilestone.TenantColumn),
 		)
-		fromU = sqlgraph.SetNeighbors(imq.driver.Dialect(), step)
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
 	}
 	return query
 }
 
 // QueryIncident chains the current query on the "incident" edge.
-func (imq *IncidentMilestoneQuery) QueryIncident() *IncidentQuery {
-	query := (&IncidentClient{config: imq.config}).Query()
+func (_q *IncidentMilestoneQuery) QueryIncident() *IncidentQuery {
+	query := (&IncidentClient{config: _q.config}).Query()
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
-		if err := imq.prepareQuery(ctx); err != nil {
+		if err := _q.prepareQuery(ctx); err != nil {
 			return nil, err
 		}
-		selector := imq.sqlQuery(ctx)
+		selector := _q.sqlQuery(ctx)
 		if err := selector.Err(); err != nil {
 			return nil, err
 		}
@@ -103,7 +103,7 @@ func (imq *IncidentMilestoneQuery) QueryIncident() *IncidentQuery {
 			sqlgraph.To(incident.Table, incident.FieldID),
 			sqlgraph.Edge(sqlgraph.M2O, true, incidentmilestone.IncidentTable, incidentmilestone.IncidentColumn),
 		)
-		fromU = sqlgraph.SetNeighbors(imq.driver.Dialect(), step)
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
 	}
 	return query
@@ -111,8 +111,8 @@ func (imq *IncidentMilestoneQuery) QueryIncident() *IncidentQuery {
 
 // First returns the first IncidentMilestone entity from the query.
 // Returns a *NotFoundError when no IncidentMilestone was found.
-func (imq *IncidentMilestoneQuery) First(ctx context.Context) (*IncidentMilestone, error) {
-	nodes, err := imq.Limit(1).All(setContextOp(ctx, imq.ctx, ent.OpQueryFirst))
+func (_q *IncidentMilestoneQuery) First(ctx context.Context) (*IncidentMilestone, error) {
+	nodes, err := _q.Limit(1).All(setContextOp(ctx, _q.ctx, ent.OpQueryFirst))
 	if err != nil {
 		return nil, err
 	}
@@ -123,8 +123,8 @@ func (imq *IncidentMilestoneQuery) First(ctx context.Context) (*IncidentMileston
 }
 
 // FirstX is like First, but panics if an error occurs.
-func (imq *IncidentMilestoneQuery) FirstX(ctx context.Context) *IncidentMilestone {
-	node, err := imq.First(ctx)
+func (_q *IncidentMilestoneQuery) FirstX(ctx context.Context) *IncidentMilestone {
+	node, err := _q.First(ctx)
 	if err != nil && !IsNotFound(err) {
 		panic(err)
 	}
@@ -133,9 +133,9 @@ func (imq *IncidentMilestoneQuery) FirstX(ctx context.Context) *IncidentMileston
 
 // FirstID returns the first IncidentMilestone ID from the query.
 // Returns a *NotFoundError when no IncidentMilestone ID was found.
-func (imq *IncidentMilestoneQuery) FirstID(ctx context.Context) (id uuid.UUID, err error) {
+func (_q *IncidentMilestoneQuery) FirstID(ctx context.Context) (id uuid.UUID, err error) {
 	var ids []uuid.UUID
-	if ids, err = imq.Limit(1).IDs(setContextOp(ctx, imq.ctx, ent.OpQueryFirstID)); err != nil {
+	if ids, err = _q.Limit(1).IDs(setContextOp(ctx, _q.ctx, ent.OpQueryFirstID)); err != nil {
 		return
 	}
 	if len(ids) == 0 {
@@ -146,8 +146,8 @@ func (imq *IncidentMilestoneQuery) FirstID(ctx context.Context) (id uuid.UUID, e
 }
 
 // FirstIDX is like FirstID, but panics if an error occurs.
-func (imq *IncidentMilestoneQuery) FirstIDX(ctx context.Context) uuid.UUID {
-	id, err := imq.FirstID(ctx)
+func (_q *IncidentMilestoneQuery) FirstIDX(ctx context.Context) uuid.UUID {
+	id, err := _q.FirstID(ctx)
 	if err != nil && !IsNotFound(err) {
 		panic(err)
 	}
@@ -157,8 +157,8 @@ func (imq *IncidentMilestoneQuery) FirstIDX(ctx context.Context) uuid.UUID {
 // Only returns a single IncidentMilestone entity found by the query, ensuring it only returns one.
 // Returns a *NotSingularError when more than one IncidentMilestone entity is found.
 // Returns a *NotFoundError when no IncidentMilestone entities are found.
-func (imq *IncidentMilestoneQuery) Only(ctx context.Context) (*IncidentMilestone, error) {
-	nodes, err := imq.Limit(2).All(setContextOp(ctx, imq.ctx, ent.OpQueryOnly))
+func (_q *IncidentMilestoneQuery) Only(ctx context.Context) (*IncidentMilestone, error) {
+	nodes, err := _q.Limit(2).All(setContextOp(ctx, _q.ctx, ent.OpQueryOnly))
 	if err != nil {
 		return nil, err
 	}
@@ -173,8 +173,8 @@ func (imq *IncidentMilestoneQuery) Only(ctx context.Context) (*IncidentMilestone
 }
 
 // OnlyX is like Only, but panics if an error occurs.
-func (imq *IncidentMilestoneQuery) OnlyX(ctx context.Context) *IncidentMilestone {
-	node, err := imq.Only(ctx)
+func (_q *IncidentMilestoneQuery) OnlyX(ctx context.Context) *IncidentMilestone {
+	node, err := _q.Only(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -184,9 +184,9 @@ func (imq *IncidentMilestoneQuery) OnlyX(ctx context.Context) *IncidentMilestone
 // OnlyID is like Only, but returns the only IncidentMilestone ID in the query.
 // Returns a *NotSingularError when more than one IncidentMilestone ID is found.
 // Returns a *NotFoundError when no entities are found.
-func (imq *IncidentMilestoneQuery) OnlyID(ctx context.Context) (id uuid.UUID, err error) {
+func (_q *IncidentMilestoneQuery) OnlyID(ctx context.Context) (id uuid.UUID, err error) {
 	var ids []uuid.UUID
-	if ids, err = imq.Limit(2).IDs(setContextOp(ctx, imq.ctx, ent.OpQueryOnlyID)); err != nil {
+	if ids, err = _q.Limit(2).IDs(setContextOp(ctx, _q.ctx, ent.OpQueryOnlyID)); err != nil {
 		return
 	}
 	switch len(ids) {
@@ -201,8 +201,8 @@ func (imq *IncidentMilestoneQuery) OnlyID(ctx context.Context) (id uuid.UUID, er
 }
 
 // OnlyIDX is like OnlyID, but panics if an error occurs.
-func (imq *IncidentMilestoneQuery) OnlyIDX(ctx context.Context) uuid.UUID {
-	id, err := imq.OnlyID(ctx)
+func (_q *IncidentMilestoneQuery) OnlyIDX(ctx context.Context) uuid.UUID {
+	id, err := _q.OnlyID(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -210,18 +210,18 @@ func (imq *IncidentMilestoneQuery) OnlyIDX(ctx context.Context) uuid.UUID {
 }
 
 // All executes the query and returns a list of IncidentMilestones.
-func (imq *IncidentMilestoneQuery) All(ctx context.Context) ([]*IncidentMilestone, error) {
-	ctx = setContextOp(ctx, imq.ctx, ent.OpQueryAll)
-	if err := imq.prepareQuery(ctx); err != nil {
+func (_q *IncidentMilestoneQuery) All(ctx context.Context) ([]*IncidentMilestone, error) {
+	ctx = setContextOp(ctx, _q.ctx, ent.OpQueryAll)
+	if err := _q.prepareQuery(ctx); err != nil {
 		return nil, err
 	}
 	qr := querierAll[[]*IncidentMilestone, *IncidentMilestoneQuery]()
-	return withInterceptors[[]*IncidentMilestone](ctx, imq, qr, imq.inters)
+	return withInterceptors[[]*IncidentMilestone](ctx, _q, qr, _q.inters)
 }
 
 // AllX is like All, but panics if an error occurs.
-func (imq *IncidentMilestoneQuery) AllX(ctx context.Context) []*IncidentMilestone {
-	nodes, err := imq.All(ctx)
+func (_q *IncidentMilestoneQuery) AllX(ctx context.Context) []*IncidentMilestone {
+	nodes, err := _q.All(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -229,20 +229,20 @@ func (imq *IncidentMilestoneQuery) AllX(ctx context.Context) []*IncidentMileston
 }
 
 // IDs executes the query and returns a list of IncidentMilestone IDs.
-func (imq *IncidentMilestoneQuery) IDs(ctx context.Context) (ids []uuid.UUID, err error) {
-	if imq.ctx.Unique == nil && imq.path != nil {
-		imq.Unique(true)
+func (_q *IncidentMilestoneQuery) IDs(ctx context.Context) (ids []uuid.UUID, err error) {
+	if _q.ctx.Unique == nil && _q.path != nil {
+		_q.Unique(true)
 	}
-	ctx = setContextOp(ctx, imq.ctx, ent.OpQueryIDs)
-	if err = imq.Select(incidentmilestone.FieldID).Scan(ctx, &ids); err != nil {
+	ctx = setContextOp(ctx, _q.ctx, ent.OpQueryIDs)
+	if err = _q.Select(incidentmilestone.FieldID).Scan(ctx, &ids); err != nil {
 		return nil, err
 	}
 	return ids, nil
 }
 
 // IDsX is like IDs, but panics if an error occurs.
-func (imq *IncidentMilestoneQuery) IDsX(ctx context.Context) []uuid.UUID {
-	ids, err := imq.IDs(ctx)
+func (_q *IncidentMilestoneQuery) IDsX(ctx context.Context) []uuid.UUID {
+	ids, err := _q.IDs(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -250,17 +250,17 @@ func (imq *IncidentMilestoneQuery) IDsX(ctx context.Context) []uuid.UUID {
 }
 
 // Count returns the count of the given query.
-func (imq *IncidentMilestoneQuery) Count(ctx context.Context) (int, error) {
-	ctx = setContextOp(ctx, imq.ctx, ent.OpQueryCount)
-	if err := imq.prepareQuery(ctx); err != nil {
+func (_q *IncidentMilestoneQuery) Count(ctx context.Context) (int, error) {
+	ctx = setContextOp(ctx, _q.ctx, ent.OpQueryCount)
+	if err := _q.prepareQuery(ctx); err != nil {
 		return 0, err
 	}
-	return withInterceptors[int](ctx, imq, querierCount[*IncidentMilestoneQuery](), imq.inters)
+	return withInterceptors[int](ctx, _q, querierCount[*IncidentMilestoneQuery](), _q.inters)
 }
 
 // CountX is like Count, but panics if an error occurs.
-func (imq *IncidentMilestoneQuery) CountX(ctx context.Context) int {
-	count, err := imq.Count(ctx)
+func (_q *IncidentMilestoneQuery) CountX(ctx context.Context) int {
+	count, err := _q.Count(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -268,9 +268,9 @@ func (imq *IncidentMilestoneQuery) CountX(ctx context.Context) int {
 }
 
 // Exist returns true if the query has elements in the graph.
-func (imq *IncidentMilestoneQuery) Exist(ctx context.Context) (bool, error) {
-	ctx = setContextOp(ctx, imq.ctx, ent.OpQueryExist)
-	switch _, err := imq.FirstID(ctx); {
+func (_q *IncidentMilestoneQuery) Exist(ctx context.Context) (bool, error) {
+	ctx = setContextOp(ctx, _q.ctx, ent.OpQueryExist)
+	switch _, err := _q.FirstID(ctx); {
 	case IsNotFound(err):
 		return false, nil
 	case err != nil:
@@ -281,8 +281,8 @@ func (imq *IncidentMilestoneQuery) Exist(ctx context.Context) (bool, error) {
 }
 
 // ExistX is like Exist, but panics if an error occurs.
-func (imq *IncidentMilestoneQuery) ExistX(ctx context.Context) bool {
-	exist, err := imq.Exist(ctx)
+func (_q *IncidentMilestoneQuery) ExistX(ctx context.Context) bool {
+	exist, err := _q.Exist(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -291,45 +291,45 @@ func (imq *IncidentMilestoneQuery) ExistX(ctx context.Context) bool {
 
 // Clone returns a duplicate of the IncidentMilestoneQuery builder, including all associated steps. It can be
 // used to prepare common query builders and use them differently after the clone is made.
-func (imq *IncidentMilestoneQuery) Clone() *IncidentMilestoneQuery {
-	if imq == nil {
+func (_q *IncidentMilestoneQuery) Clone() *IncidentMilestoneQuery {
+	if _q == nil {
 		return nil
 	}
 	return &IncidentMilestoneQuery{
-		config:       imq.config,
-		ctx:          imq.ctx.Clone(),
-		order:        append([]incidentmilestone.OrderOption{}, imq.order...),
-		inters:       append([]Interceptor{}, imq.inters...),
-		predicates:   append([]predicate.IncidentMilestone{}, imq.predicates...),
-		withTenant:   imq.withTenant.Clone(),
-		withIncident: imq.withIncident.Clone(),
+		config:       _q.config,
+		ctx:          _q.ctx.Clone(),
+		order:        append([]incidentmilestone.OrderOption{}, _q.order...),
+		inters:       append([]Interceptor{}, _q.inters...),
+		predicates:   append([]predicate.IncidentMilestone{}, _q.predicates...),
+		withTenant:   _q.withTenant.Clone(),
+		withIncident: _q.withIncident.Clone(),
 		// clone intermediate query.
-		sql:       imq.sql.Clone(),
-		path:      imq.path,
-		modifiers: append([]func(*sql.Selector){}, imq.modifiers...),
+		sql:       _q.sql.Clone(),
+		path:      _q.path,
+		modifiers: append([]func(*sql.Selector){}, _q.modifiers...),
 	}
 }
 
 // WithTenant tells the query-builder to eager-load the nodes that are connected to
 // the "tenant" edge. The optional arguments are used to configure the query builder of the edge.
-func (imq *IncidentMilestoneQuery) WithTenant(opts ...func(*TenantQuery)) *IncidentMilestoneQuery {
-	query := (&TenantClient{config: imq.config}).Query()
+func (_q *IncidentMilestoneQuery) WithTenant(opts ...func(*TenantQuery)) *IncidentMilestoneQuery {
+	query := (&TenantClient{config: _q.config}).Query()
 	for _, opt := range opts {
 		opt(query)
 	}
-	imq.withTenant = query
-	return imq
+	_q.withTenant = query
+	return _q
 }
 
 // WithIncident tells the query-builder to eager-load the nodes that are connected to
 // the "incident" edge. The optional arguments are used to configure the query builder of the edge.
-func (imq *IncidentMilestoneQuery) WithIncident(opts ...func(*IncidentQuery)) *IncidentMilestoneQuery {
-	query := (&IncidentClient{config: imq.config}).Query()
+func (_q *IncidentMilestoneQuery) WithIncident(opts ...func(*IncidentQuery)) *IncidentMilestoneQuery {
+	query := (&IncidentClient{config: _q.config}).Query()
 	for _, opt := range opts {
 		opt(query)
 	}
-	imq.withIncident = query
-	return imq
+	_q.withIncident = query
+	return _q
 }
 
 // GroupBy is used to group vertices by one or more fields/columns.
@@ -346,10 +346,10 @@ func (imq *IncidentMilestoneQuery) WithIncident(opts ...func(*IncidentQuery)) *I
 //		GroupBy(incidentmilestone.FieldTenantID).
 //		Aggregate(ent.Count()).
 //		Scan(ctx, &v)
-func (imq *IncidentMilestoneQuery) GroupBy(field string, fields ...string) *IncidentMilestoneGroupBy {
-	imq.ctx.Fields = append([]string{field}, fields...)
-	grbuild := &IncidentMilestoneGroupBy{build: imq}
-	grbuild.flds = &imq.ctx.Fields
+func (_q *IncidentMilestoneQuery) GroupBy(field string, fields ...string) *IncidentMilestoneGroupBy {
+	_q.ctx.Fields = append([]string{field}, fields...)
+	grbuild := &IncidentMilestoneGroupBy{build: _q}
+	grbuild.flds = &_q.ctx.Fields
 	grbuild.label = incidentmilestone.Label
 	grbuild.scan = grbuild.Scan
 	return grbuild
@@ -367,89 +367,89 @@ func (imq *IncidentMilestoneQuery) GroupBy(field string, fields ...string) *Inci
 //	client.IncidentMilestone.Query().
 //		Select(incidentmilestone.FieldTenantID).
 //		Scan(ctx, &v)
-func (imq *IncidentMilestoneQuery) Select(fields ...string) *IncidentMilestoneSelect {
-	imq.ctx.Fields = append(imq.ctx.Fields, fields...)
-	sbuild := &IncidentMilestoneSelect{IncidentMilestoneQuery: imq}
+func (_q *IncidentMilestoneQuery) Select(fields ...string) *IncidentMilestoneSelect {
+	_q.ctx.Fields = append(_q.ctx.Fields, fields...)
+	sbuild := &IncidentMilestoneSelect{IncidentMilestoneQuery: _q}
 	sbuild.label = incidentmilestone.Label
-	sbuild.flds, sbuild.scan = &imq.ctx.Fields, sbuild.Scan
+	sbuild.flds, sbuild.scan = &_q.ctx.Fields, sbuild.Scan
 	return sbuild
 }
 
 // Aggregate returns a IncidentMilestoneSelect configured with the given aggregations.
-func (imq *IncidentMilestoneQuery) Aggregate(fns ...AggregateFunc) *IncidentMilestoneSelect {
-	return imq.Select().Aggregate(fns...)
+func (_q *IncidentMilestoneQuery) Aggregate(fns ...AggregateFunc) *IncidentMilestoneSelect {
+	return _q.Select().Aggregate(fns...)
 }
 
-func (imq *IncidentMilestoneQuery) prepareQuery(ctx context.Context) error {
-	for _, inter := range imq.inters {
+func (_q *IncidentMilestoneQuery) prepareQuery(ctx context.Context) error {
+	for _, inter := range _q.inters {
 		if inter == nil {
 			return fmt.Errorf("ent: uninitialized interceptor (forgotten import ent/runtime?)")
 		}
 		if trv, ok := inter.(Traverser); ok {
-			if err := trv.Traverse(ctx, imq); err != nil {
+			if err := trv.Traverse(ctx, _q); err != nil {
 				return err
 			}
 		}
 	}
-	for _, f := range imq.ctx.Fields {
+	for _, f := range _q.ctx.Fields {
 		if !incidentmilestone.ValidColumn(f) {
 			return &ValidationError{Name: f, err: fmt.Errorf("ent: invalid field %q for query", f)}
 		}
 	}
-	if imq.path != nil {
-		prev, err := imq.path(ctx)
+	if _q.path != nil {
+		prev, err := _q.path(ctx)
 		if err != nil {
 			return err
 		}
-		imq.sql = prev
+		_q.sql = prev
 	}
 	if incidentmilestone.Policy == nil {
 		return errors.New("ent: uninitialized incidentmilestone.Policy (forgotten import ent/runtime?)")
 	}
-	if err := incidentmilestone.Policy.EvalQuery(ctx, imq); err != nil {
+	if err := incidentmilestone.Policy.EvalQuery(ctx, _q); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (imq *IncidentMilestoneQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*IncidentMilestone, error) {
+func (_q *IncidentMilestoneQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*IncidentMilestone, error) {
 	var (
 		nodes       = []*IncidentMilestone{}
-		_spec       = imq.querySpec()
+		_spec       = _q.querySpec()
 		loadedTypes = [2]bool{
-			imq.withTenant != nil,
-			imq.withIncident != nil,
+			_q.withTenant != nil,
+			_q.withIncident != nil,
 		}
 	)
 	_spec.ScanValues = func(columns []string) ([]any, error) {
 		return (*IncidentMilestone).scanValues(nil, columns)
 	}
 	_spec.Assign = func(columns []string, values []any) error {
-		node := &IncidentMilestone{config: imq.config}
+		node := &IncidentMilestone{config: _q.config}
 		nodes = append(nodes, node)
 		node.Edges.loadedTypes = loadedTypes
 		return node.assignValues(columns, values)
 	}
-	if len(imq.modifiers) > 0 {
-		_spec.Modifiers = imq.modifiers
+	if len(_q.modifiers) > 0 {
+		_spec.Modifiers = _q.modifiers
 	}
 	for i := range hooks {
 		hooks[i](ctx, _spec)
 	}
-	if err := sqlgraph.QueryNodes(ctx, imq.driver, _spec); err != nil {
+	if err := sqlgraph.QueryNodes(ctx, _q.driver, _spec); err != nil {
 		return nil, err
 	}
 	if len(nodes) == 0 {
 		return nodes, nil
 	}
-	if query := imq.withTenant; query != nil {
-		if err := imq.loadTenant(ctx, query, nodes, nil,
+	if query := _q.withTenant; query != nil {
+		if err := _q.loadTenant(ctx, query, nodes, nil,
 			func(n *IncidentMilestone, e *Tenant) { n.Edges.Tenant = e }); err != nil {
 			return nil, err
 		}
 	}
-	if query := imq.withIncident; query != nil {
-		if err := imq.loadIncident(ctx, query, nodes, nil,
+	if query := _q.withIncident; query != nil {
+		if err := _q.loadIncident(ctx, query, nodes, nil,
 			func(n *IncidentMilestone, e *Incident) { n.Edges.Incident = e }); err != nil {
 			return nil, err
 		}
@@ -457,7 +457,7 @@ func (imq *IncidentMilestoneQuery) sqlAll(ctx context.Context, hooks ...queryHoo
 	return nodes, nil
 }
 
-func (imq *IncidentMilestoneQuery) loadTenant(ctx context.Context, query *TenantQuery, nodes []*IncidentMilestone, init func(*IncidentMilestone), assign func(*IncidentMilestone, *Tenant)) error {
+func (_q *IncidentMilestoneQuery) loadTenant(ctx context.Context, query *TenantQuery, nodes []*IncidentMilestone, init func(*IncidentMilestone), assign func(*IncidentMilestone, *Tenant)) error {
 	ids := make([]int, 0, len(nodes))
 	nodeids := make(map[int][]*IncidentMilestone)
 	for i := range nodes {
@@ -486,7 +486,7 @@ func (imq *IncidentMilestoneQuery) loadTenant(ctx context.Context, query *Tenant
 	}
 	return nil
 }
-func (imq *IncidentMilestoneQuery) loadIncident(ctx context.Context, query *IncidentQuery, nodes []*IncidentMilestone, init func(*IncidentMilestone), assign func(*IncidentMilestone, *Incident)) error {
+func (_q *IncidentMilestoneQuery) loadIncident(ctx context.Context, query *IncidentQuery, nodes []*IncidentMilestone, init func(*IncidentMilestone), assign func(*IncidentMilestone, *Incident)) error {
 	ids := make([]uuid.UUID, 0, len(nodes))
 	nodeids := make(map[uuid.UUID][]*IncidentMilestone)
 	for i := range nodes {
@@ -516,27 +516,27 @@ func (imq *IncidentMilestoneQuery) loadIncident(ctx context.Context, query *Inci
 	return nil
 }
 
-func (imq *IncidentMilestoneQuery) sqlCount(ctx context.Context) (int, error) {
-	_spec := imq.querySpec()
-	if len(imq.modifiers) > 0 {
-		_spec.Modifiers = imq.modifiers
+func (_q *IncidentMilestoneQuery) sqlCount(ctx context.Context) (int, error) {
+	_spec := _q.querySpec()
+	if len(_q.modifiers) > 0 {
+		_spec.Modifiers = _q.modifiers
 	}
-	_spec.Node.Columns = imq.ctx.Fields
-	if len(imq.ctx.Fields) > 0 {
-		_spec.Unique = imq.ctx.Unique != nil && *imq.ctx.Unique
+	_spec.Node.Columns = _q.ctx.Fields
+	if len(_q.ctx.Fields) > 0 {
+		_spec.Unique = _q.ctx.Unique != nil && *_q.ctx.Unique
 	}
-	return sqlgraph.CountNodes(ctx, imq.driver, _spec)
+	return sqlgraph.CountNodes(ctx, _q.driver, _spec)
 }
 
-func (imq *IncidentMilestoneQuery) querySpec() *sqlgraph.QuerySpec {
+func (_q *IncidentMilestoneQuery) querySpec() *sqlgraph.QuerySpec {
 	_spec := sqlgraph.NewQuerySpec(incidentmilestone.Table, incidentmilestone.Columns, sqlgraph.NewFieldSpec(incidentmilestone.FieldID, field.TypeUUID))
-	_spec.From = imq.sql
-	if unique := imq.ctx.Unique; unique != nil {
+	_spec.From = _q.sql
+	if unique := _q.ctx.Unique; unique != nil {
 		_spec.Unique = *unique
-	} else if imq.path != nil {
+	} else if _q.path != nil {
 		_spec.Unique = true
 	}
-	if fields := imq.ctx.Fields; len(fields) > 0 {
+	if fields := _q.ctx.Fields; len(fields) > 0 {
 		_spec.Node.Columns = make([]string, 0, len(fields))
 		_spec.Node.Columns = append(_spec.Node.Columns, incidentmilestone.FieldID)
 		for i := range fields {
@@ -544,27 +544,27 @@ func (imq *IncidentMilestoneQuery) querySpec() *sqlgraph.QuerySpec {
 				_spec.Node.Columns = append(_spec.Node.Columns, fields[i])
 			}
 		}
-		if imq.withTenant != nil {
+		if _q.withTenant != nil {
 			_spec.Node.AddColumnOnce(incidentmilestone.FieldTenantID)
 		}
-		if imq.withIncident != nil {
+		if _q.withIncident != nil {
 			_spec.Node.AddColumnOnce(incidentmilestone.FieldIncidentID)
 		}
 	}
-	if ps := imq.predicates; len(ps) > 0 {
+	if ps := _q.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {
 				ps[i](selector)
 			}
 		}
 	}
-	if limit := imq.ctx.Limit; limit != nil {
+	if limit := _q.ctx.Limit; limit != nil {
 		_spec.Limit = *limit
 	}
-	if offset := imq.ctx.Offset; offset != nil {
+	if offset := _q.ctx.Offset; offset != nil {
 		_spec.Offset = *offset
 	}
-	if ps := imq.order; len(ps) > 0 {
+	if ps := _q.order; len(ps) > 0 {
 		_spec.Order = func(selector *sql.Selector) {
 			for i := range ps {
 				ps[i](selector)
@@ -574,45 +574,45 @@ func (imq *IncidentMilestoneQuery) querySpec() *sqlgraph.QuerySpec {
 	return _spec
 }
 
-func (imq *IncidentMilestoneQuery) sqlQuery(ctx context.Context) *sql.Selector {
-	builder := sql.Dialect(imq.driver.Dialect())
+func (_q *IncidentMilestoneQuery) sqlQuery(ctx context.Context) *sql.Selector {
+	builder := sql.Dialect(_q.driver.Dialect())
 	t1 := builder.Table(incidentmilestone.Table)
-	columns := imq.ctx.Fields
+	columns := _q.ctx.Fields
 	if len(columns) == 0 {
 		columns = incidentmilestone.Columns
 	}
 	selector := builder.Select(t1.Columns(columns...)...).From(t1)
-	if imq.sql != nil {
-		selector = imq.sql
+	if _q.sql != nil {
+		selector = _q.sql
 		selector.Select(selector.Columns(columns...)...)
 	}
-	if imq.ctx.Unique != nil && *imq.ctx.Unique {
+	if _q.ctx.Unique != nil && *_q.ctx.Unique {
 		selector.Distinct()
 	}
-	for _, m := range imq.modifiers {
+	for _, m := range _q.modifiers {
 		m(selector)
 	}
-	for _, p := range imq.predicates {
+	for _, p := range _q.predicates {
 		p(selector)
 	}
-	for _, p := range imq.order {
+	for _, p := range _q.order {
 		p(selector)
 	}
-	if offset := imq.ctx.Offset; offset != nil {
+	if offset := _q.ctx.Offset; offset != nil {
 		// limit is mandatory for offset clause. We start
 		// with default value, and override it below if needed.
 		selector.Offset(*offset).Limit(math.MaxInt32)
 	}
-	if limit := imq.ctx.Limit; limit != nil {
+	if limit := _q.ctx.Limit; limit != nil {
 		selector.Limit(*limit)
 	}
 	return selector
 }
 
 // Modify adds a query modifier for attaching custom logic to queries.
-func (imq *IncidentMilestoneQuery) Modify(modifiers ...func(s *sql.Selector)) *IncidentMilestoneSelect {
-	imq.modifiers = append(imq.modifiers, modifiers...)
-	return imq.Select()
+func (_q *IncidentMilestoneQuery) Modify(modifiers ...func(s *sql.Selector)) *IncidentMilestoneSelect {
+	_q.modifiers = append(_q.modifiers, modifiers...)
+	return _q.Select()
 }
 
 // IncidentMilestoneGroupBy is the group-by builder for IncidentMilestone entities.
@@ -622,41 +622,41 @@ type IncidentMilestoneGroupBy struct {
 }
 
 // Aggregate adds the given aggregation functions to the group-by query.
-func (imgb *IncidentMilestoneGroupBy) Aggregate(fns ...AggregateFunc) *IncidentMilestoneGroupBy {
-	imgb.fns = append(imgb.fns, fns...)
-	return imgb
+func (_g *IncidentMilestoneGroupBy) Aggregate(fns ...AggregateFunc) *IncidentMilestoneGroupBy {
+	_g.fns = append(_g.fns, fns...)
+	return _g
 }
 
 // Scan applies the selector query and scans the result into the given value.
-func (imgb *IncidentMilestoneGroupBy) Scan(ctx context.Context, v any) error {
-	ctx = setContextOp(ctx, imgb.build.ctx, ent.OpQueryGroupBy)
-	if err := imgb.build.prepareQuery(ctx); err != nil {
+func (_g *IncidentMilestoneGroupBy) Scan(ctx context.Context, v any) error {
+	ctx = setContextOp(ctx, _g.build.ctx, ent.OpQueryGroupBy)
+	if err := _g.build.prepareQuery(ctx); err != nil {
 		return err
 	}
-	return scanWithInterceptors[*IncidentMilestoneQuery, *IncidentMilestoneGroupBy](ctx, imgb.build, imgb, imgb.build.inters, v)
+	return scanWithInterceptors[*IncidentMilestoneQuery, *IncidentMilestoneGroupBy](ctx, _g.build, _g, _g.build.inters, v)
 }
 
-func (imgb *IncidentMilestoneGroupBy) sqlScan(ctx context.Context, root *IncidentMilestoneQuery, v any) error {
+func (_g *IncidentMilestoneGroupBy) sqlScan(ctx context.Context, root *IncidentMilestoneQuery, v any) error {
 	selector := root.sqlQuery(ctx).Select()
-	aggregation := make([]string, 0, len(imgb.fns))
-	for _, fn := range imgb.fns {
+	aggregation := make([]string, 0, len(_g.fns))
+	for _, fn := range _g.fns {
 		aggregation = append(aggregation, fn(selector))
 	}
 	if len(selector.SelectedColumns()) == 0 {
-		columns := make([]string, 0, len(*imgb.flds)+len(imgb.fns))
-		for _, f := range *imgb.flds {
+		columns := make([]string, 0, len(*_g.flds)+len(_g.fns))
+		for _, f := range *_g.flds {
 			columns = append(columns, selector.C(f))
 		}
 		columns = append(columns, aggregation...)
 		selector.Select(columns...)
 	}
-	selector.GroupBy(selector.Columns(*imgb.flds...)...)
+	selector.GroupBy(selector.Columns(*_g.flds...)...)
 	if err := selector.Err(); err != nil {
 		return err
 	}
 	rows := &sql.Rows{}
 	query, args := selector.Query()
-	if err := imgb.build.driver.Query(ctx, query, args, rows); err != nil {
+	if err := _g.build.driver.Query(ctx, query, args, rows); err != nil {
 		return err
 	}
 	defer rows.Close()
@@ -670,27 +670,27 @@ type IncidentMilestoneSelect struct {
 }
 
 // Aggregate adds the given aggregation functions to the selector query.
-func (ims *IncidentMilestoneSelect) Aggregate(fns ...AggregateFunc) *IncidentMilestoneSelect {
-	ims.fns = append(ims.fns, fns...)
-	return ims
+func (_s *IncidentMilestoneSelect) Aggregate(fns ...AggregateFunc) *IncidentMilestoneSelect {
+	_s.fns = append(_s.fns, fns...)
+	return _s
 }
 
 // Scan applies the selector query and scans the result into the given value.
-func (ims *IncidentMilestoneSelect) Scan(ctx context.Context, v any) error {
-	ctx = setContextOp(ctx, ims.ctx, ent.OpQuerySelect)
-	if err := ims.prepareQuery(ctx); err != nil {
+func (_s *IncidentMilestoneSelect) Scan(ctx context.Context, v any) error {
+	ctx = setContextOp(ctx, _s.ctx, ent.OpQuerySelect)
+	if err := _s.prepareQuery(ctx); err != nil {
 		return err
 	}
-	return scanWithInterceptors[*IncidentMilestoneQuery, *IncidentMilestoneSelect](ctx, ims.IncidentMilestoneQuery, ims, ims.inters, v)
+	return scanWithInterceptors[*IncidentMilestoneQuery, *IncidentMilestoneSelect](ctx, _s.IncidentMilestoneQuery, _s, _s.inters, v)
 }
 
-func (ims *IncidentMilestoneSelect) sqlScan(ctx context.Context, root *IncidentMilestoneQuery, v any) error {
+func (_s *IncidentMilestoneSelect) sqlScan(ctx context.Context, root *IncidentMilestoneQuery, v any) error {
 	selector := root.sqlQuery(ctx)
-	aggregation := make([]string, 0, len(ims.fns))
-	for _, fn := range ims.fns {
+	aggregation := make([]string, 0, len(_s.fns))
+	for _, fn := range _s.fns {
 		aggregation = append(aggregation, fn(selector))
 	}
-	switch n := len(*ims.selector.flds); {
+	switch n := len(*_s.selector.flds); {
 	case n == 0 && len(aggregation) > 0:
 		selector.Select(aggregation...)
 	case n != 0 && len(aggregation) > 0:
@@ -698,7 +698,7 @@ func (ims *IncidentMilestoneSelect) sqlScan(ctx context.Context, root *IncidentM
 	}
 	rows := &sql.Rows{}
 	query, args := selector.Query()
-	if err := ims.driver.Query(ctx, query, args, rows); err != nil {
+	if err := _s.driver.Query(ctx, query, args, rows); err != nil {
 		return err
 	}
 	defer rows.Close()
@@ -706,7 +706,7 @@ func (ims *IncidentMilestoneSelect) sqlScan(ctx context.Context, root *IncidentM
 }
 
 // Modify adds a query modifier for attaching custom logic to queries.
-func (ims *IncidentMilestoneSelect) Modify(modifiers ...func(s *sql.Selector)) *IncidentMilestoneSelect {
-	ims.modifiers = append(ims.modifiers, modifiers...)
-	return ims
+func (_s *IncidentMilestoneSelect) Modify(modifiers ...func(s *sql.Selector)) *IncidentMilestoneSelect {
+	_s.modifiers = append(_s.modifiers, modifiers...)
+	return _s
 }

@@ -20,56 +20,56 @@ type OncallShiftMetricsDelete struct {
 }
 
 // Where appends a list predicates to the OncallShiftMetricsDelete builder.
-func (osmd *OncallShiftMetricsDelete) Where(ps ...predicate.OncallShiftMetrics) *OncallShiftMetricsDelete {
-	osmd.mutation.Where(ps...)
-	return osmd
+func (_d *OncallShiftMetricsDelete) Where(ps ...predicate.OncallShiftMetrics) *OncallShiftMetricsDelete {
+	_d.mutation.Where(ps...)
+	return _d
 }
 
 // Exec executes the deletion query and returns how many vertices were deleted.
-func (osmd *OncallShiftMetricsDelete) Exec(ctx context.Context) (int, error) {
-	return withHooks(ctx, osmd.sqlExec, osmd.mutation, osmd.hooks)
+func (_d *OncallShiftMetricsDelete) Exec(ctx context.Context) (int, error) {
+	return withHooks(ctx, _d.sqlExec, _d.mutation, _d.hooks)
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (osmd *OncallShiftMetricsDelete) ExecX(ctx context.Context) int {
-	n, err := osmd.Exec(ctx)
+func (_d *OncallShiftMetricsDelete) ExecX(ctx context.Context) int {
+	n, err := _d.Exec(ctx)
 	if err != nil {
 		panic(err)
 	}
 	return n
 }
 
-func (osmd *OncallShiftMetricsDelete) sqlExec(ctx context.Context) (int, error) {
+func (_d *OncallShiftMetricsDelete) sqlExec(ctx context.Context) (int, error) {
 	_spec := sqlgraph.NewDeleteSpec(oncallshiftmetrics.Table, sqlgraph.NewFieldSpec(oncallshiftmetrics.FieldID, field.TypeUUID))
-	if ps := osmd.mutation.predicates; len(ps) > 0 {
+	if ps := _d.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {
 				ps[i](selector)
 			}
 		}
 	}
-	affected, err := sqlgraph.DeleteNodes(ctx, osmd.driver, _spec)
+	affected, err := sqlgraph.DeleteNodes(ctx, _d.driver, _spec)
 	if err != nil && sqlgraph.IsConstraintError(err) {
 		err = &ConstraintError{msg: err.Error(), wrap: err}
 	}
-	osmd.mutation.done = true
+	_d.mutation.done = true
 	return affected, err
 }
 
 // OncallShiftMetricsDeleteOne is the builder for deleting a single OncallShiftMetrics entity.
 type OncallShiftMetricsDeleteOne struct {
-	osmd *OncallShiftMetricsDelete
+	_d *OncallShiftMetricsDelete
 }
 
 // Where appends a list predicates to the OncallShiftMetricsDelete builder.
-func (osmdo *OncallShiftMetricsDeleteOne) Where(ps ...predicate.OncallShiftMetrics) *OncallShiftMetricsDeleteOne {
-	osmdo.osmd.mutation.Where(ps...)
-	return osmdo
+func (_d *OncallShiftMetricsDeleteOne) Where(ps ...predicate.OncallShiftMetrics) *OncallShiftMetricsDeleteOne {
+	_d._d.mutation.Where(ps...)
+	return _d
 }
 
 // Exec executes the deletion query.
-func (osmdo *OncallShiftMetricsDeleteOne) Exec(ctx context.Context) error {
-	n, err := osmdo.osmd.Exec(ctx)
+func (_d *OncallShiftMetricsDeleteOne) Exec(ctx context.Context) error {
+	n, err := _d._d.Exec(ctx)
 	switch {
 	case err != nil:
 		return err
@@ -81,8 +81,8 @@ func (osmdo *OncallShiftMetricsDeleteOne) Exec(ctx context.Context) error {
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (osmdo *OncallShiftMetricsDeleteOne) ExecX(ctx context.Context) {
-	if err := osmdo.Exec(ctx); err != nil {
+func (_d *OncallShiftMetricsDeleteOne) ExecX(ctx context.Context) {
+	if err := _d.Exec(ctx); err != nil {
 		panic(err)
 	}
 }

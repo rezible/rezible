@@ -36,44 +36,44 @@ type SystemComponentKindQuery struct {
 }
 
 // Where adds a new predicate for the SystemComponentKindQuery builder.
-func (sckq *SystemComponentKindQuery) Where(ps ...predicate.SystemComponentKind) *SystemComponentKindQuery {
-	sckq.predicates = append(sckq.predicates, ps...)
-	return sckq
+func (_q *SystemComponentKindQuery) Where(ps ...predicate.SystemComponentKind) *SystemComponentKindQuery {
+	_q.predicates = append(_q.predicates, ps...)
+	return _q
 }
 
 // Limit the number of records to be returned by this query.
-func (sckq *SystemComponentKindQuery) Limit(limit int) *SystemComponentKindQuery {
-	sckq.ctx.Limit = &limit
-	return sckq
+func (_q *SystemComponentKindQuery) Limit(limit int) *SystemComponentKindQuery {
+	_q.ctx.Limit = &limit
+	return _q
 }
 
 // Offset to start from.
-func (sckq *SystemComponentKindQuery) Offset(offset int) *SystemComponentKindQuery {
-	sckq.ctx.Offset = &offset
-	return sckq
+func (_q *SystemComponentKindQuery) Offset(offset int) *SystemComponentKindQuery {
+	_q.ctx.Offset = &offset
+	return _q
 }
 
 // Unique configures the query builder to filter duplicate records on query.
 // By default, unique is set to true, and can be disabled using this method.
-func (sckq *SystemComponentKindQuery) Unique(unique bool) *SystemComponentKindQuery {
-	sckq.ctx.Unique = &unique
-	return sckq
+func (_q *SystemComponentKindQuery) Unique(unique bool) *SystemComponentKindQuery {
+	_q.ctx.Unique = &unique
+	return _q
 }
 
 // Order specifies how the records should be ordered.
-func (sckq *SystemComponentKindQuery) Order(o ...systemcomponentkind.OrderOption) *SystemComponentKindQuery {
-	sckq.order = append(sckq.order, o...)
-	return sckq
+func (_q *SystemComponentKindQuery) Order(o ...systemcomponentkind.OrderOption) *SystemComponentKindQuery {
+	_q.order = append(_q.order, o...)
+	return _q
 }
 
 // QueryTenant chains the current query on the "tenant" edge.
-func (sckq *SystemComponentKindQuery) QueryTenant() *TenantQuery {
-	query := (&TenantClient{config: sckq.config}).Query()
+func (_q *SystemComponentKindQuery) QueryTenant() *TenantQuery {
+	query := (&TenantClient{config: _q.config}).Query()
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
-		if err := sckq.prepareQuery(ctx); err != nil {
+		if err := _q.prepareQuery(ctx); err != nil {
 			return nil, err
 		}
-		selector := sckq.sqlQuery(ctx)
+		selector := _q.sqlQuery(ctx)
 		if err := selector.Err(); err != nil {
 			return nil, err
 		}
@@ -82,20 +82,20 @@ func (sckq *SystemComponentKindQuery) QueryTenant() *TenantQuery {
 			sqlgraph.To(tenant.Table, tenant.FieldID),
 			sqlgraph.Edge(sqlgraph.M2O, false, systemcomponentkind.TenantTable, systemcomponentkind.TenantColumn),
 		)
-		fromU = sqlgraph.SetNeighbors(sckq.driver.Dialect(), step)
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
 	}
 	return query
 }
 
 // QueryComponents chains the current query on the "components" edge.
-func (sckq *SystemComponentKindQuery) QueryComponents() *SystemComponentQuery {
-	query := (&SystemComponentClient{config: sckq.config}).Query()
+func (_q *SystemComponentKindQuery) QueryComponents() *SystemComponentQuery {
+	query := (&SystemComponentClient{config: _q.config}).Query()
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
-		if err := sckq.prepareQuery(ctx); err != nil {
+		if err := _q.prepareQuery(ctx); err != nil {
 			return nil, err
 		}
-		selector := sckq.sqlQuery(ctx)
+		selector := _q.sqlQuery(ctx)
 		if err := selector.Err(); err != nil {
 			return nil, err
 		}
@@ -104,7 +104,7 @@ func (sckq *SystemComponentKindQuery) QueryComponents() *SystemComponentQuery {
 			sqlgraph.To(systemcomponent.Table, systemcomponent.FieldID),
 			sqlgraph.Edge(sqlgraph.O2M, true, systemcomponentkind.ComponentsTable, systemcomponentkind.ComponentsColumn),
 		)
-		fromU = sqlgraph.SetNeighbors(sckq.driver.Dialect(), step)
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
 	}
 	return query
@@ -112,8 +112,8 @@ func (sckq *SystemComponentKindQuery) QueryComponents() *SystemComponentQuery {
 
 // First returns the first SystemComponentKind entity from the query.
 // Returns a *NotFoundError when no SystemComponentKind was found.
-func (sckq *SystemComponentKindQuery) First(ctx context.Context) (*SystemComponentKind, error) {
-	nodes, err := sckq.Limit(1).All(setContextOp(ctx, sckq.ctx, ent.OpQueryFirst))
+func (_q *SystemComponentKindQuery) First(ctx context.Context) (*SystemComponentKind, error) {
+	nodes, err := _q.Limit(1).All(setContextOp(ctx, _q.ctx, ent.OpQueryFirst))
 	if err != nil {
 		return nil, err
 	}
@@ -124,8 +124,8 @@ func (sckq *SystemComponentKindQuery) First(ctx context.Context) (*SystemCompone
 }
 
 // FirstX is like First, but panics if an error occurs.
-func (sckq *SystemComponentKindQuery) FirstX(ctx context.Context) *SystemComponentKind {
-	node, err := sckq.First(ctx)
+func (_q *SystemComponentKindQuery) FirstX(ctx context.Context) *SystemComponentKind {
+	node, err := _q.First(ctx)
 	if err != nil && !IsNotFound(err) {
 		panic(err)
 	}
@@ -134,9 +134,9 @@ func (sckq *SystemComponentKindQuery) FirstX(ctx context.Context) *SystemCompone
 
 // FirstID returns the first SystemComponentKind ID from the query.
 // Returns a *NotFoundError when no SystemComponentKind ID was found.
-func (sckq *SystemComponentKindQuery) FirstID(ctx context.Context) (id uuid.UUID, err error) {
+func (_q *SystemComponentKindQuery) FirstID(ctx context.Context) (id uuid.UUID, err error) {
 	var ids []uuid.UUID
-	if ids, err = sckq.Limit(1).IDs(setContextOp(ctx, sckq.ctx, ent.OpQueryFirstID)); err != nil {
+	if ids, err = _q.Limit(1).IDs(setContextOp(ctx, _q.ctx, ent.OpQueryFirstID)); err != nil {
 		return
 	}
 	if len(ids) == 0 {
@@ -147,8 +147,8 @@ func (sckq *SystemComponentKindQuery) FirstID(ctx context.Context) (id uuid.UUID
 }
 
 // FirstIDX is like FirstID, but panics if an error occurs.
-func (sckq *SystemComponentKindQuery) FirstIDX(ctx context.Context) uuid.UUID {
-	id, err := sckq.FirstID(ctx)
+func (_q *SystemComponentKindQuery) FirstIDX(ctx context.Context) uuid.UUID {
+	id, err := _q.FirstID(ctx)
 	if err != nil && !IsNotFound(err) {
 		panic(err)
 	}
@@ -158,8 +158,8 @@ func (sckq *SystemComponentKindQuery) FirstIDX(ctx context.Context) uuid.UUID {
 // Only returns a single SystemComponentKind entity found by the query, ensuring it only returns one.
 // Returns a *NotSingularError when more than one SystemComponentKind entity is found.
 // Returns a *NotFoundError when no SystemComponentKind entities are found.
-func (sckq *SystemComponentKindQuery) Only(ctx context.Context) (*SystemComponentKind, error) {
-	nodes, err := sckq.Limit(2).All(setContextOp(ctx, sckq.ctx, ent.OpQueryOnly))
+func (_q *SystemComponentKindQuery) Only(ctx context.Context) (*SystemComponentKind, error) {
+	nodes, err := _q.Limit(2).All(setContextOp(ctx, _q.ctx, ent.OpQueryOnly))
 	if err != nil {
 		return nil, err
 	}
@@ -174,8 +174,8 @@ func (sckq *SystemComponentKindQuery) Only(ctx context.Context) (*SystemComponen
 }
 
 // OnlyX is like Only, but panics if an error occurs.
-func (sckq *SystemComponentKindQuery) OnlyX(ctx context.Context) *SystemComponentKind {
-	node, err := sckq.Only(ctx)
+func (_q *SystemComponentKindQuery) OnlyX(ctx context.Context) *SystemComponentKind {
+	node, err := _q.Only(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -185,9 +185,9 @@ func (sckq *SystemComponentKindQuery) OnlyX(ctx context.Context) *SystemComponen
 // OnlyID is like Only, but returns the only SystemComponentKind ID in the query.
 // Returns a *NotSingularError when more than one SystemComponentKind ID is found.
 // Returns a *NotFoundError when no entities are found.
-func (sckq *SystemComponentKindQuery) OnlyID(ctx context.Context) (id uuid.UUID, err error) {
+func (_q *SystemComponentKindQuery) OnlyID(ctx context.Context) (id uuid.UUID, err error) {
 	var ids []uuid.UUID
-	if ids, err = sckq.Limit(2).IDs(setContextOp(ctx, sckq.ctx, ent.OpQueryOnlyID)); err != nil {
+	if ids, err = _q.Limit(2).IDs(setContextOp(ctx, _q.ctx, ent.OpQueryOnlyID)); err != nil {
 		return
 	}
 	switch len(ids) {
@@ -202,8 +202,8 @@ func (sckq *SystemComponentKindQuery) OnlyID(ctx context.Context) (id uuid.UUID,
 }
 
 // OnlyIDX is like OnlyID, but panics if an error occurs.
-func (sckq *SystemComponentKindQuery) OnlyIDX(ctx context.Context) uuid.UUID {
-	id, err := sckq.OnlyID(ctx)
+func (_q *SystemComponentKindQuery) OnlyIDX(ctx context.Context) uuid.UUID {
+	id, err := _q.OnlyID(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -211,18 +211,18 @@ func (sckq *SystemComponentKindQuery) OnlyIDX(ctx context.Context) uuid.UUID {
 }
 
 // All executes the query and returns a list of SystemComponentKinds.
-func (sckq *SystemComponentKindQuery) All(ctx context.Context) ([]*SystemComponentKind, error) {
-	ctx = setContextOp(ctx, sckq.ctx, ent.OpQueryAll)
-	if err := sckq.prepareQuery(ctx); err != nil {
+func (_q *SystemComponentKindQuery) All(ctx context.Context) ([]*SystemComponentKind, error) {
+	ctx = setContextOp(ctx, _q.ctx, ent.OpQueryAll)
+	if err := _q.prepareQuery(ctx); err != nil {
 		return nil, err
 	}
 	qr := querierAll[[]*SystemComponentKind, *SystemComponentKindQuery]()
-	return withInterceptors[[]*SystemComponentKind](ctx, sckq, qr, sckq.inters)
+	return withInterceptors[[]*SystemComponentKind](ctx, _q, qr, _q.inters)
 }
 
 // AllX is like All, but panics if an error occurs.
-func (sckq *SystemComponentKindQuery) AllX(ctx context.Context) []*SystemComponentKind {
-	nodes, err := sckq.All(ctx)
+func (_q *SystemComponentKindQuery) AllX(ctx context.Context) []*SystemComponentKind {
+	nodes, err := _q.All(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -230,20 +230,20 @@ func (sckq *SystemComponentKindQuery) AllX(ctx context.Context) []*SystemCompone
 }
 
 // IDs executes the query and returns a list of SystemComponentKind IDs.
-func (sckq *SystemComponentKindQuery) IDs(ctx context.Context) (ids []uuid.UUID, err error) {
-	if sckq.ctx.Unique == nil && sckq.path != nil {
-		sckq.Unique(true)
+func (_q *SystemComponentKindQuery) IDs(ctx context.Context) (ids []uuid.UUID, err error) {
+	if _q.ctx.Unique == nil && _q.path != nil {
+		_q.Unique(true)
 	}
-	ctx = setContextOp(ctx, sckq.ctx, ent.OpQueryIDs)
-	if err = sckq.Select(systemcomponentkind.FieldID).Scan(ctx, &ids); err != nil {
+	ctx = setContextOp(ctx, _q.ctx, ent.OpQueryIDs)
+	if err = _q.Select(systemcomponentkind.FieldID).Scan(ctx, &ids); err != nil {
 		return nil, err
 	}
 	return ids, nil
 }
 
 // IDsX is like IDs, but panics if an error occurs.
-func (sckq *SystemComponentKindQuery) IDsX(ctx context.Context) []uuid.UUID {
-	ids, err := sckq.IDs(ctx)
+func (_q *SystemComponentKindQuery) IDsX(ctx context.Context) []uuid.UUID {
+	ids, err := _q.IDs(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -251,17 +251,17 @@ func (sckq *SystemComponentKindQuery) IDsX(ctx context.Context) []uuid.UUID {
 }
 
 // Count returns the count of the given query.
-func (sckq *SystemComponentKindQuery) Count(ctx context.Context) (int, error) {
-	ctx = setContextOp(ctx, sckq.ctx, ent.OpQueryCount)
-	if err := sckq.prepareQuery(ctx); err != nil {
+func (_q *SystemComponentKindQuery) Count(ctx context.Context) (int, error) {
+	ctx = setContextOp(ctx, _q.ctx, ent.OpQueryCount)
+	if err := _q.prepareQuery(ctx); err != nil {
 		return 0, err
 	}
-	return withInterceptors[int](ctx, sckq, querierCount[*SystemComponentKindQuery](), sckq.inters)
+	return withInterceptors[int](ctx, _q, querierCount[*SystemComponentKindQuery](), _q.inters)
 }
 
 // CountX is like Count, but panics if an error occurs.
-func (sckq *SystemComponentKindQuery) CountX(ctx context.Context) int {
-	count, err := sckq.Count(ctx)
+func (_q *SystemComponentKindQuery) CountX(ctx context.Context) int {
+	count, err := _q.Count(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -269,9 +269,9 @@ func (sckq *SystemComponentKindQuery) CountX(ctx context.Context) int {
 }
 
 // Exist returns true if the query has elements in the graph.
-func (sckq *SystemComponentKindQuery) Exist(ctx context.Context) (bool, error) {
-	ctx = setContextOp(ctx, sckq.ctx, ent.OpQueryExist)
-	switch _, err := sckq.FirstID(ctx); {
+func (_q *SystemComponentKindQuery) Exist(ctx context.Context) (bool, error) {
+	ctx = setContextOp(ctx, _q.ctx, ent.OpQueryExist)
+	switch _, err := _q.FirstID(ctx); {
 	case IsNotFound(err):
 		return false, nil
 	case err != nil:
@@ -282,8 +282,8 @@ func (sckq *SystemComponentKindQuery) Exist(ctx context.Context) (bool, error) {
 }
 
 // ExistX is like Exist, but panics if an error occurs.
-func (sckq *SystemComponentKindQuery) ExistX(ctx context.Context) bool {
-	exist, err := sckq.Exist(ctx)
+func (_q *SystemComponentKindQuery) ExistX(ctx context.Context) bool {
+	exist, err := _q.Exist(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -292,45 +292,45 @@ func (sckq *SystemComponentKindQuery) ExistX(ctx context.Context) bool {
 
 // Clone returns a duplicate of the SystemComponentKindQuery builder, including all associated steps. It can be
 // used to prepare common query builders and use them differently after the clone is made.
-func (sckq *SystemComponentKindQuery) Clone() *SystemComponentKindQuery {
-	if sckq == nil {
+func (_q *SystemComponentKindQuery) Clone() *SystemComponentKindQuery {
+	if _q == nil {
 		return nil
 	}
 	return &SystemComponentKindQuery{
-		config:         sckq.config,
-		ctx:            sckq.ctx.Clone(),
-		order:          append([]systemcomponentkind.OrderOption{}, sckq.order...),
-		inters:         append([]Interceptor{}, sckq.inters...),
-		predicates:     append([]predicate.SystemComponentKind{}, sckq.predicates...),
-		withTenant:     sckq.withTenant.Clone(),
-		withComponents: sckq.withComponents.Clone(),
+		config:         _q.config,
+		ctx:            _q.ctx.Clone(),
+		order:          append([]systemcomponentkind.OrderOption{}, _q.order...),
+		inters:         append([]Interceptor{}, _q.inters...),
+		predicates:     append([]predicate.SystemComponentKind{}, _q.predicates...),
+		withTenant:     _q.withTenant.Clone(),
+		withComponents: _q.withComponents.Clone(),
 		// clone intermediate query.
-		sql:       sckq.sql.Clone(),
-		path:      sckq.path,
-		modifiers: append([]func(*sql.Selector){}, sckq.modifiers...),
+		sql:       _q.sql.Clone(),
+		path:      _q.path,
+		modifiers: append([]func(*sql.Selector){}, _q.modifiers...),
 	}
 }
 
 // WithTenant tells the query-builder to eager-load the nodes that are connected to
 // the "tenant" edge. The optional arguments are used to configure the query builder of the edge.
-func (sckq *SystemComponentKindQuery) WithTenant(opts ...func(*TenantQuery)) *SystemComponentKindQuery {
-	query := (&TenantClient{config: sckq.config}).Query()
+func (_q *SystemComponentKindQuery) WithTenant(opts ...func(*TenantQuery)) *SystemComponentKindQuery {
+	query := (&TenantClient{config: _q.config}).Query()
 	for _, opt := range opts {
 		opt(query)
 	}
-	sckq.withTenant = query
-	return sckq
+	_q.withTenant = query
+	return _q
 }
 
 // WithComponents tells the query-builder to eager-load the nodes that are connected to
 // the "components" edge. The optional arguments are used to configure the query builder of the edge.
-func (sckq *SystemComponentKindQuery) WithComponents(opts ...func(*SystemComponentQuery)) *SystemComponentKindQuery {
-	query := (&SystemComponentClient{config: sckq.config}).Query()
+func (_q *SystemComponentKindQuery) WithComponents(opts ...func(*SystemComponentQuery)) *SystemComponentKindQuery {
+	query := (&SystemComponentClient{config: _q.config}).Query()
 	for _, opt := range opts {
 		opt(query)
 	}
-	sckq.withComponents = query
-	return sckq
+	_q.withComponents = query
+	return _q
 }
 
 // GroupBy is used to group vertices by one or more fields/columns.
@@ -347,10 +347,10 @@ func (sckq *SystemComponentKindQuery) WithComponents(opts ...func(*SystemCompone
 //		GroupBy(systemcomponentkind.FieldTenantID).
 //		Aggregate(ent.Count()).
 //		Scan(ctx, &v)
-func (sckq *SystemComponentKindQuery) GroupBy(field string, fields ...string) *SystemComponentKindGroupBy {
-	sckq.ctx.Fields = append([]string{field}, fields...)
-	grbuild := &SystemComponentKindGroupBy{build: sckq}
-	grbuild.flds = &sckq.ctx.Fields
+func (_q *SystemComponentKindQuery) GroupBy(field string, fields ...string) *SystemComponentKindGroupBy {
+	_q.ctx.Fields = append([]string{field}, fields...)
+	grbuild := &SystemComponentKindGroupBy{build: _q}
+	grbuild.flds = &_q.ctx.Fields
 	grbuild.label = systemcomponentkind.Label
 	grbuild.scan = grbuild.Scan
 	return grbuild
@@ -368,89 +368,89 @@ func (sckq *SystemComponentKindQuery) GroupBy(field string, fields ...string) *S
 //	client.SystemComponentKind.Query().
 //		Select(systemcomponentkind.FieldTenantID).
 //		Scan(ctx, &v)
-func (sckq *SystemComponentKindQuery) Select(fields ...string) *SystemComponentKindSelect {
-	sckq.ctx.Fields = append(sckq.ctx.Fields, fields...)
-	sbuild := &SystemComponentKindSelect{SystemComponentKindQuery: sckq}
+func (_q *SystemComponentKindQuery) Select(fields ...string) *SystemComponentKindSelect {
+	_q.ctx.Fields = append(_q.ctx.Fields, fields...)
+	sbuild := &SystemComponentKindSelect{SystemComponentKindQuery: _q}
 	sbuild.label = systemcomponentkind.Label
-	sbuild.flds, sbuild.scan = &sckq.ctx.Fields, sbuild.Scan
+	sbuild.flds, sbuild.scan = &_q.ctx.Fields, sbuild.Scan
 	return sbuild
 }
 
 // Aggregate returns a SystemComponentKindSelect configured with the given aggregations.
-func (sckq *SystemComponentKindQuery) Aggregate(fns ...AggregateFunc) *SystemComponentKindSelect {
-	return sckq.Select().Aggregate(fns...)
+func (_q *SystemComponentKindQuery) Aggregate(fns ...AggregateFunc) *SystemComponentKindSelect {
+	return _q.Select().Aggregate(fns...)
 }
 
-func (sckq *SystemComponentKindQuery) prepareQuery(ctx context.Context) error {
-	for _, inter := range sckq.inters {
+func (_q *SystemComponentKindQuery) prepareQuery(ctx context.Context) error {
+	for _, inter := range _q.inters {
 		if inter == nil {
 			return fmt.Errorf("ent: uninitialized interceptor (forgotten import ent/runtime?)")
 		}
 		if trv, ok := inter.(Traverser); ok {
-			if err := trv.Traverse(ctx, sckq); err != nil {
+			if err := trv.Traverse(ctx, _q); err != nil {
 				return err
 			}
 		}
 	}
-	for _, f := range sckq.ctx.Fields {
+	for _, f := range _q.ctx.Fields {
 		if !systemcomponentkind.ValidColumn(f) {
 			return &ValidationError{Name: f, err: fmt.Errorf("ent: invalid field %q for query", f)}
 		}
 	}
-	if sckq.path != nil {
-		prev, err := sckq.path(ctx)
+	if _q.path != nil {
+		prev, err := _q.path(ctx)
 		if err != nil {
 			return err
 		}
-		sckq.sql = prev
+		_q.sql = prev
 	}
 	if systemcomponentkind.Policy == nil {
 		return errors.New("ent: uninitialized systemcomponentkind.Policy (forgotten import ent/runtime?)")
 	}
-	if err := systemcomponentkind.Policy.EvalQuery(ctx, sckq); err != nil {
+	if err := systemcomponentkind.Policy.EvalQuery(ctx, _q); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (sckq *SystemComponentKindQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*SystemComponentKind, error) {
+func (_q *SystemComponentKindQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*SystemComponentKind, error) {
 	var (
 		nodes       = []*SystemComponentKind{}
-		_spec       = sckq.querySpec()
+		_spec       = _q.querySpec()
 		loadedTypes = [2]bool{
-			sckq.withTenant != nil,
-			sckq.withComponents != nil,
+			_q.withTenant != nil,
+			_q.withComponents != nil,
 		}
 	)
 	_spec.ScanValues = func(columns []string) ([]any, error) {
 		return (*SystemComponentKind).scanValues(nil, columns)
 	}
 	_spec.Assign = func(columns []string, values []any) error {
-		node := &SystemComponentKind{config: sckq.config}
+		node := &SystemComponentKind{config: _q.config}
 		nodes = append(nodes, node)
 		node.Edges.loadedTypes = loadedTypes
 		return node.assignValues(columns, values)
 	}
-	if len(sckq.modifiers) > 0 {
-		_spec.Modifiers = sckq.modifiers
+	if len(_q.modifiers) > 0 {
+		_spec.Modifiers = _q.modifiers
 	}
 	for i := range hooks {
 		hooks[i](ctx, _spec)
 	}
-	if err := sqlgraph.QueryNodes(ctx, sckq.driver, _spec); err != nil {
+	if err := sqlgraph.QueryNodes(ctx, _q.driver, _spec); err != nil {
 		return nil, err
 	}
 	if len(nodes) == 0 {
 		return nodes, nil
 	}
-	if query := sckq.withTenant; query != nil {
-		if err := sckq.loadTenant(ctx, query, nodes, nil,
+	if query := _q.withTenant; query != nil {
+		if err := _q.loadTenant(ctx, query, nodes, nil,
 			func(n *SystemComponentKind, e *Tenant) { n.Edges.Tenant = e }); err != nil {
 			return nil, err
 		}
 	}
-	if query := sckq.withComponents; query != nil {
-		if err := sckq.loadComponents(ctx, query, nodes,
+	if query := _q.withComponents; query != nil {
+		if err := _q.loadComponents(ctx, query, nodes,
 			func(n *SystemComponentKind) { n.Edges.Components = []*SystemComponent{} },
 			func(n *SystemComponentKind, e *SystemComponent) { n.Edges.Components = append(n.Edges.Components, e) }); err != nil {
 			return nil, err
@@ -459,7 +459,7 @@ func (sckq *SystemComponentKindQuery) sqlAll(ctx context.Context, hooks ...query
 	return nodes, nil
 }
 
-func (sckq *SystemComponentKindQuery) loadTenant(ctx context.Context, query *TenantQuery, nodes []*SystemComponentKind, init func(*SystemComponentKind), assign func(*SystemComponentKind, *Tenant)) error {
+func (_q *SystemComponentKindQuery) loadTenant(ctx context.Context, query *TenantQuery, nodes []*SystemComponentKind, init func(*SystemComponentKind), assign func(*SystemComponentKind, *Tenant)) error {
 	ids := make([]int, 0, len(nodes))
 	nodeids := make(map[int][]*SystemComponentKind)
 	for i := range nodes {
@@ -488,7 +488,7 @@ func (sckq *SystemComponentKindQuery) loadTenant(ctx context.Context, query *Ten
 	}
 	return nil
 }
-func (sckq *SystemComponentKindQuery) loadComponents(ctx context.Context, query *SystemComponentQuery, nodes []*SystemComponentKind, init func(*SystemComponentKind), assign func(*SystemComponentKind, *SystemComponent)) error {
+func (_q *SystemComponentKindQuery) loadComponents(ctx context.Context, query *SystemComponentQuery, nodes []*SystemComponentKind, init func(*SystemComponentKind), assign func(*SystemComponentKind, *SystemComponent)) error {
 	fks := make([]driver.Value, 0, len(nodes))
 	nodeids := make(map[uuid.UUID]*SystemComponentKind)
 	for i := range nodes {
@@ -519,27 +519,27 @@ func (sckq *SystemComponentKindQuery) loadComponents(ctx context.Context, query 
 	return nil
 }
 
-func (sckq *SystemComponentKindQuery) sqlCount(ctx context.Context) (int, error) {
-	_spec := sckq.querySpec()
-	if len(sckq.modifiers) > 0 {
-		_spec.Modifiers = sckq.modifiers
+func (_q *SystemComponentKindQuery) sqlCount(ctx context.Context) (int, error) {
+	_spec := _q.querySpec()
+	if len(_q.modifiers) > 0 {
+		_spec.Modifiers = _q.modifiers
 	}
-	_spec.Node.Columns = sckq.ctx.Fields
-	if len(sckq.ctx.Fields) > 0 {
-		_spec.Unique = sckq.ctx.Unique != nil && *sckq.ctx.Unique
+	_spec.Node.Columns = _q.ctx.Fields
+	if len(_q.ctx.Fields) > 0 {
+		_spec.Unique = _q.ctx.Unique != nil && *_q.ctx.Unique
 	}
-	return sqlgraph.CountNodes(ctx, sckq.driver, _spec)
+	return sqlgraph.CountNodes(ctx, _q.driver, _spec)
 }
 
-func (sckq *SystemComponentKindQuery) querySpec() *sqlgraph.QuerySpec {
+func (_q *SystemComponentKindQuery) querySpec() *sqlgraph.QuerySpec {
 	_spec := sqlgraph.NewQuerySpec(systemcomponentkind.Table, systemcomponentkind.Columns, sqlgraph.NewFieldSpec(systemcomponentkind.FieldID, field.TypeUUID))
-	_spec.From = sckq.sql
-	if unique := sckq.ctx.Unique; unique != nil {
+	_spec.From = _q.sql
+	if unique := _q.ctx.Unique; unique != nil {
 		_spec.Unique = *unique
-	} else if sckq.path != nil {
+	} else if _q.path != nil {
 		_spec.Unique = true
 	}
-	if fields := sckq.ctx.Fields; len(fields) > 0 {
+	if fields := _q.ctx.Fields; len(fields) > 0 {
 		_spec.Node.Columns = make([]string, 0, len(fields))
 		_spec.Node.Columns = append(_spec.Node.Columns, systemcomponentkind.FieldID)
 		for i := range fields {
@@ -547,24 +547,24 @@ func (sckq *SystemComponentKindQuery) querySpec() *sqlgraph.QuerySpec {
 				_spec.Node.Columns = append(_spec.Node.Columns, fields[i])
 			}
 		}
-		if sckq.withTenant != nil {
+		if _q.withTenant != nil {
 			_spec.Node.AddColumnOnce(systemcomponentkind.FieldTenantID)
 		}
 	}
-	if ps := sckq.predicates; len(ps) > 0 {
+	if ps := _q.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {
 				ps[i](selector)
 			}
 		}
 	}
-	if limit := sckq.ctx.Limit; limit != nil {
+	if limit := _q.ctx.Limit; limit != nil {
 		_spec.Limit = *limit
 	}
-	if offset := sckq.ctx.Offset; offset != nil {
+	if offset := _q.ctx.Offset; offset != nil {
 		_spec.Offset = *offset
 	}
-	if ps := sckq.order; len(ps) > 0 {
+	if ps := _q.order; len(ps) > 0 {
 		_spec.Order = func(selector *sql.Selector) {
 			for i := range ps {
 				ps[i](selector)
@@ -574,45 +574,45 @@ func (sckq *SystemComponentKindQuery) querySpec() *sqlgraph.QuerySpec {
 	return _spec
 }
 
-func (sckq *SystemComponentKindQuery) sqlQuery(ctx context.Context) *sql.Selector {
-	builder := sql.Dialect(sckq.driver.Dialect())
+func (_q *SystemComponentKindQuery) sqlQuery(ctx context.Context) *sql.Selector {
+	builder := sql.Dialect(_q.driver.Dialect())
 	t1 := builder.Table(systemcomponentkind.Table)
-	columns := sckq.ctx.Fields
+	columns := _q.ctx.Fields
 	if len(columns) == 0 {
 		columns = systemcomponentkind.Columns
 	}
 	selector := builder.Select(t1.Columns(columns...)...).From(t1)
-	if sckq.sql != nil {
-		selector = sckq.sql
+	if _q.sql != nil {
+		selector = _q.sql
 		selector.Select(selector.Columns(columns...)...)
 	}
-	if sckq.ctx.Unique != nil && *sckq.ctx.Unique {
+	if _q.ctx.Unique != nil && *_q.ctx.Unique {
 		selector.Distinct()
 	}
-	for _, m := range sckq.modifiers {
+	for _, m := range _q.modifiers {
 		m(selector)
 	}
-	for _, p := range sckq.predicates {
+	for _, p := range _q.predicates {
 		p(selector)
 	}
-	for _, p := range sckq.order {
+	for _, p := range _q.order {
 		p(selector)
 	}
-	if offset := sckq.ctx.Offset; offset != nil {
+	if offset := _q.ctx.Offset; offset != nil {
 		// limit is mandatory for offset clause. We start
 		// with default value, and override it below if needed.
 		selector.Offset(*offset).Limit(math.MaxInt32)
 	}
-	if limit := sckq.ctx.Limit; limit != nil {
+	if limit := _q.ctx.Limit; limit != nil {
 		selector.Limit(*limit)
 	}
 	return selector
 }
 
 // Modify adds a query modifier for attaching custom logic to queries.
-func (sckq *SystemComponentKindQuery) Modify(modifiers ...func(s *sql.Selector)) *SystemComponentKindSelect {
-	sckq.modifiers = append(sckq.modifiers, modifiers...)
-	return sckq.Select()
+func (_q *SystemComponentKindQuery) Modify(modifiers ...func(s *sql.Selector)) *SystemComponentKindSelect {
+	_q.modifiers = append(_q.modifiers, modifiers...)
+	return _q.Select()
 }
 
 // SystemComponentKindGroupBy is the group-by builder for SystemComponentKind entities.
@@ -622,41 +622,41 @@ type SystemComponentKindGroupBy struct {
 }
 
 // Aggregate adds the given aggregation functions to the group-by query.
-func (sckgb *SystemComponentKindGroupBy) Aggregate(fns ...AggregateFunc) *SystemComponentKindGroupBy {
-	sckgb.fns = append(sckgb.fns, fns...)
-	return sckgb
+func (_g *SystemComponentKindGroupBy) Aggregate(fns ...AggregateFunc) *SystemComponentKindGroupBy {
+	_g.fns = append(_g.fns, fns...)
+	return _g
 }
 
 // Scan applies the selector query and scans the result into the given value.
-func (sckgb *SystemComponentKindGroupBy) Scan(ctx context.Context, v any) error {
-	ctx = setContextOp(ctx, sckgb.build.ctx, ent.OpQueryGroupBy)
-	if err := sckgb.build.prepareQuery(ctx); err != nil {
+func (_g *SystemComponentKindGroupBy) Scan(ctx context.Context, v any) error {
+	ctx = setContextOp(ctx, _g.build.ctx, ent.OpQueryGroupBy)
+	if err := _g.build.prepareQuery(ctx); err != nil {
 		return err
 	}
-	return scanWithInterceptors[*SystemComponentKindQuery, *SystemComponentKindGroupBy](ctx, sckgb.build, sckgb, sckgb.build.inters, v)
+	return scanWithInterceptors[*SystemComponentKindQuery, *SystemComponentKindGroupBy](ctx, _g.build, _g, _g.build.inters, v)
 }
 
-func (sckgb *SystemComponentKindGroupBy) sqlScan(ctx context.Context, root *SystemComponentKindQuery, v any) error {
+func (_g *SystemComponentKindGroupBy) sqlScan(ctx context.Context, root *SystemComponentKindQuery, v any) error {
 	selector := root.sqlQuery(ctx).Select()
-	aggregation := make([]string, 0, len(sckgb.fns))
-	for _, fn := range sckgb.fns {
+	aggregation := make([]string, 0, len(_g.fns))
+	for _, fn := range _g.fns {
 		aggregation = append(aggregation, fn(selector))
 	}
 	if len(selector.SelectedColumns()) == 0 {
-		columns := make([]string, 0, len(*sckgb.flds)+len(sckgb.fns))
-		for _, f := range *sckgb.flds {
+		columns := make([]string, 0, len(*_g.flds)+len(_g.fns))
+		for _, f := range *_g.flds {
 			columns = append(columns, selector.C(f))
 		}
 		columns = append(columns, aggregation...)
 		selector.Select(columns...)
 	}
-	selector.GroupBy(selector.Columns(*sckgb.flds...)...)
+	selector.GroupBy(selector.Columns(*_g.flds...)...)
 	if err := selector.Err(); err != nil {
 		return err
 	}
 	rows := &sql.Rows{}
 	query, args := selector.Query()
-	if err := sckgb.build.driver.Query(ctx, query, args, rows); err != nil {
+	if err := _g.build.driver.Query(ctx, query, args, rows); err != nil {
 		return err
 	}
 	defer rows.Close()
@@ -670,27 +670,27 @@ type SystemComponentKindSelect struct {
 }
 
 // Aggregate adds the given aggregation functions to the selector query.
-func (scks *SystemComponentKindSelect) Aggregate(fns ...AggregateFunc) *SystemComponentKindSelect {
-	scks.fns = append(scks.fns, fns...)
-	return scks
+func (_s *SystemComponentKindSelect) Aggregate(fns ...AggregateFunc) *SystemComponentKindSelect {
+	_s.fns = append(_s.fns, fns...)
+	return _s
 }
 
 // Scan applies the selector query and scans the result into the given value.
-func (scks *SystemComponentKindSelect) Scan(ctx context.Context, v any) error {
-	ctx = setContextOp(ctx, scks.ctx, ent.OpQuerySelect)
-	if err := scks.prepareQuery(ctx); err != nil {
+func (_s *SystemComponentKindSelect) Scan(ctx context.Context, v any) error {
+	ctx = setContextOp(ctx, _s.ctx, ent.OpQuerySelect)
+	if err := _s.prepareQuery(ctx); err != nil {
 		return err
 	}
-	return scanWithInterceptors[*SystemComponentKindQuery, *SystemComponentKindSelect](ctx, scks.SystemComponentKindQuery, scks, scks.inters, v)
+	return scanWithInterceptors[*SystemComponentKindQuery, *SystemComponentKindSelect](ctx, _s.SystemComponentKindQuery, _s, _s.inters, v)
 }
 
-func (scks *SystemComponentKindSelect) sqlScan(ctx context.Context, root *SystemComponentKindQuery, v any) error {
+func (_s *SystemComponentKindSelect) sqlScan(ctx context.Context, root *SystemComponentKindQuery, v any) error {
 	selector := root.sqlQuery(ctx)
-	aggregation := make([]string, 0, len(scks.fns))
-	for _, fn := range scks.fns {
+	aggregation := make([]string, 0, len(_s.fns))
+	for _, fn := range _s.fns {
 		aggregation = append(aggregation, fn(selector))
 	}
-	switch n := len(*scks.selector.flds); {
+	switch n := len(*_s.selector.flds); {
 	case n == 0 && len(aggregation) > 0:
 		selector.Select(aggregation...)
 	case n != 0 && len(aggregation) > 0:
@@ -698,7 +698,7 @@ func (scks *SystemComponentKindSelect) sqlScan(ctx context.Context, root *System
 	}
 	rows := &sql.Rows{}
 	query, args := selector.Query()
-	if err := scks.driver.Query(ctx, query, args, rows); err != nil {
+	if err := _s.driver.Query(ctx, query, args, rows); err != nil {
 		return err
 	}
 	defer rows.Close()
@@ -706,7 +706,7 @@ func (scks *SystemComponentKindSelect) sqlScan(ctx context.Context, root *System
 }
 
 // Modify adds a query modifier for attaching custom logic to queries.
-func (scks *SystemComponentKindSelect) Modify(modifiers ...func(s *sql.Selector)) *SystemComponentKindSelect {
-	scks.modifiers = append(scks.modifiers, modifiers...)
-	return scks
+func (_s *SystemComponentKindSelect) Modify(modifiers ...func(s *sql.Selector)) *SystemComponentKindSelect {
+	_s.modifiers = append(_s.modifiers, modifiers...)
+	return _s
 }

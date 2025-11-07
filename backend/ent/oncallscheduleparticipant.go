@@ -98,7 +98,7 @@ func (*OncallScheduleParticipant) scanValues(columns []string) ([]any, error) {
 
 // assignValues assigns the values that were returned from sql.Rows (after scanning)
 // to the OncallScheduleParticipant fields.
-func (osp *OncallScheduleParticipant) assignValues(columns []string, values []any) error {
+func (_m *OncallScheduleParticipant) assignValues(columns []string, values []any) error {
 	if m, n := len(values), len(columns); m < n {
 		return fmt.Errorf("mismatch number of scan values: %d != %d", m, n)
 	}
@@ -108,34 +108,34 @@ func (osp *OncallScheduleParticipant) assignValues(columns []string, values []an
 			if value, ok := values[i].(*uuid.UUID); !ok {
 				return fmt.Errorf("unexpected type %T for field id", values[i])
 			} else if value != nil {
-				osp.ID = *value
+				_m.ID = *value
 			}
 		case oncallscheduleparticipant.FieldTenantID:
 			if value, ok := values[i].(*sql.NullInt64); !ok {
 				return fmt.Errorf("unexpected type %T for field tenant_id", values[i])
 			} else if value.Valid {
-				osp.TenantID = int(value.Int64)
+				_m.TenantID = int(value.Int64)
 			}
 		case oncallscheduleparticipant.FieldScheduleID:
 			if value, ok := values[i].(*uuid.UUID); !ok {
 				return fmt.Errorf("unexpected type %T for field schedule_id", values[i])
 			} else if value != nil {
-				osp.ScheduleID = *value
+				_m.ScheduleID = *value
 			}
 		case oncallscheduleparticipant.FieldUserID:
 			if value, ok := values[i].(*uuid.UUID); !ok {
 				return fmt.Errorf("unexpected type %T for field user_id", values[i])
 			} else if value != nil {
-				osp.UserID = *value
+				_m.UserID = *value
 			}
 		case oncallscheduleparticipant.FieldIndex:
 			if value, ok := values[i].(*sql.NullInt64); !ok {
 				return fmt.Errorf("unexpected type %T for field index", values[i])
 			} else if value.Valid {
-				osp.Index = int(value.Int64)
+				_m.Index = int(value.Int64)
 			}
 		default:
-			osp.selectValues.Set(columns[i], values[i])
+			_m.selectValues.Set(columns[i], values[i])
 		}
 	}
 	return nil
@@ -143,59 +143,59 @@ func (osp *OncallScheduleParticipant) assignValues(columns []string, values []an
 
 // Value returns the ent.Value that was dynamically selected and assigned to the OncallScheduleParticipant.
 // This includes values selected through modifiers, order, etc.
-func (osp *OncallScheduleParticipant) Value(name string) (ent.Value, error) {
-	return osp.selectValues.Get(name)
+func (_m *OncallScheduleParticipant) Value(name string) (ent.Value, error) {
+	return _m.selectValues.Get(name)
 }
 
 // QueryTenant queries the "tenant" edge of the OncallScheduleParticipant entity.
-func (osp *OncallScheduleParticipant) QueryTenant() *TenantQuery {
-	return NewOncallScheduleParticipantClient(osp.config).QueryTenant(osp)
+func (_m *OncallScheduleParticipant) QueryTenant() *TenantQuery {
+	return NewOncallScheduleParticipantClient(_m.config).QueryTenant(_m)
 }
 
 // QuerySchedule queries the "schedule" edge of the OncallScheduleParticipant entity.
-func (osp *OncallScheduleParticipant) QuerySchedule() *OncallScheduleQuery {
-	return NewOncallScheduleParticipantClient(osp.config).QuerySchedule(osp)
+func (_m *OncallScheduleParticipant) QuerySchedule() *OncallScheduleQuery {
+	return NewOncallScheduleParticipantClient(_m.config).QuerySchedule(_m)
 }
 
 // QueryUser queries the "user" edge of the OncallScheduleParticipant entity.
-func (osp *OncallScheduleParticipant) QueryUser() *UserQuery {
-	return NewOncallScheduleParticipantClient(osp.config).QueryUser(osp)
+func (_m *OncallScheduleParticipant) QueryUser() *UserQuery {
+	return NewOncallScheduleParticipantClient(_m.config).QueryUser(_m)
 }
 
 // Update returns a builder for updating this OncallScheduleParticipant.
 // Note that you need to call OncallScheduleParticipant.Unwrap() before calling this method if this OncallScheduleParticipant
 // was returned from a transaction, and the transaction was committed or rolled back.
-func (osp *OncallScheduleParticipant) Update() *OncallScheduleParticipantUpdateOne {
-	return NewOncallScheduleParticipantClient(osp.config).UpdateOne(osp)
+func (_m *OncallScheduleParticipant) Update() *OncallScheduleParticipantUpdateOne {
+	return NewOncallScheduleParticipantClient(_m.config).UpdateOne(_m)
 }
 
 // Unwrap unwraps the OncallScheduleParticipant entity that was returned from a transaction after it was closed,
 // so that all future queries will be executed through the driver which created the transaction.
-func (osp *OncallScheduleParticipant) Unwrap() *OncallScheduleParticipant {
-	_tx, ok := osp.config.driver.(*txDriver)
+func (_m *OncallScheduleParticipant) Unwrap() *OncallScheduleParticipant {
+	_tx, ok := _m.config.driver.(*txDriver)
 	if !ok {
 		panic("ent: OncallScheduleParticipant is not a transactional entity")
 	}
-	osp.config.driver = _tx.drv
-	return osp
+	_m.config.driver = _tx.drv
+	return _m
 }
 
 // String implements the fmt.Stringer.
-func (osp *OncallScheduleParticipant) String() string {
+func (_m *OncallScheduleParticipant) String() string {
 	var builder strings.Builder
 	builder.WriteString("OncallScheduleParticipant(")
-	builder.WriteString(fmt.Sprintf("id=%v, ", osp.ID))
+	builder.WriteString(fmt.Sprintf("id=%v, ", _m.ID))
 	builder.WriteString("tenant_id=")
-	builder.WriteString(fmt.Sprintf("%v", osp.TenantID))
+	builder.WriteString(fmt.Sprintf("%v", _m.TenantID))
 	builder.WriteString(", ")
 	builder.WriteString("schedule_id=")
-	builder.WriteString(fmt.Sprintf("%v", osp.ScheduleID))
+	builder.WriteString(fmt.Sprintf("%v", _m.ScheduleID))
 	builder.WriteString(", ")
 	builder.WriteString("user_id=")
-	builder.WriteString(fmt.Sprintf("%v", osp.UserID))
+	builder.WriteString(fmt.Sprintf("%v", _m.UserID))
 	builder.WriteString(", ")
 	builder.WriteString("index=")
-	builder.WriteString(fmt.Sprintf("%v", osp.Index))
+	builder.WriteString(fmt.Sprintf("%v", _m.Index))
 	builder.WriteByte(')')
 	return builder.String()
 }

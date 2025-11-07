@@ -28,102 +28,102 @@ type IncidentTagCreate struct {
 }
 
 // SetTenantID sets the "tenant_id" field.
-func (itc *IncidentTagCreate) SetTenantID(i int) *IncidentTagCreate {
-	itc.mutation.SetTenantID(i)
-	return itc
+func (_c *IncidentTagCreate) SetTenantID(v int) *IncidentTagCreate {
+	_c.mutation.SetTenantID(v)
+	return _c
 }
 
 // SetArchiveTime sets the "archive_time" field.
-func (itc *IncidentTagCreate) SetArchiveTime(t time.Time) *IncidentTagCreate {
-	itc.mutation.SetArchiveTime(t)
-	return itc
+func (_c *IncidentTagCreate) SetArchiveTime(v time.Time) *IncidentTagCreate {
+	_c.mutation.SetArchiveTime(v)
+	return _c
 }
 
 // SetNillableArchiveTime sets the "archive_time" field if the given value is not nil.
-func (itc *IncidentTagCreate) SetNillableArchiveTime(t *time.Time) *IncidentTagCreate {
-	if t != nil {
-		itc.SetArchiveTime(*t)
+func (_c *IncidentTagCreate) SetNillableArchiveTime(v *time.Time) *IncidentTagCreate {
+	if v != nil {
+		_c.SetArchiveTime(*v)
 	}
-	return itc
+	return _c
 }
 
 // SetKey sets the "key" field.
-func (itc *IncidentTagCreate) SetKey(s string) *IncidentTagCreate {
-	itc.mutation.SetKey(s)
-	return itc
+func (_c *IncidentTagCreate) SetKey(v string) *IncidentTagCreate {
+	_c.mutation.SetKey(v)
+	return _c
 }
 
 // SetValue sets the "value" field.
-func (itc *IncidentTagCreate) SetValue(s string) *IncidentTagCreate {
-	itc.mutation.SetValue(s)
-	return itc
+func (_c *IncidentTagCreate) SetValue(v string) *IncidentTagCreate {
+	_c.mutation.SetValue(v)
+	return _c
 }
 
 // SetID sets the "id" field.
-func (itc *IncidentTagCreate) SetID(u uuid.UUID) *IncidentTagCreate {
-	itc.mutation.SetID(u)
-	return itc
+func (_c *IncidentTagCreate) SetID(v uuid.UUID) *IncidentTagCreate {
+	_c.mutation.SetID(v)
+	return _c
 }
 
 // SetNillableID sets the "id" field if the given value is not nil.
-func (itc *IncidentTagCreate) SetNillableID(u *uuid.UUID) *IncidentTagCreate {
-	if u != nil {
-		itc.SetID(*u)
+func (_c *IncidentTagCreate) SetNillableID(v *uuid.UUID) *IncidentTagCreate {
+	if v != nil {
+		_c.SetID(*v)
 	}
-	return itc
+	return _c
 }
 
 // SetTenant sets the "tenant" edge to the Tenant entity.
-func (itc *IncidentTagCreate) SetTenant(t *Tenant) *IncidentTagCreate {
-	return itc.SetTenantID(t.ID)
+func (_c *IncidentTagCreate) SetTenant(v *Tenant) *IncidentTagCreate {
+	return _c.SetTenantID(v.ID)
 }
 
 // AddIncidentIDs adds the "incidents" edge to the Incident entity by IDs.
-func (itc *IncidentTagCreate) AddIncidentIDs(ids ...uuid.UUID) *IncidentTagCreate {
-	itc.mutation.AddIncidentIDs(ids...)
-	return itc
+func (_c *IncidentTagCreate) AddIncidentIDs(ids ...uuid.UUID) *IncidentTagCreate {
+	_c.mutation.AddIncidentIDs(ids...)
+	return _c
 }
 
 // AddIncidents adds the "incidents" edges to the Incident entity.
-func (itc *IncidentTagCreate) AddIncidents(i ...*Incident) *IncidentTagCreate {
-	ids := make([]uuid.UUID, len(i))
-	for j := range i {
-		ids[j] = i[j].ID
+func (_c *IncidentTagCreate) AddIncidents(v ...*Incident) *IncidentTagCreate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
 	}
-	return itc.AddIncidentIDs(ids...)
+	return _c.AddIncidentIDs(ids...)
 }
 
 // AddDebriefQuestionIDs adds the "debrief_questions" edge to the IncidentDebriefQuestion entity by IDs.
-func (itc *IncidentTagCreate) AddDebriefQuestionIDs(ids ...uuid.UUID) *IncidentTagCreate {
-	itc.mutation.AddDebriefQuestionIDs(ids...)
-	return itc
+func (_c *IncidentTagCreate) AddDebriefQuestionIDs(ids ...uuid.UUID) *IncidentTagCreate {
+	_c.mutation.AddDebriefQuestionIDs(ids...)
+	return _c
 }
 
 // AddDebriefQuestions adds the "debrief_questions" edges to the IncidentDebriefQuestion entity.
-func (itc *IncidentTagCreate) AddDebriefQuestions(i ...*IncidentDebriefQuestion) *IncidentTagCreate {
-	ids := make([]uuid.UUID, len(i))
-	for j := range i {
-		ids[j] = i[j].ID
+func (_c *IncidentTagCreate) AddDebriefQuestions(v ...*IncidentDebriefQuestion) *IncidentTagCreate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
 	}
-	return itc.AddDebriefQuestionIDs(ids...)
+	return _c.AddDebriefQuestionIDs(ids...)
 }
 
 // Mutation returns the IncidentTagMutation object of the builder.
-func (itc *IncidentTagCreate) Mutation() *IncidentTagMutation {
-	return itc.mutation
+func (_c *IncidentTagCreate) Mutation() *IncidentTagMutation {
+	return _c.mutation
 }
 
 // Save creates the IncidentTag in the database.
-func (itc *IncidentTagCreate) Save(ctx context.Context) (*IncidentTag, error) {
-	if err := itc.defaults(); err != nil {
+func (_c *IncidentTagCreate) Save(ctx context.Context) (*IncidentTag, error) {
+	if err := _c.defaults(); err != nil {
 		return nil, err
 	}
-	return withHooks(ctx, itc.sqlSave, itc.mutation, itc.hooks)
+	return withHooks(ctx, _c.sqlSave, _c.mutation, _c.hooks)
 }
 
 // SaveX calls Save and panics if Save returns an error.
-func (itc *IncidentTagCreate) SaveX(ctx context.Context) *IncidentTag {
-	v, err := itc.Save(ctx)
+func (_c *IncidentTagCreate) SaveX(ctx context.Context) *IncidentTag {
+	v, err := _c.Save(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -131,53 +131,53 @@ func (itc *IncidentTagCreate) SaveX(ctx context.Context) *IncidentTag {
 }
 
 // Exec executes the query.
-func (itc *IncidentTagCreate) Exec(ctx context.Context) error {
-	_, err := itc.Save(ctx)
+func (_c *IncidentTagCreate) Exec(ctx context.Context) error {
+	_, err := _c.Save(ctx)
 	return err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (itc *IncidentTagCreate) ExecX(ctx context.Context) {
-	if err := itc.Exec(ctx); err != nil {
+func (_c *IncidentTagCreate) ExecX(ctx context.Context) {
+	if err := _c.Exec(ctx); err != nil {
 		panic(err)
 	}
 }
 
 // defaults sets the default values of the builder before save.
-func (itc *IncidentTagCreate) defaults() error {
-	if _, ok := itc.mutation.ID(); !ok {
+func (_c *IncidentTagCreate) defaults() error {
+	if _, ok := _c.mutation.ID(); !ok {
 		if incidenttag.DefaultID == nil {
 			return fmt.Errorf("ent: uninitialized incidenttag.DefaultID (forgotten import ent/runtime?)")
 		}
 		v := incidenttag.DefaultID()
-		itc.mutation.SetID(v)
+		_c.mutation.SetID(v)
 	}
 	return nil
 }
 
 // check runs all checks and user-defined validators on the builder.
-func (itc *IncidentTagCreate) check() error {
-	if _, ok := itc.mutation.TenantID(); !ok {
+func (_c *IncidentTagCreate) check() error {
+	if _, ok := _c.mutation.TenantID(); !ok {
 		return &ValidationError{Name: "tenant_id", err: errors.New(`ent: missing required field "IncidentTag.tenant_id"`)}
 	}
-	if _, ok := itc.mutation.Key(); !ok {
+	if _, ok := _c.mutation.Key(); !ok {
 		return &ValidationError{Name: "key", err: errors.New(`ent: missing required field "IncidentTag.key"`)}
 	}
-	if _, ok := itc.mutation.Value(); !ok {
+	if _, ok := _c.mutation.Value(); !ok {
 		return &ValidationError{Name: "value", err: errors.New(`ent: missing required field "IncidentTag.value"`)}
 	}
-	if len(itc.mutation.TenantIDs()) == 0 {
+	if len(_c.mutation.TenantIDs()) == 0 {
 		return &ValidationError{Name: "tenant", err: errors.New(`ent: missing required edge "IncidentTag.tenant"`)}
 	}
 	return nil
 }
 
-func (itc *IncidentTagCreate) sqlSave(ctx context.Context) (*IncidentTag, error) {
-	if err := itc.check(); err != nil {
+func (_c *IncidentTagCreate) sqlSave(ctx context.Context) (*IncidentTag, error) {
+	if err := _c.check(); err != nil {
 		return nil, err
 	}
-	_node, _spec := itc.createSpec()
-	if err := sqlgraph.CreateNode(ctx, itc.driver, _spec); err != nil {
+	_node, _spec := _c.createSpec()
+	if err := sqlgraph.CreateNode(ctx, _c.driver, _spec); err != nil {
 		if sqlgraph.IsConstraintError(err) {
 			err = &ConstraintError{msg: err.Error(), wrap: err}
 		}
@@ -190,34 +190,34 @@ func (itc *IncidentTagCreate) sqlSave(ctx context.Context) (*IncidentTag, error)
 			return nil, err
 		}
 	}
-	itc.mutation.id = &_node.ID
-	itc.mutation.done = true
+	_c.mutation.id = &_node.ID
+	_c.mutation.done = true
 	return _node, nil
 }
 
-func (itc *IncidentTagCreate) createSpec() (*IncidentTag, *sqlgraph.CreateSpec) {
+func (_c *IncidentTagCreate) createSpec() (*IncidentTag, *sqlgraph.CreateSpec) {
 	var (
-		_node = &IncidentTag{config: itc.config}
+		_node = &IncidentTag{config: _c.config}
 		_spec = sqlgraph.NewCreateSpec(incidenttag.Table, sqlgraph.NewFieldSpec(incidenttag.FieldID, field.TypeUUID))
 	)
-	_spec.OnConflict = itc.conflict
-	if id, ok := itc.mutation.ID(); ok {
+	_spec.OnConflict = _c.conflict
+	if id, ok := _c.mutation.ID(); ok {
 		_node.ID = id
 		_spec.ID.Value = &id
 	}
-	if value, ok := itc.mutation.ArchiveTime(); ok {
+	if value, ok := _c.mutation.ArchiveTime(); ok {
 		_spec.SetField(incidenttag.FieldArchiveTime, field.TypeTime, value)
 		_node.ArchiveTime = value
 	}
-	if value, ok := itc.mutation.Key(); ok {
+	if value, ok := _c.mutation.Key(); ok {
 		_spec.SetField(incidenttag.FieldKey, field.TypeString, value)
 		_node.Key = value
 	}
-	if value, ok := itc.mutation.Value(); ok {
+	if value, ok := _c.mutation.Value(); ok {
 		_spec.SetField(incidenttag.FieldValue, field.TypeString, value)
 		_node.Value = value
 	}
-	if nodes := itc.mutation.TenantIDs(); len(nodes) > 0 {
+	if nodes := _c.mutation.TenantIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
@@ -234,7 +234,7 @@ func (itc *IncidentTagCreate) createSpec() (*IncidentTag, *sqlgraph.CreateSpec) 
 		_node.TenantID = nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
-	if nodes := itc.mutation.IncidentsIDs(); len(nodes) > 0 {
+	if nodes := _c.mutation.IncidentsIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
 			Inverse: true,
@@ -250,7 +250,7 @@ func (itc *IncidentTagCreate) createSpec() (*IncidentTag, *sqlgraph.CreateSpec) 
 		}
 		_spec.Edges = append(_spec.Edges, edge)
 	}
-	if nodes := itc.mutation.DebriefQuestionsIDs(); len(nodes) > 0 {
+	if nodes := _c.mutation.DebriefQuestionsIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
 			Inverse: true,
@@ -285,10 +285,10 @@ func (itc *IncidentTagCreate) createSpec() (*IncidentTag, *sqlgraph.CreateSpec) 
 //			SetTenantID(v+v).
 //		}).
 //		Exec(ctx)
-func (itc *IncidentTagCreate) OnConflict(opts ...sql.ConflictOption) *IncidentTagUpsertOne {
-	itc.conflict = opts
+func (_c *IncidentTagCreate) OnConflict(opts ...sql.ConflictOption) *IncidentTagUpsertOne {
+	_c.conflict = opts
 	return &IncidentTagUpsertOne{
-		create: itc,
+		create: _c,
 	}
 }
 
@@ -298,10 +298,10 @@ func (itc *IncidentTagCreate) OnConflict(opts ...sql.ConflictOption) *IncidentTa
 //	client.IncidentTag.Create().
 //		OnConflict(sql.ConflictColumns(columns...)).
 //		Exec(ctx)
-func (itc *IncidentTagCreate) OnConflictColumns(columns ...string) *IncidentTagUpsertOne {
-	itc.conflict = append(itc.conflict, sql.ConflictColumns(columns...))
+func (_c *IncidentTagCreate) OnConflictColumns(columns ...string) *IncidentTagUpsertOne {
+	_c.conflict = append(_c.conflict, sql.ConflictColumns(columns...))
 	return &IncidentTagUpsertOne{
-		create: itc,
+		create: _c,
 	}
 }
 
@@ -507,16 +507,16 @@ type IncidentTagCreateBulk struct {
 }
 
 // Save creates the IncidentTag entities in the database.
-func (itcb *IncidentTagCreateBulk) Save(ctx context.Context) ([]*IncidentTag, error) {
-	if itcb.err != nil {
-		return nil, itcb.err
+func (_c *IncidentTagCreateBulk) Save(ctx context.Context) ([]*IncidentTag, error) {
+	if _c.err != nil {
+		return nil, _c.err
 	}
-	specs := make([]*sqlgraph.CreateSpec, len(itcb.builders))
-	nodes := make([]*IncidentTag, len(itcb.builders))
-	mutators := make([]Mutator, len(itcb.builders))
-	for i := range itcb.builders {
+	specs := make([]*sqlgraph.CreateSpec, len(_c.builders))
+	nodes := make([]*IncidentTag, len(_c.builders))
+	mutators := make([]Mutator, len(_c.builders))
+	for i := range _c.builders {
 		func(i int, root context.Context) {
-			builder := itcb.builders[i]
+			builder := _c.builders[i]
 			builder.defaults()
 			var mut Mutator = MutateFunc(func(ctx context.Context, m Mutation) (Value, error) {
 				mutation, ok := m.(*IncidentTagMutation)
@@ -530,12 +530,12 @@ func (itcb *IncidentTagCreateBulk) Save(ctx context.Context) ([]*IncidentTag, er
 				var err error
 				nodes[i], specs[i] = builder.createSpec()
 				if i < len(mutators)-1 {
-					_, err = mutators[i+1].Mutate(root, itcb.builders[i+1].mutation)
+					_, err = mutators[i+1].Mutate(root, _c.builders[i+1].mutation)
 				} else {
 					spec := &sqlgraph.BatchCreateSpec{Nodes: specs}
-					spec.OnConflict = itcb.conflict
+					spec.OnConflict = _c.conflict
 					// Invoke the actual operation on the latest mutation in the chain.
-					if err = sqlgraph.BatchCreate(ctx, itcb.driver, spec); err != nil {
+					if err = sqlgraph.BatchCreate(ctx, _c.driver, spec); err != nil {
 						if sqlgraph.IsConstraintError(err) {
 							err = &ConstraintError{msg: err.Error(), wrap: err}
 						}
@@ -555,7 +555,7 @@ func (itcb *IncidentTagCreateBulk) Save(ctx context.Context) ([]*IncidentTag, er
 		}(i, ctx)
 	}
 	if len(mutators) > 0 {
-		if _, err := mutators[0].Mutate(ctx, itcb.builders[0].mutation); err != nil {
+		if _, err := mutators[0].Mutate(ctx, _c.builders[0].mutation); err != nil {
 			return nil, err
 		}
 	}
@@ -563,8 +563,8 @@ func (itcb *IncidentTagCreateBulk) Save(ctx context.Context) ([]*IncidentTag, er
 }
 
 // SaveX is like Save, but panics if an error occurs.
-func (itcb *IncidentTagCreateBulk) SaveX(ctx context.Context) []*IncidentTag {
-	v, err := itcb.Save(ctx)
+func (_c *IncidentTagCreateBulk) SaveX(ctx context.Context) []*IncidentTag {
+	v, err := _c.Save(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -572,14 +572,14 @@ func (itcb *IncidentTagCreateBulk) SaveX(ctx context.Context) []*IncidentTag {
 }
 
 // Exec executes the query.
-func (itcb *IncidentTagCreateBulk) Exec(ctx context.Context) error {
-	_, err := itcb.Save(ctx)
+func (_c *IncidentTagCreateBulk) Exec(ctx context.Context) error {
+	_, err := _c.Save(ctx)
 	return err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (itcb *IncidentTagCreateBulk) ExecX(ctx context.Context) {
-	if err := itcb.Exec(ctx); err != nil {
+func (_c *IncidentTagCreateBulk) ExecX(ctx context.Context) {
+	if err := _c.Exec(ctx); err != nil {
 		panic(err)
 	}
 }
@@ -599,10 +599,10 @@ func (itcb *IncidentTagCreateBulk) ExecX(ctx context.Context) {
 //			SetTenantID(v+v).
 //		}).
 //		Exec(ctx)
-func (itcb *IncidentTagCreateBulk) OnConflict(opts ...sql.ConflictOption) *IncidentTagUpsertBulk {
-	itcb.conflict = opts
+func (_c *IncidentTagCreateBulk) OnConflict(opts ...sql.ConflictOption) *IncidentTagUpsertBulk {
+	_c.conflict = opts
 	return &IncidentTagUpsertBulk{
-		create: itcb,
+		create: _c,
 	}
 }
 
@@ -612,10 +612,10 @@ func (itcb *IncidentTagCreateBulk) OnConflict(opts ...sql.ConflictOption) *Incid
 //	client.IncidentTag.Create().
 //		OnConflict(sql.ConflictColumns(columns...)).
 //		Exec(ctx)
-func (itcb *IncidentTagCreateBulk) OnConflictColumns(columns ...string) *IncidentTagUpsertBulk {
-	itcb.conflict = append(itcb.conflict, sql.ConflictColumns(columns...))
+func (_c *IncidentTagCreateBulk) OnConflictColumns(columns ...string) *IncidentTagUpsertBulk {
+	_c.conflict = append(_c.conflict, sql.ConflictColumns(columns...))
 	return &IncidentTagUpsertBulk{
-		create: itcb,
+		create: _c,
 	}
 }
 

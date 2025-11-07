@@ -27,99 +27,99 @@ type IncidentRoleAssignmentUpdate struct {
 }
 
 // Where appends a list predicates to the IncidentRoleAssignmentUpdate builder.
-func (irau *IncidentRoleAssignmentUpdate) Where(ps ...predicate.IncidentRoleAssignment) *IncidentRoleAssignmentUpdate {
-	irau.mutation.Where(ps...)
-	return irau
+func (_u *IncidentRoleAssignmentUpdate) Where(ps ...predicate.IncidentRoleAssignment) *IncidentRoleAssignmentUpdate {
+	_u.mutation.Where(ps...)
+	return _u
 }
 
 // SetIncidentID sets the "incident_id" field.
-func (irau *IncidentRoleAssignmentUpdate) SetIncidentID(u uuid.UUID) *IncidentRoleAssignmentUpdate {
-	irau.mutation.SetIncidentID(u)
-	return irau
+func (_u *IncidentRoleAssignmentUpdate) SetIncidentID(v uuid.UUID) *IncidentRoleAssignmentUpdate {
+	_u.mutation.SetIncidentID(v)
+	return _u
 }
 
 // SetNillableIncidentID sets the "incident_id" field if the given value is not nil.
-func (irau *IncidentRoleAssignmentUpdate) SetNillableIncidentID(u *uuid.UUID) *IncidentRoleAssignmentUpdate {
-	if u != nil {
-		irau.SetIncidentID(*u)
+func (_u *IncidentRoleAssignmentUpdate) SetNillableIncidentID(v *uuid.UUID) *IncidentRoleAssignmentUpdate {
+	if v != nil {
+		_u.SetIncidentID(*v)
 	}
-	return irau
+	return _u
 }
 
 // SetUserID sets the "user_id" field.
-func (irau *IncidentRoleAssignmentUpdate) SetUserID(u uuid.UUID) *IncidentRoleAssignmentUpdate {
-	irau.mutation.SetUserID(u)
-	return irau
+func (_u *IncidentRoleAssignmentUpdate) SetUserID(v uuid.UUID) *IncidentRoleAssignmentUpdate {
+	_u.mutation.SetUserID(v)
+	return _u
 }
 
 // SetNillableUserID sets the "user_id" field if the given value is not nil.
-func (irau *IncidentRoleAssignmentUpdate) SetNillableUserID(u *uuid.UUID) *IncidentRoleAssignmentUpdate {
-	if u != nil {
-		irau.SetUserID(*u)
+func (_u *IncidentRoleAssignmentUpdate) SetNillableUserID(v *uuid.UUID) *IncidentRoleAssignmentUpdate {
+	if v != nil {
+		_u.SetUserID(*v)
 	}
-	return irau
+	return _u
 }
 
 // SetRoleID sets the "role_id" field.
-func (irau *IncidentRoleAssignmentUpdate) SetRoleID(u uuid.UUID) *IncidentRoleAssignmentUpdate {
-	irau.mutation.SetRoleID(u)
-	return irau
+func (_u *IncidentRoleAssignmentUpdate) SetRoleID(v uuid.UUID) *IncidentRoleAssignmentUpdate {
+	_u.mutation.SetRoleID(v)
+	return _u
 }
 
 // SetNillableRoleID sets the "role_id" field if the given value is not nil.
-func (irau *IncidentRoleAssignmentUpdate) SetNillableRoleID(u *uuid.UUID) *IncidentRoleAssignmentUpdate {
-	if u != nil {
-		irau.SetRoleID(*u)
+func (_u *IncidentRoleAssignmentUpdate) SetNillableRoleID(v *uuid.UUID) *IncidentRoleAssignmentUpdate {
+	if v != nil {
+		_u.SetRoleID(*v)
 	}
-	return irau
+	return _u
 }
 
 // SetIncident sets the "incident" edge to the Incident entity.
-func (irau *IncidentRoleAssignmentUpdate) SetIncident(i *Incident) *IncidentRoleAssignmentUpdate {
-	return irau.SetIncidentID(i.ID)
+func (_u *IncidentRoleAssignmentUpdate) SetIncident(v *Incident) *IncidentRoleAssignmentUpdate {
+	return _u.SetIncidentID(v.ID)
 }
 
 // SetUser sets the "user" edge to the User entity.
-func (irau *IncidentRoleAssignmentUpdate) SetUser(u *User) *IncidentRoleAssignmentUpdate {
-	return irau.SetUserID(u.ID)
+func (_u *IncidentRoleAssignmentUpdate) SetUser(v *User) *IncidentRoleAssignmentUpdate {
+	return _u.SetUserID(v.ID)
 }
 
 // SetRole sets the "role" edge to the IncidentRole entity.
-func (irau *IncidentRoleAssignmentUpdate) SetRole(i *IncidentRole) *IncidentRoleAssignmentUpdate {
-	return irau.SetRoleID(i.ID)
+func (_u *IncidentRoleAssignmentUpdate) SetRole(v *IncidentRole) *IncidentRoleAssignmentUpdate {
+	return _u.SetRoleID(v.ID)
 }
 
 // Mutation returns the IncidentRoleAssignmentMutation object of the builder.
-func (irau *IncidentRoleAssignmentUpdate) Mutation() *IncidentRoleAssignmentMutation {
-	return irau.mutation
+func (_u *IncidentRoleAssignmentUpdate) Mutation() *IncidentRoleAssignmentMutation {
+	return _u.mutation
 }
 
 // ClearIncident clears the "incident" edge to the Incident entity.
-func (irau *IncidentRoleAssignmentUpdate) ClearIncident() *IncidentRoleAssignmentUpdate {
-	irau.mutation.ClearIncident()
-	return irau
+func (_u *IncidentRoleAssignmentUpdate) ClearIncident() *IncidentRoleAssignmentUpdate {
+	_u.mutation.ClearIncident()
+	return _u
 }
 
 // ClearUser clears the "user" edge to the User entity.
-func (irau *IncidentRoleAssignmentUpdate) ClearUser() *IncidentRoleAssignmentUpdate {
-	irau.mutation.ClearUser()
-	return irau
+func (_u *IncidentRoleAssignmentUpdate) ClearUser() *IncidentRoleAssignmentUpdate {
+	_u.mutation.ClearUser()
+	return _u
 }
 
 // ClearRole clears the "role" edge to the IncidentRole entity.
-func (irau *IncidentRoleAssignmentUpdate) ClearRole() *IncidentRoleAssignmentUpdate {
-	irau.mutation.ClearRole()
-	return irau
+func (_u *IncidentRoleAssignmentUpdate) ClearRole() *IncidentRoleAssignmentUpdate {
+	_u.mutation.ClearRole()
+	return _u
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
-func (irau *IncidentRoleAssignmentUpdate) Save(ctx context.Context) (int, error) {
-	return withHooks(ctx, irau.sqlSave, irau.mutation, irau.hooks)
+func (_u *IncidentRoleAssignmentUpdate) Save(ctx context.Context) (int, error) {
+	return withHooks(ctx, _u.sqlSave, _u.mutation, _u.hooks)
 }
 
 // SaveX is like Save, but panics if an error occurs.
-func (irau *IncidentRoleAssignmentUpdate) SaveX(ctx context.Context) int {
-	affected, err := irau.Save(ctx)
+func (_u *IncidentRoleAssignmentUpdate) SaveX(ctx context.Context) int {
+	affected, err := _u.Save(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -127,54 +127,54 @@ func (irau *IncidentRoleAssignmentUpdate) SaveX(ctx context.Context) int {
 }
 
 // Exec executes the query.
-func (irau *IncidentRoleAssignmentUpdate) Exec(ctx context.Context) error {
-	_, err := irau.Save(ctx)
+func (_u *IncidentRoleAssignmentUpdate) Exec(ctx context.Context) error {
+	_, err := _u.Save(ctx)
 	return err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (irau *IncidentRoleAssignmentUpdate) ExecX(ctx context.Context) {
-	if err := irau.Exec(ctx); err != nil {
+func (_u *IncidentRoleAssignmentUpdate) ExecX(ctx context.Context) {
+	if err := _u.Exec(ctx); err != nil {
 		panic(err)
 	}
 }
 
 // check runs all checks and user-defined validators on the builder.
-func (irau *IncidentRoleAssignmentUpdate) check() error {
-	if irau.mutation.TenantCleared() && len(irau.mutation.TenantIDs()) > 0 {
+func (_u *IncidentRoleAssignmentUpdate) check() error {
+	if _u.mutation.TenantCleared() && len(_u.mutation.TenantIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "IncidentRoleAssignment.tenant"`)
 	}
-	if irau.mutation.IncidentCleared() && len(irau.mutation.IncidentIDs()) > 0 {
+	if _u.mutation.IncidentCleared() && len(_u.mutation.IncidentIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "IncidentRoleAssignment.incident"`)
 	}
-	if irau.mutation.UserCleared() && len(irau.mutation.UserIDs()) > 0 {
+	if _u.mutation.UserCleared() && len(_u.mutation.UserIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "IncidentRoleAssignment.user"`)
 	}
-	if irau.mutation.RoleCleared() && len(irau.mutation.RoleIDs()) > 0 {
+	if _u.mutation.RoleCleared() && len(_u.mutation.RoleIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "IncidentRoleAssignment.role"`)
 	}
 	return nil
 }
 
 // Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
-func (irau *IncidentRoleAssignmentUpdate) Modify(modifiers ...func(u *sql.UpdateBuilder)) *IncidentRoleAssignmentUpdate {
-	irau.modifiers = append(irau.modifiers, modifiers...)
-	return irau
+func (_u *IncidentRoleAssignmentUpdate) Modify(modifiers ...func(u *sql.UpdateBuilder)) *IncidentRoleAssignmentUpdate {
+	_u.modifiers = append(_u.modifiers, modifiers...)
+	return _u
 }
 
-func (irau *IncidentRoleAssignmentUpdate) sqlSave(ctx context.Context) (n int, err error) {
-	if err := irau.check(); err != nil {
-		return n, err
+func (_u *IncidentRoleAssignmentUpdate) sqlSave(ctx context.Context) (_node int, err error) {
+	if err := _u.check(); err != nil {
+		return _node, err
 	}
 	_spec := sqlgraph.NewUpdateSpec(incidentroleassignment.Table, incidentroleassignment.Columns, sqlgraph.NewFieldSpec(incidentroleassignment.FieldID, field.TypeUUID))
-	if ps := irau.mutation.predicates; len(ps) > 0 {
+	if ps := _u.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {
 				ps[i](selector)
 			}
 		}
 	}
-	if irau.mutation.IncidentCleared() {
+	if _u.mutation.IncidentCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
@@ -187,7 +187,7 @@ func (irau *IncidentRoleAssignmentUpdate) sqlSave(ctx context.Context) (n int, e
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := irau.mutation.IncidentIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.IncidentIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
@@ -203,7 +203,7 @@ func (irau *IncidentRoleAssignmentUpdate) sqlSave(ctx context.Context) (n int, e
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if irau.mutation.UserCleared() {
+	if _u.mutation.UserCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
@@ -216,7 +216,7 @@ func (irau *IncidentRoleAssignmentUpdate) sqlSave(ctx context.Context) (n int, e
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := irau.mutation.UserIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.UserIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
@@ -232,7 +232,7 @@ func (irau *IncidentRoleAssignmentUpdate) sqlSave(ctx context.Context) (n int, e
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if irau.mutation.RoleCleared() {
+	if _u.mutation.RoleCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
@@ -245,7 +245,7 @@ func (irau *IncidentRoleAssignmentUpdate) sqlSave(ctx context.Context) (n int, e
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := irau.mutation.RoleIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.RoleIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
@@ -261,8 +261,8 @@ func (irau *IncidentRoleAssignmentUpdate) sqlSave(ctx context.Context) (n int, e
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	_spec.AddModifiers(irau.modifiers...)
-	if n, err = sqlgraph.UpdateNodes(ctx, irau.driver, _spec); err != nil {
+	_spec.AddModifiers(_u.modifiers...)
+	if _node, err = sqlgraph.UpdateNodes(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{incidentroleassignment.Label}
 		} else if sqlgraph.IsConstraintError(err) {
@@ -270,8 +270,8 @@ func (irau *IncidentRoleAssignmentUpdate) sqlSave(ctx context.Context) (n int, e
 		}
 		return 0, err
 	}
-	irau.mutation.done = true
-	return n, nil
+	_u.mutation.done = true
+	return _node, nil
 }
 
 // IncidentRoleAssignmentUpdateOne is the builder for updating a single IncidentRoleAssignment entity.
@@ -284,106 +284,106 @@ type IncidentRoleAssignmentUpdateOne struct {
 }
 
 // SetIncidentID sets the "incident_id" field.
-func (irauo *IncidentRoleAssignmentUpdateOne) SetIncidentID(u uuid.UUID) *IncidentRoleAssignmentUpdateOne {
-	irauo.mutation.SetIncidentID(u)
-	return irauo
+func (_u *IncidentRoleAssignmentUpdateOne) SetIncidentID(v uuid.UUID) *IncidentRoleAssignmentUpdateOne {
+	_u.mutation.SetIncidentID(v)
+	return _u
 }
 
 // SetNillableIncidentID sets the "incident_id" field if the given value is not nil.
-func (irauo *IncidentRoleAssignmentUpdateOne) SetNillableIncidentID(u *uuid.UUID) *IncidentRoleAssignmentUpdateOne {
-	if u != nil {
-		irauo.SetIncidentID(*u)
+func (_u *IncidentRoleAssignmentUpdateOne) SetNillableIncidentID(v *uuid.UUID) *IncidentRoleAssignmentUpdateOne {
+	if v != nil {
+		_u.SetIncidentID(*v)
 	}
-	return irauo
+	return _u
 }
 
 // SetUserID sets the "user_id" field.
-func (irauo *IncidentRoleAssignmentUpdateOne) SetUserID(u uuid.UUID) *IncidentRoleAssignmentUpdateOne {
-	irauo.mutation.SetUserID(u)
-	return irauo
+func (_u *IncidentRoleAssignmentUpdateOne) SetUserID(v uuid.UUID) *IncidentRoleAssignmentUpdateOne {
+	_u.mutation.SetUserID(v)
+	return _u
 }
 
 // SetNillableUserID sets the "user_id" field if the given value is not nil.
-func (irauo *IncidentRoleAssignmentUpdateOne) SetNillableUserID(u *uuid.UUID) *IncidentRoleAssignmentUpdateOne {
-	if u != nil {
-		irauo.SetUserID(*u)
+func (_u *IncidentRoleAssignmentUpdateOne) SetNillableUserID(v *uuid.UUID) *IncidentRoleAssignmentUpdateOne {
+	if v != nil {
+		_u.SetUserID(*v)
 	}
-	return irauo
+	return _u
 }
 
 // SetRoleID sets the "role_id" field.
-func (irauo *IncidentRoleAssignmentUpdateOne) SetRoleID(u uuid.UUID) *IncidentRoleAssignmentUpdateOne {
-	irauo.mutation.SetRoleID(u)
-	return irauo
+func (_u *IncidentRoleAssignmentUpdateOne) SetRoleID(v uuid.UUID) *IncidentRoleAssignmentUpdateOne {
+	_u.mutation.SetRoleID(v)
+	return _u
 }
 
 // SetNillableRoleID sets the "role_id" field if the given value is not nil.
-func (irauo *IncidentRoleAssignmentUpdateOne) SetNillableRoleID(u *uuid.UUID) *IncidentRoleAssignmentUpdateOne {
-	if u != nil {
-		irauo.SetRoleID(*u)
+func (_u *IncidentRoleAssignmentUpdateOne) SetNillableRoleID(v *uuid.UUID) *IncidentRoleAssignmentUpdateOne {
+	if v != nil {
+		_u.SetRoleID(*v)
 	}
-	return irauo
+	return _u
 }
 
 // SetIncident sets the "incident" edge to the Incident entity.
-func (irauo *IncidentRoleAssignmentUpdateOne) SetIncident(i *Incident) *IncidentRoleAssignmentUpdateOne {
-	return irauo.SetIncidentID(i.ID)
+func (_u *IncidentRoleAssignmentUpdateOne) SetIncident(v *Incident) *IncidentRoleAssignmentUpdateOne {
+	return _u.SetIncidentID(v.ID)
 }
 
 // SetUser sets the "user" edge to the User entity.
-func (irauo *IncidentRoleAssignmentUpdateOne) SetUser(u *User) *IncidentRoleAssignmentUpdateOne {
-	return irauo.SetUserID(u.ID)
+func (_u *IncidentRoleAssignmentUpdateOne) SetUser(v *User) *IncidentRoleAssignmentUpdateOne {
+	return _u.SetUserID(v.ID)
 }
 
 // SetRole sets the "role" edge to the IncidentRole entity.
-func (irauo *IncidentRoleAssignmentUpdateOne) SetRole(i *IncidentRole) *IncidentRoleAssignmentUpdateOne {
-	return irauo.SetRoleID(i.ID)
+func (_u *IncidentRoleAssignmentUpdateOne) SetRole(v *IncidentRole) *IncidentRoleAssignmentUpdateOne {
+	return _u.SetRoleID(v.ID)
 }
 
 // Mutation returns the IncidentRoleAssignmentMutation object of the builder.
-func (irauo *IncidentRoleAssignmentUpdateOne) Mutation() *IncidentRoleAssignmentMutation {
-	return irauo.mutation
+func (_u *IncidentRoleAssignmentUpdateOne) Mutation() *IncidentRoleAssignmentMutation {
+	return _u.mutation
 }
 
 // ClearIncident clears the "incident" edge to the Incident entity.
-func (irauo *IncidentRoleAssignmentUpdateOne) ClearIncident() *IncidentRoleAssignmentUpdateOne {
-	irauo.mutation.ClearIncident()
-	return irauo
+func (_u *IncidentRoleAssignmentUpdateOne) ClearIncident() *IncidentRoleAssignmentUpdateOne {
+	_u.mutation.ClearIncident()
+	return _u
 }
 
 // ClearUser clears the "user" edge to the User entity.
-func (irauo *IncidentRoleAssignmentUpdateOne) ClearUser() *IncidentRoleAssignmentUpdateOne {
-	irauo.mutation.ClearUser()
-	return irauo
+func (_u *IncidentRoleAssignmentUpdateOne) ClearUser() *IncidentRoleAssignmentUpdateOne {
+	_u.mutation.ClearUser()
+	return _u
 }
 
 // ClearRole clears the "role" edge to the IncidentRole entity.
-func (irauo *IncidentRoleAssignmentUpdateOne) ClearRole() *IncidentRoleAssignmentUpdateOne {
-	irauo.mutation.ClearRole()
-	return irauo
+func (_u *IncidentRoleAssignmentUpdateOne) ClearRole() *IncidentRoleAssignmentUpdateOne {
+	_u.mutation.ClearRole()
+	return _u
 }
 
 // Where appends a list predicates to the IncidentRoleAssignmentUpdate builder.
-func (irauo *IncidentRoleAssignmentUpdateOne) Where(ps ...predicate.IncidentRoleAssignment) *IncidentRoleAssignmentUpdateOne {
-	irauo.mutation.Where(ps...)
-	return irauo
+func (_u *IncidentRoleAssignmentUpdateOne) Where(ps ...predicate.IncidentRoleAssignment) *IncidentRoleAssignmentUpdateOne {
+	_u.mutation.Where(ps...)
+	return _u
 }
 
 // Select allows selecting one or more fields (columns) of the returned entity.
 // The default is selecting all fields defined in the entity schema.
-func (irauo *IncidentRoleAssignmentUpdateOne) Select(field string, fields ...string) *IncidentRoleAssignmentUpdateOne {
-	irauo.fields = append([]string{field}, fields...)
-	return irauo
+func (_u *IncidentRoleAssignmentUpdateOne) Select(field string, fields ...string) *IncidentRoleAssignmentUpdateOne {
+	_u.fields = append([]string{field}, fields...)
+	return _u
 }
 
 // Save executes the query and returns the updated IncidentRoleAssignment entity.
-func (irauo *IncidentRoleAssignmentUpdateOne) Save(ctx context.Context) (*IncidentRoleAssignment, error) {
-	return withHooks(ctx, irauo.sqlSave, irauo.mutation, irauo.hooks)
+func (_u *IncidentRoleAssignmentUpdateOne) Save(ctx context.Context) (*IncidentRoleAssignment, error) {
+	return withHooks(ctx, _u.sqlSave, _u.mutation, _u.hooks)
 }
 
 // SaveX is like Save, but panics if an error occurs.
-func (irauo *IncidentRoleAssignmentUpdateOne) SaveX(ctx context.Context) *IncidentRoleAssignment {
-	node, err := irauo.Save(ctx)
+func (_u *IncidentRoleAssignmentUpdateOne) SaveX(ctx context.Context) *IncidentRoleAssignment {
+	node, err := _u.Save(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -391,52 +391,52 @@ func (irauo *IncidentRoleAssignmentUpdateOne) SaveX(ctx context.Context) *Incide
 }
 
 // Exec executes the query on the entity.
-func (irauo *IncidentRoleAssignmentUpdateOne) Exec(ctx context.Context) error {
-	_, err := irauo.Save(ctx)
+func (_u *IncidentRoleAssignmentUpdateOne) Exec(ctx context.Context) error {
+	_, err := _u.Save(ctx)
 	return err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (irauo *IncidentRoleAssignmentUpdateOne) ExecX(ctx context.Context) {
-	if err := irauo.Exec(ctx); err != nil {
+func (_u *IncidentRoleAssignmentUpdateOne) ExecX(ctx context.Context) {
+	if err := _u.Exec(ctx); err != nil {
 		panic(err)
 	}
 }
 
 // check runs all checks and user-defined validators on the builder.
-func (irauo *IncidentRoleAssignmentUpdateOne) check() error {
-	if irauo.mutation.TenantCleared() && len(irauo.mutation.TenantIDs()) > 0 {
+func (_u *IncidentRoleAssignmentUpdateOne) check() error {
+	if _u.mutation.TenantCleared() && len(_u.mutation.TenantIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "IncidentRoleAssignment.tenant"`)
 	}
-	if irauo.mutation.IncidentCleared() && len(irauo.mutation.IncidentIDs()) > 0 {
+	if _u.mutation.IncidentCleared() && len(_u.mutation.IncidentIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "IncidentRoleAssignment.incident"`)
 	}
-	if irauo.mutation.UserCleared() && len(irauo.mutation.UserIDs()) > 0 {
+	if _u.mutation.UserCleared() && len(_u.mutation.UserIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "IncidentRoleAssignment.user"`)
 	}
-	if irauo.mutation.RoleCleared() && len(irauo.mutation.RoleIDs()) > 0 {
+	if _u.mutation.RoleCleared() && len(_u.mutation.RoleIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "IncidentRoleAssignment.role"`)
 	}
 	return nil
 }
 
 // Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
-func (irauo *IncidentRoleAssignmentUpdateOne) Modify(modifiers ...func(u *sql.UpdateBuilder)) *IncidentRoleAssignmentUpdateOne {
-	irauo.modifiers = append(irauo.modifiers, modifiers...)
-	return irauo
+func (_u *IncidentRoleAssignmentUpdateOne) Modify(modifiers ...func(u *sql.UpdateBuilder)) *IncidentRoleAssignmentUpdateOne {
+	_u.modifiers = append(_u.modifiers, modifiers...)
+	return _u
 }
 
-func (irauo *IncidentRoleAssignmentUpdateOne) sqlSave(ctx context.Context) (_node *IncidentRoleAssignment, err error) {
-	if err := irauo.check(); err != nil {
+func (_u *IncidentRoleAssignmentUpdateOne) sqlSave(ctx context.Context) (_node *IncidentRoleAssignment, err error) {
+	if err := _u.check(); err != nil {
 		return _node, err
 	}
 	_spec := sqlgraph.NewUpdateSpec(incidentroleassignment.Table, incidentroleassignment.Columns, sqlgraph.NewFieldSpec(incidentroleassignment.FieldID, field.TypeUUID))
-	id, ok := irauo.mutation.ID()
+	id, ok := _u.mutation.ID()
 	if !ok {
 		return nil, &ValidationError{Name: "id", err: errors.New(`ent: missing "IncidentRoleAssignment.id" for update`)}
 	}
 	_spec.Node.ID.Value = id
-	if fields := irauo.fields; len(fields) > 0 {
+	if fields := _u.fields; len(fields) > 0 {
 		_spec.Node.Columns = make([]string, 0, len(fields))
 		_spec.Node.Columns = append(_spec.Node.Columns, incidentroleassignment.FieldID)
 		for _, f := range fields {
@@ -448,14 +448,14 @@ func (irauo *IncidentRoleAssignmentUpdateOne) sqlSave(ctx context.Context) (_nod
 			}
 		}
 	}
-	if ps := irauo.mutation.predicates; len(ps) > 0 {
+	if ps := _u.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {
 				ps[i](selector)
 			}
 		}
 	}
-	if irauo.mutation.IncidentCleared() {
+	if _u.mutation.IncidentCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
@@ -468,7 +468,7 @@ func (irauo *IncidentRoleAssignmentUpdateOne) sqlSave(ctx context.Context) (_nod
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := irauo.mutation.IncidentIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.IncidentIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
@@ -484,7 +484,7 @@ func (irauo *IncidentRoleAssignmentUpdateOne) sqlSave(ctx context.Context) (_nod
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if irauo.mutation.UserCleared() {
+	if _u.mutation.UserCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
@@ -497,7 +497,7 @@ func (irauo *IncidentRoleAssignmentUpdateOne) sqlSave(ctx context.Context) (_nod
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := irauo.mutation.UserIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.UserIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
@@ -513,7 +513,7 @@ func (irauo *IncidentRoleAssignmentUpdateOne) sqlSave(ctx context.Context) (_nod
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if irauo.mutation.RoleCleared() {
+	if _u.mutation.RoleCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
@@ -526,7 +526,7 @@ func (irauo *IncidentRoleAssignmentUpdateOne) sqlSave(ctx context.Context) (_nod
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := irauo.mutation.RoleIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.RoleIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
@@ -542,11 +542,11 @@ func (irauo *IncidentRoleAssignmentUpdateOne) sqlSave(ctx context.Context) (_nod
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	_spec.AddModifiers(irauo.modifiers...)
-	_node = &IncidentRoleAssignment{config: irauo.config}
+	_spec.AddModifiers(_u.modifiers...)
+	_node = &IncidentRoleAssignment{config: _u.config}
 	_spec.Assign = _node.assignValues
 	_spec.ScanValues = _node.scanValues
-	if err = sqlgraph.UpdateNode(ctx, irauo.driver, _spec); err != nil {
+	if err = sqlgraph.UpdateNode(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{incidentroleassignment.Label}
 		} else if sqlgraph.IsConstraintError(err) {
@@ -554,6 +554,6 @@ func (irauo *IncidentRoleAssignmentUpdateOne) sqlSave(ctx context.Context) (_nod
 		}
 		return nil, err
 	}
-	irauo.mutation.done = true
+	_u.mutation.done = true
 	return _node, nil
 }

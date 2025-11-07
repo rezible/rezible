@@ -111,7 +111,7 @@ func (*SystemAnalysisComponent) scanValues(columns []string) ([]any, error) {
 
 // assignValues assigns the values that were returned from sql.Rows (after scanning)
 // to the SystemAnalysisComponent fields.
-func (sac *SystemAnalysisComponent) assignValues(columns []string, values []any) error {
+func (_m *SystemAnalysisComponent) assignValues(columns []string, values []any) error {
 	if m, n := len(values), len(columns); m < n {
 		return fmt.Errorf("mismatch number of scan values: %d != %d", m, n)
 	}
@@ -121,52 +121,52 @@ func (sac *SystemAnalysisComponent) assignValues(columns []string, values []any)
 			if value, ok := values[i].(*uuid.UUID); !ok {
 				return fmt.Errorf("unexpected type %T for field id", values[i])
 			} else if value != nil {
-				sac.ID = *value
+				_m.ID = *value
 			}
 		case systemanalysiscomponent.FieldTenantID:
 			if value, ok := values[i].(*sql.NullInt64); !ok {
 				return fmt.Errorf("unexpected type %T for field tenant_id", values[i])
 			} else if value.Valid {
-				sac.TenantID = int(value.Int64)
+				_m.TenantID = int(value.Int64)
 			}
 		case systemanalysiscomponent.FieldAnalysisID:
 			if value, ok := values[i].(*uuid.UUID); !ok {
 				return fmt.Errorf("unexpected type %T for field analysis_id", values[i])
 			} else if value != nil {
-				sac.AnalysisID = *value
+				_m.AnalysisID = *value
 			}
 		case systemanalysiscomponent.FieldComponentID:
 			if value, ok := values[i].(*uuid.UUID); !ok {
 				return fmt.Errorf("unexpected type %T for field component_id", values[i])
 			} else if value != nil {
-				sac.ComponentID = *value
+				_m.ComponentID = *value
 			}
 		case systemanalysiscomponent.FieldDescription:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field description", values[i])
 			} else if value.Valid {
-				sac.Description = value.String
+				_m.Description = value.String
 			}
 		case systemanalysiscomponent.FieldPosX:
 			if value, ok := values[i].(*sql.NullFloat64); !ok {
 				return fmt.Errorf("unexpected type %T for field pos_x", values[i])
 			} else if value.Valid {
-				sac.PosX = value.Float64
+				_m.PosX = value.Float64
 			}
 		case systemanalysiscomponent.FieldPosY:
 			if value, ok := values[i].(*sql.NullFloat64); !ok {
 				return fmt.Errorf("unexpected type %T for field pos_y", values[i])
 			} else if value.Valid {
-				sac.PosY = value.Float64
+				_m.PosY = value.Float64
 			}
 		case systemanalysiscomponent.FieldCreatedAt:
 			if value, ok := values[i].(*sql.NullTime); !ok {
 				return fmt.Errorf("unexpected type %T for field created_at", values[i])
 			} else if value.Valid {
-				sac.CreatedAt = value.Time
+				_m.CreatedAt = value.Time
 			}
 		default:
-			sac.selectValues.Set(columns[i], values[i])
+			_m.selectValues.Set(columns[i], values[i])
 		}
 	}
 	return nil
@@ -174,68 +174,68 @@ func (sac *SystemAnalysisComponent) assignValues(columns []string, values []any)
 
 // Value returns the ent.Value that was dynamically selected and assigned to the SystemAnalysisComponent.
 // This includes values selected through modifiers, order, etc.
-func (sac *SystemAnalysisComponent) Value(name string) (ent.Value, error) {
-	return sac.selectValues.Get(name)
+func (_m *SystemAnalysisComponent) Value(name string) (ent.Value, error) {
+	return _m.selectValues.Get(name)
 }
 
 // QueryTenant queries the "tenant" edge of the SystemAnalysisComponent entity.
-func (sac *SystemAnalysisComponent) QueryTenant() *TenantQuery {
-	return NewSystemAnalysisComponentClient(sac.config).QueryTenant(sac)
+func (_m *SystemAnalysisComponent) QueryTenant() *TenantQuery {
+	return NewSystemAnalysisComponentClient(_m.config).QueryTenant(_m)
 }
 
 // QueryAnalysis queries the "analysis" edge of the SystemAnalysisComponent entity.
-func (sac *SystemAnalysisComponent) QueryAnalysis() *SystemAnalysisQuery {
-	return NewSystemAnalysisComponentClient(sac.config).QueryAnalysis(sac)
+func (_m *SystemAnalysisComponent) QueryAnalysis() *SystemAnalysisQuery {
+	return NewSystemAnalysisComponentClient(_m.config).QueryAnalysis(_m)
 }
 
 // QueryComponent queries the "component" edge of the SystemAnalysisComponent entity.
-func (sac *SystemAnalysisComponent) QueryComponent() *SystemComponentQuery {
-	return NewSystemAnalysisComponentClient(sac.config).QueryComponent(sac)
+func (_m *SystemAnalysisComponent) QueryComponent() *SystemComponentQuery {
+	return NewSystemAnalysisComponentClient(_m.config).QueryComponent(_m)
 }
 
 // Update returns a builder for updating this SystemAnalysisComponent.
 // Note that you need to call SystemAnalysisComponent.Unwrap() before calling this method if this SystemAnalysisComponent
 // was returned from a transaction, and the transaction was committed or rolled back.
-func (sac *SystemAnalysisComponent) Update() *SystemAnalysisComponentUpdateOne {
-	return NewSystemAnalysisComponentClient(sac.config).UpdateOne(sac)
+func (_m *SystemAnalysisComponent) Update() *SystemAnalysisComponentUpdateOne {
+	return NewSystemAnalysisComponentClient(_m.config).UpdateOne(_m)
 }
 
 // Unwrap unwraps the SystemAnalysisComponent entity that was returned from a transaction after it was closed,
 // so that all future queries will be executed through the driver which created the transaction.
-func (sac *SystemAnalysisComponent) Unwrap() *SystemAnalysisComponent {
-	_tx, ok := sac.config.driver.(*txDriver)
+func (_m *SystemAnalysisComponent) Unwrap() *SystemAnalysisComponent {
+	_tx, ok := _m.config.driver.(*txDriver)
 	if !ok {
 		panic("ent: SystemAnalysisComponent is not a transactional entity")
 	}
-	sac.config.driver = _tx.drv
-	return sac
+	_m.config.driver = _tx.drv
+	return _m
 }
 
 // String implements the fmt.Stringer.
-func (sac *SystemAnalysisComponent) String() string {
+func (_m *SystemAnalysisComponent) String() string {
 	var builder strings.Builder
 	builder.WriteString("SystemAnalysisComponent(")
-	builder.WriteString(fmt.Sprintf("id=%v, ", sac.ID))
+	builder.WriteString(fmt.Sprintf("id=%v, ", _m.ID))
 	builder.WriteString("tenant_id=")
-	builder.WriteString(fmt.Sprintf("%v", sac.TenantID))
+	builder.WriteString(fmt.Sprintf("%v", _m.TenantID))
 	builder.WriteString(", ")
 	builder.WriteString("analysis_id=")
-	builder.WriteString(fmt.Sprintf("%v", sac.AnalysisID))
+	builder.WriteString(fmt.Sprintf("%v", _m.AnalysisID))
 	builder.WriteString(", ")
 	builder.WriteString("component_id=")
-	builder.WriteString(fmt.Sprintf("%v", sac.ComponentID))
+	builder.WriteString(fmt.Sprintf("%v", _m.ComponentID))
 	builder.WriteString(", ")
 	builder.WriteString("description=")
-	builder.WriteString(sac.Description)
+	builder.WriteString(_m.Description)
 	builder.WriteString(", ")
 	builder.WriteString("pos_x=")
-	builder.WriteString(fmt.Sprintf("%v", sac.PosX))
+	builder.WriteString(fmt.Sprintf("%v", _m.PosX))
 	builder.WriteString(", ")
 	builder.WriteString("pos_y=")
-	builder.WriteString(fmt.Sprintf("%v", sac.PosY))
+	builder.WriteString(fmt.Sprintf("%v", _m.PosY))
 	builder.WriteString(", ")
 	builder.WriteString("created_at=")
-	builder.WriteString(sac.CreatedAt.Format(time.ANSIC))
+	builder.WriteString(_m.CreatedAt.Format(time.ANSIC))
 	builder.WriteByte(')')
 	return builder.String()
 }

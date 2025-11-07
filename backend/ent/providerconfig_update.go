@@ -24,86 +24,86 @@ type ProviderConfigUpdate struct {
 }
 
 // Where appends a list predicates to the ProviderConfigUpdate builder.
-func (pcu *ProviderConfigUpdate) Where(ps ...predicate.ProviderConfig) *ProviderConfigUpdate {
-	pcu.mutation.Where(ps...)
-	return pcu
+func (_u *ProviderConfigUpdate) Where(ps ...predicate.ProviderConfig) *ProviderConfigUpdate {
+	_u.mutation.Where(ps...)
+	return _u
 }
 
 // SetProviderType sets the "provider_type" field.
-func (pcu *ProviderConfigUpdate) SetProviderType(pt providerconfig.ProviderType) *ProviderConfigUpdate {
-	pcu.mutation.SetProviderType(pt)
-	return pcu
+func (_u *ProviderConfigUpdate) SetProviderType(v providerconfig.ProviderType) *ProviderConfigUpdate {
+	_u.mutation.SetProviderType(v)
+	return _u
 }
 
 // SetNillableProviderType sets the "provider_type" field if the given value is not nil.
-func (pcu *ProviderConfigUpdate) SetNillableProviderType(pt *providerconfig.ProviderType) *ProviderConfigUpdate {
-	if pt != nil {
-		pcu.SetProviderType(*pt)
+func (_u *ProviderConfigUpdate) SetNillableProviderType(v *providerconfig.ProviderType) *ProviderConfigUpdate {
+	if v != nil {
+		_u.SetProviderType(*v)
 	}
-	return pcu
+	return _u
 }
 
 // SetProviderID sets the "provider_id" field.
-func (pcu *ProviderConfigUpdate) SetProviderID(s string) *ProviderConfigUpdate {
-	pcu.mutation.SetProviderID(s)
-	return pcu
+func (_u *ProviderConfigUpdate) SetProviderID(v string) *ProviderConfigUpdate {
+	_u.mutation.SetProviderID(v)
+	return _u
 }
 
 // SetNillableProviderID sets the "provider_id" field if the given value is not nil.
-func (pcu *ProviderConfigUpdate) SetNillableProviderID(s *string) *ProviderConfigUpdate {
-	if s != nil {
-		pcu.SetProviderID(*s)
+func (_u *ProviderConfigUpdate) SetNillableProviderID(v *string) *ProviderConfigUpdate {
+	if v != nil {
+		_u.SetProviderID(*v)
 	}
-	return pcu
+	return _u
 }
 
 // SetConfig sets the "config" field.
-func (pcu *ProviderConfigUpdate) SetConfig(b []byte) *ProviderConfigUpdate {
-	pcu.mutation.SetConfig(b)
-	return pcu
+func (_u *ProviderConfigUpdate) SetConfig(v []byte) *ProviderConfigUpdate {
+	_u.mutation.SetConfig(v)
+	return _u
 }
 
 // SetEnabled sets the "enabled" field.
-func (pcu *ProviderConfigUpdate) SetEnabled(b bool) *ProviderConfigUpdate {
-	pcu.mutation.SetEnabled(b)
-	return pcu
+func (_u *ProviderConfigUpdate) SetEnabled(v bool) *ProviderConfigUpdate {
+	_u.mutation.SetEnabled(v)
+	return _u
 }
 
 // SetNillableEnabled sets the "enabled" field if the given value is not nil.
-func (pcu *ProviderConfigUpdate) SetNillableEnabled(b *bool) *ProviderConfigUpdate {
-	if b != nil {
-		pcu.SetEnabled(*b)
+func (_u *ProviderConfigUpdate) SetNillableEnabled(v *bool) *ProviderConfigUpdate {
+	if v != nil {
+		_u.SetEnabled(*v)
 	}
-	return pcu
+	return _u
 }
 
 // SetUpdatedAt sets the "updated_at" field.
-func (pcu *ProviderConfigUpdate) SetUpdatedAt(t time.Time) *ProviderConfigUpdate {
-	pcu.mutation.SetUpdatedAt(t)
-	return pcu
+func (_u *ProviderConfigUpdate) SetUpdatedAt(v time.Time) *ProviderConfigUpdate {
+	_u.mutation.SetUpdatedAt(v)
+	return _u
 }
 
 // SetNillableUpdatedAt sets the "updated_at" field if the given value is not nil.
-func (pcu *ProviderConfigUpdate) SetNillableUpdatedAt(t *time.Time) *ProviderConfigUpdate {
-	if t != nil {
-		pcu.SetUpdatedAt(*t)
+func (_u *ProviderConfigUpdate) SetNillableUpdatedAt(v *time.Time) *ProviderConfigUpdate {
+	if v != nil {
+		_u.SetUpdatedAt(*v)
 	}
-	return pcu
+	return _u
 }
 
 // Mutation returns the ProviderConfigMutation object of the builder.
-func (pcu *ProviderConfigUpdate) Mutation() *ProviderConfigMutation {
-	return pcu.mutation
+func (_u *ProviderConfigUpdate) Mutation() *ProviderConfigMutation {
+	return _u.mutation
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
-func (pcu *ProviderConfigUpdate) Save(ctx context.Context) (int, error) {
-	return withHooks(ctx, pcu.sqlSave, pcu.mutation, pcu.hooks)
+func (_u *ProviderConfigUpdate) Save(ctx context.Context) (int, error) {
+	return withHooks(ctx, _u.sqlSave, _u.mutation, _u.hooks)
 }
 
 // SaveX is like Save, but panics if an error occurs.
-func (pcu *ProviderConfigUpdate) SaveX(ctx context.Context) int {
-	affected, err := pcu.Save(ctx)
+func (_u *ProviderConfigUpdate) SaveX(ctx context.Context) int {
+	affected, err := _u.Save(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -111,66 +111,66 @@ func (pcu *ProviderConfigUpdate) SaveX(ctx context.Context) int {
 }
 
 // Exec executes the query.
-func (pcu *ProviderConfigUpdate) Exec(ctx context.Context) error {
-	_, err := pcu.Save(ctx)
+func (_u *ProviderConfigUpdate) Exec(ctx context.Context) error {
+	_, err := _u.Save(ctx)
 	return err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (pcu *ProviderConfigUpdate) ExecX(ctx context.Context) {
-	if err := pcu.Exec(ctx); err != nil {
+func (_u *ProviderConfigUpdate) ExecX(ctx context.Context) {
+	if err := _u.Exec(ctx); err != nil {
 		panic(err)
 	}
 }
 
 // check runs all checks and user-defined validators on the builder.
-func (pcu *ProviderConfigUpdate) check() error {
-	if v, ok := pcu.mutation.ProviderType(); ok {
+func (_u *ProviderConfigUpdate) check() error {
+	if v, ok := _u.mutation.ProviderType(); ok {
 		if err := providerconfig.ProviderTypeValidator(v); err != nil {
 			return &ValidationError{Name: "provider_type", err: fmt.Errorf(`ent: validator failed for field "ProviderConfig.provider_type": %w`, err)}
 		}
 	}
-	if pcu.mutation.TenantCleared() && len(pcu.mutation.TenantIDs()) > 0 {
+	if _u.mutation.TenantCleared() && len(_u.mutation.TenantIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "ProviderConfig.tenant"`)
 	}
 	return nil
 }
 
 // Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
-func (pcu *ProviderConfigUpdate) Modify(modifiers ...func(u *sql.UpdateBuilder)) *ProviderConfigUpdate {
-	pcu.modifiers = append(pcu.modifiers, modifiers...)
-	return pcu
+func (_u *ProviderConfigUpdate) Modify(modifiers ...func(u *sql.UpdateBuilder)) *ProviderConfigUpdate {
+	_u.modifiers = append(_u.modifiers, modifiers...)
+	return _u
 }
 
-func (pcu *ProviderConfigUpdate) sqlSave(ctx context.Context) (n int, err error) {
-	if err := pcu.check(); err != nil {
-		return n, err
+func (_u *ProviderConfigUpdate) sqlSave(ctx context.Context) (_node int, err error) {
+	if err := _u.check(); err != nil {
+		return _node, err
 	}
 	_spec := sqlgraph.NewUpdateSpec(providerconfig.Table, providerconfig.Columns, sqlgraph.NewFieldSpec(providerconfig.FieldID, field.TypeUUID))
-	if ps := pcu.mutation.predicates; len(ps) > 0 {
+	if ps := _u.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {
 				ps[i](selector)
 			}
 		}
 	}
-	if value, ok := pcu.mutation.ProviderType(); ok {
+	if value, ok := _u.mutation.ProviderType(); ok {
 		_spec.SetField(providerconfig.FieldProviderType, field.TypeEnum, value)
 	}
-	if value, ok := pcu.mutation.ProviderID(); ok {
+	if value, ok := _u.mutation.ProviderID(); ok {
 		_spec.SetField(providerconfig.FieldProviderID, field.TypeString, value)
 	}
-	if value, ok := pcu.mutation.Config(); ok {
+	if value, ok := _u.mutation.Config(); ok {
 		_spec.SetField(providerconfig.FieldConfig, field.TypeBytes, value)
 	}
-	if value, ok := pcu.mutation.Enabled(); ok {
+	if value, ok := _u.mutation.Enabled(); ok {
 		_spec.SetField(providerconfig.FieldEnabled, field.TypeBool, value)
 	}
-	if value, ok := pcu.mutation.UpdatedAt(); ok {
+	if value, ok := _u.mutation.UpdatedAt(); ok {
 		_spec.SetField(providerconfig.FieldUpdatedAt, field.TypeTime, value)
 	}
-	_spec.AddModifiers(pcu.modifiers...)
-	if n, err = sqlgraph.UpdateNodes(ctx, pcu.driver, _spec); err != nil {
+	_spec.AddModifiers(_u.modifiers...)
+	if _node, err = sqlgraph.UpdateNodes(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{providerconfig.Label}
 		} else if sqlgraph.IsConstraintError(err) {
@@ -178,8 +178,8 @@ func (pcu *ProviderConfigUpdate) sqlSave(ctx context.Context) (n int, err error)
 		}
 		return 0, err
 	}
-	pcu.mutation.done = true
-	return n, nil
+	_u.mutation.done = true
+	return _node, nil
 }
 
 // ProviderConfigUpdateOne is the builder for updating a single ProviderConfig entity.
@@ -192,93 +192,93 @@ type ProviderConfigUpdateOne struct {
 }
 
 // SetProviderType sets the "provider_type" field.
-func (pcuo *ProviderConfigUpdateOne) SetProviderType(pt providerconfig.ProviderType) *ProviderConfigUpdateOne {
-	pcuo.mutation.SetProviderType(pt)
-	return pcuo
+func (_u *ProviderConfigUpdateOne) SetProviderType(v providerconfig.ProviderType) *ProviderConfigUpdateOne {
+	_u.mutation.SetProviderType(v)
+	return _u
 }
 
 // SetNillableProviderType sets the "provider_type" field if the given value is not nil.
-func (pcuo *ProviderConfigUpdateOne) SetNillableProviderType(pt *providerconfig.ProviderType) *ProviderConfigUpdateOne {
-	if pt != nil {
-		pcuo.SetProviderType(*pt)
+func (_u *ProviderConfigUpdateOne) SetNillableProviderType(v *providerconfig.ProviderType) *ProviderConfigUpdateOne {
+	if v != nil {
+		_u.SetProviderType(*v)
 	}
-	return pcuo
+	return _u
 }
 
 // SetProviderID sets the "provider_id" field.
-func (pcuo *ProviderConfigUpdateOne) SetProviderID(s string) *ProviderConfigUpdateOne {
-	pcuo.mutation.SetProviderID(s)
-	return pcuo
+func (_u *ProviderConfigUpdateOne) SetProviderID(v string) *ProviderConfigUpdateOne {
+	_u.mutation.SetProviderID(v)
+	return _u
 }
 
 // SetNillableProviderID sets the "provider_id" field if the given value is not nil.
-func (pcuo *ProviderConfigUpdateOne) SetNillableProviderID(s *string) *ProviderConfigUpdateOne {
-	if s != nil {
-		pcuo.SetProviderID(*s)
+func (_u *ProviderConfigUpdateOne) SetNillableProviderID(v *string) *ProviderConfigUpdateOne {
+	if v != nil {
+		_u.SetProviderID(*v)
 	}
-	return pcuo
+	return _u
 }
 
 // SetConfig sets the "config" field.
-func (pcuo *ProviderConfigUpdateOne) SetConfig(b []byte) *ProviderConfigUpdateOne {
-	pcuo.mutation.SetConfig(b)
-	return pcuo
+func (_u *ProviderConfigUpdateOne) SetConfig(v []byte) *ProviderConfigUpdateOne {
+	_u.mutation.SetConfig(v)
+	return _u
 }
 
 // SetEnabled sets the "enabled" field.
-func (pcuo *ProviderConfigUpdateOne) SetEnabled(b bool) *ProviderConfigUpdateOne {
-	pcuo.mutation.SetEnabled(b)
-	return pcuo
+func (_u *ProviderConfigUpdateOne) SetEnabled(v bool) *ProviderConfigUpdateOne {
+	_u.mutation.SetEnabled(v)
+	return _u
 }
 
 // SetNillableEnabled sets the "enabled" field if the given value is not nil.
-func (pcuo *ProviderConfigUpdateOne) SetNillableEnabled(b *bool) *ProviderConfigUpdateOne {
-	if b != nil {
-		pcuo.SetEnabled(*b)
+func (_u *ProviderConfigUpdateOne) SetNillableEnabled(v *bool) *ProviderConfigUpdateOne {
+	if v != nil {
+		_u.SetEnabled(*v)
 	}
-	return pcuo
+	return _u
 }
 
 // SetUpdatedAt sets the "updated_at" field.
-func (pcuo *ProviderConfigUpdateOne) SetUpdatedAt(t time.Time) *ProviderConfigUpdateOne {
-	pcuo.mutation.SetUpdatedAt(t)
-	return pcuo
+func (_u *ProviderConfigUpdateOne) SetUpdatedAt(v time.Time) *ProviderConfigUpdateOne {
+	_u.mutation.SetUpdatedAt(v)
+	return _u
 }
 
 // SetNillableUpdatedAt sets the "updated_at" field if the given value is not nil.
-func (pcuo *ProviderConfigUpdateOne) SetNillableUpdatedAt(t *time.Time) *ProviderConfigUpdateOne {
-	if t != nil {
-		pcuo.SetUpdatedAt(*t)
+func (_u *ProviderConfigUpdateOne) SetNillableUpdatedAt(v *time.Time) *ProviderConfigUpdateOne {
+	if v != nil {
+		_u.SetUpdatedAt(*v)
 	}
-	return pcuo
+	return _u
 }
 
 // Mutation returns the ProviderConfigMutation object of the builder.
-func (pcuo *ProviderConfigUpdateOne) Mutation() *ProviderConfigMutation {
-	return pcuo.mutation
+func (_u *ProviderConfigUpdateOne) Mutation() *ProviderConfigMutation {
+	return _u.mutation
 }
 
 // Where appends a list predicates to the ProviderConfigUpdate builder.
-func (pcuo *ProviderConfigUpdateOne) Where(ps ...predicate.ProviderConfig) *ProviderConfigUpdateOne {
-	pcuo.mutation.Where(ps...)
-	return pcuo
+func (_u *ProviderConfigUpdateOne) Where(ps ...predicate.ProviderConfig) *ProviderConfigUpdateOne {
+	_u.mutation.Where(ps...)
+	return _u
 }
 
 // Select allows selecting one or more fields (columns) of the returned entity.
 // The default is selecting all fields defined in the entity schema.
-func (pcuo *ProviderConfigUpdateOne) Select(field string, fields ...string) *ProviderConfigUpdateOne {
-	pcuo.fields = append([]string{field}, fields...)
-	return pcuo
+func (_u *ProviderConfigUpdateOne) Select(field string, fields ...string) *ProviderConfigUpdateOne {
+	_u.fields = append([]string{field}, fields...)
+	return _u
 }
 
 // Save executes the query and returns the updated ProviderConfig entity.
-func (pcuo *ProviderConfigUpdateOne) Save(ctx context.Context) (*ProviderConfig, error) {
-	return withHooks(ctx, pcuo.sqlSave, pcuo.mutation, pcuo.hooks)
+func (_u *ProviderConfigUpdateOne) Save(ctx context.Context) (*ProviderConfig, error) {
+	return withHooks(ctx, _u.sqlSave, _u.mutation, _u.hooks)
 }
 
 // SaveX is like Save, but panics if an error occurs.
-func (pcuo *ProviderConfigUpdateOne) SaveX(ctx context.Context) *ProviderConfig {
-	node, err := pcuo.Save(ctx)
+func (_u *ProviderConfigUpdateOne) SaveX(ctx context.Context) *ProviderConfig {
+	node, err := _u.Save(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -286,48 +286,48 @@ func (pcuo *ProviderConfigUpdateOne) SaveX(ctx context.Context) *ProviderConfig 
 }
 
 // Exec executes the query on the entity.
-func (pcuo *ProviderConfigUpdateOne) Exec(ctx context.Context) error {
-	_, err := pcuo.Save(ctx)
+func (_u *ProviderConfigUpdateOne) Exec(ctx context.Context) error {
+	_, err := _u.Save(ctx)
 	return err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (pcuo *ProviderConfigUpdateOne) ExecX(ctx context.Context) {
-	if err := pcuo.Exec(ctx); err != nil {
+func (_u *ProviderConfigUpdateOne) ExecX(ctx context.Context) {
+	if err := _u.Exec(ctx); err != nil {
 		panic(err)
 	}
 }
 
 // check runs all checks and user-defined validators on the builder.
-func (pcuo *ProviderConfigUpdateOne) check() error {
-	if v, ok := pcuo.mutation.ProviderType(); ok {
+func (_u *ProviderConfigUpdateOne) check() error {
+	if v, ok := _u.mutation.ProviderType(); ok {
 		if err := providerconfig.ProviderTypeValidator(v); err != nil {
 			return &ValidationError{Name: "provider_type", err: fmt.Errorf(`ent: validator failed for field "ProviderConfig.provider_type": %w`, err)}
 		}
 	}
-	if pcuo.mutation.TenantCleared() && len(pcuo.mutation.TenantIDs()) > 0 {
+	if _u.mutation.TenantCleared() && len(_u.mutation.TenantIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "ProviderConfig.tenant"`)
 	}
 	return nil
 }
 
 // Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
-func (pcuo *ProviderConfigUpdateOne) Modify(modifiers ...func(u *sql.UpdateBuilder)) *ProviderConfigUpdateOne {
-	pcuo.modifiers = append(pcuo.modifiers, modifiers...)
-	return pcuo
+func (_u *ProviderConfigUpdateOne) Modify(modifiers ...func(u *sql.UpdateBuilder)) *ProviderConfigUpdateOne {
+	_u.modifiers = append(_u.modifiers, modifiers...)
+	return _u
 }
 
-func (pcuo *ProviderConfigUpdateOne) sqlSave(ctx context.Context) (_node *ProviderConfig, err error) {
-	if err := pcuo.check(); err != nil {
+func (_u *ProviderConfigUpdateOne) sqlSave(ctx context.Context) (_node *ProviderConfig, err error) {
+	if err := _u.check(); err != nil {
 		return _node, err
 	}
 	_spec := sqlgraph.NewUpdateSpec(providerconfig.Table, providerconfig.Columns, sqlgraph.NewFieldSpec(providerconfig.FieldID, field.TypeUUID))
-	id, ok := pcuo.mutation.ID()
+	id, ok := _u.mutation.ID()
 	if !ok {
 		return nil, &ValidationError{Name: "id", err: errors.New(`ent: missing "ProviderConfig.id" for update`)}
 	}
 	_spec.Node.ID.Value = id
-	if fields := pcuo.fields; len(fields) > 0 {
+	if fields := _u.fields; len(fields) > 0 {
 		_spec.Node.Columns = make([]string, 0, len(fields))
 		_spec.Node.Columns = append(_spec.Node.Columns, providerconfig.FieldID)
 		for _, f := range fields {
@@ -339,33 +339,33 @@ func (pcuo *ProviderConfigUpdateOne) sqlSave(ctx context.Context) (_node *Provid
 			}
 		}
 	}
-	if ps := pcuo.mutation.predicates; len(ps) > 0 {
+	if ps := _u.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {
 				ps[i](selector)
 			}
 		}
 	}
-	if value, ok := pcuo.mutation.ProviderType(); ok {
+	if value, ok := _u.mutation.ProviderType(); ok {
 		_spec.SetField(providerconfig.FieldProviderType, field.TypeEnum, value)
 	}
-	if value, ok := pcuo.mutation.ProviderID(); ok {
+	if value, ok := _u.mutation.ProviderID(); ok {
 		_spec.SetField(providerconfig.FieldProviderID, field.TypeString, value)
 	}
-	if value, ok := pcuo.mutation.Config(); ok {
+	if value, ok := _u.mutation.Config(); ok {
 		_spec.SetField(providerconfig.FieldConfig, field.TypeBytes, value)
 	}
-	if value, ok := pcuo.mutation.Enabled(); ok {
+	if value, ok := _u.mutation.Enabled(); ok {
 		_spec.SetField(providerconfig.FieldEnabled, field.TypeBool, value)
 	}
-	if value, ok := pcuo.mutation.UpdatedAt(); ok {
+	if value, ok := _u.mutation.UpdatedAt(); ok {
 		_spec.SetField(providerconfig.FieldUpdatedAt, field.TypeTime, value)
 	}
-	_spec.AddModifiers(pcuo.modifiers...)
-	_node = &ProviderConfig{config: pcuo.config}
+	_spec.AddModifiers(_u.modifiers...)
+	_node = &ProviderConfig{config: _u.config}
 	_spec.Assign = _node.assignValues
 	_spec.ScanValues = _node.scanValues
-	if err = sqlgraph.UpdateNode(ctx, pcuo.driver, _spec); err != nil {
+	if err = sqlgraph.UpdateNode(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{providerconfig.Label}
 		} else if sqlgraph.IsConstraintError(err) {
@@ -373,6 +373,6 @@ func (pcuo *ProviderConfigUpdateOne) sqlSave(ctx context.Context) (_node *Provid
 		}
 		return nil, err
 	}
-	pcuo.mutation.done = true
+	_u.mutation.done = true
 	return _node, nil
 }

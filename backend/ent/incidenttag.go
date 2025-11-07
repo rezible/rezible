@@ -97,7 +97,7 @@ func (*IncidentTag) scanValues(columns []string) ([]any, error) {
 
 // assignValues assigns the values that were returned from sql.Rows (after scanning)
 // to the IncidentTag fields.
-func (it *IncidentTag) assignValues(columns []string, values []any) error {
+func (_m *IncidentTag) assignValues(columns []string, values []any) error {
 	if m, n := len(values), len(columns); m < n {
 		return fmt.Errorf("mismatch number of scan values: %d != %d", m, n)
 	}
@@ -107,34 +107,34 @@ func (it *IncidentTag) assignValues(columns []string, values []any) error {
 			if value, ok := values[i].(*uuid.UUID); !ok {
 				return fmt.Errorf("unexpected type %T for field id", values[i])
 			} else if value != nil {
-				it.ID = *value
+				_m.ID = *value
 			}
 		case incidenttag.FieldTenantID:
 			if value, ok := values[i].(*sql.NullInt64); !ok {
 				return fmt.Errorf("unexpected type %T for field tenant_id", values[i])
 			} else if value.Valid {
-				it.TenantID = int(value.Int64)
+				_m.TenantID = int(value.Int64)
 			}
 		case incidenttag.FieldArchiveTime:
 			if value, ok := values[i].(*sql.NullTime); !ok {
 				return fmt.Errorf("unexpected type %T for field archive_time", values[i])
 			} else if value.Valid {
-				it.ArchiveTime = value.Time
+				_m.ArchiveTime = value.Time
 			}
 		case incidenttag.FieldKey:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field key", values[i])
 			} else if value.Valid {
-				it.Key = value.String
+				_m.Key = value.String
 			}
 		case incidenttag.FieldValue:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field value", values[i])
 			} else if value.Valid {
-				it.Value = value.String
+				_m.Value = value.String
 			}
 		default:
-			it.selectValues.Set(columns[i], values[i])
+			_m.selectValues.Set(columns[i], values[i])
 		}
 	}
 	return nil
@@ -142,59 +142,59 @@ func (it *IncidentTag) assignValues(columns []string, values []any) error {
 
 // GetValue returns the ent.Value that was dynamically selected and assigned to the IncidentTag.
 // This includes values selected through modifiers, order, etc.
-func (it *IncidentTag) GetValue(name string) (ent.Value, error) {
-	return it.selectValues.Get(name)
+func (_m *IncidentTag) GetValue(name string) (ent.Value, error) {
+	return _m.selectValues.Get(name)
 }
 
 // QueryTenant queries the "tenant" edge of the IncidentTag entity.
-func (it *IncidentTag) QueryTenant() *TenantQuery {
-	return NewIncidentTagClient(it.config).QueryTenant(it)
+func (_m *IncidentTag) QueryTenant() *TenantQuery {
+	return NewIncidentTagClient(_m.config).QueryTenant(_m)
 }
 
 // QueryIncidents queries the "incidents" edge of the IncidentTag entity.
-func (it *IncidentTag) QueryIncidents() *IncidentQuery {
-	return NewIncidentTagClient(it.config).QueryIncidents(it)
+func (_m *IncidentTag) QueryIncidents() *IncidentQuery {
+	return NewIncidentTagClient(_m.config).QueryIncidents(_m)
 }
 
 // QueryDebriefQuestions queries the "debrief_questions" edge of the IncidentTag entity.
-func (it *IncidentTag) QueryDebriefQuestions() *IncidentDebriefQuestionQuery {
-	return NewIncidentTagClient(it.config).QueryDebriefQuestions(it)
+func (_m *IncidentTag) QueryDebriefQuestions() *IncidentDebriefQuestionQuery {
+	return NewIncidentTagClient(_m.config).QueryDebriefQuestions(_m)
 }
 
 // Update returns a builder for updating this IncidentTag.
 // Note that you need to call IncidentTag.Unwrap() before calling this method if this IncidentTag
 // was returned from a transaction, and the transaction was committed or rolled back.
-func (it *IncidentTag) Update() *IncidentTagUpdateOne {
-	return NewIncidentTagClient(it.config).UpdateOne(it)
+func (_m *IncidentTag) Update() *IncidentTagUpdateOne {
+	return NewIncidentTagClient(_m.config).UpdateOne(_m)
 }
 
 // Unwrap unwraps the IncidentTag entity that was returned from a transaction after it was closed,
 // so that all future queries will be executed through the driver which created the transaction.
-func (it *IncidentTag) Unwrap() *IncidentTag {
-	_tx, ok := it.config.driver.(*txDriver)
+func (_m *IncidentTag) Unwrap() *IncidentTag {
+	_tx, ok := _m.config.driver.(*txDriver)
 	if !ok {
 		panic("ent: IncidentTag is not a transactional entity")
 	}
-	it.config.driver = _tx.drv
-	return it
+	_m.config.driver = _tx.drv
+	return _m
 }
 
 // String implements the fmt.Stringer.
-func (it *IncidentTag) String() string {
+func (_m *IncidentTag) String() string {
 	var builder strings.Builder
 	builder.WriteString("IncidentTag(")
-	builder.WriteString(fmt.Sprintf("id=%v, ", it.ID))
+	builder.WriteString(fmt.Sprintf("id=%v, ", _m.ID))
 	builder.WriteString("tenant_id=")
-	builder.WriteString(fmt.Sprintf("%v", it.TenantID))
+	builder.WriteString(fmt.Sprintf("%v", _m.TenantID))
 	builder.WriteString(", ")
 	builder.WriteString("archive_time=")
-	builder.WriteString(it.ArchiveTime.Format(time.ANSIC))
+	builder.WriteString(_m.ArchiveTime.Format(time.ANSIC))
 	builder.WriteString(", ")
 	builder.WriteString("key=")
-	builder.WriteString(it.Key)
+	builder.WriteString(_m.Key)
 	builder.WriteString(", ")
 	builder.WriteString("value=")
-	builder.WriteString(it.Value)
+	builder.WriteString(_m.Value)
 	builder.WriteByte(')')
 	return builder.String()
 }

@@ -38,44 +38,44 @@ type IncidentFieldOptionQuery struct {
 }
 
 // Where adds a new predicate for the IncidentFieldOptionQuery builder.
-func (ifoq *IncidentFieldOptionQuery) Where(ps ...predicate.IncidentFieldOption) *IncidentFieldOptionQuery {
-	ifoq.predicates = append(ifoq.predicates, ps...)
-	return ifoq
+func (_q *IncidentFieldOptionQuery) Where(ps ...predicate.IncidentFieldOption) *IncidentFieldOptionQuery {
+	_q.predicates = append(_q.predicates, ps...)
+	return _q
 }
 
 // Limit the number of records to be returned by this query.
-func (ifoq *IncidentFieldOptionQuery) Limit(limit int) *IncidentFieldOptionQuery {
-	ifoq.ctx.Limit = &limit
-	return ifoq
+func (_q *IncidentFieldOptionQuery) Limit(limit int) *IncidentFieldOptionQuery {
+	_q.ctx.Limit = &limit
+	return _q
 }
 
 // Offset to start from.
-func (ifoq *IncidentFieldOptionQuery) Offset(offset int) *IncidentFieldOptionQuery {
-	ifoq.ctx.Offset = &offset
-	return ifoq
+func (_q *IncidentFieldOptionQuery) Offset(offset int) *IncidentFieldOptionQuery {
+	_q.ctx.Offset = &offset
+	return _q
 }
 
 // Unique configures the query builder to filter duplicate records on query.
 // By default, unique is set to true, and can be disabled using this method.
-func (ifoq *IncidentFieldOptionQuery) Unique(unique bool) *IncidentFieldOptionQuery {
-	ifoq.ctx.Unique = &unique
-	return ifoq
+func (_q *IncidentFieldOptionQuery) Unique(unique bool) *IncidentFieldOptionQuery {
+	_q.ctx.Unique = &unique
+	return _q
 }
 
 // Order specifies how the records should be ordered.
-func (ifoq *IncidentFieldOptionQuery) Order(o ...incidentfieldoption.OrderOption) *IncidentFieldOptionQuery {
-	ifoq.order = append(ifoq.order, o...)
-	return ifoq
+func (_q *IncidentFieldOptionQuery) Order(o ...incidentfieldoption.OrderOption) *IncidentFieldOptionQuery {
+	_q.order = append(_q.order, o...)
+	return _q
 }
 
 // QueryTenant chains the current query on the "tenant" edge.
-func (ifoq *IncidentFieldOptionQuery) QueryTenant() *TenantQuery {
-	query := (&TenantClient{config: ifoq.config}).Query()
+func (_q *IncidentFieldOptionQuery) QueryTenant() *TenantQuery {
+	query := (&TenantClient{config: _q.config}).Query()
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
-		if err := ifoq.prepareQuery(ctx); err != nil {
+		if err := _q.prepareQuery(ctx); err != nil {
 			return nil, err
 		}
-		selector := ifoq.sqlQuery(ctx)
+		selector := _q.sqlQuery(ctx)
 		if err := selector.Err(); err != nil {
 			return nil, err
 		}
@@ -84,20 +84,20 @@ func (ifoq *IncidentFieldOptionQuery) QueryTenant() *TenantQuery {
 			sqlgraph.To(tenant.Table, tenant.FieldID),
 			sqlgraph.Edge(sqlgraph.M2O, false, incidentfieldoption.TenantTable, incidentfieldoption.TenantColumn),
 		)
-		fromU = sqlgraph.SetNeighbors(ifoq.driver.Dialect(), step)
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
 	}
 	return query
 }
 
 // QueryIncidentField chains the current query on the "incident_field" edge.
-func (ifoq *IncidentFieldOptionQuery) QueryIncidentField() *IncidentFieldQuery {
-	query := (&IncidentFieldClient{config: ifoq.config}).Query()
+func (_q *IncidentFieldOptionQuery) QueryIncidentField() *IncidentFieldQuery {
+	query := (&IncidentFieldClient{config: _q.config}).Query()
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
-		if err := ifoq.prepareQuery(ctx); err != nil {
+		if err := _q.prepareQuery(ctx); err != nil {
 			return nil, err
 		}
-		selector := ifoq.sqlQuery(ctx)
+		selector := _q.sqlQuery(ctx)
 		if err := selector.Err(); err != nil {
 			return nil, err
 		}
@@ -106,20 +106,20 @@ func (ifoq *IncidentFieldOptionQuery) QueryIncidentField() *IncidentFieldQuery {
 			sqlgraph.To(incidentfield.Table, incidentfield.FieldID),
 			sqlgraph.Edge(sqlgraph.M2O, true, incidentfieldoption.IncidentFieldTable, incidentfieldoption.IncidentFieldColumn),
 		)
-		fromU = sqlgraph.SetNeighbors(ifoq.driver.Dialect(), step)
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
 	}
 	return query
 }
 
 // QueryIncidents chains the current query on the "incidents" edge.
-func (ifoq *IncidentFieldOptionQuery) QueryIncidents() *IncidentQuery {
-	query := (&IncidentClient{config: ifoq.config}).Query()
+func (_q *IncidentFieldOptionQuery) QueryIncidents() *IncidentQuery {
+	query := (&IncidentClient{config: _q.config}).Query()
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
-		if err := ifoq.prepareQuery(ctx); err != nil {
+		if err := _q.prepareQuery(ctx); err != nil {
 			return nil, err
 		}
-		selector := ifoq.sqlQuery(ctx)
+		selector := _q.sqlQuery(ctx)
 		if err := selector.Err(); err != nil {
 			return nil, err
 		}
@@ -128,7 +128,7 @@ func (ifoq *IncidentFieldOptionQuery) QueryIncidents() *IncidentQuery {
 			sqlgraph.To(incident.Table, incident.FieldID),
 			sqlgraph.Edge(sqlgraph.M2M, true, incidentfieldoption.IncidentsTable, incidentfieldoption.IncidentsPrimaryKey...),
 		)
-		fromU = sqlgraph.SetNeighbors(ifoq.driver.Dialect(), step)
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
 	}
 	return query
@@ -136,8 +136,8 @@ func (ifoq *IncidentFieldOptionQuery) QueryIncidents() *IncidentQuery {
 
 // First returns the first IncidentFieldOption entity from the query.
 // Returns a *NotFoundError when no IncidentFieldOption was found.
-func (ifoq *IncidentFieldOptionQuery) First(ctx context.Context) (*IncidentFieldOption, error) {
-	nodes, err := ifoq.Limit(1).All(setContextOp(ctx, ifoq.ctx, ent.OpQueryFirst))
+func (_q *IncidentFieldOptionQuery) First(ctx context.Context) (*IncidentFieldOption, error) {
+	nodes, err := _q.Limit(1).All(setContextOp(ctx, _q.ctx, ent.OpQueryFirst))
 	if err != nil {
 		return nil, err
 	}
@@ -148,8 +148,8 @@ func (ifoq *IncidentFieldOptionQuery) First(ctx context.Context) (*IncidentField
 }
 
 // FirstX is like First, but panics if an error occurs.
-func (ifoq *IncidentFieldOptionQuery) FirstX(ctx context.Context) *IncidentFieldOption {
-	node, err := ifoq.First(ctx)
+func (_q *IncidentFieldOptionQuery) FirstX(ctx context.Context) *IncidentFieldOption {
+	node, err := _q.First(ctx)
 	if err != nil && !IsNotFound(err) {
 		panic(err)
 	}
@@ -158,9 +158,9 @@ func (ifoq *IncidentFieldOptionQuery) FirstX(ctx context.Context) *IncidentField
 
 // FirstID returns the first IncidentFieldOption ID from the query.
 // Returns a *NotFoundError when no IncidentFieldOption ID was found.
-func (ifoq *IncidentFieldOptionQuery) FirstID(ctx context.Context) (id uuid.UUID, err error) {
+func (_q *IncidentFieldOptionQuery) FirstID(ctx context.Context) (id uuid.UUID, err error) {
 	var ids []uuid.UUID
-	if ids, err = ifoq.Limit(1).IDs(setContextOp(ctx, ifoq.ctx, ent.OpQueryFirstID)); err != nil {
+	if ids, err = _q.Limit(1).IDs(setContextOp(ctx, _q.ctx, ent.OpQueryFirstID)); err != nil {
 		return
 	}
 	if len(ids) == 0 {
@@ -171,8 +171,8 @@ func (ifoq *IncidentFieldOptionQuery) FirstID(ctx context.Context) (id uuid.UUID
 }
 
 // FirstIDX is like FirstID, but panics if an error occurs.
-func (ifoq *IncidentFieldOptionQuery) FirstIDX(ctx context.Context) uuid.UUID {
-	id, err := ifoq.FirstID(ctx)
+func (_q *IncidentFieldOptionQuery) FirstIDX(ctx context.Context) uuid.UUID {
+	id, err := _q.FirstID(ctx)
 	if err != nil && !IsNotFound(err) {
 		panic(err)
 	}
@@ -182,8 +182,8 @@ func (ifoq *IncidentFieldOptionQuery) FirstIDX(ctx context.Context) uuid.UUID {
 // Only returns a single IncidentFieldOption entity found by the query, ensuring it only returns one.
 // Returns a *NotSingularError when more than one IncidentFieldOption entity is found.
 // Returns a *NotFoundError when no IncidentFieldOption entities are found.
-func (ifoq *IncidentFieldOptionQuery) Only(ctx context.Context) (*IncidentFieldOption, error) {
-	nodes, err := ifoq.Limit(2).All(setContextOp(ctx, ifoq.ctx, ent.OpQueryOnly))
+func (_q *IncidentFieldOptionQuery) Only(ctx context.Context) (*IncidentFieldOption, error) {
+	nodes, err := _q.Limit(2).All(setContextOp(ctx, _q.ctx, ent.OpQueryOnly))
 	if err != nil {
 		return nil, err
 	}
@@ -198,8 +198,8 @@ func (ifoq *IncidentFieldOptionQuery) Only(ctx context.Context) (*IncidentFieldO
 }
 
 // OnlyX is like Only, but panics if an error occurs.
-func (ifoq *IncidentFieldOptionQuery) OnlyX(ctx context.Context) *IncidentFieldOption {
-	node, err := ifoq.Only(ctx)
+func (_q *IncidentFieldOptionQuery) OnlyX(ctx context.Context) *IncidentFieldOption {
+	node, err := _q.Only(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -209,9 +209,9 @@ func (ifoq *IncidentFieldOptionQuery) OnlyX(ctx context.Context) *IncidentFieldO
 // OnlyID is like Only, but returns the only IncidentFieldOption ID in the query.
 // Returns a *NotSingularError when more than one IncidentFieldOption ID is found.
 // Returns a *NotFoundError when no entities are found.
-func (ifoq *IncidentFieldOptionQuery) OnlyID(ctx context.Context) (id uuid.UUID, err error) {
+func (_q *IncidentFieldOptionQuery) OnlyID(ctx context.Context) (id uuid.UUID, err error) {
 	var ids []uuid.UUID
-	if ids, err = ifoq.Limit(2).IDs(setContextOp(ctx, ifoq.ctx, ent.OpQueryOnlyID)); err != nil {
+	if ids, err = _q.Limit(2).IDs(setContextOp(ctx, _q.ctx, ent.OpQueryOnlyID)); err != nil {
 		return
 	}
 	switch len(ids) {
@@ -226,8 +226,8 @@ func (ifoq *IncidentFieldOptionQuery) OnlyID(ctx context.Context) (id uuid.UUID,
 }
 
 // OnlyIDX is like OnlyID, but panics if an error occurs.
-func (ifoq *IncidentFieldOptionQuery) OnlyIDX(ctx context.Context) uuid.UUID {
-	id, err := ifoq.OnlyID(ctx)
+func (_q *IncidentFieldOptionQuery) OnlyIDX(ctx context.Context) uuid.UUID {
+	id, err := _q.OnlyID(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -235,18 +235,18 @@ func (ifoq *IncidentFieldOptionQuery) OnlyIDX(ctx context.Context) uuid.UUID {
 }
 
 // All executes the query and returns a list of IncidentFieldOptions.
-func (ifoq *IncidentFieldOptionQuery) All(ctx context.Context) ([]*IncidentFieldOption, error) {
-	ctx = setContextOp(ctx, ifoq.ctx, ent.OpQueryAll)
-	if err := ifoq.prepareQuery(ctx); err != nil {
+func (_q *IncidentFieldOptionQuery) All(ctx context.Context) ([]*IncidentFieldOption, error) {
+	ctx = setContextOp(ctx, _q.ctx, ent.OpQueryAll)
+	if err := _q.prepareQuery(ctx); err != nil {
 		return nil, err
 	}
 	qr := querierAll[[]*IncidentFieldOption, *IncidentFieldOptionQuery]()
-	return withInterceptors[[]*IncidentFieldOption](ctx, ifoq, qr, ifoq.inters)
+	return withInterceptors[[]*IncidentFieldOption](ctx, _q, qr, _q.inters)
 }
 
 // AllX is like All, but panics if an error occurs.
-func (ifoq *IncidentFieldOptionQuery) AllX(ctx context.Context) []*IncidentFieldOption {
-	nodes, err := ifoq.All(ctx)
+func (_q *IncidentFieldOptionQuery) AllX(ctx context.Context) []*IncidentFieldOption {
+	nodes, err := _q.All(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -254,20 +254,20 @@ func (ifoq *IncidentFieldOptionQuery) AllX(ctx context.Context) []*IncidentField
 }
 
 // IDs executes the query and returns a list of IncidentFieldOption IDs.
-func (ifoq *IncidentFieldOptionQuery) IDs(ctx context.Context) (ids []uuid.UUID, err error) {
-	if ifoq.ctx.Unique == nil && ifoq.path != nil {
-		ifoq.Unique(true)
+func (_q *IncidentFieldOptionQuery) IDs(ctx context.Context) (ids []uuid.UUID, err error) {
+	if _q.ctx.Unique == nil && _q.path != nil {
+		_q.Unique(true)
 	}
-	ctx = setContextOp(ctx, ifoq.ctx, ent.OpQueryIDs)
-	if err = ifoq.Select(incidentfieldoption.FieldID).Scan(ctx, &ids); err != nil {
+	ctx = setContextOp(ctx, _q.ctx, ent.OpQueryIDs)
+	if err = _q.Select(incidentfieldoption.FieldID).Scan(ctx, &ids); err != nil {
 		return nil, err
 	}
 	return ids, nil
 }
 
 // IDsX is like IDs, but panics if an error occurs.
-func (ifoq *IncidentFieldOptionQuery) IDsX(ctx context.Context) []uuid.UUID {
-	ids, err := ifoq.IDs(ctx)
+func (_q *IncidentFieldOptionQuery) IDsX(ctx context.Context) []uuid.UUID {
+	ids, err := _q.IDs(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -275,17 +275,17 @@ func (ifoq *IncidentFieldOptionQuery) IDsX(ctx context.Context) []uuid.UUID {
 }
 
 // Count returns the count of the given query.
-func (ifoq *IncidentFieldOptionQuery) Count(ctx context.Context) (int, error) {
-	ctx = setContextOp(ctx, ifoq.ctx, ent.OpQueryCount)
-	if err := ifoq.prepareQuery(ctx); err != nil {
+func (_q *IncidentFieldOptionQuery) Count(ctx context.Context) (int, error) {
+	ctx = setContextOp(ctx, _q.ctx, ent.OpQueryCount)
+	if err := _q.prepareQuery(ctx); err != nil {
 		return 0, err
 	}
-	return withInterceptors[int](ctx, ifoq, querierCount[*IncidentFieldOptionQuery](), ifoq.inters)
+	return withInterceptors[int](ctx, _q, querierCount[*IncidentFieldOptionQuery](), _q.inters)
 }
 
 // CountX is like Count, but panics if an error occurs.
-func (ifoq *IncidentFieldOptionQuery) CountX(ctx context.Context) int {
-	count, err := ifoq.Count(ctx)
+func (_q *IncidentFieldOptionQuery) CountX(ctx context.Context) int {
+	count, err := _q.Count(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -293,9 +293,9 @@ func (ifoq *IncidentFieldOptionQuery) CountX(ctx context.Context) int {
 }
 
 // Exist returns true if the query has elements in the graph.
-func (ifoq *IncidentFieldOptionQuery) Exist(ctx context.Context) (bool, error) {
-	ctx = setContextOp(ctx, ifoq.ctx, ent.OpQueryExist)
-	switch _, err := ifoq.FirstID(ctx); {
+func (_q *IncidentFieldOptionQuery) Exist(ctx context.Context) (bool, error) {
+	ctx = setContextOp(ctx, _q.ctx, ent.OpQueryExist)
+	switch _, err := _q.FirstID(ctx); {
 	case IsNotFound(err):
 		return false, nil
 	case err != nil:
@@ -306,8 +306,8 @@ func (ifoq *IncidentFieldOptionQuery) Exist(ctx context.Context) (bool, error) {
 }
 
 // ExistX is like Exist, but panics if an error occurs.
-func (ifoq *IncidentFieldOptionQuery) ExistX(ctx context.Context) bool {
-	exist, err := ifoq.Exist(ctx)
+func (_q *IncidentFieldOptionQuery) ExistX(ctx context.Context) bool {
+	exist, err := _q.Exist(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -316,57 +316,57 @@ func (ifoq *IncidentFieldOptionQuery) ExistX(ctx context.Context) bool {
 
 // Clone returns a duplicate of the IncidentFieldOptionQuery builder, including all associated steps. It can be
 // used to prepare common query builders and use them differently after the clone is made.
-func (ifoq *IncidentFieldOptionQuery) Clone() *IncidentFieldOptionQuery {
-	if ifoq == nil {
+func (_q *IncidentFieldOptionQuery) Clone() *IncidentFieldOptionQuery {
+	if _q == nil {
 		return nil
 	}
 	return &IncidentFieldOptionQuery{
-		config:            ifoq.config,
-		ctx:               ifoq.ctx.Clone(),
-		order:             append([]incidentfieldoption.OrderOption{}, ifoq.order...),
-		inters:            append([]Interceptor{}, ifoq.inters...),
-		predicates:        append([]predicate.IncidentFieldOption{}, ifoq.predicates...),
-		withTenant:        ifoq.withTenant.Clone(),
-		withIncidentField: ifoq.withIncidentField.Clone(),
-		withIncidents:     ifoq.withIncidents.Clone(),
+		config:            _q.config,
+		ctx:               _q.ctx.Clone(),
+		order:             append([]incidentfieldoption.OrderOption{}, _q.order...),
+		inters:            append([]Interceptor{}, _q.inters...),
+		predicates:        append([]predicate.IncidentFieldOption{}, _q.predicates...),
+		withTenant:        _q.withTenant.Clone(),
+		withIncidentField: _q.withIncidentField.Clone(),
+		withIncidents:     _q.withIncidents.Clone(),
 		// clone intermediate query.
-		sql:       ifoq.sql.Clone(),
-		path:      ifoq.path,
-		modifiers: append([]func(*sql.Selector){}, ifoq.modifiers...),
+		sql:       _q.sql.Clone(),
+		path:      _q.path,
+		modifiers: append([]func(*sql.Selector){}, _q.modifiers...),
 	}
 }
 
 // WithTenant tells the query-builder to eager-load the nodes that are connected to
 // the "tenant" edge. The optional arguments are used to configure the query builder of the edge.
-func (ifoq *IncidentFieldOptionQuery) WithTenant(opts ...func(*TenantQuery)) *IncidentFieldOptionQuery {
-	query := (&TenantClient{config: ifoq.config}).Query()
+func (_q *IncidentFieldOptionQuery) WithTenant(opts ...func(*TenantQuery)) *IncidentFieldOptionQuery {
+	query := (&TenantClient{config: _q.config}).Query()
 	for _, opt := range opts {
 		opt(query)
 	}
-	ifoq.withTenant = query
-	return ifoq
+	_q.withTenant = query
+	return _q
 }
 
 // WithIncidentField tells the query-builder to eager-load the nodes that are connected to
 // the "incident_field" edge. The optional arguments are used to configure the query builder of the edge.
-func (ifoq *IncidentFieldOptionQuery) WithIncidentField(opts ...func(*IncidentFieldQuery)) *IncidentFieldOptionQuery {
-	query := (&IncidentFieldClient{config: ifoq.config}).Query()
+func (_q *IncidentFieldOptionQuery) WithIncidentField(opts ...func(*IncidentFieldQuery)) *IncidentFieldOptionQuery {
+	query := (&IncidentFieldClient{config: _q.config}).Query()
 	for _, opt := range opts {
 		opt(query)
 	}
-	ifoq.withIncidentField = query
-	return ifoq
+	_q.withIncidentField = query
+	return _q
 }
 
 // WithIncidents tells the query-builder to eager-load the nodes that are connected to
 // the "incidents" edge. The optional arguments are used to configure the query builder of the edge.
-func (ifoq *IncidentFieldOptionQuery) WithIncidents(opts ...func(*IncidentQuery)) *IncidentFieldOptionQuery {
-	query := (&IncidentClient{config: ifoq.config}).Query()
+func (_q *IncidentFieldOptionQuery) WithIncidents(opts ...func(*IncidentQuery)) *IncidentFieldOptionQuery {
+	query := (&IncidentClient{config: _q.config}).Query()
 	for _, opt := range opts {
 		opt(query)
 	}
-	ifoq.withIncidents = query
-	return ifoq
+	_q.withIncidents = query
+	return _q
 }
 
 // GroupBy is used to group vertices by one or more fields/columns.
@@ -383,10 +383,10 @@ func (ifoq *IncidentFieldOptionQuery) WithIncidents(opts ...func(*IncidentQuery)
 //		GroupBy(incidentfieldoption.FieldTenantID).
 //		Aggregate(ent.Count()).
 //		Scan(ctx, &v)
-func (ifoq *IncidentFieldOptionQuery) GroupBy(field string, fields ...string) *IncidentFieldOptionGroupBy {
-	ifoq.ctx.Fields = append([]string{field}, fields...)
-	grbuild := &IncidentFieldOptionGroupBy{build: ifoq}
-	grbuild.flds = &ifoq.ctx.Fields
+func (_q *IncidentFieldOptionQuery) GroupBy(field string, fields ...string) *IncidentFieldOptionGroupBy {
+	_q.ctx.Fields = append([]string{field}, fields...)
+	grbuild := &IncidentFieldOptionGroupBy{build: _q}
+	grbuild.flds = &_q.ctx.Fields
 	grbuild.label = incidentfieldoption.Label
 	grbuild.scan = grbuild.Scan
 	return grbuild
@@ -404,96 +404,96 @@ func (ifoq *IncidentFieldOptionQuery) GroupBy(field string, fields ...string) *I
 //	client.IncidentFieldOption.Query().
 //		Select(incidentfieldoption.FieldTenantID).
 //		Scan(ctx, &v)
-func (ifoq *IncidentFieldOptionQuery) Select(fields ...string) *IncidentFieldOptionSelect {
-	ifoq.ctx.Fields = append(ifoq.ctx.Fields, fields...)
-	sbuild := &IncidentFieldOptionSelect{IncidentFieldOptionQuery: ifoq}
+func (_q *IncidentFieldOptionQuery) Select(fields ...string) *IncidentFieldOptionSelect {
+	_q.ctx.Fields = append(_q.ctx.Fields, fields...)
+	sbuild := &IncidentFieldOptionSelect{IncidentFieldOptionQuery: _q}
 	sbuild.label = incidentfieldoption.Label
-	sbuild.flds, sbuild.scan = &ifoq.ctx.Fields, sbuild.Scan
+	sbuild.flds, sbuild.scan = &_q.ctx.Fields, sbuild.Scan
 	return sbuild
 }
 
 // Aggregate returns a IncidentFieldOptionSelect configured with the given aggregations.
-func (ifoq *IncidentFieldOptionQuery) Aggregate(fns ...AggregateFunc) *IncidentFieldOptionSelect {
-	return ifoq.Select().Aggregate(fns...)
+func (_q *IncidentFieldOptionQuery) Aggregate(fns ...AggregateFunc) *IncidentFieldOptionSelect {
+	return _q.Select().Aggregate(fns...)
 }
 
-func (ifoq *IncidentFieldOptionQuery) prepareQuery(ctx context.Context) error {
-	for _, inter := range ifoq.inters {
+func (_q *IncidentFieldOptionQuery) prepareQuery(ctx context.Context) error {
+	for _, inter := range _q.inters {
 		if inter == nil {
 			return fmt.Errorf("ent: uninitialized interceptor (forgotten import ent/runtime?)")
 		}
 		if trv, ok := inter.(Traverser); ok {
-			if err := trv.Traverse(ctx, ifoq); err != nil {
+			if err := trv.Traverse(ctx, _q); err != nil {
 				return err
 			}
 		}
 	}
-	for _, f := range ifoq.ctx.Fields {
+	for _, f := range _q.ctx.Fields {
 		if !incidentfieldoption.ValidColumn(f) {
 			return &ValidationError{Name: f, err: fmt.Errorf("ent: invalid field %q for query", f)}
 		}
 	}
-	if ifoq.path != nil {
-		prev, err := ifoq.path(ctx)
+	if _q.path != nil {
+		prev, err := _q.path(ctx)
 		if err != nil {
 			return err
 		}
-		ifoq.sql = prev
+		_q.sql = prev
 	}
 	if incidentfieldoption.Policy == nil {
 		return errors.New("ent: uninitialized incidentfieldoption.Policy (forgotten import ent/runtime?)")
 	}
-	if err := incidentfieldoption.Policy.EvalQuery(ctx, ifoq); err != nil {
+	if err := incidentfieldoption.Policy.EvalQuery(ctx, _q); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (ifoq *IncidentFieldOptionQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*IncidentFieldOption, error) {
+func (_q *IncidentFieldOptionQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*IncidentFieldOption, error) {
 	var (
 		nodes       = []*IncidentFieldOption{}
-		_spec       = ifoq.querySpec()
+		_spec       = _q.querySpec()
 		loadedTypes = [3]bool{
-			ifoq.withTenant != nil,
-			ifoq.withIncidentField != nil,
-			ifoq.withIncidents != nil,
+			_q.withTenant != nil,
+			_q.withIncidentField != nil,
+			_q.withIncidents != nil,
 		}
 	)
 	_spec.ScanValues = func(columns []string) ([]any, error) {
 		return (*IncidentFieldOption).scanValues(nil, columns)
 	}
 	_spec.Assign = func(columns []string, values []any) error {
-		node := &IncidentFieldOption{config: ifoq.config}
+		node := &IncidentFieldOption{config: _q.config}
 		nodes = append(nodes, node)
 		node.Edges.loadedTypes = loadedTypes
 		return node.assignValues(columns, values)
 	}
-	if len(ifoq.modifiers) > 0 {
-		_spec.Modifiers = ifoq.modifiers
+	if len(_q.modifiers) > 0 {
+		_spec.Modifiers = _q.modifiers
 	}
 	for i := range hooks {
 		hooks[i](ctx, _spec)
 	}
-	if err := sqlgraph.QueryNodes(ctx, ifoq.driver, _spec); err != nil {
+	if err := sqlgraph.QueryNodes(ctx, _q.driver, _spec); err != nil {
 		return nil, err
 	}
 	if len(nodes) == 0 {
 		return nodes, nil
 	}
-	if query := ifoq.withTenant; query != nil {
-		if err := ifoq.loadTenant(ctx, query, nodes, nil,
+	if query := _q.withTenant; query != nil {
+		if err := _q.loadTenant(ctx, query, nodes, nil,
 			func(n *IncidentFieldOption, e *Tenant) { n.Edges.Tenant = e }); err != nil {
 			return nil, err
 		}
 	}
-	if query := ifoq.withIncidentField; query != nil {
-		if err := ifoq.loadIncidentField(ctx, query, nodes, nil,
+	if query := _q.withIncidentField; query != nil {
+		if err := _q.loadIncidentField(ctx, query, nodes, nil,
 			func(n *IncidentFieldOption, e *IncidentField) { n.Edges.IncidentField = e }); err != nil {
 			return nil, err
 		}
 	}
-	if query := ifoq.withIncidents; query != nil {
-		if err := ifoq.loadIncidents(ctx, query, nodes,
+	if query := _q.withIncidents; query != nil {
+		if err := _q.loadIncidents(ctx, query, nodes,
 			func(n *IncidentFieldOption) { n.Edges.Incidents = []*Incident{} },
 			func(n *IncidentFieldOption, e *Incident) { n.Edges.Incidents = append(n.Edges.Incidents, e) }); err != nil {
 			return nil, err
@@ -502,7 +502,7 @@ func (ifoq *IncidentFieldOptionQuery) sqlAll(ctx context.Context, hooks ...query
 	return nodes, nil
 }
 
-func (ifoq *IncidentFieldOptionQuery) loadTenant(ctx context.Context, query *TenantQuery, nodes []*IncidentFieldOption, init func(*IncidentFieldOption), assign func(*IncidentFieldOption, *Tenant)) error {
+func (_q *IncidentFieldOptionQuery) loadTenant(ctx context.Context, query *TenantQuery, nodes []*IncidentFieldOption, init func(*IncidentFieldOption), assign func(*IncidentFieldOption, *Tenant)) error {
 	ids := make([]int, 0, len(nodes))
 	nodeids := make(map[int][]*IncidentFieldOption)
 	for i := range nodes {
@@ -531,7 +531,7 @@ func (ifoq *IncidentFieldOptionQuery) loadTenant(ctx context.Context, query *Ten
 	}
 	return nil
 }
-func (ifoq *IncidentFieldOptionQuery) loadIncidentField(ctx context.Context, query *IncidentFieldQuery, nodes []*IncidentFieldOption, init func(*IncidentFieldOption), assign func(*IncidentFieldOption, *IncidentField)) error {
+func (_q *IncidentFieldOptionQuery) loadIncidentField(ctx context.Context, query *IncidentFieldQuery, nodes []*IncidentFieldOption, init func(*IncidentFieldOption), assign func(*IncidentFieldOption, *IncidentField)) error {
 	ids := make([]uuid.UUID, 0, len(nodes))
 	nodeids := make(map[uuid.UUID][]*IncidentFieldOption)
 	for i := range nodes {
@@ -560,7 +560,7 @@ func (ifoq *IncidentFieldOptionQuery) loadIncidentField(ctx context.Context, que
 	}
 	return nil
 }
-func (ifoq *IncidentFieldOptionQuery) loadIncidents(ctx context.Context, query *IncidentQuery, nodes []*IncidentFieldOption, init func(*IncidentFieldOption), assign func(*IncidentFieldOption, *Incident)) error {
+func (_q *IncidentFieldOptionQuery) loadIncidents(ctx context.Context, query *IncidentQuery, nodes []*IncidentFieldOption, init func(*IncidentFieldOption), assign func(*IncidentFieldOption, *Incident)) error {
 	edgeIDs := make([]driver.Value, len(nodes))
 	byID := make(map[uuid.UUID]*IncidentFieldOption)
 	nids := make(map[uuid.UUID]map[*IncidentFieldOption]struct{})
@@ -622,27 +622,27 @@ func (ifoq *IncidentFieldOptionQuery) loadIncidents(ctx context.Context, query *
 	return nil
 }
 
-func (ifoq *IncidentFieldOptionQuery) sqlCount(ctx context.Context) (int, error) {
-	_spec := ifoq.querySpec()
-	if len(ifoq.modifiers) > 0 {
-		_spec.Modifiers = ifoq.modifiers
+func (_q *IncidentFieldOptionQuery) sqlCount(ctx context.Context) (int, error) {
+	_spec := _q.querySpec()
+	if len(_q.modifiers) > 0 {
+		_spec.Modifiers = _q.modifiers
 	}
-	_spec.Node.Columns = ifoq.ctx.Fields
-	if len(ifoq.ctx.Fields) > 0 {
-		_spec.Unique = ifoq.ctx.Unique != nil && *ifoq.ctx.Unique
+	_spec.Node.Columns = _q.ctx.Fields
+	if len(_q.ctx.Fields) > 0 {
+		_spec.Unique = _q.ctx.Unique != nil && *_q.ctx.Unique
 	}
-	return sqlgraph.CountNodes(ctx, ifoq.driver, _spec)
+	return sqlgraph.CountNodes(ctx, _q.driver, _spec)
 }
 
-func (ifoq *IncidentFieldOptionQuery) querySpec() *sqlgraph.QuerySpec {
+func (_q *IncidentFieldOptionQuery) querySpec() *sqlgraph.QuerySpec {
 	_spec := sqlgraph.NewQuerySpec(incidentfieldoption.Table, incidentfieldoption.Columns, sqlgraph.NewFieldSpec(incidentfieldoption.FieldID, field.TypeUUID))
-	_spec.From = ifoq.sql
-	if unique := ifoq.ctx.Unique; unique != nil {
+	_spec.From = _q.sql
+	if unique := _q.ctx.Unique; unique != nil {
 		_spec.Unique = *unique
-	} else if ifoq.path != nil {
+	} else if _q.path != nil {
 		_spec.Unique = true
 	}
-	if fields := ifoq.ctx.Fields; len(fields) > 0 {
+	if fields := _q.ctx.Fields; len(fields) > 0 {
 		_spec.Node.Columns = make([]string, 0, len(fields))
 		_spec.Node.Columns = append(_spec.Node.Columns, incidentfieldoption.FieldID)
 		for i := range fields {
@@ -650,27 +650,27 @@ func (ifoq *IncidentFieldOptionQuery) querySpec() *sqlgraph.QuerySpec {
 				_spec.Node.Columns = append(_spec.Node.Columns, fields[i])
 			}
 		}
-		if ifoq.withTenant != nil {
+		if _q.withTenant != nil {
 			_spec.Node.AddColumnOnce(incidentfieldoption.FieldTenantID)
 		}
-		if ifoq.withIncidentField != nil {
+		if _q.withIncidentField != nil {
 			_spec.Node.AddColumnOnce(incidentfieldoption.FieldIncidentFieldID)
 		}
 	}
-	if ps := ifoq.predicates; len(ps) > 0 {
+	if ps := _q.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {
 				ps[i](selector)
 			}
 		}
 	}
-	if limit := ifoq.ctx.Limit; limit != nil {
+	if limit := _q.ctx.Limit; limit != nil {
 		_spec.Limit = *limit
 	}
-	if offset := ifoq.ctx.Offset; offset != nil {
+	if offset := _q.ctx.Offset; offset != nil {
 		_spec.Offset = *offset
 	}
-	if ps := ifoq.order; len(ps) > 0 {
+	if ps := _q.order; len(ps) > 0 {
 		_spec.Order = func(selector *sql.Selector) {
 			for i := range ps {
 				ps[i](selector)
@@ -680,45 +680,45 @@ func (ifoq *IncidentFieldOptionQuery) querySpec() *sqlgraph.QuerySpec {
 	return _spec
 }
 
-func (ifoq *IncidentFieldOptionQuery) sqlQuery(ctx context.Context) *sql.Selector {
-	builder := sql.Dialect(ifoq.driver.Dialect())
+func (_q *IncidentFieldOptionQuery) sqlQuery(ctx context.Context) *sql.Selector {
+	builder := sql.Dialect(_q.driver.Dialect())
 	t1 := builder.Table(incidentfieldoption.Table)
-	columns := ifoq.ctx.Fields
+	columns := _q.ctx.Fields
 	if len(columns) == 0 {
 		columns = incidentfieldoption.Columns
 	}
 	selector := builder.Select(t1.Columns(columns...)...).From(t1)
-	if ifoq.sql != nil {
-		selector = ifoq.sql
+	if _q.sql != nil {
+		selector = _q.sql
 		selector.Select(selector.Columns(columns...)...)
 	}
-	if ifoq.ctx.Unique != nil && *ifoq.ctx.Unique {
+	if _q.ctx.Unique != nil && *_q.ctx.Unique {
 		selector.Distinct()
 	}
-	for _, m := range ifoq.modifiers {
+	for _, m := range _q.modifiers {
 		m(selector)
 	}
-	for _, p := range ifoq.predicates {
+	for _, p := range _q.predicates {
 		p(selector)
 	}
-	for _, p := range ifoq.order {
+	for _, p := range _q.order {
 		p(selector)
 	}
-	if offset := ifoq.ctx.Offset; offset != nil {
+	if offset := _q.ctx.Offset; offset != nil {
 		// limit is mandatory for offset clause. We start
 		// with default value, and override it below if needed.
 		selector.Offset(*offset).Limit(math.MaxInt32)
 	}
-	if limit := ifoq.ctx.Limit; limit != nil {
+	if limit := _q.ctx.Limit; limit != nil {
 		selector.Limit(*limit)
 	}
 	return selector
 }
 
 // Modify adds a query modifier for attaching custom logic to queries.
-func (ifoq *IncidentFieldOptionQuery) Modify(modifiers ...func(s *sql.Selector)) *IncidentFieldOptionSelect {
-	ifoq.modifiers = append(ifoq.modifiers, modifiers...)
-	return ifoq.Select()
+func (_q *IncidentFieldOptionQuery) Modify(modifiers ...func(s *sql.Selector)) *IncidentFieldOptionSelect {
+	_q.modifiers = append(_q.modifiers, modifiers...)
+	return _q.Select()
 }
 
 // IncidentFieldOptionGroupBy is the group-by builder for IncidentFieldOption entities.
@@ -728,41 +728,41 @@ type IncidentFieldOptionGroupBy struct {
 }
 
 // Aggregate adds the given aggregation functions to the group-by query.
-func (ifogb *IncidentFieldOptionGroupBy) Aggregate(fns ...AggregateFunc) *IncidentFieldOptionGroupBy {
-	ifogb.fns = append(ifogb.fns, fns...)
-	return ifogb
+func (_g *IncidentFieldOptionGroupBy) Aggregate(fns ...AggregateFunc) *IncidentFieldOptionGroupBy {
+	_g.fns = append(_g.fns, fns...)
+	return _g
 }
 
 // Scan applies the selector query and scans the result into the given value.
-func (ifogb *IncidentFieldOptionGroupBy) Scan(ctx context.Context, v any) error {
-	ctx = setContextOp(ctx, ifogb.build.ctx, ent.OpQueryGroupBy)
-	if err := ifogb.build.prepareQuery(ctx); err != nil {
+func (_g *IncidentFieldOptionGroupBy) Scan(ctx context.Context, v any) error {
+	ctx = setContextOp(ctx, _g.build.ctx, ent.OpQueryGroupBy)
+	if err := _g.build.prepareQuery(ctx); err != nil {
 		return err
 	}
-	return scanWithInterceptors[*IncidentFieldOptionQuery, *IncidentFieldOptionGroupBy](ctx, ifogb.build, ifogb, ifogb.build.inters, v)
+	return scanWithInterceptors[*IncidentFieldOptionQuery, *IncidentFieldOptionGroupBy](ctx, _g.build, _g, _g.build.inters, v)
 }
 
-func (ifogb *IncidentFieldOptionGroupBy) sqlScan(ctx context.Context, root *IncidentFieldOptionQuery, v any) error {
+func (_g *IncidentFieldOptionGroupBy) sqlScan(ctx context.Context, root *IncidentFieldOptionQuery, v any) error {
 	selector := root.sqlQuery(ctx).Select()
-	aggregation := make([]string, 0, len(ifogb.fns))
-	for _, fn := range ifogb.fns {
+	aggregation := make([]string, 0, len(_g.fns))
+	for _, fn := range _g.fns {
 		aggregation = append(aggregation, fn(selector))
 	}
 	if len(selector.SelectedColumns()) == 0 {
-		columns := make([]string, 0, len(*ifogb.flds)+len(ifogb.fns))
-		for _, f := range *ifogb.flds {
+		columns := make([]string, 0, len(*_g.flds)+len(_g.fns))
+		for _, f := range *_g.flds {
 			columns = append(columns, selector.C(f))
 		}
 		columns = append(columns, aggregation...)
 		selector.Select(columns...)
 	}
-	selector.GroupBy(selector.Columns(*ifogb.flds...)...)
+	selector.GroupBy(selector.Columns(*_g.flds...)...)
 	if err := selector.Err(); err != nil {
 		return err
 	}
 	rows := &sql.Rows{}
 	query, args := selector.Query()
-	if err := ifogb.build.driver.Query(ctx, query, args, rows); err != nil {
+	if err := _g.build.driver.Query(ctx, query, args, rows); err != nil {
 		return err
 	}
 	defer rows.Close()
@@ -776,27 +776,27 @@ type IncidentFieldOptionSelect struct {
 }
 
 // Aggregate adds the given aggregation functions to the selector query.
-func (ifos *IncidentFieldOptionSelect) Aggregate(fns ...AggregateFunc) *IncidentFieldOptionSelect {
-	ifos.fns = append(ifos.fns, fns...)
-	return ifos
+func (_s *IncidentFieldOptionSelect) Aggregate(fns ...AggregateFunc) *IncidentFieldOptionSelect {
+	_s.fns = append(_s.fns, fns...)
+	return _s
 }
 
 // Scan applies the selector query and scans the result into the given value.
-func (ifos *IncidentFieldOptionSelect) Scan(ctx context.Context, v any) error {
-	ctx = setContextOp(ctx, ifos.ctx, ent.OpQuerySelect)
-	if err := ifos.prepareQuery(ctx); err != nil {
+func (_s *IncidentFieldOptionSelect) Scan(ctx context.Context, v any) error {
+	ctx = setContextOp(ctx, _s.ctx, ent.OpQuerySelect)
+	if err := _s.prepareQuery(ctx); err != nil {
 		return err
 	}
-	return scanWithInterceptors[*IncidentFieldOptionQuery, *IncidentFieldOptionSelect](ctx, ifos.IncidentFieldOptionQuery, ifos, ifos.inters, v)
+	return scanWithInterceptors[*IncidentFieldOptionQuery, *IncidentFieldOptionSelect](ctx, _s.IncidentFieldOptionQuery, _s, _s.inters, v)
 }
 
-func (ifos *IncidentFieldOptionSelect) sqlScan(ctx context.Context, root *IncidentFieldOptionQuery, v any) error {
+func (_s *IncidentFieldOptionSelect) sqlScan(ctx context.Context, root *IncidentFieldOptionQuery, v any) error {
 	selector := root.sqlQuery(ctx)
-	aggregation := make([]string, 0, len(ifos.fns))
-	for _, fn := range ifos.fns {
+	aggregation := make([]string, 0, len(_s.fns))
+	for _, fn := range _s.fns {
 		aggregation = append(aggregation, fn(selector))
 	}
-	switch n := len(*ifos.selector.flds); {
+	switch n := len(*_s.selector.flds); {
 	case n == 0 && len(aggregation) > 0:
 		selector.Select(aggregation...)
 	case n != 0 && len(aggregation) > 0:
@@ -804,7 +804,7 @@ func (ifos *IncidentFieldOptionSelect) sqlScan(ctx context.Context, root *Incide
 	}
 	rows := &sql.Rows{}
 	query, args := selector.Query()
-	if err := ifos.driver.Query(ctx, query, args, rows); err != nil {
+	if err := _s.driver.Query(ctx, query, args, rows); err != nil {
 		return err
 	}
 	defer rows.Close()
@@ -812,7 +812,7 @@ func (ifos *IncidentFieldOptionSelect) sqlScan(ctx context.Context, root *Incide
 }
 
 // Modify adds a query modifier for attaching custom logic to queries.
-func (ifos *IncidentFieldOptionSelect) Modify(modifiers ...func(s *sql.Selector)) *IncidentFieldOptionSelect {
-	ifos.modifiers = append(ifos.modifiers, modifiers...)
-	return ifos
+func (_s *IncidentFieldOptionSelect) Modify(modifiers ...func(s *sql.Selector)) *IncidentFieldOptionSelect {
+	_s.modifiers = append(_s.modifiers, modifiers...)
+	return _s
 }

@@ -28,120 +28,120 @@ type MeetingSessionCreate struct {
 }
 
 // SetTenantID sets the "tenant_id" field.
-func (msc *MeetingSessionCreate) SetTenantID(i int) *MeetingSessionCreate {
-	msc.mutation.SetTenantID(i)
-	return msc
+func (_c *MeetingSessionCreate) SetTenantID(v int) *MeetingSessionCreate {
+	_c.mutation.SetTenantID(v)
+	return _c
 }
 
 // SetTitle sets the "title" field.
-func (msc *MeetingSessionCreate) SetTitle(s string) *MeetingSessionCreate {
-	msc.mutation.SetTitle(s)
-	return msc
+func (_c *MeetingSessionCreate) SetTitle(v string) *MeetingSessionCreate {
+	_c.mutation.SetTitle(v)
+	return _c
 }
 
 // SetStartedAt sets the "started_at" field.
-func (msc *MeetingSessionCreate) SetStartedAt(t time.Time) *MeetingSessionCreate {
-	msc.mutation.SetStartedAt(t)
-	return msc
+func (_c *MeetingSessionCreate) SetStartedAt(v time.Time) *MeetingSessionCreate {
+	_c.mutation.SetStartedAt(v)
+	return _c
 }
 
 // SetNillableStartedAt sets the "started_at" field if the given value is not nil.
-func (msc *MeetingSessionCreate) SetNillableStartedAt(t *time.Time) *MeetingSessionCreate {
-	if t != nil {
-		msc.SetStartedAt(*t)
+func (_c *MeetingSessionCreate) SetNillableStartedAt(v *time.Time) *MeetingSessionCreate {
+	if v != nil {
+		_c.SetStartedAt(*v)
 	}
-	return msc
+	return _c
 }
 
 // SetEndedAt sets the "ended_at" field.
-func (msc *MeetingSessionCreate) SetEndedAt(t time.Time) *MeetingSessionCreate {
-	msc.mutation.SetEndedAt(t)
-	return msc
+func (_c *MeetingSessionCreate) SetEndedAt(v time.Time) *MeetingSessionCreate {
+	_c.mutation.SetEndedAt(v)
+	return _c
 }
 
 // SetNillableEndedAt sets the "ended_at" field if the given value is not nil.
-func (msc *MeetingSessionCreate) SetNillableEndedAt(t *time.Time) *MeetingSessionCreate {
-	if t != nil {
-		msc.SetEndedAt(*t)
+func (_c *MeetingSessionCreate) SetNillableEndedAt(v *time.Time) *MeetingSessionCreate {
+	if v != nil {
+		_c.SetEndedAt(*v)
 	}
-	return msc
+	return _c
 }
 
 // SetDocumentName sets the "document_name" field.
-func (msc *MeetingSessionCreate) SetDocumentName(s string) *MeetingSessionCreate {
-	msc.mutation.SetDocumentName(s)
-	return msc
+func (_c *MeetingSessionCreate) SetDocumentName(v string) *MeetingSessionCreate {
+	_c.mutation.SetDocumentName(v)
+	return _c
 }
 
 // SetID sets the "id" field.
-func (msc *MeetingSessionCreate) SetID(u uuid.UUID) *MeetingSessionCreate {
-	msc.mutation.SetID(u)
-	return msc
+func (_c *MeetingSessionCreate) SetID(v uuid.UUID) *MeetingSessionCreate {
+	_c.mutation.SetID(v)
+	return _c
 }
 
 // SetNillableID sets the "id" field if the given value is not nil.
-func (msc *MeetingSessionCreate) SetNillableID(u *uuid.UUID) *MeetingSessionCreate {
-	if u != nil {
-		msc.SetID(*u)
+func (_c *MeetingSessionCreate) SetNillableID(v *uuid.UUID) *MeetingSessionCreate {
+	if v != nil {
+		_c.SetID(*v)
 	}
-	return msc
+	return _c
 }
 
 // SetTenant sets the "tenant" edge to the Tenant entity.
-func (msc *MeetingSessionCreate) SetTenant(t *Tenant) *MeetingSessionCreate {
-	return msc.SetTenantID(t.ID)
+func (_c *MeetingSessionCreate) SetTenant(v *Tenant) *MeetingSessionCreate {
+	return _c.SetTenantID(v.ID)
 }
 
 // AddIncidentIDs adds the "incidents" edge to the Incident entity by IDs.
-func (msc *MeetingSessionCreate) AddIncidentIDs(ids ...uuid.UUID) *MeetingSessionCreate {
-	msc.mutation.AddIncidentIDs(ids...)
-	return msc
+func (_c *MeetingSessionCreate) AddIncidentIDs(ids ...uuid.UUID) *MeetingSessionCreate {
+	_c.mutation.AddIncidentIDs(ids...)
+	return _c
 }
 
 // AddIncidents adds the "incidents" edges to the Incident entity.
-func (msc *MeetingSessionCreate) AddIncidents(i ...*Incident) *MeetingSessionCreate {
-	ids := make([]uuid.UUID, len(i))
-	for j := range i {
-		ids[j] = i[j].ID
+func (_c *MeetingSessionCreate) AddIncidents(v ...*Incident) *MeetingSessionCreate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
 	}
-	return msc.AddIncidentIDs(ids...)
+	return _c.AddIncidentIDs(ids...)
 }
 
 // SetScheduleID sets the "schedule" edge to the MeetingSchedule entity by ID.
-func (msc *MeetingSessionCreate) SetScheduleID(id uuid.UUID) *MeetingSessionCreate {
-	msc.mutation.SetScheduleID(id)
-	return msc
+func (_c *MeetingSessionCreate) SetScheduleID(id uuid.UUID) *MeetingSessionCreate {
+	_c.mutation.SetScheduleID(id)
+	return _c
 }
 
 // SetNillableScheduleID sets the "schedule" edge to the MeetingSchedule entity by ID if the given value is not nil.
-func (msc *MeetingSessionCreate) SetNillableScheduleID(id *uuid.UUID) *MeetingSessionCreate {
+func (_c *MeetingSessionCreate) SetNillableScheduleID(id *uuid.UUID) *MeetingSessionCreate {
 	if id != nil {
-		msc = msc.SetScheduleID(*id)
+		_c = _c.SetScheduleID(*id)
 	}
-	return msc
+	return _c
 }
 
 // SetSchedule sets the "schedule" edge to the MeetingSchedule entity.
-func (msc *MeetingSessionCreate) SetSchedule(m *MeetingSchedule) *MeetingSessionCreate {
-	return msc.SetScheduleID(m.ID)
+func (_c *MeetingSessionCreate) SetSchedule(v *MeetingSchedule) *MeetingSessionCreate {
+	return _c.SetScheduleID(v.ID)
 }
 
 // Mutation returns the MeetingSessionMutation object of the builder.
-func (msc *MeetingSessionCreate) Mutation() *MeetingSessionMutation {
-	return msc.mutation
+func (_c *MeetingSessionCreate) Mutation() *MeetingSessionMutation {
+	return _c.mutation
 }
 
 // Save creates the MeetingSession in the database.
-func (msc *MeetingSessionCreate) Save(ctx context.Context) (*MeetingSession, error) {
-	if err := msc.defaults(); err != nil {
+func (_c *MeetingSessionCreate) Save(ctx context.Context) (*MeetingSession, error) {
+	if err := _c.defaults(); err != nil {
 		return nil, err
 	}
-	return withHooks(ctx, msc.sqlSave, msc.mutation, msc.hooks)
+	return withHooks(ctx, _c.sqlSave, _c.mutation, _c.hooks)
 }
 
 // SaveX calls Save and panics if Save returns an error.
-func (msc *MeetingSessionCreate) SaveX(ctx context.Context) *MeetingSession {
-	v, err := msc.Save(ctx)
+func (_c *MeetingSessionCreate) SaveX(ctx context.Context) *MeetingSession {
+	v, err := _c.Save(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -149,63 +149,63 @@ func (msc *MeetingSessionCreate) SaveX(ctx context.Context) *MeetingSession {
 }
 
 // Exec executes the query.
-func (msc *MeetingSessionCreate) Exec(ctx context.Context) error {
-	_, err := msc.Save(ctx)
+func (_c *MeetingSessionCreate) Exec(ctx context.Context) error {
+	_, err := _c.Save(ctx)
 	return err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (msc *MeetingSessionCreate) ExecX(ctx context.Context) {
-	if err := msc.Exec(ctx); err != nil {
+func (_c *MeetingSessionCreate) ExecX(ctx context.Context) {
+	if err := _c.Exec(ctx); err != nil {
 		panic(err)
 	}
 }
 
 // defaults sets the default values of the builder before save.
-func (msc *MeetingSessionCreate) defaults() error {
-	if _, ok := msc.mutation.StartedAt(); !ok {
+func (_c *MeetingSessionCreate) defaults() error {
+	if _, ok := _c.mutation.StartedAt(); !ok {
 		if meetingsession.DefaultStartedAt == nil {
 			return fmt.Errorf("ent: uninitialized meetingsession.DefaultStartedAt (forgotten import ent/runtime?)")
 		}
 		v := meetingsession.DefaultStartedAt()
-		msc.mutation.SetStartedAt(v)
+		_c.mutation.SetStartedAt(v)
 	}
-	if _, ok := msc.mutation.ID(); !ok {
+	if _, ok := _c.mutation.ID(); !ok {
 		if meetingsession.DefaultID == nil {
 			return fmt.Errorf("ent: uninitialized meetingsession.DefaultID (forgotten import ent/runtime?)")
 		}
 		v := meetingsession.DefaultID()
-		msc.mutation.SetID(v)
+		_c.mutation.SetID(v)
 	}
 	return nil
 }
 
 // check runs all checks and user-defined validators on the builder.
-func (msc *MeetingSessionCreate) check() error {
-	if _, ok := msc.mutation.TenantID(); !ok {
+func (_c *MeetingSessionCreate) check() error {
+	if _, ok := _c.mutation.TenantID(); !ok {
 		return &ValidationError{Name: "tenant_id", err: errors.New(`ent: missing required field "MeetingSession.tenant_id"`)}
 	}
-	if _, ok := msc.mutation.Title(); !ok {
+	if _, ok := _c.mutation.Title(); !ok {
 		return &ValidationError{Name: "title", err: errors.New(`ent: missing required field "MeetingSession.title"`)}
 	}
-	if _, ok := msc.mutation.StartedAt(); !ok {
+	if _, ok := _c.mutation.StartedAt(); !ok {
 		return &ValidationError{Name: "started_at", err: errors.New(`ent: missing required field "MeetingSession.started_at"`)}
 	}
-	if _, ok := msc.mutation.DocumentName(); !ok {
+	if _, ok := _c.mutation.DocumentName(); !ok {
 		return &ValidationError{Name: "document_name", err: errors.New(`ent: missing required field "MeetingSession.document_name"`)}
 	}
-	if len(msc.mutation.TenantIDs()) == 0 {
+	if len(_c.mutation.TenantIDs()) == 0 {
 		return &ValidationError{Name: "tenant", err: errors.New(`ent: missing required edge "MeetingSession.tenant"`)}
 	}
 	return nil
 }
 
-func (msc *MeetingSessionCreate) sqlSave(ctx context.Context) (*MeetingSession, error) {
-	if err := msc.check(); err != nil {
+func (_c *MeetingSessionCreate) sqlSave(ctx context.Context) (*MeetingSession, error) {
+	if err := _c.check(); err != nil {
 		return nil, err
 	}
-	_node, _spec := msc.createSpec()
-	if err := sqlgraph.CreateNode(ctx, msc.driver, _spec); err != nil {
+	_node, _spec := _c.createSpec()
+	if err := sqlgraph.CreateNode(ctx, _c.driver, _spec); err != nil {
 		if sqlgraph.IsConstraintError(err) {
 			err = &ConstraintError{msg: err.Error(), wrap: err}
 		}
@@ -218,38 +218,38 @@ func (msc *MeetingSessionCreate) sqlSave(ctx context.Context) (*MeetingSession, 
 			return nil, err
 		}
 	}
-	msc.mutation.id = &_node.ID
-	msc.mutation.done = true
+	_c.mutation.id = &_node.ID
+	_c.mutation.done = true
 	return _node, nil
 }
 
-func (msc *MeetingSessionCreate) createSpec() (*MeetingSession, *sqlgraph.CreateSpec) {
+func (_c *MeetingSessionCreate) createSpec() (*MeetingSession, *sqlgraph.CreateSpec) {
 	var (
-		_node = &MeetingSession{config: msc.config}
+		_node = &MeetingSession{config: _c.config}
 		_spec = sqlgraph.NewCreateSpec(meetingsession.Table, sqlgraph.NewFieldSpec(meetingsession.FieldID, field.TypeUUID))
 	)
-	_spec.OnConflict = msc.conflict
-	if id, ok := msc.mutation.ID(); ok {
+	_spec.OnConflict = _c.conflict
+	if id, ok := _c.mutation.ID(); ok {
 		_node.ID = id
 		_spec.ID.Value = &id
 	}
-	if value, ok := msc.mutation.Title(); ok {
+	if value, ok := _c.mutation.Title(); ok {
 		_spec.SetField(meetingsession.FieldTitle, field.TypeString, value)
 		_node.Title = value
 	}
-	if value, ok := msc.mutation.StartedAt(); ok {
+	if value, ok := _c.mutation.StartedAt(); ok {
 		_spec.SetField(meetingsession.FieldStartedAt, field.TypeTime, value)
 		_node.StartedAt = value
 	}
-	if value, ok := msc.mutation.EndedAt(); ok {
+	if value, ok := _c.mutation.EndedAt(); ok {
 		_spec.SetField(meetingsession.FieldEndedAt, field.TypeTime, value)
 		_node.EndedAt = value
 	}
-	if value, ok := msc.mutation.DocumentName(); ok {
+	if value, ok := _c.mutation.DocumentName(); ok {
 		_spec.SetField(meetingsession.FieldDocumentName, field.TypeString, value)
 		_node.DocumentName = value
 	}
-	if nodes := msc.mutation.TenantIDs(); len(nodes) > 0 {
+	if nodes := _c.mutation.TenantIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
@@ -266,7 +266,7 @@ func (msc *MeetingSessionCreate) createSpec() (*MeetingSession, *sqlgraph.Create
 		_node.TenantID = nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
-	if nodes := msc.mutation.IncidentsIDs(); len(nodes) > 0 {
+	if nodes := _c.mutation.IncidentsIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
 			Inverse: true,
@@ -282,7 +282,7 @@ func (msc *MeetingSessionCreate) createSpec() (*MeetingSession, *sqlgraph.Create
 		}
 		_spec.Edges = append(_spec.Edges, edge)
 	}
-	if nodes := msc.mutation.ScheduleIDs(); len(nodes) > 0 {
+	if nodes := _c.mutation.ScheduleIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
@@ -318,10 +318,10 @@ func (msc *MeetingSessionCreate) createSpec() (*MeetingSession, *sqlgraph.Create
 //			SetTenantID(v+v).
 //		}).
 //		Exec(ctx)
-func (msc *MeetingSessionCreate) OnConflict(opts ...sql.ConflictOption) *MeetingSessionUpsertOne {
-	msc.conflict = opts
+func (_c *MeetingSessionCreate) OnConflict(opts ...sql.ConflictOption) *MeetingSessionUpsertOne {
+	_c.conflict = opts
 	return &MeetingSessionUpsertOne{
-		create: msc,
+		create: _c,
 	}
 }
 
@@ -331,10 +331,10 @@ func (msc *MeetingSessionCreate) OnConflict(opts ...sql.ConflictOption) *Meeting
 //	client.MeetingSession.Create().
 //		OnConflict(sql.ConflictColumns(columns...)).
 //		Exec(ctx)
-func (msc *MeetingSessionCreate) OnConflictColumns(columns ...string) *MeetingSessionUpsertOne {
-	msc.conflict = append(msc.conflict, sql.ConflictColumns(columns...))
+func (_c *MeetingSessionCreate) OnConflictColumns(columns ...string) *MeetingSessionUpsertOne {
+	_c.conflict = append(_c.conflict, sql.ConflictColumns(columns...))
 	return &MeetingSessionUpsertOne{
-		create: msc,
+		create: _c,
 	}
 }
 
@@ -566,16 +566,16 @@ type MeetingSessionCreateBulk struct {
 }
 
 // Save creates the MeetingSession entities in the database.
-func (mscb *MeetingSessionCreateBulk) Save(ctx context.Context) ([]*MeetingSession, error) {
-	if mscb.err != nil {
-		return nil, mscb.err
+func (_c *MeetingSessionCreateBulk) Save(ctx context.Context) ([]*MeetingSession, error) {
+	if _c.err != nil {
+		return nil, _c.err
 	}
-	specs := make([]*sqlgraph.CreateSpec, len(mscb.builders))
-	nodes := make([]*MeetingSession, len(mscb.builders))
-	mutators := make([]Mutator, len(mscb.builders))
-	for i := range mscb.builders {
+	specs := make([]*sqlgraph.CreateSpec, len(_c.builders))
+	nodes := make([]*MeetingSession, len(_c.builders))
+	mutators := make([]Mutator, len(_c.builders))
+	for i := range _c.builders {
 		func(i int, root context.Context) {
-			builder := mscb.builders[i]
+			builder := _c.builders[i]
 			builder.defaults()
 			var mut Mutator = MutateFunc(func(ctx context.Context, m Mutation) (Value, error) {
 				mutation, ok := m.(*MeetingSessionMutation)
@@ -589,12 +589,12 @@ func (mscb *MeetingSessionCreateBulk) Save(ctx context.Context) ([]*MeetingSessi
 				var err error
 				nodes[i], specs[i] = builder.createSpec()
 				if i < len(mutators)-1 {
-					_, err = mutators[i+1].Mutate(root, mscb.builders[i+1].mutation)
+					_, err = mutators[i+1].Mutate(root, _c.builders[i+1].mutation)
 				} else {
 					spec := &sqlgraph.BatchCreateSpec{Nodes: specs}
-					spec.OnConflict = mscb.conflict
+					spec.OnConflict = _c.conflict
 					// Invoke the actual operation on the latest mutation in the chain.
-					if err = sqlgraph.BatchCreate(ctx, mscb.driver, spec); err != nil {
+					if err = sqlgraph.BatchCreate(ctx, _c.driver, spec); err != nil {
 						if sqlgraph.IsConstraintError(err) {
 							err = &ConstraintError{msg: err.Error(), wrap: err}
 						}
@@ -614,7 +614,7 @@ func (mscb *MeetingSessionCreateBulk) Save(ctx context.Context) ([]*MeetingSessi
 		}(i, ctx)
 	}
 	if len(mutators) > 0 {
-		if _, err := mutators[0].Mutate(ctx, mscb.builders[0].mutation); err != nil {
+		if _, err := mutators[0].Mutate(ctx, _c.builders[0].mutation); err != nil {
 			return nil, err
 		}
 	}
@@ -622,8 +622,8 @@ func (mscb *MeetingSessionCreateBulk) Save(ctx context.Context) ([]*MeetingSessi
 }
 
 // SaveX is like Save, but panics if an error occurs.
-func (mscb *MeetingSessionCreateBulk) SaveX(ctx context.Context) []*MeetingSession {
-	v, err := mscb.Save(ctx)
+func (_c *MeetingSessionCreateBulk) SaveX(ctx context.Context) []*MeetingSession {
+	v, err := _c.Save(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -631,14 +631,14 @@ func (mscb *MeetingSessionCreateBulk) SaveX(ctx context.Context) []*MeetingSessi
 }
 
 // Exec executes the query.
-func (mscb *MeetingSessionCreateBulk) Exec(ctx context.Context) error {
-	_, err := mscb.Save(ctx)
+func (_c *MeetingSessionCreateBulk) Exec(ctx context.Context) error {
+	_, err := _c.Save(ctx)
 	return err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (mscb *MeetingSessionCreateBulk) ExecX(ctx context.Context) {
-	if err := mscb.Exec(ctx); err != nil {
+func (_c *MeetingSessionCreateBulk) ExecX(ctx context.Context) {
+	if err := _c.Exec(ctx); err != nil {
 		panic(err)
 	}
 }
@@ -658,10 +658,10 @@ func (mscb *MeetingSessionCreateBulk) ExecX(ctx context.Context) {
 //			SetTenantID(v+v).
 //		}).
 //		Exec(ctx)
-func (mscb *MeetingSessionCreateBulk) OnConflict(opts ...sql.ConflictOption) *MeetingSessionUpsertBulk {
-	mscb.conflict = opts
+func (_c *MeetingSessionCreateBulk) OnConflict(opts ...sql.ConflictOption) *MeetingSessionUpsertBulk {
+	_c.conflict = opts
 	return &MeetingSessionUpsertBulk{
-		create: mscb,
+		create: _c,
 	}
 }
 
@@ -671,10 +671,10 @@ func (mscb *MeetingSessionCreateBulk) OnConflict(opts ...sql.ConflictOption) *Me
 //	client.MeetingSession.Create().
 //		OnConflict(sql.ConflictColumns(columns...)).
 //		Exec(ctx)
-func (mscb *MeetingSessionCreateBulk) OnConflictColumns(columns ...string) *MeetingSessionUpsertBulk {
-	mscb.conflict = append(mscb.conflict, sql.ConflictColumns(columns...))
+func (_c *MeetingSessionCreateBulk) OnConflictColumns(columns ...string) *MeetingSessionUpsertBulk {
+	_c.conflict = append(_c.conflict, sql.ConflictColumns(columns...))
 	return &MeetingSessionUpsertBulk{
-		create: mscb,
+		create: _c,
 	}
 }
 
