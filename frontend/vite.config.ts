@@ -7,9 +7,10 @@ export default defineConfig({
 		host: "127.0.0.1",
 		port: 5173,
 		strictPort: true,
+		allowedHosts: ["app.rezible.test"],
 		proxy: {
 			"/api": {
-				target: "http://localhost:8888/api/v1",
+				target: "https://api.rezible.test/api/v1",
 				changeOrigin: true,
 				rewrite: (path) => path.replace(/^\/api/, ""),
 			},

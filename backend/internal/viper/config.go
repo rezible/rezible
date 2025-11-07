@@ -21,7 +21,7 @@ func InitConfig() *Config {
 
 	// viper.SetEnvPrefix("REZ")
 	viper.SetDefault("stop_timeout", 10)
-	
+
 	viper.AutomaticEnv()
 
 	if cfg.DebugMode() {
@@ -48,11 +48,11 @@ func (c *Config) DatabaseUrl() string {
 }
 
 func (c *Config) BackendUrl() string {
-	return "http://localhost:8888"
+	return "https://api.rezible.test"
 }
 
 func (c *Config) FrontendUrl() string {
-	return "http://localhost:5173"
+	return "https://app.rezible.test"
 }
 
 func (c *Config) AllowTenantCreation() bool {

@@ -17,7 +17,7 @@
     "DB_URL": "postgresql://localhost/rezible?sslmode=disable"
   },
   "shell": {
-    "init_hook": [],
+    "init_hook": ["unset DEVELOPER_DIR"],
     "scripts": {
       "dev":         ["just dev"],
       "dev-backend": ["just dev-backend"],
