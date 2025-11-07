@@ -26,6 +26,7 @@
     }
   },
   "dependencies": {
+    "@hocuspocus/common": "^3.4.0",
     "@hocuspocus/extension-logger": "^2.15.2",
     "@hocuspocus/server": "^2.15.2",
     "@hocuspocus/transformer": "^2.15.2",

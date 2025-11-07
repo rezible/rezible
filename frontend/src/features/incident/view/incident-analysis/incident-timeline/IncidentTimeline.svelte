@@ -1,5 +1,5 @@
 <script lang="ts">
-	import "vis-timeline/dist/vis-timeline-graph2d.min.css";
+	import "vis-timeline/styles/vis-timeline-graph2d.css"
 	import "./timeline-styles.css";
 
 	import { watch } from "runed";

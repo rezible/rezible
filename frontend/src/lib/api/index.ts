@@ -6,7 +6,7 @@ import type { ErrorModel, ResponsePagination } from "./oapi.gen/types.gen";
 import { type Options } from "@hey-api/client-fetch";
 import type { CreateQueryOptions } from "@tanstack/svelte-query";
 
-export const BACKEND_URL = dev ? "http://localhost:8888" : "";
+export const BACKEND_URL = dev ? "https://app.rezible.test" : "";
 
 const clientConfig = createConfig<ClientOptions>({ 
 	baseUrl: "/api",

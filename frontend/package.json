@@ -43,6 +43,8 @@
 		"@hey-api/client-fetch": "^0.13.1",
 		"@hocuspocus/provider": "^2.15.2",
 		"@internationalized/date": "^3.10.0",
+		"@layerstack/svelte-actions": "^1.0.1",
+		"@layerstack/svelte-stores": "^1.0.2",
 		"@layerstack/svelte-table": "^1.0.1",
 		"@layerstack/tailwind": "^1.0.1",
 		"@layerstack/utils": "^1.0.1",

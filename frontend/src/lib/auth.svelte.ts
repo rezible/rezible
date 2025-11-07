@@ -8,8 +8,8 @@ import {
 	type Organization,
 } from "$lib/api";
 import { parseAbsoluteToLocal } from "@internationalized/date";
-import { createQuery, QueryClient } from "@tanstack/svelte-query";
-import { Context, watch } from "runed";
+import { createQuery } from "@tanstack/svelte-query";
+import { Context } from "runed";
 import { onMount } from "svelte";
 
 export type SessionErrorCategory = "unknown" | "invalid" | "expired" | "no_session" | "no_user";

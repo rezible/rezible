@@ -24,14 +24,8 @@
 
 <div class="antialiased p-2 flex gap-2 w-dvw h-dvh min-h-dvh bg-surface-300 text-surface-content">
 	<SessionProtector>
-		{#if session.isAuthenticated}
-			{#if session.isSetup}
-				<Sidebar />
-			{:else}
-				<div class="w-full">
-					<LogoHeader />
-				</div>
-			{/if}
+		{#if session.isAuthenticated && session.isSetup}
+			<Sidebar />
 		{/if}
 
 		<main class="w-full max-w-full h-full max-h-full min-h-0 flex flex-col">

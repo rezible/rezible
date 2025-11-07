@@ -11,6 +11,7 @@
       "name": "documents",
       "version": "0.0.1",
       "dependencies": {
+        "@hocuspocus/common": "^3.4.0",
         "@hocuspocus/extension-logger": "^2.15.2",
         "@hocuspocus/server": "^2.15.2",
         "@hocuspocus/transformer": "^2.15.2",
@@ -51,6 +52,8 @@
         "@hey-api/client-fetch": "^0.13.1",
         "@hocuspocus/provider": "^2.15.2",
         "@internationalized/date": "^3.10.0",
+        "@layerstack/svelte-actions": "^1.0.1",
+        "@layerstack/svelte-stores": "^1.0.2",
         "@layerstack/svelte-table": "^1.0.1",
         "@layerstack/tailwind": "^1.0.1",
         "@layerstack/utils": "^1.0.1",
@@ -194,7 +197,7 @@
 
     "@hey-api/openapi-ts": ["@hey-api/openapi-ts@0.84.4", "", { "dependencies": { "@hey-api/codegen-core": "^0.2.0", "@hey-api/json-schema-ref-parser": "1.1.0", "ansi-colors": "4.1.3", "c12": "2.0.1", "color-support": "1.1.3", "commander": "13.0.0", "handlebars": "4.7.8", "open": "10.1.2", "semver": "7.7.2" }, "peerDependencies": { "typescript": ">=5.5.3" }, "bin": { "openapi-ts": "bin/index.cjs" } }, "sha512-yKR/KFQVCoAbvkpRM13uYxMUyZl3whwEY8Nj4X9Yra18dWpfzmdTyTxP8KtYzdfNMC9xIw4TAgK5+1FJctENBw=="],
 
-    "@hocuspocus/common": ["@hocuspocus/common@2.15.3", "", { "dependencies": { "lib0": "^0.2.87" } }, "sha512-Rzh1HF0a2o/tf90A3w2XNdXd9Ym3aQzMDfD3lAUONCX9B9QOdqdyiORrj6M25QEaJrEIbXFy8LtAFcL0wRdWzA=="],
+    "@hocuspocus/common": ["@hocuspocus/common@3.4.0", "", { "dependencies": { "lib0": "^0.2.87" } }, "sha512-vN0kE/mGTjuwchq16naq+nEjFDmeSLNCkDSAB7DKvpZnuG4KQi5oC42VFdKbq/baQTbDMSe82rI7f9riOR8idQ=="],
 
     "@hocuspocus/extension-logger": ["@hocuspocus/extension-logger@2.15.3", "", { "dependencies": { "@hocuspocus/server": "^2.15.3" } }, "sha512-NufsjXldlVX1c2B98Hyg8Vq9GblPmnIvw9QGdsBK6SNEgWzDwfVrjljrigMAVGuQ4pbBVz8TaY5DcsmOCi5jqA=="],
 
@@ -1165,6 +1168,10 @@
     "@eslint/eslintrc/globals": ["globals@14.0.0", "", {}, "sha512-oahGvuMGQlPw/ivIYBjVSrWAfWLBeku5tpPE2fOPLi+WHffIWbuh2tCjhyQhTBPMf5E9jDEH4FOmTYgYwbKwtQ=="],
 
     "@eslint/eslintrc/ignore": ["ignore@5.3.2", "", {}, "sha512-hsBTNUqQTDwkWtcdYI2i06Y/nUBEsNEDJKjWdigLvegy8kDuJAS8uRlpkkcQpyEXL0Z/pjDy5HBmMjRCJ2gq+g=="],
+
+    "@hocuspocus/provider/@hocuspocus/common": ["@hocuspocus/common@2.15.3", "", { "dependencies": { "lib0": "^0.2.87" } }, "sha512-Rzh1HF0a2o/tf90A3w2XNdXd9Ym3aQzMDfD3lAUONCX9B9QOdqdyiORrj6M25QEaJrEIbXFy8LtAFcL0wRdWzA=="],
+
+    "@hocuspocus/server/@hocuspocus/common": ["@hocuspocus/common@2.15.3", "", { "dependencies": { "lib0": "^0.2.87" } }, "sha512-Rzh1HF0a2o/tf90A3w2XNdXd9Ym3aQzMDfD3lAUONCX9B9QOdqdyiORrj6M25QEaJrEIbXFy8LtAFcL0wRdWzA=="],
 
     "@layerstack/svelte-stores/zod": ["zod@3.25.76", "", {}, "sha512-gzUt/qt81nXsFGKIFcC3YnfEAx5NkunCfnDlvuBSSFS02bcXu4Lmea0AFIUwbLWxWPx3d9p8S5QoaujKcNQxcQ=="],
 
