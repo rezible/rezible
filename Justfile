@@ -71,7 +71,7 @@ _default:
 @setup-db:
     just create-db
     # just setup-migrations
-    just run-migrations
+    just run-auto-migrations
     # just run-backend load-fake-config
 
 @setup-migrations:
@@ -79,7 +79,7 @@ _default:
       go tool river migrate-get --all --exclude-version 1 --up > river_all.up.sql && \
       go tool river migrate-get --all --exclude-version 1 --down > river_all.down.sql
 
-@run-migrations:
+@run-auto-migrations:
     just run-backend db migrate apply auto
 
 @seed-db:
