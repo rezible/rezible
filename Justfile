@@ -62,11 +62,15 @@ _default:
     cd documents && bun run dev
 
 # [group('Database')]
-@setup-db: stop-db
+@create-db: stop-db
     rm -rf ./.devbox/virtenv/postgresql/data
     initdb -A trust > /dev/null
     just start-db
     createdb rezible
+
+@setup-db:
+    just create-db
+    # just setup-migrations
     just run-migrations
     # just run-backend load-fake-config
 
@@ -76,7 +80,7 @@ _default:
       go tool river migrate-get --all --exclude-version 1 --down > river_all.down.sql
 
 @run-migrations:
-    just run-backend db migrate apply up
+    just run-backend db migrate apply auto
 
 @seed-db:
     just run-backend seed

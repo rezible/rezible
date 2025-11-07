@@ -125,11 +125,7 @@ var dbMigrateGenerateCmd = &cobra.Command{
 	Short: "create a new migration",
 	Args:  cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
-		ctx := access.SystemContext(cmd.Context())
-		name := args[0]
-		if genErr := rezinternal.GenerateMigration(ctx, name); genErr != nil {
-			log.Fatal().Err(genErr).Msg("failed to generate database migrations")
-		}
+
 	},
 }
 
@@ -138,9 +134,13 @@ var dbMigrateApplyCmd = &cobra.Command{
 	Short: "apply database migrations",
 	Args:  cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
-		// TODO: use generated migrations
-		if migErr := rezinternal.RunAutoMigrations(cmd.Context()); migErr != nil {
-			log.Fatal().Err(migErr).Msg("failed to apply database migrations")
+		direction := args[0]
+		if direction == "auto" {
+			if migErr := rezinternal.RunAutoMigrations(cmd.Context()); migErr != nil {
+				log.Fatal().Err(migErr).Msg("failed to apply database migrations")
+			}
+		} else {
+			log.Warn().Str("direction", direction).Msg("version migrations not implemented")
 		}
 	},
 }

@@ -2,42 +2,14 @@ package postgres
 
 import (
 	"context"
-	"embed"
 	"fmt"
 
-	"ariga.io/atlas/sql/sqltool"
 	"entgo.io/ent/dialect"
 	entsql "entgo.io/ent/dialect/sql"
-	"entgo.io/ent/dialect/sql/schema"
-	"github.com/jackc/pgx/v5/stdlib"
-	rez "github.com/rezible/rezible"
-	entmigrate "github.com/rezible/rezible/ent/migrate"
 	"github.com/rezible/rezible/internal/postgres/river"
+
+	"github.com/jackc/pgx/v5/stdlib"
 )
-
-//go:embed all:migrations/*
-var migrationFiles embed.FS
-
-func GenerateMigrationFile(ctx context.Context, name string) error {
-	dir, dirErr := sqltool.NewGolangMigrateDir("internal/postgres/migrations")
-	if dirErr != nil {
-		return fmt.Errorf("creating migration directory: %w", dirErr)
-	}
-
-	opts := []schema.MigrateOption{
-		schema.WithDir(dir),
-		schema.WithMigrationMode(schema.ModeReplay),
-		schema.WithDialect(dialect.Postgres),
-		schema.WithErrNoPlan(true),
-	}
-
-	diffErr := entmigrate.NamedDiff(ctx, rez.Config.DatabaseUrl(), name, opts...)
-	if diffErr != nil {
-		return fmt.Errorf("generating migration file: %w", diffErr)
-	}
-
-	return nil
-}
 
 func RunAutoMigrations(ctx context.Context) error {
 	dbc, dbcErr := NewDatabaseClient(ctx)
