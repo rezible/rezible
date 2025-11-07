@@ -125,7 +125,11 @@ var dbMigrateGenerateCmd = &cobra.Command{
 	Short: "create a new migration",
 	Args:  cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
-
+		ctx := access.SystemContext(cmd.Context())
+		name := args[0]
+		if genErr := rezinternal.GenerateMigration(ctx, name); genErr != nil {
+			log.Fatal().Err(genErr).Msg("failed to generate database migrations")
+		}
 	},
 }
 

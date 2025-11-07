@@ -70,6 +70,11 @@ _default:
     just run-migrations
     # just run-backend load-fake-config
 
+@setup-migrations:
+    cd backend/internal/postgres/migrations && \
+      go tool river migrate-get --all --exclude-version 1 --up > river_all.up.sql && \
+      go tool river migrate-get --all --exclude-version 1 --down > river_all.down.sql
+
 @run-migrations:
     just run-backend db migrate apply up
 

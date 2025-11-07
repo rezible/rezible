@@ -21,6 +21,19 @@ import (
 	"github.com/sourcegraph/conc/pool"
 )
 
+func GenerateMigration(ctx context.Context, name string) error {
+	return postgres.GenerateMigrationFile(ctx, name)
+}
+
+func RunAutoMigrations(ctx context.Context) error {
+	return postgres.RunAutoMigrations(ctx)
+}
+
+func OpenPostgresDatabase(ctx context.Context) (rez.Database, error) {
+	// TODO: allow different db?
+	return postgres.NewDatabaseClient(ctx)
+}
+
 func RunServer(ctx context.Context) error {
 	ctx = access.AnonymousContext(ctx)
 
@@ -77,15 +90,6 @@ func stopListeners(listeners map[string]listener) error {
 	}
 
 	return err
-}
-
-func RunAutoMigrations(ctx context.Context) error {
-	return postgres.RunAutoMigrations(ctx)
-}
-
-func OpenPostgresDatabase(ctx context.Context) (rez.Database, error) {
-	// TODO: allow different db?
-	return postgres.NewDatabaseClient(ctx)
 }
 
 func setupListeners(ctx context.Context) (map[string]listener, error) {

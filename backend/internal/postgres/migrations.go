@@ -2,6 +2,7 @@ package postgres
 
 import (
 	"context"
+	"embed"
 	"fmt"
 
 	"ariga.io/atlas/sql/sqltool"
@@ -14,8 +15,11 @@ import (
 	"github.com/rezible/rezible/internal/postgres/river"
 )
 
+//go:embed all:migrations/*
+var migrationFiles embed.FS
+
 func GenerateMigrationFile(ctx context.Context, name string) error {
-	dir, dirErr := sqltool.NewGolangMigrateDir("ent/migrate/migrations")
+	dir, dirErr := sqltool.NewGolangMigrateDir("internal/postgres/migrations")
 	if dirErr != nil {
 		return fmt.Errorf("creating migration directory: %w", dirErr)
 	}
