@@ -57,7 +57,7 @@ _default:
     cd backend && reflex -s -d none -r '\.go$' -- just run-backend
 
 @dev-frontend:
-    cd frontend && bun run dev
+    cd frontend && PUBLIC_REZ_API_BASE_URL="/api/v1" bun run dev
 
 @dev-document-server:
     cd documents && bun run dev

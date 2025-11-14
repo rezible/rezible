@@ -47,19 +47,19 @@ func (c *Config) DatabaseUrl() string {
 	return c.GetString("db_url")
 }
 
-func (c *Config) ApiRoutePrefix() string {
+func (c *Config) ApiRouteBase() string {
 	return "/api"
 }
 
-func (c *Config) AuthRoutePrefix() string {
-	return c.ApiRoutePrefix() + "/auth"
+func (c *Config) AuthRouteBase() string {
+	return "/auth"
 }
 
 func (c *Config) BackendUrl() string {
-	return "https://api.rezible.test"
+	return "http://localhost:8888"
 }
 
-func (c *Config) FrontendUrl() string {
+func (c *Config) AppUrl() string {
 	return "https://app.rezible.test"
 }
 

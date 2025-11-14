@@ -10,10 +10,10 @@ export default defineConfig({
 		allowedHosts: ["app.rezible.test"],
 		proxy: {
 			"/api": {
-				target: "https://api.rezible.test",
+				target: "http://localhost:8888",
 				changeOrigin: true,
 				configure(proxy, options) {
-					console.log(options);
+					// console.log(options);
 				},
 				// rewrite: (path) => path.replace(/^\/api/, ""),
 			},

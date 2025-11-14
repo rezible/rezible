@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"net/url"
 	"strings"
 	"time"
 
@@ -23,6 +24,7 @@ const (
 )
 
 type AuthService struct {
+	authRoute     string
 	orgs          rez.OrganizationService
 	users         rez.UserService
 	providers     []rez.AuthSessionProvider
@@ -42,7 +44,13 @@ func NewAuthSessionService(ctx context.Context, orgs rez.OrganizationService, us
 		return nil, fmt.Errorf("loading session providers: %w", provsErr)
 	}
 
+	authRoute, routeErr := url.JoinPath(rez.Config.ApiRouteBase(), rez.Config.AuthRouteBase())
+	if routeErr != nil {
+		return nil, fmt.Errorf("loading auth route: %w", routeErr)
+	}
+
 	return &AuthService{
+		authRoute:     authRoute,
 		orgs:          orgs,
 		users:         users,
 		providers:     providers,
@@ -109,8 +117,8 @@ func (s *AuthService) getMCPUserSession(r *http.Request) (*rez.AuthSession, erro
 	return fakeSess, nil
 }
 
-func (s *AuthService) UserAuthHandler() http.Handler {
-	logoutPath := rez.Config.AuthRoutePrefix() + "/logout"
+func (s *AuthService) AuthRouteHandler() http.Handler {
+	logoutPath := s.authRoute + "/logout"
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.URL.Path == logoutPath {
 			s.handleLogout(w, r)
@@ -121,7 +129,7 @@ func (s *AuthService) UserAuthHandler() http.Handler {
 			return
 		}
 
-		http.Redirect(w, r, rez.Config.FrontendUrl(), http.StatusFound)
+		http.Redirect(w, r, rez.Config.AppUrl(), http.StatusFound)
 	})
 }
 
@@ -135,7 +143,7 @@ func (s *AuthService) handleLogout(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 	http.SetCookie(w, s.makeSessionCookie(r, "", time.Now(), -1))
-	http.Redirect(w, r, rez.Config.FrontendUrl(), http.StatusFound)
+	http.Redirect(w, r, rez.Config.AppUrl(), http.StatusFound)
 }
 
 func (s *AuthService) makeUserSessionCreatedCallback(w http.ResponseWriter, r *http.Request, flowRoute string) func(ps rez.AuthProviderSession) {
@@ -144,7 +152,7 @@ func (s *AuthService) makeUserSessionCreatedCallback(w http.ResponseWriter, r *h
 	return func(ps rez.AuthProviderSession) {
 		redirect := ps.RedirectUrl
 		if redirect == "" || redirect == flowRoute {
-			redirect = rez.Config.FrontendUrl()
+			redirect = rez.Config.AppUrl()
 		}
 
 		expiry := ps.ExpiresAt
@@ -180,13 +188,19 @@ func (s *AuthService) makeUserSessionCreatedCallback(w http.ResponseWriter, r *h
 }
 
 func (s *AuthService) GetProviderStartFlowPath(prov rez.AuthSessionProvider) string {
-	return rez.Config.AuthRoutePrefix() + strings.ToLower(prov.Id())
+	return s.authRoute + "/" + strings.ToLower(prov.Id())
 }
 
 func (s *AuthService) delegateAuthFlowToProvider(w http.ResponseWriter, r *http.Request) bool {
 	for _, prov := range s.providers {
 		provFlowRoute := s.GetProviderStartFlowPath(prov)
+
 		if r.URL.Path == provFlowRoute {
+			log.Debug().
+				Str("prov", prov.DisplayName()).
+				Str("route", provFlowRoute).
+				Str("request", r.URL.Path).
+				Msg("delegate to provider?")
 			prov.StartAuthFlow(w, r)
 			return true
 		}

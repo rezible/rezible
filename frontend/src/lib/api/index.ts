@@ -6,11 +6,13 @@ import type { ErrorModel, ResponsePagination } from "./oapi.gen/types.gen";
 import { type Options } from "@hey-api/client-fetch";
 import type { CreateQueryOptions } from "@tanstack/svelte-query";
 
+import { PUBLIC_REZ_API_BASE_URL } from '$env/static/public';
+
+export const API_BASE_URL = PUBLIC_REZ_API_BASE_URL;
 export const BACKEND_URL = dev ? "https://app.rezible.test" : "";
 
 const clientConfig = createConfig<ClientOptions>({ 
-	baseUrl: "/api",
-	// baseUrl: BACKEND_URL + "/api/v1",
+	baseUrl: API_BASE_URL,
 	// credentials: "include",
 });
 client.setConfig(clientConfig);

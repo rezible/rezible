@@ -77,7 +77,7 @@ func RegisterRoutes(api huma.API, handler Handler) {
 	huma.AutoRegister(api, operations{Handler: handler})
 }
 
-func MakeApi(s Handler, mw ...Middleware) huma.API {
+func MakeApi(s Handler, prefix string, mw ...Middleware) huma.API {
 	cfg := MakeConfig()
 
 	//tranformers := []huma.Transformer{
@@ -85,7 +85,7 @@ func MakeApi(s Handler, mw ...Middleware) huma.API {
 	//}
 	//cfg.Transformers = append(cfg.Transformers, tranformers...)
 
-	adapter := humago.NewAdapter(http.NewServeMux(), prefix)
+	adapter := humago.NewAdapter(http.NewServeMux(), prefix+"/v1")
 	api := huma.NewAPI(cfg, adapter)
 	api.UseMiddleware(mw...)
 	RegisterRoutes(api, s)
@@ -94,7 +94,7 @@ func MakeApi(s Handler, mw ...Middleware) huma.API {
 }
 
 func GetYamlSpec() (string, error) {
-	api := MakeApi(operations{})
+	api := MakeApi(operations{}, "")
 	spec, specErr := yaml.Marshal(api.OpenAPI())
 	if specErr != nil {
 		return "", specErr

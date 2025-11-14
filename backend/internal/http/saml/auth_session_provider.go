@@ -77,14 +77,19 @@ func loadEnvConfig(ctx context.Context) (*AuthSessionProviderConfig, error) {
 		return nil, fmt.Errorf("failed to cast *rsa.PrivateKey")
 	}
 
-	appUrl, appUrlErr := url.Parse(rez.Config.BackendUrl())
+	appUrl, appUrlErr := url.Parse(rez.Config.AppUrl())
 	if appUrlErr != nil {
 		return nil, fmt.Errorf("failed to parse backend url: %w", appUrlErr)
 	}
 
+	pathBase, baseErr := url.JoinPath(rez.Config.ApiRouteBase(), rez.Config.AuthRouteBase(), "/saml/")
+	if baseErr != nil {
+		return nil, fmt.Errorf("failed to resolve path: %w", baseErr)
+	}
+
 	cfg := &AuthSessionProviderConfig{
 		appUrl:      *appUrl,
-		pathBase:    rez.Config.AuthRoutePrefix() + "/saml",
+		pathBase:    pathBase,
 		idpMetadata: idpMetadata,
 		keyPair:     &keyPair,
 		cert:        cert,
@@ -156,7 +161,7 @@ func (p *AuthSessionProvider) createSamlMiddleware(cfg *AuthSessionProviderConfi
 		CookieName:         sessionCookieName,
 		IDPMetadata:        cfg.idpMetadata,
 		SignRequest:        true,
-		DefaultRedirectURI: rez.Config.FrontendUrl(),
+		DefaultRedirectURI: rez.Config.AppUrl(),
 	}
 	if !rez.Config.DebugMode() {
 		opts.CookieSameSite = http.SameSiteLaxMode
@@ -347,7 +352,7 @@ func (p *AuthSessionProvider) verifyClaims(claims samlsp.JWTSessionClaims) error
 		Str("issuer", claims.Issuer).
 		Msg("TODO: verify SAML audience claim")
 
-	audience := ""
+	audience := rez.Config.AppUrl()
 	if !claims.VerifyAudience(audience, true) {
 		return fmt.Errorf("audience '%s'", claims.Audience)
 	}

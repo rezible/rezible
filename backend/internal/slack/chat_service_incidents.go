@@ -45,7 +45,7 @@ func (s *ChatService) HandleIncidentChatUpdate(ctx context.Context, args jobs.In
 		severity = inc.Edges.Severity.Name
 	}
 
-	webLink := fmt.Sprintf("%s/incidents/%s", rez.Config.FrontendUrl(), inc.Slug)
+	webLink := fmt.Sprintf("%s/incidents/%s", rez.Config.AppUrl(), inc.Slug)
 	detailsText := fmt.Sprintf("*Incident Details*\n*Title:* %s\n*Severity:* %s\n*Status:* %s\n*Web:* %s",
 		inc.Title, severity, "OPEN", webLink)
 
@@ -149,7 +149,7 @@ func (s *ChatService) UpdateIncidentChannelTopic(ctx context.Context, inc *ent.I
 		status = "CLOSED"
 	}
 
-	webLink := fmt.Sprintf("%s/incidents/%s", rez.Config.FrontendUrl(), inc.Slug)
+	webLink := fmt.Sprintf("%s/incidents/%s", rez.Config.AppUrl(), inc.Slug)
 	topic := fmt.Sprintf("[%s] %s | Status: %s | %s", severity, inc.Title, status, webLink)
 
 	_, setErr := s.client.SetTopicOfConversationContext(ctx, inc.ChatChannelID, topic)
@@ -164,7 +164,7 @@ func (s *ChatService) AddIncidentDetailsBookmark(ctx context.Context, inc *ent.I
 		return nil
 	}
 
-	webLink := fmt.Sprintf("%s/incidents/%s", rez.Config.FrontendUrl(), inc.Slug)
+	webLink := fmt.Sprintf("%s/incidents/%s", rez.Config.AppUrl(), inc.Slug)
 	title := "View Incident Details"
 
 	_, addErr := s.client.AddBookmark(inc.ChatChannelID, slack.AddBookmarkParameters{

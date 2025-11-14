@@ -86,7 +86,7 @@ func buildHandoverAnnotationsSection(annos []*ent.EventAnnotation) []prosemirror
 }
 
 func buildHandoverFooterSection(endingShift *ent.OncallShift) prosemirror.Node {
-	endingShiftLink := fmt.Sprintf("%s/oncall/shifts/%s", rez.Config.FrontendUrl(), endingShift.ID)
+	endingShiftLink := fmt.Sprintf("%s/oncall/shifts/%s", rez.Config.AppUrl(), endingShift.ID)
 
 	linkText := prosemirror.Node{
 		Type:  richTextType,

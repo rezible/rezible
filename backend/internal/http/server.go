@@ -35,7 +35,7 @@ func NewServer(auth rez.AuthService) *Server {
 	}
 
 	s.api = chi.NewMux()
-	s.api.Mount(rez.Config.AuthRoutePrefix(), auth.UserAuthHandler())
+	s.api.Mount(rez.Config.AuthRouteBase(), auth.AuthRouteHandler())
 	s.api.Get("/health", s.healthCheckHandler)
 
 	return &s
@@ -74,9 +74,8 @@ func (s *Server) MountStaticFrontend(feFiles fs.FS) {
 }
 
 func (s *Server) MountOpenApiV1(h oapiv1.Handler) {
-	handler := oapiv1.MakeApi(h, oapiv1.MakeSecurityMiddleware(s.auth)).Adapter()
-	oapiV1Router := s.commonMiddleware().
-		Handler(handler)
+	handler := oapiv1.MakeApi(h, rez.Config.ApiRouteBase(), oapiv1.MakeSecurityMiddleware(s.auth)).Adapter()
+	oapiV1Router := s.commonMiddleware().Handler(handler)
 	s.api.Mount("/v1", oapiV1Router)
 }
 
@@ -84,11 +83,8 @@ func (s *Server) Start(baseCtx context.Context) error {
 	r := chi.NewMux()
 	r.Use(middleware.Recoverer)
 
-	// remove
-	s.baseHandler = chi.Chain(middleware.Logger).Handler(s.baseHandler)
-
+	r.Mount(rez.Config.ApiRouteBase(), s.api)
 	r.Handle("/*", s.baseHandler)
-	r.Mount(ensureSlashPrefix(rez.Config.ApiRoutePrefix()), s.api)
 
 	s.httpServer = &http.Server{
 		Addr:    rez.Config.HttpServerAddress(),

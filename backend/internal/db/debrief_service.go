@@ -206,7 +206,7 @@ func (s *DebriefService) prepareUserDebrief(ctx context.Context, user *ent.User,
 
 		msgText := fmt.Sprintf(
 			"Thank you for your role in %s!\nPlease complete your incident debrief as soon as possible", incFmt)
-		msgLinkUrl := fmt.Sprintf("%s/incidents/%s/retrospective", rez.Config.FrontendUrl(), inc.ID.String())
+		msgLinkUrl := fmt.Sprintf("%s/incidents/%s/retrospective", rez.Config.AppUrl(), inc.ID.String())
 		msgLinkText := "Open Incident Debrief"
 		if msgErr := s.msg.SendUserLinkMessage(ctx, user, msgText, msgLinkUrl, msgLinkText); msgErr != nil {
 			log.Error().Err(msgErr).Msg("Failed to send incident debrief message")

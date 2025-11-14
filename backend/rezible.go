@@ -35,11 +35,11 @@ type ConfigLoader interface {
 
 	DatabaseUrl() string
 
-	FrontendUrl() string
+	AppUrl() string
 	BackendUrl() string
 
-	ApiRoutePrefix() string
-	AuthRoutePrefix() string
+	ApiRouteBase() string
+	AuthRouteBase() string
 
 	HttpServerAddress() string
 	ServerStopTimeout() time.Duration
@@ -166,7 +166,7 @@ type (
 		Providers() []AuthSessionProvider
 		GetProviderStartFlowPath(prov AuthSessionProvider) string
 
-		UserAuthHandler() http.Handler
+		AuthRouteHandler() http.Handler
 		MCPServerMiddleware() func(http.Handler) http.Handler
 
 		IssueAuthSessionToken(sess *AuthSession) (string, error)
