@@ -44,12 +44,6 @@ type (
 		User         User         `json:"user"`
 	}
 
-	Organization struct {
-		Id                   uuid.UUID `json:"id"`
-		Name                 string    `json:"name"`
-		RequiresInitialSetup bool      `json:"requiresInitialSetup"`
-	}
-
 	UserNotification struct {
 		Id         uuid.UUID                  `json:"id"`
 		Attributes UserNotificationAttributes `json:"attributes"`
@@ -57,14 +51,6 @@ type (
 
 	UserNotificationAttributes struct {
 		Text string `json:"text"`
-	}
-
-	UserAssignment struct {
-		ItemId   uuid.UUID `json:"itemId"`
-		ItemType string    `json:"itemType"`
-		Title    string    `json:"title"`
-		Deadline time.Time `json:"deadline"`
-		Role     string    `json:"role"`
 	}
 )
 

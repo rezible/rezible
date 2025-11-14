@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/google/uuid"
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/access"
 	"github.com/rezible/rezible/ent"
@@ -13,10 +14,15 @@ import (
 
 type OrganizationsService struct {
 	db *ent.Client
+	pc rez.ProviderConfigService
 }
 
-func NewOrganizationsService(db *ent.Client) (*OrganizationsService, error) {
-	return &OrganizationsService{db: db}, nil
+func NewOrganizationsService(db *ent.Client, pc rez.ProviderConfigService) (*OrganizationsService, error) {
+	return &OrganizationsService{db: db, pc: pc}, nil
+}
+
+func (s *OrganizationsService) GetById(ctx context.Context, id uuid.UUID) (*ent.Organization, error) {
+	return s.db.Organization.Get(ctx, id)
 }
 
 func (s *OrganizationsService) GetCurrent(ctx context.Context) (*ent.Organization, error) {
@@ -24,7 +30,7 @@ func (s *OrganizationsService) GetCurrent(ctx context.Context) (*ent.Organizatio
 	return s.db.Organization.Query().First(ctx)
 }
 
-func (s *OrganizationsService) FindOrCreateAuthProviderOrganization(ctx context.Context, o ent.Organization) (*ent.Organization, error) {
+func (s *OrganizationsService) FindOrCreateFromAuthProvider(ctx context.Context, o ent.Organization) (*ent.Organization, error) {
 	orgQuery := s.db.Organization.Query().
 		Where(organization.ProviderID(o.ProviderID))
 
@@ -65,8 +71,8 @@ func (s *OrganizationsService) FindOrCreateAuthProviderOrganization(ctx context.
 	return createdOrg, nil
 }
 
-func (s *OrganizationsService) FinishSetup(ctx context.Context) error {
-	o, orgErr := s.GetCurrent(ctx)
+func (s *OrganizationsService) CompleteSetup(ctx context.Context, id uuid.UUID) error {
+	o, orgErr := s.GetById(ctx, id)
 	if orgErr != nil {
 		return orgErr
 	}

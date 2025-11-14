@@ -8,11 +8,10 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"github.com/texm/prosemirror-go"
-
 	"github.com/rezible/rezible/ent"
 	"github.com/rezible/rezible/ent/providerconfig"
 	"github.com/rezible/rezible/jobs"
+	"github.com/texm/prosemirror-go"
 )
 
 var (
@@ -59,9 +58,10 @@ type ListParams = ent.ListParams
 
 type (
 	OrganizationService interface {
-		FindOrCreateAuthProviderOrganization(context.Context, ent.Organization) (*ent.Organization, error)
+		GetById(context.Context, uuid.UUID) (*ent.Organization, error)
 		GetCurrent(context.Context) (*ent.Organization, error)
-		FinishSetup(context.Context) error
+		CompleteSetup(context.Context, uuid.UUID) error
+		FindOrCreateFromAuthProvider(context.Context, ent.Organization) (*ent.Organization, error)
 	}
 )
 
@@ -266,6 +266,9 @@ type (
 
 		EnableEventListener() bool
 		MakeEventListener() (ChatEventListener, error)
+
+		GetOAuth2URL(ctx context.Context, state string) (string, error)
+		CompleteOAuth2Flow(ctx context.Context, code string) (*ent.ProviderConfig, error)
 	}
 
 	ChatEventListener interface {

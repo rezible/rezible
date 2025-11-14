@@ -18,7 +18,8 @@ type IntegrationsHandler interface {
 	UpdateIntegration(context.Context, *UpdateIntegrationRequest) (*UpdateIntegrationResponse, error)
 	DeleteIntegration(context.Context, *DeleteIntegrationRequest) (*DeleteIntegrationResponse, error)
 
-	FinishOrganizationSetup(context.Context, *FinishOrganizationSetupRequest) (*FinishOrganizationSetupResponse, error)
+	StartIntegrationOAuth(context.Context, *StartIntegrationOAuthRequest) (*StartIntegrationOAuthResponse, error)
+	CompleteIntegrationOAuth(context.Context, *CompleteIntegrationOAuthRequest) (*CompleteIntegrationOAuthResponse, error)
 }
 
 func (o operations) RegisterIntegrations(api huma.API) {
@@ -28,7 +29,8 @@ func (o operations) RegisterIntegrations(api huma.API) {
 	huma.Register(api, UpdateIntegration, o.UpdateIntegration)
 	huma.Register(api, DeleteIntegration, o.DeleteIntegration)
 
-	huma.Register(api, FinishOrganizationSetup, o.FinishOrganizationSetup)
+	huma.Register(api, StartIntegrationOAuth, o.StartIntegrationOAuth)
+	huma.Register(api, CompleteIntegrationOAuth, o.CompleteIntegrationOAuth)
 }
 
 type (
@@ -139,14 +141,40 @@ var DeleteIntegration = huma.Operation{
 type DeleteIntegrationRequest DeleteIdRequest
 type DeleteIntegrationResponse EmptyResponse
 
-var FinishOrganizationSetup = huma.Operation{
-	OperationID: "finish-organization-setup",
+var StartIntegrationOAuth = huma.Operation{
+	OperationID: "start-integration-oauth",
 	Method:      http.MethodPost,
-	Path:        "/organization/setup",
-	Summary:     "Finish initial org setup",
+	Path:        "/integrations_oauth/start",
+	Summary:     "Start OAuth flow for an Integration",
 	Tags:        integrationsTags,
 	Errors:      errorCodes(),
 }
 
-type FinishOrganizationSetupRequest EmptyRequest
-type FinishOrganizationSetupResponse EmptyResponse
+type StartIntegrationOAuthRequestAttributes struct {
+	Kind       string `json:"kind"`
+	ProviderId string `json:"provider_id"`
+}
+type StartIntegrationOAuthRequest RequestWithBodyAttributes[StartIntegrationOAuthRequestAttributes]
+
+type IntegrationOAuthFlow struct {
+	FlowUrl string `json:"flow_url"`
+}
+type StartIntegrationOAuthResponse ItemResponse[IntegrationOAuthFlow]
+
+var CompleteIntegrationOAuth = huma.Operation{
+	OperationID: "complete-integration-oauth",
+	Method:      http.MethodPost,
+	Path:        "/integrations_oauth/complete",
+	Summary:     "Complete OAuth flow for an Integration",
+	Tags:        integrationsTags,
+	Errors:      errorCodes(),
+}
+
+type CompleteIntegrationOAuthRequestAttributes struct {
+	Kind       string `json:"kind"`
+	ProviderId string `json:"provider_id"`
+	State      string `json:"state"`
+	Code       string `json:"code"`
+}
+type CompleteIntegrationOAuthRequest RequestWithBodyAttributes[CompleteIntegrationOAuthRequestAttributes]
+type CompleteIntegrationOAuthResponse ItemResponse[Integration]

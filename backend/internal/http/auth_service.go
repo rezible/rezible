@@ -160,9 +160,9 @@ func (s *AuthService) makeUserSessionCreatedCallback(w http.ResponseWriter, r *h
 			expiry = time.Now().Add(defaultSessionDuration)
 		}
 
-		org, orgErr := s.orgs.FindOrCreateAuthProviderOrganization(ctx, ps.Organization)
+		org, orgErr := s.orgs.FindOrCreateFromAuthProvider(ctx, ps.Organization)
 		if orgErr != nil {
-			log.Error().Err(orgErr).Msg("FindOrCreateAuthProviderOrganization")
+			log.Error().Err(orgErr).Msg("FindOrCreateFromAuthProvider")
 			http.Error(w, "session error", http.StatusInternalServerError)
 			return
 		}

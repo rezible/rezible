@@ -2,17 +2,21 @@ package slack
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/access"
 	"github.com/rezible/rezible/ent"
+	"github.com/rezible/rezible/ent/providerconfig"
 	"github.com/rs/zerolog/log"
 	"github.com/slack-go/slack"
+	"golang.org/x/oauth2"
 )
 
 type ChatService struct {
-	client *slack.Client
+	oauthConfig *oauth2.Config
+	client      *slack.Client
 
 	jobs       rez.JobsService
 	users      rez.UserService
@@ -27,7 +31,8 @@ func NewChatService(jobs rez.JobsService, users rez.UserService, incidents rez.I
 		return nil, clientErr
 	}
 	s := &ChatService{
-		client: client,
+		oauthConfig: LoadOAuthConfig(),
+		client:      client,
 
 		jobs:       jobs,
 		users:      users,
@@ -83,4 +88,50 @@ func (s *ChatService) SendOncallHandover(ctx context.Context, params rez.SendOnc
 
 func (s *ChatService) SendOncallHandoverReminder(ctx context.Context, shift *ent.OncallShift) error {
 	return nil
+}
+
+func (s *ChatService) GetOAuth2URL(ctx context.Context, state string) (string, error) {
+	return s.oauthConfig.AuthCodeURL(state), nil
+}
+
+type teamInfo struct {
+	ID   string `json:"id"`
+	Name string `json:"name"`
+}
+
+type providerConfigData struct {
+	AccessToken string    `json:"access_token"`
+	TokenType   string    `json:"token_type"`
+	Scope       string    `json:"scope"`
+	BotUserID   string    `json:"bot_user_id"`
+	Team        *teamInfo `json:"team"`
+	Enterprise  *teamInfo `json:"enterprise"`
+}
+
+func (s *ChatService) CompleteOAuth2Flow(ctx context.Context, code string) (*ent.ProviderConfig, error) {
+	token, tokenErr := s.oauthConfig.Exchange(ctx, code)
+	if tokenErr != nil {
+		return nil, fmt.Errorf("exchange token: %w", tokenErr)
+	}
+
+	team := token.Extra("team")
+	log.Debug().Interface("team", team).Msg("complete oauth2 flow")
+
+	cfg := providerConfigData{
+		AccessToken: token.AccessToken,
+		TokenType:   token.Type(),
+		Scope:       token.Extra("scope").(string),
+		BotUserID:   token.Extra("bot_user_id").(string),
+	}
+	cfgJson, jsonErr := json.Marshal(cfg)
+	if jsonErr != nil {
+		return nil, fmt.Errorf("marshalling provider config: %w", jsonErr)
+	}
+
+	return &ent.ProviderConfig{
+		ProviderType: providerconfig.ProviderTypeChat,
+		ProviderID:   "slack",
+		Enabled:      true,
+		Config:       cfgJson,
+	}, nil
 }

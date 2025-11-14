@@ -27,6 +27,7 @@ type Handler struct {
 	*oncallMetricsHandler
 	*oncallRostersHandler
 	*oncallShiftsHandler
+	*organizationsHandler
 	*playbooksHandler
 	*retrospectivesHandler
 	*systemAnalysisHandler
@@ -42,6 +43,7 @@ func NewHandler(
 	auth rez.AuthService,
 	orgs rez.OrganizationService,
 	configs rez.ProviderConfigService,
+	chat rez.ChatService,
 	users rez.UserService,
 	incidents rez.IncidentService,
 	debriefs rez.DebriefService,
@@ -70,13 +72,14 @@ func NewHandler(
 		tasksHandler:              newTasksHandler(db),
 		incidentTypesHandler:      newIncidentTypesHandler(db.IncidentType),
 		incidentsHandler:          newIncidentsHandler(db, incidents),
-		integrationsHandler:       newIntegrationsHandler(orgs, configs),
+		integrationsHandler:       newIntegrationsHandler(configs, chat),
 		meetingsHandler:           newMeetingsHandler(),
 		eventsHandler:             newEventsHandler(auth, events),
 		eventAnnotationsHandler:   newEventAnnotationsHandler(auth, annos),
 		oncallRostersHandler:      newOncallRostersHandler(auth, users, incidents, rosters, shifts),
 		oncallShiftsHandler:       newOncallShiftsHandler(auth, users, incidents, shifts),
 		oncallMetricsHandler:      newOncallMetricsHandler(oncallMetrics),
+		organizationsHandler:      newOrganizationsHandler(orgs),
 		playbooksHandler:          newPlaybooksHandler(playbooks),
 		retrospectivesHandler:     newRetrospectivesHandler(auth, users, incidents, retros, documents),
 		systemAnalysisHandler:     newSystemAnalysisHandler(db, components),

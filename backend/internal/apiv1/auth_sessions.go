@@ -55,13 +55,9 @@ func (h *authSessionsHandler) GetCurrentAuthSession(ctx context.Context, input *
 	}
 
 	resp.Body.Data = oapi.AuthSession{
-		User: oapi.UserFromEnt(user),
-		Organization: oapi.Organization{
-			Id:                   org.ID,
-			Name:                 org.Name,
-			RequiresInitialSetup: org.InitialSetupAt.IsZero(),
-		},
-		ExpiresAt: sess.ExpiresAt,
+		ExpiresAt:    sess.ExpiresAt,
+		User:         oapi.UserFromEnt(user),
+		Organization: oapi.OrganizationFromEnt(org),
 	}
 
 	return &resp, nil

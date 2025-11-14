@@ -22,6 +22,12 @@ type (
 type Handler interface {
 	// GetMiddleware() []Middleware
 
+	AuthSessionsHandler
+	OrganizationsHandler
+	UsersHandler
+	TeamsHandler
+	IntegrationsHandler
+
 	OncallMetricsHandler
 
 	SystemComponentsHandler
@@ -50,12 +56,6 @@ type Handler interface {
 
 	OncallRostersHandler
 	OncallShiftsHandler
-
-	UsersHandler
-	AuthSessionsHandler
-	TeamsHandler
-
-	IntegrationsHandler
 }
 type operations struct{ Handler }
 

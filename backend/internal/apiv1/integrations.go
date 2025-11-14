@@ -3,6 +3,7 @@ package apiv1
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
@@ -11,12 +12,12 @@ import (
 )
 
 type integrationsHandler struct {
-	org     rez.OrganizationService
 	configs rez.ProviderConfigService
+	chat    rez.ChatService
 }
 
-func newIntegrationsHandler(org rez.OrganizationService, configs rez.ProviderConfigService) *integrationsHandler {
-	return &integrationsHandler{org: org, configs: configs}
+func newIntegrationsHandler(configs rez.ProviderConfigService, chat rez.ChatService) *integrationsHandler {
+	return &integrationsHandler{configs: configs, chat: chat}
 }
 
 func toValidProviderType(kind string) (providerconfig.ProviderType, error) {
@@ -135,11 +136,70 @@ func (h *integrationsHandler) DeleteIntegration(ctx context.Context, req *oapi.D
 	return &resp, nil
 }
 
-func (h *integrationsHandler) FinishOrganizationSetup(ctx context.Context, req *oapi.FinishOrganizationSetupRequest) (*oapi.FinishOrganizationSetupResponse, error) {
-	var resp oapi.FinishOrganizationSetupResponse
+func (h *integrationsHandler) makeOAuthState(ctx context.Context, providerId string) (string, error) {
+	// TODO
+	return "TODO", nil
+}
 
-	if finishErr := h.org.FinishSetup(ctx); finishErr != nil {
-		return nil, apiError("failed to finish setup", finishErr)
+func (h *integrationsHandler) verifyOAuthState(ctx context.Context, providerId string, state string) error {
+	// TODO
+	return nil
+}
+
+func (h *integrationsHandler) StartIntegrationOAuth(ctx context.Context, req *oapi.StartIntegrationOAuthRequest) (*oapi.StartIntegrationOAuthResponse, error) {
+	var resp oapi.StartIntegrationOAuthResponse
+
+	attr := req.Body.Attributes
+	pt, ptErr := toValidProviderType(attr.Kind)
+	if ptErr != nil {
+		return nil, apiError("invalid provider kind", ptErr)
+	}
+
+	if pt == providerconfig.ProviderTypeChat {
+		state, stateErr := h.makeOAuthState(ctx, attr.ProviderId)
+		if stateErr != nil {
+			return nil, fmt.Errorf("failed to make oauth state: %w", stateErr)
+		}
+
+		flowUrl, urlErr := h.chat.GetOAuth2URL(ctx, state)
+		if urlErr != nil {
+			return nil, fmt.Errorf("failed to make oauth flow url: %w", urlErr)
+		}
+
+		resp.Body.Data = oapi.IntegrationOAuthFlow{FlowUrl: flowUrl}
+	} else {
+		return nil, oapi.ErrorBadRequest("invalid provider type")
+	}
+
+	return &resp, nil
+}
+
+func (h *integrationsHandler) CompleteIntegrationOAuth(ctx context.Context, req *oapi.CompleteIntegrationOAuthRequest) (*oapi.CompleteIntegrationOAuthResponse, error) {
+	var resp oapi.CompleteIntegrationOAuthResponse
+
+	attr := req.Body.Attributes
+	pt, ptErr := toValidProviderType(attr.Kind)
+	if ptErr != nil {
+		return nil, apiError("invalid provider kind", ptErr)
+	}
+
+	if pt == providerconfig.ProviderTypeChat {
+		if stateErr := h.verifyOAuthState(ctx, attr.ProviderId, attr.State); stateErr != nil {
+			return nil, oapi.ErrorForbidden("invalid state", stateErr)
+		}
+
+		cfg, cfgErr := h.chat.CompleteOAuth2Flow(ctx, attr.Code)
+		if cfgErr != nil {
+			return nil, oapi.ErrorBadRequest("invalid code", cfgErr)
+		}
+
+		pc, pcErr := h.configs.UpdateProviderConfig(ctx, *cfg)
+		if pcErr != nil {
+			return nil, apiError("failed to update provider config", pcErr)
+		}
+		resp.Body.Data = oapi.IntegrationFromEnt(pc)
+	} else {
+		return nil, oapi.ErrorBadRequest("invalid provider type")
 	}
 
 	return &resp, nil

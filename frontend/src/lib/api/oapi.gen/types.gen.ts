@@ -105,6 +105,29 @@ export type AuthSessionsConfig = {
     providers: Array<AuthSessionProviderConfig>;
 };
 
+export type CompleteIntegrationOAuthRequestAttributes = {
+    code: string;
+    kind: string;
+    provider_id: string;
+    state: string;
+};
+
+export type CompleteIntegrationOAuthRequestBody = {
+    /**
+     * A URL to the JSON Schema for this object.
+     */
+    readonly $schema?: string;
+    attributes: CompleteIntegrationOAuthRequestAttributes;
+};
+
+export type CompleteIntegrationOAuthResponseBody = {
+    /**
+     * A URL to the JSON Schema for this object.
+     */
+    readonly $schema?: string;
+    data: Integration;
+};
+
 export type CreateEventAnnotationRequestAttributes = {
     eventId: string;
     minutesOccupied: number;
@@ -1008,6 +1031,14 @@ export type GetOncallShiftResponseBody = {
     data: OncallShift;
 };
 
+export type GetOrganizationResponseBody = {
+    /**
+     * A URL to the JSON Schema for this object.
+     */
+    readonly $schema?: string;
+    data: Organization;
+};
+
 export type GetPlaybookResponseBody = {
     /**
      * A URL to the JSON Schema for this object.
@@ -1416,6 +1447,10 @@ export type IntegrationAttributes = {
     enabled: boolean;
     kind: string;
     provider_id: string;
+};
+
+export type IntegrationOAuthFlow = {
+    flow_url: string;
 };
 
 export type ListAlertIncidentLinksResponseBody = {
@@ -1891,9 +1926,13 @@ export type OncallShiftsAdjacent = {
 };
 
 export type Organization = {
+    attributes: OrganizationAttributes;
     id: string;
+};
+
+export type OrganizationAttributes = {
     name: string;
-    requiresInitialSetup: boolean;
+    setupRequired: boolean;
 };
 
 export type Playbook = {
@@ -1988,6 +2027,27 @@ export type SendOncallShiftHandoverResponseBody = {
      */
     readonly $schema?: string;
     data: OncallShiftHandover;
+};
+
+export type StartIntegrationOAuthRequestAttributes = {
+    kind: string;
+    provider_id: string;
+};
+
+export type StartIntegrationOAuthRequestBody = {
+    /**
+     * A URL to the JSON Schema for this object.
+     */
+    readonly $schema?: string;
+    attributes: StartIntegrationOAuthRequestAttributes;
+};
+
+export type StartIntegrationOAuthResponseBody = {
+    /**
+     * A URL to the JSON Schema for this object.
+     */
+    readonly $schema?: string;
+    data: IntegrationOAuthFlow;
 };
 
 export type SystemAnalysis = {
@@ -6129,6 +6189,96 @@ export type UpdateIntegrationResponses = {
 
 export type UpdateIntegrationResponse = UpdateIntegrationResponses[keyof UpdateIntegrationResponses];
 
+export type CompleteIntegrationOauthData = {
+    body: CompleteIntegrationOAuthRequestBody;
+    path?: never;
+    query?: never;
+    url: '/integrations_oauth/complete';
+};
+
+export type CompleteIntegrationOauthErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
+
+export type CompleteIntegrationOauthError = CompleteIntegrationOauthErrors[keyof CompleteIntegrationOauthErrors];
+
+export type CompleteIntegrationOauthResponses = {
+    /**
+     * OK
+     */
+    200: CompleteIntegrationOAuthResponseBody;
+};
+
+export type CompleteIntegrationOauthResponse = CompleteIntegrationOauthResponses[keyof CompleteIntegrationOauthResponses];
+
+export type StartIntegrationOauthData = {
+    body: StartIntegrationOAuthRequestBody;
+    path?: never;
+    query?: never;
+    url: '/integrations_oauth/start';
+};
+
+export type StartIntegrationOauthErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
+
+export type StartIntegrationOauthError = StartIntegrationOauthErrors[keyof StartIntegrationOauthErrors];
+
+export type StartIntegrationOauthResponses = {
+    /**
+     * OK
+     */
+    200: StartIntegrationOAuthResponseBody;
+};
+
+export type StartIntegrationOauthResponse = StartIntegrationOauthResponses[keyof StartIntegrationOauthResponses];
+
 export type ListMeetingSchedulesData = {
     body?: never;
     path?: never;
@@ -7499,11 +7649,60 @@ export type GetOncallShiftMetricsResponses = {
 
 export type GetOncallShiftMetricsResponse = GetOncallShiftMetricsResponses[keyof GetOncallShiftMetricsResponses];
 
+export type GetOrganizationData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/organizations/{id}';
+};
+
+export type GetOrganizationErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
+
+export type GetOrganizationError = GetOrganizationErrors[keyof GetOrganizationErrors];
+
+export type GetOrganizationResponses = {
+    /**
+     * OK
+     */
+    200: GetOrganizationResponseBody;
+};
+
+export type GetOrganizationResponse = GetOrganizationResponses[keyof GetOrganizationResponses];
+
 export type FinishOrganizationSetupData = {
     body?: never;
-    path?: never;
+    path: {
+        id: string;
+    };
     query?: never;
-    url: '/organization/setup';
+    url: '/organizations/{id}/setup';
 };
 
 export type FinishOrganizationSetupErrors = {
@@ -7523,6 +7722,10 @@ export type FinishOrganizationSetupErrors = {
      * Not Found
      */
     404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
     /**
      * Internal Server Error
      */

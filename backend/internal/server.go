@@ -129,7 +129,7 @@ func setupServer(ctx context.Context) (Server, error) {
 		return nil, fmt.Errorf("db.NewProviderConfigService: %w", pcErr)
 	}
 
-	orgs, orgsErr := db.NewOrganizationsService(dbc)
+	orgs, orgsErr := db.NewOrganizationsService(dbc, pc)
 	if orgsErr != nil {
 		return nil, fmt.Errorf("postgres.NewOrganizationsService: %w", orgsErr)
 	}
@@ -220,7 +220,7 @@ func setupServer(ctx context.Context) (Server, error) {
 		return nil, fmt.Errorf("hocuspocus.NewDocumentsService: %w", docsErr)
 	}
 
-	v1Handler := apiv1.NewHandler(dbc, auth, orgs, pc, users, incidents, debriefs, rosters, shifts, oncallMetrics, events, annos, docs, retros, components, alerts, playbooks)
+	v1Handler := apiv1.NewHandler(dbc, auth, orgs, pc, chat, users, incidents, debriefs, rosters, shifts, oncallMetrics, events, annos, docs, retros, components, alerts, playbooks)
 
 	srv := http.NewServer(auth)
 	srv.MountOpenApiV1(v1Handler)

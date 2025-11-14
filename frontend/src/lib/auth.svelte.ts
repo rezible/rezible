@@ -74,7 +74,7 @@ export class AuthSessionState {
 	});
 
 	isAuthenticated = $derived(!!this.session && !this.error);
-	isSetup = $derived(this.isAuthenticated && !this.org?.requiresInitialSetup);
+	isSetup = $derived(this.isAuthenticated && !this.org?.attributes.setupRequired);
 
 	refetch() {
 		this.query.refetch();
