@@ -30,6 +30,7 @@ type ConfigLoader interface {
 	GetString(key string) string
 	GetBool(key string) bool
 
+	SingleTenantMode() bool
 	DebugMode() bool
 
 	DatabaseUrl() string
@@ -88,6 +89,7 @@ type (
 	ProviderConfigService interface {
 		ListProviderConfigs(context.Context, ListProviderConfigsParams) ([]*ent.ProviderConfig, error)
 		GetProviderConfig(context.Context, uuid.UUID) (*ent.ProviderConfig, error)
+		LookupProviderConfig(context.Context, providerconfig.ProviderType, string) (*ent.ProviderConfig, error)
 		UpdateProviderConfig(context.Context, ent.ProviderConfig) (*ent.ProviderConfig, error)
 		DeleteProviderConfig(context.Context, uuid.UUID) error
 	}

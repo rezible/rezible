@@ -4,10 +4,10 @@ import (
 	"context"
 
 	"github.com/google/uuid"
-	rez "github.com/rezible/rezible"
-	"github.com/rezible/rezible/ent/providerconfig"
 
+	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
+	pc "github.com/rezible/rezible/ent/providerconfig"
 )
 
 type ProviderConfigService struct {
@@ -25,13 +25,13 @@ func NewProviderConfigService(db *ent.Client) (*ProviderConfigService, error) {
 func (s *ProviderConfigService) listQuery(p rez.ListProviderConfigsParams) *ent.ProviderConfigQuery {
 	query := s.db.ProviderConfig.Query()
 	if p.Enabled {
-		query.Where(providerconfig.EnabledEQ(true))
+		query.Where(pc.EnabledEQ(true))
 	}
 	if p.ProviderType != "" {
-		query.Where(providerconfig.ProviderTypeEQ(p.ProviderType))
+		query.Where(pc.ProviderTypeEQ(p.ProviderType))
 	}
 	if p.ProviderId != "" {
-		query.Where(providerconfig.ProviderIDEQ(p.ProviderId))
+		query.Where(pc.ProviderIDEQ(p.ProviderId))
 	}
 	return query
 }
@@ -43,6 +43,12 @@ func (s *ProviderConfigService) ListProviderConfigs(ctx context.Context, params 
 
 func (s *ProviderConfigService) GetProviderConfig(ctx context.Context, id uuid.UUID) (*ent.ProviderConfig, error) {
 	return s.db.ProviderConfig.Get(ctx, id)
+}
+
+func (s *ProviderConfigService) LookupProviderConfig(ctx context.Context, pt pc.ProviderType, id string) (*ent.ProviderConfig, error) {
+	return s.db.ProviderConfig.Query().
+		Where(pc.And(pc.ProviderTypeEQ(pt), pc.ProviderID(id))).
+		Only(ctx)
 }
 
 type updateConfigMutation interface {

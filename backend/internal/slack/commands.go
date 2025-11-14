@@ -61,7 +61,13 @@ func (s *ChatService) handleIncidentCommand(ctx context.Context, ev *slack.Slash
 	if viewErr != nil {
 		return commandErrorResponse("Failed to create incident view"), viewErr
 	}
-	resp, respErr := s.client.OpenViewContext(ctx, ev.TriggerID, *view)
+	
+	client, clientErr := s.getClient(ctx)
+	if clientErr != nil {
+		return commandErrorResponse(clientErr.Error()), nil
+	}
+
+	resp, respErr := client.OpenViewContext(ctx, ev.TriggerID, *view)
 	if respErr != nil {
 		logSlackViewErrorResponse(respErr, resp)
 		return commandErrorResponse("Failed to open view"), respErr

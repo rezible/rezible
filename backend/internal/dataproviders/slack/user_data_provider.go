@@ -24,7 +24,7 @@ type UserDataProviderConfig struct {
 }
 
 func DebugOnlyUserDataProvider(ctx context.Context) (*UserDataProvider, error) {
-	client, clientErr := rezslack.LoadClient()
+	client, clientErr := rezslack.LoadSingleTenantClient()
 	if clientErr != nil {
 		return nil, clientErr
 	}
@@ -40,7 +40,7 @@ func DebugOnlyUserDataProvider(ctx context.Context) (*UserDataProvider, error) {
 }
 
 func NewUserDataProvider(cfg UserDataProviderConfig) (*UserDataProvider, error) {
-	client, clientErr := rezslack.LoadClient()
+	client, clientErr := rezslack.LoadSingleTenantClient()
 	if clientErr != nil {
 		return nil, clientErr
 	}

@@ -14,11 +14,17 @@ import (
 
 func (s *ChatService) openOrUpdateModal(ctx context.Context, ic *slack.InteractionCallback, view *slack.ModalViewRequest) error {
 	var viewResp *slack.ViewResponse
+
+	client, clientErr := s.getClient(ctx)
+	if clientErr != nil {
+		return fmt.Errorf("get client: %w", clientErr)
+	}
+
 	var respErr error
 	if ic.View.State == nil {
-		viewResp, respErr = s.client.OpenViewContext(ctx, ic.TriggerID, *view)
+		viewResp, respErr = client.OpenViewContext(ctx, ic.TriggerID, *view)
 	} else {
-		viewResp, respErr = s.client.UpdateViewContext(ctx, *view, "", ic.Hash, ic.View.ID)
+		viewResp, respErr = client.UpdateViewContext(ctx, *view, "", ic.Hash, ic.View.ID)
 	}
 	if respErr != nil {
 		logSlackViewErrorResponse(respErr, viewResp)

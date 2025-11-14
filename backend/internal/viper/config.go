@@ -39,6 +39,10 @@ func (c *Config) GetBool(key string) bool {
 	return viper.GetBool(key)
 }
 
+func (c *Config) SingleTenantMode() bool {
+	return c.GetBool("single_tenant_mode")
+}
+
 func (c *Config) DebugMode() bool {
 	return c.GetBool("debug_mode")
 }

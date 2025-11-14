@@ -59,22 +59,24 @@ func (s *ChatService) HandleIncidentChatUpdate(ctx context.Context, args jobs.In
 		),
 	}
 
-	_, detailsTs, postErr := s.client.PostMessageContext(ctx, inc.ChatChannelID, slack.MsgOptionBlocks(detailsBlocks...))
-	if postErr != nil {
-		return fmt.Errorf("failed to post incident details: %w", postErr)
-	}
+	return s.withClient(ctx, func(client *slack.Client) error {
+		_, detailsTs, postErr := client.PostMessageContext(ctx, inc.ChatChannelID, slack.MsgOptionBlocks(detailsBlocks...))
+		if postErr != nil {
+			return fmt.Errorf("failed to post incident details: %w", postErr)
+		}
 
-	pinErr := s.client.AddPinContext(ctx, inc.ChatChannelID, slack.ItemRef{
-		Channel:   inc.ChatChannelID,
-		Timestamp: detailsTs,
+		pinErr := client.AddPinContext(ctx, inc.ChatChannelID, slack.ItemRef{
+			Channel:   inc.ChatChannelID,
+			Timestamp: detailsTs,
+		})
+		if pinErr != nil {
+			log.Warn().Err(pinErr).Msg("failed to pin details message")
+		}
+
+		// TODO: check for active alerts of linked components, playbooks, etc
+
+		return nil
 	})
-	if pinErr != nil {
-		log.Warn().Err(pinErr).Msg("failed to pin details message")
-	}
-
-	// TODO: check for active alerts of linked components, playbooks, etc
-
-	return nil
 }
 
 func (s *ChatService) onIncidentCreated(ctx context.Context, inc *ent.Incident) error {
@@ -89,9 +91,9 @@ func (s *ChatService) onIncidentCreated(ctx context.Context, inc *ent.Incident) 
 	return nil
 }
 
-func (s *ChatService) getTeamId(ctx context.Context) (string, error) {
-	// TODO: get this from org context!!
-	teams, _, listErr := s.client.ListTeamsContext(ctx, slack.ListTeamsParameters{})
+func (s *ChatService) getTeamId(ctx context.Context, client *slack.Client) (string, error) {
+	// TODO: get this from org config?
+	teams, _, listErr := client.ListTeamsContext(ctx, slack.ListTeamsParameters{})
 	if listErr != nil {
 		return "", listErr
 	}
@@ -102,14 +104,19 @@ func (s *ChatService) getTeamId(ctx context.Context) (string, error) {
 }
 
 func (s *ChatService) CreateIncidentChannel(ctx context.Context, inc *ent.Incident) (string, error) {
+	client, clientErr := s.getClient(ctx)
+	if clientErr != nil {
+		return "", fmt.Errorf("failed to get client: %w", clientErr)
+	}
+
 	channelName := fmt.Sprintf("inc-%s", inc.Slug)
 
-	teamId, teamErr := s.getTeamId(ctx)
+	teamId, teamErr := s.getTeamId(ctx, client)
 	if teamErr != nil {
 		return "", teamErr
 	}
 
-	channel, createErr := s.client.CreateConversationContext(ctx, slack.CreateConversationParams{
+	channel, createErr := client.CreateConversationContext(ctx, slack.CreateConversationParams{
 		ChannelName: channelName,
 		IsPrivate:   inc.Private,
 		TeamID:      teamId,
@@ -152,11 +159,13 @@ func (s *ChatService) UpdateIncidentChannelTopic(ctx context.Context, inc *ent.I
 	webLink := fmt.Sprintf("%s/incidents/%s", rez.Config.AppUrl(), inc.Slug)
 	topic := fmt.Sprintf("[%s] %s | Status: %s | %s", severity, inc.Title, status, webLink)
 
-	_, setErr := s.client.SetTopicOfConversationContext(ctx, inc.ChatChannelID, topic)
-	if setErr != nil {
-		return fmt.Errorf("failed to set channel topic: %w", setErr)
-	}
-	return nil
+	return s.withClient(ctx, func(client *slack.Client) error {
+		_, setErr := client.SetTopicOfConversationContext(ctx, inc.ChatChannelID, topic)
+		if setErr != nil {
+			return fmt.Errorf("failed to set channel topic: %w", setErr)
+		}
+		return nil
+	})
 }
 
 func (s *ChatService) AddIncidentDetailsBookmark(ctx context.Context, inc *ent.Incident) error {
@@ -167,15 +176,17 @@ func (s *ChatService) AddIncidentDetailsBookmark(ctx context.Context, inc *ent.I
 	webLink := fmt.Sprintf("%s/incidents/%s", rez.Config.AppUrl(), inc.Slug)
 	title := "View Incident Details"
 
-	_, addErr := s.client.AddBookmark(inc.ChatChannelID, slack.AddBookmarkParameters{
-		Title: title,
-		Link:  webLink,
-		Type:  "link",
+	return s.withClient(ctx, func(client *slack.Client) error {
+		_, addErr := client.AddBookmark(inc.ChatChannelID, slack.AddBookmarkParameters{
+			Title: title,
+			Link:  webLink,
+			Type:  "link",
+		})
+		if addErr != nil {
+			return fmt.Errorf("failed to add bookmark: %w", addErr)
+		}
+		return nil
 	})
-	if addErr != nil {
-		return fmt.Errorf("failed to add bookmark: %w", addErr)
-	}
-	return nil
 }
 
 func (s *ChatService) getIncidentAnnouncementChannelId(ctx context.Context) (string, error) {

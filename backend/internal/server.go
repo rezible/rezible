@@ -174,7 +174,7 @@ func setupServer(ctx context.Context) (Server, error) {
 		return nil, fmt.Errorf("postgres.NewSystemComponentsService: %w", componentsErr)
 	}
 
-	chat, chatErr := slack.NewChatService(jobSvc, users, incidents, annos, components)
+	chat, chatErr := slack.NewChatService(jobSvc, pc, users, incidents, annos, components)
 	if chatErr != nil {
 		return nil, fmt.Errorf("postgres.NewChatService: %w", chatErr)
 	}

@@ -16,31 +16,57 @@ import (
 
 type ChatService struct {
 	oauthConfig *oauth2.Config
-	client      *slack.Client
 
 	jobs       rez.JobsService
+	configs    rez.ProviderConfigService
 	users      rez.UserService
 	incidents  rez.IncidentService
 	annos      rez.EventAnnotationsService
 	components rez.SystemComponentsService
 }
 
-func NewChatService(jobs rez.JobsService, users rez.UserService, incidents rez.IncidentService, annos rez.EventAnnotationsService, components rez.SystemComponentsService) (*ChatService, error) {
-	client, clientErr := LoadClient()
-	if clientErr != nil {
-		return nil, clientErr
-	}
+func NewChatService(jobs rez.JobsService, configs rez.ProviderConfigService, users rez.UserService, incidents rez.IncidentService, annos rez.EventAnnotationsService, components rez.SystemComponentsService) (*ChatService, error) {
 	s := &ChatService{
 		oauthConfig: LoadOAuthConfig(),
-		client:      client,
-
-		jobs:       jobs,
-		users:      users,
-		incidents:  incidents,
-		annos:      annos,
-		components: components,
+		configs:     configs,
+		jobs:        jobs,
+		users:       users,
+		incidents:   incidents,
+		annos:       annos,
+		components:  components,
 	}
 	return s, nil
+}
+
+func (s *ChatService) loadTenantConfig(ctx context.Context) (*providerConfigData, error) {
+	pc, cfgErr := s.configs.LookupProviderConfig(ctx, providerconfig.ProviderTypeChat, "slack")
+	if cfgErr != nil {
+		return nil, cfgErr
+	}
+	var cfg providerConfigData
+	if jsonErr := json.Unmarshal(pc.Config, &cfg); jsonErr != nil {
+		return nil, jsonErr
+	}
+	return &cfg, nil
+}
+
+func (s *ChatService) getClient(ctx context.Context) (*slack.Client, error) {
+	if rez.Config.SingleTenantMode() {
+		return LoadSingleTenantClient()
+	}
+	cfg, cfgErr := s.loadTenantConfig(ctx)
+	if cfgErr != nil {
+		return nil, cfgErr
+	}
+	return slack.New(cfg.AccessToken), nil
+}
+
+func (s *ChatService) withClient(ctx context.Context, fn func(*slack.Client) error) error {
+	client, clientErr := s.getClient(ctx)
+	if clientErr != nil {
+		return fmt.Errorf("failed to get slack client: %w", clientErr)
+	}
+	return fn(client)
 }
 
 func (s *ChatService) EnableEventListener() bool {
@@ -62,8 +88,10 @@ func (s *ChatService) lookupChatUser(baseCtx context.Context, chatId string) (*e
 }
 
 func (s *ChatService) sendMessage(ctx context.Context, channelId string, msgOpts ...slack.MsgOption) error {
-	_, _, msgErr := s.client.PostMessageContext(ctx, channelId, msgOpts...)
-	return msgErr
+	return s.withClient(ctx, func(client *slack.Client) error {
+		_, _, msgErr := client.PostMessageContext(ctx, channelId, msgOpts...)
+		return msgErr
+	})
 }
 
 func (s *ChatService) SendMessage(ctx context.Context, channelId string, content *rez.ContentNode) error {

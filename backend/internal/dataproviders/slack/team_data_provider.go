@@ -24,7 +24,7 @@ type TeamDataProviderConfig struct {
 }
 
 func NewTeamDataProvider(cfg TeamDataProviderConfig) (*TeamDataProvider, error) {
-	client, clientErr := rezslack.LoadClient()
+	client, clientErr := rezslack.LoadSingleTenantClient()
 	if clientErr != nil {
 		return nil, clientErr
 	}

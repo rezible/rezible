@@ -29,10 +29,15 @@ func (s *ChatService) MakeEventListener() (rez.ChatEventListener, error) {
 }
 
 func NewSocketModeEventListener(chatSvc *ChatService) (*SocketModeListener, error) {
-	smc := socketmode.New(
-		chatSvc.client,
-		//socketmode.OptionDebug(true),
-	)
+	if !rez.Config.SingleTenantMode() {
+		return nil, errors.New("can't use socket mode in multi-tenant mode")
+	}
+	stc, cErr := LoadSingleTenantClient()
+	if cErr != nil {
+		return nil, fmt.Errorf("single tenant client: %w", cErr)
+	}
+
+	smc := socketmode.New(stc)
 	sml := &SocketModeListener{
 		chatSvc:  chatSvc,
 		client:   smc,

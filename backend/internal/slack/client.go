@@ -13,7 +13,7 @@ func UseSocketMode() bool {
 	return rez.Config.GetBool("slack.socketmode.enabled")
 }
 
-func LoadClient() (*slack.Client, error) {
+func LoadSingleTenantClient() (*slack.Client, error) {
 	botToken := rez.Config.GetString("slack.bot_token")
 	if botToken == "" {
 		return nil, errors.New("slack.bot_token not set")
