@@ -7,7 +7,7 @@ import (
 	"github.com/google/uuid"
 
 	"github.com/rezible/rezible/ent"
-	oapi "github.com/rezible/rezible/openapi"
+	oapi "github.com/rezible/rezible/openapi/v1"
 )
 
 type SystemComponentsDataProvider struct {

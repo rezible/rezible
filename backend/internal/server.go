@@ -10,7 +10,7 @@ import (
 
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/access"
-	"github.com/rezible/rezible/internal/api"
+	"github.com/rezible/rezible/internal/apiv1"
 	"github.com/rezible/rezible/internal/dataproviders"
 	"github.com/rezible/rezible/internal/db"
 	"github.com/rezible/rezible/internal/db/datasync"
@@ -220,10 +220,10 @@ func setupServer(ctx context.Context) (Server, error) {
 		return nil, fmt.Errorf("hocuspocus.NewDocumentsService: %w", docsErr)
 	}
 
-	apiHandler := api.NewHandler(dbc, auth, orgs, pc, users, incidents, debriefs, rosters, shifts, oncallMetrics, events, annos, docs, retros, components, alerts, playbooks)
+	v1Handler := apiv1.NewHandler(dbc, auth, orgs, pc, users, incidents, debriefs, rosters, shifts, oncallMetrics, events, annos, docs, retros, components, alerts, playbooks)
 
 	srv := http.NewServer(auth)
-	srv.MountOpenApi("v1", apiHandler)
+	srv.MountOpenApiV1(v1Handler)
 	srv.MountDocuments(docs)
 	srv.MountMCP(eino.NewMCPHandler(auth))
 

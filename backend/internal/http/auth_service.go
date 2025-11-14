@@ -15,7 +15,7 @@ import (
 	"github.com/rs/zerolog/log"
 
 	rez "github.com/rezible/rezible"
-	oapi "github.com/rezible/rezible/openapi"
+	oapi "github.com/rezible/rezible/openapi/v1"
 )
 
 const (

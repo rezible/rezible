@@ -18,7 +18,7 @@ import (
 	"github.com/rezible/rezible/internal/db/datasync"
 	"github.com/rezible/rezible/internal/viper"
 	"github.com/rezible/rezible/jobs"
-	"github.com/rezible/rezible/openapi"
+	oapiv1 "github.com/rezible/rezible/openapi/v1"
 )
 
 var rootCmd = &cobra.Command{
@@ -41,7 +41,7 @@ var printSpecCmd = &cobra.Command{
 	Use:   "openapi",
 	Short: "Print the OpenAPI spec",
 	Run: func(cmd *cobra.Command, args []string) {
-		spec, specErr := openapi.GetYamlSpec("")
+		spec, specErr := oapiv1.GetYamlSpec()
 		if specErr != nil {
 			log.Fatal().Err(specErr).Msg("failed to get OpenAPI spec")
 		}

@@ -17,7 +17,7 @@ import (
 
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
-	oapi "github.com/rezible/rezible/openapi"
+	oapi "github.com/rezible/rezible/openapi/v1"
 )
 
 type DocumentsService struct {

@@ -16,7 +16,7 @@ import (
 
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/mcp"
-	oapi "github.com/rezible/rezible/openapi"
+	oapiv1 "github.com/rezible/rezible/openapi/v1"
 )
 
 type Server struct {
@@ -73,12 +73,11 @@ func (s *Server) MountStaticFrontend(feFiles fs.FS) {
 	s.baseHandler = makeEmbeddedFrontendFilesServer(feFiles)
 }
 
-func (s *Server) MountOpenApi(prefix string, h oapi.Handler) {
-	prefix = ensureSlashPrefix(prefix)
-	handler := oapi.MakeApi(h, prefix, oapi.MakeSecurityMiddleware(s.auth)).Adapter()
+func (s *Server) MountOpenApiV1(h oapiv1.Handler) {
+	handler := oapiv1.MakeApi(h, oapiv1.MakeSecurityMiddleware(s.auth)).Adapter()
 	oapiV1Router := s.commonMiddleware().
 		Handler(handler)
-	s.api.Mount(prefix, oapiV1Router)
+	s.api.Mount("/v1", oapiV1Router)
 }
 
 func (s *Server) Start(baseCtx context.Context) error {
