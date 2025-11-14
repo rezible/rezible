@@ -84,7 +84,7 @@ func loadEnvConfig(ctx context.Context) (*AuthSessionProviderConfig, error) {
 
 	cfg := &AuthSessionProviderConfig{
 		appUrl:      *appUrl,
-		pathBase:    "/auth/saml",
+		pathBase:    rez.Config.AuthRoutePrefix() + "/saml",
 		idpMetadata: idpMetadata,
 		keyPair:     &keyPair,
 		cert:        cert,

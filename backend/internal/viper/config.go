@@ -47,6 +47,14 @@ func (c *Config) DatabaseUrl() string {
 	return c.GetString("db_url")
 }
 
+func (c *Config) ApiRoutePrefix() string {
+	return "/api"
+}
+
+func (c *Config) AuthRoutePrefix() string {
+	return c.ApiRoutePrefix() + "/auth"
+}
+
 func (c *Config) BackendUrl() string {
 	return "https://api.rezible.test"
 }

@@ -7,6 +7,7 @@ import (
 	"io/fs"
 	"net"
 	"net/http"
+	"strings"
 
 	"github.com/rs/zerolog/log"
 
@@ -19,30 +20,23 @@ import (
 )
 
 type Server struct {
-	auth       rez.AuthService
-	router     *chi.Mux
+	auth rez.AuthService
+
+	baseHandler http.Handler
+	api         *chi.Mux
+
 	httpServer *http.Server
-	webhooks   *chi.Mux
 }
 
 func NewServer(auth rez.AuthService) *Server {
-	var s Server
-
-	s.auth = auth
-	s.router = chi.NewRouter()
-	s.router.Use(middleware.Recoverer)
-
-	s.router.Mount("/auth", auth.UserAuthHandler())
-
-	s.webhooks = chi.NewMux()
-	s.mountWebhooks()
-
-	s.router.Get("/health", makeHealthCheckHandler())
-
-	s.httpServer = &http.Server{
-		Addr:    rez.Config.HttpServerAddress(),
-		Handler: s.router,
+	s := Server{
+		auth:        auth,
+		baseHandler: http.NotFoundHandler(),
 	}
+
+	s.api = chi.NewMux()
+	s.api.Mount(rez.Config.AuthRoutePrefix(), auth.UserAuthHandler())
+	s.api.Get("/health", s.healthCheckHandler)
 
 	return &s
 }
@@ -51,38 +45,57 @@ func (s *Server) commonMiddleware() chi.Middlewares {
 	return chi.Chain(middleware.Logger)
 }
 
-func (s *Server) MountMCP(h mcp.Handler) {
-	mcpRouter := chi.Chain(s.auth.MCPServerMiddleware()).
-		Handler(mcp.NewHTTPServer(h, "/mcp"))
-	s.router.Mount("/mcp", mcpRouter)
-}
-
-func (s *Server) MountDocuments(docs rez.DocumentsService) {
-	docsApiRouter := s.commonMiddleware().Handler(docs.Handler())
-	s.router.Mount("/api/documents", docsApiRouter)
+func ensureSlashPrefix(s string) string {
+	if strings.HasPrefix(s, "/") {
+		return s
+	}
+	return "/" + s
 }
 
 func (s *Server) AddWebhookPathHandler(path string, handler http.Handler) {
-	s.webhooks.Mount(path, handler)
+	whPath := "/webhooks" + ensureSlashPrefix(path)
+	s.api.Mount(whPath, http.StripPrefix(whPath, handler))
 }
 
-func (s *Server) mountWebhooks() {
-	webhooksRouter := s.commonMiddleware().Handler(http.StripPrefix("/api/webhooks", s.webhooks))
-	s.router.Mount("/api/webhooks", webhooksRouter)
+func (s *Server) MountMCP(h mcp.Handler) {
+	mcpRouter := chi.Chain(s.auth.MCPServerMiddleware()).
+		Handler(mcp.NewHTTPServer(h, "/mcp"))
+	s.api.Mount("/mcp", mcpRouter)
+}
+
+func (s *Server) MountDocuments(docs rez.DocumentsService) {
+	docsApiRouter := s.commonMiddleware().
+		Handler(docs.Handler())
+	s.api.Mount("/documents", docsApiRouter)
 }
 
 func (s *Server) MountStaticFrontend(feFiles fs.FS) {
-	s.router.Handle("/*", makeEmbeddedFrontendFilesServer(feFiles))
+	s.baseHandler = makeEmbeddedFrontendFilesServer(feFiles)
 }
 
-func (s *Server) MountOpenApi(h oapi.Handler) {
-	oapiServer := oapi.MakeApi(h, "/api/v1", oapi.MakeSecurityMiddleware(s.auth))
-	oapiV1Router := chi.Chain(middleware.Logger).
-		Handler(oapiServer.Adapter())
-	s.router.Mount("/api/v1", oapiV1Router)
+func (s *Server) MountOpenApi(prefix string, h oapi.Handler) {
+	prefix = ensureSlashPrefix(prefix)
+	handler := oapi.MakeApi(h, prefix, oapi.MakeSecurityMiddleware(s.auth)).Adapter()
+	oapiV1Router := s.commonMiddleware().
+		Handler(handler)
+	s.api.Mount(prefix, oapiV1Router)
 }
 
 func (s *Server) Start(baseCtx context.Context) error {
+	r := chi.NewMux()
+	r.Use(middleware.Recoverer)
+
+	// remove
+	s.baseHandler = chi.Chain(middleware.Logger).Handler(s.baseHandler)
+
+	r.Handle("/*", s.baseHandler)
+	r.Mount(ensureSlashPrefix(rez.Config.ApiRoutePrefix()), s.api)
+
+	s.httpServer = &http.Server{
+		Addr:    rez.Config.HttpServerAddress(),
+		Handler: r,
+	}
+
 	s.httpServer.BaseContext = func(l net.Listener) context.Context {
 		return baseCtx
 	}
@@ -102,8 +115,6 @@ func (s *Server) Stop(ctx context.Context) error {
 	return s.httpServer.Shutdown(ctx)
 }
 
-func makeHealthCheckHandler() http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		w.WriteHeader(http.StatusOK)
-	}
+func (s *Server) healthCheckHandler(w http.ResponseWriter, r *http.Request) {
+	w.WriteHeader(http.StatusOK)
 }

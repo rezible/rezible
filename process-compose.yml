@@ -14,7 +14,7 @@ processes:
         scheme: http
         host: localhost
         port: 8888
-        path: "/health"
+        path: "/api/health"
       initial_delay_seconds: 1
       period_seconds: 5
       timeout_seconds: 1

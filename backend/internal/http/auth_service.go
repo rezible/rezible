@@ -110,8 +110,9 @@ func (s *AuthService) getMCPUserSession(r *http.Request) (*rez.AuthSession, erro
 }
 
 func (s *AuthService) UserAuthHandler() http.Handler {
+	logoutPath := rez.Config.AuthRoutePrefix() + "/logout"
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if r.URL.Path == "/auth/logout" {
+		if r.URL.Path == logoutPath {
 			s.handleLogout(w, r)
 			return
 		}
@@ -179,7 +180,7 @@ func (s *AuthService) makeUserSessionCreatedCallback(w http.ResponseWriter, r *h
 }
 
 func (s *AuthService) GetProviderStartFlowPath(prov rez.AuthSessionProvider) string {
-	return "/auth/" + strings.ToLower(prov.Id())
+	return rez.Config.AuthRoutePrefix() + strings.ToLower(prov.Id())
 }
 
 func (s *AuthService) delegateAuthFlowToProvider(w http.ResponseWriter, r *http.Request) bool {

@@ -223,7 +223,7 @@ func setupServer(ctx context.Context) (Server, error) {
 	apiHandler := api.NewHandler(dbc, auth, orgs, pc, users, incidents, debriefs, rosters, shifts, oncallMetrics, events, annos, docs, retros, components, alerts, playbooks)
 
 	srv := http.NewServer(auth)
-	srv.MountOpenApi(apiHandler)
+	srv.MountOpenApi("v1", apiHandler)
 	srv.MountDocuments(docs)
 	srv.MountMCP(eino.NewMCPHandler(auth))
 

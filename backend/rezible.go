@@ -28,15 +28,18 @@ var (
 )
 
 type ConfigLoader interface {
+	GetString(key string) string
+	GetBool(key string) bool
+
 	DebugMode() bool
 
 	DatabaseUrl() string
 
-	BackendUrl() string
 	FrontendUrl() string
+	BackendUrl() string
 
-	GetString(key string) string
-	GetBool(key string) bool
+	ApiRoutePrefix() string
+	AuthRoutePrefix() string
 
 	HttpServerAddress() string
 	ServerStopTimeout() time.Duration

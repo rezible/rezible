@@ -19,7 +19,7 @@ const (
 )
 
 func makeCallbackPath(pid string) string {
-	return fmt.Sprintf("/auth/%s/%s", pid, "callback")
+	return fmt.Sprintf("%s/%s/%s", rez.Config.AuthRoutePrefix(), pid, "callback")
 }
 
 func NewGoogleAuthSessionProvider(ctx context.Context, cfg ProviderConfig) (*AuthSessionProvider, error) {
