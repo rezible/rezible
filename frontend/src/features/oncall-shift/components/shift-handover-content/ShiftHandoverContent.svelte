@@ -1,9 +1,9 @@
 <script lang="ts">
-	import Button from "$components/button/Button.svelte";
-	import type { ChainedCommands } from "@tiptap/core";
 	import { mdiFormatBold, mdiFormatListBulleted } from "@mdi/js";
 	import { ShiftHandoverEditorState, type HandoverEditorSection } from "./state.svelte";
 	import TiptapEditor from "$components/tiptap-editor/TiptapEditor.svelte";
+	import type { ChainedCommands } from "@tiptap/core";
+	import Button from "$components/button/Button.svelte";
 	import Header from "$components/header/Header.svelte";
 
 	type Props = {
@@ -78,7 +78,7 @@
 					size="sm"
 					disabled={!isActive}
 					variant={isActive && section.activeStatus?.get("bold") ? "fill" : "fill-light"}
-					onclick={runEditorCmd((c) => c.toggleBold())}
+					onclick={runEditorCmd((c) => alert("TODO: migrate this"))}
 				/>
 
 				<Button
@@ -87,7 +87,7 @@
 					size="sm"
 					disabled={!isActive}
 					variant={isActive && section.activeStatus?.get("bulletList") ? "fill" : "fill-light"}
-					onclick={runEditorCmd((c) => c.toggleBulletList())}
+					onclick={runEditorCmd((c) => alert("TODO: migrate this"))}
 				/>
 			</div>
 

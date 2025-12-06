@@ -1,0 +1,28 @@
+{
+  "name": "@rezible/tiptap-extensions",
+  "private": true,
+  "type": "module",
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "dependencies": {
+    "@tiptap/core": "3.13.0",
+    "@tiptap/extension-bold": "^3.13.0",
+    "@tiptap/extension-bubble-menu": "3.13.0",
+    "@tiptap/extension-document": "^3.13.0",
+    "@tiptap/extension-image": "^3.13.0",
+    "@tiptap/extension-italic": "^3.13.0",
+    "@tiptap/extension-mention": "^3.13.0",
+    "@tiptap/extension-paragraph": "^3.13.0",
+    "@tiptap/extension-text": "^3.13.0",
+    "@tiptap/extensions": "3.13.0",
+    "@tiptap/pm": "3.13.0",
+    "@tiptap/starter-kit": "3.13.0",
+    "@tiptap/suggestion": "3.13.0"
+  },
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "build": "bun build src/index.ts --outdir dist --target node"
+  }
+}

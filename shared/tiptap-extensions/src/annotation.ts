@@ -1,4 +1,4 @@
-import { Mark as MarkExtension, mergeAttributes, type Range } from '@tiptap/core';
+import { Mark as MarkExtension, mergeAttributes } from '@tiptap/core';
 import { getMarkRanges } from './utils';
 
 declare module '@tiptap/core' {
@@ -79,9 +79,10 @@ export const AnnotationExtension = MarkExtension.create<AnnotationExtensionOptio
 			},
 			removeAnnotation: (id: string) => ({ tr, dispatch }) => {
 				if (!id) return false;
-				getMarkRanges(tr.doc, (t, attrs) => (t.name === MARK_NAME && attrs.annotationId === id))
-					.forEach(({ mark, range }) => 
-						tr.removeMark(range.from, range.to, mark));
+				const doc = tr.doc;
+				const ranges = getMarkRanges(doc, (t, attrs) => (t.name === MARK_NAME && attrs.annotationId === id))
+				
+				ranges.forEach(({ mark, range }) => { tr.removeMark(range.from, range.to, mark) });
 				if (dispatch) return dispatch(tr);
 			},
 			navigateToAnnotation: (id: string) => ({editor, commands}) => {

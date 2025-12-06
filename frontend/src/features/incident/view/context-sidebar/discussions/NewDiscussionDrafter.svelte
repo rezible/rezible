@@ -2,14 +2,15 @@
 	import { onMount } from "svelte";
 	import { createMutation } from "@tanstack/svelte-query";
 	import TiptapEditor, { Editor as SvelteEditor } from "$components/tiptap-editor/TiptapEditor.svelte";
-	import { createReplyEditor, draft } from "$features/incident/lib/discussions.svelte";
+	import { draft } from "$features/incident/lib/discussions.svelte";
 	import ConfirmChangeButtons from "$components/confirm-buttons/ConfirmButtons.svelte";
-	import { createRetrospectiveDiscussionMutation, type RetrospectiveDiscussion } from "$lib/api";
+	import { createRetrospectiveCommentMutation, type RetrospectiveComment } from "$lib/api";
 	import Header from "$components/header/Header.svelte";
+	import { createDiscussionEditor } from "$src/components/tiptap-editor/editors";
 
 	type Props = {
 		retrospectiveId: string;
-		onDiscussionCreated: (discussion: RetrospectiveDiscussion) => void;
+		onDiscussionCreated: (discussion: RetrospectiveComment) => void;
 	};
 	const { retrospectiveId, onDiscussionCreated }: Props = $props();
 
@@ -17,7 +18,7 @@
 	let contentSize = $state(0);
 
 	const createDiscussion = createMutation(() => ({
-		...createRetrospectiveDiscussionMutation(),
+		...createRetrospectiveCommentMutation(),
 		onSuccess({ data }) {
 			onDiscussionCreated(data);
 		},
@@ -41,7 +42,7 @@
 	};
 
 	onMount(() => {
-		draftEditor = createReplyEditor(null, true);
+		draftEditor = createDiscussionEditor({editable: true});
 		draftEditor.on("update", ({ editor }) => {
 			contentSize = editor.$doc.content.size;
 		});

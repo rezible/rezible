@@ -2,15 +2,16 @@
 	import { Tooltip } from "svelte-ux";
 	import Button from "$components/button/Button.svelte";
 	import { onMount } from "svelte";
-	import type { RetrospectiveDiscussion } from "$lib/api";
+	import type { RetrospectiveComment } from "$lib/api";
 	import type { JSONContent } from "@tiptap/core";
 	import { mdiCheck } from "@mdi/js";
-	import { activeDiscussion, createReplyEditor } from "$features/incident/lib/discussions.svelte";
+	import { activeDiscussion } from "$features/incident/lib/discussions.svelte";
 	import TiptapEditor, { Editor as SvelteEditor } from "$components/tiptap-editor/TiptapEditor.svelte";
 	import Header from "$components/header/Header.svelte";
+	import { createDiscussionEditor } from "$src/components/tiptap-editor/editors";
 
 	type Props = {
-		discussion: RetrospectiveDiscussion;
+		discussion: RetrospectiveComment;
 	}
 	let { discussion }: Props = $props();
 
@@ -19,7 +20,7 @@
 	let editor = $state<SvelteEditor>();
 	onMount(() => {
 		const content = JSON.parse(discussion.attributes.content) as JSONContent;
-		editor = createReplyEditor(content, false);
+		editor = createDiscussionEditor({content, editable: false});
 		return () => {
 			if (editor) editor.destroy();
 		};
@@ -49,5 +50,5 @@
 		{/if}
 	</div>
 
-	<Button onclick={(e) => e.stopPropagation()}>Add Reply</Button>
+	<Button onclick={() => alert("TODO: fix this")}>Add Reply</Button>
 </div>

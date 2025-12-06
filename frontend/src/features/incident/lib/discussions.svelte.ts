@@ -1,28 +1,4 @@
-import type { Editor, Content } from "@tiptap/core";
-import { Editor as SvelteEditor } from "$components/tiptap-editor/TiptapEditor.svelte";
-import Document from "@tiptap/extension-document";
-import Paragraph from "@tiptap/extension-paragraph";
-import Text from "@tiptap/extension-text";
-import Bold from "@tiptap/extension-bold";
-import Italic from "@tiptap/extension-italic";
-
-import { RezUserSuggestion } from "$components/tiptap-editor/user-suggestions/user-suggestion.svelte";
-import { configureUserMentionExtension } from "@rezible/documents/tiptap-extensions";
-
-export const createReplyEditor = (content: Content, editable?: boolean) => {
-	const userMentions = configureUserMentionExtension(RezUserSuggestion);
-	return new SvelteEditor({
-		content,
-		editable,
-		autofocus: editable,
-		extensions: [Document, Paragraph, Text, Bold, Italic, userMentions],
-		editorProps: {
-			attributes: {
-				class: "focus:outline-none",
-			},
-		},
-	});
-};
+import type { Editor } from "@tiptap/core";
 
 const createActiveDiscussion = () => {
 	let value = $state<string>();

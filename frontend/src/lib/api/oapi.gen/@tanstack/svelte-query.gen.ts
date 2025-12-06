@@ -3,8 +3,8 @@
 import { type InfiniteData, infiniteQueryOptions, type MutationOptions, queryOptions } from '@tanstack/svelte-query';
 
 import { client } from '../client.gen';
-import { addIncidentDebriefUserMessage, addSystemAnalysisComponent, addWatchedOncallRoster, archiveDebriefQuestion, archiveIncident, archiveIncidentField, archiveIncidentRole, archiveIncidentSeverity, archiveIncidentTag, archiveIncidentType, archiveMeetingSchedule, archiveMeetingSession, archiveOncallHandoverTemplate, archivePlaybook, archiveRetrospectiveReview, archiveSystemComponent, archiveSystemComponentConstraint, archiveSystemComponentControl, archiveSystemComponentKind, archiveSystemComponentRelationship, archiveSystemComponentSignal, archiveTask, archiveTeam, completeIntegrationOauth, createDebriefQuestion, createEventAnnotation, createIncident, createIncidentEvent, createIncidentField, createIncidentMilestone, createIncidentRole, createIncidentSeverity, createIncidentTag, createIncidentType, createIntegration, createMeetingSchedule, createMeetingSession, createOncallHandoverTemplate, createPlaybook, createRetrospective, createRetrospectiveDiscussion, createRetrospectiveReview, createSystemAnalysisRelationship, createSystemComponent, createSystemComponentConstraint, createSystemComponentControl, createSystemComponentKind, createSystemComponentRelationship, createSystemComponentSignal, createTask, createTeam, deleteEventAnnotation, deleteIncidentEvent, deleteIncidentMilestone, deleteIntegration, deleteSystemAnalysisComponent, deleteSystemAnalysisRelationship, deleteUserNotification, finishOrganizationSetup, getAdjacentOncallShifts, getAlert, getAlertMetrics, getAuthSessionConfig, getCurrentAuthSession, getDebriefQuestion, getEvent, getIncident, getIncidentDebrief, getIncidentField, getIncidentRole, getIncidentSeverity, getIncidentTag, getIncidentType, getIncidentUserDebrief, getIntegration, getMeetingSchedule, getMeetingSession, getOncallRoster, getOncallRosterMetrics, getOncallShift, getOncallShiftBurdenMetricWeights, getOncallShiftHandover, getOncallShiftHandoverTemplate, getOncallShiftMetrics, getOrganization, getPlaybook, getRetrospective, getRetrospectiveComment, getRetrospectiveForIncident, getSystemAnalysis, getSystemAnalysisComponent, getSystemAnalysisRelationship, getSystemComponent, getSystemComponentConstraint, getSystemComponentControl, getSystemComponentKind, getSystemComponentRelationship, getSystemComponentSignal, getTask, getTeam, getUser, getUserOncallInformation, listAlertIncidentLinks, listAlerts, listDebriefMessages, listDebriefQuestions, listDebriefSuggestions, listEventAnnotations, listEvents, listIncidentEventContributingFactorCategories, listIncidentEvents, listIncidentFields, listIncidentMilestones, listIncidentRoles, listIncidents, listIncidentSeverities, listIncidentTags, listIncidentTypes, listIntegrations, listMeetingSchedules, listMeetingSessions, listOncallRosters, listOncallShifts, listPlaybooks, listRetrospectiveComments, listRetrospectiveReviews, listRetrospectives, listSystemAnalysisComponents, listSystemAnalysisRelationships, listSystemComponentKinds, listSystemComponentRelationships, listSystemComponents, listTasks, listTeams, listUserNotifications, listUsers, listWatchedOncallRosters, type Options, removeWatchedOncallRoster, requestDocumentEditorSession, sendOncallShiftHandover, startIntegrationOauth, updateDebriefQuestion, updateEventAnnotation, updateIncident, updateIncidentDebrief, updateIncidentEvent, updateIncidentField, updateIncidentMilestone, updateIncidentRole, updateIncidentSeverity, updateIncidentTag, updateIncidentType, updateIntegration, updateMeetingSchedule, updateMeetingSession, updateOncallHandoverTemplate, updateOncallShiftHandover, updatePlaybook, updateRetrospectiveComment, updateRetrospectiveReview, updateSystemAnalysisComponent, updateSystemAnalysisRelationship, updateSystemComponent, updateSystemComponentConstraint, updateSystemComponentControl, updateSystemComponentKind, updateSystemComponentRelationship, updateSystemComponentSignal, updateTask, updateTeams } from '../sdk.gen';
-import type { AddIncidentDebriefUserMessageData, AddIncidentDebriefUserMessageError, AddIncidentDebriefUserMessageResponse, AddSystemAnalysisComponentData, AddSystemAnalysisComponentError, AddSystemAnalysisComponentResponse, AddWatchedOncallRosterData, AddWatchedOncallRosterError, AddWatchedOncallRosterResponse, ArchiveDebriefQuestionData, ArchiveDebriefQuestionError, ArchiveDebriefQuestionResponse, ArchiveIncidentData, ArchiveIncidentError, ArchiveIncidentFieldData, ArchiveIncidentFieldError, ArchiveIncidentFieldResponse, ArchiveIncidentResponse, ArchiveIncidentRoleData, ArchiveIncidentRoleError, ArchiveIncidentRoleResponse, ArchiveIncidentSeverityData, ArchiveIncidentSeverityError, ArchiveIncidentSeverityResponse, ArchiveIncidentTagData, ArchiveIncidentTagError, ArchiveIncidentTagResponse, ArchiveIncidentTypeData, ArchiveIncidentTypeError, ArchiveIncidentTypeResponse, ArchiveMeetingScheduleData, ArchiveMeetingScheduleError, ArchiveMeetingScheduleResponse, ArchiveMeetingSessionData, ArchiveMeetingSessionError, ArchiveMeetingSessionResponse, ArchiveOncallHandoverTemplateData, ArchiveOncallHandoverTemplateError, ArchiveOncallHandoverTemplateResponse, ArchivePlaybookData, ArchivePlaybookError, ArchivePlaybookResponse, ArchiveRetrospectiveReviewData, ArchiveRetrospectiveReviewError, ArchiveRetrospectiveReviewResponse, ArchiveSystemComponentConstraintData, ArchiveSystemComponentConstraintError, ArchiveSystemComponentConstraintResponse, ArchiveSystemComponentControlData, ArchiveSystemComponentControlError, ArchiveSystemComponentControlResponse, ArchiveSystemComponentData, ArchiveSystemComponentError, ArchiveSystemComponentKindData, ArchiveSystemComponentKindError, ArchiveSystemComponentKindResponse, ArchiveSystemComponentRelationshipData, ArchiveSystemComponentRelationshipError, ArchiveSystemComponentRelationshipResponse, ArchiveSystemComponentResponse, ArchiveSystemComponentSignalData, ArchiveSystemComponentSignalError, ArchiveSystemComponentSignalResponse, ArchiveTaskData, ArchiveTaskError, ArchiveTaskResponse, ArchiveTeamData, ArchiveTeamError, ArchiveTeamResponse, CompleteIntegrationOauthData, CompleteIntegrationOauthError, CompleteIntegrationOauthResponse, CreateDebriefQuestionData, CreateDebriefQuestionError, CreateDebriefQuestionResponse, CreateEventAnnotationData, CreateEventAnnotationError, CreateEventAnnotationResponse, CreateIncidentData, CreateIncidentError, CreateIncidentEventData, CreateIncidentEventError, CreateIncidentEventResponse, CreateIncidentFieldData, CreateIncidentFieldError, CreateIncidentFieldResponse, CreateIncidentMilestoneData, CreateIncidentMilestoneError, CreateIncidentMilestoneResponse, CreateIncidentResponse, CreateIncidentRoleData, CreateIncidentRoleError, CreateIncidentRoleResponse, CreateIncidentSeverityData, CreateIncidentSeverityError, CreateIncidentSeverityResponse, CreateIncidentTagData, CreateIncidentTagError, CreateIncidentTagResponse, CreateIncidentTypeData, CreateIncidentTypeError, CreateIncidentTypeResponse, CreateIntegrationData, CreateIntegrationError, CreateIntegrationResponse, CreateMeetingScheduleData, CreateMeetingScheduleError, CreateMeetingScheduleResponse, CreateMeetingSessionData, CreateMeetingSessionError, CreateMeetingSessionResponse, CreateOncallHandoverTemplateData, CreateOncallHandoverTemplateError, CreateOncallHandoverTemplateResponse, CreatePlaybookData, CreatePlaybookError, CreatePlaybookResponse, CreateRetrospectiveData, CreateRetrospectiveDiscussionData, CreateRetrospectiveDiscussionError, CreateRetrospectiveDiscussionResponse, CreateRetrospectiveError, CreateRetrospectiveResponse, CreateRetrospectiveReviewData, CreateRetrospectiveReviewError, CreateRetrospectiveReviewResponse, CreateSystemAnalysisRelationshipData, CreateSystemAnalysisRelationshipError, CreateSystemAnalysisRelationshipResponse, CreateSystemComponentConstraintData, CreateSystemComponentConstraintError, CreateSystemComponentConstraintResponse, CreateSystemComponentControlData, CreateSystemComponentControlError, CreateSystemComponentControlResponse, CreateSystemComponentData, CreateSystemComponentError, CreateSystemComponentKindData, CreateSystemComponentKindError, CreateSystemComponentKindResponse, CreateSystemComponentRelationshipData, CreateSystemComponentRelationshipError, CreateSystemComponentRelationshipResponse, CreateSystemComponentResponse, CreateSystemComponentSignalData, CreateSystemComponentSignalError, CreateSystemComponentSignalResponse, CreateTaskData, CreateTaskError, CreateTaskResponse, CreateTeamData, CreateTeamError, CreateTeamResponse, DeleteEventAnnotationData, DeleteEventAnnotationError, DeleteEventAnnotationResponse, DeleteIncidentEventData, DeleteIncidentEventError, DeleteIncidentEventResponse, DeleteIncidentMilestoneData, DeleteIncidentMilestoneError, DeleteIncidentMilestoneResponse, DeleteIntegrationData, DeleteIntegrationError, DeleteIntegrationResponse, DeleteSystemAnalysisComponentData, DeleteSystemAnalysisComponentError, DeleteSystemAnalysisComponentResponse, DeleteSystemAnalysisRelationshipData, DeleteSystemAnalysisRelationshipError, DeleteSystemAnalysisRelationshipResponse, DeleteUserNotificationData, DeleteUserNotificationError, DeleteUserNotificationResponse, FinishOrganizationSetupData, FinishOrganizationSetupError, FinishOrganizationSetupResponse, GetAdjacentOncallShiftsData, GetAlertData, GetAlertMetricsData, GetAuthSessionConfigData, GetCurrentAuthSessionData, GetDebriefQuestionData, GetEventData, GetIncidentData, GetIncidentDebriefData, GetIncidentFieldData, GetIncidentRoleData, GetIncidentSeverityData, GetIncidentTagData, GetIncidentTypeData, GetIncidentUserDebriefData, GetIntegrationData, GetMeetingScheduleData, GetMeetingSessionData, GetOncallRosterData, GetOncallRosterMetricsData, GetOncallShiftBurdenMetricWeightsData, GetOncallShiftData, GetOncallShiftHandoverData, GetOncallShiftHandoverTemplateData, GetOncallShiftMetricsData, GetOrganizationData, GetPlaybookData, GetRetrospectiveCommentData, GetRetrospectiveCommentError, GetRetrospectiveCommentResponse, GetRetrospectiveData, GetRetrospectiveForIncidentData, GetSystemAnalysisComponentData, GetSystemAnalysisData, GetSystemAnalysisRelationshipData, GetSystemComponentConstraintData, GetSystemComponentControlData, GetSystemComponentData, GetSystemComponentKindData, GetSystemComponentRelationshipData, GetSystemComponentSignalData, GetTaskData, GetTeamData, GetUserData, GetUserOncallInformationData, ListAlertIncidentLinksData, ListAlertIncidentLinksError, ListAlertIncidentLinksResponse, ListAlertsData, ListAlertsError, ListAlertsResponse, ListDebriefMessagesData, ListDebriefMessagesError, ListDebriefMessagesResponse, ListDebriefQuestionsData, ListDebriefQuestionsError, ListDebriefQuestionsResponse, ListDebriefSuggestionsData, ListDebriefSuggestionsError, ListDebriefSuggestionsResponse, ListEventAnnotationsData, ListEventAnnotationsError, ListEventAnnotationsResponse, ListEventsData, ListEventsError, ListEventsResponse, ListIncidentEventContributingFactorCategoriesData, ListIncidentEventContributingFactorCategoriesError, ListIncidentEventContributingFactorCategoriesResponse, ListIncidentEventsData, ListIncidentEventsError, ListIncidentEventsResponse, ListIncidentFieldsData, ListIncidentFieldsError, ListIncidentFieldsResponse, ListIncidentMilestonesData, ListIncidentRolesData, ListIncidentRolesError, ListIncidentRolesResponse, ListIncidentsData, ListIncidentsError, ListIncidentSeveritiesData, ListIncidentSeveritiesError, ListIncidentSeveritiesResponse, ListIncidentsResponse, ListIncidentTagsData, ListIncidentTagsError, ListIncidentTagsResponse, ListIncidentTypesData, ListIncidentTypesError, ListIncidentTypesResponse, ListIntegrationsData, ListIntegrationsError, ListIntegrationsResponse, ListMeetingSchedulesData, ListMeetingSchedulesError, ListMeetingSchedulesResponse, ListMeetingSessionsData, ListMeetingSessionsError, ListMeetingSessionsResponse, ListOncallRostersData, ListOncallRostersError, ListOncallRostersResponse, ListOncallShiftsData, ListOncallShiftsError, ListOncallShiftsResponse, ListPlaybooksData, ListPlaybooksError, ListPlaybooksResponse, ListRetrospectiveCommentsData, ListRetrospectiveCommentsError, ListRetrospectiveCommentsResponse, ListRetrospectiveReviewsData, ListRetrospectiveReviewsError, ListRetrospectiveReviewsResponse, ListRetrospectivesData, ListRetrospectivesError, ListRetrospectivesResponse, ListSystemAnalysisComponentsData, ListSystemAnalysisComponentsError, ListSystemAnalysisComponentsResponse, ListSystemAnalysisRelationshipsData, ListSystemAnalysisRelationshipsError, ListSystemAnalysisRelationshipsResponse, ListSystemComponentKindsData, ListSystemComponentKindsError, ListSystemComponentKindsResponse, ListSystemComponentRelationshipsData, ListSystemComponentRelationshipsError, ListSystemComponentRelationshipsResponse, ListSystemComponentsData, ListSystemComponentsError, ListSystemComponentsResponse, ListTasksData, ListTasksError, ListTasksResponse, ListTeamsData, ListTeamsError, ListTeamsResponse, ListUserNotificationsData, ListUserNotificationsError, ListUserNotificationsResponse, ListUsersData, ListUsersError, ListUsersResponse, ListWatchedOncallRostersData, RemoveWatchedOncallRosterData, RemoveWatchedOncallRosterError, RemoveWatchedOncallRosterResponse, RequestDocumentEditorSessionData, RequestDocumentEditorSessionError, RequestDocumentEditorSessionResponse, SendOncallShiftHandoverData, SendOncallShiftHandoverError, SendOncallShiftHandoverResponse, StartIntegrationOauthData, StartIntegrationOauthError, StartIntegrationOauthResponse, UpdateDebriefQuestionData, UpdateDebriefQuestionError, UpdateDebriefQuestionResponse, UpdateEventAnnotationData, UpdateEventAnnotationError, UpdateEventAnnotationResponse, UpdateIncidentData, UpdateIncidentDebriefData, UpdateIncidentDebriefError, UpdateIncidentDebriefResponse, UpdateIncidentError, UpdateIncidentEventData, UpdateIncidentEventError, UpdateIncidentEventResponse, UpdateIncidentFieldData, UpdateIncidentFieldError, UpdateIncidentFieldResponse, UpdateIncidentMilestoneData, UpdateIncidentMilestoneError, UpdateIncidentMilestoneResponse, UpdateIncidentResponse, UpdateIncidentRoleData, UpdateIncidentRoleError, UpdateIncidentRoleResponse, UpdateIncidentSeverityData, UpdateIncidentSeverityError, UpdateIncidentSeverityResponse, UpdateIncidentTagData, UpdateIncidentTagError, UpdateIncidentTagResponse, UpdateIncidentTypeData, UpdateIncidentTypeError, UpdateIncidentTypeResponse, UpdateIntegrationData, UpdateIntegrationError, UpdateIntegrationResponse, UpdateMeetingScheduleData, UpdateMeetingScheduleError, UpdateMeetingScheduleResponse, UpdateMeetingSessionData, UpdateMeetingSessionError, UpdateMeetingSessionResponse, UpdateOncallHandoverTemplateData, UpdateOncallHandoverTemplateError, UpdateOncallHandoverTemplateResponse, UpdateOncallShiftHandoverData, UpdateOncallShiftHandoverError, UpdateOncallShiftHandoverResponse, UpdatePlaybookData, UpdatePlaybookError, UpdatePlaybookResponse, UpdateRetrospectiveCommentData, UpdateRetrospectiveCommentError, UpdateRetrospectiveCommentResponse, UpdateRetrospectiveReviewData, UpdateRetrospectiveReviewError, UpdateRetrospectiveReviewResponse, UpdateSystemAnalysisComponentData, UpdateSystemAnalysisComponentError, UpdateSystemAnalysisComponentResponse, UpdateSystemAnalysisRelationshipData, UpdateSystemAnalysisRelationshipError, UpdateSystemAnalysisRelationshipResponse, UpdateSystemComponentConstraintData, UpdateSystemComponentConstraintError, UpdateSystemComponentConstraintResponse, UpdateSystemComponentControlData, UpdateSystemComponentControlError, UpdateSystemComponentControlResponse, UpdateSystemComponentData, UpdateSystemComponentError, UpdateSystemComponentKindData, UpdateSystemComponentKindError, UpdateSystemComponentKindResponse, UpdateSystemComponentRelationshipData, UpdateSystemComponentRelationshipError, UpdateSystemComponentRelationshipResponse, UpdateSystemComponentResponse, UpdateSystemComponentSignalData, UpdateSystemComponentSignalError, UpdateSystemComponentSignalResponse, UpdateTaskData, UpdateTaskError, UpdateTaskResponse, UpdateTeamsData, UpdateTeamsError, UpdateTeamsResponse } from '../types.gen';
+import { addIncidentDebriefUserMessage, addSystemAnalysisComponent, addWatchedOncallRoster, archiveDebriefQuestion, archiveIncident, archiveIncidentField, archiveIncidentRole, archiveIncidentSeverity, archiveIncidentTag, archiveIncidentType, archiveMeetingSchedule, archiveMeetingSession, archiveOncallHandoverTemplate, archivePlaybook, archiveRetrospectiveReview, archiveSystemComponent, archiveSystemComponentConstraint, archiveSystemComponentControl, archiveSystemComponentKind, archiveSystemComponentRelationship, archiveSystemComponentSignal, archiveTask, archiveTeam, completeIntegrationOauth, createDebriefQuestion, createEventAnnotation, createIncident, createIncidentEvent, createIncidentField, createIncidentMilestone, createIncidentRole, createIncidentSeverity, createIncidentTag, createIncidentType, createIntegration, createMeetingSchedule, createMeetingSession, createOncallHandoverTemplate, createPlaybook, createRetrospective, createRetrospectiveComment, createRetrospectiveReview, createSystemAnalysisRelationship, createSystemComponent, createSystemComponentConstraint, createSystemComponentControl, createSystemComponentKind, createSystemComponentRelationship, createSystemComponentSignal, createTask, createTeam, deleteEventAnnotation, deleteIncidentEvent, deleteIncidentMilestone, deleteIntegration, deleteSystemAnalysisComponent, deleteSystemAnalysisRelationship, deleteUserNotification, finishOrganizationSetup, getAdjacentOncallShifts, getAlert, getAlertMetrics, getAuthSessionConfig, getCurrentAuthSession, getDebriefQuestion, getEvent, getIncident, getIncidentDebrief, getIncidentField, getIncidentRole, getIncidentSeverity, getIncidentTag, getIncidentType, getIncidentUserDebrief, getIntegration, getMeetingSchedule, getMeetingSession, getOncallRoster, getOncallRosterMetrics, getOncallShift, getOncallShiftBurdenMetricWeights, getOncallShiftHandover, getOncallShiftHandoverTemplate, getOncallShiftMetrics, getOrganization, getPlaybook, getRetrospective, getRetrospectiveComment, getRetrospectiveForIncident, getSystemAnalysis, getSystemAnalysisComponent, getSystemAnalysisRelationship, getSystemComponent, getSystemComponentConstraint, getSystemComponentControl, getSystemComponentKind, getSystemComponentRelationship, getSystemComponentSignal, getTask, getTeam, getUser, getUserOncallInformation, listAlertIncidentLinks, listAlerts, listDebriefMessages, listDebriefQuestions, listDebriefSuggestions, listEventAnnotations, listEvents, listIncidentEventContributingFactorCategories, listIncidentEvents, listIncidentFields, listIncidentMilestones, listIncidentRoles, listIncidents, listIncidentSeverities, listIncidentTags, listIncidentTypes, listIntegrations, listMeetingSchedules, listMeetingSessions, listOncallRosters, listOncallShifts, listPlaybooks, listRetrospectiveComments, listRetrospectiveReviews, listRetrospectives, listSystemAnalysisComponents, listSystemAnalysisRelationships, listSystemComponentKinds, listSystemComponentRelationships, listSystemComponents, listTasks, listTeams, listUserNotifications, listUsers, listWatchedOncallRosters, type Options, removeWatchedOncallRoster, requestDocumentEditorSession, sendOncallShiftHandover, startIntegrationOauth, updateDebriefQuestion, updateEventAnnotation, updateIncident, updateIncidentDebrief, updateIncidentEvent, updateIncidentField, updateIncidentMilestone, updateIncidentRole, updateIncidentSeverity, updateIncidentTag, updateIncidentType, updateIntegration, updateMeetingSchedule, updateMeetingSession, updateOncallHandoverTemplate, updateOncallShiftHandover, updatePlaybook, updateRetrospectiveComment, updateRetrospectiveReview, updateSystemAnalysisComponent, updateSystemAnalysisRelationship, updateSystemComponent, updateSystemComponentConstraint, updateSystemComponentControl, updateSystemComponentKind, updateSystemComponentRelationship, updateSystemComponentSignal, updateTask, updateTeams } from '../sdk.gen';
+import type { AddIncidentDebriefUserMessageData, AddIncidentDebriefUserMessageError, AddIncidentDebriefUserMessageResponse, AddSystemAnalysisComponentData, AddSystemAnalysisComponentError, AddSystemAnalysisComponentResponse, AddWatchedOncallRosterData, AddWatchedOncallRosterError, AddWatchedOncallRosterResponse, ArchiveDebriefQuestionData, ArchiveDebriefQuestionError, ArchiveDebriefQuestionResponse, ArchiveIncidentData, ArchiveIncidentError, ArchiveIncidentFieldData, ArchiveIncidentFieldError, ArchiveIncidentFieldResponse, ArchiveIncidentResponse, ArchiveIncidentRoleData, ArchiveIncidentRoleError, ArchiveIncidentRoleResponse, ArchiveIncidentSeverityData, ArchiveIncidentSeverityError, ArchiveIncidentSeverityResponse, ArchiveIncidentTagData, ArchiveIncidentTagError, ArchiveIncidentTagResponse, ArchiveIncidentTypeData, ArchiveIncidentTypeError, ArchiveIncidentTypeResponse, ArchiveMeetingScheduleData, ArchiveMeetingScheduleError, ArchiveMeetingScheduleResponse, ArchiveMeetingSessionData, ArchiveMeetingSessionError, ArchiveMeetingSessionResponse, ArchiveOncallHandoverTemplateData, ArchiveOncallHandoverTemplateError, ArchiveOncallHandoverTemplateResponse, ArchivePlaybookData, ArchivePlaybookError, ArchivePlaybookResponse, ArchiveRetrospectiveReviewData, ArchiveRetrospectiveReviewError, ArchiveRetrospectiveReviewResponse, ArchiveSystemComponentConstraintData, ArchiveSystemComponentConstraintError, ArchiveSystemComponentConstraintResponse, ArchiveSystemComponentControlData, ArchiveSystemComponentControlError, ArchiveSystemComponentControlResponse, ArchiveSystemComponentData, ArchiveSystemComponentError, ArchiveSystemComponentKindData, ArchiveSystemComponentKindError, ArchiveSystemComponentKindResponse, ArchiveSystemComponentRelationshipData, ArchiveSystemComponentRelationshipError, ArchiveSystemComponentRelationshipResponse, ArchiveSystemComponentResponse, ArchiveSystemComponentSignalData, ArchiveSystemComponentSignalError, ArchiveSystemComponentSignalResponse, ArchiveTaskData, ArchiveTaskError, ArchiveTaskResponse, ArchiveTeamData, ArchiveTeamError, ArchiveTeamResponse, CompleteIntegrationOauthData, CompleteIntegrationOauthError, CompleteIntegrationOauthResponse, CreateDebriefQuestionData, CreateDebriefQuestionError, CreateDebriefQuestionResponse, CreateEventAnnotationData, CreateEventAnnotationError, CreateEventAnnotationResponse, CreateIncidentData, CreateIncidentError, CreateIncidentEventData, CreateIncidentEventError, CreateIncidentEventResponse, CreateIncidentFieldData, CreateIncidentFieldError, CreateIncidentFieldResponse, CreateIncidentMilestoneData, CreateIncidentMilestoneError, CreateIncidentMilestoneResponse, CreateIncidentResponse, CreateIncidentRoleData, CreateIncidentRoleError, CreateIncidentRoleResponse, CreateIncidentSeverityData, CreateIncidentSeverityError, CreateIncidentSeverityResponse, CreateIncidentTagData, CreateIncidentTagError, CreateIncidentTagResponse, CreateIncidentTypeData, CreateIncidentTypeError, CreateIncidentTypeResponse, CreateIntegrationData, CreateIntegrationError, CreateIntegrationResponse, CreateMeetingScheduleData, CreateMeetingScheduleError, CreateMeetingScheduleResponse, CreateMeetingSessionData, CreateMeetingSessionError, CreateMeetingSessionResponse, CreateOncallHandoverTemplateData, CreateOncallHandoverTemplateError, CreateOncallHandoverTemplateResponse, CreatePlaybookData, CreatePlaybookError, CreatePlaybookResponse, CreateRetrospectiveCommentData, CreateRetrospectiveCommentError, CreateRetrospectiveCommentResponse, CreateRetrospectiveData, CreateRetrospectiveError, CreateRetrospectiveResponse, CreateRetrospectiveReviewData, CreateRetrospectiveReviewError, CreateRetrospectiveReviewResponse, CreateSystemAnalysisRelationshipData, CreateSystemAnalysisRelationshipError, CreateSystemAnalysisRelationshipResponse, CreateSystemComponentConstraintData, CreateSystemComponentConstraintError, CreateSystemComponentConstraintResponse, CreateSystemComponentControlData, CreateSystemComponentControlError, CreateSystemComponentControlResponse, CreateSystemComponentData, CreateSystemComponentError, CreateSystemComponentKindData, CreateSystemComponentKindError, CreateSystemComponentKindResponse, CreateSystemComponentRelationshipData, CreateSystemComponentRelationshipError, CreateSystemComponentRelationshipResponse, CreateSystemComponentResponse, CreateSystemComponentSignalData, CreateSystemComponentSignalError, CreateSystemComponentSignalResponse, CreateTaskData, CreateTaskError, CreateTaskResponse, CreateTeamData, CreateTeamError, CreateTeamResponse, DeleteEventAnnotationData, DeleteEventAnnotationError, DeleteEventAnnotationResponse, DeleteIncidentEventData, DeleteIncidentEventError, DeleteIncidentEventResponse, DeleteIncidentMilestoneData, DeleteIncidentMilestoneError, DeleteIncidentMilestoneResponse, DeleteIntegrationData, DeleteIntegrationError, DeleteIntegrationResponse, DeleteSystemAnalysisComponentData, DeleteSystemAnalysisComponentError, DeleteSystemAnalysisComponentResponse, DeleteSystemAnalysisRelationshipData, DeleteSystemAnalysisRelationshipError, DeleteSystemAnalysisRelationshipResponse, DeleteUserNotificationData, DeleteUserNotificationError, DeleteUserNotificationResponse, FinishOrganizationSetupData, FinishOrganizationSetupError, FinishOrganizationSetupResponse, GetAdjacentOncallShiftsData, GetAdjacentOncallShiftsError, GetAdjacentOncallShiftsResponse, GetAlertData, GetAlertError, GetAlertMetricsData, GetAlertMetricsError, GetAlertMetricsResponse, GetAlertResponse, GetAuthSessionConfigData, GetAuthSessionConfigError, GetAuthSessionConfigResponse, GetCurrentAuthSessionData, GetCurrentAuthSessionError, GetCurrentAuthSessionResponse, GetDebriefQuestionData, GetDebriefQuestionError, GetDebriefQuestionResponse, GetEventData, GetEventError, GetEventResponse, GetIncidentData, GetIncidentDebriefData, GetIncidentDebriefError, GetIncidentDebriefResponse, GetIncidentError, GetIncidentFieldData, GetIncidentFieldError, GetIncidentFieldResponse, GetIncidentResponse, GetIncidentRoleData, GetIncidentRoleError, GetIncidentRoleResponse, GetIncidentSeverityData, GetIncidentSeverityError, GetIncidentSeverityResponse, GetIncidentTagData, GetIncidentTagError, GetIncidentTagResponse, GetIncidentTypeData, GetIncidentTypeError, GetIncidentTypeResponse, GetIncidentUserDebriefData, GetIncidentUserDebriefError, GetIncidentUserDebriefResponse, GetIntegrationData, GetIntegrationError, GetIntegrationResponse, GetMeetingScheduleData, GetMeetingScheduleError, GetMeetingScheduleResponse, GetMeetingSessionData, GetMeetingSessionError, GetMeetingSessionResponse, GetOncallRosterData, GetOncallRosterError, GetOncallRosterMetricsData, GetOncallRosterMetricsError, GetOncallRosterMetricsResponse, GetOncallRosterResponse, GetOncallShiftBurdenMetricWeightsData, GetOncallShiftBurdenMetricWeightsError, GetOncallShiftBurdenMetricWeightsResponse, GetOncallShiftData, GetOncallShiftError, GetOncallShiftHandoverData, GetOncallShiftHandoverError, GetOncallShiftHandoverResponse, GetOncallShiftHandoverTemplateData, GetOncallShiftHandoverTemplateError, GetOncallShiftHandoverTemplateResponse, GetOncallShiftMetricsData, GetOncallShiftMetricsError, GetOncallShiftMetricsResponse, GetOncallShiftResponse, GetOrganizationData, GetOrganizationError, GetOrganizationResponse, GetPlaybookData, GetPlaybookError, GetPlaybookResponse, GetRetrospectiveCommentData, GetRetrospectiveCommentError, GetRetrospectiveCommentResponse, GetRetrospectiveData, GetRetrospectiveError, GetRetrospectiveForIncidentData, GetRetrospectiveForIncidentError, GetRetrospectiveForIncidentResponse, GetRetrospectiveResponse, GetSystemAnalysisComponentData, GetSystemAnalysisComponentError, GetSystemAnalysisComponentResponse, GetSystemAnalysisData, GetSystemAnalysisError, GetSystemAnalysisRelationshipData, GetSystemAnalysisRelationshipError, GetSystemAnalysisRelationshipResponse, GetSystemAnalysisResponse, GetSystemComponentConstraintData, GetSystemComponentConstraintError, GetSystemComponentConstraintResponse, GetSystemComponentControlData, GetSystemComponentControlError, GetSystemComponentControlResponse, GetSystemComponentData, GetSystemComponentError, GetSystemComponentKindData, GetSystemComponentKindError, GetSystemComponentKindResponse, GetSystemComponentRelationshipData, GetSystemComponentRelationshipError, GetSystemComponentRelationshipResponse, GetSystemComponentResponse, GetSystemComponentSignalData, GetSystemComponentSignalError, GetSystemComponentSignalResponse, GetTaskData, GetTaskError, GetTaskResponse, GetTeamData, GetTeamError, GetTeamResponse, GetUserData, GetUserError, GetUserOncallInformationData, GetUserOncallInformationError, GetUserOncallInformationResponse, GetUserResponse, ListAlertIncidentLinksData, ListAlertIncidentLinksError, ListAlertIncidentLinksResponse, ListAlertsData, ListAlertsError, ListAlertsResponse, ListDebriefMessagesData, ListDebriefMessagesError, ListDebriefMessagesResponse, ListDebriefQuestionsData, ListDebriefQuestionsError, ListDebriefQuestionsResponse, ListDebriefSuggestionsData, ListDebriefSuggestionsError, ListDebriefSuggestionsResponse, ListEventAnnotationsData, ListEventAnnotationsError, ListEventAnnotationsResponse, ListEventsData, ListEventsError, ListEventsResponse, ListIncidentEventContributingFactorCategoriesData, ListIncidentEventContributingFactorCategoriesError, ListIncidentEventContributingFactorCategoriesResponse, ListIncidentEventsData, ListIncidentEventsError, ListIncidentEventsResponse, ListIncidentFieldsData, ListIncidentFieldsError, ListIncidentFieldsResponse, ListIncidentMilestonesData, ListIncidentMilestonesError, ListIncidentMilestonesResponse, ListIncidentRolesData, ListIncidentRolesError, ListIncidentRolesResponse, ListIncidentsData, ListIncidentsError, ListIncidentSeveritiesData, ListIncidentSeveritiesError, ListIncidentSeveritiesResponse, ListIncidentsResponse, ListIncidentTagsData, ListIncidentTagsError, ListIncidentTagsResponse, ListIncidentTypesData, ListIncidentTypesError, ListIncidentTypesResponse, ListIntegrationsData, ListIntegrationsError, ListIntegrationsResponse, ListMeetingSchedulesData, ListMeetingSchedulesError, ListMeetingSchedulesResponse, ListMeetingSessionsData, ListMeetingSessionsError, ListMeetingSessionsResponse, ListOncallRostersData, ListOncallRostersError, ListOncallRostersResponse, ListOncallShiftsData, ListOncallShiftsError, ListOncallShiftsResponse, ListPlaybooksData, ListPlaybooksError, ListPlaybooksResponse, ListRetrospectiveCommentsData, ListRetrospectiveCommentsError, ListRetrospectiveCommentsResponse, ListRetrospectiveReviewsData, ListRetrospectiveReviewsError, ListRetrospectiveReviewsResponse, ListRetrospectivesData, ListRetrospectivesError, ListRetrospectivesResponse, ListSystemAnalysisComponentsData, ListSystemAnalysisComponentsError, ListSystemAnalysisComponentsResponse, ListSystemAnalysisRelationshipsData, ListSystemAnalysisRelationshipsError, ListSystemAnalysisRelationshipsResponse, ListSystemComponentKindsData, ListSystemComponentKindsError, ListSystemComponentKindsResponse, ListSystemComponentRelationshipsData, ListSystemComponentRelationshipsError, ListSystemComponentRelationshipsResponse, ListSystemComponentsData, ListSystemComponentsError, ListSystemComponentsResponse, ListTasksData, ListTasksError, ListTasksResponse, ListTeamsData, ListTeamsError, ListTeamsResponse, ListUserNotificationsData, ListUserNotificationsError, ListUserNotificationsResponse, ListUsersData, ListUsersError, ListUsersResponse, ListWatchedOncallRostersData, ListWatchedOncallRostersError, ListWatchedOncallRostersResponse, RemoveWatchedOncallRosterData, RemoveWatchedOncallRosterError, RemoveWatchedOncallRosterResponse, RequestDocumentEditorSessionData, RequestDocumentEditorSessionError, RequestDocumentEditorSessionResponse, SendOncallShiftHandoverData, SendOncallShiftHandoverError, SendOncallShiftHandoverResponse, StartIntegrationOauthData, StartIntegrationOauthError, StartIntegrationOauthResponse, UpdateDebriefQuestionData, UpdateDebriefQuestionError, UpdateDebriefQuestionResponse, UpdateEventAnnotationData, UpdateEventAnnotationError, UpdateEventAnnotationResponse, UpdateIncidentData, UpdateIncidentDebriefData, UpdateIncidentDebriefError, UpdateIncidentDebriefResponse, UpdateIncidentError, UpdateIncidentEventData, UpdateIncidentEventError, UpdateIncidentEventResponse, UpdateIncidentFieldData, UpdateIncidentFieldError, UpdateIncidentFieldResponse, UpdateIncidentMilestoneData, UpdateIncidentMilestoneError, UpdateIncidentMilestoneResponse, UpdateIncidentResponse, UpdateIncidentRoleData, UpdateIncidentRoleError, UpdateIncidentRoleResponse, UpdateIncidentSeverityData, UpdateIncidentSeverityError, UpdateIncidentSeverityResponse, UpdateIncidentTagData, UpdateIncidentTagError, UpdateIncidentTagResponse, UpdateIncidentTypeData, UpdateIncidentTypeError, UpdateIncidentTypeResponse, UpdateIntegrationData, UpdateIntegrationError, UpdateIntegrationResponse, UpdateMeetingScheduleData, UpdateMeetingScheduleError, UpdateMeetingScheduleResponse, UpdateMeetingSessionData, UpdateMeetingSessionError, UpdateMeetingSessionResponse, UpdateOncallHandoverTemplateData, UpdateOncallHandoverTemplateError, UpdateOncallHandoverTemplateResponse, UpdateOncallShiftHandoverData, UpdateOncallShiftHandoverError, UpdateOncallShiftHandoverResponse, UpdatePlaybookData, UpdatePlaybookError, UpdatePlaybookResponse, UpdateRetrospectiveCommentData, UpdateRetrospectiveCommentError, UpdateRetrospectiveCommentResponse, UpdateRetrospectiveReviewData, UpdateRetrospectiveReviewError, UpdateRetrospectiveReviewResponse, UpdateSystemAnalysisComponentData, UpdateSystemAnalysisComponentError, UpdateSystemAnalysisComponentResponse, UpdateSystemAnalysisRelationshipData, UpdateSystemAnalysisRelationshipError, UpdateSystemAnalysisRelationshipResponse, UpdateSystemComponentConstraintData, UpdateSystemComponentConstraintError, UpdateSystemComponentConstraintResponse, UpdateSystemComponentControlData, UpdateSystemComponentControlError, UpdateSystemComponentControlResponse, UpdateSystemComponentData, UpdateSystemComponentError, UpdateSystemComponentKindData, UpdateSystemComponentKindError, UpdateSystemComponentKindResponse, UpdateSystemComponentRelationshipData, UpdateSystemComponentRelationshipError, UpdateSystemComponentRelationshipResponse, UpdateSystemComponentResponse, UpdateSystemComponentSignalData, UpdateSystemComponentSignalError, UpdateSystemComponentSignalResponse, UpdateTaskData, UpdateTaskError, UpdateTaskResponse, UpdateTeamsData, UpdateTeamsError, UpdateTeamsResponse } from '../types.gen';
 
 export type QueryKey<TOptions extends Options> = [
     Pick<TOptions, 'baseUrl' | 'body' | 'headers' | 'path' | 'query'> & {
@@ -36,9 +36,7 @@ const createQueryKey = <TOptions extends Options>(id: string, options?: TOptions
     if (options?.query) {
         params.query = options.query;
     }
-    return [
-        params
-    ];
+    return [params];
 };
 
 export const listAlertsQueryKey = (options?: Options<ListAlertsData>) => createQueryKey('listAlerts', options);
@@ -46,25 +44,21 @@ export const listAlertsQueryKey = (options?: Options<ListAlertsData>) => createQ
 /**
  * List Alerts
  */
-export const listAlertsOptions = (options?: Options<ListAlertsData>) => {
-    return queryOptions({
-        queryFn: async ({ queryKey, signal }) => {
-            const { data } = await listAlerts({
-                ...options,
-                ...queryKey[0],
-                signal,
-                throwOnError: true
-            });
-            return data;
-        },
-        queryKey: listAlertsQueryKey(options)
-    });
-};
+export const listAlertsOptions = (options?: Options<ListAlertsData>) => queryOptions<ListAlertsResponse, ListAlertsError, ListAlertsResponse, ReturnType<typeof listAlertsQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await listAlerts({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: listAlertsQueryKey(options)
+});
 
 const createInfiniteParams = <K extends Pick<QueryKey<Options>[0], 'body' | 'headers' | 'path' | 'query'>>(queryKey: QueryKey<Options>, page: K) => {
-    const params = {
-        ...queryKey[0]
-    };
+    const params = { ...queryKey[0] };
     if (page.body) {
         params.body = {
             ...queryKey[0].body as any,
@@ -97,256 +91,234 @@ export const listAlertsInfiniteQueryKey = (options?: Options<ListAlertsData>): Q
 /**
  * List Alerts
  */
-export const listAlertsInfiniteOptions = (options?: Options<ListAlertsData>) => {
-    return infiniteQueryOptions<ListAlertsResponse, ListAlertsError, InfiniteData<ListAlertsResponse>, QueryKey<Options<ListAlertsData>>, number | Pick<QueryKey<Options<ListAlertsData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
-    // @ts-ignore
-    {
-        queryFn: async ({ pageParam, queryKey, signal }) => {
-            // @ts-ignore
-            const page: Pick<QueryKey<Options<ListAlertsData>>[0], 'body' | 'headers' | 'path' | 'query'> = typeof pageParam === 'object' ? pageParam : {
-                query: {
-                    offset: pageParam
-                }
-            };
-            const params = createInfiniteParams(queryKey, page);
-            const { data } = await listAlerts({
-                ...options,
-                ...params,
-                signal,
-                throwOnError: true
-            });
-            return data;
-        },
-        queryKey: listAlertsInfiniteQueryKey(options)
-    });
-};
+export const listAlertsInfiniteOptions = (options?: Options<ListAlertsData>) => infiniteQueryOptions<ListAlertsResponse, ListAlertsError, InfiniteData<ListAlertsResponse>, QueryKey<Options<ListAlertsData>>, number | Pick<QueryKey<Options<ListAlertsData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
+// @ts-ignore
+{
+    queryFn: async ({ pageParam, queryKey, signal }) => {
+        // @ts-ignore
+        const page: Pick<QueryKey<Options<ListAlertsData>>[0], 'body' | 'headers' | 'path' | 'query'> = typeof pageParam === 'object' ? pageParam : {
+            query: {
+                offset: pageParam
+            }
+        };
+        const params = createInfiniteParams(queryKey, page);
+        const { data } = await listAlerts({
+            ...options,
+            ...params,
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: listAlertsInfiniteQueryKey(options)
+});
 
 export const getAlertQueryKey = (options: Options<GetAlertData>) => createQueryKey('getAlert', options);
 
 /**
  * Get Alert
  */
-export const getAlertOptions = (options: Options<GetAlertData>) => {
-    return queryOptions({
-        queryFn: async ({ queryKey, signal }) => {
-            const { data } = await getAlert({
-                ...options,
-                ...queryKey[0],
-                signal,
-                throwOnError: true
-            });
-            return data;
-        },
-        queryKey: getAlertQueryKey(options)
-    });
-};
+export const getAlertOptions = (options: Options<GetAlertData>) => queryOptions<GetAlertResponse, GetAlertError, GetAlertResponse, ReturnType<typeof getAlertQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await getAlert({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: getAlertQueryKey(options)
+});
 
 export const listAlertIncidentLinksQueryKey = (options: Options<ListAlertIncidentLinksData>) => createQueryKey('listAlertIncidentLinks', options);
 
 /**
  * List Incident Links for an Alert
  */
-export const listAlertIncidentLinksOptions = (options: Options<ListAlertIncidentLinksData>) => {
-    return queryOptions({
-        queryFn: async ({ queryKey, signal }) => {
-            const { data } = await listAlertIncidentLinks({
-                ...options,
-                ...queryKey[0],
-                signal,
-                throwOnError: true
-            });
-            return data;
-        },
-        queryKey: listAlertIncidentLinksQueryKey(options)
-    });
-};
+export const listAlertIncidentLinksOptions = (options: Options<ListAlertIncidentLinksData>) => queryOptions<ListAlertIncidentLinksResponse, ListAlertIncidentLinksError, ListAlertIncidentLinksResponse, ReturnType<typeof listAlertIncidentLinksQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await listAlertIncidentLinks({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: listAlertIncidentLinksQueryKey(options)
+});
 
 export const listAlertIncidentLinksInfiniteQueryKey = (options: Options<ListAlertIncidentLinksData>): QueryKey<Options<ListAlertIncidentLinksData>> => createQueryKey('listAlertIncidentLinks', options, true);
 
 /**
  * List Incident Links for an Alert
  */
-export const listAlertIncidentLinksInfiniteOptions = (options: Options<ListAlertIncidentLinksData>) => {
-    return infiniteQueryOptions<ListAlertIncidentLinksResponse, ListAlertIncidentLinksError, InfiniteData<ListAlertIncidentLinksResponse>, QueryKey<Options<ListAlertIncidentLinksData>>, number | Pick<QueryKey<Options<ListAlertIncidentLinksData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
-    // @ts-ignore
-    {
-        queryFn: async ({ pageParam, queryKey, signal }) => {
-            // @ts-ignore
-            const page: Pick<QueryKey<Options<ListAlertIncidentLinksData>>[0], 'body' | 'headers' | 'path' | 'query'> = typeof pageParam === 'object' ? pageParam : {
-                query: {
-                    offset: pageParam
-                }
-            };
-            const params = createInfiniteParams(queryKey, page);
-            const { data } = await listAlertIncidentLinks({
-                ...options,
-                ...params,
-                signal,
-                throwOnError: true
-            });
-            return data;
-        },
-        queryKey: listAlertIncidentLinksInfiniteQueryKey(options)
-    });
-};
+export const listAlertIncidentLinksInfiniteOptions = (options: Options<ListAlertIncidentLinksData>) => infiniteQueryOptions<ListAlertIncidentLinksResponse, ListAlertIncidentLinksError, InfiniteData<ListAlertIncidentLinksResponse>, QueryKey<Options<ListAlertIncidentLinksData>>, number | Pick<QueryKey<Options<ListAlertIncidentLinksData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
+// @ts-ignore
+{
+    queryFn: async ({ pageParam, queryKey, signal }) => {
+        // @ts-ignore
+        const page: Pick<QueryKey<Options<ListAlertIncidentLinksData>>[0], 'body' | 'headers' | 'path' | 'query'> = typeof pageParam === 'object' ? pageParam : {
+            query: {
+                offset: pageParam
+            }
+        };
+        const params = createInfiniteParams(queryKey, page);
+        const { data } = await listAlertIncidentLinks({
+            ...options,
+            ...params,
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: listAlertIncidentLinksInfiniteQueryKey(options)
+});
 
 export const getAlertMetricsQueryKey = (options: Options<GetAlertMetricsData>) => createQueryKey('getAlertMetrics', options);
 
 /**
  * Get Alert Metrics
  */
-export const getAlertMetricsOptions = (options: Options<GetAlertMetricsData>) => {
-    return queryOptions({
-        queryFn: async ({ queryKey, signal }) => {
-            const { data } = await getAlertMetrics({
-                ...options,
-                ...queryKey[0],
-                signal,
-                throwOnError: true
-            });
-            return data;
-        },
-        queryKey: getAlertMetricsQueryKey(options)
-    });
-};
+export const getAlertMetricsOptions = (options: Options<GetAlertMetricsData>) => queryOptions<GetAlertMetricsResponse, GetAlertMetricsError, GetAlertMetricsResponse, ReturnType<typeof getAlertMetricsQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await getAlertMetrics({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: getAlertMetricsQueryKey(options)
+});
 
 export const getCurrentAuthSessionQueryKey = (options?: Options<GetCurrentAuthSessionData>) => createQueryKey('getCurrentAuthSession', options);
 
 /**
  * Get the Auth Session for the Current User
  */
-export const getCurrentAuthSessionOptions = (options?: Options<GetCurrentAuthSessionData>) => {
-    return queryOptions({
-        queryFn: async ({ queryKey, signal }) => {
-            const { data } = await getCurrentAuthSession({
-                ...options,
-                ...queryKey[0],
-                signal,
-                throwOnError: true
-            });
-            return data;
-        },
-        queryKey: getCurrentAuthSessionQueryKey(options)
-    });
-};
+export const getCurrentAuthSessionOptions = (options?: Options<GetCurrentAuthSessionData>) => queryOptions<GetCurrentAuthSessionResponse, GetCurrentAuthSessionError, GetCurrentAuthSessionResponse, ReturnType<typeof getCurrentAuthSessionQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await getCurrentAuthSession({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: getCurrentAuthSessionQueryKey(options)
+});
 
 export const getAuthSessionConfigQueryKey = (options?: Options<GetAuthSessionConfigData>) => createQueryKey('getAuthSessionConfig', options);
 
 /**
  * Get the Auth Session config
  */
-export const getAuthSessionConfigOptions = (options?: Options<GetAuthSessionConfigData>) => {
-    return queryOptions({
-        queryFn: async ({ queryKey, signal }) => {
-            const { data } = await getAuthSessionConfig({
-                ...options,
-                ...queryKey[0],
-                signal,
-                throwOnError: true
-            });
-            return data;
-        },
-        queryKey: getAuthSessionConfigQueryKey(options)
-    });
-};
+export const getAuthSessionConfigOptions = (options?: Options<GetAuthSessionConfigData>) => queryOptions<GetAuthSessionConfigResponse, GetAuthSessionConfigError, GetAuthSessionConfigResponse, ReturnType<typeof getAuthSessionConfigQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await getAuthSessionConfig({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: getAuthSessionConfigQueryKey(options)
+});
 
 export const listUserNotificationsQueryKey = (options?: Options<ListUserNotificationsData>) => createQueryKey('listUserNotifications', options);
 
 /**
  * List Notifications for the Current User
  */
-export const listUserNotificationsOptions = (options?: Options<ListUserNotificationsData>) => {
-    return queryOptions({
-        queryFn: async ({ queryKey, signal }) => {
-            const { data } = await listUserNotifications({
-                ...options,
-                ...queryKey[0],
-                signal,
-                throwOnError: true
-            });
-            return data;
-        },
-        queryKey: listUserNotificationsQueryKey(options)
-    });
-};
+export const listUserNotificationsOptions = (options?: Options<ListUserNotificationsData>) => queryOptions<ListUserNotificationsResponse, ListUserNotificationsError, ListUserNotificationsResponse, ReturnType<typeof listUserNotificationsQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await listUserNotifications({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: listUserNotificationsQueryKey(options)
+});
 
 export const listUserNotificationsInfiniteQueryKey = (options?: Options<ListUserNotificationsData>): QueryKey<Options<ListUserNotificationsData>> => createQueryKey('listUserNotifications', options, true);
 
 /**
  * List Notifications for the Current User
  */
-export const listUserNotificationsInfiniteOptions = (options?: Options<ListUserNotificationsData>) => {
-    return infiniteQueryOptions<ListUserNotificationsResponse, ListUserNotificationsError, InfiniteData<ListUserNotificationsResponse>, QueryKey<Options<ListUserNotificationsData>>, number | Pick<QueryKey<Options<ListUserNotificationsData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
-    // @ts-ignore
-    {
-        queryFn: async ({ pageParam, queryKey, signal }) => {
-            // @ts-ignore
-            const page: Pick<QueryKey<Options<ListUserNotificationsData>>[0], 'body' | 'headers' | 'path' | 'query'> = typeof pageParam === 'object' ? pageParam : {
-                query: {
-                    offset: pageParam
-                }
-            };
-            const params = createInfiniteParams(queryKey, page);
-            const { data } = await listUserNotifications({
-                ...options,
-                ...params,
-                signal,
-                throwOnError: true
-            });
-            return data;
-        },
-        queryKey: listUserNotificationsInfiniteQueryKey(options)
-    });
-};
+export const listUserNotificationsInfiniteOptions = (options?: Options<ListUserNotificationsData>) => infiniteQueryOptions<ListUserNotificationsResponse, ListUserNotificationsError, InfiniteData<ListUserNotificationsResponse>, QueryKey<Options<ListUserNotificationsData>>, number | Pick<QueryKey<Options<ListUserNotificationsData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
+// @ts-ignore
+{
+    queryFn: async ({ pageParam, queryKey, signal }) => {
+        // @ts-ignore
+        const page: Pick<QueryKey<Options<ListUserNotificationsData>>[0], 'body' | 'headers' | 'path' | 'query'> = typeof pageParam === 'object' ? pageParam : {
+            query: {
+                offset: pageParam
+            }
+        };
+        const params = createInfiniteParams(queryKey, page);
+        const { data } = await listUserNotifications({
+            ...options,
+            ...params,
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: listUserNotificationsInfiniteQueryKey(options)
+});
 
 export const listDebriefQuestionsQueryKey = (options?: Options<ListDebriefQuestionsData>) => createQueryKey('listDebriefQuestions', options);
 
 /**
  * List Incident Debrief Questions
  */
-export const listDebriefQuestionsOptions = (options?: Options<ListDebriefQuestionsData>) => {
-    return queryOptions({
-        queryFn: async ({ queryKey, signal }) => {
-            const { data } = await listDebriefQuestions({
-                ...options,
-                ...queryKey[0],
-                signal,
-                throwOnError: true
-            });
-            return data;
-        },
-        queryKey: listDebriefQuestionsQueryKey(options)
-    });
-};
+export const listDebriefQuestionsOptions = (options?: Options<ListDebriefQuestionsData>) => queryOptions<ListDebriefQuestionsResponse, ListDebriefQuestionsError, ListDebriefQuestionsResponse, ReturnType<typeof listDebriefQuestionsQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await listDebriefQuestions({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: listDebriefQuestionsQueryKey(options)
+});
 
 export const listDebriefQuestionsInfiniteQueryKey = (options?: Options<ListDebriefQuestionsData>): QueryKey<Options<ListDebriefQuestionsData>> => createQueryKey('listDebriefQuestions', options, true);
 
 /**
  * List Incident Debrief Questions
  */
-export const listDebriefQuestionsInfiniteOptions = (options?: Options<ListDebriefQuestionsData>) => {
-    return infiniteQueryOptions<ListDebriefQuestionsResponse, ListDebriefQuestionsError, InfiniteData<ListDebriefQuestionsResponse>, QueryKey<Options<ListDebriefQuestionsData>>, number | Pick<QueryKey<Options<ListDebriefQuestionsData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
-    // @ts-ignore
-    {
-        queryFn: async ({ pageParam, queryKey, signal }) => {
-            // @ts-ignore
-            const page: Pick<QueryKey<Options<ListDebriefQuestionsData>>[0], 'body' | 'headers' | 'path' | 'query'> = typeof pageParam === 'object' ? pageParam : {
-                query: {
-                    offset: pageParam
-                }
-            };
-            const params = createInfiniteParams(queryKey, page);
-            const { data } = await listDebriefQuestions({
-                ...options,
-                ...params,
-                signal,
-                throwOnError: true
-            });
-            return data;
-        },
-        queryKey: listDebriefQuestionsInfiniteQueryKey(options)
-    });
-};
+export const listDebriefQuestionsInfiniteOptions = (options?: Options<ListDebriefQuestionsData>) => infiniteQueryOptions<ListDebriefQuestionsResponse, ListDebriefQuestionsError, InfiniteData<ListDebriefQuestionsResponse>, QueryKey<Options<ListDebriefQuestionsData>>, number | Pick<QueryKey<Options<ListDebriefQuestionsData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
+// @ts-ignore
+{
+    queryFn: async ({ pageParam, queryKey, signal }) => {
+        // @ts-ignore
+        const page: Pick<QueryKey<Options<ListDebriefQuestionsData>>[0], 'body' | 'headers' | 'path' | 'query'> = typeof pageParam === 'object' ? pageParam : {
+            query: {
+                offset: pageParam
+            }
+        };
+        const params = createInfiniteParams(queryKey, page);
+        const { data } = await listDebriefQuestions({
+            ...options,
+            ...params,
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: listDebriefQuestionsInfiniteQueryKey(options)
+});
 
 /**
  * Create an Incident Debrief Question
@@ -387,20 +359,18 @@ export const getDebriefQuestionQueryKey = (options: Options<GetDebriefQuestionDa
 /**
  * Get an Incident Debrief Question
  */
-export const getDebriefQuestionOptions = (options: Options<GetDebriefQuestionData>) => {
-    return queryOptions({
-        queryFn: async ({ queryKey, signal }) => {
-            const { data } = await getDebriefQuestion({
-                ...options,
-                ...queryKey[0],
-                signal,
-                throwOnError: true
-            });
-            return data;
-        },
-        queryKey: getDebriefQuestionQueryKey(options)
-    });
-};
+export const getDebriefQuestionOptions = (options: Options<GetDebriefQuestionData>) => queryOptions<GetDebriefQuestionResponse, GetDebriefQuestionError, GetDebriefQuestionResponse, ReturnType<typeof getDebriefQuestionQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await getDebriefQuestion({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: getDebriefQuestionQueryKey(options)
+});
 
 /**
  * Update an Incident Debrief Question
@@ -441,49 +411,45 @@ export const listEventAnnotationsQueryKey = (options?: Options<ListEventAnnotati
 /**
  * List Event Annotations
  */
-export const listEventAnnotationsOptions = (options?: Options<ListEventAnnotationsData>) => {
-    return queryOptions({
-        queryFn: async ({ queryKey, signal }) => {
-            const { data } = await listEventAnnotations({
-                ...options,
-                ...queryKey[0],
-                signal,
-                throwOnError: true
-            });
-            return data;
-        },
-        queryKey: listEventAnnotationsQueryKey(options)
-    });
-};
+export const listEventAnnotationsOptions = (options?: Options<ListEventAnnotationsData>) => queryOptions<ListEventAnnotationsResponse, ListEventAnnotationsError, ListEventAnnotationsResponse, ReturnType<typeof listEventAnnotationsQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await listEventAnnotations({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: listEventAnnotationsQueryKey(options)
+});
 
 export const listEventAnnotationsInfiniteQueryKey = (options?: Options<ListEventAnnotationsData>): QueryKey<Options<ListEventAnnotationsData>> => createQueryKey('listEventAnnotations', options, true);
 
 /**
  * List Event Annotations
  */
-export const listEventAnnotationsInfiniteOptions = (options?: Options<ListEventAnnotationsData>) => {
-    return infiniteQueryOptions<ListEventAnnotationsResponse, ListEventAnnotationsError, InfiniteData<ListEventAnnotationsResponse>, QueryKey<Options<ListEventAnnotationsData>>, number | Pick<QueryKey<Options<ListEventAnnotationsData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
-    // @ts-ignore
-    {
-        queryFn: async ({ pageParam, queryKey, signal }) => {
-            // @ts-ignore
-            const page: Pick<QueryKey<Options<ListEventAnnotationsData>>[0], 'body' | 'headers' | 'path' | 'query'> = typeof pageParam === 'object' ? pageParam : {
-                query: {
-                    offset: pageParam
-                }
-            };
-            const params = createInfiniteParams(queryKey, page);
-            const { data } = await listEventAnnotations({
-                ...options,
-                ...params,
-                signal,
-                throwOnError: true
-            });
-            return data;
-        },
-        queryKey: listEventAnnotationsInfiniteQueryKey(options)
-    });
-};
+export const listEventAnnotationsInfiniteOptions = (options?: Options<ListEventAnnotationsData>) => infiniteQueryOptions<ListEventAnnotationsResponse, ListEventAnnotationsError, InfiniteData<ListEventAnnotationsResponse>, QueryKey<Options<ListEventAnnotationsData>>, number | Pick<QueryKey<Options<ListEventAnnotationsData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
+// @ts-ignore
+{
+    queryFn: async ({ pageParam, queryKey, signal }) => {
+        // @ts-ignore
+        const page: Pick<QueryKey<Options<ListEventAnnotationsData>>[0], 'body' | 'headers' | 'path' | 'query'> = typeof pageParam === 'object' ? pageParam : {
+            query: {
+                offset: pageParam
+            }
+        };
+        const params = createInfiniteParams(queryKey, page);
+        const { data } = await listEventAnnotations({
+            ...options,
+            ...params,
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: listEventAnnotationsInfiniteQueryKey(options)
+});
 
 /**
  * Create an Event Annotation
@@ -541,89 +507,81 @@ export const listEventsQueryKey = (options?: Options<ListEventsData>) => createQ
 /**
  * List Events
  */
-export const listEventsOptions = (options?: Options<ListEventsData>) => {
-    return queryOptions({
-        queryFn: async ({ queryKey, signal }) => {
-            const { data } = await listEvents({
-                ...options,
-                ...queryKey[0],
-                signal,
-                throwOnError: true
-            });
-            return data;
-        },
-        queryKey: listEventsQueryKey(options)
-    });
-};
+export const listEventsOptions = (options?: Options<ListEventsData>) => queryOptions<ListEventsResponse, ListEventsError, ListEventsResponse, ReturnType<typeof listEventsQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await listEvents({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: listEventsQueryKey(options)
+});
 
 export const listEventsInfiniteQueryKey = (options?: Options<ListEventsData>): QueryKey<Options<ListEventsData>> => createQueryKey('listEvents', options, true);
 
 /**
  * List Events
  */
-export const listEventsInfiniteOptions = (options?: Options<ListEventsData>) => {
-    return infiniteQueryOptions<ListEventsResponse, ListEventsError, InfiniteData<ListEventsResponse>, QueryKey<Options<ListEventsData>>, number | Pick<QueryKey<Options<ListEventsData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
-    // @ts-ignore
-    {
-        queryFn: async ({ pageParam, queryKey, signal }) => {
-            // @ts-ignore
-            const page: Pick<QueryKey<Options<ListEventsData>>[0], 'body' | 'headers' | 'path' | 'query'> = typeof pageParam === 'object' ? pageParam : {
-                query: {
-                    offset: pageParam
-                }
-            };
-            const params = createInfiniteParams(queryKey, page);
-            const { data } = await listEvents({
-                ...options,
-                ...params,
-                signal,
-                throwOnError: true
-            });
-            return data;
-        },
-        queryKey: listEventsInfiniteQueryKey(options)
-    });
-};
+export const listEventsInfiniteOptions = (options?: Options<ListEventsData>) => infiniteQueryOptions<ListEventsResponse, ListEventsError, InfiniteData<ListEventsResponse>, QueryKey<Options<ListEventsData>>, number | Pick<QueryKey<Options<ListEventsData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
+// @ts-ignore
+{
+    queryFn: async ({ pageParam, queryKey, signal }) => {
+        // @ts-ignore
+        const page: Pick<QueryKey<Options<ListEventsData>>[0], 'body' | 'headers' | 'path' | 'query'> = typeof pageParam === 'object' ? pageParam : {
+            query: {
+                offset: pageParam
+            }
+        };
+        const params = createInfiniteParams(queryKey, page);
+        const { data } = await listEvents({
+            ...options,
+            ...params,
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: listEventsInfiniteQueryKey(options)
+});
 
 export const getEventQueryKey = (options: Options<GetEventData>) => createQueryKey('getEvent', options);
 
 /**
  * Get Event
  */
-export const getEventOptions = (options: Options<GetEventData>) => {
-    return queryOptions({
-        queryFn: async ({ queryKey, signal }) => {
-            const { data } = await getEvent({
-                ...options,
-                ...queryKey[0],
-                signal,
-                throwOnError: true
-            });
-            return data;
-        },
-        queryKey: getEventQueryKey(options)
-    });
-};
+export const getEventOptions = (options: Options<GetEventData>) => queryOptions<GetEventResponse, GetEventError, GetEventResponse, ReturnType<typeof getEventQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await getEvent({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: getEventQueryKey(options)
+});
 
 export const getIncidentDebriefQueryKey = (options: Options<GetIncidentDebriefData>) => createQueryKey('getIncidentDebrief', options);
 
 /**
  * Get Incident Debrief
  */
-export const getIncidentDebriefOptions = (options: Options<GetIncidentDebriefData>) => {
-    return queryOptions({
-        queryFn: async ({ queryKey, signal }) => {
-            const { data } = await getIncidentDebrief({
-                ...options,
-                ...queryKey[0],
-                signal,
-                throwOnError: true
-            });
-            return data;
-        },
-        queryKey: getIncidentDebriefQueryKey(options)
-    });
-};
+export const getIncidentDebriefOptions = (options: Options<GetIncidentDebriefData>) => queryOptions<GetIncidentDebriefResponse, GetIncidentDebriefError, GetIncidentDebriefResponse, ReturnType<typeof getIncidentDebriefQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await getIncidentDebrief({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: getIncidentDebriefQueryKey(options)
+});
 
 /**
  * Update Incident Debrief
@@ -647,49 +605,45 @@ export const listDebriefMessagesQueryKey = (options: Options<ListDebriefMessages
 /**
  * List Incident Debrief Messages
  */
-export const listDebriefMessagesOptions = (options: Options<ListDebriefMessagesData>) => {
-    return queryOptions({
-        queryFn: async ({ queryKey, signal }) => {
-            const { data } = await listDebriefMessages({
-                ...options,
-                ...queryKey[0],
-                signal,
-                throwOnError: true
-            });
-            return data;
-        },
-        queryKey: listDebriefMessagesQueryKey(options)
-    });
-};
+export const listDebriefMessagesOptions = (options: Options<ListDebriefMessagesData>) => queryOptions<ListDebriefMessagesResponse, ListDebriefMessagesError, ListDebriefMessagesResponse, ReturnType<typeof listDebriefMessagesQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await listDebriefMessages({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: listDebriefMessagesQueryKey(options)
+});
 
 export const listDebriefMessagesInfiniteQueryKey = (options: Options<ListDebriefMessagesData>): QueryKey<Options<ListDebriefMessagesData>> => createQueryKey('listDebriefMessages', options, true);
 
 /**
  * List Incident Debrief Messages
  */
-export const listDebriefMessagesInfiniteOptions = (options: Options<ListDebriefMessagesData>) => {
-    return infiniteQueryOptions<ListDebriefMessagesResponse, ListDebriefMessagesError, InfiniteData<ListDebriefMessagesResponse>, QueryKey<Options<ListDebriefMessagesData>>, number | Pick<QueryKey<Options<ListDebriefMessagesData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
-    // @ts-ignore
-    {
-        queryFn: async ({ pageParam, queryKey, signal }) => {
-            // @ts-ignore
-            const page: Pick<QueryKey<Options<ListDebriefMessagesData>>[0], 'body' | 'headers' | 'path' | 'query'> = typeof pageParam === 'object' ? pageParam : {
-                query: {
-                    offset: pageParam
-                }
-            };
-            const params = createInfiniteParams(queryKey, page);
-            const { data } = await listDebriefMessages({
-                ...options,
-                ...params,
-                signal,
-                throwOnError: true
-            });
-            return data;
-        },
-        queryKey: listDebriefMessagesInfiniteQueryKey(options)
-    });
-};
+export const listDebriefMessagesInfiniteOptions = (options: Options<ListDebriefMessagesData>) => infiniteQueryOptions<ListDebriefMessagesResponse, ListDebriefMessagesError, InfiniteData<ListDebriefMessagesResponse>, QueryKey<Options<ListDebriefMessagesData>>, number | Pick<QueryKey<Options<ListDebriefMessagesData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
+// @ts-ignore
+{
+    queryFn: async ({ pageParam, queryKey, signal }) => {
+        // @ts-ignore
+        const page: Pick<QueryKey<Options<ListDebriefMessagesData>>[0], 'body' | 'headers' | 'path' | 'query'> = typeof pageParam === 'object' ? pageParam : {
+            query: {
+                offset: pageParam
+            }
+        };
+        const params = createInfiniteParams(queryKey, page);
+        const { data } = await listDebriefMessages({
+            ...options,
+            ...params,
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: listDebriefMessagesInfiniteQueryKey(options)
+});
 
 /**
  * Add an Incident Debrief message
@@ -713,98 +667,90 @@ export const listDebriefSuggestionsQueryKey = (options: Options<ListDebriefSugge
 /**
  * List Incident Debrief Suggestions
  */
-export const listDebriefSuggestionsOptions = (options: Options<ListDebriefSuggestionsData>) => {
-    return queryOptions({
-        queryFn: async ({ queryKey, signal }) => {
-            const { data } = await listDebriefSuggestions({
-                ...options,
-                ...queryKey[0],
-                signal,
-                throwOnError: true
-            });
-            return data;
-        },
-        queryKey: listDebriefSuggestionsQueryKey(options)
-    });
-};
+export const listDebriefSuggestionsOptions = (options: Options<ListDebriefSuggestionsData>) => queryOptions<ListDebriefSuggestionsResponse, ListDebriefSuggestionsError, ListDebriefSuggestionsResponse, ReturnType<typeof listDebriefSuggestionsQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await listDebriefSuggestions({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: listDebriefSuggestionsQueryKey(options)
+});
 
 export const listDebriefSuggestionsInfiniteQueryKey = (options: Options<ListDebriefSuggestionsData>): QueryKey<Options<ListDebriefSuggestionsData>> => createQueryKey('listDebriefSuggestions', options, true);
 
 /**
  * List Incident Debrief Suggestions
  */
-export const listDebriefSuggestionsInfiniteOptions = (options: Options<ListDebriefSuggestionsData>) => {
-    return infiniteQueryOptions<ListDebriefSuggestionsResponse, ListDebriefSuggestionsError, InfiniteData<ListDebriefSuggestionsResponse>, QueryKey<Options<ListDebriefSuggestionsData>>, number | Pick<QueryKey<Options<ListDebriefSuggestionsData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
-    // @ts-ignore
-    {
-        queryFn: async ({ pageParam, queryKey, signal }) => {
-            // @ts-ignore
-            const page: Pick<QueryKey<Options<ListDebriefSuggestionsData>>[0], 'body' | 'headers' | 'path' | 'query'> = typeof pageParam === 'object' ? pageParam : {
-                query: {
-                    offset: pageParam
-                }
-            };
-            const params = createInfiniteParams(queryKey, page);
-            const { data } = await listDebriefSuggestions({
-                ...options,
-                ...params,
-                signal,
-                throwOnError: true
-            });
-            return data;
-        },
-        queryKey: listDebriefSuggestionsInfiniteQueryKey(options)
-    });
-};
+export const listDebriefSuggestionsInfiniteOptions = (options: Options<ListDebriefSuggestionsData>) => infiniteQueryOptions<ListDebriefSuggestionsResponse, ListDebriefSuggestionsError, InfiniteData<ListDebriefSuggestionsResponse>, QueryKey<Options<ListDebriefSuggestionsData>>, number | Pick<QueryKey<Options<ListDebriefSuggestionsData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
+// @ts-ignore
+{
+    queryFn: async ({ pageParam, queryKey, signal }) => {
+        // @ts-ignore
+        const page: Pick<QueryKey<Options<ListDebriefSuggestionsData>>[0], 'body' | 'headers' | 'path' | 'query'> = typeof pageParam === 'object' ? pageParam : {
+            query: {
+                offset: pageParam
+            }
+        };
+        const params = createInfiniteParams(queryKey, page);
+        const { data } = await listDebriefSuggestions({
+            ...options,
+            ...params,
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: listDebriefSuggestionsInfiniteQueryKey(options)
+});
 
 export const listIncidentEventContributingFactorCategoriesQueryKey = (options?: Options<ListIncidentEventContributingFactorCategoriesData>) => createQueryKey('listIncidentEventContributingFactorCategories', options);
 
 /**
  * List Categories of Contributing Factors used in Incident Events
  */
-export const listIncidentEventContributingFactorCategoriesOptions = (options?: Options<ListIncidentEventContributingFactorCategoriesData>) => {
-    return queryOptions({
-        queryFn: async ({ queryKey, signal }) => {
-            const { data } = await listIncidentEventContributingFactorCategories({
-                ...options,
-                ...queryKey[0],
-                signal,
-                throwOnError: true
-            });
-            return data;
-        },
-        queryKey: listIncidentEventContributingFactorCategoriesQueryKey(options)
-    });
-};
+export const listIncidentEventContributingFactorCategoriesOptions = (options?: Options<ListIncidentEventContributingFactorCategoriesData>) => queryOptions<ListIncidentEventContributingFactorCategoriesResponse, ListIncidentEventContributingFactorCategoriesError, ListIncidentEventContributingFactorCategoriesResponse, ReturnType<typeof listIncidentEventContributingFactorCategoriesQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await listIncidentEventContributingFactorCategories({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: listIncidentEventContributingFactorCategoriesQueryKey(options)
+});
 
 export const listIncidentEventContributingFactorCategoriesInfiniteQueryKey = (options?: Options<ListIncidentEventContributingFactorCategoriesData>): QueryKey<Options<ListIncidentEventContributingFactorCategoriesData>> => createQueryKey('listIncidentEventContributingFactorCategories', options, true);
 
 /**
  * List Categories of Contributing Factors used in Incident Events
  */
-export const listIncidentEventContributingFactorCategoriesInfiniteOptions = (options?: Options<ListIncidentEventContributingFactorCategoriesData>) => {
-    return infiniteQueryOptions<ListIncidentEventContributingFactorCategoriesResponse, ListIncidentEventContributingFactorCategoriesError, InfiniteData<ListIncidentEventContributingFactorCategoriesResponse>, QueryKey<Options<ListIncidentEventContributingFactorCategoriesData>>, number | Pick<QueryKey<Options<ListIncidentEventContributingFactorCategoriesData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
-    // @ts-ignore
-    {
-        queryFn: async ({ pageParam, queryKey, signal }) => {
-            // @ts-ignore
-            const page: Pick<QueryKey<Options<ListIncidentEventContributingFactorCategoriesData>>[0], 'body' | 'headers' | 'path' | 'query'> = typeof pageParam === 'object' ? pageParam : {
-                query: {
-                    offset: pageParam
-                }
-            };
-            const params = createInfiniteParams(queryKey, page);
-            const { data } = await listIncidentEventContributingFactorCategories({
-                ...options,
-                ...params,
-                signal,
-                throwOnError: true
-            });
-            return data;
-        },
-        queryKey: listIncidentEventContributingFactorCategoriesInfiniteQueryKey(options)
-    });
-};
+export const listIncidentEventContributingFactorCategoriesInfiniteOptions = (options?: Options<ListIncidentEventContributingFactorCategoriesData>) => infiniteQueryOptions<ListIncidentEventContributingFactorCategoriesResponse, ListIncidentEventContributingFactorCategoriesError, InfiniteData<ListIncidentEventContributingFactorCategoriesResponse>, QueryKey<Options<ListIncidentEventContributingFactorCategoriesData>>, number | Pick<QueryKey<Options<ListIncidentEventContributingFactorCategoriesData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
+// @ts-ignore
+{
+    queryFn: async ({ pageParam, queryKey, signal }) => {
+        // @ts-ignore
+        const page: Pick<QueryKey<Options<ListIncidentEventContributingFactorCategoriesData>>[0], 'body' | 'headers' | 'path' | 'query'> = typeof pageParam === 'object' ? pageParam : {
+            query: {
+                offset: pageParam
+            }
+        };
+        const params = createInfiniteParams(queryKey, page);
+        const { data } = await listIncidentEventContributingFactorCategories({
+            ...options,
+            ...params,
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: listIncidentEventContributingFactorCategoriesInfiniteQueryKey(options)
+});
 
 /**
  * Delete an Incident Event
@@ -845,49 +791,45 @@ export const listIncidentFieldsQueryKey = (options?: Options<ListIncidentFieldsD
 /**
  * List Incident Fields
  */
-export const listIncidentFieldsOptions = (options?: Options<ListIncidentFieldsData>) => {
-    return queryOptions({
-        queryFn: async ({ queryKey, signal }) => {
-            const { data } = await listIncidentFields({
-                ...options,
-                ...queryKey[0],
-                signal,
-                throwOnError: true
-            });
-            return data;
-        },
-        queryKey: listIncidentFieldsQueryKey(options)
-    });
-};
+export const listIncidentFieldsOptions = (options?: Options<ListIncidentFieldsData>) => queryOptions<ListIncidentFieldsResponse, ListIncidentFieldsError, ListIncidentFieldsResponse, ReturnType<typeof listIncidentFieldsQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await listIncidentFields({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: listIncidentFieldsQueryKey(options)
+});
 
 export const listIncidentFieldsInfiniteQueryKey = (options?: Options<ListIncidentFieldsData>): QueryKey<Options<ListIncidentFieldsData>> => createQueryKey('listIncidentFields', options, true);
 
 /**
  * List Incident Fields
  */
-export const listIncidentFieldsInfiniteOptions = (options?: Options<ListIncidentFieldsData>) => {
-    return infiniteQueryOptions<ListIncidentFieldsResponse, ListIncidentFieldsError, InfiniteData<ListIncidentFieldsResponse>, QueryKey<Options<ListIncidentFieldsData>>, number | Pick<QueryKey<Options<ListIncidentFieldsData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
-    // @ts-ignore
-    {
-        queryFn: async ({ pageParam, queryKey, signal }) => {
-            // @ts-ignore
-            const page: Pick<QueryKey<Options<ListIncidentFieldsData>>[0], 'body' | 'headers' | 'path' | 'query'> = typeof pageParam === 'object' ? pageParam : {
-                query: {
-                    offset: pageParam
-                }
-            };
-            const params = createInfiniteParams(queryKey, page);
-            const { data } = await listIncidentFields({
-                ...options,
-                ...params,
-                signal,
-                throwOnError: true
-            });
-            return data;
-        },
-        queryKey: listIncidentFieldsInfiniteQueryKey(options)
-    });
-};
+export const listIncidentFieldsInfiniteOptions = (options?: Options<ListIncidentFieldsData>) => infiniteQueryOptions<ListIncidentFieldsResponse, ListIncidentFieldsError, InfiniteData<ListIncidentFieldsResponse>, QueryKey<Options<ListIncidentFieldsData>>, number | Pick<QueryKey<Options<ListIncidentFieldsData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
+// @ts-ignore
+{
+    queryFn: async ({ pageParam, queryKey, signal }) => {
+        // @ts-ignore
+        const page: Pick<QueryKey<Options<ListIncidentFieldsData>>[0], 'body' | 'headers' | 'path' | 'query'> = typeof pageParam === 'object' ? pageParam : {
+            query: {
+                offset: pageParam
+            }
+        };
+        const params = createInfiniteParams(queryKey, page);
+        const { data } = await listIncidentFields({
+            ...options,
+            ...params,
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: listIncidentFieldsInfiniteQueryKey(options)
+});
 
 /**
  * Create an Incident Field
@@ -928,20 +870,18 @@ export const getIncidentFieldQueryKey = (options: Options<GetIncidentFieldData>)
 /**
  * Get an Incident Field
  */
-export const getIncidentFieldOptions = (options: Options<GetIncidentFieldData>) => {
-    return queryOptions({
-        queryFn: async ({ queryKey, signal }) => {
-            const { data } = await getIncidentField({
-                ...options,
-                ...queryKey[0],
-                signal,
-                throwOnError: true
-            });
-            return data;
-        },
-        queryKey: getIncidentFieldQueryKey(options)
-    });
-};
+export const getIncidentFieldOptions = (options: Options<GetIncidentFieldData>) => queryOptions<GetIncidentFieldResponse, GetIncidentFieldError, GetIncidentFieldResponse, ReturnType<typeof getIncidentFieldQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await getIncidentField({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: getIncidentFieldQueryKey(options)
+});
 
 /**
  * Update an Incident Field
@@ -999,49 +939,45 @@ export const listIncidentRolesQueryKey = (options?: Options<ListIncidentRolesDat
 /**
  * List Incident Roles
  */
-export const listIncidentRolesOptions = (options?: Options<ListIncidentRolesData>) => {
-    return queryOptions({
-        queryFn: async ({ queryKey, signal }) => {
-            const { data } = await listIncidentRoles({
-                ...options,
-                ...queryKey[0],
-                signal,
-                throwOnError: true
-            });
-            return data;
-        },
-        queryKey: listIncidentRolesQueryKey(options)
-    });
-};
+export const listIncidentRolesOptions = (options?: Options<ListIncidentRolesData>) => queryOptions<ListIncidentRolesResponse, ListIncidentRolesError, ListIncidentRolesResponse, ReturnType<typeof listIncidentRolesQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await listIncidentRoles({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: listIncidentRolesQueryKey(options)
+});
 
 export const listIncidentRolesInfiniteQueryKey = (options?: Options<ListIncidentRolesData>): QueryKey<Options<ListIncidentRolesData>> => createQueryKey('listIncidentRoles', options, true);
 
 /**
  * List Incident Roles
  */
-export const listIncidentRolesInfiniteOptions = (options?: Options<ListIncidentRolesData>) => {
-    return infiniteQueryOptions<ListIncidentRolesResponse, ListIncidentRolesError, InfiniteData<ListIncidentRolesResponse>, QueryKey<Options<ListIncidentRolesData>>, number | Pick<QueryKey<Options<ListIncidentRolesData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
-    // @ts-ignore
-    {
-        queryFn: async ({ pageParam, queryKey, signal }) => {
-            // @ts-ignore
-            const page: Pick<QueryKey<Options<ListIncidentRolesData>>[0], 'body' | 'headers' | 'path' | 'query'> = typeof pageParam === 'object' ? pageParam : {
-                query: {
-                    offset: pageParam
-                }
-            };
-            const params = createInfiniteParams(queryKey, page);
-            const { data } = await listIncidentRoles({
-                ...options,
-                ...params,
-                signal,
-                throwOnError: true
-            });
-            return data;
-        },
-        queryKey: listIncidentRolesInfiniteQueryKey(options)
-    });
-};
+export const listIncidentRolesInfiniteOptions = (options?: Options<ListIncidentRolesData>) => infiniteQueryOptions<ListIncidentRolesResponse, ListIncidentRolesError, InfiniteData<ListIncidentRolesResponse>, QueryKey<Options<ListIncidentRolesData>>, number | Pick<QueryKey<Options<ListIncidentRolesData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
+// @ts-ignore
+{
+    queryFn: async ({ pageParam, queryKey, signal }) => {
+        // @ts-ignore
+        const page: Pick<QueryKey<Options<ListIncidentRolesData>>[0], 'body' | 'headers' | 'path' | 'query'> = typeof pageParam === 'object' ? pageParam : {
+            query: {
+                offset: pageParam
+            }
+        };
+        const params = createInfiniteParams(queryKey, page);
+        const { data } = await listIncidentRoles({
+            ...options,
+            ...params,
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: listIncidentRolesInfiniteQueryKey(options)
+});
 
 /**
  * Create an Incident Role
@@ -1082,20 +1018,18 @@ export const getIncidentRoleQueryKey = (options: Options<GetIncidentRoleData>) =
 /**
  * Get an Incident Role
  */
-export const getIncidentRoleOptions = (options: Options<GetIncidentRoleData>) => {
-    return queryOptions({
-        queryFn: async ({ queryKey, signal }) => {
-            const { data } = await getIncidentRole({
-                ...options,
-                ...queryKey[0],
-                signal,
-                throwOnError: true
-            });
-            return data;
-        },
-        queryKey: getIncidentRoleQueryKey(options)
-    });
-};
+export const getIncidentRoleOptions = (options: Options<GetIncidentRoleData>) => queryOptions<GetIncidentRoleResponse, GetIncidentRoleError, GetIncidentRoleResponse, ReturnType<typeof getIncidentRoleQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await getIncidentRole({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: getIncidentRoleQueryKey(options)
+});
 
 /**
  * Update an Incident Role
@@ -1119,49 +1053,45 @@ export const listIncidentSeveritiesQueryKey = (options?: Options<ListIncidentSev
 /**
  * List Severities
  */
-export const listIncidentSeveritiesOptions = (options?: Options<ListIncidentSeveritiesData>) => {
-    return queryOptions({
-        queryFn: async ({ queryKey, signal }) => {
-            const { data } = await listIncidentSeverities({
-                ...options,
-                ...queryKey[0],
-                signal,
-                throwOnError: true
-            });
-            return data;
-        },
-        queryKey: listIncidentSeveritiesQueryKey(options)
-    });
-};
+export const listIncidentSeveritiesOptions = (options?: Options<ListIncidentSeveritiesData>) => queryOptions<ListIncidentSeveritiesResponse, ListIncidentSeveritiesError, ListIncidentSeveritiesResponse, ReturnType<typeof listIncidentSeveritiesQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await listIncidentSeverities({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: listIncidentSeveritiesQueryKey(options)
+});
 
 export const listIncidentSeveritiesInfiniteQueryKey = (options?: Options<ListIncidentSeveritiesData>): QueryKey<Options<ListIncidentSeveritiesData>> => createQueryKey('listIncidentSeverities', options, true);
 
 /**
  * List Severities
  */
-export const listIncidentSeveritiesInfiniteOptions = (options?: Options<ListIncidentSeveritiesData>) => {
-    return infiniteQueryOptions<ListIncidentSeveritiesResponse, ListIncidentSeveritiesError, InfiniteData<ListIncidentSeveritiesResponse>, QueryKey<Options<ListIncidentSeveritiesData>>, number | Pick<QueryKey<Options<ListIncidentSeveritiesData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
-    // @ts-ignore
-    {
-        queryFn: async ({ pageParam, queryKey, signal }) => {
-            // @ts-ignore
-            const page: Pick<QueryKey<Options<ListIncidentSeveritiesData>>[0], 'body' | 'headers' | 'path' | 'query'> = typeof pageParam === 'object' ? pageParam : {
-                query: {
-                    offset: pageParam
-                }
-            };
-            const params = createInfiniteParams(queryKey, page);
-            const { data } = await listIncidentSeverities({
-                ...options,
-                ...params,
-                signal,
-                throwOnError: true
-            });
-            return data;
-        },
-        queryKey: listIncidentSeveritiesInfiniteQueryKey(options)
-    });
-};
+export const listIncidentSeveritiesInfiniteOptions = (options?: Options<ListIncidentSeveritiesData>) => infiniteQueryOptions<ListIncidentSeveritiesResponse, ListIncidentSeveritiesError, InfiniteData<ListIncidentSeveritiesResponse>, QueryKey<Options<ListIncidentSeveritiesData>>, number | Pick<QueryKey<Options<ListIncidentSeveritiesData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
+// @ts-ignore
+{
+    queryFn: async ({ pageParam, queryKey, signal }) => {
+        // @ts-ignore
+        const page: Pick<QueryKey<Options<ListIncidentSeveritiesData>>[0], 'body' | 'headers' | 'path' | 'query'> = typeof pageParam === 'object' ? pageParam : {
+            query: {
+                offset: pageParam
+            }
+        };
+        const params = createInfiniteParams(queryKey, page);
+        const { data } = await listIncidentSeverities({
+            ...options,
+            ...params,
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: listIncidentSeveritiesInfiniteQueryKey(options)
+});
 
 /**
  * Create a Severity
@@ -1202,20 +1132,18 @@ export const getIncidentSeverityQueryKey = (options: Options<GetIncidentSeverity
 /**
  * Get a Severity
  */
-export const getIncidentSeverityOptions = (options: Options<GetIncidentSeverityData>) => {
-    return queryOptions({
-        queryFn: async ({ queryKey, signal }) => {
-            const { data } = await getIncidentSeverity({
-                ...options,
-                ...queryKey[0],
-                signal,
-                throwOnError: true
-            });
-            return data;
-        },
-        queryKey: getIncidentSeverityQueryKey(options)
-    });
-};
+export const getIncidentSeverityOptions = (options: Options<GetIncidentSeverityData>) => queryOptions<GetIncidentSeverityResponse, GetIncidentSeverityError, GetIncidentSeverityResponse, ReturnType<typeof getIncidentSeverityQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await getIncidentSeverity({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: getIncidentSeverityQueryKey(options)
+});
 
 /**
  * Update a Severity
@@ -1239,49 +1167,45 @@ export const listIncidentTagsQueryKey = (options?: Options<ListIncidentTagsData>
 /**
  * List Incident Tags
  */
-export const listIncidentTagsOptions = (options?: Options<ListIncidentTagsData>) => {
-    return queryOptions({
-        queryFn: async ({ queryKey, signal }) => {
-            const { data } = await listIncidentTags({
-                ...options,
-                ...queryKey[0],
-                signal,
-                throwOnError: true
-            });
-            return data;
-        },
-        queryKey: listIncidentTagsQueryKey(options)
-    });
-};
+export const listIncidentTagsOptions = (options?: Options<ListIncidentTagsData>) => queryOptions<ListIncidentTagsResponse, ListIncidentTagsError, ListIncidentTagsResponse, ReturnType<typeof listIncidentTagsQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await listIncidentTags({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: listIncidentTagsQueryKey(options)
+});
 
 export const listIncidentTagsInfiniteQueryKey = (options?: Options<ListIncidentTagsData>): QueryKey<Options<ListIncidentTagsData>> => createQueryKey('listIncidentTags', options, true);
 
 /**
  * List Incident Tags
  */
-export const listIncidentTagsInfiniteOptions = (options?: Options<ListIncidentTagsData>) => {
-    return infiniteQueryOptions<ListIncidentTagsResponse, ListIncidentTagsError, InfiniteData<ListIncidentTagsResponse>, QueryKey<Options<ListIncidentTagsData>>, number | Pick<QueryKey<Options<ListIncidentTagsData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
-    // @ts-ignore
-    {
-        queryFn: async ({ pageParam, queryKey, signal }) => {
-            // @ts-ignore
-            const page: Pick<QueryKey<Options<ListIncidentTagsData>>[0], 'body' | 'headers' | 'path' | 'query'> = typeof pageParam === 'object' ? pageParam : {
-                query: {
-                    offset: pageParam
-                }
-            };
-            const params = createInfiniteParams(queryKey, page);
-            const { data } = await listIncidentTags({
-                ...options,
-                ...params,
-                signal,
-                throwOnError: true
-            });
-            return data;
-        },
-        queryKey: listIncidentTagsInfiniteQueryKey(options)
-    });
-};
+export const listIncidentTagsInfiniteOptions = (options?: Options<ListIncidentTagsData>) => infiniteQueryOptions<ListIncidentTagsResponse, ListIncidentTagsError, InfiniteData<ListIncidentTagsResponse>, QueryKey<Options<ListIncidentTagsData>>, number | Pick<QueryKey<Options<ListIncidentTagsData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
+// @ts-ignore
+{
+    queryFn: async ({ pageParam, queryKey, signal }) => {
+        // @ts-ignore
+        const page: Pick<QueryKey<Options<ListIncidentTagsData>>[0], 'body' | 'headers' | 'path' | 'query'> = typeof pageParam === 'object' ? pageParam : {
+            query: {
+                offset: pageParam
+            }
+        };
+        const params = createInfiniteParams(queryKey, page);
+        const { data } = await listIncidentTags({
+            ...options,
+            ...params,
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: listIncidentTagsInfiniteQueryKey(options)
+});
 
 /**
  * Create an Incident Tag
@@ -1322,20 +1246,18 @@ export const getIncidentTagQueryKey = (options: Options<GetIncidentTagData>) => 
 /**
  * Get an Incident Tag
  */
-export const getIncidentTagOptions = (options: Options<GetIncidentTagData>) => {
-    return queryOptions({
-        queryFn: async ({ queryKey, signal }) => {
-            const { data } = await getIncidentTag({
-                ...options,
-                ...queryKey[0],
-                signal,
-                throwOnError: true
-            });
-            return data;
-        },
-        queryKey: getIncidentTagQueryKey(options)
-    });
-};
+export const getIncidentTagOptions = (options: Options<GetIncidentTagData>) => queryOptions<GetIncidentTagResponse, GetIncidentTagError, GetIncidentTagResponse, ReturnType<typeof getIncidentTagQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await getIncidentTag({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: getIncidentTagQueryKey(options)
+});
 
 /**
  * Update an Incident Tag
@@ -1359,49 +1281,45 @@ export const listIncidentTypesQueryKey = (options?: Options<ListIncidentTypesDat
 /**
  * List Types
  */
-export const listIncidentTypesOptions = (options?: Options<ListIncidentTypesData>) => {
-    return queryOptions({
-        queryFn: async ({ queryKey, signal }) => {
-            const { data } = await listIncidentTypes({
-                ...options,
-                ...queryKey[0],
-                signal,
-                throwOnError: true
-            });
-            return data;
-        },
-        queryKey: listIncidentTypesQueryKey(options)
-    });
-};
+export const listIncidentTypesOptions = (options?: Options<ListIncidentTypesData>) => queryOptions<ListIncidentTypesResponse, ListIncidentTypesError, ListIncidentTypesResponse, ReturnType<typeof listIncidentTypesQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await listIncidentTypes({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: listIncidentTypesQueryKey(options)
+});
 
 export const listIncidentTypesInfiniteQueryKey = (options?: Options<ListIncidentTypesData>): QueryKey<Options<ListIncidentTypesData>> => createQueryKey('listIncidentTypes', options, true);
 
 /**
  * List Types
  */
-export const listIncidentTypesInfiniteOptions = (options?: Options<ListIncidentTypesData>) => {
-    return infiniteQueryOptions<ListIncidentTypesResponse, ListIncidentTypesError, InfiniteData<ListIncidentTypesResponse>, QueryKey<Options<ListIncidentTypesData>>, number | Pick<QueryKey<Options<ListIncidentTypesData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
-    // @ts-ignore
-    {
-        queryFn: async ({ pageParam, queryKey, signal }) => {
-            // @ts-ignore
-            const page: Pick<QueryKey<Options<ListIncidentTypesData>>[0], 'body' | 'headers' | 'path' | 'query'> = typeof pageParam === 'object' ? pageParam : {
-                query: {
-                    offset: pageParam
-                }
-            };
-            const params = createInfiniteParams(queryKey, page);
-            const { data } = await listIncidentTypes({
-                ...options,
-                ...params,
-                signal,
-                throwOnError: true
-            });
-            return data;
-        },
-        queryKey: listIncidentTypesInfiniteQueryKey(options)
-    });
-};
+export const listIncidentTypesInfiniteOptions = (options?: Options<ListIncidentTypesData>) => infiniteQueryOptions<ListIncidentTypesResponse, ListIncidentTypesError, InfiniteData<ListIncidentTypesResponse>, QueryKey<Options<ListIncidentTypesData>>, number | Pick<QueryKey<Options<ListIncidentTypesData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
+// @ts-ignore
+{
+    queryFn: async ({ pageParam, queryKey, signal }) => {
+        // @ts-ignore
+        const page: Pick<QueryKey<Options<ListIncidentTypesData>>[0], 'body' | 'headers' | 'path' | 'query'> = typeof pageParam === 'object' ? pageParam : {
+            query: {
+                offset: pageParam
+            }
+        };
+        const params = createInfiniteParams(queryKey, page);
+        const { data } = await listIncidentTypes({
+            ...options,
+            ...params,
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: listIncidentTypesInfiniteQueryKey(options)
+});
 
 /**
  * Create an Incident Type
@@ -1442,20 +1360,18 @@ export const getIncidentTypeQueryKey = (options: Options<GetIncidentTypeData>) =
 /**
  * Get a Severity
  */
-export const getIncidentTypeOptions = (options: Options<GetIncidentTypeData>) => {
-    return queryOptions({
-        queryFn: async ({ queryKey, signal }) => {
-            const { data } = await getIncidentType({
-                ...options,
-                ...queryKey[0],
-                signal,
-                throwOnError: true
-            });
-            return data;
-        },
-        queryKey: getIncidentTypeQueryKey(options)
-    });
-};
+export const getIncidentTypeOptions = (options: Options<GetIncidentTypeData>) => queryOptions<GetIncidentTypeResponse, GetIncidentTypeError, GetIncidentTypeResponse, ReturnType<typeof getIncidentTypeQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await getIncidentType({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: getIncidentTypeQueryKey(options)
+});
 
 /**
  * Update an Incident Type
@@ -1479,49 +1395,45 @@ export const listIncidentsQueryKey = (options?: Options<ListIncidentsData>) => c
 /**
  * List Incidents
  */
-export const listIncidentsOptions = (options?: Options<ListIncidentsData>) => {
-    return queryOptions({
-        queryFn: async ({ queryKey, signal }) => {
-            const { data } = await listIncidents({
-                ...options,
-                ...queryKey[0],
-                signal,
-                throwOnError: true
-            });
-            return data;
-        },
-        queryKey: listIncidentsQueryKey(options)
-    });
-};
+export const listIncidentsOptions = (options?: Options<ListIncidentsData>) => queryOptions<ListIncidentsResponse, ListIncidentsError, ListIncidentsResponse, ReturnType<typeof listIncidentsQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await listIncidents({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: listIncidentsQueryKey(options)
+});
 
 export const listIncidentsInfiniteQueryKey = (options?: Options<ListIncidentsData>): QueryKey<Options<ListIncidentsData>> => createQueryKey('listIncidents', options, true);
 
 /**
  * List Incidents
  */
-export const listIncidentsInfiniteOptions = (options?: Options<ListIncidentsData>) => {
-    return infiniteQueryOptions<ListIncidentsResponse, ListIncidentsError, InfiniteData<ListIncidentsResponse>, QueryKey<Options<ListIncidentsData>>, number | Pick<QueryKey<Options<ListIncidentsData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
-    // @ts-ignore
-    {
-        queryFn: async ({ pageParam, queryKey, signal }) => {
-            // @ts-ignore
-            const page: Pick<QueryKey<Options<ListIncidentsData>>[0], 'body' | 'headers' | 'path' | 'query'> = typeof pageParam === 'object' ? pageParam : {
-                query: {
-                    offset: pageParam
-                }
-            };
-            const params = createInfiniteParams(queryKey, page);
-            const { data } = await listIncidents({
-                ...options,
-                ...params,
-                signal,
-                throwOnError: true
-            });
-            return data;
-        },
-        queryKey: listIncidentsInfiniteQueryKey(options)
-    });
-};
+export const listIncidentsInfiniteOptions = (options?: Options<ListIncidentsData>) => infiniteQueryOptions<ListIncidentsResponse, ListIncidentsError, InfiniteData<ListIncidentsResponse>, QueryKey<Options<ListIncidentsData>>, number | Pick<QueryKey<Options<ListIncidentsData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
+// @ts-ignore
+{
+    queryFn: async ({ pageParam, queryKey, signal }) => {
+        // @ts-ignore
+        const page: Pick<QueryKey<Options<ListIncidentsData>>[0], 'body' | 'headers' | 'path' | 'query'> = typeof pageParam === 'object' ? pageParam : {
+            query: {
+                offset: pageParam
+            }
+        };
+        const params = createInfiniteParams(queryKey, page);
+        const { data } = await listIncidents({
+            ...options,
+            ...params,
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: listIncidentsInfiniteQueryKey(options)
+});
 
 /**
  * Create an Incident
@@ -1562,20 +1474,18 @@ export const getIncidentQueryKey = (options: Options<GetIncidentData>) => create
 /**
  * Get Incident
  */
-export const getIncidentOptions = (options: Options<GetIncidentData>) => {
-    return queryOptions({
-        queryFn: async ({ queryKey, signal }) => {
-            const { data } = await getIncident({
-                ...options,
-                ...queryKey[0],
-                signal,
-                throwOnError: true
-            });
-            return data;
-        },
-        queryKey: getIncidentQueryKey(options)
-    });
-};
+export const getIncidentOptions = (options: Options<GetIncidentData>) => queryOptions<GetIncidentResponse, GetIncidentError, GetIncidentResponse, ReturnType<typeof getIncidentQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await getIncident({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: getIncidentQueryKey(options)
+});
 
 /**
  * Update an Incident
@@ -1599,69 +1509,63 @@ export const getIncidentUserDebriefQueryKey = (options: Options<GetIncidentUserD
 /**
  * Get Debrief For Incident
  */
-export const getIncidentUserDebriefOptions = (options: Options<GetIncidentUserDebriefData>) => {
-    return queryOptions({
-        queryFn: async ({ queryKey, signal }) => {
-            const { data } = await getIncidentUserDebrief({
-                ...options,
-                ...queryKey[0],
-                signal,
-                throwOnError: true
-            });
-            return data;
-        },
-        queryKey: getIncidentUserDebriefQueryKey(options)
-    });
-};
+export const getIncidentUserDebriefOptions = (options: Options<GetIncidentUserDebriefData>) => queryOptions<GetIncidentUserDebriefResponse, GetIncidentUserDebriefError, GetIncidentUserDebriefResponse, ReturnType<typeof getIncidentUserDebriefQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await getIncidentUserDebrief({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: getIncidentUserDebriefQueryKey(options)
+});
 
 export const listIncidentEventsQueryKey = (options: Options<ListIncidentEventsData>) => createQueryKey('listIncidentEvents', options);
 
 /**
  * List Events for Incident
  */
-export const listIncidentEventsOptions = (options: Options<ListIncidentEventsData>) => {
-    return queryOptions({
-        queryFn: async ({ queryKey, signal }) => {
-            const { data } = await listIncidentEvents({
-                ...options,
-                ...queryKey[0],
-                signal,
-                throwOnError: true
-            });
-            return data;
-        },
-        queryKey: listIncidentEventsQueryKey(options)
-    });
-};
+export const listIncidentEventsOptions = (options: Options<ListIncidentEventsData>) => queryOptions<ListIncidentEventsResponse, ListIncidentEventsError, ListIncidentEventsResponse, ReturnType<typeof listIncidentEventsQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await listIncidentEvents({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: listIncidentEventsQueryKey(options)
+});
 
 export const listIncidentEventsInfiniteQueryKey = (options: Options<ListIncidentEventsData>): QueryKey<Options<ListIncidentEventsData>> => createQueryKey('listIncidentEvents', options, true);
 
 /**
  * List Events for Incident
  */
-export const listIncidentEventsInfiniteOptions = (options: Options<ListIncidentEventsData>) => {
-    return infiniteQueryOptions<ListIncidentEventsResponse, ListIncidentEventsError, InfiniteData<ListIncidentEventsResponse>, QueryKey<Options<ListIncidentEventsData>>, number | Pick<QueryKey<Options<ListIncidentEventsData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
-    // @ts-ignore
-    {
-        queryFn: async ({ pageParam, queryKey, signal }) => {
-            // @ts-ignore
-            const page: Pick<QueryKey<Options<ListIncidentEventsData>>[0], 'body' | 'headers' | 'path' | 'query'> = typeof pageParam === 'object' ? pageParam : {
-                query: {
-                    offset: pageParam
-                }
-            };
-            const params = createInfiniteParams(queryKey, page);
-            const { data } = await listIncidentEvents({
-                ...options,
-                ...params,
-                signal,
-                throwOnError: true
-            });
-            return data;
-        },
-        queryKey: listIncidentEventsInfiniteQueryKey(options)
-    });
-};
+export const listIncidentEventsInfiniteOptions = (options: Options<ListIncidentEventsData>) => infiniteQueryOptions<ListIncidentEventsResponse, ListIncidentEventsError, InfiniteData<ListIncidentEventsResponse>, QueryKey<Options<ListIncidentEventsData>>, number | Pick<QueryKey<Options<ListIncidentEventsData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
+// @ts-ignore
+{
+    queryFn: async ({ pageParam, queryKey, signal }) => {
+        // @ts-ignore
+        const page: Pick<QueryKey<Options<ListIncidentEventsData>>[0], 'body' | 'headers' | 'path' | 'query'> = typeof pageParam === 'object' ? pageParam : {
+            query: {
+                offset: pageParam
+            }
+        };
+        const params = createInfiniteParams(queryKey, page);
+        const { data } = await listIncidentEvents({
+            ...options,
+            ...params,
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: listIncidentEventsInfiniteQueryKey(options)
+});
 
 /**
  * Create an Incident Event
@@ -1685,20 +1589,18 @@ export const listIncidentMilestonesQueryKey = (options: Options<ListIncidentMile
 /**
  * List Milestones for Incident
  */
-export const listIncidentMilestonesOptions = (options: Options<ListIncidentMilestonesData>) => {
-    return queryOptions({
-        queryFn: async ({ queryKey, signal }) => {
-            const { data } = await listIncidentMilestones({
-                ...options,
-                ...queryKey[0],
-                signal,
-                throwOnError: true
-            });
-            return data;
-        },
-        queryKey: listIncidentMilestonesQueryKey(options)
-    });
-};
+export const listIncidentMilestonesOptions = (options: Options<ListIncidentMilestonesData>) => queryOptions<ListIncidentMilestonesResponse, ListIncidentMilestonesError, ListIncidentMilestonesResponse, ReturnType<typeof listIncidentMilestonesQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await listIncidentMilestones({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: listIncidentMilestonesQueryKey(options)
+});
 
 /**
  * Create an Incident Milestone
@@ -1722,69 +1624,63 @@ export const getRetrospectiveForIncidentQueryKey = (options: Options<GetRetrospe
 /**
  * Get a Retrospective for an Incident
  */
-export const getRetrospectiveForIncidentOptions = (options: Options<GetRetrospectiveForIncidentData>) => {
-    return queryOptions({
-        queryFn: async ({ queryKey, signal }) => {
-            const { data } = await getRetrospectiveForIncident({
-                ...options,
-                ...queryKey[0],
-                signal,
-                throwOnError: true
-            });
-            return data;
-        },
-        queryKey: getRetrospectiveForIncidentQueryKey(options)
-    });
-};
+export const getRetrospectiveForIncidentOptions = (options: Options<GetRetrospectiveForIncidentData>) => queryOptions<GetRetrospectiveForIncidentResponse, GetRetrospectiveForIncidentError, GetRetrospectiveForIncidentResponse, ReturnType<typeof getRetrospectiveForIncidentQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await getRetrospectiveForIncident({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: getRetrospectiveForIncidentQueryKey(options)
+});
 
 export const listIntegrationsQueryKey = (options?: Options<ListIntegrationsData>) => createQueryKey('listIntegrations', options);
 
 /**
  * List Integrations
  */
-export const listIntegrationsOptions = (options?: Options<ListIntegrationsData>) => {
-    return queryOptions({
-        queryFn: async ({ queryKey, signal }) => {
-            const { data } = await listIntegrations({
-                ...options,
-                ...queryKey[0],
-                signal,
-                throwOnError: true
-            });
-            return data;
-        },
-        queryKey: listIntegrationsQueryKey(options)
-    });
-};
+export const listIntegrationsOptions = (options?: Options<ListIntegrationsData>) => queryOptions<ListIntegrationsResponse, ListIntegrationsError, ListIntegrationsResponse, ReturnType<typeof listIntegrationsQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await listIntegrations({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: listIntegrationsQueryKey(options)
+});
 
 export const listIntegrationsInfiniteQueryKey = (options?: Options<ListIntegrationsData>): QueryKey<Options<ListIntegrationsData>> => createQueryKey('listIntegrations', options, true);
 
 /**
  * List Integrations
  */
-export const listIntegrationsInfiniteOptions = (options?: Options<ListIntegrationsData>) => {
-    return infiniteQueryOptions<ListIntegrationsResponse, ListIntegrationsError, InfiniteData<ListIntegrationsResponse>, QueryKey<Options<ListIntegrationsData>>, number | Pick<QueryKey<Options<ListIntegrationsData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
-    // @ts-ignore
-    {
-        queryFn: async ({ pageParam, queryKey, signal }) => {
-            // @ts-ignore
-            const page: Pick<QueryKey<Options<ListIntegrationsData>>[0], 'body' | 'headers' | 'path' | 'query'> = typeof pageParam === 'object' ? pageParam : {
-                query: {
-                    offset: pageParam
-                }
-            };
-            const params = createInfiniteParams(queryKey, page);
-            const { data } = await listIntegrations({
-                ...options,
-                ...params,
-                signal,
-                throwOnError: true
-            });
-            return data;
-        },
-        queryKey: listIntegrationsInfiniteQueryKey(options)
-    });
-};
+export const listIntegrationsInfiniteOptions = (options?: Options<ListIntegrationsData>) => infiniteQueryOptions<ListIntegrationsResponse, ListIntegrationsError, InfiniteData<ListIntegrationsResponse>, QueryKey<Options<ListIntegrationsData>>, number | Pick<QueryKey<Options<ListIntegrationsData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
+// @ts-ignore
+{
+    queryFn: async ({ pageParam, queryKey, signal }) => {
+        // @ts-ignore
+        const page: Pick<QueryKey<Options<ListIntegrationsData>>[0], 'body' | 'headers' | 'path' | 'query'> = typeof pageParam === 'object' ? pageParam : {
+            query: {
+                offset: pageParam
+            }
+        };
+        const params = createInfiniteParams(queryKey, page);
+        const { data } = await listIntegrations({
+            ...options,
+            ...params,
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: listIntegrationsInfiniteQueryKey(options)
+});
 
 /**
  * Create an Integration
@@ -1825,20 +1721,18 @@ export const getIntegrationQueryKey = (options: Options<GetIntegrationData>) => 
 /**
  * Get an Integration
  */
-export const getIntegrationOptions = (options: Options<GetIntegrationData>) => {
-    return queryOptions({
-        queryFn: async ({ queryKey, signal }) => {
-            const { data } = await getIntegration({
-                ...options,
-                ...queryKey[0],
-                signal,
-                throwOnError: true
-            });
-            return data;
-        },
-        queryKey: getIntegrationQueryKey(options)
-    });
-};
+export const getIntegrationOptions = (options: Options<GetIntegrationData>) => queryOptions<GetIntegrationResponse, GetIntegrationError, GetIntegrationResponse, ReturnType<typeof getIntegrationQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await getIntegration({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: getIntegrationQueryKey(options)
+});
 
 /**
  * Update an Integration
@@ -1896,49 +1790,45 @@ export const listMeetingSchedulesQueryKey = (options?: Options<ListMeetingSchedu
 /**
  * List Meeting Schedules
  */
-export const listMeetingSchedulesOptions = (options?: Options<ListMeetingSchedulesData>) => {
-    return queryOptions({
-        queryFn: async ({ queryKey, signal }) => {
-            const { data } = await listMeetingSchedules({
-                ...options,
-                ...queryKey[0],
-                signal,
-                throwOnError: true
-            });
-            return data;
-        },
-        queryKey: listMeetingSchedulesQueryKey(options)
-    });
-};
+export const listMeetingSchedulesOptions = (options?: Options<ListMeetingSchedulesData>) => queryOptions<ListMeetingSchedulesResponse, ListMeetingSchedulesError, ListMeetingSchedulesResponse, ReturnType<typeof listMeetingSchedulesQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await listMeetingSchedules({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: listMeetingSchedulesQueryKey(options)
+});
 
 export const listMeetingSchedulesInfiniteQueryKey = (options?: Options<ListMeetingSchedulesData>): QueryKey<Options<ListMeetingSchedulesData>> => createQueryKey('listMeetingSchedules', options, true);
 
 /**
  * List Meeting Schedules
  */
-export const listMeetingSchedulesInfiniteOptions = (options?: Options<ListMeetingSchedulesData>) => {
-    return infiniteQueryOptions<ListMeetingSchedulesResponse, ListMeetingSchedulesError, InfiniteData<ListMeetingSchedulesResponse>, QueryKey<Options<ListMeetingSchedulesData>>, number | Pick<QueryKey<Options<ListMeetingSchedulesData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
-    // @ts-ignore
-    {
-        queryFn: async ({ pageParam, queryKey, signal }) => {
-            // @ts-ignore
-            const page: Pick<QueryKey<Options<ListMeetingSchedulesData>>[0], 'body' | 'headers' | 'path' | 'query'> = typeof pageParam === 'object' ? pageParam : {
-                query: {
-                    offset: pageParam
-                }
-            };
-            const params = createInfiniteParams(queryKey, page);
-            const { data } = await listMeetingSchedules({
-                ...options,
-                ...params,
-                signal,
-                throwOnError: true
-            });
-            return data;
-        },
-        queryKey: listMeetingSchedulesInfiniteQueryKey(options)
-    });
-};
+export const listMeetingSchedulesInfiniteOptions = (options?: Options<ListMeetingSchedulesData>) => infiniteQueryOptions<ListMeetingSchedulesResponse, ListMeetingSchedulesError, InfiniteData<ListMeetingSchedulesResponse>, QueryKey<Options<ListMeetingSchedulesData>>, number | Pick<QueryKey<Options<ListMeetingSchedulesData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
+// @ts-ignore
+{
+    queryFn: async ({ pageParam, queryKey, signal }) => {
+        // @ts-ignore
+        const page: Pick<QueryKey<Options<ListMeetingSchedulesData>>[0], 'body' | 'headers' | 'path' | 'query'> = typeof pageParam === 'object' ? pageParam : {
+            query: {
+                offset: pageParam
+            }
+        };
+        const params = createInfiniteParams(queryKey, page);
+        const { data } = await listMeetingSchedules({
+            ...options,
+            ...params,
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: listMeetingSchedulesInfiniteQueryKey(options)
+});
 
 /**
  * Create a Meeting Schedule
@@ -1979,20 +1869,18 @@ export const getMeetingScheduleQueryKey = (options: Options<GetMeetingScheduleDa
 /**
  * Get a Meeting Schedule
  */
-export const getMeetingScheduleOptions = (options: Options<GetMeetingScheduleData>) => {
-    return queryOptions({
-        queryFn: async ({ queryKey, signal }) => {
-            const { data } = await getMeetingSchedule({
-                ...options,
-                ...queryKey[0],
-                signal,
-                throwOnError: true
-            });
-            return data;
-        },
-        queryKey: getMeetingScheduleQueryKey(options)
-    });
-};
+export const getMeetingScheduleOptions = (options: Options<GetMeetingScheduleData>) => queryOptions<GetMeetingScheduleResponse, GetMeetingScheduleError, GetMeetingScheduleResponse, ReturnType<typeof getMeetingScheduleQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await getMeetingSchedule({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: getMeetingScheduleQueryKey(options)
+});
 
 /**
  * Update a Meeting Schedule
@@ -2016,49 +1904,45 @@ export const listMeetingSessionsQueryKey = (options?: Options<ListMeetingSession
 /**
  * List Sessions
  */
-export const listMeetingSessionsOptions = (options?: Options<ListMeetingSessionsData>) => {
-    return queryOptions({
-        queryFn: async ({ queryKey, signal }) => {
-            const { data } = await listMeetingSessions({
-                ...options,
-                ...queryKey[0],
-                signal,
-                throwOnError: true
-            });
-            return data;
-        },
-        queryKey: listMeetingSessionsQueryKey(options)
-    });
-};
+export const listMeetingSessionsOptions = (options?: Options<ListMeetingSessionsData>) => queryOptions<ListMeetingSessionsResponse, ListMeetingSessionsError, ListMeetingSessionsResponse, ReturnType<typeof listMeetingSessionsQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await listMeetingSessions({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: listMeetingSessionsQueryKey(options)
+});
 
 export const listMeetingSessionsInfiniteQueryKey = (options?: Options<ListMeetingSessionsData>): QueryKey<Options<ListMeetingSessionsData>> => createQueryKey('listMeetingSessions', options, true);
 
 /**
  * List Sessions
  */
-export const listMeetingSessionsInfiniteOptions = (options?: Options<ListMeetingSessionsData>) => {
-    return infiniteQueryOptions<ListMeetingSessionsResponse, ListMeetingSessionsError, InfiniteData<ListMeetingSessionsResponse>, QueryKey<Options<ListMeetingSessionsData>>, number | Pick<QueryKey<Options<ListMeetingSessionsData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
-    // @ts-ignore
-    {
-        queryFn: async ({ pageParam, queryKey, signal }) => {
-            // @ts-ignore
-            const page: Pick<QueryKey<Options<ListMeetingSessionsData>>[0], 'body' | 'headers' | 'path' | 'query'> = typeof pageParam === 'object' ? pageParam : {
-                query: {
-                    offset: pageParam
-                }
-            };
-            const params = createInfiniteParams(queryKey, page);
-            const { data } = await listMeetingSessions({
-                ...options,
-                ...params,
-                signal,
-                throwOnError: true
-            });
-            return data;
-        },
-        queryKey: listMeetingSessionsInfiniteQueryKey(options)
-    });
-};
+export const listMeetingSessionsInfiniteOptions = (options?: Options<ListMeetingSessionsData>) => infiniteQueryOptions<ListMeetingSessionsResponse, ListMeetingSessionsError, InfiniteData<ListMeetingSessionsResponse>, QueryKey<Options<ListMeetingSessionsData>>, number | Pick<QueryKey<Options<ListMeetingSessionsData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
+// @ts-ignore
+{
+    queryFn: async ({ pageParam, queryKey, signal }) => {
+        // @ts-ignore
+        const page: Pick<QueryKey<Options<ListMeetingSessionsData>>[0], 'body' | 'headers' | 'path' | 'query'> = typeof pageParam === 'object' ? pageParam : {
+            query: {
+                offset: pageParam
+            }
+        };
+        const params = createInfiniteParams(queryKey, page);
+        const { data } = await listMeetingSessions({
+            ...options,
+            ...params,
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: listMeetingSessionsInfiniteQueryKey(options)
+});
 
 /**
  * Create a Meeting Session
@@ -2099,20 +1983,18 @@ export const getMeetingSessionQueryKey = (options: Options<GetMeetingSessionData
 /**
  * Get a Meeting Session
  */
-export const getMeetingSessionOptions = (options: Options<GetMeetingSessionData>) => {
-    return queryOptions({
-        queryFn: async ({ queryKey, signal }) => {
-            const { data } = await getMeetingSession({
-                ...options,
-                ...queryKey[0],
-                signal,
-                throwOnError: true
-            });
-            return data;
-        },
-        queryKey: getMeetingSessionQueryKey(options)
-    });
-};
+export const getMeetingSessionOptions = (options: Options<GetMeetingSessionData>) => queryOptions<GetMeetingSessionResponse, GetMeetingSessionError, GetMeetingSessionResponse, ReturnType<typeof getMeetingSessionQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await getMeetingSession({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: getMeetingSessionQueryKey(options)
+});
 
 /**
  * Update a Meeting Session
@@ -2170,20 +2052,18 @@ export const getOncallShiftHandoverTemplateQueryKey = (options: Options<GetOncal
 /**
  * Get handover for a shift
  */
-export const getOncallShiftHandoverTemplateOptions = (options: Options<GetOncallShiftHandoverTemplateData>) => {
-    return queryOptions({
-        queryFn: async ({ queryKey, signal }) => {
-            const { data } = await getOncallShiftHandoverTemplate({
-                ...options,
-                ...queryKey[0],
-                signal,
-                throwOnError: true
-            });
-            return data;
-        },
-        queryKey: getOncallShiftHandoverTemplateQueryKey(options)
-    });
-};
+export const getOncallShiftHandoverTemplateOptions = (options: Options<GetOncallShiftHandoverTemplateData>) => queryOptions<GetOncallShiftHandoverTemplateResponse, GetOncallShiftHandoverTemplateError, GetOncallShiftHandoverTemplateResponse, ReturnType<typeof getOncallShiftHandoverTemplateQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await getOncallShiftHandoverTemplate({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: getOncallShiftHandoverTemplateQueryKey(options)
+});
 
 /**
  * Update an Oncall Handover Template
@@ -2241,218 +2121,198 @@ export const listOncallRostersQueryKey = (options?: Options<ListOncallRostersDat
 /**
  * List Oncall Rosters
  */
-export const listOncallRostersOptions = (options?: Options<ListOncallRostersData>) => {
-    return queryOptions({
-        queryFn: async ({ queryKey, signal }) => {
-            const { data } = await listOncallRosters({
-                ...options,
-                ...queryKey[0],
-                signal,
-                throwOnError: true
-            });
-            return data;
-        },
-        queryKey: listOncallRostersQueryKey(options)
-    });
-};
+export const listOncallRostersOptions = (options?: Options<ListOncallRostersData>) => queryOptions<ListOncallRostersResponse, ListOncallRostersError, ListOncallRostersResponse, ReturnType<typeof listOncallRostersQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await listOncallRosters({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: listOncallRostersQueryKey(options)
+});
 
 export const listOncallRostersInfiniteQueryKey = (options?: Options<ListOncallRostersData>): QueryKey<Options<ListOncallRostersData>> => createQueryKey('listOncallRosters', options, true);
 
 /**
  * List Oncall Rosters
  */
-export const listOncallRostersInfiniteOptions = (options?: Options<ListOncallRostersData>) => {
-    return infiniteQueryOptions<ListOncallRostersResponse, ListOncallRostersError, InfiniteData<ListOncallRostersResponse>, QueryKey<Options<ListOncallRostersData>>, number | Pick<QueryKey<Options<ListOncallRostersData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
-    // @ts-ignore
-    {
-        queryFn: async ({ pageParam, queryKey, signal }) => {
-            // @ts-ignore
-            const page: Pick<QueryKey<Options<ListOncallRostersData>>[0], 'body' | 'headers' | 'path' | 'query'> = typeof pageParam === 'object' ? pageParam : {
-                query: {
-                    offset: pageParam
-                }
-            };
-            const params = createInfiniteParams(queryKey, page);
-            const { data } = await listOncallRosters({
-                ...options,
-                ...params,
-                signal,
-                throwOnError: true
-            });
-            return data;
-        },
-        queryKey: listOncallRostersInfiniteQueryKey(options)
-    });
-};
+export const listOncallRostersInfiniteOptions = (options?: Options<ListOncallRostersData>) => infiniteQueryOptions<ListOncallRostersResponse, ListOncallRostersError, InfiniteData<ListOncallRostersResponse>, QueryKey<Options<ListOncallRostersData>>, number | Pick<QueryKey<Options<ListOncallRostersData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
+// @ts-ignore
+{
+    queryFn: async ({ pageParam, queryKey, signal }) => {
+        // @ts-ignore
+        const page: Pick<QueryKey<Options<ListOncallRostersData>>[0], 'body' | 'headers' | 'path' | 'query'> = typeof pageParam === 'object' ? pageParam : {
+            query: {
+                offset: pageParam
+            }
+        };
+        const params = createInfiniteParams(queryKey, page);
+        const { data } = await listOncallRosters({
+            ...options,
+            ...params,
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: listOncallRostersInfiniteQueryKey(options)
+});
 
 export const getOncallRosterQueryKey = (options: Options<GetOncallRosterData>) => createQueryKey('getOncallRoster', options);
 
 /**
  * Get oncall roster
  */
-export const getOncallRosterOptions = (options: Options<GetOncallRosterData>) => {
-    return queryOptions({
-        queryFn: async ({ queryKey, signal }) => {
-            const { data } = await getOncallRoster({
-                ...options,
-                ...queryKey[0],
-                signal,
-                throwOnError: true
-            });
-            return data;
-        },
-        queryKey: getOncallRosterQueryKey(options)
-    });
-};
+export const getOncallRosterOptions = (options: Options<GetOncallRosterData>) => queryOptions<GetOncallRosterResponse, GetOncallRosterError, GetOncallRosterResponse, ReturnType<typeof getOncallRosterQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await getOncallRoster({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: getOncallRosterQueryKey(options)
+});
 
 export const listOncallShiftsQueryKey = (options?: Options<ListOncallShiftsData>) => createQueryKey('listOncallShifts', options);
 
 /**
  * List Oncall Shifts
  */
-export const listOncallShiftsOptions = (options?: Options<ListOncallShiftsData>) => {
-    return queryOptions({
-        queryFn: async ({ queryKey, signal }) => {
-            const { data } = await listOncallShifts({
-                ...options,
-                ...queryKey[0],
-                signal,
-                throwOnError: true
-            });
-            return data;
-        },
-        queryKey: listOncallShiftsQueryKey(options)
-    });
-};
+export const listOncallShiftsOptions = (options?: Options<ListOncallShiftsData>) => queryOptions<ListOncallShiftsResponse, ListOncallShiftsError, ListOncallShiftsResponse, ReturnType<typeof listOncallShiftsQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await listOncallShifts({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: listOncallShiftsQueryKey(options)
+});
 
 export const listOncallShiftsInfiniteQueryKey = (options?: Options<ListOncallShiftsData>): QueryKey<Options<ListOncallShiftsData>> => createQueryKey('listOncallShifts', options, true);
 
 /**
  * List Oncall Shifts
  */
-export const listOncallShiftsInfiniteOptions = (options?: Options<ListOncallShiftsData>) => {
-    return infiniteQueryOptions<ListOncallShiftsResponse, ListOncallShiftsError, InfiniteData<ListOncallShiftsResponse>, QueryKey<Options<ListOncallShiftsData>>, number | Pick<QueryKey<Options<ListOncallShiftsData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
-    // @ts-ignore
-    {
-        queryFn: async ({ pageParam, queryKey, signal }) => {
-            // @ts-ignore
-            const page: Pick<QueryKey<Options<ListOncallShiftsData>>[0], 'body' | 'headers' | 'path' | 'query'> = typeof pageParam === 'object' ? pageParam : {
-                query: {
-                    offset: pageParam
-                }
-            };
-            const params = createInfiniteParams(queryKey, page);
-            const { data } = await listOncallShifts({
-                ...options,
-                ...params,
-                signal,
-                throwOnError: true
-            });
-            return data;
-        },
-        queryKey: listOncallShiftsInfiniteQueryKey(options)
-    });
-};
+export const listOncallShiftsInfiniteOptions = (options?: Options<ListOncallShiftsData>) => infiniteQueryOptions<ListOncallShiftsResponse, ListOncallShiftsError, InfiniteData<ListOncallShiftsResponse>, QueryKey<Options<ListOncallShiftsData>>, number | Pick<QueryKey<Options<ListOncallShiftsData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
+// @ts-ignore
+{
+    queryFn: async ({ pageParam, queryKey, signal }) => {
+        // @ts-ignore
+        const page: Pick<QueryKey<Options<ListOncallShiftsData>>[0], 'body' | 'headers' | 'path' | 'query'> = typeof pageParam === 'object' ? pageParam : {
+            query: {
+                offset: pageParam
+            }
+        };
+        const params = createInfiniteParams(queryKey, page);
+        const { data } = await listOncallShifts({
+            ...options,
+            ...params,
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: listOncallShiftsInfiniteQueryKey(options)
+});
 
 export const getOncallShiftQueryKey = (options: Options<GetOncallShiftData>) => createQueryKey('getOncallShift', options);
 
 /**
  * Get an Oncall Shift
  */
-export const getOncallShiftOptions = (options: Options<GetOncallShiftData>) => {
-    return queryOptions({
-        queryFn: async ({ queryKey, signal }) => {
-            const { data } = await getOncallShift({
-                ...options,
-                ...queryKey[0],
-                signal,
-                throwOnError: true
-            });
-            return data;
-        },
-        queryKey: getOncallShiftQueryKey(options)
-    });
-};
+export const getOncallShiftOptions = (options: Options<GetOncallShiftData>) => queryOptions<GetOncallShiftResponse, GetOncallShiftError, GetOncallShiftResponse, ReturnType<typeof getOncallShiftQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await getOncallShift({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: getOncallShiftQueryKey(options)
+});
 
 export const getAdjacentOncallShiftsQueryKey = (options: Options<GetAdjacentOncallShiftsData>) => createQueryKey('getAdjacentOncallShifts', options);
 
 /**
  * Get shifts adjacent to a given shift
  */
-export const getAdjacentOncallShiftsOptions = (options: Options<GetAdjacentOncallShiftsData>) => {
-    return queryOptions({
-        queryFn: async ({ queryKey, signal }) => {
-            const { data } = await getAdjacentOncallShifts({
-                ...options,
-                ...queryKey[0],
-                signal,
-                throwOnError: true
-            });
-            return data;
-        },
-        queryKey: getAdjacentOncallShiftsQueryKey(options)
-    });
-};
+export const getAdjacentOncallShiftsOptions = (options: Options<GetAdjacentOncallShiftsData>) => queryOptions<GetAdjacentOncallShiftsResponse, GetAdjacentOncallShiftsError, GetAdjacentOncallShiftsResponse, ReturnType<typeof getAdjacentOncallShiftsQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await getAdjacentOncallShifts({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: getAdjacentOncallShiftsQueryKey(options)
+});
 
 export const getOncallShiftHandoverQueryKey = (options: Options<GetOncallShiftHandoverData>) => createQueryKey('getOncallShiftHandover', options);
 
 /**
  * Get handover for a shift
  */
-export const getOncallShiftHandoverOptions = (options: Options<GetOncallShiftHandoverData>) => {
-    return queryOptions({
-        queryFn: async ({ queryKey, signal }) => {
-            const { data } = await getOncallShiftHandover({
-                ...options,
-                ...queryKey[0],
-                signal,
-                throwOnError: true
-            });
-            return data;
-        },
-        queryKey: getOncallShiftHandoverQueryKey(options)
-    });
-};
+export const getOncallShiftHandoverOptions = (options: Options<GetOncallShiftHandoverData>) => queryOptions<GetOncallShiftHandoverResponse, GetOncallShiftHandoverError, GetOncallShiftHandoverResponse, ReturnType<typeof getOncallShiftHandoverQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await getOncallShiftHandover({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: getOncallShiftHandoverQueryKey(options)
+});
 
 export const getUserOncallInformationQueryKey = (options: Options<GetUserOncallInformationData>) => createQueryKey('getUserOncallInformation', options);
 
 /**
  * Get oncall information for a user
  */
-export const getUserOncallInformationOptions = (options: Options<GetUserOncallInformationData>) => {
-    return queryOptions({
-        queryFn: async ({ queryKey, signal }) => {
-            const { data } = await getUserOncallInformation({
-                ...options,
-                ...queryKey[0],
-                signal,
-                throwOnError: true
-            });
-            return data;
-        },
-        queryKey: getUserOncallInformationQueryKey(options)
-    });
-};
+export const getUserOncallInformationOptions = (options: Options<GetUserOncallInformationData>) => queryOptions<GetUserOncallInformationResponse, GetUserOncallInformationError, GetUserOncallInformationResponse, ReturnType<typeof getUserOncallInformationQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await getUserOncallInformation({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: getUserOncallInformationQueryKey(options)
+});
 
 export const listWatchedOncallRostersQueryKey = (options?: Options<ListWatchedOncallRostersData>) => createQueryKey('listWatchedOncallRosters', options);
 
 /**
  * List watched oncall rosters
  */
-export const listWatchedOncallRostersOptions = (options?: Options<ListWatchedOncallRostersData>) => {
-    return queryOptions({
-        queryFn: async ({ queryKey, signal }) => {
-            const { data } = await listWatchedOncallRosters({
-                ...options,
-                ...queryKey[0],
-                signal,
-                throwOnError: true
-            });
-            return data;
-        },
-        queryKey: listWatchedOncallRostersQueryKey(options)
-    });
-};
+export const listWatchedOncallRostersOptions = (options?: Options<ListWatchedOncallRostersData>) => queryOptions<ListWatchedOncallRostersResponse, ListWatchedOncallRostersError, ListWatchedOncallRostersResponse, ReturnType<typeof listWatchedOncallRostersQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await listWatchedOncallRosters({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: listWatchedOncallRostersQueryKey(options)
+});
 
 /**
  * Remove a watched oncall roster
@@ -2493,80 +2353,72 @@ export const getOncallShiftBurdenMetricWeightsQueryKey = (options?: Options<GetO
 /**
  * Get Weights for Calculating Burden
  */
-export const getOncallShiftBurdenMetricWeightsOptions = (options?: Options<GetOncallShiftBurdenMetricWeightsData>) => {
-    return queryOptions({
-        queryFn: async ({ queryKey, signal }) => {
-            const { data } = await getOncallShiftBurdenMetricWeights({
-                ...options,
-                ...queryKey[0],
-                signal,
-                throwOnError: true
-            });
-            return data;
-        },
-        queryKey: getOncallShiftBurdenMetricWeightsQueryKey(options)
-    });
-};
+export const getOncallShiftBurdenMetricWeightsOptions = (options?: Options<GetOncallShiftBurdenMetricWeightsData>) => queryOptions<GetOncallShiftBurdenMetricWeightsResponse, GetOncallShiftBurdenMetricWeightsError, GetOncallShiftBurdenMetricWeightsResponse, ReturnType<typeof getOncallShiftBurdenMetricWeightsQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await getOncallShiftBurdenMetricWeights({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: getOncallShiftBurdenMetricWeightsQueryKey(options)
+});
 
 export const getOncallRosterMetricsQueryKey = (options?: Options<GetOncallRosterMetricsData>) => createQueryKey('getOncallRosterMetrics', options);
 
 /**
  * Get Metrics for an Oncall Roster
  */
-export const getOncallRosterMetricsOptions = (options?: Options<GetOncallRosterMetricsData>) => {
-    return queryOptions({
-        queryFn: async ({ queryKey, signal }) => {
-            const { data } = await getOncallRosterMetrics({
-                ...options,
-                ...queryKey[0],
-                signal,
-                throwOnError: true
-            });
-            return data;
-        },
-        queryKey: getOncallRosterMetricsQueryKey(options)
-    });
-};
+export const getOncallRosterMetricsOptions = (options?: Options<GetOncallRosterMetricsData>) => queryOptions<GetOncallRosterMetricsResponse, GetOncallRosterMetricsError, GetOncallRosterMetricsResponse, ReturnType<typeof getOncallRosterMetricsQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await getOncallRosterMetrics({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: getOncallRosterMetricsQueryKey(options)
+});
 
 export const getOncallShiftMetricsQueryKey = (options?: Options<GetOncallShiftMetricsData>) => createQueryKey('getOncallShiftMetrics', options);
 
 /**
  * Get Metrics for an Oncall Shift
  */
-export const getOncallShiftMetricsOptions = (options?: Options<GetOncallShiftMetricsData>) => {
-    return queryOptions({
-        queryFn: async ({ queryKey, signal }) => {
-            const { data } = await getOncallShiftMetrics({
-                ...options,
-                ...queryKey[0],
-                signal,
-                throwOnError: true
-            });
-            return data;
-        },
-        queryKey: getOncallShiftMetricsQueryKey(options)
-    });
-};
+export const getOncallShiftMetricsOptions = (options?: Options<GetOncallShiftMetricsData>) => queryOptions<GetOncallShiftMetricsResponse, GetOncallShiftMetricsError, GetOncallShiftMetricsResponse, ReturnType<typeof getOncallShiftMetricsQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await getOncallShiftMetrics({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: getOncallShiftMetricsQueryKey(options)
+});
 
 export const getOrganizationQueryKey = (options: Options<GetOrganizationData>) => createQueryKey('getOrganization', options);
 
 /**
  * Get Organization
  */
-export const getOrganizationOptions = (options: Options<GetOrganizationData>) => {
-    return queryOptions({
-        queryFn: async ({ queryKey, signal }) => {
-            const { data } = await getOrganization({
-                ...options,
-                ...queryKey[0],
-                signal,
-                throwOnError: true
-            });
-            return data;
-        },
-        queryKey: getOrganizationQueryKey(options)
-    });
-};
+export const getOrganizationOptions = (options: Options<GetOrganizationData>) => queryOptions<GetOrganizationResponse, GetOrganizationError, GetOrganizationResponse, ReturnType<typeof getOrganizationQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await getOrganization({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: getOrganizationQueryKey(options)
+});
 
 /**
  * Finish initial org setup
@@ -2590,49 +2442,45 @@ export const listPlaybooksQueryKey = (options?: Options<ListPlaybooksData>) => c
 /**
  * List Playbooks
  */
-export const listPlaybooksOptions = (options?: Options<ListPlaybooksData>) => {
-    return queryOptions({
-        queryFn: async ({ queryKey, signal }) => {
-            const { data } = await listPlaybooks({
-                ...options,
-                ...queryKey[0],
-                signal,
-                throwOnError: true
-            });
-            return data;
-        },
-        queryKey: listPlaybooksQueryKey(options)
-    });
-};
+export const listPlaybooksOptions = (options?: Options<ListPlaybooksData>) => queryOptions<ListPlaybooksResponse, ListPlaybooksError, ListPlaybooksResponse, ReturnType<typeof listPlaybooksQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await listPlaybooks({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: listPlaybooksQueryKey(options)
+});
 
 export const listPlaybooksInfiniteQueryKey = (options?: Options<ListPlaybooksData>): QueryKey<Options<ListPlaybooksData>> => createQueryKey('listPlaybooks', options, true);
 
 /**
  * List Playbooks
  */
-export const listPlaybooksInfiniteOptions = (options?: Options<ListPlaybooksData>) => {
-    return infiniteQueryOptions<ListPlaybooksResponse, ListPlaybooksError, InfiniteData<ListPlaybooksResponse>, QueryKey<Options<ListPlaybooksData>>, number | Pick<QueryKey<Options<ListPlaybooksData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
-    // @ts-ignore
-    {
-        queryFn: async ({ pageParam, queryKey, signal }) => {
-            // @ts-ignore
-            const page: Pick<QueryKey<Options<ListPlaybooksData>>[0], 'body' | 'headers' | 'path' | 'query'> = typeof pageParam === 'object' ? pageParam : {
-                query: {
-                    offset: pageParam
-                }
-            };
-            const params = createInfiniteParams(queryKey, page);
-            const { data } = await listPlaybooks({
-                ...options,
-                ...params,
-                signal,
-                throwOnError: true
-            });
-            return data;
-        },
-        queryKey: listPlaybooksInfiniteQueryKey(options)
-    });
-};
+export const listPlaybooksInfiniteOptions = (options?: Options<ListPlaybooksData>) => infiniteQueryOptions<ListPlaybooksResponse, ListPlaybooksError, InfiniteData<ListPlaybooksResponse>, QueryKey<Options<ListPlaybooksData>>, number | Pick<QueryKey<Options<ListPlaybooksData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
+// @ts-ignore
+{
+    queryFn: async ({ pageParam, queryKey, signal }) => {
+        // @ts-ignore
+        const page: Pick<QueryKey<Options<ListPlaybooksData>>[0], 'body' | 'headers' | 'path' | 'query'> = typeof pageParam === 'object' ? pageParam : {
+            query: {
+                offset: pageParam
+            }
+        };
+        const params = createInfiniteParams(queryKey, page);
+        const { data } = await listPlaybooks({
+            ...options,
+            ...params,
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: listPlaybooksInfiniteQueryKey(options)
+});
 
 /**
  * Create a Playbook
@@ -2673,20 +2521,18 @@ export const getPlaybookQueryKey = (options: Options<GetPlaybookData>) => create
 /**
  * Get Playbook
  */
-export const getPlaybookOptions = (options: Options<GetPlaybookData>) => {
-    return queryOptions({
-        queryFn: async ({ queryKey, signal }) => {
-            const { data } = await getPlaybook({
-                ...options,
-                ...queryKey[0],
-                signal,
-                throwOnError: true
-            });
-            return data;
-        },
-        queryKey: getPlaybookQueryKey(options)
-    });
-};
+export const getPlaybookOptions = (options: Options<GetPlaybookData>) => queryOptions<GetPlaybookResponse, GetPlaybookError, GetPlaybookResponse, ReturnType<typeof getPlaybookQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await getPlaybook({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: getPlaybookQueryKey(options)
+});
 
 /**
  * Update a Playbook
@@ -2710,49 +2556,45 @@ export const getRetrospectiveCommentQueryKey = (options: Options<GetRetrospectiv
 /**
  * Get a Retrospective Comment
  */
-export const getRetrospectiveCommentOptions = (options: Options<GetRetrospectiveCommentData>) => {
-    return queryOptions({
-        queryFn: async ({ queryKey, signal }) => {
-            const { data } = await getRetrospectiveComment({
-                ...options,
-                ...queryKey[0],
-                signal,
-                throwOnError: true
-            });
-            return data;
-        },
-        queryKey: getRetrospectiveCommentQueryKey(options)
-    });
-};
+export const getRetrospectiveCommentOptions = (options: Options<GetRetrospectiveCommentData>) => queryOptions<GetRetrospectiveCommentResponse, GetRetrospectiveCommentError, GetRetrospectiveCommentResponse, ReturnType<typeof getRetrospectiveCommentQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await getRetrospectiveComment({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: getRetrospectiveCommentQueryKey(options)
+});
 
 export const getRetrospectiveCommentInfiniteQueryKey = (options: Options<GetRetrospectiveCommentData>): QueryKey<Options<GetRetrospectiveCommentData>> => createQueryKey('getRetrospectiveComment', options, true);
 
 /**
  * Get a Retrospective Comment
  */
-export const getRetrospectiveCommentInfiniteOptions = (options: Options<GetRetrospectiveCommentData>) => {
-    return infiniteQueryOptions<GetRetrospectiveCommentResponse, GetRetrospectiveCommentError, InfiniteData<GetRetrospectiveCommentResponse>, QueryKey<Options<GetRetrospectiveCommentData>>, number | Pick<QueryKey<Options<GetRetrospectiveCommentData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
-    // @ts-ignore
-    {
-        queryFn: async ({ pageParam, queryKey, signal }) => {
-            // @ts-ignore
-            const page: Pick<QueryKey<Options<GetRetrospectiveCommentData>>[0], 'body' | 'headers' | 'path' | 'query'> = typeof pageParam === 'object' ? pageParam : {
-                query: {
-                    offset: pageParam
-                }
-            };
-            const params = createInfiniteParams(queryKey, page);
-            const { data } = await getRetrospectiveComment({
-                ...options,
-                ...params,
-                signal,
-                throwOnError: true
-            });
-            return data;
-        },
-        queryKey: getRetrospectiveCommentInfiniteQueryKey(options)
-    });
-};
+export const getRetrospectiveCommentInfiniteOptions = (options: Options<GetRetrospectiveCommentData>) => infiniteQueryOptions<GetRetrospectiveCommentResponse, GetRetrospectiveCommentError, InfiniteData<GetRetrospectiveCommentResponse>, QueryKey<Options<GetRetrospectiveCommentData>>, number | Pick<QueryKey<Options<GetRetrospectiveCommentData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
+// @ts-ignore
+{
+    queryFn: async ({ pageParam, queryKey, signal }) => {
+        // @ts-ignore
+        const page: Pick<QueryKey<Options<GetRetrospectiveCommentData>>[0], 'body' | 'headers' | 'path' | 'query'> = typeof pageParam === 'object' ? pageParam : {
+            query: {
+                offset: pageParam
+            }
+        };
+        const params = createInfiniteParams(queryKey, page);
+        const { data } = await getRetrospectiveComment({
+            ...options,
+            ...params,
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: getRetrospectiveCommentInfiniteQueryKey(options)
+});
 
 /**
  * Update a Retrospective Comment
@@ -2810,49 +2652,45 @@ export const listRetrospectivesQueryKey = (options?: Options<ListRetrospectivesD
 /**
  * List Retrospectives
  */
-export const listRetrospectivesOptions = (options?: Options<ListRetrospectivesData>) => {
-    return queryOptions({
-        queryFn: async ({ queryKey, signal }) => {
-            const { data } = await listRetrospectives({
-                ...options,
-                ...queryKey[0],
-                signal,
-                throwOnError: true
-            });
-            return data;
-        },
-        queryKey: listRetrospectivesQueryKey(options)
-    });
-};
+export const listRetrospectivesOptions = (options?: Options<ListRetrospectivesData>) => queryOptions<ListRetrospectivesResponse, ListRetrospectivesError, ListRetrospectivesResponse, ReturnType<typeof listRetrospectivesQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await listRetrospectives({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: listRetrospectivesQueryKey(options)
+});
 
 export const listRetrospectivesInfiniteQueryKey = (options?: Options<ListRetrospectivesData>): QueryKey<Options<ListRetrospectivesData>> => createQueryKey('listRetrospectives', options, true);
 
 /**
  * List Retrospectives
  */
-export const listRetrospectivesInfiniteOptions = (options?: Options<ListRetrospectivesData>) => {
-    return infiniteQueryOptions<ListRetrospectivesResponse, ListRetrospectivesError, InfiniteData<ListRetrospectivesResponse>, QueryKey<Options<ListRetrospectivesData>>, number | Pick<QueryKey<Options<ListRetrospectivesData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
-    // @ts-ignore
-    {
-        queryFn: async ({ pageParam, queryKey, signal }) => {
-            // @ts-ignore
-            const page: Pick<QueryKey<Options<ListRetrospectivesData>>[0], 'body' | 'headers' | 'path' | 'query'> = typeof pageParam === 'object' ? pageParam : {
-                query: {
-                    offset: pageParam
-                }
-            };
-            const params = createInfiniteParams(queryKey, page);
-            const { data } = await listRetrospectives({
-                ...options,
-                ...params,
-                signal,
-                throwOnError: true
-            });
-            return data;
-        },
-        queryKey: listRetrospectivesInfiniteQueryKey(options)
-    });
-};
+export const listRetrospectivesInfiniteOptions = (options?: Options<ListRetrospectivesData>) => infiniteQueryOptions<ListRetrospectivesResponse, ListRetrospectivesError, InfiniteData<ListRetrospectivesResponse>, QueryKey<Options<ListRetrospectivesData>>, number | Pick<QueryKey<Options<ListRetrospectivesData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
+// @ts-ignore
+{
+    queryFn: async ({ pageParam, queryKey, signal }) => {
+        // @ts-ignore
+        const page: Pick<QueryKey<Options<ListRetrospectivesData>>[0], 'body' | 'headers' | 'path' | 'query'> = typeof pageParam === 'object' ? pageParam : {
+            query: {
+                offset: pageParam
+            }
+        };
+        const params = createInfiniteParams(queryKey, page);
+        const { data } = await listRetrospectives({
+            ...options,
+            ...params,
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: listRetrospectivesInfiniteQueryKey(options)
+});
 
 /**
  * Create an Incident Retrospective
@@ -2876,77 +2714,71 @@ export const getRetrospectiveQueryKey = (options: Options<GetRetrospectiveData>)
 /**
  * Get a Retrospective
  */
-export const getRetrospectiveOptions = (options: Options<GetRetrospectiveData>) => {
-    return queryOptions({
-        queryFn: async ({ queryKey, signal }) => {
-            const { data } = await getRetrospective({
-                ...options,
-                ...queryKey[0],
-                signal,
-                throwOnError: true
-            });
-            return data;
-        },
-        queryKey: getRetrospectiveQueryKey(options)
-    });
-};
+export const getRetrospectiveOptions = (options: Options<GetRetrospectiveData>) => queryOptions<GetRetrospectiveResponse, GetRetrospectiveError, GetRetrospectiveResponse, ReturnType<typeof getRetrospectiveQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await getRetrospective({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: getRetrospectiveQueryKey(options)
+});
 
 export const listRetrospectiveCommentsQueryKey = (options: Options<ListRetrospectiveCommentsData>) => createQueryKey('listRetrospectiveComments', options);
 
 /**
  * List Comments For a Retrospective
  */
-export const listRetrospectiveCommentsOptions = (options: Options<ListRetrospectiveCommentsData>) => {
-    return queryOptions({
-        queryFn: async ({ queryKey, signal }) => {
-            const { data } = await listRetrospectiveComments({
-                ...options,
-                ...queryKey[0],
-                signal,
-                throwOnError: true
-            });
-            return data;
-        },
-        queryKey: listRetrospectiveCommentsQueryKey(options)
-    });
-};
+export const listRetrospectiveCommentsOptions = (options: Options<ListRetrospectiveCommentsData>) => queryOptions<ListRetrospectiveCommentsResponse, ListRetrospectiveCommentsError, ListRetrospectiveCommentsResponse, ReturnType<typeof listRetrospectiveCommentsQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await listRetrospectiveComments({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: listRetrospectiveCommentsQueryKey(options)
+});
 
 export const listRetrospectiveCommentsInfiniteQueryKey = (options: Options<ListRetrospectiveCommentsData>): QueryKey<Options<ListRetrospectiveCommentsData>> => createQueryKey('listRetrospectiveComments', options, true);
 
 /**
  * List Comments For a Retrospective
  */
-export const listRetrospectiveCommentsInfiniteOptions = (options: Options<ListRetrospectiveCommentsData>) => {
-    return infiniteQueryOptions<ListRetrospectiveCommentsResponse, ListRetrospectiveCommentsError, InfiniteData<ListRetrospectiveCommentsResponse>, QueryKey<Options<ListRetrospectiveCommentsData>>, number | Pick<QueryKey<Options<ListRetrospectiveCommentsData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
-    // @ts-ignore
-    {
-        queryFn: async ({ pageParam, queryKey, signal }) => {
-            // @ts-ignore
-            const page: Pick<QueryKey<Options<ListRetrospectiveCommentsData>>[0], 'body' | 'headers' | 'path' | 'query'> = typeof pageParam === 'object' ? pageParam : {
-                query: {
-                    offset: pageParam
-                }
-            };
-            const params = createInfiniteParams(queryKey, page);
-            const { data } = await listRetrospectiveComments({
-                ...options,
-                ...params,
-                signal,
-                throwOnError: true
-            });
-            return data;
-        },
-        queryKey: listRetrospectiveCommentsInfiniteQueryKey(options)
-    });
-};
+export const listRetrospectiveCommentsInfiniteOptions = (options: Options<ListRetrospectiveCommentsData>) => infiniteQueryOptions<ListRetrospectiveCommentsResponse, ListRetrospectiveCommentsError, InfiniteData<ListRetrospectiveCommentsResponse>, QueryKey<Options<ListRetrospectiveCommentsData>>, number | Pick<QueryKey<Options<ListRetrospectiveCommentsData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
+// @ts-ignore
+{
+    queryFn: async ({ pageParam, queryKey, signal }) => {
+        // @ts-ignore
+        const page: Pick<QueryKey<Options<ListRetrospectiveCommentsData>>[0], 'body' | 'headers' | 'path' | 'query'> = typeof pageParam === 'object' ? pageParam : {
+            query: {
+                offset: pageParam
+            }
+        };
+        const params = createInfiniteParams(queryKey, page);
+        const { data } = await listRetrospectiveComments({
+            ...options,
+            ...params,
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: listRetrospectiveCommentsInfiniteQueryKey(options)
+});
 
 /**
  * Create a Retrospective Comment
  */
-export const createRetrospectiveDiscussionMutation = (options?: Partial<Options<CreateRetrospectiveDiscussionData>>): MutationOptions<CreateRetrospectiveDiscussionResponse, CreateRetrospectiveDiscussionError, Options<CreateRetrospectiveDiscussionData>> => {
-    const mutationOptions: MutationOptions<CreateRetrospectiveDiscussionResponse, CreateRetrospectiveDiscussionError, Options<CreateRetrospectiveDiscussionData>> = {
+export const createRetrospectiveCommentMutation = (options?: Partial<Options<CreateRetrospectiveCommentData>>): MutationOptions<CreateRetrospectiveCommentResponse, CreateRetrospectiveCommentError, Options<CreateRetrospectiveCommentData>> => {
+    const mutationOptions: MutationOptions<CreateRetrospectiveCommentResponse, CreateRetrospectiveCommentError, Options<CreateRetrospectiveCommentData>> = {
         mutationFn: async (fnOptions) => {
-            const { data } = await createRetrospectiveDiscussion({
+            const { data } = await createRetrospectiveComment({
                 ...options,
                 ...fnOptions,
                 throwOnError: true
@@ -2962,49 +2794,45 @@ export const listRetrospectiveReviewsQueryKey = (options?: Options<ListRetrospec
 /**
  * List Retrospective Reviews
  */
-export const listRetrospectiveReviewsOptions = (options?: Options<ListRetrospectiveReviewsData>) => {
-    return queryOptions({
-        queryFn: async ({ queryKey, signal }) => {
-            const { data } = await listRetrospectiveReviews({
-                ...options,
-                ...queryKey[0],
-                signal,
-                throwOnError: true
-            });
-            return data;
-        },
-        queryKey: listRetrospectiveReviewsQueryKey(options)
-    });
-};
+export const listRetrospectiveReviewsOptions = (options?: Options<ListRetrospectiveReviewsData>) => queryOptions<ListRetrospectiveReviewsResponse, ListRetrospectiveReviewsError, ListRetrospectiveReviewsResponse, ReturnType<typeof listRetrospectiveReviewsQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await listRetrospectiveReviews({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: listRetrospectiveReviewsQueryKey(options)
+});
 
 export const listRetrospectiveReviewsInfiniteQueryKey = (options?: Options<ListRetrospectiveReviewsData>): QueryKey<Options<ListRetrospectiveReviewsData>> => createQueryKey('listRetrospectiveReviews', options, true);
 
 /**
  * List Retrospective Reviews
  */
-export const listRetrospectiveReviewsInfiniteOptions = (options?: Options<ListRetrospectiveReviewsData>) => {
-    return infiniteQueryOptions<ListRetrospectiveReviewsResponse, ListRetrospectiveReviewsError, InfiniteData<ListRetrospectiveReviewsResponse>, QueryKey<Options<ListRetrospectiveReviewsData>>, number | Pick<QueryKey<Options<ListRetrospectiveReviewsData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
-    // @ts-ignore
-    {
-        queryFn: async ({ pageParam, queryKey, signal }) => {
-            // @ts-ignore
-            const page: Pick<QueryKey<Options<ListRetrospectiveReviewsData>>[0], 'body' | 'headers' | 'path' | 'query'> = typeof pageParam === 'object' ? pageParam : {
-                query: {
-                    offset: pageParam
-                }
-            };
-            const params = createInfiniteParams(queryKey, page);
-            const { data } = await listRetrospectiveReviews({
-                ...options,
-                ...params,
-                signal,
-                throwOnError: true
-            });
-            return data;
-        },
-        queryKey: listRetrospectiveReviewsInfiniteQueryKey(options)
-    });
-};
+export const listRetrospectiveReviewsInfiniteOptions = (options?: Options<ListRetrospectiveReviewsData>) => infiniteQueryOptions<ListRetrospectiveReviewsResponse, ListRetrospectiveReviewsError, InfiniteData<ListRetrospectiveReviewsResponse>, QueryKey<Options<ListRetrospectiveReviewsData>>, number | Pick<QueryKey<Options<ListRetrospectiveReviewsData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
+// @ts-ignore
+{
+    queryFn: async ({ pageParam, queryKey, signal }) => {
+        // @ts-ignore
+        const page: Pick<QueryKey<Options<ListRetrospectiveReviewsData>>[0], 'body' | 'headers' | 'path' | 'query'> = typeof pageParam === 'object' ? pageParam : {
+            query: {
+                offset: pageParam
+            }
+        };
+        const params = createInfiniteParams(queryKey, page);
+        const { data } = await listRetrospectiveReviews({
+            ...options,
+            ...params,
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: listRetrospectiveReviewsInfiniteQueryKey(options)
+});
 
 /**
  * Create a Retrospective Review
@@ -3028,69 +2856,63 @@ export const getSystemAnalysisQueryKey = (options: Options<GetSystemAnalysisData
 /**
  * Get System Analysis
  */
-export const getSystemAnalysisOptions = (options: Options<GetSystemAnalysisData>) => {
-    return queryOptions({
-        queryFn: async ({ queryKey, signal }) => {
-            const { data } = await getSystemAnalysis({
-                ...options,
-                ...queryKey[0],
-                signal,
-                throwOnError: true
-            });
-            return data;
-        },
-        queryKey: getSystemAnalysisQueryKey(options)
-    });
-};
+export const getSystemAnalysisOptions = (options: Options<GetSystemAnalysisData>) => queryOptions<GetSystemAnalysisResponse, GetSystemAnalysisError, GetSystemAnalysisResponse, ReturnType<typeof getSystemAnalysisQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await getSystemAnalysis({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: getSystemAnalysisQueryKey(options)
+});
 
 export const listSystemAnalysisComponentsQueryKey = (options: Options<ListSystemAnalysisComponentsData>) => createQueryKey('listSystemAnalysisComponents', options);
 
 /**
  * List components in a System analysis
  */
-export const listSystemAnalysisComponentsOptions = (options: Options<ListSystemAnalysisComponentsData>) => {
-    return queryOptions({
-        queryFn: async ({ queryKey, signal }) => {
-            const { data } = await listSystemAnalysisComponents({
-                ...options,
-                ...queryKey[0],
-                signal,
-                throwOnError: true
-            });
-            return data;
-        },
-        queryKey: listSystemAnalysisComponentsQueryKey(options)
-    });
-};
+export const listSystemAnalysisComponentsOptions = (options: Options<ListSystemAnalysisComponentsData>) => queryOptions<ListSystemAnalysisComponentsResponse, ListSystemAnalysisComponentsError, ListSystemAnalysisComponentsResponse, ReturnType<typeof listSystemAnalysisComponentsQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await listSystemAnalysisComponents({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: listSystemAnalysisComponentsQueryKey(options)
+});
 
 export const listSystemAnalysisComponentsInfiniteQueryKey = (options: Options<ListSystemAnalysisComponentsData>): QueryKey<Options<ListSystemAnalysisComponentsData>> => createQueryKey('listSystemAnalysisComponents', options, true);
 
 /**
  * List components in a System analysis
  */
-export const listSystemAnalysisComponentsInfiniteOptions = (options: Options<ListSystemAnalysisComponentsData>) => {
-    return infiniteQueryOptions<ListSystemAnalysisComponentsResponse, ListSystemAnalysisComponentsError, InfiniteData<ListSystemAnalysisComponentsResponse>, QueryKey<Options<ListSystemAnalysisComponentsData>>, number | Pick<QueryKey<Options<ListSystemAnalysisComponentsData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
-    // @ts-ignore
-    {
-        queryFn: async ({ pageParam, queryKey, signal }) => {
-            // @ts-ignore
-            const page: Pick<QueryKey<Options<ListSystemAnalysisComponentsData>>[0], 'body' | 'headers' | 'path' | 'query'> = typeof pageParam === 'object' ? pageParam : {
-                query: {
-                    offset: pageParam
-                }
-            };
-            const params = createInfiniteParams(queryKey, page);
-            const { data } = await listSystemAnalysisComponents({
-                ...options,
-                ...params,
-                signal,
-                throwOnError: true
-            });
-            return data;
-        },
-        queryKey: listSystemAnalysisComponentsInfiniteQueryKey(options)
-    });
-};
+export const listSystemAnalysisComponentsInfiniteOptions = (options: Options<ListSystemAnalysisComponentsData>) => infiniteQueryOptions<ListSystemAnalysisComponentsResponse, ListSystemAnalysisComponentsError, InfiniteData<ListSystemAnalysisComponentsResponse>, QueryKey<Options<ListSystemAnalysisComponentsData>>, number | Pick<QueryKey<Options<ListSystemAnalysisComponentsData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
+// @ts-ignore
+{
+    queryFn: async ({ pageParam, queryKey, signal }) => {
+        // @ts-ignore
+        const page: Pick<QueryKey<Options<ListSystemAnalysisComponentsData>>[0], 'body' | 'headers' | 'path' | 'query'> = typeof pageParam === 'object' ? pageParam : {
+            query: {
+                offset: pageParam
+            }
+        };
+        const params = createInfiniteParams(queryKey, page);
+        const { data } = await listSystemAnalysisComponents({
+            ...options,
+            ...params,
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: listSystemAnalysisComponentsInfiniteQueryKey(options)
+});
 
 /**
  * Add a Component to a System Analysis
@@ -3114,49 +2936,45 @@ export const listSystemAnalysisRelationshipsQueryKey = (options: Options<ListSys
 /**
  * List relationships in a System analysis
  */
-export const listSystemAnalysisRelationshipsOptions = (options: Options<ListSystemAnalysisRelationshipsData>) => {
-    return queryOptions({
-        queryFn: async ({ queryKey, signal }) => {
-            const { data } = await listSystemAnalysisRelationships({
-                ...options,
-                ...queryKey[0],
-                signal,
-                throwOnError: true
-            });
-            return data;
-        },
-        queryKey: listSystemAnalysisRelationshipsQueryKey(options)
-    });
-};
+export const listSystemAnalysisRelationshipsOptions = (options: Options<ListSystemAnalysisRelationshipsData>) => queryOptions<ListSystemAnalysisRelationshipsResponse, ListSystemAnalysisRelationshipsError, ListSystemAnalysisRelationshipsResponse, ReturnType<typeof listSystemAnalysisRelationshipsQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await listSystemAnalysisRelationships({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: listSystemAnalysisRelationshipsQueryKey(options)
+});
 
 export const listSystemAnalysisRelationshipsInfiniteQueryKey = (options: Options<ListSystemAnalysisRelationshipsData>): QueryKey<Options<ListSystemAnalysisRelationshipsData>> => createQueryKey('listSystemAnalysisRelationships', options, true);
 
 /**
  * List relationships in a System analysis
  */
-export const listSystemAnalysisRelationshipsInfiniteOptions = (options: Options<ListSystemAnalysisRelationshipsData>) => {
-    return infiniteQueryOptions<ListSystemAnalysisRelationshipsResponse, ListSystemAnalysisRelationshipsError, InfiniteData<ListSystemAnalysisRelationshipsResponse>, QueryKey<Options<ListSystemAnalysisRelationshipsData>>, number | Pick<QueryKey<Options<ListSystemAnalysisRelationshipsData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
-    // @ts-ignore
-    {
-        queryFn: async ({ pageParam, queryKey, signal }) => {
-            // @ts-ignore
-            const page: Pick<QueryKey<Options<ListSystemAnalysisRelationshipsData>>[0], 'body' | 'headers' | 'path' | 'query'> = typeof pageParam === 'object' ? pageParam : {
-                query: {
-                    offset: pageParam
-                }
-            };
-            const params = createInfiniteParams(queryKey, page);
-            const { data } = await listSystemAnalysisRelationships({
-                ...options,
-                ...params,
-                signal,
-                throwOnError: true
-            });
-            return data;
-        },
-        queryKey: listSystemAnalysisRelationshipsInfiniteQueryKey(options)
-    });
-};
+export const listSystemAnalysisRelationshipsInfiniteOptions = (options: Options<ListSystemAnalysisRelationshipsData>) => infiniteQueryOptions<ListSystemAnalysisRelationshipsResponse, ListSystemAnalysisRelationshipsError, InfiniteData<ListSystemAnalysisRelationshipsResponse>, QueryKey<Options<ListSystemAnalysisRelationshipsData>>, number | Pick<QueryKey<Options<ListSystemAnalysisRelationshipsData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
+// @ts-ignore
+{
+    queryFn: async ({ pageParam, queryKey, signal }) => {
+        // @ts-ignore
+        const page: Pick<QueryKey<Options<ListSystemAnalysisRelationshipsData>>[0], 'body' | 'headers' | 'path' | 'query'> = typeof pageParam === 'object' ? pageParam : {
+            query: {
+                offset: pageParam
+            }
+        };
+        const params = createInfiniteParams(queryKey, page);
+        const { data } = await listSystemAnalysisRelationships({
+            ...options,
+            ...params,
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: listSystemAnalysisRelationshipsInfiniteQueryKey(options)
+});
 
 /**
  * Create a Relationship in a System Analysis
@@ -3197,20 +3015,18 @@ export const getSystemAnalysisComponentQueryKey = (options: Options<GetSystemAna
 /**
  * Get a component in a System analysis
  */
-export const getSystemAnalysisComponentOptions = (options: Options<GetSystemAnalysisComponentData>) => {
-    return queryOptions({
-        queryFn: async ({ queryKey, signal }) => {
-            const { data } = await getSystemAnalysisComponent({
-                ...options,
-                ...queryKey[0],
-                signal,
-                throwOnError: true
-            });
-            return data;
-        },
-        queryKey: getSystemAnalysisComponentQueryKey(options)
-    });
-};
+export const getSystemAnalysisComponentOptions = (options: Options<GetSystemAnalysisComponentData>) => queryOptions<GetSystemAnalysisComponentResponse, GetSystemAnalysisComponentError, GetSystemAnalysisComponentResponse, ReturnType<typeof getSystemAnalysisComponentQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await getSystemAnalysisComponent({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: getSystemAnalysisComponentQueryKey(options)
+});
 
 /**
  * Update a System Analysis Component
@@ -3251,20 +3067,18 @@ export const getSystemAnalysisRelationshipQueryKey = (options: Options<GetSystem
 /**
  * Get a relationship in a System analysis
  */
-export const getSystemAnalysisRelationshipOptions = (options: Options<GetSystemAnalysisRelationshipData>) => {
-    return queryOptions({
-        queryFn: async ({ queryKey, signal }) => {
-            const { data } = await getSystemAnalysisRelationship({
-                ...options,
-                ...queryKey[0],
-                signal,
-                throwOnError: true
-            });
-            return data;
-        },
-        queryKey: getSystemAnalysisRelationshipQueryKey(options)
-    });
-};
+export const getSystemAnalysisRelationshipOptions = (options: Options<GetSystemAnalysisRelationshipData>) => queryOptions<GetSystemAnalysisRelationshipResponse, GetSystemAnalysisRelationshipError, GetSystemAnalysisRelationshipResponse, ReturnType<typeof getSystemAnalysisRelationshipQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await getSystemAnalysisRelationship({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: getSystemAnalysisRelationshipQueryKey(options)
+});
 
 /**
  * Update a System Analysis Relationship
@@ -3305,20 +3119,18 @@ export const getSystemComponentConstraintQueryKey = (options: Options<GetSystemC
 /**
  * Get a System Component
  */
-export const getSystemComponentConstraintOptions = (options: Options<GetSystemComponentConstraintData>) => {
-    return queryOptions({
-        queryFn: async ({ queryKey, signal }) => {
-            const { data } = await getSystemComponentConstraint({
-                ...options,
-                ...queryKey[0],
-                signal,
-                throwOnError: true
-            });
-            return data;
-        },
-        queryKey: getSystemComponentConstraintQueryKey(options)
-    });
-};
+export const getSystemComponentConstraintOptions = (options: Options<GetSystemComponentConstraintData>) => queryOptions<GetSystemComponentConstraintResponse, GetSystemComponentConstraintError, GetSystemComponentConstraintResponse, ReturnType<typeof getSystemComponentConstraintQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await getSystemComponentConstraint({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: getSystemComponentConstraintQueryKey(options)
+});
 
 /**
  * Update a System Component Constraint
@@ -3359,20 +3171,18 @@ export const getSystemComponentControlQueryKey = (options: Options<GetSystemComp
 /**
  * Get a System Component Control
  */
-export const getSystemComponentControlOptions = (options: Options<GetSystemComponentControlData>) => {
-    return queryOptions({
-        queryFn: async ({ queryKey, signal }) => {
-            const { data } = await getSystemComponentControl({
-                ...options,
-                ...queryKey[0],
-                signal,
-                throwOnError: true
-            });
-            return data;
-        },
-        queryKey: getSystemComponentControlQueryKey(options)
-    });
-};
+export const getSystemComponentControlOptions = (options: Options<GetSystemComponentControlData>) => queryOptions<GetSystemComponentControlResponse, GetSystemComponentControlError, GetSystemComponentControlResponse, ReturnType<typeof getSystemComponentControlQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await getSystemComponentControl({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: getSystemComponentControlQueryKey(options)
+});
 
 /**
  * Update a System Component Control
@@ -3396,49 +3206,45 @@ export const listSystemComponentKindsQueryKey = (options?: Options<ListSystemCom
 /**
  * List System Component Kinds
  */
-export const listSystemComponentKindsOptions = (options?: Options<ListSystemComponentKindsData>) => {
-    return queryOptions({
-        queryFn: async ({ queryKey, signal }) => {
-            const { data } = await listSystemComponentKinds({
-                ...options,
-                ...queryKey[0],
-                signal,
-                throwOnError: true
-            });
-            return data;
-        },
-        queryKey: listSystemComponentKindsQueryKey(options)
-    });
-};
+export const listSystemComponentKindsOptions = (options?: Options<ListSystemComponentKindsData>) => queryOptions<ListSystemComponentKindsResponse, ListSystemComponentKindsError, ListSystemComponentKindsResponse, ReturnType<typeof listSystemComponentKindsQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await listSystemComponentKinds({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: listSystemComponentKindsQueryKey(options)
+});
 
 export const listSystemComponentKindsInfiniteQueryKey = (options?: Options<ListSystemComponentKindsData>): QueryKey<Options<ListSystemComponentKindsData>> => createQueryKey('listSystemComponentKinds', options, true);
 
 /**
  * List System Component Kinds
  */
-export const listSystemComponentKindsInfiniteOptions = (options?: Options<ListSystemComponentKindsData>) => {
-    return infiniteQueryOptions<ListSystemComponentKindsResponse, ListSystemComponentKindsError, InfiniteData<ListSystemComponentKindsResponse>, QueryKey<Options<ListSystemComponentKindsData>>, number | Pick<QueryKey<Options<ListSystemComponentKindsData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
-    // @ts-ignore
-    {
-        queryFn: async ({ pageParam, queryKey, signal }) => {
-            // @ts-ignore
-            const page: Pick<QueryKey<Options<ListSystemComponentKindsData>>[0], 'body' | 'headers' | 'path' | 'query'> = typeof pageParam === 'object' ? pageParam : {
-                query: {
-                    offset: pageParam
-                }
-            };
-            const params = createInfiniteParams(queryKey, page);
-            const { data } = await listSystemComponentKinds({
-                ...options,
-                ...params,
-                signal,
-                throwOnError: true
-            });
-            return data;
-        },
-        queryKey: listSystemComponentKindsInfiniteQueryKey(options)
-    });
-};
+export const listSystemComponentKindsInfiniteOptions = (options?: Options<ListSystemComponentKindsData>) => infiniteQueryOptions<ListSystemComponentKindsResponse, ListSystemComponentKindsError, InfiniteData<ListSystemComponentKindsResponse>, QueryKey<Options<ListSystemComponentKindsData>>, number | Pick<QueryKey<Options<ListSystemComponentKindsData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
+// @ts-ignore
+{
+    queryFn: async ({ pageParam, queryKey, signal }) => {
+        // @ts-ignore
+        const page: Pick<QueryKey<Options<ListSystemComponentKindsData>>[0], 'body' | 'headers' | 'path' | 'query'> = typeof pageParam === 'object' ? pageParam : {
+            query: {
+                offset: pageParam
+            }
+        };
+        const params = createInfiniteParams(queryKey, page);
+        const { data } = await listSystemComponentKinds({
+            ...options,
+            ...params,
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: listSystemComponentKindsInfiniteQueryKey(options)
+});
 
 /**
  * Create a System Component Kind
@@ -3479,20 +3285,18 @@ export const getSystemComponentKindQueryKey = (options: Options<GetSystemCompone
 /**
  * Get a System Component Kind
  */
-export const getSystemComponentKindOptions = (options: Options<GetSystemComponentKindData>) => {
-    return queryOptions({
-        queryFn: async ({ queryKey, signal }) => {
-            const { data } = await getSystemComponentKind({
-                ...options,
-                ...queryKey[0],
-                signal,
-                throwOnError: true
-            });
-            return data;
-        },
-        queryKey: getSystemComponentKindQueryKey(options)
-    });
-};
+export const getSystemComponentKindOptions = (options: Options<GetSystemComponentKindData>) => queryOptions<GetSystemComponentKindResponse, GetSystemComponentKindError, GetSystemComponentKindResponse, ReturnType<typeof getSystemComponentKindQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await getSystemComponentKind({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: getSystemComponentKindQueryKey(options)
+});
 
 /**
  * Update a System Component Kind
@@ -3516,49 +3320,45 @@ export const listSystemComponentRelationshipsQueryKey = (options?: Options<ListS
 /**
  * List System Component Relationships
  */
-export const listSystemComponentRelationshipsOptions = (options?: Options<ListSystemComponentRelationshipsData>) => {
-    return queryOptions({
-        queryFn: async ({ queryKey, signal }) => {
-            const { data } = await listSystemComponentRelationships({
-                ...options,
-                ...queryKey[0],
-                signal,
-                throwOnError: true
-            });
-            return data;
-        },
-        queryKey: listSystemComponentRelationshipsQueryKey(options)
-    });
-};
+export const listSystemComponentRelationshipsOptions = (options?: Options<ListSystemComponentRelationshipsData>) => queryOptions<ListSystemComponentRelationshipsResponse, ListSystemComponentRelationshipsError, ListSystemComponentRelationshipsResponse, ReturnType<typeof listSystemComponentRelationshipsQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await listSystemComponentRelationships({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: listSystemComponentRelationshipsQueryKey(options)
+});
 
 export const listSystemComponentRelationshipsInfiniteQueryKey = (options?: Options<ListSystemComponentRelationshipsData>): QueryKey<Options<ListSystemComponentRelationshipsData>> => createQueryKey('listSystemComponentRelationships', options, true);
 
 /**
  * List System Component Relationships
  */
-export const listSystemComponentRelationshipsInfiniteOptions = (options?: Options<ListSystemComponentRelationshipsData>) => {
-    return infiniteQueryOptions<ListSystemComponentRelationshipsResponse, ListSystemComponentRelationshipsError, InfiniteData<ListSystemComponentRelationshipsResponse>, QueryKey<Options<ListSystemComponentRelationshipsData>>, number | Pick<QueryKey<Options<ListSystemComponentRelationshipsData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
-    // @ts-ignore
-    {
-        queryFn: async ({ pageParam, queryKey, signal }) => {
-            // @ts-ignore
-            const page: Pick<QueryKey<Options<ListSystemComponentRelationshipsData>>[0], 'body' | 'headers' | 'path' | 'query'> = typeof pageParam === 'object' ? pageParam : {
-                query: {
-                    offset: pageParam
-                }
-            };
-            const params = createInfiniteParams(queryKey, page);
-            const { data } = await listSystemComponentRelationships({
-                ...options,
-                ...params,
-                signal,
-                throwOnError: true
-            });
-            return data;
-        },
-        queryKey: listSystemComponentRelationshipsInfiniteQueryKey(options)
-    });
-};
+export const listSystemComponentRelationshipsInfiniteOptions = (options?: Options<ListSystemComponentRelationshipsData>) => infiniteQueryOptions<ListSystemComponentRelationshipsResponse, ListSystemComponentRelationshipsError, InfiniteData<ListSystemComponentRelationshipsResponse>, QueryKey<Options<ListSystemComponentRelationshipsData>>, number | Pick<QueryKey<Options<ListSystemComponentRelationshipsData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
+// @ts-ignore
+{
+    queryFn: async ({ pageParam, queryKey, signal }) => {
+        // @ts-ignore
+        const page: Pick<QueryKey<Options<ListSystemComponentRelationshipsData>>[0], 'body' | 'headers' | 'path' | 'query'> = typeof pageParam === 'object' ? pageParam : {
+            query: {
+                offset: pageParam
+            }
+        };
+        const params = createInfiniteParams(queryKey, page);
+        const { data } = await listSystemComponentRelationships({
+            ...options,
+            ...params,
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: listSystemComponentRelationshipsInfiniteQueryKey(options)
+});
 
 /**
  * Create a System Component Relationship
@@ -3599,20 +3399,18 @@ export const getSystemComponentRelationshipQueryKey = (options: Options<GetSyste
 /**
  * Get a System Component Relationship
  */
-export const getSystemComponentRelationshipOptions = (options: Options<GetSystemComponentRelationshipData>) => {
-    return queryOptions({
-        queryFn: async ({ queryKey, signal }) => {
-            const { data } = await getSystemComponentRelationship({
-                ...options,
-                ...queryKey[0],
-                signal,
-                throwOnError: true
-            });
-            return data;
-        },
-        queryKey: getSystemComponentRelationshipQueryKey(options)
-    });
-};
+export const getSystemComponentRelationshipOptions = (options: Options<GetSystemComponentRelationshipData>) => queryOptions<GetSystemComponentRelationshipResponse, GetSystemComponentRelationshipError, GetSystemComponentRelationshipResponse, ReturnType<typeof getSystemComponentRelationshipQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await getSystemComponentRelationship({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: getSystemComponentRelationshipQueryKey(options)
+});
 
 /**
  * Update a System Component Relationship
@@ -3653,20 +3451,18 @@ export const getSystemComponentSignalQueryKey = (options: Options<GetSystemCompo
 /**
  * Get a System Component Signal
  */
-export const getSystemComponentSignalOptions = (options: Options<GetSystemComponentSignalData>) => {
-    return queryOptions({
-        queryFn: async ({ queryKey, signal }) => {
-            const { data } = await getSystemComponentSignal({
-                ...options,
-                ...queryKey[0],
-                signal,
-                throwOnError: true
-            });
-            return data;
-        },
-        queryKey: getSystemComponentSignalQueryKey(options)
-    });
-};
+export const getSystemComponentSignalOptions = (options: Options<GetSystemComponentSignalData>) => queryOptions<GetSystemComponentSignalResponse, GetSystemComponentSignalError, GetSystemComponentSignalResponse, ReturnType<typeof getSystemComponentSignalQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await getSystemComponentSignal({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: getSystemComponentSignalQueryKey(options)
+});
 
 /**
  * Update a System Component Signal
@@ -3690,49 +3486,45 @@ export const listSystemComponentsQueryKey = (options?: Options<ListSystemCompone
 /**
  * List System Components
  */
-export const listSystemComponentsOptions = (options?: Options<ListSystemComponentsData>) => {
-    return queryOptions({
-        queryFn: async ({ queryKey, signal }) => {
-            const { data } = await listSystemComponents({
-                ...options,
-                ...queryKey[0],
-                signal,
-                throwOnError: true
-            });
-            return data;
-        },
-        queryKey: listSystemComponentsQueryKey(options)
-    });
-};
+export const listSystemComponentsOptions = (options?: Options<ListSystemComponentsData>) => queryOptions<ListSystemComponentsResponse, ListSystemComponentsError, ListSystemComponentsResponse, ReturnType<typeof listSystemComponentsQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await listSystemComponents({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: listSystemComponentsQueryKey(options)
+});
 
 export const listSystemComponentsInfiniteQueryKey = (options?: Options<ListSystemComponentsData>): QueryKey<Options<ListSystemComponentsData>> => createQueryKey('listSystemComponents', options, true);
 
 /**
  * List System Components
  */
-export const listSystemComponentsInfiniteOptions = (options?: Options<ListSystemComponentsData>) => {
-    return infiniteQueryOptions<ListSystemComponentsResponse, ListSystemComponentsError, InfiniteData<ListSystemComponentsResponse>, QueryKey<Options<ListSystemComponentsData>>, number | Pick<QueryKey<Options<ListSystemComponentsData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
-    // @ts-ignore
-    {
-        queryFn: async ({ pageParam, queryKey, signal }) => {
-            // @ts-ignore
-            const page: Pick<QueryKey<Options<ListSystemComponentsData>>[0], 'body' | 'headers' | 'path' | 'query'> = typeof pageParam === 'object' ? pageParam : {
-                query: {
-                    offset: pageParam
-                }
-            };
-            const params = createInfiniteParams(queryKey, page);
-            const { data } = await listSystemComponents({
-                ...options,
-                ...params,
-                signal,
-                throwOnError: true
-            });
-            return data;
-        },
-        queryKey: listSystemComponentsInfiniteQueryKey(options)
-    });
-};
+export const listSystemComponentsInfiniteOptions = (options?: Options<ListSystemComponentsData>) => infiniteQueryOptions<ListSystemComponentsResponse, ListSystemComponentsError, InfiniteData<ListSystemComponentsResponse>, QueryKey<Options<ListSystemComponentsData>>, number | Pick<QueryKey<Options<ListSystemComponentsData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
+// @ts-ignore
+{
+    queryFn: async ({ pageParam, queryKey, signal }) => {
+        // @ts-ignore
+        const page: Pick<QueryKey<Options<ListSystemComponentsData>>[0], 'body' | 'headers' | 'path' | 'query'> = typeof pageParam === 'object' ? pageParam : {
+            query: {
+                offset: pageParam
+            }
+        };
+        const params = createInfiniteParams(queryKey, page);
+        const { data } = await listSystemComponents({
+            ...options,
+            ...params,
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: listSystemComponentsInfiniteQueryKey(options)
+});
 
 /**
  * Create a System Component
@@ -3773,20 +3565,18 @@ export const getSystemComponentQueryKey = (options: Options<GetSystemComponentDa
 /**
  * Get a System Component
  */
-export const getSystemComponentOptions = (options: Options<GetSystemComponentData>) => {
-    return queryOptions({
-        queryFn: async ({ queryKey, signal }) => {
-            const { data } = await getSystemComponent({
-                ...options,
-                ...queryKey[0],
-                signal,
-                throwOnError: true
-            });
-            return data;
-        },
-        queryKey: getSystemComponentQueryKey(options)
-    });
-};
+export const getSystemComponentOptions = (options: Options<GetSystemComponentData>) => queryOptions<GetSystemComponentResponse, GetSystemComponentError, GetSystemComponentResponse, ReturnType<typeof getSystemComponentQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await getSystemComponent({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: getSystemComponentQueryKey(options)
+});
 
 /**
  * Update a System Component
@@ -3861,49 +3651,45 @@ export const listTasksQueryKey = (options?: Options<ListTasksData>) => createQue
 /**
  * List Tasks
  */
-export const listTasksOptions = (options?: Options<ListTasksData>) => {
-    return queryOptions({
-        queryFn: async ({ queryKey, signal }) => {
-            const { data } = await listTasks({
-                ...options,
-                ...queryKey[0],
-                signal,
-                throwOnError: true
-            });
-            return data;
-        },
-        queryKey: listTasksQueryKey(options)
-    });
-};
+export const listTasksOptions = (options?: Options<ListTasksData>) => queryOptions<ListTasksResponse, ListTasksError, ListTasksResponse, ReturnType<typeof listTasksQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await listTasks({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: listTasksQueryKey(options)
+});
 
 export const listTasksInfiniteQueryKey = (options?: Options<ListTasksData>): QueryKey<Options<ListTasksData>> => createQueryKey('listTasks', options, true);
 
 /**
  * List Tasks
  */
-export const listTasksInfiniteOptions = (options?: Options<ListTasksData>) => {
-    return infiniteQueryOptions<ListTasksResponse, ListTasksError, InfiniteData<ListTasksResponse>, QueryKey<Options<ListTasksData>>, number | Pick<QueryKey<Options<ListTasksData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
-    // @ts-ignore
-    {
-        queryFn: async ({ pageParam, queryKey, signal }) => {
-            // @ts-ignore
-            const page: Pick<QueryKey<Options<ListTasksData>>[0], 'body' | 'headers' | 'path' | 'query'> = typeof pageParam === 'object' ? pageParam : {
-                query: {
-                    offset: pageParam
-                }
-            };
-            const params = createInfiniteParams(queryKey, page);
-            const { data } = await listTasks({
-                ...options,
-                ...params,
-                signal,
-                throwOnError: true
-            });
-            return data;
-        },
-        queryKey: listTasksInfiniteQueryKey(options)
-    });
-};
+export const listTasksInfiniteOptions = (options?: Options<ListTasksData>) => infiniteQueryOptions<ListTasksResponse, ListTasksError, InfiniteData<ListTasksResponse>, QueryKey<Options<ListTasksData>>, number | Pick<QueryKey<Options<ListTasksData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
+// @ts-ignore
+{
+    queryFn: async ({ pageParam, queryKey, signal }) => {
+        // @ts-ignore
+        const page: Pick<QueryKey<Options<ListTasksData>>[0], 'body' | 'headers' | 'path' | 'query'> = typeof pageParam === 'object' ? pageParam : {
+            query: {
+                offset: pageParam
+            }
+        };
+        const params = createInfiniteParams(queryKey, page);
+        const { data } = await listTasks({
+            ...options,
+            ...params,
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: listTasksInfiniteQueryKey(options)
+});
 
 /**
  * Create a Task
@@ -3944,20 +3730,18 @@ export const getTaskQueryKey = (options: Options<GetTaskData>) => createQueryKey
 /**
  * Get Task
  */
-export const getTaskOptions = (options: Options<GetTaskData>) => {
-    return queryOptions({
-        queryFn: async ({ queryKey, signal }) => {
-            const { data } = await getTask({
-                ...options,
-                ...queryKey[0],
-                signal,
-                throwOnError: true
-            });
-            return data;
-        },
-        queryKey: getTaskQueryKey(options)
-    });
-};
+export const getTaskOptions = (options: Options<GetTaskData>) => queryOptions<GetTaskResponse, GetTaskError, GetTaskResponse, ReturnType<typeof getTaskQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await getTask({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: getTaskQueryKey(options)
+});
 
 /**
  * Update a Task
@@ -3981,49 +3765,45 @@ export const listTeamsQueryKey = (options?: Options<ListTeamsData>) => createQue
 /**
  * List Teams
  */
-export const listTeamsOptions = (options?: Options<ListTeamsData>) => {
-    return queryOptions({
-        queryFn: async ({ queryKey, signal }) => {
-            const { data } = await listTeams({
-                ...options,
-                ...queryKey[0],
-                signal,
-                throwOnError: true
-            });
-            return data;
-        },
-        queryKey: listTeamsQueryKey(options)
-    });
-};
+export const listTeamsOptions = (options?: Options<ListTeamsData>) => queryOptions<ListTeamsResponse, ListTeamsError, ListTeamsResponse, ReturnType<typeof listTeamsQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await listTeams({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: listTeamsQueryKey(options)
+});
 
 export const listTeamsInfiniteQueryKey = (options?: Options<ListTeamsData>): QueryKey<Options<ListTeamsData>> => createQueryKey('listTeams', options, true);
 
 /**
  * List Teams
  */
-export const listTeamsInfiniteOptions = (options?: Options<ListTeamsData>) => {
-    return infiniteQueryOptions<ListTeamsResponse, ListTeamsError, InfiniteData<ListTeamsResponse>, QueryKey<Options<ListTeamsData>>, number | Pick<QueryKey<Options<ListTeamsData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
-    // @ts-ignore
-    {
-        queryFn: async ({ pageParam, queryKey, signal }) => {
-            // @ts-ignore
-            const page: Pick<QueryKey<Options<ListTeamsData>>[0], 'body' | 'headers' | 'path' | 'query'> = typeof pageParam === 'object' ? pageParam : {
-                query: {
-                    offset: pageParam
-                }
-            };
-            const params = createInfiniteParams(queryKey, page);
-            const { data } = await listTeams({
-                ...options,
-                ...params,
-                signal,
-                throwOnError: true
-            });
-            return data;
-        },
-        queryKey: listTeamsInfiniteQueryKey(options)
-    });
-};
+export const listTeamsInfiniteOptions = (options?: Options<ListTeamsData>) => infiniteQueryOptions<ListTeamsResponse, ListTeamsError, InfiniteData<ListTeamsResponse>, QueryKey<Options<ListTeamsData>>, number | Pick<QueryKey<Options<ListTeamsData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
+// @ts-ignore
+{
+    queryFn: async ({ pageParam, queryKey, signal }) => {
+        // @ts-ignore
+        const page: Pick<QueryKey<Options<ListTeamsData>>[0], 'body' | 'headers' | 'path' | 'query'> = typeof pageParam === 'object' ? pageParam : {
+            query: {
+                offset: pageParam
+            }
+        };
+        const params = createInfiniteParams(queryKey, page);
+        const { data } = await listTeams({
+            ...options,
+            ...params,
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: listTeamsInfiniteQueryKey(options)
+});
 
 /**
  * Create a Team
@@ -4064,20 +3844,18 @@ export const getTeamQueryKey = (options: Options<GetTeamData>) => createQueryKey
 /**
  * Get a Team
  */
-export const getTeamOptions = (options: Options<GetTeamData>) => {
-    return queryOptions({
-        queryFn: async ({ queryKey, signal }) => {
-            const { data } = await getTeam({
-                ...options,
-                ...queryKey[0],
-                signal,
-                throwOnError: true
-            });
-            return data;
-        },
-        queryKey: getTeamQueryKey(options)
-    });
-};
+export const getTeamOptions = (options: Options<GetTeamData>) => queryOptions<GetTeamResponse, GetTeamError, GetTeamResponse, ReturnType<typeof getTeamQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await getTeam({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: getTeamQueryKey(options)
+});
 
 /**
  * Update a Team
@@ -4118,66 +3896,60 @@ export const listUsersQueryKey = (options?: Options<ListUsersData>) => createQue
 /**
  * List Users
  */
-export const listUsersOptions = (options?: Options<ListUsersData>) => {
-    return queryOptions({
-        queryFn: async ({ queryKey, signal }) => {
-            const { data } = await listUsers({
-                ...options,
-                ...queryKey[0],
-                signal,
-                throwOnError: true
-            });
-            return data;
-        },
-        queryKey: listUsersQueryKey(options)
-    });
-};
+export const listUsersOptions = (options?: Options<ListUsersData>) => queryOptions<ListUsersResponse, ListUsersError, ListUsersResponse, ReturnType<typeof listUsersQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await listUsers({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: listUsersQueryKey(options)
+});
 
 export const listUsersInfiniteQueryKey = (options?: Options<ListUsersData>): QueryKey<Options<ListUsersData>> => createQueryKey('listUsers', options, true);
 
 /**
  * List Users
  */
-export const listUsersInfiniteOptions = (options?: Options<ListUsersData>) => {
-    return infiniteQueryOptions<ListUsersResponse, ListUsersError, InfiniteData<ListUsersResponse>, QueryKey<Options<ListUsersData>>, number | Pick<QueryKey<Options<ListUsersData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
-    // @ts-ignore
-    {
-        queryFn: async ({ pageParam, queryKey, signal }) => {
-            // @ts-ignore
-            const page: Pick<QueryKey<Options<ListUsersData>>[0], 'body' | 'headers' | 'path' | 'query'> = typeof pageParam === 'object' ? pageParam : {
-                query: {
-                    offset: pageParam
-                }
-            };
-            const params = createInfiniteParams(queryKey, page);
-            const { data } = await listUsers({
-                ...options,
-                ...params,
-                signal,
-                throwOnError: true
-            });
-            return data;
-        },
-        queryKey: listUsersInfiniteQueryKey(options)
-    });
-};
+export const listUsersInfiniteOptions = (options?: Options<ListUsersData>) => infiniteQueryOptions<ListUsersResponse, ListUsersError, InfiniteData<ListUsersResponse>, QueryKey<Options<ListUsersData>>, number | Pick<QueryKey<Options<ListUsersData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
+// @ts-ignore
+{
+    queryFn: async ({ pageParam, queryKey, signal }) => {
+        // @ts-ignore
+        const page: Pick<QueryKey<Options<ListUsersData>>[0], 'body' | 'headers' | 'path' | 'query'> = typeof pageParam === 'object' ? pageParam : {
+            query: {
+                offset: pageParam
+            }
+        };
+        const params = createInfiniteParams(queryKey, page);
+        const { data } = await listUsers({
+            ...options,
+            ...params,
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: listUsersInfiniteQueryKey(options)
+});
 
 export const getUserQueryKey = (options: Options<GetUserData>) => createQueryKey('getUser', options);
 
 /**
  * Get a User
  */
-export const getUserOptions = (options: Options<GetUserData>) => {
-    return queryOptions({
-        queryFn: async ({ queryKey, signal }) => {
-            const { data } = await getUser({
-                ...options,
-                ...queryKey[0],
-                signal,
-                throwOnError: true
-            });
-            return data;
-        },
-        queryKey: getUserQueryKey(options)
-    });
-};
+export const getUserOptions = (options: Options<GetUserData>) => queryOptions<GetUserResponse, GetUserError, GetUserResponse, ReturnType<typeof getUserQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await getUser({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: getUserQueryKey(options)
+});

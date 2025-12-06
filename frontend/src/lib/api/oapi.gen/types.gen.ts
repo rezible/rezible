@@ -8368,7 +8368,7 @@ export type ListRetrospectiveCommentsResponses = {
 
 export type ListRetrospectiveCommentsResponse = ListRetrospectiveCommentsResponses[keyof ListRetrospectiveCommentsResponses];
 
-export type CreateRetrospectiveDiscussionData = {
+export type CreateRetrospectiveCommentData = {
     body: CreateRetrospectiveCommentRequestBody;
     path: {
         id: string;
@@ -8377,7 +8377,7 @@ export type CreateRetrospectiveDiscussionData = {
     url: '/retrospectives/{id}/comments';
 };
 
-export type CreateRetrospectiveDiscussionErrors = {
+export type CreateRetrospectiveCommentErrors = {
     /**
      * Bad Request
      */
@@ -8404,16 +8404,16 @@ export type CreateRetrospectiveDiscussionErrors = {
     500: ErrorModel;
 };
 
-export type CreateRetrospectiveDiscussionError = CreateRetrospectiveDiscussionErrors[keyof CreateRetrospectiveDiscussionErrors];
+export type CreateRetrospectiveCommentError = CreateRetrospectiveCommentErrors[keyof CreateRetrospectiveCommentErrors];
 
-export type CreateRetrospectiveDiscussionResponses = {
+export type CreateRetrospectiveCommentResponses = {
     /**
      * OK
      */
     200: CreateRetrospectiveCommentResponseBody;
 };
 
-export type CreateRetrospectiveDiscussionResponse = CreateRetrospectiveDiscussionResponses[keyof CreateRetrospectiveDiscussionResponses];
+export type CreateRetrospectiveCommentResponse = CreateRetrospectiveCommentResponses[keyof CreateRetrospectiveCommentResponses];
 
 export type ListRetrospectiveReviewsData = {
     body?: never;

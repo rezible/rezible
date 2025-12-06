@@ -1,16 +1,12 @@
 import type {
 	Extension,
 	onAuthenticatePayload,
-	onConnectPayload,
 	onChangePayload,
 	onLoadDocumentPayload,
-	onDisconnectPayload,
 } from "@hocuspocus/server";
 import { Forbidden } from "@hocuspocus/common";
-import type { Doc } from "yjs";
 import * as Y from "yjs";
 import { createHmac } from "crypto";
-import { documentTransformer } from "./transformer";
 
 type SessionUser = {
 	id: string;
@@ -20,11 +16,6 @@ type SessionUser = {
 export type AuthContext = {
 	user: SessionUser;
 	token: string;
-}
-
-type VerifyAuthSessionResponseData = {
-	user: SessionUser;
-	readOnly: boolean;
 }
 
 export class RezibleServerProxy implements Extension {
@@ -64,12 +55,12 @@ export class RezibleServerProxy implements Extension {
         if (!res.ok || res.status != 200) throw new Error("Authentication Failed");
 
         const { readOnly, user } = await res.json();
-		data.connection.readOnly = !!readOnly;
+		data.connectionConfig.readOnly = !!readOnly;
 		return { user, token: data.token } as AuthContext;
 	}
 
     async onLoadDocument(data: onLoadDocumentPayload): Promise<any> {
-        if (!data.context.token) throw new Forbidden("no token");
+        if (!data.context.token) throw Forbidden;
 
         const documentId = data.documentName;
         const res = await this.apiRequest("load", data.context.token, { documentId });
@@ -82,7 +73,7 @@ export class RezibleServerProxy implements Extension {
 	}
 
 	async onStoreDocument(data: onChangePayload) {
-        if (!data.context.token) throw new Forbidden("no token");
+        if (!data.context.token) throw Forbidden;
 
         const documentId = data.documentName;
         const state = Buffer.from(Y.encodeStateAsUpdate(data.document));

@@ -1,5 +1,5 @@
 import type { Range } from '@tiptap/core';
-import type { Attrs, Mark, Node, NodeType, MarkType } from '@tiptap/pm/model';
+import type { Attrs, Mark, Node, MarkType } from '@tiptap/pm/model';
 
 type NodeMarkRange = {mark: Mark; range: Range;}
 export type MarkFilterFn = (t: MarkType, attrs: Attrs) => boolean;

@@ -1,15 +1,14 @@
 <script lang="ts">
 	import { onMount } from "svelte";
-	import TiptapEditor, { Editor as SvelteEditor } from "$components/tiptap-editor/TiptapEditor.svelte";
-	import { configureBaseExtensions } from "@rezible/documents/tiptap-extensions";
+	import TiptapEditor from "$components/tiptap-editor/TiptapEditor.svelte";
 	import { usePlaybookViewState } from "$features/playbook";
+	import { createPlaybookEditor } from "$components/tiptap-editor/editors";
 
 	const view = usePlaybookViewState();
 
 	const mountEditor = () => {
-		view.editor = new SvelteEditor({
+		view.editor = createPlaybookEditor({
 			content: view.playbookContent,
-			extensions: configureBaseExtensions(false),
 			editable: true,
 			autofocus: false,
 			editorProps: {

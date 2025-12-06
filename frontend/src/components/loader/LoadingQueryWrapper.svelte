@@ -7,7 +7,7 @@
 	import LoadingIndicator from "$components/loading-indicator/LoadingIndicator.svelte";
 
 	type Props = {
-		query: CreateQueryResult<{ data: QueryResultData }, Error>;
+		query: CreateQueryResult<{ data: QueryResultData }, ErrorModel>;
 		view: Snippet<[QueryResultData]>;
 		loading?: Snippet;
 		error?: Snippet<[ErrorModel]>;

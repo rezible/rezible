@@ -59,8 +59,8 @@ _default:
 @dev-frontend:
     cd frontend && PUBLIC_REZ_API_BASE_URL="/api/v1" bun run dev
 
-@dev-document-server:
-    cd documents && bun run dev
+@dev-documents-server:
+    cd documents-server && bun run dev
 
 # [group('Database')]
 @create-db: stop-db

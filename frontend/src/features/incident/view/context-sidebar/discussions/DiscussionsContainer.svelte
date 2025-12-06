@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { createQuery, useQueryClient } from "@tanstack/svelte-query";
-	import { listRetrospectiveDiscussionsOptions, type RetrospectiveDiscussion } from "$lib/api";
+	import { listRetrospectiveCommentsOptions, type RetrospectiveComment } from "$lib/api";
 	import LoadingQueryWrapper from "$components/loader/LoadingQueryWrapper.svelte";
 	import { draft } from "$features/incident/lib/discussions.svelte";
 	import DiscussionThread from "./DiscussionThread.svelte";
@@ -14,10 +14,10 @@
 
 	const queryClient = useQueryClient();
 
-	const queryOptions = $derived(listRetrospectiveDiscussionsOptions({ path: { id: retrospectiveId } }));
+	const queryOptions = $derived(listRetrospectiveCommentsOptions({ path: { id: retrospectiveId } }));
 	const query = createQuery(() => queryOptions);
 
-	const onDiscussionCreated = (d: RetrospectiveDiscussion) => {
+	const onDiscussionCreated = (d: RetrospectiveComment) => {
 		if (draft.editor) {
 			draft.editor.commands.convertDraftToAnnotation(d.id);
 			draft.clear(true);
@@ -48,7 +48,7 @@
 
 	<div class="overflow-y-auto flex flex-col gap-2">
 		<LoadingQueryWrapper {query}>
-			{#snippet view(discussions: RetrospectiveDiscussion[])}
+			{#snippet view(discussions: RetrospectiveComment[])}
 				{#each discussions as discussion (discussion.id)}
 					<DiscussionThread {discussion} />
 				{/each}

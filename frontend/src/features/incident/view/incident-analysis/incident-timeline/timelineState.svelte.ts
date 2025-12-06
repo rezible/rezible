@@ -1,6 +1,6 @@
-import { hydrate, mount, onMount, tick, unmount } from "svelte";
-import { Timeline, type DataGroup, type DataItemCollectionType, type TimelineItem, type TimelineOptions } from "vis-timeline/esnext";
-import { DataSet } from "vis-data/esnext";
+import { mount, onMount, tick, unmount } from "svelte";
+import { Timeline, type DataGroup, type DataItemCollectionType, type TimelineItem, type TimelineOptions } from "vis-timeline";
+import { DataSet } from "vis-data";
 
 import { createQuery, QueryClient, useQueryClient } from "@tanstack/svelte-query";
 import { Context, watch } from "runed";

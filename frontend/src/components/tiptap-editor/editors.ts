@@ -1,9 +1,6 @@
-import type { Content } from "@tiptap/core";
+import type { Content, EditorOptions } from "@tiptap/core";
 import { Editor as SvelteEditor } from "$components/tiptap-editor/TiptapEditor.svelte";
-import {
-	configureBaseExtensions,
-	configureUserMentionExtension,
-} from "@rezible/documents/tiptap-extensions";
+import { configureBaseExtensions, configureUserMentionExtension, getHandoverExtensions, getDiscussionExtensions, getPlaybookExtensions } from "@rezible/tiptap-extensions";
 import { RezUserSuggestion } from "$components/tiptap-editor/user-suggestions/user-suggestion.svelte";
 
 export const createMentionEditor = (content: Content, classes = "") => {
@@ -17,5 +14,41 @@ export const createMentionEditor = (content: Content, classes = "") => {
 				class: "focus:outline-none " + classes,
 			},
 		},
+	});
+};
+
+export const createHandoverEditor = (options: Partial<EditorOptions>) => {
+	return new SvelteEditor({
+		extensions: getHandoverExtensions(RezUserSuggestion),
+		editorProps: {
+			attributes: {
+				// class: "focus:outline-none " + classes,
+			},
+		},
+		...options,
+	});
+};
+
+export const createDiscussionEditor = (options: Partial<EditorOptions>) => {
+	return new SvelteEditor({
+		extensions: getDiscussionExtensions(RezUserSuggestion),
+		editorProps: {
+			attributes: {
+				// class: "focus:outline-none " + classes,
+			},
+		},
+		...options,
+	});
+};
+
+export const createPlaybookEditor = (options: Partial<EditorOptions>) => {
+	return new SvelteEditor({
+		extensions: getPlaybookExtensions(RezUserSuggestion),
+		editorProps: {
+			attributes: {
+				// class: "focus:outline-none " + classes,
+			},
+		},
+		...options,
 	});
 };

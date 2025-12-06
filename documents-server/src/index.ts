@@ -19,7 +19,7 @@ const loadConfig = (): Config => {
 	if (port < 1024) port = 8889;
 
 	const apiUrl = process.env.DOCUMENTS_API_URL ?? "http://localhost:8888/api/documents";
-	const apiSecret = process.env.DOCUMENTS_API_SECRET;
+	const apiSecret = process.env.DOCUMENTS_API_SECRET ?? "foo";
 
 	return { name, host, port, apiUrl, apiSecret };
 }
@@ -29,7 +29,7 @@ const createServer = async (cfg: Config) => {
 
     const rezProxy = new RezibleServerProxy(cfg.apiUrl, cfg.apiSecret);
 	
-	const server = Server.configure({
+	const server = new Server({
 		name: cfg.name,
 		address: cfg.host,
 		port: cfg.port,

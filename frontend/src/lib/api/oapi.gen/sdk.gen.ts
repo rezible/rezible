@@ -2,7 +2,7 @@
 
 import type { Client, Options as Options2, TDataShape } from './client';
 import { client } from './client.gen';
-import type { AddIncidentDebriefUserMessageData, AddIncidentDebriefUserMessageErrors, AddIncidentDebriefUserMessageResponses, AddSystemAnalysisComponentData, AddSystemAnalysisComponentErrors, AddSystemAnalysisComponentResponses, AddWatchedOncallRosterData, AddWatchedOncallRosterErrors, AddWatchedOncallRosterResponses, ArchiveDebriefQuestionData, ArchiveDebriefQuestionErrors, ArchiveDebriefQuestionResponses, ArchiveIncidentData, ArchiveIncidentErrors, ArchiveIncidentFieldData, ArchiveIncidentFieldErrors, ArchiveIncidentFieldResponses, ArchiveIncidentResponses, ArchiveIncidentRoleData, ArchiveIncidentRoleErrors, ArchiveIncidentRoleResponses, ArchiveIncidentSeverityData, ArchiveIncidentSeverityErrors, ArchiveIncidentSeverityResponses, ArchiveIncidentTagData, ArchiveIncidentTagErrors, ArchiveIncidentTagResponses, ArchiveIncidentTypeData, ArchiveIncidentTypeErrors, ArchiveIncidentTypeResponses, ArchiveMeetingScheduleData, ArchiveMeetingScheduleErrors, ArchiveMeetingScheduleResponses, ArchiveMeetingSessionData, ArchiveMeetingSessionErrors, ArchiveMeetingSessionResponses, ArchiveOncallHandoverTemplateData, ArchiveOncallHandoverTemplateErrors, ArchiveOncallHandoverTemplateResponses, ArchivePlaybookData, ArchivePlaybookErrors, ArchivePlaybookResponses, ArchiveRetrospectiveReviewData, ArchiveRetrospectiveReviewErrors, ArchiveRetrospectiveReviewResponses, ArchiveSystemComponentConstraintData, ArchiveSystemComponentConstraintErrors, ArchiveSystemComponentConstraintResponses, ArchiveSystemComponentControlData, ArchiveSystemComponentControlErrors, ArchiveSystemComponentControlResponses, ArchiveSystemComponentData, ArchiveSystemComponentErrors, ArchiveSystemComponentKindData, ArchiveSystemComponentKindErrors, ArchiveSystemComponentKindResponses, ArchiveSystemComponentRelationshipData, ArchiveSystemComponentRelationshipErrors, ArchiveSystemComponentRelationshipResponses, ArchiveSystemComponentResponses, ArchiveSystemComponentSignalData, ArchiveSystemComponentSignalErrors, ArchiveSystemComponentSignalResponses, ArchiveTaskData, ArchiveTaskErrors, ArchiveTaskResponses, ArchiveTeamData, ArchiveTeamErrors, ArchiveTeamResponses, CompleteIntegrationOauthData, CompleteIntegrationOauthErrors, CompleteIntegrationOauthResponses, CreateDebriefQuestionData, CreateDebriefQuestionErrors, CreateDebriefQuestionResponses, CreateEventAnnotationData, CreateEventAnnotationErrors, CreateEventAnnotationResponses, CreateIncidentData, CreateIncidentErrors, CreateIncidentEventData, CreateIncidentEventErrors, CreateIncidentEventResponses, CreateIncidentFieldData, CreateIncidentFieldErrors, CreateIncidentFieldResponses, CreateIncidentMilestoneData, CreateIncidentMilestoneErrors, CreateIncidentMilestoneResponses, CreateIncidentResponses, CreateIncidentRoleData, CreateIncidentRoleErrors, CreateIncidentRoleResponses, CreateIncidentSeverityData, CreateIncidentSeverityErrors, CreateIncidentSeverityResponses, CreateIncidentTagData, CreateIncidentTagErrors, CreateIncidentTagResponses, CreateIncidentTypeData, CreateIncidentTypeErrors, CreateIncidentTypeResponses, CreateIntegrationData, CreateIntegrationErrors, CreateIntegrationResponses, CreateMeetingScheduleData, CreateMeetingScheduleErrors, CreateMeetingScheduleResponses, CreateMeetingSessionData, CreateMeetingSessionErrors, CreateMeetingSessionResponses, CreateOncallHandoverTemplateData, CreateOncallHandoverTemplateErrors, CreateOncallHandoverTemplateResponses, CreatePlaybookData, CreatePlaybookErrors, CreatePlaybookResponses, CreateRetrospectiveData, CreateRetrospectiveDiscussionData, CreateRetrospectiveDiscussionErrors, CreateRetrospectiveDiscussionResponses, CreateRetrospectiveErrors, CreateRetrospectiveResponses, CreateRetrospectiveReviewData, CreateRetrospectiveReviewErrors, CreateRetrospectiveReviewResponses, CreateSystemAnalysisRelationshipData, CreateSystemAnalysisRelationshipErrors, CreateSystemAnalysisRelationshipResponses, CreateSystemComponentConstraintData, CreateSystemComponentConstraintErrors, CreateSystemComponentConstraintResponses, CreateSystemComponentControlData, CreateSystemComponentControlErrors, CreateSystemComponentControlResponses, CreateSystemComponentData, CreateSystemComponentErrors, CreateSystemComponentKindData, CreateSystemComponentKindErrors, CreateSystemComponentKindResponses, CreateSystemComponentRelationshipData, CreateSystemComponentRelationshipErrors, CreateSystemComponentRelationshipResponses, CreateSystemComponentResponses, CreateSystemComponentSignalData, CreateSystemComponentSignalErrors, CreateSystemComponentSignalResponses, CreateTaskData, CreateTaskErrors, CreateTaskResponses, CreateTeamData, CreateTeamErrors, CreateTeamResponses, DeleteEventAnnotationData, DeleteEventAnnotationErrors, DeleteEventAnnotationResponses, DeleteIncidentEventData, DeleteIncidentEventErrors, DeleteIncidentEventResponses, DeleteIncidentMilestoneData, DeleteIncidentMilestoneErrors, DeleteIncidentMilestoneResponses, DeleteIntegrationData, DeleteIntegrationErrors, DeleteIntegrationResponses, DeleteSystemAnalysisComponentData, DeleteSystemAnalysisComponentErrors, DeleteSystemAnalysisComponentResponses, DeleteSystemAnalysisRelationshipData, DeleteSystemAnalysisRelationshipErrors, DeleteSystemAnalysisRelationshipResponses, DeleteUserNotificationData, DeleteUserNotificationErrors, DeleteUserNotificationResponses, FinishOrganizationSetupData, FinishOrganizationSetupErrors, FinishOrganizationSetupResponses, GetAdjacentOncallShiftsData, GetAdjacentOncallShiftsErrors, GetAdjacentOncallShiftsResponses, GetAlertData, GetAlertErrors, GetAlertMetricsData, GetAlertMetricsErrors, GetAlertMetricsResponses, GetAlertResponses, GetAuthSessionConfigData, GetAuthSessionConfigErrors, GetAuthSessionConfigResponses, GetCurrentAuthSessionData, GetCurrentAuthSessionErrors, GetCurrentAuthSessionResponses, GetDebriefQuestionData, GetDebriefQuestionErrors, GetDebriefQuestionResponses, GetEventData, GetEventErrors, GetEventResponses, GetIncidentData, GetIncidentDebriefData, GetIncidentDebriefErrors, GetIncidentDebriefResponses, GetIncidentErrors, GetIncidentFieldData, GetIncidentFieldErrors, GetIncidentFieldResponses, GetIncidentResponses, GetIncidentRoleData, GetIncidentRoleErrors, GetIncidentRoleResponses, GetIncidentSeverityData, GetIncidentSeverityErrors, GetIncidentSeverityResponses, GetIncidentTagData, GetIncidentTagErrors, GetIncidentTagResponses, GetIncidentTypeData, GetIncidentTypeErrors, GetIncidentTypeResponses, GetIncidentUserDebriefData, GetIncidentUserDebriefErrors, GetIncidentUserDebriefResponses, GetIntegrationData, GetIntegrationErrors, GetIntegrationResponses, GetMeetingScheduleData, GetMeetingScheduleErrors, GetMeetingScheduleResponses, GetMeetingSessionData, GetMeetingSessionErrors, GetMeetingSessionResponses, GetOncallRosterData, GetOncallRosterErrors, GetOncallRosterMetricsData, GetOncallRosterMetricsErrors, GetOncallRosterMetricsResponses, GetOncallRosterResponses, GetOncallShiftBurdenMetricWeightsData, GetOncallShiftBurdenMetricWeightsErrors, GetOncallShiftBurdenMetricWeightsResponses, GetOncallShiftData, GetOncallShiftErrors, GetOncallShiftHandoverData, GetOncallShiftHandoverErrors, GetOncallShiftHandoverResponses, GetOncallShiftHandoverTemplateData, GetOncallShiftHandoverTemplateErrors, GetOncallShiftHandoverTemplateResponses, GetOncallShiftMetricsData, GetOncallShiftMetricsErrors, GetOncallShiftMetricsResponses, GetOncallShiftResponses, GetOrganizationData, GetOrganizationErrors, GetOrganizationResponses, GetPlaybookData, GetPlaybookErrors, GetPlaybookResponses, GetRetrospectiveCommentData, GetRetrospectiveCommentErrors, GetRetrospectiveCommentResponses, GetRetrospectiveData, GetRetrospectiveErrors, GetRetrospectiveForIncidentData, GetRetrospectiveForIncidentErrors, GetRetrospectiveForIncidentResponses, GetRetrospectiveResponses, GetSystemAnalysisComponentData, GetSystemAnalysisComponentErrors, GetSystemAnalysisComponentResponses, GetSystemAnalysisData, GetSystemAnalysisErrors, GetSystemAnalysisRelationshipData, GetSystemAnalysisRelationshipErrors, GetSystemAnalysisRelationshipResponses, GetSystemAnalysisResponses, GetSystemComponentConstraintData, GetSystemComponentConstraintErrors, GetSystemComponentConstraintResponses, GetSystemComponentControlData, GetSystemComponentControlErrors, GetSystemComponentControlResponses, GetSystemComponentData, GetSystemComponentErrors, GetSystemComponentKindData, GetSystemComponentKindErrors, GetSystemComponentKindResponses, GetSystemComponentRelationshipData, GetSystemComponentRelationshipErrors, GetSystemComponentRelationshipResponses, GetSystemComponentResponses, GetSystemComponentSignalData, GetSystemComponentSignalErrors, GetSystemComponentSignalResponses, GetTaskData, GetTaskErrors, GetTaskResponses, GetTeamData, GetTeamErrors, GetTeamResponses, GetUserData, GetUserErrors, GetUserOncallInformationData, GetUserOncallInformationErrors, GetUserOncallInformationResponses, GetUserResponses, ListAlertIncidentLinksData, ListAlertIncidentLinksErrors, ListAlertIncidentLinksResponses, ListAlertsData, ListAlertsErrors, ListAlertsResponses, ListDebriefMessagesData, ListDebriefMessagesErrors, ListDebriefMessagesResponses, ListDebriefQuestionsData, ListDebriefQuestionsErrors, ListDebriefQuestionsResponses, ListDebriefSuggestionsData, ListDebriefSuggestionsErrors, ListDebriefSuggestionsResponses, ListEventAnnotationsData, ListEventAnnotationsErrors, ListEventAnnotationsResponses, ListEventsData, ListEventsErrors, ListEventsResponses, ListIncidentEventContributingFactorCategoriesData, ListIncidentEventContributingFactorCategoriesErrors, ListIncidentEventContributingFactorCategoriesResponses, ListIncidentEventsData, ListIncidentEventsErrors, ListIncidentEventsResponses, ListIncidentFieldsData, ListIncidentFieldsErrors, ListIncidentFieldsResponses, ListIncidentMilestonesData, ListIncidentMilestonesErrors, ListIncidentMilestonesResponses, ListIncidentRolesData, ListIncidentRolesErrors, ListIncidentRolesResponses, ListIncidentsData, ListIncidentsErrors, ListIncidentSeveritiesData, ListIncidentSeveritiesErrors, ListIncidentSeveritiesResponses, ListIncidentsResponses, ListIncidentTagsData, ListIncidentTagsErrors, ListIncidentTagsResponses, ListIncidentTypesData, ListIncidentTypesErrors, ListIncidentTypesResponses, ListIntegrationsData, ListIntegrationsErrors, ListIntegrationsResponses, ListMeetingSchedulesData, ListMeetingSchedulesErrors, ListMeetingSchedulesResponses, ListMeetingSessionsData, ListMeetingSessionsErrors, ListMeetingSessionsResponses, ListOncallRostersData, ListOncallRostersErrors, ListOncallRostersResponses, ListOncallShiftsData, ListOncallShiftsErrors, ListOncallShiftsResponses, ListPlaybooksData, ListPlaybooksErrors, ListPlaybooksResponses, ListRetrospectiveCommentsData, ListRetrospectiveCommentsErrors, ListRetrospectiveCommentsResponses, ListRetrospectiveReviewsData, ListRetrospectiveReviewsErrors, ListRetrospectiveReviewsResponses, ListRetrospectivesData, ListRetrospectivesErrors, ListRetrospectivesResponses, ListSystemAnalysisComponentsData, ListSystemAnalysisComponentsErrors, ListSystemAnalysisComponentsResponses, ListSystemAnalysisRelationshipsData, ListSystemAnalysisRelationshipsErrors, ListSystemAnalysisRelationshipsResponses, ListSystemComponentKindsData, ListSystemComponentKindsErrors, ListSystemComponentKindsResponses, ListSystemComponentRelationshipsData, ListSystemComponentRelationshipsErrors, ListSystemComponentRelationshipsResponses, ListSystemComponentsData, ListSystemComponentsErrors, ListSystemComponentsResponses, ListTasksData, ListTasksErrors, ListTasksResponses, ListTeamsData, ListTeamsErrors, ListTeamsResponses, ListUserNotificationsData, ListUserNotificationsErrors, ListUserNotificationsResponses, ListUsersData, ListUsersErrors, ListUsersResponses, ListWatchedOncallRostersData, ListWatchedOncallRostersErrors, ListWatchedOncallRostersResponses, RemoveWatchedOncallRosterData, RemoveWatchedOncallRosterErrors, RemoveWatchedOncallRosterResponses, RequestDocumentEditorSessionData, RequestDocumentEditorSessionErrors, RequestDocumentEditorSessionResponses, SendOncallShiftHandoverData, SendOncallShiftHandoverErrors, SendOncallShiftHandoverResponses, StartIntegrationOauthData, StartIntegrationOauthErrors, StartIntegrationOauthResponses, UpdateDebriefQuestionData, UpdateDebriefQuestionErrors, UpdateDebriefQuestionResponses, UpdateEventAnnotationData, UpdateEventAnnotationErrors, UpdateEventAnnotationResponses, UpdateIncidentData, UpdateIncidentDebriefData, UpdateIncidentDebriefErrors, UpdateIncidentDebriefResponses, UpdateIncidentErrors, UpdateIncidentEventData, UpdateIncidentEventErrors, UpdateIncidentEventResponses, UpdateIncidentFieldData, UpdateIncidentFieldErrors, UpdateIncidentFieldResponses, UpdateIncidentMilestoneData, UpdateIncidentMilestoneErrors, UpdateIncidentMilestoneResponses, UpdateIncidentResponses, UpdateIncidentRoleData, UpdateIncidentRoleErrors, UpdateIncidentRoleResponses, UpdateIncidentSeverityData, UpdateIncidentSeverityErrors, UpdateIncidentSeverityResponses, UpdateIncidentTagData, UpdateIncidentTagErrors, UpdateIncidentTagResponses, UpdateIncidentTypeData, UpdateIncidentTypeErrors, UpdateIncidentTypeResponses, UpdateIntegrationData, UpdateIntegrationErrors, UpdateIntegrationResponses, UpdateMeetingScheduleData, UpdateMeetingScheduleErrors, UpdateMeetingScheduleResponses, UpdateMeetingSessionData, UpdateMeetingSessionErrors, UpdateMeetingSessionResponses, UpdateOncallHandoverTemplateData, UpdateOncallHandoverTemplateErrors, UpdateOncallHandoverTemplateResponses, UpdateOncallShiftHandoverData, UpdateOncallShiftHandoverErrors, UpdateOncallShiftHandoverResponses, UpdatePlaybookData, UpdatePlaybookErrors, UpdatePlaybookResponses, UpdateRetrospectiveCommentData, UpdateRetrospectiveCommentErrors, UpdateRetrospectiveCommentResponses, UpdateRetrospectiveReviewData, UpdateRetrospectiveReviewErrors, UpdateRetrospectiveReviewResponses, UpdateSystemAnalysisComponentData, UpdateSystemAnalysisComponentErrors, UpdateSystemAnalysisComponentResponses, UpdateSystemAnalysisRelationshipData, UpdateSystemAnalysisRelationshipErrors, UpdateSystemAnalysisRelationshipResponses, UpdateSystemComponentConstraintData, UpdateSystemComponentConstraintErrors, UpdateSystemComponentConstraintResponses, UpdateSystemComponentControlData, UpdateSystemComponentControlErrors, UpdateSystemComponentControlResponses, UpdateSystemComponentData, UpdateSystemComponentErrors, UpdateSystemComponentKindData, UpdateSystemComponentKindErrors, UpdateSystemComponentKindResponses, UpdateSystemComponentRelationshipData, UpdateSystemComponentRelationshipErrors, UpdateSystemComponentRelationshipResponses, UpdateSystemComponentResponses, UpdateSystemComponentSignalData, UpdateSystemComponentSignalErrors, UpdateSystemComponentSignalResponses, UpdateTaskData, UpdateTaskErrors, UpdateTaskResponses, UpdateTeamsData, UpdateTeamsErrors, UpdateTeamsResponses } from './types.gen';
+import type { AddIncidentDebriefUserMessageData, AddIncidentDebriefUserMessageErrors, AddIncidentDebriefUserMessageResponses, AddSystemAnalysisComponentData, AddSystemAnalysisComponentErrors, AddSystemAnalysisComponentResponses, AddWatchedOncallRosterData, AddWatchedOncallRosterErrors, AddWatchedOncallRosterResponses, ArchiveDebriefQuestionData, ArchiveDebriefQuestionErrors, ArchiveDebriefQuestionResponses, ArchiveIncidentData, ArchiveIncidentErrors, ArchiveIncidentFieldData, ArchiveIncidentFieldErrors, ArchiveIncidentFieldResponses, ArchiveIncidentResponses, ArchiveIncidentRoleData, ArchiveIncidentRoleErrors, ArchiveIncidentRoleResponses, ArchiveIncidentSeverityData, ArchiveIncidentSeverityErrors, ArchiveIncidentSeverityResponses, ArchiveIncidentTagData, ArchiveIncidentTagErrors, ArchiveIncidentTagResponses, ArchiveIncidentTypeData, ArchiveIncidentTypeErrors, ArchiveIncidentTypeResponses, ArchiveMeetingScheduleData, ArchiveMeetingScheduleErrors, ArchiveMeetingScheduleResponses, ArchiveMeetingSessionData, ArchiveMeetingSessionErrors, ArchiveMeetingSessionResponses, ArchiveOncallHandoverTemplateData, ArchiveOncallHandoverTemplateErrors, ArchiveOncallHandoverTemplateResponses, ArchivePlaybookData, ArchivePlaybookErrors, ArchivePlaybookResponses, ArchiveRetrospectiveReviewData, ArchiveRetrospectiveReviewErrors, ArchiveRetrospectiveReviewResponses, ArchiveSystemComponentConstraintData, ArchiveSystemComponentConstraintErrors, ArchiveSystemComponentConstraintResponses, ArchiveSystemComponentControlData, ArchiveSystemComponentControlErrors, ArchiveSystemComponentControlResponses, ArchiveSystemComponentData, ArchiveSystemComponentErrors, ArchiveSystemComponentKindData, ArchiveSystemComponentKindErrors, ArchiveSystemComponentKindResponses, ArchiveSystemComponentRelationshipData, ArchiveSystemComponentRelationshipErrors, ArchiveSystemComponentRelationshipResponses, ArchiveSystemComponentResponses, ArchiveSystemComponentSignalData, ArchiveSystemComponentSignalErrors, ArchiveSystemComponentSignalResponses, ArchiveTaskData, ArchiveTaskErrors, ArchiveTaskResponses, ArchiveTeamData, ArchiveTeamErrors, ArchiveTeamResponses, CompleteIntegrationOauthData, CompleteIntegrationOauthErrors, CompleteIntegrationOauthResponses, CreateDebriefQuestionData, CreateDebriefQuestionErrors, CreateDebriefQuestionResponses, CreateEventAnnotationData, CreateEventAnnotationErrors, CreateEventAnnotationResponses, CreateIncidentData, CreateIncidentErrors, CreateIncidentEventData, CreateIncidentEventErrors, CreateIncidentEventResponses, CreateIncidentFieldData, CreateIncidentFieldErrors, CreateIncidentFieldResponses, CreateIncidentMilestoneData, CreateIncidentMilestoneErrors, CreateIncidentMilestoneResponses, CreateIncidentResponses, CreateIncidentRoleData, CreateIncidentRoleErrors, CreateIncidentRoleResponses, CreateIncidentSeverityData, CreateIncidentSeverityErrors, CreateIncidentSeverityResponses, CreateIncidentTagData, CreateIncidentTagErrors, CreateIncidentTagResponses, CreateIncidentTypeData, CreateIncidentTypeErrors, CreateIncidentTypeResponses, CreateIntegrationData, CreateIntegrationErrors, CreateIntegrationResponses, CreateMeetingScheduleData, CreateMeetingScheduleErrors, CreateMeetingScheduleResponses, CreateMeetingSessionData, CreateMeetingSessionErrors, CreateMeetingSessionResponses, CreateOncallHandoverTemplateData, CreateOncallHandoverTemplateErrors, CreateOncallHandoverTemplateResponses, CreatePlaybookData, CreatePlaybookErrors, CreatePlaybookResponses, CreateRetrospectiveCommentData, CreateRetrospectiveCommentErrors, CreateRetrospectiveCommentResponses, CreateRetrospectiveData, CreateRetrospectiveErrors, CreateRetrospectiveResponses, CreateRetrospectiveReviewData, CreateRetrospectiveReviewErrors, CreateRetrospectiveReviewResponses, CreateSystemAnalysisRelationshipData, CreateSystemAnalysisRelationshipErrors, CreateSystemAnalysisRelationshipResponses, CreateSystemComponentConstraintData, CreateSystemComponentConstraintErrors, CreateSystemComponentConstraintResponses, CreateSystemComponentControlData, CreateSystemComponentControlErrors, CreateSystemComponentControlResponses, CreateSystemComponentData, CreateSystemComponentErrors, CreateSystemComponentKindData, CreateSystemComponentKindErrors, CreateSystemComponentKindResponses, CreateSystemComponentRelationshipData, CreateSystemComponentRelationshipErrors, CreateSystemComponentRelationshipResponses, CreateSystemComponentResponses, CreateSystemComponentSignalData, CreateSystemComponentSignalErrors, CreateSystemComponentSignalResponses, CreateTaskData, CreateTaskErrors, CreateTaskResponses, CreateTeamData, CreateTeamErrors, CreateTeamResponses, DeleteEventAnnotationData, DeleteEventAnnotationErrors, DeleteEventAnnotationResponses, DeleteIncidentEventData, DeleteIncidentEventErrors, DeleteIncidentEventResponses, DeleteIncidentMilestoneData, DeleteIncidentMilestoneErrors, DeleteIncidentMilestoneResponses, DeleteIntegrationData, DeleteIntegrationErrors, DeleteIntegrationResponses, DeleteSystemAnalysisComponentData, DeleteSystemAnalysisComponentErrors, DeleteSystemAnalysisComponentResponses, DeleteSystemAnalysisRelationshipData, DeleteSystemAnalysisRelationshipErrors, DeleteSystemAnalysisRelationshipResponses, DeleteUserNotificationData, DeleteUserNotificationErrors, DeleteUserNotificationResponses, FinishOrganizationSetupData, FinishOrganizationSetupErrors, FinishOrganizationSetupResponses, GetAdjacentOncallShiftsData, GetAdjacentOncallShiftsErrors, GetAdjacentOncallShiftsResponses, GetAlertData, GetAlertErrors, GetAlertMetricsData, GetAlertMetricsErrors, GetAlertMetricsResponses, GetAlertResponses, GetAuthSessionConfigData, GetAuthSessionConfigErrors, GetAuthSessionConfigResponses, GetCurrentAuthSessionData, GetCurrentAuthSessionErrors, GetCurrentAuthSessionResponses, GetDebriefQuestionData, GetDebriefQuestionErrors, GetDebriefQuestionResponses, GetEventData, GetEventErrors, GetEventResponses, GetIncidentData, GetIncidentDebriefData, GetIncidentDebriefErrors, GetIncidentDebriefResponses, GetIncidentErrors, GetIncidentFieldData, GetIncidentFieldErrors, GetIncidentFieldResponses, GetIncidentResponses, GetIncidentRoleData, GetIncidentRoleErrors, GetIncidentRoleResponses, GetIncidentSeverityData, GetIncidentSeverityErrors, GetIncidentSeverityResponses, GetIncidentTagData, GetIncidentTagErrors, GetIncidentTagResponses, GetIncidentTypeData, GetIncidentTypeErrors, GetIncidentTypeResponses, GetIncidentUserDebriefData, GetIncidentUserDebriefErrors, GetIncidentUserDebriefResponses, GetIntegrationData, GetIntegrationErrors, GetIntegrationResponses, GetMeetingScheduleData, GetMeetingScheduleErrors, GetMeetingScheduleResponses, GetMeetingSessionData, GetMeetingSessionErrors, GetMeetingSessionResponses, GetOncallRosterData, GetOncallRosterErrors, GetOncallRosterMetricsData, GetOncallRosterMetricsErrors, GetOncallRosterMetricsResponses, GetOncallRosterResponses, GetOncallShiftBurdenMetricWeightsData, GetOncallShiftBurdenMetricWeightsErrors, GetOncallShiftBurdenMetricWeightsResponses, GetOncallShiftData, GetOncallShiftErrors, GetOncallShiftHandoverData, GetOncallShiftHandoverErrors, GetOncallShiftHandoverResponses, GetOncallShiftHandoverTemplateData, GetOncallShiftHandoverTemplateErrors, GetOncallShiftHandoverTemplateResponses, GetOncallShiftMetricsData, GetOncallShiftMetricsErrors, GetOncallShiftMetricsResponses, GetOncallShiftResponses, GetOrganizationData, GetOrganizationErrors, GetOrganizationResponses, GetPlaybookData, GetPlaybookErrors, GetPlaybookResponses, GetRetrospectiveCommentData, GetRetrospectiveCommentErrors, GetRetrospectiveCommentResponses, GetRetrospectiveData, GetRetrospectiveErrors, GetRetrospectiveForIncidentData, GetRetrospectiveForIncidentErrors, GetRetrospectiveForIncidentResponses, GetRetrospectiveResponses, GetSystemAnalysisComponentData, GetSystemAnalysisComponentErrors, GetSystemAnalysisComponentResponses, GetSystemAnalysisData, GetSystemAnalysisErrors, GetSystemAnalysisRelationshipData, GetSystemAnalysisRelationshipErrors, GetSystemAnalysisRelationshipResponses, GetSystemAnalysisResponses, GetSystemComponentConstraintData, GetSystemComponentConstraintErrors, GetSystemComponentConstraintResponses, GetSystemComponentControlData, GetSystemComponentControlErrors, GetSystemComponentControlResponses, GetSystemComponentData, GetSystemComponentErrors, GetSystemComponentKindData, GetSystemComponentKindErrors, GetSystemComponentKindResponses, GetSystemComponentRelationshipData, GetSystemComponentRelationshipErrors, GetSystemComponentRelationshipResponses, GetSystemComponentResponses, GetSystemComponentSignalData, GetSystemComponentSignalErrors, GetSystemComponentSignalResponses, GetTaskData, GetTaskErrors, GetTaskResponses, GetTeamData, GetTeamErrors, GetTeamResponses, GetUserData, GetUserErrors, GetUserOncallInformationData, GetUserOncallInformationErrors, GetUserOncallInformationResponses, GetUserResponses, ListAlertIncidentLinksData, ListAlertIncidentLinksErrors, ListAlertIncidentLinksResponses, ListAlertsData, ListAlertsErrors, ListAlertsResponses, ListDebriefMessagesData, ListDebriefMessagesErrors, ListDebriefMessagesResponses, ListDebriefQuestionsData, ListDebriefQuestionsErrors, ListDebriefQuestionsResponses, ListDebriefSuggestionsData, ListDebriefSuggestionsErrors, ListDebriefSuggestionsResponses, ListEventAnnotationsData, ListEventAnnotationsErrors, ListEventAnnotationsResponses, ListEventsData, ListEventsErrors, ListEventsResponses, ListIncidentEventContributingFactorCategoriesData, ListIncidentEventContributingFactorCategoriesErrors, ListIncidentEventContributingFactorCategoriesResponses, ListIncidentEventsData, ListIncidentEventsErrors, ListIncidentEventsResponses, ListIncidentFieldsData, ListIncidentFieldsErrors, ListIncidentFieldsResponses, ListIncidentMilestonesData, ListIncidentMilestonesErrors, ListIncidentMilestonesResponses, ListIncidentRolesData, ListIncidentRolesErrors, ListIncidentRolesResponses, ListIncidentsData, ListIncidentsErrors, ListIncidentSeveritiesData, ListIncidentSeveritiesErrors, ListIncidentSeveritiesResponses, ListIncidentsResponses, ListIncidentTagsData, ListIncidentTagsErrors, ListIncidentTagsResponses, ListIncidentTypesData, ListIncidentTypesErrors, ListIncidentTypesResponses, ListIntegrationsData, ListIntegrationsErrors, ListIntegrationsResponses, ListMeetingSchedulesData, ListMeetingSchedulesErrors, ListMeetingSchedulesResponses, ListMeetingSessionsData, ListMeetingSessionsErrors, ListMeetingSessionsResponses, ListOncallRostersData, ListOncallRostersErrors, ListOncallRostersResponses, ListOncallShiftsData, ListOncallShiftsErrors, ListOncallShiftsResponses, ListPlaybooksData, ListPlaybooksErrors, ListPlaybooksResponses, ListRetrospectiveCommentsData, ListRetrospectiveCommentsErrors, ListRetrospectiveCommentsResponses, ListRetrospectiveReviewsData, ListRetrospectiveReviewsErrors, ListRetrospectiveReviewsResponses, ListRetrospectivesData, ListRetrospectivesErrors, ListRetrospectivesResponses, ListSystemAnalysisComponentsData, ListSystemAnalysisComponentsErrors, ListSystemAnalysisComponentsResponses, ListSystemAnalysisRelationshipsData, ListSystemAnalysisRelationshipsErrors, ListSystemAnalysisRelationshipsResponses, ListSystemComponentKindsData, ListSystemComponentKindsErrors, ListSystemComponentKindsResponses, ListSystemComponentRelationshipsData, ListSystemComponentRelationshipsErrors, ListSystemComponentRelationshipsResponses, ListSystemComponentsData, ListSystemComponentsErrors, ListSystemComponentsResponses, ListTasksData, ListTasksErrors, ListTasksResponses, ListTeamsData, ListTeamsErrors, ListTeamsResponses, ListUserNotificationsData, ListUserNotificationsErrors, ListUserNotificationsResponses, ListUsersData, ListUsersErrors, ListUsersResponses, ListWatchedOncallRostersData, ListWatchedOncallRostersErrors, ListWatchedOncallRostersResponses, RemoveWatchedOncallRosterData, RemoveWatchedOncallRosterErrors, RemoveWatchedOncallRosterResponses, RequestDocumentEditorSessionData, RequestDocumentEditorSessionErrors, RequestDocumentEditorSessionResponses, SendOncallShiftHandoverData, SendOncallShiftHandoverErrors, SendOncallShiftHandoverResponses, StartIntegrationOauthData, StartIntegrationOauthErrors, StartIntegrationOauthResponses, UpdateDebriefQuestionData, UpdateDebriefQuestionErrors, UpdateDebriefQuestionResponses, UpdateEventAnnotationData, UpdateEventAnnotationErrors, UpdateEventAnnotationResponses, UpdateIncidentData, UpdateIncidentDebriefData, UpdateIncidentDebriefErrors, UpdateIncidentDebriefResponses, UpdateIncidentErrors, UpdateIncidentEventData, UpdateIncidentEventErrors, UpdateIncidentEventResponses, UpdateIncidentFieldData, UpdateIncidentFieldErrors, UpdateIncidentFieldResponses, UpdateIncidentMilestoneData, UpdateIncidentMilestoneErrors, UpdateIncidentMilestoneResponses, UpdateIncidentResponses, UpdateIncidentRoleData, UpdateIncidentRoleErrors, UpdateIncidentRoleResponses, UpdateIncidentSeverityData, UpdateIncidentSeverityErrors, UpdateIncidentSeverityResponses, UpdateIncidentTagData, UpdateIncidentTagErrors, UpdateIncidentTagResponses, UpdateIncidentTypeData, UpdateIncidentTypeErrors, UpdateIncidentTypeResponses, UpdateIntegrationData, UpdateIntegrationErrors, UpdateIntegrationResponses, UpdateMeetingScheduleData, UpdateMeetingScheduleErrors, UpdateMeetingScheduleResponses, UpdateMeetingSessionData, UpdateMeetingSessionErrors, UpdateMeetingSessionResponses, UpdateOncallHandoverTemplateData, UpdateOncallHandoverTemplateErrors, UpdateOncallHandoverTemplateResponses, UpdateOncallShiftHandoverData, UpdateOncallShiftHandoverErrors, UpdateOncallShiftHandoverResponses, UpdatePlaybookData, UpdatePlaybookErrors, UpdatePlaybookResponses, UpdateRetrospectiveCommentData, UpdateRetrospectiveCommentErrors, UpdateRetrospectiveCommentResponses, UpdateRetrospectiveReviewData, UpdateRetrospectiveReviewErrors, UpdateRetrospectiveReviewResponses, UpdateSystemAnalysisComponentData, UpdateSystemAnalysisComponentErrors, UpdateSystemAnalysisComponentResponses, UpdateSystemAnalysisRelationshipData, UpdateSystemAnalysisRelationshipErrors, UpdateSystemAnalysisRelationshipResponses, UpdateSystemComponentConstraintData, UpdateSystemComponentConstraintErrors, UpdateSystemComponentConstraintResponses, UpdateSystemComponentControlData, UpdateSystemComponentControlErrors, UpdateSystemComponentControlResponses, UpdateSystemComponentData, UpdateSystemComponentErrors, UpdateSystemComponentKindData, UpdateSystemComponentKindErrors, UpdateSystemComponentKindResponses, UpdateSystemComponentRelationshipData, UpdateSystemComponentRelationshipErrors, UpdateSystemComponentRelationshipResponses, UpdateSystemComponentResponses, UpdateSystemComponentSignalData, UpdateSystemComponentSignalErrors, UpdateSystemComponentSignalResponses, UpdateTaskData, UpdateTaskErrors, UpdateTaskResponses, UpdateTeamsData, UpdateTeamsErrors, UpdateTeamsResponses } from './types.gen';
 
 export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends boolean = boolean> = Options2<TData, ThrowOnError> & {
     /**
@@ -21,3813 +21,2453 @@ export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends 
 /**
  * List Alerts
  */
-export const listAlerts = <ThrowOnError extends boolean = false>(options?: Options<ListAlertsData, ThrowOnError>) => {
-    return (options?.client ?? client).get<ListAlertsResponses, ListAlertsErrors, ThrowOnError>({
-        security: [
-            {
-                in: 'cookie',
-                name: 'rezible_auth',
-                type: 'apiKey'
-            },
-            {
-                scheme: 'bearer',
-                type: 'http'
-            }
-        ],
-        url: '/alerts',
-        ...options
-    });
-};
+export const listAlerts = <ThrowOnError extends boolean = false>(options?: Options<ListAlertsData, ThrowOnError>) => (options?.client ?? client).get<ListAlertsResponses, ListAlertsErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'rezible_auth',
+            type: 'apiKey'
+        }, { scheme: 'bearer', type: 'http' }],
+    url: '/alerts',
+    ...options
+});
 
 /**
  * Get Alert
  */
-export const getAlert = <ThrowOnError extends boolean = false>(options: Options<GetAlertData, ThrowOnError>) => {
-    return (options.client ?? client).get<GetAlertResponses, GetAlertErrors, ThrowOnError>({
-        security: [
-            {
-                in: 'cookie',
-                name: 'rezible_auth',
-                type: 'apiKey'
-            },
-            {
-                scheme: 'bearer',
-                type: 'http'
-            }
-        ],
-        url: '/alerts/{id}',
-        ...options
-    });
-};
+export const getAlert = <ThrowOnError extends boolean = false>(options: Options<GetAlertData, ThrowOnError>) => (options.client ?? client).get<GetAlertResponses, GetAlertErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'rezible_auth',
+            type: 'apiKey'
+        }, { scheme: 'bearer', type: 'http' }],
+    url: '/alerts/{id}',
+    ...options
+});
 
 /**
  * List Incident Links for an Alert
  */
-export const listAlertIncidentLinks = <ThrowOnError extends boolean = false>(options: Options<ListAlertIncidentLinksData, ThrowOnError>) => {
-    return (options.client ?? client).get<ListAlertIncidentLinksResponses, ListAlertIncidentLinksErrors, ThrowOnError>({
-        security: [
-            {
-                in: 'cookie',
-                name: 'rezible_auth',
-                type: 'apiKey'
-            },
-            {
-                scheme: 'bearer',
-                type: 'http'
-            }
-        ],
-        url: '/alerts/{id}/incident_links',
-        ...options
-    });
-};
+export const listAlertIncidentLinks = <ThrowOnError extends boolean = false>(options: Options<ListAlertIncidentLinksData, ThrowOnError>) => (options.client ?? client).get<ListAlertIncidentLinksResponses, ListAlertIncidentLinksErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'rezible_auth',
+            type: 'apiKey'
+        }, { scheme: 'bearer', type: 'http' }],
+    url: '/alerts/{id}/incident_links',
+    ...options
+});
 
 /**
  * Get Alert Metrics
  */
-export const getAlertMetrics = <ThrowOnError extends boolean = false>(options: Options<GetAlertMetricsData, ThrowOnError>) => {
-    return (options.client ?? client).get<GetAlertMetricsResponses, GetAlertMetricsErrors, ThrowOnError>({
-        security: [
-            {
-                in: 'cookie',
-                name: 'rezible_auth',
-                type: 'apiKey'
-            },
-            {
-                scheme: 'bearer',
-                type: 'http'
-            }
-        ],
-        url: '/alerts/{id}/metrics',
-        ...options
-    });
-};
+export const getAlertMetrics = <ThrowOnError extends boolean = false>(options: Options<GetAlertMetricsData, ThrowOnError>) => (options.client ?? client).get<GetAlertMetricsResponses, GetAlertMetricsErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'rezible_auth',
+            type: 'apiKey'
+        }, { scheme: 'bearer', type: 'http' }],
+    url: '/alerts/{id}/metrics',
+    ...options
+});
 
 /**
  * Get the Auth Session for the Current User
  */
-export const getCurrentAuthSession = <ThrowOnError extends boolean = false>(options?: Options<GetCurrentAuthSessionData, ThrowOnError>) => {
-    return (options?.client ?? client).get<GetCurrentAuthSessionResponses, GetCurrentAuthSessionErrors, ThrowOnError>({
-        security: [
-            {
-                in: 'cookie',
-                name: 'rezible_auth',
-                type: 'apiKey'
-            },
-            {
-                scheme: 'bearer',
-                type: 'http'
-            }
-        ],
-        url: '/auth_session',
-        ...options
-    });
-};
+export const getCurrentAuthSession = <ThrowOnError extends boolean = false>(options?: Options<GetCurrentAuthSessionData, ThrowOnError>) => (options?.client ?? client).get<GetCurrentAuthSessionResponses, GetCurrentAuthSessionErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'rezible_auth',
+            type: 'apiKey'
+        }, { scheme: 'bearer', type: 'http' }],
+    url: '/auth_session',
+    ...options
+});
 
 /**
  * Get the Auth Session config
  */
-export const getAuthSessionConfig = <ThrowOnError extends boolean = false>(options?: Options<GetAuthSessionConfigData, ThrowOnError>) => {
-    return (options?.client ?? client).get<GetAuthSessionConfigResponses, GetAuthSessionConfigErrors, ThrowOnError>({
-        security: [
-            {
-                in: 'cookie',
-                name: 'rezible_auth',
-                type: 'apiKey'
-            },
-            {
-                scheme: 'bearer',
-                type: 'http'
-            }
-        ],
-        url: '/auth_session/config',
-        ...options
-    });
-};
+export const getAuthSessionConfig = <ThrowOnError extends boolean = false>(options?: Options<GetAuthSessionConfigData, ThrowOnError>) => (options?.client ?? client).get<GetAuthSessionConfigResponses, GetAuthSessionConfigErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'rezible_auth',
+            type: 'apiKey'
+        }, { scheme: 'bearer', type: 'http' }],
+    url: '/auth_session/config',
+    ...options
+});
 
 /**
  * List Notifications for the Current User
  */
-export const listUserNotifications = <ThrowOnError extends boolean = false>(options?: Options<ListUserNotificationsData, ThrowOnError>) => {
-    return (options?.client ?? client).get<ListUserNotificationsResponses, ListUserNotificationsErrors, ThrowOnError>({
-        security: [
-            {
-                in: 'cookie',
-                name: 'rezible_auth',
-                type: 'apiKey'
-            },
-            {
-                scheme: 'bearer',
-                type: 'http'
-            }
-        ],
-        url: '/auth_session/user/notifications',
-        ...options
-    });
-};
+export const listUserNotifications = <ThrowOnError extends boolean = false>(options?: Options<ListUserNotificationsData, ThrowOnError>) => (options?.client ?? client).get<ListUserNotificationsResponses, ListUserNotificationsErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'rezible_auth',
+            type: 'apiKey'
+        }, { scheme: 'bearer', type: 'http' }],
+    url: '/auth_session/user/notifications',
+    ...options
+});
 
 /**
  * List Incident Debrief Questions
  */
-export const listDebriefQuestions = <ThrowOnError extends boolean = false>(options?: Options<ListDebriefQuestionsData, ThrowOnError>) => {
-    return (options?.client ?? client).get<ListDebriefQuestionsResponses, ListDebriefQuestionsErrors, ThrowOnError>({
-        security: [
-            {
-                in: 'cookie',
-                name: 'rezible_auth',
-                type: 'apiKey'
-            },
-            {
-                scheme: 'bearer',
-                type: 'http'
-            }
-        ],
-        url: '/debrief_questions',
-        ...options
-    });
-};
+export const listDebriefQuestions = <ThrowOnError extends boolean = false>(options?: Options<ListDebriefQuestionsData, ThrowOnError>) => (options?.client ?? client).get<ListDebriefQuestionsResponses, ListDebriefQuestionsErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'rezible_auth',
+            type: 'apiKey'
+        }, { scheme: 'bearer', type: 'http' }],
+    url: '/debrief_questions',
+    ...options
+});
 
 /**
  * Create an Incident Debrief Question
  */
-export const createDebriefQuestion = <ThrowOnError extends boolean = false>(options: Options<CreateDebriefQuestionData, ThrowOnError>) => {
-    return (options.client ?? client).post<CreateDebriefQuestionResponses, CreateDebriefQuestionErrors, ThrowOnError>({
-        security: [
-            {
-                in: 'cookie',
-                name: 'rezible_auth',
-                type: 'apiKey'
-            },
-            {
-                scheme: 'bearer',
-                type: 'http'
-            }
-        ],
-        url: '/debrief_questions',
-        ...options,
-        headers: {
-            'Content-Type': 'application/json',
-            ...options.headers
-        }
-    });
-};
+export const createDebriefQuestion = <ThrowOnError extends boolean = false>(options: Options<CreateDebriefQuestionData, ThrowOnError>) => (options.client ?? client).post<CreateDebriefQuestionResponses, CreateDebriefQuestionErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'rezible_auth',
+            type: 'apiKey'
+        }, { scheme: 'bearer', type: 'http' }],
+    url: '/debrief_questions',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
 
 /**
  * Archive an Incident Debrief Question
  */
-export const archiveDebriefQuestion = <ThrowOnError extends boolean = false>(options: Options<ArchiveDebriefQuestionData, ThrowOnError>) => {
-    return (options.client ?? client).delete<ArchiveDebriefQuestionResponses, ArchiveDebriefQuestionErrors, ThrowOnError>({
-        security: [
-            {
-                in: 'cookie',
-                name: 'rezible_auth',
-                type: 'apiKey'
-            },
-            {
-                scheme: 'bearer',
-                type: 'http'
-            }
-        ],
-        url: '/debrief_questions/{id}',
-        ...options
-    });
-};
+export const archiveDebriefQuestion = <ThrowOnError extends boolean = false>(options: Options<ArchiveDebriefQuestionData, ThrowOnError>) => (options.client ?? client).delete<ArchiveDebriefQuestionResponses, ArchiveDebriefQuestionErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'rezible_auth',
+            type: 'apiKey'
+        }, { scheme: 'bearer', type: 'http' }],
+    url: '/debrief_questions/{id}',
+    ...options
+});
 
 /**
  * Get an Incident Debrief Question
  */
-export const getDebriefQuestion = <ThrowOnError extends boolean = false>(options: Options<GetDebriefQuestionData, ThrowOnError>) => {
-    return (options.client ?? client).get<GetDebriefQuestionResponses, GetDebriefQuestionErrors, ThrowOnError>({
-        security: [
-            {
-                in: 'cookie',
-                name: 'rezible_auth',
-                type: 'apiKey'
-            },
-            {
-                scheme: 'bearer',
-                type: 'http'
-            }
-        ],
-        url: '/debrief_questions/{id}',
-        ...options
-    });
-};
+export const getDebriefQuestion = <ThrowOnError extends boolean = false>(options: Options<GetDebriefQuestionData, ThrowOnError>) => (options.client ?? client).get<GetDebriefQuestionResponses, GetDebriefQuestionErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'rezible_auth',
+            type: 'apiKey'
+        }, { scheme: 'bearer', type: 'http' }],
+    url: '/debrief_questions/{id}',
+    ...options
+});
 
 /**
  * Update an Incident Debrief Question
  */
-export const updateDebriefQuestion = <ThrowOnError extends boolean = false>(options: Options<UpdateDebriefQuestionData, ThrowOnError>) => {
-    return (options.client ?? client).patch<UpdateDebriefQuestionResponses, UpdateDebriefQuestionErrors, ThrowOnError>({
-        security: [
-            {
-                in: 'cookie',
-                name: 'rezible_auth',
-                type: 'apiKey'
-            },
-            {
-                scheme: 'bearer',
-                type: 'http'
-            }
-        ],
-        url: '/debrief_questions/{id}',
-        ...options,
-        headers: {
-            'Content-Type': 'application/json',
-            ...options.headers
-        }
-    });
-};
+export const updateDebriefQuestion = <ThrowOnError extends boolean = false>(options: Options<UpdateDebriefQuestionData, ThrowOnError>) => (options.client ?? client).patch<UpdateDebriefQuestionResponses, UpdateDebriefQuestionErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'rezible_auth',
+            type: 'apiKey'
+        }, { scheme: 'bearer', type: 'http' }],
+    url: '/debrief_questions/{id}',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
 
 /**
  * Request a Document Editor Session
  */
-export const requestDocumentEditorSession = <ThrowOnError extends boolean = false>(options: Options<RequestDocumentEditorSessionData, ThrowOnError>) => {
-    return (options.client ?? client).post<RequestDocumentEditorSessionResponses, RequestDocumentEditorSessionErrors, ThrowOnError>({
-        security: [
-            {
-                in: 'cookie',
-                name: 'rezible_auth',
-                type: 'apiKey'
-            },
-            {
-                scheme: 'bearer',
-                type: 'http'
-            }
-        ],
-        url: '/documents/{id}/session',
-        ...options
-    });
-};
+export const requestDocumentEditorSession = <ThrowOnError extends boolean = false>(options: Options<RequestDocumentEditorSessionData, ThrowOnError>) => (options.client ?? client).post<RequestDocumentEditorSessionResponses, RequestDocumentEditorSessionErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'rezible_auth',
+            type: 'apiKey'
+        }, { scheme: 'bearer', type: 'http' }],
+    url: '/documents/{id}/session',
+    ...options
+});
 
 /**
  * List Event Annotations
  */
-export const listEventAnnotations = <ThrowOnError extends boolean = false>(options?: Options<ListEventAnnotationsData, ThrowOnError>) => {
-    return (options?.client ?? client).get<ListEventAnnotationsResponses, ListEventAnnotationsErrors, ThrowOnError>({
-        security: [
-            {
-                in: 'cookie',
-                name: 'rezible_auth',
-                type: 'apiKey'
-            },
-            {
-                scheme: 'bearer',
-                type: 'http'
-            }
-        ],
-        url: '/event_annotations',
-        ...options
-    });
-};
+export const listEventAnnotations = <ThrowOnError extends boolean = false>(options?: Options<ListEventAnnotationsData, ThrowOnError>) => (options?.client ?? client).get<ListEventAnnotationsResponses, ListEventAnnotationsErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'rezible_auth',
+            type: 'apiKey'
+        }, { scheme: 'bearer', type: 'http' }],
+    url: '/event_annotations',
+    ...options
+});
 
 /**
  * Create an Event Annotation
  */
-export const createEventAnnotation = <ThrowOnError extends boolean = false>(options: Options<CreateEventAnnotationData, ThrowOnError>) => {
-    return (options.client ?? client).post<CreateEventAnnotationResponses, CreateEventAnnotationErrors, ThrowOnError>({
-        security: [
-            {
-                in: 'cookie',
-                name: 'rezible_auth',
-                type: 'apiKey'
-            },
-            {
-                scheme: 'bearer',
-                type: 'http'
-            }
-        ],
-        url: '/event_annotations',
-        ...options,
-        headers: {
-            'Content-Type': 'application/json',
-            ...options.headers
-        }
-    });
-};
+export const createEventAnnotation = <ThrowOnError extends boolean = false>(options: Options<CreateEventAnnotationData, ThrowOnError>) => (options.client ?? client).post<CreateEventAnnotationResponses, CreateEventAnnotationErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'rezible_auth',
+            type: 'apiKey'
+        }, { scheme: 'bearer', type: 'http' }],
+    url: '/event_annotations',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
 
 /**
  * Delete an Event Annotation
  */
-export const deleteEventAnnotation = <ThrowOnError extends boolean = false>(options: Options<DeleteEventAnnotationData, ThrowOnError>) => {
-    return (options.client ?? client).delete<DeleteEventAnnotationResponses, DeleteEventAnnotationErrors, ThrowOnError>({
-        security: [
-            {
-                in: 'cookie',
-                name: 'rezible_auth',
-                type: 'apiKey'
-            },
-            {
-                scheme: 'bearer',
-                type: 'http'
-            }
-        ],
-        url: '/event_annotations/{id}',
-        ...options
-    });
-};
+export const deleteEventAnnotation = <ThrowOnError extends boolean = false>(options: Options<DeleteEventAnnotationData, ThrowOnError>) => (options.client ?? client).delete<DeleteEventAnnotationResponses, DeleteEventAnnotationErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'rezible_auth',
+            type: 'apiKey'
+        }, { scheme: 'bearer', type: 'http' }],
+    url: '/event_annotations/{id}',
+    ...options
+});
 
 /**
  * Update an Event Annotation
  */
-export const updateEventAnnotation = <ThrowOnError extends boolean = false>(options: Options<UpdateEventAnnotationData, ThrowOnError>) => {
-    return (options.client ?? client).patch<UpdateEventAnnotationResponses, UpdateEventAnnotationErrors, ThrowOnError>({
-        security: [
-            {
-                in: 'cookie',
-                name: 'rezible_auth',
-                type: 'apiKey'
-            },
-            {
-                scheme: 'bearer',
-                type: 'http'
-            }
-        ],
-        url: '/event_annotations/{id}',
-        ...options,
-        headers: {
-            'Content-Type': 'application/json',
-            ...options.headers
-        }
-    });
-};
+export const updateEventAnnotation = <ThrowOnError extends boolean = false>(options: Options<UpdateEventAnnotationData, ThrowOnError>) => (options.client ?? client).patch<UpdateEventAnnotationResponses, UpdateEventAnnotationErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'rezible_auth',
+            type: 'apiKey'
+        }, { scheme: 'bearer', type: 'http' }],
+    url: '/event_annotations/{id}',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
 
 /**
  * List Events
  */
-export const listEvents = <ThrowOnError extends boolean = false>(options?: Options<ListEventsData, ThrowOnError>) => {
-    return (options?.client ?? client).get<ListEventsResponses, ListEventsErrors, ThrowOnError>({
-        security: [
-            {
-                in: 'cookie',
-                name: 'rezible_auth',
-                type: 'apiKey'
-            },
-            {
-                scheme: 'bearer',
-                type: 'http'
-            }
-        ],
-        url: '/events',
-        ...options
-    });
-};
+export const listEvents = <ThrowOnError extends boolean = false>(options?: Options<ListEventsData, ThrowOnError>) => (options?.client ?? client).get<ListEventsResponses, ListEventsErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'rezible_auth',
+            type: 'apiKey'
+        }, { scheme: 'bearer', type: 'http' }],
+    url: '/events',
+    ...options
+});
 
 /**
  * Get Event
  */
-export const getEvent = <ThrowOnError extends boolean = false>(options: Options<GetEventData, ThrowOnError>) => {
-    return (options.client ?? client).get<GetEventResponses, GetEventErrors, ThrowOnError>({
-        security: [
-            {
-                in: 'cookie',
-                name: 'rezible_auth',
-                type: 'apiKey'
-            },
-            {
-                scheme: 'bearer',
-                type: 'http'
-            }
-        ],
-        url: '/events/{id}',
-        ...options
-    });
-};
+export const getEvent = <ThrowOnError extends boolean = false>(options: Options<GetEventData, ThrowOnError>) => (options.client ?? client).get<GetEventResponses, GetEventErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'rezible_auth',
+            type: 'apiKey'
+        }, { scheme: 'bearer', type: 'http' }],
+    url: '/events/{id}',
+    ...options
+});
 
 /**
  * Get Incident Debrief
  */
-export const getIncidentDebrief = <ThrowOnError extends boolean = false>(options: Options<GetIncidentDebriefData, ThrowOnError>) => {
-    return (options.client ?? client).get<GetIncidentDebriefResponses, GetIncidentDebriefErrors, ThrowOnError>({
-        security: [
-            {
-                in: 'cookie',
-                name: 'rezible_auth',
-                type: 'apiKey'
-            },
-            {
-                scheme: 'bearer',
-                type: 'http'
-            }
-        ],
-        url: '/incident_debriefs/{id}',
-        ...options
-    });
-};
+export const getIncidentDebrief = <ThrowOnError extends boolean = false>(options: Options<GetIncidentDebriefData, ThrowOnError>) => (options.client ?? client).get<GetIncidentDebriefResponses, GetIncidentDebriefErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'rezible_auth',
+            type: 'apiKey'
+        }, { scheme: 'bearer', type: 'http' }],
+    url: '/incident_debriefs/{id}',
+    ...options
+});
 
 /**
  * Update Incident Debrief
  */
-export const updateIncidentDebrief = <ThrowOnError extends boolean = false>(options: Options<UpdateIncidentDebriefData, ThrowOnError>) => {
-    return (options.client ?? client).patch<UpdateIncidentDebriefResponses, UpdateIncidentDebriefErrors, ThrowOnError>({
-        security: [
-            {
-                in: 'cookie',
-                name: 'rezible_auth',
-                type: 'apiKey'
-            },
-            {
-                scheme: 'bearer',
-                type: 'http'
-            }
-        ],
-        url: '/incident_debriefs/{id}',
-        ...options,
-        headers: {
-            'Content-Type': 'application/json',
-            ...options.headers
-        }
-    });
-};
+export const updateIncidentDebrief = <ThrowOnError extends boolean = false>(options: Options<UpdateIncidentDebriefData, ThrowOnError>) => (options.client ?? client).patch<UpdateIncidentDebriefResponses, UpdateIncidentDebriefErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'rezible_auth',
+            type: 'apiKey'
+        }, { scheme: 'bearer', type: 'http' }],
+    url: '/incident_debriefs/{id}',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
 
 /**
  * List Incident Debrief Messages
  */
-export const listDebriefMessages = <ThrowOnError extends boolean = false>(options: Options<ListDebriefMessagesData, ThrowOnError>) => {
-    return (options.client ?? client).get<ListDebriefMessagesResponses, ListDebriefMessagesErrors, ThrowOnError>({
-        security: [
-            {
-                in: 'cookie',
-                name: 'rezible_auth',
-                type: 'apiKey'
-            },
-            {
-                scheme: 'bearer',
-                type: 'http'
-            }
-        ],
-        url: '/incident_debriefs/{id}/messages',
-        ...options
-    });
-};
+export const listDebriefMessages = <ThrowOnError extends boolean = false>(options: Options<ListDebriefMessagesData, ThrowOnError>) => (options.client ?? client).get<ListDebriefMessagesResponses, ListDebriefMessagesErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'rezible_auth',
+            type: 'apiKey'
+        }, { scheme: 'bearer', type: 'http' }],
+    url: '/incident_debriefs/{id}/messages',
+    ...options
+});
 
 /**
  * Add an Incident Debrief message
  */
-export const addIncidentDebriefUserMessage = <ThrowOnError extends boolean = false>(options: Options<AddIncidentDebriefUserMessageData, ThrowOnError>) => {
-    return (options.client ?? client).post<AddIncidentDebriefUserMessageResponses, AddIncidentDebriefUserMessageErrors, ThrowOnError>({
-        security: [
-            {
-                in: 'cookie',
-                name: 'rezible_auth',
-                type: 'apiKey'
-            },
-            {
-                scheme: 'bearer',
-                type: 'http'
-            }
-        ],
-        url: '/incident_debriefs/{id}/messages',
-        ...options,
-        headers: {
-            'Content-Type': 'application/json',
-            ...options.headers
-        }
-    });
-};
+export const addIncidentDebriefUserMessage = <ThrowOnError extends boolean = false>(options: Options<AddIncidentDebriefUserMessageData, ThrowOnError>) => (options.client ?? client).post<AddIncidentDebriefUserMessageResponses, AddIncidentDebriefUserMessageErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'rezible_auth',
+            type: 'apiKey'
+        }, { scheme: 'bearer', type: 'http' }],
+    url: '/incident_debriefs/{id}/messages',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
 
 /**
  * List Incident Debrief Suggestions
  */
-export const listDebriefSuggestions = <ThrowOnError extends boolean = false>(options: Options<ListDebriefSuggestionsData, ThrowOnError>) => {
-    return (options.client ?? client).get<ListDebriefSuggestionsResponses, ListDebriefSuggestionsErrors, ThrowOnError>({
-        security: [
-            {
-                in: 'cookie',
-                name: 'rezible_auth',
-                type: 'apiKey'
-            },
-            {
-                scheme: 'bearer',
-                type: 'http'
-            }
-        ],
-        url: '/incident_debriefs/{id}/suggestions',
-        ...options
-    });
-};
+export const listDebriefSuggestions = <ThrowOnError extends boolean = false>(options: Options<ListDebriefSuggestionsData, ThrowOnError>) => (options.client ?? client).get<ListDebriefSuggestionsResponses, ListDebriefSuggestionsErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'rezible_auth',
+            type: 'apiKey'
+        }, { scheme: 'bearer', type: 'http' }],
+    url: '/incident_debriefs/{id}/suggestions',
+    ...options
+});
 
 /**
  * List Categories of Contributing Factors used in Incident Events
  */
-export const listIncidentEventContributingFactorCategories = <ThrowOnError extends boolean = false>(options?: Options<ListIncidentEventContributingFactorCategoriesData, ThrowOnError>) => {
-    return (options?.client ?? client).get<ListIncidentEventContributingFactorCategoriesResponses, ListIncidentEventContributingFactorCategoriesErrors, ThrowOnError>({
-        security: [
-            {
-                in: 'cookie',
-                name: 'rezible_auth',
-                type: 'apiKey'
-            },
-            {
-                scheme: 'bearer',
-                type: 'http'
-            }
-        ],
-        url: '/incident_event_contributing_factor_categories',
-        ...options
-    });
-};
+export const listIncidentEventContributingFactorCategories = <ThrowOnError extends boolean = false>(options?: Options<ListIncidentEventContributingFactorCategoriesData, ThrowOnError>) => (options?.client ?? client).get<ListIncidentEventContributingFactorCategoriesResponses, ListIncidentEventContributingFactorCategoriesErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'rezible_auth',
+            type: 'apiKey'
+        }, { scheme: 'bearer', type: 'http' }],
+    url: '/incident_event_contributing_factor_categories',
+    ...options
+});
 
 /**
  * Delete an Incident Event
  */
-export const deleteIncidentEvent = <ThrowOnError extends boolean = false>(options: Options<DeleteIncidentEventData, ThrowOnError>) => {
-    return (options.client ?? client).delete<DeleteIncidentEventResponses, DeleteIncidentEventErrors, ThrowOnError>({
-        security: [
-            {
-                in: 'cookie',
-                name: 'rezible_auth',
-                type: 'apiKey'
-            },
-            {
-                scheme: 'bearer',
-                type: 'http'
-            }
-        ],
-        url: '/incident_events/{id}',
-        ...options
-    });
-};
+export const deleteIncidentEvent = <ThrowOnError extends boolean = false>(options: Options<DeleteIncidentEventData, ThrowOnError>) => (options.client ?? client).delete<DeleteIncidentEventResponses, DeleteIncidentEventErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'rezible_auth',
+            type: 'apiKey'
+        }, { scheme: 'bearer', type: 'http' }],
+    url: '/incident_events/{id}',
+    ...options
+});
 
 /**
  * Update an Incident Event
  */
-export const updateIncidentEvent = <ThrowOnError extends boolean = false>(options: Options<UpdateIncidentEventData, ThrowOnError>) => {
-    return (options.client ?? client).patch<UpdateIncidentEventResponses, UpdateIncidentEventErrors, ThrowOnError>({
-        security: [
-            {
-                in: 'cookie',
-                name: 'rezible_auth',
-                type: 'apiKey'
-            },
-            {
-                scheme: 'bearer',
-                type: 'http'
-            }
-        ],
-        url: '/incident_events/{id}',
-        ...options,
-        headers: {
-            'Content-Type': 'application/json',
-            ...options.headers
-        }
-    });
-};
+export const updateIncidentEvent = <ThrowOnError extends boolean = false>(options: Options<UpdateIncidentEventData, ThrowOnError>) => (options.client ?? client).patch<UpdateIncidentEventResponses, UpdateIncidentEventErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'rezible_auth',
+            type: 'apiKey'
+        }, { scheme: 'bearer', type: 'http' }],
+    url: '/incident_events/{id}',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
 
 /**
  * List Incident Fields
  */
-export const listIncidentFields = <ThrowOnError extends boolean = false>(options?: Options<ListIncidentFieldsData, ThrowOnError>) => {
-    return (options?.client ?? client).get<ListIncidentFieldsResponses, ListIncidentFieldsErrors, ThrowOnError>({
-        security: [
-            {
-                in: 'cookie',
-                name: 'rezible_auth',
-                type: 'apiKey'
-            },
-            {
-                scheme: 'bearer',
-                type: 'http'
-            }
-        ],
-        url: '/incident_fields',
-        ...options
-    });
-};
+export const listIncidentFields = <ThrowOnError extends boolean = false>(options?: Options<ListIncidentFieldsData, ThrowOnError>) => (options?.client ?? client).get<ListIncidentFieldsResponses, ListIncidentFieldsErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'rezible_auth',
+            type: 'apiKey'
+        }, { scheme: 'bearer', type: 'http' }],
+    url: '/incident_fields',
+    ...options
+});
 
 /**
  * Create an Incident Field
  */
-export const createIncidentField = <ThrowOnError extends boolean = false>(options: Options<CreateIncidentFieldData, ThrowOnError>) => {
-    return (options.client ?? client).post<CreateIncidentFieldResponses, CreateIncidentFieldErrors, ThrowOnError>({
-        security: [
-            {
-                in: 'cookie',
-                name: 'rezible_auth',
-                type: 'apiKey'
-            },
-            {
-                scheme: 'bearer',
-                type: 'http'
-            }
-        ],
-        url: '/incident_fields',
-        ...options,
-        headers: {
-            'Content-Type': 'application/json',
-            ...options.headers
-        }
-    });
-};
+export const createIncidentField = <ThrowOnError extends boolean = false>(options: Options<CreateIncidentFieldData, ThrowOnError>) => (options.client ?? client).post<CreateIncidentFieldResponses, CreateIncidentFieldErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'rezible_auth',
+            type: 'apiKey'
+        }, { scheme: 'bearer', type: 'http' }],
+    url: '/incident_fields',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
 
 /**
  * Archive an Incident Field
  */
-export const archiveIncidentField = <ThrowOnError extends boolean = false>(options: Options<ArchiveIncidentFieldData, ThrowOnError>) => {
-    return (options.client ?? client).delete<ArchiveIncidentFieldResponses, ArchiveIncidentFieldErrors, ThrowOnError>({
-        security: [
-            {
-                in: 'cookie',
-                name: 'rezible_auth',
-                type: 'apiKey'
-            },
-            {
-                scheme: 'bearer',
-                type: 'http'
-            }
-        ],
-        url: '/incident_fields/{id}',
-        ...options
-    });
-};
+export const archiveIncidentField = <ThrowOnError extends boolean = false>(options: Options<ArchiveIncidentFieldData, ThrowOnError>) => (options.client ?? client).delete<ArchiveIncidentFieldResponses, ArchiveIncidentFieldErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'rezible_auth',
+            type: 'apiKey'
+        }, { scheme: 'bearer', type: 'http' }],
+    url: '/incident_fields/{id}',
+    ...options
+});
 
 /**
  * Get an Incident Field
  */
-export const getIncidentField = <ThrowOnError extends boolean = false>(options: Options<GetIncidentFieldData, ThrowOnError>) => {
-    return (options.client ?? client).get<GetIncidentFieldResponses, GetIncidentFieldErrors, ThrowOnError>({
-        security: [
-            {
-                in: 'cookie',
-                name: 'rezible_auth',
-                type: 'apiKey'
-            },
-            {
-                scheme: 'bearer',
-                type: 'http'
-            }
-        ],
-        url: '/incident_fields/{id}',
-        ...options
-    });
-};
+export const getIncidentField = <ThrowOnError extends boolean = false>(options: Options<GetIncidentFieldData, ThrowOnError>) => (options.client ?? client).get<GetIncidentFieldResponses, GetIncidentFieldErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'rezible_auth',
+            type: 'apiKey'
+        }, { scheme: 'bearer', type: 'http' }],
+    url: '/incident_fields/{id}',
+    ...options
+});
 
 /**
  * Update an Incident Field
  */
-export const updateIncidentField = <ThrowOnError extends boolean = false>(options: Options<UpdateIncidentFieldData, ThrowOnError>) => {
-    return (options.client ?? client).patch<UpdateIncidentFieldResponses, UpdateIncidentFieldErrors, ThrowOnError>({
-        security: [
-            {
-                in: 'cookie',
-                name: 'rezible_auth',
-                type: 'apiKey'
-            },
-            {
-                scheme: 'bearer',
-                type: 'http'
-            }
-        ],
-        url: '/incident_fields/{id}',
-        ...options,
-        headers: {
-            'Content-Type': 'application/json',
-            ...options.headers
-        }
-    });
-};
+export const updateIncidentField = <ThrowOnError extends boolean = false>(options: Options<UpdateIncidentFieldData, ThrowOnError>) => (options.client ?? client).patch<UpdateIncidentFieldResponses, UpdateIncidentFieldErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'rezible_auth',
+            type: 'apiKey'
+        }, { scheme: 'bearer', type: 'http' }],
+    url: '/incident_fields/{id}',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
 
 /**
  * Delete an Incident Milestone
  */
-export const deleteIncidentMilestone = <ThrowOnError extends boolean = false>(options: Options<DeleteIncidentMilestoneData, ThrowOnError>) => {
-    return (options.client ?? client).delete<DeleteIncidentMilestoneResponses, DeleteIncidentMilestoneErrors, ThrowOnError>({
-        security: [
-            {
-                in: 'cookie',
-                name: 'rezible_auth',
-                type: 'apiKey'
-            },
-            {
-                scheme: 'bearer',
-                type: 'http'
-            }
-        ],
-        url: '/incident_milestones/{id}',
-        ...options
-    });
-};
+export const deleteIncidentMilestone = <ThrowOnError extends boolean = false>(options: Options<DeleteIncidentMilestoneData, ThrowOnError>) => (options.client ?? client).delete<DeleteIncidentMilestoneResponses, DeleteIncidentMilestoneErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'rezible_auth',
+            type: 'apiKey'
+        }, { scheme: 'bearer', type: 'http' }],
+    url: '/incident_milestones/{id}',
+    ...options
+});
 
 /**
  * Update an Incident Milestone
  */
-export const updateIncidentMilestone = <ThrowOnError extends boolean = false>(options: Options<UpdateIncidentMilestoneData, ThrowOnError>) => {
-    return (options.client ?? client).patch<UpdateIncidentMilestoneResponses, UpdateIncidentMilestoneErrors, ThrowOnError>({
-        security: [
-            {
-                in: 'cookie',
-                name: 'rezible_auth',
-                type: 'apiKey'
-            },
-            {
-                scheme: 'bearer',
-                type: 'http'
-            }
-        ],
-        url: '/incident_milestones/{id}',
-        ...options,
-        headers: {
-            'Content-Type': 'application/json',
-            ...options.headers
-        }
-    });
-};
+export const updateIncidentMilestone = <ThrowOnError extends boolean = false>(options: Options<UpdateIncidentMilestoneData, ThrowOnError>) => (options.client ?? client).patch<UpdateIncidentMilestoneResponses, UpdateIncidentMilestoneErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'rezible_auth',
+            type: 'apiKey'
+        }, { scheme: 'bearer', type: 'http' }],
+    url: '/incident_milestones/{id}',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
 
 /**
  * List Incident Roles
  */
-export const listIncidentRoles = <ThrowOnError extends boolean = false>(options?: Options<ListIncidentRolesData, ThrowOnError>) => {
-    return (options?.client ?? client).get<ListIncidentRolesResponses, ListIncidentRolesErrors, ThrowOnError>({
-        security: [
-            {
-                in: 'cookie',
-                name: 'rezible_auth',
-                type: 'apiKey'
-            },
-            {
-                scheme: 'bearer',
-                type: 'http'
-            }
-        ],
-        url: '/incident_roles',
-        ...options
-    });
-};
+export const listIncidentRoles = <ThrowOnError extends boolean = false>(options?: Options<ListIncidentRolesData, ThrowOnError>) => (options?.client ?? client).get<ListIncidentRolesResponses, ListIncidentRolesErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'rezible_auth',
+            type: 'apiKey'
+        }, { scheme: 'bearer', type: 'http' }],
+    url: '/incident_roles',
+    ...options
+});
 
 /**
  * Create an Incident Role
  */
-export const createIncidentRole = <ThrowOnError extends boolean = false>(options: Options<CreateIncidentRoleData, ThrowOnError>) => {
-    return (options.client ?? client).post<CreateIncidentRoleResponses, CreateIncidentRoleErrors, ThrowOnError>({
-        security: [
-            {
-                in: 'cookie',
-                name: 'rezible_auth',
-                type: 'apiKey'
-            },
-            {
-                scheme: 'bearer',
-                type: 'http'
-            }
-        ],
-        url: '/incident_roles',
-        ...options,
-        headers: {
-            'Content-Type': 'application/json',
-            ...options.headers
-        }
-    });
-};
+export const createIncidentRole = <ThrowOnError extends boolean = false>(options: Options<CreateIncidentRoleData, ThrowOnError>) => (options.client ?? client).post<CreateIncidentRoleResponses, CreateIncidentRoleErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'rezible_auth',
+            type: 'apiKey'
+        }, { scheme: 'bearer', type: 'http' }],
+    url: '/incident_roles',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
 
 /**
  * Archive an Incident Role
  */
-export const archiveIncidentRole = <ThrowOnError extends boolean = false>(options: Options<ArchiveIncidentRoleData, ThrowOnError>) => {
-    return (options.client ?? client).delete<ArchiveIncidentRoleResponses, ArchiveIncidentRoleErrors, ThrowOnError>({
-        security: [
-            {
-                in: 'cookie',
-                name: 'rezible_auth',
-                type: 'apiKey'
-            },
-            {
-                scheme: 'bearer',
-                type: 'http'
-            }
-        ],
-        url: '/incident_roles/{id}',
-        ...options
-    });
-};
+export const archiveIncidentRole = <ThrowOnError extends boolean = false>(options: Options<ArchiveIncidentRoleData, ThrowOnError>) => (options.client ?? client).delete<ArchiveIncidentRoleResponses, ArchiveIncidentRoleErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'rezible_auth',
+            type: 'apiKey'
+        }, { scheme: 'bearer', type: 'http' }],
+    url: '/incident_roles/{id}',
+    ...options
+});
 
 /**
  * Get an Incident Role
  */
-export const getIncidentRole = <ThrowOnError extends boolean = false>(options: Options<GetIncidentRoleData, ThrowOnError>) => {
-    return (options.client ?? client).get<GetIncidentRoleResponses, GetIncidentRoleErrors, ThrowOnError>({
-        security: [
-            {
-                in: 'cookie',
-                name: 'rezible_auth',
-                type: 'apiKey'
-            },
-            {
-                scheme: 'bearer',
-                type: 'http'
-            }
-        ],
-        url: '/incident_roles/{id}',
-        ...options
-    });
-};
+export const getIncidentRole = <ThrowOnError extends boolean = false>(options: Options<GetIncidentRoleData, ThrowOnError>) => (options.client ?? client).get<GetIncidentRoleResponses, GetIncidentRoleErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'rezible_auth',
+            type: 'apiKey'
+        }, { scheme: 'bearer', type: 'http' }],
+    url: '/incident_roles/{id}',
+    ...options
+});
 
 /**
  * Update an Incident Role
  */
-export const updateIncidentRole = <ThrowOnError extends boolean = false>(options: Options<UpdateIncidentRoleData, ThrowOnError>) => {
-    return (options.client ?? client).patch<UpdateIncidentRoleResponses, UpdateIncidentRoleErrors, ThrowOnError>({
-        security: [
-            {
-                in: 'cookie',
-                name: 'rezible_auth',
-                type: 'apiKey'
-            },
-            {
-                scheme: 'bearer',
-                type: 'http'
-            }
-        ],
-        url: '/incident_roles/{id}',
-        ...options,
-        headers: {
-            'Content-Type': 'application/json',
-            ...options.headers
-        }
-    });
-};
+export const updateIncidentRole = <ThrowOnError extends boolean = false>(options: Options<UpdateIncidentRoleData, ThrowOnError>) => (options.client ?? client).patch<UpdateIncidentRoleResponses, UpdateIncidentRoleErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'rezible_auth',
+            type: 'apiKey'
+        }, { scheme: 'bearer', type: 'http' }],
+    url: '/incident_roles/{id}',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
 
 /**
  * List Severities
  */
-export const listIncidentSeverities = <ThrowOnError extends boolean = false>(options?: Options<ListIncidentSeveritiesData, ThrowOnError>) => {
-    return (options?.client ?? client).get<ListIncidentSeveritiesResponses, ListIncidentSeveritiesErrors, ThrowOnError>({
-        security: [
-            {
-                in: 'cookie',
-                name: 'rezible_auth',
-                type: 'apiKey'
-            },
-            {
-                scheme: 'bearer',
-                type: 'http'
-            }
-        ],
-        url: '/incident_severities',
-        ...options
-    });
-};
+export const listIncidentSeverities = <ThrowOnError extends boolean = false>(options?: Options<ListIncidentSeveritiesData, ThrowOnError>) => (options?.client ?? client).get<ListIncidentSeveritiesResponses, ListIncidentSeveritiesErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'rezible_auth',
+            type: 'apiKey'
+        }, { scheme: 'bearer', type: 'http' }],
+    url: '/incident_severities',
+    ...options
+});
 
 /**
  * Create a Severity
  */
-export const createIncidentSeverity = <ThrowOnError extends boolean = false>(options: Options<CreateIncidentSeverityData, ThrowOnError>) => {
-    return (options.client ?? client).post<CreateIncidentSeverityResponses, CreateIncidentSeverityErrors, ThrowOnError>({
-        security: [
-            {
-                in: 'cookie',
-                name: 'rezible_auth',
-                type: 'apiKey'
-            },
-            {
-                scheme: 'bearer',
-                type: 'http'
-            }
-        ],
-        url: '/incident_severities',
-        ...options,
-        headers: {
-            'Content-Type': 'application/json',
-            ...options.headers
-        }
-    });
-};
+export const createIncidentSeverity = <ThrowOnError extends boolean = false>(options: Options<CreateIncidentSeverityData, ThrowOnError>) => (options.client ?? client).post<CreateIncidentSeverityResponses, CreateIncidentSeverityErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'rezible_auth',
+            type: 'apiKey'
+        }, { scheme: 'bearer', type: 'http' }],
+    url: '/incident_severities',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
 
 /**
  * Archive a Severity
  */
-export const archiveIncidentSeverity = <ThrowOnError extends boolean = false>(options: Options<ArchiveIncidentSeverityData, ThrowOnError>) => {
-    return (options.client ?? client).delete<ArchiveIncidentSeverityResponses, ArchiveIncidentSeverityErrors, ThrowOnError>({
-        security: [
-            {
-                in: 'cookie',
-                name: 'rezible_auth',
-                type: 'apiKey'
-            },
-            {
-                scheme: 'bearer',
-                type: 'http'
-            }
-        ],
-        url: '/incident_severities/{id}',
-        ...options
-    });
-};
+export const archiveIncidentSeverity = <ThrowOnError extends boolean = false>(options: Options<ArchiveIncidentSeverityData, ThrowOnError>) => (options.client ?? client).delete<ArchiveIncidentSeverityResponses, ArchiveIncidentSeverityErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'rezible_auth',
+            type: 'apiKey'
+        }, { scheme: 'bearer', type: 'http' }],
+    url: '/incident_severities/{id}',
+    ...options
+});
 
 /**
  * Get a Severity
  */
-export const getIncidentSeverity = <ThrowOnError extends boolean = false>(options: Options<GetIncidentSeverityData, ThrowOnError>) => {
-    return (options.client ?? client).get<GetIncidentSeverityResponses, GetIncidentSeverityErrors, ThrowOnError>({
-        security: [
-            {
-                in: 'cookie',
-                name: 'rezible_auth',
-                type: 'apiKey'
-            },
-            {
-                scheme: 'bearer',
-                type: 'http'
-            }
-        ],
-        url: '/incident_severities/{id}',
-        ...options
-    });
-};
+export const getIncidentSeverity = <ThrowOnError extends boolean = false>(options: Options<GetIncidentSeverityData, ThrowOnError>) => (options.client ?? client).get<GetIncidentSeverityResponses, GetIncidentSeverityErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'rezible_auth',
+            type: 'apiKey'
+        }, { scheme: 'bearer', type: 'http' }],
+    url: '/incident_severities/{id}',
+    ...options
+});
 
 /**
  * Update a Severity
  */
-export const updateIncidentSeverity = <ThrowOnError extends boolean = false>(options: Options<UpdateIncidentSeverityData, ThrowOnError>) => {
-    return (options.client ?? client).patch<UpdateIncidentSeverityResponses, UpdateIncidentSeverityErrors, ThrowOnError>({
-        security: [
-            {
-                in: 'cookie',
-                name: 'rezible_auth',
-                type: 'apiKey'
-            },
-            {
-                scheme: 'bearer',
-                type: 'http'
-            }
-        ],
-        url: '/incident_severities/{id}',
-        ...options,
-        headers: {
-            'Content-Type': 'application/json',
-            ...options.headers
-        }
-    });
-};
+export const updateIncidentSeverity = <ThrowOnError extends boolean = false>(options: Options<UpdateIncidentSeverityData, ThrowOnError>) => (options.client ?? client).patch<UpdateIncidentSeverityResponses, UpdateIncidentSeverityErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'rezible_auth',
+            type: 'apiKey'
+        }, { scheme: 'bearer', type: 'http' }],
+    url: '/incident_severities/{id}',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
 
 /**
  * List Incident Tags
  */
-export const listIncidentTags = <ThrowOnError extends boolean = false>(options?: Options<ListIncidentTagsData, ThrowOnError>) => {
-    return (options?.client ?? client).get<ListIncidentTagsResponses, ListIncidentTagsErrors, ThrowOnError>({
-        security: [
-            {
-                in: 'cookie',
-                name: 'rezible_auth',
-                type: 'apiKey'
-            },
-            {
-                scheme: 'bearer',
-                type: 'http'
-            }
-        ],
-        url: '/incident_tags',
-        ...options
-    });
-};
+export const listIncidentTags = <ThrowOnError extends boolean = false>(options?: Options<ListIncidentTagsData, ThrowOnError>) => (options?.client ?? client).get<ListIncidentTagsResponses, ListIncidentTagsErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'rezible_auth',
+            type: 'apiKey'
+        }, { scheme: 'bearer', type: 'http' }],
+    url: '/incident_tags',
+    ...options
+});
 
 /**
  * Create an Incident Tag
  */
-export const createIncidentTag = <ThrowOnError extends boolean = false>(options: Options<CreateIncidentTagData, ThrowOnError>) => {
-    return (options.client ?? client).post<CreateIncidentTagResponses, CreateIncidentTagErrors, ThrowOnError>({
-        security: [
-            {
-                in: 'cookie',
-                name: 'rezible_auth',
-                type: 'apiKey'
-            },
-            {
-                scheme: 'bearer',
-                type: 'http'
-            }
-        ],
-        url: '/incident_tags',
-        ...options,
-        headers: {
-            'Content-Type': 'application/json',
-            ...options.headers
-        }
-    });
-};
+export const createIncidentTag = <ThrowOnError extends boolean = false>(options: Options<CreateIncidentTagData, ThrowOnError>) => (options.client ?? client).post<CreateIncidentTagResponses, CreateIncidentTagErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'rezible_auth',
+            type: 'apiKey'
+        }, { scheme: 'bearer', type: 'http' }],
+    url: '/incident_tags',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
 
 /**
  * Archive an Incident Tag
  */
-export const archiveIncidentTag = <ThrowOnError extends boolean = false>(options: Options<ArchiveIncidentTagData, ThrowOnError>) => {
-    return (options.client ?? client).delete<ArchiveIncidentTagResponses, ArchiveIncidentTagErrors, ThrowOnError>({
-        security: [
-            {
-                in: 'cookie',
-                name: 'rezible_auth',
-                type: 'apiKey'
-            },
-            {
-                scheme: 'bearer',
-                type: 'http'
-            }
-        ],
-        url: '/incident_tags/{id}',
-        ...options
-    });
-};
+export const archiveIncidentTag = <ThrowOnError extends boolean = false>(options: Options<ArchiveIncidentTagData, ThrowOnError>) => (options.client ?? client).delete<ArchiveIncidentTagResponses, ArchiveIncidentTagErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'rezible_auth',
+            type: 'apiKey'
+        }, { scheme: 'bearer', type: 'http' }],
+    url: '/incident_tags/{id}',
+    ...options
+});
 
 /**
  * Get an Incident Tag
  */
-export const getIncidentTag = <ThrowOnError extends boolean = false>(options: Options<GetIncidentTagData, ThrowOnError>) => {
-    return (options.client ?? client).get<GetIncidentTagResponses, GetIncidentTagErrors, ThrowOnError>({
-        security: [
-            {
-                in: 'cookie',
-                name: 'rezible_auth',
-                type: 'apiKey'
-            },
-            {
-                scheme: 'bearer',
-                type: 'http'
-            }
-        ],
-        url: '/incident_tags/{id}',
-        ...options
-    });
-};
+export const getIncidentTag = <ThrowOnError extends boolean = false>(options: Options<GetIncidentTagData, ThrowOnError>) => (options.client ?? client).get<GetIncidentTagResponses, GetIncidentTagErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'rezible_auth',
+            type: 'apiKey'
+        }, { scheme: 'bearer', type: 'http' }],
+    url: '/incident_tags/{id}',
+    ...options
+});
 
 /**
  * Update an Incident Tag
  */
-export const updateIncidentTag = <ThrowOnError extends boolean = false>(options: Options<UpdateIncidentTagData, ThrowOnError>) => {
-    return (options.client ?? client).patch<UpdateIncidentTagResponses, UpdateIncidentTagErrors, ThrowOnError>({
-        security: [
-            {
-                in: 'cookie',
-                name: 'rezible_auth',
-                type: 'apiKey'
-            },
-            {
-                scheme: 'bearer',
-                type: 'http'
-            }
-        ],
-        url: '/incident_tags/{id}',
-        ...options,
-        headers: {
-            'Content-Type': 'application/json',
-            ...options.headers
-        }
-    });
-};
+export const updateIncidentTag = <ThrowOnError extends boolean = false>(options: Options<UpdateIncidentTagData, ThrowOnError>) => (options.client ?? client).patch<UpdateIncidentTagResponses, UpdateIncidentTagErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'rezible_auth',
+            type: 'apiKey'
+        }, { scheme: 'bearer', type: 'http' }],
+    url: '/incident_tags/{id}',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
 
 /**
  * List Types
  */
-export const listIncidentTypes = <ThrowOnError extends boolean = false>(options?: Options<ListIncidentTypesData, ThrowOnError>) => {
-    return (options?.client ?? client).get<ListIncidentTypesResponses, ListIncidentTypesErrors, ThrowOnError>({
-        security: [
-            {
-                in: 'cookie',
-                name: 'rezible_auth',
-                type: 'apiKey'
-            },
-            {
-                scheme: 'bearer',
-                type: 'http'
-            }
-        ],
-        url: '/incident_types',
-        ...options
-    });
-};
+export const listIncidentTypes = <ThrowOnError extends boolean = false>(options?: Options<ListIncidentTypesData, ThrowOnError>) => (options?.client ?? client).get<ListIncidentTypesResponses, ListIncidentTypesErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'rezible_auth',
+            type: 'apiKey'
+        }, { scheme: 'bearer', type: 'http' }],
+    url: '/incident_types',
+    ...options
+});
 
 /**
  * Create an Incident Type
  */
-export const createIncidentType = <ThrowOnError extends boolean = false>(options: Options<CreateIncidentTypeData, ThrowOnError>) => {
-    return (options.client ?? client).post<CreateIncidentTypeResponses, CreateIncidentTypeErrors, ThrowOnError>({
-        security: [
-            {
-                in: 'cookie',
-                name: 'rezible_auth',
-                type: 'apiKey'
-            },
-            {
-                scheme: 'bearer',
-                type: 'http'
-            }
-        ],
-        url: '/incident_types',
-        ...options,
-        headers: {
-            'Content-Type': 'application/json',
-            ...options.headers
-        }
-    });
-};
+export const createIncidentType = <ThrowOnError extends boolean = false>(options: Options<CreateIncidentTypeData, ThrowOnError>) => (options.client ?? client).post<CreateIncidentTypeResponses, CreateIncidentTypeErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'rezible_auth',
+            type: 'apiKey'
+        }, { scheme: 'bearer', type: 'http' }],
+    url: '/incident_types',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
 
 /**
  * Archive an Incident Type
  */
-export const archiveIncidentType = <ThrowOnError extends boolean = false>(options: Options<ArchiveIncidentTypeData, ThrowOnError>) => {
-    return (options.client ?? client).delete<ArchiveIncidentTypeResponses, ArchiveIncidentTypeErrors, ThrowOnError>({
-        security: [
-            {
-                in: 'cookie',
-                name: 'rezible_auth',
-                type: 'apiKey'
-            },
-            {
-                scheme: 'bearer',
-                type: 'http'
-            }
-        ],
-        url: '/incident_types/{id}',
-        ...options
-    });
-};
+export const archiveIncidentType = <ThrowOnError extends boolean = false>(options: Options<ArchiveIncidentTypeData, ThrowOnError>) => (options.client ?? client).delete<ArchiveIncidentTypeResponses, ArchiveIncidentTypeErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'rezible_auth',
+            type: 'apiKey'
+        }, { scheme: 'bearer', type: 'http' }],
+    url: '/incident_types/{id}',
+    ...options
+});
 
 /**
  * Get a Severity
  */
-export const getIncidentType = <ThrowOnError extends boolean = false>(options: Options<GetIncidentTypeData, ThrowOnError>) => {
-    return (options.client ?? client).get<GetIncidentTypeResponses, GetIncidentTypeErrors, ThrowOnError>({
-        security: [
-            {
-                in: 'cookie',
-                name: 'rezible_auth',
-                type: 'apiKey'
-            },
-            {
-                scheme: 'bearer',
-                type: 'http'
-            }
-        ],
-        url: '/incident_types/{id}',
-        ...options
-    });
-};
+export const getIncidentType = <ThrowOnError extends boolean = false>(options: Options<GetIncidentTypeData, ThrowOnError>) => (options.client ?? client).get<GetIncidentTypeResponses, GetIncidentTypeErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'rezible_auth',
+            type: 'apiKey'
+        }, { scheme: 'bearer', type: 'http' }],
+    url: '/incident_types/{id}',
+    ...options
+});
 
 /**
  * Update an Incident Type
  */
-export const updateIncidentType = <ThrowOnError extends boolean = false>(options: Options<UpdateIncidentTypeData, ThrowOnError>) => {
-    return (options.client ?? client).patch<UpdateIncidentTypeResponses, UpdateIncidentTypeErrors, ThrowOnError>({
-        security: [
-            {
-                in: 'cookie',
-                name: 'rezible_auth',
-                type: 'apiKey'
-            },
-            {
-                scheme: 'bearer',
-                type: 'http'
-            }
-        ],
-        url: '/incident_types/{id}',
-        ...options,
-        headers: {
-            'Content-Type': 'application/json',
-            ...options.headers
-        }
-    });
-};
+export const updateIncidentType = <ThrowOnError extends boolean = false>(options: Options<UpdateIncidentTypeData, ThrowOnError>) => (options.client ?? client).patch<UpdateIncidentTypeResponses, UpdateIncidentTypeErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'rezible_auth',
+            type: 'apiKey'
+        }, { scheme: 'bearer', type: 'http' }],
+    url: '/incident_types/{id}',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
 
 /**
  * List Incidents
  */
-export const listIncidents = <ThrowOnError extends boolean = false>(options?: Options<ListIncidentsData, ThrowOnError>) => {
-    return (options?.client ?? client).get<ListIncidentsResponses, ListIncidentsErrors, ThrowOnError>({
-        security: [
-            {
-                in: 'cookie',
-                name: 'rezible_auth',
-                type: 'apiKey'
-            },
-            {
-                scheme: 'bearer',
-                type: 'http'
-            }
-        ],
-        url: '/incidents',
-        ...options
-    });
-};
+export const listIncidents = <ThrowOnError extends boolean = false>(options?: Options<ListIncidentsData, ThrowOnError>) => (options?.client ?? client).get<ListIncidentsResponses, ListIncidentsErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'rezible_auth',
+            type: 'apiKey'
+        }, { scheme: 'bearer', type: 'http' }],
+    url: '/incidents',
+    ...options
+});
 
 /**
  * Create an Incident
  */
-export const createIncident = <ThrowOnError extends boolean = false>(options: Options<CreateIncidentData, ThrowOnError>) => {
-    return (options.client ?? client).post<CreateIncidentResponses, CreateIncidentErrors, ThrowOnError>({
-        security: [
-            {
-                in: 'cookie',
-                name: 'rezible_auth',
-                type: 'apiKey'
-            },
-            {
-                scheme: 'bearer',
-                type: 'http'
-            }
-        ],
-        url: '/incidents',
-        ...options,
-        headers: {
-            'Content-Type': 'application/json',
-            ...options.headers
-        }
-    });
-};
+export const createIncident = <ThrowOnError extends boolean = false>(options: Options<CreateIncidentData, ThrowOnError>) => (options.client ?? client).post<CreateIncidentResponses, CreateIncidentErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'rezible_auth',
+            type: 'apiKey'
+        }, { scheme: 'bearer', type: 'http' }],
+    url: '/incidents',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
 
 /**
  * Archive an Incident
  */
-export const archiveIncident = <ThrowOnError extends boolean = false>(options: Options<ArchiveIncidentData, ThrowOnError>) => {
-    return (options.client ?? client).delete<ArchiveIncidentResponses, ArchiveIncidentErrors, ThrowOnError>({
-        security: [
-            {
-                in: 'cookie',
-                name: 'rezible_auth',
-                type: 'apiKey'
-            },
-            {
-                scheme: 'bearer',
-                type: 'http'
-            }
-        ],
-        url: '/incidents/{id}',
-        ...options
-    });
-};
+export const archiveIncident = <ThrowOnError extends boolean = false>(options: Options<ArchiveIncidentData, ThrowOnError>) => (options.client ?? client).delete<ArchiveIncidentResponses, ArchiveIncidentErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'rezible_auth',
+            type: 'apiKey'
+        }, { scheme: 'bearer', type: 'http' }],
+    url: '/incidents/{id}',
+    ...options
+});
 
 /**
  * Get Incident
  */
-export const getIncident = <ThrowOnError extends boolean = false>(options: Options<GetIncidentData, ThrowOnError>) => {
-    return (options.client ?? client).get<GetIncidentResponses, GetIncidentErrors, ThrowOnError>({
-        security: [
-            {
-                in: 'cookie',
-                name: 'rezible_auth',
-                type: 'apiKey'
-            },
-            {
-                scheme: 'bearer',
-                type: 'http'
-            }
-        ],
-        url: '/incidents/{id}',
-        ...options
-    });
-};
+export const getIncident = <ThrowOnError extends boolean = false>(options: Options<GetIncidentData, ThrowOnError>) => (options.client ?? client).get<GetIncidentResponses, GetIncidentErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'rezible_auth',
+            type: 'apiKey'
+        }, { scheme: 'bearer', type: 'http' }],
+    url: '/incidents/{id}',
+    ...options
+});
 
 /**
  * Update an Incident
  */
-export const updateIncident = <ThrowOnError extends boolean = false>(options: Options<UpdateIncidentData, ThrowOnError>) => {
-    return (options.client ?? client).patch<UpdateIncidentResponses, UpdateIncidentErrors, ThrowOnError>({
-        security: [
-            {
-                in: 'cookie',
-                name: 'rezible_auth',
-                type: 'apiKey'
-            },
-            {
-                scheme: 'bearer',
-                type: 'http'
-            }
-        ],
-        url: '/incidents/{id}',
-        ...options,
-        headers: {
-            'Content-Type': 'application/json',
-            ...options.headers
-        }
-    });
-};
+export const updateIncident = <ThrowOnError extends boolean = false>(options: Options<UpdateIncidentData, ThrowOnError>) => (options.client ?? client).patch<UpdateIncidentResponses, UpdateIncidentErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'rezible_auth',
+            type: 'apiKey'
+        }, { scheme: 'bearer', type: 'http' }],
+    url: '/incidents/{id}',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
 
 /**
  * Get Debrief For Incident
  */
-export const getIncidentUserDebrief = <ThrowOnError extends boolean = false>(options: Options<GetIncidentUserDebriefData, ThrowOnError>) => {
-    return (options.client ?? client).get<GetIncidentUserDebriefResponses, GetIncidentUserDebriefErrors, ThrowOnError>({
-        security: [
-            {
-                in: 'cookie',
-                name: 'rezible_auth',
-                type: 'apiKey'
-            },
-            {
-                scheme: 'bearer',
-                type: 'http'
-            }
-        ],
-        url: '/incidents/{id}/debrief',
-        ...options
-    });
-};
+export const getIncidentUserDebrief = <ThrowOnError extends boolean = false>(options: Options<GetIncidentUserDebriefData, ThrowOnError>) => (options.client ?? client).get<GetIncidentUserDebriefResponses, GetIncidentUserDebriefErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'rezible_auth',
+            type: 'apiKey'
+        }, { scheme: 'bearer', type: 'http' }],
+    url: '/incidents/{id}/debrief',
+    ...options
+});
 
 /**
  * List Events for Incident
  */
-export const listIncidentEvents = <ThrowOnError extends boolean = false>(options: Options<ListIncidentEventsData, ThrowOnError>) => {
-    return (options.client ?? client).get<ListIncidentEventsResponses, ListIncidentEventsErrors, ThrowOnError>({
-        security: [
-            {
-                in: 'cookie',
-                name: 'rezible_auth',
-                type: 'apiKey'
-            },
-            {
-                scheme: 'bearer',
-                type: 'http'
-            }
-        ],
-        url: '/incidents/{id}/events',
-        ...options
-    });
-};
+export const listIncidentEvents = <ThrowOnError extends boolean = false>(options: Options<ListIncidentEventsData, ThrowOnError>) => (options.client ?? client).get<ListIncidentEventsResponses, ListIncidentEventsErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'rezible_auth',
+            type: 'apiKey'
+        }, { scheme: 'bearer', type: 'http' }],
+    url: '/incidents/{id}/events',
+    ...options
+});
 
 /**
  * Create an Incident Event
  */
-export const createIncidentEvent = <ThrowOnError extends boolean = false>(options: Options<CreateIncidentEventData, ThrowOnError>) => {
-    return (options.client ?? client).post<CreateIncidentEventResponses, CreateIncidentEventErrors, ThrowOnError>({
-        security: [
-            {
-                in: 'cookie',
-                name: 'rezible_auth',
-                type: 'apiKey'
-            },
-            {
-                scheme: 'bearer',
-                type: 'http'
-            }
-        ],
-        url: '/incidents/{id}/events',
-        ...options,
-        headers: {
-            'Content-Type': 'application/json',
-            ...options.headers
-        }
-    });
-};
+export const createIncidentEvent = <ThrowOnError extends boolean = false>(options: Options<CreateIncidentEventData, ThrowOnError>) => (options.client ?? client).post<CreateIncidentEventResponses, CreateIncidentEventErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'rezible_auth',
+            type: 'apiKey'
+        }, { scheme: 'bearer', type: 'http' }],
+    url: '/incidents/{id}/events',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
 
 /**
  * List Milestones for Incident
  */
-export const listIncidentMilestones = <ThrowOnError extends boolean = false>(options: Options<ListIncidentMilestonesData, ThrowOnError>) => {
-    return (options.client ?? client).get<ListIncidentMilestonesResponses, ListIncidentMilestonesErrors, ThrowOnError>({
-        security: [
-            {
-                in: 'cookie',
-                name: 'rezible_auth',
-                type: 'apiKey'
-            },
-            {
-                scheme: 'bearer',
-                type: 'http'
-            }
-        ],
-        url: '/incidents/{id}/milestones',
-        ...options
-    });
-};
+export const listIncidentMilestones = <ThrowOnError extends boolean = false>(options: Options<ListIncidentMilestonesData, ThrowOnError>) => (options.client ?? client).get<ListIncidentMilestonesResponses, ListIncidentMilestonesErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'rezible_auth',
+            type: 'apiKey'
+        }, { scheme: 'bearer', type: 'http' }],
+    url: '/incidents/{id}/milestones',
+    ...options
+});
 
 /**
  * Create an Incident Milestone
  */
-export const createIncidentMilestone = <ThrowOnError extends boolean = false>(options: Options<CreateIncidentMilestoneData, ThrowOnError>) => {
-    return (options.client ?? client).post<CreateIncidentMilestoneResponses, CreateIncidentMilestoneErrors, ThrowOnError>({
-        security: [
-            {
-                in: 'cookie',
-                name: 'rezible_auth',
-                type: 'apiKey'
-            },
-            {
-                scheme: 'bearer',
-                type: 'http'
-            }
-        ],
-        url: '/incidents/{id}/milestones',
-        ...options,
-        headers: {
-            'Content-Type': 'application/json',
-            ...options.headers
-        }
-    });
-};
+export const createIncidentMilestone = <ThrowOnError extends boolean = false>(options: Options<CreateIncidentMilestoneData, ThrowOnError>) => (options.client ?? client).post<CreateIncidentMilestoneResponses, CreateIncidentMilestoneErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'rezible_auth',
+            type: 'apiKey'
+        }, { scheme: 'bearer', type: 'http' }],
+    url: '/incidents/{id}/milestones',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
 
 /**
  * Get a Retrospective for an Incident
  */
-export const getRetrospectiveForIncident = <ThrowOnError extends boolean = false>(options: Options<GetRetrospectiveForIncidentData, ThrowOnError>) => {
-    return (options.client ?? client).get<GetRetrospectiveForIncidentResponses, GetRetrospectiveForIncidentErrors, ThrowOnError>({
-        security: [
-            {
-                in: 'cookie',
-                name: 'rezible_auth',
-                type: 'apiKey'
-            },
-            {
-                scheme: 'bearer',
-                type: 'http'
-            }
-        ],
-        url: '/incidents/{id}/retrospective',
-        ...options
-    });
-};
+export const getRetrospectiveForIncident = <ThrowOnError extends boolean = false>(options: Options<GetRetrospectiveForIncidentData, ThrowOnError>) => (options.client ?? client).get<GetRetrospectiveForIncidentResponses, GetRetrospectiveForIncidentErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'rezible_auth',
+            type: 'apiKey'
+        }, { scheme: 'bearer', type: 'http' }],
+    url: '/incidents/{id}/retrospective',
+    ...options
+});
 
 /**
  * List Integrations
  */
-export const listIntegrations = <ThrowOnError extends boolean = false>(options?: Options<ListIntegrationsData, ThrowOnError>) => {
-    return (options?.client ?? client).get<ListIntegrationsResponses, ListIntegrationsErrors, ThrowOnError>({
-        security: [
-            {
-                in: 'cookie',
-                name: 'rezible_auth',
-                type: 'apiKey'
-            },
-            {
-                scheme: 'bearer',
-                type: 'http'
-            }
-        ],
-        url: '/integrations',
-        ...options
-    });
-};
+export const listIntegrations = <ThrowOnError extends boolean = false>(options?: Options<ListIntegrationsData, ThrowOnError>) => (options?.client ?? client).get<ListIntegrationsResponses, ListIntegrationsErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'rezible_auth',
+            type: 'apiKey'
+        }, { scheme: 'bearer', type: 'http' }],
+    url: '/integrations',
+    ...options
+});
 
 /**
  * Create an Integration
  */
-export const createIntegration = <ThrowOnError extends boolean = false>(options: Options<CreateIntegrationData, ThrowOnError>) => {
-    return (options.client ?? client).post<CreateIntegrationResponses, CreateIntegrationErrors, ThrowOnError>({
-        security: [
-            {
-                in: 'cookie',
-                name: 'rezible_auth',
-                type: 'apiKey'
-            },
-            {
-                scheme: 'bearer',
-                type: 'http'
-            }
-        ],
-        url: '/integrations',
-        ...options,
-        headers: {
-            'Content-Type': 'application/json',
-            ...options.headers
-        }
-    });
-};
+export const createIntegration = <ThrowOnError extends boolean = false>(options: Options<CreateIntegrationData, ThrowOnError>) => (options.client ?? client).post<CreateIntegrationResponses, CreateIntegrationErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'rezible_auth',
+            type: 'apiKey'
+        }, { scheme: 'bearer', type: 'http' }],
+    url: '/integrations',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
 
 /**
  * Delete an Integration
  */
-export const deleteIntegration = <ThrowOnError extends boolean = false>(options: Options<DeleteIntegrationData, ThrowOnError>) => {
-    return (options.client ?? client).delete<DeleteIntegrationResponses, DeleteIntegrationErrors, ThrowOnError>({
-        security: [
-            {
-                in: 'cookie',
-                name: 'rezible_auth',
-                type: 'apiKey'
-            },
-            {
-                scheme: 'bearer',
-                type: 'http'
-            }
-        ],
-        url: '/integrations/{id}',
-        ...options
-    });
-};
+export const deleteIntegration = <ThrowOnError extends boolean = false>(options: Options<DeleteIntegrationData, ThrowOnError>) => (options.client ?? client).delete<DeleteIntegrationResponses, DeleteIntegrationErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'rezible_auth',
+            type: 'apiKey'
+        }, { scheme: 'bearer', type: 'http' }],
+    url: '/integrations/{id}',
+    ...options
+});
 
 /**
  * Get an Integration
  */
-export const getIntegration = <ThrowOnError extends boolean = false>(options: Options<GetIntegrationData, ThrowOnError>) => {
-    return (options.client ?? client).get<GetIntegrationResponses, GetIntegrationErrors, ThrowOnError>({
-        security: [
-            {
-                in: 'cookie',
-                name: 'rezible_auth',
-                type: 'apiKey'
-            },
-            {
-                scheme: 'bearer',
-                type: 'http'
-            }
-        ],
-        url: '/integrations/{id}',
-        ...options
-    });
-};
+export const getIntegration = <ThrowOnError extends boolean = false>(options: Options<GetIntegrationData, ThrowOnError>) => (options.client ?? client).get<GetIntegrationResponses, GetIntegrationErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'rezible_auth',
+            type: 'apiKey'
+        }, { scheme: 'bearer', type: 'http' }],
+    url: '/integrations/{id}',
+    ...options
+});
 
 /**
  * Update an Integration
  */
-export const updateIntegration = <ThrowOnError extends boolean = false>(options: Options<UpdateIntegrationData, ThrowOnError>) => {
-    return (options.client ?? client).patch<UpdateIntegrationResponses, UpdateIntegrationErrors, ThrowOnError>({
-        security: [
-            {
-                in: 'cookie',
-                name: 'rezible_auth',
-                type: 'apiKey'
-            },
-            {
-                scheme: 'bearer',
-                type: 'http'
-            }
-        ],
-        url: '/integrations/{id}',
-        ...options,
-        headers: {
-            'Content-Type': 'application/json',
-            ...options.headers
-        }
-    });
-};
+export const updateIntegration = <ThrowOnError extends boolean = false>(options: Options<UpdateIntegrationData, ThrowOnError>) => (options.client ?? client).patch<UpdateIntegrationResponses, UpdateIntegrationErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'rezible_auth',
+            type: 'apiKey'
+        }, { scheme: 'bearer', type: 'http' }],
+    url: '/integrations/{id}',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
 
 /**
  * Complete OAuth flow for an Integration
  */
-export const completeIntegrationOauth = <ThrowOnError extends boolean = false>(options: Options<CompleteIntegrationOauthData, ThrowOnError>) => {
-    return (options.client ?? client).post<CompleteIntegrationOauthResponses, CompleteIntegrationOauthErrors, ThrowOnError>({
-        security: [
-            {
-                in: 'cookie',
-                name: 'rezible_auth',
-                type: 'apiKey'
-            },
-            {
-                scheme: 'bearer',
-                type: 'http'
-            }
-        ],
-        url: '/integrations_oauth/complete',
-        ...options,
-        headers: {
-            'Content-Type': 'application/json',
-            ...options.headers
-        }
-    });
-};
+export const completeIntegrationOauth = <ThrowOnError extends boolean = false>(options: Options<CompleteIntegrationOauthData, ThrowOnError>) => (options.client ?? client).post<CompleteIntegrationOauthResponses, CompleteIntegrationOauthErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'rezible_auth',
+            type: 'apiKey'
+        }, { scheme: 'bearer', type: 'http' }],
+    url: '/integrations_oauth/complete',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
 
 /**
  * Start OAuth flow for an Integration
  */
-export const startIntegrationOauth = <ThrowOnError extends boolean = false>(options: Options<StartIntegrationOauthData, ThrowOnError>) => {
-    return (options.client ?? client).post<StartIntegrationOauthResponses, StartIntegrationOauthErrors, ThrowOnError>({
-        security: [
-            {
-                in: 'cookie',
-                name: 'rezible_auth',
-                type: 'apiKey'
-            },
-            {
-                scheme: 'bearer',
-                type: 'http'
-            }
-        ],
-        url: '/integrations_oauth/start',
-        ...options,
-        headers: {
-            'Content-Type': 'application/json',
-            ...options.headers
-        }
-    });
-};
+export const startIntegrationOauth = <ThrowOnError extends boolean = false>(options: Options<StartIntegrationOauthData, ThrowOnError>) => (options.client ?? client).post<StartIntegrationOauthResponses, StartIntegrationOauthErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'rezible_auth',
+            type: 'apiKey'
+        }, { scheme: 'bearer', type: 'http' }],
+    url: '/integrations_oauth/start',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
 
 /**
  * List Meeting Schedules
  */
-export const listMeetingSchedules = <ThrowOnError extends boolean = false>(options?: Options<ListMeetingSchedulesData, ThrowOnError>) => {
-    return (options?.client ?? client).get<ListMeetingSchedulesResponses, ListMeetingSchedulesErrors, ThrowOnError>({
-        security: [
-            {
-                in: 'cookie',
-                name: 'rezible_auth',
-                type: 'apiKey'
-            },
-            {
-                scheme: 'bearer',
-                type: 'http'
-            }
-        ],
-        url: '/meeting_schedules',
-        ...options
-    });
-};
+export const listMeetingSchedules = <ThrowOnError extends boolean = false>(options?: Options<ListMeetingSchedulesData, ThrowOnError>) => (options?.client ?? client).get<ListMeetingSchedulesResponses, ListMeetingSchedulesErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'rezible_auth',
+            type: 'apiKey'
+        }, { scheme: 'bearer', type: 'http' }],
+    url: '/meeting_schedules',
+    ...options
+});
 
 /**
  * Create a Meeting Schedule
  */
-export const createMeetingSchedule = <ThrowOnError extends boolean = false>(options: Options<CreateMeetingScheduleData, ThrowOnError>) => {
-    return (options.client ?? client).post<CreateMeetingScheduleResponses, CreateMeetingScheduleErrors, ThrowOnError>({
-        security: [
-            {
-                in: 'cookie',
-                name: 'rezible_auth',
-                type: 'apiKey'
-            },
-            {
-                scheme: 'bearer',
-                type: 'http'
-            }
-        ],
-        url: '/meeting_schedules',
-        ...options,
-        headers: {
-            'Content-Type': 'application/json',
-            ...options.headers
-        }
-    });
-};
+export const createMeetingSchedule = <ThrowOnError extends boolean = false>(options: Options<CreateMeetingScheduleData, ThrowOnError>) => (options.client ?? client).post<CreateMeetingScheduleResponses, CreateMeetingScheduleErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'rezible_auth',
+            type: 'apiKey'
+        }, { scheme: 'bearer', type: 'http' }],
+    url: '/meeting_schedules',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
 
 /**
  * Archive a Meeting Schedule
  */
-export const archiveMeetingSchedule = <ThrowOnError extends boolean = false>(options: Options<ArchiveMeetingScheduleData, ThrowOnError>) => {
-    return (options.client ?? client).delete<ArchiveMeetingScheduleResponses, ArchiveMeetingScheduleErrors, ThrowOnError>({
-        security: [
-            {
-                in: 'cookie',
-                name: 'rezible_auth',
-                type: 'apiKey'
-            },
-            {
-                scheme: 'bearer',
-                type: 'http'
-            }
-        ],
-        url: '/meeting_schedules/{id}',
-        ...options
-    });
-};
+export const archiveMeetingSchedule = <ThrowOnError extends boolean = false>(options: Options<ArchiveMeetingScheduleData, ThrowOnError>) => (options.client ?? client).delete<ArchiveMeetingScheduleResponses, ArchiveMeetingScheduleErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'rezible_auth',
+            type: 'apiKey'
+        }, { scheme: 'bearer', type: 'http' }],
+    url: '/meeting_schedules/{id}',
+    ...options
+});
 
 /**
  * Get a Meeting Schedule
  */
-export const getMeetingSchedule = <ThrowOnError extends boolean = false>(options: Options<GetMeetingScheduleData, ThrowOnError>) => {
-    return (options.client ?? client).get<GetMeetingScheduleResponses, GetMeetingScheduleErrors, ThrowOnError>({
-        security: [
-            {
-                in: 'cookie',
-                name: 'rezible_auth',
-                type: 'apiKey'
-            },
-            {
-                scheme: 'bearer',
-                type: 'http'
-            }
-        ],
-        url: '/meeting_schedules/{id}',
-        ...options
-    });
-};
+export const getMeetingSchedule = <ThrowOnError extends boolean = false>(options: Options<GetMeetingScheduleData, ThrowOnError>) => (options.client ?? client).get<GetMeetingScheduleResponses, GetMeetingScheduleErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'rezible_auth',
+            type: 'apiKey'
+        }, { scheme: 'bearer', type: 'http' }],
+    url: '/meeting_schedules/{id}',
+    ...options
+});
 
 /**
  * Update a Meeting Schedule
  */
-export const updateMeetingSchedule = <ThrowOnError extends boolean = false>(options: Options<UpdateMeetingScheduleData, ThrowOnError>) => {
-    return (options.client ?? client).patch<UpdateMeetingScheduleResponses, UpdateMeetingScheduleErrors, ThrowOnError>({
-        security: [
-            {
-                in: 'cookie',
-                name: 'rezible_auth',
-                type: 'apiKey'
-            },
-            {
-                scheme: 'bearer',
-                type: 'http'
-            }
-        ],
-        url: '/meeting_schedules/{id}',
-        ...options,
-        headers: {
-            'Content-Type': 'application/json',
-            ...options.headers
-        }
-    });
-};
+export const updateMeetingSchedule = <ThrowOnError extends boolean = false>(options: Options<UpdateMeetingScheduleData, ThrowOnError>) => (options.client ?? client).patch<UpdateMeetingScheduleResponses, UpdateMeetingScheduleErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'rezible_auth',
+            type: 'apiKey'
+        }, { scheme: 'bearer', type: 'http' }],
+    url: '/meeting_schedules/{id}',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
 
 /**
  * List Sessions
  */
-export const listMeetingSessions = <ThrowOnError extends boolean = false>(options?: Options<ListMeetingSessionsData, ThrowOnError>) => {
-    return (options?.client ?? client).get<ListMeetingSessionsResponses, ListMeetingSessionsErrors, ThrowOnError>({
-        security: [
-            {
-                in: 'cookie',
-                name: 'rezible_auth',
-                type: 'apiKey'
-            },
-            {
-                scheme: 'bearer',
-                type: 'http'
-            }
-        ],
-        url: '/meeting_sessions',
-        ...options
-    });
-};
+export const listMeetingSessions = <ThrowOnError extends boolean = false>(options?: Options<ListMeetingSessionsData, ThrowOnError>) => (options?.client ?? client).get<ListMeetingSessionsResponses, ListMeetingSessionsErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'rezible_auth',
+            type: 'apiKey'
+        }, { scheme: 'bearer', type: 'http' }],
+    url: '/meeting_sessions',
+    ...options
+});
 
 /**
  * Create a Meeting Session
  */
-export const createMeetingSession = <ThrowOnError extends boolean = false>(options: Options<CreateMeetingSessionData, ThrowOnError>) => {
-    return (options.client ?? client).post<CreateMeetingSessionResponses, CreateMeetingSessionErrors, ThrowOnError>({
-        security: [
-            {
-                in: 'cookie',
-                name: 'rezible_auth',
-                type: 'apiKey'
-            },
-            {
-                scheme: 'bearer',
-                type: 'http'
-            }
-        ],
-        url: '/meeting_sessions',
-        ...options,
-        headers: {
-            'Content-Type': 'application/json',
-            ...options.headers
-        }
-    });
-};
+export const createMeetingSession = <ThrowOnError extends boolean = false>(options: Options<CreateMeetingSessionData, ThrowOnError>) => (options.client ?? client).post<CreateMeetingSessionResponses, CreateMeetingSessionErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'rezible_auth',
+            type: 'apiKey'
+        }, { scheme: 'bearer', type: 'http' }],
+    url: '/meeting_sessions',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
 
 /**
  * Archive a Meeting Session
  */
-export const archiveMeetingSession = <ThrowOnError extends boolean = false>(options: Options<ArchiveMeetingSessionData, ThrowOnError>) => {
-    return (options.client ?? client).delete<ArchiveMeetingSessionResponses, ArchiveMeetingSessionErrors, ThrowOnError>({
-        security: [
-            {
-                in: 'cookie',
-                name: 'rezible_auth',
-                type: 'apiKey'
-            },
-            {
-                scheme: 'bearer',
-                type: 'http'
-            }
-        ],
-        url: '/meeting_sessions/{id}',
-        ...options
-    });
-};
+export const archiveMeetingSession = <ThrowOnError extends boolean = false>(options: Options<ArchiveMeetingSessionData, ThrowOnError>) => (options.client ?? client).delete<ArchiveMeetingSessionResponses, ArchiveMeetingSessionErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'rezible_auth',
+            type: 'apiKey'
+        }, { scheme: 'bearer', type: 'http' }],
+    url: '/meeting_sessions/{id}',
+    ...options
+});
 
 /**
  * Get a Meeting Session
  */
-export const getMeetingSession = <ThrowOnError extends boolean = false>(options: Options<GetMeetingSessionData, ThrowOnError>) => {
-    return (options.client ?? client).get<GetMeetingSessionResponses, GetMeetingSessionErrors, ThrowOnError>({
-        security: [
-            {
-                in: 'cookie',
-                name: 'rezible_auth',
-                type: 'apiKey'
-            },
-            {
-                scheme: 'bearer',
-                type: 'http'
-            }
-        ],
-        url: '/meeting_sessions/{id}',
-        ...options
-    });
-};
+export const getMeetingSession = <ThrowOnError extends boolean = false>(options: Options<GetMeetingSessionData, ThrowOnError>) => (options.client ?? client).get<GetMeetingSessionResponses, GetMeetingSessionErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'rezible_auth',
+            type: 'apiKey'
+        }, { scheme: 'bearer', type: 'http' }],
+    url: '/meeting_sessions/{id}',
+    ...options
+});
 
 /**
  * Update a Meeting Session
  */
-export const updateMeetingSession = <ThrowOnError extends boolean = false>(options: Options<UpdateMeetingSessionData, ThrowOnError>) => {
-    return (options.client ?? client).patch<UpdateMeetingSessionResponses, UpdateMeetingSessionErrors, ThrowOnError>({
-        security: [
-            {
-                in: 'cookie',
-                name: 'rezible_auth',
-                type: 'apiKey'
-            },
-            {
-                scheme: 'bearer',
-                type: 'http'
-            }
-        ],
-        url: '/meeting_sessions/{id}',
-        ...options,
-        headers: {
-            'Content-Type': 'application/json',
-            ...options.headers
-        }
-    });
-};
+export const updateMeetingSession = <ThrowOnError extends boolean = false>(options: Options<UpdateMeetingSessionData, ThrowOnError>) => (options.client ?? client).patch<UpdateMeetingSessionResponses, UpdateMeetingSessionErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'rezible_auth',
+            type: 'apiKey'
+        }, { scheme: 'bearer', type: 'http' }],
+    url: '/meeting_sessions/{id}',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
 
 /**
  * Create an Oncall Handover Template
  */
-export const createOncallHandoverTemplate = <ThrowOnError extends boolean = false>(options: Options<CreateOncallHandoverTemplateData, ThrowOnError>) => {
-    return (options.client ?? client).post<CreateOncallHandoverTemplateResponses, CreateOncallHandoverTemplateErrors, ThrowOnError>({
-        security: [
-            {
-                in: 'cookie',
-                name: 'rezible_auth',
-                type: 'apiKey'
-            },
-            {
-                scheme: 'bearer',
-                type: 'http'
-            }
-        ],
-        url: '/oncall/handover_templates',
-        ...options,
-        headers: {
-            'Content-Type': 'application/json',
-            ...options.headers
-        }
-    });
-};
+export const createOncallHandoverTemplate = <ThrowOnError extends boolean = false>(options: Options<CreateOncallHandoverTemplateData, ThrowOnError>) => (options.client ?? client).post<CreateOncallHandoverTemplateResponses, CreateOncallHandoverTemplateErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'rezible_auth',
+            type: 'apiKey'
+        }, { scheme: 'bearer', type: 'http' }],
+    url: '/oncall/handover_templates',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
 
 /**
  * Archive an Oncall Handover Template
  */
-export const archiveOncallHandoverTemplate = <ThrowOnError extends boolean = false>(options: Options<ArchiveOncallHandoverTemplateData, ThrowOnError>) => {
-    return (options.client ?? client).delete<ArchiveOncallHandoverTemplateResponses, ArchiveOncallHandoverTemplateErrors, ThrowOnError>({
-        security: [
-            {
-                in: 'cookie',
-                name: 'rezible_auth',
-                type: 'apiKey'
-            },
-            {
-                scheme: 'bearer',
-                type: 'http'
-            }
-        ],
-        url: '/oncall/handover_templates/{id}',
-        ...options
-    });
-};
+export const archiveOncallHandoverTemplate = <ThrowOnError extends boolean = false>(options: Options<ArchiveOncallHandoverTemplateData, ThrowOnError>) => (options.client ?? client).delete<ArchiveOncallHandoverTemplateResponses, ArchiveOncallHandoverTemplateErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'rezible_auth',
+            type: 'apiKey'
+        }, { scheme: 'bearer', type: 'http' }],
+    url: '/oncall/handover_templates/{id}',
+    ...options
+});
 
 /**
  * Get handover for a shift
  */
-export const getOncallShiftHandoverTemplate = <ThrowOnError extends boolean = false>(options: Options<GetOncallShiftHandoverTemplateData, ThrowOnError>) => {
-    return (options.client ?? client).get<GetOncallShiftHandoverTemplateResponses, GetOncallShiftHandoverTemplateErrors, ThrowOnError>({
-        security: [
-            {
-                in: 'cookie',
-                name: 'rezible_auth',
-                type: 'apiKey'
-            },
-            {
-                scheme: 'bearer',
-                type: 'http'
-            }
-        ],
-        url: '/oncall/handover_templates/{id}',
-        ...options
-    });
-};
+export const getOncallShiftHandoverTemplate = <ThrowOnError extends boolean = false>(options: Options<GetOncallShiftHandoverTemplateData, ThrowOnError>) => (options.client ?? client).get<GetOncallShiftHandoverTemplateResponses, GetOncallShiftHandoverTemplateErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'rezible_auth',
+            type: 'apiKey'
+        }, { scheme: 'bearer', type: 'http' }],
+    url: '/oncall/handover_templates/{id}',
+    ...options
+});
 
 /**
  * Update an Oncall Handover Template
  */
-export const updateOncallHandoverTemplate = <ThrowOnError extends boolean = false>(options: Options<UpdateOncallHandoverTemplateData, ThrowOnError>) => {
-    return (options.client ?? client).patch<UpdateOncallHandoverTemplateResponses, UpdateOncallHandoverTemplateErrors, ThrowOnError>({
-        security: [
-            {
-                in: 'cookie',
-                name: 'rezible_auth',
-                type: 'apiKey'
-            },
-            {
-                scheme: 'bearer',
-                type: 'http'
-            }
-        ],
-        url: '/oncall/handover_templates/{id}',
-        ...options,
-        headers: {
-            'Content-Type': 'application/json',
-            ...options.headers
-        }
-    });
-};
+export const updateOncallHandoverTemplate = <ThrowOnError extends boolean = false>(options: Options<UpdateOncallHandoverTemplateData, ThrowOnError>) => (options.client ?? client).patch<UpdateOncallHandoverTemplateResponses, UpdateOncallHandoverTemplateErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'rezible_auth',
+            type: 'apiKey'
+        }, { scheme: 'bearer', type: 'http' }],
+    url: '/oncall/handover_templates/{id}',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
 
 /**
  * Update an Oncall Shift Handover
  */
-export const updateOncallShiftHandover = <ThrowOnError extends boolean = false>(options: Options<UpdateOncallShiftHandoverData, ThrowOnError>) => {
-    return (options.client ?? client).patch<UpdateOncallShiftHandoverResponses, UpdateOncallShiftHandoverErrors, ThrowOnError>({
-        security: [
-            {
-                in: 'cookie',
-                name: 'rezible_auth',
-                type: 'apiKey'
-            },
-            {
-                scheme: 'bearer',
-                type: 'http'
-            }
-        ],
-        url: '/oncall/handovers/{id}',
-        ...options,
-        headers: {
-            'Content-Type': 'application/json',
-            ...options.headers
-        }
-    });
-};
+export const updateOncallShiftHandover = <ThrowOnError extends boolean = false>(options: Options<UpdateOncallShiftHandoverData, ThrowOnError>) => (options.client ?? client).patch<UpdateOncallShiftHandoverResponses, UpdateOncallShiftHandoverErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'rezible_auth',
+            type: 'apiKey'
+        }, { scheme: 'bearer', type: 'http' }],
+    url: '/oncall/handovers/{id}',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
 
 /**
  * Send a Shift Handover
  */
-export const sendOncallShiftHandover = <ThrowOnError extends boolean = false>(options: Options<SendOncallShiftHandoverData, ThrowOnError>) => {
-    return (options.client ?? client).post<SendOncallShiftHandoverResponses, SendOncallShiftHandoverErrors, ThrowOnError>({
-        security: [
-            {
-                in: 'cookie',
-                name: 'rezible_auth',
-                type: 'apiKey'
-            },
-            {
-                scheme: 'bearer',
-                type: 'http'
-            }
-        ],
-        url: '/oncall/handovers/{id}/send',
-        ...options,
-        headers: {
-            'Content-Type': 'application/json',
-            ...options.headers
-        }
-    });
-};
+export const sendOncallShiftHandover = <ThrowOnError extends boolean = false>(options: Options<SendOncallShiftHandoverData, ThrowOnError>) => (options.client ?? client).post<SendOncallShiftHandoverResponses, SendOncallShiftHandoverErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'rezible_auth',
+            type: 'apiKey'
+        }, { scheme: 'bearer', type: 'http' }],
+    url: '/oncall/handovers/{id}/send',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
 
 /**
  * List Oncall Rosters
  */
-export const listOncallRosters = <ThrowOnError extends boolean = false>(options?: Options<ListOncallRostersData, ThrowOnError>) => {
-    return (options?.client ?? client).get<ListOncallRostersResponses, ListOncallRostersErrors, ThrowOnError>({
-        security: [
-            {
-                in: 'cookie',
-                name: 'rezible_auth',
-                type: 'apiKey'
-            },
-            {
-                scheme: 'bearer',
-                type: 'http'
-            }
-        ],
-        url: '/oncall/rosters',
-        ...options
-    });
-};
+export const listOncallRosters = <ThrowOnError extends boolean = false>(options?: Options<ListOncallRostersData, ThrowOnError>) => (options?.client ?? client).get<ListOncallRostersResponses, ListOncallRostersErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'rezible_auth',
+            type: 'apiKey'
+        }, { scheme: 'bearer', type: 'http' }],
+    url: '/oncall/rosters',
+    ...options
+});
 
 /**
  * Get oncall roster
  */
-export const getOncallRoster = <ThrowOnError extends boolean = false>(options: Options<GetOncallRosterData, ThrowOnError>) => {
-    return (options.client ?? client).get<GetOncallRosterResponses, GetOncallRosterErrors, ThrowOnError>({
-        security: [
-            {
-                in: 'cookie',
-                name: 'rezible_auth',
-                type: 'apiKey'
-            },
-            {
-                scheme: 'bearer',
-                type: 'http'
-            }
-        ],
-        url: '/oncall/rosters/{id}',
-        ...options
-    });
-};
+export const getOncallRoster = <ThrowOnError extends boolean = false>(options: Options<GetOncallRosterData, ThrowOnError>) => (options.client ?? client).get<GetOncallRosterResponses, GetOncallRosterErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'rezible_auth',
+            type: 'apiKey'
+        }, { scheme: 'bearer', type: 'http' }],
+    url: '/oncall/rosters/{id}',
+    ...options
+});
 
 /**
  * List Oncall Shifts
  */
-export const listOncallShifts = <ThrowOnError extends boolean = false>(options?: Options<ListOncallShiftsData, ThrowOnError>) => {
-    return (options?.client ?? client).get<ListOncallShiftsResponses, ListOncallShiftsErrors, ThrowOnError>({
-        security: [
-            {
-                in: 'cookie',
-                name: 'rezible_auth',
-                type: 'apiKey'
-            },
-            {
-                scheme: 'bearer',
-                type: 'http'
-            }
-        ],
-        url: '/oncall/shifts',
-        ...options
-    });
-};
+export const listOncallShifts = <ThrowOnError extends boolean = false>(options?: Options<ListOncallShiftsData, ThrowOnError>) => (options?.client ?? client).get<ListOncallShiftsResponses, ListOncallShiftsErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'rezible_auth',
+            type: 'apiKey'
+        }, { scheme: 'bearer', type: 'http' }],
+    url: '/oncall/shifts',
+    ...options
+});
 
 /**
  * Get an Oncall Shift
  */
-export const getOncallShift = <ThrowOnError extends boolean = false>(options: Options<GetOncallShiftData, ThrowOnError>) => {
-    return (options.client ?? client).get<GetOncallShiftResponses, GetOncallShiftErrors, ThrowOnError>({
-        security: [
-            {
-                in: 'cookie',
-                name: 'rezible_auth',
-                type: 'apiKey'
-            },
-            {
-                scheme: 'bearer',
-                type: 'http'
-            }
-        ],
-        url: '/oncall/shifts/{id}',
-        ...options
-    });
-};
+export const getOncallShift = <ThrowOnError extends boolean = false>(options: Options<GetOncallShiftData, ThrowOnError>) => (options.client ?? client).get<GetOncallShiftResponses, GetOncallShiftErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'rezible_auth',
+            type: 'apiKey'
+        }, { scheme: 'bearer', type: 'http' }],
+    url: '/oncall/shifts/{id}',
+    ...options
+});
 
 /**
  * Get shifts adjacent to a given shift
  */
-export const getAdjacentOncallShifts = <ThrowOnError extends boolean = false>(options: Options<GetAdjacentOncallShiftsData, ThrowOnError>) => {
-    return (options.client ?? client).get<GetAdjacentOncallShiftsResponses, GetAdjacentOncallShiftsErrors, ThrowOnError>({
-        security: [
-            {
-                in: 'cookie',
-                name: 'rezible_auth',
-                type: 'apiKey'
-            },
-            {
-                scheme: 'bearer',
-                type: 'http'
-            }
-        ],
-        url: '/oncall/shifts/{id}/adjacent',
-        ...options
-    });
-};
+export const getAdjacentOncallShifts = <ThrowOnError extends boolean = false>(options: Options<GetAdjacentOncallShiftsData, ThrowOnError>) => (options.client ?? client).get<GetAdjacentOncallShiftsResponses, GetAdjacentOncallShiftsErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'rezible_auth',
+            type: 'apiKey'
+        }, { scheme: 'bearer', type: 'http' }],
+    url: '/oncall/shifts/{id}/adjacent',
+    ...options
+});
 
 /**
  * Get handover for a shift
  */
-export const getOncallShiftHandover = <ThrowOnError extends boolean = false>(options: Options<GetOncallShiftHandoverData, ThrowOnError>) => {
-    return (options.client ?? client).get<GetOncallShiftHandoverResponses, GetOncallShiftHandoverErrors, ThrowOnError>({
-        security: [
-            {
-                in: 'cookie',
-                name: 'rezible_auth',
-                type: 'apiKey'
-            },
-            {
-                scheme: 'bearer',
-                type: 'http'
-            }
-        ],
-        url: '/oncall/shifts/{id}/handover',
-        ...options
-    });
-};
+export const getOncallShiftHandover = <ThrowOnError extends boolean = false>(options: Options<GetOncallShiftHandoverData, ThrowOnError>) => (options.client ?? client).get<GetOncallShiftHandoverResponses, GetOncallShiftHandoverErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'rezible_auth',
+            type: 'apiKey'
+        }, { scheme: 'bearer', type: 'http' }],
+    url: '/oncall/shifts/{id}/handover',
+    ...options
+});
 
 /**
  * Get oncall information for a user
  */
-export const getUserOncallInformation = <ThrowOnError extends boolean = false>(options: Options<GetUserOncallInformationData, ThrowOnError>) => {
-    return (options.client ?? client).get<GetUserOncallInformationResponses, GetUserOncallInformationErrors, ThrowOnError>({
-        security: [
-            {
-                in: 'cookie',
-                name: 'rezible_auth',
-                type: 'apiKey'
-            },
-            {
-                scheme: 'bearer',
-                type: 'http'
-            }
-        ],
-        url: '/oncall/user',
-        ...options
-    });
-};
+export const getUserOncallInformation = <ThrowOnError extends boolean = false>(options: Options<GetUserOncallInformationData, ThrowOnError>) => (options.client ?? client).get<GetUserOncallInformationResponses, GetUserOncallInformationErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'rezible_auth',
+            type: 'apiKey'
+        }, { scheme: 'bearer', type: 'http' }],
+    url: '/oncall/user',
+    ...options
+});
 
 /**
  * List watched oncall rosters
  */
-export const listWatchedOncallRosters = <ThrowOnError extends boolean = false>(options?: Options<ListWatchedOncallRostersData, ThrowOnError>) => {
-    return (options?.client ?? client).get<ListWatchedOncallRostersResponses, ListWatchedOncallRostersErrors, ThrowOnError>({
-        security: [
-            {
-                in: 'cookie',
-                name: 'rezible_auth',
-                type: 'apiKey'
-            },
-            {
-                scheme: 'bearer',
-                type: 'http'
-            }
-        ],
-        url: '/oncall/watched_rosters',
-        ...options
-    });
-};
+export const listWatchedOncallRosters = <ThrowOnError extends boolean = false>(options?: Options<ListWatchedOncallRostersData, ThrowOnError>) => (options?.client ?? client).get<ListWatchedOncallRostersResponses, ListWatchedOncallRostersErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'rezible_auth',
+            type: 'apiKey'
+        }, { scheme: 'bearer', type: 'http' }],
+    url: '/oncall/watched_rosters',
+    ...options
+});
 
 /**
  * Remove a watched oncall roster
  */
-export const removeWatchedOncallRoster = <ThrowOnError extends boolean = false>(options: Options<RemoveWatchedOncallRosterData, ThrowOnError>) => {
-    return (options.client ?? client).delete<RemoveWatchedOncallRosterResponses, RemoveWatchedOncallRosterErrors, ThrowOnError>({
-        security: [
-            {
-                in: 'cookie',
-                name: 'rezible_auth',
-                type: 'apiKey'
-            },
-            {
-                scheme: 'bearer',
-                type: 'http'
-            }
-        ],
-        url: '/oncall/watched_rosters/{id}',
-        ...options
-    });
-};
+export const removeWatchedOncallRoster = <ThrowOnError extends boolean = false>(options: Options<RemoveWatchedOncallRosterData, ThrowOnError>) => (options.client ?? client).delete<RemoveWatchedOncallRosterResponses, RemoveWatchedOncallRosterErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'rezible_auth',
+            type: 'apiKey'
+        }, { scheme: 'bearer', type: 'http' }],
+    url: '/oncall/watched_rosters/{id}',
+    ...options
+});
 
 /**
  * Add a watched oncall roster
  */
-export const addWatchedOncallRoster = <ThrowOnError extends boolean = false>(options: Options<AddWatchedOncallRosterData, ThrowOnError>) => {
-    return (options.client ?? client).post<AddWatchedOncallRosterResponses, AddWatchedOncallRosterErrors, ThrowOnError>({
-        security: [
-            {
-                in: 'cookie',
-                name: 'rezible_auth',
-                type: 'apiKey'
-            },
-            {
-                scheme: 'bearer',
-                type: 'http'
-            }
-        ],
-        url: '/oncall/watched_rosters/{id}',
-        ...options
-    });
-};
+export const addWatchedOncallRoster = <ThrowOnError extends boolean = false>(options: Options<AddWatchedOncallRosterData, ThrowOnError>) => (options.client ?? client).post<AddWatchedOncallRosterResponses, AddWatchedOncallRosterErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'rezible_auth',
+            type: 'apiKey'
+        }, { scheme: 'bearer', type: 'http' }],
+    url: '/oncall/watched_rosters/{id}',
+    ...options
+});
 
 /**
  * Get Weights for Calculating Burden
  */
-export const getOncallShiftBurdenMetricWeights = <ThrowOnError extends boolean = false>(options?: Options<GetOncallShiftBurdenMetricWeightsData, ThrowOnError>) => {
-    return (options?.client ?? client).get<GetOncallShiftBurdenMetricWeightsResponses, GetOncallShiftBurdenMetricWeightsErrors, ThrowOnError>({
-        security: [
-            {
-                in: 'cookie',
-                name: 'rezible_auth',
-                type: 'apiKey'
-            },
-            {
-                scheme: 'bearer',
-                type: 'http'
-            }
-        ],
-        url: '/oncall_metrics/burden_weights',
-        ...options
-    });
-};
+export const getOncallShiftBurdenMetricWeights = <ThrowOnError extends boolean = false>(options?: Options<GetOncallShiftBurdenMetricWeightsData, ThrowOnError>) => (options?.client ?? client).get<GetOncallShiftBurdenMetricWeightsResponses, GetOncallShiftBurdenMetricWeightsErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'rezible_auth',
+            type: 'apiKey'
+        }, { scheme: 'bearer', type: 'http' }],
+    url: '/oncall_metrics/burden_weights',
+    ...options
+});
 
 /**
  * Get Metrics for an Oncall Roster
  */
-export const getOncallRosterMetrics = <ThrowOnError extends boolean = false>(options?: Options<GetOncallRosterMetricsData, ThrowOnError>) => {
-    return (options?.client ?? client).get<GetOncallRosterMetricsResponses, GetOncallRosterMetricsErrors, ThrowOnError>({
-        security: [
-            {
-                in: 'cookie',
-                name: 'rezible_auth',
-                type: 'apiKey'
-            },
-            {
-                scheme: 'bearer',
-                type: 'http'
-            }
-        ],
-        url: '/oncall_metrics/rosters',
-        ...options
-    });
-};
+export const getOncallRosterMetrics = <ThrowOnError extends boolean = false>(options?: Options<GetOncallRosterMetricsData, ThrowOnError>) => (options?.client ?? client).get<GetOncallRosterMetricsResponses, GetOncallRosterMetricsErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'rezible_auth',
+            type: 'apiKey'
+        }, { scheme: 'bearer', type: 'http' }],
+    url: '/oncall_metrics/rosters',
+    ...options
+});
 
 /**
  * Get Metrics for an Oncall Shift
  */
-export const getOncallShiftMetrics = <ThrowOnError extends boolean = false>(options?: Options<GetOncallShiftMetricsData, ThrowOnError>) => {
-    return (options?.client ?? client).get<GetOncallShiftMetricsResponses, GetOncallShiftMetricsErrors, ThrowOnError>({
-        security: [
-            {
-                in: 'cookie',
-                name: 'rezible_auth',
-                type: 'apiKey'
-            },
-            {
-                scheme: 'bearer',
-                type: 'http'
-            }
-        ],
-        url: '/oncall_metrics/shifts',
-        ...options
-    });
-};
+export const getOncallShiftMetrics = <ThrowOnError extends boolean = false>(options?: Options<GetOncallShiftMetricsData, ThrowOnError>) => (options?.client ?? client).get<GetOncallShiftMetricsResponses, GetOncallShiftMetricsErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'rezible_auth',
+            type: 'apiKey'
+        }, { scheme: 'bearer', type: 'http' }],
+    url: '/oncall_metrics/shifts',
+    ...options
+});
 
 /**
  * Get Organization
  */
-export const getOrganization = <ThrowOnError extends boolean = false>(options: Options<GetOrganizationData, ThrowOnError>) => {
-    return (options.client ?? client).get<GetOrganizationResponses, GetOrganizationErrors, ThrowOnError>({
-        security: [
-            {
-                in: 'cookie',
-                name: 'rezible_auth',
-                type: 'apiKey'
-            },
-            {
-                scheme: 'bearer',
-                type: 'http'
-            }
-        ],
-        url: '/organizations/{id}',
-        ...options
-    });
-};
+export const getOrganization = <ThrowOnError extends boolean = false>(options: Options<GetOrganizationData, ThrowOnError>) => (options.client ?? client).get<GetOrganizationResponses, GetOrganizationErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'rezible_auth',
+            type: 'apiKey'
+        }, { scheme: 'bearer', type: 'http' }],
+    url: '/organizations/{id}',
+    ...options
+});
 
 /**
  * Finish initial org setup
  */
-export const finishOrganizationSetup = <ThrowOnError extends boolean = false>(options: Options<FinishOrganizationSetupData, ThrowOnError>) => {
-    return (options.client ?? client).post<FinishOrganizationSetupResponses, FinishOrganizationSetupErrors, ThrowOnError>({
-        security: [
-            {
-                in: 'cookie',
-                name: 'rezible_auth',
-                type: 'apiKey'
-            },
-            {
-                scheme: 'bearer',
-                type: 'http'
-            }
-        ],
-        url: '/organizations/{id}/setup',
-        ...options
-    });
-};
+export const finishOrganizationSetup = <ThrowOnError extends boolean = false>(options: Options<FinishOrganizationSetupData, ThrowOnError>) => (options.client ?? client).post<FinishOrganizationSetupResponses, FinishOrganizationSetupErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'rezible_auth',
+            type: 'apiKey'
+        }, { scheme: 'bearer', type: 'http' }],
+    url: '/organizations/{id}/setup',
+    ...options
+});
 
 /**
  * List Playbooks
  */
-export const listPlaybooks = <ThrowOnError extends boolean = false>(options?: Options<ListPlaybooksData, ThrowOnError>) => {
-    return (options?.client ?? client).get<ListPlaybooksResponses, ListPlaybooksErrors, ThrowOnError>({
-        security: [
-            {
-                in: 'cookie',
-                name: 'rezible_auth',
-                type: 'apiKey'
-            },
-            {
-                scheme: 'bearer',
-                type: 'http'
-            }
-        ],
-        url: '/playbooks',
-        ...options
-    });
-};
+export const listPlaybooks = <ThrowOnError extends boolean = false>(options?: Options<ListPlaybooksData, ThrowOnError>) => (options?.client ?? client).get<ListPlaybooksResponses, ListPlaybooksErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'rezible_auth',
+            type: 'apiKey'
+        }, { scheme: 'bearer', type: 'http' }],
+    url: '/playbooks',
+    ...options
+});
 
 /**
  * Create a Playbook
  */
-export const createPlaybook = <ThrowOnError extends boolean = false>(options: Options<CreatePlaybookData, ThrowOnError>) => {
-    return (options.client ?? client).post<CreatePlaybookResponses, CreatePlaybookErrors, ThrowOnError>({
-        security: [
-            {
-                in: 'cookie',
-                name: 'rezible_auth',
-                type: 'apiKey'
-            },
-            {
-                scheme: 'bearer',
-                type: 'http'
-            }
-        ],
-        url: '/playbooks',
-        ...options,
-        headers: {
-            'Content-Type': 'application/json',
-            ...options.headers
-        }
-    });
-};
+export const createPlaybook = <ThrowOnError extends boolean = false>(options: Options<CreatePlaybookData, ThrowOnError>) => (options.client ?? client).post<CreatePlaybookResponses, CreatePlaybookErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'rezible_auth',
+            type: 'apiKey'
+        }, { scheme: 'bearer', type: 'http' }],
+    url: '/playbooks',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
 
 /**
  * Archive a Playbook
  */
-export const archivePlaybook = <ThrowOnError extends boolean = false>(options: Options<ArchivePlaybookData, ThrowOnError>) => {
-    return (options.client ?? client).delete<ArchivePlaybookResponses, ArchivePlaybookErrors, ThrowOnError>({
-        security: [
-            {
-                in: 'cookie',
-                name: 'rezible_auth',
-                type: 'apiKey'
-            },
-            {
-                scheme: 'bearer',
-                type: 'http'
-            }
-        ],
-        url: '/playbooks/{id}',
-        ...options
-    });
-};
+export const archivePlaybook = <ThrowOnError extends boolean = false>(options: Options<ArchivePlaybookData, ThrowOnError>) => (options.client ?? client).delete<ArchivePlaybookResponses, ArchivePlaybookErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'rezible_auth',
+            type: 'apiKey'
+        }, { scheme: 'bearer', type: 'http' }],
+    url: '/playbooks/{id}',
+    ...options
+});
 
 /**
  * Get Playbook
  */
-export const getPlaybook = <ThrowOnError extends boolean = false>(options: Options<GetPlaybookData, ThrowOnError>) => {
-    return (options.client ?? client).get<GetPlaybookResponses, GetPlaybookErrors, ThrowOnError>({
-        security: [
-            {
-                in: 'cookie',
-                name: 'rezible_auth',
-                type: 'apiKey'
-            },
-            {
-                scheme: 'bearer',
-                type: 'http'
-            }
-        ],
-        url: '/playbooks/{id}',
-        ...options
-    });
-};
+export const getPlaybook = <ThrowOnError extends boolean = false>(options: Options<GetPlaybookData, ThrowOnError>) => (options.client ?? client).get<GetPlaybookResponses, GetPlaybookErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'rezible_auth',
+            type: 'apiKey'
+        }, { scheme: 'bearer', type: 'http' }],
+    url: '/playbooks/{id}',
+    ...options
+});
 
 /**
  * Update a Playbook
  */
-export const updatePlaybook = <ThrowOnError extends boolean = false>(options: Options<UpdatePlaybookData, ThrowOnError>) => {
-    return (options.client ?? client).patch<UpdatePlaybookResponses, UpdatePlaybookErrors, ThrowOnError>({
-        security: [
-            {
-                in: 'cookie',
-                name: 'rezible_auth',
-                type: 'apiKey'
-            },
-            {
-                scheme: 'bearer',
-                type: 'http'
-            }
-        ],
-        url: '/playbooks/{id}',
-        ...options,
-        headers: {
-            'Content-Type': 'application/json',
-            ...options.headers
-        }
-    });
-};
+export const updatePlaybook = <ThrowOnError extends boolean = false>(options: Options<UpdatePlaybookData, ThrowOnError>) => (options.client ?? client).patch<UpdatePlaybookResponses, UpdatePlaybookErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'rezible_auth',
+            type: 'apiKey'
+        }, { scheme: 'bearer', type: 'http' }],
+    url: '/playbooks/{id}',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
 
 /**
  * Get a Retrospective Comment
  */
-export const getRetrospectiveComment = <ThrowOnError extends boolean = false>(options: Options<GetRetrospectiveCommentData, ThrowOnError>) => {
-    return (options.client ?? client).get<GetRetrospectiveCommentResponses, GetRetrospectiveCommentErrors, ThrowOnError>({
-        security: [
-            {
-                in: 'cookie',
-                name: 'rezible_auth',
-                type: 'apiKey'
-            },
-            {
-                scheme: 'bearer',
-                type: 'http'
-            }
-        ],
-        url: '/retrospective_comments/{id}',
-        ...options
-    });
-};
+export const getRetrospectiveComment = <ThrowOnError extends boolean = false>(options: Options<GetRetrospectiveCommentData, ThrowOnError>) => (options.client ?? client).get<GetRetrospectiveCommentResponses, GetRetrospectiveCommentErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'rezible_auth',
+            type: 'apiKey'
+        }, { scheme: 'bearer', type: 'http' }],
+    url: '/retrospective_comments/{id}',
+    ...options
+});
 
 /**
  * Update a Retrospective Comment
  */
-export const updateRetrospectiveComment = <ThrowOnError extends boolean = false>(options: Options<UpdateRetrospectiveCommentData, ThrowOnError>) => {
-    return (options.client ?? client).patch<UpdateRetrospectiveCommentResponses, UpdateRetrospectiveCommentErrors, ThrowOnError>({
-        security: [
-            {
-                in: 'cookie',
-                name: 'rezible_auth',
-                type: 'apiKey'
-            },
-            {
-                scheme: 'bearer',
-                type: 'http'
-            }
-        ],
-        url: '/retrospective_comments/{id}',
-        ...options,
-        headers: {
-            'Content-Type': 'application/json',
-            ...options.headers
-        }
-    });
-};
+export const updateRetrospectiveComment = <ThrowOnError extends boolean = false>(options: Options<UpdateRetrospectiveCommentData, ThrowOnError>) => (options.client ?? client).patch<UpdateRetrospectiveCommentResponses, UpdateRetrospectiveCommentErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'rezible_auth',
+            type: 'apiKey'
+        }, { scheme: 'bearer', type: 'http' }],
+    url: '/retrospective_comments/{id}',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
 
 /**
  * Archive a Retrospective Review
  */
-export const archiveRetrospectiveReview = <ThrowOnError extends boolean = false>(options: Options<ArchiveRetrospectiveReviewData, ThrowOnError>) => {
-    return (options.client ?? client).delete<ArchiveRetrospectiveReviewResponses, ArchiveRetrospectiveReviewErrors, ThrowOnError>({
-        security: [
-            {
-                in: 'cookie',
-                name: 'rezible_auth',
-                type: 'apiKey'
-            },
-            {
-                scheme: 'bearer',
-                type: 'http'
-            }
-        ],
-        url: '/retrospective_reviews/{id}',
-        ...options
-    });
-};
+export const archiveRetrospectiveReview = <ThrowOnError extends boolean = false>(options: Options<ArchiveRetrospectiveReviewData, ThrowOnError>) => (options.client ?? client).delete<ArchiveRetrospectiveReviewResponses, ArchiveRetrospectiveReviewErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'rezible_auth',
+            type: 'apiKey'
+        }, { scheme: 'bearer', type: 'http' }],
+    url: '/retrospective_reviews/{id}',
+    ...options
+});
 
 /**
  * Update a Retrospective Review
  */
-export const updateRetrospectiveReview = <ThrowOnError extends boolean = false>(options: Options<UpdateRetrospectiveReviewData, ThrowOnError>) => {
-    return (options.client ?? client).patch<UpdateRetrospectiveReviewResponses, UpdateRetrospectiveReviewErrors, ThrowOnError>({
-        security: [
-            {
-                in: 'cookie',
-                name: 'rezible_auth',
-                type: 'apiKey'
-            },
-            {
-                scheme: 'bearer',
-                type: 'http'
-            }
-        ],
-        url: '/retrospective_reviews/{id}',
-        ...options,
-        headers: {
-            'Content-Type': 'application/json',
-            ...options.headers
-        }
-    });
-};
+export const updateRetrospectiveReview = <ThrowOnError extends boolean = false>(options: Options<UpdateRetrospectiveReviewData, ThrowOnError>) => (options.client ?? client).patch<UpdateRetrospectiveReviewResponses, UpdateRetrospectiveReviewErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'rezible_auth',
+            type: 'apiKey'
+        }, { scheme: 'bearer', type: 'http' }],
+    url: '/retrospective_reviews/{id}',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
 
 /**
  * List Retrospectives
  */
-export const listRetrospectives = <ThrowOnError extends boolean = false>(options?: Options<ListRetrospectivesData, ThrowOnError>) => {
-    return (options?.client ?? client).get<ListRetrospectivesResponses, ListRetrospectivesErrors, ThrowOnError>({
-        security: [
-            {
-                in: 'cookie',
-                name: 'rezible_auth',
-                type: 'apiKey'
-            },
-            {
-                scheme: 'bearer',
-                type: 'http'
-            }
-        ],
-        url: '/retrospectives',
-        ...options
-    });
-};
+export const listRetrospectives = <ThrowOnError extends boolean = false>(options?: Options<ListRetrospectivesData, ThrowOnError>) => (options?.client ?? client).get<ListRetrospectivesResponses, ListRetrospectivesErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'rezible_auth',
+            type: 'apiKey'
+        }, { scheme: 'bearer', type: 'http' }],
+    url: '/retrospectives',
+    ...options
+});
 
 /**
  * Create an Incident Retrospective
  */
-export const createRetrospective = <ThrowOnError extends boolean = false>(options: Options<CreateRetrospectiveData, ThrowOnError>) => {
-    return (options.client ?? client).post<CreateRetrospectiveResponses, CreateRetrospectiveErrors, ThrowOnError>({
-        security: [
-            {
-                in: 'cookie',
-                name: 'rezible_auth',
-                type: 'apiKey'
-            },
-            {
-                scheme: 'bearer',
-                type: 'http'
-            }
-        ],
-        url: '/retrospectives',
-        ...options,
-        headers: {
-            'Content-Type': 'application/json',
-            ...options.headers
-        }
-    });
-};
+export const createRetrospective = <ThrowOnError extends boolean = false>(options: Options<CreateRetrospectiveData, ThrowOnError>) => (options.client ?? client).post<CreateRetrospectiveResponses, CreateRetrospectiveErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'rezible_auth',
+            type: 'apiKey'
+        }, { scheme: 'bearer', type: 'http' }],
+    url: '/retrospectives',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
 
 /**
  * Get a Retrospective
  */
-export const getRetrospective = <ThrowOnError extends boolean = false>(options: Options<GetRetrospectiveData, ThrowOnError>) => {
-    return (options.client ?? client).get<GetRetrospectiveResponses, GetRetrospectiveErrors, ThrowOnError>({
-        security: [
-            {
-                in: 'cookie',
-                name: 'rezible_auth',
-                type: 'apiKey'
-            },
-            {
-                scheme: 'bearer',
-                type: 'http'
-            }
-        ],
-        url: '/retrospectives/{id}',
-        ...options
-    });
-};
+export const getRetrospective = <ThrowOnError extends boolean = false>(options: Options<GetRetrospectiveData, ThrowOnError>) => (options.client ?? client).get<GetRetrospectiveResponses, GetRetrospectiveErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'rezible_auth',
+            type: 'apiKey'
+        }, { scheme: 'bearer', type: 'http' }],
+    url: '/retrospectives/{id}',
+    ...options
+});
 
 /**
  * List Comments For a Retrospective
  */
-export const listRetrospectiveComments = <ThrowOnError extends boolean = false>(options: Options<ListRetrospectiveCommentsData, ThrowOnError>) => {
-    return (options.client ?? client).get<ListRetrospectiveCommentsResponses, ListRetrospectiveCommentsErrors, ThrowOnError>({
-        security: [
-            {
-                in: 'cookie',
-                name: 'rezible_auth',
-                type: 'apiKey'
-            },
-            {
-                scheme: 'bearer',
-                type: 'http'
-            }
-        ],
-        url: '/retrospectives/{id}/comments',
-        ...options
-    });
-};
+export const listRetrospectiveComments = <ThrowOnError extends boolean = false>(options: Options<ListRetrospectiveCommentsData, ThrowOnError>) => (options.client ?? client).get<ListRetrospectiveCommentsResponses, ListRetrospectiveCommentsErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'rezible_auth',
+            type: 'apiKey'
+        }, { scheme: 'bearer', type: 'http' }],
+    url: '/retrospectives/{id}/comments',
+    ...options
+});
 
 /**
  * Create a Retrospective Comment
  */
-export const createRetrospectiveDiscussion = <ThrowOnError extends boolean = false>(options: Options<CreateRetrospectiveDiscussionData, ThrowOnError>) => {
-    return (options.client ?? client).post<CreateRetrospectiveDiscussionResponses, CreateRetrospectiveDiscussionErrors, ThrowOnError>({
-        security: [
-            {
-                in: 'cookie',
-                name: 'rezible_auth',
-                type: 'apiKey'
-            },
-            {
-                scheme: 'bearer',
-                type: 'http'
-            }
-        ],
-        url: '/retrospectives/{id}/comments',
-        ...options,
-        headers: {
-            'Content-Type': 'application/json',
-            ...options.headers
-        }
-    });
-};
+export const createRetrospectiveComment = <ThrowOnError extends boolean = false>(options: Options<CreateRetrospectiveCommentData, ThrowOnError>) => (options.client ?? client).post<CreateRetrospectiveCommentResponses, CreateRetrospectiveCommentErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'rezible_auth',
+            type: 'apiKey'
+        }, { scheme: 'bearer', type: 'http' }],
+    url: '/retrospectives/{id}/comments',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
 
 /**
  * List Retrospective Reviews
  */
-export const listRetrospectiveReviews = <ThrowOnError extends boolean = false>(options?: Options<ListRetrospectiveReviewsData, ThrowOnError>) => {
-    return (options?.client ?? client).get<ListRetrospectiveReviewsResponses, ListRetrospectiveReviewsErrors, ThrowOnError>({
-        security: [
-            {
-                in: 'cookie',
-                name: 'rezible_auth',
-                type: 'apiKey'
-            },
-            {
-                scheme: 'bearer',
-                type: 'http'
-            }
-        ],
-        url: '/retrospectives/{id}/reviews',
-        ...options
-    });
-};
+export const listRetrospectiveReviews = <ThrowOnError extends boolean = false>(options?: Options<ListRetrospectiveReviewsData, ThrowOnError>) => (options?.client ?? client).get<ListRetrospectiveReviewsResponses, ListRetrospectiveReviewsErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'rezible_auth',
+            type: 'apiKey'
+        }, { scheme: 'bearer', type: 'http' }],
+    url: '/retrospectives/{id}/reviews',
+    ...options
+});
 
 /**
  * Create a Retrospective Review
  */
-export const createRetrospectiveReview = <ThrowOnError extends boolean = false>(options: Options<CreateRetrospectiveReviewData, ThrowOnError>) => {
-    return (options.client ?? client).post<CreateRetrospectiveReviewResponses, CreateRetrospectiveReviewErrors, ThrowOnError>({
-        security: [
-            {
-                in: 'cookie',
-                name: 'rezible_auth',
-                type: 'apiKey'
-            },
-            {
-                scheme: 'bearer',
-                type: 'http'
-            }
-        ],
-        url: '/retrospectives/{id}/reviews',
-        ...options,
-        headers: {
-            'Content-Type': 'application/json',
-            ...options.headers
-        }
-    });
-};
+export const createRetrospectiveReview = <ThrowOnError extends boolean = false>(options: Options<CreateRetrospectiveReviewData, ThrowOnError>) => (options.client ?? client).post<CreateRetrospectiveReviewResponses, CreateRetrospectiveReviewErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'rezible_auth',
+            type: 'apiKey'
+        }, { scheme: 'bearer', type: 'http' }],
+    url: '/retrospectives/{id}/reviews',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
 
 /**
  * Get System Analysis
  */
-export const getSystemAnalysis = <ThrowOnError extends boolean = false>(options: Options<GetSystemAnalysisData, ThrowOnError>) => {
-    return (options.client ?? client).get<GetSystemAnalysisResponses, GetSystemAnalysisErrors, ThrowOnError>({
-        security: [
-            {
-                in: 'cookie',
-                name: 'rezible_auth',
-                type: 'apiKey'
-            },
-            {
-                scheme: 'bearer',
-                type: 'http'
-            }
-        ],
-        url: '/system_analysis/{id}',
-        ...options
-    });
-};
+export const getSystemAnalysis = <ThrowOnError extends boolean = false>(options: Options<GetSystemAnalysisData, ThrowOnError>) => (options.client ?? client).get<GetSystemAnalysisResponses, GetSystemAnalysisErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'rezible_auth',
+            type: 'apiKey'
+        }, { scheme: 'bearer', type: 'http' }],
+    url: '/system_analysis/{id}',
+    ...options
+});
 
 /**
  * List components in a System analysis
  */
-export const listSystemAnalysisComponents = <ThrowOnError extends boolean = false>(options: Options<ListSystemAnalysisComponentsData, ThrowOnError>) => {
-    return (options.client ?? client).get<ListSystemAnalysisComponentsResponses, ListSystemAnalysisComponentsErrors, ThrowOnError>({
-        security: [
-            {
-                in: 'cookie',
-                name: 'rezible_auth',
-                type: 'apiKey'
-            },
-            {
-                scheme: 'bearer',
-                type: 'http'
-            }
-        ],
-        url: '/system_analysis/{id}/components',
-        ...options
-    });
-};
+export const listSystemAnalysisComponents = <ThrowOnError extends boolean = false>(options: Options<ListSystemAnalysisComponentsData, ThrowOnError>) => (options.client ?? client).get<ListSystemAnalysisComponentsResponses, ListSystemAnalysisComponentsErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'rezible_auth',
+            type: 'apiKey'
+        }, { scheme: 'bearer', type: 'http' }],
+    url: '/system_analysis/{id}/components',
+    ...options
+});
 
 /**
  * Add a Component to a System Analysis
  */
-export const addSystemAnalysisComponent = <ThrowOnError extends boolean = false>(options: Options<AddSystemAnalysisComponentData, ThrowOnError>) => {
-    return (options.client ?? client).post<AddSystemAnalysisComponentResponses, AddSystemAnalysisComponentErrors, ThrowOnError>({
-        security: [
-            {
-                in: 'cookie',
-                name: 'rezible_auth',
-                type: 'apiKey'
-            },
-            {
-                scheme: 'bearer',
-                type: 'http'
-            }
-        ],
-        url: '/system_analysis/{id}/components',
-        ...options,
-        headers: {
-            'Content-Type': 'application/json',
-            ...options.headers
-        }
-    });
-};
+export const addSystemAnalysisComponent = <ThrowOnError extends boolean = false>(options: Options<AddSystemAnalysisComponentData, ThrowOnError>) => (options.client ?? client).post<AddSystemAnalysisComponentResponses, AddSystemAnalysisComponentErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'rezible_auth',
+            type: 'apiKey'
+        }, { scheme: 'bearer', type: 'http' }],
+    url: '/system_analysis/{id}/components',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
 
 /**
  * List relationships in a System analysis
  */
-export const listSystemAnalysisRelationships = <ThrowOnError extends boolean = false>(options: Options<ListSystemAnalysisRelationshipsData, ThrowOnError>) => {
-    return (options.client ?? client).get<ListSystemAnalysisRelationshipsResponses, ListSystemAnalysisRelationshipsErrors, ThrowOnError>({
-        security: [
-            {
-                in: 'cookie',
-                name: 'rezible_auth',
-                type: 'apiKey'
-            },
-            {
-                scheme: 'bearer',
-                type: 'http'
-            }
-        ],
-        url: '/system_analysis/{id}/relationships',
-        ...options
-    });
-};
+export const listSystemAnalysisRelationships = <ThrowOnError extends boolean = false>(options: Options<ListSystemAnalysisRelationshipsData, ThrowOnError>) => (options.client ?? client).get<ListSystemAnalysisRelationshipsResponses, ListSystemAnalysisRelationshipsErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'rezible_auth',
+            type: 'apiKey'
+        }, { scheme: 'bearer', type: 'http' }],
+    url: '/system_analysis/{id}/relationships',
+    ...options
+});
 
 /**
  * Create a Relationship in a System Analysis
  */
-export const createSystemAnalysisRelationship = <ThrowOnError extends boolean = false>(options: Options<CreateSystemAnalysisRelationshipData, ThrowOnError>) => {
-    return (options.client ?? client).post<CreateSystemAnalysisRelationshipResponses, CreateSystemAnalysisRelationshipErrors, ThrowOnError>({
-        security: [
-            {
-                in: 'cookie',
-                name: 'rezible_auth',
-                type: 'apiKey'
-            },
-            {
-                scheme: 'bearer',
-                type: 'http'
-            }
-        ],
-        url: '/system_analysis/{id}/relationships',
-        ...options,
-        headers: {
-            'Content-Type': 'application/json',
-            ...options.headers
-        }
-    });
-};
+export const createSystemAnalysisRelationship = <ThrowOnError extends boolean = false>(options: Options<CreateSystemAnalysisRelationshipData, ThrowOnError>) => (options.client ?? client).post<CreateSystemAnalysisRelationshipResponses, CreateSystemAnalysisRelationshipErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'rezible_auth',
+            type: 'apiKey'
+        }, { scheme: 'bearer', type: 'http' }],
+    url: '/system_analysis/{id}/relationships',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
 
 /**
  * Delete a Component from a System Analysis
  */
-export const deleteSystemAnalysisComponent = <ThrowOnError extends boolean = false>(options: Options<DeleteSystemAnalysisComponentData, ThrowOnError>) => {
-    return (options.client ?? client).delete<DeleteSystemAnalysisComponentResponses, DeleteSystemAnalysisComponentErrors, ThrowOnError>({
-        security: [
-            {
-                in: 'cookie',
-                name: 'rezible_auth',
-                type: 'apiKey'
-            },
-            {
-                scheme: 'bearer',
-                type: 'http'
-            }
-        ],
-        url: '/system_analysis_components/{id}',
-        ...options
-    });
-};
+export const deleteSystemAnalysisComponent = <ThrowOnError extends boolean = false>(options: Options<DeleteSystemAnalysisComponentData, ThrowOnError>) => (options.client ?? client).delete<DeleteSystemAnalysisComponentResponses, DeleteSystemAnalysisComponentErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'rezible_auth',
+            type: 'apiKey'
+        }, { scheme: 'bearer', type: 'http' }],
+    url: '/system_analysis_components/{id}',
+    ...options
+});
 
 /**
  * Get a component in a System analysis
  */
-export const getSystemAnalysisComponent = <ThrowOnError extends boolean = false>(options: Options<GetSystemAnalysisComponentData, ThrowOnError>) => {
-    return (options.client ?? client).get<GetSystemAnalysisComponentResponses, GetSystemAnalysisComponentErrors, ThrowOnError>({
-        security: [
-            {
-                in: 'cookie',
-                name: 'rezible_auth',
-                type: 'apiKey'
-            },
-            {
-                scheme: 'bearer',
-                type: 'http'
-            }
-        ],
-        url: '/system_analysis_components/{id}',
-        ...options
-    });
-};
+export const getSystemAnalysisComponent = <ThrowOnError extends boolean = false>(options: Options<GetSystemAnalysisComponentData, ThrowOnError>) => (options.client ?? client).get<GetSystemAnalysisComponentResponses, GetSystemAnalysisComponentErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'rezible_auth',
+            type: 'apiKey'
+        }, { scheme: 'bearer', type: 'http' }],
+    url: '/system_analysis_components/{id}',
+    ...options
+});
 
 /**
  * Update a System Analysis Component
  */
-export const updateSystemAnalysisComponent = <ThrowOnError extends boolean = false>(options: Options<UpdateSystemAnalysisComponentData, ThrowOnError>) => {
-    return (options.client ?? client).patch<UpdateSystemAnalysisComponentResponses, UpdateSystemAnalysisComponentErrors, ThrowOnError>({
-        security: [
-            {
-                in: 'cookie',
-                name: 'rezible_auth',
-                type: 'apiKey'
-            },
-            {
-                scheme: 'bearer',
-                type: 'http'
-            }
-        ],
-        url: '/system_analysis_components/{id}',
-        ...options,
-        headers: {
-            'Content-Type': 'application/json',
-            ...options.headers
-        }
-    });
-};
+export const updateSystemAnalysisComponent = <ThrowOnError extends boolean = false>(options: Options<UpdateSystemAnalysisComponentData, ThrowOnError>) => (options.client ?? client).patch<UpdateSystemAnalysisComponentResponses, UpdateSystemAnalysisComponentErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'rezible_auth',
+            type: 'apiKey'
+        }, { scheme: 'bearer', type: 'http' }],
+    url: '/system_analysis_components/{id}',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
 
 /**
  * Delete a Relationship from a System Analysis
  */
-export const deleteSystemAnalysisRelationship = <ThrowOnError extends boolean = false>(options: Options<DeleteSystemAnalysisRelationshipData, ThrowOnError>) => {
-    return (options.client ?? client).delete<DeleteSystemAnalysisRelationshipResponses, DeleteSystemAnalysisRelationshipErrors, ThrowOnError>({
-        security: [
-            {
-                in: 'cookie',
-                name: 'rezible_auth',
-                type: 'apiKey'
-            },
-            {
-                scheme: 'bearer',
-                type: 'http'
-            }
-        ],
-        url: '/system_analysis_relationships/{id}',
-        ...options
-    });
-};
+export const deleteSystemAnalysisRelationship = <ThrowOnError extends boolean = false>(options: Options<DeleteSystemAnalysisRelationshipData, ThrowOnError>) => (options.client ?? client).delete<DeleteSystemAnalysisRelationshipResponses, DeleteSystemAnalysisRelationshipErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'rezible_auth',
+            type: 'apiKey'
+        }, { scheme: 'bearer', type: 'http' }],
+    url: '/system_analysis_relationships/{id}',
+    ...options
+});
 
 /**
  * Get a relationship in a System analysis
  */
-export const getSystemAnalysisRelationship = <ThrowOnError extends boolean = false>(options: Options<GetSystemAnalysisRelationshipData, ThrowOnError>) => {
-    return (options.client ?? client).get<GetSystemAnalysisRelationshipResponses, GetSystemAnalysisRelationshipErrors, ThrowOnError>({
-        security: [
-            {
-                in: 'cookie',
-                name: 'rezible_auth',
-                type: 'apiKey'
-            },
-            {
-                scheme: 'bearer',
-                type: 'http'
-            }
-        ],
-        url: '/system_analysis_relationships/{id}',
-        ...options
-    });
-};
+export const getSystemAnalysisRelationship = <ThrowOnError extends boolean = false>(options: Options<GetSystemAnalysisRelationshipData, ThrowOnError>) => (options.client ?? client).get<GetSystemAnalysisRelationshipResponses, GetSystemAnalysisRelationshipErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'rezible_auth',
+            type: 'apiKey'
+        }, { scheme: 'bearer', type: 'http' }],
+    url: '/system_analysis_relationships/{id}',
+    ...options
+});
 
 /**
  * Update a System Analysis Relationship
  */
-export const updateSystemAnalysisRelationship = <ThrowOnError extends boolean = false>(options: Options<UpdateSystemAnalysisRelationshipData, ThrowOnError>) => {
-    return (options.client ?? client).patch<UpdateSystemAnalysisRelationshipResponses, UpdateSystemAnalysisRelationshipErrors, ThrowOnError>({
-        security: [
-            {
-                in: 'cookie',
-                name: 'rezible_auth',
-                type: 'apiKey'
-            },
-            {
-                scheme: 'bearer',
-                type: 'http'
-            }
-        ],
-        url: '/system_analysis_relationships/{id}',
-        ...options,
-        headers: {
-            'Content-Type': 'application/json',
-            ...options.headers
-        }
-    });
-};
+export const updateSystemAnalysisRelationship = <ThrowOnError extends boolean = false>(options: Options<UpdateSystemAnalysisRelationshipData, ThrowOnError>) => (options.client ?? client).patch<UpdateSystemAnalysisRelationshipResponses, UpdateSystemAnalysisRelationshipErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'rezible_auth',
+            type: 'apiKey'
+        }, { scheme: 'bearer', type: 'http' }],
+    url: '/system_analysis_relationships/{id}',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
 
 /**
  * Archive a System Component Constraint
  */
-export const archiveSystemComponentConstraint = <ThrowOnError extends boolean = false>(options: Options<ArchiveSystemComponentConstraintData, ThrowOnError>) => {
-    return (options.client ?? client).delete<ArchiveSystemComponentConstraintResponses, ArchiveSystemComponentConstraintErrors, ThrowOnError>({
-        security: [
-            {
-                in: 'cookie',
-                name: 'rezible_auth',
-                type: 'apiKey'
-            },
-            {
-                scheme: 'bearer',
-                type: 'http'
-            }
-        ],
-        url: '/system_component_constraints/{id}',
-        ...options
-    });
-};
+export const archiveSystemComponentConstraint = <ThrowOnError extends boolean = false>(options: Options<ArchiveSystemComponentConstraintData, ThrowOnError>) => (options.client ?? client).delete<ArchiveSystemComponentConstraintResponses, ArchiveSystemComponentConstraintErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'rezible_auth',
+            type: 'apiKey'
+        }, { scheme: 'bearer', type: 'http' }],
+    url: '/system_component_constraints/{id}',
+    ...options
+});
 
 /**
  * Get a System Component
  */
-export const getSystemComponentConstraint = <ThrowOnError extends boolean = false>(options: Options<GetSystemComponentConstraintData, ThrowOnError>) => {
-    return (options.client ?? client).get<GetSystemComponentConstraintResponses, GetSystemComponentConstraintErrors, ThrowOnError>({
-        security: [
-            {
-                in: 'cookie',
-                name: 'rezible_auth',
-                type: 'apiKey'
-            },
-            {
-                scheme: 'bearer',
-                type: 'http'
-            }
-        ],
-        url: '/system_component_constraints/{id}',
-        ...options
-    });
-};
+export const getSystemComponentConstraint = <ThrowOnError extends boolean = false>(options: Options<GetSystemComponentConstraintData, ThrowOnError>) => (options.client ?? client).get<GetSystemComponentConstraintResponses, GetSystemComponentConstraintErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'rezible_auth',
+            type: 'apiKey'
+        }, { scheme: 'bearer', type: 'http' }],
+    url: '/system_component_constraints/{id}',
+    ...options
+});
 
 /**
  * Update a System Component Constraint
  */
-export const updateSystemComponentConstraint = <ThrowOnError extends boolean = false>(options: Options<UpdateSystemComponentConstraintData, ThrowOnError>) => {
-    return (options.client ?? client).patch<UpdateSystemComponentConstraintResponses, UpdateSystemComponentConstraintErrors, ThrowOnError>({
-        security: [
-            {
-                in: 'cookie',
-                name: 'rezible_auth',
-                type: 'apiKey'
-            },
-            {
-                scheme: 'bearer',
-                type: 'http'
-            }
-        ],
-        url: '/system_component_constraints/{id}',
-        ...options,
-        headers: {
-            'Content-Type': 'application/json',
-            ...options.headers
-        }
-    });
-};
+export const updateSystemComponentConstraint = <ThrowOnError extends boolean = false>(options: Options<UpdateSystemComponentConstraintData, ThrowOnError>) => (options.client ?? client).patch<UpdateSystemComponentConstraintResponses, UpdateSystemComponentConstraintErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'rezible_auth',
+            type: 'apiKey'
+        }, { scheme: 'bearer', type: 'http' }],
+    url: '/system_component_constraints/{id}',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
 
 /**
  * Archive a System Component Control
  */
-export const archiveSystemComponentControl = <ThrowOnError extends boolean = false>(options: Options<ArchiveSystemComponentControlData, ThrowOnError>) => {
-    return (options.client ?? client).delete<ArchiveSystemComponentControlResponses, ArchiveSystemComponentControlErrors, ThrowOnError>({
-        security: [
-            {
-                in: 'cookie',
-                name: 'rezible_auth',
-                type: 'apiKey'
-            },
-            {
-                scheme: 'bearer',
-                type: 'http'
-            }
-        ],
-        url: '/system_component_controls/{id}',
-        ...options
-    });
-};
+export const archiveSystemComponentControl = <ThrowOnError extends boolean = false>(options: Options<ArchiveSystemComponentControlData, ThrowOnError>) => (options.client ?? client).delete<ArchiveSystemComponentControlResponses, ArchiveSystemComponentControlErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'rezible_auth',
+            type: 'apiKey'
+        }, { scheme: 'bearer', type: 'http' }],
+    url: '/system_component_controls/{id}',
+    ...options
+});
 
 /**
  * Get a System Component Control
  */
-export const getSystemComponentControl = <ThrowOnError extends boolean = false>(options: Options<GetSystemComponentControlData, ThrowOnError>) => {
-    return (options.client ?? client).get<GetSystemComponentControlResponses, GetSystemComponentControlErrors, ThrowOnError>({
-        security: [
-            {
-                in: 'cookie',
-                name: 'rezible_auth',
-                type: 'apiKey'
-            },
-            {
-                scheme: 'bearer',
-                type: 'http'
-            }
-        ],
-        url: '/system_component_controls/{id}',
-        ...options
-    });
-};
+export const getSystemComponentControl = <ThrowOnError extends boolean = false>(options: Options<GetSystemComponentControlData, ThrowOnError>) => (options.client ?? client).get<GetSystemComponentControlResponses, GetSystemComponentControlErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'rezible_auth',
+            type: 'apiKey'
+        }, { scheme: 'bearer', type: 'http' }],
+    url: '/system_component_controls/{id}',
+    ...options
+});
 
 /**
  * Update a System Component Control
  */
-export const updateSystemComponentControl = <ThrowOnError extends boolean = false>(options: Options<UpdateSystemComponentControlData, ThrowOnError>) => {
-    return (options.client ?? client).patch<UpdateSystemComponentControlResponses, UpdateSystemComponentControlErrors, ThrowOnError>({
-        security: [
-            {
-                in: 'cookie',
-                name: 'rezible_auth',
-                type: 'apiKey'
-            },
-            {
-                scheme: 'bearer',
-                type: 'http'
-            }
-        ],
-        url: '/system_component_controls/{id}',
-        ...options,
-        headers: {
-            'Content-Type': 'application/json',
-            ...options.headers
-        }
-    });
-};
+export const updateSystemComponentControl = <ThrowOnError extends boolean = false>(options: Options<UpdateSystemComponentControlData, ThrowOnError>) => (options.client ?? client).patch<UpdateSystemComponentControlResponses, UpdateSystemComponentControlErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'rezible_auth',
+            type: 'apiKey'
+        }, { scheme: 'bearer', type: 'http' }],
+    url: '/system_component_controls/{id}',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
 
 /**
  * List System Component Kinds
  */
-export const listSystemComponentKinds = <ThrowOnError extends boolean = false>(options?: Options<ListSystemComponentKindsData, ThrowOnError>) => {
-    return (options?.client ?? client).get<ListSystemComponentKindsResponses, ListSystemComponentKindsErrors, ThrowOnError>({
-        security: [
-            {
-                in: 'cookie',
-                name: 'rezible_auth',
-                type: 'apiKey'
-            },
-            {
-                scheme: 'bearer',
-                type: 'http'
-            }
-        ],
-        url: '/system_component_kinds',
-        ...options
-    });
-};
+export const listSystemComponentKinds = <ThrowOnError extends boolean = false>(options?: Options<ListSystemComponentKindsData, ThrowOnError>) => (options?.client ?? client).get<ListSystemComponentKindsResponses, ListSystemComponentKindsErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'rezible_auth',
+            type: 'apiKey'
+        }, { scheme: 'bearer', type: 'http' }],
+    url: '/system_component_kinds',
+    ...options
+});
 
 /**
  * Create a System Component Kind
  */
-export const createSystemComponentKind = <ThrowOnError extends boolean = false>(options: Options<CreateSystemComponentKindData, ThrowOnError>) => {
-    return (options.client ?? client).post<CreateSystemComponentKindResponses, CreateSystemComponentKindErrors, ThrowOnError>({
-        security: [
-            {
-                in: 'cookie',
-                name: 'rezible_auth',
-                type: 'apiKey'
-            },
-            {
-                scheme: 'bearer',
-                type: 'http'
-            }
-        ],
-        url: '/system_component_kinds',
-        ...options,
-        headers: {
-            'Content-Type': 'application/json',
-            ...options.headers
-        }
-    });
-};
+export const createSystemComponentKind = <ThrowOnError extends boolean = false>(options: Options<CreateSystemComponentKindData, ThrowOnError>) => (options.client ?? client).post<CreateSystemComponentKindResponses, CreateSystemComponentKindErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'rezible_auth',
+            type: 'apiKey'
+        }, { scheme: 'bearer', type: 'http' }],
+    url: '/system_component_kinds',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
 
 /**
  * Archive a System Component Kind
  */
-export const archiveSystemComponentKind = <ThrowOnError extends boolean = false>(options: Options<ArchiveSystemComponentKindData, ThrowOnError>) => {
-    return (options.client ?? client).delete<ArchiveSystemComponentKindResponses, ArchiveSystemComponentKindErrors, ThrowOnError>({
-        security: [
-            {
-                in: 'cookie',
-                name: 'rezible_auth',
-                type: 'apiKey'
-            },
-            {
-                scheme: 'bearer',
-                type: 'http'
-            }
-        ],
-        url: '/system_component_kinds/{id}',
-        ...options
-    });
-};
+export const archiveSystemComponentKind = <ThrowOnError extends boolean = false>(options: Options<ArchiveSystemComponentKindData, ThrowOnError>) => (options.client ?? client).delete<ArchiveSystemComponentKindResponses, ArchiveSystemComponentKindErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'rezible_auth',
+            type: 'apiKey'
+        }, { scheme: 'bearer', type: 'http' }],
+    url: '/system_component_kinds/{id}',
+    ...options
+});
 
 /**
  * Get a System Component Kind
  */
-export const getSystemComponentKind = <ThrowOnError extends boolean = false>(options: Options<GetSystemComponentKindData, ThrowOnError>) => {
-    return (options.client ?? client).get<GetSystemComponentKindResponses, GetSystemComponentKindErrors, ThrowOnError>({
-        security: [
-            {
-                in: 'cookie',
-                name: 'rezible_auth',
-                type: 'apiKey'
-            },
-            {
-                scheme: 'bearer',
-                type: 'http'
-            }
-        ],
-        url: '/system_component_kinds/{id}',
-        ...options
-    });
-};
+export const getSystemComponentKind = <ThrowOnError extends boolean = false>(options: Options<GetSystemComponentKindData, ThrowOnError>) => (options.client ?? client).get<GetSystemComponentKindResponses, GetSystemComponentKindErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'rezible_auth',
+            type: 'apiKey'
+        }, { scheme: 'bearer', type: 'http' }],
+    url: '/system_component_kinds/{id}',
+    ...options
+});
 
 /**
  * Update a System Component Kind
  */
-export const updateSystemComponentKind = <ThrowOnError extends boolean = false>(options: Options<UpdateSystemComponentKindData, ThrowOnError>) => {
-    return (options.client ?? client).patch<UpdateSystemComponentKindResponses, UpdateSystemComponentKindErrors, ThrowOnError>({
-        security: [
-            {
-                in: 'cookie',
-                name: 'rezible_auth',
-                type: 'apiKey'
-            },
-            {
-                scheme: 'bearer',
-                type: 'http'
-            }
-        ],
-        url: '/system_component_kinds/{id}',
-        ...options,
-        headers: {
-            'Content-Type': 'application/json',
-            ...options.headers
-        }
-    });
-};
+export const updateSystemComponentKind = <ThrowOnError extends boolean = false>(options: Options<UpdateSystemComponentKindData, ThrowOnError>) => (options.client ?? client).patch<UpdateSystemComponentKindResponses, UpdateSystemComponentKindErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'rezible_auth',
+            type: 'apiKey'
+        }, { scheme: 'bearer', type: 'http' }],
+    url: '/system_component_kinds/{id}',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
 
 /**
  * List System Component Relationships
  */
-export const listSystemComponentRelationships = <ThrowOnError extends boolean = false>(options?: Options<ListSystemComponentRelationshipsData, ThrowOnError>) => {
-    return (options?.client ?? client).get<ListSystemComponentRelationshipsResponses, ListSystemComponentRelationshipsErrors, ThrowOnError>({
-        security: [
-            {
-                in: 'cookie',
-                name: 'rezible_auth',
-                type: 'apiKey'
-            },
-            {
-                scheme: 'bearer',
-                type: 'http'
-            }
-        ],
-        url: '/system_component_relationships',
-        ...options
-    });
-};
+export const listSystemComponentRelationships = <ThrowOnError extends boolean = false>(options?: Options<ListSystemComponentRelationshipsData, ThrowOnError>) => (options?.client ?? client).get<ListSystemComponentRelationshipsResponses, ListSystemComponentRelationshipsErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'rezible_auth',
+            type: 'apiKey'
+        }, { scheme: 'bearer', type: 'http' }],
+    url: '/system_component_relationships',
+    ...options
+});
 
 /**
  * Create a System Component Relationship
  */
-export const createSystemComponentRelationship = <ThrowOnError extends boolean = false>(options: Options<CreateSystemComponentRelationshipData, ThrowOnError>) => {
-    return (options.client ?? client).post<CreateSystemComponentRelationshipResponses, CreateSystemComponentRelationshipErrors, ThrowOnError>({
-        security: [
-            {
-                in: 'cookie',
-                name: 'rezible_auth',
-                type: 'apiKey'
-            },
-            {
-                scheme: 'bearer',
-                type: 'http'
-            }
-        ],
-        url: '/system_component_relationships',
-        ...options,
-        headers: {
-            'Content-Type': 'application/json',
-            ...options.headers
-        }
-    });
-};
+export const createSystemComponentRelationship = <ThrowOnError extends boolean = false>(options: Options<CreateSystemComponentRelationshipData, ThrowOnError>) => (options.client ?? client).post<CreateSystemComponentRelationshipResponses, CreateSystemComponentRelationshipErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'rezible_auth',
+            type: 'apiKey'
+        }, { scheme: 'bearer', type: 'http' }],
+    url: '/system_component_relationships',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
 
 /**
  * Archive a System Component Relationship
  */
-export const archiveSystemComponentRelationship = <ThrowOnError extends boolean = false>(options: Options<ArchiveSystemComponentRelationshipData, ThrowOnError>) => {
-    return (options.client ?? client).delete<ArchiveSystemComponentRelationshipResponses, ArchiveSystemComponentRelationshipErrors, ThrowOnError>({
-        security: [
-            {
-                in: 'cookie',
-                name: 'rezible_auth',
-                type: 'apiKey'
-            },
-            {
-                scheme: 'bearer',
-                type: 'http'
-            }
-        ],
-        url: '/system_component_relationships/{id}',
-        ...options
-    });
-};
+export const archiveSystemComponentRelationship = <ThrowOnError extends boolean = false>(options: Options<ArchiveSystemComponentRelationshipData, ThrowOnError>) => (options.client ?? client).delete<ArchiveSystemComponentRelationshipResponses, ArchiveSystemComponentRelationshipErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'rezible_auth',
+            type: 'apiKey'
+        }, { scheme: 'bearer', type: 'http' }],
+    url: '/system_component_relationships/{id}',
+    ...options
+});
 
 /**
  * Get a System Component Relationship
  */
-export const getSystemComponentRelationship = <ThrowOnError extends boolean = false>(options: Options<GetSystemComponentRelationshipData, ThrowOnError>) => {
-    return (options.client ?? client).get<GetSystemComponentRelationshipResponses, GetSystemComponentRelationshipErrors, ThrowOnError>({
-        security: [
-            {
-                in: 'cookie',
-                name: 'rezible_auth',
-                type: 'apiKey'
-            },
-            {
-                scheme: 'bearer',
-                type: 'http'
-            }
-        ],
-        url: '/system_component_relationships/{id}',
-        ...options
-    });
-};
+export const getSystemComponentRelationship = <ThrowOnError extends boolean = false>(options: Options<GetSystemComponentRelationshipData, ThrowOnError>) => (options.client ?? client).get<GetSystemComponentRelationshipResponses, GetSystemComponentRelationshipErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'rezible_auth',
+            type: 'apiKey'
+        }, { scheme: 'bearer', type: 'http' }],
+    url: '/system_component_relationships/{id}',
+    ...options
+});
 
 /**
  * Update a System Component Relationship
  */
-export const updateSystemComponentRelationship = <ThrowOnError extends boolean = false>(options: Options<UpdateSystemComponentRelationshipData, ThrowOnError>) => {
-    return (options.client ?? client).patch<UpdateSystemComponentRelationshipResponses, UpdateSystemComponentRelationshipErrors, ThrowOnError>({
-        security: [
-            {
-                in: 'cookie',
-                name: 'rezible_auth',
-                type: 'apiKey'
-            },
-            {
-                scheme: 'bearer',
-                type: 'http'
-            }
-        ],
-        url: '/system_component_relationships/{id}',
-        ...options,
-        headers: {
-            'Content-Type': 'application/json',
-            ...options.headers
-        }
-    });
-};
+export const updateSystemComponentRelationship = <ThrowOnError extends boolean = false>(options: Options<UpdateSystemComponentRelationshipData, ThrowOnError>) => (options.client ?? client).patch<UpdateSystemComponentRelationshipResponses, UpdateSystemComponentRelationshipErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'rezible_auth',
+            type: 'apiKey'
+        }, { scheme: 'bearer', type: 'http' }],
+    url: '/system_component_relationships/{id}',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
 
 /**
  * Archive a System Component Signal
  */
-export const archiveSystemComponentSignal = <ThrowOnError extends boolean = false>(options: Options<ArchiveSystemComponentSignalData, ThrowOnError>) => {
-    return (options.client ?? client).delete<ArchiveSystemComponentSignalResponses, ArchiveSystemComponentSignalErrors, ThrowOnError>({
-        security: [
-            {
-                in: 'cookie',
-                name: 'rezible_auth',
-                type: 'apiKey'
-            },
-            {
-                scheme: 'bearer',
-                type: 'http'
-            }
-        ],
-        url: '/system_component_signals/{id}',
-        ...options
-    });
-};
+export const archiveSystemComponentSignal = <ThrowOnError extends boolean = false>(options: Options<ArchiveSystemComponentSignalData, ThrowOnError>) => (options.client ?? client).delete<ArchiveSystemComponentSignalResponses, ArchiveSystemComponentSignalErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'rezible_auth',
+            type: 'apiKey'
+        }, { scheme: 'bearer', type: 'http' }],
+    url: '/system_component_signals/{id}',
+    ...options
+});
 
 /**
  * Get a System Component Signal
  */
-export const getSystemComponentSignal = <ThrowOnError extends boolean = false>(options: Options<GetSystemComponentSignalData, ThrowOnError>) => {
-    return (options.client ?? client).get<GetSystemComponentSignalResponses, GetSystemComponentSignalErrors, ThrowOnError>({
-        security: [
-            {
-                in: 'cookie',
-                name: 'rezible_auth',
-                type: 'apiKey'
-            },
-            {
-                scheme: 'bearer',
-                type: 'http'
-            }
-        ],
-        url: '/system_component_signals/{id}',
-        ...options
-    });
-};
+export const getSystemComponentSignal = <ThrowOnError extends boolean = false>(options: Options<GetSystemComponentSignalData, ThrowOnError>) => (options.client ?? client).get<GetSystemComponentSignalResponses, GetSystemComponentSignalErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'rezible_auth',
+            type: 'apiKey'
+        }, { scheme: 'bearer', type: 'http' }],
+    url: '/system_component_signals/{id}',
+    ...options
+});
 
 /**
  * Update a System Component Signal
  */
-export const updateSystemComponentSignal = <ThrowOnError extends boolean = false>(options: Options<UpdateSystemComponentSignalData, ThrowOnError>) => {
-    return (options.client ?? client).patch<UpdateSystemComponentSignalResponses, UpdateSystemComponentSignalErrors, ThrowOnError>({
-        security: [
-            {
-                in: 'cookie',
-                name: 'rezible_auth',
-                type: 'apiKey'
-            },
-            {
-                scheme: 'bearer',
-                type: 'http'
-            }
-        ],
-        url: '/system_component_signals/{id}',
-        ...options,
-        headers: {
-            'Content-Type': 'application/json',
-            ...options.headers
-        }
-    });
-};
+export const updateSystemComponentSignal = <ThrowOnError extends boolean = false>(options: Options<UpdateSystemComponentSignalData, ThrowOnError>) => (options.client ?? client).patch<UpdateSystemComponentSignalResponses, UpdateSystemComponentSignalErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'rezible_auth',
+            type: 'apiKey'
+        }, { scheme: 'bearer', type: 'http' }],
+    url: '/system_component_signals/{id}',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
 
 /**
  * List System Components
  */
-export const listSystemComponents = <ThrowOnError extends boolean = false>(options?: Options<ListSystemComponentsData, ThrowOnError>) => {
-    return (options?.client ?? client).get<ListSystemComponentsResponses, ListSystemComponentsErrors, ThrowOnError>({
-        security: [
-            {
-                in: 'cookie',
-                name: 'rezible_auth',
-                type: 'apiKey'
-            },
-            {
-                scheme: 'bearer',
-                type: 'http'
-            }
-        ],
-        url: '/system_components',
-        ...options
-    });
-};
+export const listSystemComponents = <ThrowOnError extends boolean = false>(options?: Options<ListSystemComponentsData, ThrowOnError>) => (options?.client ?? client).get<ListSystemComponentsResponses, ListSystemComponentsErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'rezible_auth',
+            type: 'apiKey'
+        }, { scheme: 'bearer', type: 'http' }],
+    url: '/system_components',
+    ...options
+});
 
 /**
  * Create a System Component
  */
-export const createSystemComponent = <ThrowOnError extends boolean = false>(options: Options<CreateSystemComponentData, ThrowOnError>) => {
-    return (options.client ?? client).post<CreateSystemComponentResponses, CreateSystemComponentErrors, ThrowOnError>({
-        security: [
-            {
-                in: 'cookie',
-                name: 'rezible_auth',
-                type: 'apiKey'
-            },
-            {
-                scheme: 'bearer',
-                type: 'http'
-            }
-        ],
-        url: '/system_components',
-        ...options,
-        headers: {
-            'Content-Type': 'application/json',
-            ...options.headers
-        }
-    });
-};
+export const createSystemComponent = <ThrowOnError extends boolean = false>(options: Options<CreateSystemComponentData, ThrowOnError>) => (options.client ?? client).post<CreateSystemComponentResponses, CreateSystemComponentErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'rezible_auth',
+            type: 'apiKey'
+        }, { scheme: 'bearer', type: 'http' }],
+    url: '/system_components',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
 
 /**
  * Archive a System Component
  */
-export const archiveSystemComponent = <ThrowOnError extends boolean = false>(options: Options<ArchiveSystemComponentData, ThrowOnError>) => {
-    return (options.client ?? client).delete<ArchiveSystemComponentResponses, ArchiveSystemComponentErrors, ThrowOnError>({
-        security: [
-            {
-                in: 'cookie',
-                name: 'rezible_auth',
-                type: 'apiKey'
-            },
-            {
-                scheme: 'bearer',
-                type: 'http'
-            }
-        ],
-        url: '/system_components/{id}',
-        ...options
-    });
-};
+export const archiveSystemComponent = <ThrowOnError extends boolean = false>(options: Options<ArchiveSystemComponentData, ThrowOnError>) => (options.client ?? client).delete<ArchiveSystemComponentResponses, ArchiveSystemComponentErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'rezible_auth',
+            type: 'apiKey'
+        }, { scheme: 'bearer', type: 'http' }],
+    url: '/system_components/{id}',
+    ...options
+});
 
 /**
  * Get a System Component
  */
-export const getSystemComponent = <ThrowOnError extends boolean = false>(options: Options<GetSystemComponentData, ThrowOnError>) => {
-    return (options.client ?? client).get<GetSystemComponentResponses, GetSystemComponentErrors, ThrowOnError>({
-        security: [
-            {
-                in: 'cookie',
-                name: 'rezible_auth',
-                type: 'apiKey'
-            },
-            {
-                scheme: 'bearer',
-                type: 'http'
-            }
-        ],
-        url: '/system_components/{id}',
-        ...options
-    });
-};
+export const getSystemComponent = <ThrowOnError extends boolean = false>(options: Options<GetSystemComponentData, ThrowOnError>) => (options.client ?? client).get<GetSystemComponentResponses, GetSystemComponentErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'rezible_auth',
+            type: 'apiKey'
+        }, { scheme: 'bearer', type: 'http' }],
+    url: '/system_components/{id}',
+    ...options
+});
 
 /**
  * Update a System Component
  */
-export const updateSystemComponent = <ThrowOnError extends boolean = false>(options: Options<UpdateSystemComponentData, ThrowOnError>) => {
-    return (options.client ?? client).patch<UpdateSystemComponentResponses, UpdateSystemComponentErrors, ThrowOnError>({
-        security: [
-            {
-                in: 'cookie',
-                name: 'rezible_auth',
-                type: 'apiKey'
-            },
-            {
-                scheme: 'bearer',
-                type: 'http'
-            }
-        ],
-        url: '/system_components/{id}',
-        ...options,
-        headers: {
-            'Content-Type': 'application/json',
-            ...options.headers
-        }
-    });
-};
+export const updateSystemComponent = <ThrowOnError extends boolean = false>(options: Options<UpdateSystemComponentData, ThrowOnError>) => (options.client ?? client).patch<UpdateSystemComponentResponses, UpdateSystemComponentErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'rezible_auth',
+            type: 'apiKey'
+        }, { scheme: 'bearer', type: 'http' }],
+    url: '/system_components/{id}',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
 
 /**
  * Create a System Component Constraint
  */
-export const createSystemComponentConstraint = <ThrowOnError extends boolean = false>(options: Options<CreateSystemComponentConstraintData, ThrowOnError>) => {
-    return (options.client ?? client).post<CreateSystemComponentConstraintResponses, CreateSystemComponentConstraintErrors, ThrowOnError>({
-        security: [
-            {
-                in: 'cookie',
-                name: 'rezible_auth',
-                type: 'apiKey'
-            },
-            {
-                scheme: 'bearer',
-                type: 'http'
-            }
-        ],
-        url: '/system_components/{id}/constraints',
-        ...options,
-        headers: {
-            'Content-Type': 'application/json',
-            ...options.headers
-        }
-    });
-};
+export const createSystemComponentConstraint = <ThrowOnError extends boolean = false>(options: Options<CreateSystemComponentConstraintData, ThrowOnError>) => (options.client ?? client).post<CreateSystemComponentConstraintResponses, CreateSystemComponentConstraintErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'rezible_auth',
+            type: 'apiKey'
+        }, { scheme: 'bearer', type: 'http' }],
+    url: '/system_components/{id}/constraints',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
 
 /**
  * Create a System Component Control
  */
-export const createSystemComponentControl = <ThrowOnError extends boolean = false>(options: Options<CreateSystemComponentControlData, ThrowOnError>) => {
-    return (options.client ?? client).post<CreateSystemComponentControlResponses, CreateSystemComponentControlErrors, ThrowOnError>({
-        security: [
-            {
-                in: 'cookie',
-                name: 'rezible_auth',
-                type: 'apiKey'
-            },
-            {
-                scheme: 'bearer',
-                type: 'http'
-            }
-        ],
-        url: '/system_components/{id}/controls',
-        ...options,
-        headers: {
-            'Content-Type': 'application/json',
-            ...options.headers
-        }
-    });
-};
+export const createSystemComponentControl = <ThrowOnError extends boolean = false>(options: Options<CreateSystemComponentControlData, ThrowOnError>) => (options.client ?? client).post<CreateSystemComponentControlResponses, CreateSystemComponentControlErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'rezible_auth',
+            type: 'apiKey'
+        }, { scheme: 'bearer', type: 'http' }],
+    url: '/system_components/{id}/controls',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
 
 /**
  * Create a System Component Signal
  */
-export const createSystemComponentSignal = <ThrowOnError extends boolean = false>(options: Options<CreateSystemComponentSignalData, ThrowOnError>) => {
-    return (options.client ?? client).post<CreateSystemComponentSignalResponses, CreateSystemComponentSignalErrors, ThrowOnError>({
-        security: [
-            {
-                in: 'cookie',
-                name: 'rezible_auth',
-                type: 'apiKey'
-            },
-            {
-                scheme: 'bearer',
-                type: 'http'
-            }
-        ],
-        url: '/system_components/{id}/signals',
-        ...options,
-        headers: {
-            'Content-Type': 'application/json',
-            ...options.headers
-        }
-    });
-};
+export const createSystemComponentSignal = <ThrowOnError extends boolean = false>(options: Options<CreateSystemComponentSignalData, ThrowOnError>) => (options.client ?? client).post<CreateSystemComponentSignalResponses, CreateSystemComponentSignalErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'rezible_auth',
+            type: 'apiKey'
+        }, { scheme: 'bearer', type: 'http' }],
+    url: '/system_components/{id}/signals',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
 
 /**
  * List Tasks
  */
-export const listTasks = <ThrowOnError extends boolean = false>(options?: Options<ListTasksData, ThrowOnError>) => {
-    return (options?.client ?? client).get<ListTasksResponses, ListTasksErrors, ThrowOnError>({
-        security: [
-            {
-                in: 'cookie',
-                name: 'rezible_auth',
-                type: 'apiKey'
-            },
-            {
-                scheme: 'bearer',
-                type: 'http'
-            }
-        ],
-        url: '/tasks',
-        ...options
-    });
-};
+export const listTasks = <ThrowOnError extends boolean = false>(options?: Options<ListTasksData, ThrowOnError>) => (options?.client ?? client).get<ListTasksResponses, ListTasksErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'rezible_auth',
+            type: 'apiKey'
+        }, { scheme: 'bearer', type: 'http' }],
+    url: '/tasks',
+    ...options
+});
 
 /**
  * Create a Task
  */
-export const createTask = <ThrowOnError extends boolean = false>(options: Options<CreateTaskData, ThrowOnError>) => {
-    return (options.client ?? client).post<CreateTaskResponses, CreateTaskErrors, ThrowOnError>({
-        security: [
-            {
-                in: 'cookie',
-                name: 'rezible_auth',
-                type: 'apiKey'
-            },
-            {
-                scheme: 'bearer',
-                type: 'http'
-            }
-        ],
-        url: '/tasks',
-        ...options,
-        headers: {
-            'Content-Type': 'application/json',
-            ...options.headers
-        }
-    });
-};
+export const createTask = <ThrowOnError extends boolean = false>(options: Options<CreateTaskData, ThrowOnError>) => (options.client ?? client).post<CreateTaskResponses, CreateTaskErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'rezible_auth',
+            type: 'apiKey'
+        }, { scheme: 'bearer', type: 'http' }],
+    url: '/tasks',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
 
 /**
  * Archive a Task
  */
-export const archiveTask = <ThrowOnError extends boolean = false>(options: Options<ArchiveTaskData, ThrowOnError>) => {
-    return (options.client ?? client).delete<ArchiveTaskResponses, ArchiveTaskErrors, ThrowOnError>({
-        security: [
-            {
-                in: 'cookie',
-                name: 'rezible_auth',
-                type: 'apiKey'
-            },
-            {
-                scheme: 'bearer',
-                type: 'http'
-            }
-        ],
-        url: '/tasks/{id}',
-        ...options
-    });
-};
+export const archiveTask = <ThrowOnError extends boolean = false>(options: Options<ArchiveTaskData, ThrowOnError>) => (options.client ?? client).delete<ArchiveTaskResponses, ArchiveTaskErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'rezible_auth',
+            type: 'apiKey'
+        }, { scheme: 'bearer', type: 'http' }],
+    url: '/tasks/{id}',
+    ...options
+});
 
 /**
  * Get Task
  */
-export const getTask = <ThrowOnError extends boolean = false>(options: Options<GetTaskData, ThrowOnError>) => {
-    return (options.client ?? client).get<GetTaskResponses, GetTaskErrors, ThrowOnError>({
-        security: [
-            {
-                in: 'cookie',
-                name: 'rezible_auth',
-                type: 'apiKey'
-            },
-            {
-                scheme: 'bearer',
-                type: 'http'
-            }
-        ],
-        url: '/tasks/{id}',
-        ...options
-    });
-};
+export const getTask = <ThrowOnError extends boolean = false>(options: Options<GetTaskData, ThrowOnError>) => (options.client ?? client).get<GetTaskResponses, GetTaskErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'rezible_auth',
+            type: 'apiKey'
+        }, { scheme: 'bearer', type: 'http' }],
+    url: '/tasks/{id}',
+    ...options
+});
 
 /**
  * Update a Task
  */
-export const updateTask = <ThrowOnError extends boolean = false>(options: Options<UpdateTaskData, ThrowOnError>) => {
-    return (options.client ?? client).patch<UpdateTaskResponses, UpdateTaskErrors, ThrowOnError>({
-        security: [
-            {
-                in: 'cookie',
-                name: 'rezible_auth',
-                type: 'apiKey'
-            },
-            {
-                scheme: 'bearer',
-                type: 'http'
-            }
-        ],
-        url: '/tasks/{id}',
-        ...options,
-        headers: {
-            'Content-Type': 'application/json',
-            ...options.headers
-        }
-    });
-};
+export const updateTask = <ThrowOnError extends boolean = false>(options: Options<UpdateTaskData, ThrowOnError>) => (options.client ?? client).patch<UpdateTaskResponses, UpdateTaskErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'rezible_auth',
+            type: 'apiKey'
+        }, { scheme: 'bearer', type: 'http' }],
+    url: '/tasks/{id}',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
 
 /**
  * List Teams
  */
-export const listTeams = <ThrowOnError extends boolean = false>(options?: Options<ListTeamsData, ThrowOnError>) => {
-    return (options?.client ?? client).get<ListTeamsResponses, ListTeamsErrors, ThrowOnError>({
-        security: [
-            {
-                in: 'cookie',
-                name: 'rezible_auth',
-                type: 'apiKey'
-            },
-            {
-                scheme: 'bearer',
-                type: 'http'
-            }
-        ],
-        url: '/teams',
-        ...options
-    });
-};
+export const listTeams = <ThrowOnError extends boolean = false>(options?: Options<ListTeamsData, ThrowOnError>) => (options?.client ?? client).get<ListTeamsResponses, ListTeamsErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'rezible_auth',
+            type: 'apiKey'
+        }, { scheme: 'bearer', type: 'http' }],
+    url: '/teams',
+    ...options
+});
 
 /**
  * Create a Team
  */
-export const createTeam = <ThrowOnError extends boolean = false>(options: Options<CreateTeamData, ThrowOnError>) => {
-    return (options.client ?? client).post<CreateTeamResponses, CreateTeamErrors, ThrowOnError>({
-        security: [
-            {
-                in: 'cookie',
-                name: 'rezible_auth',
-                type: 'apiKey'
-            },
-            {
-                scheme: 'bearer',
-                type: 'http'
-            }
-        ],
-        url: '/teams',
-        ...options,
-        headers: {
-            'Content-Type': 'application/json',
-            ...options.headers
-        }
-    });
-};
+export const createTeam = <ThrowOnError extends boolean = false>(options: Options<CreateTeamData, ThrowOnError>) => (options.client ?? client).post<CreateTeamResponses, CreateTeamErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'rezible_auth',
+            type: 'apiKey'
+        }, { scheme: 'bearer', type: 'http' }],
+    url: '/teams',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
 
 /**
  * Archive a Team
  */
-export const archiveTeam = <ThrowOnError extends boolean = false>(options: Options<ArchiveTeamData, ThrowOnError>) => {
-    return (options.client ?? client).delete<ArchiveTeamResponses, ArchiveTeamErrors, ThrowOnError>({
-        security: [
-            {
-                in: 'cookie',
-                name: 'rezible_auth',
-                type: 'apiKey'
-            },
-            {
-                scheme: 'bearer',
-                type: 'http'
-            }
-        ],
-        url: '/teams/{id}',
-        ...options
-    });
-};
+export const archiveTeam = <ThrowOnError extends boolean = false>(options: Options<ArchiveTeamData, ThrowOnError>) => (options.client ?? client).delete<ArchiveTeamResponses, ArchiveTeamErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'rezible_auth',
+            type: 'apiKey'
+        }, { scheme: 'bearer', type: 'http' }],
+    url: '/teams/{id}',
+    ...options
+});
 
 /**
  * Get a Team
  */
-export const getTeam = <ThrowOnError extends boolean = false>(options: Options<GetTeamData, ThrowOnError>) => {
-    return (options.client ?? client).get<GetTeamResponses, GetTeamErrors, ThrowOnError>({
-        security: [
-            {
-                in: 'cookie',
-                name: 'rezible_auth',
-                type: 'apiKey'
-            },
-            {
-                scheme: 'bearer',
-                type: 'http'
-            }
-        ],
-        url: '/teams/{id}',
-        ...options
-    });
-};
+export const getTeam = <ThrowOnError extends boolean = false>(options: Options<GetTeamData, ThrowOnError>) => (options.client ?? client).get<GetTeamResponses, GetTeamErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'rezible_auth',
+            type: 'apiKey'
+        }, { scheme: 'bearer', type: 'http' }],
+    url: '/teams/{id}',
+    ...options
+});
 
 /**
  * Update a Team
  */
-export const updateTeams = <ThrowOnError extends boolean = false>(options: Options<UpdateTeamsData, ThrowOnError>) => {
-    return (options.client ?? client).patch<UpdateTeamsResponses, UpdateTeamsErrors, ThrowOnError>({
-        security: [
-            {
-                in: 'cookie',
-                name: 'rezible_auth',
-                type: 'apiKey'
-            },
-            {
-                scheme: 'bearer',
-                type: 'http'
-            }
-        ],
-        url: '/teams/{id}',
-        ...options,
-        headers: {
-            'Content-Type': 'application/json',
-            ...options.headers
-        }
-    });
-};
+export const updateTeams = <ThrowOnError extends boolean = false>(options: Options<UpdateTeamsData, ThrowOnError>) => (options.client ?? client).patch<UpdateTeamsResponses, UpdateTeamsErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'rezible_auth',
+            type: 'apiKey'
+        }, { scheme: 'bearer', type: 'http' }],
+    url: '/teams/{id}',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
 
 /**
  * Delete a Notification for the Current User
  */
-export const deleteUserNotification = <ThrowOnError extends boolean = false>(options: Options<DeleteUserNotificationData, ThrowOnError>) => {
-    return (options.client ?? client).delete<DeleteUserNotificationResponses, DeleteUserNotificationErrors, ThrowOnError>({
-        security: [
-            {
-                in: 'cookie',
-                name: 'rezible_auth',
-                type: 'apiKey'
-            },
-            {
-                scheme: 'bearer',
-                type: 'http'
-            }
-        ],
-        url: '/user_session/notifications/{id}',
-        ...options
-    });
-};
+export const deleteUserNotification = <ThrowOnError extends boolean = false>(options: Options<DeleteUserNotificationData, ThrowOnError>) => (options.client ?? client).delete<DeleteUserNotificationResponses, DeleteUserNotificationErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'rezible_auth',
+            type: 'apiKey'
+        }, { scheme: 'bearer', type: 'http' }],
+    url: '/user_session/notifications/{id}',
+    ...options
+});
 
 /**
  * List Users
  */
-export const listUsers = <ThrowOnError extends boolean = false>(options?: Options<ListUsersData, ThrowOnError>) => {
-    return (options?.client ?? client).get<ListUsersResponses, ListUsersErrors, ThrowOnError>({
-        security: [
-            {
-                in: 'cookie',
-                name: 'rezible_auth',
-                type: 'apiKey'
-            },
-            {
-                scheme: 'bearer',
-                type: 'http'
-            }
-        ],
-        url: '/users',
-        ...options
-    });
-};
+export const listUsers = <ThrowOnError extends boolean = false>(options?: Options<ListUsersData, ThrowOnError>) => (options?.client ?? client).get<ListUsersResponses, ListUsersErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'rezible_auth',
+            type: 'apiKey'
+        }, { scheme: 'bearer', type: 'http' }],
+    url: '/users',
+    ...options
+});
 
 /**
  * Get a User
  */
-export const getUser = <ThrowOnError extends boolean = false>(options: Options<GetUserData, ThrowOnError>) => {
-    return (options.client ?? client).get<GetUserResponses, GetUserErrors, ThrowOnError>({
-        security: [
-            {
-                in: 'cookie',
-                name: 'rezible_auth',
-                type: 'apiKey'
-            },
-            {
-                scheme: 'bearer',
-                type: 'http'
-            }
-        ],
-        url: '/users/{id}',
-        ...options
-    });
-};
+export const getUser = <ThrowOnError extends boolean = false>(options: Options<GetUserData, ThrowOnError>) => (options.client ?? client).get<GetUserResponses, GetUserErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'rezible_auth',
+            type: 'apiKey'
+        }, { scheme: 'bearer', type: 'http' }],
+    url: '/users/{id}',
+    ...options
+});

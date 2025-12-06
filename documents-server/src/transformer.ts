@@ -6,7 +6,7 @@ import {
   configureUserMentionExtension,
   configureAnnotationExtension,
   getHandoverExtensions,
-} from "@rezible/documents/tiptap-extensions";
+} from "@rezible/tiptap-extensions";
 import type { MarkSpec, NodeSpec, SchemaSpec } from "@tiptap/pm/model";
 
 const getTipTapExtensions = (): Extensions => {
@@ -34,14 +34,10 @@ export const transformSchemaSpec = (spec: SchemaSpec): transformedSpec => {
 	let nodes = new Map<string, NodeSpec>();
 	
 	if (typeof spec.marks?.forEach == "function") {
-		spec.marks?.forEach((name, val) => {
-			marks.set(name, val);
-		})
+		spec.marks?.forEach((name, val) => marks.set(name, val));
 	}
 	if (typeof spec.nodes?.forEach == "function") {
-		spec.nodes?.forEach((name, val) => {
-			nodes.set(name, val);
-		})
+		spec.nodes?.forEach((name, val) => nodes.set(name, val));
 	}
 	const topNode = spec.topNode ?? "doc";
 	const tsSpec: transformedSpec = {

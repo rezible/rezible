@@ -13,9 +13,10 @@
 		configureUserMentionExtension,
 		configureAnnotationExtension,
 		configureDraftDiscussionHighlightExtension,
-	} from "@rezible/documents/tiptap-extensions";
+	} from "@rezible/tiptap-extensions";
 	import Collaboration from "@tiptap/extension-collaboration";
-	import CollaborationCursor from "@tiptap/extension-collaboration-cursor";
+	import CollaborationCaret from "@tiptap/extension-collaboration-caret";
+	
 	import BubbleMenu, { type AnnotationType } from "./BubbleMenu.svelte";
 	import MenuBar from "./MenuBar.svelte";
 
@@ -41,7 +42,7 @@
 			configureAnnotationExtension(activeAnnotation.set),
 			configureDraftDiscussionHighlightExtension(session.user?.id),
 			Collaboration.configure({ document: provider.document, field }),
-			CollaborationCursor.configure({ provider, user }),
+			CollaborationCaret.configure({ provider, user }),
 		];
 
 		return extensions;

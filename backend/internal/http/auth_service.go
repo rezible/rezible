@@ -194,19 +194,16 @@ func (s *AuthService) GetProviderStartFlowPath(prov rez.AuthSessionProvider) str
 func (s *AuthService) delegateAuthFlowToProvider(w http.ResponseWriter, r *http.Request) bool {
 	for _, prov := range s.providers {
 		provFlowRoute := s.GetProviderStartFlowPath(prov)
+		if !strings.HasPrefix(r.URL.Path, provFlowRoute) {
+			continue
+		}
 
 		if r.URL.Path == provFlowRoute {
-			log.Debug().
-				Str("prov", prov.DisplayName()).
-				Str("route", provFlowRoute).
-				Str("request", r.URL.Path).
-				Msg("delegate to provider?")
 			prov.StartAuthFlow(w, r)
 			return true
 		}
 
-		onSessionCreatedCallback := s.makeUserSessionCreatedCallback(w, r, provFlowRoute)
-		if prov.HandleAuthFlowRequest(w, r, onSessionCreatedCallback) {
+		if prov.HandleAuthFlowRequest(w, r, s.makeUserSessionCreatedCallback(w, r, provFlowRoute)) {
 			return true
 		}
 	}

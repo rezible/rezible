@@ -1,9 +1,9 @@
-import { createRetrospectiveMutation, getIncidentOptions, getRetrospectiveForIncidentOptions, getRetrospectiveOptions, type CreateRetrospectiveAttributes, type CreateRetrospectiveResponseBody, type Retrospective } from "$lib/api";
+import { createRetrospectiveMutation, getIncidentOptions, getRetrospectiveOptions, type CreateRetrospectiveResponseBody } from "$lib/api";
 import type { Getter } from "$src/lib/utils.svelte";
 import type { IncidentViewRouteParam } from "$src/params/incidentView";
 import { getLocalTimeZone } from "@internationalized/date";
 import { createMutation, createQuery, useQueryClient } from "@tanstack/svelte-query";
-import { Context, watch, watchOnce } from "runed";
+import { Context, watch } from "runed";
 import { RetrospectiveCollaborationState } from "./collaborationState.svelte";
 
 type StateParams = { slug: string, viewRouteParam: IncidentViewRouteParam };

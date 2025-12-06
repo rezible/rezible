@@ -18,13 +18,12 @@ const (
 	googleIssuerUrl  = "https://accounts.google.com"
 )
 
-func makeCallbackPath(pid string) string {
-	return fmt.Sprintf("%s/%s/%s", rez.Config.AuthRouteBase(), pid, "callback")
-}
-
 func NewGoogleAuthSessionProvider(ctx context.Context, cfg ProviderConfig) (*AuthSessionProvider, error) {
-	callbackPath := makeCallbackPath(googleProviderId)
-	redirectUrl, urlErr := url.JoinPath(rez.Config.BackendUrl(), rez.Config.ApiRouteBase(), callbackPath)
+	callbackPath, cbPathErr := url.JoinPath(rez.Config.ApiRouteBase(), rez.Config.AuthRouteBase(), googleProviderId, "callback")
+	if cbPathErr != nil {
+		return nil, fmt.Errorf("callback path: %w", cbPathErr)
+	}
+	redirectUrl, urlErr := url.JoinPath(rez.Config.BackendUrl(), callbackPath)
 	if urlErr != nil {
 		return nil, fmt.Errorf("creating redirect url: %w", urlErr)
 	}

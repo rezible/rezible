@@ -256,7 +256,7 @@ type ListRetrospectiveCommentsRequest ListIdRequest
 type ListRetrospectiveCommentsResponse PaginatedResponse[RetrospectiveComment]
 
 var CreateRetrospectiveComment = huma.Operation{
-	OperationID: "create-retrospective-discussion",
+	OperationID: "create-retrospective-comment",
 	Method:      http.MethodPost,
 	Path:        "/retrospectives/{id}/comments",
 	Summary:     "Create a Retrospective Comment",

@@ -28,7 +28,7 @@ export class RetrospectiveCollaborationState {
 		// https://github.com/ueberdosis/hocuspocus/issues/845
 		if (this.provider) {
 			try {
-				if (this.provider.isConnected) this.provider.disconnect();
+				if (this.provider.isSynced) this.provider.disconnect();
 				this.provider.destroy();
 				this.provider = undefined;
 			} catch (e) {
@@ -83,7 +83,6 @@ export class RetrospectiveCollaborationState {
 			url: sess.connectionUrl,
 			token: sess.token,
 			name: sess.documentId,
-			preserveConnection: false,
 			onAwarenessChange: (e) => this.onAwarenessChange(e),
 			onStatus: (e) => this.onConnectionStatusChange(e),
 			onAuthenticated: () => this.onAuthenticated(),

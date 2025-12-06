@@ -1,14 +1,11 @@
+import { debounce } from "$lib/utils.svelte";
+import type { OncallShiftHandover, OncallShiftHandoverSection } from "$lib/api";
+import { SvelteMap } from "svelte/reactivity";
+import { watch } from "runed";
+
 import type { Content, Editor } from "@tiptap/core";
 import { Editor as SvelteEditor } from "$components/tiptap-editor/TiptapEditor.svelte";
-import { debounce } from "$lib/utils.svelte";
-import { getHandoverExtensions } from "@rezible/documents/tiptap-extensions";
-import type {
-	OncallShiftHandover,
-	OncallShiftHandoverSection,
-} from "$lib/api";
-import { SvelteMap } from "svelte/reactivity";
-import { onMount } from "svelte";
-import { watch } from "runed";
+import { createHandoverEditor } from "$components/tiptap-editor/editors";
 
 export type HandoverEditorSection = {
 	header: string;
@@ -73,10 +70,9 @@ export class ShiftHandoverEditorState {
 			activeStatus.set("heading", e.isActive("heading"));
 		}, 100);
 
-		const editor = new SvelteEditor({
+		const editor = createHandoverEditor({
 			content,
 			editable: this.editable,
-			extensions: getHandoverExtensions(),
 			autofocus: (this.editable && idx === 0) ? "end" : false,
 			editorProps: {
 				attributes: {

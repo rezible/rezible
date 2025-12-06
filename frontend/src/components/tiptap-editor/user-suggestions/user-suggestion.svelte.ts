@@ -1,7 +1,7 @@
 import type { Content } from "@tiptap/core";
-import tippy, { type Instance as TippyInstance, type Props as TippyProps } from "tippy.js";
 import type { SuggestionKeyDownProps, SuggestionOptions, SuggestionProps } from "@tiptap/suggestion";
 import { mount, unmount } from "svelte";
+import { offset } from "@floating-ui/dom";
 import SuggestionPopup from "./UserSuggestionPopup.svelte";
 
 const userList = [
@@ -73,7 +73,7 @@ export const RezUserSuggestion: Partial<SuggestionOptions<string, any>> = {
 		let componentProps = $state<SuggestionProps<string, any>>();
 		let componentOnKeyDown: (props: SuggestionKeyDownProps) => boolean;
 		let unmountComponent: () => void;
-		let popup: TippyInstance<TippyProps>[];
+		// let popup: TippyInstance<TippyProps>[];
 
 		return {
 			onStart: (props) => {
@@ -91,6 +91,7 @@ export const RezUserSuggestion: Partial<SuggestionOptions<string, any>> = {
 
 				if (!props.clientRect) return;
 
+				/*
 				popup = tippy("body", {
 					getReferenceClientRect: getClientRect(props.clientRect),
 					appendTo: () => document.body,
@@ -100,6 +101,7 @@ export const RezUserSuggestion: Partial<SuggestionOptions<string, any>> = {
 					trigger: "manual",
 					placement: "bottom-start",
 				});
+				*/
 			},
 
 			onUpdate(props) {
@@ -108,14 +110,12 @@ export const RezUserSuggestion: Partial<SuggestionOptions<string, any>> = {
 					componentProps.items = props.items;
 				}
 				if (!props.clientRect) return;
-				popup[0].setProps({
-					getReferenceClientRect: getClientRect(props.clientRect),
-				});
+				// popup[0].setProps({ getReferenceClientRect: getClientRect(props.clientRect) });
 			},
 
 			onKeyDown(props) {
 				if (props.event.key === "Escape") {
-					popup[0].hide();
+					// popup[0].hide();
 					return true;
 				}
 
@@ -123,7 +123,7 @@ export const RezUserSuggestion: Partial<SuggestionOptions<string, any>> = {
 			},
 
 			onExit() {
-				popup[0].destroy();
+				// popup[0].destroy();
 				unmountComponent();
 			},
 		};

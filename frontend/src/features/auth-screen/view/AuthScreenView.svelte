@@ -1,11 +1,12 @@
 <script lang="ts">
 	import { createQuery } from "@tanstack/svelte-query";
-	import { BACKEND_URL, getAuthSessionConfigOptions } from "$lib/api";
+	import { BACKEND_URL, getAuthSessionConfigOptions, type AuthSessionProviderConfig } from "$lib/api";
 	import { useAuthSessionState, type SessionErrorCategory } from "$lib/auth.svelte";
 	import Button from "$components/button/Button.svelte";
 	import Header from "$components/header/Header.svelte";
 	import { mdiGoogle, mdiKey } from "@mdi/js";
 	import Icon from "$src/components/icon/Icon.svelte";
+	import { dev } from "$app/environment";
 
 	const session = useAuthSessionState();
 
@@ -29,6 +30,12 @@
 		no_user: "You signed in successfully, but Rezible does not have your details.",
 		no_session: "",
 	};
+
+	const getProviderStartFlowEndpoint = (pc: AuthSessionProviderConfig) => {
+		// TODO: remove this workaround for dev
+		if (dev && pc.name === "Google") return "http://localhost:8888" + pc.startFlowEndpoint;
+		return pc.startFlowEndpoint;
+	}
 </script>
 
 <div class="grid h-full w-full place-items-center">
@@ -50,7 +57,7 @@
 		{:else if !!providers}
 			{#each providers as p}
 				{@const display = providerDisplay.get(p.name.toLowerCase())}
-				<Button href="{BACKEND_URL}{p.startFlowEndpoint}" color="primary" variant="fill">
+				<Button href={getProviderStartFlowEndpoint(p)} color="primary" variant="fill">
 					<span class="flex items-center gap-2">
 					Continue with {display?.label ?? p.name}
 					{#if display?.icon}

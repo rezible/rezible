@@ -19,11 +19,21 @@
 
 	let ref = $state<HTMLElement>(null!);
 
+	const getEditorOptionsDefinedElement = (e: Editor) => {
+		let el = e.options.element;
+		if (!el) return;
+		if (typeof el === "function") return;
+		if (el instanceof Element) return el; 
+		return el.mount;
+	}
+
 	const setupEditor = () => {
 		if (!editor?.options.element) return;
 		if (editor.contentElement) return;
 
-		ref.append(...Array.from(editor.options.element.childNodes));
+		const el = getEditorOptionsDefinedElement(editor);
+		if (el) ref.append(...Array.from(el.childNodes));
+
 		editor.setOptions({ element: ref });
 		editor.contentElement = ref;
 	};
@@ -33,16 +43,15 @@
 
 		editor.contentElement = null;
 
-		if (!editor.options.element.firstChild) return;
+		const el = getEditorOptionsDefinedElement(editor);
+		if (!el || !el.firstChild) return;
 
 		const newRef = document.createElement("div");
-		newRef.append(...Array.from(editor.options.element.childNodes));
+		newRef.append(...Array.from(el.childNodes));
 		editor.setOptions({ element: newRef });
 	}
 
-	onMount(() => {
-		tick().then(setupEditor)
-	});
+	onMount(() => {tick().then(setupEditor)});
 	onDestroy(destroyEditor);
 </script>
 
