@@ -38,7 +38,9 @@
 				{#each components as c (c.id)}
 					{@render componentListItem(c)}
 				{:else}
-					<span>No Components Found</span>
+					<div class="grid place-items-center flex-1">
+						<span class="text-surface-content/80">No Components Found</span>
+					</div>
 				{/each}
 			{/snippet}
 		</LoadingQueryWrapper>

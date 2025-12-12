@@ -323,9 +323,10 @@ func (p *AuthSessionProvider) createSession(a *saml.Assertion, redirectUrl strin
 
 	email := attr.Get("email")
 	domain := strings.Split(email, "@")[1]
+	id := attr.Get("id")
 
 	po := ent.Organization{
-		ProviderID: claims.Id,
+		ProviderID: id,
 		Name:       domain,
 	}
 

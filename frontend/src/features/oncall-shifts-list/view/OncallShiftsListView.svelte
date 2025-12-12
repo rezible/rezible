@@ -110,6 +110,10 @@
 			{#snippet view(shifts: OncallShift[])}
 				{#each shifts as shift}
 					<ShiftCard {shift} />
+				{:else}
+					<div class="grid place-items-center flex-1">
+						<span class="text-surface-content/80">No Shifts Found</span>
+					</div>
 				{/each}
 			{/snippet}
 		</LoadingQueryWrapper>

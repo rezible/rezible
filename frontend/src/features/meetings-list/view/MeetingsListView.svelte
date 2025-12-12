@@ -31,7 +31,9 @@
 				{#each sessions as session}
 					<MeetingSessionCard {session} />
 				{:else}
-					<span>No upcoming meetings</span>
+					<div class="grid place-items-center flex-1">
+						<span class="text-surface-content/80">No Upcoming Meetings Found</span>
+					</div>
 				{/each}
 			{/snippet}
 		</LoadingQueryWrapper>

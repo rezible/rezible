@@ -33,6 +33,10 @@
 			{#snippet view(rosters: OncallRoster[])}
 				{#each rosters as roster}
 					<RosterCard {roster} />
+				{:else}
+					<div class="grid place-items-center flex-1">
+						<span class="text-surface-content/80">No Rosters Found</span>
+					</div>
 				{/each}
 			{/snippet}
 		</LoadingQueryWrapper>

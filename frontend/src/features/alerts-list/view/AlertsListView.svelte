@@ -38,7 +38,9 @@
 				{#each alerts as a (a.id)}
 					{@render alertListItem(a)}
 				{:else}
-					<span>No Alerts Found</span>
+					<div class="grid place-items-center flex-1">
+						<span class="text-surface-content/80">No Alerts Found</span>
+					</div>
 				{/each}
 			{/snippet}
 		</LoadingQueryWrapper>

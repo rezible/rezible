@@ -2,7 +2,7 @@ import { paginationStore as createPaginationStore } from "@layerstack/svelte-sto
 import type { CreateQueryResult } from "@tanstack/svelte-query";
 import { watch } from "runed";
 import { fromStore } from "svelte/store";
-import type { ResponsePagination } from "./api";
+import type { ErrorModel, ResponsePagination } from "./api";
 import type { ComponentProps } from "svelte";
 import { Pagination } from "svelte-ux";
 
@@ -10,7 +10,7 @@ type PaginatedData = {
 	data: any;
 	pagination: ResponsePagination;
 }
-type PaginatedQuery<PData extends PaginatedData> = CreateQueryResult<PData, Error>;
+type PaginatedQuery<PData extends PaginatedData> = CreateQueryResult<PData, ErrorModel>;
 
 export class QueryPaginatorState {
 	pagination = createPaginationStore({ page: 1, perPage: 10, total: 0 });

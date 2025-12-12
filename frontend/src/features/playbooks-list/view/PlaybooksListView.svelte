@@ -38,7 +38,9 @@
 				{#each playbooks as pb (pb.id)}
 					{@render playbookListItem(pb)}
 				{:else}
-					<span>No Playbooks Found</span>
+					<div class="grid place-items-center flex-1">
+						<span class="text-surface-content/80">No Playbooks Found</span>
+					</div>
 				{/each}
 			{/snippet}
 		</LoadingQueryWrapper>
