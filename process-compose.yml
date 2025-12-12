@@ -26,7 +26,7 @@ processes:
       documents-server:
         condition: process_started
       oidc-test-provider:
-        condition: process_started
+        condition: process_log_ready
 
   frontend:
     command: just dev-frontend
@@ -63,3 +63,4 @@ processes:
 
   oidc-test-provider:
     command: just run-oidc-test-provider
+    ready_log_line: "Application started"
