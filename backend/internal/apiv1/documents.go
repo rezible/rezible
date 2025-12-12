@@ -3,7 +3,6 @@ package apiv1
 import (
 	"context"
 
-	"github.com/google/uuid"
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
 	oapi "github.com/rezible/rezible/openapi/v1"
@@ -12,17 +11,10 @@ import (
 type documentsHandler struct {
 	documents rez.DocumentsService
 	auth      rez.AuthService
-	users     rez.UserService
 }
 
-func newDocumentsHandler(documents rez.DocumentsService, auth rez.AuthService, users rez.UserService) *documentsHandler {
-	return &documentsHandler{documents, auth, users}
-}
-
-func (h *documentsHandler) verifyUserDocumentAccess(ctx context.Context, userId uuid.UUID, docId uuid.UUID) (bool, error) {
-	// TODO: lookup document using ent, check tenant
-	const readOnly = false
-	return readOnly, nil
+func newDocumentsHandler(documents rez.DocumentsService, auth rez.AuthService) *documentsHandler {
+	return &documentsHandler{documents, auth}
 }
 
 func (h *documentsHandler) RequestDocumentEditorSession(ctx context.Context, request *oapi.RequestDocumentEditorSessionRequest) (*oapi.RequestDocumentEditorSessionResponse, error) {
@@ -31,7 +23,7 @@ func (h *documentsHandler) RequestDocumentEditorSession(ctx context.Context, req
 	sess := getRequestAuthSession(ctx, h.auth)
 
 	docId := request.Id
-	_, accessErr := h.verifyUserDocumentAccess(ctx, sess.UserId, docId)
+	_, accessErr := h.documents.GetUserDocumentAccess(ctx, sess.UserId, docId)
 	if accessErr != nil {
 		return nil, apiError("no document access", accessErr)
 	}
@@ -41,10 +33,11 @@ func (h *documentsHandler) RequestDocumentEditorSession(ctx context.Context, req
 		return nil, apiError("failed to create session token", tokenErr)
 	}
 
+	wsUrl := "ws://" + rez.Config.DocumentsServerAddress()
 	resp.Body.Data = oapi.DocumentEditorSession{
 		DocumentId:    docId,
 		Token:         token,
-		ConnectionUrl: h.documents.GetServerWebsocketAddress(),
+		ConnectionUrl: wsUrl,
 	}
 
 	return &resp, nil
@@ -56,7 +49,7 @@ func (h *documentsHandler) VerifyDocumentSessionAuth(ctx context.Context, req *o
 	sess := getRequestAuthSession(ctx, h.auth)
 
 	docId := req.Id
-	readOnly, accessErr := h.verifyUserDocumentAccess(ctx, sess.UserId, docId)
+	readOnly, accessErr := h.documents.GetUserDocumentAccess(ctx, sess.UserId, docId)
 	if accessErr != nil {
 		return nil, apiError("no document access", accessErr)
 	}

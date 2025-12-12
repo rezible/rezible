@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/rezible/rezible/internal/prosemirror"
 	"github.com/rs/zerolog/log"
 	"github.com/sourcegraph/conc/pool"
 
@@ -16,7 +17,6 @@ import (
 	"github.com/rezible/rezible/internal/db"
 	"github.com/rezible/rezible/internal/db/datasync"
 	"github.com/rezible/rezible/internal/eino"
-	"github.com/rezible/rezible/internal/hocuspocus"
 	"github.com/rezible/rezible/internal/http"
 	"github.com/rezible/rezible/internal/postgres"
 	"github.com/rezible/rezible/internal/postgres/river"
@@ -140,6 +140,11 @@ func setupServer(ctx context.Context) (Server, error) {
 		return nil, fmt.Errorf("postgres.NewUserService: %w", usersErr)
 	}
 
+	auth, authErr := http.NewAuthSessionService(ctx, orgs, users)
+	if authErr != nil {
+		return nil, fmt.Errorf("http.NewAuthSessionService: %w", authErr)
+	}
+
 	events, eventsErr := db.NewEventsService(dbc, users)
 	if eventsErr != nil {
 		return nil, fmt.Errorf("postgres.NewEventsService: %w", eventsErr)
@@ -153,6 +158,11 @@ func setupServer(ctx context.Context) (Server, error) {
 	_, teamsErr := db.NewTeamService(dbc)
 	if teamsErr != nil {
 		return nil, fmt.Errorf("postgres.NewTeamService: %w", teamsErr)
+	}
+
+	_, nodesErr := prosemirror.NewNodeService()
+	if nodesErr != nil {
+		return nil, fmt.Errorf("prosemirror.NewNodeService: %w", nodesErr)
 	}
 
 	lms, lmsErr := eino.NewLanguageModelService(ctx)
@@ -210,15 +220,9 @@ func setupServer(ctx context.Context) (Server, error) {
 		return nil, fmt.Errorf("postgres.NewPlaybookService: %w", playbooksErr)
 	}
 
-	auth, authErr := http.NewAuthSessionService(ctx, orgs, users)
-	if authErr != nil {
-		return nil, fmt.Errorf("http.NewAuthSessionService: %w", authErr)
-	}
-
-	// TODO: just move this into api
-	docs, docsErr := hocuspocus.NewDocumentsService(dbc, auth, users)
+	docs, docsErr := db.NewDocumentsService(dbc, auth, users)
 	if docsErr != nil {
-		return nil, fmt.Errorf("hocuspocus.NewDocumentsService: %w", docsErr)
+		return nil, fmt.Errorf("db.NewDocumentsService: %w", docsErr)
 	}
 
 	v1Handler := apiv1.NewHandler(dbc, auth, orgs, pc, chat, users, incidents, debriefs, rosters, shifts, oncallMetrics, events, annos, docs, retros, components, alerts, playbooks)

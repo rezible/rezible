@@ -35,7 +35,7 @@ type ConfigLoader interface {
 	DebugMode() bool
 
 	DatabaseUrl() string
-
+	DocumentsServerAddress() string
 	AppUrl() string
 
 	ApiRouteBase() string
@@ -235,14 +235,16 @@ type (
 		Content *prosemirror.Node `json:"jsonContent,omitempty"`
 	}
 
+	ContentNodeService interface {
+		CreateOncallShiftHandoverMessage(sections []OncallShiftHandoverSection, annotations []*ent.EventAnnotation, roster *ent.OncallRoster, endingShift *ent.OncallShift, startingShift *ent.OncallShift) (*ContentNode, error)
+	}
+
 	DocumentsService interface {
-		GetServerWebsocketAddress() string
+		GetUserDocumentAccess(ctx context.Context, userId uuid.UUID, documentId uuid.UUID) (bool, error)
 		CreateEditorSessionToken(sess *AuthSession, docId uuid.UUID) (string, error)
 
 		GetDocument(context.Context, uuid.UUID) (*ent.Document, error)
 		SetDocument(context.Context, uuid.UUID, func(*ent.DocumentMutation)) (*ent.Document, error)
-
-		CreateOncallShiftHandoverMessage(sections []OncallShiftHandoverSection, annotations []*ent.EventAnnotation, roster *ent.OncallRoster, endingShift *ent.OncallShift, startingShift *ent.OncallShift) (*ContentNode, error)
 	}
 )
 

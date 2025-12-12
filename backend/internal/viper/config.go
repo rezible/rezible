@@ -80,6 +80,10 @@ func (c *Config) AppUrl() string {
 	return "https://app.rezible.test"
 }
 
+func (c *Config) DocumentsServerAddress() string {
+	return c.GetString("documents_server_address")
+}
+
 func (c *Config) SingleTenantMode() bool {
 	return c.GetBool("single_tenant_mode")
 }
