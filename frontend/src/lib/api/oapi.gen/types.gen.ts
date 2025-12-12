@@ -2901,10 +2901,18 @@ export type VerifyDocumentSessionAuthRequestAttributes = {
 };
 
 export type VerifyDocumentSessionAuthRequestBody = {
+    /**
+     * A URL to the JSON Schema for this object.
+     */
+    readonly $schema?: string;
     attributes: VerifyDocumentSessionAuthRequestAttributes;
 };
 
 export type VerifyDocumentSessionAuthResponseBody = {
+    /**
+     * A URL to the JSON Schema for this object.
+     */
+    readonly $schema?: string;
     data: DocumentEditorSessionAuth;
 };
 
@@ -3482,6 +3490,53 @@ export type UpdateDebriefQuestionResponses = {
 };
 
 export type UpdateDebriefQuestionResponse = UpdateDebriefQuestionResponses[keyof UpdateDebriefQuestionResponses];
+
+export type VerifyDocumentSessionAuthData = {
+    body: VerifyDocumentSessionAuthRequestBody;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/documents/{id}/auth';
+};
+
+export type VerifyDocumentSessionAuthErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
+
+export type VerifyDocumentSessionAuthError = VerifyDocumentSessionAuthErrors[keyof VerifyDocumentSessionAuthErrors];
+
+export type VerifyDocumentSessionAuthResponses = {
+    /**
+     * OK
+     */
+    200: VerifyDocumentSessionAuthResponseBody;
+};
+
+export type VerifyDocumentSessionAuthResponse = VerifyDocumentSessionAuthResponses[keyof VerifyDocumentSessionAuthResponses];
 
 export type LoadDocumentData = {
     body?: never;

@@ -2,7 +2,7 @@
 
 import type { Client, Options as Options2, TDataShape } from './client';
 import { client } from './client.gen';
-import type { LoadDocumentData, LoadDocumentErrors, LoadDocumentResponses, RequestDocumentEditorSessionData, RequestDocumentEditorSessionErrors, RequestDocumentEditorSessionResponses, UpdateDocumentData, UpdateDocumentErrors, UpdateDocumentResponses } from './types.gen';
+import type { LoadDocumentData, LoadDocumentErrors, LoadDocumentResponses, RequestDocumentEditorSessionData, RequestDocumentEditorSessionErrors, RequestDocumentEditorSessionResponses, UpdateDocumentData, UpdateDocumentErrors, UpdateDocumentResponses, VerifyDocumentSessionAuthData, VerifyDocumentSessionAuthErrors, VerifyDocumentSessionAuthResponses } from './types.gen';
 
 export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends boolean = boolean> = Options2<TData, ThrowOnError> & {
     /**
@@ -19,6 +19,25 @@ export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends 
 };
 
 export class Documents {
+    /**
+     * Verify document auth
+     */
+    public static verifyDocumentSessionAuth<ThrowOnError extends boolean = false>(options: Options<VerifyDocumentSessionAuthData, ThrowOnError>) {
+        return (options.client ?? client).post<VerifyDocumentSessionAuthResponses, VerifyDocumentSessionAuthErrors, ThrowOnError>({
+            security: [{
+                    in: 'cookie',
+                    name: 'rezible_auth',
+                    type: 'apiKey'
+                }, { scheme: 'bearer', type: 'http' }],
+            url: '/documents/{id}/auth',
+            ...options,
+            headers: {
+                'Content-Type': 'application/json',
+                ...options.headers
+            }
+        });
+    }
+    
     /**
      * Load document
      */
