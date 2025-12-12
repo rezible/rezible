@@ -1454,9 +1454,9 @@ var (
 				Columns: []*schema.Column{ProviderConfigsColumns[6]},
 			},
 			{
-				Name:    "providerconfig_provider_id_provider_type",
+				Name:    "providerconfig_provider_id_provider_type_tenant_id",
 				Unique:  true,
-				Columns: []*schema.Column{ProviderConfigsColumns[2], ProviderConfigsColumns[1]},
+				Columns: []*schema.Column{ProviderConfigsColumns[2], ProviderConfigsColumns[1], ProviderConfigsColumns[6]},
 			},
 		},
 	}
