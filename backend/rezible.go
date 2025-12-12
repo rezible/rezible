@@ -237,8 +237,11 @@ type (
 
 	DocumentsService interface {
 		GetServerWebsocketAddress() string
-		Handler() http.Handler
 		CreateEditorSessionToken(sess *AuthSession, docId uuid.UUID) (string, error)
+
+		GetDocument(context.Context, uuid.UUID) (*ent.Document, error)
+		SetDocument(context.Context, uuid.UUID, func(*ent.DocumentMutation)) (*ent.Document, error)
+
 		CreateOncallShiftHandoverMessage(sections []OncallShiftHandoverSection, annotations []*ent.EventAnnotation, roster *ent.OncallRoster, endingShift *ent.OncallShift, startingShift *ent.OncallShift) (*ContentNode, error)
 	}
 )

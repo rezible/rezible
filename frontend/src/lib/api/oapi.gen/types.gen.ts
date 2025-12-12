@@ -723,10 +723,29 @@ export type CreateTeamResponseBody = {
     data: Team;
 };
 
+export type Document = {
+    attributes: DocumentAttributes;
+    id: string;
+};
+
+export type DocumentAttributes = {
+    content: string;
+};
+
 export type DocumentEditorSession = {
     connectionUrl: string;
     documentId: string;
     token: string;
+};
+
+export type DocumentEditorSessionAuth = {
+    readOnly: boolean;
+    user: DocumentEditorSessionUser;
+};
+
+export type DocumentEditorSessionUser = {
+    id: string;
+    username: string;
 };
 
 export type ErrorDetail = {
@@ -1765,6 +1784,14 @@ export type ListWatchedOncallRostersResponseBody = {
     data: Array<OncallRoster>;
 };
 
+export type LoadDocumentResponseBody = {
+    /**
+     * A URL to the JSON Schema for this object.
+     */
+    readonly $schema?: string;
+    data: Document;
+};
+
 export type MeetingAttendees = {
     private: boolean;
     teams: Array<string>;
@@ -2195,6 +2222,26 @@ export type Team = {
 export type TeamAttributes = {
     name: string;
     slug: string;
+};
+
+export type UpdateDocumentRequestAttributes = {
+    content: unknown;
+};
+
+export type UpdateDocumentRequestBody = {
+    /**
+     * A URL to the JSON Schema for this object.
+     */
+    readonly $schema?: string;
+    attributes: UpdateDocumentRequestAttributes;
+};
+
+export type UpdateDocumentResponseBody = {
+    /**
+     * A URL to the JSON Schema for this object.
+     */
+    readonly $schema?: string;
+    data: Document;
 };
 
 export type UpdateEventAnnotationRequestAttributes = {
@@ -2849,6 +2896,26 @@ export type UserOncallInformation = {
     watchingRosters: Array<OncallRoster>;
 };
 
+export type VerifyDocumentSessionAuthRequestAttributes = {
+    token: string;
+};
+
+export type VerifyDocumentSessionAuthRequestBody = {
+    /**
+     * A URL to the JSON Schema for this object.
+     */
+    readonly $schema?: string;
+    attributes: VerifyDocumentSessionAuthRequestAttributes;
+};
+
+export type VerifyDocumentSessionAuthResponseBody = {
+    /**
+     * A URL to the JSON Schema for this object.
+     */
+    readonly $schema?: string;
+    data: DocumentEditorSessionAuth;
+};
+
 export type ListAlertsData = {
     body?: never;
     path?: never;
@@ -3424,6 +3491,100 @@ export type UpdateDebriefQuestionResponses = {
 
 export type UpdateDebriefQuestionResponse = UpdateDebriefQuestionResponses[keyof UpdateDebriefQuestionResponses];
 
+export type VerifyDocumentSessionAuthData = {
+    body: VerifyDocumentSessionAuthRequestBody;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/documents/{id}/auth';
+};
+
+export type VerifyDocumentSessionAuthErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
+
+export type VerifyDocumentSessionAuthError = VerifyDocumentSessionAuthErrors[keyof VerifyDocumentSessionAuthErrors];
+
+export type VerifyDocumentSessionAuthResponses = {
+    /**
+     * OK
+     */
+    200: VerifyDocumentSessionAuthResponseBody;
+};
+
+export type VerifyDocumentSessionAuthResponse = VerifyDocumentSessionAuthResponses[keyof VerifyDocumentSessionAuthResponses];
+
+export type LoadDocumentData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/documents/{id}/load';
+};
+
+export type LoadDocumentErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
+
+export type LoadDocumentError = LoadDocumentErrors[keyof LoadDocumentErrors];
+
+export type LoadDocumentResponses = {
+    /**
+     * OK
+     */
+    200: LoadDocumentResponseBody;
+};
+
+export type LoadDocumentResponse = LoadDocumentResponses[keyof LoadDocumentResponses];
+
 export type RequestDocumentEditorSessionData = {
     body?: never;
     path: {
@@ -3470,6 +3631,53 @@ export type RequestDocumentEditorSessionResponses = {
 };
 
 export type RequestDocumentEditorSessionResponse = RequestDocumentEditorSessionResponses[keyof RequestDocumentEditorSessionResponses];
+
+export type UpdateDocumentData = {
+    body: UpdateDocumentRequestBody;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/documents/{id}/update';
+};
+
+export type UpdateDocumentErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
+
+export type UpdateDocumentError = UpdateDocumentErrors[keyof UpdateDocumentErrors];
+
+export type UpdateDocumentResponses = {
+    /**
+     * OK
+     */
+    200: UpdateDocumentResponseBody;
+};
+
+export type UpdateDocumentResponse = UpdateDocumentResponses[keyof UpdateDocumentResponses];
 
 export type ListEventAnnotationsData = {
     body?: never;

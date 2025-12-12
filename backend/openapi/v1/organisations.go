@@ -66,5 +66,5 @@ var FinishOrganizationSetup = huma.Operation{
 	Errors:      errorCodes(),
 }
 
-type FinishOrganizationSetupRequest PostIdRequest
+type FinishOrganizationSetupRequest PostIdEmptyRequest
 type FinishOrganizationSetupResponse EmptyResponse

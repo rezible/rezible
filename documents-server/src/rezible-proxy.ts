@@ -6,68 +6,50 @@ import type {
 } from "@hocuspocus/server";
 import { Forbidden } from "@hocuspocus/common";
 import * as Y from "yjs";
-import { createHmac } from "crypto";
 
-type SessionUser = {
-	id: string;
-	username: string;
-}
-
-export type AuthContext = {
-	user: SessionUser;
-	token: string;
-}
+import { client } from "./lib/api/oapi.gen/client.gen";
+import { Documents } from "./lib/api/oapi.gen/sdk.gen";
+import type { DocumentEditorSessionAuth } from "./lib/api/oapi.gen/types.gen";
 
 export class RezibleServerProxy implements Extension {
-	extensionName: string;
-    apiUrl: string;
-    apiSecret: string;
+	extensionName = "Rezible Proxy";
 
 	constructor(apiUrl: string, apiSecret: string) {
-		this.extensionName = "Rezible Proxy";
-		this.apiUrl = apiUrl;
-		this.apiSecret = apiSecret;
-
 		if (!apiUrl || !apiSecret) throw new Error("missing proxy config");
+
+		client.setConfig({
+			baseUrl: apiUrl,
+			auth: apiSecret,
+		});
 	}
 
-    createRequestSignature(body: string): string {
-		const hmac = createHmac("sha256", this.apiSecret);
-		return `sha256=${hmac.update(body).digest("hex")}`;
-	}
-
-    async apiRequest(endpoint: string, token: string, reqBody: any) {
-		const body = JSON.stringify(reqBody);
-		return fetch(`${this.apiUrl}/${endpoint}`, {
-            method: "POST",
-            headers: [
-				["Content-Type", "application/json"],
-                ["X-Rez-Signature-256", this.createRequestSignature(body)],
-                ["Authorization", "Bearer " + token],
-            ],
-            body,
-        });
-	}
-
-	async onAuthenticate(data: onAuthenticatePayload): Promise<AuthContext> {
+	async onAuthenticate(data: onAuthenticatePayload): Promise<DocumentEditorSessionAuth> {
         const documentId = data.documentName;
-        const res = await this.apiRequest("auth", data.token, { documentId });
-        if (!res.ok || res.status != 200) throw new Error("Authentication Failed");
+		const token = data.token;
 
-        const { readOnly, user } = await res.json();
-		data.connectionConfig.readOnly = !!readOnly;
-		return { user, token: data.token } as AuthContext;
+		const res = await Documents.verifyDocumentSessionAuth({
+			path: { id: documentId },
+			body: { attributes: {token} }
+		});
+        if (res.error) throw new Error("Authentication Failed");
+		
+		const sessionAuth = res.data.data;
+		data.connectionConfig.readOnly = sessionAuth.readOnly;
+
+		return sessionAuth;
 	}
 
     async onLoadDocument(data: onLoadDocumentPayload): Promise<any> {
         if (!data.context.token) throw Forbidden;
 
-        const documentId = data.documentName;
-        const res = await this.apiRequest("load", data.context.token, { documentId });
 
-        if (res.status !== 200) throw new Error("failed to load");
+		const res = await Documents.loadDocument({
+			path: { id: data.documentName },
+		});
+        if (res.error) throw new Error("Authentication Failed");
 
-        const state = await res.json();
+		const doc = res.data.data;
+        const state = JSON.parse(doc.attributes.content);
         const update = new Uint8Array(state.data);
         if (update) Y.applyUpdate(data.document, update);
 	}
@@ -75,8 +57,14 @@ export class RezibleServerProxy implements Extension {
 	async onStoreDocument(data: onChangePayload) {
         if (!data.context.token) throw Forbidden;
 
-        const documentId = data.documentName;
         const state = Buffer.from(Y.encodeStateAsUpdate(data.document));
-        await this.apiRequest("update", data.context.token, { state, documentId });
+
+		const res = await Documents.updateDocument({
+			path: { id: data.documentName },
+			body: { attributes: { content: state }}
+		})
+		if (res.error) {
+			console.log("failed to update document");
+		}
 	}
 }

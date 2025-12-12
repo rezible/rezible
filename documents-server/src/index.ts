@@ -26,7 +26,6 @@ const loadConfig = (): Config => {
 
 const createServer = async (cfg: Config) => {
 	const logger = new Logger();
-
     const rezProxy = new RezibleServerProxy(cfg.apiUrl, cfg.apiSecret);
 	
 	const server = new Server({

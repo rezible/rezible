@@ -6,6 +6,7 @@
   "source": "src/index.ts",
   "main": "build/main.js",
   "scripts": {
+    "codegen": "openapi-ts",
     "build": "bun build ./src/index.ts --target bun --outdir ./dist",
     "dev": "bun --watch run ./src/index.ts"
   },

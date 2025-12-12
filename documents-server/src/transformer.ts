@@ -1,4 +1,4 @@
-import { getSchema, type Extensions } from "@tiptap/core";
+import { getSchema } from "@tiptap/core";
 import { TiptapTransformer } from "@hocuspocus/transformer";
 
 import {
@@ -9,15 +9,11 @@ import {
 } from "@rezible/tiptap-extensions";
 import type { MarkSpec, NodeSpec, SchemaSpec } from "@tiptap/pm/model";
 
-const getTipTapExtensions = (): Extensions => {
-  return [
+export const extensions = [
 	...configureBaseExtensions(false),
 	configureAnnotationExtension(),
 	configureUserMentionExtension(),
-  ];
-}
-
-export const extensions = getTipTapExtensions();
+];
 
 export const handoverSchema = getSchema(getHandoverExtensions());
 export const schema = getSchema(extensions);

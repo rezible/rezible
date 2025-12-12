@@ -225,7 +225,6 @@ func setupServer(ctx context.Context) (Server, error) {
 
 	srv := http.NewServer(auth)
 	srv.MountOpenApiV1(v1Handler)
-	srv.MountDocuments(docs)
 	srv.MountMCP(eino.NewMCPHandler(auth))
 
 	frontendFS, feFSErr := http.GetEmbeddedFrontendFiles()

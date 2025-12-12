@@ -11,13 +11,11 @@ import (
 	"io"
 	"net/http"
 
-	"github.com/go-chi/chi/v5"
 	"github.com/google/uuid"
-	"github.com/rs/zerolog/log"
-
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
 	oapi "github.com/rezible/rezible/openapi/v1"
+	"github.com/rs/zerolog/log"
 )
 
 type DocumentsService struct {
@@ -48,15 +46,6 @@ func (s *DocumentsService) GetServerWebsocketAddress() string {
 	return fmt.Sprintf("ws://%s", s.serverAddress)
 }
 
-// TODO: these should just be regular api endpoints
-func (s *DocumentsService) Handler() http.Handler {
-	r := chi.NewRouter()
-	r.Post("/auth", s.handleAuthRequest)
-	r.Post("/load", s.handleLoadRequest)
-	r.Post("/update", s.handleUpdateRequest)
-	return r
-}
-
 func makeDocumentSessionTokenScopes(docId uuid.UUID) rez.AuthSessionScopes {
 	return rez.AuthSessionScopes{
 		"documents": []string{docId.String()},
@@ -66,6 +55,39 @@ func makeDocumentSessionTokenScopes(docId uuid.UUID) rez.AuthSessionScopes {
 func (s *DocumentsService) CreateEditorSessionToken(sess *rez.AuthSession, docId uuid.UUID) (string, error) {
 	sess.Scopes = makeDocumentSessionTokenScopes(docId)
 	return s.auth.IssueAuthSessionToken(sess)
+}
+
+func (s *DocumentsService) GetDocument(ctx context.Context, id uuid.UUID) (*ent.Document, error) {
+	return s.db.Document.Get(ctx, id)
+}
+
+type documentMutator interface {
+	Save(ctx context.Context) (*ent.Document, error)
+	Mutation() *ent.DocumentMutation
+}
+
+func (s *DocumentsService) SetDocument(ctx context.Context, id uuid.UUID, setFn func(*ent.DocumentMutation)) (*ent.Document, error) {
+	var mutator documentMutator
+	isNew := id == uuid.Nil
+	if isNew {
+		mutator = s.db.Document.Create().SetID(uuid.New())
+	} else {
+		curr, getErr := s.db.Document.Get(ctx, id)
+		if getErr != nil {
+			return nil, fmt.Errorf("fetch existing incident: %w", getErr)
+		}
+		mutator = s.db.Document.UpdateOne(curr)
+	}
+
+	mut := mutator.Mutation()
+	setFn(mut)
+
+	updated, saveErr := mutator.Save(ctx)
+	if saveErr != nil {
+		return nil, fmt.Errorf("save incident: %w", saveErr)
+	}
+
+	return updated, nil
 }
 
 func (s *DocumentsService) verifyRequestSignature(signature []byte, body []byte) bool {

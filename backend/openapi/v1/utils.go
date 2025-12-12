@@ -41,8 +41,12 @@ type (
 			Attributes T `json:"attributes"`
 		}
 	}
-	PostIdRequest struct {
+	PostIdEmptyRequest struct {
 		Id uuid.UUID `path:"id"`
+	}
+	PostIdRequest[T any] struct {
+		Id uuid.UUID `path:"id"`
+		RequestWithBodyAttributes[T]
 	}
 	CreateIdRequest[T any] struct {
 		Id uuid.UUID `path:"id"`

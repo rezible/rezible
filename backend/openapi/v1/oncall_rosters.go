@@ -2,9 +2,10 @@ package v1
 
 import (
 	"context"
+	"net/http"
+
 	"github.com/danielgtaylor/huma/v2"
 	"github.com/google/uuid"
-	"net/http"
 
 	"github.com/rezible/rezible/ent"
 )
@@ -170,7 +171,7 @@ var AddWatchedOncallRoster = huma.Operation{
 	Errors:      errorCodes(),
 }
 
-type AddWatchedOncallRosterRequest PostIdRequest
+type AddWatchedOncallRosterRequest PostIdEmptyRequest
 type AddWatchedOncallRosterResponse ListResponse[OncallRoster]
 
 var ListWatchedOncallRosters = huma.Operation{

@@ -32,17 +32,18 @@ _default:
 
 # [group('Code Generation')]
 
-@codegen: codegen-backend && codegen-frontend
-
-@codegen-ent:
-    cd backend && go generate ./ent
+@codegen: codegen-backend && codegen-api
 
 @codegen-backend:
     cd backend && go generate ./...
 
-@codegen-frontend:
+@codegen-ent:
+    cd backend && go generate ./ent
+
+@codegen-api:
     just run-backend openapi > /tmp/rezible-spec.yaml
     cd frontend && bun run codegen
+    cd documents-server && bun run codegen
 
 # [group('Development')]
 

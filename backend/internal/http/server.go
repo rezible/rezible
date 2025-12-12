@@ -63,12 +63,6 @@ func (s *Server) MountMCP(h mcp.Handler) {
 	s.api.Mount("/mcp", mcpRouter)
 }
 
-func (s *Server) MountDocuments(docs rez.DocumentsService) {
-	docsApiRouter := s.commonMiddleware().
-		Handler(docs.Handler())
-	s.api.Mount("/documents", docsApiRouter)
-}
-
 func (s *Server) MountStaticFrontend(feFiles fs.FS) {
 	s.baseHandler = makeEmbeddedFrontendFilesServer(feFiles)
 }
