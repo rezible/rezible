@@ -7,6 +7,7 @@ import (
 	"io/fs"
 	"net"
 	"net/http"
+	"path"
 	"strings"
 
 	"github.com/rs/zerolog/log"
@@ -24,6 +25,7 @@ type Server struct {
 
 	baseHandler http.Handler
 	api         *chi.Mux
+	webhooks    *chi.Mux
 
 	httpServer *http.Server
 }
@@ -37,6 +39,12 @@ func NewServer(auth rez.AuthService) *Server {
 	s.api = chi.NewMux()
 	s.api.Mount(rez.Config.AuthRouteBase(), auth.AuthRouteHandler())
 	s.api.Get("/health", s.healthCheckHandler)
+
+	s.webhooks = chi.NewMux()
+	s.webhooks.NotFound(func(w http.ResponseWriter, r *http.Request) {
+		log.Debug().Msg("webhook handler not found")
+		http.NotFound(w, r)
+	})
 
 	return &s
 }
@@ -53,8 +61,7 @@ func ensureSlashPrefix(s string) string {
 }
 
 func (s *Server) AddWebhookPathHandler(path string, handler http.Handler) {
-	whPath := "/webhooks" + ensureSlashPrefix(path)
-	s.api.Mount(whPath, http.StripPrefix(whPath, handler))
+	s.webhooks.Mount(ensureSlashPrefix(path), handler)
 }
 
 func (s *Server) MountMCP(h mcp.Handler) {
@@ -76,6 +83,9 @@ func (s *Server) MountOpenApiV1(h oapiv1.Handler) {
 func (s *Server) Start(baseCtx context.Context) error {
 	r := chi.NewMux()
 	r.Use(middleware.Recoverer)
+
+	whPrefix := path.Join(rez.Config.ApiRouteBase(), "webhooks")
+	s.api.Mount("/webhooks", http.StripPrefix(whPrefix, s.webhooks))
 
 	r.Mount(rez.Config.ApiRouteBase(), s.api)
 	r.Handle("/*", s.baseHandler)

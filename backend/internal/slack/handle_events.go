@@ -3,6 +3,7 @@ package slack
 import (
 	"context"
 	"fmt"
+	"time"
 
 	"github.com/rezible/rezible/jobs"
 	"github.com/rs/zerolog/log"
@@ -13,6 +14,17 @@ import (
 const (
 	eventKindCallback = "callback"
 )
+
+func (s *ChatService) onCallbackEventReceived(data slackevents.EventsAPIEvent) {
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*3)
+	defer cancel()
+	_, handleErr := s.handleCallbackEvent(ctx, &data)
+	if handleErr != nil {
+		log.Error().
+			Err(handleErr).
+			Msg("failed to handle callback event")
+	}
+}
 
 func (s *ChatService) queueCallbackEvent(ctx context.Context, data slackevents.EventsAPIEvent) error {
 	return s.jobs.Insert(ctx, jobs.InsertJobParams{
@@ -45,13 +57,13 @@ func (s *ChatService) ProcessEvent(ctx context.Context, args jobs.ProcessChatEve
 func (s *ChatService) handleCallbackEvent(ctx context.Context, ev *slackevents.EventsAPIEvent) (bool, error) {
 	switch data := ev.InnerEvent.Data.(type) {
 	case *slackevents.AppHomeOpenedEvent:
-		return true, s.onUserHomeOpenedEvent(data)
+		return true, s.onUserHomeOpenedEvent(ctx, data)
 	case *slackevents.AppMentionEvent:
-		return true, s.onMentionEvent(data)
+		return true, s.onMentionEvent(ctx, data)
 	case *slackevents.AssistantThreadStartedEvent:
-		return true, s.onAssistantThreadStartedEvent(data)
+		return true, s.onAssistantThreadStartedEvent(ctx, data)
 	case *slackevents.MessageEvent:
-		return true, s.onMessageEvent(data)
+		return true, s.onMessageEvent(ctx, data)
 	default:
 		log.Debug().
 			Str("innerEventType", ev.InnerEvent.Type).
@@ -60,7 +72,7 @@ func (s *ChatService) handleCallbackEvent(ctx context.Context, ev *slackevents.E
 	}
 }
 
-func (s *ChatService) onMentionEvent(data *slackevents.AppMentionEvent) error {
+func (s *ChatService) onMentionEvent(ctx context.Context, data *slackevents.AppMentionEvent) error {
 	replyTs := data.TimeStamp
 	if data.ThreadTimeStamp != "" {
 		replyTs = data.ThreadTimeStamp
@@ -71,7 +83,7 @@ func (s *ChatService) onMentionEvent(data *slackevents.AppMentionEvent) error {
 	return nil
 }
 
-func (s *ChatService) onMessageEvent(data *slackevents.MessageEvent) error {
+func (s *ChatService) onMessageEvent(ctx context.Context, data *slackevents.MessageEvent) error {
 	threadTs := data.ThreadTimeStamp
 	// TODO check if thread is 'monitored'
 
@@ -84,13 +96,13 @@ func (s *ChatService) onMessageEvent(data *slackevents.MessageEvent) error {
 	return nil
 }
 
-func (s *ChatService) onAssistantThreadStartedEvent(data *slackevents.AssistantThreadStartedEvent) error {
+func (s *ChatService) onAssistantThreadStartedEvent(ctx context.Context, data *slackevents.AssistantThreadStartedEvent) error {
 	log.Debug().Msg("assistant thread started")
 	return nil
 }
 
-func (s *ChatService) onUserHomeOpenedEvent(data *slackevents.AppHomeOpenedEvent) error {
-	usr, ctx, usrErr := s.lookupChatUser(context.Background(), data.User)
+func (s *ChatService) onUserHomeOpenedEvent(ctx context.Context, data *slackevents.AppHomeOpenedEvent) error {
+	usr, ctx, usrErr := s.lookupChatUser(ctx, data.User)
 	if usrErr != nil {
 		return fmt.Errorf("failed to lookup user: %w", usrErr)
 	}

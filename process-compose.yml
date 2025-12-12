@@ -70,3 +70,4 @@ processes:
         path: "/"
       initial_delay_seconds: 2
       failure_threshold: 3
+      period_seconds: 1

@@ -245,11 +245,12 @@ func setupServer(ctx context.Context) (Server, error) {
 		}
 		listeners["chat events"] = sml
 	} else {
-		webhooks, whErr := slack.NewWebhookEventHandler(chat)
+		webhooks, whErr := slack.NewWebhookEventListener(chat)
 		if whErr != nil {
 			return nil, fmt.Errorf("slack.NewWebhookEventListener: %w", whErr)
 		}
 		srv.AddWebhookPathHandler("/slack", webhooks.Handler())
+		srv.AddWebhookPathHandler("/foo", webhooks.Handler())
 	}
 
 	syncSvc := datasync.NewProviderSyncService(dbc, dataproviders.NewProviderLoader(pc))

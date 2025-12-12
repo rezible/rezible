@@ -3,25 +3,21 @@ package slack
 import (
 	"context"
 	"fmt"
+	"time"
 
 	"github.com/rezible/rezible/ent"
+	"github.com/rs/zerolog/log"
 	"github.com/slack-go/slack"
 )
 
-func commandErrorResponse(message string) *slack.Msg {
-	return &slack.Msg{
-		Text: message,
-		Blocks: slack.Blocks{
-			BlockSet: []slack.Block{
-				&slack.SectionBlock{
-					Type: slack.MBTSection,
-					Text: &slack.TextBlockObject{
-						Type: slack.PlainTextType,
-						Text: fmt.Sprintf("❌ %s", message),
-					},
-				},
-			},
-		},
+func (s *ChatService) onSlashCommandReceived(cmd slack.SlashCommand) {
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*3)
+	defer cancel()
+	_, _, handleErr := s.handleSlashCommand(ctx, &cmd)
+	if handleErr != nil {
+		log.Error().
+			Err(handleErr).
+			Msg("failed to handle slash command")
 	}
 }
 
@@ -38,6 +34,23 @@ func (s *ChatService) handleSlashCommand(ctx context.Context, ev *slack.SlashCom
 		return true, payload, handlerErr
 	default:
 		return false, nil, nil
+	}
+}
+
+func commandErrorResponse(message string) *slack.Msg {
+	return &slack.Msg{
+		Text: message,
+		Blocks: slack.Blocks{
+			BlockSet: []slack.Block{
+				&slack.SectionBlock{
+					Type: slack.MBTSection,
+					Text: &slack.TextBlockObject{
+						Type: slack.PlainTextType,
+						Text: fmt.Sprintf("❌ %s", message),
+					},
+				},
+			},
+		},
 	}
 }
 
@@ -61,16 +74,17 @@ func (s *ChatService) handleIncidentCommand(ctx context.Context, ev *slack.Slash
 	if viewErr != nil {
 		return commandErrorResponse("Failed to create incident view"), viewErr
 	}
-	
-	client, clientErr := s.getClient(ctx)
-	if clientErr != nil {
-		return commandErrorResponse(clientErr.Error()), nil
-	}
 
-	resp, respErr := client.OpenViewContext(ctx, ev.TriggerID, *view)
-	if respErr != nil {
-		logSlackViewErrorResponse(respErr, resp)
-		return commandErrorResponse("Failed to open view"), respErr
+	openViewErr := s.withClient(ctx, func(client *slack.Client) error {
+		resp, respErr := client.OpenViewContext(ctx, ev.TriggerID, *view)
+		if respErr != nil {
+			logSlackViewErrorResponse(respErr, resp)
+			return respErr
+		}
+		return nil
+	})
+	if openViewErr != nil {
+		return commandErrorResponse("Failed to open view"), openViewErr
 	}
 
 	return nil, nil
