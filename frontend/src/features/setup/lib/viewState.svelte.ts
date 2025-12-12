@@ -56,7 +56,7 @@ export class SetupViewState {
         if (this.loading || !!this.queryProviderId || !!this.settingUpProvider) return;
         
         const resp = await this.startIntegrationOAuthMut.mutateAsync({body: {attributes: {provider_id, kind: getProviderKind(provider_id)}}});
-        console.log("start", resp.data);
+        // console.log("start", resp.data);
     }
 
     private completeIntegrationOAuthMut = createMutation(() => completeIntegrationOauthMutation({}));

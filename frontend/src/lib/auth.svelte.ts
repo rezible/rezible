@@ -12,7 +12,7 @@ import { createQuery } from "@tanstack/svelte-query";
 import { Context } from "runed";
 import { onMount } from "svelte";
 
-export type SessionErrorCategory = "unknown" | "invalid" | "expired" | "no_session" | "no_user";
+export type SessionErrorCategory = "unknown" | "invalid" | "session_expired" | "no_session" | "invalid_user";
 
 export type SessionError = {
 	category: SessionErrorCategory;
@@ -25,14 +25,14 @@ const parseSessionError = (err: ErrorModel): SessionError => {
 	const errCode = err.detail;
 	if (status === 401) {
 		if (errCode === "session_expired") {
-			errCategory = "expired";
+			errCategory = "session_expired";
 		} else if (errCode === "no_session") {
 			errCategory = "no_session";
-		} else if (errCode === "missing_user") {
-			errCategory = "no_user";
+		} else if (errCode === "invalid_user") {
+			errCategory = "invalid_user";
 		}
 	} else if (status === 404) {
-		errCategory = "no_user";
+		errCategory = "invalid_user";
 	} else if (status >= 500) {
 		// TODO
 		console.error("failed to get auth session", status, err);
@@ -66,7 +66,7 @@ export class AuthSessionState {
 	
 	error = $derived.by<SessionError | undefined>(() => {
 		if (this.session && this.session.expiresAt < new Date(Date.now())) {
-			return {category: "expired"};
+			return {category: "session_expired"};
 		}
 		if (this.query.error) {
 			return parseSessionError(this.query.error as ErrorModel);
@@ -84,7 +84,7 @@ export class AuthSessionState {
 		if (!this.session) return;
 		const timeLeft = this.session.expiresAt.valueOf() - new Date(Date.now()).valueOf();
 		if (timeLeft <= 0) {
-			this.error = {category: "expired"};
+			this.error = {category: "session_expired"};
 		} else if (timeLeft <= SessionExpiryCheckIntervalMs * 100) {
 			this.refreshSession(timeLeft);
 		}

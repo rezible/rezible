@@ -1,12 +1,11 @@
 <script lang="ts">
 	import { createQuery } from "@tanstack/svelte-query";
-	import { BACKEND_URL, getAuthSessionConfigOptions, type AuthSessionProviderConfig } from "$lib/api";
+	import { BACKEND_URL, getAuthSessionConfigOptions } from "$lib/api";
 	import { useAuthSessionState, type SessionErrorCategory } from "$lib/auth.svelte";
+	import { mdiGoogle, mdiKey } from "@mdi/js";
 	import Button from "$components/button/Button.svelte";
 	import Header from "$components/header/Header.svelte";
-	import { mdiGoogle, mdiKey } from "@mdi/js";
-	import Icon from "$src/components/icon/Icon.svelte";
-	import { dev } from "$app/environment";
+	import Icon from "$components/icon/Icon.svelte";
 
 	const session = useAuthSessionState();
 
@@ -26,16 +25,10 @@
 	const errorDisplayText: Record<SessionErrorCategory, string> = {
 		unknown: "An unknown error occurred",
 		invalid: "Auth session is invalid",
-		expired: "Your session has expired",
-		no_user: "You signed in successfully, but Rezible does not have your details.",
+		session_expired: "Your session has expired",
+		invalid_user: "You signed in successfully, but Rezible does not have your details.",
 		no_session: "",
 	};
-
-	const getProviderStartFlowEndpoint = (pc: AuthSessionProviderConfig) => {
-		// TODO: remove this workaround for dev
-		if (dev && pc.name === "Google") return "http://localhost:8888" + pc.startFlowEndpoint;
-		return pc.startFlowEndpoint;
-	}
 </script>
 
 <div class="grid h-full w-full place-items-center">
@@ -52,12 +45,12 @@
 			</div>
 		{/if}
 
-		{#if errorCategory === "no_user"}
-			<Button href="{BACKEND_URL}/logout" loading={configQuery.isLoading} color="primary" variant="fill">Logout</Button>
+		{#if errorCategory === "invalid_user"}
+			<Button href="{BACKEND_URL}/api/auth/logout" loading={configQuery.isLoading} color="primary" variant="fill">Logout</Button>
 		{:else if !!providers}
 			{#each providers as p}
 				{@const display = providerDisplay.get(p.name.toLowerCase())}
-				<Button href={getProviderStartFlowEndpoint(p)} color="primary" variant="fill">
+				<Button href={p.startFlowEndpoint} color="primary" variant="fill">
 					<span class="flex items-center gap-2">
 					Continue with {display?.label ?? p.name}
 					{#if display?.icon}

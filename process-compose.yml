@@ -25,6 +25,8 @@ processes:
         condition: process_healthy
       documents-server:
         condition: process_started
+      oidc-test-provider:
+        condition: process_started
 
   frontend:
     command: just dev-frontend
