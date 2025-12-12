@@ -21,14 +21,15 @@ var (
 	ErrInvalidUser             = errors.New("user does not exist")
 	ErrInvalidTenant           = errors.New("tenant does not exist")
 	ErrUnauthorized            = errors.New("unauthorized")
-
-	ErrNoStoredProviderConfigs        = errors.New("no stored configs")
-	ErrMultipleEnabledProviderConfigs = errors.New("multiple stored configs enabled")
 )
 
 type ConfigLoader interface {
 	GetString(key string) string
+	GetStringOr(key string, orDefault string) string
 	GetBool(key string) bool
+	GetBoolOr(key string, orDefault bool) bool
+	GetDuration(key string) time.Duration
+	GetDurationOr(key string, orDefault time.Duration) time.Duration
 
 	SingleTenantMode() bool
 	DebugMode() bool
@@ -36,13 +37,9 @@ type ConfigLoader interface {
 	DatabaseUrl() string
 
 	AppUrl() string
-	BackendUrl() string
 
 	ApiRouteBase() string
 	AuthRouteBase() string
-
-	HttpServerAddress() string
-	ServerStopTimeout() time.Duration
 
 	AllowTenantCreation() bool
 	AllowUserCreation() bool

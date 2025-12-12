@@ -1,7 +1,6 @@
 package viper
 
 import (
-	"net"
 	"os"
 	"time"
 
@@ -19,9 +18,6 @@ type Config struct {
 func InitConfig() *Config {
 	cfg := &Config{}
 
-	// viper.SetEnvPrefix("REZ")
-	viper.SetDefault("stop_timeout", 10)
-
 	viper.AutomaticEnv()
 
 	if cfg.DebugMode() {
@@ -35,12 +31,33 @@ func (c *Config) GetString(key string) string {
 	return viper.GetString(key)
 }
 
+func (c *Config) GetStringOr(key string, orDefault string) string {
+	if viper.IsSet(key) {
+		return viper.GetString(key)
+	}
+	return orDefault
+}
+
 func (c *Config) GetBool(key string) bool {
 	return viper.GetBool(key)
 }
 
-func (c *Config) SingleTenantMode() bool {
-	return c.GetBool("single_tenant_mode")
+func (c *Config) GetBoolOr(key string, orDefault bool) bool {
+	if viper.IsSet(key) {
+		return viper.GetBool(key)
+	}
+	return orDefault
+}
+
+func (c *Config) GetDuration(key string) time.Duration {
+	return viper.GetDuration(key)
+}
+
+func (c *Config) GetDurationOr(key string, orDefault time.Duration) time.Duration {
+	if viper.IsSet(key) {
+		return viper.GetDuration(key)
+	}
+	return orDefault
 }
 
 func (c *Config) DebugMode() bool {
@@ -59,29 +76,18 @@ func (c *Config) AuthRouteBase() string {
 	return "/auth"
 }
 
-func (c *Config) BackendUrl() string {
-	return "http://localhost:8888"
-}
-
 func (c *Config) AppUrl() string {
 	return "https://app.rezible.test"
 }
 
-func (c *Config) AllowTenantCreation() bool {
-	return c.DebugMode()
+func (c *Config) SingleTenantMode() bool {
+	return c.GetBool("single_tenant_mode")
 }
 
 func (c *Config) AllowUserCreation() bool {
 	return c.DebugMode()
 }
 
-func (c *Config) HttpServerAddress() string {
-	host := "localhost"
-	port := "8888"
-	return net.JoinHostPort(host, port)
-}
-
-func (c *Config) ServerStopTimeout() time.Duration {
-	secs := viper.GetInt("stop_timeout")
-	return time.Duration(secs) * time.Second
+func (c *Config) AllowTenantCreation() bool {
+	return c.DebugMode()
 }

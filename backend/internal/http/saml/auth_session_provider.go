@@ -10,6 +10,7 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
+	"strings"
 	"time"
 
 	"github.com/crewjam/saml"
@@ -315,25 +316,23 @@ func (p *AuthSessionProvider) createSession(a *saml.Assertion, redirectUrl strin
 	}
 
 	if verifyErr := p.verifyClaims(claims); verifyErr != nil {
-		if rez.Config.DebugMode() {
-			log.Warn().Err(verifyErr).Msgf("failed to verify SAML claims")
-		} else {
-			return nil, fmt.Errorf("failed to verify claims: %w", verifyErr)
-		}
+		return nil, fmt.Errorf("failed to verify claims: %w", verifyErr)
 	}
 
 	attr := sa.GetAttributes()
 
-	// TODO: fix this
+	email := attr.Get("email")
+	domain := strings.Split(email, "@")[1]
+
 	po := ent.Organization{
-		ProviderID: claims.Subject,
-		Name:       claims.Subject,
+		ProviderID: claims.Id,
+		Name:       domain,
 	}
 
 	pu := ent.User{
 		ProviderID: claims.Subject,
 		Name:       attr.Get("firstName"),
-		Email:      attr.Get("email"),
+		Email:      email,
 	}
 
 	ps := &rez.AuthProviderSession{
@@ -347,18 +346,12 @@ func (p *AuthSessionProvider) createSession(a *saml.Assertion, redirectUrl strin
 }
 
 func (p *AuthSessionProvider) verifyClaims(claims samlsp.JWTSessionClaims) error {
-	log.Debug().
-		Str("audience", claims.Audience).
-		Str("issuer", claims.Issuer).
-		Msg("TODO: verify SAML audience claim")
-
-	audience := rez.Config.AppUrl()
-	if !claims.VerifyAudience(audience, true) {
+	appUrl := rez.Config.AppUrl()
+	if !claims.VerifyAudience(appUrl, true) {
 		return fmt.Errorf("audience '%s'", claims.Audience)
 	}
 
-	issuer := ""
-	if !claims.VerifyIssuer(issuer, true) {
+	if !claims.VerifyIssuer(appUrl, true) {
 		return fmt.Errorf("issuer '%s'", claims.Issuer)
 	}
 

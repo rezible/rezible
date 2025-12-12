@@ -86,8 +86,11 @@ func (s *Server) Start(baseCtx context.Context) error {
 	r.Mount(rez.Config.ApiRouteBase(), s.api)
 	r.Handle("/*", s.baseHandler)
 
+	host := rez.Config.GetStringOr("listen_host", "0.0.0.0")
+	port := rez.Config.GetStringOr("listen_port", "8888")
+
 	s.httpServer = &http.Server{
-		Addr:    rez.Config.HttpServerAddress(),
+		Addr:    net.JoinHostPort(host, port),
 		Handler: r,
 	}
 

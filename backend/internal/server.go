@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"time"
 
 	"github.com/rs/zerolog/log"
 	"github.com/sourcegraph/conc/pool"
@@ -76,7 +77,7 @@ func (s Server) start(ctx context.Context) error {
 }
 
 func (s Server) stop() error {
-	timeout := rez.Config.ServerStopTimeout()
+	timeout := rez.Config.GetDurationOr("stop_timeout", time.Second*10)
 	timeoutCtx, cancelStopCtx := context.WithTimeout(context.Background(), timeout)
 	defer cancelStopCtx()
 

@@ -23,7 +23,7 @@ func NewGoogleAuthSessionProvider(ctx context.Context, cfg ProviderConfig) (*Aut
 	if cbPathErr != nil {
 		return nil, fmt.Errorf("callback path: %w", cbPathErr)
 	}
-	redirectUrl, urlErr := url.JoinPath(rez.Config.BackendUrl(), callbackPath)
+	redirectUrl, urlErr := url.JoinPath(rez.Config.AppUrl(), callbackPath)
 	if urlErr != nil {
 		return nil, fmt.Errorf("creating redirect url: %w", urlErr)
 	}
