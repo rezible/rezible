@@ -18,10 +18,12 @@ const (
 	sessionCookieName = "oidc_session"
 )
 
-func configureSessionStore(secretKey string) *sessions.CookieStore {
+var SessionSecretKey []byte
+
+func configureSessionStore() *sessions.CookieStore {
 	maxAge := 86400 * 30 // 30 days
 
-	store := sessions.NewCookieStore([]byte(secretKey))
+	store := sessions.NewCookieStore(SessionSecretKey)
 	store.MaxAge(maxAge)
 	store.Options.Path = "/"
 	store.Options.HttpOnly = true

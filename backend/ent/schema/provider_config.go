@@ -37,6 +37,6 @@ func (ProviderConfig) Fields() []ent.Field {
 
 func (ProviderConfig) Indexes() []ent.Index {
 	return []ent.Index{
-		index.Fields("provider_id", "provider_type").Unique(),
+		index.Fields("provider_id", "provider_type", "tenant_id").Unique(),
 	}
 }

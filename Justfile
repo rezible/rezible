@@ -98,3 +98,14 @@ _default:
 
 @stop-db:
     -pg_isready -q && pg_ctl stop > /dev/null
+
+# [group('Other')]
+@run-oidc-test-provider:
+    docker run -p 6432:8080 \
+        -e DevOidcToolkit__Users__0__Email=test@example.com \
+        -e DevOidcToolkit__Users__0__FirstName=Test \
+        -e DevOidcToolkit__Users__0__LastName=User \
+        -e DevOidcToolkit__Clients__0__Id=client \
+        -e DevOidcToolkit__Clients__0__Secret=secret \
+        -e DevOidcToolkit__Clients__0__RedirectUris__INDEX=https://app.rezible.test/api/auth/oidc/callback \
+        ghcr.io/businesssimulations/dev-oidc-toolkit:0.2.0

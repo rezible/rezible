@@ -34,7 +34,7 @@ type AuthService struct {
 var _ rez.AuthService = (*AuthService)(nil)
 
 func NewAuthSessionService(ctx context.Context, orgs rez.OrganizationService, users rez.UserService) (*AuthService, error) {
-	secretKey := rez.Config.GetString("AUTH.SECRET_KEY")
+	secretKey := rez.Config.GetString("auth.session_secret_key")
 	if secretKey == "" {
 		return nil, errors.New("auth session secret key must be set")
 	}

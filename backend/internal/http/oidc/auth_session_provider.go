@@ -17,12 +17,6 @@ import (
 	"github.com/rezible/rezible/ent"
 )
 
-type ProviderConfig struct {
-	SessionSecret string
-	ClientID      string
-	ClientSecret  string
-}
-
 type identityProvider interface {
 	GetAuthCodeOptions(r *http.Request) []oauth2.AuthCodeOption
 	ExtractTokenSession(token *oidc.IDToken) (*rez.AuthProviderSession, error)
@@ -141,22 +135,22 @@ func (s *AuthSessionProvider) handleFlowCallback(r *http.Request, onCreated func
 		}
 	}
 
-	token, tokenErr := s.exchangeAndVerifiedIdToken(r)
+	token, tokenErr := s.exchangeAndVerifyIdToken(r)
 	if tokenErr != nil {
 		return fmt.Errorf("failed to get id token: %w", tokenErr)
 	}
 
-	ps, psErr := s.idp.ExtractTokenSession(token)
+	provSess, psErr := s.idp.ExtractTokenSession(token)
 	if psErr != nil {
 		return fmt.Errorf("failed to extract token session: %w", psErr)
 	}
 
-	onCreated(*ps)
+	onCreated(*provSess)
 
 	return nil
 }
 
-func (s *AuthSessionProvider) exchangeAndVerifiedIdToken(r *http.Request) (*oidc.IDToken, error) {
+func (s *AuthSessionProvider) exchangeAndVerifyIdToken(r *http.Request) (*oidc.IDToken, error) {
 	ctx := r.Context()
 	authCode := r.URL.Query().Get("code")
 

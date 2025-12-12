@@ -38,6 +38,10 @@ func (c *Config) GetStringOr(key string, orDefault string) string {
 	return orDefault
 }
 
+func (c *Config) GetStrings(key string) []string {
+	return viper.GetStringSlice(key)
+}
+
 func (c *Config) GetBool(key string) bool {
 	return viper.GetBool(key)
 }
@@ -66,6 +70,10 @@ func (c *Config) DebugMode() bool {
 
 func (c *Config) DatabaseUrl() string {
 	return c.GetString("db_url")
+}
+
+func (c *Config) AuthSessionSecret() string {
+	return c.GetString("auth.session_secret")
 }
 
 func (c *Config) ApiRouteBase() string {

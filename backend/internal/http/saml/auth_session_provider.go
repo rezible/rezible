@@ -23,9 +23,6 @@ import (
 
 const (
 	sessionCookieName = "saml_session"
-
-	CertFileEnv    = "SAML_CERT_FILE"
-	CertKeyFileEnv = "SAML_CERT_KEY_FILE"
 )
 
 var (

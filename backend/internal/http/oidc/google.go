@@ -18,7 +18,12 @@ const (
 	googleIssuerUrl  = "https://accounts.google.com"
 )
 
-func NewGoogleAuthSessionProvider(ctx context.Context, cfg ProviderConfig) (*AuthSessionProvider, error) {
+type GoogleProviderConfig struct {
+	ClientID     string
+	ClientSecret string
+}
+
+func NewGoogleAuthSessionProvider(ctx context.Context, cfg GoogleProviderConfig) (*AuthSessionProvider, error) {
 	callbackPath, cbPathErr := url.JoinPath(rez.Config.ApiRouteBase(), rez.Config.AuthRouteBase(), googleProviderId, "callback")
 	if cbPathErr != nil {
 		return nil, fmt.Errorf("callback path: %w", cbPathErr)
@@ -47,7 +52,7 @@ func NewGoogleAuthSessionProvider(ctx context.Context, cfg ProviderConfig) (*Aut
 		displayName:  "Google",
 		oauth2Config: oauth2Config,
 		verifier:     prov.Verifier(&oidc.Config{ClientID: cfg.ClientID}),
-		sessionStore: configureSessionStore(cfg.SessionSecret),
+		sessionStore: configureSessionStore(),
 		idp:          &googleIdentity{},
 	}, nil
 }

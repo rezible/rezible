@@ -9,6 +9,7 @@ import (
 	"github.com/rezible/rezible/ent"
 	"github.com/rezible/rezible/ent/providerconfig"
 	oapi "github.com/rezible/rezible/openapi/v1"
+	"github.com/rs/zerolog/log"
 )
 
 type integrationsHandler struct {
@@ -195,6 +196,7 @@ func (h *integrationsHandler) CompleteIntegrationOAuth(ctx context.Context, req 
 
 		pc, pcErr := h.configs.UpdateProviderConfig(ctx, *cfg)
 		if pcErr != nil {
+			log.Debug().Err(pcErr).Msg("failed to update")
 			return nil, apiError("failed to update provider config", pcErr)
 		}
 		resp.Body.Data = oapi.IntegrationFromEnt(pc)

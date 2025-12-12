@@ -26,6 +26,7 @@ var (
 type ConfigLoader interface {
 	GetString(key string) string
 	GetStringOr(key string, orDefault string) string
+	GetStrings(key string) []string
 	GetBool(key string) bool
 	GetBoolOr(key string, orDefault bool) bool
 	GetDuration(key string) time.Duration
@@ -40,6 +41,7 @@ type ConfigLoader interface {
 
 	ApiRouteBase() string
 	AuthRouteBase() string
+	AuthSessionSecret() string
 
 	AllowTenantCreation() bool
 	AllowUserCreation() bool

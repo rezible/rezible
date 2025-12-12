@@ -58,3 +58,6 @@ processes:
     depends_on:
       postgresql:
         condition: process_healthy
+
+  oidc-test-provider:
+    command: just run-oidc-test-provider
