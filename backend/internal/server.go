@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/rezible/rezible/internal/dataproviders"
 	"github.com/rezible/rezible/internal/prosemirror"
 	"github.com/rs/zerolog/log"
 	"github.com/sourcegraph/conc/pool"
@@ -13,9 +14,7 @@ import (
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/access"
 	"github.com/rezible/rezible/internal/apiv1"
-	"github.com/rezible/rezible/internal/dataproviders"
 	"github.com/rezible/rezible/internal/db"
-	"github.com/rezible/rezible/internal/db/datasync"
 	"github.com/rezible/rezible/internal/eino"
 	"github.com/rezible/rezible/internal/http"
 	"github.com/rezible/rezible/internal/postgres"
@@ -253,8 +252,10 @@ func setupServer(ctx context.Context) (Server, error) {
 		srv.AddWebhookPathHandler("/foo", webhooks.Handler())
 	}
 
-	syncSvc := datasync.NewProviderSyncService(dbc, dataproviders.NewProviderLoader(integrations))
-	river.RegisterJobWorkers(chat, syncSvc, shifts, oncallMetrics, debriefs)
+	pl := dataproviders.NewProviderLoader(integrations)
+	syncer := integrations.MakeDataSyncer(pl)
+
+	river.RegisterJobWorkers(syncer, chat, shifts, oncallMetrics, debriefs)
 
 	return listeners, nil
 }

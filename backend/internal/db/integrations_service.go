@@ -9,6 +9,7 @@ import (
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
 	"github.com/rezible/rezible/ent/integration"
+	"github.com/rezible/rezible/internal/db/datasync"
 )
 
 type IntegrationsService struct {
@@ -141,4 +142,8 @@ func (s *IntegrationsService) CompleteOAuth2Flow(ctx context.Context, params rez
 	}
 
 	return intg, nil
+}
+
+func (s *IntegrationsService) MakeDataSyncer(pl rez.DataProviderLoader) rez.IntegrationsDataSyncService {
+	return datasync.NewIntegrationsSyncer(s.db, pl)
 }

@@ -15,7 +15,6 @@ import (
 	rezinternal "github.com/rezible/rezible/internal"
 	"github.com/rezible/rezible/internal/dataproviders"
 	"github.com/rezible/rezible/internal/db"
-	"github.com/rezible/rezible/internal/db/datasync"
 	"github.com/rezible/rezible/internal/viper"
 	"github.com/rezible/rezible/jobs"
 	oapiv1 "github.com/rezible/rezible/openapi/v1"
@@ -94,7 +93,7 @@ var integrationsSyncCmd = &cobra.Command{
 	Short: "Run integration data sync",
 	Run: func(cmd *cobra.Command, args []string) {
 		ctx := access.SystemContext(cmd.Context())
-		syncArgs := jobs.SyncProviderData{
+		syncArgs := jobs.SyncIntegrationsData{
 			Hard: true,
 		}
 		withDatabase(ctx, func(dbc rez.Database) {
@@ -103,8 +102,8 @@ var integrationsSyncCmd = &cobra.Command{
 			if intgsErr != nil {
 				log.Fatal().Err(intgsErr).Msg("db.NewIntegrationsService")
 			}
-			svc := datasync.NewProviderSyncService(client, dataproviders.NewProviderLoader(intgs))
-			syncErr := svc.SyncProviderData(ctx, syncArgs)
+			svc := intgs.MakeDataSyncer(dataproviders.NewProviderLoader(intgs))
+			syncErr := svc.SyncIntegrationsData(ctx, syncArgs)
 			if syncErr != nil {
 				log.Fatal().Err(syncErr).Msg("failed to sync provider data")
 			}

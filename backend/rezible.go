@@ -106,11 +106,13 @@ type (
 		RegisterOAuth2Handler(t integration.IntegrationType, name string, h OAuth2IntegrationHandler)
 		StartOAuth2Flow(context.Context, integration.IntegrationType, string) (string, error)
 		CompleteOAuth2Flow(context.Context, CompleteIntegrationOAuth2FlowParams) (*ent.Integration, error)
+
+		MakeDataSyncer(DataProviderLoader) IntegrationsDataSyncService
 	}
 
-	ProviderDataSyncService interface {
-		MakeSyncProviderDataPeriodicJob() jobs.PeriodicJob
-		SyncProviderData(context.Context, jobs.SyncProviderData) error
+	IntegrationsDataSyncService interface {
+		MakeSyncIntegrationsDataPeriodicJob() jobs.PeriodicJob
+		SyncIntegrationsData(context.Context, jobs.SyncIntegrationsData) error
 	}
 )
 

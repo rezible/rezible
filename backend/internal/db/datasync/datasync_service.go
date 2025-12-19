@@ -13,20 +13,20 @@ import (
 	"github.com/rezible/rezible/jobs"
 )
 
-type ProviderDataSyncService struct {
+type Syncer struct {
 	db *ent.Client
 	pl rez.DataProviderLoader
 }
 
-func NewProviderSyncService(db *ent.Client, pl rez.DataProviderLoader) *ProviderDataSyncService {
-	return &ProviderDataSyncService{db: db, pl: pl}
+func NewIntegrationsSyncer(db *ent.Client, pl rez.DataProviderLoader) *Syncer {
+	return &Syncer{db: db, pl: pl}
 }
 
-func (s *ProviderDataSyncService) MakeSyncProviderDataPeriodicJob() jobs.PeriodicJob {
+func (s *Syncer) MakeSyncIntegrationsDataPeriodicJob() jobs.PeriodicJob {
 	return jobs.PeriodicJob{
 		ConstructorFunc: func() jobs.InsertJobParams {
 			return jobs.InsertJobParams{
-				Args: &jobs.SyncProviderData{},
+				Args: &jobs.SyncIntegrationsData{},
 				Uniqueness: &jobs.JobUniquenessOpts{
 					ByState: jobs.NonCompletedJobStates,
 				},
@@ -37,7 +37,7 @@ func (s *ProviderDataSyncService) MakeSyncProviderDataPeriodicJob() jobs.Periodi
 	}
 }
 
-func (s *ProviderDataSyncService) SyncProviderData(ctx context.Context, args jobs.SyncProviderData) error {
+func (s *Syncer) SyncIntegrationsData(ctx context.Context, args jobs.SyncIntegrationsData) error {
 	tenants, tenantsErr := s.db.Tenant.Query().All(ctx)
 	if tenantsErr != nil {
 		return fmt.Errorf("querying tenants: %w", tenantsErr)
@@ -55,7 +55,7 @@ func (s *ProviderDataSyncService) SyncProviderData(ctx context.Context, args job
 	return nil
 }
 
-func (s *ProviderDataSyncService) syncProviderData(ctx context.Context, hard bool) error {
+func (s *Syncer) syncProviderData(ctx context.Context, hard bool) error {
 	if hard {
 		s.db.ProviderSyncHistory.Delete().ExecX(ctx)
 	}

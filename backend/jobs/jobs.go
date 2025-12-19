@@ -56,12 +56,12 @@ var (
 	NonCompletedJobStates = []JobState{JobStateAvailable, JobStatePending, JobStateRunning, JobStateRetryable, JobStateScheduled}
 )
 
-type SyncProviderData struct {
+type SyncIntegrationsData struct {
 	Hard bool
 }
 
-func (SyncProviderData) Kind() string {
-	return "sync-provider-data"
+func (SyncIntegrationsData) Kind() string {
+	return "sync-integrations-data"
 }
 
 type SendIncidentDebriefRequests struct {

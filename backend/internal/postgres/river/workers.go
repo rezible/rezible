@@ -5,8 +5,8 @@ import (
 )
 
 func RegisterJobWorkers(
+	syncer rez.IntegrationsDataSyncService,
 	chat rez.ChatService,
-	sync rez.ProviderDataSyncService,
 	shifts rez.OncallShiftsService,
 	oncallMetrics rez.OncallMetricsService,
 	debriefs rez.DebriefService,
@@ -14,9 +14,9 @@ func RegisterJobWorkers(
 	RegisterWorkerFunc(chat.ProcessEvent)
 	RegisterWorkerFunc(chat.HandleIncidentChatUpdate)
 
-	RegisterPeriodicJob(sync.MakeSyncProviderDataPeriodicJob(), sync.SyncProviderData)
+	RegisterPeriodicJob(syncer.MakeSyncIntegrationsDataPeriodicJob(), syncer.SyncIntegrationsData)
 	RegisterPeriodicJob(shifts.MakeScanShiftsPeriodicJob(), shifts.HandlePeriodicScanShifts)
-	
+
 	RegisterWorkerFunc(shifts.HandleEnsureShiftHandoverReminderSent)
 	RegisterWorkerFunc(shifts.HandleEnsureShiftHandoverSent)
 	RegisterWorkerFunc(oncallMetrics.HandleGenerateShiftMetrics)
