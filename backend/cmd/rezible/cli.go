@@ -7,6 +7,7 @@ import (
 	"os/signal"
 	"syscall"
 
+	"github.com/rezible/rezible/internal/db/datasync"
 	"github.com/rs/zerolog/log"
 	"github.com/spf13/cobra"
 
@@ -14,7 +15,6 @@ import (
 	"github.com/rezible/rezible/access"
 	rezinternal "github.com/rezible/rezible/internal"
 	"github.com/rezible/rezible/internal/dataproviders"
-	"github.com/rezible/rezible/internal/db"
 	"github.com/rezible/rezible/internal/viper"
 	"github.com/rezible/rezible/jobs"
 	oapiv1 "github.com/rezible/rezible/openapi/v1"
@@ -98,11 +98,7 @@ var integrationsSyncCmd = &cobra.Command{
 		}
 		withDatabase(ctx, func(dbc rez.Database) {
 			client := dbc.Client()
-			intgs, intgsErr := db.NewIntegrationsService(client)
-			if intgsErr != nil {
-				log.Fatal().Err(intgsErr).Msg("db.NewIntegrationsService")
-			}
-			svc := intgs.MakeDataSyncer(dataproviders.NewProviderLoader(intgs))
+			svc := datasync.NewIntegrationsSyncer(client, dataproviders.NewProviderLoader(client))
 			syncErr := svc.SyncIntegrationsData(ctx, syncArgs)
 			if syncErr != nil {
 				log.Fatal().Err(syncErr).Msg("failed to sync provider data")

@@ -60,13 +60,8 @@ func (s *Syncer) syncProviderData(ctx context.Context, hard bool) error {
 		s.db.ProviderSyncHistory.Delete().ExecX(ctx)
 	}
 
-	usersProviders, usersErr := s.pl.GetUserDataProviders(ctx)
-	if usersErr == nil {
-		for _, users := range usersProviders {
-			if syncErr := syncUsers(ctx, s.db, users); syncErr != nil {
-				return fmt.Errorf("users: %w", syncErr)
-			}
-		}
+	if usersErr := s.SyncUserData(ctx); usersErr != nil {
+		return fmt.Errorf("syncing users: %w", usersErr)
 	}
 
 	teamsProviders, teamsErr := s.pl.GetTeamDataProviders(ctx)
@@ -132,5 +127,17 @@ func (s *Syncer) syncProviderData(ctx context.Context, hard bool) error {
 		}
 	}
 
+	return nil
+}
+
+func (s *Syncer) SyncUserData(ctx context.Context) error {
+	usersProviders, usersErr := s.pl.GetUserDataProviders(ctx)
+	if usersErr == nil {
+		for _, prov := range usersProviders {
+			if syncErr := syncUsers(ctx, s.db, prov); syncErr != nil {
+				return fmt.Errorf("user provider (name): %w", syncErr)
+			}
+		}
+	}
 	return nil
 }

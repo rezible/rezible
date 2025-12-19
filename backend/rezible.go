@@ -7,10 +7,12 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent"
 	"github.com/rezible/rezible/ent/integration"
 	"github.com/rezible/rezible/jobs"
+
+	"github.com/ThreeDotsLabs/watermill/message"
+	"github.com/google/uuid"
 	"github.com/texm/prosemirror-go"
 	"golang.org/x/oauth2"
 )
@@ -106,13 +108,21 @@ type (
 		RegisterOAuth2Handler(t integration.IntegrationType, name string, h OAuth2IntegrationHandler)
 		StartOAuth2Flow(context.Context, integration.IntegrationType, string) (string, error)
 		CompleteOAuth2Flow(context.Context, CompleteIntegrationOAuth2FlowParams) (*ent.Integration, error)
-
-		MakeDataSyncer(DataProviderLoader) IntegrationsDataSyncService
 	}
 
 	IntegrationsDataSyncService interface {
 		MakeSyncIntegrationsDataPeriodicJob() jobs.PeriodicJob
 		SyncIntegrationsData(context.Context, jobs.SyncIntegrationsData) error
+
+		SyncUserData(context.Context) error
+	}
+)
+
+type (
+	MessageService interface {
+		Publish(topic string, msgs ...*message.Message) error
+		AddHandler(name, subTopic, pubTopic string, fn message.HandlerFunc, mw ...message.HandlerMiddleware)
+		AddConsumerHandler(name, subTopic string, fn message.NoPublishHandlerFunc, mw ...message.HandlerMiddleware)
 	}
 )
 

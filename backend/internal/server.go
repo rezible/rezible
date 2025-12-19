@@ -7,7 +7,9 @@ import (
 	"time"
 
 	"github.com/rezible/rezible/internal/dataproviders"
+	"github.com/rezible/rezible/internal/db/datasync"
 	"github.com/rezible/rezible/internal/prosemirror"
+	"github.com/rezible/rezible/internal/watermill"
 	"github.com/rs/zerolog/log"
 	"github.com/sourcegraph/conc/pool"
 
@@ -90,19 +92,6 @@ func (s Server) stop() error {
 	return err
 }
 
-type dbListener struct {
-	dbc rez.Database
-}
-
-func (l dbListener) Start(ctx context.Context) error {
-	return nil
-}
-
-func (l dbListener) Stop(ctx context.Context) error {
-	// log.Debug().Msg("Closing database connection")
-	return l.dbc.Close()
-}
-
 func setupServer(ctx context.Context) (Server, error) {
 	listeners := make(Server)
 
@@ -110,7 +99,7 @@ func setupServer(ctx context.Context) (Server, error) {
 	if dbConnErr != nil {
 		return nil, fmt.Errorf("postgres.NewDatabaseClient: %w", dbConnErr)
 	}
-	listeners["database"] = dbListener{dbc: dbConn}
+	listeners["database"] = db.NewListener(dbConn)
 
 	pgDb, ok := dbConn.(*postgres.DatabaseClient)
 	if !ok {
@@ -122,9 +111,17 @@ func setupServer(ctx context.Context) (Server, error) {
 	}
 	listeners["job_service"] = jobSvc
 
+	msgSvc, msgSvcErr := watermill.NewMessageService()
+	if msgSvcErr != nil {
+		return nil, fmt.Errorf("watermill.NewMessageService: %w", msgSvcErr)
+	}
+	listeners["message_service"] = msgSvc
+
 	dbc := dbConn.Client()
 
-	integrations, intgsErr := db.NewIntegrationsService(dbc)
+	syncer := datasync.NewIntegrationsSyncer(dbc, dataproviders.NewProviderLoader(dbc))
+
+	integrations, intgsErr := db.NewIntegrationsService(dbc, msgSvc, syncer)
 	if intgsErr != nil {
 		return nil, fmt.Errorf("db.NewIntegrationsService: %w", intgsErr)
 	}
@@ -251,9 +248,6 @@ func setupServer(ctx context.Context) (Server, error) {
 		srv.AddWebhookPathHandler("/slack", webhooks.Handler())
 		srv.AddWebhookPathHandler("/foo", webhooks.Handler())
 	}
-
-	pl := dataproviders.NewProviderLoader(integrations)
-	syncer := integrations.MakeDataSyncer(pl)
 
 	river.RegisterJobWorkers(syncer, chat, shifts, oncallMetrics, debriefs)
 

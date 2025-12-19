@@ -2,26 +2,38 @@ package db
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
+
+	"github.com/ThreeDotsLabs/watermill/message"
+	"github.com/rezible/rezible/access"
+	"github.com/rs/zerolog/log"
 
 	"github.com/google/uuid"
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
 	"github.com/rezible/rezible/ent/integration"
-	"github.com/rezible/rezible/internal/db/datasync"
 )
 
 type IntegrationsService struct {
 	db             *ent.Client
+	msgs           rez.MessageService
+	syncer         rez.IntegrationsDataSyncService
 	oauth2Handlers map[integration.IntegrationType]map[string]rez.OAuth2IntegrationHandler
 }
 
-func NewIntegrationsService(db *ent.Client) (*IntegrationsService, error) {
+const topicIntegrationUpdated = "integration_updated"
+
+func NewIntegrationsService(db *ent.Client, msgs rez.MessageService, syncer rez.IntegrationsDataSyncService) (*IntegrationsService, error) {
 	s := &IntegrationsService{
 		db:             db,
+		msgs:           msgs,
+		syncer:         syncer,
 		oauth2Handlers: make(map[integration.IntegrationType]map[string]rez.OAuth2IntegrationHandler),
 	}
+
+	msgs.AddConsumerHandler("integration_update_datasync", topicIntegrationUpdated, s.handleIntegrationUpdatedMessage)
 
 	return s, nil
 }
@@ -141,9 +153,43 @@ func (s *IntegrationsService) CompleteOAuth2Flow(ctx context.Context, params rez
 		return nil, fmt.Errorf("failed to create integration: %w", pcErr)
 	}
 
+	s.onIntegrationUpdated(intg)
+
 	return intg, nil
 }
 
-func (s *IntegrationsService) MakeDataSyncer(pl rez.DataProviderLoader) rez.IntegrationsDataSyncService {
-	return datasync.NewIntegrationsSyncer(s.db, pl)
+type integrationUpdatedPayload struct {
+	TenantId      int       `json:"tenantId"`
+	IntegrationId uuid.UUID `json:"id"`
+}
+
+func (s *IntegrationsService) onIntegrationUpdated(intg *ent.Integration) {
+	if pubErr := s.publishIntegrationUpdatedMessage(intg); pubErr != nil {
+		log.Error().Err(pubErr).Msg("failed to publish integration updated message")
+	}
+}
+
+func (s *IntegrationsService) publishIntegrationUpdatedMessage(intg *ent.Integration) error {
+	payload := integrationUpdatedPayload{
+		IntegrationId: intg.ID,
+		TenantId:      intg.TenantID,
+	}
+	payloadBytes, jsonErr := json.Marshal(payload)
+	if jsonErr != nil {
+		return fmt.Errorf("failed to marshal integration updated message: %w", jsonErr)
+	}
+	return s.msgs.Publish(topicIntegrationUpdated, message.NewMessage(uuid.NewString(), payloadBytes))
+}
+
+func (s *IntegrationsService) handleIntegrationUpdatedMessage(msg *message.Message) error {
+	var payload integrationUpdatedPayload
+	if err := json.Unmarshal(msg.Payload, &payload); err != nil {
+		return fmt.Errorf("failed to unmarshal integration updated message: %w", err)
+	}
+	ctx := access.TenantSystemContext(context.Background(), payload.TenantId)
+	// TODO
+	if syncErr := s.syncer.SyncUserData(ctx); syncErr != nil {
+		log.Error().Err(syncErr).Msg("failed to sync user data")
+	}
+	return nil
 }

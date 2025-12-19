@@ -15,18 +15,18 @@ import (
 )
 
 type ProviderLoader struct {
-	integrations rez.IntegrationsService
+	db *ent.Client
 }
 
-func NewProviderLoader(is rez.IntegrationsService) *ProviderLoader {
-	return &ProviderLoader{integrations: is}
+func NewProviderLoader(db *ent.Client) *ProviderLoader {
+	return &ProviderLoader{db: db}
 }
 
 func (l *ProviderLoader) listEnabledIntegrations(ctx context.Context, t integration.IntegrationType) (ent.Integrations, error) {
-	return l.integrations.ListIntegrations(ctx, rez.ListIntegrationsParams{
-		Type:    t,
-		Enabled: true,
-	})
+	q := l.db.Integration.Query().
+		Where(integration.IntegrationTypeEQ(t)).
+		Where(integration.Enabled(true))
+	return q.All(ctx)
 }
 
 func loadProviderCtx[C any, P any](ctx context.Context, constructorFn func(context.Context, C) (P, error), intg *ent.Integration) (P, error) {
