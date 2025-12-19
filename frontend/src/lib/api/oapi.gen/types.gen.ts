@@ -107,9 +107,9 @@ export type AuthSessionsConfig = {
 
 export type CompleteIntegrationOAuthRequestAttributes = {
     code: string;
-    kind: string;
-    provider_id: string;
+    name: string;
     state: string;
+    type: string;
 };
 
 export type CompleteIntegrationOAuthRequestBody = {
@@ -352,8 +352,8 @@ export type CreateIntegrationRequestAttributes = {
         [key: string]: string;
     };
     enabled: boolean;
-    kind: string;
-    provider_id: string;
+    name: string;
+    type: string;
 };
 
 export type CreateIntegrationRequestBody = {
@@ -735,7 +735,7 @@ export type DocumentAttributes = {
 export type DocumentEditorSession = {
     connectionUrl: string;
     documentId: string;
-    token: string;
+    sessionToken: string;
 };
 
 export type DocumentEditorSessionAuth = {
@@ -1464,8 +1464,8 @@ export type IntegrationAttributes = {
         [key: string]: string;
     };
     enabled: boolean;
-    kind: string;
-    provider_id: string;
+    name: string;
+    type: string;
 };
 
 export type IntegrationOAuthFlow = {
@@ -2057,8 +2057,8 @@ export type SendOncallShiftHandoverResponseBody = {
 };
 
 export type StartIntegrationOAuthRequestAttributes = {
-    kind: string;
-    provider_id: string;
+    name: string;
+    type: string;
 };
 
 export type StartIntegrationOAuthRequestBody = {
@@ -2896,18 +2896,6 @@ export type UserOncallInformation = {
     watchingRosters: Array<OncallRoster>;
 };
 
-export type VerifyDocumentSessionAuthRequestAttributes = {
-    token: string;
-};
-
-export type VerifyDocumentSessionAuthRequestBody = {
-    /**
-     * A URL to the JSON Schema for this object.
-     */
-    readonly $schema?: string;
-    attributes: VerifyDocumentSessionAuthRequestAttributes;
-};
-
 export type VerifyDocumentSessionAuthResponseBody = {
     /**
      * A URL to the JSON Schema for this object.
@@ -3492,7 +3480,7 @@ export type UpdateDebriefQuestionResponses = {
 export type UpdateDebriefQuestionResponse = UpdateDebriefQuestionResponses[keyof UpdateDebriefQuestionResponses];
 
 export type VerifyDocumentSessionAuthData = {
-    body: VerifyDocumentSessionAuthRequestBody;
+    body?: never;
     path: {
         id: string;
     };
@@ -6167,8 +6155,8 @@ export type ListIntegrationsData = {
         offset?: number;
         search?: string;
         archived?: boolean;
-        provider_id?: string;
-        kind?: string;
+        name?: string;
+        type?: string;
     };
     url: '/integrations';
 };

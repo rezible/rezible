@@ -20,21 +20,17 @@ export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends 
 
 export class Documents {
     /**
-     * Verify document auth
+     * Verify document session auth
      */
     public static verifyDocumentSessionAuth<ThrowOnError extends boolean = false>(options: Options<VerifyDocumentSessionAuthData, ThrowOnError>) {
-        return (options.client ?? client).post<VerifyDocumentSessionAuthResponses, VerifyDocumentSessionAuthErrors, ThrowOnError>({
+        return (options.client ?? client).get<VerifyDocumentSessionAuthResponses, VerifyDocumentSessionAuthErrors, ThrowOnError>({
             security: [{
                     in: 'cookie',
                     name: 'rezible_auth',
                     type: 'apiKey'
                 }, { scheme: 'bearer', type: 'http' }],
             url: '/documents/{id}/auth',
-            ...options,
-            headers: {
-                'Content-Type': 'application/json',
-                ...options.headers
-            }
+            ...options
         });
     }
     

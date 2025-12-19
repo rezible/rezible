@@ -183,20 +183,16 @@ export const updateDebriefQuestion = <ThrowOnError extends boolean = false>(opti
 });
 
 /**
- * Verify document auth
+ * Verify document session auth
  */
-export const verifyDocumentSessionAuth = <ThrowOnError extends boolean = false>(options: Options<VerifyDocumentSessionAuthData, ThrowOnError>) => (options.client ?? client).post<VerifyDocumentSessionAuthResponses, VerifyDocumentSessionAuthErrors, ThrowOnError>({
+export const verifyDocumentSessionAuth = <ThrowOnError extends boolean = false>(options: Options<VerifyDocumentSessionAuthData, ThrowOnError>) => (options.client ?? client).get<VerifyDocumentSessionAuthResponses, VerifyDocumentSessionAuthErrors, ThrowOnError>({
     security: [{
             in: 'cookie',
             name: 'rezible_auth',
             type: 'apiKey'
         }, { scheme: 'bearer', type: 'http' }],
     url: '/documents/{id}/auth',
-    ...options,
-    headers: {
-        'Content-Type': 'application/json',
-        ...options.headers
-    }
+    ...options
 });
 
 /**

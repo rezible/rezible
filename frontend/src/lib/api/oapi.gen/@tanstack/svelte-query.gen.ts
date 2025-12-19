@@ -389,22 +389,23 @@ export const updateDebriefQuestionMutation = (options?: Partial<Options<UpdateDe
     return mutationOptions;
 };
 
+export const verifyDocumentSessionAuthQueryKey = (options: Options<VerifyDocumentSessionAuthData>) => createQueryKey('verifyDocumentSessionAuth', options);
+
 /**
- * Verify document auth
+ * Verify document session auth
  */
-export const verifyDocumentSessionAuthMutation = (options?: Partial<Options<VerifyDocumentSessionAuthData>>): MutationOptions<VerifyDocumentSessionAuthResponse, VerifyDocumentSessionAuthError, Options<VerifyDocumentSessionAuthData>> => {
-    const mutationOptions: MutationOptions<VerifyDocumentSessionAuthResponse, VerifyDocumentSessionAuthError, Options<VerifyDocumentSessionAuthData>> = {
-        mutationFn: async (fnOptions) => {
-            const { data } = await verifyDocumentSessionAuth({
-                ...options,
-                ...fnOptions,
-                throwOnError: true
-            });
-            return data;
-        }
-    };
-    return mutationOptions;
-};
+export const verifyDocumentSessionAuthOptions = (options: Options<VerifyDocumentSessionAuthData>) => queryOptions<VerifyDocumentSessionAuthResponse, VerifyDocumentSessionAuthError, VerifyDocumentSessionAuthResponse, ReturnType<typeof verifyDocumentSessionAuthQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await verifyDocumentSessionAuth({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: verifyDocumentSessionAuthQueryKey(options)
+});
 
 export const loadDocumentQueryKey = (options: Options<LoadDocumentData>) => createQueryKey('loadDocument', options);
 

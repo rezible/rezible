@@ -22,18 +22,6 @@ export type DocumentEditorSessionAuth = {
     user: DocumentEditorSessionUser;
 };
 
-export type VerifyDocumentSessionAuthRequestBody = {
-    /**
-     * A URL to the JSON Schema for this object.
-     */
-    readonly $schema?: string;
-    attributes: VerifyDocumentSessionAuthRequestAttributes;
-};
-
-export type VerifyDocumentSessionAuthRequestAttributes = {
-    token: string;
-};
-
 export type UpdateDocumentResponseBody = {
     /**
      * A URL to the JSON Schema for this object.
@@ -74,7 +62,7 @@ export type RequestDocumentEditorSessionResponseBody = {
 export type DocumentEditorSession = {
     connectionUrl: string;
     documentId: string;
-    token: string;
+    sessionToken: string;
 };
 
 export type LoadDocumentResponseBody = {
@@ -132,7 +120,7 @@ export type ErrorDetail = {
 };
 
 export type VerifyDocumentSessionAuthData = {
-    body: VerifyDocumentSessionAuthRequestBody;
+    body?: never;
     path: {
         id: string;
     };
