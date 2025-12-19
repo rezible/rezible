@@ -14,7 +14,7 @@ func RegisterJobWorkers(
 	RegisterWorkerFunc(chat.ProcessEvent)
 	RegisterWorkerFunc(chat.HandleIncidentChatUpdate)
 
-	RegisterPeriodicJob(syncer.MakeSyncIntegrationsDataPeriodicJob(), syncer.SyncIntegrationsData)
+	RegisterPeriodicJob(syncer.MakeSyncAllTenantIntegrationsDataPeriodicJob(), syncer.SyncAllTenantIntegrationsData)
 	RegisterPeriodicJob(shifts.MakeScanShiftsPeriodicJob(), shifts.HandlePeriodicScanShifts)
 
 	RegisterWorkerFunc(shifts.HandleEnsureShiftHandoverReminderSent)

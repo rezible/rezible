@@ -8,7 +8,6 @@ import (
 	"time"
 
 	"github.com/rezible/rezible/ent"
-	"github.com/rezible/rezible/ent/integration"
 	"github.com/rezible/rezible/jobs"
 
 	"github.com/ThreeDotsLabs/watermill/message"
@@ -68,27 +67,12 @@ type (
 )
 
 type (
-	DataProviderResourceUpdatedCallback = func(providerID string, updatedAt time.Time)
-
-	DataProviderLoader interface {
-		GetTeamDataProviders(context.Context) ([]TeamDataProvider, error)
-		GetUserDataProviders(context.Context) ([]UserDataProvider, error)
-		GetIncidentDataProviders(context.Context) ([]IncidentDataProvider, error)
-		GetOncallDataProviders(context.Context) ([]OncallDataProvider, error)
-		GetSystemComponentsDataProviders(context.Context) ([]SystemComponentsDataProvider, error)
-		GetTicketDataProviders(context.Context) ([]TicketDataProvider, error)
-		GetAlertDataProviders(context.Context) ([]AlertDataProvider, error)
-		GetPlaybookDataProviders(context.Context) ([]PlaybookDataProvider, error)
-	}
-
 	ListIntegrationsParams struct {
-		Type    integration.IntegrationType
 		Name    string
 		Enabled bool
 	}
 
 	CompleteIntegrationOAuth2FlowParams struct {
-		Type  integration.IntegrationType
 		Name  string
 		State string
 		Code  string
@@ -105,16 +89,28 @@ type (
 		SetIntegration(context.Context, uuid.UUID, func(*ent.IntegrationMutation)) (*ent.Integration, error)
 		DeleteIntegration(context.Context, uuid.UUID) error
 
-		RegisterOAuth2Handler(t integration.IntegrationType, name string, h OAuth2IntegrationHandler)
-		StartOAuth2Flow(context.Context, integration.IntegrationType, string) (string, error)
+		RegisterOAuth2Handler(name string, h OAuth2IntegrationHandler)
+		StartOAuth2Flow(ctx context.Context, name string) (string, error)
 		CompleteOAuth2Flow(context.Context, CompleteIntegrationOAuth2FlowParams) (*ent.Integration, error)
 	}
 
 	IntegrationsDataSyncService interface {
-		MakeSyncIntegrationsDataPeriodicJob() jobs.PeriodicJob
-		SyncIntegrationsData(context.Context, jobs.SyncIntegrationsData) error
+		MakeSyncAllTenantIntegrationsDataPeriodicJob() jobs.PeriodicJob
+		SyncAllTenantIntegrationsData(context.Context, jobs.SyncIntegrationsData) error
+		SyncIntegrationsData(context.Context, ent.Integrations) error
+	}
 
-		SyncUserData(context.Context) error
+	DataProviderResourceUpdatedCallback = func(providerID string, updatedAt time.Time)
+
+	DataProviderLoader interface {
+		GetTeamDataProviders(context.Context, ent.Integrations) ([]TeamDataProvider, error)
+		GetUserDataProviders(context.Context, ent.Integrations) ([]UserDataProvider, error)
+		GetIncidentDataProviders(context.Context, ent.Integrations) ([]IncidentDataProvider, error)
+		GetOncallDataProviders(context.Context, ent.Integrations) ([]OncallDataProvider, error)
+		GetSystemComponentsDataProviders(context.Context, ent.Integrations) ([]SystemComponentsDataProvider, error)
+		GetTicketDataProviders(context.Context, ent.Integrations) ([]TicketDataProvider, error)
+		GetAlertDataProviders(context.Context, ent.Integrations) ([]AlertDataProvider, error)
+		GetPlaybookDataProviders(context.Context, ent.Integrations) ([]PlaybookDataProvider, error)
 	}
 )
 

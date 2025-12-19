@@ -54,14 +54,14 @@ func nilEmptyString(s string) *string {
 	return &s
 }
 
-func (s *UserService) getUserByExternalID(ctx context.Context, externalID string) (*ent.User, error) {
+func (s *UserService) getUserByAuthProviderID(ctx context.Context, authProviderID string) (*ent.User, error) {
 	userQuery := s.db.User.Query().
-		Where(user.ExternalID(externalID))
+		Where(user.AuthProviderID(authProviderID))
 	return userQuery.Only(ctx)
 }
 
 func (s *UserService) FindOrCreateAuthProviderUser(ctx context.Context, pu ent.User) (*ent.User, error) {
-	usr, usrErr := s.getUserByExternalID(ctx, pu.ExternalID)
+	usr, usrErr := s.getUserByAuthProviderID(ctx, pu.AuthProviderID)
 	if usrErr != nil && !ent.IsNotFound(usrErr) {
 		return nil, fmt.Errorf("failed to query user: %w", usrErr)
 	}
@@ -74,7 +74,7 @@ func (s *UserService) FindOrCreateAuthProviderUser(ctx context.Context, pu ent.U
 	// tenant exists, user does not exist
 
 	createUser := s.db.User.Create().
-		SetExternalID(pu.ExternalID).
+		SetAuthProviderID(pu.AuthProviderID).
 		SetEmail(pu.Email).
 		SetConfirmed(pu.Confirmed).
 		SetNillableName(nilEmptyString(pu.Name)).

@@ -7,7 +7,6 @@ import (
 	"github.com/google/uuid"
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
-	"github.com/rezible/rezible/ent/integration"
 	oapi "github.com/rezible/rezible/openapi/v1"
 )
 
@@ -19,26 +18,11 @@ func newIntegrationsHandler(integrations rez.IntegrationsService) *integrationsH
 	return &integrationsHandler{integrations: integrations}
 }
 
-func toValidIntegrationType(kind string) (integration.IntegrationType, error) {
-	pt := integration.IntegrationType(kind)
-	if validationErr := integration.IntegrationTypeValidator(pt); validationErr != nil {
-		return "", apiError("invalid integration type", validationErr)
-	}
-	return pt, nil
-}
-
 func (h *integrationsHandler) ListIntegrations(ctx context.Context, req *oapi.ListIntegrationsRequest) (*oapi.ListIntegrationsResponse, error) {
 	var resp oapi.ListIntegrationsResponse
 
 	params := rez.ListIntegrationsParams{
 		Name: req.Name,
-	}
-	if req.Type != "" {
-		pt, ptErr := toValidIntegrationType(req.Type)
-		if ptErr != nil {
-			return nil, ptErr
-		}
-		params.Type = pt
 	}
 	results, listErr := h.integrations.ListIntegrations(ctx, params)
 	if listErr != nil {
@@ -61,18 +45,12 @@ func (h *integrationsHandler) CreateIntegration(ctx context.Context, req *oapi.C
 
 	attr := req.Body.Attributes
 
-	t, typeErr := toValidIntegrationType(attr.Type)
-	if typeErr != nil {
-		return nil, typeErr
-	}
-
 	cfg, cfgErr := json.Marshal(attr.Config)
 	if cfgErr != nil {
 		return nil, apiError("failed to marshal integration config", cfgErr)
 	}
 
 	setFn := func(m *ent.IntegrationMutation) {
-		m.SetIntegrationType(t)
 		m.SetName(attr.Name)
 		m.SetConfig(cfg)
 		m.SetEnabled(attr.Enabled)
@@ -145,12 +123,8 @@ func (h *integrationsHandler) StartIntegrationOAuth(ctx context.Context, req *oa
 	var resp oapi.StartIntegrationOAuthResponse
 
 	attr := req.Body.Attributes
-	t, typeErr := toValidIntegrationType(attr.Type)
-	if typeErr != nil {
-		return nil, typeErr
-	}
 
-	startFlowUrl, flowErr := h.integrations.StartOAuth2Flow(ctx, t, attr.Name)
+	startFlowUrl, flowErr := h.integrations.StartOAuth2Flow(ctx, attr.Name)
 	if flowErr != nil {
 		return nil, apiError("failed to start flow", flowErr)
 	}
@@ -163,13 +137,8 @@ func (h *integrationsHandler) CompleteIntegrationOAuth(ctx context.Context, req 
 	var resp oapi.CompleteIntegrationOAuthResponse
 
 	attr := req.Body.Attributes
-	t, typeErr := toValidIntegrationType(attr.Type)
-	if typeErr != nil {
-		return nil, typeErr
-	}
 
 	params := rez.CompleteIntegrationOAuth2FlowParams{
-		Type:  t,
 		Name:  attr.Name,
 		State: attr.State,
 		Code:  attr.Code,

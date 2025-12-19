@@ -109,7 +109,6 @@ export type CompleteIntegrationOAuthRequestAttributes = {
     code: string;
     name: string;
     state: string;
-    type: string;
 };
 
 export type CompleteIntegrationOAuthRequestBody = {
@@ -353,7 +352,6 @@ export type CreateIntegrationRequestAttributes = {
     };
     enabled: boolean;
     name: string;
-    type: string;
 };
 
 export type CreateIntegrationRequestBody = {
@@ -1465,7 +1463,6 @@ export type IntegrationAttributes = {
     };
     enabled: boolean;
     name: string;
-    type: string;
 };
 
 export type IntegrationOAuthFlow = {
@@ -2058,7 +2055,6 @@ export type SendOncallShiftHandoverResponseBody = {
 
 export type StartIntegrationOAuthRequestAttributes = {
     name: string;
-    type: string;
 };
 
 export type StartIntegrationOAuthRequestBody = {

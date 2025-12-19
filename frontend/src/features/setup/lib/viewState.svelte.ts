@@ -11,25 +11,11 @@ export const callbackParamsSchema = z.object({
     state: z.string().default(""),
 });
 
-type IntegrationTuple = {
-    name: string;
-    type: string;
-}
-
-const SlackIntegration: IntegrationTuple = {name: "slack", type: "chat"};
-
-const getIntegrationByCallbackName = (name: string) => {
-    switch (name) {
-        case "slack": return SlackIntegration;
-    }
-}
-
 export class SetupViewState {
     session = useAuthSessionState();
 
     private callbackParams = useSearchParams(callbackParamsSchema);
     private callbackName = $derived(this.callbackParams.name);
-    private callbackIntegration = $derived(getIntegrationByCallbackName(this.callbackName));
 
     private integrationsQuery = createQuery(() => listIntegrationsOptions({}));
     loading = $derived(this.integrationsQuery.isFetching);
@@ -38,11 +24,11 @@ export class SetupViewState {
 
     constructor() {
         watch(() => this.enabledIntegrations, intgs => {this.onEnabledIntegrationsUpdated(intgs)});
-        watch(() => this.callbackIntegration, qi => {this.onCallbackIntegrationSet(qi)});
+        watch(() => this.callbackName, name => {this.onCallbackIntegrationSet(name)});
     }
 
-    currentlyCompleting = $state<IntegrationTuple>();
-    nextRequired = $state<IntegrationTuple>();
+    currentlyCompleting = $state<string>();
+    nextRequired = $state<string>();
 
     private startIntegrationOAuthMut = createMutation(() => startIntegrationOauthMutation({}));
     nextRequiredIntegrationFlowUrl = $derived(this.startIntegrationOAuthMut.data?.data.flow_url);
@@ -53,16 +39,14 @@ export class SetupViewState {
 
         this.nextRequired = undefined;
         
-        const isEnabled = (t: IntegrationTuple) => {
-            return !!intgs.find(({attributes: attr}) => (attr.name === t.name && attr.type === t.type));
-        }
+        const enabledNames = new Set(intgs.map(int => int.attributes.name));
 
-        if (!isEnabled(SlackIntegration)) this.nextRequired = SlackIntegration;
+        if (!enabledNames.has("slack")) this.nextRequired = "slack";
 
         if (!this.nextRequired) return;
 
         try {
-            const resp = await this.startIntegrationOAuthMut.mutateAsync({body: {attributes: this.nextRequired}});
+            const resp = await this.startIntegrationOAuthMut.mutateAsync({body: {attributes: {name: this.nextRequired}}});
             console.log("start", resp.data);
         } catch (e) {
             console.log("failed to start", e);
@@ -72,20 +56,20 @@ export class SetupViewState {
     private completeIntegrationOAuthMut = createMutation(() => completeIntegrationOauthMutation({}));
     completeIntegrationErr = $derived(this.completeIntegrationOAuthMut.error);
 
-    async onCallbackIntegrationSet(intg?: IntegrationTuple) {
-        if (!intg || this.completeIntegrationOAuthMut.isPending) return;
+    async onCallbackIntegrationSet(name?: string) {
+        if (!name || this.completeIntegrationOAuthMut.isPending) return;
 
-        this.currentlyCompleting = intg;
+        this.currentlyCompleting = name;
 
         const {state, code} = $state.snapshot(this.callbackParams);
 
-        console.log("do complete", intg, {state, code});
+        console.log("do complete", name, {state, code});
 
         this.callbackParams.reset();
         if (!state || !code) return;
 
         try {
-            await this.doCompleteIntegrationOAuth({type: intg.type, name: intg.name, state, code});
+            await this.doCompleteIntegrationOAuth({name, state, code});
         } catch (e) {
             console.error("failed to complete", e);
         } finally {

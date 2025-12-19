@@ -80,11 +80,11 @@ func (p *googleIdentity) ExtractTokenSession(token *oidc.IDToken) (*rez.AuthProv
 
 	ps := rez.AuthProviderSession{
 		User: ent.User{
-			ExternalID: token.Subject,
-			Email:      claims.Email,
-			Confirmed:  claims.Verified,
-			Name:       claims.Name,
-			Timezone:   claims.Locale,
+			AuthProviderID: token.Subject,
+			Email:          claims.Email,
+			Confirmed:      claims.Verified,
+			Name:           claims.Name,
+			Timezone:       claims.Locale,
 		},
 		Organization: ent.Organization{
 			ExternalID: claims.OrgId,

@@ -8,8 +8,6 @@ import (
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/access"
 	"github.com/rezible/rezible/ent"
-	"github.com/rezible/rezible/ent/integration"
-
 	"github.com/rs/zerolog/log"
 	"github.com/slack-go/slack"
 	"golang.org/x/oauth2"
@@ -38,14 +36,13 @@ func NewChatService(jobs rez.JobsService, integrations rez.IntegrationsService, 
 		annos:        annos,
 		components:   components,
 	}
-	integrations.RegisterOAuth2Handler(integration.IntegrationTypeChat, integrationName, s)
+	integrations.RegisterOAuth2Handler(integrationName, s)
 	return s, nil
 }
 
 func (s *ChatService) loadIntegrationConfig(ctx context.Context) (*IntegrationConfigData, error) {
 	params := rez.ListIntegrationsParams{
 		Name: integrationName,
-		Type: integration.IntegrationTypeChat,
 	}
 	results, listErr := s.integrations.ListIntegrations(ctx, params)
 	if listErr != nil {
@@ -169,9 +166,8 @@ func (s *ChatService) CompleteOAuth2Flow(ctx context.Context, code string) (*ent
 	}
 
 	return &ent.Integration{
-		IntegrationType: integration.IntegrationTypeChat,
-		Name:            integrationName,
-		Enabled:         true,
-		Config:          cfgJson,
+		Name:    integrationName,
+		Enabled: true,
+		Config:  cfgJson,
 	}, nil
 }

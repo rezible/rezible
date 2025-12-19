@@ -7,10 +7,11 @@ import (
 
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
-	fakeprovider "github.com/rezible/rezible/internal/dataproviders/fake"
-	"github.com/rezible/rezible/internal/dataproviders/grafana"
-	"github.com/rezible/rezible/internal/dataproviders/jira"
-	"github.com/rezible/rezible/internal/dataproviders/slack"
+	"github.com/rezible/rezible/internal/slack"
+
+	fakeprovider "github.com/rezible/rezible/dataproviders/fake"
+	"github.com/rezible/rezible/dataproviders/grafana"
+	"github.com/rezible/rezible/dataproviders/jira"
 )
 
 type ProviderLoader struct {
@@ -60,8 +61,8 @@ func (l *ProviderLoader) GetTeamDataProviders(ctx context.Context, intgs ent.Int
 		var prov rez.TeamDataProvider
 		var pErr error
 		switch intg.Name {
-		case "slack":
-			prov, pErr = loadProvider(slack.NewTeamDataProvider, intg)
+		//case "slack":
+		//	prov, pErr = loadProvider(slack.NewTeamDataProvider, intg)
 		case "fake":
 			prov, pErr = loadProvider(fakeprovider.NewTeamsDataProvider, intg)
 		default:

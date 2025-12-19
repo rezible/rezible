@@ -39,7 +39,7 @@
 
 				{#if href}
 					<a {href}>
-						{@render flowButtonImg(view.nextRequired.name)}
+						{@render flowButtonImg(view.nextRequired)}
 					</a>
 				{:else if flowErr}
 					<span>flow error: {flowErr}</span>

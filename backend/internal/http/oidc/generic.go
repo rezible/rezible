@@ -102,9 +102,9 @@ func (p *genericIdentity) ExtractTokenSession(token *oidc.IDToken) (*rez.AuthPro
 	}
 
 	usr := ent.User{
-		ExternalID: token.Subject,
-		Email:      claims.Email,
-		Name:       claims.GivenName,
+		AuthProviderID: token.Subject,
+		Email:          claims.Email,
+		Name:           claims.GivenName,
 	}
 
 	ps := rez.AuthProviderSession{

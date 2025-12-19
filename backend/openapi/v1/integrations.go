@@ -41,7 +41,6 @@ type (
 
 	IntegrationAttributes struct {
 		Name    string            `json:"name"`
-		Type    string            `json:"type"`
 		Enabled bool              `json:"enabled"`
 		Config  map[string]string `json:"config"`
 	}
@@ -54,7 +53,6 @@ func IntegrationFromEnt(intg *ent.Integration) Integration {
 	}
 	attr := IntegrationAttributes{
 		Name:    intg.Name,
-		Type:    intg.IntegrationType.String(),
 		Enabled: intg.Enabled,
 		Config:  config,
 	}
@@ -94,7 +92,6 @@ var CreateIntegration = huma.Operation{
 
 type CreateIntegrationRequestAttributes struct {
 	Name    string            `json:"name"`
-	Type    string            `json:"type"`
 	Enabled bool              `json:"enabled"`
 	Config  map[string]string `json:"config"`
 }
@@ -152,7 +149,6 @@ var StartIntegrationOAuth = huma.Operation{
 
 type StartIntegrationOAuthRequestAttributes struct {
 	Name string `json:"name"`
-	Type string `json:"type"`
 }
 type StartIntegrationOAuthRequest RequestWithBodyAttributes[StartIntegrationOAuthRequestAttributes]
 
@@ -171,7 +167,6 @@ var CompleteIntegrationOAuth = huma.Operation{
 }
 
 type CompleteIntegrationOAuthRequestAttributes struct {
-	Type  string `json:"type"`
 	Name  string `json:"name"`
 	State string `json:"state"`
 	Code  string `json:"code"`

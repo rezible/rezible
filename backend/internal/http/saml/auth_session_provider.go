@@ -328,9 +328,9 @@ func (p *AuthSessionProvider) createSession(a *saml.Assertion, redirectUrl strin
 	}
 
 	pu := ent.User{
-		ExternalID: claims.Subject,
-		Name:       attr.Get("firstName"),
-		Email:      email,
+		AuthProviderID: claims.Subject,
+		Name:           attr.Get("firstName"),
+		Email:          email,
 	}
 
 	ps := &rez.AuthProviderSession{

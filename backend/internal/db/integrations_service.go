@@ -20,7 +20,7 @@ type IntegrationsService struct {
 	db             *ent.Client
 	msgs           rez.MessageService
 	syncer         rez.IntegrationsDataSyncService
-	oauth2Handlers map[integration.IntegrationType]map[string]rez.OAuth2IntegrationHandler
+	oauth2Handlers map[string]rez.OAuth2IntegrationHandler
 }
 
 const topicIntegrationUpdated = "integration_updated"
@@ -30,7 +30,7 @@ func NewIntegrationsService(db *ent.Client, msgs rez.MessageService, syncer rez.
 		db:             db,
 		msgs:           msgs,
 		syncer:         syncer,
-		oauth2Handlers: make(map[integration.IntegrationType]map[string]rez.OAuth2IntegrationHandler),
+		oauth2Handlers: make(map[string]rez.OAuth2IntegrationHandler),
 	}
 
 	msgs.AddConsumerHandler("integration_update_datasync", topicIntegrationUpdated, s.handleIntegrationUpdatedMessage)
@@ -42,9 +42,6 @@ func (s *IntegrationsService) listQuery(p rez.ListIntegrationsParams) *ent.Integ
 	query := s.db.Integration.Query()
 	if p.Enabled {
 		query.Where(integration.EnabledEQ(true))
-	}
-	if p.Type != "" {
-		query.Where(integration.IntegrationTypeEQ(p.Type))
 	}
 	if p.Name != "" {
 		query.Where(integration.Name(p.Name))
@@ -81,37 +78,30 @@ func (s *IntegrationsService) DeleteIntegration(ctx context.Context, id uuid.UUI
 	return s.db.Integration.DeleteOneID(id).Exec(ctx)
 }
 
-func (s *IntegrationsService) RegisterOAuth2Handler(t integration.IntegrationType, name string, h rez.OAuth2IntegrationHandler) {
-	_, ok := s.oauth2Handlers[t]
-	if !ok {
-		s.oauth2Handlers[t] = make(map[string]rez.OAuth2IntegrationHandler)
-	}
-	s.oauth2Handlers[t][name] = h
+func (s *IntegrationsService) RegisterOAuth2Handler(name string, h rez.OAuth2IntegrationHandler) {
+	s.oauth2Handlers[name] = h
 }
 
-func (s *IntegrationsService) makeOAuthState(ctx context.Context, t integration.IntegrationType, name string) (string, error) {
+func (s *IntegrationsService) makeOAuthState(ctx context.Context, name string) (string, error) {
 	// TODO
 	return "TODO", nil
 }
 
-func (s *IntegrationsService) checkOAuthState(ctx context.Context, t integration.IntegrationType, name string, state string) error {
+func (s *IntegrationsService) checkOAuthState(ctx context.Context, name string, state string) error {
 	// TODO
 	// clear after checking
 	return nil
 }
 
-func (s *IntegrationsService) getOAuth2Handler(t integration.IntegrationType, name string) (rez.OAuth2IntegrationHandler, bool) {
-	if byName, typeOk := s.oauth2Handlers[t]; typeOk {
-		h, nameOk := byName[name]
-		return h, nameOk
-	}
-	return nil, false
+func (s *IntegrationsService) getOAuth2Handler(name string) (rez.OAuth2IntegrationHandler, bool) {
+	h, ok := s.oauth2Handlers[name]
+	return h, ok
 }
 
-func (s *IntegrationsService) StartOAuth2Flow(ctx context.Context, t integration.IntegrationType, name string) (string, error) {
-	h, ok := s.getOAuth2Handler(t, name)
+func (s *IntegrationsService) StartOAuth2Flow(ctx context.Context, name string) (string, error) {
+	h, ok := s.getOAuth2Handler(name)
 	if !ok {
-		return "", fmt.Errorf("invalid integration type '%s'", t)
+		return "", fmt.Errorf("invalid integration '%s'", name)
 	}
 
 	cfg := h.OAuth2Config()
@@ -119,7 +109,7 @@ func (s *IntegrationsService) StartOAuth2Flow(ctx context.Context, t integration
 		return "", errors.New("invalid integration configuration")
 	}
 
-	state, stateErr := s.makeOAuthState(ctx, t, name)
+	state, stateErr := s.makeOAuthState(ctx, name)
 	if stateErr != nil {
 		return "", fmt.Errorf("failed to make oauth state: %w", stateErr)
 	}
@@ -128,13 +118,13 @@ func (s *IntegrationsService) StartOAuth2Flow(ctx context.Context, t integration
 }
 
 func (s *IntegrationsService) CompleteOAuth2Flow(ctx context.Context, params rez.CompleteIntegrationOAuth2FlowParams) (*ent.Integration, error) {
-	if stateErr := s.checkOAuthState(ctx, params.Type, params.Name, params.State); stateErr != nil {
+	if stateErr := s.checkOAuthState(ctx, params.Name, params.State); stateErr != nil {
 		return nil, fmt.Errorf("invalid state: %w", stateErr)
 	}
 
-	h, ok := s.getOAuth2Handler(params.Type, params.Name)
+	h, ok := s.getOAuth2Handler(params.Name)
 	if !ok {
-		return nil, fmt.Errorf("invalid integration type '%s'", params.Type)
+		return nil, fmt.Errorf("invalid integration name '%s'", params.Name)
 	}
 
 	prov, completeErr := h.CompleteOAuth2Flow(ctx, params.Code)
@@ -143,7 +133,6 @@ func (s *IntegrationsService) CompleteOAuth2Flow(ctx context.Context, params rez
 	}
 
 	setFn := func(m *ent.IntegrationMutation) {
-		m.SetIntegrationType(prov.IntegrationType)
 		m.SetName(prov.Name)
 		m.SetConfig(prov.Config)
 		m.SetEnabled(prov.Enabled)
@@ -158,11 +147,6 @@ func (s *IntegrationsService) CompleteOAuth2Flow(ctx context.Context, params rez
 	return intg, nil
 }
 
-type integrationUpdatedPayload struct {
-	TenantId      int       `json:"tenantId"`
-	IntegrationId uuid.UUID `json:"id"`
-}
-
 func (s *IntegrationsService) onIntegrationUpdated(intg *ent.Integration) {
 	if pubErr := s.publishIntegrationUpdatedMessage(intg); pubErr != nil {
 		log.Error().Err(pubErr).Msg("failed to publish integration updated message")
@@ -170,11 +154,7 @@ func (s *IntegrationsService) onIntegrationUpdated(intg *ent.Integration) {
 }
 
 func (s *IntegrationsService) publishIntegrationUpdatedMessage(intg *ent.Integration) error {
-	payload := integrationUpdatedPayload{
-		IntegrationId: intg.ID,
-		TenantId:      intg.TenantID,
-	}
-	payloadBytes, jsonErr := json.Marshal(payload)
+	payloadBytes, jsonErr := json.Marshal(intg)
 	if jsonErr != nil {
 		return fmt.Errorf("failed to marshal integration updated message: %w", jsonErr)
 	}
@@ -182,14 +162,13 @@ func (s *IntegrationsService) publishIntegrationUpdatedMessage(intg *ent.Integra
 }
 
 func (s *IntegrationsService) handleIntegrationUpdatedMessage(msg *message.Message) error {
-	var payload integrationUpdatedPayload
-	if err := json.Unmarshal(msg.Payload, &payload); err != nil {
+	var intg *ent.Integration
+	if err := json.Unmarshal(msg.Payload, &intg); err != nil {
 		return fmt.Errorf("failed to unmarshal integration updated message: %w", err)
 	}
-	ctx := access.TenantSystemContext(context.Background(), payload.TenantId)
-	// TODO
-	if syncErr := s.syncer.SyncUserData(ctx); syncErr != nil {
-		log.Error().Err(syncErr).Msg("failed to sync user data")
+	ctx := access.TenantSystemContext(context.Background(), intg.TenantID)
+	if syncErr := s.syncer.SyncIntegrationsData(ctx, ent.Integrations{intg}); syncErr != nil {
+		log.Error().Err(syncErr).Msg("failed to sync integrations data")
 	}
 	return nil
 }

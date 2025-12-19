@@ -13,8 +13,8 @@ import (
 
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/access"
+	"github.com/rezible/rezible/dataproviders"
 	rezinternal "github.com/rezible/rezible/internal"
-	"github.com/rezible/rezible/internal/dataproviders"
 	"github.com/rezible/rezible/internal/viper"
 	"github.com/rezible/rezible/jobs"
 	oapiv1 "github.com/rezible/rezible/openapi/v1"
@@ -98,8 +98,8 @@ var integrationsSyncCmd = &cobra.Command{
 		}
 		withDatabase(ctx, func(dbc rez.Database) {
 			client := dbc.Client()
-			svc := datasync.NewIntegrationsSyncer(client, dataproviders.NewProviderLoader(client))
-			syncErr := svc.SyncIntegrationsData(ctx, syncArgs)
+			svc := datasync.NewIntegrationsSyncer(client, dataproviders.NewProviderLoader())
+			syncErr := svc.SyncAllTenantIntegrationsData(ctx, syncArgs)
 			if syncErr != nil {
 				log.Fatal().Err(syncErr).Msg("failed to sync provider data")
 			}
