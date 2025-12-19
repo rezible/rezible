@@ -978,7 +978,6 @@ var (
 	IntegrationsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID},
 		{Name: "name", Type: field.TypeString},
-		{Name: "integration_type", Type: field.TypeEnum, Enums: []string{"chat", "users", "teams", "incidents", "oncall", "alerts", "system_components", "tickets", "playbooks"}},
 		{Name: "config", Type: field.TypeBytes},
 		{Name: "enabled", Type: field.TypeBool, Default: true},
 		{Name: "updated_at", Type: field.TypeTime},
@@ -992,7 +991,7 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "integrations_tenants_tenant",
-				Columns:    []*schema.Column{IntegrationsColumns[6]},
+				Columns:    []*schema.Column{IntegrationsColumns[5]},
 				RefColumns: []*schema.Column{TenantsColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
@@ -1001,12 +1000,12 @@ var (
 			{
 				Name:    "integration_tenant_id",
 				Unique:  false,
-				Columns: []*schema.Column{IntegrationsColumns[6]},
+				Columns: []*schema.Column{IntegrationsColumns[5]},
 			},
 			{
-				Name:    "integration_tenant_id_name_integration_type",
+				Name:    "integration_tenant_id_name",
 				Unique:  true,
-				Columns: []*schema.Column{IntegrationsColumns[6], IntegrationsColumns[1], IntegrationsColumns[2]},
+				Columns: []*schema.Column{IntegrationsColumns[5], IntegrationsColumns[1]},
 			},
 		},
 	}
@@ -2240,7 +2239,7 @@ var (
 	// UsersColumns holds the columns for the "users" table.
 	UsersColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID},
-		{Name: "external_id", Type: field.TypeString},
+		{Name: "auth_provider_id", Type: field.TypeString, Nullable: true},
 		{Name: "email", Type: field.TypeString},
 		{Name: "name", Type: field.TypeString, Nullable: true, Default: ""},
 		{Name: "chat_id", Type: field.TypeString, Nullable: true},

@@ -43,20 +43,6 @@ func (_u *IntegrationUpdate) SetNillableName(v *string) *IntegrationUpdate {
 	return _u
 }
 
-// SetIntegrationType sets the "integration_type" field.
-func (_u *IntegrationUpdate) SetIntegrationType(v integration.IntegrationType) *IntegrationUpdate {
-	_u.mutation.SetIntegrationType(v)
-	return _u
-}
-
-// SetNillableIntegrationType sets the "integration_type" field if the given value is not nil.
-func (_u *IntegrationUpdate) SetNillableIntegrationType(v *integration.IntegrationType) *IntegrationUpdate {
-	if v != nil {
-		_u.SetIntegrationType(*v)
-	}
-	return _u
-}
-
 // SetConfig sets the "config" field.
 func (_u *IntegrationUpdate) SetConfig(v []byte) *IntegrationUpdate {
 	_u.mutation.SetConfig(v)
@@ -125,11 +111,6 @@ func (_u *IntegrationUpdate) ExecX(ctx context.Context) {
 
 // check runs all checks and user-defined validators on the builder.
 func (_u *IntegrationUpdate) check() error {
-	if v, ok := _u.mutation.IntegrationType(); ok {
-		if err := integration.IntegrationTypeValidator(v); err != nil {
-			return &ValidationError{Name: "integration_type", err: fmt.Errorf(`ent: validator failed for field "Integration.integration_type": %w`, err)}
-		}
-	}
 	if _u.mutation.TenantCleared() && len(_u.mutation.TenantIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "Integration.tenant"`)
 	}
@@ -156,9 +137,6 @@ func (_u *IntegrationUpdate) sqlSave(ctx context.Context) (_node int, err error)
 	}
 	if value, ok := _u.mutation.Name(); ok {
 		_spec.SetField(integration.FieldName, field.TypeString, value)
-	}
-	if value, ok := _u.mutation.IntegrationType(); ok {
-		_spec.SetField(integration.FieldIntegrationType, field.TypeEnum, value)
 	}
 	if value, ok := _u.mutation.Config(); ok {
 		_spec.SetField(integration.FieldConfig, field.TypeBytes, value)
@@ -201,20 +179,6 @@ func (_u *IntegrationUpdateOne) SetName(v string) *IntegrationUpdateOne {
 func (_u *IntegrationUpdateOne) SetNillableName(v *string) *IntegrationUpdateOne {
 	if v != nil {
 		_u.SetName(*v)
-	}
-	return _u
-}
-
-// SetIntegrationType sets the "integration_type" field.
-func (_u *IntegrationUpdateOne) SetIntegrationType(v integration.IntegrationType) *IntegrationUpdateOne {
-	_u.mutation.SetIntegrationType(v)
-	return _u
-}
-
-// SetNillableIntegrationType sets the "integration_type" field if the given value is not nil.
-func (_u *IntegrationUpdateOne) SetNillableIntegrationType(v *integration.IntegrationType) *IntegrationUpdateOne {
-	if v != nil {
-		_u.SetIntegrationType(*v)
 	}
 	return _u
 }
@@ -300,11 +264,6 @@ func (_u *IntegrationUpdateOne) ExecX(ctx context.Context) {
 
 // check runs all checks and user-defined validators on the builder.
 func (_u *IntegrationUpdateOne) check() error {
-	if v, ok := _u.mutation.IntegrationType(); ok {
-		if err := integration.IntegrationTypeValidator(v); err != nil {
-			return &ValidationError{Name: "integration_type", err: fmt.Errorf(`ent: validator failed for field "Integration.integration_type": %w`, err)}
-		}
-	}
 	if _u.mutation.TenantCleared() && len(_u.mutation.TenantIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "Integration.tenant"`)
 	}
@@ -348,9 +307,6 @@ func (_u *IntegrationUpdateOne) sqlSave(ctx context.Context) (_node *Integration
 	}
 	if value, ok := _u.mutation.Name(); ok {
 		_spec.SetField(integration.FieldName, field.TypeString, value)
-	}
-	if value, ok := _u.mutation.IntegrationType(); ok {
-		_spec.SetField(integration.FieldIntegrationType, field.TypeEnum, value)
 	}
 	if value, ok := _u.mutation.Config(); ok {
 		_spec.SetField(integration.FieldConfig, field.TypeBytes, value)

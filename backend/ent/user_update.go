@@ -40,17 +40,23 @@ func (_u *UserUpdate) Where(ps ...predicate.User) *UserUpdate {
 	return _u
 }
 
-// SetExternalID sets the "external_id" field.
-func (_u *UserUpdate) SetExternalID(v string) *UserUpdate {
-	_u.mutation.SetExternalID(v)
+// SetAuthProviderID sets the "auth_provider_id" field.
+func (_u *UserUpdate) SetAuthProviderID(v string) *UserUpdate {
+	_u.mutation.SetAuthProviderID(v)
 	return _u
 }
 
-// SetNillableExternalID sets the "external_id" field if the given value is not nil.
-func (_u *UserUpdate) SetNillableExternalID(v *string) *UserUpdate {
+// SetNillableAuthProviderID sets the "auth_provider_id" field if the given value is not nil.
+func (_u *UserUpdate) SetNillableAuthProviderID(v *string) *UserUpdate {
 	if v != nil {
-		_u.SetExternalID(*v)
+		_u.SetAuthProviderID(*v)
 	}
+	return _u
+}
+
+// ClearAuthProviderID clears the value of the "auth_provider_id" field.
+func (_u *UserUpdate) ClearAuthProviderID() *UserUpdate {
+	_u.mutation.ClearAuthProviderID()
 	return _u
 }
 
@@ -644,11 +650,6 @@ func (_u *UserUpdate) ExecX(ctx context.Context) {
 
 // check runs all checks and user-defined validators on the builder.
 func (_u *UserUpdate) check() error {
-	if v, ok := _u.mutation.ExternalID(); ok {
-		if err := user.ExternalIDValidator(v); err != nil {
-			return &ValidationError{Name: "external_id", err: fmt.Errorf(`ent: validator failed for field "User.external_id": %w`, err)}
-		}
-	}
 	if _u.mutation.TenantCleared() && len(_u.mutation.TenantIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "User.tenant"`)
 	}
@@ -673,8 +674,11 @@ func (_u *UserUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 			}
 		}
 	}
-	if value, ok := _u.mutation.ExternalID(); ok {
-		_spec.SetField(user.FieldExternalID, field.TypeString, value)
+	if value, ok := _u.mutation.AuthProviderID(); ok {
+		_spec.SetField(user.FieldAuthProviderID, field.TypeString, value)
+	}
+	if _u.mutation.AuthProviderIDCleared() {
+		_spec.ClearField(user.FieldAuthProviderID, field.TypeString)
 	}
 	if value, ok := _u.mutation.Email(); ok {
 		_spec.SetField(user.FieldEmail, field.TypeString, value)
@@ -1328,17 +1332,23 @@ type UserUpdateOne struct {
 	modifiers []func(*sql.UpdateBuilder)
 }
 
-// SetExternalID sets the "external_id" field.
-func (_u *UserUpdateOne) SetExternalID(v string) *UserUpdateOne {
-	_u.mutation.SetExternalID(v)
+// SetAuthProviderID sets the "auth_provider_id" field.
+func (_u *UserUpdateOne) SetAuthProviderID(v string) *UserUpdateOne {
+	_u.mutation.SetAuthProviderID(v)
 	return _u
 }
 
-// SetNillableExternalID sets the "external_id" field if the given value is not nil.
-func (_u *UserUpdateOne) SetNillableExternalID(v *string) *UserUpdateOne {
+// SetNillableAuthProviderID sets the "auth_provider_id" field if the given value is not nil.
+func (_u *UserUpdateOne) SetNillableAuthProviderID(v *string) *UserUpdateOne {
 	if v != nil {
-		_u.SetExternalID(*v)
+		_u.SetAuthProviderID(*v)
 	}
+	return _u
+}
+
+// ClearAuthProviderID clears the value of the "auth_provider_id" field.
+func (_u *UserUpdateOne) ClearAuthProviderID() *UserUpdateOne {
+	_u.mutation.ClearAuthProviderID()
 	return _u
 }
 
@@ -1945,11 +1955,6 @@ func (_u *UserUpdateOne) ExecX(ctx context.Context) {
 
 // check runs all checks and user-defined validators on the builder.
 func (_u *UserUpdateOne) check() error {
-	if v, ok := _u.mutation.ExternalID(); ok {
-		if err := user.ExternalIDValidator(v); err != nil {
-			return &ValidationError{Name: "external_id", err: fmt.Errorf(`ent: validator failed for field "User.external_id": %w`, err)}
-		}
-	}
 	if _u.mutation.TenantCleared() && len(_u.mutation.TenantIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "User.tenant"`)
 	}
@@ -1991,8 +1996,11 @@ func (_u *UserUpdateOne) sqlSave(ctx context.Context) (_node *User, err error) {
 			}
 		}
 	}
-	if value, ok := _u.mutation.ExternalID(); ok {
-		_spec.SetField(user.FieldExternalID, field.TypeString, value)
+	if value, ok := _u.mutation.AuthProviderID(); ok {
+		_spec.SetField(user.FieldAuthProviderID, field.TypeString, value)
+	}
+	if _u.mutation.AuthProviderIDCleared() {
+		_spec.ClearField(user.FieldAuthProviderID, field.TypeString)
 	}
 	if value, ok := _u.mutation.Email(); ok {
 		_spec.SetField(user.FieldEmail, field.TypeString, value)

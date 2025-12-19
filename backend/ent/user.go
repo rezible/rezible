@@ -20,8 +20,8 @@ type User struct {
 	ID uuid.UUID `json:"id,omitempty"`
 	// TenantID holds the value of the "tenant_id" field.
 	TenantID int `json:"tenant_id,omitempty"`
-	// ExternalID holds the value of the "external_id" field.
-	ExternalID string `json:"external_id,omitempty"`
+	// AuthProviderID holds the value of the "auth_provider_id" field.
+	AuthProviderID string `json:"auth_provider_id,omitempty"`
 	// Email holds the value of the "email" field.
 	Email string `json:"email,omitempty"`
 	// Name holds the value of the "name" field.
@@ -210,7 +210,7 @@ func (*User) scanValues(columns []string) ([]any, error) {
 			values[i] = new(sql.NullBool)
 		case user.FieldTenantID:
 			values[i] = new(sql.NullInt64)
-		case user.FieldExternalID, user.FieldEmail, user.FieldName, user.FieldChatID, user.FieldTimezone:
+		case user.FieldAuthProviderID, user.FieldEmail, user.FieldName, user.FieldChatID, user.FieldTimezone:
 			values[i] = new(sql.NullString)
 		case user.FieldID:
 			values[i] = new(uuid.UUID)
@@ -241,11 +241,11 @@ func (_m *User) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				_m.TenantID = int(value.Int64)
 			}
-		case user.FieldExternalID:
+		case user.FieldAuthProviderID:
 			if value, ok := values[i].(*sql.NullString); !ok {
-				return fmt.Errorf("unexpected type %T for field external_id", values[i])
+				return fmt.Errorf("unexpected type %T for field auth_provider_id", values[i])
 			} else if value.Valid {
-				_m.ExternalID = value.String
+				_m.AuthProviderID = value.String
 			}
 		case user.FieldEmail:
 			if value, ok := values[i].(*sql.NullString); !ok {
@@ -386,8 +386,8 @@ func (_m *User) String() string {
 	builder.WriteString("tenant_id=")
 	builder.WriteString(fmt.Sprintf("%v", _m.TenantID))
 	builder.WriteString(", ")
-	builder.WriteString("external_id=")
-	builder.WriteString(_m.ExternalID)
+	builder.WriteString("auth_provider_id=")
+	builder.WriteString(_m.AuthProviderID)
 	builder.WriteString(", ")
 	builder.WriteString("email=")
 	builder.WriteString(_m.Email)

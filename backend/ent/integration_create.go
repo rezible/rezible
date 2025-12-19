@@ -37,12 +37,6 @@ func (_c *IntegrationCreate) SetName(v string) *IntegrationCreate {
 	return _c
 }
 
-// SetIntegrationType sets the "integration_type" field.
-func (_c *IntegrationCreate) SetIntegrationType(v integration.IntegrationType) *IntegrationCreate {
-	_c.mutation.SetIntegrationType(v)
-	return _c
-}
-
 // SetConfig sets the "config" field.
 func (_c *IntegrationCreate) SetConfig(v []byte) *IntegrationCreate {
 	_c.mutation.SetConfig(v)
@@ -162,14 +156,6 @@ func (_c *IntegrationCreate) check() error {
 	if _, ok := _c.mutation.Name(); !ok {
 		return &ValidationError{Name: "name", err: errors.New(`ent: missing required field "Integration.name"`)}
 	}
-	if _, ok := _c.mutation.IntegrationType(); !ok {
-		return &ValidationError{Name: "integration_type", err: errors.New(`ent: missing required field "Integration.integration_type"`)}
-	}
-	if v, ok := _c.mutation.IntegrationType(); ok {
-		if err := integration.IntegrationTypeValidator(v); err != nil {
-			return &ValidationError{Name: "integration_type", err: fmt.Errorf(`ent: validator failed for field "Integration.integration_type": %w`, err)}
-		}
-	}
 	if _, ok := _c.mutation.Config(); !ok {
 		return &ValidationError{Name: "config", err: errors.New(`ent: missing required field "Integration.config"`)}
 	}
@@ -221,10 +207,6 @@ func (_c *IntegrationCreate) createSpec() (*Integration, *sqlgraph.CreateSpec) {
 	if value, ok := _c.mutation.Name(); ok {
 		_spec.SetField(integration.FieldName, field.TypeString, value)
 		_node.Name = value
-	}
-	if value, ok := _c.mutation.IntegrationType(); ok {
-		_spec.SetField(integration.FieldIntegrationType, field.TypeEnum, value)
-		_node.IntegrationType = value
 	}
 	if value, ok := _c.mutation.Config(); ok {
 		_spec.SetField(integration.FieldConfig, field.TypeBytes, value)
@@ -316,18 +298,6 @@ func (u *IntegrationUpsert) SetName(v string) *IntegrationUpsert {
 // UpdateName sets the "name" field to the value that was provided on create.
 func (u *IntegrationUpsert) UpdateName() *IntegrationUpsert {
 	u.SetExcluded(integration.FieldName)
-	return u
-}
-
-// SetIntegrationType sets the "integration_type" field.
-func (u *IntegrationUpsert) SetIntegrationType(v integration.IntegrationType) *IntegrationUpsert {
-	u.Set(integration.FieldIntegrationType, v)
-	return u
-}
-
-// UpdateIntegrationType sets the "integration_type" field to the value that was provided on create.
-func (u *IntegrationUpsert) UpdateIntegrationType() *IntegrationUpsert {
-	u.SetExcluded(integration.FieldIntegrationType)
 	return u
 }
 
@@ -429,20 +399,6 @@ func (u *IntegrationUpsertOne) SetName(v string) *IntegrationUpsertOne {
 func (u *IntegrationUpsertOne) UpdateName() *IntegrationUpsertOne {
 	return u.Update(func(s *IntegrationUpsert) {
 		s.UpdateName()
-	})
-}
-
-// SetIntegrationType sets the "integration_type" field.
-func (u *IntegrationUpsertOne) SetIntegrationType(v integration.IntegrationType) *IntegrationUpsertOne {
-	return u.Update(func(s *IntegrationUpsert) {
-		s.SetIntegrationType(v)
-	})
-}
-
-// UpdateIntegrationType sets the "integration_type" field to the value that was provided on create.
-func (u *IntegrationUpsertOne) UpdateIntegrationType() *IntegrationUpsertOne {
-	return u.Update(func(s *IntegrationUpsert) {
-		s.UpdateIntegrationType()
 	})
 }
 
@@ -717,20 +673,6 @@ func (u *IntegrationUpsertBulk) SetName(v string) *IntegrationUpsertBulk {
 func (u *IntegrationUpsertBulk) UpdateName() *IntegrationUpsertBulk {
 	return u.Update(func(s *IntegrationUpsert) {
 		s.UpdateName()
-	})
-}
-
-// SetIntegrationType sets the "integration_type" field.
-func (u *IntegrationUpsertBulk) SetIntegrationType(v integration.IntegrationType) *IntegrationUpsertBulk {
-	return u.Update(func(s *IntegrationUpsert) {
-		s.SetIntegrationType(v)
-	})
-}
-
-// UpdateIntegrationType sets the "integration_type" field to the value that was provided on create.
-func (u *IntegrationUpsertBulk) UpdateIntegrationType() *IntegrationUpsertBulk {
-	return u.Update(func(s *IntegrationUpsert) {
-		s.UpdateIntegrationType()
 	})
 }
 

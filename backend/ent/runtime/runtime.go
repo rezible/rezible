@@ -587,11 +587,11 @@ func init() {
 	integrationFields := schema.Integration{}.Fields()
 	_ = integrationFields
 	// integrationDescEnabled is the schema descriptor for enabled field.
-	integrationDescEnabled := integrationFields[4].Descriptor()
+	integrationDescEnabled := integrationFields[3].Descriptor()
 	// integration.DefaultEnabled holds the default value on creation for the enabled field.
 	integration.DefaultEnabled = integrationDescEnabled.Default.(bool)
 	// integrationDescUpdatedAt is the schema descriptor for updated_at field.
-	integrationDescUpdatedAt := integrationFields[5].Descriptor()
+	integrationDescUpdatedAt := integrationFields[4].Descriptor()
 	// integration.DefaultUpdatedAt holds the default value on creation for the updated_at field.
 	integration.DefaultUpdatedAt = integrationDescUpdatedAt.Default.(func() time.Time)
 	// integrationDescID is the schema descriptor for id field.
@@ -1269,20 +1269,14 @@ func init() {
 			return next.Mutate(ctx, m)
 		})
 	}
-	userMixinFields2 := userMixin[2].Fields()
-	_ = userMixinFields2
 	userFields := schema.User{}.Fields()
 	_ = userFields
-	// userDescExternalID is the schema descriptor for external_id field.
-	userDescExternalID := userMixinFields2[0].Descriptor()
-	// user.ExternalIDValidator is a validator for the "external_id" field. It is called by the builders before save.
-	user.ExternalIDValidator = userDescExternalID.Validators[0].(func(string) error)
 	// userDescName is the schema descriptor for name field.
-	userDescName := userFields[2].Descriptor()
+	userDescName := userFields[3].Descriptor()
 	// user.DefaultName holds the default value on creation for the name field.
 	user.DefaultName = userDescName.Default.(string)
 	// userDescConfirmed is the schema descriptor for confirmed field.
-	userDescConfirmed := userFields[5].Descriptor()
+	userDescConfirmed := userFields[6].Descriptor()
 	// user.DefaultConfirmed holds the default value on creation for the confirmed field.
 	user.DefaultConfirmed = userDescConfirmed.Default.(bool)
 	// userDescID is the schema descriptor for id field.

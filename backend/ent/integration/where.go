@@ -166,26 +166,6 @@ func NameContainsFold(v string) predicate.Integration {
 	return predicate.Integration(sql.FieldContainsFold(FieldName, v))
 }
 
-// IntegrationTypeEQ applies the EQ predicate on the "integration_type" field.
-func IntegrationTypeEQ(v IntegrationType) predicate.Integration {
-	return predicate.Integration(sql.FieldEQ(FieldIntegrationType, v))
-}
-
-// IntegrationTypeNEQ applies the NEQ predicate on the "integration_type" field.
-func IntegrationTypeNEQ(v IntegrationType) predicate.Integration {
-	return predicate.Integration(sql.FieldNEQ(FieldIntegrationType, v))
-}
-
-// IntegrationTypeIn applies the In predicate on the "integration_type" field.
-func IntegrationTypeIn(vs ...IntegrationType) predicate.Integration {
-	return predicate.Integration(sql.FieldIn(FieldIntegrationType, vs...))
-}
-
-// IntegrationTypeNotIn applies the NotIn predicate on the "integration_type" field.
-func IntegrationTypeNotIn(vs ...IntegrationType) predicate.Integration {
-	return predicate.Integration(sql.FieldNotIn(FieldIntegrationType, vs...))
-}
-
 // ConfigEQ applies the EQ predicate on the "config" field.
 func ConfigEQ(v []byte) predicate.Integration {
 	return predicate.Integration(sql.FieldEQ(FieldConfig, v))

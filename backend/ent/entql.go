@@ -566,12 +566,11 @@ var schemaGraph = func() *sqlgraph.Schema {
 		},
 		Type: "Integration",
 		Fields: map[string]*sqlgraph.FieldSpec{
-			integration.FieldTenantID:        {Type: field.TypeInt, Column: integration.FieldTenantID},
-			integration.FieldName:            {Type: field.TypeString, Column: integration.FieldName},
-			integration.FieldIntegrationType: {Type: field.TypeEnum, Column: integration.FieldIntegrationType},
-			integration.FieldConfig:          {Type: field.TypeBytes, Column: integration.FieldConfig},
-			integration.FieldEnabled:         {Type: field.TypeBool, Column: integration.FieldEnabled},
-			integration.FieldUpdatedAt:       {Type: field.TypeTime, Column: integration.FieldUpdatedAt},
+			integration.FieldTenantID:  {Type: field.TypeInt, Column: integration.FieldTenantID},
+			integration.FieldName:      {Type: field.TypeString, Column: integration.FieldName},
+			integration.FieldConfig:    {Type: field.TypeBytes, Column: integration.FieldConfig},
+			integration.FieldEnabled:   {Type: field.TypeBool, Column: integration.FieldEnabled},
+			integration.FieldUpdatedAt: {Type: field.TypeTime, Column: integration.FieldUpdatedAt},
 		},
 	}
 	graph.Nodes[27] = &sqlgraph.Node{
@@ -1187,13 +1186,13 @@ var schemaGraph = func() *sqlgraph.Schema {
 		},
 		Type: "User",
 		Fields: map[string]*sqlgraph.FieldSpec{
-			user.FieldTenantID:   {Type: field.TypeInt, Column: user.FieldTenantID},
-			user.FieldExternalID: {Type: field.TypeString, Column: user.FieldExternalID},
-			user.FieldEmail:      {Type: field.TypeString, Column: user.FieldEmail},
-			user.FieldName:       {Type: field.TypeString, Column: user.FieldName},
-			user.FieldChatID:     {Type: field.TypeString, Column: user.FieldChatID},
-			user.FieldTimezone:   {Type: field.TypeString, Column: user.FieldTimezone},
-			user.FieldConfirmed:  {Type: field.TypeBool, Column: user.FieldConfirmed},
+			user.FieldTenantID:       {Type: field.TypeInt, Column: user.FieldTenantID},
+			user.FieldAuthProviderID: {Type: field.TypeString, Column: user.FieldAuthProviderID},
+			user.FieldEmail:          {Type: field.TypeString, Column: user.FieldEmail},
+			user.FieldName:           {Type: field.TypeString, Column: user.FieldName},
+			user.FieldChatID:         {Type: field.TypeString, Column: user.FieldChatID},
+			user.FieldTimezone:       {Type: field.TypeString, Column: user.FieldTimezone},
+			user.FieldConfirmed:      {Type: field.TypeBool, Column: user.FieldConfirmed},
 		},
 	}
 	graph.MustAddE(
@@ -7164,11 +7163,6 @@ func (f *IntegrationFilter) WhereName(p entql.StringP) {
 	f.Where(p.Field(integration.FieldName))
 }
 
-// WhereIntegrationType applies the entql string predicate on the integration_type field.
-func (f *IntegrationFilter) WhereIntegrationType(p entql.StringP) {
-	f.Where(p.Field(integration.FieldIntegrationType))
-}
-
 // WhereConfig applies the entql []byte predicate on the config field.
 func (f *IntegrationFilter) WhereConfig(p entql.BytesP) {
 	f.Where(p.Field(integration.FieldConfig))
@@ -11152,9 +11146,9 @@ func (f *UserFilter) WhereTenantID(p entql.IntP) {
 	f.Where(p.Field(user.FieldTenantID))
 }
 
-// WhereExternalID applies the entql string predicate on the external_id field.
-func (f *UserFilter) WhereExternalID(p entql.StringP) {
-	f.Where(p.Field(user.FieldExternalID))
+// WhereAuthProviderID applies the entql string predicate on the auth_provider_id field.
+func (f *UserFilter) WhereAuthProviderID(p entql.StringP) {
+	f.Where(p.Field(user.FieldAuthProviderID))
 }
 
 // WhereEmail applies the entql string predicate on the email field.

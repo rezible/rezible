@@ -26,10 +26,9 @@ type (
 	}
 
 	providerTenantConfigEntry struct {
-		Type     integration.IntegrationType `json:"type"`
-		Name     string                      `json:"provider_id"`
-		Disabled bool                        `json:"disabled"`
-		Config   json.RawMessage             `json:"config"`
+		Name     string          `json:"provider_id"`
+		Disabled bool            `json:"disabled"`
+		Config   json.RawMessage `json:"config"`
 	}
 )
 
@@ -57,21 +56,19 @@ func loadTenantProviderConfig(ctx context.Context, client *ent.Client, cfg *prov
 		for _, c := range cfg.ConfigEntries {
 			log.Info().
 				Str("name", c.Name).
-				Str("type", string(c.Type)).
 				Msg("loading provider")
 
 			upsert := tx.Integration.Create().
 				SetName(c.Name).
-				SetIntegrationType(c.Type).
 				SetConfig(c.Config).
 				SetEnabled(!c.Disabled).
 				SetUpdatedAt(time.Now()).
-				OnConflictColumns(integration.FieldName, integration.FieldIntegrationType).
+				OnConflictColumns(integration.FieldName).
 				UpdateConfig().
 				UpdateUpdatedAt()
 
 			if upsertErr := upsert.Exec(ctx); upsertErr != nil {
-				return fmt.Errorf("upserting (%s %s): %w", string(c.Type), c.Name, upsertErr)
+				return fmt.Errorf("upserting (%s): %w", c.Name, upsertErr)
 			}
 		}
 		return nil
@@ -111,26 +108,21 @@ func grafanaOncallProviderConfig() providerTenantConfigEntry {
 	apiToken := rez.Config.GetString("GRAFANA_ONCALL_API_TOKEN")
 	grafanaOncallRawConfig := fmt.Sprintf(`{"api_endpoint":"%s","api_token":"%s"}`, apiEndpoint, apiToken)
 	return providerTenantConfigEntry{
-		Type:   integration.IntegrationTypeOncall,
 		Name:   "grafana",
 		Config: []byte(grafanaOncallRawConfig),
 	}
 }
 
 func LoadFakeConfig(ctx context.Context, client *ent.Client) error {
-	fakeProviderConfigEntry := func(t integration.IntegrationType) providerTenantConfigEntry {
-		return providerTenantConfigEntry{Type: t, Name: "fake", Config: []byte("{}")}
+	fakeProviderConfigEntry := func() providerTenantConfigEntry {
+		return providerTenantConfigEntry{Name: "fake", Config: []byte("{}")}
 	}
 
 	cfg := &providerTenantConfig{
 		OrgName: "Test Organization",
 		ConfigEntries: []providerTenantConfigEntry{
 			grafanaOncallProviderConfig(),
-			fakeProviderConfigEntry(integration.IntegrationTypeIncidents),
-			fakeProviderConfigEntry(integration.IntegrationTypeAlerts),
-			fakeProviderConfigEntry(integration.IntegrationTypeTickets),
-			fakeProviderConfigEntry(integration.IntegrationTypePlaybooks),
-			fakeProviderConfigEntry(integration.IntegrationTypeSystemComponents),
+			fakeProviderConfigEntry(),
 		},
 	}
 	if loadErr := loadTenantProviderConfig(ctx, client, cfg); loadErr != nil {

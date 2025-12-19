@@ -21729,20 +21729,19 @@ func (m *IncidentTypeMutation) ResetEdge(name string) error {
 // IntegrationMutation represents an operation that mutates the Integration nodes in the graph.
 type IntegrationMutation struct {
 	config
-	op               Op
-	typ              string
-	id               *uuid.UUID
-	name             *string
-	integration_type *integration.IntegrationType
-	_config          *[]byte
-	enabled          *bool
-	updated_at       *time.Time
-	clearedFields    map[string]struct{}
-	tenant           *int
-	clearedtenant    bool
-	done             bool
-	oldValue         func(context.Context) (*Integration, error)
-	predicates       []predicate.Integration
+	op            Op
+	typ           string
+	id            *uuid.UUID
+	name          *string
+	_config       *[]byte
+	enabled       *bool
+	updated_at    *time.Time
+	clearedFields map[string]struct{}
+	tenant        *int
+	clearedtenant bool
+	done          bool
+	oldValue      func(context.Context) (*Integration, error)
+	predicates    []predicate.Integration
 }
 
 var _ ent.Mutation = (*IntegrationMutation)(nil)
@@ -21921,42 +21920,6 @@ func (m *IntegrationMutation) ResetName() {
 	m.name = nil
 }
 
-// SetIntegrationType sets the "integration_type" field.
-func (m *IntegrationMutation) SetIntegrationType(it integration.IntegrationType) {
-	m.integration_type = &it
-}
-
-// IntegrationType returns the value of the "integration_type" field in the mutation.
-func (m *IntegrationMutation) IntegrationType() (r integration.IntegrationType, exists bool) {
-	v := m.integration_type
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldIntegrationType returns the old "integration_type" field's value of the Integration entity.
-// If the Integration object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *IntegrationMutation) OldIntegrationType(ctx context.Context) (v integration.IntegrationType, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldIntegrationType is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldIntegrationType requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldIntegrationType: %w", err)
-	}
-	return oldValue.IntegrationType, nil
-}
-
-// ResetIntegrationType resets all changes to the "integration_type" field.
-func (m *IntegrationMutation) ResetIntegrationType() {
-	m.integration_type = nil
-}
-
 // SetConfig sets the "config" field.
 func (m *IntegrationMutation) SetConfig(b []byte) {
 	m._config = &b
@@ -22126,15 +22089,12 @@ func (m *IntegrationMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *IntegrationMutation) Fields() []string {
-	fields := make([]string, 0, 6)
+	fields := make([]string, 0, 5)
 	if m.tenant != nil {
 		fields = append(fields, integration.FieldTenantID)
 	}
 	if m.name != nil {
 		fields = append(fields, integration.FieldName)
-	}
-	if m.integration_type != nil {
-		fields = append(fields, integration.FieldIntegrationType)
 	}
 	if m._config != nil {
 		fields = append(fields, integration.FieldConfig)
@@ -22157,8 +22117,6 @@ func (m *IntegrationMutation) Field(name string) (ent.Value, bool) {
 		return m.TenantID()
 	case integration.FieldName:
 		return m.Name()
-	case integration.FieldIntegrationType:
-		return m.IntegrationType()
 	case integration.FieldConfig:
 		return m.Config()
 	case integration.FieldEnabled:
@@ -22178,8 +22136,6 @@ func (m *IntegrationMutation) OldField(ctx context.Context, name string) (ent.Va
 		return m.OldTenantID(ctx)
 	case integration.FieldName:
 		return m.OldName(ctx)
-	case integration.FieldIntegrationType:
-		return m.OldIntegrationType(ctx)
 	case integration.FieldConfig:
 		return m.OldConfig(ctx)
 	case integration.FieldEnabled:
@@ -22208,13 +22164,6 @@ func (m *IntegrationMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetName(v)
-		return nil
-	case integration.FieldIntegrationType:
-		v, ok := value.(integration.IntegrationType)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetIntegrationType(v)
 		return nil
 	case integration.FieldConfig:
 		v, ok := value.([]byte)
@@ -22294,9 +22243,6 @@ func (m *IntegrationMutation) ResetField(name string) error {
 		return nil
 	case integration.FieldName:
 		m.ResetName()
-		return nil
-	case integration.FieldIntegrationType:
-		m.ResetIntegrationType()
 		return nil
 	case integration.FieldConfig:
 		m.ResetConfig()
@@ -50860,7 +50806,7 @@ type UserMutation struct {
 	op                                    Op
 	typ                                   string
 	id                                    *uuid.UUID
-	external_id                           *string
+	auth_provider_id                      *string
 	email                                 *string
 	name                                  *string
 	chat_id                               *string
@@ -51053,40 +50999,53 @@ func (m *UserMutation) ResetTenantID() {
 	m.tenant = nil
 }
 
-// SetExternalID sets the "external_id" field.
-func (m *UserMutation) SetExternalID(s string) {
-	m.external_id = &s
+// SetAuthProviderID sets the "auth_provider_id" field.
+func (m *UserMutation) SetAuthProviderID(s string) {
+	m.auth_provider_id = &s
 }
 
-// ExternalID returns the value of the "external_id" field in the mutation.
-func (m *UserMutation) ExternalID() (r string, exists bool) {
-	v := m.external_id
+// AuthProviderID returns the value of the "auth_provider_id" field in the mutation.
+func (m *UserMutation) AuthProviderID() (r string, exists bool) {
+	v := m.auth_provider_id
 	if v == nil {
 		return
 	}
 	return *v, true
 }
 
-// OldExternalID returns the old "external_id" field's value of the User entity.
+// OldAuthProviderID returns the old "auth_provider_id" field's value of the User entity.
 // If the User object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *UserMutation) OldExternalID(ctx context.Context) (v string, err error) {
+func (m *UserMutation) OldAuthProviderID(ctx context.Context) (v string, err error) {
 	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldExternalID is only allowed on UpdateOne operations")
+		return v, errors.New("OldAuthProviderID is only allowed on UpdateOne operations")
 	}
 	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldExternalID requires an ID field in the mutation")
+		return v, errors.New("OldAuthProviderID requires an ID field in the mutation")
 	}
 	oldValue, err := m.oldValue(ctx)
 	if err != nil {
-		return v, fmt.Errorf("querying old value for OldExternalID: %w", err)
+		return v, fmt.Errorf("querying old value for OldAuthProviderID: %w", err)
 	}
-	return oldValue.ExternalID, nil
+	return oldValue.AuthProviderID, nil
 }
 
-// ResetExternalID resets all changes to the "external_id" field.
-func (m *UserMutation) ResetExternalID() {
-	m.external_id = nil
+// ClearAuthProviderID clears the value of the "auth_provider_id" field.
+func (m *UserMutation) ClearAuthProviderID() {
+	m.auth_provider_id = nil
+	m.clearedFields[user.FieldAuthProviderID] = struct{}{}
+}
+
+// AuthProviderIDCleared returns if the "auth_provider_id" field was cleared in this mutation.
+func (m *UserMutation) AuthProviderIDCleared() bool {
+	_, ok := m.clearedFields[user.FieldAuthProviderID]
+	return ok
+}
+
+// ResetAuthProviderID resets all changes to the "auth_provider_id" field.
+func (m *UserMutation) ResetAuthProviderID() {
+	m.auth_provider_id = nil
+	delete(m.clearedFields, user.FieldAuthProviderID)
 }
 
 // SetEmail sets the "email" field.
@@ -52075,8 +52034,8 @@ func (m *UserMutation) Fields() []string {
 	if m.tenant != nil {
 		fields = append(fields, user.FieldTenantID)
 	}
-	if m.external_id != nil {
-		fields = append(fields, user.FieldExternalID)
+	if m.auth_provider_id != nil {
+		fields = append(fields, user.FieldAuthProviderID)
 	}
 	if m.email != nil {
 		fields = append(fields, user.FieldEmail)
@@ -52103,8 +52062,8 @@ func (m *UserMutation) Field(name string) (ent.Value, bool) {
 	switch name {
 	case user.FieldTenantID:
 		return m.TenantID()
-	case user.FieldExternalID:
-		return m.ExternalID()
+	case user.FieldAuthProviderID:
+		return m.AuthProviderID()
 	case user.FieldEmail:
 		return m.Email()
 	case user.FieldName:
@@ -52126,8 +52085,8 @@ func (m *UserMutation) OldField(ctx context.Context, name string) (ent.Value, er
 	switch name {
 	case user.FieldTenantID:
 		return m.OldTenantID(ctx)
-	case user.FieldExternalID:
-		return m.OldExternalID(ctx)
+	case user.FieldAuthProviderID:
+		return m.OldAuthProviderID(ctx)
 	case user.FieldEmail:
 		return m.OldEmail(ctx)
 	case user.FieldName:
@@ -52154,12 +52113,12 @@ func (m *UserMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetTenantID(v)
 		return nil
-	case user.FieldExternalID:
+	case user.FieldAuthProviderID:
 		v, ok := value.(string)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
-		m.SetExternalID(v)
+		m.SetAuthProviderID(v)
 		return nil
 	case user.FieldEmail:
 		v, ok := value.(string)
@@ -52229,6 +52188,9 @@ func (m *UserMutation) AddField(name string, value ent.Value) error {
 // mutation.
 func (m *UserMutation) ClearedFields() []string {
 	var fields []string
+	if m.FieldCleared(user.FieldAuthProviderID) {
+		fields = append(fields, user.FieldAuthProviderID)
+	}
 	if m.FieldCleared(user.FieldName) {
 		fields = append(fields, user.FieldName)
 	}
@@ -52252,6 +52214,9 @@ func (m *UserMutation) FieldCleared(name string) bool {
 // error if the field is not defined in the schema.
 func (m *UserMutation) ClearField(name string) error {
 	switch name {
+	case user.FieldAuthProviderID:
+		m.ClearAuthProviderID()
+		return nil
 	case user.FieldName:
 		m.ClearName()
 		return nil
@@ -52272,8 +52237,8 @@ func (m *UserMutation) ResetField(name string) error {
 	case user.FieldTenantID:
 		m.ResetTenantID()
 		return nil
-	case user.FieldExternalID:
-		m.ResetExternalID()
+	case user.FieldAuthProviderID:
+		m.ResetAuthProviderID()
 		return nil
 	case user.FieldEmail:
 		m.ResetEmail()

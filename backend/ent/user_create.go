@@ -41,9 +41,17 @@ func (_c *UserCreate) SetTenantID(v int) *UserCreate {
 	return _c
 }
 
-// SetExternalID sets the "external_id" field.
-func (_c *UserCreate) SetExternalID(v string) *UserCreate {
-	_c.mutation.SetExternalID(v)
+// SetAuthProviderID sets the "auth_provider_id" field.
+func (_c *UserCreate) SetAuthProviderID(v string) *UserCreate {
+	_c.mutation.SetAuthProviderID(v)
+	return _c
+}
+
+// SetNillableAuthProviderID sets the "auth_provider_id" field if the given value is not nil.
+func (_c *UserCreate) SetNillableAuthProviderID(v *string) *UserCreate {
+	if v != nil {
+		_c.SetAuthProviderID(*v)
+	}
 	return _c
 }
 
@@ -383,14 +391,6 @@ func (_c *UserCreate) check() error {
 	if _, ok := _c.mutation.TenantID(); !ok {
 		return &ValidationError{Name: "tenant_id", err: errors.New(`ent: missing required field "User.tenant_id"`)}
 	}
-	if _, ok := _c.mutation.ExternalID(); !ok {
-		return &ValidationError{Name: "external_id", err: errors.New(`ent: missing required field "User.external_id"`)}
-	}
-	if v, ok := _c.mutation.ExternalID(); ok {
-		if err := user.ExternalIDValidator(v); err != nil {
-			return &ValidationError{Name: "external_id", err: fmt.Errorf(`ent: validator failed for field "User.external_id": %w`, err)}
-		}
-	}
 	if _, ok := _c.mutation.Email(); !ok {
 		return &ValidationError{Name: "email", err: errors.New(`ent: missing required field "User.email"`)}
 	}
@@ -436,9 +436,9 @@ func (_c *UserCreate) createSpec() (*User, *sqlgraph.CreateSpec) {
 		_node.ID = id
 		_spec.ID.Value = &id
 	}
-	if value, ok := _c.mutation.ExternalID(); ok {
-		_spec.SetField(user.FieldExternalID, field.TypeString, value)
-		_node.ExternalID = value
+	if value, ok := _c.mutation.AuthProviderID(); ok {
+		_spec.SetField(user.FieldAuthProviderID, field.TypeString, value)
+		_node.AuthProviderID = value
 	}
 	if value, ok := _c.mutation.Email(); ok {
 		_spec.SetField(user.FieldEmail, field.TypeString, value)
@@ -744,15 +744,21 @@ type (
 	}
 )
 
-// SetExternalID sets the "external_id" field.
-func (u *UserUpsert) SetExternalID(v string) *UserUpsert {
-	u.Set(user.FieldExternalID, v)
+// SetAuthProviderID sets the "auth_provider_id" field.
+func (u *UserUpsert) SetAuthProviderID(v string) *UserUpsert {
+	u.Set(user.FieldAuthProviderID, v)
 	return u
 }
 
-// UpdateExternalID sets the "external_id" field to the value that was provided on create.
-func (u *UserUpsert) UpdateExternalID() *UserUpsert {
-	u.SetExcluded(user.FieldExternalID)
+// UpdateAuthProviderID sets the "auth_provider_id" field to the value that was provided on create.
+func (u *UserUpsert) UpdateAuthProviderID() *UserUpsert {
+	u.SetExcluded(user.FieldAuthProviderID)
+	return u
+}
+
+// ClearAuthProviderID clears the value of the "auth_provider_id" field.
+func (u *UserUpsert) ClearAuthProviderID() *UserUpsert {
+	u.SetNull(user.FieldAuthProviderID)
 	return u
 }
 
@@ -885,17 +891,24 @@ func (u *UserUpsertOne) Update(set func(*UserUpsert)) *UserUpsertOne {
 	return u
 }
 
-// SetExternalID sets the "external_id" field.
-func (u *UserUpsertOne) SetExternalID(v string) *UserUpsertOne {
+// SetAuthProviderID sets the "auth_provider_id" field.
+func (u *UserUpsertOne) SetAuthProviderID(v string) *UserUpsertOne {
 	return u.Update(func(s *UserUpsert) {
-		s.SetExternalID(v)
+		s.SetAuthProviderID(v)
 	})
 }
 
-// UpdateExternalID sets the "external_id" field to the value that was provided on create.
-func (u *UserUpsertOne) UpdateExternalID() *UserUpsertOne {
+// UpdateAuthProviderID sets the "auth_provider_id" field to the value that was provided on create.
+func (u *UserUpsertOne) UpdateAuthProviderID() *UserUpsertOne {
 	return u.Update(func(s *UserUpsert) {
-		s.UpdateExternalID()
+		s.UpdateAuthProviderID()
+	})
+}
+
+// ClearAuthProviderID clears the value of the "auth_provider_id" field.
+func (u *UserUpsertOne) ClearAuthProviderID() *UserUpsertOne {
+	return u.Update(func(s *UserUpsert) {
+		s.ClearAuthProviderID()
 	})
 }
 
@@ -1208,17 +1221,24 @@ func (u *UserUpsertBulk) Update(set func(*UserUpsert)) *UserUpsertBulk {
 	return u
 }
 
-// SetExternalID sets the "external_id" field.
-func (u *UserUpsertBulk) SetExternalID(v string) *UserUpsertBulk {
+// SetAuthProviderID sets the "auth_provider_id" field.
+func (u *UserUpsertBulk) SetAuthProviderID(v string) *UserUpsertBulk {
 	return u.Update(func(s *UserUpsert) {
-		s.SetExternalID(v)
+		s.SetAuthProviderID(v)
 	})
 }
 
-// UpdateExternalID sets the "external_id" field to the value that was provided on create.
-func (u *UserUpsertBulk) UpdateExternalID() *UserUpsertBulk {
+// UpdateAuthProviderID sets the "auth_provider_id" field to the value that was provided on create.
+func (u *UserUpsertBulk) UpdateAuthProviderID() *UserUpsertBulk {
 	return u.Update(func(s *UserUpsert) {
-		s.UpdateExternalID()
+		s.UpdateAuthProviderID()
+	})
+}
+
+// ClearAuthProviderID clears the value of the "auth_provider_id" field.
+func (u *UserUpsertBulk) ClearAuthProviderID() *UserUpsertBulk {
+	return u.Update(func(s *UserUpsert) {
+		s.ClearAuthProviderID()
 	})
 }
 

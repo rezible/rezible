@@ -23,8 +23,6 @@ type Integration struct {
 	TenantID int `json:"tenant_id,omitempty"`
 	// Name holds the value of the "name" field.
 	Name string `json:"name,omitempty"`
-	// IntegrationType holds the value of the "integration_type" field.
-	IntegrationType integration.IntegrationType `json:"integration_type,omitempty"`
 	// Config holds the value of the "config" field.
 	Config []byte `json:"config,omitempty"`
 	// Enabled holds the value of the "enabled" field.
@@ -68,7 +66,7 @@ func (*Integration) scanValues(columns []string) ([]any, error) {
 			values[i] = new(sql.NullBool)
 		case integration.FieldTenantID:
 			values[i] = new(sql.NullInt64)
-		case integration.FieldName, integration.FieldIntegrationType:
+		case integration.FieldName:
 			values[i] = new(sql.NullString)
 		case integration.FieldUpdatedAt:
 			values[i] = new(sql.NullTime)
@@ -106,12 +104,6 @@ func (_m *Integration) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field name", values[i])
 			} else if value.Valid {
 				_m.Name = value.String
-			}
-		case integration.FieldIntegrationType:
-			if value, ok := values[i].(*sql.NullString); !ok {
-				return fmt.Errorf("unexpected type %T for field integration_type", values[i])
-			} else if value.Valid {
-				_m.IntegrationType = integration.IntegrationType(value.String)
 			}
 		case integration.FieldConfig:
 			if value, ok := values[i].(*[]byte); !ok {
@@ -177,9 +169,6 @@ func (_m *Integration) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("name=")
 	builder.WriteString(_m.Name)
-	builder.WriteString(", ")
-	builder.WriteString("integration_type=")
-	builder.WriteString(fmt.Sprintf("%v", _m.IntegrationType))
 	builder.WriteString(", ")
 	builder.WriteString("config=")
 	builder.WriteString(fmt.Sprintf("%v", _m.Config))

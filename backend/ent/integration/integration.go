@@ -3,7 +3,6 @@
 package integration
 
 import (
-	"fmt"
 	"time"
 
 	"entgo.io/ent"
@@ -21,8 +20,6 @@ const (
 	FieldTenantID = "tenant_id"
 	// FieldName holds the string denoting the name field in the database.
 	FieldName = "name"
-	// FieldIntegrationType holds the string denoting the integration_type field in the database.
-	FieldIntegrationType = "integration_type"
 	// FieldConfig holds the string denoting the config field in the database.
 	FieldConfig = "config"
 	// FieldEnabled holds the string denoting the enabled field in the database.
@@ -47,7 +44,6 @@ var Columns = []string{
 	FieldID,
 	FieldTenantID,
 	FieldName,
-	FieldIntegrationType,
 	FieldConfig,
 	FieldEnabled,
 	FieldUpdatedAt,
@@ -79,36 +75,6 @@ var (
 	DefaultID func() uuid.UUID
 )
 
-// IntegrationType defines the type for the "integration_type" enum field.
-type IntegrationType string
-
-// IntegrationType values.
-const (
-	IntegrationTypeChat             IntegrationType = "chat"
-	IntegrationTypeUsers            IntegrationType = "users"
-	IntegrationTypeTeams            IntegrationType = "teams"
-	IntegrationTypeIncidents        IntegrationType = "incidents"
-	IntegrationTypeOncall           IntegrationType = "oncall"
-	IntegrationTypeAlerts           IntegrationType = "alerts"
-	IntegrationTypeSystemComponents IntegrationType = "system_components"
-	IntegrationTypeTickets          IntegrationType = "tickets"
-	IntegrationTypePlaybooks        IntegrationType = "playbooks"
-)
-
-func (it IntegrationType) String() string {
-	return string(it)
-}
-
-// IntegrationTypeValidator is a validator for the "integration_type" field enum values. It is called by the builders before save.
-func IntegrationTypeValidator(it IntegrationType) error {
-	switch it {
-	case IntegrationTypeChat, IntegrationTypeUsers, IntegrationTypeTeams, IntegrationTypeIncidents, IntegrationTypeOncall, IntegrationTypeAlerts, IntegrationTypeSystemComponents, IntegrationTypeTickets, IntegrationTypePlaybooks:
-		return nil
-	default:
-		return fmt.Errorf("integration: invalid enum value for integration_type field: %q", it)
-	}
-}
-
 // OrderOption defines the ordering options for the Integration queries.
 type OrderOption func(*sql.Selector)
 
@@ -125,11 +91,6 @@ func ByTenantID(opts ...sql.OrderTermOption) OrderOption {
 // ByName orders the results by the name field.
 func ByName(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldName, opts...).ToFunc()
-}
-
-// ByIntegrationType orders the results by the integration_type field.
-func ByIntegrationType(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldIntegrationType, opts...).ToFunc()
 }
 
 // ByEnabled orders the results by the enabled field.
