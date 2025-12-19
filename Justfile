@@ -102,7 +102,7 @@ _default:
 # [group('Other')]
 @run-oidc-test-provider:
     docker run -p 6432:8080 \
-        -e DevOidcToolkit__Users__0__Email=test@example.com \
+        -e DevOidcToolkit__Users__0__Email="${REZ_DEBUG_DEFAULT_USER_EMAIL}" \
         -e DevOidcToolkit__Users__0__FirstName=Test \
         -e DevOidcToolkit__Users__0__LastName=User \
         -e DevOidcToolkit__Clients__0__Id=client \
