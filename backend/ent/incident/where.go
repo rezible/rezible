@@ -61,6 +61,11 @@ func TenantID(v int) predicate.Incident {
 	return predicate.Incident(sql.FieldEQ(FieldTenantID, v))
 }
 
+// ExternalID applies equality check predicate on the "external_id" field. It's identical to ExternalIDEQ.
+func ExternalID(v string) predicate.Incident {
+	return predicate.Incident(sql.FieldEQ(FieldExternalID, v))
+}
+
 // Slug applies equality check predicate on the "slug" field. It's identical to SlugEQ.
 func Slug(v string) predicate.Incident {
 	return predicate.Incident(sql.FieldEQ(FieldSlug, v))
@@ -96,16 +101,6 @@ func ClosedAt(v time.Time) predicate.Incident {
 	return predicate.Incident(sql.FieldEQ(FieldClosedAt, v))
 }
 
-// ProviderID applies equality check predicate on the "provider_id" field. It's identical to ProviderIDEQ.
-func ProviderID(v string) predicate.Incident {
-	return predicate.Incident(sql.FieldEQ(FieldProviderID, v))
-}
-
-// ChatChannelID applies equality check predicate on the "chat_channel_id" field. It's identical to ChatChannelIDEQ.
-func ChatChannelID(v string) predicate.Incident {
-	return predicate.Incident(sql.FieldEQ(FieldChatChannelID, v))
-}
-
 // SeverityID applies equality check predicate on the "severity_id" field. It's identical to SeverityIDEQ.
 func SeverityID(v uuid.UUID) predicate.Incident {
 	return predicate.Incident(sql.FieldEQ(FieldSeverityID, v))
@@ -114,6 +109,11 @@ func SeverityID(v uuid.UUID) predicate.Incident {
 // TypeID applies equality check predicate on the "type_id" field. It's identical to TypeIDEQ.
 func TypeID(v uuid.UUID) predicate.Incident {
 	return predicate.Incident(sql.FieldEQ(FieldTypeID, v))
+}
+
+// ChatChannelID applies equality check predicate on the "chat_channel_id" field. It's identical to ChatChannelIDEQ.
+func ChatChannelID(v string) predicate.Incident {
+	return predicate.Incident(sql.FieldEQ(FieldChatChannelID, v))
 }
 
 // TenantIDEQ applies the EQ predicate on the "tenant_id" field.
@@ -134,6 +134,81 @@ func TenantIDIn(vs ...int) predicate.Incident {
 // TenantIDNotIn applies the NotIn predicate on the "tenant_id" field.
 func TenantIDNotIn(vs ...int) predicate.Incident {
 	return predicate.Incident(sql.FieldNotIn(FieldTenantID, vs...))
+}
+
+// ExternalIDEQ applies the EQ predicate on the "external_id" field.
+func ExternalIDEQ(v string) predicate.Incident {
+	return predicate.Incident(sql.FieldEQ(FieldExternalID, v))
+}
+
+// ExternalIDNEQ applies the NEQ predicate on the "external_id" field.
+func ExternalIDNEQ(v string) predicate.Incident {
+	return predicate.Incident(sql.FieldNEQ(FieldExternalID, v))
+}
+
+// ExternalIDIn applies the In predicate on the "external_id" field.
+func ExternalIDIn(vs ...string) predicate.Incident {
+	return predicate.Incident(sql.FieldIn(FieldExternalID, vs...))
+}
+
+// ExternalIDNotIn applies the NotIn predicate on the "external_id" field.
+func ExternalIDNotIn(vs ...string) predicate.Incident {
+	return predicate.Incident(sql.FieldNotIn(FieldExternalID, vs...))
+}
+
+// ExternalIDGT applies the GT predicate on the "external_id" field.
+func ExternalIDGT(v string) predicate.Incident {
+	return predicate.Incident(sql.FieldGT(FieldExternalID, v))
+}
+
+// ExternalIDGTE applies the GTE predicate on the "external_id" field.
+func ExternalIDGTE(v string) predicate.Incident {
+	return predicate.Incident(sql.FieldGTE(FieldExternalID, v))
+}
+
+// ExternalIDLT applies the LT predicate on the "external_id" field.
+func ExternalIDLT(v string) predicate.Incident {
+	return predicate.Incident(sql.FieldLT(FieldExternalID, v))
+}
+
+// ExternalIDLTE applies the LTE predicate on the "external_id" field.
+func ExternalIDLTE(v string) predicate.Incident {
+	return predicate.Incident(sql.FieldLTE(FieldExternalID, v))
+}
+
+// ExternalIDContains applies the Contains predicate on the "external_id" field.
+func ExternalIDContains(v string) predicate.Incident {
+	return predicate.Incident(sql.FieldContains(FieldExternalID, v))
+}
+
+// ExternalIDHasPrefix applies the HasPrefix predicate on the "external_id" field.
+func ExternalIDHasPrefix(v string) predicate.Incident {
+	return predicate.Incident(sql.FieldHasPrefix(FieldExternalID, v))
+}
+
+// ExternalIDHasSuffix applies the HasSuffix predicate on the "external_id" field.
+func ExternalIDHasSuffix(v string) predicate.Incident {
+	return predicate.Incident(sql.FieldHasSuffix(FieldExternalID, v))
+}
+
+// ExternalIDIsNil applies the IsNil predicate on the "external_id" field.
+func ExternalIDIsNil() predicate.Incident {
+	return predicate.Incident(sql.FieldIsNull(FieldExternalID))
+}
+
+// ExternalIDNotNil applies the NotNil predicate on the "external_id" field.
+func ExternalIDNotNil() predicate.Incident {
+	return predicate.Incident(sql.FieldNotNull(FieldExternalID))
+}
+
+// ExternalIDEqualFold applies the EqualFold predicate on the "external_id" field.
+func ExternalIDEqualFold(v string) predicate.Incident {
+	return predicate.Incident(sql.FieldEqualFold(FieldExternalID, v))
+}
+
+// ExternalIDContainsFold applies the ContainsFold predicate on the "external_id" field.
+func ExternalIDContainsFold(v string) predicate.Incident {
+	return predicate.Incident(sql.FieldContainsFold(FieldExternalID, v))
 }
 
 // SlugEQ applies the EQ predicate on the "slug" field.
@@ -491,79 +566,64 @@ func ClosedAtNotNil() predicate.Incident {
 	return predicate.Incident(sql.FieldNotNull(FieldClosedAt))
 }
 
-// ProviderIDEQ applies the EQ predicate on the "provider_id" field.
-func ProviderIDEQ(v string) predicate.Incident {
-	return predicate.Incident(sql.FieldEQ(FieldProviderID, v))
+// SeverityIDEQ applies the EQ predicate on the "severity_id" field.
+func SeverityIDEQ(v uuid.UUID) predicate.Incident {
+	return predicate.Incident(sql.FieldEQ(FieldSeverityID, v))
 }
 
-// ProviderIDNEQ applies the NEQ predicate on the "provider_id" field.
-func ProviderIDNEQ(v string) predicate.Incident {
-	return predicate.Incident(sql.FieldNEQ(FieldProviderID, v))
+// SeverityIDNEQ applies the NEQ predicate on the "severity_id" field.
+func SeverityIDNEQ(v uuid.UUID) predicate.Incident {
+	return predicate.Incident(sql.FieldNEQ(FieldSeverityID, v))
 }
 
-// ProviderIDIn applies the In predicate on the "provider_id" field.
-func ProviderIDIn(vs ...string) predicate.Incident {
-	return predicate.Incident(sql.FieldIn(FieldProviderID, vs...))
+// SeverityIDIn applies the In predicate on the "severity_id" field.
+func SeverityIDIn(vs ...uuid.UUID) predicate.Incident {
+	return predicate.Incident(sql.FieldIn(FieldSeverityID, vs...))
 }
 
-// ProviderIDNotIn applies the NotIn predicate on the "provider_id" field.
-func ProviderIDNotIn(vs ...string) predicate.Incident {
-	return predicate.Incident(sql.FieldNotIn(FieldProviderID, vs...))
+// SeverityIDNotIn applies the NotIn predicate on the "severity_id" field.
+func SeverityIDNotIn(vs ...uuid.UUID) predicate.Incident {
+	return predicate.Incident(sql.FieldNotIn(FieldSeverityID, vs...))
 }
 
-// ProviderIDGT applies the GT predicate on the "provider_id" field.
-func ProviderIDGT(v string) predicate.Incident {
-	return predicate.Incident(sql.FieldGT(FieldProviderID, v))
+// SeverityIDIsNil applies the IsNil predicate on the "severity_id" field.
+func SeverityIDIsNil() predicate.Incident {
+	return predicate.Incident(sql.FieldIsNull(FieldSeverityID))
 }
 
-// ProviderIDGTE applies the GTE predicate on the "provider_id" field.
-func ProviderIDGTE(v string) predicate.Incident {
-	return predicate.Incident(sql.FieldGTE(FieldProviderID, v))
+// SeverityIDNotNil applies the NotNil predicate on the "severity_id" field.
+func SeverityIDNotNil() predicate.Incident {
+	return predicate.Incident(sql.FieldNotNull(FieldSeverityID))
 }
 
-// ProviderIDLT applies the LT predicate on the "provider_id" field.
-func ProviderIDLT(v string) predicate.Incident {
-	return predicate.Incident(sql.FieldLT(FieldProviderID, v))
+// TypeIDEQ applies the EQ predicate on the "type_id" field.
+func TypeIDEQ(v uuid.UUID) predicate.Incident {
+	return predicate.Incident(sql.FieldEQ(FieldTypeID, v))
 }
 
-// ProviderIDLTE applies the LTE predicate on the "provider_id" field.
-func ProviderIDLTE(v string) predicate.Incident {
-	return predicate.Incident(sql.FieldLTE(FieldProviderID, v))
+// TypeIDNEQ applies the NEQ predicate on the "type_id" field.
+func TypeIDNEQ(v uuid.UUID) predicate.Incident {
+	return predicate.Incident(sql.FieldNEQ(FieldTypeID, v))
 }
 
-// ProviderIDContains applies the Contains predicate on the "provider_id" field.
-func ProviderIDContains(v string) predicate.Incident {
-	return predicate.Incident(sql.FieldContains(FieldProviderID, v))
+// TypeIDIn applies the In predicate on the "type_id" field.
+func TypeIDIn(vs ...uuid.UUID) predicate.Incident {
+	return predicate.Incident(sql.FieldIn(FieldTypeID, vs...))
 }
 
-// ProviderIDHasPrefix applies the HasPrefix predicate on the "provider_id" field.
-func ProviderIDHasPrefix(v string) predicate.Incident {
-	return predicate.Incident(sql.FieldHasPrefix(FieldProviderID, v))
+// TypeIDNotIn applies the NotIn predicate on the "type_id" field.
+func TypeIDNotIn(vs ...uuid.UUID) predicate.Incident {
+	return predicate.Incident(sql.FieldNotIn(FieldTypeID, vs...))
 }
 
-// ProviderIDHasSuffix applies the HasSuffix predicate on the "provider_id" field.
-func ProviderIDHasSuffix(v string) predicate.Incident {
-	return predicate.Incident(sql.FieldHasSuffix(FieldProviderID, v))
+// TypeIDIsNil applies the IsNil predicate on the "type_id" field.
+func TypeIDIsNil() predicate.Incident {
+	return predicate.Incident(sql.FieldIsNull(FieldTypeID))
 }
 
-// ProviderIDIsNil applies the IsNil predicate on the "provider_id" field.
-func ProviderIDIsNil() predicate.Incident {
-	return predicate.Incident(sql.FieldIsNull(FieldProviderID))
-}
-
-// ProviderIDNotNil applies the NotNil predicate on the "provider_id" field.
-func ProviderIDNotNil() predicate.Incident {
-	return predicate.Incident(sql.FieldNotNull(FieldProviderID))
-}
-
-// ProviderIDEqualFold applies the EqualFold predicate on the "provider_id" field.
-func ProviderIDEqualFold(v string) predicate.Incident {
-	return predicate.Incident(sql.FieldEqualFold(FieldProviderID, v))
-}
-
-// ProviderIDContainsFold applies the ContainsFold predicate on the "provider_id" field.
-func ProviderIDContainsFold(v string) predicate.Incident {
-	return predicate.Incident(sql.FieldContainsFold(FieldProviderID, v))
+// TypeIDNotNil applies the NotNil predicate on the "type_id" field.
+func TypeIDNotNil() predicate.Incident {
+	return predicate.Incident(sql.FieldNotNull(FieldTypeID))
 }
 
 // ChatChannelIDEQ applies the EQ predicate on the "chat_channel_id" field.
@@ -639,66 +699,6 @@ func ChatChannelIDEqualFold(v string) predicate.Incident {
 // ChatChannelIDContainsFold applies the ContainsFold predicate on the "chat_channel_id" field.
 func ChatChannelIDContainsFold(v string) predicate.Incident {
 	return predicate.Incident(sql.FieldContainsFold(FieldChatChannelID, v))
-}
-
-// SeverityIDEQ applies the EQ predicate on the "severity_id" field.
-func SeverityIDEQ(v uuid.UUID) predicate.Incident {
-	return predicate.Incident(sql.FieldEQ(FieldSeverityID, v))
-}
-
-// SeverityIDNEQ applies the NEQ predicate on the "severity_id" field.
-func SeverityIDNEQ(v uuid.UUID) predicate.Incident {
-	return predicate.Incident(sql.FieldNEQ(FieldSeverityID, v))
-}
-
-// SeverityIDIn applies the In predicate on the "severity_id" field.
-func SeverityIDIn(vs ...uuid.UUID) predicate.Incident {
-	return predicate.Incident(sql.FieldIn(FieldSeverityID, vs...))
-}
-
-// SeverityIDNotIn applies the NotIn predicate on the "severity_id" field.
-func SeverityIDNotIn(vs ...uuid.UUID) predicate.Incident {
-	return predicate.Incident(sql.FieldNotIn(FieldSeverityID, vs...))
-}
-
-// SeverityIDIsNil applies the IsNil predicate on the "severity_id" field.
-func SeverityIDIsNil() predicate.Incident {
-	return predicate.Incident(sql.FieldIsNull(FieldSeverityID))
-}
-
-// SeverityIDNotNil applies the NotNil predicate on the "severity_id" field.
-func SeverityIDNotNil() predicate.Incident {
-	return predicate.Incident(sql.FieldNotNull(FieldSeverityID))
-}
-
-// TypeIDEQ applies the EQ predicate on the "type_id" field.
-func TypeIDEQ(v uuid.UUID) predicate.Incident {
-	return predicate.Incident(sql.FieldEQ(FieldTypeID, v))
-}
-
-// TypeIDNEQ applies the NEQ predicate on the "type_id" field.
-func TypeIDNEQ(v uuid.UUID) predicate.Incident {
-	return predicate.Incident(sql.FieldNEQ(FieldTypeID, v))
-}
-
-// TypeIDIn applies the In predicate on the "type_id" field.
-func TypeIDIn(vs ...uuid.UUID) predicate.Incident {
-	return predicate.Incident(sql.FieldIn(FieldTypeID, vs...))
-}
-
-// TypeIDNotIn applies the NotIn predicate on the "type_id" field.
-func TypeIDNotIn(vs ...uuid.UUID) predicate.Incident {
-	return predicate.Incident(sql.FieldNotIn(FieldTypeID, vs...))
-}
-
-// TypeIDIsNil applies the IsNil predicate on the "type_id" field.
-func TypeIDIsNil() predicate.Incident {
-	return predicate.Incident(sql.FieldIsNull(FieldTypeID))
-}
-
-// TypeIDNotNil applies the NotNil predicate on the "type_id" field.
-func TypeIDNotNil() predicate.Incident {
-	return predicate.Incident(sql.FieldNotNull(FieldTypeID))
 }
 
 // HasTenant applies the HasEdge predicate on the "tenant" edge.

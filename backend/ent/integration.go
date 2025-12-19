@@ -10,21 +10,21 @@ import (
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
 	"github.com/google/uuid"
-	"github.com/rezible/rezible/ent/providerconfig"
+	"github.com/rezible/rezible/ent/integration"
 	"github.com/rezible/rezible/ent/tenant"
 )
 
-// ProviderConfig is the model entity for the ProviderConfig schema.
-type ProviderConfig struct {
+// Integration is the model entity for the Integration schema.
+type Integration struct {
 	config `json:"-"`
 	// ID of the ent.
 	ID uuid.UUID `json:"id,omitempty"`
 	// TenantID holds the value of the "tenant_id" field.
 	TenantID int `json:"tenant_id,omitempty"`
-	// ProviderType holds the value of the "provider_type" field.
-	ProviderType providerconfig.ProviderType `json:"provider_type,omitempty"`
-	// ProviderID holds the value of the "provider_id" field.
-	ProviderID string `json:"provider_id,omitempty"`
+	// Name holds the value of the "name" field.
+	Name string `json:"name,omitempty"`
+	// IntegrationType holds the value of the "integration_type" field.
+	IntegrationType integration.IntegrationType `json:"integration_type,omitempty"`
 	// Config holds the value of the "config" field.
 	Config []byte `json:"config,omitempty"`
 	// Enabled holds the value of the "enabled" field.
@@ -32,13 +32,13 @@ type ProviderConfig struct {
 	// UpdatedAt holds the value of the "updated_at" field.
 	UpdatedAt time.Time `json:"updated_at,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
-	// The values are being populated by the ProviderConfigQuery when eager-loading is set.
-	Edges        ProviderConfigEdges `json:"edges"`
+	// The values are being populated by the IntegrationQuery when eager-loading is set.
+	Edges        IntegrationEdges `json:"edges"`
 	selectValues sql.SelectValues
 }
 
-// ProviderConfigEdges holds the relations/edges for other nodes in the graph.
-type ProviderConfigEdges struct {
+// IntegrationEdges holds the relations/edges for other nodes in the graph.
+type IntegrationEdges struct {
 	// Tenant holds the value of the tenant edge.
 	Tenant *Tenant `json:"tenant,omitempty"`
 	// loadedTypes holds the information for reporting if a
@@ -48,7 +48,7 @@ type ProviderConfigEdges struct {
 
 // TenantOrErr returns the Tenant value or an error if the edge
 // was not loaded in eager-loading, or loaded but was not found.
-func (e ProviderConfigEdges) TenantOrErr() (*Tenant, error) {
+func (e IntegrationEdges) TenantOrErr() (*Tenant, error) {
 	if e.Tenant != nil {
 		return e.Tenant, nil
 	} else if e.loadedTypes[0] {
@@ -58,21 +58,21 @@ func (e ProviderConfigEdges) TenantOrErr() (*Tenant, error) {
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
-func (*ProviderConfig) scanValues(columns []string) ([]any, error) {
+func (*Integration) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case providerconfig.FieldConfig:
+		case integration.FieldConfig:
 			values[i] = new([]byte)
-		case providerconfig.FieldEnabled:
+		case integration.FieldEnabled:
 			values[i] = new(sql.NullBool)
-		case providerconfig.FieldTenantID:
+		case integration.FieldTenantID:
 			values[i] = new(sql.NullInt64)
-		case providerconfig.FieldProviderType, providerconfig.FieldProviderID:
+		case integration.FieldName, integration.FieldIntegrationType:
 			values[i] = new(sql.NullString)
-		case providerconfig.FieldUpdatedAt:
+		case integration.FieldUpdatedAt:
 			values[i] = new(sql.NullTime)
-		case providerconfig.FieldID:
+		case integration.FieldID:
 			values[i] = new(uuid.UUID)
 		default:
 			values[i] = new(sql.UnknownType)
@@ -82,50 +82,50 @@ func (*ProviderConfig) scanValues(columns []string) ([]any, error) {
 }
 
 // assignValues assigns the values that were returned from sql.Rows (after scanning)
-// to the ProviderConfig fields.
-func (_m *ProviderConfig) assignValues(columns []string, values []any) error {
+// to the Integration fields.
+func (_m *Integration) assignValues(columns []string, values []any) error {
 	if m, n := len(values), len(columns); m < n {
 		return fmt.Errorf("mismatch number of scan values: %d != %d", m, n)
 	}
 	for i := range columns {
 		switch columns[i] {
-		case providerconfig.FieldID:
+		case integration.FieldID:
 			if value, ok := values[i].(*uuid.UUID); !ok {
 				return fmt.Errorf("unexpected type %T for field id", values[i])
 			} else if value != nil {
 				_m.ID = *value
 			}
-		case providerconfig.FieldTenantID:
+		case integration.FieldTenantID:
 			if value, ok := values[i].(*sql.NullInt64); !ok {
 				return fmt.Errorf("unexpected type %T for field tenant_id", values[i])
 			} else if value.Valid {
 				_m.TenantID = int(value.Int64)
 			}
-		case providerconfig.FieldProviderType:
+		case integration.FieldName:
 			if value, ok := values[i].(*sql.NullString); !ok {
-				return fmt.Errorf("unexpected type %T for field provider_type", values[i])
+				return fmt.Errorf("unexpected type %T for field name", values[i])
 			} else if value.Valid {
-				_m.ProviderType = providerconfig.ProviderType(value.String)
+				_m.Name = value.String
 			}
-		case providerconfig.FieldProviderID:
+		case integration.FieldIntegrationType:
 			if value, ok := values[i].(*sql.NullString); !ok {
-				return fmt.Errorf("unexpected type %T for field provider_id", values[i])
+				return fmt.Errorf("unexpected type %T for field integration_type", values[i])
 			} else if value.Valid {
-				_m.ProviderID = value.String
+				_m.IntegrationType = integration.IntegrationType(value.String)
 			}
-		case providerconfig.FieldConfig:
+		case integration.FieldConfig:
 			if value, ok := values[i].(*[]byte); !ok {
 				return fmt.Errorf("unexpected type %T for field config", values[i])
 			} else if value != nil {
 				_m.Config = *value
 			}
-		case providerconfig.FieldEnabled:
+		case integration.FieldEnabled:
 			if value, ok := values[i].(*sql.NullBool); !ok {
 				return fmt.Errorf("unexpected type %T for field enabled", values[i])
 			} else if value.Valid {
 				_m.Enabled = value.Bool
 			}
-		case providerconfig.FieldUpdatedAt:
+		case integration.FieldUpdatedAt:
 			if value, ok := values[i].(*sql.NullTime); !ok {
 				return fmt.Errorf("unexpected type %T for field updated_at", values[i])
 			} else if value.Valid {
@@ -138,48 +138,48 @@ func (_m *ProviderConfig) assignValues(columns []string, values []any) error {
 	return nil
 }
 
-// Value returns the ent.Value that was dynamically selected and assigned to the ProviderConfig.
+// Value returns the ent.Value that was dynamically selected and assigned to the Integration.
 // This includes values selected through modifiers, order, etc.
-func (_m *ProviderConfig) Value(name string) (ent.Value, error) {
+func (_m *Integration) Value(name string) (ent.Value, error) {
 	return _m.selectValues.Get(name)
 }
 
-// QueryTenant queries the "tenant" edge of the ProviderConfig entity.
-func (_m *ProviderConfig) QueryTenant() *TenantQuery {
-	return NewProviderConfigClient(_m.config).QueryTenant(_m)
+// QueryTenant queries the "tenant" edge of the Integration entity.
+func (_m *Integration) QueryTenant() *TenantQuery {
+	return NewIntegrationClient(_m.config).QueryTenant(_m)
 }
 
-// Update returns a builder for updating this ProviderConfig.
-// Note that you need to call ProviderConfig.Unwrap() before calling this method if this ProviderConfig
+// Update returns a builder for updating this Integration.
+// Note that you need to call Integration.Unwrap() before calling this method if this Integration
 // was returned from a transaction, and the transaction was committed or rolled back.
-func (_m *ProviderConfig) Update() *ProviderConfigUpdateOne {
-	return NewProviderConfigClient(_m.config).UpdateOne(_m)
+func (_m *Integration) Update() *IntegrationUpdateOne {
+	return NewIntegrationClient(_m.config).UpdateOne(_m)
 }
 
-// Unwrap unwraps the ProviderConfig entity that was returned from a transaction after it was closed,
+// Unwrap unwraps the Integration entity that was returned from a transaction after it was closed,
 // so that all future queries will be executed through the driver which created the transaction.
-func (_m *ProviderConfig) Unwrap() *ProviderConfig {
+func (_m *Integration) Unwrap() *Integration {
 	_tx, ok := _m.config.driver.(*txDriver)
 	if !ok {
-		panic("ent: ProviderConfig is not a transactional entity")
+		panic("ent: Integration is not a transactional entity")
 	}
 	_m.config.driver = _tx.drv
 	return _m
 }
 
 // String implements the fmt.Stringer.
-func (_m *ProviderConfig) String() string {
+func (_m *Integration) String() string {
 	var builder strings.Builder
-	builder.WriteString("ProviderConfig(")
+	builder.WriteString("Integration(")
 	builder.WriteString(fmt.Sprintf("id=%v, ", _m.ID))
 	builder.WriteString("tenant_id=")
 	builder.WriteString(fmt.Sprintf("%v", _m.TenantID))
 	builder.WriteString(", ")
-	builder.WriteString("provider_type=")
-	builder.WriteString(fmt.Sprintf("%v", _m.ProviderType))
+	builder.WriteString("name=")
+	builder.WriteString(_m.Name)
 	builder.WriteString(", ")
-	builder.WriteString("provider_id=")
-	builder.WriteString(_m.ProviderID)
+	builder.WriteString("integration_type=")
+	builder.WriteString(fmt.Sprintf("%v", _m.IntegrationType))
 	builder.WriteString(", ")
 	builder.WriteString("config=")
 	builder.WriteString(fmt.Sprintf("%v", _m.Config))
@@ -193,5 +193,5 @@ func (_m *ProviderConfig) String() string {
 	return builder.String()
 }
 
-// ProviderConfigs is a parsable slice of ProviderConfig.
-type ProviderConfigs []*ProviderConfig
+// Integrations is a parsable slice of Integration.
+type Integrations []*Integration

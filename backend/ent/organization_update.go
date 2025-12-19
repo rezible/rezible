@@ -29,16 +29,16 @@ func (_u *OrganizationUpdate) Where(ps ...predicate.Organization) *OrganizationU
 	return _u
 }
 
-// SetProviderID sets the "provider_id" field.
-func (_u *OrganizationUpdate) SetProviderID(v string) *OrganizationUpdate {
-	_u.mutation.SetProviderID(v)
+// SetExternalID sets the "external_id" field.
+func (_u *OrganizationUpdate) SetExternalID(v string) *OrganizationUpdate {
+	_u.mutation.SetExternalID(v)
 	return _u
 }
 
-// SetNillableProviderID sets the "provider_id" field if the given value is not nil.
-func (_u *OrganizationUpdate) SetNillableProviderID(v *string) *OrganizationUpdate {
+// SetNillableExternalID sets the "external_id" field if the given value is not nil.
+func (_u *OrganizationUpdate) SetNillableExternalID(v *string) *OrganizationUpdate {
 	if v != nil {
-		_u.SetProviderID(*v)
+		_u.SetExternalID(*v)
 	}
 	return _u
 }
@@ -111,9 +111,9 @@ func (_u *OrganizationUpdate) ExecX(ctx context.Context) {
 
 // check runs all checks and user-defined validators on the builder.
 func (_u *OrganizationUpdate) check() error {
-	if v, ok := _u.mutation.ProviderID(); ok {
-		if err := organization.ProviderIDValidator(v); err != nil {
-			return &ValidationError{Name: "provider_id", err: fmt.Errorf(`ent: validator failed for field "Organization.provider_id": %w`, err)}
+	if v, ok := _u.mutation.ExternalID(); ok {
+		if err := organization.ExternalIDValidator(v); err != nil {
+			return &ValidationError{Name: "external_id", err: fmt.Errorf(`ent: validator failed for field "Organization.external_id": %w`, err)}
 		}
 	}
 	if _u.mutation.TenantCleared() && len(_u.mutation.TenantIDs()) > 0 {
@@ -140,8 +140,8 @@ func (_u *OrganizationUpdate) sqlSave(ctx context.Context) (_node int, err error
 			}
 		}
 	}
-	if value, ok := _u.mutation.ProviderID(); ok {
-		_spec.SetField(organization.FieldProviderID, field.TypeString, value)
+	if value, ok := _u.mutation.ExternalID(); ok {
+		_spec.SetField(organization.FieldExternalID, field.TypeString, value)
 	}
 	if value, ok := _u.mutation.Name(); ok {
 		_spec.SetField(organization.FieldName, field.TypeString, value)
@@ -174,16 +174,16 @@ type OrganizationUpdateOne struct {
 	modifiers []func(*sql.UpdateBuilder)
 }
 
-// SetProviderID sets the "provider_id" field.
-func (_u *OrganizationUpdateOne) SetProviderID(v string) *OrganizationUpdateOne {
-	_u.mutation.SetProviderID(v)
+// SetExternalID sets the "external_id" field.
+func (_u *OrganizationUpdateOne) SetExternalID(v string) *OrganizationUpdateOne {
+	_u.mutation.SetExternalID(v)
 	return _u
 }
 
-// SetNillableProviderID sets the "provider_id" field if the given value is not nil.
-func (_u *OrganizationUpdateOne) SetNillableProviderID(v *string) *OrganizationUpdateOne {
+// SetNillableExternalID sets the "external_id" field if the given value is not nil.
+func (_u *OrganizationUpdateOne) SetNillableExternalID(v *string) *OrganizationUpdateOne {
 	if v != nil {
-		_u.SetProviderID(*v)
+		_u.SetExternalID(*v)
 	}
 	return _u
 }
@@ -269,9 +269,9 @@ func (_u *OrganizationUpdateOne) ExecX(ctx context.Context) {
 
 // check runs all checks and user-defined validators on the builder.
 func (_u *OrganizationUpdateOne) check() error {
-	if v, ok := _u.mutation.ProviderID(); ok {
-		if err := organization.ProviderIDValidator(v); err != nil {
-			return &ValidationError{Name: "provider_id", err: fmt.Errorf(`ent: validator failed for field "Organization.provider_id": %w`, err)}
+	if v, ok := _u.mutation.ExternalID(); ok {
+		if err := organization.ExternalIDValidator(v); err != nil {
+			return &ValidationError{Name: "external_id", err: fmt.Errorf(`ent: validator failed for field "Organization.external_id": %w`, err)}
 		}
 	}
 	if _u.mutation.TenantCleared() && len(_u.mutation.TenantIDs()) > 0 {
@@ -315,8 +315,8 @@ func (_u *OrganizationUpdateOne) sqlSave(ctx context.Context) (_node *Organizati
 			}
 		}
 	}
-	if value, ok := _u.mutation.ProviderID(); ok {
-		_spec.SetField(organization.FieldProviderID, field.TypeString, value)
+	if value, ok := _u.mutation.ExternalID(); ok {
+		_spec.SetField(organization.FieldExternalID, field.TypeString, value)
 	}
 	if value, ok := _u.mutation.Name(); ok {
 		_spec.SetField(organization.FieldName, field.TypeString, value)

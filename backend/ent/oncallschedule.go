@@ -24,14 +24,14 @@ type OncallSchedule struct {
 	TenantID int `json:"tenant_id,omitempty"`
 	// ArchiveTime holds the value of the "archive_time" field.
 	ArchiveTime time.Time `json:"archive_time,omitempty"`
+	// ExternalID holds the value of the "external_id" field.
+	ExternalID string `json:"external_id,omitempty"`
 	// Name holds the value of the "name" field.
 	Name string `json:"name,omitempty"`
 	// RosterID holds the value of the "roster_id" field.
 	RosterID uuid.UUID `json:"roster_id,omitempty"`
 	// Timezone holds the value of the "timezone" field.
 	Timezone string `json:"timezone,omitempty"`
-	// ProviderID holds the value of the "provider_id" field.
-	ProviderID string `json:"provider_id,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the OncallScheduleQuery when eager-loading is set.
 	Edges        OncallScheduleEdges `json:"edges"`
@@ -89,7 +89,7 @@ func (*OncallSchedule) scanValues(columns []string) ([]any, error) {
 		switch columns[i] {
 		case oncallschedule.FieldTenantID:
 			values[i] = new(sql.NullInt64)
-		case oncallschedule.FieldName, oncallschedule.FieldTimezone, oncallschedule.FieldProviderID:
+		case oncallschedule.FieldExternalID, oncallschedule.FieldName, oncallschedule.FieldTimezone:
 			values[i] = new(sql.NullString)
 		case oncallschedule.FieldArchiveTime:
 			values[i] = new(sql.NullTime)
@@ -128,6 +128,12 @@ func (_m *OncallSchedule) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				_m.ArchiveTime = value.Time
 			}
+		case oncallschedule.FieldExternalID:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field external_id", values[i])
+			} else if value.Valid {
+				_m.ExternalID = value.String
+			}
 		case oncallschedule.FieldName:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field name", values[i])
@@ -145,12 +151,6 @@ func (_m *OncallSchedule) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field timezone", values[i])
 			} else if value.Valid {
 				_m.Timezone = value.String
-			}
-		case oncallschedule.FieldProviderID:
-			if value, ok := values[i].(*sql.NullString); !ok {
-				return fmt.Errorf("unexpected type %T for field provider_id", values[i])
-			} else if value.Valid {
-				_m.ProviderID = value.String
 			}
 		default:
 			_m.selectValues.Set(columns[i], values[i])
@@ -209,6 +209,9 @@ func (_m *OncallSchedule) String() string {
 	builder.WriteString("archive_time=")
 	builder.WriteString(_m.ArchiveTime.Format(time.ANSIC))
 	builder.WriteString(", ")
+	builder.WriteString("external_id=")
+	builder.WriteString(_m.ExternalID)
+	builder.WriteString(", ")
 	builder.WriteString("name=")
 	builder.WriteString(_m.Name)
 	builder.WriteString(", ")
@@ -217,9 +220,6 @@ func (_m *OncallSchedule) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("timezone=")
 	builder.WriteString(_m.Timezone)
-	builder.WriteString(", ")
-	builder.WriteString("provider_id=")
-	builder.WriteString(_m.ProviderID)
 	builder.WriteByte(')')
 	return builder.String()
 }

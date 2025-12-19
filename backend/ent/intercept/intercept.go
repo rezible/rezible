@@ -34,6 +34,7 @@ import (
 	"github.com/rezible/rezible/ent/incidentseverity"
 	"github.com/rezible/rezible/ent/incidenttag"
 	"github.com/rezible/rezible/ent/incidenttype"
+	"github.com/rezible/rezible/ent/integration"
 	"github.com/rezible/rezible/ent/meetingschedule"
 	"github.com/rezible/rezible/ent/meetingsession"
 	"github.com/rezible/rezible/ent/oncallhandovertemplate"
@@ -47,7 +48,6 @@ import (
 	"github.com/rezible/rezible/ent/organization"
 	"github.com/rezible/rezible/ent/playbook"
 	"github.com/rezible/rezible/ent/predicate"
-	"github.com/rezible/rezible/ent/providerconfig"
 	"github.com/rezible/rezible/ent/providersynchistory"
 	"github.com/rezible/rezible/ent/retrospective"
 	"github.com/rezible/rezible/ent/retrospectivecomment"
@@ -829,6 +829,33 @@ func (f TraverseIncidentType) Traverse(ctx context.Context, q ent.Query) error {
 	return fmt.Errorf("unexpected query type %T. expect *ent.IncidentTypeQuery", q)
 }
 
+// The IntegrationFunc type is an adapter to allow the use of ordinary function as a Querier.
+type IntegrationFunc func(context.Context, *ent.IntegrationQuery) (ent.Value, error)
+
+// Query calls f(ctx, q).
+func (f IntegrationFunc) Query(ctx context.Context, q ent.Query) (ent.Value, error) {
+	if q, ok := q.(*ent.IntegrationQuery); ok {
+		return f(ctx, q)
+	}
+	return nil, fmt.Errorf("unexpected query type %T. expect *ent.IntegrationQuery", q)
+}
+
+// The TraverseIntegration type is an adapter to allow the use of ordinary function as Traverser.
+type TraverseIntegration func(context.Context, *ent.IntegrationQuery) error
+
+// Intercept is a dummy implementation of Intercept that returns the next Querier in the pipeline.
+func (f TraverseIntegration) Intercept(next ent.Querier) ent.Querier {
+	return next
+}
+
+// Traverse calls f(ctx, q).
+func (f TraverseIntegration) Traverse(ctx context.Context, q ent.Query) error {
+	if q, ok := q.(*ent.IntegrationQuery); ok {
+		return f(ctx, q)
+	}
+	return fmt.Errorf("unexpected query type %T. expect *ent.IntegrationQuery", q)
+}
+
 // The MeetingScheduleFunc type is an adapter to allow the use of ordinary function as a Querier.
 type MeetingScheduleFunc func(context.Context, *ent.MeetingScheduleQuery) (ent.Value, error)
 
@@ -1151,33 +1178,6 @@ func (f TraversePlaybook) Traverse(ctx context.Context, q ent.Query) error {
 		return f(ctx, q)
 	}
 	return fmt.Errorf("unexpected query type %T. expect *ent.PlaybookQuery", q)
-}
-
-// The ProviderConfigFunc type is an adapter to allow the use of ordinary function as a Querier.
-type ProviderConfigFunc func(context.Context, *ent.ProviderConfigQuery) (ent.Value, error)
-
-// Query calls f(ctx, q).
-func (f ProviderConfigFunc) Query(ctx context.Context, q ent.Query) (ent.Value, error) {
-	if q, ok := q.(*ent.ProviderConfigQuery); ok {
-		return f(ctx, q)
-	}
-	return nil, fmt.Errorf("unexpected query type %T. expect *ent.ProviderConfigQuery", q)
-}
-
-// The TraverseProviderConfig type is an adapter to allow the use of ordinary function as Traverser.
-type TraverseProviderConfig func(context.Context, *ent.ProviderConfigQuery) error
-
-// Intercept is a dummy implementation of Intercept that returns the next Querier in the pipeline.
-func (f TraverseProviderConfig) Intercept(next ent.Querier) ent.Querier {
-	return next
-}
-
-// Traverse calls f(ctx, q).
-func (f TraverseProviderConfig) Traverse(ctx context.Context, q ent.Query) error {
-	if q, ok := q.(*ent.ProviderConfigQuery); ok {
-		return f(ctx, q)
-	}
-	return fmt.Errorf("unexpected query type %T. expect *ent.ProviderConfigQuery", q)
 }
 
 // The ProviderSyncHistoryFunc type is an adapter to allow the use of ordinary function as a Querier.
@@ -1802,6 +1802,8 @@ func NewQuery(q ent.Query) (Query, error) {
 		return &query[*ent.IncidentTagQuery, predicate.IncidentTag, incidenttag.OrderOption]{typ: ent.TypeIncidentTag, tq: q}, nil
 	case *ent.IncidentTypeQuery:
 		return &query[*ent.IncidentTypeQuery, predicate.IncidentType, incidenttype.OrderOption]{typ: ent.TypeIncidentType, tq: q}, nil
+	case *ent.IntegrationQuery:
+		return &query[*ent.IntegrationQuery, predicate.Integration, integration.OrderOption]{typ: ent.TypeIntegration, tq: q}, nil
 	case *ent.MeetingScheduleQuery:
 		return &query[*ent.MeetingScheduleQuery, predicate.MeetingSchedule, meetingschedule.OrderOption]{typ: ent.TypeMeetingSchedule, tq: q}, nil
 	case *ent.MeetingSessionQuery:
@@ -1826,8 +1828,6 @@ func NewQuery(q ent.Query) (Query, error) {
 		return &query[*ent.OrganizationQuery, predicate.Organization, organization.OrderOption]{typ: ent.TypeOrganization, tq: q}, nil
 	case *ent.PlaybookQuery:
 		return &query[*ent.PlaybookQuery, predicate.Playbook, playbook.OrderOption]{typ: ent.TypePlaybook, tq: q}, nil
-	case *ent.ProviderConfigQuery:
-		return &query[*ent.ProviderConfigQuery, predicate.ProviderConfig, providerconfig.OrderOption]{typ: ent.TypeProviderConfig, tq: q}, nil
 	case *ent.ProviderSyncHistoryQuery:
 		return &query[*ent.ProviderSyncHistoryQuery, predicate.ProviderSyncHistory, providersynchistory.OrderOption]{typ: ent.TypeProviderSyncHistory, tq: q}, nil
 	case *ent.RetrospectiveQuery:

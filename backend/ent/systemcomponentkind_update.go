@@ -31,23 +31,23 @@ func (_u *SystemComponentKindUpdate) Where(ps ...predicate.SystemComponentKind) 
 	return _u
 }
 
-// SetProviderID sets the "provider_id" field.
-func (_u *SystemComponentKindUpdate) SetProviderID(v string) *SystemComponentKindUpdate {
-	_u.mutation.SetProviderID(v)
+// SetExternalID sets the "external_id" field.
+func (_u *SystemComponentKindUpdate) SetExternalID(v string) *SystemComponentKindUpdate {
+	_u.mutation.SetExternalID(v)
 	return _u
 }
 
-// SetNillableProviderID sets the "provider_id" field if the given value is not nil.
-func (_u *SystemComponentKindUpdate) SetNillableProviderID(v *string) *SystemComponentKindUpdate {
+// SetNillableExternalID sets the "external_id" field if the given value is not nil.
+func (_u *SystemComponentKindUpdate) SetNillableExternalID(v *string) *SystemComponentKindUpdate {
 	if v != nil {
-		_u.SetProviderID(*v)
+		_u.SetExternalID(*v)
 	}
 	return _u
 }
 
-// ClearProviderID clears the value of the "provider_id" field.
-func (_u *SystemComponentKindUpdate) ClearProviderID() *SystemComponentKindUpdate {
-	_u.mutation.ClearProviderID()
+// ClearExternalID clears the value of the "external_id" field.
+func (_u *SystemComponentKindUpdate) ClearExternalID() *SystemComponentKindUpdate {
+	_u.mutation.ClearExternalID()
 	return _u
 }
 
@@ -193,11 +193,11 @@ func (_u *SystemComponentKindUpdate) sqlSave(ctx context.Context) (_node int, er
 			}
 		}
 	}
-	if value, ok := _u.mutation.ProviderID(); ok {
-		_spec.SetField(systemcomponentkind.FieldProviderID, field.TypeString, value)
+	if value, ok := _u.mutation.ExternalID(); ok {
+		_spec.SetField(systemcomponentkind.FieldExternalID, field.TypeString, value)
 	}
-	if _u.mutation.ProviderIDCleared() {
-		_spec.ClearField(systemcomponentkind.FieldProviderID, field.TypeString)
+	if _u.mutation.ExternalIDCleared() {
+		_spec.ClearField(systemcomponentkind.FieldExternalID, field.TypeString)
 	}
 	if value, ok := _u.mutation.Label(); ok {
 		_spec.SetField(systemcomponentkind.FieldLabel, field.TypeString, value)
@@ -278,23 +278,23 @@ type SystemComponentKindUpdateOne struct {
 	modifiers []func(*sql.UpdateBuilder)
 }
 
-// SetProviderID sets the "provider_id" field.
-func (_u *SystemComponentKindUpdateOne) SetProviderID(v string) *SystemComponentKindUpdateOne {
-	_u.mutation.SetProviderID(v)
+// SetExternalID sets the "external_id" field.
+func (_u *SystemComponentKindUpdateOne) SetExternalID(v string) *SystemComponentKindUpdateOne {
+	_u.mutation.SetExternalID(v)
 	return _u
 }
 
-// SetNillableProviderID sets the "provider_id" field if the given value is not nil.
-func (_u *SystemComponentKindUpdateOne) SetNillableProviderID(v *string) *SystemComponentKindUpdateOne {
+// SetNillableExternalID sets the "external_id" field if the given value is not nil.
+func (_u *SystemComponentKindUpdateOne) SetNillableExternalID(v *string) *SystemComponentKindUpdateOne {
 	if v != nil {
-		_u.SetProviderID(*v)
+		_u.SetExternalID(*v)
 	}
 	return _u
 }
 
-// ClearProviderID clears the value of the "provider_id" field.
-func (_u *SystemComponentKindUpdateOne) ClearProviderID() *SystemComponentKindUpdateOne {
-	_u.mutation.ClearProviderID()
+// ClearExternalID clears the value of the "external_id" field.
+func (_u *SystemComponentKindUpdateOne) ClearExternalID() *SystemComponentKindUpdateOne {
+	_u.mutation.ClearExternalID()
 	return _u
 }
 
@@ -470,11 +470,11 @@ func (_u *SystemComponentKindUpdateOne) sqlSave(ctx context.Context) (_node *Sys
 			}
 		}
 	}
-	if value, ok := _u.mutation.ProviderID(); ok {
-		_spec.SetField(systemcomponentkind.FieldProviderID, field.TypeString, value)
+	if value, ok := _u.mutation.ExternalID(); ok {
+		_spec.SetField(systemcomponentkind.FieldExternalID, field.TypeString, value)
 	}
-	if _u.mutation.ProviderIDCleared() {
-		_spec.ClearField(systemcomponentkind.FieldProviderID, field.TypeString)
+	if _u.mutation.ExternalIDCleared() {
+		_spec.ClearField(systemcomponentkind.FieldExternalID, field.TypeString)
 	}
 	if value, ok := _u.mutation.Label(); ok {
 		_spec.SetField(systemcomponentkind.FieldLabel, field.TypeString, value)

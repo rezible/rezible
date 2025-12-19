@@ -32,6 +32,26 @@ func (_u *TeamUpdate) Where(ps ...predicate.Team) *TeamUpdate {
 	return _u
 }
 
+// SetExternalID sets the "external_id" field.
+func (_u *TeamUpdate) SetExternalID(v string) *TeamUpdate {
+	_u.mutation.SetExternalID(v)
+	return _u
+}
+
+// SetNillableExternalID sets the "external_id" field if the given value is not nil.
+func (_u *TeamUpdate) SetNillableExternalID(v *string) *TeamUpdate {
+	if v != nil {
+		_u.SetExternalID(*v)
+	}
+	return _u
+}
+
+// ClearExternalID clears the value of the "external_id" field.
+func (_u *TeamUpdate) ClearExternalID() *TeamUpdate {
+	_u.mutation.ClearExternalID()
+	return _u
+}
+
 // SetSlug sets the "slug" field.
 func (_u *TeamUpdate) SetSlug(v string) *TeamUpdate {
 	_u.mutation.SetSlug(v)
@@ -43,26 +63,6 @@ func (_u *TeamUpdate) SetNillableSlug(v *string) *TeamUpdate {
 	if v != nil {
 		_u.SetSlug(*v)
 	}
-	return _u
-}
-
-// SetProviderID sets the "provider_id" field.
-func (_u *TeamUpdate) SetProviderID(v string) *TeamUpdate {
-	_u.mutation.SetProviderID(v)
-	return _u
-}
-
-// SetNillableProviderID sets the "provider_id" field if the given value is not nil.
-func (_u *TeamUpdate) SetNillableProviderID(v *string) *TeamUpdate {
-	if v != nil {
-		_u.SetProviderID(*v)
-	}
-	return _u
-}
-
-// ClearProviderID clears the value of the "provider_id" field.
-func (_u *TeamUpdate) ClearProviderID() *TeamUpdate {
-	_u.mutation.ClearProviderID()
 	return _u
 }
 
@@ -286,14 +286,14 @@ func (_u *TeamUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 			}
 		}
 	}
+	if value, ok := _u.mutation.ExternalID(); ok {
+		_spec.SetField(team.FieldExternalID, field.TypeString, value)
+	}
+	if _u.mutation.ExternalIDCleared() {
+		_spec.ClearField(team.FieldExternalID, field.TypeString)
+	}
 	if value, ok := _u.mutation.Slug(); ok {
 		_spec.SetField(team.FieldSlug, field.TypeString, value)
-	}
-	if value, ok := _u.mutation.ProviderID(); ok {
-		_spec.SetField(team.FieldProviderID, field.TypeString, value)
-	}
-	if _u.mutation.ProviderIDCleared() {
-		_spec.ClearField(team.FieldProviderID, field.TypeString)
 	}
 	if value, ok := _u.mutation.Name(); ok {
 		_spec.SetField(team.FieldName, field.TypeString, value)
@@ -467,6 +467,26 @@ type TeamUpdateOne struct {
 	modifiers []func(*sql.UpdateBuilder)
 }
 
+// SetExternalID sets the "external_id" field.
+func (_u *TeamUpdateOne) SetExternalID(v string) *TeamUpdateOne {
+	_u.mutation.SetExternalID(v)
+	return _u
+}
+
+// SetNillableExternalID sets the "external_id" field if the given value is not nil.
+func (_u *TeamUpdateOne) SetNillableExternalID(v *string) *TeamUpdateOne {
+	if v != nil {
+		_u.SetExternalID(*v)
+	}
+	return _u
+}
+
+// ClearExternalID clears the value of the "external_id" field.
+func (_u *TeamUpdateOne) ClearExternalID() *TeamUpdateOne {
+	_u.mutation.ClearExternalID()
+	return _u
+}
+
 // SetSlug sets the "slug" field.
 func (_u *TeamUpdateOne) SetSlug(v string) *TeamUpdateOne {
 	_u.mutation.SetSlug(v)
@@ -478,26 +498,6 @@ func (_u *TeamUpdateOne) SetNillableSlug(v *string) *TeamUpdateOne {
 	if v != nil {
 		_u.SetSlug(*v)
 	}
-	return _u
-}
-
-// SetProviderID sets the "provider_id" field.
-func (_u *TeamUpdateOne) SetProviderID(v string) *TeamUpdateOne {
-	_u.mutation.SetProviderID(v)
-	return _u
-}
-
-// SetNillableProviderID sets the "provider_id" field if the given value is not nil.
-func (_u *TeamUpdateOne) SetNillableProviderID(v *string) *TeamUpdateOne {
-	if v != nil {
-		_u.SetProviderID(*v)
-	}
-	return _u
-}
-
-// ClearProviderID clears the value of the "provider_id" field.
-func (_u *TeamUpdateOne) ClearProviderID() *TeamUpdateOne {
-	_u.mutation.ClearProviderID()
 	return _u
 }
 
@@ -751,14 +751,14 @@ func (_u *TeamUpdateOne) sqlSave(ctx context.Context) (_node *Team, err error) {
 			}
 		}
 	}
+	if value, ok := _u.mutation.ExternalID(); ok {
+		_spec.SetField(team.FieldExternalID, field.TypeString, value)
+	}
+	if _u.mutation.ExternalIDCleared() {
+		_spec.ClearField(team.FieldExternalID, field.TypeString)
+	}
 	if value, ok := _u.mutation.Slug(); ok {
 		_spec.SetField(team.FieldSlug, field.TypeString, value)
-	}
-	if value, ok := _u.mutation.ProviderID(); ok {
-		_spec.SetField(team.FieldProviderID, field.TypeString, value)
-	}
-	if _u.mutation.ProviderIDCleared() {
-		_spec.ClearField(team.FieldProviderID, field.TypeString)
 	}
 	if value, ok := _u.mutation.Name(); ok {
 		_spec.SetField(team.FieldName, field.TypeString, value)

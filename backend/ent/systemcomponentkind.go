@@ -21,8 +21,8 @@ type SystemComponentKind struct {
 	ID uuid.UUID `json:"id,omitempty"`
 	// TenantID holds the value of the "tenant_id" field.
 	TenantID int `json:"tenant_id,omitempty"`
-	// ProviderID holds the value of the "provider_id" field.
-	ProviderID string `json:"provider_id,omitempty"`
+	// ExternalID holds the value of the "external_id" field.
+	ExternalID string `json:"external_id,omitempty"`
 	// Label holds the value of the "label" field.
 	Label string `json:"label,omitempty"`
 	// Description holds the value of the "description" field.
@@ -73,7 +73,7 @@ func (*SystemComponentKind) scanValues(columns []string) ([]any, error) {
 		switch columns[i] {
 		case systemcomponentkind.FieldTenantID:
 			values[i] = new(sql.NullInt64)
-		case systemcomponentkind.FieldProviderID, systemcomponentkind.FieldLabel, systemcomponentkind.FieldDescription:
+		case systemcomponentkind.FieldExternalID, systemcomponentkind.FieldLabel, systemcomponentkind.FieldDescription:
 			values[i] = new(sql.NullString)
 		case systemcomponentkind.FieldCreatedAt:
 			values[i] = new(sql.NullTime)
@@ -106,11 +106,11 @@ func (_m *SystemComponentKind) assignValues(columns []string, values []any) erro
 			} else if value.Valid {
 				_m.TenantID = int(value.Int64)
 			}
-		case systemcomponentkind.FieldProviderID:
+		case systemcomponentkind.FieldExternalID:
 			if value, ok := values[i].(*sql.NullString); !ok {
-				return fmt.Errorf("unexpected type %T for field provider_id", values[i])
+				return fmt.Errorf("unexpected type %T for field external_id", values[i])
 			} else if value.Valid {
-				_m.ProviderID = value.String
+				_m.ExternalID = value.String
 			}
 		case systemcomponentkind.FieldLabel:
 			if value, ok := values[i].(*sql.NullString); !ok {
@@ -179,8 +179,8 @@ func (_m *SystemComponentKind) String() string {
 	builder.WriteString("tenant_id=")
 	builder.WriteString(fmt.Sprintf("%v", _m.TenantID))
 	builder.WriteString(", ")
-	builder.WriteString("provider_id=")
-	builder.WriteString(_m.ProviderID)
+	builder.WriteString("external_id=")
+	builder.WriteString(_m.ExternalID)
 	builder.WriteString(", ")
 	builder.WriteString("label=")
 	builder.WriteString(_m.Label)

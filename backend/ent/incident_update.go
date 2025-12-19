@@ -43,6 +43,26 @@ func (_u *IncidentUpdate) Where(ps ...predicate.Incident) *IncidentUpdate {
 	return _u
 }
 
+// SetExternalID sets the "external_id" field.
+func (_u *IncidentUpdate) SetExternalID(v string) *IncidentUpdate {
+	_u.mutation.SetExternalID(v)
+	return _u
+}
+
+// SetNillableExternalID sets the "external_id" field if the given value is not nil.
+func (_u *IncidentUpdate) SetNillableExternalID(v *string) *IncidentUpdate {
+	if v != nil {
+		_u.SetExternalID(*v)
+	}
+	return _u
+}
+
+// ClearExternalID clears the value of the "external_id" field.
+func (_u *IncidentUpdate) ClearExternalID() *IncidentUpdate {
+	_u.mutation.ClearExternalID()
+	return _u
+}
+
 // SetSlug sets the "slug" field.
 func (_u *IncidentUpdate) SetSlug(v string) *IncidentUpdate {
 	_u.mutation.SetSlug(v)
@@ -159,46 +179,6 @@ func (_u *IncidentUpdate) ClearClosedAt() *IncidentUpdate {
 	return _u
 }
 
-// SetProviderID sets the "provider_id" field.
-func (_u *IncidentUpdate) SetProviderID(v string) *IncidentUpdate {
-	_u.mutation.SetProviderID(v)
-	return _u
-}
-
-// SetNillableProviderID sets the "provider_id" field if the given value is not nil.
-func (_u *IncidentUpdate) SetNillableProviderID(v *string) *IncidentUpdate {
-	if v != nil {
-		_u.SetProviderID(*v)
-	}
-	return _u
-}
-
-// ClearProviderID clears the value of the "provider_id" field.
-func (_u *IncidentUpdate) ClearProviderID() *IncidentUpdate {
-	_u.mutation.ClearProviderID()
-	return _u
-}
-
-// SetChatChannelID sets the "chat_channel_id" field.
-func (_u *IncidentUpdate) SetChatChannelID(v string) *IncidentUpdate {
-	_u.mutation.SetChatChannelID(v)
-	return _u
-}
-
-// SetNillableChatChannelID sets the "chat_channel_id" field if the given value is not nil.
-func (_u *IncidentUpdate) SetNillableChatChannelID(v *string) *IncidentUpdate {
-	if v != nil {
-		_u.SetChatChannelID(*v)
-	}
-	return _u
-}
-
-// ClearChatChannelID clears the value of the "chat_channel_id" field.
-func (_u *IncidentUpdate) ClearChatChannelID() *IncidentUpdate {
-	_u.mutation.ClearChatChannelID()
-	return _u
-}
-
 // SetSeverityID sets the "severity_id" field.
 func (_u *IncidentUpdate) SetSeverityID(v uuid.UUID) *IncidentUpdate {
 	_u.mutation.SetSeverityID(v)
@@ -236,6 +216,26 @@ func (_u *IncidentUpdate) SetNillableTypeID(v *uuid.UUID) *IncidentUpdate {
 // ClearTypeID clears the value of the "type_id" field.
 func (_u *IncidentUpdate) ClearTypeID() *IncidentUpdate {
 	_u.mutation.ClearTypeID()
+	return _u
+}
+
+// SetChatChannelID sets the "chat_channel_id" field.
+func (_u *IncidentUpdate) SetChatChannelID(v string) *IncidentUpdate {
+	_u.mutation.SetChatChannelID(v)
+	return _u
+}
+
+// SetNillableChatChannelID sets the "chat_channel_id" field if the given value is not nil.
+func (_u *IncidentUpdate) SetNillableChatChannelID(v *string) *IncidentUpdate {
+	if v != nil {
+		_u.SetChatChannelID(*v)
+	}
+	return _u
+}
+
+// ClearChatChannelID clears the value of the "chat_channel_id" field.
+func (_u *IncidentUpdate) ClearChatChannelID() *IncidentUpdate {
+	_u.mutation.ClearChatChannelID()
 	return _u
 }
 
@@ -776,6 +776,12 @@ func (_u *IncidentUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 			}
 		}
 	}
+	if value, ok := _u.mutation.ExternalID(); ok {
+		_spec.SetField(incident.FieldExternalID, field.TypeString, value)
+	}
+	if _u.mutation.ExternalIDCleared() {
+		_spec.ClearField(incident.FieldExternalID, field.TypeString)
+	}
 	if value, ok := _u.mutation.Slug(); ok {
 		_spec.SetField(incident.FieldSlug, field.TypeString, value)
 	}
@@ -805,12 +811,6 @@ func (_u *IncidentUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	}
 	if _u.mutation.ClosedAtCleared() {
 		_spec.ClearField(incident.FieldClosedAt, field.TypeTime)
-	}
-	if value, ok := _u.mutation.ProviderID(); ok {
-		_spec.SetField(incident.FieldProviderID, field.TypeString, value)
-	}
-	if _u.mutation.ProviderIDCleared() {
-		_spec.ClearField(incident.FieldProviderID, field.TypeString)
 	}
 	if value, ok := _u.mutation.ChatChannelID(); ok {
 		_spec.SetField(incident.FieldChatChannelID, field.TypeString, value)
@@ -1488,6 +1488,26 @@ type IncidentUpdateOne struct {
 	modifiers []func(*sql.UpdateBuilder)
 }
 
+// SetExternalID sets the "external_id" field.
+func (_u *IncidentUpdateOne) SetExternalID(v string) *IncidentUpdateOne {
+	_u.mutation.SetExternalID(v)
+	return _u
+}
+
+// SetNillableExternalID sets the "external_id" field if the given value is not nil.
+func (_u *IncidentUpdateOne) SetNillableExternalID(v *string) *IncidentUpdateOne {
+	if v != nil {
+		_u.SetExternalID(*v)
+	}
+	return _u
+}
+
+// ClearExternalID clears the value of the "external_id" field.
+func (_u *IncidentUpdateOne) ClearExternalID() *IncidentUpdateOne {
+	_u.mutation.ClearExternalID()
+	return _u
+}
+
 // SetSlug sets the "slug" field.
 func (_u *IncidentUpdateOne) SetSlug(v string) *IncidentUpdateOne {
 	_u.mutation.SetSlug(v)
@@ -1604,46 +1624,6 @@ func (_u *IncidentUpdateOne) ClearClosedAt() *IncidentUpdateOne {
 	return _u
 }
 
-// SetProviderID sets the "provider_id" field.
-func (_u *IncidentUpdateOne) SetProviderID(v string) *IncidentUpdateOne {
-	_u.mutation.SetProviderID(v)
-	return _u
-}
-
-// SetNillableProviderID sets the "provider_id" field if the given value is not nil.
-func (_u *IncidentUpdateOne) SetNillableProviderID(v *string) *IncidentUpdateOne {
-	if v != nil {
-		_u.SetProviderID(*v)
-	}
-	return _u
-}
-
-// ClearProviderID clears the value of the "provider_id" field.
-func (_u *IncidentUpdateOne) ClearProviderID() *IncidentUpdateOne {
-	_u.mutation.ClearProviderID()
-	return _u
-}
-
-// SetChatChannelID sets the "chat_channel_id" field.
-func (_u *IncidentUpdateOne) SetChatChannelID(v string) *IncidentUpdateOne {
-	_u.mutation.SetChatChannelID(v)
-	return _u
-}
-
-// SetNillableChatChannelID sets the "chat_channel_id" field if the given value is not nil.
-func (_u *IncidentUpdateOne) SetNillableChatChannelID(v *string) *IncidentUpdateOne {
-	if v != nil {
-		_u.SetChatChannelID(*v)
-	}
-	return _u
-}
-
-// ClearChatChannelID clears the value of the "chat_channel_id" field.
-func (_u *IncidentUpdateOne) ClearChatChannelID() *IncidentUpdateOne {
-	_u.mutation.ClearChatChannelID()
-	return _u
-}
-
 // SetSeverityID sets the "severity_id" field.
 func (_u *IncidentUpdateOne) SetSeverityID(v uuid.UUID) *IncidentUpdateOne {
 	_u.mutation.SetSeverityID(v)
@@ -1681,6 +1661,26 @@ func (_u *IncidentUpdateOne) SetNillableTypeID(v *uuid.UUID) *IncidentUpdateOne 
 // ClearTypeID clears the value of the "type_id" field.
 func (_u *IncidentUpdateOne) ClearTypeID() *IncidentUpdateOne {
 	_u.mutation.ClearTypeID()
+	return _u
+}
+
+// SetChatChannelID sets the "chat_channel_id" field.
+func (_u *IncidentUpdateOne) SetChatChannelID(v string) *IncidentUpdateOne {
+	_u.mutation.SetChatChannelID(v)
+	return _u
+}
+
+// SetNillableChatChannelID sets the "chat_channel_id" field if the given value is not nil.
+func (_u *IncidentUpdateOne) SetNillableChatChannelID(v *string) *IncidentUpdateOne {
+	if v != nil {
+		_u.SetChatChannelID(*v)
+	}
+	return _u
+}
+
+// ClearChatChannelID clears the value of the "chat_channel_id" field.
+func (_u *IncidentUpdateOne) ClearChatChannelID() *IncidentUpdateOne {
+	_u.mutation.ClearChatChannelID()
 	return _u
 }
 
@@ -2251,6 +2251,12 @@ func (_u *IncidentUpdateOne) sqlSave(ctx context.Context) (_node *Incident, err 
 			}
 		}
 	}
+	if value, ok := _u.mutation.ExternalID(); ok {
+		_spec.SetField(incident.FieldExternalID, field.TypeString, value)
+	}
+	if _u.mutation.ExternalIDCleared() {
+		_spec.ClearField(incident.FieldExternalID, field.TypeString)
+	}
 	if value, ok := _u.mutation.Slug(); ok {
 		_spec.SetField(incident.FieldSlug, field.TypeString, value)
 	}
@@ -2280,12 +2286,6 @@ func (_u *IncidentUpdateOne) sqlSave(ctx context.Context) (_node *Incident, err 
 	}
 	if _u.mutation.ClosedAtCleared() {
 		_spec.ClearField(incident.FieldClosedAt, field.TypeTime)
-	}
-	if value, ok := _u.mutation.ProviderID(); ok {
-		_spec.SetField(incident.FieldProviderID, field.TypeString, value)
-	}
-	if _u.mutation.ProviderIDCleared() {
-		_spec.ClearField(incident.FieldProviderID, field.TypeString)
 	}
 	if value, ok := _u.mutation.ChatChannelID(); ok {
 		_spec.SetField(incident.FieldChatChannelID, field.TypeString, value)

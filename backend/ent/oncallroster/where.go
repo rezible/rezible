@@ -66,6 +66,11 @@ func ArchiveTime(v time.Time) predicate.OncallRoster {
 	return predicate.OncallRoster(sql.FieldEQ(FieldArchiveTime, v))
 }
 
+// ExternalID applies equality check predicate on the "external_id" field. It's identical to ExternalIDEQ.
+func ExternalID(v string) predicate.OncallRoster {
+	return predicate.OncallRoster(sql.FieldEQ(FieldExternalID, v))
+}
+
 // Name applies equality check predicate on the "name" field. It's identical to NameEQ.
 func Name(v string) predicate.OncallRoster {
 	return predicate.OncallRoster(sql.FieldEQ(FieldName, v))
@@ -74,11 +79,6 @@ func Name(v string) predicate.OncallRoster {
 // Slug applies equality check predicate on the "slug" field. It's identical to SlugEQ.
 func Slug(v string) predicate.OncallRoster {
 	return predicate.OncallRoster(sql.FieldEQ(FieldSlug, v))
-}
-
-// ProviderID applies equality check predicate on the "provider_id" field. It's identical to ProviderIDEQ.
-func ProviderID(v string) predicate.OncallRoster {
-	return predicate.OncallRoster(sql.FieldEQ(FieldProviderID, v))
 }
 
 // Timezone applies equality check predicate on the "timezone" field. It's identical to TimezoneEQ.
@@ -169,6 +169,81 @@ func ArchiveTimeIsNil() predicate.OncallRoster {
 // ArchiveTimeNotNil applies the NotNil predicate on the "archive_time" field.
 func ArchiveTimeNotNil() predicate.OncallRoster {
 	return predicate.OncallRoster(sql.FieldNotNull(FieldArchiveTime))
+}
+
+// ExternalIDEQ applies the EQ predicate on the "external_id" field.
+func ExternalIDEQ(v string) predicate.OncallRoster {
+	return predicate.OncallRoster(sql.FieldEQ(FieldExternalID, v))
+}
+
+// ExternalIDNEQ applies the NEQ predicate on the "external_id" field.
+func ExternalIDNEQ(v string) predicate.OncallRoster {
+	return predicate.OncallRoster(sql.FieldNEQ(FieldExternalID, v))
+}
+
+// ExternalIDIn applies the In predicate on the "external_id" field.
+func ExternalIDIn(vs ...string) predicate.OncallRoster {
+	return predicate.OncallRoster(sql.FieldIn(FieldExternalID, vs...))
+}
+
+// ExternalIDNotIn applies the NotIn predicate on the "external_id" field.
+func ExternalIDNotIn(vs ...string) predicate.OncallRoster {
+	return predicate.OncallRoster(sql.FieldNotIn(FieldExternalID, vs...))
+}
+
+// ExternalIDGT applies the GT predicate on the "external_id" field.
+func ExternalIDGT(v string) predicate.OncallRoster {
+	return predicate.OncallRoster(sql.FieldGT(FieldExternalID, v))
+}
+
+// ExternalIDGTE applies the GTE predicate on the "external_id" field.
+func ExternalIDGTE(v string) predicate.OncallRoster {
+	return predicate.OncallRoster(sql.FieldGTE(FieldExternalID, v))
+}
+
+// ExternalIDLT applies the LT predicate on the "external_id" field.
+func ExternalIDLT(v string) predicate.OncallRoster {
+	return predicate.OncallRoster(sql.FieldLT(FieldExternalID, v))
+}
+
+// ExternalIDLTE applies the LTE predicate on the "external_id" field.
+func ExternalIDLTE(v string) predicate.OncallRoster {
+	return predicate.OncallRoster(sql.FieldLTE(FieldExternalID, v))
+}
+
+// ExternalIDContains applies the Contains predicate on the "external_id" field.
+func ExternalIDContains(v string) predicate.OncallRoster {
+	return predicate.OncallRoster(sql.FieldContains(FieldExternalID, v))
+}
+
+// ExternalIDHasPrefix applies the HasPrefix predicate on the "external_id" field.
+func ExternalIDHasPrefix(v string) predicate.OncallRoster {
+	return predicate.OncallRoster(sql.FieldHasPrefix(FieldExternalID, v))
+}
+
+// ExternalIDHasSuffix applies the HasSuffix predicate on the "external_id" field.
+func ExternalIDHasSuffix(v string) predicate.OncallRoster {
+	return predicate.OncallRoster(sql.FieldHasSuffix(FieldExternalID, v))
+}
+
+// ExternalIDIsNil applies the IsNil predicate on the "external_id" field.
+func ExternalIDIsNil() predicate.OncallRoster {
+	return predicate.OncallRoster(sql.FieldIsNull(FieldExternalID))
+}
+
+// ExternalIDNotNil applies the NotNil predicate on the "external_id" field.
+func ExternalIDNotNil() predicate.OncallRoster {
+	return predicate.OncallRoster(sql.FieldNotNull(FieldExternalID))
+}
+
+// ExternalIDEqualFold applies the EqualFold predicate on the "external_id" field.
+func ExternalIDEqualFold(v string) predicate.OncallRoster {
+	return predicate.OncallRoster(sql.FieldEqualFold(FieldExternalID, v))
+}
+
+// ExternalIDContainsFold applies the ContainsFold predicate on the "external_id" field.
+func ExternalIDContainsFold(v string) predicate.OncallRoster {
+	return predicate.OncallRoster(sql.FieldContainsFold(FieldExternalID, v))
 }
 
 // NameEQ applies the EQ predicate on the "name" field.
@@ -299,71 +374,6 @@ func SlugEqualFold(v string) predicate.OncallRoster {
 // SlugContainsFold applies the ContainsFold predicate on the "slug" field.
 func SlugContainsFold(v string) predicate.OncallRoster {
 	return predicate.OncallRoster(sql.FieldContainsFold(FieldSlug, v))
-}
-
-// ProviderIDEQ applies the EQ predicate on the "provider_id" field.
-func ProviderIDEQ(v string) predicate.OncallRoster {
-	return predicate.OncallRoster(sql.FieldEQ(FieldProviderID, v))
-}
-
-// ProviderIDNEQ applies the NEQ predicate on the "provider_id" field.
-func ProviderIDNEQ(v string) predicate.OncallRoster {
-	return predicate.OncallRoster(sql.FieldNEQ(FieldProviderID, v))
-}
-
-// ProviderIDIn applies the In predicate on the "provider_id" field.
-func ProviderIDIn(vs ...string) predicate.OncallRoster {
-	return predicate.OncallRoster(sql.FieldIn(FieldProviderID, vs...))
-}
-
-// ProviderIDNotIn applies the NotIn predicate on the "provider_id" field.
-func ProviderIDNotIn(vs ...string) predicate.OncallRoster {
-	return predicate.OncallRoster(sql.FieldNotIn(FieldProviderID, vs...))
-}
-
-// ProviderIDGT applies the GT predicate on the "provider_id" field.
-func ProviderIDGT(v string) predicate.OncallRoster {
-	return predicate.OncallRoster(sql.FieldGT(FieldProviderID, v))
-}
-
-// ProviderIDGTE applies the GTE predicate on the "provider_id" field.
-func ProviderIDGTE(v string) predicate.OncallRoster {
-	return predicate.OncallRoster(sql.FieldGTE(FieldProviderID, v))
-}
-
-// ProviderIDLT applies the LT predicate on the "provider_id" field.
-func ProviderIDLT(v string) predicate.OncallRoster {
-	return predicate.OncallRoster(sql.FieldLT(FieldProviderID, v))
-}
-
-// ProviderIDLTE applies the LTE predicate on the "provider_id" field.
-func ProviderIDLTE(v string) predicate.OncallRoster {
-	return predicate.OncallRoster(sql.FieldLTE(FieldProviderID, v))
-}
-
-// ProviderIDContains applies the Contains predicate on the "provider_id" field.
-func ProviderIDContains(v string) predicate.OncallRoster {
-	return predicate.OncallRoster(sql.FieldContains(FieldProviderID, v))
-}
-
-// ProviderIDHasPrefix applies the HasPrefix predicate on the "provider_id" field.
-func ProviderIDHasPrefix(v string) predicate.OncallRoster {
-	return predicate.OncallRoster(sql.FieldHasPrefix(FieldProviderID, v))
-}
-
-// ProviderIDHasSuffix applies the HasSuffix predicate on the "provider_id" field.
-func ProviderIDHasSuffix(v string) predicate.OncallRoster {
-	return predicate.OncallRoster(sql.FieldHasSuffix(FieldProviderID, v))
-}
-
-// ProviderIDEqualFold applies the EqualFold predicate on the "provider_id" field.
-func ProviderIDEqualFold(v string) predicate.OncallRoster {
-	return predicate.OncallRoster(sql.FieldEqualFold(FieldProviderID, v))
-}
-
-// ProviderIDContainsFold applies the ContainsFold predicate on the "provider_id" field.
-func ProviderIDContainsFold(v string) predicate.OncallRoster {
-	return predicate.OncallRoster(sql.FieldContainsFold(FieldProviderID, v))
 }
 
 // TimezoneEQ applies the EQ predicate on the "timezone" field.

@@ -309,6 +309,18 @@ func (f IncidentTypeFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.IncidentTypeMutation", m)
 }
 
+// The IntegrationFunc type is an adapter to allow the use of ordinary
+// function as Integration mutator.
+type IntegrationFunc func(context.Context, *ent.IntegrationMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f IntegrationFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.IntegrationMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.IntegrationMutation", m)
+}
+
 // The MeetingScheduleFunc type is an adapter to allow the use of ordinary
 // function as MeetingSchedule mutator.
 type MeetingScheduleFunc func(context.Context, *ent.MeetingScheduleMutation) (ent.Value, error)
@@ -451,18 +463,6 @@ func (f PlaybookFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, er
 		return f(ctx, mv)
 	}
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.PlaybookMutation", m)
-}
-
-// The ProviderConfigFunc type is an adapter to allow the use of ordinary
-// function as ProviderConfig mutator.
-type ProviderConfigFunc func(context.Context, *ent.ProviderConfigMutation) (ent.Value, error)
-
-// Mutate calls f(ctx, m).
-func (f ProviderConfigFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
-	if mv, ok := m.(*ent.ProviderConfigMutation); ok {
-		return f(ctx, mv)
-	}
-	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.ProviderConfigMutation", m)
 }
 
 // The ProviderSyncHistoryFunc type is an adapter to allow the use of ordinary

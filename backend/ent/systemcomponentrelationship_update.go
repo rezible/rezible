@@ -33,23 +33,23 @@ func (_u *SystemComponentRelationshipUpdate) Where(ps ...predicate.SystemCompone
 	return _u
 }
 
-// SetProviderID sets the "provider_id" field.
-func (_u *SystemComponentRelationshipUpdate) SetProviderID(v string) *SystemComponentRelationshipUpdate {
-	_u.mutation.SetProviderID(v)
+// SetExternalID sets the "external_id" field.
+func (_u *SystemComponentRelationshipUpdate) SetExternalID(v string) *SystemComponentRelationshipUpdate {
+	_u.mutation.SetExternalID(v)
 	return _u
 }
 
-// SetNillableProviderID sets the "provider_id" field if the given value is not nil.
-func (_u *SystemComponentRelationshipUpdate) SetNillableProviderID(v *string) *SystemComponentRelationshipUpdate {
+// SetNillableExternalID sets the "external_id" field if the given value is not nil.
+func (_u *SystemComponentRelationshipUpdate) SetNillableExternalID(v *string) *SystemComponentRelationshipUpdate {
 	if v != nil {
-		_u.SetProviderID(*v)
+		_u.SetExternalID(*v)
 	}
 	return _u
 }
 
-// ClearProviderID clears the value of the "provider_id" field.
-func (_u *SystemComponentRelationshipUpdate) ClearProviderID() *SystemComponentRelationshipUpdate {
-	_u.mutation.ClearProviderID()
+// ClearExternalID clears the value of the "external_id" field.
+func (_u *SystemComponentRelationshipUpdate) ClearExternalID() *SystemComponentRelationshipUpdate {
+	_u.mutation.ClearExternalID()
 	return _u
 }
 
@@ -273,11 +273,11 @@ func (_u *SystemComponentRelationshipUpdate) sqlSave(ctx context.Context) (_node
 			}
 		}
 	}
-	if value, ok := _u.mutation.ProviderID(); ok {
-		_spec.SetField(systemcomponentrelationship.FieldProviderID, field.TypeString, value)
+	if value, ok := _u.mutation.ExternalID(); ok {
+		_spec.SetField(systemcomponentrelationship.FieldExternalID, field.TypeString, value)
 	}
-	if _u.mutation.ProviderIDCleared() {
-		_spec.ClearField(systemcomponentrelationship.FieldProviderID, field.TypeString)
+	if _u.mutation.ExternalIDCleared() {
+		_spec.ClearField(systemcomponentrelationship.FieldExternalID, field.TypeString)
 	}
 	if value, ok := _u.mutation.Description(); ok {
 		_spec.SetField(systemcomponentrelationship.FieldDescription, field.TypeString, value)
@@ -458,23 +458,23 @@ type SystemComponentRelationshipUpdateOne struct {
 	modifiers []func(*sql.UpdateBuilder)
 }
 
-// SetProviderID sets the "provider_id" field.
-func (_u *SystemComponentRelationshipUpdateOne) SetProviderID(v string) *SystemComponentRelationshipUpdateOne {
-	_u.mutation.SetProviderID(v)
+// SetExternalID sets the "external_id" field.
+func (_u *SystemComponentRelationshipUpdateOne) SetExternalID(v string) *SystemComponentRelationshipUpdateOne {
+	_u.mutation.SetExternalID(v)
 	return _u
 }
 
-// SetNillableProviderID sets the "provider_id" field if the given value is not nil.
-func (_u *SystemComponentRelationshipUpdateOne) SetNillableProviderID(v *string) *SystemComponentRelationshipUpdateOne {
+// SetNillableExternalID sets the "external_id" field if the given value is not nil.
+func (_u *SystemComponentRelationshipUpdateOne) SetNillableExternalID(v *string) *SystemComponentRelationshipUpdateOne {
 	if v != nil {
-		_u.SetProviderID(*v)
+		_u.SetExternalID(*v)
 	}
 	return _u
 }
 
-// ClearProviderID clears the value of the "provider_id" field.
-func (_u *SystemComponentRelationshipUpdateOne) ClearProviderID() *SystemComponentRelationshipUpdateOne {
-	_u.mutation.ClearProviderID()
+// ClearExternalID clears the value of the "external_id" field.
+func (_u *SystemComponentRelationshipUpdateOne) ClearExternalID() *SystemComponentRelationshipUpdateOne {
+	_u.mutation.ClearExternalID()
 	return _u
 }
 
@@ -728,11 +728,11 @@ func (_u *SystemComponentRelationshipUpdateOne) sqlSave(ctx context.Context) (_n
 			}
 		}
 	}
-	if value, ok := _u.mutation.ProviderID(); ok {
-		_spec.SetField(systemcomponentrelationship.FieldProviderID, field.TypeString, value)
+	if value, ok := _u.mutation.ExternalID(); ok {
+		_spec.SetField(systemcomponentrelationship.FieldExternalID, field.TypeString, value)
 	}
-	if _u.mutation.ProviderIDCleared() {
-		_spec.ClearField(systemcomponentrelationship.FieldProviderID, field.TypeString)
+	if _u.mutation.ExternalIDCleared() {
+		_spec.ClearField(systemcomponentrelationship.FieldExternalID, field.TypeString)
 	}
 	if value, ok := _u.mutation.Description(); ok {
 		_spec.SetField(systemcomponentrelationship.FieldDescription, field.TypeString, value)

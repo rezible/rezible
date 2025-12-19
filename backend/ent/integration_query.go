@@ -13,18 +13,18 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
+	"github.com/rezible/rezible/ent/integration"
 	"github.com/rezible/rezible/ent/predicate"
-	"github.com/rezible/rezible/ent/providerconfig"
 	"github.com/rezible/rezible/ent/tenant"
 )
 
-// ProviderConfigQuery is the builder for querying ProviderConfig entities.
-type ProviderConfigQuery struct {
+// IntegrationQuery is the builder for querying Integration entities.
+type IntegrationQuery struct {
 	config
 	ctx        *QueryContext
-	order      []providerconfig.OrderOption
+	order      []integration.OrderOption
 	inters     []Interceptor
-	predicates []predicate.ProviderConfig
+	predicates []predicate.Integration
 	withTenant *TenantQuery
 	modifiers  []func(*sql.Selector)
 	// intermediate query (i.e. traversal path).
@@ -32,39 +32,39 @@ type ProviderConfigQuery struct {
 	path func(context.Context) (*sql.Selector, error)
 }
 
-// Where adds a new predicate for the ProviderConfigQuery builder.
-func (_q *ProviderConfigQuery) Where(ps ...predicate.ProviderConfig) *ProviderConfigQuery {
+// Where adds a new predicate for the IntegrationQuery builder.
+func (_q *IntegrationQuery) Where(ps ...predicate.Integration) *IntegrationQuery {
 	_q.predicates = append(_q.predicates, ps...)
 	return _q
 }
 
 // Limit the number of records to be returned by this query.
-func (_q *ProviderConfigQuery) Limit(limit int) *ProviderConfigQuery {
+func (_q *IntegrationQuery) Limit(limit int) *IntegrationQuery {
 	_q.ctx.Limit = &limit
 	return _q
 }
 
 // Offset to start from.
-func (_q *ProviderConfigQuery) Offset(offset int) *ProviderConfigQuery {
+func (_q *IntegrationQuery) Offset(offset int) *IntegrationQuery {
 	_q.ctx.Offset = &offset
 	return _q
 }
 
 // Unique configures the query builder to filter duplicate records on query.
 // By default, unique is set to true, and can be disabled using this method.
-func (_q *ProviderConfigQuery) Unique(unique bool) *ProviderConfigQuery {
+func (_q *IntegrationQuery) Unique(unique bool) *IntegrationQuery {
 	_q.ctx.Unique = &unique
 	return _q
 }
 
 // Order specifies how the records should be ordered.
-func (_q *ProviderConfigQuery) Order(o ...providerconfig.OrderOption) *ProviderConfigQuery {
+func (_q *IntegrationQuery) Order(o ...integration.OrderOption) *IntegrationQuery {
 	_q.order = append(_q.order, o...)
 	return _q
 }
 
 // QueryTenant chains the current query on the "tenant" edge.
-func (_q *ProviderConfigQuery) QueryTenant() *TenantQuery {
+func (_q *IntegrationQuery) QueryTenant() *TenantQuery {
 	query := (&TenantClient{config: _q.config}).Query()
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
 		if err := _q.prepareQuery(ctx); err != nil {
@@ -75,9 +75,9 @@ func (_q *ProviderConfigQuery) QueryTenant() *TenantQuery {
 			return nil, err
 		}
 		step := sqlgraph.NewStep(
-			sqlgraph.From(providerconfig.Table, providerconfig.FieldID, selector),
+			sqlgraph.From(integration.Table, integration.FieldID, selector),
 			sqlgraph.To(tenant.Table, tenant.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, providerconfig.TenantTable, providerconfig.TenantColumn),
+			sqlgraph.Edge(sqlgraph.M2O, false, integration.TenantTable, integration.TenantColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
@@ -85,21 +85,21 @@ func (_q *ProviderConfigQuery) QueryTenant() *TenantQuery {
 	return query
 }
 
-// First returns the first ProviderConfig entity from the query.
-// Returns a *NotFoundError when no ProviderConfig was found.
-func (_q *ProviderConfigQuery) First(ctx context.Context) (*ProviderConfig, error) {
+// First returns the first Integration entity from the query.
+// Returns a *NotFoundError when no Integration was found.
+func (_q *IntegrationQuery) First(ctx context.Context) (*Integration, error) {
 	nodes, err := _q.Limit(1).All(setContextOp(ctx, _q.ctx, ent.OpQueryFirst))
 	if err != nil {
 		return nil, err
 	}
 	if len(nodes) == 0 {
-		return nil, &NotFoundError{providerconfig.Label}
+		return nil, &NotFoundError{integration.Label}
 	}
 	return nodes[0], nil
 }
 
 // FirstX is like First, but panics if an error occurs.
-func (_q *ProviderConfigQuery) FirstX(ctx context.Context) *ProviderConfig {
+func (_q *IntegrationQuery) FirstX(ctx context.Context) *Integration {
 	node, err := _q.First(ctx)
 	if err != nil && !IsNotFound(err) {
 		panic(err)
@@ -107,22 +107,22 @@ func (_q *ProviderConfigQuery) FirstX(ctx context.Context) *ProviderConfig {
 	return node
 }
 
-// FirstID returns the first ProviderConfig ID from the query.
-// Returns a *NotFoundError when no ProviderConfig ID was found.
-func (_q *ProviderConfigQuery) FirstID(ctx context.Context) (id uuid.UUID, err error) {
+// FirstID returns the first Integration ID from the query.
+// Returns a *NotFoundError when no Integration ID was found.
+func (_q *IntegrationQuery) FirstID(ctx context.Context) (id uuid.UUID, err error) {
 	var ids []uuid.UUID
 	if ids, err = _q.Limit(1).IDs(setContextOp(ctx, _q.ctx, ent.OpQueryFirstID)); err != nil {
 		return
 	}
 	if len(ids) == 0 {
-		err = &NotFoundError{providerconfig.Label}
+		err = &NotFoundError{integration.Label}
 		return
 	}
 	return ids[0], nil
 }
 
 // FirstIDX is like FirstID, but panics if an error occurs.
-func (_q *ProviderConfigQuery) FirstIDX(ctx context.Context) uuid.UUID {
+func (_q *IntegrationQuery) FirstIDX(ctx context.Context) uuid.UUID {
 	id, err := _q.FirstID(ctx)
 	if err != nil && !IsNotFound(err) {
 		panic(err)
@@ -130,10 +130,10 @@ func (_q *ProviderConfigQuery) FirstIDX(ctx context.Context) uuid.UUID {
 	return id
 }
 
-// Only returns a single ProviderConfig entity found by the query, ensuring it only returns one.
-// Returns a *NotSingularError when more than one ProviderConfig entity is found.
-// Returns a *NotFoundError when no ProviderConfig entities are found.
-func (_q *ProviderConfigQuery) Only(ctx context.Context) (*ProviderConfig, error) {
+// Only returns a single Integration entity found by the query, ensuring it only returns one.
+// Returns a *NotSingularError when more than one Integration entity is found.
+// Returns a *NotFoundError when no Integration entities are found.
+func (_q *IntegrationQuery) Only(ctx context.Context) (*Integration, error) {
 	nodes, err := _q.Limit(2).All(setContextOp(ctx, _q.ctx, ent.OpQueryOnly))
 	if err != nil {
 		return nil, err
@@ -142,14 +142,14 @@ func (_q *ProviderConfigQuery) Only(ctx context.Context) (*ProviderConfig, error
 	case 1:
 		return nodes[0], nil
 	case 0:
-		return nil, &NotFoundError{providerconfig.Label}
+		return nil, &NotFoundError{integration.Label}
 	default:
-		return nil, &NotSingularError{providerconfig.Label}
+		return nil, &NotSingularError{integration.Label}
 	}
 }
 
 // OnlyX is like Only, but panics if an error occurs.
-func (_q *ProviderConfigQuery) OnlyX(ctx context.Context) *ProviderConfig {
+func (_q *IntegrationQuery) OnlyX(ctx context.Context) *Integration {
 	node, err := _q.Only(ctx)
 	if err != nil {
 		panic(err)
@@ -157,10 +157,10 @@ func (_q *ProviderConfigQuery) OnlyX(ctx context.Context) *ProviderConfig {
 	return node
 }
 
-// OnlyID is like Only, but returns the only ProviderConfig ID in the query.
-// Returns a *NotSingularError when more than one ProviderConfig ID is found.
+// OnlyID is like Only, but returns the only Integration ID in the query.
+// Returns a *NotSingularError when more than one Integration ID is found.
 // Returns a *NotFoundError when no entities are found.
-func (_q *ProviderConfigQuery) OnlyID(ctx context.Context) (id uuid.UUID, err error) {
+func (_q *IntegrationQuery) OnlyID(ctx context.Context) (id uuid.UUID, err error) {
 	var ids []uuid.UUID
 	if ids, err = _q.Limit(2).IDs(setContextOp(ctx, _q.ctx, ent.OpQueryOnlyID)); err != nil {
 		return
@@ -169,15 +169,15 @@ func (_q *ProviderConfigQuery) OnlyID(ctx context.Context) (id uuid.UUID, err er
 	case 1:
 		id = ids[0]
 	case 0:
-		err = &NotFoundError{providerconfig.Label}
+		err = &NotFoundError{integration.Label}
 	default:
-		err = &NotSingularError{providerconfig.Label}
+		err = &NotSingularError{integration.Label}
 	}
 	return
 }
 
 // OnlyIDX is like OnlyID, but panics if an error occurs.
-func (_q *ProviderConfigQuery) OnlyIDX(ctx context.Context) uuid.UUID {
+func (_q *IntegrationQuery) OnlyIDX(ctx context.Context) uuid.UUID {
 	id, err := _q.OnlyID(ctx)
 	if err != nil {
 		panic(err)
@@ -185,18 +185,18 @@ func (_q *ProviderConfigQuery) OnlyIDX(ctx context.Context) uuid.UUID {
 	return id
 }
 
-// All executes the query and returns a list of ProviderConfigs.
-func (_q *ProviderConfigQuery) All(ctx context.Context) ([]*ProviderConfig, error) {
+// All executes the query and returns a list of Integrations.
+func (_q *IntegrationQuery) All(ctx context.Context) ([]*Integration, error) {
 	ctx = setContextOp(ctx, _q.ctx, ent.OpQueryAll)
 	if err := _q.prepareQuery(ctx); err != nil {
 		return nil, err
 	}
-	qr := querierAll[[]*ProviderConfig, *ProviderConfigQuery]()
-	return withInterceptors[[]*ProviderConfig](ctx, _q, qr, _q.inters)
+	qr := querierAll[[]*Integration, *IntegrationQuery]()
+	return withInterceptors[[]*Integration](ctx, _q, qr, _q.inters)
 }
 
 // AllX is like All, but panics if an error occurs.
-func (_q *ProviderConfigQuery) AllX(ctx context.Context) []*ProviderConfig {
+func (_q *IntegrationQuery) AllX(ctx context.Context) []*Integration {
 	nodes, err := _q.All(ctx)
 	if err != nil {
 		panic(err)
@@ -204,20 +204,20 @@ func (_q *ProviderConfigQuery) AllX(ctx context.Context) []*ProviderConfig {
 	return nodes
 }
 
-// IDs executes the query and returns a list of ProviderConfig IDs.
-func (_q *ProviderConfigQuery) IDs(ctx context.Context) (ids []uuid.UUID, err error) {
+// IDs executes the query and returns a list of Integration IDs.
+func (_q *IntegrationQuery) IDs(ctx context.Context) (ids []uuid.UUID, err error) {
 	if _q.ctx.Unique == nil && _q.path != nil {
 		_q.Unique(true)
 	}
 	ctx = setContextOp(ctx, _q.ctx, ent.OpQueryIDs)
-	if err = _q.Select(providerconfig.FieldID).Scan(ctx, &ids); err != nil {
+	if err = _q.Select(integration.FieldID).Scan(ctx, &ids); err != nil {
 		return nil, err
 	}
 	return ids, nil
 }
 
 // IDsX is like IDs, but panics if an error occurs.
-func (_q *ProviderConfigQuery) IDsX(ctx context.Context) []uuid.UUID {
+func (_q *IntegrationQuery) IDsX(ctx context.Context) []uuid.UUID {
 	ids, err := _q.IDs(ctx)
 	if err != nil {
 		panic(err)
@@ -226,16 +226,16 @@ func (_q *ProviderConfigQuery) IDsX(ctx context.Context) []uuid.UUID {
 }
 
 // Count returns the count of the given query.
-func (_q *ProviderConfigQuery) Count(ctx context.Context) (int, error) {
+func (_q *IntegrationQuery) Count(ctx context.Context) (int, error) {
 	ctx = setContextOp(ctx, _q.ctx, ent.OpQueryCount)
 	if err := _q.prepareQuery(ctx); err != nil {
 		return 0, err
 	}
-	return withInterceptors[int](ctx, _q, querierCount[*ProviderConfigQuery](), _q.inters)
+	return withInterceptors[int](ctx, _q, querierCount[*IntegrationQuery](), _q.inters)
 }
 
 // CountX is like Count, but panics if an error occurs.
-func (_q *ProviderConfigQuery) CountX(ctx context.Context) int {
+func (_q *IntegrationQuery) CountX(ctx context.Context) int {
 	count, err := _q.Count(ctx)
 	if err != nil {
 		panic(err)
@@ -244,7 +244,7 @@ func (_q *ProviderConfigQuery) CountX(ctx context.Context) int {
 }
 
 // Exist returns true if the query has elements in the graph.
-func (_q *ProviderConfigQuery) Exist(ctx context.Context) (bool, error) {
+func (_q *IntegrationQuery) Exist(ctx context.Context) (bool, error) {
 	ctx = setContextOp(ctx, _q.ctx, ent.OpQueryExist)
 	switch _, err := _q.FirstID(ctx); {
 	case IsNotFound(err):
@@ -257,7 +257,7 @@ func (_q *ProviderConfigQuery) Exist(ctx context.Context) (bool, error) {
 }
 
 // ExistX is like Exist, but panics if an error occurs.
-func (_q *ProviderConfigQuery) ExistX(ctx context.Context) bool {
+func (_q *IntegrationQuery) ExistX(ctx context.Context) bool {
 	exist, err := _q.Exist(ctx)
 	if err != nil {
 		panic(err)
@@ -265,18 +265,18 @@ func (_q *ProviderConfigQuery) ExistX(ctx context.Context) bool {
 	return exist
 }
 
-// Clone returns a duplicate of the ProviderConfigQuery builder, including all associated steps. It can be
+// Clone returns a duplicate of the IntegrationQuery builder, including all associated steps. It can be
 // used to prepare common query builders and use them differently after the clone is made.
-func (_q *ProviderConfigQuery) Clone() *ProviderConfigQuery {
+func (_q *IntegrationQuery) Clone() *IntegrationQuery {
 	if _q == nil {
 		return nil
 	}
-	return &ProviderConfigQuery{
+	return &IntegrationQuery{
 		config:     _q.config,
 		ctx:        _q.ctx.Clone(),
-		order:      append([]providerconfig.OrderOption{}, _q.order...),
+		order:      append([]integration.OrderOption{}, _q.order...),
 		inters:     append([]Interceptor{}, _q.inters...),
-		predicates: append([]predicate.ProviderConfig{}, _q.predicates...),
+		predicates: append([]predicate.Integration{}, _q.predicates...),
 		withTenant: _q.withTenant.Clone(),
 		// clone intermediate query.
 		sql:       _q.sql.Clone(),
@@ -287,7 +287,7 @@ func (_q *ProviderConfigQuery) Clone() *ProviderConfigQuery {
 
 // WithTenant tells the query-builder to eager-load the nodes that are connected to
 // the "tenant" edge. The optional arguments are used to configure the query builder of the edge.
-func (_q *ProviderConfigQuery) WithTenant(opts ...func(*TenantQuery)) *ProviderConfigQuery {
+func (_q *IntegrationQuery) WithTenant(opts ...func(*TenantQuery)) *IntegrationQuery {
 	query := (&TenantClient{config: _q.config}).Query()
 	for _, opt := range opts {
 		opt(query)
@@ -306,15 +306,15 @@ func (_q *ProviderConfigQuery) WithTenant(opts ...func(*TenantQuery)) *ProviderC
 //		Count int `json:"count,omitempty"`
 //	}
 //
-//	client.ProviderConfig.Query().
-//		GroupBy(providerconfig.FieldTenantID).
+//	client.Integration.Query().
+//		GroupBy(integration.FieldTenantID).
 //		Aggregate(ent.Count()).
 //		Scan(ctx, &v)
-func (_q *ProviderConfigQuery) GroupBy(field string, fields ...string) *ProviderConfigGroupBy {
+func (_q *IntegrationQuery) GroupBy(field string, fields ...string) *IntegrationGroupBy {
 	_q.ctx.Fields = append([]string{field}, fields...)
-	grbuild := &ProviderConfigGroupBy{build: _q}
+	grbuild := &IntegrationGroupBy{build: _q}
 	grbuild.flds = &_q.ctx.Fields
-	grbuild.label = providerconfig.Label
+	grbuild.label = integration.Label
 	grbuild.scan = grbuild.Scan
 	return grbuild
 }
@@ -328,23 +328,23 @@ func (_q *ProviderConfigQuery) GroupBy(field string, fields ...string) *Provider
 //		TenantID int `json:"tenant_id,omitempty"`
 //	}
 //
-//	client.ProviderConfig.Query().
-//		Select(providerconfig.FieldTenantID).
+//	client.Integration.Query().
+//		Select(integration.FieldTenantID).
 //		Scan(ctx, &v)
-func (_q *ProviderConfigQuery) Select(fields ...string) *ProviderConfigSelect {
+func (_q *IntegrationQuery) Select(fields ...string) *IntegrationSelect {
 	_q.ctx.Fields = append(_q.ctx.Fields, fields...)
-	sbuild := &ProviderConfigSelect{ProviderConfigQuery: _q}
-	sbuild.label = providerconfig.Label
+	sbuild := &IntegrationSelect{IntegrationQuery: _q}
+	sbuild.label = integration.Label
 	sbuild.flds, sbuild.scan = &_q.ctx.Fields, sbuild.Scan
 	return sbuild
 }
 
-// Aggregate returns a ProviderConfigSelect configured with the given aggregations.
-func (_q *ProviderConfigQuery) Aggregate(fns ...AggregateFunc) *ProviderConfigSelect {
+// Aggregate returns a IntegrationSelect configured with the given aggregations.
+func (_q *IntegrationQuery) Aggregate(fns ...AggregateFunc) *IntegrationSelect {
 	return _q.Select().Aggregate(fns...)
 }
 
-func (_q *ProviderConfigQuery) prepareQuery(ctx context.Context) error {
+func (_q *IntegrationQuery) prepareQuery(ctx context.Context) error {
 	for _, inter := range _q.inters {
 		if inter == nil {
 			return fmt.Errorf("ent: uninitialized interceptor (forgotten import ent/runtime?)")
@@ -356,7 +356,7 @@ func (_q *ProviderConfigQuery) prepareQuery(ctx context.Context) error {
 		}
 	}
 	for _, f := range _q.ctx.Fields {
-		if !providerconfig.ValidColumn(f) {
+		if !integration.ValidColumn(f) {
 			return &ValidationError{Name: f, err: fmt.Errorf("ent: invalid field %q for query", f)}
 		}
 	}
@@ -367,28 +367,28 @@ func (_q *ProviderConfigQuery) prepareQuery(ctx context.Context) error {
 		}
 		_q.sql = prev
 	}
-	if providerconfig.Policy == nil {
-		return errors.New("ent: uninitialized providerconfig.Policy (forgotten import ent/runtime?)")
+	if integration.Policy == nil {
+		return errors.New("ent: uninitialized integration.Policy (forgotten import ent/runtime?)")
 	}
-	if err := providerconfig.Policy.EvalQuery(ctx, _q); err != nil {
+	if err := integration.Policy.EvalQuery(ctx, _q); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (_q *ProviderConfigQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*ProviderConfig, error) {
+func (_q *IntegrationQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Integration, error) {
 	var (
-		nodes       = []*ProviderConfig{}
+		nodes       = []*Integration{}
 		_spec       = _q.querySpec()
 		loadedTypes = [1]bool{
 			_q.withTenant != nil,
 		}
 	)
 	_spec.ScanValues = func(columns []string) ([]any, error) {
-		return (*ProviderConfig).scanValues(nil, columns)
+		return (*Integration).scanValues(nil, columns)
 	}
 	_spec.Assign = func(columns []string, values []any) error {
-		node := &ProviderConfig{config: _q.config}
+		node := &Integration{config: _q.config}
 		nodes = append(nodes, node)
 		node.Edges.loadedTypes = loadedTypes
 		return node.assignValues(columns, values)
@@ -407,16 +407,16 @@ func (_q *ProviderConfigQuery) sqlAll(ctx context.Context, hooks ...queryHook) (
 	}
 	if query := _q.withTenant; query != nil {
 		if err := _q.loadTenant(ctx, query, nodes, nil,
-			func(n *ProviderConfig, e *Tenant) { n.Edges.Tenant = e }); err != nil {
+			func(n *Integration, e *Tenant) { n.Edges.Tenant = e }); err != nil {
 			return nil, err
 		}
 	}
 	return nodes, nil
 }
 
-func (_q *ProviderConfigQuery) loadTenant(ctx context.Context, query *TenantQuery, nodes []*ProviderConfig, init func(*ProviderConfig), assign func(*ProviderConfig, *Tenant)) error {
+func (_q *IntegrationQuery) loadTenant(ctx context.Context, query *TenantQuery, nodes []*Integration, init func(*Integration), assign func(*Integration, *Tenant)) error {
 	ids := make([]int, 0, len(nodes))
-	nodeids := make(map[int][]*ProviderConfig)
+	nodeids := make(map[int][]*Integration)
 	for i := range nodes {
 		fk := nodes[i].TenantID
 		if _, ok := nodeids[fk]; !ok {
@@ -444,7 +444,7 @@ func (_q *ProviderConfigQuery) loadTenant(ctx context.Context, query *TenantQuer
 	return nil
 }
 
-func (_q *ProviderConfigQuery) sqlCount(ctx context.Context) (int, error) {
+func (_q *IntegrationQuery) sqlCount(ctx context.Context) (int, error) {
 	_spec := _q.querySpec()
 	if len(_q.modifiers) > 0 {
 		_spec.Modifiers = _q.modifiers
@@ -456,8 +456,8 @@ func (_q *ProviderConfigQuery) sqlCount(ctx context.Context) (int, error) {
 	return sqlgraph.CountNodes(ctx, _q.driver, _spec)
 }
 
-func (_q *ProviderConfigQuery) querySpec() *sqlgraph.QuerySpec {
-	_spec := sqlgraph.NewQuerySpec(providerconfig.Table, providerconfig.Columns, sqlgraph.NewFieldSpec(providerconfig.FieldID, field.TypeUUID))
+func (_q *IntegrationQuery) querySpec() *sqlgraph.QuerySpec {
+	_spec := sqlgraph.NewQuerySpec(integration.Table, integration.Columns, sqlgraph.NewFieldSpec(integration.FieldID, field.TypeUUID))
 	_spec.From = _q.sql
 	if unique := _q.ctx.Unique; unique != nil {
 		_spec.Unique = *unique
@@ -466,14 +466,14 @@ func (_q *ProviderConfigQuery) querySpec() *sqlgraph.QuerySpec {
 	}
 	if fields := _q.ctx.Fields; len(fields) > 0 {
 		_spec.Node.Columns = make([]string, 0, len(fields))
-		_spec.Node.Columns = append(_spec.Node.Columns, providerconfig.FieldID)
+		_spec.Node.Columns = append(_spec.Node.Columns, integration.FieldID)
 		for i := range fields {
-			if fields[i] != providerconfig.FieldID {
+			if fields[i] != integration.FieldID {
 				_spec.Node.Columns = append(_spec.Node.Columns, fields[i])
 			}
 		}
 		if _q.withTenant != nil {
-			_spec.Node.AddColumnOnce(providerconfig.FieldTenantID)
+			_spec.Node.AddColumnOnce(integration.FieldTenantID)
 		}
 	}
 	if ps := _q.predicates; len(ps) > 0 {
@@ -499,12 +499,12 @@ func (_q *ProviderConfigQuery) querySpec() *sqlgraph.QuerySpec {
 	return _spec
 }
 
-func (_q *ProviderConfigQuery) sqlQuery(ctx context.Context) *sql.Selector {
+func (_q *IntegrationQuery) sqlQuery(ctx context.Context) *sql.Selector {
 	builder := sql.Dialect(_q.driver.Dialect())
-	t1 := builder.Table(providerconfig.Table)
+	t1 := builder.Table(integration.Table)
 	columns := _q.ctx.Fields
 	if len(columns) == 0 {
-		columns = providerconfig.Columns
+		columns = integration.Columns
 	}
 	selector := builder.Select(t1.Columns(columns...)...).From(t1)
 	if _q.sql != nil {
@@ -535,33 +535,33 @@ func (_q *ProviderConfigQuery) sqlQuery(ctx context.Context) *sql.Selector {
 }
 
 // Modify adds a query modifier for attaching custom logic to queries.
-func (_q *ProviderConfigQuery) Modify(modifiers ...func(s *sql.Selector)) *ProviderConfigSelect {
+func (_q *IntegrationQuery) Modify(modifiers ...func(s *sql.Selector)) *IntegrationSelect {
 	_q.modifiers = append(_q.modifiers, modifiers...)
 	return _q.Select()
 }
 
-// ProviderConfigGroupBy is the group-by builder for ProviderConfig entities.
-type ProviderConfigGroupBy struct {
+// IntegrationGroupBy is the group-by builder for Integration entities.
+type IntegrationGroupBy struct {
 	selector
-	build *ProviderConfigQuery
+	build *IntegrationQuery
 }
 
 // Aggregate adds the given aggregation functions to the group-by query.
-func (_g *ProviderConfigGroupBy) Aggregate(fns ...AggregateFunc) *ProviderConfigGroupBy {
+func (_g *IntegrationGroupBy) Aggregate(fns ...AggregateFunc) *IntegrationGroupBy {
 	_g.fns = append(_g.fns, fns...)
 	return _g
 }
 
 // Scan applies the selector query and scans the result into the given value.
-func (_g *ProviderConfigGroupBy) Scan(ctx context.Context, v any) error {
+func (_g *IntegrationGroupBy) Scan(ctx context.Context, v any) error {
 	ctx = setContextOp(ctx, _g.build.ctx, ent.OpQueryGroupBy)
 	if err := _g.build.prepareQuery(ctx); err != nil {
 		return err
 	}
-	return scanWithInterceptors[*ProviderConfigQuery, *ProviderConfigGroupBy](ctx, _g.build, _g, _g.build.inters, v)
+	return scanWithInterceptors[*IntegrationQuery, *IntegrationGroupBy](ctx, _g.build, _g, _g.build.inters, v)
 }
 
-func (_g *ProviderConfigGroupBy) sqlScan(ctx context.Context, root *ProviderConfigQuery, v any) error {
+func (_g *IntegrationGroupBy) sqlScan(ctx context.Context, root *IntegrationQuery, v any) error {
 	selector := root.sqlQuery(ctx).Select()
 	aggregation := make([]string, 0, len(_g.fns))
 	for _, fn := range _g.fns {
@@ -588,28 +588,28 @@ func (_g *ProviderConfigGroupBy) sqlScan(ctx context.Context, root *ProviderConf
 	return sql.ScanSlice(rows, v)
 }
 
-// ProviderConfigSelect is the builder for selecting fields of ProviderConfig entities.
-type ProviderConfigSelect struct {
-	*ProviderConfigQuery
+// IntegrationSelect is the builder for selecting fields of Integration entities.
+type IntegrationSelect struct {
+	*IntegrationQuery
 	selector
 }
 
 // Aggregate adds the given aggregation functions to the selector query.
-func (_s *ProviderConfigSelect) Aggregate(fns ...AggregateFunc) *ProviderConfigSelect {
+func (_s *IntegrationSelect) Aggregate(fns ...AggregateFunc) *IntegrationSelect {
 	_s.fns = append(_s.fns, fns...)
 	return _s
 }
 
 // Scan applies the selector query and scans the result into the given value.
-func (_s *ProviderConfigSelect) Scan(ctx context.Context, v any) error {
+func (_s *IntegrationSelect) Scan(ctx context.Context, v any) error {
 	ctx = setContextOp(ctx, _s.ctx, ent.OpQuerySelect)
 	if err := _s.prepareQuery(ctx); err != nil {
 		return err
 	}
-	return scanWithInterceptors[*ProviderConfigQuery, *ProviderConfigSelect](ctx, _s.ProviderConfigQuery, _s, _s.inters, v)
+	return scanWithInterceptors[*IntegrationQuery, *IntegrationSelect](ctx, _s.IntegrationQuery, _s, _s.inters, v)
 }
 
-func (_s *ProviderConfigSelect) sqlScan(ctx context.Context, root *ProviderConfigQuery, v any) error {
+func (_s *IntegrationSelect) sqlScan(ctx context.Context, root *IntegrationQuery, v any) error {
 	selector := root.sqlQuery(ctx)
 	aggregation := make([]string, 0, len(_s.fns))
 	for _, fn := range _s.fns {
@@ -631,7 +631,7 @@ func (_s *ProviderConfigSelect) sqlScan(ctx context.Context, root *ProviderConfi
 }
 
 // Modify adds a query modifier for attaching custom logic to queries.
-func (_s *ProviderConfigSelect) Modify(modifiers ...func(s *sql.Selector)) *ProviderConfigSelect {
+func (_s *IntegrationSelect) Modify(modifiers ...func(s *sql.Selector)) *IntegrationSelect {
 	_s.modifiers = append(_s.modifiers, modifiers...)
 	return _s
 }

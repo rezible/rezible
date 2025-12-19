@@ -34,9 +34,17 @@ func (_c *EventCreate) SetTenantID(v int) *EventCreate {
 	return _c
 }
 
-// SetProviderID sets the "provider_id" field.
-func (_c *EventCreate) SetProviderID(v string) *EventCreate {
-	_c.mutation.SetProviderID(v)
+// SetExternalID sets the "external_id" field.
+func (_c *EventCreate) SetExternalID(v string) *EventCreate {
+	_c.mutation.SetExternalID(v)
+	return _c
+}
+
+// SetNillableExternalID sets the "external_id" field if the given value is not nil.
+func (_c *EventCreate) SetNillableExternalID(v *string) *EventCreate {
+	if v != nil {
+		_c.SetExternalID(*v)
+	}
 	return _c
 }
 
@@ -186,9 +194,6 @@ func (_c *EventCreate) check() error {
 	if _, ok := _c.mutation.TenantID(); !ok {
 		return &ValidationError{Name: "tenant_id", err: errors.New(`ent: missing required field "Event.tenant_id"`)}
 	}
-	if _, ok := _c.mutation.ProviderID(); !ok {
-		return &ValidationError{Name: "provider_id", err: errors.New(`ent: missing required field "Event.provider_id"`)}
-	}
 	if _, ok := _c.mutation.Timestamp(); !ok {
 		return &ValidationError{Name: "timestamp", err: errors.New(`ent: missing required field "Event.timestamp"`)}
 	}
@@ -248,9 +253,9 @@ func (_c *EventCreate) createSpec() (*Event, *sqlgraph.CreateSpec) {
 		_node.ID = id
 		_spec.ID.Value = &id
 	}
-	if value, ok := _c.mutation.ProviderID(); ok {
-		_spec.SetField(event.FieldProviderID, field.TypeString, value)
-		_node.ProviderID = value
+	if value, ok := _c.mutation.ExternalID(); ok {
+		_spec.SetField(event.FieldExternalID, field.TypeString, value)
+		_node.ExternalID = value
 	}
 	if value, ok := _c.mutation.Timestamp(); ok {
 		_spec.SetField(event.FieldTimestamp, field.TypeTime, value)
@@ -389,15 +394,21 @@ type (
 	}
 )
 
-// SetProviderID sets the "provider_id" field.
-func (u *EventUpsert) SetProviderID(v string) *EventUpsert {
-	u.Set(event.FieldProviderID, v)
+// SetExternalID sets the "external_id" field.
+func (u *EventUpsert) SetExternalID(v string) *EventUpsert {
+	u.Set(event.FieldExternalID, v)
 	return u
 }
 
-// UpdateProviderID sets the "provider_id" field to the value that was provided on create.
-func (u *EventUpsert) UpdateProviderID() *EventUpsert {
-	u.SetExcluded(event.FieldProviderID)
+// UpdateExternalID sets the "external_id" field to the value that was provided on create.
+func (u *EventUpsert) UpdateExternalID() *EventUpsert {
+	u.SetExcluded(event.FieldExternalID)
+	return u
+}
+
+// ClearExternalID clears the value of the "external_id" field.
+func (u *EventUpsert) ClearExternalID() *EventUpsert {
+	u.SetNull(event.FieldExternalID)
 	return u
 }
 
@@ -512,17 +523,24 @@ func (u *EventUpsertOne) Update(set func(*EventUpsert)) *EventUpsertOne {
 	return u
 }
 
-// SetProviderID sets the "provider_id" field.
-func (u *EventUpsertOne) SetProviderID(v string) *EventUpsertOne {
+// SetExternalID sets the "external_id" field.
+func (u *EventUpsertOne) SetExternalID(v string) *EventUpsertOne {
 	return u.Update(func(s *EventUpsert) {
-		s.SetProviderID(v)
+		s.SetExternalID(v)
 	})
 }
 
-// UpdateProviderID sets the "provider_id" field to the value that was provided on create.
-func (u *EventUpsertOne) UpdateProviderID() *EventUpsertOne {
+// UpdateExternalID sets the "external_id" field to the value that was provided on create.
+func (u *EventUpsertOne) UpdateExternalID() *EventUpsertOne {
 	return u.Update(func(s *EventUpsert) {
-		s.UpdateProviderID()
+		s.UpdateExternalID()
+	})
+}
+
+// ClearExternalID clears the value of the "external_id" field.
+func (u *EventUpsertOne) ClearExternalID() *EventUpsertOne {
+	return u.Update(func(s *EventUpsert) {
+		s.ClearExternalID()
 	})
 }
 
@@ -814,17 +832,24 @@ func (u *EventUpsertBulk) Update(set func(*EventUpsert)) *EventUpsertBulk {
 	return u
 }
 
-// SetProviderID sets the "provider_id" field.
-func (u *EventUpsertBulk) SetProviderID(v string) *EventUpsertBulk {
+// SetExternalID sets the "external_id" field.
+func (u *EventUpsertBulk) SetExternalID(v string) *EventUpsertBulk {
 	return u.Update(func(s *EventUpsert) {
-		s.SetProviderID(v)
+		s.SetExternalID(v)
 	})
 }
 
-// UpdateProviderID sets the "provider_id" field to the value that was provided on create.
-func (u *EventUpsertBulk) UpdateProviderID() *EventUpsertBulk {
+// UpdateExternalID sets the "external_id" field to the value that was provided on create.
+func (u *EventUpsertBulk) UpdateExternalID() *EventUpsertBulk {
 	return u.Update(func(s *EventUpsert) {
-		s.UpdateProviderID()
+		s.UpdateExternalID()
+	})
+}
+
+// ClearExternalID clears the value of the "external_id" field.
+func (u *EventUpsertBulk) ClearExternalID() *EventUpsertBulk {
+	return u.Update(func(s *EventUpsert) {
+		s.ClearExternalID()
 	})
 }
 

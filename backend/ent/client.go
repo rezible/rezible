@@ -41,6 +41,7 @@ import (
 	"github.com/rezible/rezible/ent/incidentseverity"
 	"github.com/rezible/rezible/ent/incidenttag"
 	"github.com/rezible/rezible/ent/incidenttype"
+	"github.com/rezible/rezible/ent/integration"
 	"github.com/rezible/rezible/ent/meetingschedule"
 	"github.com/rezible/rezible/ent/meetingsession"
 	"github.com/rezible/rezible/ent/oncallhandovertemplate"
@@ -53,7 +54,6 @@ import (
 	"github.com/rezible/rezible/ent/oncallshiftmetrics"
 	"github.com/rezible/rezible/ent/organization"
 	"github.com/rezible/rezible/ent/playbook"
-	"github.com/rezible/rezible/ent/providerconfig"
 	"github.com/rezible/rezible/ent/providersynchistory"
 	"github.com/rezible/rezible/ent/retrospective"
 	"github.com/rezible/rezible/ent/retrospectivecomment"
@@ -134,6 +134,8 @@ type Client struct {
 	IncidentTag *IncidentTagClient
 	// IncidentType is the client for interacting with the IncidentType builders.
 	IncidentType *IncidentTypeClient
+	// Integration is the client for interacting with the Integration builders.
+	Integration *IntegrationClient
 	// MeetingSchedule is the client for interacting with the MeetingSchedule builders.
 	MeetingSchedule *MeetingScheduleClient
 	// MeetingSession is the client for interacting with the MeetingSession builders.
@@ -158,8 +160,6 @@ type Client struct {
 	Organization *OrganizationClient
 	// Playbook is the client for interacting with the Playbook builders.
 	Playbook *PlaybookClient
-	// ProviderConfig is the client for interacting with the ProviderConfig builders.
-	ProviderConfig *ProviderConfigClient
 	// ProviderSyncHistory is the client for interacting with the ProviderSyncHistory builders.
 	ProviderSyncHistory *ProviderSyncHistoryClient
 	// Retrospective is the client for interacting with the Retrospective builders.
@@ -239,6 +239,7 @@ func (c *Client) init() {
 	c.IncidentSeverity = NewIncidentSeverityClient(c.config)
 	c.IncidentTag = NewIncidentTagClient(c.config)
 	c.IncidentType = NewIncidentTypeClient(c.config)
+	c.Integration = NewIntegrationClient(c.config)
 	c.MeetingSchedule = NewMeetingScheduleClient(c.config)
 	c.MeetingSession = NewMeetingSessionClient(c.config)
 	c.OncallHandoverTemplate = NewOncallHandoverTemplateClient(c.config)
@@ -251,7 +252,6 @@ func (c *Client) init() {
 	c.OncallShiftMetrics = NewOncallShiftMetricsClient(c.config)
 	c.Organization = NewOrganizationClient(c.config)
 	c.Playbook = NewPlaybookClient(c.config)
-	c.ProviderConfig = NewProviderConfigClient(c.config)
 	c.ProviderSyncHistory = NewProviderSyncHistoryClient(c.config)
 	c.Retrospective = NewRetrospectiveClient(c.config)
 	c.RetrospectiveComment = NewRetrospectiveCommentClient(c.config)
@@ -391,6 +391,7 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 		IncidentSeverity:                 NewIncidentSeverityClient(cfg),
 		IncidentTag:                      NewIncidentTagClient(cfg),
 		IncidentType:                     NewIncidentTypeClient(cfg),
+		Integration:                      NewIntegrationClient(cfg),
 		MeetingSchedule:                  NewMeetingScheduleClient(cfg),
 		MeetingSession:                   NewMeetingSessionClient(cfg),
 		OncallHandoverTemplate:           NewOncallHandoverTemplateClient(cfg),
@@ -403,7 +404,6 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 		OncallShiftMetrics:               NewOncallShiftMetricsClient(cfg),
 		Organization:                     NewOrganizationClient(cfg),
 		Playbook:                         NewPlaybookClient(cfg),
-		ProviderConfig:                   NewProviderConfigClient(cfg),
 		ProviderSyncHistory:              NewProviderSyncHistoryClient(cfg),
 		Retrospective:                    NewRetrospectiveClient(cfg),
 		RetrospectiveComment:             NewRetrospectiveCommentClient(cfg),
@@ -470,6 +470,7 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 		IncidentSeverity:                 NewIncidentSeverityClient(cfg),
 		IncidentTag:                      NewIncidentTagClient(cfg),
 		IncidentType:                     NewIncidentTypeClient(cfg),
+		Integration:                      NewIntegrationClient(cfg),
 		MeetingSchedule:                  NewMeetingScheduleClient(cfg),
 		MeetingSession:                   NewMeetingSessionClient(cfg),
 		OncallHandoverTemplate:           NewOncallHandoverTemplateClient(cfg),
@@ -482,7 +483,6 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 		OncallShiftMetrics:               NewOncallShiftMetricsClient(cfg),
 		Organization:                     NewOrganizationClient(cfg),
 		Playbook:                         NewPlaybookClient(cfg),
-		ProviderConfig:                   NewProviderConfigClient(cfg),
 		ProviderSyncHistory:              NewProviderSyncHistoryClient(cfg),
 		Retrospective:                    NewRetrospectiveClient(cfg),
 		RetrospectiveComment:             NewRetrospectiveCommentClient(cfg),
@@ -540,16 +540,16 @@ func (c *Client) Use(hooks ...Hook) {
 		c.IncidentEventEvidence, c.IncidentEventSystemComponent, c.IncidentField,
 		c.IncidentFieldOption, c.IncidentLink, c.IncidentMilestone, c.IncidentRole,
 		c.IncidentRoleAssignment, c.IncidentSeverity, c.IncidentTag, c.IncidentType,
-		c.MeetingSchedule, c.MeetingSession, c.OncallHandoverTemplate, c.OncallRoster,
-		c.OncallRosterMetrics, c.OncallSchedule, c.OncallScheduleParticipant,
-		c.OncallShift, c.OncallShiftHandover, c.OncallShiftMetrics, c.Organization,
-		c.Playbook, c.ProviderConfig, c.ProviderSyncHistory, c.Retrospective,
-		c.RetrospectiveComment, c.RetrospectiveReview, c.SystemAnalysis,
-		c.SystemAnalysisComponent, c.SystemAnalysisRelationship, c.SystemComponent,
-		c.SystemComponentConstraint, c.SystemComponentControl, c.SystemComponentKind,
-		c.SystemComponentRelationship, c.SystemComponentSignal, c.SystemHazard,
-		c.SystemRelationshipControlAction, c.SystemRelationshipFeedbackSignal, c.Task,
-		c.Team, c.Tenant, c.Ticket, c.User,
+		c.Integration, c.MeetingSchedule, c.MeetingSession, c.OncallHandoverTemplate,
+		c.OncallRoster, c.OncallRosterMetrics, c.OncallSchedule,
+		c.OncallScheduleParticipant, c.OncallShift, c.OncallShiftHandover,
+		c.OncallShiftMetrics, c.Organization, c.Playbook, c.ProviderSyncHistory,
+		c.Retrospective, c.RetrospectiveComment, c.RetrospectiveReview,
+		c.SystemAnalysis, c.SystemAnalysisComponent, c.SystemAnalysisRelationship,
+		c.SystemComponent, c.SystemComponentConstraint, c.SystemComponentControl,
+		c.SystemComponentKind, c.SystemComponentRelationship, c.SystemComponentSignal,
+		c.SystemHazard, c.SystemRelationshipControlAction,
+		c.SystemRelationshipFeedbackSignal, c.Task, c.Team, c.Tenant, c.Ticket, c.User,
 	} {
 		n.Use(hooks...)
 	}
@@ -566,16 +566,16 @@ func (c *Client) Intercept(interceptors ...Interceptor) {
 		c.IncidentEventEvidence, c.IncidentEventSystemComponent, c.IncidentField,
 		c.IncidentFieldOption, c.IncidentLink, c.IncidentMilestone, c.IncidentRole,
 		c.IncidentRoleAssignment, c.IncidentSeverity, c.IncidentTag, c.IncidentType,
-		c.MeetingSchedule, c.MeetingSession, c.OncallHandoverTemplate, c.OncallRoster,
-		c.OncallRosterMetrics, c.OncallSchedule, c.OncallScheduleParticipant,
-		c.OncallShift, c.OncallShiftHandover, c.OncallShiftMetrics, c.Organization,
-		c.Playbook, c.ProviderConfig, c.ProviderSyncHistory, c.Retrospective,
-		c.RetrospectiveComment, c.RetrospectiveReview, c.SystemAnalysis,
-		c.SystemAnalysisComponent, c.SystemAnalysisRelationship, c.SystemComponent,
-		c.SystemComponentConstraint, c.SystemComponentControl, c.SystemComponentKind,
-		c.SystemComponentRelationship, c.SystemComponentSignal, c.SystemHazard,
-		c.SystemRelationshipControlAction, c.SystemRelationshipFeedbackSignal, c.Task,
-		c.Team, c.Tenant, c.Ticket, c.User,
+		c.Integration, c.MeetingSchedule, c.MeetingSession, c.OncallHandoverTemplate,
+		c.OncallRoster, c.OncallRosterMetrics, c.OncallSchedule,
+		c.OncallScheduleParticipant, c.OncallShift, c.OncallShiftHandover,
+		c.OncallShiftMetrics, c.Organization, c.Playbook, c.ProviderSyncHistory,
+		c.Retrospective, c.RetrospectiveComment, c.RetrospectiveReview,
+		c.SystemAnalysis, c.SystemAnalysisComponent, c.SystemAnalysisRelationship,
+		c.SystemComponent, c.SystemComponentConstraint, c.SystemComponentControl,
+		c.SystemComponentKind, c.SystemComponentRelationship, c.SystemComponentSignal,
+		c.SystemHazard, c.SystemRelationshipControlAction,
+		c.SystemRelationshipFeedbackSignal, c.Task, c.Team, c.Tenant, c.Ticket, c.User,
 	} {
 		n.Intercept(interceptors...)
 	}
@@ -634,6 +634,8 @@ func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 		return c.IncidentTag.mutate(ctx, m)
 	case *IncidentTypeMutation:
 		return c.IncidentType.mutate(ctx, m)
+	case *IntegrationMutation:
+		return c.Integration.mutate(ctx, m)
 	case *MeetingScheduleMutation:
 		return c.MeetingSchedule.mutate(ctx, m)
 	case *MeetingSessionMutation:
@@ -658,8 +660,6 @@ func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 		return c.Organization.mutate(ctx, m)
 	case *PlaybookMutation:
 		return c.Playbook.mutate(ctx, m)
-	case *ProviderConfigMutation:
-		return c.ProviderConfig.mutate(ctx, m)
 	case *ProviderSyncHistoryMutation:
 		return c.ProviderSyncHistory.mutate(ctx, m)
 	case *RetrospectiveMutation:
@@ -5645,6 +5645,156 @@ func (c *IncidentTypeClient) mutate(ctx context.Context, m *IncidentTypeMutation
 	}
 }
 
+// IntegrationClient is a client for the Integration schema.
+type IntegrationClient struct {
+	config
+}
+
+// NewIntegrationClient returns a client for the Integration from the given config.
+func NewIntegrationClient(c config) *IntegrationClient {
+	return &IntegrationClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `integration.Hooks(f(g(h())))`.
+func (c *IntegrationClient) Use(hooks ...Hook) {
+	c.hooks.Integration = append(c.hooks.Integration, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `integration.Intercept(f(g(h())))`.
+func (c *IntegrationClient) Intercept(interceptors ...Interceptor) {
+	c.inters.Integration = append(c.inters.Integration, interceptors...)
+}
+
+// Create returns a builder for creating a Integration entity.
+func (c *IntegrationClient) Create() *IntegrationCreate {
+	mutation := newIntegrationMutation(c.config, OpCreate)
+	return &IntegrationCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of Integration entities.
+func (c *IntegrationClient) CreateBulk(builders ...*IntegrationCreate) *IntegrationCreateBulk {
+	return &IntegrationCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *IntegrationClient) MapCreateBulk(slice any, setFunc func(*IntegrationCreate, int)) *IntegrationCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &IntegrationCreateBulk{err: fmt.Errorf("calling to IntegrationClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*IntegrationCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &IntegrationCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for Integration.
+func (c *IntegrationClient) Update() *IntegrationUpdate {
+	mutation := newIntegrationMutation(c.config, OpUpdate)
+	return &IntegrationUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *IntegrationClient) UpdateOne(_m *Integration) *IntegrationUpdateOne {
+	mutation := newIntegrationMutation(c.config, OpUpdateOne, withIntegration(_m))
+	return &IntegrationUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *IntegrationClient) UpdateOneID(id uuid.UUID) *IntegrationUpdateOne {
+	mutation := newIntegrationMutation(c.config, OpUpdateOne, withIntegrationID(id))
+	return &IntegrationUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for Integration.
+func (c *IntegrationClient) Delete() *IntegrationDelete {
+	mutation := newIntegrationMutation(c.config, OpDelete)
+	return &IntegrationDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *IntegrationClient) DeleteOne(_m *Integration) *IntegrationDeleteOne {
+	return c.DeleteOneID(_m.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *IntegrationClient) DeleteOneID(id uuid.UUID) *IntegrationDeleteOne {
+	builder := c.Delete().Where(integration.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &IntegrationDeleteOne{builder}
+}
+
+// Query returns a query builder for Integration.
+func (c *IntegrationClient) Query() *IntegrationQuery {
+	return &IntegrationQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeIntegration},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a Integration entity by its id.
+func (c *IntegrationClient) Get(ctx context.Context, id uuid.UUID) (*Integration, error) {
+	return c.Query().Where(integration.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *IntegrationClient) GetX(ctx context.Context, id uuid.UUID) *Integration {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QueryTenant queries the tenant edge of a Integration.
+func (c *IntegrationClient) QueryTenant(_m *Integration) *TenantQuery {
+	query := (&TenantClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(integration.Table, integration.FieldID, id),
+			sqlgraph.To(tenant.Table, tenant.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, integration.TenantTable, integration.TenantColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *IntegrationClient) Hooks() []Hook {
+	hooks := c.hooks.Integration
+	return append(hooks[:len(hooks):len(hooks)], integration.Hooks[:]...)
+}
+
+// Interceptors returns the client interceptors.
+func (c *IntegrationClient) Interceptors() []Interceptor {
+	return c.inters.Integration
+}
+
+func (c *IntegrationClient) mutate(ctx context.Context, m *IntegrationMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&IntegrationCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&IntegrationUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&IntegrationUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&IntegrationDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown Integration mutation op: %q", m.Op())
+	}
+}
+
 // MeetingScheduleClient is a client for the MeetingSchedule schema.
 type MeetingScheduleClient struct {
 	config
@@ -7861,156 +8011,6 @@ func (c *PlaybookClient) mutate(ctx context.Context, m *PlaybookMutation) (Value
 		return (&PlaybookDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
 	default:
 		return nil, fmt.Errorf("ent: unknown Playbook mutation op: %q", m.Op())
-	}
-}
-
-// ProviderConfigClient is a client for the ProviderConfig schema.
-type ProviderConfigClient struct {
-	config
-}
-
-// NewProviderConfigClient returns a client for the ProviderConfig from the given config.
-func NewProviderConfigClient(c config) *ProviderConfigClient {
-	return &ProviderConfigClient{config: c}
-}
-
-// Use adds a list of mutation hooks to the hooks stack.
-// A call to `Use(f, g, h)` equals to `providerconfig.Hooks(f(g(h())))`.
-func (c *ProviderConfigClient) Use(hooks ...Hook) {
-	c.hooks.ProviderConfig = append(c.hooks.ProviderConfig, hooks...)
-}
-
-// Intercept adds a list of query interceptors to the interceptors stack.
-// A call to `Intercept(f, g, h)` equals to `providerconfig.Intercept(f(g(h())))`.
-func (c *ProviderConfigClient) Intercept(interceptors ...Interceptor) {
-	c.inters.ProviderConfig = append(c.inters.ProviderConfig, interceptors...)
-}
-
-// Create returns a builder for creating a ProviderConfig entity.
-func (c *ProviderConfigClient) Create() *ProviderConfigCreate {
-	mutation := newProviderConfigMutation(c.config, OpCreate)
-	return &ProviderConfigCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// CreateBulk returns a builder for creating a bulk of ProviderConfig entities.
-func (c *ProviderConfigClient) CreateBulk(builders ...*ProviderConfigCreate) *ProviderConfigCreateBulk {
-	return &ProviderConfigCreateBulk{config: c.config, builders: builders}
-}
-
-// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
-// a builder and applies setFunc on it.
-func (c *ProviderConfigClient) MapCreateBulk(slice any, setFunc func(*ProviderConfigCreate, int)) *ProviderConfigCreateBulk {
-	rv := reflect.ValueOf(slice)
-	if rv.Kind() != reflect.Slice {
-		return &ProviderConfigCreateBulk{err: fmt.Errorf("calling to ProviderConfigClient.MapCreateBulk with wrong type %T, need slice", slice)}
-	}
-	builders := make([]*ProviderConfigCreate, rv.Len())
-	for i := 0; i < rv.Len(); i++ {
-		builders[i] = c.Create()
-		setFunc(builders[i], i)
-	}
-	return &ProviderConfigCreateBulk{config: c.config, builders: builders}
-}
-
-// Update returns an update builder for ProviderConfig.
-func (c *ProviderConfigClient) Update() *ProviderConfigUpdate {
-	mutation := newProviderConfigMutation(c.config, OpUpdate)
-	return &ProviderConfigUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// UpdateOne returns an update builder for the given entity.
-func (c *ProviderConfigClient) UpdateOne(_m *ProviderConfig) *ProviderConfigUpdateOne {
-	mutation := newProviderConfigMutation(c.config, OpUpdateOne, withProviderConfig(_m))
-	return &ProviderConfigUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// UpdateOneID returns an update builder for the given id.
-func (c *ProviderConfigClient) UpdateOneID(id uuid.UUID) *ProviderConfigUpdateOne {
-	mutation := newProviderConfigMutation(c.config, OpUpdateOne, withProviderConfigID(id))
-	return &ProviderConfigUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// Delete returns a delete builder for ProviderConfig.
-func (c *ProviderConfigClient) Delete() *ProviderConfigDelete {
-	mutation := newProviderConfigMutation(c.config, OpDelete)
-	return &ProviderConfigDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// DeleteOne returns a builder for deleting the given entity.
-func (c *ProviderConfigClient) DeleteOne(_m *ProviderConfig) *ProviderConfigDeleteOne {
-	return c.DeleteOneID(_m.ID)
-}
-
-// DeleteOneID returns a builder for deleting the given entity by its id.
-func (c *ProviderConfigClient) DeleteOneID(id uuid.UUID) *ProviderConfigDeleteOne {
-	builder := c.Delete().Where(providerconfig.ID(id))
-	builder.mutation.id = &id
-	builder.mutation.op = OpDeleteOne
-	return &ProviderConfigDeleteOne{builder}
-}
-
-// Query returns a query builder for ProviderConfig.
-func (c *ProviderConfigClient) Query() *ProviderConfigQuery {
-	return &ProviderConfigQuery{
-		config: c.config,
-		ctx:    &QueryContext{Type: TypeProviderConfig},
-		inters: c.Interceptors(),
-	}
-}
-
-// Get returns a ProviderConfig entity by its id.
-func (c *ProviderConfigClient) Get(ctx context.Context, id uuid.UUID) (*ProviderConfig, error) {
-	return c.Query().Where(providerconfig.ID(id)).Only(ctx)
-}
-
-// GetX is like Get, but panics if an error occurs.
-func (c *ProviderConfigClient) GetX(ctx context.Context, id uuid.UUID) *ProviderConfig {
-	obj, err := c.Get(ctx, id)
-	if err != nil {
-		panic(err)
-	}
-	return obj
-}
-
-// QueryTenant queries the tenant edge of a ProviderConfig.
-func (c *ProviderConfigClient) QueryTenant(_m *ProviderConfig) *TenantQuery {
-	query := (&TenantClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := _m.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(providerconfig.Table, providerconfig.FieldID, id),
-			sqlgraph.To(tenant.Table, tenant.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, providerconfig.TenantTable, providerconfig.TenantColumn),
-		)
-		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// Hooks returns the client hooks.
-func (c *ProviderConfigClient) Hooks() []Hook {
-	hooks := c.hooks.ProviderConfig
-	return append(hooks[:len(hooks):len(hooks)], providerconfig.Hooks[:]...)
-}
-
-// Interceptors returns the client interceptors.
-func (c *ProviderConfigClient) Interceptors() []Interceptor {
-	return c.inters.ProviderConfig
-}
-
-func (c *ProviderConfigClient) mutate(ctx context.Context, m *ProviderConfigMutation) (Value, error) {
-	switch m.Op() {
-	case OpCreate:
-		return (&ProviderConfigCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
-	case OpUpdate:
-		return (&ProviderConfigUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
-	case OpUpdateOne:
-		return (&ProviderConfigUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
-	case OpDelete, OpDeleteOne:
-		return (&ProviderConfigDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
-	default:
-		return nil, fmt.Errorf("ent: unknown ProviderConfig mutation op: %q", m.Op())
 	}
 }
 
@@ -12389,16 +12389,16 @@ type (
 		IncidentEventContributingFactor, IncidentEventEvidence,
 		IncidentEventSystemComponent, IncidentField, IncidentFieldOption, IncidentLink,
 		IncidentMilestone, IncidentRole, IncidentRoleAssignment, IncidentSeverity,
-		IncidentTag, IncidentType, MeetingSchedule, MeetingSession,
+		IncidentTag, IncidentType, Integration, MeetingSchedule, MeetingSession,
 		OncallHandoverTemplate, OncallRoster, OncallRosterMetrics, OncallSchedule,
 		OncallScheduleParticipant, OncallShift, OncallShiftHandover,
-		OncallShiftMetrics, Organization, Playbook, ProviderConfig,
-		ProviderSyncHistory, Retrospective, RetrospectiveComment, RetrospectiveReview,
-		SystemAnalysis, SystemAnalysisComponent, SystemAnalysisRelationship,
-		SystemComponent, SystemComponentConstraint, SystemComponentControl,
-		SystemComponentKind, SystemComponentRelationship, SystemComponentSignal,
-		SystemHazard, SystemRelationshipControlAction,
-		SystemRelationshipFeedbackSignal, Task, Team, Tenant, Ticket, User []ent.Hook
+		OncallShiftMetrics, Organization, Playbook, ProviderSyncHistory, Retrospective,
+		RetrospectiveComment, RetrospectiveReview, SystemAnalysis,
+		SystemAnalysisComponent, SystemAnalysisRelationship, SystemComponent,
+		SystemComponentConstraint, SystemComponentControl, SystemComponentKind,
+		SystemComponentRelationship, SystemComponentSignal, SystemHazard,
+		SystemRelationshipControlAction, SystemRelationshipFeedbackSignal, Task, Team,
+		Tenant, Ticket, User []ent.Hook
 	}
 	inters struct {
 		Alert, AlertFeedback, AlertInstance, AlertMetrics, Document, Event,
@@ -12407,16 +12407,15 @@ type (
 		IncidentEventContext, IncidentEventContributingFactor, IncidentEventEvidence,
 		IncidentEventSystemComponent, IncidentField, IncidentFieldOption, IncidentLink,
 		IncidentMilestone, IncidentRole, IncidentRoleAssignment, IncidentSeverity,
-		IncidentTag, IncidentType, MeetingSchedule, MeetingSession,
+		IncidentTag, IncidentType, Integration, MeetingSchedule, MeetingSession,
 		OncallHandoverTemplate, OncallRoster, OncallRosterMetrics, OncallSchedule,
 		OncallScheduleParticipant, OncallShift, OncallShiftHandover,
-		OncallShiftMetrics, Organization, Playbook, ProviderConfig,
-		ProviderSyncHistory, Retrospective, RetrospectiveComment, RetrospectiveReview,
-		SystemAnalysis, SystemAnalysisComponent, SystemAnalysisRelationship,
-		SystemComponent, SystemComponentConstraint, SystemComponentControl,
-		SystemComponentKind, SystemComponentRelationship, SystemComponentSignal,
-		SystemHazard, SystemRelationshipControlAction,
-		SystemRelationshipFeedbackSignal, Task, Team, Tenant, Ticket,
-		User []ent.Interceptor
+		OncallShiftMetrics, Organization, Playbook, ProviderSyncHistory, Retrospective,
+		RetrospectiveComment, RetrospectiveReview, SystemAnalysis,
+		SystemAnalysisComponent, SystemAnalysisRelationship, SystemComponent,
+		SystemComponentConstraint, SystemComponentControl, SystemComponentKind,
+		SystemComponentRelationship, SystemComponentSignal, SystemHazard,
+		SystemRelationshipControlAction, SystemRelationshipFeedbackSignal, Task, Team,
+		Tenant, Ticket, User []ent.Interceptor
 	}
 )

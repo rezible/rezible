@@ -59,14 +59,14 @@ func TenantID(v int) predicate.Playbook {
 	return predicate.Playbook(sql.FieldEQ(FieldTenantID, v))
 }
 
+// ExternalID applies equality check predicate on the "external_id" field. It's identical to ExternalIDEQ.
+func ExternalID(v string) predicate.Playbook {
+	return predicate.Playbook(sql.FieldEQ(FieldExternalID, v))
+}
+
 // Title applies equality check predicate on the "title" field. It's identical to TitleEQ.
 func Title(v string) predicate.Playbook {
 	return predicate.Playbook(sql.FieldEQ(FieldTitle, v))
-}
-
-// ProviderID applies equality check predicate on the "provider_id" field. It's identical to ProviderIDEQ.
-func ProviderID(v string) predicate.Playbook {
-	return predicate.Playbook(sql.FieldEQ(FieldProviderID, v))
 }
 
 // Content applies equality check predicate on the "content" field. It's identical to ContentEQ.
@@ -92,6 +92,81 @@ func TenantIDIn(vs ...int) predicate.Playbook {
 // TenantIDNotIn applies the NotIn predicate on the "tenant_id" field.
 func TenantIDNotIn(vs ...int) predicate.Playbook {
 	return predicate.Playbook(sql.FieldNotIn(FieldTenantID, vs...))
+}
+
+// ExternalIDEQ applies the EQ predicate on the "external_id" field.
+func ExternalIDEQ(v string) predicate.Playbook {
+	return predicate.Playbook(sql.FieldEQ(FieldExternalID, v))
+}
+
+// ExternalIDNEQ applies the NEQ predicate on the "external_id" field.
+func ExternalIDNEQ(v string) predicate.Playbook {
+	return predicate.Playbook(sql.FieldNEQ(FieldExternalID, v))
+}
+
+// ExternalIDIn applies the In predicate on the "external_id" field.
+func ExternalIDIn(vs ...string) predicate.Playbook {
+	return predicate.Playbook(sql.FieldIn(FieldExternalID, vs...))
+}
+
+// ExternalIDNotIn applies the NotIn predicate on the "external_id" field.
+func ExternalIDNotIn(vs ...string) predicate.Playbook {
+	return predicate.Playbook(sql.FieldNotIn(FieldExternalID, vs...))
+}
+
+// ExternalIDGT applies the GT predicate on the "external_id" field.
+func ExternalIDGT(v string) predicate.Playbook {
+	return predicate.Playbook(sql.FieldGT(FieldExternalID, v))
+}
+
+// ExternalIDGTE applies the GTE predicate on the "external_id" field.
+func ExternalIDGTE(v string) predicate.Playbook {
+	return predicate.Playbook(sql.FieldGTE(FieldExternalID, v))
+}
+
+// ExternalIDLT applies the LT predicate on the "external_id" field.
+func ExternalIDLT(v string) predicate.Playbook {
+	return predicate.Playbook(sql.FieldLT(FieldExternalID, v))
+}
+
+// ExternalIDLTE applies the LTE predicate on the "external_id" field.
+func ExternalIDLTE(v string) predicate.Playbook {
+	return predicate.Playbook(sql.FieldLTE(FieldExternalID, v))
+}
+
+// ExternalIDContains applies the Contains predicate on the "external_id" field.
+func ExternalIDContains(v string) predicate.Playbook {
+	return predicate.Playbook(sql.FieldContains(FieldExternalID, v))
+}
+
+// ExternalIDHasPrefix applies the HasPrefix predicate on the "external_id" field.
+func ExternalIDHasPrefix(v string) predicate.Playbook {
+	return predicate.Playbook(sql.FieldHasPrefix(FieldExternalID, v))
+}
+
+// ExternalIDHasSuffix applies the HasSuffix predicate on the "external_id" field.
+func ExternalIDHasSuffix(v string) predicate.Playbook {
+	return predicate.Playbook(sql.FieldHasSuffix(FieldExternalID, v))
+}
+
+// ExternalIDIsNil applies the IsNil predicate on the "external_id" field.
+func ExternalIDIsNil() predicate.Playbook {
+	return predicate.Playbook(sql.FieldIsNull(FieldExternalID))
+}
+
+// ExternalIDNotNil applies the NotNil predicate on the "external_id" field.
+func ExternalIDNotNil() predicate.Playbook {
+	return predicate.Playbook(sql.FieldNotNull(FieldExternalID))
+}
+
+// ExternalIDEqualFold applies the EqualFold predicate on the "external_id" field.
+func ExternalIDEqualFold(v string) predicate.Playbook {
+	return predicate.Playbook(sql.FieldEqualFold(FieldExternalID, v))
+}
+
+// ExternalIDContainsFold applies the ContainsFold predicate on the "external_id" field.
+func ExternalIDContainsFold(v string) predicate.Playbook {
+	return predicate.Playbook(sql.FieldContainsFold(FieldExternalID, v))
 }
 
 // TitleEQ applies the EQ predicate on the "title" field.
@@ -157,71 +232,6 @@ func TitleEqualFold(v string) predicate.Playbook {
 // TitleContainsFold applies the ContainsFold predicate on the "title" field.
 func TitleContainsFold(v string) predicate.Playbook {
 	return predicate.Playbook(sql.FieldContainsFold(FieldTitle, v))
-}
-
-// ProviderIDEQ applies the EQ predicate on the "provider_id" field.
-func ProviderIDEQ(v string) predicate.Playbook {
-	return predicate.Playbook(sql.FieldEQ(FieldProviderID, v))
-}
-
-// ProviderIDNEQ applies the NEQ predicate on the "provider_id" field.
-func ProviderIDNEQ(v string) predicate.Playbook {
-	return predicate.Playbook(sql.FieldNEQ(FieldProviderID, v))
-}
-
-// ProviderIDIn applies the In predicate on the "provider_id" field.
-func ProviderIDIn(vs ...string) predicate.Playbook {
-	return predicate.Playbook(sql.FieldIn(FieldProviderID, vs...))
-}
-
-// ProviderIDNotIn applies the NotIn predicate on the "provider_id" field.
-func ProviderIDNotIn(vs ...string) predicate.Playbook {
-	return predicate.Playbook(sql.FieldNotIn(FieldProviderID, vs...))
-}
-
-// ProviderIDGT applies the GT predicate on the "provider_id" field.
-func ProviderIDGT(v string) predicate.Playbook {
-	return predicate.Playbook(sql.FieldGT(FieldProviderID, v))
-}
-
-// ProviderIDGTE applies the GTE predicate on the "provider_id" field.
-func ProviderIDGTE(v string) predicate.Playbook {
-	return predicate.Playbook(sql.FieldGTE(FieldProviderID, v))
-}
-
-// ProviderIDLT applies the LT predicate on the "provider_id" field.
-func ProviderIDLT(v string) predicate.Playbook {
-	return predicate.Playbook(sql.FieldLT(FieldProviderID, v))
-}
-
-// ProviderIDLTE applies the LTE predicate on the "provider_id" field.
-func ProviderIDLTE(v string) predicate.Playbook {
-	return predicate.Playbook(sql.FieldLTE(FieldProviderID, v))
-}
-
-// ProviderIDContains applies the Contains predicate on the "provider_id" field.
-func ProviderIDContains(v string) predicate.Playbook {
-	return predicate.Playbook(sql.FieldContains(FieldProviderID, v))
-}
-
-// ProviderIDHasPrefix applies the HasPrefix predicate on the "provider_id" field.
-func ProviderIDHasPrefix(v string) predicate.Playbook {
-	return predicate.Playbook(sql.FieldHasPrefix(FieldProviderID, v))
-}
-
-// ProviderIDHasSuffix applies the HasSuffix predicate on the "provider_id" field.
-func ProviderIDHasSuffix(v string) predicate.Playbook {
-	return predicate.Playbook(sql.FieldHasSuffix(FieldProviderID, v))
-}
-
-// ProviderIDEqualFold applies the EqualFold predicate on the "provider_id" field.
-func ProviderIDEqualFold(v string) predicate.Playbook {
-	return predicate.Playbook(sql.FieldEqualFold(FieldProviderID, v))
-}
-
-// ProviderIDContainsFold applies the ContainsFold predicate on the "provider_id" field.
-func ProviderIDContainsFold(v string) predicate.Playbook {
-	return predicate.Playbook(sql.FieldContainsFold(FieldProviderID, v))
 }
 
 // ContentEQ applies the EQ predicate on the "content" field.

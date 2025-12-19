@@ -16,12 +16,12 @@ const (
 	FieldID = "id"
 	// FieldTenantID holds the string denoting the tenant_id field in the database.
 	FieldTenantID = "tenant_id"
+	// FieldExternalID holds the string denoting the external_id field in the database.
+	FieldExternalID = "external_id"
 	// FieldAlertID holds the string denoting the alert_id field in the database.
 	FieldAlertID = "alert_id"
 	// FieldEventID holds the string denoting the event_id field in the database.
 	FieldEventID = "event_id"
-	// FieldProviderID holds the string denoting the provider_id field in the database.
-	FieldProviderID = "provider_id"
 	// FieldAcknowledgedAt holds the string denoting the acknowledged_at field in the database.
 	FieldAcknowledgedAt = "acknowledged_at"
 	// EdgeTenant holds the string denoting the tenant edge name in mutations.
@@ -68,9 +68,9 @@ const (
 var Columns = []string{
 	FieldID,
 	FieldTenantID,
+	FieldExternalID,
 	FieldAlertID,
 	FieldEventID,
-	FieldProviderID,
 	FieldAcknowledgedAt,
 }
 
@@ -121,6 +121,11 @@ func ByTenantID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldTenantID, opts...).ToFunc()
 }
 
+// ByExternalID orders the results by the external_id field.
+func ByExternalID(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldExternalID, opts...).ToFunc()
+}
+
 // ByAlertID orders the results by the alert_id field.
 func ByAlertID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldAlertID, opts...).ToFunc()
@@ -129,11 +134,6 @@ func ByAlertID(opts ...sql.OrderTermOption) OrderOption {
 // ByEventID orders the results by the event_id field.
 func ByEventID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldEventID, opts...).ToFunc()
-}
-
-// ByProviderID orders the results by the provider_id field.
-func ByProviderID(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldProviderID, opts...).ToFunc()
 }
 
 // ByAcknowledgedAt orders the results by the acknowledged_at field.

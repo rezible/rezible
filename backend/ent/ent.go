@@ -38,6 +38,7 @@ import (
 	"github.com/rezible/rezible/ent/incidentseverity"
 	"github.com/rezible/rezible/ent/incidenttag"
 	"github.com/rezible/rezible/ent/incidenttype"
+	"github.com/rezible/rezible/ent/integration"
 	"github.com/rezible/rezible/ent/meetingschedule"
 	"github.com/rezible/rezible/ent/meetingsession"
 	"github.com/rezible/rezible/ent/oncallhandovertemplate"
@@ -50,7 +51,6 @@ import (
 	"github.com/rezible/rezible/ent/oncallshiftmetrics"
 	"github.com/rezible/rezible/ent/organization"
 	"github.com/rezible/rezible/ent/playbook"
-	"github.com/rezible/rezible/ent/providerconfig"
 	"github.com/rezible/rezible/ent/providersynchistory"
 	"github.com/rezible/rezible/ent/retrospective"
 	"github.com/rezible/rezible/ent/retrospectivecomment"
@@ -158,6 +158,7 @@ func checkColumn(t, c string) error {
 			incidentseverity.Table:                 incidentseverity.ValidColumn,
 			incidenttag.Table:                      incidenttag.ValidColumn,
 			incidenttype.Table:                     incidenttype.ValidColumn,
+			integration.Table:                      integration.ValidColumn,
 			meetingschedule.Table:                  meetingschedule.ValidColumn,
 			meetingsession.Table:                   meetingsession.ValidColumn,
 			oncallhandovertemplate.Table:           oncallhandovertemplate.ValidColumn,
@@ -170,7 +171,6 @@ func checkColumn(t, c string) error {
 			oncallshiftmetrics.Table:               oncallshiftmetrics.ValidColumn,
 			organization.Table:                     organization.ValidColumn,
 			playbook.Table:                         playbook.ValidColumn,
-			providerconfig.Table:                   providerconfig.ValidColumn,
 			providersynchistory.Table:              providersynchistory.ValidColumn,
 			retrospective.Table:                    retrospective.ValidColumn,
 			retrospectivecomment.Table:             retrospectivecomment.ValidColumn,

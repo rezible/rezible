@@ -41,23 +41,23 @@ func (_c *SystemComponentCreate) SetTenantID(v int) *SystemComponentCreate {
 	return _c
 }
 
+// SetExternalID sets the "external_id" field.
+func (_c *SystemComponentCreate) SetExternalID(v string) *SystemComponentCreate {
+	_c.mutation.SetExternalID(v)
+	return _c
+}
+
+// SetNillableExternalID sets the "external_id" field if the given value is not nil.
+func (_c *SystemComponentCreate) SetNillableExternalID(v *string) *SystemComponentCreate {
+	if v != nil {
+		_c.SetExternalID(*v)
+	}
+	return _c
+}
+
 // SetName sets the "name" field.
 func (_c *SystemComponentCreate) SetName(v string) *SystemComponentCreate {
 	_c.mutation.SetName(v)
-	return _c
-}
-
-// SetProviderID sets the "provider_id" field.
-func (_c *SystemComponentCreate) SetProviderID(v string) *SystemComponentCreate {
-	_c.mutation.SetProviderID(v)
-	return _c
-}
-
-// SetNillableProviderID sets the "provider_id" field if the given value is not nil.
-func (_c *SystemComponentCreate) SetNillableProviderID(v *string) *SystemComponentCreate {
-	if v != nil {
-		_c.SetProviderID(*v)
-	}
 	return _c
 }
 
@@ -416,13 +416,13 @@ func (_c *SystemComponentCreate) createSpec() (*SystemComponent, *sqlgraph.Creat
 		_node.ID = id
 		_spec.ID.Value = &id
 	}
+	if value, ok := _c.mutation.ExternalID(); ok {
+		_spec.SetField(systemcomponent.FieldExternalID, field.TypeString, value)
+		_node.ExternalID = value
+	}
 	if value, ok := _c.mutation.Name(); ok {
 		_spec.SetField(systemcomponent.FieldName, field.TypeString, value)
 		_node.Name = value
-	}
-	if value, ok := _c.mutation.ProviderID(); ok {
-		_spec.SetField(systemcomponent.FieldProviderID, field.TypeString, value)
-		_node.ProviderID = value
 	}
 	if value, ok := _c.mutation.Description(); ok {
 		_spec.SetField(systemcomponent.FieldDescription, field.TypeString, value)
@@ -707,6 +707,24 @@ type (
 	}
 )
 
+// SetExternalID sets the "external_id" field.
+func (u *SystemComponentUpsert) SetExternalID(v string) *SystemComponentUpsert {
+	u.Set(systemcomponent.FieldExternalID, v)
+	return u
+}
+
+// UpdateExternalID sets the "external_id" field to the value that was provided on create.
+func (u *SystemComponentUpsert) UpdateExternalID() *SystemComponentUpsert {
+	u.SetExcluded(systemcomponent.FieldExternalID)
+	return u
+}
+
+// ClearExternalID clears the value of the "external_id" field.
+func (u *SystemComponentUpsert) ClearExternalID() *SystemComponentUpsert {
+	u.SetNull(systemcomponent.FieldExternalID)
+	return u
+}
+
 // SetName sets the "name" field.
 func (u *SystemComponentUpsert) SetName(v string) *SystemComponentUpsert {
 	u.Set(systemcomponent.FieldName, v)
@@ -716,24 +734,6 @@ func (u *SystemComponentUpsert) SetName(v string) *SystemComponentUpsert {
 // UpdateName sets the "name" field to the value that was provided on create.
 func (u *SystemComponentUpsert) UpdateName() *SystemComponentUpsert {
 	u.SetExcluded(systemcomponent.FieldName)
-	return u
-}
-
-// SetProviderID sets the "provider_id" field.
-func (u *SystemComponentUpsert) SetProviderID(v string) *SystemComponentUpsert {
-	u.Set(systemcomponent.FieldProviderID, v)
-	return u
-}
-
-// UpdateProviderID sets the "provider_id" field to the value that was provided on create.
-func (u *SystemComponentUpsert) UpdateProviderID() *SystemComponentUpsert {
-	u.SetExcluded(systemcomponent.FieldProviderID)
-	return u
-}
-
-// ClearProviderID clears the value of the "provider_id" field.
-func (u *SystemComponentUpsert) ClearProviderID() *SystemComponentUpsert {
-	u.SetNull(systemcomponent.FieldProviderID)
 	return u
 }
 
@@ -866,6 +866,27 @@ func (u *SystemComponentUpsertOne) Update(set func(*SystemComponentUpsert)) *Sys
 	return u
 }
 
+// SetExternalID sets the "external_id" field.
+func (u *SystemComponentUpsertOne) SetExternalID(v string) *SystemComponentUpsertOne {
+	return u.Update(func(s *SystemComponentUpsert) {
+		s.SetExternalID(v)
+	})
+}
+
+// UpdateExternalID sets the "external_id" field to the value that was provided on create.
+func (u *SystemComponentUpsertOne) UpdateExternalID() *SystemComponentUpsertOne {
+	return u.Update(func(s *SystemComponentUpsert) {
+		s.UpdateExternalID()
+	})
+}
+
+// ClearExternalID clears the value of the "external_id" field.
+func (u *SystemComponentUpsertOne) ClearExternalID() *SystemComponentUpsertOne {
+	return u.Update(func(s *SystemComponentUpsert) {
+		s.ClearExternalID()
+	})
+}
+
 // SetName sets the "name" field.
 func (u *SystemComponentUpsertOne) SetName(v string) *SystemComponentUpsertOne {
 	return u.Update(func(s *SystemComponentUpsert) {
@@ -877,27 +898,6 @@ func (u *SystemComponentUpsertOne) SetName(v string) *SystemComponentUpsertOne {
 func (u *SystemComponentUpsertOne) UpdateName() *SystemComponentUpsertOne {
 	return u.Update(func(s *SystemComponentUpsert) {
 		s.UpdateName()
-	})
-}
-
-// SetProviderID sets the "provider_id" field.
-func (u *SystemComponentUpsertOne) SetProviderID(v string) *SystemComponentUpsertOne {
-	return u.Update(func(s *SystemComponentUpsert) {
-		s.SetProviderID(v)
-	})
-}
-
-// UpdateProviderID sets the "provider_id" field to the value that was provided on create.
-func (u *SystemComponentUpsertOne) UpdateProviderID() *SystemComponentUpsertOne {
-	return u.Update(func(s *SystemComponentUpsert) {
-		s.UpdateProviderID()
-	})
-}
-
-// ClearProviderID clears the value of the "provider_id" field.
-func (u *SystemComponentUpsertOne) ClearProviderID() *SystemComponentUpsertOne {
-	return u.Update(func(s *SystemComponentUpsert) {
-		s.ClearProviderID()
 	})
 }
 
@@ -1210,6 +1210,27 @@ func (u *SystemComponentUpsertBulk) Update(set func(*SystemComponentUpsert)) *Sy
 	return u
 }
 
+// SetExternalID sets the "external_id" field.
+func (u *SystemComponentUpsertBulk) SetExternalID(v string) *SystemComponentUpsertBulk {
+	return u.Update(func(s *SystemComponentUpsert) {
+		s.SetExternalID(v)
+	})
+}
+
+// UpdateExternalID sets the "external_id" field to the value that was provided on create.
+func (u *SystemComponentUpsertBulk) UpdateExternalID() *SystemComponentUpsertBulk {
+	return u.Update(func(s *SystemComponentUpsert) {
+		s.UpdateExternalID()
+	})
+}
+
+// ClearExternalID clears the value of the "external_id" field.
+func (u *SystemComponentUpsertBulk) ClearExternalID() *SystemComponentUpsertBulk {
+	return u.Update(func(s *SystemComponentUpsert) {
+		s.ClearExternalID()
+	})
+}
+
 // SetName sets the "name" field.
 func (u *SystemComponentUpsertBulk) SetName(v string) *SystemComponentUpsertBulk {
 	return u.Update(func(s *SystemComponentUpsert) {
@@ -1221,27 +1242,6 @@ func (u *SystemComponentUpsertBulk) SetName(v string) *SystemComponentUpsertBulk
 func (u *SystemComponentUpsertBulk) UpdateName() *SystemComponentUpsertBulk {
 	return u.Update(func(s *SystemComponentUpsert) {
 		s.UpdateName()
-	})
-}
-
-// SetProviderID sets the "provider_id" field.
-func (u *SystemComponentUpsertBulk) SetProviderID(v string) *SystemComponentUpsertBulk {
-	return u.Update(func(s *SystemComponentUpsert) {
-		s.SetProviderID(v)
-	})
-}
-
-// UpdateProviderID sets the "provider_id" field to the value that was provided on create.
-func (u *SystemComponentUpsertBulk) UpdateProviderID() *SystemComponentUpsertBulk {
-	return u.Update(func(s *SystemComponentUpsert) {
-		s.UpdateProviderID()
-	})
-}
-
-// ClearProviderID clears the value of the "provider_id" field.
-func (u *SystemComponentUpsertBulk) ClearProviderID() *SystemComponentUpsertBulk {
-	return u.Update(func(s *SystemComponentUpsert) {
-		s.ClearProviderID()
 	})
 }
 

@@ -52,6 +52,20 @@ func (_c *OncallRosterCreate) SetNillableArchiveTime(v *time.Time) *OncallRoster
 	return _c
 }
 
+// SetExternalID sets the "external_id" field.
+func (_c *OncallRosterCreate) SetExternalID(v string) *OncallRosterCreate {
+	_c.mutation.SetExternalID(v)
+	return _c
+}
+
+// SetNillableExternalID sets the "external_id" field if the given value is not nil.
+func (_c *OncallRosterCreate) SetNillableExternalID(v *string) *OncallRosterCreate {
+	if v != nil {
+		_c.SetExternalID(*v)
+	}
+	return _c
+}
+
 // SetName sets the "name" field.
 func (_c *OncallRosterCreate) SetName(v string) *OncallRosterCreate {
 	_c.mutation.SetName(v)
@@ -61,12 +75,6 @@ func (_c *OncallRosterCreate) SetName(v string) *OncallRosterCreate {
 // SetSlug sets the "slug" field.
 func (_c *OncallRosterCreate) SetSlug(v string) *OncallRosterCreate {
 	_c.mutation.SetSlug(v)
-	return _c
-}
-
-// SetProviderID sets the "provider_id" field.
-func (_c *OncallRosterCreate) SetProviderID(v string) *OncallRosterCreate {
-	_c.mutation.SetProviderID(v)
 	return _c
 }
 
@@ -298,9 +306,6 @@ func (_c *OncallRosterCreate) check() error {
 	if _, ok := _c.mutation.Slug(); !ok {
 		return &ValidationError{Name: "slug", err: errors.New(`ent: missing required field "OncallRoster.slug"`)}
 	}
-	if _, ok := _c.mutation.ProviderID(); !ok {
-		return &ValidationError{Name: "provider_id", err: errors.New(`ent: missing required field "OncallRoster.provider_id"`)}
-	}
 	if len(_c.mutation.TenantIDs()) == 0 {
 		return &ValidationError{Name: "tenant", err: errors.New(`ent: missing required edge "OncallRoster.tenant"`)}
 	}
@@ -344,6 +349,10 @@ func (_c *OncallRosterCreate) createSpec() (*OncallRoster, *sqlgraph.CreateSpec)
 		_spec.SetField(oncallroster.FieldArchiveTime, field.TypeTime, value)
 		_node.ArchiveTime = value
 	}
+	if value, ok := _c.mutation.ExternalID(); ok {
+		_spec.SetField(oncallroster.FieldExternalID, field.TypeString, value)
+		_node.ExternalID = value
+	}
 	if value, ok := _c.mutation.Name(); ok {
 		_spec.SetField(oncallroster.FieldName, field.TypeString, value)
 		_node.Name = value
@@ -351,10 +360,6 @@ func (_c *OncallRosterCreate) createSpec() (*OncallRoster, *sqlgraph.CreateSpec)
 	if value, ok := _c.mutation.Slug(); ok {
 		_spec.SetField(oncallroster.FieldSlug, field.TypeString, value)
 		_node.Slug = value
-	}
-	if value, ok := _c.mutation.ProviderID(); ok {
-		_spec.SetField(oncallroster.FieldProviderID, field.TypeString, value)
-		_node.ProviderID = value
 	}
 	if value, ok := _c.mutation.Timezone(); ok {
 		_spec.SetField(oncallroster.FieldTimezone, field.TypeString, value)
@@ -568,6 +573,24 @@ func (u *OncallRosterUpsert) ClearArchiveTime() *OncallRosterUpsert {
 	return u
 }
 
+// SetExternalID sets the "external_id" field.
+func (u *OncallRosterUpsert) SetExternalID(v string) *OncallRosterUpsert {
+	u.Set(oncallroster.FieldExternalID, v)
+	return u
+}
+
+// UpdateExternalID sets the "external_id" field to the value that was provided on create.
+func (u *OncallRosterUpsert) UpdateExternalID() *OncallRosterUpsert {
+	u.SetExcluded(oncallroster.FieldExternalID)
+	return u
+}
+
+// ClearExternalID clears the value of the "external_id" field.
+func (u *OncallRosterUpsert) ClearExternalID() *OncallRosterUpsert {
+	u.SetNull(oncallroster.FieldExternalID)
+	return u
+}
+
 // SetName sets the "name" field.
 func (u *OncallRosterUpsert) SetName(v string) *OncallRosterUpsert {
 	u.Set(oncallroster.FieldName, v)
@@ -589,18 +612,6 @@ func (u *OncallRosterUpsert) SetSlug(v string) *OncallRosterUpsert {
 // UpdateSlug sets the "slug" field to the value that was provided on create.
 func (u *OncallRosterUpsert) UpdateSlug() *OncallRosterUpsert {
 	u.SetExcluded(oncallroster.FieldSlug)
-	return u
-}
-
-// SetProviderID sets the "provider_id" field.
-func (u *OncallRosterUpsert) SetProviderID(v string) *OncallRosterUpsert {
-	u.Set(oncallroster.FieldProviderID, v)
-	return u
-}
-
-// UpdateProviderID sets the "provider_id" field to the value that was provided on create.
-func (u *OncallRosterUpsert) UpdateProviderID() *OncallRosterUpsert {
-	u.SetExcluded(oncallroster.FieldProviderID)
 	return u
 }
 
@@ -748,6 +759,27 @@ func (u *OncallRosterUpsertOne) ClearArchiveTime() *OncallRosterUpsertOne {
 	})
 }
 
+// SetExternalID sets the "external_id" field.
+func (u *OncallRosterUpsertOne) SetExternalID(v string) *OncallRosterUpsertOne {
+	return u.Update(func(s *OncallRosterUpsert) {
+		s.SetExternalID(v)
+	})
+}
+
+// UpdateExternalID sets the "external_id" field to the value that was provided on create.
+func (u *OncallRosterUpsertOne) UpdateExternalID() *OncallRosterUpsertOne {
+	return u.Update(func(s *OncallRosterUpsert) {
+		s.UpdateExternalID()
+	})
+}
+
+// ClearExternalID clears the value of the "external_id" field.
+func (u *OncallRosterUpsertOne) ClearExternalID() *OncallRosterUpsertOne {
+	return u.Update(func(s *OncallRosterUpsert) {
+		s.ClearExternalID()
+	})
+}
+
 // SetName sets the "name" field.
 func (u *OncallRosterUpsertOne) SetName(v string) *OncallRosterUpsertOne {
 	return u.Update(func(s *OncallRosterUpsert) {
@@ -773,20 +805,6 @@ func (u *OncallRosterUpsertOne) SetSlug(v string) *OncallRosterUpsertOne {
 func (u *OncallRosterUpsertOne) UpdateSlug() *OncallRosterUpsertOne {
 	return u.Update(func(s *OncallRosterUpsert) {
 		s.UpdateSlug()
-	})
-}
-
-// SetProviderID sets the "provider_id" field.
-func (u *OncallRosterUpsertOne) SetProviderID(v string) *OncallRosterUpsertOne {
-	return u.Update(func(s *OncallRosterUpsert) {
-		s.SetProviderID(v)
-	})
-}
-
-// UpdateProviderID sets the "provider_id" field to the value that was provided on create.
-func (u *OncallRosterUpsertOne) UpdateProviderID() *OncallRosterUpsertOne {
-	return u.Update(func(s *OncallRosterUpsert) {
-		s.UpdateProviderID()
 	})
 }
 
@@ -1113,6 +1131,27 @@ func (u *OncallRosterUpsertBulk) ClearArchiveTime() *OncallRosterUpsertBulk {
 	})
 }
 
+// SetExternalID sets the "external_id" field.
+func (u *OncallRosterUpsertBulk) SetExternalID(v string) *OncallRosterUpsertBulk {
+	return u.Update(func(s *OncallRosterUpsert) {
+		s.SetExternalID(v)
+	})
+}
+
+// UpdateExternalID sets the "external_id" field to the value that was provided on create.
+func (u *OncallRosterUpsertBulk) UpdateExternalID() *OncallRosterUpsertBulk {
+	return u.Update(func(s *OncallRosterUpsert) {
+		s.UpdateExternalID()
+	})
+}
+
+// ClearExternalID clears the value of the "external_id" field.
+func (u *OncallRosterUpsertBulk) ClearExternalID() *OncallRosterUpsertBulk {
+	return u.Update(func(s *OncallRosterUpsert) {
+		s.ClearExternalID()
+	})
+}
+
 // SetName sets the "name" field.
 func (u *OncallRosterUpsertBulk) SetName(v string) *OncallRosterUpsertBulk {
 	return u.Update(func(s *OncallRosterUpsert) {
@@ -1138,20 +1177,6 @@ func (u *OncallRosterUpsertBulk) SetSlug(v string) *OncallRosterUpsertBulk {
 func (u *OncallRosterUpsertBulk) UpdateSlug() *OncallRosterUpsertBulk {
 	return u.Update(func(s *OncallRosterUpsert) {
 		s.UpdateSlug()
-	})
-}
-
-// SetProviderID sets the "provider_id" field.
-func (u *OncallRosterUpsertBulk) SetProviderID(v string) *OncallRosterUpsertBulk {
-	return u.Update(func(s *OncallRosterUpsert) {
-		s.SetProviderID(v)
-	})
-}
-
-// UpdateProviderID sets the "provider_id" field to the value that was provided on create.
-func (u *OncallRosterUpsertBulk) UpdateProviderID() *OncallRosterUpsertBulk {
-	return u.Update(func(s *OncallRosterUpsert) {
-		s.UpdateProviderID()
 	})
 }
 

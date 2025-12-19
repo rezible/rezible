@@ -25,12 +25,12 @@ type OncallShift struct {
 	ID uuid.UUID `json:"id,omitempty"`
 	// TenantID holds the value of the "tenant_id" field.
 	TenantID int `json:"tenant_id,omitempty"`
+	// ExternalID holds the value of the "external_id" field.
+	ExternalID string `json:"external_id,omitempty"`
 	// UserID holds the value of the "user_id" field.
 	UserID uuid.UUID `json:"user_id,omitempty"`
 	// RosterID holds the value of the "roster_id" field.
 	RosterID uuid.UUID `json:"roster_id,omitempty"`
-	// ProviderID holds the value of the "provider_id" field.
-	ProviderID string `json:"provider_id,omitempty"`
 	// Role holds the value of the "role" field.
 	Role oncallshift.Role `json:"role,omitempty"`
 	// PrimaryShiftID holds the value of the "primary_shift_id" field.
@@ -137,7 +137,7 @@ func (*OncallShift) scanValues(columns []string) ([]any, error) {
 		switch columns[i] {
 		case oncallshift.FieldTenantID:
 			values[i] = new(sql.NullInt64)
-		case oncallshift.FieldProviderID, oncallshift.FieldRole:
+		case oncallshift.FieldExternalID, oncallshift.FieldRole:
 			values[i] = new(sql.NullString)
 		case oncallshift.FieldStartAt, oncallshift.FieldEndAt:
 			values[i] = new(sql.NullTime)
@@ -170,6 +170,12 @@ func (_m *OncallShift) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				_m.TenantID = int(value.Int64)
 			}
+		case oncallshift.FieldExternalID:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field external_id", values[i])
+			} else if value.Valid {
+				_m.ExternalID = value.String
+			}
 		case oncallshift.FieldUserID:
 			if value, ok := values[i].(*uuid.UUID); !ok {
 				return fmt.Errorf("unexpected type %T for field user_id", values[i])
@@ -181,12 +187,6 @@ func (_m *OncallShift) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field roster_id", values[i])
 			} else if value != nil {
 				_m.RosterID = *value
-			}
-		case oncallshift.FieldProviderID:
-			if value, ok := values[i].(*sql.NullString); !ok {
-				return fmt.Errorf("unexpected type %T for field provider_id", values[i])
-			} else if value.Valid {
-				_m.ProviderID = value.String
 			}
 		case oncallshift.FieldRole:
 			if value, ok := values[i].(*sql.NullString); !ok {
@@ -281,14 +281,14 @@ func (_m *OncallShift) String() string {
 	builder.WriteString("tenant_id=")
 	builder.WriteString(fmt.Sprintf("%v", _m.TenantID))
 	builder.WriteString(", ")
+	builder.WriteString("external_id=")
+	builder.WriteString(_m.ExternalID)
+	builder.WriteString(", ")
 	builder.WriteString("user_id=")
 	builder.WriteString(fmt.Sprintf("%v", _m.UserID))
 	builder.WriteString(", ")
 	builder.WriteString("roster_id=")
 	builder.WriteString(fmt.Sprintf("%v", _m.RosterID))
-	builder.WriteString(", ")
-	builder.WriteString("provider_id=")
-	builder.WriteString(_m.ProviderID)
 	builder.WriteString(", ")
 	builder.WriteString("role=")
 	builder.WriteString(fmt.Sprintf("%v", _m.Role))

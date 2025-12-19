@@ -52,23 +52,23 @@ func (_u *IncidentSeverityUpdate) ClearArchiveTime() *IncidentSeverityUpdate {
 	return _u
 }
 
-// SetProviderID sets the "provider_id" field.
-func (_u *IncidentSeverityUpdate) SetProviderID(v string) *IncidentSeverityUpdate {
-	_u.mutation.SetProviderID(v)
+// SetExternalID sets the "external_id" field.
+func (_u *IncidentSeverityUpdate) SetExternalID(v string) *IncidentSeverityUpdate {
+	_u.mutation.SetExternalID(v)
 	return _u
 }
 
-// SetNillableProviderID sets the "provider_id" field if the given value is not nil.
-func (_u *IncidentSeverityUpdate) SetNillableProviderID(v *string) *IncidentSeverityUpdate {
+// SetNillableExternalID sets the "external_id" field if the given value is not nil.
+func (_u *IncidentSeverityUpdate) SetNillableExternalID(v *string) *IncidentSeverityUpdate {
 	if v != nil {
-		_u.SetProviderID(*v)
+		_u.SetExternalID(*v)
 	}
 	return _u
 }
 
-// ClearProviderID clears the value of the "provider_id" field.
-func (_u *IncidentSeverityUpdate) ClearProviderID() *IncidentSeverityUpdate {
-	_u.mutation.ClearProviderID()
+// ClearExternalID clears the value of the "external_id" field.
+func (_u *IncidentSeverityUpdate) ClearExternalID() *IncidentSeverityUpdate {
+	_u.mutation.ClearExternalID()
 	return _u
 }
 
@@ -283,11 +283,11 @@ func (_u *IncidentSeverityUpdate) sqlSave(ctx context.Context) (_node int, err e
 	if _u.mutation.ArchiveTimeCleared() {
 		_spec.ClearField(incidentseverity.FieldArchiveTime, field.TypeTime)
 	}
-	if value, ok := _u.mutation.ProviderID(); ok {
-		_spec.SetField(incidentseverity.FieldProviderID, field.TypeString, value)
+	if value, ok := _u.mutation.ExternalID(); ok {
+		_spec.SetField(incidentseverity.FieldExternalID, field.TypeString, value)
 	}
-	if _u.mutation.ProviderIDCleared() {
-		_spec.ClearField(incidentseverity.FieldProviderID, field.TypeString)
+	if _u.mutation.ExternalIDCleared() {
+		_spec.ClearField(incidentseverity.FieldExternalID, field.TypeString)
 	}
 	if value, ok := _u.mutation.Name(); ok {
 		_spec.SetField(incidentseverity.FieldName, field.TypeString, value)
@@ -442,23 +442,23 @@ func (_u *IncidentSeverityUpdateOne) ClearArchiveTime() *IncidentSeverityUpdateO
 	return _u
 }
 
-// SetProviderID sets the "provider_id" field.
-func (_u *IncidentSeverityUpdateOne) SetProviderID(v string) *IncidentSeverityUpdateOne {
-	_u.mutation.SetProviderID(v)
+// SetExternalID sets the "external_id" field.
+func (_u *IncidentSeverityUpdateOne) SetExternalID(v string) *IncidentSeverityUpdateOne {
+	_u.mutation.SetExternalID(v)
 	return _u
 }
 
-// SetNillableProviderID sets the "provider_id" field if the given value is not nil.
-func (_u *IncidentSeverityUpdateOne) SetNillableProviderID(v *string) *IncidentSeverityUpdateOne {
+// SetNillableExternalID sets the "external_id" field if the given value is not nil.
+func (_u *IncidentSeverityUpdateOne) SetNillableExternalID(v *string) *IncidentSeverityUpdateOne {
 	if v != nil {
-		_u.SetProviderID(*v)
+		_u.SetExternalID(*v)
 	}
 	return _u
 }
 
-// ClearProviderID clears the value of the "provider_id" field.
-func (_u *IncidentSeverityUpdateOne) ClearProviderID() *IncidentSeverityUpdateOne {
-	_u.mutation.ClearProviderID()
+// ClearExternalID clears the value of the "external_id" field.
+func (_u *IncidentSeverityUpdateOne) ClearExternalID() *IncidentSeverityUpdateOne {
+	_u.mutation.ClearExternalID()
 	return _u
 }
 
@@ -703,11 +703,11 @@ func (_u *IncidentSeverityUpdateOne) sqlSave(ctx context.Context) (_node *Incide
 	if _u.mutation.ArchiveTimeCleared() {
 		_spec.ClearField(incidentseverity.FieldArchiveTime, field.TypeTime)
 	}
-	if value, ok := _u.mutation.ProviderID(); ok {
-		_spec.SetField(incidentseverity.FieldProviderID, field.TypeString, value)
+	if value, ok := _u.mutation.ExternalID(); ok {
+		_spec.SetField(incidentseverity.FieldExternalID, field.TypeString, value)
 	}
-	if _u.mutation.ProviderIDCleared() {
-		_spec.ClearField(incidentseverity.FieldProviderID, field.TypeString)
+	if _u.mutation.ExternalIDCleared() {
+		_spec.ClearField(incidentseverity.FieldExternalID, field.TypeString)
 	}
 	if value, ok := _u.mutation.Name(); ok {
 		_spec.SetField(incidentseverity.FieldName, field.TypeString, value)

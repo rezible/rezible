@@ -44,6 +44,20 @@ func (_c *IncidentCreate) SetTenantID(v int) *IncidentCreate {
 	return _c
 }
 
+// SetExternalID sets the "external_id" field.
+func (_c *IncidentCreate) SetExternalID(v string) *IncidentCreate {
+	_c.mutation.SetExternalID(v)
+	return _c
+}
+
+// SetNillableExternalID sets the "external_id" field if the given value is not nil.
+func (_c *IncidentCreate) SetNillableExternalID(v *string) *IncidentCreate {
+	if v != nil {
+		_c.SetExternalID(*v)
+	}
+	return _c
+}
+
 // SetSlug sets the "slug" field.
 func (_c *IncidentCreate) SetSlug(v string) *IncidentCreate {
 	_c.mutation.SetSlug(v)
@@ -126,34 +140,6 @@ func (_c *IncidentCreate) SetNillableClosedAt(v *time.Time) *IncidentCreate {
 	return _c
 }
 
-// SetProviderID sets the "provider_id" field.
-func (_c *IncidentCreate) SetProviderID(v string) *IncidentCreate {
-	_c.mutation.SetProviderID(v)
-	return _c
-}
-
-// SetNillableProviderID sets the "provider_id" field if the given value is not nil.
-func (_c *IncidentCreate) SetNillableProviderID(v *string) *IncidentCreate {
-	if v != nil {
-		_c.SetProviderID(*v)
-	}
-	return _c
-}
-
-// SetChatChannelID sets the "chat_channel_id" field.
-func (_c *IncidentCreate) SetChatChannelID(v string) *IncidentCreate {
-	_c.mutation.SetChatChannelID(v)
-	return _c
-}
-
-// SetNillableChatChannelID sets the "chat_channel_id" field if the given value is not nil.
-func (_c *IncidentCreate) SetNillableChatChannelID(v *string) *IncidentCreate {
-	if v != nil {
-		_c.SetChatChannelID(*v)
-	}
-	return _c
-}
-
 // SetSeverityID sets the "severity_id" field.
 func (_c *IncidentCreate) SetSeverityID(v uuid.UUID) *IncidentCreate {
 	_c.mutation.SetSeverityID(v)
@@ -178,6 +164,20 @@ func (_c *IncidentCreate) SetTypeID(v uuid.UUID) *IncidentCreate {
 func (_c *IncidentCreate) SetNillableTypeID(v *uuid.UUID) *IncidentCreate {
 	if v != nil {
 		_c.SetTypeID(*v)
+	}
+	return _c
+}
+
+// SetChatChannelID sets the "chat_channel_id" field.
+func (_c *IncidentCreate) SetChatChannelID(v string) *IncidentCreate {
+	_c.mutation.SetChatChannelID(v)
+	return _c
+}
+
+// SetNillableChatChannelID sets the "chat_channel_id" field if the given value is not nil.
+func (_c *IncidentCreate) SetNillableChatChannelID(v *string) *IncidentCreate {
+	if v != nil {
+		_c.SetChatChannelID(*v)
 	}
 	return _c
 }
@@ -524,6 +524,10 @@ func (_c *IncidentCreate) createSpec() (*Incident, *sqlgraph.CreateSpec) {
 		_node.ID = id
 		_spec.ID.Value = &id
 	}
+	if value, ok := _c.mutation.ExternalID(); ok {
+		_spec.SetField(incident.FieldExternalID, field.TypeString, value)
+		_node.ExternalID = value
+	}
 	if value, ok := _c.mutation.Slug(); ok {
 		_spec.SetField(incident.FieldSlug, field.TypeString, value)
 		_node.Slug = value
@@ -551,10 +555,6 @@ func (_c *IncidentCreate) createSpec() (*Incident, *sqlgraph.CreateSpec) {
 	if value, ok := _c.mutation.ClosedAt(); ok {
 		_spec.SetField(incident.FieldClosedAt, field.TypeTime, value)
 		_node.ClosedAt = value
-	}
-	if value, ok := _c.mutation.ProviderID(); ok {
-		_spec.SetField(incident.FieldProviderID, field.TypeString, value)
-		_node.ProviderID = value
 	}
 	if value, ok := _c.mutation.ChatChannelID(); ok {
 		_spec.SetField(incident.FieldChatChannelID, field.TypeString, value)
@@ -878,6 +878,24 @@ type (
 	}
 )
 
+// SetExternalID sets the "external_id" field.
+func (u *IncidentUpsert) SetExternalID(v string) *IncidentUpsert {
+	u.Set(incident.FieldExternalID, v)
+	return u
+}
+
+// UpdateExternalID sets the "external_id" field to the value that was provided on create.
+func (u *IncidentUpsert) UpdateExternalID() *IncidentUpsert {
+	u.SetExcluded(incident.FieldExternalID)
+	return u
+}
+
+// ClearExternalID clears the value of the "external_id" field.
+func (u *IncidentUpsert) ClearExternalID() *IncidentUpsert {
+	u.SetNull(incident.FieldExternalID)
+	return u
+}
+
 // SetSlug sets the "slug" field.
 func (u *IncidentUpsert) SetSlug(v string) *IncidentUpsert {
 	u.Set(incident.FieldSlug, v)
@@ -980,42 +998,6 @@ func (u *IncidentUpsert) ClearClosedAt() *IncidentUpsert {
 	return u
 }
 
-// SetProviderID sets the "provider_id" field.
-func (u *IncidentUpsert) SetProviderID(v string) *IncidentUpsert {
-	u.Set(incident.FieldProviderID, v)
-	return u
-}
-
-// UpdateProviderID sets the "provider_id" field to the value that was provided on create.
-func (u *IncidentUpsert) UpdateProviderID() *IncidentUpsert {
-	u.SetExcluded(incident.FieldProviderID)
-	return u
-}
-
-// ClearProviderID clears the value of the "provider_id" field.
-func (u *IncidentUpsert) ClearProviderID() *IncidentUpsert {
-	u.SetNull(incident.FieldProviderID)
-	return u
-}
-
-// SetChatChannelID sets the "chat_channel_id" field.
-func (u *IncidentUpsert) SetChatChannelID(v string) *IncidentUpsert {
-	u.Set(incident.FieldChatChannelID, v)
-	return u
-}
-
-// UpdateChatChannelID sets the "chat_channel_id" field to the value that was provided on create.
-func (u *IncidentUpsert) UpdateChatChannelID() *IncidentUpsert {
-	u.SetExcluded(incident.FieldChatChannelID)
-	return u
-}
-
-// ClearChatChannelID clears the value of the "chat_channel_id" field.
-func (u *IncidentUpsert) ClearChatChannelID() *IncidentUpsert {
-	u.SetNull(incident.FieldChatChannelID)
-	return u
-}
-
 // SetSeverityID sets the "severity_id" field.
 func (u *IncidentUpsert) SetSeverityID(v uuid.UUID) *IncidentUpsert {
 	u.Set(incident.FieldSeverityID, v)
@@ -1049,6 +1031,24 @@ func (u *IncidentUpsert) UpdateTypeID() *IncidentUpsert {
 // ClearTypeID clears the value of the "type_id" field.
 func (u *IncidentUpsert) ClearTypeID() *IncidentUpsert {
 	u.SetNull(incident.FieldTypeID)
+	return u
+}
+
+// SetChatChannelID sets the "chat_channel_id" field.
+func (u *IncidentUpsert) SetChatChannelID(v string) *IncidentUpsert {
+	u.Set(incident.FieldChatChannelID, v)
+	return u
+}
+
+// UpdateChatChannelID sets the "chat_channel_id" field to the value that was provided on create.
+func (u *IncidentUpsert) UpdateChatChannelID() *IncidentUpsert {
+	u.SetExcluded(incident.FieldChatChannelID)
+	return u
+}
+
+// ClearChatChannelID clears the value of the "chat_channel_id" field.
+func (u *IncidentUpsert) ClearChatChannelID() *IncidentUpsert {
+	u.SetNull(incident.FieldChatChannelID)
 	return u
 }
 
@@ -1101,6 +1101,27 @@ func (u *IncidentUpsertOne) Update(set func(*IncidentUpsert)) *IncidentUpsertOne
 		set(&IncidentUpsert{UpdateSet: update})
 	}))
 	return u
+}
+
+// SetExternalID sets the "external_id" field.
+func (u *IncidentUpsertOne) SetExternalID(v string) *IncidentUpsertOne {
+	return u.Update(func(s *IncidentUpsert) {
+		s.SetExternalID(v)
+	})
+}
+
+// UpdateExternalID sets the "external_id" field to the value that was provided on create.
+func (u *IncidentUpsertOne) UpdateExternalID() *IncidentUpsertOne {
+	return u.Update(func(s *IncidentUpsert) {
+		s.UpdateExternalID()
+	})
+}
+
+// ClearExternalID clears the value of the "external_id" field.
+func (u *IncidentUpsertOne) ClearExternalID() *IncidentUpsertOne {
+	return u.Update(func(s *IncidentUpsert) {
+		s.ClearExternalID()
+	})
 }
 
 // SetSlug sets the "slug" field.
@@ -1222,48 +1243,6 @@ func (u *IncidentUpsertOne) ClearClosedAt() *IncidentUpsertOne {
 	})
 }
 
-// SetProviderID sets the "provider_id" field.
-func (u *IncidentUpsertOne) SetProviderID(v string) *IncidentUpsertOne {
-	return u.Update(func(s *IncidentUpsert) {
-		s.SetProviderID(v)
-	})
-}
-
-// UpdateProviderID sets the "provider_id" field to the value that was provided on create.
-func (u *IncidentUpsertOne) UpdateProviderID() *IncidentUpsertOne {
-	return u.Update(func(s *IncidentUpsert) {
-		s.UpdateProviderID()
-	})
-}
-
-// ClearProviderID clears the value of the "provider_id" field.
-func (u *IncidentUpsertOne) ClearProviderID() *IncidentUpsertOne {
-	return u.Update(func(s *IncidentUpsert) {
-		s.ClearProviderID()
-	})
-}
-
-// SetChatChannelID sets the "chat_channel_id" field.
-func (u *IncidentUpsertOne) SetChatChannelID(v string) *IncidentUpsertOne {
-	return u.Update(func(s *IncidentUpsert) {
-		s.SetChatChannelID(v)
-	})
-}
-
-// UpdateChatChannelID sets the "chat_channel_id" field to the value that was provided on create.
-func (u *IncidentUpsertOne) UpdateChatChannelID() *IncidentUpsertOne {
-	return u.Update(func(s *IncidentUpsert) {
-		s.UpdateChatChannelID()
-	})
-}
-
-// ClearChatChannelID clears the value of the "chat_channel_id" field.
-func (u *IncidentUpsertOne) ClearChatChannelID() *IncidentUpsertOne {
-	return u.Update(func(s *IncidentUpsert) {
-		s.ClearChatChannelID()
-	})
-}
-
 // SetSeverityID sets the "severity_id" field.
 func (u *IncidentUpsertOne) SetSeverityID(v uuid.UUID) *IncidentUpsertOne {
 	return u.Update(func(s *IncidentUpsert) {
@@ -1303,6 +1282,27 @@ func (u *IncidentUpsertOne) UpdateTypeID() *IncidentUpsertOne {
 func (u *IncidentUpsertOne) ClearTypeID() *IncidentUpsertOne {
 	return u.Update(func(s *IncidentUpsert) {
 		s.ClearTypeID()
+	})
+}
+
+// SetChatChannelID sets the "chat_channel_id" field.
+func (u *IncidentUpsertOne) SetChatChannelID(v string) *IncidentUpsertOne {
+	return u.Update(func(s *IncidentUpsert) {
+		s.SetChatChannelID(v)
+	})
+}
+
+// UpdateChatChannelID sets the "chat_channel_id" field to the value that was provided on create.
+func (u *IncidentUpsertOne) UpdateChatChannelID() *IncidentUpsertOne {
+	return u.Update(func(s *IncidentUpsert) {
+		s.UpdateChatChannelID()
+	})
+}
+
+// ClearChatChannelID clears the value of the "chat_channel_id" field.
+func (u *IncidentUpsertOne) ClearChatChannelID() *IncidentUpsertOne {
+	return u.Update(func(s *IncidentUpsert) {
+		s.ClearChatChannelID()
 	})
 }
 
@@ -1524,6 +1524,27 @@ func (u *IncidentUpsertBulk) Update(set func(*IncidentUpsert)) *IncidentUpsertBu
 	return u
 }
 
+// SetExternalID sets the "external_id" field.
+func (u *IncidentUpsertBulk) SetExternalID(v string) *IncidentUpsertBulk {
+	return u.Update(func(s *IncidentUpsert) {
+		s.SetExternalID(v)
+	})
+}
+
+// UpdateExternalID sets the "external_id" field to the value that was provided on create.
+func (u *IncidentUpsertBulk) UpdateExternalID() *IncidentUpsertBulk {
+	return u.Update(func(s *IncidentUpsert) {
+		s.UpdateExternalID()
+	})
+}
+
+// ClearExternalID clears the value of the "external_id" field.
+func (u *IncidentUpsertBulk) ClearExternalID() *IncidentUpsertBulk {
+	return u.Update(func(s *IncidentUpsert) {
+		s.ClearExternalID()
+	})
+}
+
 // SetSlug sets the "slug" field.
 func (u *IncidentUpsertBulk) SetSlug(v string) *IncidentUpsertBulk {
 	return u.Update(func(s *IncidentUpsert) {
@@ -1643,48 +1664,6 @@ func (u *IncidentUpsertBulk) ClearClosedAt() *IncidentUpsertBulk {
 	})
 }
 
-// SetProviderID sets the "provider_id" field.
-func (u *IncidentUpsertBulk) SetProviderID(v string) *IncidentUpsertBulk {
-	return u.Update(func(s *IncidentUpsert) {
-		s.SetProviderID(v)
-	})
-}
-
-// UpdateProviderID sets the "provider_id" field to the value that was provided on create.
-func (u *IncidentUpsertBulk) UpdateProviderID() *IncidentUpsertBulk {
-	return u.Update(func(s *IncidentUpsert) {
-		s.UpdateProviderID()
-	})
-}
-
-// ClearProviderID clears the value of the "provider_id" field.
-func (u *IncidentUpsertBulk) ClearProviderID() *IncidentUpsertBulk {
-	return u.Update(func(s *IncidentUpsert) {
-		s.ClearProviderID()
-	})
-}
-
-// SetChatChannelID sets the "chat_channel_id" field.
-func (u *IncidentUpsertBulk) SetChatChannelID(v string) *IncidentUpsertBulk {
-	return u.Update(func(s *IncidentUpsert) {
-		s.SetChatChannelID(v)
-	})
-}
-
-// UpdateChatChannelID sets the "chat_channel_id" field to the value that was provided on create.
-func (u *IncidentUpsertBulk) UpdateChatChannelID() *IncidentUpsertBulk {
-	return u.Update(func(s *IncidentUpsert) {
-		s.UpdateChatChannelID()
-	})
-}
-
-// ClearChatChannelID clears the value of the "chat_channel_id" field.
-func (u *IncidentUpsertBulk) ClearChatChannelID() *IncidentUpsertBulk {
-	return u.Update(func(s *IncidentUpsert) {
-		s.ClearChatChannelID()
-	})
-}
-
 // SetSeverityID sets the "severity_id" field.
 func (u *IncidentUpsertBulk) SetSeverityID(v uuid.UUID) *IncidentUpsertBulk {
 	return u.Update(func(s *IncidentUpsert) {
@@ -1724,6 +1703,27 @@ func (u *IncidentUpsertBulk) UpdateTypeID() *IncidentUpsertBulk {
 func (u *IncidentUpsertBulk) ClearTypeID() *IncidentUpsertBulk {
 	return u.Update(func(s *IncidentUpsert) {
 		s.ClearTypeID()
+	})
+}
+
+// SetChatChannelID sets the "chat_channel_id" field.
+func (u *IncidentUpsertBulk) SetChatChannelID(v string) *IncidentUpsertBulk {
+	return u.Update(func(s *IncidentUpsert) {
+		s.SetChatChannelID(v)
+	})
+}
+
+// UpdateChatChannelID sets the "chat_channel_id" field to the value that was provided on create.
+func (u *IncidentUpsertBulk) UpdateChatChannelID() *IncidentUpsertBulk {
+	return u.Update(func(s *IncidentUpsert) {
+		s.UpdateChatChannelID()
+	})
+}
+
+// ClearChatChannelID clears the value of the "chat_channel_id" field.
+func (u *IncidentUpsertBulk) ClearChatChannelID() *IncidentUpsertBulk {
+	return u.Update(func(s *IncidentUpsert) {
+		s.ClearChatChannelID()
 	})
 }
 

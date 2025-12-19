@@ -23,10 +23,10 @@ type IncidentRole struct {
 	TenantID int `json:"tenant_id,omitempty"`
 	// ArchiveTime holds the value of the "archive_time" field.
 	ArchiveTime time.Time `json:"archive_time,omitempty"`
+	// ExternalID holds the value of the "external_id" field.
+	ExternalID string `json:"external_id,omitempty"`
 	// Name holds the value of the "name" field.
 	Name string `json:"name,omitempty"`
-	// ProviderID holds the value of the "provider_id" field.
-	ProviderID string `json:"provider_id,omitempty"`
 	// Required holds the value of the "required" field.
 	Required bool `json:"required,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
@@ -86,7 +86,7 @@ func (*IncidentRole) scanValues(columns []string) ([]any, error) {
 			values[i] = new(sql.NullBool)
 		case incidentrole.FieldTenantID:
 			values[i] = new(sql.NullInt64)
-		case incidentrole.FieldName, incidentrole.FieldProviderID:
+		case incidentrole.FieldExternalID, incidentrole.FieldName:
 			values[i] = new(sql.NullString)
 		case incidentrole.FieldArchiveTime:
 			values[i] = new(sql.NullTime)
@@ -125,17 +125,17 @@ func (_m *IncidentRole) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				_m.ArchiveTime = value.Time
 			}
+		case incidentrole.FieldExternalID:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field external_id", values[i])
+			} else if value.Valid {
+				_m.ExternalID = value.String
+			}
 		case incidentrole.FieldName:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field name", values[i])
 			} else if value.Valid {
 				_m.Name = value.String
-			}
-		case incidentrole.FieldProviderID:
-			if value, ok := values[i].(*sql.NullString); !ok {
-				return fmt.Errorf("unexpected type %T for field provider_id", values[i])
-			} else if value.Valid {
-				_m.ProviderID = value.String
 			}
 		case incidentrole.FieldRequired:
 			if value, ok := values[i].(*sql.NullBool); !ok {
@@ -200,11 +200,11 @@ func (_m *IncidentRole) String() string {
 	builder.WriteString("archive_time=")
 	builder.WriteString(_m.ArchiveTime.Format(time.ANSIC))
 	builder.WriteString(", ")
+	builder.WriteString("external_id=")
+	builder.WriteString(_m.ExternalID)
+	builder.WriteString(", ")
 	builder.WriteString("name=")
 	builder.WriteString(_m.Name)
-	builder.WriteString(", ")
-	builder.WriteString("provider_id=")
-	builder.WriteString(_m.ProviderID)
 	builder.WriteString(", ")
 	builder.WriteString("required=")
 	builder.WriteString(fmt.Sprintf("%v", _m.Required))

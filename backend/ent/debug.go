@@ -212,6 +212,14 @@ func (c *IncidentTypeClient) Debug() *IncidentTypeClient {
 	return &IncidentTypeClient{config: cfg}
 }
 
+func (c *IntegrationClient) Debug() *IntegrationClient {
+	if c.debug {
+		return c
+	}
+	cfg := config{driver: dialect.Debug(c.driver, c.log), log: c.log, debug: true, hooks: c.hooks, inters: c.inters}
+	return &IntegrationClient{config: cfg}
+}
+
 func (c *MeetingScheduleClient) Debug() *MeetingScheduleClient {
 	if c.debug {
 		return c
@@ -306,14 +314,6 @@ func (c *PlaybookClient) Debug() *PlaybookClient {
 	}
 	cfg := config{driver: dialect.Debug(c.driver, c.log), log: c.log, debug: true, hooks: c.hooks, inters: c.inters}
 	return &PlaybookClient{config: cfg}
-}
-
-func (c *ProviderConfigClient) Debug() *ProviderConfigClient {
-	if c.debug {
-		return c
-	}
-	cfg := config{driver: dialect.Debug(c.driver, c.log), log: c.log, debug: true, hooks: c.hooks, inters: c.inters}
-	return &ProviderConfigClient{config: cfg}
 }
 
 func (c *ProviderSyncHistoryClient) Debug() *ProviderSyncHistoryClient {

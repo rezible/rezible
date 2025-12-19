@@ -18,10 +18,10 @@ const (
 	FieldID = "id"
 	// FieldTenantID holds the string denoting the tenant_id field in the database.
 	FieldTenantID = "tenant_id"
+	// FieldExternalID holds the string denoting the external_id field in the database.
+	FieldExternalID = "external_id"
 	// FieldName holds the string denoting the name field in the database.
 	FieldName = "name"
-	// FieldProviderID holds the string denoting the provider_id field in the database.
-	FieldProviderID = "provider_id"
 	// FieldKindID holds the string denoting the kind_id field in the database.
 	FieldKindID = "kind_id"
 	// FieldDescription holds the string denoting the description field in the database.
@@ -137,8 +137,8 @@ const (
 var Columns = []string{
 	FieldID,
 	FieldTenantID,
+	FieldExternalID,
 	FieldName,
-	FieldProviderID,
 	FieldKindID,
 	FieldDescription,
 	FieldProperties,
@@ -204,14 +204,14 @@ func ByTenantID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldTenantID, opts...).ToFunc()
 }
 
+// ByExternalID orders the results by the external_id field.
+func ByExternalID(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldExternalID, opts...).ToFunc()
+}
+
 // ByName orders the results by the name field.
 func ByName(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldName, opts...).ToFunc()
-}
-
-// ByProviderID orders the results by the provider_id field.
-func ByProviderID(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldProviderID, opts...).ToFunc()
 }
 
 // ByKindID orders the results by the kind_id field.

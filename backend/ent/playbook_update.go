@@ -30,6 +30,26 @@ func (_u *PlaybookUpdate) Where(ps ...predicate.Playbook) *PlaybookUpdate {
 	return _u
 }
 
+// SetExternalID sets the "external_id" field.
+func (_u *PlaybookUpdate) SetExternalID(v string) *PlaybookUpdate {
+	_u.mutation.SetExternalID(v)
+	return _u
+}
+
+// SetNillableExternalID sets the "external_id" field if the given value is not nil.
+func (_u *PlaybookUpdate) SetNillableExternalID(v *string) *PlaybookUpdate {
+	if v != nil {
+		_u.SetExternalID(*v)
+	}
+	return _u
+}
+
+// ClearExternalID clears the value of the "external_id" field.
+func (_u *PlaybookUpdate) ClearExternalID() *PlaybookUpdate {
+	_u.mutation.ClearExternalID()
+	return _u
+}
+
 // SetTitle sets the "title" field.
 func (_u *PlaybookUpdate) SetTitle(v string) *PlaybookUpdate {
 	_u.mutation.SetTitle(v)
@@ -40,20 +60,6 @@ func (_u *PlaybookUpdate) SetTitle(v string) *PlaybookUpdate {
 func (_u *PlaybookUpdate) SetNillableTitle(v *string) *PlaybookUpdate {
 	if v != nil {
 		_u.SetTitle(*v)
-	}
-	return _u
-}
-
-// SetProviderID sets the "provider_id" field.
-func (_u *PlaybookUpdate) SetProviderID(v string) *PlaybookUpdate {
-	_u.mutation.SetProviderID(v)
-	return _u
-}
-
-// SetNillableProviderID sets the "provider_id" field if the given value is not nil.
-func (_u *PlaybookUpdate) SetNillableProviderID(v *string) *PlaybookUpdate {
-	if v != nil {
-		_u.SetProviderID(*v)
 	}
 	return _u
 }
@@ -158,11 +164,14 @@ func (_u *PlaybookUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 			}
 		}
 	}
+	if value, ok := _u.mutation.ExternalID(); ok {
+		_spec.SetField(playbook.FieldExternalID, field.TypeString, value)
+	}
+	if _u.mutation.ExternalIDCleared() {
+		_spec.ClearField(playbook.FieldExternalID, field.TypeString)
+	}
 	if value, ok := _u.mutation.Title(); ok {
 		_spec.SetField(playbook.FieldTitle, field.TypeString, value)
-	}
-	if value, ok := _u.mutation.ProviderID(); ok {
-		_spec.SetField(playbook.FieldProviderID, field.TypeString, value)
 	}
 	if value, ok := _u.mutation.Content(); ok {
 		_spec.SetField(playbook.FieldContent, field.TypeBytes, value)
@@ -234,6 +243,26 @@ type PlaybookUpdateOne struct {
 	modifiers []func(*sql.UpdateBuilder)
 }
 
+// SetExternalID sets the "external_id" field.
+func (_u *PlaybookUpdateOne) SetExternalID(v string) *PlaybookUpdateOne {
+	_u.mutation.SetExternalID(v)
+	return _u
+}
+
+// SetNillableExternalID sets the "external_id" field if the given value is not nil.
+func (_u *PlaybookUpdateOne) SetNillableExternalID(v *string) *PlaybookUpdateOne {
+	if v != nil {
+		_u.SetExternalID(*v)
+	}
+	return _u
+}
+
+// ClearExternalID clears the value of the "external_id" field.
+func (_u *PlaybookUpdateOne) ClearExternalID() *PlaybookUpdateOne {
+	_u.mutation.ClearExternalID()
+	return _u
+}
+
 // SetTitle sets the "title" field.
 func (_u *PlaybookUpdateOne) SetTitle(v string) *PlaybookUpdateOne {
 	_u.mutation.SetTitle(v)
@@ -244,20 +273,6 @@ func (_u *PlaybookUpdateOne) SetTitle(v string) *PlaybookUpdateOne {
 func (_u *PlaybookUpdateOne) SetNillableTitle(v *string) *PlaybookUpdateOne {
 	if v != nil {
 		_u.SetTitle(*v)
-	}
-	return _u
-}
-
-// SetProviderID sets the "provider_id" field.
-func (_u *PlaybookUpdateOne) SetProviderID(v string) *PlaybookUpdateOne {
-	_u.mutation.SetProviderID(v)
-	return _u
-}
-
-// SetNillableProviderID sets the "provider_id" field if the given value is not nil.
-func (_u *PlaybookUpdateOne) SetNillableProviderID(v *string) *PlaybookUpdateOne {
-	if v != nil {
-		_u.SetProviderID(*v)
 	}
 	return _u
 }
@@ -392,11 +407,14 @@ func (_u *PlaybookUpdateOne) sqlSave(ctx context.Context) (_node *Playbook, err 
 			}
 		}
 	}
+	if value, ok := _u.mutation.ExternalID(); ok {
+		_spec.SetField(playbook.FieldExternalID, field.TypeString, value)
+	}
+	if _u.mutation.ExternalIDCleared() {
+		_spec.ClearField(playbook.FieldExternalID, field.TypeString)
+	}
 	if value, ok := _u.mutation.Title(); ok {
 		_spec.SetField(playbook.FieldTitle, field.TypeString, value)
-	}
-	if value, ok := _u.mutation.ProviderID(); ok {
-		_spec.SetField(playbook.FieldProviderID, field.TypeString, value)
 	}
 	if value, ok := _u.mutation.Content(); ok {
 		_spec.SetField(playbook.FieldContent, field.TypeBytes, value)

@@ -23,8 +23,8 @@ type IncidentSeverity struct {
 	TenantID int `json:"tenant_id,omitempty"`
 	// ArchiveTime holds the value of the "archive_time" field.
 	ArchiveTime time.Time `json:"archive_time,omitempty"`
-	// ProviderID holds the value of the "provider_id" field.
-	ProviderID string `json:"provider_id,omitempty"`
+	// ExternalID holds the value of the "external_id" field.
+	ExternalID string `json:"external_id,omitempty"`
 	// Name holds the value of the "name" field.
 	Name string `json:"name,omitempty"`
 	// Rank holds the value of the "rank" field.
@@ -88,7 +88,7 @@ func (*IncidentSeverity) scanValues(columns []string) ([]any, error) {
 		switch columns[i] {
 		case incidentseverity.FieldTenantID, incidentseverity.FieldRank:
 			values[i] = new(sql.NullInt64)
-		case incidentseverity.FieldProviderID, incidentseverity.FieldName, incidentseverity.FieldColor, incidentseverity.FieldDescription:
+		case incidentseverity.FieldExternalID, incidentseverity.FieldName, incidentseverity.FieldColor, incidentseverity.FieldDescription:
 			values[i] = new(sql.NullString)
 		case incidentseverity.FieldArchiveTime:
 			values[i] = new(sql.NullTime)
@@ -127,11 +127,11 @@ func (_m *IncidentSeverity) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				_m.ArchiveTime = value.Time
 			}
-		case incidentseverity.FieldProviderID:
+		case incidentseverity.FieldExternalID:
 			if value, ok := values[i].(*sql.NullString); !ok {
-				return fmt.Errorf("unexpected type %T for field provider_id", values[i])
+				return fmt.Errorf("unexpected type %T for field external_id", values[i])
 			} else if value.Valid {
-				_m.ProviderID = value.String
+				_m.ExternalID = value.String
 			}
 		case incidentseverity.FieldName:
 			if value, ok := values[i].(*sql.NullString); !ok {
@@ -214,8 +214,8 @@ func (_m *IncidentSeverity) String() string {
 	builder.WriteString("archive_time=")
 	builder.WriteString(_m.ArchiveTime.Format(time.ANSIC))
 	builder.WriteString(", ")
-	builder.WriteString("provider_id=")
-	builder.WriteString(_m.ProviderID)
+	builder.WriteString("external_id=")
+	builder.WriteString(_m.ExternalID)
 	builder.WriteString(", ")
 	builder.WriteString("name=")
 	builder.WriteString(_m.Name)

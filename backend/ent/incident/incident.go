@@ -18,6 +18,8 @@ const (
 	FieldID = "id"
 	// FieldTenantID holds the string denoting the tenant_id field in the database.
 	FieldTenantID = "tenant_id"
+	// FieldExternalID holds the string denoting the external_id field in the database.
+	FieldExternalID = "external_id"
 	// FieldSlug holds the string denoting the slug field in the database.
 	FieldSlug = "slug"
 	// FieldTitle holds the string denoting the title field in the database.
@@ -32,14 +34,12 @@ const (
 	FieldModifiedAt = "modified_at"
 	// FieldClosedAt holds the string denoting the closed_at field in the database.
 	FieldClosedAt = "closed_at"
-	// FieldProviderID holds the string denoting the provider_id field in the database.
-	FieldProviderID = "provider_id"
-	// FieldChatChannelID holds the string denoting the chat_channel_id field in the database.
-	FieldChatChannelID = "chat_channel_id"
 	// FieldSeverityID holds the string denoting the severity_id field in the database.
 	FieldSeverityID = "severity_id"
 	// FieldTypeID holds the string denoting the type_id field in the database.
 	FieldTypeID = "type_id"
+	// FieldChatChannelID holds the string denoting the chat_channel_id field in the database.
+	FieldChatChannelID = "chat_channel_id"
 	// EdgeTenant holds the string denoting the tenant edge name in mutations.
 	EdgeTenant = "tenant"
 	// EdgeSeverity holds the string denoting the severity edge name in mutations.
@@ -179,6 +179,7 @@ const (
 var Columns = []string{
 	FieldID,
 	FieldTenantID,
+	FieldExternalID,
 	FieldSlug,
 	FieldTitle,
 	FieldPrivate,
@@ -186,10 +187,9 @@ var Columns = []string{
 	FieldOpenedAt,
 	FieldModifiedAt,
 	FieldClosedAt,
-	FieldProviderID,
-	FieldChatChannelID,
 	FieldSeverityID,
 	FieldTypeID,
+	FieldChatChannelID,
 }
 
 var (
@@ -249,6 +249,11 @@ func ByTenantID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldTenantID, opts...).ToFunc()
 }
 
+// ByExternalID orders the results by the external_id field.
+func ByExternalID(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldExternalID, opts...).ToFunc()
+}
+
 // BySlug orders the results by the slug field.
 func BySlug(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldSlug, opts...).ToFunc()
@@ -284,16 +289,6 @@ func ByClosedAt(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldClosedAt, opts...).ToFunc()
 }
 
-// ByProviderID orders the results by the provider_id field.
-func ByProviderID(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldProviderID, opts...).ToFunc()
-}
-
-// ByChatChannelID orders the results by the chat_channel_id field.
-func ByChatChannelID(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldChatChannelID, opts...).ToFunc()
-}
-
 // BySeverityID orders the results by the severity_id field.
 func BySeverityID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldSeverityID, opts...).ToFunc()
@@ -302,6 +297,11 @@ func BySeverityID(opts ...sql.OrderTermOption) OrderOption {
 // ByTypeID orders the results by the type_id field.
 func ByTypeID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldTypeID, opts...).ToFunc()
+}
+
+// ByChatChannelID orders the results by the chat_channel_id field.
+func ByChatChannelID(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldChatChannelID, opts...).ToFunc()
 }
 
 // ByTenantField orders the results by tenant field.

@@ -57,6 +57,26 @@ func (_u *OncallRosterUpdate) ClearArchiveTime() *OncallRosterUpdate {
 	return _u
 }
 
+// SetExternalID sets the "external_id" field.
+func (_u *OncallRosterUpdate) SetExternalID(v string) *OncallRosterUpdate {
+	_u.mutation.SetExternalID(v)
+	return _u
+}
+
+// SetNillableExternalID sets the "external_id" field if the given value is not nil.
+func (_u *OncallRosterUpdate) SetNillableExternalID(v *string) *OncallRosterUpdate {
+	if v != nil {
+		_u.SetExternalID(*v)
+	}
+	return _u
+}
+
+// ClearExternalID clears the value of the "external_id" field.
+func (_u *OncallRosterUpdate) ClearExternalID() *OncallRosterUpdate {
+	_u.mutation.ClearExternalID()
+	return _u
+}
+
 // SetName sets the "name" field.
 func (_u *OncallRosterUpdate) SetName(v string) *OncallRosterUpdate {
 	_u.mutation.SetName(v)
@@ -81,20 +101,6 @@ func (_u *OncallRosterUpdate) SetSlug(v string) *OncallRosterUpdate {
 func (_u *OncallRosterUpdate) SetNillableSlug(v *string) *OncallRosterUpdate {
 	if v != nil {
 		_u.SetSlug(*v)
-	}
-	return _u
-}
-
-// SetProviderID sets the "provider_id" field.
-func (_u *OncallRosterUpdate) SetProviderID(v string) *OncallRosterUpdate {
-	_u.mutation.SetProviderID(v)
-	return _u
-}
-
-// SetNillableProviderID sets the "provider_id" field if the given value is not nil.
-func (_u *OncallRosterUpdate) SetNillableProviderID(v *string) *OncallRosterUpdate {
-	if v != nil {
-		_u.SetProviderID(*v)
 	}
 	return _u
 }
@@ -470,14 +476,17 @@ func (_u *OncallRosterUpdate) sqlSave(ctx context.Context) (_node int, err error
 	if _u.mutation.ArchiveTimeCleared() {
 		_spec.ClearField(oncallroster.FieldArchiveTime, field.TypeTime)
 	}
+	if value, ok := _u.mutation.ExternalID(); ok {
+		_spec.SetField(oncallroster.FieldExternalID, field.TypeString, value)
+	}
+	if _u.mutation.ExternalIDCleared() {
+		_spec.ClearField(oncallroster.FieldExternalID, field.TypeString)
+	}
 	if value, ok := _u.mutation.Name(); ok {
 		_spec.SetField(oncallroster.FieldName, field.TypeString, value)
 	}
 	if value, ok := _u.mutation.Slug(); ok {
 		_spec.SetField(oncallroster.FieldSlug, field.TypeString, value)
-	}
-	if value, ok := _u.mutation.ProviderID(); ok {
-		_spec.SetField(oncallroster.FieldProviderID, field.TypeString, value)
 	}
 	if value, ok := _u.mutation.Timezone(); ok {
 		_spec.SetField(oncallroster.FieldTimezone, field.TypeString, value)
@@ -838,6 +847,26 @@ func (_u *OncallRosterUpdateOne) ClearArchiveTime() *OncallRosterUpdateOne {
 	return _u
 }
 
+// SetExternalID sets the "external_id" field.
+func (_u *OncallRosterUpdateOne) SetExternalID(v string) *OncallRosterUpdateOne {
+	_u.mutation.SetExternalID(v)
+	return _u
+}
+
+// SetNillableExternalID sets the "external_id" field if the given value is not nil.
+func (_u *OncallRosterUpdateOne) SetNillableExternalID(v *string) *OncallRosterUpdateOne {
+	if v != nil {
+		_u.SetExternalID(*v)
+	}
+	return _u
+}
+
+// ClearExternalID clears the value of the "external_id" field.
+func (_u *OncallRosterUpdateOne) ClearExternalID() *OncallRosterUpdateOne {
+	_u.mutation.ClearExternalID()
+	return _u
+}
+
 // SetName sets the "name" field.
 func (_u *OncallRosterUpdateOne) SetName(v string) *OncallRosterUpdateOne {
 	_u.mutation.SetName(v)
@@ -862,20 +891,6 @@ func (_u *OncallRosterUpdateOne) SetSlug(v string) *OncallRosterUpdateOne {
 func (_u *OncallRosterUpdateOne) SetNillableSlug(v *string) *OncallRosterUpdateOne {
 	if v != nil {
 		_u.SetSlug(*v)
-	}
-	return _u
-}
-
-// SetProviderID sets the "provider_id" field.
-func (_u *OncallRosterUpdateOne) SetProviderID(v string) *OncallRosterUpdateOne {
-	_u.mutation.SetProviderID(v)
-	return _u
-}
-
-// SetNillableProviderID sets the "provider_id" field if the given value is not nil.
-func (_u *OncallRosterUpdateOne) SetNillableProviderID(v *string) *OncallRosterUpdateOne {
-	if v != nil {
-		_u.SetProviderID(*v)
 	}
 	return _u
 }
@@ -1281,14 +1296,17 @@ func (_u *OncallRosterUpdateOne) sqlSave(ctx context.Context) (_node *OncallRost
 	if _u.mutation.ArchiveTimeCleared() {
 		_spec.ClearField(oncallroster.FieldArchiveTime, field.TypeTime)
 	}
+	if value, ok := _u.mutation.ExternalID(); ok {
+		_spec.SetField(oncallroster.FieldExternalID, field.TypeString, value)
+	}
+	if _u.mutation.ExternalIDCleared() {
+		_spec.ClearField(oncallroster.FieldExternalID, field.TypeString)
+	}
 	if value, ok := _u.mutation.Name(); ok {
 		_spec.SetField(oncallroster.FieldName, field.TypeString, value)
 	}
 	if value, ok := _u.mutation.Slug(); ok {
 		_spec.SetField(oncallroster.FieldSlug, field.TypeString, value)
-	}
-	if value, ok := _u.mutation.ProviderID(); ok {
-		_spec.SetField(oncallroster.FieldProviderID, field.TypeString, value)
 	}
 	if value, ok := _u.mutation.Timezone(); ok {
 		_spec.SetField(oncallroster.FieldTimezone, field.TypeString, value)

@@ -723,6 +723,30 @@ func (f IncidentTypeMutationRuleFunc) EvalMutation(ctx context.Context, m ent.Mu
 	return Denyf("ent/privacy: unexpected mutation type %T, expect *ent.IncidentTypeMutation", m)
 }
 
+// The IntegrationQueryRuleFunc type is an adapter to allow the use of ordinary
+// functions as a query rule.
+type IntegrationQueryRuleFunc func(context.Context, *ent.IntegrationQuery) error
+
+// EvalQuery return f(ctx, q).
+func (f IntegrationQueryRuleFunc) EvalQuery(ctx context.Context, q ent.Query) error {
+	if q, ok := q.(*ent.IntegrationQuery); ok {
+		return f(ctx, q)
+	}
+	return Denyf("ent/privacy: unexpected query type %T, expect *ent.IntegrationQuery", q)
+}
+
+// The IntegrationMutationRuleFunc type is an adapter to allow the use of ordinary
+// functions as a mutation rule.
+type IntegrationMutationRuleFunc func(context.Context, *ent.IntegrationMutation) error
+
+// EvalMutation calls f(ctx, m).
+func (f IntegrationMutationRuleFunc) EvalMutation(ctx context.Context, m ent.Mutation) error {
+	if m, ok := m.(*ent.IntegrationMutation); ok {
+		return f(ctx, m)
+	}
+	return Denyf("ent/privacy: unexpected mutation type %T, expect *ent.IntegrationMutation", m)
+}
+
 // The MeetingScheduleQueryRuleFunc type is an adapter to allow the use of ordinary
 // functions as a query rule.
 type MeetingScheduleQueryRuleFunc func(context.Context, *ent.MeetingScheduleQuery) error
@@ -1009,30 +1033,6 @@ func (f PlaybookMutationRuleFunc) EvalMutation(ctx context.Context, m ent.Mutati
 		return f(ctx, m)
 	}
 	return Denyf("ent/privacy: unexpected mutation type %T, expect *ent.PlaybookMutation", m)
-}
-
-// The ProviderConfigQueryRuleFunc type is an adapter to allow the use of ordinary
-// functions as a query rule.
-type ProviderConfigQueryRuleFunc func(context.Context, *ent.ProviderConfigQuery) error
-
-// EvalQuery return f(ctx, q).
-func (f ProviderConfigQueryRuleFunc) EvalQuery(ctx context.Context, q ent.Query) error {
-	if q, ok := q.(*ent.ProviderConfigQuery); ok {
-		return f(ctx, q)
-	}
-	return Denyf("ent/privacy: unexpected query type %T, expect *ent.ProviderConfigQuery", q)
-}
-
-// The ProviderConfigMutationRuleFunc type is an adapter to allow the use of ordinary
-// functions as a mutation rule.
-type ProviderConfigMutationRuleFunc func(context.Context, *ent.ProviderConfigMutation) error
-
-// EvalMutation calls f(ctx, m).
-func (f ProviderConfigMutationRuleFunc) EvalMutation(ctx context.Context, m ent.Mutation) error {
-	if m, ok := m.(*ent.ProviderConfigMutation); ok {
-		return f(ctx, m)
-	}
-	return Denyf("ent/privacy: unexpected mutation type %T, expect *ent.ProviderConfigMutation", m)
 }
 
 // The ProviderSyncHistoryQueryRuleFunc type is an adapter to allow the use of ordinary
@@ -1626,6 +1626,8 @@ func queryFilter(q ent.Query) (Filter, error) {
 		return q.Filter(), nil
 	case *ent.IncidentTypeQuery:
 		return q.Filter(), nil
+	case *ent.IntegrationQuery:
+		return q.Filter(), nil
 	case *ent.MeetingScheduleQuery:
 		return q.Filter(), nil
 	case *ent.MeetingSessionQuery:
@@ -1649,8 +1651,6 @@ func queryFilter(q ent.Query) (Filter, error) {
 	case *ent.OrganizationQuery:
 		return q.Filter(), nil
 	case *ent.PlaybookQuery:
-		return q.Filter(), nil
-	case *ent.ProviderConfigQuery:
 		return q.Filter(), nil
 	case *ent.ProviderSyncHistoryQuery:
 		return q.Filter(), nil
@@ -1751,6 +1751,8 @@ func mutationFilter(m ent.Mutation) (Filter, error) {
 		return m.Filter(), nil
 	case *ent.IncidentTypeMutation:
 		return m.Filter(), nil
+	case *ent.IntegrationMutation:
+		return m.Filter(), nil
 	case *ent.MeetingScheduleMutation:
 		return m.Filter(), nil
 	case *ent.MeetingSessionMutation:
@@ -1774,8 +1776,6 @@ func mutationFilter(m ent.Mutation) (Filter, error) {
 	case *ent.OrganizationMutation:
 		return m.Filter(), nil
 	case *ent.PlaybookMutation:
-		return m.Filter(), nil
-	case *ent.ProviderConfigMutation:
 		return m.Filter(), nil
 	case *ent.ProviderSyncHistoryMutation:
 		return m.Filter(), nil

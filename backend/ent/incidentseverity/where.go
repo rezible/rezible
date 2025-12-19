@@ -66,9 +66,9 @@ func ArchiveTime(v time.Time) predicate.IncidentSeverity {
 	return predicate.IncidentSeverity(sql.FieldEQ(FieldArchiveTime, v))
 }
 
-// ProviderID applies equality check predicate on the "provider_id" field. It's identical to ProviderIDEQ.
-func ProviderID(v string) predicate.IncidentSeverity {
-	return predicate.IncidentSeverity(sql.FieldEQ(FieldProviderID, v))
+// ExternalID applies equality check predicate on the "external_id" field. It's identical to ExternalIDEQ.
+func ExternalID(v string) predicate.IncidentSeverity {
+	return predicate.IncidentSeverity(sql.FieldEQ(FieldExternalID, v))
 }
 
 // Name applies equality check predicate on the "name" field. It's identical to NameEQ.
@@ -161,79 +161,79 @@ func ArchiveTimeNotNil() predicate.IncidentSeverity {
 	return predicate.IncidentSeverity(sql.FieldNotNull(FieldArchiveTime))
 }
 
-// ProviderIDEQ applies the EQ predicate on the "provider_id" field.
-func ProviderIDEQ(v string) predicate.IncidentSeverity {
-	return predicate.IncidentSeverity(sql.FieldEQ(FieldProviderID, v))
+// ExternalIDEQ applies the EQ predicate on the "external_id" field.
+func ExternalIDEQ(v string) predicate.IncidentSeverity {
+	return predicate.IncidentSeverity(sql.FieldEQ(FieldExternalID, v))
 }
 
-// ProviderIDNEQ applies the NEQ predicate on the "provider_id" field.
-func ProviderIDNEQ(v string) predicate.IncidentSeverity {
-	return predicate.IncidentSeverity(sql.FieldNEQ(FieldProviderID, v))
+// ExternalIDNEQ applies the NEQ predicate on the "external_id" field.
+func ExternalIDNEQ(v string) predicate.IncidentSeverity {
+	return predicate.IncidentSeverity(sql.FieldNEQ(FieldExternalID, v))
 }
 
-// ProviderIDIn applies the In predicate on the "provider_id" field.
-func ProviderIDIn(vs ...string) predicate.IncidentSeverity {
-	return predicate.IncidentSeverity(sql.FieldIn(FieldProviderID, vs...))
+// ExternalIDIn applies the In predicate on the "external_id" field.
+func ExternalIDIn(vs ...string) predicate.IncidentSeverity {
+	return predicate.IncidentSeverity(sql.FieldIn(FieldExternalID, vs...))
 }
 
-// ProviderIDNotIn applies the NotIn predicate on the "provider_id" field.
-func ProviderIDNotIn(vs ...string) predicate.IncidentSeverity {
-	return predicate.IncidentSeverity(sql.FieldNotIn(FieldProviderID, vs...))
+// ExternalIDNotIn applies the NotIn predicate on the "external_id" field.
+func ExternalIDNotIn(vs ...string) predicate.IncidentSeverity {
+	return predicate.IncidentSeverity(sql.FieldNotIn(FieldExternalID, vs...))
 }
 
-// ProviderIDGT applies the GT predicate on the "provider_id" field.
-func ProviderIDGT(v string) predicate.IncidentSeverity {
-	return predicate.IncidentSeverity(sql.FieldGT(FieldProviderID, v))
+// ExternalIDGT applies the GT predicate on the "external_id" field.
+func ExternalIDGT(v string) predicate.IncidentSeverity {
+	return predicate.IncidentSeverity(sql.FieldGT(FieldExternalID, v))
 }
 
-// ProviderIDGTE applies the GTE predicate on the "provider_id" field.
-func ProviderIDGTE(v string) predicate.IncidentSeverity {
-	return predicate.IncidentSeverity(sql.FieldGTE(FieldProviderID, v))
+// ExternalIDGTE applies the GTE predicate on the "external_id" field.
+func ExternalIDGTE(v string) predicate.IncidentSeverity {
+	return predicate.IncidentSeverity(sql.FieldGTE(FieldExternalID, v))
 }
 
-// ProviderIDLT applies the LT predicate on the "provider_id" field.
-func ProviderIDLT(v string) predicate.IncidentSeverity {
-	return predicate.IncidentSeverity(sql.FieldLT(FieldProviderID, v))
+// ExternalIDLT applies the LT predicate on the "external_id" field.
+func ExternalIDLT(v string) predicate.IncidentSeverity {
+	return predicate.IncidentSeverity(sql.FieldLT(FieldExternalID, v))
 }
 
-// ProviderIDLTE applies the LTE predicate on the "provider_id" field.
-func ProviderIDLTE(v string) predicate.IncidentSeverity {
-	return predicate.IncidentSeverity(sql.FieldLTE(FieldProviderID, v))
+// ExternalIDLTE applies the LTE predicate on the "external_id" field.
+func ExternalIDLTE(v string) predicate.IncidentSeverity {
+	return predicate.IncidentSeverity(sql.FieldLTE(FieldExternalID, v))
 }
 
-// ProviderIDContains applies the Contains predicate on the "provider_id" field.
-func ProviderIDContains(v string) predicate.IncidentSeverity {
-	return predicate.IncidentSeverity(sql.FieldContains(FieldProviderID, v))
+// ExternalIDContains applies the Contains predicate on the "external_id" field.
+func ExternalIDContains(v string) predicate.IncidentSeverity {
+	return predicate.IncidentSeverity(sql.FieldContains(FieldExternalID, v))
 }
 
-// ProviderIDHasPrefix applies the HasPrefix predicate on the "provider_id" field.
-func ProviderIDHasPrefix(v string) predicate.IncidentSeverity {
-	return predicate.IncidentSeverity(sql.FieldHasPrefix(FieldProviderID, v))
+// ExternalIDHasPrefix applies the HasPrefix predicate on the "external_id" field.
+func ExternalIDHasPrefix(v string) predicate.IncidentSeverity {
+	return predicate.IncidentSeverity(sql.FieldHasPrefix(FieldExternalID, v))
 }
 
-// ProviderIDHasSuffix applies the HasSuffix predicate on the "provider_id" field.
-func ProviderIDHasSuffix(v string) predicate.IncidentSeverity {
-	return predicate.IncidentSeverity(sql.FieldHasSuffix(FieldProviderID, v))
+// ExternalIDHasSuffix applies the HasSuffix predicate on the "external_id" field.
+func ExternalIDHasSuffix(v string) predicate.IncidentSeverity {
+	return predicate.IncidentSeverity(sql.FieldHasSuffix(FieldExternalID, v))
 }
 
-// ProviderIDIsNil applies the IsNil predicate on the "provider_id" field.
-func ProviderIDIsNil() predicate.IncidentSeverity {
-	return predicate.IncidentSeverity(sql.FieldIsNull(FieldProviderID))
+// ExternalIDIsNil applies the IsNil predicate on the "external_id" field.
+func ExternalIDIsNil() predicate.IncidentSeverity {
+	return predicate.IncidentSeverity(sql.FieldIsNull(FieldExternalID))
 }
 
-// ProviderIDNotNil applies the NotNil predicate on the "provider_id" field.
-func ProviderIDNotNil() predicate.IncidentSeverity {
-	return predicate.IncidentSeverity(sql.FieldNotNull(FieldProviderID))
+// ExternalIDNotNil applies the NotNil predicate on the "external_id" field.
+func ExternalIDNotNil() predicate.IncidentSeverity {
+	return predicate.IncidentSeverity(sql.FieldNotNull(FieldExternalID))
 }
 
-// ProviderIDEqualFold applies the EqualFold predicate on the "provider_id" field.
-func ProviderIDEqualFold(v string) predicate.IncidentSeverity {
-	return predicate.IncidentSeverity(sql.FieldEqualFold(FieldProviderID, v))
+// ExternalIDEqualFold applies the EqualFold predicate on the "external_id" field.
+func ExternalIDEqualFold(v string) predicate.IncidentSeverity {
+	return predicate.IncidentSeverity(sql.FieldEqualFold(FieldExternalID, v))
 }
 
-// ProviderIDContainsFold applies the ContainsFold predicate on the "provider_id" field.
-func ProviderIDContainsFold(v string) predicate.IncidentSeverity {
-	return predicate.IncidentSeverity(sql.FieldContainsFold(FieldProviderID, v))
+// ExternalIDContainsFold applies the ContainsFold predicate on the "external_id" field.
+func ExternalIDContainsFold(v string) predicate.IncidentSeverity {
+	return predicate.IncidentSeverity(sql.FieldContainsFold(FieldExternalID, v))
 }
 
 // NameEQ applies the EQ predicate on the "name" field.

@@ -32,17 +32,23 @@ func (_u *AlertUpdate) Where(ps ...predicate.Alert) *AlertUpdate {
 	return _u
 }
 
-// SetProviderID sets the "provider_id" field.
-func (_u *AlertUpdate) SetProviderID(v string) *AlertUpdate {
-	_u.mutation.SetProviderID(v)
+// SetExternalID sets the "external_id" field.
+func (_u *AlertUpdate) SetExternalID(v string) *AlertUpdate {
+	_u.mutation.SetExternalID(v)
 	return _u
 }
 
-// SetNillableProviderID sets the "provider_id" field if the given value is not nil.
-func (_u *AlertUpdate) SetNillableProviderID(v *string) *AlertUpdate {
+// SetNillableExternalID sets the "external_id" field if the given value is not nil.
+func (_u *AlertUpdate) SetNillableExternalID(v *string) *AlertUpdate {
 	if v != nil {
-		_u.SetProviderID(*v)
+		_u.SetExternalID(*v)
 	}
+	return _u
+}
+
+// ClearExternalID clears the value of the "external_id" field.
+func (_u *AlertUpdate) ClearExternalID() *AlertUpdate {
+	_u.mutation.ClearExternalID()
 	return _u
 }
 
@@ -261,8 +267,11 @@ func (_u *AlertUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 			}
 		}
 	}
-	if value, ok := _u.mutation.ProviderID(); ok {
-		_spec.SetField(alert.FieldProviderID, field.TypeString, value)
+	if value, ok := _u.mutation.ExternalID(); ok {
+		_spec.SetField(alert.FieldExternalID, field.TypeString, value)
+	}
+	if _u.mutation.ExternalIDCleared() {
+		_spec.ClearField(alert.FieldExternalID, field.TypeString)
 	}
 	if value, ok := _u.mutation.Title(); ok {
 		_spec.SetField(alert.FieldTitle, field.TypeString, value)
@@ -420,17 +429,23 @@ type AlertUpdateOne struct {
 	modifiers []func(*sql.UpdateBuilder)
 }
 
-// SetProviderID sets the "provider_id" field.
-func (_u *AlertUpdateOne) SetProviderID(v string) *AlertUpdateOne {
-	_u.mutation.SetProviderID(v)
+// SetExternalID sets the "external_id" field.
+func (_u *AlertUpdateOne) SetExternalID(v string) *AlertUpdateOne {
+	_u.mutation.SetExternalID(v)
 	return _u
 }
 
-// SetNillableProviderID sets the "provider_id" field if the given value is not nil.
-func (_u *AlertUpdateOne) SetNillableProviderID(v *string) *AlertUpdateOne {
+// SetNillableExternalID sets the "external_id" field if the given value is not nil.
+func (_u *AlertUpdateOne) SetNillableExternalID(v *string) *AlertUpdateOne {
 	if v != nil {
-		_u.SetProviderID(*v)
+		_u.SetExternalID(*v)
 	}
+	return _u
+}
+
+// ClearExternalID clears the value of the "external_id" field.
+func (_u *AlertUpdateOne) ClearExternalID() *AlertUpdateOne {
+	_u.mutation.ClearExternalID()
 	return _u
 }
 
@@ -679,8 +694,11 @@ func (_u *AlertUpdateOne) sqlSave(ctx context.Context) (_node *Alert, err error)
 			}
 		}
 	}
-	if value, ok := _u.mutation.ProviderID(); ok {
-		_spec.SetField(alert.FieldProviderID, field.TypeString, value)
+	if value, ok := _u.mutation.ExternalID(); ok {
+		_spec.SetField(alert.FieldExternalID, field.TypeString, value)
+	}
+	if _u.mutation.ExternalIDCleared() {
+		_spec.ClearField(alert.FieldExternalID, field.TypeString)
 	}
 	if value, ok := _u.mutation.Title(); ok {
 		_spec.SetField(alert.FieldTitle, field.TypeString, value)

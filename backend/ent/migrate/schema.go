@@ -11,7 +11,7 @@ var (
 	// AlertsColumns holds the columns for the "alerts" table.
 	AlertsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID},
-		{Name: "provider_id", Type: field.TypeString},
+		{Name: "external_id", Type: field.TypeString, Nullable: true},
 		{Name: "title", Type: field.TypeString},
 		{Name: "description", Type: field.TypeString, Nullable: true},
 		{Name: "definition", Type: field.TypeString, Nullable: true},
@@ -85,7 +85,7 @@ var (
 	// AlertInstancesColumns holds the columns for the "alert_instances" table.
 	AlertInstancesColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID},
-		{Name: "provider_id", Type: field.TypeString},
+		{Name: "external_id", Type: field.TypeString, Nullable: true},
 		{Name: "acknowledged_at", Type: field.TypeTime, Nullable: true},
 		{Name: "alert_instances", Type: field.TypeUUID, Nullable: true},
 		{Name: "tenant_id", Type: field.TypeInt},
@@ -168,7 +168,7 @@ var (
 	// EventsColumns holds the columns for the "events" table.
 	EventsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID},
-		{Name: "provider_id", Type: field.TypeString},
+		{Name: "external_id", Type: field.TypeString, Nullable: true},
 		{Name: "timestamp", Type: field.TypeTime},
 		{Name: "kind", Type: field.TypeEnum, Enums: []string{"alert", "interrupt", "message", "other"}},
 		{Name: "title", Type: field.TypeString},
@@ -244,6 +244,7 @@ var (
 	// IncidentsColumns holds the columns for the "incidents" table.
 	IncidentsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID},
+		{Name: "external_id", Type: field.TypeString, Nullable: true},
 		{Name: "slug", Type: field.TypeString, Unique: true},
 		{Name: "title", Type: field.TypeString},
 		{Name: "private", Type: field.TypeBool, Default: false},
@@ -251,7 +252,6 @@ var (
 		{Name: "opened_at", Type: field.TypeTime},
 		{Name: "modified_at", Type: field.TypeTime, Nullable: true},
 		{Name: "closed_at", Type: field.TypeTime, Nullable: true},
-		{Name: "provider_id", Type: field.TypeString, Nullable: true},
 		{Name: "chat_channel_id", Type: field.TypeString, Nullable: true},
 		{Name: "tenant_id", Type: field.TypeInt},
 		{Name: "severity_id", Type: field.TypeUUID, Nullable: true},
@@ -807,8 +807,8 @@ var (
 	IncidentRolesColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID},
 		{Name: "archive_time", Type: field.TypeTime, Nullable: true},
+		{Name: "external_id", Type: field.TypeString, Nullable: true},
 		{Name: "name", Type: field.TypeString},
-		{Name: "provider_id", Type: field.TypeString},
 		{Name: "required", Type: field.TypeBool, Default: false},
 		{Name: "tenant_id", Type: field.TypeInt},
 	}
@@ -889,7 +889,7 @@ var (
 	IncidentSeveritiesColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID},
 		{Name: "archive_time", Type: field.TypeTime, Nullable: true},
-		{Name: "provider_id", Type: field.TypeString, Nullable: true},
+		{Name: "external_id", Type: field.TypeString, Nullable: true},
 		{Name: "name", Type: field.TypeString},
 		{Name: "rank", Type: field.TypeInt},
 		{Name: "color", Type: field.TypeString, Nullable: true},
@@ -971,6 +971,42 @@ var (
 				Name:    "incidenttype_tenant_id",
 				Unique:  false,
 				Columns: []*schema.Column{IncidentTypesColumns[3]},
+			},
+		},
+	}
+	// IntegrationsColumns holds the columns for the "integrations" table.
+	IntegrationsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUUID},
+		{Name: "name", Type: field.TypeString},
+		{Name: "integration_type", Type: field.TypeEnum, Enums: []string{"chat", "users", "teams", "incidents", "oncall", "alerts", "system_components", "tickets", "playbooks"}},
+		{Name: "config", Type: field.TypeBytes},
+		{Name: "enabled", Type: field.TypeBool, Default: true},
+		{Name: "updated_at", Type: field.TypeTime},
+		{Name: "tenant_id", Type: field.TypeInt},
+	}
+	// IntegrationsTable holds the schema information for the "integrations" table.
+	IntegrationsTable = &schema.Table{
+		Name:       "integrations",
+		Columns:    IntegrationsColumns,
+		PrimaryKey: []*schema.Column{IntegrationsColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "integrations_tenants_tenant",
+				Columns:    []*schema.Column{IntegrationsColumns[6]},
+				RefColumns: []*schema.Column{TenantsColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+		},
+		Indexes: []*schema.Index{
+			{
+				Name:    "integration_tenant_id",
+				Unique:  false,
+				Columns: []*schema.Column{IntegrationsColumns[6]},
+			},
+			{
+				Name:    "integration_tenant_id_name_integration_type",
+				Unique:  true,
+				Columns: []*schema.Column{IntegrationsColumns[6], IntegrationsColumns[1], IntegrationsColumns[2]},
 			},
 		},
 	}
@@ -1083,9 +1119,9 @@ var (
 	OncallRostersColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID},
 		{Name: "archive_time", Type: field.TypeTime, Nullable: true},
+		{Name: "external_id", Type: field.TypeString, Nullable: true},
 		{Name: "name", Type: field.TypeString},
 		{Name: "slug", Type: field.TypeString, Unique: true},
-		{Name: "provider_id", Type: field.TypeString, Unique: true},
 		{Name: "timezone", Type: field.TypeString, Nullable: true},
 		{Name: "chat_handle", Type: field.TypeString, Nullable: true},
 		{Name: "chat_channel_id", Type: field.TypeString, Nullable: true},
@@ -1156,9 +1192,9 @@ var (
 	OncallSchedulesColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID},
 		{Name: "archive_time", Type: field.TypeTime, Nullable: true},
+		{Name: "external_id", Type: field.TypeString, Nullable: true},
 		{Name: "name", Type: field.TypeString},
 		{Name: "timezone", Type: field.TypeString, Nullable: true},
-		{Name: "provider_id", Type: field.TypeString, Unique: true},
 		{Name: "roster_id", Type: field.TypeUUID},
 		{Name: "tenant_id", Type: field.TypeInt},
 	}
@@ -1233,7 +1269,7 @@ var (
 	// OncallShiftsColumns holds the columns for the "oncall_shifts" table.
 	OncallShiftsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID},
-		{Name: "provider_id", Type: field.TypeString, Unique: true, Nullable: true},
+		{Name: "external_id", Type: field.TypeString, Nullable: true},
 		{Name: "role", Type: field.TypeEnum, Nullable: true, Enums: []string{"primary", "secondary", "shadow", "covering"}, Default: "primary"},
 		{Name: "start_at", Type: field.TypeTime},
 		{Name: "end_at", Type: field.TypeTime},
@@ -1369,7 +1405,7 @@ var (
 	// OrganizationsColumns holds the columns for the "organizations" table.
 	OrganizationsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID},
-		{Name: "provider_id", Type: field.TypeString},
+		{Name: "external_id", Type: field.TypeString},
 		{Name: "name", Type: field.TypeString},
 		{Name: "initial_setup_at", Type: field.TypeTime, Nullable: true},
 		{Name: "tenant_id", Type: field.TypeInt},
@@ -1398,8 +1434,8 @@ var (
 	// PlaybooksColumns holds the columns for the "playbooks" table.
 	PlaybooksColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID},
+		{Name: "external_id", Type: field.TypeString, Nullable: true},
 		{Name: "title", Type: field.TypeString},
-		{Name: "provider_id", Type: field.TypeString},
 		{Name: "content", Type: field.TypeBytes},
 		{Name: "tenant_id", Type: field.TypeInt},
 	}
@@ -1421,42 +1457,6 @@ var (
 				Name:    "playbook_tenant_id",
 				Unique:  false,
 				Columns: []*schema.Column{PlaybooksColumns[4]},
-			},
-		},
-	}
-	// ProviderConfigsColumns holds the columns for the "provider_configs" table.
-	ProviderConfigsColumns = []*schema.Column{
-		{Name: "id", Type: field.TypeUUID},
-		{Name: "provider_type", Type: field.TypeEnum, Enums: []string{"chat", "users", "teams", "incidents", "oncall", "alerts", "system_components", "tickets", "playbooks"}},
-		{Name: "provider_id", Type: field.TypeString},
-		{Name: "config", Type: field.TypeBytes},
-		{Name: "enabled", Type: field.TypeBool, Default: true},
-		{Name: "updated_at", Type: field.TypeTime},
-		{Name: "tenant_id", Type: field.TypeInt},
-	}
-	// ProviderConfigsTable holds the schema information for the "provider_configs" table.
-	ProviderConfigsTable = &schema.Table{
-		Name:       "provider_configs",
-		Columns:    ProviderConfigsColumns,
-		PrimaryKey: []*schema.Column{ProviderConfigsColumns[0]},
-		ForeignKeys: []*schema.ForeignKey{
-			{
-				Symbol:     "provider_configs_tenants_tenant",
-				Columns:    []*schema.Column{ProviderConfigsColumns[6]},
-				RefColumns: []*schema.Column{TenantsColumns[0]},
-				OnDelete:   schema.NoAction,
-			},
-		},
-		Indexes: []*schema.Index{
-			{
-				Name:    "providerconfig_tenant_id",
-				Unique:  false,
-				Columns: []*schema.Column{ProviderConfigsColumns[6]},
-			},
-			{
-				Name:    "providerconfig_provider_id_provider_type_tenant_id",
-				Unique:  true,
-				Columns: []*schema.Column{ProviderConfigsColumns[2], ProviderConfigsColumns[1], ProviderConfigsColumns[6]},
 			},
 		},
 	}
@@ -1771,8 +1771,8 @@ var (
 	// SystemComponentsColumns holds the columns for the "system_components" table.
 	SystemComponentsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID},
+		{Name: "external_id", Type: field.TypeString, Nullable: true},
 		{Name: "name", Type: field.TypeString},
-		{Name: "provider_id", Type: field.TypeString, Nullable: true},
 		{Name: "description", Type: field.TypeString, Nullable: true, Size: 2147483647},
 		{Name: "properties", Type: field.TypeJSON, Nullable: true},
 		{Name: "created_at", Type: field.TypeTime},
@@ -1882,7 +1882,7 @@ var (
 	// SystemComponentKindsColumns holds the columns for the "system_component_kinds" table.
 	SystemComponentKindsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID},
-		{Name: "provider_id", Type: field.TypeString, Nullable: true},
+		{Name: "external_id", Type: field.TypeString, Nullable: true},
 		{Name: "label", Type: field.TypeString, Size: 2147483647},
 		{Name: "description", Type: field.TypeString, Nullable: true, Size: 2147483647},
 		{Name: "created_at", Type: field.TypeTime},
@@ -1912,7 +1912,7 @@ var (
 	// SystemComponentRelationshipsColumns holds the columns for the "system_component_relationships" table.
 	SystemComponentRelationshipsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID},
-		{Name: "provider_id", Type: field.TypeString, Nullable: true},
+		{Name: "external_id", Type: field.TypeString, Nullable: true},
 		{Name: "description", Type: field.TypeString, Nullable: true, Size: 2147483647},
 		{Name: "created_at", Type: field.TypeTime},
 		{Name: "tenant_id", Type: field.TypeInt},
@@ -2171,8 +2171,8 @@ var (
 	// TeamsColumns holds the columns for the "teams" table.
 	TeamsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID},
+		{Name: "external_id", Type: field.TypeString, Nullable: true},
 		{Name: "slug", Type: field.TypeString, Unique: true},
-		{Name: "provider_id", Type: field.TypeString, Nullable: true},
 		{Name: "name", Type: field.TypeString},
 		{Name: "chat_channel_id", Type: field.TypeString, Nullable: true},
 		{Name: "timezone", Type: field.TypeString, Nullable: true},
@@ -2212,7 +2212,7 @@ var (
 	// TicketsColumns holds the columns for the "tickets" table.
 	TicketsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID},
-		{Name: "provider_id", Type: field.TypeString},
+		{Name: "external_id", Type: field.TypeString, Nullable: true},
 		{Name: "title", Type: field.TypeString},
 		{Name: "tenant_id", Type: field.TypeInt},
 	}
@@ -2240,7 +2240,7 @@ var (
 	// UsersColumns holds the columns for the "users" table.
 	UsersColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID},
-		{Name: "provider_id", Type: field.TypeString, Nullable: true},
+		{Name: "external_id", Type: field.TypeString},
 		{Name: "email", Type: field.TypeString},
 		{Name: "name", Type: field.TypeString, Nullable: true, Default: ""},
 		{Name: "chat_id", Type: field.TypeString, Nullable: true},
@@ -2746,6 +2746,7 @@ var (
 		IncidentSeveritiesTable,
 		IncidentTagsTable,
 		IncidentTypesTable,
+		IntegrationsTable,
 		MeetingSchedulesTable,
 		MeetingSessionsTable,
 		OncallHandoverTemplatesTable,
@@ -2758,7 +2759,6 @@ var (
 		OncallShiftMetricsTable,
 		OrganizationsTable,
 		PlaybooksTable,
-		ProviderConfigsTable,
 		ProviderSyncHistoriesTable,
 		RetrospectivesTable,
 		RetrospectiveCommentsTable,
@@ -2856,6 +2856,7 @@ func init() {
 	IncidentSeveritiesTable.ForeignKeys[0].RefTable = TenantsTable
 	IncidentTagsTable.ForeignKeys[0].RefTable = TenantsTable
 	IncidentTypesTable.ForeignKeys[0].RefTable = TenantsTable
+	IntegrationsTable.ForeignKeys[0].RefTable = TenantsTable
 	MeetingSchedulesTable.ForeignKeys[0].RefTable = TenantsTable
 	MeetingSessionsTable.ForeignKeys[0].RefTable = TenantsTable
 	MeetingSessionsTable.ForeignKeys[1].RefTable = MeetingSchedulesTable
@@ -2879,7 +2880,6 @@ func init() {
 	OncallShiftMetricsTable.ForeignKeys[1].RefTable = TenantsTable
 	OrganizationsTable.ForeignKeys[0].RefTable = TenantsTable
 	PlaybooksTable.ForeignKeys[0].RefTable = TenantsTable
-	ProviderConfigsTable.ForeignKeys[0].RefTable = TenantsTable
 	ProviderSyncHistoriesTable.ForeignKeys[0].RefTable = TenantsTable
 	RetrospectivesTable.ForeignKeys[0].RefTable = DocumentsTable
 	RetrospectivesTable.ForeignKeys[1].RefTable = IncidentsTable

@@ -34,16 +34,16 @@ func (_c *SystemComponentRelationshipCreate) SetTenantID(v int) *SystemComponent
 	return _c
 }
 
-// SetProviderID sets the "provider_id" field.
-func (_c *SystemComponentRelationshipCreate) SetProviderID(v string) *SystemComponentRelationshipCreate {
-	_c.mutation.SetProviderID(v)
+// SetExternalID sets the "external_id" field.
+func (_c *SystemComponentRelationshipCreate) SetExternalID(v string) *SystemComponentRelationshipCreate {
+	_c.mutation.SetExternalID(v)
 	return _c
 }
 
-// SetNillableProviderID sets the "provider_id" field if the given value is not nil.
-func (_c *SystemComponentRelationshipCreate) SetNillableProviderID(v *string) *SystemComponentRelationshipCreate {
+// SetNillableExternalID sets the "external_id" field if the given value is not nil.
+func (_c *SystemComponentRelationshipCreate) SetNillableExternalID(v *string) *SystemComponentRelationshipCreate {
 	if v != nil {
-		_c.SetProviderID(*v)
+		_c.SetExternalID(*v)
 	}
 	return _c
 }
@@ -260,9 +260,9 @@ func (_c *SystemComponentRelationshipCreate) createSpec() (*SystemComponentRelat
 		_node.ID = id
 		_spec.ID.Value = &id
 	}
-	if value, ok := _c.mutation.ProviderID(); ok {
-		_spec.SetField(systemcomponentrelationship.FieldProviderID, field.TypeString, value)
-		_node.ProviderID = value
+	if value, ok := _c.mutation.ExternalID(); ok {
+		_spec.SetField(systemcomponentrelationship.FieldExternalID, field.TypeString, value)
+		_node.ExternalID = value
 	}
 	if value, ok := _c.mutation.Description(); ok {
 		_spec.SetField(systemcomponentrelationship.FieldDescription, field.TypeString, value)
@@ -407,21 +407,21 @@ type (
 	}
 )
 
-// SetProviderID sets the "provider_id" field.
-func (u *SystemComponentRelationshipUpsert) SetProviderID(v string) *SystemComponentRelationshipUpsert {
-	u.Set(systemcomponentrelationship.FieldProviderID, v)
+// SetExternalID sets the "external_id" field.
+func (u *SystemComponentRelationshipUpsert) SetExternalID(v string) *SystemComponentRelationshipUpsert {
+	u.Set(systemcomponentrelationship.FieldExternalID, v)
 	return u
 }
 
-// UpdateProviderID sets the "provider_id" field to the value that was provided on create.
-func (u *SystemComponentRelationshipUpsert) UpdateProviderID() *SystemComponentRelationshipUpsert {
-	u.SetExcluded(systemcomponentrelationship.FieldProviderID)
+// UpdateExternalID sets the "external_id" field to the value that was provided on create.
+func (u *SystemComponentRelationshipUpsert) UpdateExternalID() *SystemComponentRelationshipUpsert {
+	u.SetExcluded(systemcomponentrelationship.FieldExternalID)
 	return u
 }
 
-// ClearProviderID clears the value of the "provider_id" field.
-func (u *SystemComponentRelationshipUpsert) ClearProviderID() *SystemComponentRelationshipUpsert {
-	u.SetNull(systemcomponentrelationship.FieldProviderID)
+// ClearExternalID clears the value of the "external_id" field.
+func (u *SystemComponentRelationshipUpsert) ClearExternalID() *SystemComponentRelationshipUpsert {
+	u.SetNull(systemcomponentrelationship.FieldExternalID)
 	return u
 }
 
@@ -530,24 +530,24 @@ func (u *SystemComponentRelationshipUpsertOne) Update(set func(*SystemComponentR
 	return u
 }
 
-// SetProviderID sets the "provider_id" field.
-func (u *SystemComponentRelationshipUpsertOne) SetProviderID(v string) *SystemComponentRelationshipUpsertOne {
+// SetExternalID sets the "external_id" field.
+func (u *SystemComponentRelationshipUpsertOne) SetExternalID(v string) *SystemComponentRelationshipUpsertOne {
 	return u.Update(func(s *SystemComponentRelationshipUpsert) {
-		s.SetProviderID(v)
+		s.SetExternalID(v)
 	})
 }
 
-// UpdateProviderID sets the "provider_id" field to the value that was provided on create.
-func (u *SystemComponentRelationshipUpsertOne) UpdateProviderID() *SystemComponentRelationshipUpsertOne {
+// UpdateExternalID sets the "external_id" field to the value that was provided on create.
+func (u *SystemComponentRelationshipUpsertOne) UpdateExternalID() *SystemComponentRelationshipUpsertOne {
 	return u.Update(func(s *SystemComponentRelationshipUpsert) {
-		s.UpdateProviderID()
+		s.UpdateExternalID()
 	})
 }
 
-// ClearProviderID clears the value of the "provider_id" field.
-func (u *SystemComponentRelationshipUpsertOne) ClearProviderID() *SystemComponentRelationshipUpsertOne {
+// ClearExternalID clears the value of the "external_id" field.
+func (u *SystemComponentRelationshipUpsertOne) ClearExternalID() *SystemComponentRelationshipUpsertOne {
 	return u.Update(func(s *SystemComponentRelationshipUpsert) {
-		s.ClearProviderID()
+		s.ClearExternalID()
 	})
 }
 
@@ -832,24 +832,24 @@ func (u *SystemComponentRelationshipUpsertBulk) Update(set func(*SystemComponent
 	return u
 }
 
-// SetProviderID sets the "provider_id" field.
-func (u *SystemComponentRelationshipUpsertBulk) SetProviderID(v string) *SystemComponentRelationshipUpsertBulk {
+// SetExternalID sets the "external_id" field.
+func (u *SystemComponentRelationshipUpsertBulk) SetExternalID(v string) *SystemComponentRelationshipUpsertBulk {
 	return u.Update(func(s *SystemComponentRelationshipUpsert) {
-		s.SetProviderID(v)
+		s.SetExternalID(v)
 	})
 }
 
-// UpdateProviderID sets the "provider_id" field to the value that was provided on create.
-func (u *SystemComponentRelationshipUpsertBulk) UpdateProviderID() *SystemComponentRelationshipUpsertBulk {
+// UpdateExternalID sets the "external_id" field to the value that was provided on create.
+func (u *SystemComponentRelationshipUpsertBulk) UpdateExternalID() *SystemComponentRelationshipUpsertBulk {
 	return u.Update(func(s *SystemComponentRelationshipUpsert) {
-		s.UpdateProviderID()
+		s.UpdateExternalID()
 	})
 }
 
-// ClearProviderID clears the value of the "provider_id" field.
-func (u *SystemComponentRelationshipUpsertBulk) ClearProviderID() *SystemComponentRelationshipUpsertBulk {
+// ClearExternalID clears the value of the "external_id" field.
+func (u *SystemComponentRelationshipUpsertBulk) ClearExternalID() *SystemComponentRelationshipUpsertBulk {
 	return u.Update(func(s *SystemComponentRelationshipUpsert) {
-		s.ClearProviderID()
+		s.ClearExternalID()
 	})
 }
 

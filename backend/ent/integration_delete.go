@@ -8,30 +8,30 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
+	"github.com/rezible/rezible/ent/integration"
 	"github.com/rezible/rezible/ent/predicate"
-	"github.com/rezible/rezible/ent/providerconfig"
 )
 
-// ProviderConfigDelete is the builder for deleting a ProviderConfig entity.
-type ProviderConfigDelete struct {
+// IntegrationDelete is the builder for deleting a Integration entity.
+type IntegrationDelete struct {
 	config
 	hooks    []Hook
-	mutation *ProviderConfigMutation
+	mutation *IntegrationMutation
 }
 
-// Where appends a list predicates to the ProviderConfigDelete builder.
-func (_d *ProviderConfigDelete) Where(ps ...predicate.ProviderConfig) *ProviderConfigDelete {
+// Where appends a list predicates to the IntegrationDelete builder.
+func (_d *IntegrationDelete) Where(ps ...predicate.Integration) *IntegrationDelete {
 	_d.mutation.Where(ps...)
 	return _d
 }
 
 // Exec executes the deletion query and returns how many vertices were deleted.
-func (_d *ProviderConfigDelete) Exec(ctx context.Context) (int, error) {
+func (_d *IntegrationDelete) Exec(ctx context.Context) (int, error) {
 	return withHooks(ctx, _d.sqlExec, _d.mutation, _d.hooks)
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (_d *ProviderConfigDelete) ExecX(ctx context.Context) int {
+func (_d *IntegrationDelete) ExecX(ctx context.Context) int {
 	n, err := _d.Exec(ctx)
 	if err != nil {
 		panic(err)
@@ -39,8 +39,8 @@ func (_d *ProviderConfigDelete) ExecX(ctx context.Context) int {
 	return n
 }
 
-func (_d *ProviderConfigDelete) sqlExec(ctx context.Context) (int, error) {
-	_spec := sqlgraph.NewDeleteSpec(providerconfig.Table, sqlgraph.NewFieldSpec(providerconfig.FieldID, field.TypeUUID))
+func (_d *IntegrationDelete) sqlExec(ctx context.Context) (int, error) {
+	_spec := sqlgraph.NewDeleteSpec(integration.Table, sqlgraph.NewFieldSpec(integration.FieldID, field.TypeUUID))
 	if ps := _d.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {
@@ -56,32 +56,32 @@ func (_d *ProviderConfigDelete) sqlExec(ctx context.Context) (int, error) {
 	return affected, err
 }
 
-// ProviderConfigDeleteOne is the builder for deleting a single ProviderConfig entity.
-type ProviderConfigDeleteOne struct {
-	_d *ProviderConfigDelete
+// IntegrationDeleteOne is the builder for deleting a single Integration entity.
+type IntegrationDeleteOne struct {
+	_d *IntegrationDelete
 }
 
-// Where appends a list predicates to the ProviderConfigDelete builder.
-func (_d *ProviderConfigDeleteOne) Where(ps ...predicate.ProviderConfig) *ProviderConfigDeleteOne {
+// Where appends a list predicates to the IntegrationDelete builder.
+func (_d *IntegrationDeleteOne) Where(ps ...predicate.Integration) *IntegrationDeleteOne {
 	_d._d.mutation.Where(ps...)
 	return _d
 }
 
 // Exec executes the deletion query.
-func (_d *ProviderConfigDeleteOne) Exec(ctx context.Context) error {
+func (_d *IntegrationDeleteOne) Exec(ctx context.Context) error {
 	n, err := _d._d.Exec(ctx)
 	switch {
 	case err != nil:
 		return err
 	case n == 0:
-		return &NotFoundError{providerconfig.Label}
+		return &NotFoundError{integration.Label}
 	default:
 		return nil
 	}
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (_d *ProviderConfigDeleteOne) ExecX(ctx context.Context) {
+func (_d *IntegrationDeleteOne) ExecX(ctx context.Context) {
 	if err := _d.Exec(ctx); err != nil {
 		panic(err)
 	}

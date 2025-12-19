@@ -33,6 +33,26 @@ func (_u *AlertInstanceUpdate) Where(ps ...predicate.AlertInstance) *AlertInstan
 	return _u
 }
 
+// SetExternalID sets the "external_id" field.
+func (_u *AlertInstanceUpdate) SetExternalID(v string) *AlertInstanceUpdate {
+	_u.mutation.SetExternalID(v)
+	return _u
+}
+
+// SetNillableExternalID sets the "external_id" field if the given value is not nil.
+func (_u *AlertInstanceUpdate) SetNillableExternalID(v *string) *AlertInstanceUpdate {
+	if v != nil {
+		_u.SetExternalID(*v)
+	}
+	return _u
+}
+
+// ClearExternalID clears the value of the "external_id" field.
+func (_u *AlertInstanceUpdate) ClearExternalID() *AlertInstanceUpdate {
+	_u.mutation.ClearExternalID()
+	return _u
+}
+
 // SetAlertID sets the "alert_id" field.
 func (_u *AlertInstanceUpdate) SetAlertID(v uuid.UUID) *AlertInstanceUpdate {
 	_u.mutation.SetAlertID(v)
@@ -57,20 +77,6 @@ func (_u *AlertInstanceUpdate) SetEventID(v uuid.UUID) *AlertInstanceUpdate {
 func (_u *AlertInstanceUpdate) SetNillableEventID(v *uuid.UUID) *AlertInstanceUpdate {
 	if v != nil {
 		_u.SetEventID(*v)
-	}
-	return _u
-}
-
-// SetProviderID sets the "provider_id" field.
-func (_u *AlertInstanceUpdate) SetProviderID(v string) *AlertInstanceUpdate {
-	_u.mutation.SetProviderID(v)
-	return _u
-}
-
-// SetNillableProviderID sets the "provider_id" field if the given value is not nil.
-func (_u *AlertInstanceUpdate) SetNillableProviderID(v *string) *AlertInstanceUpdate {
-	if v != nil {
-		_u.SetProviderID(*v)
 	}
 	return _u
 }
@@ -206,8 +212,11 @@ func (_u *AlertInstanceUpdate) sqlSave(ctx context.Context) (_node int, err erro
 			}
 		}
 	}
-	if value, ok := _u.mutation.ProviderID(); ok {
-		_spec.SetField(alertinstance.FieldProviderID, field.TypeString, value)
+	if value, ok := _u.mutation.ExternalID(); ok {
+		_spec.SetField(alertinstance.FieldExternalID, field.TypeString, value)
+	}
+	if _u.mutation.ExternalIDCleared() {
+		_spec.ClearField(alertinstance.FieldExternalID, field.TypeString)
 	}
 	if value, ok := _u.mutation.AcknowledgedAt(); ok {
 		_spec.SetField(alertinstance.FieldAcknowledgedAt, field.TypeTime, value)
@@ -324,6 +333,26 @@ type AlertInstanceUpdateOne struct {
 	modifiers []func(*sql.UpdateBuilder)
 }
 
+// SetExternalID sets the "external_id" field.
+func (_u *AlertInstanceUpdateOne) SetExternalID(v string) *AlertInstanceUpdateOne {
+	_u.mutation.SetExternalID(v)
+	return _u
+}
+
+// SetNillableExternalID sets the "external_id" field if the given value is not nil.
+func (_u *AlertInstanceUpdateOne) SetNillableExternalID(v *string) *AlertInstanceUpdateOne {
+	if v != nil {
+		_u.SetExternalID(*v)
+	}
+	return _u
+}
+
+// ClearExternalID clears the value of the "external_id" field.
+func (_u *AlertInstanceUpdateOne) ClearExternalID() *AlertInstanceUpdateOne {
+	_u.mutation.ClearExternalID()
+	return _u
+}
+
 // SetAlertID sets the "alert_id" field.
 func (_u *AlertInstanceUpdateOne) SetAlertID(v uuid.UUID) *AlertInstanceUpdateOne {
 	_u.mutation.SetAlertID(v)
@@ -348,20 +377,6 @@ func (_u *AlertInstanceUpdateOne) SetEventID(v uuid.UUID) *AlertInstanceUpdateOn
 func (_u *AlertInstanceUpdateOne) SetNillableEventID(v *uuid.UUID) *AlertInstanceUpdateOne {
 	if v != nil {
 		_u.SetEventID(*v)
-	}
-	return _u
-}
-
-// SetProviderID sets the "provider_id" field.
-func (_u *AlertInstanceUpdateOne) SetProviderID(v string) *AlertInstanceUpdateOne {
-	_u.mutation.SetProviderID(v)
-	return _u
-}
-
-// SetNillableProviderID sets the "provider_id" field if the given value is not nil.
-func (_u *AlertInstanceUpdateOne) SetNillableProviderID(v *string) *AlertInstanceUpdateOne {
-	if v != nil {
-		_u.SetProviderID(*v)
 	}
 	return _u
 }
@@ -527,8 +542,11 @@ func (_u *AlertInstanceUpdateOne) sqlSave(ctx context.Context) (_node *AlertInst
 			}
 		}
 	}
-	if value, ok := _u.mutation.ProviderID(); ok {
-		_spec.SetField(alertinstance.FieldProviderID, field.TypeString, value)
+	if value, ok := _u.mutation.ExternalID(); ok {
+		_spec.SetField(alertinstance.FieldExternalID, field.TypeString, value)
+	}
+	if _u.mutation.ExternalIDCleared() {
+		_spec.ClearField(alertinstance.FieldExternalID, field.TypeString)
 	}
 	if value, ok := _u.mutation.AcknowledgedAt(); ok {
 		_spec.SetField(alertinstance.FieldAcknowledgedAt, field.TypeTime, value)

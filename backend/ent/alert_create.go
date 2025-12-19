@@ -33,9 +33,17 @@ func (_c *AlertCreate) SetTenantID(v int) *AlertCreate {
 	return _c
 }
 
-// SetProviderID sets the "provider_id" field.
-func (_c *AlertCreate) SetProviderID(v string) *AlertCreate {
-	_c.mutation.SetProviderID(v)
+// SetExternalID sets the "external_id" field.
+func (_c *AlertCreate) SetExternalID(v string) *AlertCreate {
+	_c.mutation.SetExternalID(v)
+	return _c
+}
+
+// SetNillableExternalID sets the "external_id" field if the given value is not nil.
+func (_c *AlertCreate) SetNillableExternalID(v *string) *AlertCreate {
+	if v != nil {
+		_c.SetExternalID(*v)
+	}
 	return _c
 }
 
@@ -193,9 +201,6 @@ func (_c *AlertCreate) check() error {
 	if _, ok := _c.mutation.TenantID(); !ok {
 		return &ValidationError{Name: "tenant_id", err: errors.New(`ent: missing required field "Alert.tenant_id"`)}
 	}
-	if _, ok := _c.mutation.ProviderID(); !ok {
-		return &ValidationError{Name: "provider_id", err: errors.New(`ent: missing required field "Alert.provider_id"`)}
-	}
 	if _, ok := _c.mutation.Title(); !ok {
 		return &ValidationError{Name: "title", err: errors.New(`ent: missing required field "Alert.title"`)}
 	}
@@ -238,9 +243,9 @@ func (_c *AlertCreate) createSpec() (*Alert, *sqlgraph.CreateSpec) {
 		_node.ID = id
 		_spec.ID.Value = &id
 	}
-	if value, ok := _c.mutation.ProviderID(); ok {
-		_spec.SetField(alert.FieldProviderID, field.TypeString, value)
-		_node.ProviderID = value
+	if value, ok := _c.mutation.ExternalID(); ok {
+		_spec.SetField(alert.FieldExternalID, field.TypeString, value)
+		_node.ExternalID = value
 	}
 	if value, ok := _c.mutation.Title(); ok {
 		_spec.SetField(alert.FieldTitle, field.TypeString, value)
@@ -372,15 +377,21 @@ type (
 	}
 )
 
-// SetProviderID sets the "provider_id" field.
-func (u *AlertUpsert) SetProviderID(v string) *AlertUpsert {
-	u.Set(alert.FieldProviderID, v)
+// SetExternalID sets the "external_id" field.
+func (u *AlertUpsert) SetExternalID(v string) *AlertUpsert {
+	u.Set(alert.FieldExternalID, v)
 	return u
 }
 
-// UpdateProviderID sets the "provider_id" field to the value that was provided on create.
-func (u *AlertUpsert) UpdateProviderID() *AlertUpsert {
-	u.SetExcluded(alert.FieldProviderID)
+// UpdateExternalID sets the "external_id" field to the value that was provided on create.
+func (u *AlertUpsert) UpdateExternalID() *AlertUpsert {
+	u.SetExcluded(alert.FieldExternalID)
+	return u
+}
+
+// ClearExternalID clears the value of the "external_id" field.
+func (u *AlertUpsert) ClearExternalID() *AlertUpsert {
+	u.SetNull(alert.FieldExternalID)
 	return u
 }
 
@@ -501,17 +512,24 @@ func (u *AlertUpsertOne) Update(set func(*AlertUpsert)) *AlertUpsertOne {
 	return u
 }
 
-// SetProviderID sets the "provider_id" field.
-func (u *AlertUpsertOne) SetProviderID(v string) *AlertUpsertOne {
+// SetExternalID sets the "external_id" field.
+func (u *AlertUpsertOne) SetExternalID(v string) *AlertUpsertOne {
 	return u.Update(func(s *AlertUpsert) {
-		s.SetProviderID(v)
+		s.SetExternalID(v)
 	})
 }
 
-// UpdateProviderID sets the "provider_id" field to the value that was provided on create.
-func (u *AlertUpsertOne) UpdateProviderID() *AlertUpsertOne {
+// UpdateExternalID sets the "external_id" field to the value that was provided on create.
+func (u *AlertUpsertOne) UpdateExternalID() *AlertUpsertOne {
 	return u.Update(func(s *AlertUpsert) {
-		s.UpdateProviderID()
+		s.UpdateExternalID()
+	})
+}
+
+// ClearExternalID clears the value of the "external_id" field.
+func (u *AlertUpsertOne) ClearExternalID() *AlertUpsertOne {
+	return u.Update(func(s *AlertUpsert) {
+		s.ClearExternalID()
 	})
 }
 
@@ -810,17 +828,24 @@ func (u *AlertUpsertBulk) Update(set func(*AlertUpsert)) *AlertUpsertBulk {
 	return u
 }
 
-// SetProviderID sets the "provider_id" field.
-func (u *AlertUpsertBulk) SetProviderID(v string) *AlertUpsertBulk {
+// SetExternalID sets the "external_id" field.
+func (u *AlertUpsertBulk) SetExternalID(v string) *AlertUpsertBulk {
 	return u.Update(func(s *AlertUpsert) {
-		s.SetProviderID(v)
+		s.SetExternalID(v)
 	})
 }
 
-// UpdateProviderID sets the "provider_id" field to the value that was provided on create.
-func (u *AlertUpsertBulk) UpdateProviderID() *AlertUpsertBulk {
+// UpdateExternalID sets the "external_id" field to the value that was provided on create.
+func (u *AlertUpsertBulk) UpdateExternalID() *AlertUpsertBulk {
 	return u.Update(func(s *AlertUpsert) {
-		s.UpdateProviderID()
+		s.UpdateExternalID()
+	})
+}
+
+// ClearExternalID clears the value of the "external_id" field.
+func (u *AlertUpsertBulk) ClearExternalID() *AlertUpsertBulk {
+	return u.Update(func(s *AlertUpsert) {
+		s.ClearExternalID()
 	})
 }
 

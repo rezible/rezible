@@ -31,9 +31,17 @@ func (_c *TicketCreate) SetTenantID(v int) *TicketCreate {
 	return _c
 }
 
-// SetProviderID sets the "provider_id" field.
-func (_c *TicketCreate) SetProviderID(v string) *TicketCreate {
-	_c.mutation.SetProviderID(v)
+// SetExternalID sets the "external_id" field.
+func (_c *TicketCreate) SetExternalID(v string) *TicketCreate {
+	_c.mutation.SetExternalID(v)
+	return _c
+}
+
+// SetNillableExternalID sets the "external_id" field if the given value is not nil.
+func (_c *TicketCreate) SetNillableExternalID(v *string) *TicketCreate {
+	if v != nil {
+		_c.SetExternalID(*v)
+	}
 	return _c
 }
 
@@ -129,9 +137,6 @@ func (_c *TicketCreate) check() error {
 	if _, ok := _c.mutation.TenantID(); !ok {
 		return &ValidationError{Name: "tenant_id", err: errors.New(`ent: missing required field "Ticket.tenant_id"`)}
 	}
-	if _, ok := _c.mutation.ProviderID(); !ok {
-		return &ValidationError{Name: "provider_id", err: errors.New(`ent: missing required field "Ticket.provider_id"`)}
-	}
 	if _, ok := _c.mutation.Title(); !ok {
 		return &ValidationError{Name: "title", err: errors.New(`ent: missing required field "Ticket.title"`)}
 	}
@@ -174,9 +179,9 @@ func (_c *TicketCreate) createSpec() (*Ticket, *sqlgraph.CreateSpec) {
 		_node.ID = id
 		_spec.ID.Value = &id
 	}
-	if value, ok := _c.mutation.ProviderID(); ok {
-		_spec.SetField(ticket.FieldProviderID, field.TypeString, value)
-		_node.ProviderID = value
+	if value, ok := _c.mutation.ExternalID(); ok {
+		_spec.SetField(ticket.FieldExternalID, field.TypeString, value)
+		_node.ExternalID = value
 	}
 	if value, ok := _c.mutation.Title(); ok {
 		_spec.SetField(ticket.FieldTitle, field.TypeString, value)
@@ -267,15 +272,21 @@ type (
 	}
 )
 
-// SetProviderID sets the "provider_id" field.
-func (u *TicketUpsert) SetProviderID(v string) *TicketUpsert {
-	u.Set(ticket.FieldProviderID, v)
+// SetExternalID sets the "external_id" field.
+func (u *TicketUpsert) SetExternalID(v string) *TicketUpsert {
+	u.Set(ticket.FieldExternalID, v)
 	return u
 }
 
-// UpdateProviderID sets the "provider_id" field to the value that was provided on create.
-func (u *TicketUpsert) UpdateProviderID() *TicketUpsert {
-	u.SetExcluded(ticket.FieldProviderID)
+// UpdateExternalID sets the "external_id" field to the value that was provided on create.
+func (u *TicketUpsert) UpdateExternalID() *TicketUpsert {
+	u.SetExcluded(ticket.FieldExternalID)
+	return u
+}
+
+// ClearExternalID clears the value of the "external_id" field.
+func (u *TicketUpsert) ClearExternalID() *TicketUpsert {
+	u.SetNull(ticket.FieldExternalID)
 	return u
 }
 
@@ -342,17 +353,24 @@ func (u *TicketUpsertOne) Update(set func(*TicketUpsert)) *TicketUpsertOne {
 	return u
 }
 
-// SetProviderID sets the "provider_id" field.
-func (u *TicketUpsertOne) SetProviderID(v string) *TicketUpsertOne {
+// SetExternalID sets the "external_id" field.
+func (u *TicketUpsertOne) SetExternalID(v string) *TicketUpsertOne {
 	return u.Update(func(s *TicketUpsert) {
-		s.SetProviderID(v)
+		s.SetExternalID(v)
 	})
 }
 
-// UpdateProviderID sets the "provider_id" field to the value that was provided on create.
-func (u *TicketUpsertOne) UpdateProviderID() *TicketUpsertOne {
+// UpdateExternalID sets the "external_id" field to the value that was provided on create.
+func (u *TicketUpsertOne) UpdateExternalID() *TicketUpsertOne {
 	return u.Update(func(s *TicketUpsert) {
-		s.UpdateProviderID()
+		s.UpdateExternalID()
+	})
+}
+
+// ClearExternalID clears the value of the "external_id" field.
+func (u *TicketUpsertOne) ClearExternalID() *TicketUpsertOne {
+	return u.Update(func(s *TicketUpsert) {
+		s.ClearExternalID()
 	})
 }
 
@@ -588,17 +606,24 @@ func (u *TicketUpsertBulk) Update(set func(*TicketUpsert)) *TicketUpsertBulk {
 	return u
 }
 
-// SetProviderID sets the "provider_id" field.
-func (u *TicketUpsertBulk) SetProviderID(v string) *TicketUpsertBulk {
+// SetExternalID sets the "external_id" field.
+func (u *TicketUpsertBulk) SetExternalID(v string) *TicketUpsertBulk {
 	return u.Update(func(s *TicketUpsert) {
-		s.SetProviderID(v)
+		s.SetExternalID(v)
 	})
 }
 
-// UpdateProviderID sets the "provider_id" field to the value that was provided on create.
-func (u *TicketUpsertBulk) UpdateProviderID() *TicketUpsertBulk {
+// UpdateExternalID sets the "external_id" field to the value that was provided on create.
+func (u *TicketUpsertBulk) UpdateExternalID() *TicketUpsertBulk {
 	return u.Update(func(s *TicketUpsert) {
-		s.UpdateProviderID()
+		s.UpdateExternalID()
+	})
+}
+
+// ClearExternalID clears the value of the "external_id" field.
+func (u *TicketUpsertBulk) ClearExternalID() *TicketUpsertBulk {
+	return u.Update(func(s *TicketUpsert) {
+		s.ClearExternalID()
 	})
 }
 

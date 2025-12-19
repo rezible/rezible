@@ -37,6 +37,7 @@ import (
 	"github.com/rezible/rezible/ent/incidentseverity"
 	"github.com/rezible/rezible/ent/incidenttag"
 	"github.com/rezible/rezible/ent/incidenttype"
+	"github.com/rezible/rezible/ent/integration"
 	"github.com/rezible/rezible/ent/meetingschedule"
 	"github.com/rezible/rezible/ent/meetingsession"
 	"github.com/rezible/rezible/ent/oncallhandovertemplate"
@@ -50,7 +51,6 @@ import (
 	"github.com/rezible/rezible/ent/organization"
 	"github.com/rezible/rezible/ent/playbook"
 	"github.com/rezible/rezible/ent/predicate"
-	"github.com/rezible/rezible/ent/providerconfig"
 	"github.com/rezible/rezible/ent/providersynchistory"
 	"github.com/rezible/rezible/ent/retrospective"
 	"github.com/rezible/rezible/ent/retrospectivecomment"
@@ -108,6 +108,7 @@ const (
 	TypeIncidentSeverity                 = "IncidentSeverity"
 	TypeIncidentTag                      = "IncidentTag"
 	TypeIncidentType                     = "IncidentType"
+	TypeIntegration                      = "Integration"
 	TypeMeetingSchedule                  = "MeetingSchedule"
 	TypeMeetingSession                   = "MeetingSession"
 	TypeOncallHandoverTemplate           = "OncallHandoverTemplate"
@@ -120,7 +121,6 @@ const (
 	TypeOncallShiftMetrics               = "OncallShiftMetrics"
 	TypeOrganization                     = "Organization"
 	TypePlaybook                         = "Playbook"
-	TypeProviderConfig                   = "ProviderConfig"
 	TypeProviderSyncHistory              = "ProviderSyncHistory"
 	TypeRetrospective                    = "Retrospective"
 	TypeRetrospectiveComment             = "RetrospectiveComment"
@@ -150,7 +150,7 @@ type AlertMutation struct {
 	op               Op
 	typ              string
 	id               *uuid.UUID
-	provider_id      *string
+	external_id      *string
 	title            *string
 	description      *string
 	definition       *string
@@ -310,40 +310,53 @@ func (m *AlertMutation) ResetTenantID() {
 	m.tenant = nil
 }
 
-// SetProviderID sets the "provider_id" field.
-func (m *AlertMutation) SetProviderID(s string) {
-	m.provider_id = &s
+// SetExternalID sets the "external_id" field.
+func (m *AlertMutation) SetExternalID(s string) {
+	m.external_id = &s
 }
 
-// ProviderID returns the value of the "provider_id" field in the mutation.
-func (m *AlertMutation) ProviderID() (r string, exists bool) {
-	v := m.provider_id
+// ExternalID returns the value of the "external_id" field in the mutation.
+func (m *AlertMutation) ExternalID() (r string, exists bool) {
+	v := m.external_id
 	if v == nil {
 		return
 	}
 	return *v, true
 }
 
-// OldProviderID returns the old "provider_id" field's value of the Alert entity.
+// OldExternalID returns the old "external_id" field's value of the Alert entity.
 // If the Alert object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *AlertMutation) OldProviderID(ctx context.Context) (v string, err error) {
+func (m *AlertMutation) OldExternalID(ctx context.Context) (v string, err error) {
 	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldProviderID is only allowed on UpdateOne operations")
+		return v, errors.New("OldExternalID is only allowed on UpdateOne operations")
 	}
 	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldProviderID requires an ID field in the mutation")
+		return v, errors.New("OldExternalID requires an ID field in the mutation")
 	}
 	oldValue, err := m.oldValue(ctx)
 	if err != nil {
-		return v, fmt.Errorf("querying old value for OldProviderID: %w", err)
+		return v, fmt.Errorf("querying old value for OldExternalID: %w", err)
 	}
-	return oldValue.ProviderID, nil
+	return oldValue.ExternalID, nil
 }
 
-// ResetProviderID resets all changes to the "provider_id" field.
-func (m *AlertMutation) ResetProviderID() {
-	m.provider_id = nil
+// ClearExternalID clears the value of the "external_id" field.
+func (m *AlertMutation) ClearExternalID() {
+	m.external_id = nil
+	m.clearedFields[alert.FieldExternalID] = struct{}{}
+}
+
+// ExternalIDCleared returns if the "external_id" field was cleared in this mutation.
+func (m *AlertMutation) ExternalIDCleared() bool {
+	_, ok := m.clearedFields[alert.FieldExternalID]
+	return ok
+}
+
+// ResetExternalID resets all changes to the "external_id" field.
+func (m *AlertMutation) ResetExternalID() {
+	m.external_id = nil
+	delete(m.clearedFields, alert.FieldExternalID)
 }
 
 // SetTitle sets the "title" field.
@@ -729,8 +742,8 @@ func (m *AlertMutation) Fields() []string {
 	if m.tenant != nil {
 		fields = append(fields, alert.FieldTenantID)
 	}
-	if m.provider_id != nil {
-		fields = append(fields, alert.FieldProviderID)
+	if m.external_id != nil {
+		fields = append(fields, alert.FieldExternalID)
 	}
 	if m.title != nil {
 		fields = append(fields, alert.FieldTitle)
@@ -754,8 +767,8 @@ func (m *AlertMutation) Field(name string) (ent.Value, bool) {
 	switch name {
 	case alert.FieldTenantID:
 		return m.TenantID()
-	case alert.FieldProviderID:
-		return m.ProviderID()
+	case alert.FieldExternalID:
+		return m.ExternalID()
 	case alert.FieldTitle:
 		return m.Title()
 	case alert.FieldDescription:
@@ -775,8 +788,8 @@ func (m *AlertMutation) OldField(ctx context.Context, name string) (ent.Value, e
 	switch name {
 	case alert.FieldTenantID:
 		return m.OldTenantID(ctx)
-	case alert.FieldProviderID:
-		return m.OldProviderID(ctx)
+	case alert.FieldExternalID:
+		return m.OldExternalID(ctx)
 	case alert.FieldTitle:
 		return m.OldTitle(ctx)
 	case alert.FieldDescription:
@@ -801,12 +814,12 @@ func (m *AlertMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetTenantID(v)
 		return nil
-	case alert.FieldProviderID:
+	case alert.FieldExternalID:
 		v, ok := value.(string)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
-		m.SetProviderID(v)
+		m.SetExternalID(v)
 		return nil
 	case alert.FieldTitle:
 		v, ok := value.(string)
@@ -869,6 +882,9 @@ func (m *AlertMutation) AddField(name string, value ent.Value) error {
 // mutation.
 func (m *AlertMutation) ClearedFields() []string {
 	var fields []string
+	if m.FieldCleared(alert.FieldExternalID) {
+		fields = append(fields, alert.FieldExternalID)
+	}
 	if m.FieldCleared(alert.FieldDescription) {
 		fields = append(fields, alert.FieldDescription)
 	}
@@ -892,6 +908,9 @@ func (m *AlertMutation) FieldCleared(name string) bool {
 // error if the field is not defined in the schema.
 func (m *AlertMutation) ClearField(name string) error {
 	switch name {
+	case alert.FieldExternalID:
+		m.ClearExternalID()
+		return nil
 	case alert.FieldDescription:
 		m.ClearDescription()
 		return nil
@@ -912,8 +931,8 @@ func (m *AlertMutation) ResetField(name string) error {
 	case alert.FieldTenantID:
 		m.ResetTenantID()
 		return nil
-	case alert.FieldProviderID:
-		m.ResetProviderID()
+	case alert.FieldExternalID:
+		m.ResetExternalID()
 		return nil
 	case alert.FieldTitle:
 		m.ResetTitle()
@@ -1788,7 +1807,7 @@ type AlertInstanceMutation struct {
 	op              Op
 	typ             string
 	id              *uuid.UUID
-	provider_id     *string
+	external_id     *string
 	acknowledged_at *time.Time
 	clearedFields   map[string]struct{}
 	tenant          *int
@@ -1944,6 +1963,55 @@ func (m *AlertInstanceMutation) ResetTenantID() {
 	m.tenant = nil
 }
 
+// SetExternalID sets the "external_id" field.
+func (m *AlertInstanceMutation) SetExternalID(s string) {
+	m.external_id = &s
+}
+
+// ExternalID returns the value of the "external_id" field in the mutation.
+func (m *AlertInstanceMutation) ExternalID() (r string, exists bool) {
+	v := m.external_id
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldExternalID returns the old "external_id" field's value of the AlertInstance entity.
+// If the AlertInstance object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *AlertInstanceMutation) OldExternalID(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldExternalID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldExternalID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldExternalID: %w", err)
+	}
+	return oldValue.ExternalID, nil
+}
+
+// ClearExternalID clears the value of the "external_id" field.
+func (m *AlertInstanceMutation) ClearExternalID() {
+	m.external_id = nil
+	m.clearedFields[alertinstance.FieldExternalID] = struct{}{}
+}
+
+// ExternalIDCleared returns if the "external_id" field was cleared in this mutation.
+func (m *AlertInstanceMutation) ExternalIDCleared() bool {
+	_, ok := m.clearedFields[alertinstance.FieldExternalID]
+	return ok
+}
+
+// ResetExternalID resets all changes to the "external_id" field.
+func (m *AlertInstanceMutation) ResetExternalID() {
+	m.external_id = nil
+	delete(m.clearedFields, alertinstance.FieldExternalID)
+}
+
 // SetAlertID sets the "alert_id" field.
 func (m *AlertInstanceMutation) SetAlertID(u uuid.UUID) {
 	m.alert = &u
@@ -2014,42 +2082,6 @@ func (m *AlertInstanceMutation) OldEventID(ctx context.Context) (v uuid.UUID, er
 // ResetEventID resets all changes to the "event_id" field.
 func (m *AlertInstanceMutation) ResetEventID() {
 	m.event = nil
-}
-
-// SetProviderID sets the "provider_id" field.
-func (m *AlertInstanceMutation) SetProviderID(s string) {
-	m.provider_id = &s
-}
-
-// ProviderID returns the value of the "provider_id" field in the mutation.
-func (m *AlertInstanceMutation) ProviderID() (r string, exists bool) {
-	v := m.provider_id
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldProviderID returns the old "provider_id" field's value of the AlertInstance entity.
-// If the AlertInstance object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *AlertInstanceMutation) OldProviderID(ctx context.Context) (v string, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldProviderID is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldProviderID requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldProviderID: %w", err)
-	}
-	return oldValue.ProviderID, nil
-}
-
-// ResetProviderID resets all changes to the "provider_id" field.
-func (m *AlertInstanceMutation) ResetProviderID() {
-	m.provider_id = nil
 }
 
 // SetAcknowledgedAt sets the "acknowledged_at" field.
@@ -2259,14 +2291,14 @@ func (m *AlertInstanceMutation) Fields() []string {
 	if m.tenant != nil {
 		fields = append(fields, alertinstance.FieldTenantID)
 	}
+	if m.external_id != nil {
+		fields = append(fields, alertinstance.FieldExternalID)
+	}
 	if m.alert != nil {
 		fields = append(fields, alertinstance.FieldAlertID)
 	}
 	if m.event != nil {
 		fields = append(fields, alertinstance.FieldEventID)
-	}
-	if m.provider_id != nil {
-		fields = append(fields, alertinstance.FieldProviderID)
 	}
 	if m.acknowledged_at != nil {
 		fields = append(fields, alertinstance.FieldAcknowledgedAt)
@@ -2281,12 +2313,12 @@ func (m *AlertInstanceMutation) Field(name string) (ent.Value, bool) {
 	switch name {
 	case alertinstance.FieldTenantID:
 		return m.TenantID()
+	case alertinstance.FieldExternalID:
+		return m.ExternalID()
 	case alertinstance.FieldAlertID:
 		return m.AlertID()
 	case alertinstance.FieldEventID:
 		return m.EventID()
-	case alertinstance.FieldProviderID:
-		return m.ProviderID()
 	case alertinstance.FieldAcknowledgedAt:
 		return m.AcknowledgedAt()
 	}
@@ -2300,12 +2332,12 @@ func (m *AlertInstanceMutation) OldField(ctx context.Context, name string) (ent.
 	switch name {
 	case alertinstance.FieldTenantID:
 		return m.OldTenantID(ctx)
+	case alertinstance.FieldExternalID:
+		return m.OldExternalID(ctx)
 	case alertinstance.FieldAlertID:
 		return m.OldAlertID(ctx)
 	case alertinstance.FieldEventID:
 		return m.OldEventID(ctx)
-	case alertinstance.FieldProviderID:
-		return m.OldProviderID(ctx)
 	case alertinstance.FieldAcknowledgedAt:
 		return m.OldAcknowledgedAt(ctx)
 	}
@@ -2324,6 +2356,13 @@ func (m *AlertInstanceMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetTenantID(v)
 		return nil
+	case alertinstance.FieldExternalID:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetExternalID(v)
+		return nil
 	case alertinstance.FieldAlertID:
 		v, ok := value.(uuid.UUID)
 		if !ok {
@@ -2337,13 +2376,6 @@ func (m *AlertInstanceMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetEventID(v)
-		return nil
-	case alertinstance.FieldProviderID:
-		v, ok := value.(string)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetProviderID(v)
 		return nil
 	case alertinstance.FieldAcknowledgedAt:
 		v, ok := value.(time.Time)
@@ -2385,6 +2417,9 @@ func (m *AlertInstanceMutation) AddField(name string, value ent.Value) error {
 // mutation.
 func (m *AlertInstanceMutation) ClearedFields() []string {
 	var fields []string
+	if m.FieldCleared(alertinstance.FieldExternalID) {
+		fields = append(fields, alertinstance.FieldExternalID)
+	}
 	if m.FieldCleared(alertinstance.FieldAcknowledgedAt) {
 		fields = append(fields, alertinstance.FieldAcknowledgedAt)
 	}
@@ -2402,6 +2437,9 @@ func (m *AlertInstanceMutation) FieldCleared(name string) bool {
 // error if the field is not defined in the schema.
 func (m *AlertInstanceMutation) ClearField(name string) error {
 	switch name {
+	case alertinstance.FieldExternalID:
+		m.ClearExternalID()
+		return nil
 	case alertinstance.FieldAcknowledgedAt:
 		m.ClearAcknowledgedAt()
 		return nil
@@ -2416,14 +2454,14 @@ func (m *AlertInstanceMutation) ResetField(name string) error {
 	case alertinstance.FieldTenantID:
 		m.ResetTenantID()
 		return nil
+	case alertinstance.FieldExternalID:
+		m.ResetExternalID()
+		return nil
 	case alertinstance.FieldAlertID:
 		m.ResetAlertID()
 		return nil
 	case alertinstance.FieldEventID:
 		m.ResetEventID()
-		return nil
-	case alertinstance.FieldProviderID:
-		m.ResetProviderID()
 		return nil
 	case alertinstance.FieldAcknowledgedAt:
 		m.ResetAcknowledgedAt()
@@ -3068,7 +3106,7 @@ type EventMutation struct {
 	op                    Op
 	typ                   string
 	id                    *uuid.UUID
-	provider_id           *string
+	external_id           *string
 	timestamp             *time.Time
 	kind                  *event.Kind
 	title                 *string
@@ -3231,40 +3269,53 @@ func (m *EventMutation) ResetTenantID() {
 	m.tenant = nil
 }
 
-// SetProviderID sets the "provider_id" field.
-func (m *EventMutation) SetProviderID(s string) {
-	m.provider_id = &s
+// SetExternalID sets the "external_id" field.
+func (m *EventMutation) SetExternalID(s string) {
+	m.external_id = &s
 }
 
-// ProviderID returns the value of the "provider_id" field in the mutation.
-func (m *EventMutation) ProviderID() (r string, exists bool) {
-	v := m.provider_id
+// ExternalID returns the value of the "external_id" field in the mutation.
+func (m *EventMutation) ExternalID() (r string, exists bool) {
+	v := m.external_id
 	if v == nil {
 		return
 	}
 	return *v, true
 }
 
-// OldProviderID returns the old "provider_id" field's value of the Event entity.
+// OldExternalID returns the old "external_id" field's value of the Event entity.
 // If the Event object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *EventMutation) OldProviderID(ctx context.Context) (v string, err error) {
+func (m *EventMutation) OldExternalID(ctx context.Context) (v string, err error) {
 	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldProviderID is only allowed on UpdateOne operations")
+		return v, errors.New("OldExternalID is only allowed on UpdateOne operations")
 	}
 	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldProviderID requires an ID field in the mutation")
+		return v, errors.New("OldExternalID requires an ID field in the mutation")
 	}
 	oldValue, err := m.oldValue(ctx)
 	if err != nil {
-		return v, fmt.Errorf("querying old value for OldProviderID: %w", err)
+		return v, fmt.Errorf("querying old value for OldExternalID: %w", err)
 	}
-	return oldValue.ProviderID, nil
+	return oldValue.ExternalID, nil
 }
 
-// ResetProviderID resets all changes to the "provider_id" field.
-func (m *EventMutation) ResetProviderID() {
-	m.provider_id = nil
+// ClearExternalID clears the value of the "external_id" field.
+func (m *EventMutation) ClearExternalID() {
+	m.external_id = nil
+	m.clearedFields[event.FieldExternalID] = struct{}{}
+}
+
+// ExternalIDCleared returns if the "external_id" field was cleared in this mutation.
+func (m *EventMutation) ExternalIDCleared() bool {
+	_, ok := m.clearedFields[event.FieldExternalID]
+	return ok
+}
+
+// ResetExternalID resets all changes to the "external_id" field.
+func (m *EventMutation) ResetExternalID() {
+	m.external_id = nil
+	delete(m.clearedFields, event.FieldExternalID)
 }
 
 // SetTimestamp sets the "timestamp" field.
@@ -3674,8 +3725,8 @@ func (m *EventMutation) Fields() []string {
 	if m.tenant != nil {
 		fields = append(fields, event.FieldTenantID)
 	}
-	if m.provider_id != nil {
-		fields = append(fields, event.FieldProviderID)
+	if m.external_id != nil {
+		fields = append(fields, event.FieldExternalID)
 	}
 	if m.timestamp != nil {
 		fields = append(fields, event.FieldTimestamp)
@@ -3702,8 +3753,8 @@ func (m *EventMutation) Field(name string) (ent.Value, bool) {
 	switch name {
 	case event.FieldTenantID:
 		return m.TenantID()
-	case event.FieldProviderID:
-		return m.ProviderID()
+	case event.FieldExternalID:
+		return m.ExternalID()
 	case event.FieldTimestamp:
 		return m.Timestamp()
 	case event.FieldKind:
@@ -3725,8 +3776,8 @@ func (m *EventMutation) OldField(ctx context.Context, name string) (ent.Value, e
 	switch name {
 	case event.FieldTenantID:
 		return m.OldTenantID(ctx)
-	case event.FieldProviderID:
-		return m.OldProviderID(ctx)
+	case event.FieldExternalID:
+		return m.OldExternalID(ctx)
 	case event.FieldTimestamp:
 		return m.OldTimestamp(ctx)
 	case event.FieldKind:
@@ -3753,12 +3804,12 @@ func (m *EventMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetTenantID(v)
 		return nil
-	case event.FieldProviderID:
+	case event.FieldExternalID:
 		v, ok := value.(string)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
-		m.SetProviderID(v)
+		m.SetExternalID(v)
 		return nil
 	case event.FieldTimestamp:
 		v, ok := value.(time.Time)
@@ -3827,7 +3878,11 @@ func (m *EventMutation) AddField(name string, value ent.Value) error {
 // ClearedFields returns all nullable fields that were cleared during this
 // mutation.
 func (m *EventMutation) ClearedFields() []string {
-	return nil
+	var fields []string
+	if m.FieldCleared(event.FieldExternalID) {
+		fields = append(fields, event.FieldExternalID)
+	}
+	return fields
 }
 
 // FieldCleared returns a boolean indicating if a field with the given name was
@@ -3840,6 +3895,11 @@ func (m *EventMutation) FieldCleared(name string) bool {
 // ClearField clears the value of the field with the given name. It returns an
 // error if the field is not defined in the schema.
 func (m *EventMutation) ClearField(name string) error {
+	switch name {
+	case event.FieldExternalID:
+		m.ClearExternalID()
+		return nil
+	}
 	return fmt.Errorf("unknown Event nullable field %s", name)
 }
 
@@ -3850,8 +3910,8 @@ func (m *EventMutation) ResetField(name string) error {
 	case event.FieldTenantID:
 		m.ResetTenantID()
 		return nil
-	case event.FieldProviderID:
-		m.ResetProviderID()
+	case event.FieldExternalID:
+		m.ResetExternalID()
 		return nil
 	case event.FieldTimestamp:
 		m.ResetTimestamp()
@@ -4971,6 +5031,7 @@ type IncidentMutation struct {
 	op                      Op
 	typ                     string
 	id                      *uuid.UUID
+	external_id             *string
 	slug                    *string
 	title                   *string
 	private                 *bool
@@ -4978,7 +5039,6 @@ type IncidentMutation struct {
 	opened_at               *time.Time
 	modified_at             *time.Time
 	closed_at               *time.Time
-	provider_id             *string
 	chat_channel_id         *string
 	clearedFields           map[string]struct{}
 	tenant                  *int
@@ -5168,6 +5228,55 @@ func (m *IncidentMutation) OldTenantID(ctx context.Context) (v int, err error) {
 // ResetTenantID resets all changes to the "tenant_id" field.
 func (m *IncidentMutation) ResetTenantID() {
 	m.tenant = nil
+}
+
+// SetExternalID sets the "external_id" field.
+func (m *IncidentMutation) SetExternalID(s string) {
+	m.external_id = &s
+}
+
+// ExternalID returns the value of the "external_id" field in the mutation.
+func (m *IncidentMutation) ExternalID() (r string, exists bool) {
+	v := m.external_id
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldExternalID returns the old "external_id" field's value of the Incident entity.
+// If the Incident object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *IncidentMutation) OldExternalID(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldExternalID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldExternalID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldExternalID: %w", err)
+	}
+	return oldValue.ExternalID, nil
+}
+
+// ClearExternalID clears the value of the "external_id" field.
+func (m *IncidentMutation) ClearExternalID() {
+	m.external_id = nil
+	m.clearedFields[incident.FieldExternalID] = struct{}{}
+}
+
+// ExternalIDCleared returns if the "external_id" field was cleared in this mutation.
+func (m *IncidentMutation) ExternalIDCleared() bool {
+	_, ok := m.clearedFields[incident.FieldExternalID]
+	return ok
+}
+
+// ResetExternalID resets all changes to the "external_id" field.
+func (m *IncidentMutation) ResetExternalID() {
+	m.external_id = nil
+	delete(m.clearedFields, incident.FieldExternalID)
 }
 
 // SetSlug sets the "slug" field.
@@ -5461,104 +5570,6 @@ func (m *IncidentMutation) ResetClosedAt() {
 	delete(m.clearedFields, incident.FieldClosedAt)
 }
 
-// SetProviderID sets the "provider_id" field.
-func (m *IncidentMutation) SetProviderID(s string) {
-	m.provider_id = &s
-}
-
-// ProviderID returns the value of the "provider_id" field in the mutation.
-func (m *IncidentMutation) ProviderID() (r string, exists bool) {
-	v := m.provider_id
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldProviderID returns the old "provider_id" field's value of the Incident entity.
-// If the Incident object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *IncidentMutation) OldProviderID(ctx context.Context) (v string, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldProviderID is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldProviderID requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldProviderID: %w", err)
-	}
-	return oldValue.ProviderID, nil
-}
-
-// ClearProviderID clears the value of the "provider_id" field.
-func (m *IncidentMutation) ClearProviderID() {
-	m.provider_id = nil
-	m.clearedFields[incident.FieldProviderID] = struct{}{}
-}
-
-// ProviderIDCleared returns if the "provider_id" field was cleared in this mutation.
-func (m *IncidentMutation) ProviderIDCleared() bool {
-	_, ok := m.clearedFields[incident.FieldProviderID]
-	return ok
-}
-
-// ResetProviderID resets all changes to the "provider_id" field.
-func (m *IncidentMutation) ResetProviderID() {
-	m.provider_id = nil
-	delete(m.clearedFields, incident.FieldProviderID)
-}
-
-// SetChatChannelID sets the "chat_channel_id" field.
-func (m *IncidentMutation) SetChatChannelID(s string) {
-	m.chat_channel_id = &s
-}
-
-// ChatChannelID returns the value of the "chat_channel_id" field in the mutation.
-func (m *IncidentMutation) ChatChannelID() (r string, exists bool) {
-	v := m.chat_channel_id
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldChatChannelID returns the old "chat_channel_id" field's value of the Incident entity.
-// If the Incident object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *IncidentMutation) OldChatChannelID(ctx context.Context) (v string, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldChatChannelID is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldChatChannelID requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldChatChannelID: %w", err)
-	}
-	return oldValue.ChatChannelID, nil
-}
-
-// ClearChatChannelID clears the value of the "chat_channel_id" field.
-func (m *IncidentMutation) ClearChatChannelID() {
-	m.chat_channel_id = nil
-	m.clearedFields[incident.FieldChatChannelID] = struct{}{}
-}
-
-// ChatChannelIDCleared returns if the "chat_channel_id" field was cleared in this mutation.
-func (m *IncidentMutation) ChatChannelIDCleared() bool {
-	_, ok := m.clearedFields[incident.FieldChatChannelID]
-	return ok
-}
-
-// ResetChatChannelID resets all changes to the "chat_channel_id" field.
-func (m *IncidentMutation) ResetChatChannelID() {
-	m.chat_channel_id = nil
-	delete(m.clearedFields, incident.FieldChatChannelID)
-}
-
 // SetSeverityID sets the "severity_id" field.
 func (m *IncidentMutation) SetSeverityID(u uuid.UUID) {
 	m.severity = &u
@@ -5655,6 +5666,55 @@ func (m *IncidentMutation) TypeIDCleared() bool {
 func (m *IncidentMutation) ResetTypeID() {
 	m._type = nil
 	delete(m.clearedFields, incident.FieldTypeID)
+}
+
+// SetChatChannelID sets the "chat_channel_id" field.
+func (m *IncidentMutation) SetChatChannelID(s string) {
+	m.chat_channel_id = &s
+}
+
+// ChatChannelID returns the value of the "chat_channel_id" field in the mutation.
+func (m *IncidentMutation) ChatChannelID() (r string, exists bool) {
+	v := m.chat_channel_id
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldChatChannelID returns the old "chat_channel_id" field's value of the Incident entity.
+// If the Incident object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *IncidentMutation) OldChatChannelID(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldChatChannelID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldChatChannelID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldChatChannelID: %w", err)
+	}
+	return oldValue.ChatChannelID, nil
+}
+
+// ClearChatChannelID clears the value of the "chat_channel_id" field.
+func (m *IncidentMutation) ClearChatChannelID() {
+	m.chat_channel_id = nil
+	m.clearedFields[incident.FieldChatChannelID] = struct{}{}
+}
+
+// ChatChannelIDCleared returns if the "chat_channel_id" field was cleared in this mutation.
+func (m *IncidentMutation) ChatChannelIDCleared() bool {
+	_, ok := m.clearedFields[incident.FieldChatChannelID]
+	return ok
+}
+
+// ResetChatChannelID resets all changes to the "chat_channel_id" field.
+func (m *IncidentMutation) ResetChatChannelID() {
+	m.chat_channel_id = nil
+	delete(m.clearedFields, incident.FieldChatChannelID)
 }
 
 // ClearTenant clears the "tenant" edge to the Tenant entity.
@@ -6463,6 +6523,9 @@ func (m *IncidentMutation) Fields() []string {
 	if m.tenant != nil {
 		fields = append(fields, incident.FieldTenantID)
 	}
+	if m.external_id != nil {
+		fields = append(fields, incident.FieldExternalID)
+	}
 	if m.slug != nil {
 		fields = append(fields, incident.FieldSlug)
 	}
@@ -6484,17 +6547,14 @@ func (m *IncidentMutation) Fields() []string {
 	if m.closed_at != nil {
 		fields = append(fields, incident.FieldClosedAt)
 	}
-	if m.provider_id != nil {
-		fields = append(fields, incident.FieldProviderID)
-	}
-	if m.chat_channel_id != nil {
-		fields = append(fields, incident.FieldChatChannelID)
-	}
 	if m.severity != nil {
 		fields = append(fields, incident.FieldSeverityID)
 	}
 	if m._type != nil {
 		fields = append(fields, incident.FieldTypeID)
+	}
+	if m.chat_channel_id != nil {
+		fields = append(fields, incident.FieldChatChannelID)
 	}
 	return fields
 }
@@ -6506,6 +6566,8 @@ func (m *IncidentMutation) Field(name string) (ent.Value, bool) {
 	switch name {
 	case incident.FieldTenantID:
 		return m.TenantID()
+	case incident.FieldExternalID:
+		return m.ExternalID()
 	case incident.FieldSlug:
 		return m.Slug()
 	case incident.FieldTitle:
@@ -6520,14 +6582,12 @@ func (m *IncidentMutation) Field(name string) (ent.Value, bool) {
 		return m.ModifiedAt()
 	case incident.FieldClosedAt:
 		return m.ClosedAt()
-	case incident.FieldProviderID:
-		return m.ProviderID()
-	case incident.FieldChatChannelID:
-		return m.ChatChannelID()
 	case incident.FieldSeverityID:
 		return m.SeverityID()
 	case incident.FieldTypeID:
 		return m.TypeID()
+	case incident.FieldChatChannelID:
+		return m.ChatChannelID()
 	}
 	return nil, false
 }
@@ -6539,6 +6599,8 @@ func (m *IncidentMutation) OldField(ctx context.Context, name string) (ent.Value
 	switch name {
 	case incident.FieldTenantID:
 		return m.OldTenantID(ctx)
+	case incident.FieldExternalID:
+		return m.OldExternalID(ctx)
 	case incident.FieldSlug:
 		return m.OldSlug(ctx)
 	case incident.FieldTitle:
@@ -6553,14 +6615,12 @@ func (m *IncidentMutation) OldField(ctx context.Context, name string) (ent.Value
 		return m.OldModifiedAt(ctx)
 	case incident.FieldClosedAt:
 		return m.OldClosedAt(ctx)
-	case incident.FieldProviderID:
-		return m.OldProviderID(ctx)
-	case incident.FieldChatChannelID:
-		return m.OldChatChannelID(ctx)
 	case incident.FieldSeverityID:
 		return m.OldSeverityID(ctx)
 	case incident.FieldTypeID:
 		return m.OldTypeID(ctx)
+	case incident.FieldChatChannelID:
+		return m.OldChatChannelID(ctx)
 	}
 	return nil, fmt.Errorf("unknown Incident field %s", name)
 }
@@ -6576,6 +6636,13 @@ func (m *IncidentMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetTenantID(v)
+		return nil
+	case incident.FieldExternalID:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetExternalID(v)
 		return nil
 	case incident.FieldSlug:
 		v, ok := value.(string)
@@ -6626,20 +6693,6 @@ func (m *IncidentMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetClosedAt(v)
 		return nil
-	case incident.FieldProviderID:
-		v, ok := value.(string)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetProviderID(v)
-		return nil
-	case incident.FieldChatChannelID:
-		v, ok := value.(string)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetChatChannelID(v)
-		return nil
 	case incident.FieldSeverityID:
 		v, ok := value.(uuid.UUID)
 		if !ok {
@@ -6653,6 +6706,13 @@ func (m *IncidentMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetTypeID(v)
+		return nil
+	case incident.FieldChatChannelID:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetChatChannelID(v)
 		return nil
 	}
 	return fmt.Errorf("unknown Incident field %s", name)
@@ -6687,6 +6747,9 @@ func (m *IncidentMutation) AddField(name string, value ent.Value) error {
 // mutation.
 func (m *IncidentMutation) ClearedFields() []string {
 	var fields []string
+	if m.FieldCleared(incident.FieldExternalID) {
+		fields = append(fields, incident.FieldExternalID)
+	}
 	if m.FieldCleared(incident.FieldSummary) {
 		fields = append(fields, incident.FieldSummary)
 	}
@@ -6696,17 +6759,14 @@ func (m *IncidentMutation) ClearedFields() []string {
 	if m.FieldCleared(incident.FieldClosedAt) {
 		fields = append(fields, incident.FieldClosedAt)
 	}
-	if m.FieldCleared(incident.FieldProviderID) {
-		fields = append(fields, incident.FieldProviderID)
-	}
-	if m.FieldCleared(incident.FieldChatChannelID) {
-		fields = append(fields, incident.FieldChatChannelID)
-	}
 	if m.FieldCleared(incident.FieldSeverityID) {
 		fields = append(fields, incident.FieldSeverityID)
 	}
 	if m.FieldCleared(incident.FieldTypeID) {
 		fields = append(fields, incident.FieldTypeID)
+	}
+	if m.FieldCleared(incident.FieldChatChannelID) {
+		fields = append(fields, incident.FieldChatChannelID)
 	}
 	return fields
 }
@@ -6722,6 +6782,9 @@ func (m *IncidentMutation) FieldCleared(name string) bool {
 // error if the field is not defined in the schema.
 func (m *IncidentMutation) ClearField(name string) error {
 	switch name {
+	case incident.FieldExternalID:
+		m.ClearExternalID()
+		return nil
 	case incident.FieldSummary:
 		m.ClearSummary()
 		return nil
@@ -6731,17 +6794,14 @@ func (m *IncidentMutation) ClearField(name string) error {
 	case incident.FieldClosedAt:
 		m.ClearClosedAt()
 		return nil
-	case incident.FieldProviderID:
-		m.ClearProviderID()
-		return nil
-	case incident.FieldChatChannelID:
-		m.ClearChatChannelID()
-		return nil
 	case incident.FieldSeverityID:
 		m.ClearSeverityID()
 		return nil
 	case incident.FieldTypeID:
 		m.ClearTypeID()
+		return nil
+	case incident.FieldChatChannelID:
+		m.ClearChatChannelID()
 		return nil
 	}
 	return fmt.Errorf("unknown Incident nullable field %s", name)
@@ -6753,6 +6813,9 @@ func (m *IncidentMutation) ResetField(name string) error {
 	switch name {
 	case incident.FieldTenantID:
 		m.ResetTenantID()
+		return nil
+	case incident.FieldExternalID:
+		m.ResetExternalID()
 		return nil
 	case incident.FieldSlug:
 		m.ResetSlug()
@@ -6775,17 +6838,14 @@ func (m *IncidentMutation) ResetField(name string) error {
 	case incident.FieldClosedAt:
 		m.ResetClosedAt()
 		return nil
-	case incident.FieldProviderID:
-		m.ResetProviderID()
-		return nil
-	case incident.FieldChatChannelID:
-		m.ResetChatChannelID()
-		return nil
 	case incident.FieldSeverityID:
 		m.ResetSeverityID()
 		return nil
 	case incident.FieldTypeID:
 		m.ResetTypeID()
+		return nil
+	case incident.FieldChatChannelID:
+		m.ResetChatChannelID()
 		return nil
 	}
 	return fmt.Errorf("unknown Incident field %s", name)
@@ -17749,8 +17809,8 @@ type IncidentRoleMutation struct {
 	typ                      string
 	id                       *uuid.UUID
 	archive_time             *time.Time
+	external_id              *string
 	name                     *string
-	provider_id              *string
 	required                 *bool
 	clearedFields            map[string]struct{}
 	tenant                   *int
@@ -17955,6 +18015,55 @@ func (m *IncidentRoleMutation) ResetArchiveTime() {
 	delete(m.clearedFields, incidentrole.FieldArchiveTime)
 }
 
+// SetExternalID sets the "external_id" field.
+func (m *IncidentRoleMutation) SetExternalID(s string) {
+	m.external_id = &s
+}
+
+// ExternalID returns the value of the "external_id" field in the mutation.
+func (m *IncidentRoleMutation) ExternalID() (r string, exists bool) {
+	v := m.external_id
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldExternalID returns the old "external_id" field's value of the IncidentRole entity.
+// If the IncidentRole object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *IncidentRoleMutation) OldExternalID(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldExternalID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldExternalID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldExternalID: %w", err)
+	}
+	return oldValue.ExternalID, nil
+}
+
+// ClearExternalID clears the value of the "external_id" field.
+func (m *IncidentRoleMutation) ClearExternalID() {
+	m.external_id = nil
+	m.clearedFields[incidentrole.FieldExternalID] = struct{}{}
+}
+
+// ExternalIDCleared returns if the "external_id" field was cleared in this mutation.
+func (m *IncidentRoleMutation) ExternalIDCleared() bool {
+	_, ok := m.clearedFields[incidentrole.FieldExternalID]
+	return ok
+}
+
+// ResetExternalID resets all changes to the "external_id" field.
+func (m *IncidentRoleMutation) ResetExternalID() {
+	m.external_id = nil
+	delete(m.clearedFields, incidentrole.FieldExternalID)
+}
+
 // SetName sets the "name" field.
 func (m *IncidentRoleMutation) SetName(s string) {
 	m.name = &s
@@ -17989,42 +18098,6 @@ func (m *IncidentRoleMutation) OldName(ctx context.Context) (v string, err error
 // ResetName resets all changes to the "name" field.
 func (m *IncidentRoleMutation) ResetName() {
 	m.name = nil
-}
-
-// SetProviderID sets the "provider_id" field.
-func (m *IncidentRoleMutation) SetProviderID(s string) {
-	m.provider_id = &s
-}
-
-// ProviderID returns the value of the "provider_id" field in the mutation.
-func (m *IncidentRoleMutation) ProviderID() (r string, exists bool) {
-	v := m.provider_id
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldProviderID returns the old "provider_id" field's value of the IncidentRole entity.
-// If the IncidentRole object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *IncidentRoleMutation) OldProviderID(ctx context.Context) (v string, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldProviderID is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldProviderID requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldProviderID: %w", err)
-	}
-	return oldValue.ProviderID, nil
-}
-
-// ResetProviderID resets all changes to the "provider_id" field.
-func (m *IncidentRoleMutation) ResetProviderID() {
-	m.provider_id = nil
 }
 
 // SetRequired sets the "required" field.
@@ -18239,11 +18312,11 @@ func (m *IncidentRoleMutation) Fields() []string {
 	if m.archive_time != nil {
 		fields = append(fields, incidentrole.FieldArchiveTime)
 	}
+	if m.external_id != nil {
+		fields = append(fields, incidentrole.FieldExternalID)
+	}
 	if m.name != nil {
 		fields = append(fields, incidentrole.FieldName)
-	}
-	if m.provider_id != nil {
-		fields = append(fields, incidentrole.FieldProviderID)
 	}
 	if m.required != nil {
 		fields = append(fields, incidentrole.FieldRequired)
@@ -18260,10 +18333,10 @@ func (m *IncidentRoleMutation) Field(name string) (ent.Value, bool) {
 		return m.TenantID()
 	case incidentrole.FieldArchiveTime:
 		return m.ArchiveTime()
+	case incidentrole.FieldExternalID:
+		return m.ExternalID()
 	case incidentrole.FieldName:
 		return m.Name()
-	case incidentrole.FieldProviderID:
-		return m.ProviderID()
 	case incidentrole.FieldRequired:
 		return m.Required()
 	}
@@ -18279,10 +18352,10 @@ func (m *IncidentRoleMutation) OldField(ctx context.Context, name string) (ent.V
 		return m.OldTenantID(ctx)
 	case incidentrole.FieldArchiveTime:
 		return m.OldArchiveTime(ctx)
+	case incidentrole.FieldExternalID:
+		return m.OldExternalID(ctx)
 	case incidentrole.FieldName:
 		return m.OldName(ctx)
-	case incidentrole.FieldProviderID:
-		return m.OldProviderID(ctx)
 	case incidentrole.FieldRequired:
 		return m.OldRequired(ctx)
 	}
@@ -18308,19 +18381,19 @@ func (m *IncidentRoleMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetArchiveTime(v)
 		return nil
+	case incidentrole.FieldExternalID:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetExternalID(v)
+		return nil
 	case incidentrole.FieldName:
 		v, ok := value.(string)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetName(v)
-		return nil
-	case incidentrole.FieldProviderID:
-		v, ok := value.(string)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetProviderID(v)
 		return nil
 	case incidentrole.FieldRequired:
 		v, ok := value.(bool)
@@ -18365,6 +18438,9 @@ func (m *IncidentRoleMutation) ClearedFields() []string {
 	if m.FieldCleared(incidentrole.FieldArchiveTime) {
 		fields = append(fields, incidentrole.FieldArchiveTime)
 	}
+	if m.FieldCleared(incidentrole.FieldExternalID) {
+		fields = append(fields, incidentrole.FieldExternalID)
+	}
 	return fields
 }
 
@@ -18382,6 +18458,9 @@ func (m *IncidentRoleMutation) ClearField(name string) error {
 	case incidentrole.FieldArchiveTime:
 		m.ClearArchiveTime()
 		return nil
+	case incidentrole.FieldExternalID:
+		m.ClearExternalID()
+		return nil
 	}
 	return fmt.Errorf("unknown IncidentRole nullable field %s", name)
 }
@@ -18396,11 +18475,11 @@ func (m *IncidentRoleMutation) ResetField(name string) error {
 	case incidentrole.FieldArchiveTime:
 		m.ResetArchiveTime()
 		return nil
+	case incidentrole.FieldExternalID:
+		m.ResetExternalID()
+		return nil
 	case incidentrole.FieldName:
 		m.ResetName()
-		return nil
-	case incidentrole.FieldProviderID:
-		m.ResetProviderID()
 		return nil
 	case incidentrole.FieldRequired:
 		m.ResetRequired()
@@ -19233,7 +19312,7 @@ type IncidentSeverityMutation struct {
 	typ                      string
 	id                       *uuid.UUID
 	archive_time             *time.Time
-	provider_id              *string
+	external_id              *string
 	name                     *string
 	rank                     *int
 	addrank                  *int
@@ -19442,53 +19521,53 @@ func (m *IncidentSeverityMutation) ResetArchiveTime() {
 	delete(m.clearedFields, incidentseverity.FieldArchiveTime)
 }
 
-// SetProviderID sets the "provider_id" field.
-func (m *IncidentSeverityMutation) SetProviderID(s string) {
-	m.provider_id = &s
+// SetExternalID sets the "external_id" field.
+func (m *IncidentSeverityMutation) SetExternalID(s string) {
+	m.external_id = &s
 }
 
-// ProviderID returns the value of the "provider_id" field in the mutation.
-func (m *IncidentSeverityMutation) ProviderID() (r string, exists bool) {
-	v := m.provider_id
+// ExternalID returns the value of the "external_id" field in the mutation.
+func (m *IncidentSeverityMutation) ExternalID() (r string, exists bool) {
+	v := m.external_id
 	if v == nil {
 		return
 	}
 	return *v, true
 }
 
-// OldProviderID returns the old "provider_id" field's value of the IncidentSeverity entity.
+// OldExternalID returns the old "external_id" field's value of the IncidentSeverity entity.
 // If the IncidentSeverity object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *IncidentSeverityMutation) OldProviderID(ctx context.Context) (v string, err error) {
+func (m *IncidentSeverityMutation) OldExternalID(ctx context.Context) (v string, err error) {
 	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldProviderID is only allowed on UpdateOne operations")
+		return v, errors.New("OldExternalID is only allowed on UpdateOne operations")
 	}
 	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldProviderID requires an ID field in the mutation")
+		return v, errors.New("OldExternalID requires an ID field in the mutation")
 	}
 	oldValue, err := m.oldValue(ctx)
 	if err != nil {
-		return v, fmt.Errorf("querying old value for OldProviderID: %w", err)
+		return v, fmt.Errorf("querying old value for OldExternalID: %w", err)
 	}
-	return oldValue.ProviderID, nil
+	return oldValue.ExternalID, nil
 }
 
-// ClearProviderID clears the value of the "provider_id" field.
-func (m *IncidentSeverityMutation) ClearProviderID() {
-	m.provider_id = nil
-	m.clearedFields[incidentseverity.FieldProviderID] = struct{}{}
+// ClearExternalID clears the value of the "external_id" field.
+func (m *IncidentSeverityMutation) ClearExternalID() {
+	m.external_id = nil
+	m.clearedFields[incidentseverity.FieldExternalID] = struct{}{}
 }
 
-// ProviderIDCleared returns if the "provider_id" field was cleared in this mutation.
-func (m *IncidentSeverityMutation) ProviderIDCleared() bool {
-	_, ok := m.clearedFields[incidentseverity.FieldProviderID]
+// ExternalIDCleared returns if the "external_id" field was cleared in this mutation.
+func (m *IncidentSeverityMutation) ExternalIDCleared() bool {
+	_, ok := m.clearedFields[incidentseverity.FieldExternalID]
 	return ok
 }
 
-// ResetProviderID resets all changes to the "provider_id" field.
-func (m *IncidentSeverityMutation) ResetProviderID() {
-	m.provider_id = nil
-	delete(m.clearedFields, incidentseverity.FieldProviderID)
+// ResetExternalID resets all changes to the "external_id" field.
+func (m *IncidentSeverityMutation) ResetExternalID() {
+	m.external_id = nil
+	delete(m.clearedFields, incidentseverity.FieldExternalID)
 }
 
 // SetName sets the "name" field.
@@ -19857,8 +19936,8 @@ func (m *IncidentSeverityMutation) Fields() []string {
 	if m.archive_time != nil {
 		fields = append(fields, incidentseverity.FieldArchiveTime)
 	}
-	if m.provider_id != nil {
-		fields = append(fields, incidentseverity.FieldProviderID)
+	if m.external_id != nil {
+		fields = append(fields, incidentseverity.FieldExternalID)
 	}
 	if m.name != nil {
 		fields = append(fields, incidentseverity.FieldName)
@@ -19884,8 +19963,8 @@ func (m *IncidentSeverityMutation) Field(name string) (ent.Value, bool) {
 		return m.TenantID()
 	case incidentseverity.FieldArchiveTime:
 		return m.ArchiveTime()
-	case incidentseverity.FieldProviderID:
-		return m.ProviderID()
+	case incidentseverity.FieldExternalID:
+		return m.ExternalID()
 	case incidentseverity.FieldName:
 		return m.Name()
 	case incidentseverity.FieldRank:
@@ -19907,8 +19986,8 @@ func (m *IncidentSeverityMutation) OldField(ctx context.Context, name string) (e
 		return m.OldTenantID(ctx)
 	case incidentseverity.FieldArchiveTime:
 		return m.OldArchiveTime(ctx)
-	case incidentseverity.FieldProviderID:
-		return m.OldProviderID(ctx)
+	case incidentseverity.FieldExternalID:
+		return m.OldExternalID(ctx)
 	case incidentseverity.FieldName:
 		return m.OldName(ctx)
 	case incidentseverity.FieldRank:
@@ -19940,12 +20019,12 @@ func (m *IncidentSeverityMutation) SetField(name string, value ent.Value) error 
 		}
 		m.SetArchiveTime(v)
 		return nil
-	case incidentseverity.FieldProviderID:
+	case incidentseverity.FieldExternalID:
 		v, ok := value.(string)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
-		m.SetProviderID(v)
+		m.SetExternalID(v)
 		return nil
 	case incidentseverity.FieldName:
 		v, ok := value.(string)
@@ -20023,8 +20102,8 @@ func (m *IncidentSeverityMutation) ClearedFields() []string {
 	if m.FieldCleared(incidentseverity.FieldArchiveTime) {
 		fields = append(fields, incidentseverity.FieldArchiveTime)
 	}
-	if m.FieldCleared(incidentseverity.FieldProviderID) {
-		fields = append(fields, incidentseverity.FieldProviderID)
+	if m.FieldCleared(incidentseverity.FieldExternalID) {
+		fields = append(fields, incidentseverity.FieldExternalID)
 	}
 	if m.FieldCleared(incidentseverity.FieldColor) {
 		fields = append(fields, incidentseverity.FieldColor)
@@ -20049,8 +20128,8 @@ func (m *IncidentSeverityMutation) ClearField(name string) error {
 	case incidentseverity.FieldArchiveTime:
 		m.ClearArchiveTime()
 		return nil
-	case incidentseverity.FieldProviderID:
-		m.ClearProviderID()
+	case incidentseverity.FieldExternalID:
+		m.ClearExternalID()
 		return nil
 	case incidentseverity.FieldColor:
 		m.ClearColor()
@@ -20072,8 +20151,8 @@ func (m *IncidentSeverityMutation) ResetField(name string) error {
 	case incidentseverity.FieldArchiveTime:
 		m.ResetArchiveTime()
 		return nil
-	case incidentseverity.FieldProviderID:
-		m.ResetProviderID()
+	case incidentseverity.FieldExternalID:
+		m.ResetExternalID()
 		return nil
 	case incidentseverity.FieldName:
 		m.ResetName()
@@ -21645,6 +21724,665 @@ func (m *IncidentTypeMutation) ResetEdge(name string) error {
 		return nil
 	}
 	return fmt.Errorf("unknown IncidentType edge %s", name)
+}
+
+// IntegrationMutation represents an operation that mutates the Integration nodes in the graph.
+type IntegrationMutation struct {
+	config
+	op               Op
+	typ              string
+	id               *uuid.UUID
+	name             *string
+	integration_type *integration.IntegrationType
+	_config          *[]byte
+	enabled          *bool
+	updated_at       *time.Time
+	clearedFields    map[string]struct{}
+	tenant           *int
+	clearedtenant    bool
+	done             bool
+	oldValue         func(context.Context) (*Integration, error)
+	predicates       []predicate.Integration
+}
+
+var _ ent.Mutation = (*IntegrationMutation)(nil)
+
+// integrationOption allows management of the mutation configuration using functional options.
+type integrationOption func(*IntegrationMutation)
+
+// newIntegrationMutation creates new mutation for the Integration entity.
+func newIntegrationMutation(c config, op Op, opts ...integrationOption) *IntegrationMutation {
+	m := &IntegrationMutation{
+		config:        c,
+		op:            op,
+		typ:           TypeIntegration,
+		clearedFields: make(map[string]struct{}),
+	}
+	for _, opt := range opts {
+		opt(m)
+	}
+	return m
+}
+
+// withIntegrationID sets the ID field of the mutation.
+func withIntegrationID(id uuid.UUID) integrationOption {
+	return func(m *IntegrationMutation) {
+		var (
+			err   error
+			once  sync.Once
+			value *Integration
+		)
+		m.oldValue = func(ctx context.Context) (*Integration, error) {
+			once.Do(func() {
+				if m.done {
+					err = errors.New("querying old values post mutation is not allowed")
+				} else {
+					value, err = m.Client().Integration.Get(ctx, id)
+				}
+			})
+			return value, err
+		}
+		m.id = &id
+	}
+}
+
+// withIntegration sets the old Integration of the mutation.
+func withIntegration(node *Integration) integrationOption {
+	return func(m *IntegrationMutation) {
+		m.oldValue = func(context.Context) (*Integration, error) {
+			return node, nil
+		}
+		m.id = &node.ID
+	}
+}
+
+// Client returns a new `ent.Client` from the mutation. If the mutation was
+// executed in a transaction (ent.Tx), a transactional client is returned.
+func (m IntegrationMutation) Client() *Client {
+	client := &Client{config: m.config}
+	client.init()
+	return client
+}
+
+// Tx returns an `ent.Tx` for mutations that were executed in transactions;
+// it returns an error otherwise.
+func (m IntegrationMutation) Tx() (*Tx, error) {
+	if _, ok := m.driver.(*txDriver); !ok {
+		return nil, errors.New("ent: mutation is not running in a transaction")
+	}
+	tx := &Tx{config: m.config}
+	tx.init()
+	return tx, nil
+}
+
+// SetID sets the value of the id field. Note that this
+// operation is only accepted on creation of Integration entities.
+func (m *IntegrationMutation) SetID(id uuid.UUID) {
+	m.id = &id
+}
+
+// ID returns the ID value in the mutation. Note that the ID is only available
+// if it was provided to the builder or after it was returned from the database.
+func (m *IntegrationMutation) ID() (id uuid.UUID, exists bool) {
+	if m.id == nil {
+		return
+	}
+	return *m.id, true
+}
+
+// IDs queries the database and returns the entity ids that match the mutation's predicate.
+// That means, if the mutation is applied within a transaction with an isolation level such
+// as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
+// or updated by the mutation.
+func (m *IntegrationMutation) IDs(ctx context.Context) ([]uuid.UUID, error) {
+	switch {
+	case m.op.Is(OpUpdateOne | OpDeleteOne):
+		id, exists := m.ID()
+		if exists {
+			return []uuid.UUID{id}, nil
+		}
+		fallthrough
+	case m.op.Is(OpUpdate | OpDelete):
+		return m.Client().Integration.Query().Where(m.predicates...).IDs(ctx)
+	default:
+		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
+	}
+}
+
+// SetTenantID sets the "tenant_id" field.
+func (m *IntegrationMutation) SetTenantID(i int) {
+	m.tenant = &i
+}
+
+// TenantID returns the value of the "tenant_id" field in the mutation.
+func (m *IntegrationMutation) TenantID() (r int, exists bool) {
+	v := m.tenant
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldTenantID returns the old "tenant_id" field's value of the Integration entity.
+// If the Integration object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *IntegrationMutation) OldTenantID(ctx context.Context) (v int, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldTenantID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldTenantID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldTenantID: %w", err)
+	}
+	return oldValue.TenantID, nil
+}
+
+// ResetTenantID resets all changes to the "tenant_id" field.
+func (m *IntegrationMutation) ResetTenantID() {
+	m.tenant = nil
+}
+
+// SetName sets the "name" field.
+func (m *IntegrationMutation) SetName(s string) {
+	m.name = &s
+}
+
+// Name returns the value of the "name" field in the mutation.
+func (m *IntegrationMutation) Name() (r string, exists bool) {
+	v := m.name
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldName returns the old "name" field's value of the Integration entity.
+// If the Integration object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *IntegrationMutation) OldName(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldName is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldName requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldName: %w", err)
+	}
+	return oldValue.Name, nil
+}
+
+// ResetName resets all changes to the "name" field.
+func (m *IntegrationMutation) ResetName() {
+	m.name = nil
+}
+
+// SetIntegrationType sets the "integration_type" field.
+func (m *IntegrationMutation) SetIntegrationType(it integration.IntegrationType) {
+	m.integration_type = &it
+}
+
+// IntegrationType returns the value of the "integration_type" field in the mutation.
+func (m *IntegrationMutation) IntegrationType() (r integration.IntegrationType, exists bool) {
+	v := m.integration_type
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldIntegrationType returns the old "integration_type" field's value of the Integration entity.
+// If the Integration object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *IntegrationMutation) OldIntegrationType(ctx context.Context) (v integration.IntegrationType, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldIntegrationType is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldIntegrationType requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldIntegrationType: %w", err)
+	}
+	return oldValue.IntegrationType, nil
+}
+
+// ResetIntegrationType resets all changes to the "integration_type" field.
+func (m *IntegrationMutation) ResetIntegrationType() {
+	m.integration_type = nil
+}
+
+// SetConfig sets the "config" field.
+func (m *IntegrationMutation) SetConfig(b []byte) {
+	m._config = &b
+}
+
+// Config returns the value of the "config" field in the mutation.
+func (m *IntegrationMutation) Config() (r []byte, exists bool) {
+	v := m._config
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldConfig returns the old "config" field's value of the Integration entity.
+// If the Integration object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *IntegrationMutation) OldConfig(ctx context.Context) (v []byte, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldConfig is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldConfig requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldConfig: %w", err)
+	}
+	return oldValue.Config, nil
+}
+
+// ResetConfig resets all changes to the "config" field.
+func (m *IntegrationMutation) ResetConfig() {
+	m._config = nil
+}
+
+// SetEnabled sets the "enabled" field.
+func (m *IntegrationMutation) SetEnabled(b bool) {
+	m.enabled = &b
+}
+
+// Enabled returns the value of the "enabled" field in the mutation.
+func (m *IntegrationMutation) Enabled() (r bool, exists bool) {
+	v := m.enabled
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldEnabled returns the old "enabled" field's value of the Integration entity.
+// If the Integration object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *IntegrationMutation) OldEnabled(ctx context.Context) (v bool, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldEnabled is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldEnabled requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldEnabled: %w", err)
+	}
+	return oldValue.Enabled, nil
+}
+
+// ResetEnabled resets all changes to the "enabled" field.
+func (m *IntegrationMutation) ResetEnabled() {
+	m.enabled = nil
+}
+
+// SetUpdatedAt sets the "updated_at" field.
+func (m *IntegrationMutation) SetUpdatedAt(t time.Time) {
+	m.updated_at = &t
+}
+
+// UpdatedAt returns the value of the "updated_at" field in the mutation.
+func (m *IntegrationMutation) UpdatedAt() (r time.Time, exists bool) {
+	v := m.updated_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldUpdatedAt returns the old "updated_at" field's value of the Integration entity.
+// If the Integration object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *IntegrationMutation) OldUpdatedAt(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldUpdatedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldUpdatedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldUpdatedAt: %w", err)
+	}
+	return oldValue.UpdatedAt, nil
+}
+
+// ResetUpdatedAt resets all changes to the "updated_at" field.
+func (m *IntegrationMutation) ResetUpdatedAt() {
+	m.updated_at = nil
+}
+
+// ClearTenant clears the "tenant" edge to the Tenant entity.
+func (m *IntegrationMutation) ClearTenant() {
+	m.clearedtenant = true
+	m.clearedFields[integration.FieldTenantID] = struct{}{}
+}
+
+// TenantCleared reports if the "tenant" edge to the Tenant entity was cleared.
+func (m *IntegrationMutation) TenantCleared() bool {
+	return m.clearedtenant
+}
+
+// TenantIDs returns the "tenant" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// TenantID instead. It exists only for internal usage by the builders.
+func (m *IntegrationMutation) TenantIDs() (ids []int) {
+	if id := m.tenant; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetTenant resets all changes to the "tenant" edge.
+func (m *IntegrationMutation) ResetTenant() {
+	m.tenant = nil
+	m.clearedtenant = false
+}
+
+// Where appends a list predicates to the IntegrationMutation builder.
+func (m *IntegrationMutation) Where(ps ...predicate.Integration) {
+	m.predicates = append(m.predicates, ps...)
+}
+
+// WhereP appends storage-level predicates to the IntegrationMutation builder. Using this method,
+// users can use type-assertion to append predicates that do not depend on any generated package.
+func (m *IntegrationMutation) WhereP(ps ...func(*sql.Selector)) {
+	p := make([]predicate.Integration, len(ps))
+	for i := range ps {
+		p[i] = ps[i]
+	}
+	m.Where(p...)
+}
+
+// Op returns the operation name.
+func (m *IntegrationMutation) Op() Op {
+	return m.op
+}
+
+// SetOp allows setting the mutation operation.
+func (m *IntegrationMutation) SetOp(op Op) {
+	m.op = op
+}
+
+// Type returns the node type of this mutation (Integration).
+func (m *IntegrationMutation) Type() string {
+	return m.typ
+}
+
+// Fields returns all fields that were changed during this mutation. Note that in
+// order to get all numeric fields that were incremented/decremented, call
+// AddedFields().
+func (m *IntegrationMutation) Fields() []string {
+	fields := make([]string, 0, 6)
+	if m.tenant != nil {
+		fields = append(fields, integration.FieldTenantID)
+	}
+	if m.name != nil {
+		fields = append(fields, integration.FieldName)
+	}
+	if m.integration_type != nil {
+		fields = append(fields, integration.FieldIntegrationType)
+	}
+	if m._config != nil {
+		fields = append(fields, integration.FieldConfig)
+	}
+	if m.enabled != nil {
+		fields = append(fields, integration.FieldEnabled)
+	}
+	if m.updated_at != nil {
+		fields = append(fields, integration.FieldUpdatedAt)
+	}
+	return fields
+}
+
+// Field returns the value of a field with the given name. The second boolean
+// return value indicates that this field was not set, or was not defined in the
+// schema.
+func (m *IntegrationMutation) Field(name string) (ent.Value, bool) {
+	switch name {
+	case integration.FieldTenantID:
+		return m.TenantID()
+	case integration.FieldName:
+		return m.Name()
+	case integration.FieldIntegrationType:
+		return m.IntegrationType()
+	case integration.FieldConfig:
+		return m.Config()
+	case integration.FieldEnabled:
+		return m.Enabled()
+	case integration.FieldUpdatedAt:
+		return m.UpdatedAt()
+	}
+	return nil, false
+}
+
+// OldField returns the old value of the field from the database. An error is
+// returned if the mutation operation is not UpdateOne, or the query to the
+// database failed.
+func (m *IntegrationMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
+	switch name {
+	case integration.FieldTenantID:
+		return m.OldTenantID(ctx)
+	case integration.FieldName:
+		return m.OldName(ctx)
+	case integration.FieldIntegrationType:
+		return m.OldIntegrationType(ctx)
+	case integration.FieldConfig:
+		return m.OldConfig(ctx)
+	case integration.FieldEnabled:
+		return m.OldEnabled(ctx)
+	case integration.FieldUpdatedAt:
+		return m.OldUpdatedAt(ctx)
+	}
+	return nil, fmt.Errorf("unknown Integration field %s", name)
+}
+
+// SetField sets the value of a field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *IntegrationMutation) SetField(name string, value ent.Value) error {
+	switch name {
+	case integration.FieldTenantID:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetTenantID(v)
+		return nil
+	case integration.FieldName:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetName(v)
+		return nil
+	case integration.FieldIntegrationType:
+		v, ok := value.(integration.IntegrationType)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetIntegrationType(v)
+		return nil
+	case integration.FieldConfig:
+		v, ok := value.([]byte)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetConfig(v)
+		return nil
+	case integration.FieldEnabled:
+		v, ok := value.(bool)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetEnabled(v)
+		return nil
+	case integration.FieldUpdatedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetUpdatedAt(v)
+		return nil
+	}
+	return fmt.Errorf("unknown Integration field %s", name)
+}
+
+// AddedFields returns all numeric fields that were incremented/decremented during
+// this mutation.
+func (m *IntegrationMutation) AddedFields() []string {
+	var fields []string
+	return fields
+}
+
+// AddedField returns the numeric value that was incremented/decremented on a field
+// with the given name. The second boolean return value indicates that this field
+// was not set, or was not defined in the schema.
+func (m *IntegrationMutation) AddedField(name string) (ent.Value, bool) {
+	switch name {
+	}
+	return nil, false
+}
+
+// AddField adds the value to the field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *IntegrationMutation) AddField(name string, value ent.Value) error {
+	switch name {
+	}
+	return fmt.Errorf("unknown Integration numeric field %s", name)
+}
+
+// ClearedFields returns all nullable fields that were cleared during this
+// mutation.
+func (m *IntegrationMutation) ClearedFields() []string {
+	return nil
+}
+
+// FieldCleared returns a boolean indicating if a field with the given name was
+// cleared in this mutation.
+func (m *IntegrationMutation) FieldCleared(name string) bool {
+	_, ok := m.clearedFields[name]
+	return ok
+}
+
+// ClearField clears the value of the field with the given name. It returns an
+// error if the field is not defined in the schema.
+func (m *IntegrationMutation) ClearField(name string) error {
+	return fmt.Errorf("unknown Integration nullable field %s", name)
+}
+
+// ResetField resets all changes in the mutation for the field with the given name.
+// It returns an error if the field is not defined in the schema.
+func (m *IntegrationMutation) ResetField(name string) error {
+	switch name {
+	case integration.FieldTenantID:
+		m.ResetTenantID()
+		return nil
+	case integration.FieldName:
+		m.ResetName()
+		return nil
+	case integration.FieldIntegrationType:
+		m.ResetIntegrationType()
+		return nil
+	case integration.FieldConfig:
+		m.ResetConfig()
+		return nil
+	case integration.FieldEnabled:
+		m.ResetEnabled()
+		return nil
+	case integration.FieldUpdatedAt:
+		m.ResetUpdatedAt()
+		return nil
+	}
+	return fmt.Errorf("unknown Integration field %s", name)
+}
+
+// AddedEdges returns all edge names that were set/added in this mutation.
+func (m *IntegrationMutation) AddedEdges() []string {
+	edges := make([]string, 0, 1)
+	if m.tenant != nil {
+		edges = append(edges, integration.EdgeTenant)
+	}
+	return edges
+}
+
+// AddedIDs returns all IDs (to other nodes) that were added for the given edge
+// name in this mutation.
+func (m *IntegrationMutation) AddedIDs(name string) []ent.Value {
+	switch name {
+	case integration.EdgeTenant:
+		if id := m.tenant; id != nil {
+			return []ent.Value{*id}
+		}
+	}
+	return nil
+}
+
+// RemovedEdges returns all edge names that were removed in this mutation.
+func (m *IntegrationMutation) RemovedEdges() []string {
+	edges := make([]string, 0, 1)
+	return edges
+}
+
+// RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
+// the given name in this mutation.
+func (m *IntegrationMutation) RemovedIDs(name string) []ent.Value {
+	return nil
+}
+
+// ClearedEdges returns all edge names that were cleared in this mutation.
+func (m *IntegrationMutation) ClearedEdges() []string {
+	edges := make([]string, 0, 1)
+	if m.clearedtenant {
+		edges = append(edges, integration.EdgeTenant)
+	}
+	return edges
+}
+
+// EdgeCleared returns a boolean which indicates if the edge with the given name
+// was cleared in this mutation.
+func (m *IntegrationMutation) EdgeCleared(name string) bool {
+	switch name {
+	case integration.EdgeTenant:
+		return m.clearedtenant
+	}
+	return false
+}
+
+// ClearEdge clears the value of the edge with the given name. It returns an error
+// if that edge is not defined in the schema.
+func (m *IntegrationMutation) ClearEdge(name string) error {
+	switch name {
+	case integration.EdgeTenant:
+		m.ClearTenant()
+		return nil
+	}
+	return fmt.Errorf("unknown Integration unique edge %s", name)
+}
+
+// ResetEdge resets all changes to the edge with the given name in this mutation.
+// It returns an error if the edge is not defined in the schema.
+func (m *IntegrationMutation) ResetEdge(name string) error {
+	switch name {
+	case integration.EdgeTenant:
+		m.ResetTenant()
+		return nil
+	}
+	return fmt.Errorf("unknown Integration edge %s", name)
 }
 
 // MeetingScheduleMutation represents an operation that mutates the MeetingSchedule nodes in the graph.
@@ -24587,9 +25325,9 @@ type OncallRosterMutation struct {
 	typ                      string
 	id                       *uuid.UUID
 	archive_time             *time.Time
+	external_id              *string
 	name                     *string
 	slug                     *string
-	provider_id              *string
 	timezone                 *string
 	chat_handle              *string
 	chat_channel_id          *string
@@ -24810,6 +25548,55 @@ func (m *OncallRosterMutation) ResetArchiveTime() {
 	delete(m.clearedFields, oncallroster.FieldArchiveTime)
 }
 
+// SetExternalID sets the "external_id" field.
+func (m *OncallRosterMutation) SetExternalID(s string) {
+	m.external_id = &s
+}
+
+// ExternalID returns the value of the "external_id" field in the mutation.
+func (m *OncallRosterMutation) ExternalID() (r string, exists bool) {
+	v := m.external_id
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldExternalID returns the old "external_id" field's value of the OncallRoster entity.
+// If the OncallRoster object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *OncallRosterMutation) OldExternalID(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldExternalID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldExternalID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldExternalID: %w", err)
+	}
+	return oldValue.ExternalID, nil
+}
+
+// ClearExternalID clears the value of the "external_id" field.
+func (m *OncallRosterMutation) ClearExternalID() {
+	m.external_id = nil
+	m.clearedFields[oncallroster.FieldExternalID] = struct{}{}
+}
+
+// ExternalIDCleared returns if the "external_id" field was cleared in this mutation.
+func (m *OncallRosterMutation) ExternalIDCleared() bool {
+	_, ok := m.clearedFields[oncallroster.FieldExternalID]
+	return ok
+}
+
+// ResetExternalID resets all changes to the "external_id" field.
+func (m *OncallRosterMutation) ResetExternalID() {
+	m.external_id = nil
+	delete(m.clearedFields, oncallroster.FieldExternalID)
+}
+
 // SetName sets the "name" field.
 func (m *OncallRosterMutation) SetName(s string) {
 	m.name = &s
@@ -24880,42 +25667,6 @@ func (m *OncallRosterMutation) OldSlug(ctx context.Context) (v string, err error
 // ResetSlug resets all changes to the "slug" field.
 func (m *OncallRosterMutation) ResetSlug() {
 	m.slug = nil
-}
-
-// SetProviderID sets the "provider_id" field.
-func (m *OncallRosterMutation) SetProviderID(s string) {
-	m.provider_id = &s
-}
-
-// ProviderID returns the value of the "provider_id" field in the mutation.
-func (m *OncallRosterMutation) ProviderID() (r string, exists bool) {
-	v := m.provider_id
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldProviderID returns the old "provider_id" field's value of the OncallRoster entity.
-// If the OncallRoster object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *OncallRosterMutation) OldProviderID(ctx context.Context) (v string, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldProviderID is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldProviderID requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldProviderID: %w", err)
-	}
-	return oldValue.ProviderID, nil
-}
-
-// ResetProviderID resets all changes to the "provider_id" field.
-func (m *OncallRosterMutation) ResetProviderID() {
-	m.provider_id = nil
 }
 
 // SetTimezone sets the "timezone" field.
@@ -25533,14 +26284,14 @@ func (m *OncallRosterMutation) Fields() []string {
 	if m.archive_time != nil {
 		fields = append(fields, oncallroster.FieldArchiveTime)
 	}
+	if m.external_id != nil {
+		fields = append(fields, oncallroster.FieldExternalID)
+	}
 	if m.name != nil {
 		fields = append(fields, oncallroster.FieldName)
 	}
 	if m.slug != nil {
 		fields = append(fields, oncallroster.FieldSlug)
-	}
-	if m.provider_id != nil {
-		fields = append(fields, oncallroster.FieldProviderID)
 	}
 	if m.timezone != nil {
 		fields = append(fields, oncallroster.FieldTimezone)
@@ -25566,12 +26317,12 @@ func (m *OncallRosterMutation) Field(name string) (ent.Value, bool) {
 		return m.TenantID()
 	case oncallroster.FieldArchiveTime:
 		return m.ArchiveTime()
+	case oncallroster.FieldExternalID:
+		return m.ExternalID()
 	case oncallroster.FieldName:
 		return m.Name()
 	case oncallroster.FieldSlug:
 		return m.Slug()
-	case oncallroster.FieldProviderID:
-		return m.ProviderID()
 	case oncallroster.FieldTimezone:
 		return m.Timezone()
 	case oncallroster.FieldChatHandle:
@@ -25593,12 +26344,12 @@ func (m *OncallRosterMutation) OldField(ctx context.Context, name string) (ent.V
 		return m.OldTenantID(ctx)
 	case oncallroster.FieldArchiveTime:
 		return m.OldArchiveTime(ctx)
+	case oncallroster.FieldExternalID:
+		return m.OldExternalID(ctx)
 	case oncallroster.FieldName:
 		return m.OldName(ctx)
 	case oncallroster.FieldSlug:
 		return m.OldSlug(ctx)
-	case oncallroster.FieldProviderID:
-		return m.OldProviderID(ctx)
 	case oncallroster.FieldTimezone:
 		return m.OldTimezone(ctx)
 	case oncallroster.FieldChatHandle:
@@ -25630,6 +26381,13 @@ func (m *OncallRosterMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetArchiveTime(v)
 		return nil
+	case oncallroster.FieldExternalID:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetExternalID(v)
+		return nil
 	case oncallroster.FieldName:
 		v, ok := value.(string)
 		if !ok {
@@ -25643,13 +26401,6 @@ func (m *OncallRosterMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetSlug(v)
-		return nil
-	case oncallroster.FieldProviderID:
-		v, ok := value.(string)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetProviderID(v)
 		return nil
 	case oncallroster.FieldTimezone:
 		v, ok := value.(string)
@@ -25715,6 +26466,9 @@ func (m *OncallRosterMutation) ClearedFields() []string {
 	if m.FieldCleared(oncallroster.FieldArchiveTime) {
 		fields = append(fields, oncallroster.FieldArchiveTime)
 	}
+	if m.FieldCleared(oncallroster.FieldExternalID) {
+		fields = append(fields, oncallroster.FieldExternalID)
+	}
 	if m.FieldCleared(oncallroster.FieldTimezone) {
 		fields = append(fields, oncallroster.FieldTimezone)
 	}
@@ -25744,6 +26498,9 @@ func (m *OncallRosterMutation) ClearField(name string) error {
 	case oncallroster.FieldArchiveTime:
 		m.ClearArchiveTime()
 		return nil
+	case oncallroster.FieldExternalID:
+		m.ClearExternalID()
+		return nil
 	case oncallroster.FieldTimezone:
 		m.ClearTimezone()
 		return nil
@@ -25770,14 +26527,14 @@ func (m *OncallRosterMutation) ResetField(name string) error {
 	case oncallroster.FieldArchiveTime:
 		m.ResetArchiveTime()
 		return nil
+	case oncallroster.FieldExternalID:
+		m.ResetExternalID()
+		return nil
 	case oncallroster.FieldName:
 		m.ResetName()
 		return nil
 	case oncallroster.FieldSlug:
 		m.ResetSlug()
-		return nil
-	case oncallroster.FieldProviderID:
-		m.ResetProviderID()
 		return nil
 	case oncallroster.FieldTimezone:
 		m.ResetTimezone()
@@ -26541,9 +27298,9 @@ type OncallScheduleMutation struct {
 	typ                 string
 	id                  *uuid.UUID
 	archive_time        *time.Time
+	external_id         *string
 	name                *string
 	timezone            *string
-	provider_id         *string
 	clearedFields       map[string]struct{}
 	tenant              *int
 	clearedtenant       bool
@@ -26746,6 +27503,55 @@ func (m *OncallScheduleMutation) ResetArchiveTime() {
 	delete(m.clearedFields, oncallschedule.FieldArchiveTime)
 }
 
+// SetExternalID sets the "external_id" field.
+func (m *OncallScheduleMutation) SetExternalID(s string) {
+	m.external_id = &s
+}
+
+// ExternalID returns the value of the "external_id" field in the mutation.
+func (m *OncallScheduleMutation) ExternalID() (r string, exists bool) {
+	v := m.external_id
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldExternalID returns the old "external_id" field's value of the OncallSchedule entity.
+// If the OncallSchedule object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *OncallScheduleMutation) OldExternalID(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldExternalID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldExternalID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldExternalID: %w", err)
+	}
+	return oldValue.ExternalID, nil
+}
+
+// ClearExternalID clears the value of the "external_id" field.
+func (m *OncallScheduleMutation) ClearExternalID() {
+	m.external_id = nil
+	m.clearedFields[oncallschedule.FieldExternalID] = struct{}{}
+}
+
+// ExternalIDCleared returns if the "external_id" field was cleared in this mutation.
+func (m *OncallScheduleMutation) ExternalIDCleared() bool {
+	_, ok := m.clearedFields[oncallschedule.FieldExternalID]
+	return ok
+}
+
+// ResetExternalID resets all changes to the "external_id" field.
+func (m *OncallScheduleMutation) ResetExternalID() {
+	m.external_id = nil
+	delete(m.clearedFields, oncallschedule.FieldExternalID)
+}
+
 // SetName sets the "name" field.
 func (m *OncallScheduleMutation) SetName(s string) {
 	m.name = &s
@@ -26865,42 +27671,6 @@ func (m *OncallScheduleMutation) TimezoneCleared() bool {
 func (m *OncallScheduleMutation) ResetTimezone() {
 	m.timezone = nil
 	delete(m.clearedFields, oncallschedule.FieldTimezone)
-}
-
-// SetProviderID sets the "provider_id" field.
-func (m *OncallScheduleMutation) SetProviderID(s string) {
-	m.provider_id = &s
-}
-
-// ProviderID returns the value of the "provider_id" field in the mutation.
-func (m *OncallScheduleMutation) ProviderID() (r string, exists bool) {
-	v := m.provider_id
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldProviderID returns the old "provider_id" field's value of the OncallSchedule entity.
-// If the OncallSchedule object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *OncallScheduleMutation) OldProviderID(ctx context.Context) (v string, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldProviderID is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldProviderID requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldProviderID: %w", err)
-	}
-	return oldValue.ProviderID, nil
-}
-
-// ResetProviderID resets all changes to the "provider_id" field.
-func (m *OncallScheduleMutation) ResetProviderID() {
-	m.provider_id = nil
 }
 
 // ClearTenant clears the "tenant" edge to the Tenant entity.
@@ -27052,6 +27822,9 @@ func (m *OncallScheduleMutation) Fields() []string {
 	if m.archive_time != nil {
 		fields = append(fields, oncallschedule.FieldArchiveTime)
 	}
+	if m.external_id != nil {
+		fields = append(fields, oncallschedule.FieldExternalID)
+	}
 	if m.name != nil {
 		fields = append(fields, oncallschedule.FieldName)
 	}
@@ -27060,9 +27833,6 @@ func (m *OncallScheduleMutation) Fields() []string {
 	}
 	if m.timezone != nil {
 		fields = append(fields, oncallschedule.FieldTimezone)
-	}
-	if m.provider_id != nil {
-		fields = append(fields, oncallschedule.FieldProviderID)
 	}
 	return fields
 }
@@ -27076,14 +27846,14 @@ func (m *OncallScheduleMutation) Field(name string) (ent.Value, bool) {
 		return m.TenantID()
 	case oncallschedule.FieldArchiveTime:
 		return m.ArchiveTime()
+	case oncallschedule.FieldExternalID:
+		return m.ExternalID()
 	case oncallschedule.FieldName:
 		return m.Name()
 	case oncallschedule.FieldRosterID:
 		return m.RosterID()
 	case oncallschedule.FieldTimezone:
 		return m.Timezone()
-	case oncallschedule.FieldProviderID:
-		return m.ProviderID()
 	}
 	return nil, false
 }
@@ -27097,14 +27867,14 @@ func (m *OncallScheduleMutation) OldField(ctx context.Context, name string) (ent
 		return m.OldTenantID(ctx)
 	case oncallschedule.FieldArchiveTime:
 		return m.OldArchiveTime(ctx)
+	case oncallschedule.FieldExternalID:
+		return m.OldExternalID(ctx)
 	case oncallschedule.FieldName:
 		return m.OldName(ctx)
 	case oncallschedule.FieldRosterID:
 		return m.OldRosterID(ctx)
 	case oncallschedule.FieldTimezone:
 		return m.OldTimezone(ctx)
-	case oncallschedule.FieldProviderID:
-		return m.OldProviderID(ctx)
 	}
 	return nil, fmt.Errorf("unknown OncallSchedule field %s", name)
 }
@@ -27128,6 +27898,13 @@ func (m *OncallScheduleMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetArchiveTime(v)
 		return nil
+	case oncallschedule.FieldExternalID:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetExternalID(v)
+		return nil
 	case oncallschedule.FieldName:
 		v, ok := value.(string)
 		if !ok {
@@ -27148,13 +27925,6 @@ func (m *OncallScheduleMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetTimezone(v)
-		return nil
-	case oncallschedule.FieldProviderID:
-		v, ok := value.(string)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetProviderID(v)
 		return nil
 	}
 	return fmt.Errorf("unknown OncallSchedule field %s", name)
@@ -27192,6 +27962,9 @@ func (m *OncallScheduleMutation) ClearedFields() []string {
 	if m.FieldCleared(oncallschedule.FieldArchiveTime) {
 		fields = append(fields, oncallschedule.FieldArchiveTime)
 	}
+	if m.FieldCleared(oncallschedule.FieldExternalID) {
+		fields = append(fields, oncallschedule.FieldExternalID)
+	}
 	if m.FieldCleared(oncallschedule.FieldTimezone) {
 		fields = append(fields, oncallschedule.FieldTimezone)
 	}
@@ -27212,6 +27985,9 @@ func (m *OncallScheduleMutation) ClearField(name string) error {
 	case oncallschedule.FieldArchiveTime:
 		m.ClearArchiveTime()
 		return nil
+	case oncallschedule.FieldExternalID:
+		m.ClearExternalID()
+		return nil
 	case oncallschedule.FieldTimezone:
 		m.ClearTimezone()
 		return nil
@@ -27229,6 +28005,9 @@ func (m *OncallScheduleMutation) ResetField(name string) error {
 	case oncallschedule.FieldArchiveTime:
 		m.ResetArchiveTime()
 		return nil
+	case oncallschedule.FieldExternalID:
+		m.ResetExternalID()
+		return nil
 	case oncallschedule.FieldName:
 		m.ResetName()
 		return nil
@@ -27237,9 +28016,6 @@ func (m *OncallScheduleMutation) ResetField(name string) error {
 		return nil
 	case oncallschedule.FieldTimezone:
 		m.ResetTimezone()
-		return nil
-	case oncallschedule.FieldProviderID:
-		m.ResetProviderID()
 		return nil
 	}
 	return fmt.Errorf("unknown OncallSchedule field %s", name)
@@ -28047,7 +28823,7 @@ type OncallShiftMutation struct {
 	op                   Op
 	typ                  string
 	id                   *uuid.UUID
-	provider_id          *string
+	external_id          *string
 	role                 *oncallshift.Role
 	start_at             *time.Time
 	end_at               *time.Time
@@ -28209,6 +28985,55 @@ func (m *OncallShiftMutation) ResetTenantID() {
 	m.tenant = nil
 }
 
+// SetExternalID sets the "external_id" field.
+func (m *OncallShiftMutation) SetExternalID(s string) {
+	m.external_id = &s
+}
+
+// ExternalID returns the value of the "external_id" field in the mutation.
+func (m *OncallShiftMutation) ExternalID() (r string, exists bool) {
+	v := m.external_id
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldExternalID returns the old "external_id" field's value of the OncallShift entity.
+// If the OncallShift object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *OncallShiftMutation) OldExternalID(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldExternalID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldExternalID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldExternalID: %w", err)
+	}
+	return oldValue.ExternalID, nil
+}
+
+// ClearExternalID clears the value of the "external_id" field.
+func (m *OncallShiftMutation) ClearExternalID() {
+	m.external_id = nil
+	m.clearedFields[oncallshift.FieldExternalID] = struct{}{}
+}
+
+// ExternalIDCleared returns if the "external_id" field was cleared in this mutation.
+func (m *OncallShiftMutation) ExternalIDCleared() bool {
+	_, ok := m.clearedFields[oncallshift.FieldExternalID]
+	return ok
+}
+
+// ResetExternalID resets all changes to the "external_id" field.
+func (m *OncallShiftMutation) ResetExternalID() {
+	m.external_id = nil
+	delete(m.clearedFields, oncallshift.FieldExternalID)
+}
+
 // SetUserID sets the "user_id" field.
 func (m *OncallShiftMutation) SetUserID(u uuid.UUID) {
 	m.user = &u
@@ -28279,55 +29104,6 @@ func (m *OncallShiftMutation) OldRosterID(ctx context.Context) (v uuid.UUID, err
 // ResetRosterID resets all changes to the "roster_id" field.
 func (m *OncallShiftMutation) ResetRosterID() {
 	m.roster = nil
-}
-
-// SetProviderID sets the "provider_id" field.
-func (m *OncallShiftMutation) SetProviderID(s string) {
-	m.provider_id = &s
-}
-
-// ProviderID returns the value of the "provider_id" field in the mutation.
-func (m *OncallShiftMutation) ProviderID() (r string, exists bool) {
-	v := m.provider_id
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldProviderID returns the old "provider_id" field's value of the OncallShift entity.
-// If the OncallShift object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *OncallShiftMutation) OldProviderID(ctx context.Context) (v string, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldProviderID is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldProviderID requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldProviderID: %w", err)
-	}
-	return oldValue.ProviderID, nil
-}
-
-// ClearProviderID clears the value of the "provider_id" field.
-func (m *OncallShiftMutation) ClearProviderID() {
-	m.provider_id = nil
-	m.clearedFields[oncallshift.FieldProviderID] = struct{}{}
-}
-
-// ProviderIDCleared returns if the "provider_id" field was cleared in this mutation.
-func (m *OncallShiftMutation) ProviderIDCleared() bool {
-	_, ok := m.clearedFields[oncallshift.FieldProviderID]
-	return ok
-}
-
-// ResetProviderID resets all changes to the "provider_id" field.
-func (m *OncallShiftMutation) ResetProviderID() {
-	m.provider_id = nil
-	delete(m.clearedFields, oncallshift.FieldProviderID)
 }
 
 // SetRole sets the "role" field.
@@ -28724,14 +29500,14 @@ func (m *OncallShiftMutation) Fields() []string {
 	if m.tenant != nil {
 		fields = append(fields, oncallshift.FieldTenantID)
 	}
+	if m.external_id != nil {
+		fields = append(fields, oncallshift.FieldExternalID)
+	}
 	if m.user != nil {
 		fields = append(fields, oncallshift.FieldUserID)
 	}
 	if m.roster != nil {
 		fields = append(fields, oncallshift.FieldRosterID)
-	}
-	if m.provider_id != nil {
-		fields = append(fields, oncallshift.FieldProviderID)
 	}
 	if m.role != nil {
 		fields = append(fields, oncallshift.FieldRole)
@@ -28755,12 +29531,12 @@ func (m *OncallShiftMutation) Field(name string) (ent.Value, bool) {
 	switch name {
 	case oncallshift.FieldTenantID:
 		return m.TenantID()
+	case oncallshift.FieldExternalID:
+		return m.ExternalID()
 	case oncallshift.FieldUserID:
 		return m.UserID()
 	case oncallshift.FieldRosterID:
 		return m.RosterID()
-	case oncallshift.FieldProviderID:
-		return m.ProviderID()
 	case oncallshift.FieldRole:
 		return m.Role()
 	case oncallshift.FieldPrimaryShiftID:
@@ -28780,12 +29556,12 @@ func (m *OncallShiftMutation) OldField(ctx context.Context, name string) (ent.Va
 	switch name {
 	case oncallshift.FieldTenantID:
 		return m.OldTenantID(ctx)
+	case oncallshift.FieldExternalID:
+		return m.OldExternalID(ctx)
 	case oncallshift.FieldUserID:
 		return m.OldUserID(ctx)
 	case oncallshift.FieldRosterID:
 		return m.OldRosterID(ctx)
-	case oncallshift.FieldProviderID:
-		return m.OldProviderID(ctx)
 	case oncallshift.FieldRole:
 		return m.OldRole(ctx)
 	case oncallshift.FieldPrimaryShiftID:
@@ -28810,6 +29586,13 @@ func (m *OncallShiftMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetTenantID(v)
 		return nil
+	case oncallshift.FieldExternalID:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetExternalID(v)
+		return nil
 	case oncallshift.FieldUserID:
 		v, ok := value.(uuid.UUID)
 		if !ok {
@@ -28823,13 +29606,6 @@ func (m *OncallShiftMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetRosterID(v)
-		return nil
-	case oncallshift.FieldProviderID:
-		v, ok := value.(string)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetProviderID(v)
 		return nil
 	case oncallshift.FieldRole:
 		v, ok := value.(oncallshift.Role)
@@ -28892,8 +29668,8 @@ func (m *OncallShiftMutation) AddField(name string, value ent.Value) error {
 // mutation.
 func (m *OncallShiftMutation) ClearedFields() []string {
 	var fields []string
-	if m.FieldCleared(oncallshift.FieldProviderID) {
-		fields = append(fields, oncallshift.FieldProviderID)
+	if m.FieldCleared(oncallshift.FieldExternalID) {
+		fields = append(fields, oncallshift.FieldExternalID)
 	}
 	if m.FieldCleared(oncallshift.FieldRole) {
 		fields = append(fields, oncallshift.FieldRole)
@@ -28915,8 +29691,8 @@ func (m *OncallShiftMutation) FieldCleared(name string) bool {
 // error if the field is not defined in the schema.
 func (m *OncallShiftMutation) ClearField(name string) error {
 	switch name {
-	case oncallshift.FieldProviderID:
-		m.ClearProviderID()
+	case oncallshift.FieldExternalID:
+		m.ClearExternalID()
 		return nil
 	case oncallshift.FieldRole:
 		m.ClearRole()
@@ -28935,14 +29711,14 @@ func (m *OncallShiftMutation) ResetField(name string) error {
 	case oncallshift.FieldTenantID:
 		m.ResetTenantID()
 		return nil
+	case oncallshift.FieldExternalID:
+		m.ResetExternalID()
+		return nil
 	case oncallshift.FieldUserID:
 		m.ResetUserID()
 		return nil
 	case oncallshift.FieldRosterID:
 		m.ResetRosterID()
-		return nil
-	case oncallshift.FieldProviderID:
-		m.ResetProviderID()
 		return nil
 	case oncallshift.FieldRole:
 		m.ResetRole()
@@ -31670,7 +32446,7 @@ type OrganizationMutation struct {
 	op               Op
 	typ              string
 	id               *uuid.UUID
-	provider_id      *string
+	external_id      *string
 	name             *string
 	initial_setup_at *time.Time
 	clearedFields    map[string]struct{}
@@ -31821,40 +32597,40 @@ func (m *OrganizationMutation) ResetTenantID() {
 	m.tenant = nil
 }
 
-// SetProviderID sets the "provider_id" field.
-func (m *OrganizationMutation) SetProviderID(s string) {
-	m.provider_id = &s
+// SetExternalID sets the "external_id" field.
+func (m *OrganizationMutation) SetExternalID(s string) {
+	m.external_id = &s
 }
 
-// ProviderID returns the value of the "provider_id" field in the mutation.
-func (m *OrganizationMutation) ProviderID() (r string, exists bool) {
-	v := m.provider_id
+// ExternalID returns the value of the "external_id" field in the mutation.
+func (m *OrganizationMutation) ExternalID() (r string, exists bool) {
+	v := m.external_id
 	if v == nil {
 		return
 	}
 	return *v, true
 }
 
-// OldProviderID returns the old "provider_id" field's value of the Organization entity.
+// OldExternalID returns the old "external_id" field's value of the Organization entity.
 // If the Organization object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *OrganizationMutation) OldProviderID(ctx context.Context) (v string, err error) {
+func (m *OrganizationMutation) OldExternalID(ctx context.Context) (v string, err error) {
 	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldProviderID is only allowed on UpdateOne operations")
+		return v, errors.New("OldExternalID is only allowed on UpdateOne operations")
 	}
 	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldProviderID requires an ID field in the mutation")
+		return v, errors.New("OldExternalID requires an ID field in the mutation")
 	}
 	oldValue, err := m.oldValue(ctx)
 	if err != nil {
-		return v, fmt.Errorf("querying old value for OldProviderID: %w", err)
+		return v, fmt.Errorf("querying old value for OldExternalID: %w", err)
 	}
-	return oldValue.ProviderID, nil
+	return oldValue.ExternalID, nil
 }
 
-// ResetProviderID resets all changes to the "provider_id" field.
-func (m *OrganizationMutation) ResetProviderID() {
-	m.provider_id = nil
+// ResetExternalID resets all changes to the "external_id" field.
+func (m *OrganizationMutation) ResetExternalID() {
+	m.external_id = nil
 }
 
 // SetName sets the "name" field.
@@ -32007,8 +32783,8 @@ func (m *OrganizationMutation) Fields() []string {
 	if m.tenant != nil {
 		fields = append(fields, organization.FieldTenantID)
 	}
-	if m.provider_id != nil {
-		fields = append(fields, organization.FieldProviderID)
+	if m.external_id != nil {
+		fields = append(fields, organization.FieldExternalID)
 	}
 	if m.name != nil {
 		fields = append(fields, organization.FieldName)
@@ -32026,8 +32802,8 @@ func (m *OrganizationMutation) Field(name string) (ent.Value, bool) {
 	switch name {
 	case organization.FieldTenantID:
 		return m.TenantID()
-	case organization.FieldProviderID:
-		return m.ProviderID()
+	case organization.FieldExternalID:
+		return m.ExternalID()
 	case organization.FieldName:
 		return m.Name()
 	case organization.FieldInitialSetupAt:
@@ -32043,8 +32819,8 @@ func (m *OrganizationMutation) OldField(ctx context.Context, name string) (ent.V
 	switch name {
 	case organization.FieldTenantID:
 		return m.OldTenantID(ctx)
-	case organization.FieldProviderID:
-		return m.OldProviderID(ctx)
+	case organization.FieldExternalID:
+		return m.OldExternalID(ctx)
 	case organization.FieldName:
 		return m.OldName(ctx)
 	case organization.FieldInitialSetupAt:
@@ -32065,12 +32841,12 @@ func (m *OrganizationMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetTenantID(v)
 		return nil
-	case organization.FieldProviderID:
+	case organization.FieldExternalID:
 		v, ok := value.(string)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
-		m.SetProviderID(v)
+		m.SetExternalID(v)
 		return nil
 	case organization.FieldName:
 		v, ok := value.(string)
@@ -32150,8 +32926,8 @@ func (m *OrganizationMutation) ResetField(name string) error {
 	case organization.FieldTenantID:
 		m.ResetTenantID()
 		return nil
-	case organization.FieldProviderID:
-		m.ResetProviderID()
+	case organization.FieldExternalID:
+		m.ResetExternalID()
 		return nil
 	case organization.FieldName:
 		m.ResetName()
@@ -32243,8 +33019,8 @@ type PlaybookMutation struct {
 	op            Op
 	typ           string
 	id            *uuid.UUID
+	external_id   *string
 	title         *string
-	provider_id   *string
 	content       *[]byte
 	clearedFields map[string]struct{}
 	tenant        *int
@@ -32397,6 +33173,55 @@ func (m *PlaybookMutation) ResetTenantID() {
 	m.tenant = nil
 }
 
+// SetExternalID sets the "external_id" field.
+func (m *PlaybookMutation) SetExternalID(s string) {
+	m.external_id = &s
+}
+
+// ExternalID returns the value of the "external_id" field in the mutation.
+func (m *PlaybookMutation) ExternalID() (r string, exists bool) {
+	v := m.external_id
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldExternalID returns the old "external_id" field's value of the Playbook entity.
+// If the Playbook object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *PlaybookMutation) OldExternalID(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldExternalID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldExternalID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldExternalID: %w", err)
+	}
+	return oldValue.ExternalID, nil
+}
+
+// ClearExternalID clears the value of the "external_id" field.
+func (m *PlaybookMutation) ClearExternalID() {
+	m.external_id = nil
+	m.clearedFields[playbook.FieldExternalID] = struct{}{}
+}
+
+// ExternalIDCleared returns if the "external_id" field was cleared in this mutation.
+func (m *PlaybookMutation) ExternalIDCleared() bool {
+	_, ok := m.clearedFields[playbook.FieldExternalID]
+	return ok
+}
+
+// ResetExternalID resets all changes to the "external_id" field.
+func (m *PlaybookMutation) ResetExternalID() {
+	m.external_id = nil
+	delete(m.clearedFields, playbook.FieldExternalID)
+}
+
 // SetTitle sets the "title" field.
 func (m *PlaybookMutation) SetTitle(s string) {
 	m.title = &s
@@ -32431,42 +33256,6 @@ func (m *PlaybookMutation) OldTitle(ctx context.Context) (v string, err error) {
 // ResetTitle resets all changes to the "title" field.
 func (m *PlaybookMutation) ResetTitle() {
 	m.title = nil
-}
-
-// SetProviderID sets the "provider_id" field.
-func (m *PlaybookMutation) SetProviderID(s string) {
-	m.provider_id = &s
-}
-
-// ProviderID returns the value of the "provider_id" field in the mutation.
-func (m *PlaybookMutation) ProviderID() (r string, exists bool) {
-	v := m.provider_id
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldProviderID returns the old "provider_id" field's value of the Playbook entity.
-// If the Playbook object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *PlaybookMutation) OldProviderID(ctx context.Context) (v string, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldProviderID is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldProviderID requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldProviderID: %w", err)
-	}
-	return oldValue.ProviderID, nil
-}
-
-// ResetProviderID resets all changes to the "provider_id" field.
-func (m *PlaybookMutation) ResetProviderID() {
-	m.provider_id = nil
 }
 
 // SetContent sets the "content" field.
@@ -32624,11 +33413,11 @@ func (m *PlaybookMutation) Fields() []string {
 	if m.tenant != nil {
 		fields = append(fields, playbook.FieldTenantID)
 	}
+	if m.external_id != nil {
+		fields = append(fields, playbook.FieldExternalID)
+	}
 	if m.title != nil {
 		fields = append(fields, playbook.FieldTitle)
-	}
-	if m.provider_id != nil {
-		fields = append(fields, playbook.FieldProviderID)
 	}
 	if m.content != nil {
 		fields = append(fields, playbook.FieldContent)
@@ -32643,10 +33432,10 @@ func (m *PlaybookMutation) Field(name string) (ent.Value, bool) {
 	switch name {
 	case playbook.FieldTenantID:
 		return m.TenantID()
+	case playbook.FieldExternalID:
+		return m.ExternalID()
 	case playbook.FieldTitle:
 		return m.Title()
-	case playbook.FieldProviderID:
-		return m.ProviderID()
 	case playbook.FieldContent:
 		return m.Content()
 	}
@@ -32660,10 +33449,10 @@ func (m *PlaybookMutation) OldField(ctx context.Context, name string) (ent.Value
 	switch name {
 	case playbook.FieldTenantID:
 		return m.OldTenantID(ctx)
+	case playbook.FieldExternalID:
+		return m.OldExternalID(ctx)
 	case playbook.FieldTitle:
 		return m.OldTitle(ctx)
-	case playbook.FieldProviderID:
-		return m.OldProviderID(ctx)
 	case playbook.FieldContent:
 		return m.OldContent(ctx)
 	}
@@ -32682,19 +33471,19 @@ func (m *PlaybookMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetTenantID(v)
 		return nil
+	case playbook.FieldExternalID:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetExternalID(v)
+		return nil
 	case playbook.FieldTitle:
 		v, ok := value.(string)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetTitle(v)
-		return nil
-	case playbook.FieldProviderID:
-		v, ok := value.(string)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetProviderID(v)
 		return nil
 	case playbook.FieldContent:
 		v, ok := value.([]byte)
@@ -32735,7 +33524,11 @@ func (m *PlaybookMutation) AddField(name string, value ent.Value) error {
 // ClearedFields returns all nullable fields that were cleared during this
 // mutation.
 func (m *PlaybookMutation) ClearedFields() []string {
-	return nil
+	var fields []string
+	if m.FieldCleared(playbook.FieldExternalID) {
+		fields = append(fields, playbook.FieldExternalID)
+	}
+	return fields
 }
 
 // FieldCleared returns a boolean indicating if a field with the given name was
@@ -32748,6 +33541,11 @@ func (m *PlaybookMutation) FieldCleared(name string) bool {
 // ClearField clears the value of the field with the given name. It returns an
 // error if the field is not defined in the schema.
 func (m *PlaybookMutation) ClearField(name string) error {
+	switch name {
+	case playbook.FieldExternalID:
+		m.ClearExternalID()
+		return nil
+	}
 	return fmt.Errorf("unknown Playbook nullable field %s", name)
 }
 
@@ -32758,11 +33556,11 @@ func (m *PlaybookMutation) ResetField(name string) error {
 	case playbook.FieldTenantID:
 		m.ResetTenantID()
 		return nil
+	case playbook.FieldExternalID:
+		m.ResetExternalID()
+		return nil
 	case playbook.FieldTitle:
 		m.ResetTitle()
-		return nil
-	case playbook.FieldProviderID:
-		m.ResetProviderID()
 		return nil
 	case playbook.FieldContent:
 		m.ResetContent()
@@ -32871,665 +33669,6 @@ func (m *PlaybookMutation) ResetEdge(name string) error {
 		return nil
 	}
 	return fmt.Errorf("unknown Playbook edge %s", name)
-}
-
-// ProviderConfigMutation represents an operation that mutates the ProviderConfig nodes in the graph.
-type ProviderConfigMutation struct {
-	config
-	op            Op
-	typ           string
-	id            *uuid.UUID
-	provider_type *providerconfig.ProviderType
-	provider_id   *string
-	_config       *[]byte
-	enabled       *bool
-	updated_at    *time.Time
-	clearedFields map[string]struct{}
-	tenant        *int
-	clearedtenant bool
-	done          bool
-	oldValue      func(context.Context) (*ProviderConfig, error)
-	predicates    []predicate.ProviderConfig
-}
-
-var _ ent.Mutation = (*ProviderConfigMutation)(nil)
-
-// providerconfigOption allows management of the mutation configuration using functional options.
-type providerconfigOption func(*ProviderConfigMutation)
-
-// newProviderConfigMutation creates new mutation for the ProviderConfig entity.
-func newProviderConfigMutation(c config, op Op, opts ...providerconfigOption) *ProviderConfigMutation {
-	m := &ProviderConfigMutation{
-		config:        c,
-		op:            op,
-		typ:           TypeProviderConfig,
-		clearedFields: make(map[string]struct{}),
-	}
-	for _, opt := range opts {
-		opt(m)
-	}
-	return m
-}
-
-// withProviderConfigID sets the ID field of the mutation.
-func withProviderConfigID(id uuid.UUID) providerconfigOption {
-	return func(m *ProviderConfigMutation) {
-		var (
-			err   error
-			once  sync.Once
-			value *ProviderConfig
-		)
-		m.oldValue = func(ctx context.Context) (*ProviderConfig, error) {
-			once.Do(func() {
-				if m.done {
-					err = errors.New("querying old values post mutation is not allowed")
-				} else {
-					value, err = m.Client().ProviderConfig.Get(ctx, id)
-				}
-			})
-			return value, err
-		}
-		m.id = &id
-	}
-}
-
-// withProviderConfig sets the old ProviderConfig of the mutation.
-func withProviderConfig(node *ProviderConfig) providerconfigOption {
-	return func(m *ProviderConfigMutation) {
-		m.oldValue = func(context.Context) (*ProviderConfig, error) {
-			return node, nil
-		}
-		m.id = &node.ID
-	}
-}
-
-// Client returns a new `ent.Client` from the mutation. If the mutation was
-// executed in a transaction (ent.Tx), a transactional client is returned.
-func (m ProviderConfigMutation) Client() *Client {
-	client := &Client{config: m.config}
-	client.init()
-	return client
-}
-
-// Tx returns an `ent.Tx` for mutations that were executed in transactions;
-// it returns an error otherwise.
-func (m ProviderConfigMutation) Tx() (*Tx, error) {
-	if _, ok := m.driver.(*txDriver); !ok {
-		return nil, errors.New("ent: mutation is not running in a transaction")
-	}
-	tx := &Tx{config: m.config}
-	tx.init()
-	return tx, nil
-}
-
-// SetID sets the value of the id field. Note that this
-// operation is only accepted on creation of ProviderConfig entities.
-func (m *ProviderConfigMutation) SetID(id uuid.UUID) {
-	m.id = &id
-}
-
-// ID returns the ID value in the mutation. Note that the ID is only available
-// if it was provided to the builder or after it was returned from the database.
-func (m *ProviderConfigMutation) ID() (id uuid.UUID, exists bool) {
-	if m.id == nil {
-		return
-	}
-	return *m.id, true
-}
-
-// IDs queries the database and returns the entity ids that match the mutation's predicate.
-// That means, if the mutation is applied within a transaction with an isolation level such
-// as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
-// or updated by the mutation.
-func (m *ProviderConfigMutation) IDs(ctx context.Context) ([]uuid.UUID, error) {
-	switch {
-	case m.op.Is(OpUpdateOne | OpDeleteOne):
-		id, exists := m.ID()
-		if exists {
-			return []uuid.UUID{id}, nil
-		}
-		fallthrough
-	case m.op.Is(OpUpdate | OpDelete):
-		return m.Client().ProviderConfig.Query().Where(m.predicates...).IDs(ctx)
-	default:
-		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
-	}
-}
-
-// SetTenantID sets the "tenant_id" field.
-func (m *ProviderConfigMutation) SetTenantID(i int) {
-	m.tenant = &i
-}
-
-// TenantID returns the value of the "tenant_id" field in the mutation.
-func (m *ProviderConfigMutation) TenantID() (r int, exists bool) {
-	v := m.tenant
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldTenantID returns the old "tenant_id" field's value of the ProviderConfig entity.
-// If the ProviderConfig object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *ProviderConfigMutation) OldTenantID(ctx context.Context) (v int, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldTenantID is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldTenantID requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldTenantID: %w", err)
-	}
-	return oldValue.TenantID, nil
-}
-
-// ResetTenantID resets all changes to the "tenant_id" field.
-func (m *ProviderConfigMutation) ResetTenantID() {
-	m.tenant = nil
-}
-
-// SetProviderType sets the "provider_type" field.
-func (m *ProviderConfigMutation) SetProviderType(pt providerconfig.ProviderType) {
-	m.provider_type = &pt
-}
-
-// ProviderType returns the value of the "provider_type" field in the mutation.
-func (m *ProviderConfigMutation) ProviderType() (r providerconfig.ProviderType, exists bool) {
-	v := m.provider_type
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldProviderType returns the old "provider_type" field's value of the ProviderConfig entity.
-// If the ProviderConfig object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *ProviderConfigMutation) OldProviderType(ctx context.Context) (v providerconfig.ProviderType, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldProviderType is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldProviderType requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldProviderType: %w", err)
-	}
-	return oldValue.ProviderType, nil
-}
-
-// ResetProviderType resets all changes to the "provider_type" field.
-func (m *ProviderConfigMutation) ResetProviderType() {
-	m.provider_type = nil
-}
-
-// SetProviderID sets the "provider_id" field.
-func (m *ProviderConfigMutation) SetProviderID(s string) {
-	m.provider_id = &s
-}
-
-// ProviderID returns the value of the "provider_id" field in the mutation.
-func (m *ProviderConfigMutation) ProviderID() (r string, exists bool) {
-	v := m.provider_id
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldProviderID returns the old "provider_id" field's value of the ProviderConfig entity.
-// If the ProviderConfig object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *ProviderConfigMutation) OldProviderID(ctx context.Context) (v string, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldProviderID is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldProviderID requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldProviderID: %w", err)
-	}
-	return oldValue.ProviderID, nil
-}
-
-// ResetProviderID resets all changes to the "provider_id" field.
-func (m *ProviderConfigMutation) ResetProviderID() {
-	m.provider_id = nil
-}
-
-// SetConfig sets the "config" field.
-func (m *ProviderConfigMutation) SetConfig(b []byte) {
-	m._config = &b
-}
-
-// Config returns the value of the "config" field in the mutation.
-func (m *ProviderConfigMutation) Config() (r []byte, exists bool) {
-	v := m._config
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldConfig returns the old "config" field's value of the ProviderConfig entity.
-// If the ProviderConfig object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *ProviderConfigMutation) OldConfig(ctx context.Context) (v []byte, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldConfig is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldConfig requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldConfig: %w", err)
-	}
-	return oldValue.Config, nil
-}
-
-// ResetConfig resets all changes to the "config" field.
-func (m *ProviderConfigMutation) ResetConfig() {
-	m._config = nil
-}
-
-// SetEnabled sets the "enabled" field.
-func (m *ProviderConfigMutation) SetEnabled(b bool) {
-	m.enabled = &b
-}
-
-// Enabled returns the value of the "enabled" field in the mutation.
-func (m *ProviderConfigMutation) Enabled() (r bool, exists bool) {
-	v := m.enabled
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldEnabled returns the old "enabled" field's value of the ProviderConfig entity.
-// If the ProviderConfig object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *ProviderConfigMutation) OldEnabled(ctx context.Context) (v bool, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldEnabled is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldEnabled requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldEnabled: %w", err)
-	}
-	return oldValue.Enabled, nil
-}
-
-// ResetEnabled resets all changes to the "enabled" field.
-func (m *ProviderConfigMutation) ResetEnabled() {
-	m.enabled = nil
-}
-
-// SetUpdatedAt sets the "updated_at" field.
-func (m *ProviderConfigMutation) SetUpdatedAt(t time.Time) {
-	m.updated_at = &t
-}
-
-// UpdatedAt returns the value of the "updated_at" field in the mutation.
-func (m *ProviderConfigMutation) UpdatedAt() (r time.Time, exists bool) {
-	v := m.updated_at
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldUpdatedAt returns the old "updated_at" field's value of the ProviderConfig entity.
-// If the ProviderConfig object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *ProviderConfigMutation) OldUpdatedAt(ctx context.Context) (v time.Time, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldUpdatedAt is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldUpdatedAt requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldUpdatedAt: %w", err)
-	}
-	return oldValue.UpdatedAt, nil
-}
-
-// ResetUpdatedAt resets all changes to the "updated_at" field.
-func (m *ProviderConfigMutation) ResetUpdatedAt() {
-	m.updated_at = nil
-}
-
-// ClearTenant clears the "tenant" edge to the Tenant entity.
-func (m *ProviderConfigMutation) ClearTenant() {
-	m.clearedtenant = true
-	m.clearedFields[providerconfig.FieldTenantID] = struct{}{}
-}
-
-// TenantCleared reports if the "tenant" edge to the Tenant entity was cleared.
-func (m *ProviderConfigMutation) TenantCleared() bool {
-	return m.clearedtenant
-}
-
-// TenantIDs returns the "tenant" edge IDs in the mutation.
-// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
-// TenantID instead. It exists only for internal usage by the builders.
-func (m *ProviderConfigMutation) TenantIDs() (ids []int) {
-	if id := m.tenant; id != nil {
-		ids = append(ids, *id)
-	}
-	return
-}
-
-// ResetTenant resets all changes to the "tenant" edge.
-func (m *ProviderConfigMutation) ResetTenant() {
-	m.tenant = nil
-	m.clearedtenant = false
-}
-
-// Where appends a list predicates to the ProviderConfigMutation builder.
-func (m *ProviderConfigMutation) Where(ps ...predicate.ProviderConfig) {
-	m.predicates = append(m.predicates, ps...)
-}
-
-// WhereP appends storage-level predicates to the ProviderConfigMutation builder. Using this method,
-// users can use type-assertion to append predicates that do not depend on any generated package.
-func (m *ProviderConfigMutation) WhereP(ps ...func(*sql.Selector)) {
-	p := make([]predicate.ProviderConfig, len(ps))
-	for i := range ps {
-		p[i] = ps[i]
-	}
-	m.Where(p...)
-}
-
-// Op returns the operation name.
-func (m *ProviderConfigMutation) Op() Op {
-	return m.op
-}
-
-// SetOp allows setting the mutation operation.
-func (m *ProviderConfigMutation) SetOp(op Op) {
-	m.op = op
-}
-
-// Type returns the node type of this mutation (ProviderConfig).
-func (m *ProviderConfigMutation) Type() string {
-	return m.typ
-}
-
-// Fields returns all fields that were changed during this mutation. Note that in
-// order to get all numeric fields that were incremented/decremented, call
-// AddedFields().
-func (m *ProviderConfigMutation) Fields() []string {
-	fields := make([]string, 0, 6)
-	if m.tenant != nil {
-		fields = append(fields, providerconfig.FieldTenantID)
-	}
-	if m.provider_type != nil {
-		fields = append(fields, providerconfig.FieldProviderType)
-	}
-	if m.provider_id != nil {
-		fields = append(fields, providerconfig.FieldProviderID)
-	}
-	if m._config != nil {
-		fields = append(fields, providerconfig.FieldConfig)
-	}
-	if m.enabled != nil {
-		fields = append(fields, providerconfig.FieldEnabled)
-	}
-	if m.updated_at != nil {
-		fields = append(fields, providerconfig.FieldUpdatedAt)
-	}
-	return fields
-}
-
-// Field returns the value of a field with the given name. The second boolean
-// return value indicates that this field was not set, or was not defined in the
-// schema.
-func (m *ProviderConfigMutation) Field(name string) (ent.Value, bool) {
-	switch name {
-	case providerconfig.FieldTenantID:
-		return m.TenantID()
-	case providerconfig.FieldProviderType:
-		return m.ProviderType()
-	case providerconfig.FieldProviderID:
-		return m.ProviderID()
-	case providerconfig.FieldConfig:
-		return m.Config()
-	case providerconfig.FieldEnabled:
-		return m.Enabled()
-	case providerconfig.FieldUpdatedAt:
-		return m.UpdatedAt()
-	}
-	return nil, false
-}
-
-// OldField returns the old value of the field from the database. An error is
-// returned if the mutation operation is not UpdateOne, or the query to the
-// database failed.
-func (m *ProviderConfigMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
-	switch name {
-	case providerconfig.FieldTenantID:
-		return m.OldTenantID(ctx)
-	case providerconfig.FieldProviderType:
-		return m.OldProviderType(ctx)
-	case providerconfig.FieldProviderID:
-		return m.OldProviderID(ctx)
-	case providerconfig.FieldConfig:
-		return m.OldConfig(ctx)
-	case providerconfig.FieldEnabled:
-		return m.OldEnabled(ctx)
-	case providerconfig.FieldUpdatedAt:
-		return m.OldUpdatedAt(ctx)
-	}
-	return nil, fmt.Errorf("unknown ProviderConfig field %s", name)
-}
-
-// SetField sets the value of a field with the given name. It returns an error if
-// the field is not defined in the schema, or if the type mismatched the field
-// type.
-func (m *ProviderConfigMutation) SetField(name string, value ent.Value) error {
-	switch name {
-	case providerconfig.FieldTenantID:
-		v, ok := value.(int)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetTenantID(v)
-		return nil
-	case providerconfig.FieldProviderType:
-		v, ok := value.(providerconfig.ProviderType)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetProviderType(v)
-		return nil
-	case providerconfig.FieldProviderID:
-		v, ok := value.(string)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetProviderID(v)
-		return nil
-	case providerconfig.FieldConfig:
-		v, ok := value.([]byte)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetConfig(v)
-		return nil
-	case providerconfig.FieldEnabled:
-		v, ok := value.(bool)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetEnabled(v)
-		return nil
-	case providerconfig.FieldUpdatedAt:
-		v, ok := value.(time.Time)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetUpdatedAt(v)
-		return nil
-	}
-	return fmt.Errorf("unknown ProviderConfig field %s", name)
-}
-
-// AddedFields returns all numeric fields that were incremented/decremented during
-// this mutation.
-func (m *ProviderConfigMutation) AddedFields() []string {
-	var fields []string
-	return fields
-}
-
-// AddedField returns the numeric value that was incremented/decremented on a field
-// with the given name. The second boolean return value indicates that this field
-// was not set, or was not defined in the schema.
-func (m *ProviderConfigMutation) AddedField(name string) (ent.Value, bool) {
-	switch name {
-	}
-	return nil, false
-}
-
-// AddField adds the value to the field with the given name. It returns an error if
-// the field is not defined in the schema, or if the type mismatched the field
-// type.
-func (m *ProviderConfigMutation) AddField(name string, value ent.Value) error {
-	switch name {
-	}
-	return fmt.Errorf("unknown ProviderConfig numeric field %s", name)
-}
-
-// ClearedFields returns all nullable fields that were cleared during this
-// mutation.
-func (m *ProviderConfigMutation) ClearedFields() []string {
-	return nil
-}
-
-// FieldCleared returns a boolean indicating if a field with the given name was
-// cleared in this mutation.
-func (m *ProviderConfigMutation) FieldCleared(name string) bool {
-	_, ok := m.clearedFields[name]
-	return ok
-}
-
-// ClearField clears the value of the field with the given name. It returns an
-// error if the field is not defined in the schema.
-func (m *ProviderConfigMutation) ClearField(name string) error {
-	return fmt.Errorf("unknown ProviderConfig nullable field %s", name)
-}
-
-// ResetField resets all changes in the mutation for the field with the given name.
-// It returns an error if the field is not defined in the schema.
-func (m *ProviderConfigMutation) ResetField(name string) error {
-	switch name {
-	case providerconfig.FieldTenantID:
-		m.ResetTenantID()
-		return nil
-	case providerconfig.FieldProviderType:
-		m.ResetProviderType()
-		return nil
-	case providerconfig.FieldProviderID:
-		m.ResetProviderID()
-		return nil
-	case providerconfig.FieldConfig:
-		m.ResetConfig()
-		return nil
-	case providerconfig.FieldEnabled:
-		m.ResetEnabled()
-		return nil
-	case providerconfig.FieldUpdatedAt:
-		m.ResetUpdatedAt()
-		return nil
-	}
-	return fmt.Errorf("unknown ProviderConfig field %s", name)
-}
-
-// AddedEdges returns all edge names that were set/added in this mutation.
-func (m *ProviderConfigMutation) AddedEdges() []string {
-	edges := make([]string, 0, 1)
-	if m.tenant != nil {
-		edges = append(edges, providerconfig.EdgeTenant)
-	}
-	return edges
-}
-
-// AddedIDs returns all IDs (to other nodes) that were added for the given edge
-// name in this mutation.
-func (m *ProviderConfigMutation) AddedIDs(name string) []ent.Value {
-	switch name {
-	case providerconfig.EdgeTenant:
-		if id := m.tenant; id != nil {
-			return []ent.Value{*id}
-		}
-	}
-	return nil
-}
-
-// RemovedEdges returns all edge names that were removed in this mutation.
-func (m *ProviderConfigMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 1)
-	return edges
-}
-
-// RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
-// the given name in this mutation.
-func (m *ProviderConfigMutation) RemovedIDs(name string) []ent.Value {
-	return nil
-}
-
-// ClearedEdges returns all edge names that were cleared in this mutation.
-func (m *ProviderConfigMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 1)
-	if m.clearedtenant {
-		edges = append(edges, providerconfig.EdgeTenant)
-	}
-	return edges
-}
-
-// EdgeCleared returns a boolean which indicates if the edge with the given name
-// was cleared in this mutation.
-func (m *ProviderConfigMutation) EdgeCleared(name string) bool {
-	switch name {
-	case providerconfig.EdgeTenant:
-		return m.clearedtenant
-	}
-	return false
-}
-
-// ClearEdge clears the value of the edge with the given name. It returns an error
-// if that edge is not defined in the schema.
-func (m *ProviderConfigMutation) ClearEdge(name string) error {
-	switch name {
-	case providerconfig.EdgeTenant:
-		m.ClearTenant()
-		return nil
-	}
-	return fmt.Errorf("unknown ProviderConfig unique edge %s", name)
-}
-
-// ResetEdge resets all changes to the edge with the given name in this mutation.
-// It returns an error if the edge is not defined in the schema.
-func (m *ProviderConfigMutation) ResetEdge(name string) error {
-	switch name {
-	case providerconfig.EdgeTenant:
-		m.ResetTenant()
-		return nil
-	}
-	return fmt.Errorf("unknown ProviderConfig edge %s", name)
 }
 
 // ProviderSyncHistoryMutation represents an operation that mutates the ProviderSyncHistory nodes in the graph.
@@ -39684,8 +39823,8 @@ type SystemComponentMutation struct {
 	op                                Op
 	typ                               string
 	id                                *uuid.UUID
+	external_id                       *string
 	name                              *string
-	provider_id                       *string
 	description                       *string
 	properties                        *map[string]interface{}
 	created_at                        *time.Time
@@ -39870,6 +40009,55 @@ func (m *SystemComponentMutation) ResetTenantID() {
 	m.tenant = nil
 }
 
+// SetExternalID sets the "external_id" field.
+func (m *SystemComponentMutation) SetExternalID(s string) {
+	m.external_id = &s
+}
+
+// ExternalID returns the value of the "external_id" field in the mutation.
+func (m *SystemComponentMutation) ExternalID() (r string, exists bool) {
+	v := m.external_id
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldExternalID returns the old "external_id" field's value of the SystemComponent entity.
+// If the SystemComponent object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *SystemComponentMutation) OldExternalID(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldExternalID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldExternalID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldExternalID: %w", err)
+	}
+	return oldValue.ExternalID, nil
+}
+
+// ClearExternalID clears the value of the "external_id" field.
+func (m *SystemComponentMutation) ClearExternalID() {
+	m.external_id = nil
+	m.clearedFields[systemcomponent.FieldExternalID] = struct{}{}
+}
+
+// ExternalIDCleared returns if the "external_id" field was cleared in this mutation.
+func (m *SystemComponentMutation) ExternalIDCleared() bool {
+	_, ok := m.clearedFields[systemcomponent.FieldExternalID]
+	return ok
+}
+
+// ResetExternalID resets all changes to the "external_id" field.
+func (m *SystemComponentMutation) ResetExternalID() {
+	m.external_id = nil
+	delete(m.clearedFields, systemcomponent.FieldExternalID)
+}
+
 // SetName sets the "name" field.
 func (m *SystemComponentMutation) SetName(s string) {
 	m.name = &s
@@ -39904,55 +40092,6 @@ func (m *SystemComponentMutation) OldName(ctx context.Context) (v string, err er
 // ResetName resets all changes to the "name" field.
 func (m *SystemComponentMutation) ResetName() {
 	m.name = nil
-}
-
-// SetProviderID sets the "provider_id" field.
-func (m *SystemComponentMutation) SetProviderID(s string) {
-	m.provider_id = &s
-}
-
-// ProviderID returns the value of the "provider_id" field in the mutation.
-func (m *SystemComponentMutation) ProviderID() (r string, exists bool) {
-	v := m.provider_id
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldProviderID returns the old "provider_id" field's value of the SystemComponent entity.
-// If the SystemComponent object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *SystemComponentMutation) OldProviderID(ctx context.Context) (v string, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldProviderID is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldProviderID requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldProviderID: %w", err)
-	}
-	return oldValue.ProviderID, nil
-}
-
-// ClearProviderID clears the value of the "provider_id" field.
-func (m *SystemComponentMutation) ClearProviderID() {
-	m.provider_id = nil
-	m.clearedFields[systemcomponent.FieldProviderID] = struct{}{}
-}
-
-// ProviderIDCleared returns if the "provider_id" field was cleared in this mutation.
-func (m *SystemComponentMutation) ProviderIDCleared() bool {
-	_, ok := m.clearedFields[systemcomponent.FieldProviderID]
-	return ok
-}
-
-// ResetProviderID resets all changes to the "provider_id" field.
-func (m *SystemComponentMutation) ResetProviderID() {
-	m.provider_id = nil
-	delete(m.clearedFields, systemcomponent.FieldProviderID)
 }
 
 // SetKindID sets the "kind_id" field.
@@ -40806,11 +40945,11 @@ func (m *SystemComponentMutation) Fields() []string {
 	if m.tenant != nil {
 		fields = append(fields, systemcomponent.FieldTenantID)
 	}
+	if m.external_id != nil {
+		fields = append(fields, systemcomponent.FieldExternalID)
+	}
 	if m.name != nil {
 		fields = append(fields, systemcomponent.FieldName)
-	}
-	if m.provider_id != nil {
-		fields = append(fields, systemcomponent.FieldProviderID)
 	}
 	if m.kind != nil {
 		fields = append(fields, systemcomponent.FieldKindID)
@@ -40837,10 +40976,10 @@ func (m *SystemComponentMutation) Field(name string) (ent.Value, bool) {
 	switch name {
 	case systemcomponent.FieldTenantID:
 		return m.TenantID()
+	case systemcomponent.FieldExternalID:
+		return m.ExternalID()
 	case systemcomponent.FieldName:
 		return m.Name()
-	case systemcomponent.FieldProviderID:
-		return m.ProviderID()
 	case systemcomponent.FieldKindID:
 		return m.KindID()
 	case systemcomponent.FieldDescription:
@@ -40862,10 +41001,10 @@ func (m *SystemComponentMutation) OldField(ctx context.Context, name string) (en
 	switch name {
 	case systemcomponent.FieldTenantID:
 		return m.OldTenantID(ctx)
+	case systemcomponent.FieldExternalID:
+		return m.OldExternalID(ctx)
 	case systemcomponent.FieldName:
 		return m.OldName(ctx)
-	case systemcomponent.FieldProviderID:
-		return m.OldProviderID(ctx)
 	case systemcomponent.FieldKindID:
 		return m.OldKindID(ctx)
 	case systemcomponent.FieldDescription:
@@ -40892,19 +41031,19 @@ func (m *SystemComponentMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetTenantID(v)
 		return nil
+	case systemcomponent.FieldExternalID:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetExternalID(v)
+		return nil
 	case systemcomponent.FieldName:
 		v, ok := value.(string)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetName(v)
-		return nil
-	case systemcomponent.FieldProviderID:
-		v, ok := value.(string)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetProviderID(v)
 		return nil
 	case systemcomponent.FieldKindID:
 		v, ok := value.(uuid.UUID)
@@ -40974,8 +41113,8 @@ func (m *SystemComponentMutation) AddField(name string, value ent.Value) error {
 // mutation.
 func (m *SystemComponentMutation) ClearedFields() []string {
 	var fields []string
-	if m.FieldCleared(systemcomponent.FieldProviderID) {
-		fields = append(fields, systemcomponent.FieldProviderID)
+	if m.FieldCleared(systemcomponent.FieldExternalID) {
+		fields = append(fields, systemcomponent.FieldExternalID)
 	}
 	if m.FieldCleared(systemcomponent.FieldKindID) {
 		fields = append(fields, systemcomponent.FieldKindID)
@@ -41000,8 +41139,8 @@ func (m *SystemComponentMutation) FieldCleared(name string) bool {
 // error if the field is not defined in the schema.
 func (m *SystemComponentMutation) ClearField(name string) error {
 	switch name {
-	case systemcomponent.FieldProviderID:
-		m.ClearProviderID()
+	case systemcomponent.FieldExternalID:
+		m.ClearExternalID()
 		return nil
 	case systemcomponent.FieldKindID:
 		m.ClearKindID()
@@ -41023,11 +41162,11 @@ func (m *SystemComponentMutation) ResetField(name string) error {
 	case systemcomponent.FieldTenantID:
 		m.ResetTenantID()
 		return nil
+	case systemcomponent.FieldExternalID:
+		m.ResetExternalID()
+		return nil
 	case systemcomponent.FieldName:
 		m.ResetName()
-		return nil
-	case systemcomponent.FieldProviderID:
-		m.ResetProviderID()
 		return nil
 	case systemcomponent.FieldKindID:
 		m.ResetKindID()
@@ -43007,7 +43146,7 @@ type SystemComponentKindMutation struct {
 	op                Op
 	typ               string
 	id                *uuid.UUID
-	provider_id       *string
+	external_id       *string
 	label             *string
 	description       *string
 	created_at        *time.Time
@@ -43162,53 +43301,53 @@ func (m *SystemComponentKindMutation) ResetTenantID() {
 	m.tenant = nil
 }
 
-// SetProviderID sets the "provider_id" field.
-func (m *SystemComponentKindMutation) SetProviderID(s string) {
-	m.provider_id = &s
+// SetExternalID sets the "external_id" field.
+func (m *SystemComponentKindMutation) SetExternalID(s string) {
+	m.external_id = &s
 }
 
-// ProviderID returns the value of the "provider_id" field in the mutation.
-func (m *SystemComponentKindMutation) ProviderID() (r string, exists bool) {
-	v := m.provider_id
+// ExternalID returns the value of the "external_id" field in the mutation.
+func (m *SystemComponentKindMutation) ExternalID() (r string, exists bool) {
+	v := m.external_id
 	if v == nil {
 		return
 	}
 	return *v, true
 }
 
-// OldProviderID returns the old "provider_id" field's value of the SystemComponentKind entity.
+// OldExternalID returns the old "external_id" field's value of the SystemComponentKind entity.
 // If the SystemComponentKind object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *SystemComponentKindMutation) OldProviderID(ctx context.Context) (v string, err error) {
+func (m *SystemComponentKindMutation) OldExternalID(ctx context.Context) (v string, err error) {
 	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldProviderID is only allowed on UpdateOne operations")
+		return v, errors.New("OldExternalID is only allowed on UpdateOne operations")
 	}
 	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldProviderID requires an ID field in the mutation")
+		return v, errors.New("OldExternalID requires an ID field in the mutation")
 	}
 	oldValue, err := m.oldValue(ctx)
 	if err != nil {
-		return v, fmt.Errorf("querying old value for OldProviderID: %w", err)
+		return v, fmt.Errorf("querying old value for OldExternalID: %w", err)
 	}
-	return oldValue.ProviderID, nil
+	return oldValue.ExternalID, nil
 }
 
-// ClearProviderID clears the value of the "provider_id" field.
-func (m *SystemComponentKindMutation) ClearProviderID() {
-	m.provider_id = nil
-	m.clearedFields[systemcomponentkind.FieldProviderID] = struct{}{}
+// ClearExternalID clears the value of the "external_id" field.
+func (m *SystemComponentKindMutation) ClearExternalID() {
+	m.external_id = nil
+	m.clearedFields[systemcomponentkind.FieldExternalID] = struct{}{}
 }
 
-// ProviderIDCleared returns if the "provider_id" field was cleared in this mutation.
-func (m *SystemComponentKindMutation) ProviderIDCleared() bool {
-	_, ok := m.clearedFields[systemcomponentkind.FieldProviderID]
+// ExternalIDCleared returns if the "external_id" field was cleared in this mutation.
+func (m *SystemComponentKindMutation) ExternalIDCleared() bool {
+	_, ok := m.clearedFields[systemcomponentkind.FieldExternalID]
 	return ok
 }
 
-// ResetProviderID resets all changes to the "provider_id" field.
-func (m *SystemComponentKindMutation) ResetProviderID() {
-	m.provider_id = nil
-	delete(m.clearedFields, systemcomponentkind.FieldProviderID)
+// ResetExternalID resets all changes to the "external_id" field.
+func (m *SystemComponentKindMutation) ResetExternalID() {
+	m.external_id = nil
+	delete(m.clearedFields, systemcomponentkind.FieldExternalID)
 }
 
 // SetLabel sets the "label" field.
@@ -43451,8 +43590,8 @@ func (m *SystemComponentKindMutation) Fields() []string {
 	if m.tenant != nil {
 		fields = append(fields, systemcomponentkind.FieldTenantID)
 	}
-	if m.provider_id != nil {
-		fields = append(fields, systemcomponentkind.FieldProviderID)
+	if m.external_id != nil {
+		fields = append(fields, systemcomponentkind.FieldExternalID)
 	}
 	if m.label != nil {
 		fields = append(fields, systemcomponentkind.FieldLabel)
@@ -43473,8 +43612,8 @@ func (m *SystemComponentKindMutation) Field(name string) (ent.Value, bool) {
 	switch name {
 	case systemcomponentkind.FieldTenantID:
 		return m.TenantID()
-	case systemcomponentkind.FieldProviderID:
-		return m.ProviderID()
+	case systemcomponentkind.FieldExternalID:
+		return m.ExternalID()
 	case systemcomponentkind.FieldLabel:
 		return m.Label()
 	case systemcomponentkind.FieldDescription:
@@ -43492,8 +43631,8 @@ func (m *SystemComponentKindMutation) OldField(ctx context.Context, name string)
 	switch name {
 	case systemcomponentkind.FieldTenantID:
 		return m.OldTenantID(ctx)
-	case systemcomponentkind.FieldProviderID:
-		return m.OldProviderID(ctx)
+	case systemcomponentkind.FieldExternalID:
+		return m.OldExternalID(ctx)
 	case systemcomponentkind.FieldLabel:
 		return m.OldLabel(ctx)
 	case systemcomponentkind.FieldDescription:
@@ -43516,12 +43655,12 @@ func (m *SystemComponentKindMutation) SetField(name string, value ent.Value) err
 		}
 		m.SetTenantID(v)
 		return nil
-	case systemcomponentkind.FieldProviderID:
+	case systemcomponentkind.FieldExternalID:
 		v, ok := value.(string)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
-		m.SetProviderID(v)
+		m.SetExternalID(v)
 		return nil
 	case systemcomponentkind.FieldLabel:
 		v, ok := value.(string)
@@ -43577,8 +43716,8 @@ func (m *SystemComponentKindMutation) AddField(name string, value ent.Value) err
 // mutation.
 func (m *SystemComponentKindMutation) ClearedFields() []string {
 	var fields []string
-	if m.FieldCleared(systemcomponentkind.FieldProviderID) {
-		fields = append(fields, systemcomponentkind.FieldProviderID)
+	if m.FieldCleared(systemcomponentkind.FieldExternalID) {
+		fields = append(fields, systemcomponentkind.FieldExternalID)
 	}
 	if m.FieldCleared(systemcomponentkind.FieldDescription) {
 		fields = append(fields, systemcomponentkind.FieldDescription)
@@ -43597,8 +43736,8 @@ func (m *SystemComponentKindMutation) FieldCleared(name string) bool {
 // error if the field is not defined in the schema.
 func (m *SystemComponentKindMutation) ClearField(name string) error {
 	switch name {
-	case systemcomponentkind.FieldProviderID:
-		m.ClearProviderID()
+	case systemcomponentkind.FieldExternalID:
+		m.ClearExternalID()
 		return nil
 	case systemcomponentkind.FieldDescription:
 		m.ClearDescription()
@@ -43614,8 +43753,8 @@ func (m *SystemComponentKindMutation) ResetField(name string) error {
 	case systemcomponentkind.FieldTenantID:
 		m.ResetTenantID()
 		return nil
-	case systemcomponentkind.FieldProviderID:
-		m.ResetProviderID()
+	case systemcomponentkind.FieldExternalID:
+		m.ResetExternalID()
 		return nil
 	case systemcomponentkind.FieldLabel:
 		m.ResetLabel()
@@ -43738,7 +43877,7 @@ type SystemComponentRelationshipMutation struct {
 	op                     Op
 	typ                    string
 	id                     *uuid.UUID
-	provider_id            *string
+	external_id            *string
 	description            *string
 	created_at             *time.Time
 	clearedFields          map[string]struct{}
@@ -43899,53 +44038,53 @@ func (m *SystemComponentRelationshipMutation) ResetTenantID() {
 	m.tenant = nil
 }
 
-// SetProviderID sets the "provider_id" field.
-func (m *SystemComponentRelationshipMutation) SetProviderID(s string) {
-	m.provider_id = &s
+// SetExternalID sets the "external_id" field.
+func (m *SystemComponentRelationshipMutation) SetExternalID(s string) {
+	m.external_id = &s
 }
 
-// ProviderID returns the value of the "provider_id" field in the mutation.
-func (m *SystemComponentRelationshipMutation) ProviderID() (r string, exists bool) {
-	v := m.provider_id
+// ExternalID returns the value of the "external_id" field in the mutation.
+func (m *SystemComponentRelationshipMutation) ExternalID() (r string, exists bool) {
+	v := m.external_id
 	if v == nil {
 		return
 	}
 	return *v, true
 }
 
-// OldProviderID returns the old "provider_id" field's value of the SystemComponentRelationship entity.
+// OldExternalID returns the old "external_id" field's value of the SystemComponentRelationship entity.
 // If the SystemComponentRelationship object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *SystemComponentRelationshipMutation) OldProviderID(ctx context.Context) (v string, err error) {
+func (m *SystemComponentRelationshipMutation) OldExternalID(ctx context.Context) (v string, err error) {
 	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldProviderID is only allowed on UpdateOne operations")
+		return v, errors.New("OldExternalID is only allowed on UpdateOne operations")
 	}
 	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldProviderID requires an ID field in the mutation")
+		return v, errors.New("OldExternalID requires an ID field in the mutation")
 	}
 	oldValue, err := m.oldValue(ctx)
 	if err != nil {
-		return v, fmt.Errorf("querying old value for OldProviderID: %w", err)
+		return v, fmt.Errorf("querying old value for OldExternalID: %w", err)
 	}
-	return oldValue.ProviderID, nil
+	return oldValue.ExternalID, nil
 }
 
-// ClearProviderID clears the value of the "provider_id" field.
-func (m *SystemComponentRelationshipMutation) ClearProviderID() {
-	m.provider_id = nil
-	m.clearedFields[systemcomponentrelationship.FieldProviderID] = struct{}{}
+// ClearExternalID clears the value of the "external_id" field.
+func (m *SystemComponentRelationshipMutation) ClearExternalID() {
+	m.external_id = nil
+	m.clearedFields[systemcomponentrelationship.FieldExternalID] = struct{}{}
 }
 
-// ProviderIDCleared returns if the "provider_id" field was cleared in this mutation.
-func (m *SystemComponentRelationshipMutation) ProviderIDCleared() bool {
-	_, ok := m.clearedFields[systemcomponentrelationship.FieldProviderID]
+// ExternalIDCleared returns if the "external_id" field was cleared in this mutation.
+func (m *SystemComponentRelationshipMutation) ExternalIDCleared() bool {
+	_, ok := m.clearedFields[systemcomponentrelationship.FieldExternalID]
 	return ok
 }
 
-// ResetProviderID resets all changes to the "provider_id" field.
-func (m *SystemComponentRelationshipMutation) ResetProviderID() {
-	m.provider_id = nil
-	delete(m.clearedFields, systemcomponentrelationship.FieldProviderID)
+// ResetExternalID resets all changes to the "external_id" field.
+func (m *SystemComponentRelationshipMutation) ResetExternalID() {
+	m.external_id = nil
+	delete(m.clearedFields, systemcomponentrelationship.FieldExternalID)
 }
 
 // SetSourceID sets the "source_id" field.
@@ -44332,8 +44471,8 @@ func (m *SystemComponentRelationshipMutation) Fields() []string {
 	if m.tenant != nil {
 		fields = append(fields, systemcomponentrelationship.FieldTenantID)
 	}
-	if m.provider_id != nil {
-		fields = append(fields, systemcomponentrelationship.FieldProviderID)
+	if m.external_id != nil {
+		fields = append(fields, systemcomponentrelationship.FieldExternalID)
 	}
 	if m.source != nil {
 		fields = append(fields, systemcomponentrelationship.FieldSourceID)
@@ -44357,8 +44496,8 @@ func (m *SystemComponentRelationshipMutation) Field(name string) (ent.Value, boo
 	switch name {
 	case systemcomponentrelationship.FieldTenantID:
 		return m.TenantID()
-	case systemcomponentrelationship.FieldProviderID:
-		return m.ProviderID()
+	case systemcomponentrelationship.FieldExternalID:
+		return m.ExternalID()
 	case systemcomponentrelationship.FieldSourceID:
 		return m.SourceID()
 	case systemcomponentrelationship.FieldTargetID:
@@ -44378,8 +44517,8 @@ func (m *SystemComponentRelationshipMutation) OldField(ctx context.Context, name
 	switch name {
 	case systemcomponentrelationship.FieldTenantID:
 		return m.OldTenantID(ctx)
-	case systemcomponentrelationship.FieldProviderID:
-		return m.OldProviderID(ctx)
+	case systemcomponentrelationship.FieldExternalID:
+		return m.OldExternalID(ctx)
 	case systemcomponentrelationship.FieldSourceID:
 		return m.OldSourceID(ctx)
 	case systemcomponentrelationship.FieldTargetID:
@@ -44404,12 +44543,12 @@ func (m *SystemComponentRelationshipMutation) SetField(name string, value ent.Va
 		}
 		m.SetTenantID(v)
 		return nil
-	case systemcomponentrelationship.FieldProviderID:
+	case systemcomponentrelationship.FieldExternalID:
 		v, ok := value.(string)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
-		m.SetProviderID(v)
+		m.SetExternalID(v)
 		return nil
 	case systemcomponentrelationship.FieldSourceID:
 		v, ok := value.(uuid.UUID)
@@ -44472,8 +44611,8 @@ func (m *SystemComponentRelationshipMutation) AddField(name string, value ent.Va
 // mutation.
 func (m *SystemComponentRelationshipMutation) ClearedFields() []string {
 	var fields []string
-	if m.FieldCleared(systemcomponentrelationship.FieldProviderID) {
-		fields = append(fields, systemcomponentrelationship.FieldProviderID)
+	if m.FieldCleared(systemcomponentrelationship.FieldExternalID) {
+		fields = append(fields, systemcomponentrelationship.FieldExternalID)
 	}
 	if m.FieldCleared(systemcomponentrelationship.FieldDescription) {
 		fields = append(fields, systemcomponentrelationship.FieldDescription)
@@ -44492,8 +44631,8 @@ func (m *SystemComponentRelationshipMutation) FieldCleared(name string) bool {
 // error if the field is not defined in the schema.
 func (m *SystemComponentRelationshipMutation) ClearField(name string) error {
 	switch name {
-	case systemcomponentrelationship.FieldProviderID:
-		m.ClearProviderID()
+	case systemcomponentrelationship.FieldExternalID:
+		m.ClearExternalID()
 		return nil
 	case systemcomponentrelationship.FieldDescription:
 		m.ClearDescription()
@@ -44509,8 +44648,8 @@ func (m *SystemComponentRelationshipMutation) ResetField(name string) error {
 	case systemcomponentrelationship.FieldTenantID:
 		m.ResetTenantID()
 		return nil
-	case systemcomponentrelationship.FieldProviderID:
-		m.ResetProviderID()
+	case systemcomponentrelationship.FieldExternalID:
+		m.ResetExternalID()
 		return nil
 	case systemcomponentrelationship.FieldSourceID:
 		m.ResetSourceID()
@@ -48883,8 +49022,8 @@ type TeamMutation struct {
 	op                        Op
 	typ                       string
 	id                        *uuid.UUID
+	external_id               *string
 	slug                      *string
-	provider_id               *string
 	name                      *string
 	chat_channel_id           *string
 	timezone                  *string
@@ -49045,6 +49184,55 @@ func (m *TeamMutation) ResetTenantID() {
 	m.tenant = nil
 }
 
+// SetExternalID sets the "external_id" field.
+func (m *TeamMutation) SetExternalID(s string) {
+	m.external_id = &s
+}
+
+// ExternalID returns the value of the "external_id" field in the mutation.
+func (m *TeamMutation) ExternalID() (r string, exists bool) {
+	v := m.external_id
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldExternalID returns the old "external_id" field's value of the Team entity.
+// If the Team object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *TeamMutation) OldExternalID(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldExternalID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldExternalID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldExternalID: %w", err)
+	}
+	return oldValue.ExternalID, nil
+}
+
+// ClearExternalID clears the value of the "external_id" field.
+func (m *TeamMutation) ClearExternalID() {
+	m.external_id = nil
+	m.clearedFields[team.FieldExternalID] = struct{}{}
+}
+
+// ExternalIDCleared returns if the "external_id" field was cleared in this mutation.
+func (m *TeamMutation) ExternalIDCleared() bool {
+	_, ok := m.clearedFields[team.FieldExternalID]
+	return ok
+}
+
+// ResetExternalID resets all changes to the "external_id" field.
+func (m *TeamMutation) ResetExternalID() {
+	m.external_id = nil
+	delete(m.clearedFields, team.FieldExternalID)
+}
+
 // SetSlug sets the "slug" field.
 func (m *TeamMutation) SetSlug(s string) {
 	m.slug = &s
@@ -49079,55 +49267,6 @@ func (m *TeamMutation) OldSlug(ctx context.Context) (v string, err error) {
 // ResetSlug resets all changes to the "slug" field.
 func (m *TeamMutation) ResetSlug() {
 	m.slug = nil
-}
-
-// SetProviderID sets the "provider_id" field.
-func (m *TeamMutation) SetProviderID(s string) {
-	m.provider_id = &s
-}
-
-// ProviderID returns the value of the "provider_id" field in the mutation.
-func (m *TeamMutation) ProviderID() (r string, exists bool) {
-	v := m.provider_id
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldProviderID returns the old "provider_id" field's value of the Team entity.
-// If the Team object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *TeamMutation) OldProviderID(ctx context.Context) (v string, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldProviderID is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldProviderID requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldProviderID: %w", err)
-	}
-	return oldValue.ProviderID, nil
-}
-
-// ClearProviderID clears the value of the "provider_id" field.
-func (m *TeamMutation) ClearProviderID() {
-	m.provider_id = nil
-	m.clearedFields[team.FieldProviderID] = struct{}{}
-}
-
-// ProviderIDCleared returns if the "provider_id" field was cleared in this mutation.
-func (m *TeamMutation) ProviderIDCleared() bool {
-	_, ok := m.clearedFields[team.FieldProviderID]
-	return ok
-}
-
-// ResetProviderID resets all changes to the "provider_id" field.
-func (m *TeamMutation) ResetProviderID() {
-	m.provider_id = nil
-	delete(m.clearedFields, team.FieldProviderID)
 }
 
 // SetName sets the "name" field.
@@ -49491,11 +49630,11 @@ func (m *TeamMutation) Fields() []string {
 	if m.tenant != nil {
 		fields = append(fields, team.FieldTenantID)
 	}
+	if m.external_id != nil {
+		fields = append(fields, team.FieldExternalID)
+	}
 	if m.slug != nil {
 		fields = append(fields, team.FieldSlug)
-	}
-	if m.provider_id != nil {
-		fields = append(fields, team.FieldProviderID)
 	}
 	if m.name != nil {
 		fields = append(fields, team.FieldName)
@@ -49516,10 +49655,10 @@ func (m *TeamMutation) Field(name string) (ent.Value, bool) {
 	switch name {
 	case team.FieldTenantID:
 		return m.TenantID()
+	case team.FieldExternalID:
+		return m.ExternalID()
 	case team.FieldSlug:
 		return m.Slug()
-	case team.FieldProviderID:
-		return m.ProviderID()
 	case team.FieldName:
 		return m.Name()
 	case team.FieldChatChannelID:
@@ -49537,10 +49676,10 @@ func (m *TeamMutation) OldField(ctx context.Context, name string) (ent.Value, er
 	switch name {
 	case team.FieldTenantID:
 		return m.OldTenantID(ctx)
+	case team.FieldExternalID:
+		return m.OldExternalID(ctx)
 	case team.FieldSlug:
 		return m.OldSlug(ctx)
-	case team.FieldProviderID:
-		return m.OldProviderID(ctx)
 	case team.FieldName:
 		return m.OldName(ctx)
 	case team.FieldChatChannelID:
@@ -49563,19 +49702,19 @@ func (m *TeamMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetTenantID(v)
 		return nil
+	case team.FieldExternalID:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetExternalID(v)
+		return nil
 	case team.FieldSlug:
 		v, ok := value.(string)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetSlug(v)
-		return nil
-	case team.FieldProviderID:
-		v, ok := value.(string)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetProviderID(v)
 		return nil
 	case team.FieldName:
 		v, ok := value.(string)
@@ -49631,8 +49770,8 @@ func (m *TeamMutation) AddField(name string, value ent.Value) error {
 // mutation.
 func (m *TeamMutation) ClearedFields() []string {
 	var fields []string
-	if m.FieldCleared(team.FieldProviderID) {
-		fields = append(fields, team.FieldProviderID)
+	if m.FieldCleared(team.FieldExternalID) {
+		fields = append(fields, team.FieldExternalID)
 	}
 	if m.FieldCleared(team.FieldChatChannelID) {
 		fields = append(fields, team.FieldChatChannelID)
@@ -49654,8 +49793,8 @@ func (m *TeamMutation) FieldCleared(name string) bool {
 // error if the field is not defined in the schema.
 func (m *TeamMutation) ClearField(name string) error {
 	switch name {
-	case team.FieldProviderID:
-		m.ClearProviderID()
+	case team.FieldExternalID:
+		m.ClearExternalID()
 		return nil
 	case team.FieldChatChannelID:
 		m.ClearChatChannelID()
@@ -49674,11 +49813,11 @@ func (m *TeamMutation) ResetField(name string) error {
 	case team.FieldTenantID:
 		m.ResetTenantID()
 		return nil
+	case team.FieldExternalID:
+		m.ResetExternalID()
+		return nil
 	case team.FieldSlug:
 		m.ResetSlug()
-		return nil
-	case team.FieldProviderID:
-		m.ResetProviderID()
 		return nil
 	case team.FieldName:
 		m.ResetName()
@@ -50117,7 +50256,7 @@ type TicketMutation struct {
 	op            Op
 	typ           string
 	id            *uuid.UUID
-	provider_id   *string
+	external_id   *string
 	title         *string
 	clearedFields map[string]struct{}
 	tenant        *int
@@ -50270,40 +50409,53 @@ func (m *TicketMutation) ResetTenantID() {
 	m.tenant = nil
 }
 
-// SetProviderID sets the "provider_id" field.
-func (m *TicketMutation) SetProviderID(s string) {
-	m.provider_id = &s
+// SetExternalID sets the "external_id" field.
+func (m *TicketMutation) SetExternalID(s string) {
+	m.external_id = &s
 }
 
-// ProviderID returns the value of the "provider_id" field in the mutation.
-func (m *TicketMutation) ProviderID() (r string, exists bool) {
-	v := m.provider_id
+// ExternalID returns the value of the "external_id" field in the mutation.
+func (m *TicketMutation) ExternalID() (r string, exists bool) {
+	v := m.external_id
 	if v == nil {
 		return
 	}
 	return *v, true
 }
 
-// OldProviderID returns the old "provider_id" field's value of the Ticket entity.
+// OldExternalID returns the old "external_id" field's value of the Ticket entity.
 // If the Ticket object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *TicketMutation) OldProviderID(ctx context.Context) (v string, err error) {
+func (m *TicketMutation) OldExternalID(ctx context.Context) (v string, err error) {
 	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldProviderID is only allowed on UpdateOne operations")
+		return v, errors.New("OldExternalID is only allowed on UpdateOne operations")
 	}
 	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldProviderID requires an ID field in the mutation")
+		return v, errors.New("OldExternalID requires an ID field in the mutation")
 	}
 	oldValue, err := m.oldValue(ctx)
 	if err != nil {
-		return v, fmt.Errorf("querying old value for OldProviderID: %w", err)
+		return v, fmt.Errorf("querying old value for OldExternalID: %w", err)
 	}
-	return oldValue.ProviderID, nil
+	return oldValue.ExternalID, nil
 }
 
-// ResetProviderID resets all changes to the "provider_id" field.
-func (m *TicketMutation) ResetProviderID() {
-	m.provider_id = nil
+// ClearExternalID clears the value of the "external_id" field.
+func (m *TicketMutation) ClearExternalID() {
+	m.external_id = nil
+	m.clearedFields[ticket.FieldExternalID] = struct{}{}
+}
+
+// ExternalIDCleared returns if the "external_id" field was cleared in this mutation.
+func (m *TicketMutation) ExternalIDCleared() bool {
+	_, ok := m.clearedFields[ticket.FieldExternalID]
+	return ok
+}
+
+// ResetExternalID resets all changes to the "external_id" field.
+func (m *TicketMutation) ResetExternalID() {
+	m.external_id = nil
+	delete(m.clearedFields, ticket.FieldExternalID)
 }
 
 // SetTitle sets the "title" field.
@@ -50461,8 +50613,8 @@ func (m *TicketMutation) Fields() []string {
 	if m.tenant != nil {
 		fields = append(fields, ticket.FieldTenantID)
 	}
-	if m.provider_id != nil {
-		fields = append(fields, ticket.FieldProviderID)
+	if m.external_id != nil {
+		fields = append(fields, ticket.FieldExternalID)
 	}
 	if m.title != nil {
 		fields = append(fields, ticket.FieldTitle)
@@ -50477,8 +50629,8 @@ func (m *TicketMutation) Field(name string) (ent.Value, bool) {
 	switch name {
 	case ticket.FieldTenantID:
 		return m.TenantID()
-	case ticket.FieldProviderID:
-		return m.ProviderID()
+	case ticket.FieldExternalID:
+		return m.ExternalID()
 	case ticket.FieldTitle:
 		return m.Title()
 	}
@@ -50492,8 +50644,8 @@ func (m *TicketMutation) OldField(ctx context.Context, name string) (ent.Value, 
 	switch name {
 	case ticket.FieldTenantID:
 		return m.OldTenantID(ctx)
-	case ticket.FieldProviderID:
-		return m.OldProviderID(ctx)
+	case ticket.FieldExternalID:
+		return m.OldExternalID(ctx)
 	case ticket.FieldTitle:
 		return m.OldTitle(ctx)
 	}
@@ -50512,12 +50664,12 @@ func (m *TicketMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetTenantID(v)
 		return nil
-	case ticket.FieldProviderID:
+	case ticket.FieldExternalID:
 		v, ok := value.(string)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
-		m.SetProviderID(v)
+		m.SetExternalID(v)
 		return nil
 	case ticket.FieldTitle:
 		v, ok := value.(string)
@@ -50558,7 +50710,11 @@ func (m *TicketMutation) AddField(name string, value ent.Value) error {
 // ClearedFields returns all nullable fields that were cleared during this
 // mutation.
 func (m *TicketMutation) ClearedFields() []string {
-	return nil
+	var fields []string
+	if m.FieldCleared(ticket.FieldExternalID) {
+		fields = append(fields, ticket.FieldExternalID)
+	}
+	return fields
 }
 
 // FieldCleared returns a boolean indicating if a field with the given name was
@@ -50571,6 +50727,11 @@ func (m *TicketMutation) FieldCleared(name string) bool {
 // ClearField clears the value of the field with the given name. It returns an
 // error if the field is not defined in the schema.
 func (m *TicketMutation) ClearField(name string) error {
+	switch name {
+	case ticket.FieldExternalID:
+		m.ClearExternalID()
+		return nil
+	}
 	return fmt.Errorf("unknown Ticket nullable field %s", name)
 }
 
@@ -50581,8 +50742,8 @@ func (m *TicketMutation) ResetField(name string) error {
 	case ticket.FieldTenantID:
 		m.ResetTenantID()
 		return nil
-	case ticket.FieldProviderID:
-		m.ResetProviderID()
+	case ticket.FieldExternalID:
+		m.ResetExternalID()
 		return nil
 	case ticket.FieldTitle:
 		m.ResetTitle()
@@ -50699,7 +50860,7 @@ type UserMutation struct {
 	op                                    Op
 	typ                                   string
 	id                                    *uuid.UUID
-	provider_id                           *string
+	external_id                           *string
 	email                                 *string
 	name                                  *string
 	chat_id                               *string
@@ -50892,53 +51053,40 @@ func (m *UserMutation) ResetTenantID() {
 	m.tenant = nil
 }
 
-// SetProviderID sets the "provider_id" field.
-func (m *UserMutation) SetProviderID(s string) {
-	m.provider_id = &s
+// SetExternalID sets the "external_id" field.
+func (m *UserMutation) SetExternalID(s string) {
+	m.external_id = &s
 }
 
-// ProviderID returns the value of the "provider_id" field in the mutation.
-func (m *UserMutation) ProviderID() (r string, exists bool) {
-	v := m.provider_id
+// ExternalID returns the value of the "external_id" field in the mutation.
+func (m *UserMutation) ExternalID() (r string, exists bool) {
+	v := m.external_id
 	if v == nil {
 		return
 	}
 	return *v, true
 }
 
-// OldProviderID returns the old "provider_id" field's value of the User entity.
+// OldExternalID returns the old "external_id" field's value of the User entity.
 // If the User object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *UserMutation) OldProviderID(ctx context.Context) (v string, err error) {
+func (m *UserMutation) OldExternalID(ctx context.Context) (v string, err error) {
 	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldProviderID is only allowed on UpdateOne operations")
+		return v, errors.New("OldExternalID is only allowed on UpdateOne operations")
 	}
 	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldProviderID requires an ID field in the mutation")
+		return v, errors.New("OldExternalID requires an ID field in the mutation")
 	}
 	oldValue, err := m.oldValue(ctx)
 	if err != nil {
-		return v, fmt.Errorf("querying old value for OldProviderID: %w", err)
+		return v, fmt.Errorf("querying old value for OldExternalID: %w", err)
 	}
-	return oldValue.ProviderID, nil
+	return oldValue.ExternalID, nil
 }
 
-// ClearProviderID clears the value of the "provider_id" field.
-func (m *UserMutation) ClearProviderID() {
-	m.provider_id = nil
-	m.clearedFields[user.FieldProviderID] = struct{}{}
-}
-
-// ProviderIDCleared returns if the "provider_id" field was cleared in this mutation.
-func (m *UserMutation) ProviderIDCleared() bool {
-	_, ok := m.clearedFields[user.FieldProviderID]
-	return ok
-}
-
-// ResetProviderID resets all changes to the "provider_id" field.
-func (m *UserMutation) ResetProviderID() {
-	m.provider_id = nil
-	delete(m.clearedFields, user.FieldProviderID)
+// ResetExternalID resets all changes to the "external_id" field.
+func (m *UserMutation) ResetExternalID() {
+	m.external_id = nil
 }
 
 // SetEmail sets the "email" field.
@@ -51927,8 +52075,8 @@ func (m *UserMutation) Fields() []string {
 	if m.tenant != nil {
 		fields = append(fields, user.FieldTenantID)
 	}
-	if m.provider_id != nil {
-		fields = append(fields, user.FieldProviderID)
+	if m.external_id != nil {
+		fields = append(fields, user.FieldExternalID)
 	}
 	if m.email != nil {
 		fields = append(fields, user.FieldEmail)
@@ -51955,8 +52103,8 @@ func (m *UserMutation) Field(name string) (ent.Value, bool) {
 	switch name {
 	case user.FieldTenantID:
 		return m.TenantID()
-	case user.FieldProviderID:
-		return m.ProviderID()
+	case user.FieldExternalID:
+		return m.ExternalID()
 	case user.FieldEmail:
 		return m.Email()
 	case user.FieldName:
@@ -51978,8 +52126,8 @@ func (m *UserMutation) OldField(ctx context.Context, name string) (ent.Value, er
 	switch name {
 	case user.FieldTenantID:
 		return m.OldTenantID(ctx)
-	case user.FieldProviderID:
-		return m.OldProviderID(ctx)
+	case user.FieldExternalID:
+		return m.OldExternalID(ctx)
 	case user.FieldEmail:
 		return m.OldEmail(ctx)
 	case user.FieldName:
@@ -52006,12 +52154,12 @@ func (m *UserMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetTenantID(v)
 		return nil
-	case user.FieldProviderID:
+	case user.FieldExternalID:
 		v, ok := value.(string)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
-		m.SetProviderID(v)
+		m.SetExternalID(v)
 		return nil
 	case user.FieldEmail:
 		v, ok := value.(string)
@@ -52081,9 +52229,6 @@ func (m *UserMutation) AddField(name string, value ent.Value) error {
 // mutation.
 func (m *UserMutation) ClearedFields() []string {
 	var fields []string
-	if m.FieldCleared(user.FieldProviderID) {
-		fields = append(fields, user.FieldProviderID)
-	}
 	if m.FieldCleared(user.FieldName) {
 		fields = append(fields, user.FieldName)
 	}
@@ -52107,9 +52252,6 @@ func (m *UserMutation) FieldCleared(name string) bool {
 // error if the field is not defined in the schema.
 func (m *UserMutation) ClearField(name string) error {
 	switch name {
-	case user.FieldProviderID:
-		m.ClearProviderID()
-		return nil
 	case user.FieldName:
 		m.ClearName()
 		return nil
@@ -52130,8 +52272,8 @@ func (m *UserMutation) ResetField(name string) error {
 	case user.FieldTenantID:
 		m.ResetTenantID()
 		return nil
-	case user.FieldProviderID:
-		m.ResetProviderID()
+	case user.FieldExternalID:
+		m.ResetExternalID()
 		return nil
 	case user.FieldEmail:
 		m.ResetEmail()

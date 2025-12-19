@@ -22,8 +22,8 @@ type SystemComponentRelationship struct {
 	ID uuid.UUID `json:"id,omitempty"`
 	// TenantID holds the value of the "tenant_id" field.
 	TenantID int `json:"tenant_id,omitempty"`
-	// ProviderID holds the value of the "provider_id" field.
-	ProviderID string `json:"provider_id,omitempty"`
+	// ExternalID holds the value of the "external_id" field.
+	ExternalID string `json:"external_id,omitempty"`
 	// SourceID holds the value of the "source_id" field.
 	SourceID uuid.UUID `json:"source_id,omitempty"`
 	// TargetID holds the value of the "target_id" field.
@@ -113,7 +113,7 @@ func (*SystemComponentRelationship) scanValues(columns []string) ([]any, error) 
 		switch columns[i] {
 		case systemcomponentrelationship.FieldTenantID:
 			values[i] = new(sql.NullInt64)
-		case systemcomponentrelationship.FieldProviderID, systemcomponentrelationship.FieldDescription:
+		case systemcomponentrelationship.FieldExternalID, systemcomponentrelationship.FieldDescription:
 			values[i] = new(sql.NullString)
 		case systemcomponentrelationship.FieldCreatedAt:
 			values[i] = new(sql.NullTime)
@@ -146,11 +146,11 @@ func (_m *SystemComponentRelationship) assignValues(columns []string, values []a
 			} else if value.Valid {
 				_m.TenantID = int(value.Int64)
 			}
-		case systemcomponentrelationship.FieldProviderID:
+		case systemcomponentrelationship.FieldExternalID:
 			if value, ok := values[i].(*sql.NullString); !ok {
-				return fmt.Errorf("unexpected type %T for field provider_id", values[i])
+				return fmt.Errorf("unexpected type %T for field external_id", values[i])
 			} else if value.Valid {
-				_m.ProviderID = value.String
+				_m.ExternalID = value.String
 			}
 		case systemcomponentrelationship.FieldSourceID:
 			if value, ok := values[i].(*uuid.UUID); !ok {
@@ -240,8 +240,8 @@ func (_m *SystemComponentRelationship) String() string {
 	builder.WriteString("tenant_id=")
 	builder.WriteString(fmt.Sprintf("%v", _m.TenantID))
 	builder.WriteString(", ")
-	builder.WriteString("provider_id=")
-	builder.WriteString(_m.ProviderID)
+	builder.WriteString("external_id=")
+	builder.WriteString(_m.ExternalID)
 	builder.WriteString(", ")
 	builder.WriteString("source_id=")
 	builder.WriteString(fmt.Sprintf("%v", _m.SourceID))

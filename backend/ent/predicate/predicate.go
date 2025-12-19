@@ -84,6 +84,9 @@ type IncidentTag func(*sql.Selector)
 // IncidentType is the predicate function for incidenttype builders.
 type IncidentType func(*sql.Selector)
 
+// Integration is the predicate function for integration builders.
+type Integration func(*sql.Selector)
+
 // MeetingSchedule is the predicate function for meetingschedule builders.
 type MeetingSchedule func(*sql.Selector)
 
@@ -119,9 +122,6 @@ type Organization func(*sql.Selector)
 
 // Playbook is the predicate function for playbook builders.
 type Playbook func(*sql.Selector)
-
-// ProviderConfig is the predicate function for providerconfig builders.
-type ProviderConfig func(*sql.Selector)
 
 // ProviderSyncHistory is the predicate function for providersynchistory builders.
 type ProviderSyncHistory func(*sql.Selector)

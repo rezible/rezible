@@ -24,6 +24,8 @@ type Incident struct {
 	ID uuid.UUID `json:"id,omitempty"`
 	// TenantID holds the value of the "tenant_id" field.
 	TenantID int `json:"tenant_id,omitempty"`
+	// ExternalID holds the value of the "external_id" field.
+	ExternalID string `json:"external_id,omitempty"`
 	// Slug holds the value of the "slug" field.
 	Slug string `json:"slug,omitempty"`
 	// Title holds the value of the "title" field.
@@ -38,14 +40,12 @@ type Incident struct {
 	ModifiedAt time.Time `json:"modified_at,omitempty"`
 	// ClosedAt holds the value of the "closed_at" field.
 	ClosedAt time.Time `json:"closed_at,omitempty"`
-	// ProviderID holds the value of the "provider_id" field.
-	ProviderID string `json:"provider_id,omitempty"`
-	// ChatChannelID holds the value of the "chat_channel_id" field.
-	ChatChannelID string `json:"chat_channel_id,omitempty"`
 	// SeverityID holds the value of the "severity_id" field.
 	SeverityID uuid.UUID `json:"severity_id,omitempty"`
 	// TypeID holds the value of the "type_id" field.
 	TypeID uuid.UUID `json:"type_id,omitempty"`
+	// ChatChannelID holds the value of the "chat_channel_id" field.
+	ChatChannelID string `json:"chat_channel_id,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the IncidentQuery when eager-loading is set.
 	Edges        IncidentEdges `json:"edges"`
@@ -252,7 +252,7 @@ func (*Incident) scanValues(columns []string) ([]any, error) {
 			values[i] = new(sql.NullBool)
 		case incident.FieldTenantID:
 			values[i] = new(sql.NullInt64)
-		case incident.FieldSlug, incident.FieldTitle, incident.FieldSummary, incident.FieldProviderID, incident.FieldChatChannelID:
+		case incident.FieldExternalID, incident.FieldSlug, incident.FieldTitle, incident.FieldSummary, incident.FieldChatChannelID:
 			values[i] = new(sql.NullString)
 		case incident.FieldOpenedAt, incident.FieldModifiedAt, incident.FieldClosedAt:
 			values[i] = new(sql.NullTime)
@@ -284,6 +284,12 @@ func (_m *Incident) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field tenant_id", values[i])
 			} else if value.Valid {
 				_m.TenantID = int(value.Int64)
+			}
+		case incident.FieldExternalID:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field external_id", values[i])
+			} else if value.Valid {
+				_m.ExternalID = value.String
 			}
 		case incident.FieldSlug:
 			if value, ok := values[i].(*sql.NullString); !ok {
@@ -327,18 +333,6 @@ func (_m *Incident) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				_m.ClosedAt = value.Time
 			}
-		case incident.FieldProviderID:
-			if value, ok := values[i].(*sql.NullString); !ok {
-				return fmt.Errorf("unexpected type %T for field provider_id", values[i])
-			} else if value.Valid {
-				_m.ProviderID = value.String
-			}
-		case incident.FieldChatChannelID:
-			if value, ok := values[i].(*sql.NullString); !ok {
-				return fmt.Errorf("unexpected type %T for field chat_channel_id", values[i])
-			} else if value.Valid {
-				_m.ChatChannelID = value.String
-			}
 		case incident.FieldSeverityID:
 			if value, ok := values[i].(*uuid.UUID); !ok {
 				return fmt.Errorf("unexpected type %T for field severity_id", values[i])
@@ -350,6 +344,12 @@ func (_m *Incident) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field type_id", values[i])
 			} else if value != nil {
 				_m.TypeID = *value
+			}
+		case incident.FieldChatChannelID:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field chat_channel_id", values[i])
+			} else if value.Valid {
+				_m.ChatChannelID = value.String
 			}
 		default:
 			_m.selectValues.Set(columns[i], values[i])
@@ -470,6 +470,9 @@ func (_m *Incident) String() string {
 	builder.WriteString("tenant_id=")
 	builder.WriteString(fmt.Sprintf("%v", _m.TenantID))
 	builder.WriteString(", ")
+	builder.WriteString("external_id=")
+	builder.WriteString(_m.ExternalID)
+	builder.WriteString(", ")
 	builder.WriteString("slug=")
 	builder.WriteString(_m.Slug)
 	builder.WriteString(", ")
@@ -491,17 +494,14 @@ func (_m *Incident) String() string {
 	builder.WriteString("closed_at=")
 	builder.WriteString(_m.ClosedAt.Format(time.ANSIC))
 	builder.WriteString(", ")
-	builder.WriteString("provider_id=")
-	builder.WriteString(_m.ProviderID)
-	builder.WriteString(", ")
-	builder.WriteString("chat_channel_id=")
-	builder.WriteString(_m.ChatChannelID)
-	builder.WriteString(", ")
 	builder.WriteString("severity_id=")
 	builder.WriteString(fmt.Sprintf("%v", _m.SeverityID))
 	builder.WriteString(", ")
 	builder.WriteString("type_id=")
 	builder.WriteString(fmt.Sprintf("%v", _m.TypeID))
+	builder.WriteString(", ")
+	builder.WriteString("chat_channel_id=")
+	builder.WriteString(_m.ChatChannelID)
 	builder.WriteByte(')')
 	return builder.String()
 }

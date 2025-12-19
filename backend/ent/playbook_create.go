@@ -31,15 +31,23 @@ func (_c *PlaybookCreate) SetTenantID(v int) *PlaybookCreate {
 	return _c
 }
 
-// SetTitle sets the "title" field.
-func (_c *PlaybookCreate) SetTitle(v string) *PlaybookCreate {
-	_c.mutation.SetTitle(v)
+// SetExternalID sets the "external_id" field.
+func (_c *PlaybookCreate) SetExternalID(v string) *PlaybookCreate {
+	_c.mutation.SetExternalID(v)
 	return _c
 }
 
-// SetProviderID sets the "provider_id" field.
-func (_c *PlaybookCreate) SetProviderID(v string) *PlaybookCreate {
-	_c.mutation.SetProviderID(v)
+// SetNillableExternalID sets the "external_id" field if the given value is not nil.
+func (_c *PlaybookCreate) SetNillableExternalID(v *string) *PlaybookCreate {
+	if v != nil {
+		_c.SetExternalID(*v)
+	}
+	return _c
+}
+
+// SetTitle sets the "title" field.
+func (_c *PlaybookCreate) SetTitle(v string) *PlaybookCreate {
+	_c.mutation.SetTitle(v)
 	return _c
 }
 
@@ -138,9 +146,6 @@ func (_c *PlaybookCreate) check() error {
 	if _, ok := _c.mutation.Title(); !ok {
 		return &ValidationError{Name: "title", err: errors.New(`ent: missing required field "Playbook.title"`)}
 	}
-	if _, ok := _c.mutation.ProviderID(); !ok {
-		return &ValidationError{Name: "provider_id", err: errors.New(`ent: missing required field "Playbook.provider_id"`)}
-	}
 	if _, ok := _c.mutation.Content(); !ok {
 		return &ValidationError{Name: "content", err: errors.New(`ent: missing required field "Playbook.content"`)}
 	}
@@ -183,13 +188,13 @@ func (_c *PlaybookCreate) createSpec() (*Playbook, *sqlgraph.CreateSpec) {
 		_node.ID = id
 		_spec.ID.Value = &id
 	}
+	if value, ok := _c.mutation.ExternalID(); ok {
+		_spec.SetField(playbook.FieldExternalID, field.TypeString, value)
+		_node.ExternalID = value
+	}
 	if value, ok := _c.mutation.Title(); ok {
 		_spec.SetField(playbook.FieldTitle, field.TypeString, value)
 		_node.Title = value
-	}
-	if value, ok := _c.mutation.ProviderID(); ok {
-		_spec.SetField(playbook.FieldProviderID, field.TypeString, value)
-		_node.ProviderID = value
 	}
 	if value, ok := _c.mutation.Content(); ok {
 		_spec.SetField(playbook.FieldContent, field.TypeBytes, value)
@@ -280,6 +285,24 @@ type (
 	}
 )
 
+// SetExternalID sets the "external_id" field.
+func (u *PlaybookUpsert) SetExternalID(v string) *PlaybookUpsert {
+	u.Set(playbook.FieldExternalID, v)
+	return u
+}
+
+// UpdateExternalID sets the "external_id" field to the value that was provided on create.
+func (u *PlaybookUpsert) UpdateExternalID() *PlaybookUpsert {
+	u.SetExcluded(playbook.FieldExternalID)
+	return u
+}
+
+// ClearExternalID clears the value of the "external_id" field.
+func (u *PlaybookUpsert) ClearExternalID() *PlaybookUpsert {
+	u.SetNull(playbook.FieldExternalID)
+	return u
+}
+
 // SetTitle sets the "title" field.
 func (u *PlaybookUpsert) SetTitle(v string) *PlaybookUpsert {
 	u.Set(playbook.FieldTitle, v)
@@ -289,18 +312,6 @@ func (u *PlaybookUpsert) SetTitle(v string) *PlaybookUpsert {
 // UpdateTitle sets the "title" field to the value that was provided on create.
 func (u *PlaybookUpsert) UpdateTitle() *PlaybookUpsert {
 	u.SetExcluded(playbook.FieldTitle)
-	return u
-}
-
-// SetProviderID sets the "provider_id" field.
-func (u *PlaybookUpsert) SetProviderID(v string) *PlaybookUpsert {
-	u.Set(playbook.FieldProviderID, v)
-	return u
-}
-
-// UpdateProviderID sets the "provider_id" field to the value that was provided on create.
-func (u *PlaybookUpsert) UpdateProviderID() *PlaybookUpsert {
-	u.SetExcluded(playbook.FieldProviderID)
 	return u
 }
 
@@ -367,6 +378,27 @@ func (u *PlaybookUpsertOne) Update(set func(*PlaybookUpsert)) *PlaybookUpsertOne
 	return u
 }
 
+// SetExternalID sets the "external_id" field.
+func (u *PlaybookUpsertOne) SetExternalID(v string) *PlaybookUpsertOne {
+	return u.Update(func(s *PlaybookUpsert) {
+		s.SetExternalID(v)
+	})
+}
+
+// UpdateExternalID sets the "external_id" field to the value that was provided on create.
+func (u *PlaybookUpsertOne) UpdateExternalID() *PlaybookUpsertOne {
+	return u.Update(func(s *PlaybookUpsert) {
+		s.UpdateExternalID()
+	})
+}
+
+// ClearExternalID clears the value of the "external_id" field.
+func (u *PlaybookUpsertOne) ClearExternalID() *PlaybookUpsertOne {
+	return u.Update(func(s *PlaybookUpsert) {
+		s.ClearExternalID()
+	})
+}
+
 // SetTitle sets the "title" field.
 func (u *PlaybookUpsertOne) SetTitle(v string) *PlaybookUpsertOne {
 	return u.Update(func(s *PlaybookUpsert) {
@@ -378,20 +410,6 @@ func (u *PlaybookUpsertOne) SetTitle(v string) *PlaybookUpsertOne {
 func (u *PlaybookUpsertOne) UpdateTitle() *PlaybookUpsertOne {
 	return u.Update(func(s *PlaybookUpsert) {
 		s.UpdateTitle()
-	})
-}
-
-// SetProviderID sets the "provider_id" field.
-func (u *PlaybookUpsertOne) SetProviderID(v string) *PlaybookUpsertOne {
-	return u.Update(func(s *PlaybookUpsert) {
-		s.SetProviderID(v)
-	})
-}
-
-// UpdateProviderID sets the "provider_id" field to the value that was provided on create.
-func (u *PlaybookUpsertOne) UpdateProviderID() *PlaybookUpsertOne {
-	return u.Update(func(s *PlaybookUpsert) {
-		s.UpdateProviderID()
 	})
 }
 
@@ -627,6 +645,27 @@ func (u *PlaybookUpsertBulk) Update(set func(*PlaybookUpsert)) *PlaybookUpsertBu
 	return u
 }
 
+// SetExternalID sets the "external_id" field.
+func (u *PlaybookUpsertBulk) SetExternalID(v string) *PlaybookUpsertBulk {
+	return u.Update(func(s *PlaybookUpsert) {
+		s.SetExternalID(v)
+	})
+}
+
+// UpdateExternalID sets the "external_id" field to the value that was provided on create.
+func (u *PlaybookUpsertBulk) UpdateExternalID() *PlaybookUpsertBulk {
+	return u.Update(func(s *PlaybookUpsert) {
+		s.UpdateExternalID()
+	})
+}
+
+// ClearExternalID clears the value of the "external_id" field.
+func (u *PlaybookUpsertBulk) ClearExternalID() *PlaybookUpsertBulk {
+	return u.Update(func(s *PlaybookUpsert) {
+		s.ClearExternalID()
+	})
+}
+
 // SetTitle sets the "title" field.
 func (u *PlaybookUpsertBulk) SetTitle(v string) *PlaybookUpsertBulk {
 	return u.Update(func(s *PlaybookUpsert) {
@@ -638,20 +677,6 @@ func (u *PlaybookUpsertBulk) SetTitle(v string) *PlaybookUpsertBulk {
 func (u *PlaybookUpsertBulk) UpdateTitle() *PlaybookUpsertBulk {
 	return u.Update(func(s *PlaybookUpsert) {
 		s.UpdateTitle()
-	})
-}
-
-// SetProviderID sets the "provider_id" field.
-func (u *PlaybookUpsertBulk) SetProviderID(v string) *PlaybookUpsertBulk {
-	return u.Update(func(s *PlaybookUpsert) {
-		s.SetProviderID(v)
-	})
-}
-
-// UpdateProviderID sets the "provider_id" field to the value that was provided on create.
-func (u *PlaybookUpsertBulk) UpdateProviderID() *PlaybookUpsertBulk {
-	return u.Update(func(s *PlaybookUpsert) {
-		s.UpdateProviderID()
 	})
 }
 

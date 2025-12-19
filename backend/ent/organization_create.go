@@ -31,9 +31,9 @@ func (_c *OrganizationCreate) SetTenantID(v int) *OrganizationCreate {
 	return _c
 }
 
-// SetProviderID sets the "provider_id" field.
-func (_c *OrganizationCreate) SetProviderID(v string) *OrganizationCreate {
-	_c.mutation.SetProviderID(v)
+// SetExternalID sets the "external_id" field.
+func (_c *OrganizationCreate) SetExternalID(v string) *OrganizationCreate {
+	_c.mutation.SetExternalID(v)
 	return _c
 }
 
@@ -128,12 +128,12 @@ func (_c *OrganizationCreate) check() error {
 	if _, ok := _c.mutation.TenantID(); !ok {
 		return &ValidationError{Name: "tenant_id", err: errors.New(`ent: missing required field "Organization.tenant_id"`)}
 	}
-	if _, ok := _c.mutation.ProviderID(); !ok {
-		return &ValidationError{Name: "provider_id", err: errors.New(`ent: missing required field "Organization.provider_id"`)}
+	if _, ok := _c.mutation.ExternalID(); !ok {
+		return &ValidationError{Name: "external_id", err: errors.New(`ent: missing required field "Organization.external_id"`)}
 	}
-	if v, ok := _c.mutation.ProviderID(); ok {
-		if err := organization.ProviderIDValidator(v); err != nil {
-			return &ValidationError{Name: "provider_id", err: fmt.Errorf(`ent: validator failed for field "Organization.provider_id": %w`, err)}
+	if v, ok := _c.mutation.ExternalID(); ok {
+		if err := organization.ExternalIDValidator(v); err != nil {
+			return &ValidationError{Name: "external_id", err: fmt.Errorf(`ent: validator failed for field "Organization.external_id": %w`, err)}
 		}
 	}
 	if _, ok := _c.mutation.Name(); !ok {
@@ -178,9 +178,9 @@ func (_c *OrganizationCreate) createSpec() (*Organization, *sqlgraph.CreateSpec)
 		_node.ID = id
 		_spec.ID.Value = &id
 	}
-	if value, ok := _c.mutation.ProviderID(); ok {
-		_spec.SetField(organization.FieldProviderID, field.TypeString, value)
-		_node.ProviderID = value
+	if value, ok := _c.mutation.ExternalID(); ok {
+		_spec.SetField(organization.FieldExternalID, field.TypeString, value)
+		_node.ExternalID = value
 	}
 	if value, ok := _c.mutation.Name(); ok {
 		_spec.SetField(organization.FieldName, field.TypeString, value)
@@ -259,15 +259,15 @@ type (
 	}
 )
 
-// SetProviderID sets the "provider_id" field.
-func (u *OrganizationUpsert) SetProviderID(v string) *OrganizationUpsert {
-	u.Set(organization.FieldProviderID, v)
+// SetExternalID sets the "external_id" field.
+func (u *OrganizationUpsert) SetExternalID(v string) *OrganizationUpsert {
+	u.Set(organization.FieldExternalID, v)
 	return u
 }
 
-// UpdateProviderID sets the "provider_id" field to the value that was provided on create.
-func (u *OrganizationUpsert) UpdateProviderID() *OrganizationUpsert {
-	u.SetExcluded(organization.FieldProviderID)
+// UpdateExternalID sets the "external_id" field to the value that was provided on create.
+func (u *OrganizationUpsert) UpdateExternalID() *OrganizationUpsert {
+	u.SetExcluded(organization.FieldExternalID)
 	return u
 }
 
@@ -352,17 +352,17 @@ func (u *OrganizationUpsertOne) Update(set func(*OrganizationUpsert)) *Organizat
 	return u
 }
 
-// SetProviderID sets the "provider_id" field.
-func (u *OrganizationUpsertOne) SetProviderID(v string) *OrganizationUpsertOne {
+// SetExternalID sets the "external_id" field.
+func (u *OrganizationUpsertOne) SetExternalID(v string) *OrganizationUpsertOne {
 	return u.Update(func(s *OrganizationUpsert) {
-		s.SetProviderID(v)
+		s.SetExternalID(v)
 	})
 }
 
-// UpdateProviderID sets the "provider_id" field to the value that was provided on create.
-func (u *OrganizationUpsertOne) UpdateProviderID() *OrganizationUpsertOne {
+// UpdateExternalID sets the "external_id" field to the value that was provided on create.
+func (u *OrganizationUpsertOne) UpdateExternalID() *OrganizationUpsertOne {
 	return u.Update(func(s *OrganizationUpsert) {
-		s.UpdateProviderID()
+		s.UpdateExternalID()
 	})
 }
 
@@ -619,17 +619,17 @@ func (u *OrganizationUpsertBulk) Update(set func(*OrganizationUpsert)) *Organiza
 	return u
 }
 
-// SetProviderID sets the "provider_id" field.
-func (u *OrganizationUpsertBulk) SetProviderID(v string) *OrganizationUpsertBulk {
+// SetExternalID sets the "external_id" field.
+func (u *OrganizationUpsertBulk) SetExternalID(v string) *OrganizationUpsertBulk {
 	return u.Update(func(s *OrganizationUpsert) {
-		s.SetProviderID(v)
+		s.SetExternalID(v)
 	})
 }
 
-// UpdateProviderID sets the "provider_id" field to the value that was provided on create.
-func (u *OrganizationUpsertBulk) UpdateProviderID() *OrganizationUpsertBulk {
+// UpdateExternalID sets the "external_id" field to the value that was provided on create.
+func (u *OrganizationUpsertBulk) UpdateExternalID() *OrganizationUpsertBulk {
 	return u.Update(func(s *OrganizationUpsert) {
-		s.UpdateProviderID()
+		s.UpdateExternalID()
 	})
 }
 

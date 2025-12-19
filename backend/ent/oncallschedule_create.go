@@ -47,6 +47,20 @@ func (_c *OncallScheduleCreate) SetNillableArchiveTime(v *time.Time) *OncallSche
 	return _c
 }
 
+// SetExternalID sets the "external_id" field.
+func (_c *OncallScheduleCreate) SetExternalID(v string) *OncallScheduleCreate {
+	_c.mutation.SetExternalID(v)
+	return _c
+}
+
+// SetNillableExternalID sets the "external_id" field if the given value is not nil.
+func (_c *OncallScheduleCreate) SetNillableExternalID(v *string) *OncallScheduleCreate {
+	if v != nil {
+		_c.SetExternalID(*v)
+	}
+	return _c
+}
+
 // SetName sets the "name" field.
 func (_c *OncallScheduleCreate) SetName(v string) *OncallScheduleCreate {
 	_c.mutation.SetName(v)
@@ -70,12 +84,6 @@ func (_c *OncallScheduleCreate) SetNillableTimezone(v *string) *OncallScheduleCr
 	if v != nil {
 		_c.SetTimezone(*v)
 	}
-	return _c
-}
-
-// SetProviderID sets the "provider_id" field.
-func (_c *OncallScheduleCreate) SetProviderID(v string) *OncallScheduleCreate {
-	_c.mutation.SetProviderID(v)
 	return _c
 }
 
@@ -176,9 +184,6 @@ func (_c *OncallScheduleCreate) check() error {
 	if _, ok := _c.mutation.RosterID(); !ok {
 		return &ValidationError{Name: "roster_id", err: errors.New(`ent: missing required field "OncallSchedule.roster_id"`)}
 	}
-	if _, ok := _c.mutation.ProviderID(); !ok {
-		return &ValidationError{Name: "provider_id", err: errors.New(`ent: missing required field "OncallSchedule.provider_id"`)}
-	}
 	if len(_c.mutation.TenantIDs()) == 0 {
 		return &ValidationError{Name: "tenant", err: errors.New(`ent: missing required edge "OncallSchedule.tenant"`)}
 	}
@@ -225,6 +230,10 @@ func (_c *OncallScheduleCreate) createSpec() (*OncallSchedule, *sqlgraph.CreateS
 		_spec.SetField(oncallschedule.FieldArchiveTime, field.TypeTime, value)
 		_node.ArchiveTime = value
 	}
+	if value, ok := _c.mutation.ExternalID(); ok {
+		_spec.SetField(oncallschedule.FieldExternalID, field.TypeString, value)
+		_node.ExternalID = value
+	}
 	if value, ok := _c.mutation.Name(); ok {
 		_spec.SetField(oncallschedule.FieldName, field.TypeString, value)
 		_node.Name = value
@@ -232,10 +241,6 @@ func (_c *OncallScheduleCreate) createSpec() (*OncallSchedule, *sqlgraph.CreateS
 	if value, ok := _c.mutation.Timezone(); ok {
 		_spec.SetField(oncallschedule.FieldTimezone, field.TypeString, value)
 		_node.Timezone = value
-	}
-	if value, ok := _c.mutation.ProviderID(); ok {
-		_spec.SetField(oncallschedule.FieldProviderID, field.TypeString, value)
-		_node.ProviderID = value
 	}
 	if nodes := _c.mutation.TenantIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
@@ -357,6 +362,24 @@ func (u *OncallScheduleUpsert) ClearArchiveTime() *OncallScheduleUpsert {
 	return u
 }
 
+// SetExternalID sets the "external_id" field.
+func (u *OncallScheduleUpsert) SetExternalID(v string) *OncallScheduleUpsert {
+	u.Set(oncallschedule.FieldExternalID, v)
+	return u
+}
+
+// UpdateExternalID sets the "external_id" field to the value that was provided on create.
+func (u *OncallScheduleUpsert) UpdateExternalID() *OncallScheduleUpsert {
+	u.SetExcluded(oncallschedule.FieldExternalID)
+	return u
+}
+
+// ClearExternalID clears the value of the "external_id" field.
+func (u *OncallScheduleUpsert) ClearExternalID() *OncallScheduleUpsert {
+	u.SetNull(oncallschedule.FieldExternalID)
+	return u
+}
+
 // SetName sets the "name" field.
 func (u *OncallScheduleUpsert) SetName(v string) *OncallScheduleUpsert {
 	u.Set(oncallschedule.FieldName, v)
@@ -396,18 +419,6 @@ func (u *OncallScheduleUpsert) UpdateTimezone() *OncallScheduleUpsert {
 // ClearTimezone clears the value of the "timezone" field.
 func (u *OncallScheduleUpsert) ClearTimezone() *OncallScheduleUpsert {
 	u.SetNull(oncallschedule.FieldTimezone)
-	return u
-}
-
-// SetProviderID sets the "provider_id" field.
-func (u *OncallScheduleUpsert) SetProviderID(v string) *OncallScheduleUpsert {
-	u.Set(oncallschedule.FieldProviderID, v)
-	return u
-}
-
-// UpdateProviderID sets the "provider_id" field to the value that was provided on create.
-func (u *OncallScheduleUpsert) UpdateProviderID() *OncallScheduleUpsert {
-	u.SetExcluded(oncallschedule.FieldProviderID)
 	return u
 }
 
@@ -483,6 +494,27 @@ func (u *OncallScheduleUpsertOne) ClearArchiveTime() *OncallScheduleUpsertOne {
 	})
 }
 
+// SetExternalID sets the "external_id" field.
+func (u *OncallScheduleUpsertOne) SetExternalID(v string) *OncallScheduleUpsertOne {
+	return u.Update(func(s *OncallScheduleUpsert) {
+		s.SetExternalID(v)
+	})
+}
+
+// UpdateExternalID sets the "external_id" field to the value that was provided on create.
+func (u *OncallScheduleUpsertOne) UpdateExternalID() *OncallScheduleUpsertOne {
+	return u.Update(func(s *OncallScheduleUpsert) {
+		s.UpdateExternalID()
+	})
+}
+
+// ClearExternalID clears the value of the "external_id" field.
+func (u *OncallScheduleUpsertOne) ClearExternalID() *OncallScheduleUpsertOne {
+	return u.Update(func(s *OncallScheduleUpsert) {
+		s.ClearExternalID()
+	})
+}
+
 // SetName sets the "name" field.
 func (u *OncallScheduleUpsertOne) SetName(v string) *OncallScheduleUpsertOne {
 	return u.Update(func(s *OncallScheduleUpsert) {
@@ -529,20 +561,6 @@ func (u *OncallScheduleUpsertOne) UpdateTimezone() *OncallScheduleUpsertOne {
 func (u *OncallScheduleUpsertOne) ClearTimezone() *OncallScheduleUpsertOne {
 	return u.Update(func(s *OncallScheduleUpsert) {
 		s.ClearTimezone()
-	})
-}
-
-// SetProviderID sets the "provider_id" field.
-func (u *OncallScheduleUpsertOne) SetProviderID(v string) *OncallScheduleUpsertOne {
-	return u.Update(func(s *OncallScheduleUpsert) {
-		s.SetProviderID(v)
-	})
-}
-
-// UpdateProviderID sets the "provider_id" field to the value that was provided on create.
-func (u *OncallScheduleUpsertOne) UpdateProviderID() *OncallScheduleUpsertOne {
-	return u.Update(func(s *OncallScheduleUpsert) {
-		s.UpdateProviderID()
 	})
 }
 
@@ -785,6 +803,27 @@ func (u *OncallScheduleUpsertBulk) ClearArchiveTime() *OncallScheduleUpsertBulk 
 	})
 }
 
+// SetExternalID sets the "external_id" field.
+func (u *OncallScheduleUpsertBulk) SetExternalID(v string) *OncallScheduleUpsertBulk {
+	return u.Update(func(s *OncallScheduleUpsert) {
+		s.SetExternalID(v)
+	})
+}
+
+// UpdateExternalID sets the "external_id" field to the value that was provided on create.
+func (u *OncallScheduleUpsertBulk) UpdateExternalID() *OncallScheduleUpsertBulk {
+	return u.Update(func(s *OncallScheduleUpsert) {
+		s.UpdateExternalID()
+	})
+}
+
+// ClearExternalID clears the value of the "external_id" field.
+func (u *OncallScheduleUpsertBulk) ClearExternalID() *OncallScheduleUpsertBulk {
+	return u.Update(func(s *OncallScheduleUpsert) {
+		s.ClearExternalID()
+	})
+}
+
 // SetName sets the "name" field.
 func (u *OncallScheduleUpsertBulk) SetName(v string) *OncallScheduleUpsertBulk {
 	return u.Update(func(s *OncallScheduleUpsert) {
@@ -831,20 +870,6 @@ func (u *OncallScheduleUpsertBulk) UpdateTimezone() *OncallScheduleUpsertBulk {
 func (u *OncallScheduleUpsertBulk) ClearTimezone() *OncallScheduleUpsertBulk {
 	return u.Update(func(s *OncallScheduleUpsert) {
 		s.ClearTimezone()
-	})
-}
-
-// SetProviderID sets the "provider_id" field.
-func (u *OncallScheduleUpsertBulk) SetProviderID(v string) *OncallScheduleUpsertBulk {
-	return u.Update(func(s *OncallScheduleUpsert) {
-		s.SetProviderID(v)
-	})
-}
-
-// UpdateProviderID sets the "provider_id" field to the value that was provided on create.
-func (u *OncallScheduleUpsertBulk) UpdateProviderID() *OncallScheduleUpsertBulk {
-	return u.Update(func(s *OncallScheduleUpsert) {
-		s.UpdateProviderID()
 	})
 }
 

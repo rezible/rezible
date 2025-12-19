@@ -47,16 +47,16 @@ func (_c *IncidentSeverityCreate) SetNillableArchiveTime(v *time.Time) *Incident
 	return _c
 }
 
-// SetProviderID sets the "provider_id" field.
-func (_c *IncidentSeverityCreate) SetProviderID(v string) *IncidentSeverityCreate {
-	_c.mutation.SetProviderID(v)
+// SetExternalID sets the "external_id" field.
+func (_c *IncidentSeverityCreate) SetExternalID(v string) *IncidentSeverityCreate {
+	_c.mutation.SetExternalID(v)
 	return _c
 }
 
-// SetNillableProviderID sets the "provider_id" field if the given value is not nil.
-func (_c *IncidentSeverityCreate) SetNillableProviderID(v *string) *IncidentSeverityCreate {
+// SetNillableExternalID sets the "external_id" field if the given value is not nil.
+func (_c *IncidentSeverityCreate) SetNillableExternalID(v *string) *IncidentSeverityCreate {
 	if v != nil {
-		_c.SetProviderID(*v)
+		_c.SetExternalID(*v)
 	}
 	return _c
 }
@@ -251,9 +251,9 @@ func (_c *IncidentSeverityCreate) createSpec() (*IncidentSeverity, *sqlgraph.Cre
 		_spec.SetField(incidentseverity.FieldArchiveTime, field.TypeTime, value)
 		_node.ArchiveTime = value
 	}
-	if value, ok := _c.mutation.ProviderID(); ok {
-		_spec.SetField(incidentseverity.FieldProviderID, field.TypeString, value)
-		_node.ProviderID = value
+	if value, ok := _c.mutation.ExternalID(); ok {
+		_spec.SetField(incidentseverity.FieldExternalID, field.TypeString, value)
+		_node.ExternalID = value
 	}
 	if value, ok := _c.mutation.Name(); ok {
 		_spec.SetField(incidentseverity.FieldName, field.TypeString, value)
@@ -390,21 +390,21 @@ func (u *IncidentSeverityUpsert) ClearArchiveTime() *IncidentSeverityUpsert {
 	return u
 }
 
-// SetProviderID sets the "provider_id" field.
-func (u *IncidentSeverityUpsert) SetProviderID(v string) *IncidentSeverityUpsert {
-	u.Set(incidentseverity.FieldProviderID, v)
+// SetExternalID sets the "external_id" field.
+func (u *IncidentSeverityUpsert) SetExternalID(v string) *IncidentSeverityUpsert {
+	u.Set(incidentseverity.FieldExternalID, v)
 	return u
 }
 
-// UpdateProviderID sets the "provider_id" field to the value that was provided on create.
-func (u *IncidentSeverityUpsert) UpdateProviderID() *IncidentSeverityUpsert {
-	u.SetExcluded(incidentseverity.FieldProviderID)
+// UpdateExternalID sets the "external_id" field to the value that was provided on create.
+func (u *IncidentSeverityUpsert) UpdateExternalID() *IncidentSeverityUpsert {
+	u.SetExcluded(incidentseverity.FieldExternalID)
 	return u
 }
 
-// ClearProviderID clears the value of the "provider_id" field.
-func (u *IncidentSeverityUpsert) ClearProviderID() *IncidentSeverityUpsert {
-	u.SetNull(incidentseverity.FieldProviderID)
+// ClearExternalID clears the value of the "external_id" field.
+func (u *IncidentSeverityUpsert) ClearExternalID() *IncidentSeverityUpsert {
+	u.SetNull(incidentseverity.FieldExternalID)
 	return u
 }
 
@@ -546,24 +546,24 @@ func (u *IncidentSeverityUpsertOne) ClearArchiveTime() *IncidentSeverityUpsertOn
 	})
 }
 
-// SetProviderID sets the "provider_id" field.
-func (u *IncidentSeverityUpsertOne) SetProviderID(v string) *IncidentSeverityUpsertOne {
+// SetExternalID sets the "external_id" field.
+func (u *IncidentSeverityUpsertOne) SetExternalID(v string) *IncidentSeverityUpsertOne {
 	return u.Update(func(s *IncidentSeverityUpsert) {
-		s.SetProviderID(v)
+		s.SetExternalID(v)
 	})
 }
 
-// UpdateProviderID sets the "provider_id" field to the value that was provided on create.
-func (u *IncidentSeverityUpsertOne) UpdateProviderID() *IncidentSeverityUpsertOne {
+// UpdateExternalID sets the "external_id" field to the value that was provided on create.
+func (u *IncidentSeverityUpsertOne) UpdateExternalID() *IncidentSeverityUpsertOne {
 	return u.Update(func(s *IncidentSeverityUpsert) {
-		s.UpdateProviderID()
+		s.UpdateExternalID()
 	})
 }
 
-// ClearProviderID clears the value of the "provider_id" field.
-func (u *IncidentSeverityUpsertOne) ClearProviderID() *IncidentSeverityUpsertOne {
+// ClearExternalID clears the value of the "external_id" field.
+func (u *IncidentSeverityUpsertOne) ClearExternalID() *IncidentSeverityUpsertOne {
 	return u.Update(func(s *IncidentSeverityUpsert) {
-		s.ClearProviderID()
+		s.ClearExternalID()
 	})
 }
 
@@ -883,24 +883,24 @@ func (u *IncidentSeverityUpsertBulk) ClearArchiveTime() *IncidentSeverityUpsertB
 	})
 }
 
-// SetProviderID sets the "provider_id" field.
-func (u *IncidentSeverityUpsertBulk) SetProviderID(v string) *IncidentSeverityUpsertBulk {
+// SetExternalID sets the "external_id" field.
+func (u *IncidentSeverityUpsertBulk) SetExternalID(v string) *IncidentSeverityUpsertBulk {
 	return u.Update(func(s *IncidentSeverityUpsert) {
-		s.SetProviderID(v)
+		s.SetExternalID(v)
 	})
 }
 
-// UpdateProviderID sets the "provider_id" field to the value that was provided on create.
-func (u *IncidentSeverityUpsertBulk) UpdateProviderID() *IncidentSeverityUpsertBulk {
+// UpdateExternalID sets the "external_id" field to the value that was provided on create.
+func (u *IncidentSeverityUpsertBulk) UpdateExternalID() *IncidentSeverityUpsertBulk {
 	return u.Update(func(s *IncidentSeverityUpsert) {
-		s.UpdateProviderID()
+		s.UpdateExternalID()
 	})
 }
 
-// ClearProviderID clears the value of the "provider_id" field.
-func (u *IncidentSeverityUpsertBulk) ClearProviderID() *IncidentSeverityUpsertBulk {
+// ClearExternalID clears the value of the "external_id" field.
+func (u *IncidentSeverityUpsertBulk) ClearExternalID() *IncidentSeverityUpsertBulk {
 	return u.Update(func(s *IncidentSeverityUpsert) {
-		s.ClearProviderID()
+		s.ClearExternalID()
 	})
 }
 

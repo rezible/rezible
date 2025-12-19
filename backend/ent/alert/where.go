@@ -59,9 +59,9 @@ func TenantID(v int) predicate.Alert {
 	return predicate.Alert(sql.FieldEQ(FieldTenantID, v))
 }
 
-// ProviderID applies equality check predicate on the "provider_id" field. It's identical to ProviderIDEQ.
-func ProviderID(v string) predicate.Alert {
-	return predicate.Alert(sql.FieldEQ(FieldProviderID, v))
+// ExternalID applies equality check predicate on the "external_id" field. It's identical to ExternalIDEQ.
+func ExternalID(v string) predicate.Alert {
+	return predicate.Alert(sql.FieldEQ(FieldExternalID, v))
 }
 
 // Title applies equality check predicate on the "title" field. It's identical to TitleEQ.
@@ -104,69 +104,79 @@ func TenantIDNotIn(vs ...int) predicate.Alert {
 	return predicate.Alert(sql.FieldNotIn(FieldTenantID, vs...))
 }
 
-// ProviderIDEQ applies the EQ predicate on the "provider_id" field.
-func ProviderIDEQ(v string) predicate.Alert {
-	return predicate.Alert(sql.FieldEQ(FieldProviderID, v))
+// ExternalIDEQ applies the EQ predicate on the "external_id" field.
+func ExternalIDEQ(v string) predicate.Alert {
+	return predicate.Alert(sql.FieldEQ(FieldExternalID, v))
 }
 
-// ProviderIDNEQ applies the NEQ predicate on the "provider_id" field.
-func ProviderIDNEQ(v string) predicate.Alert {
-	return predicate.Alert(sql.FieldNEQ(FieldProviderID, v))
+// ExternalIDNEQ applies the NEQ predicate on the "external_id" field.
+func ExternalIDNEQ(v string) predicate.Alert {
+	return predicate.Alert(sql.FieldNEQ(FieldExternalID, v))
 }
 
-// ProviderIDIn applies the In predicate on the "provider_id" field.
-func ProviderIDIn(vs ...string) predicate.Alert {
-	return predicate.Alert(sql.FieldIn(FieldProviderID, vs...))
+// ExternalIDIn applies the In predicate on the "external_id" field.
+func ExternalIDIn(vs ...string) predicate.Alert {
+	return predicate.Alert(sql.FieldIn(FieldExternalID, vs...))
 }
 
-// ProviderIDNotIn applies the NotIn predicate on the "provider_id" field.
-func ProviderIDNotIn(vs ...string) predicate.Alert {
-	return predicate.Alert(sql.FieldNotIn(FieldProviderID, vs...))
+// ExternalIDNotIn applies the NotIn predicate on the "external_id" field.
+func ExternalIDNotIn(vs ...string) predicate.Alert {
+	return predicate.Alert(sql.FieldNotIn(FieldExternalID, vs...))
 }
 
-// ProviderIDGT applies the GT predicate on the "provider_id" field.
-func ProviderIDGT(v string) predicate.Alert {
-	return predicate.Alert(sql.FieldGT(FieldProviderID, v))
+// ExternalIDGT applies the GT predicate on the "external_id" field.
+func ExternalIDGT(v string) predicate.Alert {
+	return predicate.Alert(sql.FieldGT(FieldExternalID, v))
 }
 
-// ProviderIDGTE applies the GTE predicate on the "provider_id" field.
-func ProviderIDGTE(v string) predicate.Alert {
-	return predicate.Alert(sql.FieldGTE(FieldProviderID, v))
+// ExternalIDGTE applies the GTE predicate on the "external_id" field.
+func ExternalIDGTE(v string) predicate.Alert {
+	return predicate.Alert(sql.FieldGTE(FieldExternalID, v))
 }
 
-// ProviderIDLT applies the LT predicate on the "provider_id" field.
-func ProviderIDLT(v string) predicate.Alert {
-	return predicate.Alert(sql.FieldLT(FieldProviderID, v))
+// ExternalIDLT applies the LT predicate on the "external_id" field.
+func ExternalIDLT(v string) predicate.Alert {
+	return predicate.Alert(sql.FieldLT(FieldExternalID, v))
 }
 
-// ProviderIDLTE applies the LTE predicate on the "provider_id" field.
-func ProviderIDLTE(v string) predicate.Alert {
-	return predicate.Alert(sql.FieldLTE(FieldProviderID, v))
+// ExternalIDLTE applies the LTE predicate on the "external_id" field.
+func ExternalIDLTE(v string) predicate.Alert {
+	return predicate.Alert(sql.FieldLTE(FieldExternalID, v))
 }
 
-// ProviderIDContains applies the Contains predicate on the "provider_id" field.
-func ProviderIDContains(v string) predicate.Alert {
-	return predicate.Alert(sql.FieldContains(FieldProviderID, v))
+// ExternalIDContains applies the Contains predicate on the "external_id" field.
+func ExternalIDContains(v string) predicate.Alert {
+	return predicate.Alert(sql.FieldContains(FieldExternalID, v))
 }
 
-// ProviderIDHasPrefix applies the HasPrefix predicate on the "provider_id" field.
-func ProviderIDHasPrefix(v string) predicate.Alert {
-	return predicate.Alert(sql.FieldHasPrefix(FieldProviderID, v))
+// ExternalIDHasPrefix applies the HasPrefix predicate on the "external_id" field.
+func ExternalIDHasPrefix(v string) predicate.Alert {
+	return predicate.Alert(sql.FieldHasPrefix(FieldExternalID, v))
 }
 
-// ProviderIDHasSuffix applies the HasSuffix predicate on the "provider_id" field.
-func ProviderIDHasSuffix(v string) predicate.Alert {
-	return predicate.Alert(sql.FieldHasSuffix(FieldProviderID, v))
+// ExternalIDHasSuffix applies the HasSuffix predicate on the "external_id" field.
+func ExternalIDHasSuffix(v string) predicate.Alert {
+	return predicate.Alert(sql.FieldHasSuffix(FieldExternalID, v))
 }
 
-// ProviderIDEqualFold applies the EqualFold predicate on the "provider_id" field.
-func ProviderIDEqualFold(v string) predicate.Alert {
-	return predicate.Alert(sql.FieldEqualFold(FieldProviderID, v))
+// ExternalIDIsNil applies the IsNil predicate on the "external_id" field.
+func ExternalIDIsNil() predicate.Alert {
+	return predicate.Alert(sql.FieldIsNull(FieldExternalID))
 }
 
-// ProviderIDContainsFold applies the ContainsFold predicate on the "provider_id" field.
-func ProviderIDContainsFold(v string) predicate.Alert {
-	return predicate.Alert(sql.FieldContainsFold(FieldProviderID, v))
+// ExternalIDNotNil applies the NotNil predicate on the "external_id" field.
+func ExternalIDNotNil() predicate.Alert {
+	return predicate.Alert(sql.FieldNotNull(FieldExternalID))
+}
+
+// ExternalIDEqualFold applies the EqualFold predicate on the "external_id" field.
+func ExternalIDEqualFold(v string) predicate.Alert {
+	return predicate.Alert(sql.FieldEqualFold(FieldExternalID, v))
+}
+
+// ExternalIDContainsFold applies the ContainsFold predicate on the "external_id" field.
+func ExternalIDContainsFold(v string) predicate.Alert {
+	return predicate.Alert(sql.FieldContainsFold(FieldExternalID, v))
 }
 
 // TitleEQ applies the EQ predicate on the "title" field.

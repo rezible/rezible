@@ -41,17 +41,9 @@ func (_c *UserCreate) SetTenantID(v int) *UserCreate {
 	return _c
 }
 
-// SetProviderID sets the "provider_id" field.
-func (_c *UserCreate) SetProviderID(v string) *UserCreate {
-	_c.mutation.SetProviderID(v)
-	return _c
-}
-
-// SetNillableProviderID sets the "provider_id" field if the given value is not nil.
-func (_c *UserCreate) SetNillableProviderID(v *string) *UserCreate {
-	if v != nil {
-		_c.SetProviderID(*v)
-	}
+// SetExternalID sets the "external_id" field.
+func (_c *UserCreate) SetExternalID(v string) *UserCreate {
+	_c.mutation.SetExternalID(v)
 	return _c
 }
 
@@ -391,6 +383,14 @@ func (_c *UserCreate) check() error {
 	if _, ok := _c.mutation.TenantID(); !ok {
 		return &ValidationError{Name: "tenant_id", err: errors.New(`ent: missing required field "User.tenant_id"`)}
 	}
+	if _, ok := _c.mutation.ExternalID(); !ok {
+		return &ValidationError{Name: "external_id", err: errors.New(`ent: missing required field "User.external_id"`)}
+	}
+	if v, ok := _c.mutation.ExternalID(); ok {
+		if err := user.ExternalIDValidator(v); err != nil {
+			return &ValidationError{Name: "external_id", err: fmt.Errorf(`ent: validator failed for field "User.external_id": %w`, err)}
+		}
+	}
 	if _, ok := _c.mutation.Email(); !ok {
 		return &ValidationError{Name: "email", err: errors.New(`ent: missing required field "User.email"`)}
 	}
@@ -436,9 +436,9 @@ func (_c *UserCreate) createSpec() (*User, *sqlgraph.CreateSpec) {
 		_node.ID = id
 		_spec.ID.Value = &id
 	}
-	if value, ok := _c.mutation.ProviderID(); ok {
-		_spec.SetField(user.FieldProviderID, field.TypeString, value)
-		_node.ProviderID = value
+	if value, ok := _c.mutation.ExternalID(); ok {
+		_spec.SetField(user.FieldExternalID, field.TypeString, value)
+		_node.ExternalID = value
 	}
 	if value, ok := _c.mutation.Email(); ok {
 		_spec.SetField(user.FieldEmail, field.TypeString, value)
@@ -744,21 +744,15 @@ type (
 	}
 )
 
-// SetProviderID sets the "provider_id" field.
-func (u *UserUpsert) SetProviderID(v string) *UserUpsert {
-	u.Set(user.FieldProviderID, v)
+// SetExternalID sets the "external_id" field.
+func (u *UserUpsert) SetExternalID(v string) *UserUpsert {
+	u.Set(user.FieldExternalID, v)
 	return u
 }
 
-// UpdateProviderID sets the "provider_id" field to the value that was provided on create.
-func (u *UserUpsert) UpdateProviderID() *UserUpsert {
-	u.SetExcluded(user.FieldProviderID)
-	return u
-}
-
-// ClearProviderID clears the value of the "provider_id" field.
-func (u *UserUpsert) ClearProviderID() *UserUpsert {
-	u.SetNull(user.FieldProviderID)
+// UpdateExternalID sets the "external_id" field to the value that was provided on create.
+func (u *UserUpsert) UpdateExternalID() *UserUpsert {
+	u.SetExcluded(user.FieldExternalID)
 	return u
 }
 
@@ -891,24 +885,17 @@ func (u *UserUpsertOne) Update(set func(*UserUpsert)) *UserUpsertOne {
 	return u
 }
 
-// SetProviderID sets the "provider_id" field.
-func (u *UserUpsertOne) SetProviderID(v string) *UserUpsertOne {
+// SetExternalID sets the "external_id" field.
+func (u *UserUpsertOne) SetExternalID(v string) *UserUpsertOne {
 	return u.Update(func(s *UserUpsert) {
-		s.SetProviderID(v)
+		s.SetExternalID(v)
 	})
 }
 
-// UpdateProviderID sets the "provider_id" field to the value that was provided on create.
-func (u *UserUpsertOne) UpdateProviderID() *UserUpsertOne {
+// UpdateExternalID sets the "external_id" field to the value that was provided on create.
+func (u *UserUpsertOne) UpdateExternalID() *UserUpsertOne {
 	return u.Update(func(s *UserUpsert) {
-		s.UpdateProviderID()
-	})
-}
-
-// ClearProviderID clears the value of the "provider_id" field.
-func (u *UserUpsertOne) ClearProviderID() *UserUpsertOne {
-	return u.Update(func(s *UserUpsert) {
-		s.ClearProviderID()
+		s.UpdateExternalID()
 	})
 }
 
@@ -1221,24 +1208,17 @@ func (u *UserUpsertBulk) Update(set func(*UserUpsert)) *UserUpsertBulk {
 	return u
 }
 
-// SetProviderID sets the "provider_id" field.
-func (u *UserUpsertBulk) SetProviderID(v string) *UserUpsertBulk {
+// SetExternalID sets the "external_id" field.
+func (u *UserUpsertBulk) SetExternalID(v string) *UserUpsertBulk {
 	return u.Update(func(s *UserUpsert) {
-		s.SetProviderID(v)
+		s.SetExternalID(v)
 	})
 }
 
-// UpdateProviderID sets the "provider_id" field to the value that was provided on create.
-func (u *UserUpsertBulk) UpdateProviderID() *UserUpsertBulk {
+// UpdateExternalID sets the "external_id" field to the value that was provided on create.
+func (u *UserUpsertBulk) UpdateExternalID() *UserUpsertBulk {
 	return u.Update(func(s *UserUpsert) {
-		s.UpdateProviderID()
-	})
-}
-
-// ClearProviderID clears the value of the "provider_id" field.
-func (u *UserUpsertBulk) ClearProviderID() *UserUpsertBulk {
-	return u.Update(func(s *UserUpsert) {
-		s.ClearProviderID()
+		s.UpdateExternalID()
 	})
 }
 

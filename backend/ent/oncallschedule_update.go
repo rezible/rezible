@@ -52,6 +52,26 @@ func (_u *OncallScheduleUpdate) ClearArchiveTime() *OncallScheduleUpdate {
 	return _u
 }
 
+// SetExternalID sets the "external_id" field.
+func (_u *OncallScheduleUpdate) SetExternalID(v string) *OncallScheduleUpdate {
+	_u.mutation.SetExternalID(v)
+	return _u
+}
+
+// SetNillableExternalID sets the "external_id" field if the given value is not nil.
+func (_u *OncallScheduleUpdate) SetNillableExternalID(v *string) *OncallScheduleUpdate {
+	if v != nil {
+		_u.SetExternalID(*v)
+	}
+	return _u
+}
+
+// ClearExternalID clears the value of the "external_id" field.
+func (_u *OncallScheduleUpdate) ClearExternalID() *OncallScheduleUpdate {
+	_u.mutation.ClearExternalID()
+	return _u
+}
+
 // SetName sets the "name" field.
 func (_u *OncallScheduleUpdate) SetName(v string) *OncallScheduleUpdate {
 	_u.mutation.SetName(v)
@@ -97,20 +117,6 @@ func (_u *OncallScheduleUpdate) SetNillableTimezone(v *string) *OncallScheduleUp
 // ClearTimezone clears the value of the "timezone" field.
 func (_u *OncallScheduleUpdate) ClearTimezone() *OncallScheduleUpdate {
 	_u.mutation.ClearTimezone()
-	return _u
-}
-
-// SetProviderID sets the "provider_id" field.
-func (_u *OncallScheduleUpdate) SetProviderID(v string) *OncallScheduleUpdate {
-	_u.mutation.SetProviderID(v)
-	return _u
-}
-
-// SetNillableProviderID sets the "provider_id" field if the given value is not nil.
-func (_u *OncallScheduleUpdate) SetNillableProviderID(v *string) *OncallScheduleUpdate {
-	if v != nil {
-		_u.SetProviderID(*v)
-	}
 	return _u
 }
 
@@ -228,6 +234,12 @@ func (_u *OncallScheduleUpdate) sqlSave(ctx context.Context) (_node int, err err
 	if _u.mutation.ArchiveTimeCleared() {
 		_spec.ClearField(oncallschedule.FieldArchiveTime, field.TypeTime)
 	}
+	if value, ok := _u.mutation.ExternalID(); ok {
+		_spec.SetField(oncallschedule.FieldExternalID, field.TypeString, value)
+	}
+	if _u.mutation.ExternalIDCleared() {
+		_spec.ClearField(oncallschedule.FieldExternalID, field.TypeString)
+	}
 	if value, ok := _u.mutation.Name(); ok {
 		_spec.SetField(oncallschedule.FieldName, field.TypeString, value)
 	}
@@ -236,9 +248,6 @@ func (_u *OncallScheduleUpdate) sqlSave(ctx context.Context) (_node int, err err
 	}
 	if _u.mutation.TimezoneCleared() {
 		_spec.ClearField(oncallschedule.FieldTimezone, field.TypeString)
-	}
-	if value, ok := _u.mutation.ProviderID(); ok {
-		_spec.SetField(oncallschedule.FieldProviderID, field.TypeString, value)
 	}
 	if _u.mutation.ParticipantsCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -356,6 +365,26 @@ func (_u *OncallScheduleUpdateOne) ClearArchiveTime() *OncallScheduleUpdateOne {
 	return _u
 }
 
+// SetExternalID sets the "external_id" field.
+func (_u *OncallScheduleUpdateOne) SetExternalID(v string) *OncallScheduleUpdateOne {
+	_u.mutation.SetExternalID(v)
+	return _u
+}
+
+// SetNillableExternalID sets the "external_id" field if the given value is not nil.
+func (_u *OncallScheduleUpdateOne) SetNillableExternalID(v *string) *OncallScheduleUpdateOne {
+	if v != nil {
+		_u.SetExternalID(*v)
+	}
+	return _u
+}
+
+// ClearExternalID clears the value of the "external_id" field.
+func (_u *OncallScheduleUpdateOne) ClearExternalID() *OncallScheduleUpdateOne {
+	_u.mutation.ClearExternalID()
+	return _u
+}
+
 // SetName sets the "name" field.
 func (_u *OncallScheduleUpdateOne) SetName(v string) *OncallScheduleUpdateOne {
 	_u.mutation.SetName(v)
@@ -401,20 +430,6 @@ func (_u *OncallScheduleUpdateOne) SetNillableTimezone(v *string) *OncallSchedul
 // ClearTimezone clears the value of the "timezone" field.
 func (_u *OncallScheduleUpdateOne) ClearTimezone() *OncallScheduleUpdateOne {
 	_u.mutation.ClearTimezone()
-	return _u
-}
-
-// SetProviderID sets the "provider_id" field.
-func (_u *OncallScheduleUpdateOne) SetProviderID(v string) *OncallScheduleUpdateOne {
-	_u.mutation.SetProviderID(v)
-	return _u
-}
-
-// SetNillableProviderID sets the "provider_id" field if the given value is not nil.
-func (_u *OncallScheduleUpdateOne) SetNillableProviderID(v *string) *OncallScheduleUpdateOne {
-	if v != nil {
-		_u.SetProviderID(*v)
-	}
 	return _u
 }
 
@@ -562,6 +577,12 @@ func (_u *OncallScheduleUpdateOne) sqlSave(ctx context.Context) (_node *OncallSc
 	if _u.mutation.ArchiveTimeCleared() {
 		_spec.ClearField(oncallschedule.FieldArchiveTime, field.TypeTime)
 	}
+	if value, ok := _u.mutation.ExternalID(); ok {
+		_spec.SetField(oncallschedule.FieldExternalID, field.TypeString, value)
+	}
+	if _u.mutation.ExternalIDCleared() {
+		_spec.ClearField(oncallschedule.FieldExternalID, field.TypeString)
+	}
 	if value, ok := _u.mutation.Name(); ok {
 		_spec.SetField(oncallschedule.FieldName, field.TypeString, value)
 	}
@@ -570,9 +591,6 @@ func (_u *OncallScheduleUpdateOne) sqlSave(ctx context.Context) (_node *OncallSc
 	}
 	if _u.mutation.TimezoneCleared() {
 		_spec.ClearField(oncallschedule.FieldTimezone, field.TypeString)
-	}
-	if value, ok := _u.mutation.ProviderID(); ok {
-		_spec.SetField(oncallschedule.FieldProviderID, field.TypeString, value)
 	}
 	if _u.mutation.ParticipantsCleared() {
 		edge := &sqlgraph.EdgeSpec{

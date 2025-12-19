@@ -47,15 +47,23 @@ func (_c *IncidentRoleCreate) SetNillableArchiveTime(v *time.Time) *IncidentRole
 	return _c
 }
 
-// SetName sets the "name" field.
-func (_c *IncidentRoleCreate) SetName(v string) *IncidentRoleCreate {
-	_c.mutation.SetName(v)
+// SetExternalID sets the "external_id" field.
+func (_c *IncidentRoleCreate) SetExternalID(v string) *IncidentRoleCreate {
+	_c.mutation.SetExternalID(v)
 	return _c
 }
 
-// SetProviderID sets the "provider_id" field.
-func (_c *IncidentRoleCreate) SetProviderID(v string) *IncidentRoleCreate {
-	_c.mutation.SetProviderID(v)
+// SetNillableExternalID sets the "external_id" field if the given value is not nil.
+func (_c *IncidentRoleCreate) SetNillableExternalID(v *string) *IncidentRoleCreate {
+	if v != nil {
+		_c.SetExternalID(*v)
+	}
+	return _c
+}
+
+// SetName sets the "name" field.
+func (_c *IncidentRoleCreate) SetName(v string) *IncidentRoleCreate {
+	_c.mutation.SetName(v)
 	return _c
 }
 
@@ -181,9 +189,6 @@ func (_c *IncidentRoleCreate) check() error {
 	if _, ok := _c.mutation.Name(); !ok {
 		return &ValidationError{Name: "name", err: errors.New(`ent: missing required field "IncidentRole.name"`)}
 	}
-	if _, ok := _c.mutation.ProviderID(); !ok {
-		return &ValidationError{Name: "provider_id", err: errors.New(`ent: missing required field "IncidentRole.provider_id"`)}
-	}
 	if _, ok := _c.mutation.Required(); !ok {
 		return &ValidationError{Name: "required", err: errors.New(`ent: missing required field "IncidentRole.required"`)}
 	}
@@ -230,13 +235,13 @@ func (_c *IncidentRoleCreate) createSpec() (*IncidentRole, *sqlgraph.CreateSpec)
 		_spec.SetField(incidentrole.FieldArchiveTime, field.TypeTime, value)
 		_node.ArchiveTime = value
 	}
+	if value, ok := _c.mutation.ExternalID(); ok {
+		_spec.SetField(incidentrole.FieldExternalID, field.TypeString, value)
+		_node.ExternalID = value
+	}
 	if value, ok := _c.mutation.Name(); ok {
 		_spec.SetField(incidentrole.FieldName, field.TypeString, value)
 		_node.Name = value
-	}
-	if value, ok := _c.mutation.ProviderID(); ok {
-		_spec.SetField(incidentrole.FieldProviderID, field.TypeString, value)
-		_node.ProviderID = value
 	}
 	if value, ok := _c.mutation.Required(); ok {
 		_spec.SetField(incidentrole.FieldRequired, field.TypeBool, value)
@@ -361,6 +366,24 @@ func (u *IncidentRoleUpsert) ClearArchiveTime() *IncidentRoleUpsert {
 	return u
 }
 
+// SetExternalID sets the "external_id" field.
+func (u *IncidentRoleUpsert) SetExternalID(v string) *IncidentRoleUpsert {
+	u.Set(incidentrole.FieldExternalID, v)
+	return u
+}
+
+// UpdateExternalID sets the "external_id" field to the value that was provided on create.
+func (u *IncidentRoleUpsert) UpdateExternalID() *IncidentRoleUpsert {
+	u.SetExcluded(incidentrole.FieldExternalID)
+	return u
+}
+
+// ClearExternalID clears the value of the "external_id" field.
+func (u *IncidentRoleUpsert) ClearExternalID() *IncidentRoleUpsert {
+	u.SetNull(incidentrole.FieldExternalID)
+	return u
+}
+
 // SetName sets the "name" field.
 func (u *IncidentRoleUpsert) SetName(v string) *IncidentRoleUpsert {
 	u.Set(incidentrole.FieldName, v)
@@ -370,18 +393,6 @@ func (u *IncidentRoleUpsert) SetName(v string) *IncidentRoleUpsert {
 // UpdateName sets the "name" field to the value that was provided on create.
 func (u *IncidentRoleUpsert) UpdateName() *IncidentRoleUpsert {
 	u.SetExcluded(incidentrole.FieldName)
-	return u
-}
-
-// SetProviderID sets the "provider_id" field.
-func (u *IncidentRoleUpsert) SetProviderID(v string) *IncidentRoleUpsert {
-	u.Set(incidentrole.FieldProviderID, v)
-	return u
-}
-
-// UpdateProviderID sets the "provider_id" field to the value that was provided on create.
-func (u *IncidentRoleUpsert) UpdateProviderID() *IncidentRoleUpsert {
-	u.SetExcluded(incidentrole.FieldProviderID)
 	return u
 }
 
@@ -469,6 +480,27 @@ func (u *IncidentRoleUpsertOne) ClearArchiveTime() *IncidentRoleUpsertOne {
 	})
 }
 
+// SetExternalID sets the "external_id" field.
+func (u *IncidentRoleUpsertOne) SetExternalID(v string) *IncidentRoleUpsertOne {
+	return u.Update(func(s *IncidentRoleUpsert) {
+		s.SetExternalID(v)
+	})
+}
+
+// UpdateExternalID sets the "external_id" field to the value that was provided on create.
+func (u *IncidentRoleUpsertOne) UpdateExternalID() *IncidentRoleUpsertOne {
+	return u.Update(func(s *IncidentRoleUpsert) {
+		s.UpdateExternalID()
+	})
+}
+
+// ClearExternalID clears the value of the "external_id" field.
+func (u *IncidentRoleUpsertOne) ClearExternalID() *IncidentRoleUpsertOne {
+	return u.Update(func(s *IncidentRoleUpsert) {
+		s.ClearExternalID()
+	})
+}
+
 // SetName sets the "name" field.
 func (u *IncidentRoleUpsertOne) SetName(v string) *IncidentRoleUpsertOne {
 	return u.Update(func(s *IncidentRoleUpsert) {
@@ -480,20 +512,6 @@ func (u *IncidentRoleUpsertOne) SetName(v string) *IncidentRoleUpsertOne {
 func (u *IncidentRoleUpsertOne) UpdateName() *IncidentRoleUpsertOne {
 	return u.Update(func(s *IncidentRoleUpsert) {
 		s.UpdateName()
-	})
-}
-
-// SetProviderID sets the "provider_id" field.
-func (u *IncidentRoleUpsertOne) SetProviderID(v string) *IncidentRoleUpsertOne {
-	return u.Update(func(s *IncidentRoleUpsert) {
-		s.SetProviderID(v)
-	})
-}
-
-// UpdateProviderID sets the "provider_id" field to the value that was provided on create.
-func (u *IncidentRoleUpsertOne) UpdateProviderID() *IncidentRoleUpsertOne {
-	return u.Update(func(s *IncidentRoleUpsert) {
-		s.UpdateProviderID()
 	})
 }
 
@@ -750,6 +768,27 @@ func (u *IncidentRoleUpsertBulk) ClearArchiveTime() *IncidentRoleUpsertBulk {
 	})
 }
 
+// SetExternalID sets the "external_id" field.
+func (u *IncidentRoleUpsertBulk) SetExternalID(v string) *IncidentRoleUpsertBulk {
+	return u.Update(func(s *IncidentRoleUpsert) {
+		s.SetExternalID(v)
+	})
+}
+
+// UpdateExternalID sets the "external_id" field to the value that was provided on create.
+func (u *IncidentRoleUpsertBulk) UpdateExternalID() *IncidentRoleUpsertBulk {
+	return u.Update(func(s *IncidentRoleUpsert) {
+		s.UpdateExternalID()
+	})
+}
+
+// ClearExternalID clears the value of the "external_id" field.
+func (u *IncidentRoleUpsertBulk) ClearExternalID() *IncidentRoleUpsertBulk {
+	return u.Update(func(s *IncidentRoleUpsert) {
+		s.ClearExternalID()
+	})
+}
+
 // SetName sets the "name" field.
 func (u *IncidentRoleUpsertBulk) SetName(v string) *IncidentRoleUpsertBulk {
 	return u.Update(func(s *IncidentRoleUpsert) {
@@ -761,20 +800,6 @@ func (u *IncidentRoleUpsertBulk) SetName(v string) *IncidentRoleUpsertBulk {
 func (u *IncidentRoleUpsertBulk) UpdateName() *IncidentRoleUpsertBulk {
 	return u.Update(func(s *IncidentRoleUpsert) {
 		s.UpdateName()
-	})
-}
-
-// SetProviderID sets the "provider_id" field.
-func (u *IncidentRoleUpsertBulk) SetProviderID(v string) *IncidentRoleUpsertBulk {
-	return u.Update(func(s *IncidentRoleUpsert) {
-		s.SetProviderID(v)
-	})
-}
-
-// UpdateProviderID sets the "provider_id" field to the value that was provided on create.
-func (u *IncidentRoleUpsertBulk) UpdateProviderID() *IncidentRoleUpsertBulk {
-	return u.Update(func(s *IncidentRoleUpsert) {
-		s.UpdateProviderID()
 	})
 }
 

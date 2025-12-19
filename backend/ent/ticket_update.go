@@ -30,17 +30,23 @@ func (_u *TicketUpdate) Where(ps ...predicate.Ticket) *TicketUpdate {
 	return _u
 }
 
-// SetProviderID sets the "provider_id" field.
-func (_u *TicketUpdate) SetProviderID(v string) *TicketUpdate {
-	_u.mutation.SetProviderID(v)
+// SetExternalID sets the "external_id" field.
+func (_u *TicketUpdate) SetExternalID(v string) *TicketUpdate {
+	_u.mutation.SetExternalID(v)
 	return _u
 }
 
-// SetNillableProviderID sets the "provider_id" field if the given value is not nil.
-func (_u *TicketUpdate) SetNillableProviderID(v *string) *TicketUpdate {
+// SetNillableExternalID sets the "external_id" field if the given value is not nil.
+func (_u *TicketUpdate) SetNillableExternalID(v *string) *TicketUpdate {
 	if v != nil {
-		_u.SetProviderID(*v)
+		_u.SetExternalID(*v)
 	}
+	return _u
+}
+
+// ClearExternalID clears the value of the "external_id" field.
+func (_u *TicketUpdate) ClearExternalID() *TicketUpdate {
+	_u.mutation.ClearExternalID()
 	return _u
 }
 
@@ -152,8 +158,11 @@ func (_u *TicketUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 			}
 		}
 	}
-	if value, ok := _u.mutation.ProviderID(); ok {
-		_spec.SetField(ticket.FieldProviderID, field.TypeString, value)
+	if value, ok := _u.mutation.ExternalID(); ok {
+		_spec.SetField(ticket.FieldExternalID, field.TypeString, value)
+	}
+	if _u.mutation.ExternalIDCleared() {
+		_spec.ClearField(ticket.FieldExternalID, field.TypeString)
 	}
 	if value, ok := _u.mutation.Title(); ok {
 		_spec.SetField(ticket.FieldTitle, field.TypeString, value)
@@ -225,17 +234,23 @@ type TicketUpdateOne struct {
 	modifiers []func(*sql.UpdateBuilder)
 }
 
-// SetProviderID sets the "provider_id" field.
-func (_u *TicketUpdateOne) SetProviderID(v string) *TicketUpdateOne {
-	_u.mutation.SetProviderID(v)
+// SetExternalID sets the "external_id" field.
+func (_u *TicketUpdateOne) SetExternalID(v string) *TicketUpdateOne {
+	_u.mutation.SetExternalID(v)
 	return _u
 }
 
-// SetNillableProviderID sets the "provider_id" field if the given value is not nil.
-func (_u *TicketUpdateOne) SetNillableProviderID(v *string) *TicketUpdateOne {
+// SetNillableExternalID sets the "external_id" field if the given value is not nil.
+func (_u *TicketUpdateOne) SetNillableExternalID(v *string) *TicketUpdateOne {
 	if v != nil {
-		_u.SetProviderID(*v)
+		_u.SetExternalID(*v)
 	}
+	return _u
+}
+
+// ClearExternalID clears the value of the "external_id" field.
+func (_u *TicketUpdateOne) ClearExternalID() *TicketUpdateOne {
+	_u.mutation.ClearExternalID()
 	return _u
 }
 
@@ -377,8 +392,11 @@ func (_u *TicketUpdateOne) sqlSave(ctx context.Context) (_node *Ticket, err erro
 			}
 		}
 	}
-	if value, ok := _u.mutation.ProviderID(); ok {
-		_spec.SetField(ticket.FieldProviderID, field.TypeString, value)
+	if value, ok := _u.mutation.ExternalID(); ok {
+		_spec.SetField(ticket.FieldExternalID, field.TypeString, value)
+	}
+	if _u.mutation.ExternalIDCleared() {
+		_spec.ClearField(ticket.FieldExternalID, field.TypeString)
 	}
 	if value, ok := _u.mutation.Title(); ok {
 		_spec.SetField(ticket.FieldTitle, field.TypeString, value)

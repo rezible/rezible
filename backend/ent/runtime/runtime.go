@@ -32,6 +32,7 @@ import (
 	"github.com/rezible/rezible/ent/incidentseverity"
 	"github.com/rezible/rezible/ent/incidenttag"
 	"github.com/rezible/rezible/ent/incidenttype"
+	"github.com/rezible/rezible/ent/integration"
 	"github.com/rezible/rezible/ent/meetingschedule"
 	"github.com/rezible/rezible/ent/meetingsession"
 	"github.com/rezible/rezible/ent/oncallhandovertemplate"
@@ -44,7 +45,6 @@ import (
 	"github.com/rezible/rezible/ent/oncallshiftmetrics"
 	"github.com/rezible/rezible/ent/organization"
 	"github.com/rezible/rezible/ent/playbook"
-	"github.com/rezible/rezible/ent/providerconfig"
 	"github.com/rezible/rezible/ent/providersynchistory"
 	"github.com/rezible/rezible/ent/retrospective"
 	"github.com/rezible/rezible/ent/retrospectivecomment"
@@ -488,7 +488,7 @@ func init() {
 	incidentroleFields := schema.IncidentRole{}.Fields()
 	_ = incidentroleFields
 	// incidentroleDescRequired is the schema descriptor for required field.
-	incidentroleDescRequired := incidentroleFields[3].Descriptor()
+	incidentroleDescRequired := incidentroleFields[2].Descriptor()
 	// incidentrole.DefaultRequired holds the default value on creation for the required field.
 	incidentrole.DefaultRequired = incidentroleDescRequired.Default.(bool)
 	// incidentroleDescID is the schema descriptor for id field.
@@ -574,6 +574,30 @@ func init() {
 	incidenttypeDescID := incidenttypeFields[0].Descriptor()
 	// incidenttype.DefaultID holds the default value on creation for the id field.
 	incidenttype.DefaultID = incidenttypeDescID.Default.(func() uuid.UUID)
+	integrationMixin := schema.Integration{}.Mixin()
+	integration.Policy = privacy.NewPolicies(integrationMixin[0], integrationMixin[1], schema.Integration{})
+	integration.Hooks[0] = func(next ent.Mutator) ent.Mutator {
+		return ent.MutateFunc(func(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+			if err := integration.Policy.EvalMutation(ctx, m); err != nil {
+				return nil, err
+			}
+			return next.Mutate(ctx, m)
+		})
+	}
+	integrationFields := schema.Integration{}.Fields()
+	_ = integrationFields
+	// integrationDescEnabled is the schema descriptor for enabled field.
+	integrationDescEnabled := integrationFields[4].Descriptor()
+	// integration.DefaultEnabled holds the default value on creation for the enabled field.
+	integration.DefaultEnabled = integrationDescEnabled.Default.(bool)
+	// integrationDescUpdatedAt is the schema descriptor for updated_at field.
+	integrationDescUpdatedAt := integrationFields[5].Descriptor()
+	// integration.DefaultUpdatedAt holds the default value on creation for the updated_at field.
+	integration.DefaultUpdatedAt = integrationDescUpdatedAt.Default.(func() time.Time)
+	// integrationDescID is the schema descriptor for id field.
+	integrationDescID := integrationFields[0].Descriptor()
+	// integration.DefaultID holds the default value on creation for the id field.
+	integration.DefaultID = integrationDescID.Default.(func() uuid.UUID)
 	meetingscheduleMixin := schema.MeetingSchedule{}.Mixin()
 	meetingschedule.Policy = privacy.NewPolicies(meetingscheduleMixin[0], meetingscheduleMixin[1], schema.MeetingSchedule{})
 	meetingschedule.Hooks[0] = func(next ent.Mutator) ent.Mutator {
@@ -795,12 +819,14 @@ func init() {
 			return next.Mutate(ctx, m)
 		})
 	}
+	organizationMixinFields2 := organizationMixin[2].Fields()
+	_ = organizationMixinFields2
 	organizationFields := schema.Organization{}.Fields()
 	_ = organizationFields
-	// organizationDescProviderID is the schema descriptor for provider_id field.
-	organizationDescProviderID := organizationFields[1].Descriptor()
-	// organization.ProviderIDValidator is a validator for the "provider_id" field. It is called by the builders before save.
-	organization.ProviderIDValidator = organizationDescProviderID.Validators[0].(func(string) error)
+	// organizationDescExternalID is the schema descriptor for external_id field.
+	organizationDescExternalID := organizationMixinFields2[0].Descriptor()
+	// organization.ExternalIDValidator is a validator for the "external_id" field. It is called by the builders before save.
+	organization.ExternalIDValidator = organizationDescExternalID.Validators[0].(func(string) error)
 	// organizationDescID is the schema descriptor for id field.
 	organizationDescID := organizationFields[0].Descriptor()
 	// organization.DefaultID holds the default value on creation for the id field.
@@ -821,30 +847,6 @@ func init() {
 	playbookDescID := playbookFields[0].Descriptor()
 	// playbook.DefaultID holds the default value on creation for the id field.
 	playbook.DefaultID = playbookDescID.Default.(func() uuid.UUID)
-	providerconfigMixin := schema.ProviderConfig{}.Mixin()
-	providerconfig.Policy = privacy.NewPolicies(providerconfigMixin[0], providerconfigMixin[1], schema.ProviderConfig{})
-	providerconfig.Hooks[0] = func(next ent.Mutator) ent.Mutator {
-		return ent.MutateFunc(func(ctx context.Context, m ent.Mutation) (ent.Value, error) {
-			if err := providerconfig.Policy.EvalMutation(ctx, m); err != nil {
-				return nil, err
-			}
-			return next.Mutate(ctx, m)
-		})
-	}
-	providerconfigFields := schema.ProviderConfig{}.Fields()
-	_ = providerconfigFields
-	// providerconfigDescEnabled is the schema descriptor for enabled field.
-	providerconfigDescEnabled := providerconfigFields[4].Descriptor()
-	// providerconfig.DefaultEnabled holds the default value on creation for the enabled field.
-	providerconfig.DefaultEnabled = providerconfigDescEnabled.Default.(bool)
-	// providerconfigDescUpdatedAt is the schema descriptor for updated_at field.
-	providerconfigDescUpdatedAt := providerconfigFields[5].Descriptor()
-	// providerconfig.DefaultUpdatedAt holds the default value on creation for the updated_at field.
-	providerconfig.DefaultUpdatedAt = providerconfigDescUpdatedAt.Default.(func() time.Time)
-	// providerconfigDescID is the schema descriptor for id field.
-	providerconfigDescID := providerconfigFields[0].Descriptor()
-	// providerconfig.DefaultID holds the default value on creation for the id field.
-	providerconfig.DefaultID = providerconfigDescID.Default.(func() uuid.UUID)
 	providersynchistoryMixin := schema.ProviderSyncHistory{}.Mixin()
 	providersynchistory.Policy = privacy.NewPolicies(providersynchistoryMixin[0], providersynchistoryMixin[1], schema.ProviderSyncHistory{})
 	providersynchistory.Hooks[0] = func(next ent.Mutator) ent.Mutator {
@@ -1008,11 +1010,11 @@ func init() {
 	// systemcomponent.NameValidator is a validator for the "name" field. It is called by the builders before save.
 	systemcomponent.NameValidator = systemcomponentDescName.Validators[0].(func(string) error)
 	// systemcomponentDescCreatedAt is the schema descriptor for created_at field.
-	systemcomponentDescCreatedAt := systemcomponentFields[6].Descriptor()
+	systemcomponentDescCreatedAt := systemcomponentFields[5].Descriptor()
 	// systemcomponent.DefaultCreatedAt holds the default value on creation for the created_at field.
 	systemcomponent.DefaultCreatedAt = systemcomponentDescCreatedAt.Default.(func() time.Time)
 	// systemcomponentDescUpdatedAt is the schema descriptor for updated_at field.
-	systemcomponentDescUpdatedAt := systemcomponentFields[7].Descriptor()
+	systemcomponentDescUpdatedAt := systemcomponentFields[6].Descriptor()
 	// systemcomponent.DefaultUpdatedAt holds the default value on creation for the updated_at field.
 	systemcomponent.DefaultUpdatedAt = systemcomponentDescUpdatedAt.Default.(func() time.Time)
 	// systemcomponent.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
@@ -1074,7 +1076,7 @@ func init() {
 	systemcomponentkindFields := schema.SystemComponentKind{}.Fields()
 	_ = systemcomponentkindFields
 	// systemcomponentkindDescCreatedAt is the schema descriptor for created_at field.
-	systemcomponentkindDescCreatedAt := systemcomponentkindFields[4].Descriptor()
+	systemcomponentkindDescCreatedAt := systemcomponentkindFields[3].Descriptor()
 	// systemcomponentkind.DefaultCreatedAt holds the default value on creation for the created_at field.
 	systemcomponentkind.DefaultCreatedAt = systemcomponentkindDescCreatedAt.Default.(func() time.Time)
 	// systemcomponentkindDescID is the schema descriptor for id field.
@@ -1094,7 +1096,7 @@ func init() {
 	systemcomponentrelationshipFields := schema.SystemComponentRelationship{}.Fields()
 	_ = systemcomponentrelationshipFields
 	// systemcomponentrelationshipDescCreatedAt is the schema descriptor for created_at field.
-	systemcomponentrelationshipDescCreatedAt := systemcomponentrelationshipFields[5].Descriptor()
+	systemcomponentrelationshipDescCreatedAt := systemcomponentrelationshipFields[4].Descriptor()
 	// systemcomponentrelationship.DefaultCreatedAt holds the default value on creation for the created_at field.
 	systemcomponentrelationship.DefaultCreatedAt = systemcomponentrelationshipDescCreatedAt.Default.(func() time.Time)
 	// systemcomponentrelationshipDescID is the schema descriptor for id field.
@@ -1267,14 +1269,20 @@ func init() {
 			return next.Mutate(ctx, m)
 		})
 	}
+	userMixinFields2 := userMixin[2].Fields()
+	_ = userMixinFields2
 	userFields := schema.User{}.Fields()
 	_ = userFields
+	// userDescExternalID is the schema descriptor for external_id field.
+	userDescExternalID := userMixinFields2[0].Descriptor()
+	// user.ExternalIDValidator is a validator for the "external_id" field. It is called by the builders before save.
+	user.ExternalIDValidator = userDescExternalID.Validators[0].(func(string) error)
 	// userDescName is the schema descriptor for name field.
-	userDescName := userFields[3].Descriptor()
+	userDescName := userFields[2].Descriptor()
 	// user.DefaultName holds the default value on creation for the name field.
 	user.DefaultName = userDescName.Default.(string)
 	// userDescConfirmed is the schema descriptor for confirmed field.
-	userDescConfirmed := userFields[6].Descriptor()
+	userDescConfirmed := userFields[5].Descriptor()
 	// user.DefaultConfirmed holds the default value on creation for the confirmed field.
 	user.DefaultConfirmed = userDescConfirmed.Default.(bool)
 	// userDescID is the schema descriptor for id field.

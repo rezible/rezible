@@ -18,12 +18,12 @@ const (
 	FieldID = "id"
 	// FieldTenantID holds the string denoting the tenant_id field in the database.
 	FieldTenantID = "tenant_id"
+	// FieldExternalID holds the string denoting the external_id field in the database.
+	FieldExternalID = "external_id"
 	// FieldUserID holds the string denoting the user_id field in the database.
 	FieldUserID = "user_id"
 	// FieldRosterID holds the string denoting the roster_id field in the database.
 	FieldRosterID = "roster_id"
-	// FieldProviderID holds the string denoting the provider_id field in the database.
-	FieldProviderID = "provider_id"
 	// FieldRole holds the string denoting the role field in the database.
 	FieldRole = "role"
 	// FieldPrimaryShiftID holds the string denoting the primary_shift_id field in the database.
@@ -91,9 +91,9 @@ const (
 var Columns = []string{
 	FieldID,
 	FieldTenantID,
+	FieldExternalID,
 	FieldUserID,
 	FieldRosterID,
-	FieldProviderID,
 	FieldRole,
 	FieldPrimaryShiftID,
 	FieldStartAt,
@@ -163,6 +163,11 @@ func ByTenantID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldTenantID, opts...).ToFunc()
 }
 
+// ByExternalID orders the results by the external_id field.
+func ByExternalID(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldExternalID, opts...).ToFunc()
+}
+
 // ByUserID orders the results by the user_id field.
 func ByUserID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldUserID, opts...).ToFunc()
@@ -171,11 +176,6 @@ func ByUserID(opts ...sql.OrderTermOption) OrderOption {
 // ByRosterID orders the results by the roster_id field.
 func ByRosterID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldRosterID, opts...).ToFunc()
-}
-
-// ByProviderID orders the results by the provider_id field.
-func ByProviderID(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldProviderID, opts...).ToFunc()
 }
 
 // ByRole orders the results by the role field.

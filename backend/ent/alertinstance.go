@@ -24,12 +24,12 @@ type AlertInstance struct {
 	ID uuid.UUID `json:"id,omitempty"`
 	// TenantID holds the value of the "tenant_id" field.
 	TenantID int `json:"tenant_id,omitempty"`
+	// ExternalID holds the value of the "external_id" field.
+	ExternalID string `json:"external_id,omitempty"`
 	// AlertID holds the value of the "alert_id" field.
 	AlertID uuid.UUID `json:"alert_id,omitempty"`
 	// EventID holds the value of the "event_id" field.
 	EventID uuid.UUID `json:"event_id,omitempty"`
-	// ProviderID holds the value of the "provider_id" field.
-	ProviderID string `json:"provider_id,omitempty"`
 	// AcknowledgedAt holds the value of the "acknowledged_at" field.
 	AcknowledgedAt time.Time `json:"acknowledged_at,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
@@ -106,7 +106,7 @@ func (*AlertInstance) scanValues(columns []string) ([]any, error) {
 		switch columns[i] {
 		case alertinstance.FieldTenantID:
 			values[i] = new(sql.NullInt64)
-		case alertinstance.FieldProviderID:
+		case alertinstance.FieldExternalID:
 			values[i] = new(sql.NullString)
 		case alertinstance.FieldAcknowledgedAt:
 			values[i] = new(sql.NullTime)
@@ -143,6 +143,12 @@ func (_m *AlertInstance) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				_m.TenantID = int(value.Int64)
 			}
+		case alertinstance.FieldExternalID:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field external_id", values[i])
+			} else if value.Valid {
+				_m.ExternalID = value.String
+			}
 		case alertinstance.FieldAlertID:
 			if value, ok := values[i].(*uuid.UUID); !ok {
 				return fmt.Errorf("unexpected type %T for field alert_id", values[i])
@@ -154,12 +160,6 @@ func (_m *AlertInstance) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field event_id", values[i])
 			} else if value != nil {
 				_m.EventID = *value
-			}
-		case alertinstance.FieldProviderID:
-			if value, ok := values[i].(*sql.NullString); !ok {
-				return fmt.Errorf("unexpected type %T for field provider_id", values[i])
-			} else if value.Valid {
-				_m.ProviderID = value.String
 			}
 		case alertinstance.FieldAcknowledgedAt:
 			if value, ok := values[i].(*sql.NullTime); !ok {
@@ -240,14 +240,14 @@ func (_m *AlertInstance) String() string {
 	builder.WriteString("tenant_id=")
 	builder.WriteString(fmt.Sprintf("%v", _m.TenantID))
 	builder.WriteString(", ")
+	builder.WriteString("external_id=")
+	builder.WriteString(_m.ExternalID)
+	builder.WriteString(", ")
 	builder.WriteString("alert_id=")
 	builder.WriteString(fmt.Sprintf("%v", _m.AlertID))
 	builder.WriteString(", ")
 	builder.WriteString("event_id=")
 	builder.WriteString(fmt.Sprintf("%v", _m.EventID))
-	builder.WriteString(", ")
-	builder.WriteString("provider_id=")
-	builder.WriteString(_m.ProviderID)
 	builder.WriteString(", ")
 	builder.WriteString("acknowledged_at=")
 	builder.WriteString(_m.AcknowledgedAt.Format(time.ANSIC))

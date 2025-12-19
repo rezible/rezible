@@ -61,6 +61,11 @@ func TenantID(v int) predicate.OncallShift {
 	return predicate.OncallShift(sql.FieldEQ(FieldTenantID, v))
 }
 
+// ExternalID applies equality check predicate on the "external_id" field. It's identical to ExternalIDEQ.
+func ExternalID(v string) predicate.OncallShift {
+	return predicate.OncallShift(sql.FieldEQ(FieldExternalID, v))
+}
+
 // UserID applies equality check predicate on the "user_id" field. It's identical to UserIDEQ.
 func UserID(v uuid.UUID) predicate.OncallShift {
 	return predicate.OncallShift(sql.FieldEQ(FieldUserID, v))
@@ -69,11 +74,6 @@ func UserID(v uuid.UUID) predicate.OncallShift {
 // RosterID applies equality check predicate on the "roster_id" field. It's identical to RosterIDEQ.
 func RosterID(v uuid.UUID) predicate.OncallShift {
 	return predicate.OncallShift(sql.FieldEQ(FieldRosterID, v))
-}
-
-// ProviderID applies equality check predicate on the "provider_id" field. It's identical to ProviderIDEQ.
-func ProviderID(v string) predicate.OncallShift {
-	return predicate.OncallShift(sql.FieldEQ(FieldProviderID, v))
 }
 
 // PrimaryShiftID applies equality check predicate on the "primary_shift_id" field. It's identical to PrimaryShiftIDEQ.
@@ -109,6 +109,81 @@ func TenantIDIn(vs ...int) predicate.OncallShift {
 // TenantIDNotIn applies the NotIn predicate on the "tenant_id" field.
 func TenantIDNotIn(vs ...int) predicate.OncallShift {
 	return predicate.OncallShift(sql.FieldNotIn(FieldTenantID, vs...))
+}
+
+// ExternalIDEQ applies the EQ predicate on the "external_id" field.
+func ExternalIDEQ(v string) predicate.OncallShift {
+	return predicate.OncallShift(sql.FieldEQ(FieldExternalID, v))
+}
+
+// ExternalIDNEQ applies the NEQ predicate on the "external_id" field.
+func ExternalIDNEQ(v string) predicate.OncallShift {
+	return predicate.OncallShift(sql.FieldNEQ(FieldExternalID, v))
+}
+
+// ExternalIDIn applies the In predicate on the "external_id" field.
+func ExternalIDIn(vs ...string) predicate.OncallShift {
+	return predicate.OncallShift(sql.FieldIn(FieldExternalID, vs...))
+}
+
+// ExternalIDNotIn applies the NotIn predicate on the "external_id" field.
+func ExternalIDNotIn(vs ...string) predicate.OncallShift {
+	return predicate.OncallShift(sql.FieldNotIn(FieldExternalID, vs...))
+}
+
+// ExternalIDGT applies the GT predicate on the "external_id" field.
+func ExternalIDGT(v string) predicate.OncallShift {
+	return predicate.OncallShift(sql.FieldGT(FieldExternalID, v))
+}
+
+// ExternalIDGTE applies the GTE predicate on the "external_id" field.
+func ExternalIDGTE(v string) predicate.OncallShift {
+	return predicate.OncallShift(sql.FieldGTE(FieldExternalID, v))
+}
+
+// ExternalIDLT applies the LT predicate on the "external_id" field.
+func ExternalIDLT(v string) predicate.OncallShift {
+	return predicate.OncallShift(sql.FieldLT(FieldExternalID, v))
+}
+
+// ExternalIDLTE applies the LTE predicate on the "external_id" field.
+func ExternalIDLTE(v string) predicate.OncallShift {
+	return predicate.OncallShift(sql.FieldLTE(FieldExternalID, v))
+}
+
+// ExternalIDContains applies the Contains predicate on the "external_id" field.
+func ExternalIDContains(v string) predicate.OncallShift {
+	return predicate.OncallShift(sql.FieldContains(FieldExternalID, v))
+}
+
+// ExternalIDHasPrefix applies the HasPrefix predicate on the "external_id" field.
+func ExternalIDHasPrefix(v string) predicate.OncallShift {
+	return predicate.OncallShift(sql.FieldHasPrefix(FieldExternalID, v))
+}
+
+// ExternalIDHasSuffix applies the HasSuffix predicate on the "external_id" field.
+func ExternalIDHasSuffix(v string) predicate.OncallShift {
+	return predicate.OncallShift(sql.FieldHasSuffix(FieldExternalID, v))
+}
+
+// ExternalIDIsNil applies the IsNil predicate on the "external_id" field.
+func ExternalIDIsNil() predicate.OncallShift {
+	return predicate.OncallShift(sql.FieldIsNull(FieldExternalID))
+}
+
+// ExternalIDNotNil applies the NotNil predicate on the "external_id" field.
+func ExternalIDNotNil() predicate.OncallShift {
+	return predicate.OncallShift(sql.FieldNotNull(FieldExternalID))
+}
+
+// ExternalIDEqualFold applies the EqualFold predicate on the "external_id" field.
+func ExternalIDEqualFold(v string) predicate.OncallShift {
+	return predicate.OncallShift(sql.FieldEqualFold(FieldExternalID, v))
+}
+
+// ExternalIDContainsFold applies the ContainsFold predicate on the "external_id" field.
+func ExternalIDContainsFold(v string) predicate.OncallShift {
+	return predicate.OncallShift(sql.FieldContainsFold(FieldExternalID, v))
 }
 
 // UserIDEQ applies the EQ predicate on the "user_id" field.
@@ -149,81 +224,6 @@ func RosterIDIn(vs ...uuid.UUID) predicate.OncallShift {
 // RosterIDNotIn applies the NotIn predicate on the "roster_id" field.
 func RosterIDNotIn(vs ...uuid.UUID) predicate.OncallShift {
 	return predicate.OncallShift(sql.FieldNotIn(FieldRosterID, vs...))
-}
-
-// ProviderIDEQ applies the EQ predicate on the "provider_id" field.
-func ProviderIDEQ(v string) predicate.OncallShift {
-	return predicate.OncallShift(sql.FieldEQ(FieldProviderID, v))
-}
-
-// ProviderIDNEQ applies the NEQ predicate on the "provider_id" field.
-func ProviderIDNEQ(v string) predicate.OncallShift {
-	return predicate.OncallShift(sql.FieldNEQ(FieldProviderID, v))
-}
-
-// ProviderIDIn applies the In predicate on the "provider_id" field.
-func ProviderIDIn(vs ...string) predicate.OncallShift {
-	return predicate.OncallShift(sql.FieldIn(FieldProviderID, vs...))
-}
-
-// ProviderIDNotIn applies the NotIn predicate on the "provider_id" field.
-func ProviderIDNotIn(vs ...string) predicate.OncallShift {
-	return predicate.OncallShift(sql.FieldNotIn(FieldProviderID, vs...))
-}
-
-// ProviderIDGT applies the GT predicate on the "provider_id" field.
-func ProviderIDGT(v string) predicate.OncallShift {
-	return predicate.OncallShift(sql.FieldGT(FieldProviderID, v))
-}
-
-// ProviderIDGTE applies the GTE predicate on the "provider_id" field.
-func ProviderIDGTE(v string) predicate.OncallShift {
-	return predicate.OncallShift(sql.FieldGTE(FieldProviderID, v))
-}
-
-// ProviderIDLT applies the LT predicate on the "provider_id" field.
-func ProviderIDLT(v string) predicate.OncallShift {
-	return predicate.OncallShift(sql.FieldLT(FieldProviderID, v))
-}
-
-// ProviderIDLTE applies the LTE predicate on the "provider_id" field.
-func ProviderIDLTE(v string) predicate.OncallShift {
-	return predicate.OncallShift(sql.FieldLTE(FieldProviderID, v))
-}
-
-// ProviderIDContains applies the Contains predicate on the "provider_id" field.
-func ProviderIDContains(v string) predicate.OncallShift {
-	return predicate.OncallShift(sql.FieldContains(FieldProviderID, v))
-}
-
-// ProviderIDHasPrefix applies the HasPrefix predicate on the "provider_id" field.
-func ProviderIDHasPrefix(v string) predicate.OncallShift {
-	return predicate.OncallShift(sql.FieldHasPrefix(FieldProviderID, v))
-}
-
-// ProviderIDHasSuffix applies the HasSuffix predicate on the "provider_id" field.
-func ProviderIDHasSuffix(v string) predicate.OncallShift {
-	return predicate.OncallShift(sql.FieldHasSuffix(FieldProviderID, v))
-}
-
-// ProviderIDIsNil applies the IsNil predicate on the "provider_id" field.
-func ProviderIDIsNil() predicate.OncallShift {
-	return predicate.OncallShift(sql.FieldIsNull(FieldProviderID))
-}
-
-// ProviderIDNotNil applies the NotNil predicate on the "provider_id" field.
-func ProviderIDNotNil() predicate.OncallShift {
-	return predicate.OncallShift(sql.FieldNotNull(FieldProviderID))
-}
-
-// ProviderIDEqualFold applies the EqualFold predicate on the "provider_id" field.
-func ProviderIDEqualFold(v string) predicate.OncallShift {
-	return predicate.OncallShift(sql.FieldEqualFold(FieldProviderID, v))
-}
-
-// ProviderIDContainsFold applies the ContainsFold predicate on the "provider_id" field.
-func ProviderIDContainsFold(v string) predicate.OncallShift {
-	return predicate.OncallShift(sql.FieldContainsFold(FieldProviderID, v))
 }
 
 // RoleEQ applies the EQ predicate on the "role" field.

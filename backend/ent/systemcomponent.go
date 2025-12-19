@@ -23,10 +23,10 @@ type SystemComponent struct {
 	ID uuid.UUID `json:"id,omitempty"`
 	// TenantID holds the value of the "tenant_id" field.
 	TenantID int `json:"tenant_id,omitempty"`
+	// ExternalID holds the value of the "external_id" field.
+	ExternalID string `json:"external_id,omitempty"`
 	// Name holds the value of the "name" field.
 	Name string `json:"name,omitempty"`
-	// ProviderID holds the value of the "provider_id" field.
-	ProviderID string `json:"provider_id,omitempty"`
 	// KindID holds the value of the "kind_id" field.
 	KindID uuid.UUID `json:"kind_id,omitempty"`
 	// Description holds the value of the "description" field.
@@ -195,7 +195,7 @@ func (*SystemComponent) scanValues(columns []string) ([]any, error) {
 			values[i] = new([]byte)
 		case systemcomponent.FieldTenantID:
 			values[i] = new(sql.NullInt64)
-		case systemcomponent.FieldName, systemcomponent.FieldProviderID, systemcomponent.FieldDescription:
+		case systemcomponent.FieldExternalID, systemcomponent.FieldName, systemcomponent.FieldDescription:
 			values[i] = new(sql.NullString)
 		case systemcomponent.FieldCreatedAt, systemcomponent.FieldUpdatedAt:
 			values[i] = new(sql.NullTime)
@@ -228,17 +228,17 @@ func (_m *SystemComponent) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				_m.TenantID = int(value.Int64)
 			}
+		case systemcomponent.FieldExternalID:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field external_id", values[i])
+			} else if value.Valid {
+				_m.ExternalID = value.String
+			}
 		case systemcomponent.FieldName:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field name", values[i])
 			} else if value.Valid {
 				_m.Name = value.String
-			}
-		case systemcomponent.FieldProviderID:
-			if value, ok := values[i].(*sql.NullString); !ok {
-				return fmt.Errorf("unexpected type %T for field provider_id", values[i])
-			} else if value.Valid {
-				_m.ProviderID = value.String
 			}
 		case systemcomponent.FieldKindID:
 			if value, ok := values[i].(*uuid.UUID); !ok {
@@ -371,11 +371,11 @@ func (_m *SystemComponent) String() string {
 	builder.WriteString("tenant_id=")
 	builder.WriteString(fmt.Sprintf("%v", _m.TenantID))
 	builder.WriteString(", ")
+	builder.WriteString("external_id=")
+	builder.WriteString(_m.ExternalID)
+	builder.WriteString(", ")
 	builder.WriteString("name=")
 	builder.WriteString(_m.Name)
-	builder.WriteString(", ")
-	builder.WriteString("provider_id=")
-	builder.WriteString(_m.ProviderID)
 	builder.WriteString(", ")
 	builder.WriteString("kind_id=")
 	builder.WriteString(fmt.Sprintf("%v", _m.KindID))

@@ -64,6 +64,8 @@ type Tx struct {
 	IncidentTag *IncidentTagClient
 	// IncidentType is the client for interacting with the IncidentType builders.
 	IncidentType *IncidentTypeClient
+	// Integration is the client for interacting with the Integration builders.
+	Integration *IntegrationClient
 	// MeetingSchedule is the client for interacting with the MeetingSchedule builders.
 	MeetingSchedule *MeetingScheduleClient
 	// MeetingSession is the client for interacting with the MeetingSession builders.
@@ -88,8 +90,6 @@ type Tx struct {
 	Organization *OrganizationClient
 	// Playbook is the client for interacting with the Playbook builders.
 	Playbook *PlaybookClient
-	// ProviderConfig is the client for interacting with the ProviderConfig builders.
-	ProviderConfig *ProviderConfigClient
 	// ProviderSyncHistory is the client for interacting with the ProviderSyncHistory builders.
 	ProviderSyncHistory *ProviderSyncHistoryClient
 	// Retrospective is the client for interacting with the Retrospective builders.
@@ -289,6 +289,7 @@ func (tx *Tx) init() {
 	tx.IncidentSeverity = NewIncidentSeverityClient(tx.config)
 	tx.IncidentTag = NewIncidentTagClient(tx.config)
 	tx.IncidentType = NewIncidentTypeClient(tx.config)
+	tx.Integration = NewIntegrationClient(tx.config)
 	tx.MeetingSchedule = NewMeetingScheduleClient(tx.config)
 	tx.MeetingSession = NewMeetingSessionClient(tx.config)
 	tx.OncallHandoverTemplate = NewOncallHandoverTemplateClient(tx.config)
@@ -301,7 +302,6 @@ func (tx *Tx) init() {
 	tx.OncallShiftMetrics = NewOncallShiftMetricsClient(tx.config)
 	tx.Organization = NewOrganizationClient(tx.config)
 	tx.Playbook = NewPlaybookClient(tx.config)
-	tx.ProviderConfig = NewProviderConfigClient(tx.config)
 	tx.ProviderSyncHistory = NewProviderSyncHistoryClient(tx.config)
 	tx.Retrospective = NewRetrospectiveClient(tx.config)
 	tx.RetrospectiveComment = NewRetrospectiveCommentClient(tx.config)
