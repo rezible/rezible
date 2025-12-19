@@ -205,7 +205,7 @@ func (p *AuthSessionProvider) onError(w http.ResponseWriter, r *http.Request, er
 	http.Error(w, http.StatusText(http.StatusForbidden), http.StatusForbidden)
 }
 
-func (p *AuthSessionProvider) StartAuthFlow(w http.ResponseWriter, r *http.Request) {
+func (p *AuthSessionProvider) HandleStartAuthFlow(w http.ResponseWriter, r *http.Request) {
 	p.mw.HandleStartAuthFlow(w, r)
 }
 
@@ -323,12 +323,12 @@ func (p *AuthSessionProvider) createSession(a *saml.Assertion, redirectUrl strin
 	id := attr.Get("id")
 
 	po := ent.Organization{
-		ProviderID: id,
+		ExternalID: id,
 		Name:       domain,
 	}
 
 	pu := ent.User{
-		ProviderID: claims.Subject,
+		ExternalID: claims.Subject,
 		Name:       attr.Get("firstName"),
 		Email:      email,
 	}

@@ -14,11 +14,10 @@ import (
 
 type OrganizationsService struct {
 	db *ent.Client
-	pc rez.ProviderConfigService
 }
 
-func NewOrganizationsService(db *ent.Client, pc rez.ProviderConfigService) (*OrganizationsService, error) {
-	return &OrganizationsService{db: db, pc: pc}, nil
+func NewOrganizationsService(db *ent.Client) (*OrganizationsService, error) {
+	return &OrganizationsService{db: db}, nil
 }
 
 func (s *OrganizationsService) GetById(ctx context.Context, id uuid.UUID) (*ent.Organization, error) {
@@ -30,9 +29,9 @@ func (s *OrganizationsService) GetCurrent(ctx context.Context) (*ent.Organizatio
 	return s.db.Organization.Query().First(ctx)
 }
 
-func (s *OrganizationsService) FindOrCreateFromAuthProvider(ctx context.Context, o ent.Organization) (*ent.Organization, error) {
+func (s *OrganizationsService) FindOrCreateFromProvider(ctx context.Context, o ent.Organization) (*ent.Organization, error) {
 	orgQuery := s.db.Organization.Query().
-		Where(organization.ProviderID(o.ProviderID))
+		Where(organization.ExternalID(o.ExternalID))
 
 	org, orgErr := orgQuery.Only(access.SystemContext(ctx))
 	if orgErr != nil && !ent.IsNotFound(orgErr) {
@@ -54,7 +53,7 @@ func (s *OrganizationsService) FindOrCreateFromAuthProvider(ctx context.Context,
 
 		org, orgErr = tx.Organization.Create().
 			SetTenant(tnt).
-			SetProviderID(o.ProviderID).
+			SetExternalID(o.ExternalID).
 			SetName(o.Name).
 			Save(access.TenantSystemContext(ctx, tnt.ID))
 		if orgErr != nil {

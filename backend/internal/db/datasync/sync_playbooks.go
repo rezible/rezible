@@ -32,22 +32,22 @@ func (b *playbooksBatcher) pullData(ctx context.Context) iter.Seq2[*ent.Playbook
 func (b *playbooksBatcher) createBatchMutations(ctx context.Context, batch []*ent.Playbook) ([]ent.Mutation, error) {
 	ids := make([]string, len(batch))
 	for i, t := range batch {
-		ids[i] = t.ProviderID
+		ids[i] = t.ExternalID
 	}
 
-	dbPlaybooks, queryErr := b.db.Playbook.Query().Where(playbook.ProviderIDIn(ids...)).All(ctx)
+	dbPlaybooks, queryErr := b.db.Playbook.Query().Where(playbook.ExternalIDIn(ids...)).All(ctx)
 	if queryErr != nil {
 		return nil, fmt.Errorf("querying playbooks: %w", queryErr)
 	}
 	dbProvMap := make(map[string]*ent.Playbook)
 	for _, pb := range dbPlaybooks {
 		p := pb
-		dbProvMap[p.ProviderID] = p
+		dbProvMap[p.ExternalID] = p
 	}
 
 	var muts []ent.Mutation
 	for _, prov := range batch {
-		curr, exists := dbProvMap[prov.ProviderID]
+		curr, exists := dbProvMap[prov.ExternalID]
 		if exists {
 		}
 		if mut := b.syncPlaybook(curr, prov); mut != nil {
@@ -73,7 +73,7 @@ func (b *playbooksBatcher) syncPlaybook(curr, prov *ent.Playbook) *ent.PlaybookM
 		}
 	}
 
-	m.SetProviderID(prov.ProviderID)
+	m.SetExternalID(prov.ExternalID)
 	m.SetTitle(prov.Title)
 	m.SetContent(prov.Content)
 

@@ -23,7 +23,7 @@ type incidentRolesBatcher struct {
 	db       *ent.Client
 	provider rez.IncidentDataProvider
 
-	dbProviderIdMap map[string]*ent.IncidentRole
+	dbExternalIDMap map[string]*ent.IncidentRole
 	deletedIds      mapset.Set[uuid.UUID]
 }
 
@@ -33,12 +33,12 @@ func (b *incidentRolesBatcher) setup(ctx context.Context) error {
 		return fmt.Errorf("querying db roles: %w", dbRolesErr)
 	}
 
-	b.dbProviderIdMap = make(map[string]*ent.IncidentRole)
+	b.dbExternalIDMap = make(map[string]*ent.IncidentRole)
 	b.deletedIds = mapset.NewSet[uuid.UUID]()
 
 	for _, role := range dbRoles {
 		r := role
-		b.dbProviderIdMap[r.ProviderID] = r
+		b.dbExternalIDMap[r.ExternalID] = r
 		b.deletedIds.Add(role.ID)
 	}
 
@@ -64,7 +64,7 @@ func (b *incidentRolesBatcher) createBatchMutations(ctx context.Context, batch [
 	var mutations []ent.Mutation
 	for _, r := range batch {
 		prov := r
-		curr, exists := b.dbProviderIdMap[prov.ProviderID]
+		curr, exists := b.dbExternalIDMap[prov.ExternalID]
 		if exists {
 			b.deletedIds.Remove(curr.ID)
 		}
@@ -89,7 +89,7 @@ func (b *incidentRolesBatcher) syncIncidentRole(curr, prov *ent.IncidentRole) *e
 			return nil
 		}
 	}
-	mut.SetProviderID(prov.ProviderID)
+	mut.SetExternalID(prov.ExternalID)
 	mut.SetName(prov.Name)
 	mut.SetRequired(prov.Required)
 

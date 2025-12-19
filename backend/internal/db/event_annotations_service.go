@@ -59,8 +59,8 @@ func (s *EventAnnotationsService) LookupByUserEvent(ctx context.Context, userId 
 
 	if ev.ID != uuid.Nil {
 		eventPred = event.ID(ev.ID)
-	} else if ev.ProviderID != "" {
-		eventPred = event.ProviderID(ev.ProviderID)
+	} else if ev.ExternalID != "" {
+		eventPred = event.ExternalID(ev.ExternalID)
 	}
 
 	query := s.db.EventAnnotation.Query().
@@ -95,7 +95,7 @@ func (s *EventAnnotationsService) createAnnotation(ctx context.Context, anno *en
 	eventId := anno.EventID
 	if eventId == uuid.Nil && anno.Edges.Event != nil {
 		eventQuery := s.db.Event.Query().
-			Where(event.ProviderID(anno.Edges.Event.ProviderID))
+			Where(event.ExternalID(anno.Edges.Event.ExternalID))
 		existingId, eventErr := eventQuery.OnlyID(ctx)
 		if eventErr != nil && !ent.IsNotFound(eventErr) {
 			return nil, fmt.Errorf("failed to check for existing oncall event: %w", eventErr)
@@ -109,7 +109,7 @@ func (s *EventAnnotationsService) createAnnotation(ctx context.Context, anno *en
 				return fmt.Errorf("oncall annotation event is empty")
 			}
 			createEvent := tx.Event.Create().
-				SetProviderID(e.ProviderID).
+				SetExternalID(e.ExternalID).
 				SetSource(e.Source).
 				SetKind(e.Kind).
 				SetTitle(e.Title).

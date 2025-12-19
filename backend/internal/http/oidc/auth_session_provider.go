@@ -87,7 +87,7 @@ func generateRequestState() (string, error) {
 	return base64.URLEncoding.EncodeToString(nonceBytes), nil
 }
 
-func (s *AuthSessionProvider) StartAuthFlow(w http.ResponseWriter, r *http.Request) {
+func (s *AuthSessionProvider) HandleStartAuthFlow(w http.ResponseWriter, r *http.Request) {
 	state := getRequestState(r)
 	if state == "" {
 		var stateErr error

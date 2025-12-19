@@ -36,7 +36,7 @@ func (h *documentsHandler) RequestDocumentEditorSession(ctx context.Context, req
 	wsUrl := "ws://" + rez.Config.DocumentsServerAddress()
 	resp.Body.Data = oapi.DocumentEditorSession{
 		DocumentId:    docId,
-		Token:         token,
+		SessionToken:  token,
 		ConnectionUrl: wsUrl,
 	}
 
@@ -48,8 +48,7 @@ func (h *documentsHandler) VerifyDocumentSessionAuth(ctx context.Context, req *o
 
 	sess := getRequestAuthSession(ctx, h.auth)
 
-	docId := req.Id
-	readOnly, accessErr := h.documents.GetUserDocumentAccess(ctx, sess.UserId, docId)
+	readOnly, accessErr := h.documents.GetUserDocumentAccess(ctx, sess.UserId, req.Id)
 	if accessErr != nil {
 		return nil, apiError("no document access", accessErr)
 	}

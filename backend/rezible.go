@@ -9,9 +9,10 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent"
-	"github.com/rezible/rezible/ent/providerconfig"
+	"github.com/rezible/rezible/ent/integration"
 	"github.com/rezible/rezible/jobs"
 	"github.com/texm/prosemirror-go"
+	"golang.org/x/oauth2"
 )
 
 var (
@@ -41,7 +42,6 @@ type ConfigLoader interface {
 
 	ApiRouteBase() string
 	AuthRouteBase() string
-	AuthSessionSecret() string
 
 	AllowTenantCreation() bool
 	AllowUserCreation() bool
@@ -61,7 +61,7 @@ type (
 		GetById(context.Context, uuid.UUID) (*ent.Organization, error)
 		GetCurrent(context.Context) (*ent.Organization, error)
 		CompleteSetup(context.Context, uuid.UUID) error
-		FindOrCreateFromAuthProvider(context.Context, ent.Organization) (*ent.Organization, error)
+		FindOrCreateFromProvider(context.Context, ent.Organization) (*ent.Organization, error)
 	}
 )
 
@@ -79,18 +79,33 @@ type (
 		GetPlaybookDataProviders(context.Context) ([]PlaybookDataProvider, error)
 	}
 
-	ListProviderConfigsParams struct {
-		ProviderType providerconfig.ProviderType
-		ProviderId   string
-		Enabled      bool
+	ListIntegrationsParams struct {
+		Type    integration.IntegrationType
+		Name    string
+		Enabled bool
 	}
 
-	ProviderConfigService interface {
-		ListProviderConfigs(context.Context, ListProviderConfigsParams) ([]*ent.ProviderConfig, error)
-		GetProviderConfig(context.Context, uuid.UUID) (*ent.ProviderConfig, error)
-		LookupProviderConfig(context.Context, providerconfig.ProviderType, string) (*ent.ProviderConfig, error)
-		UpdateProviderConfig(context.Context, ent.ProviderConfig) (*ent.ProviderConfig, error)
-		DeleteProviderConfig(context.Context, uuid.UUID) error
+	CompleteIntegrationOAuth2FlowParams struct {
+		Type  integration.IntegrationType
+		Name  string
+		State string
+		Code  string
+	}
+
+	OAuth2IntegrationHandler interface {
+		OAuth2Config() *oauth2.Config
+		CompleteOAuth2Flow(ctx context.Context, code string) (*ent.Integration, error)
+	}
+
+	IntegrationsService interface {
+		ListIntegrations(context.Context, ListIntegrationsParams) ([]*ent.Integration, error)
+		GetIntegration(context.Context, uuid.UUID) (*ent.Integration, error)
+		SetIntegration(context.Context, uuid.UUID, func(*ent.IntegrationMutation)) (*ent.Integration, error)
+		DeleteIntegration(context.Context, uuid.UUID) error
+
+		RegisterOAuth2Handler(t integration.IntegrationType, name string, h OAuth2IntegrationHandler)
+		StartOAuth2Flow(context.Context, integration.IntegrationType, string) (string, error)
+		CompleteOAuth2Flow(context.Context, CompleteIntegrationOAuth2FlowParams) (*ent.Integration, error)
 	}
 
 	ProviderDataSyncService interface {
@@ -131,10 +146,6 @@ type (
 		GetById(context.Context, uuid.UUID) (*ent.User, error)
 		GetByEmail(context.Context, string) (*ent.User, error)
 		GetByChatId(context.Context, string) (*ent.User, error)
-
-		GetTenantById(context.Context, int) (*ent.Tenant, error)
-
-		LookupProviderUser(ctx context.Context, provUser *ent.User) (*ent.User, error)
 	}
 )
 
@@ -150,7 +161,7 @@ type (
 		Id() string
 		DisplayName() string
 		UserMapping() *ent.User
-		StartAuthFlow(w http.ResponseWriter, r *http.Request)
+		HandleStartAuthFlow(w http.ResponseWriter, r *http.Request)
 		HandleAuthFlowRequest(w http.ResponseWriter, r *http.Request, onCreated func(AuthProviderSession)) bool
 		SessionExists(r *http.Request) bool
 		ClearSession(w http.ResponseWriter, r *http.Request) error
@@ -272,9 +283,6 @@ type (
 
 		EnableEventListener() bool
 		MakeEventListener() (ChatEventListener, error)
-
-		GetOAuth2URL(ctx context.Context, state string) (string, error)
-		CompleteOAuth2Flow(ctx context.Context, code string) (*ent.ProviderConfig, error)
 	}
 
 	ChatEventListener interface {
@@ -424,12 +432,9 @@ type (
 		WithAnnotations bool
 	}
 
-	LookupOncallProviderEventFn func(ctx context.Context, id string) (*ent.Event, error)
-
 	EventsService interface {
 		GetEvent(ctx context.Context, id uuid.UUID) (*ent.Event, error)
 		ListEvents(ctx context.Context, params ListEventsParams) (*ent.ListResult[*ent.Event], error)
-		GetProviderEvent(ctx context.Context, providerId string) (*ent.Event, error)
 	}
 
 	ExpandAnnotationsParams struct {

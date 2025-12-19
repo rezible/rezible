@@ -166,10 +166,6 @@ func (s *IncidentService) GetBySlug(ctx context.Context, slug string) (*ent.Inci
 	return s.incidentQuery(incident.Slug(slug), true).Only(ctx)
 }
 
-func (s *IncidentService) GetByProviderId(ctx context.Context, pid string) (*ent.Incident, error) {
-	return s.incidentQuery(incident.ProviderID(pid), true).Only(ctx)
-}
-
 func (s *IncidentService) ListIncidents(ctx context.Context, params rez.ListIncidentsParams) (*ent.ListResult[*ent.Incident], error) {
 	query := s.db.Incident.Query()
 	query.Order(incident.ByOpenedAt(params.GetOrder()))

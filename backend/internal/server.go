@@ -125,12 +125,12 @@ func setupServer(ctx context.Context) (Server, error) {
 
 	dbc := dbConn.Client()
 
-	pc, pcErr := db.NewProviderConfigService(dbc)
-	if pcErr != nil {
-		return nil, fmt.Errorf("db.NewProviderConfigService: %w", pcErr)
+	integrations, intgsErr := db.NewIntegrationsService(dbc)
+	if intgsErr != nil {
+		return nil, fmt.Errorf("db.NewIntegrationsService: %w", intgsErr)
 	}
 
-	orgs, orgsErr := db.NewOrganizationsService(dbc, pc)
+	orgs, orgsErr := db.NewOrganizationsService(dbc)
 	if orgsErr != nil {
 		return nil, fmt.Errorf("postgres.NewOrganizationsService: %w", orgsErr)
 	}
@@ -185,7 +185,7 @@ func setupServer(ctx context.Context) (Server, error) {
 		return nil, fmt.Errorf("postgres.NewSystemComponentsService: %w", componentsErr)
 	}
 
-	chat, chatErr := slack.NewChatService(jobSvc, pc, users, incidents, annos, components)
+	chat, chatErr := slack.NewChatService(jobSvc, integrations, users, incidents, annos, components)
 	if chatErr != nil {
 		return nil, fmt.Errorf("postgres.NewChatService: %w", chatErr)
 	}
@@ -225,7 +225,7 @@ func setupServer(ctx context.Context) (Server, error) {
 		return nil, fmt.Errorf("db.NewDocumentsService: %w", docsErr)
 	}
 
-	v1Handler := apiv1.NewHandler(dbc, auth, orgs, pc, chat, users, incidents, debriefs, rosters, shifts, oncallMetrics, events, annos, docs, retros, components, alerts, playbooks)
+	v1Handler := apiv1.NewHandler(dbc, auth, orgs, integrations, chat, users, incidents, debriefs, rosters, shifts, oncallMetrics, events, annos, docs, retros, components, alerts, playbooks)
 
 	srv := http.NewServer(auth)
 	srv.MountOpenApiV1(v1Handler)
@@ -253,7 +253,7 @@ func setupServer(ctx context.Context) (Server, error) {
 		srv.AddWebhookPathHandler("/foo", webhooks.Handler())
 	}
 
-	syncSvc := datasync.NewProviderSyncService(dbc, dataproviders.NewProviderLoader(pc))
+	syncSvc := datasync.NewProviderSyncService(dbc, dataproviders.NewProviderLoader(integrations))
 	river.RegisterJobWorkers(chat, syncSvc, shifts, oncallMetrics, debriefs)
 
 	return listeners, nil

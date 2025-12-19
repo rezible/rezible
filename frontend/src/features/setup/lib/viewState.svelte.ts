@@ -1,88 +1,95 @@
-import { completeIntegrationOauthMutation, finishOrganizationSetupMutation, listIntegrationsOptions, startIntegrationOauthMutation, type CompleteIntegrationOAuthRequestAttributes } from "$src/lib/api";
+import { completeIntegrationOauthMutation, finishOrganizationSetupMutation, listIntegrationsOptions, startIntegrationOauthMutation, type CompleteIntegrationOAuthRequestAttributes, type Integration } from "$src/lib/api";
 import { useAuthSessionState } from "$src/lib/auth.svelte";
 import { createMutation, createQuery } from "@tanstack/svelte-query";
 import { Context, watch } from "runed";
 import { useSearchParams } from "runed/kit";
-import { SvelteSet } from "svelte/reactivity";
 import { z } from "zod";
  
-export const setupIntegrationParamsSchema = z.object({
-	providerId: z.string().default(""),
+export const callbackParamsSchema = z.object({
+	name: z.string().default(""),
     code: z.string().default(""),
     state: z.string().default(""),
 });
 
-const getProviderKind = (id: string) => {
-    if (id === "slack") return "chat";
-    throw new Error("invalid provider id");
+type IntegrationTuple = {
+    name: string;
+    type: string;
+}
+
+const SlackIntegration: IntegrationTuple = {name: "slack", type: "chat"};
+
+const getIntegrationByCallbackName = (name: string) => {
+    switch (name) {
+        case "slack": return SlackIntegration;
+    }
 }
 
 export class SetupViewState {
     session = useAuthSessionState();
-    private searchParams = useSearchParams(setupIntegrationParamsSchema);
-    private queryProviderId = $derived(this.searchParams.providerId);
-    private queryCode = $derived(this.searchParams.code);
-    private queryState = $derived(this.searchParams.state);
 
-    settingUpProvider = $state<string>();
+    private callbackParams = useSearchParams(callbackParamsSchema);
+    private callbackName = $derived(this.callbackParams.name);
+    private callbackIntegration = $derived(getIntegrationByCallbackName(this.callbackName));
 
     private integrationsQuery = createQuery(() => listIntegrationsOptions({}));
     loading = $derived(this.integrationsQuery.isFetching);
     private integrations = $derived(this.integrationsQuery.data?.data);
-    private enabledProviderIntegrationIds = $derived(this.integrations?.filter(intg => intg.attributes.enabled).map(intg => intg.attributes.provider_id) ?? []);
-    private enabledProviderIdMap = $derived(new SvelteSet(this.enabledProviderIntegrationIds));
+    private enabledIntegrations = $derived(this.integrations?.filter(intg => intg.attributes.enabled) ?? []);
 
     constructor() {
-        watch(() => this.queryProviderId, id => {this.onProviderIdSet(id)});
-        watch(() => this.enabledProviderIdMap, ids => {this.onEnabledProvidersUpdated(ids)})
+        watch(() => this.enabledIntegrations, intgs => {this.onEnabledIntegrationsUpdated(intgs)});
+        watch(() => this.callbackIntegration, qi => {this.onCallbackIntegrationSet(qi)});
     }
 
-    nextRequiredIntegrationId = $state<string>();
+    currentlyCompleting = $state<IntegrationTuple>();
+    nextRequired = $state<IntegrationTuple>();
+
     private startIntegrationOAuthMut = createMutation(() => startIntegrationOauthMutation({}));
     nextRequiredIntegrationFlowUrl = $derived(this.startIntegrationOAuthMut.data?.data.flow_url);
     nextRequiredIntegrationFlowErr = $derived(this.startIntegrationOAuthMut.error);
 
-    async onEnabledProvidersUpdated(ids: Set<string>) {
-        this.nextRequiredIntegrationId = undefined;
-        if (!ids.has("slack")) this.nextRequiredIntegrationId = "slack";
-        // iterate in order
+    async onEnabledIntegrationsUpdated(intgs: Integration[]) {
+        if (this.loading || !!this.currentlyCompleting) return;
+
+        this.nextRequired = undefined;
+        
+        const isEnabled = (t: IntegrationTuple) => {
+            return !!intgs.find(({attributes: attr}) => (attr.name === t.name && attr.type === t.type));
+        }
+
+        if (!isEnabled(SlackIntegration)) this.nextRequired = SlackIntegration;
+
+        if (!this.nextRequired) return;
 
         try {
-            if (this.nextRequiredIntegrationId) await this.doStartIntegrationOAuth(this.nextRequiredIntegrationId);
-        } catch (e) {}
-    }
-
-    async doStartIntegrationOAuth(provider_id: string) {
-        if (this.loading || !!this.queryProviderId || !!this.settingUpProvider) return;
-        
-        const resp = await this.startIntegrationOAuthMut.mutateAsync({body: {attributes: {provider_id, kind: getProviderKind(provider_id)}}});
-        // console.log("start", resp.data);
-    }
+            const resp = await this.startIntegrationOAuthMut.mutateAsync({body: {attributes: this.nextRequired}});
+            console.log("start", resp.data);
+        } catch (e) {
+            console.log("failed to start", e);
+        }
+    };
 
     private completeIntegrationOAuthMut = createMutation(() => completeIntegrationOauthMutation({}));
     completeIntegrationErr = $derived(this.completeIntegrationOAuthMut.error);
 
-    async onProviderIdSet(provider_id?: string) {
-        if (!provider_id) return;
-        if (this.completeIntegrationOAuthMut.isPending) return;
+    async onCallbackIntegrationSet(intg?: IntegrationTuple) {
+        if (!intg || this.completeIntegrationOAuthMut.isPending) return;
 
-        this.settingUpProvider = provider_id;
+        this.currentlyCompleting = intg;
 
-        const state = $state.snapshot(this.queryState);
-        const code = $state.snapshot(this.queryCode);
+        const {state, code} = $state.snapshot(this.callbackParams);
 
-        console.log("do complete", {state, code});
+        console.log("do complete", intg, {state, code});
 
-        this.searchParams.reset();
+        this.callbackParams.reset();
         if (!state || !code) return;
 
         try {
-            const kind = getProviderKind(provider_id);
-            await this.doCompleteIntegrationOAuth({provider_id, kind, state, code});
+            await this.doCompleteIntegrationOAuth({type: intg.type, name: intg.name, state, code});
         } catch (e) {
             console.error("failed to complete", e);
         } finally {
-            this.settingUpProvider = undefined;
+            this.currentlyCompleting = undefined;
         }
     }
 

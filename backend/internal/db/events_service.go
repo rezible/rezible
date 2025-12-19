@@ -28,10 +28,6 @@ func (s *EventsService) GetEvent(ctx context.Context, id uuid.UUID) (*ent.Event,
 	return s.db.Event.Get(ctx, id)
 }
 
-func (s *EventsService) GetProviderEvent(ctx context.Context, providerId string) (*ent.Event, error) {
-	return s.db.Event.Query().Where(oe.ProviderID(providerId)).First(ctx)
-}
-
 func (s *EventsService) ListEvents(ctx context.Context, params rez.ListEventsParams) (*ent.ListResult[*ent.Event], error) {
 	query := s.db.Event.Query()
 

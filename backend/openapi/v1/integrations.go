@@ -40,27 +40,27 @@ type (
 	}
 
 	IntegrationAttributes struct {
-		ProviderId string            `json:"provider_id"`
-		Kind       string            `json:"kind"`
-		Enabled    bool              `json:"enabled"`
-		Config     map[string]string `json:"config"`
+		Name    string            `json:"name"`
+		Type    string            `json:"type"`
+		Enabled bool              `json:"enabled"`
+		Config  map[string]string `json:"config"`
 	}
 )
 
-func IntegrationFromEnt(pc *ent.ProviderConfig) Integration {
+func IntegrationFromEnt(intg *ent.Integration) Integration {
 	config := make(map[string]string)
-	if jsonErr := json.Unmarshal(pc.Config, &config); jsonErr != nil {
-		log.Warn().Err(jsonErr).Msg("Failed to unmarshal provider config")
+	if jsonErr := json.Unmarshal(intg.Config, &config); jsonErr != nil {
+		log.Warn().Err(jsonErr).Msg("Failed to unmarshal integration config")
 	}
 	attr := IntegrationAttributes{
-		ProviderId: pc.ProviderID,
-		Kind:       pc.ProviderType.String(),
-		Enabled:    pc.Enabled,
-		Config:     config,
+		Name:    intg.Name,
+		Type:    intg.IntegrationType.String(),
+		Enabled: intg.Enabled,
+		Config:  config,
 	}
 
 	return Integration{
-		Id:         pc.ID,
+		Id:         intg.ID,
 		Attributes: attr,
 	}
 }
@@ -78,8 +78,8 @@ var ListIntegrations = huma.Operation{
 
 type ListIntegrationsRequest struct {
 	ListRequest
-	ProviderId string `query:"provider_id" required:"false"`
-	Kind       string `query:"kind" required:"false"`
+	Name string `query:"name" required:"false"`
+	Type string `query:"type" required:"false"`
 }
 type ListIntegrationsResponse PaginatedResponse[Integration]
 
@@ -93,10 +93,10 @@ var CreateIntegration = huma.Operation{
 }
 
 type CreateIntegrationRequestAttributes struct {
-	ProviderId string            `json:"provider_id"`
-	Kind       string            `json:"kind"`
-	Enabled    bool              `json:"enabled"`
-	Config     map[string]string `json:"config"`
+	Name    string            `json:"name"`
+	Type    string            `json:"type"`
+	Enabled bool              `json:"enabled"`
+	Config  map[string]string `json:"config"`
 }
 type CreateIntegrationRequest RequestWithBodyAttributes[CreateIntegrationRequestAttributes]
 type CreateIntegrationResponse ItemResponse[Integration]
@@ -151,8 +151,8 @@ var StartIntegrationOAuth = huma.Operation{
 }
 
 type StartIntegrationOAuthRequestAttributes struct {
-	Kind       string `json:"kind"`
-	ProviderId string `json:"provider_id"`
+	Name string `json:"name"`
+	Type string `json:"type"`
 }
 type StartIntegrationOAuthRequest RequestWithBodyAttributes[StartIntegrationOAuthRequestAttributes]
 
@@ -171,10 +171,10 @@ var CompleteIntegrationOAuth = huma.Operation{
 }
 
 type CompleteIntegrationOAuthRequestAttributes struct {
-	Kind       string `json:"kind"`
-	ProviderId string `json:"provider_id"`
-	State      string `json:"state"`
-	Code       string `json:"code"`
+	Type  string `json:"type"`
+	Name  string `json:"name"`
+	State string `json:"state"`
+	Code  string `json:"code"`
 }
 type CompleteIntegrationOAuthRequest RequestWithBodyAttributes[CompleteIntegrationOAuthRequestAttributes]
 type CompleteIntegrationOAuthResponse ItemResponse[Integration]

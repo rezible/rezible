@@ -64,13 +64,13 @@ func withDatabase(ctx context.Context, fn func(dbc rez.Database)) {
 	fn(dbc)
 }
 
-var providersCmd = &cobra.Command{
-	Use: "provider-configs",
+var integrationsCmd = &cobra.Command{
+	Use: "integrations",
 }
 
-var providersLoadCmd = &cobra.Command{
+var integrationsLoadCmd = &cobra.Command{
 	Use:   "load [source]",
-	Short: "Load tenant provider configs from source",
+	Short: "Load tenant integrations from source",
 	Args:  cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
 		ctx := access.SystemContext(cmd.Context())
@@ -89,9 +89,9 @@ var providersLoadCmd = &cobra.Command{
 	},
 }
 
-var providersSyncCmd = &cobra.Command{
+var integrationsSyncCmd = &cobra.Command{
 	Use:   "sync",
-	Short: "Run provider data sync",
+	Short: "Run integration data sync",
 	Run: func(cmd *cobra.Command, args []string) {
 		ctx := access.SystemContext(cmd.Context())
 		syncArgs := jobs.SyncProviderData{
@@ -99,11 +99,11 @@ var providersSyncCmd = &cobra.Command{
 		}
 		withDatabase(ctx, func(dbc rez.Database) {
 			client := dbc.Client()
-			cfgs, cfgsErr := db.NewProviderConfigService(client)
-			if cfgsErr != nil {
-				log.Fatal().Err(cfgsErr).Msg("failed to load provider configs")
+			intgs, intgsErr := db.NewIntegrationsService(client)
+			if intgsErr != nil {
+				log.Fatal().Err(intgsErr).Msg("db.NewIntegrationsService")
 			}
-			svc := datasync.NewProviderSyncService(client, dataproviders.NewProviderLoader(cfgs))
+			svc := datasync.NewProviderSyncService(client, dataproviders.NewProviderLoader(intgs))
 			syncErr := svc.SyncProviderData(ctx, syncArgs)
 			if syncErr != nil {
 				log.Fatal().Err(syncErr).Msg("failed to sync provider data")
@@ -148,9 +148,9 @@ var dbMigrateApplyCmd = &cobra.Command{
 func init() {
 	rez.Config = viper.InitConfig()
 
-	rootCmd.AddCommand(serveCmd, printSpecCmd, providersCmd, dbCmd)
+	rootCmd.AddCommand(serveCmd, printSpecCmd, integrationsCmd, dbCmd)
 
-	providersCmd.AddCommand(providersLoadCmd, providersSyncCmd)
+	integrationsCmd.AddCommand(integrationsLoadCmd, integrationsSyncCmd)
 
 	dbCmd.AddCommand(dbMigrateCmd)
 	dbMigrateCmd.AddCommand(dbMigrateGenerateCmd, dbMigrateApplyCmd)

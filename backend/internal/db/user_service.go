@@ -54,14 +54,14 @@ func nilEmptyString(s string) *string {
 	return &s
 }
 
-func (s *UserService) getUserByProviderID(ctx context.Context, providerID string) (*ent.User, error) {
+func (s *UserService) getUserByExternalID(ctx context.Context, externalID string) (*ent.User, error) {
 	userQuery := s.db.User.Query().
-		Where(user.ProviderID(providerID))
+		Where(user.ExternalID(externalID))
 	return userQuery.Only(ctx)
 }
 
 func (s *UserService) FindOrCreateAuthProviderUser(ctx context.Context, pu ent.User) (*ent.User, error) {
-	usr, usrErr := s.getUserByProviderID(ctx, pu.ProviderID)
+	usr, usrErr := s.getUserByExternalID(ctx, pu.ExternalID)
 	if usrErr != nil && !ent.IsNotFound(usrErr) {
 		return nil, fmt.Errorf("failed to query user: %w", usrErr)
 	}
@@ -74,7 +74,7 @@ func (s *UserService) FindOrCreateAuthProviderUser(ctx context.Context, pu ent.U
 	// tenant exists, user does not exist
 
 	createUser := s.db.User.Create().
-		SetProviderID(pu.ProviderID).
+		SetExternalID(pu.ExternalID).
 		SetEmail(pu.Email).
 		SetConfirmed(pu.Confirmed).
 		SetNillableName(nilEmptyString(pu.Name)).
@@ -114,31 +114,28 @@ func (s *UserService) GetByChatId(ctx context.Context, chatId string) (*ent.User
 	return s.getOneWhere(ctx, user.ChatID(chatId))
 }
 
-func (s *UserService) GetTenantById(ctx context.Context, id int) (*ent.Tenant, error) {
-	return s.db.Tenant.Get(ctx, id)
-}
-
-func (s *UserService) LookupProviderUser(ctx context.Context, provUser *ent.User) (*ent.User, error) {
-	// TODO: use provider mapping to match user details, not just by email
-	email := provUser.Email
-	if rez.Config.DebugMode() {
-		defaultEmail := rez.Config.GetString("REZ_DEBUG_DEFAULT_USER_EMAIL")
-		if defaultEmail != "" {
-			email = defaultEmail
-			//log.Debug().Str("email", email).Msg("using debug auth email")
-		}
-	}
-
-	allowQueryCtx := privacy.DecisionContext(ctx, privacy.Allow)
-	u, lookupErr := s.GetByEmail(allowQueryCtx, email)
-	if lookupErr != nil {
-		if ent.IsNotFound(lookupErr) {
-			return nil, nil
-		}
-		return nil, fmt.Errorf("users.GetByEmail: %w", lookupErr)
-	}
-	return u, nil
-}
+//
+//func (s *UserService) LookupProviderUser(ctx context.Context, provUser *ent.User) (*ent.User, error) {
+//	// TODO: use provider mapping to match user details, not just by email
+//	email := provUser.Email
+//	if rez.Config.DebugMode() {
+//		defaultEmail := rez.Config.GetString("REZ_DEBUG_DEFAULT_USER_EMAIL")
+//		if defaultEmail != "" {
+//			email = defaultEmail
+//			//log.Debug().Str("email", email).Msg("using debug auth email")
+//		}
+//	}
+//
+//	allowQueryCtx := privacy.DecisionContext(ctx, privacy.Allow)
+//	u, lookupErr := s.GetByEmail(allowQueryCtx, email)
+//	if lookupErr != nil {
+//		if ent.IsNotFound(lookupErr) {
+//			return nil, nil
+//		}
+//		return nil, fmt.Errorf("users.GetByEmail: %w", lookupErr)
+//	}
+//	return u, nil
+//}
 
 func (s *UserService) ListUsers(ctx context.Context, params rez.ListUsersParams) ([]*ent.User, error) {
 	query := s.db.User.Query().

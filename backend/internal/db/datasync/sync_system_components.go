@@ -38,10 +38,10 @@ func (b *systemComponentsBatcher) getDeletionMutations() []ent.Mutation {
 func (b *systemComponentsBatcher) createBatchMutations(ctx context.Context, batch []*ent.SystemComponent) ([]ent.Mutation, error) {
 	ids := make([]string, len(batch))
 	for i, c := range batch {
-		ids[i] = c.ProviderID
+		ids[i] = c.ExternalID
 	}
 
-	query := b.db.SystemComponent.Query().Where(systemcomponent.ProviderIDIn(ids...))
+	query := b.db.SystemComponent.Query().Where(systemcomponent.ExternalIDIn(ids...))
 	dbComponents, queryErr := query.All(ctx)
 	if queryErr != nil {
 		return nil, fmt.Errorf("querying db system components: %w", queryErr)
@@ -50,12 +50,12 @@ func (b *systemComponentsBatcher) createBatchMutations(ctx context.Context, batc
 	dbIdMap := make(map[string]*ent.SystemComponent)
 	for _, dbCmp := range dbComponents {
 		c := dbCmp
-		dbIdMap[c.ProviderID] = c
+		dbIdMap[c.ExternalID] = c
 	}
 
 	var mutations []ent.Mutation
 	for _, provCmp := range batch {
-		dbCmp, exists := dbIdMap[provCmp.ProviderID]
+		dbCmp, exists := dbIdMap[provCmp.ExternalID]
 		if exists {
 			// don't delete this component
 		}
@@ -85,7 +85,7 @@ func (b *systemComponentsBatcher) syncComponent(db, prov *ent.SystemComponent) [
 		m.SetKindID(prov.KindID)
 	}
 
-	m.SetProviderID(prov.ProviderID)
+	m.SetExternalID(prov.ExternalID)
 	m.SetName(prov.Name)
 	m.SetProperties(prov.Properties)
 	m.SetDescription(prov.Description)
@@ -102,13 +102,13 @@ func (b *systemComponentsBatcher) syncComponentKind(prov *ent.SystemComponentKin
 	var m *ent.SystemComponentKindMutation
 	var kindId uuid.UUID
 
-	dbKind, dbExists := b.componentKindProvIds[prov.ProviderID]
+	dbKind, dbExists := b.componentKindProvIds[prov.ExternalID]
 
 	if !dbExists {
 		kindId = uuid.New()
-		b.componentKindProvIds[prov.ProviderID] = &ent.SystemComponentKind{
+		b.componentKindProvIds[prov.ExternalID] = &ent.SystemComponentKind{
 			ID:          kindId,
-			ProviderID:  prov.ProviderID,
+			ExternalID:  prov.ExternalID,
 			Label:       prov.Label,
 			Description: prov.Description,
 		}
@@ -125,7 +125,7 @@ func (b *systemComponentsBatcher) syncComponentKind(prov *ent.SystemComponentKin
 
 	m.SetLabel(prov.Label)
 	m.SetDescription(prov.Description)
-	m.SetProviderID(prov.ProviderID)
+	m.SetExternalID(prov.ExternalID)
 
 	return m
 }

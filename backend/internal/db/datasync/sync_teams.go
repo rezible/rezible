@@ -39,22 +39,22 @@ func (b *teamsBatcher) getDeletionMutations() []ent.Mutation {
 func (b *teamsBatcher) createBatchMutations(ctx context.Context, batch []*ent.Team) ([]ent.Mutation, error) {
 	ids := make([]string, len(batch))
 	for i, t := range batch {
-		ids[i] = t.ProviderID
+		ids[i] = t.ExternalID
 	}
 
-	dbTeams, queryErr := b.db.Team.Query().Where(team.ProviderIDIn(ids...)).All(ctx)
+	dbTeams, queryErr := b.db.Team.Query().Where(team.ExternalIDIn(ids...)).All(ctx)
 	if queryErr != nil {
 		return nil, fmt.Errorf("querying users: %w", queryErr)
 	}
 	dbProvMap := make(map[string]*ent.Team)
 	for _, tm := range dbTeams {
 		t := tm
-		dbProvMap[t.ProviderID] = t
+		dbProvMap[t.ExternalID] = t
 	}
 
 	var mutations []ent.Mutation
 	for _, provTeam := range batch {
-		dbTeam, exists := dbProvMap[provTeam.ProviderID]
+		dbTeam, exists := dbProvMap[provTeam.ExternalID]
 		if exists {
 
 		}
@@ -93,7 +93,7 @@ func (b *teamsBatcher) syncTeam(ctx context.Context, db, prov *ent.Team) (*ent.T
 		return nil, fmt.Errorf("failed to create unique incident slug: %w", slugErr)
 	}
 
-	m.SetProviderID(prov.ProviderID)
+	m.SetExternalID(prov.ExternalID)
 	m.SetName(prov.Name)
 	m.SetSlug(slug)
 	m.SetTimezone(prov.Timezone)

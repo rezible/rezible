@@ -8,7 +8,8 @@ import (
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/access"
 	"github.com/rezible/rezible/ent"
-	"github.com/rezible/rezible/ent/providerconfig"
+	"github.com/rezible/rezible/ent/integration"
+
 	"github.com/rs/zerolog/log"
 	"github.com/slack-go/slack"
 	"golang.org/x/oauth2"
@@ -17,34 +18,45 @@ import (
 type ChatService struct {
 	oauthConfig *oauth2.Config
 
-	jobs       rez.JobsService
-	configs    rez.ProviderConfigService
-	users      rez.UserService
-	incidents  rez.IncidentService
-	annos      rez.EventAnnotationsService
-	components rez.SystemComponentsService
+	jobs         rez.JobsService
+	integrations rez.IntegrationsService
+	users        rez.UserService
+	incidents    rez.IncidentService
+	annos        rez.EventAnnotationsService
+	components   rez.SystemComponentsService
 }
 
-func NewChatService(jobs rez.JobsService, configs rez.ProviderConfigService, users rez.UserService, incidents rez.IncidentService, annos rez.EventAnnotationsService, components rez.SystemComponentsService) (*ChatService, error) {
+const integrationName = "slack"
+
+func NewChatService(jobs rez.JobsService, integrations rez.IntegrationsService, users rez.UserService, incidents rez.IncidentService, annos rez.EventAnnotationsService, components rez.SystemComponentsService) (*ChatService, error) {
 	s := &ChatService{
-		oauthConfig: LoadOAuthConfig(),
-		configs:     configs,
-		jobs:        jobs,
-		users:       users,
-		incidents:   incidents,
-		annos:       annos,
-		components:  components,
+		oauthConfig:  LoadOAuthConfig(),
+		integrations: integrations,
+		jobs:         jobs,
+		users:        users,
+		incidents:    incidents,
+		annos:        annos,
+		components:   components,
 	}
+	integrations.RegisterOAuth2Handler(integration.IntegrationTypeChat, integrationName, s)
 	return s, nil
 }
 
-func (s *ChatService) loadTenantConfig(ctx context.Context) (*providerConfigData, error) {
-	pc, cfgErr := s.configs.LookupProviderConfig(ctx, providerconfig.ProviderTypeChat, "slack")
-	if cfgErr != nil {
-		return nil, cfgErr
+func (s *ChatService) loadIntegrationConfig(ctx context.Context) (*IntegrationConfigData, error) {
+	params := rez.ListIntegrationsParams{
+		Name: integrationName,
+		Type: integration.IntegrationTypeChat,
 	}
-	var cfg providerConfigData
-	if jsonErr := json.Unmarshal(pc.Config, &cfg); jsonErr != nil {
+	results, listErr := s.integrations.ListIntegrations(ctx, params)
+	if listErr != nil {
+		return nil, listErr
+	}
+	// TODO: handle multiple??
+	if len(results) != 1 {
+		return nil, fmt.Errorf("expected 1 integration, got %d", len(results))
+	}
+	var cfg IntegrationConfigData
+	if jsonErr := json.Unmarshal(results[0].Config, &cfg); jsonErr != nil {
 		return nil, jsonErr
 	}
 	return &cfg, nil
@@ -54,9 +66,9 @@ func (s *ChatService) getClient(ctx context.Context) (*slack.Client, error) {
 	if rez.Config.SingleTenantMode() {
 		return LoadSingleTenantClient()
 	}
-	cfg, cfgErr := s.loadTenantConfig(ctx)
-	if cfgErr != nil {
-		return nil, cfgErr
+	cfg, loadErr := s.loadIntegrationConfig(ctx)
+	if loadErr != nil {
+		return nil, fmt.Errorf("loading integration config: %w", loadErr)
 	}
 	return slack.New(cfg.AccessToken), nil
 }
@@ -118,8 +130,8 @@ func (s *ChatService) SendOncallHandoverReminder(ctx context.Context, shift *ent
 	return nil
 }
 
-func (s *ChatService) GetOAuth2URL(ctx context.Context, state string) (string, error) {
-	return s.oauthConfig.AuthCodeURL(state), nil
+func (s *ChatService) OAuth2Config() *oauth2.Config {
+	return s.oauthConfig
 }
 
 type teamInfo struct {
@@ -127,7 +139,7 @@ type teamInfo struct {
 	Name string `json:"name"`
 }
 
-type providerConfigData struct {
+type IntegrationConfigData struct {
 	AccessToken string    `json:"access_token"`
 	TokenType   string    `json:"token_type"`
 	Scope       string    `json:"scope"`
@@ -136,7 +148,7 @@ type providerConfigData struct {
 	Enterprise  *teamInfo `json:"enterprise"`
 }
 
-func (s *ChatService) CompleteOAuth2Flow(ctx context.Context, code string) (*ent.ProviderConfig, error) {
+func (s *ChatService) CompleteOAuth2Flow(ctx context.Context, code string) (*ent.Integration, error) {
 	token, tokenErr := s.oauthConfig.Exchange(ctx, code)
 	if tokenErr != nil {
 		return nil, fmt.Errorf("exchange token: %w", tokenErr)
@@ -145,7 +157,7 @@ func (s *ChatService) CompleteOAuth2Flow(ctx context.Context, code string) (*ent
 	team := token.Extra("team")
 	log.Debug().Interface("team", team).Msg("complete oauth2 flow")
 
-	cfg := providerConfigData{
+	cfg := IntegrationConfigData{
 		AccessToken: token.AccessToken,
 		TokenType:   token.Type(),
 		Scope:       token.Extra("scope").(string),
@@ -156,10 +168,10 @@ func (s *ChatService) CompleteOAuth2Flow(ctx context.Context, code string) (*ent
 		return nil, fmt.Errorf("marshalling provider config: %w", jsonErr)
 	}
 
-	return &ent.ProviderConfig{
-		ProviderType: providerconfig.ProviderTypeChat,
-		ProviderID:   "slack",
-		Enabled:      true,
-		Config:       cfgJson,
+	return &ent.Integration{
+		IntegrationType: integration.IntegrationTypeChat,
+		Name:            integrationName,
+		Enabled:         true,
+		Config:          cfgJson,
 	}, nil
 }

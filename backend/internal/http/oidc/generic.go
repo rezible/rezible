@@ -97,12 +97,12 @@ func (p *genericIdentity) ExtractTokenSession(token *oidc.IDToken) (*rez.AuthPro
 	domain := strings.Split(claims.Email, "@")[1]
 
 	org := ent.Organization{
-		ProviderID: domain,
+		ExternalID: domain,
 		Name:       domain,
 	}
 
 	usr := ent.User{
-		ProviderID: token.Subject,
+		ExternalID: token.Subject,
 		Email:      claims.Email,
 		Name:       claims.GivenName,
 	}

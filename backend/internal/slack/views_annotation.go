@@ -50,7 +50,7 @@ func (s *ChatService) makeAnnotationViewContext(ctx context.Context, ic *slack.I
 	}
 
 	ev := &ent.Event{
-		ProviderID: d.meta.MsgId.String(),
+		ExternalID: d.meta.MsgId.String(),
 	}
 
 	anno, annoErr := s.annos.LookupByUserEvent(usrCtx, usr.ID, ev)
@@ -142,7 +142,7 @@ func (s *ChatService) getAnnotationModalAnnotation(ctx context.Context, view sla
 	}
 
 	ev := &ent.Event{
-		ProviderID:  meta.MsgId.String(),
+		ExternalID:  meta.MsgId.String(),
 		Kind:        "message",
 		Timestamp:   meta.MsgId.getTimestamp(),
 		Source:      "slack",

@@ -46,7 +46,7 @@ var (
 		OpenedAt:      timeSupported,
 		ModifiedAt:    timeSupported,
 		ClosedAt:      timeSupported,
-		ProviderID:    strSupported,
+		ExternalID:    strSupported,
 		ChatChannelID: strSupported,
 		Edges: ent.IncidentEdges{
 			Severity:        &incidentSeverityMapping,

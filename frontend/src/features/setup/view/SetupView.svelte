@@ -12,8 +12,8 @@
 	const view = useSetupViewState();
 </script>
 
-{#snippet flowButtonImg(id: string)}
-	{#if id === "slack"}
+{#snippet flowButtonImg(name: string)}
+	{#if name === "slack"}
 	<img alt="Add to Slack" height="40" width="139" 
 		src="https://platform.slack-edge.com/img/add_to_slack.png" 
 		srcSet="https://platform.slack-edge.com/img/add_to_slack.png 1x, https://platform.slack-edge.com/img/add_to_slack@2x.png 2x" />
@@ -33,13 +33,13 @@
 		{#if view.loading}
 			<LoadingIndicator />
 		{:else}
-			{#if !!view.nextRequiredIntegrationId}
+			{#if !!view.nextRequired}
 				{@const href = view.nextRequiredIntegrationFlowUrl}
 				{@const flowErr = view.nextRequiredIntegrationFlowErr}
 
 				{#if href}
 					<a {href}>
-						{@render flowButtonImg(view.nextRequiredIntegrationId)}
+						{@render flowButtonImg(view.nextRequired.name)}
 					</a>
 				{:else if flowErr}
 					<span>flow error: {flowErr}</span>

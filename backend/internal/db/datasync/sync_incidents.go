@@ -49,7 +49,7 @@ func (b *incidentBatcher) setup(ctx context.Context) error {
 	}
 	for _, r := range roles {
 		role := r
-		b.provIdRoleMap[role.ProviderID] = role
+		b.provIdRoleMap[role.ExternalID] = role
 	}
 
 	b.provIdSeverityMap = make(map[string]*ent.IncidentSeverity)
@@ -59,7 +59,7 @@ func (b *incidentBatcher) setup(ctx context.Context) error {
 	}
 	for _, s := range severities {
 		sev := s
-		b.provIdSeverityMap[sev.ProviderID] = sev
+		b.provIdSeverityMap[sev.ExternalID] = sev
 	}
 
 	return nil
@@ -71,7 +71,7 @@ func (b *incidentBatcher) pullData(ctx context.Context) iter.Seq2[*ent.Incident,
 
 func (b *incidentBatcher) queryDbIncidents(ctx context.Context, provIds []string) ([]*ent.Incident, error) {
 	dbIncidents, incErr := b.db.Incident.Query().
-		Where(incident.ProviderIDIn(provIds...)).
+		Where(incident.ExternalIDIn(provIds...)).
 		WithRoleAssignments().
 		All(ctx)
 	if incErr != nil && !ent.IsNotFound(incErr) {
@@ -90,7 +90,7 @@ func (b *incidentBatcher) getDeletionMutations() []ent.Mutation {
 func (b *incidentBatcher) createBatchMutations(ctx context.Context, batch []*ent.Incident) ([]ent.Mutation, error) {
 	provIds := make([]string, len(batch))
 	for i, p := range batch {
-		provIds[i] = p.ProviderID
+		provIds[i] = p.ExternalID
 	}
 
 	dbIncidents, dbIncErr := b.queryDbIncidents(ctx, provIds)
@@ -107,10 +107,10 @@ func (b *incidentBatcher) createBatchMutations(ctx context.Context, batch []*ent
 		inc := dbInc
 		needsSync := dbInc.ModifiedAt.IsZero() || inc.ModifiedAt.After(lastSyncTime)
 		if !needsSync {
-			syncIds.Remove(inc.ProviderID)
+			syncIds.Remove(inc.ExternalID)
 		} else {
 			deletedIds.Add(inc.ID)
-			dbProvIdMap[inc.ProviderID] = inc
+			dbProvIdMap[inc.ExternalID] = inc
 		}
 	}
 	if syncIds.IsEmpty() {
@@ -119,7 +119,7 @@ func (b *incidentBatcher) createBatchMutations(ctx context.Context, batch []*ent
 
 	var muts []ent.Mutation
 	for _, provInc := range batch {
-		dbInc, incExists := dbProvIdMap[provInc.ProviderID]
+		dbInc, incExists := dbProvIdMap[provInc.ExternalID]
 		if incExists {
 			deletedIds.Remove(dbInc.ID)
 		}
@@ -164,7 +164,7 @@ func (b *incidentBatcher) syncIncident(ctx context.Context, db, prov *ent.Incide
 
 	m.SetTitle(prov.Title)
 	m.SetSummary(prov.Summary)
-	m.SetProviderID(prov.ProviderID)
+	m.SetExternalID(prov.ExternalID)
 	m.SetChatChannelID(prov.ChatChannelID)
 	m.SetOpenedAt(prov.OpenedAt)
 	m.SetModifiedAt(prov.ModifiedAt)
@@ -209,10 +209,10 @@ func (b *incidentBatcher) syncIncidentRoleAssignments(ctx context.Context, dbInc
 		provRole := a.Edges.Role
 		provUser := a.Edges.User
 
-		role, roleExists := b.provIdRoleMap[provRole.ProviderID]
+		role, roleExists := b.provIdRoleMap[provRole.ExternalID]
 		if !roleExists {
-			log.Warn().Str("id", provRole.ProviderID).Msg("failed to lookup incident role")
-			return nil, fmt.Errorf("missing db role for id: %s", provRole.ProviderID)
+			log.Warn().Str("id", provRole.ExternalID).Msg("failed to lookup incident role")
+			return nil, fmt.Errorf("missing db role for id: %s", provRole.ExternalID)
 		}
 
 		userId, userMut, userErr := b.userTracker.lookupOrCreate(ctx, provUser, provUserMapping)

@@ -35,7 +35,7 @@ var (
 	teamDataMapping = ent.Team{
 		Name: "y",
 		Edges: ent.TeamEdges{
-			Users: []*ent.User{&ent.User{
+			Users: []*ent.User{{
 				ChatID: "y",
 			}},
 		},
@@ -63,7 +63,7 @@ func (p *TeamDataProvider) PullTeams(ctx context.Context) iter.Seq2[*ent.Team, e
 					ugUsers[i] = &ent.User{ChatID: userId}
 				}
 				mapped := &ent.Team{
-					ProviderID: userGroup.ID,
+					ExternalID: userGroup.ID,
 					Name:       userGroup.Name,
 					Edges: ent.TeamEdges{
 						Users: ugUsers,

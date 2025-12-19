@@ -105,7 +105,7 @@ func (p *IncidentDataProvider) makeFakeIncidents() {
 
 		p.incidents[i] = &ent.Incident{
 			Title:      title,
-			ProviderID: fmt.Sprintf("fake-%d", i+1),
+			ExternalID: fmt.Sprintf("fake-%d", i+1),
 			Slug:       incSlug,
 			Summary:    faker.Sentence(),
 			OpenedAt:   openedAt,
@@ -144,7 +144,7 @@ func (p *IncidentDataProvider) PullIncidents(ctx context.Context) iter.Seq2[*ent
 
 func (p *IncidentDataProvider) GetIncidentByID(ctx context.Context, id string) (*ent.Incident, error) {
 	for _, inc := range p.incidents {
-		if inc.ProviderID == id {
+		if inc.ExternalID == id {
 			return inc, nil
 		}
 	}

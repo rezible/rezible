@@ -27,7 +27,7 @@ func (p *PlaybookDataProvider) TeamDataMapping() *ent.Playbook {
 
 var fakePlaybook = &ent.Playbook{
 	Title:      "Example Playbook",
-	ProviderID: "example-playbook",
+	ExternalID: "example-playbook",
 	Content:    []byte("<p>hello</p>"),
 }
 

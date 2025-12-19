@@ -31,7 +31,6 @@ func LoadSingleTenantClient() (*slack.Client, error) {
 }
 
 func LoadOAuthConfig() *oauth2.Config {
-	//appId := rez.Config.GetString("slack.app_id")
 	clientId := rez.Config.GetString("slack.oauth_client_id")
 	clientSecret := rez.Config.GetString("slack.oauth_client_secret")
 	scopes := []string{

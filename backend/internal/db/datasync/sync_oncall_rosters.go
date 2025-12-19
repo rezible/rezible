@@ -48,7 +48,7 @@ func (b *oncallRosterBatcher) pullData(ctx context.Context) iter.Seq2[*ent.Oncal
 
 func (b *oncallRosterBatcher) queryRosters(ctx context.Context, ids []string) ([]*ent.OncallRoster, error) {
 	return b.db.OncallRoster.Query().
-		Where(oncallroster.ProviderIDIn(ids...)).
+		Where(oncallroster.ExternalIDIn(ids...)).
 		WithSchedules(func(q *ent.OncallScheduleQuery) {
 			q.WithParticipants()
 		}).All(ctx)
@@ -64,29 +64,29 @@ func participantUniqueId(p *ent.OncallScheduleParticipant) string {
 }
 
 func (b *oncallRosterBatcher) createBatchMutations(ctx context.Context, batch []*ent.OncallRoster) ([]ent.Mutation, error) {
-	providerIds := make([]string, len(batch))
+	ExternalIDs := make([]string, len(batch))
 	for i, p := range batch {
-		providerIds[i] = p.ProviderID
+		ExternalIDs[i] = p.ExternalID
 	}
 
-	dbRosters, rostersErr := b.queryRosters(ctx, providerIds)
+	dbRosters, rostersErr := b.queryRosters(ctx, ExternalIDs)
 	if rostersErr != nil {
 		return nil, fmt.Errorf("get current rosters: %w", rostersErr)
 	}
 
 	deletedRosterIds := mapset.NewSet[uuid.UUID]()
-	rosterProviderIdMap := make(map[string]*ent.OncallRoster)
+	rosterExternalIDMap := make(map[string]*ent.OncallRoster)
 
 	deletedScheduleIds := mapset.NewSet[uuid.UUID]()
-	scheduleProviderIdMap := make(map[string]*ent.OncallSchedule)
+	scheduleExternalIDMap := make(map[string]*ent.OncallSchedule)
 
 	deletedParticipantIds := mapset.NewSet[uuid.UUID]()
 	participantIdMap := make(map[string]*ent.OncallScheduleParticipant)
 	for _, roster := range dbRosters {
-		rosterProviderIdMap[roster.ProviderID] = roster
+		rosterExternalIDMap[roster.ExternalID] = roster
 		deletedRosterIds.Add(roster.ID)
 		for _, sched := range roster.Edges.Schedules {
-			scheduleProviderIdMap[sched.ProviderID] = sched
+			scheduleExternalIDMap[sched.ExternalID] = sched
 			deletedScheduleIds.Add(sched.ID)
 			for _, part := range sched.Edges.Participants {
 				participantIdMap[participantUniqueId(part)] = part
@@ -103,7 +103,7 @@ func (b *oncallRosterBatcher) createBatchMutations(ctx context.Context, batch []
 		provRoster := roster
 		provRoster.Slug = makeOncallRosterSlug(provRoster.Name)
 
-		currRoster, rosterExists := rosterProviderIdMap[provRoster.ProviderID]
+		currRoster, rosterExists := rosterExternalIDMap[provRoster.ExternalID]
 		if rosterExists {
 			deletedRosterIds.Remove(currRoster.ID)
 		}
@@ -117,7 +117,7 @@ func (b *oncallRosterBatcher) createBatchMutations(ctx context.Context, batch []
 			provSched := sched
 			provSched.RosterID = provRoster.ID
 
-			currSched, schedExists := scheduleProviderIdMap[provSched.ProviderID]
+			currSched, schedExists := scheduleExternalIDMap[provSched.ExternalID]
 			if schedExists {
 				deletedScheduleIds.Remove(currSched.ID)
 			}
@@ -172,7 +172,7 @@ func (b *oncallRosterBatcher) syncRoster(curr, prov *ent.OncallRoster) (uuid.UUI
 			return id, nil
 		}
 	}
-	mut.SetProviderID(prov.ProviderID)
+	mut.SetExternalID(prov.ExternalID)
 	mut.SetName(prov.Name)
 	mut.SetSlug(prov.Slug)
 	mut.SetTimezone(prov.Timezone)
@@ -201,7 +201,7 @@ func (b *oncallRosterBatcher) syncSchedule(curr, prov *ent.OncallSchedule) (uuid
 		}
 	}
 
-	mut.SetProviderID(prov.ProviderID)
+	mut.SetExternalID(prov.ExternalID)
 	mut.SetRosterID(prov.RosterID)
 	mut.SetName(prov.Name)
 	if prov.Timezone != "" {

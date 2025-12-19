@@ -10,6 +10,12 @@ import * as Y from "yjs";
 import { client } from "./lib/api/oapi.gen/client.gen";
 import { Documents } from "./lib/api/oapi.gen/sdk.gen";
 import type { DocumentEditorSessionAuth } from "./lib/api/oapi.gen/types.gen";
+import type { AuthToken } from "./lib/api/oapi.gen/core/auth.gen";
+
+type AuthContext = {
+	token: AuthToken;
+	sessionAuth: DocumentEditorSessionAuth;
+};
 
 export class RezibleServerProxy implements Extension {
 	extensionName = "Rezible Proxy";
@@ -23,27 +29,31 @@ export class RezibleServerProxy implements Extension {
 		});
 	}
 
-	async onAuthenticate(data: onAuthenticatePayload): Promise<DocumentEditorSessionAuth> {
-        const documentId = data.documentName;
-		const token = data.token;
-
+	async onAuthenticate(data: onAuthenticatePayload): Promise<AuthContext> {
+		const token = data.token as AuthToken;
 		const res = await Documents.verifyDocumentSessionAuth({
-			path: { id: documentId },
-			body: { attributes: {token} }
+			auth: token,
+			path: { id: data.documentName },
 		});
         if (res.error) throw new Error("Authentication Failed");
 		
 		const sessionAuth = res.data.data;
 		data.connectionConfig.readOnly = sessionAuth.readOnly;
 
-		return sessionAuth;
+		return {token, sessionAuth};
+	}
+
+	getAuthContext(data: {context: AuthContext}): AuthContext {
+		const ctx = data.context as AuthContext | undefined;
+		console.log("load context", ctx);
+        if (!ctx?.token) throw Forbidden;
+		return ctx;
 	}
 
     async onLoadDocument(data: onLoadDocumentPayload): Promise<any> {
-        if (!data.context.token) throw Forbidden;
-
-
+		const ctx = this.getAuthContext(data);
 		const res = await Documents.loadDocument({
+			auth: ctx.token,
 			path: { id: data.documentName },
 		});
         if (res.error) throw new Error("Authentication Failed");
@@ -55,16 +65,13 @@ export class RezibleServerProxy implements Extension {
 	}
 
 	async onStoreDocument(data: onChangePayload) {
-        if (!data.context.token) throw Forbidden;
-
-        const state = Buffer.from(Y.encodeStateAsUpdate(data.document));
-
+        const ctx = this.getAuthContext(data);
+        const content = Buffer.from(Y.encodeStateAsUpdate(data.document));
 		const res = await Documents.updateDocument({
+			auth: ctx.token,
 			path: { id: data.documentName },
-			body: { attributes: { content: state }}
+			body: { attributes: { content }}
 		})
-		if (res.error) {
-			console.log("failed to update document");
-		}
+		if (res.error) console.log("failed to update document");
 	}
 }

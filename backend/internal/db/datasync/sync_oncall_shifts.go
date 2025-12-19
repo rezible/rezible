@@ -65,7 +65,7 @@ func (b *oncallShiftsBatcher) pullData(ctx context.Context) iter.Seq2[*ent.Oncal
 				from:     from,
 				to:       to,
 			}
-			for shift, pullErr := range b.provider.PullShiftsForRoster(ctx, r.ProviderID, from, to) {
+			for shift, pullErr := range b.provider.PullShiftsForRoster(ctx, r.ExternalID, from, to) {
 				if !yield(shift, pullErr) {
 					return
 				}
@@ -77,11 +77,11 @@ func (b *oncallShiftsBatcher) pullData(ctx context.Context) iter.Seq2[*ent.Oncal
 func (b *oncallShiftsBatcher) createBatchMutations(ctx context.Context, batch []*ent.OncallShift) ([]ent.Mutation, error) {
 	provIds := make([]string, len(batch))
 	for i, s := range batch {
-		provIds[i] = s.ProviderID
+		provIds[i] = s.ExternalID
 	}
 
 	dbShifts, queryErr := b.db.OncallShift.Query().
-		Where(oncallshift.ProviderIDIn(provIds...)).
+		Where(oncallshift.ExternalIDIn(provIds...)).
 		Where(oncallshift.RosterID(b.batchParams.rosterID)).
 		All(ctx)
 	if queryErr != nil {
@@ -90,7 +90,7 @@ func (b *oncallShiftsBatcher) createBatchMutations(ctx context.Context, batch []
 
 	dbProvIds := make(map[string]*ent.OncallShift)
 	for _, sh := range dbShifts {
-		dbProvIds[sh.ProviderID] = sh
+		dbProvIds[sh.ExternalID] = sh
 	}
 
 	//provUserMapping := b.provider.UserShiftDataMapping().Edges.User
@@ -110,7 +110,7 @@ func (b *oncallShiftsBatcher) createBatchMutations(ctx context.Context, batch []
 		}
 		prov.UserID = userId
 
-		curr, exists := dbProvIds[prov.ProviderID]
+		curr, exists := dbProvIds[prov.ExternalID]
 		if exists {
 
 		}
@@ -138,7 +138,7 @@ func (b *oncallShiftsBatcher) syncShift(curr, prov *ent.OncallShift) *ent.Oncall
 		}
 	}
 
-	m.SetProviderID(prov.ProviderID)
+	m.SetExternalID(prov.ExternalID)
 	m.SetUserID(prov.UserID)
 	m.SetRosterID(prov.RosterID)
 	m.SetStartAt(prov.StartAt)

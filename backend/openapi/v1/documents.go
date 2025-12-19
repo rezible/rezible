@@ -18,8 +18,8 @@ type DocumentsHandler interface {
 }
 
 func (o operations) RegisterDocuments(api huma.API) {
-	huma.Register(api, VerifyDocumentSessionAuth, o.VerifyDocumentSessionAuth)
 	huma.Register(api, RequestDocumentEditorSession, o.RequestDocumentEditorSession)
+	huma.Register(api, VerifyDocumentSessionAuth, o.VerifyDocumentSessionAuth)
 	huma.Register(api, LoadDocument, o.LoadDocument)
 	huma.Register(api, UpdateDocument, o.UpdateDocument)
 }
@@ -37,7 +37,7 @@ type (
 	DocumentEditorSession struct {
 		DocumentId    uuid.UUID `json:"documentId"`
 		ConnectionUrl string    `json:"connectionUrl"`
-		Token         string    `json:"token"`
+		SessionToken  string    `json:"sessionToken"`
 	}
 
 	DocumentEditorSessionAuth struct {
@@ -74,17 +74,14 @@ type RequestDocumentEditorSessionResponse ItemResponse[DocumentEditorSession]
 
 var VerifyDocumentSessionAuth = huma.Operation{
 	OperationID: "verify-document-session-auth",
-	Method:      http.MethodPost,
+	Method:      http.MethodGet,
 	Path:        "/documents/{id}/auth",
-	Summary:     "Verify document auth",
+	Summary:     "Verify document session auth",
 	Tags:        documentsTags,
 	Errors:      errorCodes(),
 }
 
-type VerifyDocumentSessionAuthRequestAttributes struct {
-	Token string `json:"token"`
-}
-type VerifyDocumentSessionAuthRequest PostIdRequest[VerifyDocumentSessionAuthRequestAttributes]
+type VerifyDocumentSessionAuthRequest GetIdRequest
 type VerifyDocumentSessionAuthResponse ItemResponse[DocumentEditorSessionAuth]
 
 var LoadDocument = huma.Operation{

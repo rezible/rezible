@@ -7,7 +7,7 @@ import (
 
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
-	"github.com/rezible/rezible/ent/providerconfig"
+	"github.com/rezible/rezible/ent/integration"
 	fakeprovider "github.com/rezible/rezible/internal/dataproviders/fake"
 	"github.com/rezible/rezible/internal/dataproviders/grafana"
 	"github.com/rezible/rezible/internal/dataproviders/jira"
@@ -15,49 +15,47 @@ import (
 )
 
 type ProviderLoader struct {
-	config rez.ProviderConfigService
+	integrations rez.IntegrationsService
 }
 
-func NewProviderLoader(config rez.ProviderConfigService) *ProviderLoader {
-	return &ProviderLoader{
-		config: config,
-	}
+func NewProviderLoader(is rez.IntegrationsService) *ProviderLoader {
+	return &ProviderLoader{integrations: is}
 }
 
-func (l *ProviderLoader) listEnabledConfigs(ctx context.Context, t providerconfig.ProviderType) (ent.ProviderConfigs, error) {
-	return l.config.ListProviderConfigs(ctx, rez.ListProviderConfigsParams{
-		ProviderType: t,
-		Enabled:      true,
+func (l *ProviderLoader) listEnabledIntegrations(ctx context.Context, t integration.IntegrationType) (ent.Integrations, error) {
+	return l.integrations.ListIntegrations(ctx, rez.ListIntegrationsParams{
+		Type:    t,
+		Enabled: true,
 	})
 }
 
-func loadProviderCtx[C any, P any](ctx context.Context, constructorFn func(context.Context, C) (P, error), pc *ent.ProviderConfig) (P, error) {
+func loadProviderCtx[C any, P any](ctx context.Context, constructorFn func(context.Context, C) (P, error), intg *ent.Integration) (P, error) {
 	return loadProvider(func(c C) (P, error) {
 		return constructorFn(ctx, c)
-	}, pc)
+	}, intg)
 }
 
-func loadProvider[C any, P any](constructorFn func(C) (P, error), pc *ent.ProviderConfig) (P, error) {
+func loadProvider[C any, P any](constructorFn func(C) (P, error), intg *ent.Integration) (P, error) {
 	var cfg C
 	var p P
-	if jsonErr := json.Unmarshal(pc.Config, &cfg); jsonErr != nil {
-		return p, fmt.Errorf("failed to unmarshal provider config: %w", jsonErr)
+	if jsonErr := json.Unmarshal(intg.Config, &cfg); jsonErr != nil {
+		return p, fmt.Errorf("failed to unmarshal integration config: %w", jsonErr)
 	}
 	return constructorFn(cfg)
 }
 
 func (l *ProviderLoader) GetUserDataProviders(ctx context.Context) ([]rez.UserDataProvider, error) {
-	cfgs, cfgsErr := l.listEnabledConfigs(ctx, providerconfig.ProviderTypeUsers)
-	if cfgsErr != nil {
-		return nil, cfgsErr
+	intgs, intgsErr := l.listEnabledIntegrations(ctx, integration.IntegrationTypeUsers)
+	if intgsErr != nil {
+		return nil, intgsErr
 	}
 
-	provs := make([]rez.UserDataProvider, len(cfgs))
-	for i, cfg := range cfgs {
+	provs := make([]rez.UserDataProvider, len(intgs))
+	for i, intg := range intgs {
 		var pErr error
-		switch cfg.ProviderID {
+		switch intg.Name {
 		case "slack":
-			provs[i], pErr = loadProvider(slack.NewUserDataProvider, cfg)
+			provs[i], pErr = loadProvider(slack.NewUserDataProvider, intg)
 		}
 		if pErr != nil {
 			return nil, fmt.Errorf("failed to load provider config: %w", pErr)
@@ -67,19 +65,19 @@ func (l *ProviderLoader) GetUserDataProviders(ctx context.Context) ([]rez.UserDa
 }
 
 func (l *ProviderLoader) GetTeamDataProviders(ctx context.Context) ([]rez.TeamDataProvider, error) {
-	cfgs, cfgsErr := l.listEnabledConfigs(ctx, providerconfig.ProviderTypeTeams)
-	if cfgsErr != nil {
-		return nil, cfgsErr
+	intgs, intgsErr := l.listEnabledIntegrations(ctx, integration.IntegrationTypeTeams)
+	if intgsErr != nil {
+		return nil, intgsErr
 	}
 
-	provs := make([]rez.TeamDataProvider, len(cfgs))
-	for i, cfg := range cfgs {
+	provs := make([]rez.TeamDataProvider, len(intgs))
+	for i, intg := range intgs {
 		var pErr error
-		switch cfg.ProviderID {
+		switch intg.Name {
 		case "slack":
-			provs[i], pErr = loadProvider(slack.NewTeamDataProvider, cfg)
+			provs[i], pErr = loadProvider(slack.NewTeamDataProvider, intg)
 		case "fake":
-			provs[i], pErr = loadProvider(fakeprovider.NewTeamsDataProvider, cfg)
+			provs[i], pErr = loadProvider(fakeprovider.NewTeamsDataProvider, intg)
 		}
 		if pErr != nil {
 			return nil, fmt.Errorf("failed to load provider config: %w", pErr)
@@ -89,21 +87,21 @@ func (l *ProviderLoader) GetTeamDataProviders(ctx context.Context) ([]rez.TeamDa
 }
 
 func (l *ProviderLoader) GetOncallDataProviders(ctx context.Context) ([]rez.OncallDataProvider, error) {
-	cfgs, cfgsErr := l.listEnabledConfigs(ctx, providerconfig.ProviderTypeOncall)
-	if cfgsErr != nil {
-		return nil, cfgsErr
+	intgs, intgsErr := l.listEnabledIntegrations(ctx, integration.IntegrationTypeOncall)
+	if intgsErr != nil {
+		return nil, intgsErr
 	}
 
-	provs := make([]rez.OncallDataProvider, len(cfgs))
-	for i, cfg := range cfgs {
+	provs := make([]rez.OncallDataProvider, len(intgs))
+	for i, intg := range intgs {
 		var pErr error
-		switch cfg.ProviderID {
+		switch intg.Name {
 		case "grafana":
-			provs[i], pErr = loadProvider(grafana.NewOncallDataProvider, cfg)
+			provs[i], pErr = loadProvider(grafana.NewOncallDataProvider, intg)
 		case "fake":
-			provs[i], pErr = loadProvider(fakeprovider.NewOncallDataProvider, cfg)
+			provs[i], pErr = loadProvider(fakeprovider.NewOncallDataProvider, intg)
 		default:
-			pErr = fmt.Errorf("unknown provider: %s", cfg.ProviderID)
+			pErr = fmt.Errorf("unknown provider: %s", intg.Name)
 		}
 		if pErr != nil {
 			return nil, fmt.Errorf("failed to load provider config: %w", pErr)
@@ -113,19 +111,19 @@ func (l *ProviderLoader) GetOncallDataProviders(ctx context.Context) ([]rez.Onca
 }
 
 func (l *ProviderLoader) GetAlertDataProviders(ctx context.Context) ([]rez.AlertDataProvider, error) {
-	cfgs, cfgsErr := l.listEnabledConfigs(ctx, providerconfig.ProviderTypeAlerts)
-	if cfgsErr != nil {
-		return nil, cfgsErr
+	intgs, intgsErr := l.listEnabledIntegrations(ctx, integration.IntegrationTypeAlerts)
+	if intgsErr != nil {
+		return nil, intgsErr
 	}
 
-	provs := make([]rez.AlertDataProvider, len(cfgs))
-	for i, cfg := range cfgs {
+	provs := make([]rez.AlertDataProvider, len(intgs))
+	for i, intg := range intgs {
 		var pErr error
-		switch cfg.ProviderID {
+		switch intg.Name {
 		case "fake":
-			provs[i], pErr = loadProvider(fakeprovider.NewAlertDataProvider, cfg)
+			provs[i], pErr = loadProvider(fakeprovider.NewAlertDataProvider, intg)
 		default:
-			pErr = fmt.Errorf("unknown provider: %s", cfg.ProviderID)
+			pErr = fmt.Errorf("unknown provider: %s", intg.Name)
 		}
 		if pErr != nil {
 			return nil, fmt.Errorf("failed to load provider config: %w", pErr)
@@ -135,19 +133,19 @@ func (l *ProviderLoader) GetAlertDataProviders(ctx context.Context) ([]rez.Alert
 }
 
 func (l *ProviderLoader) GetIncidentDataProviders(ctx context.Context) ([]rez.IncidentDataProvider, error) {
-	cfgs, cfgsErr := l.listEnabledConfigs(ctx, providerconfig.ProviderTypeIncidents)
-	if cfgsErr != nil {
-		return nil, cfgsErr
+	intgs, intgsErr := l.listEnabledIntegrations(ctx, integration.IntegrationTypeIncidents)
+	if intgsErr != nil {
+		return nil, intgsErr
 	}
 
-	provs := make([]rez.IncidentDataProvider, len(cfgs))
-	for i, cfg := range cfgs {
+	provs := make([]rez.IncidentDataProvider, len(intgs))
+	for i, intg := range intgs {
 		var pErr error
-		switch cfg.ProviderID {
+		switch intg.Name {
 		case "grafana":
-			provs[i], pErr = loadProvider(grafana.NewIncidentDataProvider, cfg)
+			provs[i], pErr = loadProvider(grafana.NewIncidentDataProvider, intg)
 		case "fake":
-			provs[i], pErr = loadProvider(fakeprovider.NewIncidentDataProvider, cfg)
+			provs[i], pErr = loadProvider(fakeprovider.NewIncidentDataProvider, intg)
 		}
 		if pErr != nil {
 			return nil, fmt.Errorf("failed to load provider config: %w", pErr)
@@ -157,17 +155,17 @@ func (l *ProviderLoader) GetIncidentDataProviders(ctx context.Context) ([]rez.In
 }
 
 func (l *ProviderLoader) GetSystemComponentsDataProviders(ctx context.Context) ([]rez.SystemComponentsDataProvider, error) {
-	cfgs, cfgsErr := l.listEnabledConfigs(ctx, providerconfig.ProviderTypeSystemComponents)
-	if cfgsErr != nil {
-		return nil, cfgsErr
+	intgs, intgsErr := l.listEnabledIntegrations(ctx, integration.IntegrationTypeSystemComponents)
+	if intgsErr != nil {
+		return nil, intgsErr
 	}
 
-	provs := make([]rez.SystemComponentsDataProvider, len(cfgs))
-	for i, cfg := range cfgs {
+	provs := make([]rez.SystemComponentsDataProvider, len(intgs))
+	for i, intg := range intgs {
 		var pErr error
-		switch cfg.ProviderID {
+		switch intg.Name {
 		case "fake":
-			provs[i], pErr = loadProvider(fakeprovider.NewSystemComponentsDataProvider, cfg)
+			provs[i], pErr = loadProvider(fakeprovider.NewSystemComponentsDataProvider, intg)
 		}
 		if pErr != nil {
 			return nil, fmt.Errorf("failed to load provider config: %w", pErr)
@@ -177,19 +175,19 @@ func (l *ProviderLoader) GetSystemComponentsDataProviders(ctx context.Context) (
 }
 
 func (l *ProviderLoader) GetTicketDataProviders(ctx context.Context) ([]rez.TicketDataProvider, error) {
-	cfgs, cfgsErr := l.listEnabledConfigs(ctx, providerconfig.ProviderTypeTickets)
-	if cfgsErr != nil {
-		return nil, cfgsErr
+	intgs, intgsErr := l.listEnabledIntegrations(ctx, integration.IntegrationTypeTickets)
+	if intgsErr != nil {
+		return nil, intgsErr
 	}
 
-	provs := make([]rez.TicketDataProvider, len(cfgs))
-	for i, cfg := range cfgs {
+	provs := make([]rez.TicketDataProvider, len(intgs))
+	for i, intg := range intgs {
 		var pErr error
-		switch cfg.ProviderID {
+		switch intg.Name {
 		case "jira":
-			provs[i], pErr = loadProviderCtx(ctx, jira.NewTicketDataProvider, cfg)
+			provs[i], pErr = loadProviderCtx(ctx, jira.NewTicketDataProvider, intg)
 		case "fake":
-			provs[i], pErr = loadProvider(fakeprovider.NewTicketDataProvider, cfg)
+			provs[i], pErr = loadProvider(fakeprovider.NewTicketDataProvider, intg)
 		}
 		if pErr != nil {
 			return nil, fmt.Errorf("failed to load provider config: %w", pErr)
@@ -199,17 +197,17 @@ func (l *ProviderLoader) GetTicketDataProviders(ctx context.Context) ([]rez.Tick
 }
 
 func (l *ProviderLoader) GetPlaybookDataProviders(ctx context.Context) ([]rez.PlaybookDataProvider, error) {
-	cfgs, cfgsErr := l.listEnabledConfigs(ctx, providerconfig.ProviderTypePlaybooks)
-	if cfgsErr != nil {
-		return nil, cfgsErr
+	intgs, intgsErr := l.listEnabledIntegrations(ctx, integration.IntegrationTypePlaybooks)
+	if intgsErr != nil {
+		return nil, intgsErr
 	}
 
-	provs := make([]rez.PlaybookDataProvider, len(cfgs))
-	for i, cfg := range cfgs {
+	provs := make([]rez.PlaybookDataProvider, len(intgs))
+	for i, intg := range intgs {
 		var pErr error
-		switch cfg.ProviderID {
+		switch intg.Name {
 		case "fake":
-			provs[i], pErr = loadProvider(fakeprovider.NewPlaybookDataProvider, cfg)
+			provs[i], pErr = loadProvider(fakeprovider.NewPlaybookDataProvider, intg)
 		}
 		if pErr != nil {
 			return nil, fmt.Errorf("failed to load provider config: %w", pErr)

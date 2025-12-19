@@ -6,13 +6,14 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/rezible/rezible/ent/incidentmilestone"
 	"io"
 	"iter"
 	"net/http"
 	"net/url"
 	"strconv"
 	"time"
+
+	"github.com/rezible/rezible/ent/incidentmilestone"
 
 	"github.com/rs/zerolog/log"
 
@@ -148,7 +149,7 @@ func convertIncidentPreview(i incidentPreview) *ent.Incident {
 	}
 
 	return &ent.Incident{
-		ProviderID: i.IncidentID,
+		ExternalID: i.IncidentID,
 		Title:      i.Title,
 		Slug:       i.Slug,
 		Summary:    i.Summary,
@@ -223,7 +224,7 @@ func (p *IncidentDataProvider) convertIncident(ctx context.Context, i *gIncident
 	}
 
 	inc := &ent.Incident{
-		ProviderID: i.IncidentID,
+		ExternalID: i.IncidentID,
 		Title:      i.Title,
 		Summary:    i.Summary,
 		OpenedAt:   createdAt,
@@ -296,7 +297,7 @@ func convertIncidentRole(r incidentRole) *ent.IncidentRole {
 	return &ent.IncidentRole{
 		Name:        r.Name,
 		Required:    r.Mandatory,
-		ProviderID:  strconv.Itoa(r.RoleID),
+		ExternalID:  strconv.Itoa(r.RoleID),
 		ArchiveTime: archiveTime,
 	}
 }
@@ -382,7 +383,7 @@ func convertIncidentMilestone(item incidentActivityItem) *ent.IncidentMilestone 
 }
 
 func (p *IncidentDataProvider) setIncidentIntegrationData(ctx context.Context, inc *ent.Incident) error {
-	hookRuns, hookErr := p.getIncidentHookRuns(ctx, inc.ProviderID)
+	hookRuns, hookErr := p.getIncidentHookRuns(ctx, inc.ExternalID)
 	if hookErr != nil {
 		return hookErr
 	}

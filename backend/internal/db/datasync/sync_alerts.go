@@ -35,22 +35,22 @@ func (b *alertsBatcher) pullData(ctx context.Context) iter.Seq2[*ent.Alert, erro
 func (b *alertsBatcher) createBatchMutations(ctx context.Context, batch []*ent.Alert) ([]ent.Mutation, error) {
 	ids := make([]string, len(batch))
 	for i, t := range batch {
-		ids[i] = t.ProviderID
+		ids[i] = t.ExternalID
 	}
 
-	dbAlerts, queryErr := b.db.Alert.Query().Where(alert.ProviderIDIn(ids...)).All(ctx)
+	dbAlerts, queryErr := b.db.Alert.Query().Where(alert.ExternalIDIn(ids...)).All(ctx)
 	if queryErr != nil {
 		return nil, fmt.Errorf("querying alerts: %w", queryErr)
 	}
 	dbProvMap := make(map[string]*ent.Alert)
 	for _, al := range dbAlerts {
 		a := al
-		dbProvMap[a.ProviderID] = a
+		dbProvMap[a.ExternalID] = a
 	}
 
 	var muts []ent.Mutation
 	for _, provAlert := range batch {
-		dbAlert, exists := dbProvMap[provAlert.ProviderID]
+		dbAlert, exists := dbProvMap[provAlert.ExternalID]
 		if exists {
 		}
 
@@ -68,7 +68,7 @@ func (b *alertsBatcher) createBatchMutations(ctx context.Context, batch []*ent.A
 			}
 		}
 
-		m.SetProviderID(provAlert.ProviderID)
+		m.SetExternalID(provAlert.ExternalID)
 		m.SetTitle(provAlert.Title)
 
 		muts = append(muts, m)
@@ -107,28 +107,28 @@ func (b *alertInstancesBatcher) createBatchMutations(ctx context.Context, batch 
 	provIds := make([]string, len(batch))
 	alertProvIds := make([]string, 0, len(batch))
 	for i, t := range batch {
-		provIds[i] = t.ProviderID
-		if a := t.Edges.Alert; a != nil && a.ProviderID != "" {
-			alertProvIds = append(alertProvIds, a.ProviderID)
+		provIds[i] = t.ExternalID
+		if a := t.Edges.Alert; a != nil && a.ExternalID != "" {
+			alertProvIds = append(alertProvIds, a.ExternalID)
 		}
 	}
 
 	dbProvAlertMap := make(map[string]*ent.Alert)
 	if len(alertProvIds) > 0 {
 		dbAlerts, alertsQueryErr := b.db.Alert.Query().
-			Where(alert.ProviderIDIn(alertProvIds...)).
+			Where(alert.ExternalIDIn(alertProvIds...)).
 			All(ctx)
 		if alertsQueryErr != nil {
 			return nil, fmt.Errorf("querying db alerts: %w", alertsQueryErr)
 		}
 		for _, al := range dbAlerts {
 			a := al
-			dbProvAlertMap[a.ProviderID] = a
+			dbProvAlertMap[a.ExternalID] = a
 		}
 	}
 
 	dbInstances, instancesQueryErr := b.db.AlertInstance.Query().
-		Where(alertinstance.ProviderIDIn(provIds...)).
+		Where(alertinstance.ExternalIDIn(provIds...)).
 		WithEvent().
 		All(ctx)
 	if instancesQueryErr != nil {
@@ -138,17 +138,17 @@ func (b *alertInstancesBatcher) createBatchMutations(ctx context.Context, batch 
 	dbProvMap := make(map[string]*ent.AlertInstance)
 	for _, ins := range dbInstances {
 		i := ins
-		dbProvMap[i.ProviderID] = ins
+		dbProvMap[i.ExternalID] = ins
 	}
 
 	var mutations []ent.Mutation
 	for _, prov := range batch {
-		db, exists := dbProvMap[prov.ProviderID]
+		db, exists := dbProvMap[prov.ExternalID]
 		if exists {
 		}
 
 		if provAlert := prov.Edges.Alert; provAlert != nil {
-			if dbAlert, alertExists := dbProvAlertMap[provAlert.ProviderID]; alertExists {
+			if dbAlert, alertExists := dbProvAlertMap[provAlert.ExternalID]; alertExists {
 				prov.AlertID = dbAlert.ID
 			}
 		}
@@ -181,7 +181,7 @@ func (b *alertInstancesBatcher) syncInstance(db, prov *ent.AlertInstance) *ent.A
 		}
 	}
 
-	m.SetProviderID(prov.ProviderID)
+	m.SetExternalID(prov.ExternalID)
 	if prov.AlertID != uuid.Nil {
 		m.SetAlertID(prov.AlertID)
 	}

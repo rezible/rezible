@@ -13,8 +13,8 @@ import (
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/access"
 	"github.com/rezible/rezible/ent"
+	"github.com/rezible/rezible/ent/integration"
 	"github.com/rezible/rezible/ent/organization"
-	"github.com/rezible/rezible/ent/providerconfig"
 )
 
 // TODO: move this
@@ -26,10 +26,10 @@ type (
 	}
 
 	providerTenantConfigEntry struct {
-		Type       providerconfig.ProviderType `json:"type"`
-		ProviderID string                      `json:"provider_id"`
-		Disabled   bool                        `json:"disabled"`
-		Config     json.RawMessage             `json:"config"`
+		Type     integration.IntegrationType `json:"type"`
+		Name     string                      `json:"provider_id"`
+		Disabled bool                        `json:"disabled"`
+		Config   json.RawMessage             `json:"config"`
 	}
 )
 
@@ -45,7 +45,7 @@ func loadTenantProviderConfig(ctx context.Context, client *ent.Client, cfg *prov
 		}
 		org, orgErr = client.Organization.Create().
 			SetName(cfg.OrgName).
-			SetProviderID(cfg.OrgName).
+			SetExternalID(cfg.OrgName).
 			SetTenantID(tnt.ID).
 			Save(ctx)
 		if orgErr != nil {
@@ -56,22 +56,22 @@ func loadTenantProviderConfig(ctx context.Context, client *ent.Client, cfg *prov
 	loadConfigTxFn := func(tx *ent.Tx) error {
 		for _, c := range cfg.ConfigEntries {
 			log.Info().
-				Str("name", c.ProviderID).
+				Str("name", c.Name).
 				Str("type", string(c.Type)).
 				Msg("loading provider")
 
-			upsert := tx.ProviderConfig.Create().
-				SetProviderID(c.ProviderID).
-				SetProviderType(c.Type).
+			upsert := tx.Integration.Create().
+				SetName(c.Name).
+				SetIntegrationType(c.Type).
 				SetConfig(c.Config).
 				SetEnabled(!c.Disabled).
 				SetUpdatedAt(time.Now()).
-				OnConflictColumns(providerconfig.FieldProviderID, providerconfig.FieldProviderType).
+				OnConflictColumns(integration.FieldName, integration.FieldIntegrationType).
 				UpdateConfig().
 				UpdateUpdatedAt()
 
 			if upsertErr := upsert.Exec(ctx); upsertErr != nil {
-				return fmt.Errorf("upserting (%s %s): %w", string(c.Type), c.ProviderID, upsertErr)
+				return fmt.Errorf("upserting (%s %s): %w", string(c.Type), c.Name, upsertErr)
 			}
 		}
 		return nil
@@ -111,26 +111,26 @@ func grafanaOncallProviderConfig() providerTenantConfigEntry {
 	apiToken := rez.Config.GetString("GRAFANA_ONCALL_API_TOKEN")
 	grafanaOncallRawConfig := fmt.Sprintf(`{"api_endpoint":"%s","api_token":"%s"}`, apiEndpoint, apiToken)
 	return providerTenantConfigEntry{
-		Type:       providerconfig.ProviderTypeOncall,
-		ProviderID: "grafana",
-		Config:     []byte(grafanaOncallRawConfig),
+		Type:   integration.IntegrationTypeOncall,
+		Name:   "grafana",
+		Config: []byte(grafanaOncallRawConfig),
 	}
 }
 
 func LoadFakeConfig(ctx context.Context, client *ent.Client) error {
-	fakeProviderConfigEntry := func(t providerconfig.ProviderType) providerTenantConfigEntry {
-		return providerTenantConfigEntry{Type: t, ProviderID: "fake", Config: []byte("{}")}
+	fakeProviderConfigEntry := func(t integration.IntegrationType) providerTenantConfigEntry {
+		return providerTenantConfigEntry{Type: t, Name: "fake", Config: []byte("{}")}
 	}
 
 	cfg := &providerTenantConfig{
 		OrgName: "Test Organization",
 		ConfigEntries: []providerTenantConfigEntry{
 			grafanaOncallProviderConfig(),
-			fakeProviderConfigEntry(providerconfig.ProviderTypeIncidents),
-			fakeProviderConfigEntry(providerconfig.ProviderTypeAlerts),
-			fakeProviderConfigEntry(providerconfig.ProviderTypeTickets),
-			fakeProviderConfigEntry(providerconfig.ProviderTypePlaybooks),
-			fakeProviderConfigEntry(providerconfig.ProviderTypeSystemComponents),
+			fakeProviderConfigEntry(integration.IntegrationTypeIncidents),
+			fakeProviderConfigEntry(integration.IntegrationTypeAlerts),
+			fakeProviderConfigEntry(integration.IntegrationTypeTickets),
+			fakeProviderConfigEntry(integration.IntegrationTypePlaybooks),
+			fakeProviderConfigEntry(integration.IntegrationTypeSystemComponents),
 		},
 	}
 	if loadErr := loadTenantProviderConfig(ctx, client, cfg); loadErr != nil {

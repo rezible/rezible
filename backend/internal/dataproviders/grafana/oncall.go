@@ -179,7 +179,7 @@ func (p *OncallDataProvider) PullShiftsForRoster(ctx context.Context, id string,
 				}
 
 				shift := &ent.OncallShift{
-					ProviderID: fmt.Sprintf("%s_%s_%s_%s", id, res.UserPk, res.ShiftStart, res.ShiftEnd),
+					ExternalID: fmt.Sprintf("%s_%s_%s_%s", id, res.UserPk, res.ShiftStart, res.ShiftEnd),
 					StartAt:    startsAt,
 					EndAt:      endsAt,
 					Edges: ent.OncallShiftEdges{
@@ -280,7 +280,7 @@ func (p *OncallDataProvider) convertSchedule(s oncallSchedule, shiftIdMap map[st
 
 	return &ent.OncallRoster{
 		Name:          s.Name,
-		ProviderID:    s.Id,
+		ExternalID:    s.Id,
 		Timezone:      s.TimeZone,
 		ChatChannelID: s.Slack.ChannelId,
 		ChatHandle:    s.Slack.UserGroupId,
@@ -293,7 +293,7 @@ func (p *OncallDataProvider) convertSchedule(s oncallSchedule, shiftIdMap map[st
 func (p *OncallDataProvider) convertShift(shift *oncallShift) *ent.OncallSchedule {
 	// TODO
 	sched := &ent.OncallSchedule{
-		ProviderID: shift.Id,
+		ExternalID: shift.Id,
 		Name:       shift.Name,
 	}
 

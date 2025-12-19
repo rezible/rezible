@@ -148,7 +148,6 @@ func (s *AuthService) handleLogout(w http.ResponseWriter, r *http.Request) {
 
 func (s *AuthService) makeUserSessionCreatedCallback(w http.ResponseWriter, r *http.Request, flowRoute string) func(ps rez.AuthProviderSession) {
 	ctx := r.Context()
-
 	return func(ps rez.AuthProviderSession) {
 		redirect := ps.RedirectUrl
 		if redirect == "" || redirect == flowRoute {
@@ -160,9 +159,9 @@ func (s *AuthService) makeUserSessionCreatedCallback(w http.ResponseWriter, r *h
 			expiry = time.Now().Add(defaultSessionDuration)
 		}
 
-		org, orgErr := s.orgs.FindOrCreateFromAuthProvider(ctx, ps.Organization)
+		org, orgErr := s.orgs.FindOrCreateFromProvider(ctx, ps.Organization)
 		if orgErr != nil {
-			log.Error().Err(orgErr).Msg("FindOrCreateFromAuthProvider")
+			log.Error().Err(orgErr).Msg("FindOrCreateFromProvider")
 			http.Error(w, "session error", http.StatusInternalServerError)
 			return
 		}
@@ -199,7 +198,7 @@ func (s *AuthService) delegateAuthFlowToProvider(w http.ResponseWriter, r *http.
 		}
 
 		if r.URL.Path == provFlowRoute {
-			prov.StartAuthFlow(w, r)
+			prov.HandleStartAuthFlow(w, r)
 			return true
 		}
 
