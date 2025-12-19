@@ -16,6 +16,7 @@ func (User) Mixin() []ent.Mixin {
 	return []ent.Mixin{
 		BaseMixin{},
 		TenantMixin{},
+		IntegrationMixin{Required: true},
 	}
 }
 
@@ -23,7 +24,6 @@ func (User) Mixin() []ent.Mixin {
 func (User) Fields() []ent.Field {
 	return []ent.Field{
 		field.UUID("id", uuid.New()).Default(uuid.New),
-		field.String("provider_id").Optional(),
 		field.String("email"),
 		field.String("name").Optional().Default(""),
 		field.String("chat_id").Optional(),

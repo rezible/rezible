@@ -17,6 +17,7 @@ func (Ticket) Mixin() []ent.Mixin {
 	return []ent.Mixin{
 		BaseMixin{},
 		TenantMixin{},
+		IntegrationMixin{},
 	}
 }
 
@@ -24,7 +25,6 @@ func (Ticket) Mixin() []ent.Mixin {
 func (Ticket) Fields() []ent.Field {
 	return []ent.Field{
 		field.UUID("id", uuid.New()).Default(uuid.New),
-		field.String("provider_id"),
 		field.String("title"),
 	}
 }

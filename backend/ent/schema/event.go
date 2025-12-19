@@ -15,6 +15,7 @@ func (Event) Mixin() []ent.Mixin {
 	return []ent.Mixin{
 		BaseMixin{},
 		TenantMixin{},
+		IntegrationMixin{},
 	}
 }
 
@@ -23,7 +24,6 @@ var eventKind = []string{"alert", "interrupt", "message", "other"}
 func (Event) Fields() []ent.Field {
 	return []ent.Field{
 		field.UUID("id", uuid.UUID{}).Default(uuid.New),
-		field.String("provider_id"),
 		field.Time("timestamp"),
 		field.Enum("kind").Values(eventKind...),
 		field.String("title"),

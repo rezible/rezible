@@ -17,6 +17,7 @@ func (OncallShift) Mixin() []ent.Mixin {
 	return []ent.Mixin{
 		BaseMixin{},
 		TenantMixin{},
+		IntegrationMixin{},
 	}
 }
 
@@ -26,7 +27,6 @@ func (OncallShift) Fields() []ent.Field {
 		field.UUID("id", uuid.UUID{}).Default(uuid.New),
 		field.UUID("user_id", uuid.UUID{}),
 		field.UUID("roster_id", uuid.UUID{}),
-		field.String("provider_id").Unique().Optional(),
 		field.Enum("role").Values("primary", "secondary", "shadow", "covering").Default("primary").Optional(),
 		field.UUID("primary_shift_id", uuid.UUID{}).Optional(),
 		field.Time("start_at"),

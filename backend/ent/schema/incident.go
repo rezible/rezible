@@ -18,6 +18,7 @@ func (Incident) Mixin() []ent.Mixin {
 	return []ent.Mixin{
 		BaseMixin{},
 		TenantMixin{},
+		IntegrationMixin{},
 	}
 }
 
@@ -32,10 +33,9 @@ func (Incident) Fields() []ent.Field {
 		field.Time("opened_at").Default(time.Now),
 		field.Time("modified_at").Optional(),
 		field.Time("closed_at").Optional(),
-		field.String("provider_id").Optional(),
-		field.String("chat_channel_id").Optional(),
 		field.UUID("severity_id", uuid.UUID{}).Optional(),
 		field.UUID("type_id", uuid.UUID{}).Optional(),
+		field.String("chat_channel_id").Optional(),
 	}
 }
 

@@ -17,6 +17,7 @@ func (IncidentRole) Mixin() []ent.Mixin {
 		BaseMixin{},
 		TenantMixin{},
 		ArchiveMixin{},
+		IntegrationMixin{},
 	}
 }
 
@@ -25,7 +26,6 @@ func (IncidentRole) Fields() []ent.Field {
 	return []ent.Field{
 		field.UUID("id", uuid.UUID{}).Default(uuid.New),
 		field.String("name"),
-		field.String("provider_id"),
 		field.Bool("required").Default(false),
 	}
 }

@@ -131,3 +131,18 @@ func (d ArchiveMixin) P(w interface{ WhereP(...func(*sql.Selector)) }) {
 		sql.FieldIsNull(d.Fields()[0].Descriptor().Name),
 	)
 }
+
+type IntegrationMixin struct {
+	mixin.Schema
+	Required bool
+}
+
+func (i IntegrationMixin) Fields() []ent.Field {
+	idField := field.String("external_id")
+	if !i.Required {
+		idField.Optional()
+	} else {
+		idField.NotEmpty()
+	}
+	return []ent.Field{idField}
+}

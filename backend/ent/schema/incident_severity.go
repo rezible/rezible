@@ -17,6 +17,7 @@ func (IncidentSeverity) Mixin() []ent.Mixin {
 		BaseMixin{},
 		TenantMixin{},
 		ArchiveMixin{},
+		IntegrationMixin{},
 	}
 }
 
@@ -24,7 +25,6 @@ func (IncidentSeverity) Mixin() []ent.Mixin {
 func (IncidentSeverity) Fields() []ent.Field {
 	return []ent.Field{
 		field.UUID("id", uuid.New()).Default(uuid.New),
-		field.String("provider_id").Optional(),
 		field.String("name"),
 		field.Int("rank"),
 		field.String("color").Optional(),

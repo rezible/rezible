@@ -17,6 +17,7 @@ func (OncallRoster) Mixin() []ent.Mixin {
 		BaseMixin{},
 		TenantMixin{},
 		ArchiveMixin{},
+		IntegrationMixin{},
 	}
 }
 
@@ -26,7 +27,6 @@ func (OncallRoster) Fields() []ent.Field {
 		field.UUID("id", uuid.UUID{}).Default(uuid.New),
 		field.String("name"),
 		field.String("slug").Unique(),
-		field.String("provider_id").Unique(),
 		field.String("timezone").Optional(),
 		field.String("chat_handle").Optional(),
 		field.String("chat_channel_id").Optional(),

@@ -17,6 +17,7 @@ func (OncallSchedule) Mixin() []ent.Mixin {
 		BaseMixin{},
 		TenantMixin{},
 		ArchiveMixin{},
+		IntegrationMixin{},
 	}
 }
 
@@ -27,7 +28,6 @@ func (OncallSchedule) Fields() []ent.Field {
 		field.String("name"),
 		field.UUID("roster_id", uuid.UUID{}),
 		field.String("timezone").Optional(),
-		field.String("provider_id").Unique(),
 		// start, end, cadence, etc
 	}
 }

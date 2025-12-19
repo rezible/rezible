@@ -11,21 +11,21 @@ type Alert struct {
 	ent.Schema
 }
 
-func (Alert) Fields() []ent.Field {
-	return []ent.Field{
-		field.UUID("id", uuid.New()).Default(uuid.New),
-		field.String("provider_id"),
-		field.String("title"),
-		field.String("description").Optional(),
-		field.String("definition").Optional(),
-		field.UUID("roster_id", uuid.UUID{}).Optional(),
-	}
-}
-
 func (Alert) Mixin() []ent.Mixin {
 	return []ent.Mixin{
 		BaseMixin{},
 		TenantMixin{},
+		IntegrationMixin{},
+	}
+}
+
+func (Alert) Fields() []ent.Field {
+	return []ent.Field{
+		field.UUID("id", uuid.New()).Default(uuid.New),
+		field.String("title"),
+		field.String("description").Optional(),
+		field.String("definition").Optional(),
+		field.UUID("roster_id", uuid.UUID{}).Optional(),
 	}
 }
 
@@ -47,6 +47,7 @@ func (AlertInstance) Mixin() []ent.Mixin {
 	return []ent.Mixin{
 		BaseMixin{},
 		TenantMixin{},
+		IntegrationMixin{},
 	}
 }
 
@@ -55,7 +56,6 @@ func (AlertInstance) Fields() []ent.Field {
 		field.UUID("id", uuid.UUID{}).Default(uuid.New),
 		field.UUID("alert_id", uuid.UUID{}),
 		field.UUID("event_id", uuid.UUID{}),
-		field.String("provider_id"),
 		field.Time("acknowledged_at").Optional(),
 		//field.UUID("acknowledged_by_id", uuid.UUID{}).Optional(),
 	}

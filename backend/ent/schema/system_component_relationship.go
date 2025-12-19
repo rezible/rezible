@@ -17,13 +17,13 @@ func (SystemComponentRelationship) Mixin() []ent.Mixin {
 	return []ent.Mixin{
 		BaseMixin{},
 		TenantMixin{},
+		IntegrationMixin{},
 	}
 }
 
 func (SystemComponentRelationship) Fields() []ent.Field {
 	return []ent.Field{
 		field.UUID("id", uuid.UUID{}).Default(uuid.New),
-		field.String("provider_id").Optional(),
 		field.UUID("source_id", uuid.UUID{}),
 		field.UUID("target_id", uuid.UUID{}),
 		field.Text("description").Optional(),

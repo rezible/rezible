@@ -17,6 +17,7 @@ func (SystemComponent) Mixin() []ent.Mixin {
 	return []ent.Mixin{
 		BaseMixin{},
 		TenantMixin{},
+		IntegrationMixin{},
 	}
 }
 
@@ -24,7 +25,6 @@ func (SystemComponent) Fields() []ent.Field {
 	return []ent.Field{
 		field.UUID("id", uuid.UUID{}).Default(uuid.New),
 		field.String("name").NotEmpty(),
-		field.String("provider_id").Optional(),
 		field.UUID("kind_id", uuid.UUID{}).Optional(),
 		field.Text("description").Optional(),
 		field.JSON("properties", map[string]any{}).Optional(),
@@ -78,13 +78,13 @@ func (SystemComponentKind) Mixin() []ent.Mixin {
 	return []ent.Mixin{
 		BaseMixin{},
 		TenantMixin{},
+		IntegrationMixin{},
 	}
 }
 
 func (SystemComponentKind) Fields() []ent.Field {
 	return []ent.Field{
 		field.UUID("id", uuid.UUID{}).Default(uuid.New),
-		field.String("provider_id").Optional(),
 		field.Text("label"),
 		field.Text("description").Optional(),
 		field.Time("created_at").Default(time.Now),
