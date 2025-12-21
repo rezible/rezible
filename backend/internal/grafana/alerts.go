@@ -16,7 +16,7 @@ type AlertsDataProvider struct {
 
 	providerUserMap map[string]*ent.User
 
-	webhookCallback rez.DataProviderResourceUpdatedCallback
+	webhookCallback rez.ExternalResourceUpdatedCallback
 }
 
 type AlertsDataProviderConfig struct {

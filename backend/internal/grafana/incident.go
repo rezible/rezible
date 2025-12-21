@@ -25,7 +25,7 @@ type IncidentDataProvider struct {
 	apiEndpoint         string
 	token               string
 	webhookSecret       string
-	onIncidentUpdatedFn rez.DataProviderResourceUpdatedCallback
+	onIncidentUpdatedFn rez.ExternalResourceUpdatedCallback
 
 	incidentMappingSupport *ent.Incident
 
@@ -56,7 +56,7 @@ func NewIncidentDataProvider(cfg IncidentDataProviderConfig) (*IncidentDataProvi
 	return p, nil
 }
 
-func (p *IncidentDataProvider) SetOnIncidentUpdatedCallback(cb rez.DataProviderResourceUpdatedCallback) {
+func (p *IncidentDataProvider) SetOnIncidentUpdatedCallback(cb rez.ExternalResourceUpdatedCallback) {
 	p.onIncidentUpdatedFn = cb
 }
 

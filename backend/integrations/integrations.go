@@ -1,4 +1,4 @@
-package dataproviders
+package integrations
 
 import (
 	"context"
@@ -7,19 +7,12 @@ import (
 
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
+
+	fakeprovider "github.com/rezible/rezible/internal/fake"
+	"github.com/rezible/rezible/internal/grafana"
+	"github.com/rezible/rezible/internal/jira"
 	"github.com/rezible/rezible/internal/slack"
-
-	fakeprovider "github.com/rezible/rezible/dataproviders/fake"
-	"github.com/rezible/rezible/dataproviders/grafana"
-	"github.com/rezible/rezible/dataproviders/jira"
 )
-
-type ProviderLoader struct {
-}
-
-func NewProviderLoader() *ProviderLoader {
-	return &ProviderLoader{}
-}
 
 func loadProviderCtx[C any, P any](ctx context.Context, constructorFn func(context.Context, C) (P, error), intg *ent.Integration) (P, error) {
 	return loadProvider(func(c C) (P, error) {
@@ -36,7 +29,7 @@ func loadProvider[C any, P any](constructorFn func(C) (P, error), intg *ent.Inte
 	return constructorFn(cfg)
 }
 
-func (l *ProviderLoader) GetUserDataProviders(ctx context.Context, intgs ent.Integrations) ([]rez.UserDataProvider, error) {
+func GetUserDataProviders(ctx context.Context, intgs ent.Integrations) ([]rez.UserDataProvider, error) {
 	var provs []rez.UserDataProvider
 	for _, intg := range intgs {
 		var prov rez.UserDataProvider
@@ -55,7 +48,7 @@ func (l *ProviderLoader) GetUserDataProviders(ctx context.Context, intgs ent.Int
 	return provs, nil
 }
 
-func (l *ProviderLoader) GetTeamDataProviders(ctx context.Context, intgs ent.Integrations) ([]rez.TeamDataProvider, error) {
+func GetTeamDataProviders(ctx context.Context, intgs ent.Integrations) ([]rez.TeamDataProvider, error) {
 	var provs []rez.TeamDataProvider
 	for _, intg := range intgs {
 		var prov rez.TeamDataProvider
@@ -76,7 +69,7 @@ func (l *ProviderLoader) GetTeamDataProviders(ctx context.Context, intgs ent.Int
 	return provs, nil
 }
 
-func (l *ProviderLoader) GetOncallDataProviders(ctx context.Context, intgs ent.Integrations) ([]rez.OncallDataProvider, error) {
+func GetOncallDataProviders(ctx context.Context, intgs ent.Integrations) ([]rez.OncallDataProvider, error) {
 	var provs []rez.OncallDataProvider
 	for _, intg := range intgs {
 		var prov rez.OncallDataProvider
@@ -97,7 +90,7 @@ func (l *ProviderLoader) GetOncallDataProviders(ctx context.Context, intgs ent.I
 	return provs, nil
 }
 
-func (l *ProviderLoader) GetAlertDataProviders(ctx context.Context, intgs ent.Integrations) ([]rez.AlertDataProvider, error) {
+func GetAlertDataProviders(ctx context.Context, intgs ent.Integrations) ([]rez.AlertDataProvider, error) {
 	var provs []rez.AlertDataProvider
 	for _, intg := range intgs {
 		var prov rez.AlertDataProvider
@@ -116,7 +109,7 @@ func (l *ProviderLoader) GetAlertDataProviders(ctx context.Context, intgs ent.In
 	return provs, nil
 }
 
-func (l *ProviderLoader) GetIncidentDataProviders(ctx context.Context, intgs ent.Integrations) ([]rez.IncidentDataProvider, error) {
+func GetIncidentDataProviders(ctx context.Context, intgs ent.Integrations) ([]rez.IncidentDataProvider, error) {
 	var provs []rez.IncidentDataProvider
 	for _, intg := range intgs {
 		var prov rez.IncidentDataProvider
@@ -137,7 +130,7 @@ func (l *ProviderLoader) GetIncidentDataProviders(ctx context.Context, intgs ent
 	return provs, nil
 }
 
-func (l *ProviderLoader) GetSystemComponentsDataProviders(ctx context.Context, intgs ent.Integrations) ([]rez.SystemComponentsDataProvider, error) {
+func GetSystemComponentsDataProviders(ctx context.Context, intgs ent.Integrations) ([]rez.SystemComponentsDataProvider, error) {
 	var provs []rez.SystemComponentsDataProvider
 	for _, intg := range intgs {
 		var prov rez.SystemComponentsDataProvider
@@ -156,7 +149,7 @@ func (l *ProviderLoader) GetSystemComponentsDataProviders(ctx context.Context, i
 	return provs, nil
 }
 
-func (l *ProviderLoader) GetTicketDataProviders(ctx context.Context, intgs ent.Integrations) ([]rez.TicketDataProvider, error) {
+func GetTicketDataProviders(ctx context.Context, intgs ent.Integrations) ([]rez.TicketDataProvider, error) {
 	var provs []rez.TicketDataProvider
 	for _, intg := range intgs {
 		var prov rez.TicketDataProvider
@@ -177,7 +170,7 @@ func (l *ProviderLoader) GetTicketDataProviders(ctx context.Context, intgs ent.I
 	return provs, nil
 }
 
-func (l *ProviderLoader) GetPlaybookDataProviders(ctx context.Context, intgs ent.Integrations) ([]rez.PlaybookDataProvider, error) {
+func GetPlaybookDataProviders(ctx context.Context, intgs ent.Integrations) ([]rez.PlaybookDataProvider, error) {
 	var provs []rez.PlaybookDataProvider
 	for _, intg := range intgs {
 		var prov rez.PlaybookDataProvider

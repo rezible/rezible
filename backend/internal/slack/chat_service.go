@@ -24,8 +24,6 @@ type ChatService struct {
 	components   rez.SystemComponentsService
 }
 
-const integrationName = "slack"
-
 func NewChatService(jobs rez.JobsService, integrations rez.IntegrationsService, users rez.UserService, incidents rez.IncidentService, annos rez.EventAnnotationsService, components rez.SystemComponentsService) (*ChatService, error) {
 	s := &ChatService{
 		oauthConfig:  LoadOAuthConfig(),
@@ -40,46 +38,12 @@ func NewChatService(jobs rez.JobsService, integrations rez.IntegrationsService, 
 	return s, nil
 }
 
-func (s *ChatService) loadIntegrationConfig(ctx context.Context) (*IntegrationConfigData, error) {
-	params := rez.ListIntegrationsParams{
-		Name: integrationName,
-	}
-	results, listErr := s.integrations.ListIntegrations(ctx, params)
-	if listErr != nil {
-		return nil, listErr
-	}
-	// TODO: handle multiple??
-	if len(results) != 1 {
-		return nil, fmt.Errorf("expected 1 integration, got %d", len(results))
-	}
-	var cfg IntegrationConfigData
-	if jsonErr := json.Unmarshal(results[0].Config, &cfg); jsonErr != nil {
-		return nil, jsonErr
-	}
-	return &cfg, nil
-}
-
-func (s *ChatService) getClient(ctx context.Context) (*slack.Client, error) {
-	if rez.Config.SingleTenantMode() {
-		return LoadSingleTenantClient()
-	}
-	cfg, loadErr := s.loadIntegrationConfig(ctx)
-	if loadErr != nil {
-		return nil, fmt.Errorf("loading integration config: %w", loadErr)
-	}
-	return slack.New(cfg.AccessToken), nil
+func (s *ChatService) EnableEventListener() bool {
+	return UseSocketMode()
 }
 
 func (s *ChatService) withClient(ctx context.Context, fn func(*slack.Client) error) error {
-	client, clientErr := s.getClient(ctx)
-	if clientErr != nil {
-		return fmt.Errorf("failed to get slack client: %w", clientErr)
-	}
-	return fn(client)
-}
-
-func (s *ChatService) EnableEventListener() bool {
-	return UseSocketMode()
+	return withClient(ctx, s.integrations, fn)
 }
 
 func (s *ChatService) getChatUserContext(ctx context.Context, userId string) (context.Context, error) {
@@ -129,20 +93,6 @@ func (s *ChatService) SendOncallHandoverReminder(ctx context.Context, shift *ent
 
 func (s *ChatService) OAuth2Config() *oauth2.Config {
 	return s.oauthConfig
-}
-
-type teamInfo struct {
-	ID   string `json:"id"`
-	Name string `json:"name"`
-}
-
-type IntegrationConfigData struct {
-	AccessToken string    `json:"access_token"`
-	TokenType   string    `json:"token_type"`
-	Scope       string    `json:"scope"`
-	BotUserID   string    `json:"bot_user_id"`
-	Team        *teamInfo `json:"team"`
-	Enterprise  *teamInfo `json:"enterprise"`
 }
 
 func (s *ChatService) CompleteOAuth2Flow(ctx context.Context, code string) (*ent.Integration, error) {

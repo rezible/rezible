@@ -1,4 +1,4 @@
-package dataproviders
+package integrations
 
 import (
 	"context"
@@ -10,29 +10,26 @@ import (
 
 	"github.com/rs/zerolog/log"
 
-	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/access"
 	"github.com/rezible/rezible/ent"
 	"github.com/rezible/rezible/ent/integration"
 	"github.com/rezible/rezible/ent/organization"
 )
 
-// TODO: move this
-
 type (
-	providerTenantConfig struct {
-		OrgName       string                      `json:"organization_name"`
-		ConfigEntries []providerTenantConfigEntry `json:"configs"`
+	orgConfig struct {
+		OrgName      string           `json:"organization_name"`
+		Integrations []orgIntegration `json:"configs"`
 	}
 
-	providerTenantConfigEntry struct {
+	orgIntegration struct {
 		Name     string          `json:"provider_id"`
 		Disabled bool            `json:"disabled"`
 		Config   json.RawMessage `json:"config"`
 	}
 )
 
-func loadTenantProviderConfig(ctx context.Context, client *ent.Client, cfg *providerTenantConfig) error {
+func (cfg *orgConfig) load(ctx context.Context, client *ent.Client) error {
 	org, orgErr := client.Organization.Query().Where(organization.Name(cfg.OrgName)).Only(ctx)
 	if orgErr != nil {
 		if !ent.IsNotFound(orgErr) {
@@ -53,22 +50,20 @@ func loadTenantProviderConfig(ctx context.Context, client *ent.Client, cfg *prov
 	}
 	ctx = access.TenantSystemContext(ctx, org.TenantID)
 	loadConfigTxFn := func(tx *ent.Tx) error {
-		for _, c := range cfg.ConfigEntries {
-			log.Info().
-				Str("name", c.Name).
-				Msg("loading provider")
+		for _, intg := range cfg.Integrations {
+			log.Info().Str("name", intg.Name).Msg("loading integration")
 
 			upsert := tx.Integration.Create().
-				SetName(c.Name).
-				SetConfig(c.Config).
-				SetEnabled(!c.Disabled).
+				SetName(intg.Name).
+				SetConfig(intg.Config).
+				SetEnabled(!intg.Disabled).
 				SetUpdatedAt(time.Now()).
 				OnConflictColumns(integration.FieldName).
 				UpdateConfig().
 				UpdateUpdatedAt()
 
 			if upsertErr := upsert.Exec(ctx); upsertErr != nil {
-				return fmt.Errorf("upserting (%s): %w", c.Name, upsertErr)
+				return fmt.Errorf("upserting (%s): %w", intg.Name, upsertErr)
 			}
 		}
 		return nil
@@ -80,7 +75,7 @@ func loadTenantProviderConfig(ctx context.Context, client *ent.Client, cfg *prov
 	return nil
 }
 
-func LoadTenantConfig(ctx context.Context, client *ent.Client, fileName string) error {
+func LoadOrganization(ctx context.Context, client *ent.Client, fileName string) error {
 	f, openErr := os.Open(fileName)
 	if openErr != nil {
 		return fmt.Errorf("open file: %w", openErr)
@@ -91,41 +86,23 @@ func LoadTenantConfig(ctx context.Context, client *ent.Client, fileName string) 
 		return fmt.Errorf("read file: %w", readErr)
 	}
 
-	var cfg providerTenantConfig
-	if cfgErr := json.Unmarshal(fileContents, &cfg); cfgErr != nil {
+	var cfg *orgConfig
+	if cfgErr := json.Unmarshal(fileContents, cfg); cfgErr != nil || cfg == nil {
 		return fmt.Errorf("unmarshal file: %w", cfgErr)
 	}
 
-	if loadErr := loadTenantProviderConfig(ctx, client, &cfg); loadErr != nil {
+	if loadErr := cfg.load(ctx, client); loadErr != nil {
 		return fmt.Errorf("loading config: %w", loadErr)
 	}
 	return nil
 }
 
-// TODO: use fake oncall provider
-func grafanaOncallProviderConfig() providerTenantConfigEntry {
-	apiEndpoint := rez.Config.GetString("GRAFANA_ONCALL_API_ENDPOINT")
-	apiToken := rez.Config.GetString("GRAFANA_ONCALL_API_TOKEN")
-	grafanaOncallRawConfig := fmt.Sprintf(`{"api_endpoint":"%s","api_token":"%s"}`, apiEndpoint, apiToken)
-	return providerTenantConfigEntry{
-		Name:   "grafana",
-		Config: []byte(grafanaOncallRawConfig),
+func LoadDevOrganization(ctx context.Context, client *ent.Client) error {
+	cfg := &orgConfig{
+		OrgName:      "Test Organization",
+		Integrations: []orgIntegration{{Name: "fake", Config: []byte("{}")}},
 	}
-}
-
-func LoadFakeConfig(ctx context.Context, client *ent.Client) error {
-	fakeProviderConfigEntry := func() providerTenantConfigEntry {
-		return providerTenantConfigEntry{Name: "fake", Config: []byte("{}")}
-	}
-
-	cfg := &providerTenantConfig{
-		OrgName: "Test Organization",
-		ConfigEntries: []providerTenantConfigEntry{
-			grafanaOncallProviderConfig(),
-			fakeProviderConfigEntry(),
-		},
-	}
-	if loadErr := loadTenantProviderConfig(ctx, client, cfg); loadErr != nil {
+	if loadErr := cfg.load(ctx, client); loadErr != nil {
 		return fmt.Errorf("loading fake config: %w", loadErr)
 	}
 	return nil

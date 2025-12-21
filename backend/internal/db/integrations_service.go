@@ -19,13 +19,13 @@ import (
 type IntegrationsService struct {
 	db             *ent.Client
 	msgs           rez.MessageService
-	syncer         rez.IntegrationsDataSyncService
+	syncer         rez.IntegrationsDataSyncer
 	oauth2Handlers map[string]rez.OAuth2IntegrationHandler
 }
 
 const topicIntegrationUpdated = "integration_updated"
 
-func NewIntegrationsService(db *ent.Client, msgs rez.MessageService, syncer rez.IntegrationsDataSyncService) (*IntegrationsService, error) {
+func NewIntegrationsService(db *ent.Client, msgs rez.MessageService, syncer rez.IntegrationsDataSyncer) (*IntegrationsService, error) {
 	s := &IntegrationsService{
 		db:             db,
 		msgs:           msgs,

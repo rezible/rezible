@@ -104,7 +104,7 @@ func (s *ChatService) getTeamId(ctx context.Context, client *slack.Client) (stri
 }
 
 func (s *ChatService) CreateIncidentChannel(ctx context.Context, inc *ent.Incident) (string, error) {
-	client, clientErr := s.getClient(ctx)
+	client, clientErr := getClient(ctx, s.integrations)
 	if clientErr != nil {
 		return "", fmt.Errorf("failed to get client: %w", clientErr)
 	}

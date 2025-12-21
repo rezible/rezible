@@ -5,7 +5,7 @@ import (
 )
 
 func RegisterJobWorkers(
-	syncer rez.IntegrationsDataSyncService,
+	syncer rez.IntegrationsDataSyncer,
 	chat rez.ChatService,
 	shifts rez.OncallShiftsService,
 	oncallMetrics rez.OncallMetricsService,

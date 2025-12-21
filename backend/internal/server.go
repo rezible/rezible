@@ -11,7 +11,6 @@ import (
 
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/access"
-	"github.com/rezible/rezible/dataproviders"
 	"github.com/rezible/rezible/internal/apiv1"
 	"github.com/rezible/rezible/internal/db"
 	"github.com/rezible/rezible/internal/db/datasync"
@@ -119,9 +118,9 @@ func setupServer(ctx context.Context) (Server, error) {
 
 	dbc := dbConn.Client()
 
-	syncer := datasync.NewIntegrationsSyncer(dbc, dataproviders.NewProviderLoader())
+	syncer := datasync.NewSyncer(dbc)
 
-	integrations, intgsErr := db.NewIntegrationsService(dbc, msgSvc, syncer)
+	intgs, intgsErr := db.NewIntegrationsService(dbc, msgSvc, syncer)
 	if intgsErr != nil {
 		return nil, fmt.Errorf("db.NewIntegrationsService: %w", intgsErr)
 	}
@@ -181,7 +180,7 @@ func setupServer(ctx context.Context) (Server, error) {
 		return nil, fmt.Errorf("postgres.NewSystemComponentsService: %w", componentsErr)
 	}
 
-	chat, chatErr := slack.NewChatService(jobSvc, integrations, users, incidents, annos, components)
+	chat, chatErr := slack.NewChatService(jobSvc, intgs, users, incidents, annos, components)
 	if chatErr != nil {
 		return nil, fmt.Errorf("postgres.NewChatService: %w", chatErr)
 	}
@@ -221,7 +220,7 @@ func setupServer(ctx context.Context) (Server, error) {
 		return nil, fmt.Errorf("db.NewDocumentsService: %w", docsErr)
 	}
 
-	v1Handler := apiv1.NewHandler(dbc, auth, orgs, integrations, chat, users, incidents, debriefs, rosters, shifts, oncallMetrics, events, annos, docs, retros, components, alerts, playbooks)
+	v1Handler := apiv1.NewHandler(dbc, auth, orgs, intgs, chat, users, incidents, debriefs, rosters, shifts, oncallMetrics, events, annos, docs, retros, components, alerts, playbooks)
 
 	srv := http.NewServer(auth)
 	srv.MountOpenApiV1(v1Handler)

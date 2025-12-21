@@ -5,22 +5,21 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/rezible/rezible/ent/integration"
 	"github.com/rs/zerolog/log"
 
-	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/access"
 	"github.com/rezible/rezible/ent"
+	"github.com/rezible/rezible/ent/integration"
+	"github.com/rezible/rezible/integrations"
 	"github.com/rezible/rezible/jobs"
 )
 
 type Syncer struct {
 	db *ent.Client
-	pl rez.DataProviderLoader
 }
 
-func NewIntegrationsSyncer(db *ent.Client, pl rez.DataProviderLoader) *Syncer {
-	return &Syncer{db: db, pl: pl}
+func NewSyncer(db *ent.Client) *Syncer {
+	return &Syncer{db: db}
 }
 
 func (s *Syncer) MakeSyncAllTenantIntegrationsDataPeriodicJob() jobs.PeriodicJob {
@@ -74,7 +73,7 @@ func (s *Syncer) SyncIntegrationsData(ctx context.Context, intgs ent.Integration
 		names[i] = intg.Name
 	}
 
-	usersProviders, usersErr := s.pl.GetUserDataProviders(ctx, intgs)
+	usersProviders, usersErr := integrations.GetUserDataProviders(ctx, intgs)
 	if usersErr != nil {
 		log.Error().Err(usersErr).Msg("failed to load user data providers")
 	} else if len(usersProviders) > 0 {
@@ -85,7 +84,7 @@ func (s *Syncer) SyncIntegrationsData(ctx context.Context, intgs ent.Integration
 		}
 	}
 
-	teamsProviders, teamsErr := s.pl.GetTeamDataProviders(ctx, intgs)
+	teamsProviders, teamsErr := integrations.GetTeamDataProviders(ctx, intgs)
 	if teamsErr != nil {
 		log.Error().Err(teamsErr).Msg("failed to load teams data providers")
 	} else if len(teamsProviders) > 0 {
@@ -96,7 +95,7 @@ func (s *Syncer) SyncIntegrationsData(ctx context.Context, intgs ent.Integration
 		}
 	}
 
-	oncallProviders, oncallErr := s.pl.GetOncallDataProviders(ctx, intgs)
+	oncallProviders, oncallErr := integrations.GetOncallDataProviders(ctx, intgs)
 	if oncallErr != nil {
 		log.Error().Err(oncallErr).Msg("failed to load oncall data providers")
 	} else if len(oncallProviders) > 0 {
@@ -110,7 +109,7 @@ func (s *Syncer) SyncIntegrationsData(ctx context.Context, intgs ent.Integration
 		}
 	}
 
-	componentsProviders, componentsErr := s.pl.GetSystemComponentsDataProviders(ctx, intgs)
+	componentsProviders, componentsErr := integrations.GetSystemComponentsDataProviders(ctx, intgs)
 	if componentsErr != nil {
 		log.Error().Err(componentsErr).Msg("failed to load components data providers")
 	} else if len(componentsProviders) > 0 {
@@ -121,7 +120,7 @@ func (s *Syncer) SyncIntegrationsData(ctx context.Context, intgs ent.Integration
 		}
 	}
 
-	alertsProviders, alertsErr := s.pl.GetAlertDataProviders(ctx, intgs)
+	alertsProviders, alertsErr := integrations.GetAlertDataProviders(ctx, intgs)
 	if alertsErr != nil {
 		log.Error().Err(alertsErr).Msg("failed to load alerts data providers")
 	} else if len(alertsProviders) > 0 {
@@ -135,7 +134,7 @@ func (s *Syncer) SyncIntegrationsData(ctx context.Context, intgs ent.Integration
 		}
 	}
 
-	playbooksProviders, playbooksErr := s.pl.GetPlaybookDataProviders(ctx, intgs)
+	playbooksProviders, playbooksErr := integrations.GetPlaybookDataProviders(ctx, intgs)
 	if playbooksErr != nil {
 		log.Error().Err(playbooksErr).Msg("failed to load playbooks data providers")
 	} else if len(playbooksProviders) > 0 {
@@ -146,7 +145,7 @@ func (s *Syncer) SyncIntegrationsData(ctx context.Context, intgs ent.Integration
 		}
 	}
 
-	incidentsProviders, incidentsErr := s.pl.GetIncidentDataProviders(ctx, intgs)
+	incidentsProviders, incidentsErr := integrations.GetIncidentDataProviders(ctx, intgs)
 	if incidentsErr != nil {
 		log.Error().Err(incidentsErr).Msg("failed to load incidents data providers")
 	} else if len(incidentsProviders) > 0 {

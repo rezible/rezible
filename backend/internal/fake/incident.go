@@ -16,7 +16,7 @@ import (
 )
 
 type IncidentDataProvider struct {
-	onIncidentUpdatedFn rez.DataProviderResourceUpdatedCallback
+	onIncidentUpdatedFn rez.ExternalResourceUpdatedCallback
 
 	roles      []*ent.IncidentRole
 	severities []*ent.IncidentSeverity
@@ -122,7 +122,7 @@ func (p *IncidentDataProvider) makeFakeIncidents() {
 	}
 }
 
-func (p *IncidentDataProvider) SetOnIncidentUpdatedCallback(cb rez.DataProviderResourceUpdatedCallback) {
+func (p *IncidentDataProvider) SetOnIncidentUpdatedCallback(cb rez.ExternalResourceUpdatedCallback) {
 	p.onIncidentUpdatedFn = cb
 }
 

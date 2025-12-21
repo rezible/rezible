@@ -94,24 +94,13 @@ type (
 		CompleteOAuth2Flow(context.Context, CompleteIntegrationOAuth2FlowParams) (*ent.Integration, error)
 	}
 
-	IntegrationsDataSyncService interface {
+	IntegrationsDataSyncer interface {
 		MakeSyncAllTenantIntegrationsDataPeriodicJob() jobs.PeriodicJob
 		SyncAllTenantIntegrationsData(context.Context, jobs.SyncIntegrationsData) error
 		SyncIntegrationsData(context.Context, ent.Integrations) error
 	}
 
-	DataProviderResourceUpdatedCallback = func(providerID string, updatedAt time.Time)
-
-	DataProviderLoader interface {
-		GetTeamDataProviders(context.Context, ent.Integrations) ([]TeamDataProvider, error)
-		GetUserDataProviders(context.Context, ent.Integrations) ([]UserDataProvider, error)
-		GetIncidentDataProviders(context.Context, ent.Integrations) ([]IncidentDataProvider, error)
-		GetOncallDataProviders(context.Context, ent.Integrations) ([]OncallDataProvider, error)
-		GetSystemComponentsDataProviders(context.Context, ent.Integrations) ([]SystemComponentsDataProvider, error)
-		GetTicketDataProviders(context.Context, ent.Integrations) ([]TicketDataProvider, error)
-		GetAlertDataProviders(context.Context, ent.Integrations) ([]AlertDataProvider, error)
-		GetPlaybookDataProviders(context.Context, ent.Integrations) ([]PlaybookDataProvider, error)
-	}
+	ExternalResourceUpdatedCallback = func(externalId string, updatedAt time.Time)
 )
 
 type (
@@ -360,7 +349,7 @@ type (
 		IncidentDataMapping() *ent.Incident
 		IncidentRoleDataMapping() *ent.IncidentRole
 
-		SetOnIncidentUpdatedCallback(DataProviderResourceUpdatedCallback)
+		SetOnIncidentUpdatedCallback(ExternalResourceUpdatedCallback)
 		PullIncidents(context.Context) iter.Seq2[*ent.Incident, error]
 		GetIncidentByID(context.Context, string) (*ent.Incident, error)
 		ListIncidentRoles(context.Context) ([]*ent.IncidentRole, error)

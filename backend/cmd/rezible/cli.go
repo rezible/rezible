@@ -7,13 +7,13 @@ import (
 	"os/signal"
 	"syscall"
 
+	"github.com/rezible/rezible/integrations"
 	"github.com/rezible/rezible/internal/db/datasync"
 	"github.com/rs/zerolog/log"
 	"github.com/spf13/cobra"
 
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/access"
-	"github.com/rezible/rezible/dataproviders"
 	rezinternal "github.com/rezible/rezible/internal"
 	"github.com/rezible/rezible/internal/viper"
 	"github.com/rezible/rezible/jobs"
@@ -76,10 +76,10 @@ var integrationsLoadCmd = &cobra.Command{
 		src := args[0]
 		withDatabase(cmd.Context(), func(dbc rez.Database) {
 			var loadErr error
-			if src == "fake" {
-				loadErr = dataproviders.LoadFakeConfig(ctx, dbc.Client())
+			if src == "dev" {
+				loadErr = integrations.LoadDevOrganization(ctx, dbc.Client())
 			} else {
-				loadErr = dataproviders.LoadTenantConfig(ctx, dbc.Client(), src)
+				loadErr = integrations.LoadOrganization(ctx, dbc.Client(), src)
 			}
 			if loadErr != nil {
 				log.Fatal().Err(loadErr).Msg("failed to load tenant config")
@@ -98,7 +98,7 @@ var integrationsSyncCmd = &cobra.Command{
 		}
 		withDatabase(ctx, func(dbc rez.Database) {
 			client := dbc.Client()
-			svc := datasync.NewIntegrationsSyncer(client, dataproviders.NewProviderLoader())
+			svc := datasync.NewSyncer(client)
 			syncErr := svc.SyncAllTenantIntegrationsData(ctx, syncArgs)
 			if syncErr != nil {
 				log.Fatal().Err(syncErr).Msg("failed to sync provider data")
