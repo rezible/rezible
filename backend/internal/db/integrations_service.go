@@ -117,17 +117,17 @@ func (s *IntegrationsService) StartOAuth2Flow(ctx context.Context, name string) 
 	return cfg.AuthCodeURL(state), nil
 }
 
-func (s *IntegrationsService) CompleteOAuth2Flow(ctx context.Context, params rez.CompleteIntegrationOAuth2FlowParams) (*ent.Integration, error) {
-	if stateErr := s.checkOAuthState(ctx, params.Name, params.State); stateErr != nil {
+func (s *IntegrationsService) CompleteOAuth2Flow(ctx context.Context, name, state, code string) (*ent.Integration, error) {
+	if stateErr := s.checkOAuthState(ctx, name, state); stateErr != nil {
 		return nil, fmt.Errorf("invalid state: %w", stateErr)
 	}
 
-	h, ok := s.getOAuth2Handler(params.Name)
+	h, ok := s.getOAuth2Handler(name)
 	if !ok {
-		return nil, fmt.Errorf("invalid integration name '%s'", params.Name)
+		return nil, fmt.Errorf("invalid integration name '%s'", name)
 	}
 
-	token, tokenErr := h.OAuth2Config().Exchange(ctx, params.Code)
+	token, tokenErr := h.OAuth2Config().Exchange(ctx, code)
 	if tokenErr != nil {
 		return nil, fmt.Errorf("exchange token: %w", tokenErr)
 	}

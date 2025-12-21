@@ -137,13 +137,7 @@ func (h *integrationsHandler) CompleteIntegrationOAuth(ctx context.Context, req 
 
 	attr := req.Body.Attributes
 
-	params := rez.CompleteIntegrationOAuth2FlowParams{
-		Name:  attr.Name,
-		State: attr.State,
-		Code:  attr.Code,
-	}
-
-	intg, completeErr := h.integrations.CompleteOAuth2Flow(ctx, params)
+	intg, completeErr := h.integrations.CompleteOAuth2Flow(ctx, attr.Name, attr.State, attr.Code)
 	if completeErr != nil {
 		return nil, apiError("failed to complete integration", completeErr)
 	}

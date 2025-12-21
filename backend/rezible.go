@@ -72,12 +72,6 @@ type (
 		Enabled bool
 	}
 
-	CompleteIntegrationOAuth2FlowParams struct {
-		Name  string
-		State string
-		Code  string
-	}
-
 	OAuth2IntegrationHandler interface {
 		OAuth2Config() *oauth2.Config
 		GetIntegrationFromToken(*oauth2.Token) (*ent.Integration, error)
@@ -91,7 +85,7 @@ type (
 
 		RegisterOAuth2Handler(name string, h OAuth2IntegrationHandler)
 		StartOAuth2Flow(ctx context.Context, name string) (string, error)
-		CompleteOAuth2Flow(context.Context, CompleteIntegrationOAuth2FlowParams) (*ent.Integration, error)
+		CompleteOAuth2Flow(ctx context.Context, name, state, code string) (*ent.Integration, error)
 	}
 
 	IntegrationsDataSyncer interface {
