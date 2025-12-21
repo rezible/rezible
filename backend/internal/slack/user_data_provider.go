@@ -19,10 +19,7 @@ type UserDataProvider struct {
 var _ rez.UserDataProvider = (*UserDataProvider)(nil)
 
 func NewUserDataProvider(cfg IntegrationConfigData) (*UserDataProvider, error) {
-	var teamIds []string
-	if cfg.Team != nil {
-		teamIds = []string{cfg.Team.ID}
-	}
+	teamIds := []string{cfg.Team.ID}
 	return &UserDataProvider{client: slack.New(cfg.AccessToken), teamIds: teamIds}, nil
 }
 

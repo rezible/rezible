@@ -127,9 +127,14 @@ func (s *IntegrationsService) CompleteOAuth2Flow(ctx context.Context, params rez
 		return nil, fmt.Errorf("invalid integration name '%s'", params.Name)
 	}
 
-	prov, completeErr := h.CompleteOAuth2Flow(ctx, params.Code)
-	if completeErr != nil {
-		return nil, fmt.Errorf("failed to complete flow: %w", completeErr)
+	token, tokenErr := h.OAuth2Config().Exchange(ctx, params.Code)
+	if tokenErr != nil {
+		return nil, fmt.Errorf("exchange token: %w", tokenErr)
+	}
+
+	prov, intgErr := h.GetIntegrationFromToken(token)
+	if intgErr != nil {
+		return nil, fmt.Errorf("failed to get integration: %w", intgErr)
 	}
 
 	setFn := func(m *ent.IntegrationMutation) {
@@ -137,9 +142,9 @@ func (s *IntegrationsService) CompleteOAuth2Flow(ctx context.Context, params rez
 		m.SetConfig(prov.Config)
 		m.SetEnabled(prov.Enabled)
 	}
-	intg, pcErr := s.SetIntegration(ctx, uuid.Nil, setFn)
-	if pcErr != nil {
-		return nil, fmt.Errorf("failed to create integration: %w", pcErr)
+	intg, setErr := s.SetIntegration(ctx, uuid.Nil, setFn)
+	if setErr != nil {
+		return nil, fmt.Errorf("failed to create integration: %w", setErr)
 	}
 
 	s.onIntegrationUpdated(intg)

@@ -347,9 +347,7 @@ export type CreateIncidentTypeResponseBody = {
 };
 
 export type CreateIntegrationRequestAttributes = {
-    config: {
-        [key: string]: string;
-    };
+    config: unknown;
     enabled: boolean;
     name: string;
 };
@@ -1458,9 +1456,7 @@ export type Integration = {
 };
 
 export type IntegrationAttributes = {
-    config: {
-        [key: string]: string;
-    };
+    config: unknown;
     enabled: boolean;
     name: string;
 };
@@ -2489,9 +2485,7 @@ export type UpdateIncidentTypeResponseBody = {
 };
 
 export type UpdateIntegrationAttributes = {
-    config?: {
-        [key: string]: string;
-    };
+    config?: unknown;
     enabled?: boolean;
 };
 

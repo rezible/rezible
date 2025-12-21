@@ -7,14 +7,14 @@ import (
 	"os/signal"
 	"syscall"
 
-	"github.com/rezible/rezible/integrations"
-	"github.com/rezible/rezible/internal/db/datasync"
 	"github.com/rs/zerolog/log"
 	"github.com/spf13/cobra"
 
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/access"
-	rezinternal "github.com/rezible/rezible/internal"
+	"github.com/rezible/rezible/integrations"
+	"github.com/rezible/rezible/internal"
+	"github.com/rezible/rezible/internal/db/datasync"
 	"github.com/rezible/rezible/internal/viper"
 	"github.com/rezible/rezible/jobs"
 	oapiv1 "github.com/rezible/rezible/openapi/v1"
@@ -30,7 +30,7 @@ var serveCmd = &cobra.Command{
 	Use:   "serve",
 	Short: "runs the rezible server",
 	Run: func(cmd *cobra.Command, args []string) {
-		if runErr := rezinternal.RunServer(cmd.Context()); runErr != nil {
+		if runErr := internal.RunServer(cmd.Context()); runErr != nil {
 			log.Fatal().Err(runErr).Msg("failed to run server")
 		}
 	},
@@ -49,7 +49,7 @@ var printSpecCmd = &cobra.Command{
 }
 
 func withDatabase(ctx context.Context, fn func(dbc rez.Database)) {
-	dbc, dbcErr := rezinternal.OpenPostgresDatabase(ctx)
+	dbc, dbcErr := internal.OpenDatabase(ctx)
 	if dbcErr != nil {
 		log.Fatal().Err(dbcErr).Msg("failed to get database")
 	}
@@ -131,7 +131,7 @@ var dbMigrateApplyCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		direction := args[0]
 		if direction == "auto" {
-			if migErr := rezinternal.RunAutoMigrations(cmd.Context()); migErr != nil {
+			if migErr := internal.RunAutoMigrations(cmd.Context()); migErr != nil {
 				log.Fatal().Err(migErr).Msg("failed to apply database migrations")
 			}
 		} else {

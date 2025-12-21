@@ -2,7 +2,6 @@ package apiv1
 
 import (
 	"context"
-	"encoding/json"
 
 	"github.com/google/uuid"
 	rez "github.com/rezible/rezible"
@@ -45,7 +44,7 @@ func (h *integrationsHandler) CreateIntegration(ctx context.Context, req *oapi.C
 
 	attr := req.Body.Attributes
 
-	cfg, cfgErr := json.Marshal(attr.Config)
+	cfg, cfgErr := attr.Config.MarshalJSON()
 	if cfgErr != nil {
 		return nil, apiError("failed to marshal integration config", cfgErr)
 	}
@@ -84,7 +83,7 @@ func (h *integrationsHandler) UpdateIntegration(ctx context.Context, req *oapi.U
 
 	var newCfg []byte
 	if attr.Config != nil {
-		cfg, cfgErr := json.Marshal(attr.Config)
+		cfg, cfgErr := attr.Config.MarshalJSON()
 		if cfgErr != nil {
 			return nil, apiError("invalid config", cfgErr)
 		}

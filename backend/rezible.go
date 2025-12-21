@@ -80,7 +80,7 @@ type (
 
 	OAuth2IntegrationHandler interface {
 		OAuth2Config() *oauth2.Config
-		CompleteOAuth2Flow(ctx context.Context, code string) (*ent.Integration, error)
+		GetIntegrationFromToken(*oauth2.Token) (*ent.Integration, error)
 	}
 
 	IntegrationsService interface {

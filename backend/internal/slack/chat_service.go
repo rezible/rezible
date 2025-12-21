@@ -95,21 +95,12 @@ func (s *ChatService) OAuth2Config() *oauth2.Config {
 	return s.oauthConfig
 }
 
-func (s *ChatService) CompleteOAuth2Flow(ctx context.Context, code string) (*ent.Integration, error) {
-	token, tokenErr := s.oauthConfig.Exchange(ctx, code)
-	if tokenErr != nil {
-		return nil, fmt.Errorf("exchange token: %w", tokenErr)
+func (s *ChatService) GetIntegrationFromToken(token *oauth2.Token) (*ent.Integration, error) {
+	cfg, cfgErr := getIntegrationConfigFromOAuthToken(token)
+	if cfgErr != nil {
+		return nil, fmt.Errorf("get integration config: %w", cfgErr)
 	}
 
-	team := token.Extra("team")
-	log.Debug().Interface("team", team).Msg("complete oauth2 flow")
-
-	cfg := IntegrationConfigData{
-		AccessToken: token.AccessToken,
-		TokenType:   token.Type(),
-		Scope:       token.Extra("scope").(string),
-		BotUserID:   token.Extra("bot_user_id").(string),
-	}
 	cfgJson, jsonErr := json.Marshal(cfg)
 	if jsonErr != nil {
 		return nil, fmt.Errorf("marshalling provider config: %w", jsonErr)

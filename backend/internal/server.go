@@ -27,7 +27,7 @@ func RunAutoMigrations(ctx context.Context) error {
 	return postgres.RunAutoMigrations(ctx)
 }
 
-func OpenPostgresDatabase(ctx context.Context) (rez.Database, error) {
+func OpenDatabase(ctx context.Context) (rez.Database, error) {
 	return postgres.NewDatabaseClient(ctx)
 }
 
@@ -94,7 +94,7 @@ func (s Server) stop() error {
 func setupServer(ctx context.Context) (Server, error) {
 	listeners := make(Server)
 
-	dbConn, dbConnErr := OpenPostgresDatabase(ctx)
+	dbConn, dbConnErr := OpenDatabase(ctx)
 	if dbConnErr != nil {
 		return nil, fmt.Errorf("postgres.NewDatabaseClient: %w", dbConnErr)
 	}

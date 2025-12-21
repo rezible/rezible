@@ -8,7 +8,6 @@ import (
 	"github.com/danielgtaylor/huma/v2"
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent"
-	"github.com/rs/zerolog/log"
 )
 
 type IntegrationsHandler interface {
@@ -40,21 +39,17 @@ type (
 	}
 
 	IntegrationAttributes struct {
-		Name    string            `json:"name"`
-		Enabled bool              `json:"enabled"`
-		Config  map[string]string `json:"config"`
+		Name    string          `json:"name"`
+		Enabled bool            `json:"enabled"`
+		Config  json.RawMessage `json:"config"`
 	}
 )
 
 func IntegrationFromEnt(intg *ent.Integration) Integration {
-	config := make(map[string]string)
-	if jsonErr := json.Unmarshal(intg.Config, &config); jsonErr != nil {
-		log.Warn().Err(jsonErr).Msg("Failed to unmarshal integration config")
-	}
 	attr := IntegrationAttributes{
 		Name:    intg.Name,
 		Enabled: intg.Enabled,
-		Config:  config,
+		Config:  intg.Config,
 	}
 
 	return Integration{
@@ -91,9 +86,9 @@ var CreateIntegration = huma.Operation{
 }
 
 type CreateIntegrationRequestAttributes struct {
-	Name    string            `json:"name"`
-	Enabled bool              `json:"enabled"`
-	Config  map[string]string `json:"config"`
+	Name    string          `json:"name"`
+	Enabled bool            `json:"enabled"`
+	Config  json.RawMessage `json:"config"`
 }
 type CreateIntegrationRequest RequestWithBodyAttributes[CreateIntegrationRequestAttributes]
 type CreateIntegrationResponse ItemResponse[Integration]
@@ -120,8 +115,8 @@ var UpdateIntegration = huma.Operation{
 }
 
 type UpdateIntegrationAttributes struct {
-	Enabled *bool              `json:"enabled,omitempty"`
-	Config  *map[string]string `json:"config,omitempty"`
+	Enabled *bool            `json:"enabled,omitempty"`
+	Config  *json.RawMessage `json:"config,omitempty"`
 }
 type UpdateIntegrationRequest UpdateIdRequest[UpdateIntegrationAttributes]
 type UpdateIntegrationResponse ItemResponse[Integration]
