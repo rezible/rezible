@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/rezible/rezible/jobs"
 	"github.com/rs/zerolog/log"
 	"github.com/slack-go/slack"
 	"github.com/slack-go/slack/slackevents"
@@ -27,29 +26,13 @@ func (s *ChatService) onCallbackEventReceived(data slackevents.EventsAPIEvent) {
 }
 
 func (s *ChatService) queueCallbackEvent(ctx context.Context, data slackevents.EventsAPIEvent) error {
-	return s.jobs.Insert(ctx, jobs.InsertJobParams{
-		Args: jobs.ProcessChatEvent{
-			Provider:  "slack",
-			EventKind: eventKindCallback,
-			Data:      data,
-		},
-	})
+	return nil
 }
 
-func (s *ChatService) ProcessEvent(ctx context.Context, args jobs.ProcessChatEvent) error {
-	if args.Provider != "slack" {
-		return fmt.Errorf("invalid provider")
-	}
-	if args.EventKind == eventKindCallback {
-		data, ok := args.Data.(slackevents.EventsAPIEvent)
-		if !ok {
-			return fmt.Errorf("invalid event")
-		}
-		_, handleErr := s.handleCallbackEvent(ctx, &data)
-		if handleErr != nil {
-			return fmt.Errorf("failed to handle callback event: %w", handleErr)
-		}
-		return nil
+func (s *ChatService) ProcessEvent(ctx context.Context, data slackevents.EventsAPIEvent) error {
+	_, handleErr := s.handleCallbackEvent(ctx, &data)
+	if handleErr != nil {
+		return fmt.Errorf("failed to handle callback event: %w", handleErr)
 	}
 	return nil
 }

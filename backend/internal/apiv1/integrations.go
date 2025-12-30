@@ -17,12 +17,35 @@ func newIntegrationsHandler(integrations rez.IntegrationsService) *integrationsH
 	return &integrationsHandler{integrations: integrations}
 }
 
+func (h *integrationsHandler) ListSupportedIntegrations(ctx context.Context, req *oapi.ListSupportedIntegrationsRequest) (*oapi.ListSupportedIntegrationsResponse, error) {
+	var resp oapi.ListSupportedIntegrationsResponse
+
+	supportedIntegrations := []oapi.SupportedIntegration{
+		{
+			Name:          "slack",
+			DataKinds:     []string{"chat", "users"},
+			OAuthRequired: true,
+		},
+	}
+
+	if rez.Config.DebugMode() {
+		fakeIntegration := oapi.SupportedIntegration{
+			Name:          "fake",
+			DataKinds:     []string{},
+			OAuthRequired: false,
+		}
+		supportedIntegrations = append(supportedIntegrations, fakeIntegration)
+	}
+
+	resp.Body.Data = supportedIntegrations
+
+	return &resp, nil
+}
+
 func (h *integrationsHandler) ListIntegrations(ctx context.Context, req *oapi.ListIntegrationsRequest) (*oapi.ListIntegrationsResponse, error) {
 	var resp oapi.ListIntegrationsResponse
 
-	params := rez.ListIntegrationsParams{
-		Name: req.Name,
-	}
+	params := rez.ListIntegrationsParams{}
 	results, listErr := h.integrations.ListIntegrations(ctx, params)
 	if listErr != nil {
 		return nil, apiError("failed to list integrations", listErr)
@@ -52,7 +75,6 @@ func (h *integrationsHandler) CreateIntegration(ctx context.Context, req *oapi.C
 	setFn := func(m *ent.IntegrationMutation) {
 		m.SetName(attr.Name)
 		m.SetConfig(cfg)
-		m.SetEnabled(attr.Enabled)
 	}
 
 	created, createErr := h.integrations.SetIntegration(ctx, uuid.Nil, setFn)
@@ -93,9 +115,6 @@ func (h *integrationsHandler) UpdateIntegration(ctx context.Context, req *oapi.U
 	setFn := func(m *ent.IntegrationMutation) {
 		if newCfg != nil {
 			m.SetConfig(newCfg)
-		}
-		if attr.Enabled != nil {
-			m.SetEnabled(*attr.Enabled)
 		}
 	}
 

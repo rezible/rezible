@@ -71,11 +71,6 @@ func Config(v []byte) predicate.Integration {
 	return predicate.Integration(sql.FieldEQ(FieldConfig, v))
 }
 
-// Enabled applies equality check predicate on the "enabled" field. It's identical to EnabledEQ.
-func Enabled(v bool) predicate.Integration {
-	return predicate.Integration(sql.FieldEQ(FieldEnabled, v))
-}
-
 // UpdatedAt applies equality check predicate on the "updated_at" field. It's identical to UpdatedAtEQ.
 func UpdatedAt(v time.Time) predicate.Integration {
 	return predicate.Integration(sql.FieldEQ(FieldUpdatedAt, v))
@@ -204,16 +199,6 @@ func ConfigLT(v []byte) predicate.Integration {
 // ConfigLTE applies the LTE predicate on the "config" field.
 func ConfigLTE(v []byte) predicate.Integration {
 	return predicate.Integration(sql.FieldLTE(FieldConfig, v))
-}
-
-// EnabledEQ applies the EQ predicate on the "enabled" field.
-func EnabledEQ(v bool) predicate.Integration {
-	return predicate.Integration(sql.FieldEQ(FieldEnabled, v))
-}
-
-// EnabledNEQ applies the NEQ predicate on the "enabled" field.
-func EnabledNEQ(v bool) predicate.Integration {
-	return predicate.Integration(sql.FieldNEQ(FieldEnabled, v))
 }
 
 // UpdatedAtEQ applies the EQ predicate on the "updated_at" field.

@@ -22,8 +22,6 @@ const (
 	FieldName = "name"
 	// FieldConfig holds the string denoting the config field in the database.
 	FieldConfig = "config"
-	// FieldEnabled holds the string denoting the enabled field in the database.
-	FieldEnabled = "enabled"
 	// FieldUpdatedAt holds the string denoting the updated_at field in the database.
 	FieldUpdatedAt = "updated_at"
 	// EdgeTenant holds the string denoting the tenant edge name in mutations.
@@ -45,7 +43,6 @@ var Columns = []string{
 	FieldTenantID,
 	FieldName,
 	FieldConfig,
-	FieldEnabled,
 	FieldUpdatedAt,
 }
 
@@ -67,8 +64,6 @@ func ValidColumn(column string) bool {
 var (
 	Hooks  [1]ent.Hook
 	Policy ent.Policy
-	// DefaultEnabled holds the default value on creation for the "enabled" field.
-	DefaultEnabled bool
 	// DefaultUpdatedAt holds the default value on creation for the "updated_at" field.
 	DefaultUpdatedAt func() time.Time
 	// DefaultID holds the default value on creation for the "id" field.
@@ -91,11 +86,6 @@ func ByTenantID(opts ...sql.OrderTermOption) OrderOption {
 // ByName orders the results by the name field.
 func ByName(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldName, opts...).ToFunc()
-}
-
-// ByEnabled orders the results by the enabled field.
-func ByEnabled(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldEnabled, opts...).ToFunc()
 }
 
 // ByUpdatedAt orders the results by the updated_at field.

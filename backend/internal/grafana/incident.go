@@ -312,13 +312,13 @@ func (p *IncidentDataProvider) getIncidentMilestones(ctx context.Context, i *gIn
 	}
 
 	start := &ent.IncidentMilestone{
-		Kind: incidentmilestone.KindImpact,
-		Time: startedAt,
+		Kind:      incidentmilestone.KindImpact,
+		Timestamp: startedAt,
 	}
 
 	end := &ent.IncidentMilestone{
-		Kind: incidentmilestone.KindResolution,
-		Time: endedAt,
+		Kind:      incidentmilestone.KindResolution,
+		Timestamp: endedAt,
 	}
 
 	milestones = append(milestones, start, end)
@@ -376,7 +376,7 @@ func convertIncidentMilestone(item incidentActivityItem) *ent.IncidentMilestone 
 	// TODO: map properly
 
 	event := &ent.IncidentMilestone{
-		Time: item.CreatedTime,
+		Timestamp: item.CreatedTime,
 	}
 
 	return event

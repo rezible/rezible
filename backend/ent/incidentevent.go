@@ -38,16 +38,12 @@ type IncidentEvent struct {
 	Description string `json:"description,omitempty"`
 	// IsKey holds the value of the "is_key" field.
 	IsKey bool `json:"is_key,omitempty"`
+	// Sequence holds the value of the "sequence" field.
+	Sequence int `json:"sequence,omitempty"`
 	// CreatedAt holds the value of the "created_at" field.
 	CreatedAt time.Time `json:"created_at,omitempty"`
 	// UpdatedAt holds the value of the "updated_at" field.
 	UpdatedAt time.Time `json:"updated_at,omitempty"`
-	// CreatedBy holds the value of the "created_by" field.
-	CreatedBy uuid.UUID `json:"created_by,omitempty"`
-	// Sequence holds the value of the "sequence" field.
-	Sequence int `json:"sequence,omitempty"`
-	// IsDraft holds the value of the "is_draft" field.
-	IsDraft bool `json:"is_draft,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the IncidentEventQuery when eager-loading is set.
 	Edges        IncidentEventEdges `json:"edges"`
@@ -162,7 +158,7 @@ func (*IncidentEvent) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case incidentevent.FieldIsKey, incidentevent.FieldIsDraft:
+		case incidentevent.FieldIsKey:
 			values[i] = new(sql.NullBool)
 		case incidentevent.FieldTenantID, incidentevent.FieldSequence:
 			values[i] = new(sql.NullInt64)
@@ -170,7 +166,7 @@ func (*IncidentEvent) scanValues(columns []string) ([]any, error) {
 			values[i] = new(sql.NullString)
 		case incidentevent.FieldTimestamp, incidentevent.FieldCreatedAt, incidentevent.FieldUpdatedAt:
 			values[i] = new(sql.NullTime)
-		case incidentevent.FieldID, incidentevent.FieldIncidentID, incidentevent.FieldEventID, incidentevent.FieldCreatedBy:
+		case incidentevent.FieldID, incidentevent.FieldIncidentID, incidentevent.FieldEventID:
 			values[i] = new(uuid.UUID)
 		default:
 			values[i] = new(sql.UnknownType)
@@ -241,6 +237,12 @@ func (_m *IncidentEvent) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				_m.IsKey = value.Bool
 			}
+		case incidentevent.FieldSequence:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for field sequence", values[i])
+			} else if value.Valid {
+				_m.Sequence = int(value.Int64)
+			}
 		case incidentevent.FieldCreatedAt:
 			if value, ok := values[i].(*sql.NullTime); !ok {
 				return fmt.Errorf("unexpected type %T for field created_at", values[i])
@@ -252,24 +254,6 @@ func (_m *IncidentEvent) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field updated_at", values[i])
 			} else if value.Valid {
 				_m.UpdatedAt = value.Time
-			}
-		case incidentevent.FieldCreatedBy:
-			if value, ok := values[i].(*uuid.UUID); !ok {
-				return fmt.Errorf("unexpected type %T for field created_by", values[i])
-			} else if value != nil {
-				_m.CreatedBy = *value
-			}
-		case incidentevent.FieldSequence:
-			if value, ok := values[i].(*sql.NullInt64); !ok {
-				return fmt.Errorf("unexpected type %T for field sequence", values[i])
-			} else if value.Valid {
-				_m.Sequence = int(value.Int64)
-			}
-		case incidentevent.FieldIsDraft:
-			if value, ok := values[i].(*sql.NullBool); !ok {
-				return fmt.Errorf("unexpected type %T for field is_draft", values[i])
-			} else if value.Valid {
-				_m.IsDraft = value.Bool
 			}
 		default:
 			_m.selectValues.Set(columns[i], values[i])
@@ -371,20 +355,14 @@ func (_m *IncidentEvent) String() string {
 	builder.WriteString("is_key=")
 	builder.WriteString(fmt.Sprintf("%v", _m.IsKey))
 	builder.WriteString(", ")
+	builder.WriteString("sequence=")
+	builder.WriteString(fmt.Sprintf("%v", _m.Sequence))
+	builder.WriteString(", ")
 	builder.WriteString("created_at=")
 	builder.WriteString(_m.CreatedAt.Format(time.ANSIC))
 	builder.WriteString(", ")
 	builder.WriteString("updated_at=")
 	builder.WriteString(_m.UpdatedAt.Format(time.ANSIC))
-	builder.WriteString(", ")
-	builder.WriteString("created_by=")
-	builder.WriteString(fmt.Sprintf("%v", _m.CreatedBy))
-	builder.WriteString(", ")
-	builder.WriteString("sequence=")
-	builder.WriteString(fmt.Sprintf("%v", _m.Sequence))
-	builder.WriteString(", ")
-	builder.WriteString("is_draft=")
-	builder.WriteString(fmt.Sprintf("%v", _m.IsDraft))
 	builder.WriteByte(')')
 	return builder.String()
 }

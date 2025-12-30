@@ -22,10 +22,14 @@ const (
 	FieldIncidentID = "incident_id"
 	// FieldKind holds the string denoting the kind field in the database.
 	FieldKind = "kind"
+	// FieldTimestamp holds the string denoting the timestamp field in the database.
+	FieldTimestamp = "timestamp"
 	// FieldDescription holds the string denoting the description field in the database.
 	FieldDescription = "description"
-	// FieldTime holds the string denoting the time field in the database.
-	FieldTime = "time"
+	// FieldSource holds the string denoting the source field in the database.
+	FieldSource = "source"
+	// FieldExternalID holds the string denoting the external_id field in the database.
+	FieldExternalID = "external_id"
 	// EdgeTenant holds the string denoting the tenant edge name in mutations.
 	EdgeTenant = "tenant"
 	// EdgeIncident holds the string denoting the incident edge name in mutations.
@@ -54,8 +58,10 @@ var Columns = []string{
 	FieldTenantID,
 	FieldIncidentID,
 	FieldKind,
+	FieldTimestamp,
 	FieldDescription,
-	FieldTime,
+	FieldSource,
+	FieldExternalID,
 }
 
 // ValidColumn reports if the column name is valid (part of the table columns).
@@ -85,11 +91,11 @@ type Kind string
 
 // Kind values.
 const (
-	KindImpact        Kind = "impact"
-	KindDetection     Kind = "detection"
-	KindInvestigation Kind = "investigation"
-	KindMitigation    Kind = "mitigation"
-	KindResolution    Kind = "resolution"
+	KindImpact     Kind = "impact"
+	KindDetection  Kind = "detection"
+	KindResponse   Kind = "response"
+	KindMitigation Kind = "mitigation"
+	KindResolution Kind = "resolution"
 )
 
 func (k Kind) String() string {
@@ -99,7 +105,7 @@ func (k Kind) String() string {
 // KindValidator is a validator for the "kind" field enum values. It is called by the builders before save.
 func KindValidator(k Kind) error {
 	switch k {
-	case KindImpact, KindDetection, KindInvestigation, KindMitigation, KindResolution:
+	case KindImpact, KindDetection, KindResponse, KindMitigation, KindResolution:
 		return nil
 	default:
 		return fmt.Errorf("incidentmilestone: invalid enum value for kind field: %q", k)
@@ -129,14 +135,24 @@ func ByKind(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldKind, opts...).ToFunc()
 }
 
+// ByTimestamp orders the results by the timestamp field.
+func ByTimestamp(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldTimestamp, opts...).ToFunc()
+}
+
 // ByDescription orders the results by the description field.
 func ByDescription(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldDescription, opts...).ToFunc()
 }
 
-// ByTime orders the results by the time field.
-func ByTime(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldTime, opts...).ToFunc()
+// BySource orders the results by the source field.
+func BySource(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldSource, opts...).ToFunc()
+}
+
+// ByExternalID orders the results by the external_id field.
+func ByExternalID(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldExternalID, opts...).ToFunc()
 }
 
 // ByTenantField orders the results by tenant field.

@@ -42,50 +42,6 @@ func NewMessageService() (*MessageService, error) {
 	ms.publisher = pubSub
 	ms.subscriber = pubSub
 
-	/*
-		handler := router.AddHandler(
-			"struct_handler",          // handler name, must be unique
-			"incoming_messages_topic", // topic from which we will read events
-			pubSub,
-			"outgoing_messages_topic", // topic to which we will publish events
-			pubSub,
-			structHandler{}.Handler,
-		)
-
-		// Handler level middleware is only executed for a specific handler
-		// Such middleware can be added the same way the router level ones
-		handler.AddMiddleware(func(h message.HandlerFunc) message.HandlerFunc {
-			return func(message *message.Message) ([]*message.Message, error) {
-				//log.Println("executing handler specific middleware for ", message.UUID)
-
-				return h(message)
-			}
-		})
-	*/
-
-	printMessages := func(msg *message.Message) error {
-		log.Debug().
-			Str("uuid", msg.UUID).
-			Str("payload", string(msg.Payload)).
-			Interface("metadata", msg.Metadata).
-			Msg("received message")
-		return nil
-	}
-
-	router.AddConsumerHandler(
-		"print_incoming_messages",
-		"incoming_messages_topic",
-		pubSub,
-		printMessages,
-	)
-
-	router.AddConsumerHandler(
-		"print_outgoing_messages",
-		"outgoing_messages_topic",
-		pubSub,
-		printMessages,
-	)
-
 	return ms, nil
 }
 

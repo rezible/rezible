@@ -2,47 +2,37 @@ package db
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
 	"fmt"
-
-	"github.com/ThreeDotsLabs/watermill/message"
-	"github.com/rezible/rezible/access"
-	"github.com/rs/zerolog/log"
 
 	"github.com/google/uuid"
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
 	"github.com/rezible/rezible/ent/integration"
+	"github.com/rezible/rezible/jobs"
+	"github.com/rs/zerolog/log"
 )
 
 type IntegrationsService struct {
 	db             *ent.Client
-	msgs           rez.MessageService
+	jobs           rez.JobsService
 	syncer         rez.IntegrationsDataSyncer
 	oauth2Handlers map[string]rez.OAuth2IntegrationHandler
 }
 
-const topicIntegrationUpdated = "integration_updated"
-
-func NewIntegrationsService(db *ent.Client, msgs rez.MessageService, syncer rez.IntegrationsDataSyncer) (*IntegrationsService, error) {
+func NewIntegrationsService(db *ent.Client, jobs rez.JobsService, syncer rez.IntegrationsDataSyncer) (*IntegrationsService, error) {
 	s := &IntegrationsService{
 		db:             db,
-		msgs:           msgs,
+		jobs:           jobs,
 		syncer:         syncer,
 		oauth2Handlers: make(map[string]rez.OAuth2IntegrationHandler),
 	}
-
-	msgs.AddConsumerHandler("integration_update_datasync", topicIntegrationUpdated, s.handleIntegrationUpdatedMessage)
 
 	return s, nil
 }
 
 func (s *IntegrationsService) listQuery(p rez.ListIntegrationsParams) *ent.IntegrationQuery {
 	query := s.db.Integration.Query()
-	if p.Enabled {
-		query.Where(integration.EnabledEQ(true))
-	}
 	if p.Name != "" {
 		query.Where(integration.Name(p.Name))
 	}
@@ -64,6 +54,7 @@ type updateIntegrationMutation interface {
 }
 
 func (s *IntegrationsService) SetIntegration(ctx context.Context, id uuid.UUID, setFn func(*ent.IntegrationMutation)) (*ent.Integration, error) {
+
 	var m updateIntegrationMutation
 	if id != uuid.Nil {
 		m = s.db.Integration.UpdateOneID(id)
@@ -71,7 +62,22 @@ func (s *IntegrationsService) SetIntegration(ctx context.Context, id uuid.UUID, 
 		m = s.db.Integration.Create()
 	}
 	setFn(m.Mutation())
-	return m.Save(ctx)
+
+	updated, saveErr := m.Save(ctx)
+	if saveErr != nil {
+		return nil, fmt.Errorf("failed to save: %w", saveErr)
+	}
+
+	params := jobs.InsertJobParams{
+		Args: jobs.SyncIntegrationsData{
+			IntegrationId: updated.ID,
+		},
+	}
+	if jobErr := s.jobs.Insert(ctx, params); jobErr != nil {
+		log.Error().Err(jobErr).Msg("failed to insert sync job")
+	}
+
+	return updated, nil
 }
 
 func (s *IntegrationsService) DeleteIntegration(ctx context.Context, id uuid.UUID) error {
@@ -140,40 +146,11 @@ func (s *IntegrationsService) CompleteOAuth2Flow(ctx context.Context, name, stat
 	setFn := func(m *ent.IntegrationMutation) {
 		m.SetName(prov.Name)
 		m.SetConfig(prov.Config)
-		m.SetEnabled(prov.Enabled)
 	}
 	intg, setErr := s.SetIntegration(ctx, uuid.Nil, setFn)
 	if setErr != nil {
 		return nil, fmt.Errorf("failed to create integration: %w", setErr)
 	}
 
-	s.onIntegrationUpdated(intg)
-
 	return intg, nil
-}
-
-func (s *IntegrationsService) onIntegrationUpdated(intg *ent.Integration) {
-	if pubErr := s.publishIntegrationUpdatedMessage(intg); pubErr != nil {
-		log.Error().Err(pubErr).Msg("failed to publish integration updated message")
-	}
-}
-
-func (s *IntegrationsService) publishIntegrationUpdatedMessage(intg *ent.Integration) error {
-	payloadBytes, jsonErr := json.Marshal(intg)
-	if jsonErr != nil {
-		return fmt.Errorf("failed to marshal integration updated message: %w", jsonErr)
-	}
-	return s.msgs.Publish(topicIntegrationUpdated, message.NewMessage(uuid.NewString(), payloadBytes))
-}
-
-func (s *IntegrationsService) handleIntegrationUpdatedMessage(msg *message.Message) error {
-	var intg *ent.Integration
-	if err := json.Unmarshal(msg.Payload, &intg); err != nil {
-		return fmt.Errorf("failed to unmarshal integration updated message: %w", err)
-	}
-	ctx := access.TenantSystemContext(context.Background(), intg.TenantID)
-	if syncErr := s.syncer.SyncIntegrationsData(ctx, ent.Integrations{intg}); syncErr != nil {
-		log.Error().Err(syncErr).Msg("failed to sync integrations data")
-	}
-	return nil
 }

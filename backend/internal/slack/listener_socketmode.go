@@ -98,13 +98,15 @@ func (sml *SocketModeListener) onEventReceived(ctx context.Context, evt *socketm
 	handled, payload, handlerErr := sml.handleEvent(ctx, evt)
 	if handlerErr != nil {
 		log.Error().Err(handlerErr).Msgf("Error handling socket mode event")
-	} else if !handled {
-		log.Warn().Str("type", string(evt.Type)).Msgf("skipping socket mode event")
-	} else {
+	}
+
+	if handled {
 		ackErr := sml.client.AckCtx(ctx, evt.Request.EnvelopeID, payload)
 		if ackErr != nil {
 			log.Error().Err(ackErr).Msgf("Error acking socket mode event")
 		}
+	} else {
+		log.Warn().Str("type", string(evt.Type)).Msgf("unhandled socket mode event")
 	}
 }
 

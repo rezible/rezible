@@ -44,6 +44,12 @@ func (_c *IncidentMilestoneCreate) SetKind(v incidentmilestone.Kind) *IncidentMi
 	return _c
 }
 
+// SetTimestamp sets the "timestamp" field.
+func (_c *IncidentMilestoneCreate) SetTimestamp(v time.Time) *IncidentMilestoneCreate {
+	_c.mutation.SetTimestamp(v)
+	return _c
+}
+
 // SetDescription sets the "description" field.
 func (_c *IncidentMilestoneCreate) SetDescription(v string) *IncidentMilestoneCreate {
 	_c.mutation.SetDescription(v)
@@ -58,9 +64,31 @@ func (_c *IncidentMilestoneCreate) SetNillableDescription(v *string) *IncidentMi
 	return _c
 }
 
-// SetTime sets the "time" field.
-func (_c *IncidentMilestoneCreate) SetTime(v time.Time) *IncidentMilestoneCreate {
-	_c.mutation.SetTime(v)
+// SetSource sets the "source" field.
+func (_c *IncidentMilestoneCreate) SetSource(v string) *IncidentMilestoneCreate {
+	_c.mutation.SetSource(v)
+	return _c
+}
+
+// SetNillableSource sets the "source" field if the given value is not nil.
+func (_c *IncidentMilestoneCreate) SetNillableSource(v *string) *IncidentMilestoneCreate {
+	if v != nil {
+		_c.SetSource(*v)
+	}
+	return _c
+}
+
+// SetExternalID sets the "external_id" field.
+func (_c *IncidentMilestoneCreate) SetExternalID(v string) *IncidentMilestoneCreate {
+	_c.mutation.SetExternalID(v)
+	return _c
+}
+
+// SetNillableExternalID sets the "external_id" field if the given value is not nil.
+func (_c *IncidentMilestoneCreate) SetNillableExternalID(v *string) *IncidentMilestoneCreate {
+	if v != nil {
+		_c.SetExternalID(*v)
+	}
 	return _c
 }
 
@@ -151,8 +179,8 @@ func (_c *IncidentMilestoneCreate) check() error {
 			return &ValidationError{Name: "kind", err: fmt.Errorf(`ent: validator failed for field "IncidentMilestone.kind": %w`, err)}
 		}
 	}
-	if _, ok := _c.mutation.Time(); !ok {
-		return &ValidationError{Name: "time", err: errors.New(`ent: missing required field "IncidentMilestone.time"`)}
+	if _, ok := _c.mutation.Timestamp(); !ok {
+		return &ValidationError{Name: "timestamp", err: errors.New(`ent: missing required field "IncidentMilestone.timestamp"`)}
 	}
 	if len(_c.mutation.TenantIDs()) == 0 {
 		return &ValidationError{Name: "tenant", err: errors.New(`ent: missing required edge "IncidentMilestone.tenant"`)}
@@ -200,13 +228,21 @@ func (_c *IncidentMilestoneCreate) createSpec() (*IncidentMilestone, *sqlgraph.C
 		_spec.SetField(incidentmilestone.FieldKind, field.TypeEnum, value)
 		_node.Kind = value
 	}
+	if value, ok := _c.mutation.Timestamp(); ok {
+		_spec.SetField(incidentmilestone.FieldTimestamp, field.TypeTime, value)
+		_node.Timestamp = value
+	}
 	if value, ok := _c.mutation.Description(); ok {
 		_spec.SetField(incidentmilestone.FieldDescription, field.TypeString, value)
 		_node.Description = value
 	}
-	if value, ok := _c.mutation.Time(); ok {
-		_spec.SetField(incidentmilestone.FieldTime, field.TypeTime, value)
-		_node.Time = value
+	if value, ok := _c.mutation.Source(); ok {
+		_spec.SetField(incidentmilestone.FieldSource, field.TypeString, value)
+		_node.Source = value
+	}
+	if value, ok := _c.mutation.ExternalID(); ok {
+		_spec.SetField(incidentmilestone.FieldExternalID, field.TypeString, value)
+		_node.ExternalID = value
 	}
 	if nodes := _c.mutation.TenantIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
@@ -318,6 +354,18 @@ func (u *IncidentMilestoneUpsert) UpdateKind() *IncidentMilestoneUpsert {
 	return u
 }
 
+// SetTimestamp sets the "timestamp" field.
+func (u *IncidentMilestoneUpsert) SetTimestamp(v time.Time) *IncidentMilestoneUpsert {
+	u.Set(incidentmilestone.FieldTimestamp, v)
+	return u
+}
+
+// UpdateTimestamp sets the "timestamp" field to the value that was provided on create.
+func (u *IncidentMilestoneUpsert) UpdateTimestamp() *IncidentMilestoneUpsert {
+	u.SetExcluded(incidentmilestone.FieldTimestamp)
+	return u
+}
+
 // SetDescription sets the "description" field.
 func (u *IncidentMilestoneUpsert) SetDescription(v string) *IncidentMilestoneUpsert {
 	u.Set(incidentmilestone.FieldDescription, v)
@@ -336,15 +384,39 @@ func (u *IncidentMilestoneUpsert) ClearDescription() *IncidentMilestoneUpsert {
 	return u
 }
 
-// SetTime sets the "time" field.
-func (u *IncidentMilestoneUpsert) SetTime(v time.Time) *IncidentMilestoneUpsert {
-	u.Set(incidentmilestone.FieldTime, v)
+// SetSource sets the "source" field.
+func (u *IncidentMilestoneUpsert) SetSource(v string) *IncidentMilestoneUpsert {
+	u.Set(incidentmilestone.FieldSource, v)
 	return u
 }
 
-// UpdateTime sets the "time" field to the value that was provided on create.
-func (u *IncidentMilestoneUpsert) UpdateTime() *IncidentMilestoneUpsert {
-	u.SetExcluded(incidentmilestone.FieldTime)
+// UpdateSource sets the "source" field to the value that was provided on create.
+func (u *IncidentMilestoneUpsert) UpdateSource() *IncidentMilestoneUpsert {
+	u.SetExcluded(incidentmilestone.FieldSource)
+	return u
+}
+
+// ClearSource clears the value of the "source" field.
+func (u *IncidentMilestoneUpsert) ClearSource() *IncidentMilestoneUpsert {
+	u.SetNull(incidentmilestone.FieldSource)
+	return u
+}
+
+// SetExternalID sets the "external_id" field.
+func (u *IncidentMilestoneUpsert) SetExternalID(v string) *IncidentMilestoneUpsert {
+	u.Set(incidentmilestone.FieldExternalID, v)
+	return u
+}
+
+// UpdateExternalID sets the "external_id" field to the value that was provided on create.
+func (u *IncidentMilestoneUpsert) UpdateExternalID() *IncidentMilestoneUpsert {
+	u.SetExcluded(incidentmilestone.FieldExternalID)
+	return u
+}
+
+// ClearExternalID clears the value of the "external_id" field.
+func (u *IncidentMilestoneUpsert) ClearExternalID() *IncidentMilestoneUpsert {
+	u.SetNull(incidentmilestone.FieldExternalID)
 	return u
 }
 
@@ -427,6 +499,20 @@ func (u *IncidentMilestoneUpsertOne) UpdateKind() *IncidentMilestoneUpsertOne {
 	})
 }
 
+// SetTimestamp sets the "timestamp" field.
+func (u *IncidentMilestoneUpsertOne) SetTimestamp(v time.Time) *IncidentMilestoneUpsertOne {
+	return u.Update(func(s *IncidentMilestoneUpsert) {
+		s.SetTimestamp(v)
+	})
+}
+
+// UpdateTimestamp sets the "timestamp" field to the value that was provided on create.
+func (u *IncidentMilestoneUpsertOne) UpdateTimestamp() *IncidentMilestoneUpsertOne {
+	return u.Update(func(s *IncidentMilestoneUpsert) {
+		s.UpdateTimestamp()
+	})
+}
+
 // SetDescription sets the "description" field.
 func (u *IncidentMilestoneUpsertOne) SetDescription(v string) *IncidentMilestoneUpsertOne {
 	return u.Update(func(s *IncidentMilestoneUpsert) {
@@ -448,17 +534,45 @@ func (u *IncidentMilestoneUpsertOne) ClearDescription() *IncidentMilestoneUpsert
 	})
 }
 
-// SetTime sets the "time" field.
-func (u *IncidentMilestoneUpsertOne) SetTime(v time.Time) *IncidentMilestoneUpsertOne {
+// SetSource sets the "source" field.
+func (u *IncidentMilestoneUpsertOne) SetSource(v string) *IncidentMilestoneUpsertOne {
 	return u.Update(func(s *IncidentMilestoneUpsert) {
-		s.SetTime(v)
+		s.SetSource(v)
 	})
 }
 
-// UpdateTime sets the "time" field to the value that was provided on create.
-func (u *IncidentMilestoneUpsertOne) UpdateTime() *IncidentMilestoneUpsertOne {
+// UpdateSource sets the "source" field to the value that was provided on create.
+func (u *IncidentMilestoneUpsertOne) UpdateSource() *IncidentMilestoneUpsertOne {
 	return u.Update(func(s *IncidentMilestoneUpsert) {
-		s.UpdateTime()
+		s.UpdateSource()
+	})
+}
+
+// ClearSource clears the value of the "source" field.
+func (u *IncidentMilestoneUpsertOne) ClearSource() *IncidentMilestoneUpsertOne {
+	return u.Update(func(s *IncidentMilestoneUpsert) {
+		s.ClearSource()
+	})
+}
+
+// SetExternalID sets the "external_id" field.
+func (u *IncidentMilestoneUpsertOne) SetExternalID(v string) *IncidentMilestoneUpsertOne {
+	return u.Update(func(s *IncidentMilestoneUpsert) {
+		s.SetExternalID(v)
+	})
+}
+
+// UpdateExternalID sets the "external_id" field to the value that was provided on create.
+func (u *IncidentMilestoneUpsertOne) UpdateExternalID() *IncidentMilestoneUpsertOne {
+	return u.Update(func(s *IncidentMilestoneUpsert) {
+		s.UpdateExternalID()
+	})
+}
+
+// ClearExternalID clears the value of the "external_id" field.
+func (u *IncidentMilestoneUpsertOne) ClearExternalID() *IncidentMilestoneUpsertOne {
+	return u.Update(func(s *IncidentMilestoneUpsert) {
+		s.ClearExternalID()
 	})
 }
 
@@ -708,6 +822,20 @@ func (u *IncidentMilestoneUpsertBulk) UpdateKind() *IncidentMilestoneUpsertBulk 
 	})
 }
 
+// SetTimestamp sets the "timestamp" field.
+func (u *IncidentMilestoneUpsertBulk) SetTimestamp(v time.Time) *IncidentMilestoneUpsertBulk {
+	return u.Update(func(s *IncidentMilestoneUpsert) {
+		s.SetTimestamp(v)
+	})
+}
+
+// UpdateTimestamp sets the "timestamp" field to the value that was provided on create.
+func (u *IncidentMilestoneUpsertBulk) UpdateTimestamp() *IncidentMilestoneUpsertBulk {
+	return u.Update(func(s *IncidentMilestoneUpsert) {
+		s.UpdateTimestamp()
+	})
+}
+
 // SetDescription sets the "description" field.
 func (u *IncidentMilestoneUpsertBulk) SetDescription(v string) *IncidentMilestoneUpsertBulk {
 	return u.Update(func(s *IncidentMilestoneUpsert) {
@@ -729,17 +857,45 @@ func (u *IncidentMilestoneUpsertBulk) ClearDescription() *IncidentMilestoneUpser
 	})
 }
 
-// SetTime sets the "time" field.
-func (u *IncidentMilestoneUpsertBulk) SetTime(v time.Time) *IncidentMilestoneUpsertBulk {
+// SetSource sets the "source" field.
+func (u *IncidentMilestoneUpsertBulk) SetSource(v string) *IncidentMilestoneUpsertBulk {
 	return u.Update(func(s *IncidentMilestoneUpsert) {
-		s.SetTime(v)
+		s.SetSource(v)
 	})
 }
 
-// UpdateTime sets the "time" field to the value that was provided on create.
-func (u *IncidentMilestoneUpsertBulk) UpdateTime() *IncidentMilestoneUpsertBulk {
+// UpdateSource sets the "source" field to the value that was provided on create.
+func (u *IncidentMilestoneUpsertBulk) UpdateSource() *IncidentMilestoneUpsertBulk {
 	return u.Update(func(s *IncidentMilestoneUpsert) {
-		s.UpdateTime()
+		s.UpdateSource()
+	})
+}
+
+// ClearSource clears the value of the "source" field.
+func (u *IncidentMilestoneUpsertBulk) ClearSource() *IncidentMilestoneUpsertBulk {
+	return u.Update(func(s *IncidentMilestoneUpsert) {
+		s.ClearSource()
+	})
+}
+
+// SetExternalID sets the "external_id" field.
+func (u *IncidentMilestoneUpsertBulk) SetExternalID(v string) *IncidentMilestoneUpsertBulk {
+	return u.Update(func(s *IncidentMilestoneUpsert) {
+		s.SetExternalID(v)
+	})
+}
+
+// UpdateExternalID sets the "external_id" field to the value that was provided on create.
+func (u *IncidentMilestoneUpsertBulk) UpdateExternalID() *IncidentMilestoneUpsertBulk {
+	return u.Update(func(s *IncidentMilestoneUpsert) {
+		s.UpdateExternalID()
+	})
+}
+
+// ClearExternalID clears the value of the "external_id" field.
+func (u *IncidentMilestoneUpsertBulk) ClearExternalID() *IncidentMilestoneUpsertBulk {
+	return u.Update(func(s *IncidentMilestoneUpsert) {
+		s.ClearExternalID()
 	})
 }
 

@@ -8,9 +8,12 @@ import (
 	"github.com/danielgtaylor/huma/v2"
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent"
+	"github.com/rezible/rezible/integrations"
 )
 
 type IntegrationsHandler interface {
+	ListSupportedIntegrations(context.Context, *ListSupportedIntegrationsRequest) (*ListSupportedIntegrationsResponse, error)
+
 	ListIntegrations(context.Context, *ListIntegrationsRequest) (*ListIntegrationsResponse, error)
 	CreateIntegration(context.Context, *CreateIntegrationRequest) (*CreateIntegrationResponse, error)
 	GetIntegration(context.Context, *GetIntegrationRequest) (*GetIntegrationResponse, error)
@@ -22,6 +25,8 @@ type IntegrationsHandler interface {
 }
 
 func (o operations) RegisterIntegrations(api huma.API) {
+	huma.Register(api, ListSupportedIntegrations, o.ListSupportedIntegrations)
+
 	huma.Register(api, ListIntegrations, o.ListIntegrations)
 	huma.Register(api, CreateIntegration, o.CreateIntegration)
 	huma.Register(api, GetIntegration, o.GetIntegration)
@@ -33,70 +38,85 @@ func (o operations) RegisterIntegrations(api huma.API) {
 }
 
 type (
+	SupportedIntegration struct {
+		Name          string   `json:"name"`
+		DataKinds     []string `json:"supportedDataKinds"`
+		OAuthRequired bool     `json:"oauthRequired"`
+	}
+
 	Integration struct {
 		Id         uuid.UUID             `json:"id"`
 		Attributes IntegrationAttributes `json:"attributes"`
 	}
 
 	IntegrationAttributes struct {
-		Name    string          `json:"name"`
-		Enabled bool            `json:"enabled"`
-		Config  json.RawMessage `json:"config"`
+		Name             string          `json:"name"`
+		Config           json.RawMessage `json:"config"`
+		ConfigValid      bool            `json:"configValid"`
+		EnabledDataKinds []string        `json:"enabledDataKinds"`
 	}
 )
 
 func IntegrationFromEnt(intg *ent.Integration) Integration {
-	attr := IntegrationAttributes{
-		Name:    intg.Name,
-		Enabled: intg.Enabled,
-		Config:  intg.Config,
+	attrs := IntegrationAttributes{
+		Name:             intg.Name,
+		Config:           intg.Config,
+		ConfigValid:      integrations.CheckConfigValid(intg),
+		EnabledDataKinds: integrations.GetEnabledDataKinds(intg),
 	}
 
 	return Integration{
 		Id:         intg.ID,
-		Attributes: attr,
+		Attributes: attrs,
 	}
 }
 
 var integrationsTags = []string{"Integrations"}
 
-var ListIntegrations = huma.Operation{
-	OperationID: "list-integrations",
+var ListSupportedIntegrations = huma.Operation{
+	OperationID: "list-supported-integrations",
 	Method:      http.MethodGet,
 	Path:        "/integrations",
-	Summary:     "List Integrations",
+	Summary:     "List Supported Integrations",
 	Tags:        integrationsTags,
 	Errors:      errorCodes(),
 }
 
-type ListIntegrationsRequest struct {
-	ListRequest
-	Name string `query:"name" required:"false"`
-	Type string `query:"type" required:"false"`
+type ListSupportedIntegrationsRequest ListRequest
+type ListSupportedIntegrationsResponse PaginatedResponse[SupportedIntegration]
+
+var ListIntegrations = huma.Operation{
+	OperationID: "list-configured-integrations",
+	Method:      http.MethodGet,
+	Path:        "/integrations/configured",
+	Summary:     "List Configured Integrations",
+	Tags:        integrationsTags,
+	Errors:      errorCodes(),
 }
+
+type ListIntegrationsRequest ListRequest
 type ListIntegrationsResponse PaginatedResponse[Integration]
 
 var CreateIntegration = huma.Operation{
 	OperationID: "create-integration",
 	Method:      http.MethodPost,
-	Path:        "/integrations",
+	Path:        "/integrations/configured",
 	Summary:     "Create an Integration",
 	Tags:        integrationsTags,
 	Errors:      errorCodes(),
 }
 
 type CreateIntegrationRequestAttributes struct {
-	Name    string          `json:"name"`
-	Enabled bool            `json:"enabled"`
-	Config  json.RawMessage `json:"config"`
+	Name   string          `json:"name"`
+	Config json.RawMessage `json:"config"`
 }
 type CreateIntegrationRequest RequestWithBodyAttributes[CreateIntegrationRequestAttributes]
 type CreateIntegrationResponse ItemResponse[Integration]
 
 var GetIntegration = huma.Operation{
-	OperationID: "get-integration",
+	OperationID: "get-configured-integration",
 	Method:      http.MethodGet,
-	Path:        "/integrations/{id}",
+	Path:        "/integrations/configured/{id}",
 	Summary:     "Get an Integration",
 	Tags:        integrationsTags,
 	Errors:      errorCodes(),
@@ -106,9 +126,9 @@ type GetIntegrationRequest GetIdRequest
 type GetIntegrationResponse ItemResponse[Integration]
 
 var UpdateIntegration = huma.Operation{
-	OperationID: "update-integration",
+	OperationID: "update-configured-integration",
 	Method:      http.MethodPatch,
-	Path:        "/integrations/{id}",
+	Path:        "/integrations/configured/{id}",
 	Summary:     "Update an Integration",
 	Tags:        integrationsTags,
 	Errors:      errorCodes(),
@@ -122,9 +142,9 @@ type UpdateIntegrationRequest UpdateIdRequest[UpdateIntegrationAttributes]
 type UpdateIntegrationResponse ItemResponse[Integration]
 
 var DeleteIntegration = huma.Operation{
-	OperationID: "delete-integration",
+	OperationID: "delete-configured-integration",
 	Method:      http.MethodDelete,
-	Path:        "/integrations/{id}",
+	Path:        "/integrations/configured/{id}",
 	Summary:     "Delete an Integration",
 	Tags:        integrationsTags,
 	Errors:      errorCodes(),
@@ -136,7 +156,7 @@ type DeleteIntegrationResponse EmptyResponse
 var StartIntegrationOAuth = huma.Operation{
 	OperationID: "start-integration-oauth",
 	Method:      http.MethodPost,
-	Path:        "/integrations_oauth/start",
+	Path:        "/integrations/oauth/start",
 	Summary:     "Start OAuth flow for an Integration",
 	Tags:        integrationsTags,
 	Errors:      errorCodes(),
@@ -155,7 +175,7 @@ type StartIntegrationOAuthResponse ItemResponse[IntegrationOAuthFlow]
 var CompleteIntegrationOAuth = huma.Operation{
 	OperationID: "complete-integration-oauth",
 	Method:      http.MethodPost,
-	Path:        "/integrations_oauth/complete",
+	Path:        "/integrations/oauth/complete",
 	Summary:     "Complete OAuth flow for an Integration",
 	Tags:        integrationsTags,
 	Errors:      errorCodes(),

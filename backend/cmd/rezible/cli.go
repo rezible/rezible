@@ -12,7 +12,6 @@ import (
 
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/access"
-	"github.com/rezible/rezible/integrations"
 	"github.com/rezible/rezible/internal"
 	"github.com/rezible/rezible/internal/db/datasync"
 	"github.com/rezible/rezible/internal/viper"
@@ -67,39 +66,16 @@ var integrationsCmd = &cobra.Command{
 	Use: "integrations",
 }
 
-var integrationsLoadCmd = &cobra.Command{
-	Use:   "load [source]",
-	Short: "Load tenant integrations from source",
-	Args:  cobra.ExactArgs(1),
-	Run: func(cmd *cobra.Command, args []string) {
-		ctx := access.SystemContext(cmd.Context())
-		src := args[0]
-		withDatabase(cmd.Context(), func(dbc rez.Database) {
-			var loadErr error
-			if src == "dev" {
-				loadErr = integrations.LoadDevOrganization(ctx, dbc.Client())
-			} else {
-				loadErr = integrations.LoadOrganization(ctx, dbc.Client(), src)
-			}
-			if loadErr != nil {
-				log.Fatal().Err(loadErr).Msg("failed to load tenant config")
-			}
-		})
-	},
-}
-
 var integrationsSyncCmd = &cobra.Command{
 	Use:   "sync",
 	Short: "Run integration data sync",
 	Run: func(cmd *cobra.Command, args []string) {
 		ctx := access.SystemContext(cmd.Context())
-		syncArgs := jobs.SyncIntegrationsData{
-			Hard: true,
-		}
 		withDatabase(ctx, func(dbc rez.Database) {
-			client := dbc.Client()
-			svc := datasync.NewSyncer(client)
-			syncErr := svc.SyncAllTenantIntegrationsData(ctx, syncArgs)
+			svc := datasync.NewSyncer(dbc.Client())
+			syncErr := svc.SyncIntegrationsData(ctx, jobs.SyncIntegrationsData{
+				Hard: true,
+			})
 			if syncErr != nil {
 				log.Fatal().Err(syncErr).Msg("failed to sync provider data")
 			}
@@ -145,7 +121,7 @@ func init() {
 
 	rootCmd.AddCommand(serveCmd, printSpecCmd, integrationsCmd, dbCmd)
 
-	integrationsCmd.AddCommand(integrationsLoadCmd, integrationsSyncCmd)
+	integrationsCmd.AddCommand(integrationsSyncCmd)
 
 	dbCmd.AddCommand(dbMigrateCmd)
 	dbMigrateCmd.AddCommand(dbMigrateGenerateCmd, dbMigrateApplyCmd)

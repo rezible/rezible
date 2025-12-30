@@ -40,7 +40,7 @@ func (s *UserService) CreateUserContext(ctx context.Context, userId uuid.UUID) (
 		}
 		return nil, fmt.Errorf("get user by id: %w", userErr)
 	}
-	return context.WithValue(access.TenantUserContext(ctx, usr.TenantID), userCtxKey{}, usr), nil
+	return context.WithValue(access.TenantContext(ctx, usr.TenantID), userCtxKey{}, usr), nil
 }
 
 func (s *UserService) GetUserContext(ctx context.Context) *ent.User {

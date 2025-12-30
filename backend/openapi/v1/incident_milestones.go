@@ -42,7 +42,7 @@ func IncidentMilestoneFromEnt(m *ent.IncidentMilestone) IncidentMilestone {
 		Id: m.ID,
 		Attributes: IncidentMilestoneAttributes{
 			Kind:      m.Kind.String(),
-			Timestamp: m.Time,
+			Timestamp: m.Timestamp,
 		},
 	}
 }

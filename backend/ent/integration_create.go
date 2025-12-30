@@ -43,20 +43,6 @@ func (_c *IntegrationCreate) SetConfig(v []byte) *IntegrationCreate {
 	return _c
 }
 
-// SetEnabled sets the "enabled" field.
-func (_c *IntegrationCreate) SetEnabled(v bool) *IntegrationCreate {
-	_c.mutation.SetEnabled(v)
-	return _c
-}
-
-// SetNillableEnabled sets the "enabled" field if the given value is not nil.
-func (_c *IntegrationCreate) SetNillableEnabled(v *bool) *IntegrationCreate {
-	if v != nil {
-		_c.SetEnabled(*v)
-	}
-	return _c
-}
-
 // SetUpdatedAt sets the "updated_at" field.
 func (_c *IntegrationCreate) SetUpdatedAt(v time.Time) *IntegrationCreate {
 	_c.mutation.SetUpdatedAt(v)
@@ -127,10 +113,6 @@ func (_c *IntegrationCreate) ExecX(ctx context.Context) {
 
 // defaults sets the default values of the builder before save.
 func (_c *IntegrationCreate) defaults() error {
-	if _, ok := _c.mutation.Enabled(); !ok {
-		v := integration.DefaultEnabled
-		_c.mutation.SetEnabled(v)
-	}
 	if _, ok := _c.mutation.UpdatedAt(); !ok {
 		if integration.DefaultUpdatedAt == nil {
 			return fmt.Errorf("ent: uninitialized integration.DefaultUpdatedAt (forgotten import ent/runtime?)")
@@ -158,9 +140,6 @@ func (_c *IntegrationCreate) check() error {
 	}
 	if _, ok := _c.mutation.Config(); !ok {
 		return &ValidationError{Name: "config", err: errors.New(`ent: missing required field "Integration.config"`)}
-	}
-	if _, ok := _c.mutation.Enabled(); !ok {
-		return &ValidationError{Name: "enabled", err: errors.New(`ent: missing required field "Integration.enabled"`)}
 	}
 	if _, ok := _c.mutation.UpdatedAt(); !ok {
 		return &ValidationError{Name: "updated_at", err: errors.New(`ent: missing required field "Integration.updated_at"`)}
@@ -211,10 +190,6 @@ func (_c *IntegrationCreate) createSpec() (*Integration, *sqlgraph.CreateSpec) {
 	if value, ok := _c.mutation.Config(); ok {
 		_spec.SetField(integration.FieldConfig, field.TypeBytes, value)
 		_node.Config = value
-	}
-	if value, ok := _c.mutation.Enabled(); ok {
-		_spec.SetField(integration.FieldEnabled, field.TypeBool, value)
-		_node.Enabled = value
 	}
 	if value, ok := _c.mutation.UpdatedAt(); ok {
 		_spec.SetField(integration.FieldUpdatedAt, field.TypeTime, value)
@@ -313,18 +288,6 @@ func (u *IntegrationUpsert) UpdateConfig() *IntegrationUpsert {
 	return u
 }
 
-// SetEnabled sets the "enabled" field.
-func (u *IntegrationUpsert) SetEnabled(v bool) *IntegrationUpsert {
-	u.Set(integration.FieldEnabled, v)
-	return u
-}
-
-// UpdateEnabled sets the "enabled" field to the value that was provided on create.
-func (u *IntegrationUpsert) UpdateEnabled() *IntegrationUpsert {
-	u.SetExcluded(integration.FieldEnabled)
-	return u
-}
-
 // SetUpdatedAt sets the "updated_at" field.
 func (u *IntegrationUpsert) SetUpdatedAt(v time.Time) *IntegrationUpsert {
 	u.Set(integration.FieldUpdatedAt, v)
@@ -413,20 +376,6 @@ func (u *IntegrationUpsertOne) SetConfig(v []byte) *IntegrationUpsertOne {
 func (u *IntegrationUpsertOne) UpdateConfig() *IntegrationUpsertOne {
 	return u.Update(func(s *IntegrationUpsert) {
 		s.UpdateConfig()
-	})
-}
-
-// SetEnabled sets the "enabled" field.
-func (u *IntegrationUpsertOne) SetEnabled(v bool) *IntegrationUpsertOne {
-	return u.Update(func(s *IntegrationUpsert) {
-		s.SetEnabled(v)
-	})
-}
-
-// UpdateEnabled sets the "enabled" field to the value that was provided on create.
-func (u *IntegrationUpsertOne) UpdateEnabled() *IntegrationUpsertOne {
-	return u.Update(func(s *IntegrationUpsert) {
-		s.UpdateEnabled()
 	})
 }
 
@@ -687,20 +636,6 @@ func (u *IntegrationUpsertBulk) SetConfig(v []byte) *IntegrationUpsertBulk {
 func (u *IntegrationUpsertBulk) UpdateConfig() *IntegrationUpsertBulk {
 	return u.Update(func(s *IntegrationUpsert) {
 		s.UpdateConfig()
-	})
-}
-
-// SetEnabled sets the "enabled" field.
-func (u *IntegrationUpsertBulk) SetEnabled(v bool) *IntegrationUpsertBulk {
-	return u.Update(func(s *IntegrationUpsert) {
-		s.SetEnabled(v)
-	})
-}
-
-// UpdateEnabled sets the "enabled" field to the value that was provided on create.
-func (u *IntegrationUpsertBulk) UpdateEnabled() *IntegrationUpsertBulk {
-	return u.Update(func(s *IntegrationUpsert) {
-		s.UpdateEnabled()
 	})
 }
 

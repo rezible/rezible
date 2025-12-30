@@ -127,17 +127,6 @@ func (s *OncallShiftsService) queryShiftsEndingWithinWindow(ctx context.Context,
 	return shifts, nil
 }
 
-func (s *OncallShiftsService) MakeScanShiftsPeriodicJob() jobs.PeriodicJob {
-	interval := time.Hour
-	return jobs.PeriodicJob{
-		ConstructorFunc: func() jobs.InsertJobParams {
-			return jobs.InsertJobParams{Args: &jobs.ScanOncallShifts{}}
-		},
-		Interval: interval,
-		Opts:     &jobs.PeriodicJobOpts{RunOnStart: true},
-	}
-}
-
 func (s *OncallShiftsService) HandlePeriodicScanShifts(ctx context.Context, _ jobs.ScanOncallShifts) error {
 	shifts, shiftsErr := s.queryShiftsEndingWithinWindow(ctx, time.Hour)
 	if shiftsErr != nil {

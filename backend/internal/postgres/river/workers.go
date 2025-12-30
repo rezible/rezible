@@ -2,6 +2,7 @@ package river
 
 import (
 	rez "github.com/rezible/rezible"
+	"github.com/rezible/rezible/jobs"
 )
 
 func RegisterJobWorkers(
@@ -11,11 +12,10 @@ func RegisterJobWorkers(
 	oncallMetrics rez.OncallMetricsService,
 	debriefs rez.DebriefService,
 ) {
-	RegisterWorkerFunc(chat.ProcessEvent)
-	RegisterWorkerFunc(chat.HandleIncidentChatUpdate)
+	RegisterPeriodicJob(jobs.SyncAllTenantIntegrationsDataPeriodicJob, syncer.SyncIntegrationsData)
+	RegisterPeriodicJob(jobs.ScanOncallShiftsPeriodicJob, shifts.HandlePeriodicScanShifts)
 
-	RegisterPeriodicJob(syncer.MakeSyncAllTenantIntegrationsDataPeriodicJob(), syncer.SyncAllTenantIntegrationsData)
-	RegisterPeriodicJob(shifts.MakeScanShiftsPeriodicJob(), shifts.HandlePeriodicScanShifts)
+	RegisterWorkerFunc(chat.HandleIncidentChatUpdate)
 
 	RegisterWorkerFunc(shifts.HandleEnsureShiftHandoverReminderSent)
 	RegisterWorkerFunc(shifts.HandleEnsureShiftHandoverSent)

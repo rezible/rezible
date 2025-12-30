@@ -33,16 +33,12 @@ const (
 	FieldDescription = "description"
 	// FieldIsKey holds the string denoting the is_key field in the database.
 	FieldIsKey = "is_key"
+	// FieldSequence holds the string denoting the sequence field in the database.
+	FieldSequence = "sequence"
 	// FieldCreatedAt holds the string denoting the created_at field in the database.
 	FieldCreatedAt = "created_at"
 	// FieldUpdatedAt holds the string denoting the updated_at field in the database.
 	FieldUpdatedAt = "updated_at"
-	// FieldCreatedBy holds the string denoting the created_by field in the database.
-	FieldCreatedBy = "created_by"
-	// FieldSequence holds the string denoting the sequence field in the database.
-	FieldSequence = "sequence"
-	// FieldIsDraft holds the string denoting the is_draft field in the database.
-	FieldIsDraft = "is_draft"
 	// EdgeTenant holds the string denoting the tenant edge name in mutations.
 	EdgeTenant = "tenant"
 	// EdgeIncident holds the string denoting the incident edge name in mutations.
@@ -128,11 +124,9 @@ var Columns = []string{
 	FieldTitle,
 	FieldDescription,
 	FieldIsKey,
+	FieldSequence,
 	FieldCreatedAt,
 	FieldUpdatedAt,
-	FieldCreatedBy,
-	FieldSequence,
-	FieldIsDraft,
 }
 
 var (
@@ -163,16 +157,14 @@ var (
 	TitleValidator func(string) error
 	// DefaultIsKey holds the default value on creation for the "is_key" field.
 	DefaultIsKey bool
+	// DefaultSequence holds the default value on creation for the "sequence" field.
+	DefaultSequence int
 	// DefaultCreatedAt holds the default value on creation for the "created_at" field.
 	DefaultCreatedAt func() time.Time
 	// DefaultUpdatedAt holds the default value on creation for the "updated_at" field.
 	DefaultUpdatedAt func() time.Time
 	// UpdateDefaultUpdatedAt holds the default value on update for the "updated_at" field.
 	UpdateDefaultUpdatedAt func() time.Time
-	// DefaultSequence holds the default value on creation for the "sequence" field.
-	DefaultSequence int
-	// DefaultIsDraft holds the default value on creation for the "is_draft" field.
-	DefaultIsDraft bool
 	// DefaultID holds the default value on creation for the "id" field.
 	DefaultID func() uuid.UUID
 )
@@ -183,9 +175,9 @@ type Kind string
 // Kind values.
 const (
 	KindObservation Kind = "observation"
-	KindAction      Kind = "action"
-	KindDecision    Kind = "decision"
 	KindContext     Kind = "context"
+	KindDecision    Kind = "decision"
+	KindAction      Kind = "action"
 )
 
 func (k Kind) String() string {
@@ -195,7 +187,7 @@ func (k Kind) String() string {
 // KindValidator is a validator for the "kind" field enum values. It is called by the builders before save.
 func KindValidator(k Kind) error {
 	switch k {
-	case KindObservation, KindAction, KindDecision, KindContext:
+	case KindObservation, KindContext, KindDecision, KindAction:
 		return nil
 	default:
 		return fmt.Errorf("incidentevent: invalid enum value for kind field: %q", k)
@@ -250,6 +242,11 @@ func ByIsKey(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldIsKey, opts...).ToFunc()
 }
 
+// BySequence orders the results by the sequence field.
+func BySequence(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldSequence, opts...).ToFunc()
+}
+
 // ByCreatedAt orders the results by the created_at field.
 func ByCreatedAt(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldCreatedAt, opts...).ToFunc()
@@ -258,21 +255,6 @@ func ByCreatedAt(opts ...sql.OrderTermOption) OrderOption {
 // ByUpdatedAt orders the results by the updated_at field.
 func ByUpdatedAt(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldUpdatedAt, opts...).ToFunc()
-}
-
-// ByCreatedBy orders the results by the created_by field.
-func ByCreatedBy(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldCreatedBy, opts...).ToFunc()
-}
-
-// BySequence orders the results by the sequence field.
-func BySequence(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldSequence, opts...).ToFunc()
-}
-
-// ByIsDraft orders the results by the is_draft field.
-func ByIsDraft(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldIsDraft, opts...).ToFunc()
 }
 
 // ByTenantField orders the results by tenant field.

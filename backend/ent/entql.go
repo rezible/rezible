@@ -317,11 +317,9 @@ var schemaGraph = func() *sqlgraph.Schema {
 			incidentevent.FieldTitle:       {Type: field.TypeString, Column: incidentevent.FieldTitle},
 			incidentevent.FieldDescription: {Type: field.TypeString, Column: incidentevent.FieldDescription},
 			incidentevent.FieldIsKey:       {Type: field.TypeBool, Column: incidentevent.FieldIsKey},
+			incidentevent.FieldSequence:    {Type: field.TypeInt, Column: incidentevent.FieldSequence},
 			incidentevent.FieldCreatedAt:   {Type: field.TypeTime, Column: incidentevent.FieldCreatedAt},
 			incidentevent.FieldUpdatedAt:   {Type: field.TypeTime, Column: incidentevent.FieldUpdatedAt},
-			incidentevent.FieldCreatedBy:   {Type: field.TypeUUID, Column: incidentevent.FieldCreatedBy},
-			incidentevent.FieldSequence:    {Type: field.TypeInt, Column: incidentevent.FieldSequence},
-			incidentevent.FieldIsDraft:     {Type: field.TypeBool, Column: incidentevent.FieldIsDraft},
 		},
 	}
 	graph.Nodes[13] = &sqlgraph.Node{
@@ -463,8 +461,10 @@ var schemaGraph = func() *sqlgraph.Schema {
 			incidentmilestone.FieldTenantID:    {Type: field.TypeInt, Column: incidentmilestone.FieldTenantID},
 			incidentmilestone.FieldIncidentID:  {Type: field.TypeUUID, Column: incidentmilestone.FieldIncidentID},
 			incidentmilestone.FieldKind:        {Type: field.TypeEnum, Column: incidentmilestone.FieldKind},
+			incidentmilestone.FieldTimestamp:   {Type: field.TypeTime, Column: incidentmilestone.FieldTimestamp},
 			incidentmilestone.FieldDescription: {Type: field.TypeString, Column: incidentmilestone.FieldDescription},
-			incidentmilestone.FieldTime:        {Type: field.TypeTime, Column: incidentmilestone.FieldTime},
+			incidentmilestone.FieldSource:      {Type: field.TypeString, Column: incidentmilestone.FieldSource},
+			incidentmilestone.FieldExternalID:  {Type: field.TypeString, Column: incidentmilestone.FieldExternalID},
 		},
 	}
 	graph.Nodes[21] = &sqlgraph.Node{
@@ -569,7 +569,6 @@ var schemaGraph = func() *sqlgraph.Schema {
 			integration.FieldTenantID:  {Type: field.TypeInt, Column: integration.FieldTenantID},
 			integration.FieldName:      {Type: field.TypeString, Column: integration.FieldName},
 			integration.FieldConfig:    {Type: field.TypeBytes, Column: integration.FieldConfig},
-			integration.FieldEnabled:   {Type: field.TypeBool, Column: integration.FieldEnabled},
 			integration.FieldUpdatedAt: {Type: field.TypeTime, Column: integration.FieldUpdatedAt},
 		},
 	}
@@ -5642,6 +5641,11 @@ func (f *IncidentEventFilter) WhereIsKey(p entql.BoolP) {
 	f.Where(p.Field(incidentevent.FieldIsKey))
 }
 
+// WhereSequence applies the entql int predicate on the sequence field.
+func (f *IncidentEventFilter) WhereSequence(p entql.IntP) {
+	f.Where(p.Field(incidentevent.FieldSequence))
+}
+
 // WhereCreatedAt applies the entql time.Time predicate on the created_at field.
 func (f *IncidentEventFilter) WhereCreatedAt(p entql.TimeP) {
 	f.Where(p.Field(incidentevent.FieldCreatedAt))
@@ -5650,21 +5654,6 @@ func (f *IncidentEventFilter) WhereCreatedAt(p entql.TimeP) {
 // WhereUpdatedAt applies the entql time.Time predicate on the updated_at field.
 func (f *IncidentEventFilter) WhereUpdatedAt(p entql.TimeP) {
 	f.Where(p.Field(incidentevent.FieldUpdatedAt))
-}
-
-// WhereCreatedBy applies the entql [16]byte predicate on the created_by field.
-func (f *IncidentEventFilter) WhereCreatedBy(p entql.ValueP) {
-	f.Where(p.Field(incidentevent.FieldCreatedBy))
-}
-
-// WhereSequence applies the entql int predicate on the sequence field.
-func (f *IncidentEventFilter) WhereSequence(p entql.IntP) {
-	f.Where(p.Field(incidentevent.FieldSequence))
-}
-
-// WhereIsDraft applies the entql bool predicate on the is_draft field.
-func (f *IncidentEventFilter) WhereIsDraft(p entql.BoolP) {
-	f.Where(p.Field(incidentevent.FieldIsDraft))
 }
 
 // WhereHasTenant applies a predicate to check if query has an edge tenant.
@@ -6536,14 +6525,24 @@ func (f *IncidentMilestoneFilter) WhereKind(p entql.StringP) {
 	f.Where(p.Field(incidentmilestone.FieldKind))
 }
 
+// WhereTimestamp applies the entql time.Time predicate on the timestamp field.
+func (f *IncidentMilestoneFilter) WhereTimestamp(p entql.TimeP) {
+	f.Where(p.Field(incidentmilestone.FieldTimestamp))
+}
+
 // WhereDescription applies the entql string predicate on the description field.
 func (f *IncidentMilestoneFilter) WhereDescription(p entql.StringP) {
 	f.Where(p.Field(incidentmilestone.FieldDescription))
 }
 
-// WhereTime applies the entql time.Time predicate on the time field.
-func (f *IncidentMilestoneFilter) WhereTime(p entql.TimeP) {
-	f.Where(p.Field(incidentmilestone.FieldTime))
+// WhereSource applies the entql string predicate on the source field.
+func (f *IncidentMilestoneFilter) WhereSource(p entql.StringP) {
+	f.Where(p.Field(incidentmilestone.FieldSource))
+}
+
+// WhereExternalID applies the entql string predicate on the external_id field.
+func (f *IncidentMilestoneFilter) WhereExternalID(p entql.StringP) {
+	f.Where(p.Field(incidentmilestone.FieldExternalID))
 }
 
 // WhereHasTenant applies a predicate to check if query has an edge tenant.
@@ -7166,11 +7165,6 @@ func (f *IntegrationFilter) WhereName(p entql.StringP) {
 // WhereConfig applies the entql []byte predicate on the config field.
 func (f *IntegrationFilter) WhereConfig(p entql.BytesP) {
 	f.Where(p.Field(integration.FieldConfig))
-}
-
-// WhereEnabled applies the entql bool predicate on the enabled field.
-func (f *IntegrationFilter) WhereEnabled(p entql.BoolP) {
-	f.Where(p.Field(integration.FieldEnabled))
 }
 
 // WhereUpdatedAt applies the entql time.Time predicate on the updated_at field.

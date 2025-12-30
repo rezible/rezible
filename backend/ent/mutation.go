@@ -10473,12 +10473,10 @@ type IncidentEventMutation struct {
 	title                    *string
 	description              *string
 	is_key                   *bool
-	created_at               *time.Time
-	updated_at               *time.Time
-	created_by               *uuid.UUID
 	sequence                 *int
 	addsequence              *int
-	is_draft                 *bool
+	created_at               *time.Time
+	updated_at               *time.Time
 	clearedFields            map[string]struct{}
 	tenant                   *int
 	clearedtenant            bool
@@ -10923,6 +10921,62 @@ func (m *IncidentEventMutation) ResetIsKey() {
 	m.is_key = nil
 }
 
+// SetSequence sets the "sequence" field.
+func (m *IncidentEventMutation) SetSequence(i int) {
+	m.sequence = &i
+	m.addsequence = nil
+}
+
+// Sequence returns the value of the "sequence" field in the mutation.
+func (m *IncidentEventMutation) Sequence() (r int, exists bool) {
+	v := m.sequence
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldSequence returns the old "sequence" field's value of the IncidentEvent entity.
+// If the IncidentEvent object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *IncidentEventMutation) OldSequence(ctx context.Context) (v int, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldSequence is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldSequence requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldSequence: %w", err)
+	}
+	return oldValue.Sequence, nil
+}
+
+// AddSequence adds i to the "sequence" field.
+func (m *IncidentEventMutation) AddSequence(i int) {
+	if m.addsequence != nil {
+		*m.addsequence += i
+	} else {
+		m.addsequence = &i
+	}
+}
+
+// AddedSequence returns the value that was added to the "sequence" field in this mutation.
+func (m *IncidentEventMutation) AddedSequence() (r int, exists bool) {
+	v := m.addsequence
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetSequence resets all changes to the "sequence" field.
+func (m *IncidentEventMutation) ResetSequence() {
+	m.sequence = nil
+	m.addsequence = nil
+}
+
 // SetCreatedAt sets the "created_at" field.
 func (m *IncidentEventMutation) SetCreatedAt(t time.Time) {
 	m.created_at = &t
@@ -10993,134 +11047,6 @@ func (m *IncidentEventMutation) OldUpdatedAt(ctx context.Context) (v time.Time, 
 // ResetUpdatedAt resets all changes to the "updated_at" field.
 func (m *IncidentEventMutation) ResetUpdatedAt() {
 	m.updated_at = nil
-}
-
-// SetCreatedBy sets the "created_by" field.
-func (m *IncidentEventMutation) SetCreatedBy(u uuid.UUID) {
-	m.created_by = &u
-}
-
-// CreatedBy returns the value of the "created_by" field in the mutation.
-func (m *IncidentEventMutation) CreatedBy() (r uuid.UUID, exists bool) {
-	v := m.created_by
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldCreatedBy returns the old "created_by" field's value of the IncidentEvent entity.
-// If the IncidentEvent object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *IncidentEventMutation) OldCreatedBy(ctx context.Context) (v uuid.UUID, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldCreatedBy is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldCreatedBy requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldCreatedBy: %w", err)
-	}
-	return oldValue.CreatedBy, nil
-}
-
-// ResetCreatedBy resets all changes to the "created_by" field.
-func (m *IncidentEventMutation) ResetCreatedBy() {
-	m.created_by = nil
-}
-
-// SetSequence sets the "sequence" field.
-func (m *IncidentEventMutation) SetSequence(i int) {
-	m.sequence = &i
-	m.addsequence = nil
-}
-
-// Sequence returns the value of the "sequence" field in the mutation.
-func (m *IncidentEventMutation) Sequence() (r int, exists bool) {
-	v := m.sequence
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldSequence returns the old "sequence" field's value of the IncidentEvent entity.
-// If the IncidentEvent object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *IncidentEventMutation) OldSequence(ctx context.Context) (v int, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldSequence is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldSequence requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldSequence: %w", err)
-	}
-	return oldValue.Sequence, nil
-}
-
-// AddSequence adds i to the "sequence" field.
-func (m *IncidentEventMutation) AddSequence(i int) {
-	if m.addsequence != nil {
-		*m.addsequence += i
-	} else {
-		m.addsequence = &i
-	}
-}
-
-// AddedSequence returns the value that was added to the "sequence" field in this mutation.
-func (m *IncidentEventMutation) AddedSequence() (r int, exists bool) {
-	v := m.addsequence
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// ResetSequence resets all changes to the "sequence" field.
-func (m *IncidentEventMutation) ResetSequence() {
-	m.sequence = nil
-	m.addsequence = nil
-}
-
-// SetIsDraft sets the "is_draft" field.
-func (m *IncidentEventMutation) SetIsDraft(b bool) {
-	m.is_draft = &b
-}
-
-// IsDraft returns the value of the "is_draft" field in the mutation.
-func (m *IncidentEventMutation) IsDraft() (r bool, exists bool) {
-	v := m.is_draft
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldIsDraft returns the old "is_draft" field's value of the IncidentEvent entity.
-// If the IncidentEvent object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *IncidentEventMutation) OldIsDraft(ctx context.Context) (v bool, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldIsDraft is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldIsDraft requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldIsDraft: %w", err)
-	}
-	return oldValue.IsDraft, nil
-}
-
-// ResetIsDraft resets all changes to the "is_draft" field.
-func (m *IncidentEventMutation) ResetIsDraft() {
-	m.is_draft = nil
 }
 
 // ClearTenant clears the "tenant" edge to the Tenant entity.
@@ -11493,7 +11419,7 @@ func (m *IncidentEventMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *IncidentEventMutation) Fields() []string {
-	fields := make([]string, 0, 13)
+	fields := make([]string, 0, 11)
 	if m.tenant != nil {
 		fields = append(fields, incidentevent.FieldTenantID)
 	}
@@ -11518,20 +11444,14 @@ func (m *IncidentEventMutation) Fields() []string {
 	if m.is_key != nil {
 		fields = append(fields, incidentevent.FieldIsKey)
 	}
+	if m.sequence != nil {
+		fields = append(fields, incidentevent.FieldSequence)
+	}
 	if m.created_at != nil {
 		fields = append(fields, incidentevent.FieldCreatedAt)
 	}
 	if m.updated_at != nil {
 		fields = append(fields, incidentevent.FieldUpdatedAt)
-	}
-	if m.created_by != nil {
-		fields = append(fields, incidentevent.FieldCreatedBy)
-	}
-	if m.sequence != nil {
-		fields = append(fields, incidentevent.FieldSequence)
-	}
-	if m.is_draft != nil {
-		fields = append(fields, incidentevent.FieldIsDraft)
 	}
 	return fields
 }
@@ -11557,16 +11477,12 @@ func (m *IncidentEventMutation) Field(name string) (ent.Value, bool) {
 		return m.Description()
 	case incidentevent.FieldIsKey:
 		return m.IsKey()
+	case incidentevent.FieldSequence:
+		return m.Sequence()
 	case incidentevent.FieldCreatedAt:
 		return m.CreatedAt()
 	case incidentevent.FieldUpdatedAt:
 		return m.UpdatedAt()
-	case incidentevent.FieldCreatedBy:
-		return m.CreatedBy()
-	case incidentevent.FieldSequence:
-		return m.Sequence()
-	case incidentevent.FieldIsDraft:
-		return m.IsDraft()
 	}
 	return nil, false
 }
@@ -11592,16 +11508,12 @@ func (m *IncidentEventMutation) OldField(ctx context.Context, name string) (ent.
 		return m.OldDescription(ctx)
 	case incidentevent.FieldIsKey:
 		return m.OldIsKey(ctx)
+	case incidentevent.FieldSequence:
+		return m.OldSequence(ctx)
 	case incidentevent.FieldCreatedAt:
 		return m.OldCreatedAt(ctx)
 	case incidentevent.FieldUpdatedAt:
 		return m.OldUpdatedAt(ctx)
-	case incidentevent.FieldCreatedBy:
-		return m.OldCreatedBy(ctx)
-	case incidentevent.FieldSequence:
-		return m.OldSequence(ctx)
-	case incidentevent.FieldIsDraft:
-		return m.OldIsDraft(ctx)
 	}
 	return nil, fmt.Errorf("unknown IncidentEvent field %s", name)
 }
@@ -11667,6 +11579,13 @@ func (m *IncidentEventMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetIsKey(v)
 		return nil
+	case incidentevent.FieldSequence:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetSequence(v)
+		return nil
 	case incidentevent.FieldCreatedAt:
 		v, ok := value.(time.Time)
 		if !ok {
@@ -11680,27 +11599,6 @@ func (m *IncidentEventMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetUpdatedAt(v)
-		return nil
-	case incidentevent.FieldCreatedBy:
-		v, ok := value.(uuid.UUID)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetCreatedBy(v)
-		return nil
-	case incidentevent.FieldSequence:
-		v, ok := value.(int)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetSequence(v)
-		return nil
-	case incidentevent.FieldIsDraft:
-		v, ok := value.(bool)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetIsDraft(v)
 		return nil
 	}
 	return fmt.Errorf("unknown IncidentEvent field %s", name)
@@ -11805,20 +11703,14 @@ func (m *IncidentEventMutation) ResetField(name string) error {
 	case incidentevent.FieldIsKey:
 		m.ResetIsKey()
 		return nil
+	case incidentevent.FieldSequence:
+		m.ResetSequence()
+		return nil
 	case incidentevent.FieldCreatedAt:
 		m.ResetCreatedAt()
 		return nil
 	case incidentevent.FieldUpdatedAt:
 		m.ResetUpdatedAt()
-		return nil
-	case incidentevent.FieldCreatedBy:
-		m.ResetCreatedBy()
-		return nil
-	case incidentevent.FieldSequence:
-		m.ResetSequence()
-		return nil
-	case incidentevent.FieldIsDraft:
-		m.ResetIsDraft()
 		return nil
 	}
 	return fmt.Errorf("unknown IncidentEvent field %s", name)
@@ -17136,8 +17028,10 @@ type IncidentMilestoneMutation struct {
 	typ             string
 	id              *uuid.UUID
 	kind            *incidentmilestone.Kind
+	timestamp       *time.Time
 	description     *string
-	time            *time.Time
+	source          *string
+	external_id     *string
 	clearedFields   map[string]struct{}
 	tenant          *int
 	clearedtenant   bool
@@ -17360,6 +17254,42 @@ func (m *IncidentMilestoneMutation) ResetKind() {
 	m.kind = nil
 }
 
+// SetTimestamp sets the "timestamp" field.
+func (m *IncidentMilestoneMutation) SetTimestamp(t time.Time) {
+	m.timestamp = &t
+}
+
+// Timestamp returns the value of the "timestamp" field in the mutation.
+func (m *IncidentMilestoneMutation) Timestamp() (r time.Time, exists bool) {
+	v := m.timestamp
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldTimestamp returns the old "timestamp" field's value of the IncidentMilestone entity.
+// If the IncidentMilestone object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *IncidentMilestoneMutation) OldTimestamp(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldTimestamp is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldTimestamp requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldTimestamp: %w", err)
+	}
+	return oldValue.Timestamp, nil
+}
+
+// ResetTimestamp resets all changes to the "timestamp" field.
+func (m *IncidentMilestoneMutation) ResetTimestamp() {
+	m.timestamp = nil
+}
+
 // SetDescription sets the "description" field.
 func (m *IncidentMilestoneMutation) SetDescription(s string) {
 	m.description = &s
@@ -17409,40 +17339,102 @@ func (m *IncidentMilestoneMutation) ResetDescription() {
 	delete(m.clearedFields, incidentmilestone.FieldDescription)
 }
 
-// SetTime sets the "time" field.
-func (m *IncidentMilestoneMutation) SetTime(t time.Time) {
-	m.time = &t
+// SetSource sets the "source" field.
+func (m *IncidentMilestoneMutation) SetSource(s string) {
+	m.source = &s
 }
 
-// Time returns the value of the "time" field in the mutation.
-func (m *IncidentMilestoneMutation) Time() (r time.Time, exists bool) {
-	v := m.time
+// Source returns the value of the "source" field in the mutation.
+func (m *IncidentMilestoneMutation) Source() (r string, exists bool) {
+	v := m.source
 	if v == nil {
 		return
 	}
 	return *v, true
 }
 
-// OldTime returns the old "time" field's value of the IncidentMilestone entity.
+// OldSource returns the old "source" field's value of the IncidentMilestone entity.
 // If the IncidentMilestone object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *IncidentMilestoneMutation) OldTime(ctx context.Context) (v time.Time, err error) {
+func (m *IncidentMilestoneMutation) OldSource(ctx context.Context) (v string, err error) {
 	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldTime is only allowed on UpdateOne operations")
+		return v, errors.New("OldSource is only allowed on UpdateOne operations")
 	}
 	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldTime requires an ID field in the mutation")
+		return v, errors.New("OldSource requires an ID field in the mutation")
 	}
 	oldValue, err := m.oldValue(ctx)
 	if err != nil {
-		return v, fmt.Errorf("querying old value for OldTime: %w", err)
+		return v, fmt.Errorf("querying old value for OldSource: %w", err)
 	}
-	return oldValue.Time, nil
+	return oldValue.Source, nil
 }
 
-// ResetTime resets all changes to the "time" field.
-func (m *IncidentMilestoneMutation) ResetTime() {
-	m.time = nil
+// ClearSource clears the value of the "source" field.
+func (m *IncidentMilestoneMutation) ClearSource() {
+	m.source = nil
+	m.clearedFields[incidentmilestone.FieldSource] = struct{}{}
+}
+
+// SourceCleared returns if the "source" field was cleared in this mutation.
+func (m *IncidentMilestoneMutation) SourceCleared() bool {
+	_, ok := m.clearedFields[incidentmilestone.FieldSource]
+	return ok
+}
+
+// ResetSource resets all changes to the "source" field.
+func (m *IncidentMilestoneMutation) ResetSource() {
+	m.source = nil
+	delete(m.clearedFields, incidentmilestone.FieldSource)
+}
+
+// SetExternalID sets the "external_id" field.
+func (m *IncidentMilestoneMutation) SetExternalID(s string) {
+	m.external_id = &s
+}
+
+// ExternalID returns the value of the "external_id" field in the mutation.
+func (m *IncidentMilestoneMutation) ExternalID() (r string, exists bool) {
+	v := m.external_id
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldExternalID returns the old "external_id" field's value of the IncidentMilestone entity.
+// If the IncidentMilestone object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *IncidentMilestoneMutation) OldExternalID(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldExternalID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldExternalID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldExternalID: %w", err)
+	}
+	return oldValue.ExternalID, nil
+}
+
+// ClearExternalID clears the value of the "external_id" field.
+func (m *IncidentMilestoneMutation) ClearExternalID() {
+	m.external_id = nil
+	m.clearedFields[incidentmilestone.FieldExternalID] = struct{}{}
+}
+
+// ExternalIDCleared returns if the "external_id" field was cleared in this mutation.
+func (m *IncidentMilestoneMutation) ExternalIDCleared() bool {
+	_, ok := m.clearedFields[incidentmilestone.FieldExternalID]
+	return ok
+}
+
+// ResetExternalID resets all changes to the "external_id" field.
+func (m *IncidentMilestoneMutation) ResetExternalID() {
+	m.external_id = nil
+	delete(m.clearedFields, incidentmilestone.FieldExternalID)
 }
 
 // ClearTenant clears the "tenant" edge to the Tenant entity.
@@ -17533,7 +17525,7 @@ func (m *IncidentMilestoneMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *IncidentMilestoneMutation) Fields() []string {
-	fields := make([]string, 0, 5)
+	fields := make([]string, 0, 7)
 	if m.tenant != nil {
 		fields = append(fields, incidentmilestone.FieldTenantID)
 	}
@@ -17543,11 +17535,17 @@ func (m *IncidentMilestoneMutation) Fields() []string {
 	if m.kind != nil {
 		fields = append(fields, incidentmilestone.FieldKind)
 	}
+	if m.timestamp != nil {
+		fields = append(fields, incidentmilestone.FieldTimestamp)
+	}
 	if m.description != nil {
 		fields = append(fields, incidentmilestone.FieldDescription)
 	}
-	if m.time != nil {
-		fields = append(fields, incidentmilestone.FieldTime)
+	if m.source != nil {
+		fields = append(fields, incidentmilestone.FieldSource)
+	}
+	if m.external_id != nil {
+		fields = append(fields, incidentmilestone.FieldExternalID)
 	}
 	return fields
 }
@@ -17563,10 +17561,14 @@ func (m *IncidentMilestoneMutation) Field(name string) (ent.Value, bool) {
 		return m.IncidentID()
 	case incidentmilestone.FieldKind:
 		return m.Kind()
+	case incidentmilestone.FieldTimestamp:
+		return m.Timestamp()
 	case incidentmilestone.FieldDescription:
 		return m.Description()
-	case incidentmilestone.FieldTime:
-		return m.Time()
+	case incidentmilestone.FieldSource:
+		return m.Source()
+	case incidentmilestone.FieldExternalID:
+		return m.ExternalID()
 	}
 	return nil, false
 }
@@ -17582,10 +17584,14 @@ func (m *IncidentMilestoneMutation) OldField(ctx context.Context, name string) (
 		return m.OldIncidentID(ctx)
 	case incidentmilestone.FieldKind:
 		return m.OldKind(ctx)
+	case incidentmilestone.FieldTimestamp:
+		return m.OldTimestamp(ctx)
 	case incidentmilestone.FieldDescription:
 		return m.OldDescription(ctx)
-	case incidentmilestone.FieldTime:
-		return m.OldTime(ctx)
+	case incidentmilestone.FieldSource:
+		return m.OldSource(ctx)
+	case incidentmilestone.FieldExternalID:
+		return m.OldExternalID(ctx)
 	}
 	return nil, fmt.Errorf("unknown IncidentMilestone field %s", name)
 }
@@ -17616,6 +17622,13 @@ func (m *IncidentMilestoneMutation) SetField(name string, value ent.Value) error
 		}
 		m.SetKind(v)
 		return nil
+	case incidentmilestone.FieldTimestamp:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetTimestamp(v)
+		return nil
 	case incidentmilestone.FieldDescription:
 		v, ok := value.(string)
 		if !ok {
@@ -17623,12 +17636,19 @@ func (m *IncidentMilestoneMutation) SetField(name string, value ent.Value) error
 		}
 		m.SetDescription(v)
 		return nil
-	case incidentmilestone.FieldTime:
-		v, ok := value.(time.Time)
+	case incidentmilestone.FieldSource:
+		v, ok := value.(string)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
-		m.SetTime(v)
+		m.SetSource(v)
+		return nil
+	case incidentmilestone.FieldExternalID:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetExternalID(v)
 		return nil
 	}
 	return fmt.Errorf("unknown IncidentMilestone field %s", name)
@@ -17666,6 +17686,12 @@ func (m *IncidentMilestoneMutation) ClearedFields() []string {
 	if m.FieldCleared(incidentmilestone.FieldDescription) {
 		fields = append(fields, incidentmilestone.FieldDescription)
 	}
+	if m.FieldCleared(incidentmilestone.FieldSource) {
+		fields = append(fields, incidentmilestone.FieldSource)
+	}
+	if m.FieldCleared(incidentmilestone.FieldExternalID) {
+		fields = append(fields, incidentmilestone.FieldExternalID)
+	}
 	return fields
 }
 
@@ -17682,6 +17708,12 @@ func (m *IncidentMilestoneMutation) ClearField(name string) error {
 	switch name {
 	case incidentmilestone.FieldDescription:
 		m.ClearDescription()
+		return nil
+	case incidentmilestone.FieldSource:
+		m.ClearSource()
+		return nil
+	case incidentmilestone.FieldExternalID:
+		m.ClearExternalID()
 		return nil
 	}
 	return fmt.Errorf("unknown IncidentMilestone nullable field %s", name)
@@ -17700,11 +17732,17 @@ func (m *IncidentMilestoneMutation) ResetField(name string) error {
 	case incidentmilestone.FieldKind:
 		m.ResetKind()
 		return nil
+	case incidentmilestone.FieldTimestamp:
+		m.ResetTimestamp()
+		return nil
 	case incidentmilestone.FieldDescription:
 		m.ResetDescription()
 		return nil
-	case incidentmilestone.FieldTime:
-		m.ResetTime()
+	case incidentmilestone.FieldSource:
+		m.ResetSource()
+		return nil
+	case incidentmilestone.FieldExternalID:
+		m.ResetExternalID()
 		return nil
 	}
 	return fmt.Errorf("unknown IncidentMilestone field %s", name)
@@ -21734,7 +21772,6 @@ type IntegrationMutation struct {
 	id            *uuid.UUID
 	name          *string
 	_config       *[]byte
-	enabled       *bool
 	updated_at    *time.Time
 	clearedFields map[string]struct{}
 	tenant        *int
@@ -21956,42 +21993,6 @@ func (m *IntegrationMutation) ResetConfig() {
 	m._config = nil
 }
 
-// SetEnabled sets the "enabled" field.
-func (m *IntegrationMutation) SetEnabled(b bool) {
-	m.enabled = &b
-}
-
-// Enabled returns the value of the "enabled" field in the mutation.
-func (m *IntegrationMutation) Enabled() (r bool, exists bool) {
-	v := m.enabled
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldEnabled returns the old "enabled" field's value of the Integration entity.
-// If the Integration object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *IntegrationMutation) OldEnabled(ctx context.Context) (v bool, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldEnabled is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldEnabled requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldEnabled: %w", err)
-	}
-	return oldValue.Enabled, nil
-}
-
-// ResetEnabled resets all changes to the "enabled" field.
-func (m *IntegrationMutation) ResetEnabled() {
-	m.enabled = nil
-}
-
 // SetUpdatedAt sets the "updated_at" field.
 func (m *IntegrationMutation) SetUpdatedAt(t time.Time) {
 	m.updated_at = &t
@@ -22089,7 +22090,7 @@ func (m *IntegrationMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *IntegrationMutation) Fields() []string {
-	fields := make([]string, 0, 5)
+	fields := make([]string, 0, 4)
 	if m.tenant != nil {
 		fields = append(fields, integration.FieldTenantID)
 	}
@@ -22098,9 +22099,6 @@ func (m *IntegrationMutation) Fields() []string {
 	}
 	if m._config != nil {
 		fields = append(fields, integration.FieldConfig)
-	}
-	if m.enabled != nil {
-		fields = append(fields, integration.FieldEnabled)
 	}
 	if m.updated_at != nil {
 		fields = append(fields, integration.FieldUpdatedAt)
@@ -22119,8 +22117,6 @@ func (m *IntegrationMutation) Field(name string) (ent.Value, bool) {
 		return m.Name()
 	case integration.FieldConfig:
 		return m.Config()
-	case integration.FieldEnabled:
-		return m.Enabled()
 	case integration.FieldUpdatedAt:
 		return m.UpdatedAt()
 	}
@@ -22138,8 +22134,6 @@ func (m *IntegrationMutation) OldField(ctx context.Context, name string) (ent.Va
 		return m.OldName(ctx)
 	case integration.FieldConfig:
 		return m.OldConfig(ctx)
-	case integration.FieldEnabled:
-		return m.OldEnabled(ctx)
 	case integration.FieldUpdatedAt:
 		return m.OldUpdatedAt(ctx)
 	}
@@ -22171,13 +22165,6 @@ func (m *IntegrationMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetConfig(v)
-		return nil
-	case integration.FieldEnabled:
-		v, ok := value.(bool)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetEnabled(v)
 		return nil
 	case integration.FieldUpdatedAt:
 		v, ok := value.(time.Time)
@@ -22246,9 +22233,6 @@ func (m *IntegrationMutation) ResetField(name string) error {
 		return nil
 	case integration.FieldConfig:
 		m.ResetConfig()
-		return nil
-	case integration.FieldEnabled:
-		m.ResetEnabled()
 		return nil
 	case integration.FieldUpdatedAt:
 		m.ResetUpdatedAt()

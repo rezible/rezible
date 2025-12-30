@@ -22,6 +22,8 @@ func (IncidentEvent) Mixin() []ent.Mixin {
 	}
 }
 
+var incidentEventKinds = []string{"observation", "context", "decision", "action"}
+
 // Fields of the IncidentEvent.
 func (IncidentEvent) Fields() []ent.Field {
 	return []ent.Field{
@@ -30,29 +32,23 @@ func (IncidentEvent) Fields() []ent.Field {
 		field.UUID("incident_id", uuid.UUID{}),
 		field.UUID("event_id", uuid.UUID{}).Optional(),
 		field.Time("timestamp"),
-		field.Enum("kind").
-			Values("observation", "action", "decision", "context"),
-		field.String("title").
-			NotEmpty(),
-		field.Text("description").
-			Optional(),
+		field.Enum("kind").Values(incidentEventKinds...),
+		field.String("title").NotEmpty(),
+		field.Text("description").Optional(),
 		field.Bool("is_key").Default(false),
+		field.Int("sequence").Default(0),
 		field.Time("created_at").
 			Default(time.Now),
 		field.Time("updated_at").
 			Default(time.Now).
 			UpdateDefault(time.Now),
-		field.UUID("created_by", uuid.UUID{}),
-		field.Int("sequence").Default(0),
-		field.Bool("is_draft").Default(false),
 	}
 }
 
 // Indexes of the IncidentEvent.
 func (IncidentEvent) Indexes() []ent.Index {
 	return []ent.Index{
-		index.Fields("incident_id", "timestamp"),
-		index.Fields("incident_id", "timestamp", "sequence").Unique(),
+		index.Fields("kind"),
 	}
 }
 

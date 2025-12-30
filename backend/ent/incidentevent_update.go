@@ -147,40 +147,6 @@ func (_u *IncidentEventUpdate) SetNillableIsKey(v *bool) *IncidentEventUpdate {
 	return _u
 }
 
-// SetCreatedAt sets the "created_at" field.
-func (_u *IncidentEventUpdate) SetCreatedAt(v time.Time) *IncidentEventUpdate {
-	_u.mutation.SetCreatedAt(v)
-	return _u
-}
-
-// SetNillableCreatedAt sets the "created_at" field if the given value is not nil.
-func (_u *IncidentEventUpdate) SetNillableCreatedAt(v *time.Time) *IncidentEventUpdate {
-	if v != nil {
-		_u.SetCreatedAt(*v)
-	}
-	return _u
-}
-
-// SetUpdatedAt sets the "updated_at" field.
-func (_u *IncidentEventUpdate) SetUpdatedAt(v time.Time) *IncidentEventUpdate {
-	_u.mutation.SetUpdatedAt(v)
-	return _u
-}
-
-// SetCreatedBy sets the "created_by" field.
-func (_u *IncidentEventUpdate) SetCreatedBy(v uuid.UUID) *IncidentEventUpdate {
-	_u.mutation.SetCreatedBy(v)
-	return _u
-}
-
-// SetNillableCreatedBy sets the "created_by" field if the given value is not nil.
-func (_u *IncidentEventUpdate) SetNillableCreatedBy(v *uuid.UUID) *IncidentEventUpdate {
-	if v != nil {
-		_u.SetCreatedBy(*v)
-	}
-	return _u
-}
-
 // SetSequence sets the "sequence" field.
 func (_u *IncidentEventUpdate) SetSequence(v int) *IncidentEventUpdate {
 	_u.mutation.ResetSequence()
@@ -202,17 +168,23 @@ func (_u *IncidentEventUpdate) AddSequence(v int) *IncidentEventUpdate {
 	return _u
 }
 
-// SetIsDraft sets the "is_draft" field.
-func (_u *IncidentEventUpdate) SetIsDraft(v bool) *IncidentEventUpdate {
-	_u.mutation.SetIsDraft(v)
+// SetCreatedAt sets the "created_at" field.
+func (_u *IncidentEventUpdate) SetCreatedAt(v time.Time) *IncidentEventUpdate {
+	_u.mutation.SetCreatedAt(v)
 	return _u
 }
 
-// SetNillableIsDraft sets the "is_draft" field if the given value is not nil.
-func (_u *IncidentEventUpdate) SetNillableIsDraft(v *bool) *IncidentEventUpdate {
+// SetNillableCreatedAt sets the "created_at" field if the given value is not nil.
+func (_u *IncidentEventUpdate) SetNillableCreatedAt(v *time.Time) *IncidentEventUpdate {
 	if v != nil {
-		_u.SetIsDraft(*v)
+		_u.SetCreatedAt(*v)
 	}
+	return _u
+}
+
+// SetUpdatedAt sets the "updated_at" field.
+func (_u *IncidentEventUpdate) SetUpdatedAt(v time.Time) *IncidentEventUpdate {
+	_u.mutation.SetUpdatedAt(v)
 	return _u
 }
 
@@ -511,23 +483,17 @@ func (_u *IncidentEventUpdate) sqlSave(ctx context.Context) (_node int, err erro
 	if value, ok := _u.mutation.IsKey(); ok {
 		_spec.SetField(incidentevent.FieldIsKey, field.TypeBool, value)
 	}
-	if value, ok := _u.mutation.CreatedAt(); ok {
-		_spec.SetField(incidentevent.FieldCreatedAt, field.TypeTime, value)
-	}
-	if value, ok := _u.mutation.UpdatedAt(); ok {
-		_spec.SetField(incidentevent.FieldUpdatedAt, field.TypeTime, value)
-	}
-	if value, ok := _u.mutation.CreatedBy(); ok {
-		_spec.SetField(incidentevent.FieldCreatedBy, field.TypeUUID, value)
-	}
 	if value, ok := _u.mutation.Sequence(); ok {
 		_spec.SetField(incidentevent.FieldSequence, field.TypeInt, value)
 	}
 	if value, ok := _u.mutation.AddedSequence(); ok {
 		_spec.AddField(incidentevent.FieldSequence, field.TypeInt, value)
 	}
-	if value, ok := _u.mutation.IsDraft(); ok {
-		_spec.SetField(incidentevent.FieldIsDraft, field.TypeBool, value)
+	if value, ok := _u.mutation.CreatedAt(); ok {
+		_spec.SetField(incidentevent.FieldCreatedAt, field.TypeTime, value)
+	}
+	if value, ok := _u.mutation.UpdatedAt(); ok {
+		_spec.SetField(incidentevent.FieldUpdatedAt, field.TypeTime, value)
 	}
 	if _u.mutation.IncidentCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -949,40 +915,6 @@ func (_u *IncidentEventUpdateOne) SetNillableIsKey(v *bool) *IncidentEventUpdate
 	return _u
 }
 
-// SetCreatedAt sets the "created_at" field.
-func (_u *IncidentEventUpdateOne) SetCreatedAt(v time.Time) *IncidentEventUpdateOne {
-	_u.mutation.SetCreatedAt(v)
-	return _u
-}
-
-// SetNillableCreatedAt sets the "created_at" field if the given value is not nil.
-func (_u *IncidentEventUpdateOne) SetNillableCreatedAt(v *time.Time) *IncidentEventUpdateOne {
-	if v != nil {
-		_u.SetCreatedAt(*v)
-	}
-	return _u
-}
-
-// SetUpdatedAt sets the "updated_at" field.
-func (_u *IncidentEventUpdateOne) SetUpdatedAt(v time.Time) *IncidentEventUpdateOne {
-	_u.mutation.SetUpdatedAt(v)
-	return _u
-}
-
-// SetCreatedBy sets the "created_by" field.
-func (_u *IncidentEventUpdateOne) SetCreatedBy(v uuid.UUID) *IncidentEventUpdateOne {
-	_u.mutation.SetCreatedBy(v)
-	return _u
-}
-
-// SetNillableCreatedBy sets the "created_by" field if the given value is not nil.
-func (_u *IncidentEventUpdateOne) SetNillableCreatedBy(v *uuid.UUID) *IncidentEventUpdateOne {
-	if v != nil {
-		_u.SetCreatedBy(*v)
-	}
-	return _u
-}
-
 // SetSequence sets the "sequence" field.
 func (_u *IncidentEventUpdateOne) SetSequence(v int) *IncidentEventUpdateOne {
 	_u.mutation.ResetSequence()
@@ -1004,17 +936,23 @@ func (_u *IncidentEventUpdateOne) AddSequence(v int) *IncidentEventUpdateOne {
 	return _u
 }
 
-// SetIsDraft sets the "is_draft" field.
-func (_u *IncidentEventUpdateOne) SetIsDraft(v bool) *IncidentEventUpdateOne {
-	_u.mutation.SetIsDraft(v)
+// SetCreatedAt sets the "created_at" field.
+func (_u *IncidentEventUpdateOne) SetCreatedAt(v time.Time) *IncidentEventUpdateOne {
+	_u.mutation.SetCreatedAt(v)
 	return _u
 }
 
-// SetNillableIsDraft sets the "is_draft" field if the given value is not nil.
-func (_u *IncidentEventUpdateOne) SetNillableIsDraft(v *bool) *IncidentEventUpdateOne {
+// SetNillableCreatedAt sets the "created_at" field if the given value is not nil.
+func (_u *IncidentEventUpdateOne) SetNillableCreatedAt(v *time.Time) *IncidentEventUpdateOne {
 	if v != nil {
-		_u.SetIsDraft(*v)
+		_u.SetCreatedAt(*v)
 	}
+	return _u
+}
+
+// SetUpdatedAt sets the "updated_at" field.
+func (_u *IncidentEventUpdateOne) SetUpdatedAt(v time.Time) *IncidentEventUpdateOne {
+	_u.mutation.SetUpdatedAt(v)
 	return _u
 }
 
@@ -1343,23 +1281,17 @@ func (_u *IncidentEventUpdateOne) sqlSave(ctx context.Context) (_node *IncidentE
 	if value, ok := _u.mutation.IsKey(); ok {
 		_spec.SetField(incidentevent.FieldIsKey, field.TypeBool, value)
 	}
-	if value, ok := _u.mutation.CreatedAt(); ok {
-		_spec.SetField(incidentevent.FieldCreatedAt, field.TypeTime, value)
-	}
-	if value, ok := _u.mutation.UpdatedAt(); ok {
-		_spec.SetField(incidentevent.FieldUpdatedAt, field.TypeTime, value)
-	}
-	if value, ok := _u.mutation.CreatedBy(); ok {
-		_spec.SetField(incidentevent.FieldCreatedBy, field.TypeUUID, value)
-	}
 	if value, ok := _u.mutation.Sequence(); ok {
 		_spec.SetField(incidentevent.FieldSequence, field.TypeInt, value)
 	}
 	if value, ok := _u.mutation.AddedSequence(); ok {
 		_spec.AddField(incidentevent.FieldSequence, field.TypeInt, value)
 	}
-	if value, ok := _u.mutation.IsDraft(); ok {
-		_spec.SetField(incidentevent.FieldIsDraft, field.TypeBool, value)
+	if value, ok := _u.mutation.CreatedAt(); ok {
+		_spec.SetField(incidentevent.FieldCreatedAt, field.TypeTime, value)
+	}
+	if value, ok := _u.mutation.UpdatedAt(); ok {
+		_spec.SetField(incidentevent.FieldUpdatedAt, field.TypeTime, value)
 	}
 	if _u.mutation.IncidentCleared() {
 		edge := &sqlgraph.EdgeSpec{

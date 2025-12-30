@@ -68,8 +68,8 @@ type (
 
 type (
 	ListIntegrationsParams struct {
-		Name    string
-		Enabled bool
+		Name     string
+		DataKind string
 	}
 
 	OAuth2IntegrationHandler interface {
@@ -89,9 +89,7 @@ type (
 	}
 
 	IntegrationsDataSyncer interface {
-		MakeSyncAllTenantIntegrationsDataPeriodicJob() jobs.PeriodicJob
-		SyncAllTenantIntegrationsData(context.Context, jobs.SyncIntegrationsData) error
-		SyncIntegrationsData(context.Context, ent.Integrations) error
+		SyncIntegrationsData(context.Context, jobs.SyncIntegrationsData) error
 	}
 
 	ExternalResourceUpdatedCallback = func(externalId string, updatedAt time.Time)
@@ -261,9 +259,6 @@ type (
 	}
 
 	ChatService interface {
-		ProcessEvent(context.Context, jobs.ProcessChatEvent) error
-		HandleIncidentChatUpdate(context.Context, jobs.IncidentChatUpdate) error
-
 		SendMessage(ctx context.Context, id string, msg *ContentNode) error
 		SendReply(ctx context.Context, channelId string, threadId string, text string) error
 		SendTextMessage(ctx context.Context, id string, text string) error
@@ -271,6 +266,8 @@ type (
 		// TODO: this should just be converted to *ContentNode by DocumentService
 		SendOncallHandover(ctx context.Context, params SendOncallHandoverParams) error
 		SendOncallHandoverReminder(context.Context, *ent.OncallShift) error
+
+		HandleIncidentChatUpdate(context.Context, jobs.HandleIncidentChatUpdate) error
 
 		EnableEventListener() bool
 		MakeEventListener() (ChatEventListener, error)
@@ -349,6 +346,13 @@ type (
 		ListIncidentRoles(context.Context) ([]*ent.IncidentRole, error)
 	}
 
+	IncidentMetadata struct {
+		Roles      ent.IncidentRoles
+		Types      ent.IncidentTypes
+		Fields     ent.IncidentFields
+		Severities ent.IncidentSeverities
+	}
+
 	ListIncidentsParams struct {
 		ListParams
 		UserId       uuid.UUID
@@ -358,18 +362,20 @@ type (
 
 	IncidentService interface {
 		Get(context.Context, uuid.UUID) (*ent.Incident, error)
-		Set(context.Context, uuid.UUID, func(*ent.IncidentMutation)) (*ent.Incident, error)
+		Set(context.Context, uuid.UUID, func(*ent.IncidentMutation), *ent.IncidentEdges) (*ent.Incident, error)
 		GetBySlug(context.Context, string) (*ent.Incident, error)
 		GetByChatChannelID(context.Context, string) (*ent.Incident, error)
 		ListIncidents(context.Context, ListIncidentsParams) (*ent.ListResult[*ent.Incident], error)
 
-		ListIncidentFields(context.Context) (ent.IncidentEdges, error)
-
 		ListIncidentRoles(context.Context) ([]*ent.IncidentRole, error)
 		ListIncidentSeverities(context.Context) ([]*ent.IncidentSeverity, error)
 		ListIncidentTypes(context.Context) ([]*ent.IncidentType, error)
+
+		GetIncidentMetadata(context.Context) (*IncidentMetadata, error)
 	}
 )
+
+var MessageIncidentUpdatedTopic = "incident_updated"
 
 type (
 	DebriefService interface {
@@ -494,7 +500,6 @@ type (
 	}
 
 	OncallShiftsService interface {
-		MakeScanShiftsPeriodicJob() jobs.PeriodicJob
 		HandlePeriodicScanShifts(context.Context, jobs.ScanOncallShifts) error
 		HandleEnsureShiftHandoverSent(context.Context, jobs.EnsureShiftHandoverSent) error
 		HandleEnsureShiftHandoverReminderSent(context.Context, jobs.EnsureShiftHandoverReminderSent) error

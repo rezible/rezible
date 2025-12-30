@@ -3,11 +3,12 @@ package slack
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
+	"time"
 
-	"github.com/google/uuid"
-	"github.com/rezible/rezible/jobs"
-	"github.com/rs/zerolog/log"
+	"github.com/rezible/rezible/ent"
+	"github.com/rezible/rezible/ent/incidentmilestone"
 	"github.com/slack-go/slack"
 )
 
@@ -108,26 +109,50 @@ func (s *ChatService) handleIncidentModalInteraction(ctx context.Context, ic *sl
 	return nil, nil
 }
 
+type slackIncidentDeclaration struct {
+	TeamID    string
+	UserID    string
+	ChannelID string
+}
+
+func (d slackIncidentDeclaration) ToMilestoneID(hash string) string {
+	return fmt.Sprintf("%s_%s_%s_%s", d.TeamID, d.UserID, d.ChannelID, hash)
+}
+
 func (s *ChatService) handleIncidentModalSubmission(ctx context.Context, ic *slack.InteractionCallback) (any, error) {
 	var meta incidentViewMetadata
 	if jsonErr := json.Unmarshal([]byte(ic.View.PrivateMetadata), &meta); jsonErr != nil {
 		return nil, fmt.Errorf("failed to unmarshal metadata: %w", jsonErr)
 	}
 
-	inc, incErr := s.incidents.Set(ctx, meta.IncidentId, setIncidentFieldsFromModal(ic.View))
-	if incErr != nil {
-		return nil, fmt.Errorf("upsert incident from modal data: %w", incErr)
+	state := ic.View.State
+	if state == nil {
+		return nil, errors.New("invalid view state")
 	}
 
-	// TODO: handle this in incident service
-	chatUpdateJobArgs := jobs.IncidentChatUpdate{
-		IncidentId:      inc.ID,
-		Created:         meta.IncidentId == uuid.Nil,
-		OriginChannelId: meta.ChannelId,
+	decl := slackIncidentDeclaration{
+		TeamID:    ic.Team.ID,
+		UserID:    meta.UserId,
+		ChannelID: meta.ChannelId,
 	}
-	chatUpdateJobErr := s.jobs.Insert(ctx, jobs.InsertJobParams{Args: chatUpdateJobArgs})
-	if chatUpdateJobErr != nil {
-		log.Warn().Err(chatUpdateJobErr).Msg("failed to incident chat update job")
+
+	incidentDeclaredMilestone := &ent.IncidentMilestone{
+		Kind:        incidentmilestone.KindResponse,
+		Description: "Incident declared via slack",
+		Timestamp:   time.Now(),
+		Source:      integrationName,
+		ExternalID:  decl.ToMilestoneID(ic.View.Hash),
+	}
+	edges := &ent.IncidentEdges{
+		Milestones: ent.IncidentMilestones{incidentDeclaredMilestone},
+	}
+
+	setFn := func(m *ent.IncidentMutation) {
+		setIncidentModalStateFields(m, state)
+	}
+	_, incErr := s.incidents.Set(ctx, meta.IncidentId, setFn, edges)
+	if incErr != nil {
+		return nil, fmt.Errorf("upsert incident from modal data: %w", incErr)
 	}
 
 	return nil, nil

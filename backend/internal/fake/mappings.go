@@ -28,7 +28,7 @@ var (
 	incidentSeverityMapping  = ent.IncidentSeverity{Name: strSupported}
 	incidentTypeMapping      = ent.IncidentType{Name: strSupported}
 	incidentTaskMapping      = ent.Task{Title: strSupported}
-	incidentMilestoneMapping = ent.IncidentMilestone{Time: timeSupported}
+	incidentMilestoneMapping = ent.IncidentMilestone{Timestamp: timeSupported}
 	incidentTagMapping       = ent.IncidentTag{
 		Key:   strSupported,
 		Value: strSupported,

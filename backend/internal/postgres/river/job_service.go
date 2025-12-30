@@ -7,6 +7,7 @@ import (
 
 	"github.com/rezible/rezible/access"
 	"github.com/rezible/rezible/jobs"
+	"github.com/rs/zerolog/log"
 
 	"log/slog"
 
@@ -142,10 +143,14 @@ func convertInsertOpts(p jobs.InsertJobParams) *river.InsertOpts {
 }
 
 func (s *JobService) Insert(ctx context.Context, params jobs.InsertJobParams) error {
-	_, insertErr := s.client.Insert(ctx, params.Args, convertInsertOpts(params))
+	res, insertErr := s.client.Insert(ctx, params.Args, convertInsertOpts(params))
 	if insertErr != nil {
 		return fmt.Errorf("could not insert job: %w", insertErr)
 	}
+	log.Debug().
+		Str("kind", params.Args.Kind()).
+		Bool("skipped_unique", res.UniqueSkippedAsDuplicate).
+		Msg("inserted job")
 	return nil
 }
 

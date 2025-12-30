@@ -288,24 +288,20 @@ func init() {
 	incidenteventDescIsKey := incidenteventFields[7].Descriptor()
 	// incidentevent.DefaultIsKey holds the default value on creation for the is_key field.
 	incidentevent.DefaultIsKey = incidenteventDescIsKey.Default.(bool)
+	// incidenteventDescSequence is the schema descriptor for sequence field.
+	incidenteventDescSequence := incidenteventFields[8].Descriptor()
+	// incidentevent.DefaultSequence holds the default value on creation for the sequence field.
+	incidentevent.DefaultSequence = incidenteventDescSequence.Default.(int)
 	// incidenteventDescCreatedAt is the schema descriptor for created_at field.
-	incidenteventDescCreatedAt := incidenteventFields[8].Descriptor()
+	incidenteventDescCreatedAt := incidenteventFields[9].Descriptor()
 	// incidentevent.DefaultCreatedAt holds the default value on creation for the created_at field.
 	incidentevent.DefaultCreatedAt = incidenteventDescCreatedAt.Default.(func() time.Time)
 	// incidenteventDescUpdatedAt is the schema descriptor for updated_at field.
-	incidenteventDescUpdatedAt := incidenteventFields[9].Descriptor()
+	incidenteventDescUpdatedAt := incidenteventFields[10].Descriptor()
 	// incidentevent.DefaultUpdatedAt holds the default value on creation for the updated_at field.
 	incidentevent.DefaultUpdatedAt = incidenteventDescUpdatedAt.Default.(func() time.Time)
 	// incidentevent.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
 	incidentevent.UpdateDefaultUpdatedAt = incidenteventDescUpdatedAt.UpdateDefault.(func() time.Time)
-	// incidenteventDescSequence is the schema descriptor for sequence field.
-	incidenteventDescSequence := incidenteventFields[11].Descriptor()
-	// incidentevent.DefaultSequence holds the default value on creation for the sequence field.
-	incidentevent.DefaultSequence = incidenteventDescSequence.Default.(int)
-	// incidenteventDescIsDraft is the schema descriptor for is_draft field.
-	incidenteventDescIsDraft := incidenteventFields[12].Descriptor()
-	// incidentevent.DefaultIsDraft holds the default value on creation for the is_draft field.
-	incidentevent.DefaultIsDraft = incidenteventDescIsDraft.Default.(bool)
 	// incidenteventDescID is the schema descriptor for id field.
 	incidenteventDescID := incidenteventFields[0].Descriptor()
 	// incidentevent.DefaultID holds the default value on creation for the id field.
@@ -586,12 +582,8 @@ func init() {
 	}
 	integrationFields := schema.Integration{}.Fields()
 	_ = integrationFields
-	// integrationDescEnabled is the schema descriptor for enabled field.
-	integrationDescEnabled := integrationFields[3].Descriptor()
-	// integration.DefaultEnabled holds the default value on creation for the enabled field.
-	integration.DefaultEnabled = integrationDescEnabled.Default.(bool)
 	// integrationDescUpdatedAt is the schema descriptor for updated_at field.
-	integrationDescUpdatedAt := integrationFields[4].Descriptor()
+	integrationDescUpdatedAt := integrationFields[3].Descriptor()
 	// integration.DefaultUpdatedAt holds the default value on creation for the updated_at field.
 	integration.DefaultUpdatedAt = integrationDescUpdatedAt.Default.(func() time.Time)
 	// integrationDescID is the schema descriptor for id field.

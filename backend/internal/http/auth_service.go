@@ -166,7 +166,7 @@ func (s *AuthService) makeUserSessionCreatedCallback(w http.ResponseWriter, r *h
 			return
 		}
 
-		findUserCtx := access.TenantSystemContext(ctx, org.TenantID)
+		findUserCtx := access.TenantContext(ctx, org.TenantID)
 		usr, usrErr := s.users.FindOrCreateAuthProviderUser(findUserCtx, ps.User)
 		if usrErr != nil {
 			log.Error().Err(usrErr).Msg("FindOrCreateAuthProviderUser")

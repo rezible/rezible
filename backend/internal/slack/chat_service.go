@@ -3,6 +3,7 @@ package slack
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 
 	rez "github.com/rezible/rezible"
@@ -14,27 +15,33 @@ import (
 )
 
 type ChatService struct {
-	oauthConfig *oauth2.Config
-
 	jobs         rez.JobsService
+	messages     rez.MessageService
 	integrations rez.IntegrationsService
 	users        rez.UserService
 	incidents    rez.IncidentService
 	annos        rez.EventAnnotationsService
 	components   rez.SystemComponentsService
+
+	oauthConfig *oauth2.Config
 }
 
-func NewChatService(jobs rez.JobsService, integrations rez.IntegrationsService, users rez.UserService, incidents rez.IncidentService, annos rez.EventAnnotationsService, components rez.SystemComponentsService) (*ChatService, error) {
+func NewChatService(jobs rez.JobsService, messages rez.MessageService, integrations rez.IntegrationsService, users rez.UserService, incidents rez.IncidentService, annos rez.EventAnnotationsService, components rez.SystemComponentsService) (*ChatService, error) {
 	s := &ChatService{
-		oauthConfig:  LoadOAuthConfig(),
-		integrations: integrations,
 		jobs:         jobs,
+		messages:     messages,
+		integrations: integrations,
 		users:        users,
 		incidents:    incidents,
 		annos:        annos,
 		components:   components,
+		oauthConfig:  LoadOAuthConfig(),
 	}
+
 	integrations.RegisterOAuth2Handler(integrationName, s)
+
+	s.messages.AddConsumerHandler("SlackIncidentUpdate", rez.MessageIncidentUpdatedTopic, s.incidentUpdateMessageHandler)
+
 	return s, nil
 }
 
@@ -44,6 +51,10 @@ func (s *ChatService) EnableEventListener() bool {
 
 func (s *ChatService) withClient(ctx context.Context, fn func(*slack.Client) error) error {
 	return withClient(ctx, s.integrations, fn)
+}
+
+func (s *ChatService) getChatTeamContext(ctx context.Context, teamId string) (context.Context, error) {
+	return nil, errors.New("not implemented")
 }
 
 func (s *ChatService) getChatUserContext(ctx context.Context, userId string) (context.Context, error) {
@@ -57,7 +68,7 @@ func (s *ChatService) lookupChatUser(baseCtx context.Context, chatId string) (*e
 		log.Error().Err(usrErr).Str("chat_id", chatId).Msg("failed to lookup chat user")
 		return nil, nil, usrErr
 	}
-	return usr, access.TenantUserContext(baseCtx, usr.TenantID), nil
+	return usr, access.TenantContext(baseCtx, usr.TenantID), nil
 }
 
 func (s *ChatService) sendMessage(ctx context.Context, channelId string, msgOpts ...slack.MsgOption) error {
@@ -107,8 +118,7 @@ func (s *ChatService) GetIntegrationFromToken(token *oauth2.Token) (*ent.Integra
 	}
 
 	return &ent.Integration{
-		Name:    integrationName,
-		Enabled: true,
-		Config:  cfgJson,
+		Name:   integrationName,
+		Config: cfgJson,
 	}, nil
 }

@@ -7,7 +7,6 @@ import (
 	"github.com/google/uuid"
 
 	"github.com/rezible/rezible/ent"
-	oapi "github.com/rezible/rezible/openapi/v1"
 )
 
 type SystemComponentsDataProvider struct {
@@ -37,6 +36,7 @@ func (p *SystemComponentsDataProvider) PullSystemComponents(ctx context.Context)
 }
 
 // TODO convert this
+/*
 func makeFakeSystemAnalysis(cmps []oapi.SystemComponent) oapi.SystemAnalysis {
 	position := func(x, y float64) oapi.SystemAnalysisDiagramPosition {
 		return oapi.SystemAnalysisDiagramPosition{X: x, Y: y}
@@ -108,6 +108,7 @@ func makeFakeSystemAnalysis(cmps []oapi.SystemComponent) oapi.SystemAnalysis {
 		},
 	}
 }
+*/
 
 func makeFakeSystemComponents() []*ent.SystemComponent {
 	makeConstraint := func(label, desc string) *ent.SystemComponentConstraint {

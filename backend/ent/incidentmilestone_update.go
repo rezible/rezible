@@ -59,6 +59,20 @@ func (_u *IncidentMilestoneUpdate) SetNillableKind(v *incidentmilestone.Kind) *I
 	return _u
 }
 
+// SetTimestamp sets the "timestamp" field.
+func (_u *IncidentMilestoneUpdate) SetTimestamp(v time.Time) *IncidentMilestoneUpdate {
+	_u.mutation.SetTimestamp(v)
+	return _u
+}
+
+// SetNillableTimestamp sets the "timestamp" field if the given value is not nil.
+func (_u *IncidentMilestoneUpdate) SetNillableTimestamp(v *time.Time) *IncidentMilestoneUpdate {
+	if v != nil {
+		_u.SetTimestamp(*v)
+	}
+	return _u
+}
+
 // SetDescription sets the "description" field.
 func (_u *IncidentMilestoneUpdate) SetDescription(v string) *IncidentMilestoneUpdate {
 	_u.mutation.SetDescription(v)
@@ -79,17 +93,43 @@ func (_u *IncidentMilestoneUpdate) ClearDescription() *IncidentMilestoneUpdate {
 	return _u
 }
 
-// SetTime sets the "time" field.
-func (_u *IncidentMilestoneUpdate) SetTime(v time.Time) *IncidentMilestoneUpdate {
-	_u.mutation.SetTime(v)
+// SetSource sets the "source" field.
+func (_u *IncidentMilestoneUpdate) SetSource(v string) *IncidentMilestoneUpdate {
+	_u.mutation.SetSource(v)
 	return _u
 }
 
-// SetNillableTime sets the "time" field if the given value is not nil.
-func (_u *IncidentMilestoneUpdate) SetNillableTime(v *time.Time) *IncidentMilestoneUpdate {
+// SetNillableSource sets the "source" field if the given value is not nil.
+func (_u *IncidentMilestoneUpdate) SetNillableSource(v *string) *IncidentMilestoneUpdate {
 	if v != nil {
-		_u.SetTime(*v)
+		_u.SetSource(*v)
 	}
+	return _u
+}
+
+// ClearSource clears the value of the "source" field.
+func (_u *IncidentMilestoneUpdate) ClearSource() *IncidentMilestoneUpdate {
+	_u.mutation.ClearSource()
+	return _u
+}
+
+// SetExternalID sets the "external_id" field.
+func (_u *IncidentMilestoneUpdate) SetExternalID(v string) *IncidentMilestoneUpdate {
+	_u.mutation.SetExternalID(v)
+	return _u
+}
+
+// SetNillableExternalID sets the "external_id" field if the given value is not nil.
+func (_u *IncidentMilestoneUpdate) SetNillableExternalID(v *string) *IncidentMilestoneUpdate {
+	if v != nil {
+		_u.SetExternalID(*v)
+	}
+	return _u
+}
+
+// ClearExternalID clears the value of the "external_id" field.
+func (_u *IncidentMilestoneUpdate) ClearExternalID() *IncidentMilestoneUpdate {
+	_u.mutation.ClearExternalID()
 	return _u
 }
 
@@ -173,14 +213,26 @@ func (_u *IncidentMilestoneUpdate) sqlSave(ctx context.Context) (_node int, err 
 	if value, ok := _u.mutation.Kind(); ok {
 		_spec.SetField(incidentmilestone.FieldKind, field.TypeEnum, value)
 	}
+	if value, ok := _u.mutation.Timestamp(); ok {
+		_spec.SetField(incidentmilestone.FieldTimestamp, field.TypeTime, value)
+	}
 	if value, ok := _u.mutation.Description(); ok {
 		_spec.SetField(incidentmilestone.FieldDescription, field.TypeString, value)
 	}
 	if _u.mutation.DescriptionCleared() {
 		_spec.ClearField(incidentmilestone.FieldDescription, field.TypeString)
 	}
-	if value, ok := _u.mutation.Time(); ok {
-		_spec.SetField(incidentmilestone.FieldTime, field.TypeTime, value)
+	if value, ok := _u.mutation.Source(); ok {
+		_spec.SetField(incidentmilestone.FieldSource, field.TypeString, value)
+	}
+	if _u.mutation.SourceCleared() {
+		_spec.ClearField(incidentmilestone.FieldSource, field.TypeString)
+	}
+	if value, ok := _u.mutation.ExternalID(); ok {
+		_spec.SetField(incidentmilestone.FieldExternalID, field.TypeString, value)
+	}
+	if _u.mutation.ExternalIDCleared() {
+		_spec.ClearField(incidentmilestone.FieldExternalID, field.TypeString)
 	}
 	if _u.mutation.IncidentCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -261,6 +313,20 @@ func (_u *IncidentMilestoneUpdateOne) SetNillableKind(v *incidentmilestone.Kind)
 	return _u
 }
 
+// SetTimestamp sets the "timestamp" field.
+func (_u *IncidentMilestoneUpdateOne) SetTimestamp(v time.Time) *IncidentMilestoneUpdateOne {
+	_u.mutation.SetTimestamp(v)
+	return _u
+}
+
+// SetNillableTimestamp sets the "timestamp" field if the given value is not nil.
+func (_u *IncidentMilestoneUpdateOne) SetNillableTimestamp(v *time.Time) *IncidentMilestoneUpdateOne {
+	if v != nil {
+		_u.SetTimestamp(*v)
+	}
+	return _u
+}
+
 // SetDescription sets the "description" field.
 func (_u *IncidentMilestoneUpdateOne) SetDescription(v string) *IncidentMilestoneUpdateOne {
 	_u.mutation.SetDescription(v)
@@ -281,17 +347,43 @@ func (_u *IncidentMilestoneUpdateOne) ClearDescription() *IncidentMilestoneUpdat
 	return _u
 }
 
-// SetTime sets the "time" field.
-func (_u *IncidentMilestoneUpdateOne) SetTime(v time.Time) *IncidentMilestoneUpdateOne {
-	_u.mutation.SetTime(v)
+// SetSource sets the "source" field.
+func (_u *IncidentMilestoneUpdateOne) SetSource(v string) *IncidentMilestoneUpdateOne {
+	_u.mutation.SetSource(v)
 	return _u
 }
 
-// SetNillableTime sets the "time" field if the given value is not nil.
-func (_u *IncidentMilestoneUpdateOne) SetNillableTime(v *time.Time) *IncidentMilestoneUpdateOne {
+// SetNillableSource sets the "source" field if the given value is not nil.
+func (_u *IncidentMilestoneUpdateOne) SetNillableSource(v *string) *IncidentMilestoneUpdateOne {
 	if v != nil {
-		_u.SetTime(*v)
+		_u.SetSource(*v)
 	}
+	return _u
+}
+
+// ClearSource clears the value of the "source" field.
+func (_u *IncidentMilestoneUpdateOne) ClearSource() *IncidentMilestoneUpdateOne {
+	_u.mutation.ClearSource()
+	return _u
+}
+
+// SetExternalID sets the "external_id" field.
+func (_u *IncidentMilestoneUpdateOne) SetExternalID(v string) *IncidentMilestoneUpdateOne {
+	_u.mutation.SetExternalID(v)
+	return _u
+}
+
+// SetNillableExternalID sets the "external_id" field if the given value is not nil.
+func (_u *IncidentMilestoneUpdateOne) SetNillableExternalID(v *string) *IncidentMilestoneUpdateOne {
+	if v != nil {
+		_u.SetExternalID(*v)
+	}
+	return _u
+}
+
+// ClearExternalID clears the value of the "external_id" field.
+func (_u *IncidentMilestoneUpdateOne) ClearExternalID() *IncidentMilestoneUpdateOne {
+	_u.mutation.ClearExternalID()
 	return _u
 }
 
@@ -405,14 +497,26 @@ func (_u *IncidentMilestoneUpdateOne) sqlSave(ctx context.Context) (_node *Incid
 	if value, ok := _u.mutation.Kind(); ok {
 		_spec.SetField(incidentmilestone.FieldKind, field.TypeEnum, value)
 	}
+	if value, ok := _u.mutation.Timestamp(); ok {
+		_spec.SetField(incidentmilestone.FieldTimestamp, field.TypeTime, value)
+	}
 	if value, ok := _u.mutation.Description(); ok {
 		_spec.SetField(incidentmilestone.FieldDescription, field.TypeString, value)
 	}
 	if _u.mutation.DescriptionCleared() {
 		_spec.ClearField(incidentmilestone.FieldDescription, field.TypeString)
 	}
-	if value, ok := _u.mutation.Time(); ok {
-		_spec.SetField(incidentmilestone.FieldTime, field.TypeTime, value)
+	if value, ok := _u.mutation.Source(); ok {
+		_spec.SetField(incidentmilestone.FieldSource, field.TypeString, value)
+	}
+	if _u.mutation.SourceCleared() {
+		_spec.ClearField(incidentmilestone.FieldSource, field.TypeString)
+	}
+	if value, ok := _u.mutation.ExternalID(); ok {
+		_spec.SetField(incidentmilestone.FieldExternalID, field.TypeString, value)
+	}
+	if _u.mutation.ExternalIDCleared() {
+		_spec.ClearField(incidentmilestone.FieldExternalID, field.TypeString)
 	}
 	if _u.mutation.IncidentCleared() {
 		edge := &sqlgraph.EdgeSpec{

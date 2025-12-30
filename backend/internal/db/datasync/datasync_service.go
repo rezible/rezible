@@ -3,13 +3,12 @@ package datasync
 import (
 	"context"
 	"fmt"
-	"time"
 
+	"github.com/google/uuid"
 	"github.com/rs/zerolog/log"
 
 	"github.com/rezible/rezible/access"
 	"github.com/rezible/rezible/ent"
-	"github.com/rezible/rezible/ent/integration"
 	"github.com/rezible/rezible/integrations"
 	"github.com/rezible/rezible/jobs"
 )
@@ -22,52 +21,58 @@ func NewSyncer(db *ent.Client) *Syncer {
 	return &Syncer{db: db}
 }
 
-func (s *Syncer) MakeSyncAllTenantIntegrationsDataPeriodicJob() jobs.PeriodicJob {
-	return jobs.PeriodicJob{
-		ConstructorFunc: func() jobs.InsertJobParams {
-			return jobs.InsertJobParams{
-				Args: &jobs.SyncIntegrationsData{},
-				Uniqueness: &jobs.JobUniquenessOpts{
-					ByState: jobs.NonCompletedJobStates,
-				},
-			}
-		},
-		Interval: time.Hour,
-		Opts:     &jobs.PeriodicJobOpts{RunOnStart: true},
+func (s *Syncer) SyncIntegrationsData(ctx context.Context, args jobs.SyncIntegrationsData) error {
+	if args.Hard {
+		ctx = context.WithValue(ctx, ignoreHistoryKey{}, true)
 	}
-}
-
-func (s *Syncer) SyncAllTenantIntegrationsData(ctx context.Context, args jobs.SyncIntegrationsData) error {
-	tenants, tenantsErr := s.db.Tenant.Query().All(ctx)
-	if tenantsErr != nil {
-		return fmt.Errorf("querying tenants: %w", tenantsErr)
+	if args.CreateDefaults {
+		ctx = context.WithValue(ctx, createDefaultsKey{}, true)
 	}
 
-	for _, tenant := range tenants {
-		tenantCtx := access.TenantSystemContext(ctx, tenant.ID)
-		integrationsQuery := s.db.Integration.Query().
-			Where(integration.Enabled(true))
+	if args.IntegrationId != uuid.Nil {
+		intg, queryErr := s.db.Integration.Get(access.SystemContext(ctx), args.IntegrationId)
+		if queryErr != nil {
+			return fmt.Errorf("query args integrations: %w", queryErr)
+		}
+		ctx = access.TenantContext(ctx, intg.TenantID)
+		return s.syncData(ctx, ent.Integrations{intg})
+	}
 
-		intgs, intgsErr := integrationsQuery.All(tenantCtx)
+	if args.OrganizationId != uuid.Nil {
+		org, orgErr := s.db.Organization.Get(access.SystemContext(ctx), args.OrganizationId)
+		if orgErr != nil {
+			return fmt.Errorf("query args organization: %w", orgErr)
+		}
+		ctx = access.TenantContext(ctx, org.TenantID)
+		intgs, intgsErr := s.db.Integration.Query().All(ctx)
 		if intgsErr != nil {
 			return fmt.Errorf("querying integrations: %w", intgsErr)
 		}
+		return s.syncData(ctx, intgs)
+	}
 
-		if args.Hard {
-			s.db.ProviderSyncHistory.Delete().ExecX(tenantCtx)
+	// Sync all tenants
+	tenantIds, tenantsErr := s.db.Tenant.Query().IDs(access.SystemContext(ctx))
+	if tenantsErr != nil {
+		return fmt.Errorf("querying tenants: %w", tenantsErr)
+	}
+	for _, tenantId := range tenantIds {
+		tenantCtx := access.TenantContext(ctx, tenantId)
+		intgs, intgsErr := s.db.Integration.Query().All(tenantCtx)
+		if intgsErr != nil {
+			return fmt.Errorf("querying integrations: %w", intgsErr)
 		}
-
-		if syncErr := s.SyncIntegrationsData(tenantCtx, intgs); syncErr != nil {
+		if syncErr := s.syncData(tenantCtx, intgs); syncErr != nil {
 			log.Error().
 				Err(syncErr).
-				Int("tenantID", tenant.ID).
 				Msg("failed to sync integrations data")
 		}
 	}
+
 	return nil
 }
 
-func (s *Syncer) SyncIntegrationsData(ctx context.Context, intgs ent.Integrations) error {
+func (s *Syncer) syncData(ctx context.Context, intgs ent.Integrations) error {
 	names := make([]string, len(intgs))
 	for i, intg := range intgs {
 		names[i] = intg.Name
@@ -156,6 +161,12 @@ func (s *Syncer) SyncIntegrationsData(ctx context.Context, intgs ent.Integration
 			if syncErr := syncIncidents(ctx, s.db, incidents); syncErr != nil {
 				return fmt.Errorf("incidents: %w", syncErr)
 			}
+		}
+	}
+
+	if ShouldCreateDefaults(ctx) {
+		if defaultsErr := syncRequiredDefaultData(ctx, s.db); defaultsErr != nil {
+			return fmt.Errorf("create required default data: %w", defaultsErr)
 		}
 	}
 

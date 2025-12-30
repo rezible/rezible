@@ -27,7 +27,6 @@ func (Integration) Fields() []ent.Field {
 		field.UUID("id", uuid.New()).Default(uuid.New),
 		field.String("name"),
 		field.Bytes("config"),
-		field.Bool("enabled").Default(true),
 		field.Time("updated_at").Default(time.Now),
 	}
 }

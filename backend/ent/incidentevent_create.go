@@ -104,6 +104,20 @@ func (_c *IncidentEventCreate) SetNillableIsKey(v *bool) *IncidentEventCreate {
 	return _c
 }
 
+// SetSequence sets the "sequence" field.
+func (_c *IncidentEventCreate) SetSequence(v int) *IncidentEventCreate {
+	_c.mutation.SetSequence(v)
+	return _c
+}
+
+// SetNillableSequence sets the "sequence" field if the given value is not nil.
+func (_c *IncidentEventCreate) SetNillableSequence(v *int) *IncidentEventCreate {
+	if v != nil {
+		_c.SetSequence(*v)
+	}
+	return _c
+}
+
 // SetCreatedAt sets the "created_at" field.
 func (_c *IncidentEventCreate) SetCreatedAt(v time.Time) *IncidentEventCreate {
 	_c.mutation.SetCreatedAt(v)
@@ -128,40 +142,6 @@ func (_c *IncidentEventCreate) SetUpdatedAt(v time.Time) *IncidentEventCreate {
 func (_c *IncidentEventCreate) SetNillableUpdatedAt(v *time.Time) *IncidentEventCreate {
 	if v != nil {
 		_c.SetUpdatedAt(*v)
-	}
-	return _c
-}
-
-// SetCreatedBy sets the "created_by" field.
-func (_c *IncidentEventCreate) SetCreatedBy(v uuid.UUID) *IncidentEventCreate {
-	_c.mutation.SetCreatedBy(v)
-	return _c
-}
-
-// SetSequence sets the "sequence" field.
-func (_c *IncidentEventCreate) SetSequence(v int) *IncidentEventCreate {
-	_c.mutation.SetSequence(v)
-	return _c
-}
-
-// SetNillableSequence sets the "sequence" field if the given value is not nil.
-func (_c *IncidentEventCreate) SetNillableSequence(v *int) *IncidentEventCreate {
-	if v != nil {
-		_c.SetSequence(*v)
-	}
-	return _c
-}
-
-// SetIsDraft sets the "is_draft" field.
-func (_c *IncidentEventCreate) SetIsDraft(v bool) *IncidentEventCreate {
-	_c.mutation.SetIsDraft(v)
-	return _c
-}
-
-// SetNillableIsDraft sets the "is_draft" field if the given value is not nil.
-func (_c *IncidentEventCreate) SetNillableIsDraft(v *bool) *IncidentEventCreate {
-	if v != nil {
-		_c.SetIsDraft(*v)
 	}
 	return _c
 }
@@ -315,6 +295,10 @@ func (_c *IncidentEventCreate) defaults() error {
 		v := incidentevent.DefaultIsKey
 		_c.mutation.SetIsKey(v)
 	}
+	if _, ok := _c.mutation.Sequence(); !ok {
+		v := incidentevent.DefaultSequence
+		_c.mutation.SetSequence(v)
+	}
 	if _, ok := _c.mutation.CreatedAt(); !ok {
 		if incidentevent.DefaultCreatedAt == nil {
 			return fmt.Errorf("ent: uninitialized incidentevent.DefaultCreatedAt (forgotten import ent/runtime?)")
@@ -328,14 +312,6 @@ func (_c *IncidentEventCreate) defaults() error {
 		}
 		v := incidentevent.DefaultUpdatedAt()
 		_c.mutation.SetUpdatedAt(v)
-	}
-	if _, ok := _c.mutation.Sequence(); !ok {
-		v := incidentevent.DefaultSequence
-		_c.mutation.SetSequence(v)
-	}
-	if _, ok := _c.mutation.IsDraft(); !ok {
-		v := incidentevent.DefaultIsDraft
-		_c.mutation.SetIsDraft(v)
 	}
 	if _, ok := _c.mutation.ID(); !ok {
 		if incidentevent.DefaultID == nil {
@@ -377,20 +353,14 @@ func (_c *IncidentEventCreate) check() error {
 	if _, ok := _c.mutation.IsKey(); !ok {
 		return &ValidationError{Name: "is_key", err: errors.New(`ent: missing required field "IncidentEvent.is_key"`)}
 	}
+	if _, ok := _c.mutation.Sequence(); !ok {
+		return &ValidationError{Name: "sequence", err: errors.New(`ent: missing required field "IncidentEvent.sequence"`)}
+	}
 	if _, ok := _c.mutation.CreatedAt(); !ok {
 		return &ValidationError{Name: "created_at", err: errors.New(`ent: missing required field "IncidentEvent.created_at"`)}
 	}
 	if _, ok := _c.mutation.UpdatedAt(); !ok {
 		return &ValidationError{Name: "updated_at", err: errors.New(`ent: missing required field "IncidentEvent.updated_at"`)}
-	}
-	if _, ok := _c.mutation.CreatedBy(); !ok {
-		return &ValidationError{Name: "created_by", err: errors.New(`ent: missing required field "IncidentEvent.created_by"`)}
-	}
-	if _, ok := _c.mutation.Sequence(); !ok {
-		return &ValidationError{Name: "sequence", err: errors.New(`ent: missing required field "IncidentEvent.sequence"`)}
-	}
-	if _, ok := _c.mutation.IsDraft(); !ok {
-		return &ValidationError{Name: "is_draft", err: errors.New(`ent: missing required field "IncidentEvent.is_draft"`)}
 	}
 	if len(_c.mutation.TenantIDs()) == 0 {
 		return &ValidationError{Name: "tenant", err: errors.New(`ent: missing required edge "IncidentEvent.tenant"`)}
@@ -454,6 +424,10 @@ func (_c *IncidentEventCreate) createSpec() (*IncidentEvent, *sqlgraph.CreateSpe
 		_spec.SetField(incidentevent.FieldIsKey, field.TypeBool, value)
 		_node.IsKey = value
 	}
+	if value, ok := _c.mutation.Sequence(); ok {
+		_spec.SetField(incidentevent.FieldSequence, field.TypeInt, value)
+		_node.Sequence = value
+	}
 	if value, ok := _c.mutation.CreatedAt(); ok {
 		_spec.SetField(incidentevent.FieldCreatedAt, field.TypeTime, value)
 		_node.CreatedAt = value
@@ -461,18 +435,6 @@ func (_c *IncidentEventCreate) createSpec() (*IncidentEvent, *sqlgraph.CreateSpe
 	if value, ok := _c.mutation.UpdatedAt(); ok {
 		_spec.SetField(incidentevent.FieldUpdatedAt, field.TypeTime, value)
 		_node.UpdatedAt = value
-	}
-	if value, ok := _c.mutation.CreatedBy(); ok {
-		_spec.SetField(incidentevent.FieldCreatedBy, field.TypeUUID, value)
-		_node.CreatedBy = value
-	}
-	if value, ok := _c.mutation.Sequence(); ok {
-		_spec.SetField(incidentevent.FieldSequence, field.TypeInt, value)
-		_node.Sequence = value
-	}
-	if value, ok := _c.mutation.IsDraft(); ok {
-		_spec.SetField(incidentevent.FieldIsDraft, field.TypeBool, value)
-		_node.IsDraft = value
 	}
 	if nodes := _c.mutation.TenantIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
@@ -760,6 +722,24 @@ func (u *IncidentEventUpsert) UpdateIsKey() *IncidentEventUpsert {
 	return u
 }
 
+// SetSequence sets the "sequence" field.
+func (u *IncidentEventUpsert) SetSequence(v int) *IncidentEventUpsert {
+	u.Set(incidentevent.FieldSequence, v)
+	return u
+}
+
+// UpdateSequence sets the "sequence" field to the value that was provided on create.
+func (u *IncidentEventUpsert) UpdateSequence() *IncidentEventUpsert {
+	u.SetExcluded(incidentevent.FieldSequence)
+	return u
+}
+
+// AddSequence adds v to the "sequence" field.
+func (u *IncidentEventUpsert) AddSequence(v int) *IncidentEventUpsert {
+	u.Add(incidentevent.FieldSequence, v)
+	return u
+}
+
 // SetCreatedAt sets the "created_at" field.
 func (u *IncidentEventUpsert) SetCreatedAt(v time.Time) *IncidentEventUpsert {
 	u.Set(incidentevent.FieldCreatedAt, v)
@@ -781,48 +761,6 @@ func (u *IncidentEventUpsert) SetUpdatedAt(v time.Time) *IncidentEventUpsert {
 // UpdateUpdatedAt sets the "updated_at" field to the value that was provided on create.
 func (u *IncidentEventUpsert) UpdateUpdatedAt() *IncidentEventUpsert {
 	u.SetExcluded(incidentevent.FieldUpdatedAt)
-	return u
-}
-
-// SetCreatedBy sets the "created_by" field.
-func (u *IncidentEventUpsert) SetCreatedBy(v uuid.UUID) *IncidentEventUpsert {
-	u.Set(incidentevent.FieldCreatedBy, v)
-	return u
-}
-
-// UpdateCreatedBy sets the "created_by" field to the value that was provided on create.
-func (u *IncidentEventUpsert) UpdateCreatedBy() *IncidentEventUpsert {
-	u.SetExcluded(incidentevent.FieldCreatedBy)
-	return u
-}
-
-// SetSequence sets the "sequence" field.
-func (u *IncidentEventUpsert) SetSequence(v int) *IncidentEventUpsert {
-	u.Set(incidentevent.FieldSequence, v)
-	return u
-}
-
-// UpdateSequence sets the "sequence" field to the value that was provided on create.
-func (u *IncidentEventUpsert) UpdateSequence() *IncidentEventUpsert {
-	u.SetExcluded(incidentevent.FieldSequence)
-	return u
-}
-
-// AddSequence adds v to the "sequence" field.
-func (u *IncidentEventUpsert) AddSequence(v int) *IncidentEventUpsert {
-	u.Add(incidentevent.FieldSequence, v)
-	return u
-}
-
-// SetIsDraft sets the "is_draft" field.
-func (u *IncidentEventUpsert) SetIsDraft(v bool) *IncidentEventUpsert {
-	u.Set(incidentevent.FieldIsDraft, v)
-	return u
-}
-
-// UpdateIsDraft sets the "is_draft" field to the value that was provided on create.
-func (u *IncidentEventUpsert) UpdateIsDraft() *IncidentEventUpsert {
-	u.SetExcluded(incidentevent.FieldIsDraft)
 	return u
 }
 
@@ -989,6 +927,27 @@ func (u *IncidentEventUpsertOne) UpdateIsKey() *IncidentEventUpsertOne {
 	})
 }
 
+// SetSequence sets the "sequence" field.
+func (u *IncidentEventUpsertOne) SetSequence(v int) *IncidentEventUpsertOne {
+	return u.Update(func(s *IncidentEventUpsert) {
+		s.SetSequence(v)
+	})
+}
+
+// AddSequence adds v to the "sequence" field.
+func (u *IncidentEventUpsertOne) AddSequence(v int) *IncidentEventUpsertOne {
+	return u.Update(func(s *IncidentEventUpsert) {
+		s.AddSequence(v)
+	})
+}
+
+// UpdateSequence sets the "sequence" field to the value that was provided on create.
+func (u *IncidentEventUpsertOne) UpdateSequence() *IncidentEventUpsertOne {
+	return u.Update(func(s *IncidentEventUpsert) {
+		s.UpdateSequence()
+	})
+}
+
 // SetCreatedAt sets the "created_at" field.
 func (u *IncidentEventUpsertOne) SetCreatedAt(v time.Time) *IncidentEventUpsertOne {
 	return u.Update(func(s *IncidentEventUpsert) {
@@ -1014,55 +973,6 @@ func (u *IncidentEventUpsertOne) SetUpdatedAt(v time.Time) *IncidentEventUpsertO
 func (u *IncidentEventUpsertOne) UpdateUpdatedAt() *IncidentEventUpsertOne {
 	return u.Update(func(s *IncidentEventUpsert) {
 		s.UpdateUpdatedAt()
-	})
-}
-
-// SetCreatedBy sets the "created_by" field.
-func (u *IncidentEventUpsertOne) SetCreatedBy(v uuid.UUID) *IncidentEventUpsertOne {
-	return u.Update(func(s *IncidentEventUpsert) {
-		s.SetCreatedBy(v)
-	})
-}
-
-// UpdateCreatedBy sets the "created_by" field to the value that was provided on create.
-func (u *IncidentEventUpsertOne) UpdateCreatedBy() *IncidentEventUpsertOne {
-	return u.Update(func(s *IncidentEventUpsert) {
-		s.UpdateCreatedBy()
-	})
-}
-
-// SetSequence sets the "sequence" field.
-func (u *IncidentEventUpsertOne) SetSequence(v int) *IncidentEventUpsertOne {
-	return u.Update(func(s *IncidentEventUpsert) {
-		s.SetSequence(v)
-	})
-}
-
-// AddSequence adds v to the "sequence" field.
-func (u *IncidentEventUpsertOne) AddSequence(v int) *IncidentEventUpsertOne {
-	return u.Update(func(s *IncidentEventUpsert) {
-		s.AddSequence(v)
-	})
-}
-
-// UpdateSequence sets the "sequence" field to the value that was provided on create.
-func (u *IncidentEventUpsertOne) UpdateSequence() *IncidentEventUpsertOne {
-	return u.Update(func(s *IncidentEventUpsert) {
-		s.UpdateSequence()
-	})
-}
-
-// SetIsDraft sets the "is_draft" field.
-func (u *IncidentEventUpsertOne) SetIsDraft(v bool) *IncidentEventUpsertOne {
-	return u.Update(func(s *IncidentEventUpsert) {
-		s.SetIsDraft(v)
-	})
-}
-
-// UpdateIsDraft sets the "is_draft" field to the value that was provided on create.
-func (u *IncidentEventUpsertOne) UpdateIsDraft() *IncidentEventUpsertOne {
-	return u.Update(func(s *IncidentEventUpsert) {
-		s.UpdateIsDraft()
 	})
 }
 
@@ -1396,6 +1306,27 @@ func (u *IncidentEventUpsertBulk) UpdateIsKey() *IncidentEventUpsertBulk {
 	})
 }
 
+// SetSequence sets the "sequence" field.
+func (u *IncidentEventUpsertBulk) SetSequence(v int) *IncidentEventUpsertBulk {
+	return u.Update(func(s *IncidentEventUpsert) {
+		s.SetSequence(v)
+	})
+}
+
+// AddSequence adds v to the "sequence" field.
+func (u *IncidentEventUpsertBulk) AddSequence(v int) *IncidentEventUpsertBulk {
+	return u.Update(func(s *IncidentEventUpsert) {
+		s.AddSequence(v)
+	})
+}
+
+// UpdateSequence sets the "sequence" field to the value that was provided on create.
+func (u *IncidentEventUpsertBulk) UpdateSequence() *IncidentEventUpsertBulk {
+	return u.Update(func(s *IncidentEventUpsert) {
+		s.UpdateSequence()
+	})
+}
+
 // SetCreatedAt sets the "created_at" field.
 func (u *IncidentEventUpsertBulk) SetCreatedAt(v time.Time) *IncidentEventUpsertBulk {
 	return u.Update(func(s *IncidentEventUpsert) {
@@ -1421,55 +1352,6 @@ func (u *IncidentEventUpsertBulk) SetUpdatedAt(v time.Time) *IncidentEventUpsert
 func (u *IncidentEventUpsertBulk) UpdateUpdatedAt() *IncidentEventUpsertBulk {
 	return u.Update(func(s *IncidentEventUpsert) {
 		s.UpdateUpdatedAt()
-	})
-}
-
-// SetCreatedBy sets the "created_by" field.
-func (u *IncidentEventUpsertBulk) SetCreatedBy(v uuid.UUID) *IncidentEventUpsertBulk {
-	return u.Update(func(s *IncidentEventUpsert) {
-		s.SetCreatedBy(v)
-	})
-}
-
-// UpdateCreatedBy sets the "created_by" field to the value that was provided on create.
-func (u *IncidentEventUpsertBulk) UpdateCreatedBy() *IncidentEventUpsertBulk {
-	return u.Update(func(s *IncidentEventUpsert) {
-		s.UpdateCreatedBy()
-	})
-}
-
-// SetSequence sets the "sequence" field.
-func (u *IncidentEventUpsertBulk) SetSequence(v int) *IncidentEventUpsertBulk {
-	return u.Update(func(s *IncidentEventUpsert) {
-		s.SetSequence(v)
-	})
-}
-
-// AddSequence adds v to the "sequence" field.
-func (u *IncidentEventUpsertBulk) AddSequence(v int) *IncidentEventUpsertBulk {
-	return u.Update(func(s *IncidentEventUpsert) {
-		s.AddSequence(v)
-	})
-}
-
-// UpdateSequence sets the "sequence" field to the value that was provided on create.
-func (u *IncidentEventUpsertBulk) UpdateSequence() *IncidentEventUpsertBulk {
-	return u.Update(func(s *IncidentEventUpsert) {
-		s.UpdateSequence()
-	})
-}
-
-// SetIsDraft sets the "is_draft" field.
-func (u *IncidentEventUpsertBulk) SetIsDraft(v bool) *IncidentEventUpsertBulk {
-	return u.Update(func(s *IncidentEventUpsert) {
-		s.SetIsDraft(v)
-	})
-}
-
-// UpdateIsDraft sets the "is_draft" field to the value that was provided on create.
-func (u *IncidentEventUpsertBulk) UpdateIsDraft() *IncidentEventUpsertBulk {
-	return u.Update(func(s *IncidentEventUpsert) {
-		s.UpdateIsDraft()
 	})
 }
 

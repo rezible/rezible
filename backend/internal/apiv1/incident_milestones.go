@@ -2,6 +2,7 @@ package apiv1
 
 import (
 	"context"
+
 	"github.com/rezible/rezible/ent"
 	"github.com/rezible/rezible/ent/incidentmilestone"
 	oapi "github.com/rezible/rezible/openapi/v1"
@@ -43,7 +44,7 @@ func (h *incidentMilestonesHandler) CreateIncidentMilestone(ctx context.Context,
 	query := h.db.IncidentMilestone.Create().
 		SetIncidentID(request.Id).
 		SetKind(incidentmilestone.Kind(attrs.Kind)).
-		SetTime(attrs.Timestamp)
+		SetTimestamp(attrs.Timestamp)
 
 	ev, createErr := query.Save(ctx)
 	if createErr != nil {
@@ -61,7 +62,7 @@ func (h *incidentMilestonesHandler) UpdateIncidentMilestone(ctx context.Context,
 
 	query := h.db.IncidentMilestone.UpdateOneID(input.Id).
 		SetNillableDescription(attrs.Description).
-		SetNillableTime(attrs.Timestamp)
+		SetNillableTimestamp(attrs.Timestamp)
 
 	if attrs.Kind != nil {
 		query.SetKind(incidentmilestone.Kind(*attrs.Kind))

@@ -3,11 +3,12 @@ package fakeprovider
 import (
 	"context"
 	"fmt"
-	"github.com/go-faker/faker/v4"
-	"github.com/gosimple/slug"
 	"iter"
 	"math/rand"
 	"time"
+
+	"github.com/go-faker/faker/v4"
+	"github.com/gosimple/slug"
 
 	"github.com/rs/zerolog/log"
 
@@ -86,9 +87,9 @@ func (p *IncidentDataProvider) makeFakeRoleAssignments() []*ent.IncidentRoleAssi
 func (p *IncidentDataProvider) makeIncidentMilestones(start, end time.Time) []*ent.IncidentMilestone {
 	return []*ent.IncidentMilestone{
 		{
-			Kind:  "",
-			Time:  time.Now().Add(-8 * time.Hour),
-			Edges: ent.IncidentMilestoneEdges{},
+			Kind:      "",
+			Timestamp: time.Now().Add(-8 * time.Hour),
+			Edges:     ent.IncidentMilestoneEdges{},
 		},
 	}
 }

@@ -49,20 +49,6 @@ func (_u *IntegrationUpdate) SetConfig(v []byte) *IntegrationUpdate {
 	return _u
 }
 
-// SetEnabled sets the "enabled" field.
-func (_u *IntegrationUpdate) SetEnabled(v bool) *IntegrationUpdate {
-	_u.mutation.SetEnabled(v)
-	return _u
-}
-
-// SetNillableEnabled sets the "enabled" field if the given value is not nil.
-func (_u *IntegrationUpdate) SetNillableEnabled(v *bool) *IntegrationUpdate {
-	if v != nil {
-		_u.SetEnabled(*v)
-	}
-	return _u
-}
-
 // SetUpdatedAt sets the "updated_at" field.
 func (_u *IntegrationUpdate) SetUpdatedAt(v time.Time) *IntegrationUpdate {
 	_u.mutation.SetUpdatedAt(v)
@@ -141,9 +127,6 @@ func (_u *IntegrationUpdate) sqlSave(ctx context.Context) (_node int, err error)
 	if value, ok := _u.mutation.Config(); ok {
 		_spec.SetField(integration.FieldConfig, field.TypeBytes, value)
 	}
-	if value, ok := _u.mutation.Enabled(); ok {
-		_spec.SetField(integration.FieldEnabled, field.TypeBool, value)
-	}
 	if value, ok := _u.mutation.UpdatedAt(); ok {
 		_spec.SetField(integration.FieldUpdatedAt, field.TypeTime, value)
 	}
@@ -186,20 +169,6 @@ func (_u *IntegrationUpdateOne) SetNillableName(v *string) *IntegrationUpdateOne
 // SetConfig sets the "config" field.
 func (_u *IntegrationUpdateOne) SetConfig(v []byte) *IntegrationUpdateOne {
 	_u.mutation.SetConfig(v)
-	return _u
-}
-
-// SetEnabled sets the "enabled" field.
-func (_u *IntegrationUpdateOne) SetEnabled(v bool) *IntegrationUpdateOne {
-	_u.mutation.SetEnabled(v)
-	return _u
-}
-
-// SetNillableEnabled sets the "enabled" field if the given value is not nil.
-func (_u *IntegrationUpdateOne) SetNillableEnabled(v *bool) *IntegrationUpdateOne {
-	if v != nil {
-		_u.SetEnabled(*v)
-	}
 	return _u
 }
 
@@ -310,9 +279,6 @@ func (_u *IntegrationUpdateOne) sqlSave(ctx context.Context) (_node *Integration
 	}
 	if value, ok := _u.mutation.Config(); ok {
 		_spec.SetField(integration.FieldConfig, field.TypeBytes, value)
-	}
-	if value, ok := _u.mutation.Enabled(); ok {
-		_spec.SetField(integration.FieldEnabled, field.TypeBool, value)
 	}
 	if value, ok := _u.mutation.UpdatedAt(); ok {
 		_spec.SetField(integration.FieldUpdatedAt, field.TypeTime, value)

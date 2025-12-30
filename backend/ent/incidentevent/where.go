@@ -91,6 +91,11 @@ func IsKey(v bool) predicate.IncidentEvent {
 	return predicate.IncidentEvent(sql.FieldEQ(FieldIsKey, v))
 }
 
+// Sequence applies equality check predicate on the "sequence" field. It's identical to SequenceEQ.
+func Sequence(v int) predicate.IncidentEvent {
+	return predicate.IncidentEvent(sql.FieldEQ(FieldSequence, v))
+}
+
 // CreatedAt applies equality check predicate on the "created_at" field. It's identical to CreatedAtEQ.
 func CreatedAt(v time.Time) predicate.IncidentEvent {
 	return predicate.IncidentEvent(sql.FieldEQ(FieldCreatedAt, v))
@@ -99,21 +104,6 @@ func CreatedAt(v time.Time) predicate.IncidentEvent {
 // UpdatedAt applies equality check predicate on the "updated_at" field. It's identical to UpdatedAtEQ.
 func UpdatedAt(v time.Time) predicate.IncidentEvent {
 	return predicate.IncidentEvent(sql.FieldEQ(FieldUpdatedAt, v))
-}
-
-// CreatedBy applies equality check predicate on the "created_by" field. It's identical to CreatedByEQ.
-func CreatedBy(v uuid.UUID) predicate.IncidentEvent {
-	return predicate.IncidentEvent(sql.FieldEQ(FieldCreatedBy, v))
-}
-
-// Sequence applies equality check predicate on the "sequence" field. It's identical to SequenceEQ.
-func Sequence(v int) predicate.IncidentEvent {
-	return predicate.IncidentEvent(sql.FieldEQ(FieldSequence, v))
-}
-
-// IsDraft applies equality check predicate on the "is_draft" field. It's identical to IsDraftEQ.
-func IsDraft(v bool) predicate.IncidentEvent {
-	return predicate.IncidentEvent(sql.FieldEQ(FieldIsDraft, v))
 }
 
 // TenantIDEQ applies the EQ predicate on the "tenant_id" field.
@@ -396,6 +386,46 @@ func IsKeyNEQ(v bool) predicate.IncidentEvent {
 	return predicate.IncidentEvent(sql.FieldNEQ(FieldIsKey, v))
 }
 
+// SequenceEQ applies the EQ predicate on the "sequence" field.
+func SequenceEQ(v int) predicate.IncidentEvent {
+	return predicate.IncidentEvent(sql.FieldEQ(FieldSequence, v))
+}
+
+// SequenceNEQ applies the NEQ predicate on the "sequence" field.
+func SequenceNEQ(v int) predicate.IncidentEvent {
+	return predicate.IncidentEvent(sql.FieldNEQ(FieldSequence, v))
+}
+
+// SequenceIn applies the In predicate on the "sequence" field.
+func SequenceIn(vs ...int) predicate.IncidentEvent {
+	return predicate.IncidentEvent(sql.FieldIn(FieldSequence, vs...))
+}
+
+// SequenceNotIn applies the NotIn predicate on the "sequence" field.
+func SequenceNotIn(vs ...int) predicate.IncidentEvent {
+	return predicate.IncidentEvent(sql.FieldNotIn(FieldSequence, vs...))
+}
+
+// SequenceGT applies the GT predicate on the "sequence" field.
+func SequenceGT(v int) predicate.IncidentEvent {
+	return predicate.IncidentEvent(sql.FieldGT(FieldSequence, v))
+}
+
+// SequenceGTE applies the GTE predicate on the "sequence" field.
+func SequenceGTE(v int) predicate.IncidentEvent {
+	return predicate.IncidentEvent(sql.FieldGTE(FieldSequence, v))
+}
+
+// SequenceLT applies the LT predicate on the "sequence" field.
+func SequenceLT(v int) predicate.IncidentEvent {
+	return predicate.IncidentEvent(sql.FieldLT(FieldSequence, v))
+}
+
+// SequenceLTE applies the LTE predicate on the "sequence" field.
+func SequenceLTE(v int) predicate.IncidentEvent {
+	return predicate.IncidentEvent(sql.FieldLTE(FieldSequence, v))
+}
+
 // CreatedAtEQ applies the EQ predicate on the "created_at" field.
 func CreatedAtEQ(v time.Time) predicate.IncidentEvent {
 	return predicate.IncidentEvent(sql.FieldEQ(FieldCreatedAt, v))
@@ -474,96 +504,6 @@ func UpdatedAtLT(v time.Time) predicate.IncidentEvent {
 // UpdatedAtLTE applies the LTE predicate on the "updated_at" field.
 func UpdatedAtLTE(v time.Time) predicate.IncidentEvent {
 	return predicate.IncidentEvent(sql.FieldLTE(FieldUpdatedAt, v))
-}
-
-// CreatedByEQ applies the EQ predicate on the "created_by" field.
-func CreatedByEQ(v uuid.UUID) predicate.IncidentEvent {
-	return predicate.IncidentEvent(sql.FieldEQ(FieldCreatedBy, v))
-}
-
-// CreatedByNEQ applies the NEQ predicate on the "created_by" field.
-func CreatedByNEQ(v uuid.UUID) predicate.IncidentEvent {
-	return predicate.IncidentEvent(sql.FieldNEQ(FieldCreatedBy, v))
-}
-
-// CreatedByIn applies the In predicate on the "created_by" field.
-func CreatedByIn(vs ...uuid.UUID) predicate.IncidentEvent {
-	return predicate.IncidentEvent(sql.FieldIn(FieldCreatedBy, vs...))
-}
-
-// CreatedByNotIn applies the NotIn predicate on the "created_by" field.
-func CreatedByNotIn(vs ...uuid.UUID) predicate.IncidentEvent {
-	return predicate.IncidentEvent(sql.FieldNotIn(FieldCreatedBy, vs...))
-}
-
-// CreatedByGT applies the GT predicate on the "created_by" field.
-func CreatedByGT(v uuid.UUID) predicate.IncidentEvent {
-	return predicate.IncidentEvent(sql.FieldGT(FieldCreatedBy, v))
-}
-
-// CreatedByGTE applies the GTE predicate on the "created_by" field.
-func CreatedByGTE(v uuid.UUID) predicate.IncidentEvent {
-	return predicate.IncidentEvent(sql.FieldGTE(FieldCreatedBy, v))
-}
-
-// CreatedByLT applies the LT predicate on the "created_by" field.
-func CreatedByLT(v uuid.UUID) predicate.IncidentEvent {
-	return predicate.IncidentEvent(sql.FieldLT(FieldCreatedBy, v))
-}
-
-// CreatedByLTE applies the LTE predicate on the "created_by" field.
-func CreatedByLTE(v uuid.UUID) predicate.IncidentEvent {
-	return predicate.IncidentEvent(sql.FieldLTE(FieldCreatedBy, v))
-}
-
-// SequenceEQ applies the EQ predicate on the "sequence" field.
-func SequenceEQ(v int) predicate.IncidentEvent {
-	return predicate.IncidentEvent(sql.FieldEQ(FieldSequence, v))
-}
-
-// SequenceNEQ applies the NEQ predicate on the "sequence" field.
-func SequenceNEQ(v int) predicate.IncidentEvent {
-	return predicate.IncidentEvent(sql.FieldNEQ(FieldSequence, v))
-}
-
-// SequenceIn applies the In predicate on the "sequence" field.
-func SequenceIn(vs ...int) predicate.IncidentEvent {
-	return predicate.IncidentEvent(sql.FieldIn(FieldSequence, vs...))
-}
-
-// SequenceNotIn applies the NotIn predicate on the "sequence" field.
-func SequenceNotIn(vs ...int) predicate.IncidentEvent {
-	return predicate.IncidentEvent(sql.FieldNotIn(FieldSequence, vs...))
-}
-
-// SequenceGT applies the GT predicate on the "sequence" field.
-func SequenceGT(v int) predicate.IncidentEvent {
-	return predicate.IncidentEvent(sql.FieldGT(FieldSequence, v))
-}
-
-// SequenceGTE applies the GTE predicate on the "sequence" field.
-func SequenceGTE(v int) predicate.IncidentEvent {
-	return predicate.IncidentEvent(sql.FieldGTE(FieldSequence, v))
-}
-
-// SequenceLT applies the LT predicate on the "sequence" field.
-func SequenceLT(v int) predicate.IncidentEvent {
-	return predicate.IncidentEvent(sql.FieldLT(FieldSequence, v))
-}
-
-// SequenceLTE applies the LTE predicate on the "sequence" field.
-func SequenceLTE(v int) predicate.IncidentEvent {
-	return predicate.IncidentEvent(sql.FieldLTE(FieldSequence, v))
-}
-
-// IsDraftEQ applies the EQ predicate on the "is_draft" field.
-func IsDraftEQ(v bool) predicate.IncidentEvent {
-	return predicate.IncidentEvent(sql.FieldEQ(FieldIsDraft, v))
-}
-
-// IsDraftNEQ applies the NEQ predicate on the "is_draft" field.
-func IsDraftNEQ(v bool) predicate.IncidentEvent {
-	return predicate.IncidentEvent(sql.FieldNEQ(FieldIsDraft, v))
 }
 
 // HasTenant applies the HasEdge predicate on the "tenant" edge.

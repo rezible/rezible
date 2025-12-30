@@ -2,13 +2,14 @@ package apiv1
 
 import (
 	"context"
+	"time"
+
 	"github.com/google/uuid"
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
 	"github.com/rezible/rezible/ent/incidentevent"
 	oapi "github.com/rezible/rezible/openapi/v1"
 	"github.com/rs/zerolog/log"
-	"time"
 )
 
 type incidentEventsHandler struct {
@@ -58,7 +59,7 @@ func (h *incidentEventsHandler) CreateIncidentEvent(ctx context.Context, request
 		return nil, apiError("invalid kind", kindErr)
 	}
 
-	userId := requestUserId(ctx, h.auth)
+	// userId := requestUserId(ctx, h.auth)
 
 	sequence, seqErr := h.getEventSequence(ctx, request.Id, attr.Timestamp)
 	if seqErr != nil {
@@ -70,7 +71,6 @@ func (h *incidentEventsHandler) CreateIncidentEvent(ctx context.Context, request
 		SetTitle(attr.Title).
 		SetKind(kind).
 		SetIsKey(attr.IsKey).
-		SetCreatedBy(userId).
 		SetTimestamp(attr.Timestamp).
 		SetSequence(sequence)
 

@@ -110,22 +110,22 @@ func setupServer(ctx context.Context) (Server, error) {
 	}
 	listeners["job_service"] = jobSvc
 
-	msgSvc, msgSvcErr := watermill.NewMessageService()
-	if msgSvcErr != nil {
-		return nil, fmt.Errorf("watermill.NewMessageService: %w", msgSvcErr)
+	msgs, msgsErr := watermill.NewMessageService()
+	if msgsErr != nil {
+		return nil, fmt.Errorf("watermill.NewMessageService: %w", msgsErr)
 	}
-	listeners["message_service"] = msgSvc
+	listeners["message_service"] = msgs
 
 	dbc := dbConn.Client()
 
 	syncer := datasync.NewSyncer(dbc)
 
-	intgs, intgsErr := db.NewIntegrationsService(dbc, msgSvc, syncer)
+	intgs, intgsErr := db.NewIntegrationsService(dbc, jobSvc, syncer)
 	if intgsErr != nil {
 		return nil, fmt.Errorf("db.NewIntegrationsService: %w", intgsErr)
 	}
 
-	orgs, orgsErr := db.NewOrganizationsService(dbc)
+	orgs, orgsErr := db.NewOrganizationsService(dbc, jobSvc)
 	if orgsErr != nil {
 		return nil, fmt.Errorf("postgres.NewOrganizationsService: %w", orgsErr)
 	}
@@ -165,7 +165,7 @@ func setupServer(ctx context.Context) (Server, error) {
 		return nil, fmt.Errorf("eino.NewLanguageModelService: %w", lmsErr)
 	}
 
-	incidents, incidentsErr := db.NewIncidentService(dbc, jobSvc, users)
+	incidents, incidentsErr := db.NewIncidentService(dbc, jobSvc, msgs, users)
 	if incidentsErr != nil {
 		return nil, fmt.Errorf("postgres.NewIncidentService: %w", incidentsErr)
 	}
@@ -180,7 +180,7 @@ func setupServer(ctx context.Context) (Server, error) {
 		return nil, fmt.Errorf("postgres.NewSystemComponentsService: %w", componentsErr)
 	}
 
-	chat, chatErr := slack.NewChatService(jobSvc, intgs, users, incidents, annos, components)
+	chat, chatErr := slack.NewChatService(jobSvc, msgs, intgs, users, incidents, annos, components)
 	if chatErr != nil {
 		return nil, fmt.Errorf("postgres.NewChatService: %w", chatErr)
 	}

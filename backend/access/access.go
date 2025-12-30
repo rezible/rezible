@@ -24,7 +24,7 @@ func MakeRoles(roles ...Role) Roles {
 
 const (
 	RoleSystem    Role = "system"
-	RoleUser      Role = "user"
+	RoleTenant    Role = "tenant"
 	RoleAnonymous Role = "anonymous"
 
 	noTenantId = -1
@@ -60,16 +60,16 @@ func AnonymousContext(ctx context.Context) context.Context {
 	return storeContext(ctx, newContext(noTenantId, MakeRoles(RoleAnonymous)))
 }
 
+func TenantContext(ctx context.Context, tenantId int) context.Context {
+	return storeContext(ctx, newContext(tenantId, MakeRoles(RoleTenant)))
+}
+
 func SystemContext(ctx context.Context) context.Context {
 	return storeContext(ctx, newContext(noTenantId, MakeRoles(RoleSystem)))
 }
 
 func TenantSystemContext(ctx context.Context, tenantId int) context.Context {
 	return storeContext(ctx, newContext(tenantId, MakeRoles(RoleSystem)))
-}
-
-func TenantUserContext(ctx context.Context, tenantId int) context.Context {
-	return storeContext(ctx, newContext(tenantId, MakeRoles(RoleUser)))
 }
 
 func GetContext(ctx context.Context) *Context {

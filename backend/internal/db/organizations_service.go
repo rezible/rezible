@@ -10,14 +10,17 @@ import (
 	"github.com/rezible/rezible/access"
 	"github.com/rezible/rezible/ent"
 	"github.com/rezible/rezible/ent/organization"
+	"github.com/rezible/rezible/jobs"
+	"github.com/rs/zerolog/log"
 )
 
 type OrganizationsService struct {
-	db *ent.Client
+	db   *ent.Client
+	jobs rez.JobsService
 }
 
-func NewOrganizationsService(db *ent.Client) (*OrganizationsService, error) {
-	return &OrganizationsService{db: db}, nil
+func NewOrganizationsService(db *ent.Client, jobs rez.JobsService) (*OrganizationsService, error) {
+	return &OrganizationsService{db: db, jobs: jobs}, nil
 }
 
 func (s *OrganizationsService) GetById(ctx context.Context, id uuid.UUID) (*ent.Organization, error) {
@@ -30,10 +33,13 @@ func (s *OrganizationsService) GetCurrent(ctx context.Context) (*ent.Organizatio
 }
 
 func (s *OrganizationsService) FindOrCreateFromProvider(ctx context.Context, o ent.Organization) (*ent.Organization, error) {
+	// Required to query without a tenant id set
+	ctx = access.SystemContext(ctx)
+
 	orgQuery := s.db.Organization.Query().
 		Where(organization.ExternalID(o.ExternalID))
 
-	org, orgErr := orgQuery.Only(access.SystemContext(ctx))
+	org, orgErr := orgQuery.Only(ctx)
 	if orgErr != nil && !ent.IsNotFound(orgErr) {
 		return nil, fmt.Errorf("failed to query organization: %w", orgErr)
 	}
@@ -44,18 +50,23 @@ func (s *OrganizationsService) FindOrCreateFromProvider(ctx context.Context, o e
 		return nil, rez.ErrInvalidTenant
 	}
 
+	var createdTenant *ent.Tenant
 	var createdOrg *ent.Organization
 	createTenantOrgFn := func(tx *ent.Tx) error {
-		tnt, tenantErr := tx.Tenant.Create().Save(access.SystemContext(ctx))
-		if tenantErr != nil {
-			return fmt.Errorf("create tenant: %w", tenantErr)
-		}
+		var createErr error
 
-		org, orgErr = tx.Organization.Create().
-			SetTenant(tnt).
+		createTenant := tx.Tenant.Create()
+		createdTenant, createErr = createTenant.Save(ctx)
+		if createErr != nil {
+			return fmt.Errorf("create tenant: %w", createErr)
+		}
+		ctx = access.TenantContext(ctx, createdTenant.ID)
+
+		createOrg := tx.Organization.Create().
+			SetTenant(createdTenant).
 			SetExternalID(o.ExternalID).
-			SetName(o.Name).
-			Save(access.TenantSystemContext(ctx, tnt.ID))
+			SetName(o.Name)
+		org, orgErr = createOrg.Save(ctx)
 		if orgErr != nil {
 			return fmt.Errorf("create organization: %w", orgErr)
 		}
@@ -71,9 +82,16 @@ func (s *OrganizationsService) FindOrCreateFromProvider(ctx context.Context, o e
 }
 
 func (s *OrganizationsService) CompleteSetup(ctx context.Context, id uuid.UUID) error {
-	o, orgErr := s.GetById(ctx, id)
-	if orgErr != nil {
-		return orgErr
+	params := jobs.InsertJobParams{
+		Args: jobs.SyncIntegrationsData{
+			OrganizationId: id,
+			Hard:           true,
+			CreateDefaults: true,
+		},
 	}
-	return o.Update().SetInitialSetupAt(time.Now()).Exec(ctx)
+	if jobErr := s.jobs.Insert(ctx, params); jobErr != nil {
+		log.Error().Err(jobErr).Msg("failed to insert sync job")
+	}
+
+	return s.db.Organization.UpdateOneID(id).SetInitialSetupAt(time.Now()).Exec(ctx)
 }

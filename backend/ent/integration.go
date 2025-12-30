@@ -25,8 +25,6 @@ type Integration struct {
 	Name string `json:"name,omitempty"`
 	// Config holds the value of the "config" field.
 	Config []byte `json:"config,omitempty"`
-	// Enabled holds the value of the "enabled" field.
-	Enabled bool `json:"enabled,omitempty"`
 	// UpdatedAt holds the value of the "updated_at" field.
 	UpdatedAt time.Time `json:"updated_at,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
@@ -62,8 +60,6 @@ func (*Integration) scanValues(columns []string) ([]any, error) {
 		switch columns[i] {
 		case integration.FieldConfig:
 			values[i] = new([]byte)
-		case integration.FieldEnabled:
-			values[i] = new(sql.NullBool)
 		case integration.FieldTenantID:
 			values[i] = new(sql.NullInt64)
 		case integration.FieldName:
@@ -110,12 +106,6 @@ func (_m *Integration) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field config", values[i])
 			} else if value != nil {
 				_m.Config = *value
-			}
-		case integration.FieldEnabled:
-			if value, ok := values[i].(*sql.NullBool); !ok {
-				return fmt.Errorf("unexpected type %T for field enabled", values[i])
-			} else if value.Valid {
-				_m.Enabled = value.Bool
 			}
 		case integration.FieldUpdatedAt:
 			if value, ok := values[i].(*sql.NullTime); !ok {
@@ -172,9 +162,6 @@ func (_m *Integration) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("config=")
 	builder.WriteString(fmt.Sprintf("%v", _m.Config))
-	builder.WriteString(", ")
-	builder.WriteString("enabled=")
-	builder.WriteString(fmt.Sprintf("%v", _m.Enabled))
 	builder.WriteString(", ")
 	builder.WriteString("updated_at=")
 	builder.WriteString(_m.UpdatedAt.Format(time.ANSIC))

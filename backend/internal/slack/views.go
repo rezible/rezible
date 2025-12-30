@@ -35,12 +35,11 @@ func (s *ChatService) openOrUpdateModal(ctx context.Context, ic *slack.Interacti
 }
 
 func logSlackViewErrorResponse(err error, resp *slack.ViewResponse) {
+	line := log.Error().Err(err)
 	if resp != nil {
-		log.Debug().
-			Strs("messages", resp.ResponseMetadata.Messages).
-			Msg("publish response")
+		line.Strs("response_messages", resp.ResponseMetadata.Messages)
 	}
-	log.Error().Err(err).Msg("slack view response error")
+	line.Msg("slack view response error")
 }
 
 func convertSlackTs(ts string) time.Time {
@@ -70,13 +69,34 @@ func getMessageId(ic *slack.InteractionCallback) messageId {
 	return messageId(fmt.Sprintf("%s_%s", ic.Channel.ID, ic.Message.Timestamp))
 }
 
-func getViewStateBlockAction(state *slack.ViewState, blockId string, inputId string) *slack.BlockAction {
-	if block, blockOk := state.Values[blockId]; blockOk {
-		if action, inputOk := block[inputId]; inputOk {
+func getViewStateBlockAction(state *slack.ViewState, ids blockActionIds) *slack.BlockAction {
+	if block, blockOk := state.Values[ids.Block]; blockOk {
+		if action, inputOk := block[ids.Input]; inputOk {
 			return &action
 		}
 	}
 	return nil
+}
+
+type blockActionIds struct {
+	Block string
+	Input string
+}
+
+func (ids blockActionIds) GetStateValue(state *slack.ViewState) string {
+	action := getViewStateBlockAction(state, ids)
+	if action == nil {
+		return ""
+	}
+	return action.Value
+}
+
+func (ids blockActionIds) GetStateSelectedValue(state *slack.ViewState) string {
+	action := getViewStateBlockAction(state, ids)
+	if action == nil {
+		return ""
+	}
+	return action.SelectedOption.Value
 }
 
 func makeUserHomeView(ctx context.Context, user *ent.User) (*slack.HomeTabViewRequest, error) {

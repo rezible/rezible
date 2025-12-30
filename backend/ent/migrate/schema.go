@@ -441,15 +441,13 @@ var (
 	IncidentEventsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID},
 		{Name: "timestamp", Type: field.TypeTime},
-		{Name: "kind", Type: field.TypeEnum, Enums: []string{"observation", "action", "decision", "context"}},
+		{Name: "kind", Type: field.TypeEnum, Enums: []string{"observation", "context", "decision", "action"}},
 		{Name: "title", Type: field.TypeString},
 		{Name: "description", Type: field.TypeString, Nullable: true, Size: 2147483647},
 		{Name: "is_key", Type: field.TypeBool, Default: false},
+		{Name: "sequence", Type: field.TypeInt, Default: 0},
 		{Name: "created_at", Type: field.TypeTime},
 		{Name: "updated_at", Type: field.TypeTime},
-		{Name: "created_by", Type: field.TypeUUID},
-		{Name: "sequence", Type: field.TypeInt, Default: 0},
-		{Name: "is_draft", Type: field.TypeBool, Default: false},
 		{Name: "incident_id", Type: field.TypeUUID},
 		{Name: "tenant_id", Type: field.TypeInt},
 		{Name: "event_id", Type: field.TypeUUID, Nullable: true},
@@ -462,19 +460,19 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "incident_events_incidents_events",
-				Columns:    []*schema.Column{IncidentEventsColumns[11]},
+				Columns:    []*schema.Column{IncidentEventsColumns[9]},
 				RefColumns: []*schema.Column{IncidentsColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
 			{
 				Symbol:     "incident_events_tenants_tenant",
-				Columns:    []*schema.Column{IncidentEventsColumns[12]},
+				Columns:    []*schema.Column{IncidentEventsColumns[10]},
 				RefColumns: []*schema.Column{TenantsColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
 			{
 				Symbol:     "incident_events_events_event",
-				Columns:    []*schema.Column{IncidentEventsColumns[13]},
+				Columns:    []*schema.Column{IncidentEventsColumns[11]},
 				RefColumns: []*schema.Column{EventsColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
@@ -483,17 +481,12 @@ var (
 			{
 				Name:    "incidentevent_tenant_id",
 				Unique:  false,
-				Columns: []*schema.Column{IncidentEventsColumns[12]},
+				Columns: []*schema.Column{IncidentEventsColumns[10]},
 			},
 			{
-				Name:    "incidentevent_incident_id_timestamp",
+				Name:    "incidentevent_kind",
 				Unique:  false,
-				Columns: []*schema.Column{IncidentEventsColumns[11], IncidentEventsColumns[1]},
-			},
-			{
-				Name:    "incidentevent_incident_id_timestamp_sequence",
-				Unique:  true,
-				Columns: []*schema.Column{IncidentEventsColumns[11], IncidentEventsColumns[1], IncidentEventsColumns[9]},
+				Columns: []*schema.Column{IncidentEventsColumns[2]},
 			},
 		},
 	}
@@ -770,9 +763,11 @@ var (
 	// IncidentMilestonesColumns holds the columns for the "incident_milestones" table.
 	IncidentMilestonesColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID},
-		{Name: "kind", Type: field.TypeEnum, Enums: []string{"impact", "detection", "investigation", "mitigation", "resolution"}},
+		{Name: "kind", Type: field.TypeEnum, Enums: []string{"impact", "detection", "response", "mitigation", "resolution"}},
+		{Name: "timestamp", Type: field.TypeTime},
 		{Name: "description", Type: field.TypeString, Nullable: true},
-		{Name: "time", Type: field.TypeTime},
+		{Name: "source", Type: field.TypeString, Nullable: true},
+		{Name: "external_id", Type: field.TypeString, Nullable: true},
 		{Name: "incident_id", Type: field.TypeUUID},
 		{Name: "tenant_id", Type: field.TypeInt},
 	}
@@ -784,13 +779,13 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "incident_milestones_incidents_milestones",
-				Columns:    []*schema.Column{IncidentMilestonesColumns[4]},
+				Columns:    []*schema.Column{IncidentMilestonesColumns[6]},
 				RefColumns: []*schema.Column{IncidentsColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
 			{
 				Symbol:     "incident_milestones_tenants_tenant",
-				Columns:    []*schema.Column{IncidentMilestonesColumns[5]},
+				Columns:    []*schema.Column{IncidentMilestonesColumns[7]},
 				RefColumns: []*schema.Column{TenantsColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
@@ -799,7 +794,7 @@ var (
 			{
 				Name:    "incidentmilestone_tenant_id",
 				Unique:  false,
-				Columns: []*schema.Column{IncidentMilestonesColumns[5]},
+				Columns: []*schema.Column{IncidentMilestonesColumns[7]},
 			},
 		},
 	}
@@ -979,7 +974,6 @@ var (
 		{Name: "id", Type: field.TypeUUID},
 		{Name: "name", Type: field.TypeString},
 		{Name: "config", Type: field.TypeBytes},
-		{Name: "enabled", Type: field.TypeBool, Default: true},
 		{Name: "updated_at", Type: field.TypeTime},
 		{Name: "tenant_id", Type: field.TypeInt},
 	}
@@ -991,7 +985,7 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "integrations_tenants_tenant",
-				Columns:    []*schema.Column{IntegrationsColumns[5]},
+				Columns:    []*schema.Column{IntegrationsColumns[4]},
 				RefColumns: []*schema.Column{TenantsColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
@@ -1000,12 +994,12 @@ var (
 			{
 				Name:    "integration_tenant_id",
 				Unique:  false,
-				Columns: []*schema.Column{IntegrationsColumns[5]},
+				Columns: []*schema.Column{IntegrationsColumns[4]},
 			},
 			{
 				Name:    "integration_tenant_id_name",
 				Unique:  true,
-				Columns: []*schema.Column{IntegrationsColumns[5], IntegrationsColumns[1]},
+				Columns: []*schema.Column{IntegrationsColumns[4], IntegrationsColumns[1]},
 			},
 		},
 	}

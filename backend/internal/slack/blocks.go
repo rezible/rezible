@@ -28,6 +28,9 @@ type (
 )
 
 func plainTextBlock(text string) *slack.TextBlockObject {
+	if text == "" {
+		return nil
+	}
 	return slack.NewTextBlockObject("plain_text", text, false, false)
 }
 

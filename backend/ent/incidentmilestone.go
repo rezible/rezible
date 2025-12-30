@@ -26,10 +26,14 @@ type IncidentMilestone struct {
 	IncidentID uuid.UUID `json:"incident_id,omitempty"`
 	// Kind holds the value of the "kind" field.
 	Kind incidentmilestone.Kind `json:"kind,omitempty"`
+	// Timestamp holds the value of the "timestamp" field.
+	Timestamp time.Time `json:"timestamp,omitempty"`
 	// Description holds the value of the "description" field.
 	Description string `json:"description,omitempty"`
-	// Time holds the value of the "time" field.
-	Time time.Time `json:"time,omitempty"`
+	// Source holds the value of the "source" field.
+	Source string `json:"source,omitempty"`
+	// ExternalID holds the value of the "external_id" field.
+	ExternalID string `json:"external_id,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the IncidentMilestoneQuery when eager-loading is set.
 	Edges        IncidentMilestoneEdges `json:"edges"`
@@ -76,9 +80,9 @@ func (*IncidentMilestone) scanValues(columns []string) ([]any, error) {
 		switch columns[i] {
 		case incidentmilestone.FieldTenantID:
 			values[i] = new(sql.NullInt64)
-		case incidentmilestone.FieldKind, incidentmilestone.FieldDescription:
+		case incidentmilestone.FieldKind, incidentmilestone.FieldDescription, incidentmilestone.FieldSource, incidentmilestone.FieldExternalID:
 			values[i] = new(sql.NullString)
-		case incidentmilestone.FieldTime:
+		case incidentmilestone.FieldTimestamp:
 			values[i] = new(sql.NullTime)
 		case incidentmilestone.FieldID, incidentmilestone.FieldIncidentID:
 			values[i] = new(uuid.UUID)
@@ -121,17 +125,29 @@ func (_m *IncidentMilestone) assignValues(columns []string, values []any) error 
 			} else if value.Valid {
 				_m.Kind = incidentmilestone.Kind(value.String)
 			}
+		case incidentmilestone.FieldTimestamp:
+			if value, ok := values[i].(*sql.NullTime); !ok {
+				return fmt.Errorf("unexpected type %T for field timestamp", values[i])
+			} else if value.Valid {
+				_m.Timestamp = value.Time
+			}
 		case incidentmilestone.FieldDescription:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field description", values[i])
 			} else if value.Valid {
 				_m.Description = value.String
 			}
-		case incidentmilestone.FieldTime:
-			if value, ok := values[i].(*sql.NullTime); !ok {
-				return fmt.Errorf("unexpected type %T for field time", values[i])
+		case incidentmilestone.FieldSource:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field source", values[i])
 			} else if value.Valid {
-				_m.Time = value.Time
+				_m.Source = value.String
+			}
+		case incidentmilestone.FieldExternalID:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field external_id", values[i])
+			} else if value.Valid {
+				_m.ExternalID = value.String
 			}
 		default:
 			_m.selectValues.Set(columns[i], values[i])
@@ -188,11 +204,17 @@ func (_m *IncidentMilestone) String() string {
 	builder.WriteString("kind=")
 	builder.WriteString(fmt.Sprintf("%v", _m.Kind))
 	builder.WriteString(", ")
+	builder.WriteString("timestamp=")
+	builder.WriteString(_m.Timestamp.Format(time.ANSIC))
+	builder.WriteString(", ")
 	builder.WriteString("description=")
 	builder.WriteString(_m.Description)
 	builder.WriteString(", ")
-	builder.WriteString("time=")
-	builder.WriteString(_m.Time.Format(time.ANSIC))
+	builder.WriteString("source=")
+	builder.WriteString(_m.Source)
+	builder.WriteString(", ")
+	builder.WriteString("external_id=")
+	builder.WriteString(_m.ExternalID)
 	builder.WriteByte(')')
 	return builder.String()
 }

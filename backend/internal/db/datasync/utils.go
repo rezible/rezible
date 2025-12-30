@@ -10,6 +10,20 @@ import (
 	"github.com/rezible/rezible/ent/user"
 )
 
+type ignoreHistoryKey struct{}
+
+func IsHardSync(ctx context.Context) bool {
+	_, ok := ctx.Value(ignoreHistoryKey{}).(bool)
+	return ok
+}
+
+type createDefaultsKey struct{}
+
+func ShouldCreateDefaults(ctx context.Context) bool {
+	_, ok := ctx.Value(createDefaultsKey{}).(bool)
+	return ok
+}
+
 type initialSlugCountFn = func(context.Context, string) (int, error)
 
 // TODO: just do this in postgres

@@ -57,11 +57,27 @@ var (
 )
 
 type SyncIntegrationsData struct {
-	Hard bool
+	Hard           bool
+	CreateDefaults bool
+	OrganizationId uuid.UUID
+	IntegrationId  uuid.UUID
 }
 
 func (SyncIntegrationsData) Kind() string {
 	return "sync-integrations-data"
+}
+
+var SyncAllTenantIntegrationsDataPeriodicJob = PeriodicJob{
+	ConstructorFunc: func() InsertJobParams {
+		return InsertJobParams{
+			Args: &SyncIntegrationsData{},
+			Uniqueness: &JobUniquenessOpts{
+				ByState: NonCompletedJobStates,
+			},
+		}
+	},
+	Interval: time.Hour,
+	Opts:     &PeriodicJobOpts{RunOnStart: true},
 }
 
 type SendIncidentDebriefRequests struct {
@@ -94,6 +110,14 @@ func (ScanOncallShifts) Kind() string {
 	return "scan-oncall-shifts"
 }
 
+var ScanOncallShiftsPeriodicJob = PeriodicJob{
+	ConstructorFunc: func() InsertJobParams {
+		return InsertJobParams{Args: &ScanOncallShifts{}}
+	},
+	Interval: time.Hour,
+	Opts:     &PeriodicJobOpts{RunOnStart: true},
+}
+
 type EnsureShiftHandoverSent struct {
 	ShiftId uuid.UUID
 }
@@ -114,22 +138,8 @@ func (GenerateShiftMetrics) Kind() string {
 	return "generate-shift-metrics"
 }
 
-type ProcessChatEvent struct {
-	Provider  string
-	EventKind string
-	Data      any
+type HandleIncidentChatUpdate struct {
+	IncidentId uuid.UUID
 }
 
-func (ProcessChatEvent) Kind() string {
-	return "process-chat-event"
-}
-
-type IncidentChatUpdate struct {
-	IncidentId      uuid.UUID
-	Created         bool
-	OriginChannelId string
-}
-
-func (IncidentChatUpdate) Kind() string {
-	return "incident-chat-update"
-}
+func (HandleIncidentChatUpdate) Kind() string { return "handle-incident-chat-update" }

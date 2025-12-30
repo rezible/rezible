@@ -35,9 +35,9 @@ func NewWebhookEventListener(chatSvc *ChatService) (*WebhookEventHandler, error)
 
 func (wh *WebhookEventHandler) Handler() http.Handler {
 	mux := chi.NewMux()
-	mux.HandleFunc("/options", wh.handleOptionsWebhook)
 	mux.HandleFunc("/events", wh.handleEventsWebhook)
 	mux.HandleFunc("/interaction", wh.handleInteractionsWebhook)
+	mux.HandleFunc("/options", wh.handleOptionsWebhook)
 	mux.HandleFunc("/commands", wh.handleCommandsWebhook)
 	mux.NotFound(func(w http.ResponseWriter, r *http.Request) {
 		log.Debug().Msg("slack webhook handler not found")

@@ -66,14 +66,24 @@ func IncidentID(v uuid.UUID) predicate.IncidentMilestone {
 	return predicate.IncidentMilestone(sql.FieldEQ(FieldIncidentID, v))
 }
 
+// Timestamp applies equality check predicate on the "timestamp" field. It's identical to TimestampEQ.
+func Timestamp(v time.Time) predicate.IncidentMilestone {
+	return predicate.IncidentMilestone(sql.FieldEQ(FieldTimestamp, v))
+}
+
 // Description applies equality check predicate on the "description" field. It's identical to DescriptionEQ.
 func Description(v string) predicate.IncidentMilestone {
 	return predicate.IncidentMilestone(sql.FieldEQ(FieldDescription, v))
 }
 
-// Time applies equality check predicate on the "time" field. It's identical to TimeEQ.
-func Time(v time.Time) predicate.IncidentMilestone {
-	return predicate.IncidentMilestone(sql.FieldEQ(FieldTime, v))
+// Source applies equality check predicate on the "source" field. It's identical to SourceEQ.
+func Source(v string) predicate.IncidentMilestone {
+	return predicate.IncidentMilestone(sql.FieldEQ(FieldSource, v))
+}
+
+// ExternalID applies equality check predicate on the "external_id" field. It's identical to ExternalIDEQ.
+func ExternalID(v string) predicate.IncidentMilestone {
+	return predicate.IncidentMilestone(sql.FieldEQ(FieldExternalID, v))
 }
 
 // TenantIDEQ applies the EQ predicate on the "tenant_id" field.
@@ -134,6 +144,46 @@ func KindIn(vs ...Kind) predicate.IncidentMilestone {
 // KindNotIn applies the NotIn predicate on the "kind" field.
 func KindNotIn(vs ...Kind) predicate.IncidentMilestone {
 	return predicate.IncidentMilestone(sql.FieldNotIn(FieldKind, vs...))
+}
+
+// TimestampEQ applies the EQ predicate on the "timestamp" field.
+func TimestampEQ(v time.Time) predicate.IncidentMilestone {
+	return predicate.IncidentMilestone(sql.FieldEQ(FieldTimestamp, v))
+}
+
+// TimestampNEQ applies the NEQ predicate on the "timestamp" field.
+func TimestampNEQ(v time.Time) predicate.IncidentMilestone {
+	return predicate.IncidentMilestone(sql.FieldNEQ(FieldTimestamp, v))
+}
+
+// TimestampIn applies the In predicate on the "timestamp" field.
+func TimestampIn(vs ...time.Time) predicate.IncidentMilestone {
+	return predicate.IncidentMilestone(sql.FieldIn(FieldTimestamp, vs...))
+}
+
+// TimestampNotIn applies the NotIn predicate on the "timestamp" field.
+func TimestampNotIn(vs ...time.Time) predicate.IncidentMilestone {
+	return predicate.IncidentMilestone(sql.FieldNotIn(FieldTimestamp, vs...))
+}
+
+// TimestampGT applies the GT predicate on the "timestamp" field.
+func TimestampGT(v time.Time) predicate.IncidentMilestone {
+	return predicate.IncidentMilestone(sql.FieldGT(FieldTimestamp, v))
+}
+
+// TimestampGTE applies the GTE predicate on the "timestamp" field.
+func TimestampGTE(v time.Time) predicate.IncidentMilestone {
+	return predicate.IncidentMilestone(sql.FieldGTE(FieldTimestamp, v))
+}
+
+// TimestampLT applies the LT predicate on the "timestamp" field.
+func TimestampLT(v time.Time) predicate.IncidentMilestone {
+	return predicate.IncidentMilestone(sql.FieldLT(FieldTimestamp, v))
+}
+
+// TimestampLTE applies the LTE predicate on the "timestamp" field.
+func TimestampLTE(v time.Time) predicate.IncidentMilestone {
+	return predicate.IncidentMilestone(sql.FieldLTE(FieldTimestamp, v))
 }
 
 // DescriptionEQ applies the EQ predicate on the "description" field.
@@ -211,44 +261,154 @@ func DescriptionContainsFold(v string) predicate.IncidentMilestone {
 	return predicate.IncidentMilestone(sql.FieldContainsFold(FieldDescription, v))
 }
 
-// TimeEQ applies the EQ predicate on the "time" field.
-func TimeEQ(v time.Time) predicate.IncidentMilestone {
-	return predicate.IncidentMilestone(sql.FieldEQ(FieldTime, v))
+// SourceEQ applies the EQ predicate on the "source" field.
+func SourceEQ(v string) predicate.IncidentMilestone {
+	return predicate.IncidentMilestone(sql.FieldEQ(FieldSource, v))
 }
 
-// TimeNEQ applies the NEQ predicate on the "time" field.
-func TimeNEQ(v time.Time) predicate.IncidentMilestone {
-	return predicate.IncidentMilestone(sql.FieldNEQ(FieldTime, v))
+// SourceNEQ applies the NEQ predicate on the "source" field.
+func SourceNEQ(v string) predicate.IncidentMilestone {
+	return predicate.IncidentMilestone(sql.FieldNEQ(FieldSource, v))
 }
 
-// TimeIn applies the In predicate on the "time" field.
-func TimeIn(vs ...time.Time) predicate.IncidentMilestone {
-	return predicate.IncidentMilestone(sql.FieldIn(FieldTime, vs...))
+// SourceIn applies the In predicate on the "source" field.
+func SourceIn(vs ...string) predicate.IncidentMilestone {
+	return predicate.IncidentMilestone(sql.FieldIn(FieldSource, vs...))
 }
 
-// TimeNotIn applies the NotIn predicate on the "time" field.
-func TimeNotIn(vs ...time.Time) predicate.IncidentMilestone {
-	return predicate.IncidentMilestone(sql.FieldNotIn(FieldTime, vs...))
+// SourceNotIn applies the NotIn predicate on the "source" field.
+func SourceNotIn(vs ...string) predicate.IncidentMilestone {
+	return predicate.IncidentMilestone(sql.FieldNotIn(FieldSource, vs...))
 }
 
-// TimeGT applies the GT predicate on the "time" field.
-func TimeGT(v time.Time) predicate.IncidentMilestone {
-	return predicate.IncidentMilestone(sql.FieldGT(FieldTime, v))
+// SourceGT applies the GT predicate on the "source" field.
+func SourceGT(v string) predicate.IncidentMilestone {
+	return predicate.IncidentMilestone(sql.FieldGT(FieldSource, v))
 }
 
-// TimeGTE applies the GTE predicate on the "time" field.
-func TimeGTE(v time.Time) predicate.IncidentMilestone {
-	return predicate.IncidentMilestone(sql.FieldGTE(FieldTime, v))
+// SourceGTE applies the GTE predicate on the "source" field.
+func SourceGTE(v string) predicate.IncidentMilestone {
+	return predicate.IncidentMilestone(sql.FieldGTE(FieldSource, v))
 }
 
-// TimeLT applies the LT predicate on the "time" field.
-func TimeLT(v time.Time) predicate.IncidentMilestone {
-	return predicate.IncidentMilestone(sql.FieldLT(FieldTime, v))
+// SourceLT applies the LT predicate on the "source" field.
+func SourceLT(v string) predicate.IncidentMilestone {
+	return predicate.IncidentMilestone(sql.FieldLT(FieldSource, v))
 }
 
-// TimeLTE applies the LTE predicate on the "time" field.
-func TimeLTE(v time.Time) predicate.IncidentMilestone {
-	return predicate.IncidentMilestone(sql.FieldLTE(FieldTime, v))
+// SourceLTE applies the LTE predicate on the "source" field.
+func SourceLTE(v string) predicate.IncidentMilestone {
+	return predicate.IncidentMilestone(sql.FieldLTE(FieldSource, v))
+}
+
+// SourceContains applies the Contains predicate on the "source" field.
+func SourceContains(v string) predicate.IncidentMilestone {
+	return predicate.IncidentMilestone(sql.FieldContains(FieldSource, v))
+}
+
+// SourceHasPrefix applies the HasPrefix predicate on the "source" field.
+func SourceHasPrefix(v string) predicate.IncidentMilestone {
+	return predicate.IncidentMilestone(sql.FieldHasPrefix(FieldSource, v))
+}
+
+// SourceHasSuffix applies the HasSuffix predicate on the "source" field.
+func SourceHasSuffix(v string) predicate.IncidentMilestone {
+	return predicate.IncidentMilestone(sql.FieldHasSuffix(FieldSource, v))
+}
+
+// SourceIsNil applies the IsNil predicate on the "source" field.
+func SourceIsNil() predicate.IncidentMilestone {
+	return predicate.IncidentMilestone(sql.FieldIsNull(FieldSource))
+}
+
+// SourceNotNil applies the NotNil predicate on the "source" field.
+func SourceNotNil() predicate.IncidentMilestone {
+	return predicate.IncidentMilestone(sql.FieldNotNull(FieldSource))
+}
+
+// SourceEqualFold applies the EqualFold predicate on the "source" field.
+func SourceEqualFold(v string) predicate.IncidentMilestone {
+	return predicate.IncidentMilestone(sql.FieldEqualFold(FieldSource, v))
+}
+
+// SourceContainsFold applies the ContainsFold predicate on the "source" field.
+func SourceContainsFold(v string) predicate.IncidentMilestone {
+	return predicate.IncidentMilestone(sql.FieldContainsFold(FieldSource, v))
+}
+
+// ExternalIDEQ applies the EQ predicate on the "external_id" field.
+func ExternalIDEQ(v string) predicate.IncidentMilestone {
+	return predicate.IncidentMilestone(sql.FieldEQ(FieldExternalID, v))
+}
+
+// ExternalIDNEQ applies the NEQ predicate on the "external_id" field.
+func ExternalIDNEQ(v string) predicate.IncidentMilestone {
+	return predicate.IncidentMilestone(sql.FieldNEQ(FieldExternalID, v))
+}
+
+// ExternalIDIn applies the In predicate on the "external_id" field.
+func ExternalIDIn(vs ...string) predicate.IncidentMilestone {
+	return predicate.IncidentMilestone(sql.FieldIn(FieldExternalID, vs...))
+}
+
+// ExternalIDNotIn applies the NotIn predicate on the "external_id" field.
+func ExternalIDNotIn(vs ...string) predicate.IncidentMilestone {
+	return predicate.IncidentMilestone(sql.FieldNotIn(FieldExternalID, vs...))
+}
+
+// ExternalIDGT applies the GT predicate on the "external_id" field.
+func ExternalIDGT(v string) predicate.IncidentMilestone {
+	return predicate.IncidentMilestone(sql.FieldGT(FieldExternalID, v))
+}
+
+// ExternalIDGTE applies the GTE predicate on the "external_id" field.
+func ExternalIDGTE(v string) predicate.IncidentMilestone {
+	return predicate.IncidentMilestone(sql.FieldGTE(FieldExternalID, v))
+}
+
+// ExternalIDLT applies the LT predicate on the "external_id" field.
+func ExternalIDLT(v string) predicate.IncidentMilestone {
+	return predicate.IncidentMilestone(sql.FieldLT(FieldExternalID, v))
+}
+
+// ExternalIDLTE applies the LTE predicate on the "external_id" field.
+func ExternalIDLTE(v string) predicate.IncidentMilestone {
+	return predicate.IncidentMilestone(sql.FieldLTE(FieldExternalID, v))
+}
+
+// ExternalIDContains applies the Contains predicate on the "external_id" field.
+func ExternalIDContains(v string) predicate.IncidentMilestone {
+	return predicate.IncidentMilestone(sql.FieldContains(FieldExternalID, v))
+}
+
+// ExternalIDHasPrefix applies the HasPrefix predicate on the "external_id" field.
+func ExternalIDHasPrefix(v string) predicate.IncidentMilestone {
+	return predicate.IncidentMilestone(sql.FieldHasPrefix(FieldExternalID, v))
+}
+
+// ExternalIDHasSuffix applies the HasSuffix predicate on the "external_id" field.
+func ExternalIDHasSuffix(v string) predicate.IncidentMilestone {
+	return predicate.IncidentMilestone(sql.FieldHasSuffix(FieldExternalID, v))
+}
+
+// ExternalIDIsNil applies the IsNil predicate on the "external_id" field.
+func ExternalIDIsNil() predicate.IncidentMilestone {
+	return predicate.IncidentMilestone(sql.FieldIsNull(FieldExternalID))
+}
+
+// ExternalIDNotNil applies the NotNil predicate on the "external_id" field.
+func ExternalIDNotNil() predicate.IncidentMilestone {
+	return predicate.IncidentMilestone(sql.FieldNotNull(FieldExternalID))
+}
+
+// ExternalIDEqualFold applies the EqualFold predicate on the "external_id" field.
+func ExternalIDEqualFold(v string) predicate.IncidentMilestone {
+	return predicate.IncidentMilestone(sql.FieldEqualFold(FieldExternalID, v))
+}
+
+// ExternalIDContainsFold applies the ContainsFold predicate on the "external_id" field.
+func ExternalIDContainsFold(v string) predicate.IncidentMilestone {
+	return predicate.IncidentMilestone(sql.FieldContainsFold(FieldExternalID, v))
 }
 
 // HasTenant applies the HasEdge predicate on the "tenant" edge.

@@ -14,6 +14,19 @@ import (
 	"github.com/rezible/rezible/internal/slack"
 )
 
+// TODO: do these properly
+
+func CheckConfigValid(intg *ent.Integration) bool {
+	return true
+}
+
+func GetEnabledDataKinds(intg *ent.Integration) []string {
+	if intg.Name == "slack" {
+		return []string{"users", "chat"}
+	}
+	return []string{}
+}
+
 func loadProviderCtx[C any, P any](ctx context.Context, constructorFn func(context.Context, C) (P, error), intg *ent.Integration) (P, error) {
 	return loadProvider(func(c C) (P, error) {
 		return constructorFn(ctx, c)
