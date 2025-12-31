@@ -6,9 +6,9 @@ import (
 	"math/rand"
 	"time"
 
-	"github.com/ThreeDotsLabs/watermill/message"
 	"github.com/google/uuid"
 	"github.com/gosimple/slug"
+	"github.com/rezible/rezible/access"
 	"github.com/rezible/rezible/ent/retrospective"
 	"github.com/rs/zerolog/log"
 
@@ -193,6 +193,7 @@ func (s *IncidentService) Set(ctx context.Context, id uuid.UUID, setFn func(*ent
 		return nil, fmt.Errorf("update: %w", txErr)
 	}
 
+	log.Debug().Interface("ac", access.GetContext(ctx)).Msg("incident set")
 	s.publishIncidentUpdatedMessage(ctx, updated)
 
 	return updated, nil
@@ -209,7 +210,7 @@ func (s *IncidentService) generateSlugForMutation(ctx context.Context, setFn fun
 }
 
 func (s *IncidentService) publishIncidentUpdatedMessage(ctx context.Context, inc *ent.Incident) {
-	msg := message.NewMessage(uuid.NewString(), []byte(inc.ID.String()))
+	msg := s.msgs.NewMessage(ctx, []byte(inc.ID.String()))
 	if pubErr := s.msgs.Publish(rez.MessageIncidentUpdatedTopic, msg); pubErr != nil {
 		log.Error().Err(pubErr).Msg("failed to publish incident updated message")
 	}

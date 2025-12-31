@@ -2079,9 +2079,6 @@ export type StartIntegrationOAuthResponseBody = {
 };
 
 export type SupportedIntegration = {
-    configFields: {
-        [key: string]: string;
-    };
     name: string;
     oauthRequired: boolean;
     supportedDataKinds: Array<string>;

@@ -6,6 +6,7 @@ import (
 
 	"github.com/rezible/rezible/access"
 	"github.com/rezible/rezible/jobs"
+	"github.com/riverqueue/river/rivertype"
 	"github.com/rs/zerolog/log"
 
 	"log/slog"
@@ -29,6 +30,10 @@ type (
 )
 
 func NewJobService(pool *pgxpool.Pool) (*JobService, error) {
+	middleware := []rivertype.Middleware{
+		&accessContextMiddleware{},
+	}
+
 	queues := map[string]river.QueueConfig{
 		river.QueueDefault: {MaxWorkers: 20},
 	}
@@ -39,6 +44,7 @@ func NewJobService(pool *pgxpool.Pool) (*JobService, error) {
 	}
 
 	cfg := &river.Config{
+		Middleware:   middleware,
 		Workers:      jobs.Workers,
 		Queues:       queues,
 		Logger:       slog.New(slogOpts.NewZerologHandler()),

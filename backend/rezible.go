@@ -96,10 +96,12 @@ type (
 )
 
 type (
+	Message        = message.Message
 	MessageService interface {
-		Publish(topic string, msgs ...*message.Message) error
-		AddHandler(name, subTopic, pubTopic string, fn message.HandlerFunc, mw ...message.HandlerMiddleware)
-		AddConsumerHandler(name, subTopic string, fn message.NoPublishHandlerFunc, mw ...message.HandlerMiddleware)
+		NewMessage(ctx context.Context, payload []byte) *Message
+		Publish(topic string, msgs ...*Message) error
+		AddHandler(name, subTopic, pubTopic string, fn func(context.Context, *Message) ([]*Message, error))
+		AddConsumerHandler(name, subTopic string, fn func(context.Context, *Message) error)
 	}
 )
 

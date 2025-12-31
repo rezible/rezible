@@ -52,8 +52,27 @@ func (s *ChatService) withClient(ctx context.Context, fn func(*slack.Client) err
 	return withClient(ctx, s.integrations, fn)
 }
 
-func (s *ChatService) getChatTeamContext(ctx context.Context, teamId string) (context.Context, error) {
-	return nil, errors.New("not implemented")
+func (s *ChatService) lookupTeamTenantId(ctx context.Context, teamId string, enterpriseId string) (int, error) {
+	log.Warn().Msg("looking up tenant id from slack integrations via db - slow")
+	// TODO: this needs to be done faster & cached
+	params := rez.ListIntegrationsParams{Name: integrationName}
+	intgs, intgsErr := s.integrations.ListIntegrations(access.SystemContext(ctx), params)
+	if intgsErr != nil {
+		return -1, fmt.Errorf("failed to list integrations: %w", intgsErr)
+	}
+	for _, intg := range intgs {
+		var cfg IntegrationConfigData
+		if jsonErr := json.Unmarshal(intg.Config, &cfg); jsonErr != nil {
+			log.Warn().Err(jsonErr).Msg("failed to unmarshal slack integration config")
+		}
+		if cfg.Enterprise != nil && enterpriseId != "" && cfg.Enterprise.ID == enterpriseId {
+			return intg.TenantID, nil
+		}
+		if cfg.Team.ID == teamId {
+			return intg.TenantID, nil
+		}
+	}
+	return -1, errors.New("failed to lookup team tenant")
 }
 
 func (s *ChatService) getChatUserContext(ctx context.Context, userId string) (context.Context, error) {

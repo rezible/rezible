@@ -13,6 +13,7 @@ import (
 func (s *ChatService) onSlashCommandReceived(cmd slack.SlashCommand) {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*3)
 	defer cancel()
+
 	_, _, handleErr := s.handleSlashCommand(ctx, &cmd)
 	if handleErr != nil {
 		log.Error().

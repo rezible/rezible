@@ -12,7 +12,7 @@ import (
 func DenyIfNoAccessContext() privacy.QueryMutationRule {
 	return privacy.ContextQueryMutationRule(func(ctx context.Context) error {
 		ac := access.GetContext(ctx)
-		if ac == nil {
+		if ac.IsAnonymous() {
 			return privacy.Denyf("access context is missing")
 		}
 		return privacy.Skip
@@ -22,10 +22,10 @@ func DenyIfNoAccessContext() privacy.QueryMutationRule {
 func DenyIfAnonymous() privacy.QueryMutationRule {
 	return privacy.ContextQueryMutationRule(func(ctx context.Context) error {
 		ac := access.GetContext(ctx)
-		if ac == nil {
-			return privacy.Denyf("access context is missing")
-		}
-		if ac.HasRole(access.RoleAnonymous) {
+		//if ac == nil {
+		//	return privacy.Denyf("access context is missing")
+		//}
+		if ac.IsAnonymous() {
 			return privacy.Deny
 		}
 		return privacy.Skip
@@ -35,7 +35,7 @@ func DenyIfAnonymous() privacy.QueryMutationRule {
 func AllowIfSystemRole() privacy.QueryMutationRule {
 	return privacy.ContextQueryMutationRule(func(ctx context.Context) error {
 		ac := access.GetContext(ctx)
-		if ac.HasRole(access.RoleSystem) {
+		if ac.IsSystem() {
 			return privacy.Allow
 		}
 		return privacy.Skip
@@ -48,8 +48,7 @@ func FilterTenantRule() privacy.QueryMutationRule {
 	}
 	return privacy.FilterFunc(func(ctx context.Context, f privacy.Filter) error {
 		ac := access.GetContext(ctx)
-		tenantId, hasTenant := ac.TenantId()
-		if !hasTenant {
+		if !ac.HasTenant() {
 			return privacy.Denyf("missing tenant in access context")
 		}
 		tf, isFilterable := f.(TenantsFilter)
@@ -58,7 +57,7 @@ func FilterTenantRule() privacy.QueryMutationRule {
 		}
 
 		// Make sure that a tenant reads only entities that have an edge to it.
-		tf.WhereTenantID(entql.IntEQ(tenantId))
+		tf.WhereTenantID(entql.IntEQ(ac.GetTenantId()))
 
 		return privacy.Skip
 	})

@@ -5,12 +5,15 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"io"
 	"net/http"
 	"time"
 
+	"github.com/ThreeDotsLabs/watermill/message"
 	"github.com/go-chi/chi/v5"
 	rez "github.com/rezible/rezible"
+	"github.com/rezible/rezible/access"
 	"github.com/rs/zerolog/log"
 	"github.com/slack-go/slack"
 	"github.com/slack-go/slack/slackevents"
@@ -30,7 +33,9 @@ func NewWebhookEventListener(chatSvc *ChatService) (*WebhookEventHandler, error)
 	if signingSecret == "" && !UseSocketMode() {
 		return nil, errors.New("slack.webhook_signing_secret not set")
 	}
-	return &WebhookEventHandler{chatSvc: chatSvc, signingSecret: signingSecret}, nil
+	wh := &WebhookEventHandler{chatSvc: chatSvc, signingSecret: signingSecret}
+	chatSvc.messages.AddConsumerHandler("SlackCallbackEventReceived", callbackEventMsgTopic, wh.processCallbackEventMessage)
+	return wh, nil
 }
 
 func (wh *WebhookEventHandler) Handler() http.Handler {
@@ -44,6 +49,40 @@ func (wh *WebhookEventHandler) Handler() http.Handler {
 		w.WriteHeader(http.StatusOK)
 	})
 	return mux
+}
+
+const callbackEventMsgTopic = "slack.callbackevent.received"
+
+func (wh *WebhookEventHandler) onCallbackEventReceived(ev slackevents.EventsAPIEvent, body []byte) error {
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*3)
+	defer cancel()
+	tenantId, tenantIdErr := wh.chatSvc.lookupTeamTenantId(ctx, ev.TeamID, ev.EnterpriseID)
+	if tenantIdErr != nil {
+		return fmt.Errorf("failed to get tenant id: %w", tenantIdErr)
+	}
+	msg := wh.chatSvc.messages.NewMessage(access.TenantContext(ctx, tenantId), body)
+	if pubErr := wh.chatSvc.messages.Publish(callbackEventMsgTopic, msg); pubErr != nil {
+		return fmt.Errorf("publish event message: %w", pubErr)
+	}
+	return nil
+}
+
+func (wh *WebhookEventHandler) processCallbackEventMessage(ctx context.Context, m *message.Message) error {
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*3)
+	defer cancel()
+
+	ev, parseErr := slackevents.ParseEvent(json.RawMessage(m.Payload), slackevents.OptionNoVerifyToken())
+	if parseErr != nil {
+		return fmt.Errorf("failed to unmarshal event payload: %w", parseErr)
+	}
+
+	_, handleErr := wh.chatSvc.handleCallbackEvent(ctx, &ev)
+	if handleErr != nil {
+		log.Error().
+			Err(handleErr).
+			Msg("failed to handle callback event")
+	}
+	return nil
 }
 
 func (wh *WebhookEventHandler) readAndVerify(w http.ResponseWriter, r *http.Request) ([]byte, error) {
@@ -122,7 +161,11 @@ func (wh *WebhookEventHandler) handleEventsWebhook(w http.ResponseWriter, r *htt
 	}
 
 	if ev.Type == slackevents.CallbackEvent {
-		go wh.chatSvc.onCallbackEventReceived(ev)
+		if handleErr := wh.onCallbackEventReceived(ev, body); handleErr != nil {
+			log.Error().Err(handleErr).Msg("failed to handle callback event")
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
 		w.WriteHeader(http.StatusOK)
 		return
 	}

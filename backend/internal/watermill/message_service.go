@@ -3,16 +3,16 @@ package watermill
 import (
 	"context"
 	"fmt"
+	"log/slog"
+	"time"
 
 	"github.com/ThreeDotsLabs/watermill"
 	"github.com/ThreeDotsLabs/watermill/message"
-	"github.com/ThreeDotsLabs/watermill/message/router/middleware"
 	"github.com/ThreeDotsLabs/watermill/pubsub/gochannel"
+	"github.com/google/uuid"
+	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
-)
-
-var (
-	logger = watermill.NewStdLogger(false, false)
+	slogzerolog "github.com/samber/slog-zerolog/v2"
 )
 
 type MessageService struct {
@@ -22,25 +22,31 @@ type MessageService struct {
 }
 
 func NewMessageService() (*MessageService, error) {
-	router, routerErr := message.NewRouter(message.RouterConfig{}, logger)
-	if routerErr != nil {
-		return nil, fmt.Errorf("faile initializing message router: %w", routerErr)
+	slogOpts := slogzerolog.Option{
+		Level:  slog.LevelDebug,
+		Logger: zerolog.DefaultContextLogger,
 	}
 
-	router.AddMiddleware(
-		// CorrelationID will copy the correlation id from the incoming message's metadata to the produced messages
-		middleware.CorrelationID,
-		middleware.Recoverer,
-	)
-
-	ms := &MessageService{
-		router: router,
-	}
-
+	logger := watermill.NewSlogLogger(slog.New(slogOpts.NewZerologHandler()))
 	pubSub := gochannel.NewGoChannel(gochannel.Config{}, logger)
 
-	ms.publisher = pubSub
-	ms.subscriber = pubSub
+	cfg := message.RouterConfig{
+		CloseTimeout: time.Second * 5,
+	}
+	router, routerErr := message.NewRouter(cfg, logger)
+	if routerErr != nil {
+		return nil, fmt.Errorf("failed initializing message router: %w", routerErr)
+	}
+
+	if mwErr := addMiddleware(router, logger, pubSub, pubSub); mwErr != nil {
+		return nil, fmt.Errorf("failed adding middleware: %w", mwErr)
+	}
+
+	ms := &MessageService{
+		router:     router,
+		publisher:  pubSub,
+		subscriber: pubSub,
+	}
 
 	return ms, nil
 }
@@ -50,18 +56,32 @@ func (ms *MessageService) Start(ctx context.Context) error {
 	return ms.router.Run(ctx)
 }
 
+func (ms *MessageService) NewMessage(ctx context.Context, payload []byte) *message.Message {
+	return message.NewMessageWithContext(ctx, uuid.NewString(), payload)
+}
+
 func (ms *MessageService) Publish(topic string, msgs ...*message.Message) error {
+	for _, msg := range msgs {
+		if mdErr := setMessageMetadata(msg); mdErr != nil {
+			return mdErr
+		}
+	}
 	return ms.publisher.Publish(topic, msgs...)
 }
 
-func (ms *MessageService) AddHandler(name, subTopic, pubTopic string, fn message.HandlerFunc, mw ...message.HandlerMiddleware) {
-	handler := ms.router.AddHandler(name, subTopic, ms.subscriber, pubTopic, ms.publisher, fn)
-	handler.AddMiddleware(mw...)
+type MessageHandler = func(ctx context.Context, msg *message.Message) ([]*message.Message, error)
+type MessageConsumerHandler = func(ctx context.Context, msg *message.Message) error
+
+func (ms *MessageService) AddHandler(name, subTopic, pubTopic string, fn MessageHandler) {
+	ms.router.AddHandler(name, subTopic, ms.subscriber, pubTopic, ms.publisher, func(m *message.Message) ([]*message.Message, error) {
+		return fn(m.Context(), m)
+	})
 }
 
-func (ms *MessageService) AddConsumerHandler(name, subTopic string, fn message.NoPublishHandlerFunc, mw ...message.HandlerMiddleware) {
-	handler := ms.router.AddConsumerHandler(name, subTopic, ms.subscriber, fn)
-	handler.AddMiddleware(mw...)
+func (ms *MessageService) AddConsumerHandler(name, subTopic string, fn MessageConsumerHandler) {
+	ms.router.AddConsumerHandler(name, subTopic, ms.subscriber, func(m *message.Message) error {
+		return fn(m.Context(), m)
+	})
 }
 
 func (ms *MessageService) Stop(ctx context.Context) error {

@@ -3,39 +3,11 @@ package slack
 import (
 	"context"
 	"fmt"
-	"time"
 
 	"github.com/rs/zerolog/log"
 	"github.com/slack-go/slack"
 	"github.com/slack-go/slack/slackevents"
 )
-
-const (
-	eventKindCallback = "callback"
-)
-
-func (s *ChatService) onCallbackEventReceived(data slackevents.EventsAPIEvent) {
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second*3)
-	defer cancel()
-	_, handleErr := s.handleCallbackEvent(ctx, &data)
-	if handleErr != nil {
-		log.Error().
-			Err(handleErr).
-			Msg("failed to handle callback event")
-	}
-}
-
-func (s *ChatService) queueCallbackEvent(ctx context.Context, data slackevents.EventsAPIEvent) error {
-	return nil
-}
-
-func (s *ChatService) ProcessEvent(ctx context.Context, data slackevents.EventsAPIEvent) error {
-	_, handleErr := s.handleCallbackEvent(ctx, &data)
-	if handleErr != nil {
-		return fmt.Errorf("failed to handle callback event: %w", handleErr)
-	}
-	return nil
-}
 
 func (s *ChatService) handleCallbackEvent(ctx context.Context, ev *slackevents.EventsAPIEvent) (bool, error) {
 	switch data := ev.InnerEvent.Data.(type) {
@@ -75,7 +47,8 @@ func (s *ChatService) onMessageEvent(ctx context.Context, data *slackevents.Mess
 		Str("text", data.Text).
 		Str("thread", threadTs).
 		Str("user", data.User).
-		Msg("message")
+		Msg("message event")
+
 	return nil
 }
 

@@ -68,9 +68,9 @@ func (dbc *DatabaseClient) Close() error {
 func setTenantContextInterceptor() ent.Interceptor {
 	return ent.InterceptFunc(func(q ent.Querier) ent.Querier {
 		return ent.QuerierFunc(func(ctx context.Context, query ent.Query) (ent.Value, error) {
-			authCtx := access.GetContext(ctx)
-			if tenantId, idExists := authCtx.TenantId(); idExists {
-				ctx = entsql.WithIntVar(ctx, "app.current_tenant", tenantId)
+			ac := access.GetContext(ctx)
+			if ac.HasTenant() {
+				ctx = entsql.WithIntVar(ctx, "app.current_tenant", ac.GetTenantId())
 			}
 			return q.Query(ctx, query)
 		})
@@ -84,11 +84,11 @@ func ensureTenantIdSetHook(next ent.Mutator) ent.Mutator {
 	return ent.MutateFunc(func(ctx context.Context, m ent.Mutation) (ent.Value, error) {
 		if tm, ok := m.(tenantedMutation); ok {
 			if _, alreadySet := m.Field("tenant_id"); !alreadySet {
-				tid, tenantExists := access.GetContext(ctx).TenantId()
-				if !tenantExists {
+				ac := access.GetContext(ctx)
+				if !ac.HasTenant() {
 					return nil, errors.New("tenant not found in auth context")
 				}
-				tm.SetTenantID(tid)
+				tm.SetTenantID(ac.GetTenantId())
 			}
 		}
 		return next.Mutate(ctx, m)
@@ -98,8 +98,8 @@ func ensureTenantIdSetHook(next ent.Mutator) ent.Mutator {
 func debugLogQueryAccessAuthContext() ent.Interceptor {
 	return ent.InterceptFunc(func(q ent.Querier) ent.Querier {
 		return ent.QuerierFunc(func(ctx context.Context, query ent.Query) (ent.Value, error) {
-			authCtx := access.GetContext(ctx)
-			log.Debug().Bool("isSystem", authCtx.HasRole(access.RoleSystem)).Msg("query")
+			ac := access.GetContext(ctx)
+			log.Debug().Bool("isSystem", ac.IsSystem()).Msg("query")
 			return q.Query(ctx, query)
 		})
 	})

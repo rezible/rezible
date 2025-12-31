@@ -4,83 +4,56 @@ import (
 	"context"
 )
 
-type (
-	Role  string
-	Roles map[Role]struct{}
-)
-
-func (r Roles) Has(role Role) bool {
-	_, has := r[role]
-	return has
-}
-
-func MakeRoles(roles ...Role) Roles {
-	r := Roles{}
-	for _, role := range roles {
-		r[role] = struct{}{}
-	}
-	return r
-}
-
-const (
-	RoleSystem    Role = "system"
-	RoleTenant    Role = "tenant"
-	RoleAnonymous Role = "anonymous"
-
-	noTenantId = -1
-)
-
 type Context struct {
-	tenantId int
-	roles    Roles
+	System   bool `json:"sys"`
+	TenantId *int `json:"tid"`
 }
 
-func newContext(tenantId int, roles Roles) *Context {
-	return &Context{tenantId: tenantId, roles: roles}
-}
-
-func (v Context) HasRole(r Role) bool {
-	return v.roles.Has(r)
-}
-
-func (v Context) TenantId() (int, bool) {
-	if v.tenantId != noTenantId {
-		return v.tenantId, true
+func (c Context) GetTenantId() int {
+	if c.TenantId == nil {
+		return -1
 	}
-	return noTenantId, false
+	return *c.TenantId
+}
+
+func (c Context) HasTenant() bool {
+	return c.TenantId != nil
+}
+
+func (c Context) IsSystem() bool {
+	return c.System
+}
+
+func (c Context) IsAnonymous() bool {
+	return !c.HasTenant() && !c.IsSystem()
+}
+
+func newContext(tenantId *int, system bool) Context {
+	return Context{TenantId: tenantId, System: system}
 }
 
 type ctxKey struct{}
 
-func storeContext(parent context.Context, ac *Context) context.Context {
+func SetContext(parent context.Context, ac Context) context.Context {
 	return context.WithValue(parent, ctxKey{}, ac)
 }
 
-func AnonymousContext(ctx context.Context) context.Context {
-	return storeContext(ctx, newContext(noTenantId, MakeRoles(RoleAnonymous)))
-}
-
-func TenantContext(ctx context.Context, tenantId int) context.Context {
-	return storeContext(ctx, newContext(tenantId, MakeRoles(RoleTenant)))
-}
-
-func SystemContext(ctx context.Context) context.Context {
-	return storeContext(ctx, newContext(noTenantId, MakeRoles(RoleSystem)))
-}
-
-func TenantSystemContext(ctx context.Context, tenantId int) context.Context {
-	return storeContext(ctx, newContext(tenantId, MakeRoles(RoleSystem)))
-}
-
-func GetContext(ctx context.Context) *Context {
-	c, _ := ctx.Value(ctxKey{}).(*Context)
+func GetContext(ctx context.Context) Context {
+	c, ok := ctx.Value(ctxKey{}).(Context)
+	if !ok {
+		return newContext(nil, false)
+	}
 	return c
 }
 
-func GetContextTenantId(ctx context.Context) (int, bool) {
-	ac := ctx.Value(ctxKey{}).(*Context)
-	if ac == nil {
-		return noTenantId, false
-	}
-	return ac.TenantId()
+func AnonymousContext(ctx context.Context) context.Context {
+	return SetContext(ctx, newContext(nil, false))
+}
+
+func TenantContext(ctx context.Context, tenantId int) context.Context {
+	return SetContext(ctx, newContext(&tenantId, false))
+}
+
+func SystemContext(ctx context.Context) context.Context {
+	return SetContext(ctx, newContext(nil, true))
 }

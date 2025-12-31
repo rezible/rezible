@@ -11,27 +11,20 @@ import (
 	"github.com/slack-go/slack"
 
 	rez "github.com/rezible/rezible"
-	"github.com/rezible/rezible/access"
 	"github.com/rezible/rezible/ent"
 	"github.com/rezible/rezible/ent/incidentmilestone"
 	"github.com/rezible/rezible/jobs"
 )
 
 func (s *ChatService) setupIncidentUpdateHandler() {
-	onIncidentUpdateMessage := func(m *message.Message) error {
+	onIncidentUpdateMessage := func(ctx context.Context, m *message.Message) error {
 		id, idErr := uuid.ParseBytes(m.Payload)
 		if idErr != nil {
 			return fmt.Errorf("failed to parse incident id: %w", idErr)
 		}
-		log.Debug().Msg("message handler, inserting job")
-		ctx := access.SystemContext(context.Background())
-
-		args := handleIncidentChatUpdateArgs{
-			IncidentId: id,
-		}
-		opts := &jobs.InsertOpts{
-			UniqueOpts: jobs.UniqueOpts{ByArgs: true},
-		}
+		log.Debug().Msg("slack incident message handler, inserting job")
+		args := handleIncidentChatUpdateArgs{IncidentId: id}
+		opts := &jobs.InsertOpts{UniqueOpts: jobs.UniqueOpts{ByArgs: true}}
 		if jobErr := s.jobs.Insert(ctx, args, opts); jobErr != nil {
 			log.Error().Err(jobErr).Msg("failed to insert job")
 		}
@@ -57,19 +50,27 @@ func newIncidentChatUpdateWorker(chat *ChatService) *incidentChatUpdateWorker {
 }
 
 func (w *incidentChatUpdateWorker) Work(ctx context.Context, job *jobs.Job[handleIncidentChatUpdateArgs]) error {
-	incidentId := job.Args.IncidentId
-	inc, incErr := w.chat.incidents.Get(access.SystemContext(ctx), incidentId)
+	inc, incErr := w.chat.incidents.Get(ctx, job.Args.IncidentId)
 	if incErr != nil {
 		return fmt.Errorf("failed to get incident: %w", incErr)
 	}
-	ctx = access.TenantContext(ctx, inc.TenantID)
 
 	if inc.ChatChannelID == "" {
 		chanId, chanErr := w.createIncidentChannel(ctx, inc)
 		if chanErr != nil {
 			return fmt.Errorf("failed to create incident channel: %w", chanErr)
 		}
+		if updateErr := inc.Update().SetChatChannelID(chanId).Exec(ctx); updateErr != nil {
+			return fmt.Errorf("set incident chatChannelID: %w", updateErr)
+		}
 		inc.ChatChannelID = chanId
+		if annoErr := w.postIncidentAnnouncement(ctx, inc); annoErr != nil {
+			log.Warn().Err(annoErr).Msg("failed to post incident announcement")
+		}
+
+		if detailsErr := w.sendIncidentChannelDetailsMessage(ctx, inc); detailsErr != nil {
+			log.Warn().Err(detailsErr).Msg("failed to send incident channel details message")
+		}
 	}
 
 	// TODO: these should all be inserted as jobs
@@ -95,57 +96,31 @@ func (w *incidentChatUpdateWorker) createIncidentChannel(ctx context.Context, in
 		return "", fmt.Errorf("failed to get client: %w", clientErr)
 	}
 
+	createParams := slack.CreateConversationParams{
+		ChannelName: getIncidentChannelName(inc),
+		IsPrivate:   false,
+	}
+
 	decl, declErr := fetchIncidentDeclaration(ctx, inc)
 	if declErr != nil {
 		return "", fmt.Errorf("fetching incident declaration: %w", declErr)
 	}
-
-	params := slack.CreateConversationParams{
-		ChannelName: getIncidentChannelName(inc),
-		IsPrivate:   false,
-	}
 	if decl != nil {
-		params.TeamID = decl.TeamID
+		createParams.TeamID = decl.TeamID
 	}
 
-	channel, createErr := client.CreateConversationContext(ctx, params)
+	channel, createErr := client.CreateConversationContext(ctx, createParams)
 	if createErr != nil {
 		return "", fmt.Errorf("create channel: %w", createErr)
 	}
 
-	setFn := func(m *ent.IncidentMutation) {
-		m.SetChatChannelID(channel.ID)
-	}
-	_, updateErr := w.chat.incidents.Set(ctx, inc.ID, setFn, nil)
-	if updateErr != nil {
-		return "", fmt.Errorf("set incident chatChannelID: %w", updateErr)
-	}
-	inc.ChatChannelID = channel.ID
-
-	announcementChannelId := "#incident"
-	// TODO: fetch from config
-	/*
-		announcementChannelId, chanErr := s.getIncidentAnnouncementChannelId(ctx)
-		if chanErr != nil {
-			return "", fmt.Errorf("failed to get announcement channel: %w", chanErr)
-		}
-	*/
-
 	// send message to user that created incident
-	if decl != nil && decl.ChannelID != "" && decl.ChannelID != announcementChannelId {
+	if decl != nil && decl.ChannelID != "" {
 		msgText := fmt.Sprintf("Incident created: <#%s>", channel.ID)
 		_, sendErr := client.PostEphemeralContext(ctx, decl.ChannelID, decl.UserID, slack.MsgOptionText(msgText, false))
 		if sendErr != nil {
 			log.Warn().Err(sendErr).Msg("failed to send confirmation message")
 		}
-	}
-
-	if annoErr := w.postIncidentAnnouncement(ctx, inc, announcementChannelId); annoErr != nil {
-		log.Warn().Err(annoErr).Msg("failed to post incident announcement")
-	}
-
-	if detailsErr := w.sendIncidentChannelDetailsMessage(ctx, inc); detailsErr != nil {
-		log.Warn().Err(detailsErr).Msg("failed to send incident channel details message")
 	}
 
 	return channel.ID, nil
@@ -181,8 +156,17 @@ func getIncidentSeverityName(inc *ent.Incident) string {
 	return "UNKNOWN"
 }
 
-func (w *incidentChatUpdateWorker) postIncidentAnnouncement(ctx context.Context, inc *ent.Incident, channelId string) error {
+func (w *incidentChatUpdateWorker) postIncidentAnnouncement(ctx context.Context, inc *ent.Incident) error {
 	severity := getIncidentSeverityName(inc)
+
+	announcementChannelId := "#incident"
+	// TODO: fetch from config
+	/*
+		announcementChannelId, chanErr := s.getIncidentAnnouncementChannelId(ctx)
+		if chanErr != nil {
+			return "", fmt.Errorf("failed to get announcement channel: %w", chanErr)
+		}
+	*/
 
 	headerText := fmt.Sprintf(":rotating_light: Incident Declared: <#%s> [*%s*] :rotating_light:", inc.ChatChannelID, severity)
 
@@ -203,7 +187,7 @@ func (w *incidentChatUpdateWorker) postIncidentAnnouncement(ctx context.Context,
 		),
 	}
 
-	postErr := w.chat.sendMessage(ctx, channelId, slack.MsgOptionBlocks(blocks...))
+	postErr := w.chat.sendMessage(ctx, announcementChannelId, slack.MsgOptionBlocks(blocks...))
 	if postErr != nil {
 		return fmt.Errorf("failed to post announcement message: %w", postErr)
 	}
@@ -262,7 +246,7 @@ func (w *incidentChatUpdateWorker) updateIncidentChannelInfo(ctx context.Context
 	}
 
 	webLink := fmt.Sprintf("%s/incidents/%s", rez.Config.AppUrl(), inc.Slug)
-	topic := fmt.Sprintf("[%s] %s | %s | %s", severity, inc.Title, status)
+	topic := fmt.Sprintf("[%s] %s | %s", severity, inc.Title, status)
 
 	return w.chat.withClient(ctx, func(client *slack.Client) error {
 		_, setErr := client.SetTopicOfConversationContext(ctx, inc.ChatChannelID, topic)
