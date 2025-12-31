@@ -18,14 +18,14 @@ import (
 type DebriefService struct {
 	db   *ent.Client
 	jobs rez.JobsService
-	lms  rez.LanguageModelService
+	ai   rez.AiAgentService
 }
 
-func NewDebriefService(db *ent.Client, jobs rez.JobsService, lms rez.LanguageModelService) (*DebriefService, error) {
+func NewDebriefService(db *ent.Client, jobs rez.JobsService, ai rez.AiAgentService) (*DebriefService, error) {
 	svc := &DebriefService{
 		db:   db,
 		jobs: jobs,
-		lms:  lms,
+		ai:   ai,
 	}
 
 	return svc, nil
@@ -83,10 +83,8 @@ func (s *DebriefService) StartDebrief(ctx context.Context, debriefId uuid.UUID) 
 			return fmt.Errorf("failed to start incident debrief: %w", updateErr)
 		}
 
-		params := jobs.InsertJobParams{
-			Args: jobs.GenerateIncidentDebriefResponse{DebriefId: debriefId},
-		}
-		if genErr := s.jobs.InsertTx(ctx, tx, params); genErr != nil {
+		args := jobs.GenerateIncidentDebriefResponse{DebriefId: debriefId}
+		if genErr := s.jobs.InsertTx(ctx, tx, args, nil); genErr != nil {
 			return fmt.Errorf("failed to request response generation: %w", genErr)
 		}
 
@@ -119,10 +117,8 @@ func (s *DebriefService) CompleteDebrief(ctx context.Context, debriefId uuid.UUI
 			return fmt.Errorf("failed to save: %w", updateErr)
 		}
 
-		params := jobs.InsertJobParams{
-			Args: jobs.GenerateIncidentDebriefSuggestions{DebriefId: debriefId},
-		}
-		if genErr := s.jobs.InsertTx(ctx, tx, params); genErr != nil {
+		args := jobs.GenerateIncidentDebriefSuggestions{DebriefId: debriefId}
+		if genErr := s.jobs.InsertTx(ctx, tx, args, nil); genErr != nil {
 			return fmt.Errorf("failed to request suggestions generation: %w", genErr)
 		}
 
@@ -231,10 +227,8 @@ func (s *DebriefService) AddDebriefMessage(ctx context.Context, debriefId uuid.U
 			return fmt.Errorf("failed to save incident debrief message: %w", msgErr)
 		}
 
-		params := jobs.InsertJobParams{
-			Args: jobs.GenerateIncidentDebriefResponse{DebriefId: debriefId},
-		}
-		if genJobErr := s.jobs.InsertTx(ctx, tx, params); genJobErr != nil {
+		args := jobs.GenerateIncidentDebriefResponse{DebriefId: debriefId}
+		if genJobErr := s.jobs.InsertTx(ctx, tx, args, nil); genJobErr != nil {
 			return fmt.Errorf("failed to request response generation: %w", genJobErr)
 		}
 
@@ -273,7 +267,7 @@ func (s *DebriefService) HandleGenerateDebriefResponse(ctx context.Context, args
 		msg = questionMsg
 		questionId = &question.ID
 	} else {
-		assistantMsg, responseErr := s.lms.GenerateDebriefResponse(ctx, debrief)
+		assistantMsg, responseErr := s.ai.GenerateDebriefResponse(ctx, debrief)
 		if responseErr != nil {
 			return fmt.Errorf("failed to generate debrief message: %w", responseErr)
 		}

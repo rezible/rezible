@@ -82,14 +82,12 @@ func (s *OrganizationsService) FindOrCreateFromProvider(ctx context.Context, o e
 }
 
 func (s *OrganizationsService) CompleteSetup(ctx context.Context, id uuid.UUID) error {
-	params := jobs.InsertJobParams{
-		Args: jobs.SyncIntegrationsData{
-			OrganizationId: id,
-			Hard:           true,
-			CreateDefaults: true,
-		},
+	args := jobs.SyncIntegrationsData{
+		OrganizationId: id,
+		Hard:           true,
+		CreateDefaults: true,
 	}
-	if jobErr := s.jobs.Insert(ctx, params); jobErr != nil {
+	if jobErr := s.jobs.Insert(ctx, args, nil); jobErr != nil {
 		log.Error().Err(jobErr).Msg("failed to insert sync job")
 	}
 

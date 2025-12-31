@@ -15,16 +15,16 @@ import (
 	"github.com/rezible/rezible/ent/incidentdebriefmessage"
 )
 
-type LanguageModelService struct {
+type AiAgentService struct {
 	llm model.ToolCallingChatModel
 }
 
-func NewLanguageModelService(ctx context.Context) (*LanguageModelService, error) {
+func NewAiAgentService(ctx context.Context) (*AiAgentService, error) {
 	m, mErr := newClaudeLanguageModelProvider(ctx)
 	if mErr != nil {
 		return nil, mErr
 	}
-	return &LanguageModelService{llm: m}, nil
+	return &AiAgentService{llm: m}, nil
 }
 
 var (
@@ -32,7 +32,7 @@ var (
 		`You are an AI model conducting an incident debrief. Details about the incident`)
 )
 
-func (s *LanguageModelService) GenerateDebriefResponse(ctx context.Context, debrief *ent.IncidentDebrief) (*ent.IncidentDebriefMessage, error) {
+func (s *AiAgentService) GenerateDebriefResponse(ctx context.Context, debrief *ent.IncidentDebrief) (*ent.IncidentDebriefMessage, error) {
 	if rez.Config.DebugMode() {
 		log.Debug().Msg("TODO: faking ai response")
 		return &ent.IncidentDebriefMessage{

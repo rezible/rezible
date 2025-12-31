@@ -68,12 +68,10 @@ func (s *IntegrationsService) SetIntegration(ctx context.Context, id uuid.UUID, 
 		return nil, fmt.Errorf("failed to save: %w", saveErr)
 	}
 
-	params := jobs.InsertJobParams{
-		Args: jobs.SyncIntegrationsData{
-			IntegrationId: updated.ID,
-		},
+	args := jobs.SyncIntegrationsData{
+		IntegrationId: updated.ID,
 	}
-	if jobErr := s.jobs.Insert(ctx, params); jobErr != nil {
+	if jobErr := s.jobs.Insert(ctx, args, nil); jobErr != nil {
 		log.Error().Err(jobErr).Msg("failed to insert sync job")
 	}
 

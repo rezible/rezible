@@ -3,7 +3,6 @@ package river
 import (
 	"context"
 	"fmt"
-	"time"
 
 	"github.com/rezible/rezible/access"
 	"github.com/rezible/rezible/jobs"
@@ -17,16 +16,9 @@ import (
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 
+	"github.com/rezible/rezible/ent"
 	"github.com/riverqueue/river"
 	"github.com/riverqueue/river/riverdriver/riverpgxv5"
-	"github.com/riverqueue/river/rivertype"
-
-	"github.com/rezible/rezible/ent"
-)
-
-var (
-	workers      = river.NewWorkers()
-	periodicJobs []*river.PeriodicJob
 )
 
 type (
@@ -34,9 +26,6 @@ type (
 	JobService struct {
 		client *pgxClient
 	}
-
-	Job[T jobs.JobArgs]    = river.Job[T]
-	Worker[T jobs.JobArgs] = river.Worker[T]
 )
 
 func NewJobService(pool *pgxpool.Pool) (*JobService, error) {
@@ -50,10 +39,10 @@ func NewJobService(pool *pgxpool.Pool) (*JobService, error) {
 	}
 
 	cfg := &river.Config{
-		Workers:      workers,
+		Workers:      jobs.Workers,
 		Queues:       queues,
 		Logger:       slog.New(slogOpts.NewZerologHandler()),
-		PeriodicJobs: periodicJobs,
+		PeriodicJobs: jobs.PeriodicJobs,
 	}
 
 	client, clientErr := river.NewClient(riverpgxv5.New(pool), cfg)
@@ -66,36 +55,9 @@ func NewJobService(pool *pgxpool.Pool) (*JobService, error) {
 	return svc, nil
 }
 
-func RegisterWorkerFunc[A jobs.JobArgs](work jobs.WorkFn[A]) {
-	river.AddWorker[A](workers, river.WorkFunc(func(ctx context.Context, j *river.Job[A]) error {
-		return work(ctx, j.Args)
-	}))
-}
-
-func RegisterPeriodicJob[A jobs.JobArgs](job jobs.PeriodicJob, workFn jobs.WorkFn[A]) {
-	constructor := func() (river.JobArgs, *river.InsertOpts) {
-		params := job.ConstructorFunc()
-		return params.Args, convertInsertOpts(params)
-	}
-	riverJob := river.NewPeriodicJob(periodicInterval(job.Interval), constructor, convertPeriodicOpts(job.Opts))
-	periodicJobs = append(periodicJobs, riverJob)
-	RegisterWorkerFunc[A](workFn)
-}
-
-type periodicIntervalSchedule struct {
-	interval time.Duration
-}
-
-func periodicInterval(interval time.Duration) river.PeriodicSchedule {
-	return &periodicIntervalSchedule{interval}
-}
-func (s *periodicIntervalSchedule) Next(t time.Time) time.Time {
-	return t.Add(s.interval)
-}
-
 func (s *JobService) Start(ctx context.Context) error {
 	pj := s.client.PeriodicJobs()
-	_, pjErr := pj.AddManySafely(periodicJobs)
+	_, pjErr := pj.AddManySafely(jobs.PeriodicJobs)
 	if pjErr != nil {
 		return fmt.Errorf("failed to add periodic jobs: %w", pjErr)
 	}
@@ -109,72 +71,32 @@ func (s *JobService) Stop(ctx context.Context) error {
 	return s.client.Stop(ctx)
 }
 
-func convertPeriodicOpts(o *jobs.PeriodicJobOpts) *river.PeriodicJobOpts {
-	if o == nil {
-		return nil
-	}
-	return &river.PeriodicJobOpts{
-		RunOnStart: o.RunOnStart,
-	}
-}
-
-func convertInsertOpts(p jobs.InsertJobParams) *river.InsertOpts {
-	riverOpts := &river.InsertOpts{
-		ScheduledAt: p.ScheduledAt,
-	}
-	if p.Uniqueness != nil {
-		uOpts := river.UniqueOpts{
-			ByArgs:      p.Uniqueness.Args,
-			ByPeriod:    p.Uniqueness.ByPeriod,
-			ByQueue:     p.Uniqueness.ByQueue,
-			ExcludeKind: p.Uniqueness.ExcludeKind,
-		}
-
-		if p.Uniqueness.ByState != nil {
-			uOpts.ByState = make([]rivertype.JobState, len(p.Uniqueness.ByState))
-			for i, s := range p.Uniqueness.ByState {
-				uOpts.ByState[i] = rivertype.JobState(s)
-			}
-		}
-
-		riverOpts.UniqueOpts = uOpts
-	}
-	return riverOpts
-}
-
-func (s *JobService) Insert(ctx context.Context, params jobs.InsertJobParams) error {
-	res, insertErr := s.client.Insert(ctx, params.Args, convertInsertOpts(params))
+func (s *JobService) Insert(ctx context.Context, args jobs.JobArgs, opts *jobs.InsertOpts) error {
+	res, insertErr := s.client.Insert(ctx, args, opts)
 	if insertErr != nil {
 		return fmt.Errorf("could not insert job: %w", insertErr)
 	}
 	log.Debug().
-		Str("kind", params.Args.Kind()).
+		Str("kind", args.Kind()).
 		Bool("skipped_unique", res.UniqueSkippedAsDuplicate).
 		Msg("inserted job")
 	return nil
 }
 
-func (s *JobService) InsertMany(ctx context.Context, params []jobs.InsertJobParams) error {
-	insertParams := make([]river.InsertManyParams, len(params))
-	for i, p := range params {
-		insertParams[i] = river.InsertManyParams{
-			Args:       p.Args,
-			InsertOpts: convertInsertOpts(p),
-		}
-	}
-	_, insertErr := s.client.InsertMany(ctx, insertParams)
+func (s *JobService) InsertMany(ctx context.Context, params []jobs.InsertManyParams) error {
+	_, insertErr := s.client.InsertMany(ctx, params)
 	if insertErr != nil {
 		return fmt.Errorf("could not insert jobs: %w", insertErr)
 	}
 	return nil
 }
 
-func (s *JobService) InsertTx(ctx context.Context, tx *ent.Tx, params jobs.InsertJobParams) error {
+func (s *JobService) InsertTx(ctx context.Context, tx *ent.Tx, args jobs.JobArgs, opts *jobs.InsertOpts) error {
 	pgxTx, pgErr := ent.ExtractPgxTx(tx)
 	if pgErr != nil {
 		return fmt.Errorf("not using pgx driver: %w", pgErr)
 	}
-	_, insertErr := s.client.InsertTx(ctx, pgxTx, params.Args, convertInsertOpts(params))
+	_, insertErr := s.client.InsertTx(ctx, pgxTx, args, opts)
 	if insertErr != nil {
 		return fmt.Errorf("could not insert job in tx: %w", insertErr)
 	}

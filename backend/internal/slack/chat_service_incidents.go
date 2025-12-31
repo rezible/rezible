@@ -17,32 +17,55 @@ import (
 	"github.com/rezible/rezible/jobs"
 )
 
-func (s *ChatService) incidentUpdateMessageHandler(m *message.Message) error {
-	id, idErr := uuid.ParseBytes(m.Payload)
-	if idErr != nil {
-		return fmt.Errorf("failed to parse incident id: %w", idErr)
-	}
-	log.Debug().Msg("message handler, inserting job")
-	params := jobs.InsertJobParams{
-		Args:       jobs.HandleIncidentChatUpdate{IncidentId: id},
-		Uniqueness: &jobs.JobUniquenessOpts{Args: true},
-	}
-	if jobErr := s.jobs.Insert(access.SystemContext(context.Background()), params); jobErr != nil {
-		log.Error().Err(jobErr).Msg("failed to insert job")
-	}
+func (s *ChatService) setupIncidentUpdateHandler() {
+	onIncidentUpdateMessage := func(m *message.Message) error {
+		id, idErr := uuid.ParseBytes(m.Payload)
+		if idErr != nil {
+			return fmt.Errorf("failed to parse incident id: %w", idErr)
+		}
+		log.Debug().Msg("message handler, inserting job")
+		ctx := access.SystemContext(context.Background())
 
-	return nil
+		args := handleIncidentChatUpdateArgs{
+			IncidentId: id,
+		}
+		opts := &jobs.InsertOpts{
+			UniqueOpts: jobs.UniqueOpts{ByArgs: true},
+		}
+		if jobErr := s.jobs.Insert(ctx, args, opts); jobErr != nil {
+			log.Error().Err(jobErr).Msg("failed to insert job")
+		}
+		return nil
+	}
+	s.messages.AddConsumerHandler("SlackIncidentUpdate", rez.MessageIncidentUpdatedTopic, onIncidentUpdateMessage)
+	jobs.RegisterWorker(newIncidentChatUpdateWorker(s))
 }
 
-func (s *ChatService) HandleIncidentChatUpdate(ctx context.Context, args jobs.HandleIncidentChatUpdate) error {
-	inc, incErr := s.incidents.Get(access.SystemContext(ctx), args.IncidentId)
+type handleIncidentChatUpdateArgs struct {
+	IncidentId uuid.UUID
+}
+
+func (handleIncidentChatUpdateArgs) Kind() string { return "handle-incident-chat-update" }
+
+type incidentChatUpdateWorker struct {
+	chat *ChatService
+	jobs.WorkerDefaults[handleIncidentChatUpdateArgs]
+}
+
+func newIncidentChatUpdateWorker(chat *ChatService) *incidentChatUpdateWorker {
+	return &incidentChatUpdateWorker{chat: chat}
+}
+
+func (w *incidentChatUpdateWorker) Work(ctx context.Context, job *jobs.Job[handleIncidentChatUpdateArgs]) error {
+	incidentId := job.Args.IncidentId
+	inc, incErr := w.chat.incidents.Get(access.SystemContext(ctx), incidentId)
 	if incErr != nil {
 		return fmt.Errorf("failed to get incident: %w", incErr)
 	}
 	ctx = access.TenantContext(ctx, inc.TenantID)
 
 	if inc.ChatChannelID == "" {
-		chanId, chanErr := s.createIncidentChannel(ctx, inc)
+		chanId, chanErr := w.createIncidentChannel(ctx, inc)
 		if chanErr != nil {
 			return fmt.Errorf("failed to create incident channel: %w", chanErr)
 		}
@@ -51,11 +74,11 @@ func (s *ChatService) HandleIncidentChatUpdate(ctx context.Context, args jobs.Ha
 
 	// TODO: these should all be inserted as jobs
 
-	if usersErr := s.ensureIncidentChannelUsersAdded(ctx, inc); usersErr != nil {
+	if usersErr := w.ensureIncidentChannelUsersAdded(ctx, inc); usersErr != nil {
 		log.Warn().Err(usersErr).Msg("failed to add users to incident channel")
 	}
 
-	if bookmarkErr := s.updateIncidentChannelInfo(ctx, inc); bookmarkErr != nil {
+	if bookmarkErr := w.updateIncidentChannelInfo(ctx, inc); bookmarkErr != nil {
 		log.Warn().Err(bookmarkErr).Msg("failed to update incident channel info")
 	}
 
@@ -66,8 +89,8 @@ func getIncidentChannelName(inc *ent.Incident) string {
 	return fmt.Sprintf("incident-%s", inc.Slug)
 }
 
-func (s *ChatService) createIncidentChannel(ctx context.Context, inc *ent.Incident) (string, error) {
-	client, clientErr := getClient(ctx, s.integrations)
+func (w *incidentChatUpdateWorker) createIncidentChannel(ctx context.Context, inc *ent.Incident) (string, error) {
+	client, clientErr := getClient(ctx, w.chat.integrations)
 	if clientErr != nil {
 		return "", fmt.Errorf("failed to get client: %w", clientErr)
 	}
@@ -93,7 +116,7 @@ func (s *ChatService) createIncidentChannel(ctx context.Context, inc *ent.Incide
 	setFn := func(m *ent.IncidentMutation) {
 		m.SetChatChannelID(channel.ID)
 	}
-	_, updateErr := s.incidents.Set(ctx, inc.ID, setFn, nil)
+	_, updateErr := w.chat.incidents.Set(ctx, inc.ID, setFn, nil)
 	if updateErr != nil {
 		return "", fmt.Errorf("set incident chatChannelID: %w", updateErr)
 	}
@@ -117,11 +140,11 @@ func (s *ChatService) createIncidentChannel(ctx context.Context, inc *ent.Incide
 		}
 	}
 
-	if annoErr := s.postIncidentAnnouncement(ctx, inc, announcementChannelId); annoErr != nil {
+	if annoErr := w.postIncidentAnnouncement(ctx, inc, announcementChannelId); annoErr != nil {
 		log.Warn().Err(annoErr).Msg("failed to post incident announcement")
 	}
 
-	if detailsErr := s.sendIncidentChannelDetailsMessage(ctx, inc); detailsErr != nil {
+	if detailsErr := w.sendIncidentChannelDetailsMessage(ctx, inc); detailsErr != nil {
 		log.Warn().Err(detailsErr).Msg("failed to send incident channel details message")
 	}
 
@@ -158,7 +181,7 @@ func getIncidentSeverityName(inc *ent.Incident) string {
 	return "UNKNOWN"
 }
 
-func (s *ChatService) postIncidentAnnouncement(ctx context.Context, inc *ent.Incident, channelId string) error {
+func (w *incidentChatUpdateWorker) postIncidentAnnouncement(ctx context.Context, inc *ent.Incident, channelId string) error {
 	severity := getIncidentSeverityName(inc)
 
 	headerText := fmt.Sprintf(":rotating_light: Incident Declared: <#%s> [*%s*] :rotating_light:", inc.ChatChannelID, severity)
@@ -180,7 +203,7 @@ func (s *ChatService) postIncidentAnnouncement(ctx context.Context, inc *ent.Inc
 		),
 	}
 
-	postErr := s.sendMessage(ctx, channelId, slack.MsgOptionBlocks(blocks...))
+	postErr := w.chat.sendMessage(ctx, channelId, slack.MsgOptionBlocks(blocks...))
 	if postErr != nil {
 		return fmt.Errorf("failed to post announcement message: %w", postErr)
 	}
@@ -188,7 +211,7 @@ func (s *ChatService) postIncidentAnnouncement(ctx context.Context, inc *ent.Inc
 	return nil
 }
 
-func (s *ChatService) sendIncidentChannelDetailsMessage(ctx context.Context, inc *ent.Incident) error {
+func (w *incidentChatUpdateWorker) sendIncidentChannelDetailsMessage(ctx context.Context, inc *ent.Incident) error {
 	severity := getIncidentSeverityName(inc)
 
 	webLink := fmt.Sprintf("%s/incidents/%s", rez.Config.AppUrl(), inc.Slug)
@@ -205,7 +228,7 @@ func (s *ChatService) sendIncidentChannelDetailsMessage(ctx context.Context, inc
 		),
 	}
 
-	return s.withClient(ctx, func(client *slack.Client) error {
+	return w.chat.withClient(ctx, func(client *slack.Client) error {
 		_, detailsTs, postErr := client.PostMessageContext(ctx, inc.ChatChannelID, slack.MsgOptionBlocks(detailsBlocks...))
 		if postErr != nil {
 			return fmt.Errorf("failed to post incident details: %w", postErr)
@@ -225,12 +248,12 @@ func (s *ChatService) sendIncidentChannelDetailsMessage(ctx context.Context, inc
 	})
 }
 
-func (s *ChatService) ensureIncidentChannelUsersAdded(ctx context.Context, inc *ent.Incident) error {
+func (w *incidentChatUpdateWorker) ensureIncidentChannelUsersAdded(ctx context.Context, inc *ent.Incident) error {
 
 	return nil
 }
 
-func (s *ChatService) updateIncidentChannelInfo(ctx context.Context, inc *ent.Incident) error {
+func (w *incidentChatUpdateWorker) updateIncidentChannelInfo(ctx context.Context, inc *ent.Incident) error {
 	severity := getIncidentSeverityName(inc)
 
 	status := "OPEN"
@@ -241,7 +264,7 @@ func (s *ChatService) updateIncidentChannelInfo(ctx context.Context, inc *ent.In
 	webLink := fmt.Sprintf("%s/incidents/%s", rez.Config.AppUrl(), inc.Slug)
 	topic := fmt.Sprintf("[%s] %s | %s | %s", severity, inc.Title, status)
 
-	return s.withClient(ctx, func(client *slack.Client) error {
+	return w.chat.withClient(ctx, func(client *slack.Client) error {
 		_, setErr := client.SetTopicOfConversationContext(ctx, inc.ChatChannelID, topic)
 		if setErr != nil {
 			return fmt.Errorf("failed to set channel topic: %w", setErr)

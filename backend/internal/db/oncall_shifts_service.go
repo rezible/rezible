@@ -135,34 +135,40 @@ func (s *OncallShiftsService) HandlePeriodicScanShifts(ctx context.Context, _ jo
 
 	reminderWindow := time.Minute * 10
 
-	var params []jobs.InsertJobParams
+	var params []jobs.InsertManyParams
 	for _, shift := range shifts {
 		ho := shift.Edges.Handover
 		reminderSent := ho != nil && ho.ReminderSent // !ho.ReminderSentAt.IsZero
 		if !reminderSent {
-			params = append(params, jobs.InsertJobParams{
-				Args:        jobs.EnsureShiftHandoverReminderSent{ShiftId: shift.ID},
-				ScheduledAt: shift.EndAt.Add(-reminderWindow),
-				Uniqueness: &jobs.JobUniquenessOpts{
-					Args: true,
+			params = append(params, jobs.InsertManyParams{
+				Args: jobs.EnsureShiftHandoverReminderSent{ShiftId: shift.ID},
+				InsertOpts: &jobs.InsertOpts{
+					ScheduledAt: shift.EndAt.Add(-reminderWindow),
+					UniqueOpts: jobs.UniqueOpts{
+						ByArgs: true,
+					},
 				},
 			})
 		}
 		isSent := ho != nil && !ho.SentAt.IsZero()
 		if !isSent {
-			params = append(params, jobs.InsertJobParams{
-				Args:        jobs.EnsureShiftHandoverSent{ShiftId: shift.ID},
-				ScheduledAt: shift.EndAt,
-				Uniqueness: &jobs.JobUniquenessOpts{
-					Args: true,
+			params = append(params, jobs.InsertManyParams{
+				Args: jobs.EnsureShiftHandoverSent{ShiftId: shift.ID},
+				InsertOpts: &jobs.InsertOpts{
+					ScheduledAt: shift.EndAt,
+					UniqueOpts: jobs.UniqueOpts{
+						ByArgs: true,
+					},
 				},
 			})
 		}
-		params = append(params, jobs.InsertJobParams{
-			Args:        jobs.GenerateShiftMetrics{ShiftId: shift.ID},
-			ScheduledAt: shift.EndAt,
-			Uniqueness: &jobs.JobUniquenessOpts{
-				Args: true,
+		params = append(params, jobs.InsertManyParams{
+			Args: jobs.GenerateShiftMetrics{ShiftId: shift.ID},
+			InsertOpts: &jobs.InsertOpts{
+				ScheduledAt: shift.EndAt,
+				UniqueOpts: jobs.UniqueOpts{
+					ByArgs: true,
+				},
 			},
 		})
 	}

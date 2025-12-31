@@ -26,9 +26,9 @@ type ChatService struct {
 	oauthConfig *oauth2.Config
 }
 
-func NewChatService(jobs rez.JobsService, messages rez.MessageService, integrations rez.IntegrationsService, users rez.UserService, incidents rez.IncidentService, annos rez.EventAnnotationsService, components rez.SystemComponentsService) (*ChatService, error) {
+func NewChatService(jobSvc rez.JobsService, messages rez.MessageService, integrations rez.IntegrationsService, users rez.UserService, incidents rez.IncidentService, annos rez.EventAnnotationsService, components rez.SystemComponentsService) (*ChatService, error) {
 	s := &ChatService{
-		jobs:         jobs,
+		jobs:         jobSvc,
 		messages:     messages,
 		integrations: integrations,
 		users:        users,
@@ -39,8 +39,7 @@ func NewChatService(jobs rez.JobsService, messages rez.MessageService, integrati
 	}
 
 	integrations.RegisterOAuth2Handler(integrationName, s)
-
-	s.messages.AddConsumerHandler("SlackIncidentUpdate", rez.MessageIncidentUpdatedTopic, s.incidentUpdateMessageHandler)
+	s.setupIncidentUpdateHandler()
 
 	return s, nil
 }

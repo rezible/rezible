@@ -108,9 +108,9 @@ type (
 		Start(context.Context) error
 		Stop(context.Context) error
 
-		Insert(ctx context.Context, params jobs.InsertJobParams) error
-		InsertTx(ctx context.Context, tx *ent.Tx, params jobs.InsertJobParams) error
-		InsertMany(ctx context.Context, params []jobs.InsertJobParams) error
+		Insert(context.Context, jobs.JobArgs, *jobs.InsertOpts) error
+		InsertTx(context.Context, *ent.Tx, jobs.JobArgs, *jobs.InsertOpts) error
+		InsertMany(context.Context, []jobs.InsertManyParams) error
 	}
 )
 
@@ -267,8 +267,6 @@ type (
 		SendOncallHandover(ctx context.Context, params SendOncallHandoverParams) error
 		SendOncallHandoverReminder(context.Context, *ent.OncallShift) error
 
-		HandleIncidentChatUpdate(context.Context, jobs.HandleIncidentChatUpdate) error
-
 		EnableEventListener() bool
 		MakeEventListener() (ChatEventListener, error)
 	}
@@ -280,11 +278,8 @@ type (
 )
 
 type (
-	LanguageModelService interface {
-		GenerateDebriefResponse(context.Context, *ent.IncidentDebrief) (*ent.IncidentDebriefMessage, error)
-	}
-
 	AiAgentService interface {
+		GenerateDebriefResponse(context.Context, *ent.IncidentDebrief) (*ent.IncidentDebriefMessage, error)
 	}
 )
 
