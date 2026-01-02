@@ -8,7 +8,6 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/gosimple/slug"
-	"github.com/rezible/rezible/access"
 	"github.com/rezible/rezible/ent/retrospective"
 	"github.com/rs/zerolog/log"
 
@@ -123,23 +122,21 @@ type incidentMutator interface {
 	Mutation() *ent.IncidentMutation
 }
 
-func (s *IncidentService) Set(ctx context.Context, id uuid.UUID, setFn func(*ent.IncidentMutation), edges *ent.IncidentEdges) (*ent.Incident, error) {
-	var mutator incidentMutator
+func (s *IncidentService) Set(ctx context.Context, id uuid.UUID, setFn func(*ent.IncidentMutation) []ent.Mutation) (*ent.Incident, error) {
 	isNew := id == uuid.Nil
-
-	var curr *ent.Incident
 	if !isNew {
-		var getErr error
-		curr, getErr = s.db.Incident.Get(ctx, id)
-		if getErr != nil {
+		exists, getErr := s.db.Incident.Query().Where(incident.ID(id)).Exist(ctx)
+		if getErr != nil || !exists {
 			return nil, fmt.Errorf("fetch existing incident: %w", getErr)
 		}
 	}
 
 	var uniqueSlug string
 	if isNew {
+		preMut := s.db.Incident.Create().Mutation()
+		setFn(preMut)
 		var slugErr error
-		uniqueSlug, slugErr = s.generateSlugForMutation(ctx, setFn)
+		uniqueSlug, slugErr = s.generateSlugForMutation(ctx, preMut)
 		if slugErr != nil {
 			return nil, fmt.Errorf("generate unique slug: %w", slugErr)
 		}
@@ -147,17 +144,20 @@ func (s *IncidentService) Set(ctx context.Context, id uuid.UUID, setFn func(*ent
 
 	var updated *ent.Incident
 	updateTx := func(tx *ent.Tx) error {
-		if curr == nil {
-			mutator = tx.Incident.Create().SetID(uuid.New())
+		var mutator incidentMutator
+		if isNew {
+			id = uuid.New()
+			mutator = tx.Incident.Create().SetID(id)
 		} else {
-			mutator = tx.Incident.UpdateOne(curr)
+			mutator = tx.Incident.UpdateOneID(id)
 		}
 
-		mut := mutator.Mutation()
-		setFn(mut)
+		incidentMut := mutator.Mutation()
+
+		edgeMutations := setFn(incidentMut)
 
 		if isNew && uniqueSlug != "" {
-			mut.SetSlug(uniqueSlug)
+			incidentMut.SetSlug(uniqueSlug)
 		}
 
 		var saveErr error
@@ -166,23 +166,9 @@ func (s *IncidentService) Set(ctx context.Context, id uuid.UUID, setFn func(*ent
 			return fmt.Errorf("save incident: %w", saveErr)
 		}
 
-		// TODO: don't do this
-		if edges != nil {
-			if len(edges.Milestones) > 0 {
-				ms := make([]*ent.IncidentMilestoneCreate, len(edges.Milestones))
-				for i, m := range edges.Milestones {
-					ms[i] = tx.IncidentMilestone.Create().
-						SetKind(m.Kind).
-						SetTimestamp(m.Timestamp).
-						SetExternalID(m.ExternalID).
-						SetDescription(m.Description).
-						SetSource(m.Source).
-						SetIncident(updated)
-				}
-				milestonesErr := tx.IncidentMilestone.CreateBulk(ms...).Exec(ctx)
-				if milestonesErr != nil {
-					return fmt.Errorf("save milestones: %w", milestonesErr)
-				}
+		for _, edgeMutation := range edgeMutations {
+			if _, edgeErr := tx.Client().Mutate(ctx, edgeMutation); edgeErr != nil {
+				return fmt.Errorf("edge mutation: %w", edgeErr)
 			}
 		}
 
@@ -193,27 +179,24 @@ func (s *IncidentService) Set(ctx context.Context, id uuid.UUID, setFn func(*ent
 		return nil, fmt.Errorf("update: %w", txErr)
 	}
 
-	log.Debug().Interface("ac", access.GetContext(ctx)).Msg("incident set")
-	s.publishIncidentUpdatedMessage(ctx, updated)
+	updateEvent := rez.EventOnIncidentUpdated{IncidentId: updated.ID}
+	if pubErr := s.msgs.PublishEvent(ctx, updateEvent); pubErr != nil {
+		log.Error().Err(pubErr).Msg("failed to publish incident updated message")
+	}
 
 	return updated, nil
 }
 
-func (s *IncidentService) generateSlugForMutation(ctx context.Context, setFn func(*ent.IncidentMutation)) (string, error) {
-	preMut := s.db.Incident.Create().Mutation()
-	setFn(preMut)
+func (s *IncidentService) onIncidentUpdate() {
+
+}
+
+func (s *IncidentService) generateSlugForMutation(ctx context.Context, m *ent.IncidentMutation) (string, error) {
 	openedAt := time.Now()
-	if at, exists := preMut.OpenedAt(); exists {
+	if at, exists := m.OpenedAt(); exists {
 		openedAt = at
 	}
 	return s.generateIncidentSlug(ctx, openedAt)
-}
-
-func (s *IncidentService) publishIncidentUpdatedMessage(ctx context.Context, inc *ent.Incident) {
-	msg := s.msgs.NewMessage(ctx, []byte(inc.ID.String()))
-	if pubErr := s.msgs.Publish(rez.MessageIncidentUpdatedTopic, msg); pubErr != nil {
-		log.Error().Err(pubErr).Msg("failed to publish incident updated message")
-	}
 }
 
 func (s *IncidentService) GetByChatChannelID(ctx context.Context, id string) (*ent.Incident, error) {

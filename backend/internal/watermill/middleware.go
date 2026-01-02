@@ -3,77 +3,52 @@ package watermill
 import (
 	"encoding/json"
 	"fmt"
-	"time"
 
-	"github.com/ThreeDotsLabs/watermill"
 	"github.com/ThreeDotsLabs/watermill/message"
 	"github.com/ThreeDotsLabs/watermill/message/router/middleware"
 	"github.com/rezible/rezible/access"
 	"github.com/rs/zerolog/log"
 )
 
-func addMiddleware(router *message.Router, logger watermill.LoggerAdapter, pub message.Publisher, sub message.Subscriber) error {
-	retry := middleware.Retry{
-		MaxRetries:      1,
-		InitialInterval: time.Second,
-		Logger:          logger,
+const (
+	messageMetadataKeyAccessContext = "ac"
+)
+
+func (ms *MessageService) setupPoisonQueue(pub message.Publisher, sub message.Subscriber) (message.HandlerMiddleware, error) {
+	poisonFilter := func(err error) bool {
+		return true
 	}
 
-	poison, poisonErr := makePoisonQueueMiddleware(pub)
+	poisonQueueTopic := "poison.queue"
+	poison, poisonErr := middleware.PoisonQueueWithFilter(pub, poisonQueueTopic, poisonFilter)
 	if poisonErr != nil {
-		return fmt.Errorf("failed initializing poison queue: %w", poisonErr)
+		return nil, fmt.Errorf("failed initializing poison queue: %w", poisonErr)
 	}
+	ms.router.AddConsumerHandler("PoisonQueueLogger", poisonQueueTopic, sub, ms.handlePoisonQueueMessageAdded)
 
-	throttle := middleware.NewThrottle(10, time.Second)
-
-	router.AddConsumerHandler("PoisonQueueLogger", "poison", sub, func(m *message.Message) error {
-		log.Error().Msg("message sent to poison queue")
-		return nil
-	})
-
-	router.AddMiddleware(
-		throttle.Middleware,
-		middleware.CorrelationID,
-		setMessageAccessContextMiddleware,
-		// send errors to different queue
-		poison,
-		// catch errors & retry up to 1 time, then bubble up
-		retry.Middleware,
-		// catch panics and return as error
-		middleware.Recoverer,
-	)
-	return nil
-
+	return poison, nil
 }
 
-func setMessageMetadata(msg *message.Message) error {
+func (ms *MessageService) setMessageMetadataPublisherTransform(msg *message.Message) {
 	ac := access.GetContext(msg.Context())
 	acs, jsonErr := json.Marshal(ac)
 	if jsonErr != nil {
-		return fmt.Errorf("marshalling access context: %w", jsonErr)
+		log.Error().Err(jsonErr).Msg("failed to marshal access context")
+		return
 	}
-	msg.Metadata.Set("ac", string(acs))
-	return nil
+	msg.Metadata.Set(messageMetadataKeyAccessContext, string(acs))
 }
 
 func setMessageAccessContextMiddleware(fn message.HandlerFunc) message.HandlerFunc {
 	return func(msg *message.Message) ([]*message.Message, error) {
-		var ac access.Context
-		if jsonErr := json.Unmarshal([]byte(msg.Metadata.Get("ac")), &ac); jsonErr != nil {
-			return nil, fmt.Errorf("unmarshalling access context: %w", jsonErr)
+		mdAc := msg.Metadata.Get(messageMetadataKeyAccessContext)
+		if len(mdAc) > 0 {
+			var ac access.Context
+			if jsonErr := json.Unmarshal([]byte(mdAc), &ac); jsonErr != nil {
+				return nil, fmt.Errorf("unmarshalling access context: %w", jsonErr)
+			}
+			msg.SetContext(access.SetContext(msg.Context(), ac))
 		}
-		msg.SetContext(access.SetContext(msg.Context(), ac))
 		return fn(msg)
 	}
-}
-
-func makePoisonQueueMiddleware(pub message.Publisher) (message.HandlerMiddleware, error) {
-	poisonFilter := func(err error) bool {
-		return true
-	}
-	poison, poisonErr := middleware.PoisonQueueWithFilter(pub, "poison", poisonFilter)
-	if poisonErr != nil {
-		return nil, fmt.Errorf("failed initializing poison queue: %w", poisonErr)
-	}
-	return poison, nil
 }

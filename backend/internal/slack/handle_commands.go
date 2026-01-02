@@ -3,24 +3,10 @@ package slack
 import (
 	"context"
 	"fmt"
-	"time"
 
 	"github.com/rezible/rezible/ent"
-	"github.com/rs/zerolog/log"
 	"github.com/slack-go/slack"
 )
-
-func (s *ChatService) onSlashCommandReceived(cmd slack.SlashCommand) {
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second*3)
-	defer cancel()
-
-	_, _, handleErr := s.handleSlashCommand(ctx, &cmd)
-	if handleErr != nil {
-		log.Error().
-			Err(handleErr).
-			Msg("failed to handle slash command")
-	}
-}
 
 func (s *ChatService) handleSlashCommand(ctx context.Context, ev *slack.SlashCommand) (bool, any, error) {
 	var userErr error

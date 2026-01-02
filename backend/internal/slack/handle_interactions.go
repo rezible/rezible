@@ -109,16 +109,6 @@ func (s *ChatService) handleIncidentModalInteraction(ctx context.Context, ic *sl
 	return nil, nil
 }
 
-type slackIncidentDeclaration struct {
-	TeamID    string
-	UserID    string
-	ChannelID string
-}
-
-func (d slackIncidentDeclaration) ToMilestoneID(hash string) string {
-	return fmt.Sprintf("%s_%s_%s_%s", d.TeamID, d.UserID, d.ChannelID, hash)
-}
-
 func (s *ChatService) handleIncidentModalSubmission(ctx context.Context, ic *slack.InteractionCallback) (any, error) {
 	var meta incidentViewMetadata
 	if jsonErr := json.Unmarshal([]byte(ic.View.PrivateMetadata), &meta); jsonErr != nil {
@@ -130,30 +120,30 @@ func (s *ChatService) handleIncidentModalSubmission(ctx context.Context, ic *sla
 		return nil, errors.New("invalid view state")
 	}
 
-	decl := slackIncidentDeclaration{
-		TeamID:    ic.Team.ID,
-		UserID:    meta.UserId,
-		ChannelID: meta.ChannelId,
-	}
+	// TODO: type this better
+	milestoneExternalId := fmt.Sprintf("%s_%s_%s_%s", ic.Team.ID, meta.ChannelId, meta.UserId, ic.View.Hash)
 
-	incidentDeclaredMilestone := &ent.IncidentMilestone{
-		Kind:        incidentmilestone.KindResponse,
-		Description: "Incident declared via slack",
-		Timestamp:   time.Now(),
-		Source:      integrationName,
-		ExternalID:  decl.ToMilestoneID(ic.View.Hash),
-	}
-	edges := &ent.IncidentEdges{
-		Milestones: ent.IncidentMilestones{incidentDeclaredMilestone},
-	}
-
-	setFn := func(m *ent.IncidentMutation) {
+	setFn := func(m *ent.IncidentMutation) []ent.Mutation {
 		setIncidentModalStateFields(m, state)
+
+		incidentId, exists := m.ID()
+		if !exists {
+			return nil
+		}
+		milestoneCreate := m.Client().IncidentMilestone.Create().
+			SetKind(incidentmilestone.KindResponse).
+			SetDescription("Incident declared via slack").
+			SetTimestamp(time.Now()).
+			SetSource(integrationName).
+			SetExternalID(milestoneExternalId).
+			SetIncidentID(incidentId).
+			Mutation()
+
+		return []ent.Mutation{milestoneCreate}
 	}
-	_, incErr := s.incidents.Set(ctx, meta.IncidentId, setFn, edges)
+	_, incErr := s.incidents.Set(ctx, meta.IncidentId, setFn)
 	if incErr != nil {
 		return nil, fmt.Errorf("upsert incident from modal data: %w", incErr)
 	}
-
 	return nil, nil
 }

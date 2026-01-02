@@ -39,7 +39,10 @@ func NewChatService(jobSvc rez.JobsService, messages rez.MessageService, integra
 	}
 
 	integrations.RegisterOAuth2Handler(integrationName, s)
-	s.setupIncidentUpdateHandler()
+
+	if msgsErr := s.addIncidentMessageHandlers(); msgsErr != nil {
+		return nil, fmt.Errorf("adding message handlers: %w", msgsErr)
+	}
 
 	return s, nil
 }

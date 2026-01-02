@@ -7,10 +7,10 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/ThreeDotsLabs/watermill/components/cqrs"
 	"github.com/rezible/rezible/ent"
 	"github.com/rezible/rezible/jobs"
 
-	"github.com/ThreeDotsLabs/watermill/message"
 	"github.com/google/uuid"
 	"github.com/texm/prosemirror-go"
 	"golang.org/x/oauth2"
@@ -55,6 +55,8 @@ type Database interface {
 	Close() error
 }
 
+type SetMutationFn[T any] = func(*ent.Tx, T) error
+
 type ListParams = ent.ListParams
 
 type (
@@ -96,14 +98,22 @@ type (
 )
 
 type (
-	Message        = message.Message
 	MessageService interface {
-		NewMessage(ctx context.Context, payload []byte) *Message
-		Publish(topic string, msgs ...*Message) error
-		AddHandler(name, subTopic, pubTopic string, fn func(context.Context, *Message) ([]*Message, error))
-		AddConsumerHandler(name, subTopic string, fn func(context.Context, *Message) error)
+		AddCommandHandlers(handlers ...cqrs.CommandHandler) error
+		SendCommand(ctx context.Context, cmd any) error
+
+		AddEventHandlers(handlers ...cqrs.EventHandler) error
+		PublishEvent(ctx context.Context, event any) error
 	}
 )
+
+func NewCommandHandler[T any](name string, handleFn func(context.Context, *T) error) cqrs.CommandHandler {
+	return cqrs.NewCommandHandler[T](name, handleFn)
+}
+
+func NewEventHandler[T any](name string, handleFn func(context.Context, *T) error) cqrs.EventHandler {
+	return cqrs.NewEventHandler[T](name, handleFn)
+}
 
 type (
 	JobsService interface {
@@ -359,7 +369,7 @@ type (
 
 	IncidentService interface {
 		Get(context.Context, uuid.UUID) (*ent.Incident, error)
-		Set(context.Context, uuid.UUID, func(*ent.IncidentMutation), *ent.IncidentEdges) (*ent.Incident, error)
+		Set(context.Context, uuid.UUID, func(*ent.IncidentMutation) []ent.Mutation) (*ent.Incident, error)
 		GetBySlug(context.Context, string) (*ent.Incident, error)
 		GetByChatChannelID(context.Context, string) (*ent.Incident, error)
 		ListIncidents(context.Context, ListIncidentsParams) (*ent.ListResult[*ent.Incident], error)
@@ -370,9 +380,11 @@ type (
 
 		GetIncidentMetadata(context.Context) (*IncidentMetadata, error)
 	}
-)
 
-var MessageIncidentUpdatedTopic = "incident_updated"
+	EventOnIncidentUpdated struct {
+		IncidentId uuid.UUID
+	}
+)
 
 type (
 	DebriefService interface {
