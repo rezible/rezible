@@ -34,6 +34,20 @@ func (_c *SystemHazardCreate) SetTenantID(v int) *SystemHazardCreate {
 	return _c
 }
 
+// SetExternalID sets the "external_id" field.
+func (_c *SystemHazardCreate) SetExternalID(v string) *SystemHazardCreate {
+	_c.mutation.SetExternalID(v)
+	return _c
+}
+
+// SetNillableExternalID sets the "external_id" field if the given value is not nil.
+func (_c *SystemHazardCreate) SetNillableExternalID(v *string) *SystemHazardCreate {
+	if v != nil {
+		_c.SetExternalID(*v)
+	}
+	return _c
+}
+
 // SetName sets the "name" field.
 func (_c *SystemHazardCreate) SetName(v string) *SystemHazardCreate {
 	_c.mutation.SetName(v)
@@ -260,6 +274,10 @@ func (_c *SystemHazardCreate) createSpec() (*SystemHazard, *sqlgraph.CreateSpec)
 		_node.ID = id
 		_spec.ID.Value = &id
 	}
+	if value, ok := _c.mutation.ExternalID(); ok {
+		_spec.SetField(systemhazard.FieldExternalID, field.TypeString, value)
+		_node.ExternalID = value
+	}
 	if value, ok := _c.mutation.Name(); ok {
 		_spec.SetField(systemhazard.FieldName, field.TypeString, value)
 		_node.Name = value
@@ -393,6 +411,24 @@ type (
 	}
 )
 
+// SetExternalID sets the "external_id" field.
+func (u *SystemHazardUpsert) SetExternalID(v string) *SystemHazardUpsert {
+	u.Set(systemhazard.FieldExternalID, v)
+	return u
+}
+
+// UpdateExternalID sets the "external_id" field to the value that was provided on create.
+func (u *SystemHazardUpsert) UpdateExternalID() *SystemHazardUpsert {
+	u.SetExcluded(systemhazard.FieldExternalID)
+	return u
+}
+
+// ClearExternalID clears the value of the "external_id" field.
+func (u *SystemHazardUpsert) ClearExternalID() *SystemHazardUpsert {
+	u.SetNull(systemhazard.FieldExternalID)
+	return u
+}
+
 // SetName sets the "name" field.
 func (u *SystemHazardUpsert) SetName(v string) *SystemHazardUpsert {
 	u.Set(systemhazard.FieldName, v)
@@ -490,6 +526,27 @@ func (u *SystemHazardUpsertOne) Update(set func(*SystemHazardUpsert)) *SystemHaz
 		set(&SystemHazardUpsert{UpdateSet: update})
 	}))
 	return u
+}
+
+// SetExternalID sets the "external_id" field.
+func (u *SystemHazardUpsertOne) SetExternalID(v string) *SystemHazardUpsertOne {
+	return u.Update(func(s *SystemHazardUpsert) {
+		s.SetExternalID(v)
+	})
+}
+
+// UpdateExternalID sets the "external_id" field to the value that was provided on create.
+func (u *SystemHazardUpsertOne) UpdateExternalID() *SystemHazardUpsertOne {
+	return u.Update(func(s *SystemHazardUpsert) {
+		s.UpdateExternalID()
+	})
+}
+
+// ClearExternalID clears the value of the "external_id" field.
+func (u *SystemHazardUpsertOne) ClearExternalID() *SystemHazardUpsertOne {
+	return u.Update(func(s *SystemHazardUpsert) {
+		s.ClearExternalID()
+	})
 }
 
 // SetName sets the "name" field.
@@ -764,6 +821,27 @@ func (u *SystemHazardUpsertBulk) Update(set func(*SystemHazardUpsert)) *SystemHa
 		set(&SystemHazardUpsert{UpdateSet: update})
 	}))
 	return u
+}
+
+// SetExternalID sets the "external_id" field.
+func (u *SystemHazardUpsertBulk) SetExternalID(v string) *SystemHazardUpsertBulk {
+	return u.Update(func(s *SystemHazardUpsert) {
+		s.SetExternalID(v)
+	})
+}
+
+// UpdateExternalID sets the "external_id" field to the value that was provided on create.
+func (u *SystemHazardUpsertBulk) UpdateExternalID() *SystemHazardUpsertBulk {
+	return u.Update(func(s *SystemHazardUpsert) {
+		s.UpdateExternalID()
+	})
+}
+
+// ClearExternalID clears the value of the "external_id" field.
+func (u *SystemHazardUpsertBulk) ClearExternalID() *SystemHazardUpsertBulk {
+	return u.Update(func(s *SystemHazardUpsert) {
+		s.ClearExternalID()
+	})
 }
 
 // SetName sets the "name" field.

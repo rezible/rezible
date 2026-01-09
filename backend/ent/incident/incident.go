@@ -3,8 +3,6 @@
 package incident
 
 import (
-	"time"
-
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
@@ -24,20 +22,12 @@ const (
 	FieldSlug = "slug"
 	// FieldTitle holds the string denoting the title field in the database.
 	FieldTitle = "title"
-	// FieldPrivate holds the string denoting the private field in the database.
-	FieldPrivate = "private"
-	// FieldSummary holds the string denoting the summary field in the database.
-	FieldSummary = "summary"
-	// FieldOpenedAt holds the string denoting the opened_at field in the database.
-	FieldOpenedAt = "opened_at"
-	// FieldModifiedAt holds the string denoting the modified_at field in the database.
-	FieldModifiedAt = "modified_at"
-	// FieldClosedAt holds the string denoting the closed_at field in the database.
-	FieldClosedAt = "closed_at"
 	// FieldSeverityID holds the string denoting the severity_id field in the database.
 	FieldSeverityID = "severity_id"
 	// FieldTypeID holds the string denoting the type_id field in the database.
 	FieldTypeID = "type_id"
+	// FieldSummary holds the string denoting the summary field in the database.
+	FieldSummary = "summary"
 	// FieldChatChannelID holds the string denoting the chat_channel_id field in the database.
 	FieldChatChannelID = "chat_channel_id"
 	// EdgeTenant holds the string denoting the tenant edge name in mutations.
@@ -182,13 +172,9 @@ var Columns = []string{
 	FieldExternalID,
 	FieldSlug,
 	FieldTitle,
-	FieldPrivate,
-	FieldSummary,
-	FieldOpenedAt,
-	FieldModifiedAt,
-	FieldClosedAt,
 	FieldSeverityID,
 	FieldTypeID,
+	FieldSummary,
 	FieldChatChannelID,
 }
 
@@ -228,10 +214,6 @@ func ValidColumn(column string) bool {
 var (
 	Hooks  [1]ent.Hook
 	Policy ent.Policy
-	// DefaultPrivate holds the default value on creation for the "private" field.
-	DefaultPrivate bool
-	// DefaultOpenedAt holds the default value on creation for the "opened_at" field.
-	DefaultOpenedAt func() time.Time
 	// DefaultID holds the default value on creation for the "id" field.
 	DefaultID func() uuid.UUID
 )
@@ -264,31 +246,6 @@ func ByTitle(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldTitle, opts...).ToFunc()
 }
 
-// ByPrivate orders the results by the private field.
-func ByPrivate(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldPrivate, opts...).ToFunc()
-}
-
-// BySummary orders the results by the summary field.
-func BySummary(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldSummary, opts...).ToFunc()
-}
-
-// ByOpenedAt orders the results by the opened_at field.
-func ByOpenedAt(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldOpenedAt, opts...).ToFunc()
-}
-
-// ByModifiedAt orders the results by the modified_at field.
-func ByModifiedAt(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldModifiedAt, opts...).ToFunc()
-}
-
-// ByClosedAt orders the results by the closed_at field.
-func ByClosedAt(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldClosedAt, opts...).ToFunc()
-}
-
 // BySeverityID orders the results by the severity_id field.
 func BySeverityID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldSeverityID, opts...).ToFunc()
@@ -297,6 +254,11 @@ func BySeverityID(opts ...sql.OrderTermOption) OrderOption {
 // ByTypeID orders the results by the type_id field.
 func ByTypeID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldTypeID, opts...).ToFunc()
+}
+
+// BySummary orders the results by the summary field.
+func BySummary(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldSummary, opts...).ToFunc()
 }
 
 // ByChatChannelID orders the results by the chat_channel_id field.

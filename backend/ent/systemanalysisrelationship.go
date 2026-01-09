@@ -45,17 +45,9 @@ type SystemAnalysisRelationshipEdges struct {
 	SystemAnalysis *SystemAnalysis `json:"system_analysis,omitempty"`
 	// ComponentRelationship holds the value of the component_relationship edge.
 	ComponentRelationship *SystemComponentRelationship `json:"component_relationship,omitempty"`
-	// Controls holds the value of the controls edge.
-	Controls []*SystemComponentControl `json:"controls,omitempty"`
-	// Signals holds the value of the signals edge.
-	Signals []*SystemComponentSignal `json:"signals,omitempty"`
-	// ControlActions holds the value of the control_actions edge.
-	ControlActions []*SystemRelationshipControlAction `json:"control_actions,omitempty"`
-	// FeedbackSignals holds the value of the feedback_signals edge.
-	FeedbackSignals []*SystemRelationshipFeedbackSignal `json:"feedback_signals,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [7]bool
+	loadedTypes [3]bool
 }
 
 // TenantOrErr returns the Tenant value or an error if the edge
@@ -89,42 +81,6 @@ func (e SystemAnalysisRelationshipEdges) ComponentRelationshipOrErr() (*SystemCo
 		return nil, &NotFoundError{label: systemcomponentrelationship.Label}
 	}
 	return nil, &NotLoadedError{edge: "component_relationship"}
-}
-
-// ControlsOrErr returns the Controls value or an error if the edge
-// was not loaded in eager-loading.
-func (e SystemAnalysisRelationshipEdges) ControlsOrErr() ([]*SystemComponentControl, error) {
-	if e.loadedTypes[3] {
-		return e.Controls, nil
-	}
-	return nil, &NotLoadedError{edge: "controls"}
-}
-
-// SignalsOrErr returns the Signals value or an error if the edge
-// was not loaded in eager-loading.
-func (e SystemAnalysisRelationshipEdges) SignalsOrErr() ([]*SystemComponentSignal, error) {
-	if e.loadedTypes[4] {
-		return e.Signals, nil
-	}
-	return nil, &NotLoadedError{edge: "signals"}
-}
-
-// ControlActionsOrErr returns the ControlActions value or an error if the edge
-// was not loaded in eager-loading.
-func (e SystemAnalysisRelationshipEdges) ControlActionsOrErr() ([]*SystemRelationshipControlAction, error) {
-	if e.loadedTypes[5] {
-		return e.ControlActions, nil
-	}
-	return nil, &NotLoadedError{edge: "control_actions"}
-}
-
-// FeedbackSignalsOrErr returns the FeedbackSignals value or an error if the edge
-// was not loaded in eager-loading.
-func (e SystemAnalysisRelationshipEdges) FeedbackSignalsOrErr() ([]*SystemRelationshipFeedbackSignal, error) {
-	if e.loadedTypes[6] {
-		return e.FeedbackSignals, nil
-	}
-	return nil, &NotLoadedError{edge: "feedback_signals"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -217,26 +173,6 @@ func (_m *SystemAnalysisRelationship) QuerySystemAnalysis() *SystemAnalysisQuery
 // QueryComponentRelationship queries the "component_relationship" edge of the SystemAnalysisRelationship entity.
 func (_m *SystemAnalysisRelationship) QueryComponentRelationship() *SystemComponentRelationshipQuery {
 	return NewSystemAnalysisRelationshipClient(_m.config).QueryComponentRelationship(_m)
-}
-
-// QueryControls queries the "controls" edge of the SystemAnalysisRelationship entity.
-func (_m *SystemAnalysisRelationship) QueryControls() *SystemComponentControlQuery {
-	return NewSystemAnalysisRelationshipClient(_m.config).QueryControls(_m)
-}
-
-// QuerySignals queries the "signals" edge of the SystemAnalysisRelationship entity.
-func (_m *SystemAnalysisRelationship) QuerySignals() *SystemComponentSignalQuery {
-	return NewSystemAnalysisRelationshipClient(_m.config).QuerySignals(_m)
-}
-
-// QueryControlActions queries the "control_actions" edge of the SystemAnalysisRelationship entity.
-func (_m *SystemAnalysisRelationship) QueryControlActions() *SystemRelationshipControlActionQuery {
-	return NewSystemAnalysisRelationshipClient(_m.config).QueryControlActions(_m)
-}
-
-// QueryFeedbackSignals queries the "feedback_signals" edge of the SystemAnalysisRelationship entity.
-func (_m *SystemAnalysisRelationship) QueryFeedbackSignals() *SystemRelationshipFeedbackSignalQuery {
-	return NewSystemAnalysisRelationshipClient(_m.config).QueryFeedbackSignals(_m)
 }
 
 // Update returns a builder for updating this SystemAnalysisRelationship.

@@ -33,6 +33,26 @@ func (_u *SystemHazardUpdate) Where(ps ...predicate.SystemHazard) *SystemHazardU
 	return _u
 }
 
+// SetExternalID sets the "external_id" field.
+func (_u *SystemHazardUpdate) SetExternalID(v string) *SystemHazardUpdate {
+	_u.mutation.SetExternalID(v)
+	return _u
+}
+
+// SetNillableExternalID sets the "external_id" field if the given value is not nil.
+func (_u *SystemHazardUpdate) SetNillableExternalID(v *string) *SystemHazardUpdate {
+	if v != nil {
+		_u.SetExternalID(*v)
+	}
+	return _u
+}
+
+// ClearExternalID clears the value of the "external_id" field.
+func (_u *SystemHazardUpdate) ClearExternalID() *SystemHazardUpdate {
+	_u.mutation.ClearExternalID()
+	return _u
+}
+
 // SetName sets the "name" field.
 func (_u *SystemHazardUpdate) SetName(v string) *SystemHazardUpdate {
 	_u.mutation.SetName(v)
@@ -267,6 +287,12 @@ func (_u *SystemHazardUpdate) sqlSave(ctx context.Context) (_node int, err error
 			}
 		}
 	}
+	if value, ok := _u.mutation.ExternalID(); ok {
+		_spec.SetField(systemhazard.FieldExternalID, field.TypeString, value)
+	}
+	if _u.mutation.ExternalIDCleared() {
+		_spec.ClearField(systemhazard.FieldExternalID, field.TypeString)
+	}
 	if value, ok := _u.mutation.Name(); ok {
 		_spec.SetField(systemhazard.FieldName, field.TypeString, value)
 	}
@@ -434,6 +460,26 @@ type SystemHazardUpdateOne struct {
 	hooks     []Hook
 	mutation  *SystemHazardMutation
 	modifiers []func(*sql.UpdateBuilder)
+}
+
+// SetExternalID sets the "external_id" field.
+func (_u *SystemHazardUpdateOne) SetExternalID(v string) *SystemHazardUpdateOne {
+	_u.mutation.SetExternalID(v)
+	return _u
+}
+
+// SetNillableExternalID sets the "external_id" field if the given value is not nil.
+func (_u *SystemHazardUpdateOne) SetNillableExternalID(v *string) *SystemHazardUpdateOne {
+	if v != nil {
+		_u.SetExternalID(*v)
+	}
+	return _u
+}
+
+// ClearExternalID clears the value of the "external_id" field.
+func (_u *SystemHazardUpdateOne) ClearExternalID() *SystemHazardUpdateOne {
+	_u.mutation.ClearExternalID()
+	return _u
 }
 
 // SetName sets the "name" field.
@@ -699,6 +745,12 @@ func (_u *SystemHazardUpdateOne) sqlSave(ctx context.Context) (_node *SystemHaza
 				ps[i](selector)
 			}
 		}
+	}
+	if value, ok := _u.mutation.ExternalID(); ok {
+		_spec.SetField(systemhazard.FieldExternalID, field.TypeString, value)
+	}
+	if _u.mutation.ExternalIDCleared() {
+		_spec.ClearField(systemhazard.FieldExternalID, field.TypeString)
 	}
 	if value, ok := _u.mutation.Name(); ok {
 		_spec.SetField(systemhazard.FieldName, field.TypeString, value)

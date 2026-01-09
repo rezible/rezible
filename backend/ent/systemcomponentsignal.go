@@ -43,7 +43,7 @@ type SystemComponentSignalEdges struct {
 	// Component holds the value of the component edge.
 	Component *SystemComponent `json:"component,omitempty"`
 	// Relationships holds the value of the relationships edge.
-	Relationships []*SystemAnalysisRelationship `json:"relationships,omitempty"`
+	Relationships []*SystemComponentRelationship `json:"relationships,omitempty"`
 	// FeedbackSignals holds the value of the feedback_signals edge.
 	FeedbackSignals []*SystemRelationshipFeedbackSignal `json:"feedback_signals,omitempty"`
 	// loadedTypes holds the information for reporting if a
@@ -75,7 +75,7 @@ func (e SystemComponentSignalEdges) ComponentOrErr() (*SystemComponent, error) {
 
 // RelationshipsOrErr returns the Relationships value or an error if the edge
 // was not loaded in eager-loading.
-func (e SystemComponentSignalEdges) RelationshipsOrErr() ([]*SystemAnalysisRelationship, error) {
+func (e SystemComponentSignalEdges) RelationshipsOrErr() ([]*SystemComponentRelationship, error) {
 	if e.loadedTypes[2] {
 		return e.Relationships, nil
 	}
@@ -179,7 +179,7 @@ func (_m *SystemComponentSignal) QueryComponent() *SystemComponentQuery {
 }
 
 // QueryRelationships queries the "relationships" edge of the SystemComponentSignal entity.
-func (_m *SystemComponentSignal) QueryRelationships() *SystemAnalysisRelationshipQuery {
+func (_m *SystemComponentSignal) QueryRelationships() *SystemComponentRelationshipQuery {
 	return NewSystemComponentSignalClient(_m.config).QueryRelationships(_m)
 }
 

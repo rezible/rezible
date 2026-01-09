@@ -13,8 +13,8 @@ import (
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/predicate"
-	"github.com/rezible/rezible/ent/systemanalysisrelationship"
 	"github.com/rezible/rezible/ent/systemcomponentcontrol"
+	"github.com/rezible/rezible/ent/systemcomponentrelationship"
 	"github.com/rezible/rezible/ent/systemrelationshipcontrolaction"
 )
 
@@ -108,8 +108,8 @@ func (_u *SystemRelationshipControlActionUpdate) SetNillableCreatedAt(v *time.Ti
 	return _u
 }
 
-// SetRelationship sets the "relationship" edge to the SystemAnalysisRelationship entity.
-func (_u *SystemRelationshipControlActionUpdate) SetRelationship(v *SystemAnalysisRelationship) *SystemRelationshipControlActionUpdate {
+// SetRelationship sets the "relationship" edge to the SystemComponentRelationship entity.
+func (_u *SystemRelationshipControlActionUpdate) SetRelationship(v *SystemComponentRelationship) *SystemRelationshipControlActionUpdate {
 	return _u.SetRelationshipID(v.ID)
 }
 
@@ -123,7 +123,7 @@ func (_u *SystemRelationshipControlActionUpdate) Mutation() *SystemRelationshipC
 	return _u.mutation
 }
 
-// ClearRelationship clears the "relationship" edge to the SystemAnalysisRelationship entity.
+// ClearRelationship clears the "relationship" edge to the SystemComponentRelationship entity.
 func (_u *SystemRelationshipControlActionUpdate) ClearRelationship() *SystemRelationshipControlActionUpdate {
 	_u.mutation.ClearRelationship()
 	return _u
@@ -219,7 +219,7 @@ func (_u *SystemRelationshipControlActionUpdate) sqlSave(ctx context.Context) (_
 			Columns: []string{systemrelationshipcontrolaction.RelationshipColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(systemanalysisrelationship.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(systemcomponentrelationship.FieldID, field.TypeUUID),
 			},
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
@@ -232,7 +232,7 @@ func (_u *SystemRelationshipControlActionUpdate) sqlSave(ctx context.Context) (_
 			Columns: []string{systemrelationshipcontrolaction.RelationshipColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(systemanalysisrelationship.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(systemcomponentrelationship.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {
@@ -367,8 +367,8 @@ func (_u *SystemRelationshipControlActionUpdateOne) SetNillableCreatedAt(v *time
 	return _u
 }
 
-// SetRelationship sets the "relationship" edge to the SystemAnalysisRelationship entity.
-func (_u *SystemRelationshipControlActionUpdateOne) SetRelationship(v *SystemAnalysisRelationship) *SystemRelationshipControlActionUpdateOne {
+// SetRelationship sets the "relationship" edge to the SystemComponentRelationship entity.
+func (_u *SystemRelationshipControlActionUpdateOne) SetRelationship(v *SystemComponentRelationship) *SystemRelationshipControlActionUpdateOne {
 	return _u.SetRelationshipID(v.ID)
 }
 
@@ -382,7 +382,7 @@ func (_u *SystemRelationshipControlActionUpdateOne) Mutation() *SystemRelationsh
 	return _u.mutation
 }
 
-// ClearRelationship clears the "relationship" edge to the SystemAnalysisRelationship entity.
+// ClearRelationship clears the "relationship" edge to the SystemComponentRelationship entity.
 func (_u *SystemRelationshipControlActionUpdateOne) ClearRelationship() *SystemRelationshipControlActionUpdateOne {
 	_u.mutation.ClearRelationship()
 	return _u
@@ -508,7 +508,7 @@ func (_u *SystemRelationshipControlActionUpdateOne) sqlSave(ctx context.Context)
 			Columns: []string{systemrelationshipcontrolaction.RelationshipColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(systemanalysisrelationship.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(systemcomponentrelationship.FieldID, field.TypeUUID),
 			},
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
@@ -521,7 +521,7 @@ func (_u *SystemRelationshipControlActionUpdateOne) sqlSave(ctx context.Context)
 			Columns: []string{systemrelationshipcontrolaction.RelationshipColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(systemanalysisrelationship.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(systemcomponentrelationship.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {

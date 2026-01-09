@@ -10,8 +10,8 @@ import (
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
 	"github.com/google/uuid"
-	"github.com/rezible/rezible/ent/systemanalysisrelationship"
 	"github.com/rezible/rezible/ent/systemcomponentcontrol"
+	"github.com/rezible/rezible/ent/systemcomponentrelationship"
 	"github.com/rezible/rezible/ent/systemrelationshipcontrolaction"
 	"github.com/rezible/rezible/ent/tenant"
 )
@@ -44,7 +44,7 @@ type SystemRelationshipControlActionEdges struct {
 	// Tenant holds the value of the tenant edge.
 	Tenant *Tenant `json:"tenant,omitempty"`
 	// Relationship holds the value of the relationship edge.
-	Relationship *SystemAnalysisRelationship `json:"relationship,omitempty"`
+	Relationship *SystemComponentRelationship `json:"relationship,omitempty"`
 	// Control holds the value of the control edge.
 	Control *SystemComponentControl `json:"control,omitempty"`
 	// loadedTypes holds the information for reporting if a
@@ -65,11 +65,11 @@ func (e SystemRelationshipControlActionEdges) TenantOrErr() (*Tenant, error) {
 
 // RelationshipOrErr returns the Relationship value or an error if the edge
 // was not loaded in eager-loading, or loaded but was not found.
-func (e SystemRelationshipControlActionEdges) RelationshipOrErr() (*SystemAnalysisRelationship, error) {
+func (e SystemRelationshipControlActionEdges) RelationshipOrErr() (*SystemComponentRelationship, error) {
 	if e.Relationship != nil {
 		return e.Relationship, nil
 	} else if e.loadedTypes[1] {
-		return nil, &NotFoundError{label: systemanalysisrelationship.Label}
+		return nil, &NotFoundError{label: systemcomponentrelationship.Label}
 	}
 	return nil, &NotLoadedError{edge: "relationship"}
 }
@@ -174,7 +174,7 @@ func (_m *SystemRelationshipControlAction) QueryTenant() *TenantQuery {
 }
 
 // QueryRelationship queries the "relationship" edge of the SystemRelationshipControlAction entity.
-func (_m *SystemRelationshipControlAction) QueryRelationship() *SystemAnalysisRelationshipQuery {
+func (_m *SystemRelationshipControlAction) QueryRelationship() *SystemComponentRelationshipQuery {
 	return NewSystemRelationshipControlActionClient(_m.config).QueryRelationship(_m)
 }
 

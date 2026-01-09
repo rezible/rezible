@@ -188,14 +188,6 @@ func init() {
 	}
 	incidentFields := schema.Incident{}.Fields()
 	_ = incidentFields
-	// incidentDescPrivate is the schema descriptor for private field.
-	incidentDescPrivate := incidentFields[3].Descriptor()
-	// incident.DefaultPrivate holds the default value on creation for the private field.
-	incident.DefaultPrivate = incidentDescPrivate.Default.(bool)
-	// incidentDescOpenedAt is the schema descriptor for opened_at field.
-	incidentDescOpenedAt := incidentFields[5].Descriptor()
-	// incident.DefaultOpenedAt holds the default value on creation for the opened_at field.
-	incident.DefaultOpenedAt = incidentDescOpenedAt.Default.(func() time.Time)
 	// incidentDescID is the schema descriptor for id field.
 	incidentDescID := incidentFields[0].Descriptor()
 	// incident.DefaultID holds the default value on creation for the id field.

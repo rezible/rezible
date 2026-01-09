@@ -88,12 +88,6 @@ func (_u *SystemComponentUpdate) SetNillableKindID(v *uuid.UUID) *SystemComponen
 	return _u
 }
 
-// ClearKindID clears the value of the "kind_id" field.
-func (_u *SystemComponentUpdate) ClearKindID() *SystemComponentUpdate {
-	_u.mutation.ClearKindID()
-	return _u
-}
-
 // SetDescription sets the "description" field.
 func (_u *SystemComponentUpdate) SetDescription(v string) *SystemComponentUpdate {
 	_u.mutation.SetDescription(v)
@@ -573,6 +567,9 @@ func (_u *SystemComponentUpdate) check() error {
 	}
 	if _u.mutation.TenantCleared() && len(_u.mutation.TenantIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "SystemComponent.tenant"`)
+	}
+	if _u.mutation.KindCleared() && len(_u.mutation.KindIDs()) > 0 {
+		return errors.New(`ent: clearing a required unique edge "SystemComponent.kind"`)
 	}
 	return nil
 }
@@ -1234,12 +1231,6 @@ func (_u *SystemComponentUpdateOne) SetNillableKindID(v *uuid.UUID) *SystemCompo
 	return _u
 }
 
-// ClearKindID clears the value of the "kind_id" field.
-func (_u *SystemComponentUpdateOne) ClearKindID() *SystemComponentUpdateOne {
-	_u.mutation.ClearKindID()
-	return _u
-}
-
 // SetDescription sets the "description" field.
 func (_u *SystemComponentUpdateOne) SetDescription(v string) *SystemComponentUpdateOne {
 	_u.mutation.SetDescription(v)
@@ -1732,6 +1723,9 @@ func (_u *SystemComponentUpdateOne) check() error {
 	}
 	if _u.mutation.TenantCleared() && len(_u.mutation.TenantIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "SystemComponent.tenant"`)
+	}
+	if _u.mutation.KindCleared() && len(_u.mutation.KindIDs()) > 0 {
+		return errors.New(`ent: clearing a required unique edge "SystemComponent.kind"`)
 	}
 	return nil
 }

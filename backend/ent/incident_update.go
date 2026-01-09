@@ -6,7 +6,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"time"
 
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
@@ -91,16 +90,30 @@ func (_u *IncidentUpdate) SetNillableTitle(v *string) *IncidentUpdate {
 	return _u
 }
 
-// SetPrivate sets the "private" field.
-func (_u *IncidentUpdate) SetPrivate(v bool) *IncidentUpdate {
-	_u.mutation.SetPrivate(v)
+// SetSeverityID sets the "severity_id" field.
+func (_u *IncidentUpdate) SetSeverityID(v uuid.UUID) *IncidentUpdate {
+	_u.mutation.SetSeverityID(v)
 	return _u
 }
 
-// SetNillablePrivate sets the "private" field if the given value is not nil.
-func (_u *IncidentUpdate) SetNillablePrivate(v *bool) *IncidentUpdate {
+// SetNillableSeverityID sets the "severity_id" field if the given value is not nil.
+func (_u *IncidentUpdate) SetNillableSeverityID(v *uuid.UUID) *IncidentUpdate {
 	if v != nil {
-		_u.SetPrivate(*v)
+		_u.SetSeverityID(*v)
+	}
+	return _u
+}
+
+// SetTypeID sets the "type_id" field.
+func (_u *IncidentUpdate) SetTypeID(v uuid.UUID) *IncidentUpdate {
+	_u.mutation.SetTypeID(v)
+	return _u
+}
+
+// SetNillableTypeID sets the "type_id" field if the given value is not nil.
+func (_u *IncidentUpdate) SetNillableTypeID(v *uuid.UUID) *IncidentUpdate {
+	if v != nil {
+		_u.SetTypeID(*v)
 	}
 	return _u
 }
@@ -122,100 +135,6 @@ func (_u *IncidentUpdate) SetNillableSummary(v *string) *IncidentUpdate {
 // ClearSummary clears the value of the "summary" field.
 func (_u *IncidentUpdate) ClearSummary() *IncidentUpdate {
 	_u.mutation.ClearSummary()
-	return _u
-}
-
-// SetOpenedAt sets the "opened_at" field.
-func (_u *IncidentUpdate) SetOpenedAt(v time.Time) *IncidentUpdate {
-	_u.mutation.SetOpenedAt(v)
-	return _u
-}
-
-// SetNillableOpenedAt sets the "opened_at" field if the given value is not nil.
-func (_u *IncidentUpdate) SetNillableOpenedAt(v *time.Time) *IncidentUpdate {
-	if v != nil {
-		_u.SetOpenedAt(*v)
-	}
-	return _u
-}
-
-// SetModifiedAt sets the "modified_at" field.
-func (_u *IncidentUpdate) SetModifiedAt(v time.Time) *IncidentUpdate {
-	_u.mutation.SetModifiedAt(v)
-	return _u
-}
-
-// SetNillableModifiedAt sets the "modified_at" field if the given value is not nil.
-func (_u *IncidentUpdate) SetNillableModifiedAt(v *time.Time) *IncidentUpdate {
-	if v != nil {
-		_u.SetModifiedAt(*v)
-	}
-	return _u
-}
-
-// ClearModifiedAt clears the value of the "modified_at" field.
-func (_u *IncidentUpdate) ClearModifiedAt() *IncidentUpdate {
-	_u.mutation.ClearModifiedAt()
-	return _u
-}
-
-// SetClosedAt sets the "closed_at" field.
-func (_u *IncidentUpdate) SetClosedAt(v time.Time) *IncidentUpdate {
-	_u.mutation.SetClosedAt(v)
-	return _u
-}
-
-// SetNillableClosedAt sets the "closed_at" field if the given value is not nil.
-func (_u *IncidentUpdate) SetNillableClosedAt(v *time.Time) *IncidentUpdate {
-	if v != nil {
-		_u.SetClosedAt(*v)
-	}
-	return _u
-}
-
-// ClearClosedAt clears the value of the "closed_at" field.
-func (_u *IncidentUpdate) ClearClosedAt() *IncidentUpdate {
-	_u.mutation.ClearClosedAt()
-	return _u
-}
-
-// SetSeverityID sets the "severity_id" field.
-func (_u *IncidentUpdate) SetSeverityID(v uuid.UUID) *IncidentUpdate {
-	_u.mutation.SetSeverityID(v)
-	return _u
-}
-
-// SetNillableSeverityID sets the "severity_id" field if the given value is not nil.
-func (_u *IncidentUpdate) SetNillableSeverityID(v *uuid.UUID) *IncidentUpdate {
-	if v != nil {
-		_u.SetSeverityID(*v)
-	}
-	return _u
-}
-
-// ClearSeverityID clears the value of the "severity_id" field.
-func (_u *IncidentUpdate) ClearSeverityID() *IncidentUpdate {
-	_u.mutation.ClearSeverityID()
-	return _u
-}
-
-// SetTypeID sets the "type_id" field.
-func (_u *IncidentUpdate) SetTypeID(v uuid.UUID) *IncidentUpdate {
-	_u.mutation.SetTypeID(v)
-	return _u
-}
-
-// SetNillableTypeID sets the "type_id" field if the given value is not nil.
-func (_u *IncidentUpdate) SetNillableTypeID(v *uuid.UUID) *IncidentUpdate {
-	if v != nil {
-		_u.SetTypeID(*v)
-	}
-	return _u
-}
-
-// ClearTypeID clears the value of the "type_id" field.
-func (_u *IncidentUpdate) ClearTypeID() *IncidentUpdate {
-	_u.mutation.ClearTypeID()
 	return _u
 }
 
@@ -755,6 +674,12 @@ func (_u *IncidentUpdate) check() error {
 	if _u.mutation.TenantCleared() && len(_u.mutation.TenantIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "Incident.tenant"`)
 	}
+	if _u.mutation.SeverityCleared() && len(_u.mutation.SeverityIDs()) > 0 {
+		return errors.New(`ent: clearing a required unique edge "Incident.severity"`)
+	}
+	if _u.mutation.TypeCleared() && len(_u.mutation.TypeIDs()) > 0 {
+		return errors.New(`ent: clearing a required unique edge "Incident.type"`)
+	}
 	return nil
 }
 
@@ -788,29 +713,11 @@ func (_u *IncidentUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	if value, ok := _u.mutation.Title(); ok {
 		_spec.SetField(incident.FieldTitle, field.TypeString, value)
 	}
-	if value, ok := _u.mutation.Private(); ok {
-		_spec.SetField(incident.FieldPrivate, field.TypeBool, value)
-	}
 	if value, ok := _u.mutation.Summary(); ok {
 		_spec.SetField(incident.FieldSummary, field.TypeString, value)
 	}
 	if _u.mutation.SummaryCleared() {
 		_spec.ClearField(incident.FieldSummary, field.TypeString)
-	}
-	if value, ok := _u.mutation.OpenedAt(); ok {
-		_spec.SetField(incident.FieldOpenedAt, field.TypeTime, value)
-	}
-	if value, ok := _u.mutation.ModifiedAt(); ok {
-		_spec.SetField(incident.FieldModifiedAt, field.TypeTime, value)
-	}
-	if _u.mutation.ModifiedAtCleared() {
-		_spec.ClearField(incident.FieldModifiedAt, field.TypeTime)
-	}
-	if value, ok := _u.mutation.ClosedAt(); ok {
-		_spec.SetField(incident.FieldClosedAt, field.TypeTime, value)
-	}
-	if _u.mutation.ClosedAtCleared() {
-		_spec.ClearField(incident.FieldClosedAt, field.TypeTime)
 	}
 	if value, ok := _u.mutation.ChatChannelID(); ok {
 		_spec.SetField(incident.FieldChatChannelID, field.TypeString, value)
@@ -1536,16 +1443,30 @@ func (_u *IncidentUpdateOne) SetNillableTitle(v *string) *IncidentUpdateOne {
 	return _u
 }
 
-// SetPrivate sets the "private" field.
-func (_u *IncidentUpdateOne) SetPrivate(v bool) *IncidentUpdateOne {
-	_u.mutation.SetPrivate(v)
+// SetSeverityID sets the "severity_id" field.
+func (_u *IncidentUpdateOne) SetSeverityID(v uuid.UUID) *IncidentUpdateOne {
+	_u.mutation.SetSeverityID(v)
 	return _u
 }
 
-// SetNillablePrivate sets the "private" field if the given value is not nil.
-func (_u *IncidentUpdateOne) SetNillablePrivate(v *bool) *IncidentUpdateOne {
+// SetNillableSeverityID sets the "severity_id" field if the given value is not nil.
+func (_u *IncidentUpdateOne) SetNillableSeverityID(v *uuid.UUID) *IncidentUpdateOne {
 	if v != nil {
-		_u.SetPrivate(*v)
+		_u.SetSeverityID(*v)
+	}
+	return _u
+}
+
+// SetTypeID sets the "type_id" field.
+func (_u *IncidentUpdateOne) SetTypeID(v uuid.UUID) *IncidentUpdateOne {
+	_u.mutation.SetTypeID(v)
+	return _u
+}
+
+// SetNillableTypeID sets the "type_id" field if the given value is not nil.
+func (_u *IncidentUpdateOne) SetNillableTypeID(v *uuid.UUID) *IncidentUpdateOne {
+	if v != nil {
+		_u.SetTypeID(*v)
 	}
 	return _u
 }
@@ -1567,100 +1488,6 @@ func (_u *IncidentUpdateOne) SetNillableSummary(v *string) *IncidentUpdateOne {
 // ClearSummary clears the value of the "summary" field.
 func (_u *IncidentUpdateOne) ClearSummary() *IncidentUpdateOne {
 	_u.mutation.ClearSummary()
-	return _u
-}
-
-// SetOpenedAt sets the "opened_at" field.
-func (_u *IncidentUpdateOne) SetOpenedAt(v time.Time) *IncidentUpdateOne {
-	_u.mutation.SetOpenedAt(v)
-	return _u
-}
-
-// SetNillableOpenedAt sets the "opened_at" field if the given value is not nil.
-func (_u *IncidentUpdateOne) SetNillableOpenedAt(v *time.Time) *IncidentUpdateOne {
-	if v != nil {
-		_u.SetOpenedAt(*v)
-	}
-	return _u
-}
-
-// SetModifiedAt sets the "modified_at" field.
-func (_u *IncidentUpdateOne) SetModifiedAt(v time.Time) *IncidentUpdateOne {
-	_u.mutation.SetModifiedAt(v)
-	return _u
-}
-
-// SetNillableModifiedAt sets the "modified_at" field if the given value is not nil.
-func (_u *IncidentUpdateOne) SetNillableModifiedAt(v *time.Time) *IncidentUpdateOne {
-	if v != nil {
-		_u.SetModifiedAt(*v)
-	}
-	return _u
-}
-
-// ClearModifiedAt clears the value of the "modified_at" field.
-func (_u *IncidentUpdateOne) ClearModifiedAt() *IncidentUpdateOne {
-	_u.mutation.ClearModifiedAt()
-	return _u
-}
-
-// SetClosedAt sets the "closed_at" field.
-func (_u *IncidentUpdateOne) SetClosedAt(v time.Time) *IncidentUpdateOne {
-	_u.mutation.SetClosedAt(v)
-	return _u
-}
-
-// SetNillableClosedAt sets the "closed_at" field if the given value is not nil.
-func (_u *IncidentUpdateOne) SetNillableClosedAt(v *time.Time) *IncidentUpdateOne {
-	if v != nil {
-		_u.SetClosedAt(*v)
-	}
-	return _u
-}
-
-// ClearClosedAt clears the value of the "closed_at" field.
-func (_u *IncidentUpdateOne) ClearClosedAt() *IncidentUpdateOne {
-	_u.mutation.ClearClosedAt()
-	return _u
-}
-
-// SetSeverityID sets the "severity_id" field.
-func (_u *IncidentUpdateOne) SetSeverityID(v uuid.UUID) *IncidentUpdateOne {
-	_u.mutation.SetSeverityID(v)
-	return _u
-}
-
-// SetNillableSeverityID sets the "severity_id" field if the given value is not nil.
-func (_u *IncidentUpdateOne) SetNillableSeverityID(v *uuid.UUID) *IncidentUpdateOne {
-	if v != nil {
-		_u.SetSeverityID(*v)
-	}
-	return _u
-}
-
-// ClearSeverityID clears the value of the "severity_id" field.
-func (_u *IncidentUpdateOne) ClearSeverityID() *IncidentUpdateOne {
-	_u.mutation.ClearSeverityID()
-	return _u
-}
-
-// SetTypeID sets the "type_id" field.
-func (_u *IncidentUpdateOne) SetTypeID(v uuid.UUID) *IncidentUpdateOne {
-	_u.mutation.SetTypeID(v)
-	return _u
-}
-
-// SetNillableTypeID sets the "type_id" field if the given value is not nil.
-func (_u *IncidentUpdateOne) SetNillableTypeID(v *uuid.UUID) *IncidentUpdateOne {
-	if v != nil {
-		_u.SetTypeID(*v)
-	}
-	return _u
-}
-
-// ClearTypeID clears the value of the "type_id" field.
-func (_u *IncidentUpdateOne) ClearTypeID() *IncidentUpdateOne {
-	_u.mutation.ClearTypeID()
 	return _u
 }
 
@@ -2213,6 +2040,12 @@ func (_u *IncidentUpdateOne) check() error {
 	if _u.mutation.TenantCleared() && len(_u.mutation.TenantIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "Incident.tenant"`)
 	}
+	if _u.mutation.SeverityCleared() && len(_u.mutation.SeverityIDs()) > 0 {
+		return errors.New(`ent: clearing a required unique edge "Incident.severity"`)
+	}
+	if _u.mutation.TypeCleared() && len(_u.mutation.TypeIDs()) > 0 {
+		return errors.New(`ent: clearing a required unique edge "Incident.type"`)
+	}
 	return nil
 }
 
@@ -2263,29 +2096,11 @@ func (_u *IncidentUpdateOne) sqlSave(ctx context.Context) (_node *Incident, err 
 	if value, ok := _u.mutation.Title(); ok {
 		_spec.SetField(incident.FieldTitle, field.TypeString, value)
 	}
-	if value, ok := _u.mutation.Private(); ok {
-		_spec.SetField(incident.FieldPrivate, field.TypeBool, value)
-	}
 	if value, ok := _u.mutation.Summary(); ok {
 		_spec.SetField(incident.FieldSummary, field.TypeString, value)
 	}
 	if _u.mutation.SummaryCleared() {
 		_spec.ClearField(incident.FieldSummary, field.TypeString)
-	}
-	if value, ok := _u.mutation.OpenedAt(); ok {
-		_spec.SetField(incident.FieldOpenedAt, field.TypeTime, value)
-	}
-	if value, ok := _u.mutation.ModifiedAt(); ok {
-		_spec.SetField(incident.FieldModifiedAt, field.TypeTime, value)
-	}
-	if _u.mutation.ModifiedAtCleared() {
-		_spec.ClearField(incident.FieldModifiedAt, field.TypeTime)
-	}
-	if value, ok := _u.mutation.ClosedAt(); ok {
-		_spec.SetField(incident.FieldClosedAt, field.TypeTime, value)
-	}
-	if _u.mutation.ClosedAtCleared() {
-		_spec.ClearField(incident.FieldClosedAt, field.TypeTime)
 	}
 	if value, ok := _u.mutation.ChatChannelID(); ok {
 		_spec.SetField(incident.FieldChatChannelID, field.TypeString, value)

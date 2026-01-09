@@ -13,8 +13,8 @@ import (
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/predicate"
-	"github.com/rezible/rezible/ent/systemanalysisrelationship"
 	"github.com/rezible/rezible/ent/systemcomponent"
+	"github.com/rezible/rezible/ent/systemcomponentrelationship"
 	"github.com/rezible/rezible/ent/systemcomponentsignal"
 	"github.com/rezible/rezible/ent/systemrelationshipfeedbacksignal"
 )
@@ -100,14 +100,14 @@ func (_u *SystemComponentSignalUpdate) SetComponent(v *SystemComponent) *SystemC
 	return _u.SetComponentID(v.ID)
 }
 
-// AddRelationshipIDs adds the "relationships" edge to the SystemAnalysisRelationship entity by IDs.
+// AddRelationshipIDs adds the "relationships" edge to the SystemComponentRelationship entity by IDs.
 func (_u *SystemComponentSignalUpdate) AddRelationshipIDs(ids ...uuid.UUID) *SystemComponentSignalUpdate {
 	_u.mutation.AddRelationshipIDs(ids...)
 	return _u
 }
 
-// AddRelationships adds the "relationships" edges to the SystemAnalysisRelationship entity.
-func (_u *SystemComponentSignalUpdate) AddRelationships(v ...*SystemAnalysisRelationship) *SystemComponentSignalUpdate {
+// AddRelationships adds the "relationships" edges to the SystemComponentRelationship entity.
+func (_u *SystemComponentSignalUpdate) AddRelationships(v ...*SystemComponentRelationship) *SystemComponentSignalUpdate {
 	ids := make([]uuid.UUID, len(v))
 	for i := range v {
 		ids[i] = v[i].ID
@@ -141,20 +141,20 @@ func (_u *SystemComponentSignalUpdate) ClearComponent() *SystemComponentSignalUp
 	return _u
 }
 
-// ClearRelationships clears all "relationships" edges to the SystemAnalysisRelationship entity.
+// ClearRelationships clears all "relationships" edges to the SystemComponentRelationship entity.
 func (_u *SystemComponentSignalUpdate) ClearRelationships() *SystemComponentSignalUpdate {
 	_u.mutation.ClearRelationships()
 	return _u
 }
 
-// RemoveRelationshipIDs removes the "relationships" edge to SystemAnalysisRelationship entities by IDs.
+// RemoveRelationshipIDs removes the "relationships" edge to SystemComponentRelationship entities by IDs.
 func (_u *SystemComponentSignalUpdate) RemoveRelationshipIDs(ids ...uuid.UUID) *SystemComponentSignalUpdate {
 	_u.mutation.RemoveRelationshipIDs(ids...)
 	return _u
 }
 
-// RemoveRelationships removes "relationships" edges to SystemAnalysisRelationship entities.
-func (_u *SystemComponentSignalUpdate) RemoveRelationships(v ...*SystemAnalysisRelationship) *SystemComponentSignalUpdate {
+// RemoveRelationships removes "relationships" edges to SystemComponentRelationship entities.
+func (_u *SystemComponentSignalUpdate) RemoveRelationships(v ...*SystemComponentRelationship) *SystemComponentSignalUpdate {
 	ids := make([]uuid.UUID, len(v))
 	for i := range v {
 		ids[i] = v[i].ID
@@ -288,7 +288,7 @@ func (_u *SystemComponentSignalUpdate) sqlSave(ctx context.Context) (_node int, 
 			Columns: systemcomponentsignal.RelationshipsPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(systemanalysisrelationship.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(systemcomponentrelationship.FieldID, field.TypeUUID),
 			},
 		}
 		createE := &SystemRelationshipFeedbackSignalCreate{config: _u.config, mutation: newSystemRelationshipFeedbackSignalMutation(_u.config, OpCreate)}
@@ -308,7 +308,7 @@ func (_u *SystemComponentSignalUpdate) sqlSave(ctx context.Context) (_node int, 
 			Columns: systemcomponentsignal.RelationshipsPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(systemanalysisrelationship.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(systemcomponentrelationship.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {
@@ -331,7 +331,7 @@ func (_u *SystemComponentSignalUpdate) sqlSave(ctx context.Context) (_node int, 
 			Columns: systemcomponentsignal.RelationshipsPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(systemanalysisrelationship.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(systemcomponentrelationship.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {
@@ -480,14 +480,14 @@ func (_u *SystemComponentSignalUpdateOne) SetComponent(v *SystemComponent) *Syst
 	return _u.SetComponentID(v.ID)
 }
 
-// AddRelationshipIDs adds the "relationships" edge to the SystemAnalysisRelationship entity by IDs.
+// AddRelationshipIDs adds the "relationships" edge to the SystemComponentRelationship entity by IDs.
 func (_u *SystemComponentSignalUpdateOne) AddRelationshipIDs(ids ...uuid.UUID) *SystemComponentSignalUpdateOne {
 	_u.mutation.AddRelationshipIDs(ids...)
 	return _u
 }
 
-// AddRelationships adds the "relationships" edges to the SystemAnalysisRelationship entity.
-func (_u *SystemComponentSignalUpdateOne) AddRelationships(v ...*SystemAnalysisRelationship) *SystemComponentSignalUpdateOne {
+// AddRelationships adds the "relationships" edges to the SystemComponentRelationship entity.
+func (_u *SystemComponentSignalUpdateOne) AddRelationships(v ...*SystemComponentRelationship) *SystemComponentSignalUpdateOne {
 	ids := make([]uuid.UUID, len(v))
 	for i := range v {
 		ids[i] = v[i].ID
@@ -521,20 +521,20 @@ func (_u *SystemComponentSignalUpdateOne) ClearComponent() *SystemComponentSigna
 	return _u
 }
 
-// ClearRelationships clears all "relationships" edges to the SystemAnalysisRelationship entity.
+// ClearRelationships clears all "relationships" edges to the SystemComponentRelationship entity.
 func (_u *SystemComponentSignalUpdateOne) ClearRelationships() *SystemComponentSignalUpdateOne {
 	_u.mutation.ClearRelationships()
 	return _u
 }
 
-// RemoveRelationshipIDs removes the "relationships" edge to SystemAnalysisRelationship entities by IDs.
+// RemoveRelationshipIDs removes the "relationships" edge to SystemComponentRelationship entities by IDs.
 func (_u *SystemComponentSignalUpdateOne) RemoveRelationshipIDs(ids ...uuid.UUID) *SystemComponentSignalUpdateOne {
 	_u.mutation.RemoveRelationshipIDs(ids...)
 	return _u
 }
 
-// RemoveRelationships removes "relationships" edges to SystemAnalysisRelationship entities.
-func (_u *SystemComponentSignalUpdateOne) RemoveRelationships(v ...*SystemAnalysisRelationship) *SystemComponentSignalUpdateOne {
+// RemoveRelationships removes "relationships" edges to SystemComponentRelationship entities.
+func (_u *SystemComponentSignalUpdateOne) RemoveRelationships(v ...*SystemComponentRelationship) *SystemComponentSignalUpdateOne {
 	ids := make([]uuid.UUID, len(v))
 	for i := range v {
 		ids[i] = v[i].ID
@@ -698,7 +698,7 @@ func (_u *SystemComponentSignalUpdateOne) sqlSave(ctx context.Context) (_node *S
 			Columns: systemcomponentsignal.RelationshipsPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(systemanalysisrelationship.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(systemcomponentrelationship.FieldID, field.TypeUUID),
 			},
 		}
 		createE := &SystemRelationshipFeedbackSignalCreate{config: _u.config, mutation: newSystemRelationshipFeedbackSignalMutation(_u.config, OpCreate)}
@@ -718,7 +718,7 @@ func (_u *SystemComponentSignalUpdateOne) sqlSave(ctx context.Context) (_node *S
 			Columns: systemcomponentsignal.RelationshipsPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(systemanalysisrelationship.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(systemcomponentrelationship.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {
@@ -741,7 +741,7 @@ func (_u *SystemComponentSignalUpdateOne) sqlSave(ctx context.Context) (_node *S
 			Columns: systemcomponentsignal.RelationshipsPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(systemanalysisrelationship.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(systemcomponentrelationship.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {

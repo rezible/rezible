@@ -6,7 +6,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"time"
 
 	"entgo.io/ent/dialect"
 	"entgo.io/ent/dialect/sql"
@@ -70,17 +69,15 @@ func (_c *IncidentCreate) SetTitle(v string) *IncidentCreate {
 	return _c
 }
 
-// SetPrivate sets the "private" field.
-func (_c *IncidentCreate) SetPrivate(v bool) *IncidentCreate {
-	_c.mutation.SetPrivate(v)
+// SetSeverityID sets the "severity_id" field.
+func (_c *IncidentCreate) SetSeverityID(v uuid.UUID) *IncidentCreate {
+	_c.mutation.SetSeverityID(v)
 	return _c
 }
 
-// SetNillablePrivate sets the "private" field if the given value is not nil.
-func (_c *IncidentCreate) SetNillablePrivate(v *bool) *IncidentCreate {
-	if v != nil {
-		_c.SetPrivate(*v)
-	}
+// SetTypeID sets the "type_id" field.
+func (_c *IncidentCreate) SetTypeID(v uuid.UUID) *IncidentCreate {
+	_c.mutation.SetTypeID(v)
 	return _c
 }
 
@@ -94,76 +91,6 @@ func (_c *IncidentCreate) SetSummary(v string) *IncidentCreate {
 func (_c *IncidentCreate) SetNillableSummary(v *string) *IncidentCreate {
 	if v != nil {
 		_c.SetSummary(*v)
-	}
-	return _c
-}
-
-// SetOpenedAt sets the "opened_at" field.
-func (_c *IncidentCreate) SetOpenedAt(v time.Time) *IncidentCreate {
-	_c.mutation.SetOpenedAt(v)
-	return _c
-}
-
-// SetNillableOpenedAt sets the "opened_at" field if the given value is not nil.
-func (_c *IncidentCreate) SetNillableOpenedAt(v *time.Time) *IncidentCreate {
-	if v != nil {
-		_c.SetOpenedAt(*v)
-	}
-	return _c
-}
-
-// SetModifiedAt sets the "modified_at" field.
-func (_c *IncidentCreate) SetModifiedAt(v time.Time) *IncidentCreate {
-	_c.mutation.SetModifiedAt(v)
-	return _c
-}
-
-// SetNillableModifiedAt sets the "modified_at" field if the given value is not nil.
-func (_c *IncidentCreate) SetNillableModifiedAt(v *time.Time) *IncidentCreate {
-	if v != nil {
-		_c.SetModifiedAt(*v)
-	}
-	return _c
-}
-
-// SetClosedAt sets the "closed_at" field.
-func (_c *IncidentCreate) SetClosedAt(v time.Time) *IncidentCreate {
-	_c.mutation.SetClosedAt(v)
-	return _c
-}
-
-// SetNillableClosedAt sets the "closed_at" field if the given value is not nil.
-func (_c *IncidentCreate) SetNillableClosedAt(v *time.Time) *IncidentCreate {
-	if v != nil {
-		_c.SetClosedAt(*v)
-	}
-	return _c
-}
-
-// SetSeverityID sets the "severity_id" field.
-func (_c *IncidentCreate) SetSeverityID(v uuid.UUID) *IncidentCreate {
-	_c.mutation.SetSeverityID(v)
-	return _c
-}
-
-// SetNillableSeverityID sets the "severity_id" field if the given value is not nil.
-func (_c *IncidentCreate) SetNillableSeverityID(v *uuid.UUID) *IncidentCreate {
-	if v != nil {
-		_c.SetSeverityID(*v)
-	}
-	return _c
-}
-
-// SetTypeID sets the "type_id" field.
-func (_c *IncidentCreate) SetTypeID(v uuid.UUID) *IncidentCreate {
-	_c.mutation.SetTypeID(v)
-	return _c
-}
-
-// SetNillableTypeID sets the "type_id" field if the given value is not nil.
-func (_c *IncidentCreate) SetNillableTypeID(v *uuid.UUID) *IncidentCreate {
-	if v != nil {
-		_c.SetTypeID(*v)
 	}
 	return _c
 }
@@ -447,17 +374,6 @@ func (_c *IncidentCreate) ExecX(ctx context.Context) {
 
 // defaults sets the default values of the builder before save.
 func (_c *IncidentCreate) defaults() error {
-	if _, ok := _c.mutation.Private(); !ok {
-		v := incident.DefaultPrivate
-		_c.mutation.SetPrivate(v)
-	}
-	if _, ok := _c.mutation.OpenedAt(); !ok {
-		if incident.DefaultOpenedAt == nil {
-			return fmt.Errorf("ent: uninitialized incident.DefaultOpenedAt (forgotten import ent/runtime?)")
-		}
-		v := incident.DefaultOpenedAt()
-		_c.mutation.SetOpenedAt(v)
-	}
 	if _, ok := _c.mutation.ID(); !ok {
 		if incident.DefaultID == nil {
 			return fmt.Errorf("ent: uninitialized incident.DefaultID (forgotten import ent/runtime?)")
@@ -479,14 +395,20 @@ func (_c *IncidentCreate) check() error {
 	if _, ok := _c.mutation.Title(); !ok {
 		return &ValidationError{Name: "title", err: errors.New(`ent: missing required field "Incident.title"`)}
 	}
-	if _, ok := _c.mutation.Private(); !ok {
-		return &ValidationError{Name: "private", err: errors.New(`ent: missing required field "Incident.private"`)}
+	if _, ok := _c.mutation.SeverityID(); !ok {
+		return &ValidationError{Name: "severity_id", err: errors.New(`ent: missing required field "Incident.severity_id"`)}
 	}
-	if _, ok := _c.mutation.OpenedAt(); !ok {
-		return &ValidationError{Name: "opened_at", err: errors.New(`ent: missing required field "Incident.opened_at"`)}
+	if _, ok := _c.mutation.TypeID(); !ok {
+		return &ValidationError{Name: "type_id", err: errors.New(`ent: missing required field "Incident.type_id"`)}
 	}
 	if len(_c.mutation.TenantIDs()) == 0 {
 		return &ValidationError{Name: "tenant", err: errors.New(`ent: missing required edge "Incident.tenant"`)}
+	}
+	if len(_c.mutation.SeverityIDs()) == 0 {
+		return &ValidationError{Name: "severity", err: errors.New(`ent: missing required edge "Incident.severity"`)}
+	}
+	if len(_c.mutation.TypeIDs()) == 0 {
+		return &ValidationError{Name: "type", err: errors.New(`ent: missing required edge "Incident.type"`)}
 	}
 	return nil
 }
@@ -536,25 +458,9 @@ func (_c *IncidentCreate) createSpec() (*Incident, *sqlgraph.CreateSpec) {
 		_spec.SetField(incident.FieldTitle, field.TypeString, value)
 		_node.Title = value
 	}
-	if value, ok := _c.mutation.Private(); ok {
-		_spec.SetField(incident.FieldPrivate, field.TypeBool, value)
-		_node.Private = value
-	}
 	if value, ok := _c.mutation.Summary(); ok {
 		_spec.SetField(incident.FieldSummary, field.TypeString, value)
 		_node.Summary = value
-	}
-	if value, ok := _c.mutation.OpenedAt(); ok {
-		_spec.SetField(incident.FieldOpenedAt, field.TypeTime, value)
-		_node.OpenedAt = value
-	}
-	if value, ok := _c.mutation.ModifiedAt(); ok {
-		_spec.SetField(incident.FieldModifiedAt, field.TypeTime, value)
-		_node.ModifiedAt = value
-	}
-	if value, ok := _c.mutation.ClosedAt(); ok {
-		_spec.SetField(incident.FieldClosedAt, field.TypeTime, value)
-		_node.ClosedAt = value
 	}
 	if value, ok := _c.mutation.ChatChannelID(); ok {
 		_spec.SetField(incident.FieldChatChannelID, field.TypeString, value)
@@ -920,15 +826,27 @@ func (u *IncidentUpsert) UpdateTitle() *IncidentUpsert {
 	return u
 }
 
-// SetPrivate sets the "private" field.
-func (u *IncidentUpsert) SetPrivate(v bool) *IncidentUpsert {
-	u.Set(incident.FieldPrivate, v)
+// SetSeverityID sets the "severity_id" field.
+func (u *IncidentUpsert) SetSeverityID(v uuid.UUID) *IncidentUpsert {
+	u.Set(incident.FieldSeverityID, v)
 	return u
 }
 
-// UpdatePrivate sets the "private" field to the value that was provided on create.
-func (u *IncidentUpsert) UpdatePrivate() *IncidentUpsert {
-	u.SetExcluded(incident.FieldPrivate)
+// UpdateSeverityID sets the "severity_id" field to the value that was provided on create.
+func (u *IncidentUpsert) UpdateSeverityID() *IncidentUpsert {
+	u.SetExcluded(incident.FieldSeverityID)
+	return u
+}
+
+// SetTypeID sets the "type_id" field.
+func (u *IncidentUpsert) SetTypeID(v uuid.UUID) *IncidentUpsert {
+	u.Set(incident.FieldTypeID, v)
+	return u
+}
+
+// UpdateTypeID sets the "type_id" field to the value that was provided on create.
+func (u *IncidentUpsert) UpdateTypeID() *IncidentUpsert {
+	u.SetExcluded(incident.FieldTypeID)
 	return u
 }
 
@@ -947,90 +865,6 @@ func (u *IncidentUpsert) UpdateSummary() *IncidentUpsert {
 // ClearSummary clears the value of the "summary" field.
 func (u *IncidentUpsert) ClearSummary() *IncidentUpsert {
 	u.SetNull(incident.FieldSummary)
-	return u
-}
-
-// SetOpenedAt sets the "opened_at" field.
-func (u *IncidentUpsert) SetOpenedAt(v time.Time) *IncidentUpsert {
-	u.Set(incident.FieldOpenedAt, v)
-	return u
-}
-
-// UpdateOpenedAt sets the "opened_at" field to the value that was provided on create.
-func (u *IncidentUpsert) UpdateOpenedAt() *IncidentUpsert {
-	u.SetExcluded(incident.FieldOpenedAt)
-	return u
-}
-
-// SetModifiedAt sets the "modified_at" field.
-func (u *IncidentUpsert) SetModifiedAt(v time.Time) *IncidentUpsert {
-	u.Set(incident.FieldModifiedAt, v)
-	return u
-}
-
-// UpdateModifiedAt sets the "modified_at" field to the value that was provided on create.
-func (u *IncidentUpsert) UpdateModifiedAt() *IncidentUpsert {
-	u.SetExcluded(incident.FieldModifiedAt)
-	return u
-}
-
-// ClearModifiedAt clears the value of the "modified_at" field.
-func (u *IncidentUpsert) ClearModifiedAt() *IncidentUpsert {
-	u.SetNull(incident.FieldModifiedAt)
-	return u
-}
-
-// SetClosedAt sets the "closed_at" field.
-func (u *IncidentUpsert) SetClosedAt(v time.Time) *IncidentUpsert {
-	u.Set(incident.FieldClosedAt, v)
-	return u
-}
-
-// UpdateClosedAt sets the "closed_at" field to the value that was provided on create.
-func (u *IncidentUpsert) UpdateClosedAt() *IncidentUpsert {
-	u.SetExcluded(incident.FieldClosedAt)
-	return u
-}
-
-// ClearClosedAt clears the value of the "closed_at" field.
-func (u *IncidentUpsert) ClearClosedAt() *IncidentUpsert {
-	u.SetNull(incident.FieldClosedAt)
-	return u
-}
-
-// SetSeverityID sets the "severity_id" field.
-func (u *IncidentUpsert) SetSeverityID(v uuid.UUID) *IncidentUpsert {
-	u.Set(incident.FieldSeverityID, v)
-	return u
-}
-
-// UpdateSeverityID sets the "severity_id" field to the value that was provided on create.
-func (u *IncidentUpsert) UpdateSeverityID() *IncidentUpsert {
-	u.SetExcluded(incident.FieldSeverityID)
-	return u
-}
-
-// ClearSeverityID clears the value of the "severity_id" field.
-func (u *IncidentUpsert) ClearSeverityID() *IncidentUpsert {
-	u.SetNull(incident.FieldSeverityID)
-	return u
-}
-
-// SetTypeID sets the "type_id" field.
-func (u *IncidentUpsert) SetTypeID(v uuid.UUID) *IncidentUpsert {
-	u.Set(incident.FieldTypeID, v)
-	return u
-}
-
-// UpdateTypeID sets the "type_id" field to the value that was provided on create.
-func (u *IncidentUpsert) UpdateTypeID() *IncidentUpsert {
-	u.SetExcluded(incident.FieldTypeID)
-	return u
-}
-
-// ClearTypeID clears the value of the "type_id" field.
-func (u *IncidentUpsert) ClearTypeID() *IncidentUpsert {
-	u.SetNull(incident.FieldTypeID)
 	return u
 }
 
@@ -1152,17 +986,31 @@ func (u *IncidentUpsertOne) UpdateTitle() *IncidentUpsertOne {
 	})
 }
 
-// SetPrivate sets the "private" field.
-func (u *IncidentUpsertOne) SetPrivate(v bool) *IncidentUpsertOne {
+// SetSeverityID sets the "severity_id" field.
+func (u *IncidentUpsertOne) SetSeverityID(v uuid.UUID) *IncidentUpsertOne {
 	return u.Update(func(s *IncidentUpsert) {
-		s.SetPrivate(v)
+		s.SetSeverityID(v)
 	})
 }
 
-// UpdatePrivate sets the "private" field to the value that was provided on create.
-func (u *IncidentUpsertOne) UpdatePrivate() *IncidentUpsertOne {
+// UpdateSeverityID sets the "severity_id" field to the value that was provided on create.
+func (u *IncidentUpsertOne) UpdateSeverityID() *IncidentUpsertOne {
 	return u.Update(func(s *IncidentUpsert) {
-		s.UpdatePrivate()
+		s.UpdateSeverityID()
+	})
+}
+
+// SetTypeID sets the "type_id" field.
+func (u *IncidentUpsertOne) SetTypeID(v uuid.UUID) *IncidentUpsertOne {
+	return u.Update(func(s *IncidentUpsert) {
+		s.SetTypeID(v)
+	})
+}
+
+// UpdateTypeID sets the "type_id" field to the value that was provided on create.
+func (u *IncidentUpsertOne) UpdateTypeID() *IncidentUpsertOne {
+	return u.Update(func(s *IncidentUpsert) {
+		s.UpdateTypeID()
 	})
 }
 
@@ -1184,104 +1032,6 @@ func (u *IncidentUpsertOne) UpdateSummary() *IncidentUpsertOne {
 func (u *IncidentUpsertOne) ClearSummary() *IncidentUpsertOne {
 	return u.Update(func(s *IncidentUpsert) {
 		s.ClearSummary()
-	})
-}
-
-// SetOpenedAt sets the "opened_at" field.
-func (u *IncidentUpsertOne) SetOpenedAt(v time.Time) *IncidentUpsertOne {
-	return u.Update(func(s *IncidentUpsert) {
-		s.SetOpenedAt(v)
-	})
-}
-
-// UpdateOpenedAt sets the "opened_at" field to the value that was provided on create.
-func (u *IncidentUpsertOne) UpdateOpenedAt() *IncidentUpsertOne {
-	return u.Update(func(s *IncidentUpsert) {
-		s.UpdateOpenedAt()
-	})
-}
-
-// SetModifiedAt sets the "modified_at" field.
-func (u *IncidentUpsertOne) SetModifiedAt(v time.Time) *IncidentUpsertOne {
-	return u.Update(func(s *IncidentUpsert) {
-		s.SetModifiedAt(v)
-	})
-}
-
-// UpdateModifiedAt sets the "modified_at" field to the value that was provided on create.
-func (u *IncidentUpsertOne) UpdateModifiedAt() *IncidentUpsertOne {
-	return u.Update(func(s *IncidentUpsert) {
-		s.UpdateModifiedAt()
-	})
-}
-
-// ClearModifiedAt clears the value of the "modified_at" field.
-func (u *IncidentUpsertOne) ClearModifiedAt() *IncidentUpsertOne {
-	return u.Update(func(s *IncidentUpsert) {
-		s.ClearModifiedAt()
-	})
-}
-
-// SetClosedAt sets the "closed_at" field.
-func (u *IncidentUpsertOne) SetClosedAt(v time.Time) *IncidentUpsertOne {
-	return u.Update(func(s *IncidentUpsert) {
-		s.SetClosedAt(v)
-	})
-}
-
-// UpdateClosedAt sets the "closed_at" field to the value that was provided on create.
-func (u *IncidentUpsertOne) UpdateClosedAt() *IncidentUpsertOne {
-	return u.Update(func(s *IncidentUpsert) {
-		s.UpdateClosedAt()
-	})
-}
-
-// ClearClosedAt clears the value of the "closed_at" field.
-func (u *IncidentUpsertOne) ClearClosedAt() *IncidentUpsertOne {
-	return u.Update(func(s *IncidentUpsert) {
-		s.ClearClosedAt()
-	})
-}
-
-// SetSeverityID sets the "severity_id" field.
-func (u *IncidentUpsertOne) SetSeverityID(v uuid.UUID) *IncidentUpsertOne {
-	return u.Update(func(s *IncidentUpsert) {
-		s.SetSeverityID(v)
-	})
-}
-
-// UpdateSeverityID sets the "severity_id" field to the value that was provided on create.
-func (u *IncidentUpsertOne) UpdateSeverityID() *IncidentUpsertOne {
-	return u.Update(func(s *IncidentUpsert) {
-		s.UpdateSeverityID()
-	})
-}
-
-// ClearSeverityID clears the value of the "severity_id" field.
-func (u *IncidentUpsertOne) ClearSeverityID() *IncidentUpsertOne {
-	return u.Update(func(s *IncidentUpsert) {
-		s.ClearSeverityID()
-	})
-}
-
-// SetTypeID sets the "type_id" field.
-func (u *IncidentUpsertOne) SetTypeID(v uuid.UUID) *IncidentUpsertOne {
-	return u.Update(func(s *IncidentUpsert) {
-		s.SetTypeID(v)
-	})
-}
-
-// UpdateTypeID sets the "type_id" field to the value that was provided on create.
-func (u *IncidentUpsertOne) UpdateTypeID() *IncidentUpsertOne {
-	return u.Update(func(s *IncidentUpsert) {
-		s.UpdateTypeID()
-	})
-}
-
-// ClearTypeID clears the value of the "type_id" field.
-func (u *IncidentUpsertOne) ClearTypeID() *IncidentUpsertOne {
-	return u.Update(func(s *IncidentUpsert) {
-		s.ClearTypeID()
 	})
 }
 
@@ -1573,17 +1323,31 @@ func (u *IncidentUpsertBulk) UpdateTitle() *IncidentUpsertBulk {
 	})
 }
 
-// SetPrivate sets the "private" field.
-func (u *IncidentUpsertBulk) SetPrivate(v bool) *IncidentUpsertBulk {
+// SetSeverityID sets the "severity_id" field.
+func (u *IncidentUpsertBulk) SetSeverityID(v uuid.UUID) *IncidentUpsertBulk {
 	return u.Update(func(s *IncidentUpsert) {
-		s.SetPrivate(v)
+		s.SetSeverityID(v)
 	})
 }
 
-// UpdatePrivate sets the "private" field to the value that was provided on create.
-func (u *IncidentUpsertBulk) UpdatePrivate() *IncidentUpsertBulk {
+// UpdateSeverityID sets the "severity_id" field to the value that was provided on create.
+func (u *IncidentUpsertBulk) UpdateSeverityID() *IncidentUpsertBulk {
 	return u.Update(func(s *IncidentUpsert) {
-		s.UpdatePrivate()
+		s.UpdateSeverityID()
+	})
+}
+
+// SetTypeID sets the "type_id" field.
+func (u *IncidentUpsertBulk) SetTypeID(v uuid.UUID) *IncidentUpsertBulk {
+	return u.Update(func(s *IncidentUpsert) {
+		s.SetTypeID(v)
+	})
+}
+
+// UpdateTypeID sets the "type_id" field to the value that was provided on create.
+func (u *IncidentUpsertBulk) UpdateTypeID() *IncidentUpsertBulk {
+	return u.Update(func(s *IncidentUpsert) {
+		s.UpdateTypeID()
 	})
 }
 
@@ -1605,104 +1369,6 @@ func (u *IncidentUpsertBulk) UpdateSummary() *IncidentUpsertBulk {
 func (u *IncidentUpsertBulk) ClearSummary() *IncidentUpsertBulk {
 	return u.Update(func(s *IncidentUpsert) {
 		s.ClearSummary()
-	})
-}
-
-// SetOpenedAt sets the "opened_at" field.
-func (u *IncidentUpsertBulk) SetOpenedAt(v time.Time) *IncidentUpsertBulk {
-	return u.Update(func(s *IncidentUpsert) {
-		s.SetOpenedAt(v)
-	})
-}
-
-// UpdateOpenedAt sets the "opened_at" field to the value that was provided on create.
-func (u *IncidentUpsertBulk) UpdateOpenedAt() *IncidentUpsertBulk {
-	return u.Update(func(s *IncidentUpsert) {
-		s.UpdateOpenedAt()
-	})
-}
-
-// SetModifiedAt sets the "modified_at" field.
-func (u *IncidentUpsertBulk) SetModifiedAt(v time.Time) *IncidentUpsertBulk {
-	return u.Update(func(s *IncidentUpsert) {
-		s.SetModifiedAt(v)
-	})
-}
-
-// UpdateModifiedAt sets the "modified_at" field to the value that was provided on create.
-func (u *IncidentUpsertBulk) UpdateModifiedAt() *IncidentUpsertBulk {
-	return u.Update(func(s *IncidentUpsert) {
-		s.UpdateModifiedAt()
-	})
-}
-
-// ClearModifiedAt clears the value of the "modified_at" field.
-func (u *IncidentUpsertBulk) ClearModifiedAt() *IncidentUpsertBulk {
-	return u.Update(func(s *IncidentUpsert) {
-		s.ClearModifiedAt()
-	})
-}
-
-// SetClosedAt sets the "closed_at" field.
-func (u *IncidentUpsertBulk) SetClosedAt(v time.Time) *IncidentUpsertBulk {
-	return u.Update(func(s *IncidentUpsert) {
-		s.SetClosedAt(v)
-	})
-}
-
-// UpdateClosedAt sets the "closed_at" field to the value that was provided on create.
-func (u *IncidentUpsertBulk) UpdateClosedAt() *IncidentUpsertBulk {
-	return u.Update(func(s *IncidentUpsert) {
-		s.UpdateClosedAt()
-	})
-}
-
-// ClearClosedAt clears the value of the "closed_at" field.
-func (u *IncidentUpsertBulk) ClearClosedAt() *IncidentUpsertBulk {
-	return u.Update(func(s *IncidentUpsert) {
-		s.ClearClosedAt()
-	})
-}
-
-// SetSeverityID sets the "severity_id" field.
-func (u *IncidentUpsertBulk) SetSeverityID(v uuid.UUID) *IncidentUpsertBulk {
-	return u.Update(func(s *IncidentUpsert) {
-		s.SetSeverityID(v)
-	})
-}
-
-// UpdateSeverityID sets the "severity_id" field to the value that was provided on create.
-func (u *IncidentUpsertBulk) UpdateSeverityID() *IncidentUpsertBulk {
-	return u.Update(func(s *IncidentUpsert) {
-		s.UpdateSeverityID()
-	})
-}
-
-// ClearSeverityID clears the value of the "severity_id" field.
-func (u *IncidentUpsertBulk) ClearSeverityID() *IncidentUpsertBulk {
-	return u.Update(func(s *IncidentUpsert) {
-		s.ClearSeverityID()
-	})
-}
-
-// SetTypeID sets the "type_id" field.
-func (u *IncidentUpsertBulk) SetTypeID(v uuid.UUID) *IncidentUpsertBulk {
-	return u.Update(func(s *IncidentUpsert) {
-		s.SetTypeID(v)
-	})
-}
-
-// UpdateTypeID sets the "type_id" field to the value that was provided on create.
-func (u *IncidentUpsertBulk) UpdateTypeID() *IncidentUpsertBulk {
-	return u.Update(func(s *IncidentUpsert) {
-		s.UpdateTypeID()
-	})
-}
-
-// ClearTypeID clears the value of the "type_id" field.
-func (u *IncidentUpsertBulk) ClearTypeID() *IncidentUpsertBulk {
-	return u.Update(func(s *IncidentUpsert) {
-		s.ClearTypeID()
 	})
 }
 

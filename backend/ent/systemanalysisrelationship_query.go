@@ -4,7 +4,6 @@ package ent
 
 import (
 	"context"
-	"database/sql/driver"
 	"errors"
 	"fmt"
 	"math"
@@ -17,11 +16,7 @@ import (
 	"github.com/rezible/rezible/ent/predicate"
 	"github.com/rezible/rezible/ent/systemanalysis"
 	"github.com/rezible/rezible/ent/systemanalysisrelationship"
-	"github.com/rezible/rezible/ent/systemcomponentcontrol"
 	"github.com/rezible/rezible/ent/systemcomponentrelationship"
-	"github.com/rezible/rezible/ent/systemcomponentsignal"
-	"github.com/rezible/rezible/ent/systemrelationshipcontrolaction"
-	"github.com/rezible/rezible/ent/systemrelationshipfeedbacksignal"
 	"github.com/rezible/rezible/ent/tenant"
 )
 
@@ -35,10 +30,6 @@ type SystemAnalysisRelationshipQuery struct {
 	withTenant                *TenantQuery
 	withSystemAnalysis        *SystemAnalysisQuery
 	withComponentRelationship *SystemComponentRelationshipQuery
-	withControls              *SystemComponentControlQuery
-	withSignals               *SystemComponentSignalQuery
-	withControlActions        *SystemRelationshipControlActionQuery
-	withFeedbackSignals       *SystemRelationshipFeedbackSignalQuery
 	modifiers                 []func(*sql.Selector)
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
@@ -135,94 +126,6 @@ func (_q *SystemAnalysisRelationshipQuery) QueryComponentRelationship() *SystemC
 			sqlgraph.From(systemanalysisrelationship.Table, systemanalysisrelationship.FieldID, selector),
 			sqlgraph.To(systemcomponentrelationship.Table, systemcomponentrelationship.FieldID),
 			sqlgraph.Edge(sqlgraph.M2O, false, systemanalysisrelationship.ComponentRelationshipTable, systemanalysisrelationship.ComponentRelationshipColumn),
-		)
-		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
-		return fromU, nil
-	}
-	return query
-}
-
-// QueryControls chains the current query on the "controls" edge.
-func (_q *SystemAnalysisRelationshipQuery) QueryControls() *SystemComponentControlQuery {
-	query := (&SystemComponentControlClient{config: _q.config}).Query()
-	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
-		if err := _q.prepareQuery(ctx); err != nil {
-			return nil, err
-		}
-		selector := _q.sqlQuery(ctx)
-		if err := selector.Err(); err != nil {
-			return nil, err
-		}
-		step := sqlgraph.NewStep(
-			sqlgraph.From(systemanalysisrelationship.Table, systemanalysisrelationship.FieldID, selector),
-			sqlgraph.To(systemcomponentcontrol.Table, systemcomponentcontrol.FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, false, systemanalysisrelationship.ControlsTable, systemanalysisrelationship.ControlsPrimaryKey...),
-		)
-		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
-		return fromU, nil
-	}
-	return query
-}
-
-// QuerySignals chains the current query on the "signals" edge.
-func (_q *SystemAnalysisRelationshipQuery) QuerySignals() *SystemComponentSignalQuery {
-	query := (&SystemComponentSignalClient{config: _q.config}).Query()
-	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
-		if err := _q.prepareQuery(ctx); err != nil {
-			return nil, err
-		}
-		selector := _q.sqlQuery(ctx)
-		if err := selector.Err(); err != nil {
-			return nil, err
-		}
-		step := sqlgraph.NewStep(
-			sqlgraph.From(systemanalysisrelationship.Table, systemanalysisrelationship.FieldID, selector),
-			sqlgraph.To(systemcomponentsignal.Table, systemcomponentsignal.FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, false, systemanalysisrelationship.SignalsTable, systemanalysisrelationship.SignalsPrimaryKey...),
-		)
-		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
-		return fromU, nil
-	}
-	return query
-}
-
-// QueryControlActions chains the current query on the "control_actions" edge.
-func (_q *SystemAnalysisRelationshipQuery) QueryControlActions() *SystemRelationshipControlActionQuery {
-	query := (&SystemRelationshipControlActionClient{config: _q.config}).Query()
-	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
-		if err := _q.prepareQuery(ctx); err != nil {
-			return nil, err
-		}
-		selector := _q.sqlQuery(ctx)
-		if err := selector.Err(); err != nil {
-			return nil, err
-		}
-		step := sqlgraph.NewStep(
-			sqlgraph.From(systemanalysisrelationship.Table, systemanalysisrelationship.FieldID, selector),
-			sqlgraph.To(systemrelationshipcontrolaction.Table, systemrelationshipcontrolaction.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, true, systemanalysisrelationship.ControlActionsTable, systemanalysisrelationship.ControlActionsColumn),
-		)
-		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
-		return fromU, nil
-	}
-	return query
-}
-
-// QueryFeedbackSignals chains the current query on the "feedback_signals" edge.
-func (_q *SystemAnalysisRelationshipQuery) QueryFeedbackSignals() *SystemRelationshipFeedbackSignalQuery {
-	query := (&SystemRelationshipFeedbackSignalClient{config: _q.config}).Query()
-	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
-		if err := _q.prepareQuery(ctx); err != nil {
-			return nil, err
-		}
-		selector := _q.sqlQuery(ctx)
-		if err := selector.Err(); err != nil {
-			return nil, err
-		}
-		step := sqlgraph.NewStep(
-			sqlgraph.From(systemanalysisrelationship.Table, systemanalysisrelationship.FieldID, selector),
-			sqlgraph.To(systemrelationshipfeedbacksignal.Table, systemrelationshipfeedbacksignal.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, true, systemanalysisrelationship.FeedbackSignalsTable, systemanalysisrelationship.FeedbackSignalsColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
@@ -425,10 +328,6 @@ func (_q *SystemAnalysisRelationshipQuery) Clone() *SystemAnalysisRelationshipQu
 		withTenant:                _q.withTenant.Clone(),
 		withSystemAnalysis:        _q.withSystemAnalysis.Clone(),
 		withComponentRelationship: _q.withComponentRelationship.Clone(),
-		withControls:              _q.withControls.Clone(),
-		withSignals:               _q.withSignals.Clone(),
-		withControlActions:        _q.withControlActions.Clone(),
-		withFeedbackSignals:       _q.withFeedbackSignals.Clone(),
 		// clone intermediate query.
 		sql:       _q.sql.Clone(),
 		path:      _q.path,
@@ -466,50 +365,6 @@ func (_q *SystemAnalysisRelationshipQuery) WithComponentRelationship(opts ...fun
 		opt(query)
 	}
 	_q.withComponentRelationship = query
-	return _q
-}
-
-// WithControls tells the query-builder to eager-load the nodes that are connected to
-// the "controls" edge. The optional arguments are used to configure the query builder of the edge.
-func (_q *SystemAnalysisRelationshipQuery) WithControls(opts ...func(*SystemComponentControlQuery)) *SystemAnalysisRelationshipQuery {
-	query := (&SystemComponentControlClient{config: _q.config}).Query()
-	for _, opt := range opts {
-		opt(query)
-	}
-	_q.withControls = query
-	return _q
-}
-
-// WithSignals tells the query-builder to eager-load the nodes that are connected to
-// the "signals" edge. The optional arguments are used to configure the query builder of the edge.
-func (_q *SystemAnalysisRelationshipQuery) WithSignals(opts ...func(*SystemComponentSignalQuery)) *SystemAnalysisRelationshipQuery {
-	query := (&SystemComponentSignalClient{config: _q.config}).Query()
-	for _, opt := range opts {
-		opt(query)
-	}
-	_q.withSignals = query
-	return _q
-}
-
-// WithControlActions tells the query-builder to eager-load the nodes that are connected to
-// the "control_actions" edge. The optional arguments are used to configure the query builder of the edge.
-func (_q *SystemAnalysisRelationshipQuery) WithControlActions(opts ...func(*SystemRelationshipControlActionQuery)) *SystemAnalysisRelationshipQuery {
-	query := (&SystemRelationshipControlActionClient{config: _q.config}).Query()
-	for _, opt := range opts {
-		opt(query)
-	}
-	_q.withControlActions = query
-	return _q
-}
-
-// WithFeedbackSignals tells the query-builder to eager-load the nodes that are connected to
-// the "feedback_signals" edge. The optional arguments are used to configure the query builder of the edge.
-func (_q *SystemAnalysisRelationshipQuery) WithFeedbackSignals(opts ...func(*SystemRelationshipFeedbackSignalQuery)) *SystemAnalysisRelationshipQuery {
-	query := (&SystemRelationshipFeedbackSignalClient{config: _q.config}).Query()
-	for _, opt := range opts {
-		opt(query)
-	}
-	_q.withFeedbackSignals = query
 	return _q
 }
 
@@ -597,14 +452,10 @@ func (_q *SystemAnalysisRelationshipQuery) sqlAll(ctx context.Context, hooks ...
 	var (
 		nodes       = []*SystemAnalysisRelationship{}
 		_spec       = _q.querySpec()
-		loadedTypes = [7]bool{
+		loadedTypes = [3]bool{
 			_q.withTenant != nil,
 			_q.withSystemAnalysis != nil,
 			_q.withComponentRelationship != nil,
-			_q.withControls != nil,
-			_q.withSignals != nil,
-			_q.withControlActions != nil,
-			_q.withFeedbackSignals != nil,
 		}
 	)
 	_spec.ScanValues = func(columns []string) ([]any, error) {
@@ -643,42 +494,6 @@ func (_q *SystemAnalysisRelationshipQuery) sqlAll(ctx context.Context, hooks ...
 	if query := _q.withComponentRelationship; query != nil {
 		if err := _q.loadComponentRelationship(ctx, query, nodes, nil,
 			func(n *SystemAnalysisRelationship, e *SystemComponentRelationship) { n.Edges.ComponentRelationship = e }); err != nil {
-			return nil, err
-		}
-	}
-	if query := _q.withControls; query != nil {
-		if err := _q.loadControls(ctx, query, nodes,
-			func(n *SystemAnalysisRelationship) { n.Edges.Controls = []*SystemComponentControl{} },
-			func(n *SystemAnalysisRelationship, e *SystemComponentControl) {
-				n.Edges.Controls = append(n.Edges.Controls, e)
-			}); err != nil {
-			return nil, err
-		}
-	}
-	if query := _q.withSignals; query != nil {
-		if err := _q.loadSignals(ctx, query, nodes,
-			func(n *SystemAnalysisRelationship) { n.Edges.Signals = []*SystemComponentSignal{} },
-			func(n *SystemAnalysisRelationship, e *SystemComponentSignal) {
-				n.Edges.Signals = append(n.Edges.Signals, e)
-			}); err != nil {
-			return nil, err
-		}
-	}
-	if query := _q.withControlActions; query != nil {
-		if err := _q.loadControlActions(ctx, query, nodes,
-			func(n *SystemAnalysisRelationship) { n.Edges.ControlActions = []*SystemRelationshipControlAction{} },
-			func(n *SystemAnalysisRelationship, e *SystemRelationshipControlAction) {
-				n.Edges.ControlActions = append(n.Edges.ControlActions, e)
-			}); err != nil {
-			return nil, err
-		}
-	}
-	if query := _q.withFeedbackSignals; query != nil {
-		if err := _q.loadFeedbackSignals(ctx, query, nodes,
-			func(n *SystemAnalysisRelationship) { n.Edges.FeedbackSignals = []*SystemRelationshipFeedbackSignal{} },
-			func(n *SystemAnalysisRelationship, e *SystemRelationshipFeedbackSignal) {
-				n.Edges.FeedbackSignals = append(n.Edges.FeedbackSignals, e)
-			}); err != nil {
 			return nil, err
 		}
 	}
@@ -769,188 +584,6 @@ func (_q *SystemAnalysisRelationshipQuery) loadComponentRelationship(ctx context
 		for i := range nodes {
 			assign(nodes[i], n)
 		}
-	}
-	return nil
-}
-func (_q *SystemAnalysisRelationshipQuery) loadControls(ctx context.Context, query *SystemComponentControlQuery, nodes []*SystemAnalysisRelationship, init func(*SystemAnalysisRelationship), assign func(*SystemAnalysisRelationship, *SystemComponentControl)) error {
-	edgeIDs := make([]driver.Value, len(nodes))
-	byID := make(map[uuid.UUID]*SystemAnalysisRelationship)
-	nids := make(map[uuid.UUID]map[*SystemAnalysisRelationship]struct{})
-	for i, node := range nodes {
-		edgeIDs[i] = node.ID
-		byID[node.ID] = node
-		if init != nil {
-			init(node)
-		}
-	}
-	query.Where(func(s *sql.Selector) {
-		joinT := sql.Table(systemanalysisrelationship.ControlsTable)
-		s.Join(joinT).On(s.C(systemcomponentcontrol.FieldID), joinT.C(systemanalysisrelationship.ControlsPrimaryKey[1]))
-		s.Where(sql.InValues(joinT.C(systemanalysisrelationship.ControlsPrimaryKey[0]), edgeIDs...))
-		columns := s.SelectedColumns()
-		s.Select(joinT.C(systemanalysisrelationship.ControlsPrimaryKey[0]))
-		s.AppendSelect(columns...)
-		s.SetDistinct(false)
-	})
-	if err := query.prepareQuery(ctx); err != nil {
-		return err
-	}
-	qr := QuerierFunc(func(ctx context.Context, q Query) (Value, error) {
-		return query.sqlAll(ctx, func(_ context.Context, spec *sqlgraph.QuerySpec) {
-			assign := spec.Assign
-			values := spec.ScanValues
-			spec.ScanValues = func(columns []string) ([]any, error) {
-				values, err := values(columns[1:])
-				if err != nil {
-					return nil, err
-				}
-				return append([]any{new(uuid.UUID)}, values...), nil
-			}
-			spec.Assign = func(columns []string, values []any) error {
-				outValue := *values[0].(*uuid.UUID)
-				inValue := *values[1].(*uuid.UUID)
-				if nids[inValue] == nil {
-					nids[inValue] = map[*SystemAnalysisRelationship]struct{}{byID[outValue]: {}}
-					return assign(columns[1:], values[1:])
-				}
-				nids[inValue][byID[outValue]] = struct{}{}
-				return nil
-			}
-		})
-	})
-	neighbors, err := withInterceptors[[]*SystemComponentControl](ctx, query, qr, query.inters)
-	if err != nil {
-		return err
-	}
-	for _, n := range neighbors {
-		nodes, ok := nids[n.ID]
-		if !ok {
-			return fmt.Errorf(`unexpected "controls" node returned %v`, n.ID)
-		}
-		for kn := range nodes {
-			assign(kn, n)
-		}
-	}
-	return nil
-}
-func (_q *SystemAnalysisRelationshipQuery) loadSignals(ctx context.Context, query *SystemComponentSignalQuery, nodes []*SystemAnalysisRelationship, init func(*SystemAnalysisRelationship), assign func(*SystemAnalysisRelationship, *SystemComponentSignal)) error {
-	edgeIDs := make([]driver.Value, len(nodes))
-	byID := make(map[uuid.UUID]*SystemAnalysisRelationship)
-	nids := make(map[uuid.UUID]map[*SystemAnalysisRelationship]struct{})
-	for i, node := range nodes {
-		edgeIDs[i] = node.ID
-		byID[node.ID] = node
-		if init != nil {
-			init(node)
-		}
-	}
-	query.Where(func(s *sql.Selector) {
-		joinT := sql.Table(systemanalysisrelationship.SignalsTable)
-		s.Join(joinT).On(s.C(systemcomponentsignal.FieldID), joinT.C(systemanalysisrelationship.SignalsPrimaryKey[1]))
-		s.Where(sql.InValues(joinT.C(systemanalysisrelationship.SignalsPrimaryKey[0]), edgeIDs...))
-		columns := s.SelectedColumns()
-		s.Select(joinT.C(systemanalysisrelationship.SignalsPrimaryKey[0]))
-		s.AppendSelect(columns...)
-		s.SetDistinct(false)
-	})
-	if err := query.prepareQuery(ctx); err != nil {
-		return err
-	}
-	qr := QuerierFunc(func(ctx context.Context, q Query) (Value, error) {
-		return query.sqlAll(ctx, func(_ context.Context, spec *sqlgraph.QuerySpec) {
-			assign := spec.Assign
-			values := spec.ScanValues
-			spec.ScanValues = func(columns []string) ([]any, error) {
-				values, err := values(columns[1:])
-				if err != nil {
-					return nil, err
-				}
-				return append([]any{new(uuid.UUID)}, values...), nil
-			}
-			spec.Assign = func(columns []string, values []any) error {
-				outValue := *values[0].(*uuid.UUID)
-				inValue := *values[1].(*uuid.UUID)
-				if nids[inValue] == nil {
-					nids[inValue] = map[*SystemAnalysisRelationship]struct{}{byID[outValue]: {}}
-					return assign(columns[1:], values[1:])
-				}
-				nids[inValue][byID[outValue]] = struct{}{}
-				return nil
-			}
-		})
-	})
-	neighbors, err := withInterceptors[[]*SystemComponentSignal](ctx, query, qr, query.inters)
-	if err != nil {
-		return err
-	}
-	for _, n := range neighbors {
-		nodes, ok := nids[n.ID]
-		if !ok {
-			return fmt.Errorf(`unexpected "signals" node returned %v`, n.ID)
-		}
-		for kn := range nodes {
-			assign(kn, n)
-		}
-	}
-	return nil
-}
-func (_q *SystemAnalysisRelationshipQuery) loadControlActions(ctx context.Context, query *SystemRelationshipControlActionQuery, nodes []*SystemAnalysisRelationship, init func(*SystemAnalysisRelationship), assign func(*SystemAnalysisRelationship, *SystemRelationshipControlAction)) error {
-	fks := make([]driver.Value, 0, len(nodes))
-	nodeids := make(map[uuid.UUID]*SystemAnalysisRelationship)
-	for i := range nodes {
-		fks = append(fks, nodes[i].ID)
-		nodeids[nodes[i].ID] = nodes[i]
-		if init != nil {
-			init(nodes[i])
-		}
-	}
-	if len(query.ctx.Fields) > 0 {
-		query.ctx.AppendFieldOnce(systemrelationshipcontrolaction.FieldRelationshipID)
-	}
-	query.Where(predicate.SystemRelationshipControlAction(func(s *sql.Selector) {
-		s.Where(sql.InValues(s.C(systemanalysisrelationship.ControlActionsColumn), fks...))
-	}))
-	neighbors, err := query.All(ctx)
-	if err != nil {
-		return err
-	}
-	for _, n := range neighbors {
-		fk := n.RelationshipID
-		node, ok := nodeids[fk]
-		if !ok {
-			return fmt.Errorf(`unexpected referenced foreign-key "relationship_id" returned %v for node %v`, fk, n.ID)
-		}
-		assign(node, n)
-	}
-	return nil
-}
-func (_q *SystemAnalysisRelationshipQuery) loadFeedbackSignals(ctx context.Context, query *SystemRelationshipFeedbackSignalQuery, nodes []*SystemAnalysisRelationship, init func(*SystemAnalysisRelationship), assign func(*SystemAnalysisRelationship, *SystemRelationshipFeedbackSignal)) error {
-	fks := make([]driver.Value, 0, len(nodes))
-	nodeids := make(map[uuid.UUID]*SystemAnalysisRelationship)
-	for i := range nodes {
-		fks = append(fks, nodes[i].ID)
-		nodeids[nodes[i].ID] = nodes[i]
-		if init != nil {
-			init(nodes[i])
-		}
-	}
-	if len(query.ctx.Fields) > 0 {
-		query.ctx.AppendFieldOnce(systemrelationshipfeedbacksignal.FieldRelationshipID)
-	}
-	query.Where(predicate.SystemRelationshipFeedbackSignal(func(s *sql.Selector) {
-		s.Where(sql.InValues(s.C(systemanalysisrelationship.FeedbackSignalsColumn), fks...))
-	}))
-	neighbors, err := query.All(ctx)
-	if err != nil {
-		return err
-	}
-	for _, n := range neighbors {
-		fk := n.RelationshipID
-		node, ok := nodeids[fk]
-		if !ok {
-			return fmt.Errorf(`unexpected referenced foreign-key "relationship_id" returned %v for node %v`, fk, n.ID)
-		}
-		assign(node, n)
 	}
 	return nil
 }

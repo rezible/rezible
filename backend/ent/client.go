@@ -9374,70 +9374,6 @@ func (c *SystemAnalysisRelationshipClient) QueryComponentRelationship(_m *System
 	return query
 }
 
-// QueryControls queries the controls edge of a SystemAnalysisRelationship.
-func (c *SystemAnalysisRelationshipClient) QueryControls(_m *SystemAnalysisRelationship) *SystemComponentControlQuery {
-	query := (&SystemComponentControlClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := _m.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(systemanalysisrelationship.Table, systemanalysisrelationship.FieldID, id),
-			sqlgraph.To(systemcomponentcontrol.Table, systemcomponentcontrol.FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, false, systemanalysisrelationship.ControlsTable, systemanalysisrelationship.ControlsPrimaryKey...),
-		)
-		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// QuerySignals queries the signals edge of a SystemAnalysisRelationship.
-func (c *SystemAnalysisRelationshipClient) QuerySignals(_m *SystemAnalysisRelationship) *SystemComponentSignalQuery {
-	query := (&SystemComponentSignalClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := _m.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(systemanalysisrelationship.Table, systemanalysisrelationship.FieldID, id),
-			sqlgraph.To(systemcomponentsignal.Table, systemcomponentsignal.FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, false, systemanalysisrelationship.SignalsTable, systemanalysisrelationship.SignalsPrimaryKey...),
-		)
-		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// QueryControlActions queries the control_actions edge of a SystemAnalysisRelationship.
-func (c *SystemAnalysisRelationshipClient) QueryControlActions(_m *SystemAnalysisRelationship) *SystemRelationshipControlActionQuery {
-	query := (&SystemRelationshipControlActionClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := _m.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(systemanalysisrelationship.Table, systemanalysisrelationship.FieldID, id),
-			sqlgraph.To(systemrelationshipcontrolaction.Table, systemrelationshipcontrolaction.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, true, systemanalysisrelationship.ControlActionsTable, systemanalysisrelationship.ControlActionsColumn),
-		)
-		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// QueryFeedbackSignals queries the feedback_signals edge of a SystemAnalysisRelationship.
-func (c *SystemAnalysisRelationshipClient) QueryFeedbackSignals(_m *SystemAnalysisRelationship) *SystemRelationshipFeedbackSignalQuery {
-	query := (&SystemRelationshipFeedbackSignalClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := _m.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(systemanalysisrelationship.Table, systemanalysisrelationship.FieldID, id),
-			sqlgraph.To(systemrelationshipfeedbacksignal.Table, systemrelationshipfeedbacksignal.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, true, systemanalysisrelationship.FeedbackSignalsTable, systemanalysisrelationship.FeedbackSignalsColumn),
-		)
-		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
 // Hooks returns the client hooks.
 func (c *SystemAnalysisRelationshipClient) Hooks() []Hook {
 	hooks := c.hooks.SystemAnalysisRelationship
@@ -10113,13 +10049,13 @@ func (c *SystemComponentControlClient) QueryComponent(_m *SystemComponentControl
 }
 
 // QueryRelationships queries the relationships edge of a SystemComponentControl.
-func (c *SystemComponentControlClient) QueryRelationships(_m *SystemComponentControl) *SystemAnalysisRelationshipQuery {
-	query := (&SystemAnalysisRelationshipClient{config: c.config}).Query()
+func (c *SystemComponentControlClient) QueryRelationships(_m *SystemComponentControl) *SystemComponentRelationshipQuery {
+	query := (&SystemComponentRelationshipClient{config: c.config}).Query()
 	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
 		id := _m.ID
 		step := sqlgraph.NewStep(
 			sqlgraph.From(systemcomponentcontrol.Table, systemcomponentcontrol.FieldID, id),
-			sqlgraph.To(systemanalysisrelationship.Table, systemanalysisrelationship.FieldID),
+			sqlgraph.To(systemcomponentrelationship.Table, systemcomponentrelationship.FieldID),
 			sqlgraph.Edge(sqlgraph.M2M, true, systemcomponentcontrol.RelationshipsTable, systemcomponentcontrol.RelationshipsPrimaryKey...),
 		)
 		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
@@ -10524,6 +10460,70 @@ func (c *SystemComponentRelationshipClient) QueryHazards(_m *SystemComponentRela
 	return query
 }
 
+// QueryControls queries the controls edge of a SystemComponentRelationship.
+func (c *SystemComponentRelationshipClient) QueryControls(_m *SystemComponentRelationship) *SystemComponentControlQuery {
+	query := (&SystemComponentControlClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(systemcomponentrelationship.Table, systemcomponentrelationship.FieldID, id),
+			sqlgraph.To(systemcomponentcontrol.Table, systemcomponentcontrol.FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, false, systemcomponentrelationship.ControlsTable, systemcomponentrelationship.ControlsPrimaryKey...),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QuerySignals queries the signals edge of a SystemComponentRelationship.
+func (c *SystemComponentRelationshipClient) QuerySignals(_m *SystemComponentRelationship) *SystemComponentSignalQuery {
+	query := (&SystemComponentSignalClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(systemcomponentrelationship.Table, systemcomponentrelationship.FieldID, id),
+			sqlgraph.To(systemcomponentsignal.Table, systemcomponentsignal.FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, false, systemcomponentrelationship.SignalsTable, systemcomponentrelationship.SignalsPrimaryKey...),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryControlActions queries the control_actions edge of a SystemComponentRelationship.
+func (c *SystemComponentRelationshipClient) QueryControlActions(_m *SystemComponentRelationship) *SystemRelationshipControlActionQuery {
+	query := (&SystemRelationshipControlActionClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(systemcomponentrelationship.Table, systemcomponentrelationship.FieldID, id),
+			sqlgraph.To(systemrelationshipcontrolaction.Table, systemrelationshipcontrolaction.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, true, systemcomponentrelationship.ControlActionsTable, systemcomponentrelationship.ControlActionsColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryFeedbackSignals queries the feedback_signals edge of a SystemComponentRelationship.
+func (c *SystemComponentRelationshipClient) QueryFeedbackSignals(_m *SystemComponentRelationship) *SystemRelationshipFeedbackSignalQuery {
+	query := (&SystemRelationshipFeedbackSignalClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(systemcomponentrelationship.Table, systemcomponentrelationship.FieldID, id),
+			sqlgraph.To(systemrelationshipfeedbacksignal.Table, systemrelationshipfeedbacksignal.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, true, systemcomponentrelationship.FeedbackSignalsTable, systemcomponentrelationship.FeedbackSignalsColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
 // Hooks returns the client hooks.
 func (c *SystemComponentRelationshipClient) Hooks() []Hook {
 	hooks := c.hooks.SystemComponentRelationship
@@ -10691,13 +10691,13 @@ func (c *SystemComponentSignalClient) QueryComponent(_m *SystemComponentSignal) 
 }
 
 // QueryRelationships queries the relationships edge of a SystemComponentSignal.
-func (c *SystemComponentSignalClient) QueryRelationships(_m *SystemComponentSignal) *SystemAnalysisRelationshipQuery {
-	query := (&SystemAnalysisRelationshipClient{config: c.config}).Query()
+func (c *SystemComponentSignalClient) QueryRelationships(_m *SystemComponentSignal) *SystemComponentRelationshipQuery {
+	query := (&SystemComponentRelationshipClient{config: c.config}).Query()
 	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
 		id := _m.ID
 		step := sqlgraph.NewStep(
 			sqlgraph.From(systemcomponentsignal.Table, systemcomponentsignal.FieldID, id),
-			sqlgraph.To(systemanalysisrelationship.Table, systemanalysisrelationship.FieldID),
+			sqlgraph.To(systemcomponentrelationship.Table, systemcomponentrelationship.FieldID),
 			sqlgraph.Edge(sqlgraph.M2M, true, systemcomponentsignal.RelationshipsTable, systemcomponentsignal.RelationshipsPrimaryKey...),
 		)
 		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
@@ -11071,13 +11071,13 @@ func (c *SystemRelationshipControlActionClient) QueryTenant(_m *SystemRelationsh
 }
 
 // QueryRelationship queries the relationship edge of a SystemRelationshipControlAction.
-func (c *SystemRelationshipControlActionClient) QueryRelationship(_m *SystemRelationshipControlAction) *SystemAnalysisRelationshipQuery {
-	query := (&SystemAnalysisRelationshipClient{config: c.config}).Query()
+func (c *SystemRelationshipControlActionClient) QueryRelationship(_m *SystemRelationshipControlAction) *SystemComponentRelationshipQuery {
+	query := (&SystemComponentRelationshipClient{config: c.config}).Query()
 	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
 		id := _m.ID
 		step := sqlgraph.NewStep(
 			sqlgraph.From(systemrelationshipcontrolaction.Table, systemrelationshipcontrolaction.FieldID, id),
-			sqlgraph.To(systemanalysisrelationship.Table, systemanalysisrelationship.FieldID),
+			sqlgraph.To(systemcomponentrelationship.Table, systemcomponentrelationship.FieldID),
 			sqlgraph.Edge(sqlgraph.M2O, false, systemrelationshipcontrolaction.RelationshipTable, systemrelationshipcontrolaction.RelationshipColumn),
 		)
 		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
@@ -11253,13 +11253,13 @@ func (c *SystemRelationshipFeedbackSignalClient) QueryTenant(_m *SystemRelations
 }
 
 // QueryRelationship queries the relationship edge of a SystemRelationshipFeedbackSignal.
-func (c *SystemRelationshipFeedbackSignalClient) QueryRelationship(_m *SystemRelationshipFeedbackSignal) *SystemAnalysisRelationshipQuery {
-	query := (&SystemAnalysisRelationshipClient{config: c.config}).Query()
+func (c *SystemRelationshipFeedbackSignalClient) QueryRelationship(_m *SystemRelationshipFeedbackSignal) *SystemComponentRelationshipQuery {
+	query := (&SystemComponentRelationshipClient{config: c.config}).Query()
 	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
 		id := _m.ID
 		step := sqlgraph.NewStep(
 			sqlgraph.From(systemrelationshipfeedbacksignal.Table, systemrelationshipfeedbacksignal.FieldID, id),
-			sqlgraph.To(systemanalysisrelationship.Table, systemanalysisrelationship.FieldID),
+			sqlgraph.To(systemcomponentrelationship.Table, systemcomponentrelationship.FieldID),
 			sqlgraph.Edge(sqlgraph.M2O, false, systemrelationshipfeedbacksignal.RelationshipTable, systemrelationshipfeedbacksignal.RelationshipColumn),
 		)
 		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)

@@ -37,3 +37,40 @@ func (IncidentRole) Edges() []ent.Edge {
 		edge.From("debrief_questions", IncidentDebriefQuestion.Type).Ref("incident_roles"),
 	}
 }
+
+type IncidentRoleAssignment struct {
+	ent.Schema
+}
+
+func (IncidentRoleAssignment) Mixin() []ent.Mixin {
+	return []ent.Mixin{
+		BaseMixin{},
+		TenantMixin{},
+	}
+}
+
+func (IncidentRoleAssignment) Fields() []ent.Field {
+	return []ent.Field{
+		field.UUID("id", uuid.UUID{}).Default(uuid.New),
+		field.UUID("incident_id", uuid.UUID{}),
+		field.UUID("user_id", uuid.UUID{}),
+		field.UUID("role_id", uuid.UUID{}),
+	}
+}
+
+func (IncidentRoleAssignment) Edges() []ent.Edge {
+	return []ent.Edge{
+		edge.To("incident", Incident.Type).
+			Required().
+			Unique().
+			Field("incident_id"),
+		edge.To("user", User.Type).
+			Required().
+			Unique().
+			Field("user_id"),
+		edge.To("role", IncidentRole.Type).
+			Required().
+			Unique().
+			Field("role_id"),
+	}
+}

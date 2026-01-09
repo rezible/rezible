@@ -25,7 +25,7 @@ func (SystemComponent) Fields() []ent.Field {
 	return []ent.Field{
 		field.UUID("id", uuid.UUID{}).Default(uuid.New),
 		field.String("name").NotEmpty(),
-		field.UUID("kind_id", uuid.UUID{}).Optional(),
+		field.UUID("kind_id", uuid.UUID{}),
 		field.Text("description").Optional(),
 		field.JSON("properties", map[string]any{}).Optional(),
 		field.Time("created_at").
@@ -40,6 +40,7 @@ func (SystemComponent) Edges() []ent.Edge {
 	return []ent.Edge{
 		edge.To("kind", SystemComponentKind.Type).
 			Unique().
+			Required().
 			Field("kind_id"),
 
 		edge.To("related", SystemComponent.Type).
@@ -59,6 +60,7 @@ func (SystemComponent) Edges() []ent.Edge {
 		edge.From("events", IncidentEvent.Type).
 			Ref("system_components").
 			Through("event_components", IncidentEventSystemComponent.Type),
+
 		edge.From("constraints", SystemComponentConstraint.Type).
 			Ref("component"),
 		edge.From("controls", SystemComponentControl.Type).
@@ -152,7 +154,7 @@ func (SystemComponentSignal) Edges() []ent.Edge {
 	return []ent.Edge{
 		edge.To("component", SystemComponent.Type).
 			Required().Unique().Field("component_id"),
-		edge.From("relationships", SystemAnalysisRelationship.Type).
+		edge.From("relationships", SystemComponentRelationship.Type).
 			Ref("signals").
 			Through("feedback_signals", SystemRelationshipFeedbackSignal.Type),
 	}
@@ -183,7 +185,7 @@ func (SystemComponentControl) Edges() []ent.Edge {
 	return []ent.Edge{
 		edge.To("component", SystemComponent.Type).
 			Required().Unique().Field("component_id"),
-		edge.From("relationships", SystemAnalysisRelationship.Type).
+		edge.From("relationships", SystemComponentRelationship.Type).
 			Ref("controls").
 			Through("control_actions", SystemRelationshipControlAction.Type),
 	}

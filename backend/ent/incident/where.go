@@ -3,8 +3,6 @@
 package incident
 
 import (
-	"time"
-
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"github.com/google/uuid"
@@ -76,31 +74,6 @@ func Title(v string) predicate.Incident {
 	return predicate.Incident(sql.FieldEQ(FieldTitle, v))
 }
 
-// Private applies equality check predicate on the "private" field. It's identical to PrivateEQ.
-func Private(v bool) predicate.Incident {
-	return predicate.Incident(sql.FieldEQ(FieldPrivate, v))
-}
-
-// Summary applies equality check predicate on the "summary" field. It's identical to SummaryEQ.
-func Summary(v string) predicate.Incident {
-	return predicate.Incident(sql.FieldEQ(FieldSummary, v))
-}
-
-// OpenedAt applies equality check predicate on the "opened_at" field. It's identical to OpenedAtEQ.
-func OpenedAt(v time.Time) predicate.Incident {
-	return predicate.Incident(sql.FieldEQ(FieldOpenedAt, v))
-}
-
-// ModifiedAt applies equality check predicate on the "modified_at" field. It's identical to ModifiedAtEQ.
-func ModifiedAt(v time.Time) predicate.Incident {
-	return predicate.Incident(sql.FieldEQ(FieldModifiedAt, v))
-}
-
-// ClosedAt applies equality check predicate on the "closed_at" field. It's identical to ClosedAtEQ.
-func ClosedAt(v time.Time) predicate.Incident {
-	return predicate.Incident(sql.FieldEQ(FieldClosedAt, v))
-}
-
 // SeverityID applies equality check predicate on the "severity_id" field. It's identical to SeverityIDEQ.
 func SeverityID(v uuid.UUID) predicate.Incident {
 	return predicate.Incident(sql.FieldEQ(FieldSeverityID, v))
@@ -109,6 +82,11 @@ func SeverityID(v uuid.UUID) predicate.Incident {
 // TypeID applies equality check predicate on the "type_id" field. It's identical to TypeIDEQ.
 func TypeID(v uuid.UUID) predicate.Incident {
 	return predicate.Incident(sql.FieldEQ(FieldTypeID, v))
+}
+
+// Summary applies equality check predicate on the "summary" field. It's identical to SummaryEQ.
+func Summary(v string) predicate.Incident {
+	return predicate.Incident(sql.FieldEQ(FieldSummary, v))
 }
 
 // ChatChannelID applies equality check predicate on the "chat_channel_id" field. It's identical to ChatChannelIDEQ.
@@ -341,14 +319,44 @@ func TitleContainsFold(v string) predicate.Incident {
 	return predicate.Incident(sql.FieldContainsFold(FieldTitle, v))
 }
 
-// PrivateEQ applies the EQ predicate on the "private" field.
-func PrivateEQ(v bool) predicate.Incident {
-	return predicate.Incident(sql.FieldEQ(FieldPrivate, v))
+// SeverityIDEQ applies the EQ predicate on the "severity_id" field.
+func SeverityIDEQ(v uuid.UUID) predicate.Incident {
+	return predicate.Incident(sql.FieldEQ(FieldSeverityID, v))
 }
 
-// PrivateNEQ applies the NEQ predicate on the "private" field.
-func PrivateNEQ(v bool) predicate.Incident {
-	return predicate.Incident(sql.FieldNEQ(FieldPrivate, v))
+// SeverityIDNEQ applies the NEQ predicate on the "severity_id" field.
+func SeverityIDNEQ(v uuid.UUID) predicate.Incident {
+	return predicate.Incident(sql.FieldNEQ(FieldSeverityID, v))
+}
+
+// SeverityIDIn applies the In predicate on the "severity_id" field.
+func SeverityIDIn(vs ...uuid.UUID) predicate.Incident {
+	return predicate.Incident(sql.FieldIn(FieldSeverityID, vs...))
+}
+
+// SeverityIDNotIn applies the NotIn predicate on the "severity_id" field.
+func SeverityIDNotIn(vs ...uuid.UUID) predicate.Incident {
+	return predicate.Incident(sql.FieldNotIn(FieldSeverityID, vs...))
+}
+
+// TypeIDEQ applies the EQ predicate on the "type_id" field.
+func TypeIDEQ(v uuid.UUID) predicate.Incident {
+	return predicate.Incident(sql.FieldEQ(FieldTypeID, v))
+}
+
+// TypeIDNEQ applies the NEQ predicate on the "type_id" field.
+func TypeIDNEQ(v uuid.UUID) predicate.Incident {
+	return predicate.Incident(sql.FieldNEQ(FieldTypeID, v))
+}
+
+// TypeIDIn applies the In predicate on the "type_id" field.
+func TypeIDIn(vs ...uuid.UUID) predicate.Incident {
+	return predicate.Incident(sql.FieldIn(FieldTypeID, vs...))
+}
+
+// TypeIDNotIn applies the NotIn predicate on the "type_id" field.
+func TypeIDNotIn(vs ...uuid.UUID) predicate.Incident {
+	return predicate.Incident(sql.FieldNotIn(FieldTypeID, vs...))
 }
 
 // SummaryEQ applies the EQ predicate on the "summary" field.
@@ -424,206 +432,6 @@ func SummaryEqualFold(v string) predicate.Incident {
 // SummaryContainsFold applies the ContainsFold predicate on the "summary" field.
 func SummaryContainsFold(v string) predicate.Incident {
 	return predicate.Incident(sql.FieldContainsFold(FieldSummary, v))
-}
-
-// OpenedAtEQ applies the EQ predicate on the "opened_at" field.
-func OpenedAtEQ(v time.Time) predicate.Incident {
-	return predicate.Incident(sql.FieldEQ(FieldOpenedAt, v))
-}
-
-// OpenedAtNEQ applies the NEQ predicate on the "opened_at" field.
-func OpenedAtNEQ(v time.Time) predicate.Incident {
-	return predicate.Incident(sql.FieldNEQ(FieldOpenedAt, v))
-}
-
-// OpenedAtIn applies the In predicate on the "opened_at" field.
-func OpenedAtIn(vs ...time.Time) predicate.Incident {
-	return predicate.Incident(sql.FieldIn(FieldOpenedAt, vs...))
-}
-
-// OpenedAtNotIn applies the NotIn predicate on the "opened_at" field.
-func OpenedAtNotIn(vs ...time.Time) predicate.Incident {
-	return predicate.Incident(sql.FieldNotIn(FieldOpenedAt, vs...))
-}
-
-// OpenedAtGT applies the GT predicate on the "opened_at" field.
-func OpenedAtGT(v time.Time) predicate.Incident {
-	return predicate.Incident(sql.FieldGT(FieldOpenedAt, v))
-}
-
-// OpenedAtGTE applies the GTE predicate on the "opened_at" field.
-func OpenedAtGTE(v time.Time) predicate.Incident {
-	return predicate.Incident(sql.FieldGTE(FieldOpenedAt, v))
-}
-
-// OpenedAtLT applies the LT predicate on the "opened_at" field.
-func OpenedAtLT(v time.Time) predicate.Incident {
-	return predicate.Incident(sql.FieldLT(FieldOpenedAt, v))
-}
-
-// OpenedAtLTE applies the LTE predicate on the "opened_at" field.
-func OpenedAtLTE(v time.Time) predicate.Incident {
-	return predicate.Incident(sql.FieldLTE(FieldOpenedAt, v))
-}
-
-// ModifiedAtEQ applies the EQ predicate on the "modified_at" field.
-func ModifiedAtEQ(v time.Time) predicate.Incident {
-	return predicate.Incident(sql.FieldEQ(FieldModifiedAt, v))
-}
-
-// ModifiedAtNEQ applies the NEQ predicate on the "modified_at" field.
-func ModifiedAtNEQ(v time.Time) predicate.Incident {
-	return predicate.Incident(sql.FieldNEQ(FieldModifiedAt, v))
-}
-
-// ModifiedAtIn applies the In predicate on the "modified_at" field.
-func ModifiedAtIn(vs ...time.Time) predicate.Incident {
-	return predicate.Incident(sql.FieldIn(FieldModifiedAt, vs...))
-}
-
-// ModifiedAtNotIn applies the NotIn predicate on the "modified_at" field.
-func ModifiedAtNotIn(vs ...time.Time) predicate.Incident {
-	return predicate.Incident(sql.FieldNotIn(FieldModifiedAt, vs...))
-}
-
-// ModifiedAtGT applies the GT predicate on the "modified_at" field.
-func ModifiedAtGT(v time.Time) predicate.Incident {
-	return predicate.Incident(sql.FieldGT(FieldModifiedAt, v))
-}
-
-// ModifiedAtGTE applies the GTE predicate on the "modified_at" field.
-func ModifiedAtGTE(v time.Time) predicate.Incident {
-	return predicate.Incident(sql.FieldGTE(FieldModifiedAt, v))
-}
-
-// ModifiedAtLT applies the LT predicate on the "modified_at" field.
-func ModifiedAtLT(v time.Time) predicate.Incident {
-	return predicate.Incident(sql.FieldLT(FieldModifiedAt, v))
-}
-
-// ModifiedAtLTE applies the LTE predicate on the "modified_at" field.
-func ModifiedAtLTE(v time.Time) predicate.Incident {
-	return predicate.Incident(sql.FieldLTE(FieldModifiedAt, v))
-}
-
-// ModifiedAtIsNil applies the IsNil predicate on the "modified_at" field.
-func ModifiedAtIsNil() predicate.Incident {
-	return predicate.Incident(sql.FieldIsNull(FieldModifiedAt))
-}
-
-// ModifiedAtNotNil applies the NotNil predicate on the "modified_at" field.
-func ModifiedAtNotNil() predicate.Incident {
-	return predicate.Incident(sql.FieldNotNull(FieldModifiedAt))
-}
-
-// ClosedAtEQ applies the EQ predicate on the "closed_at" field.
-func ClosedAtEQ(v time.Time) predicate.Incident {
-	return predicate.Incident(sql.FieldEQ(FieldClosedAt, v))
-}
-
-// ClosedAtNEQ applies the NEQ predicate on the "closed_at" field.
-func ClosedAtNEQ(v time.Time) predicate.Incident {
-	return predicate.Incident(sql.FieldNEQ(FieldClosedAt, v))
-}
-
-// ClosedAtIn applies the In predicate on the "closed_at" field.
-func ClosedAtIn(vs ...time.Time) predicate.Incident {
-	return predicate.Incident(sql.FieldIn(FieldClosedAt, vs...))
-}
-
-// ClosedAtNotIn applies the NotIn predicate on the "closed_at" field.
-func ClosedAtNotIn(vs ...time.Time) predicate.Incident {
-	return predicate.Incident(sql.FieldNotIn(FieldClosedAt, vs...))
-}
-
-// ClosedAtGT applies the GT predicate on the "closed_at" field.
-func ClosedAtGT(v time.Time) predicate.Incident {
-	return predicate.Incident(sql.FieldGT(FieldClosedAt, v))
-}
-
-// ClosedAtGTE applies the GTE predicate on the "closed_at" field.
-func ClosedAtGTE(v time.Time) predicate.Incident {
-	return predicate.Incident(sql.FieldGTE(FieldClosedAt, v))
-}
-
-// ClosedAtLT applies the LT predicate on the "closed_at" field.
-func ClosedAtLT(v time.Time) predicate.Incident {
-	return predicate.Incident(sql.FieldLT(FieldClosedAt, v))
-}
-
-// ClosedAtLTE applies the LTE predicate on the "closed_at" field.
-func ClosedAtLTE(v time.Time) predicate.Incident {
-	return predicate.Incident(sql.FieldLTE(FieldClosedAt, v))
-}
-
-// ClosedAtIsNil applies the IsNil predicate on the "closed_at" field.
-func ClosedAtIsNil() predicate.Incident {
-	return predicate.Incident(sql.FieldIsNull(FieldClosedAt))
-}
-
-// ClosedAtNotNil applies the NotNil predicate on the "closed_at" field.
-func ClosedAtNotNil() predicate.Incident {
-	return predicate.Incident(sql.FieldNotNull(FieldClosedAt))
-}
-
-// SeverityIDEQ applies the EQ predicate on the "severity_id" field.
-func SeverityIDEQ(v uuid.UUID) predicate.Incident {
-	return predicate.Incident(sql.FieldEQ(FieldSeverityID, v))
-}
-
-// SeverityIDNEQ applies the NEQ predicate on the "severity_id" field.
-func SeverityIDNEQ(v uuid.UUID) predicate.Incident {
-	return predicate.Incident(sql.FieldNEQ(FieldSeverityID, v))
-}
-
-// SeverityIDIn applies the In predicate on the "severity_id" field.
-func SeverityIDIn(vs ...uuid.UUID) predicate.Incident {
-	return predicate.Incident(sql.FieldIn(FieldSeverityID, vs...))
-}
-
-// SeverityIDNotIn applies the NotIn predicate on the "severity_id" field.
-func SeverityIDNotIn(vs ...uuid.UUID) predicate.Incident {
-	return predicate.Incident(sql.FieldNotIn(FieldSeverityID, vs...))
-}
-
-// SeverityIDIsNil applies the IsNil predicate on the "severity_id" field.
-func SeverityIDIsNil() predicate.Incident {
-	return predicate.Incident(sql.FieldIsNull(FieldSeverityID))
-}
-
-// SeverityIDNotNil applies the NotNil predicate on the "severity_id" field.
-func SeverityIDNotNil() predicate.Incident {
-	return predicate.Incident(sql.FieldNotNull(FieldSeverityID))
-}
-
-// TypeIDEQ applies the EQ predicate on the "type_id" field.
-func TypeIDEQ(v uuid.UUID) predicate.Incident {
-	return predicate.Incident(sql.FieldEQ(FieldTypeID, v))
-}
-
-// TypeIDNEQ applies the NEQ predicate on the "type_id" field.
-func TypeIDNEQ(v uuid.UUID) predicate.Incident {
-	return predicate.Incident(sql.FieldNEQ(FieldTypeID, v))
-}
-
-// TypeIDIn applies the In predicate on the "type_id" field.
-func TypeIDIn(vs ...uuid.UUID) predicate.Incident {
-	return predicate.Incident(sql.FieldIn(FieldTypeID, vs...))
-}
-
-// TypeIDNotIn applies the NotIn predicate on the "type_id" field.
-func TypeIDNotIn(vs ...uuid.UUID) predicate.Incident {
-	return predicate.Incident(sql.FieldNotIn(FieldTypeID, vs...))
-}
-
-// TypeIDIsNil applies the IsNil predicate on the "type_id" field.
-func TypeIDIsNil() predicate.Incident {
-	return predicate.Incident(sql.FieldIsNull(FieldTypeID))
-}
-
-// TypeIDNotNil applies the NotNil predicate on the "type_id" field.
-func TypeIDNotNil() predicate.Incident {
-	return predicate.Incident(sql.FieldNotNull(FieldTypeID))
 }
 
 // ChatChannelIDEQ applies the EQ predicate on the "chat_channel_id" field.

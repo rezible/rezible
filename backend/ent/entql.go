@@ -220,13 +220,9 @@ var schemaGraph = func() *sqlgraph.Schema {
 			incident.FieldExternalID:    {Type: field.TypeString, Column: incident.FieldExternalID},
 			incident.FieldSlug:          {Type: field.TypeString, Column: incident.FieldSlug},
 			incident.FieldTitle:         {Type: field.TypeString, Column: incident.FieldTitle},
-			incident.FieldPrivate:       {Type: field.TypeBool, Column: incident.FieldPrivate},
-			incident.FieldSummary:       {Type: field.TypeString, Column: incident.FieldSummary},
-			incident.FieldOpenedAt:      {Type: field.TypeTime, Column: incident.FieldOpenedAt},
-			incident.FieldModifiedAt:    {Type: field.TypeTime, Column: incident.FieldModifiedAt},
-			incident.FieldClosedAt:      {Type: field.TypeTime, Column: incident.FieldClosedAt},
 			incident.FieldSeverityID:    {Type: field.TypeUUID, Column: incident.FieldSeverityID},
 			incident.FieldTypeID:        {Type: field.TypeUUID, Column: incident.FieldTypeID},
+			incident.FieldSummary:       {Type: field.TypeString, Column: incident.FieldSummary},
 			incident.FieldChatChannelID: {Type: field.TypeString, Column: incident.FieldChatChannelID},
 		},
 	}
@@ -1064,6 +1060,7 @@ var schemaGraph = func() *sqlgraph.Schema {
 		Type: "SystemHazard",
 		Fields: map[string]*sqlgraph.FieldSpec{
 			systemhazard.FieldTenantID:    {Type: field.TypeInt, Column: systemhazard.FieldTenantID},
+			systemhazard.FieldExternalID:  {Type: field.TypeString, Column: systemhazard.FieldExternalID},
 			systemhazard.FieldName:        {Type: field.TypeString, Column: systemhazard.FieldName},
 			systemhazard.FieldDescription: {Type: field.TypeString, Column: systemhazard.FieldDescription},
 			systemhazard.FieldCreatedAt:   {Type: field.TypeTime, Column: systemhazard.FieldCreatedAt},
@@ -3163,54 +3160,6 @@ var schemaGraph = func() *sqlgraph.Schema {
 		"SystemComponentRelationship",
 	)
 	graph.MustAddE(
-		"controls",
-		&sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
-			Inverse: false,
-			Table:   systemanalysisrelationship.ControlsTable,
-			Columns: systemanalysisrelationship.ControlsPrimaryKey,
-			Bidi:    false,
-		},
-		"SystemAnalysisRelationship",
-		"SystemComponentControl",
-	)
-	graph.MustAddE(
-		"signals",
-		&sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
-			Inverse: false,
-			Table:   systemanalysisrelationship.SignalsTable,
-			Columns: systemanalysisrelationship.SignalsPrimaryKey,
-			Bidi:    false,
-		},
-		"SystemAnalysisRelationship",
-		"SystemComponentSignal",
-	)
-	graph.MustAddE(
-		"control_actions",
-		&sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   systemanalysisrelationship.ControlActionsTable,
-			Columns: []string{systemanalysisrelationship.ControlActionsColumn},
-			Bidi:    false,
-		},
-		"SystemAnalysisRelationship",
-		"SystemRelationshipControlAction",
-	)
-	graph.MustAddE(
-		"feedback_signals",
-		&sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   systemanalysisrelationship.FeedbackSignalsTable,
-			Columns: []string{systemanalysisrelationship.FeedbackSignalsColumn},
-			Bidi:    false,
-		},
-		"SystemAnalysisRelationship",
-		"SystemRelationshipFeedbackSignal",
-	)
-	graph.MustAddE(
 		"tenant",
 		&sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
@@ -3424,7 +3373,7 @@ var schemaGraph = func() *sqlgraph.Schema {
 			Bidi:    false,
 		},
 		"SystemComponentControl",
-		"SystemAnalysisRelationship",
+		"SystemComponentRelationship",
 	)
 	graph.MustAddE(
 		"control_actions",
@@ -3523,6 +3472,54 @@ var schemaGraph = func() *sqlgraph.Schema {
 		"SystemHazard",
 	)
 	graph.MustAddE(
+		"controls",
+		&sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   systemcomponentrelationship.ControlsTable,
+			Columns: systemcomponentrelationship.ControlsPrimaryKey,
+			Bidi:    false,
+		},
+		"SystemComponentRelationship",
+		"SystemComponentControl",
+	)
+	graph.MustAddE(
+		"signals",
+		&sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   systemcomponentrelationship.SignalsTable,
+			Columns: systemcomponentrelationship.SignalsPrimaryKey,
+			Bidi:    false,
+		},
+		"SystemComponentRelationship",
+		"SystemComponentSignal",
+	)
+	graph.MustAddE(
+		"control_actions",
+		&sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   systemcomponentrelationship.ControlActionsTable,
+			Columns: []string{systemcomponentrelationship.ControlActionsColumn},
+			Bidi:    false,
+		},
+		"SystemComponentRelationship",
+		"SystemRelationshipControlAction",
+	)
+	graph.MustAddE(
+		"feedback_signals",
+		&sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   systemcomponentrelationship.FeedbackSignalsTable,
+			Columns: []string{systemcomponentrelationship.FeedbackSignalsColumn},
+			Bidi:    false,
+		},
+		"SystemComponentRelationship",
+		"SystemRelationshipFeedbackSignal",
+	)
+	graph.MustAddE(
 		"tenant",
 		&sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
@@ -3556,7 +3553,7 @@ var schemaGraph = func() *sqlgraph.Schema {
 			Bidi:    false,
 		},
 		"SystemComponentSignal",
-		"SystemAnalysisRelationship",
+		"SystemComponentRelationship",
 	)
 	graph.MustAddE(
 		"feedback_signals",
@@ -3640,7 +3637,7 @@ var schemaGraph = func() *sqlgraph.Schema {
 			Bidi:    false,
 		},
 		"SystemRelationshipControlAction",
-		"SystemAnalysisRelationship",
+		"SystemComponentRelationship",
 	)
 	graph.MustAddE(
 		"control",
@@ -3676,7 +3673,7 @@ var schemaGraph = func() *sqlgraph.Schema {
 			Bidi:    false,
 		},
 		"SystemRelationshipFeedbackSignal",
-		"SystemAnalysisRelationship",
+		"SystemComponentRelationship",
 	)
 	graph.MustAddE(
 		"signal",
@@ -4819,31 +4816,6 @@ func (f *IncidentFilter) WhereTitle(p entql.StringP) {
 	f.Where(p.Field(incident.FieldTitle))
 }
 
-// WherePrivate applies the entql bool predicate on the private field.
-func (f *IncidentFilter) WherePrivate(p entql.BoolP) {
-	f.Where(p.Field(incident.FieldPrivate))
-}
-
-// WhereSummary applies the entql string predicate on the summary field.
-func (f *IncidentFilter) WhereSummary(p entql.StringP) {
-	f.Where(p.Field(incident.FieldSummary))
-}
-
-// WhereOpenedAt applies the entql time.Time predicate on the opened_at field.
-func (f *IncidentFilter) WhereOpenedAt(p entql.TimeP) {
-	f.Where(p.Field(incident.FieldOpenedAt))
-}
-
-// WhereModifiedAt applies the entql time.Time predicate on the modified_at field.
-func (f *IncidentFilter) WhereModifiedAt(p entql.TimeP) {
-	f.Where(p.Field(incident.FieldModifiedAt))
-}
-
-// WhereClosedAt applies the entql time.Time predicate on the closed_at field.
-func (f *IncidentFilter) WhereClosedAt(p entql.TimeP) {
-	f.Where(p.Field(incident.FieldClosedAt))
-}
-
 // WhereSeverityID applies the entql [16]byte predicate on the severity_id field.
 func (f *IncidentFilter) WhereSeverityID(p entql.ValueP) {
 	f.Where(p.Field(incident.FieldSeverityID))
@@ -4852,6 +4824,11 @@ func (f *IncidentFilter) WhereSeverityID(p entql.ValueP) {
 // WhereTypeID applies the entql [16]byte predicate on the type_id field.
 func (f *IncidentFilter) WhereTypeID(p entql.ValueP) {
 	f.Where(p.Field(incident.FieldTypeID))
+}
+
+// WhereSummary applies the entql string predicate on the summary field.
+func (f *IncidentFilter) WhereSummary(p entql.StringP) {
+	f.Where(p.Field(incident.FieldSummary))
 }
 
 // WhereChatChannelID applies the entql string predicate on the chat_channel_id field.
@@ -9475,62 +9452,6 @@ func (f *SystemAnalysisRelationshipFilter) WhereHasComponentRelationshipWith(pre
 	})))
 }
 
-// WhereHasControls applies a predicate to check if query has an edge controls.
-func (f *SystemAnalysisRelationshipFilter) WhereHasControls() {
-	f.Where(entql.HasEdge("controls"))
-}
-
-// WhereHasControlsWith applies a predicate to check if query has an edge controls with a given conditions (other predicates).
-func (f *SystemAnalysisRelationshipFilter) WhereHasControlsWith(preds ...predicate.SystemComponentControl) {
-	f.Where(entql.HasEdgeWith("controls", sqlgraph.WrapFunc(func(s *sql.Selector) {
-		for _, p := range preds {
-			p(s)
-		}
-	})))
-}
-
-// WhereHasSignals applies a predicate to check if query has an edge signals.
-func (f *SystemAnalysisRelationshipFilter) WhereHasSignals() {
-	f.Where(entql.HasEdge("signals"))
-}
-
-// WhereHasSignalsWith applies a predicate to check if query has an edge signals with a given conditions (other predicates).
-func (f *SystemAnalysisRelationshipFilter) WhereHasSignalsWith(preds ...predicate.SystemComponentSignal) {
-	f.Where(entql.HasEdgeWith("signals", sqlgraph.WrapFunc(func(s *sql.Selector) {
-		for _, p := range preds {
-			p(s)
-		}
-	})))
-}
-
-// WhereHasControlActions applies a predicate to check if query has an edge control_actions.
-func (f *SystemAnalysisRelationshipFilter) WhereHasControlActions() {
-	f.Where(entql.HasEdge("control_actions"))
-}
-
-// WhereHasControlActionsWith applies a predicate to check if query has an edge control_actions with a given conditions (other predicates).
-func (f *SystemAnalysisRelationshipFilter) WhereHasControlActionsWith(preds ...predicate.SystemRelationshipControlAction) {
-	f.Where(entql.HasEdgeWith("control_actions", sqlgraph.WrapFunc(func(s *sql.Selector) {
-		for _, p := range preds {
-			p(s)
-		}
-	})))
-}
-
-// WhereHasFeedbackSignals applies a predicate to check if query has an edge feedback_signals.
-func (f *SystemAnalysisRelationshipFilter) WhereHasFeedbackSignals() {
-	f.Where(entql.HasEdge("feedback_signals"))
-}
-
-// WhereHasFeedbackSignalsWith applies a predicate to check if query has an edge feedback_signals with a given conditions (other predicates).
-func (f *SystemAnalysisRelationshipFilter) WhereHasFeedbackSignalsWith(preds ...predicate.SystemRelationshipFeedbackSignal) {
-	f.Where(entql.HasEdgeWith("feedback_signals", sqlgraph.WrapFunc(func(s *sql.Selector) {
-		for _, p := range preds {
-			p(s)
-		}
-	})))
-}
-
 // addPredicate implements the predicateAdder interface.
 func (_q *SystemComponentQuery) addPredicate(pred func(s *sql.Selector)) {
 	_q.predicates = append(_q.predicates, pred)
@@ -9985,7 +9906,7 @@ func (f *SystemComponentControlFilter) WhereHasRelationships() {
 }
 
 // WhereHasRelationshipsWith applies a predicate to check if query has an edge relationships with a given conditions (other predicates).
-func (f *SystemComponentControlFilter) WhereHasRelationshipsWith(preds ...predicate.SystemAnalysisRelationship) {
+func (f *SystemComponentControlFilter) WhereHasRelationshipsWith(preds ...predicate.SystemComponentRelationship) {
 	f.Where(entql.HasEdgeWith("relationships", sqlgraph.WrapFunc(func(s *sql.Selector) {
 		for _, p := range preds {
 			p(s)
@@ -10240,6 +10161,62 @@ func (f *SystemComponentRelationshipFilter) WhereHasHazardsWith(preds ...predica
 	})))
 }
 
+// WhereHasControls applies a predicate to check if query has an edge controls.
+func (f *SystemComponentRelationshipFilter) WhereHasControls() {
+	f.Where(entql.HasEdge("controls"))
+}
+
+// WhereHasControlsWith applies a predicate to check if query has an edge controls with a given conditions (other predicates).
+func (f *SystemComponentRelationshipFilter) WhereHasControlsWith(preds ...predicate.SystemComponentControl) {
+	f.Where(entql.HasEdgeWith("controls", sqlgraph.WrapFunc(func(s *sql.Selector) {
+		for _, p := range preds {
+			p(s)
+		}
+	})))
+}
+
+// WhereHasSignals applies a predicate to check if query has an edge signals.
+func (f *SystemComponentRelationshipFilter) WhereHasSignals() {
+	f.Where(entql.HasEdge("signals"))
+}
+
+// WhereHasSignalsWith applies a predicate to check if query has an edge signals with a given conditions (other predicates).
+func (f *SystemComponentRelationshipFilter) WhereHasSignalsWith(preds ...predicate.SystemComponentSignal) {
+	f.Where(entql.HasEdgeWith("signals", sqlgraph.WrapFunc(func(s *sql.Selector) {
+		for _, p := range preds {
+			p(s)
+		}
+	})))
+}
+
+// WhereHasControlActions applies a predicate to check if query has an edge control_actions.
+func (f *SystemComponentRelationshipFilter) WhereHasControlActions() {
+	f.Where(entql.HasEdge("control_actions"))
+}
+
+// WhereHasControlActionsWith applies a predicate to check if query has an edge control_actions with a given conditions (other predicates).
+func (f *SystemComponentRelationshipFilter) WhereHasControlActionsWith(preds ...predicate.SystemRelationshipControlAction) {
+	f.Where(entql.HasEdgeWith("control_actions", sqlgraph.WrapFunc(func(s *sql.Selector) {
+		for _, p := range preds {
+			p(s)
+		}
+	})))
+}
+
+// WhereHasFeedbackSignals applies a predicate to check if query has an edge feedback_signals.
+func (f *SystemComponentRelationshipFilter) WhereHasFeedbackSignals() {
+	f.Where(entql.HasEdge("feedback_signals"))
+}
+
+// WhereHasFeedbackSignalsWith applies a predicate to check if query has an edge feedback_signals with a given conditions (other predicates).
+func (f *SystemComponentRelationshipFilter) WhereHasFeedbackSignalsWith(preds ...predicate.SystemRelationshipFeedbackSignal) {
+	f.Where(entql.HasEdgeWith("feedback_signals", sqlgraph.WrapFunc(func(s *sql.Selector) {
+		for _, p := range preds {
+			p(s)
+		}
+	})))
+}
+
 // addPredicate implements the predicateAdder interface.
 func (_q *SystemComponentSignalQuery) addPredicate(pred func(s *sql.Selector)) {
 	_q.predicates = append(_q.predicates, pred)
@@ -10339,7 +10316,7 @@ func (f *SystemComponentSignalFilter) WhereHasRelationships() {
 }
 
 // WhereHasRelationshipsWith applies a predicate to check if query has an edge relationships with a given conditions (other predicates).
-func (f *SystemComponentSignalFilter) WhereHasRelationshipsWith(preds ...predicate.SystemAnalysisRelationship) {
+func (f *SystemComponentSignalFilter) WhereHasRelationshipsWith(preds ...predicate.SystemComponentRelationship) {
 	f.Where(entql.HasEdgeWith("relationships", sqlgraph.WrapFunc(func(s *sql.Selector) {
 		for _, p := range preds {
 			p(s)
@@ -10404,6 +10381,11 @@ func (f *SystemHazardFilter) WhereID(p entql.ValueP) {
 // WhereTenantID applies the entql int predicate on the tenant_id field.
 func (f *SystemHazardFilter) WhereTenantID(p entql.IntP) {
 	f.Where(p.Field(systemhazard.FieldTenantID))
+}
+
+// WhereExternalID applies the entql string predicate on the external_id field.
+func (f *SystemHazardFilter) WhereExternalID(p entql.StringP) {
+	f.Where(p.Field(systemhazard.FieldExternalID))
 }
 
 // WhereName applies the entql string predicate on the name field.
@@ -10572,7 +10554,7 @@ func (f *SystemRelationshipControlActionFilter) WhereHasRelationship() {
 }
 
 // WhereHasRelationshipWith applies a predicate to check if query has an edge relationship with a given conditions (other predicates).
-func (f *SystemRelationshipControlActionFilter) WhereHasRelationshipWith(preds ...predicate.SystemAnalysisRelationship) {
+func (f *SystemRelationshipControlActionFilter) WhereHasRelationshipWith(preds ...predicate.SystemComponentRelationship) {
 	f.Where(entql.HasEdgeWith("relationship", sqlgraph.WrapFunc(func(s *sql.Selector) {
 		for _, p := range preds {
 			p(s)
@@ -10684,7 +10666,7 @@ func (f *SystemRelationshipFeedbackSignalFilter) WhereHasRelationship() {
 }
 
 // WhereHasRelationshipWith applies a predicate to check if query has an edge relationship with a given conditions (other predicates).
-func (f *SystemRelationshipFeedbackSignalFilter) WhereHasRelationshipWith(preds ...predicate.SystemAnalysisRelationship) {
+func (f *SystemRelationshipFeedbackSignalFilter) WhereHasRelationshipWith(preds ...predicate.SystemComponentRelationship) {
 	f.Where(entql.HasEdgeWith("relationship", sqlgraph.WrapFunc(func(s *sql.Selector) {
 		for _, p := range preds {
 			p(s)

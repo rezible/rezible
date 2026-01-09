@@ -14,8 +14,8 @@ import (
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/predicate"
-	"github.com/rezible/rezible/ent/systemanalysisrelationship"
 	"github.com/rezible/rezible/ent/systemcomponentcontrol"
+	"github.com/rezible/rezible/ent/systemcomponentrelationship"
 	"github.com/rezible/rezible/ent/systemrelationshipcontrolaction"
 	"github.com/rezible/rezible/ent/tenant"
 )
@@ -28,7 +28,7 @@ type SystemRelationshipControlActionQuery struct {
 	inters           []Interceptor
 	predicates       []predicate.SystemRelationshipControlAction
 	withTenant       *TenantQuery
-	withRelationship *SystemAnalysisRelationshipQuery
+	withRelationship *SystemComponentRelationshipQuery
 	withControl      *SystemComponentControlQuery
 	modifiers        []func(*sql.Selector)
 	// intermediate query (i.e. traversal path).
@@ -90,8 +90,8 @@ func (_q *SystemRelationshipControlActionQuery) QueryTenant() *TenantQuery {
 }
 
 // QueryRelationship chains the current query on the "relationship" edge.
-func (_q *SystemRelationshipControlActionQuery) QueryRelationship() *SystemAnalysisRelationshipQuery {
-	query := (&SystemAnalysisRelationshipClient{config: _q.config}).Query()
+func (_q *SystemRelationshipControlActionQuery) QueryRelationship() *SystemComponentRelationshipQuery {
+	query := (&SystemComponentRelationshipClient{config: _q.config}).Query()
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
 		if err := _q.prepareQuery(ctx); err != nil {
 			return nil, err
@@ -102,7 +102,7 @@ func (_q *SystemRelationshipControlActionQuery) QueryRelationship() *SystemAnaly
 		}
 		step := sqlgraph.NewStep(
 			sqlgraph.From(systemrelationshipcontrolaction.Table, systemrelationshipcontrolaction.FieldID, selector),
-			sqlgraph.To(systemanalysisrelationship.Table, systemanalysisrelationship.FieldID),
+			sqlgraph.To(systemcomponentrelationship.Table, systemcomponentrelationship.FieldID),
 			sqlgraph.Edge(sqlgraph.M2O, false, systemrelationshipcontrolaction.RelationshipTable, systemrelationshipcontrolaction.RelationshipColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
@@ -348,8 +348,8 @@ func (_q *SystemRelationshipControlActionQuery) WithTenant(opts ...func(*TenantQ
 
 // WithRelationship tells the query-builder to eager-load the nodes that are connected to
 // the "relationship" edge. The optional arguments are used to configure the query builder of the edge.
-func (_q *SystemRelationshipControlActionQuery) WithRelationship(opts ...func(*SystemAnalysisRelationshipQuery)) *SystemRelationshipControlActionQuery {
-	query := (&SystemAnalysisRelationshipClient{config: _q.config}).Query()
+func (_q *SystemRelationshipControlActionQuery) WithRelationship(opts ...func(*SystemComponentRelationshipQuery)) *SystemRelationshipControlActionQuery {
+	query := (&SystemComponentRelationshipClient{config: _q.config}).Query()
 	for _, opt := range opts {
 		opt(query)
 	}
@@ -487,7 +487,7 @@ func (_q *SystemRelationshipControlActionQuery) sqlAll(ctx context.Context, hook
 	}
 	if query := _q.withRelationship; query != nil {
 		if err := _q.loadRelationship(ctx, query, nodes, nil,
-			func(n *SystemRelationshipControlAction, e *SystemAnalysisRelationship) { n.Edges.Relationship = e }); err != nil {
+			func(n *SystemRelationshipControlAction, e *SystemComponentRelationship) { n.Edges.Relationship = e }); err != nil {
 			return nil, err
 		}
 	}
@@ -529,7 +529,7 @@ func (_q *SystemRelationshipControlActionQuery) loadTenant(ctx context.Context, 
 	}
 	return nil
 }
-func (_q *SystemRelationshipControlActionQuery) loadRelationship(ctx context.Context, query *SystemAnalysisRelationshipQuery, nodes []*SystemRelationshipControlAction, init func(*SystemRelationshipControlAction), assign func(*SystemRelationshipControlAction, *SystemAnalysisRelationship)) error {
+func (_q *SystemRelationshipControlActionQuery) loadRelationship(ctx context.Context, query *SystemComponentRelationshipQuery, nodes []*SystemRelationshipControlAction, init func(*SystemRelationshipControlAction), assign func(*SystemRelationshipControlAction, *SystemComponentRelationship)) error {
 	ids := make([]uuid.UUID, 0, len(nodes))
 	nodeids := make(map[uuid.UUID][]*SystemRelationshipControlAction)
 	for i := range nodes {
@@ -542,7 +542,7 @@ func (_q *SystemRelationshipControlActionQuery) loadRelationship(ctx context.Con
 	if len(ids) == 0 {
 		return nil
 	}
-	query.Where(systemanalysisrelationship.IDIn(ids...))
+	query.Where(systemcomponentrelationship.IDIn(ids...))
 	neighbors, err := query.All(ctx)
 	if err != nil {
 		return err

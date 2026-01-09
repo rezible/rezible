@@ -15,8 +15,12 @@ import (
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/systemanalysisrelationship"
 	"github.com/rezible/rezible/ent/systemcomponent"
+	"github.com/rezible/rezible/ent/systemcomponentcontrol"
 	"github.com/rezible/rezible/ent/systemcomponentrelationship"
+	"github.com/rezible/rezible/ent/systemcomponentsignal"
 	"github.com/rezible/rezible/ent/systemhazard"
+	"github.com/rezible/rezible/ent/systemrelationshipcontrolaction"
+	"github.com/rezible/rezible/ent/systemrelationshipfeedbacksignal"
 	"github.com/rezible/rezible/ent/tenant"
 )
 
@@ -145,6 +149,66 @@ func (_c *SystemComponentRelationshipCreate) AddHazards(v ...*SystemHazard) *Sys
 		ids[i] = v[i].ID
 	}
 	return _c.AddHazardIDs(ids...)
+}
+
+// AddControlIDs adds the "controls" edge to the SystemComponentControl entity by IDs.
+func (_c *SystemComponentRelationshipCreate) AddControlIDs(ids ...uuid.UUID) *SystemComponentRelationshipCreate {
+	_c.mutation.AddControlIDs(ids...)
+	return _c
+}
+
+// AddControls adds the "controls" edges to the SystemComponentControl entity.
+func (_c *SystemComponentRelationshipCreate) AddControls(v ...*SystemComponentControl) *SystemComponentRelationshipCreate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _c.AddControlIDs(ids...)
+}
+
+// AddSignalIDs adds the "signals" edge to the SystemComponentSignal entity by IDs.
+func (_c *SystemComponentRelationshipCreate) AddSignalIDs(ids ...uuid.UUID) *SystemComponentRelationshipCreate {
+	_c.mutation.AddSignalIDs(ids...)
+	return _c
+}
+
+// AddSignals adds the "signals" edges to the SystemComponentSignal entity.
+func (_c *SystemComponentRelationshipCreate) AddSignals(v ...*SystemComponentSignal) *SystemComponentRelationshipCreate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _c.AddSignalIDs(ids...)
+}
+
+// AddControlActionIDs adds the "control_actions" edge to the SystemRelationshipControlAction entity by IDs.
+func (_c *SystemComponentRelationshipCreate) AddControlActionIDs(ids ...uuid.UUID) *SystemComponentRelationshipCreate {
+	_c.mutation.AddControlActionIDs(ids...)
+	return _c
+}
+
+// AddControlActions adds the "control_actions" edges to the SystemRelationshipControlAction entity.
+func (_c *SystemComponentRelationshipCreate) AddControlActions(v ...*SystemRelationshipControlAction) *SystemComponentRelationshipCreate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _c.AddControlActionIDs(ids...)
+}
+
+// AddFeedbackSignalIDs adds the "feedback_signals" edge to the SystemRelationshipFeedbackSignal entity by IDs.
+func (_c *SystemComponentRelationshipCreate) AddFeedbackSignalIDs(ids ...uuid.UUID) *SystemComponentRelationshipCreate {
+	_c.mutation.AddFeedbackSignalIDs(ids...)
+	return _c
+}
+
+// AddFeedbackSignals adds the "feedback_signals" edges to the SystemRelationshipFeedbackSignal entity.
+func (_c *SystemComponentRelationshipCreate) AddFeedbackSignals(v ...*SystemRelationshipFeedbackSignal) *SystemComponentRelationshipCreate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _c.AddFeedbackSignalIDs(ids...)
 }
 
 // Mutation returns the SystemComponentRelationshipMutation object of the builder.
@@ -348,6 +412,84 @@ func (_c *SystemComponentRelationshipCreate) createSpec() (*SystemComponentRelat
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(systemhazard.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := _c.mutation.ControlsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   systemcomponentrelationship.ControlsTable,
+			Columns: systemcomponentrelationship.ControlsPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(systemcomponentcontrol.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		createE := &SystemRelationshipControlActionCreate{config: _c.config, mutation: newSystemRelationshipControlActionMutation(_c.config, OpCreate)}
+		_ = createE.defaults()
+		_, specE := createE.createSpec()
+		edge.Target.Fields = specE.Fields
+		if specE.ID.Value != nil {
+			edge.Target.Fields = append(edge.Target.Fields, specE.ID)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := _c.mutation.SignalsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   systemcomponentrelationship.SignalsTable,
+			Columns: systemcomponentrelationship.SignalsPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(systemcomponentsignal.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		createE := &SystemRelationshipFeedbackSignalCreate{config: _c.config, mutation: newSystemRelationshipFeedbackSignalMutation(_c.config, OpCreate)}
+		_ = createE.defaults()
+		_, specE := createE.createSpec()
+		edge.Target.Fields = specE.Fields
+		if specE.ID.Value != nil {
+			edge.Target.Fields = append(edge.Target.Fields, specE.ID)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := _c.mutation.ControlActionsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   systemcomponentrelationship.ControlActionsTable,
+			Columns: []string{systemcomponentrelationship.ControlActionsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(systemrelationshipcontrolaction.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := _c.mutation.FeedbackSignalsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   systemcomponentrelationship.FeedbackSignalsTable,
+			Columns: []string{systemcomponentrelationship.FeedbackSignalsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(systemrelationshipfeedbacksignal.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {

@@ -38,6 +38,14 @@ const (
 	EdgeSystemAnalyses = "system_analyses"
 	// EdgeHazards holds the string denoting the hazards edge name in mutations.
 	EdgeHazards = "hazards"
+	// EdgeControls holds the string denoting the controls edge name in mutations.
+	EdgeControls = "controls"
+	// EdgeSignals holds the string denoting the signals edge name in mutations.
+	EdgeSignals = "signals"
+	// EdgeControlActions holds the string denoting the control_actions edge name in mutations.
+	EdgeControlActions = "control_actions"
+	// EdgeFeedbackSignals holds the string denoting the feedback_signals edge name in mutations.
+	EdgeFeedbackSignals = "feedback_signals"
 	// Table holds the table name of the systemcomponentrelationship in the database.
 	Table = "system_component_relationships"
 	// TenantTable is the table that holds the tenant relation/edge.
@@ -73,6 +81,30 @@ const (
 	// HazardsInverseTable is the table name for the SystemHazard entity.
 	// It exists in this package in order to avoid circular dependency with the "systemhazard" package.
 	HazardsInverseTable = "system_hazards"
+	// ControlsTable is the table that holds the controls relation/edge. The primary key declared below.
+	ControlsTable = "system_relationship_control_actions"
+	// ControlsInverseTable is the table name for the SystemComponentControl entity.
+	// It exists in this package in order to avoid circular dependency with the "systemcomponentcontrol" package.
+	ControlsInverseTable = "system_component_controls"
+	// SignalsTable is the table that holds the signals relation/edge. The primary key declared below.
+	SignalsTable = "system_relationship_feedback_signals"
+	// SignalsInverseTable is the table name for the SystemComponentSignal entity.
+	// It exists in this package in order to avoid circular dependency with the "systemcomponentsignal" package.
+	SignalsInverseTable = "system_component_signals"
+	// ControlActionsTable is the table that holds the control_actions relation/edge.
+	ControlActionsTable = "system_relationship_control_actions"
+	// ControlActionsInverseTable is the table name for the SystemRelationshipControlAction entity.
+	// It exists in this package in order to avoid circular dependency with the "systemrelationshipcontrolaction" package.
+	ControlActionsInverseTable = "system_relationship_control_actions"
+	// ControlActionsColumn is the table column denoting the control_actions relation/edge.
+	ControlActionsColumn = "relationship_id"
+	// FeedbackSignalsTable is the table that holds the feedback_signals relation/edge.
+	FeedbackSignalsTable = "system_relationship_feedback_signals"
+	// FeedbackSignalsInverseTable is the table name for the SystemRelationshipFeedbackSignal entity.
+	// It exists in this package in order to avoid circular dependency with the "systemrelationshipfeedbacksignal" package.
+	FeedbackSignalsInverseTable = "system_relationship_feedback_signals"
+	// FeedbackSignalsColumn is the table column denoting the feedback_signals relation/edge.
+	FeedbackSignalsColumn = "relationship_id"
 )
 
 // Columns holds all SQL columns for systemcomponentrelationship fields.
@@ -90,6 +122,12 @@ var (
 	// HazardsPrimaryKey and HazardsColumn2 are the table columns denoting the
 	// primary key for the hazards relation (M2M).
 	HazardsPrimaryKey = []string{"system_hazard_id", "system_component_relationship_id"}
+	// ControlsPrimaryKey and ControlsColumn2 are the table columns denoting the
+	// primary key for the controls relation (M2M).
+	ControlsPrimaryKey = []string{"relationship_id", "control_id"}
+	// SignalsPrimaryKey and SignalsColumn2 are the table columns denoting the
+	// primary key for the signals relation (M2M).
+	SignalsPrimaryKey = []string{"relationship_id", "signal_id"}
 )
 
 // ValidColumn reports if the column name is valid (part of the table columns).
@@ -202,6 +240,62 @@ func ByHazards(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 		sqlgraph.OrderByNeighborTerms(s, newHazardsStep(), append([]sql.OrderTerm{term}, terms...)...)
 	}
 }
+
+// ByControlsCount orders the results by controls count.
+func ByControlsCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newControlsStep(), opts...)
+	}
+}
+
+// ByControls orders the results by controls terms.
+func ByControls(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newControlsStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
+
+// BySignalsCount orders the results by signals count.
+func BySignalsCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newSignalsStep(), opts...)
+	}
+}
+
+// BySignals orders the results by signals terms.
+func BySignals(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newSignalsStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
+
+// ByControlActionsCount orders the results by control_actions count.
+func ByControlActionsCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newControlActionsStep(), opts...)
+	}
+}
+
+// ByControlActions orders the results by control_actions terms.
+func ByControlActions(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newControlActionsStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
+
+// ByFeedbackSignalsCount orders the results by feedback_signals count.
+func ByFeedbackSignalsCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newFeedbackSignalsStep(), opts...)
+	}
+}
+
+// ByFeedbackSignals orders the results by feedback_signals terms.
+func ByFeedbackSignals(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newFeedbackSignalsStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
 func newTenantStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
@@ -235,5 +329,33 @@ func newHazardsStep() *sqlgraph.Step {
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(HazardsInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.M2M, true, HazardsTable, HazardsPrimaryKey...),
+	)
+}
+func newControlsStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(ControlsInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.M2M, false, ControlsTable, ControlsPrimaryKey...),
+	)
+}
+func newSignalsStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(SignalsInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.M2M, false, SignalsTable, SignalsPrimaryKey...),
+	)
+}
+func newControlActionsStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(ControlActionsInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, true, ControlActionsTable, ControlActionsColumn),
+	)
+}
+func newFeedbackSignalsStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(FeedbackSignalsInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, true, FeedbackSignalsTable, FeedbackSignalsColumn),
 	)
 }

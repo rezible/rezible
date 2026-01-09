@@ -52,9 +52,9 @@ const (
 	ComponentColumn = "component_id"
 	// RelationshipsTable is the table that holds the relationships relation/edge. The primary key declared below.
 	RelationshipsTable = "system_relationship_feedback_signals"
-	// RelationshipsInverseTable is the table name for the SystemAnalysisRelationship entity.
-	// It exists in this package in order to avoid circular dependency with the "systemanalysisrelationship" package.
-	RelationshipsInverseTable = "system_analysis_relationships"
+	// RelationshipsInverseTable is the table name for the SystemComponentRelationship entity.
+	// It exists in this package in order to avoid circular dependency with the "systemcomponentrelationship" package.
+	RelationshipsInverseTable = "system_component_relationships"
 	// FeedbackSignalsTable is the table that holds the feedback_signals relation/edge.
 	FeedbackSignalsTable = "system_relationship_feedback_signals"
 	// FeedbackSignalsInverseTable is the table name for the SystemRelationshipFeedbackSignal entity.

@@ -9,38 +9,42 @@ import (
 	"github.com/google/uuid"
 )
 
-type SystemAnalysisRelationship struct {
+type SystemComponentRelationship struct {
 	ent.Schema
 }
 
-func (SystemAnalysisRelationship) Mixin() []ent.Mixin {
+func (SystemComponentRelationship) Mixin() []ent.Mixin {
 	return []ent.Mixin{
 		BaseMixin{},
 		TenantMixin{},
+		IntegrationMixin{},
 	}
 }
 
-func (SystemAnalysisRelationship) Fields() []ent.Field {
+func (SystemComponentRelationship) Fields() []ent.Field {
 	return []ent.Field{
 		field.UUID("id", uuid.UUID{}).Default(uuid.New),
-		field.UUID("analysis_id", uuid.UUID{}),
-		field.UUID("component_relationship_id", uuid.UUID{}),
+		field.UUID("source_id", uuid.UUID{}),
+		field.UUID("target_id", uuid.UUID{}),
 		field.Text("description").Optional(),
 		field.Time("created_at").Default(time.Now),
 	}
 }
 
-func (SystemAnalysisRelationship) Edges() []ent.Edge {
+func (SystemComponentRelationship) Edges() []ent.Edge {
 	return []ent.Edge{
-		edge.To("system_analysis", SystemAnalysis.Type).
-			Required().
-			Unique().
-			Field("analysis_id"),
+		edge.To("source", SystemComponent.Type).
+			Required().Unique().
+			Field("source_id"),
+		edge.To("target", SystemComponent.Type).
+			Required().Unique().
+			Field("target_id"),
 
-		edge.To("component_relationship", SystemComponentRelationship.Type).
-			Unique().
-			Required().
-			Field("component_relationship_id"),
+		edge.From("system_analyses", SystemAnalysisRelationship.Type).
+			Ref("component_relationship"),
+
+		edge.From("hazards", SystemHazard.Type).
+			Ref("relationships"),
 
 		edge.To("controls", SystemComponentControl.Type).
 			Through("control_actions", SystemRelationshipControlAction.Type),
@@ -67,7 +71,7 @@ func (SystemRelationshipControlAction) Fields() []ent.Field {
 		field.UUID("relationship_id", uuid.UUID{}),
 		field.UUID("control_id", uuid.UUID{}),
 		field.String("type").
-			NotEmpty(), // e.g., "rate_limits", "circuit_breaks"
+			NotEmpty(),
 		field.Text("description").
 			Optional(),
 		field.Time("created_at").
@@ -77,7 +81,7 @@ func (SystemRelationshipControlAction) Fields() []ent.Field {
 
 func (SystemRelationshipControlAction) Edges() []ent.Edge {
 	return []ent.Edge{
-		edge.To("relationship", SystemAnalysisRelationship.Type).
+		edge.To("relationship", SystemComponentRelationship.Type).
 			Unique().Required().Field("relationship_id"),
 		edge.To("control", SystemComponentControl.Type).
 			Unique().Required().Field("control_id"),
@@ -102,7 +106,7 @@ func (SystemRelationshipFeedbackSignal) Fields() []ent.Field {
 		field.UUID("relationship_id", uuid.UUID{}),
 		field.UUID("signal_id", uuid.UUID{}),
 		field.String("type").
-			NotEmpty(), // e.g., "metrics", "alerts", "logs"
+			NotEmpty(),
 		field.Text("description").
 			Optional(),
 		field.Time("created_at").
@@ -112,7 +116,7 @@ func (SystemRelationshipFeedbackSignal) Fields() []ent.Field {
 
 func (SystemRelationshipFeedbackSignal) Edges() []ent.Edge {
 	return []ent.Edge{
-		edge.To("relationship", SystemAnalysisRelationship.Type).
+		edge.To("relationship", SystemComponentRelationship.Type).
 			Unique().Required().Field("relationship_id"),
 		edge.To("signal", SystemComponentSignal.Type).
 			Unique().Required().Field("signal_id"),

@@ -67,14 +67,6 @@ func (_c *SystemComponentCreate) SetKindID(v uuid.UUID) *SystemComponentCreate {
 	return _c
 }
 
-// SetNillableKindID sets the "kind_id" field if the given value is not nil.
-func (_c *SystemComponentCreate) SetNillableKindID(v *uuid.UUID) *SystemComponentCreate {
-	if v != nil {
-		_c.SetKindID(*v)
-	}
-	return _c
-}
-
 // SetDescription sets the "description" field.
 func (_c *SystemComponentCreate) SetDescription(v string) *SystemComponentCreate {
 	_c.mutation.SetDescription(v)
@@ -371,6 +363,9 @@ func (_c *SystemComponentCreate) check() error {
 			return &ValidationError{Name: "name", err: fmt.Errorf(`ent: validator failed for field "SystemComponent.name": %w`, err)}
 		}
 	}
+	if _, ok := _c.mutation.KindID(); !ok {
+		return &ValidationError{Name: "kind_id", err: errors.New(`ent: missing required field "SystemComponent.kind_id"`)}
+	}
 	if _, ok := _c.mutation.CreatedAt(); !ok {
 		return &ValidationError{Name: "created_at", err: errors.New(`ent: missing required field "SystemComponent.created_at"`)}
 	}
@@ -379,6 +374,9 @@ func (_c *SystemComponentCreate) check() error {
 	}
 	if len(_c.mutation.TenantIDs()) == 0 {
 		return &ValidationError{Name: "tenant", err: errors.New(`ent: missing required edge "SystemComponent.tenant"`)}
+	}
+	if len(_c.mutation.KindIDs()) == 0 {
+		return &ValidationError{Name: "kind", err: errors.New(`ent: missing required edge "SystemComponent.kind"`)}
 	}
 	return nil
 }
@@ -749,12 +747,6 @@ func (u *SystemComponentUpsert) UpdateKindID() *SystemComponentUpsert {
 	return u
 }
 
-// ClearKindID clears the value of the "kind_id" field.
-func (u *SystemComponentUpsert) ClearKindID() *SystemComponentUpsert {
-	u.SetNull(systemcomponent.FieldKindID)
-	return u
-}
-
 // SetDescription sets the "description" field.
 func (u *SystemComponentUpsert) SetDescription(v string) *SystemComponentUpsert {
 	u.Set(systemcomponent.FieldDescription, v)
@@ -912,13 +904,6 @@ func (u *SystemComponentUpsertOne) SetKindID(v uuid.UUID) *SystemComponentUpsert
 func (u *SystemComponentUpsertOne) UpdateKindID() *SystemComponentUpsertOne {
 	return u.Update(func(s *SystemComponentUpsert) {
 		s.UpdateKindID()
-	})
-}
-
-// ClearKindID clears the value of the "kind_id" field.
-func (u *SystemComponentUpsertOne) ClearKindID() *SystemComponentUpsertOne {
-	return u.Update(func(s *SystemComponentUpsert) {
-		s.ClearKindID()
 	})
 }
 
@@ -1256,13 +1241,6 @@ func (u *SystemComponentUpsertBulk) SetKindID(v uuid.UUID) *SystemComponentUpser
 func (u *SystemComponentUpsertBulk) UpdateKindID() *SystemComponentUpsertBulk {
 	return u.Update(func(s *SystemComponentUpsert) {
 		s.UpdateKindID()
-	})
-}
-
-// ClearKindID clears the value of the "kind_id" field.
-func (u *SystemComponentUpsertBulk) ClearKindID() *SystemComponentUpsertBulk {
-	return u.Update(func(s *SystemComponentUpsert) {
-		s.ClearKindID()
 	})
 }
 

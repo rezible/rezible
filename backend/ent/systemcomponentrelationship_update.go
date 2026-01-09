@@ -15,8 +15,12 @@ import (
 	"github.com/rezible/rezible/ent/predicate"
 	"github.com/rezible/rezible/ent/systemanalysisrelationship"
 	"github.com/rezible/rezible/ent/systemcomponent"
+	"github.com/rezible/rezible/ent/systemcomponentcontrol"
 	"github.com/rezible/rezible/ent/systemcomponentrelationship"
+	"github.com/rezible/rezible/ent/systemcomponentsignal"
 	"github.com/rezible/rezible/ent/systemhazard"
+	"github.com/rezible/rezible/ent/systemrelationshipcontrolaction"
+	"github.com/rezible/rezible/ent/systemrelationshipfeedbacksignal"
 )
 
 // SystemComponentRelationshipUpdate is the builder for updating SystemComponentRelationship entities.
@@ -155,6 +159,66 @@ func (_u *SystemComponentRelationshipUpdate) AddHazards(v ...*SystemHazard) *Sys
 	return _u.AddHazardIDs(ids...)
 }
 
+// AddControlIDs adds the "controls" edge to the SystemComponentControl entity by IDs.
+func (_u *SystemComponentRelationshipUpdate) AddControlIDs(ids ...uuid.UUID) *SystemComponentRelationshipUpdate {
+	_u.mutation.AddControlIDs(ids...)
+	return _u
+}
+
+// AddControls adds the "controls" edges to the SystemComponentControl entity.
+func (_u *SystemComponentRelationshipUpdate) AddControls(v ...*SystemComponentControl) *SystemComponentRelationshipUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddControlIDs(ids...)
+}
+
+// AddSignalIDs adds the "signals" edge to the SystemComponentSignal entity by IDs.
+func (_u *SystemComponentRelationshipUpdate) AddSignalIDs(ids ...uuid.UUID) *SystemComponentRelationshipUpdate {
+	_u.mutation.AddSignalIDs(ids...)
+	return _u
+}
+
+// AddSignals adds the "signals" edges to the SystemComponentSignal entity.
+func (_u *SystemComponentRelationshipUpdate) AddSignals(v ...*SystemComponentSignal) *SystemComponentRelationshipUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddSignalIDs(ids...)
+}
+
+// AddControlActionIDs adds the "control_actions" edge to the SystemRelationshipControlAction entity by IDs.
+func (_u *SystemComponentRelationshipUpdate) AddControlActionIDs(ids ...uuid.UUID) *SystemComponentRelationshipUpdate {
+	_u.mutation.AddControlActionIDs(ids...)
+	return _u
+}
+
+// AddControlActions adds the "control_actions" edges to the SystemRelationshipControlAction entity.
+func (_u *SystemComponentRelationshipUpdate) AddControlActions(v ...*SystemRelationshipControlAction) *SystemComponentRelationshipUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddControlActionIDs(ids...)
+}
+
+// AddFeedbackSignalIDs adds the "feedback_signals" edge to the SystemRelationshipFeedbackSignal entity by IDs.
+func (_u *SystemComponentRelationshipUpdate) AddFeedbackSignalIDs(ids ...uuid.UUID) *SystemComponentRelationshipUpdate {
+	_u.mutation.AddFeedbackSignalIDs(ids...)
+	return _u
+}
+
+// AddFeedbackSignals adds the "feedback_signals" edges to the SystemRelationshipFeedbackSignal entity.
+func (_u *SystemComponentRelationshipUpdate) AddFeedbackSignals(v ...*SystemRelationshipFeedbackSignal) *SystemComponentRelationshipUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddFeedbackSignalIDs(ids...)
+}
+
 // Mutation returns the SystemComponentRelationshipMutation object of the builder.
 func (_u *SystemComponentRelationshipUpdate) Mutation() *SystemComponentRelationshipMutation {
 	return _u.mutation
@@ -212,6 +276,90 @@ func (_u *SystemComponentRelationshipUpdate) RemoveHazards(v ...*SystemHazard) *
 		ids[i] = v[i].ID
 	}
 	return _u.RemoveHazardIDs(ids...)
+}
+
+// ClearControls clears all "controls" edges to the SystemComponentControl entity.
+func (_u *SystemComponentRelationshipUpdate) ClearControls() *SystemComponentRelationshipUpdate {
+	_u.mutation.ClearControls()
+	return _u
+}
+
+// RemoveControlIDs removes the "controls" edge to SystemComponentControl entities by IDs.
+func (_u *SystemComponentRelationshipUpdate) RemoveControlIDs(ids ...uuid.UUID) *SystemComponentRelationshipUpdate {
+	_u.mutation.RemoveControlIDs(ids...)
+	return _u
+}
+
+// RemoveControls removes "controls" edges to SystemComponentControl entities.
+func (_u *SystemComponentRelationshipUpdate) RemoveControls(v ...*SystemComponentControl) *SystemComponentRelationshipUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveControlIDs(ids...)
+}
+
+// ClearSignals clears all "signals" edges to the SystemComponentSignal entity.
+func (_u *SystemComponentRelationshipUpdate) ClearSignals() *SystemComponentRelationshipUpdate {
+	_u.mutation.ClearSignals()
+	return _u
+}
+
+// RemoveSignalIDs removes the "signals" edge to SystemComponentSignal entities by IDs.
+func (_u *SystemComponentRelationshipUpdate) RemoveSignalIDs(ids ...uuid.UUID) *SystemComponentRelationshipUpdate {
+	_u.mutation.RemoveSignalIDs(ids...)
+	return _u
+}
+
+// RemoveSignals removes "signals" edges to SystemComponentSignal entities.
+func (_u *SystemComponentRelationshipUpdate) RemoveSignals(v ...*SystemComponentSignal) *SystemComponentRelationshipUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveSignalIDs(ids...)
+}
+
+// ClearControlActions clears all "control_actions" edges to the SystemRelationshipControlAction entity.
+func (_u *SystemComponentRelationshipUpdate) ClearControlActions() *SystemComponentRelationshipUpdate {
+	_u.mutation.ClearControlActions()
+	return _u
+}
+
+// RemoveControlActionIDs removes the "control_actions" edge to SystemRelationshipControlAction entities by IDs.
+func (_u *SystemComponentRelationshipUpdate) RemoveControlActionIDs(ids ...uuid.UUID) *SystemComponentRelationshipUpdate {
+	_u.mutation.RemoveControlActionIDs(ids...)
+	return _u
+}
+
+// RemoveControlActions removes "control_actions" edges to SystemRelationshipControlAction entities.
+func (_u *SystemComponentRelationshipUpdate) RemoveControlActions(v ...*SystemRelationshipControlAction) *SystemComponentRelationshipUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveControlActionIDs(ids...)
+}
+
+// ClearFeedbackSignals clears all "feedback_signals" edges to the SystemRelationshipFeedbackSignal entity.
+func (_u *SystemComponentRelationshipUpdate) ClearFeedbackSignals() *SystemComponentRelationshipUpdate {
+	_u.mutation.ClearFeedbackSignals()
+	return _u
+}
+
+// RemoveFeedbackSignalIDs removes the "feedback_signals" edge to SystemRelationshipFeedbackSignal entities by IDs.
+func (_u *SystemComponentRelationshipUpdate) RemoveFeedbackSignalIDs(ids ...uuid.UUID) *SystemComponentRelationshipUpdate {
+	_u.mutation.RemoveFeedbackSignalIDs(ids...)
+	return _u
+}
+
+// RemoveFeedbackSignals removes "feedback_signals" edges to SystemRelationshipFeedbackSignal entities.
+func (_u *SystemComponentRelationshipUpdate) RemoveFeedbackSignals(v ...*SystemRelationshipFeedbackSignal) *SystemComponentRelationshipUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveFeedbackSignalIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -436,6 +584,228 @@ func (_u *SystemComponentRelationshipUpdate) sqlSave(ctx context.Context) (_node
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	if _u.mutation.ControlsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   systemcomponentrelationship.ControlsTable,
+			Columns: systemcomponentrelationship.ControlsPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(systemcomponentcontrol.FieldID, field.TypeUUID),
+			},
+		}
+		createE := &SystemRelationshipControlActionCreate{config: _u.config, mutation: newSystemRelationshipControlActionMutation(_u.config, OpCreate)}
+		_ = createE.defaults()
+		_, specE := createE.createSpec()
+		edge.Target.Fields = specE.Fields
+		if specE.ID.Value != nil {
+			edge.Target.Fields = append(edge.Target.Fields, specE.ID)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedControlsIDs(); len(nodes) > 0 && !_u.mutation.ControlsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   systemcomponentrelationship.ControlsTable,
+			Columns: systemcomponentrelationship.ControlsPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(systemcomponentcontrol.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		createE := &SystemRelationshipControlActionCreate{config: _u.config, mutation: newSystemRelationshipControlActionMutation(_u.config, OpCreate)}
+		_ = createE.defaults()
+		_, specE := createE.createSpec()
+		edge.Target.Fields = specE.Fields
+		if specE.ID.Value != nil {
+			edge.Target.Fields = append(edge.Target.Fields, specE.ID)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.ControlsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   systemcomponentrelationship.ControlsTable,
+			Columns: systemcomponentrelationship.ControlsPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(systemcomponentcontrol.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		createE := &SystemRelationshipControlActionCreate{config: _u.config, mutation: newSystemRelationshipControlActionMutation(_u.config, OpCreate)}
+		_ = createE.defaults()
+		_, specE := createE.createSpec()
+		edge.Target.Fields = specE.Fields
+		if specE.ID.Value != nil {
+			edge.Target.Fields = append(edge.Target.Fields, specE.ID)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.SignalsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   systemcomponentrelationship.SignalsTable,
+			Columns: systemcomponentrelationship.SignalsPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(systemcomponentsignal.FieldID, field.TypeUUID),
+			},
+		}
+		createE := &SystemRelationshipFeedbackSignalCreate{config: _u.config, mutation: newSystemRelationshipFeedbackSignalMutation(_u.config, OpCreate)}
+		_ = createE.defaults()
+		_, specE := createE.createSpec()
+		edge.Target.Fields = specE.Fields
+		if specE.ID.Value != nil {
+			edge.Target.Fields = append(edge.Target.Fields, specE.ID)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedSignalsIDs(); len(nodes) > 0 && !_u.mutation.SignalsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   systemcomponentrelationship.SignalsTable,
+			Columns: systemcomponentrelationship.SignalsPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(systemcomponentsignal.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		createE := &SystemRelationshipFeedbackSignalCreate{config: _u.config, mutation: newSystemRelationshipFeedbackSignalMutation(_u.config, OpCreate)}
+		_ = createE.defaults()
+		_, specE := createE.createSpec()
+		edge.Target.Fields = specE.Fields
+		if specE.ID.Value != nil {
+			edge.Target.Fields = append(edge.Target.Fields, specE.ID)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.SignalsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   systemcomponentrelationship.SignalsTable,
+			Columns: systemcomponentrelationship.SignalsPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(systemcomponentsignal.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		createE := &SystemRelationshipFeedbackSignalCreate{config: _u.config, mutation: newSystemRelationshipFeedbackSignalMutation(_u.config, OpCreate)}
+		_ = createE.defaults()
+		_, specE := createE.createSpec()
+		edge.Target.Fields = specE.Fields
+		if specE.ID.Value != nil {
+			edge.Target.Fields = append(edge.Target.Fields, specE.ID)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.ControlActionsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   systemcomponentrelationship.ControlActionsTable,
+			Columns: []string{systemcomponentrelationship.ControlActionsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(systemrelationshipcontrolaction.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedControlActionsIDs(); len(nodes) > 0 && !_u.mutation.ControlActionsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   systemcomponentrelationship.ControlActionsTable,
+			Columns: []string{systemcomponentrelationship.ControlActionsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(systemrelationshipcontrolaction.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.ControlActionsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   systemcomponentrelationship.ControlActionsTable,
+			Columns: []string{systemcomponentrelationship.ControlActionsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(systemrelationshipcontrolaction.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.FeedbackSignalsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   systemcomponentrelationship.FeedbackSignalsTable,
+			Columns: []string{systemcomponentrelationship.FeedbackSignalsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(systemrelationshipfeedbacksignal.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedFeedbackSignalsIDs(); len(nodes) > 0 && !_u.mutation.FeedbackSignalsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   systemcomponentrelationship.FeedbackSignalsTable,
+			Columns: []string{systemcomponentrelationship.FeedbackSignalsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(systemrelationshipfeedbacksignal.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.FeedbackSignalsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   systemcomponentrelationship.FeedbackSignalsTable,
+			Columns: []string{systemcomponentrelationship.FeedbackSignalsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(systemrelationshipfeedbacksignal.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
 	_spec.AddModifiers(_u.modifiers...)
 	if _node, err = sqlgraph.UpdateNodes(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
@@ -580,6 +950,66 @@ func (_u *SystemComponentRelationshipUpdateOne) AddHazards(v ...*SystemHazard) *
 	return _u.AddHazardIDs(ids...)
 }
 
+// AddControlIDs adds the "controls" edge to the SystemComponentControl entity by IDs.
+func (_u *SystemComponentRelationshipUpdateOne) AddControlIDs(ids ...uuid.UUID) *SystemComponentRelationshipUpdateOne {
+	_u.mutation.AddControlIDs(ids...)
+	return _u
+}
+
+// AddControls adds the "controls" edges to the SystemComponentControl entity.
+func (_u *SystemComponentRelationshipUpdateOne) AddControls(v ...*SystemComponentControl) *SystemComponentRelationshipUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddControlIDs(ids...)
+}
+
+// AddSignalIDs adds the "signals" edge to the SystemComponentSignal entity by IDs.
+func (_u *SystemComponentRelationshipUpdateOne) AddSignalIDs(ids ...uuid.UUID) *SystemComponentRelationshipUpdateOne {
+	_u.mutation.AddSignalIDs(ids...)
+	return _u
+}
+
+// AddSignals adds the "signals" edges to the SystemComponentSignal entity.
+func (_u *SystemComponentRelationshipUpdateOne) AddSignals(v ...*SystemComponentSignal) *SystemComponentRelationshipUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddSignalIDs(ids...)
+}
+
+// AddControlActionIDs adds the "control_actions" edge to the SystemRelationshipControlAction entity by IDs.
+func (_u *SystemComponentRelationshipUpdateOne) AddControlActionIDs(ids ...uuid.UUID) *SystemComponentRelationshipUpdateOne {
+	_u.mutation.AddControlActionIDs(ids...)
+	return _u
+}
+
+// AddControlActions adds the "control_actions" edges to the SystemRelationshipControlAction entity.
+func (_u *SystemComponentRelationshipUpdateOne) AddControlActions(v ...*SystemRelationshipControlAction) *SystemComponentRelationshipUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddControlActionIDs(ids...)
+}
+
+// AddFeedbackSignalIDs adds the "feedback_signals" edge to the SystemRelationshipFeedbackSignal entity by IDs.
+func (_u *SystemComponentRelationshipUpdateOne) AddFeedbackSignalIDs(ids ...uuid.UUID) *SystemComponentRelationshipUpdateOne {
+	_u.mutation.AddFeedbackSignalIDs(ids...)
+	return _u
+}
+
+// AddFeedbackSignals adds the "feedback_signals" edges to the SystemRelationshipFeedbackSignal entity.
+func (_u *SystemComponentRelationshipUpdateOne) AddFeedbackSignals(v ...*SystemRelationshipFeedbackSignal) *SystemComponentRelationshipUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddFeedbackSignalIDs(ids...)
+}
+
 // Mutation returns the SystemComponentRelationshipMutation object of the builder.
 func (_u *SystemComponentRelationshipUpdateOne) Mutation() *SystemComponentRelationshipMutation {
 	return _u.mutation
@@ -637,6 +1067,90 @@ func (_u *SystemComponentRelationshipUpdateOne) RemoveHazards(v ...*SystemHazard
 		ids[i] = v[i].ID
 	}
 	return _u.RemoveHazardIDs(ids...)
+}
+
+// ClearControls clears all "controls" edges to the SystemComponentControl entity.
+func (_u *SystemComponentRelationshipUpdateOne) ClearControls() *SystemComponentRelationshipUpdateOne {
+	_u.mutation.ClearControls()
+	return _u
+}
+
+// RemoveControlIDs removes the "controls" edge to SystemComponentControl entities by IDs.
+func (_u *SystemComponentRelationshipUpdateOne) RemoveControlIDs(ids ...uuid.UUID) *SystemComponentRelationshipUpdateOne {
+	_u.mutation.RemoveControlIDs(ids...)
+	return _u
+}
+
+// RemoveControls removes "controls" edges to SystemComponentControl entities.
+func (_u *SystemComponentRelationshipUpdateOne) RemoveControls(v ...*SystemComponentControl) *SystemComponentRelationshipUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveControlIDs(ids...)
+}
+
+// ClearSignals clears all "signals" edges to the SystemComponentSignal entity.
+func (_u *SystemComponentRelationshipUpdateOne) ClearSignals() *SystemComponentRelationshipUpdateOne {
+	_u.mutation.ClearSignals()
+	return _u
+}
+
+// RemoveSignalIDs removes the "signals" edge to SystemComponentSignal entities by IDs.
+func (_u *SystemComponentRelationshipUpdateOne) RemoveSignalIDs(ids ...uuid.UUID) *SystemComponentRelationshipUpdateOne {
+	_u.mutation.RemoveSignalIDs(ids...)
+	return _u
+}
+
+// RemoveSignals removes "signals" edges to SystemComponentSignal entities.
+func (_u *SystemComponentRelationshipUpdateOne) RemoveSignals(v ...*SystemComponentSignal) *SystemComponentRelationshipUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveSignalIDs(ids...)
+}
+
+// ClearControlActions clears all "control_actions" edges to the SystemRelationshipControlAction entity.
+func (_u *SystemComponentRelationshipUpdateOne) ClearControlActions() *SystemComponentRelationshipUpdateOne {
+	_u.mutation.ClearControlActions()
+	return _u
+}
+
+// RemoveControlActionIDs removes the "control_actions" edge to SystemRelationshipControlAction entities by IDs.
+func (_u *SystemComponentRelationshipUpdateOne) RemoveControlActionIDs(ids ...uuid.UUID) *SystemComponentRelationshipUpdateOne {
+	_u.mutation.RemoveControlActionIDs(ids...)
+	return _u
+}
+
+// RemoveControlActions removes "control_actions" edges to SystemRelationshipControlAction entities.
+func (_u *SystemComponentRelationshipUpdateOne) RemoveControlActions(v ...*SystemRelationshipControlAction) *SystemComponentRelationshipUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveControlActionIDs(ids...)
+}
+
+// ClearFeedbackSignals clears all "feedback_signals" edges to the SystemRelationshipFeedbackSignal entity.
+func (_u *SystemComponentRelationshipUpdateOne) ClearFeedbackSignals() *SystemComponentRelationshipUpdateOne {
+	_u.mutation.ClearFeedbackSignals()
+	return _u
+}
+
+// RemoveFeedbackSignalIDs removes the "feedback_signals" edge to SystemRelationshipFeedbackSignal entities by IDs.
+func (_u *SystemComponentRelationshipUpdateOne) RemoveFeedbackSignalIDs(ids ...uuid.UUID) *SystemComponentRelationshipUpdateOne {
+	_u.mutation.RemoveFeedbackSignalIDs(ids...)
+	return _u
+}
+
+// RemoveFeedbackSignals removes "feedback_signals" edges to SystemRelationshipFeedbackSignal entities.
+func (_u *SystemComponentRelationshipUpdateOne) RemoveFeedbackSignals(v ...*SystemRelationshipFeedbackSignal) *SystemComponentRelationshipUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveFeedbackSignalIDs(ids...)
 }
 
 // Where appends a list predicates to the SystemComponentRelationshipUpdate builder.
@@ -884,6 +1398,228 @@ func (_u *SystemComponentRelationshipUpdateOne) sqlSave(ctx context.Context) (_n
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(systemhazard.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.ControlsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   systemcomponentrelationship.ControlsTable,
+			Columns: systemcomponentrelationship.ControlsPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(systemcomponentcontrol.FieldID, field.TypeUUID),
+			},
+		}
+		createE := &SystemRelationshipControlActionCreate{config: _u.config, mutation: newSystemRelationshipControlActionMutation(_u.config, OpCreate)}
+		_ = createE.defaults()
+		_, specE := createE.createSpec()
+		edge.Target.Fields = specE.Fields
+		if specE.ID.Value != nil {
+			edge.Target.Fields = append(edge.Target.Fields, specE.ID)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedControlsIDs(); len(nodes) > 0 && !_u.mutation.ControlsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   systemcomponentrelationship.ControlsTable,
+			Columns: systemcomponentrelationship.ControlsPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(systemcomponentcontrol.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		createE := &SystemRelationshipControlActionCreate{config: _u.config, mutation: newSystemRelationshipControlActionMutation(_u.config, OpCreate)}
+		_ = createE.defaults()
+		_, specE := createE.createSpec()
+		edge.Target.Fields = specE.Fields
+		if specE.ID.Value != nil {
+			edge.Target.Fields = append(edge.Target.Fields, specE.ID)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.ControlsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   systemcomponentrelationship.ControlsTable,
+			Columns: systemcomponentrelationship.ControlsPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(systemcomponentcontrol.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		createE := &SystemRelationshipControlActionCreate{config: _u.config, mutation: newSystemRelationshipControlActionMutation(_u.config, OpCreate)}
+		_ = createE.defaults()
+		_, specE := createE.createSpec()
+		edge.Target.Fields = specE.Fields
+		if specE.ID.Value != nil {
+			edge.Target.Fields = append(edge.Target.Fields, specE.ID)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.SignalsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   systemcomponentrelationship.SignalsTable,
+			Columns: systemcomponentrelationship.SignalsPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(systemcomponentsignal.FieldID, field.TypeUUID),
+			},
+		}
+		createE := &SystemRelationshipFeedbackSignalCreate{config: _u.config, mutation: newSystemRelationshipFeedbackSignalMutation(_u.config, OpCreate)}
+		_ = createE.defaults()
+		_, specE := createE.createSpec()
+		edge.Target.Fields = specE.Fields
+		if specE.ID.Value != nil {
+			edge.Target.Fields = append(edge.Target.Fields, specE.ID)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedSignalsIDs(); len(nodes) > 0 && !_u.mutation.SignalsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   systemcomponentrelationship.SignalsTable,
+			Columns: systemcomponentrelationship.SignalsPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(systemcomponentsignal.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		createE := &SystemRelationshipFeedbackSignalCreate{config: _u.config, mutation: newSystemRelationshipFeedbackSignalMutation(_u.config, OpCreate)}
+		_ = createE.defaults()
+		_, specE := createE.createSpec()
+		edge.Target.Fields = specE.Fields
+		if specE.ID.Value != nil {
+			edge.Target.Fields = append(edge.Target.Fields, specE.ID)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.SignalsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   systemcomponentrelationship.SignalsTable,
+			Columns: systemcomponentrelationship.SignalsPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(systemcomponentsignal.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		createE := &SystemRelationshipFeedbackSignalCreate{config: _u.config, mutation: newSystemRelationshipFeedbackSignalMutation(_u.config, OpCreate)}
+		_ = createE.defaults()
+		_, specE := createE.createSpec()
+		edge.Target.Fields = specE.Fields
+		if specE.ID.Value != nil {
+			edge.Target.Fields = append(edge.Target.Fields, specE.ID)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.ControlActionsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   systemcomponentrelationship.ControlActionsTable,
+			Columns: []string{systemcomponentrelationship.ControlActionsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(systemrelationshipcontrolaction.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedControlActionsIDs(); len(nodes) > 0 && !_u.mutation.ControlActionsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   systemcomponentrelationship.ControlActionsTable,
+			Columns: []string{systemcomponentrelationship.ControlActionsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(systemrelationshipcontrolaction.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.ControlActionsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   systemcomponentrelationship.ControlActionsTable,
+			Columns: []string{systemcomponentrelationship.ControlActionsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(systemrelationshipcontrolaction.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.FeedbackSignalsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   systemcomponentrelationship.FeedbackSignalsTable,
+			Columns: []string{systemcomponentrelationship.FeedbackSignalsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(systemrelationshipfeedbacksignal.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedFeedbackSignalsIDs(); len(nodes) > 0 && !_u.mutation.FeedbackSignalsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   systemcomponentrelationship.FeedbackSignalsTable,
+			Columns: []string{systemcomponentrelationship.FeedbackSignalsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(systemrelationshipfeedbacksignal.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.FeedbackSignalsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   systemcomponentrelationship.FeedbackSignalsTable,
+			Columns: []string{systemcomponentrelationship.FeedbackSignalsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(systemrelationshipfeedbacksignal.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {

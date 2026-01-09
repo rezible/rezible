@@ -5,7 +5,6 @@ package ent
 import (
 	"fmt"
 	"strings"
-	"time"
 
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
@@ -30,20 +29,12 @@ type Incident struct {
 	Slug string `json:"slug,omitempty"`
 	// Title holds the value of the "title" field.
 	Title string `json:"title,omitempty"`
-	// Private holds the value of the "private" field.
-	Private bool `json:"private,omitempty"`
-	// Summary holds the value of the "summary" field.
-	Summary string `json:"summary,omitempty"`
-	// OpenedAt holds the value of the "opened_at" field.
-	OpenedAt time.Time `json:"opened_at,omitempty"`
-	// ModifiedAt holds the value of the "modified_at" field.
-	ModifiedAt time.Time `json:"modified_at,omitempty"`
-	// ClosedAt holds the value of the "closed_at" field.
-	ClosedAt time.Time `json:"closed_at,omitempty"`
 	// SeverityID holds the value of the "severity_id" field.
 	SeverityID uuid.UUID `json:"severity_id,omitempty"`
 	// TypeID holds the value of the "type_id" field.
 	TypeID uuid.UUID `json:"type_id,omitempty"`
+	// Summary holds the value of the "summary" field.
+	Summary string `json:"summary,omitempty"`
 	// ChatChannelID holds the value of the "chat_channel_id" field.
 	ChatChannelID string `json:"chat_channel_id,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
@@ -248,14 +239,10 @@ func (*Incident) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case incident.FieldPrivate:
-			values[i] = new(sql.NullBool)
 		case incident.FieldTenantID:
 			values[i] = new(sql.NullInt64)
 		case incident.FieldExternalID, incident.FieldSlug, incident.FieldTitle, incident.FieldSummary, incident.FieldChatChannelID:
 			values[i] = new(sql.NullString)
-		case incident.FieldOpenedAt, incident.FieldModifiedAt, incident.FieldClosedAt:
-			values[i] = new(sql.NullTime)
 		case incident.FieldID, incident.FieldSeverityID, incident.FieldTypeID:
 			values[i] = new(uuid.UUID)
 		default:
@@ -303,36 +290,6 @@ func (_m *Incident) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				_m.Title = value.String
 			}
-		case incident.FieldPrivate:
-			if value, ok := values[i].(*sql.NullBool); !ok {
-				return fmt.Errorf("unexpected type %T for field private", values[i])
-			} else if value.Valid {
-				_m.Private = value.Bool
-			}
-		case incident.FieldSummary:
-			if value, ok := values[i].(*sql.NullString); !ok {
-				return fmt.Errorf("unexpected type %T for field summary", values[i])
-			} else if value.Valid {
-				_m.Summary = value.String
-			}
-		case incident.FieldOpenedAt:
-			if value, ok := values[i].(*sql.NullTime); !ok {
-				return fmt.Errorf("unexpected type %T for field opened_at", values[i])
-			} else if value.Valid {
-				_m.OpenedAt = value.Time
-			}
-		case incident.FieldModifiedAt:
-			if value, ok := values[i].(*sql.NullTime); !ok {
-				return fmt.Errorf("unexpected type %T for field modified_at", values[i])
-			} else if value.Valid {
-				_m.ModifiedAt = value.Time
-			}
-		case incident.FieldClosedAt:
-			if value, ok := values[i].(*sql.NullTime); !ok {
-				return fmt.Errorf("unexpected type %T for field closed_at", values[i])
-			} else if value.Valid {
-				_m.ClosedAt = value.Time
-			}
 		case incident.FieldSeverityID:
 			if value, ok := values[i].(*uuid.UUID); !ok {
 				return fmt.Errorf("unexpected type %T for field severity_id", values[i])
@@ -344,6 +301,12 @@ func (_m *Incident) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field type_id", values[i])
 			} else if value != nil {
 				_m.TypeID = *value
+			}
+		case incident.FieldSummary:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field summary", values[i])
+			} else if value.Valid {
+				_m.Summary = value.String
 			}
 		case incident.FieldChatChannelID:
 			if value, ok := values[i].(*sql.NullString); !ok {
@@ -479,26 +442,14 @@ func (_m *Incident) String() string {
 	builder.WriteString("title=")
 	builder.WriteString(_m.Title)
 	builder.WriteString(", ")
-	builder.WriteString("private=")
-	builder.WriteString(fmt.Sprintf("%v", _m.Private))
-	builder.WriteString(", ")
-	builder.WriteString("summary=")
-	builder.WriteString(_m.Summary)
-	builder.WriteString(", ")
-	builder.WriteString("opened_at=")
-	builder.WriteString(_m.OpenedAt.Format(time.ANSIC))
-	builder.WriteString(", ")
-	builder.WriteString("modified_at=")
-	builder.WriteString(_m.ModifiedAt.Format(time.ANSIC))
-	builder.WriteString(", ")
-	builder.WriteString("closed_at=")
-	builder.WriteString(_m.ClosedAt.Format(time.ANSIC))
-	builder.WriteString(", ")
 	builder.WriteString("severity_id=")
 	builder.WriteString(fmt.Sprintf("%v", _m.SeverityID))
 	builder.WriteString(", ")
 	builder.WriteString("type_id=")
 	builder.WriteString(fmt.Sprintf("%v", _m.TypeID))
+	builder.WriteString(", ")
+	builder.WriteString("summary=")
+	builder.WriteString(_m.Summary)
 	builder.WriteString(", ")
 	builder.WriteString("chat_channel_id=")
 	builder.WriteString(_m.ChatChannelID)

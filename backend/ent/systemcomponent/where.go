@@ -271,16 +271,6 @@ func KindIDNotIn(vs ...uuid.UUID) predicate.SystemComponent {
 	return predicate.SystemComponent(sql.FieldNotIn(FieldKindID, vs...))
 }
 
-// KindIDIsNil applies the IsNil predicate on the "kind_id" field.
-func KindIDIsNil() predicate.SystemComponent {
-	return predicate.SystemComponent(sql.FieldIsNull(FieldKindID))
-}
-
-// KindIDNotNil applies the NotNil predicate on the "kind_id" field.
-func KindIDNotNil() predicate.SystemComponent {
-	return predicate.SystemComponent(sql.FieldNotNull(FieldKindID))
-}
-
 // DescriptionEQ applies the EQ predicate on the "description" field.
 func DescriptionEQ(v string) predicate.SystemComponent {
 	return predicate.SystemComponent(sql.FieldEQ(FieldDescription, v))
