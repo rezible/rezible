@@ -20,7 +20,7 @@ type SocketModeListener struct {
 	cancelFn  context.CancelFunc
 }
 
-func (s *ChatService) MakeEventListener() (rez.ChatEventListener, error) {
+func (s *ChatService) MakeEventListener() (rez.EventListener, error) {
 	l, lErr := NewSocketModeEventListener(s)
 	if lErr != nil {
 		return nil, lErr

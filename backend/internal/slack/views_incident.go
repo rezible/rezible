@@ -23,35 +23,15 @@ var (
 	incidentModalTypeIds     = blockActionIds{Block: "incident_type", Input: "type_select"}
 )
 
-type (
-	incidentViewMetadata struct {
-		UserId     string    `json:"uid"`
-		ChannelId  string    `json:"cid"`
-		IncidentId uuid.UUID `json:"iid,omitempty"`
-		incident   *ent.Incident
-	}
-)
-
-func (s *ChatService) fetchIncidentViewMetadata(ctx context.Context, ic *slack.InteractionCallback) (*incidentViewMetadata, error) {
-	var meta incidentViewMetadata
-	if ic.View.PrivateMetadata != "" {
-		if jsonErr := json.Unmarshal([]byte(ic.View.PrivateMetadata), &meta); jsonErr != nil {
-			return nil, jsonErr
-		}
-		if meta.IncidentId != uuid.Nil {
-			inc, incErr := s.incidents.Get(ctx, meta.IncidentId)
-			if incErr != nil {
-				return nil, fmt.Errorf("failed to fetch incident: %w", incErr)
-			}
-			meta.incident = inc
-		}
-	}
-	return &meta, nil
+type incidentModalViewMetadata struct {
+	UserId           string    `json:"uid"`
+	CommandChannelId string    `json:"cid"`
+	IncidentId       uuid.UUID `json:"iid,omitempty"`
 }
 
-func (s *ChatService) makeIncidentModalView(ctx context.Context, meta *incidentViewMetadata) (*slack.ModalViewRequest, error) {
-	curr := meta.incident
-	if curr == nil && meta.IncidentId != uuid.Nil {
+func (s *ChatService) makeIncidentModalView(ctx context.Context, meta *incidentModalViewMetadata) (*slack.ModalViewRequest, error) {
+	var curr *ent.Incident
+	if meta.IncidentId != uuid.Nil {
 		inc, incErr := s.incidents.Get(ctx, meta.IncidentId)
 		if incErr != nil && !ent.IsNotFound(incErr) {
 			return nil, incErr
@@ -64,35 +44,35 @@ func (s *ChatService) makeIncidentModalView(ctx context.Context, meta *incidentV
 		return nil, fmt.Errorf("failed to get incident metadata: %w", incMetaErr)
 	}
 
-	blockSet, blocksErr := s.makeIncidentModalViewBlocks(curr, incMeta)
+	blockSet, blocksErr := makeIncidentModalViewBlocks(curr, incMeta)
 	if blocksErr != nil {
 		return nil, fmt.Errorf("failed to make incident modal view blocks: %w", blocksErr)
-	}
-
-	view := &slack.ModalViewRequest{
-		Type:       "modal",
-		CallbackID: createIncidentModalViewCallbackID,
-		Title:      plainTextBlock("Open an Incident"),
-		Submit:     plainTextBlock("Submit"),
-		Close:      plainTextBlock("Cancel"),
-	}
-	view.Blocks = slack.Blocks{BlockSet: blockSet}
-
-	if meta.incident != nil {
-		view.Title = plainTextBlock("Update Incident")
-		view.Submit = plainTextBlock("Update")
 	}
 
 	jsonMetadata, jsonErr := json.Marshal(meta)
 	if jsonErr != nil {
 		return nil, fmt.Errorf("failed to marshal metadata: %w", jsonErr)
 	}
-	view.PrivateMetadata = string(jsonMetadata)
+
+	view := &slack.ModalViewRequest{
+		Type:            "modal",
+		CallbackID:      createIncidentModalViewCallbackID,
+		Title:           plainTextBlock("Open an Incident"),
+		Submit:          plainTextBlock("Submit"),
+		Close:           plainTextBlock("Cancel"),
+		PrivateMetadata: string(jsonMetadata),
+		Blocks:          slack.Blocks{BlockSet: blockSet},
+	}
+
+	if curr != nil {
+		view.Title = plainTextBlock("Update Incident")
+		view.Submit = plainTextBlock("Update")
+	}
 
 	return view, nil
 }
 
-func (s *ChatService) makeIncidentModalViewBlocks(curr *ent.Incident, meta *rez.IncidentMetadata) ([]slack.Block, error) {
+func makeIncidentModalViewBlocks(curr *ent.Incident, meta *rez.IncidentMetadata) ([]slack.Block, error) {
 	var blocks []slack.Block
 
 	// Title input

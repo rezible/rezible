@@ -50,6 +50,11 @@ type ConfigLoader interface {
 
 var Config ConfigLoader
 
+type EventListener interface {
+	Start(ctx context.Context) error
+	Stop(ctx context.Context) error
+}
+
 type Database interface {
 	Client() *ent.Client
 	Close() error
@@ -280,12 +285,7 @@ type (
 		SendOncallHandoverReminder(context.Context, *ent.OncallShift) error
 
 		EnableEventListener() bool
-		MakeEventListener() (ChatEventListener, error)
-	}
-
-	ChatEventListener interface {
-		Start(ctx context.Context) error
-		Stop(ctx context.Context) error
+		MakeEventListener() (EventListener, error)
 	}
 )
 
@@ -375,7 +375,10 @@ type (
 		ListIncidents(context.Context, ListIncidentsParams) (*ent.ListResult[*ent.Incident], error)
 
 		ListIncidentRoles(context.Context) ([]*ent.IncidentRole, error)
+
 		ListIncidentSeverities(context.Context) ([]*ent.IncidentSeverity, error)
+		GetIncidentSeverity(context.Context, uuid.UUID) (*ent.IncidentSeverity, error)
+
 		ListIncidentTypes(context.Context) ([]*ent.IncidentType, error)
 
 		GetIncidentMetadata(context.Context) (*IncidentMetadata, error)

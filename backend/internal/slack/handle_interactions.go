@@ -7,8 +7,10 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent"
 	"github.com/rezible/rezible/ent/incidentmilestone"
+	"github.com/rs/zerolog/log"
 	"github.com/slack-go/slack"
 )
 
@@ -92,10 +94,21 @@ func (s *ChatService) handleAnnotationModalSubmission(ctx context.Context, ic *s
 	return nil, nil
 }
 
+func getInteractionIncidentModalViewMetadata(ic *slack.InteractionCallback) (*incidentModalViewMetadata, error) {
+	var meta incidentModalViewMetadata
+	if ic.View.PrivateMetadata == "" {
+		return nil, fmt.Errorf("no view metadata provided")
+	}
+	if jsonErr := json.Unmarshal([]byte(ic.View.PrivateMetadata), &meta); jsonErr != nil {
+		return nil, fmt.Errorf("failed to unmarshal incident modal metadata: %w", jsonErr)
+	}
+	return &meta, nil
+}
+
 func (s *ChatService) handleIncidentModalInteraction(ctx context.Context, ic *slack.InteractionCallback) (any, error) {
-	meta, mdErr := s.fetchIncidentViewMetadata(ctx, ic)
-	if mdErr != nil {
-		return nil, fmt.Errorf("failed to fetch incident modal metadata: %w", mdErr)
+	meta, metaErr := getInteractionIncidentModalViewMetadata(ic)
+	if metaErr != nil {
+		return nil, metaErr
 	}
 	view, viewErr := s.makeIncidentModalView(ctx, meta)
 	if viewErr != nil || view == nil {
@@ -110,26 +123,30 @@ func (s *ChatService) handleIncidentModalInteraction(ctx context.Context, ic *sl
 }
 
 func (s *ChatService) handleIncidentModalSubmission(ctx context.Context, ic *slack.InteractionCallback) (any, error) {
-	var meta incidentViewMetadata
-	if jsonErr := json.Unmarshal([]byte(ic.View.PrivateMetadata), &meta); jsonErr != nil {
-		return nil, fmt.Errorf("failed to unmarshal metadata: %w", jsonErr)
+	meta, metaErr := getInteractionIncidentModalViewMetadata(ic)
+	if metaErr != nil {
+		return nil, metaErr
 	}
 
+	creating := meta.IncidentId == uuid.Nil
 	state := ic.View.State
 	if state == nil {
 		return nil, errors.New("invalid view state")
 	}
 
-	// TODO: type this better
-	milestoneExternalId := fmt.Sprintf("%s_%s_%s_%s", ic.Team.ID, meta.ChannelId, meta.UserId, ic.View.Hash)
-
 	setFn := func(m *ent.IncidentMutation) []ent.Mutation {
 		setIncidentModalStateFields(m, state)
 
 		incidentId, exists := m.ID()
-		if !exists {
+		log.Debug().
+			Str("id", incidentId.String()).
+			Bool("id_exists", exists).
+			Bool("creating", creating).
+			Msg("set fn")
+		if !exists || !creating {
 			return nil
 		}
+		milestoneExternalId := fmt.Sprintf("%s_%s_%s_%s", ic.Team.ID, meta.CommandChannelId, meta.UserId, ic.View.Hash)
 		milestoneCreate := m.Client().IncidentMilestone.Create().
 			SetKind(incidentmilestone.KindResponse).
 			SetDescription("Incident declared via slack").

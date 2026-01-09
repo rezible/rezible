@@ -235,6 +235,10 @@ func (s *IncidentService) ListIncidentSeverities(ctx context.Context) ([]*ent.In
 	return s.db.IncidentSeverity.Query().All(ctx)
 }
 
+func (s *IncidentService) GetIncidentSeverity(ctx context.Context, id uuid.UUID) (*ent.IncidentSeverity, error) {
+	return s.db.IncidentSeverity.Get(ctx, id)
+}
+
 func (s *IncidentService) ListIncidentTypes(ctx context.Context) ([]*ent.IncidentType, error) {
 	return s.db.IncidentType.Query().All(ctx)
 }

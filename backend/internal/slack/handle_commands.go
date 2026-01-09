@@ -42,19 +42,18 @@ func commandErrorResponse(message string) *slack.Msg {
 }
 
 func (s *ChatService) handleIncidentCommand(ctx context.Context, ev *slack.SlashCommand) (any, error) {
-	meta := incidentViewMetadata{
-		ChannelId: ev.ChannelID,
-		UserId:    ev.UserID,
+	meta := incidentModalViewMetadata{
+		CommandChannelId: ev.ChannelID,
+		UserId:           ev.UserID,
 	}
 
 	// are we currently in an incident channel?
-	curr, currErr := s.incidents.GetByChatChannelID(ctx, ev.ChannelID)
-	if currErr != nil && !ent.IsNotFound(currErr) {
-		return commandErrorResponse(currErr.Error()), nil
+	inc, incErr := s.incidents.GetByChatChannelID(ctx, ev.ChannelID)
+	if incErr != nil && !ent.IsNotFound(incErr) {
+		return commandErrorResponse(incErr.Error()), nil
 	}
-	if curr != nil {
-		meta.incident = curr
-		meta.IncidentId = curr.ID
+	if inc != nil {
+		meta.IncidentId = inc.ID
 	}
 
 	view, viewErr := s.makeIncidentModalView(ctx, &meta)

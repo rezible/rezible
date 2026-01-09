@@ -50,22 +50,17 @@ func RunServer(ctx context.Context) error {
 	return runErr
 }
 
-type listener interface {
-	Start(ctx context.Context) error
-	Stop(ctx context.Context) error
-}
-
 type Server struct {
-	listeners map[string]listener
+	listeners map[string]rez.EventListener
 }
 
 func newServer() *Server {
 	return &Server{
-		listeners: make(map[string]listener),
+		listeners: make(map[string]rez.EventListener),
 	}
 }
 
-func (s *Server) addListener(name string, l listener) {
+func (s *Server) addListener(name string, l rez.EventListener) {
 	s.listeners[name] = l
 }
 
