@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/rezible/rezible/ent"
+	"github.com/rs/zerolog/log"
 	"github.com/slack-go/slack"
 )
 
@@ -14,7 +15,6 @@ func (s *ChatService) handleSlashCommand(ctx context.Context, ev *slack.SlashCom
 	if userErr != nil {
 		return false, nil, fmt.Errorf("failed to lookup user: %w", userErr)
 	}
-
 	switch ev.Command {
 	case "/incident":
 		payload, handlerErr := s.handleIncidentCommand(ctx, ev)
@@ -50,6 +50,7 @@ func (s *ChatService) handleIncidentCommand(ctx context.Context, ev *slack.Slash
 	// are we currently in an incident channel?
 	inc, incErr := s.incidents.GetByChatChannelID(ctx, ev.ChannelID)
 	if incErr != nil && !ent.IsNotFound(incErr) {
+		log.Error().Err(incErr).Msg("unable to get incident by channel")
 		return commandErrorResponse(incErr.Error()), nil
 	}
 	if inc != nil {
@@ -58,6 +59,7 @@ func (s *ChatService) handleIncidentCommand(ctx context.Context, ev *slack.Slash
 
 	view, viewErr := s.makeIncidentModalView(ctx, &meta)
 	if viewErr != nil {
+		log.Error().Err(viewErr).Msg("failed creating modal view")
 		return commandErrorResponse("Failed to create incident view"), viewErr
 	}
 

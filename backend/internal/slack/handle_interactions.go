@@ -135,7 +135,17 @@ func (s *ChatService) handleIncidentModalSubmission(ctx context.Context, ic *sla
 	}
 
 	setFn := func(m *ent.IncidentMutation) []ent.Mutation {
-		setIncidentModalStateFields(m, state)
+		m.SetTitle(incidentModalTitleIds.GetStateValue(state))
+
+		if sevId, sevErr := uuid.Parse(incidentModalSeverityIds.GetStateSelectedValue(state)); sevErr == nil {
+			m.SetSeverityID(sevId)
+		}
+
+		if typeId, typeErr := uuid.Parse(incidentModalTypeIds.GetStateSelectedValue(state)); typeErr == nil {
+			m.SetTypeID(typeId)
+		}
+
+		// TODO: get incident fields
 
 		incidentId, exists := m.ID()
 		log.Debug().
@@ -146,14 +156,17 @@ func (s *ChatService) handleIncidentModalSubmission(ctx context.Context, ic *sla
 		if !exists || !creating {
 			return nil
 		}
-		milestoneExternalId := fmt.Sprintf("%s_%s_%s_%s", ic.Team.ID, meta.CommandChannelId, meta.UserId, ic.View.Hash)
+		milestoneMeta := map[string]string{
+			"channel_id": meta.CommandChannelId,
+			"user_id":    meta.UserId,
+		}
 		milestoneCreate := m.Client().IncidentMilestone.Create().
-			SetKind(incidentmilestone.KindResponse).
+			SetKind(incidentmilestone.KindOpened).
 			SetDescription("Incident declared via slack").
 			SetTimestamp(time.Now()).
 			SetSource(integrationName).
-			SetExternalID(milestoneExternalId).
 			SetIncidentID(incidentId).
+			SetMetadata(milestoneMeta).
 			Mutation()
 
 		return []ent.Mutation{milestoneCreate}

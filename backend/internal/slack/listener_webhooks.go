@@ -129,6 +129,9 @@ func (wh *WebhookEventHandler) onCommandsWebhook(w http.ResponseWriter, r *http.
 
 func (wh *WebhookEventHandler) handleCommandEvent(ctx context.Context, cmd *slack.SlashCommand) error {
 	_, _, handleErr := wh.chat.handleSlashCommand(ctx, cmd)
+	if handleErr != nil {
+		log.Error().Err(handleErr).Msg("failed to handle slash command")
+	}
 	return handleErr
 }
 

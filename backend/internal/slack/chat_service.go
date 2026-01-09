@@ -40,7 +40,8 @@ func NewChatService(jobSvc rez.JobsService, messages rez.MessageService, integra
 
 	integrations.RegisterOAuth2Handler(integrationName, s)
 
-	if msgsErr := s.addIncidentMessageHandlers(); msgsErr != nil {
+	incMsgHandler := newIncidentChatEventHandler(s)
+	if msgsErr := incMsgHandler.registerHandlers(); msgsErr != nil {
 		return nil, fmt.Errorf("adding message handlers: %w", msgsErr)
 	}
 
@@ -90,6 +91,26 @@ func (s *ChatService) lookupChatUser(baseCtx context.Context, chatId string) (*e
 		return nil, nil, usrErr
 	}
 	return usr, access.TenantContext(baseCtx, usr.TenantID), nil
+}
+
+func getAllUsersInConversation(ctx context.Context, client *slack.Client, convId string) ([]string, error) {
+	params := &slack.GetUsersInConversationParameters{
+		ChannelID: convId,
+		Limit:     100,
+	}
+	var allIds []string
+	for {
+		ids, cursor, getErr := client.GetUsersInConversationContext(ctx, params)
+		if getErr != nil {
+			return nil, getErr
+		}
+		allIds = append(allIds, ids...)
+		params.Cursor = cursor
+		if cursor == "" || len(ids) == 0 {
+			break
+		}
+	}
+	return allIds, nil
 }
 
 func (s *ChatService) sendMessage(ctx context.Context, channelId string, msgOpts ...slack.MsgOption) error {

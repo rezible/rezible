@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"strings"
 
+	mapset "github.com/deckarep/golang-set/v2"
 	"github.com/google/uuid"
 	"github.com/rs/zerolog/log"
 	"github.com/slack-go/slack"
@@ -14,15 +15,22 @@ import (
 	im "github.com/rezible/rezible/ent/incidentmilestone"
 )
 
-func (s *ChatService) addIncidentMessageHandlers() error {
-	incidentEventHandler := &incidentChatEventHandler{chat: s}
-	cmdsErr := s.messages.AddCommandHandlers(
-		rez.NewCommandHandler("slack.CreateIncidentChannel", incidentEventHandler.createIncidentChannel))
+type incidentChatEventHandler struct {
+	chat *ChatService
+}
+
+func newIncidentChatEventHandler(chat *ChatService) *incidentChatEventHandler {
+	return &incidentChatEventHandler{chat: chat}
+}
+
+func (h *incidentChatEventHandler) registerHandlers() error {
+	cmdsErr := h.chat.messages.AddCommandHandlers(
+		rez.NewCommandHandler("SlackCreateIncidentChannel", h.createIncidentChannel))
 	if cmdsErr != nil {
 		return fmt.Errorf("commands: %w", cmdsErr)
 	}
-	eventsErr := s.messages.AddEventHandlers(
-		rez.NewEventHandler("slack.OnIncidentUpdate", incidentEventHandler.onUpdate))
+	eventsErr := h.chat.messages.AddEventHandlers(
+		rez.NewEventHandler("SlackOnIncidentUpdate", h.onUpdate))
 	if eventsErr != nil {
 		return fmt.Errorf("events: %w", eventsErr)
 	}
@@ -30,16 +38,15 @@ func (s *ChatService) addIncidentMessageHandlers() error {
 	return nil
 }
 
-type incidentChatEventHandler struct {
-	chat *ChatService
-}
-
 func (h *incidentChatEventHandler) onUpdate(ctx context.Context, ev *rez.EventOnIncidentUpdated) error {
+	log.Debug().Msg("on incident update")
+
 	inc, incErr := h.chat.incidents.Get(ctx, ev.IncidentId)
 	if incErr != nil {
 		return fmt.Errorf("failed to get incident: %w", incErr)
 	}
 
+	// incident created
 	if inc.ChatChannelID == "" {
 		createCmdErr := h.chat.messages.SendCommand(ctx, &cmdCreateIncidentChannel{IncidentID: inc.ID})
 		if createCmdErr != nil {
@@ -49,20 +56,21 @@ func (h *incidentChatEventHandler) onUpdate(ctx context.Context, ev *rez.EventOn
 	}
 
 	// TODO: these should all be inserted as jobs
+	return h.chat.withClient(ctx, func(client *slack.Client) error {
+		if detailsErr := h.updateIncidentChannelDetailsMessage(ctx, client, inc); detailsErr != nil {
+			log.Warn().Err(detailsErr).Msg("failed to update incident details message")
+		}
 
-	if detailsErr := h.updateIncidentChannelDetailsMessage(ctx, inc); detailsErr != nil {
-		log.Warn().Err(detailsErr).Msg("failed to update incident details message")
-	}
+		if bookmarkErr := h.updateIncidentChannelInfo(ctx, client, inc); bookmarkErr != nil {
+			log.Warn().Err(bookmarkErr).Msg("failed to update incident channel info")
+		}
 
-	if bookmarkErr := h.updateIncidentChannelInfo(ctx, inc); bookmarkErr != nil {
-		log.Warn().Err(bookmarkErr).Msg("failed to update incident channel info")
-	}
+		if usersErr := h.ensureIncidentChannelUsersAdded(ctx, client, inc); usersErr != nil {
+			log.Warn().Err(usersErr).Msg("failed to add users to incident channel")
+		}
 
-	if usersErr := h.ensureIncidentChannelUsersAdded(ctx, inc); usersErr != nil {
-		log.Warn().Err(usersErr).Msg("failed to add users to incident channel")
-	}
-
-	return nil
+		return nil
+	})
 }
 
 func getIncidentChannelName(inc *ent.Incident) string {
@@ -119,29 +127,35 @@ func (h *incidentChatEventHandler) createIncidentChannel(ctx context.Context, da
 	return nil
 }
 
-func (h *incidentChatEventHandler) sendUserCreationMessage(ctx context.Context, inc *ent.Incident) error {
-	msQuery := inc.QueryMilestones().
-		Where(im.KindEQ(im.KindResponse)).
-		Where(im.Source(integrationName))
+func (h *incidentChatEventHandler) getSlackIncidentCreateMilestone(ctx context.Context, inc *ent.Incident) (*ent.IncidentMilestone, error) {
+	msQuery := inc.QueryMilestones().Where(im.KindEQ(im.KindOpened))
 	ms, msErr := msQuery.First(ctx)
 	if msErr != nil && !ent.IsNotFound(msErr) {
-		return fmt.Errorf("query milestones: %w", msErr)
+		return nil, fmt.Errorf("query milestones: %w", msErr)
 	}
-	if ms == nil {
+	return ms, nil
+}
+
+func (h *incidentChatEventHandler) sendUserCreationMessage(ctx context.Context, inc *ent.Incident) error {
+	ms, msErr := h.getSlackIncidentCreateMilestone(ctx, inc)
+	if msErr != nil {
+		return msErr
+	}
+	if ms == nil || ms.Metadata == nil {
 		return nil
 	}
-	// from handleIncidentModalSubmission
-	parts := strings.Split(ms.ExternalID, "_")
-	if len(parts) != 4 {
-		log.Warn().Str("id", ms.ExternalID).Msg("invalid incident declaration milestone id")
+	userId, userOk := ms.Metadata["user_id"]
+	channelId, channelOk := ms.Metadata["channel_id"]
+	if !userOk || !channelOk {
+		log.Warn().
+			Interface("metadata", ms.Metadata).
+			Msg("invalid slack incident declaration milestone metadata")
 		return nil
 	}
-	channelID := parts[1]
-	userID := parts[2]
 	// send message to user that created incident
 	msgText := fmt.Sprintf("Incident created: <#%s>", inc.ChatChannelID)
 	return h.chat.withClient(ctx, func(client *slack.Client) error {
-		_, sendErr := client.PostEphemeralContext(ctx, channelID, userID, slack.MsgOptionText(msgText, false))
+		_, sendErr := client.PostEphemeralContext(ctx, channelId, userId, slack.MsgOptionText(msgText, false))
 		if sendErr != nil {
 			return fmt.Errorf("failed to send confirmation message: %w", sendErr)
 		}
@@ -192,10 +206,10 @@ func (h *incidentChatEventHandler) postIncidentAnnouncement(ctx context.Context,
 	return nil
 }
 
-func (h *incidentChatEventHandler) makeIncidentDetailsMessageBlocks(ctx context.Context, inc *ent.Incident) ([]slack.Block, error) {
+func (h *incidentChatEventHandler) updateIncidentChannelDetailsMessage(ctx context.Context, client *slack.Client, inc *ent.Incident) error {
 	sev, sevErr := h.chat.incidents.GetIncidentSeverity(ctx, inc.SeverityID)
 	if sevErr != nil {
-		return nil, fmt.Errorf("failed to get incident severity: %w", sevErr)
+		return fmt.Errorf("failed to get incident severity: %w", sevErr)
 	}
 
 	webLink := fmt.Sprintf("%s/incidents/%s", rez.Config.AppUrl(), inc.Slug)
@@ -206,63 +220,77 @@ func (h *incidentChatEventHandler) makeIncidentDetailsMessageBlocks(ctx context.
 		Type: slack.MarkdownType,
 		Text: detailsText,
 	}
-	return []slack.Block{
-		slack.NewSectionBlock(detailsTextBlock, nil, nil),
-	}, nil
-}
 
-func (h *incidentChatEventHandler) updateIncidentChannelDetailsMessage(ctx context.Context, inc *ent.Incident) error {
-	msgBlocks, blocksErr := h.makeIncidentDetailsMessageBlocks(ctx, inc)
-	if blocksErr != nil {
-		return fmt.Errorf("making message blocks: %w", blocksErr)
+	msgBlocks := []slack.Block{slack.NewSectionBlock(detailsTextBlock, nil, nil)}
+	msgOpts := slack.MsgOptionBlocks(msgBlocks...)
+
+	pins, _, pinsErr := client.ListPinsContext(ctx, inc.ChatChannelID)
+	if pinsErr != nil {
+		return fmt.Errorf("failed to list pins: %w", pinsErr)
+	}
+	var existingMsgTs string
+	for _, pin := range pins {
+		if pin.Message != nil {
+			if pin.Message.Text != "" && strings.HasPrefix(pin.Message.Text, "*Incident Details*") {
+				existingMsgTs = pin.Message.Timestamp
+				break
+			}
+		}
 	}
 
-	return h.chat.withClient(ctx, func(client *slack.Client) error {
-		pins, _, pinsErr := client.ListPinsContext(ctx, inc.ChatChannelID)
-		if pinsErr != nil {
-			return fmt.Errorf("failed to list pins: %w", pinsErr)
+	if existingMsgTs != "" {
+		_, _, _, updateErr := client.UpdateMessageContext(ctx, inc.ChatChannelID, existingMsgTs, msgOpts)
+		if updateErr != nil {
+			return fmt.Errorf("update message: %w", updateErr)
 		}
-		var existingMsgTs string
-		for _, pin := range pins {
-			if pin.Message != nil {
-				if pin.Message.Text != "" && strings.HasPrefix(pin.Message.Text, "*Incident Details*") {
-					existingMsgTs = pin.Message.Timestamp
-					break
-				}
-			}
-		}
-
-		msgOpts := slack.MsgOptionBlocks(msgBlocks...)
-		if existingMsgTs != "" {
-			_, _, _, updateErr := client.UpdateMessageContext(ctx, inc.ChatChannelID, existingMsgTs, msgOpts)
-			if updateErr != nil {
-				return fmt.Errorf("update message: %w", updateErr)
-			}
-			return nil
-		}
-
+	} else {
 		_, msgTs, postErr := client.PostMessageContext(ctx, inc.ChatChannelID, msgOpts)
 		if postErr != nil {
 			return fmt.Errorf("post message: %w", postErr)
 		}
-		pinErr := client.AddPinContext(ctx, inc.ChatChannelID, slack.ItemRef{
+		pinItemRef := slack.ItemRef{
 			Channel:   inc.ChatChannelID,
 			Timestamp: msgTs,
-		})
-		if pinErr != nil {
+		}
+		if pinErr := client.AddPinContext(ctx, inc.ChatChannelID, pinItemRef); pinErr != nil {
 			return fmt.Errorf("pin message: %w", pinErr)
 		}
-
-		return nil
-	})
-}
-
-func (h *incidentChatEventHandler) ensureIncidentChannelUsersAdded(ctx context.Context, inc *ent.Incident) error {
+	}
 
 	return nil
 }
 
-func (h *incidentChatEventHandler) updateIncidentChannelInfo(ctx context.Context, inc *ent.Incident) error {
+func (h *incidentChatEventHandler) ensureIncidentChannelUsersAdded(ctx context.Context, client *slack.Client, inc *ent.Incident) error {
+	currIds, idsErr := getAllUsersInConversation(ctx, client, inc.ChatChannelID)
+	if idsErr != nil {
+		return fmt.Errorf("failed to get current users in conversation: %w", idsErr)
+	}
+	excludeIds := mapset.NewSet(currIds...)
+	addIds := mapset.NewSet[string]()
+
+	ms, msErr := h.getSlackIncidentCreateMilestone(ctx, inc)
+	if msErr == nil && ms != nil && ms.Metadata != nil {
+		if userId, userOk := ms.Metadata["user_id"]; userOk {
+			addIds.Add(userId)
+		}
+	}
+
+	missingIds := addIds.Difference(excludeIds)
+	if missingIds.IsEmpty() {
+		log.Debug().Msg("no users to add to incident channel")
+		return nil
+	}
+
+	_, invErr := client.InviteUsersToConversationContext(ctx, inc.ChatChannelID, missingIds.ToSlice()...)
+	if invErr != nil {
+		log.Error().Err(invErr).Msg("failed to add users to incident channel")
+		return invErr
+	}
+
+	return nil
+}
+
+func (h *incidentChatEventHandler) updateIncidentChannelInfo(ctx context.Context, client *slack.Client, inc *ent.Incident) error {
 	sev, sevErr := h.chat.incidents.GetIncidentSeverity(ctx, inc.SeverityID)
 	if sevErr != nil {
 		return fmt.Errorf("failed to get incident severity: %w", sevErr)
@@ -271,21 +299,19 @@ func (h *incidentChatEventHandler) updateIncidentChannelInfo(ctx context.Context
 	webLink := fmt.Sprintf("%s/incidents/%s", rez.Config.AppUrl(), inc.Slug)
 	topic := fmt.Sprintf("[%s] %s", sev.Name, inc.Title)
 
-	return h.chat.withClient(ctx, func(client *slack.Client) error {
-		_, setErr := client.SetTopicOfConversationContext(ctx, inc.ChatChannelID, topic)
-		if setErr != nil {
-			return fmt.Errorf("failed to set channel topic: %w", setErr)
-		}
+	_, setErr := client.SetTopicOfConversationContext(ctx, inc.ChatChannelID, topic)
+	if setErr != nil {
+		return fmt.Errorf("failed to set channel topic: %w", setErr)
+	}
 
-		_, addErr := client.AddBookmark(inc.ChatChannelID, slack.AddBookmarkParameters{
-			Title: "View Incident Details",
-			Link:  webLink,
-			Type:  "link",
-		})
-		if addErr != nil {
-			return fmt.Errorf("failed to add bookmark: %w", addErr)
-		}
-
-		return nil
+	_, addErr := client.AddBookmark(inc.ChatChannelID, slack.AddBookmarkParameters{
+		Title: "View Incident Details",
+		Link:  webLink,
+		Type:  "link",
 	})
+	if addErr != nil {
+		return fmt.Errorf("failed to add bookmark: %w", addErr)
+	}
+
+	return nil
 }

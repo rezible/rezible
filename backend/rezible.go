@@ -228,7 +228,6 @@ type (
 		CreateRelationship(context.Context, ent.SystemComponentRelationship) (*ent.SystemComponentRelationship, error)
 
 		GetSystemAnalysis(context.Context, uuid.UUID) (*ent.SystemAnalysis, error)
-		// TODO: SetSystemAnalysis(context.Context, ent.SystemAnalysis) (*ent.SystemAnalysis, error)
 		CreateSystemAnalysisRelationship(context.Context, CreateSystemAnalysisRelationshipParams) (*ent.SystemAnalysisRelationship, error)
 	}
 )
@@ -368,11 +367,11 @@ type (
 	}
 
 	IncidentService interface {
+		ListIncidents(context.Context, ListIncidentsParams) (*ent.ListResult[*ent.Incident], error)
 		Get(context.Context, uuid.UUID) (*ent.Incident, error)
 		Set(context.Context, uuid.UUID, func(*ent.IncidentMutation) []ent.Mutation) (*ent.Incident, error)
 		GetBySlug(context.Context, string) (*ent.Incident, error)
 		GetByChatChannelID(context.Context, string) (*ent.Incident, error)
-		ListIncidents(context.Context, ListIncidentsParams) (*ent.ListResult[*ent.Incident], error)
 
 		ListIncidentRoles(context.Context) ([]*ent.IncidentRole, error)
 

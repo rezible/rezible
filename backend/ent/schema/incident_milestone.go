@@ -19,7 +19,7 @@ func (IncidentMilestone) Mixin() []ent.Mixin {
 	}
 }
 
-var incidentMilestoneKinds = []string{"impact", "detection", "response", "mitigation", "resolution"}
+var incidentMilestoneKinds = []string{"impact", "detection", "opened", "response", "mitigation", "resolution"}
 
 // Fields of the IncidentMilestone.
 func (IncidentMilestone) Fields() []ent.Field {
@@ -30,8 +30,7 @@ func (IncidentMilestone) Fields() []ent.Field {
 		field.Time("timestamp"),
 		field.String("description").Optional(),
 		field.String("source").Optional(),
-		field.String("external_id").Optional(),
-		// field.JSON("metadata", map[string]any{}).Optional(),
+		field.JSON("metadata", map[string]string{}).Optional(),
 	}
 }
 
