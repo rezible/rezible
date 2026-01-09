@@ -16901,7 +16901,7 @@ type IncidentMilestoneMutation struct {
 	timestamp       *time.Time
 	description     *string
 	source          *string
-	external_id     *string
+	metadata        *map[string]string
 	clearedFields   map[string]struct{}
 	tenant          *int
 	clearedtenant   bool
@@ -17258,53 +17258,53 @@ func (m *IncidentMilestoneMutation) ResetSource() {
 	delete(m.clearedFields, incidentmilestone.FieldSource)
 }
 
-// SetExternalID sets the "external_id" field.
-func (m *IncidentMilestoneMutation) SetExternalID(s string) {
-	m.external_id = &s
+// SetMetadata sets the "metadata" field.
+func (m *IncidentMilestoneMutation) SetMetadata(value map[string]string) {
+	m.metadata = &value
 }
 
-// ExternalID returns the value of the "external_id" field in the mutation.
-func (m *IncidentMilestoneMutation) ExternalID() (r string, exists bool) {
-	v := m.external_id
+// Metadata returns the value of the "metadata" field in the mutation.
+func (m *IncidentMilestoneMutation) Metadata() (r map[string]string, exists bool) {
+	v := m.metadata
 	if v == nil {
 		return
 	}
 	return *v, true
 }
 
-// OldExternalID returns the old "external_id" field's value of the IncidentMilestone entity.
+// OldMetadata returns the old "metadata" field's value of the IncidentMilestone entity.
 // If the IncidentMilestone object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *IncidentMilestoneMutation) OldExternalID(ctx context.Context) (v string, err error) {
+func (m *IncidentMilestoneMutation) OldMetadata(ctx context.Context) (v map[string]string, err error) {
 	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldExternalID is only allowed on UpdateOne operations")
+		return v, errors.New("OldMetadata is only allowed on UpdateOne operations")
 	}
 	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldExternalID requires an ID field in the mutation")
+		return v, errors.New("OldMetadata requires an ID field in the mutation")
 	}
 	oldValue, err := m.oldValue(ctx)
 	if err != nil {
-		return v, fmt.Errorf("querying old value for OldExternalID: %w", err)
+		return v, fmt.Errorf("querying old value for OldMetadata: %w", err)
 	}
-	return oldValue.ExternalID, nil
+	return oldValue.Metadata, nil
 }
 
-// ClearExternalID clears the value of the "external_id" field.
-func (m *IncidentMilestoneMutation) ClearExternalID() {
-	m.external_id = nil
-	m.clearedFields[incidentmilestone.FieldExternalID] = struct{}{}
+// ClearMetadata clears the value of the "metadata" field.
+func (m *IncidentMilestoneMutation) ClearMetadata() {
+	m.metadata = nil
+	m.clearedFields[incidentmilestone.FieldMetadata] = struct{}{}
 }
 
-// ExternalIDCleared returns if the "external_id" field was cleared in this mutation.
-func (m *IncidentMilestoneMutation) ExternalIDCleared() bool {
-	_, ok := m.clearedFields[incidentmilestone.FieldExternalID]
+// MetadataCleared returns if the "metadata" field was cleared in this mutation.
+func (m *IncidentMilestoneMutation) MetadataCleared() bool {
+	_, ok := m.clearedFields[incidentmilestone.FieldMetadata]
 	return ok
 }
 
-// ResetExternalID resets all changes to the "external_id" field.
-func (m *IncidentMilestoneMutation) ResetExternalID() {
-	m.external_id = nil
-	delete(m.clearedFields, incidentmilestone.FieldExternalID)
+// ResetMetadata resets all changes to the "metadata" field.
+func (m *IncidentMilestoneMutation) ResetMetadata() {
+	m.metadata = nil
+	delete(m.clearedFields, incidentmilestone.FieldMetadata)
 }
 
 // ClearTenant clears the "tenant" edge to the Tenant entity.
@@ -17414,8 +17414,8 @@ func (m *IncidentMilestoneMutation) Fields() []string {
 	if m.source != nil {
 		fields = append(fields, incidentmilestone.FieldSource)
 	}
-	if m.external_id != nil {
-		fields = append(fields, incidentmilestone.FieldExternalID)
+	if m.metadata != nil {
+		fields = append(fields, incidentmilestone.FieldMetadata)
 	}
 	return fields
 }
@@ -17437,8 +17437,8 @@ func (m *IncidentMilestoneMutation) Field(name string) (ent.Value, bool) {
 		return m.Description()
 	case incidentmilestone.FieldSource:
 		return m.Source()
-	case incidentmilestone.FieldExternalID:
-		return m.ExternalID()
+	case incidentmilestone.FieldMetadata:
+		return m.Metadata()
 	}
 	return nil, false
 }
@@ -17460,8 +17460,8 @@ func (m *IncidentMilestoneMutation) OldField(ctx context.Context, name string) (
 		return m.OldDescription(ctx)
 	case incidentmilestone.FieldSource:
 		return m.OldSource(ctx)
-	case incidentmilestone.FieldExternalID:
-		return m.OldExternalID(ctx)
+	case incidentmilestone.FieldMetadata:
+		return m.OldMetadata(ctx)
 	}
 	return nil, fmt.Errorf("unknown IncidentMilestone field %s", name)
 }
@@ -17513,12 +17513,12 @@ func (m *IncidentMilestoneMutation) SetField(name string, value ent.Value) error
 		}
 		m.SetSource(v)
 		return nil
-	case incidentmilestone.FieldExternalID:
-		v, ok := value.(string)
+	case incidentmilestone.FieldMetadata:
+		v, ok := value.(map[string]string)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
-		m.SetExternalID(v)
+		m.SetMetadata(v)
 		return nil
 	}
 	return fmt.Errorf("unknown IncidentMilestone field %s", name)
@@ -17559,8 +17559,8 @@ func (m *IncidentMilestoneMutation) ClearedFields() []string {
 	if m.FieldCleared(incidentmilestone.FieldSource) {
 		fields = append(fields, incidentmilestone.FieldSource)
 	}
-	if m.FieldCleared(incidentmilestone.FieldExternalID) {
-		fields = append(fields, incidentmilestone.FieldExternalID)
+	if m.FieldCleared(incidentmilestone.FieldMetadata) {
+		fields = append(fields, incidentmilestone.FieldMetadata)
 	}
 	return fields
 }
@@ -17582,8 +17582,8 @@ func (m *IncidentMilestoneMutation) ClearField(name string) error {
 	case incidentmilestone.FieldSource:
 		m.ClearSource()
 		return nil
-	case incidentmilestone.FieldExternalID:
-		m.ClearExternalID()
+	case incidentmilestone.FieldMetadata:
+		m.ClearMetadata()
 		return nil
 	}
 	return fmt.Errorf("unknown IncidentMilestone nullable field %s", name)
@@ -17611,8 +17611,8 @@ func (m *IncidentMilestoneMutation) ResetField(name string) error {
 	case incidentmilestone.FieldSource:
 		m.ResetSource()
 		return nil
-	case incidentmilestone.FieldExternalID:
-		m.ResetExternalID()
+	case incidentmilestone.FieldMetadata:
+		m.ResetMetadata()
 		return nil
 	}
 	return fmt.Errorf("unknown IncidentMilestone field %s", name)

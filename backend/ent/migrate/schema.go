@@ -762,11 +762,11 @@ var (
 	// IncidentMilestonesColumns holds the columns for the "incident_milestones" table.
 	IncidentMilestonesColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID},
-		{Name: "kind", Type: field.TypeEnum, Enums: []string{"impact", "detection", "response", "mitigation", "resolution"}},
+		{Name: "kind", Type: field.TypeEnum, Enums: []string{"impact", "detection", "opened", "response", "mitigation", "resolution"}},
 		{Name: "timestamp", Type: field.TypeTime},
 		{Name: "description", Type: field.TypeString, Nullable: true},
 		{Name: "source", Type: field.TypeString, Nullable: true},
-		{Name: "external_id", Type: field.TypeString, Nullable: true},
+		{Name: "metadata", Type: field.TypeJSON, Nullable: true},
 		{Name: "incident_id", Type: field.TypeUUID},
 		{Name: "tenant_id", Type: field.TypeInt},
 	}

@@ -81,11 +81,6 @@ func Source(v string) predicate.IncidentMilestone {
 	return predicate.IncidentMilestone(sql.FieldEQ(FieldSource, v))
 }
 
-// ExternalID applies equality check predicate on the "external_id" field. It's identical to ExternalIDEQ.
-func ExternalID(v string) predicate.IncidentMilestone {
-	return predicate.IncidentMilestone(sql.FieldEQ(FieldExternalID, v))
-}
-
 // TenantIDEQ applies the EQ predicate on the "tenant_id" field.
 func TenantIDEQ(v int) predicate.IncidentMilestone {
 	return predicate.IncidentMilestone(sql.FieldEQ(FieldTenantID, v))
@@ -336,79 +331,14 @@ func SourceContainsFold(v string) predicate.IncidentMilestone {
 	return predicate.IncidentMilestone(sql.FieldContainsFold(FieldSource, v))
 }
 
-// ExternalIDEQ applies the EQ predicate on the "external_id" field.
-func ExternalIDEQ(v string) predicate.IncidentMilestone {
-	return predicate.IncidentMilestone(sql.FieldEQ(FieldExternalID, v))
+// MetadataIsNil applies the IsNil predicate on the "metadata" field.
+func MetadataIsNil() predicate.IncidentMilestone {
+	return predicate.IncidentMilestone(sql.FieldIsNull(FieldMetadata))
 }
 
-// ExternalIDNEQ applies the NEQ predicate on the "external_id" field.
-func ExternalIDNEQ(v string) predicate.IncidentMilestone {
-	return predicate.IncidentMilestone(sql.FieldNEQ(FieldExternalID, v))
-}
-
-// ExternalIDIn applies the In predicate on the "external_id" field.
-func ExternalIDIn(vs ...string) predicate.IncidentMilestone {
-	return predicate.IncidentMilestone(sql.FieldIn(FieldExternalID, vs...))
-}
-
-// ExternalIDNotIn applies the NotIn predicate on the "external_id" field.
-func ExternalIDNotIn(vs ...string) predicate.IncidentMilestone {
-	return predicate.IncidentMilestone(sql.FieldNotIn(FieldExternalID, vs...))
-}
-
-// ExternalIDGT applies the GT predicate on the "external_id" field.
-func ExternalIDGT(v string) predicate.IncidentMilestone {
-	return predicate.IncidentMilestone(sql.FieldGT(FieldExternalID, v))
-}
-
-// ExternalIDGTE applies the GTE predicate on the "external_id" field.
-func ExternalIDGTE(v string) predicate.IncidentMilestone {
-	return predicate.IncidentMilestone(sql.FieldGTE(FieldExternalID, v))
-}
-
-// ExternalIDLT applies the LT predicate on the "external_id" field.
-func ExternalIDLT(v string) predicate.IncidentMilestone {
-	return predicate.IncidentMilestone(sql.FieldLT(FieldExternalID, v))
-}
-
-// ExternalIDLTE applies the LTE predicate on the "external_id" field.
-func ExternalIDLTE(v string) predicate.IncidentMilestone {
-	return predicate.IncidentMilestone(sql.FieldLTE(FieldExternalID, v))
-}
-
-// ExternalIDContains applies the Contains predicate on the "external_id" field.
-func ExternalIDContains(v string) predicate.IncidentMilestone {
-	return predicate.IncidentMilestone(sql.FieldContains(FieldExternalID, v))
-}
-
-// ExternalIDHasPrefix applies the HasPrefix predicate on the "external_id" field.
-func ExternalIDHasPrefix(v string) predicate.IncidentMilestone {
-	return predicate.IncidentMilestone(sql.FieldHasPrefix(FieldExternalID, v))
-}
-
-// ExternalIDHasSuffix applies the HasSuffix predicate on the "external_id" field.
-func ExternalIDHasSuffix(v string) predicate.IncidentMilestone {
-	return predicate.IncidentMilestone(sql.FieldHasSuffix(FieldExternalID, v))
-}
-
-// ExternalIDIsNil applies the IsNil predicate on the "external_id" field.
-func ExternalIDIsNil() predicate.IncidentMilestone {
-	return predicate.IncidentMilestone(sql.FieldIsNull(FieldExternalID))
-}
-
-// ExternalIDNotNil applies the NotNil predicate on the "external_id" field.
-func ExternalIDNotNil() predicate.IncidentMilestone {
-	return predicate.IncidentMilestone(sql.FieldNotNull(FieldExternalID))
-}
-
-// ExternalIDEqualFold applies the EqualFold predicate on the "external_id" field.
-func ExternalIDEqualFold(v string) predicate.IncidentMilestone {
-	return predicate.IncidentMilestone(sql.FieldEqualFold(FieldExternalID, v))
-}
-
-// ExternalIDContainsFold applies the ContainsFold predicate on the "external_id" field.
-func ExternalIDContainsFold(v string) predicate.IncidentMilestone {
-	return predicate.IncidentMilestone(sql.FieldContainsFold(FieldExternalID, v))
+// MetadataNotNil applies the NotNil predicate on the "metadata" field.
+func MetadataNotNil() predicate.IncidentMilestone {
+	return predicate.IncidentMilestone(sql.FieldNotNull(FieldMetadata))
 }
 
 // HasTenant applies the HasEdge predicate on the "tenant" edge.

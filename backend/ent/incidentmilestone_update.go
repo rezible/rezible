@@ -113,23 +113,15 @@ func (_u *IncidentMilestoneUpdate) ClearSource() *IncidentMilestoneUpdate {
 	return _u
 }
 
-// SetExternalID sets the "external_id" field.
-func (_u *IncidentMilestoneUpdate) SetExternalID(v string) *IncidentMilestoneUpdate {
-	_u.mutation.SetExternalID(v)
+// SetMetadata sets the "metadata" field.
+func (_u *IncidentMilestoneUpdate) SetMetadata(v map[string]string) *IncidentMilestoneUpdate {
+	_u.mutation.SetMetadata(v)
 	return _u
 }
 
-// SetNillableExternalID sets the "external_id" field if the given value is not nil.
-func (_u *IncidentMilestoneUpdate) SetNillableExternalID(v *string) *IncidentMilestoneUpdate {
-	if v != nil {
-		_u.SetExternalID(*v)
-	}
-	return _u
-}
-
-// ClearExternalID clears the value of the "external_id" field.
-func (_u *IncidentMilestoneUpdate) ClearExternalID() *IncidentMilestoneUpdate {
-	_u.mutation.ClearExternalID()
+// ClearMetadata clears the value of the "metadata" field.
+func (_u *IncidentMilestoneUpdate) ClearMetadata() *IncidentMilestoneUpdate {
+	_u.mutation.ClearMetadata()
 	return _u
 }
 
@@ -228,11 +220,11 @@ func (_u *IncidentMilestoneUpdate) sqlSave(ctx context.Context) (_node int, err 
 	if _u.mutation.SourceCleared() {
 		_spec.ClearField(incidentmilestone.FieldSource, field.TypeString)
 	}
-	if value, ok := _u.mutation.ExternalID(); ok {
-		_spec.SetField(incidentmilestone.FieldExternalID, field.TypeString, value)
+	if value, ok := _u.mutation.Metadata(); ok {
+		_spec.SetField(incidentmilestone.FieldMetadata, field.TypeJSON, value)
 	}
-	if _u.mutation.ExternalIDCleared() {
-		_spec.ClearField(incidentmilestone.FieldExternalID, field.TypeString)
+	if _u.mutation.MetadataCleared() {
+		_spec.ClearField(incidentmilestone.FieldMetadata, field.TypeJSON)
 	}
 	if _u.mutation.IncidentCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -367,23 +359,15 @@ func (_u *IncidentMilestoneUpdateOne) ClearSource() *IncidentMilestoneUpdateOne 
 	return _u
 }
 
-// SetExternalID sets the "external_id" field.
-func (_u *IncidentMilestoneUpdateOne) SetExternalID(v string) *IncidentMilestoneUpdateOne {
-	_u.mutation.SetExternalID(v)
+// SetMetadata sets the "metadata" field.
+func (_u *IncidentMilestoneUpdateOne) SetMetadata(v map[string]string) *IncidentMilestoneUpdateOne {
+	_u.mutation.SetMetadata(v)
 	return _u
 }
 
-// SetNillableExternalID sets the "external_id" field if the given value is not nil.
-func (_u *IncidentMilestoneUpdateOne) SetNillableExternalID(v *string) *IncidentMilestoneUpdateOne {
-	if v != nil {
-		_u.SetExternalID(*v)
-	}
-	return _u
-}
-
-// ClearExternalID clears the value of the "external_id" field.
-func (_u *IncidentMilestoneUpdateOne) ClearExternalID() *IncidentMilestoneUpdateOne {
-	_u.mutation.ClearExternalID()
+// ClearMetadata clears the value of the "metadata" field.
+func (_u *IncidentMilestoneUpdateOne) ClearMetadata() *IncidentMilestoneUpdateOne {
+	_u.mutation.ClearMetadata()
 	return _u
 }
 
@@ -512,11 +496,11 @@ func (_u *IncidentMilestoneUpdateOne) sqlSave(ctx context.Context) (_node *Incid
 	if _u.mutation.SourceCleared() {
 		_spec.ClearField(incidentmilestone.FieldSource, field.TypeString)
 	}
-	if value, ok := _u.mutation.ExternalID(); ok {
-		_spec.SetField(incidentmilestone.FieldExternalID, field.TypeString, value)
+	if value, ok := _u.mutation.Metadata(); ok {
+		_spec.SetField(incidentmilestone.FieldMetadata, field.TypeJSON, value)
 	}
-	if _u.mutation.ExternalIDCleared() {
-		_spec.ClearField(incidentmilestone.FieldExternalID, field.TypeString)
+	if _u.mutation.MetadataCleared() {
+		_spec.ClearField(incidentmilestone.FieldMetadata, field.TypeJSON)
 	}
 	if _u.mutation.IncidentCleared() {
 		edge := &sqlgraph.EdgeSpec{

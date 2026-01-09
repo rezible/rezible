@@ -463,7 +463,7 @@ var schemaGraph = func() *sqlgraph.Schema {
 			incidentmilestone.FieldTimestamp:   {Type: field.TypeTime, Column: incidentmilestone.FieldTimestamp},
 			incidentmilestone.FieldDescription: {Type: field.TypeString, Column: incidentmilestone.FieldDescription},
 			incidentmilestone.FieldSource:      {Type: field.TypeString, Column: incidentmilestone.FieldSource},
-			incidentmilestone.FieldExternalID:  {Type: field.TypeString, Column: incidentmilestone.FieldExternalID},
+			incidentmilestone.FieldMetadata:    {Type: field.TypeJSON, Column: incidentmilestone.FieldMetadata},
 		},
 	}
 	graph.Nodes[21] = &sqlgraph.Node{
@@ -6535,9 +6535,9 @@ func (f *IncidentMilestoneFilter) WhereSource(p entql.StringP) {
 	f.Where(p.Field(incidentmilestone.FieldSource))
 }
 
-// WhereExternalID applies the entql string predicate on the external_id field.
-func (f *IncidentMilestoneFilter) WhereExternalID(p entql.StringP) {
-	f.Where(p.Field(incidentmilestone.FieldExternalID))
+// WhereMetadata applies the entql json.RawMessage predicate on the metadata field.
+func (f *IncidentMilestoneFilter) WhereMetadata(p entql.BytesP) {
+	f.Where(p.Field(incidentmilestone.FieldMetadata))
 }
 
 // WhereHasTenant applies a predicate to check if query has an edge tenant.

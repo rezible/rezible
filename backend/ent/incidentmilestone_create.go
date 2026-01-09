@@ -78,17 +78,9 @@ func (_c *IncidentMilestoneCreate) SetNillableSource(v *string) *IncidentMilesto
 	return _c
 }
 
-// SetExternalID sets the "external_id" field.
-func (_c *IncidentMilestoneCreate) SetExternalID(v string) *IncidentMilestoneCreate {
-	_c.mutation.SetExternalID(v)
-	return _c
-}
-
-// SetNillableExternalID sets the "external_id" field if the given value is not nil.
-func (_c *IncidentMilestoneCreate) SetNillableExternalID(v *string) *IncidentMilestoneCreate {
-	if v != nil {
-		_c.SetExternalID(*v)
-	}
+// SetMetadata sets the "metadata" field.
+func (_c *IncidentMilestoneCreate) SetMetadata(v map[string]string) *IncidentMilestoneCreate {
+	_c.mutation.SetMetadata(v)
 	return _c
 }
 
@@ -240,9 +232,9 @@ func (_c *IncidentMilestoneCreate) createSpec() (*IncidentMilestone, *sqlgraph.C
 		_spec.SetField(incidentmilestone.FieldSource, field.TypeString, value)
 		_node.Source = value
 	}
-	if value, ok := _c.mutation.ExternalID(); ok {
-		_spec.SetField(incidentmilestone.FieldExternalID, field.TypeString, value)
-		_node.ExternalID = value
+	if value, ok := _c.mutation.Metadata(); ok {
+		_spec.SetField(incidentmilestone.FieldMetadata, field.TypeJSON, value)
+		_node.Metadata = value
 	}
 	if nodes := _c.mutation.TenantIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
@@ -402,21 +394,21 @@ func (u *IncidentMilestoneUpsert) ClearSource() *IncidentMilestoneUpsert {
 	return u
 }
 
-// SetExternalID sets the "external_id" field.
-func (u *IncidentMilestoneUpsert) SetExternalID(v string) *IncidentMilestoneUpsert {
-	u.Set(incidentmilestone.FieldExternalID, v)
+// SetMetadata sets the "metadata" field.
+func (u *IncidentMilestoneUpsert) SetMetadata(v map[string]string) *IncidentMilestoneUpsert {
+	u.Set(incidentmilestone.FieldMetadata, v)
 	return u
 }
 
-// UpdateExternalID sets the "external_id" field to the value that was provided on create.
-func (u *IncidentMilestoneUpsert) UpdateExternalID() *IncidentMilestoneUpsert {
-	u.SetExcluded(incidentmilestone.FieldExternalID)
+// UpdateMetadata sets the "metadata" field to the value that was provided on create.
+func (u *IncidentMilestoneUpsert) UpdateMetadata() *IncidentMilestoneUpsert {
+	u.SetExcluded(incidentmilestone.FieldMetadata)
 	return u
 }
 
-// ClearExternalID clears the value of the "external_id" field.
-func (u *IncidentMilestoneUpsert) ClearExternalID() *IncidentMilestoneUpsert {
-	u.SetNull(incidentmilestone.FieldExternalID)
+// ClearMetadata clears the value of the "metadata" field.
+func (u *IncidentMilestoneUpsert) ClearMetadata() *IncidentMilestoneUpsert {
+	u.SetNull(incidentmilestone.FieldMetadata)
 	return u
 }
 
@@ -555,24 +547,24 @@ func (u *IncidentMilestoneUpsertOne) ClearSource() *IncidentMilestoneUpsertOne {
 	})
 }
 
-// SetExternalID sets the "external_id" field.
-func (u *IncidentMilestoneUpsertOne) SetExternalID(v string) *IncidentMilestoneUpsertOne {
+// SetMetadata sets the "metadata" field.
+func (u *IncidentMilestoneUpsertOne) SetMetadata(v map[string]string) *IncidentMilestoneUpsertOne {
 	return u.Update(func(s *IncidentMilestoneUpsert) {
-		s.SetExternalID(v)
+		s.SetMetadata(v)
 	})
 }
 
-// UpdateExternalID sets the "external_id" field to the value that was provided on create.
-func (u *IncidentMilestoneUpsertOne) UpdateExternalID() *IncidentMilestoneUpsertOne {
+// UpdateMetadata sets the "metadata" field to the value that was provided on create.
+func (u *IncidentMilestoneUpsertOne) UpdateMetadata() *IncidentMilestoneUpsertOne {
 	return u.Update(func(s *IncidentMilestoneUpsert) {
-		s.UpdateExternalID()
+		s.UpdateMetadata()
 	})
 }
 
-// ClearExternalID clears the value of the "external_id" field.
-func (u *IncidentMilestoneUpsertOne) ClearExternalID() *IncidentMilestoneUpsertOne {
+// ClearMetadata clears the value of the "metadata" field.
+func (u *IncidentMilestoneUpsertOne) ClearMetadata() *IncidentMilestoneUpsertOne {
 	return u.Update(func(s *IncidentMilestoneUpsert) {
-		s.ClearExternalID()
+		s.ClearMetadata()
 	})
 }
 
@@ -878,24 +870,24 @@ func (u *IncidentMilestoneUpsertBulk) ClearSource() *IncidentMilestoneUpsertBulk
 	})
 }
 
-// SetExternalID sets the "external_id" field.
-func (u *IncidentMilestoneUpsertBulk) SetExternalID(v string) *IncidentMilestoneUpsertBulk {
+// SetMetadata sets the "metadata" field.
+func (u *IncidentMilestoneUpsertBulk) SetMetadata(v map[string]string) *IncidentMilestoneUpsertBulk {
 	return u.Update(func(s *IncidentMilestoneUpsert) {
-		s.SetExternalID(v)
+		s.SetMetadata(v)
 	})
 }
 
-// UpdateExternalID sets the "external_id" field to the value that was provided on create.
-func (u *IncidentMilestoneUpsertBulk) UpdateExternalID() *IncidentMilestoneUpsertBulk {
+// UpdateMetadata sets the "metadata" field to the value that was provided on create.
+func (u *IncidentMilestoneUpsertBulk) UpdateMetadata() *IncidentMilestoneUpsertBulk {
 	return u.Update(func(s *IncidentMilestoneUpsert) {
-		s.UpdateExternalID()
+		s.UpdateMetadata()
 	})
 }
 
-// ClearExternalID clears the value of the "external_id" field.
-func (u *IncidentMilestoneUpsertBulk) ClearExternalID() *IncidentMilestoneUpsertBulk {
+// ClearMetadata clears the value of the "metadata" field.
+func (u *IncidentMilestoneUpsertBulk) ClearMetadata() *IncidentMilestoneUpsertBulk {
 	return u.Update(func(s *IncidentMilestoneUpsert) {
-		s.ClearExternalID()
+		s.ClearMetadata()
 	})
 }
 

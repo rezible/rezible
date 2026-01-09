@@ -3,6 +3,7 @@
 package ent
 
 import (
+	"encoding/json"
 	"fmt"
 	"strings"
 	"time"
@@ -32,8 +33,8 @@ type IncidentMilestone struct {
 	Description string `json:"description,omitempty"`
 	// Source holds the value of the "source" field.
 	Source string `json:"source,omitempty"`
-	// ExternalID holds the value of the "external_id" field.
-	ExternalID string `json:"external_id,omitempty"`
+	// Metadata holds the value of the "metadata" field.
+	Metadata map[string]string `json:"metadata,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the IncidentMilestoneQuery when eager-loading is set.
 	Edges        IncidentMilestoneEdges `json:"edges"`
@@ -78,9 +79,11 @@ func (*IncidentMilestone) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
+		case incidentmilestone.FieldMetadata:
+			values[i] = new([]byte)
 		case incidentmilestone.FieldTenantID:
 			values[i] = new(sql.NullInt64)
-		case incidentmilestone.FieldKind, incidentmilestone.FieldDescription, incidentmilestone.FieldSource, incidentmilestone.FieldExternalID:
+		case incidentmilestone.FieldKind, incidentmilestone.FieldDescription, incidentmilestone.FieldSource:
 			values[i] = new(sql.NullString)
 		case incidentmilestone.FieldTimestamp:
 			values[i] = new(sql.NullTime)
@@ -143,11 +146,13 @@ func (_m *IncidentMilestone) assignValues(columns []string, values []any) error 
 			} else if value.Valid {
 				_m.Source = value.String
 			}
-		case incidentmilestone.FieldExternalID:
-			if value, ok := values[i].(*sql.NullString); !ok {
-				return fmt.Errorf("unexpected type %T for field external_id", values[i])
-			} else if value.Valid {
-				_m.ExternalID = value.String
+		case incidentmilestone.FieldMetadata:
+			if value, ok := values[i].(*[]byte); !ok {
+				return fmt.Errorf("unexpected type %T for field metadata", values[i])
+			} else if value != nil && len(*value) > 0 {
+				if err := json.Unmarshal(*value, &_m.Metadata); err != nil {
+					return fmt.Errorf("unmarshal field metadata: %w", err)
+				}
 			}
 		default:
 			_m.selectValues.Set(columns[i], values[i])
@@ -213,8 +218,8 @@ func (_m *IncidentMilestone) String() string {
 	builder.WriteString("source=")
 	builder.WriteString(_m.Source)
 	builder.WriteString(", ")
-	builder.WriteString("external_id=")
-	builder.WriteString(_m.ExternalID)
+	builder.WriteString("metadata=")
+	builder.WriteString(fmt.Sprintf("%v", _m.Metadata))
 	builder.WriteByte(')')
 	return builder.String()
 }

@@ -28,8 +28,8 @@ const (
 	FieldDescription = "description"
 	// FieldSource holds the string denoting the source field in the database.
 	FieldSource = "source"
-	// FieldExternalID holds the string denoting the external_id field in the database.
-	FieldExternalID = "external_id"
+	// FieldMetadata holds the string denoting the metadata field in the database.
+	FieldMetadata = "metadata"
 	// EdgeTenant holds the string denoting the tenant edge name in mutations.
 	EdgeTenant = "tenant"
 	// EdgeIncident holds the string denoting the incident edge name in mutations.
@@ -61,7 +61,7 @@ var Columns = []string{
 	FieldTimestamp,
 	FieldDescription,
 	FieldSource,
-	FieldExternalID,
+	FieldMetadata,
 }
 
 // ValidColumn reports if the column name is valid (part of the table columns).
@@ -93,6 +93,7 @@ type Kind string
 const (
 	KindImpact     Kind = "impact"
 	KindDetection  Kind = "detection"
+	KindOpened     Kind = "opened"
 	KindResponse   Kind = "response"
 	KindMitigation Kind = "mitigation"
 	KindResolution Kind = "resolution"
@@ -105,7 +106,7 @@ func (k Kind) String() string {
 // KindValidator is a validator for the "kind" field enum values. It is called by the builders before save.
 func KindValidator(k Kind) error {
 	switch k {
-	case KindImpact, KindDetection, KindResponse, KindMitigation, KindResolution:
+	case KindImpact, KindDetection, KindOpened, KindResponse, KindMitigation, KindResolution:
 		return nil
 	default:
 		return fmt.Errorf("incidentmilestone: invalid enum value for kind field: %q", k)
@@ -148,11 +149,6 @@ func ByDescription(opts ...sql.OrderTermOption) OrderOption {
 // BySource orders the results by the source field.
 func BySource(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldSource, opts...).ToFunc()
-}
-
-// ByExternalID orders the results by the external_id field.
-func ByExternalID(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldExternalID, opts...).ToFunc()
 }
 
 // ByTenantField orders the results by tenant field.
