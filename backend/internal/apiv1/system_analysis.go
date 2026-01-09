@@ -134,23 +134,25 @@ func (s *systemAnalysisHandler) CreateSystemAnalysisRelationship(ctx context.Con
 
 	attr := request.Body.Attributes
 
-	signals := make([]rez.ComponentTraitReference, len(attr.FeedbackSignals))
-	for i, sig := range attr.FeedbackSignals {
-		signals[i] = rez.ComponentTraitReference{Id: sig.SignalId, Description: sig.Description}
-	}
+	/*
+		signals := make([]rez.ComponentTraitReference, len(attr.FeedbackSignals))
+		for i, sig := range attr.FeedbackSignals {
+			signals[i] = rez.ComponentTraitReference{Id: sig.SignalId, Description: sig.Description}
+		}
 
-	actions := make([]rez.ComponentTraitReference, len(attr.ControlActions))
-	for i, act := range attr.ControlActions {
-		actions[i] = rez.ComponentTraitReference{Id: act.ControlId, Description: act.Description}
-	}
+		actions := make([]rez.ComponentTraitReference, len(attr.ControlActions))
+		for i, act := range attr.ControlActions {
+			actions[i] = rez.ComponentTraitReference{Id: act.ControlId, Description: act.Description}
+		}
+	*/
 
 	params := rez.CreateSystemAnalysisRelationshipParams{
-		AnalysisId:      request.Id,
-		SourceId:        attr.SourceId,
-		TargetId:        attr.TargetId,
-		Description:     attr.Description,
-		FeedbackSignals: signals,
-		ControlActions:  actions,
+		AnalysisId:  request.Id,
+		SourceId:    attr.SourceId,
+		TargetId:    attr.TargetId,
+		Description: attr.Description,
+		//FeedbackSignals: signals,
+		//ControlActions:  actions,
 	}
 
 	created, createErr := s.components.CreateSystemAnalysisRelationship(ctx, params)

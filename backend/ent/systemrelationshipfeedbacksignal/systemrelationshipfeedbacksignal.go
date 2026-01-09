@@ -22,8 +22,8 @@ const (
 	FieldRelationshipID = "relationship_id"
 	// FieldSignalID holds the string denoting the signal_id field in the database.
 	FieldSignalID = "signal_id"
-	// FieldType holds the string denoting the type field in the database.
-	FieldType = "type"
+	// FieldName holds the string denoting the name field in the database.
+	FieldName = "name"
 	// FieldDescription holds the string denoting the description field in the database.
 	FieldDescription = "description"
 	// FieldCreatedAt holds the string denoting the created_at field in the database.
@@ -65,7 +65,7 @@ var Columns = []string{
 	FieldTenantID,
 	FieldRelationshipID,
 	FieldSignalID,
-	FieldType,
+	FieldName,
 	FieldDescription,
 	FieldCreatedAt,
 }
@@ -88,8 +88,8 @@ func ValidColumn(column string) bool {
 var (
 	Hooks  [1]ent.Hook
 	Policy ent.Policy
-	// TypeValidator is a validator for the "type" field. It is called by the builders before save.
-	TypeValidator func(string) error
+	// NameValidator is a validator for the "name" field. It is called by the builders before save.
+	NameValidator func(string) error
 	// DefaultCreatedAt holds the default value on creation for the "created_at" field.
 	DefaultCreatedAt func() time.Time
 	// DefaultID holds the default value on creation for the "id" field.
@@ -119,9 +119,9 @@ func BySignalID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldSignalID, opts...).ToFunc()
 }
 
-// ByType orders the results by the type field.
-func ByType(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldType, opts...).ToFunc()
+// ByName orders the results by the name field.
+func ByName(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldName, opts...).ToFunc()
 }
 
 // ByDescription orders the results by the description field.

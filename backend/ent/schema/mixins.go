@@ -66,6 +66,17 @@ func (TenantMixin) Policy() ent.Policy {
 	return rules.FilterTenantRule()
 }
 
+type TimestampsMixin struct {
+	mixin.Schema
+}
+
+func (TimestampsMixin) Fields() []ent.Field {
+	return []ent.Field{
+		field.Time("created_at").Default(time.Now),
+		field.Time("updated_at").Default(time.Now).UpdateDefault(time.Now),
+	}
+}
+
 // ArchiveMixin implements the soft delete pattern for schemas.
 type ArchiveMixin struct {
 	mixin.Schema

@@ -245,10 +245,13 @@ var (
 	IncidentsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID},
 		{Name: "external_id", Type: field.TypeString, Nullable: true},
+		{Name: "created_at", Type: field.TypeTime},
+		{Name: "updated_at", Type: field.TypeTime},
 		{Name: "slug", Type: field.TypeString, Unique: true},
 		{Name: "title", Type: field.TypeString},
 		{Name: "summary", Type: field.TypeString, Nullable: true},
 		{Name: "chat_channel_id", Type: field.TypeString, Nullable: true},
+		{Name: "opened_at", Type: field.TypeTime},
 		{Name: "tenant_id", Type: field.TypeInt},
 		{Name: "severity_id", Type: field.TypeUUID},
 		{Name: "type_id", Type: field.TypeUUID},
@@ -261,19 +264,19 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "incidents_tenants_tenant",
-				Columns:    []*schema.Column{IncidentsColumns[6]},
+				Columns:    []*schema.Column{IncidentsColumns[9]},
 				RefColumns: []*schema.Column{TenantsColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
 			{
 				Symbol:     "incidents_incident_severities_severity",
-				Columns:    []*schema.Column{IncidentsColumns[7]},
+				Columns:    []*schema.Column{IncidentsColumns[10]},
 				RefColumns: []*schema.Column{IncidentSeveritiesColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
 			{
 				Symbol:     "incidents_incident_types_type",
-				Columns:    []*schema.Column{IncidentsColumns[8]},
+				Columns:    []*schema.Column{IncidentsColumns[11]},
 				RefColumns: []*schema.Column{IncidentTypesColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
@@ -282,7 +285,7 @@ var (
 			{
 				Name:    "incident_tenant_id",
 				Unique:  false,
-				Columns: []*schema.Column{IncidentsColumns[6]},
+				Columns: []*schema.Column{IncidentsColumns[9]},
 			},
 		},
 	}
@@ -1722,7 +1725,7 @@ var (
 		{Name: "created_at", Type: field.TypeTime},
 		{Name: "tenant_id", Type: field.TypeInt},
 		{Name: "analysis_id", Type: field.TypeUUID},
-		{Name: "component_relationship_id", Type: field.TypeUUID},
+		{Name: "relationship_id", Type: field.TypeUUID},
 	}
 	// SystemAnalysisRelationshipsTable holds the schema information for the "system_analysis_relationships" table.
 	SystemAnalysisRelationshipsTable = &schema.Table{
@@ -1743,7 +1746,7 @@ var (
 				OnDelete:   schema.NoAction,
 			},
 			{
-				Symbol:     "system_analysis_relationships_system_component_relationships_component_relationship",
+				Symbol:     "system_analysis_relationships_system_component_relationships_relationship",
 				Columns:    []*schema.Column{SystemAnalysisRelationshipsColumns[5]},
 				RefColumns: []*schema.Column{SystemComponentRelationshipsColumns[0]},
 				OnDelete:   schema.NoAction,
@@ -2016,7 +2019,7 @@ var (
 	// SystemRelationshipControlActionsColumns holds the columns for the "system_relationship_control_actions" table.
 	SystemRelationshipControlActionsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID},
-		{Name: "type", Type: field.TypeString},
+		{Name: "name", Type: field.TypeString},
 		{Name: "description", Type: field.TypeString, Nullable: true, Size: 2147483647},
 		{Name: "created_at", Type: field.TypeTime},
 		{Name: "tenant_id", Type: field.TypeInt},
@@ -2064,7 +2067,7 @@ var (
 	// SystemRelationshipFeedbackSignalsColumns holds the columns for the "system_relationship_feedback_signals" table.
 	SystemRelationshipFeedbackSignalsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID},
-		{Name: "type", Type: field.TypeString},
+		{Name: "name", Type: field.TypeString},
 		{Name: "description", Type: field.TypeString, Nullable: true, Size: 2147483647},
 		{Name: "created_at", Type: field.TypeTime},
 		{Name: "tenant_id", Type: field.TypeInt},

@@ -2,10 +2,11 @@ package v1
 
 import (
 	"context"
+	"net/http"
+
 	"github.com/danielgtaylor/huma/v2"
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent"
-	"net/http"
 )
 
 type SystemAnalysisHandler interface {
@@ -55,8 +56,9 @@ type (
 		Attributes SystemAnalysisComponentAttributes `json:"attributes"`
 	}
 	SystemAnalysisComponentAttributes struct {
-		Component SystemComponent               `json:"component"`
-		Position  SystemAnalysisDiagramPosition `json:"position"`
+		Component   SystemComponent               `json:"component"`
+		Position    SystemAnalysisDiagramPosition `json:"position"`
+		Description string                        `json:"description"`
 	}
 
 	SystemAnalysisDiagramPosition struct {
@@ -70,29 +72,8 @@ type (
 		Attributes SystemAnalysisRelationshipAttributes `json:"attributes"`
 	}
 	SystemAnalysisRelationshipAttributes struct {
-		SourceId        uuid.UUID                                  `json:"sourceId"`
-		TargetId        uuid.UUID                                  `json:"targetId"`
-		Description     string                                     `json:"description"`
-		FeedbackSignals []SystemAnalysisRelationshipFeedbackSignal `json:"feedbackSignals"`
-		ControlActions  []SystemAnalysisRelationshipControlAction  `json:"controlActions"`
-	}
-
-	SystemAnalysisRelationshipControlAction struct {
-		Id         uuid.UUID                                         `json:"id"`
-		Attributes SystemAnalysisRelationshipControlActionAttributes `json:"attributes"`
-	}
-	SystemAnalysisRelationshipControlActionAttributes struct {
-		ControlId   uuid.UUID `json:"controlId"`
-		Description string    `json:"description"`
-	}
-
-	SystemAnalysisRelationshipFeedbackSignal struct {
-		Id         uuid.UUID                                          `json:"id"`
-		Attributes SystemAnalysisRelationshipFeedbackSignalAttributes `json:"attributes"`
-	}
-	SystemAnalysisRelationshipFeedbackSignalAttributes struct {
-		SignalId    uuid.UUID `json:"signalId"`
-		Description string    `json:"description"`
+		Relationship SystemComponentRelationship `json:"relationship"`
+		Description  string                      `json:"description"`
 	}
 
 	// TODO: System Hazard support
@@ -145,44 +126,11 @@ func SystemAnalysisComponentFromEnt(sc *ent.SystemAnalysisComponent) SystemAnaly
 
 func SystemAnalysisRelationshipFromEnt(sc *ent.SystemAnalysisRelationship) SystemAnalysisRelationship {
 	attr := SystemAnalysisRelationshipAttributes{
-		Description: sc.Description,
-	}
-
-	rel := sc.Edges.ComponentRelationship
-	if rel != nil {
-		attr.SourceId = rel.SourceID
-		attr.TargetId = rel.TargetID
-	}
-
-	attr.ControlActions = make([]SystemAnalysisRelationshipControlAction, len(sc.Edges.ControlActions))
-	for i, ca := range sc.Edges.ControlActions {
-		attr.ControlActions[i] = SystemAnalysisRelationshipControlActionFromEnt(ca)
-	}
-
-	attr.FeedbackSignals = make([]SystemAnalysisRelationshipFeedbackSignal, len(sc.Edges.FeedbackSignals))
-	for i, fs := range sc.Edges.FeedbackSignals {
-		attr.FeedbackSignals[i] = SystemAnalysisRelationshipFeedbackSignalFromEnt(fs)
+		Relationship: SystemComponentRelationshipFromEnt(sc.Edges.Relationship),
+		Description:  sc.Description,
 	}
 
 	return SystemAnalysisRelationship{Id: sc.ID, Attributes: attr}
-}
-
-func SystemAnalysisRelationshipControlActionFromEnt(ca *ent.SystemRelationshipControlAction) SystemAnalysisRelationshipControlAction {
-	attr := SystemAnalysisRelationshipControlActionAttributes{
-		ControlId:   ca.ControlID,
-		Description: ca.Description,
-	}
-
-	return SystemAnalysisRelationshipControlAction{Id: ca.ID, Attributes: attr}
-}
-
-func SystemAnalysisRelationshipFeedbackSignalFromEnt(fs *ent.SystemRelationshipFeedbackSignal) SystemAnalysisRelationshipFeedbackSignal {
-	attr := SystemAnalysisRelationshipFeedbackSignalAttributes{
-		SignalId:    fs.SignalID,
-		Description: fs.Description,
-	}
-
-	return SystemAnalysisRelationshipFeedbackSignal{Id: fs.ID, Attributes: attr}
 }
 
 var systemAnalysisTags = []string{"System Analysis"}
@@ -307,11 +255,11 @@ var CreateSystemAnalysisRelationship = huma.Operation{
 }
 
 type CreateSystemAnalysisRelationshipAttributes struct {
-	SourceId        uuid.UUID                                            `json:"sourceId"`
-	TargetId        uuid.UUID                                            `json:"targetId"`
-	Description     string                                               `json:"description"`
-	FeedbackSignals []SystemAnalysisRelationshipFeedbackSignalAttributes `json:"feedbackSignals"`
-	ControlActions  []SystemAnalysisRelationshipControlActionAttributes  `json:"controlActions"`
+	SourceId    uuid.UUID `json:"sourceId"`
+	TargetId    uuid.UUID `json:"targetId"`
+	Description string    `json:"description"`
+	//FeedbackSignals []SystemAnalysisRelationshipFeedbackSignalAttributes `json:"feedbackSignals"`
+	//ControlActions  []SystemAnalysisRelationshipControlActionAttributes  `json:"controlActions"`
 }
 type CreateSystemAnalysisRelationshipRequest CreateIdRequest[CreateSystemAnalysisRelationshipAttributes]
 type CreateSystemAnalysisRelationshipResponse ItemResponse[SystemAnalysisRelationship]
@@ -326,9 +274,9 @@ var UpdateSystemAnalysisRelationship = huma.Operation{
 }
 
 type UpdateSystemAnalysisRelationshipAttributes struct {
-	Description     *string                                               `json:"description,omitempty"`
-	FeedbackSignals *[]SystemAnalysisRelationshipFeedbackSignalAttributes `json:"feedbackSignals,omitempty"`
-	ControlActions  *[]SystemAnalysisRelationshipControlActionAttributes  `json:"controlActions,omitempty"`
+	Description *string `json:"description,omitempty"`
+	//FeedbackSignals *[]SystemAnalysisRelationshipFeedbackSignalAttributes `json:"feedbackSignals,omitempty"`
+	//ControlActions  *[]SystemAnalysisRelationshipControlActionAttributes  `json:"controlActions,omitempty"`
 }
 type UpdateSystemAnalysisRelationshipRequest UpdateIdRequest[UpdateSystemAnalysisRelationshipAttributes]
 type UpdateSystemAnalysisRelationshipResponse ItemResponse[SystemAnalysisRelationship]

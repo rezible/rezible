@@ -27,8 +27,8 @@ type SystemRelationshipControlAction struct {
 	RelationshipID uuid.UUID `json:"relationship_id,omitempty"`
 	// ControlID holds the value of the "control_id" field.
 	ControlID uuid.UUID `json:"control_id,omitempty"`
-	// Type holds the value of the "type" field.
-	Type string `json:"type,omitempty"`
+	// Name holds the value of the "name" field.
+	Name string `json:"name,omitempty"`
 	// Description holds the value of the "description" field.
 	Description string `json:"description,omitempty"`
 	// CreatedAt holds the value of the "created_at" field.
@@ -92,7 +92,7 @@ func (*SystemRelationshipControlAction) scanValues(columns []string) ([]any, err
 		switch columns[i] {
 		case systemrelationshipcontrolaction.FieldTenantID:
 			values[i] = new(sql.NullInt64)
-		case systemrelationshipcontrolaction.FieldType, systemrelationshipcontrolaction.FieldDescription:
+		case systemrelationshipcontrolaction.FieldName, systemrelationshipcontrolaction.FieldDescription:
 			values[i] = new(sql.NullString)
 		case systemrelationshipcontrolaction.FieldCreatedAt:
 			values[i] = new(sql.NullTime)
@@ -137,11 +137,11 @@ func (_m *SystemRelationshipControlAction) assignValues(columns []string, values
 			} else if value != nil {
 				_m.ControlID = *value
 			}
-		case systemrelationshipcontrolaction.FieldType:
+		case systemrelationshipcontrolaction.FieldName:
 			if value, ok := values[i].(*sql.NullString); !ok {
-				return fmt.Errorf("unexpected type %T for field type", values[i])
+				return fmt.Errorf("unexpected type %T for field name", values[i])
 			} else if value.Valid {
-				_m.Type = value.String
+				_m.Name = value.String
 			}
 		case systemrelationshipcontrolaction.FieldDescription:
 			if value, ok := values[i].(*sql.NullString); !ok {
@@ -215,8 +215,8 @@ func (_m *SystemRelationshipControlAction) String() string {
 	builder.WriteString("control_id=")
 	builder.WriteString(fmt.Sprintf("%v", _m.ControlID))
 	builder.WriteString(", ")
-	builder.WriteString("type=")
-	builder.WriteString(_m.Type)
+	builder.WriteString("name=")
+	builder.WriteString(_m.Name)
 	builder.WriteString(", ")
 	builder.WriteString("description=")
 	builder.WriteString(_m.Description)

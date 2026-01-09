@@ -75,7 +75,7 @@ const (
 	// It exists in this package in order to avoid circular dependency with the "systemanalysisrelationship" package.
 	SystemAnalysesInverseTable = "system_analysis_relationships"
 	// SystemAnalysesColumn is the table column denoting the system_analyses relation/edge.
-	SystemAnalysesColumn = "component_relationship_id"
+	SystemAnalysesColumn = "relationship_id"
 	// HazardsTable is the table that holds the hazards relation/edge. The primary key declared below.
 	HazardsTable = "system_hazard_relationships"
 	// HazardsInverseTable is the table name for the SystemHazard entity.

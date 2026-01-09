@@ -131,9 +131,9 @@ func (s *SystemComponentsService) GetSystemAnalysis(ctx context.Context, id uuid
 	})
 
 	query.WithRelationships(func(q *ent.SystemAnalysisRelationshipQuery) {
-		q.WithComponentRelationship()
-		q.WithControlActions()
-		q.WithFeedbackSignals()
+		//q.WithComponentRelationship()
+		//q.WithControlActions()
+		//q.WithFeedbackSignals()
 	})
 
 	return query.Only(ctx)
@@ -145,18 +145,6 @@ func (s *SystemComponentsService) CreateSystemAnalysisRelationship(ctx context.C
 	cmpRel, relErr := s.GetRelationship(ctx, params.SourceId, params.TargetId)
 	if relErr != nil && !ent.IsNotFound(relErr) {
 		return nil, fmt.Errorf("failed to look up existing relationship: %w", relErr)
-	}
-
-	signals := params.FeedbackSignals
-	mapCreateSignals := func(c *ent.SystemRelationshipFeedbackSignalCreate, i int) {
-		sig := signals[i]
-		c.SetDescription(sig.Description).SetSignalID(sig.Id)
-	}
-
-	controls := params.ControlActions
-	mapCreateControls := func(c *ent.SystemRelationshipControlActionCreate, i int) {
-		ctrl := controls[i]
-		c.SetDescription(ctrl.Description).SetControlID(ctrl.Id)
 	}
 
 	createRelationshipTx := func(tx *ent.Tx) error {
@@ -175,25 +163,39 @@ func (s *SystemComponentsService) CreateSystemAnalysisRelationship(ctx context.C
 		createAnRel := tx.SystemAnalysisRelationship.Create().
 			SetAnalysisID(params.AnalysisId).
 			SetDescription(params.Description).
-			SetComponentRelationshipID(cmpRel.ID)
+			SetRelationshipID(cmpRel.ID)
 		created, createErr = createAnRel.Save(ctx)
 		if createErr != nil {
 			return fmt.Errorf("creating analysis relationship: %w", createErr)
 		}
 
-		created.Edges.ComponentRelationship = cmpRel
+		created.Edges.Relationship = cmpRel
 
-		createSignals := tx.SystemRelationshipFeedbackSignal.MapCreateBulk(signals, mapCreateSignals)
-		created.Edges.FeedbackSignals, createErr = createSignals.Save(ctx)
-		if createErr != nil {
-			return fmt.Errorf("creating feedback signals: %w", createErr)
-		}
+		/*
 
-		createControls := tx.SystemRelationshipControlAction.MapCreateBulk(controls, mapCreateControls)
-		created.Edges.ControlActions, createErr = createControls.Save(ctx)
-		if createErr != nil {
-			return fmt.Errorf("creating control actions: %w", createErr)
-		}
+			signals := params.FeedbackSignals
+			mapCreateSignals := func(c *ent.SystemRelationshipFeedbackSignalCreate, i int) {
+				sig := signals[i]
+				c.SetDescription(sig.Description).SetSignalID(sig.Id)
+			}
+
+			createSignals := tx.SystemRelationshipFeedbackSignal.MapCreateBulk(signals, mapCreateSignals)
+			created.Edges.FeedbackSignals, createErr = createSignals.Save(ctx)
+			if createErr != nil {
+				return fmt.Errorf("creating feedback signals: %w", createErr)
+			}
+
+			controls := params.ControlActions
+			mapCreateControls := func(c *ent.SystemRelationshipControlActionCreate, i int) {
+				ctrl := controls[i]
+				c.SetDescription(ctrl.Description).SetControlID(ctrl.Id)
+			}
+			createControls := tx.SystemRelationshipControlAction.MapCreateBulk(controls, mapCreateControls)
+			created.Edges.ControlActions, createErr = createControls.Save(ctx)
+			if createErr != nil {
+				return fmt.Errorf("creating control actions: %w", createErr)
+			}
+		*/
 
 		return nil
 	}

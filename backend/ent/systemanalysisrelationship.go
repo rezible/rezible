@@ -25,8 +25,8 @@ type SystemAnalysisRelationship struct {
 	TenantID int `json:"tenant_id,omitempty"`
 	// AnalysisID holds the value of the "analysis_id" field.
 	AnalysisID uuid.UUID `json:"analysis_id,omitempty"`
-	// ComponentRelationshipID holds the value of the "component_relationship_id" field.
-	ComponentRelationshipID uuid.UUID `json:"component_relationship_id,omitempty"`
+	// RelationshipID holds the value of the "relationship_id" field.
+	RelationshipID uuid.UUID `json:"relationship_id,omitempty"`
 	// Description holds the value of the "description" field.
 	Description string `json:"description,omitempty"`
 	// CreatedAt holds the value of the "created_at" field.
@@ -43,8 +43,8 @@ type SystemAnalysisRelationshipEdges struct {
 	Tenant *Tenant `json:"tenant,omitempty"`
 	// SystemAnalysis holds the value of the system_analysis edge.
 	SystemAnalysis *SystemAnalysis `json:"system_analysis,omitempty"`
-	// ComponentRelationship holds the value of the component_relationship edge.
-	ComponentRelationship *SystemComponentRelationship `json:"component_relationship,omitempty"`
+	// Relationship holds the value of the relationship edge.
+	Relationship *SystemComponentRelationship `json:"relationship,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
 	loadedTypes [3]bool
@@ -72,15 +72,15 @@ func (e SystemAnalysisRelationshipEdges) SystemAnalysisOrErr() (*SystemAnalysis,
 	return nil, &NotLoadedError{edge: "system_analysis"}
 }
 
-// ComponentRelationshipOrErr returns the ComponentRelationship value or an error if the edge
+// RelationshipOrErr returns the Relationship value or an error if the edge
 // was not loaded in eager-loading, or loaded but was not found.
-func (e SystemAnalysisRelationshipEdges) ComponentRelationshipOrErr() (*SystemComponentRelationship, error) {
-	if e.ComponentRelationship != nil {
-		return e.ComponentRelationship, nil
+func (e SystemAnalysisRelationshipEdges) RelationshipOrErr() (*SystemComponentRelationship, error) {
+	if e.Relationship != nil {
+		return e.Relationship, nil
 	} else if e.loadedTypes[2] {
 		return nil, &NotFoundError{label: systemcomponentrelationship.Label}
 	}
-	return nil, &NotLoadedError{edge: "component_relationship"}
+	return nil, &NotLoadedError{edge: "relationship"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -94,7 +94,7 @@ func (*SystemAnalysisRelationship) scanValues(columns []string) ([]any, error) {
 			values[i] = new(sql.NullString)
 		case systemanalysisrelationship.FieldCreatedAt:
 			values[i] = new(sql.NullTime)
-		case systemanalysisrelationship.FieldID, systemanalysisrelationship.FieldAnalysisID, systemanalysisrelationship.FieldComponentRelationshipID:
+		case systemanalysisrelationship.FieldID, systemanalysisrelationship.FieldAnalysisID, systemanalysisrelationship.FieldRelationshipID:
 			values[i] = new(uuid.UUID)
 		default:
 			values[i] = new(sql.UnknownType)
@@ -129,11 +129,11 @@ func (_m *SystemAnalysisRelationship) assignValues(columns []string, values []an
 			} else if value != nil {
 				_m.AnalysisID = *value
 			}
-		case systemanalysisrelationship.FieldComponentRelationshipID:
+		case systemanalysisrelationship.FieldRelationshipID:
 			if value, ok := values[i].(*uuid.UUID); !ok {
-				return fmt.Errorf("unexpected type %T for field component_relationship_id", values[i])
+				return fmt.Errorf("unexpected type %T for field relationship_id", values[i])
 			} else if value != nil {
-				_m.ComponentRelationshipID = *value
+				_m.RelationshipID = *value
 			}
 		case systemanalysisrelationship.FieldDescription:
 			if value, ok := values[i].(*sql.NullString); !ok {
@@ -170,9 +170,9 @@ func (_m *SystemAnalysisRelationship) QuerySystemAnalysis() *SystemAnalysisQuery
 	return NewSystemAnalysisRelationshipClient(_m.config).QuerySystemAnalysis(_m)
 }
 
-// QueryComponentRelationship queries the "component_relationship" edge of the SystemAnalysisRelationship entity.
-func (_m *SystemAnalysisRelationship) QueryComponentRelationship() *SystemComponentRelationshipQuery {
-	return NewSystemAnalysisRelationshipClient(_m.config).QueryComponentRelationship(_m)
+// QueryRelationship queries the "relationship" edge of the SystemAnalysisRelationship entity.
+func (_m *SystemAnalysisRelationship) QueryRelationship() *SystemComponentRelationshipQuery {
+	return NewSystemAnalysisRelationshipClient(_m.config).QueryRelationship(_m)
 }
 
 // Update returns a builder for updating this SystemAnalysisRelationship.
@@ -204,8 +204,8 @@ func (_m *SystemAnalysisRelationship) String() string {
 	builder.WriteString("analysis_id=")
 	builder.WriteString(fmt.Sprintf("%v", _m.AnalysisID))
 	builder.WriteString(", ")
-	builder.WriteString("component_relationship_id=")
-	builder.WriteString(fmt.Sprintf("%v", _m.ComponentRelationshipID))
+	builder.WriteString("relationship_id=")
+	builder.WriteString(fmt.Sprintf("%v", _m.RelationshipID))
 	builder.WriteString(", ")
 	builder.WriteString("description=")
 	builder.WriteString(_m.Description)

@@ -268,13 +268,8 @@ func (h *incidentChatEventHandler) updateIncidentChannelInfo(ctx context.Context
 		return fmt.Errorf("failed to get incident severity: %w", sevErr)
 	}
 
-	status := "OPEN"
-	if !inc.ClosedAt.IsZero() {
-		status = "CLOSED"
-	}
-
 	webLink := fmt.Sprintf("%s/incidents/%s", rez.Config.AppUrl(), inc.Slug)
-	topic := fmt.Sprintf("[%s] %s | %s", sev.Name, inc.Title, status)
+	topic := fmt.Sprintf("[%s] %s", sev.Name, inc.Title)
 
 	return h.chat.withClient(ctx, func(client *slack.Client) error {
 		_, setErr := client.SetTopicOfConversationContext(ctx, inc.ChatChannelID, topic)

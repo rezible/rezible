@@ -60,16 +60,16 @@ func (_u *SystemRelationshipControlActionUpdate) SetNillableControlID(v *uuid.UU
 	return _u
 }
 
-// SetType sets the "type" field.
-func (_u *SystemRelationshipControlActionUpdate) SetType(v string) *SystemRelationshipControlActionUpdate {
-	_u.mutation.SetType(v)
+// SetName sets the "name" field.
+func (_u *SystemRelationshipControlActionUpdate) SetName(v string) *SystemRelationshipControlActionUpdate {
+	_u.mutation.SetName(v)
 	return _u
 }
 
-// SetNillableType sets the "type" field if the given value is not nil.
-func (_u *SystemRelationshipControlActionUpdate) SetNillableType(v *string) *SystemRelationshipControlActionUpdate {
+// SetNillableName sets the "name" field if the given value is not nil.
+func (_u *SystemRelationshipControlActionUpdate) SetNillableName(v *string) *SystemRelationshipControlActionUpdate {
 	if v != nil {
-		_u.SetType(*v)
+		_u.SetName(*v)
 	}
 	return _u
 }
@@ -164,9 +164,9 @@ func (_u *SystemRelationshipControlActionUpdate) ExecX(ctx context.Context) {
 
 // check runs all checks and user-defined validators on the builder.
 func (_u *SystemRelationshipControlActionUpdate) check() error {
-	if v, ok := _u.mutation.GetType(); ok {
-		if err := systemrelationshipcontrolaction.TypeValidator(v); err != nil {
-			return &ValidationError{Name: "type", err: fmt.Errorf(`ent: validator failed for field "SystemRelationshipControlAction.type": %w`, err)}
+	if v, ok := _u.mutation.Name(); ok {
+		if err := systemrelationshipcontrolaction.NameValidator(v); err != nil {
+			return &ValidationError{Name: "name", err: fmt.Errorf(`ent: validator failed for field "SystemRelationshipControlAction.name": %w`, err)}
 		}
 	}
 	if _u.mutation.TenantCleared() && len(_u.mutation.TenantIDs()) > 0 {
@@ -199,8 +199,8 @@ func (_u *SystemRelationshipControlActionUpdate) sqlSave(ctx context.Context) (_
 			}
 		}
 	}
-	if value, ok := _u.mutation.GetType(); ok {
-		_spec.SetField(systemrelationshipcontrolaction.FieldType, field.TypeString, value)
+	if value, ok := _u.mutation.Name(); ok {
+		_spec.SetField(systemrelationshipcontrolaction.FieldName, field.TypeString, value)
 	}
 	if value, ok := _u.mutation.Description(); ok {
 		_spec.SetField(systemrelationshipcontrolaction.FieldDescription, field.TypeString, value)
@@ -319,16 +319,16 @@ func (_u *SystemRelationshipControlActionUpdateOne) SetNillableControlID(v *uuid
 	return _u
 }
 
-// SetType sets the "type" field.
-func (_u *SystemRelationshipControlActionUpdateOne) SetType(v string) *SystemRelationshipControlActionUpdateOne {
-	_u.mutation.SetType(v)
+// SetName sets the "name" field.
+func (_u *SystemRelationshipControlActionUpdateOne) SetName(v string) *SystemRelationshipControlActionUpdateOne {
+	_u.mutation.SetName(v)
 	return _u
 }
 
-// SetNillableType sets the "type" field if the given value is not nil.
-func (_u *SystemRelationshipControlActionUpdateOne) SetNillableType(v *string) *SystemRelationshipControlActionUpdateOne {
+// SetNillableName sets the "name" field if the given value is not nil.
+func (_u *SystemRelationshipControlActionUpdateOne) SetNillableName(v *string) *SystemRelationshipControlActionUpdateOne {
 	if v != nil {
-		_u.SetType(*v)
+		_u.SetName(*v)
 	}
 	return _u
 }
@@ -436,9 +436,9 @@ func (_u *SystemRelationshipControlActionUpdateOne) ExecX(ctx context.Context) {
 
 // check runs all checks and user-defined validators on the builder.
 func (_u *SystemRelationshipControlActionUpdateOne) check() error {
-	if v, ok := _u.mutation.GetType(); ok {
-		if err := systemrelationshipcontrolaction.TypeValidator(v); err != nil {
-			return &ValidationError{Name: "type", err: fmt.Errorf(`ent: validator failed for field "SystemRelationshipControlAction.type": %w`, err)}
+	if v, ok := _u.mutation.Name(); ok {
+		if err := systemrelationshipcontrolaction.NameValidator(v); err != nil {
+			return &ValidationError{Name: "name", err: fmt.Errorf(`ent: validator failed for field "SystemRelationshipControlAction.name": %w`, err)}
 		}
 	}
 	if _u.mutation.TenantCleared() && len(_u.mutation.TenantIDs()) > 0 {
@@ -488,8 +488,8 @@ func (_u *SystemRelationshipControlActionUpdateOne) sqlSave(ctx context.Context)
 			}
 		}
 	}
-	if value, ok := _u.mutation.GetType(); ok {
-		_spec.SetField(systemrelationshipcontrolaction.FieldType, field.TypeString, value)
+	if value, ok := _u.mutation.Name(); ok {
+		_spec.SetField(systemrelationshipcontrolaction.FieldName, field.TypeString, value)
 	}
 	if value, ok := _u.mutation.Description(); ok {
 		_spec.SetField(systemrelationshipcontrolaction.FieldDescription, field.TypeString, value)

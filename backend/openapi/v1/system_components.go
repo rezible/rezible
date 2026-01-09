@@ -94,16 +94,6 @@ type (
 		Controls    []SystemComponentControl    `json:"controls"`
 	}
 
-	SystemComponentRelationship struct {
-		Id         uuid.UUID                             `json:"id"`
-		Attributes SystemComponentRelationshipAttributes `json:"attributes"`
-	}
-	SystemComponentRelationshipAttributes struct {
-		SourceId    uuid.UUID `json:"sourceId"`
-		TargetId    uuid.UUID `json:"targetId"`
-		Description string    `json:"description"`
-	}
-
 	SystemComponentKind struct {
 		Id         uuid.UUID                     `json:"id"`
 		Attributes SystemComponentKindAttributes `json:"attributes"`
@@ -139,6 +129,34 @@ type (
 		Label       string `json:"label"`
 		Description string `json:"description"`
 	}
+
+	SystemComponentRelationship struct {
+		Id         uuid.UUID                             `json:"id"`
+		Attributes SystemComponentRelationshipAttributes `json:"attributes"`
+	}
+	SystemComponentRelationshipAttributes struct {
+		SourceId    uuid.UUID `json:"sourceId"`
+		TargetId    uuid.UUID `json:"targetId"`
+		Description string    `json:"description"`
+	}
+
+	SystemComponentRelationshipFeedbackSignal struct {
+		Id         uuid.UUID                                           `json:"id"`
+		Attributes SystemComponentRelationshipFeedbackSignalAttributes `json:"attributes"`
+	}
+	SystemComponentRelationshipFeedbackSignalAttributes struct {
+		SignalId    uuid.UUID `json:"signalId"`
+		Description string    `json:"description"`
+	}
+
+	SystemComponentRelationshipControlAction struct {
+		Id         uuid.UUID                                          `json:"id"`
+		Attributes SystemComponentRelationshipControlActionAttributes `json:"attributes"`
+	}
+	SystemComponentRelationshipControlActionAttributes struct {
+		ControlId   uuid.UUID `json:"controlId"`
+		Description string    `json:"description"`
+	}
 )
 
 func SystemComponentFromEnt(sc *ent.SystemComponent) SystemComponent {
@@ -167,17 +185,6 @@ func SystemComponentFromEnt(sc *ent.SystemComponent) SystemComponent {
 	return SystemComponent{
 		Id:         sc.ID,
 		Attributes: attr,
-	}
-}
-
-func SystemComponentRelationshipFromEnt(sc *ent.SystemComponentRelationship) SystemComponentRelationship {
-	return SystemComponentRelationship{
-		Id: sc.ID,
-		Attributes: SystemComponentRelationshipAttributes{
-			SourceId:    sc.SourceID,
-			TargetId:    sc.TargetID,
-			Description: sc.Description,
-		},
 	}
 }
 
@@ -219,6 +226,49 @@ func SystemComponentSignalFromEnt(k *ent.SystemComponentSignal) SystemComponentS
 			Description: k.Description,
 		},
 	}
+}
+
+func SystemComponentRelationshipFromEnt(sc *ent.SystemComponentRelationship) SystemComponentRelationship {
+	attr := SystemComponentRelationshipAttributes{
+		SourceId:    sc.SourceID,
+		TargetId:    sc.TargetID,
+		Description: sc.Description,
+	}
+
+	/*
+		attr.ControlActions = make([]SystemAnalysisRelationshipControlAction, len(sc.Edges.ControlActions))
+		for i, ca := range sc.Edges.ControlActions {
+			attr.ControlActions[i] = SystemAnalysisRelationshipControlActionFromEnt(ca)
+		}
+
+		attr.FeedbackSignals = make([]SystemAnalysisRelationshipFeedbackSignal, len(sc.Edges.FeedbackSignals))
+		for i, fs := range sc.Edges.FeedbackSignals {
+			attr.FeedbackSignals[i] = SystemAnalysisRelationshipFeedbackSignalFromEnt(fs)
+		}
+	*/
+
+	return SystemComponentRelationship{
+		Id:         sc.ID,
+		Attributes: attr,
+	}
+}
+
+func SystemComponentRelationshipControlActionFromEnt(ca *ent.SystemRelationshipControlAction) SystemComponentRelationshipControlAction {
+	attr := SystemComponentRelationshipControlActionAttributes{
+		ControlId:   ca.ControlID,
+		Description: ca.Description,
+	}
+
+	return SystemComponentRelationshipControlAction{Id: ca.ID, Attributes: attr}
+}
+
+func SystemComponentRelationshipFeedbackSignalFromEnt(fs *ent.SystemRelationshipFeedbackSignal) SystemComponentRelationshipFeedbackSignal {
+	attr := SystemComponentRelationshipFeedbackSignalAttributes{
+		SignalId:    fs.SignalID,
+		Description: fs.Description,
+	}
+
+	return SystemComponentRelationshipFeedbackSignal{Id: fs.ID, Attributes: attr}
 }
 
 // System Components

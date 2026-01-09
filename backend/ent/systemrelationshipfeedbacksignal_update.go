@@ -60,16 +60,16 @@ func (_u *SystemRelationshipFeedbackSignalUpdate) SetNillableSignalID(v *uuid.UU
 	return _u
 }
 
-// SetType sets the "type" field.
-func (_u *SystemRelationshipFeedbackSignalUpdate) SetType(v string) *SystemRelationshipFeedbackSignalUpdate {
-	_u.mutation.SetType(v)
+// SetName sets the "name" field.
+func (_u *SystemRelationshipFeedbackSignalUpdate) SetName(v string) *SystemRelationshipFeedbackSignalUpdate {
+	_u.mutation.SetName(v)
 	return _u
 }
 
-// SetNillableType sets the "type" field if the given value is not nil.
-func (_u *SystemRelationshipFeedbackSignalUpdate) SetNillableType(v *string) *SystemRelationshipFeedbackSignalUpdate {
+// SetNillableName sets the "name" field if the given value is not nil.
+func (_u *SystemRelationshipFeedbackSignalUpdate) SetNillableName(v *string) *SystemRelationshipFeedbackSignalUpdate {
 	if v != nil {
-		_u.SetType(*v)
+		_u.SetName(*v)
 	}
 	return _u
 }
@@ -164,9 +164,9 @@ func (_u *SystemRelationshipFeedbackSignalUpdate) ExecX(ctx context.Context) {
 
 // check runs all checks and user-defined validators on the builder.
 func (_u *SystemRelationshipFeedbackSignalUpdate) check() error {
-	if v, ok := _u.mutation.GetType(); ok {
-		if err := systemrelationshipfeedbacksignal.TypeValidator(v); err != nil {
-			return &ValidationError{Name: "type", err: fmt.Errorf(`ent: validator failed for field "SystemRelationshipFeedbackSignal.type": %w`, err)}
+	if v, ok := _u.mutation.Name(); ok {
+		if err := systemrelationshipfeedbacksignal.NameValidator(v); err != nil {
+			return &ValidationError{Name: "name", err: fmt.Errorf(`ent: validator failed for field "SystemRelationshipFeedbackSignal.name": %w`, err)}
 		}
 	}
 	if _u.mutation.TenantCleared() && len(_u.mutation.TenantIDs()) > 0 {
@@ -199,8 +199,8 @@ func (_u *SystemRelationshipFeedbackSignalUpdate) sqlSave(ctx context.Context) (
 			}
 		}
 	}
-	if value, ok := _u.mutation.GetType(); ok {
-		_spec.SetField(systemrelationshipfeedbacksignal.FieldType, field.TypeString, value)
+	if value, ok := _u.mutation.Name(); ok {
+		_spec.SetField(systemrelationshipfeedbacksignal.FieldName, field.TypeString, value)
 	}
 	if value, ok := _u.mutation.Description(); ok {
 		_spec.SetField(systemrelationshipfeedbacksignal.FieldDescription, field.TypeString, value)
@@ -319,16 +319,16 @@ func (_u *SystemRelationshipFeedbackSignalUpdateOne) SetNillableSignalID(v *uuid
 	return _u
 }
 
-// SetType sets the "type" field.
-func (_u *SystemRelationshipFeedbackSignalUpdateOne) SetType(v string) *SystemRelationshipFeedbackSignalUpdateOne {
-	_u.mutation.SetType(v)
+// SetName sets the "name" field.
+func (_u *SystemRelationshipFeedbackSignalUpdateOne) SetName(v string) *SystemRelationshipFeedbackSignalUpdateOne {
+	_u.mutation.SetName(v)
 	return _u
 }
 
-// SetNillableType sets the "type" field if the given value is not nil.
-func (_u *SystemRelationshipFeedbackSignalUpdateOne) SetNillableType(v *string) *SystemRelationshipFeedbackSignalUpdateOne {
+// SetNillableName sets the "name" field if the given value is not nil.
+func (_u *SystemRelationshipFeedbackSignalUpdateOne) SetNillableName(v *string) *SystemRelationshipFeedbackSignalUpdateOne {
 	if v != nil {
-		_u.SetType(*v)
+		_u.SetName(*v)
 	}
 	return _u
 }
@@ -436,9 +436,9 @@ func (_u *SystemRelationshipFeedbackSignalUpdateOne) ExecX(ctx context.Context) 
 
 // check runs all checks and user-defined validators on the builder.
 func (_u *SystemRelationshipFeedbackSignalUpdateOne) check() error {
-	if v, ok := _u.mutation.GetType(); ok {
-		if err := systemrelationshipfeedbacksignal.TypeValidator(v); err != nil {
-			return &ValidationError{Name: "type", err: fmt.Errorf(`ent: validator failed for field "SystemRelationshipFeedbackSignal.type": %w`, err)}
+	if v, ok := _u.mutation.Name(); ok {
+		if err := systemrelationshipfeedbacksignal.NameValidator(v); err != nil {
+			return &ValidationError{Name: "name", err: fmt.Errorf(`ent: validator failed for field "SystemRelationshipFeedbackSignal.name": %w`, err)}
 		}
 	}
 	if _u.mutation.TenantCleared() && len(_u.mutation.TenantIDs()) > 0 {
@@ -488,8 +488,8 @@ func (_u *SystemRelationshipFeedbackSignalUpdateOne) sqlSave(ctx context.Context
 			}
 		}
 	}
-	if value, ok := _u.mutation.GetType(); ok {
-		_spec.SetField(systemrelationshipfeedbacksignal.FieldType, field.TypeString, value)
+	if value, ok := _u.mutation.Name(); ok {
+		_spec.SetField(systemrelationshipfeedbacksignal.FieldName, field.TypeString, value)
 	}
 	if value, ok := _u.mutation.Description(); ok {
 		_spec.SetField(systemrelationshipfeedbacksignal.FieldDescription, field.TypeString, value)

@@ -6,6 +6,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"time"
 
 	"entgo.io/ent/dialect"
 	"entgo.io/ent/dialect/sql"
@@ -53,6 +54,34 @@ func (_c *IncidentCreate) SetExternalID(v string) *IncidentCreate {
 func (_c *IncidentCreate) SetNillableExternalID(v *string) *IncidentCreate {
 	if v != nil {
 		_c.SetExternalID(*v)
+	}
+	return _c
+}
+
+// SetCreatedAt sets the "created_at" field.
+func (_c *IncidentCreate) SetCreatedAt(v time.Time) *IncidentCreate {
+	_c.mutation.SetCreatedAt(v)
+	return _c
+}
+
+// SetNillableCreatedAt sets the "created_at" field if the given value is not nil.
+func (_c *IncidentCreate) SetNillableCreatedAt(v *time.Time) *IncidentCreate {
+	if v != nil {
+		_c.SetCreatedAt(*v)
+	}
+	return _c
+}
+
+// SetUpdatedAt sets the "updated_at" field.
+func (_c *IncidentCreate) SetUpdatedAt(v time.Time) *IncidentCreate {
+	_c.mutation.SetUpdatedAt(v)
+	return _c
+}
+
+// SetNillableUpdatedAt sets the "updated_at" field if the given value is not nil.
+func (_c *IncidentCreate) SetNillableUpdatedAt(v *time.Time) *IncidentCreate {
+	if v != nil {
+		_c.SetUpdatedAt(*v)
 	}
 	return _c
 }
@@ -105,6 +134,20 @@ func (_c *IncidentCreate) SetChatChannelID(v string) *IncidentCreate {
 func (_c *IncidentCreate) SetNillableChatChannelID(v *string) *IncidentCreate {
 	if v != nil {
 		_c.SetChatChannelID(*v)
+	}
+	return _c
+}
+
+// SetOpenedAt sets the "opened_at" field.
+func (_c *IncidentCreate) SetOpenedAt(v time.Time) *IncidentCreate {
+	_c.mutation.SetOpenedAt(v)
+	return _c
+}
+
+// SetNillableOpenedAt sets the "opened_at" field if the given value is not nil.
+func (_c *IncidentCreate) SetNillableOpenedAt(v *time.Time) *IncidentCreate {
+	if v != nil {
+		_c.SetOpenedAt(*v)
 	}
 	return _c
 }
@@ -374,6 +417,27 @@ func (_c *IncidentCreate) ExecX(ctx context.Context) {
 
 // defaults sets the default values of the builder before save.
 func (_c *IncidentCreate) defaults() error {
+	if _, ok := _c.mutation.CreatedAt(); !ok {
+		if incident.DefaultCreatedAt == nil {
+			return fmt.Errorf("ent: uninitialized incident.DefaultCreatedAt (forgotten import ent/runtime?)")
+		}
+		v := incident.DefaultCreatedAt()
+		_c.mutation.SetCreatedAt(v)
+	}
+	if _, ok := _c.mutation.UpdatedAt(); !ok {
+		if incident.DefaultUpdatedAt == nil {
+			return fmt.Errorf("ent: uninitialized incident.DefaultUpdatedAt (forgotten import ent/runtime?)")
+		}
+		v := incident.DefaultUpdatedAt()
+		_c.mutation.SetUpdatedAt(v)
+	}
+	if _, ok := _c.mutation.OpenedAt(); !ok {
+		if incident.DefaultOpenedAt == nil {
+			return fmt.Errorf("ent: uninitialized incident.DefaultOpenedAt (forgotten import ent/runtime?)")
+		}
+		v := incident.DefaultOpenedAt()
+		_c.mutation.SetOpenedAt(v)
+	}
 	if _, ok := _c.mutation.ID(); !ok {
 		if incident.DefaultID == nil {
 			return fmt.Errorf("ent: uninitialized incident.DefaultID (forgotten import ent/runtime?)")
@@ -389,6 +453,12 @@ func (_c *IncidentCreate) check() error {
 	if _, ok := _c.mutation.TenantID(); !ok {
 		return &ValidationError{Name: "tenant_id", err: errors.New(`ent: missing required field "Incident.tenant_id"`)}
 	}
+	if _, ok := _c.mutation.CreatedAt(); !ok {
+		return &ValidationError{Name: "created_at", err: errors.New(`ent: missing required field "Incident.created_at"`)}
+	}
+	if _, ok := _c.mutation.UpdatedAt(); !ok {
+		return &ValidationError{Name: "updated_at", err: errors.New(`ent: missing required field "Incident.updated_at"`)}
+	}
 	if _, ok := _c.mutation.Slug(); !ok {
 		return &ValidationError{Name: "slug", err: errors.New(`ent: missing required field "Incident.slug"`)}
 	}
@@ -400,6 +470,9 @@ func (_c *IncidentCreate) check() error {
 	}
 	if _, ok := _c.mutation.TypeID(); !ok {
 		return &ValidationError{Name: "type_id", err: errors.New(`ent: missing required field "Incident.type_id"`)}
+	}
+	if _, ok := _c.mutation.OpenedAt(); !ok {
+		return &ValidationError{Name: "opened_at", err: errors.New(`ent: missing required field "Incident.opened_at"`)}
 	}
 	if len(_c.mutation.TenantIDs()) == 0 {
 		return &ValidationError{Name: "tenant", err: errors.New(`ent: missing required edge "Incident.tenant"`)}
@@ -450,6 +523,14 @@ func (_c *IncidentCreate) createSpec() (*Incident, *sqlgraph.CreateSpec) {
 		_spec.SetField(incident.FieldExternalID, field.TypeString, value)
 		_node.ExternalID = value
 	}
+	if value, ok := _c.mutation.CreatedAt(); ok {
+		_spec.SetField(incident.FieldCreatedAt, field.TypeTime, value)
+		_node.CreatedAt = value
+	}
+	if value, ok := _c.mutation.UpdatedAt(); ok {
+		_spec.SetField(incident.FieldUpdatedAt, field.TypeTime, value)
+		_node.UpdatedAt = value
+	}
 	if value, ok := _c.mutation.Slug(); ok {
 		_spec.SetField(incident.FieldSlug, field.TypeString, value)
 		_node.Slug = value
@@ -465,6 +546,10 @@ func (_c *IncidentCreate) createSpec() (*Incident, *sqlgraph.CreateSpec) {
 	if value, ok := _c.mutation.ChatChannelID(); ok {
 		_spec.SetField(incident.FieldChatChannelID, field.TypeString, value)
 		_node.ChatChannelID = value
+	}
+	if value, ok := _c.mutation.OpenedAt(); ok {
+		_spec.SetField(incident.FieldOpenedAt, field.TypeTime, value)
+		_node.OpenedAt = value
 	}
 	if nodes := _c.mutation.TenantIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
@@ -802,6 +887,30 @@ func (u *IncidentUpsert) ClearExternalID() *IncidentUpsert {
 	return u
 }
 
+// SetCreatedAt sets the "created_at" field.
+func (u *IncidentUpsert) SetCreatedAt(v time.Time) *IncidentUpsert {
+	u.Set(incident.FieldCreatedAt, v)
+	return u
+}
+
+// UpdateCreatedAt sets the "created_at" field to the value that was provided on create.
+func (u *IncidentUpsert) UpdateCreatedAt() *IncidentUpsert {
+	u.SetExcluded(incident.FieldCreatedAt)
+	return u
+}
+
+// SetUpdatedAt sets the "updated_at" field.
+func (u *IncidentUpsert) SetUpdatedAt(v time.Time) *IncidentUpsert {
+	u.Set(incident.FieldUpdatedAt, v)
+	return u
+}
+
+// UpdateUpdatedAt sets the "updated_at" field to the value that was provided on create.
+func (u *IncidentUpsert) UpdateUpdatedAt() *IncidentUpsert {
+	u.SetExcluded(incident.FieldUpdatedAt)
+	return u
+}
+
 // SetSlug sets the "slug" field.
 func (u *IncidentUpsert) SetSlug(v string) *IncidentUpsert {
 	u.Set(incident.FieldSlug, v)
@@ -886,6 +995,18 @@ func (u *IncidentUpsert) ClearChatChannelID() *IncidentUpsert {
 	return u
 }
 
+// SetOpenedAt sets the "opened_at" field.
+func (u *IncidentUpsert) SetOpenedAt(v time.Time) *IncidentUpsert {
+	u.Set(incident.FieldOpenedAt, v)
+	return u
+}
+
+// UpdateOpenedAt sets the "opened_at" field to the value that was provided on create.
+func (u *IncidentUpsert) UpdateOpenedAt() *IncidentUpsert {
+	u.SetExcluded(incident.FieldOpenedAt)
+	return u
+}
+
 // UpdateNewValues updates the mutable fields using the new values that were set on create except the ID field.
 // Using this option is equivalent to using:
 //
@@ -955,6 +1076,34 @@ func (u *IncidentUpsertOne) UpdateExternalID() *IncidentUpsertOne {
 func (u *IncidentUpsertOne) ClearExternalID() *IncidentUpsertOne {
 	return u.Update(func(s *IncidentUpsert) {
 		s.ClearExternalID()
+	})
+}
+
+// SetCreatedAt sets the "created_at" field.
+func (u *IncidentUpsertOne) SetCreatedAt(v time.Time) *IncidentUpsertOne {
+	return u.Update(func(s *IncidentUpsert) {
+		s.SetCreatedAt(v)
+	})
+}
+
+// UpdateCreatedAt sets the "created_at" field to the value that was provided on create.
+func (u *IncidentUpsertOne) UpdateCreatedAt() *IncidentUpsertOne {
+	return u.Update(func(s *IncidentUpsert) {
+		s.UpdateCreatedAt()
+	})
+}
+
+// SetUpdatedAt sets the "updated_at" field.
+func (u *IncidentUpsertOne) SetUpdatedAt(v time.Time) *IncidentUpsertOne {
+	return u.Update(func(s *IncidentUpsert) {
+		s.SetUpdatedAt(v)
+	})
+}
+
+// UpdateUpdatedAt sets the "updated_at" field to the value that was provided on create.
+func (u *IncidentUpsertOne) UpdateUpdatedAt() *IncidentUpsertOne {
+	return u.Update(func(s *IncidentUpsert) {
+		s.UpdateUpdatedAt()
 	})
 }
 
@@ -1053,6 +1202,20 @@ func (u *IncidentUpsertOne) UpdateChatChannelID() *IncidentUpsertOne {
 func (u *IncidentUpsertOne) ClearChatChannelID() *IncidentUpsertOne {
 	return u.Update(func(s *IncidentUpsert) {
 		s.ClearChatChannelID()
+	})
+}
+
+// SetOpenedAt sets the "opened_at" field.
+func (u *IncidentUpsertOne) SetOpenedAt(v time.Time) *IncidentUpsertOne {
+	return u.Update(func(s *IncidentUpsert) {
+		s.SetOpenedAt(v)
+	})
+}
+
+// UpdateOpenedAt sets the "opened_at" field to the value that was provided on create.
+func (u *IncidentUpsertOne) UpdateOpenedAt() *IncidentUpsertOne {
+	return u.Update(func(s *IncidentUpsert) {
+		s.UpdateOpenedAt()
 	})
 }
 
@@ -1295,6 +1458,34 @@ func (u *IncidentUpsertBulk) ClearExternalID() *IncidentUpsertBulk {
 	})
 }
 
+// SetCreatedAt sets the "created_at" field.
+func (u *IncidentUpsertBulk) SetCreatedAt(v time.Time) *IncidentUpsertBulk {
+	return u.Update(func(s *IncidentUpsert) {
+		s.SetCreatedAt(v)
+	})
+}
+
+// UpdateCreatedAt sets the "created_at" field to the value that was provided on create.
+func (u *IncidentUpsertBulk) UpdateCreatedAt() *IncidentUpsertBulk {
+	return u.Update(func(s *IncidentUpsert) {
+		s.UpdateCreatedAt()
+	})
+}
+
+// SetUpdatedAt sets the "updated_at" field.
+func (u *IncidentUpsertBulk) SetUpdatedAt(v time.Time) *IncidentUpsertBulk {
+	return u.Update(func(s *IncidentUpsert) {
+		s.SetUpdatedAt(v)
+	})
+}
+
+// UpdateUpdatedAt sets the "updated_at" field to the value that was provided on create.
+func (u *IncidentUpsertBulk) UpdateUpdatedAt() *IncidentUpsertBulk {
+	return u.Update(func(s *IncidentUpsert) {
+		s.UpdateUpdatedAt()
+	})
+}
+
 // SetSlug sets the "slug" field.
 func (u *IncidentUpsertBulk) SetSlug(v string) *IncidentUpsertBulk {
 	return u.Update(func(s *IncidentUpsert) {
@@ -1390,6 +1581,20 @@ func (u *IncidentUpsertBulk) UpdateChatChannelID() *IncidentUpsertBulk {
 func (u *IncidentUpsertBulk) ClearChatChannelID() *IncidentUpsertBulk {
 	return u.Update(func(s *IncidentUpsert) {
 		s.ClearChatChannelID()
+	})
+}
+
+// SetOpenedAt sets the "opened_at" field.
+func (u *IncidentUpsertBulk) SetOpenedAt(v time.Time) *IncidentUpsertBulk {
+	return u.Update(func(s *IncidentUpsert) {
+		s.SetOpenedAt(v)
+	})
+}
+
+// UpdateOpenedAt sets the "opened_at" field to the value that was provided on create.
+func (u *IncidentUpsertBulk) UpdateOpenedAt() *IncidentUpsertBulk {
+	return u.Update(func(s *IncidentUpsert) {
+		s.UpdateOpenedAt()
 	})
 }
 

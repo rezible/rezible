@@ -71,9 +71,9 @@ func ControlID(v uuid.UUID) predicate.SystemRelationshipControlAction {
 	return predicate.SystemRelationshipControlAction(sql.FieldEQ(FieldControlID, v))
 }
 
-// Type applies equality check predicate on the "type" field. It's identical to TypeEQ.
-func Type(v string) predicate.SystemRelationshipControlAction {
-	return predicate.SystemRelationshipControlAction(sql.FieldEQ(FieldType, v))
+// Name applies equality check predicate on the "name" field. It's identical to NameEQ.
+func Name(v string) predicate.SystemRelationshipControlAction {
+	return predicate.SystemRelationshipControlAction(sql.FieldEQ(FieldName, v))
 }
 
 // Description applies equality check predicate on the "description" field. It's identical to DescriptionEQ.
@@ -146,69 +146,69 @@ func ControlIDNotIn(vs ...uuid.UUID) predicate.SystemRelationshipControlAction {
 	return predicate.SystemRelationshipControlAction(sql.FieldNotIn(FieldControlID, vs...))
 }
 
-// TypeEQ applies the EQ predicate on the "type" field.
-func TypeEQ(v string) predicate.SystemRelationshipControlAction {
-	return predicate.SystemRelationshipControlAction(sql.FieldEQ(FieldType, v))
+// NameEQ applies the EQ predicate on the "name" field.
+func NameEQ(v string) predicate.SystemRelationshipControlAction {
+	return predicate.SystemRelationshipControlAction(sql.FieldEQ(FieldName, v))
 }
 
-// TypeNEQ applies the NEQ predicate on the "type" field.
-func TypeNEQ(v string) predicate.SystemRelationshipControlAction {
-	return predicate.SystemRelationshipControlAction(sql.FieldNEQ(FieldType, v))
+// NameNEQ applies the NEQ predicate on the "name" field.
+func NameNEQ(v string) predicate.SystemRelationshipControlAction {
+	return predicate.SystemRelationshipControlAction(sql.FieldNEQ(FieldName, v))
 }
 
-// TypeIn applies the In predicate on the "type" field.
-func TypeIn(vs ...string) predicate.SystemRelationshipControlAction {
-	return predicate.SystemRelationshipControlAction(sql.FieldIn(FieldType, vs...))
+// NameIn applies the In predicate on the "name" field.
+func NameIn(vs ...string) predicate.SystemRelationshipControlAction {
+	return predicate.SystemRelationshipControlAction(sql.FieldIn(FieldName, vs...))
 }
 
-// TypeNotIn applies the NotIn predicate on the "type" field.
-func TypeNotIn(vs ...string) predicate.SystemRelationshipControlAction {
-	return predicate.SystemRelationshipControlAction(sql.FieldNotIn(FieldType, vs...))
+// NameNotIn applies the NotIn predicate on the "name" field.
+func NameNotIn(vs ...string) predicate.SystemRelationshipControlAction {
+	return predicate.SystemRelationshipControlAction(sql.FieldNotIn(FieldName, vs...))
 }
 
-// TypeGT applies the GT predicate on the "type" field.
-func TypeGT(v string) predicate.SystemRelationshipControlAction {
-	return predicate.SystemRelationshipControlAction(sql.FieldGT(FieldType, v))
+// NameGT applies the GT predicate on the "name" field.
+func NameGT(v string) predicate.SystemRelationshipControlAction {
+	return predicate.SystemRelationshipControlAction(sql.FieldGT(FieldName, v))
 }
 
-// TypeGTE applies the GTE predicate on the "type" field.
-func TypeGTE(v string) predicate.SystemRelationshipControlAction {
-	return predicate.SystemRelationshipControlAction(sql.FieldGTE(FieldType, v))
+// NameGTE applies the GTE predicate on the "name" field.
+func NameGTE(v string) predicate.SystemRelationshipControlAction {
+	return predicate.SystemRelationshipControlAction(sql.FieldGTE(FieldName, v))
 }
 
-// TypeLT applies the LT predicate on the "type" field.
-func TypeLT(v string) predicate.SystemRelationshipControlAction {
-	return predicate.SystemRelationshipControlAction(sql.FieldLT(FieldType, v))
+// NameLT applies the LT predicate on the "name" field.
+func NameLT(v string) predicate.SystemRelationshipControlAction {
+	return predicate.SystemRelationshipControlAction(sql.FieldLT(FieldName, v))
 }
 
-// TypeLTE applies the LTE predicate on the "type" field.
-func TypeLTE(v string) predicate.SystemRelationshipControlAction {
-	return predicate.SystemRelationshipControlAction(sql.FieldLTE(FieldType, v))
+// NameLTE applies the LTE predicate on the "name" field.
+func NameLTE(v string) predicate.SystemRelationshipControlAction {
+	return predicate.SystemRelationshipControlAction(sql.FieldLTE(FieldName, v))
 }
 
-// TypeContains applies the Contains predicate on the "type" field.
-func TypeContains(v string) predicate.SystemRelationshipControlAction {
-	return predicate.SystemRelationshipControlAction(sql.FieldContains(FieldType, v))
+// NameContains applies the Contains predicate on the "name" field.
+func NameContains(v string) predicate.SystemRelationshipControlAction {
+	return predicate.SystemRelationshipControlAction(sql.FieldContains(FieldName, v))
 }
 
-// TypeHasPrefix applies the HasPrefix predicate on the "type" field.
-func TypeHasPrefix(v string) predicate.SystemRelationshipControlAction {
-	return predicate.SystemRelationshipControlAction(sql.FieldHasPrefix(FieldType, v))
+// NameHasPrefix applies the HasPrefix predicate on the "name" field.
+func NameHasPrefix(v string) predicate.SystemRelationshipControlAction {
+	return predicate.SystemRelationshipControlAction(sql.FieldHasPrefix(FieldName, v))
 }
 
-// TypeHasSuffix applies the HasSuffix predicate on the "type" field.
-func TypeHasSuffix(v string) predicate.SystemRelationshipControlAction {
-	return predicate.SystemRelationshipControlAction(sql.FieldHasSuffix(FieldType, v))
+// NameHasSuffix applies the HasSuffix predicate on the "name" field.
+func NameHasSuffix(v string) predicate.SystemRelationshipControlAction {
+	return predicate.SystemRelationshipControlAction(sql.FieldHasSuffix(FieldName, v))
 }
 
-// TypeEqualFold applies the EqualFold predicate on the "type" field.
-func TypeEqualFold(v string) predicate.SystemRelationshipControlAction {
-	return predicate.SystemRelationshipControlAction(sql.FieldEqualFold(FieldType, v))
+// NameEqualFold applies the EqualFold predicate on the "name" field.
+func NameEqualFold(v string) predicate.SystemRelationshipControlAction {
+	return predicate.SystemRelationshipControlAction(sql.FieldEqualFold(FieldName, v))
 }
 
-// TypeContainsFold applies the ContainsFold predicate on the "type" field.
-func TypeContainsFold(v string) predicate.SystemRelationshipControlAction {
-	return predicate.SystemRelationshipControlAction(sql.FieldContainsFold(FieldType, v))
+// NameContainsFold applies the ContainsFold predicate on the "name" field.
+func NameContainsFold(v string) predicate.SystemRelationshipControlAction {
+	return predicate.SystemRelationshipControlAction(sql.FieldContainsFold(FieldName, v))
 }
 
 // DescriptionEQ applies the EQ predicate on the "description" field.

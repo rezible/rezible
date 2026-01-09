@@ -9358,15 +9358,15 @@ func (c *SystemAnalysisRelationshipClient) QuerySystemAnalysis(_m *SystemAnalysi
 	return query
 }
 
-// QueryComponentRelationship queries the component_relationship edge of a SystemAnalysisRelationship.
-func (c *SystemAnalysisRelationshipClient) QueryComponentRelationship(_m *SystemAnalysisRelationship) *SystemComponentRelationshipQuery {
+// QueryRelationship queries the relationship edge of a SystemAnalysisRelationship.
+func (c *SystemAnalysisRelationshipClient) QueryRelationship(_m *SystemAnalysisRelationship) *SystemComponentRelationshipQuery {
 	query := (&SystemComponentRelationshipClient{config: c.config}).Query()
 	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
 		id := _m.ID
 		step := sqlgraph.NewStep(
 			sqlgraph.From(systemanalysisrelationship.Table, systemanalysisrelationship.FieldID, id),
 			sqlgraph.To(systemcomponentrelationship.Table, systemcomponentrelationship.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, systemanalysisrelationship.ComponentRelationshipTable, systemanalysisrelationship.ComponentRelationshipColumn),
+			sqlgraph.Edge(sqlgraph.M2O, false, systemanalysisrelationship.RelationshipTable, systemanalysisrelationship.RelationshipColumn),
 		)
 		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
 		return fromV, nil

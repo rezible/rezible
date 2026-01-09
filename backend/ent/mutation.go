@@ -5032,10 +5032,13 @@ type IncidentMutation struct {
 	typ                     string
 	id                      *uuid.UUID
 	external_id             *string
+	created_at              *time.Time
+	updated_at              *time.Time
 	slug                    *string
 	title                   *string
 	summary                 *string
 	chat_channel_id         *string
+	opened_at               *time.Time
 	clearedFields           map[string]struct{}
 	tenant                  *int
 	clearedtenant           bool
@@ -5273,6 +5276,78 @@ func (m *IncidentMutation) ExternalIDCleared() bool {
 func (m *IncidentMutation) ResetExternalID() {
 	m.external_id = nil
 	delete(m.clearedFields, incident.FieldExternalID)
+}
+
+// SetCreatedAt sets the "created_at" field.
+func (m *IncidentMutation) SetCreatedAt(t time.Time) {
+	m.created_at = &t
+}
+
+// CreatedAt returns the value of the "created_at" field in the mutation.
+func (m *IncidentMutation) CreatedAt() (r time.Time, exists bool) {
+	v := m.created_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCreatedAt returns the old "created_at" field's value of the Incident entity.
+// If the Incident object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *IncidentMutation) OldCreatedAt(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCreatedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCreatedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCreatedAt: %w", err)
+	}
+	return oldValue.CreatedAt, nil
+}
+
+// ResetCreatedAt resets all changes to the "created_at" field.
+func (m *IncidentMutation) ResetCreatedAt() {
+	m.created_at = nil
+}
+
+// SetUpdatedAt sets the "updated_at" field.
+func (m *IncidentMutation) SetUpdatedAt(t time.Time) {
+	m.updated_at = &t
+}
+
+// UpdatedAt returns the value of the "updated_at" field in the mutation.
+func (m *IncidentMutation) UpdatedAt() (r time.Time, exists bool) {
+	v := m.updated_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldUpdatedAt returns the old "updated_at" field's value of the Incident entity.
+// If the Incident object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *IncidentMutation) OldUpdatedAt(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldUpdatedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldUpdatedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldUpdatedAt: %w", err)
+	}
+	return oldValue.UpdatedAt, nil
+}
+
+// ResetUpdatedAt resets all changes to the "updated_at" field.
+func (m *IncidentMutation) ResetUpdatedAt() {
+	m.updated_at = nil
 }
 
 // SetSlug sets the "slug" field.
@@ -5515,6 +5590,42 @@ func (m *IncidentMutation) ChatChannelIDCleared() bool {
 func (m *IncidentMutation) ResetChatChannelID() {
 	m.chat_channel_id = nil
 	delete(m.clearedFields, incident.FieldChatChannelID)
+}
+
+// SetOpenedAt sets the "opened_at" field.
+func (m *IncidentMutation) SetOpenedAt(t time.Time) {
+	m.opened_at = &t
+}
+
+// OpenedAt returns the value of the "opened_at" field in the mutation.
+func (m *IncidentMutation) OpenedAt() (r time.Time, exists bool) {
+	v := m.opened_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldOpenedAt returns the old "opened_at" field's value of the Incident entity.
+// If the Incident object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *IncidentMutation) OldOpenedAt(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldOpenedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldOpenedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldOpenedAt: %w", err)
+	}
+	return oldValue.OpenedAt, nil
+}
+
+// ResetOpenedAt resets all changes to the "opened_at" field.
+func (m *IncidentMutation) ResetOpenedAt() {
+	m.opened_at = nil
 }
 
 // ClearTenant clears the "tenant" edge to the Tenant entity.
@@ -6319,12 +6430,18 @@ func (m *IncidentMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *IncidentMutation) Fields() []string {
-	fields := make([]string, 0, 8)
+	fields := make([]string, 0, 11)
 	if m.tenant != nil {
 		fields = append(fields, incident.FieldTenantID)
 	}
 	if m.external_id != nil {
 		fields = append(fields, incident.FieldExternalID)
+	}
+	if m.created_at != nil {
+		fields = append(fields, incident.FieldCreatedAt)
+	}
+	if m.updated_at != nil {
+		fields = append(fields, incident.FieldUpdatedAt)
 	}
 	if m.slug != nil {
 		fields = append(fields, incident.FieldSlug)
@@ -6344,6 +6461,9 @@ func (m *IncidentMutation) Fields() []string {
 	if m.chat_channel_id != nil {
 		fields = append(fields, incident.FieldChatChannelID)
 	}
+	if m.opened_at != nil {
+		fields = append(fields, incident.FieldOpenedAt)
+	}
 	return fields
 }
 
@@ -6356,6 +6476,10 @@ func (m *IncidentMutation) Field(name string) (ent.Value, bool) {
 		return m.TenantID()
 	case incident.FieldExternalID:
 		return m.ExternalID()
+	case incident.FieldCreatedAt:
+		return m.CreatedAt()
+	case incident.FieldUpdatedAt:
+		return m.UpdatedAt()
 	case incident.FieldSlug:
 		return m.Slug()
 	case incident.FieldTitle:
@@ -6368,6 +6492,8 @@ func (m *IncidentMutation) Field(name string) (ent.Value, bool) {
 		return m.Summary()
 	case incident.FieldChatChannelID:
 		return m.ChatChannelID()
+	case incident.FieldOpenedAt:
+		return m.OpenedAt()
 	}
 	return nil, false
 }
@@ -6381,6 +6507,10 @@ func (m *IncidentMutation) OldField(ctx context.Context, name string) (ent.Value
 		return m.OldTenantID(ctx)
 	case incident.FieldExternalID:
 		return m.OldExternalID(ctx)
+	case incident.FieldCreatedAt:
+		return m.OldCreatedAt(ctx)
+	case incident.FieldUpdatedAt:
+		return m.OldUpdatedAt(ctx)
 	case incident.FieldSlug:
 		return m.OldSlug(ctx)
 	case incident.FieldTitle:
@@ -6393,6 +6523,8 @@ func (m *IncidentMutation) OldField(ctx context.Context, name string) (ent.Value
 		return m.OldSummary(ctx)
 	case incident.FieldChatChannelID:
 		return m.OldChatChannelID(ctx)
+	case incident.FieldOpenedAt:
+		return m.OldOpenedAt(ctx)
 	}
 	return nil, fmt.Errorf("unknown Incident field %s", name)
 }
@@ -6415,6 +6547,20 @@ func (m *IncidentMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetExternalID(v)
+		return nil
+	case incident.FieldCreatedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCreatedAt(v)
+		return nil
+	case incident.FieldUpdatedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetUpdatedAt(v)
 		return nil
 	case incident.FieldSlug:
 		v, ok := value.(string)
@@ -6457,6 +6603,13 @@ func (m *IncidentMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetChatChannelID(v)
+		return nil
+	case incident.FieldOpenedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetOpenedAt(v)
 		return nil
 	}
 	return fmt.Errorf("unknown Incident field %s", name)
@@ -6537,6 +6690,12 @@ func (m *IncidentMutation) ResetField(name string) error {
 	case incident.FieldExternalID:
 		m.ResetExternalID()
 		return nil
+	case incident.FieldCreatedAt:
+		m.ResetCreatedAt()
+		return nil
+	case incident.FieldUpdatedAt:
+		m.ResetUpdatedAt()
+		return nil
 	case incident.FieldSlug:
 		m.ResetSlug()
 		return nil
@@ -6554,6 +6713,9 @@ func (m *IncidentMutation) ResetField(name string) error {
 		return nil
 	case incident.FieldChatChannelID:
 		m.ResetChatChannelID()
+		return nil
+	case incident.FieldOpenedAt:
+		m.ResetOpenedAt()
 		return nil
 	}
 	return fmt.Errorf("unknown Incident field %s", name)
@@ -38392,21 +38554,21 @@ func (m *SystemAnalysisComponentMutation) ResetEdge(name string) error {
 // SystemAnalysisRelationshipMutation represents an operation that mutates the SystemAnalysisRelationship nodes in the graph.
 type SystemAnalysisRelationshipMutation struct {
 	config
-	op                            Op
-	typ                           string
-	id                            *uuid.UUID
-	description                   *string
-	created_at                    *time.Time
-	clearedFields                 map[string]struct{}
-	tenant                        *int
-	clearedtenant                 bool
-	system_analysis               *uuid.UUID
-	clearedsystem_analysis        bool
-	component_relationship        *uuid.UUID
-	clearedcomponent_relationship bool
-	done                          bool
-	oldValue                      func(context.Context) (*SystemAnalysisRelationship, error)
-	predicates                    []predicate.SystemAnalysisRelationship
+	op                     Op
+	typ                    string
+	id                     *uuid.UUID
+	description            *string
+	created_at             *time.Time
+	clearedFields          map[string]struct{}
+	tenant                 *int
+	clearedtenant          bool
+	system_analysis        *uuid.UUID
+	clearedsystem_analysis bool
+	relationship           *uuid.UUID
+	clearedrelationship    bool
+	done                   bool
+	oldValue               func(context.Context) (*SystemAnalysisRelationship, error)
+	predicates             []predicate.SystemAnalysisRelationship
 }
 
 var _ ent.Mutation = (*SystemAnalysisRelationshipMutation)(nil)
@@ -38585,40 +38747,40 @@ func (m *SystemAnalysisRelationshipMutation) ResetAnalysisID() {
 	m.system_analysis = nil
 }
 
-// SetComponentRelationshipID sets the "component_relationship_id" field.
-func (m *SystemAnalysisRelationshipMutation) SetComponentRelationshipID(u uuid.UUID) {
-	m.component_relationship = &u
+// SetRelationshipID sets the "relationship_id" field.
+func (m *SystemAnalysisRelationshipMutation) SetRelationshipID(u uuid.UUID) {
+	m.relationship = &u
 }
 
-// ComponentRelationshipID returns the value of the "component_relationship_id" field in the mutation.
-func (m *SystemAnalysisRelationshipMutation) ComponentRelationshipID() (r uuid.UUID, exists bool) {
-	v := m.component_relationship
+// RelationshipID returns the value of the "relationship_id" field in the mutation.
+func (m *SystemAnalysisRelationshipMutation) RelationshipID() (r uuid.UUID, exists bool) {
+	v := m.relationship
 	if v == nil {
 		return
 	}
 	return *v, true
 }
 
-// OldComponentRelationshipID returns the old "component_relationship_id" field's value of the SystemAnalysisRelationship entity.
+// OldRelationshipID returns the old "relationship_id" field's value of the SystemAnalysisRelationship entity.
 // If the SystemAnalysisRelationship object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *SystemAnalysisRelationshipMutation) OldComponentRelationshipID(ctx context.Context) (v uuid.UUID, err error) {
+func (m *SystemAnalysisRelationshipMutation) OldRelationshipID(ctx context.Context) (v uuid.UUID, err error) {
 	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldComponentRelationshipID is only allowed on UpdateOne operations")
+		return v, errors.New("OldRelationshipID is only allowed on UpdateOne operations")
 	}
 	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldComponentRelationshipID requires an ID field in the mutation")
+		return v, errors.New("OldRelationshipID requires an ID field in the mutation")
 	}
 	oldValue, err := m.oldValue(ctx)
 	if err != nil {
-		return v, fmt.Errorf("querying old value for OldComponentRelationshipID: %w", err)
+		return v, fmt.Errorf("querying old value for OldRelationshipID: %w", err)
 	}
-	return oldValue.ComponentRelationshipID, nil
+	return oldValue.RelationshipID, nil
 }
 
-// ResetComponentRelationshipID resets all changes to the "component_relationship_id" field.
-func (m *SystemAnalysisRelationshipMutation) ResetComponentRelationshipID() {
-	m.component_relationship = nil
+// ResetRelationshipID resets all changes to the "relationship_id" field.
+func (m *SystemAnalysisRelationshipMutation) ResetRelationshipID() {
+	m.relationship = nil
 }
 
 // SetDescription sets the "description" field.
@@ -38773,31 +38935,31 @@ func (m *SystemAnalysisRelationshipMutation) ResetSystemAnalysis() {
 	m.clearedsystem_analysis = false
 }
 
-// ClearComponentRelationship clears the "component_relationship" edge to the SystemComponentRelationship entity.
-func (m *SystemAnalysisRelationshipMutation) ClearComponentRelationship() {
-	m.clearedcomponent_relationship = true
-	m.clearedFields[systemanalysisrelationship.FieldComponentRelationshipID] = struct{}{}
+// ClearRelationship clears the "relationship" edge to the SystemComponentRelationship entity.
+func (m *SystemAnalysisRelationshipMutation) ClearRelationship() {
+	m.clearedrelationship = true
+	m.clearedFields[systemanalysisrelationship.FieldRelationshipID] = struct{}{}
 }
 
-// ComponentRelationshipCleared reports if the "component_relationship" edge to the SystemComponentRelationship entity was cleared.
-func (m *SystemAnalysisRelationshipMutation) ComponentRelationshipCleared() bool {
-	return m.clearedcomponent_relationship
+// RelationshipCleared reports if the "relationship" edge to the SystemComponentRelationship entity was cleared.
+func (m *SystemAnalysisRelationshipMutation) RelationshipCleared() bool {
+	return m.clearedrelationship
 }
 
-// ComponentRelationshipIDs returns the "component_relationship" edge IDs in the mutation.
+// RelationshipIDs returns the "relationship" edge IDs in the mutation.
 // Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
-// ComponentRelationshipID instead. It exists only for internal usage by the builders.
-func (m *SystemAnalysisRelationshipMutation) ComponentRelationshipIDs() (ids []uuid.UUID) {
-	if id := m.component_relationship; id != nil {
+// RelationshipID instead. It exists only for internal usage by the builders.
+func (m *SystemAnalysisRelationshipMutation) RelationshipIDs() (ids []uuid.UUID) {
+	if id := m.relationship; id != nil {
 		ids = append(ids, *id)
 	}
 	return
 }
 
-// ResetComponentRelationship resets all changes to the "component_relationship" edge.
-func (m *SystemAnalysisRelationshipMutation) ResetComponentRelationship() {
-	m.component_relationship = nil
-	m.clearedcomponent_relationship = false
+// ResetRelationship resets all changes to the "relationship" edge.
+func (m *SystemAnalysisRelationshipMutation) ResetRelationship() {
+	m.relationship = nil
+	m.clearedrelationship = false
 }
 
 // Where appends a list predicates to the SystemAnalysisRelationshipMutation builder.
@@ -38841,8 +39003,8 @@ func (m *SystemAnalysisRelationshipMutation) Fields() []string {
 	if m.system_analysis != nil {
 		fields = append(fields, systemanalysisrelationship.FieldAnalysisID)
 	}
-	if m.component_relationship != nil {
-		fields = append(fields, systemanalysisrelationship.FieldComponentRelationshipID)
+	if m.relationship != nil {
+		fields = append(fields, systemanalysisrelationship.FieldRelationshipID)
 	}
 	if m.description != nil {
 		fields = append(fields, systemanalysisrelationship.FieldDescription)
@@ -38862,8 +39024,8 @@ func (m *SystemAnalysisRelationshipMutation) Field(name string) (ent.Value, bool
 		return m.TenantID()
 	case systemanalysisrelationship.FieldAnalysisID:
 		return m.AnalysisID()
-	case systemanalysisrelationship.FieldComponentRelationshipID:
-		return m.ComponentRelationshipID()
+	case systemanalysisrelationship.FieldRelationshipID:
+		return m.RelationshipID()
 	case systemanalysisrelationship.FieldDescription:
 		return m.Description()
 	case systemanalysisrelationship.FieldCreatedAt:
@@ -38881,8 +39043,8 @@ func (m *SystemAnalysisRelationshipMutation) OldField(ctx context.Context, name 
 		return m.OldTenantID(ctx)
 	case systemanalysisrelationship.FieldAnalysisID:
 		return m.OldAnalysisID(ctx)
-	case systemanalysisrelationship.FieldComponentRelationshipID:
-		return m.OldComponentRelationshipID(ctx)
+	case systemanalysisrelationship.FieldRelationshipID:
+		return m.OldRelationshipID(ctx)
 	case systemanalysisrelationship.FieldDescription:
 		return m.OldDescription(ctx)
 	case systemanalysisrelationship.FieldCreatedAt:
@@ -38910,12 +39072,12 @@ func (m *SystemAnalysisRelationshipMutation) SetField(name string, value ent.Val
 		}
 		m.SetAnalysisID(v)
 		return nil
-	case systemanalysisrelationship.FieldComponentRelationshipID:
+	case systemanalysisrelationship.FieldRelationshipID:
 		v, ok := value.(uuid.UUID)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
-		m.SetComponentRelationshipID(v)
+		m.SetRelationshipID(v)
 		return nil
 	case systemanalysisrelationship.FieldDescription:
 		v, ok := value.(string)
@@ -38998,8 +39160,8 @@ func (m *SystemAnalysisRelationshipMutation) ResetField(name string) error {
 	case systemanalysisrelationship.FieldAnalysisID:
 		m.ResetAnalysisID()
 		return nil
-	case systemanalysisrelationship.FieldComponentRelationshipID:
-		m.ResetComponentRelationshipID()
+	case systemanalysisrelationship.FieldRelationshipID:
+		m.ResetRelationshipID()
 		return nil
 	case systemanalysisrelationship.FieldDescription:
 		m.ResetDescription()
@@ -39020,8 +39182,8 @@ func (m *SystemAnalysisRelationshipMutation) AddedEdges() []string {
 	if m.system_analysis != nil {
 		edges = append(edges, systemanalysisrelationship.EdgeSystemAnalysis)
 	}
-	if m.component_relationship != nil {
-		edges = append(edges, systemanalysisrelationship.EdgeComponentRelationship)
+	if m.relationship != nil {
+		edges = append(edges, systemanalysisrelationship.EdgeRelationship)
 	}
 	return edges
 }
@@ -39038,8 +39200,8 @@ func (m *SystemAnalysisRelationshipMutation) AddedIDs(name string) []ent.Value {
 		if id := m.system_analysis; id != nil {
 			return []ent.Value{*id}
 		}
-	case systemanalysisrelationship.EdgeComponentRelationship:
-		if id := m.component_relationship; id != nil {
+	case systemanalysisrelationship.EdgeRelationship:
+		if id := m.relationship; id != nil {
 			return []ent.Value{*id}
 		}
 	}
@@ -39067,8 +39229,8 @@ func (m *SystemAnalysisRelationshipMutation) ClearedEdges() []string {
 	if m.clearedsystem_analysis {
 		edges = append(edges, systemanalysisrelationship.EdgeSystemAnalysis)
 	}
-	if m.clearedcomponent_relationship {
-		edges = append(edges, systemanalysisrelationship.EdgeComponentRelationship)
+	if m.clearedrelationship {
+		edges = append(edges, systemanalysisrelationship.EdgeRelationship)
 	}
 	return edges
 }
@@ -39081,8 +39243,8 @@ func (m *SystemAnalysisRelationshipMutation) EdgeCleared(name string) bool {
 		return m.clearedtenant
 	case systemanalysisrelationship.EdgeSystemAnalysis:
 		return m.clearedsystem_analysis
-	case systemanalysisrelationship.EdgeComponentRelationship:
-		return m.clearedcomponent_relationship
+	case systemanalysisrelationship.EdgeRelationship:
+		return m.clearedrelationship
 	}
 	return false
 }
@@ -39097,8 +39259,8 @@ func (m *SystemAnalysisRelationshipMutation) ClearEdge(name string) error {
 	case systemanalysisrelationship.EdgeSystemAnalysis:
 		m.ClearSystemAnalysis()
 		return nil
-	case systemanalysisrelationship.EdgeComponentRelationship:
-		m.ClearComponentRelationship()
+	case systemanalysisrelationship.EdgeRelationship:
+		m.ClearRelationship()
 		return nil
 	}
 	return fmt.Errorf("unknown SystemAnalysisRelationship unique edge %s", name)
@@ -39114,8 +39276,8 @@ func (m *SystemAnalysisRelationshipMutation) ResetEdge(name string) error {
 	case systemanalysisrelationship.EdgeSystemAnalysis:
 		m.ResetSystemAnalysis()
 		return nil
-	case systemanalysisrelationship.EdgeComponentRelationship:
-		m.ResetComponentRelationship()
+	case systemanalysisrelationship.EdgeRelationship:
+		m.ResetRelationship()
 		return nil
 	}
 	return fmt.Errorf("unknown SystemAnalysisRelationship edge %s", name)
@@ -46227,7 +46389,7 @@ type SystemRelationshipControlActionMutation struct {
 	op                  Op
 	typ                 string
 	id                  *uuid.UUID
-	_type               *string
+	name                *string
 	description         *string
 	created_at          *time.Time
 	clearedFields       map[string]struct{}
@@ -46454,40 +46616,40 @@ func (m *SystemRelationshipControlActionMutation) ResetControlID() {
 	m.control = nil
 }
 
-// SetType sets the "type" field.
-func (m *SystemRelationshipControlActionMutation) SetType(s string) {
-	m._type = &s
+// SetName sets the "name" field.
+func (m *SystemRelationshipControlActionMutation) SetName(s string) {
+	m.name = &s
 }
 
-// GetType returns the value of the "type" field in the mutation.
-func (m *SystemRelationshipControlActionMutation) GetType() (r string, exists bool) {
-	v := m._type
+// Name returns the value of the "name" field in the mutation.
+func (m *SystemRelationshipControlActionMutation) Name() (r string, exists bool) {
+	v := m.name
 	if v == nil {
 		return
 	}
 	return *v, true
 }
 
-// OldType returns the old "type" field's value of the SystemRelationshipControlAction entity.
+// OldName returns the old "name" field's value of the SystemRelationshipControlAction entity.
 // If the SystemRelationshipControlAction object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *SystemRelationshipControlActionMutation) OldType(ctx context.Context) (v string, err error) {
+func (m *SystemRelationshipControlActionMutation) OldName(ctx context.Context) (v string, err error) {
 	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldType is only allowed on UpdateOne operations")
+		return v, errors.New("OldName is only allowed on UpdateOne operations")
 	}
 	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldType requires an ID field in the mutation")
+		return v, errors.New("OldName requires an ID field in the mutation")
 	}
 	oldValue, err := m.oldValue(ctx)
 	if err != nil {
-		return v, fmt.Errorf("querying old value for OldType: %w", err)
+		return v, fmt.Errorf("querying old value for OldName: %w", err)
 	}
-	return oldValue.Type, nil
+	return oldValue.Name, nil
 }
 
-// ResetType resets all changes to the "type" field.
-func (m *SystemRelationshipControlActionMutation) ResetType() {
-	m._type = nil
+// ResetName resets all changes to the "name" field.
+func (m *SystemRelationshipControlActionMutation) ResetName() {
+	m.name = nil
 }
 
 // SetDescription sets the "description" field.
@@ -46700,8 +46862,8 @@ func (m *SystemRelationshipControlActionMutation) Fields() []string {
 	if m.control != nil {
 		fields = append(fields, systemrelationshipcontrolaction.FieldControlID)
 	}
-	if m._type != nil {
-		fields = append(fields, systemrelationshipcontrolaction.FieldType)
+	if m.name != nil {
+		fields = append(fields, systemrelationshipcontrolaction.FieldName)
 	}
 	if m.description != nil {
 		fields = append(fields, systemrelationshipcontrolaction.FieldDescription)
@@ -46723,8 +46885,8 @@ func (m *SystemRelationshipControlActionMutation) Field(name string) (ent.Value,
 		return m.RelationshipID()
 	case systemrelationshipcontrolaction.FieldControlID:
 		return m.ControlID()
-	case systemrelationshipcontrolaction.FieldType:
-		return m.GetType()
+	case systemrelationshipcontrolaction.FieldName:
+		return m.Name()
 	case systemrelationshipcontrolaction.FieldDescription:
 		return m.Description()
 	case systemrelationshipcontrolaction.FieldCreatedAt:
@@ -46744,8 +46906,8 @@ func (m *SystemRelationshipControlActionMutation) OldField(ctx context.Context, 
 		return m.OldRelationshipID(ctx)
 	case systemrelationshipcontrolaction.FieldControlID:
 		return m.OldControlID(ctx)
-	case systemrelationshipcontrolaction.FieldType:
-		return m.OldType(ctx)
+	case systemrelationshipcontrolaction.FieldName:
+		return m.OldName(ctx)
 	case systemrelationshipcontrolaction.FieldDescription:
 		return m.OldDescription(ctx)
 	case systemrelationshipcontrolaction.FieldCreatedAt:
@@ -46780,12 +46942,12 @@ func (m *SystemRelationshipControlActionMutation) SetField(name string, value en
 		}
 		m.SetControlID(v)
 		return nil
-	case systemrelationshipcontrolaction.FieldType:
+	case systemrelationshipcontrolaction.FieldName:
 		v, ok := value.(string)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
-		m.SetType(v)
+		m.SetName(v)
 		return nil
 	case systemrelationshipcontrolaction.FieldDescription:
 		v, ok := value.(string)
@@ -46871,8 +47033,8 @@ func (m *SystemRelationshipControlActionMutation) ResetField(name string) error 
 	case systemrelationshipcontrolaction.FieldControlID:
 		m.ResetControlID()
 		return nil
-	case systemrelationshipcontrolaction.FieldType:
-		m.ResetType()
+	case systemrelationshipcontrolaction.FieldName:
+		m.ResetName()
 		return nil
 	case systemrelationshipcontrolaction.FieldDescription:
 		m.ResetDescription()
@@ -47000,7 +47162,7 @@ type SystemRelationshipFeedbackSignalMutation struct {
 	op                  Op
 	typ                 string
 	id                  *uuid.UUID
-	_type               *string
+	name                *string
 	description         *string
 	created_at          *time.Time
 	clearedFields       map[string]struct{}
@@ -47227,40 +47389,40 @@ func (m *SystemRelationshipFeedbackSignalMutation) ResetSignalID() {
 	m.signal = nil
 }
 
-// SetType sets the "type" field.
-func (m *SystemRelationshipFeedbackSignalMutation) SetType(s string) {
-	m._type = &s
+// SetName sets the "name" field.
+func (m *SystemRelationshipFeedbackSignalMutation) SetName(s string) {
+	m.name = &s
 }
 
-// GetType returns the value of the "type" field in the mutation.
-func (m *SystemRelationshipFeedbackSignalMutation) GetType() (r string, exists bool) {
-	v := m._type
+// Name returns the value of the "name" field in the mutation.
+func (m *SystemRelationshipFeedbackSignalMutation) Name() (r string, exists bool) {
+	v := m.name
 	if v == nil {
 		return
 	}
 	return *v, true
 }
 
-// OldType returns the old "type" field's value of the SystemRelationshipFeedbackSignal entity.
+// OldName returns the old "name" field's value of the SystemRelationshipFeedbackSignal entity.
 // If the SystemRelationshipFeedbackSignal object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *SystemRelationshipFeedbackSignalMutation) OldType(ctx context.Context) (v string, err error) {
+func (m *SystemRelationshipFeedbackSignalMutation) OldName(ctx context.Context) (v string, err error) {
 	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldType is only allowed on UpdateOne operations")
+		return v, errors.New("OldName is only allowed on UpdateOne operations")
 	}
 	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldType requires an ID field in the mutation")
+		return v, errors.New("OldName requires an ID field in the mutation")
 	}
 	oldValue, err := m.oldValue(ctx)
 	if err != nil {
-		return v, fmt.Errorf("querying old value for OldType: %w", err)
+		return v, fmt.Errorf("querying old value for OldName: %w", err)
 	}
-	return oldValue.Type, nil
+	return oldValue.Name, nil
 }
 
-// ResetType resets all changes to the "type" field.
-func (m *SystemRelationshipFeedbackSignalMutation) ResetType() {
-	m._type = nil
+// ResetName resets all changes to the "name" field.
+func (m *SystemRelationshipFeedbackSignalMutation) ResetName() {
+	m.name = nil
 }
 
 // SetDescription sets the "description" field.
@@ -47473,8 +47635,8 @@ func (m *SystemRelationshipFeedbackSignalMutation) Fields() []string {
 	if m.signal != nil {
 		fields = append(fields, systemrelationshipfeedbacksignal.FieldSignalID)
 	}
-	if m._type != nil {
-		fields = append(fields, systemrelationshipfeedbacksignal.FieldType)
+	if m.name != nil {
+		fields = append(fields, systemrelationshipfeedbacksignal.FieldName)
 	}
 	if m.description != nil {
 		fields = append(fields, systemrelationshipfeedbacksignal.FieldDescription)
@@ -47496,8 +47658,8 @@ func (m *SystemRelationshipFeedbackSignalMutation) Field(name string) (ent.Value
 		return m.RelationshipID()
 	case systemrelationshipfeedbacksignal.FieldSignalID:
 		return m.SignalID()
-	case systemrelationshipfeedbacksignal.FieldType:
-		return m.GetType()
+	case systemrelationshipfeedbacksignal.FieldName:
+		return m.Name()
 	case systemrelationshipfeedbacksignal.FieldDescription:
 		return m.Description()
 	case systemrelationshipfeedbacksignal.FieldCreatedAt:
@@ -47517,8 +47679,8 @@ func (m *SystemRelationshipFeedbackSignalMutation) OldField(ctx context.Context,
 		return m.OldRelationshipID(ctx)
 	case systemrelationshipfeedbacksignal.FieldSignalID:
 		return m.OldSignalID(ctx)
-	case systemrelationshipfeedbacksignal.FieldType:
-		return m.OldType(ctx)
+	case systemrelationshipfeedbacksignal.FieldName:
+		return m.OldName(ctx)
 	case systemrelationshipfeedbacksignal.FieldDescription:
 		return m.OldDescription(ctx)
 	case systemrelationshipfeedbacksignal.FieldCreatedAt:
@@ -47553,12 +47715,12 @@ func (m *SystemRelationshipFeedbackSignalMutation) SetField(name string, value e
 		}
 		m.SetSignalID(v)
 		return nil
-	case systemrelationshipfeedbacksignal.FieldType:
+	case systemrelationshipfeedbacksignal.FieldName:
 		v, ok := value.(string)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
-		m.SetType(v)
+		m.SetName(v)
 		return nil
 	case systemrelationshipfeedbacksignal.FieldDescription:
 		v, ok := value.(string)
@@ -47644,8 +47806,8 @@ func (m *SystemRelationshipFeedbackSignalMutation) ResetField(name string) error
 	case systemrelationshipfeedbacksignal.FieldSignalID:
 		m.ResetSignalID()
 		return nil
-	case systemrelationshipfeedbacksignal.FieldType:
-		m.ResetType()
+	case systemrelationshipfeedbacksignal.FieldName:
+		m.ResetName()
 		return nil
 	case systemrelationshipfeedbacksignal.FieldDescription:
 		m.ResetDescription()

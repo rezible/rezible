@@ -91,7 +91,7 @@ func (SystemAnalysisRelationship) Fields() []ent.Field {
 	return []ent.Field{
 		field.UUID("id", uuid.UUID{}).Default(uuid.New),
 		field.UUID("analysis_id", uuid.UUID{}),
-		field.UUID("component_relationship_id", uuid.UUID{}),
+		field.UUID("relationship_id", uuid.UUID{}),
 		field.Text("description").Optional(),
 		field.Time("created_at").Default(time.Now),
 	}
@@ -100,13 +100,8 @@ func (SystemAnalysisRelationship) Fields() []ent.Field {
 func (SystemAnalysisRelationship) Edges() []ent.Edge {
 	return []ent.Edge{
 		edge.To("system_analysis", SystemAnalysis.Type).
-			Required().
-			Unique().
-			Field("analysis_id"),
-
-		edge.To("component_relationship", SystemComponentRelationship.Type).
-			Unique().
-			Required().
-			Field("component_relationship_id"),
+			Unique().Required().Field("analysis_id"),
+		edge.To("relationship", SystemComponentRelationship.Type).
+			Unique().Required().Field("relationship_id"),
 	}
 }

@@ -46,16 +46,16 @@ func (_u *SystemAnalysisRelationshipUpdate) SetNillableAnalysisID(v *uuid.UUID) 
 	return _u
 }
 
-// SetComponentRelationshipID sets the "component_relationship_id" field.
-func (_u *SystemAnalysisRelationshipUpdate) SetComponentRelationshipID(v uuid.UUID) *SystemAnalysisRelationshipUpdate {
-	_u.mutation.SetComponentRelationshipID(v)
+// SetRelationshipID sets the "relationship_id" field.
+func (_u *SystemAnalysisRelationshipUpdate) SetRelationshipID(v uuid.UUID) *SystemAnalysisRelationshipUpdate {
+	_u.mutation.SetRelationshipID(v)
 	return _u
 }
 
-// SetNillableComponentRelationshipID sets the "component_relationship_id" field if the given value is not nil.
-func (_u *SystemAnalysisRelationshipUpdate) SetNillableComponentRelationshipID(v *uuid.UUID) *SystemAnalysisRelationshipUpdate {
+// SetNillableRelationshipID sets the "relationship_id" field if the given value is not nil.
+func (_u *SystemAnalysisRelationshipUpdate) SetNillableRelationshipID(v *uuid.UUID) *SystemAnalysisRelationshipUpdate {
 	if v != nil {
-		_u.SetComponentRelationshipID(*v)
+		_u.SetRelationshipID(*v)
 	}
 	return _u
 }
@@ -105,9 +105,9 @@ func (_u *SystemAnalysisRelationshipUpdate) SetSystemAnalysis(v *SystemAnalysis)
 	return _u.SetSystemAnalysisID(v.ID)
 }
 
-// SetComponentRelationship sets the "component_relationship" edge to the SystemComponentRelationship entity.
-func (_u *SystemAnalysisRelationshipUpdate) SetComponentRelationship(v *SystemComponentRelationship) *SystemAnalysisRelationshipUpdate {
-	return _u.SetComponentRelationshipID(v.ID)
+// SetRelationship sets the "relationship" edge to the SystemComponentRelationship entity.
+func (_u *SystemAnalysisRelationshipUpdate) SetRelationship(v *SystemComponentRelationship) *SystemAnalysisRelationshipUpdate {
+	return _u.SetRelationshipID(v.ID)
 }
 
 // Mutation returns the SystemAnalysisRelationshipMutation object of the builder.
@@ -121,9 +121,9 @@ func (_u *SystemAnalysisRelationshipUpdate) ClearSystemAnalysis() *SystemAnalysi
 	return _u
 }
 
-// ClearComponentRelationship clears the "component_relationship" edge to the SystemComponentRelationship entity.
-func (_u *SystemAnalysisRelationshipUpdate) ClearComponentRelationship() *SystemAnalysisRelationshipUpdate {
-	_u.mutation.ClearComponentRelationship()
+// ClearRelationship clears the "relationship" edge to the SystemComponentRelationship entity.
+func (_u *SystemAnalysisRelationshipUpdate) ClearRelationship() *SystemAnalysisRelationshipUpdate {
+	_u.mutation.ClearRelationship()
 	return _u
 }
 
@@ -162,8 +162,8 @@ func (_u *SystemAnalysisRelationshipUpdate) check() error {
 	if _u.mutation.SystemAnalysisCleared() && len(_u.mutation.SystemAnalysisIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "SystemAnalysisRelationship.system_analysis"`)
 	}
-	if _u.mutation.ComponentRelationshipCleared() && len(_u.mutation.ComponentRelationshipIDs()) > 0 {
-		return errors.New(`ent: clearing a required unique edge "SystemAnalysisRelationship.component_relationship"`)
+	if _u.mutation.RelationshipCleared() && len(_u.mutation.RelationshipIDs()) > 0 {
+		return errors.New(`ent: clearing a required unique edge "SystemAnalysisRelationship.relationship"`)
 	}
 	return nil
 }
@@ -224,12 +224,12 @@ func (_u *SystemAnalysisRelationshipUpdate) sqlSave(ctx context.Context) (_node 
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if _u.mutation.ComponentRelationshipCleared() {
+	if _u.mutation.RelationshipCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
-			Table:   systemanalysisrelationship.ComponentRelationshipTable,
-			Columns: []string{systemanalysisrelationship.ComponentRelationshipColumn},
+			Table:   systemanalysisrelationship.RelationshipTable,
+			Columns: []string{systemanalysisrelationship.RelationshipColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(systemcomponentrelationship.FieldID, field.TypeUUID),
@@ -237,12 +237,12 @@ func (_u *SystemAnalysisRelationshipUpdate) sqlSave(ctx context.Context) (_node 
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := _u.mutation.ComponentRelationshipIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.RelationshipIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
-			Table:   systemanalysisrelationship.ComponentRelationshipTable,
-			Columns: []string{systemanalysisrelationship.ComponentRelationshipColumn},
+			Table:   systemanalysisrelationship.RelationshipTable,
+			Columns: []string{systemanalysisrelationship.RelationshipColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(systemcomponentrelationship.FieldID, field.TypeUUID),
@@ -289,16 +289,16 @@ func (_u *SystemAnalysisRelationshipUpdateOne) SetNillableAnalysisID(v *uuid.UUI
 	return _u
 }
 
-// SetComponentRelationshipID sets the "component_relationship_id" field.
-func (_u *SystemAnalysisRelationshipUpdateOne) SetComponentRelationshipID(v uuid.UUID) *SystemAnalysisRelationshipUpdateOne {
-	_u.mutation.SetComponentRelationshipID(v)
+// SetRelationshipID sets the "relationship_id" field.
+func (_u *SystemAnalysisRelationshipUpdateOne) SetRelationshipID(v uuid.UUID) *SystemAnalysisRelationshipUpdateOne {
+	_u.mutation.SetRelationshipID(v)
 	return _u
 }
 
-// SetNillableComponentRelationshipID sets the "component_relationship_id" field if the given value is not nil.
-func (_u *SystemAnalysisRelationshipUpdateOne) SetNillableComponentRelationshipID(v *uuid.UUID) *SystemAnalysisRelationshipUpdateOne {
+// SetNillableRelationshipID sets the "relationship_id" field if the given value is not nil.
+func (_u *SystemAnalysisRelationshipUpdateOne) SetNillableRelationshipID(v *uuid.UUID) *SystemAnalysisRelationshipUpdateOne {
 	if v != nil {
-		_u.SetComponentRelationshipID(*v)
+		_u.SetRelationshipID(*v)
 	}
 	return _u
 }
@@ -348,9 +348,9 @@ func (_u *SystemAnalysisRelationshipUpdateOne) SetSystemAnalysis(v *SystemAnalys
 	return _u.SetSystemAnalysisID(v.ID)
 }
 
-// SetComponentRelationship sets the "component_relationship" edge to the SystemComponentRelationship entity.
-func (_u *SystemAnalysisRelationshipUpdateOne) SetComponentRelationship(v *SystemComponentRelationship) *SystemAnalysisRelationshipUpdateOne {
-	return _u.SetComponentRelationshipID(v.ID)
+// SetRelationship sets the "relationship" edge to the SystemComponentRelationship entity.
+func (_u *SystemAnalysisRelationshipUpdateOne) SetRelationship(v *SystemComponentRelationship) *SystemAnalysisRelationshipUpdateOne {
+	return _u.SetRelationshipID(v.ID)
 }
 
 // Mutation returns the SystemAnalysisRelationshipMutation object of the builder.
@@ -364,9 +364,9 @@ func (_u *SystemAnalysisRelationshipUpdateOne) ClearSystemAnalysis() *SystemAnal
 	return _u
 }
 
-// ClearComponentRelationship clears the "component_relationship" edge to the SystemComponentRelationship entity.
-func (_u *SystemAnalysisRelationshipUpdateOne) ClearComponentRelationship() *SystemAnalysisRelationshipUpdateOne {
-	_u.mutation.ClearComponentRelationship()
+// ClearRelationship clears the "relationship" edge to the SystemComponentRelationship entity.
+func (_u *SystemAnalysisRelationshipUpdateOne) ClearRelationship() *SystemAnalysisRelationshipUpdateOne {
+	_u.mutation.ClearRelationship()
 	return _u
 }
 
@@ -418,8 +418,8 @@ func (_u *SystemAnalysisRelationshipUpdateOne) check() error {
 	if _u.mutation.SystemAnalysisCleared() && len(_u.mutation.SystemAnalysisIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "SystemAnalysisRelationship.system_analysis"`)
 	}
-	if _u.mutation.ComponentRelationshipCleared() && len(_u.mutation.ComponentRelationshipIDs()) > 0 {
-		return errors.New(`ent: clearing a required unique edge "SystemAnalysisRelationship.component_relationship"`)
+	if _u.mutation.RelationshipCleared() && len(_u.mutation.RelationshipIDs()) > 0 {
+		return errors.New(`ent: clearing a required unique edge "SystemAnalysisRelationship.relationship"`)
 	}
 	return nil
 }
@@ -497,12 +497,12 @@ func (_u *SystemAnalysisRelationshipUpdateOne) sqlSave(ctx context.Context) (_no
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if _u.mutation.ComponentRelationshipCleared() {
+	if _u.mutation.RelationshipCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
-			Table:   systemanalysisrelationship.ComponentRelationshipTable,
-			Columns: []string{systemanalysisrelationship.ComponentRelationshipColumn},
+			Table:   systemanalysisrelationship.RelationshipTable,
+			Columns: []string{systemanalysisrelationship.RelationshipColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(systemcomponentrelationship.FieldID, field.TypeUUID),
@@ -510,12 +510,12 @@ func (_u *SystemAnalysisRelationshipUpdateOne) sqlSave(ctx context.Context) (_no
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := _u.mutation.ComponentRelationshipIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.RelationshipIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
-			Table:   systemanalysisrelationship.ComponentRelationshipTable,
-			Columns: []string{systemanalysisrelationship.ComponentRelationshipColumn},
+			Table:   systemanalysisrelationship.RelationshipTable,
+			Columns: []string{systemanalysisrelationship.RelationshipColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(systemcomponentrelationship.FieldID, field.TypeUUID),

@@ -1,6 +1,8 @@
 package schema
 
 import (
+	"time"
+
 	"entgo.io/ent"
 	"entgo.io/ent/schema/edge"
 	"entgo.io/ent/schema/field"
@@ -17,6 +19,7 @@ func (Incident) Mixin() []ent.Mixin {
 		BaseMixin{},
 		TenantMixin{},
 		IntegrationMixin{},
+		TimestampsMixin{},
 	}
 }
 
@@ -30,6 +33,7 @@ func (Incident) Fields() []ent.Field {
 		field.UUID("type_id", uuid.UUID{}),
 		field.String("summary").Optional(),
 		field.String("chat_channel_id").Optional(),
+		field.Time("opened_at").Default(time.Now),
 	}
 }
 

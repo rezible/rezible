@@ -186,8 +186,24 @@ func init() {
 			return next.Mutate(ctx, m)
 		})
 	}
+	incidentMixinFields3 := incidentMixin[3].Fields()
+	_ = incidentMixinFields3
 	incidentFields := schema.Incident{}.Fields()
 	_ = incidentFields
+	// incidentDescCreatedAt is the schema descriptor for created_at field.
+	incidentDescCreatedAt := incidentMixinFields3[0].Descriptor()
+	// incident.DefaultCreatedAt holds the default value on creation for the created_at field.
+	incident.DefaultCreatedAt = incidentDescCreatedAt.Default.(func() time.Time)
+	// incidentDescUpdatedAt is the schema descriptor for updated_at field.
+	incidentDescUpdatedAt := incidentMixinFields3[1].Descriptor()
+	// incident.DefaultUpdatedAt holds the default value on creation for the updated_at field.
+	incident.DefaultUpdatedAt = incidentDescUpdatedAt.Default.(func() time.Time)
+	// incident.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
+	incident.UpdateDefaultUpdatedAt = incidentDescUpdatedAt.UpdateDefault.(func() time.Time)
+	// incidentDescOpenedAt is the schema descriptor for opened_at field.
+	incidentDescOpenedAt := incidentFields[7].Descriptor()
+	// incident.DefaultOpenedAt holds the default value on creation for the opened_at field.
+	incident.DefaultOpenedAt = incidentDescOpenedAt.Default.(func() time.Time)
 	// incidentDescID is the schema descriptor for id field.
 	incidentDescID := incidentFields[0].Descriptor()
 	// incident.DefaultID holds the default value on creation for the id field.
@@ -1149,10 +1165,10 @@ func init() {
 	}
 	systemrelationshipcontrolactionFields := schema.SystemRelationshipControlAction{}.Fields()
 	_ = systemrelationshipcontrolactionFields
-	// systemrelationshipcontrolactionDescType is the schema descriptor for type field.
-	systemrelationshipcontrolactionDescType := systemrelationshipcontrolactionFields[3].Descriptor()
-	// systemrelationshipcontrolaction.TypeValidator is a validator for the "type" field. It is called by the builders before save.
-	systemrelationshipcontrolaction.TypeValidator = systemrelationshipcontrolactionDescType.Validators[0].(func(string) error)
+	// systemrelationshipcontrolactionDescName is the schema descriptor for name field.
+	systemrelationshipcontrolactionDescName := systemrelationshipcontrolactionFields[3].Descriptor()
+	// systemrelationshipcontrolaction.NameValidator is a validator for the "name" field. It is called by the builders before save.
+	systemrelationshipcontrolaction.NameValidator = systemrelationshipcontrolactionDescName.Validators[0].(func(string) error)
 	// systemrelationshipcontrolactionDescCreatedAt is the schema descriptor for created_at field.
 	systemrelationshipcontrolactionDescCreatedAt := systemrelationshipcontrolactionFields[5].Descriptor()
 	// systemrelationshipcontrolaction.DefaultCreatedAt holds the default value on creation for the created_at field.
@@ -1173,10 +1189,10 @@ func init() {
 	}
 	systemrelationshipfeedbacksignalFields := schema.SystemRelationshipFeedbackSignal{}.Fields()
 	_ = systemrelationshipfeedbacksignalFields
-	// systemrelationshipfeedbacksignalDescType is the schema descriptor for type field.
-	systemrelationshipfeedbacksignalDescType := systemrelationshipfeedbacksignalFields[3].Descriptor()
-	// systemrelationshipfeedbacksignal.TypeValidator is a validator for the "type" field. It is called by the builders before save.
-	systemrelationshipfeedbacksignal.TypeValidator = systemrelationshipfeedbacksignalDescType.Validators[0].(func(string) error)
+	// systemrelationshipfeedbacksignalDescName is the schema descriptor for name field.
+	systemrelationshipfeedbacksignalDescName := systemrelationshipfeedbacksignalFields[3].Descriptor()
+	// systemrelationshipfeedbacksignal.NameValidator is a validator for the "name" field. It is called by the builders before save.
+	systemrelationshipfeedbacksignal.NameValidator = systemrelationshipfeedbacksignalDescName.Validators[0].(func(string) error)
 	// systemrelationshipfeedbacksignalDescCreatedAt is the schema descriptor for created_at field.
 	systemrelationshipfeedbacksignalDescCreatedAt := systemrelationshipfeedbacksignalFields[5].Descriptor()
 	// systemrelationshipfeedbacksignal.DefaultCreatedAt holds the default value on creation for the created_at field.

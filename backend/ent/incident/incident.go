@@ -3,6 +3,8 @@
 package incident
 
 import (
+	"time"
+
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
@@ -18,6 +20,10 @@ const (
 	FieldTenantID = "tenant_id"
 	// FieldExternalID holds the string denoting the external_id field in the database.
 	FieldExternalID = "external_id"
+	// FieldCreatedAt holds the string denoting the created_at field in the database.
+	FieldCreatedAt = "created_at"
+	// FieldUpdatedAt holds the string denoting the updated_at field in the database.
+	FieldUpdatedAt = "updated_at"
 	// FieldSlug holds the string denoting the slug field in the database.
 	FieldSlug = "slug"
 	// FieldTitle holds the string denoting the title field in the database.
@@ -30,6 +36,8 @@ const (
 	FieldSummary = "summary"
 	// FieldChatChannelID holds the string denoting the chat_channel_id field in the database.
 	FieldChatChannelID = "chat_channel_id"
+	// FieldOpenedAt holds the string denoting the opened_at field in the database.
+	FieldOpenedAt = "opened_at"
 	// EdgeTenant holds the string denoting the tenant edge name in mutations.
 	EdgeTenant = "tenant"
 	// EdgeSeverity holds the string denoting the severity edge name in mutations.
@@ -170,12 +178,15 @@ var Columns = []string{
 	FieldID,
 	FieldTenantID,
 	FieldExternalID,
+	FieldCreatedAt,
+	FieldUpdatedAt,
 	FieldSlug,
 	FieldTitle,
 	FieldSeverityID,
 	FieldTypeID,
 	FieldSummary,
 	FieldChatChannelID,
+	FieldOpenedAt,
 }
 
 var (
@@ -214,6 +225,14 @@ func ValidColumn(column string) bool {
 var (
 	Hooks  [1]ent.Hook
 	Policy ent.Policy
+	// DefaultCreatedAt holds the default value on creation for the "created_at" field.
+	DefaultCreatedAt func() time.Time
+	// DefaultUpdatedAt holds the default value on creation for the "updated_at" field.
+	DefaultUpdatedAt func() time.Time
+	// UpdateDefaultUpdatedAt holds the default value on update for the "updated_at" field.
+	UpdateDefaultUpdatedAt func() time.Time
+	// DefaultOpenedAt holds the default value on creation for the "opened_at" field.
+	DefaultOpenedAt func() time.Time
 	// DefaultID holds the default value on creation for the "id" field.
 	DefaultID func() uuid.UUID
 )
@@ -234,6 +253,16 @@ func ByTenantID(opts ...sql.OrderTermOption) OrderOption {
 // ByExternalID orders the results by the external_id field.
 func ByExternalID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldExternalID, opts...).ToFunc()
+}
+
+// ByCreatedAt orders the results by the created_at field.
+func ByCreatedAt(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldCreatedAt, opts...).ToFunc()
+}
+
+// ByUpdatedAt orders the results by the updated_at field.
+func ByUpdatedAt(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldUpdatedAt, opts...).ToFunc()
 }
 
 // BySlug orders the results by the slug field.
@@ -264,6 +293,11 @@ func BySummary(opts ...sql.OrderTermOption) OrderOption {
 // ByChatChannelID orders the results by the chat_channel_id field.
 func ByChatChannelID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldChatChannelID, opts...).ToFunc()
+}
+
+// ByOpenedAt orders the results by the opened_at field.
+func ByOpenedAt(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldOpenedAt, opts...).ToFunc()
 }
 
 // ByTenantField orders the results by tenant field.

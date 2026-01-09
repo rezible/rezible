@@ -20,8 +20,8 @@ const (
 	FieldTenantID = "tenant_id"
 	// FieldAnalysisID holds the string denoting the analysis_id field in the database.
 	FieldAnalysisID = "analysis_id"
-	// FieldComponentRelationshipID holds the string denoting the component_relationship_id field in the database.
-	FieldComponentRelationshipID = "component_relationship_id"
+	// FieldRelationshipID holds the string denoting the relationship_id field in the database.
+	FieldRelationshipID = "relationship_id"
 	// FieldDescription holds the string denoting the description field in the database.
 	FieldDescription = "description"
 	// FieldCreatedAt holds the string denoting the created_at field in the database.
@@ -30,8 +30,8 @@ const (
 	EdgeTenant = "tenant"
 	// EdgeSystemAnalysis holds the string denoting the system_analysis edge name in mutations.
 	EdgeSystemAnalysis = "system_analysis"
-	// EdgeComponentRelationship holds the string denoting the component_relationship edge name in mutations.
-	EdgeComponentRelationship = "component_relationship"
+	// EdgeRelationship holds the string denoting the relationship edge name in mutations.
+	EdgeRelationship = "relationship"
 	// Table holds the table name of the systemanalysisrelationship in the database.
 	Table = "system_analysis_relationships"
 	// TenantTable is the table that holds the tenant relation/edge.
@@ -48,13 +48,13 @@ const (
 	SystemAnalysisInverseTable = "system_analyses"
 	// SystemAnalysisColumn is the table column denoting the system_analysis relation/edge.
 	SystemAnalysisColumn = "analysis_id"
-	// ComponentRelationshipTable is the table that holds the component_relationship relation/edge.
-	ComponentRelationshipTable = "system_analysis_relationships"
-	// ComponentRelationshipInverseTable is the table name for the SystemComponentRelationship entity.
+	// RelationshipTable is the table that holds the relationship relation/edge.
+	RelationshipTable = "system_analysis_relationships"
+	// RelationshipInverseTable is the table name for the SystemComponentRelationship entity.
 	// It exists in this package in order to avoid circular dependency with the "systemcomponentrelationship" package.
-	ComponentRelationshipInverseTable = "system_component_relationships"
-	// ComponentRelationshipColumn is the table column denoting the component_relationship relation/edge.
-	ComponentRelationshipColumn = "component_relationship_id"
+	RelationshipInverseTable = "system_component_relationships"
+	// RelationshipColumn is the table column denoting the relationship relation/edge.
+	RelationshipColumn = "relationship_id"
 )
 
 // Columns holds all SQL columns for systemanalysisrelationship fields.
@@ -62,7 +62,7 @@ var Columns = []string{
 	FieldID,
 	FieldTenantID,
 	FieldAnalysisID,
-	FieldComponentRelationshipID,
+	FieldRelationshipID,
 	FieldDescription,
 	FieldCreatedAt,
 }
@@ -109,9 +109,9 @@ func ByAnalysisID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldAnalysisID, opts...).ToFunc()
 }
 
-// ByComponentRelationshipID orders the results by the component_relationship_id field.
-func ByComponentRelationshipID(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldComponentRelationshipID, opts...).ToFunc()
+// ByRelationshipID orders the results by the relationship_id field.
+func ByRelationshipID(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldRelationshipID, opts...).ToFunc()
 }
 
 // ByDescription orders the results by the description field.
@@ -138,10 +138,10 @@ func BySystemAnalysisField(field string, opts ...sql.OrderTermOption) OrderOptio
 	}
 }
 
-// ByComponentRelationshipField orders the results by component_relationship field.
-func ByComponentRelationshipField(field string, opts ...sql.OrderTermOption) OrderOption {
+// ByRelationshipField orders the results by relationship field.
+func ByRelationshipField(field string, opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborTerms(s, newComponentRelationshipStep(), sql.OrderByField(field, opts...))
+		sqlgraph.OrderByNeighborTerms(s, newRelationshipStep(), sql.OrderByField(field, opts...))
 	}
 }
 func newTenantStep() *sqlgraph.Step {
@@ -158,10 +158,10 @@ func newSystemAnalysisStep() *sqlgraph.Step {
 		sqlgraph.Edge(sqlgraph.M2O, false, SystemAnalysisTable, SystemAnalysisColumn),
 	)
 }
-func newComponentRelationshipStep() *sqlgraph.Step {
+func newRelationshipStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
-		sqlgraph.To(ComponentRelationshipInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.M2O, false, ComponentRelationshipTable, ComponentRelationshipColumn),
+		sqlgraph.To(RelationshipInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.M2O, false, RelationshipTable, RelationshipColumn),
 	)
 }

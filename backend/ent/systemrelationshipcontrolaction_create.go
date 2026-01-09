@@ -45,9 +45,9 @@ func (_c *SystemRelationshipControlActionCreate) SetControlID(v uuid.UUID) *Syst
 	return _c
 }
 
-// SetType sets the "type" field.
-func (_c *SystemRelationshipControlActionCreate) SetType(v string) *SystemRelationshipControlActionCreate {
-	_c.mutation.SetType(v)
+// SetName sets the "name" field.
+func (_c *SystemRelationshipControlActionCreate) SetName(v string) *SystemRelationshipControlActionCreate {
+	_c.mutation.SetName(v)
 	return _c
 }
 
@@ -173,12 +173,12 @@ func (_c *SystemRelationshipControlActionCreate) check() error {
 	if _, ok := _c.mutation.ControlID(); !ok {
 		return &ValidationError{Name: "control_id", err: errors.New(`ent: missing required field "SystemRelationshipControlAction.control_id"`)}
 	}
-	if _, ok := _c.mutation.GetType(); !ok {
-		return &ValidationError{Name: "type", err: errors.New(`ent: missing required field "SystemRelationshipControlAction.type"`)}
+	if _, ok := _c.mutation.Name(); !ok {
+		return &ValidationError{Name: "name", err: errors.New(`ent: missing required field "SystemRelationshipControlAction.name"`)}
 	}
-	if v, ok := _c.mutation.GetType(); ok {
-		if err := systemrelationshipcontrolaction.TypeValidator(v); err != nil {
-			return &ValidationError{Name: "type", err: fmt.Errorf(`ent: validator failed for field "SystemRelationshipControlAction.type": %w`, err)}
+	if v, ok := _c.mutation.Name(); ok {
+		if err := systemrelationshipcontrolaction.NameValidator(v); err != nil {
+			return &ValidationError{Name: "name", err: fmt.Errorf(`ent: validator failed for field "SystemRelationshipControlAction.name": %w`, err)}
 		}
 	}
 	if _, ok := _c.mutation.CreatedAt(); !ok {
@@ -229,9 +229,9 @@ func (_c *SystemRelationshipControlActionCreate) createSpec() (*SystemRelationsh
 		_node.ID = id
 		_spec.ID.Value = &id
 	}
-	if value, ok := _c.mutation.GetType(); ok {
-		_spec.SetField(systemrelationshipcontrolaction.FieldType, field.TypeString, value)
-		_node.Type = value
+	if value, ok := _c.mutation.Name(); ok {
+		_spec.SetField(systemrelationshipcontrolaction.FieldName, field.TypeString, value)
+		_node.Name = value
 	}
 	if value, ok := _c.mutation.Description(); ok {
 		_spec.SetField(systemrelationshipcontrolaction.FieldDescription, field.TypeString, value)
@@ -368,15 +368,15 @@ func (u *SystemRelationshipControlActionUpsert) UpdateControlID() *SystemRelatio
 	return u
 }
 
-// SetType sets the "type" field.
-func (u *SystemRelationshipControlActionUpsert) SetType(v string) *SystemRelationshipControlActionUpsert {
-	u.Set(systemrelationshipcontrolaction.FieldType, v)
+// SetName sets the "name" field.
+func (u *SystemRelationshipControlActionUpsert) SetName(v string) *SystemRelationshipControlActionUpsert {
+	u.Set(systemrelationshipcontrolaction.FieldName, v)
 	return u
 }
 
-// UpdateType sets the "type" field to the value that was provided on create.
-func (u *SystemRelationshipControlActionUpsert) UpdateType() *SystemRelationshipControlActionUpsert {
-	u.SetExcluded(systemrelationshipcontrolaction.FieldType)
+// UpdateName sets the "name" field to the value that was provided on create.
+func (u *SystemRelationshipControlActionUpsert) UpdateName() *SystemRelationshipControlActionUpsert {
+	u.SetExcluded(systemrelationshipcontrolaction.FieldName)
 	return u
 }
 
@@ -489,17 +489,17 @@ func (u *SystemRelationshipControlActionUpsertOne) UpdateControlID() *SystemRela
 	})
 }
 
-// SetType sets the "type" field.
-func (u *SystemRelationshipControlActionUpsertOne) SetType(v string) *SystemRelationshipControlActionUpsertOne {
+// SetName sets the "name" field.
+func (u *SystemRelationshipControlActionUpsertOne) SetName(v string) *SystemRelationshipControlActionUpsertOne {
 	return u.Update(func(s *SystemRelationshipControlActionUpsert) {
-		s.SetType(v)
+		s.SetName(v)
 	})
 }
 
-// UpdateType sets the "type" field to the value that was provided on create.
-func (u *SystemRelationshipControlActionUpsertOne) UpdateType() *SystemRelationshipControlActionUpsertOne {
+// UpdateName sets the "name" field to the value that was provided on create.
+func (u *SystemRelationshipControlActionUpsertOne) UpdateName() *SystemRelationshipControlActionUpsertOne {
 	return u.Update(func(s *SystemRelationshipControlActionUpsert) {
-		s.UpdateType()
+		s.UpdateName()
 	})
 }
 
@@ -784,17 +784,17 @@ func (u *SystemRelationshipControlActionUpsertBulk) UpdateControlID() *SystemRel
 	})
 }
 
-// SetType sets the "type" field.
-func (u *SystemRelationshipControlActionUpsertBulk) SetType(v string) *SystemRelationshipControlActionUpsertBulk {
+// SetName sets the "name" field.
+func (u *SystemRelationshipControlActionUpsertBulk) SetName(v string) *SystemRelationshipControlActionUpsertBulk {
 	return u.Update(func(s *SystemRelationshipControlActionUpsert) {
-		s.SetType(v)
+		s.SetName(v)
 	})
 }
 
-// UpdateType sets the "type" field to the value that was provided on create.
-func (u *SystemRelationshipControlActionUpsertBulk) UpdateType() *SystemRelationshipControlActionUpsertBulk {
+// UpdateName sets the "name" field to the value that was provided on create.
+func (u *SystemRelationshipControlActionUpsertBulk) UpdateName() *SystemRelationshipControlActionUpsertBulk {
 	return u.Update(func(s *SystemRelationshipControlActionUpsert) {
-		s.UpdateType()
+		s.UpdateName()
 	})
 }
 

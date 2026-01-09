@@ -97,9 +97,7 @@ func IncidentFromEnt(inc *ent.Incident) Incident {
 		Slug:     inc.Slug,
 		Title:    inc.Title,
 		Summary:  inc.Summary,
-		Private:  inc.Private,
 		OpenedAt: inc.OpenedAt,
-		ClosedAt: inc.ClosedAt,
 	}
 
 	if inc.Edges.Retrospective != nil {

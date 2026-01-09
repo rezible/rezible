@@ -218,12 +218,15 @@ var schemaGraph = func() *sqlgraph.Schema {
 		Fields: map[string]*sqlgraph.FieldSpec{
 			incident.FieldTenantID:      {Type: field.TypeInt, Column: incident.FieldTenantID},
 			incident.FieldExternalID:    {Type: field.TypeString, Column: incident.FieldExternalID},
+			incident.FieldCreatedAt:     {Type: field.TypeTime, Column: incident.FieldCreatedAt},
+			incident.FieldUpdatedAt:     {Type: field.TypeTime, Column: incident.FieldUpdatedAt},
 			incident.FieldSlug:          {Type: field.TypeString, Column: incident.FieldSlug},
 			incident.FieldTitle:         {Type: field.TypeString, Column: incident.FieldTitle},
 			incident.FieldSeverityID:    {Type: field.TypeUUID, Column: incident.FieldSeverityID},
 			incident.FieldTypeID:        {Type: field.TypeUUID, Column: incident.FieldTypeID},
 			incident.FieldSummary:       {Type: field.TypeString, Column: incident.FieldSummary},
 			incident.FieldChatChannelID: {Type: field.TypeString, Column: incident.FieldChatChannelID},
+			incident.FieldOpenedAt:      {Type: field.TypeTime, Column: incident.FieldOpenedAt},
 		},
 	}
 	graph.Nodes[8] = &sqlgraph.Node{
@@ -929,11 +932,11 @@ var schemaGraph = func() *sqlgraph.Schema {
 		},
 		Type: "SystemAnalysisRelationship",
 		Fields: map[string]*sqlgraph.FieldSpec{
-			systemanalysisrelationship.FieldTenantID:                {Type: field.TypeInt, Column: systemanalysisrelationship.FieldTenantID},
-			systemanalysisrelationship.FieldAnalysisID:              {Type: field.TypeUUID, Column: systemanalysisrelationship.FieldAnalysisID},
-			systemanalysisrelationship.FieldComponentRelationshipID: {Type: field.TypeUUID, Column: systemanalysisrelationship.FieldComponentRelationshipID},
-			systemanalysisrelationship.FieldDescription:             {Type: field.TypeString, Column: systemanalysisrelationship.FieldDescription},
-			systemanalysisrelationship.FieldCreatedAt:               {Type: field.TypeTime, Column: systemanalysisrelationship.FieldCreatedAt},
+			systemanalysisrelationship.FieldTenantID:       {Type: field.TypeInt, Column: systemanalysisrelationship.FieldTenantID},
+			systemanalysisrelationship.FieldAnalysisID:     {Type: field.TypeUUID, Column: systemanalysisrelationship.FieldAnalysisID},
+			systemanalysisrelationship.FieldRelationshipID: {Type: field.TypeUUID, Column: systemanalysisrelationship.FieldRelationshipID},
+			systemanalysisrelationship.FieldDescription:    {Type: field.TypeString, Column: systemanalysisrelationship.FieldDescription},
+			systemanalysisrelationship.FieldCreatedAt:      {Type: field.TypeTime, Column: systemanalysisrelationship.FieldCreatedAt},
 		},
 	}
 	graph.Nodes[46] = &sqlgraph.Node{
@@ -1081,7 +1084,7 @@ var schemaGraph = func() *sqlgraph.Schema {
 			systemrelationshipcontrolaction.FieldTenantID:       {Type: field.TypeInt, Column: systemrelationshipcontrolaction.FieldTenantID},
 			systemrelationshipcontrolaction.FieldRelationshipID: {Type: field.TypeUUID, Column: systemrelationshipcontrolaction.FieldRelationshipID},
 			systemrelationshipcontrolaction.FieldControlID:      {Type: field.TypeUUID, Column: systemrelationshipcontrolaction.FieldControlID},
-			systemrelationshipcontrolaction.FieldType:           {Type: field.TypeString, Column: systemrelationshipcontrolaction.FieldType},
+			systemrelationshipcontrolaction.FieldName:           {Type: field.TypeString, Column: systemrelationshipcontrolaction.FieldName},
 			systemrelationshipcontrolaction.FieldDescription:    {Type: field.TypeString, Column: systemrelationshipcontrolaction.FieldDescription},
 			systemrelationshipcontrolaction.FieldCreatedAt:      {Type: field.TypeTime, Column: systemrelationshipcontrolaction.FieldCreatedAt},
 		},
@@ -1100,7 +1103,7 @@ var schemaGraph = func() *sqlgraph.Schema {
 			systemrelationshipfeedbacksignal.FieldTenantID:       {Type: field.TypeInt, Column: systemrelationshipfeedbacksignal.FieldTenantID},
 			systemrelationshipfeedbacksignal.FieldRelationshipID: {Type: field.TypeUUID, Column: systemrelationshipfeedbacksignal.FieldRelationshipID},
 			systemrelationshipfeedbacksignal.FieldSignalID:       {Type: field.TypeUUID, Column: systemrelationshipfeedbacksignal.FieldSignalID},
-			systemrelationshipfeedbacksignal.FieldType:           {Type: field.TypeString, Column: systemrelationshipfeedbacksignal.FieldType},
+			systemrelationshipfeedbacksignal.FieldName:           {Type: field.TypeString, Column: systemrelationshipfeedbacksignal.FieldName},
 			systemrelationshipfeedbacksignal.FieldDescription:    {Type: field.TypeString, Column: systemrelationshipfeedbacksignal.FieldDescription},
 			systemrelationshipfeedbacksignal.FieldCreatedAt:      {Type: field.TypeTime, Column: systemrelationshipfeedbacksignal.FieldCreatedAt},
 		},
@@ -3148,12 +3151,12 @@ var schemaGraph = func() *sqlgraph.Schema {
 		"SystemAnalysis",
 	)
 	graph.MustAddE(
-		"component_relationship",
+		"relationship",
 		&sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
-			Table:   systemanalysisrelationship.ComponentRelationshipTable,
-			Columns: []string{systemanalysisrelationship.ComponentRelationshipColumn},
+			Table:   systemanalysisrelationship.RelationshipTable,
+			Columns: []string{systemanalysisrelationship.RelationshipColumn},
 			Bidi:    false,
 		},
 		"SystemAnalysisRelationship",
@@ -4806,6 +4809,16 @@ func (f *IncidentFilter) WhereExternalID(p entql.StringP) {
 	f.Where(p.Field(incident.FieldExternalID))
 }
 
+// WhereCreatedAt applies the entql time.Time predicate on the created_at field.
+func (f *IncidentFilter) WhereCreatedAt(p entql.TimeP) {
+	f.Where(p.Field(incident.FieldCreatedAt))
+}
+
+// WhereUpdatedAt applies the entql time.Time predicate on the updated_at field.
+func (f *IncidentFilter) WhereUpdatedAt(p entql.TimeP) {
+	f.Where(p.Field(incident.FieldUpdatedAt))
+}
+
 // WhereSlug applies the entql string predicate on the slug field.
 func (f *IncidentFilter) WhereSlug(p entql.StringP) {
 	f.Where(p.Field(incident.FieldSlug))
@@ -4834,6 +4847,11 @@ func (f *IncidentFilter) WhereSummary(p entql.StringP) {
 // WhereChatChannelID applies the entql string predicate on the chat_channel_id field.
 func (f *IncidentFilter) WhereChatChannelID(p entql.StringP) {
 	f.Where(p.Field(incident.FieldChatChannelID))
+}
+
+// WhereOpenedAt applies the entql time.Time predicate on the opened_at field.
+func (f *IncidentFilter) WhereOpenedAt(p entql.TimeP) {
+	f.Where(p.Field(incident.FieldOpenedAt))
 }
 
 // WhereHasTenant applies a predicate to check if query has an edge tenant.
@@ -9395,9 +9413,9 @@ func (f *SystemAnalysisRelationshipFilter) WhereAnalysisID(p entql.ValueP) {
 	f.Where(p.Field(systemanalysisrelationship.FieldAnalysisID))
 }
 
-// WhereComponentRelationshipID applies the entql [16]byte predicate on the component_relationship_id field.
-func (f *SystemAnalysisRelationshipFilter) WhereComponentRelationshipID(p entql.ValueP) {
-	f.Where(p.Field(systemanalysisrelationship.FieldComponentRelationshipID))
+// WhereRelationshipID applies the entql [16]byte predicate on the relationship_id field.
+func (f *SystemAnalysisRelationshipFilter) WhereRelationshipID(p entql.ValueP) {
+	f.Where(p.Field(systemanalysisrelationship.FieldRelationshipID))
 }
 
 // WhereDescription applies the entql string predicate on the description field.
@@ -9438,14 +9456,14 @@ func (f *SystemAnalysisRelationshipFilter) WhereHasSystemAnalysisWith(preds ...p
 	})))
 }
 
-// WhereHasComponentRelationship applies a predicate to check if query has an edge component_relationship.
-func (f *SystemAnalysisRelationshipFilter) WhereHasComponentRelationship() {
-	f.Where(entql.HasEdge("component_relationship"))
+// WhereHasRelationship applies a predicate to check if query has an edge relationship.
+func (f *SystemAnalysisRelationshipFilter) WhereHasRelationship() {
+	f.Where(entql.HasEdge("relationship"))
 }
 
-// WhereHasComponentRelationshipWith applies a predicate to check if query has an edge component_relationship with a given conditions (other predicates).
-func (f *SystemAnalysisRelationshipFilter) WhereHasComponentRelationshipWith(preds ...predicate.SystemComponentRelationship) {
-	f.Where(entql.HasEdgeWith("component_relationship", sqlgraph.WrapFunc(func(s *sql.Selector) {
+// WhereHasRelationshipWith applies a predicate to check if query has an edge relationship with a given conditions (other predicates).
+func (f *SystemAnalysisRelationshipFilter) WhereHasRelationshipWith(preds ...predicate.SystemComponentRelationship) {
+	f.Where(entql.HasEdgeWith("relationship", sqlgraph.WrapFunc(func(s *sql.Selector) {
 		for _, p := range preds {
 			p(s)
 		}
@@ -10519,9 +10537,9 @@ func (f *SystemRelationshipControlActionFilter) WhereControlID(p entql.ValueP) {
 	f.Where(p.Field(systemrelationshipcontrolaction.FieldControlID))
 }
 
-// WhereType applies the entql string predicate on the type field.
-func (f *SystemRelationshipControlActionFilter) WhereType(p entql.StringP) {
-	f.Where(p.Field(systemrelationshipcontrolaction.FieldType))
+// WhereName applies the entql string predicate on the name field.
+func (f *SystemRelationshipControlActionFilter) WhereName(p entql.StringP) {
+	f.Where(p.Field(systemrelationshipcontrolaction.FieldName))
 }
 
 // WhereDescription applies the entql string predicate on the description field.
@@ -10631,9 +10649,9 @@ func (f *SystemRelationshipFeedbackSignalFilter) WhereSignalID(p entql.ValueP) {
 	f.Where(p.Field(systemrelationshipfeedbacksignal.FieldSignalID))
 }
 
-// WhereType applies the entql string predicate on the type field.
-func (f *SystemRelationshipFeedbackSignalFilter) WhereType(p entql.StringP) {
-	f.Where(p.Field(systemrelationshipfeedbacksignal.FieldType))
+// WhereName applies the entql string predicate on the name field.
+func (f *SystemRelationshipFeedbackSignalFilter) WhereName(p entql.StringP) {
+	f.Where(p.Field(systemrelationshipfeedbacksignal.FieldName))
 }
 
 // WhereDescription applies the entql string predicate on the description field.

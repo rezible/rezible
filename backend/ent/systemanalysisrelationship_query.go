@@ -23,14 +23,14 @@ import (
 // SystemAnalysisRelationshipQuery is the builder for querying SystemAnalysisRelationship entities.
 type SystemAnalysisRelationshipQuery struct {
 	config
-	ctx                       *QueryContext
-	order                     []systemanalysisrelationship.OrderOption
-	inters                    []Interceptor
-	predicates                []predicate.SystemAnalysisRelationship
-	withTenant                *TenantQuery
-	withSystemAnalysis        *SystemAnalysisQuery
-	withComponentRelationship *SystemComponentRelationshipQuery
-	modifiers                 []func(*sql.Selector)
+	ctx                *QueryContext
+	order              []systemanalysisrelationship.OrderOption
+	inters             []Interceptor
+	predicates         []predicate.SystemAnalysisRelationship
+	withTenant         *TenantQuery
+	withSystemAnalysis *SystemAnalysisQuery
+	withRelationship   *SystemComponentRelationshipQuery
+	modifiers          []func(*sql.Selector)
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -111,8 +111,8 @@ func (_q *SystemAnalysisRelationshipQuery) QuerySystemAnalysis() *SystemAnalysis
 	return query
 }
 
-// QueryComponentRelationship chains the current query on the "component_relationship" edge.
-func (_q *SystemAnalysisRelationshipQuery) QueryComponentRelationship() *SystemComponentRelationshipQuery {
+// QueryRelationship chains the current query on the "relationship" edge.
+func (_q *SystemAnalysisRelationshipQuery) QueryRelationship() *SystemComponentRelationshipQuery {
 	query := (&SystemComponentRelationshipClient{config: _q.config}).Query()
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
 		if err := _q.prepareQuery(ctx); err != nil {
@@ -125,7 +125,7 @@ func (_q *SystemAnalysisRelationshipQuery) QueryComponentRelationship() *SystemC
 		step := sqlgraph.NewStep(
 			sqlgraph.From(systemanalysisrelationship.Table, systemanalysisrelationship.FieldID, selector),
 			sqlgraph.To(systemcomponentrelationship.Table, systemcomponentrelationship.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, systemanalysisrelationship.ComponentRelationshipTable, systemanalysisrelationship.ComponentRelationshipColumn),
+			sqlgraph.Edge(sqlgraph.M2O, false, systemanalysisrelationship.RelationshipTable, systemanalysisrelationship.RelationshipColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
@@ -320,14 +320,14 @@ func (_q *SystemAnalysisRelationshipQuery) Clone() *SystemAnalysisRelationshipQu
 		return nil
 	}
 	return &SystemAnalysisRelationshipQuery{
-		config:                    _q.config,
-		ctx:                       _q.ctx.Clone(),
-		order:                     append([]systemanalysisrelationship.OrderOption{}, _q.order...),
-		inters:                    append([]Interceptor{}, _q.inters...),
-		predicates:                append([]predicate.SystemAnalysisRelationship{}, _q.predicates...),
-		withTenant:                _q.withTenant.Clone(),
-		withSystemAnalysis:        _q.withSystemAnalysis.Clone(),
-		withComponentRelationship: _q.withComponentRelationship.Clone(),
+		config:             _q.config,
+		ctx:                _q.ctx.Clone(),
+		order:              append([]systemanalysisrelationship.OrderOption{}, _q.order...),
+		inters:             append([]Interceptor{}, _q.inters...),
+		predicates:         append([]predicate.SystemAnalysisRelationship{}, _q.predicates...),
+		withTenant:         _q.withTenant.Clone(),
+		withSystemAnalysis: _q.withSystemAnalysis.Clone(),
+		withRelationship:   _q.withRelationship.Clone(),
 		// clone intermediate query.
 		sql:       _q.sql.Clone(),
 		path:      _q.path,
@@ -357,14 +357,14 @@ func (_q *SystemAnalysisRelationshipQuery) WithSystemAnalysis(opts ...func(*Syst
 	return _q
 }
 
-// WithComponentRelationship tells the query-builder to eager-load the nodes that are connected to
-// the "component_relationship" edge. The optional arguments are used to configure the query builder of the edge.
-func (_q *SystemAnalysisRelationshipQuery) WithComponentRelationship(opts ...func(*SystemComponentRelationshipQuery)) *SystemAnalysisRelationshipQuery {
+// WithRelationship tells the query-builder to eager-load the nodes that are connected to
+// the "relationship" edge. The optional arguments are used to configure the query builder of the edge.
+func (_q *SystemAnalysisRelationshipQuery) WithRelationship(opts ...func(*SystemComponentRelationshipQuery)) *SystemAnalysisRelationshipQuery {
 	query := (&SystemComponentRelationshipClient{config: _q.config}).Query()
 	for _, opt := range opts {
 		opt(query)
 	}
-	_q.withComponentRelationship = query
+	_q.withRelationship = query
 	return _q
 }
 
@@ -455,7 +455,7 @@ func (_q *SystemAnalysisRelationshipQuery) sqlAll(ctx context.Context, hooks ...
 		loadedTypes = [3]bool{
 			_q.withTenant != nil,
 			_q.withSystemAnalysis != nil,
-			_q.withComponentRelationship != nil,
+			_q.withRelationship != nil,
 		}
 	)
 	_spec.ScanValues = func(columns []string) ([]any, error) {
@@ -491,9 +491,9 @@ func (_q *SystemAnalysisRelationshipQuery) sqlAll(ctx context.Context, hooks ...
 			return nil, err
 		}
 	}
-	if query := _q.withComponentRelationship; query != nil {
-		if err := _q.loadComponentRelationship(ctx, query, nodes, nil,
-			func(n *SystemAnalysisRelationship, e *SystemComponentRelationship) { n.Edges.ComponentRelationship = e }); err != nil {
+	if query := _q.withRelationship; query != nil {
+		if err := _q.loadRelationship(ctx, query, nodes, nil,
+			func(n *SystemAnalysisRelationship, e *SystemComponentRelationship) { n.Edges.Relationship = e }); err != nil {
 			return nil, err
 		}
 	}
@@ -558,11 +558,11 @@ func (_q *SystemAnalysisRelationshipQuery) loadSystemAnalysis(ctx context.Contex
 	}
 	return nil
 }
-func (_q *SystemAnalysisRelationshipQuery) loadComponentRelationship(ctx context.Context, query *SystemComponentRelationshipQuery, nodes []*SystemAnalysisRelationship, init func(*SystemAnalysisRelationship), assign func(*SystemAnalysisRelationship, *SystemComponentRelationship)) error {
+func (_q *SystemAnalysisRelationshipQuery) loadRelationship(ctx context.Context, query *SystemComponentRelationshipQuery, nodes []*SystemAnalysisRelationship, init func(*SystemAnalysisRelationship), assign func(*SystemAnalysisRelationship, *SystemComponentRelationship)) error {
 	ids := make([]uuid.UUID, 0, len(nodes))
 	nodeids := make(map[uuid.UUID][]*SystemAnalysisRelationship)
 	for i := range nodes {
-		fk := nodes[i].ComponentRelationshipID
+		fk := nodes[i].RelationshipID
 		if _, ok := nodeids[fk]; !ok {
 			ids = append(ids, fk)
 		}
@@ -579,7 +579,7 @@ func (_q *SystemAnalysisRelationshipQuery) loadComponentRelationship(ctx context
 	for _, n := range neighbors {
 		nodes, ok := nodeids[n.ID]
 		if !ok {
-			return fmt.Errorf(`unexpected foreign-key "component_relationship_id" returned %v`, n.ID)
+			return fmt.Errorf(`unexpected foreign-key "relationship_id" returned %v`, n.ID)
 		}
 		for i := range nodes {
 			assign(nodes[i], n)
@@ -622,8 +622,8 @@ func (_q *SystemAnalysisRelationshipQuery) querySpec() *sqlgraph.QuerySpec {
 		if _q.withSystemAnalysis != nil {
 			_spec.Node.AddColumnOnce(systemanalysisrelationship.FieldAnalysisID)
 		}
-		if _q.withComponentRelationship != nil {
-			_spec.Node.AddColumnOnce(systemanalysisrelationship.FieldComponentRelationshipID)
+		if _q.withRelationship != nil {
+			_spec.Node.AddColumnOnce(systemanalysisrelationship.FieldRelationshipID)
 		}
 	}
 	if ps := _q.predicates; len(ps) > 0 {

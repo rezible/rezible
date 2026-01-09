@@ -105,7 +105,7 @@ func (b *incidentBatcher) createBatchMutations(ctx context.Context, batch []*ent
 	lastSyncTime := time.Time{}
 	for _, dbInc := range dbIncidents {
 		inc := dbInc
-		needsSync := dbInc.ModifiedAt.IsZero() || inc.ModifiedAt.After(lastSyncTime)
+		needsSync := inc.UpdatedAt.IsZero() || inc.UpdatedAt.After(lastSyncTime)
 		if !needsSync {
 			syncIds.Remove(inc.ExternalID)
 		} else {
@@ -167,8 +167,6 @@ func (b *incidentBatcher) syncIncident(ctx context.Context, db, prov *ent.Incide
 	m.SetExternalID(prov.ExternalID)
 	m.SetChatChannelID(prov.ChatChannelID)
 	m.SetOpenedAt(prov.OpenedAt)
-	m.SetModifiedAt(prov.ModifiedAt)
-	m.SetClosedAt(prov.ClosedAt)
 
 	slug, slugErr := b.slugs.generateUnique(ctx, prov.Title)
 	if slugErr != nil {

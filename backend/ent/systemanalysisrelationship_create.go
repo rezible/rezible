@@ -39,9 +39,9 @@ func (_c *SystemAnalysisRelationshipCreate) SetAnalysisID(v uuid.UUID) *SystemAn
 	return _c
 }
 
-// SetComponentRelationshipID sets the "component_relationship_id" field.
-func (_c *SystemAnalysisRelationshipCreate) SetComponentRelationshipID(v uuid.UUID) *SystemAnalysisRelationshipCreate {
-	_c.mutation.SetComponentRelationshipID(v)
+// SetRelationshipID sets the "relationship_id" field.
+func (_c *SystemAnalysisRelationshipCreate) SetRelationshipID(v uuid.UUID) *SystemAnalysisRelationshipCreate {
+	_c.mutation.SetRelationshipID(v)
 	return _c
 }
 
@@ -103,9 +103,9 @@ func (_c *SystemAnalysisRelationshipCreate) SetSystemAnalysis(v *SystemAnalysis)
 	return _c.SetSystemAnalysisID(v.ID)
 }
 
-// SetComponentRelationship sets the "component_relationship" edge to the SystemComponentRelationship entity.
-func (_c *SystemAnalysisRelationshipCreate) SetComponentRelationship(v *SystemComponentRelationship) *SystemAnalysisRelationshipCreate {
-	return _c.SetComponentRelationshipID(v.ID)
+// SetRelationship sets the "relationship" edge to the SystemComponentRelationship entity.
+func (_c *SystemAnalysisRelationshipCreate) SetRelationship(v *SystemComponentRelationship) *SystemAnalysisRelationshipCreate {
+	return _c.SetRelationshipID(v.ID)
 }
 
 // Mutation returns the SystemAnalysisRelationshipMutation object of the builder.
@@ -170,8 +170,8 @@ func (_c *SystemAnalysisRelationshipCreate) check() error {
 	if _, ok := _c.mutation.AnalysisID(); !ok {
 		return &ValidationError{Name: "analysis_id", err: errors.New(`ent: missing required field "SystemAnalysisRelationship.analysis_id"`)}
 	}
-	if _, ok := _c.mutation.ComponentRelationshipID(); !ok {
-		return &ValidationError{Name: "component_relationship_id", err: errors.New(`ent: missing required field "SystemAnalysisRelationship.component_relationship_id"`)}
+	if _, ok := _c.mutation.RelationshipID(); !ok {
+		return &ValidationError{Name: "relationship_id", err: errors.New(`ent: missing required field "SystemAnalysisRelationship.relationship_id"`)}
 	}
 	if _, ok := _c.mutation.CreatedAt(); !ok {
 		return &ValidationError{Name: "created_at", err: errors.New(`ent: missing required field "SystemAnalysisRelationship.created_at"`)}
@@ -182,8 +182,8 @@ func (_c *SystemAnalysisRelationshipCreate) check() error {
 	if len(_c.mutation.SystemAnalysisIDs()) == 0 {
 		return &ValidationError{Name: "system_analysis", err: errors.New(`ent: missing required edge "SystemAnalysisRelationship.system_analysis"`)}
 	}
-	if len(_c.mutation.ComponentRelationshipIDs()) == 0 {
-		return &ValidationError{Name: "component_relationship", err: errors.New(`ent: missing required edge "SystemAnalysisRelationship.component_relationship"`)}
+	if len(_c.mutation.RelationshipIDs()) == 0 {
+		return &ValidationError{Name: "relationship", err: errors.New(`ent: missing required edge "SystemAnalysisRelationship.relationship"`)}
 	}
 	return nil
 }
@@ -263,12 +263,12 @@ func (_c *SystemAnalysisRelationshipCreate) createSpec() (*SystemAnalysisRelatio
 		_node.AnalysisID = nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
-	if nodes := _c.mutation.ComponentRelationshipIDs(); len(nodes) > 0 {
+	if nodes := _c.mutation.RelationshipIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
-			Table:   systemanalysisrelationship.ComponentRelationshipTable,
-			Columns: []string{systemanalysisrelationship.ComponentRelationshipColumn},
+			Table:   systemanalysisrelationship.RelationshipTable,
+			Columns: []string{systemanalysisrelationship.RelationshipColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(systemcomponentrelationship.FieldID, field.TypeUUID),
@@ -277,7 +277,7 @@ func (_c *SystemAnalysisRelationshipCreate) createSpec() (*SystemAnalysisRelatio
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
-		_node.ComponentRelationshipID = nodes[0]
+		_node.RelationshipID = nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	return _node, _spec
@@ -344,15 +344,15 @@ func (u *SystemAnalysisRelationshipUpsert) UpdateAnalysisID() *SystemAnalysisRel
 	return u
 }
 
-// SetComponentRelationshipID sets the "component_relationship_id" field.
-func (u *SystemAnalysisRelationshipUpsert) SetComponentRelationshipID(v uuid.UUID) *SystemAnalysisRelationshipUpsert {
-	u.Set(systemanalysisrelationship.FieldComponentRelationshipID, v)
+// SetRelationshipID sets the "relationship_id" field.
+func (u *SystemAnalysisRelationshipUpsert) SetRelationshipID(v uuid.UUID) *SystemAnalysisRelationshipUpsert {
+	u.Set(systemanalysisrelationship.FieldRelationshipID, v)
 	return u
 }
 
-// UpdateComponentRelationshipID sets the "component_relationship_id" field to the value that was provided on create.
-func (u *SystemAnalysisRelationshipUpsert) UpdateComponentRelationshipID() *SystemAnalysisRelationshipUpsert {
-	u.SetExcluded(systemanalysisrelationship.FieldComponentRelationshipID)
+// UpdateRelationshipID sets the "relationship_id" field to the value that was provided on create.
+func (u *SystemAnalysisRelationshipUpsert) UpdateRelationshipID() *SystemAnalysisRelationshipUpsert {
+	u.SetExcluded(systemanalysisrelationship.FieldRelationshipID)
 	return u
 }
 
@@ -451,17 +451,17 @@ func (u *SystemAnalysisRelationshipUpsertOne) UpdateAnalysisID() *SystemAnalysis
 	})
 }
 
-// SetComponentRelationshipID sets the "component_relationship_id" field.
-func (u *SystemAnalysisRelationshipUpsertOne) SetComponentRelationshipID(v uuid.UUID) *SystemAnalysisRelationshipUpsertOne {
+// SetRelationshipID sets the "relationship_id" field.
+func (u *SystemAnalysisRelationshipUpsertOne) SetRelationshipID(v uuid.UUID) *SystemAnalysisRelationshipUpsertOne {
 	return u.Update(func(s *SystemAnalysisRelationshipUpsert) {
-		s.SetComponentRelationshipID(v)
+		s.SetRelationshipID(v)
 	})
 }
 
-// UpdateComponentRelationshipID sets the "component_relationship_id" field to the value that was provided on create.
-func (u *SystemAnalysisRelationshipUpsertOne) UpdateComponentRelationshipID() *SystemAnalysisRelationshipUpsertOne {
+// UpdateRelationshipID sets the "relationship_id" field to the value that was provided on create.
+func (u *SystemAnalysisRelationshipUpsertOne) UpdateRelationshipID() *SystemAnalysisRelationshipUpsertOne {
 	return u.Update(func(s *SystemAnalysisRelationshipUpsert) {
-		s.UpdateComponentRelationshipID()
+		s.UpdateRelationshipID()
 	})
 }
 
@@ -732,17 +732,17 @@ func (u *SystemAnalysisRelationshipUpsertBulk) UpdateAnalysisID() *SystemAnalysi
 	})
 }
 
-// SetComponentRelationshipID sets the "component_relationship_id" field.
-func (u *SystemAnalysisRelationshipUpsertBulk) SetComponentRelationshipID(v uuid.UUID) *SystemAnalysisRelationshipUpsertBulk {
+// SetRelationshipID sets the "relationship_id" field.
+func (u *SystemAnalysisRelationshipUpsertBulk) SetRelationshipID(v uuid.UUID) *SystemAnalysisRelationshipUpsertBulk {
 	return u.Update(func(s *SystemAnalysisRelationshipUpsert) {
-		s.SetComponentRelationshipID(v)
+		s.SetRelationshipID(v)
 	})
 }
 
-// UpdateComponentRelationshipID sets the "component_relationship_id" field to the value that was provided on create.
-func (u *SystemAnalysisRelationshipUpsertBulk) UpdateComponentRelationshipID() *SystemAnalysisRelationshipUpsertBulk {
+// UpdateRelationshipID sets the "relationship_id" field to the value that was provided on create.
+func (u *SystemAnalysisRelationshipUpsertBulk) UpdateRelationshipID() *SystemAnalysisRelationshipUpsertBulk {
 	return u.Update(func(s *SystemAnalysisRelationshipUpsert) {
-		s.UpdateComponentRelationshipID()
+		s.UpdateRelationshipID()
 	})
 }
 

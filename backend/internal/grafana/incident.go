@@ -140,12 +140,8 @@ func (p *IncidentDataProvider) PullIncidents(ctx context.Context) iter.Seq2[*ent
 
 func convertIncidentPreview(i incidentPreview) *ent.Incident {
 	createdAt, createdErr := time.Parse(time.RFC3339, i.CreatedTime)
-	modifiedAt, modifiedErr := time.Parse(time.RFC3339, i.ModifiedTime)
-	closedAt, closedErr := time.Parse(time.RFC3339, i.ClosedTime)
-
-	timeErrors := errors.Join(createdErr, modifiedErr, closedErr)
-	if timeErrors != nil {
-		log.Error().Err(timeErrors).Msg("failed to parse incident times")
+	if createdErr != nil {
+		log.Error().Err(createdErr).Msg("failed to parse incident created time")
 	}
 
 	return &ent.Incident{
@@ -154,8 +150,6 @@ func convertIncidentPreview(i incidentPreview) *ent.Incident {
 		Slug:       i.Slug,
 		Summary:    i.Summary,
 		OpenedAt:   createdAt,
-		ModifiedAt: modifiedAt,
-		ClosedAt:   closedAt,
 	}
 }
 
@@ -184,12 +178,8 @@ func (p *IncidentDataProvider) GetIncidentByID(ctx context.Context, id string) (
 
 func (p *IncidentDataProvider) convertIncident(ctx context.Context, i *gIncident) (*ent.Incident, error) {
 	createdAt, createdErr := time.Parse(time.RFC3339, i.CreatedTime)
-	modifiedAt, modifiedErr := time.Parse(time.RFC3339, i.ModifiedTime)
-	closedAt, closedErr := time.Parse(time.RFC3339, i.ClosedTime)
-
-	timeErrors := errors.Join(createdErr, modifiedErr, closedErr)
-	if timeErrors != nil {
-		log.Error().Err(timeErrors).Msg("failed to parse incident times")
+	if createdErr != nil {
+		log.Error().Err(createdErr).Msg("failed to parse incident created time")
 	}
 
 	milestones, msErr := p.getIncidentMilestones(ctx, i)
@@ -228,8 +218,6 @@ func (p *IncidentDataProvider) convertIncident(ctx context.Context, i *gIncident
 		Title:      i.Title,
 		Summary:    i.Summary,
 		OpenedAt:   createdAt,
-		ModifiedAt: modifiedAt,
-		ClosedAt:   closedAt,
 		Edges: ent.IncidentEdges{
 			RoleAssignments: roleAssignments,
 			Severity:        severity,
@@ -307,8 +295,11 @@ func (p *IncidentDataProvider) getIncidentMilestones(ctx context.Context, i *gIn
 
 	startedAt, startErr := time.Parse(time.RFC3339, i.IncidentStart)
 	endedAt, endedErr := time.Parse(time.RFC3339, i.IncidentEnd)
-	if timeErrs := errors.Join(startErr, endedErr); timeErrs != nil {
-		return nil, fmt.Errorf("failed to parse times: %w", timeErrs)
+	closedAt, closedErr := time.Parse(time.RFC3339, i.ClosedTime)
+
+	timeErrors := errors.Join(startErr, endedErr, closedErr)
+	if timeErrors != nil {
+		return nil, fmt.Errorf("failed to parse times: %w", timeErrors)
 	}
 
 	start := &ent.IncidentMilestone{
@@ -317,11 +308,16 @@ func (p *IncidentDataProvider) getIncidentMilestones(ctx context.Context, i *gIn
 	}
 
 	end := &ent.IncidentMilestone{
-		Kind:      incidentmilestone.KindResolution,
+		Kind:      incidentmilestone.KindMitigation,
 		Timestamp: endedAt,
 	}
 
-	milestones = append(milestones, start, end)
+	res := &ent.IncidentMilestone{
+		Kind:      incidentmilestone.KindResolution,
+		Timestamp: closedAt,
+	}
+
+	milestones = append(milestones, start, end, res)
 
 	type queryResponse struct {
 		Cursor        incidentCursor         `json:"cursor"`

@@ -44,8 +44,6 @@ var (
 		Title:         strSupported,
 		Summary:       strSupported,
 		OpenedAt:      timeSupported,
-		ModifiedAt:    timeSupported,
-		ClosedAt:      timeSupported,
 		ExternalID:    strSupported,
 		ChatChannelID: strSupported,
 		Edges: ent.IncidentEdges{

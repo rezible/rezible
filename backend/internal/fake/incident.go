@@ -110,8 +110,6 @@ func (p *IncidentDataProvider) makeFakeIncidents() {
 			Slug:       incSlug,
 			Summary:    faker.Sentence(),
 			OpenedAt:   openedAt,
-			ModifiedAt: openedAt.Add(time.Minute * 30),
-			ClosedAt:   closedAt,
 			Edges: ent.IncidentEdges{
 				Severity:        p.severities[rand.Intn(len(p.severities))],
 				Type:            p.types[rand.Intn(len(p.types))],

@@ -3,6 +3,8 @@
 package incident
 
 import (
+	"time"
+
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"github.com/google/uuid"
@@ -64,6 +66,16 @@ func ExternalID(v string) predicate.Incident {
 	return predicate.Incident(sql.FieldEQ(FieldExternalID, v))
 }
 
+// CreatedAt applies equality check predicate on the "created_at" field. It's identical to CreatedAtEQ.
+func CreatedAt(v time.Time) predicate.Incident {
+	return predicate.Incident(sql.FieldEQ(FieldCreatedAt, v))
+}
+
+// UpdatedAt applies equality check predicate on the "updated_at" field. It's identical to UpdatedAtEQ.
+func UpdatedAt(v time.Time) predicate.Incident {
+	return predicate.Incident(sql.FieldEQ(FieldUpdatedAt, v))
+}
+
 // Slug applies equality check predicate on the "slug" field. It's identical to SlugEQ.
 func Slug(v string) predicate.Incident {
 	return predicate.Incident(sql.FieldEQ(FieldSlug, v))
@@ -92,6 +104,11 @@ func Summary(v string) predicate.Incident {
 // ChatChannelID applies equality check predicate on the "chat_channel_id" field. It's identical to ChatChannelIDEQ.
 func ChatChannelID(v string) predicate.Incident {
 	return predicate.Incident(sql.FieldEQ(FieldChatChannelID, v))
+}
+
+// OpenedAt applies equality check predicate on the "opened_at" field. It's identical to OpenedAtEQ.
+func OpenedAt(v time.Time) predicate.Incident {
+	return predicate.Incident(sql.FieldEQ(FieldOpenedAt, v))
 }
 
 // TenantIDEQ applies the EQ predicate on the "tenant_id" field.
@@ -187,6 +204,86 @@ func ExternalIDEqualFold(v string) predicate.Incident {
 // ExternalIDContainsFold applies the ContainsFold predicate on the "external_id" field.
 func ExternalIDContainsFold(v string) predicate.Incident {
 	return predicate.Incident(sql.FieldContainsFold(FieldExternalID, v))
+}
+
+// CreatedAtEQ applies the EQ predicate on the "created_at" field.
+func CreatedAtEQ(v time.Time) predicate.Incident {
+	return predicate.Incident(sql.FieldEQ(FieldCreatedAt, v))
+}
+
+// CreatedAtNEQ applies the NEQ predicate on the "created_at" field.
+func CreatedAtNEQ(v time.Time) predicate.Incident {
+	return predicate.Incident(sql.FieldNEQ(FieldCreatedAt, v))
+}
+
+// CreatedAtIn applies the In predicate on the "created_at" field.
+func CreatedAtIn(vs ...time.Time) predicate.Incident {
+	return predicate.Incident(sql.FieldIn(FieldCreatedAt, vs...))
+}
+
+// CreatedAtNotIn applies the NotIn predicate on the "created_at" field.
+func CreatedAtNotIn(vs ...time.Time) predicate.Incident {
+	return predicate.Incident(sql.FieldNotIn(FieldCreatedAt, vs...))
+}
+
+// CreatedAtGT applies the GT predicate on the "created_at" field.
+func CreatedAtGT(v time.Time) predicate.Incident {
+	return predicate.Incident(sql.FieldGT(FieldCreatedAt, v))
+}
+
+// CreatedAtGTE applies the GTE predicate on the "created_at" field.
+func CreatedAtGTE(v time.Time) predicate.Incident {
+	return predicate.Incident(sql.FieldGTE(FieldCreatedAt, v))
+}
+
+// CreatedAtLT applies the LT predicate on the "created_at" field.
+func CreatedAtLT(v time.Time) predicate.Incident {
+	return predicate.Incident(sql.FieldLT(FieldCreatedAt, v))
+}
+
+// CreatedAtLTE applies the LTE predicate on the "created_at" field.
+func CreatedAtLTE(v time.Time) predicate.Incident {
+	return predicate.Incident(sql.FieldLTE(FieldCreatedAt, v))
+}
+
+// UpdatedAtEQ applies the EQ predicate on the "updated_at" field.
+func UpdatedAtEQ(v time.Time) predicate.Incident {
+	return predicate.Incident(sql.FieldEQ(FieldUpdatedAt, v))
+}
+
+// UpdatedAtNEQ applies the NEQ predicate on the "updated_at" field.
+func UpdatedAtNEQ(v time.Time) predicate.Incident {
+	return predicate.Incident(sql.FieldNEQ(FieldUpdatedAt, v))
+}
+
+// UpdatedAtIn applies the In predicate on the "updated_at" field.
+func UpdatedAtIn(vs ...time.Time) predicate.Incident {
+	return predicate.Incident(sql.FieldIn(FieldUpdatedAt, vs...))
+}
+
+// UpdatedAtNotIn applies the NotIn predicate on the "updated_at" field.
+func UpdatedAtNotIn(vs ...time.Time) predicate.Incident {
+	return predicate.Incident(sql.FieldNotIn(FieldUpdatedAt, vs...))
+}
+
+// UpdatedAtGT applies the GT predicate on the "updated_at" field.
+func UpdatedAtGT(v time.Time) predicate.Incident {
+	return predicate.Incident(sql.FieldGT(FieldUpdatedAt, v))
+}
+
+// UpdatedAtGTE applies the GTE predicate on the "updated_at" field.
+func UpdatedAtGTE(v time.Time) predicate.Incident {
+	return predicate.Incident(sql.FieldGTE(FieldUpdatedAt, v))
+}
+
+// UpdatedAtLT applies the LT predicate on the "updated_at" field.
+func UpdatedAtLT(v time.Time) predicate.Incident {
+	return predicate.Incident(sql.FieldLT(FieldUpdatedAt, v))
+}
+
+// UpdatedAtLTE applies the LTE predicate on the "updated_at" field.
+func UpdatedAtLTE(v time.Time) predicate.Incident {
+	return predicate.Incident(sql.FieldLTE(FieldUpdatedAt, v))
 }
 
 // SlugEQ applies the EQ predicate on the "slug" field.
@@ -507,6 +604,46 @@ func ChatChannelIDEqualFold(v string) predicate.Incident {
 // ChatChannelIDContainsFold applies the ContainsFold predicate on the "chat_channel_id" field.
 func ChatChannelIDContainsFold(v string) predicate.Incident {
 	return predicate.Incident(sql.FieldContainsFold(FieldChatChannelID, v))
+}
+
+// OpenedAtEQ applies the EQ predicate on the "opened_at" field.
+func OpenedAtEQ(v time.Time) predicate.Incident {
+	return predicate.Incident(sql.FieldEQ(FieldOpenedAt, v))
+}
+
+// OpenedAtNEQ applies the NEQ predicate on the "opened_at" field.
+func OpenedAtNEQ(v time.Time) predicate.Incident {
+	return predicate.Incident(sql.FieldNEQ(FieldOpenedAt, v))
+}
+
+// OpenedAtIn applies the In predicate on the "opened_at" field.
+func OpenedAtIn(vs ...time.Time) predicate.Incident {
+	return predicate.Incident(sql.FieldIn(FieldOpenedAt, vs...))
+}
+
+// OpenedAtNotIn applies the NotIn predicate on the "opened_at" field.
+func OpenedAtNotIn(vs ...time.Time) predicate.Incident {
+	return predicate.Incident(sql.FieldNotIn(FieldOpenedAt, vs...))
+}
+
+// OpenedAtGT applies the GT predicate on the "opened_at" field.
+func OpenedAtGT(v time.Time) predicate.Incident {
+	return predicate.Incident(sql.FieldGT(FieldOpenedAt, v))
+}
+
+// OpenedAtGTE applies the GTE predicate on the "opened_at" field.
+func OpenedAtGTE(v time.Time) predicate.Incident {
+	return predicate.Incident(sql.FieldGTE(FieldOpenedAt, v))
+}
+
+// OpenedAtLT applies the LT predicate on the "opened_at" field.
+func OpenedAtLT(v time.Time) predicate.Incident {
+	return predicate.Incident(sql.FieldLT(FieldOpenedAt, v))
+}
+
+// OpenedAtLTE applies the LTE predicate on the "opened_at" field.
+func OpenedAtLTE(v time.Time) predicate.Incident {
+	return predicate.Incident(sql.FieldLTE(FieldOpenedAt, v))
 }
 
 // HasTenant applies the HasEdge predicate on the "tenant" edge.

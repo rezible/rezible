@@ -45,9 +45,9 @@ func (_c *SystemRelationshipFeedbackSignalCreate) SetSignalID(v uuid.UUID) *Syst
 	return _c
 }
 
-// SetType sets the "type" field.
-func (_c *SystemRelationshipFeedbackSignalCreate) SetType(v string) *SystemRelationshipFeedbackSignalCreate {
-	_c.mutation.SetType(v)
+// SetName sets the "name" field.
+func (_c *SystemRelationshipFeedbackSignalCreate) SetName(v string) *SystemRelationshipFeedbackSignalCreate {
+	_c.mutation.SetName(v)
 	return _c
 }
 
@@ -173,12 +173,12 @@ func (_c *SystemRelationshipFeedbackSignalCreate) check() error {
 	if _, ok := _c.mutation.SignalID(); !ok {
 		return &ValidationError{Name: "signal_id", err: errors.New(`ent: missing required field "SystemRelationshipFeedbackSignal.signal_id"`)}
 	}
-	if _, ok := _c.mutation.GetType(); !ok {
-		return &ValidationError{Name: "type", err: errors.New(`ent: missing required field "SystemRelationshipFeedbackSignal.type"`)}
+	if _, ok := _c.mutation.Name(); !ok {
+		return &ValidationError{Name: "name", err: errors.New(`ent: missing required field "SystemRelationshipFeedbackSignal.name"`)}
 	}
-	if v, ok := _c.mutation.GetType(); ok {
-		if err := systemrelationshipfeedbacksignal.TypeValidator(v); err != nil {
-			return &ValidationError{Name: "type", err: fmt.Errorf(`ent: validator failed for field "SystemRelationshipFeedbackSignal.type": %w`, err)}
+	if v, ok := _c.mutation.Name(); ok {
+		if err := systemrelationshipfeedbacksignal.NameValidator(v); err != nil {
+			return &ValidationError{Name: "name", err: fmt.Errorf(`ent: validator failed for field "SystemRelationshipFeedbackSignal.name": %w`, err)}
 		}
 	}
 	if _, ok := _c.mutation.CreatedAt(); !ok {
@@ -229,9 +229,9 @@ func (_c *SystemRelationshipFeedbackSignalCreate) createSpec() (*SystemRelations
 		_node.ID = id
 		_spec.ID.Value = &id
 	}
-	if value, ok := _c.mutation.GetType(); ok {
-		_spec.SetField(systemrelationshipfeedbacksignal.FieldType, field.TypeString, value)
-		_node.Type = value
+	if value, ok := _c.mutation.Name(); ok {
+		_spec.SetField(systemrelationshipfeedbacksignal.FieldName, field.TypeString, value)
+		_node.Name = value
 	}
 	if value, ok := _c.mutation.Description(); ok {
 		_spec.SetField(systemrelationshipfeedbacksignal.FieldDescription, field.TypeString, value)
@@ -368,15 +368,15 @@ func (u *SystemRelationshipFeedbackSignalUpsert) UpdateSignalID() *SystemRelatio
 	return u
 }
 
-// SetType sets the "type" field.
-func (u *SystemRelationshipFeedbackSignalUpsert) SetType(v string) *SystemRelationshipFeedbackSignalUpsert {
-	u.Set(systemrelationshipfeedbacksignal.FieldType, v)
+// SetName sets the "name" field.
+func (u *SystemRelationshipFeedbackSignalUpsert) SetName(v string) *SystemRelationshipFeedbackSignalUpsert {
+	u.Set(systemrelationshipfeedbacksignal.FieldName, v)
 	return u
 }
 
-// UpdateType sets the "type" field to the value that was provided on create.
-func (u *SystemRelationshipFeedbackSignalUpsert) UpdateType() *SystemRelationshipFeedbackSignalUpsert {
-	u.SetExcluded(systemrelationshipfeedbacksignal.FieldType)
+// UpdateName sets the "name" field to the value that was provided on create.
+func (u *SystemRelationshipFeedbackSignalUpsert) UpdateName() *SystemRelationshipFeedbackSignalUpsert {
+	u.SetExcluded(systemrelationshipfeedbacksignal.FieldName)
 	return u
 }
 
@@ -489,17 +489,17 @@ func (u *SystemRelationshipFeedbackSignalUpsertOne) UpdateSignalID() *SystemRela
 	})
 }
 
-// SetType sets the "type" field.
-func (u *SystemRelationshipFeedbackSignalUpsertOne) SetType(v string) *SystemRelationshipFeedbackSignalUpsertOne {
+// SetName sets the "name" field.
+func (u *SystemRelationshipFeedbackSignalUpsertOne) SetName(v string) *SystemRelationshipFeedbackSignalUpsertOne {
 	return u.Update(func(s *SystemRelationshipFeedbackSignalUpsert) {
-		s.SetType(v)
+		s.SetName(v)
 	})
 }
 
-// UpdateType sets the "type" field to the value that was provided on create.
-func (u *SystemRelationshipFeedbackSignalUpsertOne) UpdateType() *SystemRelationshipFeedbackSignalUpsertOne {
+// UpdateName sets the "name" field to the value that was provided on create.
+func (u *SystemRelationshipFeedbackSignalUpsertOne) UpdateName() *SystemRelationshipFeedbackSignalUpsertOne {
 	return u.Update(func(s *SystemRelationshipFeedbackSignalUpsert) {
-		s.UpdateType()
+		s.UpdateName()
 	})
 }
 
@@ -784,17 +784,17 @@ func (u *SystemRelationshipFeedbackSignalUpsertBulk) UpdateSignalID() *SystemRel
 	})
 }
 
-// SetType sets the "type" field.
-func (u *SystemRelationshipFeedbackSignalUpsertBulk) SetType(v string) *SystemRelationshipFeedbackSignalUpsertBulk {
+// SetName sets the "name" field.
+func (u *SystemRelationshipFeedbackSignalUpsertBulk) SetName(v string) *SystemRelationshipFeedbackSignalUpsertBulk {
 	return u.Update(func(s *SystemRelationshipFeedbackSignalUpsert) {
-		s.SetType(v)
+		s.SetName(v)
 	})
 }
 
-// UpdateType sets the "type" field to the value that was provided on create.
-func (u *SystemRelationshipFeedbackSignalUpsertBulk) UpdateType() *SystemRelationshipFeedbackSignalUpsertBulk {
+// UpdateName sets the "name" field to the value that was provided on create.
+func (u *SystemRelationshipFeedbackSignalUpsertBulk) UpdateName() *SystemRelationshipFeedbackSignalUpsertBulk {
 	return u.Update(func(s *SystemRelationshipFeedbackSignalUpsert) {
-		s.UpdateType()
+		s.UpdateName()
 	})
 }
 

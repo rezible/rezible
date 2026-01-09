@@ -41,7 +41,7 @@ func (SystemComponentRelationship) Edges() []ent.Edge {
 			Field("target_id"),
 
 		edge.From("system_analyses", SystemAnalysisRelationship.Type).
-			Ref("component_relationship"),
+			Ref("relationship"),
 
 		edge.From("hazards", SystemHazard.Type).
 			Ref("relationships"),
@@ -70,7 +70,7 @@ func (SystemRelationshipControlAction) Fields() []ent.Field {
 			Default(uuid.New),
 		field.UUID("relationship_id", uuid.UUID{}),
 		field.UUID("control_id", uuid.UUID{}),
-		field.String("type").
+		field.String("name").
 			NotEmpty(),
 		field.Text("description").
 			Optional(),
@@ -105,7 +105,7 @@ func (SystemRelationshipFeedbackSignal) Fields() []ent.Field {
 			Default(uuid.New),
 		field.UUID("relationship_id", uuid.UUID{}),
 		field.UUID("signal_id", uuid.UUID{}),
-		field.String("type").
+		field.String("name").
 			NotEmpty(),
 		field.Text("description").
 			Optional(),

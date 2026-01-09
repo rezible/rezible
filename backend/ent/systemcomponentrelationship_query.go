@@ -872,7 +872,7 @@ func (_q *SystemComponentRelationshipQuery) loadSystemAnalyses(ctx context.Conte
 		}
 	}
 	if len(query.ctx.Fields) > 0 {
-		query.ctx.AppendFieldOnce(systemanalysisrelationship.FieldComponentRelationshipID)
+		query.ctx.AppendFieldOnce(systemanalysisrelationship.FieldRelationshipID)
 	}
 	query.Where(predicate.SystemAnalysisRelationship(func(s *sql.Selector) {
 		s.Where(sql.InValues(s.C(systemcomponentrelationship.SystemAnalysesColumn), fks...))
@@ -882,10 +882,10 @@ func (_q *SystemComponentRelationshipQuery) loadSystemAnalyses(ctx context.Conte
 		return err
 	}
 	for _, n := range neighbors {
-		fk := n.ComponentRelationshipID
+		fk := n.RelationshipID
 		node, ok := nodeids[fk]
 		if !ok {
-			return fmt.Errorf(`unexpected referenced foreign-key "component_relationship_id" returned %v for node %v`, fk, n.ID)
+			return fmt.Errorf(`unexpected referenced foreign-key "relationship_id" returned %v for node %v`, fk, n.ID)
 		}
 		assign(node, n)
 	}

@@ -5,6 +5,7 @@ package ent
 import (
 	"fmt"
 	"strings"
+	"time"
 
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
@@ -25,6 +26,10 @@ type Incident struct {
 	TenantID int `json:"tenant_id,omitempty"`
 	// ExternalID holds the value of the "external_id" field.
 	ExternalID string `json:"external_id,omitempty"`
+	// CreatedAt holds the value of the "created_at" field.
+	CreatedAt time.Time `json:"created_at,omitempty"`
+	// UpdatedAt holds the value of the "updated_at" field.
+	UpdatedAt time.Time `json:"updated_at,omitempty"`
 	// Slug holds the value of the "slug" field.
 	Slug string `json:"slug,omitempty"`
 	// Title holds the value of the "title" field.
@@ -37,6 +42,8 @@ type Incident struct {
 	Summary string `json:"summary,omitempty"`
 	// ChatChannelID holds the value of the "chat_channel_id" field.
 	ChatChannelID string `json:"chat_channel_id,omitempty"`
+	// OpenedAt holds the value of the "opened_at" field.
+	OpenedAt time.Time `json:"opened_at,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the IncidentQuery when eager-loading is set.
 	Edges        IncidentEdges `json:"edges"`
@@ -243,6 +250,8 @@ func (*Incident) scanValues(columns []string) ([]any, error) {
 			values[i] = new(sql.NullInt64)
 		case incident.FieldExternalID, incident.FieldSlug, incident.FieldTitle, incident.FieldSummary, incident.FieldChatChannelID:
 			values[i] = new(sql.NullString)
+		case incident.FieldCreatedAt, incident.FieldUpdatedAt, incident.FieldOpenedAt:
+			values[i] = new(sql.NullTime)
 		case incident.FieldID, incident.FieldSeverityID, incident.FieldTypeID:
 			values[i] = new(uuid.UUID)
 		default:
@@ -277,6 +286,18 @@ func (_m *Incident) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field external_id", values[i])
 			} else if value.Valid {
 				_m.ExternalID = value.String
+			}
+		case incident.FieldCreatedAt:
+			if value, ok := values[i].(*sql.NullTime); !ok {
+				return fmt.Errorf("unexpected type %T for field created_at", values[i])
+			} else if value.Valid {
+				_m.CreatedAt = value.Time
+			}
+		case incident.FieldUpdatedAt:
+			if value, ok := values[i].(*sql.NullTime); !ok {
+				return fmt.Errorf("unexpected type %T for field updated_at", values[i])
+			} else if value.Valid {
+				_m.UpdatedAt = value.Time
 			}
 		case incident.FieldSlug:
 			if value, ok := values[i].(*sql.NullString); !ok {
@@ -313,6 +334,12 @@ func (_m *Incident) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field chat_channel_id", values[i])
 			} else if value.Valid {
 				_m.ChatChannelID = value.String
+			}
+		case incident.FieldOpenedAt:
+			if value, ok := values[i].(*sql.NullTime); !ok {
+				return fmt.Errorf("unexpected type %T for field opened_at", values[i])
+			} else if value.Valid {
+				_m.OpenedAt = value.Time
 			}
 		default:
 			_m.selectValues.Set(columns[i], values[i])
@@ -436,6 +463,12 @@ func (_m *Incident) String() string {
 	builder.WriteString("external_id=")
 	builder.WriteString(_m.ExternalID)
 	builder.WriteString(", ")
+	builder.WriteString("created_at=")
+	builder.WriteString(_m.CreatedAt.Format(time.ANSIC))
+	builder.WriteString(", ")
+	builder.WriteString("updated_at=")
+	builder.WriteString(_m.UpdatedAt.Format(time.ANSIC))
+	builder.WriteString(", ")
 	builder.WriteString("slug=")
 	builder.WriteString(_m.Slug)
 	builder.WriteString(", ")
@@ -453,6 +486,9 @@ func (_m *Incident) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("chat_channel_id=")
 	builder.WriteString(_m.ChatChannelID)
+	builder.WriteString(", ")
+	builder.WriteString("opened_at=")
+	builder.WriteString(_m.OpenedAt.Format(time.ANSIC))
 	builder.WriteByte(')')
 	return builder.String()
 }

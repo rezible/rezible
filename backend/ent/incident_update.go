@@ -6,6 +6,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"time"
 
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
@@ -59,6 +60,26 @@ func (_u *IncidentUpdate) SetNillableExternalID(v *string) *IncidentUpdate {
 // ClearExternalID clears the value of the "external_id" field.
 func (_u *IncidentUpdate) ClearExternalID() *IncidentUpdate {
 	_u.mutation.ClearExternalID()
+	return _u
+}
+
+// SetCreatedAt sets the "created_at" field.
+func (_u *IncidentUpdate) SetCreatedAt(v time.Time) *IncidentUpdate {
+	_u.mutation.SetCreatedAt(v)
+	return _u
+}
+
+// SetNillableCreatedAt sets the "created_at" field if the given value is not nil.
+func (_u *IncidentUpdate) SetNillableCreatedAt(v *time.Time) *IncidentUpdate {
+	if v != nil {
+		_u.SetCreatedAt(*v)
+	}
+	return _u
+}
+
+// SetUpdatedAt sets the "updated_at" field.
+func (_u *IncidentUpdate) SetUpdatedAt(v time.Time) *IncidentUpdate {
+	_u.mutation.SetUpdatedAt(v)
 	return _u
 }
 
@@ -155,6 +176,20 @@ func (_u *IncidentUpdate) SetNillableChatChannelID(v *string) *IncidentUpdate {
 // ClearChatChannelID clears the value of the "chat_channel_id" field.
 func (_u *IncidentUpdate) ClearChatChannelID() *IncidentUpdate {
 	_u.mutation.ClearChatChannelID()
+	return _u
+}
+
+// SetOpenedAt sets the "opened_at" field.
+func (_u *IncidentUpdate) SetOpenedAt(v time.Time) *IncidentUpdate {
+	_u.mutation.SetOpenedAt(v)
+	return _u
+}
+
+// SetNillableOpenedAt sets the "opened_at" field if the given value is not nil.
+func (_u *IncidentUpdate) SetNillableOpenedAt(v *time.Time) *IncidentUpdate {
+	if v != nil {
+		_u.SetOpenedAt(*v)
+	}
 	return _u
 }
 
@@ -644,6 +679,9 @@ func (_u *IncidentUpdate) RemoveIncidentLinks(v ...*IncidentLink) *IncidentUpdat
 
 // Save executes the query and returns the number of nodes affected by the update operation.
 func (_u *IncidentUpdate) Save(ctx context.Context) (int, error) {
+	if err := _u.defaults(); err != nil {
+		return 0, err
+	}
 	return withHooks(ctx, _u.sqlSave, _u.mutation, _u.hooks)
 }
 
@@ -667,6 +705,18 @@ func (_u *IncidentUpdate) ExecX(ctx context.Context) {
 	if err := _u.Exec(ctx); err != nil {
 		panic(err)
 	}
+}
+
+// defaults sets the default values of the builder before save.
+func (_u *IncidentUpdate) defaults() error {
+	if _, ok := _u.mutation.UpdatedAt(); !ok {
+		if incident.UpdateDefaultUpdatedAt == nil {
+			return fmt.Errorf("ent: uninitialized incident.UpdateDefaultUpdatedAt (forgotten import ent/runtime?)")
+		}
+		v := incident.UpdateDefaultUpdatedAt()
+		_u.mutation.SetUpdatedAt(v)
+	}
+	return nil
 }
 
 // check runs all checks and user-defined validators on the builder.
@@ -707,6 +757,12 @@ func (_u *IncidentUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	if _u.mutation.ExternalIDCleared() {
 		_spec.ClearField(incident.FieldExternalID, field.TypeString)
 	}
+	if value, ok := _u.mutation.CreatedAt(); ok {
+		_spec.SetField(incident.FieldCreatedAt, field.TypeTime, value)
+	}
+	if value, ok := _u.mutation.UpdatedAt(); ok {
+		_spec.SetField(incident.FieldUpdatedAt, field.TypeTime, value)
+	}
 	if value, ok := _u.mutation.Slug(); ok {
 		_spec.SetField(incident.FieldSlug, field.TypeString, value)
 	}
@@ -724,6 +780,9 @@ func (_u *IncidentUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	}
 	if _u.mutation.ChatChannelIDCleared() {
 		_spec.ClearField(incident.FieldChatChannelID, field.TypeString)
+	}
+	if value, ok := _u.mutation.OpenedAt(); ok {
+		_spec.SetField(incident.FieldOpenedAt, field.TypeTime, value)
 	}
 	if _u.mutation.SeverityCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -1415,6 +1474,26 @@ func (_u *IncidentUpdateOne) ClearExternalID() *IncidentUpdateOne {
 	return _u
 }
 
+// SetCreatedAt sets the "created_at" field.
+func (_u *IncidentUpdateOne) SetCreatedAt(v time.Time) *IncidentUpdateOne {
+	_u.mutation.SetCreatedAt(v)
+	return _u
+}
+
+// SetNillableCreatedAt sets the "created_at" field if the given value is not nil.
+func (_u *IncidentUpdateOne) SetNillableCreatedAt(v *time.Time) *IncidentUpdateOne {
+	if v != nil {
+		_u.SetCreatedAt(*v)
+	}
+	return _u
+}
+
+// SetUpdatedAt sets the "updated_at" field.
+func (_u *IncidentUpdateOne) SetUpdatedAt(v time.Time) *IncidentUpdateOne {
+	_u.mutation.SetUpdatedAt(v)
+	return _u
+}
+
 // SetSlug sets the "slug" field.
 func (_u *IncidentUpdateOne) SetSlug(v string) *IncidentUpdateOne {
 	_u.mutation.SetSlug(v)
@@ -1508,6 +1587,20 @@ func (_u *IncidentUpdateOne) SetNillableChatChannelID(v *string) *IncidentUpdate
 // ClearChatChannelID clears the value of the "chat_channel_id" field.
 func (_u *IncidentUpdateOne) ClearChatChannelID() *IncidentUpdateOne {
 	_u.mutation.ClearChatChannelID()
+	return _u
+}
+
+// SetOpenedAt sets the "opened_at" field.
+func (_u *IncidentUpdateOne) SetOpenedAt(v time.Time) *IncidentUpdateOne {
+	_u.mutation.SetOpenedAt(v)
+	return _u
+}
+
+// SetNillableOpenedAt sets the "opened_at" field if the given value is not nil.
+func (_u *IncidentUpdateOne) SetNillableOpenedAt(v *time.Time) *IncidentUpdateOne {
+	if v != nil {
+		_u.SetOpenedAt(*v)
+	}
 	return _u
 }
 
@@ -2010,6 +2103,9 @@ func (_u *IncidentUpdateOne) Select(field string, fields ...string) *IncidentUpd
 
 // Save executes the query and returns the updated Incident entity.
 func (_u *IncidentUpdateOne) Save(ctx context.Context) (*Incident, error) {
+	if err := _u.defaults(); err != nil {
+		return nil, err
+	}
 	return withHooks(ctx, _u.sqlSave, _u.mutation, _u.hooks)
 }
 
@@ -2033,6 +2129,18 @@ func (_u *IncidentUpdateOne) ExecX(ctx context.Context) {
 	if err := _u.Exec(ctx); err != nil {
 		panic(err)
 	}
+}
+
+// defaults sets the default values of the builder before save.
+func (_u *IncidentUpdateOne) defaults() error {
+	if _, ok := _u.mutation.UpdatedAt(); !ok {
+		if incident.UpdateDefaultUpdatedAt == nil {
+			return fmt.Errorf("ent: uninitialized incident.UpdateDefaultUpdatedAt (forgotten import ent/runtime?)")
+		}
+		v := incident.UpdateDefaultUpdatedAt()
+		_u.mutation.SetUpdatedAt(v)
+	}
+	return nil
 }
 
 // check runs all checks and user-defined validators on the builder.
@@ -2090,6 +2198,12 @@ func (_u *IncidentUpdateOne) sqlSave(ctx context.Context) (_node *Incident, err 
 	if _u.mutation.ExternalIDCleared() {
 		_spec.ClearField(incident.FieldExternalID, field.TypeString)
 	}
+	if value, ok := _u.mutation.CreatedAt(); ok {
+		_spec.SetField(incident.FieldCreatedAt, field.TypeTime, value)
+	}
+	if value, ok := _u.mutation.UpdatedAt(); ok {
+		_spec.SetField(incident.FieldUpdatedAt, field.TypeTime, value)
+	}
 	if value, ok := _u.mutation.Slug(); ok {
 		_spec.SetField(incident.FieldSlug, field.TypeString, value)
 	}
@@ -2107,6 +2221,9 @@ func (_u *IncidentUpdateOne) sqlSave(ctx context.Context) (_node *Incident, err 
 	}
 	if _u.mutation.ChatChannelIDCleared() {
 		_spec.ClearField(incident.FieldChatChannelID, field.TypeString)
+	}
+	if value, ok := _u.mutation.OpenedAt(); ok {
+		_spec.SetField(incident.FieldOpenedAt, field.TypeTime, value)
 	}
 	if _u.mutation.SeverityCleared() {
 		edge := &sqlgraph.EdgeSpec{
