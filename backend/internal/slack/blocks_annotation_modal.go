@@ -1,7 +1,6 @@
 package slack
 
 import (
-	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent"
 	"github.com/slack-go/slack"
 )
