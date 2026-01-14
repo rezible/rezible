@@ -89,6 +89,32 @@ func (s *IncidentService) GetBySlug(ctx context.Context, slug string) (*ent.Inci
 	return s.incidentQuery(incident.Slug(slug), true).Only(ctx)
 }
 
+func (s *IncidentService) getIncidentEdgeMutationUpdateEvent(incidentId uuid.UUID, m ent.Mutation, v ent.Value) any {
+	op := m.Op()
+	isCreate := op.Is(ent.OpCreate)
+	isUpdate := op.Is(ent.OpUpdateOne)
+	if !(isCreate || isUpdate) {
+		return nil
+	}
+	if m.Type() == ent.TypeIncidentMilestone {
+		ms, ok := v.(*ent.IncidentMilestone)
+		if !ok {
+			log.Warn().Interface("v", v).Msg("failed to cast value to ent.IncidentMilestone")
+			return nil
+		}
+		return &rez.EventOnIncidentMilestoneUpdated{
+			IncidentId:  incidentId,
+			MilestoneId: ms.ID,
+			Created:     m.Op().Is(ent.OpCreate),
+		}
+	}
+	log.Debug().
+		Str("op", op.String()).
+		Str("type", m.Type()).
+		Msg("maybe add update event")
+	return nil
+}
+
 func (s *IncidentService) Set(ctx context.Context, id uuid.UUID, setFn func(*ent.IncidentMutation) []ent.Mutation) (*ent.Incident, error) {
 	var curr *ent.Incident
 	if id != uuid.Nil {
@@ -114,6 +140,7 @@ func (s *IncidentService) Set(ctx context.Context, id uuid.UUID, setFn func(*ent
 		generatedUniqueSlug = incSlug
 	}
 
+	var updateEvents []any
 	var updated *ent.Incident
 	updateTx := func(tx *ent.Tx) error {
 		var mutator ent.EntityMutator[*ent.Incident, *ent.IncidentMutation]
@@ -125,9 +152,7 @@ func (s *IncidentService) Set(ctx context.Context, id uuid.UUID, setFn func(*ent
 		}
 
 		incidentMut := mutator.Mutation()
-
 		edgeMuts := setFn(incidentMut)
-
 		if generatedUniqueSlug != "" {
 			incidentMut.SetSlug(generatedUniqueSlug)
 		}
@@ -137,26 +162,26 @@ func (s *IncidentService) Set(ctx context.Context, id uuid.UUID, setFn func(*ent
 		if saveErr != nil {
 			return fmt.Errorf("save incident: %w", saveErr)
 		}
+		updateEvents = append(updateEvents, rez.EventOnIncidentUpdated{IncidentId: updated.ID})
 
 		for _, edgeMut := range edgeMuts {
-			log.Debug().
-				Str("type", edgeMut.Type()).
-				Msg("incident setFn edgeMutation")
-			if _, edgeErr := tx.Client().Mutate(ctx, edgeMut); edgeErr != nil {
+			v, edgeErr := tx.Client().Mutate(ctx, edgeMut)
+			if edgeErr != nil {
 				return fmt.Errorf("edge mutation: %w", edgeErr)
 			}
+			updateEvents = append(updateEvents, s.getIncidentEdgeMutationUpdateEvent(updated.ID, edgeMut, v))
 		}
 
 		return nil
 	}
-
 	if txErr := ent.WithTx(ctx, s.db, updateTx); txErr != nil {
 		return nil, fmt.Errorf("update: %w", txErr)
 	}
 
-	pubErr := s.msgs.PublishEvent(ctx, rez.EventOnIncidentUpdated{IncidentId: updated.ID})
-	if pubErr != nil {
-		log.Error().Err(pubErr).Msg("failed to publish incident updated message")
+	for _, ev := range updateEvents {
+		if pubEvErr := s.msgs.PublishEvent(ctx, ev); pubEvErr != nil {
+			log.Error().Err(pubEvErr).Msg("failed to publish incident update event message")
+		}
 	}
 
 	return updated, nil
@@ -260,7 +285,7 @@ func (s *IncidentService) SetIncidentMilestone(ctx context.Context, id uuid.UUID
 
 	ev := &rez.EventOnIncidentMilestoneUpdated{
 		Created:     id == uuid.Nil,
-		MilestoneId: id,
+		MilestoneId: updated.ID,
 		IncidentId:  updated.IncidentID,
 	}
 	if pubErr := s.msgs.PublishEvent(ctx, ev); pubErr != nil {

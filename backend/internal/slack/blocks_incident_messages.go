@@ -9,7 +9,10 @@ import (
 	"github.com/slack-go/slack"
 )
 
-const actionCallbackIdIncidentModalButton = "open_incident_modal"
+const (
+	actionCallbackIdIncidentDetailsModalButton   = "open_incident_details_modal"
+	actionCallbackIdIncidentMilestoneModalButton = "open_incident_milestone_modal"
+)
 
 type incidentDetailsMessageBuilder struct {
 	blocks   []slack.Block
@@ -48,10 +51,13 @@ func (b *incidentDetailsMessageBuilder) makeDetailsText() {
 }
 
 func (b *incidentDetailsMessageBuilder) makeActions() {
-	buttonText := slack.NewTextBlockObject(slack.PlainTextType, "Edit :gear:", true, false)
-	openModalButton := slack.NewButtonBlockElement(actionCallbackIdIncidentModalButton, "open_modal", buttonText)
-	openModalButton.Style = slack.StyleDefault
-	b.blocks = append(b.blocks, slack.NewActionBlock("incident_details_actions", openModalButton))
+	detailsButtonText := slack.NewTextBlockObject(slack.PlainTextType, "Update Incident Details :gear:", true, false)
+	detailsButton := slack.NewButtonBlockElement(actionCallbackIdIncidentDetailsModalButton, "details", detailsButtonText)
+
+	milestoneButtonText := slack.NewTextBlockObject(slack.PlainTextType, "Update Incident Status", true, false)
+	milestoneButton := slack.NewButtonBlockElement(actionCallbackIdIncidentMilestoneModalButton, "milestone", milestoneButtonText)
+
+	b.blocks = append(b.blocks, slack.NewActionBlock("incident_details_actions", detailsButton, milestoneButton))
 }
 
 type incidentAnnouncementMessageBuilder struct {

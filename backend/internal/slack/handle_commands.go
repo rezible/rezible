@@ -57,7 +57,7 @@ func (s *ChatService) handleIncidentCommand(ctx context.Context, ev *slack.Slash
 		meta.IncidentId = inc.ID
 	}
 
-	view, viewErr := s.makeIncidentModalView(ctx, &meta)
+	view, viewErr := s.makeIncidentDetailsModalView(ctx, &meta)
 	if viewErr != nil {
 		log.Error().Err(viewErr).Msg("failed creating modal view")
 		return commandErrorResponse("Failed to create incident view"), viewErr

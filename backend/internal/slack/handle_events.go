@@ -39,15 +39,17 @@ func (s *ChatService) onMentionEvent(ctx context.Context, data *slackevents.AppM
 }
 
 func (s *ChatService) onMessageEvent(ctx context.Context, data *slackevents.MessageEvent) error {
-	threadTs := data.ThreadTimeStamp
-	// TODO check if thread is 'monitored'
+	/*
+		threadTs := data.ThreadTimeStamp
+		// TODO check if thread is 'monitored'
 
-	log.Debug().
-		Str("type", data.ChannelType).
-		Str("text", data.Text).
-		Str("thread", threadTs).
-		Str("user", data.User).
-		Msg("message event")
+		log.Debug().
+			Str("type", data.ChannelType).
+			Str("text", data.Text).
+			Str("thread", threadTs).
+			Str("user", data.User).
+			Msg("message event")
+	*/
 
 	return nil
 }

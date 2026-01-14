@@ -11,9 +11,10 @@ import (
 )
 
 const (
-	viewCallbackIdAnnotationModal = "annotation_modal"
-	viewCallbackIdIncidentModal   = "incident_modal"
-	viewCallbackIdUserHome        = "user_home"
+	viewCallbackIdAnnotationModal        = "annotation_modal"
+	viewCallbackIdIncidentDetailsModal   = "incident_details_modal"
+	viewCallbackIdIncidentMilestoneModal = "incident_milestone_modal"
+	viewCallbackIdUserHome               = "user_home"
 )
 
 func makeUserHomeView(ctx context.Context, user *ent.User) (*slack.HomeTabViewRequest, error) {
@@ -126,7 +127,7 @@ type incidentModalViewMetadata struct {
 	IncidentId       uuid.UUID `json:"iid,omitempty"`
 }
 
-func (s *ChatService) makeIncidentModalView(ctx context.Context, meta *incidentModalViewMetadata) (*slack.ModalViewRequest, error) {
+func (s *ChatService) makeIncidentDetailsModalView(ctx context.Context, meta *incidentModalViewMetadata) (*slack.ModalViewRequest, error) {
 	var curr *ent.Incident
 	if meta.IncidentId != uuid.Nil {
 		inc, incErr := s.incidents.Get(ctx, meta.IncidentId)
@@ -142,8 +143,7 @@ func (s *ChatService) makeIncidentModalView(ctx context.Context, meta *incidentM
 	}
 
 	builder := newIncidentModalViewBuilder(curr, meta)
-	builder.build(incMeta)
-	blockSet := builder.blockSet()
+	blockSet := builder.build(incMeta)
 
 	jsonMetadata, jsonErr := json.Marshal(meta)
 	if jsonErr != nil {
@@ -159,7 +159,7 @@ func (s *ChatService) makeIncidentModalView(ctx context.Context, meta *incidentM
 
 	view := &slack.ModalViewRequest{
 		Type:            "modal",
-		CallbackID:      viewCallbackIdIncidentModal,
+		CallbackID:      viewCallbackIdIncidentDetailsModal,
 		Title:           plainTextBlock(titleText),
 		Submit:          plainTextBlock(submitText),
 		Close:           plainTextBlock("Cancel"),
@@ -170,14 +170,33 @@ func (s *ChatService) makeIncidentModalView(ctx context.Context, meta *incidentM
 	return view, nil
 }
 
-func setIncidentModalInputMutationFields(m *ent.IncidentMutation, state *slack.ViewState) {
-	m.SetTitle(incidentModalTitleIds.GetStateValue(state))
-
-	if sevId, sevErr := uuid.Parse(incidentModalSeverityIds.GetStateSelectedValue(state)); sevErr == nil {
-		m.SetSeverityID(sevId)
+func (s *ChatService) makeIncidentMilestoneModalView(ctx context.Context, meta *incidentModalViewMetadata) (*slack.ModalViewRequest, error) {
+	var curr *ent.Incident
+	if meta.IncidentId != uuid.Nil {
+		inc, incErr := s.incidents.Get(ctx, meta.IncidentId)
+		if incErr != nil && !ent.IsNotFound(incErr) {
+			return nil, incErr
+		}
+		curr = inc
 	}
 
-	if typeId, typeErr := uuid.Parse(incidentModalTypeIds.GetStateSelectedValue(state)); typeErr == nil {
-		m.SetTypeID(typeId)
+	builder := newIncidentMilestoneModalViewBuilder(curr, meta)
+	blockSet := builder.build()
+
+	jsonMetadata, jsonErr := json.Marshal(meta)
+	if jsonErr != nil {
+		return nil, fmt.Errorf("failed to marshal metadata: %w", jsonErr)
 	}
+
+	view := &slack.ModalViewRequest{
+		Type:            "modal",
+		CallbackID:      viewCallbackIdIncidentMilestoneModal,
+		Title:           plainTextBlock("Update Incident Status"),
+		Submit:          plainTextBlock("Save"),
+		Close:           plainTextBlock("Cancel"),
+		PrivateMetadata: string(jsonMetadata),
+		Blocks:          blockSet,
+	}
+
+	return view, nil
 }

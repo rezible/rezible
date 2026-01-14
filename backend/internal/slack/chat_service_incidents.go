@@ -40,8 +40,6 @@ func (h *incidentChatEventHandler) registerHandlers() error {
 }
 
 func (h *incidentChatEventHandler) onIncidentUpdate(ctx context.Context, ev *rez.EventOnIncidentUpdated) error {
-	log.Debug().Msg("on incident update")
-
 	inc, incErr := h.chat.incidents.Get(ctx, ev.IncidentId)
 	if incErr != nil {
 		return fmt.Errorf("failed to get incident: %w", incErr)
@@ -92,17 +90,19 @@ func (h *incidentChatEventHandler) sendIncidentMilestoneMessage(ctx context.Cont
 	}
 
 	if inc.ChatChannelID == "" {
-		return fmt.Errorf("no chat channel for incident: %s", ev.IncidentId)
+		// just created, no need to send milestone update
+		return nil
 	}
 
-	ms, msErr := inc.QueryMilestones().Where(im.ID(ev.MilestoneId)).Only(ctx)
+	ms, msErr := h.chat.incidents.GetIncidentMilestone(ctx, ev.MilestoneId)
 	if msErr != nil {
 		return fmt.Errorf("failed to get milestone: %w", msErr)
 	}
 
 	return h.chat.withClient(ctx, func(client *slack.Client) error {
+		text := fmt.Sprintf("Incident Milestone %s - %s", ms.Kind.String(), ms.Description)
 		blocks := []slack.Block{
-			slack.NewSectionBlock(plainTextBlock(ms.Description), nil, nil),
+			slack.NewSectionBlock(plainTextBlock(text), nil, nil),
 		}
 
 		metadata := slack.SlackMetadata{
