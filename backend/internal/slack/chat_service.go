@@ -164,3 +164,25 @@ func (s *ChatService) GetIntegrationFromToken(token *oauth2.Token) (*ent.Integra
 		Config: cfgJson,
 	}, nil
 }
+
+func (s *ChatService) openOrUpdateModal(ctx context.Context, ic *slack.InteractionCallback, view *slack.ModalViewRequest) error {
+	var viewResp *slack.ViewResponse
+	var respErr error
+	openViewFn := func(client *slack.Client) error {
+		if ic.View.State == nil {
+			viewResp, respErr = client.OpenViewContext(ctx, ic.TriggerID, *view)
+		} else {
+			viewResp, respErr = client.UpdateViewContext(ctx, *view, "", ic.Hash, ic.View.ID)
+		}
+		return nil
+	}
+	if clientErr := s.withClient(ctx, openViewFn); clientErr != nil {
+		return clientErr
+	}
+	if respErr != nil {
+		logSlackViewErrorResponse(respErr, viewResp)
+		return respErr
+	}
+
+	return nil
+}

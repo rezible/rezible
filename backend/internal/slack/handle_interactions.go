@@ -56,9 +56,9 @@ func (s *ChatService) handleMessageActionInteraction(ctx context.Context, ic *sl
 
 func (s *ChatService) handleBlockActionsInteraction(ctx context.Context, ic *slack.InteractionCallback) (any, error) {
 	switch ic.View.CallbackID {
-	case annotationModalViewCallbackID:
+	case modalCallbackIdAnnotationSubmit:
 		return s.handleAnnotationModalInteraction(ctx, ic)
-	case createIncidentModalViewCallbackID:
+	case modalCallbackIdIncidentSubmit:
 		return s.handleIncidentModalInteraction(ctx, ic)
 	}
 	return nil, fmt.Errorf("unknown block actions: %s", ic.View.CallbackID)
@@ -66,9 +66,9 @@ func (s *ChatService) handleBlockActionsInteraction(ctx context.Context, ic *sla
 
 func (s *ChatService) handleViewSubmissionInteraction(ctx context.Context, ic *slack.InteractionCallback) (any, error) {
 	switch ic.View.CallbackID {
-	case annotationModalViewCallbackID:
+	case modalCallbackIdAnnotationSubmit:
 		return s.handleAnnotationModalSubmission(ctx, ic)
-	case createIncidentModalViewCallbackID:
+	case modalCallbackIdIncidentSubmit:
 		return s.handleIncidentModalSubmission(ctx, ic)
 	}
 	return nil, fmt.Errorf("unknown view submission: %s", ic.View.CallbackID)

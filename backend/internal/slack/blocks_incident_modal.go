@@ -43,18 +43,6 @@ func incidentModalFieldOptionIds(optId string) blockActionIds {
 	return blockActionIds{Block: "incident_field_" + optId, Input: "incident_field_select_" + optId}
 }
 
-func setIncidentModalInputMutationFields(m *ent.IncidentMutation, state *slack.ViewState) {
-	m.SetTitle(incidentModalTitleIds.GetStateValue(state))
-
-	if sevId, sevErr := uuid.Parse(incidentModalSeverityIds.GetStateSelectedValue(state)); sevErr == nil {
-		m.SetSeverityID(sevId)
-	}
-
-	if typeId, typeErr := uuid.Parse(incidentModalTypeIds.GetStateSelectedValue(state)); typeErr == nil {
-		m.SetTypeID(typeId)
-	}
-}
-
 func (b *incidentModalViewBuilder) makeTitleInput() {
 	// Title input
 	titleInput := slack.NewPlainTextInputBlockElement(nil, incidentModalTitleIds.Input)

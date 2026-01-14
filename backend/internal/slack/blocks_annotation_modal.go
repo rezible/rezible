@@ -12,13 +12,6 @@ type annotationModalBuilder struct {
 	metadata       *annotationModalMetadata
 }
 
-type annotationModalMetadata struct {
-	UserId       string    `json:"uid"`
-	MsgId        messageId `json:"mid"`
-	MsgText      string    `json:"mtx"`
-	AnnotationId uuid.UUID `json:"aid,omitempty"`
-}
-
 func newAnnotationModalBuilder(curr *ent.EventAnnotation, meta *annotationModalMetadata) *annotationModalBuilder {
 	return &annotationModalBuilder{
 		blocks:         []slack.Block{},

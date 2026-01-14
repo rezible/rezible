@@ -2,112 +2,195 @@ package slack
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
-	"strconv"
-	"strings"
-	"time"
 
+	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent"
-	"github.com/rs/zerolog/log"
 	"github.com/slack-go/slack"
 )
 
-func (s *ChatService) openOrUpdateModal(ctx context.Context, ic *slack.InteractionCallback, view *slack.ModalViewRequest) error {
-	var viewResp *slack.ViewResponse
-	var respErr error
-	openViewFn := func(client *slack.Client) error {
-		if ic.View.State == nil {
-			viewResp, respErr = client.OpenViewContext(ctx, ic.TriggerID, *view)
-		} else {
-			viewResp, respErr = client.UpdateViewContext(ctx, *view, "", ic.Hash, ic.View.ID)
-		}
-		return nil
-	}
-	if clientErr := s.withClient(ctx, openViewFn); clientErr != nil {
-		return clientErr
-	}
-	if respErr != nil {
-		logSlackViewErrorResponse(respErr, viewResp)
-		return respErr
-	}
-
-	return nil
-}
-
-func logSlackViewErrorResponse(err error, resp *slack.ViewResponse) {
-	line := log.Error().Err(err)
-	if resp != nil {
-		line.Strs("response_messages", resp.ResponseMetadata.Messages)
-	}
-	line.Msg("slack view response error")
-}
-
-func convertSlackTs(ts string) time.Time {
-	parts := strings.Split(ts, ".")
-	if len(parts) < 2 {
-		return time.Time{}
-	}
-	secs, parseErr := strconv.ParseInt(parts[0], 10, 32)
-	if parseErr != nil {
-		return time.Time{}
-	}
-	return time.Unix(secs, 0)
-}
-
-type messageId string
-
-func (m messageId) getTimestamp() time.Time {
-	_, ts, _ := strings.Cut(m.String(), "_")
-	return convertSlackTs(ts)
-}
-
-func (m messageId) String() string {
-	return string(m)
-}
-
-func getMessageId(ic *slack.InteractionCallback) messageId {
-	return messageId(fmt.Sprintf("%s_%s", ic.Channel.ID, ic.Message.Timestamp))
-}
-
-func getViewStateBlockAction(state *slack.ViewState, ids blockActionIds) *slack.BlockAction {
-	if block, blockOk := state.Values[ids.Block]; blockOk {
-		if action, inputOk := block[ids.Input]; inputOk {
-			return &action
-		}
-	}
-	return nil
-}
-
-type blockActionIds struct {
-	Block string
-	Input string
-}
-
-func (ids blockActionIds) GetStateValue(state *slack.ViewState) string {
-	action := getViewStateBlockAction(state, ids)
-	if action == nil {
-		return ""
-	}
-	return action.Value
-}
-
-func (ids blockActionIds) GetStateSelectedValue(state *slack.ViewState) string {
-	action := getViewStateBlockAction(state, ids)
-	if action == nil {
-		return ""
-	}
-	return action.SelectedOption.Value
-}
+const (
+	modalCallbackIdAnnotationSubmit = "annotation_modal_submit"
+	modalCallbackIdIncidentSubmit   = "incident_modal_submit"
+	modalCallbackIdUserHome         = "user_home"
+)
 
 func makeUserHomeView(ctx context.Context, user *ent.User) (*slack.HomeTabViewRequest, error) {
 	var blocks []slack.Block
 	blocks = append(blocks, slack.NewSectionBlock(plainTextBlock("Home Tab"), nil, nil))
 	homeView := slack.HomeTabViewRequest{
 		Type:            slack.VTHomeTab,
-		CallbackID:      "user_home",
+		CallbackID:      modalCallbackIdUserHome,
 		PrivateMetadata: "foo",
 		Blocks:          slack.Blocks{BlockSet: blocks},
 		ExternalID:      user.ID.String(),
 	}
 	return &homeView, nil
+}
+
+type annotationModalMetadata struct {
+	UserId       string    `json:"uid"`
+	MsgId        messageId `json:"mid"`
+	MsgText      string    `json:"mtx"`
+	AnnotationId uuid.UUID `json:"aid,omitempty"`
+}
+
+func (s *ChatService) makeAnnotationModalView(ctx context.Context, ic *slack.InteractionCallback) (*slack.ModalViewRequest, error) {
+	var meta annotationModalMetadata
+	if ic.View.PrivateMetadata != "" {
+		if jsonErr := json.Unmarshal([]byte(ic.View.PrivateMetadata), &meta); jsonErr != nil {
+			return nil, jsonErr
+		}
+	} else {
+		meta = annotationModalMetadata{
+			UserId:  ic.User.ID,
+			MsgId:   messageId(fmt.Sprintf("%s_%s", ic.Channel.ID, ic.Message.Timestamp)),
+			MsgText: ic.Message.Text,
+		}
+	}
+
+	usr, usrCtx, userErr := s.lookupChatUser(ctx, meta.UserId)
+	if userErr != nil {
+		return nil, fmt.Errorf("failed to lookup user: %w", userErr)
+	}
+
+	ev := &ent.Event{ExternalID: meta.MsgId.String()}
+
+	curr, currErr := s.annos.LookupByUserEvent(usrCtx, usr.ID, ev)
+	if currErr != nil && !ent.IsNotFound(currErr) {
+		return nil, fmt.Errorf("failed to lookup existing event annotation: %w", currErr)
+	}
+	if curr != nil {
+		meta.AnnotationId = curr.ID
+	}
+
+	builder := newAnnotationModalBuilder(curr, &meta)
+	blockSet := builder.build()
+
+	titleText := "Create Annotation"
+	submitText := "Create"
+
+	if curr != nil {
+		titleText = "Update Annotation"
+		submitText = "Update"
+	}
+
+	jsonMetadata, jsonErr := json.Marshal(meta)
+	if jsonErr != nil {
+		return nil, fmt.Errorf("failed to marshal metadata: %w", jsonErr)
+	}
+
+	return &slack.ModalViewRequest{
+		Type:            "modal",
+		CallbackID:      modalCallbackIdAnnotationSubmit,
+		Title:           plainTextBlock(titleText),
+		Submit:          plainTextBlock(submitText),
+		Close:           plainTextBlock("Cancel"),
+		Blocks:          blockSet,
+		PrivateMetadata: string(jsonMetadata),
+	}, nil
+}
+
+func (s *ChatService) getAnnotationModalAnnotation(ctx context.Context, view slack.View) (*ent.EventAnnotation, error) {
+	var meta annotationModalMetadata
+	if jsonErr := json.Unmarshal([]byte(view.PrivateMetadata), &meta); jsonErr != nil {
+		return nil, fmt.Errorf("failed to unmarshal metadata: %w", jsonErr)
+	}
+
+	usr, _, userErr := s.lookupChatUser(ctx, meta.UserId)
+	if userErr != nil {
+		return nil, fmt.Errorf("failed to lookup user: %w", userErr)
+	}
+
+	var notes string
+	if view.State != nil {
+		if notesInput, inputOk := view.State.Values["notes_input"]; inputOk {
+			if noteBlock, noteOk := notesInput["notes_input_text"]; noteOk {
+				notes = noteBlock.Value
+			}
+		}
+	}
+
+	ev := &ent.Event{
+		ExternalID:  meta.MsgId.String(),
+		Kind:        "message",
+		Timestamp:   meta.MsgId.getTimestamp(),
+		Source:      "slack",
+		Title:       "Slack Message",
+		Description: meta.MsgText,
+	}
+
+	anno := &ent.EventAnnotation{
+		ID:        meta.AnnotationId,
+		CreatorID: usr.ID,
+		Notes:     notes,
+		Edges: ent.EventAnnotationEdges{
+			Event: ev,
+		},
+	}
+
+	return anno, nil
+}
+
+type incidentModalViewMetadata struct {
+	UserId           string    `json:"uid"`
+	CommandChannelId string    `json:"cid"`
+	IncidentId       uuid.UUID `json:"iid,omitempty"`
+}
+
+func (s *ChatService) makeIncidentModalView(ctx context.Context, meta *incidentModalViewMetadata) (*slack.ModalViewRequest, error) {
+	var curr *ent.Incident
+	if meta.IncidentId != uuid.Nil {
+		inc, incErr := s.incidents.Get(ctx, meta.IncidentId)
+		if incErr != nil && !ent.IsNotFound(incErr) {
+			return nil, incErr
+		}
+		curr = inc
+	}
+
+	incMeta, incMetaErr := s.incidents.GetIncidentMetadata(ctx)
+	if incMetaErr != nil {
+		return nil, fmt.Errorf("failed to get incident metadata: %w", incMetaErr)
+	}
+
+	builder := newIncidentModalViewBuilder(curr, meta)
+	builder.build(incMeta)
+	blockSet := builder.blockSet()
+
+	jsonMetadata, jsonErr := json.Marshal(meta)
+	if jsonErr != nil {
+		return nil, fmt.Errorf("failed to marshal metadata: %w", jsonErr)
+	}
+
+	titleText := "Open Incident"
+	submitText := "Submit"
+	if curr != nil {
+		titleText = "Update Incident"
+		submitText = "Update"
+	}
+
+	view := &slack.ModalViewRequest{
+		Type:            "modal",
+		CallbackID:      modalCallbackIdIncidentSubmit,
+		Title:           plainTextBlock(titleText),
+		Submit:          plainTextBlock(submitText),
+		Close:           plainTextBlock("Cancel"),
+		PrivateMetadata: string(jsonMetadata),
+		Blocks:          blockSet,
+	}
+
+	return view, nil
+}
+
+func setIncidentModalInputMutationFields(m *ent.IncidentMutation, state *slack.ViewState) {
+	m.SetTitle(incidentModalTitleIds.GetStateValue(state))
+
+	if sevId, sevErr := uuid.Parse(incidentModalSeverityIds.GetStateSelectedValue(state)); sevErr == nil {
+		m.SetSeverityID(sevId)
+	}
+
+	if typeId, typeErr := uuid.Parse(incidentModalTypeIds.GetStateSelectedValue(state)); typeErr == nil {
+		m.SetTypeID(typeId)
+	}
 }
