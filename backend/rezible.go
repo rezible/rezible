@@ -375,6 +375,9 @@ type (
 
 		ListIncidentRoles(context.Context) ([]*ent.IncidentRole, error)
 
+		GetIncidentMilestone(context.Context, uuid.UUID) (*ent.IncidentMilestone, error)
+		SetIncidentMilestone(context.Context, uuid.UUID, func(*ent.IncidentMilestoneMutation)) (*ent.IncidentMilestone, error)
+
 		ListIncidentSeverities(context.Context) ([]*ent.IncidentSeverity, error)
 		GetIncidentSeverity(context.Context, uuid.UUID) (*ent.IncidentSeverity, error)
 
@@ -384,7 +387,14 @@ type (
 	}
 
 	EventOnIncidentUpdated struct {
+		Created    bool
 		IncidentId uuid.UUID
+	}
+
+	EventOnIncidentMilestoneUpdated struct {
+		Created     bool
+		IncidentId  uuid.UUID
+		MilestoneId uuid.UUID
 	}
 )
 

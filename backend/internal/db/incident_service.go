@@ -89,11 +89,6 @@ func (s *IncidentService) GetBySlug(ctx context.Context, slug string) (*ent.Inci
 	return s.incidentQuery(incident.Slug(slug), true).Only(ctx)
 }
 
-type incidentMutator interface {
-	Save(ctx context.Context) (*ent.Incident, error)
-	Mutation() *ent.IncidentMutation
-}
-
 func (s *IncidentService) Set(ctx context.Context, id uuid.UUID, setFn func(*ent.IncidentMutation) []ent.Mutation) (*ent.Incident, error) {
 	var curr *ent.Incident
 	if id != uuid.Nil {
@@ -121,7 +116,7 @@ func (s *IncidentService) Set(ctx context.Context, id uuid.UUID, setFn func(*ent
 
 	var updated *ent.Incident
 	updateTx := func(tx *ent.Tx) error {
-		var mutator incidentMutator
+		var mutator ent.EntityMutator[*ent.Incident, *ent.IncidentMutation]
 		if curr == nil {
 			id = uuid.New()
 			mutator = tx.Incident.Create().SetID(id)
@@ -222,6 +217,57 @@ func (s *IncidentService) ListIncidentSeverities(ctx context.Context) ([]*ent.In
 
 func (s *IncidentService) GetIncidentSeverity(ctx context.Context, id uuid.UUID) (*ent.IncidentSeverity, error) {
 	return s.db.IncidentSeverity.Get(ctx, id)
+}
+
+func (s *IncidentService) GetIncidentMilestone(ctx context.Context, id uuid.UUID) (*ent.IncidentMilestone, error) {
+	return s.db.IncidentMilestone.Get(ctx, id)
+}
+
+func (s *IncidentService) SetIncidentMilestone(ctx context.Context, id uuid.UUID, setFn func(*ent.IncidentMilestoneMutation)) (*ent.IncidentMilestone, error) {
+	var curr *ent.IncidentMilestone
+	if id != uuid.Nil {
+		inc, getErr := s.db.IncidentMilestone.Get(ctx, id)
+		if getErr != nil {
+			return nil, fmt.Errorf("fetch existing incident: %w", getErr)
+		}
+		curr = inc
+	}
+
+	var updated *ent.IncidentMilestone
+	updateTx := func(tx *ent.Tx) error {
+		var mutator ent.EntityMutator[*ent.IncidentMilestone, *ent.IncidentMilestoneMutation]
+		if curr == nil {
+			mutator = tx.IncidentMilestone.Create().SetID(uuid.New())
+		} else {
+			mutator = tx.IncidentMilestone.UpdateOne(curr)
+		}
+
+		mut := mutator.Mutation()
+		setFn(mut)
+
+		var saveErr error
+		updated, saveErr = mutator.Save(ctx)
+		if saveErr != nil {
+			return fmt.Errorf("save: %w", saveErr)
+		}
+
+		return nil
+	}
+
+	if txErr := ent.WithTx(ctx, s.db, updateTx); txErr != nil {
+		return nil, fmt.Errorf("update: %w", txErr)
+	}
+
+	ev := &rez.EventOnIncidentMilestoneUpdated{
+		Created:     id == uuid.Nil,
+		MilestoneId: id,
+		IncidentId:  updated.IncidentID,
+	}
+	if pubErr := s.msgs.PublishEvent(ctx, ev); pubErr != nil {
+		log.Error().Err(pubErr).Msg("failed to publish incident milestone updated message")
+	}
+
+	return updated, nil
 }
 
 func (s *IncidentService) ListIncidentTypes(ctx context.Context) ([]*ent.IncidentType, error) {

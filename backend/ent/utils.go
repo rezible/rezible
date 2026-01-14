@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 
+	"entgo.io/ent"
 	entsql "entgo.io/ent/dialect/sql"
 	"github.com/jackc/pgx/v5"
 	"github.com/rezible/rezible/ent/entpgx"
@@ -39,6 +40,11 @@ func (p ListParams) GetQueryContext(parent context.Context) context.Context {
 		return context.WithValue(parent, "include_archived", true)
 	}
 	return parent
+}
+
+type EntityMutator[T any, M ent.Mutation] interface {
+	Save(ctx context.Context) (T, error)
+	Mutation() M
 }
 
 func WithTx(ctx context.Context, client *Client, fn func(tx *Tx) error) error {

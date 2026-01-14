@@ -165,6 +165,12 @@ func (s *ChatService) GetIntegrationFromToken(token *oauth2.Token) (*ent.Integra
 	}, nil
 }
 
+func (s *ChatService) getIncidentAnnouncementChannelId(ctx context.Context) (string, error) {
+	// TODO: fetch from config
+	announcementChannelId := "#incident"
+	return announcementChannelId, nil
+}
+
 func (s *ChatService) openOrUpdateModal(ctx context.Context, ic *slack.InteractionCallback, view *slack.ModalViewRequest) error {
 	var viewResp *slack.ViewResponse
 	var respErr error

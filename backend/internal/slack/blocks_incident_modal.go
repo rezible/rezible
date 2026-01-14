@@ -26,7 +26,7 @@ func (b *incidentModalViewBuilder) build(im *rez.IncidentMetadata) {
 	b.makeTitleInput()
 	b.makeSeveritySelect(im.Severities)
 	if b.incident != nil {
-
+		b.makeMilestoneSelect()
 	}
 	// only allow setting incident type on creation
 	if b.incident == nil && len(im.Types) > 0 {
@@ -42,9 +42,10 @@ func (b *incidentModalViewBuilder) blockSet() slack.Blocks {
 }
 
 var (
-	incidentModalTitleIds    = blockActionIds{Block: "title", Input: "title_input"}
-	incidentModalSeverityIds = blockActionIds{Block: "incident_severity", Input: "severity_select"}
-	incidentModalTypeIds     = blockActionIds{Block: "incident_type", Input: "type_select"}
+	incidentModalTitleIds     = blockActionIds{Block: "title", Input: "title_input"}
+	incidentModalSeverityIds  = blockActionIds{Block: "incident_severity", Input: "severity_select"}
+	incidentModalTypeIds      = blockActionIds{Block: "incident_type", Input: "type_select"}
+	incidentModalMilestoneIds = blockActionIds{Block: "incident_milestone", Input: "milestone_select"}
 )
 
 func incidentModalFieldOptionIds(optId string) blockActionIds {
@@ -85,6 +86,30 @@ func (b *incidentModalViewBuilder) makeSeveritySelect(sevs ent.IncidentSeveritie
 	b.blocks = append(b.blocks,
 		slack.NewInputBlock(incidentModalSeverityIds.Block, plainTextBlock("Severity"), nil, severitySelect))
 
+}
+
+func (b *incidentModalViewBuilder) makeMilestoneSelect() {
+	msOptions := []*slack.OptionBlockObject{
+		slack.NewOptionBlockObject("impact", plainTextBlock("Impact"), nil),
+		slack.NewOptionBlockObject("mitigated", plainTextBlock("Mitigated"), nil),
+		slack.NewOptionBlockObject("resolved", plainTextBlock("Resolved"), nil),
+	}
+
+	msSelect := slack.NewOptionsSelectBlockElement(slack.OptTypeStatic, nil, incidentModalMilestoneIds.Input, msOptions...)
+
+	initialOpt := msOptions[0]
+	if b.incident != nil {
+		for _, opt := range msOptions {
+			if opt.Value == b.incident.TypeID.String() {
+				initialOpt = opt
+				break
+			}
+		}
+	}
+	msSelect.WithInitialOption(initialOpt)
+
+	b.blocks = append(b.blocks,
+		slack.NewInputBlock(incidentModalMilestoneIds.Block, plainTextBlock("Incident Status"), nil, msSelect))
 }
 
 func (b *incidentModalViewBuilder) makeTypeSelect(types ent.IncidentTypes) {
