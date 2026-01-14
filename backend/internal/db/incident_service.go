@@ -8,14 +8,14 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/gosimple/slug"
-	"github.com/rezible/rezible/ent/retrospective"
 	"github.com/rs/zerolog/log"
 
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
 	"github.com/rezible/rezible/ent/incident"
-	"github.com/rezible/rezible/ent/incidentroleassignment"
+	ira "github.com/rezible/rezible/ent/incidentroleassignment"
 	"github.com/rezible/rezible/ent/predicate"
+	"github.com/rezible/rezible/ent/retrospective"
 )
 
 type IncidentService struct {
@@ -33,24 +33,11 @@ func NewIncidentService(db *ent.Client, jobs rez.JobsService, msgs rez.MessageSe
 		users: users,
 	}
 
+	if msgsErr := svc.registerMessageHandlers(); msgsErr != nil {
+		return nil, fmt.Errorf("failed registering message handlers: %w", msgsErr)
+	}
+
 	return svc, nil
-}
-
-func (s *IncidentService) onProviderIncidentUpdated(providerId string, updatedAt time.Time) {
-	//ctx := context.Background()
-	//job := incidentDataSyncJobArgs{ProviderId: providerId}
-	//insertOpts := &jobs.InsertOpts{
-	//	UniqueOpts: jobs.UniqueOpts{
-	//		ByArgs:  true,
-	//		ByState: jobs.NonCompletedJobStates,
-	//	},
-	//}
-	//if _, insertErr := s.jobClient.Insert(ctx, job, insertOpts); insertErr != nil {
-	//	log.Error().Err(insertErr).Str("providerId", providerId).Msg("failed to insert update job")
-	//}
-	log.Debug().Str("id", providerId).Msg("incident updated")
-
-	// check resolved, send debrief requests
 }
 
 func (s *IncidentService) incidentQuery(pred predicate.Incident, edges bool) *ent.IncidentQuery {
@@ -70,8 +57,114 @@ func (s *IncidentService) incidentQuery(pred predicate.Incident, edges bool) *en
 	return q
 }
 
+func (s *IncidentService) ListIncidents(ctx context.Context, params rez.ListIncidentsParams) (*ent.ListResult[*ent.Incident], error) {
+	query := s.db.Incident.Query()
+	query.Order(incident.ByOpenedAt(params.GetOrder()))
+	if !params.OpenedAfter.IsZero() {
+		query.Where(incident.OpenedAtGT(params.OpenedAfter))
+	}
+	if !params.OpenedBefore.IsZero() {
+		query.Where(incident.OpenedAtLT(params.OpenedBefore))
+	}
+
+	// TODO: this is probably incorrect, should lookup role assignments first
+	if params.UserId != uuid.Nil {
+		query.WithRoleAssignments(func(q *ent.IncidentRoleAssignmentQuery) {
+			q.Where(ira.UserID(params.UserId))
+		})
+	}
+
+	return ent.DoListQuery[*ent.Incident, *ent.IncidentQuery](ctx, query, params.ListParams)
+}
+
 func (s *IncidentService) Get(ctx context.Context, id uuid.UUID) (*ent.Incident, error) {
 	return s.incidentQuery(incident.ID(id), true).Only(ctx)
+}
+
+func (s *IncidentService) GetByChatChannelID(ctx context.Context, id string) (*ent.Incident, error) {
+	return s.incidentQuery(incident.ChatChannelID(id), false).Only(ctx)
+}
+
+func (s *IncidentService) GetBySlug(ctx context.Context, slug string) (*ent.Incident, error) {
+	return s.incidentQuery(incident.Slug(slug), true).Only(ctx)
+}
+
+type incidentMutator interface {
+	Save(ctx context.Context) (*ent.Incident, error)
+	Mutation() *ent.IncidentMutation
+}
+
+func (s *IncidentService) Set(ctx context.Context, id uuid.UUID, setFn func(*ent.IncidentMutation) []ent.Mutation) (*ent.Incident, error) {
+	var curr *ent.Incident
+	if id != uuid.Nil {
+		inc, getErr := s.db.Incident.Get(ctx, id)
+		if getErr != nil {
+			return nil, fmt.Errorf("fetch existing incident: %w", getErr)
+		}
+		curr = inc
+	}
+
+	var generatedUniqueSlug string
+	if curr == nil {
+		m := s.db.Incident.Create().Mutation()
+		setFn(m)
+		openedAt := time.Now()
+		if at, exists := m.OpenedAt(); exists {
+			openedAt = at
+		}
+		incSlug, slugErr := s.generateIncidentSlug(ctx, openedAt)
+		if slugErr != nil {
+			return nil, fmt.Errorf("generate unique slug: %w", slugErr)
+		}
+		generatedUniqueSlug = incSlug
+	}
+
+	var updated *ent.Incident
+	updateTx := func(tx *ent.Tx) error {
+		var mutator incidentMutator
+		if curr == nil {
+			id = uuid.New()
+			mutator = tx.Incident.Create().SetID(id)
+		} else {
+			mutator = tx.Incident.UpdateOne(curr)
+		}
+
+		incidentMut := mutator.Mutation()
+
+		edgeMuts := setFn(incidentMut)
+
+		if generatedUniqueSlug != "" {
+			incidentMut.SetSlug(generatedUniqueSlug)
+		}
+
+		var saveErr error
+		updated, saveErr = mutator.Save(ctx)
+		if saveErr != nil {
+			return fmt.Errorf("save incident: %w", saveErr)
+		}
+
+		for _, edgeMut := range edgeMuts {
+			log.Debug().
+				Str("type", edgeMut.Type()).
+				Msg("incident setFn edgeMutation")
+			if _, edgeErr := tx.Client().Mutate(ctx, edgeMut); edgeErr != nil {
+				return fmt.Errorf("edge mutation: %w", edgeErr)
+			}
+		}
+
+		return nil
+	}
+
+	if txErr := ent.WithTx(ctx, s.db, updateTx); txErr != nil {
+		return nil, fmt.Errorf("update: %w", txErr)
+	}
+
+	pubErr := s.msgs.PublishEvent(ctx, rez.EventOnIncidentUpdated{IncidentId: updated.ID})
+	if pubErr != nil {
+		log.Error().Err(pubErr).Msg("failed to publish incident updated message")
+	}
+
+	return updated, nil
 }
 
 // TODO: load these from somewhere
@@ -114,117 +207,9 @@ func (s *IncidentService) generateIncidentSlug(ctx context.Context, openedAt tim
 	adj := slugAdjectives[randgen.Intn(len(slugAdjectives))]
 	noun := slugNouns[randgen.Intn(len(slugNouns))]
 	shortUUID := uuid.New().String()[:8]
-	return slug.Make(fmt.Sprintf("%s-%s-%s-%s", datePrefix, adj, noun, shortUUID)), nil
-}
-
-type incidentMutator interface {
-	Save(ctx context.Context) (*ent.Incident, error)
-	Mutation() *ent.IncidentMutation
-}
-
-func (s *IncidentService) Set(ctx context.Context, id uuid.UUID, setFn func(*ent.IncidentMutation) []ent.Mutation) (*ent.Incident, error) {
-	isNew := id == uuid.Nil
-	if !isNew {
-		exists, getErr := s.db.Incident.Query().Where(incident.ID(id)).Exist(ctx)
-		if getErr != nil || !exists {
-			return nil, fmt.Errorf("fetch existing incident: %w", getErr)
-		}
-	}
-
-	var uniqueSlug string
-	if isNew {
-		preMut := s.db.Incident.Create().Mutation()
-		setFn(preMut)
-		var slugErr error
-		uniqueSlug, slugErr = s.generateSlugForMutation(ctx, preMut)
-		if slugErr != nil {
-			return nil, fmt.Errorf("generate unique slug: %w", slugErr)
-		}
-	}
-
-	var updated *ent.Incident
-	updateTx := func(tx *ent.Tx) error {
-		var mutator incidentMutator
-		if isNew {
-			id = uuid.New()
-			mutator = tx.Incident.Create().SetID(id)
-		} else {
-			mutator = tx.Incident.UpdateOneID(id)
-		}
-
-		incidentMut := mutator.Mutation()
-
-		edgeMutations := setFn(incidentMut)
-
-		if isNew && uniqueSlug != "" {
-			incidentMut.SetSlug(uniqueSlug)
-		}
-
-		var saveErr error
-		updated, saveErr = mutator.Save(ctx)
-		if saveErr != nil {
-			return fmt.Errorf("save incident: %w", saveErr)
-		}
-
-		for _, edgeMutation := range edgeMutations {
-			if _, edgeErr := tx.Client().Mutate(ctx, edgeMutation); edgeErr != nil {
-				return fmt.Errorf("edge mutation: %w", edgeErr)
-			}
-		}
-
-		return nil
-	}
-
-	if txErr := ent.WithTx(ctx, s.db, updateTx); txErr != nil {
-		return nil, fmt.Errorf("update: %w", txErr)
-	}
-
-	updateEvent := rez.EventOnIncidentUpdated{IncidentId: updated.ID}
-	if pubErr := s.msgs.PublishEvent(ctx, updateEvent); pubErr != nil {
-		log.Error().Err(pubErr).Msg("failed to publish incident updated message")
-	}
-
-	return updated, nil
-}
-
-func (s *IncidentService) onIncidentUpdate() {
-
-}
-
-func (s *IncidentService) generateSlugForMutation(ctx context.Context, m *ent.IncidentMutation) (string, error) {
-	openedAt := time.Now()
-	if at, exists := m.OpenedAt(); exists {
-		openedAt = at
-	}
-	return s.generateIncidentSlug(ctx, openedAt)
-}
-
-func (s *IncidentService) GetByChatChannelID(ctx context.Context, id string) (*ent.Incident, error) {
-	return s.incidentQuery(incident.ChatChannelID(id), false).Only(ctx)
-}
-
-func (s *IncidentService) GetBySlug(ctx context.Context, slug string) (*ent.Incident, error) {
-	return s.incidentQuery(incident.Slug(slug), true).Only(ctx)
-}
-
-func (s *IncidentService) ListIncidents(ctx context.Context, params rez.ListIncidentsParams) (*ent.ListResult[*ent.Incident], error) {
-	query := s.db.Incident.Query()
-	query.Order(incident.ByOpenedAt(params.GetOrder()))
-	if !params.OpenedAfter.IsZero() {
-		query.Where(incident.OpenedAtGT(params.OpenedAfter))
-	}
-	if !params.OpenedBefore.IsZero() {
-		query.Where(incident.OpenedAtLT(params.OpenedBefore))
-	}
-
-	// TODO: this is probably incorrect, should lookup role assignments first
-	if params.UserId != uuid.Nil {
-		query.WithRoleAssignments(func(q *ent.IncidentRoleAssignmentQuery) {
-			q.Where(incidentroleassignment.UserIDEQ(params.UserId))
-		})
-	}
-
-	return ent.DoListQuery[*ent.Incident, *ent.IncidentQuery](ctx, query, params.ListParams)
+	uuidSlug := slug.Make(fmt.Sprintf("%s-%s-%s-%s", datePrefix, adj, noun, shortUUID))
+	log.Warn().Str("slug", uuidSlug).Msg("falling back to uuid incident slug")
+	return uuidSlug, nil
 }
 
 func (s *IncidentService) ListIncidentRoles(ctx context.Context) ([]*ent.IncidentRole, error) {
@@ -248,7 +233,7 @@ func (s *IncidentService) ListIncidentFields(ctx context.Context) ([]*ent.Incide
 }
 
 func (s *IncidentService) GetIncidentMetadata(ctx context.Context) (*rez.IncidentMetadata, error) {
-	var md rez.IncidentMetadata
+	md := rez.IncidentMetadata{}
 	var err error
 
 	// TODO: use a view or get in parallel

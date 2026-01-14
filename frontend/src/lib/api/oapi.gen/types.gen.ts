@@ -521,9 +521,7 @@ export type CreateRetrospectiveReviewResponseBody = {
 };
 
 export type CreateSystemAnalysisRelationshipAttributes = {
-    controlActions: Array<SystemAnalysisRelationshipControlActionAttributes>;
     description: string;
-    feedbackSignals: Array<SystemAnalysisRelationshipFeedbackSignalAttributes>;
     sourceId: string;
     targetId: string;
 };
@@ -2101,6 +2099,7 @@ export type SystemAnalysisComponent = {
 
 export type SystemAnalysisComponentAttributes = {
     component: SystemComponent;
+    description: string;
     position: SystemAnalysisDiagramPosition;
 };
 
@@ -2116,31 +2115,8 @@ export type SystemAnalysisRelationship = {
 };
 
 export type SystemAnalysisRelationshipAttributes = {
-    controlActions: Array<SystemAnalysisRelationshipControlAction>;
     description: string;
-    feedbackSignals: Array<SystemAnalysisRelationshipFeedbackSignal>;
-    sourceId: string;
-    targetId: string;
-};
-
-export type SystemAnalysisRelationshipControlAction = {
-    attributes: SystemAnalysisRelationshipControlActionAttributes;
-    id: string;
-};
-
-export type SystemAnalysisRelationshipControlActionAttributes = {
-    controlId: string;
-    description: string;
-};
-
-export type SystemAnalysisRelationshipFeedbackSignal = {
-    attributes: SystemAnalysisRelationshipFeedbackSignalAttributes;
-    id: string;
-};
-
-export type SystemAnalysisRelationshipFeedbackSignalAttributes = {
-    description: string;
-    signalId: string;
+    relationship: SystemComponentRelationship;
 };
 
 export type SystemComponent = {
@@ -2274,11 +2250,10 @@ export type UpdateEventAnnotationResponseBody = {
 };
 
 export type UpdateIncidentAttributes = {
-    environments?: Array<string>;
-    private?: boolean;
     severityId?: string;
     summary?: string;
     title?: string;
+    typeId?: string;
 };
 
 export type UpdateIncidentDebriefAttributes = {
@@ -2684,9 +2659,7 @@ export type UpdateSystemAnalysisComponentResponseBody = {
 };
 
 export type UpdateSystemAnalysisRelationshipAttributes = {
-    controlActions?: Array<SystemAnalysisRelationshipControlActionAttributes>;
     description?: string;
-    feedbackSignals?: Array<SystemAnalysisRelationshipFeedbackSignalAttributes>;
 };
 
 export type UpdateSystemAnalysisRelationshipRequestBody = {

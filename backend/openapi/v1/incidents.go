@@ -190,11 +190,10 @@ var UpdateIncident = huma.Operation{
 }
 
 type UpdateIncidentAttributes struct {
-	Title        *string   `json:"title,omitempty"`
-	Summary      *string   `json:"summary,omitempty"`
-	SeverityId   *string   `json:"severityId,omitempty"`
-	Private      *bool     `json:"private,omitempty"`
-	Environments *[]string `json:"environments,omitempty"`
+	Title      *string   `json:"title,omitempty"`
+	Summary    *string   `json:"summary,omitempty"`
+	SeverityId uuid.UUID `json:"severityId,omitempty" required:"false"`
+	TypeId     uuid.UUID `json:"typeId,omitempty" required:"false"`
 }
 type UpdateIncidentRequest UpdateIdRequest[UpdateIncidentAttributes]
 type UpdateIncidentResponse ItemResponse[Incident]

@@ -2,10 +2,12 @@ package apiv1
 
 import (
 	"context"
+	"time"
 
 	"github.com/google/uuid"
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
+	im "github.com/rezible/rezible/ent/incidentmilestone"
 	oapi "github.com/rezible/rezible/openapi/v1"
 )
 
@@ -19,26 +21,6 @@ func newIncidentsHandler(db *ent.Client, incidents rez.IncidentService) *inciden
 		db:        db,
 		incidents: incidents,
 	}
-}
-
-func (h *incidentsHandler) CreateIncident(ctx context.Context, input *oapi.CreateIncidentRequest) (*oapi.CreateIncidentResponse, error) {
-	var resp oapi.CreateIncidentResponse
-
-	attr := input.Body.Attributes
-
-	setFn := func(m *ent.IncidentMutation) []ent.Mutation {
-		m.SetTitle(attr.Title)
-		m.SetSummary(attr.Summary)
-		return nil
-	}
-
-	created, createErr := h.incidents.Set(ctx, uuid.Nil, setFn)
-	if createErr != nil {
-		return nil, apiError("failed to create incident", createErr)
-	}
-	resp.Body.Data = oapi.IncidentFromEnt(created)
-
-	return &resp, nil
 }
 
 func (h *incidentsHandler) ListIncidents(ctx context.Context, req *oapi.ListIncidentsRequest) (*oapi.ListIncidentsResponse, error) {
@@ -82,13 +64,35 @@ func (h *incidentsHandler) GetIncident(ctx context.Context, input *oapi.GetIncid
 	return &resp, nil
 }
 
-func (h *incidentsHandler) ArchiveIncident(ctx context.Context, input *oapi.ArchiveIncidentRequest) (*oapi.ArchiveIncidentResponse, error) {
-	var resp oapi.ArchiveIncidentResponse
+func (h *incidentsHandler) CreateIncident(ctx context.Context, input *oapi.CreateIncidentRequest) (*oapi.CreateIncidentResponse, error) {
+	var resp oapi.CreateIncidentResponse
 
-	err := h.db.Incident.DeleteOneID(input.Id).Exec(ctx)
-	if err != nil {
-		return nil, apiError("failed to archive incident", err)
+	attr := input.Body.Attributes
+
+	setFn := func(m *ent.IncidentMutation) []ent.Mutation {
+		m.SetTitle(attr.Title)
+		m.SetSummary(attr.Summary)
+
+		incidentId, exists := m.ID()
+		if !exists {
+			return nil
+		}
+
+		createMilestone := m.Client().IncidentMilestone.Create().
+			SetKind(im.KindOpened).
+			SetDescription("Incident created via API").
+			SetTimestamp(time.Now()).
+			SetSource("api").
+			SetIncidentID(incidentId)
+
+		return []ent.Mutation{createMilestone.Mutation()}
 	}
+
+	created, createErr := h.incidents.Set(ctx, uuid.Nil, setFn)
+	if createErr != nil {
+		return nil, apiError("failed to create incident", createErr)
+	}
+	resp.Body.Data = oapi.IncidentFromEnt(created)
 
 	return &resp, nil
 }
@@ -102,15 +106,14 @@ func (h *incidentsHandler) UpdateIncident(ctx context.Context, request *oapi.Upd
 	}
 
 	attr := request.Body.Attributes
-
-	var updateSeverityId uuid.UUID
-	if attr.SeverityId != nil {
-		sevId, sevErr := uuid.Parse(*attr.SeverityId)
-		if sevErr != nil {
-			return nil, oapi.ErrorBadRequest("invalid severity id", sevErr)
-		}
-		updateSeverityId = sevId
-	}
+	//var updateSeverityId uuid.UUID
+	//if attr.SeverityId != nil {
+	//	sevId, sevErr := uuid.Parse(*attr.SeverityId)
+	//	if sevErr != nil {
+	//		return nil, oapi.ErrorBadRequest("invalid severity id", sevErr)
+	//	}
+	//	updateSeverityId = sevId
+	//}
 
 	setFn := func(m *ent.IncidentMutation) []ent.Mutation {
 		if attr.Title != nil {
@@ -119,8 +122,11 @@ func (h *incidentsHandler) UpdateIncident(ctx context.Context, request *oapi.Upd
 		if attr.Summary != nil {
 			m.SetSummary(*attr.Summary)
 		}
-		if updateSeverityId != uuid.Nil {
-			m.SetSeverityID(updateSeverityId)
+		if attr.SeverityId != uuid.Nil {
+			m.SetSeverityID(attr.SeverityId)
+		}
+		if attr.TypeId != uuid.Nil {
+			m.SetTypeID(attr.TypeId)
 		}
 
 		return nil
@@ -131,6 +137,17 @@ func (h *incidentsHandler) UpdateIncident(ctx context.Context, request *oapi.Upd
 		return nil, apiError("failed to update incident", updateErr)
 	}
 	resp.Body.Data = oapi.IncidentFromEnt(updated)
+
+	return &resp, nil
+}
+
+func (h *incidentsHandler) ArchiveIncident(ctx context.Context, input *oapi.ArchiveIncidentRequest) (*oapi.ArchiveIncidentResponse, error) {
+	var resp oapi.ArchiveIncidentResponse
+
+	err := h.db.Incident.DeleteOneID(input.Id).Exec(ctx)
+	if err != nil {
+		return nil, apiError("failed to archive incident", err)
+	}
 
 	return &resp, nil
 }
