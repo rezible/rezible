@@ -20,12 +20,12 @@ func newAnnotationModalBuilder(curr *ent.EventAnnotation, meta *annotationModalM
 }
 
 func (b *annotationModalBuilder) build() slack.Blocks {
-	b.makeMessageDetailsBLocks()
+	b.makeMessageDetailsBlocks()
 	b.makeNotesInputBlocks()
 	return slack.Blocks{BlockSet: b.blocks}
 }
 
-func (b *annotationModalBuilder) makeMessageDetailsBLocks() {
+func (b *annotationModalBuilder) makeMessageDetailsBlocks() {
 	msgTime := b.metadata.MsgId.getTimestamp().Unix()
 	messageUserDetails := slack.NewRichTextSection(
 		slack.NewRichTextSectionUserElement(b.metadata.UserId, nil),

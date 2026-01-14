@@ -3,7 +3,6 @@ package slack
 import (
 	"context"
 	"fmt"
-	"strings"
 
 	mapset "github.com/deckarep/golang-set/v2"
 	"github.com/google/uuid"
@@ -168,6 +167,7 @@ func (h *incidentChatEventHandler) postIncidentAnnouncement(ctx context.Context,
 	if sevErr != nil {
 		return fmt.Errorf("failed to get incident severity: %w", sevErr)
 	}
+	inc.Edges.Severity = sev
 
 	announcementChannelId := "#incident"
 	// TODO: fetch from config
@@ -178,27 +178,9 @@ func (h *incidentChatEventHandler) postIncidentAnnouncement(ctx context.Context,
 		}
 	*/
 
-	headerText := fmt.Sprintf(":rotating_light: Incident Declared: <#%s> [*%s*] :rotating_light:",
-		inc.ChatChannelID, sev.Name)
+	builder := newIncidentAnnouncementMessageBuilder(inc)
 
-	blocks := []slack.Block{
-		slack.NewSectionBlock(
-			&slack.TextBlockObject{
-				Type: slack.MarkdownType,
-				Text: headerText,
-			},
-			nil, nil,
-		),
-		slack.NewSectionBlock(
-			&slack.TextBlockObject{
-				Type: slack.MarkdownType,
-				Text: fmt.Sprintf("_%s_", inc.Title),
-			},
-			nil, nil,
-		),
-	}
-
-	postErr := h.chat.sendMessage(ctx, announcementChannelId, slack.MsgOptionBlocks(blocks...))
+	postErr := h.chat.sendMessage(ctx, announcementChannelId, slack.MsgOptionBlocks(builder.build()...))
 	if postErr != nil {
 		return fmt.Errorf("failed to post announcement message: %w", postErr)
 	}
@@ -211,18 +193,9 @@ func (h *incidentChatEventHandler) updateIncidentChannelDetailsMessage(ctx conte
 	if sevErr != nil {
 		return fmt.Errorf("failed to get incident severity: %w", sevErr)
 	}
+	inc.Edges.Severity = sev
 
-	webLink := fmt.Sprintf("%s/incidents/%s", rez.Config.AppUrl(), inc.Slug)
-	detailsText := fmt.Sprintf("*Incident Details*\n*Title:* %s\n*Severity:* %s\n*Status:* %s\n*Web:* %s",
-		inc.Title, sev.Name, "OPEN", webLink)
-
-	detailsTextBlock := &slack.TextBlockObject{
-		Type: slack.MarkdownType,
-		Text: detailsText,
-	}
-
-	msgBlocks := []slack.Block{slack.NewSectionBlock(detailsTextBlock, nil, nil)}
-	msgOpts := slack.MsgOptionBlocks(msgBlocks...)
+	builder := newIncidentDetailsMessageBuilder(inc)
 
 	pins, _, pinsErr := client.ListPinsContext(ctx, inc.ChatChannelID)
 	if pinsErr != nil {
@@ -230,31 +203,32 @@ func (h *incidentChatEventHandler) updateIncidentChannelDetailsMessage(ctx conte
 	}
 	var existingMsgTs string
 	for _, pin := range pins {
-		if pin.Message != nil {
-			if pin.Message.Text != "" && strings.HasPrefix(pin.Message.Text, "*Incident Details*") {
-				existingMsgTs = pin.Message.Timestamp
-				break
-			}
+		if pin.Message != nil && builder.isDetailsMessage(pin.Message) {
+			existingMsgTs = pin.Message.Timestamp
+			break
 		}
 	}
+
+	msgOpts := slack.MsgOptionBlocks(builder.build()...)
 
 	if existingMsgTs != "" {
 		_, _, _, updateErr := client.UpdateMessageContext(ctx, inc.ChatChannelID, existingMsgTs, msgOpts)
 		if updateErr != nil {
 			return fmt.Errorf("update message: %w", updateErr)
 		}
-	} else {
-		_, msgTs, postErr := client.PostMessageContext(ctx, inc.ChatChannelID, msgOpts)
-		if postErr != nil {
-			return fmt.Errorf("post message: %w", postErr)
-		}
-		pinItemRef := slack.ItemRef{
-			Channel:   inc.ChatChannelID,
-			Timestamp: msgTs,
-		}
-		if pinErr := client.AddPinContext(ctx, inc.ChatChannelID, pinItemRef); pinErr != nil {
-			return fmt.Errorf("pin message: %w", pinErr)
-		}
+		return nil
+	}
+
+	_, msgTs, postErr := client.PostMessageContext(ctx, inc.ChatChannelID, msgOpts)
+	if postErr != nil {
+		return fmt.Errorf("post message: %w", postErr)
+	}
+	pinItemRef := slack.ItemRef{
+		Channel:   inc.ChatChannelID,
+		Timestamp: msgTs,
+	}
+	if pinErr := client.AddPinContext(ctx, inc.ChatChannelID, pinItemRef); pinErr != nil {
+		return fmt.Errorf("pin message: %w", pinErr)
 	}
 
 	return nil

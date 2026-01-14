@@ -11,9 +11,9 @@ import (
 )
 
 const (
-	modalCallbackIdAnnotationSubmit = "annotation_modal_submit"
-	modalCallbackIdIncidentSubmit   = "incident_modal_submit"
-	modalCallbackIdUserHome         = "user_home"
+	viewCallbackIdAnnotationModal = "annotation_modal"
+	viewCallbackIdIncidentModal   = "incident_modal"
+	viewCallbackIdUserHome        = "user_home"
 )
 
 func makeUserHomeView(ctx context.Context, user *ent.User) (*slack.HomeTabViewRequest, error) {
@@ -21,7 +21,7 @@ func makeUserHomeView(ctx context.Context, user *ent.User) (*slack.HomeTabViewRe
 	blocks = append(blocks, slack.NewSectionBlock(plainTextBlock("Home Tab"), nil, nil))
 	homeView := slack.HomeTabViewRequest{
 		Type:            slack.VTHomeTab,
-		CallbackID:      modalCallbackIdUserHome,
+		CallbackID:      viewCallbackIdUserHome,
 		PrivateMetadata: "foo",
 		Blocks:          slack.Blocks{BlockSet: blocks},
 		ExternalID:      user.ID.String(),
@@ -36,20 +36,7 @@ type annotationModalMetadata struct {
 	AnnotationId uuid.UUID `json:"aid,omitempty"`
 }
 
-func (s *ChatService) makeAnnotationModalView(ctx context.Context, ic *slack.InteractionCallback) (*slack.ModalViewRequest, error) {
-	var meta annotationModalMetadata
-	if ic.View.PrivateMetadata != "" {
-		if jsonErr := json.Unmarshal([]byte(ic.View.PrivateMetadata), &meta); jsonErr != nil {
-			return nil, jsonErr
-		}
-	} else {
-		meta = annotationModalMetadata{
-			UserId:  ic.User.ID,
-			MsgId:   messageId(fmt.Sprintf("%s_%s", ic.Channel.ID, ic.Message.Timestamp)),
-			MsgText: ic.Message.Text,
-		}
-	}
-
+func (s *ChatService) makeAnnotationModalView(ctx context.Context, meta *annotationModalMetadata) (*slack.ModalViewRequest, error) {
 	usr, usrCtx, userErr := s.lookupChatUser(ctx, meta.UserId)
 	if userErr != nil {
 		return nil, fmt.Errorf("failed to lookup user: %w", userErr)
@@ -65,7 +52,7 @@ func (s *ChatService) makeAnnotationModalView(ctx context.Context, ic *slack.Int
 		meta.AnnotationId = curr.ID
 	}
 
-	builder := newAnnotationModalBuilder(curr, &meta)
+	builder := newAnnotationModalBuilder(curr, meta)
 	blockSet := builder.build()
 
 	titleText := "Create Annotation"
@@ -83,7 +70,7 @@ func (s *ChatService) makeAnnotationModalView(ctx context.Context, ic *slack.Int
 
 	return &slack.ModalViewRequest{
 		Type:            "modal",
-		CallbackID:      modalCallbackIdAnnotationSubmit,
+		CallbackID:      viewCallbackIdAnnotationModal,
 		Title:           plainTextBlock(titleText),
 		Submit:          plainTextBlock(submitText),
 		Close:           plainTextBlock("Cancel"),
@@ -172,7 +159,7 @@ func (s *ChatService) makeIncidentModalView(ctx context.Context, meta *incidentM
 
 	view := &slack.ModalViewRequest{
 		Type:            "modal",
-		CallbackID:      modalCallbackIdIncidentSubmit,
+		CallbackID:      viewCallbackIdIncidentModal,
 		Title:           plainTextBlock(titleText),
 		Submit:          plainTextBlock(submitText),
 		Close:           plainTextBlock("Cancel"),

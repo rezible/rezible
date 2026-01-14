@@ -25,8 +25,16 @@ func newIncidentModalViewBuilder(curr *ent.Incident, meta *incidentModalViewMeta
 func (b *incidentModalViewBuilder) build(im *rez.IncidentMetadata) {
 	b.makeTitleInput()
 	b.makeSeveritySelect(im.Severities)
-	b.makeTypeSelect(im.Types)
-	b.makeCustomFieldSelect(im.Fields)
+	if b.incident != nil {
+
+	}
+	// only allow setting incident type on creation
+	if b.incident == nil && len(im.Types) > 0 {
+		b.makeTypeSelect(im.Types)
+	}
+	if len(im.Fields) > 0 {
+		b.makeCustomFieldSelect(im.Fields)
+	}
 }
 
 func (b *incidentModalViewBuilder) blockSet() slack.Blocks {
@@ -80,10 +88,6 @@ func (b *incidentModalViewBuilder) makeSeveritySelect(sevs ent.IncidentSeveritie
 }
 
 func (b *incidentModalViewBuilder) makeTypeSelect(types ent.IncidentTypes) {
-	// only allow setting incident type on creation
-	if b.incident != nil || len(types) == 0 {
-		return
-	}
 	typeOptions := make([]*slack.OptionBlockObject, len(types))
 	for i, t := range types {
 		typeOptions[i] = slack.NewOptionBlockObject(t.ID.String(), plainTextBlock(t.Name), nil)
@@ -106,9 +110,6 @@ func (b *incidentModalViewBuilder) makeTypeSelect(types ent.IncidentTypes) {
 }
 
 func (b *incidentModalViewBuilder) makeCustomFieldSelect(fields ent.IncidentFields) {
-	if len(fields) == 0 {
-		return
-	}
 	b.blocks = append(b.blocks, slack.NewDividerBlock())
 	for _, field := range fields {
 		fieldOptions := make([]*slack.OptionBlockObject, len(field.Edges.Options))
