@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/google/uuid"
 	"github.com/slack-go/slack"
 
 	"github.com/rezible/rezible/ent"
@@ -15,97 +14,47 @@ const (
 	annotationModalViewCallbackID = "create_annotation_confirm"
 )
 
-type (
-	annotationViewContext struct {
-		meta             annotationViewMetadata
-		rosters          []*ent.OncallRoster
-		selectedRosterId uuid.UUID
-		currAnnotation   *ent.EventAnnotation
-	}
-	annotationViewMetadata struct {
-		UserId       string    `json:"uid"`
-		MsgId        messageId `json:"mid"`
-		MsgText      string    `json:"mtx"`
-		AnnotationId uuid.UUID `json:"aid,omitempty"`
-	}
-)
-
-func (s *ChatService) makeAnnotationViewContext(ctx context.Context, ic *slack.InteractionCallback) (*annotationViewContext, error) {
-	d := &annotationViewContext{}
+func (s *ChatService) makeAnnotationModalView(ctx context.Context, ic *slack.InteractionCallback) (*slack.ModalViewRequest, error) {
+	var meta annotationModalMetadata
 	if ic.View.PrivateMetadata != "" {
-		if jsonErr := json.Unmarshal([]byte(ic.View.PrivateMetadata), &d.meta); jsonErr != nil {
+		if jsonErr := json.Unmarshal([]byte(ic.View.PrivateMetadata), &meta); jsonErr != nil {
 			return nil, jsonErr
 		}
 	} else {
-		d.meta = annotationViewMetadata{
-			MsgId:   getMessageId(ic),
+		meta = annotationModalMetadata{
 			UserId:  ic.User.ID,
+			MsgId:   getMessageId(ic),
 			MsgText: ic.Message.Text,
 		}
 	}
 
-	usr, usrCtx, userErr := s.lookupChatUser(ctx, d.meta.UserId)
+	usr, usrCtx, userErr := s.lookupChatUser(ctx, meta.UserId)
 	if userErr != nil {
 		return nil, fmt.Errorf("failed to lookup user: %w", userErr)
 	}
 
-	ev := &ent.Event{
-		ExternalID: d.meta.MsgId.String(),
+	ev := &ent.Event{ExternalID: meta.MsgId.String()}
+
+	curr, currErr := s.annos.LookupByUserEvent(usrCtx, usr.ID, ev)
+	if currErr != nil && !ent.IsNotFound(currErr) {
+		return nil, fmt.Errorf("failed to lookup existing event annotation: %w", currErr)
+	}
+	if curr != nil {
+		meta.AnnotationId = curr.ID
 	}
 
-	anno, annoErr := s.annos.LookupByUserEvent(usrCtx, usr.ID, ev)
-	if annoErr != nil && !ent.IsNotFound(annoErr) {
-		return nil, fmt.Errorf("failed to lookup existing event annotation: %w", annoErr)
-	}
-	d.currAnnotation = anno
-
-	return d, nil
-}
-
-func makeAnnotationModalViewBlocks(c *annotationViewContext) []slack.Block {
-	var blockSet []slack.Block
-
-	messageUserDetails := slack.NewRichTextSection(
-		slack.NewRichTextSectionUserElement(c.meta.UserId, nil),
-		slack.NewRichTextSectionDateElement(c.meta.MsgId.getTimestamp().Unix(), " - {date_short_pretty} at {time}", nil, nil))
-	messageContentsDetails := slack.NewRichTextSection(
-		slack.NewRichTextSectionTextElement(c.meta.MsgText, &slack.RichTextSectionTextStyle{Italic: true}))
-
-	blockSet = append(blockSet, slack.NewRichTextBlock("anno_msg", messageUserDetails, messageContentsDetails))
-
-	inputBlock := slack.NewPlainTextInputBlockElement(nil, "notes_input_text")
-	//inputBlock.WithMinLength(1)
-	inputHint := plainTextBlock("You can edit this later")
-	if c.currAnnotation != nil {
-		inputBlock.WithInitialValue(c.currAnnotation.Notes)
-		inputHint = nil
-	}
-
-	blockSet = append(blockSet,
-		slack.NewDividerBlock(),
-		slack.NewInputBlock("notes_input", plainTextBlock("Notes"), inputHint, inputBlock))
-
-	return blockSet
-}
-
-func (s *ChatService) makeAnnotationModalView(ctx context.Context, ic *slack.InteractionCallback) (*slack.ModalViewRequest, error) {
-	c, ctxErr := s.makeAnnotationViewContext(ctx, ic)
-	if ctxErr != nil {
-		return nil, fmt.Errorf("failed to get message annotation context: %w", ctxErr)
-	}
-
-	blockSet := makeAnnotationModalViewBlocks(c)
+	builder := newAnnotationModalBuilder(curr, &meta)
+	blockSet := builder.build()
 
 	titleText := "Create Annotation"
 	submitText := "Create"
 
-	if c.currAnnotation != nil {
-		c.meta.AnnotationId = c.currAnnotation.ID
+	if curr != nil {
 		titleText = "Update Annotation"
 		submitText = "Update"
 	}
 
-	jsonMetadata, jsonErr := json.Marshal(c.meta)
+	jsonMetadata, jsonErr := json.Marshal(meta)
 	if jsonErr != nil {
 		return nil, fmt.Errorf("failed to marshal metadata: %w", jsonErr)
 	}
@@ -113,16 +62,16 @@ func (s *ChatService) makeAnnotationModalView(ctx context.Context, ic *slack.Int
 	return &slack.ModalViewRequest{
 		Type:            "modal",
 		CallbackID:      annotationModalViewCallbackID,
-		PrivateMetadata: string(jsonMetadata),
 		Title:           plainTextBlock(titleText),
-		Close:           plainTextBlock("Cancel"),
 		Submit:          plainTextBlock(submitText),
-		Blocks:          slack.Blocks{BlockSet: blockSet},
+		Close:           plainTextBlock("Cancel"),
+		Blocks:          blockSet,
+		PrivateMetadata: string(jsonMetadata),
 	}, nil
 }
 
 func (s *ChatService) getAnnotationModalAnnotation(ctx context.Context, view slack.View) (*ent.EventAnnotation, error) {
-	var meta annotationViewMetadata
+	var meta annotationModalMetadata
 	if jsonErr := json.Unmarshal([]byte(view.PrivateMetadata), &meta); jsonErr != nil {
 		return nil, fmt.Errorf("failed to unmarshal metadata: %w", jsonErr)
 	}

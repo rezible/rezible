@@ -135,17 +135,7 @@ func (s *ChatService) handleIncidentModalSubmission(ctx context.Context, ic *sla
 	}
 
 	setFn := func(m *ent.IncidentMutation) []ent.Mutation {
-		m.SetTitle(incidentModalTitleIds.GetStateValue(state))
-
-		if sevId, sevErr := uuid.Parse(incidentModalSeverityIds.GetStateSelectedValue(state)); sevErr == nil {
-			m.SetSeverityID(sevId)
-		}
-
-		if typeId, typeErr := uuid.Parse(incidentModalTypeIds.GetStateSelectedValue(state)); typeErr == nil {
-			m.SetTypeID(typeId)
-		}
-
-		// TODO: get incident fields
+		setIncidentModalInputMutationFields(m, state)
 
 		incidentId, exists := m.ID()
 		log.Debug().

@@ -6,26 +6,12 @@ import (
 	"fmt"
 
 	"github.com/google/uuid"
-	rez "github.com/rezible/rezible"
-	"github.com/rs/zerolog/log"
 	"github.com/slack-go/slack"
 
 	"github.com/rezible/rezible/ent"
 )
 
-const (
-	createIncidentModalViewCallbackID = "incident_modal_submit"
-)
-
-var (
-	incidentModalTitleIds    = blockActionIds{Block: "title", Input: "title_input"}
-	incidentModalSeverityIds = blockActionIds{Block: "incident_severity", Input: "severity_select"}
-	incidentModalTypeIds     = blockActionIds{Block: "incident_type", Input: "type_select"}
-)
-
-func incidentModalFieldOptionIds(optId string) blockActionIds {
-	return blockActionIds{Block: "incident_field_" + optId, Input: "incident_field_select_" + optId}
-}
+const createIncidentModalViewCallbackID = "incident_modal_submit"
 
 type incidentModalViewMetadata struct {
 	UserId           string    `json:"uid"`
@@ -48,117 +34,31 @@ func (s *ChatService) makeIncidentModalView(ctx context.Context, meta *incidentM
 		return nil, fmt.Errorf("failed to get incident metadata: %w", incMetaErr)
 	}
 
-	blockSet, blocksErr := makeIncidentModalViewBlocks(curr, incMeta)
-	if blocksErr != nil {
-		return nil, fmt.Errorf("failed to make incident modal view blocks: %w", blocksErr)
-	}
+	builder := newIncidentModalViewBuilder(curr, meta)
+	builder.build(incMeta)
+	blockSet := builder.blockSet()
 
 	jsonMetadata, jsonErr := json.Marshal(meta)
 	if jsonErr != nil {
 		return nil, fmt.Errorf("failed to marshal metadata: %w", jsonErr)
 	}
 
+	titleText := "Open Incident"
+	submitText := "Submit"
+	if curr != nil {
+		titleText = "Update Incident"
+		submitText = "Update"
+	}
+
 	view := &slack.ModalViewRequest{
 		Type:            "modal",
 		CallbackID:      createIncidentModalViewCallbackID,
-		Title:           plainTextBlock("Open an Incident"),
-		Submit:          plainTextBlock("Submit"),
+		Title:           plainTextBlock(titleText),
+		Submit:          plainTextBlock(submitText),
 		Close:           plainTextBlock("Cancel"),
 		PrivateMetadata: string(jsonMetadata),
-		Blocks:          slack.Blocks{BlockSet: blockSet},
-	}
-
-	if curr != nil {
-		view.Title = plainTextBlock("Update Incident")
-		view.Submit = plainTextBlock("Update")
+		Blocks:          blockSet,
 	}
 
 	return view, nil
-}
-
-func makeIncidentModalViewBlocks(curr *ent.Incident, meta *rez.IncidentMetadata) ([]slack.Block, error) {
-	var blocks []slack.Block
-
-	// Title input
-	titleInput := slack.NewPlainTextInputBlockElement(nil, incidentModalTitleIds.Input)
-	if curr != nil {
-		titleInput.WithInitialValue(curr.Title)
-		log.Debug().Str("curr.Title", curr.Title).Msg("set initial title")
-	}
-	blocks = append(blocks,
-		slack.NewInputBlock(incidentModalTitleIds.Block, plainTextBlock("Title"), nil, titleInput))
-
-	severityOptions := make([]*slack.OptionBlockObject, len(meta.Severities))
-	for i, sev := range meta.Severities {
-		severityOptions[i] = slack.NewOptionBlockObject(sev.ID.String(), plainTextBlock(sev.Name), plainTextBlock(sev.Description))
-	}
-	severitySelect := slack.NewOptionsSelectBlockElement(slack.OptTypeStatic, nil, incidentModalSeverityIds.Input, severityOptions...)
-	initialSeverity := severityOptions[0]
-	if curr != nil && curr.SeverityID != uuid.Nil {
-		// Set initial option based on incident.Severity
-		for _, opt := range severityOptions {
-			if opt.Value == curr.SeverityID.String() {
-				initialSeverity = opt
-				log.Debug().Str("opt.Value", opt.Value).Msg("set initial severity")
-				break
-			}
-		}
-	}
-	severitySelect.WithInitialOption(initialSeverity)
-	blocks = append(blocks,
-		slack.NewInputBlock(incidentModalSeverityIds.Block, plainTextBlock("Severity"), nil, severitySelect))
-
-	// only allow setting incident type on creation
-	if curr == nil && len(meta.Types) > 0 {
-		typeOptions := make([]*slack.OptionBlockObject, len(meta.Types))
-		for i, t := range meta.Types {
-			typeOptions[i] = slack.NewOptionBlockObject(t.ID.String(), plainTextBlock(t.Name), nil)
-		}
-		typeSelect := slack.NewOptionsSelectBlockElement(slack.OptTypeStatic, nil, incidentModalTypeIds.Input, typeOptions...)
-
-		initialType := typeOptions[0]
-		if curr != nil && curr.TypeID != uuid.Nil {
-			for _, opt := range typeOptions {
-				if opt.Value == curr.TypeID.String() {
-					initialType = opt
-					break
-				}
-			}
-		}
-		typeSelect.WithInitialOption(initialType)
-
-		blocks = append(blocks,
-			slack.NewInputBlock(incidentModalTypeIds.Block, plainTextBlock("Incident Type"), nil, typeSelect))
-	}
-
-	if len(meta.Fields) > 0 {
-		blocks = append(blocks, slack.NewDividerBlock())
-	}
-	for _, field := range meta.Fields {
-		fieldOptions := make([]*slack.OptionBlockObject, len(field.Edges.Options))
-		for i, opt := range field.Edges.Options {
-			fieldOptions[i] = slack.NewOptionBlockObject(opt.ID.String(), plainTextBlock(opt.Value), nil)
-		}
-		initialOption := fieldOptions[0]
-		if curr != nil && len(curr.Edges.FieldSelections) > 0 {
-			for _, s := range curr.Edges.FieldSelections {
-				if s.IncidentFieldID == field.ID {
-					for _, opt := range fieldOptions {
-						if opt.Value == s.Value {
-							initialOption = opt
-							break
-						}
-					}
-					break
-				}
-			}
-		}
-		ids := incidentModalFieldOptionIds(field.ID.String())
-		fieldOptionSelect := slack.NewOptionsSelectBlockElement(slack.OptTypeStatic, nil, ids.Input, fieldOptions...)
-		fieldOptionSelect.WithInitialOption(initialOption)
-		blocks = append(blocks,
-			slack.NewInputBlock(ids.Block, plainTextBlock(field.Name), nil, fieldOptionSelect))
-	}
-
-	return blocks, nil
 }
