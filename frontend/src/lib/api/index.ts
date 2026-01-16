@@ -9,7 +9,7 @@ import type { CreateQueryOptions } from "@tanstack/svelte-query";
 import { PUBLIC_REZ_API_BASE_URL } from '$env/static/public';
 
 export const API_BASE_URL = PUBLIC_REZ_API_BASE_URL;
-export const BACKEND_URL = dev ? "https://app.rezible.test" : "";
+export const BACKEND_URL = dev ? "https://app.dev.rezible.com" : "";
 
 const clientConfig = createConfig<ClientOptions>({ 
 	baseUrl: API_BASE_URL,

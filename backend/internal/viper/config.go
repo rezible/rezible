@@ -72,8 +72,8 @@ func (c *Config) DatabaseUrl() string {
 	return c.GetString("db_url")
 }
 
-func (c *Config) AuthSessionSecret() string {
-	return c.GetString("auth.session_secret")
+func (c *Config) AppUrl() string {
+	return c.GetString("app_url")
 }
 
 func (c *Config) ApiRouteBase() string {
@@ -84,12 +84,12 @@ func (c *Config) AuthRouteBase() string {
 	return "/auth"
 }
 
-func (c *Config) AppUrl() string {
-	return "https://app.rezible.test"
-}
-
 func (c *Config) DocumentsServerAddress() string {
 	return c.GetString("documents_server_address")
+}
+
+func (c *Config) AuthSessionSecret() string {
+	return c.GetString("auth.session_secret")
 }
 
 func (c *Config) SingleTenantMode() bool {

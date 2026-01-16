@@ -1,2 +1,4 @@
-app.rezible.test: 5173
-api.rezible.test: 8888
+app.dev.rezible.com: 5173
+api.dev.rezible.com: 8888
+documents-api.dev.rezible.com: 8889
+oidc.dev.rezible.com: 6432
