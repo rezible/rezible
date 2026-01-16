@@ -2,29 +2,31 @@ package slack
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 
-	rez "github.com/rezible/rezible"
+	"github.com/go-viper/mapstructure/v2"
+	"github.com/rezible/rezible/ent"
 	"github.com/rs/zerolog/log"
 	"github.com/slack-go/slack"
 	"golang.org/x/oauth2"
+
+	rez "github.com/rezible/rezible"
 )
 
 const integrationName = "slack"
 
-type IntegrationConfigData struct {
-	AccessToken string    `json:"access_token"`
-	TokenType   string    `json:"token_type"`
-	Scope       string    `json:"scope"`
-	BotUserID   string    `json:"bot_user_id"`
-	Team        teamInfo  `json:"team"`
-	Enterprise  *teamInfo `json:"enterprise"`
+type IntegrationConfig struct {
+	AccessToken string
+	TokenType   string
+	Scope       string
+	BotUserID   string
+	Team        teamInfo
+	Enterprise  *teamInfo
 }
 
 type teamInfo struct {
-	ID   string `json:"id"`
-	Name string `json:"name"`
+	ID   string
+	Name string
 }
 
 func getTeamInfoFromTokenExtra(e map[string]interface{}) (*teamInfo, error) {
@@ -39,7 +41,7 @@ func getTeamInfoFromTokenExtra(e map[string]interface{}) (*teamInfo, error) {
 	return &teamInfo{ID: id, Name: name}, nil
 }
 
-func getIntegrationConfigFromOAuthToken(t *oauth2.Token) (*IntegrationConfigData, error) {
+func getIntegrationConfigFromOAuthToken(t *oauth2.Token) (*IntegrationConfig, error) {
 	scope, scopeOk := t.Extra("scope").(string)
 	if !scopeOk {
 		return nil, fmt.Errorf("missing or invalid scope")
@@ -60,7 +62,7 @@ func getIntegrationConfigFromOAuthToken(t *oauth2.Token) (*IntegrationConfigData
 		return nil, fmt.Errorf("invalid team info")
 	}
 
-	cfg := IntegrationConfigData{
+	cfg := IntegrationConfig{
 		AccessToken: t.AccessToken,
 		TokenType:   t.Type(),
 		Scope:       scope,
@@ -81,7 +83,15 @@ func getIntegrationConfigFromOAuthToken(t *oauth2.Token) (*IntegrationConfigData
 	return &cfg, nil
 }
 
-func loadIntegrationConfig(ctx context.Context, s rez.IntegrationsService) (*IntegrationConfigData, error) {
+func decodeConfig(intg *ent.Integration) (*IntegrationConfig, error) {
+	var cfg IntegrationConfig
+	if cfgErr := mapstructure.Decode(intg.Config, &cfg); cfgErr != nil {
+		return nil, fmt.Errorf("failed to decode integration config: %w", cfgErr)
+	}
+	return &cfg, nil
+}
+
+func loadIntegrationConfig(ctx context.Context, s rez.IntegrationsService) (*IntegrationConfig, error) {
 	params := rez.ListIntegrationsParams{
 		Name: integrationName,
 	}
@@ -89,15 +99,10 @@ func loadIntegrationConfig(ctx context.Context, s rez.IntegrationsService) (*Int
 	if listErr != nil {
 		return nil, listErr
 	}
-	// TODO: handle multiple??
 	if len(results) != 1 {
 		return nil, fmt.Errorf("expected 1 integration, got %d", len(results))
 	}
-	var cfg IntegrationConfigData
-	if jsonErr := json.Unmarshal(results[0].Config, &cfg); jsonErr != nil {
-		return nil, jsonErr
-	}
-	return &cfg, nil
+	return decodeConfig(results[0])
 }
 
 func getClient(ctx context.Context, s rez.IntegrationsService) (*slack.Client, error) {

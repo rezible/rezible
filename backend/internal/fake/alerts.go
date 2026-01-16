@@ -23,7 +23,7 @@ type AlertDataProvider struct {
 type AlertDataProviderConfig struct {
 }
 
-func NewAlertDataProvider(cfg AlertDataProviderConfig) (*AlertDataProvider, error) {
+func NewAlertDataProvider(intg *ent.Integration) (*AlertDataProvider, error) {
 	p := &AlertDataProvider{
 		providerUserMap: make(map[string]*ent.User),
 		webhookCallback: func(ExternalID string, updatedAt time.Time) {},

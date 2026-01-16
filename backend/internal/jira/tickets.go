@@ -6,6 +6,7 @@ import (
 	"iter"
 
 	"github.com/andygrunwald/go-jira"
+	"github.com/go-viper/mapstructure/v2"
 
 	"github.com/rezible/rezible/ent"
 )
@@ -14,13 +15,11 @@ type TicketDataProvider struct {
 	client *jira.Client
 }
 
-type TicketDataProviderConfig struct {
-	ProjectUrl  string `json:"project_url"`
-	ApiUsername string `json:"api_username"`
-	ApiToken    string `json:"api_token"`
-}
-
-func NewTicketDataProvider(ctx context.Context, cfg TicketDataProviderConfig) (*TicketDataProvider, error) {
+func NewTicketDataProvider(ctx context.Context, intg *ent.Integration) (*TicketDataProvider, error) {
+	var cfg IntegrationConfig
+	if cfgErr := mapstructure.Decode(intg.Config, &cfg); cfgErr != nil {
+		return nil, cfgErr
+	}
 	tp := jira.BasicAuthTransport{
 		Username: cfg.ApiUsername,
 		Password: cfg.ApiToken,

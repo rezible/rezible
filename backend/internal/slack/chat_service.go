@@ -2,7 +2,6 @@ package slack
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
 	"fmt"
 
@@ -56,24 +55,41 @@ func (s *ChatService) withClient(ctx context.Context, fn func(*slack.Client) err
 	return withClient(ctx, s.integrations, fn)
 }
 
+// TODO: actually do this properly
+var teamTenantIdCache = make(map[string]int)
+
 func (s *ChatService) lookupTeamTenantId(ctx context.Context, teamId string, enterpriseId string) (int, error) {
-	log.Warn().Msg("looking up tenant id from slack integrations via db - slow")
-	// TODO: this needs to be done faster & cached
+	if id, teamOk := teamTenantIdCache[enterpriseId]; teamOk {
+		return id, nil
+	}
+	if id, entOk := teamTenantIdCache[teamId]; entOk {
+		return id, nil
+	}
+	log.Warn().
+		Str("teamId", teamId).
+		Str("enterpriseId", enterpriseId).
+		Msg("looking up tenant id from slack integrations via db")
 	params := rez.ListIntegrationsParams{Name: integrationName}
 	intgs, intgsErr := s.integrations.ListIntegrations(access.SystemContext(ctx), params)
 	if intgsErr != nil {
 		return -1, fmt.Errorf("failed to list integrations: %w", intgsErr)
 	}
 	for _, intg := range intgs {
-		var cfg IntegrationConfigData
-		if jsonErr := json.Unmarshal(intg.Config, &cfg); jsonErr != nil {
-			log.Warn().Err(jsonErr).Msg("failed to unmarshal slack integration config")
+		cfg, cfgErr := decodeConfig(intg)
+		if cfgErr != nil {
+			log.Warn().Err(cfgErr).Msg("failed to decode slack integration config")
+			continue
 		}
-		if cfg.Enterprise != nil && enterpriseId != "" && cfg.Enterprise.ID == enterpriseId {
-			return intg.TenantID, nil
+		tenantId := intg.TenantID
+		if enterpriseId != "" {
+			if cfg.Enterprise != nil && cfg.Enterprise.ID == enterpriseId {
+				teamTenantIdCache[enterpriseId] = tenantId
+				return tenantId, nil
+			}
 		}
 		if cfg.Team.ID == teamId {
-			return intg.TenantID, nil
+			teamTenantIdCache[teamId] = tenantId
+			return tenantId, nil
 		}
 	}
 	return -1, errors.New("failed to lookup team tenant")
@@ -148,21 +164,8 @@ func (s *ChatService) OAuth2Config() *oauth2.Config {
 	return s.oauthConfig
 }
 
-func (s *ChatService) GetIntegrationFromToken(token *oauth2.Token) (*ent.Integration, error) {
-	cfg, cfgErr := getIntegrationConfigFromOAuthToken(token)
-	if cfgErr != nil {
-		return nil, fmt.Errorf("get integration config: %w", cfgErr)
-	}
-
-	cfgJson, jsonErr := json.Marshal(cfg)
-	if jsonErr != nil {
-		return nil, fmt.Errorf("marshalling provider config: %w", jsonErr)
-	}
-
-	return &ent.Integration{
-		Name:   integrationName,
-		Config: cfgJson,
-	}, nil
+func (s *ChatService) GetIntegrationConfigFromToken(token *oauth2.Token) (any, error) {
+	return getIntegrationConfigFromOAuthToken(token)
 }
 
 func (s *ChatService) getIncidentAnnouncementChannelId(ctx context.Context) (string, error) {

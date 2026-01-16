@@ -23,7 +23,7 @@ var (
 	}
 )
 
-func NewTeamsDataProvider(cfg TeamDataProviderConfig) (*TeamDataProvider, error) {
+func NewTeamsDataProvider(intg *ent.Integration) (*TeamDataProvider, error) {
 	return &TeamDataProvider{}, nil
 }
 

@@ -1,9 +1,8 @@
 package schema
 
 import (
-	"time"
-
 	"entgo.io/ent"
+	"entgo.io/ent/dialect"
 	"entgo.io/ent/schema/field"
 	"entgo.io/ent/schema/index"
 	"github.com/google/uuid"
@@ -18,6 +17,7 @@ func (Integration) Mixin() []ent.Mixin {
 	return []ent.Mixin{
 		BaseMixin{},
 		TenantMixin{},
+		TimestampsMixin{},
 	}
 }
 
@@ -26,8 +26,11 @@ func (Integration) Fields() []ent.Field {
 	return []ent.Field{
 		field.UUID("id", uuid.New()).Default(uuid.New),
 		field.String("name"),
-		field.Bytes("config"),
-		field.Time("updated_at").Default(time.Now),
+		field.JSON("config", map[string]any{}).
+			SchemaType(map[string]string{
+				dialect.Postgres: "jsonb",
+			}),
+		field.JSON("user_config", map[string]any{}).Optional(),
 	}
 }
 

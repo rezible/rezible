@@ -13,7 +13,7 @@ type PlaybookDataProvider struct {
 type PlaybookDataProviderConfig struct {
 }
 
-func NewPlaybookDataProvider(cfg PlaybookDataProviderConfig) (*PlaybookDataProvider, error) {
+func NewPlaybookDataProvider(intg *ent.Integration) (*PlaybookDataProvider, error) {
 	return &PlaybookDataProvider{}, nil
 }
 

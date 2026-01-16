@@ -21,8 +21,6 @@ processes:
         condition: process_healthy
       documents-server:
         condition: process_started
-      oidc-test-provider:
-        condition: process_healthy
 
   frontend:
     command: just dev-frontend
@@ -68,6 +66,6 @@ processes:
         host: localhost
         port: 6432
         path: "/"
-      initial_delay_seconds: 2
+      initial_delay_seconds: 3
       failure_threshold: 3
       period_seconds: 1

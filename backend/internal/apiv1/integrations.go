@@ -67,14 +67,9 @@ func (h *integrationsHandler) CreateIntegration(ctx context.Context, req *oapi.C
 
 	attr := req.Body.Attributes
 
-	cfg, cfgErr := attr.Config.MarshalJSON()
-	if cfgErr != nil {
-		return nil, apiError("failed to marshal integration config", cfgErr)
-	}
-
 	setFn := func(m *ent.IntegrationMutation) {
 		m.SetName(attr.Name)
-		m.SetConfig(cfg)
+		m.SetConfig(attr.Config)
 	}
 
 	created, createErr := h.integrations.SetIntegration(ctx, uuid.Nil, setFn)
@@ -103,18 +98,9 @@ func (h *integrationsHandler) UpdateIntegration(ctx context.Context, req *oapi.U
 
 	attr := req.Body.Attributes
 
-	var newCfg []byte
-	if attr.Config != nil {
-		cfg, cfgErr := attr.Config.MarshalJSON()
-		if cfgErr != nil {
-			return nil, apiError("invalid config", cfgErr)
-		}
-		newCfg = cfg
-	}
-
 	setFn := func(m *ent.IntegrationMutation) {
-		if newCfg != nil {
-			m.SetConfig(newCfg)
+		if attr.Config != nil {
+			m.SetConfig(*attr.Config)
 		}
 	}
 

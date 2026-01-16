@@ -15,7 +15,7 @@ type SystemComponentsDataProvider struct {
 
 type SystemComponentsDataProviderConfig struct{}
 
-func NewSystemComponentsDataProvider(cfg SystemComponentsDataProviderConfig) (*SystemComponentsDataProvider, error) {
+func NewSystemComponentsDataProvider(intg *ent.Integration) (*SystemComponentsDataProvider, error) {
 	p := &SystemComponentsDataProvider{
 		components: makeFakeSystemComponents(),
 	}

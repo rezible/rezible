@@ -29,6 +29,26 @@ func (_u *IntegrationUpdate) Where(ps ...predicate.Integration) *IntegrationUpda
 	return _u
 }
 
+// SetCreatedAt sets the "created_at" field.
+func (_u *IntegrationUpdate) SetCreatedAt(v time.Time) *IntegrationUpdate {
+	_u.mutation.SetCreatedAt(v)
+	return _u
+}
+
+// SetNillableCreatedAt sets the "created_at" field if the given value is not nil.
+func (_u *IntegrationUpdate) SetNillableCreatedAt(v *time.Time) *IntegrationUpdate {
+	if v != nil {
+		_u.SetCreatedAt(*v)
+	}
+	return _u
+}
+
+// SetUpdatedAt sets the "updated_at" field.
+func (_u *IntegrationUpdate) SetUpdatedAt(v time.Time) *IntegrationUpdate {
+	_u.mutation.SetUpdatedAt(v)
+	return _u
+}
+
 // SetName sets the "name" field.
 func (_u *IntegrationUpdate) SetName(v string) *IntegrationUpdate {
 	_u.mutation.SetName(v)
@@ -44,22 +64,20 @@ func (_u *IntegrationUpdate) SetNillableName(v *string) *IntegrationUpdate {
 }
 
 // SetConfig sets the "config" field.
-func (_u *IntegrationUpdate) SetConfig(v []byte) *IntegrationUpdate {
+func (_u *IntegrationUpdate) SetConfig(v map[string]interface{}) *IntegrationUpdate {
 	_u.mutation.SetConfig(v)
 	return _u
 }
 
-// SetUpdatedAt sets the "updated_at" field.
-func (_u *IntegrationUpdate) SetUpdatedAt(v time.Time) *IntegrationUpdate {
-	_u.mutation.SetUpdatedAt(v)
+// SetUserConfig sets the "user_config" field.
+func (_u *IntegrationUpdate) SetUserConfig(v map[string]interface{}) *IntegrationUpdate {
+	_u.mutation.SetUserConfig(v)
 	return _u
 }
 
-// SetNillableUpdatedAt sets the "updated_at" field if the given value is not nil.
-func (_u *IntegrationUpdate) SetNillableUpdatedAt(v *time.Time) *IntegrationUpdate {
-	if v != nil {
-		_u.SetUpdatedAt(*v)
-	}
+// ClearUserConfig clears the value of the "user_config" field.
+func (_u *IntegrationUpdate) ClearUserConfig() *IntegrationUpdate {
+	_u.mutation.ClearUserConfig()
 	return _u
 }
 
@@ -70,6 +88,9 @@ func (_u *IntegrationUpdate) Mutation() *IntegrationMutation {
 
 // Save executes the query and returns the number of nodes affected by the update operation.
 func (_u *IntegrationUpdate) Save(ctx context.Context) (int, error) {
+	if err := _u.defaults(); err != nil {
+		return 0, err
+	}
 	return withHooks(ctx, _u.sqlSave, _u.mutation, _u.hooks)
 }
 
@@ -93,6 +114,18 @@ func (_u *IntegrationUpdate) ExecX(ctx context.Context) {
 	if err := _u.Exec(ctx); err != nil {
 		panic(err)
 	}
+}
+
+// defaults sets the default values of the builder before save.
+func (_u *IntegrationUpdate) defaults() error {
+	if _, ok := _u.mutation.UpdatedAt(); !ok {
+		if integration.UpdateDefaultUpdatedAt == nil {
+			return fmt.Errorf("ent: uninitialized integration.UpdateDefaultUpdatedAt (forgotten import ent/runtime?)")
+		}
+		v := integration.UpdateDefaultUpdatedAt()
+		_u.mutation.SetUpdatedAt(v)
+	}
+	return nil
 }
 
 // check runs all checks and user-defined validators on the builder.
@@ -121,14 +154,23 @@ func (_u *IntegrationUpdate) sqlSave(ctx context.Context) (_node int, err error)
 			}
 		}
 	}
+	if value, ok := _u.mutation.CreatedAt(); ok {
+		_spec.SetField(integration.FieldCreatedAt, field.TypeTime, value)
+	}
+	if value, ok := _u.mutation.UpdatedAt(); ok {
+		_spec.SetField(integration.FieldUpdatedAt, field.TypeTime, value)
+	}
 	if value, ok := _u.mutation.Name(); ok {
 		_spec.SetField(integration.FieldName, field.TypeString, value)
 	}
 	if value, ok := _u.mutation.Config(); ok {
-		_spec.SetField(integration.FieldConfig, field.TypeBytes, value)
+		_spec.SetField(integration.FieldConfig, field.TypeJSON, value)
 	}
-	if value, ok := _u.mutation.UpdatedAt(); ok {
-		_spec.SetField(integration.FieldUpdatedAt, field.TypeTime, value)
+	if value, ok := _u.mutation.UserConfig(); ok {
+		_spec.SetField(integration.FieldUserConfig, field.TypeJSON, value)
+	}
+	if _u.mutation.UserConfigCleared() {
+		_spec.ClearField(integration.FieldUserConfig, field.TypeJSON)
 	}
 	_spec.AddModifiers(_u.modifiers...)
 	if _node, err = sqlgraph.UpdateNodes(ctx, _u.driver, _spec); err != nil {
@@ -152,6 +194,26 @@ type IntegrationUpdateOne struct {
 	modifiers []func(*sql.UpdateBuilder)
 }
 
+// SetCreatedAt sets the "created_at" field.
+func (_u *IntegrationUpdateOne) SetCreatedAt(v time.Time) *IntegrationUpdateOne {
+	_u.mutation.SetCreatedAt(v)
+	return _u
+}
+
+// SetNillableCreatedAt sets the "created_at" field if the given value is not nil.
+func (_u *IntegrationUpdateOne) SetNillableCreatedAt(v *time.Time) *IntegrationUpdateOne {
+	if v != nil {
+		_u.SetCreatedAt(*v)
+	}
+	return _u
+}
+
+// SetUpdatedAt sets the "updated_at" field.
+func (_u *IntegrationUpdateOne) SetUpdatedAt(v time.Time) *IntegrationUpdateOne {
+	_u.mutation.SetUpdatedAt(v)
+	return _u
+}
+
 // SetName sets the "name" field.
 func (_u *IntegrationUpdateOne) SetName(v string) *IntegrationUpdateOne {
 	_u.mutation.SetName(v)
@@ -167,22 +229,20 @@ func (_u *IntegrationUpdateOne) SetNillableName(v *string) *IntegrationUpdateOne
 }
 
 // SetConfig sets the "config" field.
-func (_u *IntegrationUpdateOne) SetConfig(v []byte) *IntegrationUpdateOne {
+func (_u *IntegrationUpdateOne) SetConfig(v map[string]interface{}) *IntegrationUpdateOne {
 	_u.mutation.SetConfig(v)
 	return _u
 }
 
-// SetUpdatedAt sets the "updated_at" field.
-func (_u *IntegrationUpdateOne) SetUpdatedAt(v time.Time) *IntegrationUpdateOne {
-	_u.mutation.SetUpdatedAt(v)
+// SetUserConfig sets the "user_config" field.
+func (_u *IntegrationUpdateOne) SetUserConfig(v map[string]interface{}) *IntegrationUpdateOne {
+	_u.mutation.SetUserConfig(v)
 	return _u
 }
 
-// SetNillableUpdatedAt sets the "updated_at" field if the given value is not nil.
-func (_u *IntegrationUpdateOne) SetNillableUpdatedAt(v *time.Time) *IntegrationUpdateOne {
-	if v != nil {
-		_u.SetUpdatedAt(*v)
-	}
+// ClearUserConfig clears the value of the "user_config" field.
+func (_u *IntegrationUpdateOne) ClearUserConfig() *IntegrationUpdateOne {
+	_u.mutation.ClearUserConfig()
 	return _u
 }
 
@@ -206,6 +266,9 @@ func (_u *IntegrationUpdateOne) Select(field string, fields ...string) *Integrat
 
 // Save executes the query and returns the updated Integration entity.
 func (_u *IntegrationUpdateOne) Save(ctx context.Context) (*Integration, error) {
+	if err := _u.defaults(); err != nil {
+		return nil, err
+	}
 	return withHooks(ctx, _u.sqlSave, _u.mutation, _u.hooks)
 }
 
@@ -229,6 +292,18 @@ func (_u *IntegrationUpdateOne) ExecX(ctx context.Context) {
 	if err := _u.Exec(ctx); err != nil {
 		panic(err)
 	}
+}
+
+// defaults sets the default values of the builder before save.
+func (_u *IntegrationUpdateOne) defaults() error {
+	if _, ok := _u.mutation.UpdatedAt(); !ok {
+		if integration.UpdateDefaultUpdatedAt == nil {
+			return fmt.Errorf("ent: uninitialized integration.UpdateDefaultUpdatedAt (forgotten import ent/runtime?)")
+		}
+		v := integration.UpdateDefaultUpdatedAt()
+		_u.mutation.SetUpdatedAt(v)
+	}
+	return nil
 }
 
 // check runs all checks and user-defined validators on the builder.
@@ -274,14 +349,23 @@ func (_u *IntegrationUpdateOne) sqlSave(ctx context.Context) (_node *Integration
 			}
 		}
 	}
+	if value, ok := _u.mutation.CreatedAt(); ok {
+		_spec.SetField(integration.FieldCreatedAt, field.TypeTime, value)
+	}
+	if value, ok := _u.mutation.UpdatedAt(); ok {
+		_spec.SetField(integration.FieldUpdatedAt, field.TypeTime, value)
+	}
 	if value, ok := _u.mutation.Name(); ok {
 		_spec.SetField(integration.FieldName, field.TypeString, value)
 	}
 	if value, ok := _u.mutation.Config(); ok {
-		_spec.SetField(integration.FieldConfig, field.TypeBytes, value)
+		_spec.SetField(integration.FieldConfig, field.TypeJSON, value)
 	}
-	if value, ok := _u.mutation.UpdatedAt(); ok {
-		_spec.SetField(integration.FieldUpdatedAt, field.TypeTime, value)
+	if value, ok := _u.mutation.UserConfig(); ok {
+		_spec.SetField(integration.FieldUserConfig, field.TypeJSON, value)
+	}
+	if _u.mutation.UserConfigCleared() {
+		_spec.ClearField(integration.FieldUserConfig, field.TypeJSON)
 	}
 	_spec.AddModifiers(_u.modifiers...)
 	_node = &Integration{config: _u.config}

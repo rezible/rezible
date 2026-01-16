@@ -2,6 +2,7 @@ package db
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 
@@ -102,6 +103,19 @@ func (s *IntegrationsService) getOAuth2Handler(name string) (rez.OAuth2Integrati
 	return h, ok
 }
 
+// probably a better way to do this
+func (s *IntegrationsService) encodeConfig(cfg any) (map[string]any, error) {
+	enc, encErr := json.Marshal(cfg)
+	if encErr != nil {
+		return nil, fmt.Errorf("failed to marshal config: %w", encErr)
+	}
+	var mapCfg map[string]any
+	if decErr := json.Unmarshal(enc, &mapCfg); decErr != nil {
+		return nil, fmt.Errorf("failed to unmarshal config: %w", decErr)
+	}
+	return mapCfg, nil
+}
+
 func (s *IntegrationsService) StartOAuth2Flow(ctx context.Context, name string) (string, error) {
 	h, ok := s.getOAuth2Handler(name)
 	if !ok {
@@ -121,14 +135,14 @@ func (s *IntegrationsService) StartOAuth2Flow(ctx context.Context, name string) 
 	return cfg.AuthCodeURL(state), nil
 }
 
-func (s *IntegrationsService) CompleteOAuth2Flow(ctx context.Context, name, state, code string) (*ent.Integration, error) {
-	if stateErr := s.checkOAuthState(ctx, name, state); stateErr != nil {
-		return nil, fmt.Errorf("invalid state: %w", stateErr)
+func (s *IntegrationsService) CompleteOAuth2Flow(ctx context.Context, intgName, state, code string) (*ent.Integration, error) {
+	h, ok := s.getOAuth2Handler(intgName)
+	if !ok {
+		return nil, fmt.Errorf("missing integration oauth handler name '%s'", intgName)
 	}
 
-	h, ok := s.getOAuth2Handler(name)
-	if !ok {
-		return nil, fmt.Errorf("invalid integration name '%s'", name)
+	if stateErr := s.checkOAuthState(ctx, intgName, state); stateErr != nil {
+		return nil, fmt.Errorf("invalid state: %w", stateErr)
 	}
 
 	token, tokenErr := h.OAuth2Config().Exchange(ctx, code)
@@ -136,14 +150,19 @@ func (s *IntegrationsService) CompleteOAuth2Flow(ctx context.Context, name, stat
 		return nil, fmt.Errorf("exchange token: %w", tokenErr)
 	}
 
-	prov, intgErr := h.GetIntegrationFromToken(token)
-	if intgErr != nil {
-		return nil, fmt.Errorf("failed to get integration: %w", intgErr)
+	cfg, cfgErr := h.GetIntegrationConfigFromToken(token)
+	if cfgErr != nil {
+		return nil, fmt.Errorf("failed to get integration config: %w", cfgErr)
+	}
+
+	mapCfg, encErr := s.encodeConfig(cfg)
+	if encErr != nil {
+		return nil, fmt.Errorf("encode config: %w", encErr)
 	}
 
 	setFn := func(m *ent.IntegrationMutation) {
-		m.SetName(prov.Name)
-		m.SetConfig(prov.Config)
+		m.SetName(intgName)
+		m.SetConfig(mapCfg)
 	}
 	intg, setErr := s.SetIntegration(ctx, uuid.Nil, setFn)
 	if setErr != nil {

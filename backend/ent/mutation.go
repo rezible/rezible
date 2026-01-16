@@ -21640,9 +21640,11 @@ type IntegrationMutation struct {
 	op            Op
 	typ           string
 	id            *uuid.UUID
-	name          *string
-	_config       *[]byte
+	created_at    *time.Time
 	updated_at    *time.Time
+	name          *string
+	_config       *map[string]interface{}
+	user_config   *map[string]interface{}
 	clearedFields map[string]struct{}
 	tenant        *int
 	clearedtenant bool
@@ -21791,6 +21793,78 @@ func (m *IntegrationMutation) ResetTenantID() {
 	m.tenant = nil
 }
 
+// SetCreatedAt sets the "created_at" field.
+func (m *IntegrationMutation) SetCreatedAt(t time.Time) {
+	m.created_at = &t
+}
+
+// CreatedAt returns the value of the "created_at" field in the mutation.
+func (m *IntegrationMutation) CreatedAt() (r time.Time, exists bool) {
+	v := m.created_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCreatedAt returns the old "created_at" field's value of the Integration entity.
+// If the Integration object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *IntegrationMutation) OldCreatedAt(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCreatedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCreatedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCreatedAt: %w", err)
+	}
+	return oldValue.CreatedAt, nil
+}
+
+// ResetCreatedAt resets all changes to the "created_at" field.
+func (m *IntegrationMutation) ResetCreatedAt() {
+	m.created_at = nil
+}
+
+// SetUpdatedAt sets the "updated_at" field.
+func (m *IntegrationMutation) SetUpdatedAt(t time.Time) {
+	m.updated_at = &t
+}
+
+// UpdatedAt returns the value of the "updated_at" field in the mutation.
+func (m *IntegrationMutation) UpdatedAt() (r time.Time, exists bool) {
+	v := m.updated_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldUpdatedAt returns the old "updated_at" field's value of the Integration entity.
+// If the Integration object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *IntegrationMutation) OldUpdatedAt(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldUpdatedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldUpdatedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldUpdatedAt: %w", err)
+	}
+	return oldValue.UpdatedAt, nil
+}
+
+// ResetUpdatedAt resets all changes to the "updated_at" field.
+func (m *IntegrationMutation) ResetUpdatedAt() {
+	m.updated_at = nil
+}
+
 // SetName sets the "name" field.
 func (m *IntegrationMutation) SetName(s string) {
 	m.name = &s
@@ -21828,12 +21902,12 @@ func (m *IntegrationMutation) ResetName() {
 }
 
 // SetConfig sets the "config" field.
-func (m *IntegrationMutation) SetConfig(b []byte) {
-	m._config = &b
+func (m *IntegrationMutation) SetConfig(value map[string]interface{}) {
+	m._config = &value
 }
 
 // Config returns the value of the "config" field in the mutation.
-func (m *IntegrationMutation) Config() (r []byte, exists bool) {
+func (m *IntegrationMutation) Config() (r map[string]interface{}, exists bool) {
 	v := m._config
 	if v == nil {
 		return
@@ -21844,7 +21918,7 @@ func (m *IntegrationMutation) Config() (r []byte, exists bool) {
 // OldConfig returns the old "config" field's value of the Integration entity.
 // If the Integration object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *IntegrationMutation) OldConfig(ctx context.Context) (v []byte, err error) {
+func (m *IntegrationMutation) OldConfig(ctx context.Context) (v map[string]interface{}, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldConfig is only allowed on UpdateOne operations")
 	}
@@ -21863,40 +21937,53 @@ func (m *IntegrationMutation) ResetConfig() {
 	m._config = nil
 }
 
-// SetUpdatedAt sets the "updated_at" field.
-func (m *IntegrationMutation) SetUpdatedAt(t time.Time) {
-	m.updated_at = &t
+// SetUserConfig sets the "user_config" field.
+func (m *IntegrationMutation) SetUserConfig(value map[string]interface{}) {
+	m.user_config = &value
 }
 
-// UpdatedAt returns the value of the "updated_at" field in the mutation.
-func (m *IntegrationMutation) UpdatedAt() (r time.Time, exists bool) {
-	v := m.updated_at
+// UserConfig returns the value of the "user_config" field in the mutation.
+func (m *IntegrationMutation) UserConfig() (r map[string]interface{}, exists bool) {
+	v := m.user_config
 	if v == nil {
 		return
 	}
 	return *v, true
 }
 
-// OldUpdatedAt returns the old "updated_at" field's value of the Integration entity.
+// OldUserConfig returns the old "user_config" field's value of the Integration entity.
 // If the Integration object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *IntegrationMutation) OldUpdatedAt(ctx context.Context) (v time.Time, err error) {
+func (m *IntegrationMutation) OldUserConfig(ctx context.Context) (v map[string]interface{}, err error) {
 	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldUpdatedAt is only allowed on UpdateOne operations")
+		return v, errors.New("OldUserConfig is only allowed on UpdateOne operations")
 	}
 	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldUpdatedAt requires an ID field in the mutation")
+		return v, errors.New("OldUserConfig requires an ID field in the mutation")
 	}
 	oldValue, err := m.oldValue(ctx)
 	if err != nil {
-		return v, fmt.Errorf("querying old value for OldUpdatedAt: %w", err)
+		return v, fmt.Errorf("querying old value for OldUserConfig: %w", err)
 	}
-	return oldValue.UpdatedAt, nil
+	return oldValue.UserConfig, nil
 }
 
-// ResetUpdatedAt resets all changes to the "updated_at" field.
-func (m *IntegrationMutation) ResetUpdatedAt() {
-	m.updated_at = nil
+// ClearUserConfig clears the value of the "user_config" field.
+func (m *IntegrationMutation) ClearUserConfig() {
+	m.user_config = nil
+	m.clearedFields[integration.FieldUserConfig] = struct{}{}
+}
+
+// UserConfigCleared returns if the "user_config" field was cleared in this mutation.
+func (m *IntegrationMutation) UserConfigCleared() bool {
+	_, ok := m.clearedFields[integration.FieldUserConfig]
+	return ok
+}
+
+// ResetUserConfig resets all changes to the "user_config" field.
+func (m *IntegrationMutation) ResetUserConfig() {
+	m.user_config = nil
+	delete(m.clearedFields, integration.FieldUserConfig)
 }
 
 // ClearTenant clears the "tenant" edge to the Tenant entity.
@@ -21960,9 +22047,15 @@ func (m *IntegrationMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *IntegrationMutation) Fields() []string {
-	fields := make([]string, 0, 4)
+	fields := make([]string, 0, 6)
 	if m.tenant != nil {
 		fields = append(fields, integration.FieldTenantID)
+	}
+	if m.created_at != nil {
+		fields = append(fields, integration.FieldCreatedAt)
+	}
+	if m.updated_at != nil {
+		fields = append(fields, integration.FieldUpdatedAt)
 	}
 	if m.name != nil {
 		fields = append(fields, integration.FieldName)
@@ -21970,8 +22063,8 @@ func (m *IntegrationMutation) Fields() []string {
 	if m._config != nil {
 		fields = append(fields, integration.FieldConfig)
 	}
-	if m.updated_at != nil {
-		fields = append(fields, integration.FieldUpdatedAt)
+	if m.user_config != nil {
+		fields = append(fields, integration.FieldUserConfig)
 	}
 	return fields
 }
@@ -21983,12 +22076,16 @@ func (m *IntegrationMutation) Field(name string) (ent.Value, bool) {
 	switch name {
 	case integration.FieldTenantID:
 		return m.TenantID()
+	case integration.FieldCreatedAt:
+		return m.CreatedAt()
+	case integration.FieldUpdatedAt:
+		return m.UpdatedAt()
 	case integration.FieldName:
 		return m.Name()
 	case integration.FieldConfig:
 		return m.Config()
-	case integration.FieldUpdatedAt:
-		return m.UpdatedAt()
+	case integration.FieldUserConfig:
+		return m.UserConfig()
 	}
 	return nil, false
 }
@@ -22000,12 +22097,16 @@ func (m *IntegrationMutation) OldField(ctx context.Context, name string) (ent.Va
 	switch name {
 	case integration.FieldTenantID:
 		return m.OldTenantID(ctx)
+	case integration.FieldCreatedAt:
+		return m.OldCreatedAt(ctx)
+	case integration.FieldUpdatedAt:
+		return m.OldUpdatedAt(ctx)
 	case integration.FieldName:
 		return m.OldName(ctx)
 	case integration.FieldConfig:
 		return m.OldConfig(ctx)
-	case integration.FieldUpdatedAt:
-		return m.OldUpdatedAt(ctx)
+	case integration.FieldUserConfig:
+		return m.OldUserConfig(ctx)
 	}
 	return nil, fmt.Errorf("unknown Integration field %s", name)
 }
@@ -22022,6 +22123,20 @@ func (m *IntegrationMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetTenantID(v)
 		return nil
+	case integration.FieldCreatedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCreatedAt(v)
+		return nil
+	case integration.FieldUpdatedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetUpdatedAt(v)
+		return nil
 	case integration.FieldName:
 		v, ok := value.(string)
 		if !ok {
@@ -22030,18 +22145,18 @@ func (m *IntegrationMutation) SetField(name string, value ent.Value) error {
 		m.SetName(v)
 		return nil
 	case integration.FieldConfig:
-		v, ok := value.([]byte)
+		v, ok := value.(map[string]interface{})
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetConfig(v)
 		return nil
-	case integration.FieldUpdatedAt:
-		v, ok := value.(time.Time)
+	case integration.FieldUserConfig:
+		v, ok := value.(map[string]interface{})
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
-		m.SetUpdatedAt(v)
+		m.SetUserConfig(v)
 		return nil
 	}
 	return fmt.Errorf("unknown Integration field %s", name)
@@ -22075,7 +22190,11 @@ func (m *IntegrationMutation) AddField(name string, value ent.Value) error {
 // ClearedFields returns all nullable fields that were cleared during this
 // mutation.
 func (m *IntegrationMutation) ClearedFields() []string {
-	return nil
+	var fields []string
+	if m.FieldCleared(integration.FieldUserConfig) {
+		fields = append(fields, integration.FieldUserConfig)
+	}
+	return fields
 }
 
 // FieldCleared returns a boolean indicating if a field with the given name was
@@ -22088,6 +22207,11 @@ func (m *IntegrationMutation) FieldCleared(name string) bool {
 // ClearField clears the value of the field with the given name. It returns an
 // error if the field is not defined in the schema.
 func (m *IntegrationMutation) ClearField(name string) error {
+	switch name {
+	case integration.FieldUserConfig:
+		m.ClearUserConfig()
+		return nil
+	}
 	return fmt.Errorf("unknown Integration nullable field %s", name)
 }
 
@@ -22098,14 +22222,20 @@ func (m *IntegrationMutation) ResetField(name string) error {
 	case integration.FieldTenantID:
 		m.ResetTenantID()
 		return nil
+	case integration.FieldCreatedAt:
+		m.ResetCreatedAt()
+		return nil
+	case integration.FieldUpdatedAt:
+		m.ResetUpdatedAt()
+		return nil
 	case integration.FieldName:
 		m.ResetName()
 		return nil
 	case integration.FieldConfig:
 		m.ResetConfig()
 		return nil
-	case integration.FieldUpdatedAt:
-		m.ResetUpdatedAt()
+	case integration.FieldUserConfig:
+		m.ResetUserConfig()
 		return nil
 	}
 	return fmt.Errorf("unknown Integration field %s", name)

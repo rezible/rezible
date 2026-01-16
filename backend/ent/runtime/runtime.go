@@ -588,12 +588,20 @@ func init() {
 			return next.Mutate(ctx, m)
 		})
 	}
+	integrationMixinFields2 := integrationMixin[2].Fields()
+	_ = integrationMixinFields2
 	integrationFields := schema.Integration{}.Fields()
 	_ = integrationFields
+	// integrationDescCreatedAt is the schema descriptor for created_at field.
+	integrationDescCreatedAt := integrationMixinFields2[0].Descriptor()
+	// integration.DefaultCreatedAt holds the default value on creation for the created_at field.
+	integration.DefaultCreatedAt = integrationDescCreatedAt.Default.(func() time.Time)
 	// integrationDescUpdatedAt is the schema descriptor for updated_at field.
-	integrationDescUpdatedAt := integrationFields[3].Descriptor()
+	integrationDescUpdatedAt := integrationMixinFields2[1].Descriptor()
 	// integration.DefaultUpdatedAt holds the default value on creation for the updated_at field.
 	integration.DefaultUpdatedAt = integrationDescUpdatedAt.Default.(func() time.Time)
+	// integration.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
+	integration.UpdateDefaultUpdatedAt = integrationDescUpdatedAt.UpdateDefault.(func() time.Time)
 	// integrationDescID is the schema descriptor for id field.
 	integrationDescID := integrationFields[0].Descriptor()
 	// integration.DefaultID holds the default value on creation for the id field.

@@ -2,9 +2,10 @@ package fakeprovider
 
 import (
 	"context"
-	"github.com/rezible/rezible/ent"
 	"iter"
 	"time"
+
+	"github.com/rezible/rezible/ent"
 )
 
 type OncallDataProvider struct {
@@ -13,7 +14,7 @@ type OncallDataProvider struct {
 
 type OncallDataProviderConfig struct{}
 
-func NewOncallDataProvider(cfg OncallDataProviderConfig) (*OncallDataProvider, error) {
+func NewOncallDataProvider(intg *ent.Integration) (*OncallDataProvider, error) {
 	p := &OncallDataProvider{
 		providerUserMap: make(map[string]*ent.User),
 	}

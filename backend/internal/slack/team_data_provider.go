@@ -18,7 +18,11 @@ type TeamDataProvider struct {
 
 var _ rez.TeamDataProvider = (*TeamDataProvider)(nil)
 
-func NewTeamDataProvider(cfg IntegrationConfigData) (*TeamDataProvider, error) {
+func NewTeamDataProvider(intg *ent.Integration) (*TeamDataProvider, error) {
+	cfg, cfgErr := decodeConfig(intg)
+	if cfgErr != nil {
+		return nil, cfgErr
+	}
 	teamIds := []string{cfg.Team.ID}
 	return &TeamDataProvider{client: slack.New(cfg.AccessToken), teamIds: teamIds}, nil
 }

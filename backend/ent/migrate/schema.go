@@ -971,9 +971,11 @@ var (
 	// IntegrationsColumns holds the columns for the "integrations" table.
 	IntegrationsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID},
-		{Name: "name", Type: field.TypeString},
-		{Name: "config", Type: field.TypeBytes},
+		{Name: "created_at", Type: field.TypeTime},
 		{Name: "updated_at", Type: field.TypeTime},
+		{Name: "name", Type: field.TypeString},
+		{Name: "config", Type: field.TypeJSON, SchemaType: map[string]string{"postgres": "jsonb"}},
+		{Name: "user_config", Type: field.TypeJSON, Nullable: true},
 		{Name: "tenant_id", Type: field.TypeInt},
 	}
 	// IntegrationsTable holds the schema information for the "integrations" table.
@@ -984,7 +986,7 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "integrations_tenants_tenant",
-				Columns:    []*schema.Column{IntegrationsColumns[4]},
+				Columns:    []*schema.Column{IntegrationsColumns[6]},
 				RefColumns: []*schema.Column{TenantsColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
@@ -993,12 +995,12 @@ var (
 			{
 				Name:    "integration_tenant_id",
 				Unique:  false,
-				Columns: []*schema.Column{IntegrationsColumns[4]},
+				Columns: []*schema.Column{IntegrationsColumns[6]},
 			},
 			{
 				Name:    "integration_tenant_id_name",
 				Unique:  true,
-				Columns: []*schema.Column{IntegrationsColumns[4], IntegrationsColumns[1]},
+				Columns: []*schema.Column{IntegrationsColumns[6], IntegrationsColumns[3]},
 			},
 		},
 	}

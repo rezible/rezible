@@ -11,6 +11,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/go-viper/mapstructure/v2"
 	"github.com/rezible/rezible/ent"
 	"github.com/rs/zerolog/log"
 )
@@ -27,7 +28,11 @@ type OncallDataProviderConfig struct {
 	ApiToken    string `json:"api_token"`
 }
 
-func NewOncallDataProvider(cfg OncallDataProviderConfig) (*OncallDataProvider, error) {
+func NewOncallDataProvider(intg *ent.Integration) (*OncallDataProvider, error) {
+	var cfg OncallDataProviderConfig
+	if cfgErr := mapstructure.Decode(intg.Config, &cfg); cfgErr != nil {
+		return nil, cfgErr
+	}
 	p := &OncallDataProvider{
 		apiEndpoint:     strings.TrimSuffix(cfg.ApiEndpoint, "/"),
 		apiToken:        cfg.ApiToken,

@@ -3,6 +3,7 @@ package datasync
 import (
 	"context"
 	"fmt"
+	"reflect"
 
 	"github.com/google/uuid"
 	"github.com/rs/zerolog/log"
@@ -84,7 +85,7 @@ func (s *Syncer) syncData(ctx context.Context, intgs ent.Integrations) error {
 	} else if len(usersProviders) > 0 {
 		for _, prov := range usersProviders {
 			if syncErr := syncUsers(ctx, s.db, prov); syncErr != nil {
-				return fmt.Errorf("user provider (name): %w", syncErr)
+				return fmt.Errorf("user provider (%s): %w", reflect.TypeOf(prov).String(), syncErr)
 			}
 		}
 	}

@@ -565,10 +565,12 @@ var schemaGraph = func() *sqlgraph.Schema {
 		},
 		Type: "Integration",
 		Fields: map[string]*sqlgraph.FieldSpec{
-			integration.FieldTenantID:  {Type: field.TypeInt, Column: integration.FieldTenantID},
-			integration.FieldName:      {Type: field.TypeString, Column: integration.FieldName},
-			integration.FieldConfig:    {Type: field.TypeBytes, Column: integration.FieldConfig},
-			integration.FieldUpdatedAt: {Type: field.TypeTime, Column: integration.FieldUpdatedAt},
+			integration.FieldTenantID:   {Type: field.TypeInt, Column: integration.FieldTenantID},
+			integration.FieldCreatedAt:  {Type: field.TypeTime, Column: integration.FieldCreatedAt},
+			integration.FieldUpdatedAt:  {Type: field.TypeTime, Column: integration.FieldUpdatedAt},
+			integration.FieldName:       {Type: field.TypeString, Column: integration.FieldName},
+			integration.FieldConfig:     {Type: field.TypeJSON, Column: integration.FieldConfig},
+			integration.FieldUserConfig: {Type: field.TypeJSON, Column: integration.FieldUserConfig},
 		},
 	}
 	graph.Nodes[27] = &sqlgraph.Node{
@@ -7152,19 +7154,29 @@ func (f *IntegrationFilter) WhereTenantID(p entql.IntP) {
 	f.Where(p.Field(integration.FieldTenantID))
 }
 
-// WhereName applies the entql string predicate on the name field.
-func (f *IntegrationFilter) WhereName(p entql.StringP) {
-	f.Where(p.Field(integration.FieldName))
-}
-
-// WhereConfig applies the entql []byte predicate on the config field.
-func (f *IntegrationFilter) WhereConfig(p entql.BytesP) {
-	f.Where(p.Field(integration.FieldConfig))
+// WhereCreatedAt applies the entql time.Time predicate on the created_at field.
+func (f *IntegrationFilter) WhereCreatedAt(p entql.TimeP) {
+	f.Where(p.Field(integration.FieldCreatedAt))
 }
 
 // WhereUpdatedAt applies the entql time.Time predicate on the updated_at field.
 func (f *IntegrationFilter) WhereUpdatedAt(p entql.TimeP) {
 	f.Where(p.Field(integration.FieldUpdatedAt))
+}
+
+// WhereName applies the entql string predicate on the name field.
+func (f *IntegrationFilter) WhereName(p entql.StringP) {
+	f.Where(p.Field(integration.FieldName))
+}
+
+// WhereConfig applies the entql json.RawMessage predicate on the config field.
+func (f *IntegrationFilter) WhereConfig(p entql.BytesP) {
+	f.Where(p.Field(integration.FieldConfig))
+}
+
+// WhereUserConfig applies the entql json.RawMessage predicate on the user_config field.
+func (f *IntegrationFilter) WhereUserConfig(p entql.BytesP) {
+	f.Where(p.Field(integration.FieldUserConfig))
 }
 
 // WhereHasTenant applies a predicate to check if query has an edge tenant.

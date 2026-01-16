@@ -13,7 +13,7 @@ type TicketDataProvider struct {
 type TicketDataProviderConfig struct {
 }
 
-func NewTicketDataProvider(cfg TicketDataProviderConfig) (*TicketDataProvider, error) {
+func NewTicketDataProvider(intg *ent.Integration) (*TicketDataProvider, error) {
 	return &TicketDataProvider{}, nil
 }
 

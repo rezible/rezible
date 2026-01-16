@@ -31,7 +31,7 @@ type IncidentDataProvider struct {
 type IncidentDataProviderConfig struct {
 }
 
-func NewIncidentDataProvider(cfg IncidentDataProviderConfig) (*IncidentDataProvider, error) {
+func NewIncidentDataProvider(intg *ent.Integration) (*IncidentDataProvider, error) {
 	p := &IncidentDataProvider{
 		onIncidentUpdatedFn: func(id string, m time.Time) {
 			log.Warn().Msg("no onIncidentUpdated function")

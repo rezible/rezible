@@ -2,7 +2,6 @@ package integrations
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 
 	rez "github.com/rezible/rezible"
@@ -15,7 +14,6 @@ import (
 )
 
 // TODO: do these properly
-
 func CheckConfigValid(intg *ent.Integration) bool {
 	return true
 }
@@ -27,21 +25,6 @@ func GetEnabledDataKinds(intg *ent.Integration) []string {
 	return []string{}
 }
 
-func loadProviderCtx[C any, P any](ctx context.Context, constructorFn func(context.Context, C) (P, error), intg *ent.Integration) (P, error) {
-	return loadProvider(func(c C) (P, error) {
-		return constructorFn(ctx, c)
-	}, intg)
-}
-
-func loadProvider[C any, P any](constructorFn func(C) (P, error), intg *ent.Integration) (P, error) {
-	var cfg C
-	var p P
-	if jsonErr := json.Unmarshal(intg.Config, &cfg); jsonErr != nil {
-		return p, fmt.Errorf("failed to unmarshal integration config: %w", jsonErr)
-	}
-	return constructorFn(cfg)
-}
-
 func GetUserDataProviders(ctx context.Context, intgs ent.Integrations) ([]rez.UserDataProvider, error) {
 	var provs []rez.UserDataProvider
 	for _, intg := range intgs {
@@ -49,7 +32,7 @@ func GetUserDataProviders(ctx context.Context, intgs ent.Integrations) ([]rez.Us
 		var pErr error
 		switch intg.Name {
 		case "slack":
-			prov, pErr = loadProvider(slack.NewUserDataProvider, intg)
+			prov, pErr = slack.NewUserDataProvider(intg)
 		default:
 			continue
 		}
@@ -70,7 +53,7 @@ func GetTeamDataProviders(ctx context.Context, intgs ent.Integrations) ([]rez.Te
 		//case "slack":
 		//	prov, pErr = loadProvider(slack.NewTeamDataProvider, intg)
 		case "fake":
-			prov, pErr = loadProvider(fakeprovider.NewTeamsDataProvider, intg)
+			prov, pErr = fakeprovider.NewTeamsDataProvider(intg)
 		default:
 			continue
 		}
@@ -89,9 +72,9 @@ func GetOncallDataProviders(ctx context.Context, intgs ent.Integrations) ([]rez.
 		var pErr error
 		switch intg.Name {
 		case "grafana":
-			prov, pErr = loadProvider(grafana.NewOncallDataProvider, intg)
+			prov, pErr = grafana.NewOncallDataProvider(intg)
 		case "fake":
-			prov, pErr = loadProvider(fakeprovider.NewOncallDataProvider, intg)
+			prov, pErr = fakeprovider.NewOncallDataProvider(intg)
 		default:
 			continue
 		}
@@ -110,7 +93,7 @@ func GetAlertDataProviders(ctx context.Context, intgs ent.Integrations) ([]rez.A
 		var pErr error
 		switch intg.Name {
 		case "fake":
-			prov, pErr = loadProvider(fakeprovider.NewAlertDataProvider, intg)
+			prov, pErr = fakeprovider.NewAlertDataProvider(intg)
 		default:
 			continue
 		}
@@ -129,9 +112,9 @@ func GetIncidentDataProviders(ctx context.Context, intgs ent.Integrations) ([]re
 		var pErr error
 		switch intg.Name {
 		case "grafana":
-			prov, pErr = loadProvider(grafana.NewIncidentDataProvider, intg)
+			prov, pErr = grafana.NewIncidentDataProvider(intg)
 		case "fake":
-			prov, pErr = loadProvider(fakeprovider.NewIncidentDataProvider, intg)
+			prov, pErr = fakeprovider.NewIncidentDataProvider(intg)
 		default:
 			continue
 		}
@@ -150,7 +133,7 @@ func GetSystemComponentsDataProviders(ctx context.Context, intgs ent.Integration
 		var pErr error
 		switch intg.Name {
 		case "fake":
-			prov, pErr = loadProvider(fakeprovider.NewSystemComponentsDataProvider, intg)
+			prov, pErr = fakeprovider.NewSystemComponentsDataProvider(intg)
 		default:
 			continue
 		}
@@ -169,9 +152,9 @@ func GetTicketDataProviders(ctx context.Context, intgs ent.Integrations) ([]rez.
 		var pErr error
 		switch intg.Name {
 		case "jira":
-			prov, pErr = loadProviderCtx(ctx, jira.NewTicketDataProvider, intg)
+			prov, pErr = jira.NewTicketDataProvider(ctx, intg)
 		case "fake":
-			prov, pErr = loadProvider(fakeprovider.NewTicketDataProvider, intg)
+			prov, pErr = fakeprovider.NewTicketDataProvider(intg)
 		default:
 			continue
 		}
@@ -190,7 +173,7 @@ func GetPlaybookDataProviders(ctx context.Context, intgs ent.Integrations) ([]re
 		var pErr error
 		switch intg.Name {
 		case "fake":
-			prov, pErr = loadProvider(fakeprovider.NewPlaybookDataProvider, intg)
+			prov, pErr = fakeprovider.NewPlaybookDataProvider(intg)
 		default:
 			continue
 		}

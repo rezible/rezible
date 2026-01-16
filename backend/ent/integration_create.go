@@ -31,15 +31,17 @@ func (_c *IntegrationCreate) SetTenantID(v int) *IntegrationCreate {
 	return _c
 }
 
-// SetName sets the "name" field.
-func (_c *IntegrationCreate) SetName(v string) *IntegrationCreate {
-	_c.mutation.SetName(v)
+// SetCreatedAt sets the "created_at" field.
+func (_c *IntegrationCreate) SetCreatedAt(v time.Time) *IntegrationCreate {
+	_c.mutation.SetCreatedAt(v)
 	return _c
 }
 
-// SetConfig sets the "config" field.
-func (_c *IntegrationCreate) SetConfig(v []byte) *IntegrationCreate {
-	_c.mutation.SetConfig(v)
+// SetNillableCreatedAt sets the "created_at" field if the given value is not nil.
+func (_c *IntegrationCreate) SetNillableCreatedAt(v *time.Time) *IntegrationCreate {
+	if v != nil {
+		_c.SetCreatedAt(*v)
+	}
 	return _c
 }
 
@@ -54,6 +56,24 @@ func (_c *IntegrationCreate) SetNillableUpdatedAt(v *time.Time) *IntegrationCrea
 	if v != nil {
 		_c.SetUpdatedAt(*v)
 	}
+	return _c
+}
+
+// SetName sets the "name" field.
+func (_c *IntegrationCreate) SetName(v string) *IntegrationCreate {
+	_c.mutation.SetName(v)
+	return _c
+}
+
+// SetConfig sets the "config" field.
+func (_c *IntegrationCreate) SetConfig(v map[string]interface{}) *IntegrationCreate {
+	_c.mutation.SetConfig(v)
+	return _c
+}
+
+// SetUserConfig sets the "user_config" field.
+func (_c *IntegrationCreate) SetUserConfig(v map[string]interface{}) *IntegrationCreate {
+	_c.mutation.SetUserConfig(v)
 	return _c
 }
 
@@ -113,6 +133,13 @@ func (_c *IntegrationCreate) ExecX(ctx context.Context) {
 
 // defaults sets the default values of the builder before save.
 func (_c *IntegrationCreate) defaults() error {
+	if _, ok := _c.mutation.CreatedAt(); !ok {
+		if integration.DefaultCreatedAt == nil {
+			return fmt.Errorf("ent: uninitialized integration.DefaultCreatedAt (forgotten import ent/runtime?)")
+		}
+		v := integration.DefaultCreatedAt()
+		_c.mutation.SetCreatedAt(v)
+	}
 	if _, ok := _c.mutation.UpdatedAt(); !ok {
 		if integration.DefaultUpdatedAt == nil {
 			return fmt.Errorf("ent: uninitialized integration.DefaultUpdatedAt (forgotten import ent/runtime?)")
@@ -135,14 +162,17 @@ func (_c *IntegrationCreate) check() error {
 	if _, ok := _c.mutation.TenantID(); !ok {
 		return &ValidationError{Name: "tenant_id", err: errors.New(`ent: missing required field "Integration.tenant_id"`)}
 	}
+	if _, ok := _c.mutation.CreatedAt(); !ok {
+		return &ValidationError{Name: "created_at", err: errors.New(`ent: missing required field "Integration.created_at"`)}
+	}
+	if _, ok := _c.mutation.UpdatedAt(); !ok {
+		return &ValidationError{Name: "updated_at", err: errors.New(`ent: missing required field "Integration.updated_at"`)}
+	}
 	if _, ok := _c.mutation.Name(); !ok {
 		return &ValidationError{Name: "name", err: errors.New(`ent: missing required field "Integration.name"`)}
 	}
 	if _, ok := _c.mutation.Config(); !ok {
 		return &ValidationError{Name: "config", err: errors.New(`ent: missing required field "Integration.config"`)}
-	}
-	if _, ok := _c.mutation.UpdatedAt(); !ok {
-		return &ValidationError{Name: "updated_at", err: errors.New(`ent: missing required field "Integration.updated_at"`)}
 	}
 	if len(_c.mutation.TenantIDs()) == 0 {
 		return &ValidationError{Name: "tenant", err: errors.New(`ent: missing required edge "Integration.tenant"`)}
@@ -183,17 +213,25 @@ func (_c *IntegrationCreate) createSpec() (*Integration, *sqlgraph.CreateSpec) {
 		_node.ID = id
 		_spec.ID.Value = &id
 	}
+	if value, ok := _c.mutation.CreatedAt(); ok {
+		_spec.SetField(integration.FieldCreatedAt, field.TypeTime, value)
+		_node.CreatedAt = value
+	}
+	if value, ok := _c.mutation.UpdatedAt(); ok {
+		_spec.SetField(integration.FieldUpdatedAt, field.TypeTime, value)
+		_node.UpdatedAt = value
+	}
 	if value, ok := _c.mutation.Name(); ok {
 		_spec.SetField(integration.FieldName, field.TypeString, value)
 		_node.Name = value
 	}
 	if value, ok := _c.mutation.Config(); ok {
-		_spec.SetField(integration.FieldConfig, field.TypeBytes, value)
+		_spec.SetField(integration.FieldConfig, field.TypeJSON, value)
 		_node.Config = value
 	}
-	if value, ok := _c.mutation.UpdatedAt(); ok {
-		_spec.SetField(integration.FieldUpdatedAt, field.TypeTime, value)
-		_node.UpdatedAt = value
+	if value, ok := _c.mutation.UserConfig(); ok {
+		_spec.SetField(integration.FieldUserConfig, field.TypeJSON, value)
+		_node.UserConfig = value
 	}
 	if nodes := _c.mutation.TenantIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
@@ -264,6 +302,30 @@ type (
 	}
 )
 
+// SetCreatedAt sets the "created_at" field.
+func (u *IntegrationUpsert) SetCreatedAt(v time.Time) *IntegrationUpsert {
+	u.Set(integration.FieldCreatedAt, v)
+	return u
+}
+
+// UpdateCreatedAt sets the "created_at" field to the value that was provided on create.
+func (u *IntegrationUpsert) UpdateCreatedAt() *IntegrationUpsert {
+	u.SetExcluded(integration.FieldCreatedAt)
+	return u
+}
+
+// SetUpdatedAt sets the "updated_at" field.
+func (u *IntegrationUpsert) SetUpdatedAt(v time.Time) *IntegrationUpsert {
+	u.Set(integration.FieldUpdatedAt, v)
+	return u
+}
+
+// UpdateUpdatedAt sets the "updated_at" field to the value that was provided on create.
+func (u *IntegrationUpsert) UpdateUpdatedAt() *IntegrationUpsert {
+	u.SetExcluded(integration.FieldUpdatedAt)
+	return u
+}
+
 // SetName sets the "name" field.
 func (u *IntegrationUpsert) SetName(v string) *IntegrationUpsert {
 	u.Set(integration.FieldName, v)
@@ -277,7 +339,7 @@ func (u *IntegrationUpsert) UpdateName() *IntegrationUpsert {
 }
 
 // SetConfig sets the "config" field.
-func (u *IntegrationUpsert) SetConfig(v []byte) *IntegrationUpsert {
+func (u *IntegrationUpsert) SetConfig(v map[string]interface{}) *IntegrationUpsert {
 	u.Set(integration.FieldConfig, v)
 	return u
 }
@@ -288,15 +350,21 @@ func (u *IntegrationUpsert) UpdateConfig() *IntegrationUpsert {
 	return u
 }
 
-// SetUpdatedAt sets the "updated_at" field.
-func (u *IntegrationUpsert) SetUpdatedAt(v time.Time) *IntegrationUpsert {
-	u.Set(integration.FieldUpdatedAt, v)
+// SetUserConfig sets the "user_config" field.
+func (u *IntegrationUpsert) SetUserConfig(v map[string]interface{}) *IntegrationUpsert {
+	u.Set(integration.FieldUserConfig, v)
 	return u
 }
 
-// UpdateUpdatedAt sets the "updated_at" field to the value that was provided on create.
-func (u *IntegrationUpsert) UpdateUpdatedAt() *IntegrationUpsert {
-	u.SetExcluded(integration.FieldUpdatedAt)
+// UpdateUserConfig sets the "user_config" field to the value that was provided on create.
+func (u *IntegrationUpsert) UpdateUserConfig() *IntegrationUpsert {
+	u.SetExcluded(integration.FieldUserConfig)
+	return u
+}
+
+// ClearUserConfig clears the value of the "user_config" field.
+func (u *IntegrationUpsert) ClearUserConfig() *IntegrationUpsert {
+	u.SetNull(integration.FieldUserConfig)
 	return u
 }
 
@@ -351,6 +419,34 @@ func (u *IntegrationUpsertOne) Update(set func(*IntegrationUpsert)) *Integration
 	return u
 }
 
+// SetCreatedAt sets the "created_at" field.
+func (u *IntegrationUpsertOne) SetCreatedAt(v time.Time) *IntegrationUpsertOne {
+	return u.Update(func(s *IntegrationUpsert) {
+		s.SetCreatedAt(v)
+	})
+}
+
+// UpdateCreatedAt sets the "created_at" field to the value that was provided on create.
+func (u *IntegrationUpsertOne) UpdateCreatedAt() *IntegrationUpsertOne {
+	return u.Update(func(s *IntegrationUpsert) {
+		s.UpdateCreatedAt()
+	})
+}
+
+// SetUpdatedAt sets the "updated_at" field.
+func (u *IntegrationUpsertOne) SetUpdatedAt(v time.Time) *IntegrationUpsertOne {
+	return u.Update(func(s *IntegrationUpsert) {
+		s.SetUpdatedAt(v)
+	})
+}
+
+// UpdateUpdatedAt sets the "updated_at" field to the value that was provided on create.
+func (u *IntegrationUpsertOne) UpdateUpdatedAt() *IntegrationUpsertOne {
+	return u.Update(func(s *IntegrationUpsert) {
+		s.UpdateUpdatedAt()
+	})
+}
+
 // SetName sets the "name" field.
 func (u *IntegrationUpsertOne) SetName(v string) *IntegrationUpsertOne {
 	return u.Update(func(s *IntegrationUpsert) {
@@ -366,7 +462,7 @@ func (u *IntegrationUpsertOne) UpdateName() *IntegrationUpsertOne {
 }
 
 // SetConfig sets the "config" field.
-func (u *IntegrationUpsertOne) SetConfig(v []byte) *IntegrationUpsertOne {
+func (u *IntegrationUpsertOne) SetConfig(v map[string]interface{}) *IntegrationUpsertOne {
 	return u.Update(func(s *IntegrationUpsert) {
 		s.SetConfig(v)
 	})
@@ -379,17 +475,24 @@ func (u *IntegrationUpsertOne) UpdateConfig() *IntegrationUpsertOne {
 	})
 }
 
-// SetUpdatedAt sets the "updated_at" field.
-func (u *IntegrationUpsertOne) SetUpdatedAt(v time.Time) *IntegrationUpsertOne {
+// SetUserConfig sets the "user_config" field.
+func (u *IntegrationUpsertOne) SetUserConfig(v map[string]interface{}) *IntegrationUpsertOne {
 	return u.Update(func(s *IntegrationUpsert) {
-		s.SetUpdatedAt(v)
+		s.SetUserConfig(v)
 	})
 }
 
-// UpdateUpdatedAt sets the "updated_at" field to the value that was provided on create.
-func (u *IntegrationUpsertOne) UpdateUpdatedAt() *IntegrationUpsertOne {
+// UpdateUserConfig sets the "user_config" field to the value that was provided on create.
+func (u *IntegrationUpsertOne) UpdateUserConfig() *IntegrationUpsertOne {
 	return u.Update(func(s *IntegrationUpsert) {
-		s.UpdateUpdatedAt()
+		s.UpdateUserConfig()
+	})
+}
+
+// ClearUserConfig clears the value of the "user_config" field.
+func (u *IntegrationUpsertOne) ClearUserConfig() *IntegrationUpsertOne {
+	return u.Update(func(s *IntegrationUpsert) {
+		s.ClearUserConfig()
 	})
 }
 
@@ -611,6 +714,34 @@ func (u *IntegrationUpsertBulk) Update(set func(*IntegrationUpsert)) *Integratio
 	return u
 }
 
+// SetCreatedAt sets the "created_at" field.
+func (u *IntegrationUpsertBulk) SetCreatedAt(v time.Time) *IntegrationUpsertBulk {
+	return u.Update(func(s *IntegrationUpsert) {
+		s.SetCreatedAt(v)
+	})
+}
+
+// UpdateCreatedAt sets the "created_at" field to the value that was provided on create.
+func (u *IntegrationUpsertBulk) UpdateCreatedAt() *IntegrationUpsertBulk {
+	return u.Update(func(s *IntegrationUpsert) {
+		s.UpdateCreatedAt()
+	})
+}
+
+// SetUpdatedAt sets the "updated_at" field.
+func (u *IntegrationUpsertBulk) SetUpdatedAt(v time.Time) *IntegrationUpsertBulk {
+	return u.Update(func(s *IntegrationUpsert) {
+		s.SetUpdatedAt(v)
+	})
+}
+
+// UpdateUpdatedAt sets the "updated_at" field to the value that was provided on create.
+func (u *IntegrationUpsertBulk) UpdateUpdatedAt() *IntegrationUpsertBulk {
+	return u.Update(func(s *IntegrationUpsert) {
+		s.UpdateUpdatedAt()
+	})
+}
+
 // SetName sets the "name" field.
 func (u *IntegrationUpsertBulk) SetName(v string) *IntegrationUpsertBulk {
 	return u.Update(func(s *IntegrationUpsert) {
@@ -626,7 +757,7 @@ func (u *IntegrationUpsertBulk) UpdateName() *IntegrationUpsertBulk {
 }
 
 // SetConfig sets the "config" field.
-func (u *IntegrationUpsertBulk) SetConfig(v []byte) *IntegrationUpsertBulk {
+func (u *IntegrationUpsertBulk) SetConfig(v map[string]interface{}) *IntegrationUpsertBulk {
 	return u.Update(func(s *IntegrationUpsert) {
 		s.SetConfig(v)
 	})
@@ -639,17 +770,24 @@ func (u *IntegrationUpsertBulk) UpdateConfig() *IntegrationUpsertBulk {
 	})
 }
 
-// SetUpdatedAt sets the "updated_at" field.
-func (u *IntegrationUpsertBulk) SetUpdatedAt(v time.Time) *IntegrationUpsertBulk {
+// SetUserConfig sets the "user_config" field.
+func (u *IntegrationUpsertBulk) SetUserConfig(v map[string]interface{}) *IntegrationUpsertBulk {
 	return u.Update(func(s *IntegrationUpsert) {
-		s.SetUpdatedAt(v)
+		s.SetUserConfig(v)
 	})
 }
 
-// UpdateUpdatedAt sets the "updated_at" field to the value that was provided on create.
-func (u *IntegrationUpsertBulk) UpdateUpdatedAt() *IntegrationUpsertBulk {
+// UpdateUserConfig sets the "user_config" field to the value that was provided on create.
+func (u *IntegrationUpsertBulk) UpdateUserConfig() *IntegrationUpsertBulk {
 	return u.Update(func(s *IntegrationUpsert) {
-		s.UpdateUpdatedAt()
+		s.UpdateUserConfig()
+	})
+}
+
+// ClearUserConfig clears the value of the "user_config" field.
+func (u *IntegrationUpsertBulk) ClearUserConfig() *IntegrationUpsertBulk {
+	return u.Update(func(s *IntegrationUpsert) {
+		s.ClearUserConfig()
 	})
 }
 

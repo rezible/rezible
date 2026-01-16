@@ -2,7 +2,6 @@ package v1
 
 import (
 	"context"
-	"encoding/json"
 	"net/http"
 
 	"github.com/danielgtaylor/huma/v2"
@@ -50,10 +49,10 @@ type (
 	}
 
 	IntegrationAttributes struct {
-		Name             string          `json:"name"`
-		Config           json.RawMessage `json:"config"`
-		ConfigValid      bool            `json:"configValid"`
-		EnabledDataKinds []string        `json:"enabledDataKinds"`
+		Name             string         `json:"name"`
+		Config           map[string]any `json:"config"`
+		ConfigValid      bool           `json:"configValid"`
+		EnabledDataKinds []string       `json:"enabledDataKinds"`
 	}
 )
 
@@ -107,8 +106,8 @@ var CreateIntegration = huma.Operation{
 }
 
 type CreateIntegrationRequestAttributes struct {
-	Name   string          `json:"name"`
-	Config json.RawMessage `json:"config"`
+	Name   string         `json:"name"`
+	Config map[string]any `json:"config"`
 }
 type CreateIntegrationRequest RequestWithBodyAttributes[CreateIntegrationRequestAttributes]
 type CreateIntegrationResponse ItemResponse[Integration]
@@ -135,8 +134,8 @@ var UpdateIntegration = huma.Operation{
 }
 
 type UpdateIntegrationAttributes struct {
-	Enabled *bool            `json:"enabled,omitempty"`
-	Config  *json.RawMessage `json:"config,omitempty"`
+	Enabled *bool           `json:"enabled,omitempty"`
+	Config  *map[string]any `json:"config,omitempty"`
 }
 type UpdateIntegrationRequest UpdateIdRequest[UpdateIntegrationAttributes]
 type UpdateIntegrationResponse ItemResponse[Integration]

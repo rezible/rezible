@@ -81,7 +81,7 @@ type (
 
 	OAuth2IntegrationHandler interface {
 		OAuth2Config() *oauth2.Config
-		GetIntegrationFromToken(*oauth2.Token) (*ent.Integration, error)
+		GetIntegrationConfigFromToken(*oauth2.Token) (any, error)
 	}
 
 	IntegrationsService interface {
@@ -90,9 +90,9 @@ type (
 		SetIntegration(context.Context, uuid.UUID, func(*ent.IntegrationMutation)) (*ent.Integration, error)
 		DeleteIntegration(context.Context, uuid.UUID) error
 
-		RegisterOAuth2Handler(name string, h OAuth2IntegrationHandler)
-		StartOAuth2Flow(ctx context.Context, name string) (string, error)
-		CompleteOAuth2Flow(ctx context.Context, name, state, code string) (*ent.Integration, error)
+		RegisterOAuth2Handler(integrationName string, h OAuth2IntegrationHandler)
+		StartOAuth2Flow(ctx context.Context, integrationName string) (string, error)
+		CompleteOAuth2Flow(ctx context.Context, integrationName, state, code string) (*ent.Integration, error)
 	}
 
 	IntegrationsDataSyncer interface {

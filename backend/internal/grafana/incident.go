@@ -13,6 +13,7 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/go-viper/mapstructure/v2"
 	"github.com/rezible/rezible/ent/incidentmilestone"
 
 	"github.com/rs/zerolog/log"
@@ -38,7 +39,11 @@ type IncidentDataProviderConfig struct {
 	WebhookSecret       string `json:"webhook_secret"`
 }
 
-func NewIncidentDataProvider(cfg IncidentDataProviderConfig) (*IncidentDataProvider, error) {
+func NewIncidentDataProvider(intg *ent.Integration) (*IncidentDataProvider, error) {
+	var cfg IncidentDataProviderConfig
+	if cfgErr := mapstructure.Decode(intg.Config, &cfg); cfgErr != nil {
+		return nil, cfgErr
+	}
 	if cfg.WebhookSecret == "" {
 		return nil, fmt.Errorf("webhook secret not configured")
 	}
