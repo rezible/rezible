@@ -25,7 +25,11 @@ type DatabaseClient struct {
 }
 
 func NewDatabaseClient(ctx context.Context) (*DatabaseClient, error) {
-	pool, poolErr := pgxpool.New(ctx, rez.Config.DatabaseUrl())
+	cfg, cfgErr := pgxpool.ParseConfig(rez.Config.DatabaseUrl())
+	if cfgErr != nil {
+		return nil, fmt.Errorf("parse config: %w", cfgErr)
+	}
+	pool, poolErr := pgxpool.NewWithConfig(ctx, cfg)
 	if poolErr != nil {
 		return nil, fmt.Errorf("create: %w", poolErr)
 	}

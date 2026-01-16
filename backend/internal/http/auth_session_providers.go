@@ -4,7 +4,10 @@ import (
 	"context"
 	"fmt"
 	"strings"
+	"time"
 
+	"github.com/failsafe-go/failsafe-go"
+	"github.com/failsafe-go/failsafe-go/retrypolicy"
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/internal/http/oidc"
 	"github.com/rezible/rezible/internal/http/saml"
@@ -17,10 +20,18 @@ func isAuthProviderEnabled(name string) bool {
 func getAuthSessionProviders(ctx context.Context, secretKey string) ([]rez.AuthSessionProvider, error) {
 	var provs []rez.AuthSessionProvider
 
+	defaultRetryPolicy := retrypolicy.NewBuilder[rez.AuthSessionProvider]().
+		//HandleErrors(ErrConnecting).
+		WithDelay(time.Second).
+		WithMaxRetries(3)
+
 	if isAuthProviderEnabled("saml") {
-		samlProv, spErr := saml.NewAuthSessionProvider(ctx)
-		if spErr != nil {
-			return nil, fmt.Errorf("saml.NewAuthSessionProvider: %w", spErr)
+		loadSamlProvFn := func() (rez.AuthSessionProvider, error) {
+			return saml.NewAuthSessionProvider(ctx)
+		}
+		samlProv, provErr := failsafe.With(defaultRetryPolicy.Build()).Get(loadSamlProvFn)
+		if provErr != nil {
+			return nil, fmt.Errorf("saml.NewAuthSessionProvider: %w", provErr)
 		}
 		provs = append(provs, samlProv)
 	}
@@ -32,11 +43,13 @@ func getAuthSessionProviders(ctx context.Context, secretKey string) ([]rez.AuthS
 			ClientID:     rez.Config.GetString("auth.google.client_id"),
 			ClientSecret: rez.Config.GetString("auth.google.client_secret"),
 		}
-		googleProv, googleErr := oidc.NewGoogleAuthSessionProvider(ctx, googleCfg)
+		loadGoogleProvFn := func() (rez.AuthSessionProvider, error) {
+			return oidc.NewGoogleAuthSessionProvider(ctx, googleCfg)
+		}
+		googleProv, googleErr := failsafe.With(defaultRetryPolicy.Build()).Get(loadGoogleProvFn)
 		if googleErr != nil {
 			return nil, fmt.Errorf("oidc.NewGoogleProvider: %w", googleErr)
 		}
-
 		provs = append(provs, googleProv)
 	}
 
@@ -50,11 +63,13 @@ func getAuthSessionProviders(ctx context.Context, secretKey string) ([]rez.AuthS
 			IssuerUrl:    rez.Config.GetString("auth.oidc.issuer_url"),
 			DiscoveryUrl: rez.Config.GetString("auth.oidc.discovery_url"),
 		}
-		prov, provErr := oidc.NewGenericAuthSessionProvider(ctx, cfg)
+		loadGenericProvFn := func() (rez.AuthSessionProvider, error) {
+			return oidc.NewGenericAuthSessionProvider(ctx, cfg)
+		}
+		prov, provErr := failsafe.With(defaultRetryPolicy.Build()).Get(loadGenericProvFn)
 		if provErr != nil {
 			return nil, fmt.Errorf("oidc.NewGenericAuthSessionProvider: %w", provErr)
 		}
-
 		provs = append(provs, prov)
 	}
 

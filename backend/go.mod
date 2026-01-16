@@ -13,6 +13,7 @@ require (
 	github.com/danielgtaylor/huma/v2 v2.33.0
 	github.com/deckarep/golang-set/v2 v2.8.0
 	github.com/elimity-com/scim v0.0.0-20240320110924-172bf2aee9c8
+	github.com/failsafe-go/failsafe-go v0.9.5
 	github.com/go-chi/chi/v5 v5.2.2
 	github.com/go-faker/faker/v4 v4.6.1
 	github.com/go-viper/mapstructure/v2 v2.5.0
@@ -57,6 +58,7 @@ require (
 	github.com/aws/smithy-go v1.22.1 // indirect
 	github.com/bahlo/generic-list-go v0.2.0 // indirect
 	github.com/beevik/etree v1.5.1 // indirect
+	github.com/bits-and-blooms/bitset v1.24.4 // indirect
 	github.com/bmatcuk/doublestar v1.3.4 // indirect
 	github.com/buger/jsonparser v1.1.1 // indirect
 	github.com/bytedance/gopkg v0.1.3 // indirect
