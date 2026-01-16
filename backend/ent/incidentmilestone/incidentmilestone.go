@@ -20,6 +20,8 @@ const (
 	FieldTenantID = "tenant_id"
 	// FieldIncidentID holds the string denoting the incident_id field in the database.
 	FieldIncidentID = "incident_id"
+	// FieldUserID holds the string denoting the user_id field in the database.
+	FieldUserID = "user_id"
 	// FieldKind holds the string denoting the kind field in the database.
 	FieldKind = "kind"
 	// FieldTimestamp holds the string denoting the timestamp field in the database.
@@ -34,6 +36,8 @@ const (
 	EdgeTenant = "tenant"
 	// EdgeIncident holds the string denoting the incident edge name in mutations.
 	EdgeIncident = "incident"
+	// EdgeUser holds the string denoting the user edge name in mutations.
+	EdgeUser = "user"
 	// Table holds the table name of the incidentmilestone in the database.
 	Table = "incident_milestones"
 	// TenantTable is the table that holds the tenant relation/edge.
@@ -50,6 +54,13 @@ const (
 	IncidentInverseTable = "incidents"
 	// IncidentColumn is the table column denoting the incident relation/edge.
 	IncidentColumn = "incident_id"
+	// UserTable is the table that holds the user relation/edge.
+	UserTable = "incident_milestones"
+	// UserInverseTable is the table name for the User entity.
+	// It exists in this package in order to avoid circular dependency with the "user" package.
+	UserInverseTable = "users"
+	// UserColumn is the table column denoting the user relation/edge.
+	UserColumn = "user_id"
 )
 
 // Columns holds all SQL columns for incidentmilestone fields.
@@ -57,6 +68,7 @@ var Columns = []string{
 	FieldID,
 	FieldTenantID,
 	FieldIncidentID,
+	FieldUserID,
 	FieldKind,
 	FieldTimestamp,
 	FieldDescription,
@@ -92,9 +104,8 @@ type Kind string
 // Kind values.
 const (
 	KindImpact     Kind = "impact"
-	KindDetection  Kind = "detection"
+	KindDetected   Kind = "detected"
 	KindOpened     Kind = "opened"
-	KindResponse   Kind = "response"
 	KindMitigation Kind = "mitigation"
 	KindResolution Kind = "resolution"
 )
@@ -106,7 +117,7 @@ func (k Kind) String() string {
 // KindValidator is a validator for the "kind" field enum values. It is called by the builders before save.
 func KindValidator(k Kind) error {
 	switch k {
-	case KindImpact, KindDetection, KindOpened, KindResponse, KindMitigation, KindResolution:
+	case KindImpact, KindDetected, KindOpened, KindMitigation, KindResolution:
 		return nil
 	default:
 		return fmt.Errorf("incidentmilestone: invalid enum value for kind field: %q", k)
@@ -129,6 +140,11 @@ func ByTenantID(opts ...sql.OrderTermOption) OrderOption {
 // ByIncidentID orders the results by the incident_id field.
 func ByIncidentID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldIncidentID, opts...).ToFunc()
+}
+
+// ByUserID orders the results by the user_id field.
+func ByUserID(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldUserID, opts...).ToFunc()
 }
 
 // ByKind orders the results by the kind field.
@@ -164,6 +180,13 @@ func ByIncidentField(field string, opts ...sql.OrderTermOption) OrderOption {
 		sqlgraph.OrderByNeighborTerms(s, newIncidentStep(), sql.OrderByField(field, opts...))
 	}
 }
+
+// ByUserField orders the results by user field.
+func ByUserField(field string, opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newUserStep(), sql.OrderByField(field, opts...))
+	}
+}
 func newTenantStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
@@ -176,5 +199,12 @@ func newIncidentStep() *sqlgraph.Step {
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(IncidentInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.M2O, true, IncidentTable, IncidentColumn),
+	)
+}
+func newUserStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(UserInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.M2O, true, UserTable, UserColumn),
 	)
 }

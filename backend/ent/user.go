@@ -54,6 +54,8 @@ type UserEdges struct {
 	EventAnnotations []*EventAnnotation `json:"event_annotations,omitempty"`
 	// Incidents holds the value of the incidents edge.
 	Incidents []*Incident `json:"incidents,omitempty"`
+	// IncidentMilestones holds the value of the incident_milestones edge.
+	IncidentMilestones []*IncidentMilestone `json:"incident_milestones,omitempty"`
 	// IncidentDebriefs holds the value of the incident_debriefs edge.
 	IncidentDebriefs []*IncidentDebrief `json:"incident_debriefs,omitempty"`
 	// AssignedTasks holds the value of the assigned_tasks edge.
@@ -70,7 +72,7 @@ type UserEdges struct {
 	RoleAssignments []*IncidentRoleAssignment `json:"role_assignments,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [14]bool
+	loadedTypes [15]bool
 }
 
 // TenantOrErr returns the Tenant value or an error if the edge
@@ -138,10 +140,19 @@ func (e UserEdges) IncidentsOrErr() ([]*Incident, error) {
 	return nil, &NotLoadedError{edge: "incidents"}
 }
 
+// IncidentMilestonesOrErr returns the IncidentMilestones value or an error if the edge
+// was not loaded in eager-loading.
+func (e UserEdges) IncidentMilestonesOrErr() ([]*IncidentMilestone, error) {
+	if e.loadedTypes[7] {
+		return e.IncidentMilestones, nil
+	}
+	return nil, &NotLoadedError{edge: "incident_milestones"}
+}
+
 // IncidentDebriefsOrErr returns the IncidentDebriefs value or an error if the edge
 // was not loaded in eager-loading.
 func (e UserEdges) IncidentDebriefsOrErr() ([]*IncidentDebrief, error) {
-	if e.loadedTypes[7] {
+	if e.loadedTypes[8] {
 		return e.IncidentDebriefs, nil
 	}
 	return nil, &NotLoadedError{edge: "incident_debriefs"}
@@ -150,7 +161,7 @@ func (e UserEdges) IncidentDebriefsOrErr() ([]*IncidentDebrief, error) {
 // AssignedTasksOrErr returns the AssignedTasks value or an error if the edge
 // was not loaded in eager-loading.
 func (e UserEdges) AssignedTasksOrErr() ([]*Task, error) {
-	if e.loadedTypes[8] {
+	if e.loadedTypes[9] {
 		return e.AssignedTasks, nil
 	}
 	return nil, &NotLoadedError{edge: "assigned_tasks"}
@@ -159,7 +170,7 @@ func (e UserEdges) AssignedTasksOrErr() ([]*Task, error) {
 // CreatedTasksOrErr returns the CreatedTasks value or an error if the edge
 // was not loaded in eager-loading.
 func (e UserEdges) CreatedTasksOrErr() ([]*Task, error) {
-	if e.loadedTypes[9] {
+	if e.loadedTypes[10] {
 		return e.CreatedTasks, nil
 	}
 	return nil, &NotLoadedError{edge: "created_tasks"}
@@ -168,7 +179,7 @@ func (e UserEdges) CreatedTasksOrErr() ([]*Task, error) {
 // RetrospectiveReviewRequestsOrErr returns the RetrospectiveReviewRequests value or an error if the edge
 // was not loaded in eager-loading.
 func (e UserEdges) RetrospectiveReviewRequestsOrErr() ([]*RetrospectiveReview, error) {
-	if e.loadedTypes[10] {
+	if e.loadedTypes[11] {
 		return e.RetrospectiveReviewRequests, nil
 	}
 	return nil, &NotLoadedError{edge: "retrospective_review_requests"}
@@ -177,7 +188,7 @@ func (e UserEdges) RetrospectiveReviewRequestsOrErr() ([]*RetrospectiveReview, e
 // RetrospectiveReviewResponsesOrErr returns the RetrospectiveReviewResponses value or an error if the edge
 // was not loaded in eager-loading.
 func (e UserEdges) RetrospectiveReviewResponsesOrErr() ([]*RetrospectiveReview, error) {
-	if e.loadedTypes[11] {
+	if e.loadedTypes[12] {
 		return e.RetrospectiveReviewResponses, nil
 	}
 	return nil, &NotLoadedError{edge: "retrospective_review_responses"}
@@ -186,7 +197,7 @@ func (e UserEdges) RetrospectiveReviewResponsesOrErr() ([]*RetrospectiveReview, 
 // RetrospectiveCommentsOrErr returns the RetrospectiveComments value or an error if the edge
 // was not loaded in eager-loading.
 func (e UserEdges) RetrospectiveCommentsOrErr() ([]*RetrospectiveComment, error) {
-	if e.loadedTypes[12] {
+	if e.loadedTypes[13] {
 		return e.RetrospectiveComments, nil
 	}
 	return nil, &NotLoadedError{edge: "retrospective_comments"}
@@ -195,7 +206,7 @@ func (e UserEdges) RetrospectiveCommentsOrErr() ([]*RetrospectiveComment, error)
 // RoleAssignmentsOrErr returns the RoleAssignments value or an error if the edge
 // was not loaded in eager-loading.
 func (e UserEdges) RoleAssignmentsOrErr() ([]*IncidentRoleAssignment, error) {
-	if e.loadedTypes[13] {
+	if e.loadedTypes[14] {
 		return e.RoleAssignments, nil
 	}
 	return nil, &NotLoadedError{edge: "role_assignments"}
@@ -323,6 +334,11 @@ func (_m *User) QueryEventAnnotations() *EventAnnotationQuery {
 // QueryIncidents queries the "incidents" edge of the User entity.
 func (_m *User) QueryIncidents() *IncidentQuery {
 	return NewUserClient(_m.config).QueryIncidents(_m)
+}
+
+// QueryIncidentMilestones queries the "incident_milestones" edge of the User entity.
+func (_m *User) QueryIncidentMilestones() *IncidentMilestoneQuery {
+	return NewUserClient(_m.config).QueryIncidentMilestones(_m)
 }
 
 // QueryIncidentDebriefs queries the "incident_debriefs" edge of the User entity.

@@ -14,6 +14,7 @@ import (
 	"github.com/rezible/rezible/ent/eventannotation"
 	"github.com/rezible/rezible/ent/incident"
 	"github.com/rezible/rezible/ent/incidentdebrief"
+	"github.com/rezible/rezible/ent/incidentmilestone"
 	"github.com/rezible/rezible/ent/incidentroleassignment"
 	"github.com/rezible/rezible/ent/oncallroster"
 	"github.com/rezible/rezible/ent/oncallscheduleparticipant"
@@ -236,6 +237,21 @@ func (_u *UserUpdate) AddIncidents(v ...*Incident) *UserUpdate {
 		ids[i] = v[i].ID
 	}
 	return _u.AddIncidentIDs(ids...)
+}
+
+// AddIncidentMilestoneIDs adds the "incident_milestones" edge to the IncidentMilestone entity by IDs.
+func (_u *UserUpdate) AddIncidentMilestoneIDs(ids ...uuid.UUID) *UserUpdate {
+	_u.mutation.AddIncidentMilestoneIDs(ids...)
+	return _u
+}
+
+// AddIncidentMilestones adds the "incident_milestones" edges to the IncidentMilestone entity.
+func (_u *UserUpdate) AddIncidentMilestones(v ...*IncidentMilestone) *UserUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddIncidentMilestoneIDs(ids...)
 }
 
 // AddIncidentDebriefIDs adds the "incident_debriefs" edge to the IncidentDebrief entity by IDs.
@@ -472,6 +488,27 @@ func (_u *UserUpdate) RemoveIncidents(v ...*Incident) *UserUpdate {
 		ids[i] = v[i].ID
 	}
 	return _u.RemoveIncidentIDs(ids...)
+}
+
+// ClearIncidentMilestones clears all "incident_milestones" edges to the IncidentMilestone entity.
+func (_u *UserUpdate) ClearIncidentMilestones() *UserUpdate {
+	_u.mutation.ClearIncidentMilestones()
+	return _u
+}
+
+// RemoveIncidentMilestoneIDs removes the "incident_milestones" edge to IncidentMilestone entities by IDs.
+func (_u *UserUpdate) RemoveIncidentMilestoneIDs(ids ...uuid.UUID) *UserUpdate {
+	_u.mutation.RemoveIncidentMilestoneIDs(ids...)
+	return _u
+}
+
+// RemoveIncidentMilestones removes "incident_milestones" edges to IncidentMilestone entities.
+func (_u *UserUpdate) RemoveIncidentMilestones(v ...*IncidentMilestone) *UserUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveIncidentMilestoneIDs(ids...)
 }
 
 // ClearIncidentDebriefs clears all "incident_debriefs" edges to the IncidentDebrief entity.
@@ -992,6 +1029,51 @@ func (_u *UserUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 		edge.Target.Fields = specE.Fields
 		if specE.ID.Value != nil {
 			edge.Target.Fields = append(edge.Target.Fields, specE.ID)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.IncidentMilestonesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.IncidentMilestonesTable,
+			Columns: []string{user.IncidentMilestonesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(incidentmilestone.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedIncidentMilestonesIDs(); len(nodes) > 0 && !_u.mutation.IncidentMilestonesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.IncidentMilestonesTable,
+			Columns: []string{user.IncidentMilestonesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(incidentmilestone.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.IncidentMilestonesIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.IncidentMilestonesTable,
+			Columns: []string{user.IncidentMilestonesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(incidentmilestone.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
@@ -1530,6 +1612,21 @@ func (_u *UserUpdateOne) AddIncidents(v ...*Incident) *UserUpdateOne {
 	return _u.AddIncidentIDs(ids...)
 }
 
+// AddIncidentMilestoneIDs adds the "incident_milestones" edge to the IncidentMilestone entity by IDs.
+func (_u *UserUpdateOne) AddIncidentMilestoneIDs(ids ...uuid.UUID) *UserUpdateOne {
+	_u.mutation.AddIncidentMilestoneIDs(ids...)
+	return _u
+}
+
+// AddIncidentMilestones adds the "incident_milestones" edges to the IncidentMilestone entity.
+func (_u *UserUpdateOne) AddIncidentMilestones(v ...*IncidentMilestone) *UserUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddIncidentMilestoneIDs(ids...)
+}
+
 // AddIncidentDebriefIDs adds the "incident_debriefs" edge to the IncidentDebrief entity by IDs.
 func (_u *UserUpdateOne) AddIncidentDebriefIDs(ids ...uuid.UUID) *UserUpdateOne {
 	_u.mutation.AddIncidentDebriefIDs(ids...)
@@ -1764,6 +1861,27 @@ func (_u *UserUpdateOne) RemoveIncidents(v ...*Incident) *UserUpdateOne {
 		ids[i] = v[i].ID
 	}
 	return _u.RemoveIncidentIDs(ids...)
+}
+
+// ClearIncidentMilestones clears all "incident_milestones" edges to the IncidentMilestone entity.
+func (_u *UserUpdateOne) ClearIncidentMilestones() *UserUpdateOne {
+	_u.mutation.ClearIncidentMilestones()
+	return _u
+}
+
+// RemoveIncidentMilestoneIDs removes the "incident_milestones" edge to IncidentMilestone entities by IDs.
+func (_u *UserUpdateOne) RemoveIncidentMilestoneIDs(ids ...uuid.UUID) *UserUpdateOne {
+	_u.mutation.RemoveIncidentMilestoneIDs(ids...)
+	return _u
+}
+
+// RemoveIncidentMilestones removes "incident_milestones" edges to IncidentMilestone entities.
+func (_u *UserUpdateOne) RemoveIncidentMilestones(v ...*IncidentMilestone) *UserUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveIncidentMilestoneIDs(ids...)
 }
 
 // ClearIncidentDebriefs clears all "incident_debriefs" edges to the IncidentDebrief entity.
@@ -2314,6 +2432,51 @@ func (_u *UserUpdateOne) sqlSave(ctx context.Context) (_node *User, err error) {
 		edge.Target.Fields = specE.Fields
 		if specE.ID.Value != nil {
 			edge.Target.Fields = append(edge.Target.Fields, specE.ID)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.IncidentMilestonesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.IncidentMilestonesTable,
+			Columns: []string{user.IncidentMilestonesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(incidentmilestone.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedIncidentMilestonesIDs(); len(nodes) > 0 && !_u.mutation.IncidentMilestonesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.IncidentMilestonesTable,
+			Columns: []string{user.IncidentMilestonesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(incidentmilestone.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.IncidentMilestonesIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.IncidentMilestonesTable,
+			Columns: []string{user.IncidentMilestonesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(incidentmilestone.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}

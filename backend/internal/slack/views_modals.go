@@ -121,13 +121,13 @@ func (s *ChatService) getAnnotationModalAnnotation(ctx context.Context, view sla
 	return anno, nil
 }
 
-type incidentModalViewMetadata struct {
+type incidentDetailsModalViewMetadata struct {
 	UserId           string    `json:"uid"`
 	CommandChannelId string    `json:"cid"`
 	IncidentId       uuid.UUID `json:"iid,omitempty"`
 }
 
-func (s *ChatService) makeIncidentDetailsModalView(ctx context.Context, meta *incidentModalViewMetadata) (*slack.ModalViewRequest, error) {
+func (s *ChatService) makeIncidentDetailsModalView(ctx context.Context, meta *incidentDetailsModalViewMetadata) (*slack.ModalViewRequest, error) {
 	var curr *ent.Incident
 	if meta.IncidentId != uuid.Nil {
 		inc, incErr := s.incidents.Get(ctx, meta.IncidentId)
@@ -170,17 +170,18 @@ func (s *ChatService) makeIncidentDetailsModalView(ctx context.Context, meta *in
 	return view, nil
 }
 
-func (s *ChatService) makeIncidentMilestoneModalView(ctx context.Context, meta *incidentModalViewMetadata) (*slack.ModalViewRequest, error) {
-	var curr *ent.Incident
-	if meta.IncidentId != uuid.Nil {
-		inc, incErr := s.incidents.Get(ctx, meta.IncidentId)
-		if incErr != nil && !ent.IsNotFound(incErr) {
-			return nil, incErr
-		}
-		curr = inc
+type incidentMilestoneModalViewMetadata struct {
+	UserId     string    `json:"uid"`
+	IncidentId uuid.UUID `json:"iid"`
+}
+
+func (s *ChatService) makeIncidentMilestoneModalView(ctx context.Context, meta *incidentMilestoneModalViewMetadata) (*slack.ModalViewRequest, error) {
+	inc, incErr := s.incidents.Get(ctx, meta.IncidentId)
+	if incErr != nil && !ent.IsNotFound(incErr) {
+		return nil, incErr
 	}
 
-	builder := newIncidentMilestoneModalViewBuilder(curr, meta)
+	builder := newIncidentMilestoneModalViewBuilder(inc, meta)
 	blockSet := builder.build()
 
 	jsonMetadata, jsonErr := json.Marshal(meta)

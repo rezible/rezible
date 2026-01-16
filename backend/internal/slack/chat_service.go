@@ -174,6 +174,17 @@ func (s *ChatService) getIncidentAnnouncementChannelId(ctx context.Context) (str
 	return announcementChannelId, nil
 }
 
+func (s *ChatService) openModalView(ctx context.Context, triggerId string, viewReq slack.ModalViewRequest) error {
+	return s.withClient(ctx, func(client *slack.Client) error {
+		resp, respErr := client.OpenViewContext(ctx, triggerId, viewReq)
+		if respErr != nil {
+			logSlackViewErrorResponse(respErr, resp)
+			return respErr
+		}
+		return nil
+	})
+}
+
 func (s *ChatService) openOrUpdateModal(ctx context.Context, ic *slack.InteractionCallback, view *slack.ModalViewRequest) error {
 	var viewResp *slack.ViewResponse
 	var respErr error

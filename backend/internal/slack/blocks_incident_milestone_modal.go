@@ -10,10 +10,10 @@ import (
 type incidentMilestoneModalViewBuilder struct {
 	blocks   []slack.Block
 	incident *ent.Incident
-	metadata *incidentModalViewMetadata
+	metadata *incidentMilestoneModalViewMetadata
 }
 
-func newIncidentMilestoneModalViewBuilder(curr *ent.Incident, meta *incidentModalViewMetadata) *incidentMilestoneModalViewBuilder {
+func newIncidentMilestoneModalViewBuilder(curr *ent.Incident, meta *incidentMilestoneModalViewMetadata) *incidentMilestoneModalViewBuilder {
 	return &incidentMilestoneModalViewBuilder{
 		blocks:   []slack.Block{},
 		incident: curr,

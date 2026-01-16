@@ -66,6 +66,11 @@ func IncidentID(v uuid.UUID) predicate.IncidentMilestone {
 	return predicate.IncidentMilestone(sql.FieldEQ(FieldIncidentID, v))
 }
 
+// UserID applies equality check predicate on the "user_id" field. It's identical to UserIDEQ.
+func UserID(v uuid.UUID) predicate.IncidentMilestone {
+	return predicate.IncidentMilestone(sql.FieldEQ(FieldUserID, v))
+}
+
 // Timestamp applies equality check predicate on the "timestamp" field. It's identical to TimestampEQ.
 func Timestamp(v time.Time) predicate.IncidentMilestone {
 	return predicate.IncidentMilestone(sql.FieldEQ(FieldTimestamp, v))
@@ -119,6 +124,26 @@ func IncidentIDIn(vs ...uuid.UUID) predicate.IncidentMilestone {
 // IncidentIDNotIn applies the NotIn predicate on the "incident_id" field.
 func IncidentIDNotIn(vs ...uuid.UUID) predicate.IncidentMilestone {
 	return predicate.IncidentMilestone(sql.FieldNotIn(FieldIncidentID, vs...))
+}
+
+// UserIDEQ applies the EQ predicate on the "user_id" field.
+func UserIDEQ(v uuid.UUID) predicate.IncidentMilestone {
+	return predicate.IncidentMilestone(sql.FieldEQ(FieldUserID, v))
+}
+
+// UserIDNEQ applies the NEQ predicate on the "user_id" field.
+func UserIDNEQ(v uuid.UUID) predicate.IncidentMilestone {
+	return predicate.IncidentMilestone(sql.FieldNEQ(FieldUserID, v))
+}
+
+// UserIDIn applies the In predicate on the "user_id" field.
+func UserIDIn(vs ...uuid.UUID) predicate.IncidentMilestone {
+	return predicate.IncidentMilestone(sql.FieldIn(FieldUserID, vs...))
+}
+
+// UserIDNotIn applies the NotIn predicate on the "user_id" field.
+func UserIDNotIn(vs ...uuid.UUID) predicate.IncidentMilestone {
+	return predicate.IncidentMilestone(sql.FieldNotIn(FieldUserID, vs...))
 }
 
 // KindEQ applies the EQ predicate on the "kind" field.
@@ -379,6 +404,29 @@ func HasIncident() predicate.IncidentMilestone {
 func HasIncidentWith(preds ...predicate.Incident) predicate.IncidentMilestone {
 	return predicate.IncidentMilestone(func(s *sql.Selector) {
 		step := newIncidentStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasUser applies the HasEdge predicate on the "user" edge.
+func HasUser() predicate.IncidentMilestone {
+	return predicate.IncidentMilestone(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, UserTable, UserColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasUserWith applies the HasEdge predicate on the "user" edge with a given conditions (other predicates).
+func HasUserWith(preds ...predicate.User) predicate.IncidentMilestone {
+	return predicate.IncidentMilestone(func(s *sql.Selector) {
+		step := newUserStep()
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)

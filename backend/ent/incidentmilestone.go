@@ -14,6 +14,7 @@ import (
 	"github.com/rezible/rezible/ent/incident"
 	"github.com/rezible/rezible/ent/incidentmilestone"
 	"github.com/rezible/rezible/ent/tenant"
+	"github.com/rezible/rezible/ent/user"
 )
 
 // IncidentMilestone is the model entity for the IncidentMilestone schema.
@@ -25,6 +26,8 @@ type IncidentMilestone struct {
 	TenantID int `json:"tenant_id,omitempty"`
 	// IncidentID holds the value of the "incident_id" field.
 	IncidentID uuid.UUID `json:"incident_id,omitempty"`
+	// UserID holds the value of the "user_id" field.
+	UserID uuid.UUID `json:"user_id,omitempty"`
 	// Kind holds the value of the "kind" field.
 	Kind incidentmilestone.Kind `json:"kind,omitempty"`
 	// Timestamp holds the value of the "timestamp" field.
@@ -47,9 +50,11 @@ type IncidentMilestoneEdges struct {
 	Tenant *Tenant `json:"tenant,omitempty"`
 	// Incident holds the value of the incident edge.
 	Incident *Incident `json:"incident,omitempty"`
+	// User holds the value of the user edge.
+	User *User `json:"user,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [2]bool
+	loadedTypes [3]bool
 }
 
 // TenantOrErr returns the Tenant value or an error if the edge
@@ -74,6 +79,17 @@ func (e IncidentMilestoneEdges) IncidentOrErr() (*Incident, error) {
 	return nil, &NotLoadedError{edge: "incident"}
 }
 
+// UserOrErr returns the User value or an error if the edge
+// was not loaded in eager-loading, or loaded but was not found.
+func (e IncidentMilestoneEdges) UserOrErr() (*User, error) {
+	if e.User != nil {
+		return e.User, nil
+	} else if e.loadedTypes[2] {
+		return nil, &NotFoundError{label: user.Label}
+	}
+	return nil, &NotLoadedError{edge: "user"}
+}
+
 // scanValues returns the types for scanning values from sql.Rows.
 func (*IncidentMilestone) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
@@ -87,7 +103,7 @@ func (*IncidentMilestone) scanValues(columns []string) ([]any, error) {
 			values[i] = new(sql.NullString)
 		case incidentmilestone.FieldTimestamp:
 			values[i] = new(sql.NullTime)
-		case incidentmilestone.FieldID, incidentmilestone.FieldIncidentID:
+		case incidentmilestone.FieldID, incidentmilestone.FieldIncidentID, incidentmilestone.FieldUserID:
 			values[i] = new(uuid.UUID)
 		default:
 			values[i] = new(sql.UnknownType)
@@ -121,6 +137,12 @@ func (_m *IncidentMilestone) assignValues(columns []string, values []any) error 
 				return fmt.Errorf("unexpected type %T for field incident_id", values[i])
 			} else if value != nil {
 				_m.IncidentID = *value
+			}
+		case incidentmilestone.FieldUserID:
+			if value, ok := values[i].(*uuid.UUID); !ok {
+				return fmt.Errorf("unexpected type %T for field user_id", values[i])
+			} else if value != nil {
+				_m.UserID = *value
 			}
 		case incidentmilestone.FieldKind:
 			if value, ok := values[i].(*sql.NullString); !ok {
@@ -177,6 +199,11 @@ func (_m *IncidentMilestone) QueryIncident() *IncidentQuery {
 	return NewIncidentMilestoneClient(_m.config).QueryIncident(_m)
 }
 
+// QueryUser queries the "user" edge of the IncidentMilestone entity.
+func (_m *IncidentMilestone) QueryUser() *UserQuery {
+	return NewIncidentMilestoneClient(_m.config).QueryUser(_m)
+}
+
 // Update returns a builder for updating this IncidentMilestone.
 // Note that you need to call IncidentMilestone.Unwrap() before calling this method if this IncidentMilestone
 // was returned from a transaction, and the transaction was committed or rolled back.
@@ -205,6 +232,9 @@ func (_m *IncidentMilestone) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("incident_id=")
 	builder.WriteString(fmt.Sprintf("%v", _m.IncidentID))
+	builder.WriteString(", ")
+	builder.WriteString("user_id=")
+	builder.WriteString(fmt.Sprintf("%v", _m.UserID))
 	builder.WriteString(", ")
 	builder.WriteString("kind=")
 	builder.WriteString(fmt.Sprintf("%v", _m.Kind))

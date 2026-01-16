@@ -127,22 +127,24 @@ func (s *ChatService) handleAnnotationModalSubmission(ctx context.Context, ic *s
 	return nil, nil
 }
 
-func (s *ChatService) getIncidentModalViewMetadata(ctx context.Context, ic *slack.InteractionCallback) (*incidentModalViewMetadata, error) {
-	var meta incidentModalViewMetadata
+func (s *ChatService) getIncidentModalViewMetadata(ctx context.Context, ic *slack.InteractionCallback) (*incidentDetailsModalViewMetadata, error) {
+	var meta incidentDetailsModalViewMetadata
 	if ic.Type == slack.InteractionTypeBlockActions {
 		inc, incErr := s.incidents.GetByChatChannelID(ctx, ic.Channel.ID)
 		if incErr != nil {
 			return nil, fmt.Errorf("unable to get incident by channel: %w", incErr)
 		}
-		meta.UserId = ic.User.ID
-		meta.IncidentId = inc.ID
-		return &meta, nil
-	}
-	if ic.View.PrivateMetadata == "" {
-		return nil, fmt.Errorf("no view metadata provided")
-	}
-	if jsonErr := json.Unmarshal([]byte(ic.View.PrivateMetadata), &meta); jsonErr != nil {
-		return nil, fmt.Errorf("failed to unmarshal incident modal metadata: %w", jsonErr)
+		meta = incidentDetailsModalViewMetadata{
+			UserId:     ic.User.ID,
+			IncidentId: inc.ID,
+		}
+	} else {
+		if ic.View.PrivateMetadata == "" {
+			return nil, fmt.Errorf("no view metadata provided")
+		}
+		if jsonErr := json.Unmarshal([]byte(ic.View.PrivateMetadata), &meta); jsonErr != nil {
+			return nil, fmt.Errorf("failed to unmarshal incident modal metadata: %w", jsonErr)
+		}
 	}
 	return &meta, nil
 }
@@ -176,6 +178,11 @@ func (s *ChatService) handleIncidentDetailsModalSubmission(ctx context.Context, 
 		return nil, errors.New("invalid view state")
 	}
 
+	usr, userErr := s.users.GetByChatId(ctx, meta.UserId)
+	if userErr != nil {
+		return nil, fmt.Errorf("failed to get user: %w", userErr)
+	}
+
 	setFn := func(m *ent.IncidentMutation) []ent.Mutation {
 		setIncidentDetailsModalInputMutationFields(m, state)
 
@@ -194,6 +201,7 @@ func (s *ChatService) handleIncidentDetailsModalSubmission(ctx context.Context, 
 			SetSource(integrationName).
 			SetIncidentID(incidentId).
 			SetMetadata(milestoneMeta).
+			SetUserID(usr.ID).
 			Mutation()
 
 		return []ent.Mutation{milestoneCreate}
@@ -205,20 +213,22 @@ func (s *ChatService) handleIncidentDetailsModalSubmission(ctx context.Context, 
 	return nil, nil
 }
 
-func (s *ChatService) getIncidentMilestoneModalViewMetadata(ctx context.Context, ic *slack.InteractionCallback) (*incidentModalViewMetadata, error) {
-	var meta incidentModalViewMetadata
+func (s *ChatService) getIncidentMilestoneModalViewMetadata(ctx context.Context, ic *slack.InteractionCallback) (*incidentMilestoneModalViewMetadata, error) {
+	var meta incidentMilestoneModalViewMetadata
 	if ic.View.PrivateMetadata != "" {
 		if jsonErr := json.Unmarshal([]byte(ic.View.PrivateMetadata), &meta); jsonErr != nil {
 			return nil, fmt.Errorf("failed to unmarshal incident modal metadata: %w", jsonErr)
 		}
-		return &meta, nil
+	} else {
+		inc, incErr := s.incidents.GetByChatChannelID(ctx, ic.Channel.ID)
+		if incErr != nil {
+			return nil, fmt.Errorf("unable to get incident by channel: %w", incErr)
+		}
+		meta = incidentMilestoneModalViewMetadata{
+			UserId:     ic.User.ID,
+			IncidentId: inc.ID,
+		}
 	}
-	inc, incErr := s.incidents.GetByChatChannelID(ctx, ic.Channel.ID)
-	if incErr != nil {
-		return nil, fmt.Errorf("unable to get incident by channel: %w", incErr)
-	}
-	meta.UserId = ic.User.ID
-	meta.IncidentId = inc.ID
 	return &meta, nil
 }
 
@@ -245,6 +255,11 @@ func (s *ChatService) handleIncidentMilestoneModalSubmission(ctx context.Context
 		return nil, metaErr
 	}
 
+	usr, userErr := s.users.GetByChatId(ctx, meta.UserId)
+	if userErr != nil {
+		return nil, fmt.Errorf("failed to get user: %w", userErr)
+	}
+
 	state := ic.View.State
 	if state == nil {
 		return nil, errors.New("invalid view state")
@@ -254,6 +269,7 @@ func (s *ChatService) handleIncidentMilestoneModalSubmission(ctx context.Context
 		m.SetIncidentID(meta.IncidentId)
 		m.SetSource(integrationName)
 		m.SetTimestamp(time.Now())
+		m.SetUserID(usr.ID)
 		setIncidentMilestoneModalInputMutationFields(m, state)
 	}
 	_, incErr := s.incidents.SetIncidentMilestone(ctx, uuid.Nil, setFn)

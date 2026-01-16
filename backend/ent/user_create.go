@@ -15,6 +15,7 @@ import (
 	"github.com/rezible/rezible/ent/eventannotation"
 	"github.com/rezible/rezible/ent/incident"
 	"github.com/rezible/rezible/ent/incidentdebrief"
+	"github.com/rezible/rezible/ent/incidentmilestone"
 	"github.com/rezible/rezible/ent/incidentroleassignment"
 	"github.com/rezible/rezible/ent/oncallroster"
 	"github.com/rezible/rezible/ent/oncallscheduleparticipant"
@@ -224,6 +225,21 @@ func (_c *UserCreate) AddIncidents(v ...*Incident) *UserCreate {
 		ids[i] = v[i].ID
 	}
 	return _c.AddIncidentIDs(ids...)
+}
+
+// AddIncidentMilestoneIDs adds the "incident_milestones" edge to the IncidentMilestone entity by IDs.
+func (_c *UserCreate) AddIncidentMilestoneIDs(ids ...uuid.UUID) *UserCreate {
+	_c.mutation.AddIncidentMilestoneIDs(ids...)
+	return _c
+}
+
+// AddIncidentMilestones adds the "incident_milestones" edges to the IncidentMilestone entity.
+func (_c *UserCreate) AddIncidentMilestones(v ...*IncidentMilestone) *UserCreate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _c.AddIncidentMilestoneIDs(ids...)
 }
 
 // AddIncidentDebriefIDs adds the "incident_debriefs" edge to the IncidentDebrief entity by IDs.
@@ -577,6 +593,22 @@ func (_c *UserCreate) createSpec() (*User, *sqlgraph.CreateSpec) {
 		edge.Target.Fields = specE.Fields
 		if specE.ID.Value != nil {
 			edge.Target.Fields = append(edge.Target.Fields, specE.ID)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := _c.mutation.IncidentMilestonesIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.IncidentMilestonesTable,
+			Columns: []string{user.IncidentMilestonesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(incidentmilestone.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		_spec.Edges = append(_spec.Edges, edge)
 	}

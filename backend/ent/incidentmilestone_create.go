@@ -16,6 +16,7 @@ import (
 	"github.com/rezible/rezible/ent/incident"
 	"github.com/rezible/rezible/ent/incidentmilestone"
 	"github.com/rezible/rezible/ent/tenant"
+	"github.com/rezible/rezible/ent/user"
 )
 
 // IncidentMilestoneCreate is the builder for creating a IncidentMilestone entity.
@@ -35,6 +36,12 @@ func (_c *IncidentMilestoneCreate) SetTenantID(v int) *IncidentMilestoneCreate {
 // SetIncidentID sets the "incident_id" field.
 func (_c *IncidentMilestoneCreate) SetIncidentID(v uuid.UUID) *IncidentMilestoneCreate {
 	_c.mutation.SetIncidentID(v)
+	return _c
+}
+
+// SetUserID sets the "user_id" field.
+func (_c *IncidentMilestoneCreate) SetUserID(v uuid.UUID) *IncidentMilestoneCreate {
+	_c.mutation.SetUserID(v)
 	return _c
 }
 
@@ -108,6 +115,11 @@ func (_c *IncidentMilestoneCreate) SetIncident(v *Incident) *IncidentMilestoneCr
 	return _c.SetIncidentID(v.ID)
 }
 
+// SetUser sets the "user" edge to the User entity.
+func (_c *IncidentMilestoneCreate) SetUser(v *User) *IncidentMilestoneCreate {
+	return _c.SetUserID(v.ID)
+}
+
 // Mutation returns the IncidentMilestoneMutation object of the builder.
 func (_c *IncidentMilestoneCreate) Mutation() *IncidentMilestoneMutation {
 	return _c.mutation
@@ -163,6 +175,9 @@ func (_c *IncidentMilestoneCreate) check() error {
 	if _, ok := _c.mutation.IncidentID(); !ok {
 		return &ValidationError{Name: "incident_id", err: errors.New(`ent: missing required field "IncidentMilestone.incident_id"`)}
 	}
+	if _, ok := _c.mutation.UserID(); !ok {
+		return &ValidationError{Name: "user_id", err: errors.New(`ent: missing required field "IncidentMilestone.user_id"`)}
+	}
 	if _, ok := _c.mutation.Kind(); !ok {
 		return &ValidationError{Name: "kind", err: errors.New(`ent: missing required field "IncidentMilestone.kind"`)}
 	}
@@ -179,6 +194,9 @@ func (_c *IncidentMilestoneCreate) check() error {
 	}
 	if len(_c.mutation.IncidentIDs()) == 0 {
 		return &ValidationError{Name: "incident", err: errors.New(`ent: missing required edge "IncidentMilestone.incident"`)}
+	}
+	if len(_c.mutation.UserIDs()) == 0 {
+		return &ValidationError{Name: "user", err: errors.New(`ent: missing required edge "IncidentMilestone.user"`)}
 	}
 	return nil
 }
@@ -270,6 +288,23 @@ func (_c *IncidentMilestoneCreate) createSpec() (*IncidentMilestone, *sqlgraph.C
 		_node.IncidentID = nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
+	if nodes := _c.mutation.UserIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   incidentmilestone.UserTable,
+			Columns: []string{incidentmilestone.UserColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_node.UserID = nodes[0]
+		_spec.Edges = append(_spec.Edges, edge)
+	}
 	return _node, _spec
 }
 
@@ -331,6 +366,18 @@ func (u *IncidentMilestoneUpsert) SetIncidentID(v uuid.UUID) *IncidentMilestoneU
 // UpdateIncidentID sets the "incident_id" field to the value that was provided on create.
 func (u *IncidentMilestoneUpsert) UpdateIncidentID() *IncidentMilestoneUpsert {
 	u.SetExcluded(incidentmilestone.FieldIncidentID)
+	return u
+}
+
+// SetUserID sets the "user_id" field.
+func (u *IncidentMilestoneUpsert) SetUserID(v uuid.UUID) *IncidentMilestoneUpsert {
+	u.Set(incidentmilestone.FieldUserID, v)
+	return u
+}
+
+// UpdateUserID sets the "user_id" field to the value that was provided on create.
+func (u *IncidentMilestoneUpsert) UpdateUserID() *IncidentMilestoneUpsert {
+	u.SetExcluded(incidentmilestone.FieldUserID)
 	return u
 }
 
@@ -474,6 +521,20 @@ func (u *IncidentMilestoneUpsertOne) SetIncidentID(v uuid.UUID) *IncidentMilesto
 func (u *IncidentMilestoneUpsertOne) UpdateIncidentID() *IncidentMilestoneUpsertOne {
 	return u.Update(func(s *IncidentMilestoneUpsert) {
 		s.UpdateIncidentID()
+	})
+}
+
+// SetUserID sets the "user_id" field.
+func (u *IncidentMilestoneUpsertOne) SetUserID(v uuid.UUID) *IncidentMilestoneUpsertOne {
+	return u.Update(func(s *IncidentMilestoneUpsert) {
+		s.SetUserID(v)
+	})
+}
+
+// UpdateUserID sets the "user_id" field to the value that was provided on create.
+func (u *IncidentMilestoneUpsertOne) UpdateUserID() *IncidentMilestoneUpsertOne {
+	return u.Update(func(s *IncidentMilestoneUpsert) {
+		s.UpdateUserID()
 	})
 }
 
@@ -797,6 +858,20 @@ func (u *IncidentMilestoneUpsertBulk) SetIncidentID(v uuid.UUID) *IncidentMilest
 func (u *IncidentMilestoneUpsertBulk) UpdateIncidentID() *IncidentMilestoneUpsertBulk {
 	return u.Update(func(s *IncidentMilestoneUpsert) {
 		s.UpdateIncidentID()
+	})
+}
+
+// SetUserID sets the "user_id" field.
+func (u *IncidentMilestoneUpsertBulk) SetUserID(v uuid.UUID) *IncidentMilestoneUpsertBulk {
+	return u.Update(func(s *IncidentMilestoneUpsert) {
+		s.SetUserID(v)
+	})
+}
+
+// UpdateUserID sets the "user_id" field to the value that was provided on create.
+func (u *IncidentMilestoneUpsertBulk) UpdateUserID() *IncidentMilestoneUpsertBulk {
+	return u.Update(func(s *IncidentMilestoneUpsert) {
+		s.UpdateUserID()
 	})
 }
 

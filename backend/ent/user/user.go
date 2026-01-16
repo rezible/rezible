@@ -42,6 +42,8 @@ const (
 	EdgeEventAnnotations = "event_annotations"
 	// EdgeIncidents holds the string denoting the incidents edge name in mutations.
 	EdgeIncidents = "incidents"
+	// EdgeIncidentMilestones holds the string denoting the incident_milestones edge name in mutations.
+	EdgeIncidentMilestones = "incident_milestones"
 	// EdgeIncidentDebriefs holds the string denoting the incident_debriefs edge name in mutations.
 	EdgeIncidentDebriefs = "incident_debriefs"
 	// EdgeAssignedTasks holds the string denoting the assigned_tasks edge name in mutations.
@@ -101,6 +103,13 @@ const (
 	// IncidentsInverseTable is the table name for the Incident entity.
 	// It exists in this package in order to avoid circular dependency with the "incident" package.
 	IncidentsInverseTable = "incidents"
+	// IncidentMilestonesTable is the table that holds the incident_milestones relation/edge.
+	IncidentMilestonesTable = "incident_milestones"
+	// IncidentMilestonesInverseTable is the table name for the IncidentMilestone entity.
+	// It exists in this package in order to avoid circular dependency with the "incidentmilestone" package.
+	IncidentMilestonesInverseTable = "incident_milestones"
+	// IncidentMilestonesColumn is the table column denoting the incident_milestones relation/edge.
+	IncidentMilestonesColumn = "user_id"
 	// IncidentDebriefsTable is the table that holds the incident_debriefs relation/edge.
 	IncidentDebriefsTable = "incident_debriefs"
 	// IncidentDebriefsInverseTable is the table name for the IncidentDebrief entity.
@@ -336,6 +345,20 @@ func ByIncidents(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 	}
 }
 
+// ByIncidentMilestonesCount orders the results by incident_milestones count.
+func ByIncidentMilestonesCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newIncidentMilestonesStep(), opts...)
+	}
+}
+
+// ByIncidentMilestones orders the results by incident_milestones terms.
+func ByIncidentMilestones(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newIncidentMilestonesStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
+
 // ByIncidentDebriefsCount orders the results by incident_debriefs count.
 func ByIncidentDebriefsCount(opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
@@ -480,6 +503,13 @@ func newIncidentsStep() *sqlgraph.Step {
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(IncidentsInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.M2M, false, IncidentsTable, IncidentsPrimaryKey...),
+	)
+}
+func newIncidentMilestonesStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(IncidentMilestonesInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, false, IncidentMilestonesTable, IncidentMilestonesColumn),
 	)
 }
 func newIncidentDebriefsStep() *sqlgraph.Step {

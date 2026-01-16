@@ -16907,6 +16907,8 @@ type IncidentMilestoneMutation struct {
 	clearedtenant   bool
 	incident        *uuid.UUID
 	clearedincident bool
+	user            *uuid.UUID
+	cleareduser     bool
 	done            bool
 	oldValue        func(context.Context) (*IncidentMilestone, error)
 	predicates      []predicate.IncidentMilestone
@@ -17086,6 +17088,42 @@ func (m *IncidentMilestoneMutation) OldIncidentID(ctx context.Context) (v uuid.U
 // ResetIncidentID resets all changes to the "incident_id" field.
 func (m *IncidentMilestoneMutation) ResetIncidentID() {
 	m.incident = nil
+}
+
+// SetUserID sets the "user_id" field.
+func (m *IncidentMilestoneMutation) SetUserID(u uuid.UUID) {
+	m.user = &u
+}
+
+// UserID returns the value of the "user_id" field in the mutation.
+func (m *IncidentMilestoneMutation) UserID() (r uuid.UUID, exists bool) {
+	v := m.user
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldUserID returns the old "user_id" field's value of the IncidentMilestone entity.
+// If the IncidentMilestone object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *IncidentMilestoneMutation) OldUserID(ctx context.Context) (v uuid.UUID, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldUserID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldUserID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldUserID: %w", err)
+	}
+	return oldValue.UserID, nil
+}
+
+// ResetUserID resets all changes to the "user_id" field.
+func (m *IncidentMilestoneMutation) ResetUserID() {
+	m.user = nil
 }
 
 // SetKind sets the "kind" field.
@@ -17361,6 +17399,33 @@ func (m *IncidentMilestoneMutation) ResetIncident() {
 	m.clearedincident = false
 }
 
+// ClearUser clears the "user" edge to the User entity.
+func (m *IncidentMilestoneMutation) ClearUser() {
+	m.cleareduser = true
+	m.clearedFields[incidentmilestone.FieldUserID] = struct{}{}
+}
+
+// UserCleared reports if the "user" edge to the User entity was cleared.
+func (m *IncidentMilestoneMutation) UserCleared() bool {
+	return m.cleareduser
+}
+
+// UserIDs returns the "user" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// UserID instead. It exists only for internal usage by the builders.
+func (m *IncidentMilestoneMutation) UserIDs() (ids []uuid.UUID) {
+	if id := m.user; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetUser resets all changes to the "user" edge.
+func (m *IncidentMilestoneMutation) ResetUser() {
+	m.user = nil
+	m.cleareduser = false
+}
+
 // Where appends a list predicates to the IncidentMilestoneMutation builder.
 func (m *IncidentMilestoneMutation) Where(ps ...predicate.IncidentMilestone) {
 	m.predicates = append(m.predicates, ps...)
@@ -17395,12 +17460,15 @@ func (m *IncidentMilestoneMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *IncidentMilestoneMutation) Fields() []string {
-	fields := make([]string, 0, 7)
+	fields := make([]string, 0, 8)
 	if m.tenant != nil {
 		fields = append(fields, incidentmilestone.FieldTenantID)
 	}
 	if m.incident != nil {
 		fields = append(fields, incidentmilestone.FieldIncidentID)
+	}
+	if m.user != nil {
+		fields = append(fields, incidentmilestone.FieldUserID)
 	}
 	if m.kind != nil {
 		fields = append(fields, incidentmilestone.FieldKind)
@@ -17429,6 +17497,8 @@ func (m *IncidentMilestoneMutation) Field(name string) (ent.Value, bool) {
 		return m.TenantID()
 	case incidentmilestone.FieldIncidentID:
 		return m.IncidentID()
+	case incidentmilestone.FieldUserID:
+		return m.UserID()
 	case incidentmilestone.FieldKind:
 		return m.Kind()
 	case incidentmilestone.FieldTimestamp:
@@ -17452,6 +17522,8 @@ func (m *IncidentMilestoneMutation) OldField(ctx context.Context, name string) (
 		return m.OldTenantID(ctx)
 	case incidentmilestone.FieldIncidentID:
 		return m.OldIncidentID(ctx)
+	case incidentmilestone.FieldUserID:
+		return m.OldUserID(ctx)
 	case incidentmilestone.FieldKind:
 		return m.OldKind(ctx)
 	case incidentmilestone.FieldTimestamp:
@@ -17484,6 +17556,13 @@ func (m *IncidentMilestoneMutation) SetField(name string, value ent.Value) error
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetIncidentID(v)
+		return nil
+	case incidentmilestone.FieldUserID:
+		v, ok := value.(uuid.UUID)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetUserID(v)
 		return nil
 	case incidentmilestone.FieldKind:
 		v, ok := value.(incidentmilestone.Kind)
@@ -17599,6 +17678,9 @@ func (m *IncidentMilestoneMutation) ResetField(name string) error {
 	case incidentmilestone.FieldIncidentID:
 		m.ResetIncidentID()
 		return nil
+	case incidentmilestone.FieldUserID:
+		m.ResetUserID()
+		return nil
 	case incidentmilestone.FieldKind:
 		m.ResetKind()
 		return nil
@@ -17620,12 +17702,15 @@ func (m *IncidentMilestoneMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *IncidentMilestoneMutation) AddedEdges() []string {
-	edges := make([]string, 0, 2)
+	edges := make([]string, 0, 3)
 	if m.tenant != nil {
 		edges = append(edges, incidentmilestone.EdgeTenant)
 	}
 	if m.incident != nil {
 		edges = append(edges, incidentmilestone.EdgeIncident)
+	}
+	if m.user != nil {
+		edges = append(edges, incidentmilestone.EdgeUser)
 	}
 	return edges
 }
@@ -17642,13 +17727,17 @@ func (m *IncidentMilestoneMutation) AddedIDs(name string) []ent.Value {
 		if id := m.incident; id != nil {
 			return []ent.Value{*id}
 		}
+	case incidentmilestone.EdgeUser:
+		if id := m.user; id != nil {
+			return []ent.Value{*id}
+		}
 	}
 	return nil
 }
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *IncidentMilestoneMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 2)
+	edges := make([]string, 0, 3)
 	return edges
 }
 
@@ -17660,12 +17749,15 @@ func (m *IncidentMilestoneMutation) RemovedIDs(name string) []ent.Value {
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *IncidentMilestoneMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 2)
+	edges := make([]string, 0, 3)
 	if m.clearedtenant {
 		edges = append(edges, incidentmilestone.EdgeTenant)
 	}
 	if m.clearedincident {
 		edges = append(edges, incidentmilestone.EdgeIncident)
+	}
+	if m.cleareduser {
+		edges = append(edges, incidentmilestone.EdgeUser)
 	}
 	return edges
 }
@@ -17678,6 +17770,8 @@ func (m *IncidentMilestoneMutation) EdgeCleared(name string) bool {
 		return m.clearedtenant
 	case incidentmilestone.EdgeIncident:
 		return m.clearedincident
+	case incidentmilestone.EdgeUser:
+		return m.cleareduser
 	}
 	return false
 }
@@ -17692,6 +17786,9 @@ func (m *IncidentMilestoneMutation) ClearEdge(name string) error {
 	case incidentmilestone.EdgeIncident:
 		m.ClearIncident()
 		return nil
+	case incidentmilestone.EdgeUser:
+		m.ClearUser()
+		return nil
 	}
 	return fmt.Errorf("unknown IncidentMilestone unique edge %s", name)
 }
@@ -17705,6 +17802,9 @@ func (m *IncidentMilestoneMutation) ResetEdge(name string) error {
 		return nil
 	case incidentmilestone.EdgeIncident:
 		m.ResetIncident()
+		return nil
+	case incidentmilestone.EdgeUser:
+		m.ResetUser()
 		return nil
 	}
 	return fmt.Errorf("unknown IncidentMilestone edge %s", name)
@@ -50872,6 +50972,9 @@ type UserMutation struct {
 	incidents                             map[uuid.UUID]struct{}
 	removedincidents                      map[uuid.UUID]struct{}
 	clearedincidents                      bool
+	incident_milestones                   map[uuid.UUID]struct{}
+	removedincident_milestones            map[uuid.UUID]struct{}
+	clearedincident_milestones            bool
 	incident_debriefs                     map[uuid.UUID]struct{}
 	removedincident_debriefs              map[uuid.UUID]struct{}
 	clearedincident_debriefs              bool
@@ -51657,6 +51760,60 @@ func (m *UserMutation) ResetIncidents() {
 	m.removedincidents = nil
 }
 
+// AddIncidentMilestoneIDs adds the "incident_milestones" edge to the IncidentMilestone entity by ids.
+func (m *UserMutation) AddIncidentMilestoneIDs(ids ...uuid.UUID) {
+	if m.incident_milestones == nil {
+		m.incident_milestones = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		m.incident_milestones[ids[i]] = struct{}{}
+	}
+}
+
+// ClearIncidentMilestones clears the "incident_milestones" edge to the IncidentMilestone entity.
+func (m *UserMutation) ClearIncidentMilestones() {
+	m.clearedincident_milestones = true
+}
+
+// IncidentMilestonesCleared reports if the "incident_milestones" edge to the IncidentMilestone entity was cleared.
+func (m *UserMutation) IncidentMilestonesCleared() bool {
+	return m.clearedincident_milestones
+}
+
+// RemoveIncidentMilestoneIDs removes the "incident_milestones" edge to the IncidentMilestone entity by IDs.
+func (m *UserMutation) RemoveIncidentMilestoneIDs(ids ...uuid.UUID) {
+	if m.removedincident_milestones == nil {
+		m.removedincident_milestones = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		delete(m.incident_milestones, ids[i])
+		m.removedincident_milestones[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedIncidentMilestones returns the removed IDs of the "incident_milestones" edge to the IncidentMilestone entity.
+func (m *UserMutation) RemovedIncidentMilestonesIDs() (ids []uuid.UUID) {
+	for id := range m.removedincident_milestones {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// IncidentMilestonesIDs returns the "incident_milestones" edge IDs in the mutation.
+func (m *UserMutation) IncidentMilestonesIDs() (ids []uuid.UUID) {
+	for id := range m.incident_milestones {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetIncidentMilestones resets all changes to the "incident_milestones" edge.
+func (m *UserMutation) ResetIncidentMilestones() {
+	m.incident_milestones = nil
+	m.clearedincident_milestones = false
+	m.removedincident_milestones = nil
+}
+
 // AddIncidentDebriefIDs adds the "incident_debriefs" edge to the IncidentDebrief entity by ids.
 func (m *UserMutation) AddIncidentDebriefIDs(ids ...uuid.UUID) {
 	if m.incident_debriefs == nil {
@@ -52300,7 +52457,7 @@ func (m *UserMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *UserMutation) AddedEdges() []string {
-	edges := make([]string, 0, 14)
+	edges := make([]string, 0, 15)
 	if m.tenant != nil {
 		edges = append(edges, user.EdgeTenant)
 	}
@@ -52321,6 +52478,9 @@ func (m *UserMutation) AddedEdges() []string {
 	}
 	if m.incidents != nil {
 		edges = append(edges, user.EdgeIncidents)
+	}
+	if m.incident_milestones != nil {
+		edges = append(edges, user.EdgeIncidentMilestones)
 	}
 	if m.incident_debriefs != nil {
 		edges = append(edges, user.EdgeIncidentDebriefs)
@@ -52390,6 +52550,12 @@ func (m *UserMutation) AddedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case user.EdgeIncidentMilestones:
+		ids := make([]ent.Value, 0, len(m.incident_milestones))
+		for id := range m.incident_milestones {
+			ids = append(ids, id)
+		}
+		return ids
 	case user.EdgeIncidentDebriefs:
 		ids := make([]ent.Value, 0, len(m.incident_debriefs))
 		for id := range m.incident_debriefs {
@@ -52438,7 +52604,7 @@ func (m *UserMutation) AddedIDs(name string) []ent.Value {
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *UserMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 14)
+	edges := make([]string, 0, 15)
 	if m.removedteams != nil {
 		edges = append(edges, user.EdgeTeams)
 	}
@@ -52456,6 +52622,9 @@ func (m *UserMutation) RemovedEdges() []string {
 	}
 	if m.removedincidents != nil {
 		edges = append(edges, user.EdgeIncidents)
+	}
+	if m.removedincident_milestones != nil {
+		edges = append(edges, user.EdgeIncidentMilestones)
 	}
 	if m.removedincident_debriefs != nil {
 		edges = append(edges, user.EdgeIncidentDebriefs)
@@ -52521,6 +52690,12 @@ func (m *UserMutation) RemovedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case user.EdgeIncidentMilestones:
+		ids := make([]ent.Value, 0, len(m.removedincident_milestones))
+		for id := range m.removedincident_milestones {
+			ids = append(ids, id)
+		}
+		return ids
 	case user.EdgeIncidentDebriefs:
 		ids := make([]ent.Value, 0, len(m.removedincident_debriefs))
 		for id := range m.removedincident_debriefs {
@@ -52569,7 +52744,7 @@ func (m *UserMutation) RemovedIDs(name string) []ent.Value {
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *UserMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 14)
+	edges := make([]string, 0, 15)
 	if m.clearedtenant {
 		edges = append(edges, user.EdgeTenant)
 	}
@@ -52590,6 +52765,9 @@ func (m *UserMutation) ClearedEdges() []string {
 	}
 	if m.clearedincidents {
 		edges = append(edges, user.EdgeIncidents)
+	}
+	if m.clearedincident_milestones {
+		edges = append(edges, user.EdgeIncidentMilestones)
 	}
 	if m.clearedincident_debriefs {
 		edges = append(edges, user.EdgeIncidentDebriefs)
@@ -52633,6 +52811,8 @@ func (m *UserMutation) EdgeCleared(name string) bool {
 		return m.clearedevent_annotations
 	case user.EdgeIncidents:
 		return m.clearedincidents
+	case user.EdgeIncidentMilestones:
+		return m.clearedincident_milestones
 	case user.EdgeIncidentDebriefs:
 		return m.clearedincident_debriefs
 	case user.EdgeAssignedTasks:
@@ -52686,6 +52866,9 @@ func (m *UserMutation) ResetEdge(name string) error {
 		return nil
 	case user.EdgeIncidents:
 		m.ResetIncidents()
+		return nil
+	case user.EdgeIncidentMilestones:
+		m.ResetIncidentMilestones()
 		return nil
 	case user.EdgeIncidentDebriefs:
 		m.ResetIncidentDebriefs()

@@ -128,6 +128,10 @@ func (ms *MessageService) setup(pub message.Publisher, sub message.Subscriber) e
 		GeneratePublishTopic: func(params cqrs.CommandBusGeneratePublishTopicParams) (string, error) {
 			return generateCommandsTopic(params.CommandName), nil
 		},
+		OnSend: func(params cqrs.CommandBusOnSendParams) error {
+			log.Debug().Str("name", params.CommandName).Msg("sending command")
+			return nil
+		},
 		Marshaler: jsonMarshaller,
 		Logger:    ms.logger,
 	}
@@ -147,6 +151,10 @@ func (ms *MessageService) setup(pub message.Publisher, sub message.Subscriber) e
 	eventBusCfg := cqrs.EventBusConfig{
 		GeneratePublishTopic: func(params cqrs.GenerateEventPublishTopicParams) (string, error) {
 			return generateEventsTopic(params.EventName), nil
+		},
+		OnPublish: func(params cqrs.OnEventSendParams) error {
+			log.Debug().Str("name", params.EventName).Msg("sending event")
+			return nil
 		},
 		Marshaler: jsonMarshaller,
 		Logger:    ms.logger,

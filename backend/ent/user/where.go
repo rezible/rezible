@@ -645,6 +645,29 @@ func HasIncidentsWith(preds ...predicate.Incident) predicate.User {
 	})
 }
 
+// HasIncidentMilestones applies the HasEdge predicate on the "incident_milestones" edge.
+func HasIncidentMilestones() predicate.User {
+	return predicate.User(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, IncidentMilestonesTable, IncidentMilestonesColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasIncidentMilestonesWith applies the HasEdge predicate on the "incident_milestones" edge with a given conditions (other predicates).
+func HasIncidentMilestonesWith(preds ...predicate.IncidentMilestone) predicate.User {
+	return predicate.User(func(s *sql.Selector) {
+		step := newIncidentMilestonesStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
 // HasIncidentDebriefs applies the HasEdge predicate on the "incident_debriefs" edge.
 func HasIncidentDebriefs() predicate.User {
 	return predicate.User(func(s *sql.Selector) {

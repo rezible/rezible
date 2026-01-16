@@ -459,6 +459,7 @@ var schemaGraph = func() *sqlgraph.Schema {
 		Fields: map[string]*sqlgraph.FieldSpec{
 			incidentmilestone.FieldTenantID:    {Type: field.TypeInt, Column: incidentmilestone.FieldTenantID},
 			incidentmilestone.FieldIncidentID:  {Type: field.TypeUUID, Column: incidentmilestone.FieldIncidentID},
+			incidentmilestone.FieldUserID:      {Type: field.TypeUUID, Column: incidentmilestone.FieldUserID},
 			incidentmilestone.FieldKind:        {Type: field.TypeEnum, Column: incidentmilestone.FieldKind},
 			incidentmilestone.FieldTimestamp:   {Type: field.TypeTime, Column: incidentmilestone.FieldTimestamp},
 			incidentmilestone.FieldDescription: {Type: field.TypeString, Column: incidentmilestone.FieldDescription},
@@ -2167,6 +2168,18 @@ var schemaGraph = func() *sqlgraph.Schema {
 		},
 		"IncidentMilestone",
 		"Incident",
+	)
+	graph.MustAddE(
+		"user",
+		&sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   incidentmilestone.UserTable,
+			Columns: []string{incidentmilestone.UserColumn},
+			Bidi:    false,
+		},
+		"IncidentMilestone",
+		"User",
 	)
 	graph.MustAddE(
 		"tenant",
@@ -3907,6 +3920,18 @@ var schemaGraph = func() *sqlgraph.Schema {
 		},
 		"User",
 		"Incident",
+	)
+	graph.MustAddE(
+		"incident_milestones",
+		&sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.IncidentMilestonesTable,
+			Columns: []string{user.IncidentMilestonesColumn},
+			Bidi:    false,
+		},
+		"User",
+		"IncidentMilestone",
 	)
 	graph.MustAddE(
 		"incident_debriefs",
@@ -6517,6 +6542,11 @@ func (f *IncidentMilestoneFilter) WhereIncidentID(p entql.ValueP) {
 	f.Where(p.Field(incidentmilestone.FieldIncidentID))
 }
 
+// WhereUserID applies the entql [16]byte predicate on the user_id field.
+func (f *IncidentMilestoneFilter) WhereUserID(p entql.ValueP) {
+	f.Where(p.Field(incidentmilestone.FieldUserID))
+}
+
 // WhereKind applies the entql string predicate on the kind field.
 func (f *IncidentMilestoneFilter) WhereKind(p entql.StringP) {
 	f.Where(p.Field(incidentmilestone.FieldKind))
@@ -6564,6 +6594,20 @@ func (f *IncidentMilestoneFilter) WhereHasIncident() {
 // WhereHasIncidentWith applies a predicate to check if query has an edge incident with a given conditions (other predicates).
 func (f *IncidentMilestoneFilter) WhereHasIncidentWith(preds ...predicate.Incident) {
 	f.Where(entql.HasEdgeWith("incident", sqlgraph.WrapFunc(func(s *sql.Selector) {
+		for _, p := range preds {
+			p(s)
+		}
+	})))
+}
+
+// WhereHasUser applies a predicate to check if query has an edge user.
+func (f *IncidentMilestoneFilter) WhereHasUser() {
+	f.Where(entql.HasEdge("user"))
+}
+
+// WhereHasUserWith applies a predicate to check if query has an edge user with a given conditions (other predicates).
+func (f *IncidentMilestoneFilter) WhereHasUserWith(preds ...predicate.User) {
+	f.Where(entql.HasEdgeWith("user", sqlgraph.WrapFunc(func(s *sql.Selector) {
 		for _, p := range preds {
 			p(s)
 		}
@@ -11274,6 +11318,20 @@ func (f *UserFilter) WhereHasIncidents() {
 // WhereHasIncidentsWith applies a predicate to check if query has an edge incidents with a given conditions (other predicates).
 func (f *UserFilter) WhereHasIncidentsWith(preds ...predicate.Incident) {
 	f.Where(entql.HasEdgeWith("incidents", sqlgraph.WrapFunc(func(s *sql.Selector) {
+		for _, p := range preds {
+			p(s)
+		}
+	})))
+}
+
+// WhereHasIncidentMilestones applies a predicate to check if query has an edge incident_milestones.
+func (f *UserFilter) WhereHasIncidentMilestones() {
+	f.Where(entql.HasEdge("incident_milestones"))
+}
+
+// WhereHasIncidentMilestonesWith applies a predicate to check if query has an edge incident_milestones with a given conditions (other predicates).
+func (f *UserFilter) WhereHasIncidentMilestonesWith(preds ...predicate.IncidentMilestone) {
+	f.Where(entql.HasEdgeWith("incident_milestones", sqlgraph.WrapFunc(func(s *sql.Selector) {
 		for _, p := range preds {
 			p(s)
 		}

@@ -4689,6 +4689,22 @@ func (c *IncidentMilestoneClient) QueryIncident(_m *IncidentMilestone) *Incident
 	return query
 }
 
+// QueryUser queries the user edge of a IncidentMilestone.
+func (c *IncidentMilestoneClient) QueryUser(_m *IncidentMilestone) *UserQuery {
+	query := (&UserClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(incidentmilestone.Table, incidentmilestone.FieldID, id),
+			sqlgraph.To(user.Table, user.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, incidentmilestone.UserTable, incidentmilestone.UserColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
 // Hooks returns the client hooks.
 func (c *IncidentMilestoneClient) Hooks() []Hook {
 	hooks := c.hooks.IncidentMilestone
@@ -12235,6 +12251,22 @@ func (c *UserClient) QueryIncidents(_m *User) *IncidentQuery {
 			sqlgraph.From(user.Table, user.FieldID, id),
 			sqlgraph.To(incident.Table, incident.FieldID),
 			sqlgraph.Edge(sqlgraph.M2M, false, user.IncidentsTable, user.IncidentsPrimaryKey...),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryIncidentMilestones queries the incident_milestones edge of a User.
+func (c *UserClient) QueryIncidentMilestones(_m *User) *IncidentMilestoneQuery {
+	query := (&IncidentMilestoneClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(user.Table, user.FieldID, id),
+			sqlgraph.To(incidentmilestone.Table, incidentmilestone.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, user.IncidentMilestonesTable, user.IncidentMilestonesColumn),
 		)
 		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
 		return fromV, nil

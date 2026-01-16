@@ -54,12 +54,10 @@ func (h *incidentChatEventHandler) onIncidentUpdate(ctx context.Context, ev *rez
 		return nil
 	}
 
-	// TODO: these should all be inserted as jobs
 	return h.chat.withClient(ctx, func(client *slack.Client) error {
 		if channelErr := h.updateIncidentChannelProperties(ctx, client, inc); channelErr != nil {
 			log.Error().Err(channelErr).Msg("failed to update incident channel")
 		}
-
 		return nil
 	})
 }
@@ -68,14 +66,10 @@ func (h *incidentChatEventHandler) onIncidentMilestone(ctx context.Context, ev *
 	if !ev.Created {
 		return nil
 	}
-	cmd := &cmdSendIncidentMilestoneMessage{
+	return h.chat.messages.SendCommand(ctx, &cmdSendIncidentMilestoneMessage{
 		IncidentId:  ev.IncidentId,
 		MilestoneId: ev.MilestoneId,
-	}
-	if cmdErr := h.chat.messages.SendCommand(ctx, cmd); cmdErr != nil {
-		return fmt.Errorf("failed to send incident milestone message command: %w", cmdErr)
-	}
-	return nil
+	})
 }
 
 type cmdSendIncidentMilestoneMessage struct {
@@ -90,7 +84,7 @@ func (h *incidentChatEventHandler) sendIncidentMilestoneMessage(ctx context.Cont
 	}
 
 	if inc.ChatChannelID == "" {
-		// just created, no need to send milestone update
+		// just created, don't send milestone update
 		return nil
 	}
 
@@ -99,27 +93,35 @@ func (h *incidentChatEventHandler) sendIncidentMilestoneMessage(ctx context.Cont
 		return fmt.Errorf("failed to get milestone: %w", msErr)
 	}
 
-	return h.chat.withClient(ctx, func(client *slack.Client) error {
-		text := fmt.Sprintf("Incident Milestone %s - %s", ms.Kind.String(), ms.Description)
-		blocks := []slack.Block{
-			slack.NewSectionBlock(plainTextBlock(text), nil, nil),
+	userTag := "Someone"
+	if msUser := ms.Edges.User; msUser != nil {
+		if msUser.ChatID != "" {
+			userTag = fmt.Sprintf("<@%s>", msUser.ChatID)
+		} else {
+			userTag = msUser.Name
 		}
+	}
 
-		metadata := slack.SlackMetadata{
-			EventType: "incident_milestone",
-			EventPayload: map[string]interface{}{
-				"milestone_id": ev.MilestoneId,
-			},
-		}
+	// TODO: format nicely
+	milestoneText := ms.Kind.String()
 
-		_, _, msgErr := client.PostMessageContext(ctx, inc.ChatChannelID,
-			slack.MsgOptionBlocks(blocks...), slack.MsgOptionMetadata(metadata))
-		if msgErr != nil {
-			return fmt.Errorf("failed to post announcement message: %w", msgErr)
-		}
+	descText := ""
+	if ms.Description != "" {
+		descText = fmt.Sprintf(" with a note: \"%s\"", ms.Description)
+	}
 
-		return nil
-	})
+	text := fmt.Sprintf("%s marked incident as *%s*%s", userTag, milestoneText, descText)
+	textBlock := slack.NewTextBlockObject("mrkdwn", text, false, false)
+	blocks := []slack.Block{
+		slack.NewSectionBlock(textBlock, nil, nil),
+	}
+
+	msgErr := h.chat.sendMessage(ctx, inc.ChatChannelID, slack.MsgOptionBlocks(blocks...))
+	if msgErr != nil {
+		return fmt.Errorf("failed to post announcement message: %w", msgErr)
+	}
+
+	return nil
 }
 
 func getIncidentChannelName(inc *ent.Incident) string {

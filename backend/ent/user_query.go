@@ -17,6 +17,7 @@ import (
 	"github.com/rezible/rezible/ent/eventannotation"
 	"github.com/rezible/rezible/ent/incident"
 	"github.com/rezible/rezible/ent/incidentdebrief"
+	"github.com/rezible/rezible/ent/incidentmilestone"
 	"github.com/rezible/rezible/ent/incidentroleassignment"
 	"github.com/rezible/rezible/ent/oncallroster"
 	"github.com/rezible/rezible/ent/oncallscheduleparticipant"
@@ -44,6 +45,7 @@ type UserQuery struct {
 	withOncallShifts                 *OncallShiftQuery
 	withEventAnnotations             *EventAnnotationQuery
 	withIncidents                    *IncidentQuery
+	withIncidentMilestones           *IncidentMilestoneQuery
 	withIncidentDebriefs             *IncidentDebriefQuery
 	withAssignedTasks                *TaskQuery
 	withCreatedTasks                 *TaskQuery
@@ -235,6 +237,28 @@ func (_q *UserQuery) QueryIncidents() *IncidentQuery {
 			sqlgraph.From(user.Table, user.FieldID, selector),
 			sqlgraph.To(incident.Table, incident.FieldID),
 			sqlgraph.Edge(sqlgraph.M2M, false, user.IncidentsTable, user.IncidentsPrimaryKey...),
+		)
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryIncidentMilestones chains the current query on the "incident_milestones" edge.
+func (_q *UserQuery) QueryIncidentMilestones() *IncidentMilestoneQuery {
+	query := (&IncidentMilestoneClient{config: _q.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := _q.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := _q.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(user.Table, user.FieldID, selector),
+			sqlgraph.To(incidentmilestone.Table, incidentmilestone.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, user.IncidentMilestonesTable, user.IncidentMilestonesColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
@@ -595,6 +619,7 @@ func (_q *UserQuery) Clone() *UserQuery {
 		withOncallShifts:                 _q.withOncallShifts.Clone(),
 		withEventAnnotations:             _q.withEventAnnotations.Clone(),
 		withIncidents:                    _q.withIncidents.Clone(),
+		withIncidentMilestones:           _q.withIncidentMilestones.Clone(),
 		withIncidentDebriefs:             _q.withIncidentDebriefs.Clone(),
 		withAssignedTasks:                _q.withAssignedTasks.Clone(),
 		withCreatedTasks:                 _q.withCreatedTasks.Clone(),
@@ -683,6 +708,17 @@ func (_q *UserQuery) WithIncidents(opts ...func(*IncidentQuery)) *UserQuery {
 		opt(query)
 	}
 	_q.withIncidents = query
+	return _q
+}
+
+// WithIncidentMilestones tells the query-builder to eager-load the nodes that are connected to
+// the "incident_milestones" edge. The optional arguments are used to configure the query builder of the edge.
+func (_q *UserQuery) WithIncidentMilestones(opts ...func(*IncidentMilestoneQuery)) *UserQuery {
+	query := (&IncidentMilestoneClient{config: _q.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	_q.withIncidentMilestones = query
 	return _q
 }
 
@@ -847,7 +883,7 @@ func (_q *UserQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*User, e
 	var (
 		nodes       = []*User{}
 		_spec       = _q.querySpec()
-		loadedTypes = [14]bool{
+		loadedTypes = [15]bool{
 			_q.withTenant != nil,
 			_q.withTeams != nil,
 			_q.withWatchedOncallRosters != nil,
@@ -855,6 +891,7 @@ func (_q *UserQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*User, e
 			_q.withOncallShifts != nil,
 			_q.withEventAnnotations != nil,
 			_q.withIncidents != nil,
+			_q.withIncidentMilestones != nil,
 			_q.withIncidentDebriefs != nil,
 			_q.withAssignedTasks != nil,
 			_q.withCreatedTasks != nil,
@@ -932,6 +969,15 @@ func (_q *UserQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*User, e
 		if err := _q.loadIncidents(ctx, query, nodes,
 			func(n *User) { n.Edges.Incidents = []*Incident{} },
 			func(n *User, e *Incident) { n.Edges.Incidents = append(n.Edges.Incidents, e) }); err != nil {
+			return nil, err
+		}
+	}
+	if query := _q.withIncidentMilestones; query != nil {
+		if err := _q.loadIncidentMilestones(ctx, query, nodes,
+			func(n *User) { n.Edges.IncidentMilestones = []*IncidentMilestone{} },
+			func(n *User, e *IncidentMilestone) {
+				n.Edges.IncidentMilestones = append(n.Edges.IncidentMilestones, e)
+			}); err != nil {
 			return nil, err
 		}
 	}
@@ -1292,6 +1338,36 @@ func (_q *UserQuery) loadIncidents(ctx context.Context, query *IncidentQuery, no
 		for kn := range nodes {
 			assign(kn, n)
 		}
+	}
+	return nil
+}
+func (_q *UserQuery) loadIncidentMilestones(ctx context.Context, query *IncidentMilestoneQuery, nodes []*User, init func(*User), assign func(*User, *IncidentMilestone)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[uuid.UUID]*User)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+		if init != nil {
+			init(nodes[i])
+		}
+	}
+	if len(query.ctx.Fields) > 0 {
+		query.ctx.AppendFieldOnce(incidentmilestone.FieldUserID)
+	}
+	query.Where(predicate.IncidentMilestone(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(user.IncidentMilestonesColumn), fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.UserID
+		node, ok := nodeids[fk]
+		if !ok {
+			return fmt.Errorf(`unexpected referenced foreign-key "user_id" returned %v for node %v`, fk, n.ID)
+		}
+		assign(node, n)
 	}
 	return nil
 }

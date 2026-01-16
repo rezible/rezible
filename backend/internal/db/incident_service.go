@@ -8,6 +8,7 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/gosimple/slug"
+	im "github.com/rezible/rezible/ent/incidentmilestone"
 	"github.com/rs/zerolog/log"
 
 	rez "github.com/rezible/rezible"
@@ -124,6 +125,7 @@ func (s *IncidentService) Set(ctx context.Context, id uuid.UUID, setFn func(*ent
 		}
 		curr = inc
 	}
+	isCreate := id == uuid.Nil && curr == nil
 
 	var generatedUniqueSlug string
 	if curr == nil {
@@ -145,8 +147,7 @@ func (s *IncidentService) Set(ctx context.Context, id uuid.UUID, setFn func(*ent
 	updateTx := func(tx *ent.Tx) error {
 		var mutator ent.EntityMutator[*ent.Incident, *ent.IncidentMutation]
 		if curr == nil {
-			id = uuid.New()
-			mutator = tx.Incident.Create().SetID(id)
+			mutator = tx.Incident.Create().SetID(uuid.New())
 		} else {
 			mutator = tx.Incident.UpdateOne(curr)
 		}
@@ -162,7 +163,11 @@ func (s *IncidentService) Set(ctx context.Context, id uuid.UUID, setFn func(*ent
 		if saveErr != nil {
 			return fmt.Errorf("save incident: %w", saveErr)
 		}
-		updateEvents = append(updateEvents, rez.EventOnIncidentUpdated{IncidentId: updated.ID})
+		incEvent := rez.EventOnIncidentUpdated{
+			Created:    isCreate,
+			IncidentId: updated.ID,
+		}
+		updateEvents = append(updateEvents, incEvent)
 
 		for _, edgeMut := range edgeMuts {
 			v, edgeErr := tx.Client().Mutate(ctx, edgeMut)
@@ -245,7 +250,10 @@ func (s *IncidentService) GetIncidentSeverity(ctx context.Context, id uuid.UUID)
 }
 
 func (s *IncidentService) GetIncidentMilestone(ctx context.Context, id uuid.UUID) (*ent.IncidentMilestone, error) {
-	return s.db.IncidentMilestone.Get(ctx, id)
+	query := s.db.IncidentMilestone.Query().
+		Where(im.ID(id)).
+		WithUser()
+	return query.Only(ctx)
 }
 
 func (s *IncidentService) SetIncidentMilestone(ctx context.Context, id uuid.UUID, setFn func(*ent.IncidentMilestoneMutation)) (*ent.IncidentMilestone, error) {

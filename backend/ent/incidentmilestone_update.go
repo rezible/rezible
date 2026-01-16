@@ -15,6 +15,7 @@ import (
 	"github.com/rezible/rezible/ent/incident"
 	"github.com/rezible/rezible/ent/incidentmilestone"
 	"github.com/rezible/rezible/ent/predicate"
+	"github.com/rezible/rezible/ent/user"
 )
 
 // IncidentMilestoneUpdate is the builder for updating IncidentMilestone entities.
@@ -41,6 +42,20 @@ func (_u *IncidentMilestoneUpdate) SetIncidentID(v uuid.UUID) *IncidentMilestone
 func (_u *IncidentMilestoneUpdate) SetNillableIncidentID(v *uuid.UUID) *IncidentMilestoneUpdate {
 	if v != nil {
 		_u.SetIncidentID(*v)
+	}
+	return _u
+}
+
+// SetUserID sets the "user_id" field.
+func (_u *IncidentMilestoneUpdate) SetUserID(v uuid.UUID) *IncidentMilestoneUpdate {
+	_u.mutation.SetUserID(v)
+	return _u
+}
+
+// SetNillableUserID sets the "user_id" field if the given value is not nil.
+func (_u *IncidentMilestoneUpdate) SetNillableUserID(v *uuid.UUID) *IncidentMilestoneUpdate {
+	if v != nil {
+		_u.SetUserID(*v)
 	}
 	return _u
 }
@@ -130,6 +145,11 @@ func (_u *IncidentMilestoneUpdate) SetIncident(v *Incident) *IncidentMilestoneUp
 	return _u.SetIncidentID(v.ID)
 }
 
+// SetUser sets the "user" edge to the User entity.
+func (_u *IncidentMilestoneUpdate) SetUser(v *User) *IncidentMilestoneUpdate {
+	return _u.SetUserID(v.ID)
+}
+
 // Mutation returns the IncidentMilestoneMutation object of the builder.
 func (_u *IncidentMilestoneUpdate) Mutation() *IncidentMilestoneMutation {
 	return _u.mutation
@@ -138,6 +158,12 @@ func (_u *IncidentMilestoneUpdate) Mutation() *IncidentMilestoneMutation {
 // ClearIncident clears the "incident" edge to the Incident entity.
 func (_u *IncidentMilestoneUpdate) ClearIncident() *IncidentMilestoneUpdate {
 	_u.mutation.ClearIncident()
+	return _u
+}
+
+// ClearUser clears the "user" edge to the User entity.
+func (_u *IncidentMilestoneUpdate) ClearUser() *IncidentMilestoneUpdate {
+	_u.mutation.ClearUser()
 	return _u
 }
 
@@ -180,6 +206,9 @@ func (_u *IncidentMilestoneUpdate) check() error {
 	}
 	if _u.mutation.IncidentCleared() && len(_u.mutation.IncidentIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "IncidentMilestone.incident"`)
+	}
+	if _u.mutation.UserCleared() && len(_u.mutation.UserIDs()) > 0 {
+		return errors.New(`ent: clearing a required unique edge "IncidentMilestone.user"`)
 	}
 	return nil
 }
@@ -255,6 +284,35 @@ func (_u *IncidentMilestoneUpdate) sqlSave(ctx context.Context) (_node int, err 
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	if _u.mutation.UserCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   incidentmilestone.UserTable,
+			Columns: []string{incidentmilestone.UserColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.UserIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   incidentmilestone.UserTable,
+			Columns: []string{incidentmilestone.UserColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
 	_spec.AddModifiers(_u.modifiers...)
 	if _node, err = sqlgraph.UpdateNodes(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
@@ -287,6 +345,20 @@ func (_u *IncidentMilestoneUpdateOne) SetIncidentID(v uuid.UUID) *IncidentMilest
 func (_u *IncidentMilestoneUpdateOne) SetNillableIncidentID(v *uuid.UUID) *IncidentMilestoneUpdateOne {
 	if v != nil {
 		_u.SetIncidentID(*v)
+	}
+	return _u
+}
+
+// SetUserID sets the "user_id" field.
+func (_u *IncidentMilestoneUpdateOne) SetUserID(v uuid.UUID) *IncidentMilestoneUpdateOne {
+	_u.mutation.SetUserID(v)
+	return _u
+}
+
+// SetNillableUserID sets the "user_id" field if the given value is not nil.
+func (_u *IncidentMilestoneUpdateOne) SetNillableUserID(v *uuid.UUID) *IncidentMilestoneUpdateOne {
+	if v != nil {
+		_u.SetUserID(*v)
 	}
 	return _u
 }
@@ -376,6 +448,11 @@ func (_u *IncidentMilestoneUpdateOne) SetIncident(v *Incident) *IncidentMileston
 	return _u.SetIncidentID(v.ID)
 }
 
+// SetUser sets the "user" edge to the User entity.
+func (_u *IncidentMilestoneUpdateOne) SetUser(v *User) *IncidentMilestoneUpdateOne {
+	return _u.SetUserID(v.ID)
+}
+
 // Mutation returns the IncidentMilestoneMutation object of the builder.
 func (_u *IncidentMilestoneUpdateOne) Mutation() *IncidentMilestoneMutation {
 	return _u.mutation
@@ -384,6 +461,12 @@ func (_u *IncidentMilestoneUpdateOne) Mutation() *IncidentMilestoneMutation {
 // ClearIncident clears the "incident" edge to the Incident entity.
 func (_u *IncidentMilestoneUpdateOne) ClearIncident() *IncidentMilestoneUpdateOne {
 	_u.mutation.ClearIncident()
+	return _u
+}
+
+// ClearUser clears the "user" edge to the User entity.
+func (_u *IncidentMilestoneUpdateOne) ClearUser() *IncidentMilestoneUpdateOne {
+	_u.mutation.ClearUser()
 	return _u
 }
 
@@ -439,6 +522,9 @@ func (_u *IncidentMilestoneUpdateOne) check() error {
 	}
 	if _u.mutation.IncidentCleared() && len(_u.mutation.IncidentIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "IncidentMilestone.incident"`)
+	}
+	if _u.mutation.UserCleared() && len(_u.mutation.UserIDs()) > 0 {
+		return errors.New(`ent: clearing a required unique edge "IncidentMilestone.user"`)
 	}
 	return nil
 }
@@ -524,6 +610,35 @@ func (_u *IncidentMilestoneUpdateOne) sqlSave(ctx context.Context) (_node *Incid
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(incident.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.UserCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   incidentmilestone.UserTable,
+			Columns: []string{incidentmilestone.UserColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.UserIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   incidentmilestone.UserTable,
+			Columns: []string{incidentmilestone.UserColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {

@@ -129,7 +129,11 @@ func (sml *SocketModeListener) handleEvent(ctx context.Context, evt *socketmode.
 		if !ok {
 			return false, nil, fmt.Errorf("invalid slash command data")
 		}
-		return sml.chatSvc.handleSlashCommand(ctx, &cmd)
+		userCtx, userErr := sml.chatSvc.getChatUserContext(ctx, cmd.UserID)
+		if userErr != nil {
+			return false, nil, fmt.Errorf("failed to lookup user: %w", userErr)
+		}
+		return sml.chatSvc.handleSlashCommand(userCtx, &cmd)
 	default:
 		log.Warn().Str("type", string(evt.Type)).Msg("skipped socketmode event")
 		return false, nil, nil

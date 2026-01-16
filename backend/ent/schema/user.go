@@ -46,6 +46,7 @@ func (User) Edges() []ent.Edge {
 
 		edge.To("incidents", Incident.Type).
 			Through("role_assignments", IncidentRoleAssignment.Type),
+		edge.To("incident_milestones", IncidentMilestone.Type),
 
 		edge.To("incident_debriefs", IncidentDebrief.Type),
 

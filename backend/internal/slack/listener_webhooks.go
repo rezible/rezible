@@ -128,11 +128,28 @@ func (wh *WebhookEventHandler) onCommandsWebhook(w http.ResponseWriter, r *http.
 }
 
 func (wh *WebhookEventHandler) handleCommandEvent(ctx context.Context, cmd *slack.SlashCommand) error {
-	_, _, handleErr := wh.chat.handleSlashCommand(ctx, cmd)
+	var userErr error
+	ctx, userErr = wh.chat.getChatUserContext(ctx, cmd.UserID)
+	if userErr != nil {
+		return fmt.Errorf("failed to lookup user: %w", userErr)
+	}
+	handled, payload, handleErr := wh.chat.handleSlashCommand(ctx, cmd)
 	if handleErr != nil {
 		log.Error().Err(handleErr).Msg("failed to handle slash command")
+		return handleErr
 	}
-	return handleErr
+	if !handled {
+		log.Warn().Str("command", cmd.Command).Msg("unknown slack command, ignoring")
+		return nil
+	}
+	if payload != nil {
+		return wh.chat.withClient(ctx, func(client *slack.Client) error {
+			msg := slack.MsgOptionBlocks(payload.Blocks.BlockSet...)
+			_, postErr := client.PostEphemeralContext(ctx, cmd.ChannelID, cmd.UserID, msg)
+			return postErr
+		})
+	}
+	return nil
 }
 
 func (wh *WebhookEventHandler) onInteractionsWebhook(w http.ResponseWriter, r *http.Request) {

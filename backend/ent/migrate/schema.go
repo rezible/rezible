@@ -762,13 +762,14 @@ var (
 	// IncidentMilestonesColumns holds the columns for the "incident_milestones" table.
 	IncidentMilestonesColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID},
-		{Name: "kind", Type: field.TypeEnum, Enums: []string{"impact", "detection", "opened", "response", "mitigation", "resolution"}},
+		{Name: "kind", Type: field.TypeEnum, Enums: []string{"impact", "detected", "opened", "mitigation", "resolution"}},
 		{Name: "timestamp", Type: field.TypeTime},
 		{Name: "description", Type: field.TypeString, Nullable: true},
 		{Name: "source", Type: field.TypeString, Nullable: true},
 		{Name: "metadata", Type: field.TypeJSON, Nullable: true},
 		{Name: "incident_id", Type: field.TypeUUID},
 		{Name: "tenant_id", Type: field.TypeInt},
+		{Name: "user_id", Type: field.TypeUUID},
 	}
 	// IncidentMilestonesTable holds the schema information for the "incident_milestones" table.
 	IncidentMilestonesTable = &schema.Table{
@@ -786,6 +787,12 @@ var (
 				Symbol:     "incident_milestones_tenants_tenant",
 				Columns:    []*schema.Column{IncidentMilestonesColumns[7]},
 				RefColumns: []*schema.Column{TenantsColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+			{
+				Symbol:     "incident_milestones_users_incident_milestones",
+				Columns:    []*schema.Column{IncidentMilestonesColumns[8]},
+				RefColumns: []*schema.Column{UsersColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
 		},
@@ -2843,6 +2850,7 @@ func init() {
 	IncidentLinksTable.ForeignKeys[2].RefTable = IncidentsTable
 	IncidentMilestonesTable.ForeignKeys[0].RefTable = IncidentsTable
 	IncidentMilestonesTable.ForeignKeys[1].RefTable = TenantsTable
+	IncidentMilestonesTable.ForeignKeys[2].RefTable = UsersTable
 	IncidentRolesTable.ForeignKeys[0].RefTable = TenantsTable
 	IncidentRoleAssignmentsTable.ForeignKeys[0].RefTable = TenantsTable
 	IncidentRoleAssignmentsTable.ForeignKeys[1].RefTable = IncidentsTable
