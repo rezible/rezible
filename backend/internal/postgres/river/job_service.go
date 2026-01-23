@@ -44,11 +44,10 @@ func NewJobService(pool *pgxpool.Pool) (*JobService, error) {
 	}
 
 	cfg := &river.Config{
-		Middleware:   middleware,
-		Workers:      jobs.Workers,
-		Queues:       queues,
-		Logger:       slog.New(slogOpts.NewZerologHandler()),
-		PeriodicJobs: jobs.PeriodicJobs,
+		Middleware: middleware,
+		Workers:    jobs.Workers,
+		Queues:     queues,
+		Logger:     slog.New(slogOpts.NewZerologHandler()),
 	}
 
 	client, clientErr := river.NewClient(riverpgxv5.New(pool), cfg)

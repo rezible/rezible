@@ -19,7 +19,7 @@ func newIntegrationsHandler(integrations rez.IntegrationsService) *integrationsH
 func (h *integrationsHandler) ListSupported(ctx context.Context, req *oapi.ListSupportedIntegrationsRequest) (*oapi.ListSupportedIntegrationsResponse, error) {
 	var resp oapi.ListSupportedIntegrationsResponse
 
-	supportedIntegrations := integrations.GetSupported()
+	supportedIntegrations := integrations.GetEnabled()
 	resp.Body.Data = make([]oapi.SupportedIntegration, len(supportedIntegrations))
 	for i, detail := range supportedIntegrations {
 		resp.Body.Data[i] = oapi.SupportedIntegration{

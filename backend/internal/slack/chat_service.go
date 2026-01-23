@@ -22,15 +22,15 @@ type ChatService struct {
 	components   rez.SystemComponentsService
 }
 
-func NewChatService(jobSvc rez.JobsService, messages rez.MessageService, integrations rez.IntegrationsService, users rez.UserService, incidents rez.IncidentService, annos rez.EventAnnotationsService, components rez.SystemComponentsService) (*ChatService, error) {
+func NewChatService(ctx context.Context, svcs *rez.Services) (*ChatService, error) {
 	s := &ChatService{
-		jobs:         jobSvc,
-		messages:     messages,
-		integrations: integrations,
-		users:        users,
-		incidents:    incidents,
-		annos:        annos,
-		components:   components,
+		jobs:         svcs.Jobs,
+		messages:     svcs.Messages,
+		integrations: svcs.Integrations,
+		users:        svcs.Users,
+		incidents:    svcs.Incidents,
+		annos:        svcs.EventAnnotations,
+		components:   svcs.Components,
 	}
 
 	incMsgHandler := newIncidentChatEventHandler(s)
@@ -39,10 +39,6 @@ func NewChatService(jobSvc rez.JobsService, messages rez.MessageService, integra
 	}
 
 	return s, nil
-}
-
-func (s *ChatService) EnableEventListener() bool {
-	return UseSocketMode()
 }
 
 func (s *ChatService) withClient(ctx context.Context, fn func(*slack.Client) error) error {

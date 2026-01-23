@@ -8,13 +8,13 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/ThreeDotsLabs/watermill/components/cqrs"
 	"github.com/rezible/rezible/ent"
 	"github.com/rezible/rezible/jobs"
-	"golang.org/x/oauth2"
 
+	"github.com/ThreeDotsLabs/watermill/components/cqrs"
 	"github.com/google/uuid"
 	"github.com/texm/prosemirror-go"
+	"golang.org/x/oauth2"
 )
 
 var (
@@ -61,12 +61,33 @@ type Database interface {
 	Close() error
 }
 
-type SetMutationFn[T any] = func(*ent.Tx, T) error
+type Services struct {
+	Jobs             JobsService
+	Messages         MessageService
+	Auth             AuthService
+	Organizations    OrganizationService
+	Integrations     IntegrationsService
+	Users            UserService
+	Teams            TeamService
+	Incidents        IncidentService
+	Debriefs         DebriefService
+	OncallRosters    OncallRostersService
+	OncallShifts     OncallShiftsService
+	OncallMetrics    OncallMetricsService
+	Events           EventsService
+	EventAnnotations EventAnnotationsService
+	Documents        DocumentsService
+	Retros           RetrospectiveService
+	Components       SystemComponentsService
+	Alerts           AlertService
+	Playbooks        PlaybookService
+}
 
+// TODO: remove this
 type ListParams = ent.ListParams
 
 type (
-	PackageIntegrationsDetail interface {
+	IntegrationPackage interface {
 		Name() string
 		Enabled() bool
 		SupportedDataKinds() []string
@@ -78,6 +99,14 @@ type (
 	IntegrationWithOAuth2SetupFlow interface {
 		OAuth2Config() *oauth2.Config
 		GetIntegrationConfigFromToken(*oauth2.Token) (any, error)
+	}
+
+	IntegrationWithEventListeners interface {
+		EventListeners() map[string]EventListener
+	}
+
+	IntegrationWithWebhookHandlers interface {
+		WebhookHandlers() map[string]http.Handler
 	}
 
 	ListIntegrationsParams struct {
@@ -289,9 +318,6 @@ type (
 		// TODO: this should just be converted to *ContentNode by DocumentService
 		SendOncallHandover(ctx context.Context, params SendOncallHandoverParams) error
 		SendOncallHandoverReminder(context.Context, *ent.OncallShift) error
-
-		EnableEventListener() bool
-		MakeEventListener() (EventListener, error)
 	}
 )
 

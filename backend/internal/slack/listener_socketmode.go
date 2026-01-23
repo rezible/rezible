@@ -20,14 +20,6 @@ type SocketModeListener struct {
 	cancelFn  context.CancelFunc
 }
 
-func (s *ChatService) MakeEventListener() (rez.EventListener, error) {
-	l, lErr := NewSocketModeEventListener(s)
-	if lErr != nil {
-		return nil, lErr
-	}
-	return l, nil
-}
-
 func NewSocketModeEventListener(chatSvc *ChatService) (*SocketModeListener, error) {
 	if !rez.Config.SingleTenantMode() {
 		return nil, errors.New("can't use socket mode in multi-tenant mode")

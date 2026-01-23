@@ -77,6 +77,7 @@ const dataKinds = [
 ];
 
 const getEnabledDataKinds = (dk: ConfiguredIntegrationAttributes["dataKinds"]) => {
+    if (!dk) return [];
     return Object.entries(dk).filter(([_, isEnabled]) => isEnabled).map(([kind, _]) => kind);
 }
 

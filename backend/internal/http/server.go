@@ -60,8 +60,8 @@ func ensureSlashPrefix(s string) string {
 	return "/" + s
 }
 
-func (s *Server) AddWebhookPathHandler(path string, handler http.Handler) {
-	s.webhooks.Mount(ensureSlashPrefix(path), handler)
+func (s *Server) AddWebhookHandler(name string, handler http.Handler) {
+	s.webhooks.Mount(ensureSlashPrefix(name), handler)
 }
 
 func (s *Server) MountMCP(h mcp.Handler) {

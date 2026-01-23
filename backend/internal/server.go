@@ -6,8 +6,9 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/rezible/rezible/ent"
+	"github.com/rezible/rezible/integrations"
 	"github.com/rezible/rezible/jobs"
-	oapiv1 "github.com/rezible/rezible/openapi/v1"
 	"github.com/rs/zerolog/log"
 	"github.com/sourcegraph/conc/pool"
 
@@ -21,7 +22,6 @@ import (
 	"github.com/rezible/rezible/internal/postgres"
 	"github.com/rezible/rezible/internal/postgres/river"
 	"github.com/rezible/rezible/internal/prosemirror"
-	"github.com/rezible/rezible/internal/slack"
 	"github.com/rezible/rezible/internal/watermill"
 )
 
@@ -98,162 +98,48 @@ func (s *Server) stop() error {
 }
 
 func (s *Server) setup(ctx context.Context) error {
-	dbConn, dbConnErr := s.OpenDatabase(ctx)
-	if dbConnErr != nil {
-		return fmt.Errorf("database: %w", dbConnErr)
+	conn, dbcErr := OpenDatabase(ctx)
+	if dbcErr != nil {
+		return dbcErr
+	}
+	s.addListener("database", db.NewListener(conn))
+
+	client := conn.Client()
+
+	svcs, svcsErr := s.makeServices(ctx, conn, client)
+	if svcsErr != nil {
+		return fmt.Errorf("services: %w", svcsErr)
 	}
 
-	dbc := dbConn.Client()
+	// TODO: this shouldn't need the db client
+	apiv1Handler := apiv1.NewHandler(client, svcs)
 
-	jobSvc, jobSvcErr := s.makeJobService(dbConn)
-	if jobSvcErr != nil {
-		return fmt.Errorf("job service: %w", jobSvcErr)
+	srv := http.NewServer(svcs.Auth)
+	srv.MountOpenApiV1(apiv1Handler)
+	srv.MountMCP(eino.NewMCPHandler(svcs.Auth))
+
+	frontendFS, feFSErr := http.GetEmbeddedFrontendFiles()
+	if feFSErr != nil {
+		return fmt.Errorf("failed to get embedded frontend files: %w", feFSErr)
+	}
+	srv.MountStaticFrontend(frontendFS)
+	s.addListener("http_server", srv)
+
+	if intgsErr := integrations.Setup(ctx, svcs); intgsErr != nil {
+		return fmt.Errorf("integrations: %w", intgsErr)
 	}
 
-	msgs, msgsErr := s.makeMessageService()
-	if msgsErr != nil {
-		return fmt.Errorf("watermill.NewMessageService: %w", msgsErr)
-	}
-
-	syncer := datasync.NewSyncer(dbc)
-	jobs.RegisterPeriodicJob(jobs.SyncAllTenantIntegrationsDataPeriodicJob)
-	jobs.RegisterWorkerFunc(syncer.SyncIntegrationsData)
-
-	intgs, intgsErr := db.NewIntegrationsService(dbc, jobSvc, syncer)
-	if intgsErr != nil {
-		return fmt.Errorf("db.NewIntegrationsService: %w", intgsErr)
-	}
-
-	orgs, orgsErr := db.NewOrganizationsService(dbc, jobSvc)
-	if orgsErr != nil {
-		return fmt.Errorf("postgres.NewOrganizationsService: %w", orgsErr)
-	}
-
-	users, usersErr := db.NewUserService(dbc, orgs)
-	if usersErr != nil {
-		return fmt.Errorf("postgres.NewUserService: %w", usersErr)
-	}
-
-	auth, authErr := http.NewAuthSessionService(ctx, orgs, users)
-	if authErr != nil {
-		return fmt.Errorf("http.NewAuthSessionService: %w", authErr)
-	}
-
-	events, eventsErr := db.NewEventsService(dbc, users)
-	if eventsErr != nil {
-		return fmt.Errorf("postgres.NewEventsService: %w", eventsErr)
-	}
-
-	annos, annosErr := db.NewEventAnnotationsService(dbc, events)
-	if annosErr != nil {
-		return fmt.Errorf("postgres.NewEventAnnotationsService: %w", annosErr)
-	}
-
-	_, teamsErr := db.NewTeamService(dbc)
-	if teamsErr != nil {
-		return fmt.Errorf("postgres.NewTeamService: %w", teamsErr)
-	}
-
-	_, nodesErr := prosemirror.NewNodeService()
-	if nodesErr != nil {
-		return fmt.Errorf("prosemirror.NewNodeService: %w", nodesErr)
-	}
-
-	ai, aiErr := eino.NewAiAgentService(ctx)
-	if aiErr != nil {
-		return fmt.Errorf("eino.NewAiAgentService: %w", aiErr)
-	}
-
-	incidents, incidentsErr := db.NewIncidentService(dbc, jobSvc, msgs, users)
-	if incidentsErr != nil {
-		return fmt.Errorf("postgres.NewIncidentService: %w", incidentsErr)
-	}
-
-	rosters, rostersErr := db.NewOncallRostersService(dbc, jobSvc)
-	if rostersErr != nil {
-		return fmt.Errorf("postgres.NewOncallRostersService: %w", rostersErr)
-	}
-
-	components, componentsErr := db.NewSystemComponentsService(dbc)
-	if componentsErr != nil {
-		return fmt.Errorf("postgres.NewSystemComponentsService: %w", componentsErr)
-	}
-
-	chat, chatErr := slack.NewChatService(jobSvc, msgs, intgs, users, incidents, annos, components)
-	if chatErr != nil {
-		return fmt.Errorf("postgres.NewChatService: %w", chatErr)
-	}
-
-	shifts, shiftsErr := db.NewOncallShiftsService(dbc, jobSvc)
-	if shiftsErr != nil {
-		return fmt.Errorf("postgres.NewOncallShiftsService: %w", shiftsErr)
-	}
-	jobs.RegisterPeriodicJob(jobs.ScanOncallShiftsPeriodicJob)
-	jobs.RegisterWorkerFunc(shifts.HandlePeriodicScanShifts)
-	jobs.RegisterWorkerFunc(shifts.HandleEnsureShiftHandoverReminderSent)
-	jobs.RegisterWorkerFunc(shifts.HandleEnsureShiftHandoverSent)
-
-	oncallMetrics, oncallMetricsErr := db.NewOncallMetricsService(dbc, jobSvc, shifts)
-	if oncallMetricsErr != nil {
-		return fmt.Errorf("postgres.NewOncallMetricsService: %w", oncallMetricsErr)
-	}
-	jobs.RegisterWorkerFunc(oncallMetrics.HandleGenerateShiftMetrics)
-
-	debriefs, debriefsErr := db.NewDebriefService(dbc, jobSvc, ai)
-	if debriefsErr != nil {
-		return fmt.Errorf("postgres.NewDebriefService: %w", debriefsErr)
-	}
-	jobs.RegisterWorkerFunc(debriefs.HandleGenerateDebriefResponse)
-	jobs.RegisterWorkerFunc(debriefs.HandleGenerateSuggestions)
-	jobs.RegisterWorkerFunc(debriefs.HandleSendDebriefRequests)
-
-	retros, retrosErr := db.NewRetrospectiveService(dbc)
-	if retrosErr != nil {
-		return fmt.Errorf("postgres.NewRetrospectiveService: %w", retrosErr)
-	}
-
-	alerts, alertsErr := db.NewAlertService(dbc)
-	if alertsErr != nil {
-		return fmt.Errorf("postgres.NewAlertService: %w", alertsErr)
-	}
-
-	playbooks, playbooksErr := db.NewPlaybookService(dbc)
-	if playbooksErr != nil {
-		return fmt.Errorf("postgres.NewPlaybookService: %w", playbooksErr)
-	}
-
-	docs, docsErr := db.NewDocumentsService(dbc, auth, users)
-	if docsErr != nil {
-		return fmt.Errorf("db.NewDocumentsService: %w", docsErr)
-	}
-
-	apiv1Handler := apiv1.NewHandler(
-		dbc,
-		auth,
-		orgs,
-		intgs,
-		users,
-		incidents,
-		debriefs,
-		rosters,
-		shifts,
-		oncallMetrics,
-		events,
-		annos,
-		docs,
-		retros,
-		components,
-		alerts,
-		playbooks,
-	)
-
-	srv, srvErr := s.makeHttpServer(auth, apiv1Handler)
-	if srvErr != nil {
-		return fmt.Errorf("http server: %w", srvErr)
-	}
-
-	if chatEventsErr := s.setupChatEventListener(chat, srv); chatEventsErr != nil {
-		return fmt.Errorf("chatEvents: %w", chatEventsErr)
+	for _, p := range integrations.GetEnabled() {
+		if elIntegration, ok := p.(rez.IntegrationWithEventListeners); ok {
+			for name, l := range elIntegration.EventListeners() {
+				s.addListener(name, l)
+			}
+		}
+		if whIntegration, ok := p.(rez.IntegrationWithWebhookHandlers); ok {
+			for name, h := range whIntegration.WebhookHandlers() {
+				srv.AddWebhookHandler(name, h)
+			}
+		}
 	}
 
 	return nil
@@ -266,14 +152,145 @@ func OpenDatabase(ctx context.Context) (rez.Database, error) {
 	}
 	return dbc, nil
 }
+func (s *Server) makeServices(ctx context.Context, dbConn rez.Database, dbc *ent.Client) (*rez.Services, error) {
+	syncer := datasync.NewSyncerService(dbc)
+	jobs.RegisterPeriodicJob(jobs.SyncAllTenantIntegrationsDataPeriodicJob)
+	jobs.RegisterWorkerFunc(syncer.SyncIntegrationsData)
 
-func (s *Server) OpenDatabase(ctx context.Context) (rez.Database, error) {
-	dbc, dbcErr := OpenDatabase(ctx)
-	if dbcErr != nil {
-		return nil, dbcErr
+	jobSvc, jobSvcErr := s.makeJobService(dbConn)
+	if jobSvcErr != nil {
+		return nil, fmt.Errorf("job service: %w", jobSvcErr)
 	}
-	s.addListener("database", db.NewListener(dbc))
-	return dbc, nil
+
+	msgs, msgsErr := s.makeMessageService()
+	if msgsErr != nil {
+		return nil, fmt.Errorf("watermill.NewMessageService: %w", msgsErr)
+	}
+
+	intgs, intgsErr := db.NewIntegrationsService(dbc, jobSvc, syncer)
+	if intgsErr != nil {
+		return nil, fmt.Errorf("db.NewIntegrationsService: %w", intgsErr)
+	}
+
+	orgs, orgsErr := db.NewOrganizationsService(dbc, jobSvc)
+	if orgsErr != nil {
+		return nil, fmt.Errorf("postgres.NewOrganizationsService: %w", orgsErr)
+	}
+
+	users, usersErr := db.NewUserService(dbc, orgs)
+	if usersErr != nil {
+		return nil, fmt.Errorf("postgres.NewUserService: %w", usersErr)
+	}
+
+	auth, authErr := http.NewAuthSessionService(ctx, orgs, users)
+	if authErr != nil {
+		return nil, fmt.Errorf("http.NewAuthSessionService: %w", authErr)
+	}
+
+	events, eventsErr := db.NewEventsService(dbc, users)
+	if eventsErr != nil {
+		return nil, fmt.Errorf("postgres.NewEventsService: %w", eventsErr)
+	}
+
+	annos, annosErr := db.NewEventAnnotationsService(dbc, events)
+	if annosErr != nil {
+		return nil, fmt.Errorf("postgres.NewEventAnnotationsService: %w", annosErr)
+	}
+
+	teams, teamsErr := db.NewTeamService(dbc)
+	if teamsErr != nil {
+		return nil, fmt.Errorf("postgres.NewTeamService: %w", teamsErr)
+	}
+
+	_, nodesErr := prosemirror.NewNodeService()
+	if nodesErr != nil {
+		return nil, fmt.Errorf("prosemirror.NewNodeService: %w", nodesErr)
+	}
+
+	ai, aiErr := eino.NewAiAgentService(ctx)
+	if aiErr != nil {
+		return nil, fmt.Errorf("eino.NewAiAgentService: %w", aiErr)
+	}
+
+	incidents, incidentsErr := db.NewIncidentService(dbc, jobSvc, msgs, users)
+	if incidentsErr != nil {
+		return nil, fmt.Errorf("postgres.NewIncidentService: %w", incidentsErr)
+	}
+
+	rosters, rostersErr := db.NewOncallRostersService(dbc, jobSvc)
+	if rostersErr != nil {
+		return nil, fmt.Errorf("postgres.NewOncallRostersService: %w", rostersErr)
+	}
+
+	components, componentsErr := db.NewSystemComponentsService(dbc)
+	if componentsErr != nil {
+		return nil, fmt.Errorf("postgres.NewSystemComponentsService: %w", componentsErr)
+	}
+
+	shifts, shiftsErr := db.NewOncallShiftsService(dbc, jobSvc)
+	if shiftsErr != nil {
+		return nil, fmt.Errorf("postgres.NewOncallShiftsService: %w", shiftsErr)
+	}
+	jobs.RegisterPeriodicJob(jobs.ScanOncallShiftsPeriodicJob)
+	jobs.RegisterWorkerFunc(shifts.HandlePeriodicScanShifts)
+	jobs.RegisterWorkerFunc(shifts.HandleEnsureShiftHandoverReminderSent)
+	jobs.RegisterWorkerFunc(shifts.HandleEnsureShiftHandoverSent)
+
+	oncallMetrics, oncallMetricsErr := db.NewOncallMetricsService(dbc, jobSvc, shifts)
+	if oncallMetricsErr != nil {
+		return nil, fmt.Errorf("postgres.NewOncallMetricsService: %w", oncallMetricsErr)
+	}
+	jobs.RegisterWorkerFunc(oncallMetrics.HandleGenerateShiftMetrics)
+
+	debriefs, debriefsErr := db.NewDebriefService(dbc, jobSvc, ai)
+	if debriefsErr != nil {
+		return nil, fmt.Errorf("postgres.NewDebriefService: %w", debriefsErr)
+	}
+	jobs.RegisterWorkerFunc(debriefs.HandleGenerateDebriefResponse)
+	jobs.RegisterWorkerFunc(debriefs.HandleGenerateSuggestions)
+	jobs.RegisterWorkerFunc(debriefs.HandleSendDebriefRequests)
+
+	retros, retrosErr := db.NewRetrospectiveService(dbc)
+	if retrosErr != nil {
+		return nil, fmt.Errorf("postgres.NewRetrospectiveService: %w", retrosErr)
+	}
+
+	alerts, alertsErr := db.NewAlertService(dbc)
+	if alertsErr != nil {
+		return nil, fmt.Errorf("postgres.NewAlertService: %w", alertsErr)
+	}
+
+	playbooks, playbooksErr := db.NewPlaybookService(dbc)
+	if playbooksErr != nil {
+		return nil, fmt.Errorf("postgres.NewPlaybookService: %w", playbooksErr)
+	}
+
+	docs, docsErr := db.NewDocumentsService(dbc, auth, users)
+	if docsErr != nil {
+		return nil, fmt.Errorf("db.NewDocumentsService: %w", docsErr)
+	}
+
+	return &rez.Services{
+		Jobs:             jobSvc,
+		Messages:         msgs,
+		Auth:             auth,
+		Organizations:    orgs,
+		Integrations:     intgs,
+		Users:            users,
+		Teams:            teams,
+		Incidents:        incidents,
+		Debriefs:         debriefs,
+		OncallRosters:    rosters,
+		OncallShifts:     shifts,
+		OncallMetrics:    oncallMetrics,
+		Events:           events,
+		EventAnnotations: annos,
+		Documents:        docs,
+		Retros:           retros,
+		Components:       components,
+		Alerts:           alerts,
+		Playbooks:        playbooks,
+	}, nil
 }
 
 func (s *Server) makeJobService(dbc rez.Database) (rez.JobsService, error) {
@@ -296,37 +313,4 @@ func (s *Server) makeMessageService() (rez.MessageService, error) {
 	}
 	s.addListener("message_service", msgs)
 	return msgs, nil
-}
-
-func (s *Server) makeHttpServer(auth rez.AuthService, oapiHandler oapiv1.Handler) (*http.Server, error) {
-	srv := http.NewServer(auth)
-	srv.MountOpenApiV1(oapiHandler)
-	srv.MountMCP(eino.NewMCPHandler(auth))
-
-	frontendFS, feFSErr := http.GetEmbeddedFrontendFiles()
-	if feFSErr != nil {
-		return nil, fmt.Errorf("failed to get embedded frontend files: %w", feFSErr)
-	}
-	srv.MountStaticFrontend(frontendFS)
-	s.addListener("http_server", srv)
-
-	return srv, nil
-}
-
-func (s *Server) setupChatEventListener(chat rez.ChatService, srv *http.Server) error {
-	if chat.EnableEventListener() {
-		sml, listenerErr := chat.MakeEventListener()
-		if listenerErr != nil {
-			return fmt.Errorf("chat.MakeEventListener: %w", listenerErr)
-		}
-		s.addListener("chat_events", sml)
-	} else if slackChatSvc, ok := chat.(*slack.ChatService); ok {
-		webhooks, whErr := slack.NewWebhookEventListener(slackChatSvc)
-		if whErr != nil {
-			return fmt.Errorf("slack.NewWebhookEventListener: %w", whErr)
-		}
-		srv.AddWebhookPathHandler("/slack", webhooks.Handler())
-		srv.AddWebhookPathHandler("/foo", webhooks.Handler())
-	}
-	return nil
 }

@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"net/http"
 
 	"github.com/rezible/rezible/ent"
 	"github.com/rs/zerolog/log"
@@ -15,39 +16,73 @@ import (
 
 const integrationName = "slack"
 
-type integration struct{}
-
-func IntegrationDetail() rez.PackageIntegrationsDetail {
-	return integration{}
+type integration struct {
+	eventListeners  map[string]rez.EventListener
+	webhookHandlers map[string]http.Handler
 }
 
-func (d integration) Name() string {
+func SetupIntegration(ctx context.Context, svcs *rez.Services) (rez.IntegrationPackage, error) {
+	intg := &integration{
+		eventListeners:  make(map[string]rez.EventListener),
+		webhookHandlers: make(map[string]http.Handler),
+	}
+	cs, csErr := NewChatService(ctx, svcs)
+	if csErr != nil {
+		return nil, fmt.Errorf("failed to create chat service: %w", csErr)
+	}
+
+	if UseSocketMode() {
+		el, lErr := NewSocketModeEventListener(cs)
+		if lErr != nil {
+			return nil, fmt.Errorf("failed to create event listener: %w", lErr)
+		}
+		intg.eventListeners["slack_socketmode"] = el
+	} else {
+		wh, whErr := NewWebhookEventHandler(cs)
+		if whErr != nil {
+			return nil, fmt.Errorf("webhook event handler: %w", whErr)
+		}
+		intg.webhookHandlers["/"] = wh.Handler()
+	}
+
+	return intg, nil
+}
+
+func (d *integration) Name() string {
 	return integrationName
 }
 
-func (d integration) Enabled() bool {
+func (d *integration) Enabled() bool {
 	// TODO: check config
 	return true
 }
 
-func (d integration) SupportedDataKinds() []string {
+func (d *integration) EventListeners() map[string]rez.EventListener {
+	return d.eventListeners
+}
+
+func (d *integration) WebhookHandlers() map[string]http.Handler {
+	return d.webhookHandlers
+}
+
+func (d *integration) SupportedDataKinds() []string {
 	return []string{"chat", "users"}
 }
 
-func (d integration) OAuthConfigRequired() bool {
+func (d *integration) OAuthConfigRequired() bool {
 	return true
 }
 
-func (d integration) ValidateConfig(cfg json.RawMessage) (bool, error) {
+func (d *integration) ValidateConfig(cfg json.RawMessage) (bool, error) {
 
 	return true, nil
 }
 
-func (d integration) OAuth2Config() *oauth2.Config {
+func (d *integration) OAuth2Config() *oauth2.Config {
 	return LoadOAuthConfig()
 }
 
-func (d integration) GetIntegrationConfigFromToken(token *oauth2.Token) (any, error) {
+func (d *integration) GetIntegrationConfigFromToken(token *oauth2.Token) (any, error) {
 	return getIntegrationConfigFromOAuthToken(token)
 }
 

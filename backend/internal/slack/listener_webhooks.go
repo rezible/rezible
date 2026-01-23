@@ -19,6 +19,51 @@ import (
 	"github.com/slack-go/slack/slackevents"
 )
 
+type WebhookEventHandler struct {
+	chat         *ChatService
+	bodyVerifier webhookVerifierFunc
+}
+
+func NewWebhookEventHandler(chat *ChatService) (*WebhookEventHandler, error) {
+	whVerifier, verifierErr := makeWebhookVerifier()
+	if verifierErr != nil {
+		return nil, verifierErr
+	}
+
+	wh := &WebhookEventHandler{
+		chat:         chat,
+		bodyVerifier: whVerifier,
+	}
+
+	cmdsErr := chat.messages.AddCommandHandlers(
+		rez.NewCommandHandler("SlackHandleCommandEvent", wh.handleCommandEvent),
+		rez.NewCommandHandler("SlackHandleInteractionEvent", wh.handleInteractionEvent))
+	if cmdsErr != nil {
+		return nil, fmt.Errorf("command handlers: %w", cmdsErr)
+	}
+	evsErr := chat.messages.AddEventHandlers(
+		rez.NewEventHandler("SlackHandleCallbackEvent", wh.handleCallbackEvent))
+	if evsErr != nil {
+		return nil, fmt.Errorf("event handlers: %w", evsErr)
+	}
+
+	return wh, nil
+}
+
+func (wh *WebhookEventHandler) Handler() *chi.Mux {
+	mux := chi.NewMux()
+	mux.Use(middleware.Timeout(3 * time.Second))
+	mux.HandleFunc("/commands", wh.onCommandsWebhook)
+	mux.HandleFunc("/interaction", wh.onInteractionsWebhook)
+	mux.HandleFunc("/options", wh.onOptionsWebhook)
+	mux.HandleFunc("/events", wh.onEventsWebhook)
+	mux.NotFound(func(w http.ResponseWriter, r *http.Request) {
+		log.Debug().Msg("slack webhook handler not found")
+		w.WriteHeader(http.StatusOK)
+	})
+	return mux
+}
+
 var (
 	maxWebhookPayloadBytes = int64(4<<20 + 1) // 4 MB
 )
@@ -57,51 +102,6 @@ func makeWebhookVerifier() (webhookVerifierFunc, error) {
 		return body, nil
 	}
 	return verifyFn, nil
-}
-
-type WebhookEventHandler struct {
-	chat         *ChatService
-	bodyVerifier webhookVerifierFunc
-}
-
-func NewWebhookEventListener(chat *ChatService) (*WebhookEventHandler, error) {
-	whVerifier, verifierErr := makeWebhookVerifier()
-	if verifierErr != nil {
-		return nil, verifierErr
-	}
-
-	wh := &WebhookEventHandler{
-		chat:         chat,
-		bodyVerifier: whVerifier,
-	}
-
-	cmdsErr := chat.messages.AddCommandHandlers(
-		rez.NewCommandHandler("SlackHandleCommandEvent", wh.handleCommandEvent),
-		rez.NewCommandHandler("SlackHandleInteractionEvent", wh.handleInteractionEvent))
-	if cmdsErr != nil {
-		return nil, fmt.Errorf("command handlers: %w", cmdsErr)
-	}
-	evsErr := chat.messages.AddEventHandlers(
-		rez.NewEventHandler("SlackHandleCallbackEvent", wh.handleCallbackEvent))
-	if evsErr != nil {
-		return nil, fmt.Errorf("event handlers: %w", evsErr)
-	}
-
-	return wh, nil
-}
-
-func (wh *WebhookEventHandler) Handler() http.Handler {
-	mux := chi.NewMux()
-	mux.Use(middleware.Timeout(3 * time.Second))
-	mux.HandleFunc("/commands", wh.onCommandsWebhook)
-	mux.HandleFunc("/interaction", wh.onInteractionsWebhook)
-	mux.HandleFunc("/options", wh.onOptionsWebhook)
-	mux.HandleFunc("/events", wh.onEventsWebhook)
-	mux.NotFound(func(w http.ResponseWriter, r *http.Request) {
-		log.Debug().Msg("slack webhook handler not found")
-		w.WriteHeader(http.StatusOK)
-	})
-	return mux
 }
 
 func (wh *WebhookEventHandler) onCommandsWebhook(w http.ResponseWriter, r *http.Request) {

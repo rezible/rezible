@@ -62,7 +62,7 @@ func (s *IntegrationsService) ConfigureIntegration(ctx context.Context, name str
 	if curr != nil {
 		m = s.db.Integration.UpdateOneID(curr.ID)
 	} else {
-		m = s.db.Integration.Create()
+		m = s.db.Integration.Create().SetName(name)
 	}
 
 	m.Mutation().SetConfig(cfg)

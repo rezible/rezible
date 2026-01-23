@@ -15,18 +15,25 @@ import (
 	"github.com/rezible/rezible/internal/slack"
 )
 
-var packageMap = map[string]rez.PackageIntegrationsDetail{}
+var packageMap = map[string]rez.IntegrationPackage{}
 
-func InitPackages() {
-	packageDetails := []rez.PackageIntegrationsDetail{
-		fakeprovider.IntegrationDetail(),
-		slack.IntegrationDetail(),
-		google.IntegrationDetail(),
+type packageSetupFunc = func(context.Context, *rez.Services) (rez.IntegrationPackage, error)
+
+func Setup(ctx context.Context, svcs *rez.Services) error {
+	packageSetupFuncs := []packageSetupFunc{
+		fakeprovider.SetupIntegration,
+		slack.SetupIntegration,
+		google.SetupIntegration,
 	}
-	packageMap = make(map[string]rez.PackageIntegrationsDetail)
-	for _, detail := range packageDetails {
-		packageMap[detail.Name()] = detail
+	packageMap = make(map[string]rez.IntegrationPackage)
+	for _, pkgFn := range packageSetupFuncs {
+		pkg, pkgErr := pkgFn(ctx, svcs)
+		if pkgErr != nil {
+			return fmt.Errorf("setup integration: %w", pkgErr)
+		}
+		packageMap[pkg.Name()] = pkg
 	}
+	return nil
 }
 
 func ValidateConfig(name string, cfg json.RawMessage) (bool, error) {
@@ -36,17 +43,17 @@ func ValidateConfig(name string, cfg json.RawMessage) (bool, error) {
 	return false, fmt.Errorf("unknown integration: %s", name)
 }
 
-func GetSupported() []rez.PackageIntegrationsDetail {
-	supported := make([]rez.PackageIntegrationsDetail, 0)
+func GetEnabled() []rez.IntegrationPackage {
+	enabled := make([]rez.IntegrationPackage, 0)
 	for _, pkg := range packageMap {
 		if pkg.Enabled() {
-			supported = append(supported, pkg)
+			enabled = append(enabled, pkg)
 		}
 	}
-	return supported
+	return enabled
 }
 
-func GetDetail(name string) (rez.PackageIntegrationsDetail, error) {
+func GetDetail(name string) (rez.IntegrationPackage, error) {
 	p, valid := packageMap[name]
 	if !valid {
 		return nil, fmt.Errorf("unknown integration: %s", name)
@@ -54,16 +61,7 @@ func GetDetail(name string) (rez.PackageIntegrationsDetail, error) {
 	return p, nil
 }
 
-func GetSupportedDataKinds(intg *ent.Integration) []string {
-	if p, valid := packageMap[intg.Name]; valid {
-		if p.Enabled() {
-			return p.SupportedDataKinds()
-		}
-	}
-	return []string{}
-}
-
-func GetDataProviders[T any](intgs ent.Integrations, iFn func(rez.PackageIntegrationsDetail, *ent.Integration) (bool, T, error)) ([]T, error) {
+func GetDataProviders[T any](intgs ent.Integrations, iFn func(rez.IntegrationPackage, *ent.Integration) (bool, T, error)) ([]T, error) {
 	var provs []T
 	for _, intg := range intgs {
 		if p, valid := packageMap[intg.Name]; valid {
@@ -83,7 +81,7 @@ func GetUserDataProviders(ctx context.Context, intgs ent.Integrations) ([]rez.Us
 		MakeUserDataProvider(context.Context, *ent.Integration) (rez.UserDataProvider, error)
 	}
 
-	provFn := func(p rez.PackageIntegrationsDetail, i *ent.Integration) (bool, rez.UserDataProvider, error) {
+	provFn := func(p rez.IntegrationPackage, i *ent.Integration) (bool, rez.UserDataProvider, error) {
 		if dpi, ok := p.(integrationWithUserDataProvider); ok {
 			prov, pErr := dpi.MakeUserDataProvider(ctx, i)
 			return true, prov, pErr

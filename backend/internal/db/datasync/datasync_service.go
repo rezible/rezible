@@ -18,7 +18,7 @@ type Syncer struct {
 	db *ent.Client
 }
 
-func NewSyncer(db *ent.Client) *Syncer {
+func NewSyncerService(db *ent.Client) *Syncer {
 	return &Syncer{db: db}
 }
 
