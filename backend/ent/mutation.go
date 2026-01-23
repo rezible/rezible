@@ -4,6 +4,7 @@ package ent
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"sync"
@@ -21737,20 +21738,22 @@ func (m *IncidentTypeMutation) ResetEdge(name string) error {
 // IntegrationMutation represents an operation that mutates the Integration nodes in the graph.
 type IntegrationMutation struct {
 	config
-	op            Op
-	typ           string
-	id            *uuid.UUID
-	created_at    *time.Time
-	updated_at    *time.Time
-	name          *string
-	_config       *map[string]interface{}
-	user_config   *map[string]interface{}
-	clearedFields map[string]struct{}
-	tenant        *int
-	clearedtenant bool
-	done          bool
-	oldValue      func(context.Context) (*Integration, error)
-	predicates    []predicate.Integration
+	op                Op
+	typ               string
+	id                *uuid.UUID
+	created_at        *time.Time
+	updated_at        *time.Time
+	name              *string
+	_config           *json.RawMessage
+	append_config     json.RawMessage
+	user_config       *json.RawMessage
+	appenduser_config json.RawMessage
+	clearedFields     map[string]struct{}
+	tenant            *int
+	clearedtenant     bool
+	done              bool
+	oldValue          func(context.Context) (*Integration, error)
+	predicates        []predicate.Integration
 }
 
 var _ ent.Mutation = (*IntegrationMutation)(nil)
@@ -22002,12 +22005,13 @@ func (m *IntegrationMutation) ResetName() {
 }
 
 // SetConfig sets the "config" field.
-func (m *IntegrationMutation) SetConfig(value map[string]interface{}) {
-	m._config = &value
+func (m *IntegrationMutation) SetConfig(jm json.RawMessage) {
+	m._config = &jm
+	m.append_config = nil
 }
 
 // Config returns the value of the "config" field in the mutation.
-func (m *IntegrationMutation) Config() (r map[string]interface{}, exists bool) {
+func (m *IntegrationMutation) Config() (r json.RawMessage, exists bool) {
 	v := m._config
 	if v == nil {
 		return
@@ -22018,7 +22022,7 @@ func (m *IntegrationMutation) Config() (r map[string]interface{}, exists bool) {
 // OldConfig returns the old "config" field's value of the Integration entity.
 // If the Integration object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *IntegrationMutation) OldConfig(ctx context.Context) (v map[string]interface{}, err error) {
+func (m *IntegrationMutation) OldConfig(ctx context.Context) (v json.RawMessage, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldConfig is only allowed on UpdateOne operations")
 	}
@@ -22032,18 +22036,33 @@ func (m *IntegrationMutation) OldConfig(ctx context.Context) (v map[string]inter
 	return oldValue.Config, nil
 }
 
+// AppendConfig adds jm to the "config" field.
+func (m *IntegrationMutation) AppendConfig(jm json.RawMessage) {
+	m.append_config = append(m.append_config, jm...)
+}
+
+// AppendedConfig returns the list of values that were appended to the "config" field in this mutation.
+func (m *IntegrationMutation) AppendedConfig() (json.RawMessage, bool) {
+	if len(m.append_config) == 0 {
+		return nil, false
+	}
+	return m.append_config, true
+}
+
 // ResetConfig resets all changes to the "config" field.
 func (m *IntegrationMutation) ResetConfig() {
 	m._config = nil
+	m.append_config = nil
 }
 
 // SetUserConfig sets the "user_config" field.
-func (m *IntegrationMutation) SetUserConfig(value map[string]interface{}) {
-	m.user_config = &value
+func (m *IntegrationMutation) SetUserConfig(jm json.RawMessage) {
+	m.user_config = &jm
+	m.appenduser_config = nil
 }
 
 // UserConfig returns the value of the "user_config" field in the mutation.
-func (m *IntegrationMutation) UserConfig() (r map[string]interface{}, exists bool) {
+func (m *IntegrationMutation) UserConfig() (r json.RawMessage, exists bool) {
 	v := m.user_config
 	if v == nil {
 		return
@@ -22054,7 +22073,7 @@ func (m *IntegrationMutation) UserConfig() (r map[string]interface{}, exists boo
 // OldUserConfig returns the old "user_config" field's value of the Integration entity.
 // If the Integration object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *IntegrationMutation) OldUserConfig(ctx context.Context) (v map[string]interface{}, err error) {
+func (m *IntegrationMutation) OldUserConfig(ctx context.Context) (v json.RawMessage, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldUserConfig is only allowed on UpdateOne operations")
 	}
@@ -22068,9 +22087,23 @@ func (m *IntegrationMutation) OldUserConfig(ctx context.Context) (v map[string]i
 	return oldValue.UserConfig, nil
 }
 
+// AppendUserConfig adds jm to the "user_config" field.
+func (m *IntegrationMutation) AppendUserConfig(jm json.RawMessage) {
+	m.appenduser_config = append(m.appenduser_config, jm...)
+}
+
+// AppendedUserConfig returns the list of values that were appended to the "user_config" field in this mutation.
+func (m *IntegrationMutation) AppendedUserConfig() (json.RawMessage, bool) {
+	if len(m.appenduser_config) == 0 {
+		return nil, false
+	}
+	return m.appenduser_config, true
+}
+
 // ClearUserConfig clears the value of the "user_config" field.
 func (m *IntegrationMutation) ClearUserConfig() {
 	m.user_config = nil
+	m.appenduser_config = nil
 	m.clearedFields[integration.FieldUserConfig] = struct{}{}
 }
 
@@ -22083,6 +22116,7 @@ func (m *IntegrationMutation) UserConfigCleared() bool {
 // ResetUserConfig resets all changes to the "user_config" field.
 func (m *IntegrationMutation) ResetUserConfig() {
 	m.user_config = nil
+	m.appenduser_config = nil
 	delete(m.clearedFields, integration.FieldUserConfig)
 }
 
@@ -22245,14 +22279,14 @@ func (m *IntegrationMutation) SetField(name string, value ent.Value) error {
 		m.SetName(v)
 		return nil
 	case integration.FieldConfig:
-		v, ok := value.(map[string]interface{})
+		v, ok := value.(json.RawMessage)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetConfig(v)
 		return nil
 	case integration.FieldUserConfig:
-		v, ok := value.(map[string]interface{})
+		v, ok := value.(json.RawMessage)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}

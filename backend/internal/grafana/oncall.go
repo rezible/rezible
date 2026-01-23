@@ -11,7 +11,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/go-viper/mapstructure/v2"
 	"github.com/rezible/rezible/ent"
 	"github.com/rs/zerolog/log"
 )
@@ -30,7 +29,7 @@ type OncallDataProviderConfig struct {
 
 func NewOncallDataProvider(intg *ent.Integration) (*OncallDataProvider, error) {
 	var cfg OncallDataProviderConfig
-	if cfgErr := mapstructure.Decode(intg.Config, &cfg); cfgErr != nil {
+	if cfgErr := json.Unmarshal(intg.Config, &cfg); cfgErr != nil {
 		return nil, cfgErr
 	}
 	p := &OncallDataProvider{

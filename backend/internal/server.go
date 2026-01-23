@@ -184,7 +184,7 @@ func (s *Server) setup(ctx context.Context) error {
 		return fmt.Errorf("postgres.NewChatService: %w", chatErr)
 	}
 
-	shifts, shiftsErr := db.NewOncallShiftsService(dbc, jobSvc, chat)
+	shifts, shiftsErr := db.NewOncallShiftsService(dbc, jobSvc)
 	if shiftsErr != nil {
 		return fmt.Errorf("postgres.NewOncallShiftsService: %w", shiftsErr)
 	}
@@ -232,7 +232,6 @@ func (s *Server) setup(ctx context.Context) error {
 		auth,
 		orgs,
 		intgs,
-		chat,
 		users,
 		incidents,
 		debriefs,

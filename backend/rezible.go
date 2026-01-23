@@ -2,6 +2,7 @@ package rez
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"iter"
 	"net/http"
@@ -10,10 +11,10 @@ import (
 	"github.com/ThreeDotsLabs/watermill/components/cqrs"
 	"github.com/rezible/rezible/ent"
 	"github.com/rezible/rezible/jobs"
+	"golang.org/x/oauth2"
 
 	"github.com/google/uuid"
 	"github.com/texm/prosemirror-go"
-	"golang.org/x/oauth2"
 )
 
 var (
@@ -65,41 +66,38 @@ type SetMutationFn[T any] = func(*ent.Tx, T) error
 type ListParams = ent.ListParams
 
 type (
-	OrganizationService interface {
-		GetById(context.Context, uuid.UUID) (*ent.Organization, error)
-		GetCurrent(context.Context) (*ent.Organization, error)
-		CompleteSetup(context.Context, uuid.UUID) error
-		FindOrCreateFromProvider(context.Context, ent.Organization) (*ent.Organization, error)
-	}
-)
+	PackageIntegrationsDetail interface {
+		Name() string
+		Enabled() bool
+		SupportedDataKinds() []string
+		OAuthConfigRequired() bool
 
-type (
+		ValidateConfig(json.RawMessage) (bool, error)
+	}
+
+	IntegrationWithOAuth2SetupFlow interface {
+		OAuth2Config() *oauth2.Config
+		GetIntegrationConfigFromToken(*oauth2.Token) (any, error)
+	}
+
 	ListIntegrationsParams struct {
 		Name     string
 		DataKind string
 	}
 
-	OAuth2IntegrationHandler interface {
-		OAuth2Config() *oauth2.Config
-		GetIntegrationConfigFromToken(*oauth2.Token) (any, error)
-	}
-
 	IntegrationsService interface {
-		ListIntegrations(context.Context, ListIntegrationsParams) ([]*ent.Integration, error)
-		GetIntegration(context.Context, uuid.UUID) (*ent.Integration, error)
-		SetIntegration(context.Context, uuid.UUID, func(*ent.IntegrationMutation)) (*ent.Integration, error)
-		DeleteIntegration(context.Context, uuid.UUID) error
+		ListIntegrations(ctx context.Context, params ListIntegrationsParams) ([]*ent.Integration, error)
+		GetIntegration(ctx context.Context, name string) (*ent.Integration, error)
+		ConfigureIntegration(ctx context.Context, name string, cfg json.RawMessage) (*ent.Integration, error)
+		DeleteIntegration(ctx context.Context, name string) error
 
-		RegisterOAuth2Handler(integrationName string, h OAuth2IntegrationHandler)
-		StartOAuth2Flow(ctx context.Context, integrationName string) (string, error)
-		CompleteOAuth2Flow(ctx context.Context, integrationName, state, code string) (*ent.Integration, error)
+		StartOAuth2Flow(ctx context.Context, name string) (string, error)
+		CompleteOAuth2Flow(ctx context.Context, name, state, code string) (*ent.Integration, error)
 	}
 
 	IntegrationsDataSyncer interface {
 		SyncIntegrationsData(context.Context, jobs.SyncIntegrationsData) error
 	}
-
-	ExternalResourceUpdatedCallback = func(externalId string, updatedAt time.Time)
 )
 
 type (
@@ -128,6 +126,15 @@ type (
 		Insert(context.Context, jobs.JobArgs, *jobs.InsertOpts) error
 		InsertTx(context.Context, *ent.Tx, jobs.JobArgs, *jobs.InsertOpts) error
 		InsertMany(context.Context, []jobs.InsertManyParams) error
+	}
+)
+
+type (
+	OrganizationService interface {
+		GetById(context.Context, uuid.UUID) (*ent.Organization, error)
+		GetCurrent(context.Context) (*ent.Organization, error)
+		CompleteSetup(context.Context, uuid.UUID) error
+		FindOrCreateFromProvider(context.Context, ent.Organization) (*ent.Organization, error)
 	}
 )
 
@@ -346,7 +353,6 @@ type (
 		IncidentDataMapping() *ent.Incident
 		IncidentRoleDataMapping() *ent.IncidentRole
 
-		SetOnIncidentUpdatedCallback(ExternalResourceUpdatedCallback)
 		PullIncidents(context.Context) iter.Seq2[*ent.Incident, error]
 		GetIncidentByID(context.Context, string) (*ent.Incident, error)
 		ListIncidentRoles(context.Context) ([]*ent.IncidentRole, error)

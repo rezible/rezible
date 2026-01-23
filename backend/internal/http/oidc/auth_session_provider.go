@@ -17,7 +17,7 @@ import (
 	"github.com/rezible/rezible/ent"
 )
 
-type identityProvider interface {
+type IdentityProvider interface {
 	GetAuthCodeOptions(r *http.Request) []oauth2.AuthCodeOption
 	ExtractTokenSession(token *oidc.IDToken) (*rez.AuthProviderSession, error)
 }
@@ -29,7 +29,7 @@ type AuthSessionProvider struct {
 	sessionStore sessions.Store
 	oauth2Config oauth2.Config
 	verifier     *oidc.IDTokenVerifier
-	idp          identityProvider
+	idp          IdentityProvider
 }
 
 func (s *AuthSessionProvider) DisplayName() string {

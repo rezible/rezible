@@ -2,9 +2,9 @@ package slack
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 
-	"github.com/go-viper/mapstructure/v2"
 	"github.com/rezible/rezible/ent"
 	"github.com/rs/zerolog/log"
 	"github.com/slack-go/slack"
@@ -14,6 +14,42 @@ import (
 )
 
 const integrationName = "slack"
+
+type integration struct{}
+
+func IntegrationDetail() rez.PackageIntegrationsDetail {
+	return integration{}
+}
+
+func (d integration) Name() string {
+	return integrationName
+}
+
+func (d integration) Enabled() bool {
+	// TODO: check config
+	return true
+}
+
+func (d integration) SupportedDataKinds() []string {
+	return []string{"chat", "users"}
+}
+
+func (d integration) OAuthConfigRequired() bool {
+	return true
+}
+
+func (d integration) ValidateConfig(cfg json.RawMessage) (bool, error) {
+
+	return true, nil
+}
+
+func (d integration) OAuth2Config() *oauth2.Config {
+	return LoadOAuthConfig()
+}
+
+func (d integration) GetIntegrationConfigFromToken(token *oauth2.Token) (any, error) {
+	return getIntegrationConfigFromOAuthToken(token)
+}
 
 type IntegrationConfig struct {
 	AccessToken string
@@ -84,8 +120,11 @@ func getIntegrationConfigFromOAuthToken(t *oauth2.Token) (*IntegrationConfig, er
 }
 
 func decodeConfig(intg *ent.Integration) (*IntegrationConfig, error) {
+	if intg.Name != integrationName {
+		return nil, fmt.Errorf("invalid integration name")
+	}
 	var cfg IntegrationConfig
-	if cfgErr := mapstructure.Decode(intg.Config, &cfg); cfgErr != nil {
+	if cfgErr := json.Unmarshal(intg.Config, &cfg); cfgErr != nil {
 		return nil, fmt.Errorf("failed to decode integration config: %w", cfgErr)
 	}
 	return &cfg, nil

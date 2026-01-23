@@ -29,9 +29,9 @@ type Integration struct {
 	// Name holds the value of the "name" field.
 	Name string `json:"name,omitempty"`
 	// Config holds the value of the "config" field.
-	Config map[string]interface{} `json:"config,omitempty"`
+	Config json.RawMessage `json:"config,omitempty"`
 	// UserConfig holds the value of the "user_config" field.
-	UserConfig map[string]interface{} `json:"user_config,omitempty"`
+	UserConfig json.RawMessage `json:"user_config,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the IntegrationQuery when eager-loading is set.
 	Edges        IntegrationEdges `json:"edges"`

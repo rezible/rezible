@@ -10,15 +10,10 @@ import (
 	"github.com/go-faker/faker/v4"
 	"github.com/gosimple/slug"
 
-	"github.com/rs/zerolog/log"
-
-	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
 )
 
 type IncidentDataProvider struct {
-	onIncidentUpdatedFn rez.ExternalResourceUpdatedCallback
-
 	roles      []*ent.IncidentRole
 	severities []*ent.IncidentSeverity
 	types      []*ent.IncidentType
@@ -32,11 +27,7 @@ type IncidentDataProviderConfig struct {
 }
 
 func NewIncidentDataProvider(intg *ent.Integration) (*IncidentDataProvider, error) {
-	p := &IncidentDataProvider{
-		onIncidentUpdatedFn: func(id string, m time.Time) {
-			log.Warn().Msg("no onIncidentUpdated function")
-		},
-	}
+	p := &IncidentDataProvider{}
 
 	p.makeFakeData()
 	p.makeFakeIncidents()
@@ -119,10 +110,6 @@ func (p *IncidentDataProvider) makeFakeIncidents() {
 			},
 		}
 	}
-}
-
-func (p *IncidentDataProvider) SetOnIncidentUpdatedCallback(cb rez.ExternalResourceUpdatedCallback) {
-	p.onIncidentUpdatedFn = cb
 }
 
 func (p *IncidentDataProvider) IncidentDataMapping() *ent.Incident {

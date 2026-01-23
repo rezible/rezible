@@ -10,7 +10,6 @@ import (
 	"github.com/rezible/rezible/ent"
 	"github.com/rs/zerolog/log"
 	"github.com/slack-go/slack"
-	"golang.org/x/oauth2"
 )
 
 type ChatService struct {
@@ -21,8 +20,6 @@ type ChatService struct {
 	incidents    rez.IncidentService
 	annos        rez.EventAnnotationsService
 	components   rez.SystemComponentsService
-
-	oauthConfig *oauth2.Config
 }
 
 func NewChatService(jobSvc rez.JobsService, messages rez.MessageService, integrations rez.IntegrationsService, users rez.UserService, incidents rez.IncidentService, annos rez.EventAnnotationsService, components rez.SystemComponentsService) (*ChatService, error) {
@@ -34,10 +31,7 @@ func NewChatService(jobSvc rez.JobsService, messages rez.MessageService, integra
 		incidents:    incidents,
 		annos:        annos,
 		components:   components,
-		oauthConfig:  LoadOAuthConfig(),
 	}
-
-	integrations.RegisterOAuth2Handler(integrationName, s)
 
 	incMsgHandler := newIncidentChatEventHandler(s)
 	if msgsErr := incMsgHandler.registerHandlers(); msgsErr != nil {
@@ -158,14 +152,6 @@ func (s *ChatService) SendOncallHandover(ctx context.Context, params rez.SendOnc
 
 func (s *ChatService) SendOncallHandoverReminder(ctx context.Context, shift *ent.OncallShift) error {
 	return nil
-}
-
-func (s *ChatService) OAuth2Config() *oauth2.Config {
-	return s.oauthConfig
-}
-
-func (s *ChatService) GetIntegrationConfigFromToken(token *oauth2.Token) (any, error) {
-	return getIntegrationConfigFromOAuthToken(token)
 }
 
 func (s *ChatService) getIncidentAnnouncementChannelId(ctx context.Context) (string, error) {

@@ -13,20 +13,17 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/go-viper/mapstructure/v2"
 	"github.com/rezible/rezible/ent/incidentmilestone"
 
 	"github.com/rs/zerolog/log"
 
-	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
 )
 
 type IncidentDataProvider struct {
-	apiEndpoint         string
-	token               string
-	webhookSecret       string
-	onIncidentUpdatedFn rez.ExternalResourceUpdatedCallback
+	apiEndpoint   string
+	token         string
+	webhookSecret string
 
 	incidentMappingSupport *ent.Incident
 
@@ -41,7 +38,7 @@ type IncidentDataProviderConfig struct {
 
 func NewIncidentDataProvider(intg *ent.Integration) (*IncidentDataProvider, error) {
 	var cfg IncidentDataProviderConfig
-	if cfgErr := mapstructure.Decode(intg.Config, &cfg); cfgErr != nil {
+	if cfgErr := json.Unmarshal(intg.Config, &cfg); cfgErr != nil {
 		return nil, cfgErr
 	}
 	if cfg.WebhookSecret == "" {
@@ -53,16 +50,9 @@ func NewIncidentDataProvider(intg *ent.Integration) (*IncidentDataProvider, erro
 		token:         cfg.ServiceAccountToken,
 		webhookSecret: cfg.WebhookSecret,
 		userIdEmails:  make(map[string]string),
-		onIncidentUpdatedFn: func(id string, m time.Time) {
-			log.Warn().Msg("no onIncidentUpdated function")
-		},
 	}
 
 	return p, nil
-}
-
-func (p *IncidentDataProvider) SetOnIncidentUpdatedCallback(cb rez.ExternalResourceUpdatedCallback) {
-	p.onIncidentUpdatedFn = cb
 }
 
 func (p *IncidentDataProvider) IncidentDataMapping() *ent.Incident {
@@ -88,7 +78,7 @@ func (p *IncidentDataProvider) makeWebhookHandler(w http.ResponseWriter, r *http
 		}
 
 		if incidentId != "" {
-			go p.onIncidentUpdatedFn(incidentId, modifiedAt)
+			// go p.onIncidentUpdatedFn(incidentId, modifiedAt)
 		}
 	}
 

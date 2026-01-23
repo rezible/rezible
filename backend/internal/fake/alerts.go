@@ -10,14 +10,11 @@ import (
 	"github.com/rezible/rezible/ent/event"
 	"github.com/rs/zerolog/log"
 
-	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
 )
 
 type AlertDataProvider struct {
 	providerUserMap map[string]*ent.User
-
-	webhookCallback rez.ExternalResourceUpdatedCallback
 }
 
 type AlertDataProviderConfig struct {
@@ -26,7 +23,6 @@ type AlertDataProviderConfig struct {
 func NewAlertDataProvider(intg *ent.Integration) (*AlertDataProvider, error) {
 	p := &AlertDataProvider{
 		providerUserMap: make(map[string]*ent.User),
-		webhookCallback: func(ExternalID string, updatedAt time.Time) {},
 	}
 
 	return p, nil

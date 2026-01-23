@@ -4,26 +4,16 @@
 	import Header from "$src/components/header/Header.svelte";
 	import { useSetupViewState } from "../lib/viewState.svelte";
 	import LoadingIndicator from "$src/components/loading-indicator/LoadingIndicator.svelte";
-	import { SvelteMap, SvelteSet } from "svelte/reactivity";
+	import type { SupportedIntegration } from "$src/lib/api";
 
 	appShell.setPageBreadcrumbs(() => [
 		{ label: "Setup", href: "/setup" },
 	]);
 
 	const view = useSetupViewState();
-
-	const dataKinds = [
-		{name: "Chat", kind: "chat", required: true},
-		{name: "Users", kind: "users", required: true},
-	];
-	const requiredDataKinds = new Set(dataKinds.filter(k => k.required).map(k => k.kind));
-	const configuredMap = $derived(new SvelteMap(view.configuredIntegrations.map(intg => ([intg.attributes.name, intg]))));
-	const completedDataKinds = $derived(new SvelteSet(view.configuredIntegrations.flatMap(intg => (intg.attributes.enabledDataKinds))));
-	const remainingRequiredKinds = $derived(requiredDataKinds.difference(completedDataKinds));
 </script>
 
-{#snippet oauthFlowButton(name: string)}
-	<Button onclick={() => {view.oauth.startFlow(name)}}>
+{#snippet oauthFlowButtonContent(name: string)}
 	{#if name === "slack"}
 	<img alt="Add to Slack" height="40" width="139" 
 		src="https://platform.slack-edge.com/img/add_to_slack.png" 
@@ -31,7 +21,31 @@
 	{:else}
 		<span>Start OAuth Flow</span>
 	{/if}
-	</Button>
+{/snippet}
+
+{#snippet integrationSetupCard(intg: SupportedIntegration, dataKind: string)}
+	{@const configured = view.configuredIntegrationsMap.get(intg.name)}
+	{@const configValid = configured?.attributes.configValid}
+	<div class="border p-2 flex flex-col gap-2">
+		<span>{intg.name}</span>
+		{#if !configured && intg.oauthRequired}
+			<Button onclick={() => {view.oauth.startFlow(intg.name)}}>
+				{@render oauthFlowButtonContent(intg.name)}
+			</Button>
+		{:else}
+			{#if configValid}
+				<span>enable support for {dataKind} button</span>
+			{/if}
+			<span>config form</span>
+			<Button 
+				variant="fill-light"
+				color="secondary"
+				onclick={() => {view.doConfigureIntegration(intg.name, {})}}
+			>
+				Do Initial Configure
+			</Button>
+		{/if}
+	</div>
 {/snippet}
 
 <div class="grid h-full w-full place-items-center">
@@ -54,35 +68,30 @@
 		{:else if view.oauth.completingFlow}
 			<span>completing oauth flow</span>
 			<LoadingIndicator />
-		{:else if view.oauth.completeIntegrationErr}
+		{:else if view.oauth.completeFlowErr}
 			<span>complete integration error</span>
 		{:else}
-			<div class="flex flex-col gap-2">
-				{#each view.supportedIntegrations as intg}
-					{@const configured = configuredMap.get(intg.name)}
-					<div class="border p-2">
-						<span>{intg.name}</span>
-						{#if !!configured?.attributes.configValid}
-							<br />
-							<span>valid</span>
-						{:else}
-							<br />
-							{#if intg.oauthRequired}
-								{@render oauthFlowButton(intg.name)}
-							{:else}
-								<Button 
-									variant="fill-light"
-									color="secondary"
-									onclick={() => {view.doConfigureIntegration(intg.name, {})}}
-								>
-									Enable
-								</Button>
-							{/if}
-						{/if}
-					</div>
+			<span>Data Kinds:</span>
+			<div class="w-full flex gap-2">
+				{#each view.requiredDataKinds as kind}
+					<div class="p-2 border" class:bg-success-100={view.configuredEnabledDataKinds.has(kind)}>{kind}</div>
 				{/each}
 			</div>
-			{#if remainingRequiredKinds.size === 0}
+
+			<!-- TODO: this should be tabs, with required data kinds first -->
+			{#if !!view.nextRequiredDataKind}
+				<div class="flex flex-col gap-2">
+					{#each view.nextRequiredSupportedIntegrations as intg}
+						{@render integrationSetupCard(intg, view.nextRequiredDataKind)}	
+					{:else}
+						<div class="p-2 border-error-300 border-2">
+							<span>No supported integrations available for this data</span>
+						</div>
+					{/each}
+				</div>
+			{/if}
+			
+			{#if !view.nextRequiredDataKind}
 				<Button 
 					color="secondary" 
 					variant="fill"

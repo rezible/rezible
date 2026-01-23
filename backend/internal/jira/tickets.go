@@ -2,12 +2,11 @@ package jira
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"iter"
 
 	"github.com/andygrunwald/go-jira"
-	"github.com/go-viper/mapstructure/v2"
-
 	"github.com/rezible/rezible/ent"
 )
 
@@ -17,7 +16,7 @@ type TicketDataProvider struct {
 
 func NewTicketDataProvider(ctx context.Context, intg *ent.Integration) (*TicketDataProvider, error) {
 	var cfg IntegrationConfig
-	if cfgErr := mapstructure.Decode(intg.Config, &cfg); cfgErr != nil {
+	if cfgErr := json.Unmarshal(intg.Config, &cfg); cfgErr != nil {
 		return nil, cfgErr
 	}
 	tp := jira.BasicAuthTransport{

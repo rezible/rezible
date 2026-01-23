@@ -3,9 +3,7 @@ package grafana
 import (
 	"errors"
 	"strings"
-	"time"
 
-	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
 )
 
@@ -15,8 +13,6 @@ type AlertsDataProvider struct {
 	webhookSecret string
 
 	providerUserMap map[string]*ent.User
-
-	webhookCallback rez.ExternalResourceUpdatedCallback
 }
 
 type AlertsDataProviderConfig struct {
@@ -35,7 +31,6 @@ func NewAlertsDataProvider(cfg AlertsDataProviderConfig) (*AlertsDataProvider, e
 		apiToken:        cfg.ApiToken,
 		providerUserMap: make(map[string]*ent.User),
 		webhookSecret:   cfg.WebhookSecret,
-		webhookCallback: func(providerId string, updatedAt time.Time) {},
 	}
 
 	return p, nil

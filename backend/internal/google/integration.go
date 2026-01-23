@@ -2,9 +2,10 @@ package google
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 
-	"github.com/go-viper/mapstructure/v2"
+	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
 
 	"google.golang.org/api/calendar/v3"
@@ -14,6 +15,34 @@ import (
 
 const integrationName = "google"
 
+type integration struct{}
+
+func IntegrationDetail() rez.PackageIntegrationsDetail {
+	return integration{}
+}
+
+func (d integration) Name() string {
+	return integrationName
+}
+
+func (d integration) Enabled() bool {
+	// TODO: check config
+	return true
+}
+
+func (d integration) SupportedDataKinds() []string {
+	return []string{"video_conferencing"}
+}
+
+func (d integration) OAuthConfigRequired() bool {
+	return false
+}
+
+func (d integration) ValidateConfig(cfg json.RawMessage) (bool, error) {
+
+	return true, nil
+}
+
 type IntegrationConfig struct {
 	ServiceAccount         string
 	ServiceCredentialsJson []byte
@@ -21,7 +50,7 @@ type IntegrationConfig struct {
 
 func NewClient(ctx context.Context, intg *ent.Integration) error {
 	var cfg IntegrationConfig
-	if cfgErr := mapstructure.Decode(intg, &cfg); cfgErr != nil {
+	if cfgErr := json.Unmarshal(intg.Config, &cfg); cfgErr != nil {
 		return fmt.Errorf("failed to decode integration config: %w", cfgErr)
 	}
 

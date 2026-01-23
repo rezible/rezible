@@ -2,38 +2,36 @@ package v1
 
 import (
 	"context"
+	"encoding/json"
 	"net/http"
 
 	"github.com/danielgtaylor/huma/v2"
-	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent"
 	"github.com/rezible/rezible/integrations"
 )
 
 type IntegrationsHandler interface {
-	ListSupportedIntegrations(context.Context, *ListSupportedIntegrationsRequest) (*ListSupportedIntegrationsResponse, error)
+	ListSupported(context.Context, *ListSupportedIntegrationsRequest) (*ListSupportedIntegrationsResponse, error)
 
-	ListIntegrations(context.Context, *ListIntegrationsRequest) (*ListIntegrationsResponse, error)
-	CreateIntegration(context.Context, *CreateIntegrationRequest) (*CreateIntegrationResponse, error)
+	ListConfigured(context.Context, *ListConfiguredIntegrationsRequest) (*ListConfiguredIntegrationsResponse, error)
+	ConfigureIntegration(context.Context, *ConfigureIntegrationRequest) (*ConfigureIntegrationResponse, error)
 	GetIntegration(context.Context, *GetIntegrationRequest) (*GetIntegrationResponse, error)
-	UpdateIntegration(context.Context, *UpdateIntegrationRequest) (*UpdateIntegrationResponse, error)
 	DeleteIntegration(context.Context, *DeleteIntegrationRequest) (*DeleteIntegrationResponse, error)
 
-	StartIntegrationOAuth(context.Context, *StartIntegrationOAuthRequest) (*StartIntegrationOAuthResponse, error)
-	CompleteIntegrationOAuth(context.Context, *CompleteIntegrationOAuthRequest) (*CompleteIntegrationOAuthResponse, error)
+	StartIntegrationOAuthFlow(context.Context, *StartIntegrationOAuthFlowRequest) (*StartIntegrationOAuthFlowResponse, error)
+	CompleteIntegrationOAuthFlow(context.Context, *CompleteIntegrationOAuthFlowRequest) (*CompleteIntegrationOAuthFlowResponse, error)
 }
 
 func (o operations) RegisterIntegrations(api huma.API) {
-	huma.Register(api, ListSupportedIntegrations, o.ListSupportedIntegrations)
+	huma.Register(api, ListSupportedIntegrations, o.ListSupported)
 
-	huma.Register(api, ListIntegrations, o.ListIntegrations)
-	huma.Register(api, CreateIntegration, o.CreateIntegration)
+	huma.Register(api, ListConfiguredIntegrations, o.ListConfigured)
+	huma.Register(api, ConfigureIntegration, o.ConfigureIntegration)
 	huma.Register(api, GetIntegration, o.GetIntegration)
-	huma.Register(api, UpdateIntegration, o.UpdateIntegration)
 	huma.Register(api, DeleteIntegration, o.DeleteIntegration)
 
-	huma.Register(api, StartIntegrationOAuth, o.StartIntegrationOAuth)
-	huma.Register(api, CompleteIntegrationOAuth, o.CompleteIntegrationOAuth)
+	huma.Register(api, StartIntegrationOAuthFlow, o.StartIntegrationOAuthFlow)
+	huma.Register(api, CompleteIntegrationOAuthFlow, o.CompleteIntegrationOAuthFlow)
 }
 
 type (
@@ -43,39 +41,57 @@ type (
 		OAuthRequired bool     `json:"oauthRequired"`
 	}
 
-	Integration struct {
-		Id         uuid.UUID             `json:"id"`
-		Attributes IntegrationAttributes `json:"attributes"`
+	ConfiguredIntegration struct {
+		Name       string                          `json:"name"`
+		Attributes ConfiguredIntegrationAttributes `json:"attributes"`
 	}
 
-	IntegrationAttributes struct {
-		Name             string         `json:"name"`
-		Config           map[string]any `json:"config"`
-		ConfigValid      bool           `json:"configValid"`
-		EnabledDataKinds []string       `json:"enabledDataKinds"`
+	ConfiguredIntegrationAttributes struct {
+		Config      json.RawMessage `json:"config"`
+		ConfigValid bool            `json:"configValid"`
+		DataKinds   map[string]bool `json:"dataKinds"`
+	}
+
+	IntegrationOAuthFlow struct {
+		FlowUrl string `json:"flow_url"`
 	}
 )
 
-func IntegrationFromEnt(intg *ent.Integration) Integration {
-	attrs := IntegrationAttributes{
-		Name:             intg.Name,
-		Config:           intg.Config,
-		ConfigValid:      integrations.CheckConfigValid(intg),
-		EnabledDataKinds: integrations.GetEnabledDataKinds(intg),
+func IntegrationFromEnt(intg *ent.Integration) ConfiguredIntegration {
+	configValid, _ := integrations.ValidateConfig(intg.Name, intg.Config)
+	attrs := ConfiguredIntegrationAttributes{
+		Config:      intg.Config,
+		ConfigValid: configValid,
 	}
 
-	return Integration{
-		Id:         intg.ID,
+	return ConfiguredIntegration{
+		Name:       intg.Name,
 		Attributes: attrs,
 	}
 }
 
 var integrationsTags = []string{"Integrations"}
 
+type (
+	NamedIntegrationRequest struct {
+		Name string `path:"name"`
+	}
+
+	NamedIntegrationRequestWithAttributes[A any] struct {
+		NamedIntegrationRequest
+		RequestWithBodyAttributes[A]
+	}
+
+	RawIntegrationConfigRequestAttributes struct {
+		Config json.RawMessage `json:"config"`
+	}
+	NamedIntegrationRawConfigRequest NamedIntegrationRequestWithAttributes[RawIntegrationConfigRequestAttributes]
+)
+
 var ListSupportedIntegrations = huma.Operation{
 	OperationID: "list-supported-integrations",
 	Method:      http.MethodGet,
-	Path:        "/integrations",
+	Path:        "/integrations/supported",
 	Summary:     "List Supported Integrations",
 	Tags:        integrationsTags,
 	Errors:      errorCodes(),
@@ -84,64 +100,44 @@ var ListSupportedIntegrations = huma.Operation{
 type ListSupportedIntegrationsRequest ListRequest
 type ListSupportedIntegrationsResponse PaginatedResponse[SupportedIntegration]
 
-var ListIntegrations = huma.Operation{
+var ListConfiguredIntegrations = huma.Operation{
 	OperationID: "list-configured-integrations",
 	Method:      http.MethodGet,
 	Path:        "/integrations/configured",
-	Summary:     "List Configured Integrations",
+	Summary:     "List Integrations",
 	Tags:        integrationsTags,
 	Errors:      errorCodes(),
 }
 
-type ListIntegrationsRequest ListRequest
-type ListIntegrationsResponse PaginatedResponse[Integration]
-
-var CreateIntegration = huma.Operation{
-	OperationID: "create-integration",
-	Method:      http.MethodPost,
-	Path:        "/integrations/configured",
-	Summary:     "Create an Integration",
-	Tags:        integrationsTags,
-	Errors:      errorCodes(),
-}
-
-type CreateIntegrationRequestAttributes struct {
-	Name   string         `json:"name"`
-	Config map[string]any `json:"config"`
-}
-type CreateIntegrationRequest RequestWithBodyAttributes[CreateIntegrationRequestAttributes]
-type CreateIntegrationResponse ItemResponse[Integration]
+type ListConfiguredIntegrationsRequest ListRequest
+type ListConfiguredIntegrationsResponse PaginatedResponse[ConfiguredIntegration]
 
 var GetIntegration = huma.Operation{
-	OperationID: "get-configured-integration",
+	OperationID: "get-integration",
 	Method:      http.MethodGet,
-	Path:        "/integrations/configured/{id}",
+	Path:        "/integrations/configured/{name}",
 	Summary:     "Get an Integration",
 	Tags:        integrationsTags,
 	Errors:      errorCodes(),
 }
 
-type GetIntegrationRequest GetIdRequest
-type GetIntegrationResponse ItemResponse[Integration]
+type GetIntegrationRequest NamedIntegrationRequest
+type GetIntegrationResponse ItemResponse[ConfiguredIntegration]
 
-var UpdateIntegration = huma.Operation{
-	OperationID: "update-configured-integration",
-	Method:      http.MethodPatch,
-	Path:        "/integrations/configured/{id}",
-	Summary:     "Update an Integration",
+var ConfigureIntegration = huma.Operation{
+	OperationID: "configure-integration",
+	Method:      http.MethodPost,
+	Path:        "/integrations/configured/{name}",
+	Summary:     "Create an Integration",
 	Tags:        integrationsTags,
 	Errors:      errorCodes(),
 }
 
-type UpdateIntegrationAttributes struct {
-	Enabled *bool           `json:"enabled,omitempty"`
-	Config  *map[string]any `json:"config,omitempty"`
-}
-type UpdateIntegrationRequest UpdateIdRequest[UpdateIntegrationAttributes]
-type UpdateIntegrationResponse ItemResponse[Integration]
+type ConfigureIntegrationRequest NamedIntegrationRawConfigRequest
+type ConfigureIntegrationResponse ItemResponse[ConfiguredIntegration]
 
 var DeleteIntegration = huma.Operation{
-	OperationID: "delete-configured-integration",
+	OperationID: "delete-integration",
 	Method:      http.MethodDelete,
 	Path:        "/integrations/configured/{id}",
 	Summary:     "Delete an Integration",
@@ -149,41 +145,33 @@ var DeleteIntegration = huma.Operation{
 	Errors:      errorCodes(),
 }
 
-type DeleteIntegrationRequest DeleteIdRequest
+type DeleteIntegrationRequest NamedIntegrationRequest
 type DeleteIntegrationResponse EmptyResponse
 
-var StartIntegrationOAuth = huma.Operation{
-	OperationID: "start-integration-oauth",
+var StartIntegrationOAuthFlow = huma.Operation{
+	OperationID: "start-integration-oauth-flow",
 	Method:      http.MethodPost,
-	Path:        "/integrations/oauth/start",
+	Path:        "/integrations/oauth/{name}/start",
 	Summary:     "Start OAuth flow for an Integration",
 	Tags:        integrationsTags,
 	Errors:      errorCodes(),
 }
 
-type StartIntegrationOAuthRequestAttributes struct {
-	Name string `json:"name"`
-}
-type StartIntegrationOAuthRequest RequestWithBodyAttributes[StartIntegrationOAuthRequestAttributes]
+type StartIntegrationOAuthFlowRequest NamedIntegrationRequest
+type StartIntegrationOAuthFlowResponse ItemResponse[IntegrationOAuthFlow]
 
-type IntegrationOAuthFlow struct {
-	FlowUrl string `json:"flow_url"`
-}
-type StartIntegrationOAuthResponse ItemResponse[IntegrationOAuthFlow]
-
-var CompleteIntegrationOAuth = huma.Operation{
-	OperationID: "complete-integration-oauth",
+var CompleteIntegrationOAuthFlow = huma.Operation{
+	OperationID: "complete-integration-oauth-flow",
 	Method:      http.MethodPost,
-	Path:        "/integrations/oauth/complete",
+	Path:        "/integrations/oauth/{name}/complete",
 	Summary:     "Complete OAuth flow for an Integration",
 	Tags:        integrationsTags,
 	Errors:      errorCodes(),
 }
 
-type CompleteIntegrationOAuthRequestAttributes struct {
-	Name  string `json:"name"`
+type CompleteIntegrationOAuthFlowRequestAttributes struct {
 	State string `json:"state"`
 	Code  string `json:"code"`
 }
-type CompleteIntegrationOAuthRequest RequestWithBodyAttributes[CompleteIntegrationOAuthRequestAttributes]
-type CompleteIntegrationOAuthResponse ItemResponse[Integration]
+type CompleteIntegrationOAuthFlowRequest NamedIntegrationRequestWithAttributes[CompleteIntegrationOAuthFlowRequestAttributes]
+type CompleteIntegrationOAuthFlowResponse ItemResponse[ConfiguredIntegration]

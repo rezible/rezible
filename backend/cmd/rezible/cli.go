@@ -12,6 +12,7 @@ import (
 
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/access"
+	"github.com/rezible/rezible/integrations"
 	"github.com/rezible/rezible/internal"
 	"github.com/rezible/rezible/internal/db/datasync"
 	"github.com/rezible/rezible/internal/viper"
@@ -118,6 +119,7 @@ var dbMigrateApplyCmd = &cobra.Command{
 
 func init() {
 	rez.Config = viper.InitConfig()
+	integrations.InitPackages()
 
 	rootCmd.AddCommand(serveCmd, printSpecCmd, integrationsCmd, dbCmd)
 

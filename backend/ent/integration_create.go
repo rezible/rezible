@@ -4,6 +4,7 @@ package ent
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"time"
@@ -66,13 +67,13 @@ func (_c *IntegrationCreate) SetName(v string) *IntegrationCreate {
 }
 
 // SetConfig sets the "config" field.
-func (_c *IntegrationCreate) SetConfig(v map[string]interface{}) *IntegrationCreate {
+func (_c *IntegrationCreate) SetConfig(v json.RawMessage) *IntegrationCreate {
 	_c.mutation.SetConfig(v)
 	return _c
 }
 
 // SetUserConfig sets the "user_config" field.
-func (_c *IntegrationCreate) SetUserConfig(v map[string]interface{}) *IntegrationCreate {
+func (_c *IntegrationCreate) SetUserConfig(v json.RawMessage) *IntegrationCreate {
 	_c.mutation.SetUserConfig(v)
 	return _c
 }
@@ -339,7 +340,7 @@ func (u *IntegrationUpsert) UpdateName() *IntegrationUpsert {
 }
 
 // SetConfig sets the "config" field.
-func (u *IntegrationUpsert) SetConfig(v map[string]interface{}) *IntegrationUpsert {
+func (u *IntegrationUpsert) SetConfig(v json.RawMessage) *IntegrationUpsert {
 	u.Set(integration.FieldConfig, v)
 	return u
 }
@@ -351,7 +352,7 @@ func (u *IntegrationUpsert) UpdateConfig() *IntegrationUpsert {
 }
 
 // SetUserConfig sets the "user_config" field.
-func (u *IntegrationUpsert) SetUserConfig(v map[string]interface{}) *IntegrationUpsert {
+func (u *IntegrationUpsert) SetUserConfig(v json.RawMessage) *IntegrationUpsert {
 	u.Set(integration.FieldUserConfig, v)
 	return u
 }
@@ -462,7 +463,7 @@ func (u *IntegrationUpsertOne) UpdateName() *IntegrationUpsertOne {
 }
 
 // SetConfig sets the "config" field.
-func (u *IntegrationUpsertOne) SetConfig(v map[string]interface{}) *IntegrationUpsertOne {
+func (u *IntegrationUpsertOne) SetConfig(v json.RawMessage) *IntegrationUpsertOne {
 	return u.Update(func(s *IntegrationUpsert) {
 		s.SetConfig(v)
 	})
@@ -476,7 +477,7 @@ func (u *IntegrationUpsertOne) UpdateConfig() *IntegrationUpsertOne {
 }
 
 // SetUserConfig sets the "user_config" field.
-func (u *IntegrationUpsertOne) SetUserConfig(v map[string]interface{}) *IntegrationUpsertOne {
+func (u *IntegrationUpsertOne) SetUserConfig(v json.RawMessage) *IntegrationUpsertOne {
 	return u.Update(func(s *IntegrationUpsert) {
 		s.SetUserConfig(v)
 	})
@@ -757,7 +758,7 @@ func (u *IntegrationUpsertBulk) UpdateName() *IntegrationUpsertBulk {
 }
 
 // SetConfig sets the "config" field.
-func (u *IntegrationUpsertBulk) SetConfig(v map[string]interface{}) *IntegrationUpsertBulk {
+func (u *IntegrationUpsertBulk) SetConfig(v json.RawMessage) *IntegrationUpsertBulk {
 	return u.Update(func(s *IntegrationUpsert) {
 		s.SetConfig(v)
 	})
@@ -771,7 +772,7 @@ func (u *IntegrationUpsertBulk) UpdateConfig() *IntegrationUpsertBulk {
 }
 
 // SetUserConfig sets the "user_config" field.
-func (u *IntegrationUpsertBulk) SetUserConfig(v map[string]interface{}) *IntegrationUpsertBulk {
+func (u *IntegrationUpsertBulk) SetUserConfig(v json.RawMessage) *IntegrationUpsertBulk {
 	return u.Update(func(s *IntegrationUpsert) {
 		s.SetUserConfig(v)
 	})

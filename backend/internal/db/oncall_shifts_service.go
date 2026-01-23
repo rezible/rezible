@@ -9,6 +9,7 @@ import (
 	"entgo.io/ent/dialect/sql"
 	mapset "github.com/deckarep/golang-set/v2"
 	"github.com/google/uuid"
+	"github.com/rs/zerolog/log"
 
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
@@ -24,15 +25,13 @@ type OncallShiftsService struct {
 	db    *ent.Client
 	jobs  rez.JobsService
 	docs  rez.DocumentsService
-	chat  rez.ChatService
 	users rez.UserService
 }
 
-func NewOncallShiftsService(db *ent.Client, jobs rez.JobsService, chat rez.ChatService) (*OncallShiftsService, error) {
+func NewOncallShiftsService(db *ent.Client, jobs rez.JobsService) (*OncallShiftsService, error) {
 	s := &OncallShiftsService{
 		db:   db,
 		jobs: jobs,
-		chat: chat,
 	}
 
 	return s, nil
@@ -211,9 +210,9 @@ func (s *OncallShiftsService) HandleEnsureShiftHandoverReminderSent(ctx context.
 		return nil
 	}
 
-	if msgErr := s.chat.SendOncallHandoverReminder(ctx, shift); msgErr != nil {
-		return fmt.Errorf("sending reminder: %w", msgErr)
-	}
+	log.Debug().
+		Str("shiftId", shift.ID.String()).
+		Msg("send shift ending reminder")
 
 	update := ho.Update().SetReminderSent(true)
 	if updateErr := update.Exec(ctx); updateErr != nil {
@@ -379,9 +378,13 @@ func (s *OncallShiftsService) sendShiftHandover(ctx context.Context, ho *ent.Onc
 		StartingShift:     nextShift,
 		PinnedAnnotations: annos,
 	}
-	if sendErr := s.chat.SendOncallHandover(ctx, params); sendErr != nil {
-		return nil, fmt.Errorf("failed to send oncall handover: %w", sendErr)
-	}
+	log.Debug().
+		Str("shiftId", shift.ID.String()).
+		Interface("params", params).
+		Msg("send shift handover")
+	//if sendErr := s.chat.SendOncallHandover(ctx, params); sendErr != nil {
+	//	return nil, fmt.Errorf("failed to send oncall handover: %w", sendErr)
+	//}
 
 	updated, updateErr := ho.Update().SetSentAt(time.Now()).Save(ctx)
 	if updateErr != nil {

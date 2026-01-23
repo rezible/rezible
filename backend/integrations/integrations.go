@@ -2,10 +2,12 @@ package integrations
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
+	"github.com/rezible/rezible/internal/google"
 
 	fakeprovider "github.com/rezible/rezible/internal/fake"
 	"github.com/rezible/rezible/internal/grafana"
@@ -13,35 +15,82 @@ import (
 	"github.com/rezible/rezible/internal/slack"
 )
 
-// TODO: do these properly
-func CheckConfigValid(intg *ent.Integration) bool {
-	return true
+var packageMap = map[string]rez.PackageIntegrationsDetail{}
+
+func InitPackages() {
+	packageDetails := []rez.PackageIntegrationsDetail{
+		fakeprovider.IntegrationDetail(),
+		slack.IntegrationDetail(),
+		google.IntegrationDetail(),
+	}
+	packageMap = make(map[string]rez.PackageIntegrationsDetail)
+	for _, detail := range packageDetails {
+		packageMap[detail.Name()] = detail
+	}
 }
 
-func GetEnabledDataKinds(intg *ent.Integration) []string {
-	if intg.Name == "slack" {
-		return []string{"users", "chat"}
+func ValidateConfig(name string, cfg json.RawMessage) (bool, error) {
+	if p, ok := packageMap[name]; ok {
+		return p.ValidateConfig(cfg)
+	}
+	return false, fmt.Errorf("unknown integration: %s", name)
+}
+
+func GetSupported() []rez.PackageIntegrationsDetail {
+	supported := make([]rez.PackageIntegrationsDetail, 0)
+	for _, pkg := range packageMap {
+		if pkg.Enabled() {
+			supported = append(supported, pkg)
+		}
+	}
+	return supported
+}
+
+func GetDetail(name string) (rez.PackageIntegrationsDetail, error) {
+	p, valid := packageMap[name]
+	if !valid {
+		return nil, fmt.Errorf("unknown integration: %s", name)
+	}
+	return p, nil
+}
+
+func GetSupportedDataKinds(intg *ent.Integration) []string {
+	if p, valid := packageMap[intg.Name]; valid {
+		if p.Enabled() {
+			return p.SupportedDataKinds()
+		}
 	}
 	return []string{}
 }
 
-func GetUserDataProviders(ctx context.Context, intgs ent.Integrations) ([]rez.UserDataProvider, error) {
-	var provs []rez.UserDataProvider
+func GetDataProviders[T any](intgs ent.Integrations, iFn func(rez.PackageIntegrationsDetail, *ent.Integration) (bool, T, error)) ([]T, error) {
+	var provs []T
 	for _, intg := range intgs {
-		var prov rez.UserDataProvider
-		var pErr error
-		switch intg.Name {
-		case "slack":
-			prov, pErr = slack.NewUserDataProvider(intg)
-		default:
-			continue
+		if p, valid := packageMap[intg.Name]; valid {
+			if supported, prov, pErr := iFn(p, intg); supported {
+				if pErr != nil {
+					return nil, fmt.Errorf("loading data provider: %w", pErr)
+				}
+				provs = append(provs, prov)
+			}
 		}
-		if pErr != nil {
-			return nil, fmt.Errorf("loading provider: %w", pErr)
-		}
-		provs = append(provs, prov)
 	}
 	return provs, nil
+}
+
+func GetUserDataProviders(ctx context.Context, intgs ent.Integrations) ([]rez.UserDataProvider, error) {
+	type integrationWithUserDataProvider interface {
+		MakeUserDataProvider(context.Context, *ent.Integration) (rez.UserDataProvider, error)
+	}
+
+	provFn := func(p rez.PackageIntegrationsDetail, i *ent.Integration) (bool, rez.UserDataProvider, error) {
+		if dpi, ok := p.(integrationWithUserDataProvider); ok {
+			prov, pErr := dpi.MakeUserDataProvider(ctx, i)
+			return true, prov, pErr
+		}
+		return false, nil, nil
+	}
+	return GetDataProviders[rez.UserDataProvider](intgs, provFn)
 }
 
 func GetTeamDataProviders(ctx context.Context, intgs ent.Integrations) ([]rez.TeamDataProvider, error) {

@@ -105,26 +105,54 @@ export type AuthSessionsConfig = {
     providers: Array<AuthSessionProviderConfig>;
 };
 
-export type CompleteIntegrationOAuthRequestAttributes = {
+export type CompleteIntegrationOAuthFlowRequestAttributes = {
     code: string;
-    name: string;
     state: string;
 };
 
-export type CompleteIntegrationOAuthRequestBody = {
+export type CompleteIntegrationOAuthFlowRequestBody = {
     /**
      * A URL to the JSON Schema for this object.
      */
     readonly $schema?: string;
-    attributes: CompleteIntegrationOAuthRequestAttributes;
+    attributes: CompleteIntegrationOAuthFlowRequestAttributes;
 };
 
-export type CompleteIntegrationOAuthResponseBody = {
+export type CompleteIntegrationOAuthFlowResponseBody = {
     /**
      * A URL to the JSON Schema for this object.
      */
     readonly $schema?: string;
-    data: Integration;
+    data: ConfiguredIntegration;
+};
+
+export type ConfigureIntegrationRequestBody = {
+    /**
+     * A URL to the JSON Schema for this object.
+     */
+    readonly $schema?: string;
+    attributes: RawIntegrationConfigRequestAttributes;
+};
+
+export type ConfigureIntegrationResponseBody = {
+    /**
+     * A URL to the JSON Schema for this object.
+     */
+    readonly $schema?: string;
+    data: ConfiguredIntegration;
+};
+
+export type ConfiguredIntegration = {
+    attributes: ConfiguredIntegrationAttributes;
+    name: string;
+};
+
+export type ConfiguredIntegrationAttributes = {
+    config: unknown;
+    configValid: boolean;
+    dataKinds: {
+        [key: string]: boolean;
+    };
 };
 
 export type CreateEventAnnotationRequestAttributes = {
@@ -344,29 +372,6 @@ export type CreateIncidentTypeResponseBody = {
      */
     readonly $schema?: string;
     data: IncidentType;
-};
-
-export type CreateIntegrationRequestAttributes = {
-    config: {
-        [key: string]: unknown;
-    };
-    name: string;
-};
-
-export type CreateIntegrationRequestBody = {
-    /**
-     * A URL to the JSON Schema for this object.
-     */
-    readonly $schema?: string;
-    attributes: CreateIntegrationRequestAttributes;
-};
-
-export type CreateIntegrationResponseBody = {
-    /**
-     * A URL to the JSON Schema for this object.
-     */
-    readonly $schema?: string;
-    data: Integration;
 };
 
 export type CreateMeetingScheduleAttributes = {
@@ -970,7 +975,7 @@ export type GetIntegrationResponseBody = {
      * A URL to the JSON Schema for this object.
      */
     readonly $schema?: string;
-    data: Integration;
+    data: ConfiguredIntegration;
 };
 
 export type GetMeetingScheduleResponseBody = {
@@ -1449,20 +1454,6 @@ export type IncidentTypeAttributes = {
     name: string;
 };
 
-export type Integration = {
-    attributes: IntegrationAttributes;
-    id: string;
-};
-
-export type IntegrationAttributes = {
-    config: {
-        [key: string]: unknown;
-    };
-    configValid: boolean;
-    enabledDataKinds: Array<string>;
-    name: string;
-};
-
 export type IntegrationOAuthFlow = {
     flow_url: string;
 };
@@ -1482,6 +1473,15 @@ export type ListAlertsResponseBody = {
      */
     readonly $schema?: string;
     data: Array<Alert>;
+    pagination: ResponsePagination;
+};
+
+export type ListConfiguredIntegrationsResponseBody = {
+    /**
+     * A URL to the JSON Schema for this object.
+     */
+    readonly $schema?: string;
+    data: Array<ConfiguredIntegration>;
     pagination: ResponsePagination;
 };
 
@@ -1606,15 +1606,6 @@ export type ListIncidentsResponseBody = {
      */
     readonly $schema?: string;
     data: Array<Incident>;
-    pagination: ResponsePagination;
-};
-
-export type ListIntegrationsResponseBody = {
-    /**
-     * A URL to the JSON Schema for this object.
-     */
-    readonly $schema?: string;
-    data: Array<Integration>;
     pagination: ResponsePagination;
 };
 
@@ -1976,6 +1967,10 @@ export type PlaybookAttributes = {
     title: string;
 };
 
+export type RawIntegrationConfigRequestAttributes = {
+    config: unknown;
+};
+
 export type RemoveWatchedOncallRosterResponseBody = {
     /**
      * A URL to the JSON Schema for this object.
@@ -2060,19 +2055,7 @@ export type SendOncallShiftHandoverResponseBody = {
     data: OncallShiftHandover;
 };
 
-export type StartIntegrationOAuthRequestAttributes = {
-    name: string;
-};
-
-export type StartIntegrationOAuthRequestBody = {
-    /**
-     * A URL to the JSON Schema for this object.
-     */
-    readonly $schema?: string;
-    attributes: StartIntegrationOAuthRequestAttributes;
-};
-
-export type StartIntegrationOAuthResponseBody = {
+export type StartIntegrationOAuthFlowResponseBody = {
     /**
      * A URL to the JSON Schema for this object.
      */
@@ -2476,29 +2459,6 @@ export type UpdateIncidentTypeResponseBody = {
      */
     readonly $schema?: string;
     data: IncidentType;
-};
-
-export type UpdateIntegrationAttributes = {
-    config?: {
-        [key: string]: unknown;
-    };
-    enabled?: boolean;
-};
-
-export type UpdateIntegrationRequestBody = {
-    /**
-     * A URL to the JSON Schema for this object.
-     */
-    readonly $schema?: string;
-    attributes: UpdateIntegrationAttributes;
-};
-
-export type UpdateIntegrationResponseBody = {
-    /**
-     * A URL to the JSON Schema for this object.
-     */
-    readonly $schema?: string;
-    data: Integration;
 };
 
 export type UpdateMeetingScheduleAttributes = {
@@ -6131,56 +6091,6 @@ export type GetRetrospectiveForIncidentResponses = {
 
 export type GetRetrospectiveForIncidentResponse = GetRetrospectiveForIncidentResponses[keyof GetRetrospectiveForIncidentResponses];
 
-export type ListSupportedIntegrationsData = {
-    body?: never;
-    path?: never;
-    query?: {
-        limit?: number;
-        offset?: number;
-        search?: string;
-        archived?: boolean;
-    };
-    url: '/integrations';
-};
-
-export type ListSupportedIntegrationsErrors = {
-    /**
-     * Bad Request
-     */
-    400: ErrorModel;
-    /**
-     * Unauthorized
-     */
-    401: ErrorModel;
-    /**
-     * Forbidden
-     */
-    403: ErrorModel;
-    /**
-     * Not Found
-     */
-    404: ErrorModel;
-    /**
-     * Unprocessable Entity
-     */
-    422: ErrorModel;
-    /**
-     * Internal Server Error
-     */
-    500: ErrorModel;
-};
-
-export type ListSupportedIntegrationsError = ListSupportedIntegrationsErrors[keyof ListSupportedIntegrationsErrors];
-
-export type ListSupportedIntegrationsResponses = {
-    /**
-     * OK
-     */
-    200: ListSupportedIntegrationsResponseBody;
-};
-
-export type ListSupportedIntegrationsResponse = ListSupportedIntegrationsResponses[keyof ListSupportedIntegrationsResponses];
-
 export type ListConfiguredIntegrationsData = {
     body?: never;
     path?: never;
@@ -6226,66 +6136,21 @@ export type ListConfiguredIntegrationsResponses = {
     /**
      * OK
      */
-    200: ListIntegrationsResponseBody;
+    200: ListConfiguredIntegrationsResponseBody;
 };
 
 export type ListConfiguredIntegrationsResponse = ListConfiguredIntegrationsResponses[keyof ListConfiguredIntegrationsResponses];
 
-export type CreateIntegrationData = {
-    body: CreateIntegrationRequestBody;
-    path?: never;
-    query?: never;
-    url: '/integrations/configured';
-};
-
-export type CreateIntegrationErrors = {
-    /**
-     * Bad Request
-     */
-    400: ErrorModel;
-    /**
-     * Unauthorized
-     */
-    401: ErrorModel;
-    /**
-     * Forbidden
-     */
-    403: ErrorModel;
-    /**
-     * Not Found
-     */
-    404: ErrorModel;
-    /**
-     * Unprocessable Entity
-     */
-    422: ErrorModel;
-    /**
-     * Internal Server Error
-     */
-    500: ErrorModel;
-};
-
-export type CreateIntegrationError = CreateIntegrationErrors[keyof CreateIntegrationErrors];
-
-export type CreateIntegrationResponses = {
-    /**
-     * OK
-     */
-    200: CreateIntegrationResponseBody;
-};
-
-export type CreateIntegrationResponse = CreateIntegrationResponses[keyof CreateIntegrationResponses];
-
-export type DeleteConfiguredIntegrationData = {
+export type DeleteIntegrationData = {
     body?: never;
     path: {
-        id: string;
+        name: string;
     };
     query?: never;
     url: '/integrations/configured/{id}';
 };
 
-export type DeleteConfiguredIntegrationErrors = {
+export type DeleteIntegrationErrors = {
     /**
      * Bad Request
      */
@@ -6312,27 +6177,27 @@ export type DeleteConfiguredIntegrationErrors = {
     500: ErrorModel;
 };
 
-export type DeleteConfiguredIntegrationError = DeleteConfiguredIntegrationErrors[keyof DeleteConfiguredIntegrationErrors];
+export type DeleteIntegrationError = DeleteIntegrationErrors[keyof DeleteIntegrationErrors];
 
-export type DeleteConfiguredIntegrationResponses = {
+export type DeleteIntegrationResponses = {
     /**
      * No Content
      */
     204: void;
 };
 
-export type DeleteConfiguredIntegrationResponse = DeleteConfiguredIntegrationResponses[keyof DeleteConfiguredIntegrationResponses];
+export type DeleteIntegrationResponse = DeleteIntegrationResponses[keyof DeleteIntegrationResponses];
 
-export type GetConfiguredIntegrationData = {
+export type GetIntegrationData = {
     body?: never;
     path: {
-        id: string;
+        name: string;
     };
     query?: never;
-    url: '/integrations/configured/{id}';
+    url: '/integrations/configured/{name}';
 };
 
-export type GetConfiguredIntegrationErrors = {
+export type GetIntegrationErrors = {
     /**
      * Bad Request
      */
@@ -6359,27 +6224,27 @@ export type GetConfiguredIntegrationErrors = {
     500: ErrorModel;
 };
 
-export type GetConfiguredIntegrationError = GetConfiguredIntegrationErrors[keyof GetConfiguredIntegrationErrors];
+export type GetIntegrationError = GetIntegrationErrors[keyof GetIntegrationErrors];
 
-export type GetConfiguredIntegrationResponses = {
+export type GetIntegrationResponses = {
     /**
      * OK
      */
     200: GetIntegrationResponseBody;
 };
 
-export type GetConfiguredIntegrationResponse = GetConfiguredIntegrationResponses[keyof GetConfiguredIntegrationResponses];
+export type GetIntegrationResponse = GetIntegrationResponses[keyof GetIntegrationResponses];
 
-export type UpdateConfiguredIntegrationData = {
-    body: UpdateIntegrationRequestBody;
+export type ConfigureIntegrationData = {
+    body: ConfigureIntegrationRequestBody;
     path: {
-        id: string;
+        name: string;
     };
     query?: never;
-    url: '/integrations/configured/{id}';
+    url: '/integrations/configured/{name}';
 };
 
-export type UpdateConfiguredIntegrationErrors = {
+export type ConfigureIntegrationErrors = {
     /**
      * Bad Request
      */
@@ -6406,25 +6271,27 @@ export type UpdateConfiguredIntegrationErrors = {
     500: ErrorModel;
 };
 
-export type UpdateConfiguredIntegrationError = UpdateConfiguredIntegrationErrors[keyof UpdateConfiguredIntegrationErrors];
+export type ConfigureIntegrationError = ConfigureIntegrationErrors[keyof ConfigureIntegrationErrors];
 
-export type UpdateConfiguredIntegrationResponses = {
+export type ConfigureIntegrationResponses = {
     /**
      * OK
      */
-    200: UpdateIntegrationResponseBody;
+    200: ConfigureIntegrationResponseBody;
 };
 
-export type UpdateConfiguredIntegrationResponse = UpdateConfiguredIntegrationResponses[keyof UpdateConfiguredIntegrationResponses];
+export type ConfigureIntegrationResponse = ConfigureIntegrationResponses[keyof ConfigureIntegrationResponses];
 
-export type CompleteIntegrationOauthData = {
-    body: CompleteIntegrationOAuthRequestBody;
-    path?: never;
+export type CompleteIntegrationOauthFlowData = {
+    body: CompleteIntegrationOAuthFlowRequestBody;
+    path: {
+        name: string;
+    };
     query?: never;
-    url: '/integrations/oauth/complete';
+    url: '/integrations/oauth/{name}/complete';
 };
 
-export type CompleteIntegrationOauthErrors = {
+export type CompleteIntegrationOauthFlowErrors = {
     /**
      * Bad Request
      */
@@ -6451,25 +6318,27 @@ export type CompleteIntegrationOauthErrors = {
     500: ErrorModel;
 };
 
-export type CompleteIntegrationOauthError = CompleteIntegrationOauthErrors[keyof CompleteIntegrationOauthErrors];
+export type CompleteIntegrationOauthFlowError = CompleteIntegrationOauthFlowErrors[keyof CompleteIntegrationOauthFlowErrors];
 
-export type CompleteIntegrationOauthResponses = {
+export type CompleteIntegrationOauthFlowResponses = {
     /**
      * OK
      */
-    200: CompleteIntegrationOAuthResponseBody;
+    200: CompleteIntegrationOAuthFlowResponseBody;
 };
 
-export type CompleteIntegrationOauthResponse = CompleteIntegrationOauthResponses[keyof CompleteIntegrationOauthResponses];
+export type CompleteIntegrationOauthFlowResponse = CompleteIntegrationOauthFlowResponses[keyof CompleteIntegrationOauthFlowResponses];
 
-export type StartIntegrationOauthData = {
-    body: StartIntegrationOAuthRequestBody;
-    path?: never;
+export type StartIntegrationOauthFlowData = {
+    body?: never;
+    path: {
+        name: string;
+    };
     query?: never;
-    url: '/integrations/oauth/start';
+    url: '/integrations/oauth/{name}/start';
 };
 
-export type StartIntegrationOauthErrors = {
+export type StartIntegrationOauthFlowErrors = {
     /**
      * Bad Request
      */
@@ -6496,16 +6365,66 @@ export type StartIntegrationOauthErrors = {
     500: ErrorModel;
 };
 
-export type StartIntegrationOauthError = StartIntegrationOauthErrors[keyof StartIntegrationOauthErrors];
+export type StartIntegrationOauthFlowError = StartIntegrationOauthFlowErrors[keyof StartIntegrationOauthFlowErrors];
 
-export type StartIntegrationOauthResponses = {
+export type StartIntegrationOauthFlowResponses = {
     /**
      * OK
      */
-    200: StartIntegrationOAuthResponseBody;
+    200: StartIntegrationOAuthFlowResponseBody;
 };
 
-export type StartIntegrationOauthResponse = StartIntegrationOauthResponses[keyof StartIntegrationOauthResponses];
+export type StartIntegrationOauthFlowResponse = StartIntegrationOauthFlowResponses[keyof StartIntegrationOauthFlowResponses];
+
+export type ListSupportedIntegrationsData = {
+    body?: never;
+    path?: never;
+    query?: {
+        limit?: number;
+        offset?: number;
+        search?: string;
+        archived?: boolean;
+    };
+    url: '/integrations/supported';
+};
+
+export type ListSupportedIntegrationsErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
+
+export type ListSupportedIntegrationsError = ListSupportedIntegrationsErrors[keyof ListSupportedIntegrationsErrors];
+
+export type ListSupportedIntegrationsResponses = {
+    /**
+     * OK
+     */
+    200: ListSupportedIntegrationsResponseBody;
+};
+
+export type ListSupportedIntegrationsResponse = ListSupportedIntegrationsResponses[keyof ListSupportedIntegrationsResponses];
 
 export type ListMeetingSchedulesData = {
     body?: never;

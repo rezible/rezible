@@ -16,7 +16,6 @@ require (
 	github.com/failsafe-go/failsafe-go v0.9.5
 	github.com/go-chi/chi/v5 v5.2.2
 	github.com/go-faker/faker/v4 v4.6.1
-	github.com/go-viper/mapstructure/v2 v2.5.0
 	github.com/golang-jwt/jwt/v5 v5.2.2
 	github.com/google/uuid v1.6.0
 	github.com/gorilla/sessions v1.4.0
@@ -34,6 +33,7 @@ require (
 	github.com/spf13/viper v1.21.0
 	github.com/texm/prosemirror-go v0.0.0-20241205030628-c6d58982acfd
 	golang.org/x/oauth2 v0.34.0
+	google.golang.org/api v0.260.0
 	gopkg.in/yaml.v3 v3.0.1
 )
 
@@ -85,6 +85,7 @@ require (
 	github.com/go-openapi/inflect v0.21.3 // indirect
 	github.com/go-openapi/jsonpointer v0.21.1 // indirect
 	github.com/go-openapi/swag v0.23.1 // indirect
+	github.com/go-viper/mapstructure/v2 v2.5.0 // indirect
 	github.com/gogo/protobuf v1.3.2 // indirect
 	github.com/golang-jwt/jwt/v4 v4.5.2 // indirect
 	github.com/google/go-cmp v0.7.0 // indirect
@@ -128,7 +129,6 @@ require (
 	github.com/riverqueue/river/riverdriver v0.26.0 // indirect
 	github.com/riverqueue/river/riverdriver/riversqlite v0.26.0 // indirect
 	github.com/riverqueue/river/rivershared v0.26.0 // indirect
-	github.com/rogpeppe/go-internal v1.14.1 // indirect
 	github.com/russellhaering/goxmldsig v1.5.0 // indirect
 	github.com/sagikazarmark/locafero v0.11.0 // indirect
 	github.com/samber/lo v1.49.1 // indirect
@@ -169,7 +169,6 @@ require (
 	golang.org/x/sys v0.39.0 // indirect
 	golang.org/x/text v0.32.0 // indirect
 	golang.org/x/tools v0.39.0 // indirect
-	google.golang.org/api v0.260.0 // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20251222181119-0a764e51fe1b // indirect
 	google.golang.org/grpc v1.78.0 // indirect
 	google.golang.org/protobuf v1.36.11 // indirect

@@ -43,7 +43,6 @@ func NewHandler(
 	auth rez.AuthService,
 	orgs rez.OrganizationService,
 	integrations rez.IntegrationsService,
-	chat rez.ChatService,
 	users rez.UserService,
 	incidents rez.IncidentService,
 	debriefs rez.DebriefService,
