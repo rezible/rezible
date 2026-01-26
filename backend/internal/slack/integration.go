@@ -11,10 +11,6 @@ import (
 	"github.com/slack-go/slack"
 	"golang.org/x/oauth2"
 
-	"entgo.io/ent/dialect/sql"
-	"entgo.io/ent/dialect/sql/sqljson"
-	entintegration "github.com/rezible/rezible/ent/integration"
-
 	rez "github.com/rezible/rezible"
 )
 
@@ -132,24 +128,6 @@ type teamInfo struct {
 }
 
 type IntegrationUserConfig struct {
-}
-
-func getIntegrationConfigQueryPredicate(teamId string, enterpriseId string) func(q *ent.IntegrationQuery) {
-	hasEnterpriseId := func(s *sql.Selector) {
-		s.Where(sqljson.ValueEQ(entintegration.FieldConfig, enterpriseId, sqljson.DotPath("Enterprise.ID")))
-	}
-	hasTeamId := func(s *sql.Selector) {
-		s.Where(sqljson.ValueEQ(entintegration.FieldConfig, teamId, sqljson.DotPath("Team.ID")))
-	}
-	return func(q *ent.IntegrationQuery) {
-		if enterpriseId != "" && teamId != "" {
-			q.Where(entintegration.And(hasEnterpriseId, hasTeamId))
-		} else if enterpriseId != "" {
-			q.Where(hasEnterpriseId)
-		} else if teamId != "" {
-			q.Where(hasTeamId)
-		}
-	}
 }
 
 func getTeamInfoFromTokenExtra(e map[string]interface{}) (*teamInfo, error) {

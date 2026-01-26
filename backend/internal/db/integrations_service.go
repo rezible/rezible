@@ -40,7 +40,7 @@ func NewIntegrationsService(db *ent.Client, jobSvc rez.JobsService) (*Integratio
 }
 
 func (s *IntegrationsService) listQuery(p rez.ListIntegrationsParams) *ent.IntegrationQuery {
-	query := s.db.Integration.Query()
+	query := s.db.Integration.Debug().Query()
 	if p.Name != "" {
 		query.Where(integration.Name(p.Name))
 	}
@@ -65,24 +65,6 @@ func (s *IntegrationsService) listQuery(p rez.ListIntegrationsParams) *ent.Integ
 
 func (s *IntegrationsService) ListIntegrations(ctx context.Context, params rez.ListIntegrationsParams) ([]*ent.Integration, error) {
 	return s.listQuery(params).All(ctx)
-	// query := s.listQuery(params)
-	//all, queryErr := query.All(ctx)
-	//if queryErr != nil {
-	//	return nil, fmt.Errorf("failed to query integrations: %w", queryErr)
-	//}
-	//if params.DataKind == "" {
-	//	return all, nil
-	//}
-	//var supportingKind []*ent.Integration
-	//for _, intg := range all {
-	//	if intg.DataKinds[params.DataKind] {
-	//		supportingKind = append(supportingKind, intg)
-	//	}
-	//}
-	//if len(supportingKind) == 0 {
-	//	return nil, rez.ErrNoConfiguredIntegrations
-	//}
-	//return supportingKind, nil
 }
 
 func (s *IntegrationsService) GetIntegration(ctx context.Context, name string) (*ent.Integration, error) {

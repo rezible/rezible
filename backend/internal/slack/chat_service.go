@@ -97,9 +97,16 @@ func (s *ChatService) lookupIntegrationTenantId(ctx context.Context, teamId stri
 			Str("enterpriseId", enterpriseId).
 			Msg("looking up tenant id from slack integrations via db")
 
+		configValues := make(map[string]any)
+		if teamId != "" {
+			configValues["Team.ID"] = teamId
+		}
+		if enterpriseId != "" {
+			configValues["Enterprise.ID"] = enterpriseId
+		}
 		listParams := rez.ListIntegrationsParams{
-			Name:   integrationName,
-			Filter: getIntegrationConfigQueryPredicate(teamId, enterpriseId),
+			Name:         integrationName,
+			ConfigValues: configValues,
 		}
 		intgs, intgsErr := s.integrations.ListIntegrations(access.SystemContext(ctx), listParams)
 		if intgsErr != nil {
