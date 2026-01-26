@@ -7,6 +7,7 @@ import (
 	"net/http"
 
 	"github.com/danielgtaylor/huma/v2"
+	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
 	"github.com/rezible/rezible/integrations"
 )
@@ -58,14 +59,28 @@ type (
 	}
 )
 
-func IntegrationFromEnt(intg *ent.Integration) (*ConfiguredIntegration, error) {
-	userConfig, cfgErr := integrations.GetUserConfig(intg.Name, intg.Config)
-	if cfgErr != nil {
-		return nil, fmt.Errorf("get user config: %w", cfgErr)
+func SupportedIntegrationFromPackage(p rez.IntegrationPackage) SupportedIntegration {
+	return SupportedIntegration{
+		Name:          p.Name(),
+		DataKinds:     p.SupportedDataKinds(),
+		OAuthRequired: p.OAuthConfigRequired(),
 	}
-	valid, _ := integrations.ValidateConfig(intg.Name, intg.Config)
+}
+
+func IntegrationFromEnt(intg *ent.Integration) (*ConfiguredIntegration, error) {
+	p, pErr := integrations.GetPackage(intg.Name)
+	if pErr != nil {
+		return nil, pErr
+	}
+
+	valid, _ := p.ValidateConfig(intg.Config)
+	sanitizedConfig, sanitizedErr := p.GetSanitizedConfig(intg.Config)
+	if sanitizedErr != nil {
+		return nil, fmt.Errorf("sanitized: %w", sanitizedErr)
+	}
+
 	attrs := ConfiguredIntegrationAttributes{
-		Config:      userConfig,
+		Config:      sanitizedConfig,
 		ConfigValid: valid,
 		DataKinds:   intg.DataKinds,
 	}

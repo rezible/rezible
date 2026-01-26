@@ -19,14 +19,10 @@ func newIntegrationsHandler(integrations rez.IntegrationsService) *integrationsH
 func (h *integrationsHandler) ListSupported(ctx context.Context, req *oapi.ListSupportedIntegrationsRequest) (*oapi.ListSupportedIntegrationsResponse, error) {
 	var resp oapi.ListSupportedIntegrationsResponse
 
-	supportedIntegrations := integrations.GetEnabled()
+	supportedIntegrations := integrations.GetAvailable()
 	resp.Body.Data = make([]oapi.SupportedIntegration, len(supportedIntegrations))
-	for i, detail := range supportedIntegrations {
-		resp.Body.Data[i] = oapi.SupportedIntegration{
-			Name:          detail.Name(),
-			DataKinds:     detail.SupportedDataKinds(),
-			OAuthRequired: detail.OAuthConfigRequired(),
-		}
+	for i, p := range supportedIntegrations {
+		resp.Body.Data[i] = oapi.SupportedIntegrationFromPackage(p)
 	}
 
 	return &resp, nil
@@ -77,7 +73,7 @@ func (h *integrationsHandler) ConfigureIntegration(ctx context.Context, req *oap
 
 	attr := req.Body.Attributes
 
-	created, createErr := h.integrations.ConfigureIntegration(ctx, req.Name, attr.Config, attr.DataKinds)
+	created, createErr := h.integrations.ConfigureIntegration(ctx, req.Name, true, attr.Config, attr.DataKinds)
 	if createErr != nil {
 		return nil, apiError("failed to update integration", createErr)
 	}

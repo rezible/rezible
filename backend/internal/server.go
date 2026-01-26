@@ -136,7 +136,7 @@ func (s *Server) setup(ctx context.Context) error {
 		return fmt.Errorf("integrations: %w", intgsErr)
 	}
 
-	for _, p := range integrations.GetEnabled() {
+	for _, p := range integrations.GetAvailable() {
 		if elIntegration, ok := p.(rez.IntegrationWithEventListeners); ok {
 			for name, l := range elIntegration.EventListeners() {
 				s.addEventListener(name, l)

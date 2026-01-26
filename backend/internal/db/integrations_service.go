@@ -40,7 +40,7 @@ func NewIntegrationsService(db *ent.Client, jobSvc rez.JobsService) (*Integratio
 }
 
 func (s *IntegrationsService) listQuery(p rez.ListIntegrationsParams) *ent.IntegrationQuery {
-	query := s.db.Integration.Debug().Query()
+	query := s.db.Integration.Query()
 	if p.Name != "" {
 		query.Where(integration.Name(p.Name))
 	}
@@ -72,25 +72,49 @@ func (s *IntegrationsService) GetIntegration(ctx context.Context, name string) (
 	return q.Only(ctx)
 }
 
-type updateIntegrationMutation interface {
+type configureIntegrationMutation interface {
 	Save(context.Context) (*ent.Integration, error)
 	Mutation() *ent.IntegrationMutation
 }
 
-func (s *IntegrationsService) ConfigureIntegration(ctx context.Context, name string, cfg json.RawMessage, dataKinds map[string]bool) (*ent.Integration, error) {
+func (s *IntegrationsService) ConfigureIntegration(ctx context.Context, name string, user bool, rawCfg json.RawMessage, dataKinds map[string]bool) (*ent.Integration, error) {
 	curr, getCurrErr := s.GetIntegration(ctx, name)
 	if getCurrErr != nil && !ent.IsNotFound(getCurrErr) {
 		return nil, fmt.Errorf("failed to get integration %s: %w", name, getCurrErr)
 	}
-	var m updateIntegrationMutation
-	if curr != nil {
-		m = s.db.Integration.UpdateOneID(curr.ID)
-	} else {
+
+	p, pErr := integrations.GetPackage(name)
+	if pErr != nil {
+		return nil, fmt.Errorf("failed to get package %s: %w", name, pErr)
+	}
+
+	var m configureIntegrationMutation
+	if curr == nil {
 		m = s.db.Integration.Create().SetName(name)
+	} else {
+		m = s.db.Integration.UpdateOneID(curr.ID)
+	}
+
+	newCfg := rawCfg
+	if user {
+		currCfg := []byte("{}")
+		if curr != nil {
+			currCfg = curr.Config
+		}
+		merged, mergeErr := p.MergeUserConfig(currCfg, rawCfg)
+		if mergeErr != nil {
+			return nil, fmt.Errorf("failed to merge user config: %w", mergeErr)
+		}
+		newCfg = merged
+	}
+
+	valid, validErr := p.ValidateConfig(newCfg)
+	if !valid || validErr != nil {
+		return nil, fmt.Errorf("failed to validate config: %w", validErr)
 	}
 
 	mut := m.Mutation()
-	mut.SetConfig(cfg)
+	mut.SetConfig(newCfg)
 	mut.SetDataKinds(dataKinds)
 
 	updated, saveErr := m.Save(ctx)
@@ -139,7 +163,7 @@ func (s *IntegrationsService) getIntegrationOAuthConfig(d rez.IntegrationPackage
 }
 
 func (s *IntegrationsService) StartOAuth2Flow(ctx context.Context, name string) (string, error) {
-	intgDetail, intgErr := integrations.GetDetail(name)
+	intgDetail, intgErr := integrations.GetPackage(name)
 	if intgErr != nil {
 		return "", intgErr
 	}
@@ -158,7 +182,7 @@ func (s *IntegrationsService) StartOAuth2Flow(ctx context.Context, name string) 
 }
 
 func (s *IntegrationsService) CompleteOAuth2Flow(ctx context.Context, name, state, code string) (*ent.Integration, error) {
-	intgDetail, intgErr := integrations.GetDetail(name)
+	intgDetail, intgErr := integrations.GetPackage(name)
 	if intgErr != nil {
 		return nil, intgErr
 	}
@@ -188,11 +212,16 @@ func (s *IntegrationsService) CompleteOAuth2Flow(ctx context.Context, name, stat
 	}
 
 	enabledKinds := map[string]bool{}
-	if kinds := intgDetail.SupportedDataKinds(); len(kinds) == 1 {
+	kinds := intgDetail.SupportedDataKinds()
+	if len(kinds) == 1 {
 		enabledKinds[kinds[0]] = true
+	} else {
+		for _, kind := range kinds {
+			enabledKinds[kind] = false
+		}
 	}
 
-	intg, setErr := s.ConfigureIntegration(ctx, name, cfgJson, enabledKinds)
+	intg, setErr := s.ConfigureIntegration(ctx, name, false, cfgJson, enabledKinds)
 	if setErr != nil {
 		return nil, fmt.Errorf("failed to create integration: %w", setErr)
 	}
@@ -210,7 +239,7 @@ func (s *IntegrationsService) getPackageSupportingDataKind(ctx context.Context, 
 	if len(intgs) != 1 {
 		return nil, fmt.Errorf("expected 1 integration, got %d", len(intgs))
 	}
-	return integrations.GetPackage(intgs[0])
+	return integrations.GetPackage(intgs[0].Name)
 }
 
 func (s *IntegrationsService) GetChatService(ctx context.Context) (rez.ChatService, error) {
@@ -220,6 +249,17 @@ func (s *IntegrationsService) GetChatService(ctx context.Context) (rez.ChatServi
 	}
 	if chatPackage, ok := p.(rez.IntegrationWithChatService); ok {
 		return chatPackage.GetChatService(), nil
+	}
+	return nil, rez.ErrNoConfiguredIntegrations
+}
+
+func (s *IntegrationsService) GetVideoConferenceService(ctx context.Context) (rez.VideoConferenceService, error) {
+	p, pErr := s.getPackageSupportingDataKind(ctx, "video_conference")
+	if pErr != nil {
+		return nil, pErr
+	}
+	if vcPackage, ok := p.(rez.IntegrationWithVideoConferenceService); ok {
+		return vcPackage.GetVideoConferenceService(), nil
 	}
 	return nil, rez.ErrNoConfiguredIntegrations
 }

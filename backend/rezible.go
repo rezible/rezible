@@ -92,8 +92,8 @@ type (
 		OAuthConfigRequired() bool
 
 		ValidateConfig(json.RawMessage) (bool, error)
-		GetUserConfig(json.RawMessage) (json.RawMessage, error)
-		MergeUserConfig(cfg json.RawMessage, userCfg json.RawMessage) (json.RawMessage, error)
+		MergeUserConfig(json.RawMessage, json.RawMessage) (json.RawMessage, error)
+		GetSanitizedConfig(json.RawMessage) (json.RawMessage, error)
 	}
 
 	IntegrationWithOAuth2SetupFlow interface {
@@ -119,25 +119,14 @@ type (
 	IntegrationsService interface {
 		ListIntegrations(ctx context.Context, params ListIntegrationsParams) ([]*ent.Integration, error)
 		GetIntegration(ctx context.Context, name string) (*ent.Integration, error)
-		ConfigureIntegration(ctx context.Context, name string, cfg json.RawMessage, dataKinds map[string]bool) (*ent.Integration, error)
+		ConfigureIntegration(ctx context.Context, name string, user bool, cfg json.RawMessage, dataKinds map[string]bool) (*ent.Integration, error)
 		DeleteIntegration(ctx context.Context, name string) error
 
 		StartOAuth2Flow(ctx context.Context, name string) (string, error)
 		CompleteOAuth2Flow(ctx context.Context, name, state, code string) (*ent.Integration, error)
 
 		GetChatService(ctx context.Context) (ChatService, error)
-	}
-)
-
-type (
-	IntegrationWithChatService interface {
-		GetChatService() ChatService
-	}
-
-	ChatService interface {
-		SendMessage(ctx context.Context, id string, msg *ContentNode) (string, error)
-		SendReply(ctx context.Context, channelId string, threadId string, text string) (string, error)
-		SendTextMessage(ctx context.Context, id string, text string) (string, error)
+		GetVideoConferenceService(ctx context.Context) (VideoConferenceService, error)
 	}
 )
 
@@ -240,6 +229,28 @@ type (
 
 		CreateAuthContext(context.Context, *AuthSession) (context.Context, error)
 		GetAuthSession(context.Context) (*AuthSession, error)
+	}
+)
+
+type (
+	IntegrationWithChatService interface {
+		GetChatService() ChatService
+	}
+
+	ChatService interface {
+		SendMessage(ctx context.Context, id string, msg *ContentNode) (string, error)
+		SendReply(ctx context.Context, channelId string, threadId string, text string) (string, error)
+		SendTextMessage(ctx context.Context, id string, text string) (string, error)
+	}
+)
+
+type (
+	IntegrationWithVideoConferenceService interface {
+		GetVideoConferenceService() VideoConferenceService
+	}
+
+	VideoConferenceService interface {
+		CreateVideoConference(ctx context.Context) (string, error)
 	}
 )
 

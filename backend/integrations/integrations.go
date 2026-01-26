@@ -2,7 +2,6 @@ package integrations
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 
 	rez "github.com/rezible/rezible"
@@ -36,28 +35,7 @@ func Setup(ctx context.Context, svcs *rez.Services) error {
 	return nil
 }
 
-func GetUserConfig(name string, cfg json.RawMessage) (json.RawMessage, error) {
-	if p, ok := packageMap[name]; ok {
-		return p.GetUserConfig(cfg)
-	}
-	return nil, fmt.Errorf("unknown integration: %s", name)
-}
-
-func MergeUserConfig(name string, cfg json.RawMessage, userCfg json.RawMessage) (json.RawMessage, error) {
-	if p, ok := packageMap[name]; ok {
-		return p.MergeUserConfig(cfg, userCfg)
-	}
-	return nil, fmt.Errorf("unknown integration: %s", name)
-}
-
-func ValidateConfig(name string, cfg json.RawMessage) (bool, error) {
-	if p, ok := packageMap[name]; ok {
-		return p.ValidateConfig(cfg)
-	}
-	return false, fmt.Errorf("unknown integration: %s", name)
-}
-
-func GetEnabled() []rez.IntegrationPackage {
+func GetAvailable() []rez.IntegrationPackage {
 	enabled := make([]rez.IntegrationPackage, 0)
 	for _, pkg := range packageMap {
 		if pkg.Enabled() {
@@ -67,18 +45,10 @@ func GetEnabled() []rez.IntegrationPackage {
 	return enabled
 }
 
-func GetPackage(intg *ent.Integration) (rez.IntegrationPackage, error) {
-	p, valid := packageMap[intg.Name]
-	if !valid {
-		return nil, fmt.Errorf("unknown integration package: %s", intg.Name)
-	}
-	return p, nil
-}
-
-func GetDetail(name string) (rez.IntegrationPackage, error) {
+func GetPackage(name string) (rez.IntegrationPackage, error) {
 	p, valid := packageMap[name]
 	if !valid {
-		return nil, fmt.Errorf("unknown integration: %s", name)
+		return nil, fmt.Errorf("unknown integration package: %s", name)
 	}
 	return p, nil
 }
