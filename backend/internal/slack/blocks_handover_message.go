@@ -14,16 +14,16 @@ import (
 	TODO: eventually this should be handled by the document service - converted to *rez.ContentNode
 */
 
-func buildHandoverMessage(params rez.SendOncallHandoverParams) (string, slack.MsgOption, error) {
-	mb, builderErr := newHandoverMessageBuilder(params.EndingShift, params.StartingShift, params.PinnedAnnotations)
-	if builderErr != nil {
-		return "", nil, fmt.Errorf("new builder: %w", builderErr)
-	}
-	if buildErr := mb.build(params.Content); buildErr != nil {
-		return "", nil, fmt.Errorf("building message: %w", buildErr)
-	}
-	return mb.getChannel(), mb.getMessage(), nil
-}
+//func buildHandoverMessage(params rez.SendOncallHandoverParams) (string, slack.MsgOption, error) {
+//	mb, builderErr := newHandoverMessageBuilder(params.EndingShift, params.StartingShift, params.PinnedAnnotations)
+//	if builderErr != nil {
+//		return "", nil, fmt.Errorf("new builder: %w", builderErr)
+//	}
+//	if buildErr := mb.build(params.Content); buildErr != nil {
+//		return "", nil, fmt.Errorf("building message: %w", buildErr)
+//	}
+//	return mb.getChannel(), mb.getMessage(), nil
+//}
 
 type handoverMessageBuilder struct {
 	blocks []slack.Block
@@ -77,10 +77,6 @@ func (b *handoverMessageBuilder) getChannel() string {
 	return b.roster.ChatChannelID
 }
 
-func (b *handoverMessageBuilder) getMessage() slack.MsgOption {
-	return slack.MsgOptionBlocks(b.blocks...)
-}
-
 func (b *handoverMessageBuilder) addBlocks(blocks ...slack.Block) {
 	b.blocks = append(b.blocks, blocks...)
 }
@@ -108,18 +104,9 @@ func (b *handoverMessageBuilder) build(content []rez.OncallShiftHandoverSection)
 	// Dynamic Sections
 	b.addBlocks(slack.NewDividerBlock())
 	for idx, s := range content {
-		b.addBlocks(slack.NewHeaderBlock(plainTextBlock(s.Header)))
-
-		if s.Kind == "annotations" {
-			annoBlocks, annosErr := b.createPinnedAnnotationsBlocks()
-			if annosErr != nil {
-				return fmt.Errorf("failed to create annotations block: %w", annosErr)
-			}
-			b.addBlocks(annoBlocks...)
-		} else if s.Kind == "regular" {
-			b.addBlocks(convertContentToBlocks(s.Content, fmt.Sprintf("section_%d", idx))...)
-		} else {
-			return fmt.Errorf("unknown section kind '%s' for idx %d", s.Kind, idx)
+		id := fmt.Sprintf("section_%d", idx)
+		if sectionErr := b.addSection(id, s.Header, s.Kind, s.Content); sectionErr != nil {
+			return fmt.Errorf("section %d: %w", idx, sectionErr)
 		}
 	}
 	b.addBlocks(slack.NewDividerBlock())
@@ -129,6 +116,24 @@ func (b *handoverMessageBuilder) build(content []rez.OncallShiftHandoverSection)
 	footerEl := slack.NewRichTextSection(slack.NewRichTextSectionLinkElement(
 		endingShiftLink, "View Full Shift Details in Rezible", nil))
 	b.addBlocks(slack.NewRichTextBlock("handover_footer", footerEl))
+
+	return nil
+}
+
+func (b *handoverMessageBuilder) addSection(id string, header, kind string, content *rez.ContentNode) error {
+	b.addBlocks(slack.NewHeaderBlock(plainTextBlock(header)))
+
+	if kind == "annotations" {
+		annoBlocks, annosErr := b.createPinnedAnnotationsBlocks()
+		if annosErr != nil {
+			return fmt.Errorf("failed to create annotations block: %w", annosErr)
+		}
+		b.addBlocks(annoBlocks...)
+	} else if kind == "regular" {
+		b.addBlocks(convertContentToBlocks(content, id)...)
+	} else {
+		return fmt.Errorf("unknown section kind '%s'", kind)
+	}
 
 	return nil
 }

@@ -19,14 +19,21 @@ type OncallMetricsService struct {
 	shifts rez.OncallShiftsService
 }
 
-func NewOncallMetricsService(db *ent.Client, jobs rez.JobsService, shifts rez.OncallShiftsService) (*OncallMetricsService, error) {
+func NewOncallMetricsService(db *ent.Client, jobSvc rez.JobsService, shifts rez.OncallShiftsService) (*OncallMetricsService, error) {
 	s := &OncallMetricsService{
 		db:     db,
-		jobs:   jobs,
+		jobs:   jobSvc,
 		shifts: shifts,
 	}
 
+	jobs.RegisterWorkerFunc(s.handleGenerateShiftMetrics)
+
 	return s, nil
+}
+
+func (s *OncallMetricsService) handleGenerateShiftMetrics(ctx context.Context, args jobs.GenerateShiftMetrics) error {
+	_, genErr := s.generateMetricsForShift(ctx, args.ShiftId)
+	return genErr
 }
 
 func (s *OncallMetricsService) queryShiftMetrics(ctx context.Context, shiftId uuid.UUID) (*ent.OncallShiftMetrics, error) {
@@ -131,9 +138,4 @@ func (s *OncallMetricsService) GetComparisonShiftMetrics(ctx context.Context, fr
 		InterruptsNight:         4,
 		InterruptsBusinessHours: 8,
 	}, nil
-}
-
-func (s *OncallMetricsService) HandleGenerateShiftMetrics(ctx context.Context, args jobs.GenerateShiftMetrics) error {
-	_, genErr := s.generateMetricsForShift(ctx, args.ShiftId)
-	return genErr
 }

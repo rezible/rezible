@@ -18,12 +18,13 @@ import (
 )
 
 var (
-	ErrNoAuthSession           = errors.New("no auth session")
-	ErrAuthSessionExpired      = errors.New("auth session expired")
-	ErrAuthSessionInvalidScope = errors.New("invalid session token scope")
-	ErrInvalidUser             = errors.New("user does not exist")
-	ErrInvalidTenant           = errors.New("tenant does not exist")
-	ErrUnauthorized            = errors.New("unauthorized")
+	ErrNoAuthSession            = errors.New("no auth session")
+	ErrAuthSessionExpired       = errors.New("auth session expired")
+	ErrAuthSessionInvalidScope  = errors.New("invalid session token scope")
+	ErrInvalidUser              = errors.New("user does not exist")
+	ErrInvalidTenant            = errors.New("tenant does not exist")
+	ErrUnauthorized             = errors.New("unauthorized")
+	ErrNoConfiguredIntegrations = errors.New("no configured integrations")
 )
 
 type ConfigLoader interface {
@@ -111,9 +112,15 @@ type (
 		WebhookHandlers() map[string]http.Handler
 	}
 
+	IntegrationWithChatService interface {
+		GetChatService() ChatService
+	}
+
 	ListIntegrationsParams struct {
-		Name     string
-		DataKind string
+		Name         string
+		DataKind     string
+		ConfigValues map[string]any
+		Filter       func(*ent.IntegrationQuery)
 	}
 
 	IntegrationsService interface {
@@ -124,6 +131,14 @@ type (
 
 		StartOAuth2Flow(ctx context.Context, name string) (string, error)
 		CompleteOAuth2Flow(ctx context.Context, name, state, code string) (*ent.Integration, error)
+
+		GetChatService(ctx context.Context) (ChatService, error)
+	}
+
+	ChatService interface {
+		SendMessage(ctx context.Context, id string, msg *ContentNode) (string, error)
+		SendReply(ctx context.Context, channelId string, threadId string, text string) (string, error)
+		SendTextMessage(ctx context.Context, id string, text string) (string, error)
 	}
 )
 
@@ -278,44 +293,13 @@ type (
 )
 
 type (
-	ContentNode        = prosemirror.Node
-	DocumentSchemaSpec = prosemirror.SchemaSpec
-
-	OncallShiftHandoverSection struct {
-		Header  string            `json:"header"`
-		Kind    string            `json:"kind"`
-		Content *prosemirror.Node `json:"jsonContent,omitempty"`
-	}
-
-	ContentNodeService interface {
-		CreateOncallShiftHandoverMessage(sections []OncallShiftHandoverSection, annotations []*ent.EventAnnotation, roster *ent.OncallRoster, endingShift *ent.OncallShift, startingShift *ent.OncallShift) (*ContentNode, error)
-	}
+	ContentNode = prosemirror.Node
 
 	DocumentsService interface {
 		GetUserDocumentAccess(ctx context.Context, userId uuid.UUID, documentId uuid.UUID) (bool, error)
-		CreateEditorSessionToken(sess *AuthSession, docId uuid.UUID) (string, error)
 
 		GetDocument(context.Context, uuid.UUID) (*ent.Document, error)
 		SetDocument(context.Context, uuid.UUID, func(*ent.DocumentMutation)) (*ent.Document, error)
-	}
-)
-
-type (
-	SendOncallHandoverParams struct {
-		Content           []OncallShiftHandoverSection
-		EndingShift       *ent.OncallShift
-		StartingShift     *ent.OncallShift
-		PinnedAnnotations []*ent.EventAnnotation
-	}
-
-	ChatService interface {
-		SendMessage(ctx context.Context, id string, msg *ContentNode) error
-		SendReply(ctx context.Context, channelId string, threadId string, text string) error
-		SendTextMessage(ctx context.Context, id string, text string) error
-
-		// TODO: this should just be converted to *ContentNode by DocumentService
-		SendOncallHandover(ctx context.Context, params SendOncallHandoverParams) error
-		SendOncallHandoverReminder(context.Context, *ent.OncallShift) error
 	}
 )
 
@@ -430,10 +414,6 @@ type (
 
 type (
 	DebriefService interface {
-		HandleSendDebriefRequests(context.Context, jobs.SendIncidentDebriefRequests) error
-		HandleGenerateDebriefResponse(context.Context, jobs.GenerateIncidentDebriefResponse) error
-		HandleGenerateSuggestions(context.Context, jobs.GenerateIncidentDebriefSuggestions) error
-
 		CreateDebrief(ctx context.Context, incidentId uuid.UUID, userId uuid.UUID) (*ent.IncidentDebrief, error)
 		GetDebrief(ctx context.Context, id uuid.UUID) (*ent.IncidentDebrief, error)
 		GetUserDebrief(ctx context.Context, incidentId uuid.UUID, userId uuid.UUID) (*ent.IncidentDebrief, error)
@@ -550,11 +530,13 @@ type (
 		Window time.Duration
 	}
 
-	OncallShiftsService interface {
-		HandlePeriodicScanShifts(context.Context, jobs.ScanOncallShifts) error
-		HandleEnsureShiftHandoverSent(context.Context, jobs.EnsureShiftHandoverSent) error
-		HandleEnsureShiftHandoverReminderSent(context.Context, jobs.EnsureShiftHandoverReminderSent) error
+	OncallShiftHandoverSection struct {
+		Header  string            `json:"header"`
+		Kind    string            `json:"kind"`
+		Content *prosemirror.Node `json:"jsonContent,omitempty"`
+	}
 
+	OncallShiftsService interface {
 		ListShifts(ctx context.Context, params ListOncallShiftsParams) (*ent.ListResult[*ent.OncallShift], error)
 		GetShiftByID(ctx context.Context, id uuid.UUID) (*ent.OncallShift, error)
 		GetAdjacentShifts(ctx context.Context, id uuid.UUID) (*ent.OncallShift, *ent.OncallShift, error)
@@ -566,7 +548,6 @@ type (
 	}
 
 	OncallMetricsService interface {
-		HandleGenerateShiftMetrics(context.Context, jobs.GenerateShiftMetrics) error
 		GetShiftMetrics(ctx context.Context, id uuid.UUID) (*ent.OncallShiftMetrics, error)
 		GetComparisonShiftMetrics(ctx context.Context, from, to time.Time) (*ent.OncallShiftMetrics, error)
 	}

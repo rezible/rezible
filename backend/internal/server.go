@@ -9,7 +9,6 @@ import (
 
 	"github.com/rezible/rezible/ent"
 	"github.com/rezible/rezible/integrations"
-	"github.com/rezible/rezible/jobs"
 	"github.com/rs/zerolog/log"
 	"github.com/sourcegraph/conc/pool"
 
@@ -241,28 +240,20 @@ func (s *Server) makeServices(ctx context.Context, dbConn rez.Database, dbc *ent
 		return nil, fmt.Errorf("postgres.NewSystemComponentsService: %w", componentsErr)
 	}
 
-	shifts, shiftsErr := db.NewOncallShiftsService(dbc, jobSvc)
+	shifts, shiftsErr := db.NewOncallShiftsService(dbc, jobSvc, intgs)
 	if shiftsErr != nil {
 		return nil, fmt.Errorf("postgres.NewOncallShiftsService: %w", shiftsErr)
 	}
-	jobs.RegisterPeriodicJob(jobs.ScanOncallShiftsPeriodicJob)
-	jobs.RegisterWorkerFunc(shifts.HandlePeriodicScanShifts)
-	jobs.RegisterWorkerFunc(shifts.HandleEnsureShiftHandoverReminderSent)
-	jobs.RegisterWorkerFunc(shifts.HandleEnsureShiftHandoverSent)
 
 	oncallMetrics, oncallMetricsErr := db.NewOncallMetricsService(dbc, jobSvc, shifts)
 	if oncallMetricsErr != nil {
 		return nil, fmt.Errorf("postgres.NewOncallMetricsService: %w", oncallMetricsErr)
 	}
-	jobs.RegisterWorkerFunc(oncallMetrics.HandleGenerateShiftMetrics)
 
 	debriefs, debriefsErr := db.NewDebriefService(dbc, jobSvc, ai)
 	if debriefsErr != nil {
 		return nil, fmt.Errorf("postgres.NewDebriefService: %w", debriefsErr)
 	}
-	jobs.RegisterWorkerFunc(debriefs.HandleGenerateDebriefResponse)
-	jobs.RegisterWorkerFunc(debriefs.HandleGenerateSuggestions)
-	jobs.RegisterWorkerFunc(debriefs.HandleSendDebriefRequests)
 
 	retros, retrosErr := db.NewRetrospectiveService(dbc)
 	if retrosErr != nil {
@@ -279,14 +270,14 @@ func (s *Server) makeServices(ctx context.Context, dbConn rez.Database, dbc *ent
 		return nil, fmt.Errorf("postgres.NewPlaybookService: %w", playbooksErr)
 	}
 
+	docs, docsErr := db.NewDocumentsService(dbc, users)
+	if docsErr != nil {
+		return nil, fmt.Errorf("db.NewDocumentsService: %w", docsErr)
+	}
+
 	auth, authErr := http.NewAuthSessionService(ctx, orgs, users)
 	if authErr != nil {
 		return nil, fmt.Errorf("http.NewAuthSessionService: %w", authErr)
-	}
-
-	docs, docsErr := db.NewDocumentsService(dbc, auth, users)
-	if docsErr != nil {
-		return nil, fmt.Errorf("db.NewDocumentsService: %w", docsErr)
 	}
 
 	return &rez.Services{

@@ -273,7 +273,7 @@ func (wh *WebhookEventHandler) handleCallbackEvent(ctx context.Context, ev *webh
 	if parseErr != nil {
 		return fmt.Errorf("failed to parse event: %w", parseErr)
 	}
-	tenantId, tenantIdErr := wh.chat.lookupTeamTenantId(ctx, cbe.TeamID, cbe.EnterpriseID)
+	tenantId, tenantIdErr := wh.chat.GetTenantId(ctx, cbe.TeamID, cbe.EnterpriseID)
 	if tenantIdErr != nil {
 		return fmt.Errorf("failed to get tenant id: %w", tenantIdErr)
 	}

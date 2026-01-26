@@ -11,24 +11,31 @@ import (
 	"github.com/slack-go/slack"
 	"golang.org/x/oauth2"
 
+	"entgo.io/ent/dialect/sql"
+	"entgo.io/ent/dialect/sql/sqljson"
+	entintegration "github.com/rezible/rezible/ent/integration"
+
 	rez "github.com/rezible/rezible"
 )
 
 const integrationName = "slack"
 
 type integration struct {
+	chatService     *ChatService
 	eventListeners  map[string]rez.EventListener
 	webhookHandlers map[string]http.Handler
 }
 
 func SetupIntegration(ctx context.Context, svcs *rez.Services) (rez.IntegrationPackage, error) {
-	intg := &integration{
-		eventListeners:  make(map[string]rez.EventListener),
-		webhookHandlers: make(map[string]http.Handler),
-	}
 	cs, csErr := NewChatService(ctx, svcs)
 	if csErr != nil {
 		return nil, fmt.Errorf("failed to create chat service: %w", csErr)
+	}
+
+	intg := &integration{
+		chatService:     cs,
+		eventListeners:  make(map[string]rez.EventListener),
+		webhookHandlers: make(map[string]http.Handler),
 	}
 
 	if UseSocketMode() {
@@ -67,6 +74,10 @@ func (d *integration) WebhookHandlers() map[string]http.Handler {
 
 func (d *integration) SupportedDataKinds() []string {
 	return []string{"chat", "users"}
+}
+
+func (d *integration) GetChatService() rez.ChatService {
+	return d.chatService
 }
 
 func (d *integration) OAuthConfigRequired() bool {
@@ -121,6 +132,24 @@ type teamInfo struct {
 }
 
 type IntegrationUserConfig struct {
+}
+
+func getIntegrationConfigQueryPredicate(teamId string, enterpriseId string) func(q *ent.IntegrationQuery) {
+	hasEnterpriseId := func(s *sql.Selector) {
+		s.Where(sqljson.ValueEQ(entintegration.FieldConfig, enterpriseId, sqljson.DotPath("Enterprise.ID")))
+	}
+	hasTeamId := func(s *sql.Selector) {
+		s.Where(sqljson.ValueEQ(entintegration.FieldConfig, teamId, sqljson.DotPath("Team.ID")))
+	}
+	return func(q *ent.IntegrationQuery) {
+		if enterpriseId != "" && teamId != "" {
+			q.Where(entintegration.And(hasEnterpriseId, hasTeamId))
+		} else if enterpriseId != "" {
+			q.Where(hasEnterpriseId)
+		} else if teamId != "" {
+			q.Where(hasTeamId)
+		}
+	}
 }
 
 func getTeamInfoFromTokenExtra(e map[string]interface{}) (*teamInfo, error) {

@@ -2,14 +2,15 @@ package slack
 
 import (
 	"context"
-	"errors"
 	"fmt"
+
+	"github.com/rs/zerolog/log"
+	"github.com/slack-go/slack"
+	"golang.org/x/sync/singleflight"
 
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/access"
 	"github.com/rezible/rezible/ent"
-	"github.com/rs/zerolog/log"
-	"github.com/slack-go/slack"
 )
 
 type ChatService struct {
@@ -45,44 +46,78 @@ func (s *ChatService) withClient(ctx context.Context, fn func(*slack.Client) err
 	return withClient(ctx, s.integrations, fn)
 }
 
-// TODO: actually do this properly
+func (s *ChatService) SendMessage(ctx context.Context, channelId string, content *rez.ContentNode) (string, error) {
+	return s.sendMessage(ctx, channelId, slack.MsgOptionBlocks(convertContentToBlocks(content, "")...))
+}
+
+func (s *ChatService) SendTextMessage(ctx context.Context, channelId string, text string) (string, error) {
+	return s.sendMessage(ctx, channelId, slack.MsgOptionText(text, false))
+}
+
+func (s *ChatService) SendReply(ctx context.Context, channelId string, threadId string, text string) (string, error) {
+	return s.sendMessage(ctx, channelId, slack.MsgOptionText(text, false), slack.MsgOptionTS(threadId))
+}
+
+// TODO: actually cache this properly
 var teamTenantIdCache = make(map[string]int)
 
-func (s *ChatService) lookupTeamTenantId(ctx context.Context, teamId string, enterpriseId string) (int, error) {
+var lookupTenantGroup singleflight.Group
+
+func (s *ChatService) GetTenantId(ctx context.Context, teamId string, enterpriseId string) (int, error) {
 	if id, teamOk := teamTenantIdCache[enterpriseId]; teamOk {
 		return id, nil
 	}
 	if id, entOk := teamTenantIdCache[teamId]; entOk {
 		return id, nil
 	}
-	log.Warn().
-		Str("teamId", teamId).
-		Str("enterpriseId", enterpriseId).
-		Msg("looking up tenant id from slack integrations via db")
-	params := rez.ListIntegrationsParams{Name: integrationName}
-	intgs, intgsErr := s.integrations.ListIntegrations(access.SystemContext(ctx), params)
-	if intgsErr != nil {
-		return -1, fmt.Errorf("failed to list integrations: %w", intgsErr)
+
+	tenantId, lookupErr := s.lookupIntegrationTenantId(ctx, teamId, enterpriseId)
+	if lookupErr != nil {
+		log.Warn().
+			Err(lookupErr).
+			Str("teamId", teamId).
+			Str("enterpriseId", enterpriseId).
+			Msg("failed to get tenant id")
+		return -1, lookupErr
 	}
-	for _, intg := range intgs {
-		cfg, cfgErr := decodeConfig(intg)
-		if cfgErr != nil {
-			log.Warn().Err(cfgErr).Msg("failed to decode slack integration config")
-			continue
-		}
-		tenantId := intg.TenantID
-		if enterpriseId != "" {
-			if cfg.Enterprise != nil && cfg.Enterprise.ID == enterpriseId {
-				teamTenantIdCache[enterpriseId] = tenantId
-				return tenantId, nil
-			}
-		}
-		if cfg.Team.ID == teamId {
-			teamTenantIdCache[teamId] = tenantId
-			return tenantId, nil
-		}
+
+	if teamId != "" {
+		teamTenantIdCache[teamId] = tenantId
 	}
-	return -1, errors.New("failed to lookup team tenant")
+	if enterpriseId != "" {
+		teamTenantIdCache[enterpriseId] = tenantId
+	}
+	return tenantId, nil
+}
+
+func (s *ChatService) lookupIntegrationTenantId(ctx context.Context, teamId string, enterpriseId string) (int, error) {
+	lookupFn := func() (any, error) {
+		log.Warn().
+			Str("teamId", teamId).
+			Str("enterpriseId", enterpriseId).
+			Msg("looking up tenant id from slack integrations via db")
+
+		listParams := rez.ListIntegrationsParams{
+			Name:   integrationName,
+			Filter: getIntegrationConfigQueryPredicate(teamId, enterpriseId),
+		}
+		intgs, intgsErr := s.integrations.ListIntegrations(access.SystemContext(ctx), listParams)
+		if intgsErr != nil {
+			return -1, fmt.Errorf("failed to list integrations: %w", intgsErr)
+		}
+		if len(intgs) != 1 {
+			return -1, fmt.Errorf("found unexpected number of matching integrations: %d", len(intgs))
+		}
+		return intgs[0].TenantID, nil
+	}
+	v, lookupErr, _ := lookupTenantGroup.Do(fmt.Sprintf("slack_%s_%s", teamId, enterpriseId), lookupFn)
+	if lookupErr != nil {
+		return -1, lookupErr
+	}
+	if tenantId, ok := v.(int); ok {
+		return tenantId, nil
+	}
+	return -1, fmt.Errorf("invalid tenant id from lookup: %v", v)
 }
 
 func (s *ChatService) getChatUserContext(ctx context.Context, userId string) (context.Context, error) {
@@ -119,35 +154,14 @@ func getAllUsersInConversation(ctx context.Context, client *slack.Client, convId
 	return allIds, nil
 }
 
-func (s *ChatService) sendMessage(ctx context.Context, channelId string, msgOpts ...slack.MsgOption) error {
-	return s.withClient(ctx, func(client *slack.Client) error {
-		_, _, msgErr := client.PostMessageContext(ctx, channelId, msgOpts...)
-		return msgErr
-	})
-}
-
-func (s *ChatService) SendMessage(ctx context.Context, channelId string, content *rez.ContentNode) error {
-	return s.sendMessage(ctx, channelId, slack.MsgOptionBlocks(convertContentToBlocks(content, "")...))
-}
-
-func (s *ChatService) SendTextMessage(ctx context.Context, channelId string, text string) error {
-	return s.sendMessage(ctx, channelId, slack.MsgOptionText(text, false))
-}
-
-func (s *ChatService) SendReply(ctx context.Context, channelId string, threadId string, text string) error {
-	return s.sendMessage(ctx, channelId, slack.MsgOptionText(text, false), slack.MsgOptionTS(threadId))
-}
-
-func (s *ChatService) SendOncallHandover(ctx context.Context, params rez.SendOncallHandoverParams) error {
-	channel, msg, err := buildHandoverMessage(params)
-	if err != nil {
-		return fmt.Errorf("creating handover message: %w", err)
+func (s *ChatService) sendMessage(ctx context.Context, channelId string, msgOpts ...slack.MsgOption) (string, error) {
+	client, clientErr := getClient(ctx, s.integrations)
+	if clientErr != nil {
+		return "", fmt.Errorf("get slack client: %w", clientErr)
 	}
-	return s.sendMessage(ctx, channel, msg)
-}
 
-func (s *ChatService) SendOncallHandoverReminder(ctx context.Context, shift *ent.OncallShift) error {
-	return nil
+	_, msgTs, msgErr := client.PostMessageContext(ctx, channelId, msgOpts...)
+	return msgTs, msgErr
 }
 
 func (s *ChatService) getIncidentAnnouncementChannelId(ctx context.Context) (string, error) {

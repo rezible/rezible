@@ -22,19 +22,39 @@ import (
 )
 
 type OncallShiftsService struct {
-	db    *ent.Client
-	jobs  rez.JobsService
-	docs  rez.DocumentsService
-	users rez.UserService
+	db           *ent.Client
+	jobs         rez.JobsService
+	integrations rez.IntegrationsService
+	docs         rez.DocumentsService
+	users        rez.UserService
 }
 
-func NewOncallShiftsService(db *ent.Client, jobs rez.JobsService) (*OncallShiftsService, error) {
+func NewOncallShiftsService(db *ent.Client, jobSvc rez.JobsService, integrations rez.IntegrationsService) (*OncallShiftsService, error) {
 	s := &OncallShiftsService{
-		db:   db,
-		jobs: jobs,
+		db:           db,
+		jobs:         jobSvc,
+		integrations: integrations,
 	}
 
+	jobs.RegisterPeriodicJob(jobs.ScanOncallShiftsPeriodicJob)
+	jobs.RegisterWorkerFunc(s.periodicScanShifts)
+	jobs.RegisterWorkerFunc(s.ensureShiftHandoverReminderSent)
+	jobs.RegisterWorkerFunc(s.ensureShiftHandoverSent)
+
 	return s, nil
+}
+
+func (s *OncallShiftsService) periodicScanShifts(ctx context.Context, _ jobs.ScanOncallShifts) error {
+	return s.scanShifts(ctx)
+}
+
+func (s *OncallShiftsService) ensureShiftHandoverSent(ctx context.Context, args jobs.EnsureShiftHandoverSent) error {
+	_, err := s.SendShiftHandover(ctx, args.ShiftId)
+	return err
+}
+
+func (s *OncallShiftsService) ensureShiftHandoverReminderSent(ctx context.Context, args jobs.EnsureShiftHandoverReminderSent) error {
+	return s.sendShiftHandoverReminder(ctx, args.ShiftId)
 }
 
 func (s *OncallShiftsService) GetShiftByID(ctx context.Context, id uuid.UUID) (*ent.OncallShift, error) {
@@ -126,7 +146,7 @@ func (s *OncallShiftsService) queryShiftsEndingWithinWindow(ctx context.Context,
 	return shifts, nil
 }
 
-func (s *OncallShiftsService) HandlePeriodicScanShifts(ctx context.Context, _ jobs.ScanOncallShifts) error {
+func (s *OncallShiftsService) scanShifts(ctx context.Context) error {
 	shifts, shiftsErr := s.queryShiftsEndingWithinWindow(ctx, time.Hour)
 	if shiftsErr != nil {
 		return fmt.Errorf("failed to get shifts: %w", shiftsErr)
@@ -176,47 +196,6 @@ func (s *OncallShiftsService) HandlePeriodicScanShifts(ctx context.Context, _ jo
 		if insertErr := s.jobs.InsertMany(ctx, params); insertErr != nil {
 			return fmt.Errorf("could not insert jobs: %w", insertErr)
 		}
-	}
-
-	return nil
-}
-
-func (s *OncallShiftsService) HandleEnsureShiftHandoverSent(ctx context.Context, args jobs.EnsureShiftHandoverSent) error {
-	shiftId := args.ShiftId
-
-	ho, hoErr := s.GetHandoverForShift(ctx, shiftId)
-	if hoErr != nil {
-		return fmt.Errorf("failed to get or create shift handover: %w", hoErr)
-	}
-	_, sendErr := s.sendShiftHandover(ctx, ho)
-
-	return sendErr
-}
-
-func (s *OncallShiftsService) HandleEnsureShiftHandoverReminderSent(ctx context.Context, args jobs.EnsureShiftHandoverReminderSent) error {
-	shiftId := args.ShiftId
-
-	shift, shiftErr := s.GetShiftByID(ctx, shiftId)
-	if shiftErr != nil {
-		return fmt.Errorf("querying shift: %w", shiftErr)
-	}
-
-	ho, hoErr := s.GetHandoverForShift(ctx, shiftId)
-	if hoErr != nil {
-		return fmt.Errorf("failed to get or create shift handover: %w", hoErr)
-	}
-
-	if ho.ReminderSent {
-		return nil
-	}
-
-	log.Debug().
-		Str("shiftId", shift.ID.String()).
-		Msg("send shift ending reminder")
-
-	update := ho.Update().SetReminderSent(true)
-	if updateErr := update.Exec(ctx); updateErr != nil {
-		return fmt.Errorf("failed to set reminder_sent: %w", updateErr)
 	}
 
 	return nil
@@ -320,32 +299,53 @@ func (s *OncallShiftsService) UpdateShiftHandover(ctx context.Context, update *e
 	return query.Save(ctx)
 }
 
+func (s *OncallShiftsService) sendShiftHandoverReminder(ctx context.Context, shiftId uuid.UUID) error {
+	ho, hoErr := s.GetHandoverForShift(ctx, shiftId)
+	if hoErr != nil {
+		return fmt.Errorf("failed to get or create shift handover: %w", hoErr)
+	}
+
+	log.Debug().
+		Str("shiftId", shiftId.String()).
+		Bool("reminderSent", ho.ReminderSent).
+		Msg("send shift ending reminder")
+	if ho.ReminderSent {
+		return nil
+	}
+
+	updateErr := ho.Update().SetReminderSent(true).Exec(ctx)
+	if updateErr != nil {
+		return fmt.Errorf("failed to set reminder_sent: %w", updateErr)
+	}
+	return nil
+}
+
 func (s *OncallShiftsService) SendShiftHandover(ctx context.Context, handoverId uuid.UUID) (*ent.OncallShiftHandover, error) {
-	query := s.db.OncallShiftHandover.Query().
+	hoQuery := s.db.OncallShiftHandover.Query().
 		Where(oncallshifthandover.ID(handoverId)).
-		WithShift().
+		WithShift(func(q *ent.OncallShiftQuery) {
+			q.WithRoster()
+		}).
 		WithPinnedAnnotations(func(q *ent.EventAnnotationQuery) {
 			q.WithEvent()
 		})
 
-	handover, handoverErr := query.First(ctx)
+	handover, handoverErr := hoQuery.First(ctx)
 	if handover == nil || handoverErr != nil {
 		return nil, fmt.Errorf("failed to get handover: %w", handoverErr)
 	}
+	if !handover.SentAt.IsZero() {
+		return handover, nil
+	}
+
 	return s.sendShiftHandover(ctx, handover)
 }
 
 func (s *OncallShiftsService) sendShiftHandover(ctx context.Context, ho *ent.OncallShiftHandover) (*ent.OncallShiftHandover, error) {
-	if !ho.SentAt.IsZero() {
-		return ho, nil
-	}
-
-	if ho.UpdatedAt.IsZero() {
-		// TODO: fill in template
-	}
-
 	var sections []rez.OncallShiftHandoverSection
-	if jsonErr := json.Unmarshal(ho.Contents, &sections); jsonErr != nil {
+	if ho.UpdatedAt.IsZero() {
+		// TODO: fill in from template
+	} else if jsonErr := json.Unmarshal(ho.Contents, &sections); jsonErr != nil {
 		return nil, fmt.Errorf("failed to unmarshal content: %w", jsonErr)
 	}
 
@@ -354,12 +354,7 @@ func (s *OncallShiftsService) sendShiftHandover(ctx context.Context, ho *ent.Onc
 		return nil, fmt.Errorf("failed to get handover shift: %w", shiftErr)
 	}
 
-	nextShift, nextShiftErr := s.getNextShift(ctx, shift)
-	if nextShiftErr != nil {
-		return nil, fmt.Errorf("get next shift: %w", nextShiftErr)
-	}
-
-	roster, rosterErr := nextShift.Edges.RosterOrErr()
+	roster, rosterErr := shift.Edges.RosterOrErr()
 	if rosterErr != nil {
 		return nil, fmt.Errorf("next shift roster: %w", rosterErr)
 	}
@@ -367,24 +362,20 @@ func (s *OncallShiftsService) sendShiftHandover(ctx context.Context, ho *ent.Onc
 		return nil, fmt.Errorf("no roster chat channel found")
 	}
 
-	annos, annosErr := ho.Edges.PinnedAnnotationsOrErr()
+	_, annosErr := ho.Edges.PinnedAnnotationsOrErr()
 	if annosErr != nil {
 		return nil, fmt.Errorf("get pinned annotations: %w", annosErr)
 	}
 
-	params := rez.SendOncallHandoverParams{
-		Content:           sections,
-		EndingShift:       shift,
-		StartingShift:     nextShift,
-		PinnedAnnotations: annos,
+	cs, csErr := s.integrations.GetChatService(ctx)
+	if csErr != nil {
+		return nil, fmt.Errorf("failed to get chat service: %w", csErr)
 	}
-	log.Debug().
-		Str("shiftId", shift.ID.String()).
-		Interface("params", params).
-		Msg("send shift handover")
-	//if sendErr := s.chat.SendOncallHandover(ctx, params); sendErr != nil {
-	//	return nil, fmt.Errorf("failed to send oncall handover: %w", sendErr)
-	//}
+
+	_, msgErr := cs.SendMessage(ctx, roster.ChatChannelID, &rez.ContentNode{})
+	if msgErr != nil {
+		return nil, fmt.Errorf("failed to send message: %w", msgErr)
+	}
 
 	updated, updateErr := ho.Update().SetSentAt(time.Now()).Save(ctx)
 	if updateErr != nil {

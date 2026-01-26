@@ -28,7 +28,10 @@ func (h *documentsHandler) RequestDocumentEditorSession(ctx context.Context, req
 		return nil, apiError("no document access", accessErr)
 	}
 
-	token, tokenErr := h.documents.CreateEditorSessionToken(sess, docId)
+	sess.Scopes = rez.AuthSessionScopes{
+		"documents": []string{docId.String()},
+	}
+	token, tokenErr := h.auth.IssueAuthSessionToken(sess)
 	if tokenErr != nil {
 		return nil, apiError("failed to create session token", tokenErr)
 	}

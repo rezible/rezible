@@ -67,6 +67,14 @@ func GetEnabled() []rez.IntegrationPackage {
 	return enabled
 }
 
+func GetPackage(intg *ent.Integration) (rez.IntegrationPackage, error) {
+	p, valid := packageMap[intg.Name]
+	if !valid {
+		return nil, fmt.Errorf("unknown integration package: %s", intg.Name)
+	}
+	return p, nil
+}
+
 func GetDetail(name string) (rez.IntegrationPackage, error) {
 	p, valid := packageMap[name]
 	if !valid {

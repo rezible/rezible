@@ -116,9 +116,13 @@ func (h *incidentChatEventHandler) sendIncidentMilestoneMessage(ctx context.Cont
 		slack.NewSectionBlock(textBlock, nil, nil),
 	}
 
-	msgErr := h.chat.sendMessage(ctx, inc.ChatChannelID, slack.MsgOptionBlocks(blocks...))
+	msgTs, msgErr := h.chat.sendMessage(ctx, inc.ChatChannelID, slack.MsgOptionBlocks(blocks...))
 	if msgErr != nil {
 		return fmt.Errorf("failed to post announcement message: %w", msgErr)
+	}
+	ms.Metadata["msg_ts"] = msgTs
+	if updateErr := ms.Update().SetMetadata(ms.Metadata).Exec(ctx); updateErr != nil {
+		return fmt.Errorf("failed to update metadata: %w", updateErr)
 	}
 
 	return nil
@@ -223,7 +227,7 @@ func (h *incidentChatEventHandler) postIncidentAnnouncement(ctx context.Context,
 
 	builder := newIncidentAnnouncementMessageBuilder(inc)
 
-	postErr := h.chat.sendMessage(ctx, announcementChannelId, slack.MsgOptionBlocks(builder.build()...))
+	_, postErr := h.chat.sendMessage(ctx, announcementChannelId, slack.MsgOptionBlocks(builder.build()...))
 	if postErr != nil {
 		return fmt.Errorf("failed to post announcement message: %w", postErr)
 	}

@@ -182,29 +182,6 @@ func (h *oncallShiftsHandler) UpdateOncallShiftHandover(ctx context.Context, req
 func (h *oncallShiftsHandler) SendOncallShiftHandover(ctx context.Context, request *oapi.SendOncallShiftHandoverRequest) (*oapi.SendOncallShiftHandoverResponse, error) {
 	var resp oapi.SendOncallShiftHandoverResponse
 
-	//reqContent := request.Body.Attributes.Content
-	//sections := make([]rez.OncallShiftHandoverSection, len(reqContent))
-	//for i, sec := range reqContent {
-	//	hoSec := rez.OncallShiftHandoverSection{
-	//		Header:  sec.Header,
-	//		Kind:    sec.Kind,
-	//		Content: nil,
-	//	}
-	//
-	//	if sec.Kind == "regular" {
-	//		if sec.JsonContent == nil {
-	//			return nil, oapi.ErrorBadRequest("no content provided")
-	//		}
-	//		var content prosemirror.Node
-	//		if jsonErr := json.Unmarshal([]byte(*sec.JsonContent), &content); jsonErr != nil {
-	//			return nil, oapi.ErrorBadRequest("invalid section content", jsonErr)
-	//		}
-	//		hoSec.Content = &content
-	//	}
-	//
-	//	sections[i] = hoSec
-	//}
-
 	handover, sendErr := h.shifts.SendShiftHandover(ctx, request.Id)
 	if sendErr != nil {
 		return nil, apiError("failed to send handover", sendErr)

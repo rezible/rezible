@@ -6,6 +6,8 @@ import (
 	"errors"
 	"fmt"
 
+	"entgo.io/ent/dialect/sql"
+	"entgo.io/ent/dialect/sql/sqljson"
 	"github.com/rs/zerolog/log"
 	"golang.org/x/oauth2"
 
@@ -42,12 +44,45 @@ func (s *IntegrationsService) listQuery(p rez.ListIntegrationsParams) *ent.Integ
 	if p.Name != "" {
 		query.Where(integration.Name(p.Name))
 	}
+	if p.DataKind != "" {
+		hasDataKindPred := sqljson.ValueEQ(integration.FieldDataKinds, true, sqljson.DotPath(p.DataKind))
+		query.Where(func(s *sql.Selector) {
+			s.Where(hasDataKindPred)
+		})
+	}
+	if p.ConfigValues != nil && len(p.ConfigValues) > 0 {
+		for path, value := range p.ConfigValues {
+			query.Where(func(s *sql.Selector) {
+				s.Where(sqljson.ValueEQ(integration.FieldConfig, value, sqljson.DotPath(path)))
+			})
+		}
+	}
+	if p.Filter != nil {
+		p.Filter(query)
+	}
 	return query
 }
 
 func (s *IntegrationsService) ListIntegrations(ctx context.Context, params rez.ListIntegrationsParams) ([]*ent.Integration, error) {
-	query := s.listQuery(params)
-	return query.All(ctx)
+	return s.listQuery(params).All(ctx)
+	// query := s.listQuery(params)
+	//all, queryErr := query.All(ctx)
+	//if queryErr != nil {
+	//	return nil, fmt.Errorf("failed to query integrations: %w", queryErr)
+	//}
+	//if params.DataKind == "" {
+	//	return all, nil
+	//}
+	//var supportingKind []*ent.Integration
+	//for _, intg := range all {
+	//	if intg.DataKinds[params.DataKind] {
+	//		supportingKind = append(supportingKind, intg)
+	//	}
+	//}
+	//if len(supportingKind) == 0 {
+	//	return nil, rez.ErrNoConfiguredIntegrations
+	//}
+	//return supportingKind, nil
 }
 
 func (s *IntegrationsService) GetIntegration(ctx context.Context, name string) (*ent.Integration, error) {
@@ -183,6 +218,26 @@ func (s *IntegrationsService) CompleteOAuth2Flow(ctx context.Context, name, stat
 	return intg, nil
 }
 
-func (s *IntegrationsService) GetFoo() {
+func (s *IntegrationsService) getPackageSupportingDataKind(ctx context.Context, dataKind string) (rez.IntegrationPackage, error) {
+	intgs, listErr := s.ListIntegrations(ctx, rez.ListIntegrationsParams{
+		DataKind: dataKind,
+	})
+	if listErr != nil {
+		return nil, listErr
+	}
+	if len(intgs) != 1 {
+		return nil, fmt.Errorf("expected 1 integration, got %d", len(intgs))
+	}
+	return integrations.GetPackage(intgs[0])
+}
 
+func (s *IntegrationsService) GetChatService(ctx context.Context) (rez.ChatService, error) {
+	p, pErr := s.getPackageSupportingDataKind(ctx, "chat")
+	if pErr != nil {
+		return nil, pErr
+	}
+	if chatPackage, ok := p.(rez.IntegrationWithChatService); ok {
+		return chatPackage.GetChatService(), nil
+	}
+	return nil, rez.ErrNoConfiguredIntegrations
 }

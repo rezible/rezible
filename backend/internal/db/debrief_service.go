@@ -21,14 +21,30 @@ type DebriefService struct {
 	ai   rez.AiAgentService
 }
 
-func NewDebriefService(db *ent.Client, jobs rez.JobsService, ai rez.AiAgentService) (*DebriefService, error) {
+func NewDebriefService(db *ent.Client, jobSvc rez.JobsService, ai rez.AiAgentService) (*DebriefService, error) {
 	svc := &DebriefService{
 		db:   db,
-		jobs: jobs,
+		jobs: jobSvc,
 		ai:   ai,
 	}
 
+	jobs.RegisterWorkerFunc(svc.handleSendDebriefRequests)
+	jobs.RegisterWorkerFunc(svc.handleGenerateDebriefResponse)
+	jobs.RegisterWorkerFunc(svc.handleGenerateSuggestions)
+
 	return svc, nil
+}
+
+func (s *DebriefService) handleSendDebriefRequests(ctx context.Context, args jobs.SendIncidentDebriefRequests) error {
+	return s.sendDebriefRequests(ctx, args.IncidentId)
+}
+
+func (s *DebriefService) handleGenerateDebriefResponse(ctx context.Context, args jobs.GenerateIncidentDebriefResponse) error {
+	return s.generateDebriefResponse(ctx, args.DebriefId)
+}
+
+func (s *DebriefService) handleGenerateSuggestions(ctx context.Context, args jobs.GenerateIncidentDebriefSuggestions) error {
+	return nil
 }
 
 func (s *DebriefService) CreateDebrief(ctx context.Context, incidentId uuid.UUID, userId uuid.UUID) (*ent.IncidentDebrief, error) {
@@ -132,10 +148,6 @@ func (s *DebriefService) CompleteDebrief(ctx context.Context, debriefId uuid.UUI
 	return debrief, nil
 }
 
-func (s *DebriefService) HandleGenerateSuggestions(ctx context.Context, args jobs.GenerateIncidentDebriefSuggestions) error {
-	return nil
-}
-
 func (s *DebriefService) GetDebrief(ctx context.Context, id uuid.UUID) (*ent.IncidentDebrief, error) {
 	return s.db.IncidentDebrief.Get(ctx, id)
 }
@@ -146,8 +158,7 @@ func (s *DebriefService) GetUserDebrief(ctx context.Context, incidentId uuid.UUI
 		Only(ctx)
 }
 
-func (s *DebriefService) HandleSendDebriefRequests(ctx context.Context, args jobs.SendIncidentDebriefRequests) error {
-	incidentId := args.IncidentId
+func (s *DebriefService) sendDebriefRequests(ctx context.Context, incidentId uuid.UUID) error {
 	inc, incErr := s.db.Incident.Get(ctx, incidentId)
 	if incErr != nil {
 		return fmt.Errorf("get incident %s failed: %w", incidentId.String(), incErr)
@@ -241,8 +252,7 @@ func (s *DebriefService) AddDebriefMessage(ctx context.Context, debriefId uuid.U
 	return msg, nil
 }
 
-func (s *DebriefService) HandleGenerateDebriefResponse(ctx context.Context, args jobs.GenerateIncidentDebriefResponse) error {
-	debriefId := args.DebriefId
+func (s *DebriefService) generateDebriefResponse(ctx context.Context, debriefId uuid.UUID) error {
 	debrief, debriefErr := s.db.IncidentDebrief.Query().
 		Where(incidentdebrief.ID(debriefId)).
 		WithMessages().
