@@ -1,8 +1,8 @@
 <script lang="ts">
-	import { setSetupViewState } from "$features/setup/lib/viewState.svelte";
-	import { SetupView } from "$features/setup";
+	import { setInitialSetupViewState } from "$features/settings/lib/initialSetupViewState.svelte";
+	import InitialSetupView from "$features/settings/view/initial-setup/InitialSetupView.svelte";
 
-    setSetupViewState();
+    setInitialSetupViewState();
 </script>
 
-<SetupView />
+<InitialSetupView />

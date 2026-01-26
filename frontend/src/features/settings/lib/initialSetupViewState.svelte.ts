@@ -42,9 +42,7 @@ class OAuthIntegrationSetupState {
     async startFlow(name: string) {
         try {
             const resp = await this.startFlowMut.mutateAsync({ path: { name } });
-            const flowUrl = new URL(resp.data.flow_url);
-            alert(`oauth navigation to ${resp.data.flow_url}`);
-            window.location.assign(flowUrl);
+            window.location.assign(new URL(resp.data.flow_url));
         } catch (e) {
             console.error("failed to complete", e);
         }
@@ -93,7 +91,7 @@ const getDataKindIntegrationsMap = (intgs: SupportedIntegration[]) => {
     return kindsMap;
 }
 
-export class SetupViewState {
+export class InitialSetupViewState {
     session = useAuthSessionState();
 
     oauth: OAuthIntegrationSetupState;
@@ -159,6 +157,6 @@ export class SetupViewState {
     loading = $derived(this.finishingSetup || this.configuringIntegration || this.loadingIntegrations)
 }
 
-const ctx = new Context<SetupViewState>("setupView");
-export const setSetupViewState = () => ctx.set(new SetupViewState());
-export const useSetupViewState = () => ctx.get();
+const ctx = new Context<InitialSetupViewState>("initialSetupView");
+export const setInitialSetupViewState = () => ctx.set(new InitialSetupViewState());
+export const useInitialSetupViewState = () => ctx.get();
