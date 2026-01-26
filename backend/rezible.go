@@ -94,6 +94,8 @@ type (
 		OAuthConfigRequired() bool
 
 		ValidateConfig(json.RawMessage) (bool, error)
+		GetUserConfig(json.RawMessage) (json.RawMessage, error)
+		MergeUserConfig(cfg json.RawMessage, userCfg json.RawMessage) (json.RawMessage, error)
 	}
 
 	IntegrationWithOAuth2SetupFlow interface {
@@ -117,15 +119,11 @@ type (
 	IntegrationsService interface {
 		ListIntegrations(ctx context.Context, params ListIntegrationsParams) ([]*ent.Integration, error)
 		GetIntegration(ctx context.Context, name string) (*ent.Integration, error)
-		ConfigureIntegration(ctx context.Context, name string, cfg json.RawMessage) (*ent.Integration, error)
+		ConfigureIntegration(ctx context.Context, name string, cfg json.RawMessage, dataKinds map[string]bool) (*ent.Integration, error)
 		DeleteIntegration(ctx context.Context, name string) error
 
 		StartOAuth2Flow(ctx context.Context, name string) (string, error)
 		CompleteOAuth2Flow(ctx context.Context, name, state, code string) (*ent.Integration, error)
-	}
-
-	IntegrationsDataSyncer interface {
-		SyncIntegrationsData(context.Context, jobs.SyncIntegrationsData) error
 	}
 )
 

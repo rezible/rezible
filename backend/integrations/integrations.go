@@ -36,6 +36,20 @@ func Setup(ctx context.Context, svcs *rez.Services) error {
 	return nil
 }
 
+func GetUserConfig(name string, cfg json.RawMessage) (json.RawMessage, error) {
+	if p, ok := packageMap[name]; ok {
+		return p.GetUserConfig(cfg)
+	}
+	return nil, fmt.Errorf("unknown integration: %s", name)
+}
+
+func MergeUserConfig(name string, cfg json.RawMessage, userCfg json.RawMessage) (json.RawMessage, error) {
+	if p, ok := packageMap[name]; ok {
+		return p.MergeUserConfig(cfg, userCfg)
+	}
+	return nil, fmt.Errorf("unknown integration: %s", name)
+}
+
 func ValidateConfig(name string, cfg json.RawMessage) (bool, error) {
 	if p, ok := packageMap[name]; ok {
 		return p.ValidateConfig(cfg)

@@ -77,21 +77,9 @@ func (_u *IntegrationUpdate) AppendConfig(v json.RawMessage) *IntegrationUpdate 
 	return _u
 }
 
-// SetUserConfig sets the "user_config" field.
-func (_u *IntegrationUpdate) SetUserConfig(v json.RawMessage) *IntegrationUpdate {
-	_u.mutation.SetUserConfig(v)
-	return _u
-}
-
-// AppendUserConfig appends value to the "user_config" field.
-func (_u *IntegrationUpdate) AppendUserConfig(v json.RawMessage) *IntegrationUpdate {
-	_u.mutation.AppendUserConfig(v)
-	return _u
-}
-
-// ClearUserConfig clears the value of the "user_config" field.
-func (_u *IntegrationUpdate) ClearUserConfig() *IntegrationUpdate {
-	_u.mutation.ClearUserConfig()
+// SetDataKinds sets the "data_kinds" field.
+func (_u *IntegrationUpdate) SetDataKinds(v map[string]bool) *IntegrationUpdate {
+	_u.mutation.SetDataKinds(v)
 	return _u
 }
 
@@ -185,16 +173,8 @@ func (_u *IntegrationUpdate) sqlSave(ctx context.Context) (_node int, err error)
 			sqljson.Append(u, integration.FieldConfig, value)
 		})
 	}
-	if value, ok := _u.mutation.UserConfig(); ok {
-		_spec.SetField(integration.FieldUserConfig, field.TypeJSON, value)
-	}
-	if value, ok := _u.mutation.AppendedUserConfig(); ok {
-		_spec.AddModifier(func(u *sql.UpdateBuilder) {
-			sqljson.Append(u, integration.FieldUserConfig, value)
-		})
-	}
-	if _u.mutation.UserConfigCleared() {
-		_spec.ClearField(integration.FieldUserConfig, field.TypeJSON)
+	if value, ok := _u.mutation.DataKinds(); ok {
+		_spec.SetField(integration.FieldDataKinds, field.TypeJSON, value)
 	}
 	_spec.AddModifiers(_u.modifiers...)
 	if _node, err = sqlgraph.UpdateNodes(ctx, _u.driver, _spec); err != nil {
@@ -264,21 +244,9 @@ func (_u *IntegrationUpdateOne) AppendConfig(v json.RawMessage) *IntegrationUpda
 	return _u
 }
 
-// SetUserConfig sets the "user_config" field.
-func (_u *IntegrationUpdateOne) SetUserConfig(v json.RawMessage) *IntegrationUpdateOne {
-	_u.mutation.SetUserConfig(v)
-	return _u
-}
-
-// AppendUserConfig appends value to the "user_config" field.
-func (_u *IntegrationUpdateOne) AppendUserConfig(v json.RawMessage) *IntegrationUpdateOne {
-	_u.mutation.AppendUserConfig(v)
-	return _u
-}
-
-// ClearUserConfig clears the value of the "user_config" field.
-func (_u *IntegrationUpdateOne) ClearUserConfig() *IntegrationUpdateOne {
-	_u.mutation.ClearUserConfig()
+// SetDataKinds sets the "data_kinds" field.
+func (_u *IntegrationUpdateOne) SetDataKinds(v map[string]bool) *IntegrationUpdateOne {
+	_u.mutation.SetDataKinds(v)
 	return _u
 }
 
@@ -402,16 +370,8 @@ func (_u *IntegrationUpdateOne) sqlSave(ctx context.Context) (_node *Integration
 			sqljson.Append(u, integration.FieldConfig, value)
 		})
 	}
-	if value, ok := _u.mutation.UserConfig(); ok {
-		_spec.SetField(integration.FieldUserConfig, field.TypeJSON, value)
-	}
-	if value, ok := _u.mutation.AppendedUserConfig(); ok {
-		_spec.AddModifier(func(u *sql.UpdateBuilder) {
-			sqljson.Append(u, integration.FieldUserConfig, value)
-		})
-	}
-	if _u.mutation.UserConfigCleared() {
-		_spec.ClearField(integration.FieldUserConfig, field.TypeJSON)
+	if value, ok := _u.mutation.DataKinds(); ok {
+		_spec.SetField(integration.FieldDataKinds, field.TypeJSON, value)
 	}
 	_spec.AddModifiers(_u.modifiers...)
 	_node = &Integration{config: _u.config}

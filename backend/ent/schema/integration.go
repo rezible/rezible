@@ -30,7 +30,7 @@ func (Integration) Fields() []ent.Field {
 		field.String("name"),
 		field.JSON("config", json.RawMessage{}).
 			SchemaType(map[string]string{dialect.Postgres: "jsonb"}),
-		field.JSON("user_config", json.RawMessage{}).Optional(),
+		field.JSON("data_kinds", map[string]bool{}),
 	}
 }
 

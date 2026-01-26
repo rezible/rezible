@@ -6,24 +6,31 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/rs/zerolog/log"
+	"golang.org/x/oauth2"
+
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
 	"github.com/rezible/rezible/ent/integration"
 	"github.com/rezible/rezible/integrations"
+	"github.com/rezible/rezible/internal/db/datasync"
 	"github.com/rezible/rezible/jobs"
-	"github.com/rs/zerolog/log"
 )
 
 type IntegrationsService struct {
 	db     *ent.Client
 	jobs   rez.JobsService
-	syncer rez.IntegrationsDataSyncer
+	syncer *datasync.Syncer
 }
 
-func NewIntegrationsService(db *ent.Client, jobs rez.JobsService, syncer rez.IntegrationsDataSyncer) (*IntegrationsService, error) {
+func NewIntegrationsService(db *ent.Client, jobSvc rez.JobsService) (*IntegrationsService, error) {
+	syncer := datasync.NewSyncerService(db)
+	jobs.RegisterPeriodicJob(jobs.SyncAllTenantIntegrationsDataPeriodicJob)
+	jobs.RegisterWorkerFunc(syncer.SyncIntegrationsData)
+
 	s := &IntegrationsService{
 		db:     db,
-		jobs:   jobs,
+		jobs:   jobSvc,
 		syncer: syncer,
 	}
 
@@ -53,7 +60,7 @@ type updateIntegrationMutation interface {
 	Mutation() *ent.IntegrationMutation
 }
 
-func (s *IntegrationsService) ConfigureIntegration(ctx context.Context, name string, cfg json.RawMessage) (*ent.Integration, error) {
+func (s *IntegrationsService) ConfigureIntegration(ctx context.Context, name string, cfg json.RawMessage, dataKinds map[string]bool) (*ent.Integration, error) {
 	curr, getCurrErr := s.GetIntegration(ctx, name)
 	if getCurrErr != nil && !ent.IsNotFound(getCurrErr) {
 		return nil, fmt.Errorf("failed to get integration %s: %w", name, getCurrErr)
@@ -65,7 +72,9 @@ func (s *IntegrationsService) ConfigureIntegration(ctx context.Context, name str
 		m = s.db.Integration.Create().SetName(name)
 	}
 
-	m.Mutation().SetConfig(cfg)
+	mut := m.Mutation()
+	mut.SetConfig(cfg)
+	mut.SetDataKinds(dataKinds)
 
 	updated, saveErr := m.Save(ctx)
 	if saveErr != nil {
@@ -99,28 +108,27 @@ func (s *IntegrationsService) verifyOAuthState(ctx context.Context, name string,
 	return nil
 }
 
-func (s *IntegrationsService) getOAuth2FlowHandler(name string) (rez.IntegrationWithOAuth2SetupFlow, error) {
-	intgDetail, intgErr := integrations.GetDetail(name)
-	if intgErr != nil {
-		return nil, intgErr
-	}
-
-	oauth2Intg, ok := intgDetail.(rez.IntegrationWithOAuth2SetupFlow)
+func (s *IntegrationsService) getIntegrationOAuthConfig(d rez.IntegrationPackage) (rez.IntegrationWithOAuth2SetupFlow, *oauth2.Config, error) {
+	oauth2Intg, ok := d.(rez.IntegrationWithOAuth2SetupFlow)
 	if !ok {
-		return nil, fmt.Errorf("oauth2 flow not supported for integration %s", name)
+		return nil, nil, fmt.Errorf("oauth2 flow not supported for integration %s", d.Name())
 	}
 
-	return oauth2Intg, nil
+	cfg := oauth2Intg.OAuth2Config()
+	if cfg == nil {
+		return nil, nil, errors.New("invalid integration configuration")
+	}
+	return oauth2Intg, cfg, nil
 }
 
 func (s *IntegrationsService) StartOAuth2Flow(ctx context.Context, name string) (string, error) {
-	h, hErr := s.getOAuth2FlowHandler(name)
-	if hErr != nil {
-		return "", hErr
+	intgDetail, intgErr := integrations.GetDetail(name)
+	if intgErr != nil {
+		return "", intgErr
 	}
 
-	cfg := h.OAuth2Config()
-	if cfg == nil {
+	_, cfg, cfgErr := s.getIntegrationOAuthConfig(intgDetail)
+	if cfgErr != nil {
 		return "", errors.New("invalid integration configuration")
 	}
 
@@ -133,21 +141,26 @@ func (s *IntegrationsService) StartOAuth2Flow(ctx context.Context, name string) 
 }
 
 func (s *IntegrationsService) CompleteOAuth2Flow(ctx context.Context, name, state, code string) (*ent.Integration, error) {
-	h, hErr := s.getOAuth2FlowHandler(name)
-	if hErr != nil {
-		return nil, hErr
+	intgDetail, intgErr := integrations.GetDetail(name)
+	if intgErr != nil {
+		return nil, intgErr
+	}
+
+	oauth2Intg, oauthCfg, oauthCfgErr := s.getIntegrationOAuthConfig(intgDetail)
+	if oauthCfgErr != nil {
+		return nil, errors.New("invalid integration configuration")
 	}
 
 	if stateErr := s.verifyOAuthState(ctx, name, state); stateErr != nil {
 		return nil, fmt.Errorf("invalid state: %w", stateErr)
 	}
 
-	token, tokenErr := h.OAuth2Config().Exchange(ctx, code)
+	token, tokenErr := oauthCfg.Exchange(ctx, code)
 	if tokenErr != nil {
 		return nil, fmt.Errorf("exchange token: %w", tokenErr)
 	}
 
-	cfg, cfgErr := h.GetIntegrationConfigFromToken(token)
+	cfg, cfgErr := oauth2Intg.GetIntegrationConfigFromToken(token)
 	if cfgErr != nil {
 		return nil, fmt.Errorf("failed to get integration config: %w", cfgErr)
 	}
@@ -157,10 +170,19 @@ func (s *IntegrationsService) CompleteOAuth2Flow(ctx context.Context, name, stat
 		return nil, fmt.Errorf("failed to marshal integration config: %w", jsonErr)
 	}
 
-	intg, setErr := s.ConfigureIntegration(ctx, name, cfgJson)
+	enabledKinds := map[string]bool{}
+	if kinds := intgDetail.SupportedDataKinds(); len(kinds) == 1 {
+		enabledKinds[kinds[0]] = true
+	}
+
+	intg, setErr := s.ConfigureIntegration(ctx, name, cfgJson, enabledKinds)
 	if setErr != nil {
 		return nil, fmt.Errorf("failed to create integration: %w", setErr)
 	}
 
 	return intg, nil
+}
+
+func (s *IntegrationsService) GetFoo() {
+
 }

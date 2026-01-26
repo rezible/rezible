@@ -43,7 +43,11 @@ func (h *integrationsHandler) ListConfigured(ctx context.Context, req *oapi.List
 
 	resp.Body.Data = make([]oapi.ConfiguredIntegration, len(results))
 	for i, intg := range results {
-		resp.Body.Data[i] = oapi.IntegrationFromEnt(intg)
+		oapiIntg, intgErr := oapi.IntegrationFromEnt(intg)
+		if intgErr != nil {
+			return nil, apiError("failed to convert integration", intgErr)
+		}
+		resp.Body.Data[i] = *oapiIntg
 	}
 	resp.Body.Pagination = oapi.ResponsePagination{
 		Total: len(results),
@@ -59,7 +63,11 @@ func (h *integrationsHandler) GetIntegration(ctx context.Context, req *oapi.GetI
 	if getErr != nil {
 		return nil, apiError("failed to get integration", getErr)
 	}
-	resp.Body.Data = oapi.IntegrationFromEnt(intg)
+	oapiIntg, intgErr := oapi.IntegrationFromEnt(intg)
+	if intgErr != nil {
+		return nil, apiError("failed to convert integration", intgErr)
+	}
+	resp.Body.Data = *oapiIntg
 
 	return &resp, nil
 }
@@ -69,11 +77,15 @@ func (h *integrationsHandler) ConfigureIntegration(ctx context.Context, req *oap
 
 	attr := req.Body.Attributes
 
-	created, createErr := h.integrations.ConfigureIntegration(ctx, req.Name, attr.Config)
+	created, createErr := h.integrations.ConfigureIntegration(ctx, req.Name, attr.Config, attr.DataKinds)
 	if createErr != nil {
 		return nil, apiError("failed to update integration", createErr)
 	}
-	resp.Body.Data = oapi.IntegrationFromEnt(created)
+	oapiIntg, intgErr := oapi.IntegrationFromEnt(created)
+	if intgErr != nil {
+		return nil, apiError("failed to convert integration", intgErr)
+	}
+	resp.Body.Data = *oapiIntg
 
 	return &resp, nil
 }
@@ -109,7 +121,11 @@ func (h *integrationsHandler) CompleteIntegrationOAuthFlow(ctx context.Context, 
 	if completeErr != nil {
 		return nil, apiError("failed to complete integration", completeErr)
 	}
-	resp.Body.Data = oapi.IntegrationFromEnt(intg)
+	oapiIntg, intgErr := oapi.IntegrationFromEnt(intg)
+	if intgErr != nil {
+		return nil, apiError("failed to convert integration", intgErr)
+	}
+	resp.Body.Data = *oapiIntg
 
 	return &resp, nil
 }

@@ -3,6 +3,7 @@ package v1
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"net/http"
 
 	"github.com/danielgtaylor/huma/v2"
@@ -57,17 +58,19 @@ type (
 	}
 )
 
-func IntegrationFromEnt(intg *ent.Integration) ConfiguredIntegration {
-	configValid, _ := integrations.ValidateConfig(intg.Name, intg.Config)
+func IntegrationFromEnt(intg *ent.Integration) (*ConfiguredIntegration, error) {
+	userConfig, cfgErr := integrations.GetUserConfig(intg.Name, intg.Config)
+	if cfgErr != nil {
+		return nil, fmt.Errorf("get user config: %w", cfgErr)
+	}
+	valid, _ := integrations.ValidateConfig(intg.Name, intg.Config)
 	attrs := ConfiguredIntegrationAttributes{
-		Config:      intg.Config,
-		ConfigValid: configValid,
+		Config:      userConfig,
+		ConfigValid: valid,
+		DataKinds:   intg.DataKinds,
 	}
 
-	return ConfiguredIntegration{
-		Name:       intg.Name,
-		Attributes: attrs,
-	}
+	return &ConfiguredIntegration{Name: intg.Name, Attributes: attrs}, nil
 }
 
 var integrationsTags = []string{"Integrations"}
@@ -83,7 +86,8 @@ type (
 	}
 
 	RawIntegrationConfigRequestAttributes struct {
-		Config json.RawMessage `json:"config"`
+		Config    json.RawMessage `json:"config"`
+		DataKinds map[string]bool `json:"dataKinds"`
 	}
 	NamedIntegrationRawConfigRequest NamedIntegrationRequestWithAttributes[RawIntegrationConfigRequestAttributes]
 )

@@ -982,7 +982,7 @@ var (
 		{Name: "updated_at", Type: field.TypeTime},
 		{Name: "name", Type: field.TypeString},
 		{Name: "config", Type: field.TypeJSON, SchemaType: map[string]string{"postgres": "jsonb"}},
-		{Name: "user_config", Type: field.TypeJSON, Nullable: true},
+		{Name: "data_kinds", Type: field.TypeJSON},
 		{Name: "tenant_id", Type: field.TypeInt},
 	}
 	// IntegrationsTable holds the schema information for the "integrations" table.

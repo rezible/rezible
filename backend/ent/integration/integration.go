@@ -26,8 +26,8 @@ const (
 	FieldName = "name"
 	// FieldConfig holds the string denoting the config field in the database.
 	FieldConfig = "config"
-	// FieldUserConfig holds the string denoting the user_config field in the database.
-	FieldUserConfig = "user_config"
+	// FieldDataKinds holds the string denoting the data_kinds field in the database.
+	FieldDataKinds = "data_kinds"
 	// EdgeTenant holds the string denoting the tenant edge name in mutations.
 	EdgeTenant = "tenant"
 	// Table holds the table name of the integration in the database.
@@ -49,7 +49,7 @@ var Columns = []string{
 	FieldUpdatedAt,
 	FieldName,
 	FieldConfig,
-	FieldUserConfig,
+	FieldDataKinds,
 }
 
 // ValidColumn reports if the column name is valid (part of the table columns).

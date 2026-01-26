@@ -30,8 +30,8 @@ type Integration struct {
 	Name string `json:"name,omitempty"`
 	// Config holds the value of the "config" field.
 	Config json.RawMessage `json:"config,omitempty"`
-	// UserConfig holds the value of the "user_config" field.
-	UserConfig json.RawMessage `json:"user_config,omitempty"`
+	// DataKinds holds the value of the "data_kinds" field.
+	DataKinds map[string]bool `json:"data_kinds,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the IntegrationQuery when eager-loading is set.
 	Edges        IntegrationEdges `json:"edges"`
@@ -63,7 +63,7 @@ func (*Integration) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case integration.FieldConfig, integration.FieldUserConfig:
+		case integration.FieldConfig, integration.FieldDataKinds:
 			values[i] = new([]byte)
 		case integration.FieldTenantID:
 			values[i] = new(sql.NullInt64)
@@ -126,12 +126,12 @@ func (_m *Integration) assignValues(columns []string, values []any) error {
 					return fmt.Errorf("unmarshal field config: %w", err)
 				}
 			}
-		case integration.FieldUserConfig:
+		case integration.FieldDataKinds:
 			if value, ok := values[i].(*[]byte); !ok {
-				return fmt.Errorf("unexpected type %T for field user_config", values[i])
+				return fmt.Errorf("unexpected type %T for field data_kinds", values[i])
 			} else if value != nil && len(*value) > 0 {
-				if err := json.Unmarshal(*value, &_m.UserConfig); err != nil {
-					return fmt.Errorf("unmarshal field user_config: %w", err)
+				if err := json.Unmarshal(*value, &_m.DataKinds); err != nil {
+					return fmt.Errorf("unmarshal field data_kinds: %w", err)
 				}
 			}
 		default:
@@ -190,8 +190,8 @@ func (_m *Integration) String() string {
 	builder.WriteString("config=")
 	builder.WriteString(fmt.Sprintf("%v", _m.Config))
 	builder.WriteString(", ")
-	builder.WriteString("user_config=")
-	builder.WriteString(fmt.Sprintf("%v", _m.UserConfig))
+	builder.WriteString("data_kinds=")
+	builder.WriteString(fmt.Sprintf("%v", _m.DataKinds))
 	builder.WriteByte(')')
 	return builder.String()
 }

@@ -36,3 +36,11 @@ func (d *integration) ValidateConfig(cfg json.RawMessage) (bool, error) {
 
 	return true, nil
 }
+
+func (d *integration) GetUserConfig(rawCfg json.RawMessage) (json.RawMessage, error) {
+	return rawCfg, nil
+}
+
+func (d *integration) MergeUserConfig(rawCfg json.RawMessage, rawUserCfg json.RawMessage) (json.RawMessage, error) {
+	return rawCfg, nil
+}

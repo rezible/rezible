@@ -21738,22 +21738,21 @@ func (m *IncidentTypeMutation) ResetEdge(name string) error {
 // IntegrationMutation represents an operation that mutates the Integration nodes in the graph.
 type IntegrationMutation struct {
 	config
-	op                Op
-	typ               string
-	id                *uuid.UUID
-	created_at        *time.Time
-	updated_at        *time.Time
-	name              *string
-	_config           *json.RawMessage
-	append_config     json.RawMessage
-	user_config       *json.RawMessage
-	appenduser_config json.RawMessage
-	clearedFields     map[string]struct{}
-	tenant            *int
-	clearedtenant     bool
-	done              bool
-	oldValue          func(context.Context) (*Integration, error)
-	predicates        []predicate.Integration
+	op            Op
+	typ           string
+	id            *uuid.UUID
+	created_at    *time.Time
+	updated_at    *time.Time
+	name          *string
+	_config       *json.RawMessage
+	append_config json.RawMessage
+	data_kinds    *map[string]bool
+	clearedFields map[string]struct{}
+	tenant        *int
+	clearedtenant bool
+	done          bool
+	oldValue      func(context.Context) (*Integration, error)
+	predicates    []predicate.Integration
 }
 
 var _ ent.Mutation = (*IntegrationMutation)(nil)
@@ -22055,69 +22054,40 @@ func (m *IntegrationMutation) ResetConfig() {
 	m.append_config = nil
 }
 
-// SetUserConfig sets the "user_config" field.
-func (m *IntegrationMutation) SetUserConfig(jm json.RawMessage) {
-	m.user_config = &jm
-	m.appenduser_config = nil
+// SetDataKinds sets the "data_kinds" field.
+func (m *IntegrationMutation) SetDataKinds(value map[string]bool) {
+	m.data_kinds = &value
 }
 
-// UserConfig returns the value of the "user_config" field in the mutation.
-func (m *IntegrationMutation) UserConfig() (r json.RawMessage, exists bool) {
-	v := m.user_config
+// DataKinds returns the value of the "data_kinds" field in the mutation.
+func (m *IntegrationMutation) DataKinds() (r map[string]bool, exists bool) {
+	v := m.data_kinds
 	if v == nil {
 		return
 	}
 	return *v, true
 }
 
-// OldUserConfig returns the old "user_config" field's value of the Integration entity.
+// OldDataKinds returns the old "data_kinds" field's value of the Integration entity.
 // If the Integration object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *IntegrationMutation) OldUserConfig(ctx context.Context) (v json.RawMessage, err error) {
+func (m *IntegrationMutation) OldDataKinds(ctx context.Context) (v map[string]bool, err error) {
 	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldUserConfig is only allowed on UpdateOne operations")
+		return v, errors.New("OldDataKinds is only allowed on UpdateOne operations")
 	}
 	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldUserConfig requires an ID field in the mutation")
+		return v, errors.New("OldDataKinds requires an ID field in the mutation")
 	}
 	oldValue, err := m.oldValue(ctx)
 	if err != nil {
-		return v, fmt.Errorf("querying old value for OldUserConfig: %w", err)
+		return v, fmt.Errorf("querying old value for OldDataKinds: %w", err)
 	}
-	return oldValue.UserConfig, nil
+	return oldValue.DataKinds, nil
 }
 
-// AppendUserConfig adds jm to the "user_config" field.
-func (m *IntegrationMutation) AppendUserConfig(jm json.RawMessage) {
-	m.appenduser_config = append(m.appenduser_config, jm...)
-}
-
-// AppendedUserConfig returns the list of values that were appended to the "user_config" field in this mutation.
-func (m *IntegrationMutation) AppendedUserConfig() (json.RawMessage, bool) {
-	if len(m.appenduser_config) == 0 {
-		return nil, false
-	}
-	return m.appenduser_config, true
-}
-
-// ClearUserConfig clears the value of the "user_config" field.
-func (m *IntegrationMutation) ClearUserConfig() {
-	m.user_config = nil
-	m.appenduser_config = nil
-	m.clearedFields[integration.FieldUserConfig] = struct{}{}
-}
-
-// UserConfigCleared returns if the "user_config" field was cleared in this mutation.
-func (m *IntegrationMutation) UserConfigCleared() bool {
-	_, ok := m.clearedFields[integration.FieldUserConfig]
-	return ok
-}
-
-// ResetUserConfig resets all changes to the "user_config" field.
-func (m *IntegrationMutation) ResetUserConfig() {
-	m.user_config = nil
-	m.appenduser_config = nil
-	delete(m.clearedFields, integration.FieldUserConfig)
+// ResetDataKinds resets all changes to the "data_kinds" field.
+func (m *IntegrationMutation) ResetDataKinds() {
+	m.data_kinds = nil
 }
 
 // ClearTenant clears the "tenant" edge to the Tenant entity.
@@ -22197,8 +22167,8 @@ func (m *IntegrationMutation) Fields() []string {
 	if m._config != nil {
 		fields = append(fields, integration.FieldConfig)
 	}
-	if m.user_config != nil {
-		fields = append(fields, integration.FieldUserConfig)
+	if m.data_kinds != nil {
+		fields = append(fields, integration.FieldDataKinds)
 	}
 	return fields
 }
@@ -22218,8 +22188,8 @@ func (m *IntegrationMutation) Field(name string) (ent.Value, bool) {
 		return m.Name()
 	case integration.FieldConfig:
 		return m.Config()
-	case integration.FieldUserConfig:
-		return m.UserConfig()
+	case integration.FieldDataKinds:
+		return m.DataKinds()
 	}
 	return nil, false
 }
@@ -22239,8 +22209,8 @@ func (m *IntegrationMutation) OldField(ctx context.Context, name string) (ent.Va
 		return m.OldName(ctx)
 	case integration.FieldConfig:
 		return m.OldConfig(ctx)
-	case integration.FieldUserConfig:
-		return m.OldUserConfig(ctx)
+	case integration.FieldDataKinds:
+		return m.OldDataKinds(ctx)
 	}
 	return nil, fmt.Errorf("unknown Integration field %s", name)
 }
@@ -22285,12 +22255,12 @@ func (m *IntegrationMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetConfig(v)
 		return nil
-	case integration.FieldUserConfig:
-		v, ok := value.(json.RawMessage)
+	case integration.FieldDataKinds:
+		v, ok := value.(map[string]bool)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
-		m.SetUserConfig(v)
+		m.SetDataKinds(v)
 		return nil
 	}
 	return fmt.Errorf("unknown Integration field %s", name)
@@ -22324,11 +22294,7 @@ func (m *IntegrationMutation) AddField(name string, value ent.Value) error {
 // ClearedFields returns all nullable fields that were cleared during this
 // mutation.
 func (m *IntegrationMutation) ClearedFields() []string {
-	var fields []string
-	if m.FieldCleared(integration.FieldUserConfig) {
-		fields = append(fields, integration.FieldUserConfig)
-	}
-	return fields
+	return nil
 }
 
 // FieldCleared returns a boolean indicating if a field with the given name was
@@ -22341,11 +22307,6 @@ func (m *IntegrationMutation) FieldCleared(name string) bool {
 // ClearField clears the value of the field with the given name. It returns an
 // error if the field is not defined in the schema.
 func (m *IntegrationMutation) ClearField(name string) error {
-	switch name {
-	case integration.FieldUserConfig:
-		m.ClearUserConfig()
-		return nil
-	}
 	return fmt.Errorf("unknown Integration nullable field %s", name)
 }
 
@@ -22368,8 +22329,8 @@ func (m *IntegrationMutation) ResetField(name string) error {
 	case integration.FieldConfig:
 		m.ResetConfig()
 		return nil
-	case integration.FieldUserConfig:
-		m.ResetUserConfig()
+	case integration.FieldDataKinds:
+		m.ResetDataKinds()
 		return nil
 	}
 	return fmt.Errorf("unknown Integration field %s", name)

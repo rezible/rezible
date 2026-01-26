@@ -241,16 +241,6 @@ func NameContainsFold(v string) predicate.Integration {
 	return predicate.Integration(sql.FieldContainsFold(FieldName, v))
 }
 
-// UserConfigIsNil applies the IsNil predicate on the "user_config" field.
-func UserConfigIsNil() predicate.Integration {
-	return predicate.Integration(sql.FieldIsNull(FieldUserConfig))
-}
-
-// UserConfigNotNil applies the NotNil predicate on the "user_config" field.
-func UserConfigNotNil() predicate.Integration {
-	return predicate.Integration(sql.FieldNotNull(FieldUserConfig))
-}
-
 // HasTenant applies the HasEdge predicate on the "tenant" edge.
 func HasTenant() predicate.Integration {
 	return predicate.Integration(func(s *sql.Selector) {

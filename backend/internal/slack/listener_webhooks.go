@@ -58,7 +58,9 @@ func (wh *WebhookEventHandler) Handler() *chi.Mux {
 	mux.HandleFunc("/options", wh.onOptionsWebhook)
 	mux.HandleFunc("/events", wh.onEventsWebhook)
 	mux.NotFound(func(w http.ResponseWriter, r *http.Request) {
-		log.Debug().Msg("slack webhook handler not found")
+		log.Debug().
+			Str("path", r.URL.Path).
+			Msg("slack webhook handler not found")
 		w.WriteHeader(http.StatusOK)
 	})
 	return mux

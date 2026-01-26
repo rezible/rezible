@@ -1969,6 +1969,9 @@ export type PlaybookAttributes = {
 
 export type RawIntegrationConfigRequestAttributes = {
     config: unknown;
+    dataKinds: {
+        [key: string]: boolean;
+    };
 };
 
 export type RemoveWatchedOncallRosterResponseBody = {

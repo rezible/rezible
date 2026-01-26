@@ -72,9 +72,9 @@ func (_c *IntegrationCreate) SetConfig(v json.RawMessage) *IntegrationCreate {
 	return _c
 }
 
-// SetUserConfig sets the "user_config" field.
-func (_c *IntegrationCreate) SetUserConfig(v json.RawMessage) *IntegrationCreate {
-	_c.mutation.SetUserConfig(v)
+// SetDataKinds sets the "data_kinds" field.
+func (_c *IntegrationCreate) SetDataKinds(v map[string]bool) *IntegrationCreate {
+	_c.mutation.SetDataKinds(v)
 	return _c
 }
 
@@ -175,6 +175,9 @@ func (_c *IntegrationCreate) check() error {
 	if _, ok := _c.mutation.Config(); !ok {
 		return &ValidationError{Name: "config", err: errors.New(`ent: missing required field "Integration.config"`)}
 	}
+	if _, ok := _c.mutation.DataKinds(); !ok {
+		return &ValidationError{Name: "data_kinds", err: errors.New(`ent: missing required field "Integration.data_kinds"`)}
+	}
 	if len(_c.mutation.TenantIDs()) == 0 {
 		return &ValidationError{Name: "tenant", err: errors.New(`ent: missing required edge "Integration.tenant"`)}
 	}
@@ -230,9 +233,9 @@ func (_c *IntegrationCreate) createSpec() (*Integration, *sqlgraph.CreateSpec) {
 		_spec.SetField(integration.FieldConfig, field.TypeJSON, value)
 		_node.Config = value
 	}
-	if value, ok := _c.mutation.UserConfig(); ok {
-		_spec.SetField(integration.FieldUserConfig, field.TypeJSON, value)
-		_node.UserConfig = value
+	if value, ok := _c.mutation.DataKinds(); ok {
+		_spec.SetField(integration.FieldDataKinds, field.TypeJSON, value)
+		_node.DataKinds = value
 	}
 	if nodes := _c.mutation.TenantIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
@@ -351,21 +354,15 @@ func (u *IntegrationUpsert) UpdateConfig() *IntegrationUpsert {
 	return u
 }
 
-// SetUserConfig sets the "user_config" field.
-func (u *IntegrationUpsert) SetUserConfig(v json.RawMessage) *IntegrationUpsert {
-	u.Set(integration.FieldUserConfig, v)
+// SetDataKinds sets the "data_kinds" field.
+func (u *IntegrationUpsert) SetDataKinds(v map[string]bool) *IntegrationUpsert {
+	u.Set(integration.FieldDataKinds, v)
 	return u
 }
 
-// UpdateUserConfig sets the "user_config" field to the value that was provided on create.
-func (u *IntegrationUpsert) UpdateUserConfig() *IntegrationUpsert {
-	u.SetExcluded(integration.FieldUserConfig)
-	return u
-}
-
-// ClearUserConfig clears the value of the "user_config" field.
-func (u *IntegrationUpsert) ClearUserConfig() *IntegrationUpsert {
-	u.SetNull(integration.FieldUserConfig)
+// UpdateDataKinds sets the "data_kinds" field to the value that was provided on create.
+func (u *IntegrationUpsert) UpdateDataKinds() *IntegrationUpsert {
+	u.SetExcluded(integration.FieldDataKinds)
 	return u
 }
 
@@ -476,24 +473,17 @@ func (u *IntegrationUpsertOne) UpdateConfig() *IntegrationUpsertOne {
 	})
 }
 
-// SetUserConfig sets the "user_config" field.
-func (u *IntegrationUpsertOne) SetUserConfig(v json.RawMessage) *IntegrationUpsertOne {
+// SetDataKinds sets the "data_kinds" field.
+func (u *IntegrationUpsertOne) SetDataKinds(v map[string]bool) *IntegrationUpsertOne {
 	return u.Update(func(s *IntegrationUpsert) {
-		s.SetUserConfig(v)
+		s.SetDataKinds(v)
 	})
 }
 
-// UpdateUserConfig sets the "user_config" field to the value that was provided on create.
-func (u *IntegrationUpsertOne) UpdateUserConfig() *IntegrationUpsertOne {
+// UpdateDataKinds sets the "data_kinds" field to the value that was provided on create.
+func (u *IntegrationUpsertOne) UpdateDataKinds() *IntegrationUpsertOne {
 	return u.Update(func(s *IntegrationUpsert) {
-		s.UpdateUserConfig()
-	})
-}
-
-// ClearUserConfig clears the value of the "user_config" field.
-func (u *IntegrationUpsertOne) ClearUserConfig() *IntegrationUpsertOne {
-	return u.Update(func(s *IntegrationUpsert) {
-		s.ClearUserConfig()
+		s.UpdateDataKinds()
 	})
 }
 
@@ -771,24 +761,17 @@ func (u *IntegrationUpsertBulk) UpdateConfig() *IntegrationUpsertBulk {
 	})
 }
 
-// SetUserConfig sets the "user_config" field.
-func (u *IntegrationUpsertBulk) SetUserConfig(v json.RawMessage) *IntegrationUpsertBulk {
+// SetDataKinds sets the "data_kinds" field.
+func (u *IntegrationUpsertBulk) SetDataKinds(v map[string]bool) *IntegrationUpsertBulk {
 	return u.Update(func(s *IntegrationUpsert) {
-		s.SetUserConfig(v)
+		s.SetDataKinds(v)
 	})
 }
 
-// UpdateUserConfig sets the "user_config" field to the value that was provided on create.
-func (u *IntegrationUpsertBulk) UpdateUserConfig() *IntegrationUpsertBulk {
+// UpdateDataKinds sets the "data_kinds" field to the value that was provided on create.
+func (u *IntegrationUpsertBulk) UpdateDataKinds() *IntegrationUpsertBulk {
 	return u.Update(func(s *IntegrationUpsert) {
-		s.UpdateUserConfig()
-	})
-}
-
-// ClearUserConfig clears the value of the "user_config" field.
-func (u *IntegrationUpsertBulk) ClearUserConfig() *IntegrationUpsertBulk {
-	return u.Update(func(s *IntegrationUpsert) {
-		s.ClearUserConfig()
+		s.UpdateDataKinds()
 	})
 }
 

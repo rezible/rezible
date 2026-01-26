@@ -8,6 +8,7 @@ import {
     startIntegrationOauthFlowMutation, 
     completeIntegrationOauthFlowMutation,
     type SupportedIntegration,
+    type ConfigureIntegrationRequestBody,
 } from "$lib/api";
 import { useAuthSessionState } from "$src/lib/auth.svelte";
 import { createMutation, createQuery } from "@tanstack/svelte-query";
@@ -139,10 +140,10 @@ export class SetupViewState {
     configuringIntegration = $derived(this.configureIntegrationMut.isPending);
     configureIntegrationMutErr = $derived(this.configureIntegrationMut.error);
 
-    async doConfigureIntegration(name: string, config: any) {
+    async doConfigureIntegration(name: string, attributes: ConfigureIntegrationRequestBody["attributes"]) {
         this.configureIntegrationMut.mutateAsync({
             path: { name },
-            body: { attributes: { config } }
+            body: { attributes }
         })
     }
 

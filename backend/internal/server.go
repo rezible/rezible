@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"path"
 	"time"
 
 	"github.com/rezible/rezible/ent"
@@ -16,7 +17,6 @@ import (
 	"github.com/rezible/rezible/access"
 	"github.com/rezible/rezible/internal/apiv1"
 	"github.com/rezible/rezible/internal/db"
-	"github.com/rezible/rezible/internal/db/datasync"
 	"github.com/rezible/rezible/internal/eino"
 	"github.com/rezible/rezible/internal/http"
 	"github.com/rezible/rezible/internal/postgres"
@@ -27,6 +27,14 @@ import (
 
 func RunAutoMigrations(ctx context.Context) error {
 	return postgres.RunAutoMigrations(ctx)
+}
+
+func OpenDatabase(ctx context.Context) (rez.Database, error) {
+	dbc, dbcErr := postgres.NewDatabaseClient(ctx)
+	if dbcErr != nil {
+		return nil, fmt.Errorf("postgres.NewDatabaseClient: %w", dbcErr)
+	}
+	return dbc, nil
 }
 
 func RunServer(ctx context.Context) error {
@@ -60,7 +68,7 @@ func newServer() *Server {
 	}
 }
 
-func (s *Server) addListener(name string, l rez.EventListener) {
+func (s *Server) addEventListener(name string, l rez.EventListener) {
 	s.listeners[name] = l
 }
 
@@ -102,7 +110,7 @@ func (s *Server) setup(ctx context.Context) error {
 	if dbcErr != nil {
 		return dbcErr
 	}
-	s.addListener("database", db.NewListener(conn))
+	s.addEventListener("database", db.NewListener(conn))
 
 	client := conn.Client()
 
@@ -123,7 +131,7 @@ func (s *Server) setup(ctx context.Context) error {
 		return fmt.Errorf("failed to get embedded frontend files: %w", feFSErr)
 	}
 	srv.MountStaticFrontend(frontendFS)
-	s.addListener("http_server", srv)
+	s.addEventListener("http_server", srv)
 
 	if intgsErr := integrations.Setup(ctx, svcs); intgsErr != nil {
 		return fmt.Errorf("integrations: %w", intgsErr)
@@ -132,12 +140,12 @@ func (s *Server) setup(ctx context.Context) error {
 	for _, p := range integrations.GetEnabled() {
 		if elIntegration, ok := p.(rez.IntegrationWithEventListeners); ok {
 			for name, l := range elIntegration.EventListeners() {
-				s.addListener(name, l)
+				s.addEventListener(name, l)
 			}
 		}
 		if whIntegration, ok := p.(rez.IntegrationWithWebhookHandlers); ok {
-			for name, h := range whIntegration.WebhookHandlers() {
-				srv.AddWebhookHandler(name, h)
+			for whPrefix, h := range whIntegration.WebhookHandlers() {
+				srv.AddWebhookHandler(path.Join(p.Name(), whPrefix), h)
 			}
 		}
 	}
@@ -145,18 +153,29 @@ func (s *Server) setup(ctx context.Context) error {
 	return nil
 }
 
-func OpenDatabase(ctx context.Context) (rez.Database, error) {
-	dbc, dbcErr := postgres.NewDatabaseClient(ctx)
-	if dbcErr != nil {
-		return nil, fmt.Errorf("postgres.NewDatabaseClient: %w", dbcErr)
+func (s *Server) makeJobService(dbc rez.Database) (rez.JobsService, error) {
+	pgDb, ok := dbc.(*postgres.DatabaseClient)
+	if !ok {
+		return nil, errors.New("non-postgres db client with river job service")
 	}
-	return dbc, nil
+	jobSvc, jobSvcErr := river.NewJobService(pgDb.Pool())
+	if jobSvcErr != nil {
+		return nil, fmt.Errorf("river.NewJobService: %w", jobSvcErr)
+	}
+	s.addEventListener("job_service", jobSvc)
+	return jobSvc, nil
 }
-func (s *Server) makeServices(ctx context.Context, dbConn rez.Database, dbc *ent.Client) (*rez.Services, error) {
-	syncer := datasync.NewSyncerService(dbc)
-	jobs.RegisterPeriodicJob(jobs.SyncAllTenantIntegrationsDataPeriodicJob)
-	jobs.RegisterWorkerFunc(syncer.SyncIntegrationsData)
 
+func (s *Server) makeMessageService() (rez.MessageService, error) {
+	msgs, msgsErr := watermill.NewMessageService()
+	if msgsErr != nil {
+		return nil, fmt.Errorf("watermill.NewMessageService: %w", msgsErr)
+	}
+	s.addEventListener("message_service", msgs)
+	return msgs, nil
+}
+
+func (s *Server) makeServices(ctx context.Context, dbConn rez.Database, dbc *ent.Client) (*rez.Services, error) {
 	jobSvc, jobSvcErr := s.makeJobService(dbConn)
 	if jobSvcErr != nil {
 		return nil, fmt.Errorf("job service: %w", jobSvcErr)
@@ -167,7 +186,7 @@ func (s *Server) makeServices(ctx context.Context, dbConn rez.Database, dbc *ent
 		return nil, fmt.Errorf("watermill.NewMessageService: %w", msgsErr)
 	}
 
-	intgs, intgsErr := db.NewIntegrationsService(dbc, jobSvc, syncer)
+	intgs, intgsErr := db.NewIntegrationsService(dbc, jobSvc)
 	if intgsErr != nil {
 		return nil, fmt.Errorf("db.NewIntegrationsService: %w", intgsErr)
 	}
@@ -180,11 +199,6 @@ func (s *Server) makeServices(ctx context.Context, dbConn rez.Database, dbc *ent
 	users, usersErr := db.NewUserService(dbc, orgs)
 	if usersErr != nil {
 		return nil, fmt.Errorf("postgres.NewUserService: %w", usersErr)
-	}
-
-	auth, authErr := http.NewAuthSessionService(ctx, orgs, users)
-	if authErr != nil {
-		return nil, fmt.Errorf("http.NewAuthSessionService: %w", authErr)
 	}
 
 	events, eventsErr := db.NewEventsService(dbc, users)
@@ -265,6 +279,11 @@ func (s *Server) makeServices(ctx context.Context, dbConn rez.Database, dbc *ent
 		return nil, fmt.Errorf("postgres.NewPlaybookService: %w", playbooksErr)
 	}
 
+	auth, authErr := http.NewAuthSessionService(ctx, orgs, users)
+	if authErr != nil {
+		return nil, fmt.Errorf("http.NewAuthSessionService: %w", authErr)
+	}
+
 	docs, docsErr := db.NewDocumentsService(dbc, auth, users)
 	if docsErr != nil {
 		return nil, fmt.Errorf("db.NewDocumentsService: %w", docsErr)
@@ -291,26 +310,4 @@ func (s *Server) makeServices(ctx context.Context, dbConn rez.Database, dbc *ent
 		Alerts:           alerts,
 		Playbooks:        playbooks,
 	}, nil
-}
-
-func (s *Server) makeJobService(dbc rez.Database) (rez.JobsService, error) {
-	pgDb, ok := dbc.(*postgres.DatabaseClient)
-	if !ok {
-		return nil, errors.New("non-postgres db client with river job service")
-	}
-	jobSvc, jobSvcErr := river.NewJobService(pgDb.Pool())
-	if jobSvcErr != nil {
-		return nil, fmt.Errorf("river.NewJobService: %w", jobSvcErr)
-	}
-	s.addListener("job_service", jobSvc)
-	return jobSvc, nil
-}
-
-func (s *Server) makeMessageService() (rez.MessageService, error) {
-	msgs, msgsErr := watermill.NewMessageService()
-	if msgsErr != nil {
-		return nil, fmt.Errorf("watermill.NewMessageService: %w", msgsErr)
-	}
-	s.addListener("message_service", msgs)
-	return msgs, nil
 }
