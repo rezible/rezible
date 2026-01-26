@@ -84,9 +84,6 @@ type Services struct {
 	Playbooks        PlaybookService
 }
 
-// TODO: remove this
-type ListParams = ent.ListParams
-
 type (
 	IntegrationPackage interface {
 		Name() string
@@ -112,10 +109,6 @@ type (
 		WebhookHandlers() map[string]http.Handler
 	}
 
-	IntegrationWithChatService interface {
-		GetChatService() ChatService
-	}
-
 	ListIntegrationsParams struct {
 		Name         string
 		DataKind     string
@@ -133,6 +126,12 @@ type (
 		CompleteOAuth2Flow(ctx context.Context, name, state, code string) (*ent.Integration, error)
 
 		GetChatService(ctx context.Context) (ChatService, error)
+	}
+)
+
+type (
+	IntegrationWithChatService interface {
+		GetChatService() ChatService
 	}
 
 	ChatService interface {
@@ -186,7 +185,7 @@ type (
 		PullUsers(ctx context.Context) iter.Seq2[*ent.User, error]
 	}
 	ListUsersParams = struct {
-		ListParams
+		ent.ListParams
 		TeamID uuid.UUID
 	}
 
@@ -265,7 +264,7 @@ type (
 	}
 
 	ListSystemComponentsParams struct {
-		ListParams
+		ent.ListParams
 	}
 
 	SystemComponentsService interface {
@@ -322,7 +321,7 @@ type (
 	}
 
 	ListAlertsParams struct {
-		ListParams
+		ent.ListParams
 	}
 
 	GetAlertMetricsParams struct {
@@ -346,7 +345,7 @@ type (
 	}
 
 	ListPlaybooksParams struct {
-		ListParams
+		ent.ListParams
 	}
 
 	PlaybookService interface {
@@ -374,7 +373,7 @@ type (
 	}
 
 	ListIncidentsParams struct {
-		ListParams
+		ent.ListParams
 		UserId       uuid.UUID
 		OpenedAfter  time.Time
 		OpenedBefore time.Time
@@ -426,13 +425,13 @@ type (
 
 type (
 	ListRetrospectiveCommentsParams struct {
-		ListParams
+		ent.ListParams
 		RetrospectiveID uuid.UUID
 		WithReplies     bool
 	}
 
 	ListRetrospectiveReviewsParams struct {
-		ListParams
+		ent.ListParams
 		RetrospectiveID uuid.UUID
 		WithReplies     bool
 	}
@@ -454,7 +453,7 @@ type (
 
 type (
 	ListEventsParams struct {
-		ListParams
+		ent.ListParams
 		From            time.Time
 		To              time.Time
 		WithAnnotations bool
@@ -473,7 +472,7 @@ type (
 	}
 
 	ListAnnotationsParams struct {
-		ListParams
+		ent.ListParams
 		From     time.Time
 		To       time.Time
 		UserIds  []uuid.UUID
@@ -503,12 +502,12 @@ type (
 	}
 
 	ListOncallRostersParams = struct {
-		ListParams
+		ent.ListParams
 		UserID uuid.UUID
 	}
 
 	ListOncallSchedulesParams = struct {
-		ListParams
+		ent.ListParams
 		UserID uuid.UUID
 	}
 
@@ -524,7 +523,7 @@ type (
 	}
 
 	ListOncallShiftsParams struct {
-		ListParams
+		ent.ListParams
 		UserID uuid.UUID
 		Anchor time.Time
 		Window time.Duration

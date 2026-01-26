@@ -10,7 +10,7 @@ import (
 
 	"github.com/danielgtaylor/huma/v2"
 	"github.com/google/uuid"
-	rez "github.com/rezible/rezible"
+	"github.com/rezible/rezible/ent"
 )
 
 const (
@@ -71,8 +71,8 @@ type (
 	}
 )
 
-func (l ListRequest) ListParams() rez.ListParams {
-	return rez.ListParams{
+func (l ListRequest) ListParams() ent.ListParams {
+	return ent.ListParams{
 		Search:          l.Search,
 		Offset:          l.Offset,
 		Limit:           l.Limit,

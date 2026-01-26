@@ -5,9 +5,9 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"github.com/rezible/rezible/ent"
 
 	rez "github.com/rezible/rezible"
+	"github.com/rezible/rezible/ent"
 	oapi "github.com/rezible/rezible/openapi/v1"
 )
 
@@ -170,7 +170,7 @@ func (h *oncallRostersHandler) GetUserOncallInformation(ctx context.Context, req
 		UserID: userId,
 		Anchor: time.Now(),
 		Window: oneWeek,
-		ListParams: rez.ListParams{
+		ListParams: ent.ListParams{
 			Limit: 20,
 		},
 	})
