@@ -10,10 +10,13 @@
     type Props = {
         integration: SupportedIntegration;
         configured?: ConfiguredIntegration;
+        nextRequiredDataKind?: string;
         startOAuthFlow: () => void;
         configureIntegration: (attrs: ConfigureIntegrationRequestBody["attributes"]) => void;
     };
-    const { integration, configured, startOAuthFlow, configureIntegration }: Props = $props();
+    const { integration, configured, nextRequiredDataKind, startOAuthFlow, configureIntegration }: Props = $props();
+
+    const supportsNextRequiredDataKind = $derived(!!nextRequiredDataKind && integration.supportedDataKinds.includes(nextRequiredDataKind))
 
     const configs: Record<string, IntegrationConfigComponent> = {
         "slack": SlackConfig,
@@ -54,7 +57,11 @@
         <Button onclick={() => {startOAuthFlow()}}>
             {@render oauthFlowButtonContent(integration.name)}
         </Button>
-    {:else}
+    {:else} 
+        {#if !!nextRequiredDataKind && supportsNextRequiredDataKind}
+            <Button>Enable Support for {nextRequiredDataKind}</Button>
+        {/if}
+        
         <ConfigComponent {integration} {configured} {onConfigChange} />
 
         <Button 
