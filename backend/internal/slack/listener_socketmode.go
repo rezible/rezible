@@ -13,26 +13,37 @@ import (
 	"github.com/sourcegraph/conc/pool"
 )
 
+func UseSocketMode() bool {
+	return rez.Config.GetBool("slack.socketmode.enabled")
+}
+
 type SocketModeListener struct {
-	chatSvc   *ChatService
 	client    *socketmode.Client
+	chat      *ChatService
 	eventPool *pool.ContextPool
 	cancelFn  context.CancelFunc
 }
 
-func NewSocketModeEventListener(chatSvc *ChatService) (*SocketModeListener, error) {
+func newSocketModeEventListener(svcs *rez.Services) (*SocketModeListener, error) {
 	if !rez.Config.SingleTenantMode() {
 		return nil, errors.New("can't use socket mode in multi-tenant mode")
 	}
-	stc, cErr := LoadSingleTenantClient()
-	if cErr != nil {
-		return nil, fmt.Errorf("single tenant client: %w", cErr)
+
+	appToken := rez.Config.GetString("slack.app_token")
+	if appToken != "" {
+		return nil, errors.New("slack.app_token not set")
 	}
 
-	smc := socketmode.New(stc)
+	botToken := rez.Config.GetString("slack.bot_token")
+	if botToken == "" {
+		return nil, errors.New("slack.bot_token not set")
+	}
+
+	client := slack.New(botToken, slack.OptionAppLevelToken(appToken))
+
 	sml := &SocketModeListener{
-		chatSvc:  chatSvc,
-		client:   smc,
+		chat:     newChatService(client, svcs),
+		client:   socketmode.New(client),
 		cancelFn: func() {},
 	}
 	return sml, nil
@@ -105,36 +116,24 @@ func (sml *SocketModeListener) onEventReceived(ctx context.Context, evt *socketm
 func (sml *SocketModeListener) handleEvent(ctx context.Context, evt *socketmode.Event) (bool, any, error) {
 	switch evt.Type {
 	case socketmode.EventTypeEventsAPI:
-		eev, ok := evt.Data.(slackevents.EventsAPIEvent)
-		if !ok {
-			return false, nil, fmt.Errorf("invalid events api event data")
-		}
-		return sml.handleEventsApiEvent(ctx, &eev)
+		return sml.handleEventsApiEvent(ctx, evt)
 	case socketmode.EventTypeInteractive:
-		ic, ok := evt.Data.(slack.InteractionCallback)
-		if !ok {
-			return false, nil, fmt.Errorf("invalid interaction callback data")
-		}
-		return sml.chatSvc.handleInteractionEvent(ctx, &ic)
+		return sml.handleInteractiveEvent(ctx, evt)
 	case socketmode.EventTypeSlashCommand:
-		cmd, ok := evt.Data.(slack.SlashCommand)
-		if !ok {
-			return false, nil, fmt.Errorf("invalid slash command data")
-		}
-		userCtx, userErr := sml.chatSvc.getChatUserContext(ctx, cmd.UserID)
-		if userErr != nil {
-			return false, nil, fmt.Errorf("failed to lookup user: %w", userErr)
-		}
-		return sml.chatSvc.handleSlashCommand(userCtx, &cmd)
+		return sml.handleSlashCommand(ctx, evt)
 	default:
 		log.Warn().Str("type", string(evt.Type)).Msg("skipped socketmode event")
 		return false, nil, nil
 	}
 }
 
-func (sml *SocketModeListener) handleEventsApiEvent(ctx context.Context, evt *slackevents.EventsAPIEvent) (bool, any, error) {
+func (sml *SocketModeListener) handleEventsApiEvent(ctx context.Context, e *socketmode.Event) (bool, any, error) {
+	evt, ok := e.Data.(slackevents.EventsAPIEvent)
+	if !ok {
+		return false, nil, fmt.Errorf("invalid events api event data")
+	}
 	if evt.Type == slackevents.CallbackEvent {
-		handled, handleErr := sml.chatSvc.handleCallbackEvent(ctx, evt)
+		handled, handleErr := sml.chat.handleCallbackEvent(ctx, &evt)
 		if handleErr != nil {
 			return true, nil, fmt.Errorf("handling callback event: %w", handleErr)
 		}
@@ -142,4 +141,20 @@ func (sml *SocketModeListener) handleEventsApiEvent(ctx context.Context, evt *sl
 	}
 	log.Warn().Str("type", evt.Type).Msg("didnt handle slack callback event")
 	return false, nil, nil
+}
+
+func (sml *SocketModeListener) handleInteractiveEvent(ctx context.Context, e *socketmode.Event) (bool, any, error) {
+	ic, ok := e.Data.(slack.InteractionCallback)
+	if !ok {
+		return false, nil, fmt.Errorf("invalid interaction callback data")
+	}
+	return sml.chat.handleInteractionEvent(ctx, &ic)
+}
+
+func (sml *SocketModeListener) handleSlashCommand(ctx context.Context, e *socketmode.Event) (bool, any, error) {
+	cmd, ok := e.Data.(slack.SlashCommand)
+	if !ok {
+		return false, nil, fmt.Errorf("invalid slash command data")
+	}
+	return sml.chat.handleSlashCommand(ctx, &cmd)
 }

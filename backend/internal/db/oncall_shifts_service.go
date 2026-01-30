@@ -367,12 +367,12 @@ func (s *OncallShiftsService) sendShiftHandover(ctx context.Context, ho *ent.Onc
 		return nil, fmt.Errorf("get pinned annotations: %w", annosErr)
 	}
 
-	cs, csErr := s.integrations.GetChatService(ctx)
+	chat, csErr := s.integrations.GetChatIntegration(ctx)
 	if csErr != nil {
 		return nil, fmt.Errorf("failed to get chat service: %w", csErr)
 	}
 
-	_, msgErr := cs.SendMessage(ctx, roster.ChatChannelID, &rez.ContentNode{})
+	_, msgErr := chat.SendMessage(ctx, roster.ChatChannelID, &rez.ContentNode{})
 	if msgErr != nil {
 		return nil, fmt.Errorf("failed to send message: %w", msgErr)
 	}

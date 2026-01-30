@@ -30,7 +30,12 @@ func (h *organizationsHandler) GetOrganization(ctx context.Context, request *oap
 func (h *organizationsHandler) FinishOrganizationSetup(ctx context.Context, request *oapi.FinishOrganizationSetupRequest) (*oapi.FinishOrganizationSetupResponse, error) {
 	var resp oapi.FinishOrganizationSetupResponse
 
-	completeErr := h.orgs.CompleteSetup(ctx, request.Id)
+	org, orgErr := h.orgs.GetById(ctx, request.Id)
+	if orgErr != nil {
+		return nil, apiError("failed to fetch organization", orgErr)
+	}
+
+	completeErr := h.orgs.CompleteSetup(ctx, org)
 	if completeErr != nil {
 		return nil, apiError("failed to finish setup", completeErr)
 	}

@@ -5,7 +5,6 @@ import (
 	"fmt"
 
 	"github.com/rs/zerolog/log"
-	"github.com/slack-go/slack"
 	"github.com/slack-go/slack/slackevents"
 )
 
@@ -60,23 +59,22 @@ func (s *ChatService) onAssistantThreadStartedEvent(ctx context.Context, data *s
 }
 
 func (s *ChatService) onUserHomeOpenedEvent(ctx context.Context, data *slackevents.AppHomeOpenedEvent) error {
-	usr, ctx, usrErr := s.lookupChatUser(ctx, data.User)
+	usr, usrCtx, usrErr := s.lookupUser(ctx, data.User)
 	if usrErr != nil {
 		return fmt.Errorf("failed to lookup user: %w", usrErr)
 	}
+	ctx = usrCtx
 
 	homeView, viewErr := makeUserHomeView(ctx, usr)
 	if viewErr != nil || homeView == nil {
 		return fmt.Errorf("failed to create user home view: %w", viewErr)
 	}
 
-	return s.withClient(ctx, func(client *slack.Client) error {
-		resp, publishErr := client.PublishViewContext(ctx, data.User, *homeView, "")
-		if publishErr != nil {
-			logSlackViewErrorResponse(publishErr, resp)
-			return fmt.Errorf("failed to publish user home view: %w", publishErr)
-		}
+	resp, publishErr := s.client.PublishViewContext(ctx, data.User, *homeView, "")
+	if publishErr != nil {
+		logSlackViewErrorResponse(publishErr, resp)
+		return fmt.Errorf("failed to publish user home view: %w", publishErr)
+	}
 
-		return nil
-	})
+	return nil
 }

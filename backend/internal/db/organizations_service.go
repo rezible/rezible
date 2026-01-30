@@ -81,15 +81,15 @@ func (s *OrganizationsService) FindOrCreateFromProvider(ctx context.Context, o e
 	return createdOrg, nil
 }
 
-func (s *OrganizationsService) CompleteSetup(ctx context.Context, id uuid.UUID) error {
+func (s *OrganizationsService) CompleteSetup(ctx context.Context, org *ent.Organization) error {
 	args := jobs.SyncIntegrationsData{
-		OrganizationId: id,
-		Hard:           true,
+		OrganizationId: org.ID,
+		IgnoreHistory:  true,
 		CreateDefaults: true,
 	}
 	if jobErr := s.jobs.Insert(ctx, args, nil); jobErr != nil {
 		log.Error().Err(jobErr).Msg("failed to insert sync job")
 	}
 
-	return s.db.Organization.UpdateOneID(id).SetInitialSetupAt(time.Now()).Exec(ctx)
+	return s.db.Organization.UpdateOne(org).SetInitialSetupAt(time.Now()).Exec(ctx)
 }

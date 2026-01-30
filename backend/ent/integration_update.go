@@ -77,9 +77,15 @@ func (_u *IntegrationUpdate) AppendConfig(v json.RawMessage) *IntegrationUpdate 
 	return _u
 }
 
-// SetDataKinds sets the "data_kinds" field.
-func (_u *IntegrationUpdate) SetDataKinds(v map[string]bool) *IntegrationUpdate {
-	_u.mutation.SetDataKinds(v)
+// SetUserPreferences sets the "user_preferences" field.
+func (_u *IntegrationUpdate) SetUserPreferences(v map[string]interface{}) *IntegrationUpdate {
+	_u.mutation.SetUserPreferences(v)
+	return _u
+}
+
+// ClearUserPreferences clears the value of the "user_preferences" field.
+func (_u *IntegrationUpdate) ClearUserPreferences() *IntegrationUpdate {
+	_u.mutation.ClearUserPreferences()
 	return _u
 }
 
@@ -173,8 +179,11 @@ func (_u *IntegrationUpdate) sqlSave(ctx context.Context) (_node int, err error)
 			sqljson.Append(u, integration.FieldConfig, value)
 		})
 	}
-	if value, ok := _u.mutation.DataKinds(); ok {
-		_spec.SetField(integration.FieldDataKinds, field.TypeJSON, value)
+	if value, ok := _u.mutation.UserPreferences(); ok {
+		_spec.SetField(integration.FieldUserPreferences, field.TypeJSON, value)
+	}
+	if _u.mutation.UserPreferencesCleared() {
+		_spec.ClearField(integration.FieldUserPreferences, field.TypeJSON)
 	}
 	_spec.AddModifiers(_u.modifiers...)
 	if _node, err = sqlgraph.UpdateNodes(ctx, _u.driver, _spec); err != nil {
@@ -244,9 +253,15 @@ func (_u *IntegrationUpdateOne) AppendConfig(v json.RawMessage) *IntegrationUpda
 	return _u
 }
 
-// SetDataKinds sets the "data_kinds" field.
-func (_u *IntegrationUpdateOne) SetDataKinds(v map[string]bool) *IntegrationUpdateOne {
-	_u.mutation.SetDataKinds(v)
+// SetUserPreferences sets the "user_preferences" field.
+func (_u *IntegrationUpdateOne) SetUserPreferences(v map[string]interface{}) *IntegrationUpdateOne {
+	_u.mutation.SetUserPreferences(v)
+	return _u
+}
+
+// ClearUserPreferences clears the value of the "user_preferences" field.
+func (_u *IntegrationUpdateOne) ClearUserPreferences() *IntegrationUpdateOne {
+	_u.mutation.ClearUserPreferences()
 	return _u
 }
 
@@ -370,8 +385,11 @@ func (_u *IntegrationUpdateOne) sqlSave(ctx context.Context) (_node *Integration
 			sqljson.Append(u, integration.FieldConfig, value)
 		})
 	}
-	if value, ok := _u.mutation.DataKinds(); ok {
-		_spec.SetField(integration.FieldDataKinds, field.TypeJSON, value)
+	if value, ok := _u.mutation.UserPreferences(); ok {
+		_spec.SetField(integration.FieldUserPreferences, field.TypeJSON, value)
+	}
+	if _u.mutation.UserPreferencesCleared() {
+		_spec.ClearField(integration.FieldUserPreferences, field.TypeJSON)
 	}
 	_spec.AddModifiers(_u.modifiers...)
 	_node = &Integration{config: _u.config}

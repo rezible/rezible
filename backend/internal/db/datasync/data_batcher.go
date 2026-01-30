@@ -92,7 +92,7 @@ func (ds *batchedDataSyncer[T]) Sync(ctx context.Context) error {
 }
 
 func (ds *batchedDataSyncer[T]) getLastSyncTime(ctx context.Context) time.Time {
-	if IsHardSync(ctx) {
+	if isHardSync(ctx) {
 		return time.Time{}
 	}
 	last, queryErr := ds.db.ProviderSyncHistory.Query().

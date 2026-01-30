@@ -19,7 +19,7 @@ type TeamDataProvider struct {
 var _ rez.TeamDataProvider = (*TeamDataProvider)(nil)
 
 func NewTeamDataProvider(intg *ent.Integration) (*TeamDataProvider, error) {
-	cfg, cfgErr := decodeConfig(intg)
+	cfg, cfgErr := decodeConfig(intg.Config)
 	if cfgErr != nil {
 		return nil, cfgErr
 	}

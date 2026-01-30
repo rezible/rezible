@@ -4,203 +4,85 @@ import (
 	"context"
 	"fmt"
 
+	rez "github.com/rezible/rezible"
+	"github.com/rezible/rezible/ent"
 	"github.com/rs/zerolog/log"
 	"github.com/slack-go/slack"
-	"golang.org/x/sync/singleflight"
-
-	rez "github.com/rezible/rezible"
-	"github.com/rezible/rezible/access"
-	"github.com/rezible/rezible/ent"
 )
 
 type ChatService struct {
-	jobs         rez.JobsService
-	messages     rez.MessageService
-	integrations rez.IntegrationsService
-	users        rez.UserService
-	incidents    rez.IncidentService
-	annos        rez.EventAnnotationsService
-	components   rez.SystemComponentsService
+	client *slack.Client
+
+	jobs       rez.JobsService
+	messages   rez.MessageService
+	users      rez.UserService
+	incidents  rez.IncidentService
+	annos      rez.EventAnnotationsService
+	components rez.SystemComponentsService
 }
 
-func NewChatService(ctx context.Context, svcs *rez.Services) (*ChatService, error) {
-	s := &ChatService{
-		jobs:         svcs.Jobs,
-		messages:     svcs.Messages,
-		integrations: svcs.Integrations,
-		users:        svcs.Users,
-		incidents:    svcs.Incidents,
-		annos:        svcs.EventAnnotations,
-		components:   svcs.Components,
+func newChatService(client *slack.Client, svcs *rez.Services) *ChatService {
+	return &ChatService{
+		client:     client,
+		jobs:       svcs.Jobs,
+		messages:   svcs.Messages,
+		users:      svcs.Users,
+		incidents:  svcs.Incidents,
+		annos:      svcs.EventAnnotations,
+		components: svcs.Components,
 	}
-
-	incMsgHandler := newIncidentChatEventHandler(s)
-	if msgsErr := incMsgHandler.registerHandlers(); msgsErr != nil {
-		return nil, fmt.Errorf("adding message handlers: %w", msgsErr)
-	}
-
-	return s, nil
 }
 
-func (s *ChatService) withClient(ctx context.Context, fn func(*slack.Client) error) error {
-	return withClient(ctx, s.integrations, fn)
-}
-
-func (s *ChatService) SendMessage(ctx context.Context, channelId string, content *rez.ContentNode) (string, error) {
-	return s.sendMessage(ctx, channelId, slack.MsgOptionBlocks(convertContentToBlocks(content, "")...))
-}
-
-func (s *ChatService) SendTextMessage(ctx context.Context, channelId string, text string) (string, error) {
-	return s.sendMessage(ctx, channelId, slack.MsgOptionText(text, false))
-}
-
-func (s *ChatService) SendReply(ctx context.Context, channelId string, threadId string, text string) (string, error) {
-	return s.sendMessage(ctx, channelId, slack.MsgOptionText(text, false), slack.MsgOptionTS(threadId))
-}
-
-// TODO: actually cache this properly
-var teamTenantIdCache = make(map[string]int)
-
-var lookupTenantGroup singleflight.Group
-
-func (s *ChatService) GetTenantId(ctx context.Context, teamId string, enterpriseId string) (int, error) {
-	if id, teamOk := teamTenantIdCache[enterpriseId]; teamOk {
-		return id, nil
-	}
-	if id, entOk := teamTenantIdCache[teamId]; entOk {
-		return id, nil
-	}
-
-	tenantId, lookupErr := s.lookupIntegrationTenantId(ctx, teamId, enterpriseId)
-	if lookupErr != nil {
-		log.Warn().
-			Err(lookupErr).
-			Str("teamId", teamId).
-			Str("enterpriseId", enterpriseId).
-			Msg("failed to get tenant id")
-		return -1, lookupErr
-	}
-
-	if teamId != "" {
-		teamTenantIdCache[teamId] = tenantId
-	}
-	if enterpriseId != "" {
-		teamTenantIdCache[enterpriseId] = tenantId
-	}
-	return tenantId, nil
-}
-
-func (s *ChatService) lookupIntegrationTenantId(ctx context.Context, teamId string, enterpriseId string) (int, error) {
-	lookupFn := func() (any, error) {
-		log.Warn().
-			Str("teamId", teamId).
-			Str("enterpriseId", enterpriseId).
-			Msg("looking up tenant id from slack integrations via db")
-
-		configValues := make(map[string]any)
-		if teamId != "" {
-			configValues["Team.ID"] = teamId
-		}
-		if enterpriseId != "" {
-			configValues["Enterprise.ID"] = enterpriseId
-		}
-		listParams := rez.ListIntegrationsParams{
-			Name:         integrationName,
-			ConfigValues: configValues,
-		}
-		intgs, intgsErr := s.integrations.ListIntegrations(access.SystemContext(ctx), listParams)
-		if intgsErr != nil {
-			return -1, fmt.Errorf("failed to list integrations: %w", intgsErr)
-		}
-		if len(intgs) != 1 {
-			return -1, fmt.Errorf("found unexpected number of matching integrations: %d", len(intgs))
-		}
-		return intgs[0].TenantID, nil
-	}
-	v, lookupErr, _ := lookupTenantGroup.Do(fmt.Sprintf("slack_%s_%s", teamId, enterpriseId), lookupFn)
-	if lookupErr != nil {
-		return -1, lookupErr
-	}
-	if tenantId, ok := v.(int); ok {
-		return tenantId, nil
-	}
-	return -1, fmt.Errorf("invalid tenant id from lookup: %v", v)
-}
-
-func (s *ChatService) getChatUserContext(ctx context.Context, userId string) (context.Context, error) {
-	_, usrCtx, usrErr := s.lookupChatUser(ctx, userId)
-	return usrCtx, usrErr
-}
-
-func (s *ChatService) lookupChatUser(baseCtx context.Context, chatId string) (*ent.User, context.Context, error) {
-	usr, usrErr := s.users.GetByChatId(access.SystemContext(baseCtx), chatId)
-	if usrErr != nil {
-		log.Error().Err(usrErr).Str("chat_id", chatId).Msg("failed to lookup chat user")
-		return nil, nil, usrErr
-	}
-	return usr, access.TenantContext(baseCtx, usr.TenantID), nil
-}
-
-func getAllUsersInConversation(ctx context.Context, client *slack.Client, convId string) ([]string, error) {
-	params := &slack.GetUsersInConversationParameters{
-		ChannelID: convId,
-		Limit:     100,
-	}
-	var allIds []string
-	for {
-		ids, cursor, getErr := client.GetUsersInConversationContext(ctx, params)
-		if getErr != nil {
-			return nil, getErr
-		}
-		allIds = append(allIds, ids...)
-		params.Cursor = cursor
-		if cursor == "" || len(ids) == 0 {
-			break
-		}
-	}
-	return allIds, nil
-}
-
-func (s *ChatService) sendMessage(ctx context.Context, channelId string, msgOpts ...slack.MsgOption) (string, error) {
-	client, clientErr := getClient(ctx, s.integrations)
-	if clientErr != nil {
-		return "", fmt.Errorf("get slack client: %w", clientErr)
-	}
-
-	_, msgTs, msgErr := client.PostMessageContext(ctx, channelId, msgOpts...)
+func (s *ChatService) postMessage(ctx context.Context, channelId string, msgOpts ...slack.MsgOption) (string, error) {
+	_, msgTs, msgErr := s.client.PostMessageContext(ctx, channelId, msgOpts...)
 	return msgTs, msgErr
 }
 
-func (s *ChatService) getIncidentAnnouncementChannelId(ctx context.Context) (string, error) {
-	// TODO: fetch from config
-	announcementChannelId := "#incident"
-	return announcementChannelId, nil
+func (s *ChatService) postEphemeralMessage(ctx context.Context, channelId, userId string, msgOpts ...slack.MsgOption) (string, error) {
+	return s.client.PostEphemeralContext(ctx, channelId, userId, msgOpts...)
+}
+
+func (s *ChatService) SendMessage(ctx context.Context, channelId string, content *rez.ContentNode) (string, error) {
+	return s.postMessage(ctx, channelId, slack.MsgOptionBlocks(convertContentToBlocks(content, "")...))
+}
+
+func (s *ChatService) SendTextMessage(ctx context.Context, channelId string, text string) (string, error) {
+	return s.postMessage(ctx, channelId, slack.MsgOptionText(text, false))
+}
+
+func (s *ChatService) SendReply(ctx context.Context, channelId string, threadId string, text string) (string, error) {
+	return s.postMessage(ctx, channelId, slack.MsgOptionText(text, false), slack.MsgOptionTS(threadId))
+}
+
+func (s *ChatService) lookupUser(ctx context.Context, userChatId string) (*ent.User, context.Context, error) {
+	usr, usrErr := s.users.GetByChatId(ctx, userChatId)
+	if usrErr != nil {
+		log.Error().Err(usrErr).Str("chat_id", userChatId).Msg("failed to lookup chat user")
+		return nil, nil, fmt.Errorf("lookup user: %w", usrErr)
+	}
+	userCtx, ctxErr := s.users.CreateUserContext(ctx, usr.ID)
+	if ctxErr != nil {
+		return nil, nil, fmt.Errorf("creating user context: %w", ctxErr)
+	}
+	return usr, userCtx, nil
 }
 
 func (s *ChatService) openModalView(ctx context.Context, triggerId string, viewReq slack.ModalViewRequest) error {
-	return s.withClient(ctx, func(client *slack.Client) error {
-		resp, respErr := client.OpenViewContext(ctx, triggerId, viewReq)
-		if respErr != nil {
-			logSlackViewErrorResponse(respErr, resp)
-			return respErr
-		}
-		return nil
-	})
+	resp, respErr := s.client.OpenViewContext(ctx, triggerId, viewReq)
+	if respErr != nil {
+		logSlackViewErrorResponse(respErr, resp)
+		return respErr
+	}
+	return nil
 }
 
 func (s *ChatService) openOrUpdateModal(ctx context.Context, ic *slack.InteractionCallback, view *slack.ModalViewRequest) error {
 	var viewResp *slack.ViewResponse
 	var respErr error
-	openViewFn := func(client *slack.Client) error {
-		if ic.View.State == nil {
-			viewResp, respErr = client.OpenViewContext(ctx, ic.TriggerID, *view)
-		} else {
-			viewResp, respErr = client.UpdateViewContext(ctx, *view, "", ic.Hash, ic.View.ID)
-		}
-		return nil
-	}
-	if clientErr := s.withClient(ctx, openViewFn); clientErr != nil {
-		return clientErr
+	if ic.View.State == nil {
+		viewResp, respErr = s.client.OpenViewContext(ctx, ic.TriggerID, *view)
+	} else {
+		viewResp, respErr = s.client.UpdateViewContext(ctx, *view, "", ic.Hash, ic.View.ID)
 	}
 	if respErr != nil {
 		logSlackViewErrorResponse(respErr, viewResp)

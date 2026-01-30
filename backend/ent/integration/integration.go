@@ -26,8 +26,8 @@ const (
 	FieldName = "name"
 	// FieldConfig holds the string denoting the config field in the database.
 	FieldConfig = "config"
-	// FieldDataKinds holds the string denoting the data_kinds field in the database.
-	FieldDataKinds = "data_kinds"
+	// FieldUserPreferences holds the string denoting the user_preferences field in the database.
+	FieldUserPreferences = "user_preferences"
 	// EdgeTenant holds the string denoting the tenant edge name in mutations.
 	EdgeTenant = "tenant"
 	// Table holds the table name of the integration in the database.
@@ -49,7 +49,7 @@ var Columns = []string{
 	FieldUpdatedAt,
 	FieldName,
 	FieldConfig,
-	FieldDataKinds,
+	FieldUserPreferences,
 }
 
 // ValidColumn reports if the column name is valid (part of the table columns).
@@ -76,6 +76,8 @@ var (
 	DefaultUpdatedAt func() time.Time
 	// UpdateDefaultUpdatedAt holds the default value on update for the "updated_at" field.
 	UpdateDefaultUpdatedAt func() time.Time
+	// DefaultUserPreferences holds the default value on creation for the "user_preferences" field.
+	DefaultUserPreferences map[string]interface{}
 	// DefaultID holds the default value on creation for the "id" field.
 	DefaultID func() uuid.UUID
 )

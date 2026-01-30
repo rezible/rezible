@@ -9,18 +9,6 @@ import (
 	"google.golang.org/api/option"
 )
 
-type meetService struct {
-	msgs         rez.MessageService
-	integrations rez.IntegrationsService
-}
-
-func newMeetService(ctx context.Context, svcs *rez.Services) (*meetService, error) {
-	return &meetService{
-		msgs:         svcs.Messages,
-		integrations: svcs.Integrations,
-	}, nil
-}
-
 var meetScopes = []string{
 	"https://www.googleapis.com/auth/meetings.space.settings",
 	"https://www.googleapis.com/auth/meetings.space.created",
@@ -28,26 +16,32 @@ var meetScopes = []string{
 	"https://www.googleapis.com/auth/drive.meet.readonly",
 }
 
-func (s *meetService) getClient(ctx context.Context) (*meet.Service, error) {
-	cfg, cfgErr := lookupIntegrationConfig(ctx, s.integrations)
-	if cfgErr != nil {
-		return nil, cfgErr
-	}
+type meetService struct {
+	msgs     rez.MessageService
+	credsOpt option.ClientOption
+}
 
-	credsOpt := option.WithAuthCredentialsJSON(option.ServiceAccount, cfg.UserConfig.ServiceAccountCredentials)
-	client, meetErr := meet.NewService(ctx, credsOpt)
+func newMeetService(ctx context.Context, msgs rez.MessageService, credsOpt option.ClientOption) (*meetService, error) {
+	return &meetService{
+		msgs:     msgs,
+		credsOpt: credsOpt,
+	}, nil
+}
+
+func (s *meetService) makeClient(ctx context.Context) (*meet.Service, error) {
+	svc, meetErr := meet.NewService(ctx, s.credsOpt)
 	if meetErr != nil {
 		return nil, fmt.Errorf("failed to create meet service: %w", meetErr)
 	}
-
-	return client, nil
+	return svc, nil
 }
 
 func (s *meetService) CreateVideoConference(ctx context.Context) (string, error) {
-	client, clientErr := s.getClient(ctx)
+	client, clientErr := s.makeClient(ctx)
 	if clientErr != nil {
 		return "", clientErr
 	}
+
 	createSpace := client.Spaces.Create(&meet.Space{
 		Name: "",
 	})

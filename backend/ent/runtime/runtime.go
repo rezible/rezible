@@ -602,6 +602,10 @@ func init() {
 	integration.DefaultUpdatedAt = integrationDescUpdatedAt.Default.(func() time.Time)
 	// integration.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
 	integration.UpdateDefaultUpdatedAt = integrationDescUpdatedAt.UpdateDefault.(func() time.Time)
+	// integrationDescUserPreferences is the schema descriptor for user_preferences field.
+	integrationDescUserPreferences := integrationFields[3].Descriptor()
+	// integration.DefaultUserPreferences holds the default value on creation for the user_preferences field.
+	integration.DefaultUserPreferences = integrationDescUserPreferences.Default.(map[string]interface{})
 	// integrationDescID is the schema descriptor for id field.
 	integrationDescID := integrationFields[0].Descriptor()
 	// integration.DefaultID holds the default value on creation for the id field.

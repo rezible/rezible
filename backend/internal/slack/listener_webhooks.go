@@ -12,42 +12,52 @@ import (
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
-	rez "github.com/rezible/rezible"
-	"github.com/rezible/rezible/access"
 	"github.com/rs/zerolog/log"
+
 	"github.com/slack-go/slack"
 	"github.com/slack-go/slack/slackevents"
+
+	rez "github.com/rezible/rezible"
 )
 
 type WebhookEventHandler struct {
-	chat         *ChatService
+	loader       *loader
+	msgs         rez.MessageService
 	bodyVerifier webhookVerifierFunc
 }
 
-func NewWebhookEventHandler(chat *ChatService) (*WebhookEventHandler, error) {
+func newWebhookEventHandler(l *loader, svcs *rez.Services) (*WebhookEventHandler, error) {
 	whVerifier, verifierErr := makeWebhookVerifier()
 	if verifierErr != nil {
 		return nil, verifierErr
 	}
 
 	wh := &WebhookEventHandler{
-		chat:         chat,
+		loader:       l,
+		msgs:         svcs.Messages,
 		bodyVerifier: whVerifier,
 	}
 
-	cmdsErr := chat.messages.AddCommandHandlers(
-		rez.NewCommandHandler("SlackHandleCommandEvent", wh.handleCommandEvent),
-		rez.NewCommandHandler("SlackHandleInteractionEvent", wh.handleInteractionEvent))
-	if cmdsErr != nil {
-		return nil, fmt.Errorf("command handlers: %w", cmdsErr)
-	}
-	evsErr := chat.messages.AddEventHandlers(
-		rez.NewEventHandler("SlackHandleCallbackEvent", wh.handleCallbackEvent))
-	if evsErr != nil {
-		return nil, fmt.Errorf("event handlers: %w", evsErr)
+	if msgsErr := wh.addMessageHandlers(); msgsErr != nil {
+		return nil, msgsErr
 	}
 
 	return wh, nil
+}
+
+func (wh *WebhookEventHandler) addMessageHandlers() error {
+	cmdsErr := wh.msgs.AddCommandHandlers(
+		rez.NewCommandHandler("SlackHandleCommandEvent", wh.handleCommandEvent),
+		rez.NewCommandHandler("SlackHandleInteractionEvent", wh.handleInteractionEvent))
+	if cmdsErr != nil {
+		return fmt.Errorf("command handlers: %w", cmdsErr)
+	}
+	evsErr := wh.msgs.AddEventHandlers(
+		rez.NewEventHandler("SlackHandleCallbackEvent", wh.handleCallbackEvent))
+	if evsErr != nil {
+		return fmt.Errorf("event handlers: %w", evsErr)
+	}
+	return nil
 }
 
 func (wh *WebhookEventHandler) Handler() *chi.Mux {
@@ -74,7 +84,7 @@ type webhookVerifierFunc func(w http.ResponseWriter, r *http.Request) ([]byte, e
 
 func makeWebhookVerifier() (webhookVerifierFunc, error) {
 	signingSecret := rez.Config.GetString("slack.webhook_signing_secret")
-	if signingSecret == "" && !UseSocketMode() {
+	if signingSecret == "" {
 		return nil, errors.New("slack.webhook_signing_secret not set")
 	}
 	verifyFn := func(w http.ResponseWriter, r *http.Request) ([]byte, error) {
@@ -119,10 +129,8 @@ func (wh *WebhookEventHandler) onCommandsWebhook(w http.ResponseWriter, r *http.
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
-
-	cmdErr := wh.chat.messages.SendCommand(r.Context(), cmd)
-	if cmdErr != nil {
-		log.Error().Err(cmdErr).Msg("failed to publish slash command")
+	if sendCmdErr := wh.msgs.SendCommand(r.Context(), cmd); sendCmdErr != nil {
+		log.Error().Err(sendCmdErr).Msg("failed to publish slash command")
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
@@ -130,12 +138,11 @@ func (wh *WebhookEventHandler) onCommandsWebhook(w http.ResponseWriter, r *http.
 }
 
 func (wh *WebhookEventHandler) handleCommandEvent(ctx context.Context, cmd *slack.SlashCommand) error {
-	var userErr error
-	ctx, userErr = wh.chat.getChatUserContext(ctx, cmd.UserID)
-	if userErr != nil {
-		return fmt.Errorf("failed to lookup user: %w", userErr)
+	chat, _, chatErr := wh.loader.loadByTenantLookup(ctx, cmd.TeamID, cmd.EnterpriseID)
+	if chatErr != nil {
+		return fmt.Errorf("get user client: %w", chatErr)
 	}
-	handled, payload, handleErr := wh.chat.handleSlashCommand(ctx, cmd)
+	handled, payload, handleErr := chat.handleSlashCommand(ctx, cmd)
 	if handleErr != nil {
 		log.Error().Err(handleErr).Msg("failed to handle slash command")
 		return handleErr
@@ -145,11 +152,9 @@ func (wh *WebhookEventHandler) handleCommandEvent(ctx context.Context, cmd *slac
 		return nil
 	}
 	if payload != nil {
-		return wh.chat.withClient(ctx, func(client *slack.Client) error {
-			msg := slack.MsgOptionBlocks(payload.Blocks.BlockSet...)
-			_, postErr := client.PostEphemeralContext(ctx, cmd.ChannelID, cmd.UserID, msg)
-			return postErr
-		})
+		msg := slack.MsgOptionBlocks(payload.Blocks.BlockSet...)
+		_, postErr := chat.postEphemeralMessage(ctx, cmd.ChannelID, cmd.UserID, msg)
+		return postErr
 	}
 	return nil
 }
@@ -168,7 +173,7 @@ func (wh *WebhookEventHandler) onInteractionsWebhook(w http.ResponseWriter, r *h
 		return
 	}
 
-	cmdErr := wh.chat.messages.SendCommand(r.Context(), webhookInteractionEvent{Payload: payload})
+	cmdErr := wh.msgs.SendCommand(r.Context(), webhookInteractionEvent{Payload: payload})
 	if cmdErr != nil {
 		log.Error().Err(cmdErr).Msg("failed to publish interaction event")
 		w.WriteHeader(http.StatusInternalServerError)
@@ -188,7 +193,12 @@ func (wh *WebhookEventHandler) handleInteractionEvent(ctx context.Context, ie *w
 		return nil
 	}
 
-	handled, _, handlerErr := wh.chat.handleInteractionEvent(ctx, &ic)
+	chat, tenantCtx, chatErr := wh.loader.loadByTenantLookup(ctx, ic.Team.ID, ic.Enterprise.ID)
+	if chatErr != nil {
+		return fmt.Errorf("get user client: %w", chatErr)
+	}
+
+	handled, _, handlerErr := chat.handleInteractionEvent(tenantCtx, &ic)
 	if handlerErr != nil {
 		log.Error().Err(handlerErr).Str("type", string(ic.Type)).Msg("failed to handle interaction")
 		return handlerErr
@@ -248,7 +258,7 @@ func (wh *WebhookEventHandler) onEventsWebhook(w http.ResponseWriter, r *http.Re
 	}
 
 	if ev.Type == slackevents.CallbackEvent {
-		pubErr := wh.chat.messages.PublishEvent(r.Context(), webhookCallbackEvent{Body: body})
+		pubErr := wh.msgs.PublishEvent(r.Context(), webhookCallbackEvent{Body: body})
 		if pubErr != nil {
 			log.Error().Err(pubErr).Msg("failed to publish callback command")
 			w.WriteHeader(http.StatusInternalServerError)
@@ -273,11 +283,11 @@ func (wh *WebhookEventHandler) handleCallbackEvent(ctx context.Context, ev *webh
 	if parseErr != nil {
 		return fmt.Errorf("failed to parse event: %w", parseErr)
 	}
-	tenantId, tenantIdErr := wh.chat.GetTenantId(ctx, cbe.TeamID, cbe.EnterpriseID)
-	if tenantIdErr != nil {
-		return fmt.Errorf("failed to get tenant id: %w", tenantIdErr)
+	chat, tenantCtx, chatErr := wh.loader.loadByTenantLookup(ctx, cbe.TeamID, cbe.EnterpriseID)
+	if chatErr != nil {
+		return fmt.Errorf("get user client: %w", chatErr)
 	}
-	handled, handlerErr := wh.chat.handleCallbackEvent(access.TenantContext(ctx, tenantId), &cbe)
+	handled, handlerErr := chat.handleCallbackEvent(tenantCtx, &cbe)
 	if handlerErr != nil {
 		return fmt.Errorf("failed to handle callback event: %w", handlerErr)
 	}

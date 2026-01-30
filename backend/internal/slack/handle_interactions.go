@@ -24,11 +24,11 @@ func (s *ChatService) onInteractionEventReceived(ctx context.Context, ic *slack.
 }
 
 func (s *ChatService) handleInteractionEvent(ctx context.Context, ic *slack.InteractionCallback) (bool, any, error) {
-	var usrErr error
-	ctx, usrErr = s.getChatUserContext(ctx, ic.User.ID)
+	_, usrCtx, usrErr := s.lookupUser(ctx, ic.User.ID)
 	if usrErr != nil {
 		return false, nil, fmt.Errorf("failed to lookup user: %w", usrErr)
 	}
+	ctx = usrCtx
 
 	handled := true
 	var payload any

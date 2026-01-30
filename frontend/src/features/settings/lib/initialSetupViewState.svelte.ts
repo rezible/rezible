@@ -75,11 +75,6 @@ const dataKinds = [
     {name: "Users", kind: "users", required: true},
 ];
 
-const getEnabledDataKinds = (dk: ConfiguredIntegrationAttributes["dataKinds"]) => {
-    if (!dk) return [];
-    return Object.entries(dk).filter(([_, isEnabled]) => isEnabled).map(([kind, _]) => kind);
-}
-
 const getDataKindIntegrationsMap = (intgs: SupportedIntegration[]) => {
     const kindsMap = new SvelteMap<string, Set<SupportedIntegration>>();
     intgs.forEach(intg => {
@@ -109,7 +104,7 @@ export class InitialSetupViewState {
     loadingIntegrations = $derived(this.supportedIntegrationsQuery.isPending || this.configuredIntegrationsQuery.isPending);
 
     requiredDataKinds = new Set(dataKinds.filter(k => k.required).map(k => k.kind));
-	configuredEnabledDataKinds = $derived(new SvelteSet(this.configuredIntegrations.flatMap(intg => getEnabledDataKinds(intg.attributes.dataKinds))));
+	configuredEnabledDataKinds = $derived(new Set(this.configuredIntegrations.flatMap(intg => intg.attributes.enabledDataKinds)));
     remainingRequiredDataKinds = $derived(this.requiredDataKinds.difference(this.configuredEnabledDataKinds));
     nextRequiredDataKind = $derived(this.remainingRequiredDataKinds.values().next().value);
     nextRequiredSupportedIntegrations = $derived.by(() => {
@@ -122,7 +117,7 @@ export class InitialSetupViewState {
     nextRequiredSupportedConfiguredIntegrations = $derived.by(() => {
         const reqKind = $state.snapshot(this.nextRequiredDataKind);
         if (!reqKind) return;
-        return this.configuredIntegrations.filter(intg => (Object.keys(intg.attributes.dataKinds).includes(reqKind)));
+        return this.configuredIntegrations.filter(intg => intg.attributes.enabledDataKinds.includes(reqKind));
     });
 
     constructor() {

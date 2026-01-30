@@ -16,32 +16,36 @@ import (
 
 const integrationName = "slack"
 
+var supportedDataKinds = []string{"chat", "users"}
+
 type integration struct {
-	chatService     *ChatService
+	services        *rez.Services
 	eventListeners  map[string]rez.EventListener
 	webhookHandlers map[string]http.Handler
 }
 
 func SetupIntegration(ctx context.Context, svcs *rez.Services) (rez.IntegrationPackage, error) {
-	cs, csErr := NewChatService(ctx, svcs)
-	if csErr != nil {
-		return nil, fmt.Errorf("failed to create chat service: %w", csErr)
-	}
-
 	intg := &integration{
-		chatService:     cs,
+		services:        svcs,
 		eventListeners:  make(map[string]rez.EventListener),
 		webhookHandlers: make(map[string]http.Handler),
 	}
 
+	l := newLoader(svcs)
+
+	incMsgHandler := newIncidentChatEventHandler(l, svcs.Messages, svcs.Incidents)
+	if msgsErr := incMsgHandler.registerHandlers(); msgsErr != nil {
+		return nil, fmt.Errorf("adding message handlers: %w", msgsErr)
+	}
+
 	if UseSocketMode() {
-		el, lErr := NewSocketModeEventListener(cs)
+		el, lErr := newSocketModeEventListener(svcs)
 		if lErr != nil {
 			return nil, fmt.Errorf("failed to create event listener: %w", lErr)
 		}
 		intg.eventListeners["slack_socketmode"] = el
 	} else {
-		wh, whErr := NewWebhookEventHandler(cs)
+		wh, whErr := newWebhookEventHandler(l, svcs)
 		if whErr != nil {
 			return nil, fmt.Errorf("webhook event handler: %w", whErr)
 		}
@@ -69,11 +73,7 @@ func (d *integration) WebhookHandlers() map[string]http.Handler {
 }
 
 func (d *integration) SupportedDataKinds() []string {
-	return []string{"chat", "users"}
-}
-
-func (d *integration) GetChatService() rez.ChatService {
-	return d.chatService
+	return supportedDataKinds
 }
 
 func (d *integration) OAuthConfigRequired() bool {
@@ -84,72 +84,24 @@ func (d *integration) OAuth2Config() *oauth2.Config {
 	return LoadOAuthConfig()
 }
 
-func (d *integration) GetIntegrationConfigFromToken(token *oauth2.Token) (any, error) {
-	return getIntegrationConfigFromOAuthToken(token)
-}
+func (d *integration) GetIntegrationConfigFromToken(t *oauth2.Token) (any, error) {
+	getTeamInfoFromTokenExtra := func(extraKey string) (*teamInfo, error) {
+		e, eOk := t.Extra(extraKey).(map[string]interface{})
+		if !eOk {
+			return nil, fmt.Errorf("missing or invalid extra field: %s", extraKey)
+		}
 
-func (d *integration) NewConfig() *IntegrationConfig {
-	return &IntegrationConfig{}
-}
-
-func (d *integration) ParseConfig(raw json.RawMessage) (*IntegrationConfig, error) {
-	var cfg IntegrationConfig
-	if cfgErr := json.Unmarshal(raw, &cfg); cfgErr != nil {
-		return nil, fmt.Errorf("failed to decode integration config: %w", cfgErr)
+		id, idOk := e["id"].(string)
+		if !idOk {
+			return nil, fmt.Errorf("missing or invalid id")
+		}
+		name, nameOk := e["name"].(string)
+		if !nameOk {
+			return nil, fmt.Errorf("missing or invalid name")
+		}
+		return &teamInfo{ID: id, Name: name}, nil
 	}
-	return &cfg, nil
-}
 
-func (d *integration) ValidateConfig(raw json.RawMessage) (bool, error) {
-	return true, nil
-}
-
-func (d *integration) MergeUserConfig(full json.RawMessage, userCfg json.RawMessage) (json.RawMessage, error) {
-	var cfg IntegrationConfig
-	if cfgErr := json.Unmarshal(full, &cfg); cfgErr != nil {
-		return nil, fmt.Errorf("failed to decode integration config: %w", cfgErr)
-	}
-	if userCfgErr := json.Unmarshal(userCfg, &cfg.UserConfig); userCfgErr != nil {
-		return nil, fmt.Errorf("failed to decode user config: %w", userCfgErr)
-	}
-	return json.Marshal(cfg)
-}
-
-func (d *integration) GetSanitizedConfig(cfg json.RawMessage) (json.RawMessage, error) {
-	return json.Marshal(cfg)
-}
-
-type IntegrationConfig struct {
-	AccessToken string
-	TokenType   string
-	Scope       string
-	BotUserID   string
-	Team        teamInfo
-	Enterprise  *teamInfo
-	UserConfig  IntegrationUserConfig
-}
-
-type teamInfo struct {
-	ID   string
-	Name string
-}
-
-type IntegrationUserConfig struct {
-}
-
-func getTeamInfoFromTokenExtra(e map[string]interface{}) (*teamInfo, error) {
-	id, idOk := e["id"].(string)
-	if !idOk {
-		return nil, fmt.Errorf("missing or invalid id")
-	}
-	name, nameOk := e["name"].(string)
-	if !nameOk {
-		return nil, fmt.Errorf("missing or invalid name")
-	}
-	return &teamInfo{ID: id, Name: name}, nil
-}
-
-func getIntegrationConfigFromOAuthToken(t *oauth2.Token) (*IntegrationConfig, error) {
 	scope, scopeOk := t.Extra("scope").(string)
 	if !scopeOk {
 		return nil, fmt.Errorf("missing or invalid scope")
@@ -160,14 +112,16 @@ func getIntegrationConfigFromOAuthToken(t *oauth2.Token) (*IntegrationConfig, er
 		return nil, fmt.Errorf("missing or invalid bot_user_id")
 	}
 
-	teamRaw, teamOk := t.Extra("team").(map[string]interface{})
-	if !teamOk {
-		return nil, fmt.Errorf("missing or invalid team")
-	}
-
-	team, teamErr := getTeamInfoFromTokenExtra(teamRaw)
+	team, teamErr := getTeamInfoFromTokenExtra("team")
 	if teamErr != nil {
 		return nil, fmt.Errorf("invalid team info")
+	}
+
+	// isEnterprise, isEntOk := t.Extra("is_enterprise_install").(string)
+
+	enterprise, entErr := getTeamInfoFromTokenExtra("enterprise")
+	if entErr != nil {
+		log.Warn().Err(entErr).Msgf("get enterprise info from token")
 	}
 
 	cfg := IntegrationConfig{
@@ -176,61 +130,66 @@ func getIntegrationConfigFromOAuthToken(t *oauth2.Token) (*IntegrationConfig, er
 		Scope:       scope,
 		BotUserID:   botUserId,
 		Team:        *team,
-	}
-
-	// isEnterprise, isEntOk := t.Extra("is_enterprise_install").(string)
-
-	if enterprise, eOk := t.Extra("enterprise").(map[string]interface{}); eOk {
-		e, entErr := getTeamInfoFromTokenExtra(enterprise)
-		if entErr != nil {
-			log.Error().Err(entErr).Msgf("get enterprise info from token")
-		}
-		cfg.Enterprise = e
+		Enterprise:  enterprise,
 	}
 
 	return &cfg, nil
 }
 
-func decodeConfig(intg *ent.Integration) (*IntegrationConfig, error) {
-	if intg.Name != integrationName {
-		return nil, fmt.Errorf("invalid integration name")
-	}
+func (d *integration) GetConfiguredIntegration(i *ent.Integration) rez.ConfiguredIntegration {
+	return &ConfiguredIntegration{intg: i}
+}
+
+type ConfiguredIntegration struct {
+	intg *ent.Integration
+}
+
+func (ci *ConfiguredIntegration) Name() string {
+	return integrationName
+}
+
+func (ci *ConfiguredIntegration) RawConfig() json.RawMessage {
+	return ci.intg.Config
+}
+
+func (ci *ConfiguredIntegration) GetSanitizedConfig() (json.RawMessage, error) {
+	return json.Marshal(ci.RawConfig())
+}
+
+func (ci *ConfiguredIntegration) UserPreferences() map[string]any {
+	return ci.intg.UserPreferences
+}
+
+func (ci *ConfiguredIntegration) EnabledDataKinds() []string {
+	return supportedDataKinds
+}
+
+func (ci *ConfiguredIntegration) ChatService(ctx context.Context) (rez.ChatService, error) {
+	return nil, nil
+}
+
+type IntegrationConfig struct {
+	AccessToken string
+	TokenType   string
+	Scope       string
+	BotUserID   string
+	Team        teamInfo
+	Enterprise  *teamInfo
+}
+
+type teamInfo struct {
+	ID   string
+	Name string
+}
+
+func (c *IntegrationConfig) makeClient() *slack.Client {
+	return slack.New(c.AccessToken)
+}
+
+func decodeConfig(raw json.RawMessage) (*IntegrationConfig, error) {
 	var cfg IntegrationConfig
-	if cfgErr := json.Unmarshal(intg.Config, &cfg); cfgErr != nil {
+	if cfgErr := json.Unmarshal(raw, &cfg); cfgErr != nil {
 		return nil, fmt.Errorf("failed to decode integration config: %w", cfgErr)
 	}
 	return &cfg, nil
-}
-
-func loadIntegrationConfig(ctx context.Context, s rez.IntegrationsService) (*IntegrationConfig, error) {
-	params := rez.ListIntegrationsParams{
-		Name: integrationName,
-	}
-	results, listErr := s.ListIntegrations(ctx, params)
-	if listErr != nil {
-		return nil, listErr
-	}
-	if len(results) != 1 {
-		return nil, fmt.Errorf("expected 1 integration, got %d", len(results))
-	}
-	return decodeConfig(results[0])
-}
-
-func getClient(ctx context.Context, s rez.IntegrationsService) (*slack.Client, error) {
-	if rez.Config.SingleTenantMode() {
-		return LoadSingleTenantClient()
-	}
-	cfg, loadErr := loadIntegrationConfig(ctx, s)
-	if loadErr != nil {
-		return nil, fmt.Errorf("loading integration config: %w", loadErr)
-	}
-	return slack.New(cfg.AccessToken), nil
-}
-
-func withClient(ctx context.Context, s rez.IntegrationsService, fn func(*slack.Client) error) error {
-	client, clientErr := getClient(ctx, s)
-	if clientErr != nil {
-		return fmt.Errorf("get slack client: %w", clientErr)
-	}
-	return fn(client)
 }

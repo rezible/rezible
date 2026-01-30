@@ -1,33 +1,58 @@
 package slack
 
 import (
-	"errors"
+	"context"
+	"fmt"
 	"strings"
 
 	rez "github.com/rezible/rezible"
-	"github.com/slack-go/slack"
+	"github.com/rezible/rezible/access"
+	"github.com/rezible/rezible/ent"
 	"golang.org/x/oauth2"
 )
 
-func UseSocketMode() bool {
-	return rez.Config.GetBool("slack.socketmode.enabled")
+type loader struct {
+	svcs *rez.Services
 }
 
-func LoadSingleTenantClient() (*slack.Client, error) {
-	botToken := rez.Config.GetString("slack.bot_token")
-	if botToken == "" {
-		return nil, errors.New("slack.bot_token not set")
+func newLoader(svcs *rez.Services) *loader {
+	return &loader{svcs: svcs}
+}
+
+func (l *loader) loadWithIntegration(intg *ent.Integration) (*ChatService, error) {
+	cfg, cfgErr := decodeConfig(intg.Config)
+	if cfgErr != nil {
+		return nil, fmt.Errorf("unable to decode config: %w", cfgErr)
 	}
+	return newChatService(cfg.makeClient(), l.svcs), nil
+}
 
-	appToken := rez.Config.GetString("slack.app_token")
-	if appToken != "" && !UseSocketMode() {
-		return nil, errors.New("slack.app_token not set")
+func (l *loader) loadByTenantLookup(ctx context.Context, teamId string, enterpriseId string) (*ChatService, context.Context, error) {
+	vals := make(map[string]any)
+	if teamId != "" {
+		vals["Team.ID"] = teamId
 	}
+	if enterpriseId != "" {
+		vals["Enterprise.ID"] = enterpriseId
+	}
+	intg, lookupErr := l.svcs.Integrations.LookupByConfigValues(access.SystemContext(ctx), integrationName, vals)
+	if lookupErr != nil {
+		return nil, nil, lookupErr
+	}
+	tenantCtx := access.TenantContext(ctx, intg.TenantID)
+	chat, chatErr := l.loadWithIntegration(intg)
+	if chatErr != nil {
+		return nil, nil, fmt.Errorf("load chat service failed: %w", chatErr)
+	}
+	return chat, tenantCtx, nil
+}
 
-	client := slack.New(botToken,
-		slack.OptionAppLevelToken(appToken))
-
-	return client, nil
+func (l *loader) loadFromContext(ctx context.Context) (*ChatService, error) {
+	intg, lookupErr := l.svcs.Integrations.Get(ctx, integrationName)
+	if lookupErr != nil {
+		return nil, lookupErr
+	}
+	return l.loadWithIntegration(intg)
 }
 
 func LoadOAuthConfig() *oauth2.Config {

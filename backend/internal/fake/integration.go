@@ -3,12 +3,14 @@ package fakeprovider
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 
 	rez "github.com/rezible/rezible"
+	"github.com/rezible/rezible/ent"
 )
 
 const integrationName = "fake"
+
+var supportedDataKinds = []string{}
 
 type integration struct{}
 
@@ -26,44 +28,39 @@ func (d *integration) Enabled() bool {
 }
 
 func (d *integration) SupportedDataKinds() []string {
-	return []string{}
+	return supportedDataKinds
 }
 
 func (d *integration) OAuthConfigRequired() bool {
 	return false
 }
 
-func (d *integration) ValidateConfig(raw json.RawMessage) (bool, error) {
-	return true, nil
+func (d *integration) GetConfiguredIntegration(i *ent.Integration) rez.ConfiguredIntegration {
+	return &ConfiguredIntegration{intg: i}
 }
 
-func (d *integration) MergeUserConfig(full json.RawMessage, userCfg json.RawMessage) (json.RawMessage, error) {
-	var cfg IntegrationConfig
-	if cfgErr := json.Unmarshal(full, &cfg); cfgErr != nil {
-		return nil, fmt.Errorf("failed to decode integration config: %w", cfgErr)
-	}
-	if userCfgErr := json.Unmarshal(userCfg, &cfg.UserConfig); userCfgErr != nil {
-		return nil, fmt.Errorf("failed to decode user config: %w", userCfgErr)
-	}
-	return json.Marshal(cfg)
+type ConfiguredIntegration struct {
+	intg *ent.Integration
 }
 
-func (d *integration) GetSanitizedConfig(rawCfg json.RawMessage) (json.RawMessage, error) {
-	var cfg IntegrationConfig
-	if rawErr := json.Unmarshal(rawCfg, &cfg); rawErr != nil {
-		return nil, fmt.Errorf("failed to decode integration config: %w", rawErr)
-	}
-	return json.Marshal(cfg)
+func (ci *ConfiguredIntegration) Name() string {
+	return integrationName
 }
 
-type IntegrationConfig struct {
-	UserConfig struct{}
+func (ci *ConfiguredIntegration) RawConfig() json.RawMessage {
+	return ci.intg.Config
 }
 
-func (c *IntegrationConfig) GetSanitized() (json.RawMessage, error) {
-	return []byte("{}"), nil
+func (ci *ConfiguredIntegration) UserPreferences() map[string]any {
+	return ci.intg.UserPreferences
 }
 
-func (c *IntegrationConfig) MergeUserConfig(rawUserCfg json.RawMessage) (json.RawMessage, error) {
-	return []byte("{}"), nil
+func (ci *ConfiguredIntegration) EnabledDataKinds() []string {
+	return supportedDataKinds
 }
+
+func (ci *ConfiguredIntegration) GetSanitizedConfig() (json.RawMessage, error) {
+	return json.Marshal(ci.RawConfig())
+}
+
+type IntegrationConfig struct{}

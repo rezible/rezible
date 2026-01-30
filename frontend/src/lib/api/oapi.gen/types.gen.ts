@@ -149,9 +149,9 @@ export type ConfiguredIntegration = {
 
 export type ConfiguredIntegrationAttributes = {
     config: unknown;
-    configValid: boolean;
-    dataKinds: {
-        [key: string]: boolean;
+    enabledDataKinds: Array<string>;
+    preferences: {
+        [key: string]: unknown;
     };
 };
 
@@ -1968,9 +1968,12 @@ export type PlaybookAttributes = {
 };
 
 export type RawIntegrationConfigRequestAttributes = {
-    config: unknown;
-    dataKinds: {
+    config?: unknown;
+    dataKinds?: {
         [key: string]: boolean;
+    };
+    preferences?: {
+        [key: string]: unknown;
     };
 };
 

@@ -5,8 +5,6 @@
 
     const { integration, configured, onConfigChange }: ConfigComponentProps = $props();
 
-    const configValid = $derived(configured?.attributes.configValid);
-
     onMount(() => {
 
     });

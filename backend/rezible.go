@@ -85,15 +85,23 @@ type Services struct {
 }
 
 type (
+	SetupPackageFunc = func(context.Context, *Services) (IntegrationPackage, error)
+	
 	IntegrationPackage interface {
 		Name() string
 		Enabled() bool
 		SupportedDataKinds() []string
 		OAuthConfigRequired() bool
 
-		ValidateConfig(json.RawMessage) (bool, error)
-		MergeUserConfig(json.RawMessage, json.RawMessage) (json.RawMessage, error)
-		GetSanitizedConfig(json.RawMessage) (json.RawMessage, error)
+		GetConfiguredIntegration(*ent.Integration) ConfiguredIntegration
+	}
+
+	ConfiguredIntegration interface {
+		Name() string
+		RawConfig() json.RawMessage
+		UserPreferences() map[string]any
+		EnabledDataKinds() []string
+		GetSanitizedConfig() (json.RawMessage, error)
 	}
 
 	IntegrationWithOAuth2SetupFlow interface {
@@ -110,23 +118,25 @@ type (
 	}
 
 	ListIntegrationsParams struct {
-		Name         string
-		DataKind     string
+		Names        []string
 		ConfigValues map[string]any
 		Filter       func(*ent.IntegrationQuery)
 	}
 
 	IntegrationsService interface {
-		ListIntegrations(ctx context.Context, params ListIntegrationsParams) ([]*ent.Integration, error)
-		GetIntegration(ctx context.Context, name string) (*ent.Integration, error)
-		ConfigureIntegration(ctx context.Context, name string, user bool, cfg json.RawMessage, dataKinds map[string]bool) (*ent.Integration, error)
-		DeleteIntegration(ctx context.Context, name string) error
+		LookupByConfigValues(ctx context.Context, name string, configValues map[string]any) (*ent.Integration, error)
+
+		ListConfigured(ctx context.Context, params ListIntegrationsParams) ([]ConfiguredIntegration, error)
+		Get(ctx context.Context, name string) (*ent.Integration, error)
+		GetConfigured(ctx context.Context, name string) (ConfiguredIntegration, error)
+		SetIntegration(ctx context.Context, name string, setFn func(*ent.IntegrationMutation)) (ConfiguredIntegration, error)
+		DeleteConfigured(ctx context.Context, name string) error
 
 		StartOAuth2Flow(ctx context.Context, name string) (string, error)
-		CompleteOAuth2Flow(ctx context.Context, name, state, code string) (*ent.Integration, error)
+		CompleteOAuth2Flow(ctx context.Context, name, state, code string) (ConfiguredIntegration, error)
 
-		GetChatService(ctx context.Context) (ChatService, error)
-		GetVideoConferenceService(ctx context.Context) (VideoConferenceService, error)
+		GetChatIntegration(ctx context.Context) (ChatService, error)
+		GetVideoConferenceIntegration(ctx context.Context) (VideoConferenceIntegration, error)
 	}
 )
 
@@ -163,7 +173,7 @@ type (
 	OrganizationService interface {
 		GetById(context.Context, uuid.UUID) (*ent.Organization, error)
 		GetCurrent(context.Context) (*ent.Organization, error)
-		CompleteSetup(context.Context, uuid.UUID) error
+		CompleteSetup(context.Context, *ent.Organization) error
 		FindOrCreateFromProvider(context.Context, ent.Organization) (*ent.Organization, error)
 	}
 )
@@ -234,7 +244,7 @@ type (
 
 type (
 	IntegrationWithChatService interface {
-		GetChatService() ChatService
+		ChatService() ChatService
 	}
 
 	ChatService interface {
@@ -245,11 +255,11 @@ type (
 )
 
 type (
-	IntegrationWithVideoConferenceService interface {
-		GetVideoConferenceService() VideoConferenceService
+	IntegrationWithVideoConference interface {
+		VideoConferenceIntegration(ctx context.Context) (VideoConferenceIntegration, error)
 	}
 
-	VideoConferenceService interface {
+	VideoConferenceIntegration interface {
 		CreateVideoConference(ctx context.Context) (string, error)
 	}
 )

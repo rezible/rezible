@@ -566,12 +566,12 @@ var schemaGraph = func() *sqlgraph.Schema {
 		},
 		Type: "Integration",
 		Fields: map[string]*sqlgraph.FieldSpec{
-			integration.FieldTenantID:  {Type: field.TypeInt, Column: integration.FieldTenantID},
-			integration.FieldCreatedAt: {Type: field.TypeTime, Column: integration.FieldCreatedAt},
-			integration.FieldUpdatedAt: {Type: field.TypeTime, Column: integration.FieldUpdatedAt},
-			integration.FieldName:      {Type: field.TypeString, Column: integration.FieldName},
-			integration.FieldConfig:    {Type: field.TypeJSON, Column: integration.FieldConfig},
-			integration.FieldDataKinds: {Type: field.TypeJSON, Column: integration.FieldDataKinds},
+			integration.FieldTenantID:        {Type: field.TypeInt, Column: integration.FieldTenantID},
+			integration.FieldCreatedAt:       {Type: field.TypeTime, Column: integration.FieldCreatedAt},
+			integration.FieldUpdatedAt:       {Type: field.TypeTime, Column: integration.FieldUpdatedAt},
+			integration.FieldName:            {Type: field.TypeString, Column: integration.FieldName},
+			integration.FieldConfig:          {Type: field.TypeJSON, Column: integration.FieldConfig},
+			integration.FieldUserPreferences: {Type: field.TypeJSON, Column: integration.FieldUserPreferences},
 		},
 	}
 	graph.Nodes[27] = &sqlgraph.Node{
@@ -7218,9 +7218,9 @@ func (f *IntegrationFilter) WhereConfig(p entql.BytesP) {
 	f.Where(p.Field(integration.FieldConfig))
 }
 
-// WhereDataKinds applies the entql json.RawMessage predicate on the data_kinds field.
-func (f *IntegrationFilter) WhereDataKinds(p entql.BytesP) {
-	f.Where(p.Field(integration.FieldDataKinds))
+// WhereUserPreferences applies the entql json.RawMessage predicate on the user_preferences field.
+func (f *IntegrationFilter) WhereUserPreferences(p entql.BytesP) {
+	f.Where(p.Field(integration.FieldUserPreferences))
 }
 
 // WhereHasTenant applies a predicate to check if query has an edge tenant.

@@ -74,7 +74,7 @@ var integrationsSyncCmd = &cobra.Command{
 		withDatabase(ctx, func(dbc rez.Database) {
 			svc := datasync.NewSyncerService(dbc.Client())
 			syncErr := svc.SyncIntegrationsData(ctx, jobs.SyncIntegrationsData{
-				Hard: true,
+				IgnoreHistory: true,
 			})
 			if syncErr != nil {
 				log.Fatal().Err(syncErr).Msg("failed to sync provider data")

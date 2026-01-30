@@ -14,16 +14,16 @@ import (
 	"github.com/rezible/rezible/internal/slack"
 )
 
-var packageMap = map[string]rez.IntegrationPackage{}
-
-type packageSetupFunc = func(context.Context, *rez.Services) (rez.IntegrationPackage, error)
-
-func Setup(ctx context.Context, svcs *rez.Services) error {
-	packageSetupFuncs := []packageSetupFunc{
+var (
+	packageMap        = map[string]rez.IntegrationPackage{}
+	packageSetupFuncs = []rez.SetupPackageFunc{
 		fakeprovider.SetupIntegration,
 		slack.SetupIntegration,
 		google.SetupIntegration,
 	}
+)
+
+func Setup(ctx context.Context, svcs *rez.Services) error {
 	packageMap = make(map[string]rez.IntegrationPackage)
 	for _, pkgFn := range packageSetupFuncs {
 		pkg, pkgErr := pkgFn(ctx, svcs)

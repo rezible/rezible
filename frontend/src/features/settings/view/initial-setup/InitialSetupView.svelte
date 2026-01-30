@@ -5,6 +5,7 @@
 	import { useInitialSetupViewState } from "$features/settings/lib/initialSetupViewState.svelte";
 	import LoadingIndicator from "$components/loading-indicator/LoadingIndicator.svelte";
 	import IntegrationConfigCard from "$features/settings/components/integration-config-card/IntegrationConfigCard.svelte";
+	import type { SupportedIntegration } from "$lib/api";
 
 	appShell.setPageBreadcrumbs(() => [
 		{ label: "Setup", href: "/setup" },
@@ -12,6 +13,16 @@
 
 	const view = useInitialSetupViewState();
 </script>
+
+{#snippet integrationCard(integration: SupportedIntegration)}
+	{@const configured = view.configuredIntegrationsMap.get(integration.name)}
+	{#key integration.name}
+		<IntegrationConfigCard {integration} {configured}
+			startOAuthFlow={() => {view.oauth.startFlow(integration.name)}}
+			configureIntegration={attrs => {view.doConfigureIntegration(integration.name, attrs)}}
+		/>
+	{/key}
+{/snippet}
 
 <div class="grid h-full w-full place-items-center">
 	<div class="flex flex-col gap-2 border rounded-lg border-surface-content/10 bg-surface-200 p-3">
@@ -50,15 +61,8 @@
 			<div class="flex flex-col gap-2">
 				{#if !!view.nextRequiredDataKind}
 					<span>Integrations supporting {view.nextRequiredDataKind}</span>
-					{#each view.nextRequiredSupportedIntegrations as integration}
-						{@const configured = view.configuredIntegrationsMap.get(integration.name)}
-						{#key integration.name}
-							<IntegrationConfigCard 
-								{integration} {configured}
-								startOAuthFlow={() => {view.oauth.startFlow(integration.name)}}
-								configureIntegration={attrs => {view.doConfigureIntegration(integration.name, attrs)}}
-							/>
-						{/key}
+					{#each view.nextRequiredSupportedIntegrations as intg}
+						{@render integrationCard(intg)}
 					{:else}
 						<div class="p-2 border-error-300 border-2">
 							<span>No supported integrations available for this data</span>
@@ -66,15 +70,8 @@
 					{/each}
 				{:else}
 					<span>All Integrations</span>
-					{#each view.supportedIntegrations as integration}
-						{@const configured = view.configuredIntegrationsMap.get(integration.name)}
-						{#key integration.name}
-							<IntegrationConfigCard 
-								{integration} {configured}
-								startOAuthFlow={() => {view.oauth.startFlow(integration.name)}}
-								configureIntegration={attrs => {view.doConfigureIntegration(integration.name, attrs)}}
-							/>
-						{/key}
+					{#each view.supportedIntegrations as intg}
+						{@render integrationCard(intg)}
 					{/each}
 				{/if}
 			</div>

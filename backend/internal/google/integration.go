@@ -7,95 +7,111 @@ import (
 	"net/http"
 
 	rez "github.com/rezible/rezible"
+	"github.com/rezible/rezible/ent"
+	"google.golang.org/api/option"
 )
 
 const integrationName = "google"
 
+var supportedDataKinds = []string{"video_conferencing"}
+
 type integration struct {
-	meetService *meetService
+	services *rez.Services
 }
 
 func SetupIntegration(ctx context.Context, svcs *rez.Services) (rez.IntegrationPackage, error) {
-	ms, msErr := newMeetService(ctx, svcs)
-	if msErr != nil {
-		return nil, fmt.Errorf("unable to create MeetService: %v", msErr)
-	}
-
-	intg := &integration{
-		meetService: ms,
-	}
+	intg := &integration{services: svcs}
 	return intg, nil
 }
 
-func (d *integration) Name() string {
+func (i *integration) Name() string {
 	return integrationName
 }
 
-func (d *integration) Enabled() bool {
+func (i *integration) Enabled() bool {
 	// TODO: check config
 	return true
 }
 
-func (d *integration) EventListeners() map[string]rez.EventListener {
+func (i *integration) EventListeners() map[string]rez.EventListener {
 	return nil
 }
 
-func (d *integration) WebhookHandlers() map[string]http.Handler {
+func (i *integration) WebhookHandlers() map[string]http.Handler {
 	return nil
 }
 
-func (d *integration) GetVideoConferenceService() rez.VideoConferenceService {
-	return d.meetService
+func (i *integration) SupportedDataKinds() []string {
+	return supportedDataKinds
 }
 
-func (d *integration) SupportedDataKinds() []string {
-	return []string{"video_conferencing"}
-}
-
-func (d *integration) OAuthConfigRequired() bool {
+func (i *integration) OAuthConfigRequired() bool {
 	return false
 }
 
-func (d *integration) ValidateConfig(raw json.RawMessage) (bool, error) {
-	return true, nil
+func (i *integration) GetConfiguredIntegration(intg *ent.Integration) rez.ConfiguredIntegration {
+	return &ConfiguredIntegration{intg: intg, svcs: i.services}
 }
 
-func (d *integration) MergeUserConfig(full json.RawMessage, userCfg json.RawMessage) (json.RawMessage, error) {
-	var cfg IntegrationConfig
-	if cfgErr := json.Unmarshal(full, &cfg); cfgErr != nil {
-		return nil, fmt.Errorf("failed to decode integration config: %w", cfgErr)
-	}
-	if userCfgErr := json.Unmarshal(userCfg, &cfg.UserConfig); userCfgErr != nil {
-		return nil, fmt.Errorf("failed to decode user config: %w", userCfgErr)
-	}
-	return json.Marshal(cfg)
+type ConfiguredIntegration struct {
+	intg *ent.Integration
+	svcs *rez.Services
 }
 
-func (d *integration) GetSanitizedConfig(rawCfg json.RawMessage) (json.RawMessage, error) {
-	var cfg IntegrationConfig
-	if rawErr := json.Unmarshal(rawCfg, &cfg); rawErr != nil {
-		return nil, fmt.Errorf("failed to decode integration config: %w", rawErr)
+type integrationConfig struct {
+	UserConfig integrationUserConfig
+}
+
+type integrationUserConfig struct {
+	ServiceAccountCredentials json.RawMessage
+}
+
+func (ci *ConfiguredIntegration) Name() string {
+	return integrationName
+}
+
+func (ci *ConfiguredIntegration) RawConfig() json.RawMessage {
+	return ci.intg.Config
+}
+
+func (ci *ConfiguredIntegration) unmarshalConfig() (*integrationConfig, error) {
+	var cfg integrationConfig
+	if err := json.Unmarshal(ci.RawConfig(), &cfg); err != nil {
+		return nil, fmt.Errorf("error unmarshalling config: %w", err)
+	}
+	return &cfg, nil
+}
+
+func (ci *ConfiguredIntegration) GetSanitizedConfig() (json.RawMessage, error) {
+	cfg, cfgErr := ci.unmarshalConfig()
+	if cfgErr != nil {
+		return nil, cfgErr
 	}
 	cfg.UserConfig.ServiceAccountCredentials = nil
 	return json.Marshal(cfg)
 }
 
-type IntegrationConfig struct {
-	UserConfig IntegrationUserConfig
+func (ci *ConfiguredIntegration) UserPreferences() map[string]any {
+	return ci.intg.UserPreferences
 }
 
-type IntegrationUserConfig struct {
-	ServiceAccountCredentials json.RawMessage
+func (ci *ConfiguredIntegration) EnabledDataKinds() []string {
+	return supportedDataKinds
 }
 
-func lookupIntegrationConfig(ctx context.Context, integrations rez.IntegrationsService) (*IntegrationConfig, error) {
-	intg, lookupErr := integrations.GetIntegration(ctx, integrationName)
-	if lookupErr != nil {
-		return nil, lookupErr
+func (ci *ConfiguredIntegration) getServiceAccountAuthCredentials() (option.ClientOption, error) {
+	cfg, cfgErr := ci.unmarshalConfig()
+	if cfgErr != nil {
+		return nil, cfgErr
 	}
-	var cfg IntegrationConfig
-	if jsonErr := json.Unmarshal(intg.Config, &cfg); jsonErr != nil {
-		return nil, fmt.Errorf("unmarshal integration: %w", jsonErr)
+	authOpt := option.WithAuthCredentialsJSON(option.ServiceAccount, cfg.UserConfig.ServiceAccountCredentials)
+	return authOpt, nil
+}
+
+func (ci *ConfiguredIntegration) VideoConferenceIntegration(ctx context.Context) (rez.VideoConferenceIntegration, error) {
+	svcAuthOpt, authErr := ci.getServiceAccountAuthCredentials()
+	if authErr != nil {
+		return nil, authErr
 	}
-	return &cfg, nil
+	return newMeetService(ctx, ci.svcs.Messages, svcAuthOpt)
 }

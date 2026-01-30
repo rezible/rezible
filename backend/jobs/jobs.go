@@ -5,7 +5,7 @@ import (
 )
 
 type SyncIntegrationsData struct {
-	Hard           bool
+	IgnoreHistory  bool
 	CreateDefaults bool
 	OrganizationId uuid.UUID
 	IntegrationId  uuid.UUID

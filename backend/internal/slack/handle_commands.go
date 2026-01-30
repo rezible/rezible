@@ -29,6 +29,12 @@ func commandErrorResponse(message string) *slack.Msg {
 }
 
 func (s *ChatService) handleSlashCommand(ctx context.Context, ev *slack.SlashCommand) (bool, *slack.Msg, error) {
+	var usrErr error
+	_, ctx, usrErr = s.lookupUser(ctx, ev.UserID)
+	if usrErr != nil {
+		return false, nil, fmt.Errorf("failed to lookup user: %w", usrErr)
+	}
+
 	switch ev.Command {
 	case "/incident":
 		payload, handlerErr := s.handleIncidentCommand(ctx, ev)

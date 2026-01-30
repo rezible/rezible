@@ -19,7 +19,7 @@ type UserDataProvider struct {
 var _ rez.UserDataProvider = (*UserDataProvider)(nil)
 
 func NewUserDataProvider(intg *ent.Integration) (*UserDataProvider, error) {
-	cfg, cfgErr := decodeConfig(intg)
+	cfg, cfgErr := decodeConfig(intg.Config)
 	if cfgErr != nil {
 		return nil, cfgErr
 	}

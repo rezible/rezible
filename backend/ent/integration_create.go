@@ -72,9 +72,9 @@ func (_c *IntegrationCreate) SetConfig(v json.RawMessage) *IntegrationCreate {
 	return _c
 }
 
-// SetDataKinds sets the "data_kinds" field.
-func (_c *IntegrationCreate) SetDataKinds(v map[string]bool) *IntegrationCreate {
-	_c.mutation.SetDataKinds(v)
+// SetUserPreferences sets the "user_preferences" field.
+func (_c *IntegrationCreate) SetUserPreferences(v map[string]interface{}) *IntegrationCreate {
+	_c.mutation.SetUserPreferences(v)
 	return _c
 }
 
@@ -148,6 +148,10 @@ func (_c *IntegrationCreate) defaults() error {
 		v := integration.DefaultUpdatedAt()
 		_c.mutation.SetUpdatedAt(v)
 	}
+	if _, ok := _c.mutation.UserPreferences(); !ok {
+		v := integration.DefaultUserPreferences
+		_c.mutation.SetUserPreferences(v)
+	}
 	if _, ok := _c.mutation.ID(); !ok {
 		if integration.DefaultID == nil {
 			return fmt.Errorf("ent: uninitialized integration.DefaultID (forgotten import ent/runtime?)")
@@ -174,9 +178,6 @@ func (_c *IntegrationCreate) check() error {
 	}
 	if _, ok := _c.mutation.Config(); !ok {
 		return &ValidationError{Name: "config", err: errors.New(`ent: missing required field "Integration.config"`)}
-	}
-	if _, ok := _c.mutation.DataKinds(); !ok {
-		return &ValidationError{Name: "data_kinds", err: errors.New(`ent: missing required field "Integration.data_kinds"`)}
 	}
 	if len(_c.mutation.TenantIDs()) == 0 {
 		return &ValidationError{Name: "tenant", err: errors.New(`ent: missing required edge "Integration.tenant"`)}
@@ -233,9 +234,9 @@ func (_c *IntegrationCreate) createSpec() (*Integration, *sqlgraph.CreateSpec) {
 		_spec.SetField(integration.FieldConfig, field.TypeJSON, value)
 		_node.Config = value
 	}
-	if value, ok := _c.mutation.DataKinds(); ok {
-		_spec.SetField(integration.FieldDataKinds, field.TypeJSON, value)
-		_node.DataKinds = value
+	if value, ok := _c.mutation.UserPreferences(); ok {
+		_spec.SetField(integration.FieldUserPreferences, field.TypeJSON, value)
+		_node.UserPreferences = value
 	}
 	if nodes := _c.mutation.TenantIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
@@ -354,15 +355,21 @@ func (u *IntegrationUpsert) UpdateConfig() *IntegrationUpsert {
 	return u
 }
 
-// SetDataKinds sets the "data_kinds" field.
-func (u *IntegrationUpsert) SetDataKinds(v map[string]bool) *IntegrationUpsert {
-	u.Set(integration.FieldDataKinds, v)
+// SetUserPreferences sets the "user_preferences" field.
+func (u *IntegrationUpsert) SetUserPreferences(v map[string]interface{}) *IntegrationUpsert {
+	u.Set(integration.FieldUserPreferences, v)
 	return u
 }
 
-// UpdateDataKinds sets the "data_kinds" field to the value that was provided on create.
-func (u *IntegrationUpsert) UpdateDataKinds() *IntegrationUpsert {
-	u.SetExcluded(integration.FieldDataKinds)
+// UpdateUserPreferences sets the "user_preferences" field to the value that was provided on create.
+func (u *IntegrationUpsert) UpdateUserPreferences() *IntegrationUpsert {
+	u.SetExcluded(integration.FieldUserPreferences)
+	return u
+}
+
+// ClearUserPreferences clears the value of the "user_preferences" field.
+func (u *IntegrationUpsert) ClearUserPreferences() *IntegrationUpsert {
+	u.SetNull(integration.FieldUserPreferences)
 	return u
 }
 
@@ -473,17 +480,24 @@ func (u *IntegrationUpsertOne) UpdateConfig() *IntegrationUpsertOne {
 	})
 }
 
-// SetDataKinds sets the "data_kinds" field.
-func (u *IntegrationUpsertOne) SetDataKinds(v map[string]bool) *IntegrationUpsertOne {
+// SetUserPreferences sets the "user_preferences" field.
+func (u *IntegrationUpsertOne) SetUserPreferences(v map[string]interface{}) *IntegrationUpsertOne {
 	return u.Update(func(s *IntegrationUpsert) {
-		s.SetDataKinds(v)
+		s.SetUserPreferences(v)
 	})
 }
 
-// UpdateDataKinds sets the "data_kinds" field to the value that was provided on create.
-func (u *IntegrationUpsertOne) UpdateDataKinds() *IntegrationUpsertOne {
+// UpdateUserPreferences sets the "user_preferences" field to the value that was provided on create.
+func (u *IntegrationUpsertOne) UpdateUserPreferences() *IntegrationUpsertOne {
 	return u.Update(func(s *IntegrationUpsert) {
-		s.UpdateDataKinds()
+		s.UpdateUserPreferences()
+	})
+}
+
+// ClearUserPreferences clears the value of the "user_preferences" field.
+func (u *IntegrationUpsertOne) ClearUserPreferences() *IntegrationUpsertOne {
+	return u.Update(func(s *IntegrationUpsert) {
+		s.ClearUserPreferences()
 	})
 }
 
@@ -761,17 +775,24 @@ func (u *IntegrationUpsertBulk) UpdateConfig() *IntegrationUpsertBulk {
 	})
 }
 
-// SetDataKinds sets the "data_kinds" field.
-func (u *IntegrationUpsertBulk) SetDataKinds(v map[string]bool) *IntegrationUpsertBulk {
+// SetUserPreferences sets the "user_preferences" field.
+func (u *IntegrationUpsertBulk) SetUserPreferences(v map[string]interface{}) *IntegrationUpsertBulk {
 	return u.Update(func(s *IntegrationUpsert) {
-		s.SetDataKinds(v)
+		s.SetUserPreferences(v)
 	})
 }
 
-// UpdateDataKinds sets the "data_kinds" field to the value that was provided on create.
-func (u *IntegrationUpsertBulk) UpdateDataKinds() *IntegrationUpsertBulk {
+// UpdateUserPreferences sets the "user_preferences" field to the value that was provided on create.
+func (u *IntegrationUpsertBulk) UpdateUserPreferences() *IntegrationUpsertBulk {
 	return u.Update(func(s *IntegrationUpsert) {
-		s.UpdateDataKinds()
+		s.UpdateUserPreferences()
+	})
+}
+
+// ClearUserPreferences clears the value of the "user_preferences" field.
+func (u *IntegrationUpsertBulk) ClearUserPreferences() *IntegrationUpsertBulk {
+	return u.Update(func(s *IntegrationUpsert) {
+		s.ClearUserPreferences()
 	})
 }
 

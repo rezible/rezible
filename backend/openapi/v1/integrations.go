@@ -8,8 +8,6 @@ import (
 
 	"github.com/danielgtaylor/huma/v2"
 	rez "github.com/rezible/rezible"
-	"github.com/rezible/rezible/ent"
-	"github.com/rezible/rezible/integrations"
 )
 
 type IntegrationsHandler interface {
@@ -49,9 +47,9 @@ type (
 	}
 
 	ConfiguredIntegrationAttributes struct {
-		Config      json.RawMessage `json:"config"`
-		ConfigValid bool            `json:"configValid"`
-		DataKinds   map[string]bool `json:"dataKinds"`
+		Config           json.RawMessage `json:"config"`
+		UserPreferences  map[string]any  `json:"preferences"`
+		EnabledDataKinds []string        `json:"enabledDataKinds"`
 	}
 
 	IntegrationOAuthFlow struct {
@@ -67,25 +65,19 @@ func SupportedIntegrationFromPackage(p rez.IntegrationPackage) SupportedIntegrat
 	}
 }
 
-func IntegrationFromEnt(intg *ent.Integration) (*ConfiguredIntegration, error) {
-	p, pErr := integrations.GetPackage(intg.Name)
-	if pErr != nil {
-		return nil, pErr
-	}
-
-	valid, _ := p.ValidateConfig(intg.Config)
-	sanitizedConfig, sanitizedErr := p.GetSanitizedConfig(intg.Config)
+func ConfiguredIntegrationFromConfig(cfg rez.ConfiguredIntegration) (*ConfiguredIntegration, error) {
+	sanitizedConfig, sanitizedErr := cfg.GetSanitizedConfig()
 	if sanitizedErr != nil {
 		return nil, fmt.Errorf("sanitized: %w", sanitizedErr)
 	}
 
 	attrs := ConfiguredIntegrationAttributes{
-		Config:      sanitizedConfig,
-		ConfigValid: valid,
-		DataKinds:   intg.DataKinds,
+		Config:           sanitizedConfig,
+		UserPreferences:  cfg.UserPreferences(),
+		EnabledDataKinds: cfg.EnabledDataKinds(),
 	}
 
-	return &ConfiguredIntegration{Name: intg.Name, Attributes: attrs}, nil
+	return &ConfiguredIntegration{Name: cfg.Name(), Attributes: attrs}, nil
 }
 
 var integrationsTags = []string{"Integrations"}
@@ -101,8 +93,9 @@ type (
 	}
 
 	RawIntegrationConfigRequestAttributes struct {
-		Config    json.RawMessage `json:"config"`
-		DataKinds map[string]bool `json:"dataKinds"`
+		Config          json.RawMessage `json:"config,omitempty"`
+		UserPreferences map[string]any  `json:"preferences,omitempty"`
+		DataKinds       map[string]bool `json:"dataKinds,omitempty"`
 	}
 	NamedIntegrationRawConfigRequest NamedIntegrationRequestWithAttributes[RawIntegrationConfigRequestAttributes]
 )

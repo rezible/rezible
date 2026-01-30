@@ -1,6 +1,7 @@
 package slack
 
 import (
+	"context"
 	"strconv"
 	"strings"
 	"time"
@@ -8,6 +9,26 @@ import (
 	"github.com/rs/zerolog/log"
 	"github.com/slack-go/slack"
 )
+
+func getAllUsersInConversation(ctx context.Context, client *slack.Client, convId string) ([]string, error) {
+	params := &slack.GetUsersInConversationParameters{
+		ChannelID: convId,
+		Limit:     100,
+	}
+	var allIds []string
+	for {
+		ids, cursor, getErr := client.GetUsersInConversationContext(ctx, params)
+		if getErr != nil {
+			return nil, getErr
+		}
+		allIds = append(allIds, ids...)
+		params.Cursor = cursor
+		if cursor == "" || len(ids) == 0 {
+			break
+		}
+	}
+	return allIds, nil
+}
 
 func logSlackViewErrorResponse(err error, resp *slack.ViewResponse) {
 	line := log.Error().Err(err)

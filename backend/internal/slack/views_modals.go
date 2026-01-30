@@ -38,7 +38,7 @@ type annotationModalMetadata struct {
 }
 
 func (s *ChatService) makeAnnotationModalView(ctx context.Context, meta *annotationModalMetadata) (*slack.ModalViewRequest, error) {
-	usr, usrCtx, userErr := s.lookupChatUser(ctx, meta.UserId)
+	usr, usrCtx, userErr := s.lookupUser(ctx, meta.UserId)
 	if userErr != nil {
 		return nil, fmt.Errorf("failed to lookup user: %w", userErr)
 	}
@@ -86,7 +86,7 @@ func (s *ChatService) getAnnotationModalAnnotation(ctx context.Context, view sla
 		return nil, fmt.Errorf("failed to unmarshal metadata: %w", jsonErr)
 	}
 
-	usr, _, userErr := s.lookupChatUser(ctx, meta.UserId)
+	usr, _, userErr := s.lookupUser(ctx, meta.UserId)
 	if userErr != nil {
 		return nil, fmt.Errorf("failed to lookup user: %w", userErr)
 	}

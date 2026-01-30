@@ -6,20 +6,32 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/gosimple/slug"
+	
+	"github.com/rezible/rezible/access"
 	"github.com/rezible/rezible/ent"
 	"github.com/rezible/rezible/ent/user"
 )
 
+func makeSyncContext(ctx context.Context, ignoreHistory bool, createDefaults bool) context.Context {
+	if ignoreHistory {
+		ctx = context.WithValue(ctx, ignoreHistoryKey{}, true)
+	}
+	if createDefaults {
+		ctx = context.WithValue(ctx, createDefaultsKey{}, true)
+	}
+	return access.SystemContext(ctx)
+}
+
 type ignoreHistoryKey struct{}
 
-func IsHardSync(ctx context.Context) bool {
+func isHardSync(ctx context.Context) bool {
 	_, ok := ctx.Value(ignoreHistoryKey{}).(bool)
 	return ok
 }
 
 type createDefaultsKey struct{}
 
-func ShouldCreateDefaults(ctx context.Context) bool {
+func shouldCreateDefaults(ctx context.Context) bool {
 	_, ok := ctx.Value(createDefaultsKey{}).(bool)
 	return ok
 }
