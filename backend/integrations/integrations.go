@@ -17,8 +17,6 @@ import (
 	"github.com/rezible/rezible/ent"
 	"github.com/rezible/rezible/internal/fake"
 	"github.com/rezible/rezible/internal/google"
-	"github.com/rezible/rezible/internal/grafana"
-	"github.com/rezible/rezible/internal/jira"
 	"github.com/rezible/rezible/internal/slack"
 )
 
@@ -173,122 +171,62 @@ func GetTeamDataProviders(ctx context.Context, intgs ent.Integrations) ([]rez.Te
 	})
 }
 
+type IntegrationWithOncallDataProvider interface {
+	MakeOncallDataProvider(context.Context, *ent.Integration) (rez.OncallDataProvider, error)
+}
+
 func GetOncallDataProviders(ctx context.Context, intgs ent.Integrations) ([]rez.OncallDataProvider, error) {
-	var provs []rez.OncallDataProvider
-	for _, intg := range intgs {
-		var prov rez.OncallDataProvider
-		var pErr error
-		switch intg.Name {
-		case "grafana":
-			prov, pErr = grafana.NewOncallDataProvider(intg)
-		case "fake":
-			prov, pErr = fakeprovider.NewOncallDataProvider(intg)
-		default:
-			continue
-		}
-		if pErr != nil {
-			return nil, fmt.Errorf("loading provider: %w", pErr)
-		}
-		provs = append(provs, prov)
-	}
-	return provs, nil
+	return getDataProviders(intgs, func(dpi IntegrationWithOncallDataProvider, i *ent.Integration) (rez.OncallDataProvider, error) {
+		return dpi.MakeOncallDataProvider(ctx, i)
+	})
+}
+
+type IntegrationWithAlertDataProvider interface {
+	MakeAlertDataProvider(context.Context, *ent.Integration) (rez.AlertDataProvider, error)
 }
 
 func GetAlertDataProviders(ctx context.Context, intgs ent.Integrations) ([]rez.AlertDataProvider, error) {
-	var provs []rez.AlertDataProvider
-	for _, intg := range intgs {
-		var prov rez.AlertDataProvider
-		var pErr error
-		switch intg.Name {
-		case "fake":
-			prov, pErr = fakeprovider.NewAlertDataProvider(intg)
-		default:
-			continue
-		}
-		if pErr != nil {
-			return nil, fmt.Errorf("loading provider: %w", pErr)
-		}
-		provs = append(provs, prov)
-	}
-	return provs, nil
+	return getDataProviders(intgs, func(dpi IntegrationWithAlertDataProvider, i *ent.Integration) (rez.AlertDataProvider, error) {
+		return dpi.MakeAlertDataProvider(ctx, i)
+	})
+}
+
+type IntegrationWithIncidentDataProvider interface {
+	MakeIncidentDataProvider(context.Context, *ent.Integration) (rez.IncidentDataProvider, error)
 }
 
 func GetIncidentDataProviders(ctx context.Context, intgs ent.Integrations) ([]rez.IncidentDataProvider, error) {
-	var provs []rez.IncidentDataProvider
-	for _, intg := range intgs {
-		var prov rez.IncidentDataProvider
-		var pErr error
-		switch intg.Name {
-		case "grafana":
-			prov, pErr = grafana.NewIncidentDataProvider(intg)
-		case "fake":
-			prov, pErr = fakeprovider.NewIncidentDataProvider(intg)
-		default:
-			continue
-		}
-		if pErr != nil {
-			return nil, fmt.Errorf("loading provider: %w", pErr)
-		}
-		provs = append(provs, prov)
-	}
-	return provs, nil
+	return getDataProviders(intgs, func(dpi IntegrationWithIncidentDataProvider, i *ent.Integration) (rez.IncidentDataProvider, error) {
+		return dpi.MakeIncidentDataProvider(ctx, i)
+	})
+}
+
+type IntegrationWithSystemComponentsDataProvider interface {
+	MakeSystemComponentsDataProvider(context.Context, *ent.Integration) (rez.SystemComponentsDataProvider, error)
 }
 
 func GetSystemComponentsDataProviders(ctx context.Context, intgs ent.Integrations) ([]rez.SystemComponentsDataProvider, error) {
-	var provs []rez.SystemComponentsDataProvider
-	for _, intg := range intgs {
-		var prov rez.SystemComponentsDataProvider
-		var pErr error
-		switch intg.Name {
-		case "fake":
-			prov, pErr = fakeprovider.NewSystemComponentsDataProvider(intg)
-		default:
-			continue
-		}
-		if pErr != nil {
-			return nil, fmt.Errorf("loading provider: %w", pErr)
-		}
-		provs = append(provs, prov)
-	}
-	return provs, nil
+	return getDataProviders(intgs, func(dpi IntegrationWithSystemComponentsDataProvider, i *ent.Integration) (rez.SystemComponentsDataProvider, error) {
+		return dpi.MakeSystemComponentsDataProvider(ctx, i)
+	})
+}
+
+type IntegrationWithTicketDataProvider interface {
+	MakeTicketDataProvider(context.Context, *ent.Integration) (rez.TicketDataProvider, error)
 }
 
 func GetTicketDataProviders(ctx context.Context, intgs ent.Integrations) ([]rez.TicketDataProvider, error) {
-	var provs []rez.TicketDataProvider
-	for _, intg := range intgs {
-		var prov rez.TicketDataProvider
-		var pErr error
-		switch intg.Name {
-		case "jira":
-			prov, pErr = jira.NewTicketDataProvider(ctx, intg)
-		case "fake":
-			prov, pErr = fakeprovider.NewTicketDataProvider(intg)
-		default:
-			continue
-		}
-		if pErr != nil {
-			return nil, fmt.Errorf("loading provider: %w", pErr)
-		}
-		provs = append(provs, prov)
-	}
-	return provs, nil
+	return getDataProviders(intgs, func(dpi IntegrationWithTicketDataProvider, i *ent.Integration) (rez.TicketDataProvider, error) {
+		return dpi.MakeTicketDataProvider(ctx, i)
+	})
+}
+
+type IntegrationWithPlaybookDataProvider interface {
+	MakePlaybookDataProvider(context.Context, *ent.Integration) (rez.PlaybookDataProvider, error)
 }
 
 func GetPlaybookDataProviders(ctx context.Context, intgs ent.Integrations) ([]rez.PlaybookDataProvider, error) {
-	var provs []rez.PlaybookDataProvider
-	for _, intg := range intgs {
-		var prov rez.PlaybookDataProvider
-		var pErr error
-		switch intg.Name {
-		case "fake":
-			prov, pErr = fakeprovider.NewPlaybookDataProvider(intg)
-		default:
-			continue
-		}
-		if pErr != nil {
-			return nil, fmt.Errorf("loading provider: %w", pErr)
-		}
-		provs = append(provs, prov)
-	}
-	return provs, nil
+	return getDataProviders(intgs, func(dpi IntegrationWithPlaybookDataProvider, i *ent.Integration) (rez.PlaybookDataProvider, error) {
+		return dpi.MakePlaybookDataProvider(ctx, i)
+	})
 }
