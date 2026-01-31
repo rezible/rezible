@@ -21,12 +21,12 @@ import (
 )
 
 type WebhookEventHandler struct {
-	loader       *loader
+	loader       *serviceLoader
 	msgs         rez.MessageService
 	bodyVerifier webhookVerifierFunc
 }
 
-func newWebhookEventHandler(l *loader, svcs *rez.Services) (*WebhookEventHandler, error) {
+func newWebhookEventHandler(l *serviceLoader, svcs *rez.Services) (*WebhookEventHandler, error) {
 	whVerifier, verifierErr := makeWebhookVerifier()
 	if verifierErr != nil {
 		return nil, verifierErr
@@ -238,7 +238,7 @@ type webhookCommandEvent struct {
 
 func (wh *WebhookEventHandler) processCommandEvent(baseCtx context.Context, ev *webhookCommandEvent) error {
 	cmd := ev.Command
-	chat, ctx, chatErr := wh.loader.loadByTenantLookup(baseCtx, cmd.TeamID, cmd.EnterpriseID)
+	chat, ctx, chatErr := wh.loader.fromTenantLookup(baseCtx, cmd.TeamID, cmd.EnterpriseID)
 	if chatErr != nil {
 		return fmt.Errorf("get user client: %w", chatErr)
 	}
@@ -270,7 +270,7 @@ func (wh *WebhookEventHandler) processInteractionEvent(ctx context.Context, ie *
 		return nil
 	}
 
-	chat, tenantCtx, chatErr := wh.loader.loadByTenantLookup(ctx, ic.Team.ID, ic.Enterprise.ID)
+	chat, tenantCtx, chatErr := wh.loader.fromTenantLookup(ctx, ic.Team.ID, ic.Enterprise.ID)
 	if chatErr != nil {
 		return fmt.Errorf("get user client: %w", chatErr)
 	}
@@ -297,7 +297,7 @@ func (wh *WebhookEventHandler) processCallbackEvent(ctx context.Context, ev *web
 	if parseErr != nil {
 		return fmt.Errorf("failed to parse event: %w", parseErr)
 	}
-	chat, tenantCtx, chatErr := wh.loader.loadByTenantLookup(ctx, cbe.TeamID, cbe.EnterpriseID)
+	chat, tenantCtx, chatErr := wh.loader.fromTenantLookup(ctx, cbe.TeamID, cbe.EnterpriseID)
 	if chatErr != nil {
 		return fmt.Errorf("get user client: %w", chatErr)
 	}

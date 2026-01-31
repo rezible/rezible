@@ -14,15 +14,15 @@ import (
 	"github.com/slack-go/slack"
 )
 
-type loader struct {
+type serviceLoader struct {
 	svcs *rez.Services
 }
 
-func newLoader(svcs *rez.Services) *loader {
-	return &loader{svcs: svcs}
+func newServiceLoader(svcs *rez.Services) *serviceLoader {
+	return &serviceLoader{svcs: svcs}
 }
 
-func (l *loader) loadWithIntegration(intg *ent.Integration) (*ChatService, error) {
+func (l *serviceLoader) fromIntegration(intg *ent.Integration) (*ChatService, error) {
 	cfg, cfgErr := decodeConfig(intg.Config)
 	if cfgErr != nil {
 		return nil, fmt.Errorf("unable to decode config: %w", cfgErr)
@@ -30,24 +30,27 @@ func (l *loader) loadWithIntegration(intg *ent.Integration) (*ChatService, error
 	return newChatService(cfg.makeClient(), l.svcs), nil
 }
 
-func (l *loader) loadByTenantLookup(ctx context.Context, teamId string, enterpriseId string) (*ChatService, context.Context, error) {
+func (l *serviceLoader) fromTenantLookup(ctx context.Context, teamId string, enterpriseId string) (*ChatService, context.Context, error) {
 	intg, lookupErr := lookupIntegration(ctx, l.svcs.Integrations, teamId, enterpriseId)
 	if lookupErr != nil {
 		return nil, nil, lookupErr
 	}
-	chat, chatErr := l.loadWithIntegration(intg)
+	chat, chatErr := l.fromIntegration(intg)
 	if chatErr != nil {
 		return nil, nil, fmt.Errorf("load chat service failed: %w", chatErr)
 	}
 	return chat, access.TenantContext(ctx, intg.TenantID), nil
 }
 
-func (l *loader) loadFromContext(ctx context.Context) (*ChatService, error) {
+func (l *serviceLoader) fromContext(ctx context.Context) (*ChatService, error) {
 	intg, lookupErr := l.svcs.Integrations.Get(ctx, integrationName)
 	if lookupErr != nil {
+		if ent.IsNotFound(lookupErr) {
+			return nil, nil
+		}
 		return nil, lookupErr
 	}
-	return l.loadWithIntegration(intg)
+	return l.fromIntegration(intg)
 }
 
 func getAllUsersInConversation(ctx context.Context, client *slack.Client, convId string) ([]string, error) {

@@ -16,11 +16,22 @@ const integrationName = "google"
 var supportedDataKinds = []string{"video_conferencing"}
 
 type integration struct {
-	services *rez.Services
+	services       *rez.Services
+	incidentEvents *incidentEventHandler
 }
 
 func SetupIntegration(ctx context.Context, svcs *rez.Services) (rez.IntegrationPackage, error) {
-	intg := &integration{services: svcs}
+	sl := &serviceLoader{}
+	ih, ihErr := newIncidentEventHandler(sl, svcs.Messages, svcs.Incidents)
+	if ihErr != nil {
+		return nil, fmt.Errorf("creating incident event handler: %w", ihErr)
+	}
+
+	intg := &integration{
+		services:       svcs,
+		incidentEvents: ih,
+	}
+
 	return intg, nil
 }
 

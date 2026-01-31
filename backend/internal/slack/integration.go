@@ -21,25 +21,27 @@ const integrationName = "slack"
 var supportedDataKinds = []string{"chat", "users"}
 
 type integration struct {
-	services        *rez.Services
-	oauth2Config    *oauth2.Config
-	eventListeners  map[string]rez.EventListener
-	webhookHandlers map[string]http.Handler
+	services             *rez.Services
+	oauth2Config         *oauth2.Config
+	eventListeners       map[string]rez.EventListener
+	webhookHandlers      map[string]http.Handler
+	incidentEventHandler *incidentEventHandler
 }
 
 func SetupIntegration(ctx context.Context, svcs *rez.Services) (rez.IntegrationPackage, error) {
-	intg := &integration{
-		services:        svcs,
-		oauth2Config:    loadOAuthConfig(),
-		eventListeners:  make(map[string]rez.EventListener),
-		webhookHandlers: make(map[string]http.Handler),
+	sl := newServiceLoader(svcs)
+
+	incHandler, incHandlerErr := newIncidentEventHandler(sl, svcs.Messages, svcs.Incidents)
+	if incHandlerErr != nil {
+		return nil, fmt.Errorf("incident event handler: %w", incHandlerErr)
 	}
 
-	l := newLoader(svcs)
-
-	incMsgHandler := newIncidentChatEventHandler(l, svcs.Messages, svcs.Incidents)
-	if msgsErr := incMsgHandler.registerHandlers(); msgsErr != nil {
-		return nil, fmt.Errorf("adding message handlers: %w", msgsErr)
+	intg := &integration{
+		services:             svcs,
+		oauth2Config:         loadOAuthConfig(),
+		eventListeners:       make(map[string]rez.EventListener),
+		webhookHandlers:      make(map[string]http.Handler),
+		incidentEventHandler: incHandler,
 	}
 
 	if UseSocketMode() {
@@ -49,7 +51,7 @@ func SetupIntegration(ctx context.Context, svcs *rez.Services) (rez.IntegrationP
 		}
 		intg.eventListeners["slack_socketmode"] = el
 	} else {
-		wh, whErr := newWebhookEventHandler(l, svcs)
+		wh, whErr := newWebhookEventHandler(sl, svcs)
 		if whErr != nil {
 			return nil, fmt.Errorf("webhook event handler: %w", whErr)
 		}
