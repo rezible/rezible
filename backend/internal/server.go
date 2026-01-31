@@ -15,12 +15,14 @@ import (
 	"github.com/rezible/rezible/integrations"
 	"github.com/rezible/rezible/internal/apiv1"
 	"github.com/rezible/rezible/internal/db"
+	"github.com/rezible/rezible/internal/db/datasync"
 	"github.com/rezible/rezible/internal/eino"
 	"github.com/rezible/rezible/internal/http"
 	"github.com/rezible/rezible/internal/postgres"
 	"github.com/rezible/rezible/internal/postgres/river"
 	"github.com/rezible/rezible/internal/prosemirror"
 	"github.com/rezible/rezible/internal/watermill"
+	"github.com/rezible/rezible/jobs"
 )
 
 func RunAutoMigrations(ctx context.Context) error {
@@ -35,21 +37,52 @@ func OpenDatabase(ctx context.Context) (rez.Database, error) {
 	return dbc, nil
 }
 
+func RunIntegrationsDataSync(ctx context.Context, args jobs.SyncIntegrationsData) error {
+	ctx = access.SystemContext(ctx)
+	srv := newServer()
+	setupErr := srv.setup(ctx)
+	if setupErr != nil {
+		return fmt.Errorf("server: %s", setupErr)
+	}
+	return datasync.NewSyncerService(srv.dbClient).SyncIntegrationsData(ctx, args)
+}
+
+func makeJobService(dbc rez.Database) (rez.JobsService, error) {
+	pgDb, ok := dbc.(*postgres.DatabaseClient)
+	if !ok {
+		return nil, errors.New("non-postgres db client with river job service")
+	}
+	jobSvc, jobSvcErr := river.NewJobService(pgDb.Pool())
+	if jobSvcErr != nil {
+		return nil, fmt.Errorf("river.NewJobService: %w", jobSvcErr)
+	}
+	return jobSvc, nil
+}
+
+func makeMessageService() (*watermill.MessageService, error) {
+	msgs, msgsErr := watermill.NewMessageService()
+	if msgsErr != nil {
+		return nil, fmt.Errorf("watermill.NewMessageService: %w", msgsErr)
+	}
+	return msgs, nil
+}
+
 func RunServer(ctx context.Context) error {
 	ctx = access.AnonymousContext(ctx)
+	srv := newServer()
 
-	s := newServer()
-
-	if setupErr := s.setup(ctx); setupErr != nil {
-		return fmt.Errorf("setup: %s", setupErr)
+	setupErr := srv.setup(ctx)
+	if setupErr != nil {
+		return fmt.Errorf("server: %s", setupErr)
 	}
 
-	runErr := s.start(ctx)
+	runErr := srv.start(ctx)
 	if runErr != nil && !errors.Is(runErr, context.Canceled) {
 		runErr = nil
 	}
 
-	if stopErr := s.stop(); stopErr != nil {
+	stopErr := srv.stop()
+	if stopErr != nil {
 		log.Error().Err(stopErr).Msg("Failed to stop server")
 	}
 
@@ -58,6 +91,7 @@ func RunServer(ctx context.Context) error {
 
 type Server struct {
 	listeners map[string]rez.EventListener
+	dbClient  *ent.Client
 }
 
 func newServer() *Server {
@@ -104,80 +138,59 @@ func (s *Server) stop() error {
 }
 
 func (s *Server) setup(ctx context.Context) error {
-	conn, dbcErr := OpenDatabase(ctx)
-	if dbcErr != nil {
-		return dbcErr
+	conn, dbErr := OpenDatabase(ctx)
+	if dbErr != nil {
+		return dbErr
 	}
 	s.addEventListener("database", db.NewListener(conn))
 
-	client := conn.Client()
+	jobSvc, jobSvcErr := makeJobService(conn)
+	if jobSvcErr != nil {
+		return fmt.Errorf("job service: %w", jobSvcErr)
+	}
+	s.addEventListener("job_service", jobSvc)
 
-	svcs, svcsErr := s.makeServices(ctx, conn, client)
+	msgs, msgsErr := makeMessageService()
+	if msgsErr != nil {
+		return fmt.Errorf("message service: %w", msgsErr)
+	}
+	s.addEventListener("message_service", msgs)
+
+	s.dbClient = conn.Client()
+	svcs, svcsErr := s.setupServices(ctx, s.dbClient, jobSvc, msgs)
 	if svcsErr != nil {
 		return fmt.Errorf("services: %w", svcsErr)
 	}
-
-	// TODO: this shouldn't need the db client
-	apiv1Handler := apiv1.NewHandler(client, svcs)
-
-	srv := http.NewServer(svcs.Auth)
-	srv.MountOpenApiV1(apiv1Handler)
-	srv.MountMCP(eino.NewMCPHandler(svcs.Auth))
-
-	frontendFS, feFSErr := http.GetEmbeddedFrontendFiles()
-	if feFSErr != nil {
-		return fmt.Errorf("failed to get embedded frontend files: %w", feFSErr)
+	if integrationsErr := integrations.Setup(ctx, svcs); integrationsErr != nil {
+		return fmt.Errorf("integrations.Setup: %w", integrationsErr)
 	}
-	srv.MountStaticFrontend(frontendFS)
-	s.addEventListener("http_server", srv)
-
-	intgs, intgsErr := integrations.Setup(ctx, svcs)
-	if intgsErr != nil {
-		return fmt.Errorf("integrations setup: %w", intgsErr)
-	}
-	for name, el := range integrations.GetEventListeners(intgs) {
+	for name, el := range integrations.GetEventListeners() {
 		s.addEventListener(name, el)
 	}
-	for prefix, h := range integrations.GetWebhookHandlers(intgs) {
-		srv.AddWebhookHandler(prefix, h)
+
+	if !rez.Config.DataSyncMode() {
+		// TODO: this shouldn't need the db client
+		apiv1Handler := apiv1.NewHandler(svcs, s.dbClient)
+
+		srv := http.NewServer(svcs.Auth)
+		srv.MountOpenApiV1(apiv1Handler)
+		srv.MountMCP(eino.NewMCPHandler(svcs.Auth))
+		for prefix, h := range integrations.GetWebhookHandlers() {
+			srv.AddWebhookHandler(prefix, h)
+		}
+
+		frontendFS, feFSErr := http.GetEmbeddedFrontendFiles()
+		if feFSErr != nil {
+			return fmt.Errorf("failed to get embedded frontend files: %w", feFSErr)
+		}
+		srv.MountStaticFrontend(frontendFS)
+		s.addEventListener("http_server", srv)
 	}
 
 	return nil
 }
 
-func (s *Server) makeJobService(dbc rez.Database) (rez.JobsService, error) {
-	pgDb, ok := dbc.(*postgres.DatabaseClient)
-	if !ok {
-		return nil, errors.New("non-postgres db client with river job service")
-	}
-	jobSvc, jobSvcErr := river.NewJobService(pgDb.Pool())
-	if jobSvcErr != nil {
-		return nil, fmt.Errorf("river.NewJobService: %w", jobSvcErr)
-	}
-	s.addEventListener("job_service", jobSvc)
-	return jobSvc, nil
-}
-
-func (s *Server) makeMessageService() (rez.MessageService, error) {
-	msgs, msgsErr := watermill.NewMessageService()
-	if msgsErr != nil {
-		return nil, fmt.Errorf("watermill.NewMessageService: %w", msgsErr)
-	}
-	s.addEventListener("message_service", msgs)
-	return msgs, nil
-}
-
-func (s *Server) makeServices(ctx context.Context, dbConn rez.Database, dbc *ent.Client) (*rez.Services, error) {
-	jobSvc, jobSvcErr := s.makeJobService(dbConn)
-	if jobSvcErr != nil {
-		return nil, fmt.Errorf("job service: %w", jobSvcErr)
-	}
-
-	msgs, msgsErr := s.makeMessageService()
-	if msgsErr != nil {
-		return nil, fmt.Errorf("watermill.NewMessageService: %w", msgsErr)
-	}
-
+func (s *Server) setupServices(ctx context.Context, dbc *ent.Client, jobSvc rez.JobsService, msgs rez.MessageService) (*rez.Services, error) {
 	intgs, intgsErr := db.NewIntegrationsService(dbc, jobSvc)
 	if intgsErr != nil {
 		return nil, fmt.Errorf("db.NewIntegrationsService: %w", intgsErr)
@@ -213,11 +226,6 @@ func (s *Server) makeServices(ctx context.Context, dbConn rez.Database, dbc *ent
 		return nil, fmt.Errorf("prosemirror.NewNodeService: %w", nodesErr)
 	}
 
-	ai, aiErr := eino.NewAiAgentService(ctx)
-	if aiErr != nil {
-		return nil, fmt.Errorf("eino.NewAiAgentService: %w", aiErr)
-	}
-
 	incidents, incidentsErr := db.NewIncidentService(dbc, jobSvc, msgs, users)
 	if incidentsErr != nil {
 		return nil, fmt.Errorf("postgres.NewIncidentService: %w", incidentsErr)
@@ -241,6 +249,11 @@ func (s *Server) makeServices(ctx context.Context, dbConn rez.Database, dbc *ent
 	oncallMetrics, oncallMetricsErr := db.NewOncallMetricsService(dbc, jobSvc, shifts)
 	if oncallMetricsErr != nil {
 		return nil, fmt.Errorf("postgres.NewOncallMetricsService: %w", oncallMetricsErr)
+	}
+
+	ai, aiErr := eino.NewAiAgentService(ctx)
+	if aiErr != nil {
+		return nil, fmt.Errorf("eino.NewAiAgentService: %w", aiErr)
 	}
 
 	debriefs, debriefsErr := db.NewDebriefService(dbc, jobSvc, ai)

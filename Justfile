@@ -63,6 +63,9 @@ _default:
 @dev-documents-server:
     cd documents-server && bun run dev
 
+@run-datasync: start-db
+    DATASYNC_MODE="true" just run-backend integrations sync
+
 # [group('Database')]
 @create-db: stop-db
     rm -rf ./.devbox/virtenv/postgresql/data

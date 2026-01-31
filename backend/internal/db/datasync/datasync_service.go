@@ -75,14 +75,14 @@ func (s *Syncer) syncData(ctx context.Context, intgs ent.Integrations) error {
 		names[i] = intg.Name
 	}
 
-	usersProviders, usersErr := integrations.GetUserDataProviders(ctx, intgs)
+	usersProvs, usersErr := integrations.GetUserDataProviders(ctx, intgs)
 	if usersErr != nil {
 		log.Error().Err(usersErr).Msg("failed to load user data providers")
-	} else if len(usersProviders) > 0 {
-		for _, prov := range usersProviders {
-			if syncErr := syncUsers(ctx, s.db, prov); syncErr != nil {
-				return fmt.Errorf("user provider (%s): %w", reflect.TypeOf(prov).String(), syncErr)
-			}
+	}
+	log.Debug().Int("providers", len(usersProvs)).Msg("sync user data")
+	for _, prov := range usersProvs {
+		if syncErr := syncUsers(ctx, s.db, prov); syncErr != nil {
+			return fmt.Errorf("user provider (%s): %w", reflect.TypeOf(prov).String(), syncErr)
 		}
 	}
 

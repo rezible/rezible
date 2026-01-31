@@ -39,14 +39,14 @@ func NewAuthSessionService(ctx context.Context, orgs rez.OrganizationService, us
 		return nil, errors.New("auth session secret key must be set")
 	}
 
-	providers, provsErr := getAuthSessionProviders(ctx, secretKey)
-	if provsErr != nil {
-		return nil, fmt.Errorf("loading session providers: %w", provsErr)
-	}
-
 	authRoute, routeErr := url.JoinPath(rez.Config.ApiRouteBase(), rez.Config.AuthRouteBase())
 	if routeErr != nil {
 		return nil, fmt.Errorf("loading auth route: %w", routeErr)
+	}
+
+	providers, provsErr := getAuthSessionProviders(ctx, secretKey)
+	if provsErr != nil {
+		return nil, fmt.Errorf("loading session providers: %w", provsErr)
 	}
 
 	return &AuthService{

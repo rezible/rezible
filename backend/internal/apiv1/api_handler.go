@@ -38,7 +38,7 @@ type Handler struct {
 
 var _ oapi.Handler = (*Handler)(nil)
 
-func NewHandler(db *ent.Client, svcs *rez.Services) *Handler {
+func NewHandler(svcs *rez.Services, db *ent.Client) *Handler {
 	return &Handler{
 		alertsHandler:             newAlertsHandler(svcs.Alerts),
 		authSessionsHandler:       newAuthSessionsHandler(svcs.Auth, svcs.Organizations, svcs.Users),

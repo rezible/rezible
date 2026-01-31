@@ -68,6 +68,10 @@ func (c *Config) DebugMode() bool {
 	return c.GetBool("debug_mode")
 }
 
+func (c *Config) DataSyncMode() bool {
+	return c.GetBool("datasync_mode")
+}
+
 func (c *Config) DatabaseUrl() string {
 	return c.GetString("db_url")
 }

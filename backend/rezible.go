@@ -37,6 +37,7 @@ type ConfigLoader interface {
 
 	SingleTenantMode() bool
 	DebugMode() bool
+	DataSyncMode() bool
 
 	DatabaseUrl() string
 	DocumentsServerAddress() string
@@ -88,7 +89,7 @@ type (
 
 	IntegrationPackage interface {
 		Name() string
-		Enabled() bool
+		IsAvailable() (bool, error)
 		SupportedDataKinds() []string
 		OAuthConfigRequired() bool
 

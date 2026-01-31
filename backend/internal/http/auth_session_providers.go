@@ -20,6 +20,11 @@ func isAuthProviderEnabled(name string) bool {
 func getAuthSessionProviders(ctx context.Context, secretKey string) ([]rez.AuthSessionProvider, error) {
 	var provs []rez.AuthSessionProvider
 
+	// TODO: these should be loaded from integrations anyway
+	if rez.Config.DataSyncMode() {
+		return provs, nil
+	}
+
 	defaultRetryPolicy := retrypolicy.NewBuilder[rez.AuthSessionProvider]().
 		//HandleErrors(ErrConnecting).
 		WithDelay(time.Second).

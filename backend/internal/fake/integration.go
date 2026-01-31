@@ -23,8 +23,8 @@ func (d *integration) Name() string {
 	return integrationName
 }
 
-func (d *integration) Enabled() bool {
-	return rez.Config.DebugMode()
+func (d *integration) IsAvailable() (bool, error) {
+	return rez.Config.DebugMode(), nil
 }
 
 func (d *integration) SupportedDataKinds() []string {

@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"strings"
 
 	"github.com/rezible/rezible/access"
 	"github.com/rezible/rezible/ent"
@@ -21,6 +22,7 @@ var supportedDataKinds = []string{"chat", "users"}
 
 type integration struct {
 	services        *rez.Services
+	oauth2Config    *oauth2.Config
 	eventListeners  map[string]rez.EventListener
 	webhookHandlers map[string]http.Handler
 }
@@ -28,6 +30,7 @@ type integration struct {
 func SetupIntegration(ctx context.Context, svcs *rez.Services) (rez.IntegrationPackage, error) {
 	intg := &integration{
 		services:        svcs,
+		oauth2Config:    loadOAuthConfig(),
 		eventListeners:  make(map[string]rez.EventListener),
 		webhookHandlers: make(map[string]http.Handler),
 	}
@@ -56,36 +59,80 @@ func SetupIntegration(ctx context.Context, svcs *rez.Services) (rez.IntegrationP
 	return intg, nil
 }
 
-func (d *integration) Name() string {
+func (i *integration) Name() string {
 	return integrationName
 }
 
-func (d *integration) Enabled() bool {
+func (i *integration) IsAvailable() (bool, error) {
 	// TODO: check config
-	return true
+	return true, nil
 }
 
-func (d *integration) EventListeners() map[string]rez.EventListener {
-	return d.eventListeners
+func (i *integration) EventListeners() map[string]rez.EventListener {
+	return i.eventListeners
 }
 
-func (d *integration) WebhookHandlers() map[string]http.Handler {
-	return d.webhookHandlers
+func (i *integration) WebhookHandlers() map[string]http.Handler {
+	return i.webhookHandlers
 }
 
-func (d *integration) SupportedDataKinds() []string {
+func (i *integration) SupportedDataKinds() []string {
 	return supportedDataKinds
 }
 
-func (d *integration) OAuthConfigRequired() bool {
+func (i *integration) OAuthConfigRequired() bool {
 	return true
 }
 
-func (d *integration) OAuth2Config() *oauth2.Config {
-	return LoadOAuthConfig()
+func (i *integration) OAuth2Config() *oauth2.Config {
+	return i.oauth2Config
 }
 
-func (d *integration) ExtractIntegrationConfigFromToken(t *oauth2.Token) (json.RawMessage, error) {
+func loadOAuthConfig() *oauth2.Config {
+	clientId := rez.Config.GetString("slack.oauth_client_id")
+	clientSecret := rez.Config.GetString("slack.oauth_client_secret")
+	scopes := []string{
+		"app_mentions:read",
+		"assistant:write",
+		"channels:history",
+		"channels:join",
+		"channels:read",
+		"chat:write",
+		"chat:write.customize",
+		"chat:write.public",
+		"commands",
+		"groups:history",
+		"groups:read",
+		"im:history",
+		"im:read",
+		"im:write",
+		"im:write.topic",
+		"incoming-webhook",
+		"metadata.message:read",
+		"mpim:history",
+		"pins:read",
+		"reactions:read",
+		"usergroups:read",
+		"users.profile:read",
+		"users:read",
+		"users:read.email",
+		"channels:write.topic",
+		"channels:manage",
+		"channels:write.invites",
+	}
+
+	return &oauth2.Config{
+		ClientID:     clientId,
+		ClientSecret: clientSecret,
+		Scopes:       []string{strings.Join(scopes, ",")},
+		Endpoint: oauth2.Endpoint{
+			AuthURL:  "https://slack.com/oauth/v2/authorize",
+			TokenURL: "https://slack.com/api/oauth.v2.access",
+		},
+	}
+}
+
+func (i *integration) ExtractIntegrationConfigFromToken(t *oauth2.Token) (json.RawMessage, error) {
 	getTeamInfoFromTokenExtra := func(extraKey string) (*teamInfo, error) {
 		e, eOk := t.Extra(extraKey).(map[string]interface{})
 		if !eOk {
@@ -148,8 +195,8 @@ func lookupIntegration(ctx context.Context, is rez.IntegrationsService, teamId s
 	return is.LookupByConfigValues(access.SystemContext(ctx), integrationName, vals)
 }
 
-func (d *integration) GetConfiguredIntegration(i *ent.Integration) rez.ConfiguredIntegration {
-	return &ConfiguredIntegration{intg: i}
+func (i *integration) GetConfiguredIntegration(intg *ent.Integration) rez.ConfiguredIntegration {
+	return &ConfiguredIntegration{intg: intg}
 }
 
 type ConfiguredIntegration struct {

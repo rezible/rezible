@@ -3,12 +3,15 @@ package slack
 import (
 	"context"
 	"fmt"
+	"strconv"
 	"strings"
+	"time"
 
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/access"
 	"github.com/rezible/rezible/ent"
-	"golang.org/x/oauth2"
+	"github.com/rs/zerolog/log"
+	"github.com/slack-go/slack"
 )
 
 type loader struct {
@@ -47,46 +50,53 @@ func (l *loader) loadFromContext(ctx context.Context) (*ChatService, error) {
 	return l.loadWithIntegration(intg)
 }
 
-func LoadOAuthConfig() *oauth2.Config {
-	clientId := rez.Config.GetString("slack.oauth_client_id")
-	clientSecret := rez.Config.GetString("slack.oauth_client_secret")
-	scopes := []string{
-		"app_mentions:read",
-		"assistant:write",
-		"channels:history",
-		"channels:join",
-		"channels:read",
-		"chat:write",
-		"chat:write.customize",
-		"chat:write.public",
-		"commands",
-		"groups:history",
-		"groups:read",
-		"im:history",
-		"im:read",
-		"im:write",
-		"im:write.topic",
-		"incoming-webhook",
-		"metadata.message:read",
-		"mpim:history",
-		"pins:read",
-		"reactions:read",
-		"usergroups:read",
-		"users.profile:read",
-		"users:read",
-		"users:read.email",
-		"channels:write.topic",
-		"channels:manage",
-		"channels:write.invites",
+func getAllUsersInConversation(ctx context.Context, client *slack.Client, convId string) ([]string, error) {
+	params := &slack.GetUsersInConversationParameters{
+		ChannelID: convId,
+		Limit:     100,
 	}
+	var allIds []string
+	for {
+		ids, cursor, getErr := client.GetUsersInConversationContext(ctx, params)
+		if getErr != nil {
+			return nil, getErr
+		}
+		allIds = append(allIds, ids...)
+		params.Cursor = cursor
+		if cursor == "" || len(ids) == 0 {
+			break
+		}
+	}
+	return allIds, nil
+}
 
-	return &oauth2.Config{
-		ClientID:     clientId,
-		ClientSecret: clientSecret,
-		Scopes:       []string{strings.Join(scopes, ",")},
-		Endpoint: oauth2.Endpoint{
-			AuthURL:  "https://slack.com/oauth/v2/authorize",
-			TokenURL: "https://slack.com/api/oauth.v2.access",
-		},
+func logSlackViewErrorResponse(err error, resp *slack.ViewResponse) {
+	line := log.Error().Err(err)
+	if resp != nil {
+		line.Strs("response_messages", resp.ResponseMetadata.Messages)
 	}
+	line.Msg("slack view response error")
+}
+
+func convertSlackTs(ts string) time.Time {
+	parts := strings.Split(ts, ".")
+	if len(parts) < 2 {
+		return time.Time{}
+	}
+	secs, parseErr := strconv.ParseInt(parts[0], 10, 32)
+	if parseErr != nil {
+		return time.Time{}
+	}
+	return time.Unix(secs, 0)
+}
+
+type messageId string
+
+func (m messageId) getTimestamp() time.Time {
+	_, ts, _ := strings.Cut(m.String(), "_")
+	return convertSlackTs(ts)
+}
+
+func (m messageId) String() string {
+	return string(m)
 }

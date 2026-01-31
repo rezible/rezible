@@ -9,11 +9,13 @@ import (
 	"reflect"
 	"runtime"
 
+	mapset "github.com/deckarep/golang-set/v2"
+	"github.com/rs/zerolog/log"
 	"golang.org/x/oauth2"
 
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
-	fakeprovider "github.com/rezible/rezible/internal/fake"
+	"github.com/rezible/rezible/internal/fake"
 	"github.com/rezible/rezible/internal/google"
 	"github.com/rezible/rezible/internal/grafana"
 	"github.com/rezible/rezible/internal/jira"
@@ -21,55 +23,99 @@ import (
 )
 
 var (
-	packageMap        = map[string]rez.IntegrationPackage{}
-	packageSetupFuncs = []rez.SetupPackageFunc{
+	packageNameMap     = map[string]rez.IntegrationPackage{}
+	availablePackages  []rez.IntegrationPackage
+	supportedDataKinds []string
+	packageSetupFuncs  = []rez.SetupPackageFunc{
 		fakeprovider.SetupIntegration,
 		slack.SetupIntegration,
 		google.SetupIntegration,
 	}
 )
 
-func Setup(ctx context.Context, svcs *rez.Services) ([]rez.IntegrationPackage, error) {
-	var available []rez.IntegrationPackage
-	packageMap = make(map[string]rez.IntegrationPackage)
+func Setup(ctx context.Context, svcs *rez.Services) error {
+	availablePackages = make([]rez.IntegrationPackage, 0, len(availablePackages))
+	packageNameMap = make(map[string]rez.IntegrationPackage)
+	enabledSupportedDataKinds := mapset.NewSet[string]()
 	for _, setupFn := range packageSetupFuncs {
 		pkg, pkgErr := setupFn(ctx, svcs)
 		if pkgErr != nil {
 			funcName := runtime.FuncForPC(reflect.ValueOf(setupFn).Pointer()).Name()
-			return nil, fmt.Errorf("%s: %w", funcName, pkgErr)
+			return fmt.Errorf("%s: %w", funcName, pkgErr)
 		}
-		packageMap[pkg.Name()] = pkg
-		if pkg.Enabled() {
-			available = append(available, pkg)
+		enabled, configErr := pkg.IsAvailable()
+		if !enabled {
+			continue
 		}
+		if configErr != nil {
+			log.Error().
+				Err(configErr).
+				Str("integration", pkg.Name()).
+				Msg("integration setup error")
+			continue
+		}
+		availablePackages = append(availablePackages, pkg)
+		packageNameMap[pkg.Name()] = pkg
+		enabledSupportedDataKinds.Append(pkg.SupportedDataKinds()...)
 	}
-	return available, nil
-}
 
-func GetAvailable() []rez.IntegrationPackage {
-	enabled := make([]rez.IntegrationPackage, 0)
-	for _, pkg := range packageMap {
-		if pkg.Enabled() {
-			enabled = append(enabled, pkg)
-		}
+	if enabledSupportedDataKinds.Cardinality() == 0 {
+		return fmt.Errorf("no supported data kinds found")
 	}
-	return enabled
+	supportedDataKinds = enabledSupportedDataKinds.ToSlice()
+	// TODO: check if required data kinds are supported
+
+	return nil
 }
 
 func GetPackage(name string) (rez.IntegrationPackage, error) {
-	p, valid := packageMap[name]
+	p, valid := packageNameMap[name]
 	if !valid {
-		return nil, fmt.Errorf("unknown integration package: %s", name)
+		return nil, fmt.Errorf("unknown integration: %s", name)
 	}
 	return p, nil
 }
 
-type (
-	IntegrationWithOAuth2SetupFlow interface {
-		OAuth2Config() *oauth2.Config
-		ExtractIntegrationConfigFromToken(*oauth2.Token) (json.RawMessage, error)
+func GetAvailable() []rez.IntegrationPackage {
+	return availablePackages
+}
+
+type IntegrationWithEventListeners interface {
+	EventListeners() map[string]rez.EventListener
+}
+
+func GetEventListeners() map[string]rez.EventListener {
+	els := make(map[string]rez.EventListener)
+	for _, p := range availablePackages {
+		if elIntegration, ok := p.(IntegrationWithEventListeners); ok {
+			for name, l := range elIntegration.EventListeners() {
+				els[name] = l
+			}
+		}
 	}
-)
+	return els
+}
+
+type IntegrationWithWebhookHandlers interface {
+	WebhookHandlers() map[string]http.Handler
+}
+
+func GetWebhookHandlers() map[string]http.Handler {
+	whs := make(map[string]http.Handler)
+	for _, p := range availablePackages {
+		if elIntegration, ok := p.(IntegrationWithWebhookHandlers); ok {
+			for prefix, h := range elIntegration.WebhookHandlers() {
+				whs[path.Join(p.Name(), prefix)] = h
+			}
+		}
+	}
+	return whs
+}
+
+type IntegrationWithOAuth2SetupFlow interface {
+	OAuth2Config() *oauth2.Config
+	ExtractIntegrationConfigFromToken(*oauth2.Token) (json.RawMessage, error)
+}
 
 func GetOAuthIntegration(name string) (IntegrationWithOAuth2SetupFlow, error) {
 	ip, ipErr := GetPackage(name)
@@ -86,45 +132,19 @@ func GetOAuthIntegration(name string) (IntegrationWithOAuth2SetupFlow, error) {
 	return oauth2Intg, nil
 }
 
-type IntegrationWithEventListeners interface {
-	EventListeners() map[string]rez.EventListener
-}
-
-func GetEventListeners(pkgs []rez.IntegrationPackage) map[string]rez.EventListener {
-	els := make(map[string]rez.EventListener)
-	for _, p := range pkgs {
-		if elIntegration, ok := p.(IntegrationWithEventListeners); ok {
-			for name, l := range elIntegration.EventListeners() {
-				els[name] = l
-			}
-		}
-	}
-	return els
-}
-
-type IntegrationWithWebhookHandlers interface {
-	WebhookHandlers() map[string]http.Handler
-}
-
-func GetWebhookHandlers(pkgs []rez.IntegrationPackage) map[string]http.Handler {
-	whs := make(map[string]http.Handler)
-	for _, p := range pkgs {
-		if elIntegration, ok := p.(IntegrationWithWebhookHandlers); ok {
-			for prefix, h := range elIntegration.WebhookHandlers() {
-				whs[path.Join(p.Name(), prefix)] = h
-			}
-		}
-	}
-	return whs
-}
-
-func GetDataProviders[T any](intgs ent.Integrations, iFn func(rez.IntegrationPackage, *ent.Integration) (bool, T, error)) ([]T, error) {
-	var provs []T
+func getDataProviders[DP any, I any](intgs ent.Integrations, fn func(I, *ent.Integration) (DP, error)) ([]DP, error) {
+	provs := make([]DP, 0, len(availablePackages))
 	for _, intg := range intgs {
-		if p, valid := packageMap[intg.Name]; valid {
-			if supported, prov, pErr := iFn(p, intg); supported {
-				if pErr != nil {
-					return nil, fmt.Errorf("loading data provider: %w", pErr)
+		if p, valid := packageNameMap[intg.Name]; valid {
+			dpProv, hasSupport := p.(I)
+			log.Debug().
+				Str("integration", p.Name()).
+				Bool("supports", hasSupport).
+				Msg("getDataProviders")
+			if hasSupport {
+				prov, provErr := fn(dpProv, intg)
+				if provErr != nil {
+					return nil, fmt.Errorf("loading data provider: %w", provErr)
 				}
 				provs = append(provs, prov)
 			}
@@ -133,40 +153,24 @@ func GetDataProviders[T any](intgs ent.Integrations, iFn func(rez.IntegrationPac
 	return provs, nil
 }
 
-func GetUserDataProviders(ctx context.Context, intgs ent.Integrations) ([]rez.UserDataProvider, error) {
-	type integrationWithUserDataProvider interface {
-		MakeUserDataProvider(context.Context, *ent.Integration) (rez.UserDataProvider, error)
-	}
+type IntegrationWithUserDataProvider interface {
+	MakeUserDataProvider(context.Context, *ent.Integration) (rez.UserDataProvider, error)
+}
 
-	provFn := func(p rez.IntegrationPackage, i *ent.Integration) (bool, rez.UserDataProvider, error) {
-		if dpi, ok := p.(integrationWithUserDataProvider); ok {
-			prov, pErr := dpi.MakeUserDataProvider(ctx, i)
-			return true, prov, pErr
-		}
-		return false, nil, nil
-	}
-	return GetDataProviders[rez.UserDataProvider](intgs, provFn)
+func GetUserDataProviders(ctx context.Context, intgs ent.Integrations) ([]rez.UserDataProvider, error) {
+	return getDataProviders(intgs, func(dpi IntegrationWithUserDataProvider, i *ent.Integration) (rez.UserDataProvider, error) {
+		return dpi.MakeUserDataProvider(ctx, i)
+	})
+}
+
+type IntegrationWithTeamDataProvider interface {
+	MakeTeamDataProvider(context.Context, *ent.Integration) (rez.TeamDataProvider, error)
 }
 
 func GetTeamDataProviders(ctx context.Context, intgs ent.Integrations) ([]rez.TeamDataProvider, error) {
-	var provs []rez.TeamDataProvider
-	for _, intg := range intgs {
-		var prov rez.TeamDataProvider
-		var pErr error
-		switch intg.Name {
-		//case "slack":
-		//	prov, pErr = loadProvider(slack.NewTeamDataProvider, intg)
-		case "fake":
-			prov, pErr = fakeprovider.NewTeamsDataProvider(intg)
-		default:
-			continue
-		}
-		if pErr != nil {
-			return nil, fmt.Errorf("loading provider: %w", pErr)
-		}
-		provs = append(provs, prov)
-	}
-	return provs, nil
+	return getDataProviders(intgs, func(dpi IntegrationWithTeamDataProvider, i *ent.Integration) (rez.TeamDataProvider, error) {
+		return dpi.MakeTeamDataProvider(ctx, i)
+	})
 }
 
 func GetOncallDataProviders(ctx context.Context, intgs ent.Integrations) ([]rez.OncallDataProvider, error) {

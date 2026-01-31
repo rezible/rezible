@@ -13,7 +13,6 @@ import (
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/access"
 	"github.com/rezible/rezible/internal"
-	"github.com/rezible/rezible/internal/db/datasync"
 	"github.com/rezible/rezible/internal/viper"
 	"github.com/rezible/rezible/jobs"
 	oapiv1 "github.com/rezible/rezible/openapi/v1"
@@ -71,15 +70,12 @@ var integrationsSyncCmd = &cobra.Command{
 	Short: "Run integration data sync",
 	Run: func(cmd *cobra.Command, args []string) {
 		ctx := access.SystemContext(cmd.Context())
-		withDatabase(ctx, func(dbc rez.Database) {
-			svc := datasync.NewSyncerService(dbc.Client())
-			syncErr := svc.SyncIntegrationsData(ctx, jobs.SyncIntegrationsData{
-				IgnoreHistory: true,
-			})
-			if syncErr != nil {
-				log.Fatal().Err(syncErr).Msg("failed to sync provider data")
-			}
-		})
+		syncArgs := jobs.SyncIntegrationsData{
+			IgnoreHistory: true,
+		}
+		if syncErr := internal.RunIntegrationsDataSync(ctx, syncArgs); syncErr != nil {
+			log.Fatal().Err(syncErr).Msg("failed to sync provider data")
+		}
 	},
 }
 
@@ -119,6 +115,7 @@ var dbMigrateApplyCmd = &cobra.Command{
 func init() {
 	rez.Config = viper.InitConfig()
 
+	rootCmd.Run = serveCmd.Run
 	rootCmd.AddCommand(serveCmd, printSpecCmd, integrationsCmd, dbCmd)
 
 	integrationsCmd.AddCommand(integrationsSyncCmd)

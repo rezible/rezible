@@ -11,6 +11,7 @@ import (
 	"github.com/ThreeDotsLabs/watermill/message"
 	"github.com/ThreeDotsLabs/watermill/message/router/middleware"
 	"github.com/ThreeDotsLabs/watermill/pubsub/gochannel"
+	rez "github.com/rezible/rezible"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 	slogzerolog "github.com/samber/slog-zerolog/v2"
@@ -33,6 +34,9 @@ func NewMessageService() (*MessageService, error) {
 	slogOpts := slogzerolog.Option{
 		Level:  slog.LevelInfo,
 		Logger: zerolog.DefaultContextLogger,
+	}
+	if rez.Config.DataSyncMode() {
+		slogOpts.Level = slog.LevelWarn
 	}
 
 	ms.logger = watermill.NewSlogLogger(slog.New(slogOpts.NewZerologHandler()))

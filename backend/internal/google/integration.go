@@ -28,9 +28,9 @@ func (i *integration) Name() string {
 	return integrationName
 }
 
-func (i *integration) Enabled() bool {
+func (i *integration) IsAvailable() (bool, error) {
 	// TODO: check config
-	return true
+	return true, nil
 }
 
 func (i *integration) EventListeners() map[string]rez.EventListener {
