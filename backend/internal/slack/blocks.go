@@ -9,6 +9,51 @@ import (
 	rez "github.com/rezible/rezible"
 )
 
+func plainTextBlock(text string) *slack.TextBlockObject {
+	if text == "" {
+		return nil
+	}
+	return slack.NewTextBlockObject("plain_text", text, false, false)
+}
+
+func getViewStateBlockAction(state *slack.ViewState, ids blockActionIds) *slack.BlockAction {
+	if block, blockOk := state.Values[ids.Block]; blockOk {
+		if action, inputOk := block[ids.Input]; inputOk {
+			return &action
+		}
+	}
+	return nil
+}
+
+type blockActionIds struct {
+	Block string
+	Input string
+}
+
+func (ids blockActionIds) GetStateValue(state *slack.ViewState) string {
+	action := getViewStateBlockAction(state, ids)
+	if action == nil {
+		return ""
+	}
+	return action.Value
+}
+
+func (ids blockActionIds) GetStateSelectedValue(state *slack.ViewState) string {
+	action := getViewStateBlockAction(state, ids)
+	if action == nil {
+		return ""
+	}
+	return action.SelectedOption.Value
+}
+
+func convertContentToBlocks(prefix string, content *rez.ContentNode) []slack.Block {
+	c := &blockConverter{}
+	if prefix != "" {
+		c.prefix = prefix + "_"
+	}
+	return c.convertContent(content)
+}
+
 type (
 	blockConverter struct {
 		prefix string
@@ -20,27 +65,12 @@ type (
 	}
 
 	nodeListMarker struct {
-		depth    int
 		listType slack.RichTextListElementType
+		depth    int
 		start    int
 		end      int
 	}
 )
-
-func plainTextBlock(text string) *slack.TextBlockObject {
-	if text == "" {
-		return nil
-	}
-	return slack.NewTextBlockObject("plain_text", text, false, false)
-}
-
-func convertContentToBlocks(content *rez.ContentNode, prefix string) []slack.Block {
-	c := &blockConverter{}
-	if prefix != "" {
-		c.prefix = prefix + "_"
-	}
-	return c.convertContent(content)
-}
 
 func (c *blockConverter) convertContent(doc *rez.ContentNode) []slack.Block {
 	if doc == nil {

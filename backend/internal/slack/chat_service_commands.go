@@ -11,6 +11,21 @@ import (
 	"github.com/slack-go/slack"
 )
 
+func (s *ChatService) handleSlashCommand(baseCtx context.Context, ev *slack.SlashCommand) (bool, *slack.Msg, error) {
+	_, ctx, usrErr := s.lookupUser(baseCtx, ev.UserID)
+	if usrErr != nil {
+		return false, nil, fmt.Errorf("failed to lookup user: %w", usrErr)
+	}
+
+	switch ev.Command {
+	case "/incident":
+		payload, handlerErr := s.handleIncidentCommand(ctx, ev)
+		return true, payload, handlerErr
+	default:
+		return false, nil, nil
+	}
+}
+
 func commandErrorResponse(message string) *slack.Msg {
 	return &slack.Msg{
 		Text: message,
@@ -25,22 +40,6 @@ func commandErrorResponse(message string) *slack.Msg {
 				},
 			},
 		},
-	}
-}
-
-func (s *ChatService) handleSlashCommand(ctx context.Context, ev *slack.SlashCommand) (bool, *slack.Msg, error) {
-	var usrErr error
-	_, ctx, usrErr = s.lookupUser(ctx, ev.UserID)
-	if usrErr != nil {
-		return false, nil, fmt.Errorf("failed to lookup user: %w", usrErr)
-	}
-
-	switch ev.Command {
-	case "/incident":
-		payload, handlerErr := s.handleIncidentCommand(ctx, ev)
-		return true, payload, handlerErr
-	default:
-		return false, nil, nil
 	}
 }
 

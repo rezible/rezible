@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/rezible/rezible/access"
 	"github.com/rezible/rezible/ent"
 	"github.com/rs/zerolog/log"
 	"github.com/slack-go/slack"
@@ -84,7 +85,7 @@ func (d *integration) OAuth2Config() *oauth2.Config {
 	return LoadOAuthConfig()
 }
 
-func (d *integration) GetIntegrationConfigFromToken(t *oauth2.Token) (any, error) {
+func (d *integration) ExtractIntegrationConfigFromToken(t *oauth2.Token) (json.RawMessage, error) {
 	getTeamInfoFromTokenExtra := func(extraKey string) (*teamInfo, error) {
 		e, eOk := t.Extra(extraKey).(map[string]interface{})
 		if !eOk {
@@ -133,7 +134,18 @@ func (d *integration) GetIntegrationConfigFromToken(t *oauth2.Token) (any, error
 		Enterprise:  enterprise,
 	}
 
-	return &cfg, nil
+	return json.Marshal(cfg)
+}
+
+func lookupIntegration(ctx context.Context, is rez.IntegrationsService, teamId string, enterpriseId string) (*ent.Integration, error) {
+	vals := make(map[string]any)
+	if teamId != "" {
+		vals["Team.ID"] = teamId
+	}
+	if enterpriseId != "" {
+		vals["Enterprise.ID"] = enterpriseId
+	}
+	return is.LookupByConfigValues(access.SystemContext(ctx), integrationName, vals)
 }
 
 func (d *integration) GetConfiguredIntegration(i *ent.Integration) rez.ConfiguredIntegration {

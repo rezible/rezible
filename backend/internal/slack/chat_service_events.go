@@ -5,10 +5,15 @@ import (
 	"fmt"
 
 	"github.com/rs/zerolog/log"
+	"github.com/slack-go/slack"
 	"github.com/slack-go/slack/slackevents"
 )
 
-func (s *ChatService) handleCallbackEvent(ctx context.Context, ev *slackevents.EventsAPIEvent) (bool, error) {
+func (s *ChatService) handleCallbackEvent(baseCtx context.Context, ev *slackevents.EventsAPIEvent) (bool, error) {
+	ctx, ctxErr := s.makeTenantContext(baseCtx, ev.TeamID, ev.EnterpriseID)
+	if ctxErr != nil {
+		return false, ctxErr
+	}
 	switch data := ev.InnerEvent.Data.(type) {
 	case *slackevents.AppHomeOpenedEvent:
 		return true, s.onUserHomeOpenedEvent(ctx, data)
@@ -70,7 +75,12 @@ func (s *ChatService) onUserHomeOpenedEvent(ctx context.Context, data *slackeven
 		return fmt.Errorf("failed to create user home view: %w", viewErr)
 	}
 
-	resp, publishErr := s.client.PublishViewContext(ctx, data.User, *homeView, "")
+	req := slack.PublishViewContextRequest{
+		UserID: data.User,
+		View:   *homeView,
+		Hash:   nil,
+	}
+	resp, publishErr := s.client.PublishViewContext(ctx, req)
 	if publishErr != nil {
 		logSlackViewErrorResponse(publishErr, resp)
 		return fmt.Errorf("failed to publish user home view: %w", publishErr)

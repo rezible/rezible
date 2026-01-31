@@ -130,7 +130,7 @@ func (b *handoverMessageBuilder) addSection(id string, header, kind string, cont
 		}
 		b.addBlocks(annoBlocks...)
 	} else if kind == "regular" {
-		b.addBlocks(convertContentToBlocks(content, id)...)
+		b.addBlocks(convertContentToBlocks(id, content)...)
 	} else {
 		return fmt.Errorf("unknown section kind '%s'", kind)
 	}

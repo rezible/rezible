@@ -28,23 +28,15 @@ func (l *loader) loadWithIntegration(intg *ent.Integration) (*ChatService, error
 }
 
 func (l *loader) loadByTenantLookup(ctx context.Context, teamId string, enterpriseId string) (*ChatService, context.Context, error) {
-	vals := make(map[string]any)
-	if teamId != "" {
-		vals["Team.ID"] = teamId
-	}
-	if enterpriseId != "" {
-		vals["Enterprise.ID"] = enterpriseId
-	}
-	intg, lookupErr := l.svcs.Integrations.LookupByConfigValues(access.SystemContext(ctx), integrationName, vals)
+	intg, lookupErr := lookupIntegration(ctx, l.svcs.Integrations, teamId, enterpriseId)
 	if lookupErr != nil {
 		return nil, nil, lookupErr
 	}
-	tenantCtx := access.TenantContext(ctx, intg.TenantID)
 	chat, chatErr := l.loadWithIntegration(intg)
 	if chatErr != nil {
 		return nil, nil, fmt.Errorf("load chat service failed: %w", chatErr)
 	}
-	return chat, tenantCtx, nil
+	return chat, access.TenantContext(ctx, intg.TenantID), nil
 }
 
 func (l *loader) loadFromContext(ctx context.Context) (*ChatService, error) {

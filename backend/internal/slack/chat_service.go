@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	rez "github.com/rezible/rezible"
+	"github.com/rezible/rezible/access"
 	"github.com/rezible/rezible/ent"
 	"github.com/rs/zerolog/log"
 	"github.com/slack-go/slack"
@@ -13,45 +14,34 @@ import (
 type ChatService struct {
 	client *slack.Client
 
-	jobs       rez.JobsService
-	messages   rez.MessageService
-	users      rez.UserService
-	incidents  rez.IncidentService
-	annos      rez.EventAnnotationsService
-	components rez.SystemComponentsService
+	jobs         rez.JobsService
+	messages     rez.MessageService
+	integrations rez.IntegrationsService
+	users        rez.UserService
+	incidents    rez.IncidentService
+	annos        rez.EventAnnotationsService
+	components   rez.SystemComponentsService
 }
 
 func newChatService(client *slack.Client, svcs *rez.Services) *ChatService {
 	return &ChatService{
-		client:     client,
-		jobs:       svcs.Jobs,
-		messages:   svcs.Messages,
-		users:      svcs.Users,
-		incidents:  svcs.Incidents,
-		annos:      svcs.EventAnnotations,
-		components: svcs.Components,
+		client:       client,
+		jobs:         svcs.Jobs,
+		messages:     svcs.Messages,
+		users:        svcs.Users,
+		integrations: svcs.Integrations,
+		incidents:    svcs.Incidents,
+		annos:        svcs.EventAnnotations,
+		components:   svcs.Components,
 	}
 }
 
-func (s *ChatService) postMessage(ctx context.Context, channelId string, msgOpts ...slack.MsgOption) (string, error) {
-	_, msgTs, msgErr := s.client.PostMessageContext(ctx, channelId, msgOpts...)
-	return msgTs, msgErr
-}
-
-func (s *ChatService) postEphemeralMessage(ctx context.Context, channelId, userId string, msgOpts ...slack.MsgOption) (string, error) {
-	return s.client.PostEphemeralContext(ctx, channelId, userId, msgOpts...)
-}
-
-func (s *ChatService) SendMessage(ctx context.Context, channelId string, content *rez.ContentNode) (string, error) {
-	return s.postMessage(ctx, channelId, slack.MsgOptionBlocks(convertContentToBlocks(content, "")...))
-}
-
-func (s *ChatService) SendTextMessage(ctx context.Context, channelId string, text string) (string, error) {
-	return s.postMessage(ctx, channelId, slack.MsgOptionText(text, false))
-}
-
-func (s *ChatService) SendReply(ctx context.Context, channelId string, threadId string, text string) (string, error) {
-	return s.postMessage(ctx, channelId, slack.MsgOptionText(text, false), slack.MsgOptionTS(threadId))
+func (s *ChatService) makeTenantContext(ctx context.Context, teamId, enterpriseId string) (context.Context, error) {
+	intg, intgErr := lookupIntegration(ctx, s.integrations, teamId, enterpriseId)
+	if intgErr != nil {
+		return nil, fmt.Errorf("failed to lookup integration: %w", intgErr)
+	}
+	return access.TenantContext(ctx, intg.TenantID), nil
 }
 
 func (s *ChatService) lookupUser(ctx context.Context, userChatId string) (*ent.User, context.Context, error) {
@@ -65,6 +55,28 @@ func (s *ChatService) lookupUser(ctx context.Context, userChatId string) (*ent.U
 		return nil, nil, fmt.Errorf("creating user context: %w", ctxErr)
 	}
 	return usr, userCtx, nil
+}
+
+func (s *ChatService) postMessage(ctx context.Context, channelId string, msgOpts ...slack.MsgOption) (string, error) {
+	_, msgTs, msgErr := s.client.PostMessageContext(ctx, channelId, msgOpts...)
+	return msgTs, msgErr
+}
+
+func (s *ChatService) postEphemeralMessage(ctx context.Context, channelId, userId string, msgOpts ...slack.MsgOption) (string, error) {
+	return s.client.PostEphemeralContext(ctx, channelId, userId, msgOpts...)
+}
+
+func (s *ChatService) SendMessage(ctx context.Context, channelId string, content *rez.ContentNode) (string, error) {
+	blocks := convertContentToBlocks("", content)
+	return s.postMessage(ctx, channelId, slack.MsgOptionBlocks(blocks...))
+}
+
+func (s *ChatService) SendTextMessage(ctx context.Context, channelId string, text string) (string, error) {
+	return s.postMessage(ctx, channelId, slack.MsgOptionText(text, false))
+}
+
+func (s *ChatService) SendReply(ctx context.Context, channelId string, threadId string, text string) (string, error) {
+	return s.postMessage(ctx, channelId, slack.MsgOptionText(text, false), slack.MsgOptionTS(threadId))
 }
 
 func (s *ChatService) openModalView(ctx context.Context, triggerId string, viewReq slack.ModalViewRequest) error {

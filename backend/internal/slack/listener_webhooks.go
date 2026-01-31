@@ -47,26 +47,71 @@ func newWebhookEventHandler(l *loader, svcs *rez.Services) (*WebhookEventHandler
 
 func (wh *WebhookEventHandler) addMessageHandlers() error {
 	cmdsErr := wh.msgs.AddCommandHandlers(
-		rez.NewCommandHandler("SlackHandleCommandEvent", wh.handleCommandEvent),
-		rez.NewCommandHandler("SlackHandleInteractionEvent", wh.handleInteractionEvent))
+		rez.NewCommandHandler("slack.webhooks.command", wh.processCommandEvent),
+		rez.NewCommandHandler("slack.webhooks.interaction", wh.processInteractionEvent))
 	if cmdsErr != nil {
 		return fmt.Errorf("command handlers: %w", cmdsErr)
 	}
 	evsErr := wh.msgs.AddEventHandlers(
-		rez.NewEventHandler("SlackHandleCallbackEvent", wh.handleCallbackEvent))
+		rez.NewEventHandler("slack.webhooks.callback_event", wh.processCallbackEvent))
 	if evsErr != nil {
 		return fmt.Errorf("event handlers: %w", evsErr)
 	}
 	return nil
 }
 
+var (
+	maxWebhookPayloadBytes = int64(4<<20 + 1) // 4 MB
+)
+
+type webhookVerifierFunc func(w http.ResponseWriter, r *http.Request) ([]byte, bool, error)
+
+func makeWebhookVerifier() (webhookVerifierFunc, error) {
+	signingSecret := rez.Config.GetString("slack.webhook_signing_secret")
+	if signingSecret == "" {
+		return nil, fmt.Errorf("slack.webhook_signing_secret not set")
+	}
+	verifyFn := func(w http.ResponseWriter, r *http.Request) ([]byte, bool, error) {
+		sv, svErr := slack.NewSecretsVerifier(r.Header, signingSecret)
+		if svErr != nil {
+			w.WriteHeader(http.StatusBadRequest)
+			return nil, false, fmt.Errorf("making secrets verifier: %w", svErr)
+		}
+
+		body, bodyErr := io.ReadAll(http.MaxBytesReader(w, r.Body, maxWebhookPayloadBytes))
+		if bodyErr != nil {
+			var mbErr error
+			if maxBytes := errors.As(bodyErr, &mbErr); maxBytes {
+				w.WriteHeader(http.StatusBadRequest)
+				return nil, false, nil
+			} else {
+				w.WriteHeader(http.StatusInternalServerError)
+				return nil, false, fmt.Errorf("reading body: %w", bodyErr)
+			}
+		}
+
+		if _, writeErr := sv.Write(body); writeErr != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			return nil, false, fmt.Errorf("writing body to verifier: %w", writeErr)
+		}
+
+		if verificationErr := sv.Ensure(); verificationErr != nil {
+			w.WriteHeader(http.StatusUnauthorized)
+			return nil, false, nil
+		}
+
+		return body, true, nil
+	}
+	return verifyFn, nil
+}
+
 func (wh *WebhookEventHandler) Handler() *chi.Mux {
 	mux := chi.NewMux()
 	mux.Use(middleware.Timeout(3 * time.Second))
-	mux.HandleFunc("/commands", wh.onCommandsWebhook)
-	mux.HandleFunc("/interaction", wh.onInteractionsWebhook)
-	mux.HandleFunc("/options", wh.onOptionsWebhook)
-	mux.HandleFunc("/events", wh.onEventsWebhook)
+	mux.HandleFunc("/commands", wh.handleCommands)
+	mux.HandleFunc("/interaction", wh.handleInteraction)
+	mux.HandleFunc("/options", wh.handleOptions)
+	mux.HandleFunc("/events", wh.handleEvents)
 	mux.NotFound(func(w http.ResponseWriter, r *http.Request) {
 		log.Debug().
 			Str("path", r.URL.Path).
@@ -76,50 +121,12 @@ func (wh *WebhookEventHandler) Handler() *chi.Mux {
 	return mux
 }
 
-var (
-	maxWebhookPayloadBytes = int64(4<<20 + 1) // 4 MB
-)
-
-type webhookVerifierFunc func(w http.ResponseWriter, r *http.Request) ([]byte, error)
-
-func makeWebhookVerifier() (webhookVerifierFunc, error) {
-	signingSecret := rez.Config.GetString("slack.webhook_signing_secret")
-	if signingSecret == "" {
-		return nil, errors.New("slack.webhook_signing_secret not set")
-	}
-	verifyFn := func(w http.ResponseWriter, r *http.Request) ([]byte, error) {
-		sv, svErr := slack.NewSecretsVerifier(r.Header, signingSecret)
-		if svErr != nil {
-			w.WriteHeader(http.StatusBadRequest)
-			return nil, svErr
+func (wh *WebhookEventHandler) handleCommands(w http.ResponseWriter, r *http.Request) {
+	body, verified, verifyErr := wh.bodyVerifier(w, r)
+	if !verified {
+		if verifyErr != nil {
+			log.Error().Err(verifyErr).Msg("failed to verify commands webhook body")
 		}
-
-		bodyReader := http.MaxBytesReader(w, r.Body, maxWebhookPayloadBytes)
-		body, bodyErr := io.ReadAll(bodyReader)
-		if bodyErr != nil {
-			w.WriteHeader(http.StatusBadRequest)
-			return nil, bodyErr
-		}
-
-		if _, writeErr := sv.Write(body); writeErr != nil {
-			w.WriteHeader(http.StatusInternalServerError)
-			return nil, writeErr
-		}
-
-		if verificationErr := sv.Ensure(); verificationErr != nil {
-			w.WriteHeader(http.StatusUnauthorized)
-			return nil, verificationErr
-		}
-
-		return body, nil
-	}
-	return verifyFn, nil
-}
-
-func (wh *WebhookEventHandler) onCommandsWebhook(w http.ResponseWriter, r *http.Request) {
-	body, verifyErr := wh.bodyVerifier(w, r)
-	if verifyErr != nil {
-		log.Error().Err(verifyErr).Msg("failed to verify webhook body")
 		return
 	}
 	r.Body = io.NopCloser(bytes.NewBuffer(body))
@@ -129,43 +136,22 @@ func (wh *WebhookEventHandler) onCommandsWebhook(w http.ResponseWriter, r *http.
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
-	if sendCmdErr := wh.msgs.SendCommand(r.Context(), cmd); sendCmdErr != nil {
-		log.Error().Err(sendCmdErr).Msg("failed to publish slash command")
+	if msgErr := wh.msgs.SendCommand(r.Context(), webhookCommandEvent{Command: cmd}); msgErr != nil {
+		log.Error().Err(msgErr).Msg("failed to publish slash command message")
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 	w.WriteHeader(http.StatusOK)
 }
 
-func (wh *WebhookEventHandler) handleCommandEvent(ctx context.Context, cmd *slack.SlashCommand) error {
-	chat, _, chatErr := wh.loader.loadByTenantLookup(ctx, cmd.TeamID, cmd.EnterpriseID)
-	if chatErr != nil {
-		return fmt.Errorf("get user client: %w", chatErr)
-	}
-	handled, payload, handleErr := chat.handleSlashCommand(ctx, cmd)
-	if handleErr != nil {
-		log.Error().Err(handleErr).Msg("failed to handle slash command")
-		return handleErr
-	}
-	if !handled {
-		log.Warn().Str("command", cmd.Command).Msg("unknown slack command, ignoring")
-		return nil
-	}
-	if payload != nil {
-		msg := slack.MsgOptionBlocks(payload.Blocks.BlockSet...)
-		_, postErr := chat.postEphemeralMessage(ctx, cmd.ChannelID, cmd.UserID, msg)
-		return postErr
-	}
-	return nil
-}
-
-func (wh *WebhookEventHandler) onInteractionsWebhook(w http.ResponseWriter, r *http.Request) {
-	body, verifyErr := wh.bodyVerifier(w, r)
-	if verifyErr != nil {
-		log.Error().Err(verifyErr).Msg("failed to verify webhook body")
+func (wh *WebhookEventHandler) handleInteraction(w http.ResponseWriter, r *http.Request) {
+	body, verified, verifyErr := wh.bodyVerifier(w, r)
+	if !verified {
+		if verifyErr != nil {
+			log.Error().Err(verifyErr).Msg("failed to verify commands webhook body")
+		}
 		return
 	}
-
 	r.Body = io.NopCloser(bytes.NewBuffer(body))
 	payload := r.PostFormValue("payload")
 	if payload == "" {
@@ -173,46 +159,20 @@ func (wh *WebhookEventHandler) onInteractionsWebhook(w http.ResponseWriter, r *h
 		return
 	}
 
-	cmdErr := wh.msgs.SendCommand(r.Context(), webhookInteractionEvent{Payload: payload})
-	if cmdErr != nil {
-		log.Error().Err(cmdErr).Msg("failed to publish interaction event")
+	if msgErr := wh.msgs.SendCommand(r.Context(), webhookInteractionEvent{Payload: payload}); msgErr != nil {
+		log.Error().Err(msgErr).Msg("failed to publish interaction event message")
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 	w.WriteHeader(http.StatusOK)
 }
 
-type webhookInteractionEvent struct {
-	Payload string
-}
-
-func (wh *WebhookEventHandler) handleInteractionEvent(ctx context.Context, ie *webhookInteractionEvent) error {
-	var ic slack.InteractionCallback
-	if jsonErr := ic.UnmarshalJSON([]byte(ie.Payload)); jsonErr != nil {
-		log.Debug().Err(jsonErr).Msg("failed to unmarshal interaction payload")
-		return nil
-	}
-
-	chat, tenantCtx, chatErr := wh.loader.loadByTenantLookup(ctx, ic.Team.ID, ic.Enterprise.ID)
-	if chatErr != nil {
-		return fmt.Errorf("get user client: %w", chatErr)
-	}
-
-	handled, _, handlerErr := chat.handleInteractionEvent(tenantCtx, &ic)
-	if handlerErr != nil {
-		log.Error().Err(handlerErr).Str("type", string(ic.Type)).Msg("failed to handle interaction")
-		return handlerErr
-	}
-	if !handled {
-		log.Warn().Str("type", string(ic.Type)).Msg("didnt handle webhook interaction event")
-	}
-	return nil
-}
-
-func (wh *WebhookEventHandler) onOptionsWebhook(w http.ResponseWriter, r *http.Request) {
-	_, verifyErr := wh.bodyVerifier(w, r)
-	if verifyErr != nil {
-		log.Error().Err(verifyErr).Msg("failed to verify webhook body")
+func (wh *WebhookEventHandler) handleOptions(w http.ResponseWriter, r *http.Request) {
+	_, verified, verifyErr := wh.bodyVerifier(w, r)
+	if !verified {
+		if verifyErr != nil {
+			log.Error().Err(verifyErr).Msg("failed to verify options webhook body")
+		}
 		return
 	}
 
@@ -221,16 +181,17 @@ func (wh *WebhookEventHandler) onOptionsWebhook(w http.ResponseWriter, r *http.R
 	w.WriteHeader(http.StatusOK)
 }
 
-func (wh *WebhookEventHandler) onEventsWebhook(w http.ResponseWriter, r *http.Request) {
-	body, verifyErr := wh.bodyVerifier(w, r)
-	if verifyErr != nil {
-		log.Error().Err(verifyErr).Msg("failed to verify webhook body")
+func (wh *WebhookEventHandler) handleEvents(w http.ResponseWriter, r *http.Request) {
+	body, verified, verifyErr := wh.bodyVerifier(w, r)
+	if !verified {
+		if verifyErr != nil {
+			log.Error().Err(verifyErr).Msg("failed to verify events webhook body")
+		}
 		return
 	}
 
-	ev, evErr := slackevents.ParseEvent(body,
-		// skip using the verification token as we verified via header
-		slackevents.OptionNoVerifyToken())
+	// skip using the verification token as we verified via header
+	ev, evErr := slackevents.ParseEvent(body, slackevents.OptionNoVerifyToken())
 	if evErr != nil {
 		log.Error().Err(evErr).Msg("failed to parse event")
 		w.WriteHeader(http.StatusInternalServerError)
@@ -258,9 +219,8 @@ func (wh *WebhookEventHandler) onEventsWebhook(w http.ResponseWriter, r *http.Re
 	}
 
 	if ev.Type == slackevents.CallbackEvent {
-		pubErr := wh.msgs.PublishEvent(r.Context(), webhookCallbackEvent{Body: body})
-		if pubErr != nil {
-			log.Error().Err(pubErr).Msg("failed to publish callback command")
+		if msgErr := wh.msgs.PublishEvent(r.Context(), webhookCallbackEvent{Body: body}); msgErr != nil {
+			log.Error().Err(msgErr).Msg("failed to publish callback event message")
 			w.WriteHeader(http.StatusInternalServerError)
 			return
 		}
@@ -272,11 +232,65 @@ func (wh *WebhookEventHandler) onEventsWebhook(w http.ResponseWriter, r *http.Re
 	w.WriteHeader(http.StatusBadRequest)
 }
 
+type webhookCommandEvent struct {
+	Command slack.SlashCommand
+}
+
+func (wh *WebhookEventHandler) processCommandEvent(baseCtx context.Context, ev *webhookCommandEvent) error {
+	cmd := ev.Command
+	chat, ctx, chatErr := wh.loader.loadByTenantLookup(baseCtx, cmd.TeamID, cmd.EnterpriseID)
+	if chatErr != nil {
+		return fmt.Errorf("get user client: %w", chatErr)
+	}
+	handled, payload, handleErr := chat.handleSlashCommand(ctx, &cmd)
+	if handleErr != nil {
+		log.Error().Err(handleErr).Msg("failed to handle slash command")
+		return handleErr
+	}
+	if !handled {
+		log.Warn().Str("command", cmd.Command).Msg("unknown slack command, ignoring")
+		return nil
+	}
+	if payload != nil {
+		msgOpts := slack.MsgOptionBlocks(payload.Blocks.BlockSet...)
+		_, postErr := chat.postEphemeralMessage(ctx, cmd.ChannelID, cmd.UserID, msgOpts)
+		return postErr
+	}
+	return nil
+}
+
+type webhookInteractionEvent struct {
+	Payload string
+}
+
+func (wh *WebhookEventHandler) processInteractionEvent(ctx context.Context, ie *webhookInteractionEvent) error {
+	var ic slack.InteractionCallback
+	if jsonErr := ic.UnmarshalJSON([]byte(ie.Payload)); jsonErr != nil {
+		log.Debug().Err(jsonErr).Msg("failed to unmarshal interaction payload")
+		return nil
+	}
+
+	chat, tenantCtx, chatErr := wh.loader.loadByTenantLookup(ctx, ic.Team.ID, ic.Enterprise.ID)
+	if chatErr != nil {
+		return fmt.Errorf("get user client: %w", chatErr)
+	}
+
+	handled, _, handlerErr := chat.handleInteractionEvent(tenantCtx, &ic)
+	if handlerErr != nil {
+		log.Error().Err(handlerErr).Str("type", string(ic.Type)).Msg("failed to handle interaction")
+		return handlerErr
+	}
+	if !handled {
+		log.Warn().Str("type", string(ic.Type)).Msg("didnt handle webhook interaction event")
+	}
+	return nil
+}
+
 type webhookCallbackEvent struct {
 	Body []byte
 }
 
-func (wh *WebhookEventHandler) handleCallbackEvent(ctx context.Context, ev *webhookCallbackEvent) error {
+func (wh *WebhookEventHandler) processCallbackEvent(ctx context.Context, ev *webhookCallbackEvent) error {
 	cbe, parseErr := slackevents.ParseEvent(ev.Body,
 		// skip using the verification token as we verified via header
 		slackevents.OptionNoVerifyToken())

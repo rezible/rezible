@@ -4,16 +4,15 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"path"
 	"time"
 
-	"github.com/rezible/rezible/ent"
-	"github.com/rezible/rezible/integrations"
 	"github.com/rs/zerolog/log"
 	"github.com/sourcegraph/conc/pool"
 
-	rez "github.com/rezible/rezible"
+	"github.com/rezible/rezible"
 	"github.com/rezible/rezible/access"
+	"github.com/rezible/rezible/ent"
+	"github.com/rezible/rezible/integrations"
 	"github.com/rezible/rezible/internal/apiv1"
 	"github.com/rezible/rezible/internal/db"
 	"github.com/rezible/rezible/internal/eino"
@@ -132,21 +131,15 @@ func (s *Server) setup(ctx context.Context) error {
 	srv.MountStaticFrontend(frontendFS)
 	s.addEventListener("http_server", srv)
 
-	if intgsErr := integrations.Setup(ctx, svcs); intgsErr != nil {
-		return fmt.Errorf("integrations: %w", intgsErr)
+	intgs, intgsErr := integrations.Setup(ctx, svcs)
+	if intgsErr != nil {
+		return fmt.Errorf("integrations setup: %w", intgsErr)
 	}
-
-	for _, p := range integrations.GetAvailable() {
-		if elIntegration, ok := p.(rez.IntegrationWithEventListeners); ok {
-			for name, l := range elIntegration.EventListeners() {
-				s.addEventListener(name, l)
-			}
-		}
-		if whIntegration, ok := p.(rez.IntegrationWithWebhookHandlers); ok {
-			for whPrefix, h := range whIntegration.WebhookHandlers() {
-				srv.AddWebhookHandler(path.Join(p.Name(), whPrefix), h)
-			}
-		}
+	for name, el := range integrations.GetEventListeners(intgs) {
+		s.addEventListener(name, el)
+	}
+	for prefix, h := range integrations.GetWebhookHandlers(intgs) {
+		srv.AddWebhookHandler(prefix, h)
 	}
 
 	return nil

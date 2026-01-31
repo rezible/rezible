@@ -2,13 +2,19 @@ package integrations
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
+	"net/http"
+	"path"
+	"reflect"
+	"runtime"
+
+	"golang.org/x/oauth2"
 
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
-	"github.com/rezible/rezible/internal/google"
-
 	fakeprovider "github.com/rezible/rezible/internal/fake"
+	"github.com/rezible/rezible/internal/google"
 	"github.com/rezible/rezible/internal/grafana"
 	"github.com/rezible/rezible/internal/jira"
 	"github.com/rezible/rezible/internal/slack"
@@ -23,16 +29,21 @@ var (
 	}
 )
 
-func Setup(ctx context.Context, svcs *rez.Services) error {
+func Setup(ctx context.Context, svcs *rez.Services) ([]rez.IntegrationPackage, error) {
+	var available []rez.IntegrationPackage
 	packageMap = make(map[string]rez.IntegrationPackage)
-	for _, pkgFn := range packageSetupFuncs {
-		pkg, pkgErr := pkgFn(ctx, svcs)
+	for _, setupFn := range packageSetupFuncs {
+		pkg, pkgErr := setupFn(ctx, svcs)
 		if pkgErr != nil {
-			return fmt.Errorf("setup integration: %w", pkgErr)
+			funcName := runtime.FuncForPC(reflect.ValueOf(setupFn).Pointer()).Name()
+			return nil, fmt.Errorf("%s: %w", funcName, pkgErr)
 		}
 		packageMap[pkg.Name()] = pkg
+		if pkg.Enabled() {
+			available = append(available, pkg)
+		}
 	}
-	return nil
+	return available, nil
 }
 
 func GetAvailable() []rez.IntegrationPackage {
@@ -51,6 +62,60 @@ func GetPackage(name string) (rez.IntegrationPackage, error) {
 		return nil, fmt.Errorf("unknown integration package: %s", name)
 	}
 	return p, nil
+}
+
+type (
+	IntegrationWithOAuth2SetupFlow interface {
+		OAuth2Config() *oauth2.Config
+		ExtractIntegrationConfigFromToken(*oauth2.Token) (json.RawMessage, error)
+	}
+)
+
+func GetOAuthIntegration(name string) (IntegrationWithOAuth2SetupFlow, error) {
+	ip, ipErr := GetPackage(name)
+	if ipErr != nil {
+		return nil, fmt.Errorf("invalid integration %s: %w", name, ipErr)
+	}
+	oauth2Intg, ok := ip.(IntegrationWithOAuth2SetupFlow)
+	if !ok {
+		return nil, fmt.Errorf("oauth2 flow not supported for integration %s", name)
+	}
+	if oauth2Intg.OAuth2Config() == nil {
+		return nil, fmt.Errorf("nil integration oauth2 configuration")
+	}
+	return oauth2Intg, nil
+}
+
+type IntegrationWithEventListeners interface {
+	EventListeners() map[string]rez.EventListener
+}
+
+func GetEventListeners(pkgs []rez.IntegrationPackage) map[string]rez.EventListener {
+	els := make(map[string]rez.EventListener)
+	for _, p := range pkgs {
+		if elIntegration, ok := p.(IntegrationWithEventListeners); ok {
+			for name, l := range elIntegration.EventListeners() {
+				els[name] = l
+			}
+		}
+	}
+	return els
+}
+
+type IntegrationWithWebhookHandlers interface {
+	WebhookHandlers() map[string]http.Handler
+}
+
+func GetWebhookHandlers(pkgs []rez.IntegrationPackage) map[string]http.Handler {
+	whs := make(map[string]http.Handler)
+	for _, p := range pkgs {
+		if elIntegration, ok := p.(IntegrationWithWebhookHandlers); ok {
+			for prefix, h := range elIntegration.WebhookHandlers() {
+				whs[path.Join(p.Name(), prefix)] = h
+			}
+		}
+	}
+	return whs
 }
 
 func GetDataProviders[T any](intgs ent.Integrations, iFn func(rez.IntegrationPackage, *ent.Integration) (bool, T, error)) ([]T, error) {

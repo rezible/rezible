@@ -14,7 +14,6 @@ import (
 	"github.com/ThreeDotsLabs/watermill/components/cqrs"
 	"github.com/google/uuid"
 	"github.com/texm/prosemirror-go"
-	"golang.org/x/oauth2"
 )
 
 var (
@@ -86,7 +85,7 @@ type Services struct {
 
 type (
 	SetupPackageFunc = func(context.Context, *Services) (IntegrationPackage, error)
-	
+
 	IntegrationPackage interface {
 		Name() string
 		Enabled() bool
@@ -102,19 +101,6 @@ type (
 		UserPreferences() map[string]any
 		EnabledDataKinds() []string
 		GetSanitizedConfig() (json.RawMessage, error)
-	}
-
-	IntegrationWithOAuth2SetupFlow interface {
-		OAuth2Config() *oauth2.Config
-		GetIntegrationConfigFromToken(*oauth2.Token) (any, error)
-	}
-
-	IntegrationWithEventListeners interface {
-		EventListeners() map[string]EventListener
-	}
-
-	IntegrationWithWebhookHandlers interface {
-		WebhookHandlers() map[string]http.Handler
 	}
 
 	ListIntegrationsParams struct {
