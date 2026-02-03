@@ -247,7 +247,7 @@ type (
 	}
 
 	VideoConferenceIntegration interface {
-		CreateVideoConference(ctx context.Context) (string, error)
+		CreateIncidentVideoConference(context.Context, *ent.Incident) error
 	}
 )
 

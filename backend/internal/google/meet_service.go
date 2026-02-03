@@ -5,6 +5,8 @@ import (
 	"fmt"
 
 	rez "github.com/rezible/rezible"
+	"github.com/rezible/rezible/ent"
+	"github.com/rs/zerolog/log"
 	"google.golang.org/api/meet/v2"
 	"google.golang.org/api/option"
 )
@@ -15,6 +17,8 @@ var meetScopes = []string{
 	"https://www.googleapis.com/auth/meetings.space.readonly",
 	"https://www.googleapis.com/auth/drive.meet.readonly",
 }
+
+const PreferenceEnableIncidentVideoConferences = "incident_video_conferences"
 
 type meetService struct {
 	msgs     rez.MessageService
@@ -36,7 +40,7 @@ func (s *meetService) makeClient(ctx context.Context) (*meet.Service, error) {
 	return svc, nil
 }
 
-func (s *meetService) CreateVideoConference(ctx context.Context) (string, error) {
+func (s *meetService) CreateVideoConference(ctx context.Context, inc *ent.Incident) (string, error) {
 	client, clientErr := s.makeClient(ctx)
 	if clientErr != nil {
 		return "", clientErr
@@ -52,4 +56,9 @@ func (s *meetService) CreateVideoConference(ctx context.Context) (string, error)
 	}
 
 	return space.MeetingUri, nil
+}
+
+func (s *meetService) CreateIncidentVideoConference(ctx context.Context, inc *ent.Incident) error {
+	log.Debug().Msg("meet service.. create incident conference")
+	return nil
 }
