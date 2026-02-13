@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { type MeetingSchedule as MeetingScheduleType } from "$lib/api";
-	import { appShell } from "$features/app-shell/lib/appShellState.svelte";
+	import { appShell } from "$features/app";
 	import LoadingQueryWrapper from "$components/loader/LoadingQueryWrapper.svelte";
 	import { useMeetingScheduleViewState } from "$features/meeting-schedule";
 	import MeetingSchedule from "./MeetingSchedule.svelte";

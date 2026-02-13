@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { appShell, type PageBreadcrumb } from "$features/app-shell/lib/appShellState.svelte";
+	import { appShell, type PageBreadcrumb } from "$features/app";
 
 	import TabbedViewContainer, { type Tab } from "$components/tabbed-view-container/TabbedViewContainer.svelte";
 

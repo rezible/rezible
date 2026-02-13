@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { appShell } from "$features/app-shell/lib/appShellState.svelte";
+	import { appShell } from "$features/app";
 	import { useAlertViewState } from "$features/alert";
 	import type { AlertViewParam } from "$src/params/alertView";
 	import TabbedViewContainer, { type Tab } from "$components/tabbed-view-container/TabbedViewContainer.svelte";

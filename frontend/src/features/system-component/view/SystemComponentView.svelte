@@ -1,7 +1,7 @@
 <script lang="ts">
 	import type { ComponentViewParam } from "$src/params/componentView";
 	import { useSystemComponentViewState } from "$features/system-component";
-	import { appShell } from "$features/app-shell/lib/appShellState.svelte";
+	import { appShell } from "$features/app";
 	import TabbedViewContainer, { type Tab } from "$components/tabbed-view-container/TabbedViewContainer.svelte";
 	import SystemComponentOverview from "./overview/SystemComponentOverview.svelte";
 	import SystemComponentIncidents from "./incidents/SystemComponentIncidents.svelte";

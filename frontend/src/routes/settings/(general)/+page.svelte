@@ -1,5 +1,5 @@
 <script>
-	import { appShell } from "$features/app-shell/lib/appShellState.svelte";
+	import { appShell } from "$features/app";
 	import GeneralSettingsView from "$features/settings/view/general/GeneralSettingsView.svelte";
 
 	appShell.setPageBreadcrumbs(() => [

@@ -2,7 +2,7 @@
 	import { type MeetingSession } from "$lib/api";
 	import LoadingQueryWrapper from "$components/loader/LoadingQueryWrapper.svelte";
 	import MeetingSessionCard from "$features/meeting-session/components/meeting-session-card/MeetingSessionCard.svelte";
-	import { appShell } from "$features/app-shell/lib/appShellState.svelte";
+	import { appShell } from "$features/app";
 	import FilterPage from "$components/filter-page/FilterPage.svelte";
 	import SearchInput from "$components/search-input/SearchInput.svelte";
 	import PaginatedListBox from "$components/paginated-listbox/PaginatedListBox.svelte";

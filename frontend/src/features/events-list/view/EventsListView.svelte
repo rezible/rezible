@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { appShell } from "$features/app-shell/lib/appShellState.svelte";
+	import { appShell } from "$features/app";
 	import FilterPage from "$components/filter-page/FilterPage.svelte";
 	import ListFilters from "./ListFilters.svelte";
 	import PaginatedListBox from "$components/paginated-listbox/PaginatedListBox.svelte";

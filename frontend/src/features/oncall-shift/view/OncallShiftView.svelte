@@ -1,6 +1,6 @@
 <script lang="ts">
 	import type { ComponentProps } from "svelte";
-	import { appShell } from "$features/app-shell/lib/appShellState.svelte";
+	import { appShell } from "$features/app";
 
 	import TabbedViewContainer, { type Tab } from "$components/tabbed-view-container/TabbedViewContainer.svelte";
 	import { useOncallShiftViewState } from "$features/oncall-shift";

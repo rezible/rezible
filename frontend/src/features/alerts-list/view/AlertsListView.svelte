@@ -2,7 +2,7 @@
 	import { createQuery } from "@tanstack/svelte-query";
 	import { QueryPaginatorState } from "$lib/paginator.svelte";
 	import { listAlertsOptions, type Alert, type ListAlertsData } from "$lib/api";
-	import { appShell } from "$features/app-shell/lib/appShellState.svelte";
+	import { appShell } from "$features/app";
 	import FilterPage from "$components/filter-page/FilterPage.svelte";
 	import SearchInput from "$components/search-input/SearchInput.svelte";
 	import PaginatedListBox from "$components/paginated-listbox/PaginatedListBox.svelte";

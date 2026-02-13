@@ -2,7 +2,7 @@
 	import { mdiCalendarRange } from "@mdi/js";
 	import { subDays } from "date-fns";
 	import { createQuery } from "@tanstack/svelte-query";
-	import { appShell } from "$features/app-shell/lib/appShellState.svelte";
+	import { appShell } from "$features/app";
 	import { listOncallShiftsOptions, type ListOncallShiftsData, type OncallShift } from "$lib/api";
 	import LoadingQueryWrapper from "$components/loader/LoadingQueryWrapper.svelte";
 	import FilterPage from "$components/filter-page/FilterPage.svelte";

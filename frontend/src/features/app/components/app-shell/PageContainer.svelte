@@ -1,6 +1,6 @@
 <script lang="ts">
 	import type { Snippet } from "svelte";
-	import { appShell } from "$features/app-shell/lib/appShellState.svelte";
+	import { appShell } from "$features/app";
 	import Avatar from "$components/avatar/Avatar.svelte";
 	import { useAuthSessionState } from "$lib/auth.svelte";
 

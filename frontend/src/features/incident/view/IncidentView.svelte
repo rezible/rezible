@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { appShell, type PageBreadcrumb } from "$features/app-shell/lib/appShellState.svelte";
+	import { appShell, type PageBreadcrumb } from "$features/app";
 	
 	import PageActions from "./PageActions.svelte";
 	import IncidentOverview from "./incident-overview/IncidentOverview.svelte";

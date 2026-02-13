@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { appShell } from "$features/app-shell/lib/appShellState.svelte";
+	import { appShell } from "$features/app";
 
 	import ShiftsHeader from "$features/home/view/shifts-header/ShiftsHeader.svelte";
 	import EventsTable from "$src/features/home/view/events-table/EventsTable.svelte";

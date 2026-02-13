@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { createQuery } from "@tanstack/svelte-query";
 	import { listIncidentsOptions, type ListIncidentsData, type Incident } from "$lib/api";
-	import { appShell } from "$features/app-shell/lib/appShellState.svelte";
+	import { appShell } from "$features/app";
 	import LoadingQueryWrapper from "$components/loader/LoadingQueryWrapper.svelte";
 	import FilterPage from "$components/filter-page/FilterPage.svelte";
 	import SearchInput from "$components/search-input/SearchInput.svelte";

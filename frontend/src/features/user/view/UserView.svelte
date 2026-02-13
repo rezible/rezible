@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { appShell } from "$features/app-shell/lib/appShellState.svelte";
+	import { appShell } from "$features/app";
 	import { useUserViewState } from "$features/user";
 
 	import Avatar from "$components/avatar/Avatar.svelte";

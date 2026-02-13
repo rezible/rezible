@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { createQuery } from "@tanstack/svelte-query";
-	import { appShell } from "$features/app-shell/lib/appShellState.svelte";
+	import { appShell } from "$features/app";
 	import { listOncallRostersOptions, type ListOncallRostersData, type OncallRoster } from "$lib/api";
 	import LoadingQueryWrapper from "$components/loader/LoadingQueryWrapper.svelte";
 	import FilterPage from "$components/filter-page/FilterPage.svelte";

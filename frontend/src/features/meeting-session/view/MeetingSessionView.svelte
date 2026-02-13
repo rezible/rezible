@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { type MeetingSession } from "$lib/api";
-	import { appShell } from "$features/app-shell/lib/appShellState.svelte";
+	import { appShell } from "$features/app";
 	import LoadingQueryWrapper from "$components/loader/LoadingQueryWrapper.svelte";
 	import SessionContent from "./SessionContent.svelte";
 	import { useMeetingSessionViewState } from "$features/meeting-session";
