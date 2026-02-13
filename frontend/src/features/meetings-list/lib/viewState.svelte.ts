@@ -1,10 +1,8 @@
-import { paginationStore as createPaginationStore } from "@layerstack/svelte-stores";
 import { listMeetingSessionsOptions, type ListMeetingSessionsData } from "$lib/api";
 import { createQuery } from "@tanstack/svelte-query";
 import { Context } from "runed";
 
 export class MeetingsListViewState {
-	pagination = createPaginationStore();
 	searchValue = $state<string>();
 
 	queryParams = $state<ListMeetingSessionsData["query"]>({});

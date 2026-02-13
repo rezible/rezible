@@ -1,12 +1,11 @@
 <script lang="ts">
 	import type { ComponentProps, Snippet } from "svelte";
-	import { Pagination } from "svelte-ux";
 
 	type Props = {
 		title?: string;
 		children: Snippet;
 		dense?: boolean;
-		pagination: ComponentProps<Pagination>["pagination"];
+		pagination?: any;//ComponentProps<Pagination>["pagination"];
 	};
 	const { 
 		title = "Results",
@@ -26,6 +25,6 @@
 	</div>
 
 	<div class="pt-1 flex justify-end">
-		<Pagination {pagination} show={["perPage", "prevPage", "pagination", "nextPage"]} />
+		<!-- <Pagination {pagination} show={["perPage", "prevPage", "pagination", "nextPage"]} /> -->
 	</div>
 </div>

@@ -1,14 +1,6 @@
 <script lang="ts">
 	import { mdiCalendarRange, mdiChevronDown } from "@mdi/js";
-	import { PeriodType } from "@layerstack/utils";
-	import {
-		DateRangeField,
-		Field,
-		MultiSelectMenu,
-		SelectField,
-		type MenuOption,
-	} from "svelte-ux";
-	import Button from "$components/button/Button.svelte";
+	import { Button } from "$components/ui/button";
 	import RosterSelectField from "$components/roster-select-field/RosterSelectField.svelte";
 	import Icon from "$components/icon/Icon.svelte";
 	import type { EventKind, EventsTableState } from "./eventsTableState.svelte";
@@ -19,7 +11,7 @@
 	const { tableState }: Props = $props();
 
 	type AnnotationOption = "no" | "any" | "has";
-	const annoOptions: MenuOption<AnnotationOption>[] = [
+	const annoOptions = [
 		{value: "any", label: "Any"},
 		{value: "has", label: "Yes"},
 		{value: "no", label: "No"},
@@ -35,12 +27,14 @@
 
 	let kindMenuOpen = $state(false);
 	const toggleKindMenu = () => (kindMenuOpen = !kindMenuOpen);
-	const eventKindOptions: MenuOption<EventKind>[] = [
+	const eventKindOptions = [
 		{value: "alert", label: "Alerts"}
 	]
 </script>
 
 <div class="flex flex-row items-center justify-end gap-2">
+	<span>filters</span>
+	<!--
 	<SelectField 
 		label="Annotation"
 		labelPlacement="top"
@@ -102,4 +96,5 @@
 			bind:value={() => tableState.dateRange, d => (tableState.customDateRangeValue = d)}
 		/>
 	{/if}
+	-->
 </div>

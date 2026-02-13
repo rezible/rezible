@@ -1,6 +1,5 @@
 <script lang="ts">
-	import { Collapse, ListItem, SelectField, TextField } from "svelte-ux";
-	import Button from "$components/button/Button.svelte";
+	import { Button } from "$components/ui/button";
 	import Icon from "$components/icon/Icon.svelte";
 	import type { Snippet } from "svelte";
 	import { mdiBroadcast, mdiCheck, mdiClose, mdiPencil, mdiStateMachine, mdiTune } from "@mdi/js";
@@ -26,18 +25,21 @@
 
 <div class="flex flex-row min-h-0 max-h-full h-full gap-2">
 	<div class="flex flex-col gap-2 w-2/5">
-		<TextField label="Name" labelPlacement="float" bind:value={attr.name} />
+		<span>name field</span>
+		<!-- <TextField label="Name" labelPlacement="float" bind:value={attr.name} /> -->
 
-		<TextField label="Description" labelPlacement="float" bind:value={attr.description} />
+		<span>desc field</span>
+		<!-- <TextField label="Description" labelPlacement="float" bind:value={attr.description} /> -->
 
-		<SelectField
+		<span>kind field</span>
+		<!-- <SelectField
 			label="Kind"
 			labelPlacement="float"
 			options={kindOptions}
 			loading={kindsQuery.isFetching}
 			value={attr.kindId}
 			on:change={onKindSelected}
-		/>
+		/> -->
 	</div>
 
 	<div class="flex flex-col gap-2 p-1 overflow-y-auto flex-1 min-h-0 max-h-full">
@@ -59,7 +61,7 @@
 
 {#snippet traitPanel(title: string, subheading: string, icon: string, content: Snippet)}
 	<div class="p-2 border rounded">
-		<Collapse open classes={{ root: "overflow-x-hidden", content: "p-2" }}>
+		<!-- <Collapse open classes={{ root: "overflow-x-hidden", content: "p-2" }}>
 			<ListItem
 				slot="trigger"
 				{title}
@@ -73,12 +75,12 @@
 				noShadow
 			/>
 			{@render content()}
-		</Collapse>
+		</Collapse> -->
 	</div>
 {/snippet}
 
 {#snippet attributeListItem(title: string, subheading: string, onClick: VoidFunction)}
-	<ListItem
+	<!-- <ListItem
 		{title}
 		{subheading}
 		noShadow
@@ -88,7 +90,7 @@
 		<div slot="actions">
 			<Button iconOnly icon={mdiPencil} onclick={onClick} />
 		</div>
-	</ListItem>
+	</ListItem> -->
 {/snippet}
 
 {#snippet constraintsPanel()}
@@ -104,12 +106,15 @@
 		</div>
 	{:else}
 		<div class="w-full flex flex-col border rounded-lg p-2 gap-2">
-			<TextField label="Label" labelPlacement="float" bind:value={editConstraint.attributes.label} />
-			<TextField
+			<span>label field</span>
+			<!-- <TextField label="Label" labelPlacement="float" bind:value={editConstraint.attributes.label} /> -->
+			
+			<span>desc field</span>
+			<!-- <TextField
 				label="Description"
 				labelPlacement="float"
 				bind:value={editConstraint.attributes.description}
-			/>
+			/> -->
 
 			<ConfirmButtons
 				onClose={componentTraits.clearConstraint}
@@ -138,12 +143,15 @@
 		</div>
 	{:else}
 		<div class="w-full flex flex-col border rounded-lg p-2 gap-2">
-			<TextField label="Label" labelPlacement="float" bind:value={editSignal.attributes.label} />
-			<TextField
+			<span>label field</span>
+			<!-- <TextField label="Label" labelPlacement="float" bind:value={editSignal.attributes.label} /> -->
+			
+			<span>desc field</span>
+			<!-- <TextField
 				label="Description"
 				labelPlacement="float"
 				bind:value={editSignal.attributes.description}
-			/>
+			/> -->
 
 			<ConfirmButtons
 				onClose={componentTraits.clearSignal}
@@ -172,12 +180,15 @@
 		</div>
 	{:else}
 		<div class="w-full flex flex-col border rounded-lg p-2 gap-2">
-			<TextField label="Label" labelPlacement="float" bind:value={editControl.attributes.label} />
-			<TextField
+			<span>label field</span>
+			<!-- <TextField label="Label" labelPlacement="float" bind:value={editControl.attributes.label} /> -->
+
+			<span>desc field</span>
+			<!-- <TextField
 				label="Description"
 				labelPlacement="float"
 				bind:value={editControl.attributes.description}
-			/>
+			/> -->
 
 			<ConfirmButtons
 				onClose={componentTraits.clearControl}

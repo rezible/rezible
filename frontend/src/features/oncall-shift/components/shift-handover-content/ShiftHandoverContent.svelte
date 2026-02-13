@@ -3,7 +3,7 @@
 	import { ShiftHandoverEditorState, type HandoverEditorSection } from "./state.svelte";
 	import TiptapEditor from "$components/tiptap-editor/TiptapEditor.svelte";
 	import type { ChainedCommands } from "@tiptap/core";
-	import Button from "$components/button/Button.svelte";
+	import { Button } from "$components/ui/button";
 	import Header from "$components/header/Header.svelte";
 
 	type Props = {
@@ -73,22 +73,16 @@
 				data-menu={idx}
 			>
 				<Button
-					icon={mdiFormatBold}
-					rounded={false}
 					size="sm"
 					disabled={!isActive}
-					variant={isActive && section.activeStatus?.get("bold") ? "fill" : "fill-light"}
 					onclick={runEditorCmd((c) => alert("TODO: migrate this"))}
-				/>
+				>bold</Button> <!-- variant={isActive && section.activeStatus?.get("bold") ? "fill" : "fill-light"} -->
 
 				<Button
-					icon={mdiFormatListBulleted}
-					rounded={false}
 					size="sm"
 					disabled={!isActive}
-					variant={isActive && section.activeStatus?.get("bulletList") ? "fill" : "fill-light"}
 					onclick={runEditorCmd((c) => alert("TODO: migrate this"))}
-				/>
+				>bold</Button> <!-- variant={isActive && section.activeStatus?.get("bulletList") ? "fill" : "fill-light"} -->
 			</div>
 
 			<TiptapEditor bind:editor={section.editor} class="p-2" />

@@ -1,6 +1,5 @@
 <script lang="ts">
-	import { Dialog } from "svelte-ux";
-	import Button from "$components/button/Button.svelte";
+	import { Button } from "$components/ui/button";
 	import ConfirmButtons from "$components/confirm-buttons/ConfirmButtons.svelte";
 	import EventAnnotationForm from "./EventAnnotationForm.svelte";
 	import { useAnnotationDialogState } from "./dialogState.svelte";
@@ -11,7 +10,7 @@
 	const formAction = $derived(!!dialog.annotation ? "Update" : "Create");
 </script>
 
-<Dialog
+<!--Dialog
 	open={dialog.open}
 	on:close={() => dialog.onClose()}
 	persistent
@@ -46,4 +45,4 @@
 			<Button onclick={() => dialog.onClose()}>Close</Button>
 		{/if}
 	</svelte:fragment>
-</Dialog>
+</Dialog-->

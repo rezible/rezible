@@ -1,8 +1,5 @@
 <script lang="ts">
-	import { ListItem } from "svelte-ux";
-	import Button from "$components/button/Button.svelte";
 	import { mdiFlagPlus, mdiPencil, mdiTrashCan } from "@mdi/js";
-	import Icon from "$components/icon/Icon.svelte";
 	import {
 		deleteIncidentMilestoneMutation,
 		listIncidentMilestonesOptions,
@@ -14,9 +11,12 @@
 	import { useIncidentViewState } from "$features/incident";
 	import { useMilestonesDialog } from "./dialogState.svelte";
 
-	import LoadingQueryWrapper from "$components/loader/LoadingQueryWrapper.svelte";
 	import MilestoneAttributesEditor from "./MilestoneAttributesEditor.svelte";
 	import { getIconForIncidentMilestoneKind, orderedMilestones } from "./milestones";
+
+	import LoadingQueryWrapper from "$components/loader/LoadingQueryWrapper.svelte";
+	import { Button } from "$components/ui/button";
+	import Icon from "$components/icon/Icon.svelte";
 
 	const milestonesDialog = useMilestonesDialog();
 
@@ -72,7 +72,8 @@
 		{#snippet view(milestones: IncidentMilestone[])}
 			<div class="w-full h-full overflow-y-hidden flex flex-col gap-2 p-3">
 				{#each orderedMilestones(milestones) as ms (ms.id)}
-					<ListItem
+					<span>milestone: {ms.attributes.kind}</span>
+					<!-- <ListItem
 						title={ms.attributes.kind}
 						subheading={ms.attributes.timestamp}
 						icon={getIconForIncidentMilestoneKind(ms.attributes.kind)}
@@ -96,10 +97,10 @@
 								}}
 							/>
 						</div>
-					</ListItem>
+					</ListItem> -->
 				{/each}
 		
-				<Button variant="fill-light" onclick={onAddClick}>
+				<Button onclick={onAddClick}>
 					<span class="flex gap-2 items-center">
 						Add Milestone
 						<Icon data={mdiFlagPlus} />

@@ -1,6 +1,5 @@
 import type { ListQueryOptionsFunc } from "$lib/api";
 import type { Component } from "svelte";
-import type { MenuOption } from "svelte-ux";
 import { z } from "zod";
 
 export type EditorSnippetProps<T> = {
@@ -18,6 +17,8 @@ type BaseField<T> = {
 
 export type Field = BaseField<any>;
 
+type MenuOption<T extends any> = { label: string, value: T };
+
 export type SelectFieldOptions = MenuOption<string>[] | ListQueryOptionsFunc<any>;
 
 type SelectFieldValueType = string | string[] | undefined;
@@ -27,8 +28,8 @@ export type SelectField<T extends SelectFieldValueType> = BaseField<T> & {
 
 export const unwrappedSchema = (s: z.ZodTypeAny): z.ZodTypeAny => {
 	// if ("unwrap" in s) return unwrappedSchema(s.unwrap())
-	if (s instanceof z.ZodOptional) return unwrappedSchema(s.unwrap());
-	if (s instanceof z.ZodNullable) return unwrappedSchema(s.unwrap());
+	// if (s instanceof z.ZodOptional) return unwrappedSchema(s.unwrap());
+	// if (s instanceof z.ZodNullable) return unwrappedSchema(s.unwrap());
 	return s;
 };
 export const isSelectField = (f: Field): f is SelectField<SelectFieldValueType> => "options" in f;

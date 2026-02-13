@@ -8,7 +8,6 @@
 <script lang="ts" generics="DataType extends NamedApiDataObject">
 	import { type ListQueryParameters, type ListQueryOptionsFunc } from "$lib/api";
 	import { createQuery } from "@tanstack/svelte-query";
-	import { MultiSelectField, SelectField, type MenuOption } from "svelte-ux";
 
 	type Props = {
 		options: ListQueryOptionsFunc<DataType>;
@@ -35,7 +34,7 @@
 	const query = createQuery(() => options({ query: params }));
 	const data = $derived(query.data?.data ?? []);
 	const canLoadMore = $derived((query.data?.pagination.total ?? 0) >= data.length);
-	const loadedOptions = $derived<MenuOption<string>[]>(
+	const loadedOptions = $derived(
 		data.map((v) => ({ label: v.attributes.name, value: v.id }))
 	);
 
@@ -47,7 +46,8 @@
 {#if query.error}
 	<span>error fetching options: {query.error.message}</span>
 {:else if multi && typeof value !== "string"}
-	<MultiSelectField
+	<span>multi select field</span>
+	<!-- <MultiSelectField
 		{id}
 		{label}
 		bind:value
@@ -57,9 +57,10 @@
 		loading={query.isPending}
 		{placeholder}
 		on:change
-	/>
+	/> -->
 {:else}
-	<SelectField
+	<span>select field</span>
+	<!-- <SelectField
 		{id}
 		{label}
 		bind:value
@@ -70,5 +71,5 @@
 		{placeholder}
 		on:change
 		search={onSearchChange}
-	/>
+	/> -->
 {/if}

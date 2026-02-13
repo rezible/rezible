@@ -2,17 +2,15 @@
 	import { mdiLineScan, mdiPhoneAlert, mdiMoonWaxingCrescent, mdiClipboardText, mdiCalendarRange } from "@mdi/js";
 	import MetricCard from "$src/components/viz/MetricCard.svelte";
 	import { useAlertViewState } from "$features/alert/lib/viewState.svelte";
-	import type { DateRange as DateRangeType } from '@layerstack/utils/dateRange';
 	import { DateRangeField } from "svelte-ux";
-	import { makeCalendarDateString, makeDateRangeWindow } from "$lib/utils.svelte";
+	import { makeCalendarDateString, makeDateRangeWindow } from "$lib/date-utils";
 	import { getAlertMetricsOptions, type GetAlertMetricsData } from "$lib/api";
 	import { createQuery } from "@tanstack/svelte-query";
-	import { PeriodType } from "@layerstack/utils";
 
 	const view = useAlertViewState();
 	
 	const defaultDateRange = makeDateRangeWindow({ days: 7 });
-	let dateRange = $state<DateRangeType>({ from: defaultDateRange.from, to: defaultDateRange.to });
+	let dateRange = $state({ from: defaultDateRange.from, to: defaultDateRange.to });
 
 	const dateFrom = $derived(!!dateRange?.from ? dateRange.from : defaultDateRange.from);
 	const dateTo = $derived(!!dateRange?.to ? dateRange.to : defaultDateRange.to);
@@ -37,7 +35,6 @@
 	<DateRangeField 
 		classes={{field: {root: "w-fit"}}} 
 		value={dateRange} 
-		periodTypes={[PeriodType.Day]}
 		on:change={e => (dateRange = e.detail)} 
 		label="Date Range"
 		icon={mdiCalendarRange}

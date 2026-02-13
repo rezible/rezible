@@ -1,5 +1,5 @@
 <script lang="ts">
-	import Button from "$components/button/Button.svelte";
+	import { Button } from "$components/ui/button";
 	import type { PlaybookViewState } from "../lib/viewState.svelte";
 
 	type Props = {
@@ -13,8 +13,8 @@
 <div class="self-end">
 	{#if view.editing}
 		<Button onclick={() => {view.cancelEditing()}} {disabled}>Cancel</Button>
-		<Button onclick={() => {view.saveEdit()}} {disabled} loading={view.loading} variant="fill" color="primary">Save</Button>
+		<Button onclick={() => {view.saveEdit()}} {disabled} color="primary">Save</Button>
 	{:else}
-		<Button onclick={() => {view.editing = true}} {disabled} variant="fill" color="primary">Edit</Button>
+		<Button onclick={() => {view.editing = true}} {disabled} color="primary">Edit</Button>
 	{/if}
 </div>

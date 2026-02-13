@@ -1,11 +1,5 @@
-import { createMutation } from "@tanstack/svelte-query";
-import { SvelteSet } from "svelte/reactivity";
 import {
-	createSystemAnalysisRelationshipMutation,
-	updateSystemAnalysisRelationshipMutation,
-	type CreateSystemAnalysisRelationshipAttributes,
 	type SystemAnalysisRelationship,
-	type UpdateSystemAnalysisRelationshipAttributes,
 } from "$lib/api";
 import { useIncidentAnalysis } from "../../analysisState.svelte";
 import { Context } from "runed";
@@ -37,7 +31,7 @@ export class RelationshipDialogState {
 	setEditing(rel: SystemAnalysisRelationship) {
 		this.view = "edit";
 		this.relationshipId = rel.id;
-		relationshipAttributes.initFrom(rel.attributes);
+		// relationshipAttributes.initFrom(rel.attributes);
 	};
 
 	clear() {
@@ -62,27 +56,27 @@ export class RelationshipDialogState {
 	}
 
 	doCreate() {
-		const attr = relationshipAttributes.snapshot();
-		const res = this.analysis.createRelationship({
-			sourceId: attr.sourceId,
-			targetId: attr.targetId,
-			description: attr.description,
-			controlActions: attr.controlActions.map(a => a.attributes),
-			feedbackSignals: attr.feedbackSignals.map(a => a.attributes),
-		});
-		this.setLoading(res);
+		// const attr = relationshipAttributes.snapshot();
+		// const res = this.analysis.createRelationship({
+		// 	sourceId: attr.sourceId,
+		// 	targetId: attr.targetId,
+		// 	description: attr.description,
+		// 	controlActions: attr.controlActions.map(a => a.attributes),
+		// 	feedbackSignals: attr.feedbackSignals.map(a => a.attributes),
+		// });
+		// this.setLoading(res);
 	}
 
 	doEdit() {
 		if (!this.relationshipId) return;
-		const id = $state.snapshot(this.relationshipId);
-		const attr = relationshipAttributes.snapshot();
-		const res = this.analysis.updateRelationship(id, {
-			description: attr.description,
-			controlActions: attr.controlActions.map(a => a.attributes),
-			feedbackSignals: attr.feedbackSignals.map(s => s.attributes),
-		});
-		this.setLoading(res);
+		// const id = $state.snapshot(this.relationshipId);
+		// const attr = relationshipAttributes.snapshot();
+		// const res = this.analysis.updateRelationship(id, {
+		// 	description: attr.description,
+		// 	controlActions: attr.controlActions.map(a => a.attributes),
+		// 	feedbackSignals: attr.feedbackSignals.map(s => s.attributes),
+		// });
+		// this.setLoading(res);
 	}
 
 	onConfirm() {

@@ -1,7 +1,6 @@
 <script lang="ts">
-	import { Dialog } from "svelte-ux";
 	import { mdiMagicStaff } from "@mdi/js";
-	import Button from "$components/button/Button.svelte";
+	
 	import Icon from "$components/icon/Icon.svelte";
 	import ConfirmButtons from "$components/confirm-buttons/ConfirmButtons.svelte";
 	import EventAttributesEditor from "./EventAttributesEditor.svelte";
@@ -15,7 +14,7 @@
 	const creating = $derived(eventDialog.view === "create");
 </script>
 
-<Dialog
+<!-- <Dialog
 	open={eventDialog.open}
 	on:close={() => eventDialog.clear}
 	persistent
@@ -48,4 +47,4 @@
 			saveEnabled={attributesValid}
 		/>
 	</svelte:fragment>
-</Dialog>
+</Dialog> -->

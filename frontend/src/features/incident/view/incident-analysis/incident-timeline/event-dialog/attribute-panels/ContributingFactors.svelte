@@ -1,15 +1,7 @@
 <script lang="ts">
 	import { mdiPencil, mdiPlus, mdiTrashCan } from "@mdi/js";
-	import {
-		TextField,
-		type MenuOption,
-		SelectField,
-		MenuItem,
-		ListItem,
-	} from "svelte-ux";
-	import Button from "$components/button/Button.svelte";
+	import { Button } from "$components/ui/button";
 	import Icon from "$components/icon/Icon.svelte";
-	import { cls } from '@layerstack/tailwind';
 	import { v4 as uuidv4 } from "uuid";
 	import ConfirmButtons from "$components/confirm-buttons/ConfirmButtons.svelte";
 	import {
@@ -23,7 +15,10 @@
 	const categoriesQuery = createQuery(() => listIncidentEventContributingFactorCategoriesOptions());
 	const categories = $derived(categoriesQuery.data?.data ?? []);
 
-	type FactorMenuOption = MenuOption<string> & {
+	type FactorMenuOption = {
+		label: string;
+		value: string;
+		group?: string;
 		description: string;
 		examples: string;
 	};
@@ -82,7 +77,8 @@
 <div class="flex flex-col gap-1 bg-surface-100">
 	{#if editFactor}
 		<div class="flex flex-col gap-2 border rounded p-2">
-			<SelectField
+			<span>type select</span>
+			<!-- <SelectField
 				bind:value={editFactor.attributes.factorTypeId}
 				options={factorTypeOptions}
 				loading={categoriesQuery.isLoading}
@@ -108,14 +104,15 @@
 						</div>
 					</MenuItem>
 				</svelte:fragment>
-			</SelectField>
+			</SelectField> -->
 
 			{#if selectedFactorType}
-				<TextField
+				<span>description</span>
+				<!-- <TextField
 					bind:value={editFactor.attributes.description}
 					label="Description"
 					placeholder={editFactor.attributes.description}
-				></TextField>
+				></TextField> -->
 			{/if}
 
 			<div class="w-full flex justify-end">
@@ -130,7 +127,8 @@
 	{:else}
 		{#each eventAttributes.contributingFactors as f}
 			{@const categoryName = factorCategoryNames.get(f.attributes.factorTypeId) ?? "Unknown Category"}
-			<ListItem
+			<span>factor: {categoryName}</span>
+			<!-- <ListItem
 				title={f.attributes.description}
 				subheading={categoryName}
 				classes={{ root: "pl-0" }}
@@ -142,13 +140,11 @@
 					<Button icon={mdiTrashCan} iconOnly onclick={() => confirmRemoveFactor(f)} />
 					<Button icon={mdiPencil} iconOnly onclick={() => setEditing(f)} />
 				</div>
-			</ListItem>
+			</ListItem> -->
 		{/each}
 
 		<Button
-			class="text-surface-content/50 p-2"
 			color="primary"
-			variant="fill-light"
 			onclick={() => setEditing()}
 		>
 			<span class="flex items-center gap-2 text-primary-content">

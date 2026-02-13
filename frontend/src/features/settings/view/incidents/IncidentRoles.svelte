@@ -24,7 +24,7 @@
 	};
 </script>
 
-<MutatingTable
+<!-- <MutatingTable
 	dataType="Incident Role"
 	description="Modify the roles assigned to incident responders."
 	headers={["Name", "Required"]}
@@ -37,4 +37,4 @@
 			<Icon data={role.attributes.required ? mdiThumbUp : mdiThumbDown} />
 		</td>
 	{/snippet}
-</MutatingTable>
+</MutatingTable> -->

@@ -9,8 +9,7 @@
 
 <script lang="ts" generics="TabView">
 	import { page } from "$app/state";
-
-	import { cls } from "@layerstack/tailwind";
+	import { cn } from "$lib/utils";
 	import type { Component, Snippet } from "svelte";
 
 	type Props = { 
@@ -33,7 +32,7 @@
 			{#each props.tabs as tab, i}
 				{@const active = i === activeIdx}
 				<a href="{props.path}/{tab.view}" 
-					class={cls(
+					class={cn(
 						"inline-flex self-end h-12 p-4 py-3 text-lg border border-surface-100 border-b-0 rounded-t-lg relative", 
 						active && "bg-surface-200 text-secondary",
 					)}>

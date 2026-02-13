@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { mdiChevronDown } from "@mdi/js";
-	import Button from "$components/button/Button.svelte";
+	import { Button } from "$components/ui/button";
 	import Icon from "$components/icon/Icon.svelte";
 	import CreateMeetingDialog from "$features/meetings-list/components/create-meeting-dialog/CreateMeetingDialog.svelte";
 
@@ -13,11 +13,9 @@
 
 <div class="flex gap-2">
 	<Button
-		classes={{ root: "w-fit h-fit" }}
-		variant="fill"
 		color="primary"
 		onclick={() => {createOpen = true}}
-	>
+	> <!-- classes={{ root: "w-fit h-fit" }} -->
 		Create New Meeting
 		<Icon data={mdiChevronDown} />
 	</Button>

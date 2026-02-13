@@ -10,8 +10,8 @@
 		type UpdateOncallShiftHandoverRequestBody,
 	} from "$lib/api";
 	import Header from "$components/header/Header.svelte";
-	import EventAnnotationDialog from "$src/components/events/annotation-dialog/EventAnnotationDialog.svelte";
-	import EventRow from "$src/components/events/EventRow.svelte";
+	import EventAnnotationDialog from "$components/events/annotation-dialog/EventAnnotationDialog.svelte";
+	import EventRow from "$components/events/EventRow.svelte";
 
 	type Props = {
 		handover: OncallShiftHandover;

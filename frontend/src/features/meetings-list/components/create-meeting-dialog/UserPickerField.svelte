@@ -1,6 +1,4 @@
 <script lang="ts">
-	import { Field } from "svelte-ux";
-
 	type Attendee = {
 		type: "person" | "team";
 		id: string;
@@ -12,7 +10,5 @@
 </script>
 
 <div>
-	<Field label="Attendees">
-		<span>todo</span>
-	</Field>
+	<span>user picker todo</span>
 </div>

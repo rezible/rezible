@@ -6,7 +6,6 @@
 		type MeetingScheduleTiming,
 	} from "$lib/api";
 	import { createQuery } from "@tanstack/svelte-query";
-	import { ListItem } from "svelte-ux";
 	import LoadingQueryWrapper from "$components/loader/LoadingQueryWrapper.svelte";
 	import { mdiChevronRight } from "@mdi/js";
 	import Icon from "$components/icon/Icon.svelte";
@@ -30,7 +29,8 @@
 			{#snippet view(schedules: MeetingSchedule[])}
 				{#each schedules as sched}
 					<a href="/meetings/scheduled/{sched.id}">
-						<ListItem
+						<span>scheduled list item</span>
+						<!-- <ListItem
 							title={sched.attributes.name}
 							subheading={getScheduleTimeDisplay(sched.attributes.timing)}
 							href={`/meetings/scheduled/${sched.id}`}
@@ -40,7 +40,7 @@
 							<div slot="actions" class="group-hover:text-primary">
 								<Icon data={mdiChevronRight} />
 							</div>
-						</ListItem>
+						</ListItem> -->
 					</a>
 				{/each}
 			{/snippet}

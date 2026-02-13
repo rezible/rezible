@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { mdiPlus } from "@mdi/js";
-	import Button from "$components/button/Button.svelte";
+	import { Button } from "$components/ui/button";
 	import { type OncallShift } from "$lib/api";
 	import { useAuthSessionState } from "$lib/auth.svelte";
 	import ActiveShiftCard from "./ActiveShiftCard.svelte";
@@ -46,7 +46,7 @@
 		{/each}
 	</div>
 	<div class="grid place-items-center">
-		<Button icon={mdiPlus} rounded classes={{root: "h-20 opacity-70 hover:opacity-100"}} onclick={() => (rosterDialogOpen = true)}>
+		<Button onclick={() => (rosterDialogOpen = true)}> <!-- classes={{root: "h-20 opacity-70 hover:opacity-100"}} -->
 			<span>Watch Roster</span>
 		</Button>
 	</div>

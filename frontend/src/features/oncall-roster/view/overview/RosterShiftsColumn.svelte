@@ -1,5 +1,5 @@
 <script lang="ts">
-	import Button from "$components/button/Button.svelte";
+import { Button } from "$components/ui/button";
 	import Icon from "$components/icon/Icon.svelte";
 	import { listOncallShiftsOptions } from "$lib/api";
 	import { createQuery } from "@tanstack/svelte-query";
@@ -24,7 +24,7 @@
 	<div class="h-fit p-2 flex flex-col gap-2">
 		<Header title="Shifts" classes={{root: "", title: "text-xl"}}>
 			{#snippet actions()}
-				<Button variant="fill-light" href={`/rosters/${rosterId}/shifts`}>
+				<Button href={`/rosters/${rosterId}/shifts`}>
 					View All
 					<Icon data={mdiArrowRight} classes={{root: "ml-1 h-4 w-4"}} />
 				</Button>

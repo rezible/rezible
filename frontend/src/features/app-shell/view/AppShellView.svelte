@@ -8,7 +8,6 @@
 	import Toaster from "./toaster/Toaster.svelte";
 	import PageContainer from "./PageContainer.svelte";
 	import SessionProtector from "./SessionProtector.svelte";
-	import LogoHeader from "./sidebar/LogoHeader.svelte";
 
 	const { children } = $props();
 	

@@ -28,7 +28,7 @@
 {/snippet}
 
 <FilterPage {filters}>
-	<PaginatedListBox pagination={paginator.pagination}>
+	<PaginatedListBox>
 		<LoadingQueryWrapper {query}>
 			{#snippet view(rosters: OncallRoster[])}
 				{#each rosters as roster}

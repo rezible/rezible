@@ -1,6 +1,5 @@
 <script lang="ts">
-	import { Dialog } from "svelte-ux";
-	import Button from "$components/button/Button.svelte";
+	import { Button } from "$components/ui/button";
 	import { useMilestonesDialog } from "./dialogState.svelte";
 	import MilestonesEditor from "./MilestonesEditor.svelte";
 	import { mdiClose } from "@mdi/js";
@@ -10,7 +9,7 @@
 	const title = $derived(milestonesDialog.editorOpen ? `${editAction} Milestone` : "Incident Milestones");
 </script>
 
-<Dialog
+<!-- <Dialog
 	open={milestonesDialog.open}
 	on:close={() => milestonesDialog.close()}
 	portal
@@ -19,7 +18,7 @@
 >
 	<div slot="header" class="border-b p-2 flex justify-between items-center">
 		<span class="text-xl flex-1">{title}</span>
-		<Button size="sm" icon={mdiClose} iconOnly onclick={() => milestonesDialog.close()} />
+		<Button size="sm" onclick={() => milestonesDialog.close()}>close</Button>
 	</div>
 
 	<div class="flex-1 min-h-0 overflow-y-auto flex overflow-x-hidden">
@@ -27,4 +26,4 @@
 			<MilestonesEditor />
 		{/if}
 	</div>
-</Dialog>
+</Dialog> -->

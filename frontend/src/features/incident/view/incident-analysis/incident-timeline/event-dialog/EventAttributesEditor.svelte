@@ -1,6 +1,5 @@
 <script lang="ts">
 	import type { Component } from "svelte";
-	import { Collapse, ListItem } from "svelte-ux";
 	import { mdiGraphOutline, mdiLayers, mdiLink, mdiStateMachine } from "@mdi/js";
 	import Header from "$components/header/Header.svelte";
 
@@ -60,7 +59,7 @@
 
 {#snippet componentTraitPanel(title: string, subheading: string, icon: string, PanelComponent: Component)}
 <div class="p-2 border rounded">
-	<Collapse open classes={{ root: "overflow-x-hidden", content: "p-2" }}>
+	<!-- <Collapse open classes={{ root: "overflow-x-hidden", content: "p-2" }}>
 		<ListItem
 			slot="trigger"
 			{title}
@@ -74,6 +73,6 @@
 			noShadow
 		/>
 		<PanelComponent></PanelComponent>
-	</Collapse>
+	</Collapse> -->
 </div>
 {/snippet}

@@ -98,14 +98,15 @@ const translateSystemAnalysis = (an: SystemAnalysis) => {
 	});
 
 	let edges: Edge[] = [];
-	an.attributes.relationships.forEach(relationship => {
-		const { id, attributes } = relationship;
+	an.attributes.relationships.forEach(sr => {
+		const { id, attributes } = sr;
+		const relattr = attributes.relationship.attributes;
 		edges.push({
 			id,
 			type: "relationship",
-			source: attributes.sourceId,
-			target: attributes.targetId,
-			data: { relationship } as SystemRelationshipEdgeData,
+			source: relattr.sourceId,
+			target: relattr.targetId,
+			data: { relationship: sr } as SystemRelationshipEdgeData,
 		});
 	});
 
@@ -138,11 +139,9 @@ export class SystemDiagramState {
 		this.edges = translated.edges;
 	}
 
-	flow = $state.raw<ReturnType<typeof useSvelteFlow>>();
 	flowStore = $state.raw<ReturnType<typeof useSvelteFlowStore>>();
 
 	onFlowInit() {
-		this.flow = useSvelteFlow();
 		this.flowStore = useSvelteFlowStore();
 	};
 
@@ -151,8 +150,9 @@ export class SystemDiagramState {
 	}
 
 	updateSelectedPosition({ node, edge }: { node?: Node, edge?: Edge }) {
-		if (this.flow && edge) {
-			this.selectedLivePosition = this.flow.getNodesBounds([edge.source, edge.target]);
+		const { getNodesBounds } = useSvelteFlow();
+		if (edge) {
+			this.selectedLivePosition = getNodesBounds([edge.source, edge.target]);
 		} else if (node) {
 			this.selectedLivePosition = node.position;
 		} else {

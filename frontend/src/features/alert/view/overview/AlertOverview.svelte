@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { useAlertViewState } from "$features/alert";
-	import Avatar from "$src/components/avatar/Avatar.svelte";
+	import Avatar from "$components/avatar/Avatar.svelte";
 	import AlertMetrics from "./AlertMetrics.svelte";
 
 	const viewState = useAlertViewState();

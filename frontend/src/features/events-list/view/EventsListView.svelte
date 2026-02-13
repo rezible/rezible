@@ -7,7 +7,7 @@
 	import LoadingIndicator from "$components/loading-indicator/LoadingIndicator.svelte";
 	import { AnnotationDialogState, setAnnotationDialogState } from "$src/components/events/annotation-dialog/dialogState.svelte";
 	import EventAnnotationDialog from "$src/components/events/annotation-dialog/EventAnnotationDialog.svelte";
-	import { createQuery, useQueryClient } from "@tanstack/svelte-query";
+	import { createQuery } from "@tanstack/svelte-query";
 	import { QueryPaginatorState } from "$lib/paginator.svelte";
 	import { listEventsOptions } from "$lib/api";
 	import { EventsListFiltersState } from "./filters.svelte";
@@ -44,7 +44,7 @@
 <EventAnnotationDialog />
 
 <FilterPage {filters}>
-	<PaginatedListBox pagination={paginator.pagination}>
+	<PaginatedListBox>
 		{#if query.isLoading}
 			<LoadingIndicator />
 		{:else}

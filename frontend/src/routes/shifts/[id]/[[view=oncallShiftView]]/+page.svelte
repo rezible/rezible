@@ -2,7 +2,7 @@
 	import { page } from "$app/state";
 	import { OncallShiftView, setOncallShiftViewState } from "$features/oncall-shift";
 
-	setOncallShiftViewState(() => page.params.id);
+	setOncallShiftViewState(() => (page.params.id || ""));
 </script>
 
 <OncallShiftView />

@@ -1,6 +1,5 @@
 <script lang="ts">
 	import type { Snippet } from "svelte";
-	import { Dialog } from "svelte-ux";
 	import ConfirmButtons from "$components/confirm-buttons/ConfirmButtons.svelte";
 
 	type Props = {
@@ -27,7 +26,7 @@
 	}: Props = $props();
 </script>
 
-<Dialog
+<!--Dialog
 	{open}
 	on:close={() => onClose()}
 	{loading}
@@ -53,4 +52,4 @@
 	<svelte:fragment slot="actions">
 		<ConfirmButtons {loading} {onClose} {confirmText} {onConfirm} {saveEnabled} />
 	</svelte:fragment>
-</Dialog>
+</Dialog-->

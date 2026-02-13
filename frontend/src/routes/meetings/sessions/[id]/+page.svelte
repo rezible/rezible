@@ -2,7 +2,7 @@
 	import { page } from "$app/state";
 	import { MeetingSessionView, setMeetingSessionViewState } from "$features/meeting-session";
 
-	setMeetingSessionViewState(() => page.params.id);
+	setMeetingSessionViewState(() => (page.params.id || ""));
 </script>
 
 <MeetingSessionView />

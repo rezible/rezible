@@ -1,5 +1,4 @@
 <script lang="ts">
-	import { Field, Tooltip, ToggleGroup, ToggleOption } from "svelte-ux";
 	import Icon from "$components/icon/Icon.svelte";
 	import { mdiShape } from "@mdi/js";
 	import TiptapEditor from "$components/tiptap-editor/TiptapEditor.svelte";
@@ -159,7 +158,8 @@
 		rangeMax={timeMax}
 	/>
 
-	<Field label="Kind" icon={mdiShape}>
+	<span>kind field</span>
+	<!-- <Field label="Kind" icon={mdiShape}>
 		<ToggleGroup bind:value={kind} variant="fill" inset class="w-full">
 			{#each milestoneKindOptions as opt}
 				{#if !opt.unique || !existingKinds.has(opt.value)}
@@ -174,13 +174,14 @@
 				{/if}
 			{/each}
 		</ToggleGroup>
-	</Field>
+	</Field> -->
 
-	<Field label="Description" classes={{ root: "grow", container: "h-full", input: "block" }}>
+	<span>description field</span>
+	<!-- <Field label="Description" classes={{ root: "grow", container: "h-full", input: "block" }}>
 		{#if descriptionEditor}
 			<TiptapEditor bind:editor={descriptionEditor} />
 		{/if}
-	</Field>
+	</Field> -->
 
 	<div class="flex justify-end">
 		<ConfirmButtons {loading} closeText="Cancel" confirmText="Save" {saveEnabled} {onClose} {onConfirm} />

@@ -1,6 +1,4 @@
-import { onNavigate } from "$app/navigation";
 import {
-	type UserNotification,
 	type GetCurrentAuthSessionResponse,
 	type User,
 	getCurrentAuthSessionOptions,

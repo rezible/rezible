@@ -15,10 +15,9 @@
 		useQueryClient,
 		type MutationOptions,
 	} from "@tanstack/svelte-query";
-	import { type ColumnDef } from "@layerstack/svelte-table";
-	import { Pagination, Table } from "svelte-ux";
-	import Button from "$components/button/Button.svelte";
-	import { paginationStore } from "@layerstack/svelte-stores";
+	// import { type ColumnDef } from "@layerstack/svelte-table";
+	// import { Pagination, Table } from "svelte-ux";
+	import { Button } from "$components/ui/button";
 	import type { PaginatedResponse, ErrorModel, ListQueryOptionsFunc, ListFuncQueryOptions } from "$lib/api";
 	import { mdiArchive, mdiArchiveMinus, mdiPencil, mdiPlus } from "@mdi/js";
 	import type { FormFields } from "./fields.svelte";
@@ -190,20 +189,20 @@
 	};
     */
 
-	const pagination = paginationStore();
-	const updatePaginationOnQuery = (data?: PaginatedResponse<DataType>) => {
-		pagination.setTotal(data?.pagination.total ?? 0);
-	};
-	// if (query.data) updatePaginationOnQuery(query.data);
+	// const pagination = paginationStore();
+	// const updatePaginationOnQuery = (data?: PaginatedResponse<DataType>) => {
+	// 	pagination.setTotal(data?.pagination.total ?? 0);
+	// };
+	// // if (query.data) updatePaginationOnQuery(query.data);
 
-	const columns: ColumnDef<DataType>[] = [
-		...headers.map((name) => ({ name })),
-		{ name: "actions", header: "", align: "right" },
-	];
+	// const columns: ColumnDef<DataType>[] = [
+	// 	...headers.map((name) => ({ name })),
+	// 	{ name: "actions", header: "", align: "right" },
+	// ];
 </script>
 
-{#snippet mutatingTable(data: DataType[])}
-	<Table {columns} {data} classes={{ container: "border p-2" }}>
+{#snippet mutatingTable(data: any[])}
+	<!--Table {columns} {data} classes={{ container: "border p-2" }}>
 		<tbody slot="data" let:data>
 			{#each data ?? [] as row (row.id)}
 				<tr>
@@ -229,14 +228,14 @@
 				</tr>
 			{/each}
 		</tbody>
-	</Table>
+	</Table-->
 
-	<Pagination
+	<!-- <Pagination
 		{pagination}
 		hideSinglePage
 		show={["pagination", "prevPage", "nextPage"]}
 		classes={{ perPage: "flex-1 text-right", pagination: "px-8" }}
-	/>
+	/> -->
 {/snippet}
 
 {#snippet mutatingTableRow(data: DataType)}
@@ -246,7 +245,6 @@
 	<td class="flex justify-end">
 		{#if data.attributes.archived}
 			<Button
-				icon={mdiArchiveMinus}
 				{disabled}
 				onclick={() => {
 					archiveItem = data;
@@ -255,9 +253,8 @@
 				Restore
 			</Button>
 		{:else}
-			<Button icon={mdiPencil} {disabled} onclick={() => setEditItem(data)}>Edit</Button>
+			<Button {disabled} onclick={() => setEditItem(data)}>Edit</Button>
 			<Button
-				icon={mdiArchive}
 				{disabled}
 				onclick={() => {
 					archiveItem = data;
@@ -297,9 +294,7 @@
 				/>
 			{:else}
 				<Button
-					icon={mdiPlus}
 					color="accent"
-					variant="fill-outline"
 					onclick={() => setCreating(true)}
 				>
 					Create New

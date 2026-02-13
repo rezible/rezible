@@ -6,7 +6,7 @@
 
 	const { screenToFlowPosition } = useSvelteFlow();
 
-	const addingComponent = $derived(diagram.addingComponent);
+	const addingComponent = $derived(diagram.addingComponentGhost);
 
 	let pos = $state<XYPosition>({x: 0, y: 0});
 	const onPointerMove = (e: PointerEvent) => {

@@ -1,7 +1,5 @@
 <script lang="ts">
-	import { DateToken, PeriodType } from "@layerstack/utils";
 	import { isFuture } from "date-fns";
-	import { settings } from "$lib/settings.svelte";
 	import Avatar from "$components/avatar/Avatar.svelte";
 	import { useOncallShiftViewState } from "$features/oncall-shift";
 
@@ -13,7 +11,7 @@
 	const startDate = $derived(view.shiftStart?.toDate());
 	const endDate = $derived(view.shiftEnd?.toDate());
 
-	const timeFmt = `${DateToken.Hour_numeric}:${DateToken.Minute_numeric}`;
+	// const timeFmt = `${DateToken.Hour_numeric}:${DateToken.Minute_numeric}`;
 </script>
 
 <div class="grid grid-flow-col gap-2">
@@ -35,8 +33,8 @@
 <div class="flex gap-2 border rounded-lg p-1 px-4 w-fit items-center">
 	{#snippet formattedDateTime(label: string, d: Date)}
 		<span class="leading-none">
-			{settings.format(d, PeriodType.Day)}
-			{settings.format(d, PeriodType.Custom, {custom: timeFmt})}
+			<!-- {settings.format(d, PeriodType.Day)}
+			{settings.format(d, PeriodType.Custom, {custom: timeFmt})} -->
 		</span>
 	{/snippet}
 

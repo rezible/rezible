@@ -2,5 +2,6 @@ node_modules/
 .env
 .devbox/
 .idea/
+.vscode/
 **/openapi-ts-error-*
 **/CLAUDE.md

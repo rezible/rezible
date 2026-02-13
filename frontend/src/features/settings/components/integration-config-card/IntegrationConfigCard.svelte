@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { SvelteMap } from 'svelte/reactivity';
 	import type { ConfiguredIntegration, ConfigureIntegrationRequestBody, SupportedIntegration } from '$lib/api';
-	import Button from '$components/button/Button.svelte';
+	import { Button } from "$components/ui/button";
 	import type { IntegrationConfigComponent } from './types';
 	import SlackConfig from './config-components/SlackConfig.svelte';
 	import PlaceholderConfig from './config-components/PlaceholderConfig.svelte';
@@ -65,7 +65,6 @@
         <ConfigComponent {integration} {configured} {onConfigChange} />
 
         <Button 
-            variant="fill-light"
             color="primary"
             onclick={doConfigureIntegration}
         >

@@ -1,7 +1,6 @@
 <script lang="ts">
 	import { createQuery } from "@tanstack/svelte-query";
-	import { Month } from "svelte-ux";
-	import Button from "$components/button/Button.svelte";
+	import { Button } from "$components/ui/button";
 	import Icon from "$components/icon/Icon.svelte";
 	import { mdiChevronRight } from "@mdi/js";
 	import { listOncallShiftsOptions, type OncallShift } from "$lib/api";
@@ -38,7 +37,8 @@
 		</div>
 
 		<div class="py-2 border-y">
-			<Month />
+			<span>month</span>
+			<!-- <Month /> -->
 		</div>
 	</div>
 
@@ -74,7 +74,7 @@
 		<div class="flex flex-col border p-2">
 			<Header title="Cover Requests" classes={{ root: "text-lg font-medium" }}>
 				{#snippet actions()}
-					<Button variant="fill-light">Request Cover</Button>
+					<Button>Request Cover</Button>
 				{/snippet}
 			</Header>
 

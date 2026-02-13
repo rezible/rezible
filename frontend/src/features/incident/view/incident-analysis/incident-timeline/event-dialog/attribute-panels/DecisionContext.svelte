@@ -1,5 +1,4 @@
 <script lang="ts">
-	import { TextField } from "svelte-ux";
 	import EditableStringList from "$components/editable-list/EditableStringList.svelte";
 	import { eventAttributes } from "./eventAttributesState.svelte";
 
@@ -21,9 +20,10 @@
 	<div class="flex flex-col gap-2 border p-2">
 		<span class="text-surface-content">Decision Rationale</span>
 
-		<TextField 
+		<span>rationale field</span>
+		<!-- <TextField 
 			label="Rationale for the decision made"
 			multiline
-			bind:value={eventAttributes.decisionContext.decisionRationale} />
+			bind:value={eventAttributes.decisionContext.decisionRationale} /> -->
 	</div>
 </div>

@@ -2,19 +2,22 @@ import { getOncallRosterOptions } from "$lib/api";
 import { redirect } from "@sveltejs/kit";
 import { validate as isValidUUID } from "uuid";
 import type { PageLoad } from "./$types";
+import type { QueryClient } from "@tanstack/svelte-query";
+
+const validateSlugParamOrRedirect = async (param: string, url: URL, qc: QueryClient) => {
+	if (!isValidUUID(param)) return param;
+
+	const res = await qc.fetchQuery(getOncallRosterOptions({ path: { id: param } }));
+	const slug = res.data.attributes.slug;
+	qc.setQueryData(getOncallRosterOptions({ path: { id: slug } }).queryKey, res);
+	const slugPath = url.pathname.replaceAll(slug, slug) + url.search;
+	throw redirect(301, slugPath);
+}
 
 export const load = (async ({ params, parent, url }) => {
 	const { queryClient } = await parent();
 
-	const slug = params.slug;
-
-	if (isValidUUID(slug)) {
-		const res = await queryClient.fetchQuery(getOncallRosterOptions({ path: { id: slug } }));
-		const realSlug = res.data.attributes.slug;
-		queryClient.setQueryData(getOncallRosterOptions({ path: { id: realSlug } }).queryKey, res);
-		const slugPath = url.pathname.replaceAll(slug, realSlug) + url.search;
-		throw redirect(301, slugPath);
-	}
+	const slug = await validateSlugParamOrRedirect(params.slug, url, queryClient);
 
 	return { slug };
 }) satisfies PageLoad;

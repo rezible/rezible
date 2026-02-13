@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { mdiFilter } from "@mdi/js";
 	import { ToggleGroup, ToggleOption } from "svelte-ux";
-	import Button from "$components/button/Button.svelte";
+	import { Button } from "$components/ui/button";
 	import ShiftEventsHeatmap from "./ShiftEventsHeatmap.svelte";
 	import ShiftEventsList from "./ShiftEventsList.svelte";
 	import Header from "$components/header/Header.svelte";
@@ -19,7 +19,7 @@
 	<div class="h-fit pt-2 flex flex-col gap-2">
 		<Header title="Shift Events" subheading="Showing All" classes={{root: "px-2"}}>
 			{#snippet actions()}
-				<Button icon={mdiFilter} iconOnly onclick={() => (showFilters = !showFilters)} />
+				<Button onclick={() => (showFilters = !showFilters)}>filter</Button>
 			{/snippet}
 		</Header>
 

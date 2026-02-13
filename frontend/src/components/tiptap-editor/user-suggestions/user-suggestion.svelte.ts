@@ -1,7 +1,6 @@
 import type { Content } from "@tiptap/core";
 import type { SuggestionKeyDownProps, SuggestionOptions, SuggestionProps } from "@tiptap/suggestion";
 import { mount, unmount } from "svelte";
-import { offset } from "@floating-ui/dom";
 import SuggestionPopup from "./UserSuggestionPopup.svelte";
 
 const userList = [

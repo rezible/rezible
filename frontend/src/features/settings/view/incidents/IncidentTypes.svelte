@@ -21,7 +21,7 @@
 	};
 </script>
 
-<MutatingTable
+<!-- <MutatingTable
 	dataType="Incident Type"
 	description="Modify incident types."
 	headers={["Name"]}
@@ -31,4 +31,4 @@
 	{#snippet dataRow(it: IncidentType)}
 		<td>{it.attributes.name}</td>
 	{/snippet}
-</MutatingTable>
+</MutatingTable> -->

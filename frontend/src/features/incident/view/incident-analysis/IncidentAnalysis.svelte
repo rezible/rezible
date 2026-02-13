@@ -1,5 +1,5 @@
 <script lang="ts">
-	import Button from "$components/button/Button.svelte";
+	import { Button } from "$components/ui/button";
 	import Icon from "$components/icon/Icon.svelte";
 	import { mdiChevronDown, mdiChevronUp } from "@mdi/js";
 
@@ -28,7 +28,7 @@
 
 {#snippet floatingTimelineToggleButton(hide: boolean)}
 	<div class="absolute left-2 flex items-center h-10" class:top-2={hide} class:bottom-2={!hide} class:hidden={hideTimeline === hide}>
-		<Button color={hide ? "default" : "accent"} variant="fill-light" onclick={() => {hideTimeline = hide}}>
+		<Button color={hide ? "default" : "accent"} onclick={() => {hideTimeline = hide}}>
 			{hide ? "Hide" : "Show"} Timeline
 			<Icon data={hide ? mdiChevronDown : mdiChevronUp} />
 		</Button>

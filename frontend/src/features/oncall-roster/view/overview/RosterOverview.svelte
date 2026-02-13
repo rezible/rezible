@@ -1,11 +1,7 @@
 <script lang="ts">
-	import {
-		mdiChartBar,
-	} from "@mdi/js";
+	import { mdiChartBar } from "@mdi/js";
 	import Icon from "$components/icon/Icon.svelte";
-	import {
-		getOncallRosterMetricsOptions,
-	} from "$lib/api";
+	import { getOncallRosterMetricsOptions } from "$lib/api";
 	import { createQuery } from "@tanstack/svelte-query";
 	import Header from "$components/header/Header.svelte";
 	import RosterActivityColumn from "./RosterActivityColumn.svelte";

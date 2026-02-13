@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { createQuery } from "@tanstack/svelte-query";
-	import { listTeamsOptions, type ListTeamsData, type Team } from "$lib/api";
+	import { listTeamsOptions, type Team } from "$lib/api";
 	import { appShell } from "$features/app-shell";
 	import LoadingQueryWrapper from "$components/loader/LoadingQueryWrapper.svelte";
 	import FilterPage from "$components/filter-page/FilterPage.svelte";
@@ -27,7 +27,7 @@
 {/snippet}
 
 <FilterPage {filters}>
-	<PaginatedListBox pagination={paginator.pagination}>
+	<PaginatedListBox>
 		<LoadingQueryWrapper {query}>
 			{#snippet view(teams: Team[])}
 				{#each teams as team (team.id)}

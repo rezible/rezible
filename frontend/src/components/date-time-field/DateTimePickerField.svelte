@@ -1,12 +1,6 @@
 <script lang="ts">
-	import { slide } from "svelte/transition";
-	import { mdiCalendar } from "@mdi/js";
-	import { Field, Dialog, DateSelect } from "svelte-ux";
-	import { PeriodType } from "@layerstack/utils";
-	import ConfirmChangeButtons from "$components/confirm-buttons/ConfirmButtons.svelte";
-	import TimePicker from "$components/time-picker/TimePicker.svelte";
 	import { CalendarDateTime, parseAbsolute, parseZonedDateTime, toZoned, ZonedDateTime } from "@internationalized/date";
-	import { convertTime, format } from "./format.svelte";
+	import { convertTime } from "./format.svelte";
 	import { differenceInCalendarDays } from "date-fns/differenceInCalendarDays";
 	import { isSameDay } from "date-fns";
 
@@ -62,7 +56,7 @@
 	}
 </script>
 
-<div>
+<!--div>
 	<Field let:id icon={mdiCalendar} {label}>
 		<span slot="prepend">
 			<input type="hidden" {name} value={current} />
@@ -127,4 +121,4 @@
 			<ConfirmChangeButtons {onConfirm} {onClose} saveEnabled={timeValid} />
 		</div>
 	</Dialog>
-</div>
+</div-->

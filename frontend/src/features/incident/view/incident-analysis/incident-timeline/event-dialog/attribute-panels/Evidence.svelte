@@ -4,13 +4,14 @@
 	import type { IncidentEventEvidence, IncidentEventEvidenceAttributes } from "$lib/api";
 	import { mdiPencil, mdiPlus, mdiSlack, mdiTrashCan, mdiWeb } from "@mdi/js";
 	import Icon from "$components/icon/Icon.svelte";
-	import { ListItem, SelectField, type MenuOption } from "svelte-ux";
-	import Button from "$components/button/Button.svelte";
+	import { Button } from "$components/ui/button";
 	import ConfirmButtons from "$components/confirm-buttons/ConfirmButtons.svelte";
 	import Slack from "./data-sources/Slack.svelte";
 	import Url from "./data-sources/Url.svelte";
 	import { eventAttributes } from "./eventAttributesState.svelte";
 	// import Github from "./data-sources/Github.svelte";
+
+	type MenuOption<T extends any> = { label: string; value: T, icon: string };
 
 	type DataSourceComponent = Component<{ dataValue: string }, {}, "dataValue">;
 	type DataSourceMenuOption = MenuOption<string> & { component: DataSourceComponent };
@@ -59,7 +60,8 @@
 
 <div class="flex flex-col gap-1 bg-surface-100">
 	{#if adding}
-		<SelectField bind:value={adding.source} options={dataSourceOptions} label="Data Source" />
+		<span>data source select field</span>
+		<!-- <SelectField bind:value={adding.source} options={dataSourceOptions} label="Data Source" /> -->
 
 		{#if addOption?.component}
 			{@const SourceComponent = addOption.component}
@@ -90,7 +92,8 @@
 		</div>
 	{:else}
 		{#each eventAttributes.evidence as ev, i}
-			<ListItem
+			<span>evidence: {ev.attributes.source}</span>
+			<!-- <ListItem
 				title={ev.attributes.source}
 				subheading={ev.attributes.value}
 				classes={{ root: "border first:border-t rounded elevation-0" }}
@@ -101,13 +104,11 @@
 					<Button icon={mdiPencil} iconOnly onclick={() => setEditing(ev)} />
 					<Button icon={mdiTrashCan} iconOnly onclick={() => confirmDelete(ev)} />
 				</div>
-			</ListItem>
+			</ListItem> -->
 		{/each}
 
 		<Button
-			class="text-surface-content/50 p-2"
 			color="primary"
-			variant="fill-light"
 			onclick={setAddingNew}
 		>
 			<span class="flex items-center gap-2 text-primary-content">

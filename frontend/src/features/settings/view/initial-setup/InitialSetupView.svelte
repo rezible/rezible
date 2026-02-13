@@ -4,7 +4,7 @@
 	import { useInitialSetupViewDriver } from "$features/settings/lib/initialSetupViewDriver.svelte";
 	import LoadingIndicator from "$components/loading-indicator/LoadingIndicator.svelte";
 	import RequiredIntegrationsSetup from "./RequiredIntegrationsSetup.svelte";
-	import Button from "$components/button/Button.svelte";
+	import { Button } from "$components/ui/button";
 
 	appShell.setPageBreadcrumbs(() => [
 		{ label: "Setup", href: "/setup" },
@@ -37,9 +37,8 @@
 			{#if view.canFinish}
 				<Button
 					color="secondary" 
-					variant="fill"
 					onclick={() => view.doFinishOrganizationSetup()} 
-					loading={view.finishingOrgSetup}
+					disabled={view.finishingOrgSetup}
 				>
 					Finish setup
 				</Button>

@@ -1,8 +1,7 @@
 <script lang="ts">
-	import Button from "$components/button/Button.svelte";
+	import { Button } from "$components/ui/button";
 	import Icon from "$components/icon/Icon.svelte";
 	import { mdiChevronLeft, mdiChevronRight } from "@mdi/js";
-	import { page } from "$app/state";
 
 	type Props = {
 		previousId?: string;

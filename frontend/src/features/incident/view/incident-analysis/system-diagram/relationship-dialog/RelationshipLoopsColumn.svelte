@@ -1,20 +1,18 @@
 <script lang="ts" module>
 	type RelationshipFeedbackSignal = {
-		feedback: SystemAnalysisRelationshipFeedbackSignal;
+		// feedback: SystemAnalysisRelationshipFeedbackSignal;
 		signal: SystemComponentSignal;
 	};
 
 	type RelationshipControlAction = {
-		action: SystemAnalysisRelationshipControlAction;
+		// action: SystemAnalysisRelationshipControlAction;
 		control: SystemComponentControl;
 	};
 </script>
 
 <script lang="ts">
-	import Button from "$components/button/Button.svelte";
+	import { Button } from "$components/ui/button";
 	import type {
-		SystemAnalysisRelationshipControlAction,
-		SystemAnalysisRelationshipFeedbackSignal,
 		SystemComponent,
 		SystemComponentControl,
 		SystemComponentSignal,
@@ -40,43 +38,45 @@
 	const [sourceFeedbackSignals, targetFeedbackSignals] = $derived.by(() => {
 		const src: RelationshipFeedbackSignal[] = [];
 		const tgt: RelationshipFeedbackSignal[] = [];
-		relationshipAttributes.feedbackSignals.forEach((feedback) => {
-			const signalId = feedback.attributes.signalId;
-			const sourceSignal = sourceSignals.get(signalId);
-			if (sourceSignal) src.push({ feedback, signal: sourceSignal });
-			const targetSignal = targetSignals.get(signalId);
-			if (targetSignal) tgt.push({ feedback, signal: targetSignal });
-		});
+		// relationshipAttributes.feedbackSignals.forEach((feedback) => {
+		// 	const signalId = feedback.attributes.signalId;
+		// 	const sourceSignal = sourceSignals.get(signalId);
+		// 	if (sourceSignal) src.push({ feedback, signal: sourceSignal });
+		// 	const targetSignal = targetSignals.get(signalId);
+		// 	if (targetSignal) tgt.push({ feedback, signal: targetSignal });
+		// });
 		return [src, tgt];
 	});
 
 	const [sourceControlActions, targetControlActions] = $derived.by(() => {
 		const src: RelationshipControlAction[] = [];
 		const tgt: RelationshipControlAction[] = [];
-		relationshipAttributes.controlActions.forEach((action) => {
-			const controlId = action.attributes.controlId;
-			const sourceControl = sourceControls.get(controlId);
-			if (sourceControl) src.push({ action, control: sourceControl });
-			const targetControl = targetControls.get(controlId);
-			if (targetControl) tgt.push({ action, control: targetControl });
-		});
+		// relationshipAttributes.controlActions.forEach((action) => {
+		// 	const controlId = action.attributes.controlId;
+		// 	const sourceControl = sourceControls.get(controlId);
+		// 	if (sourceControl) src.push({ action, control: sourceControl });
+		// 	const targetControl = targetControls.get(controlId);
+		// 	if (targetControl) tgt.push({ action, control: targetControl });
+		// });
 		return [src, tgt];
 	});
 
-	let editingAction = $state<SystemAnalysisRelationshipControlAction>();
+	let editingAction = $state<any/*SystemAnalysisRelationshipControlAction*/>();
 	const updateEditingAction = () => {
 		if (!editingAction) return;
 		relationshipAttributes.updateControlAction($state.snapshot(editingAction.attributes));
 		editingAction = undefined;
 	};
 
-	let editingFeedback = $state<SystemAnalysisRelationshipFeedbackSignal>();
+	let editingFeedback = $state<any/*SystemAnalysisRelationshipFeedbackSignal*/>();
 	const updateEditingFeedback = () => {
 		if (!editingFeedback) return;
 		relationshipAttributes.updateFeedbackSignal($state.snapshot(editingFeedback.attributes));
 		editingFeedback = undefined;
 	};
 </script>
+
+<!--
 
 <div class="flex flex-col gap-2">
 	{@render componentFeedbackLoops(source.attributes.name, sourceFeedbackSignals, sourceControlActions)}
@@ -153,3 +153,4 @@
 		</Header>
 	</div>
 {/snippet}
+-->

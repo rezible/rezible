@@ -1,6 +1,5 @@
 <script lang="ts">
-	import { Tooltip } from "svelte-ux";
-	import Button from "$components/button/Button.svelte";
+	import { Button } from "$components/ui/button";
 	import { onMount } from "svelte";
 	import type { RetrospectiveComment } from "$lib/api";
 	import type { JSONContent } from "@tiptap/core";
@@ -8,7 +7,7 @@
 	import { activeDiscussion } from "$features/incident/lib/discussions.svelte";
 	import TiptapEditor, { Editor as SvelteEditor } from "$components/tiptap-editor/TiptapEditor.svelte";
 	import Header from "$components/header/Header.svelte";
-	import { createDiscussionEditor } from "$src/components/tiptap-editor/editors";
+	import { createDiscussionEditor } from "$components/tiptap-editor/editors";
 
 	type Props = {
 		discussion: RetrospectiveComment;
@@ -36,9 +35,7 @@
 >
 	<Header title="User Name" subheading="date/time">
 		{#snippet actions()}
-			<Tooltip title="Mark Completed">
-				<Button iconOnly size="sm" icon={mdiCheck} />
-			</Tooltip>
+			<Button size="sm">mark completed</Button>
 		{/snippet}
 	</Header>
 

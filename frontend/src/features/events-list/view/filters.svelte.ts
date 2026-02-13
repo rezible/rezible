@@ -1,13 +1,11 @@
 import type { ListEventsData, EventAttributes } from "$lib/api";
 import { useUserOncallInformation } from "$lib/userOncall.svelte";
-import { PeriodType } from "@layerstack/utils";
-import type { DateRange as DateRangeType } from "@layerstack/utils/dateRange";
 import { subMonths, subWeeks } from "date-fns";
 
 export type DateRangeOption = { label: string, value: "shift" | "7d" | "30d" | "custom" };
 
-const last7Days = () => ({ from: subWeeks(new Date(), 1), to: new Date(), periodType: PeriodType.Day });
-const lastMonth = () => ({ from: subMonths(new Date(), 1), to: new Date(), periodType: PeriodType.Day });
+const last7Days = () => ({ from: subWeeks(new Date(), 1), to: new Date(), periodType: "day" });
+const lastMonth = () => ({ from: subMonths(new Date(), 1), to: new Date(), periodType: "day" });
 
 export type EventKind = EventAttributes["kind"];
 
@@ -23,11 +21,11 @@ export class EventsListFiltersState {
 	private defaultShiftDateRange = $derived(this.activeShift && {
 		from: new Date(this.activeShift.attributes.startAt),
 		to: new Date(this.activeShift.attributes.endAt),
-		periodType: PeriodType.Day,
+		periodType: "day",
 	});
 
 	dateRangeOption = $state<DateRangeOption["value"]>("7d");
-	customDateRangeValue = $state<DateRangeType>(last7Days());
+	customDateRangeValue = $state(last7Days());
 	shiftDateRange = $derived(!!this.defaultShiftDateRange ? this.defaultShiftDateRange : this.customDateRangeValue)
 
 	dateRange = $derived.by(() => {

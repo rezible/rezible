@@ -1,7 +1,6 @@
 <script lang="ts">
 	import { mdiClose } from "@mdi/js";
-	import { Dialog } from "svelte-ux";
-	import Button from "$components/button/Button.svelte";
+	import { Button } from "$components/ui/button";
 	import ConfirmButtons from "$components/confirm-buttons/ConfirmButtons.svelte";
 	import RelationshipAttributesEditor from "./RelationshipAttributesEditor.svelte";
 	import { useRelationshipDialog } from "./dialogState.svelte";
@@ -19,7 +18,7 @@
 	const labels = $derived(viewActionLabels[view]);
 </script>
 
-<Dialog
+<!-- <Dialog
 	{open}
 	on:close={() => relationshipDialog.clear()}
 	loading={relationshipDialog.loading}
@@ -54,4 +53,4 @@
 			onConfirm={() => relationshipDialog.onConfirm()}
 		/>
 	</svelte:fragment>
-</Dialog>
+</Dialog> -->

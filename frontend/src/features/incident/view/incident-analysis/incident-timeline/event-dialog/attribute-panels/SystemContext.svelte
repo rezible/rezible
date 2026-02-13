@@ -9,8 +9,7 @@
 	import { v4 as uuidv4 } from "uuid";
 	import { getIconForComponentKind } from "$lib/systemComponents";
 	import { SvelteMap } from "svelte/reactivity";
-	import { ListItem, TextField, ToggleGroup, ToggleOption } from "svelte-ux";
-	import Button from "$components/button/Button.svelte";
+	import { Button } from "$components/ui/button";
 	import Icon from "$components/icon/Icon.svelte";
 	import { mdiPencil, mdiPlus, mdiShapeSquareRoundedPlus, mdiTrashCan } from "@mdi/js";
 	import ConfirmButtons from "$components/confirm-buttons/ConfirmButtons.svelte";
@@ -107,39 +106,15 @@
 		{@const attrs = cmp.attributes.component.attributes}
 		<span class="text-lg">{attrs.name}</span>
 
-		<ToggleGroup variant="fill-surface" bind:value={status} gap>
+		<span>status select</span>
+		<!-- <ToggleGroup variant="fill-surface" bind:value={status} gap>
 			<ToggleOption value="normal">Normal</ToggleOption>
 			<ToggleOption value="degraded">Degraded</ToggleOption>
 			<ToggleOption value="failing">Failing</ToggleOption>
-		</ToggleGroup>
+		</ToggleGroup> -->
 
-		<TextField label="Description" bind:value={description} multiline />
-
-		<!-- TODO: think about what we want as rich context -->
-		<!--div class="flex flex-col gap-1">
-			<span>Relationships</span>
-
-			{#each relationships ?? [] as rel}
-				{@const attrs = rel.attributes}
-				{@const otherId = attrs.sourceId === focusComponentId ? attrs.targetId : attrs.sourceId}
-				{@const other = analysisComponentMap.get(otherId)?.attributes.component}
-				<ListItem
-					title={other?.attributes.name ?? "Unknown Component"}
-					subheading={rel.attributes.description}
-					classes={{ root: "border first:border-t rounded elevation-0" }}
-					class="flex-1"
-					noShadow
-				>
-					<div slot="actions">
-						<ToggleGroup variant="fill-surface" value={"normal"} gap>
-							<ToggleOption value="normal">Normal</ToggleOption>
-							<ToggleOption value="degraded">Degraded</ToggleOption>
-							<ToggleOption value="failing">Failing</ToggleOption>
-						</ToggleGroup>
-					</div>
-				</ListItem>
-			{/each}
-		</div-->
+		<span>description field</span>
+		<!-- <TextField label="Description" bind:value={description} multiline /> -->
 	{/snippet}
 
 	{#snippet confirmButtons()}
@@ -157,7 +132,8 @@
 	{#snippet componentSelector()}
 		{#each analysisComponents as c (c.id)}
 		{@const attr = c.attributes.component.attributes}
-			<ListItem
+			<span>component list item: {attr.name}</span>
+			<!-- <ListItem
 				title={attr.name}
 				subheading={attr.description}
 				avatar={{ class: "bg-surface-content/50 text-surface-100/90" }}
@@ -174,7 +150,7 @@
 						onclick={() => (selectedComponent = $state.snapshot(c))}
 					/>
 				</div>
-			</ListItem>
+			</ListItem> -->
 		{/each}
 
 		{#if analysisComponents.length === 0 && analysisComponentsQuery.isFetched}
@@ -203,7 +179,8 @@
 	{:else}
 		{#each eventAttributes.systemContext as cx, i}
 			{@const cmp = analysisComponentMap.get(cx.attributes.analysisComponentId)?.attributes.component}
-			<ListItem
+			<span>component list item: {cmp?.attributes.name ?? "Unknown Component"}</span>
+			<!-- <ListItem
 				title={cmp?.attributes.name ?? "Unknown Component"}
 				subheading={cx.attributes.description}
 				classes={{ root: "border first:border-t rounded elevation-0" }}
@@ -217,13 +194,11 @@
 					<Button icon={mdiPencil} iconOnly onclick={() => setEditing(cx)} />
 					<Button icon={mdiTrashCan} iconOnly onclick={() => confirmDelete(cx)} />
 				</div>
-			</ListItem>
+			</ListItem> -->
 		{/each}
 
 		<Button
-			class="text-surface-content/50 p-2"
 			color="primary"
-			variant="fill-light"
 			onclick={() => (selecting = true)}
 		>
 			<span class="flex items-center gap-2 text-primary-content">

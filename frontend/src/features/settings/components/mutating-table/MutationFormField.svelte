@@ -1,7 +1,6 @@
 <script lang="ts">
 	import { z } from "zod";
 	import LoadingSelect from './LoadingSelect.svelte';
-	import { Field as UxField, Switch, TextField } from "svelte-ux";
 	import { isSelectField, unwrappedSchema, type Field } from './fields.svelte';
 
 
@@ -39,7 +38,8 @@
 		<span>regular select</span>
 	{/if}
 {:else if schemaBase instanceof z.ZodString}
-	<TextField
+	<span>string</span>
+	<!-- <TextField
 		{label}
 		{error}
 		labelPlacement="float"
@@ -49,11 +49,12 @@
 			values[name] = detail.value ?? "";
 			onChange();
 		}}
-	/>
+	/> -->
 {:else if schemaBase instanceof z.ZodBoolean}
-	<UxField label={field.label} let:id {error}>
+	<span>boolean</span>
+	<!-- <UxField label={field.label} let:id {error}>
 		<Switch {id} bind:checked={values[name]} on:change={onChange} />
-	</UxField>
+	</UxField> -->
 {:else if schemaBase instanceof z.ZodNumber}
 	<span>number</span>
 {:else}

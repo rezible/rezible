@@ -3,7 +3,7 @@
 	import { BACKEND_URL, getAuthSessionConfigOptions } from "$lib/api";
 	import { useAuthSessionState, type SessionErrorCategory } from "$lib/auth.svelte";
 	import { mdiGoogle, mdiKey } from "@mdi/js";
-	import Button from "$components/button/Button.svelte";
+	import { Button } from "$components/ui/button";
 	import Header from "$components/header/Header.svelte";
 	import Icon from "$components/icon/Icon.svelte";
 
@@ -46,11 +46,11 @@
 		{/if}
 
 		{#if errorCategory === "invalid_user"}
-			<Button href="{BACKEND_URL}/api/auth/logout" loading={configQuery.isLoading} color="primary" variant="fill">Logout</Button>
+			<Button href="{BACKEND_URL}/api/auth/logout" disabled={configQuery.isLoading} color="primary">Logout</Button>
 		{:else if !!providers}
 			{#each providers as p}
 				{@const display = providerDisplay.get(p.name.toLowerCase())}
-				<Button href={p.startFlowEndpoint} color="primary" variant="fill">
+				<Button href={p.startFlowEndpoint} color="primary">
 					<span class="flex items-center gap-2">
 					Continue with {display?.label ?? p.name}
 					{#if display?.icon}

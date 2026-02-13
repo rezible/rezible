@@ -1,7 +1,5 @@
 <script lang="ts">
 	import { mdiCheck, mdiPencil, mdiPlus, mdiTrashCan } from "@mdi/js";
-	import { TextField, ListItem } from "svelte-ux";
-	import Button from "$components/button/Button.svelte";
 
 	type Props = {
 		title: string;
@@ -44,7 +42,7 @@
 	}
 </script>
 
-<div class="flex flex-col gap-2 border p-2">
+<!--div class="flex flex-col gap-2 border p-2">
 	<span class="text-surface-content">{title}</span>
 
 	{#each values as val, i}
@@ -86,4 +84,4 @@
 			/>
 		</span>
 	</TextField>
-</div>
+</div-->

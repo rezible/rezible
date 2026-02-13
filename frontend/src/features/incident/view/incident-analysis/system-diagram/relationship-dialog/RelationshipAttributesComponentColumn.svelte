@@ -1,6 +1,5 @@
 <script lang="ts">
-	import { ListItem } from "svelte-ux";
-	import Button from "$components/button/Button.svelte";
+	import { Button } from "$components/ui/button";
 	import { mdiPlus } from "@mdi/js";
 	import type { SystemComponent, SystemComponentSignal, SystemComponentControl } from "$lib/api";
 	import LabelDescriptionEditor from "./LabelDescriptionEditor.svelte";
@@ -113,7 +112,7 @@
 	includeFunc: (id: string) => void
 )}
 	<div class="p-1">
-		<ListItem
+		<!-- <ListItem
 			title={item.attributes.label}
 			subheading={item.attributes.description}
 			noShadow
@@ -121,14 +120,6 @@
 			class="px-4 py-2 transition-shadow duration-100 hover:bg-surface-100 hover:outline"
 		>
 			<svelte:fragment slot="actions">
-				<!--Button
-					size="sm"
-					iconOnly
-					icon={mdiPencil}
-					onclick={() => {
-						editFunc(item);
-					}}
-				/-->
 				<Button
 					size="sm"
 					iconOnly
@@ -138,6 +129,6 @@
 					}}
 				/>
 			</svelte:fragment>
-		</ListItem>
+		</ListItem> -->
 	</div>
 {/snippet}

@@ -1,8 +1,6 @@
 <script lang="ts">
 	import type { OncallShift } from "$lib/api";
 	import { formatDistanceToNow } from "date-fns";
-	import { Tooltip, ProgressCircle } from "svelte-ux";
-	import { cls } from "@layerstack/tailwind";
 
 	type Props = {
 		shift: OncallShift;
@@ -17,7 +15,7 @@
 	const timeLeft = $derived(formatDistanceToNow(end));
 </script>
 
-<Tooltip>
+<!--Tooltip>
 	<ProgressCircle
 		{size}
 		width={size/4}
@@ -34,4 +32,4 @@
 			<span>{timeLeft} left</span>
 		</div>
 	</div>
-</Tooltip>
+</Tooltip-->

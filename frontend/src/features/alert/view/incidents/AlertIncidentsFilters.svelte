@@ -1,17 +1,11 @@
 <script lang="ts">
-	import RosterSelectField from "$src/components/roster-select-field/RosterSelectField.svelte";
-	import { DateRangeField } from "svelte-ux";
-	import { PeriodType } from "@layerstack/utils";
-	import { type DateRange as DateRangeType } from '@layerstack/utils/dateRange';
-	import { mdiCalendarRange } from "@mdi/js";
+	import RosterSelectField from "$components/roster-select-field/RosterSelectField.svelte";
 
 	type Props = {
 		rosterId?: string;
-		dateRange?: DateRangeType;
 	};
 	let { 
 		rosterId = $bindable(),
-		dateRange = $bindable(),
 	}: Props = $props();
 
 	const onRosterSelected = (id?: string) => {
@@ -20,9 +14,9 @@
 </script>
 
 <div class="flex gap-2">
-	<RosterSelectField onSelected={onRosterSelected} selectedId={rosterId} classes={{ root: "w-64" }} />
+	<RosterSelectField onSelected={onRosterSelected} selectedId={rosterId} />
 
-	<DateRangeField
+	<!-- <DateRangeField
 		label="Date Range"
 		periodTypes={[PeriodType.Day]}
 		classes={{
@@ -30,5 +24,5 @@
 		}}
 		icon={mdiCalendarRange}
 		bind:value={dateRange}
-	/>
+	/> -->
 </div>

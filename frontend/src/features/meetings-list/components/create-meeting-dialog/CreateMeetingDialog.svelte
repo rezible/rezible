@@ -1,16 +1,8 @@
 <script lang="ts">
 	import { createMutation } from "@tanstack/svelte-query";
 	import { mdiArrowRight } from "@mdi/js";
-	import {
-		Dialog,
-		Field,
-		NumberStepper,
-		TextField,
-		ToggleGroup,
-		ToggleOption,
-		DatePickerField,
-	} from "svelte-ux";
-	import Button from "$components/button/Button.svelte";
+
+	import { Button } from "$components/ui/button";
 	import Icon from "$components/icon/Icon.svelte";
 	import { createMeetingScheduleMutation, createMeetingSessionMutation, type ErrorModel } from "$lib/api";
 	import Header from "$components/header/Header.svelte";
@@ -86,7 +78,7 @@
 	}
 </script>
 
-<Dialog
+<!--Dialog
 	bind:open
 	loading={isPending}
 	persistent
@@ -95,19 +87,10 @@
 >
 	<div slot="header" class="border-b p-2 flex justify-between items-center">
 		<span class="text-xl flex-1">Create Meeting</span>
-		<!--div class="">
-			<Button variant="fill-light" color="secondary">
-				<span class="flex gap-2 items-center">
-					AI Draft
-				</span>
-			</Button>
-		</div-->
 	</div>
 
 	<div class="flex flex-row gap-2 overflow-y-auto p-2 w-fit">
 		<div class="w-fit flex flex-col gap-1 max-h-full">
-			<!-- <Header title="Details" /> -->
-
 			<TextField label="Title" bind:value={formData.name} />
 
 			<TextField label="Description" bind:value={formData.description} />
@@ -215,3 +198,4 @@
 		</div>
 	{/if}
 {/snippet}
+-->

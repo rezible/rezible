@@ -1,15 +1,14 @@
 <script lang="ts">
-	import { Field, ToggleGroup, ToggleOption, Pagination } from "svelte-ux";
-	import Button from "$components/button/Button.svelte";
-	import Header from "$components/header/Header.svelte";
-	import EventAnnotationDialog from "$src/components/events/annotation-dialog/EventAnnotationDialog.svelte";
-	import EventRow from "$src/components/events/EventRow.svelte";
-	import LoadingIndicator from "$components/loading-indicator/LoadingIndicator.svelte";
-	import { mdiFilter } from "@mdi/js";
-	import { AnnotationDialogState, setAnnotationDialogState } from "$src/components/events/annotation-dialog/dialogState.svelte";
-	import { dateRangeOptions, EventsTableState } from "./eventsTableState.svelte";
-	import type { EventAnnotation } from "$lib/api";
 	import { watch } from "runed";
+	import { mdiFilter } from "@mdi/js";
+	import { Button } from "$components/ui/button";
+	import Header from "$components/header/Header.svelte";
+	import EventAnnotationDialog from "$components/events/annotation-dialog/EventAnnotationDialog.svelte";
+	import EventRow from "$components/events/EventRow.svelte";
+	import LoadingIndicator from "$components/loading-indicator/LoadingIndicator.svelte";
+	import { AnnotationDialogState, setAnnotationDialogState } from "$components/events/annotation-dialog/dialogState.svelte";
+	import { EventsTableState } from "./eventsTableState.svelte";
+	import type { EventAnnotation } from "$lib/api";
 	import EventsFilters from "./EventsFilters.svelte";
 
 	const tableState = new EventsTableState();
@@ -33,7 +32,7 @@
 	<Header title="Events" subheading="Recent oncall events" classes={{root: "p-2 w-full", title: "text-xl"}}>
 		{#snippet actions()}
 			<div class="justify-end flex gap-2 items-end">
-				<Field dense base classes={{root: "", container: "px-0 border-none py-0", input: "my-0 gap-2"}}>
+				<!--Field dense base classes={{root: "", container: "px-0 border-none py-0", input: "my-0 gap-2"}}>
 					<ToggleGroup variant="outline" inset classes={{root: "bg-surface-100"}} bind:value={tableState.dateRangeOption}>
 						{#if !!tableState.activeShift}
 							<ToggleOption value="shift">Active Shift</ToggleOption>
@@ -43,10 +42,9 @@
 							<ToggleOption value={opt.value}>{opt.label}</ToggleOption>
 						{/each}
 					</ToggleGroup>
-				</Field>
+				</Field-->
 
-				<Button icon={mdiFilter} iconOnly 
-					variant={filtersVisible ? "fill-light" : "default"}
+				<Button 
 					color={filtersVisible ? "accent" : "default"}
 					onclick={() => {filtersVisible = !filtersVisible}} 
 				/>
@@ -74,11 +72,11 @@
 		{/if}
 	</div>
 
-	<Pagination {...tableState.paginator.paginationProps}
+	<!-- <Pagination {...tableState.paginator.paginationProps}
 		classes={{
 			root: "border-t py-1",
 			perPage: "flex-1 text-right",
 			pagination: "px-8",
 		}}
-	/>
+	/> -->
 </div>

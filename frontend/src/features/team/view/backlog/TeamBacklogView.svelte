@@ -2,8 +2,7 @@
 	import { createQuery } from "@tanstack/svelte-query";
 	import { listTasksOptions, type ListTasksData, type Task } from "$lib/api";
 	import { mdiChevronRight } from "@mdi/js";
-	import { ListItem } from "svelte-ux";
-	import Button from "$components/button/Button.svelte";
+	import { Button } from "$components/ui/button";
 	import LoadingQueryWrapper from "$components/loader/LoadingQueryWrapper.svelte";
 	import { useTeamViewState } from "$features/team";
 	import { QueryPaginatorState } from "$lib/paginator.svelte";
@@ -26,7 +25,8 @@
 		{#each tasks as task}
 			{@const attr = task.attributes}
 			<a href="/tasks/{task.id}">
-				<ListItem title={attr.name} classes={{ root: "hover:bg-surface-200", title: "text-lg" }}>
+				<span>task: {attr.name}</span>
+				<!-- <ListItem title={attr.name} classes={{ root: "hover:bg-surface-200", title: "text-lg" }}>
 					<div slot="subheading">
 						<span class="text-surface-content/80">{attr.description}</span>
 					</div>
@@ -36,7 +36,7 @@
 					<div slot="actions">
 						<Button icon={mdiChevronRight} class="p-2 text-surface-content/50" />
 					</div>
-				</ListItem>
+				</ListItem> -->
 			</a>
 		{/each}
 {/snippet}

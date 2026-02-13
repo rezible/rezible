@@ -1,5 +1,4 @@
 <script lang="ts">
-	import { Field } from 'svelte-ux';
 	import type { ConfigComponentProps } from '../types';
 	import { onMount } from "svelte";
 
@@ -23,7 +22,8 @@
 
 <span>google config</span>
 
-<Field label="Service Account Credentials" let:id>
+<span>field svc acc creds</span>
+<!-- <Field label="Service Account Credentials" let:id>
   <input {id}
     bind:this={inputEl}
     onchange={onFileInputChange}
@@ -32,4 +32,4 @@
     class="w-full outline-none bg-surface-100"
     accept=".json"
   />
-</Field>
+</Field> -->

@@ -7,7 +7,6 @@
 	import SearchInput from "$components/search-input/SearchInput.svelte";
 	import PaginatedListBox from "$components/paginated-listbox/PaginatedListBox.svelte";
 	import LoadingQueryWrapper from "$components/loader/LoadingQueryWrapper.svelte";
-	import { ListItem } from "svelte-ux";
 
 	appShell.setPageBreadcrumbs(() => [{ label: "Alerts" }]);
 
@@ -27,12 +26,13 @@
 
 {#snippet alertListItem(a: Alert)}
 	<a href="/alerts/{a.id}">
-		<ListItem title={a.attributes.title} subheading={a.attributes.description} />
+		<span>{a.attributes.title}</span>
+		<!-- <ListItem title={a.attributes.title} subheading={a.attributes.description} /> -->
 	</a>
 {/snippet}
 
 <FilterPage {filters}>
-	<PaginatedListBox pagination={paginator.pagination}>
+	<PaginatedListBox>
 		<LoadingQueryWrapper {query}>
 			{#snippet view(alerts: Alert[])}
 				{#each alerts as a (a.id)}

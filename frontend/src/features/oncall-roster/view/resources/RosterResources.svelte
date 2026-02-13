@@ -1,7 +1,7 @@
 <script lang="ts">
-	import Header from "$components/header/Header.svelte";
 	import { mdiChevronRight, mdiPencil } from "@mdi/js";
-	import Button from "$components/button/Button.svelte";
+	import Header from "$components/header/Header.svelte";
+	import { Button } from "$components/ui/button";
 
 </script>
 
@@ -46,8 +46,8 @@ Recent meeting notes (ops reviews)</pre>
 			<div class="flex flex-col w-full border p-1">
 				<Header title="Title">
 					{#snippet actions()}
-						<Button icon={mdiPencil} iconOnly />
-						<Button icon={mdiChevronRight} iconOnly />
+						<Button>edit</Button>
+						<Button>delete</Button>
 					{/snippet}
 				</Header>
 				<div class="border">

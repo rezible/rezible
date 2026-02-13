@@ -2,7 +2,7 @@
 	import type { OncallShiftMetrics } from "$lib/api";
 	import { hour12, hour12Label } from "$lib/format.svelte";
 
-	import Button from "$components/button/Button.svelte";
+	import { Button } from "$components/ui/button";
 
 	import { isBusinessHours } from "$features/oncall-shift/lib/utils";
 	import { type InlineStatProps } from "$components/viz/InlineStat.svelte";
@@ -131,7 +131,7 @@
 	<div class="h-fit flex flex-col gap-2">
 		<Header title="Alerts" subheading="Alerts fired during this shift">
 			{#snippet actions()}
-				<Button icon={mdiFilter} iconOnly onclick={() => (showFilters = !showFilters)} />
+				<Button onclick={() => (showFilters = !showFilters)}>filter</Button>
 			{/snippet}
 		</Header>
 

@@ -1,5 +1,4 @@
 <script lang="ts">
-	import { Tooltip, Menu, MenuItem, Toggle } from "svelte-ux";
 	import {
 		mdiCodeBlockTags,
 		mdiCodeTags,
@@ -15,7 +14,7 @@
 		mdiFormatListCheckbox,
 	} from "@mdi/js";
 	import Icon from "$components/icon/Icon.svelte";
-	import Button from "$components/button/Button.svelte";
+	import { Button } from "$components/ui/button";
 	import { activeEditor, activeStatus } from "$features/incident/lib/activeEditor.svelte";
 
 	const getIconForStatus = () => {
@@ -37,12 +36,12 @@
 
 <div class="flex items-center w-full divide-x divide-surface-100 h-8">
 	{#snippet formatMenuItem(name: string, active: boolean, icon: string, cmd: VoidFunction)}
-		<MenuItem {icon} onclick={() => cmd()} selected={active}>
+		<!-- <MenuItem {icon} onclick={() => cmd()} selected={active}>
 			{name}
-		</MenuItem>
+		</MenuItem> -->
 	{/snippet}
 
-	<Toggle let:on={open} let:toggle let:toggleOff>
+	<!--Toggle let:on={open} let:toggle let:toggleOff>
 		<Button
 			icon={formatIcon}
 			onclick={toggle}
@@ -73,19 +72,13 @@
 				)}
 			</Menu>
 		</Button>
-	</Toggle>
+	</Toggle-->
 
 	{#snippet markButton(tooltip: string, active: boolean, icon: string, cmd: VoidFunction)}
-		<Tooltip title={tooltip}>
-			<Button
-				classes={{ root: "size-8" }}
-				{icon}
-				rounded={false}
-				color={active ? "secondary" : "default"}
-				variant={active ? "fill-light" : "text"}
-				onclick={() => cmd()}
-			/>
-		</Tooltip>
+		<Button
+			color={active ? "secondary" : "default"}
+			onclick={() => cmd()}
+		>{tooltip}</Button>
 	{/snippet}
 
 	<div class="px-2">

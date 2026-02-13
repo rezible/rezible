@@ -14,7 +14,6 @@
 		height: var(--size);
 	}
 	.rez-loading-ring {
-		@apply border-accent-300;
 		position: absolute;
 		top: 0px;
 		left: 0px;

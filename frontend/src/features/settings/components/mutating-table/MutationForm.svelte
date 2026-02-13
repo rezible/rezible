@@ -5,7 +5,6 @@
 </script>
 
 <script lang="ts" generics="DataType extends ApiDataObject, CreateAttributes">
-	import { Switch, Toggle } from "svelte-ux";
 	import type { ErrorModel } from "$lib/api";
 	import ConfirmChangeButtons from "$components/confirm-buttons/ConfirmButtons.svelte";
 	import type { FormFields, Field } from "./fields.svelte";
@@ -50,7 +49,7 @@
 		Object.entries(values).forEach(([name, value]) => {
 			const res = fields[name].schema.safeParse(values[name]);
 			if (res.error) {
-				errors[name] = res.error?.formErrors.formErrors.join("\n");
+				// errors[name] = res.error?.formErrors.formErrors.join("\n");
 			} else {
 				delete errors[name];
 			}
@@ -61,7 +60,7 @@
 	const onFieldUpdate = (name: string) => {
 		const res = fields[name].schema.safeParse(values[name]);
 		if (res.error) {
-			errors[name] = res.error?.formErrors.formErrors.join("\n");
+			// errors[name] = res.error?.formErrors.formErrors.join("\n");
 			submitEnabled = false;
 		} else {
 			delete errors[name];
@@ -101,7 +100,7 @@
 		<span>{editing ? "Edit" : "Create New"} {dataType}</span>
 		{#each Object.entries(fields) as [name, field]}
 			{#if field.schema.isOptional()}
-				{@render optionalFormField(name, field)}
+				<span>optional field</span><!-- {@render optionalFormField(name, field)} -->
 			{:else}
 				<MutationFormField {name} {dataType} {field} {editing} {values} {errors} {onFieldUpdate} />
 			{/if}
@@ -127,6 +126,7 @@
 	</div>
 </form>
 
+<!-- 
 {#snippet optionalFormField(name: string, field: Field)}
 	{@const isOptional = field.schema.isOptional()}
 	<Toggle on={!isOptional} let:toggle let:on>
@@ -142,4 +142,4 @@
 		{/if}
 	</Toggle>
 {/snippet}
-
+ -->

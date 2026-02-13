@@ -8,7 +8,7 @@
 		mdiAlertCircle,
 		mdiArrowRight,
 	} from "@mdi/js";
-	import Button from "$components/button/Button.svelte";
+	import { Button } from "$components/ui/button";
 	import Header from "$components/header/Header.svelte";
 	import Icon from "$components/icon/Icon.svelte";
 	import type { User } from "$lib/api";
@@ -129,7 +129,7 @@
 	<div class="h-fit p-2 flex flex-col gap-2">
 		<Header title="Recent Activity" classes={{root: "", title: "text-xl"}}>
 			{#snippet actions()}
-				<Button variant="fill-light" href={`/rosters/${rosterId}/activity`}>
+				<Button href={`/rosters/${rosterId}/activity`}>
 					View All
 					<Icon data={mdiArrowRight} classes={{root: "ml-1 h-4 w-4"}} />
 				</Button>
@@ -161,7 +161,6 @@
 
 					<div class="mt-2 flex self-center">
 						<Button
-							variant="fill"
 							color="neutral"
 							size="sm"
 							href={`/rosters/${rosterId}/backlog/${activity.id}`}

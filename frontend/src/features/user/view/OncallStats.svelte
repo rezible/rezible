@@ -1,7 +1,6 @@
 <script lang="ts">
 	import { mdiChevronRight, mdiFire, mdiPhone } from "@mdi/js";
 	import { formatDuration, minutesToHours, differenceInMinutes } from "date-fns";
-	import { ListItem } from "svelte-ux";
 	import Icon from "$components/icon/Icon.svelte";
 	import type { OncallShift } from "$lib/api";
 	import MetricCard from "$components/viz/MetricCard.svelte";
@@ -61,7 +60,8 @@
 	{@const roster = shift.attributes.roster}
 	{@const duration = formatShiftDuration(shift)}
 	<a href="/shifts/{shift.id}">
-		<ListItem title={roster.attributes.name} classes={{ root: "hover:bg-secondary-900" }}>
+		<span>shift for {roster.attributes.name}</span>
+		<!-- <ListItem title={roster.attributes.name} classes={{ root: "hover:bg-secondary-900" }}>
 			<svelte:fragment slot="avatar">
 				<Avatar kind="roster" size={32} id={roster.id} />
 			</svelte:fragment>
@@ -73,6 +73,6 @@
 			<div slot="actions">
 				<Icon data={mdiChevronRight} />
 			</div>
-		</ListItem>
+		</ListItem> -->
 	</a>
 {/snippet}

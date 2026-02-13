@@ -1,5 +1,4 @@
 import { Time, ZonedDateTime } from "@internationalized/date";
-import { DateToken, PeriodType } from "@layerstack/utils";
 import { settings } from "$lib/settings.svelte";
 import { hour12 } from "$lib/format.svelte";
 
@@ -22,34 +21,34 @@ export const convertTime = (t: ZonedDateTime): InternalValue => {
 
 const pad = (n: number) => String(n).padStart(2, "0");
 
-const dayPeriod = PeriodType.Day;
-const calendarDateFormat = [
-	DateToken.Month_long,
-	DateToken.DayOfMonth_withOrdinal,
-	DateToken.Year_numeric,
-];
-const dayOfWeekFormat = DateToken.DayOfWeek_long;
+// const dayPeriod = PeriodType.Day;
+// const calendarDateFormat = [
+// 	DateToken.Month_long,
+// 	DateToken.DayOfMonth_withOrdinal,
+// 	DateToken.Year_numeric,
+// ];
+// const dayOfWeekFormat = DateToken.DayOfWeek_long;
 
-export const createFormatter = () => {
-	const f = $derived(settings.format);
+// export const createFormatter = () => {
+// 	const f = $derived(settings.format);
 
-	const asTime = (time: Time): string => {
-		const period = time.hour >= 12 ? "PM" : "AM";
-		return `${pad(hour12(time.hour))}:${pad(time.minute)}${period}`;
-	}
+// 	const asTime = (time: Time): string => {
+// 		const period = time.hour >= 12 ? "PM" : "AM";
+// 		return `${pad(hour12(time.hour))}:${pad(time.minute)}${period}`;
+// 	}
 
-	const asCalendarDate = (d: Date): string => {
-		return f(d, dayPeriod, { custom: calendarDateFormat });
-	}
+// 	const asCalendarDate = (d: Date): string => {
+// 		return f(d, dayPeriod, { custom: calendarDateFormat });
+// 	}
 
-	const asWeekday = (d: Date): string => {
-		return f(d, dayPeriod, { custom: dayOfWeekFormat })
-	}
+// 	const asWeekday = (d: Date): string => {
+// 		return f(d, dayPeriod, { custom: dayOfWeekFormat })
+// 	}
 
-	return {
-		asTime,
-		asCalendarDate,
-		asWeekday
-	}
-}
-export const format = createFormatter();
+// 	return {
+// 		asTime,
+// 		asCalendarDate,
+// 		asWeekday
+// 	}
+// }
+// export const format = createFormatter();

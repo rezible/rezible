@@ -2,10 +2,8 @@
 	import Icon from "$components/icon/Icon.svelte";
 	import type { Event } from "$lib/api";
 	import { mdiCalendar, mdiClose, mdiPhoneAlert } from "@mdi/js";
-	import { settings } from "$lib/settings.svelte";
-	import { PeriodType } from "@layerstack/utils";
 	import { useAnnotationDialogState } from "./dialogState.svelte";
-	import Button from "$components/button/Button.svelte";
+	import { Button } from "$components/ui/button";
 	import { getEventKindIcon, getEventTimeIcon } from "../events";
 	import EventTimeDate from "../EventTimeDate.svelte";
 
@@ -34,6 +32,6 @@
 		<EventTimeDate timestamp={event.attributes.timestamp} />
 	</div>
 	<div class="">
-		<Button onclick={close} iconOnly icon={mdiClose} />
+		<Button onclick={close}>close</Button>
 	</div>
 </div>

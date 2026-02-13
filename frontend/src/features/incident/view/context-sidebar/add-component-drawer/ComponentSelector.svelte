@@ -1,8 +1,7 @@
 <script lang="ts">
-	import { Checkbox, ListItem } from "svelte-ux";
-	import Button from "$components/button/Button.svelte";
+	import { Button } from "$components/ui/button";
 	import Icon from "$components/icon/Icon.svelte";
-	import { cls } from '@layerstack/tailwind';
+	import { cn } from '$lib/utils';
 	import { listSystemComponentsOptions, type SystemComponent } from "$lib/api";
 	import { createQuery } from "@tanstack/svelte-query";
 	import { mdiPlus } from "@mdi/js";
@@ -46,7 +45,7 @@
 	<div class="grid gap-4 bg-surface-200 p-1" class:hidden={components.length === 0}>
 		{#each components as cmp (cmp.id)}
 			<div>
-				<ListItem
+				<!-- <ListItem
 					title={cmp.attributes.name}
 					subheading={cmp.attributes.description}
 					on:click={() => {}}
@@ -62,7 +61,7 @@
 					<div slot="actions">
 						<Checkbox circle dense checked={selectedId == cmp.id} />
 					</div>
-				</ListItem>
+				</ListItem> -->
 			</div>
 		{/each}
 	</div>

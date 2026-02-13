@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { DayHours } from "$lib/utils.svelte";
+	import { DayHours } from "$lib/date-utils";
 	
 	import { init, use } from "echarts/core";
 	import { HeatmapChart } from "echarts/charts";
@@ -8,7 +8,6 @@
 	import EChart, { type ChartProps, type ECMouseEvent } from "$components/viz/echart/EChart.svelte";
 	import type { ShiftEventFilterKind } from "$features/oncall-shift/lib/utils";
 	import { differenceInCalendarDays, getDay } from "date-fns";
-	import { settings } from "$lib/settings.svelte";
 	import type { YAXisOption, XAXisOption } from "echarts/types/dist/shared";
 	import { useOncallShiftViewState } from "$features/oncall-shift";
 
@@ -61,8 +60,7 @@
 			if (!start) return "";
 			const date = start.add({ days: day });
 			const dayOfWeek = getDay(date.toAbsoluteString());
-			const dayName = settings.format.getDayOfWeekName(dayOfWeek);
-			return `${dayName} ${String(date.day).padStart(2, "0")}`;
+			return `${dayOfWeek} ${String(date.day).padStart(2, "0")}`;
 		});
 	});
 

@@ -12,9 +12,8 @@
 		mdiTimelineText,
 		mdiVideo,
 	} from "@mdi/js";
-	import { cls } from '@layerstack/tailwind';
+	import { cn } from '$lib/utils';
 	import Icon from "$components/icon/Icon.svelte";
-	import OmniSearch from "./omni-search/OmniSearch.svelte";
 	import UserProfileMenu from "./UserProfileMenu.svelte";
 	import LogoHeader from "./LogoHeader.svelte";
 
@@ -52,7 +51,7 @@
 	{@const active = currentPath?.startsWith(r.route ?? r.path)}
 	<a
 		href={r.path}
-		class={cls(
+		class={cn(
 			"inline-block px-4 py-2 flex items-center gap-2 border-none-2 rounded-lg",
 			active
 				? "text-neutral-content bg-primary-900"
@@ -65,7 +64,7 @@
 {/snippet}
 
 <aside
-	class={cls(
+	class={cn(
 		"h-full group flex flex-col overflow-hidden bg-surface-300",
 		expanded ? "w-60" : "w-fit"
 	)}
@@ -86,7 +85,7 @@
 
 	{#if expanded}
 		<div class="my-2">
-			<OmniSearch />
+			<span>search</span>
 		</div>
 
 		<div class="">

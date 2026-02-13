@@ -1,7 +1,6 @@
 <script lang="ts">
 	import { createMutation, createQuery } from "@tanstack/svelte-query";
 	import { mdiMagnify } from "@mdi/js";
-	import { SelectField, type MenuOption } from "svelte-ux";
 	import Icon from "$components/icon/Icon.svelte";
 	import { addWatchedOncallRosterMutation, listOncallRostersOptions } from "$lib/api";
 	import { debounce } from "$lib/utils.svelte";
@@ -26,7 +25,7 @@
 	const rosters = $derived(rostersQuery.data?.data ?? []);
 
 	const optionsLoading = $derived(rostersQuery.isFetching);
-	const options = $derived<MenuOption<string>[]>(rosters
+	const options = $derived(rosters
 		.filter(r => (!currentMap.has(r.id)))
 		.map((r) => ({ value: r.id, label: r.attributes.name }))
 	);
@@ -57,7 +56,7 @@
 
 <FormDialog title="Add Watched Roster" {open} {onClose} {onConfirm} {saveEnabled} {confirmText}>
 	<div class="w-full gap-2 p-2">
-		<SelectField
+		<!--SelectField
 			label="Name"
 			placeholder="Search Rosters"
 			bind:value
@@ -73,6 +72,6 @@
 					<Icon data={mdiMagnify} />
 				{/if}
 			</div>
-		</SelectField>
+		</SelectField-->
 	</div>
 </FormDialog>

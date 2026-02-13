@@ -1,16 +1,6 @@
 <script lang="ts">
 	import { mdiCalendarRange, mdiChevronDown } from "@mdi/js";
-	import {
-		DateRangeField,
-		Field,
-		MultiSelectMenu,
-		SelectField,
-		ToggleGroup,
-		ToggleOption,
-		type MenuOption,
-	} from "svelte-ux";
-	import { PeriodType } from "@layerstack/utils";
-	import Button from "$components/button/Button.svelte";
+	import { Button } from "$components/ui/button";
 	import type { DateRangeOption, EventKind, EventsListFiltersState } from "./filters.svelte";
 	import RosterSelectField from "$components/roster-select-field/RosterSelectField.svelte";
 	import Icon from "$components/icon/Icon.svelte";
@@ -27,7 +17,7 @@
 	];
 
 	type AnnotationOption = "no" | "any" | "has";
-	const annoOptions: MenuOption<AnnotationOption>[] = [
+	const annoOptions = [
 		{value: "any", label: "Any"},
 		{value: "has", label: "Yes"},
 		{value: "no", label: "No"},
@@ -43,12 +33,14 @@
 
 	let kindMenuOpen = $state(false);
 	const toggleKindMenu = () => (kindMenuOpen = !kindMenuOpen);
-	const eventKindOptions: MenuOption<EventKind>[] = [
+	const eventKindOptions = [
 		{value: "alert", label: "Alerts"}
 	]
 </script>
 
 <div class="flex flex-col gap-2">
+	<span>list filters</span>
+	<!--
 	<Field label="Date Range" labelPlacement="top" dense base classes={{root: "", container: "px-0 border-none py-0", input: "my-0 gap-2"}}>
 		<ToggleGroup variant="outline" inset classes={{root: "bg-surface-100 w-full"}} bind:value={filtersState.dateRangeOption}>
 			{#if !!filtersState.activeShift}
@@ -123,4 +115,5 @@
 			/>
 		</Button>
 	</Field>
+	-->
 </div>

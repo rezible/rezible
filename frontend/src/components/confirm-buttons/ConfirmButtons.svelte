@@ -1,6 +1,6 @@
 <script lang="ts">
 	import type { Snippet } from "svelte";
-	import Button from "$components/button/Button.svelte";
+	import { Button } from "$components/ui/button";
 
 	type Props = {
 		onClose: VoidFunction;
@@ -40,8 +40,6 @@
 		{/if}
 	</Button>
 	<Button
-		{loading}
-		variant="fill"
 		color="warning"
 		onclick={onConfirm}
 		disabled={!saveEnabled || disabled}

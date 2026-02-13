@@ -29,11 +29,11 @@
 	const fields = {
 		["name"]: makeField("Field Name", z.string().min(4)),
 		["options"]: makeCustomField("Field Options", incidentFieldOptionsSchema, IncidentFieldsOptionsEdit),
-		["incidentType"]: makeSelectField(
-			"Incident Types",
-			z.string().optional().describe("Restrict to Specific Incident Types?"),
-			listIncidentTypesOptions
-		),
+		// ["incidentType"]: makeSelectField(
+		// 	"Incident Types",
+		// 	z.string().optional().describe("Restrict to Specific Incident Types?"),
+		// 	listIncidentTypesOptions
+		// ),
 		["required"]: makeField("Required", z.boolean()),
 	};
 
@@ -45,7 +45,7 @@
 	};
 </script>
 
-<MutatingTable
+<!-- <MutatingTable
 	dataType="Incident Field"
 	description="Modify incident fields"
 	headers={["Name", "Options", "Incident Type", "Required"]}
@@ -64,4 +64,4 @@
 		</td>
 		<td>{f.attributes.required ? "Yes" : "No"}</td>
 	{/snippet}
-</MutatingTable>
+</MutatingTable> -->

@@ -1,6 +1,4 @@
 <script lang="ts">
-	import { Checkbox, ListItem, Tabs } from "svelte-ux";
-	import { cls } from '@layerstack/tailwind';
 	import { mdiAccount } from "@mdi/js";
 	import Icon from "$components/icon/Icon.svelte";
 
@@ -41,7 +39,7 @@
 	};
 </script>
 
-<Tabs
+<!-- <Tabs
 	options={channels}
 	placement="top"
 	bind:value={channelId}
@@ -73,4 +71,4 @@
 			</ListItem>
 		{/each}
 	</div>
-</Tabs>
+</Tabs> -->

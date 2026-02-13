@@ -1,6 +1,5 @@
 <script lang="ts">
-	import { cls } from "@layerstack/tailwind";
-	import { uniqueId } from "@layerstack/utils";
+	import { cn } from "$lib/utils";
 
 	type Classes = {
 		root?: string;
@@ -22,6 +21,8 @@
 	};
 	const { data, size = "1.5em", viewBox = "0 0 24 24", title, desc, classes = {} }: Props = $props();
 
+	const uniqueId = (prefix: string) => `${prefix}_foo`;
+
 	const isLabelled = $derived(title || desc);
 	const titleId = $derived(!!title ? uniqueId("title-") : "");
 	const descId = $derived(!!title ? uniqueId("desc-") : "");
@@ -31,7 +32,7 @@
 	width={size}
 	height={size}
 	{viewBox}
-	class={cls("inline-block flex-shrink-0 fill-current", classes.root)}
+	class={cn("inline-block flex-shrink-0 fill-current", classes.root)}
 	role={isLabelled ? "img" : "presentation"}
 	aria-labelledby={isLabelled ? `${titleId} ${descId}` : undefined}
 >
@@ -42,7 +43,7 @@
 		<path
 			{d}
 			fill="currentColor"
-			class={cls(Array.isArray(classes.path) ? classes.path[i] : classes.path)}
+			class={cn(Array.isArray(classes.path) ? classes.path[i] : classes.path)}
 		/>
 	{/each}
 </svg>

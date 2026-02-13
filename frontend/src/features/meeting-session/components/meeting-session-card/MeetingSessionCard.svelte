@@ -1,6 +1,6 @@
 <script lang="ts">
 	import type { MeetingSession } from "$lib/api";
-	import Button from "$components/button/Button.svelte";
+	import { Button } from "$components/ui/button";
 	import Card from "$components/card/Card.svelte";
 	import Header from "$components/header/Header.svelte";
 

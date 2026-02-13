@@ -2,12 +2,11 @@
 	import { differenceInHours } from "date-fns";
 	import { mdiArrowRight } from "@mdi/js";
 	import { type OncallShift } from "$lib/api";
-	import { cls } from "@layerstack/tailwind";
-	import { ProgressCircle } from "svelte-ux";
-	import Button from "$components/button/Button.svelte";
+	import { cn } from "$lib/utils";
 	import Icon from "$components/icon/Icon.svelte";
 	import Avatar from "$components/avatar/Avatar.svelte";
 	import Header from "$components/header/Header.svelte";
+	import { Button } from "$components/ui/button";
 
 	type Props = {
 		shift: OncallShift;
@@ -24,22 +23,23 @@
 	const firstDay = $derived(differenceInHours(Date.now(), start) <= 24);
 </script>
 
-<div class={cls("max-w-lg p-2 border rounded-lg overflow-auto flex items-center", isUser ? "border-success-900/50 bg-success-900/5" : "")}>
+<div class={cn("max-w-lg p-2 border rounded-lg overflow-auto flex items-center", isUser ? "border-success-900/50 bg-success-900/5" : "")}>
 	<Header>
 		{#snippet avatar()}
-			<ProgressCircle
+			<span>progress circle {progress}</span>
+			<!-- ProgressCircle
 				size={32}
 				value={progress}
 				track
 				class={isUser ? "text-success [--track-color:theme(colors.success/10%)]" : "text-neutral [--track-color:theme(colors.neutral/50%)]"}
-			/>
+			/-->
 		{/snippet}
 		{#snippet title()}
 			<div>
 				{#if isUser}
 					<span class="text-md">You are Currently Oncall</span>
 				{:else}
-					<Button size="sm" href="/users/{user.id}" classes={{ root: "p-1 py-0 flex w-fit items-center" }}>
+					<Button size="sm" href="/users/{user.id}"> <!-- classes={{ root: "p-1 py-0 flex w-fit items-center" }} -->
 						<div class="self-center mr-1">
 							<Avatar id={user.id} kind="user" size={16} />
 						</div>
@@ -52,7 +52,7 @@
 			<span class="text-surface-content/70 inline-flex gap-1 items-center whitespace-pre">
 				<span class="text-lg">{shift.attributes.role}</span>
 				<span class="ml-1 text-lg">for</span>
-				<Button size="sm" href="/rosters/{roster.attributes.slug}" classes={{ root: "p-1 py-0" }}>
+				<Button size="sm" href="/rosters/{roster.attributes.slug}"> <!--  classes={{ root: "p-1 py-0" }}> -->
 					<span class="font-bold text-base text-lg">{roster.attributes.name}</span>
 					<div class="self-center ml-1">
 						<Avatar id={roster.id} kind="roster" size={16} />
@@ -62,7 +62,7 @@
 		{/snippet}
 		{#snippet actions()}
 			<div class="flex flex-col gap-2 px-2 py-0 justify-end">
-				<Button href="/shifts/{shift.id}" variant="fill" color={isUser ? "success" : "default"}>
+				<Button href="/shifts/{shift.id}" color={isUser ? "success" : "default"}>
 					View
 					<Icon data={mdiArrowRight} />
 				</Button>

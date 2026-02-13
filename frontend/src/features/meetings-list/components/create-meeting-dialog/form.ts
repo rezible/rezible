@@ -4,7 +4,7 @@ import type {
 	CreateMeetingSessionRequestBody,
 } from "$lib/api";
 import { getLocalTimeZone, now, type ZonedDateTime } from "@internationalized/date";
-import { ZodZonedDateTime } from "$lib/utils.svelte";
+import { ZodZonedDateTime } from "$lib/date-utils";
 import { WeekdaysShort, type Weekday } from "$lib/scheduling";
 
 export type CreateMeetingFormData = {

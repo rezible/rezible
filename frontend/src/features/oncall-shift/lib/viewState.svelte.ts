@@ -1,12 +1,11 @@
 import { getLocalTimeZone, parseAbsolute } from "@internationalized/date";
 import { createQuery, useQueryClient } from "@tanstack/svelte-query";
-import { AnnotationDialogState, setAnnotationDialogState } from "$src/components/events/annotation-dialog/dialogState.svelte";
+import { AnnotationDialogState, setAnnotationDialogState } from "$components/events/annotation-dialog/dialogState.svelte";
 import { getAdjacentOncallShiftsOptions, getOncallShiftOptions, listEventAnnotationsOptions, listEventsOptions, type EventAnnotation } from "$lib/api";
 import { shiftEventMatchesFilter, type ShiftEventFilterKind } from "$features/oncall-shift/lib/utils";
 import { Context, watch } from "runed";
 import { settings } from "$lib/settings.svelte";
-import { PeriodType } from "@layerstack/utils";
-import type { Getter } from "$src/lib/utils.svelte";
+import type { Getter } from "$lib/utils.svelte";
 
 class OncallShiftViewState {
 	private queryClient = useQueryClient();
@@ -33,9 +32,9 @@ class OncallShiftViewState {
 
 	shiftTitle = $derived.by(() => {
 		if (!this.shiftStart || !this.shiftEnd || !this.roster) return "";
-		const startFmt = settings.format(this.shiftStart.toDate(), PeriodType.Day);
-		const endFmt = settings.format(this.shiftEnd.toDate(), PeriodType.Day);
-		return `${this.roster.attributes.name} - ${startFmt} to ${endFmt}`;
+		// const startFmt = settings.format(this.shiftStart.toDate(), PeriodType.Day);
+		// const endFmt = settings.format(this.shiftEnd.toDate(), PeriodType.Day);
+		return `${this.roster.attributes.name} - ${this.shiftStart} to ${this.shiftEnd}`;
 	});
 
 	private adjacentShiftsQuery = createQuery(() => getAdjacentOncallShiftsOptions({ path: { id: this.shiftId }}));

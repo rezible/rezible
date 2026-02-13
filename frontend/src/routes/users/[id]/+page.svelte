@@ -2,7 +2,7 @@
 	import { page } from "$app/state";
 	import { UserView, setUserViewState } from "$features/user";
 
-	setUserViewState(() => page.params.id);
+	setUserViewState(() => (page.params.id || ""));
 </script>
 
 <UserView />

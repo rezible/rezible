@@ -8,8 +8,6 @@
 
 <script lang="ts">
 	import { mdiArchive, mdiArchiveMinus, mdiPlus, mdiTrashCan } from "@mdi/js";
-	import { TextField } from "svelte-ux";
-	import Button from "$components/button/Button.svelte";
 
 	type Props = {
 		id: string;
@@ -43,17 +41,16 @@
 		{#each items as item, index (item)}
 			<div class="flex flex-row items-center">
 				<span class="flex-1">{item.label}</span>
-				<Button
-					iconOnly
+				<!--Button
 					color="warning"
 					icon={getItemIcon(item.archived)}
 					onclick={() => (toggleArchiveItem(index))}
-				></Button>
+				></Button-->
 			</div>
 		{/each}
 	{/if}
 
-	<TextField {id} type="text" placeholder="Custom Option" bind:value={newVal}>
+	<!--TextField {id} type="text" placeholder="Custom Option" bind:value={newVal}>
 		<span slot="append">
 			<Button
 				icon={mdiPlus}
@@ -62,5 +59,5 @@
 				classes={{ root: "align-bottom" }}
 			/>
 		</span>
-	</TextField>
+	</TextField-->
 </div>

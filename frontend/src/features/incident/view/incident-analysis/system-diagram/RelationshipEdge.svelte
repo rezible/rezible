@@ -92,7 +92,9 @@
 </EdgeLabel>
 
 <style lang="postcss">
+	@reference("$src/app.css");
+
 	.relationship-label {
-		@apply absolute p-2 rounded-lg border border-surface-200 text-sm;
+		/* @apply absolute p-2 rounded-lg border text-sm; */
 	}
 </style>

@@ -1,8 +1,6 @@
 <script lang="ts">
 	import { mdiCalendar } from "@mdi/js";
 	import Icon from "$components/icon/Icon.svelte";
-	import Button from "$components/button/Button.svelte";
-	import { Menu, MenuItem, Toggle, type MenuOption } from "svelte-ux";
 
 	const defaultPeriods = [
 		{ value: 7, label: "Last 7 Days" },
@@ -10,6 +8,7 @@
 		{ value: 90, label: "Last 90 Days" },
 	];
 
+	type MenuOption = { value: any, label: string };
 	type Props = {
 		selected: number;
 		periodOptions?: MenuOption[];
@@ -26,7 +25,7 @@
 	}
 </script>
 
-<Toggle let:on={open} let:toggle let:toggleOff>
+<!--Toggle let:on={open} let:toggle let:toggleOff>
 	<Button onclick={toggle} classes={{root: "flex gap-2 items-center"}}>
 		{selectedOption.label}
 		<Menu {open} on:close={toggleOff}>
@@ -36,4 +35,4 @@
 		</Menu>
 		<Icon data={mdiCalendar} />
 	</Button>
-</Toggle>
+</Toggle-->

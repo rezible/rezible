@@ -1,7 +1,6 @@
 <script lang="ts">
 	import type { EventAnnotation, Event } from "$lib/api";
-	import { Checkbox, Field, TextField, ToggleGroup, ToggleOption } from "svelte-ux";
-	import Button from "$components/button/Button.svelte";
+	import { Button } from "$components/ui/button";
 	import { mdiClose, mdiPlus } from "@mdi/js";
 	import { useAnnotationDialogState } from "./dialogState.svelte";
 
@@ -63,7 +62,7 @@
 	{/if}
 	-->
 
-	<Field label="Tags">
+	<!--Field label="Tags">
 		<div class="flex gap-2" class:mr-2={dialog.attributes.tags.size > 0}>
 			{#each dialog.attributes.tags as tag}
 				<div class="flex items-center gap-1 border rounded-lg p-1 px-2">
@@ -96,7 +95,7 @@
 				/>
 			</span>
 		</TextField>
-	</Field>
+	</Field-->
 
-	<TextField label="Notes" multiline bind:value={dialog.attributes.notes} classes={{ input: "h-28" }} />
+	<!-- <TextField label="Notes" multiline bind:value={dialog.attributes.notes} classes={{ input: "h-28" }} /> -->
 </div>

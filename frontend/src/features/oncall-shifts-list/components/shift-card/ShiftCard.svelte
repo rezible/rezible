@@ -7,10 +7,8 @@
 	import ShiftProgressCircle from "./ShiftProgressCircle.svelte";
 	import Icon from "$components/icon/Icon.svelte";
 	import { mdiChevronRight } from "@mdi/js";
-	import { cls } from "@layerstack/tailwind";
-	import { settings } from "$lib/settings.svelte";
-	import { PeriodType } from "@layerstack/utils";
-	import Button from "$components/button/Button.svelte";
+	import { cn } from "$lib/utils";
+	import { Button } from "$components/ui/button";
 
 	type Props = {
 		shift: OncallShift;
@@ -51,7 +49,7 @@
 	const activeClasses = "bg-success-900/20 border-success-100/10 hover:bg-success-900/30 hover:border-success-100/20";
 </script>
 
-<div class={cls("p-2 flex flex-col gap-2 rounded border", isActive ? activeClasses : defaultClasses)}>
+<div class={cn("p-2 flex flex-col gap-2 rounded border", isActive ? activeClasses : defaultClasses)}>
 	<div class="flex items-center justify-between border-b pb-1">
 		<div class="flex flex-col gap-1">
 			{#if !hideRoster}
@@ -62,15 +60,15 @@
 			{/if}
 
 			<div class="text-sm uppercase font-semibold text-surface-content/80">
-				<span>{settings.format(start, PeriodType.Day)}</span>
+				<span>{start}</span>
 				-
-				<span>{settings.format(end, PeriodType.Day)}</span>
+				<span>{end}</span>
 			</div>
 		</div>
 
 		<div class="flex flex-col items-end">
 			<div class="flex gap-2 items-center">
-				<span class={cls("text-sm uppercase font-bold text-surface-content/60", isActive && "text-success-600")}>
+				<span class={cn("text-sm uppercase font-bold text-surface-content/60", isActive && "text-success-600")}>
 					{#if isActive}
 						Active
 					{:else if isUpcoming}
@@ -97,8 +95,8 @@
 		<span class="font-normal text-sm uppercase text-surface-content/60">{attr.role ?? "role"}</span>
 	</div>
 
-	<div class="flex justify-end">
-		<Button href="/shifts/{shift.id}" classes={{root: "max-w-lg"}}>
+	<div class="flex justify-end max-w-lg">
+		<Button href="/shifts/{shift.id}">
 			<span class="flex items-center group-hover:text-success">
 				View
 				<Icon data={mdiChevronRight} />

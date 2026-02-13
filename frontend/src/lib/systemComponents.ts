@@ -1,6 +1,7 @@
 import { mdiDelta } from "@mdi/js";
 import type { SystemComponentKind } from "./api";
-import type { MenuOption } from "svelte-ux";
+
+type MenuOption<T extends any> = { label: string, value: T };
 
 export const getSystemComponentKindMenuOptions = (kinds: SystemComponentKind[]): MenuOption<string>[] => {
 	return kinds.map(k => ({ label: k.attributes.label, value: k.id }));

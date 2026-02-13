@@ -1,26 +1,20 @@
 <script lang="ts">
 	import { debounce } from "$lib/utils.svelte";
-	import { type ListOncallRostersData, listOncallRostersOptions, type OncallRoster } from "$lib/api";
+	import { type ListOncallRostersData, listOncallRostersOptions } from "$lib/api";
 	import { createQuery } from "@tanstack/svelte-query";
-	import { MenuItem, SelectField, type MenuOption } from "svelte-ux";
-	import Avatar from "$components/avatar/Avatar.svelte";
-	import { cls } from "@layerstack/tailwind";
 	import { useUserOncallInformation } from "$lib/userOncall.svelte";
-	import type { ComponentProps } from "svelte";
 
 	type Props = {
 		onSelected: (id: string | undefined) => void;
 		selectedId?: string;
 		dense?: boolean;
 		clearable?: boolean;
-		classes?: ComponentProps<SelectField<string>>["classes"]
 	};
 	const {
 		onSelected,
 		selectedId,
 		dense,
 		clearable,
-		classes,
 	}: Props = $props();
 
 	const userInfo = useUserOncallInformation();
@@ -41,6 +35,7 @@
 
 	const queryOptions = $derived(rosters.map(r => ({value: r.id, label: r.attributes.name})));
 
+	/*
 	const rosterOptions = $derived.by(() => {
 		if (!!searchValue) return queryOptions;
 
@@ -61,13 +56,14 @@
 		onSelected(!!value ? value : undefined);
 	}
 
-	const searchFn = async (input: string, opts: MenuOption<string>[]) => {
+	const searchFn = async (input: string, opts: string[]) => {
 		setSearchValue(input);
 		return opts
 	}
+	*/
 </script>
 
-<SelectField 
+<!--SelectField 
 	label="Roster"
 	labelPlacement="top"
 	loading={query.isLoading}
@@ -104,4 +100,4 @@
 			</span>
 		</MenuItem>
 	</svelte:fragment>
-</SelectField>
+</SelectField-->

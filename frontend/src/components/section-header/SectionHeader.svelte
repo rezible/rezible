@@ -2,7 +2,7 @@
 	import Header from "$components/header/Header.svelte";
 	import { mdiFilter } from "@mdi/js";
 	import type { Snippet } from "svelte";
-	import Button from "$components/button/Button.svelte";
+	import { Button } from "$components/ui/button";
 
 	type Props = {
 		title: string;
@@ -21,7 +21,7 @@
 </script>
 
 {#snippet filterActions()}
-	<Button icon={mdiFilter} iconOnly onclick={() => {showFilters = !showFilters}} />
+	<Button onclick={() => {showFilters = !showFilters}} />
 {/snippet}
 
 <div class="flex flex-col">

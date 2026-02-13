@@ -1,8 +1,7 @@
 <script lang="ts">
 	import type { Event, EventAnnotation } from "$lib/api";
 	import { mdiPin, mdiPinOutline, mdiChatPlus, mdiMenuDown } from "@mdi/js";
-	import { Lazy, Tooltip } from "svelte-ux";
-	import Button from "$components/button/Button.svelte";
+	import { Button } from "$components/ui/button";
 	import Icon from "$components/icon/Icon.svelte";
 	import Avatar from "$components/avatar/Avatar.svelte";
 	import { useAnnotationDialogState } from "./annotation-dialog/dialogState.svelte";
@@ -43,7 +42,7 @@
 	</div>
 {/snippet}
 
-<Lazy height="70px" class="group grid grid-cols-[80px_minmax(100px,1fr)_minmax(0,.4fr)] gap-2 place-items-center border py-1 px-2 bg-neutral-900/40 border-neutral-content/10 shadow-sm hover:shadow-md transition-shadow">
+<div class="h-[70px] group grid grid-cols-[80px_minmax(100px,1fr)_minmax(0,.4fr)] gap-2 place-items-center border py-1 px-2 bg-neutral-900/40 border-neutral-content/10 shadow-sm hover:shadow-md transition-shadow">
 	<EventTimeDate timestamp={attrs.timestamp} />
 
 	<div class="flex flex-col gap-1 w-full h-full justify-center items-start">
@@ -62,7 +61,7 @@
 
 			{#if canCreate}
 				<div class="hidden group-hover:inline w-fit h-full">
-					<Button classes={{root: "w-full h-full items-center"}} {disabled} {loading} onclick={() => annoDialog.setOpen(event)}>
+					<Button {disabled} onclick={() => annoDialog.setOpen(event)}>
 						Annotate
 						<Icon data={mdiChatPlus} />
 					</Button>
@@ -71,9 +70,9 @@
 		</div>
 
 		{#if !!togglePinned}
-			<Tooltip title="Toggle Pinned">
+			<!--Tooltip title="Toggle Pinned">
 				<Button iconOnly icon={pinned ? mdiPin : mdiPinOutline} {disabled} {loading} onclick={togglePinned} />
-			</Tooltip>
+			</Tooltip-->
 		{/if}
 	</div>
-</Lazy>
+</div>

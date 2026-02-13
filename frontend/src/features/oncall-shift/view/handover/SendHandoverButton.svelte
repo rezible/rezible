@@ -1,9 +1,9 @@
 <script lang="ts">
 	import { createMutation } from "@tanstack/svelte-query";
-	import Button from "$components/button/Button.svelte";
 	import { mdiSend, mdiPhoneForward } from "@mdi/js";
 	import { sendOncallShiftHandoverMutation } from "$lib/api";
 	import { useToastState } from "$lib/toasts.svelte";
+	import { Button } from "$components/ui/button";
 	import Icon from "$components/icon/Icon.svelte";
 	import Avatar from "$components/avatar/Avatar.svelte";
 	import { useOncallShiftViewState } from "$features/oncall-shift";
@@ -40,12 +40,9 @@
 </script>
 
 <Button
-	variant={handoverState.canSend ? "fill" : "fill-light"}
 	color={handoverState.canSend ? "primary" : "default"}
-	disabled={!handoverState.canSend}
-	loading={sendMutation.isPending}
+	disabled={!handoverState.canSend || sendMutation.isPending}
 	onclick={submitHandover}
-	classes={{ root: "gap-2 py-3" }}
 >
 	<span class="flex items-center gap-2 text-lg">
 		{#if handoverState.isSent}

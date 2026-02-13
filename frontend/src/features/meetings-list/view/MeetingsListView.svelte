@@ -1,5 +1,4 @@
 <script lang="ts">
-	import { Month } from "svelte-ux";
 	import { type MeetingSession } from "$lib/api";
 	import LoadingQueryWrapper from "$components/loader/LoadingQueryWrapper.svelte";
 	import MeetingSessionCard from "$features/meeting-session/components/meeting-session-card/MeetingSessionCard.svelte";
@@ -20,12 +19,13 @@
 	<SearchInput bind:value={viewState.searchValue} />
 
 	<div class="pb-2 border">
-		<Month bind:startOfMonth={viewState.monthStart} showOutsideDays />
+		<span>month</span>
+		<!-- <Month bind:startOfMonth={viewState.monthStart} showOutsideDays /> -->
 	</div>
 {/snippet}
 
 <FilterPage {filters}>
-	<PaginatedListBox pagination={viewState.pagination}>
+	<PaginatedListBox>
 		<LoadingQueryWrapper query={viewState.query}>
 			{#snippet view(sessions: MeetingSession[])}
 				{#each sessions as session}

@@ -1,10 +1,10 @@
 <script lang="ts">
-	import Button from "$components/button/Button.svelte";
 	import type { OncallShiftMetrics } from "$lib/api";
 	import ChartWithStats from "$components/viz/ChartWithStats.svelte";
 	import { type InlineStatProps } from "$components/viz/InlineStat.svelte";
 	import { mdiFilter } from "@mdi/js";
 	import SectionCard from "./SectionCard.svelte";
+	import { Button } from "$components/ui/button";
 	import Header from "$components/header/Header.svelte";
 
 	type Props = {
@@ -53,7 +53,7 @@
 	<div class="h-fit flex flex-col gap-2">
 		<Header title="Incidents" subheading="Incidents opened during shift">
 			{#snippet actions()}
-				<Button icon={mdiFilter} iconOnly onclick={() => (showFilters = !showFilters)} />
+				<Button onclick={() => (showFilters = !showFilters)}>filter</Button>
 			{/snippet}
 		</Header>
 

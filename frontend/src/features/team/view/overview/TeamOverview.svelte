@@ -1,6 +1,5 @@
 <script lang="ts">
 	import { mdiSlack } from "@mdi/js";
-	import { SelectField } from "svelte-ux";
 	import TeamUsersTable from "./TeamUsersTable.svelte";
 	import TeamRostersTable from "./TeamRostersTable.svelte";
 
@@ -12,7 +11,8 @@
 	<div class="flex flex-col gap-2 w-fit border p-2">
 		<span class="uppercase font-semibold text-surface-content/90">Details</span>
 
-		<SelectField
+		<span>slack channel</span>
+		<!-- <SelectField
 			label="Slack Channel"
 			labelPlacement="top"
 			icon={mdiSlack}
@@ -20,7 +20,7 @@
 			options={slackChannelOptions}
 			value={slackChannel}
 			clearable={false}
-		/>
+		/> -->
 	</div>
 
 	<TeamUsersTable />

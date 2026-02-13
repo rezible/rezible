@@ -1,7 +1,4 @@
 <script lang="ts">
-	import { DateRangeField, MultiSelectField, type MenuOption } from "svelte-ux";
-	import { PeriodType } from "@layerstack/utils";
-	import type { DateRange as DateRangeType } from "@layerstack/utils/dateRange";
 	import { mdiCalendarRange } from "@mdi/js";
 	import { subDays } from "date-fns";
 	import { createQuery } from "@tanstack/svelte-query";
@@ -17,7 +14,7 @@
 
 	appShell.setPageBreadcrumbs(() => [{ label: "Oncall Shifts", href: "/shifts" }]);
 
-	const statusOptions: MenuOption<string>[] = [
+	const statusOptions = [
 		{ label: 'Active', value: "active" },
 		{ label: 'Past', value: "past" },
 		{ label: 'Upcoming', value: "upcoming", disabled: true },
@@ -27,22 +24,22 @@
 	const pagination = createPaginationStore();
 
 	const today = new Date();
-	let dateRange = $state<DateRangeType>({
+	let dateRange = $state({
 		from: subDays(today, 3),
 		to: today,
-		periodType: PeriodType.Day,
+		periodType: "day",
 	});
 
-	const periodTypes: PeriodType[] = [
-		PeriodType.Day,
-		PeriodType.Week,
-		PeriodType.BiWeek1,
-		PeriodType.Month,
-		PeriodType.Quarter,
-		PeriodType.CalendarYear,
+	const periodTypes: string[] = [
+		// PeriodType.Day,
+		// PeriodType.Week,
+		// PeriodType.BiWeek1,
+		// PeriodType.Month,
+		// PeriodType.Quarter,
+		// PeriodType.CalendarYear,
 	];
 
-	const updateDateRange = (newRange: DateRangeType) => {
+	const updateDateRange = (newRange: any) => {
 		console.log(newRange);
 	};
 
@@ -50,11 +47,11 @@
 		if (!id) return;
 	}
 
-	const formatShiftStatusField = (opts: MenuOption<string>[]) => {
-		if (opts.length === 0) return "None";
-		if (opts.length === statusOptions.length) return "Any";
-		return opts.map((o) => o.label).join(", ");
-	};
+	// const formatShiftStatusField = (opts: MenuOption<string>[]) => {
+	// 	if (opts.length === 0) return "None";
+	// 	if (opts.length === statusOptions.length) return "Any";
+	// 	return opts.map((o) => o.label).join(", ");
+	// };
 
 	const setShiftStatus = (value?: string[]) => {
 		if (!value || value.length === 0) return;
@@ -72,7 +69,8 @@
 
 {#snippet filters()}
 	<div class="flex flex-col gap-2">
-		<MultiSelectField
+		<span>status select</span>
+		<!--MultiSelectField
 			label="Shift Status"
 			labelPlacement="top"
   			formatSelected={c => formatShiftStatusField(c.options)}
@@ -87,11 +85,12 @@
 					<div class="text-sm text-danger">Nothing selected</div>
 				{/if}
 			</div>
-		</MultiSelectField>
+		</MultiSelectField-->
 
 		<RosterSelectField onSelected={onRosterSelected} />
 
-		<DateRangeField
+		<span>date range</span>
+		<!--DateRangeField
 			label="Date Range"
 			labelPlacement="top"
 			{periodTypes}
@@ -100,7 +99,7 @@
 				updateDateRange(e.detail);
 			}}
 			icon={mdiCalendarRange}
-		/>
+		/-->
 	</div>
 {/snippet}
 

@@ -7,7 +7,7 @@
 	import SearchInput from "$components/search-input/SearchInput.svelte";
 	import PaginatedListBox from "$components/paginated-listbox/PaginatedListBox.svelte";
 	import IncidentCard from "$components/incident-card/IncidentCard.svelte";
-	import { QueryPaginatorState } from "$src/lib/paginator.svelte";
+	import { QueryPaginatorState } from "$lib/paginator.svelte";
 
 	appShell.setPageBreadcrumbs(() => [{ label: "Incidents" }]);
 
@@ -26,7 +26,7 @@
 {/snippet}
 
 <FilterPage {filters}>
-	<PaginatedListBox pagination={paginator.pagination}>
+	<PaginatedListBox>
 		<LoadingQueryWrapper {query}>
 			{#snippet view(incidents: Incident[])}
 				{#each incidents as incident (incident.id)}

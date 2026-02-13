@@ -1,5 +1,5 @@
 import { getTeamOptions } from "$lib/api";
-import type { Getter } from "$src/lib/utils.svelte";
+import type { Getter } from "$lib/utils.svelte";
 import { createQuery } from "@tanstack/svelte-query";
 import { Context, watch } from "runed";
 

@@ -4,7 +4,6 @@
 	import { useTeamViewState } from "$features/team";
 	import { createQuery } from "@tanstack/svelte-query";
 	import { QueryPaginatorState } from "$lib/paginator.svelte";
-	import { Pagination } from "svelte-ux";
 
 	const view = useTeamViewState();
 	const paginator = new QueryPaginatorState();
@@ -34,9 +33,9 @@
 	</div>
 
 	<div class="flex justify-end">
-		<Pagination 
+		<!-- <Pagination 
 			{...paginator.paginationProps}
 			hideSinglePage
-		/>
+		/> -->
 	</div>
 </div>

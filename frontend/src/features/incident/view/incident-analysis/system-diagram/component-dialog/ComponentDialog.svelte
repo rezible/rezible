@@ -1,7 +1,6 @@
 <script lang="ts">
 	import { mdiClose } from "@mdi/js";
-	import { Dialog } from "svelte-ux";
-	import Button from "$components/button/Button.svelte";
+	import { Button } from "$components/ui/button";
 	import ConfirmButtons from "$components/confirm-buttons/ConfirmButtons.svelte";
 	import ComponentAttributesEditor from "./ComponentAttributesEditor.svelte";
 	import ComponentSelector from "./ComponentSelector.svelte";
@@ -24,7 +23,7 @@
 	const cancelLabel = $derived(creatingToAdd ? "Cancel" : "Cancel");
 </script>
 
-<Dialog
+<!--Dialog
 	open={componentDialog.open}
 	on:close={() => componentDialog.clear()}
 	loading={componentDialog.loading}
@@ -60,4 +59,4 @@
 			onConfirm={() => componentDialog.onConfirm()}
 		/>
 	</svelte:fragment>
-</Dialog>
+</Dialog-->

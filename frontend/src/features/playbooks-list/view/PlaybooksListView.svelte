@@ -7,7 +7,6 @@
 	import SearchInput from "$components/search-input/SearchInput.svelte";
 	import PaginatedListBox from "$components/paginated-listbox/PaginatedListBox.svelte";
 	import LoadingQueryWrapper from "$components/loader/LoadingQueryWrapper.svelte";
-	import { ListItem } from "svelte-ux";
 
 	appShell.setPageBreadcrumbs(() => [{ label: "Playbooks" }]);
 
@@ -27,12 +26,12 @@
 
 {#snippet playbookListItem(pb: Playbook)}
 	<a href="/playbooks/{pb.id}">
-		<ListItem title={pb.attributes.title} />
+		<span>{pb.attributes.title}</span>
 	</a>
 {/snippet}
 
 <FilterPage {filters}>
-	<PaginatedListBox pagination={paginator.pagination}>
+	<PaginatedListBox>
 		<LoadingQueryWrapper {query}>
 			{#snippet view(playbooks: Playbook[])}
 				{#each playbooks as pb (pb.id)}

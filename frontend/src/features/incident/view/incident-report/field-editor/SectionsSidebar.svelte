@@ -3,7 +3,7 @@
 	import { mdiCircleMedium } from "@mdi/js";
 	import { onMount } from "svelte";
 	import Icon from "$components/icon/Icon.svelte";
-	import { cls } from '@layerstack/tailwind';
+	import { cn } from '$lib/utils';
 
 	type Props = {
 		visible: boolean;
@@ -66,7 +66,7 @@
 		>
 			<!-- progress bar filled -->
 			<div
-				class={cls(
+				class={cn(
 					"flex flex-[var(--scrollAmount)]",
 					"after:h-[var(--windowHeight)] after:self-end after:bg-surface-content/25 after:content-[''] after:w-[1px] after:ml-[-0.5px] pl-[0.5px]"
 				)}

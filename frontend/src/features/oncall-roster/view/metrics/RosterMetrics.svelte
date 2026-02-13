@@ -1,5 +1,4 @@
 <script lang="ts">
-	import { scaleOrdinal } from "d3-scale";
 	import { getOncallRosterMetricsOptions } from "$lib/api";
 	import { createQuery } from "@tanstack/svelte-query";
 	import { useOncallRosterViewState } from "$features/oncall-roster";
@@ -48,12 +47,6 @@
 
 	const alertsData = $derived(generateAlertsData(periodDays));
 	const incidentTypesData = $derived(generateIncidentTypeData(periodDays));
-
-	// Chart colors
-	const alertColors = ["#4ade80", "#f87171"];
-	const pieColors = $derived(scaleOrdinal()
-		.domain(incidentTypesData.map(d => d.label))
-		.range(incidentTypesData.map(d => d.color)));
 </script>
 
 <div class="overflow-y-auto flex flex-col h-full max-h-full min-h-0 flex-1">

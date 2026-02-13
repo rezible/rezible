@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { useSvelteFlow, ViewportPortal } from "@xyflow/svelte";
-	import Button from "$components/button/Button.svelte";
+	import { Button } from "$components/ui/button";
 	import { useSystemDiagram, type SystemComponentNodeData, type SystemRelationshipEdgeData } from "./diagramState.svelte";
 	import { IsMounted } from "runed";
 	import { mdiPencil, mdiTrashCan } from "@mdi/js";
@@ -61,8 +61,8 @@
 				class="pointer-events-auto absolute border rounded-lg bg-surface-100 p-1 z-[1001]"
 				style:transform
 			>
-				<Button onclick={openEditDialog} icon={mdiPencil}></Button>
-				<Button onclick={confirmDelete} icon={mdiTrashCan}></Button>
+				<Button onclick={openEditDialog}>edit</Button>
+				<Button onclick={confirmDelete}>delete</Button>
 			</div>
 		{/if}
 	</ViewportPortal>

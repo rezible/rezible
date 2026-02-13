@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { mdiPencil } from "@mdi/js";
-	import Button from "$components/button/Button.svelte";
+	import { Button } from "$components/ui/button";
 	import Icon from "$components/icon/Icon.svelte";
 	import Avatar from "$components/avatar/Avatar.svelte";
 	import Header from "$components/header/Header.svelte";
@@ -20,7 +20,7 @@
 			<div class="border rounded-lg p-2 group">
 				<Header title="Responders" classes={{ root: "min-h-8", title: "text-md text-neutral-100" }}>
 					{#snippet actions()}
-						<Button size="sm" classes={{ root: "h-8 text-neutral-200" }} onclick={() => {}}>
+						<Button size="sm" onclick={() => {}}>
 							<Icon data={mdiPencil} />
 						</Button>
 					{/snippet}
@@ -42,7 +42,7 @@
 			<div class="border rounded-lg p-2 group">
 				<Header title="Teams" classes={{ root: "min-h-8", title: "text-md text-neutral-100" }}>
 					{#snippet actions()}
-						<Button size="sm" classes={{ root: "h-8 text-neutral-200" }} onclick={() => {}}>
+						<Button size="sm" onclick={() => {}}>
 							<Icon data={mdiPencil} />
 						</Button>
 					{/snippet}
@@ -66,7 +66,7 @@
 			<div class="border rounded-lg p-2 group">
 				<Header title="Linked Incidents" classes={{ root: "min-h-8", title: "text-md text-neutral-100" }}>
 					{#snippet actions()}
-						<Button size="sm" classes={{ root: "h-8 text-neutral-200" }} onclick={() => {}}>
+						<Button size="sm" onclick={() => {}}>
 							<Icon data={mdiPencil} />
 						</Button>
 					{/snippet}
@@ -89,7 +89,7 @@
 			<div class="border rounded-lg p-2 group">
 				<Header title="Incident Severity" classes={{ root: "h-8", title: "text-md text-neutral-100" }}>
 					{#snippet actions()}
-						<Button size="sm" classes={{ root: "h-8 text-neutral-200" }} onclick={() => {}}>
+						<Button size="sm" onclick={() => {}}>
 							<Icon data={mdiPencil} />
 						</Button>
 					{/snippet}
@@ -100,7 +100,7 @@
 			<div class="border rounded-lg p-2 group">
 				<Header title="Incident Visibility" classes={{ root: "min-h-8", title: "text-md text-neutral-100" }}>
 					{#snippet actions()}
-						<Button size="sm" classes={{ root: "h-8 text-neutral-200" }} onclick={() => {}}>
+						<Button size="sm" onclick={() => {}}>
 							<Icon data={mdiPencil} />
 						</Button>
 					{/snippet}

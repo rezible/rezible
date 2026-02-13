@@ -1,11 +1,10 @@
 <script lang="ts">
-	import { ElementSize } from "runed";
-	import Button from "$components/button/Button.svelte";
 	import { useEventDialog } from "./event-dialog/dialogState.svelte";
 	import { ZonedDateTime } from "@internationalized/date";
 	import type { TimelineItem } from "vis-timeline";
 	import { useIncidentTimeline } from "./timelineState.svelte";
 	import { mdiPencilCircle, mdiPlusCircle } from "@mdi/js";
+	import { Button } from "$components/ui/button";
 	import AnalysisContextMenu from "$features/incident/components/analysis-context-menu/AnalysisContextMenu.svelte";
 
 	type Props = {
@@ -44,12 +43,12 @@
 		role="presentation"
 	>
 		{#if event}
-			<Button variant="fill-light" icon={mdiPencilCircle} rounded={false} classes={{root: "w-full gap-2"}} onclick={onEditEventClick}>
+			<Button onclick={onEditEventClick}>
 				Edit Event
 			</Button>
 		{/if}
 		
-		<Button variant="fill-light" icon={mdiPlusCircle} rounded={false} classes={{root: "w-full gap-2"}} onclick={onAddEventClick}>
+		<Button onclick={onAddEventClick}>
 			Add New Event
 		</Button>
 	</div>
