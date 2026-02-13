@@ -1,6 +1,5 @@
 <script lang="ts">
 	import { mdiFilter } from "@mdi/js";
-	import { ToggleGroup, ToggleOption } from "svelte-ux";
 	import { Button } from "$components/ui/button";
 	import ShiftEventsHeatmap from "./ShiftEventsHeatmap.svelte";
 	import ShiftEventsList from "./ShiftEventsList.svelte";
@@ -29,10 +28,10 @@
 	</div>
 
 	<div class="p-2">
-		<ToggleGroup bind:value={display} inset variant="fill-surface" rounded>
+		<!-- <ToggleGroup bind:value={display} inset variant="fill-surface" rounded>
 			<ToggleOption value="list">List</ToggleOption>
 			<ToggleOption value="heatmap">Heatmap</ToggleOption>
-		</ToggleGroup>
+		</ToggleGroup> -->
 	</div>
 
 	<div class="flex-1 flex flex-col gap-1 px-0 overflow-y-auto">

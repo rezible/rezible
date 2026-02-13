@@ -1,5 +1,4 @@
 <script lang="ts">
-	import { Avatar as UxAvatar } from "svelte-ux";
 	import { mdiAbacus } from "@mdi/js";
 	import type { IncidentDebriefMessage } from "$lib/api";
 	import { useAuthSessionState } from "$lib/auth.svelte";
@@ -46,7 +45,6 @@
 	{/each}
 	{#if waitingForResponse}
 		<div class="flex gap-4 w-2/3 items-center">
-			<UxAvatar class="border" icon={mdiAbacus} />
 			<PulseLoader />
 		</div>
 	{/if}
@@ -63,7 +61,7 @@
 
 {#snippet assistantMessage(msg: IncidentDebriefMessage)}
 	<div class="flex gap-2 px-2 w-2/3 border-accent border-s">
-		<UxAvatar class="border" icon={mdiAbacus} />
+		<!-- <UxAvatar class="border" icon={mdiAbacus} /> -->
 		<div class="rounded p-2 border self-end bg-neutral">
 			<span>{msg.attributes.body}</span>
 		</div>

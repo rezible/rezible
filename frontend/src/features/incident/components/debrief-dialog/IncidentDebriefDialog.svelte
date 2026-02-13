@@ -1,8 +1,7 @@
 <script lang="ts">
 	import { mdiClose } from "@mdi/js";
-	import { Dialog } from "svelte-ux";
 	import type { IncidentDebrief } from "$lib/api";
-	import Button from "$components/button/Button.svelte";
+	import { Button } from "$components/ui/button";
 	import IncidentDebriefView from "./IncidentDebriefView.svelte";
 	import Header from "$components/header/Header.svelte";
 
@@ -13,7 +12,7 @@
 	let { debrief, open = $bindable() }: Props = $props();
 </script>
 
-<Dialog
+<!-- <Dialog
 	bind:open
 	persistent
 	portal
@@ -35,4 +34,4 @@
 			<IncidentDebriefView {debrief} />
 		{/if}
 	</svelte:fragment>
-</Dialog>
+</Dialog> -->

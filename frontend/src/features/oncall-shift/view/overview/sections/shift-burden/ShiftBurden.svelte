@@ -1,5 +1,4 @@
 <script lang="ts">
-	import { Collapse } from "svelte-ux";
 	import type { OncallShiftMetrics } from "$lib/api";
 	import MetricComparisonLabel from "$components/viz/MetricComparisonLabel.svelte";
 	import Header from "$components/header/Header.svelte";
@@ -64,7 +63,7 @@
 
 		<div class="flex flex-col h-fit w-full place-self-start divide-y border rounded-lg">
 			{#each burdenStats as stat}
-				<Collapse classes={{icon: "mr-2"}}>
+				<!-- <Collapse classes={{icon: "mr-2"}}>
 					<Header slot="trigger" title={stat.title} subheading={stat.subheading} classes={{root: "p-2 px-4 flex-1", title: "text-lg"}}>
 						{#snippet actions()}
 							<div class="ml-4 flex flex-col">
@@ -81,7 +80,7 @@
 					<div class="p-3">
 						TODO
 					</div>
-				</Collapse>
+				</Collapse> -->
 			{/each}
 		</div>
 	</div>

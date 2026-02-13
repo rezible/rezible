@@ -4,7 +4,7 @@
 	import { Time } from '@internationalized/date';
 	import TimePickerInput from './TimePickerInput.svelte';
 	import TimePeriodSelect from "./TimePeriodSelect.svelte";
-	import { cls } from '@layerstack/tailwind';
+	import { cn } from '$lib/utils';
 	import type { Period } from './utils';
 
 	type Props = {
@@ -31,7 +31,7 @@
 	let periodRef = $state<HTMLInputElement | null>(null);
 </script>
 
-<div class={cls('flex items-center gap-2', view === 'dotted' && 'gap-1')}>
+<div class={cn('flex items-center gap-2', view === 'dotted' && 'gap-1')}>
 	<div class="grid gap-1 text-center">
 		{#if view === 'labels'}
 			<label for="hours" class="text-xs">Hours</label>

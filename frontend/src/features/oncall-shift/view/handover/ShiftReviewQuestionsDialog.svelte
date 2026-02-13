@@ -1,6 +1,5 @@
 <script lang="ts">
 	import { createEventAnnotationMutation } from "$lib/api";
-	import { Dialog } from "svelte-ux";
 	import { createMutation } from "@tanstack/svelte-query";
 	import ConfirmButtons from "$components/confirm-buttons/ConfirmButtons.svelte";
 	import { goto } from "$app/navigation";
@@ -23,7 +22,7 @@
 	const saveReview = () => {};
 </script>
 
-<Dialog
+<!-- <Dialog
 	open
 	loading={reviewShiftMutation.isPending}
 	persistent
@@ -44,7 +43,7 @@
 	<div slot="actions">
 		<ConfirmButtons closeText="Skip" onClose={skipReview} onConfirm={saveReview} confirmText="Submit" />
 	</div>
-</Dialog>
+</Dialog> -->
 
 {#snippet dialogBody()}
 	<div class="flex flex-col gap-2 overflow-y-auto p-2">

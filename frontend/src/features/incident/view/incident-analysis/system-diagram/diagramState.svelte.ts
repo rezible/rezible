@@ -139,9 +139,12 @@ export class SystemDiagramState {
 		this.edges = translated.edges;
 	}
 
+	getNodesBounds = $state.raw<ReturnType<typeof useSvelteFlow>["getNodesBounds"]>();
 	flowStore = $state.raw<ReturnType<typeof useSvelteFlowStore>>();
 
 	onFlowInit() {
+		const flow = useSvelteFlow();
+		this.getNodesBounds = flow.getNodesBounds;
 		this.flowStore = useSvelteFlowStore();
 	};
 
@@ -150,9 +153,8 @@ export class SystemDiagramState {
 	}
 
 	updateSelectedPosition({ node, edge }: { node?: Node, edge?: Edge }) {
-		const { getNodesBounds } = useSvelteFlow();
 		if (edge) {
-			this.selectedLivePosition = getNodesBounds([edge.source, edge.target]);
+			this.selectedLivePosition = this.getNodesBounds?.([edge.source, edge.target]);
 		} else if (node) {
 			this.selectedLivePosition = node.position;
 		} else {

@@ -7,7 +7,6 @@
 	import LoadingQueryWrapper from "$components/loader/LoadingQueryWrapper.svelte";
 	import FilterPage from "$components/filter-page/FilterPage.svelte";
 	import ShiftCard from "$features/oncall-shifts-list/components/shift-card/ShiftCard.svelte";
-	import { paginationStore as createPaginationStore } from "@layerstack/svelte-stores";
 	import RosterSelectField from "$components/roster-select-field/RosterSelectField.svelte";
 	import { watch } from "runed";
 	import PaginatedListBox from "$components/paginated-listbox/PaginatedListBox.svelte";
@@ -20,8 +19,6 @@
 		{ label: 'Upcoming', value: "upcoming", disabled: true },
 	];
 	let selectedStatus = $state<string[]>(statusOptions.map(o => o.value));
-
-	const pagination = createPaginationStore();
 
 	const today = new Date();
 	let dateRange = $state({
@@ -63,7 +60,7 @@
 	const queryPagination = $derived(shiftsQuery.data?.pagination);
 	watch(() => queryPagination, p => {
 		if (!p) return;
-		pagination.setTotal(p.total)
+		// pagination.setTotal(p.total)
 	})
 </script>
 
@@ -104,7 +101,7 @@
 {/snippet}
 
 <FilterPage {filters}>
-	<PaginatedListBox {pagination}>
+	<PaginatedListBox >
 		<LoadingQueryWrapper query={shiftsQuery}>
 			{#snippet view(shifts: OncallShift[])}
 				{#each shifts as shift}

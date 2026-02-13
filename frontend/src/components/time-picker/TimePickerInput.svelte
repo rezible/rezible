@@ -24,7 +24,7 @@
 		getDateByType,
 		setDateByType
 	} from './utils';
-	import { cls } from '@layerstack/tailwind';
+	import { cn } from '$lib/utils';
 
 	let {
 		class: className,
@@ -111,7 +111,7 @@
 	bind:this={ref}
 	id={id || picker}
 	name={name || picker}
-	class={cls(
+	class={cn(
 		'w-[48px] text-center font-mono text-base tabular-nums caret-transparent bg-surface-200/50 focus:bg-primary focus:text-primary-foreground [&::-webkit-inner-spin-button]:appearance-none',
 		className
 	)}

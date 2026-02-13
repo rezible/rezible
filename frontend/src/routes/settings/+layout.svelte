@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { page } from "$app/state";
-	import { cls } from '@layerstack/tailwind';
+	import { cn } from '$lib/utils';
 	import { mdiAccount, mdiAccountGroup, mdiCog, mdiFire, mdiPuzzle } from "@mdi/js";
 	import FilterPage from "$components/filter-page/FilterPage.svelte";
 
@@ -8,7 +8,6 @@
 
 	const pages = [
 		{ label: "General", path: "", routeId: "/(general)", icon: mdiCog },
-		{ label: "Oncall", path: "/oncall", icon: mdiFire },
 		{ label: "Incidents", path: "/incidents", icon: mdiFire },
 		{ label: "Integrations", path: "/integrations", icon: mdiPuzzle },
 		{ label: "Users", path: "/users", icon: mdiAccount },
@@ -27,7 +26,7 @@
 			<li class="group flex w-full" role="presentation">
 				<a
 					href="{basePath}{p.path}"
-					class={cls(
+					class={cn(
 						"w-full py-3 px-6 gap-2 text-lg text-center border-r-2",
 						active
 							? "text-primary-content border-primary bg-surface-100 active"

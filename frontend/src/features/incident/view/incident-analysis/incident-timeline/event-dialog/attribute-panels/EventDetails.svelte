@@ -1,13 +1,5 @@
 <script lang="ts">
 	import TiptapEditor from "$components/tiptap-editor/TiptapEditor.svelte";
-	import {
-		Field,
-		ToggleGroup,
-		ToggleOption,
-		Tooltip,
-		TextField,
-		Switch,
-	} from "svelte-ux";
 	import { mdiMagnify, mdiExclamation, mdiBook, mdiBrain, mdiFlag } from "@mdi/js";
 	import Icon from "$components/icon/Icon.svelte";
 	import { onMount } from "svelte";
@@ -47,7 +39,8 @@
 </script>
 
 <div class="flex flex-col gap-2 flex-1">
-	<TextField label="Title" bind:value={eventAttributes.title} />
+	<span>title field</span>
+	<!-- <TextField label="Title" bind:value={eventAttributes.title} /> -->
 
 	<DateTimePickerField
 		label="Time"
@@ -56,7 +49,8 @@
 		exactTime
 	/>
 
-	<Field label="Event Kind">
+	<span>kind field</span>
+	<!-- <Field label="Event Kind">
 		<ToggleGroup bind:value={eventAttributes.kind} variant="fill" inset class="w-full">
 			{#each eventKindOptions as opt}
 				<ToggleOption value={opt.value}>
@@ -69,15 +63,17 @@
 				</ToggleOption>
 			{/each}
 		</ToggleGroup>
-	</Field>
+	</Field> -->
 
-	<Field label="Key Event" let:id icon={mdiFlag}>
+	<span>key event toggle</span>
+	<!-- <Field label="Key Event" let:id icon={mdiFlag}>
 		<Switch {id} bind:value={eventAttributes.isKey} />
-	</Field>
+	</Field> -->
 
-	<Field label="Description" classes={{ root: "grow", container: "h-full", input: "block" }}>
+	<span>desc field</span>
+	<!-- <Field label="Description" classes={{ root: "grow", container: "h-full", input: "block" }}>
 		{#if eventAttributes.descriptionEditor}
 			<TiptapEditor bind:editor={eventAttributes.descriptionEditor} />
 		{/if}
-	</Field>
+	</Field> -->
 </div>

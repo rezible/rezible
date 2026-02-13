@@ -2,7 +2,6 @@
 	import { mdiLineScan, mdiPhoneAlert, mdiMoonWaxingCrescent, mdiClipboardText, mdiCalendarRange } from "@mdi/js";
 	import MetricCard from "$src/components/viz/MetricCard.svelte";
 	import { useAlertViewState } from "$features/alert/lib/viewState.svelte";
-	import { DateRangeField } from "svelte-ux";
 	import { makeCalendarDateString, makeDateRangeWindow } from "$lib/date-utils";
 	import { getAlertMetricsOptions, type GetAlertMetricsData } from "$lib/api";
 	import { createQuery } from "@tanstack/svelte-query";
@@ -32,13 +31,13 @@
 </script>
 
 <div class="flex flex-col gap-2">
-	<DateRangeField 
+	<!-- <DateRangeField 
 		classes={{field: {root: "w-fit"}}} 
 		value={dateRange} 
 		on:change={e => (dateRange = e.detail)} 
 		label="Date Range"
 		icon={mdiCalendarRange}
-	/>
+	/> -->
 
 	{#if metrics}
 		<div class="flex flex-col">
