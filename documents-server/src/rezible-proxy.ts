@@ -8,12 +8,10 @@ import { Forbidden } from "@hocuspocus/common";
 import * as Y from "yjs";
 
 import { client } from "./lib/api/oapi.gen/client.gen";
-import { Documents } from "./lib/api/oapi.gen/sdk.gen";
-import type { DocumentEditorSessionAuth } from "./lib/api/oapi.gen/types.gen";
-import type { AuthToken } from "./lib/api/oapi.gen/core/auth.gen";
+import { Documents, type DocumentEditorSessionAuth } from "./lib/api/oapi.gen";
 
 type AuthContext = {
-	token: AuthToken;
+	token: string;
 	sessionAuth: DocumentEditorSessionAuth;
 };
 
@@ -30,7 +28,7 @@ export class RezibleServerProxy implements Extension {
 	}
 
 	async onAuthenticate(data: onAuthenticatePayload): Promise<AuthContext> {
-		const token = data.token as AuthToken;
+		const token = data.token;
 		const res = await Documents.verifyDocumentSessionAuth({
 			auth: token,
 			path: { id: data.documentName },

@@ -4,6 +4,7 @@
     "": {
       "name": "rezible",
       "dependencies": {
+        "@hey-api/client-fetch": "^0.13.1",
         "@tiptap/core": "3.13.0",
         "@tiptap/pm": "3.13.0",
         "@types/bun": "1.3.3",

@@ -42,8 +42,7 @@ _default:
 
 @codegen-api:
     just run-backend openapi > /tmp/rezible-spec.yaml
-    cd frontend && bun run codegen
-    cd documents-server && bun run codegen
+    bun run codegen:api
 
 # [group('Development')]
 

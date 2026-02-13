@@ -9,7 +9,6 @@
 		"preview": "vite preview",
 		"check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
 		"check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
-		"codegen": "openapi-ts",
 		"lint": "eslint .",
 		"format": "prettier --plugin-search-dir . --write ."
 	},
@@ -42,7 +41,6 @@
 	},
 	"dependencies": {
 		"@floating-ui/dom": "^1.7.4",
-		"@hey-api/client-fetch": "^0.13.1",
 		"@hocuspocus/provider": "^3.4.0",
 		"@internationalized/date": "^3.10.0",
 		"@mdi/js": "^7.4.47",
