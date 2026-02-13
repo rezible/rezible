@@ -44,6 +44,9 @@ _default:
     just run-backend openapi > /tmp/rezible-spec.yaml
     bun run codegen:api
 
+@codegen-mocks:
+    cd backend/internal/testkit/mocks && go generate ./...
+
 # [group('Development')]
 
 @dev: stop-db
@@ -64,6 +67,15 @@ _default:
 
 @run-datasync: start-db
     DATASYNC_MODE="true" just run-backend integrations sync
+
+@test-backend:
+    cd backend && go test ./...
+
+@test-backend-db:
+    cd backend && go test ./internal/db/...
+
+@test-backend-db-verbose:
+    cd backend && go test -v ./internal/db/...
 
 # [group('Database')]
 @create-db: stop-db
