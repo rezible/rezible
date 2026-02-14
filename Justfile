@@ -40,12 +40,12 @@ _default:
 @codegen-ent:
     cd backend && go generate ./ent
 
+@codegen-mocks:
+    cd backend && go generate ./testkit/mocks
+
 @codegen-api:
     just run-backend openapi > /tmp/rezible-spec.yaml
     bun run codegen:api
-
-@codegen-mocks:
-    cd backend/testkit/mocks && go generate ./...
 
 # [group('Development')]
 
