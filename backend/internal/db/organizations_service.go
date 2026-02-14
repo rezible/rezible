@@ -47,7 +47,7 @@ func (s *OrganizationsService) FindOrCreateFromProvider(ctx context.Context, o e
 		return org, nil
 	}
 	if !rez.Config.AllowTenantCreation() {
-		return nil, rez.ErrInvalidTenant
+		return nil, rez.ErrCannotCreateTenant
 	}
 
 	var createdTenant *ent.Tenant

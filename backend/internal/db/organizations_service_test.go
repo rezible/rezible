@@ -8,8 +8,8 @@ import (
 
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
-	"github.com/rezible/rezible/internal/testkit"
-	"github.com/rezible/rezible/internal/testkit/mocks"
+	"github.com/rezible/rezible/testkit"
+	"github.com/rezible/rezible/testkit/mocks"
 )
 
 type OrganizationsServiceSuite struct {
@@ -17,54 +17,68 @@ type OrganizationsServiceSuite struct {
 }
 
 func TestOrganizationsServiceSuite(t *testing.T) {
-	s := &OrganizationsServiceSuite{Suite: testkit.NewSuite()}
+	s := &OrganizationsServiceSuite{
+		Suite: testkit.NewSuite(),
+	}
 	suite.Run(t, s)
 }
 
 func (s *OrganizationsServiceSuite) TestFindOrCreateFromProviderCreatesTenantAndOrg() {
-	ctx := s.Context()
-	jobs := mocks.NewMockJobsService(s.T())
+	dbc := s.Client()
 
-	svc, err := NewOrganizationsService(s.Client(), jobs)
-	s.Require().NoError(err)
+	orgs, orgsErr := NewOrganizationsService(dbc, mocks.NewMockJobsService(s.T()))
+	s.Require().NoError(orgsErr)
 
-	beforeCount, err := s.Client().Tenant.Query().Count(ctx)
-	s.Require().NoError(err)
+	ctx := s.SystemContext()
 
-	created, err := svc.FindOrCreateFromProvider(ctx, ent.Organization{ExternalID: "provider-org-1", Name: "Acme"})
-	s.Require().NoError(err)
-	s.Equal("provider-org-1", created.ExternalID)
+	beforeCount, beforeCountErr := dbc.Tenant.Query().Count(ctx)
+	s.Require().NoError(beforeCountErr)
 
-	tenantCount, err := s.Client().Tenant.Query().Count(ctx)
-	s.Require().NoError(err)
-	s.Equal(beforeCount+1, tenantCount)
+	externalId := "provider-org-1"
+	providerOrg := ent.Organization{
+		ExternalID: externalId,
+		Name:       "Acme",
+	}
 
-	again, err := svc.FindOrCreateFromProvider(ctx, ent.Organization{ExternalID: "provider-org-1", Name: "Acme"})
-	s.Require().NoError(err)
-	s.Equal(created.ID, again.ID)
+	created, createErr := orgs.FindOrCreateFromProvider(ctx, providerOrg)
+	s.Require().NoError(createErr)
+	s.Equal(externalId, created.ExternalID)
+
+	found, findErr := orgs.FindOrCreateFromProvider(ctx, providerOrg)
+	s.Require().NoError(findErr)
+	s.Equal(created.ID, found.ID)
+
+	afterCount, afterCountErr := dbc.Tenant.Query().Count(ctx)
+	s.Require().NoError(afterCountErr)
+	s.Equal(beforeCount+1, afterCount)
 }
 
 func (s *OrganizationsServiceSuite) TestFindOrCreateFromProviderDisallowsTenantCreationWhenConfigDisabled() {
-	svc, err := NewOrganizationsService(s.Client(), mocks.NewMockJobsService(s.T()))
-	s.Require().NoError(err)
+	orgs, orgsErr := NewOrganizationsService(s.Client(), mocks.NewMockJobsService(s.T()))
+	s.Require().NoError(orgsErr)
 
-	_, err = svc.FindOrCreateFromProvider(s.Context(), ent.Organization{ExternalID: "provider-org-2", Name: "Nope"})
-	s.Require().Error(err)
-	s.ErrorIs(err, rez.ErrInvalidTenant)
+	providerOrg := ent.Organization{ExternalID: "provider-org-2", Name: "Nope"}
+
+	s.SetConfigOverrides(map[string]any{"disable_tenant_creation": true})
+	_, createErr := orgs.FindOrCreateFromProvider(s.SystemContext(), providerOrg)
+	s.Require().Error(createErr)
+	s.ErrorIs(createErr, rez.ErrCannotCreateTenant)
+	s.SetConfigOverrides(nil)
 }
 
 func (s *OrganizationsServiceSuite) TestCompleteSetupEnqueuesSyncJobAndSetsTimestamp() {
-	base := s.SeedBaseTenant()
 	jobs := mocks.NewMockJobsService(s.T())
 	jobs.On("Insert", mock.Anything, mock.Anything, mock.Anything).Return(nil).Once()
 
-	svc, err := NewOrganizationsService(s.Client(), jobs)
-	s.Require().NoError(err)
+	dbc := s.Client()
+	orgs, orgsErr := NewOrganizationsService(dbc, jobs)
+	s.Require().NoError(orgsErr)
 
-	err = svc.CompleteSetup(base.Context, base.Organization)
-	s.Require().NoError(err)
+	ctx := s.SeedTenantContext()
+	setupErr := orgs.CompleteSetup(ctx, s.SeedOrganization)
+	s.Require().NoError(setupErr)
 
-	updated, err := s.Client().Organization.Get(base.Context, base.Organization.ID)
-	s.Require().NoError(err)
+	updated, getErr := dbc.Organization.Get(ctx, s.SeedOrganization.ID)
+	s.Require().NoError(getErr)
 	s.False(updated.InitialSetupAt.IsZero())
 }

@@ -7,6 +7,7 @@ import (
 	"os/signal"
 	"syscall"
 
+	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 	"github.com/spf13/cobra"
 
@@ -44,21 +45,6 @@ var printSpecCmd = &cobra.Command{
 		}
 		fmt.Println(spec)
 	},
-}
-
-func withDatabase(ctx context.Context, fn func(dbc rez.Database)) {
-	dbc, dbcErr := internal.OpenDatabase(ctx)
-	if dbcErr != nil {
-		log.Fatal().Err(dbcErr).Msg("failed to get database")
-	}
-
-	defer func() {
-		if closeErr := dbc.Close(); closeErr != nil {
-			log.Error().Err(closeErr).Msg("failed to close database connection")
-		}
-	}()
-
-	fn(dbc)
 }
 
 var integrationsCmd = &cobra.Command{
@@ -113,7 +99,12 @@ var dbMigrateApplyCmd = &cobra.Command{
 }
 
 func init() {
-	rez.Config = viper.InitConfig()
+	rez.Config = viper.NewConfigLoader(viper.ConfigLoaderOptions{LoadEnvironment: true})
+
+	// TODO: logger package?
+	if rez.Config.DebugMode() {
+		log.Logger = log.Level(zerolog.DebugLevel).Output(zerolog.ConsoleWriter{Out: os.Stderr})
+	}
 
 	rootCmd.Run = serveCmd.Run
 	rootCmd.AddCommand(serveCmd, printSpecCmd, integrationsCmd, dbCmd)

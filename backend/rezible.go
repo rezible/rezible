@@ -22,6 +22,7 @@ var (
 	ErrAuthSessionInvalidScope  = errors.New("invalid session token scope")
 	ErrInvalidUser              = errors.New("user does not exist")
 	ErrInvalidTenant            = errors.New("tenant does not exist")
+	ErrCannotCreateTenant       = errors.New("cannot create tenant")
 	ErrUnauthorized             = errors.New("unauthorized")
 	ErrNoConfiguredIntegrations = errors.New("no configured integrations")
 )
@@ -59,6 +60,7 @@ type EventListener interface {
 
 type Database interface {
 	Client() *ent.Client
+	RunAutoMigrations(context.Context) error
 	Close() error
 }
 

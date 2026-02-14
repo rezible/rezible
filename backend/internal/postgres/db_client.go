@@ -6,7 +6,6 @@ import (
 	"errors"
 	"fmt"
 
-	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/access"
 	"github.com/rezible/rezible/ent/entpgx"
 	"github.com/rs/zerolog/log"
@@ -24,8 +23,8 @@ type DatabaseClient struct {
 	client *ent.Client
 }
 
-func NewDatabaseClient(ctx context.Context) (*DatabaseClient, error) {
-	cfg, cfgErr := pgxpool.ParseConfig(rez.Config.DatabaseUrl())
+func NewDatabasePoolClient(ctx context.Context, connUrl string) (*DatabaseClient, error) {
+	cfg, cfgErr := pgxpool.ParseConfig(connUrl)
 	if cfgErr != nil {
 		return nil, fmt.Errorf("parse config: %w", cfgErr)
 	}

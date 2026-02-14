@@ -8,8 +8,8 @@ import (
 
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/access"
-	"github.com/rezible/rezible/internal/testkit"
-	"github.com/rezible/rezible/internal/testkit/mocks"
+	"github.com/rezible/rezible/testkit"
+	"github.com/rezible/rezible/testkit/mocks"
 )
 
 type UserServiceSuite struct {
@@ -21,26 +21,25 @@ func TestUserServiceSuite(t *testing.T) {
 }
 
 func (s *UserServiceSuite) TestCreateUserContextSetsTenantAndUserContext() {
-	base := s.SeedBaseTenant()
+	orgs := mocks.NewMockOrganizationService(s.T())
+	users, usersErr := NewUserService(s.Client(), orgs)
+	s.Require().NoError(usersErr)
 
-	users, err := NewUserService(s.Client(), mocks.NewMockOrganizationService(s.T()))
-	s.Require().NoError(err)
+	tenantCtx := s.SeedTenantContext()
+	usr := s.CreateTestUser(tenantCtx)
 
-	usr := testkit.CreateUser(s.T(), s.Client(), base.Context)
-	ctx, err := users.CreateUserContext(access.AnonymousContext(s.Context()), usr.ID)
-	s.Require().NoError(err)
+	userCtx, userCtxErr := users.CreateUserContext(s.AnonymousContext(), usr.ID)
+	s.Require().NoError(userCtxErr)
 
-	s.Equal(base.TenantID, access.GetContext(ctx).GetTenantId())
-	s.Equal(usr.ID, users.GetUserContext(ctx).ID)
+	s.Equal(access.GetContext(tenantCtx).GetTenantId(), access.GetContext(userCtx).GetTenantId())
+	s.Equal(usr.ID, users.GetUserContext(userCtx).ID)
 }
 
 func (s *UserServiceSuite) TestCreateUserContextReturnsInvalidUserForUnknownID() {
-	base := s.SeedBaseTenant()
-	
 	users, err := NewUserService(s.Client(), mocks.NewMockOrganizationService(s.T()))
 	s.Require().NoError(err)
 
-	_, err = users.CreateUserContext(base.Context, uuid.New())
+	_, err = users.CreateUserContext(s.SeedTenantContext(), uuid.New())
 	s.Require().Error(err)
 	s.ErrorIs(err, rez.ErrInvalidUser)
 }

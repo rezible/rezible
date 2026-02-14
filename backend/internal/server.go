@@ -26,13 +26,18 @@ import (
 )
 
 func RunAutoMigrations(ctx context.Context) error {
-	return postgres.RunAutoMigrations(ctx)
+	dbc, dbcErr := OpenDatabase(ctx)
+	if dbcErr != nil {
+		return fmt.Errorf("open database connection: %w", dbcErr)
+	}
+	defer dbc.Close()
+	return dbc.RunAutoMigrations(ctx)
 }
 
 func OpenDatabase(ctx context.Context) (rez.Database, error) {
-	dbc, dbcErr := postgres.NewDatabaseClient(ctx)
+	dbc, dbcErr := postgres.NewDatabasePoolClient(ctx, rez.Config.DatabaseUrl())
 	if dbcErr != nil {
-		return nil, fmt.Errorf("postgres.NewDatabaseClient: %w", dbcErr)
+		return nil, fmt.Errorf("postgres.NewDatabasePoolClient: %w", dbcErr)
 	}
 	return dbc, nil
 }

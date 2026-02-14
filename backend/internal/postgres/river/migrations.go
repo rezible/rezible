@@ -7,7 +7,6 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/riverqueue/river/riverdriver/riverpgxv5"
 	"github.com/riverqueue/river/rivermigrate"
-	"github.com/rs/zerolog/log"
 )
 
 func RunMigrations(ctx context.Context, pool *pgxpool.Pool) error {
@@ -24,7 +23,7 @@ func RunMigrations(ctx context.Context, pool *pgxpool.Pool) error {
 	}
 
 	if len(res.Versions) > 0 {
-		log.Info().Int("versions", len(res.Versions)).Msg("ran river migrations")
+		// log.Info().Int("versions", len(res.Versions)).Msg("ran river migrations")
 	}
 
 	return nil

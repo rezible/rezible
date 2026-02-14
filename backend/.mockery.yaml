@@ -6,7 +6,7 @@ disable-version-string: true
 packages:
   github.com/rezible/rezible:
     config:
-      dir: internal/testkit/mocks
+      dir: testkit/mocks
       outpkg: mocks
       filename: "{{ .InterfaceName }}.go"
     interfaces:

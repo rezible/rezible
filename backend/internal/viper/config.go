@@ -1,27 +1,27 @@
 package viper
 
 import (
-	"os"
 	"time"
 
-	"github.com/rs/zerolog"
-	"github.com/rs/zerolog/log"
 	"github.com/spf13/viper"
-
-	rez "github.com/rezible/rezible"
 )
 
-type Config struct {
-	db *rez.Database
+type Config struct{}
+
+type ConfigLoaderOptions struct {
+	LoadEnvironment bool
+	Overrides       map[string]any
 }
 
-func InitConfig() *Config {
+func NewConfigLoader(opts ConfigLoaderOptions) *Config {
 	cfg := &Config{}
 
-	viper.AutomaticEnv()
+	if opts.LoadEnvironment {
+		viper.AutomaticEnv()
+	}
 
-	if cfg.DebugMode() {
-		log.Logger = log.Level(zerolog.DebugLevel).Output(zerolog.ConsoleWriter{Out: os.Stderr})
+	for k, v := range opts.Overrides {
+		viper.Set(k, v)
 	}
 
 	return cfg
@@ -100,10 +100,12 @@ func (c *Config) SingleTenantMode() bool {
 	return c.GetBool("single_tenant_mode")
 }
 
+// TODO: tighten these up
+
 func (c *Config) AllowUserCreation() bool {
-	return c.DebugMode()
+	return !c.SingleTenantMode()
 }
 
 func (c *Config) AllowTenantCreation() bool {
-	return c.DebugMode()
+	return !c.SingleTenantMode() && !c.GetBool("disable_tenant_creation")
 }

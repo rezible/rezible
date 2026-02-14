@@ -80,7 +80,7 @@ func makeWebhookVerifier() (webhookVerifierFunc, error) {
 
 		body, bodyErr := io.ReadAll(http.MaxBytesReader(w, r.Body, maxWebhookPayloadBytes))
 		if bodyErr != nil {
-			var mbErr error
+			mbErr := &http.MaxBytesError{}
 			if maxBytes := errors.As(bodyErr, &mbErr); maxBytes {
 				w.WriteHeader(http.StatusBadRequest)
 				return nil, false, nil
