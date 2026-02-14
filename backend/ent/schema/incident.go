@@ -70,6 +70,7 @@ func (Incident) Edges() []ent.Edge {
 		edge.To("tag_assignments", IncidentTag.Type),
 		edge.To("debriefs", IncidentDebrief.Type),
 		edge.To("review_sessions", MeetingSession.Type),
+		edge.To("video_conferences", VideoConference.Type),
 	}
 }
 

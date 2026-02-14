@@ -28,6 +28,7 @@ import (
 	"github.com/rezible/rezible/ent/task"
 	"github.com/rezible/rezible/ent/tenant"
 	"github.com/rezible/rezible/ent/user"
+	"github.com/rezible/rezible/ent/videoconference"
 )
 
 // IncidentCreate is the builder for creating a Incident entity.
@@ -348,6 +349,21 @@ func (_c *IncidentCreate) AddReviewSessions(v ...*MeetingSession) *IncidentCreat
 		ids[i] = v[i].ID
 	}
 	return _c.AddReviewSessionIDs(ids...)
+}
+
+// AddVideoConferenceIDs adds the "video_conferences" edge to the VideoConference entity by IDs.
+func (_c *IncidentCreate) AddVideoConferenceIDs(ids ...uuid.UUID) *IncidentCreate {
+	_c.mutation.AddVideoConferenceIDs(ids...)
+	return _c
+}
+
+// AddVideoConferences adds the "video_conferences" edges to the VideoConference entity.
+func (_c *IncidentCreate) AddVideoConferences(v ...*VideoConference) *IncidentCreate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _c.AddVideoConferenceIDs(ids...)
 }
 
 // AddUserRoleIDs adds the "user_roles" edge to the IncidentRoleAssignment entity by IDs.
@@ -778,6 +794,22 @@ func (_c *IncidentCreate) createSpec() (*Incident, *sqlgraph.CreateSpec) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(meetingsession.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := _c.mutation.VideoConferencesIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   incident.VideoConferencesTable,
+			Columns: []string{incident.VideoConferencesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(videoconference.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {

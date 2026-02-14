@@ -42,6 +42,11 @@ func (b *incidentDetailsMessageBuilder) makeDetailsText() {
 	detailsText := fmt.Sprintf("*Incident Details*\n*Title:* %s\n*Severity:* %s\n*Status:* %s\n*Web:* %s",
 		b.incident.Title, sev.Name, "OPEN", webLink)
 
+	primaryVc := b.incident.Edges.GetPrimaryVideoConference()
+	if primaryVc != nil {
+		detailsText += fmt.Sprintf("\n*Conference:* %s", primaryVc.JoinURL)
+	}
+
 	detailsTextBlock := &slack.TextBlockObject{
 		Type: slack.MarkdownType,
 		Text: detailsText,

@@ -13,6 +13,7 @@ import (
 	"github.com/rezible/rezible/ent/meetingschedule"
 	"github.com/rezible/rezible/ent/meetingsession"
 	"github.com/rezible/rezible/ent/tenant"
+	"github.com/rezible/rezible/ent/videoconference"
 )
 
 // MeetingSession is the model entity for the MeetingSession schema.
@@ -43,11 +44,13 @@ type MeetingSessionEdges struct {
 	Tenant *Tenant `json:"tenant,omitempty"`
 	// Incidents holds the value of the incidents edge.
 	Incidents []*Incident `json:"incidents,omitempty"`
+	// VideoConference holds the value of the video_conference edge.
+	VideoConference *VideoConference `json:"video_conference,omitempty"`
 	// Schedule holds the value of the schedule edge.
 	Schedule *MeetingSchedule `json:"schedule,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [3]bool
+	loadedTypes [4]bool
 }
 
 // TenantOrErr returns the Tenant value or an error if the edge
@@ -70,12 +73,23 @@ func (e MeetingSessionEdges) IncidentsOrErr() ([]*Incident, error) {
 	return nil, &NotLoadedError{edge: "incidents"}
 }
 
+// VideoConferenceOrErr returns the VideoConference value or an error if the edge
+// was not loaded in eager-loading, or loaded but was not found.
+func (e MeetingSessionEdges) VideoConferenceOrErr() (*VideoConference, error) {
+	if e.VideoConference != nil {
+		return e.VideoConference, nil
+	} else if e.loadedTypes[2] {
+		return nil, &NotFoundError{label: videoconference.Label}
+	}
+	return nil, &NotLoadedError{edge: "video_conference"}
+}
+
 // ScheduleOrErr returns the Schedule value or an error if the edge
 // was not loaded in eager-loading, or loaded but was not found.
 func (e MeetingSessionEdges) ScheduleOrErr() (*MeetingSchedule, error) {
 	if e.Schedule != nil {
 		return e.Schedule, nil
-	} else if e.loadedTypes[2] {
+	} else if e.loadedTypes[3] {
 		return nil, &NotFoundError{label: meetingschedule.Label}
 	}
 	return nil, &NotLoadedError{edge: "schedule"}
@@ -175,6 +189,11 @@ func (_m *MeetingSession) QueryTenant() *TenantQuery {
 // QueryIncidents queries the "incidents" edge of the MeetingSession entity.
 func (_m *MeetingSession) QueryIncidents() *IncidentQuery {
 	return NewMeetingSessionClient(_m.config).QueryIncidents(_m)
+}
+
+// QueryVideoConference queries the "video_conference" edge of the MeetingSession entity.
+func (_m *MeetingSession) QueryVideoConference() *VideoConferenceQuery {
+	return NewMeetingSessionClient(_m.config).QueryVideoConference(_m)
 }
 
 // QuerySchedule queries the "schedule" edge of the MeetingSession entity.

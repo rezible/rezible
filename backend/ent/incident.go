@@ -80,13 +80,15 @@ type IncidentEdges struct {
 	Debriefs []*IncidentDebrief `json:"debriefs,omitempty"`
 	// ReviewSessions holds the value of the review_sessions edge.
 	ReviewSessions []*MeetingSession `json:"review_sessions,omitempty"`
+	// VideoConferences holds the value of the video_conferences edge.
+	VideoConferences []*VideoConference `json:"video_conferences,omitempty"`
 	// UserRoles holds the value of the user_roles edge.
 	UserRoles []*IncidentRoleAssignment `json:"user_roles,omitempty"`
 	// IncidentLinks holds the value of the incident_links edge.
 	IncidentLinks []*IncidentLink `json:"incident_links,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [16]bool
+	loadedTypes [17]bool
 }
 
 // TenantOrErr returns the Tenant value or an error if the edge
@@ -223,10 +225,19 @@ func (e IncidentEdges) ReviewSessionsOrErr() ([]*MeetingSession, error) {
 	return nil, &NotLoadedError{edge: "review_sessions"}
 }
 
+// VideoConferencesOrErr returns the VideoConferences value or an error if the edge
+// was not loaded in eager-loading.
+func (e IncidentEdges) VideoConferencesOrErr() ([]*VideoConference, error) {
+	if e.loadedTypes[14] {
+		return e.VideoConferences, nil
+	}
+	return nil, &NotLoadedError{edge: "video_conferences"}
+}
+
 // UserRolesOrErr returns the UserRoles value or an error if the edge
 // was not loaded in eager-loading.
 func (e IncidentEdges) UserRolesOrErr() ([]*IncidentRoleAssignment, error) {
-	if e.loadedTypes[14] {
+	if e.loadedTypes[15] {
 		return e.UserRoles, nil
 	}
 	return nil, &NotLoadedError{edge: "user_roles"}
@@ -235,7 +246,7 @@ func (e IncidentEdges) UserRolesOrErr() ([]*IncidentRoleAssignment, error) {
 // IncidentLinksOrErr returns the IncidentLinks value or an error if the edge
 // was not loaded in eager-loading.
 func (e IncidentEdges) IncidentLinksOrErr() ([]*IncidentLink, error) {
-	if e.loadedTypes[15] {
+	if e.loadedTypes[16] {
 		return e.IncidentLinks, nil
 	}
 	return nil, &NotLoadedError{edge: "incident_links"}
@@ -422,6 +433,11 @@ func (_m *Incident) QueryDebriefs() *IncidentDebriefQuery {
 // QueryReviewSessions queries the "review_sessions" edge of the Incident entity.
 func (_m *Incident) QueryReviewSessions() *MeetingSessionQuery {
 	return NewIncidentClient(_m.config).QueryReviewSessions(_m)
+}
+
+// QueryVideoConferences queries the "video_conferences" edge of the Incident entity.
+func (_m *Incident) QueryVideoConferences() *VideoConferenceQuery {
+	return NewIncidentClient(_m.config).QueryVideoConferences(_m)
 }
 
 // QueryUserRoles queries the "user_roles" edge of the Incident entity.

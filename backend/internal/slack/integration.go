@@ -198,10 +198,11 @@ func lookupIntegration(ctx context.Context, is rez.IntegrationsService, teamId s
 }
 
 func (i *integration) GetConfiguredIntegration(intg *ent.Integration) rez.ConfiguredIntegration {
-	return &ConfiguredIntegration{intg: intg}
+	return &ConfiguredIntegration{svcs: i.services, intg: intg}
 }
 
 type ConfiguredIntegration struct {
+	svcs *rez.Services
 	intg *ent.Integration
 }
 
@@ -226,7 +227,11 @@ func (ci *ConfiguredIntegration) EnabledDataKinds() []string {
 }
 
 func (ci *ConfiguredIntegration) ChatService(ctx context.Context) (rez.ChatService, error) {
-	return nil, nil
+	cfg, cfgErr := decodeConfig(ci.intg.Config)
+	if cfgErr != nil {
+		return nil, fmt.Errorf("unable to decode config: %w", cfgErr)
+	}
+	return newChatService(cfg.makeClient(), ci.svcs), nil
 }
 
 type IntegrationConfig struct {

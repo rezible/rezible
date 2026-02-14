@@ -30,6 +30,8 @@ const (
 	EdgeTenant = "tenant"
 	// EdgeIncidents holds the string denoting the incidents edge name in mutations.
 	EdgeIncidents = "incidents"
+	// EdgeVideoConference holds the string denoting the video_conference edge name in mutations.
+	EdgeVideoConference = "video_conference"
 	// EdgeSchedule holds the string denoting the schedule edge name in mutations.
 	EdgeSchedule = "schedule"
 	// Table holds the table name of the meetingsession in the database.
@@ -46,6 +48,13 @@ const (
 	// IncidentsInverseTable is the table name for the Incident entity.
 	// It exists in this package in order to avoid circular dependency with the "incident" package.
 	IncidentsInverseTable = "incidents"
+	// VideoConferenceTable is the table that holds the video_conference relation/edge.
+	VideoConferenceTable = "video_conferences"
+	// VideoConferenceInverseTable is the table name for the VideoConference entity.
+	// It exists in this package in order to avoid circular dependency with the "videoconference" package.
+	VideoConferenceInverseTable = "video_conferences"
+	// VideoConferenceColumn is the table column denoting the video_conference relation/edge.
+	VideoConferenceColumn = "meeting_session_id"
 	// ScheduleTable is the table that holds the schedule relation/edge.
 	ScheduleTable = "meeting_sessions"
 	// ScheduleInverseTable is the table name for the MeetingSchedule entity.
@@ -160,6 +169,13 @@ func ByIncidents(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 	}
 }
 
+// ByVideoConferenceField orders the results by video_conference field.
+func ByVideoConferenceField(field string, opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newVideoConferenceStep(), sql.OrderByField(field, opts...))
+	}
+}
+
 // ByScheduleField orders the results by schedule field.
 func ByScheduleField(field string, opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
@@ -178,6 +194,13 @@ func newIncidentsStep() *sqlgraph.Step {
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(IncidentsInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.M2M, true, IncidentsTable, IncidentsPrimaryKey...),
+	)
+}
+func newVideoConferenceStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(VideoConferenceInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2O, false, VideoConferenceTable, VideoConferenceColumn),
 	)
 }
 func newScheduleStep() *sqlgraph.Step {

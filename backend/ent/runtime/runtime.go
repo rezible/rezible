@@ -67,6 +67,7 @@ import (
 	"github.com/rezible/rezible/ent/tenant"
 	"github.com/rezible/rezible/ent/ticket"
 	"github.com/rezible/rezible/ent/user"
+	"github.com/rezible/rezible/ent/videoconference"
 
 	"entgo.io/ent"
 	"entgo.io/ent/privacy"
@@ -1295,6 +1296,34 @@ func init() {
 	userDescID := userFields[0].Descriptor()
 	// user.DefaultID holds the default value on creation for the id field.
 	user.DefaultID = userDescID.Default.(func() uuid.UUID)
+	videoconferenceMixin := schema.VideoConference{}.Mixin()
+	videoconference.Policy = privacy.NewPolicies(videoconferenceMixin[0], videoconferenceMixin[1], schema.VideoConference{})
+	videoconference.Hooks[0] = func(next ent.Mutator) ent.Mutator {
+		return ent.MutateFunc(func(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+			if err := videoconference.Policy.EvalMutation(ctx, m); err != nil {
+				return nil, err
+			}
+			return next.Mutate(ctx, m)
+		})
+	}
+	videoconferenceMixinFields2 := videoconferenceMixin[2].Fields()
+	_ = videoconferenceMixinFields2
+	videoconferenceFields := schema.VideoConference{}.Fields()
+	_ = videoconferenceFields
+	// videoconferenceDescCreatedAt is the schema descriptor for created_at field.
+	videoconferenceDescCreatedAt := videoconferenceMixinFields2[0].Descriptor()
+	// videoconference.DefaultCreatedAt holds the default value on creation for the created_at field.
+	videoconference.DefaultCreatedAt = videoconferenceDescCreatedAt.Default.(func() time.Time)
+	// videoconferenceDescUpdatedAt is the schema descriptor for updated_at field.
+	videoconferenceDescUpdatedAt := videoconferenceMixinFields2[1].Descriptor()
+	// videoconference.DefaultUpdatedAt holds the default value on creation for the updated_at field.
+	videoconference.DefaultUpdatedAt = videoconferenceDescUpdatedAt.Default.(func() time.Time)
+	// videoconference.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
+	videoconference.UpdateDefaultUpdatedAt = videoconferenceDescUpdatedAt.UpdateDefault.(func() time.Time)
+	// videoconferenceDescID is the schema descriptor for id field.
+	videoconferenceDescID := videoconferenceFields[0].Descriptor()
+	// videoconference.DefaultID holds the default value on creation for the id field.
+	videoconference.DefaultID = videoconferenceDescID.Default.(func() uuid.UUID)
 }
 
 const (

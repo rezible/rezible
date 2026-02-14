@@ -132,6 +132,8 @@ type Tx struct {
 	Ticket *TicketClient
 	// User is the client for interacting with the User builders.
 	User *UserClient
+	// VideoConference is the client for interacting with the VideoConference builders.
+	VideoConference *VideoConferenceClient
 
 	// lazily loaded.
 	client     *Client
@@ -323,6 +325,7 @@ func (tx *Tx) init() {
 	tx.Tenant = NewTenantClient(tx.config)
 	tx.Ticket = NewTicketClient(tx.config)
 	tx.User = NewUserClient(tx.config)
+	tx.VideoConference = NewVideoConferenceClient(tx.config)
 }
 
 // txDriver wraps the given dialect.Tx with a nop dialect.Driver implementation.

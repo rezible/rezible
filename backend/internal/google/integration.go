@@ -12,7 +12,7 @@ import (
 
 const integrationName = "google"
 
-var supportedDataKinds = []string{"video_conferencing"}
+var supportedDataKinds = []string{"video_conference"}
 
 type integration struct {
 	services *rez.Services
@@ -92,12 +92,23 @@ func (ci *ConfiguredIntegration) getUserPreference(key string, defaultVal any) a
 	return defaultVal
 }
 
+func (ci *ConfiguredIntegration) getBoolUserPreference(key string, defaultVal bool) bool {
+	pref := ci.getUserPreference(key, defaultVal)
+	switch v := pref.(type) {
+	case bool:
+		return v
+	case string:
+		return v != "false"
+	default:
+		return defaultVal
+	}
+}
+
 func (ci *ConfiguredIntegration) isVideoConferenceEnabled() bool {
 	if !ci.isServiceAccountConfigured() {
 		return false
 	}
-	pref, prefOk := ci.getUserPreference(PreferenceEnableIncidentVideoConferences, "true").(string)
-	return prefOk && pref != "false"
+	return ci.getBoolUserPreference(PreferenceEnableIncidentVideoConferences, true)
 }
 
 func (ci *ConfiguredIntegration) Name() string {
@@ -150,5 +161,5 @@ func (ci *ConfiguredIntegration) VideoConferenceIntegration(ctx context.Context)
 	if authErr != nil {
 		return nil, authErr
 	}
-	return newMeetService(ctx, ci.svcs.Messages, svcAuthOpt)
+	return newMeetService(ctx, ci.svcs.Incidents, svcAuthOpt)
 }

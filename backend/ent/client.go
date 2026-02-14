@@ -75,6 +75,7 @@ import (
 	"github.com/rezible/rezible/ent/tenant"
 	"github.com/rezible/rezible/ent/ticket"
 	"github.com/rezible/rezible/ent/user"
+	"github.com/rezible/rezible/ent/videoconference"
 )
 
 // Client is the client that holds all ent builders.
@@ -202,6 +203,8 @@ type Client struct {
 	Ticket *TicketClient
 	// User is the client for interacting with the User builders.
 	User *UserClient
+	// VideoConference is the client for interacting with the VideoConference builders.
+	VideoConference *VideoConferenceClient
 }
 
 // NewClient creates a new client configured with the given options.
@@ -273,6 +276,7 @@ func (c *Client) init() {
 	c.Tenant = NewTenantClient(c.config)
 	c.Ticket = NewTicketClient(c.config)
 	c.User = NewUserClient(c.config)
+	c.VideoConference = NewVideoConferenceClient(c.config)
 }
 
 type (
@@ -425,6 +429,7 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 		Tenant:                           NewTenantClient(cfg),
 		Ticket:                           NewTicketClient(cfg),
 		User:                             NewUserClient(cfg),
+		VideoConference:                  NewVideoConferenceClient(cfg),
 	}, nil
 }
 
@@ -504,6 +509,7 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 		Tenant:                           NewTenantClient(cfg),
 		Ticket:                           NewTicketClient(cfg),
 		User:                             NewUserClient(cfg),
+		VideoConference:                  NewVideoConferenceClient(cfg),
 	}, nil
 }
 
@@ -550,6 +556,7 @@ func (c *Client) Use(hooks ...Hook) {
 		c.SystemComponentKind, c.SystemComponentRelationship, c.SystemComponentSignal,
 		c.SystemHazard, c.SystemRelationshipControlAction,
 		c.SystemRelationshipFeedbackSignal, c.Task, c.Team, c.Tenant, c.Ticket, c.User,
+		c.VideoConference,
 	} {
 		n.Use(hooks...)
 	}
@@ -576,6 +583,7 @@ func (c *Client) Intercept(interceptors ...Interceptor) {
 		c.SystemComponentKind, c.SystemComponentRelationship, c.SystemComponentSignal,
 		c.SystemHazard, c.SystemRelationshipControlAction,
 		c.SystemRelationshipFeedbackSignal, c.Task, c.Team, c.Tenant, c.Ticket, c.User,
+		c.VideoConference,
 	} {
 		n.Intercept(interceptors...)
 	}
@@ -702,6 +710,8 @@ func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 		return c.Ticket.mutate(ctx, m)
 	case *UserMutation:
 		return c.User.mutate(ctx, m)
+	case *VideoConferenceMutation:
+		return c.VideoConference.mutate(ctx, m)
 	default:
 		return nil, fmt.Errorf("ent: unknown mutation type %T", m)
 	}
@@ -2186,6 +2196,22 @@ func (c *IncidentClient) QueryReviewSessions(_m *Incident) *MeetingSessionQuery 
 			sqlgraph.From(incident.Table, incident.FieldID, id),
 			sqlgraph.To(meetingsession.Table, meetingsession.FieldID),
 			sqlgraph.Edge(sqlgraph.M2M, false, incident.ReviewSessionsTable, incident.ReviewSessionsPrimaryKey...),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryVideoConferences queries the video_conferences edge of a Incident.
+func (c *IncidentClient) QueryVideoConferences(_m *Incident) *VideoConferenceQuery {
+	query := (&VideoConferenceClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(incident.Table, incident.FieldID, id),
+			sqlgraph.To(videoconference.Table, videoconference.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, incident.VideoConferencesTable, incident.VideoConferencesColumn),
 		)
 		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
 		return fromV, nil
@@ -6127,6 +6153,22 @@ func (c *MeetingSessionClient) QueryIncidents(_m *MeetingSession) *IncidentQuery
 			sqlgraph.From(meetingsession.Table, meetingsession.FieldID, id),
 			sqlgraph.To(incident.Table, incident.FieldID),
 			sqlgraph.Edge(sqlgraph.M2M, true, meetingsession.IncidentsTable, meetingsession.IncidentsPrimaryKey...),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryVideoConference queries the video_conference edge of a MeetingSession.
+func (c *MeetingSessionClient) QueryVideoConference(_m *MeetingSession) *VideoConferenceQuery {
+	query := (&VideoConferenceClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(meetingsession.Table, meetingsession.FieldID, id),
+			sqlgraph.To(videoconference.Table, videoconference.FieldID),
+			sqlgraph.Edge(sqlgraph.O2O, false, meetingsession.VideoConferenceTable, meetingsession.VideoConferenceColumn),
 		)
 		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
 		return fromV, nil
@@ -12412,6 +12454,188 @@ func (c *UserClient) mutate(ctx context.Context, m *UserMutation) (Value, error)
 	}
 }
 
+// VideoConferenceClient is a client for the VideoConference schema.
+type VideoConferenceClient struct {
+	config
+}
+
+// NewVideoConferenceClient returns a client for the VideoConference from the given config.
+func NewVideoConferenceClient(c config) *VideoConferenceClient {
+	return &VideoConferenceClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `videoconference.Hooks(f(g(h())))`.
+func (c *VideoConferenceClient) Use(hooks ...Hook) {
+	c.hooks.VideoConference = append(c.hooks.VideoConference, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `videoconference.Intercept(f(g(h())))`.
+func (c *VideoConferenceClient) Intercept(interceptors ...Interceptor) {
+	c.inters.VideoConference = append(c.inters.VideoConference, interceptors...)
+}
+
+// Create returns a builder for creating a VideoConference entity.
+func (c *VideoConferenceClient) Create() *VideoConferenceCreate {
+	mutation := newVideoConferenceMutation(c.config, OpCreate)
+	return &VideoConferenceCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of VideoConference entities.
+func (c *VideoConferenceClient) CreateBulk(builders ...*VideoConferenceCreate) *VideoConferenceCreateBulk {
+	return &VideoConferenceCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *VideoConferenceClient) MapCreateBulk(slice any, setFunc func(*VideoConferenceCreate, int)) *VideoConferenceCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &VideoConferenceCreateBulk{err: fmt.Errorf("calling to VideoConferenceClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*VideoConferenceCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &VideoConferenceCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for VideoConference.
+func (c *VideoConferenceClient) Update() *VideoConferenceUpdate {
+	mutation := newVideoConferenceMutation(c.config, OpUpdate)
+	return &VideoConferenceUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *VideoConferenceClient) UpdateOne(_m *VideoConference) *VideoConferenceUpdateOne {
+	mutation := newVideoConferenceMutation(c.config, OpUpdateOne, withVideoConference(_m))
+	return &VideoConferenceUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *VideoConferenceClient) UpdateOneID(id uuid.UUID) *VideoConferenceUpdateOne {
+	mutation := newVideoConferenceMutation(c.config, OpUpdateOne, withVideoConferenceID(id))
+	return &VideoConferenceUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for VideoConference.
+func (c *VideoConferenceClient) Delete() *VideoConferenceDelete {
+	mutation := newVideoConferenceMutation(c.config, OpDelete)
+	return &VideoConferenceDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *VideoConferenceClient) DeleteOne(_m *VideoConference) *VideoConferenceDeleteOne {
+	return c.DeleteOneID(_m.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *VideoConferenceClient) DeleteOneID(id uuid.UUID) *VideoConferenceDeleteOne {
+	builder := c.Delete().Where(videoconference.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &VideoConferenceDeleteOne{builder}
+}
+
+// Query returns a query builder for VideoConference.
+func (c *VideoConferenceClient) Query() *VideoConferenceQuery {
+	return &VideoConferenceQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeVideoConference},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a VideoConference entity by its id.
+func (c *VideoConferenceClient) Get(ctx context.Context, id uuid.UUID) (*VideoConference, error) {
+	return c.Query().Where(videoconference.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *VideoConferenceClient) GetX(ctx context.Context, id uuid.UUID) *VideoConference {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QueryTenant queries the tenant edge of a VideoConference.
+func (c *VideoConferenceClient) QueryTenant(_m *VideoConference) *TenantQuery {
+	query := (&TenantClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(videoconference.Table, videoconference.FieldID, id),
+			sqlgraph.To(tenant.Table, tenant.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, videoconference.TenantTable, videoconference.TenantColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryIncident queries the incident edge of a VideoConference.
+func (c *VideoConferenceClient) QueryIncident(_m *VideoConference) *IncidentQuery {
+	query := (&IncidentClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(videoconference.Table, videoconference.FieldID, id),
+			sqlgraph.To(incident.Table, incident.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, videoconference.IncidentTable, videoconference.IncidentColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryMeetingSession queries the meeting_session edge of a VideoConference.
+func (c *VideoConferenceClient) QueryMeetingSession(_m *VideoConference) *MeetingSessionQuery {
+	query := (&MeetingSessionClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(videoconference.Table, videoconference.FieldID, id),
+			sqlgraph.To(meetingsession.Table, meetingsession.FieldID),
+			sqlgraph.Edge(sqlgraph.O2O, true, videoconference.MeetingSessionTable, videoconference.MeetingSessionColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *VideoConferenceClient) Hooks() []Hook {
+	hooks := c.hooks.VideoConference
+	return append(hooks[:len(hooks):len(hooks)], videoconference.Hooks[:]...)
+}
+
+// Interceptors returns the client interceptors.
+func (c *VideoConferenceClient) Interceptors() []Interceptor {
+	return c.inters.VideoConference
+}
+
+func (c *VideoConferenceClient) mutate(ctx context.Context, m *VideoConferenceMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&VideoConferenceCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&VideoConferenceUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&VideoConferenceUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&VideoConferenceDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown VideoConference mutation op: %q", m.Op())
+	}
+}
+
 // hooks and interceptors per client, for fast access.
 type (
 	hooks struct {
@@ -12430,7 +12654,7 @@ type (
 		SystemComponentConstraint, SystemComponentControl, SystemComponentKind,
 		SystemComponentRelationship, SystemComponentSignal, SystemHazard,
 		SystemRelationshipControlAction, SystemRelationshipFeedbackSignal, Task, Team,
-		Tenant, Ticket, User []ent.Hook
+		Tenant, Ticket, User, VideoConference []ent.Hook
 	}
 	inters struct {
 		Alert, AlertFeedback, AlertInstance, AlertMetrics, Document, Event,
@@ -12448,6 +12672,6 @@ type (
 		SystemComponentConstraint, SystemComponentControl, SystemComponentKind,
 		SystemComponentRelationship, SystemComponentSignal, SystemHazard,
 		SystemRelationshipControlAction, SystemRelationshipFeedbackSignal, Task, Team,
-		Tenant, Ticket, User []ent.Interceptor
+		Tenant, Ticket, User, VideoConference []ent.Interceptor
 	}
 )

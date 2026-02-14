@@ -64,6 +64,7 @@ import (
 	"github.com/rezible/rezible/ent/tenant"
 	"github.com/rezible/rezible/ent/ticket"
 	"github.com/rezible/rezible/ent/user"
+	"github.com/rezible/rezible/ent/videoconference"
 
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
@@ -73,7 +74,7 @@ import (
 
 // schemaGraph holds a representation of ent/schema at runtime.
 var schemaGraph = func() *sqlgraph.Schema {
-	graph := &sqlgraph.Schema{Nodes: make([]*sqlgraph.Node, 60)}
+	graph := &sqlgraph.Schema{Nodes: make([]*sqlgraph.Node, 61)}
 	graph.Nodes[0] = &sqlgraph.Node{
 		NodeSpec: sqlgraph.NodeSpec{
 			Table:   alert.Table,
@@ -1197,6 +1198,33 @@ var schemaGraph = func() *sqlgraph.Schema {
 			user.FieldConfirmed:      {Type: field.TypeBool, Column: user.FieldConfirmed},
 		},
 	}
+	graph.Nodes[60] = &sqlgraph.Node{
+		NodeSpec: sqlgraph.NodeSpec{
+			Table:   videoconference.Table,
+			Columns: videoconference.Columns,
+			ID: &sqlgraph.FieldSpec{
+				Type:   field.TypeUUID,
+				Column: videoconference.FieldID,
+			},
+		},
+		Type: "VideoConference",
+		Fields: map[string]*sqlgraph.FieldSpec{
+			videoconference.FieldTenantID:             {Type: field.TypeInt, Column: videoconference.FieldTenantID},
+			videoconference.FieldCreatedAt:            {Type: field.TypeTime, Column: videoconference.FieldCreatedAt},
+			videoconference.FieldUpdatedAt:            {Type: field.TypeTime, Column: videoconference.FieldUpdatedAt},
+			videoconference.FieldIncidentID:           {Type: field.TypeUUID, Column: videoconference.FieldIncidentID},
+			videoconference.FieldMeetingSessionID:     {Type: field.TypeUUID, Column: videoconference.FieldMeetingSessionID},
+			videoconference.FieldProvider:             {Type: field.TypeString, Column: videoconference.FieldProvider},
+			videoconference.FieldExternalID:           {Type: field.TypeString, Column: videoconference.FieldExternalID},
+			videoconference.FieldJoinURL:              {Type: field.TypeString, Column: videoconference.FieldJoinURL},
+			videoconference.FieldHostURL:              {Type: field.TypeString, Column: videoconference.FieldHostURL},
+			videoconference.FieldDialIn:               {Type: field.TypeString, Column: videoconference.FieldDialIn},
+			videoconference.FieldPasscode:             {Type: field.TypeString, Column: videoconference.FieldPasscode},
+			videoconference.FieldStatus:               {Type: field.TypeEnum, Column: videoconference.FieldStatus},
+			videoconference.FieldMetadata:             {Type: field.TypeJSON, Column: videoconference.FieldMetadata},
+			videoconference.FieldCreatedByIntegration: {Type: field.TypeString, Column: videoconference.FieldCreatedByIntegration},
+		},
+	}
 	graph.MustAddE(
 		"tenant",
 		&sqlgraph.EdgeSpec{
@@ -1604,6 +1632,18 @@ var schemaGraph = func() *sqlgraph.Schema {
 		},
 		"Incident",
 		"MeetingSession",
+	)
+	graph.MustAddE(
+		"video_conferences",
+		&sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   incident.VideoConferencesTable,
+			Columns: []string{incident.VideoConferencesColumn},
+			Bidi:    false,
+		},
+		"Incident",
+		"VideoConference",
 	)
 	graph.MustAddE(
 		"user_roles",
@@ -2444,6 +2484,18 @@ var schemaGraph = func() *sqlgraph.Schema {
 		},
 		"MeetingSession",
 		"Incident",
+	)
+	graph.MustAddE(
+		"video_conference",
+		&sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2O,
+			Inverse: false,
+			Table:   meetingsession.VideoConferenceTable,
+			Columns: []string{meetingsession.VideoConferenceColumn},
+			Bidi:    false,
+		},
+		"MeetingSession",
+		"VideoConference",
 	)
 	graph.MustAddE(
 		"schedule",
@@ -4017,6 +4069,42 @@ var schemaGraph = func() *sqlgraph.Schema {
 		"User",
 		"IncidentRoleAssignment",
 	)
+	graph.MustAddE(
+		"tenant",
+		&sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   videoconference.TenantTable,
+			Columns: []string{videoconference.TenantColumn},
+			Bidi:    false,
+		},
+		"VideoConference",
+		"Tenant",
+	)
+	graph.MustAddE(
+		"incident",
+		&sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   videoconference.IncidentTable,
+			Columns: []string{videoconference.IncidentColumn},
+			Bidi:    false,
+		},
+		"VideoConference",
+		"Incident",
+	)
+	graph.MustAddE(
+		"meeting_session",
+		&sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2O,
+			Inverse: true,
+			Table:   videoconference.MeetingSessionTable,
+			Columns: []string{videoconference.MeetingSessionColumn},
+			Bidi:    false,
+		},
+		"VideoConference",
+		"MeetingSession",
+	)
 	return graph
 }()
 
@@ -5071,6 +5159,20 @@ func (f *IncidentFilter) WhereHasReviewSessions() {
 // WhereHasReviewSessionsWith applies a predicate to check if query has an edge review_sessions with a given conditions (other predicates).
 func (f *IncidentFilter) WhereHasReviewSessionsWith(preds ...predicate.MeetingSession) {
 	f.Where(entql.HasEdgeWith("review_sessions", sqlgraph.WrapFunc(func(s *sql.Selector) {
+		for _, p := range preds {
+			p(s)
+		}
+	})))
+}
+
+// WhereHasVideoConferences applies a predicate to check if query has an edge video_conferences.
+func (f *IncidentFilter) WhereHasVideoConferences() {
+	f.Where(entql.HasEdge("video_conferences"))
+}
+
+// WhereHasVideoConferencesWith applies a predicate to check if query has an edge video_conferences with a given conditions (other predicates).
+func (f *IncidentFilter) WhereHasVideoConferencesWith(preds ...predicate.VideoConference) {
+	f.Where(entql.HasEdgeWith("video_conferences", sqlgraph.WrapFunc(func(s *sql.Selector) {
 		for _, p := range preds {
 			p(s)
 		}
@@ -7471,6 +7573,20 @@ func (f *MeetingSessionFilter) WhereHasIncidents() {
 // WhereHasIncidentsWith applies a predicate to check if query has an edge incidents with a given conditions (other predicates).
 func (f *MeetingSessionFilter) WhereHasIncidentsWith(preds ...predicate.Incident) {
 	f.Where(entql.HasEdgeWith("incidents", sqlgraph.WrapFunc(func(s *sql.Selector) {
+		for _, p := range preds {
+			p(s)
+		}
+	})))
+}
+
+// WhereHasVideoConference applies a predicate to check if query has an edge video_conference.
+func (f *MeetingSessionFilter) WhereHasVideoConference() {
+	f.Where(entql.HasEdge("video_conference"))
+}
+
+// WhereHasVideoConferenceWith applies a predicate to check if query has an edge video_conference with a given conditions (other predicates).
+func (f *MeetingSessionFilter) WhereHasVideoConferenceWith(preds ...predicate.VideoConference) {
+	f.Where(entql.HasEdgeWith("video_conference", sqlgraph.WrapFunc(func(s *sql.Selector) {
 		for _, p := range preds {
 			p(s)
 		}
@@ -11430,6 +11546,158 @@ func (f *UserFilter) WhereHasRoleAssignments() {
 // WhereHasRoleAssignmentsWith applies a predicate to check if query has an edge role_assignments with a given conditions (other predicates).
 func (f *UserFilter) WhereHasRoleAssignmentsWith(preds ...predicate.IncidentRoleAssignment) {
 	f.Where(entql.HasEdgeWith("role_assignments", sqlgraph.WrapFunc(func(s *sql.Selector) {
+		for _, p := range preds {
+			p(s)
+		}
+	})))
+}
+
+// addPredicate implements the predicateAdder interface.
+func (_q *VideoConferenceQuery) addPredicate(pred func(s *sql.Selector)) {
+	_q.predicates = append(_q.predicates, pred)
+}
+
+// Filter returns a Filter implementation to apply filters on the VideoConferenceQuery builder.
+func (_q *VideoConferenceQuery) Filter() *VideoConferenceFilter {
+	return &VideoConferenceFilter{config: _q.config, predicateAdder: _q}
+}
+
+// addPredicate implements the predicateAdder interface.
+func (m *VideoConferenceMutation) addPredicate(pred func(s *sql.Selector)) {
+	m.predicates = append(m.predicates, pred)
+}
+
+// Filter returns an entql.Where implementation to apply filters on the VideoConferenceMutation builder.
+func (m *VideoConferenceMutation) Filter() *VideoConferenceFilter {
+	return &VideoConferenceFilter{config: m.config, predicateAdder: m}
+}
+
+// VideoConferenceFilter provides a generic filtering capability at runtime for VideoConferenceQuery.
+type VideoConferenceFilter struct {
+	predicateAdder
+	config
+}
+
+// Where applies the entql predicate on the query filter.
+func (f *VideoConferenceFilter) Where(p entql.P) {
+	f.addPredicate(func(s *sql.Selector) {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[60].Type, p, s); err != nil {
+			s.AddError(err)
+		}
+	})
+}
+
+// WhereID applies the entql [16]byte predicate on the id field.
+func (f *VideoConferenceFilter) WhereID(p entql.ValueP) {
+	f.Where(p.Field(videoconference.FieldID))
+}
+
+// WhereTenantID applies the entql int predicate on the tenant_id field.
+func (f *VideoConferenceFilter) WhereTenantID(p entql.IntP) {
+	f.Where(p.Field(videoconference.FieldTenantID))
+}
+
+// WhereCreatedAt applies the entql time.Time predicate on the created_at field.
+func (f *VideoConferenceFilter) WhereCreatedAt(p entql.TimeP) {
+	f.Where(p.Field(videoconference.FieldCreatedAt))
+}
+
+// WhereUpdatedAt applies the entql time.Time predicate on the updated_at field.
+func (f *VideoConferenceFilter) WhereUpdatedAt(p entql.TimeP) {
+	f.Where(p.Field(videoconference.FieldUpdatedAt))
+}
+
+// WhereIncidentID applies the entql [16]byte predicate on the incident_id field.
+func (f *VideoConferenceFilter) WhereIncidentID(p entql.ValueP) {
+	f.Where(p.Field(videoconference.FieldIncidentID))
+}
+
+// WhereMeetingSessionID applies the entql [16]byte predicate on the meeting_session_id field.
+func (f *VideoConferenceFilter) WhereMeetingSessionID(p entql.ValueP) {
+	f.Where(p.Field(videoconference.FieldMeetingSessionID))
+}
+
+// WhereProvider applies the entql string predicate on the provider field.
+func (f *VideoConferenceFilter) WhereProvider(p entql.StringP) {
+	f.Where(p.Field(videoconference.FieldProvider))
+}
+
+// WhereExternalID applies the entql string predicate on the external_id field.
+func (f *VideoConferenceFilter) WhereExternalID(p entql.StringP) {
+	f.Where(p.Field(videoconference.FieldExternalID))
+}
+
+// WhereJoinURL applies the entql string predicate on the join_url field.
+func (f *VideoConferenceFilter) WhereJoinURL(p entql.StringP) {
+	f.Where(p.Field(videoconference.FieldJoinURL))
+}
+
+// WhereHostURL applies the entql string predicate on the host_url field.
+func (f *VideoConferenceFilter) WhereHostURL(p entql.StringP) {
+	f.Where(p.Field(videoconference.FieldHostURL))
+}
+
+// WhereDialIn applies the entql string predicate on the dial_in field.
+func (f *VideoConferenceFilter) WhereDialIn(p entql.StringP) {
+	f.Where(p.Field(videoconference.FieldDialIn))
+}
+
+// WherePasscode applies the entql string predicate on the passcode field.
+func (f *VideoConferenceFilter) WherePasscode(p entql.StringP) {
+	f.Where(p.Field(videoconference.FieldPasscode))
+}
+
+// WhereStatus applies the entql string predicate on the status field.
+func (f *VideoConferenceFilter) WhereStatus(p entql.StringP) {
+	f.Where(p.Field(videoconference.FieldStatus))
+}
+
+// WhereMetadata applies the entql json.RawMessage predicate on the metadata field.
+func (f *VideoConferenceFilter) WhereMetadata(p entql.BytesP) {
+	f.Where(p.Field(videoconference.FieldMetadata))
+}
+
+// WhereCreatedByIntegration applies the entql string predicate on the created_by_integration field.
+func (f *VideoConferenceFilter) WhereCreatedByIntegration(p entql.StringP) {
+	f.Where(p.Field(videoconference.FieldCreatedByIntegration))
+}
+
+// WhereHasTenant applies a predicate to check if query has an edge tenant.
+func (f *VideoConferenceFilter) WhereHasTenant() {
+	f.Where(entql.HasEdge("tenant"))
+}
+
+// WhereHasTenantWith applies a predicate to check if query has an edge tenant with a given conditions (other predicates).
+func (f *VideoConferenceFilter) WhereHasTenantWith(preds ...predicate.Tenant) {
+	f.Where(entql.HasEdgeWith("tenant", sqlgraph.WrapFunc(func(s *sql.Selector) {
+		for _, p := range preds {
+			p(s)
+		}
+	})))
+}
+
+// WhereHasIncident applies a predicate to check if query has an edge incident.
+func (f *VideoConferenceFilter) WhereHasIncident() {
+	f.Where(entql.HasEdge("incident"))
+}
+
+// WhereHasIncidentWith applies a predicate to check if query has an edge incident with a given conditions (other predicates).
+func (f *VideoConferenceFilter) WhereHasIncidentWith(preds ...predicate.Incident) {
+	f.Where(entql.HasEdgeWith("incident", sqlgraph.WrapFunc(func(s *sql.Selector) {
+		for _, p := range preds {
+			p(s)
+		}
+	})))
+}
+
+// WhereHasMeetingSession applies a predicate to check if query has an edge meeting_session.
+func (f *VideoConferenceFilter) WhereHasMeetingSession() {
+	f.Where(entql.HasEdge("meeting_session"))
+}
+
+// WhereHasMeetingSessionWith applies a predicate to check if query has an edge meeting_session with a given conditions (other predicates).
+func (f *VideoConferenceFilter) WhereHasMeetingSessionWith(preds ...predicate.MeetingSession) {
+	f.Where(entql.HasEdgeWith("meeting_session", sqlgraph.WrapFunc(func(s *sql.Selector) {
 		for _, p := range preds {
 			p(s)
 		}

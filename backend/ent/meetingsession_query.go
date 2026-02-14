@@ -19,20 +19,22 @@ import (
 	"github.com/rezible/rezible/ent/meetingsession"
 	"github.com/rezible/rezible/ent/predicate"
 	"github.com/rezible/rezible/ent/tenant"
+	"github.com/rezible/rezible/ent/videoconference"
 )
 
 // MeetingSessionQuery is the builder for querying MeetingSession entities.
 type MeetingSessionQuery struct {
 	config
-	ctx           *QueryContext
-	order         []meetingsession.OrderOption
-	inters        []Interceptor
-	predicates    []predicate.MeetingSession
-	withTenant    *TenantQuery
-	withIncidents *IncidentQuery
-	withSchedule  *MeetingScheduleQuery
-	withFKs       bool
-	modifiers     []func(*sql.Selector)
+	ctx                 *QueryContext
+	order               []meetingsession.OrderOption
+	inters              []Interceptor
+	predicates          []predicate.MeetingSession
+	withTenant          *TenantQuery
+	withIncidents       *IncidentQuery
+	withVideoConference *VideoConferenceQuery
+	withSchedule        *MeetingScheduleQuery
+	withFKs             bool
+	modifiers           []func(*sql.Selector)
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -106,6 +108,28 @@ func (_q *MeetingSessionQuery) QueryIncidents() *IncidentQuery {
 			sqlgraph.From(meetingsession.Table, meetingsession.FieldID, selector),
 			sqlgraph.To(incident.Table, incident.FieldID),
 			sqlgraph.Edge(sqlgraph.M2M, true, meetingsession.IncidentsTable, meetingsession.IncidentsPrimaryKey...),
+		)
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryVideoConference chains the current query on the "video_conference" edge.
+func (_q *MeetingSessionQuery) QueryVideoConference() *VideoConferenceQuery {
+	query := (&VideoConferenceClient{config: _q.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := _q.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := _q.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(meetingsession.Table, meetingsession.FieldID, selector),
+			sqlgraph.To(videoconference.Table, videoconference.FieldID),
+			sqlgraph.Edge(sqlgraph.O2O, false, meetingsession.VideoConferenceTable, meetingsession.VideoConferenceColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
@@ -322,14 +346,15 @@ func (_q *MeetingSessionQuery) Clone() *MeetingSessionQuery {
 		return nil
 	}
 	return &MeetingSessionQuery{
-		config:        _q.config,
-		ctx:           _q.ctx.Clone(),
-		order:         append([]meetingsession.OrderOption{}, _q.order...),
-		inters:        append([]Interceptor{}, _q.inters...),
-		predicates:    append([]predicate.MeetingSession{}, _q.predicates...),
-		withTenant:    _q.withTenant.Clone(),
-		withIncidents: _q.withIncidents.Clone(),
-		withSchedule:  _q.withSchedule.Clone(),
+		config:              _q.config,
+		ctx:                 _q.ctx.Clone(),
+		order:               append([]meetingsession.OrderOption{}, _q.order...),
+		inters:              append([]Interceptor{}, _q.inters...),
+		predicates:          append([]predicate.MeetingSession{}, _q.predicates...),
+		withTenant:          _q.withTenant.Clone(),
+		withIncidents:       _q.withIncidents.Clone(),
+		withVideoConference: _q.withVideoConference.Clone(),
+		withSchedule:        _q.withSchedule.Clone(),
 		// clone intermediate query.
 		sql:       _q.sql.Clone(),
 		path:      _q.path,
@@ -356,6 +381,17 @@ func (_q *MeetingSessionQuery) WithIncidents(opts ...func(*IncidentQuery)) *Meet
 		opt(query)
 	}
 	_q.withIncidents = query
+	return _q
+}
+
+// WithVideoConference tells the query-builder to eager-load the nodes that are connected to
+// the "video_conference" edge. The optional arguments are used to configure the query builder of the edge.
+func (_q *MeetingSessionQuery) WithVideoConference(opts ...func(*VideoConferenceQuery)) *MeetingSessionQuery {
+	query := (&VideoConferenceClient{config: _q.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	_q.withVideoConference = query
 	return _q
 }
 
@@ -455,9 +491,10 @@ func (_q *MeetingSessionQuery) sqlAll(ctx context.Context, hooks ...queryHook) (
 		nodes       = []*MeetingSession{}
 		withFKs     = _q.withFKs
 		_spec       = _q.querySpec()
-		loadedTypes = [3]bool{
+		loadedTypes = [4]bool{
 			_q.withTenant != nil,
 			_q.withIncidents != nil,
+			_q.withVideoConference != nil,
 			_q.withSchedule != nil,
 		}
 	)
@@ -498,6 +535,12 @@ func (_q *MeetingSessionQuery) sqlAll(ctx context.Context, hooks ...queryHook) (
 		if err := _q.loadIncidents(ctx, query, nodes,
 			func(n *MeetingSession) { n.Edges.Incidents = []*Incident{} },
 			func(n *MeetingSession, e *Incident) { n.Edges.Incidents = append(n.Edges.Incidents, e) }); err != nil {
+			return nil, err
+		}
+	}
+	if query := _q.withVideoConference; query != nil {
+		if err := _q.loadVideoConference(ctx, query, nodes, nil,
+			func(n *MeetingSession, e *VideoConference) { n.Edges.VideoConference = e }); err != nil {
 			return nil, err
 		}
 	}
@@ -597,6 +640,36 @@ func (_q *MeetingSessionQuery) loadIncidents(ctx context.Context, query *Inciden
 		for kn := range nodes {
 			assign(kn, n)
 		}
+	}
+	return nil
+}
+func (_q *MeetingSessionQuery) loadVideoConference(ctx context.Context, query *VideoConferenceQuery, nodes []*MeetingSession, init func(*MeetingSession), assign func(*MeetingSession, *VideoConference)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[uuid.UUID]*MeetingSession)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+	}
+	if len(query.ctx.Fields) > 0 {
+		query.ctx.AppendFieldOnce(videoconference.FieldMeetingSessionID)
+	}
+	query.Where(predicate.VideoConference(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(meetingsession.VideoConferenceColumn), fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.MeetingSessionID
+		if fk == nil {
+			return fmt.Errorf(`foreign-key "meeting_session_id" is nil for node %v`, n.ID)
+		}
+		node, ok := nodeids[*fk]
+		if !ok {
+			return fmt.Errorf(`unexpected referenced foreign-key "meeting_session_id" returned %v for node %v`, *fk, n.ID)
+		}
+		assign(node, n)
 	}
 	return nil
 }

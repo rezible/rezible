@@ -66,6 +66,8 @@ const (
 	EdgeDebriefs = "debriefs"
 	// EdgeReviewSessions holds the string denoting the review_sessions edge name in mutations.
 	EdgeReviewSessions = "review_sessions"
+	// EdgeVideoConferences holds the string denoting the video_conferences edge name in mutations.
+	EdgeVideoConferences = "video_conferences"
 	// EdgeUserRoles holds the string denoting the user_roles edge name in mutations.
 	EdgeUserRoles = "user_roles"
 	// EdgeIncidentLinks holds the string denoting the incident_links edge name in mutations.
@@ -157,6 +159,13 @@ const (
 	// ReviewSessionsInverseTable is the table name for the MeetingSession entity.
 	// It exists in this package in order to avoid circular dependency with the "meetingsession" package.
 	ReviewSessionsInverseTable = "meeting_sessions"
+	// VideoConferencesTable is the table that holds the video_conferences relation/edge.
+	VideoConferencesTable = "video_conferences"
+	// VideoConferencesInverseTable is the table name for the VideoConference entity.
+	// It exists in this package in order to avoid circular dependency with the "videoconference" package.
+	VideoConferencesInverseTable = "video_conferences"
+	// VideoConferencesColumn is the table column denoting the video_conferences relation/edge.
+	VideoConferencesColumn = "incident_id"
 	// UserRolesTable is the table that holds the user_roles relation/edge.
 	UserRolesTable = "incident_role_assignments"
 	// UserRolesInverseTable is the table name for the IncidentRoleAssignment entity.
@@ -468,6 +477,20 @@ func ByReviewSessions(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 	}
 }
 
+// ByVideoConferencesCount orders the results by video_conferences count.
+func ByVideoConferencesCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newVideoConferencesStep(), opts...)
+	}
+}
+
+// ByVideoConferences orders the results by video_conferences terms.
+func ByVideoConferences(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newVideoConferencesStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
+
 // ByUserRolesCount orders the results by user_roles count.
 func ByUserRolesCount(opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
@@ -591,6 +614,13 @@ func newReviewSessionsStep() *sqlgraph.Step {
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(ReviewSessionsInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.M2M, false, ReviewSessionsTable, ReviewSessionsPrimaryKey...),
+	)
+}
+func newVideoConferencesStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(VideoConferencesInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, false, VideoConferencesTable, VideoConferencesColumn),
 	)
 }
 func newUserRolesStep() *sqlgraph.Step {

@@ -10,6 +10,7 @@ import (
 	entsql "entgo.io/ent/dialect/sql"
 	"github.com/jackc/pgx/v5"
 	"github.com/rezible/rezible/ent/entpgx"
+	"github.com/rezible/rezible/ent/videoconference"
 )
 
 type ListParams struct {
@@ -118,4 +119,34 @@ func DoListQuery[T any, Q any](ctx context.Context, query listQuery[T, Q], p Lis
 		res.Data = results
 	}
 	return res, nil
+}
+
+func (vcs VideoConferences) GetPrimary() *VideoConference {
+	var active *VideoConference
+	var latest *VideoConference
+	for _, conference := range vcs {
+		if latest == nil || conference.CreatedAt.After(latest.CreatedAt) {
+			latest = conference
+		}
+		if conference.Status == videoconference.StatusActive {
+			if active == nil || conference.CreatedAt.After(active.CreatedAt) {
+				active = conference
+			}
+		}
+	}
+	if active != nil {
+		return active
+	}
+	if latest != nil {
+		return latest
+	}
+	return nil
+}
+
+func (ie IncidentEdges) GetPrimaryVideoConference() *VideoConference {
+	conferences, confErr := ie.VideoConferencesOrErr()
+	if confErr != nil || len(conferences) == 0 {
+		return nil
+	}
+	return VideoConferences(conferences).GetPrimary()
 }

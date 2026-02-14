@@ -72,6 +72,7 @@ import (
 	"github.com/rezible/rezible/ent/team"
 	"github.com/rezible/rezible/ent/ticket"
 	"github.com/rezible/rezible/ent/user"
+	"github.com/rezible/rezible/ent/videoconference"
 )
 
 const (
@@ -143,6 +144,7 @@ const (
 	TypeTenant                           = "Tenant"
 	TypeTicket                           = "Ticket"
 	TypeUser                             = "User"
+	TypeVideoConference                  = "VideoConference"
 )
 
 // AlertMutation represents an operation that mutates the Alert nodes in the graph.
@@ -5029,65 +5031,68 @@ func (m *EventAnnotationMutation) ResetEdge(name string) error {
 // IncidentMutation represents an operation that mutates the Incident nodes in the graph.
 type IncidentMutation struct {
 	config
-	op                      Op
-	typ                     string
-	id                      *uuid.UUID
-	external_id             *string
-	created_at              *time.Time
-	updated_at              *time.Time
-	slug                    *string
-	title                   *string
-	summary                 *string
-	chat_channel_id         *string
-	opened_at               *time.Time
-	clearedFields           map[string]struct{}
-	tenant                  *int
-	clearedtenant           bool
-	severity                *uuid.UUID
-	clearedseverity         bool
-	_type                   *uuid.UUID
-	cleared_type            bool
-	milestones              map[uuid.UUID]struct{}
-	removedmilestones       map[uuid.UUID]struct{}
-	clearedmilestones       bool
-	events                  map[uuid.UUID]struct{}
-	removedevents           map[uuid.UUID]struct{}
-	clearedevents           bool
-	retrospective           *uuid.UUID
-	clearedretrospective    bool
-	users                   map[uuid.UUID]struct{}
-	removedusers            map[uuid.UUID]struct{}
-	clearedusers            bool
-	role_assignments        map[uuid.UUID]struct{}
-	removedrole_assignments map[uuid.UUID]struct{}
-	clearedrole_assignments bool
-	linked_incidents        map[uuid.UUID]struct{}
-	removedlinked_incidents map[uuid.UUID]struct{}
-	clearedlinked_incidents bool
-	field_selections        map[uuid.UUID]struct{}
-	removedfield_selections map[uuid.UUID]struct{}
-	clearedfield_selections bool
-	tasks                   map[uuid.UUID]struct{}
-	removedtasks            map[uuid.UUID]struct{}
-	clearedtasks            bool
-	tag_assignments         map[uuid.UUID]struct{}
-	removedtag_assignments  map[uuid.UUID]struct{}
-	clearedtag_assignments  bool
-	debriefs                map[uuid.UUID]struct{}
-	removeddebriefs         map[uuid.UUID]struct{}
-	cleareddebriefs         bool
-	review_sessions         map[uuid.UUID]struct{}
-	removedreview_sessions  map[uuid.UUID]struct{}
-	clearedreview_sessions  bool
-	user_roles              map[uuid.UUID]struct{}
-	removeduser_roles       map[uuid.UUID]struct{}
-	cleareduser_roles       bool
-	incident_links          map[int]struct{}
-	removedincident_links   map[int]struct{}
-	clearedincident_links   bool
-	done                    bool
-	oldValue                func(context.Context) (*Incident, error)
-	predicates              []predicate.Incident
+	op                       Op
+	typ                      string
+	id                       *uuid.UUID
+	external_id              *string
+	created_at               *time.Time
+	updated_at               *time.Time
+	slug                     *string
+	title                    *string
+	summary                  *string
+	chat_channel_id          *string
+	opened_at                *time.Time
+	clearedFields            map[string]struct{}
+	tenant                   *int
+	clearedtenant            bool
+	severity                 *uuid.UUID
+	clearedseverity          bool
+	_type                    *uuid.UUID
+	cleared_type             bool
+	milestones               map[uuid.UUID]struct{}
+	removedmilestones        map[uuid.UUID]struct{}
+	clearedmilestones        bool
+	events                   map[uuid.UUID]struct{}
+	removedevents            map[uuid.UUID]struct{}
+	clearedevents            bool
+	retrospective            *uuid.UUID
+	clearedretrospective     bool
+	users                    map[uuid.UUID]struct{}
+	removedusers             map[uuid.UUID]struct{}
+	clearedusers             bool
+	role_assignments         map[uuid.UUID]struct{}
+	removedrole_assignments  map[uuid.UUID]struct{}
+	clearedrole_assignments  bool
+	linked_incidents         map[uuid.UUID]struct{}
+	removedlinked_incidents  map[uuid.UUID]struct{}
+	clearedlinked_incidents  bool
+	field_selections         map[uuid.UUID]struct{}
+	removedfield_selections  map[uuid.UUID]struct{}
+	clearedfield_selections  bool
+	tasks                    map[uuid.UUID]struct{}
+	removedtasks             map[uuid.UUID]struct{}
+	clearedtasks             bool
+	tag_assignments          map[uuid.UUID]struct{}
+	removedtag_assignments   map[uuid.UUID]struct{}
+	clearedtag_assignments   bool
+	debriefs                 map[uuid.UUID]struct{}
+	removeddebriefs          map[uuid.UUID]struct{}
+	cleareddebriefs          bool
+	review_sessions          map[uuid.UUID]struct{}
+	removedreview_sessions   map[uuid.UUID]struct{}
+	clearedreview_sessions   bool
+	video_conferences        map[uuid.UUID]struct{}
+	removedvideo_conferences map[uuid.UUID]struct{}
+	clearedvideo_conferences bool
+	user_roles               map[uuid.UUID]struct{}
+	removeduser_roles        map[uuid.UUID]struct{}
+	cleareduser_roles        bool
+	incident_links           map[int]struct{}
+	removedincident_links    map[int]struct{}
+	clearedincident_links    bool
+	done                     bool
+	oldValue                 func(context.Context) (*Incident, error)
+	predicates               []predicate.Incident
 }
 
 var _ ent.Mutation = (*IncidentMutation)(nil)
@@ -6289,6 +6294,60 @@ func (m *IncidentMutation) ResetReviewSessions() {
 	m.removedreview_sessions = nil
 }
 
+// AddVideoConferenceIDs adds the "video_conferences" edge to the VideoConference entity by ids.
+func (m *IncidentMutation) AddVideoConferenceIDs(ids ...uuid.UUID) {
+	if m.video_conferences == nil {
+		m.video_conferences = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		m.video_conferences[ids[i]] = struct{}{}
+	}
+}
+
+// ClearVideoConferences clears the "video_conferences" edge to the VideoConference entity.
+func (m *IncidentMutation) ClearVideoConferences() {
+	m.clearedvideo_conferences = true
+}
+
+// VideoConferencesCleared reports if the "video_conferences" edge to the VideoConference entity was cleared.
+func (m *IncidentMutation) VideoConferencesCleared() bool {
+	return m.clearedvideo_conferences
+}
+
+// RemoveVideoConferenceIDs removes the "video_conferences" edge to the VideoConference entity by IDs.
+func (m *IncidentMutation) RemoveVideoConferenceIDs(ids ...uuid.UUID) {
+	if m.removedvideo_conferences == nil {
+		m.removedvideo_conferences = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		delete(m.video_conferences, ids[i])
+		m.removedvideo_conferences[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedVideoConferences returns the removed IDs of the "video_conferences" edge to the VideoConference entity.
+func (m *IncidentMutation) RemovedVideoConferencesIDs() (ids []uuid.UUID) {
+	for id := range m.removedvideo_conferences {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// VideoConferencesIDs returns the "video_conferences" edge IDs in the mutation.
+func (m *IncidentMutation) VideoConferencesIDs() (ids []uuid.UUID) {
+	for id := range m.video_conferences {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetVideoConferences resets all changes to the "video_conferences" edge.
+func (m *IncidentMutation) ResetVideoConferences() {
+	m.video_conferences = nil
+	m.clearedvideo_conferences = false
+	m.removedvideo_conferences = nil
+}
+
 // AddUserRoleIDs adds the "user_roles" edge to the IncidentRoleAssignment entity by ids.
 func (m *IncidentMutation) AddUserRoleIDs(ids ...uuid.UUID) {
 	if m.user_roles == nil {
@@ -6724,7 +6783,7 @@ func (m *IncidentMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *IncidentMutation) AddedEdges() []string {
-	edges := make([]string, 0, 16)
+	edges := make([]string, 0, 17)
 	if m.tenant != nil {
 		edges = append(edges, incident.EdgeTenant)
 	}
@@ -6766,6 +6825,9 @@ func (m *IncidentMutation) AddedEdges() []string {
 	}
 	if m.review_sessions != nil {
 		edges = append(edges, incident.EdgeReviewSessions)
+	}
+	if m.video_conferences != nil {
+		edges = append(edges, incident.EdgeVideoConferences)
 	}
 	if m.user_roles != nil {
 		edges = append(edges, incident.EdgeUserRoles)
@@ -6856,6 +6918,12 @@ func (m *IncidentMutation) AddedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case incident.EdgeVideoConferences:
+		ids := make([]ent.Value, 0, len(m.video_conferences))
+		for id := range m.video_conferences {
+			ids = append(ids, id)
+		}
+		return ids
 	case incident.EdgeUserRoles:
 		ids := make([]ent.Value, 0, len(m.user_roles))
 		for id := range m.user_roles {
@@ -6874,7 +6942,7 @@ func (m *IncidentMutation) AddedIDs(name string) []ent.Value {
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *IncidentMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 16)
+	edges := make([]string, 0, 17)
 	if m.removedmilestones != nil {
 		edges = append(edges, incident.EdgeMilestones)
 	}
@@ -6904,6 +6972,9 @@ func (m *IncidentMutation) RemovedEdges() []string {
 	}
 	if m.removedreview_sessions != nil {
 		edges = append(edges, incident.EdgeReviewSessions)
+	}
+	if m.removedvideo_conferences != nil {
+		edges = append(edges, incident.EdgeVideoConferences)
 	}
 	if m.removeduser_roles != nil {
 		edges = append(edges, incident.EdgeUserRoles)
@@ -6978,6 +7049,12 @@ func (m *IncidentMutation) RemovedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case incident.EdgeVideoConferences:
+		ids := make([]ent.Value, 0, len(m.removedvideo_conferences))
+		for id := range m.removedvideo_conferences {
+			ids = append(ids, id)
+		}
+		return ids
 	case incident.EdgeUserRoles:
 		ids := make([]ent.Value, 0, len(m.removeduser_roles))
 		for id := range m.removeduser_roles {
@@ -6996,7 +7073,7 @@ func (m *IncidentMutation) RemovedIDs(name string) []ent.Value {
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *IncidentMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 16)
+	edges := make([]string, 0, 17)
 	if m.clearedtenant {
 		edges = append(edges, incident.EdgeTenant)
 	}
@@ -7039,6 +7116,9 @@ func (m *IncidentMutation) ClearedEdges() []string {
 	if m.clearedreview_sessions {
 		edges = append(edges, incident.EdgeReviewSessions)
 	}
+	if m.clearedvideo_conferences {
+		edges = append(edges, incident.EdgeVideoConferences)
+	}
 	if m.cleareduser_roles {
 		edges = append(edges, incident.EdgeUserRoles)
 	}
@@ -7080,6 +7160,8 @@ func (m *IncidentMutation) EdgeCleared(name string) bool {
 		return m.cleareddebriefs
 	case incident.EdgeReviewSessions:
 		return m.clearedreview_sessions
+	case incident.EdgeVideoConferences:
+		return m.clearedvideo_conferences
 	case incident.EdgeUserRoles:
 		return m.cleareduser_roles
 	case incident.EdgeIncidentLinks:
@@ -7153,6 +7235,9 @@ func (m *IncidentMutation) ResetEdge(name string) error {
 		return nil
 	case incident.EdgeReviewSessions:
 		m.ResetReviewSessions()
+		return nil
+	case incident.EdgeVideoConferences:
+		m.ResetVideoConferences()
 		return nil
 	case incident.EdgeUserRoles:
 		m.ResetUserRoles()
@@ -23907,24 +23992,26 @@ func (m *MeetingScheduleMutation) ResetEdge(name string) error {
 // MeetingSessionMutation represents an operation that mutates the MeetingSession nodes in the graph.
 type MeetingSessionMutation struct {
 	config
-	op               Op
-	typ              string
-	id               *uuid.UUID
-	title            *string
-	started_at       *time.Time
-	ended_at         *time.Time
-	document_name    *string
-	clearedFields    map[string]struct{}
-	tenant           *int
-	clearedtenant    bool
-	incidents        map[uuid.UUID]struct{}
-	removedincidents map[uuid.UUID]struct{}
-	clearedincidents bool
-	schedule         *uuid.UUID
-	clearedschedule  bool
-	done             bool
-	oldValue         func(context.Context) (*MeetingSession, error)
-	predicates       []predicate.MeetingSession
+	op                      Op
+	typ                     string
+	id                      *uuid.UUID
+	title                   *string
+	started_at              *time.Time
+	ended_at                *time.Time
+	document_name           *string
+	clearedFields           map[string]struct{}
+	tenant                  *int
+	clearedtenant           bool
+	incidents               map[uuid.UUID]struct{}
+	removedincidents        map[uuid.UUID]struct{}
+	clearedincidents        bool
+	video_conference        *uuid.UUID
+	clearedvideo_conference bool
+	schedule                *uuid.UUID
+	clearedschedule         bool
+	done                    bool
+	oldValue                func(context.Context) (*MeetingSession, error)
+	predicates              []predicate.MeetingSession
 }
 
 var _ ent.Mutation = (*MeetingSessionMutation)(nil)
@@ -24305,6 +24392,45 @@ func (m *MeetingSessionMutation) ResetIncidents() {
 	m.removedincidents = nil
 }
 
+// SetVideoConferenceID sets the "video_conference" edge to the VideoConference entity by id.
+func (m *MeetingSessionMutation) SetVideoConferenceID(id uuid.UUID) {
+	m.video_conference = &id
+}
+
+// ClearVideoConference clears the "video_conference" edge to the VideoConference entity.
+func (m *MeetingSessionMutation) ClearVideoConference() {
+	m.clearedvideo_conference = true
+}
+
+// VideoConferenceCleared reports if the "video_conference" edge to the VideoConference entity was cleared.
+func (m *MeetingSessionMutation) VideoConferenceCleared() bool {
+	return m.clearedvideo_conference
+}
+
+// VideoConferenceID returns the "video_conference" edge ID in the mutation.
+func (m *MeetingSessionMutation) VideoConferenceID() (id uuid.UUID, exists bool) {
+	if m.video_conference != nil {
+		return *m.video_conference, true
+	}
+	return
+}
+
+// VideoConferenceIDs returns the "video_conference" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// VideoConferenceID instead. It exists only for internal usage by the builders.
+func (m *MeetingSessionMutation) VideoConferenceIDs() (ids []uuid.UUID) {
+	if id := m.video_conference; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetVideoConference resets all changes to the "video_conference" edge.
+func (m *MeetingSessionMutation) ResetVideoConference() {
+	m.video_conference = nil
+	m.clearedvideo_conference = false
+}
+
 // SetScheduleID sets the "schedule" edge to the MeetingSchedule entity by id.
 func (m *MeetingSessionMutation) SetScheduleID(id uuid.UUID) {
 	m.schedule = &id
@@ -24557,12 +24683,15 @@ func (m *MeetingSessionMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *MeetingSessionMutation) AddedEdges() []string {
-	edges := make([]string, 0, 3)
+	edges := make([]string, 0, 4)
 	if m.tenant != nil {
 		edges = append(edges, meetingsession.EdgeTenant)
 	}
 	if m.incidents != nil {
 		edges = append(edges, meetingsession.EdgeIncidents)
+	}
+	if m.video_conference != nil {
+		edges = append(edges, meetingsession.EdgeVideoConference)
 	}
 	if m.schedule != nil {
 		edges = append(edges, meetingsession.EdgeSchedule)
@@ -24584,6 +24713,10 @@ func (m *MeetingSessionMutation) AddedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case meetingsession.EdgeVideoConference:
+		if id := m.video_conference; id != nil {
+			return []ent.Value{*id}
+		}
 	case meetingsession.EdgeSchedule:
 		if id := m.schedule; id != nil {
 			return []ent.Value{*id}
@@ -24594,7 +24727,7 @@ func (m *MeetingSessionMutation) AddedIDs(name string) []ent.Value {
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *MeetingSessionMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 3)
+	edges := make([]string, 0, 4)
 	if m.removedincidents != nil {
 		edges = append(edges, meetingsession.EdgeIncidents)
 	}
@@ -24617,12 +24750,15 @@ func (m *MeetingSessionMutation) RemovedIDs(name string) []ent.Value {
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *MeetingSessionMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 3)
+	edges := make([]string, 0, 4)
 	if m.clearedtenant {
 		edges = append(edges, meetingsession.EdgeTenant)
 	}
 	if m.clearedincidents {
 		edges = append(edges, meetingsession.EdgeIncidents)
+	}
+	if m.clearedvideo_conference {
+		edges = append(edges, meetingsession.EdgeVideoConference)
 	}
 	if m.clearedschedule {
 		edges = append(edges, meetingsession.EdgeSchedule)
@@ -24638,6 +24774,8 @@ func (m *MeetingSessionMutation) EdgeCleared(name string) bool {
 		return m.clearedtenant
 	case meetingsession.EdgeIncidents:
 		return m.clearedincidents
+	case meetingsession.EdgeVideoConference:
+		return m.clearedvideo_conference
 	case meetingsession.EdgeSchedule:
 		return m.clearedschedule
 	}
@@ -24650,6 +24788,9 @@ func (m *MeetingSessionMutation) ClearEdge(name string) error {
 	switch name {
 	case meetingsession.EdgeTenant:
 		m.ClearTenant()
+		return nil
+	case meetingsession.EdgeVideoConference:
+		m.ClearVideoConference()
 		return nil
 	case meetingsession.EdgeSchedule:
 		m.ClearSchedule()
@@ -24667,6 +24808,9 @@ func (m *MeetingSessionMutation) ResetEdge(name string) error {
 		return nil
 	case meetingsession.EdgeIncidents:
 		m.ResetIncidents()
+		return nil
+	case meetingsession.EdgeVideoConference:
+		m.ResetVideoConference()
 		return nil
 	case meetingsession.EdgeSchedule:
 		m.ResetSchedule()
@@ -52910,4 +53054,1359 @@ func (m *UserMutation) ResetEdge(name string) error {
 		return nil
 	}
 	return fmt.Errorf("unknown User edge %s", name)
+}
+
+// VideoConferenceMutation represents an operation that mutates the VideoConference nodes in the graph.
+type VideoConferenceMutation struct {
+	config
+	op                     Op
+	typ                    string
+	id                     *uuid.UUID
+	created_at             *time.Time
+	updated_at             *time.Time
+	provider               *string
+	external_id            *string
+	join_url               *string
+	host_url               *string
+	dial_in                *string
+	passcode               *string
+	status                 *videoconference.Status
+	metadata               *json.RawMessage
+	appendmetadata         json.RawMessage
+	created_by_integration *string
+	clearedFields          map[string]struct{}
+	tenant                 *int
+	clearedtenant          bool
+	incident               *uuid.UUID
+	clearedincident        bool
+	meeting_session        *uuid.UUID
+	clearedmeeting_session bool
+	done                   bool
+	oldValue               func(context.Context) (*VideoConference, error)
+	predicates             []predicate.VideoConference
+}
+
+var _ ent.Mutation = (*VideoConferenceMutation)(nil)
+
+// videoconferenceOption allows management of the mutation configuration using functional options.
+type videoconferenceOption func(*VideoConferenceMutation)
+
+// newVideoConferenceMutation creates new mutation for the VideoConference entity.
+func newVideoConferenceMutation(c config, op Op, opts ...videoconferenceOption) *VideoConferenceMutation {
+	m := &VideoConferenceMutation{
+		config:        c,
+		op:            op,
+		typ:           TypeVideoConference,
+		clearedFields: make(map[string]struct{}),
+	}
+	for _, opt := range opts {
+		opt(m)
+	}
+	return m
+}
+
+// withVideoConferenceID sets the ID field of the mutation.
+func withVideoConferenceID(id uuid.UUID) videoconferenceOption {
+	return func(m *VideoConferenceMutation) {
+		var (
+			err   error
+			once  sync.Once
+			value *VideoConference
+		)
+		m.oldValue = func(ctx context.Context) (*VideoConference, error) {
+			once.Do(func() {
+				if m.done {
+					err = errors.New("querying old values post mutation is not allowed")
+				} else {
+					value, err = m.Client().VideoConference.Get(ctx, id)
+				}
+			})
+			return value, err
+		}
+		m.id = &id
+	}
+}
+
+// withVideoConference sets the old VideoConference of the mutation.
+func withVideoConference(node *VideoConference) videoconferenceOption {
+	return func(m *VideoConferenceMutation) {
+		m.oldValue = func(context.Context) (*VideoConference, error) {
+			return node, nil
+		}
+		m.id = &node.ID
+	}
+}
+
+// Client returns a new `ent.Client` from the mutation. If the mutation was
+// executed in a transaction (ent.Tx), a transactional client is returned.
+func (m VideoConferenceMutation) Client() *Client {
+	client := &Client{config: m.config}
+	client.init()
+	return client
+}
+
+// Tx returns an `ent.Tx` for mutations that were executed in transactions;
+// it returns an error otherwise.
+func (m VideoConferenceMutation) Tx() (*Tx, error) {
+	if _, ok := m.driver.(*txDriver); !ok {
+		return nil, errors.New("ent: mutation is not running in a transaction")
+	}
+	tx := &Tx{config: m.config}
+	tx.init()
+	return tx, nil
+}
+
+// SetID sets the value of the id field. Note that this
+// operation is only accepted on creation of VideoConference entities.
+func (m *VideoConferenceMutation) SetID(id uuid.UUID) {
+	m.id = &id
+}
+
+// ID returns the ID value in the mutation. Note that the ID is only available
+// if it was provided to the builder or after it was returned from the database.
+func (m *VideoConferenceMutation) ID() (id uuid.UUID, exists bool) {
+	if m.id == nil {
+		return
+	}
+	return *m.id, true
+}
+
+// IDs queries the database and returns the entity ids that match the mutation's predicate.
+// That means, if the mutation is applied within a transaction with an isolation level such
+// as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
+// or updated by the mutation.
+func (m *VideoConferenceMutation) IDs(ctx context.Context) ([]uuid.UUID, error) {
+	switch {
+	case m.op.Is(OpUpdateOne | OpDeleteOne):
+		id, exists := m.ID()
+		if exists {
+			return []uuid.UUID{id}, nil
+		}
+		fallthrough
+	case m.op.Is(OpUpdate | OpDelete):
+		return m.Client().VideoConference.Query().Where(m.predicates...).IDs(ctx)
+	default:
+		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
+	}
+}
+
+// SetTenantID sets the "tenant_id" field.
+func (m *VideoConferenceMutation) SetTenantID(i int) {
+	m.tenant = &i
+}
+
+// TenantID returns the value of the "tenant_id" field in the mutation.
+func (m *VideoConferenceMutation) TenantID() (r int, exists bool) {
+	v := m.tenant
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldTenantID returns the old "tenant_id" field's value of the VideoConference entity.
+// If the VideoConference object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *VideoConferenceMutation) OldTenantID(ctx context.Context) (v int, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldTenantID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldTenantID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldTenantID: %w", err)
+	}
+	return oldValue.TenantID, nil
+}
+
+// ResetTenantID resets all changes to the "tenant_id" field.
+func (m *VideoConferenceMutation) ResetTenantID() {
+	m.tenant = nil
+}
+
+// SetCreatedAt sets the "created_at" field.
+func (m *VideoConferenceMutation) SetCreatedAt(t time.Time) {
+	m.created_at = &t
+}
+
+// CreatedAt returns the value of the "created_at" field in the mutation.
+func (m *VideoConferenceMutation) CreatedAt() (r time.Time, exists bool) {
+	v := m.created_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCreatedAt returns the old "created_at" field's value of the VideoConference entity.
+// If the VideoConference object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *VideoConferenceMutation) OldCreatedAt(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCreatedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCreatedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCreatedAt: %w", err)
+	}
+	return oldValue.CreatedAt, nil
+}
+
+// ResetCreatedAt resets all changes to the "created_at" field.
+func (m *VideoConferenceMutation) ResetCreatedAt() {
+	m.created_at = nil
+}
+
+// SetUpdatedAt sets the "updated_at" field.
+func (m *VideoConferenceMutation) SetUpdatedAt(t time.Time) {
+	m.updated_at = &t
+}
+
+// UpdatedAt returns the value of the "updated_at" field in the mutation.
+func (m *VideoConferenceMutation) UpdatedAt() (r time.Time, exists bool) {
+	v := m.updated_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldUpdatedAt returns the old "updated_at" field's value of the VideoConference entity.
+// If the VideoConference object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *VideoConferenceMutation) OldUpdatedAt(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldUpdatedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldUpdatedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldUpdatedAt: %w", err)
+	}
+	return oldValue.UpdatedAt, nil
+}
+
+// ResetUpdatedAt resets all changes to the "updated_at" field.
+func (m *VideoConferenceMutation) ResetUpdatedAt() {
+	m.updated_at = nil
+}
+
+// SetIncidentID sets the "incident_id" field.
+func (m *VideoConferenceMutation) SetIncidentID(u uuid.UUID) {
+	m.incident = &u
+}
+
+// IncidentID returns the value of the "incident_id" field in the mutation.
+func (m *VideoConferenceMutation) IncidentID() (r uuid.UUID, exists bool) {
+	v := m.incident
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldIncidentID returns the old "incident_id" field's value of the VideoConference entity.
+// If the VideoConference object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *VideoConferenceMutation) OldIncidentID(ctx context.Context) (v *uuid.UUID, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldIncidentID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldIncidentID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldIncidentID: %w", err)
+	}
+	return oldValue.IncidentID, nil
+}
+
+// ClearIncidentID clears the value of the "incident_id" field.
+func (m *VideoConferenceMutation) ClearIncidentID() {
+	m.incident = nil
+	m.clearedFields[videoconference.FieldIncidentID] = struct{}{}
+}
+
+// IncidentIDCleared returns if the "incident_id" field was cleared in this mutation.
+func (m *VideoConferenceMutation) IncidentIDCleared() bool {
+	_, ok := m.clearedFields[videoconference.FieldIncidentID]
+	return ok
+}
+
+// ResetIncidentID resets all changes to the "incident_id" field.
+func (m *VideoConferenceMutation) ResetIncidentID() {
+	m.incident = nil
+	delete(m.clearedFields, videoconference.FieldIncidentID)
+}
+
+// SetMeetingSessionID sets the "meeting_session_id" field.
+func (m *VideoConferenceMutation) SetMeetingSessionID(u uuid.UUID) {
+	m.meeting_session = &u
+}
+
+// MeetingSessionID returns the value of the "meeting_session_id" field in the mutation.
+func (m *VideoConferenceMutation) MeetingSessionID() (r uuid.UUID, exists bool) {
+	v := m.meeting_session
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldMeetingSessionID returns the old "meeting_session_id" field's value of the VideoConference entity.
+// If the VideoConference object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *VideoConferenceMutation) OldMeetingSessionID(ctx context.Context) (v *uuid.UUID, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldMeetingSessionID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldMeetingSessionID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldMeetingSessionID: %w", err)
+	}
+	return oldValue.MeetingSessionID, nil
+}
+
+// ClearMeetingSessionID clears the value of the "meeting_session_id" field.
+func (m *VideoConferenceMutation) ClearMeetingSessionID() {
+	m.meeting_session = nil
+	m.clearedFields[videoconference.FieldMeetingSessionID] = struct{}{}
+}
+
+// MeetingSessionIDCleared returns if the "meeting_session_id" field was cleared in this mutation.
+func (m *VideoConferenceMutation) MeetingSessionIDCleared() bool {
+	_, ok := m.clearedFields[videoconference.FieldMeetingSessionID]
+	return ok
+}
+
+// ResetMeetingSessionID resets all changes to the "meeting_session_id" field.
+func (m *VideoConferenceMutation) ResetMeetingSessionID() {
+	m.meeting_session = nil
+	delete(m.clearedFields, videoconference.FieldMeetingSessionID)
+}
+
+// SetProvider sets the "provider" field.
+func (m *VideoConferenceMutation) SetProvider(s string) {
+	m.provider = &s
+}
+
+// Provider returns the value of the "provider" field in the mutation.
+func (m *VideoConferenceMutation) Provider() (r string, exists bool) {
+	v := m.provider
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldProvider returns the old "provider" field's value of the VideoConference entity.
+// If the VideoConference object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *VideoConferenceMutation) OldProvider(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldProvider is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldProvider requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldProvider: %w", err)
+	}
+	return oldValue.Provider, nil
+}
+
+// ResetProvider resets all changes to the "provider" field.
+func (m *VideoConferenceMutation) ResetProvider() {
+	m.provider = nil
+}
+
+// SetExternalID sets the "external_id" field.
+func (m *VideoConferenceMutation) SetExternalID(s string) {
+	m.external_id = &s
+}
+
+// ExternalID returns the value of the "external_id" field in the mutation.
+func (m *VideoConferenceMutation) ExternalID() (r string, exists bool) {
+	v := m.external_id
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldExternalID returns the old "external_id" field's value of the VideoConference entity.
+// If the VideoConference object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *VideoConferenceMutation) OldExternalID(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldExternalID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldExternalID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldExternalID: %w", err)
+	}
+	return oldValue.ExternalID, nil
+}
+
+// ClearExternalID clears the value of the "external_id" field.
+func (m *VideoConferenceMutation) ClearExternalID() {
+	m.external_id = nil
+	m.clearedFields[videoconference.FieldExternalID] = struct{}{}
+}
+
+// ExternalIDCleared returns if the "external_id" field was cleared in this mutation.
+func (m *VideoConferenceMutation) ExternalIDCleared() bool {
+	_, ok := m.clearedFields[videoconference.FieldExternalID]
+	return ok
+}
+
+// ResetExternalID resets all changes to the "external_id" field.
+func (m *VideoConferenceMutation) ResetExternalID() {
+	m.external_id = nil
+	delete(m.clearedFields, videoconference.FieldExternalID)
+}
+
+// SetJoinURL sets the "join_url" field.
+func (m *VideoConferenceMutation) SetJoinURL(s string) {
+	m.join_url = &s
+}
+
+// JoinURL returns the value of the "join_url" field in the mutation.
+func (m *VideoConferenceMutation) JoinURL() (r string, exists bool) {
+	v := m.join_url
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldJoinURL returns the old "join_url" field's value of the VideoConference entity.
+// If the VideoConference object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *VideoConferenceMutation) OldJoinURL(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldJoinURL is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldJoinURL requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldJoinURL: %w", err)
+	}
+	return oldValue.JoinURL, nil
+}
+
+// ResetJoinURL resets all changes to the "join_url" field.
+func (m *VideoConferenceMutation) ResetJoinURL() {
+	m.join_url = nil
+}
+
+// SetHostURL sets the "host_url" field.
+func (m *VideoConferenceMutation) SetHostURL(s string) {
+	m.host_url = &s
+}
+
+// HostURL returns the value of the "host_url" field in the mutation.
+func (m *VideoConferenceMutation) HostURL() (r string, exists bool) {
+	v := m.host_url
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldHostURL returns the old "host_url" field's value of the VideoConference entity.
+// If the VideoConference object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *VideoConferenceMutation) OldHostURL(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldHostURL is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldHostURL requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldHostURL: %w", err)
+	}
+	return oldValue.HostURL, nil
+}
+
+// ClearHostURL clears the value of the "host_url" field.
+func (m *VideoConferenceMutation) ClearHostURL() {
+	m.host_url = nil
+	m.clearedFields[videoconference.FieldHostURL] = struct{}{}
+}
+
+// HostURLCleared returns if the "host_url" field was cleared in this mutation.
+func (m *VideoConferenceMutation) HostURLCleared() bool {
+	_, ok := m.clearedFields[videoconference.FieldHostURL]
+	return ok
+}
+
+// ResetHostURL resets all changes to the "host_url" field.
+func (m *VideoConferenceMutation) ResetHostURL() {
+	m.host_url = nil
+	delete(m.clearedFields, videoconference.FieldHostURL)
+}
+
+// SetDialIn sets the "dial_in" field.
+func (m *VideoConferenceMutation) SetDialIn(s string) {
+	m.dial_in = &s
+}
+
+// DialIn returns the value of the "dial_in" field in the mutation.
+func (m *VideoConferenceMutation) DialIn() (r string, exists bool) {
+	v := m.dial_in
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldDialIn returns the old "dial_in" field's value of the VideoConference entity.
+// If the VideoConference object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *VideoConferenceMutation) OldDialIn(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldDialIn is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldDialIn requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldDialIn: %w", err)
+	}
+	return oldValue.DialIn, nil
+}
+
+// ClearDialIn clears the value of the "dial_in" field.
+func (m *VideoConferenceMutation) ClearDialIn() {
+	m.dial_in = nil
+	m.clearedFields[videoconference.FieldDialIn] = struct{}{}
+}
+
+// DialInCleared returns if the "dial_in" field was cleared in this mutation.
+func (m *VideoConferenceMutation) DialInCleared() bool {
+	_, ok := m.clearedFields[videoconference.FieldDialIn]
+	return ok
+}
+
+// ResetDialIn resets all changes to the "dial_in" field.
+func (m *VideoConferenceMutation) ResetDialIn() {
+	m.dial_in = nil
+	delete(m.clearedFields, videoconference.FieldDialIn)
+}
+
+// SetPasscode sets the "passcode" field.
+func (m *VideoConferenceMutation) SetPasscode(s string) {
+	m.passcode = &s
+}
+
+// Passcode returns the value of the "passcode" field in the mutation.
+func (m *VideoConferenceMutation) Passcode() (r string, exists bool) {
+	v := m.passcode
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldPasscode returns the old "passcode" field's value of the VideoConference entity.
+// If the VideoConference object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *VideoConferenceMutation) OldPasscode(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldPasscode is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldPasscode requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldPasscode: %w", err)
+	}
+	return oldValue.Passcode, nil
+}
+
+// ClearPasscode clears the value of the "passcode" field.
+func (m *VideoConferenceMutation) ClearPasscode() {
+	m.passcode = nil
+	m.clearedFields[videoconference.FieldPasscode] = struct{}{}
+}
+
+// PasscodeCleared returns if the "passcode" field was cleared in this mutation.
+func (m *VideoConferenceMutation) PasscodeCleared() bool {
+	_, ok := m.clearedFields[videoconference.FieldPasscode]
+	return ok
+}
+
+// ResetPasscode resets all changes to the "passcode" field.
+func (m *VideoConferenceMutation) ResetPasscode() {
+	m.passcode = nil
+	delete(m.clearedFields, videoconference.FieldPasscode)
+}
+
+// SetStatus sets the "status" field.
+func (m *VideoConferenceMutation) SetStatus(v videoconference.Status) {
+	m.status = &v
+}
+
+// Status returns the value of the "status" field in the mutation.
+func (m *VideoConferenceMutation) Status() (r videoconference.Status, exists bool) {
+	v := m.status
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldStatus returns the old "status" field's value of the VideoConference entity.
+// If the VideoConference object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *VideoConferenceMutation) OldStatus(ctx context.Context) (v videoconference.Status, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldStatus is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldStatus requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldStatus: %w", err)
+	}
+	return oldValue.Status, nil
+}
+
+// ResetStatus resets all changes to the "status" field.
+func (m *VideoConferenceMutation) ResetStatus() {
+	m.status = nil
+}
+
+// SetMetadata sets the "metadata" field.
+func (m *VideoConferenceMutation) SetMetadata(jm json.RawMessage) {
+	m.metadata = &jm
+	m.appendmetadata = nil
+}
+
+// Metadata returns the value of the "metadata" field in the mutation.
+func (m *VideoConferenceMutation) Metadata() (r json.RawMessage, exists bool) {
+	v := m.metadata
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldMetadata returns the old "metadata" field's value of the VideoConference entity.
+// If the VideoConference object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *VideoConferenceMutation) OldMetadata(ctx context.Context) (v json.RawMessage, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldMetadata is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldMetadata requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldMetadata: %w", err)
+	}
+	return oldValue.Metadata, nil
+}
+
+// AppendMetadata adds jm to the "metadata" field.
+func (m *VideoConferenceMutation) AppendMetadata(jm json.RawMessage) {
+	m.appendmetadata = append(m.appendmetadata, jm...)
+}
+
+// AppendedMetadata returns the list of values that were appended to the "metadata" field in this mutation.
+func (m *VideoConferenceMutation) AppendedMetadata() (json.RawMessage, bool) {
+	if len(m.appendmetadata) == 0 {
+		return nil, false
+	}
+	return m.appendmetadata, true
+}
+
+// ClearMetadata clears the value of the "metadata" field.
+func (m *VideoConferenceMutation) ClearMetadata() {
+	m.metadata = nil
+	m.appendmetadata = nil
+	m.clearedFields[videoconference.FieldMetadata] = struct{}{}
+}
+
+// MetadataCleared returns if the "metadata" field was cleared in this mutation.
+func (m *VideoConferenceMutation) MetadataCleared() bool {
+	_, ok := m.clearedFields[videoconference.FieldMetadata]
+	return ok
+}
+
+// ResetMetadata resets all changes to the "metadata" field.
+func (m *VideoConferenceMutation) ResetMetadata() {
+	m.metadata = nil
+	m.appendmetadata = nil
+	delete(m.clearedFields, videoconference.FieldMetadata)
+}
+
+// SetCreatedByIntegration sets the "created_by_integration" field.
+func (m *VideoConferenceMutation) SetCreatedByIntegration(s string) {
+	m.created_by_integration = &s
+}
+
+// CreatedByIntegration returns the value of the "created_by_integration" field in the mutation.
+func (m *VideoConferenceMutation) CreatedByIntegration() (r string, exists bool) {
+	v := m.created_by_integration
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCreatedByIntegration returns the old "created_by_integration" field's value of the VideoConference entity.
+// If the VideoConference object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *VideoConferenceMutation) OldCreatedByIntegration(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCreatedByIntegration is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCreatedByIntegration requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCreatedByIntegration: %w", err)
+	}
+	return oldValue.CreatedByIntegration, nil
+}
+
+// ClearCreatedByIntegration clears the value of the "created_by_integration" field.
+func (m *VideoConferenceMutation) ClearCreatedByIntegration() {
+	m.created_by_integration = nil
+	m.clearedFields[videoconference.FieldCreatedByIntegration] = struct{}{}
+}
+
+// CreatedByIntegrationCleared returns if the "created_by_integration" field was cleared in this mutation.
+func (m *VideoConferenceMutation) CreatedByIntegrationCleared() bool {
+	_, ok := m.clearedFields[videoconference.FieldCreatedByIntegration]
+	return ok
+}
+
+// ResetCreatedByIntegration resets all changes to the "created_by_integration" field.
+func (m *VideoConferenceMutation) ResetCreatedByIntegration() {
+	m.created_by_integration = nil
+	delete(m.clearedFields, videoconference.FieldCreatedByIntegration)
+}
+
+// ClearTenant clears the "tenant" edge to the Tenant entity.
+func (m *VideoConferenceMutation) ClearTenant() {
+	m.clearedtenant = true
+	m.clearedFields[videoconference.FieldTenantID] = struct{}{}
+}
+
+// TenantCleared reports if the "tenant" edge to the Tenant entity was cleared.
+func (m *VideoConferenceMutation) TenantCleared() bool {
+	return m.clearedtenant
+}
+
+// TenantIDs returns the "tenant" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// TenantID instead. It exists only for internal usage by the builders.
+func (m *VideoConferenceMutation) TenantIDs() (ids []int) {
+	if id := m.tenant; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetTenant resets all changes to the "tenant" edge.
+func (m *VideoConferenceMutation) ResetTenant() {
+	m.tenant = nil
+	m.clearedtenant = false
+}
+
+// ClearIncident clears the "incident" edge to the Incident entity.
+func (m *VideoConferenceMutation) ClearIncident() {
+	m.clearedincident = true
+	m.clearedFields[videoconference.FieldIncidentID] = struct{}{}
+}
+
+// IncidentCleared reports if the "incident" edge to the Incident entity was cleared.
+func (m *VideoConferenceMutation) IncidentCleared() bool {
+	return m.IncidentIDCleared() || m.clearedincident
+}
+
+// IncidentIDs returns the "incident" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// IncidentID instead. It exists only for internal usage by the builders.
+func (m *VideoConferenceMutation) IncidentIDs() (ids []uuid.UUID) {
+	if id := m.incident; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetIncident resets all changes to the "incident" edge.
+func (m *VideoConferenceMutation) ResetIncident() {
+	m.incident = nil
+	m.clearedincident = false
+}
+
+// ClearMeetingSession clears the "meeting_session" edge to the MeetingSession entity.
+func (m *VideoConferenceMutation) ClearMeetingSession() {
+	m.clearedmeeting_session = true
+	m.clearedFields[videoconference.FieldMeetingSessionID] = struct{}{}
+}
+
+// MeetingSessionCleared reports if the "meeting_session" edge to the MeetingSession entity was cleared.
+func (m *VideoConferenceMutation) MeetingSessionCleared() bool {
+	return m.MeetingSessionIDCleared() || m.clearedmeeting_session
+}
+
+// MeetingSessionIDs returns the "meeting_session" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// MeetingSessionID instead. It exists only for internal usage by the builders.
+func (m *VideoConferenceMutation) MeetingSessionIDs() (ids []uuid.UUID) {
+	if id := m.meeting_session; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetMeetingSession resets all changes to the "meeting_session" edge.
+func (m *VideoConferenceMutation) ResetMeetingSession() {
+	m.meeting_session = nil
+	m.clearedmeeting_session = false
+}
+
+// Where appends a list predicates to the VideoConferenceMutation builder.
+func (m *VideoConferenceMutation) Where(ps ...predicate.VideoConference) {
+	m.predicates = append(m.predicates, ps...)
+}
+
+// WhereP appends storage-level predicates to the VideoConferenceMutation builder. Using this method,
+// users can use type-assertion to append predicates that do not depend on any generated package.
+func (m *VideoConferenceMutation) WhereP(ps ...func(*sql.Selector)) {
+	p := make([]predicate.VideoConference, len(ps))
+	for i := range ps {
+		p[i] = ps[i]
+	}
+	m.Where(p...)
+}
+
+// Op returns the operation name.
+func (m *VideoConferenceMutation) Op() Op {
+	return m.op
+}
+
+// SetOp allows setting the mutation operation.
+func (m *VideoConferenceMutation) SetOp(op Op) {
+	m.op = op
+}
+
+// Type returns the node type of this mutation (VideoConference).
+func (m *VideoConferenceMutation) Type() string {
+	return m.typ
+}
+
+// Fields returns all fields that were changed during this mutation. Note that in
+// order to get all numeric fields that were incremented/decremented, call
+// AddedFields().
+func (m *VideoConferenceMutation) Fields() []string {
+	fields := make([]string, 0, 14)
+	if m.tenant != nil {
+		fields = append(fields, videoconference.FieldTenantID)
+	}
+	if m.created_at != nil {
+		fields = append(fields, videoconference.FieldCreatedAt)
+	}
+	if m.updated_at != nil {
+		fields = append(fields, videoconference.FieldUpdatedAt)
+	}
+	if m.incident != nil {
+		fields = append(fields, videoconference.FieldIncidentID)
+	}
+	if m.meeting_session != nil {
+		fields = append(fields, videoconference.FieldMeetingSessionID)
+	}
+	if m.provider != nil {
+		fields = append(fields, videoconference.FieldProvider)
+	}
+	if m.external_id != nil {
+		fields = append(fields, videoconference.FieldExternalID)
+	}
+	if m.join_url != nil {
+		fields = append(fields, videoconference.FieldJoinURL)
+	}
+	if m.host_url != nil {
+		fields = append(fields, videoconference.FieldHostURL)
+	}
+	if m.dial_in != nil {
+		fields = append(fields, videoconference.FieldDialIn)
+	}
+	if m.passcode != nil {
+		fields = append(fields, videoconference.FieldPasscode)
+	}
+	if m.status != nil {
+		fields = append(fields, videoconference.FieldStatus)
+	}
+	if m.metadata != nil {
+		fields = append(fields, videoconference.FieldMetadata)
+	}
+	if m.created_by_integration != nil {
+		fields = append(fields, videoconference.FieldCreatedByIntegration)
+	}
+	return fields
+}
+
+// Field returns the value of a field with the given name. The second boolean
+// return value indicates that this field was not set, or was not defined in the
+// schema.
+func (m *VideoConferenceMutation) Field(name string) (ent.Value, bool) {
+	switch name {
+	case videoconference.FieldTenantID:
+		return m.TenantID()
+	case videoconference.FieldCreatedAt:
+		return m.CreatedAt()
+	case videoconference.FieldUpdatedAt:
+		return m.UpdatedAt()
+	case videoconference.FieldIncidentID:
+		return m.IncidentID()
+	case videoconference.FieldMeetingSessionID:
+		return m.MeetingSessionID()
+	case videoconference.FieldProvider:
+		return m.Provider()
+	case videoconference.FieldExternalID:
+		return m.ExternalID()
+	case videoconference.FieldJoinURL:
+		return m.JoinURL()
+	case videoconference.FieldHostURL:
+		return m.HostURL()
+	case videoconference.FieldDialIn:
+		return m.DialIn()
+	case videoconference.FieldPasscode:
+		return m.Passcode()
+	case videoconference.FieldStatus:
+		return m.Status()
+	case videoconference.FieldMetadata:
+		return m.Metadata()
+	case videoconference.FieldCreatedByIntegration:
+		return m.CreatedByIntegration()
+	}
+	return nil, false
+}
+
+// OldField returns the old value of the field from the database. An error is
+// returned if the mutation operation is not UpdateOne, or the query to the
+// database failed.
+func (m *VideoConferenceMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
+	switch name {
+	case videoconference.FieldTenantID:
+		return m.OldTenantID(ctx)
+	case videoconference.FieldCreatedAt:
+		return m.OldCreatedAt(ctx)
+	case videoconference.FieldUpdatedAt:
+		return m.OldUpdatedAt(ctx)
+	case videoconference.FieldIncidentID:
+		return m.OldIncidentID(ctx)
+	case videoconference.FieldMeetingSessionID:
+		return m.OldMeetingSessionID(ctx)
+	case videoconference.FieldProvider:
+		return m.OldProvider(ctx)
+	case videoconference.FieldExternalID:
+		return m.OldExternalID(ctx)
+	case videoconference.FieldJoinURL:
+		return m.OldJoinURL(ctx)
+	case videoconference.FieldHostURL:
+		return m.OldHostURL(ctx)
+	case videoconference.FieldDialIn:
+		return m.OldDialIn(ctx)
+	case videoconference.FieldPasscode:
+		return m.OldPasscode(ctx)
+	case videoconference.FieldStatus:
+		return m.OldStatus(ctx)
+	case videoconference.FieldMetadata:
+		return m.OldMetadata(ctx)
+	case videoconference.FieldCreatedByIntegration:
+		return m.OldCreatedByIntegration(ctx)
+	}
+	return nil, fmt.Errorf("unknown VideoConference field %s", name)
+}
+
+// SetField sets the value of a field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *VideoConferenceMutation) SetField(name string, value ent.Value) error {
+	switch name {
+	case videoconference.FieldTenantID:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetTenantID(v)
+		return nil
+	case videoconference.FieldCreatedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCreatedAt(v)
+		return nil
+	case videoconference.FieldUpdatedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetUpdatedAt(v)
+		return nil
+	case videoconference.FieldIncidentID:
+		v, ok := value.(uuid.UUID)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetIncidentID(v)
+		return nil
+	case videoconference.FieldMeetingSessionID:
+		v, ok := value.(uuid.UUID)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetMeetingSessionID(v)
+		return nil
+	case videoconference.FieldProvider:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetProvider(v)
+		return nil
+	case videoconference.FieldExternalID:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetExternalID(v)
+		return nil
+	case videoconference.FieldJoinURL:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetJoinURL(v)
+		return nil
+	case videoconference.FieldHostURL:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetHostURL(v)
+		return nil
+	case videoconference.FieldDialIn:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetDialIn(v)
+		return nil
+	case videoconference.FieldPasscode:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetPasscode(v)
+		return nil
+	case videoconference.FieldStatus:
+		v, ok := value.(videoconference.Status)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetStatus(v)
+		return nil
+	case videoconference.FieldMetadata:
+		v, ok := value.(json.RawMessage)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetMetadata(v)
+		return nil
+	case videoconference.FieldCreatedByIntegration:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCreatedByIntegration(v)
+		return nil
+	}
+	return fmt.Errorf("unknown VideoConference field %s", name)
+}
+
+// AddedFields returns all numeric fields that were incremented/decremented during
+// this mutation.
+func (m *VideoConferenceMutation) AddedFields() []string {
+	var fields []string
+	return fields
+}
+
+// AddedField returns the numeric value that was incremented/decremented on a field
+// with the given name. The second boolean return value indicates that this field
+// was not set, or was not defined in the schema.
+func (m *VideoConferenceMutation) AddedField(name string) (ent.Value, bool) {
+	switch name {
+	}
+	return nil, false
+}
+
+// AddField adds the value to the field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *VideoConferenceMutation) AddField(name string, value ent.Value) error {
+	switch name {
+	}
+	return fmt.Errorf("unknown VideoConference numeric field %s", name)
+}
+
+// ClearedFields returns all nullable fields that were cleared during this
+// mutation.
+func (m *VideoConferenceMutation) ClearedFields() []string {
+	var fields []string
+	if m.FieldCleared(videoconference.FieldIncidentID) {
+		fields = append(fields, videoconference.FieldIncidentID)
+	}
+	if m.FieldCleared(videoconference.FieldMeetingSessionID) {
+		fields = append(fields, videoconference.FieldMeetingSessionID)
+	}
+	if m.FieldCleared(videoconference.FieldExternalID) {
+		fields = append(fields, videoconference.FieldExternalID)
+	}
+	if m.FieldCleared(videoconference.FieldHostURL) {
+		fields = append(fields, videoconference.FieldHostURL)
+	}
+	if m.FieldCleared(videoconference.FieldDialIn) {
+		fields = append(fields, videoconference.FieldDialIn)
+	}
+	if m.FieldCleared(videoconference.FieldPasscode) {
+		fields = append(fields, videoconference.FieldPasscode)
+	}
+	if m.FieldCleared(videoconference.FieldMetadata) {
+		fields = append(fields, videoconference.FieldMetadata)
+	}
+	if m.FieldCleared(videoconference.FieldCreatedByIntegration) {
+		fields = append(fields, videoconference.FieldCreatedByIntegration)
+	}
+	return fields
+}
+
+// FieldCleared returns a boolean indicating if a field with the given name was
+// cleared in this mutation.
+func (m *VideoConferenceMutation) FieldCleared(name string) bool {
+	_, ok := m.clearedFields[name]
+	return ok
+}
+
+// ClearField clears the value of the field with the given name. It returns an
+// error if the field is not defined in the schema.
+func (m *VideoConferenceMutation) ClearField(name string) error {
+	switch name {
+	case videoconference.FieldIncidentID:
+		m.ClearIncidentID()
+		return nil
+	case videoconference.FieldMeetingSessionID:
+		m.ClearMeetingSessionID()
+		return nil
+	case videoconference.FieldExternalID:
+		m.ClearExternalID()
+		return nil
+	case videoconference.FieldHostURL:
+		m.ClearHostURL()
+		return nil
+	case videoconference.FieldDialIn:
+		m.ClearDialIn()
+		return nil
+	case videoconference.FieldPasscode:
+		m.ClearPasscode()
+		return nil
+	case videoconference.FieldMetadata:
+		m.ClearMetadata()
+		return nil
+	case videoconference.FieldCreatedByIntegration:
+		m.ClearCreatedByIntegration()
+		return nil
+	}
+	return fmt.Errorf("unknown VideoConference nullable field %s", name)
+}
+
+// ResetField resets all changes in the mutation for the field with the given name.
+// It returns an error if the field is not defined in the schema.
+func (m *VideoConferenceMutation) ResetField(name string) error {
+	switch name {
+	case videoconference.FieldTenantID:
+		m.ResetTenantID()
+		return nil
+	case videoconference.FieldCreatedAt:
+		m.ResetCreatedAt()
+		return nil
+	case videoconference.FieldUpdatedAt:
+		m.ResetUpdatedAt()
+		return nil
+	case videoconference.FieldIncidentID:
+		m.ResetIncidentID()
+		return nil
+	case videoconference.FieldMeetingSessionID:
+		m.ResetMeetingSessionID()
+		return nil
+	case videoconference.FieldProvider:
+		m.ResetProvider()
+		return nil
+	case videoconference.FieldExternalID:
+		m.ResetExternalID()
+		return nil
+	case videoconference.FieldJoinURL:
+		m.ResetJoinURL()
+		return nil
+	case videoconference.FieldHostURL:
+		m.ResetHostURL()
+		return nil
+	case videoconference.FieldDialIn:
+		m.ResetDialIn()
+		return nil
+	case videoconference.FieldPasscode:
+		m.ResetPasscode()
+		return nil
+	case videoconference.FieldStatus:
+		m.ResetStatus()
+		return nil
+	case videoconference.FieldMetadata:
+		m.ResetMetadata()
+		return nil
+	case videoconference.FieldCreatedByIntegration:
+		m.ResetCreatedByIntegration()
+		return nil
+	}
+	return fmt.Errorf("unknown VideoConference field %s", name)
+}
+
+// AddedEdges returns all edge names that were set/added in this mutation.
+func (m *VideoConferenceMutation) AddedEdges() []string {
+	edges := make([]string, 0, 3)
+	if m.tenant != nil {
+		edges = append(edges, videoconference.EdgeTenant)
+	}
+	if m.incident != nil {
+		edges = append(edges, videoconference.EdgeIncident)
+	}
+	if m.meeting_session != nil {
+		edges = append(edges, videoconference.EdgeMeetingSession)
+	}
+	return edges
+}
+
+// AddedIDs returns all IDs (to other nodes) that were added for the given edge
+// name in this mutation.
+func (m *VideoConferenceMutation) AddedIDs(name string) []ent.Value {
+	switch name {
+	case videoconference.EdgeTenant:
+		if id := m.tenant; id != nil {
+			return []ent.Value{*id}
+		}
+	case videoconference.EdgeIncident:
+		if id := m.incident; id != nil {
+			return []ent.Value{*id}
+		}
+	case videoconference.EdgeMeetingSession:
+		if id := m.meeting_session; id != nil {
+			return []ent.Value{*id}
+		}
+	}
+	return nil
+}
+
+// RemovedEdges returns all edge names that were removed in this mutation.
+func (m *VideoConferenceMutation) RemovedEdges() []string {
+	edges := make([]string, 0, 3)
+	return edges
+}
+
+// RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
+// the given name in this mutation.
+func (m *VideoConferenceMutation) RemovedIDs(name string) []ent.Value {
+	return nil
+}
+
+// ClearedEdges returns all edge names that were cleared in this mutation.
+func (m *VideoConferenceMutation) ClearedEdges() []string {
+	edges := make([]string, 0, 3)
+	if m.clearedtenant {
+		edges = append(edges, videoconference.EdgeTenant)
+	}
+	if m.clearedincident {
+		edges = append(edges, videoconference.EdgeIncident)
+	}
+	if m.clearedmeeting_session {
+		edges = append(edges, videoconference.EdgeMeetingSession)
+	}
+	return edges
+}
+
+// EdgeCleared returns a boolean which indicates if the edge with the given name
+// was cleared in this mutation.
+func (m *VideoConferenceMutation) EdgeCleared(name string) bool {
+	switch name {
+	case videoconference.EdgeTenant:
+		return m.clearedtenant
+	case videoconference.EdgeIncident:
+		return m.clearedincident
+	case videoconference.EdgeMeetingSession:
+		return m.clearedmeeting_session
+	}
+	return false
+}
+
+// ClearEdge clears the value of the edge with the given name. It returns an error
+// if that edge is not defined in the schema.
+func (m *VideoConferenceMutation) ClearEdge(name string) error {
+	switch name {
+	case videoconference.EdgeTenant:
+		m.ClearTenant()
+		return nil
+	case videoconference.EdgeIncident:
+		m.ClearIncident()
+		return nil
+	case videoconference.EdgeMeetingSession:
+		m.ClearMeetingSession()
+		return nil
+	}
+	return fmt.Errorf("unknown VideoConference unique edge %s", name)
+}
+
+// ResetEdge resets all changes to the edge with the given name in this mutation.
+// It returns an error if the edge is not defined in the schema.
+func (m *VideoConferenceMutation) ResetEdge(name string) error {
+	switch name {
+	case videoconference.EdgeTenant:
+		m.ResetTenant()
+		return nil
+	case videoconference.EdgeIncident:
+		m.ResetIncident()
+		return nil
+	case videoconference.EdgeMeetingSession:
+		m.ResetMeetingSession()
+		return nil
+	}
+	return fmt.Errorf("unknown VideoConference edge %s", name)
 }

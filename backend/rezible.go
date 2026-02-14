@@ -233,7 +233,7 @@ type (
 
 type (
 	IntegrationWithChatService interface {
-		ChatService() ChatService
+		ChatService(context.Context) (ChatService, error)
 	}
 
 	ChatService interface {

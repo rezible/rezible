@@ -65,7 +65,8 @@ func (h *incidentEventHandler) onIncidentUpdate(ctx context.Context, ev *rez.Eve
 		return nil
 	}
 
-	if channelErr := h.updateIncidentChannelProperties(ctx, chat.client, inc); channelErr != nil {
+	channelErr := h.updateIncidentChannel(ctx, chat, inc)
+	if channelErr != nil {
 		log.Error().Err(channelErr).Msg("failed to update incident channel")
 	}
 	return nil
@@ -258,7 +259,8 @@ func (h *incidentEventHandler) postIncidentAnnouncement(ctx context.Context, cha
 	return nil
 }
 
-func (h *incidentEventHandler) updateIncidentChannelProperties(ctx context.Context, client *slack.Client, inc *ent.Incident) error {
+func (h *incidentEventHandler) updateIncidentChannel(ctx context.Context, chat *ChatService, inc *ent.Incident) error {
+	client := chat.client
 	if detailsErr := h.updateIncidentChannelPinnedDetailsMessage(ctx, client, inc); detailsErr != nil {
 		log.Warn().Err(detailsErr).Msg("failed to update incident details message")
 	}
@@ -267,8 +269,14 @@ func (h *incidentEventHandler) updateIncidentChannelProperties(ctx context.Conte
 		log.Warn().Err(topicErr).Msg("failed to update incident channel topic")
 	}
 
-	if bookmarksErr := h.ensureIncidentChannelBookmarks(ctx, client, inc); bookmarksErr != nil {
+	conferenceAdded, bookmarksErr := h.ensureIncidentChannelBookmarks(ctx, client, inc)
+	if bookmarksErr != nil {
 		log.Warn().Err(bookmarksErr).Msg("failed to update incident channel bookmarks")
+	}
+	if conferenceAdded {
+		if msgErr := h.postIncidentConferenceMessage(ctx, chat, inc); msgErr != nil {
+			log.Warn().Err(msgErr).Msg("failed to post incident conference message")
+		}
 	}
 
 	if usersErr := h.ensureIncidentChannelUsersAdded(ctx, client, inc); usersErr != nil {
@@ -338,30 +346,75 @@ func (h *incidentEventHandler) updateIncidentChannelTopic(ctx context.Context, c
 	return nil
 }
 
-func (h *incidentEventHandler) ensureIncidentChannelBookmarks(ctx context.Context, client *slack.Client, inc *ent.Incident) error {
+func (h *incidentEventHandler) ensureIncidentChannelBookmarks(ctx context.Context, client *slack.Client, inc *ent.Incident) (bool, error) {
 	bookmarks, listErr := client.ListBookmarksContext(ctx, inc.ChatChannelID)
 	if listErr != nil {
-		return fmt.Errorf("failed to list bookmarks: %w", listErr)
+		return false, fmt.Errorf("failed to list bookmarks: %w", listErr)
 	}
 
-	title := "View Incident Details"
-	for _, bookmark := range bookmarks {
-		// TODO: check more thoroughly?
-		if bookmark.Title == title {
-			return nil
+	detailsTitle := "View Incident Details"
+	conferenceTitle := "Join Video Conference"
+	hasDetails := false
+	confBookmarkIndex := -1
+	for i, bookmark := range bookmarks {
+		switch bookmark.Title {
+		case detailsTitle:
+			hasDetails = true
+		case conferenceTitle:
+			confBookmarkIndex = i
 		}
 	}
 
-	_, addErr := client.AddBookmark(inc.ChatChannelID, slack.AddBookmarkParameters{
-		Title: title,
-		Link:  fmt.Sprintf("%s/incidents/%s", rez.Config.AppUrl(), inc.Slug),
-		Type:  "link",
-	})
-	if addErr != nil {
-		return fmt.Errorf("failed to add bookmark: %w", addErr)
+	if !hasDetails {
+		_, addErr := client.AddBookmark(inc.ChatChannelID, slack.AddBookmarkParameters{
+			Title: detailsTitle,
+			Link:  fmt.Sprintf("%s/incidents/%s", rez.Config.AppUrl(), inc.Slug),
+			Type:  "link",
+		})
+		if addErr != nil {
+			return false, fmt.Errorf("failed to add bookmark: %w", addErr)
+		}
 	}
 
-	return nil
+	conferenceUpdated := false
+	primaryConf := inc.Edges.GetPrimaryVideoConference()
+	if primaryConf != nil {
+		if confBookmarkIndex == -1 {
+			_, addErr := client.AddBookmark(inc.ChatChannelID, slack.AddBookmarkParameters{
+				Title: conferenceTitle,
+				Link:  primaryConf.JoinURL,
+				Emoji: ":video_camera:",
+				Type:  "link",
+			})
+			if addErr != nil {
+				return false, fmt.Errorf("failed to add conference bookmark: %w", addErr)
+			}
+			conferenceUpdated = true
+		} else if bm := bookmarks[confBookmarkIndex]; bm.Link != primaryConf.JoinURL {
+			_, editErr := client.EditBookmark(inc.ChatChannelID, bm.ID, slack.EditBookmarkParameters{
+				Link: primaryConf.JoinURL,
+			})
+			if editErr != nil {
+				return false, fmt.Errorf("failed to edit conference bookmark: %w", editErr)
+			}
+		}
+	}
+	return conferenceUpdated, nil
+}
+
+func (h *incidentEventHandler) postIncidentConferenceMessage(ctx context.Context, chat *ChatService, inc *ent.Incident) error {
+	primaryConf := inc.Edges.GetPrimaryVideoConference()
+	if primaryConf == nil {
+		return nil
+	}
+	textBlock := slack.NewTextBlockObject(
+		slack.MarkdownType,
+		fmt.Sprintf(":video_camera: Incident video conference: %s", primaryConf.JoinURL),
+		false,
+		false,
+	)
+	_, msgErr := chat.postMessage(ctx, inc.ChatChannelID, slack.MsgOptionBlocks(slack.NewSectionBlock(textBlock, nil, nil)))
+	return msgErr
 }
 
 func (h *incidentEventHandler) ensureIncidentChannelUsersAdded(ctx context.Context, client *slack.Client, inc *ent.Incident) error {

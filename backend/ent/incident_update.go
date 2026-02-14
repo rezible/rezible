@@ -27,6 +27,7 @@ import (
 	"github.com/rezible/rezible/ent/retrospective"
 	"github.com/rezible/rezible/ent/task"
 	"github.com/rezible/rezible/ent/user"
+	"github.com/rezible/rezible/ent/videoconference"
 )
 
 // IncidentUpdate is the builder for updating Incident entities.
@@ -372,6 +373,21 @@ func (_u *IncidentUpdate) AddReviewSessions(v ...*MeetingSession) *IncidentUpdat
 	return _u.AddReviewSessionIDs(ids...)
 }
 
+// AddVideoConferenceIDs adds the "video_conferences" edge to the VideoConference entity by IDs.
+func (_u *IncidentUpdate) AddVideoConferenceIDs(ids ...uuid.UUID) *IncidentUpdate {
+	_u.mutation.AddVideoConferenceIDs(ids...)
+	return _u
+}
+
+// AddVideoConferences adds the "video_conferences" edges to the VideoConference entity.
+func (_u *IncidentUpdate) AddVideoConferences(v ...*VideoConference) *IncidentUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddVideoConferenceIDs(ids...)
+}
+
 // AddUserRoleIDs adds the "user_roles" edge to the IncidentRoleAssignment entity by IDs.
 func (_u *IncidentUpdate) AddUserRoleIDs(ids ...uuid.UUID) *IncidentUpdate {
 	_u.mutation.AddUserRoleIDs(ids...)
@@ -633,6 +649,27 @@ func (_u *IncidentUpdate) RemoveReviewSessions(v ...*MeetingSession) *IncidentUp
 		ids[i] = v[i].ID
 	}
 	return _u.RemoveReviewSessionIDs(ids...)
+}
+
+// ClearVideoConferences clears all "video_conferences" edges to the VideoConference entity.
+func (_u *IncidentUpdate) ClearVideoConferences() *IncidentUpdate {
+	_u.mutation.ClearVideoConferences()
+	return _u
+}
+
+// RemoveVideoConferenceIDs removes the "video_conferences" edge to VideoConference entities by IDs.
+func (_u *IncidentUpdate) RemoveVideoConferenceIDs(ids ...uuid.UUID) *IncidentUpdate {
+	_u.mutation.RemoveVideoConferenceIDs(ids...)
+	return _u
+}
+
+// RemoveVideoConferences removes "video_conferences" edges to VideoConference entities.
+func (_u *IncidentUpdate) RemoveVideoConferences(v ...*VideoConference) *IncidentUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveVideoConferenceIDs(ids...)
 }
 
 // ClearUserRoles clears all "user_roles" edges to the IncidentRoleAssignment entity.
@@ -1342,6 +1379,51 @@ func (_u *IncidentUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	if _u.mutation.VideoConferencesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   incident.VideoConferencesTable,
+			Columns: []string{incident.VideoConferencesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(videoconference.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedVideoConferencesIDs(); len(nodes) > 0 && !_u.mutation.VideoConferencesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   incident.VideoConferencesTable,
+			Columns: []string{incident.VideoConferencesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(videoconference.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.VideoConferencesIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   incident.VideoConferencesTable,
+			Columns: []string{incident.VideoConferencesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(videoconference.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
 	if _u.mutation.UserRolesCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
@@ -1783,6 +1865,21 @@ func (_u *IncidentUpdateOne) AddReviewSessions(v ...*MeetingSession) *IncidentUp
 	return _u.AddReviewSessionIDs(ids...)
 }
 
+// AddVideoConferenceIDs adds the "video_conferences" edge to the VideoConference entity by IDs.
+func (_u *IncidentUpdateOne) AddVideoConferenceIDs(ids ...uuid.UUID) *IncidentUpdateOne {
+	_u.mutation.AddVideoConferenceIDs(ids...)
+	return _u
+}
+
+// AddVideoConferences adds the "video_conferences" edges to the VideoConference entity.
+func (_u *IncidentUpdateOne) AddVideoConferences(v ...*VideoConference) *IncidentUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddVideoConferenceIDs(ids...)
+}
+
 // AddUserRoleIDs adds the "user_roles" edge to the IncidentRoleAssignment entity by IDs.
 func (_u *IncidentUpdateOne) AddUserRoleIDs(ids ...uuid.UUID) *IncidentUpdateOne {
 	_u.mutation.AddUserRoleIDs(ids...)
@@ -2044,6 +2141,27 @@ func (_u *IncidentUpdateOne) RemoveReviewSessions(v ...*MeetingSession) *Inciden
 		ids[i] = v[i].ID
 	}
 	return _u.RemoveReviewSessionIDs(ids...)
+}
+
+// ClearVideoConferences clears all "video_conferences" edges to the VideoConference entity.
+func (_u *IncidentUpdateOne) ClearVideoConferences() *IncidentUpdateOne {
+	_u.mutation.ClearVideoConferences()
+	return _u
+}
+
+// RemoveVideoConferenceIDs removes the "video_conferences" edge to VideoConference entities by IDs.
+func (_u *IncidentUpdateOne) RemoveVideoConferenceIDs(ids ...uuid.UUID) *IncidentUpdateOne {
+	_u.mutation.RemoveVideoConferenceIDs(ids...)
+	return _u
+}
+
+// RemoveVideoConferences removes "video_conferences" edges to VideoConference entities.
+func (_u *IncidentUpdateOne) RemoveVideoConferences(v ...*VideoConference) *IncidentUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveVideoConferenceIDs(ids...)
 }
 
 // ClearUserRoles clears all "user_roles" edges to the IncidentRoleAssignment entity.
@@ -2776,6 +2894,51 @@ func (_u *IncidentUpdateOne) sqlSave(ctx context.Context) (_node *Incident, err 
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(meetingsession.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.VideoConferencesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   incident.VideoConferencesTable,
+			Columns: []string{incident.VideoConferencesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(videoconference.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedVideoConferencesIDs(); len(nodes) > 0 && !_u.mutation.VideoConferencesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   incident.VideoConferencesTable,
+			Columns: []string{incident.VideoConferencesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(videoconference.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.VideoConferencesIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   incident.VideoConferencesTable,
+			Columns: []string{incident.VideoConferencesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(videoconference.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {

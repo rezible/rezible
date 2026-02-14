@@ -293,7 +293,7 @@ func (s *IntegrationsService) GetChatIntegration(ctx context.Context) (rez.ChatS
 		return nil, pErr
 	}
 	if chatPackage, ok := p.(rez.IntegrationWithChatService); ok {
-		return chatPackage.ChatService(), nil
+		return chatPackage.ChatService(ctx)
 	}
 	return nil, rez.ErrNoConfiguredIntegrations
 }

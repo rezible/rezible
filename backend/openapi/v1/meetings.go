@@ -2,10 +2,13 @@ package v1
 
 import (
 	"context"
-	"github.com/danielgtaylor/huma/v2"
-	"github.com/google/uuid"
+	"encoding/json"
 	"net/http"
 	"time"
+
+	"github.com/danielgtaylor/huma/v2"
+	"github.com/google/uuid"
+	"github.com/rezible/rezible/ent"
 )
 
 type MeetingsHandler interface {
@@ -37,6 +40,23 @@ func (o operations) RegisterMeetings(api huma.API) {
 }
 
 type (
+	VideoConference struct {
+		Id         uuid.UUID                 `json:"id"`
+		Attributes VideoConferenceAttributes `json:"attributes"`
+	}
+
+	VideoConferenceAttributes struct {
+		Provider             string                 `json:"provider"`
+		ExternalId           string                 `json:"externalId,omitempty"`
+		JoinUrl              string                 `json:"joinUrl"`
+		HostUrl              string                 `json:"hostUrl,omitempty"`
+		DialIn               string                 `json:"dialIn,omitempty"`
+		Passcode             string                 `json:"passcode,omitempty"`
+		Status               string                 `json:"status"`
+		CreatedByIntegration string                 `json:"createdByIntegration,omitempty"`
+		Metadata             map[string]interface{} `json:"metadata,omitempty"`
+	}
+
 	MeetingSchedule struct {
 		Id         uuid.UUID                 `json:"id"`
 		Attributes MeetingScheduleAttributes `json:"attributes"`
@@ -92,6 +112,26 @@ type (
 		DocumentName      string           `json:"documentName"`
 	}
 )
+
+func VideoConferenceFromEnt(c *ent.VideoConference) VideoConference {
+	attrs := VideoConferenceAttributes{
+		Provider:             c.Provider,
+		ExternalId:           c.ExternalID,
+		JoinUrl:              c.JoinURL,
+		HostUrl:              c.HostURL,
+		DialIn:               c.DialIn,
+		Passcode:             c.Passcode,
+		Status:               string(c.Status),
+		CreatedByIntegration: c.CreatedByIntegration,
+		Metadata:             map[string]any{},
+	}
+
+	if len(c.Metadata) > 0 {
+		_ = json.Unmarshal(c.Metadata, &attrs.Metadata)
+	}
+
+	return VideoConference{Id: c.ID, Attributes: attrs}
+}
 
 // Operations
 

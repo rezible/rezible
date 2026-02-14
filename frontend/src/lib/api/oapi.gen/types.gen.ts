@@ -1205,6 +1205,7 @@ export type IncidentAttributes = {
     currentStatus: 'started' | 'mitigated' | 'resolved' | 'closed';
     linkedIncidents: Array<IncidentLink>;
     openedAt: string;
+    primaryVideoConference?: VideoConference;
     private: boolean;
     retrospectiveId?: string;
     roles: Array<IncidentRoleAssignment>;
@@ -2852,6 +2853,25 @@ export type VerifyDocumentSessionAuthResponseBody = {
      */
     readonly $schema?: string;
     data: DocumentEditorSessionAuth;
+};
+
+export type VideoConference = {
+    attributes: VideoConferenceAttributes;
+    id: string;
+};
+
+export type VideoConferenceAttributes = {
+    createdByIntegration?: string;
+    dialIn?: string;
+    externalId?: string;
+    hostUrl?: string;
+    joinUrl: string;
+    metadata?: {
+        [key: string]: unknown;
+    };
+    passcode?: string;
+    provider: string;
+    status: string;
 };
 
 export type ListAlertsData = {

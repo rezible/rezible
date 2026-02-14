@@ -72,6 +72,7 @@ import (
 	"github.com/rezible/rezible/ent/tenant"
 	"github.com/rezible/rezible/ent/ticket"
 	"github.com/rezible/rezible/ent/user"
+	"github.com/rezible/rezible/ent/videoconference"
 )
 
 // ent aliases to avoid import conflicts in user's code.
@@ -192,6 +193,7 @@ func checkColumn(t, c string) error {
 			tenant.Table:                           tenant.ValidColumn,
 			ticket.Table:                           ticket.ValidColumn,
 			user.Table:                             user.ValidColumn,
+			videoconference.Table:                  videoconference.ValidColumn,
 		})
 	})
 	return columnCheck(t, c)

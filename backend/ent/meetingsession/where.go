@@ -367,6 +367,29 @@ func HasIncidentsWith(preds ...predicate.Incident) predicate.MeetingSession {
 	})
 }
 
+// HasVideoConference applies the HasEdge predicate on the "video_conference" edge.
+func HasVideoConference() predicate.MeetingSession {
+	return predicate.MeetingSession(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.O2O, false, VideoConferenceTable, VideoConferenceColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasVideoConferenceWith applies the HasEdge predicate on the "video_conference" edge with a given conditions (other predicates).
+func HasVideoConferenceWith(preds ...predicate.VideoConference) predicate.MeetingSession {
+	return predicate.MeetingSession(func(s *sql.Selector) {
+		step := newVideoConferenceStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
 // HasSchedule applies the HasEdge predicate on the "schedule" edge.
 func HasSchedule() predicate.MeetingSession {
 	return predicate.MeetingSession(func(s *sql.Selector) {

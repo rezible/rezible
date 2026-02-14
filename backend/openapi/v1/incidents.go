@@ -34,23 +34,24 @@ type (
 	}
 
 	IncidentAttributes struct {
-		Slug            string                   `json:"slug"`
-		Title           string                   `json:"title"`
-		Summary         string                   `json:"summary"`
-		Private         bool                     `json:"private"`
-		CurrentStatus   string                   `json:"currentStatus" enum:"started,mitigated,resolved,closed"`
-		OpenedAt        time.Time                `json:"openedAt"`
-		ClosedAt        time.Time                `json:"closedAt"`
-		RetrospectiveId *uuid.UUID               `json:"retrospectiveId,omitempty"`
-		Severity        IncidentSeverity         `json:"severity"`
-		Type            IncidentType             `json:"type"`
-		Tags            []IncidentTag            `json:"tags"`
-		Ticket          *ExternalTicket          `json:"ticket,omitempty"`
-		Tasks           []Task                   `json:"tasks"`
-		RoleAssignments []IncidentRoleAssignment `json:"roles"`
-		TeamAssignments []IncidentTeamAssignment `json:"teams"`
-		LinkedIncidents []IncidentLink           `json:"linkedIncidents"`
-		ChatChannel     IncidentChatChannel      `json:"chatChannel"`
+		Slug                   string                   `json:"slug"`
+		Title                  string                   `json:"title"`
+		Summary                string                   `json:"summary"`
+		Private                bool                     `json:"private"`
+		CurrentStatus          string                   `json:"currentStatus" enum:"started,mitigated,resolved,closed"`
+		OpenedAt               time.Time                `json:"openedAt"`
+		ClosedAt               time.Time                `json:"closedAt"`
+		RetrospectiveId        *uuid.UUID               `json:"retrospectiveId,omitempty"`
+		Severity               IncidentSeverity         `json:"severity"`
+		Type                   IncidentType             `json:"type"`
+		Tags                   []IncidentTag            `json:"tags"`
+		Ticket                 *ExternalTicket          `json:"ticket,omitempty"`
+		Tasks                  []Task                   `json:"tasks"`
+		RoleAssignments        []IncidentRoleAssignment `json:"roles"`
+		TeamAssignments        []IncidentTeamAssignment `json:"teams"`
+		LinkedIncidents        []IncidentLink           `json:"linkedIncidents"`
+		ChatChannel            IncidentChatChannel      `json:"chatChannel"`
+		PrimaryVideoConference *VideoConference         `json:"primaryVideoConference,omitempty"`
 	}
 
 	IncidentLink struct {
@@ -114,13 +115,14 @@ func IncidentFromEnt(inc *ent.Incident) Incident {
 			attr.RoleAssignments[i] = IncidentRoleAssignmentFromEnt(assignment)
 		}
 	}
+	if conferences, confErr := inc.Edges.VideoConferencesOrErr(); confErr == nil {
+		primaryConf := VideoConferenceFromEnt(ent.VideoConferences(conferences).GetPrimary())
+		attr.PrimaryVideoConference = &primaryConf
+	}
 
 	attr.LinkedIncidents = make([]IncidentLink, 0)
 
-	return Incident{
-		Id:         inc.ID,
-		Attributes: attr,
-	}
+	return Incident{Id: inc.ID, Attributes: attr}
 }
 
 func IncidentRoleAssignmentFromEnt(assn *ent.IncidentRoleAssignment) IncidentRoleAssignment {

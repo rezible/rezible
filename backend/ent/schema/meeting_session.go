@@ -37,6 +37,7 @@ func (MeetingSession) Edges() []ent.Edge {
 	return []ent.Edge{
 		edge.From("incidents", Incident.Type).
 			Ref("review_sessions"),
+		edge.To("video_conference", VideoConference.Type).Unique(),
 		edge.To("schedule", MeetingSchedule.Type).Unique(),
 	}
 }

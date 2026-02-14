@@ -17,6 +17,7 @@ import (
 	"github.com/rezible/rezible/ent/meetingschedule"
 	"github.com/rezible/rezible/ent/meetingsession"
 	"github.com/rezible/rezible/ent/tenant"
+	"github.com/rezible/rezible/ent/videoconference"
 )
 
 // MeetingSessionCreate is the builder for creating a MeetingSession entity.
@@ -105,6 +106,25 @@ func (_c *MeetingSessionCreate) AddIncidents(v ...*Incident) *MeetingSessionCrea
 		ids[i] = v[i].ID
 	}
 	return _c.AddIncidentIDs(ids...)
+}
+
+// SetVideoConferenceID sets the "video_conference" edge to the VideoConference entity by ID.
+func (_c *MeetingSessionCreate) SetVideoConferenceID(id uuid.UUID) *MeetingSessionCreate {
+	_c.mutation.SetVideoConferenceID(id)
+	return _c
+}
+
+// SetNillableVideoConferenceID sets the "video_conference" edge to the VideoConference entity by ID if the given value is not nil.
+func (_c *MeetingSessionCreate) SetNillableVideoConferenceID(id *uuid.UUID) *MeetingSessionCreate {
+	if id != nil {
+		_c = _c.SetVideoConferenceID(*id)
+	}
+	return _c
+}
+
+// SetVideoConference sets the "video_conference" edge to the VideoConference entity.
+func (_c *MeetingSessionCreate) SetVideoConference(v *VideoConference) *MeetingSessionCreate {
+	return _c.SetVideoConferenceID(v.ID)
 }
 
 // SetScheduleID sets the "schedule" edge to the MeetingSchedule entity by ID.
@@ -275,6 +295,22 @@ func (_c *MeetingSessionCreate) createSpec() (*MeetingSession, *sqlgraph.CreateS
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(incident.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := _c.mutation.VideoConferenceIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2O,
+			Inverse: false,
+			Table:   meetingsession.VideoConferenceTable,
+			Columns: []string{meetingsession.VideoConferenceColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(videoconference.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {

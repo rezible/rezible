@@ -30,32 +30,34 @@ import (
 	"github.com/rezible/rezible/ent/task"
 	"github.com/rezible/rezible/ent/tenant"
 	"github.com/rezible/rezible/ent/user"
+	"github.com/rezible/rezible/ent/videoconference"
 )
 
 // IncidentQuery is the builder for querying Incident entities.
 type IncidentQuery struct {
 	config
-	ctx                 *QueryContext
-	order               []incident.OrderOption
-	inters              []Interceptor
-	predicates          []predicate.Incident
-	withTenant          *TenantQuery
-	withSeverity        *IncidentSeverityQuery
-	withType            *IncidentTypeQuery
-	withMilestones      *IncidentMilestoneQuery
-	withEvents          *IncidentEventQuery
-	withRetrospective   *RetrospectiveQuery
-	withUsers           *UserQuery
-	withRoleAssignments *IncidentRoleAssignmentQuery
-	withLinkedIncidents *IncidentQuery
-	withFieldSelections *IncidentFieldOptionQuery
-	withTasks           *TaskQuery
-	withTagAssignments  *IncidentTagQuery
-	withDebriefs        *IncidentDebriefQuery
-	withReviewSessions  *MeetingSessionQuery
-	withUserRoles       *IncidentRoleAssignmentQuery
-	withIncidentLinks   *IncidentLinkQuery
-	modifiers           []func(*sql.Selector)
+	ctx                  *QueryContext
+	order                []incident.OrderOption
+	inters               []Interceptor
+	predicates           []predicate.Incident
+	withTenant           *TenantQuery
+	withSeverity         *IncidentSeverityQuery
+	withType             *IncidentTypeQuery
+	withMilestones       *IncidentMilestoneQuery
+	withEvents           *IncidentEventQuery
+	withRetrospective    *RetrospectiveQuery
+	withUsers            *UserQuery
+	withRoleAssignments  *IncidentRoleAssignmentQuery
+	withLinkedIncidents  *IncidentQuery
+	withFieldSelections  *IncidentFieldOptionQuery
+	withTasks            *TaskQuery
+	withTagAssignments   *IncidentTagQuery
+	withDebriefs         *IncidentDebriefQuery
+	withReviewSessions   *MeetingSessionQuery
+	withVideoConferences *VideoConferenceQuery
+	withUserRoles        *IncidentRoleAssignmentQuery
+	withIncidentLinks    *IncidentLinkQuery
+	modifiers            []func(*sql.Selector)
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -400,6 +402,28 @@ func (_q *IncidentQuery) QueryReviewSessions() *MeetingSessionQuery {
 	return query
 }
 
+// QueryVideoConferences chains the current query on the "video_conferences" edge.
+func (_q *IncidentQuery) QueryVideoConferences() *VideoConferenceQuery {
+	query := (&VideoConferenceClient{config: _q.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := _q.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := _q.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(incident.Table, incident.FieldID, selector),
+			sqlgraph.To(videoconference.Table, videoconference.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, incident.VideoConferencesTable, incident.VideoConferencesColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
 // QueryUserRoles chains the current query on the "user_roles" edge.
 func (_q *IncidentQuery) QueryUserRoles() *IncidentRoleAssignmentQuery {
 	query := (&IncidentRoleAssignmentClient{config: _q.config}).Query()
@@ -631,27 +655,28 @@ func (_q *IncidentQuery) Clone() *IncidentQuery {
 		return nil
 	}
 	return &IncidentQuery{
-		config:              _q.config,
-		ctx:                 _q.ctx.Clone(),
-		order:               append([]incident.OrderOption{}, _q.order...),
-		inters:              append([]Interceptor{}, _q.inters...),
-		predicates:          append([]predicate.Incident{}, _q.predicates...),
-		withTenant:          _q.withTenant.Clone(),
-		withSeverity:        _q.withSeverity.Clone(),
-		withType:            _q.withType.Clone(),
-		withMilestones:      _q.withMilestones.Clone(),
-		withEvents:          _q.withEvents.Clone(),
-		withRetrospective:   _q.withRetrospective.Clone(),
-		withUsers:           _q.withUsers.Clone(),
-		withRoleAssignments: _q.withRoleAssignments.Clone(),
-		withLinkedIncidents: _q.withLinkedIncidents.Clone(),
-		withFieldSelections: _q.withFieldSelections.Clone(),
-		withTasks:           _q.withTasks.Clone(),
-		withTagAssignments:  _q.withTagAssignments.Clone(),
-		withDebriefs:        _q.withDebriefs.Clone(),
-		withReviewSessions:  _q.withReviewSessions.Clone(),
-		withUserRoles:       _q.withUserRoles.Clone(),
-		withIncidentLinks:   _q.withIncidentLinks.Clone(),
+		config:               _q.config,
+		ctx:                  _q.ctx.Clone(),
+		order:                append([]incident.OrderOption{}, _q.order...),
+		inters:               append([]Interceptor{}, _q.inters...),
+		predicates:           append([]predicate.Incident{}, _q.predicates...),
+		withTenant:           _q.withTenant.Clone(),
+		withSeverity:         _q.withSeverity.Clone(),
+		withType:             _q.withType.Clone(),
+		withMilestones:       _q.withMilestones.Clone(),
+		withEvents:           _q.withEvents.Clone(),
+		withRetrospective:    _q.withRetrospective.Clone(),
+		withUsers:            _q.withUsers.Clone(),
+		withRoleAssignments:  _q.withRoleAssignments.Clone(),
+		withLinkedIncidents:  _q.withLinkedIncidents.Clone(),
+		withFieldSelections:  _q.withFieldSelections.Clone(),
+		withTasks:            _q.withTasks.Clone(),
+		withTagAssignments:   _q.withTagAssignments.Clone(),
+		withDebriefs:         _q.withDebriefs.Clone(),
+		withReviewSessions:   _q.withReviewSessions.Clone(),
+		withVideoConferences: _q.withVideoConferences.Clone(),
+		withUserRoles:        _q.withUserRoles.Clone(),
+		withIncidentLinks:    _q.withIncidentLinks.Clone(),
 		// clone intermediate query.
 		sql:       _q.sql.Clone(),
 		path:      _q.path,
@@ -813,6 +838,17 @@ func (_q *IncidentQuery) WithReviewSessions(opts ...func(*MeetingSessionQuery)) 
 	return _q
 }
 
+// WithVideoConferences tells the query-builder to eager-load the nodes that are connected to
+// the "video_conferences" edge. The optional arguments are used to configure the query builder of the edge.
+func (_q *IncidentQuery) WithVideoConferences(opts ...func(*VideoConferenceQuery)) *IncidentQuery {
+	query := (&VideoConferenceClient{config: _q.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	_q.withVideoConferences = query
+	return _q
+}
+
 // WithUserRoles tells the query-builder to eager-load the nodes that are connected to
 // the "user_roles" edge. The optional arguments are used to configure the query builder of the edge.
 func (_q *IncidentQuery) WithUserRoles(opts ...func(*IncidentRoleAssignmentQuery)) *IncidentQuery {
@@ -919,7 +955,7 @@ func (_q *IncidentQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Inc
 	var (
 		nodes       = []*Incident{}
 		_spec       = _q.querySpec()
-		loadedTypes = [16]bool{
+		loadedTypes = [17]bool{
 			_q.withTenant != nil,
 			_q.withSeverity != nil,
 			_q.withType != nil,
@@ -934,6 +970,7 @@ func (_q *IncidentQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Inc
 			_q.withTagAssignments != nil,
 			_q.withDebriefs != nil,
 			_q.withReviewSessions != nil,
+			_q.withVideoConferences != nil,
 			_q.withUserRoles != nil,
 			_q.withIncidentLinks != nil,
 		}
@@ -1054,6 +1091,13 @@ func (_q *IncidentQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Inc
 		if err := _q.loadReviewSessions(ctx, query, nodes,
 			func(n *Incident) { n.Edges.ReviewSessions = []*MeetingSession{} },
 			func(n *Incident, e *MeetingSession) { n.Edges.ReviewSessions = append(n.Edges.ReviewSessions, e) }); err != nil {
+			return nil, err
+		}
+	}
+	if query := _q.withVideoConferences; query != nil {
+		if err := _q.loadVideoConferences(ctx, query, nodes,
+			func(n *Incident) { n.Edges.VideoConferences = []*VideoConference{} },
+			func(n *Incident, e *VideoConference) { n.Edges.VideoConferences = append(n.Edges.VideoConferences, e) }); err != nil {
 			return nil, err
 		}
 	}
@@ -1640,6 +1684,39 @@ func (_q *IncidentQuery) loadReviewSessions(ctx context.Context, query *MeetingS
 		for kn := range nodes {
 			assign(kn, n)
 		}
+	}
+	return nil
+}
+func (_q *IncidentQuery) loadVideoConferences(ctx context.Context, query *VideoConferenceQuery, nodes []*Incident, init func(*Incident), assign func(*Incident, *VideoConference)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[uuid.UUID]*Incident)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+		if init != nil {
+			init(nodes[i])
+		}
+	}
+	if len(query.ctx.Fields) > 0 {
+		query.ctx.AppendFieldOnce(videoconference.FieldIncidentID)
+	}
+	query.Where(predicate.VideoConference(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(incident.VideoConferencesColumn), fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.IncidentID
+		if fk == nil {
+			return fmt.Errorf(`foreign-key "incident_id" is nil for node %v`, n.ID)
+		}
+		node, ok := nodeids[*fk]
+		if !ok {
+			return fmt.Errorf(`unexpected referenced foreign-key "incident_id" returned %v for node %v`, *fk, n.ID)
+		}
+		assign(node, n)
 	}
 	return nil
 }

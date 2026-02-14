@@ -717,6 +717,18 @@ func (f UserFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error)
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.UserMutation", m)
 }
 
+// The VideoConferenceFunc type is an adapter to allow the use of ordinary
+// function as VideoConference mutator.
+type VideoConferenceFunc func(context.Context, *ent.VideoConferenceMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f VideoConferenceFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.VideoConferenceMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.VideoConferenceMutation", m)
+}
+
 // Condition is a hook condition function.
 type Condition func(context.Context, ent.Mutation) bool
 

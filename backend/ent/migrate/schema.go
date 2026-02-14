@@ -2271,6 +2271,67 @@ var (
 			},
 		},
 	}
+	// VideoConferencesColumns holds the columns for the "video_conferences" table.
+	VideoConferencesColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUUID},
+		{Name: "created_at", Type: field.TypeTime},
+		{Name: "updated_at", Type: field.TypeTime},
+		{Name: "provider", Type: field.TypeString},
+		{Name: "external_id", Type: field.TypeString, Nullable: true},
+		{Name: "join_url", Type: field.TypeString},
+		{Name: "host_url", Type: field.TypeString, Nullable: true},
+		{Name: "dial_in", Type: field.TypeString, Nullable: true},
+		{Name: "passcode", Type: field.TypeString, Nullable: true},
+		{Name: "status", Type: field.TypeEnum, Enums: []string{"creating", "active", "ended", "failed"}, Default: "creating"},
+		{Name: "metadata", Type: field.TypeJSON, Nullable: true, SchemaType: map[string]string{"postgres": "jsonb"}},
+		{Name: "created_by_integration", Type: field.TypeString, Nullable: true},
+		{Name: "incident_id", Type: field.TypeUUID, Nullable: true},
+		{Name: "meeting_session_id", Type: field.TypeUUID, Unique: true, Nullable: true},
+		{Name: "tenant_id", Type: field.TypeInt},
+	}
+	// VideoConferencesTable holds the schema information for the "video_conferences" table.
+	VideoConferencesTable = &schema.Table{
+		Name:       "video_conferences",
+		Columns:    VideoConferencesColumns,
+		PrimaryKey: []*schema.Column{VideoConferencesColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "video_conferences_incidents_video_conferences",
+				Columns:    []*schema.Column{VideoConferencesColumns[12]},
+				RefColumns: []*schema.Column{IncidentsColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+			{
+				Symbol:     "video_conferences_meeting_sessions_video_conference",
+				Columns:    []*schema.Column{VideoConferencesColumns[13]},
+				RefColumns: []*schema.Column{MeetingSessionsColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+			{
+				Symbol:     "video_conferences_tenants_tenant",
+				Columns:    []*schema.Column{VideoConferencesColumns[14]},
+				RefColumns: []*schema.Column{TenantsColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+		},
+		Indexes: []*schema.Index{
+			{
+				Name:    "videoconference_tenant_id",
+				Unique:  false,
+				Columns: []*schema.Column{VideoConferencesColumns[14]},
+			},
+			{
+				Name:    "videoconference_incident_id_status",
+				Unique:  false,
+				Columns: []*schema.Column{VideoConferencesColumns[12], VideoConferencesColumns[9]},
+			},
+			{
+				Name:    "videoconference_meeting_session_id_status",
+				Unique:  false,
+				Columns: []*schema.Column{VideoConferencesColumns[13], VideoConferencesColumns[9]},
+			},
+		},
+	}
 	// IncidentFieldSelectionsColumns holds the columns for the "incident_field_selections" table.
 	IncidentFieldSelectionsColumns = []*schema.Column{
 		{Name: "incident_id", Type: field.TypeUUID},
@@ -2782,6 +2843,7 @@ var (
 		TenantsTable,
 		TicketsTable,
 		UsersTable,
+		VideoConferencesTable,
 		IncidentFieldSelectionsTable,
 		IncidentTagAssignmentsTable,
 		IncidentReviewSessionsTable,
@@ -2931,6 +2993,9 @@ func init() {
 	TeamsTable.ForeignKeys[0].RefTable = TenantsTable
 	TicketsTable.ForeignKeys[0].RefTable = TenantsTable
 	UsersTable.ForeignKeys[0].RefTable = TenantsTable
+	VideoConferencesTable.ForeignKeys[0].RefTable = IncidentsTable
+	VideoConferencesTable.ForeignKeys[1].RefTable = MeetingSessionsTable
+	VideoConferencesTable.ForeignKeys[2].RefTable = TenantsTable
 	IncidentFieldSelectionsTable.ForeignKeys[0].RefTable = IncidentsTable
 	IncidentFieldSelectionsTable.ForeignKeys[1].RefTable = IncidentFieldOptionsTable
 	IncidentTagAssignmentsTable.ForeignKeys[0].RefTable = IncidentsTable

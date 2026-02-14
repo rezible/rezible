@@ -54,6 +54,7 @@ func (s *IncidentService) incidentQuery(pred predicate.Incident, edges bool) *en
 		q.WithRoleAssignments(func(raq *ent.IncidentRoleAssignmentQuery) {
 			raq.WithRole().WithUser()
 		})
+		q.WithVideoConferences()
 	}
 	return q
 }

@@ -45,7 +45,7 @@ _default:
     bun run codegen:api
 
 @codegen-mocks:
-    cd backend/internal/testkit/mocks && go generate ./...
+    cd backend/testkit/mocks && go generate ./...
 
 # [group('Development')]
 

@@ -16,6 +16,7 @@ import (
 	"github.com/rezible/rezible/ent/meetingschedule"
 	"github.com/rezible/rezible/ent/meetingsession"
 	"github.com/rezible/rezible/ent/predicate"
+	"github.com/rezible/rezible/ent/videoconference"
 )
 
 // MeetingSessionUpdate is the builder for updating MeetingSession entities.
@@ -109,6 +110,25 @@ func (_u *MeetingSessionUpdate) AddIncidents(v ...*Incident) *MeetingSessionUpda
 	return _u.AddIncidentIDs(ids...)
 }
 
+// SetVideoConferenceID sets the "video_conference" edge to the VideoConference entity by ID.
+func (_u *MeetingSessionUpdate) SetVideoConferenceID(id uuid.UUID) *MeetingSessionUpdate {
+	_u.mutation.SetVideoConferenceID(id)
+	return _u
+}
+
+// SetNillableVideoConferenceID sets the "video_conference" edge to the VideoConference entity by ID if the given value is not nil.
+func (_u *MeetingSessionUpdate) SetNillableVideoConferenceID(id *uuid.UUID) *MeetingSessionUpdate {
+	if id != nil {
+		_u = _u.SetVideoConferenceID(*id)
+	}
+	return _u
+}
+
+// SetVideoConference sets the "video_conference" edge to the VideoConference entity.
+func (_u *MeetingSessionUpdate) SetVideoConference(v *VideoConference) *MeetingSessionUpdate {
+	return _u.SetVideoConferenceID(v.ID)
+}
+
 // SetScheduleID sets the "schedule" edge to the MeetingSchedule entity by ID.
 func (_u *MeetingSessionUpdate) SetScheduleID(id uuid.UUID) *MeetingSessionUpdate {
 	_u.mutation.SetScheduleID(id)
@@ -152,6 +172,12 @@ func (_u *MeetingSessionUpdate) RemoveIncidents(v ...*Incident) *MeetingSessionU
 		ids[i] = v[i].ID
 	}
 	return _u.RemoveIncidentIDs(ids...)
+}
+
+// ClearVideoConference clears the "video_conference" edge to the VideoConference entity.
+func (_u *MeetingSessionUpdate) ClearVideoConference() *MeetingSessionUpdate {
+	_u.mutation.ClearVideoConference()
+	return _u
 }
 
 // ClearSchedule clears the "schedule" edge to the MeetingSchedule entity.
@@ -266,6 +292,35 @@ func (_u *MeetingSessionUpdate) sqlSave(ctx context.Context) (_node int, err err
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(incident.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.VideoConferenceCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2O,
+			Inverse: false,
+			Table:   meetingsession.VideoConferenceTable,
+			Columns: []string{meetingsession.VideoConferenceColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(videoconference.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.VideoConferenceIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2O,
+			Inverse: false,
+			Table:   meetingsession.VideoConferenceTable,
+			Columns: []string{meetingsession.VideoConferenceColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(videoconference.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {
@@ -401,6 +456,25 @@ func (_u *MeetingSessionUpdateOne) AddIncidents(v ...*Incident) *MeetingSessionU
 	return _u.AddIncidentIDs(ids...)
 }
 
+// SetVideoConferenceID sets the "video_conference" edge to the VideoConference entity by ID.
+func (_u *MeetingSessionUpdateOne) SetVideoConferenceID(id uuid.UUID) *MeetingSessionUpdateOne {
+	_u.mutation.SetVideoConferenceID(id)
+	return _u
+}
+
+// SetNillableVideoConferenceID sets the "video_conference" edge to the VideoConference entity by ID if the given value is not nil.
+func (_u *MeetingSessionUpdateOne) SetNillableVideoConferenceID(id *uuid.UUID) *MeetingSessionUpdateOne {
+	if id != nil {
+		_u = _u.SetVideoConferenceID(*id)
+	}
+	return _u
+}
+
+// SetVideoConference sets the "video_conference" edge to the VideoConference entity.
+func (_u *MeetingSessionUpdateOne) SetVideoConference(v *VideoConference) *MeetingSessionUpdateOne {
+	return _u.SetVideoConferenceID(v.ID)
+}
+
 // SetScheduleID sets the "schedule" edge to the MeetingSchedule entity by ID.
 func (_u *MeetingSessionUpdateOne) SetScheduleID(id uuid.UUID) *MeetingSessionUpdateOne {
 	_u.mutation.SetScheduleID(id)
@@ -444,6 +518,12 @@ func (_u *MeetingSessionUpdateOne) RemoveIncidents(v ...*Incident) *MeetingSessi
 		ids[i] = v[i].ID
 	}
 	return _u.RemoveIncidentIDs(ids...)
+}
+
+// ClearVideoConference clears the "video_conference" edge to the VideoConference entity.
+func (_u *MeetingSessionUpdateOne) ClearVideoConference() *MeetingSessionUpdateOne {
+	_u.mutation.ClearVideoConference()
+	return _u
 }
 
 // ClearSchedule clears the "schedule" edge to the MeetingSchedule entity.
@@ -588,6 +668,35 @@ func (_u *MeetingSessionUpdateOne) sqlSave(ctx context.Context) (_node *MeetingS
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(incident.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.VideoConferenceCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2O,
+			Inverse: false,
+			Table:   meetingsession.VideoConferenceTable,
+			Columns: []string{meetingsession.VideoConferenceColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(videoconference.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.VideoConferenceIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2O,
+			Inverse: false,
+			Table:   meetingsession.VideoConferenceTable,
+			Columns: []string{meetingsession.VideoConferenceColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(videoconference.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {
