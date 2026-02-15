@@ -91,8 +91,8 @@ func (i *integration) OAuth2Config() *oauth2.Config {
 }
 
 func loadOAuthConfig() *oauth2.Config {
-	clientId := rez.Config.GetString("slack.oauth_client_id")
-	clientSecret := rez.Config.GetString("slack.oauth_client_secret")
+	clientId := rez.Config.GetString("slack.oauth.client_id")
+	clientSecret := rez.Config.GetString("slack.oauth.client_secret")
 	scopes := []string{
 		"app_mentions:read",
 		"assistant:write",

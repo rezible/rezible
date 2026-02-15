@@ -10,9 +10,14 @@ import (
 	"time"
 
 	mapset "github.com/deckarep/golang-set/v2"
+	"github.com/failsafe-go/failsafe-go"
+	"github.com/failsafe-go/failsafe-go/retrypolicy"
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/access"
+	"github.com/rezible/rezible/integrations"
+	"github.com/rezible/rezible/internal/http/oidc"
+	"github.com/rezible/rezible/internal/http/saml"
 	"github.com/rs/zerolog/log"
 
 	rez "github.com/rezible/rezible"
@@ -24,18 +29,18 @@ const (
 )
 
 type AuthService struct {
-	authRoute     string
 	orgs          rez.OrganizationService
 	users         rez.UserService
 	providers     []rez.AuthSessionProvider
 	sessionSecret []byte
+	authPath      string
 }
 
 var _ rez.AuthService = (*AuthService)(nil)
 
 func NewAuthSessionService(ctx context.Context, orgs rez.OrganizationService, users rez.UserService) (*AuthService, error) {
-	secretKey := rez.Config.GetString("auth.session_secret_key")
-	if secretKey == "" {
+	secretKey := []byte(rez.Config.GetString("auth.session_secret_key"))
+	if len(secretKey) == 0 {
 		return nil, errors.New("auth session secret key must be set")
 	}
 
@@ -44,18 +49,55 @@ func NewAuthSessionService(ctx context.Context, orgs rez.OrganizationService, us
 		return nil, fmt.Errorf("loading auth route: %w", routeErr)
 	}
 
-	providers, provsErr := getAuthSessionProviders(ctx, secretKey)
-	if provsErr != nil {
-		return nil, fmt.Errorf("loading session providers: %w", provsErr)
-	}
+	oidc.SessionSecretKey = secretKey
 
 	return &AuthService{
-		authRoute:     authRoute,
+		authPath:      authRoute,
 		orgs:          orgs,
 		users:         users,
-		providers:     providers,
-		sessionSecret: []byte(secretKey),
+		sessionSecret: secretKey,
 	}, nil
+}
+
+func (s *AuthService) LoadSessionProviders(ctx context.Context) error {
+	loadFuncs := make(map[string]func() (rez.AuthSessionProvider, error))
+
+	if saml.ProviderEnabled() {
+		loadFuncs["saml"] = func() (rez.AuthSessionProvider, error) {
+			return saml.NewAuthSessionProvider(ctx, s.authPath)
+		}
+	}
+
+	oidcIdps, oidcIdpsErr := integrations.GetOIDCAuthSessionIdentityProviders()
+	if oidcIdpsErr != nil {
+		return fmt.Errorf("integrations.GetOIDCAuthSessionIdentityProviders: %w", oidcIdpsErr)
+	}
+	if enabled, genericOidcIdp, cfgErr := oidc.GetGenericOIDCAuthSessionProvider(); enabled {
+		if cfgErr != nil {
+			return fmt.Errorf("oidc GenericOIDCAuthSessionProvider: %w", cfgErr)
+		}
+		oidcIdps = append(oidcIdps, genericOidcIdp)
+	}
+	for _, idp := range oidcIdps {
+		loadFuncs["oidc."+idp.Id()] = func() (rez.AuthSessionProvider, error) {
+			return oidc.LoadAuthSessionProvider(ctx, idp, s.authPath)
+		}
+	}
+
+	defaultRetryPolicy := retrypolicy.NewBuilder[rez.AuthSessionProvider]().
+		//HandleErrors(ErrConnecting).
+		WithDelay(time.Second).
+		WithMaxRetries(1)
+
+	for name, loadFn := range loadFuncs {
+		prov, loadErr := failsafe.With(defaultRetryPolicy.Build()).Get(loadFn)
+		if loadErr != nil {
+			return fmt.Errorf("loading auth session provider '%s': %w", name, loadErr)
+		}
+		s.providers = append(s.providers, prov)
+	}
+
+	return nil
 }
 
 func (s *AuthService) Providers() []rez.AuthSessionProvider {
@@ -118,18 +160,13 @@ func (s *AuthService) getMCPUserSession(r *http.Request) (*rez.AuthSession, erro
 }
 
 func (s *AuthService) AuthRouteHandler() http.Handler {
-	logoutPath := s.authRoute + "/logout"
+	logoutPath := s.authPath + "/logout"
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.URL.Path == logoutPath {
 			s.handleLogout(w, r)
-			return
+		} else if !s.delegateAuthFlowToProvider(w, r) {
+			http.Redirect(w, r, rez.Config.AppUrl(), http.StatusFound)
 		}
-
-		if s.delegateAuthFlowToProvider(w, r) {
-			return
-		}
-
-		http.Redirect(w, r, rez.Config.AppUrl(), http.StatusFound)
 	})
 }
 
@@ -144,6 +181,25 @@ func (s *AuthService) handleLogout(w http.ResponseWriter, r *http.Request) {
 	}
 	http.SetCookie(w, s.makeSessionCookie(r, "", time.Now(), -1))
 	http.Redirect(w, r, rez.Config.AppUrl(), http.StatusFound)
+}
+
+func (s *AuthService) GetProviderStartFlowPath(prov rez.AuthSessionProvider) string {
+	return s.authPath + "/" + strings.ToLower(prov.AuthFlowPathPrefix())
+}
+
+func (s *AuthService) delegateAuthFlowToProvider(w http.ResponseWriter, r *http.Request) bool {
+	for _, prov := range s.providers {
+		provFlowPath := s.GetProviderStartFlowPath(prov)
+		log.Debug().
+			Str("path", r.URL.Path).
+			Str("prov flow route", provFlowPath).
+			Msg("auth flow")
+		if strings.HasPrefix(r.URL.Path, provFlowPath) {
+			prov.HandleAuthFlowRequest(w, r, s.makeUserSessionCreatedCallback(w, r, provFlowPath))
+			return true
+		}
+	}
+	return false
 }
 
 func (s *AuthService) makeUserSessionCreatedCallback(w http.ResponseWriter, r *http.Request, flowRoute string) func(ps rez.AuthProviderSession) {
@@ -184,29 +240,6 @@ func (s *AuthService) makeUserSessionCreatedCallback(w http.ResponseWriter, r *h
 		http.SetCookie(w, s.makeSessionCookie(r, token, ps.ExpiresAt, 0))
 		http.Redirect(w, r, redirect, http.StatusFound)
 	}
-}
-
-func (s *AuthService) GetProviderStartFlowPath(prov rez.AuthSessionProvider) string {
-	return s.authRoute + "/" + strings.ToLower(prov.Id())
-}
-
-func (s *AuthService) delegateAuthFlowToProvider(w http.ResponseWriter, r *http.Request) bool {
-	for _, prov := range s.providers {
-		provFlowRoute := s.GetProviderStartFlowPath(prov)
-		if !strings.HasPrefix(r.URL.Path, provFlowRoute) {
-			continue
-		}
-
-		if r.URL.Path == provFlowRoute {
-			prov.HandleStartAuthFlow(w, r)
-			return true
-		}
-
-		if prov.HandleAuthFlowRequest(w, r, s.makeUserSessionCreatedCallback(w, r, provFlowRoute)) {
-			return true
-		}
-	}
-	return false
 }
 
 func (s *AuthService) makeSessionCookie(r *http.Request, token string, expires time.Time, maxAge int) *http.Cookie {

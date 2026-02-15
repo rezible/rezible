@@ -1,10 +1,9 @@
-package oidc
+package google
 
 import (
 	"context"
 	"fmt"
 	"net/http"
-	"net/url"
 
 	"github.com/coreos/go-oidc/v3/oidc"
 	rez "github.com/rezible/rezible"
@@ -18,52 +17,58 @@ const (
 	googleIssuerUrl  = "https://accounts.google.com"
 )
 
-type GoogleProviderConfig struct {
-	ClientID     string
-	ClientSecret string
+type oidcIdp struct {
+	provider     *oidc.Provider
+	clientId     string
+	clientSecret string
 }
 
-func NewGoogleAuthSessionProvider(ctx context.Context, cfg GoogleProviderConfig) (*AuthSessionProvider, error) {
-	callbackPath, cbPathErr := url.JoinPath(rez.Config.ApiRouteBase(), rez.Config.AuthRouteBase(), googleProviderId, "callback")
-	if cbPathErr != nil {
-		return nil, fmt.Errorf("callback path: %w", cbPathErr)
-	}
-	redirectUrl, urlErr := url.JoinPath(rez.Config.AppUrl(), callbackPath)
-	if urlErr != nil {
-		return nil, fmt.Errorf("creating redirect url: %w", urlErr)
+func (i *integration) GetOIDCAuthSessionIdentityProvider() (bool, rez.OIDCAuthSessionIdentityProvider, error) {
+	if !rez.Config.GetBool("google.oidc.enabled") {
+		return false, nil, nil
 	}
 
+	op := &oidcIdp{
+		clientId:     rez.Config.GetString("google.oidc.client_id"),
+		clientSecret: rez.Config.GetString("google.oidc.client_secret"),
+	}
+
+	return true, op, nil
+}
+
+func (op *oidcIdp) Id() string {
+	return integrationName
+}
+
+func (op *oidcIdp) DisplayName() string {
+	return "Google"
+}
+
+func (op *oidcIdp) LoadConfig(ctx context.Context, redirectUrl string) (*oidc.IDTokenVerifier, *oauth2.Config, error) {
 	prov, oidcErr := oidc.NewProvider(ctx, googleIssuerUrl)
 	if oidcErr != nil {
-		return nil, fmt.Errorf("oidc.NewProvider: %w", oidcErr)
+		return nil, nil, fmt.Errorf("oidc.NewProvider: %w", oidcErr)
 	}
+	op.provider = prov
 
 	oauth2Config := oauth2.Config{
-		ClientID:     cfg.ClientID,
-		ClientSecret: cfg.ClientSecret,
+		ClientID:     op.clientId,
+		ClientSecret: op.clientSecret,
 		RedirectURL:  redirectUrl,
 		Endpoint:     prov.Endpoint(),
 		Scopes:       []string{oidc.ScopeOpenID, "profile", "email"},
 	}
 
-	return &AuthSessionProvider{
-		providerId:   googleProviderId,
-		callbackPath: callbackPath,
-		displayName:  "Google",
-		oauth2Config: oauth2Config,
-		verifier:     prov.Verifier(&oidc.Config{ClientID: cfg.ClientID}),
-		sessionStore: configureSessionStore(),
-		idp:          &googleIdentity{},
-	}, nil
+	verifier := prov.Verifier(&oidc.Config{ClientID: op.clientId})
+
+	return verifier, &oauth2Config, nil
 }
 
-type googleIdentity struct{}
-
-func (p *googleIdentity) GetAuthCodeOptions(r *http.Request) []oauth2.AuthCodeOption {
+func (op *oidcIdp) GetAuthCodeOptions(r *http.Request) []oauth2.AuthCodeOption {
 	return nil
 }
 
-func (p *googleIdentity) ExtractTokenSession(token *oidc.IDToken) (*rez.AuthProviderSession, error) {
+func (op *oidcIdp) ExtractTokenSession(token *oidc.IDToken) (*rez.AuthProviderSession, error) {
 	var claims struct {
 		Name     string `json:"name"`
 		Email    string `json:"email"`

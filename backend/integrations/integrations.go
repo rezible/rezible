@@ -130,6 +130,27 @@ func GetOAuthIntegration(name string) (IntegrationWithOAuth2SetupFlow, error) {
 	return oauth2Intg, nil
 }
 
+type IntegrationWithOIDCAuthSessionIdentityProvider interface {
+	GetOIDCAuthSessionIdentityProvider() (bool, rez.OIDCAuthSessionIdentityProvider, error)
+}
+
+func GetOIDCAuthSessionIdentityProviders() ([]rez.OIDCAuthSessionIdentityProvider, error) {
+	var providers []rez.OIDCAuthSessionIdentityProvider
+	for _, p := range availablePackages {
+		if provider, ok := p.(IntegrationWithOIDCAuthSessionIdentityProvider); ok {
+			enabled, prov, cfgErr := provider.GetOIDCAuthSessionIdentityProvider()
+			if !enabled {
+				continue
+			}
+			if cfgErr != nil {
+				return nil, fmt.Errorf("oidc auth session provider config error: %w", cfgErr)
+			}
+			providers = append(providers, prov)
+		}
+	}
+	return providers, nil
+}
+
 func getDataProviders[DP any, I any](intgs ent.Integrations, fn func(I, *ent.Integration) (DP, error)) ([]DP, error) {
 	provs := make([]DP, 0, len(availablePackages))
 	for _, intg := range intgs {

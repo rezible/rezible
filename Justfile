@@ -121,5 +121,5 @@ _default:
         -e DevOidcToolkit__Users__0__LastName=User \
         -e DevOidcToolkit__Clients__0__Id=client \
         -e DevOidcToolkit__Clients__0__Secret=secret \
-        -e DevOidcToolkit__Clients__0__RedirectUris__INDEX=https://app.dev.rezible.com/api/auth/oidc/callback \
+        -e DevOidcToolkit__Clients__0__RedirectUris__INDEX=https://app.dev.rezible.com/api/auth/oidc/test-provider/callback \
         ghcr.io/businesssimulations/dev-oidc-toolkit:0.2.0

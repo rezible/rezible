@@ -1,12 +1,14 @@
 package oidc
 
 import (
+	"context"
 	"crypto/rand"
 	"encoding/base64"
 	"errors"
 	"fmt"
 	"io"
 	"net/http"
+	"net/url"
 
 	"github.com/coreos/go-oidc/v3/oidc"
 	"github.com/gorilla/sessions"
@@ -17,27 +19,54 @@ import (
 	"github.com/rezible/rezible/ent"
 )
 
-type IdentityProvider interface {
-	GetAuthCodeOptions(r *http.Request) []oauth2.AuthCodeOption
-	ExtractTokenSession(token *oidc.IDToken) (*rez.AuthProviderSession, error)
-}
-
 type AuthSessionProvider struct {
-	callbackPath string
-	providerId   string
-	displayName  string
 	sessionStore sessions.Store
 	oauth2Config oauth2.Config
 	verifier     *oidc.IDTokenVerifier
-	idp          IdentityProvider
+	idp          rez.OIDCAuthSessionIdentityProvider
+	flowPath     string
+	callbackPath string
+}
+
+func LoadAuthSessionProvider(ctx context.Context, idp rez.OIDCAuthSessionIdentityProvider, authPath string) (*AuthSessionProvider, error) {
+	sp := &AuthSessionProvider{
+		idp:          idp,
+		sessionStore: configureSessionStore(),
+	}
+
+	flowPath, flowPathErr := url.JoinPath(authPath, sp.AuthFlowPathPrefix())
+	if flowPathErr != nil {
+		return nil, fmt.Errorf("flow path: %w", flowPathErr)
+	}
+	sp.flowPath = flowPath
+
+	callbackPath, callbackPathErr := url.JoinPath(flowPath, "callback")
+	if callbackPathErr != nil {
+		return nil, fmt.Errorf("callback path: %w", callbackPathErr)
+	}
+	sp.callbackPath = callbackPath
+
+	redirectUrl, urlErr := url.JoinPath(rez.Config.AppUrl(), callbackPath)
+	if urlErr != nil {
+		return nil, fmt.Errorf("creating redirect url: %w", urlErr)
+	}
+
+	v, ocfg, loadErr := idp.LoadConfig(ctx, redirectUrl)
+	if loadErr != nil {
+		return nil, loadErr
+	}
+	sp.oauth2Config = *ocfg
+	sp.verifier = v
+
+	return sp, nil
 }
 
 func (s *AuthSessionProvider) DisplayName() string {
-	return s.displayName
+	return s.idp.DisplayName()
 }
 
-func (s *AuthSessionProvider) Id() string {
-	return s.providerId
+func (s *AuthSessionProvider) AuthFlowPathPrefix() string {
+	return "oidc/" + s.idp.Id()
 }
 
 var userMapping = &ent.User{
@@ -50,11 +79,11 @@ func (s *AuthSessionProvider) UserMapping() *ent.User {
 }
 
 func (s *AuthSessionProvider) setSession(w http.ResponseWriter, r *http.Request, sess *session) error {
-	return setSession(w, r, s.sessionStore, s.providerId, sess)
+	return setSession(w, r, s.sessionStore, s.idp.Id(), sess)
 }
 
 func (s *AuthSessionProvider) getSession(r *http.Request) (*session, error) {
-	return getSession(r, s.sessionStore, s.providerId)
+	return getSession(r, s.sessionStore, s.idp.Id())
 }
 
 func (s *AuthSessionProvider) clearSession(w http.ResponseWriter, r *http.Request) error {
@@ -87,7 +116,18 @@ func generateRequestState() (string, error) {
 	return base64.URLEncoding.EncodeToString(nonceBytes), nil
 }
 
-func (s *AuthSessionProvider) HandleStartAuthFlow(w http.ResponseWriter, r *http.Request) {
+func (s *AuthSessionProvider) HandleAuthFlowRequest(w http.ResponseWriter, r *http.Request, onCreated func(rez.AuthProviderSession)) {
+	switch r.URL.Path {
+	case s.flowPath:
+		s.handleStartAuthFlow(w, r)
+	case s.callbackPath:
+		s.handleFlowCallbackPath(w, r, onCreated)
+	default:
+		http.NotFound(w, r)
+	}
+}
+
+func (s *AuthSessionProvider) handleStartAuthFlow(w http.ResponseWriter, r *http.Request) {
 	state := getRequestState(r)
 	if state == "" {
 		var stateErr error
@@ -111,15 +151,11 @@ func (s *AuthSessionProvider) HandleStartAuthFlow(w http.ResponseWriter, r *http
 	http.Redirect(w, r, authUrl, http.StatusFound)
 }
 
-func (s *AuthSessionProvider) HandleAuthFlowRequest(w http.ResponseWriter, r *http.Request, onCreated func(rez.AuthProviderSession)) bool {
-	if r.URL.Path == s.callbackPath {
-		if cbErr := s.handleFlowCallback(r, onCreated); cbErr != nil {
-			log.Debug().Err(cbErr).Msg("oidc callback error")
-			http.Error(w, http.StatusText(http.StatusForbidden), http.StatusForbidden)
-		}
-		return true
+func (s *AuthSessionProvider) handleFlowCallbackPath(w http.ResponseWriter, r *http.Request, onCreated func(rez.AuthProviderSession)) {
+	if cbErr := s.handleFlowCallback(r, onCreated); cbErr != nil {
+		log.Debug().Err(cbErr).Msg("oidc callback error")
+		http.Error(w, http.StatusText(http.StatusForbidden), http.StatusForbidden)
 	}
-	return false
 }
 
 func (s *AuthSessionProvider) handleFlowCallback(r *http.Request, onCreated func(rez.AuthProviderSession)) error {

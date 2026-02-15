@@ -174,6 +174,9 @@ func (s *Server) setup(ctx context.Context) error {
 	}
 
 	if !rez.Config.DataSyncMode() {
+		if provsErr := svcs.Auth.LoadSessionProviders(ctx); provsErr != nil {
+			return fmt.Errorf("loading auth session providers: %w", provsErr)
+		}
 		// TODO: this shouldn't need the db client
 		apiv1Handler := apiv1.NewHandler(svcs, s.dbClient)
 

@@ -8,8 +8,10 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/coreos/go-oidc/v3/oidc"
 	"github.com/rezible/rezible/ent"
 	"github.com/rezible/rezible/jobs"
+	"golang.org/x/oauth2"
 
 	"github.com/ThreeDotsLabs/watermill/components/cqrs"
 	"github.com/google/uuid"
@@ -200,23 +202,31 @@ type (
 	}
 
 	AuthSessionProvider interface {
-		Id() string
 		DisplayName() string
 		UserMapping() *ent.User
-		HandleStartAuthFlow(w http.ResponseWriter, r *http.Request)
-		HandleAuthFlowRequest(w http.ResponseWriter, r *http.Request, onCreated func(AuthProviderSession)) bool
+		AuthFlowPathPrefix() string
+		HandleAuthFlowRequest(w http.ResponseWriter, r *http.Request, onCreated func(AuthProviderSession))
 		SessionExists(r *http.Request) bool
 		ClearSession(w http.ResponseWriter, r *http.Request) error
 	}
 
-	AuthSessionScopes map[string][]string
-	AuthSession       struct {
+	OIDCAuthSessionIdentityProvider interface {
+		Id() string
+		DisplayName() string
+		LoadConfig(ctx context.Context, redirectUrl string) (*oidc.IDTokenVerifier, *oauth2.Config, error)
+		GetAuthCodeOptions(r *http.Request) []oauth2.AuthCodeOption
+		ExtractTokenSession(token *oidc.IDToken) (*AuthProviderSession, error)
+	}
+
+	AuthSession struct {
 		UserId    uuid.UUID
 		ExpiresAt time.Time
 		Scopes    AuthSessionScopes
 	}
+	AuthSessionScopes map[string][]string
 
 	AuthService interface {
+		LoadSessionProviders(context.Context) error
 		Providers() []AuthSessionProvider
 		GetProviderStartFlowPath(prov AuthSessionProvider) string
 
@@ -232,24 +242,24 @@ type (
 )
 
 type (
-	IntegrationWithChatService interface {
-		ChatService(context.Context) (ChatService, error)
-	}
-
 	ChatService interface {
 		SendMessage(ctx context.Context, id string, msg *ContentNode) (string, error)
 		SendReply(ctx context.Context, channelId string, threadId string, text string) (string, error)
 		SendTextMessage(ctx context.Context, id string, text string) (string, error)
 	}
+
+	IntegrationWithChatService interface {
+		ChatService(context.Context) (ChatService, error)
+	}
 )
 
 type (
-	IntegrationWithVideoConference interface {
-		VideoConferenceIntegration(ctx context.Context) (VideoConferenceIntegration, error)
-	}
-
 	VideoConferenceIntegration interface {
 		CreateIncidentVideoConference(context.Context, *ent.Incident) error
+	}
+
+	IntegrationWithVideoConference interface {
+		VideoConferenceIntegration(ctx context.Context) (VideoConferenceIntegration, error)
 	}
 )
 
