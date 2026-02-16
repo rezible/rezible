@@ -6,8 +6,8 @@
 	import FilterPage from "$components/filter-page/FilterPage.svelte";
 	import SearchInput from "$components/search-input/SearchInput.svelte";
 	import PaginatedListBox from "$components/paginated-listbox/PaginatedListBox.svelte";
-	import RosterCard from "$features/oncall-rosters-list/components/roster-card/RosterCard.svelte";
-	import { QueryPaginatorState } from "$src/lib/paginator.svelte";
+	import RosterCard from "$features/oncall/components/roster-card/RosterCard.svelte";
+	import { QueryPaginatorState } from "$lib/paginator.svelte";
 
 	appShell.setPageBreadcrumbs(() => [
 		{ label: "Oncall Rosters", href: "/rosters" },

@@ -8,10 +8,12 @@
 	import ContextSidebar from "./context-sidebar/ContextSidebar.svelte";
 	import TabbedViewContainer, { type Tab } from "$components/tabbed-view-container/TabbedViewContainer.svelte";
 	import IncidentDetailsBar from "./IncidentDetailsBar.svelte";
-	import { useIncidentViewState } from "$features/incident";
+	import { initIncidentViewController } from "./controller.svelte";
 	import type { IncidentViewRouteParam } from "$src/params/incidentView";
 
-	const view = useIncidentViewState();
+	const { slug, viewParam }: { slug: string, viewParam: IncidentViewRouteParam } = $props();
+
+	const view = initIncidentViewController(() => slug, () => viewParam);
 
 	const path = $derived(`/incidents/${view.incidentSlug}`);
 	const incidentBreadcrumb = $derived<PageBreadcrumb>({
@@ -19,7 +21,6 @@
 		href: path,
 	});
 
-	const viewParam = $derived(view.viewRouteParam);
 	const retroBreadcrumb = $derived<PageBreadcrumb>({
 		label: viewParam === "analysis" ? "System Analysis" : "Report",
 		href: `${path}/${viewParam}`,

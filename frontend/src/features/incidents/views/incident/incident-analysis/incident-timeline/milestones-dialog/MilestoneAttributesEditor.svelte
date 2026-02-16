@@ -18,7 +18,7 @@
 
 	import { createMentionEditor } from "$components/tiptap-editor/editors";
 	import { getIconForIncidentMilestoneKind, getNextOrderedMilestone, getPreviousOrderedMilestone } from "./milestones";
-	import { useIncidentViewState } from "$features/incident";
+	import { useIncidentViewController } from "$features/incidents/views/incident";
 	import { watch } from "runed";
 	import { useIncidentTimeline } from "../timelineState.svelte";
 
@@ -33,7 +33,7 @@
 	const timeline = useIncidentTimeline();
 	const incidentTimeBounds = $derived(timeline.incidentWindow);
 
-	const incidentViewState = useIncidentViewState();
+	const incidentViewState = useIncidentViewController();
 	const incident = $derived(incidentViewState.incident);
 
 	type MilestoneKindOption = {

@@ -3,7 +3,7 @@
 	import { type RetrospectiveReportSection } from "$lib/api";
 	import { useAuthSessionState } from "$lib/auth.svelte";
 
-	import { activeAnnotation, activeEditor } from "$features/incident/lib/activeEditor.svelte";
+	import { activeAnnotation, activeEditor } from "$src/features/incidents/lib/activeEditor.svelte";
 	import TiptapEditor, { Editor as SvelteEditor } from "$components/tiptap-editor/TiptapEditor.svelte";
 	import { RezUserSuggestion } from "$components/tiptap-editor/user-suggestions/user-suggestion.svelte";
 	import type { Editor, Extensions } from "@tiptap/core";

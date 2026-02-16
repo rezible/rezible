@@ -2,15 +2,15 @@
 	import "./styles.postcss";
 	import type { Editor as TiptapEditor } from "@tiptap/core";
 
-	import { useIncidentViewState } from "$features/incident";
+	import { useIncidentViewController } from "$features/incidents/views/incident";
 
-	import { draft } from "$features/incident/lib/discussions.svelte";
-	import { activeEditor } from "$features/incident/lib/activeEditor.svelte";
+	import { draft } from "$src/features/incidents/lib/discussions.svelte";
+	import { activeEditor } from "$src/features/incidents/lib/activeEditor.svelte";
 
 	import type { AnnotationType } from "./field-editor/BubbleMenu.svelte";
 	import FieldEditorWrapper from "./field-editor/FieldEditorWrapper.svelte";
 
-	const view = useIncidentViewState();
+	const view = useIncidentViewController();
 	const sections = $derived(view.retrospective?.attributes.reportSections ?? []);
 	const collab = $derived(view.collaboration);
 

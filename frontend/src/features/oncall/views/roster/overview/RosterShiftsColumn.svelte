@@ -5,7 +5,7 @@ import { Button } from "$components/ui/button";
 	import { createQuery } from "@tanstack/svelte-query";
 	import Header from "$components/header/Header.svelte";
 	import { mdiArrowRight } from "@mdi/js";
-	import ShiftCard from "$features/oncall-shifts-list/components/shift-card/ShiftCard.svelte";
+	import ShiftCard from "$features/oncall/components/shift-card/ShiftCard.svelte";
 	import { useOncallRosterViewController } from "$features/oncall/views/roster";
 	
 	const view = useOncallRosterViewController();

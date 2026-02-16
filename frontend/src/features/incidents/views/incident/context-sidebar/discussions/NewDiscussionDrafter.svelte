@@ -2,7 +2,7 @@
 	import { onMount } from "svelte";
 	import { createMutation } from "@tanstack/svelte-query";
 	import TiptapEditor, { Editor as SvelteEditor } from "$components/tiptap-editor/TiptapEditor.svelte";
-	import { draft } from "$features/incident/lib/discussions.svelte";
+	import { draft } from "$src/features/incidents/lib/discussions.svelte";
 	import ConfirmChangeButtons from "$components/confirm-buttons/ConfirmButtons.svelte";
 	import { createRetrospectiveCommentMutation, type RetrospectiveComment } from "$lib/api";
 	import Header from "$components/header/Header.svelte";

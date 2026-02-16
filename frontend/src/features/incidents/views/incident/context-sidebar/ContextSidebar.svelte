@@ -2,12 +2,12 @@
 	import { fly } from 'svelte/transition';
 	import { mdiCircleMedium } from "@mdi/js";
 	import Icon from "$components/icon/Icon.svelte";
-	import { useIncidentViewState } from "$features/incident";
+	import { useIncidentViewController } from "$features/incidents/views/incident";
 	import { WebSocketStatus } from "@hocuspocus/provider";
 	import ComponentSelector from "./add-component-drawer/ComponentSelector.svelte";
 	import Header from "$components/header/Header.svelte";
 
-	const view = useIncidentViewState();
+	const view = useIncidentViewController();
 	const collab = $derived(view.collaboration);
 
 	const ctxColor = $derived.by(() => {

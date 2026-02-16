@@ -4,11 +4,11 @@
 	import Icon from "$components/icon/Icon.svelte";
 	import Avatar from "$components/avatar/Avatar.svelte";
 	import Header from "$components/header/Header.svelte";
-	import { useIncidentViewState } from "$features/incident";
+	import { useIncidentViewController } from "$features/incidents/views/incident";
 
-	const viewState = useIncidentViewState();
+	const view = useIncidentViewController();
 
-	const attrs = $derived(viewState.incident?.attributes);
+	const attrs = $derived(view.incident?.attributes);
 	const teamAssignments = $derived(attrs?.teams ?? []);
 	const roleAssignments = $derived(attrs?.roles ?? []);
 	const linkedIncidents = $derived(attrs?.linkedIncidents ?? []);

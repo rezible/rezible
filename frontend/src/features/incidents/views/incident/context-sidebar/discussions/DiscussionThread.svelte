@@ -4,7 +4,7 @@
 	import type { RetrospectiveComment } from "$lib/api";
 	import type { JSONContent } from "@tiptap/core";
 	import { mdiCheck } from "@mdi/js";
-	import { activeDiscussion } from "$features/incident/lib/discussions.svelte";
+	import { activeDiscussion } from "$src/features/incidents/lib/discussions.svelte";
 	import TiptapEditor, { Editor as SvelteEditor } from "$components/tiptap-editor/TiptapEditor.svelte";
 	import Header from "$components/header/Header.svelte";
 	import { createDiscussionEditor } from "$components/tiptap-editor/editors";

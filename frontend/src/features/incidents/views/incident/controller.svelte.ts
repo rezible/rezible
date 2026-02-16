@@ -4,19 +4,22 @@ import type { IncidentViewRouteParam } from "$src/params/incidentView";
 import { getLocalTimeZone } from "@internationalized/date";
 import { createMutation, createQuery, useQueryClient } from "@tanstack/svelte-query";
 import { Context, watch } from "runed";
-import { RetrospectiveCollaborationState } from "./collaborationState.svelte";
+import { RetrospectiveCollaborationState } from "$features/incidents/lib/collaborationState.svelte";
 
-type StateParams = { slug: string, viewRouteParam: IncidentViewRouteParam };
-
-export class IncidentViewState {
+export class IncidentViewController {
 	queryClient = useQueryClient();
 
 	incidentSlug = $state<string>(null!);
 	viewRouteParam = $state<IncidentViewRouteParam>(null!);
 
-	private setParams({ slug, viewRouteParam }: StateParams) {
-		this.incidentSlug = slug;
-		this.viewRouteParam = viewRouteParam;
+	constructor(slugFn: Getter<string>, viewFn: Getter<IncidentViewRouteParam>) {
+		this.incidentSlug = slugFn();
+		watch(slugFn, slug => {this.incidentSlug = slug});
+		watch(viewFn, view => {this.viewRouteParam = view});
+
+		watch(() => this.retroNeedsCreating, create => {
+			if (create) this.maybeCreateRetrospective();
+		});
 	}
 
 	private incidentQueryOptions = $derived(getIncidentOptions({ path: { id: this.incidentSlug } }));
@@ -67,17 +70,8 @@ export class IncidentViewState {
 			}
 		});
 	}
-
-	constructor(paramsFn: Getter<StateParams>) {
-		this.setParams(paramsFn());
-		watch(paramsFn, p => { this.setParams(p) });
-
-		watch(() => this.retroNeedsCreating, create => {
-			if (create) this.maybeCreateRetrospective();
-		});
-	}
 }
 
-const incidentViewCtx = new Context<IncidentViewState>("incidentView");
-export const setIncidentViewState = (paramsFn: Getter<StateParams>) => incidentViewCtx.set(new IncidentViewState(paramsFn));
-export const useIncidentViewState = () => incidentViewCtx.get();
+const ctx = new Context<IncidentViewController>("IncidentViewController");
+export const initIncidentViewController = (idFn: Getter<string>, viewFn: Getter<IncidentViewRouteParam>) => ctx.set(new IncidentViewController(idFn, viewFn));
+export const useIncidentViewController = () => ctx.get();

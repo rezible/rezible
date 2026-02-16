@@ -1,6 +1,6 @@
 <script lang="ts">
 	import Avatar from "$components/avatar/Avatar.svelte";
-	import ShiftProgressCircle from "$features/oncall-shifts-list/components/shift-card/ShiftProgressCircle.svelte";
+	import ShiftProgressCircle from "$features/oncall/components/shift-card/ShiftProgressCircle.svelte";
 	import { useOncallRosterViewController } from "./controller.svelte";
 	
 	const view = useOncallRosterViewController();

@@ -8,7 +8,7 @@
 	
 	import { createMutation, createQuery, useQueryClient } from "@tanstack/svelte-query";
 
-	import { useIncidentViewState } from "$features/incident";
+	import { useIncidentViewController } from "$features/incidents/views/incident";
 	import { useMilestonesDialog } from "./dialogState.svelte";
 
 	import MilestoneAttributesEditor from "./MilestoneAttributesEditor.svelte";
@@ -20,8 +20,8 @@
 
 	const milestonesDialog = useMilestonesDialog();
 
-	const incidentViewState = useIncidentViewState();
-	const incidentId = $derived(incidentViewState.incident?.id ?? "");
+	const incidentView = useIncidentViewController();
+	const incidentId = $derived(incidentView.incident?.id ?? "");
 
 	const queryClient = useQueryClient();
 	const listMilestonesQueryOpts = $derived(listIncidentMilestonesOptions({ path: { id: incidentId } }));

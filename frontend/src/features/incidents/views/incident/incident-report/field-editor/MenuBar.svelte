@@ -15,7 +15,7 @@
 	} from "@mdi/js";
 	import Icon from "$components/icon/Icon.svelte";
 	import { Button } from "$components/ui/button";
-	import { activeEditor, activeStatus } from "$features/incident/lib/activeEditor.svelte";
+	import { activeEditor, activeStatus } from "$src/features/incidents/lib/activeEditor.svelte";
 
 	const getIconForStatus = () => {
 		if (activeStatus.paragraph) return mdiText;

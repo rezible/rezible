@@ -1,16 +1,9 @@
 <script lang="ts">
 	import { page } from "$app/state";
 	import { convertIncidentViewParam } from "$src/params/incidentView.js";
-	import { IncidentView, setIncidentViewState } from "$features/incident";
+	import IncidentView from "$features/incidents/views/incident";
 
 	const { data } = $props();
-
-	const viewParams = $derived({
-		slug: data.slug,
-		viewRouteParam: convertIncidentViewParam(page.params.view),
-	});
-
-	setIncidentViewState(() => viewParams);
 </script>
 
-<IncidentView />
+<IncidentView slug={data.slug} viewParam={convertIncidentViewParam(page.params.view)} />
