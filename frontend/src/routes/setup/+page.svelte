@@ -1,7 +1,5 @@
 <script lang="ts">
-	import { initInitialSetupViewDriver, InitialSetupView } from "$features/settings";
-    
-	initInitialSetupViewDriver();
+	import InitialSetupView from "$features/settings/views/initial-setup";
 </script>
 
 <InitialSetupView />

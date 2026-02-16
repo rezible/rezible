@@ -1,29 +1,82 @@
+import { watch } from "runed";
+import { useSearchParams } from "runed/kit";
+import { z } from "zod";
+import { SvelteMap } from "svelte/reactivity";
+import { createQuery, createMutation } from "@tanstack/svelte-query";
 import {
+    startIntegrationOauthFlowMutation, 
+    completeIntegrationOauthFlowMutation,
     listSupportedIntegrationsOptions,
     listConfiguredIntegrationsOptions,
     configureIntegrationMutation,
-    finishOrganizationSetupMutation,
-    type SupportedIntegration,
     type ConfigureIntegrationRequestBody,
 } from "$lib/api";
-import { useAuthSessionState } from "$src/lib/auth.svelte";
-import { createMutation, createQuery } from "@tanstack/svelte-query";
-import { Context } from "runed";
-import { SvelteMap } from "svelte/reactivity";
-import { IntegrationOAuthSetupDriver } from "./integrationOAuthSetupDriver.svelte";
+
+export const oauthCallbackParamsSchema = z.object({
+    name: z.string().default(""),
+    code: z.string().default(""),
+    state: z.string().default(""),
+});
+
+class IntegrationOAuthSetupController {
+    private callbackParams = useSearchParams(oauthCallbackParamsSchema);
+    private callbackName = $derived(this.callbackParams.name);
+
+    private onCompleted: () => void;
+
+    constructor(onCompleted: () => void) {
+        watch(() => this.callbackName, name => { this.onCallbackSet(name) });
+        this.onCompleted = onCompleted;
+    }
+
+    private startFlowMut = createMutation(() => startIntegrationOauthFlowMutation({}));
+    loadingFlowUrl = $derived(this.startFlowMut.isPending);
+    startFlowUrl = $derived(this.startFlowMut.data?.data.flow_url);
+    startFlowErr = $derived(this.startFlowMut.error);
+
+    async startFlow(name: string) {
+        try {
+            const resp = await this.startFlowMut.mutateAsync({ path: { name } });
+            window.location.assign(new URL(resp.data.flow_url));
+        } catch (e) {
+            console.error("failed to complete", e);
+        }
+    }
+
+    private completeFlowMut = createMutation(() => completeIntegrationOauthFlowMutation({}));
+    completingFlow = $derived(this.completeFlowMut.isPending);
+    completeFlowErr = $derived(this.completeFlowMut.error);
+
+    private async onCallbackSet(name?: string) {
+        if (!name || this.completingFlow) return;
+
+        const { state, code } = $state.snapshot(this.callbackParams);
+        this.callbackParams.reset();
+
+        if (!state || !code) return;
+
+        try {
+            const resp = await this.completeFlowMut.mutateAsync({ path: { name }, body: { attributes: { state, code } } });
+            console.log("completed", resp);
+            this.onCompleted();
+        } catch (e) {
+            console.error("failed to complete", e);
+        }
+    }
+};
 
 const dataKinds = [
     {name: "Chat", kind: "chat", required: true},
     {name: "Users", kind: "users", required: true},
 ];
 
-class InitialIntegrationsSetupDriver {
+export class InitialIntegrationsSetupController {
     constructor() {
-        this.oauth = new IntegrationOAuthSetupDriver(() => { 
+        this.oauth = new IntegrationOAuthSetupController(() => { 
             this.listConfiguredQuery.refetch();
         });
     }
-    oauth: IntegrationOAuthSetupDriver;
+    oauth: IntegrationOAuthSetupController;
 
     private listSupportedQuery = createQuery(() => listSupportedIntegrationsOptions());
     supported = $derived(this.listSupportedQuery.data?.data || []);
@@ -67,33 +120,4 @@ class InitialIntegrationsSetupDriver {
 
     isLoading = $derived(this.listSupportedQuery.isPending || this.listConfiguredQuery.isPending);
     isConfiguring = $derived(this.configureMut.isPending);
-}
-
-export class InitialSetupViewDriver {
-    session = useAuthSessionState();
-
-    constructor() {
-        this.integrations = new InitialIntegrationsSetupDriver();
-    }
-
-    integrations: InitialIntegrationsSetupDriver;
-
-    canFinish = $derived.by(() => {
-        if (!this.integrations) return false;
-        if (this.integrations.remainingRequiredDataKinds.length === 0) return true;
-        return false;
-    });
-
-    private finishOrgSetupMut = createMutation(() => finishOrganizationSetupMutation());
-    async doFinishOrganizationSetup() {
-        const id = this.session.org?.id;
-        if (!id) return;
-        await this.finishOrgSetupMut.mutateAsync({ path: { id } });
-        this.session.refetch();
-    }
-    finishingOrgSetup = $derived(this.finishOrgSetupMut.isPending);
-}
-
-const ctx = new Context<InitialSetupViewDriver>("InitialSetupViewDriver");
-export const initInitialSetupViewDriver = () => ctx.set(new InitialSetupViewDriver());
-export const useInitialSetupViewDriver = () => ctx.get();
+};

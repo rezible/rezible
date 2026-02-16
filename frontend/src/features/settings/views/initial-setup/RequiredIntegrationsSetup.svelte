@@ -1,9 +1,9 @@
 <script lang="ts">
-	import { useInitialSetupViewDriver } from "$src/features/settings/lib/initialSetupViewDriver.svelte";
+	import { useInitialSetupViewController } from "./initialSetupViewController.svelte";
 	import LoadingIndicator from "$components/loading-indicator/LoadingIndicator.svelte";
 	import IntegrationConfigCard from "$features/settings/components/integration-config-card/IntegrationConfigCard.svelte";
 
-	const view = useInitialSetupViewDriver();
+	const view = useInitialSetupViewController();
 
     const nextRequiredDataKind = $derived(view.integrations.nextRequiredDataKind);
 </script>

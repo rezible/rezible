@@ -1,16 +1,19 @@
 <script lang="ts">
-	import { appShell } from "$features/app-shell";
+	import { appShell } from "$features/app";
+	import { Button } from "$components/ui/button";
 	import Header from "$components/header/Header.svelte";
-	import { useInitialSetupViewDriver } from "$features/settings/lib/initialSetupViewDriver.svelte";
 	import LoadingIndicator from "$components/loading-indicator/LoadingIndicator.svelte";
 	import RequiredIntegrationsSetup from "./RequiredIntegrationsSetup.svelte";
-	import { Button } from "$components/ui/button";
+	import { initInitialSetupViewController } from "./initialSetupViewController.svelte";
+
+	type Props = {};
+	const {}: Props = $props();
 
 	appShell.setPageBreadcrumbs(() => [
 		{ label: "Setup", href: "/setup" },
 	]);
 
-	const view = useInitialSetupViewDriver();
+	const view = initInitialSetupViewController();
 
 	let step = $state("integrations");
 </script>

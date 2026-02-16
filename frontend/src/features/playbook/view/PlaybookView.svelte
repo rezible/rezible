@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { appShell } from "$features/app-shell";
+	import { appShell } from "$features/app";
 	import { usePlaybookViewState } from "$features/playbook";
 	import PlaybookEditor from "./PlaybookEditor.svelte";
 	import PlaybookPageActions from "./PlaybookPageActions.svelte";
