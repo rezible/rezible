@@ -2,10 +2,10 @@
 	import { createQuery } from "@tanstack/svelte-query";
 	import { listOncallRostersOptions, type ListOncallRostersData } from "$lib/api";
 	import { QueryPaginatorState } from "$lib/paginator.svelte";
-	import { useTeamViewState } from "$features/team";
+	import { useTeamViewController } from "$features/teams/views/team";
 	import Avatar from "$components/avatar/Avatar.svelte";
 
-	const view = useTeamViewState();
+	const view = useTeamViewController();
 	const paginator = new QueryPaginatorState();
 	
 	const params = $derived<ListOncallRostersData["query"]>({

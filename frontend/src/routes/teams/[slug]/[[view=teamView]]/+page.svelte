@@ -1,9 +1,7 @@
 <script lang="ts">
-	import { TeamView, setTeamViewState } from "$features/team";
+	import TeamView from "$features/teams/views/team";
 
 	let { data } = $props();
-
-	setTeamViewState(() => data.slug);
 </script>
 
-<TeamView />
+<TeamView id={data.slug} />

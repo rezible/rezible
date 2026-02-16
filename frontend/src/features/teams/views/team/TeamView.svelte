@@ -2,12 +2,14 @@
 	import { appShell, type PageBreadcrumb } from "$features/app";
 	import type { TeamViewParam } from "$src/params/teamView";
 	import TabbedViewContainer, { type Tab } from "$components/tabbed-view-container/TabbedViewContainer.svelte";
-	import { useTeamViewState } from "$features/team";
 	import TeamOverview from "./overview/TeamOverview.svelte";
 	import TeamBacklogView from "./backlog/TeamBacklogView.svelte";
 	import TeamMeetings from "./meetings/TeamMeetings.svelte";
+	import { initTeamViewController } from "./viewController.svelte";
 
-	const view = useTeamViewState();
+	const { id }: { id: string } = $props();
+
+	const view = initTeamViewController(() => id);
 
 	const avatar = $derived<PageBreadcrumb["avatar"]>(view.team ? { kind: "team", id: view.team.id } : undefined);
 	appShell.setPageBreadcrumbs(() => [

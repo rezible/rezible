@@ -1,11 +1,11 @@
 <script lang="ts">
 	import Avatar from "$components/avatar/Avatar.svelte";
 	import { listUsersOptions, type ListUsersData } from "$lib/api";
-	import { useTeamViewState } from "$features/team";
+	import { useTeamViewController } from "$features/teams/views/team";
 	import { createQuery } from "@tanstack/svelte-query";
 	import { QueryPaginatorState } from "$lib/paginator.svelte";
 
-	const view = useTeamViewState();
+	const view = useTeamViewController();
 	const paginator = new QueryPaginatorState();
 	
 	const params = $derived<ListUsersData["query"]>({

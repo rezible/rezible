@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { TeamsListView } from "$features/teams-list";
+	import TeamsListView from "$features/teams/views/teams-list";
 </script>
 
 <TeamsListView />

@@ -4,10 +4,10 @@
 	import { mdiChevronRight } from "@mdi/js";
 	import { Button } from "$components/ui/button";
 	import LoadingQueryWrapper from "$components/loader/LoadingQueryWrapper.svelte";
-	import { useTeamViewState } from "$features/team";
+	import { useTeamViewController } from "$features/teams/views/team";
 	import { QueryPaginatorState } from "$lib/paginator.svelte";
 
-	const view = useTeamViewState();
+	const view = useTeamViewController();
 
 	const paginator = new QueryPaginatorState();
 	const queryParams = $derived<ListTasksData["query"]>({

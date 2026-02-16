@@ -3,7 +3,7 @@ import type { Getter } from "$lib/utils.svelte";
 import { createQuery } from "@tanstack/svelte-query";
 import { Context, watch } from "runed";
 
-class TeamViewState {
+class TeamViewController {
 	teamSlug = $state<string>(null!);
 
 	constructor(slugFn: Getter<string>) {
@@ -20,6 +20,6 @@ class TeamViewState {
 	teamName = $derived(this.team?.attributes.name ?? "");
 }
 
-const teamViewCtx = new Context<TeamViewState>("teamView");
-export const setTeamViewState = (slugFn: Getter<string>) => teamViewCtx.set(new TeamViewState(slugFn));
-export const useTeamViewState = () => teamViewCtx.get();
+const ctx = new Context<TeamViewController>("TeamViewController");
+export const initTeamViewController = (slugFn: Getter<string>) => ctx.set(new TeamViewController(slugFn));
+export const useTeamViewController = () => ctx.get();
