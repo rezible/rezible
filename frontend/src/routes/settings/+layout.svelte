@@ -7,14 +7,14 @@
 	const { children } = $props();
 
 	const routes = [
-		{ label: "General", path: "", routeId: "/", icon: mdiCog },
-		{ label: "Incidents", path: "/incidents", icon: mdiFire },
-		{ label: "Integrations", path: "/integrations", icon: mdiPuzzle },
+		{ label: "General", route: "", icon: mdiCog },
+		{ label: "Incidents", route: "/incidents", icon: mdiFire },
+		{ label: "Integrations", route: "/integrations", icon: mdiPuzzle },
 	];
-	const basePath = "/settings";
+	const baseRoute = "/settings";
 
-	const activeRoute = $derived(page.route.id?.replace("/settings", "") ?? "");
-	const activeRouteIdx = $derived(routes.findIndex((p) => (p.routeId ?? p.path) === activeRoute));
+	const activeRoute = $derived(page.route.id?.replace(baseRoute, "") ?? "");
+	const activeRouteIdx = $derived(routes.findIndex((p) => p.route === activeRoute));
 </script>
 
 {#snippet filters()}
@@ -23,7 +23,7 @@
 			{@const active = i === activeRouteIdx}
 			<li class="group flex w-full" role="presentation">
 				<a
-					href="{basePath}{p.path}"
+					href="{baseRoute}{p.route}"
 					class={cn(
 						"w-full py-3 px-6 gap-2 text-lg text-center border-r-2",
 						active
@@ -43,7 +43,16 @@
 	</ul>
 {/snippet}
 
-<FilterPage {filters}>
-	{@render children()}
-</FilterPage>
+
+<div class="flex gap-3 w-full h-full max-h-full pt-2 pl-2">
+	<div class="w-full h-full max-h-full overflow-y-auto max-w-md flex flex-col">
+		<div class="flex flex-col gap-1 border p-2 rounded overflow-x-hidden overflow-y-auto">
+			{@render filters()}
+		</div>
+	</div>
+
+	<div class="flex-1 block min-h-0 max-h-full overflow-y-auto">
+		{@render children()}
+	</div>
+</div>
 

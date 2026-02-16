@@ -7,12 +7,12 @@
 	import SearchInput from "$components/search-input/SearchInput.svelte";
 	import PaginatedListBox from "$components/paginated-listbox/PaginatedListBox.svelte";
 	import MeetingsPageActions from "./MeetingsListPageActions.svelte";
-	import { useMeetingsListViewController } from "./controller.svelte";
+	import { initMeetingsListViewController } from "./controller.svelte";
 
 	appShell.setPageBreadcrumbs(() => [{ label: "Meetings" }]);
 	appShell.setPageActions(MeetingsPageActions, true);
 
-	const viewState = useMeetingsListViewController();
+	const viewState = initMeetingsListViewController();
 </script>
 
 {#snippet filters()}

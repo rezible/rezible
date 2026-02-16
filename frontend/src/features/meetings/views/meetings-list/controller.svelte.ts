@@ -12,5 +12,5 @@ export class MeetingsListViewController {
 }
 
 const ctx = new Context<MeetingsListViewController>("MeetingsListViewController");
-export const setMeetingsListViewController = () => ctx.set(new MeetingsListViewController());
+export const initMeetingsListViewController = () => ctx.set(new MeetingsListViewController());
 export const useMeetingsListViewController = () => ctx.get();

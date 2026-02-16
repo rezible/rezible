@@ -37,7 +37,7 @@
 		{ label: "System" },
 		{ path: "/alerts", label: "Alerts", icon: mdiAlarmLight },
 		{ path: "/playbooks", label: "Playbooks", icon: mdiBookshelf },
-		{ path: "/components", label: "Components", icon: mdiShape },
+		{ path: "/system", label: "Components", icon: mdiShape },
 		{ label: "People" },
 		{ path: "/teams", label: "Teams", icon: mdiAccountGroup },
 		{ path: "/meetings", label: "Meetings", icon: mdiVideo },

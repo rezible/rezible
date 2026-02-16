@@ -15,7 +15,7 @@
 </script>
 
 {#if accountMenuOpen}
-	<div class="border p-2">
+	<div class="border p-2 flex flex-col gap-2">
 		<Button onclick={toggleMode} variant="outline" size="icon">
 			<Icon data={mdiSunAngle}
 				classes={{root: "h-[1.2rem] w-[1.2rem] scale-100 rotate-0 !transition-all dark:scale-0 dark:-rotate-90"}}
@@ -24,6 +24,10 @@
 				classes={{root: "absolute h-[1.2rem] w-[1.2rem] scale-0 rotate-90 !transition-all dark:scale-100 dark:rotate-0"}}
 			/>
 			<span class="sr-only">Toggle theme</span>
+		</Button>
+
+		<Button href="/settings" variant="outline">
+			Settings
 		</Button>
 	</div>
 {/if}
