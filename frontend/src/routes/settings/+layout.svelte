@@ -1,28 +1,26 @@
 <script lang="ts">
 	import { page } from "$app/state";
 	import { cn } from '$lib/utils';
-	import { mdiAccount, mdiAccountGroup, mdiCog, mdiFire, mdiPuzzle } from "@mdi/js";
+	import { mdiCog, mdiFire, mdiPuzzle } from "@mdi/js";
 	import FilterPage from "$components/filter-page/FilterPage.svelte";
 
 	const { children } = $props();
 
-	const pages = [
-		{ label: "General", path: "", routeId: "/(general)", icon: mdiCog },
+	const routes = [
+		{ label: "General", path: "", routeId: "/", icon: mdiCog },
 		{ label: "Incidents", path: "/incidents", icon: mdiFire },
 		{ label: "Integrations", path: "/integrations", icon: mdiPuzzle },
-		{ label: "Users", path: "/users", icon: mdiAccount },
-		{ label: "Teams", path: "/teams", icon: mdiAccountGroup },
 	];
 	const basePath = "/settings";
 
-	const activePath = $derived(page.route.id?.replace("/settings", "") ?? "");
-	const activePageIdx = $derived(pages.findIndex((p) => (p.routeId ?? p.path) === activePath));
+	const activeRoute = $derived(page.route.id?.replace("/settings", "") ?? "");
+	const activeRouteIdx = $derived(routes.findIndex((p) => (p.routeId ?? p.path) === activeRoute));
 </script>
 
 {#snippet filters()}
 	<ul class="flex flex-col space-y-0 -mb-px w-full h-fit w-54 border rounded">
-		{#each pages as p, i}
-			{@const active = i === activePageIdx}
+		{#each routes as p, i}
+			{@const active = i === activeRouteIdx}
 			<li class="group flex w-full" role="presentation">
 				<a
 					href="{basePath}{p.path}"
