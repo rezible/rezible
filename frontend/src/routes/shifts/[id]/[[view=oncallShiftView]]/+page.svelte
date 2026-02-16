@@ -1,8 +1,6 @@
 <script lang="ts">
 	import { page } from "$app/state";
-	import { OncallShiftView, setOncallShiftViewState } from "$features/oncall-shift";
-
-	setOncallShiftViewState(() => (page.params.id || ""));
+	import OncallShiftView from "$features/oncall/views/shift";
 </script>
 
-<OncallShiftView />
+<OncallShiftView id={page.params.id || ""} />

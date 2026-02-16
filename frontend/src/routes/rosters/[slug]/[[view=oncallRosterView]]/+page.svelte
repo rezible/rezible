@@ -1,8 +1,7 @@
 <script lang="ts">
-	import { page } from "$app/state";
-	import { OncallRosterView, setOncallRosterViewState } from "$features/oncall-roster";
+	import OncallRosterView from "$features/oncall/views/roster";
 
-	setOncallRosterViewState(() => (page.params.slug || ""));
+	const { data } = $props();
 </script>
 
-<OncallRosterView />
+<OncallRosterView slug={data.slug} />

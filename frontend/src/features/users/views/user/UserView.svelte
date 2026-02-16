@@ -1,12 +1,12 @@
 <script lang="ts">
 	import { appShell } from "$features/app";
-
+	import type { IdProps } from "$lib/utils.svelte";
 	import Avatar from "$components/avatar/Avatar.svelte";
 	import OncallStats from "./OncallStats.svelte";
 	import Header from "$components/header/Header.svelte";
 	import { initUserViewController } from "./controller.svelte";
 
-	const { id }: { id: string } = $props();
+	const { id }: IdProps = $props();
 
 	const view = initUserViewController(() => id);
 

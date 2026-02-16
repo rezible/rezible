@@ -1,8 +1,6 @@
 <script lang="ts">
 	import { page } from "$app/state";
-	import { EventView, setEventViewState } from "$src/features/event";
-
-	setEventViewState(() => (page.params.id || ""));
+	import EventView from "$features/events/views/event";
 </script>
 
-<EventView />
+<EventView id={page.params.id || ""} />

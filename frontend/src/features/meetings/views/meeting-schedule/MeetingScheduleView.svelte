@@ -1,11 +1,12 @@
 <script lang="ts">
 	import { type MeetingSchedule as MeetingScheduleType } from "$lib/api";
+	import type { IdProps } from "$lib/utils.svelte";
 	import { appShell } from "$features/app";
 	import LoadingQueryWrapper from "$components/loader/LoadingQueryWrapper.svelte";
 	import { initMeetingScheduleViewController } from "./controller.svelte";
 	import MeetingSchedule from "./MeetingSchedule.svelte";
 
-	const { id }: { id: string } = $props();
+	const { id }: IdProps = $props();
 
 	const view = initMeetingScheduleViewController(() => id);
 	const query = $derived(view.query);

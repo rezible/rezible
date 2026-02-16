@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { AlertsListView } from "$features/alerts-list";
+	import AlertsListView from "$features/alerts/views/alerts-list";
 </script>
 
 <AlertsListView />

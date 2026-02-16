@@ -1,5 +1,7 @@
 export type Getter<T> = () => T;
 
+export type IdProps = {id: string};
+
 export function debounce<T extends Function>(cb: T, wait = 100) {
 	let timeout: ReturnType<typeof setTimeout>;
 	let callable = (...args: any) => {

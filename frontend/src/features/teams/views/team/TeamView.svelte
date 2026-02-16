@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { appShell, type PageBreadcrumb } from "$features/app";
+	import type { IdProps } from "$lib/utils.svelte";
 	import type { TeamViewParam } from "$src/params/teamView";
 	import TabbedViewContainer, { type Tab } from "$components/tabbed-view-container/TabbedViewContainer.svelte";
 	import TeamOverview from "./overview/TeamOverview.svelte";
@@ -7,7 +8,7 @@
 	import TeamMeetings from "./meetings/TeamMeetings.svelte";
 	import { initTeamViewController } from "./controller.svelte";
 
-	const { id }: { id: string } = $props();
+	const { id }: IdProps = $props();
 
 	const view = initTeamViewController(() => id);
 
