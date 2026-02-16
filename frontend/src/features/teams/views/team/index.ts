@@ -1,2 +1,2 @@
 export { default } from "./TeamView.svelte";
-export { useTeamViewController } from "./viewController.svelte";
+export { useTeamViewController } from "./controller.svelte";

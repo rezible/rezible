@@ -1,9 +1,5 @@
 <script lang="ts">
-	import { appShell } from "$features/app";
-
-	appShell.setPageBreadcrumbs(() => [
-		{ label: "Users" },
-	]);
+	import UsersListView from "$features/users/views/users-list";
 </script>
 
-<span>todo</span>
+<UsersListView />

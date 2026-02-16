@@ -1,7 +1,5 @@
 <script lang="ts">
-	import { MeetingsListView, setMeetingsListViewState } from "$features/meetings-list";
-
-	setMeetingsListViewState();
+	import MeetingsListView from "$features/meetings/views/meetings-list";
 </script>
 
 <MeetingsListView />

@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { SystemComponentsListView } from "$features/system-components-list";	
+	import SystemComponentsListView from "$features/system/views/system-components-list";	
 </script>
 
 <SystemComponentsListView />

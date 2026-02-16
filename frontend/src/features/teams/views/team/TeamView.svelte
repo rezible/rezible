@@ -5,7 +5,7 @@
 	import TeamOverview from "./overview/TeamOverview.svelte";
 	import TeamBacklogView from "./backlog/TeamBacklogView.svelte";
 	import TeamMeetings from "./meetings/TeamMeetings.svelte";
-	import { initTeamViewController } from "./viewController.svelte";
+	import { initTeamViewController } from "./controller.svelte";
 
 	const { id }: { id: string } = $props();
 

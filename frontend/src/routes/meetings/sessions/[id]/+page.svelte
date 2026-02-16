@@ -1,8 +1,6 @@
 <script lang="ts">
 	import { page } from "$app/state";
-	import { MeetingSessionView, setMeetingSessionViewState } from "$features/meeting-session";
-
-	setMeetingSessionViewState(() => (page.params.id || ""));
+	import MeetingSessionView from "$features/meetings/views/meeting-session";
 </script>
 
-<MeetingSessionView />
+<MeetingSessionView id={page.params.id || ""} />

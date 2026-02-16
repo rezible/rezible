@@ -1,8 +1,6 @@
 <script lang="ts">
 	import { page } from "$app/state";
-	import { UserView, setUserViewState } from "$features/user";
-
-	setUserViewState(() => (page.params.id || ""));
+	import UserView from "$features/users/views/user";
 </script>
 
-<UserView />
+<UserView id={page.params.id ?? ""} />

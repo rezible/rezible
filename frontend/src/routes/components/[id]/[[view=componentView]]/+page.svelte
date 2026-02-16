@@ -1,8 +1,6 @@
 <script lang="ts">
 	import { page } from "$app/state";
-	import { SystemComponentView, setSystemComponentViewState } from "$features/system-component";
-
-	setSystemComponentViewState(() => (page.params.id || ""));
+	import SystemComponentView from "$features/system/views/system-component-view";
 </script>
 
-<SystemComponentView />
+<SystemComponentView id={page.params.id || ""} />
