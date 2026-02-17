@@ -1,44 +1,69 @@
 <script lang="ts">
-	import { SvelteMap } from 'svelte/reactivity';
 	import type { ConfiguredIntegration, ConfigureIntegrationRequestBody, SupportedIntegration } from '$lib/api';
+	import * as Card from "$components/ui/card";
+	import { Badge } from "$components/ui/badge";
 	import { Button } from "$components/ui/button";
-	import type { IntegrationConfigComponent } from './types';
+	import * as Alert from "$components/ui/alert";
+	import type { IntegrationConfigComponent, IntegrationConfigPayload } from './types';
 	import SlackConfig from './config-components/SlackConfig.svelte';
 	import PlaceholderConfig from './config-components/PlaceholderConfig.svelte';
 	import GoogleConfig from './config-components/GoogleConfig.svelte';
 
-    type Props = {
-        integration: SupportedIntegration;
-        configured?: ConfiguredIntegration;
-        nextRequiredDataKind?: string;
-        startOAuthFlow: () => void;
-        configureIntegration: (attrs: ConfigureIntegrationRequestBody["attributes"]) => void;
-    };
-    const { integration, configured, nextRequiredDataKind, startOAuthFlow, configureIntegration }: Props = $props();
+	type Props = {
+		integration: SupportedIntegration;
+		configured?: ConfiguredIntegration;
+		nextRequiredDataKind?: string;
+		startOAuthFlow?: () => void;
+		configureIntegration?: (attrs: ConfigureIntegrationRequestBody["attributes"]) => Promise<unknown> | unknown;
+		isSaving?: boolean;
+		errorMessage?: string;
+	};
+	const {
+		integration,
+		configured,
+		nextRequiredDataKind,
+		startOAuthFlow,
+		configureIntegration,
+		isSaving = false,
+		errorMessage = "",
+	}: Props = $props();
 
-    const supportsNextRequiredDataKind = $derived(!!nextRequiredDataKind && integration.supportedDataKinds.includes(nextRequiredDataKind))
+	const supportsNextRequiredDataKind = $derived(
+		!!nextRequiredDataKind && integration.supportedDataKinds.includes(nextRequiredDataKind),
+	);
 
-    const configs: Record<string, IntegrationConfigComponent> = {
-        "slack": SlackConfig,
-        "google": GoogleConfig,
-    };
-    const ConfigComponent = $derived((integration.name in configs) ? configs[integration.name] : PlaceholderConfig);
+	const configs: Record<string, IntegrationConfigComponent> = {
+		slack: SlackConfig,
+		google: GoogleConfig,
+	};
+	const ConfigComponent = $derived((integration.name in configs) ? configs[integration.name] : PlaceholderConfig);
+	const enabledDataKinds = $derived(configured?.attributes.enabledDataKinds ?? []);
+	const requiresOAuthConnect = $derived(integration.oauthRequired && !configured);
+	const supportsManualSave = $derived(integration.name === "google");
 
-    let configMap = new SvelteMap<string, any>();
+	let configPayload = $state<IntegrationConfigPayload>({});
+	let hasConfigChanges = $state(false);
 
-    const onConfigChange = (key: string, value: any) => {
-        configMap.set(key, value);
-    }
+	const onConfigChange = (payload: IntegrationConfigPayload) => {
+		if (payload.config !== undefined) {
+			configPayload.config = payload.config;
+		}
+		if (payload.preferences !== undefined) {
+			configPayload.preferences = payload.preferences;
+		}
+		hasConfigChanges = true;
+	};
 
-    const doConfigureIntegration = () => {
-        let config: Record<string, any> = {};
-        configMap.forEach((v, k) => { config[k] = v });
+	const doConfigureIntegration = async () => {
+		if (!configureIntegration) return;
+		if (!hasConfigChanges) return;
 
-        let dataKinds: Record<string, boolean> = {};
-        integration.supportedDataKinds.forEach(kind => dataKinds[kind] = true);
-
-        configureIntegration({ config, dataKinds });
-    }
+		await configureIntegration({
+			config: configPayload.config,
+			preferences: configPayload.preferences,
+		});
+		hasConfigChanges = false;
+	};
 </script>
 
 {#snippet oauthFlowButtonContent(name: string)}
@@ -51,24 +76,60 @@
 	{/if}
 {/snippet}
 
-<div class="border p-2 flex flex-col gap-2">
-    <span>{integration.name}</span>
-    {#if !configured && integration.oauthRequired}
-        <Button onclick={() => {startOAuthFlow()}}>
-            {@render oauthFlowButtonContent(integration.name)}
-        </Button>
-    {:else} 
-        {#if !!nextRequiredDataKind && supportsNextRequiredDataKind}
-            <Button>Enable Support for {nextRequiredDataKind}</Button>
-        {/if}
-        
-        <ConfigComponent {integration} {configured} {onConfigChange} />
+<Card.Root class="gap-4 p-4">
+	<Card.Header class="p-0">
+		<div class="flex items-start justify-between gap-4">
+			<div class="flex flex-col gap-2">
+				<Card.Title class="capitalize">{integration.name}</Card.Title>
+				<div class="flex flex-wrap gap-2">
+					{#each integration.supportedDataKinds as kind}
+						<Badge variant="outline">{kind}</Badge>
+					{/each}
+				</div>
+				{#if enabledDataKinds.length > 0}
+					<div class="flex items-center gap-2 text-sm text-muted-foreground">
+						<span>Enabled:</span>
+						<div class="flex flex-wrap gap-2">
+							{#each enabledDataKinds as kind}
+								<Badge variant="secondary">{kind}</Badge>
+							{/each}
+						</div>
+					</div>
+				{/if}
+			</div>
+			<Badge variant={configured ? "secondary" : "outline"}>{configured ? "Configured" : "Not configured"}</Badge>
+		</div>
+	</Card.Header>
 
-        <Button 
-            color="primary"
-            onclick={doConfigureIntegration}
-        >
-            Save
-        </Button>
-    {/if}
-</div>
+	<Card.Content class="p-0 flex flex-col gap-3">
+		{#if !!nextRequiredDataKind && supportsNextRequiredDataKind}
+			<Alert.Root>
+				<Alert.Title>Supports required data kind</Alert.Title>
+				<Alert.Description>
+					This integration can provide <span class="font-medium">{nextRequiredDataKind}</span> data.
+				</Alert.Description>
+			</Alert.Root>
+		{/if}
+
+		{#if !!errorMessage}
+			<Alert.Root variant="destructive">
+				<Alert.Title>Could not save integration</Alert.Title>
+				<Alert.Description>{errorMessage}</Alert.Description>
+			</Alert.Root>
+		{/if}
+
+		{#if requiresOAuthConnect}
+			<Button onclick={() => startOAuthFlow?.()}>
+				{@render oauthFlowButtonContent(integration.name)}
+			</Button>
+		{:else}
+			<ConfigComponent {integration} {configured} onChange={onConfigChange} />
+
+			{#if supportsManualSave}
+				<Button onclick={doConfigureIntegration} disabled={!hasConfigChanges || isSaving}>
+					{isSaving ? "Saving..." : "Save"}
+				</Button>
+			{/if}
+		{/if}
+	</Card.Content>
+</Card.Root>
