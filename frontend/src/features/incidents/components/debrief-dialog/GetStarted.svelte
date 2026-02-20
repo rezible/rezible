@@ -1,5 +1,5 @@
 <script lang="ts">
-	import Button from "$components/button/Button.svelte";
+	import { Button } from "$components/ui/button";
 	import LoadingIndicator from "$components/loading-indicator/LoadingIndicator.svelte";
 	import {
 		getIncidentUserDebriefOptions,
@@ -66,11 +66,9 @@
 <div class="w-fit mx-auto">
 	<Button
 		size="lg"
-		variant="fill"
 		color="primary"
 		disabled={start.isPending}
 		onclick={startDebrief}
-		loading={start.isPending}
 	>
 		Start Debrief
 	</Button>

@@ -59,7 +59,7 @@
 		const timeRange = (wasTimeline && timelineState.timeline) ? timelineState.viewWindow : timelineState.viewBounds;
 		const timestampMs = timeRange.start + (timeRange.end - timeRange.start) * pct;
 
-		const timestamp = fromAbsolute(timestampMs, timelineState.viewState.timezone);
+		const timestamp = fromAbsolute(timestampMs, timelineState.view.timezone);
 
 		analysis.contextMenu = {
 			timeline: {

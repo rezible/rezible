@@ -47,7 +47,7 @@
 		"@mdi/js": "^7.4.47",
 		"@rezible/tiptap-extensions": "workspace:*",
 		"@tailwindcss/vite": "^4.1.18",
-		"@tanstack/svelte-query": "^6.0.10",
+		"@tanstack/svelte-query": "^6.0.18",
 		"@tiptap/extension-bubble-menu": "^3.13.0",
 		"@tiptap/extension-collaboration": "3.13.0",
 		"@tiptap/extension-collaboration-caret": "3.13.0",

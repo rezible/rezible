@@ -40,9 +40,7 @@ saml_cert_dir := "./backend/internal/http/saml/testdata"
         go run ./cmd/rezible {{ARGS}}
 
 @run-frontend *ARGS:
-    cd frontend && \
-        PUBLIC_REZ_API_BASE_URL="/api/v1" \
-        bun run {{ARGS}}
+    cd frontend && bun run {{ARGS}}
 
 @run-documents-server *ARGS:
     cd documents-server && \

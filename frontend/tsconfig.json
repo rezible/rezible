@@ -15,7 +15,7 @@
 		"allowImportingTsExtensions": true,
 		"verbatimModuleSyntax": true,
 		"noEmit": true,
-		"declaration": true,
+		"declaration": false,
 
 		// Best practices
 		"strict": true,

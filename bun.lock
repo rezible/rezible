@@ -13,7 +13,7 @@
         "yjs": "13.6.27",
       },
       "devDependencies": {
-        "@hey-api/openapi-ts": "0.88.0",
+        "@hey-api/openapi-ts": "^0.88.0",
       },
     },
     "documents-server": {
@@ -46,7 +46,7 @@
         "@mdi/js": "^7.4.47",
         "@rezible/tiptap-extensions": "workspace:*",
         "@tailwindcss/vite": "^4.1.18",
-        "@tanstack/svelte-query": "^6.0.10",
+        "@tanstack/svelte-query": "^6.0.18",
         "@tiptap/extension-bubble-menu": "^3.13.0",
         "@tiptap/extension-collaboration": "3.13.0",
         "@tiptap/extension-collaboration-caret": "3.13.0",
@@ -342,9 +342,9 @@
 
     "@tailwindcss/vite": ["@tailwindcss/vite@4.1.18", "", { "dependencies": { "@tailwindcss/node": "4.1.18", "@tailwindcss/oxide": "4.1.18", "tailwindcss": "4.1.18" }, "peerDependencies": { "vite": "^5.2.0 || ^6 || ^7" } }, "sha512-jVA+/UpKL1vRLg6Hkao5jldawNmRo7mQYrZtNHMIVpLfLhDml5nMRUo/8MwoX2vNXvnaXNNMedrMfMugAVX1nA=="],
 
-    "@tanstack/query-core": ["@tanstack/query-core@5.90.12", "", {}, "sha512-T1/8t5DhV/SisWjDnaiU2drl6ySvsHj1bHBCWNXd+/T+Hh1cf6JodyEYMd5sgwm+b/mETT4EV3H+zCVczCU5hg=="],
+    "@tanstack/query-core": ["@tanstack/query-core@5.90.20", "", {}, "sha512-OMD2HLpNouXEfZJWcKeVKUgQ5n+n3A2JFmBaScpNDUqSrQSjiveC7dKMe53uJUg1nDG16ttFPz2xfilz6i2uVg=="],
 
-    "@tanstack/svelte-query": ["@tanstack/svelte-query@6.0.10", "", { "dependencies": { "@tanstack/query-core": "5.90.12" }, "peerDependencies": { "svelte": "^5.25.0" } }, "sha512-J0kM3JNvRcRCM6cbHLeICs73aLp98N/nsihdVEtiNo3MEN4pAnO45qZ2yxX70MrEZ9vffXaCXMCChwgXs1lZ/Q=="],
+    "@tanstack/svelte-query": ["@tanstack/svelte-query@6.0.18", "", { "dependencies": { "@tanstack/query-core": "5.90.20" }, "peerDependencies": { "svelte": "^5.25.0" } }, "sha512-iGS8osfrIVUW5pkV4Ig6pspNIMtiNjGnVTNJKDas0m/QaNDFFIKbgg74rCzcjwrTIvO38tMpzb4VUKklvAmjxw=="],
 
     "@tiptap/core": ["@tiptap/core@3.13.0", "", { "peerDependencies": { "@tiptap/pm": "^3.13.0" } }, "sha512-iUelgiTMgPVMpY5ZqASUpk8mC8HuR9FWKaDzK27w9oWip9tuB54Z8mePTxNcQaSPb6ErzEaC8x8egrRt7OsdGQ=="],
 

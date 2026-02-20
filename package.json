@@ -2,7 +2,7 @@
   "name": "rezible",
   "private": true,
   "workspaces": ["frontend", "documents-server", "shared/*"],
-	"scripts": {
+  "scripts": {
     "codegen:api": "openapi-ts"
   },
   "devDependencies": {
