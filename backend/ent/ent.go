@@ -69,6 +69,7 @@ import (
 	"github.com/rezible/rezible/ent/systemrelationshipfeedbacksignal"
 	"github.com/rezible/rezible/ent/task"
 	"github.com/rezible/rezible/ent/team"
+	"github.com/rezible/rezible/ent/teammembership"
 	"github.com/rezible/rezible/ent/tenant"
 	"github.com/rezible/rezible/ent/ticket"
 	"github.com/rezible/rezible/ent/user"
@@ -190,6 +191,7 @@ func checkColumn(t, c string) error {
 			systemrelationshipfeedbacksignal.Table: systemrelationshipfeedbacksignal.ValidColumn,
 			task.Table:                             task.ValidColumn,
 			team.Table:                             team.ValidColumn,
+			teammembership.Table:                   teammembership.ValidColumn,
 			tenant.Table:                           tenant.ValidColumn,
 			ticket.Table:                           ticket.ValidColumn,
 			user.Table:                             user.ValidColumn,

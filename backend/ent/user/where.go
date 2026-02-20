@@ -74,6 +74,11 @@ func Name(v string) predicate.User {
 	return predicate.User(sql.FieldEQ(FieldName, v))
 }
 
+// IsOrgAdmin applies equality check predicate on the "is_org_admin" field. It's identical to IsOrgAdminEQ.
+func IsOrgAdmin(v bool) predicate.User {
+	return predicate.User(sql.FieldEQ(FieldIsOrgAdmin, v))
+}
+
 // ChatID applies equality check predicate on the "chat_id" field. It's identical to ChatIDEQ.
 func ChatID(v string) predicate.User {
 	return predicate.User(sql.FieldEQ(FieldChatID, v))
@@ -324,6 +329,16 @@ func NameContainsFold(v string) predicate.User {
 	return predicate.User(sql.FieldContainsFold(FieldName, v))
 }
 
+// IsOrgAdminEQ applies the EQ predicate on the "is_org_admin" field.
+func IsOrgAdminEQ(v bool) predicate.User {
+	return predicate.User(sql.FieldEQ(FieldIsOrgAdmin, v))
+}
+
+// IsOrgAdminNEQ applies the NEQ predicate on the "is_org_admin" field.
+func IsOrgAdminNEQ(v bool) predicate.User {
+	return predicate.User(sql.FieldNEQ(FieldIsOrgAdmin, v))
+}
+
 // ChatIDEQ applies the EQ predicate on the "chat_id" field.
 func ChatIDEQ(v string) predicate.User {
 	return predicate.User(sql.FieldEQ(FieldChatID, v))
@@ -512,7 +527,7 @@ func HasTeams() predicate.User {
 	return predicate.User(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, true, TeamsTable, TeamsPrimaryKey...),
+			sqlgraph.Edge(sqlgraph.M2M, false, TeamsTable, TeamsPrimaryKey...),
 		)
 		sqlgraph.HasNeighbors(s, step)
 	})
@@ -798,6 +813,29 @@ func HasRetrospectiveComments() predicate.User {
 func HasRetrospectiveCommentsWith(preds ...predicate.RetrospectiveComment) predicate.User {
 	return predicate.User(func(s *sql.Selector) {
 		step := newRetrospectiveCommentsStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasTeamMemberships applies the HasEdge predicate on the "team_memberships" edge.
+func HasTeamMemberships() predicate.User {
+	return predicate.User(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, true, TeamMembershipsTable, TeamMembershipsColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasTeamMembershipsWith applies the HasEdge predicate on the "team_memberships" edge with a given conditions (other predicates).
+func HasTeamMembershipsWith(preds ...predicate.TeamMembership) predicate.User {
+	return predicate.User(func(s *sql.Selector) {
+		step := newTeamMembershipsStep()
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)

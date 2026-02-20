@@ -70,6 +70,7 @@ import (
 	"github.com/rezible/rezible/ent/systemrelationshipfeedbacksignal"
 	"github.com/rezible/rezible/ent/task"
 	"github.com/rezible/rezible/ent/team"
+	"github.com/rezible/rezible/ent/teammembership"
 	"github.com/rezible/rezible/ent/ticket"
 	"github.com/rezible/rezible/ent/user"
 	"github.com/rezible/rezible/ent/videoconference"
@@ -141,6 +142,7 @@ const (
 	TypeSystemRelationshipFeedbackSignal = "SystemRelationshipFeedbackSignal"
 	TypeTask                             = "Task"
 	TypeTeam                             = "Team"
+	TypeTeamMembership                   = "TeamMembership"
 	TypeTenant                           = "Tenant"
 	TypeTicket                           = "Ticket"
 	TypeUser                             = "User"
@@ -49285,6 +49287,9 @@ type TeamMutation struct {
 	scheduled_meetings        map[uuid.UUID]struct{}
 	removedscheduled_meetings map[uuid.UUID]struct{}
 	clearedscheduled_meetings bool
+	team_memberships          map[uuid.UUID]struct{}
+	removedteam_memberships   map[uuid.UUID]struct{}
+	clearedteam_memberships   bool
 	done                      bool
 	oldValue                  func(context.Context) (*Team, error)
 	predicates                []predicate.Team
@@ -49838,6 +49843,60 @@ func (m *TeamMutation) ResetScheduledMeetings() {
 	m.removedscheduled_meetings = nil
 }
 
+// AddTeamMembershipIDs adds the "team_memberships" edge to the TeamMembership entity by ids.
+func (m *TeamMutation) AddTeamMembershipIDs(ids ...uuid.UUID) {
+	if m.team_memberships == nil {
+		m.team_memberships = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		m.team_memberships[ids[i]] = struct{}{}
+	}
+}
+
+// ClearTeamMemberships clears the "team_memberships" edge to the TeamMembership entity.
+func (m *TeamMutation) ClearTeamMemberships() {
+	m.clearedteam_memberships = true
+}
+
+// TeamMembershipsCleared reports if the "team_memberships" edge to the TeamMembership entity was cleared.
+func (m *TeamMutation) TeamMembershipsCleared() bool {
+	return m.clearedteam_memberships
+}
+
+// RemoveTeamMembershipIDs removes the "team_memberships" edge to the TeamMembership entity by IDs.
+func (m *TeamMutation) RemoveTeamMembershipIDs(ids ...uuid.UUID) {
+	if m.removedteam_memberships == nil {
+		m.removedteam_memberships = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		delete(m.team_memberships, ids[i])
+		m.removedteam_memberships[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedTeamMemberships returns the removed IDs of the "team_memberships" edge to the TeamMembership entity.
+func (m *TeamMutation) RemovedTeamMembershipsIDs() (ids []uuid.UUID) {
+	for id := range m.removedteam_memberships {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// TeamMembershipsIDs returns the "team_memberships" edge IDs in the mutation.
+func (m *TeamMutation) TeamMembershipsIDs() (ids []uuid.UUID) {
+	for id := range m.team_memberships {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetTeamMemberships resets all changes to the "team_memberships" edge.
+func (m *TeamMutation) ResetTeamMemberships() {
+	m.team_memberships = nil
+	m.clearedteam_memberships = false
+	m.removedteam_memberships = nil
+}
+
 // Where appends a list predicates to the TeamMutation builder.
 func (m *TeamMutation) Where(ps ...predicate.Team) {
 	m.predicates = append(m.predicates, ps...)
@@ -50080,7 +50139,7 @@ func (m *TeamMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *TeamMutation) AddedEdges() []string {
-	edges := make([]string, 0, 4)
+	edges := make([]string, 0, 5)
 	if m.tenant != nil {
 		edges = append(edges, team.EdgeTenant)
 	}
@@ -50092,6 +50151,9 @@ func (m *TeamMutation) AddedEdges() []string {
 	}
 	if m.scheduled_meetings != nil {
 		edges = append(edges, team.EdgeScheduledMeetings)
+	}
+	if m.team_memberships != nil {
+		edges = append(edges, team.EdgeTeamMemberships)
 	}
 	return edges
 }
@@ -50122,13 +50184,19 @@ func (m *TeamMutation) AddedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case team.EdgeTeamMemberships:
+		ids := make([]ent.Value, 0, len(m.team_memberships))
+		for id := range m.team_memberships {
+			ids = append(ids, id)
+		}
+		return ids
 	}
 	return nil
 }
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *TeamMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 4)
+	edges := make([]string, 0, 5)
 	if m.removedusers != nil {
 		edges = append(edges, team.EdgeUsers)
 	}
@@ -50137,6 +50205,9 @@ func (m *TeamMutation) RemovedEdges() []string {
 	}
 	if m.removedscheduled_meetings != nil {
 		edges = append(edges, team.EdgeScheduledMeetings)
+	}
+	if m.removedteam_memberships != nil {
+		edges = append(edges, team.EdgeTeamMemberships)
 	}
 	return edges
 }
@@ -50163,13 +50234,19 @@ func (m *TeamMutation) RemovedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case team.EdgeTeamMemberships:
+		ids := make([]ent.Value, 0, len(m.removedteam_memberships))
+		for id := range m.removedteam_memberships {
+			ids = append(ids, id)
+		}
+		return ids
 	}
 	return nil
 }
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *TeamMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 4)
+	edges := make([]string, 0, 5)
 	if m.clearedtenant {
 		edges = append(edges, team.EdgeTenant)
 	}
@@ -50181,6 +50258,9 @@ func (m *TeamMutation) ClearedEdges() []string {
 	}
 	if m.clearedscheduled_meetings {
 		edges = append(edges, team.EdgeScheduledMeetings)
+	}
+	if m.clearedteam_memberships {
+		edges = append(edges, team.EdgeTeamMemberships)
 	}
 	return edges
 }
@@ -50197,6 +50277,8 @@ func (m *TeamMutation) EdgeCleared(name string) bool {
 		return m.clearedoncall_rosters
 	case team.EdgeScheduledMeetings:
 		return m.clearedscheduled_meetings
+	case team.EdgeTeamMemberships:
+		return m.clearedteam_memberships
 	}
 	return false
 }
@@ -50228,8 +50310,654 @@ func (m *TeamMutation) ResetEdge(name string) error {
 	case team.EdgeScheduledMeetings:
 		m.ResetScheduledMeetings()
 		return nil
+	case team.EdgeTeamMemberships:
+		m.ResetTeamMemberships()
+		return nil
 	}
 	return fmt.Errorf("unknown Team edge %s", name)
+}
+
+// TeamMembershipMutation represents an operation that mutates the TeamMembership nodes in the graph.
+type TeamMembershipMutation struct {
+	config
+	op            Op
+	typ           string
+	id            *uuid.UUID
+	role          *teammembership.Role
+	clearedFields map[string]struct{}
+	tenant        *int
+	clearedtenant bool
+	team          *uuid.UUID
+	clearedteam   bool
+	user          *uuid.UUID
+	cleareduser   bool
+	done          bool
+	oldValue      func(context.Context) (*TeamMembership, error)
+	predicates    []predicate.TeamMembership
+}
+
+var _ ent.Mutation = (*TeamMembershipMutation)(nil)
+
+// teammembershipOption allows management of the mutation configuration using functional options.
+type teammembershipOption func(*TeamMembershipMutation)
+
+// newTeamMembershipMutation creates new mutation for the TeamMembership entity.
+func newTeamMembershipMutation(c config, op Op, opts ...teammembershipOption) *TeamMembershipMutation {
+	m := &TeamMembershipMutation{
+		config:        c,
+		op:            op,
+		typ:           TypeTeamMembership,
+		clearedFields: make(map[string]struct{}),
+	}
+	for _, opt := range opts {
+		opt(m)
+	}
+	return m
+}
+
+// withTeamMembershipID sets the ID field of the mutation.
+func withTeamMembershipID(id uuid.UUID) teammembershipOption {
+	return func(m *TeamMembershipMutation) {
+		var (
+			err   error
+			once  sync.Once
+			value *TeamMembership
+		)
+		m.oldValue = func(ctx context.Context) (*TeamMembership, error) {
+			once.Do(func() {
+				if m.done {
+					err = errors.New("querying old values post mutation is not allowed")
+				} else {
+					value, err = m.Client().TeamMembership.Get(ctx, id)
+				}
+			})
+			return value, err
+		}
+		m.id = &id
+	}
+}
+
+// withTeamMembership sets the old TeamMembership of the mutation.
+func withTeamMembership(node *TeamMembership) teammembershipOption {
+	return func(m *TeamMembershipMutation) {
+		m.oldValue = func(context.Context) (*TeamMembership, error) {
+			return node, nil
+		}
+		m.id = &node.ID
+	}
+}
+
+// Client returns a new `ent.Client` from the mutation. If the mutation was
+// executed in a transaction (ent.Tx), a transactional client is returned.
+func (m TeamMembershipMutation) Client() *Client {
+	client := &Client{config: m.config}
+	client.init()
+	return client
+}
+
+// Tx returns an `ent.Tx` for mutations that were executed in transactions;
+// it returns an error otherwise.
+func (m TeamMembershipMutation) Tx() (*Tx, error) {
+	if _, ok := m.driver.(*txDriver); !ok {
+		return nil, errors.New("ent: mutation is not running in a transaction")
+	}
+	tx := &Tx{config: m.config}
+	tx.init()
+	return tx, nil
+}
+
+// SetID sets the value of the id field. Note that this
+// operation is only accepted on creation of TeamMembership entities.
+func (m *TeamMembershipMutation) SetID(id uuid.UUID) {
+	m.id = &id
+}
+
+// ID returns the ID value in the mutation. Note that the ID is only available
+// if it was provided to the builder or after it was returned from the database.
+func (m *TeamMembershipMutation) ID() (id uuid.UUID, exists bool) {
+	if m.id == nil {
+		return
+	}
+	return *m.id, true
+}
+
+// IDs queries the database and returns the entity ids that match the mutation's predicate.
+// That means, if the mutation is applied within a transaction with an isolation level such
+// as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
+// or updated by the mutation.
+func (m *TeamMembershipMutation) IDs(ctx context.Context) ([]uuid.UUID, error) {
+	switch {
+	case m.op.Is(OpUpdateOne | OpDeleteOne):
+		id, exists := m.ID()
+		if exists {
+			return []uuid.UUID{id}, nil
+		}
+		fallthrough
+	case m.op.Is(OpUpdate | OpDelete):
+		return m.Client().TeamMembership.Query().Where(m.predicates...).IDs(ctx)
+	default:
+		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
+	}
+}
+
+// SetTenantID sets the "tenant_id" field.
+func (m *TeamMembershipMutation) SetTenantID(i int) {
+	m.tenant = &i
+}
+
+// TenantID returns the value of the "tenant_id" field in the mutation.
+func (m *TeamMembershipMutation) TenantID() (r int, exists bool) {
+	v := m.tenant
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldTenantID returns the old "tenant_id" field's value of the TeamMembership entity.
+// If the TeamMembership object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *TeamMembershipMutation) OldTenantID(ctx context.Context) (v int, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldTenantID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldTenantID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldTenantID: %w", err)
+	}
+	return oldValue.TenantID, nil
+}
+
+// ResetTenantID resets all changes to the "tenant_id" field.
+func (m *TeamMembershipMutation) ResetTenantID() {
+	m.tenant = nil
+}
+
+// SetTeamID sets the "team_id" field.
+func (m *TeamMembershipMutation) SetTeamID(u uuid.UUID) {
+	m.team = &u
+}
+
+// TeamID returns the value of the "team_id" field in the mutation.
+func (m *TeamMembershipMutation) TeamID() (r uuid.UUID, exists bool) {
+	v := m.team
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldTeamID returns the old "team_id" field's value of the TeamMembership entity.
+// If the TeamMembership object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *TeamMembershipMutation) OldTeamID(ctx context.Context) (v uuid.UUID, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldTeamID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldTeamID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldTeamID: %w", err)
+	}
+	return oldValue.TeamID, nil
+}
+
+// ResetTeamID resets all changes to the "team_id" field.
+func (m *TeamMembershipMutation) ResetTeamID() {
+	m.team = nil
+}
+
+// SetUserID sets the "user_id" field.
+func (m *TeamMembershipMutation) SetUserID(u uuid.UUID) {
+	m.user = &u
+}
+
+// UserID returns the value of the "user_id" field in the mutation.
+func (m *TeamMembershipMutation) UserID() (r uuid.UUID, exists bool) {
+	v := m.user
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldUserID returns the old "user_id" field's value of the TeamMembership entity.
+// If the TeamMembership object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *TeamMembershipMutation) OldUserID(ctx context.Context) (v uuid.UUID, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldUserID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldUserID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldUserID: %w", err)
+	}
+	return oldValue.UserID, nil
+}
+
+// ResetUserID resets all changes to the "user_id" field.
+func (m *TeamMembershipMutation) ResetUserID() {
+	m.user = nil
+}
+
+// SetRole sets the "role" field.
+func (m *TeamMembershipMutation) SetRole(t teammembership.Role) {
+	m.role = &t
+}
+
+// Role returns the value of the "role" field in the mutation.
+func (m *TeamMembershipMutation) Role() (r teammembership.Role, exists bool) {
+	v := m.role
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldRole returns the old "role" field's value of the TeamMembership entity.
+// If the TeamMembership object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *TeamMembershipMutation) OldRole(ctx context.Context) (v teammembership.Role, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldRole is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldRole requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldRole: %w", err)
+	}
+	return oldValue.Role, nil
+}
+
+// ResetRole resets all changes to the "role" field.
+func (m *TeamMembershipMutation) ResetRole() {
+	m.role = nil
+}
+
+// ClearTenant clears the "tenant" edge to the Tenant entity.
+func (m *TeamMembershipMutation) ClearTenant() {
+	m.clearedtenant = true
+	m.clearedFields[teammembership.FieldTenantID] = struct{}{}
+}
+
+// TenantCleared reports if the "tenant" edge to the Tenant entity was cleared.
+func (m *TeamMembershipMutation) TenantCleared() bool {
+	return m.clearedtenant
+}
+
+// TenantIDs returns the "tenant" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// TenantID instead. It exists only for internal usage by the builders.
+func (m *TeamMembershipMutation) TenantIDs() (ids []int) {
+	if id := m.tenant; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetTenant resets all changes to the "tenant" edge.
+func (m *TeamMembershipMutation) ResetTenant() {
+	m.tenant = nil
+	m.clearedtenant = false
+}
+
+// ClearTeam clears the "team" edge to the Team entity.
+func (m *TeamMembershipMutation) ClearTeam() {
+	m.clearedteam = true
+	m.clearedFields[teammembership.FieldTeamID] = struct{}{}
+}
+
+// TeamCleared reports if the "team" edge to the Team entity was cleared.
+func (m *TeamMembershipMutation) TeamCleared() bool {
+	return m.clearedteam
+}
+
+// TeamIDs returns the "team" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// TeamID instead. It exists only for internal usage by the builders.
+func (m *TeamMembershipMutation) TeamIDs() (ids []uuid.UUID) {
+	if id := m.team; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetTeam resets all changes to the "team" edge.
+func (m *TeamMembershipMutation) ResetTeam() {
+	m.team = nil
+	m.clearedteam = false
+}
+
+// ClearUser clears the "user" edge to the User entity.
+func (m *TeamMembershipMutation) ClearUser() {
+	m.cleareduser = true
+	m.clearedFields[teammembership.FieldUserID] = struct{}{}
+}
+
+// UserCleared reports if the "user" edge to the User entity was cleared.
+func (m *TeamMembershipMutation) UserCleared() bool {
+	return m.cleareduser
+}
+
+// UserIDs returns the "user" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// UserID instead. It exists only for internal usage by the builders.
+func (m *TeamMembershipMutation) UserIDs() (ids []uuid.UUID) {
+	if id := m.user; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetUser resets all changes to the "user" edge.
+func (m *TeamMembershipMutation) ResetUser() {
+	m.user = nil
+	m.cleareduser = false
+}
+
+// Where appends a list predicates to the TeamMembershipMutation builder.
+func (m *TeamMembershipMutation) Where(ps ...predicate.TeamMembership) {
+	m.predicates = append(m.predicates, ps...)
+}
+
+// WhereP appends storage-level predicates to the TeamMembershipMutation builder. Using this method,
+// users can use type-assertion to append predicates that do not depend on any generated package.
+func (m *TeamMembershipMutation) WhereP(ps ...func(*sql.Selector)) {
+	p := make([]predicate.TeamMembership, len(ps))
+	for i := range ps {
+		p[i] = ps[i]
+	}
+	m.Where(p...)
+}
+
+// Op returns the operation name.
+func (m *TeamMembershipMutation) Op() Op {
+	return m.op
+}
+
+// SetOp allows setting the mutation operation.
+func (m *TeamMembershipMutation) SetOp(op Op) {
+	m.op = op
+}
+
+// Type returns the node type of this mutation (TeamMembership).
+func (m *TeamMembershipMutation) Type() string {
+	return m.typ
+}
+
+// Fields returns all fields that were changed during this mutation. Note that in
+// order to get all numeric fields that were incremented/decremented, call
+// AddedFields().
+func (m *TeamMembershipMutation) Fields() []string {
+	fields := make([]string, 0, 4)
+	if m.tenant != nil {
+		fields = append(fields, teammembership.FieldTenantID)
+	}
+	if m.team != nil {
+		fields = append(fields, teammembership.FieldTeamID)
+	}
+	if m.user != nil {
+		fields = append(fields, teammembership.FieldUserID)
+	}
+	if m.role != nil {
+		fields = append(fields, teammembership.FieldRole)
+	}
+	return fields
+}
+
+// Field returns the value of a field with the given name. The second boolean
+// return value indicates that this field was not set, or was not defined in the
+// schema.
+func (m *TeamMembershipMutation) Field(name string) (ent.Value, bool) {
+	switch name {
+	case teammembership.FieldTenantID:
+		return m.TenantID()
+	case teammembership.FieldTeamID:
+		return m.TeamID()
+	case teammembership.FieldUserID:
+		return m.UserID()
+	case teammembership.FieldRole:
+		return m.Role()
+	}
+	return nil, false
+}
+
+// OldField returns the old value of the field from the database. An error is
+// returned if the mutation operation is not UpdateOne, or the query to the
+// database failed.
+func (m *TeamMembershipMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
+	switch name {
+	case teammembership.FieldTenantID:
+		return m.OldTenantID(ctx)
+	case teammembership.FieldTeamID:
+		return m.OldTeamID(ctx)
+	case teammembership.FieldUserID:
+		return m.OldUserID(ctx)
+	case teammembership.FieldRole:
+		return m.OldRole(ctx)
+	}
+	return nil, fmt.Errorf("unknown TeamMembership field %s", name)
+}
+
+// SetField sets the value of a field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *TeamMembershipMutation) SetField(name string, value ent.Value) error {
+	switch name {
+	case teammembership.FieldTenantID:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetTenantID(v)
+		return nil
+	case teammembership.FieldTeamID:
+		v, ok := value.(uuid.UUID)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetTeamID(v)
+		return nil
+	case teammembership.FieldUserID:
+		v, ok := value.(uuid.UUID)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetUserID(v)
+		return nil
+	case teammembership.FieldRole:
+		v, ok := value.(teammembership.Role)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetRole(v)
+		return nil
+	}
+	return fmt.Errorf("unknown TeamMembership field %s", name)
+}
+
+// AddedFields returns all numeric fields that were incremented/decremented during
+// this mutation.
+func (m *TeamMembershipMutation) AddedFields() []string {
+	var fields []string
+	return fields
+}
+
+// AddedField returns the numeric value that was incremented/decremented on a field
+// with the given name. The second boolean return value indicates that this field
+// was not set, or was not defined in the schema.
+func (m *TeamMembershipMutation) AddedField(name string) (ent.Value, bool) {
+	switch name {
+	}
+	return nil, false
+}
+
+// AddField adds the value to the field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *TeamMembershipMutation) AddField(name string, value ent.Value) error {
+	switch name {
+	}
+	return fmt.Errorf("unknown TeamMembership numeric field %s", name)
+}
+
+// ClearedFields returns all nullable fields that were cleared during this
+// mutation.
+func (m *TeamMembershipMutation) ClearedFields() []string {
+	return nil
+}
+
+// FieldCleared returns a boolean indicating if a field with the given name was
+// cleared in this mutation.
+func (m *TeamMembershipMutation) FieldCleared(name string) bool {
+	_, ok := m.clearedFields[name]
+	return ok
+}
+
+// ClearField clears the value of the field with the given name. It returns an
+// error if the field is not defined in the schema.
+func (m *TeamMembershipMutation) ClearField(name string) error {
+	return fmt.Errorf("unknown TeamMembership nullable field %s", name)
+}
+
+// ResetField resets all changes in the mutation for the field with the given name.
+// It returns an error if the field is not defined in the schema.
+func (m *TeamMembershipMutation) ResetField(name string) error {
+	switch name {
+	case teammembership.FieldTenantID:
+		m.ResetTenantID()
+		return nil
+	case teammembership.FieldTeamID:
+		m.ResetTeamID()
+		return nil
+	case teammembership.FieldUserID:
+		m.ResetUserID()
+		return nil
+	case teammembership.FieldRole:
+		m.ResetRole()
+		return nil
+	}
+	return fmt.Errorf("unknown TeamMembership field %s", name)
+}
+
+// AddedEdges returns all edge names that were set/added in this mutation.
+func (m *TeamMembershipMutation) AddedEdges() []string {
+	edges := make([]string, 0, 3)
+	if m.tenant != nil {
+		edges = append(edges, teammembership.EdgeTenant)
+	}
+	if m.team != nil {
+		edges = append(edges, teammembership.EdgeTeam)
+	}
+	if m.user != nil {
+		edges = append(edges, teammembership.EdgeUser)
+	}
+	return edges
+}
+
+// AddedIDs returns all IDs (to other nodes) that were added for the given edge
+// name in this mutation.
+func (m *TeamMembershipMutation) AddedIDs(name string) []ent.Value {
+	switch name {
+	case teammembership.EdgeTenant:
+		if id := m.tenant; id != nil {
+			return []ent.Value{*id}
+		}
+	case teammembership.EdgeTeam:
+		if id := m.team; id != nil {
+			return []ent.Value{*id}
+		}
+	case teammembership.EdgeUser:
+		if id := m.user; id != nil {
+			return []ent.Value{*id}
+		}
+	}
+	return nil
+}
+
+// RemovedEdges returns all edge names that were removed in this mutation.
+func (m *TeamMembershipMutation) RemovedEdges() []string {
+	edges := make([]string, 0, 3)
+	return edges
+}
+
+// RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
+// the given name in this mutation.
+func (m *TeamMembershipMutation) RemovedIDs(name string) []ent.Value {
+	return nil
+}
+
+// ClearedEdges returns all edge names that were cleared in this mutation.
+func (m *TeamMembershipMutation) ClearedEdges() []string {
+	edges := make([]string, 0, 3)
+	if m.clearedtenant {
+		edges = append(edges, teammembership.EdgeTenant)
+	}
+	if m.clearedteam {
+		edges = append(edges, teammembership.EdgeTeam)
+	}
+	if m.cleareduser {
+		edges = append(edges, teammembership.EdgeUser)
+	}
+	return edges
+}
+
+// EdgeCleared returns a boolean which indicates if the edge with the given name
+// was cleared in this mutation.
+func (m *TeamMembershipMutation) EdgeCleared(name string) bool {
+	switch name {
+	case teammembership.EdgeTenant:
+		return m.clearedtenant
+	case teammembership.EdgeTeam:
+		return m.clearedteam
+	case teammembership.EdgeUser:
+		return m.cleareduser
+	}
+	return false
+}
+
+// ClearEdge clears the value of the edge with the given name. It returns an error
+// if that edge is not defined in the schema.
+func (m *TeamMembershipMutation) ClearEdge(name string) error {
+	switch name {
+	case teammembership.EdgeTenant:
+		m.ClearTenant()
+		return nil
+	case teammembership.EdgeTeam:
+		m.ClearTeam()
+		return nil
+	case teammembership.EdgeUser:
+		m.ClearUser()
+		return nil
+	}
+	return fmt.Errorf("unknown TeamMembership unique edge %s", name)
+}
+
+// ResetEdge resets all changes to the edge with the given name in this mutation.
+// It returns an error if the edge is not defined in the schema.
+func (m *TeamMembershipMutation) ResetEdge(name string) error {
+	switch name {
+	case teammembership.EdgeTenant:
+		m.ResetTenant()
+		return nil
+	case teammembership.EdgeTeam:
+		m.ResetTeam()
+		return nil
+	case teammembership.EdgeUser:
+		m.ResetUser()
+		return nil
+	}
+	return fmt.Errorf("unknown TeamMembership edge %s", name)
 }
 
 // TenantMutation represents an operation that mutates the Tenant nodes in the graph.
@@ -51109,6 +51837,7 @@ type UserMutation struct {
 	auth_provider_id                      *string
 	email                                 *string
 	name                                  *string
+	is_org_admin                          *bool
 	chat_id                               *string
 	timezone                              *string
 	confirmed                             *bool
@@ -51154,6 +51883,9 @@ type UserMutation struct {
 	retrospective_comments                map[uuid.UUID]struct{}
 	removedretrospective_comments         map[uuid.UUID]struct{}
 	clearedretrospective_comments         bool
+	team_memberships                      map[uuid.UUID]struct{}
+	removedteam_memberships               map[uuid.UUID]struct{}
+	clearedteam_memberships               bool
 	role_assignments                      map[uuid.UUID]struct{}
 	removedrole_assignments               map[uuid.UUID]struct{}
 	clearedrole_assignments               bool
@@ -51434,6 +52166,42 @@ func (m *UserMutation) NameCleared() bool {
 func (m *UserMutation) ResetName() {
 	m.name = nil
 	delete(m.clearedFields, user.FieldName)
+}
+
+// SetIsOrgAdmin sets the "is_org_admin" field.
+func (m *UserMutation) SetIsOrgAdmin(b bool) {
+	m.is_org_admin = &b
+}
+
+// IsOrgAdmin returns the value of the "is_org_admin" field in the mutation.
+func (m *UserMutation) IsOrgAdmin() (r bool, exists bool) {
+	v := m.is_org_admin
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldIsOrgAdmin returns the old "is_org_admin" field's value of the User entity.
+// If the User object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *UserMutation) OldIsOrgAdmin(ctx context.Context) (v bool, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldIsOrgAdmin is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldIsOrgAdmin requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldIsOrgAdmin: %w", err)
+	}
+	return oldValue.IsOrgAdmin, nil
+}
+
+// ResetIsOrgAdmin resets all changes to the "is_org_admin" field.
+func (m *UserMutation) ResetIsOrgAdmin() {
+	m.is_org_admin = nil
 }
 
 // SetChatID sets the "chat_id" field.
@@ -52299,6 +53067,60 @@ func (m *UserMutation) ResetRetrospectiveComments() {
 	m.removedretrospective_comments = nil
 }
 
+// AddTeamMembershipIDs adds the "team_memberships" edge to the TeamMembership entity by ids.
+func (m *UserMutation) AddTeamMembershipIDs(ids ...uuid.UUID) {
+	if m.team_memberships == nil {
+		m.team_memberships = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		m.team_memberships[ids[i]] = struct{}{}
+	}
+}
+
+// ClearTeamMemberships clears the "team_memberships" edge to the TeamMembership entity.
+func (m *UserMutation) ClearTeamMemberships() {
+	m.clearedteam_memberships = true
+}
+
+// TeamMembershipsCleared reports if the "team_memberships" edge to the TeamMembership entity was cleared.
+func (m *UserMutation) TeamMembershipsCleared() bool {
+	return m.clearedteam_memberships
+}
+
+// RemoveTeamMembershipIDs removes the "team_memberships" edge to the TeamMembership entity by IDs.
+func (m *UserMutation) RemoveTeamMembershipIDs(ids ...uuid.UUID) {
+	if m.removedteam_memberships == nil {
+		m.removedteam_memberships = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		delete(m.team_memberships, ids[i])
+		m.removedteam_memberships[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedTeamMemberships returns the removed IDs of the "team_memberships" edge to the TeamMembership entity.
+func (m *UserMutation) RemovedTeamMembershipsIDs() (ids []uuid.UUID) {
+	for id := range m.removedteam_memberships {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// TeamMembershipsIDs returns the "team_memberships" edge IDs in the mutation.
+func (m *UserMutation) TeamMembershipsIDs() (ids []uuid.UUID) {
+	for id := range m.team_memberships {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetTeamMemberships resets all changes to the "team_memberships" edge.
+func (m *UserMutation) ResetTeamMemberships() {
+	m.team_memberships = nil
+	m.clearedteam_memberships = false
+	m.removedteam_memberships = nil
+}
+
 // AddRoleAssignmentIDs adds the "role_assignments" edge to the IncidentRoleAssignment entity by ids.
 func (m *UserMutation) AddRoleAssignmentIDs(ids ...uuid.UUID) {
 	if m.role_assignments == nil {
@@ -52387,7 +53209,7 @@ func (m *UserMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *UserMutation) Fields() []string {
-	fields := make([]string, 0, 7)
+	fields := make([]string, 0, 8)
 	if m.tenant != nil {
 		fields = append(fields, user.FieldTenantID)
 	}
@@ -52399,6 +53221,9 @@ func (m *UserMutation) Fields() []string {
 	}
 	if m.name != nil {
 		fields = append(fields, user.FieldName)
+	}
+	if m.is_org_admin != nil {
+		fields = append(fields, user.FieldIsOrgAdmin)
 	}
 	if m.chat_id != nil {
 		fields = append(fields, user.FieldChatID)
@@ -52425,6 +53250,8 @@ func (m *UserMutation) Field(name string) (ent.Value, bool) {
 		return m.Email()
 	case user.FieldName:
 		return m.Name()
+	case user.FieldIsOrgAdmin:
+		return m.IsOrgAdmin()
 	case user.FieldChatID:
 		return m.ChatID()
 	case user.FieldTimezone:
@@ -52448,6 +53275,8 @@ func (m *UserMutation) OldField(ctx context.Context, name string) (ent.Value, er
 		return m.OldEmail(ctx)
 	case user.FieldName:
 		return m.OldName(ctx)
+	case user.FieldIsOrgAdmin:
+		return m.OldIsOrgAdmin(ctx)
 	case user.FieldChatID:
 		return m.OldChatID(ctx)
 	case user.FieldTimezone:
@@ -52490,6 +53319,13 @@ func (m *UserMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetName(v)
+		return nil
+	case user.FieldIsOrgAdmin:
+		v, ok := value.(bool)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetIsOrgAdmin(v)
 		return nil
 	case user.FieldChatID:
 		v, ok := value.(string)
@@ -52603,6 +53439,9 @@ func (m *UserMutation) ResetField(name string) error {
 	case user.FieldName:
 		m.ResetName()
 		return nil
+	case user.FieldIsOrgAdmin:
+		m.ResetIsOrgAdmin()
+		return nil
 	case user.FieldChatID:
 		m.ResetChatID()
 		return nil
@@ -52618,7 +53457,7 @@ func (m *UserMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *UserMutation) AddedEdges() []string {
-	edges := make([]string, 0, 15)
+	edges := make([]string, 0, 16)
 	if m.tenant != nil {
 		edges = append(edges, user.EdgeTenant)
 	}
@@ -52660,6 +53499,9 @@ func (m *UserMutation) AddedEdges() []string {
 	}
 	if m.retrospective_comments != nil {
 		edges = append(edges, user.EdgeRetrospectiveComments)
+	}
+	if m.team_memberships != nil {
+		edges = append(edges, user.EdgeTeamMemberships)
 	}
 	if m.role_assignments != nil {
 		edges = append(edges, user.EdgeRoleAssignments)
@@ -52753,6 +53595,12 @@ func (m *UserMutation) AddedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case user.EdgeTeamMemberships:
+		ids := make([]ent.Value, 0, len(m.team_memberships))
+		for id := range m.team_memberships {
+			ids = append(ids, id)
+		}
+		return ids
 	case user.EdgeRoleAssignments:
 		ids := make([]ent.Value, 0, len(m.role_assignments))
 		for id := range m.role_assignments {
@@ -52765,7 +53613,7 @@ func (m *UserMutation) AddedIDs(name string) []ent.Value {
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *UserMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 15)
+	edges := make([]string, 0, 16)
 	if m.removedteams != nil {
 		edges = append(edges, user.EdgeTeams)
 	}
@@ -52804,6 +53652,9 @@ func (m *UserMutation) RemovedEdges() []string {
 	}
 	if m.removedretrospective_comments != nil {
 		edges = append(edges, user.EdgeRetrospectiveComments)
+	}
+	if m.removedteam_memberships != nil {
+		edges = append(edges, user.EdgeTeamMemberships)
 	}
 	if m.removedrole_assignments != nil {
 		edges = append(edges, user.EdgeRoleAssignments)
@@ -52893,6 +53744,12 @@ func (m *UserMutation) RemovedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case user.EdgeTeamMemberships:
+		ids := make([]ent.Value, 0, len(m.removedteam_memberships))
+		for id := range m.removedteam_memberships {
+			ids = append(ids, id)
+		}
+		return ids
 	case user.EdgeRoleAssignments:
 		ids := make([]ent.Value, 0, len(m.removedrole_assignments))
 		for id := range m.removedrole_assignments {
@@ -52905,7 +53762,7 @@ func (m *UserMutation) RemovedIDs(name string) []ent.Value {
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *UserMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 15)
+	edges := make([]string, 0, 16)
 	if m.clearedtenant {
 		edges = append(edges, user.EdgeTenant)
 	}
@@ -52948,6 +53805,9 @@ func (m *UserMutation) ClearedEdges() []string {
 	if m.clearedretrospective_comments {
 		edges = append(edges, user.EdgeRetrospectiveComments)
 	}
+	if m.clearedteam_memberships {
+		edges = append(edges, user.EdgeTeamMemberships)
+	}
 	if m.clearedrole_assignments {
 		edges = append(edges, user.EdgeRoleAssignments)
 	}
@@ -52986,6 +53846,8 @@ func (m *UserMutation) EdgeCleared(name string) bool {
 		return m.clearedretrospective_review_responses
 	case user.EdgeRetrospectiveComments:
 		return m.clearedretrospective_comments
+	case user.EdgeTeamMemberships:
+		return m.clearedteam_memberships
 	case user.EdgeRoleAssignments:
 		return m.clearedrole_assignments
 	}
@@ -53048,6 +53910,9 @@ func (m *UserMutation) ResetEdge(name string) error {
 		return nil
 	case user.EdgeRetrospectiveComments:
 		m.ResetRetrospectiveComments()
+		return nil
+	case user.EdgeTeamMemberships:
+		m.ResetTeamMemberships()
 		return nil
 	case user.EdgeRoleAssignments:
 		m.ResetRoleAssignments()

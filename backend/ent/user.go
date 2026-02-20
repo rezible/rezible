@@ -26,6 +26,8 @@ type User struct {
 	Email string `json:"email,omitempty"`
 	// Name holds the value of the "name" field.
 	Name string `json:"name,omitempty"`
+	// IsOrgAdmin holds the value of the "is_org_admin" field.
+	IsOrgAdmin bool `json:"is_org_admin,omitempty"`
 	// ChatID holds the value of the "chat_id" field.
 	ChatID string `json:"chat_id,omitempty"`
 	// Timezone holds the value of the "timezone" field.
@@ -68,11 +70,13 @@ type UserEdges struct {
 	RetrospectiveReviewResponses []*RetrospectiveReview `json:"retrospective_review_responses,omitempty"`
 	// RetrospectiveComments holds the value of the retrospective_comments edge.
 	RetrospectiveComments []*RetrospectiveComment `json:"retrospective_comments,omitempty"`
+	// TeamMemberships holds the value of the team_memberships edge.
+	TeamMemberships []*TeamMembership `json:"team_memberships,omitempty"`
 	// RoleAssignments holds the value of the role_assignments edge.
 	RoleAssignments []*IncidentRoleAssignment `json:"role_assignments,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [15]bool
+	loadedTypes [16]bool
 }
 
 // TenantOrErr returns the Tenant value or an error if the edge
@@ -203,10 +207,19 @@ func (e UserEdges) RetrospectiveCommentsOrErr() ([]*RetrospectiveComment, error)
 	return nil, &NotLoadedError{edge: "retrospective_comments"}
 }
 
+// TeamMembershipsOrErr returns the TeamMemberships value or an error if the edge
+// was not loaded in eager-loading.
+func (e UserEdges) TeamMembershipsOrErr() ([]*TeamMembership, error) {
+	if e.loadedTypes[14] {
+		return e.TeamMemberships, nil
+	}
+	return nil, &NotLoadedError{edge: "team_memberships"}
+}
+
 // RoleAssignmentsOrErr returns the RoleAssignments value or an error if the edge
 // was not loaded in eager-loading.
 func (e UserEdges) RoleAssignmentsOrErr() ([]*IncidentRoleAssignment, error) {
-	if e.loadedTypes[14] {
+	if e.loadedTypes[15] {
 		return e.RoleAssignments, nil
 	}
 	return nil, &NotLoadedError{edge: "role_assignments"}
@@ -217,7 +230,7 @@ func (*User) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case user.FieldConfirmed:
+		case user.FieldIsOrgAdmin, user.FieldConfirmed:
 			values[i] = new(sql.NullBool)
 		case user.FieldTenantID:
 			values[i] = new(sql.NullInt64)
@@ -269,6 +282,12 @@ func (_m *User) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field name", values[i])
 			} else if value.Valid {
 				_m.Name = value.String
+			}
+		case user.FieldIsOrgAdmin:
+			if value, ok := values[i].(*sql.NullBool); !ok {
+				return fmt.Errorf("unexpected type %T for field is_org_admin", values[i])
+			} else if value.Valid {
+				_m.IsOrgAdmin = value.Bool
 			}
 		case user.FieldChatID:
 			if value, ok := values[i].(*sql.NullString); !ok {
@@ -371,6 +390,11 @@ func (_m *User) QueryRetrospectiveComments() *RetrospectiveCommentQuery {
 	return NewUserClient(_m.config).QueryRetrospectiveComments(_m)
 }
 
+// QueryTeamMemberships queries the "team_memberships" edge of the User entity.
+func (_m *User) QueryTeamMemberships() *TeamMembershipQuery {
+	return NewUserClient(_m.config).QueryTeamMemberships(_m)
+}
+
 // QueryRoleAssignments queries the "role_assignments" edge of the User entity.
 func (_m *User) QueryRoleAssignments() *IncidentRoleAssignmentQuery {
 	return NewUserClient(_m.config).QueryRoleAssignments(_m)
@@ -410,6 +434,9 @@ func (_m *User) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("name=")
 	builder.WriteString(_m.Name)
+	builder.WriteString(", ")
+	builder.WriteString("is_org_admin=")
+	builder.WriteString(fmt.Sprintf("%v", _m.IsOrgAdmin))
 	builder.WriteString(", ")
 	builder.WriteString("chat_id=")
 	builder.WriteString(_m.ChatID)

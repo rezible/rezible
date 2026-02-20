@@ -707,6 +707,28 @@ export type CreateTeamAttributes = {
     name: string;
 };
 
+export type CreateTeamMembershipAttributes = {
+    role: 'admin' | 'member';
+    teamId: string;
+    userId: string;
+};
+
+export type CreateTeamMembershipRequestBody = {
+    /**
+     * A URL to the JSON Schema for this object.
+     */
+    readonly $schema?: string;
+    attributes: CreateTeamMembershipAttributes;
+};
+
+export type CreateTeamMembershipResponseBody = {
+    /**
+     * A URL to the JSON Schema for this object.
+     */
+    readonly $schema?: string;
+    data: TeamMembership;
+};
+
 export type CreateTeamRequestBody = {
     /**
      * A URL to the JSON Schema for this object.
@@ -1754,6 +1776,15 @@ export type ListTasksResponseBody = {
     pagination: ResponsePagination;
 };
 
+export type ListTeamMembershipsResponseBody = {
+    /**
+     * A URL to the JSON Schema for this object.
+     */
+    readonly $schema?: string;
+    data: Array<TeamMembership>;
+    pagination: ResponsePagination;
+};
+
 export type ListTeamsResponseBody = {
     /**
      * A URL to the JSON Schema for this object.
@@ -2199,6 +2230,19 @@ export type Team = {
 export type TeamAttributes = {
     name: string;
     slug: string;
+};
+
+export type TeamMembership = {
+    attributes: TeamMembershipAttributes;
+    id: string;
+};
+
+export type TeamMembershipAttributes = {
+    role: 'admin' | 'member';
+    team?: Team;
+    teamId: string;
+    user?: User;
+    userId: string;
 };
 
 export type UpdateDocumentRequestAttributes = {
@@ -2804,6 +2848,26 @@ export type UpdateTeamAttributes = {
     name: string;
 };
 
+export type UpdateTeamMembershipAttributes = {
+    role?: 'admin' | 'member';
+};
+
+export type UpdateTeamMembershipRequestBody = {
+    /**
+     * A URL to the JSON Schema for this object.
+     */
+    readonly $schema?: string;
+    attributes: UpdateTeamMembershipAttributes;
+};
+
+export type UpdateTeamMembershipResponseBody = {
+    /**
+     * A URL to the JSON Schema for this object.
+     */
+    readonly $schema?: string;
+    data: TeamMembership;
+};
+
 export type UpdateTeamRequestBody = {
     /**
      * A URL to the JSON Schema for this object.
@@ -2827,6 +2891,7 @@ export type User = {
 
 export type UserAttributes = {
     email: string;
+    isOrgAdmin?: boolean;
     name: string;
 };
 
@@ -3099,6 +3164,10 @@ export type GetCurrentAuthSessionErrors = {
      * Not Found
      */
     404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
     /**
      * Internal Server Error
      */
@@ -7577,6 +7646,10 @@ export type ListWatchedOncallRostersErrors = {
      */
     404: ErrorModel;
     /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
      * Internal Server Error
      */
     500: ErrorModel;
@@ -7711,6 +7784,10 @@ export type GetOncallShiftBurdenMetricWeightsErrors = {
      * Not Found
      */
     404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
     /**
      * Internal Server Error
      */
@@ -10723,6 +10800,197 @@ export type UpdateTaskResponses = {
 };
 
 export type UpdateTaskResponse = UpdateTaskResponses[keyof UpdateTaskResponses];
+
+export type ListTeamMembershipsData = {
+    body?: never;
+    path?: never;
+    query?: {
+        limit?: number;
+        offset?: number;
+        search?: string;
+        archived?: boolean;
+        teamId?: string;
+        userId?: string;
+    };
+    url: '/team_memberships';
+};
+
+export type ListTeamMembershipsErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
+
+export type ListTeamMembershipsError = ListTeamMembershipsErrors[keyof ListTeamMembershipsErrors];
+
+export type ListTeamMembershipsResponses = {
+    /**
+     * OK
+     */
+    200: ListTeamMembershipsResponseBody;
+};
+
+export type ListTeamMembershipsResponse = ListTeamMembershipsResponses[keyof ListTeamMembershipsResponses];
+
+export type CreateTeamMembershipData = {
+    body: CreateTeamMembershipRequestBody;
+    path?: never;
+    query?: never;
+    url: '/team_memberships';
+};
+
+export type CreateTeamMembershipErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
+
+export type CreateTeamMembershipError = CreateTeamMembershipErrors[keyof CreateTeamMembershipErrors];
+
+export type CreateTeamMembershipResponses = {
+    /**
+     * OK
+     */
+    200: CreateTeamMembershipResponseBody;
+};
+
+export type CreateTeamMembershipResponse = CreateTeamMembershipResponses[keyof CreateTeamMembershipResponses];
+
+export type ArchiveTeamMembershipData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/team_memberships/{id}';
+};
+
+export type ArchiveTeamMembershipErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
+
+export type ArchiveTeamMembershipError = ArchiveTeamMembershipErrors[keyof ArchiveTeamMembershipErrors];
+
+export type ArchiveTeamMembershipResponses = {
+    /**
+     * No Content
+     */
+    204: void;
+};
+
+export type ArchiveTeamMembershipResponse = ArchiveTeamMembershipResponses[keyof ArchiveTeamMembershipResponses];
+
+export type UpdateTeamMembershipData = {
+    body: UpdateTeamMembershipRequestBody;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/team_memberships/{id}';
+};
+
+export type UpdateTeamMembershipErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
+
+export type UpdateTeamMembershipError = UpdateTeamMembershipErrors[keyof UpdateTeamMembershipErrors];
+
+export type UpdateTeamMembershipResponses = {
+    /**
+     * OK
+     */
+    200: UpdateTeamMembershipResponseBody;
+};
+
+export type UpdateTeamMembershipResponse = UpdateTeamMembershipResponses[keyof UpdateTeamMembershipResponses];
 
 export type ListTeamsData = {
     body?: never;

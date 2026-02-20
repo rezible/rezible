@@ -22,6 +22,8 @@ const (
 	FieldEmail = "email"
 	// FieldName holds the string denoting the name field in the database.
 	FieldName = "name"
+	// FieldIsOrgAdmin holds the string denoting the is_org_admin field in the database.
+	FieldIsOrgAdmin = "is_org_admin"
 	// FieldChatID holds the string denoting the chat_id field in the database.
 	FieldChatID = "chat_id"
 	// FieldTimezone holds the string denoting the timezone field in the database.
@@ -56,6 +58,8 @@ const (
 	EdgeRetrospectiveReviewResponses = "retrospective_review_responses"
 	// EdgeRetrospectiveComments holds the string denoting the retrospective_comments edge name in mutations.
 	EdgeRetrospectiveComments = "retrospective_comments"
+	// EdgeTeamMemberships holds the string denoting the team_memberships edge name in mutations.
+	EdgeTeamMemberships = "team_memberships"
 	// EdgeRoleAssignments holds the string denoting the role_assignments edge name in mutations.
 	EdgeRoleAssignments = "role_assignments"
 	// Table holds the table name of the user in the database.
@@ -68,7 +72,7 @@ const (
 	// TenantColumn is the table column denoting the tenant relation/edge.
 	TenantColumn = "tenant_id"
 	// TeamsTable is the table that holds the teams relation/edge. The primary key declared below.
-	TeamsTable = "team_users"
+	TeamsTable = "team_memberships"
 	// TeamsInverseTable is the table name for the Team entity.
 	// It exists in this package in order to avoid circular dependency with the "team" package.
 	TeamsInverseTable = "teams"
@@ -152,6 +156,13 @@ const (
 	RetrospectiveCommentsInverseTable = "retrospective_comments"
 	// RetrospectiveCommentsColumn is the table column denoting the retrospective_comments relation/edge.
 	RetrospectiveCommentsColumn = "user_id"
+	// TeamMembershipsTable is the table that holds the team_memberships relation/edge.
+	TeamMembershipsTable = "team_memberships"
+	// TeamMembershipsInverseTable is the table name for the TeamMembership entity.
+	// It exists in this package in order to avoid circular dependency with the "teammembership" package.
+	TeamMembershipsInverseTable = "team_memberships"
+	// TeamMembershipsColumn is the table column denoting the team_memberships relation/edge.
+	TeamMembershipsColumn = "user_id"
 	// RoleAssignmentsTable is the table that holds the role_assignments relation/edge.
 	RoleAssignmentsTable = "incident_role_assignments"
 	// RoleAssignmentsInverseTable is the table name for the IncidentRoleAssignment entity.
@@ -168,6 +179,7 @@ var Columns = []string{
 	FieldAuthProviderID,
 	FieldEmail,
 	FieldName,
+	FieldIsOrgAdmin,
 	FieldChatID,
 	FieldTimezone,
 	FieldConfirmed,
@@ -176,7 +188,7 @@ var Columns = []string{
 var (
 	// TeamsPrimaryKey and TeamsColumn2 are the table columns denoting the
 	// primary key for the teams relation (M2M).
-	TeamsPrimaryKey = []string{"team_id", "user_id"}
+	TeamsPrimaryKey = []string{"user_id", "team_id"}
 	// WatchedOncallRostersPrimaryKey and WatchedOncallRostersColumn2 are the table columns denoting the
 	// primary key for the watched_oncall_rosters relation (M2M).
 	WatchedOncallRostersPrimaryKey = []string{"user_id", "oncall_roster_id"}
@@ -205,6 +217,8 @@ var (
 	Policy ent.Policy
 	// DefaultName holds the default value on creation for the "name" field.
 	DefaultName string
+	// DefaultIsOrgAdmin holds the default value on creation for the "is_org_admin" field.
+	DefaultIsOrgAdmin bool
 	// DefaultConfirmed holds the default value on creation for the "confirmed" field.
 	DefaultConfirmed bool
 	// DefaultID holds the default value on creation for the "id" field.
@@ -237,6 +251,11 @@ func ByEmail(opts ...sql.OrderTermOption) OrderOption {
 // ByName orders the results by the name field.
 func ByName(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldName, opts...).ToFunc()
+}
+
+// ByIsOrgAdmin orders the results by the is_org_admin field.
+func ByIsOrgAdmin(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldIsOrgAdmin, opts...).ToFunc()
 }
 
 // ByChatID orders the results by the chat_id field.
@@ -443,6 +462,20 @@ func ByRetrospectiveComments(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOp
 	}
 }
 
+// ByTeamMembershipsCount orders the results by team_memberships count.
+func ByTeamMembershipsCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newTeamMembershipsStep(), opts...)
+	}
+}
+
+// ByTeamMemberships orders the results by team_memberships terms.
+func ByTeamMemberships(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newTeamMembershipsStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
+
 // ByRoleAssignmentsCount orders the results by role_assignments count.
 func ByRoleAssignmentsCount(opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
@@ -467,7 +500,7 @@ func newTeamsStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(TeamsInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.M2M, true, TeamsTable, TeamsPrimaryKey...),
+		sqlgraph.Edge(sqlgraph.M2M, false, TeamsTable, TeamsPrimaryKey...),
 	)
 }
 func newWatchedOncallRostersStep() *sqlgraph.Step {
@@ -552,6 +585,13 @@ func newRetrospectiveCommentsStep() *sqlgraph.Step {
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(RetrospectiveCommentsInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.O2M, true, RetrospectiveCommentsTable, RetrospectiveCommentsColumn),
+	)
+}
+func newTeamMembershipsStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(TeamMembershipsInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, true, TeamMembershipsTable, TeamMembershipsColumn),
 	)
 }
 func newRoleAssignmentsStep() *sqlgraph.Step {

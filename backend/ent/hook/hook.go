@@ -681,6 +681,18 @@ func (f TeamFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error)
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.TeamMutation", m)
 }
 
+// The TeamMembershipFunc type is an adapter to allow the use of ordinary
+// function as TeamMembership mutator.
+type TeamMembershipFunc func(context.Context, *ent.TeamMembershipMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f TeamMembershipFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.TeamMembershipMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.TeamMembershipMutation", m)
+}
+
 // The TenantFunc type is an adapter to allow the use of ordinary
 // function as Tenant mutator.
 type TenantFunc func(context.Context, *ent.TenantMutation) (ent.Value, error)

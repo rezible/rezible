@@ -34,7 +34,8 @@ func (Team) Fields() []ent.Field {
 // Edges of the Team.
 func (Team) Edges() []ent.Edge {
 	return []ent.Edge{
-		edge.To("users", User.Type),
+		edge.From("users", User.Type).Ref("teams").
+			Through("team_memberships", TeamMembership.Type),
 
 		edge.To("oncall_rosters", OncallRoster.Type),
 

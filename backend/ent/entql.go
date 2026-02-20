@@ -61,6 +61,7 @@ import (
 	"github.com/rezible/rezible/ent/systemrelationshipfeedbacksignal"
 	"github.com/rezible/rezible/ent/task"
 	"github.com/rezible/rezible/ent/team"
+	"github.com/rezible/rezible/ent/teammembership"
 	"github.com/rezible/rezible/ent/tenant"
 	"github.com/rezible/rezible/ent/ticket"
 	"github.com/rezible/rezible/ent/user"
@@ -74,7 +75,7 @@ import (
 
 // schemaGraph holds a representation of ent/schema at runtime.
 var schemaGraph = func() *sqlgraph.Schema {
-	graph := &sqlgraph.Schema{Nodes: make([]*sqlgraph.Node, 61)}
+	graph := &sqlgraph.Schema{Nodes: make([]*sqlgraph.Node, 62)}
 	graph.Nodes[0] = &sqlgraph.Node{
 		NodeSpec: sqlgraph.NodeSpec{
 			Table:   alert.Table,
@@ -1152,6 +1153,23 @@ var schemaGraph = func() *sqlgraph.Schema {
 	}
 	graph.Nodes[57] = &sqlgraph.Node{
 		NodeSpec: sqlgraph.NodeSpec{
+			Table:   teammembership.Table,
+			Columns: teammembership.Columns,
+			ID: &sqlgraph.FieldSpec{
+				Type:   field.TypeUUID,
+				Column: teammembership.FieldID,
+			},
+		},
+		Type: "TeamMembership",
+		Fields: map[string]*sqlgraph.FieldSpec{
+			teammembership.FieldTenantID: {Type: field.TypeInt, Column: teammembership.FieldTenantID},
+			teammembership.FieldTeamID:   {Type: field.TypeUUID, Column: teammembership.FieldTeamID},
+			teammembership.FieldUserID:   {Type: field.TypeUUID, Column: teammembership.FieldUserID},
+			teammembership.FieldRole:     {Type: field.TypeEnum, Column: teammembership.FieldRole},
+		},
+	}
+	graph.Nodes[58] = &sqlgraph.Node{
+		NodeSpec: sqlgraph.NodeSpec{
 			Table:   tenant.Table,
 			Columns: tenant.Columns,
 			ID: &sqlgraph.FieldSpec{
@@ -1162,7 +1180,7 @@ var schemaGraph = func() *sqlgraph.Schema {
 		Type:   "Tenant",
 		Fields: map[string]*sqlgraph.FieldSpec{},
 	}
-	graph.Nodes[58] = &sqlgraph.Node{
+	graph.Nodes[59] = &sqlgraph.Node{
 		NodeSpec: sqlgraph.NodeSpec{
 			Table:   ticket.Table,
 			Columns: ticket.Columns,
@@ -1178,7 +1196,7 @@ var schemaGraph = func() *sqlgraph.Schema {
 			ticket.FieldTitle:      {Type: field.TypeString, Column: ticket.FieldTitle},
 		},
 	}
-	graph.Nodes[59] = &sqlgraph.Node{
+	graph.Nodes[60] = &sqlgraph.Node{
 		NodeSpec: sqlgraph.NodeSpec{
 			Table:   user.Table,
 			Columns: user.Columns,
@@ -1193,12 +1211,13 @@ var schemaGraph = func() *sqlgraph.Schema {
 			user.FieldAuthProviderID: {Type: field.TypeString, Column: user.FieldAuthProviderID},
 			user.FieldEmail:          {Type: field.TypeString, Column: user.FieldEmail},
 			user.FieldName:           {Type: field.TypeString, Column: user.FieldName},
+			user.FieldIsOrgAdmin:     {Type: field.TypeBool, Column: user.FieldIsOrgAdmin},
 			user.FieldChatID:         {Type: field.TypeString, Column: user.FieldChatID},
 			user.FieldTimezone:       {Type: field.TypeString, Column: user.FieldTimezone},
 			user.FieldConfirmed:      {Type: field.TypeBool, Column: user.FieldConfirmed},
 		},
 	}
-	graph.Nodes[60] = &sqlgraph.Node{
+	graph.Nodes[61] = &sqlgraph.Node{
 		NodeSpec: sqlgraph.NodeSpec{
 			Table:   videoconference.Table,
 			Columns: videoconference.Columns,
@@ -3833,7 +3852,7 @@ var schemaGraph = func() *sqlgraph.Schema {
 		"users",
 		&sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
-			Inverse: false,
+			Inverse: true,
 			Table:   team.UsersTable,
 			Columns: team.UsersPrimaryKey,
 			Bidi:    false,
@@ -3864,6 +3883,54 @@ var schemaGraph = func() *sqlgraph.Schema {
 		},
 		"Team",
 		"MeetingSchedule",
+	)
+	graph.MustAddE(
+		"team_memberships",
+		&sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   team.TeamMembershipsTable,
+			Columns: []string{team.TeamMembershipsColumn},
+			Bidi:    false,
+		},
+		"Team",
+		"TeamMembership",
+	)
+	graph.MustAddE(
+		"tenant",
+		&sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   teammembership.TenantTable,
+			Columns: []string{teammembership.TenantColumn},
+			Bidi:    false,
+		},
+		"TeamMembership",
+		"Tenant",
+	)
+	graph.MustAddE(
+		"team",
+		&sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   teammembership.TeamTable,
+			Columns: []string{teammembership.TeamColumn},
+			Bidi:    false,
+		},
+		"TeamMembership",
+		"Team",
+	)
+	graph.MustAddE(
+		"user",
+		&sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   teammembership.UserTable,
+			Columns: []string{teammembership.UserColumn},
+			Bidi:    false,
+		},
+		"TeamMembership",
+		"User",
 	)
 	graph.MustAddE(
 		"tenant",
@@ -3905,7 +3972,7 @@ var schemaGraph = func() *sqlgraph.Schema {
 		"teams",
 		&sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
-			Inverse: true,
+			Inverse: false,
 			Table:   user.TeamsTable,
 			Columns: user.TeamsPrimaryKey,
 			Bidi:    false,
@@ -4056,6 +4123,18 @@ var schemaGraph = func() *sqlgraph.Schema {
 		},
 		"User",
 		"RetrospectiveComment",
+	)
+	graph.MustAddE(
+		"team_memberships",
+		&sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   user.TeamMembershipsTable,
+			Columns: []string{user.TeamMembershipsColumn},
+			Bidi:    false,
+		},
+		"User",
+		"TeamMembership",
 	)
 	graph.MustAddE(
 		"role_assignments",
@@ -11144,6 +11223,122 @@ func (f *TeamFilter) WhereHasScheduledMeetingsWith(preds ...predicate.MeetingSch
 	})))
 }
 
+// WhereHasTeamMemberships applies a predicate to check if query has an edge team_memberships.
+func (f *TeamFilter) WhereHasTeamMemberships() {
+	f.Where(entql.HasEdge("team_memberships"))
+}
+
+// WhereHasTeamMembershipsWith applies a predicate to check if query has an edge team_memberships with a given conditions (other predicates).
+func (f *TeamFilter) WhereHasTeamMembershipsWith(preds ...predicate.TeamMembership) {
+	f.Where(entql.HasEdgeWith("team_memberships", sqlgraph.WrapFunc(func(s *sql.Selector) {
+		for _, p := range preds {
+			p(s)
+		}
+	})))
+}
+
+// addPredicate implements the predicateAdder interface.
+func (_q *TeamMembershipQuery) addPredicate(pred func(s *sql.Selector)) {
+	_q.predicates = append(_q.predicates, pred)
+}
+
+// Filter returns a Filter implementation to apply filters on the TeamMembershipQuery builder.
+func (_q *TeamMembershipQuery) Filter() *TeamMembershipFilter {
+	return &TeamMembershipFilter{config: _q.config, predicateAdder: _q}
+}
+
+// addPredicate implements the predicateAdder interface.
+func (m *TeamMembershipMutation) addPredicate(pred func(s *sql.Selector)) {
+	m.predicates = append(m.predicates, pred)
+}
+
+// Filter returns an entql.Where implementation to apply filters on the TeamMembershipMutation builder.
+func (m *TeamMembershipMutation) Filter() *TeamMembershipFilter {
+	return &TeamMembershipFilter{config: m.config, predicateAdder: m}
+}
+
+// TeamMembershipFilter provides a generic filtering capability at runtime for TeamMembershipQuery.
+type TeamMembershipFilter struct {
+	predicateAdder
+	config
+}
+
+// Where applies the entql predicate on the query filter.
+func (f *TeamMembershipFilter) Where(p entql.P) {
+	f.addPredicate(func(s *sql.Selector) {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[57].Type, p, s); err != nil {
+			s.AddError(err)
+		}
+	})
+}
+
+// WhereID applies the entql [16]byte predicate on the id field.
+func (f *TeamMembershipFilter) WhereID(p entql.ValueP) {
+	f.Where(p.Field(teammembership.FieldID))
+}
+
+// WhereTenantID applies the entql int predicate on the tenant_id field.
+func (f *TeamMembershipFilter) WhereTenantID(p entql.IntP) {
+	f.Where(p.Field(teammembership.FieldTenantID))
+}
+
+// WhereTeamID applies the entql [16]byte predicate on the team_id field.
+func (f *TeamMembershipFilter) WhereTeamID(p entql.ValueP) {
+	f.Where(p.Field(teammembership.FieldTeamID))
+}
+
+// WhereUserID applies the entql [16]byte predicate on the user_id field.
+func (f *TeamMembershipFilter) WhereUserID(p entql.ValueP) {
+	f.Where(p.Field(teammembership.FieldUserID))
+}
+
+// WhereRole applies the entql string predicate on the role field.
+func (f *TeamMembershipFilter) WhereRole(p entql.StringP) {
+	f.Where(p.Field(teammembership.FieldRole))
+}
+
+// WhereHasTenant applies a predicate to check if query has an edge tenant.
+func (f *TeamMembershipFilter) WhereHasTenant() {
+	f.Where(entql.HasEdge("tenant"))
+}
+
+// WhereHasTenantWith applies a predicate to check if query has an edge tenant with a given conditions (other predicates).
+func (f *TeamMembershipFilter) WhereHasTenantWith(preds ...predicate.Tenant) {
+	f.Where(entql.HasEdgeWith("tenant", sqlgraph.WrapFunc(func(s *sql.Selector) {
+		for _, p := range preds {
+			p(s)
+		}
+	})))
+}
+
+// WhereHasTeam applies a predicate to check if query has an edge team.
+func (f *TeamMembershipFilter) WhereHasTeam() {
+	f.Where(entql.HasEdge("team"))
+}
+
+// WhereHasTeamWith applies a predicate to check if query has an edge team with a given conditions (other predicates).
+func (f *TeamMembershipFilter) WhereHasTeamWith(preds ...predicate.Team) {
+	f.Where(entql.HasEdgeWith("team", sqlgraph.WrapFunc(func(s *sql.Selector) {
+		for _, p := range preds {
+			p(s)
+		}
+	})))
+}
+
+// WhereHasUser applies a predicate to check if query has an edge user.
+func (f *TeamMembershipFilter) WhereHasUser() {
+	f.Where(entql.HasEdge("user"))
+}
+
+// WhereHasUserWith applies a predicate to check if query has an edge user with a given conditions (other predicates).
+func (f *TeamMembershipFilter) WhereHasUserWith(preds ...predicate.User) {
+	f.Where(entql.HasEdgeWith("user", sqlgraph.WrapFunc(func(s *sql.Selector) {
+		for _, p := range preds {
+			p(s)
+		}
+	})))
+}
+
 // addPredicate implements the predicateAdder interface.
 func (_q *TenantQuery) addPredicate(pred func(s *sql.Selector)) {
 	_q.predicates = append(_q.predicates, pred)
@@ -11173,7 +11368,7 @@ type TenantFilter struct {
 // Where applies the entql predicate on the query filter.
 func (f *TenantFilter) Where(p entql.P) {
 	f.addPredicate(func(s *sql.Selector) {
-		if err := schemaGraph.EvalP(schemaGraph.Nodes[57].Type, p, s); err != nil {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[58].Type, p, s); err != nil {
 			s.AddError(err)
 		}
 	})
@@ -11213,7 +11408,7 @@ type TicketFilter struct {
 // Where applies the entql predicate on the query filter.
 func (f *TicketFilter) Where(p entql.P) {
 	f.addPredicate(func(s *sql.Selector) {
-		if err := schemaGraph.EvalP(schemaGraph.Nodes[58].Type, p, s); err != nil {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[59].Type, p, s); err != nil {
 			s.AddError(err)
 		}
 	})
@@ -11296,7 +11491,7 @@ type UserFilter struct {
 // Where applies the entql predicate on the query filter.
 func (f *UserFilter) Where(p entql.P) {
 	f.addPredicate(func(s *sql.Selector) {
-		if err := schemaGraph.EvalP(schemaGraph.Nodes[59].Type, p, s); err != nil {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[60].Type, p, s); err != nil {
 			s.AddError(err)
 		}
 	})
@@ -11325,6 +11520,11 @@ func (f *UserFilter) WhereEmail(p entql.StringP) {
 // WhereName applies the entql string predicate on the name field.
 func (f *UserFilter) WhereName(p entql.StringP) {
 	f.Where(p.Field(user.FieldName))
+}
+
+// WhereIsOrgAdmin applies the entql bool predicate on the is_org_admin field.
+func (f *UserFilter) WhereIsOrgAdmin(p entql.BoolP) {
+	f.Where(p.Field(user.FieldIsOrgAdmin))
 }
 
 // WhereChatID applies the entql string predicate on the chat_id field.
@@ -11538,6 +11738,20 @@ func (f *UserFilter) WhereHasRetrospectiveCommentsWith(preds ...predicate.Retros
 	})))
 }
 
+// WhereHasTeamMemberships applies a predicate to check if query has an edge team_memberships.
+func (f *UserFilter) WhereHasTeamMemberships() {
+	f.Where(entql.HasEdge("team_memberships"))
+}
+
+// WhereHasTeamMembershipsWith applies a predicate to check if query has an edge team_memberships with a given conditions (other predicates).
+func (f *UserFilter) WhereHasTeamMembershipsWith(preds ...predicate.TeamMembership) {
+	f.Where(entql.HasEdgeWith("team_memberships", sqlgraph.WrapFunc(func(s *sql.Selector) {
+		for _, p := range preds {
+			p(s)
+		}
+	})))
+}
+
 // WhereHasRoleAssignments applies a predicate to check if query has an edge role_assignments.
 func (f *UserFilter) WhereHasRoleAssignments() {
 	f.Where(entql.HasEdge("role_assignments"))
@@ -11581,7 +11795,7 @@ type VideoConferenceFilter struct {
 // Where applies the entql predicate on the query filter.
 func (f *VideoConferenceFilter) Where(p entql.P) {
 	f.addPredicate(func(s *sql.Selector) {
-		if err := schemaGraph.EvalP(schemaGraph.Nodes[60].Type, p, s); err != nil {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[61].Type, p, s); err != nil {
 			s.AddError(err)
 		}
 	})

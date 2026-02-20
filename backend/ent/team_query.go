@@ -18,6 +18,7 @@ import (
 	"github.com/rezible/rezible/ent/oncallroster"
 	"github.com/rezible/rezible/ent/predicate"
 	"github.com/rezible/rezible/ent/team"
+	"github.com/rezible/rezible/ent/teammembership"
 	"github.com/rezible/rezible/ent/tenant"
 	"github.com/rezible/rezible/ent/user"
 )
@@ -33,6 +34,7 @@ type TeamQuery struct {
 	withUsers             *UserQuery
 	withOncallRosters     *OncallRosterQuery
 	withScheduledMeetings *MeetingScheduleQuery
+	withTeamMemberships   *TeamMembershipQuery
 	modifiers             []func(*sql.Selector)
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
@@ -106,7 +108,7 @@ func (_q *TeamQuery) QueryUsers() *UserQuery {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(team.Table, team.FieldID, selector),
 			sqlgraph.To(user.Table, user.FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, false, team.UsersTable, team.UsersPrimaryKey...),
+			sqlgraph.Edge(sqlgraph.M2M, true, team.UsersTable, team.UsersPrimaryKey...),
 		)
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
@@ -151,6 +153,28 @@ func (_q *TeamQuery) QueryScheduledMeetings() *MeetingScheduleQuery {
 			sqlgraph.From(team.Table, team.FieldID, selector),
 			sqlgraph.To(meetingschedule.Table, meetingschedule.FieldID),
 			sqlgraph.Edge(sqlgraph.M2M, true, team.ScheduledMeetingsTable, team.ScheduledMeetingsPrimaryKey...),
+		)
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryTeamMemberships chains the current query on the "team_memberships" edge.
+func (_q *TeamQuery) QueryTeamMemberships() *TeamMembershipQuery {
+	query := (&TeamMembershipClient{config: _q.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := _q.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := _q.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(team.Table, team.FieldID, selector),
+			sqlgraph.To(teammembership.Table, teammembership.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, true, team.TeamMembershipsTable, team.TeamMembershipsColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
@@ -354,6 +378,7 @@ func (_q *TeamQuery) Clone() *TeamQuery {
 		withUsers:             _q.withUsers.Clone(),
 		withOncallRosters:     _q.withOncallRosters.Clone(),
 		withScheduledMeetings: _q.withScheduledMeetings.Clone(),
+		withTeamMemberships:   _q.withTeamMemberships.Clone(),
 		// clone intermediate query.
 		sql:       _q.sql.Clone(),
 		path:      _q.path,
@@ -402,6 +427,17 @@ func (_q *TeamQuery) WithScheduledMeetings(opts ...func(*MeetingScheduleQuery)) 
 		opt(query)
 	}
 	_q.withScheduledMeetings = query
+	return _q
+}
+
+// WithTeamMemberships tells the query-builder to eager-load the nodes that are connected to
+// the "team_memberships" edge. The optional arguments are used to configure the query builder of the edge.
+func (_q *TeamQuery) WithTeamMemberships(opts ...func(*TeamMembershipQuery)) *TeamQuery {
+	query := (&TeamMembershipClient{config: _q.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	_q.withTeamMemberships = query
 	return _q
 }
 
@@ -489,11 +525,12 @@ func (_q *TeamQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Team, e
 	var (
 		nodes       = []*Team{}
 		_spec       = _q.querySpec()
-		loadedTypes = [4]bool{
+		loadedTypes = [5]bool{
 			_q.withTenant != nil,
 			_q.withUsers != nil,
 			_q.withOncallRosters != nil,
 			_q.withScheduledMeetings != nil,
+			_q.withTeamMemberships != nil,
 		}
 	)
 	_spec.ScanValues = func(columns []string) ([]any, error) {
@@ -544,6 +581,13 @@ func (_q *TeamQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Team, e
 			return nil, err
 		}
 	}
+	if query := _q.withTeamMemberships; query != nil {
+		if err := _q.loadTeamMemberships(ctx, query, nodes,
+			func(n *Team) { n.Edges.TeamMemberships = []*TeamMembership{} },
+			func(n *Team, e *TeamMembership) { n.Edges.TeamMemberships = append(n.Edges.TeamMemberships, e) }); err != nil {
+			return nil, err
+		}
+	}
 	return nodes, nil
 }
 
@@ -589,10 +633,10 @@ func (_q *TeamQuery) loadUsers(ctx context.Context, query *UserQuery, nodes []*T
 	}
 	query.Where(func(s *sql.Selector) {
 		joinT := sql.Table(team.UsersTable)
-		s.Join(joinT).On(s.C(user.FieldID), joinT.C(team.UsersPrimaryKey[1]))
-		s.Where(sql.InValues(joinT.C(team.UsersPrimaryKey[0]), edgeIDs...))
+		s.Join(joinT).On(s.C(user.FieldID), joinT.C(team.UsersPrimaryKey[0]))
+		s.Where(sql.InValues(joinT.C(team.UsersPrimaryKey[1]), edgeIDs...))
 		columns := s.SelectedColumns()
-		s.Select(joinT.C(team.UsersPrimaryKey[0]))
+		s.Select(joinT.C(team.UsersPrimaryKey[1]))
 		s.AppendSelect(columns...)
 		s.SetDistinct(false)
 	})
@@ -756,6 +800,36 @@ func (_q *TeamQuery) loadScheduledMeetings(ctx context.Context, query *MeetingSc
 		for kn := range nodes {
 			assign(kn, n)
 		}
+	}
+	return nil
+}
+func (_q *TeamQuery) loadTeamMemberships(ctx context.Context, query *TeamMembershipQuery, nodes []*Team, init func(*Team), assign func(*Team, *TeamMembership)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[uuid.UUID]*Team)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+		if init != nil {
+			init(nodes[i])
+		}
+	}
+	if len(query.ctx.Fields) > 0 {
+		query.ctx.AppendFieldOnce(teammembership.FieldTeamID)
+	}
+	query.Where(predicate.TeamMembership(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(team.TeamMembershipsColumn), fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.TeamID
+		node, ok := nodeids[fk]
+		if !ok {
+			return fmt.Errorf(`unexpected referenced foreign-key "team_id" returned %v for node %v`, fk, n.ID)
+		}
+		assign(node, n)
 	}
 	return nil
 }

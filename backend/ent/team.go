@@ -46,9 +46,11 @@ type TeamEdges struct {
 	OncallRosters []*OncallRoster `json:"oncall_rosters,omitempty"`
 	// ScheduledMeetings holds the value of the scheduled_meetings edge.
 	ScheduledMeetings []*MeetingSchedule `json:"scheduled_meetings,omitempty"`
+	// TeamMemberships holds the value of the team_memberships edge.
+	TeamMemberships []*TeamMembership `json:"team_memberships,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [4]bool
+	loadedTypes [5]bool
 }
 
 // TenantOrErr returns the Tenant value or an error if the edge
@@ -87,6 +89,15 @@ func (e TeamEdges) ScheduledMeetingsOrErr() ([]*MeetingSchedule, error) {
 		return e.ScheduledMeetings, nil
 	}
 	return nil, &NotLoadedError{edge: "scheduled_meetings"}
+}
+
+// TeamMembershipsOrErr returns the TeamMemberships value or an error if the edge
+// was not loaded in eager-loading.
+func (e TeamEdges) TeamMembershipsOrErr() ([]*TeamMembership, error) {
+	if e.loadedTypes[4] {
+		return e.TeamMemberships, nil
+	}
+	return nil, &NotLoadedError{edge: "team_memberships"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -188,6 +199,11 @@ func (_m *Team) QueryOncallRosters() *OncallRosterQuery {
 // QueryScheduledMeetings queries the "scheduled_meetings" edge of the Team entity.
 func (_m *Team) QueryScheduledMeetings() *MeetingScheduleQuery {
 	return NewTeamClient(_m.config).QueryScheduledMeetings(_m)
+}
+
+// QueryTeamMemberships queries the "team_memberships" edge of the Team entity.
+func (_m *Team) QueryTeamMemberships() *TeamMembershipQuery {
+	return NewTeamClient(_m.config).QueryTeamMemberships(_m)
 }
 
 // Update returns a builder for updating this Team.

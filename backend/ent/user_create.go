@@ -24,6 +24,7 @@ import (
 	"github.com/rezible/rezible/ent/retrospectivereview"
 	"github.com/rezible/rezible/ent/task"
 	"github.com/rezible/rezible/ent/team"
+	"github.com/rezible/rezible/ent/teammembership"
 	"github.com/rezible/rezible/ent/tenant"
 	"github.com/rezible/rezible/ent/user"
 )
@@ -72,6 +73,20 @@ func (_c *UserCreate) SetName(v string) *UserCreate {
 func (_c *UserCreate) SetNillableName(v *string) *UserCreate {
 	if v != nil {
 		_c.SetName(*v)
+	}
+	return _c
+}
+
+// SetIsOrgAdmin sets the "is_org_admin" field.
+func (_c *UserCreate) SetIsOrgAdmin(v bool) *UserCreate {
+	_c.mutation.SetIsOrgAdmin(v)
+	return _c
+}
+
+// SetNillableIsOrgAdmin sets the "is_org_admin" field if the given value is not nil.
+func (_c *UserCreate) SetNillableIsOrgAdmin(v *bool) *UserCreate {
+	if v != nil {
+		_c.SetIsOrgAdmin(*v)
 	}
 	return _c
 }
@@ -332,6 +347,21 @@ func (_c *UserCreate) AddRetrospectiveComments(v ...*RetrospectiveComment) *User
 	return _c.AddRetrospectiveCommentIDs(ids...)
 }
 
+// AddTeamMembershipIDs adds the "team_memberships" edge to the TeamMembership entity by IDs.
+func (_c *UserCreate) AddTeamMembershipIDs(ids ...uuid.UUID) *UserCreate {
+	_c.mutation.AddTeamMembershipIDs(ids...)
+	return _c
+}
+
+// AddTeamMemberships adds the "team_memberships" edges to the TeamMembership entity.
+func (_c *UserCreate) AddTeamMemberships(v ...*TeamMembership) *UserCreate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _c.AddTeamMembershipIDs(ids...)
+}
+
 // AddRoleAssignmentIDs adds the "role_assignments" edge to the IncidentRoleAssignment entity by IDs.
 func (_c *UserCreate) AddRoleAssignmentIDs(ids ...uuid.UUID) *UserCreate {
 	_c.mutation.AddRoleAssignmentIDs(ids...)
@@ -388,6 +418,10 @@ func (_c *UserCreate) defaults() error {
 		v := user.DefaultName
 		_c.mutation.SetName(v)
 	}
+	if _, ok := _c.mutation.IsOrgAdmin(); !ok {
+		v := user.DefaultIsOrgAdmin
+		_c.mutation.SetIsOrgAdmin(v)
+	}
 	if _, ok := _c.mutation.Confirmed(); !ok {
 		v := user.DefaultConfirmed
 		_c.mutation.SetConfirmed(v)
@@ -409,6 +443,9 @@ func (_c *UserCreate) check() error {
 	}
 	if _, ok := _c.mutation.Email(); !ok {
 		return &ValidationError{Name: "email", err: errors.New(`ent: missing required field "User.email"`)}
+	}
+	if _, ok := _c.mutation.IsOrgAdmin(); !ok {
+		return &ValidationError{Name: "is_org_admin", err: errors.New(`ent: missing required field "User.is_org_admin"`)}
 	}
 	if _, ok := _c.mutation.Confirmed(); !ok {
 		return &ValidationError{Name: "confirmed", err: errors.New(`ent: missing required field "User.confirmed"`)}
@@ -464,6 +501,10 @@ func (_c *UserCreate) createSpec() (*User, *sqlgraph.CreateSpec) {
 		_spec.SetField(user.FieldName, field.TypeString, value)
 		_node.Name = value
 	}
+	if value, ok := _c.mutation.IsOrgAdmin(); ok {
+		_spec.SetField(user.FieldIsOrgAdmin, field.TypeBool, value)
+		_node.IsOrgAdmin = value
+	}
 	if value, ok := _c.mutation.ChatID(); ok {
 		_spec.SetField(user.FieldChatID, field.TypeString, value)
 		_node.ChatID = value
@@ -496,7 +537,7 @@ func (_c *UserCreate) createSpec() (*User, *sqlgraph.CreateSpec) {
 	if nodes := _c.mutation.TeamsIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
-			Inverse: true,
+			Inverse: false,
 			Table:   user.TeamsTable,
 			Columns: user.TeamsPrimaryKey,
 			Bidi:    false,
@@ -506,6 +547,13 @@ func (_c *UserCreate) createSpec() (*User, *sqlgraph.CreateSpec) {
 		}
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		createE := &TeamMembershipCreate{config: _c.config, mutation: newTeamMembershipMutation(_c.config, OpCreate)}
+		_ = createE.defaults()
+		_, specE := createE.createSpec()
+		edge.Target.Fields = specE.Fields
+		if specE.ID.Value != nil {
+			edge.Target.Fields = append(edge.Target.Fields, specE.ID)
 		}
 		_spec.Edges = append(_spec.Edges, edge)
 	}
@@ -708,6 +756,22 @@ func (_c *UserCreate) createSpec() (*User, *sqlgraph.CreateSpec) {
 		}
 		_spec.Edges = append(_spec.Edges, edge)
 	}
+	if nodes := _c.mutation.TeamMembershipsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   user.TeamMembershipsTable,
+			Columns: []string{user.TeamMembershipsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(teammembership.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
 	if nodes := _c.mutation.RoleAssignmentsIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
@@ -821,6 +885,18 @@ func (u *UserUpsert) UpdateName() *UserUpsert {
 // ClearName clears the value of the "name" field.
 func (u *UserUpsert) ClearName() *UserUpsert {
 	u.SetNull(user.FieldName)
+	return u
+}
+
+// SetIsOrgAdmin sets the "is_org_admin" field.
+func (u *UserUpsert) SetIsOrgAdmin(v bool) *UserUpsert {
+	u.Set(user.FieldIsOrgAdmin, v)
+	return u
+}
+
+// UpdateIsOrgAdmin sets the "is_org_admin" field to the value that was provided on create.
+func (u *UserUpsert) UpdateIsOrgAdmin() *UserUpsert {
+	u.SetExcluded(user.FieldIsOrgAdmin)
 	return u
 }
 
@@ -976,6 +1052,20 @@ func (u *UserUpsertOne) UpdateName() *UserUpsertOne {
 func (u *UserUpsertOne) ClearName() *UserUpsertOne {
 	return u.Update(func(s *UserUpsert) {
 		s.ClearName()
+	})
+}
+
+// SetIsOrgAdmin sets the "is_org_admin" field.
+func (u *UserUpsertOne) SetIsOrgAdmin(v bool) *UserUpsertOne {
+	return u.Update(func(s *UserUpsert) {
+		s.SetIsOrgAdmin(v)
+	})
+}
+
+// UpdateIsOrgAdmin sets the "is_org_admin" field to the value that was provided on create.
+func (u *UserUpsertOne) UpdateIsOrgAdmin() *UserUpsertOne {
+	return u.Update(func(s *UserUpsert) {
+		s.UpdateIsOrgAdmin()
 	})
 }
 
@@ -1306,6 +1396,20 @@ func (u *UserUpsertBulk) UpdateName() *UserUpsertBulk {
 func (u *UserUpsertBulk) ClearName() *UserUpsertBulk {
 	return u.Update(func(s *UserUpsert) {
 		s.ClearName()
+	})
+}
+
+// SetIsOrgAdmin sets the "is_org_admin" field.
+func (u *UserUpsertBulk) SetIsOrgAdmin(v bool) *UserUpsertBulk {
+	return u.Update(func(s *UserUpsert) {
+		s.SetIsOrgAdmin(v)
+	})
+}
+
+// UpdateIsOrgAdmin sets the "is_org_admin" field to the value that was provided on create.
+func (u *UserUpsertBulk) UpdateIsOrgAdmin() *UserUpsertBulk {
+	return u.Update(func(s *UserUpsert) {
+		s.UpdateIsOrgAdmin()
 	})
 }
 

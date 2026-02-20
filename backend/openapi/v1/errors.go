@@ -12,6 +12,7 @@ var defaultErrorCodes = []int{
 	http.StatusUnauthorized,
 	http.StatusForbidden,
 	http.StatusNotFound,
+	http.StatusUnprocessableEntity,
 	http.StatusInternalServerError,
 }
 
@@ -23,12 +24,12 @@ func ErrorUnauthorized(msg string, errs ...error) huma.StatusError {
 	return huma.Error401Unauthorized(msg, errs...)
 }
 
-func ErrorNotFound(msg string, errs ...error) huma.StatusError {
-	return huma.Error404NotFound(msg, errs...)
-}
-
 func ErrorForbidden(msg string, errs ...error) huma.StatusError {
 	return huma.Error403Forbidden(msg, errs...)
+}
+
+func ErrorNotFound(msg string, errs ...error) huma.StatusError {
+	return huma.Error404NotFound(msg, errs...)
 }
 
 func ErrorInternal(msg string, errs ...error) huma.StatusError {

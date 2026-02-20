@@ -72,6 +72,7 @@ import (
 	"github.com/rezible/rezible/ent/systemrelationshipfeedbacksignal"
 	"github.com/rezible/rezible/ent/task"
 	"github.com/rezible/rezible/ent/team"
+	"github.com/rezible/rezible/ent/teammembership"
 	"github.com/rezible/rezible/ent/tenant"
 	"github.com/rezible/rezible/ent/ticket"
 	"github.com/rezible/rezible/ent/user"
@@ -197,6 +198,8 @@ type Client struct {
 	Task *TaskClient
 	// Team is the client for interacting with the Team builders.
 	Team *TeamClient
+	// TeamMembership is the client for interacting with the TeamMembership builders.
+	TeamMembership *TeamMembershipClient
 	// Tenant is the client for interacting with the Tenant builders.
 	Tenant *TenantClient
 	// Ticket is the client for interacting with the Ticket builders.
@@ -273,6 +276,7 @@ func (c *Client) init() {
 	c.SystemRelationshipFeedbackSignal = NewSystemRelationshipFeedbackSignalClient(c.config)
 	c.Task = NewTaskClient(c.config)
 	c.Team = NewTeamClient(c.config)
+	c.TeamMembership = NewTeamMembershipClient(c.config)
 	c.Tenant = NewTenantClient(c.config)
 	c.Ticket = NewTicketClient(c.config)
 	c.User = NewUserClient(c.config)
@@ -426,6 +430,7 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 		SystemRelationshipFeedbackSignal: NewSystemRelationshipFeedbackSignalClient(cfg),
 		Task:                             NewTaskClient(cfg),
 		Team:                             NewTeamClient(cfg),
+		TeamMembership:                   NewTeamMembershipClient(cfg),
 		Tenant:                           NewTenantClient(cfg),
 		Ticket:                           NewTicketClient(cfg),
 		User:                             NewUserClient(cfg),
@@ -506,6 +511,7 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 		SystemRelationshipFeedbackSignal: NewSystemRelationshipFeedbackSignalClient(cfg),
 		Task:                             NewTaskClient(cfg),
 		Team:                             NewTeamClient(cfg),
+		TeamMembership:                   NewTeamMembershipClient(cfg),
 		Tenant:                           NewTenantClient(cfg),
 		Ticket:                           NewTicketClient(cfg),
 		User:                             NewUserClient(cfg),
@@ -555,8 +561,8 @@ func (c *Client) Use(hooks ...Hook) {
 		c.SystemComponent, c.SystemComponentConstraint, c.SystemComponentControl,
 		c.SystemComponentKind, c.SystemComponentRelationship, c.SystemComponentSignal,
 		c.SystemHazard, c.SystemRelationshipControlAction,
-		c.SystemRelationshipFeedbackSignal, c.Task, c.Team, c.Tenant, c.Ticket, c.User,
-		c.VideoConference,
+		c.SystemRelationshipFeedbackSignal, c.Task, c.Team, c.TeamMembership, c.Tenant,
+		c.Ticket, c.User, c.VideoConference,
 	} {
 		n.Use(hooks...)
 	}
@@ -582,8 +588,8 @@ func (c *Client) Intercept(interceptors ...Interceptor) {
 		c.SystemComponent, c.SystemComponentConstraint, c.SystemComponentControl,
 		c.SystemComponentKind, c.SystemComponentRelationship, c.SystemComponentSignal,
 		c.SystemHazard, c.SystemRelationshipControlAction,
-		c.SystemRelationshipFeedbackSignal, c.Task, c.Team, c.Tenant, c.Ticket, c.User,
-		c.VideoConference,
+		c.SystemRelationshipFeedbackSignal, c.Task, c.Team, c.TeamMembership, c.Tenant,
+		c.Ticket, c.User, c.VideoConference,
 	} {
 		n.Intercept(interceptors...)
 	}
@@ -704,6 +710,8 @@ func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 		return c.Task.mutate(ctx, m)
 	case *TeamMutation:
 		return c.Team.mutate(ctx, m)
+	case *TeamMembershipMutation:
+		return c.TeamMembership.mutate(ctx, m)
 	case *TenantMutation:
 		return c.Tenant.mutate(ctx, m)
 	case *TicketMutation:
@@ -11714,7 +11722,7 @@ func (c *TeamClient) QueryUsers(_m *Team) *UserQuery {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(team.Table, team.FieldID, id),
 			sqlgraph.To(user.Table, user.FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, false, team.UsersTable, team.UsersPrimaryKey...),
+			sqlgraph.Edge(sqlgraph.M2M, true, team.UsersTable, team.UsersPrimaryKey...),
 		)
 		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
 		return fromV, nil
@@ -11754,6 +11762,22 @@ func (c *TeamClient) QueryScheduledMeetings(_m *Team) *MeetingScheduleQuery {
 	return query
 }
 
+// QueryTeamMemberships queries the team_memberships edge of a Team.
+func (c *TeamClient) QueryTeamMemberships(_m *Team) *TeamMembershipQuery {
+	query := (&TeamMembershipClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(team.Table, team.FieldID, id),
+			sqlgraph.To(teammembership.Table, teammembership.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, true, team.TeamMembershipsTable, team.TeamMembershipsColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
 // Hooks returns the client hooks.
 func (c *TeamClient) Hooks() []Hook {
 	hooks := c.hooks.Team
@@ -11777,6 +11801,188 @@ func (c *TeamClient) mutate(ctx context.Context, m *TeamMutation) (Value, error)
 		return (&TeamDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
 	default:
 		return nil, fmt.Errorf("ent: unknown Team mutation op: %q", m.Op())
+	}
+}
+
+// TeamMembershipClient is a client for the TeamMembership schema.
+type TeamMembershipClient struct {
+	config
+}
+
+// NewTeamMembershipClient returns a client for the TeamMembership from the given config.
+func NewTeamMembershipClient(c config) *TeamMembershipClient {
+	return &TeamMembershipClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `teammembership.Hooks(f(g(h())))`.
+func (c *TeamMembershipClient) Use(hooks ...Hook) {
+	c.hooks.TeamMembership = append(c.hooks.TeamMembership, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `teammembership.Intercept(f(g(h())))`.
+func (c *TeamMembershipClient) Intercept(interceptors ...Interceptor) {
+	c.inters.TeamMembership = append(c.inters.TeamMembership, interceptors...)
+}
+
+// Create returns a builder for creating a TeamMembership entity.
+func (c *TeamMembershipClient) Create() *TeamMembershipCreate {
+	mutation := newTeamMembershipMutation(c.config, OpCreate)
+	return &TeamMembershipCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of TeamMembership entities.
+func (c *TeamMembershipClient) CreateBulk(builders ...*TeamMembershipCreate) *TeamMembershipCreateBulk {
+	return &TeamMembershipCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *TeamMembershipClient) MapCreateBulk(slice any, setFunc func(*TeamMembershipCreate, int)) *TeamMembershipCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &TeamMembershipCreateBulk{err: fmt.Errorf("calling to TeamMembershipClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*TeamMembershipCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &TeamMembershipCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for TeamMembership.
+func (c *TeamMembershipClient) Update() *TeamMembershipUpdate {
+	mutation := newTeamMembershipMutation(c.config, OpUpdate)
+	return &TeamMembershipUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *TeamMembershipClient) UpdateOne(_m *TeamMembership) *TeamMembershipUpdateOne {
+	mutation := newTeamMembershipMutation(c.config, OpUpdateOne, withTeamMembership(_m))
+	return &TeamMembershipUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *TeamMembershipClient) UpdateOneID(id uuid.UUID) *TeamMembershipUpdateOne {
+	mutation := newTeamMembershipMutation(c.config, OpUpdateOne, withTeamMembershipID(id))
+	return &TeamMembershipUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for TeamMembership.
+func (c *TeamMembershipClient) Delete() *TeamMembershipDelete {
+	mutation := newTeamMembershipMutation(c.config, OpDelete)
+	return &TeamMembershipDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *TeamMembershipClient) DeleteOne(_m *TeamMembership) *TeamMembershipDeleteOne {
+	return c.DeleteOneID(_m.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *TeamMembershipClient) DeleteOneID(id uuid.UUID) *TeamMembershipDeleteOne {
+	builder := c.Delete().Where(teammembership.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &TeamMembershipDeleteOne{builder}
+}
+
+// Query returns a query builder for TeamMembership.
+func (c *TeamMembershipClient) Query() *TeamMembershipQuery {
+	return &TeamMembershipQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeTeamMembership},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a TeamMembership entity by its id.
+func (c *TeamMembershipClient) Get(ctx context.Context, id uuid.UUID) (*TeamMembership, error) {
+	return c.Query().Where(teammembership.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *TeamMembershipClient) GetX(ctx context.Context, id uuid.UUID) *TeamMembership {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QueryTenant queries the tenant edge of a TeamMembership.
+func (c *TeamMembershipClient) QueryTenant(_m *TeamMembership) *TenantQuery {
+	query := (&TenantClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(teammembership.Table, teammembership.FieldID, id),
+			sqlgraph.To(tenant.Table, tenant.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, teammembership.TenantTable, teammembership.TenantColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryTeam queries the team edge of a TeamMembership.
+func (c *TeamMembershipClient) QueryTeam(_m *TeamMembership) *TeamQuery {
+	query := (&TeamClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(teammembership.Table, teammembership.FieldID, id),
+			sqlgraph.To(team.Table, team.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, teammembership.TeamTable, teammembership.TeamColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryUser queries the user edge of a TeamMembership.
+func (c *TeamMembershipClient) QueryUser(_m *TeamMembership) *UserQuery {
+	query := (&UserClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(teammembership.Table, teammembership.FieldID, id),
+			sqlgraph.To(user.Table, user.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, teammembership.UserTable, teammembership.UserColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *TeamMembershipClient) Hooks() []Hook {
+	hooks := c.hooks.TeamMembership
+	return append(hooks[:len(hooks):len(hooks)], teammembership.Hooks[:]...)
+}
+
+// Interceptors returns the client interceptors.
+func (c *TeamMembershipClient) Interceptors() []Interceptor {
+	return c.inters.TeamMembership
+}
+
+func (c *TeamMembershipClient) mutate(ctx context.Context, m *TeamMembershipMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&TeamMembershipCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&TeamMembershipUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&TeamMembershipUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&TeamMembershipDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown TeamMembership mutation op: %q", m.Op())
 	}
 }
 
@@ -12212,7 +12418,7 @@ func (c *UserClient) QueryTeams(_m *User) *TeamQuery {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(user.Table, user.FieldID, id),
 			sqlgraph.To(team.Table, team.FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, true, user.TeamsTable, user.TeamsPrimaryKey...),
+			sqlgraph.Edge(sqlgraph.M2M, false, user.TeamsTable, user.TeamsPrimaryKey...),
 		)
 		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
 		return fromV, nil
@@ -12405,6 +12611,22 @@ func (c *UserClient) QueryRetrospectiveComments(_m *User) *RetrospectiveCommentQ
 			sqlgraph.From(user.Table, user.FieldID, id),
 			sqlgraph.To(retrospectivecomment.Table, retrospectivecomment.FieldID),
 			sqlgraph.Edge(sqlgraph.O2M, true, user.RetrospectiveCommentsTable, user.RetrospectiveCommentsColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryTeamMemberships queries the team_memberships edge of a User.
+func (c *UserClient) QueryTeamMemberships(_m *User) *TeamMembershipQuery {
+	query := (&TeamMembershipClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(user.Table, user.FieldID, id),
+			sqlgraph.To(teammembership.Table, teammembership.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, true, user.TeamMembershipsTable, user.TeamMembershipsColumn),
 		)
 		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
 		return fromV, nil
@@ -12654,7 +12876,7 @@ type (
 		SystemComponentConstraint, SystemComponentControl, SystemComponentKind,
 		SystemComponentRelationship, SystemComponentSignal, SystemHazard,
 		SystemRelationshipControlAction, SystemRelationshipFeedbackSignal, Task, Team,
-		Tenant, Ticket, User, VideoConference []ent.Hook
+		TeamMembership, Tenant, Ticket, User, VideoConference []ent.Hook
 	}
 	inters struct {
 		Alert, AlertFeedback, AlertInstance, AlertMetrics, Document, Event,
@@ -12672,6 +12894,6 @@ type (
 		SystemComponentConstraint, SystemComponentControl, SystemComponentKind,
 		SystemComponentRelationship, SystemComponentSignal, SystemHazard,
 		SystemRelationshipControlAction, SystemRelationshipFeedbackSignal, Task, Team,
-		Tenant, Ticket, User, VideoConference []ent.Interceptor
+		TeamMembership, Tenant, Ticket, User, VideoConference []ent.Interceptor
 	}
 )

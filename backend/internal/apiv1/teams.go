@@ -3,18 +3,24 @@ package apiv1
 import (
 	"context"
 
+	"github.com/google/uuid"
+	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
 	"github.com/rezible/rezible/ent/schema"
 	entteam "github.com/rezible/rezible/ent/team"
+	"github.com/rezible/rezible/ent/teammembership"
 	oapi "github.com/rezible/rezible/openapi/v1"
 )
 
 type teamsHandler struct {
-	teams *ent.TeamClient
+	auth        rez.AuthService
+	users       *ent.UserClient
+	teams       *ent.TeamClient
+	memberships *ent.TeamMembershipClient
 }
 
-func newTeamsHandler(teams *ent.TeamClient) *teamsHandler {
-	return &teamsHandler{teams}
+func newTeamsHandler(auth rez.AuthService, users *ent.UserClient, teams *ent.TeamClient, memberships *ent.TeamMembershipClient) *teamsHandler {
+	return &teamsHandler{auth: auth, users: users, teams: teams, memberships: memberships}
 }
 
 func (h *teamsHandler) ListTeams(ctx context.Context, request *oapi.ListTeamsRequest) (*oapi.ListTeamsResponse, error) {
@@ -110,5 +116,99 @@ func (h *teamsHandler) ArchiveTeam(ctx context.Context, request *oapi.ArchiveTea
 		return nil, apiError("failed to archive team", err)
 	}
 
+	return &resp, nil
+}
+
+func (h *teamsHandler) ListTeamMemberships(ctx context.Context, request *oapi.ListTeamMembershipsRequest) (*oapi.ListTeamMembershipsResponse, error) {
+	var resp oapi.ListTeamMembershipsResponse
+
+	query := h.memberships.Query().
+		WithTeam().
+		WithUser()
+	if request.TeamId != uuid.Nil {
+		query = query.Where(teammembership.TeamID(request.TeamId))
+	}
+	if request.UserId != uuid.Nil {
+		query = query.Where(teammembership.UserID(request.UserId))
+	}
+
+	limitedQuery := query.Clone().
+		Limit(request.Limit).
+		Offset(request.Offset).
+		Order(teammembership.ByID())
+	res, queryErr := limitedQuery.All(ctx)
+	if queryErr != nil {
+		return nil, apiError("failed to query team memberships", queryErr)
+	}
+
+	resp.Body.Data = make([]oapi.TeamMembership, len(res))
+	for i, m := range res {
+		resp.Body.Data[i] = oapi.TeamMembershipFromEnt(m)
+	}
+
+	count, countErr := query.Count(ctx)
+	if countErr != nil {
+		return nil, apiError("failed to query team memberships count", countErr)
+	}
+	resp.Body.Pagination.Total = count
+
+	return &resp, nil
+}
+
+func (h *teamsHandler) CreateTeamMembership(ctx context.Context, request *oapi.CreateTeamMembershipRequest) (*oapi.CreateTeamMembershipResponse, error) {
+	var resp oapi.CreateTeamMembershipResponse
+
+	attr := request.Body.Attributes
+	created, createErr := h.memberships.Create().
+		SetTeamID(attr.TeamId).
+		SetUserID(attr.UserId).
+		SetRole(teammembership.Role(attr.Role)).
+		Save(ctx)
+	if createErr != nil {
+		return nil, apiError("failed to create team membership", createErr)
+	}
+
+	membership, queryErr := h.memberships.Query().
+		Where(teammembership.ID(created.ID)).
+		WithTeam().
+		WithUser().
+		Only(ctx)
+	if queryErr != nil {
+		return nil, apiError("failed to query created team membership", queryErr)
+	}
+	resp.Body.Data = oapi.TeamMembershipFromEnt(membership)
+	return &resp, nil
+}
+
+func (h *teamsHandler) UpdateTeamMembership(ctx context.Context, request *oapi.UpdateTeamMembershipRequest) (*oapi.UpdateTeamMembershipResponse, error) {
+	var resp oapi.UpdateTeamMembershipResponse
+
+	attr := request.Body.Attributes
+	query := h.memberships.UpdateOneID(request.Id)
+	if attr.Role != nil {
+		query = query.SetRole(teammembership.Role(*attr.Role))
+	}
+	if _, saveErr := query.Save(ctx); saveErr != nil {
+		return nil, apiError("failed to update team membership", saveErr)
+	}
+
+	membership, queryErr := h.memberships.Query().
+		Where(teammembership.ID(request.Id)).
+		WithTeam().
+		WithUser().
+		Only(ctx)
+	if queryErr != nil {
+		return nil, apiError("failed to query updated team membership", queryErr)
+	}
+	resp.Body.Data = oapi.TeamMembershipFromEnt(membership)
+	return &resp, nil
+}
+
+func (h *teamsHandler) ArchiveTeamMembership(ctx context.Context, request *oapi.ArchiveTeamMembershipRequest) (*oapi.ArchiveTeamMembershipResponse, error) {
+	var resp oapi.ArchiveTeamMembershipResponse
+	
+	if delErr := h.memberships.DeleteOneID(request.Id).Exec(ctx); delErr != nil {
+		return nil, apiError("failed to archive team membership", delErr)
+	}
 	return &resp, nil
 }

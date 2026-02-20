@@ -26,6 +26,7 @@ func (User) Fields() []ent.Field {
 		field.String("auth_provider_id").Optional(),
 		field.String("email"),
 		field.String("name").Optional().Default(""),
+		field.Bool("is_org_admin").Default(false),
 		field.String("chat_id").Optional(),
 		field.String("timezone").Optional(),
 		field.Bool("confirmed").Default(false),
@@ -35,7 +36,8 @@ func (User) Fields() []ent.Field {
 // Edges of the User.
 func (User) Edges() []ent.Edge {
 	return []ent.Edge{
-		edge.From("teams", Team.Type).Ref("users"),
+		edge.To("teams", Team.Type).
+			Through("team_memberships", TeamMembership.Type),
 
 		edge.To("watched_oncall_rosters", OncallRoster.Type),
 

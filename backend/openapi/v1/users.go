@@ -2,10 +2,11 @@ package v1
 
 import (
 	"context"
+	"net/http"
+
 	"github.com/danielgtaylor/huma/v2"
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent"
-	"net/http"
 )
 
 type UsersHandler interface {
@@ -25,15 +26,17 @@ type (
 	}
 
 	UserAttributes struct {
-		Name  string `json:"name"`
-		Email string `json:"email"`
+		Name       string `json:"name"`
+		Email      string `json:"email"`
+		IsOrgAdmin bool   `json:"isOrgAdmin" default:"false" required:"false"`
 	}
 )
 
 func UserFromEnt(user *ent.User) User {
 	attr := UserAttributes{
-		Name:  user.Name,
-		Email: user.Email,
+		Name:       user.Name,
+		Email:      user.Email,
+		IsOrgAdmin: user.IsOrgAdmin,
 	}
 
 	return User{

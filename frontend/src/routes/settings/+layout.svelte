@@ -1,20 +1,23 @@
 <script lang="ts">
 	import { page } from "$app/state";
 	import { cn } from '$lib/utils';
-	import { mdiCog, mdiFire, mdiPuzzle } from "@mdi/js";
+	import { mdiAccountGroup, mdiCog, mdiFire, mdiPuzzle } from "@mdi/js";
 	import FilterPage from "$components/filter-page/FilterPage.svelte";
 
 	const { children } = $props();
 
 	const routes = [
 		{ label: "General", route: "", icon: mdiCog },
+		{ label: "Organization", route: "/organization", icon: mdiAccountGroup },
 		{ label: "Incidents", route: "/incidents", icon: mdiFire },
 		{ label: "Integrations", route: "/integrations", icon: mdiPuzzle },
 	];
 	const baseRoute = "/settings";
 
 	const activeRoute = $derived(page.route.id?.replace(baseRoute, "") ?? "");
-	const activeRouteIdx = $derived(routes.findIndex((p) => p.route === activeRoute));
+	const activeRouteIdx = $derived(
+		routes.findIndex((p) => (p.route === "" ? activeRoute === "" : activeRoute.startsWith(p.route)))
+	);
 </script>
 
 {#snippet filters()}
@@ -55,4 +58,3 @@
 		{@render children()}
 	</div>
 </div>
-

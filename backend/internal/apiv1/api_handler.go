@@ -65,7 +65,7 @@ func NewHandler(svcs *rez.Services, db *ent.Client) *Handler {
 		retrospectivesHandler:     newRetrospectivesHandler(svcs.Auth, svcs.Users, svcs.Incidents, svcs.Retros, svcs.Documents),
 		systemAnalysisHandler:     newSystemAnalysisHandler(db, svcs.Components),
 		systemComponentsHandler:   newSystemComponentsHandler(db, svcs.Components),
-		teamsHandler:              newTeamsHandler(db.Team),
+		teamsHandler:              newTeamsHandler(svcs.Auth, db.User, db.Team, db.TeamMembership),
 		usersHandler:              newUsersHandler(svcs.Users),
 	}
 }

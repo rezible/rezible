@@ -2201,6 +2201,52 @@ var (
 			},
 		},
 	}
+	// TeamMembershipsColumns holds the columns for the "team_memberships" table.
+	TeamMembershipsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUUID},
+		{Name: "role", Type: field.TypeEnum, Enums: []string{"admin", "member"}, Default: "member"},
+		{Name: "tenant_id", Type: field.TypeInt},
+		{Name: "team_id", Type: field.TypeUUID},
+		{Name: "user_id", Type: field.TypeUUID},
+	}
+	// TeamMembershipsTable holds the schema information for the "team_memberships" table.
+	TeamMembershipsTable = &schema.Table{
+		Name:       "team_memberships",
+		Columns:    TeamMembershipsColumns,
+		PrimaryKey: []*schema.Column{TeamMembershipsColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "team_memberships_tenants_tenant",
+				Columns:    []*schema.Column{TeamMembershipsColumns[2]},
+				RefColumns: []*schema.Column{TenantsColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+			{
+				Symbol:     "team_memberships_teams_team",
+				Columns:    []*schema.Column{TeamMembershipsColumns[3]},
+				RefColumns: []*schema.Column{TeamsColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+			{
+				Symbol:     "team_memberships_users_user",
+				Columns:    []*schema.Column{TeamMembershipsColumns[4]},
+				RefColumns: []*schema.Column{UsersColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+		},
+		Indexes: []*schema.Index{
+			{
+				Name:    "teammembership_tenant_id",
+				Unique:  false,
+				Columns: []*schema.Column{TeamMembershipsColumns[2]},
+			},
+			{
+				Name:    "teammembership_team_id_user_id",
+				Unique:  true,
+				Columns: []*schema.Column{TeamMembershipsColumns[3], TeamMembershipsColumns[4]},
+			},
+		},
+	}
 	// TenantsColumns holds the columns for the "tenants" table.
 	TenantsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeInt, Increment: true},
@@ -2245,6 +2291,7 @@ var (
 		{Name: "auth_provider_id", Type: field.TypeString, Nullable: true},
 		{Name: "email", Type: field.TypeString},
 		{Name: "name", Type: field.TypeString, Nullable: true, Default: ""},
+		{Name: "is_org_admin", Type: field.TypeBool, Default: false},
 		{Name: "chat_id", Type: field.TypeString, Nullable: true},
 		{Name: "timezone", Type: field.TypeString, Nullable: true},
 		{Name: "confirmed", Type: field.TypeBool, Default: false},
@@ -2258,7 +2305,7 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "users_tenants_tenant",
-				Columns:    []*schema.Column{UsersColumns[7]},
+				Columns:    []*schema.Column{UsersColumns[8]},
 				RefColumns: []*schema.Column{TenantsColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
@@ -2267,7 +2314,7 @@ var (
 			{
 				Name:    "user_tenant_id",
 				Unique:  false,
-				Columns: []*schema.Column{UsersColumns[7]},
+				Columns: []*schema.Column{UsersColumns[8]},
 			},
 		},
 	}
@@ -2707,31 +2754,6 @@ var (
 			},
 		},
 	}
-	// TeamUsersColumns holds the columns for the "team_users" table.
-	TeamUsersColumns = []*schema.Column{
-		{Name: "team_id", Type: field.TypeUUID},
-		{Name: "user_id", Type: field.TypeUUID},
-	}
-	// TeamUsersTable holds the schema information for the "team_users" table.
-	TeamUsersTable = &schema.Table{
-		Name:       "team_users",
-		Columns:    TeamUsersColumns,
-		PrimaryKey: []*schema.Column{TeamUsersColumns[0], TeamUsersColumns[1]},
-		ForeignKeys: []*schema.ForeignKey{
-			{
-				Symbol:     "team_users_team_id",
-				Columns:    []*schema.Column{TeamUsersColumns[0]},
-				RefColumns: []*schema.Column{TeamsColumns[0]},
-				OnDelete:   schema.Cascade,
-			},
-			{
-				Symbol:     "team_users_user_id",
-				Columns:    []*schema.Column{TeamUsersColumns[1]},
-				RefColumns: []*schema.Column{UsersColumns[0]},
-				OnDelete:   schema.Cascade,
-			},
-		},
-	}
 	// TeamOncallRostersColumns holds the columns for the "team_oncall_rosters" table.
 	TeamOncallRostersColumns = []*schema.Column{
 		{Name: "team_id", Type: field.TypeUUID},
@@ -2840,6 +2862,7 @@ var (
 		SystemRelationshipFeedbackSignalsTable,
 		TasksTable,
 		TeamsTable,
+		TeamMembershipsTable,
 		TenantsTable,
 		TicketsTable,
 		UsersTable,
@@ -2859,7 +2882,6 @@ var (
 		SystemHazardConstraintsTable,
 		SystemHazardRelationshipsTable,
 		TaskTicketsTable,
-		TeamUsersTable,
 		TeamOncallRostersTable,
 		UserWatchedOncallRostersTable,
 	}
@@ -2991,6 +3013,9 @@ func init() {
 	TasksTable.ForeignKeys[2].RefTable = UsersTable
 	TasksTable.ForeignKeys[3].RefTable = UsersTable
 	TeamsTable.ForeignKeys[0].RefTable = TenantsTable
+	TeamMembershipsTable.ForeignKeys[0].RefTable = TenantsTable
+	TeamMembershipsTable.ForeignKeys[1].RefTable = TeamsTable
+	TeamMembershipsTable.ForeignKeys[2].RefTable = UsersTable
 	TicketsTable.ForeignKeys[0].RefTable = TenantsTable
 	UsersTable.ForeignKeys[0].RefTable = TenantsTable
 	VideoConferencesTable.ForeignKeys[0].RefTable = IncidentsTable
@@ -3026,8 +3051,6 @@ func init() {
 	SystemHazardRelationshipsTable.ForeignKeys[1].RefTable = SystemComponentRelationshipsTable
 	TaskTicketsTable.ForeignKeys[0].RefTable = TasksTable
 	TaskTicketsTable.ForeignKeys[1].RefTable = TicketsTable
-	TeamUsersTable.ForeignKeys[0].RefTable = TeamsTable
-	TeamUsersTable.ForeignKeys[1].RefTable = UsersTable
 	TeamOncallRostersTable.ForeignKeys[0].RefTable = TeamsTable
 	TeamOncallRostersTable.ForeignKeys[1].RefTable = OncallRostersTable
 	UserWatchedOncallRostersTable.ForeignKeys[0].RefTable = UsersTable

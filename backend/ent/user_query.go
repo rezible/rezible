@@ -27,6 +27,7 @@ import (
 	"github.com/rezible/rezible/ent/retrospectivereview"
 	"github.com/rezible/rezible/ent/task"
 	"github.com/rezible/rezible/ent/team"
+	"github.com/rezible/rezible/ent/teammembership"
 	"github.com/rezible/rezible/ent/tenant"
 	"github.com/rezible/rezible/ent/user"
 )
@@ -52,6 +53,7 @@ type UserQuery struct {
 	withRetrospectiveReviewRequests  *RetrospectiveReviewQuery
 	withRetrospectiveReviewResponses *RetrospectiveReviewQuery
 	withRetrospectiveComments        *RetrospectiveCommentQuery
+	withTeamMemberships              *TeamMembershipQuery
 	withRoleAssignments              *IncidentRoleAssignmentQuery
 	modifiers                        []func(*sql.Selector)
 	// intermediate query (i.e. traversal path).
@@ -126,7 +128,7 @@ func (_q *UserQuery) QueryTeams() *TeamQuery {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(user.Table, user.FieldID, selector),
 			sqlgraph.To(team.Table, team.FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, true, user.TeamsTable, user.TeamsPrimaryKey...),
+			sqlgraph.Edge(sqlgraph.M2M, false, user.TeamsTable, user.TeamsPrimaryKey...),
 		)
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
@@ -398,6 +400,28 @@ func (_q *UserQuery) QueryRetrospectiveComments() *RetrospectiveCommentQuery {
 	return query
 }
 
+// QueryTeamMemberships chains the current query on the "team_memberships" edge.
+func (_q *UserQuery) QueryTeamMemberships() *TeamMembershipQuery {
+	query := (&TeamMembershipClient{config: _q.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := _q.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := _q.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(user.Table, user.FieldID, selector),
+			sqlgraph.To(teammembership.Table, teammembership.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, true, user.TeamMembershipsTable, user.TeamMembershipsColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
 // QueryRoleAssignments chains the current query on the "role_assignments" edge.
 func (_q *UserQuery) QueryRoleAssignments() *IncidentRoleAssignmentQuery {
 	query := (&IncidentRoleAssignmentClient{config: _q.config}).Query()
@@ -626,6 +650,7 @@ func (_q *UserQuery) Clone() *UserQuery {
 		withRetrospectiveReviewRequests:  _q.withRetrospectiveReviewRequests.Clone(),
 		withRetrospectiveReviewResponses: _q.withRetrospectiveReviewResponses.Clone(),
 		withRetrospectiveComments:        _q.withRetrospectiveComments.Clone(),
+		withTeamMemberships:              _q.withTeamMemberships.Clone(),
 		withRoleAssignments:              _q.withRoleAssignments.Clone(),
 		// clone intermediate query.
 		sql:       _q.sql.Clone(),
@@ -788,6 +813,17 @@ func (_q *UserQuery) WithRetrospectiveComments(opts ...func(*RetrospectiveCommen
 	return _q
 }
 
+// WithTeamMemberships tells the query-builder to eager-load the nodes that are connected to
+// the "team_memberships" edge. The optional arguments are used to configure the query builder of the edge.
+func (_q *UserQuery) WithTeamMemberships(opts ...func(*TeamMembershipQuery)) *UserQuery {
+	query := (&TeamMembershipClient{config: _q.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	_q.withTeamMemberships = query
+	return _q
+}
+
 // WithRoleAssignments tells the query-builder to eager-load the nodes that are connected to
 // the "role_assignments" edge. The optional arguments are used to configure the query builder of the edge.
 func (_q *UserQuery) WithRoleAssignments(opts ...func(*IncidentRoleAssignmentQuery)) *UserQuery {
@@ -883,7 +919,7 @@ func (_q *UserQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*User, e
 	var (
 		nodes       = []*User{}
 		_spec       = _q.querySpec()
-		loadedTypes = [15]bool{
+		loadedTypes = [16]bool{
 			_q.withTenant != nil,
 			_q.withTeams != nil,
 			_q.withWatchedOncallRosters != nil,
@@ -898,6 +934,7 @@ func (_q *UserQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*User, e
 			_q.withRetrospectiveReviewRequests != nil,
 			_q.withRetrospectiveReviewResponses != nil,
 			_q.withRetrospectiveComments != nil,
+			_q.withTeamMemberships != nil,
 			_q.withRoleAssignments != nil,
 		}
 	)
@@ -1029,6 +1066,13 @@ func (_q *UserQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*User, e
 			return nil, err
 		}
 	}
+	if query := _q.withTeamMemberships; query != nil {
+		if err := _q.loadTeamMemberships(ctx, query, nodes,
+			func(n *User) { n.Edges.TeamMemberships = []*TeamMembership{} },
+			func(n *User, e *TeamMembership) { n.Edges.TeamMemberships = append(n.Edges.TeamMemberships, e) }); err != nil {
+			return nil, err
+		}
+	}
 	if query := _q.withRoleAssignments; query != nil {
 		if err := _q.loadRoleAssignments(ctx, query, nodes,
 			func(n *User) { n.Edges.RoleAssignments = []*IncidentRoleAssignment{} },
@@ -1081,10 +1125,10 @@ func (_q *UserQuery) loadTeams(ctx context.Context, query *TeamQuery, nodes []*U
 	}
 	query.Where(func(s *sql.Selector) {
 		joinT := sql.Table(user.TeamsTable)
-		s.Join(joinT).On(s.C(team.FieldID), joinT.C(user.TeamsPrimaryKey[0]))
-		s.Where(sql.InValues(joinT.C(user.TeamsPrimaryKey[1]), edgeIDs...))
+		s.Join(joinT).On(s.C(team.FieldID), joinT.C(user.TeamsPrimaryKey[1]))
+		s.Where(sql.InValues(joinT.C(user.TeamsPrimaryKey[0]), edgeIDs...))
 		columns := s.SelectedColumns()
-		s.Select(joinT.C(user.TeamsPrimaryKey[1]))
+		s.Select(joinT.C(user.TeamsPrimaryKey[0]))
 		s.AppendSelect(columns...)
 		s.SetDistinct(false)
 	})
@@ -1536,6 +1580,36 @@ func (_q *UserQuery) loadRetrospectiveComments(ctx context.Context, query *Retro
 	}
 	query.Where(predicate.RetrospectiveComment(func(s *sql.Selector) {
 		s.Where(sql.InValues(s.C(user.RetrospectiveCommentsColumn), fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.UserID
+		node, ok := nodeids[fk]
+		if !ok {
+			return fmt.Errorf(`unexpected referenced foreign-key "user_id" returned %v for node %v`, fk, n.ID)
+		}
+		assign(node, n)
+	}
+	return nil
+}
+func (_q *UserQuery) loadTeamMemberships(ctx context.Context, query *TeamMembershipQuery, nodes []*User, init func(*User), assign func(*User, *TeamMembership)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[uuid.UUID]*User)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+		if init != nil {
+			init(nodes[i])
+		}
+	}
+	if len(query.ctx.Fields) > 0 {
+		query.ctx.AppendFieldOnce(teammembership.FieldUserID)
+	}
+	query.Where(predicate.TeamMembership(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(user.TeamMembershipsColumn), fks...))
 	}))
 	neighbors, err := query.All(ctx)
 	if err != nil {

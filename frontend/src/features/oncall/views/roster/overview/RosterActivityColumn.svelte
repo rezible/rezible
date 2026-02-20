@@ -37,6 +37,7 @@
 				attributes: {
 					name: "User Name",
 					email: "user@example.com",
+					isOrgAdmin: false,
 				},
 			},
 		},
@@ -50,6 +51,7 @@
 				attributes: {
 					name: "User Name",
 					email: "user@example.com",
+					isOrgAdmin: false,
 				},
 			},
 		},
@@ -63,6 +65,7 @@
 				attributes: {
 					name: "User Name",
 					email: "user@example.com",
+					isOrgAdmin: false,
 				},
 			},
 		},
@@ -76,6 +79,7 @@
 				attributes: {
 					name: "User Name",
 					email: "user@example.com",
+					isOrgAdmin: false,
 				},
 			},
 		},

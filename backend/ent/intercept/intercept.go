@@ -66,6 +66,7 @@ import (
 	"github.com/rezible/rezible/ent/systemrelationshipfeedbacksignal"
 	"github.com/rezible/rezible/ent/task"
 	"github.com/rezible/rezible/ent/team"
+	"github.com/rezible/rezible/ent/teammembership"
 	"github.com/rezible/rezible/ent/tenant"
 	"github.com/rezible/rezible/ent/ticket"
 	"github.com/rezible/rezible/ent/user"
@@ -1667,6 +1668,33 @@ func (f TraverseTeam) Traverse(ctx context.Context, q ent.Query) error {
 	return fmt.Errorf("unexpected query type %T. expect *ent.TeamQuery", q)
 }
 
+// The TeamMembershipFunc type is an adapter to allow the use of ordinary function as a Querier.
+type TeamMembershipFunc func(context.Context, *ent.TeamMembershipQuery) (ent.Value, error)
+
+// Query calls f(ctx, q).
+func (f TeamMembershipFunc) Query(ctx context.Context, q ent.Query) (ent.Value, error) {
+	if q, ok := q.(*ent.TeamMembershipQuery); ok {
+		return f(ctx, q)
+	}
+	return nil, fmt.Errorf("unexpected query type %T. expect *ent.TeamMembershipQuery", q)
+}
+
+// The TraverseTeamMembership type is an adapter to allow the use of ordinary function as Traverser.
+type TraverseTeamMembership func(context.Context, *ent.TeamMembershipQuery) error
+
+// Intercept is a dummy implementation of Intercept that returns the next Querier in the pipeline.
+func (f TraverseTeamMembership) Intercept(next ent.Querier) ent.Querier {
+	return next
+}
+
+// Traverse calls f(ctx, q).
+func (f TraverseTeamMembership) Traverse(ctx context.Context, q ent.Query) error {
+	if q, ok := q.(*ent.TeamMembershipQuery); ok {
+		return f(ctx, q)
+	}
+	return fmt.Errorf("unexpected query type %T. expect *ent.TeamMembershipQuery", q)
+}
+
 // The TenantFunc type is an adapter to allow the use of ordinary function as a Querier.
 type TenantFunc func(context.Context, *ent.TenantQuery) (ent.Value, error)
 
@@ -1892,6 +1920,8 @@ func NewQuery(q ent.Query) (Query, error) {
 		return &query[*ent.TaskQuery, predicate.Task, task.OrderOption]{typ: ent.TypeTask, tq: q}, nil
 	case *ent.TeamQuery:
 		return &query[*ent.TeamQuery, predicate.Team, team.OrderOption]{typ: ent.TypeTeam, tq: q}, nil
+	case *ent.TeamMembershipQuery:
+		return &query[*ent.TeamMembershipQuery, predicate.TeamMembership, teammembership.OrderOption]{typ: ent.TypeTeamMembership, tq: q}, nil
 	case *ent.TenantQuery:
 		return &query[*ent.TenantQuery, predicate.Tenant, tenant.OrderOption]{typ: ent.TypeTenant, tq: q}, nil
 	case *ent.TicketQuery:

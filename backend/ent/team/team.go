@@ -34,6 +34,8 @@ const (
 	EdgeOncallRosters = "oncall_rosters"
 	// EdgeScheduledMeetings holds the string denoting the scheduled_meetings edge name in mutations.
 	EdgeScheduledMeetings = "scheduled_meetings"
+	// EdgeTeamMemberships holds the string denoting the team_memberships edge name in mutations.
+	EdgeTeamMemberships = "team_memberships"
 	// Table holds the table name of the team in the database.
 	Table = "teams"
 	// TenantTable is the table that holds the tenant relation/edge.
@@ -44,7 +46,7 @@ const (
 	// TenantColumn is the table column denoting the tenant relation/edge.
 	TenantColumn = "tenant_id"
 	// UsersTable is the table that holds the users relation/edge. The primary key declared below.
-	UsersTable = "team_users"
+	UsersTable = "team_memberships"
 	// UsersInverseTable is the table name for the User entity.
 	// It exists in this package in order to avoid circular dependency with the "user" package.
 	UsersInverseTable = "users"
@@ -58,6 +60,13 @@ const (
 	// ScheduledMeetingsInverseTable is the table name for the MeetingSchedule entity.
 	// It exists in this package in order to avoid circular dependency with the "meetingschedule" package.
 	ScheduledMeetingsInverseTable = "meeting_schedules"
+	// TeamMembershipsTable is the table that holds the team_memberships relation/edge.
+	TeamMembershipsTable = "team_memberships"
+	// TeamMembershipsInverseTable is the table name for the TeamMembership entity.
+	// It exists in this package in order to avoid circular dependency with the "teammembership" package.
+	TeamMembershipsInverseTable = "team_memberships"
+	// TeamMembershipsColumn is the table column denoting the team_memberships relation/edge.
+	TeamMembershipsColumn = "team_id"
 )
 
 // Columns holds all SQL columns for team fields.
@@ -74,7 +83,7 @@ var Columns = []string{
 var (
 	// UsersPrimaryKey and UsersColumn2 are the table columns denoting the
 	// primary key for the users relation (M2M).
-	UsersPrimaryKey = []string{"team_id", "user_id"}
+	UsersPrimaryKey = []string{"user_id", "team_id"}
 	// OncallRostersPrimaryKey and OncallRostersColumn2 are the table columns denoting the
 	// primary key for the oncall_rosters relation (M2M).
 	OncallRostersPrimaryKey = []string{"team_id", "oncall_roster_id"}
@@ -191,6 +200,20 @@ func ByScheduledMeetings(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption
 		sqlgraph.OrderByNeighborTerms(s, newScheduledMeetingsStep(), append([]sql.OrderTerm{term}, terms...)...)
 	}
 }
+
+// ByTeamMembershipsCount orders the results by team_memberships count.
+func ByTeamMembershipsCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newTeamMembershipsStep(), opts...)
+	}
+}
+
+// ByTeamMemberships orders the results by team_memberships terms.
+func ByTeamMemberships(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newTeamMembershipsStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
 func newTenantStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
@@ -202,7 +225,7 @@ func newUsersStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(UsersInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.M2M, false, UsersTable, UsersPrimaryKey...),
+		sqlgraph.Edge(sqlgraph.M2M, true, UsersTable, UsersPrimaryKey...),
 	)
 }
 func newOncallRostersStep() *sqlgraph.Step {
@@ -217,5 +240,12 @@ func newScheduledMeetingsStep() *sqlgraph.Step {
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(ScheduledMeetingsInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.M2M, true, ScheduledMeetingsTable, ScheduledMeetingsPrimaryKey...),
+	)
+}
+func newTeamMembershipsStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(TeamMembershipsInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, true, TeamMembershipsTable, TeamMembershipsColumn),
 	)
 }

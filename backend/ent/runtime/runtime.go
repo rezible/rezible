@@ -64,6 +64,7 @@ import (
 	"github.com/rezible/rezible/ent/systemrelationshipfeedbacksignal"
 	"github.com/rezible/rezible/ent/task"
 	"github.com/rezible/rezible/ent/team"
+	"github.com/rezible/rezible/ent/teammembership"
 	"github.com/rezible/rezible/ent/tenant"
 	"github.com/rezible/rezible/ent/ticket"
 	"github.com/rezible/rezible/ent/user"
@@ -1246,6 +1247,22 @@ func init() {
 	teamDescID := teamFields[0].Descriptor()
 	// team.DefaultID holds the default value on creation for the id field.
 	team.DefaultID = teamDescID.Default.(func() uuid.UUID)
+	teammembershipMixin := schema.TeamMembership{}.Mixin()
+	teammembership.Policy = privacy.NewPolicies(teammembershipMixin[0], teammembershipMixin[1], schema.TeamMembership{})
+	teammembership.Hooks[0] = func(next ent.Mutator) ent.Mutator {
+		return ent.MutateFunc(func(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+			if err := teammembership.Policy.EvalMutation(ctx, m); err != nil {
+				return nil, err
+			}
+			return next.Mutate(ctx, m)
+		})
+	}
+	teammembershipFields := schema.TeamMembership{}.Fields()
+	_ = teammembershipFields
+	// teammembershipDescID is the schema descriptor for id field.
+	teammembershipDescID := teammembershipFields[0].Descriptor()
+	// teammembership.DefaultID holds the default value on creation for the id field.
+	teammembership.DefaultID = teammembershipDescID.Default.(func() uuid.UUID)
 	tenantMixin := schema.Tenant{}.Mixin()
 	tenant.Policy = privacy.NewPolicies(tenantMixin[0], schema.Tenant{})
 	tenant.Hooks[0] = func(next ent.Mutator) ent.Mutator {
@@ -1288,8 +1305,12 @@ func init() {
 	userDescName := userFields[3].Descriptor()
 	// user.DefaultName holds the default value on creation for the name field.
 	user.DefaultName = userDescName.Default.(string)
+	// userDescIsOrgAdmin is the schema descriptor for is_org_admin field.
+	userDescIsOrgAdmin := userFields[4].Descriptor()
+	// user.DefaultIsOrgAdmin holds the default value on creation for the is_org_admin field.
+	user.DefaultIsOrgAdmin = userDescIsOrgAdmin.Default.(bool)
 	// userDescConfirmed is the schema descriptor for confirmed field.
-	userDescConfirmed := userFields[6].Descriptor()
+	userDescConfirmed := userFields[7].Descriptor()
 	// user.DefaultConfirmed holds the default value on creation for the confirmed field.
 	user.DefaultConfirmed = userDescConfirmed.Default.(bool)
 	// userDescID is the schema descriptor for id field.

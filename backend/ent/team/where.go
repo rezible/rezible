@@ -487,7 +487,7 @@ func HasUsers() predicate.Team {
 	return predicate.Team(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, false, UsersTable, UsersPrimaryKey...),
+			sqlgraph.Edge(sqlgraph.M2M, true, UsersTable, UsersPrimaryKey...),
 		)
 		sqlgraph.HasNeighbors(s, step)
 	})
@@ -543,6 +543,29 @@ func HasScheduledMeetings() predicate.Team {
 func HasScheduledMeetingsWith(preds ...predicate.MeetingSchedule) predicate.Team {
 	return predicate.Team(func(s *sql.Selector) {
 		step := newScheduledMeetingsStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasTeamMemberships applies the HasEdge predicate on the "team_memberships" edge.
+func HasTeamMemberships() predicate.Team {
+	return predicate.Team(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, true, TeamMembershipsTable, TeamMembershipsColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasTeamMembershipsWith applies the HasEdge predicate on the "team_memberships" edge with a given conditions (other predicates).
+func HasTeamMembershipsWith(preds ...predicate.TeamMembership) predicate.Team {
+	return predicate.Team(func(s *sql.Selector) {
+		step := newTeamMembershipsStep()
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)
