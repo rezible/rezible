@@ -52,10 +52,11 @@ saml_cert_dir := "./backend/internal/http/saml/testdata"
 @run-backend-datasync: start-db
     DATASYNC_MODE="true" just run-backend integrations sync
 
-@test-backend *DIR:
+@test-backend:
     cd backend && \
         DB_URL='{{ test_db_url }}' \
-        go test ./{{DIR}}...
+        go test $(go list ./... | grep -v /ent/)
+
 
 # [group('Code Generation')]
 
@@ -103,20 +104,20 @@ saml_cert_dir := "./backend/internal/http/saml/testdata"
 
 migrations_dir := "backend/migrations"
 
-@gen-initial-migrations: create-db
-    rm -f backend/migrations/*
+@create-initial-migrations: create-db
+    rm -f ./{{migrations_dir}}/*.{sql,sum}
     just run-backend db-migrations generate ent_init
-    cd backend && go tool river migrate-get --all --exclude-version 1 --up > "./migrations/river_init.up.sql"
-    cd backend && go tool river migrate-get --all --exclude-version 1 --down > "./migrations/river_init.down.sql"
+    sleep 1
+    migrate create -ext sql -dir "{{migrations_dir}}" river_init
+    cd backend && go tool river migrate-get --all --exclude-version 1 --up > "migrations/$(ls migrations | grep 'river_init.up')"
+    cd backend && go tool river migrate-get --all --exclude-version 1 --down > "migrations/$(ls migrations | grep 'river_init.down')"
 
-
-@run-auto-migrations:
-    just run-backend db migrate apply auto
+@generate-migration NAME:
+    just run-backend db-migrations generate {{NAME}}
 
 @setup-db:
     just create-db
-    # just setup-migrations
-    just run-auto-migrations
+    migrate -source "file://backend/migrations" -database "{{dev_db_url}}" up
 
 @run-db:
     -pg_isready -q || pg_ctl -o "-k $PGHOST" -l "$PGDATA/postgres.log" start

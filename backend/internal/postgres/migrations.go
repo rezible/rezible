@@ -10,8 +10,9 @@ import (
 	"entgo.io/ent/dialect/sql/schema"
 	_ "github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/stdlib"
+
 	rez "github.com/rezible/rezible"
-	"github.com/rezible/rezible/ent/migrate"
+	entmigrate "github.com/rezible/rezible/ent/migrate"
 )
 
 func GenerateEntMigrations(ctx context.Context, name string) error {
@@ -37,5 +38,5 @@ func GenerateEntMigrations(ctx context.Context, name string) error {
 	if mErr != nil {
 		return fmt.Errorf("failed creating migrate: %v", mErr)
 	}
-	return m.NamedDiff(ctx, name, migrate.Tables...)
+	return m.NamedDiff(ctx, name, entmigrate.Tables...)
 }

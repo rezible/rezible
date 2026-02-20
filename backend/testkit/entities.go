@@ -16,7 +16,7 @@ func next(prefix string) string {
 	return fmt.Sprintf("%s_%d", prefix, seq.Add(1))
 }
 
-func (s *Suite) seedData() {
+func (s *Suite) seedTestEntities() {
 	if !s.opts.seedTenant {
 		return
 	}
@@ -46,11 +46,11 @@ func (s *Suite) seedData() {
 	}
 }
 
-func (s *Suite) CreateTestUser(ctx context.Context) *ent.User {
+func (s *Suite) CreateTestUser(ctx context.Context, name string) *ent.User {
 	s.T().Helper()
 	create := s.Client().User.Create().
 		SetEmail(next("user") + "@example.com").
-		SetName("Test User")
+		SetName(name)
 	u, saveErr := create.Save(ctx)
 	s.Require().NoError(saveErr, "failed to save user")
 	return u

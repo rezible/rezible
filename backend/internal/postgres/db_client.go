@@ -2,6 +2,7 @@ package postgres
 
 import (
 	"context"
+	"database/sql"
 	_ "embed"
 	"errors"
 	"fmt"
@@ -49,15 +50,20 @@ func NewDatabasePoolClient(ctx context.Context, connUrl string) (*DatabaseClient
 	return &DatabaseClient{pool: pool}, nil
 }
 
-func (dbc *DatabaseClient) newClient(driver dialect.Driver) *ent.Client {
-	return ent.NewClient(ent.Driver(driver))
+func MakeClient(driver dialect.Driver) *ent.Client {
+	client := ent.NewClient(ent.Driver(driver))
+	client.Use(ensureTenantIdSetHook)
+	client.Intercept(setTenantContextInterceptor())
+	return client
+}
+
+func ClientFromSql(db *sql.DB) *ent.Client {
+	return MakeClient(entsql.OpenDB("postgres", db))
 }
 
 func (dbc *DatabaseClient) Client() *ent.Client {
 	if dbc.client == nil {
-		dbc.client = dbc.newClient(entpgx.NewPgxPoolDriver(dbc.pool))
-		dbc.client.Use(ensureTenantIdSetHook)
-		dbc.client.Intercept(setTenantContextInterceptor())
+		dbc.client = MakeClient(entpgx.NewPgxPoolDriver(dbc.pool))
 	}
 	return dbc.client
 }

@@ -29,9 +29,9 @@ func (s *OrganizationsServiceSuite) TestFindOrCreateFromProviderCreatesTenantAnd
 	orgs, orgsErr := NewOrganizationsService(dbc, mocks.NewMockJobsService(s.T()))
 	s.Require().NoError(orgsErr)
 
-	ctx := s.SystemContext()
+	systemCtx := s.GetSystemContext()
 
-	beforeCount, beforeCountErr := dbc.Tenant.Query().Count(ctx)
+	beforeCount, beforeCountErr := dbc.Tenant.Query().Count(systemCtx)
 	s.Require().NoError(beforeCountErr)
 
 	externalId := "provider-org-1"
@@ -40,15 +40,15 @@ func (s *OrganizationsServiceSuite) TestFindOrCreateFromProviderCreatesTenantAnd
 		Name:       "Acme",
 	}
 
-	created, createErr := orgs.FindOrCreateFromProvider(ctx, providerOrg)
+	created, createErr := orgs.FindOrCreateFromProvider(systemCtx, providerOrg)
 	s.Require().NoError(createErr)
 	s.Equal(externalId, created.ExternalID)
 
-	found, findErr := orgs.FindOrCreateFromProvider(ctx, providerOrg)
+	found, findErr := orgs.FindOrCreateFromProvider(systemCtx, providerOrg)
 	s.Require().NoError(findErr)
 	s.Equal(created.ID, found.ID)
 
-	afterCount, afterCountErr := dbc.Tenant.Query().Count(ctx)
+	afterCount, afterCountErr := dbc.Tenant.Query().Count(systemCtx)
 	s.Require().NoError(afterCountErr)
 	s.Equal(beforeCount+1, afterCount)
 }
@@ -60,7 +60,7 @@ func (s *OrganizationsServiceSuite) TestFindOrCreateFromProviderDisallowsTenantC
 	providerOrg := ent.Organization{ExternalID: "provider-org-2", Name: "Nope"}
 
 	s.SetConfigOverrides(map[string]any{"disable_tenant_creation": true})
-	_, createErr := orgs.FindOrCreateFromProvider(s.SystemContext(), providerOrg)
+	_, createErr := orgs.FindOrCreateFromProvider(s.GetSystemContext(), providerOrg)
 	s.Require().Error(createErr)
 	s.ErrorIs(createErr, rez.ErrCannotCreateTenant)
 	s.SetConfigOverrides(nil)
@@ -74,11 +74,11 @@ func (s *OrganizationsServiceSuite) TestCompleteSetupEnqueuesSyncJobAndSetsTimes
 	orgs, orgsErr := NewOrganizationsService(dbc, jobs)
 	s.Require().NoError(orgsErr)
 
-	ctx := s.SeedTenantContext()
-	setupErr := orgs.CompleteSetup(ctx, s.SeedOrganization)
+	tenantCtx := s.GetSeedTenantContext()
+	setupErr := orgs.CompleteSetup(tenantCtx, s.SeedOrganization)
 	s.Require().NoError(setupErr)
 
-	updated, getErr := dbc.Organization.Get(ctx, s.SeedOrganization.ID)
+	updated, getErr := dbc.Organization.Get(tenantCtx, s.SeedOrganization.ID)
 	s.Require().NoError(getErr)
 	s.False(updated.InitialSetupAt.IsZero())
 }

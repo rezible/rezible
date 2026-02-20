@@ -11,7 +11,8 @@
     "postgresql":                  "latest",
     "go":                          "latest",
     "process-compose":             "latest",
-    "github:peterldowns/localias": ""
+    "github:peterldowns/localias": "",
+    "go-migrate":                  "4.18.1"
   },
   "env": {
     "OLD_DB_URL": "postgresql://localhost/rezible?sslmode=disable"
