@@ -14,7 +14,7 @@
     "github:peterldowns/localias": ""
   },
   "env": {
-    "DB_URL": "postgresql://localhost/rezible?sslmode=disable"
+    "OLD_DB_URL": "postgresql://localhost/rezible?sslmode=disable"
   },
   "shell": {
     "init_hook": ["unset DEVELOPER_DIR"],

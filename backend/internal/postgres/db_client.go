@@ -6,8 +6,6 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/rezible/rezible/access"
-	"github.com/rezible/rezible/ent/entpgx"
 	"github.com/rs/zerolog/log"
 
 	"entgo.io/ent/dialect"
@@ -15,7 +13,9 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 	_ "github.com/jackc/pgx/v5/stdlib"
 
+	"github.com/rezible/rezible/access"
 	"github.com/rezible/rezible/ent"
+	"github.com/rezible/rezible/ent/entpgx"
 )
 
 type DatabaseClient struct {
@@ -23,7 +23,7 @@ type DatabaseClient struct {
 	client *ent.Client
 }
 
-func NewDatabasePoolClient(ctx context.Context, connUrl string) (*DatabaseClient, error) {
+func openPgxPool(ctx context.Context, connUrl string) (*pgxpool.Pool, error) {
 	cfg, cfgErr := pgxpool.ParseConfig(connUrl)
 	if cfgErr != nil {
 		return nil, fmt.Errorf("parse config: %w", cfgErr)
@@ -38,6 +38,14 @@ func NewDatabasePoolClient(ctx context.Context, connUrl string) (*DatabaseClient
 		return nil, fmt.Errorf("ping: %w", pingErr)
 	}
 
+	return pool, nil
+}
+
+func NewDatabasePoolClient(ctx context.Context, connUrl string) (*DatabaseClient, error) {
+	pool, poolErr := openPgxPool(ctx, connUrl)
+	if poolErr != nil {
+		return nil, poolErr
+	}
 	return &DatabaseClient{pool: pool}, nil
 }
 

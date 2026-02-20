@@ -25,23 +25,6 @@ import (
 	"github.com/rezible/rezible/jobs"
 )
 
-func RunAutoMigrations(ctx context.Context) error {
-	dbc, dbcErr := OpenDatabase(ctx)
-	if dbcErr != nil {
-		return fmt.Errorf("open database connection: %w", dbcErr)
-	}
-	defer dbc.Close()
-	return dbc.RunAutoMigrations(ctx)
-}
-
-func OpenDatabase(ctx context.Context) (rez.Database, error) {
-	dbc, dbcErr := postgres.NewDatabasePoolClient(ctx, rez.Config.DatabaseUrl())
-	if dbcErr != nil {
-		return nil, fmt.Errorf("postgres.NewDatabasePoolClient: %w", dbcErr)
-	}
-	return dbc, nil
-}
-
 func RunIntegrationsDataSync(ctx context.Context, args jobs.SyncIntegrationsData) error {
 	ctx = access.SystemContext(ctx)
 	srv := newServer()
@@ -143,13 +126,13 @@ func (s *Server) stop() error {
 }
 
 func (s *Server) setup(ctx context.Context) error {
-	conn, dbErr := OpenDatabase(ctx)
-	if dbErr != nil {
-		return dbErr
+	dbc, dbcErr := postgres.NewDatabasePoolClient(ctx, rez.Config.DatabaseUrl())
+	if dbcErr != nil {
+		return fmt.Errorf("postgres.NewDatabasePoolClient: %w", dbcErr)
 	}
-	s.addEventListener("database", db.NewListener(conn))
+	s.addEventListener("database", db.NewListener(dbc))
 
-	jobSvc, jobSvcErr := makeJobService(conn)
+	jobSvc, jobSvcErr := makeJobService(dbc)
 	if jobSvcErr != nil {
 		return fmt.Errorf("job service: %w", jobSvcErr)
 	}
@@ -161,7 +144,7 @@ func (s *Server) setup(ctx context.Context) error {
 	}
 	s.addEventListener("message_service", msgs)
 
-	s.dbClient = conn.Client()
+	s.dbClient = dbc.Client()
 	svcs, svcsErr := s.setupServices(ctx, s.dbClient, jobSvc, msgs)
 	if svcsErr != nil {
 		return fmt.Errorf("services: %w", svcsErr)

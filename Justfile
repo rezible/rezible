@@ -1,13 +1,19 @@
 set shell := ["bash", "-uc"]
 set dotenv-load
 
-frontend_dist_dir := "./backend/internal/http/frontend-dist"
-saml_cert_dir := "./backend/internal/http/saml/testdata"
+dev_db_user := "rezible"
+dev_db_name := "rezible"
+dev_db_url := "postgresql://"+dev_db_user+"@localhost"+"/"+dev_db_name+"?sslmode=disable"
+dev_db_url_docker := "postgresql://"+dev_db_user+"@host.docker.internal"+"/"+dev_db_name+"?sslmode=disable"
+test_db_url := "postgresql://"+dev_db_user+"@localhost"+"?sslmode=disable"
 
 _default:
   @just --list
 
 # [group('Setup')]
+
+frontend_dist_dir := "./backend/internal/http/frontend-dist"
+saml_cert_dir := "./backend/internal/http/saml/testdata"
 
 @setup:
     mkdir -p "{{ frontend_dist_dir }}" && echo "<p>this will be replaced by the frontend build</p>" > "{{ frontend_dist_dir }}/index.html"
@@ -28,7 +34,28 @@ _default:
     bun update
 
 @run-backend *ARGS:
-    cd backend && DB_URL="$DB_URL" DEBUG_MODE=true go run ./cmd/rezible {{ARGS}}
+    cd backend && \
+        DEBUG_MODE=true \
+        DB_URL='{{ dev_db_url }}' \
+        go run ./cmd/rezible {{ARGS}}
+
+@run-frontend *ARGS:
+    cd frontend && \
+        PUBLIC_REZ_API_BASE_URL="/api/v1" \
+        bun run {{ARGS}}
+
+@run-documents-server *ARGS:
+    cd documents-server && \
+        DB_URL='{{ dev_db_url }}' \
+        bun run {{ARGS}}
+
+@run-backend-datasync: start-db
+    DATASYNC_MODE="true" just run-backend integrations sync
+
+@test-backend *DIR:
+    cd backend && \
+        DB_URL='{{ test_db_url }}' \
+        go test ./{{DIR}}...
 
 # [group('Code Generation')]
 
@@ -47,7 +74,7 @@ _default:
     just run-backend openapi > /tmp/rezible-spec.yaml
     bun run codegen:api
 
-# [group('Development')]
+# [group('Development Servers')]
 
 @dev: stop-db
     process-compose --ordered-shutdown
@@ -60,55 +87,45 @@ _default:
     cd backend && reflex -s -d none -r '\.go$' -- just run-backend
 
 @dev-frontend:
-    cd frontend && PUBLIC_REZ_API_BASE_URL="/api/v1" bun run dev
+    just run-frontend dev
 
 @dev-documents-server:
-    cd documents-server && bun run dev
-
-@run-datasync: start-db
-    DATASYNC_MODE="true" just run-backend integrations sync
-
-@test-backend:
-    cd backend && go test ./...
-
-@test-backend-db:
-    cd backend && go test ./internal/db/...
-
-@test-backend-db-verbose:
-    cd backend && go test -v ./internal/db/...
+    just run-documents-server dev
 
 # [group('Database')]
+
 @create-db: stop-db
     rm -rf ./.devbox/virtenv/postgresql/data
     initdb -A trust > /dev/null
     just start-db
-    createdb rezible
+    psql -q -d postgres -c "CREATE ROLE {{dev_db_user}} WITH LOGIN SUPERUSER;"
+    createdb -U {{dev_db_user}} {{dev_db_name}}
+
+migrations_dir := "backend/migrations"
+
+@gen-initial-migrations: create-db
+    rm -f backend/migrations/*
+    just run-backend db-migrations generate ent_init
+    cd backend && go tool river migrate-get --all --exclude-version 1 --up > "./migrations/river_init.up.sql"
+    cd backend && go tool river migrate-get --all --exclude-version 1 --down > "./migrations/river_init.down.sql"
+
+
+@run-auto-migrations:
+    just run-backend db migrate apply auto
 
 @setup-db:
     just create-db
     # just setup-migrations
     just run-auto-migrations
-    # just run-backend load-fake-config
 
-@setup-migrations:
-    cd backend/internal/postgres/migrations && \
-      go tool river migrate-get --all --exclude-version 1 --up > river_all.up.sql && \
-      go tool river migrate-get --all --exclude-version 1 --down > river_all.down.sql
+@run-db:
+    -pg_isready -q || pg_ctl -o "-k $PGHOST" -l "$PGDATA/postgres.log" start
 
-@run-auto-migrations:
-    just run-backend db migrate apply auto
-
-@seed-db:
-    just run-backend seed
-
-@run-db: stop-db
-    -pg_isready -q || pg_ctl -o "-k $PGHOST" start
-
-@start-db: stop-db
+@start-db:
    just run-db > /dev/null
 
 @run-psql:
-    psql -d rezible
+    psql -d {{dev_db_url}}
 
 @stop-db:
     -pg_isready -q && pg_ctl stop > /dev/null

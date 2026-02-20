@@ -7,6 +7,7 @@ import (
 	"os/signal"
 	"syscall"
 
+	"github.com/rezible/rezible/internal/postgres"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 	"github.com/spf13/cobra"
@@ -65,36 +66,16 @@ var integrationsSyncCmd = &cobra.Command{
 	},
 }
 
-var dbCmd = &cobra.Command{
-	Use: "db",
+var dbMigrationsCmd = &cobra.Command{
+	Use: "db-migrations",
 }
 
-var dbMigrateCmd = &cobra.Command{
-	Use: "migrate",
-}
-
-var dbMigrateGenerateCmd = &cobra.Command{
+var dbMigrationsGenerateCmd = &cobra.Command{
 	Use:   "generate [name]",
 	Short: "create a new migration",
 	Args:  cobra.ExactArgs(1),
-	Run: func(cmd *cobra.Command, args []string) {
-
-	},
-}
-
-var dbMigrateApplyCmd = &cobra.Command{
-	Use:   "apply [direction]",
-	Short: "apply database migrations",
-	Args:  cobra.ExactArgs(1),
-	Run: func(cmd *cobra.Command, args []string) {
-		direction := args[0]
-		if direction == "auto" {
-			if migErr := internal.RunAutoMigrations(cmd.Context()); migErr != nil {
-				log.Fatal().Err(migErr).Msg("failed to apply database migrations")
-			}
-		} else {
-			log.Warn().Str("direction", direction).Msg("version migrations not implemented")
-		}
+	RunE: func(cmd *cobra.Command, args []string) error {
+		return postgres.GenerateEntMigrations(cmd.Context(), args[0])
 	},
 }
 
@@ -107,12 +88,11 @@ func init() {
 	}
 
 	rootCmd.Run = serveCmd.Run
-	rootCmd.AddCommand(serveCmd, printSpecCmd, integrationsCmd, dbCmd)
+	rootCmd.AddCommand(serveCmd, printSpecCmd, integrationsCmd, dbMigrationsCmd)
 
 	integrationsCmd.AddCommand(integrationsSyncCmd)
 
-	dbCmd.AddCommand(dbMigrateCmd)
-	dbMigrateCmd.AddCommand(dbMigrateGenerateCmd, dbMigrateApplyCmd)
+	dbMigrationsCmd.AddCommand(dbMigrationsGenerateCmd)
 }
 
 func main() {

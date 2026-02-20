@@ -61,11 +61,7 @@ func (s *Suite) SetupSuite() {
 	rez.Config = viper.NewConfigLoader(viper.ConfigLoaderOptions{
 		LoadEnvironment: true,
 	})
-	s.dbConnUrl = rez.Config.DatabaseUrl()
-	s.Require().NotEmpty(s.dbConnUrl, "database url is empty")
-
 	s.setupTestDatabase()
-	s.seedData()
 }
 
 func (s *Suite) SetConfigOverrides(overrides map[string]any) {
@@ -133,6 +129,10 @@ func (s *Suite) withPostgresClient(ctx context.Context, fn func(pc *postgres.Dat
 func (s *Suite) setupTestDatabase() {
 	ctx := s.T().Context()
 
+	s.dbConnUrl = rez.Config.DatabaseUrl()
+	s.Require().NotEmpty(s.dbConnUrl, "database url is empty")
+	s.seedData()
+
 	dbUrl, dbUrlParseErr := url.Parse(s.dbConnUrl)
 	s.Require().NoError(dbUrlParseErr, "failed to parse database url")
 
@@ -150,7 +150,7 @@ func (s *Suite) setupTestDatabase() {
 	s.Require().NoError(s.withPostgresClient(ctx, createTestDbFn))
 	pc, pcErr := postgres.NewDatabasePoolClient(ctx, s.testDbUrl)
 	s.Require().NoError(pcErr, "failed to connect to postgres database")
-	s.Require().NoError(pc.RunAutoMigrations(ctx), "failed to apply test database migrations")
+	//s.Require().NoError(pc.RunAutoMigrations(ctx), "failed to apply test database migrations")
 	s.testDb = pc
 }
 

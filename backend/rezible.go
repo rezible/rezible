@@ -62,7 +62,6 @@ type EventListener interface {
 
 type Database interface {
 	Client() *ent.Client
-	RunAutoMigrations(context.Context) error
 	Close() error
 }
 

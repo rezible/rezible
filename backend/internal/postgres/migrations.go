@@ -4,25 +4,38 @@ import (
 	"context"
 	"fmt"
 
+	"ariga.io/atlas/sql/sqltool"
 	"entgo.io/ent/dialect"
 	entsql "entgo.io/ent/dialect/sql"
-	"github.com/rezible/rezible/internal/postgres/river"
-
+	"entgo.io/ent/dialect/sql/schema"
+	_ "github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/stdlib"
+	rez "github.com/rezible/rezible"
+	"github.com/rezible/rezible/ent/migrate"
 )
 
-func (c *DatabaseClient) RunAutoMigrations(ctx context.Context) error {
-	client := c.newClient(entsql.OpenDB(dialect.Postgres, stdlib.OpenDBFromPool(c.pool)))
-	if schemaErr := client.Schema.Create(ctx); schemaErr != nil {
-		return fmt.Errorf("create schema: %w", schemaErr)
+func GenerateEntMigrations(ctx context.Context, name string) error {
+	pool, poolErr := openPgxPool(ctx, rez.Config.DatabaseUrl())
+	if poolErr != nil {
+		return poolErr
+	}
+	defer pool.Close()
+
+	dir, err := sqltool.NewGolangMigrateDir("./migrations")
+	if err != nil {
+		return fmt.Errorf("failed creating atlas migration directory: %v", err)
+	}
+	// Migrate diff options.
+	opts := []schema.MigrateOption{
+		schema.WithDir(dir),
+		schema.WithMigrationMode(schema.ModeReplay),
+		schema.WithDialect(dialect.Postgres),
 	}
 
-	// TODO: enable RLS?
-	// https://entgo.io/docs/migration/row-level-security
-
-	if riverErr := river.RunMigrations(ctx, c.pool); riverErr != nil {
-		return fmt.Errorf("failed to run river migrations: %w", riverErr)
+	driver := entsql.OpenDB(dialect.Postgres, stdlib.OpenDBFromPool(pool))
+	m, mErr := schema.NewMigrate(driver, opts...)
+	if mErr != nil {
+		return fmt.Errorf("failed creating migrate: %v", mErr)
 	}
-
-	return nil
+	return m.NamedDiff(ctx, name, migrate.Tables...)
 }
