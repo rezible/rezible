@@ -1,4 +1,4 @@
-import { useAlertViewState } from "$features/alert";
+import { useAlertViewController } from "$features/alerts/views/alert";
 import { listAlertIncidentLinksOptions, type ListIncidentsData } from "$lib/api";
 import { QueryPaginatorState } from "$lib/paginator.svelte";
 import { createQuery } from "@tanstack/svelte-query";
@@ -12,8 +12,8 @@ const defaultDateRange = () => {
 	}
 }
 
-export class AlertIncidentsState {
-	viewState = useAlertViewState();
+export class AlertIncidentsViewController {
+	view = useAlertViewController();
 
 	paginator = new QueryPaginatorState();
 
@@ -23,7 +23,7 @@ export class AlertIncidentsState {
 	queryParams = $derived<ListIncidentsData["query"]>({
 		...this.paginator.queryParams,
 	});
-	query = createQuery(() => listAlertIncidentLinksOptions({ path: {id: this.viewState.alertId}, query: this.queryParams }));
+	query = createQuery(() => listAlertIncidentLinksOptions({ path: {id: this.view.alertId}, query: this.queryParams }));
 
 	constructor() {
 		this.paginator.watchQuery(this.query);

@@ -13,7 +13,7 @@ import {
 	type UpdateSystemAnalysisRelationshipAttributes,
 } from "$lib/api";
 import { Context } from "runed";
-import { useIncidentViewState } from "$features/incident";
+import { useIncidentViewController } from "../controller.svelte";
 import type { ComponentProps } from "svelte";
 
 import IncidentTimelineContextMenu from "./incident-timeline/IncidentTimelineContextMenu.svelte";
@@ -25,8 +25,8 @@ type ContextMenuProps = {
 }
 
 export class IncidentAnalysisState {
-	viewState = useIncidentViewState();
-	analysisId = $derived(this.viewState.systemAnalysisId || "");
+	view = useIncidentViewController();
+	analysisId = $derived(this.view.systemAnalysisId || "");
 
 	contextMenu = $state<ContextMenuProps>({});
 

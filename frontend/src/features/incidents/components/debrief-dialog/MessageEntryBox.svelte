@@ -5,8 +5,8 @@
 		type IncidentDebriefMessage,
 	} from "$lib/api";
 	import { mdiArrowRight } from "@mdi/js";
-	import { useQueryClient, createMutation } from "@tanstack/svelte-query";
-	import Button from "$components/button/Button.svelte";
+	import { createMutation } from "@tanstack/svelte-query";
+	import { Button } from "$components/ui/button";
 
 	type Props = {
 		debrief: IncidentDebrief;
@@ -47,9 +47,7 @@
 
 	<Button
 		color="accent"
-		variant="fill"
 		disabled={disabled || !value}
-		icon={mdiArrowRight}
 		class="flex-row-reverse"
 		onclick={sendMessage}
 	>

@@ -81,7 +81,7 @@ export class RetrospectiveCollaborationState {
 
 		const config: HocuspocusProviderConfiguration = {
 			url: sess.connectionUrl,
-			token: sess.token,
+			token: sess.sessionToken,
 			name: sess.documentId,
 			onAwarenessChange: (e) => this.onAwarenessChange(e),
 			onStatus: (e) => this.onConnectionStatusChange(e),

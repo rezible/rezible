@@ -10,7 +10,7 @@ import {
 import { createMutation } from "@tanstack/svelte-query";
 import { Context, watch } from "runed";
 
-import { useIncidentViewState } from "$features/incident";
+import { useIncidentViewController } from "$features/incidents/views/incident";
 import { TimelineState } from "../timelineState.svelte";
 import { eventAttributes } from "./attribute-panels/eventAttributesState.svelte";
 
@@ -27,8 +27,8 @@ export class EventDialogState {
 
 	constructor(tl: TimelineState) {
 		this.timeline = tl;
-		const viewState = useIncidentViewState();
-		watch(() => viewState.incident, inc => {this.incident = inc});
+		const view = useIncidentViewController();
+		watch(() => view.incident, inc => {this.incident = inc});
 	}
 
 	setView(v: EditorDialogView) {

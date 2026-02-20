@@ -1,4 +1,4 @@
-import { useAlertViewState } from "$features/alert";
+import { useAlertViewController } from "$features/alerts/views/alert";
 import { listEventsOptions, type ListEventsData, type Event, type EventAttributes } from "$lib/api";
 import { QueryPaginatorState } from "$lib/paginator.svelte";
 import { createQuery } from "@tanstack/svelte-query";
@@ -14,8 +14,8 @@ const defaultDateRange = () => {
 	}
 }
 
-export class AlertEventsState {
-	viewState = useAlertViewState();
+export class AlertEventsViewController {
+	view = useAlertViewController();
 
 	paginator = new QueryPaginatorState();
 

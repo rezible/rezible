@@ -1,10 +1,10 @@
 <script lang="ts">
 	import LoadingQueryWrapper from "$src/components/loader/LoadingQueryWrapper.svelte";
 	import AlertIncidentsFilters from "./AlertIncidentsFilters.svelte";
-	import { AlertIncidentsState } from "./alertIncidentsState.svelte";
+	import { AlertIncidentsViewController } from "./alertIncidentsViewController.svelte";
 	import type { Incident } from "$lib/api";
 
-	const incState = new AlertIncidentsState();
+	const incState = new AlertIncidentsViewController();
 </script>
 
 {#snippet incidentListItem(inc: Incident)}
