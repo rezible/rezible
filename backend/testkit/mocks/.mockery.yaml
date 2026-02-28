@@ -1,16 +1,15 @@
-with-expecter: true
-issue-845-fix: true
-resolve-type-alias: false
-disable-version-string: true
-
+template: testify
+filename: mocks.go
+template-data:
+  unroll-variadic: true
+# all: true
 packages:
   github.com/rezible/rezible:
     config:
       dir: .
-      outpkg: mocks
-      filename: "{{ .InterfaceName }}.go"
+      pkgname: mocks
     interfaces:
       JobsService: {}
       MessageService: {}
-      UserService: {}
       OrganizationService: {}
+      UserService: {}
