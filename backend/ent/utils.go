@@ -121,6 +121,23 @@ func DoListQuery[T any, Q any](ctx context.Context, query listQuery[T, Q], p Lis
 	return res, nil
 }
 
+func (ims IncidentMilestones) GetLatest() *IncidentMilestone {
+	if len(ims) == 0 {
+		return nil
+	}
+	var latest *IncidentMilestone
+	for _, im := range ims {
+		if latest == nil || latest.Timestamp.After(im.Timestamp) {
+			latest = im
+		}
+	}
+	return latest
+}
+
+func (ie IncidentEdges) GetLatestMilestone() *IncidentMilestone {
+	return IncidentMilestones(ie.Milestones).GetLatest()
+}
+
 func (vcs VideoConferences) GetPrimary() *VideoConference {
 	var active *VideoConference
 	var latest *VideoConference

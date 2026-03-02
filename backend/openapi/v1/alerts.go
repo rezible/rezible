@@ -5,10 +5,10 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/danielgtaylor/huma/v2"
 	"github.com/google/uuid"
 
 	"github.com/rezible/rezible/ent"
+	"github.com/rezible/rezible/openapi"
 )
 
 type AlertsHandler interface {
@@ -18,11 +18,11 @@ type AlertsHandler interface {
 	ListAlertIncidentLinks(context.Context, *ListAlertIncidentLinksRequest) (*ListAlertIncidentLinksResponse, error)
 }
 
-func (o operations) RegisterAlerts(api huma.API) {
-	huma.Register(api, ListAlerts, o.ListAlerts)
-	huma.Register(api, GetAlert, o.GetAlert)
-	huma.Register(api, GetAlertMetrics, o.GetAlertMetrics)
-	huma.Register(api, ListAlertIncidentLinks, o.ListAlertIncidentLinks)
+func (o operations) RegisterAlerts(api openapi.API) {
+	openapi.Register(api, ListAlerts, o.ListAlerts)
+	openapi.Register(api, GetAlert, o.GetAlert)
+	openapi.Register(api, GetAlertMetrics, o.GetAlertMetrics)
+	openapi.Register(api, ListAlertIncidentLinks, o.ListAlertIncidentLinks)
 }
 
 type (
@@ -121,13 +121,13 @@ var alertsTags = []string{"Alerts"}
 
 // ops
 
-var ListAlerts = huma.Operation{
+var ListAlerts = openapi.Operation{
 	OperationID: "list-alerts",
 	Method:      http.MethodGet,
 	Path:        "/alerts",
 	Summary:     "List Alerts",
 	Tags:        alertsTags,
-	Errors:      errorCodes(),
+	Errors:      openapi.ErrorCodes(),
 }
 
 type ListAlertsRequest struct {
@@ -136,13 +136,13 @@ type ListAlertsRequest struct {
 }
 type ListAlertsResponse PaginatedResponse[Alert]
 
-var GetAlert = huma.Operation{
+var GetAlert = openapi.Operation{
 	OperationID: "get-alert",
 	Method:      http.MethodGet,
 	Path:        "/alerts/{id}",
 	Summary:     "Get Alert",
 	Tags:        alertsTags,
-	Errors:      errorCodes(),
+	Errors:      openapi.ErrorCodes(),
 }
 
 type GetAlertRequest struct {
@@ -150,13 +150,13 @@ type GetAlertRequest struct {
 }
 type GetAlertResponse ItemResponse[Alert]
 
-var GetAlertMetrics = huma.Operation{
+var GetAlertMetrics = openapi.Operation{
 	OperationID: "get-alert-metrics",
 	Method:      http.MethodGet,
 	Path:        "/alerts/{id}/metrics",
 	Summary:     "Get Alert Metrics",
 	Tags:        alertsTags,
-	Errors:      errorCodes(),
+	Errors:      openapi.ErrorCodes(),
 }
 
 type GetAlertMetricsRequest struct {
@@ -167,13 +167,13 @@ type GetAlertMetricsRequest struct {
 }
 type GetAlertMetricsResponse ItemResponse[AlertMetrics]
 
-var ListAlertIncidentLinks = huma.Operation{
+var ListAlertIncidentLinks = openapi.Operation{
 	OperationID: "list-alert-incident-links",
 	Method:      http.MethodGet,
 	Path:        "/alerts/{id}/incident_links",
 	Summary:     "List Incident Links for an Alert",
 	Tags:        alertsTags,
-	Errors:      errorCodes(),
+	Errors:      openapi.ErrorCodes(),
 }
 
 type ListAlertIncidentLinksRequest struct {

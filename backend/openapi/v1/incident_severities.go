@@ -2,8 +2,11 @@ package v1
 
 import (
 	"context"
+
 	"github.com/danielgtaylor/huma/v2"
 	"github.com/google/uuid"
+	"github.com/rezible/rezible/openapi"
+
 	"net/http"
 
 	"github.com/rezible/rezible/ent"
@@ -61,7 +64,7 @@ var ListIncidentSeverities = huma.Operation{
 	Path:        "/incident_severities",
 	Summary:     "List Severities",
 	Tags:        incidentSeveritiesTags,
-	Errors:      errorCodes(),
+	Errors:      openapi.ErrorCodes(),
 }
 
 type ListIncidentSeveritiesRequest ListRequest
@@ -73,7 +76,7 @@ var GetIncidentSeverity = huma.Operation{
 	Path:        "/incident_severities/{id}",
 	Summary:     "Get a Severity",
 	Tags:        incidentSeveritiesTags,
-	Errors:      errorCodes(),
+	Errors:      openapi.ErrorCodes(),
 }
 
 type GetIncidentSeverityRequest GetIdRequest
@@ -85,7 +88,7 @@ var CreateIncidentSeverity = huma.Operation{
 	Path:        "/incident_severities",
 	Summary:     "Create a Severity",
 	Tags:        incidentSeveritiesTags,
-	Errors:      errorCodes(),
+	Errors:      openapi.ErrorCodes(),
 }
 
 type CreateIncidentSeverityAttributes struct {
@@ -101,7 +104,7 @@ var UpdateIncidentSeverity = huma.Operation{
 	Path:        "/incident_severities/{id}",
 	Summary:     "Update a Severity",
 	Tags:        incidentSeveritiesTags,
-	Errors:      errorCodes(),
+	Errors:      openapi.ErrorCodes(),
 }
 
 type UpdateIncidentSeverityAttributes struct {
@@ -118,7 +121,7 @@ var ArchiveIncidentSeverity = huma.Operation{
 	Path:        "/incident_severities/{id}",
 	Summary:     "Archive a Severity",
 	Tags:        incidentSeveritiesTags,
-	Errors:      errorCodes(),
+	Errors:      openapi.ErrorCodes(),
 }
 
 type ArchiveIncidentSeverityRequest ArchiveIdRequest

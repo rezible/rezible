@@ -30,14 +30,14 @@ func newIncidentEventHandler(sl *serviceLoader, msgs rez.MessageService, inciden
 
 func (h *incidentEventHandler) registerHandlers() error {
 	cmdsErr := h.msgs.AddCommandHandlers(
-		rez.NewCommandHandler("SlackCreateIncidentChannel", h.createIncidentChannel),
-		rez.NewCommandHandler("SlackSendIncidentMilestoneMessage", h.sendIncidentMilestoneMessage))
+		rez.NewCommandHandler("slack.create_incident_channel", h.createIncidentChannel),
+		rez.NewCommandHandler("slack.send_incident_milestone_message", h.sendIncidentMilestoneMessage))
 	if cmdsErr != nil {
 		return fmt.Errorf("commands: %w", cmdsErr)
 	}
 	eventsErr := h.msgs.AddEventHandlers(
-		rez.NewEventHandler("SlackOnIncidentUpdate", h.onIncidentUpdate),
-		rez.NewEventHandler("SlackOnIncidentMilestone", h.onIncidentMilestone))
+		rez.NewEventHandler("slack.on_incident_updated", h.onIncidentUpdated),
+		rez.NewEventHandler("slack.on_incident_milestone_updated", h.onIncidentMilestoneUpdated))
 	if eventsErr != nil {
 		return fmt.Errorf("events: %w", eventsErr)
 	}
@@ -45,7 +45,7 @@ func (h *incidentEventHandler) registerHandlers() error {
 	return nil
 }
 
-func (h *incidentEventHandler) onIncidentUpdate(ctx context.Context, ev *rez.EventOnIncidentUpdated) error {
+func (h *incidentEventHandler) onIncidentUpdated(ctx context.Context, ev *rez.EventOnIncidentUpdated) error {
 	chat, loadChatErr := h.svcLoader.fromContext(ctx)
 	if chat == nil {
 		return loadChatErr
@@ -56,7 +56,6 @@ func (h *incidentEventHandler) onIncidentUpdate(ctx context.Context, ev *rez.Eve
 		return fmt.Errorf("failed to get incident: %w", incErr)
 	}
 
-	// incident created
 	if inc.ChatChannelID == "" {
 		createCmdErr := h.msgs.SendCommand(ctx, &cmdCreateIncidentChannel{IncidentID: inc.ID})
 		if createCmdErr != nil {
@@ -72,14 +71,8 @@ func (h *incidentEventHandler) onIncidentUpdate(ctx context.Context, ev *rez.Eve
 	return nil
 }
 
-func (h *incidentEventHandler) onIncidentMilestone(ctx context.Context, ev *rez.EventOnIncidentMilestoneUpdated) error {
-	if !ev.Created {
-		return nil
-	}
-	chat, loadChatErr := h.svcLoader.fromContext(ctx)
-	if chat == nil {
-		return loadChatErr
-	}
+func (h *incidentEventHandler) onIncidentMilestoneUpdated(ctx context.Context, ev *rez.EventOnIncidentMilestoneUpdated) error {
+	// TODO: check if we care about this milestone kind
 	return h.msgs.SendCommand(ctx, &cmdSendIncidentMilestoneMessage{
 		IncidentId:  ev.IncidentId,
 		MilestoneId: ev.MilestoneId,
@@ -112,7 +105,7 @@ func (h *incidentEventHandler) sendIncidentMilestoneMessage(ctx context.Context,
 		return fmt.Errorf("failed to get milestone: %w", msErr)
 	}
 
-	userTag := "Someone"
+	userTag := "Somebody"
 	if msUser := ms.Edges.User; msUser != nil {
 		if msUser.ChatID != "" {
 			userTag = fmt.Sprintf("<@%s>", msUser.ChatID)

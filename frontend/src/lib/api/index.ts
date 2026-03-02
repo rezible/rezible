@@ -1,4 +1,5 @@
-import { dev } from "$app/environment";
+import { API_URL, API_BASE_PATH } from "$lib/config";
+
 import { createConfig, type ClientOptions } from "./oapi.gen/client";
 import { client } from "./oapi.gen/client.gen";
 import type { ErrorModel, ResponsePagination } from "./oapi.gen/types.gen";
@@ -6,11 +7,8 @@ import type { ErrorModel, ResponsePagination } from "./oapi.gen/types.gen";
 import { type Options } from "@hey-api/client-fetch";
 import type { CreateQueryOptions } from "@tanstack/svelte-query";
 
-export const API_BASE_URL = "/api/v1";
-export const BACKEND_URL = dev ? "https://app.dev.rezible.com" : "";
-
 const clientConfig = createConfig<ClientOptions>({ 
-	baseUrl: API_BASE_URL,
+	baseUrl: API_URL + API_BASE_PATH,
 	// credentials: "include",
 });
 client.setConfig(clientConfig);

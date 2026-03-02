@@ -8,6 +8,7 @@ import (
 	"github.com/danielgtaylor/huma/v2"
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent"
+	"github.com/rezible/rezible/openapi"
 )
 
 type DocumentsHandler interface {
@@ -66,7 +67,7 @@ var RequestDocumentEditorSession = huma.Operation{
 	Path:        "/documents/{id}/session",
 	Summary:     "Request a Document Editor Session",
 	Tags:        documentsTags,
-	Errors:      errorCodes(),
+	Errors:      openapi.ErrorCodes(),
 }
 
 type RequestDocumentEditorSessionRequest PostIdEmptyRequest
@@ -78,7 +79,7 @@ var VerifyDocumentSessionAuth = huma.Operation{
 	Path:        "/documents/{id}/auth",
 	Summary:     "Verify document session auth",
 	Tags:        documentsTags,
-	Errors:      errorCodes(),
+	Errors:      openapi.ErrorCodes(),
 }
 
 type VerifyDocumentSessionAuthRequest GetIdRequest
@@ -90,7 +91,7 @@ var LoadDocument = huma.Operation{
 	Path:        "/documents/{id}/load",
 	Summary:     "Load document",
 	Tags:        documentsTags,
-	Errors:      errorCodes(),
+	Errors:      openapi.ErrorCodes(),
 }
 
 type LoadDocumentRequest GetIdRequest
@@ -102,7 +103,7 @@ var UpdateDocument = huma.Operation{
 	Path:        "/documents/{id}/update",
 	Summary:     "Update document",
 	Tags:        documentsTags,
-	Errors:      errorCodes(),
+	Errors:      openapi.ErrorCodes(),
 }
 
 type UpdateDocumentRequestAttributes struct {

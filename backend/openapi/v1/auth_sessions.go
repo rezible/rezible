@@ -7,6 +7,7 @@ import (
 
 	"github.com/danielgtaylor/huma/v2"
 	"github.com/google/uuid"
+	"github.com/rezible/rezible/openapi"
 )
 
 type AuthSessionsHandler interface {
@@ -64,8 +65,8 @@ var GetAuthSessionsConfig = huma.Operation{
 	Path:        "/auth_session/config",
 	Summary:     "Get the Auth Session config",
 	Tags:        authSessionsTags,
-	Errors:      errorCodes(),
-	Security:    ExplicitNoSecurity,
+	Errors:      openapi.ErrorCodes(),
+	Security:    openapi.ExplicitNoSecurity,
 }
 
 type GetAuthSessionsConfigRequest struct {
@@ -79,7 +80,7 @@ var GetCurrentAuthSession = huma.Operation{
 	Path:        "/auth_session",
 	Summary:     "Get the Auth Session for the Current User",
 	Tags:        authSessionsTags,
-	Errors:      errorCodes(),
+	Errors:      openapi.ErrorCodes(),
 }
 
 type GetCurrentAuthSessionRequest EmptyRequest
@@ -91,7 +92,7 @@ var ListNotifications = huma.Operation{
 	Path:        "/auth_session/user/notifications",
 	Summary:     "List Notifications for the Current User",
 	Tags:        authSessionsTags,
-	Errors:      errorCodes(),
+	Errors:      openapi.ErrorCodes(),
 }
 
 type ListNotificationsRequest ListRequest
@@ -103,7 +104,7 @@ var DeleteNotification = huma.Operation{
 	Path:        "/user_session/notifications/{id}",
 	Summary:     "Delete a Notification for the Current User",
 	Tags:        authSessionsTags,
-	Errors:      errorCodes(),
+	Errors:      openapi.ErrorCodes(),
 }
 
 type DeleteNotificationRequest DeleteIdRequest

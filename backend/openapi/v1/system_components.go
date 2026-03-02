@@ -7,6 +7,7 @@ import (
 	"github.com/danielgtaylor/huma/v2"
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent"
+	"github.com/rezible/rezible/openapi"
 )
 
 type SystemComponentsHandler interface {
@@ -280,7 +281,7 @@ var ListSystemComponents = huma.Operation{
 	Path:        "/system_components",
 	Summary:     "List System Components",
 	Tags:        systemComponentsTags,
-	Errors:      errorCodes(),
+	Errors:      openapi.ErrorCodes(),
 }
 
 type ListSystemComponentsRequest struct {
@@ -294,7 +295,7 @@ var GetSystemComponent = huma.Operation{
 	Path:        "/system_components/{id}",
 	Summary:     "Get a System Component",
 	Tags:        systemComponentsTags,
-	Errors:      errorCodes(),
+	Errors:      openapi.ErrorCodes(),
 }
 
 type GetSystemComponentRequest GetIdRequest
@@ -306,7 +307,7 @@ var UpdateSystemComponent = huma.Operation{
 	Path:        "/system_components/{id}",
 	Summary:     "Update a System Component",
 	Tags:        systemComponentsTags,
-	Errors:      errorCodes(),
+	Errors:      openapi.ErrorCodes(),
 }
 
 var CreateSystemComponent = huma.Operation{
@@ -315,7 +316,7 @@ var CreateSystemComponent = huma.Operation{
 	Path:        "/system_components",
 	Summary:     "Create a System Component",
 	Tags:        systemComponentsTags,
-	Errors:      errorCodes(),
+	Errors:      openapi.ErrorCodes(),
 }
 
 type CreateSystemComponentAttributes struct {
@@ -345,7 +346,7 @@ var ArchiveSystemComponent = huma.Operation{
 	Path:        "/system_components/{id}",
 	Summary:     "Archive a System Component",
 	Tags:        systemComponentsTags,
-	Errors:      errorCodes(),
+	Errors:      openapi.ErrorCodes(),
 }
 
 type ArchiveSystemComponentRequest ArchiveIdRequest
@@ -359,7 +360,7 @@ var ListSystemComponentRelationships = huma.Operation{
 	Path:        "/system_component_relationships",
 	Summary:     "List System Component Relationships",
 	Tags:        systemComponentsTags,
-	Errors:      errorCodes(),
+	Errors:      openapi.ErrorCodes(),
 }
 
 type ListSystemComponentRelationshipsRequest struct {
@@ -376,7 +377,7 @@ var GetSystemComponentRelationship = huma.Operation{
 	Path:        "/system_component_relationships/{id}",
 	Summary:     "Get a System Component Relationship",
 	Tags:        systemComponentsTags,
-	Errors:      errorCodes(),
+	Errors:      openapi.ErrorCodes(),
 }
 
 type GetSystemComponentRelationshipRequest GetIdRequest
@@ -388,7 +389,7 @@ var CreateSystemComponentRelationship = huma.Operation{
 	Path:        "/system_component_relationships",
 	Summary:     "Create a System Component Relationship",
 	Tags:        systemComponentsTags,
-	Errors:      errorCodes(),
+	Errors:      openapi.ErrorCodes(),
 }
 
 type CreateSystemComponentRelationshipAttributes struct {
@@ -405,7 +406,7 @@ var UpdateSystemComponentRelationship = huma.Operation{
 	Path:        "/system_component_relationships/{id}",
 	Summary:     "Update a System Component Relationship",
 	Tags:        systemComponentsTags,
-	Errors:      errorCodes(),
+	Errors:      openapi.ErrorCodes(),
 }
 
 type UpdateSystemComponentRelationshipAttributes struct {
@@ -420,7 +421,7 @@ var ArchiveSystemComponentRelationship = huma.Operation{
 	Path:        "/system_component_relationships/{id}",
 	Summary:     "Archive a System Component Relationship",
 	Tags:        systemComponentsTags,
-	Errors:      errorCodes(),
+	Errors:      openapi.ErrorCodes(),
 }
 
 type ArchiveSystemComponentRelationshipRequest ArchiveIdRequest
@@ -434,7 +435,7 @@ var ListSystemComponentKinds = huma.Operation{
 	Path:        "/system_component_kinds",
 	Summary:     "List System Component Kinds",
 	Tags:        systemComponentsTags,
-	Errors:      errorCodes(),
+	Errors:      openapi.ErrorCodes(),
 }
 
 type ListSystemComponentKindsRequest struct {
@@ -448,7 +449,7 @@ var CreateSystemComponentKind = huma.Operation{
 	Path:        "/system_component_kinds",
 	Summary:     "Create a System Component Kind",
 	Tags:        systemComponentsTags,
-	Errors:      errorCodes(),
+	Errors:      openapi.ErrorCodes(),
 }
 
 type CreateSystemComponentKindAttributes struct {
@@ -464,7 +465,7 @@ var GetSystemComponentKind = huma.Operation{
 	Path:        "/system_component_kinds/{id}",
 	Summary:     "Get a System Component Kind",
 	Tags:        systemComponentsTags,
-	Errors:      errorCodes(),
+	Errors:      openapi.ErrorCodes(),
 }
 
 type GetSystemComponentKindRequest GetIdRequest
@@ -476,7 +477,7 @@ var UpdateSystemComponentKind = huma.Operation{
 	Path:        "/system_component_kinds/{id}",
 	Summary:     "Update a System Component Kind",
 	Tags:        systemComponentsTags,
-	Errors:      errorCodes(),
+	Errors:      openapi.ErrorCodes(),
 }
 
 type UpdateSystemComponentKindAttributes struct {
@@ -492,7 +493,7 @@ var ArchiveSystemComponentKind = huma.Operation{
 	Path:        "/system_component_kinds/{id}",
 	Summary:     "Archive a System Component Kind",
 	Tags:        systemComponentsTags,
-	Errors:      errorCodes(),
+	Errors:      openapi.ErrorCodes(),
 }
 
 type ArchiveSystemComponentKindRequest ArchiveIdRequest
@@ -506,7 +507,7 @@ var CreateSystemComponentConstraint = huma.Operation{
 	Path:        "/system_components/{id}/constraints",
 	Summary:     "Create a System Component Constraint",
 	Tags:        systemComponentsTags,
-	Errors:      errorCodes(),
+	Errors:      openapi.ErrorCodes(),
 }
 
 type CreateSystemComponentConstraintAttributes struct {
@@ -522,7 +523,7 @@ var GetSystemComponentConstraint = huma.Operation{
 	Path:        "/system_component_constraints/{id}",
 	Summary:     "Get a System Component",
 	Tags:        systemComponentsTags,
-	Errors:      errorCodes(),
+	Errors:      openapi.ErrorCodes(),
 }
 
 type GetSystemComponentConstraintRequest GetIdRequest
@@ -534,7 +535,7 @@ var UpdateSystemComponentConstraint = huma.Operation{
 	Path:        "/system_component_constraints/{id}",
 	Summary:     "Update a System Component Constraint",
 	Tags:        systemComponentsTags,
-	Errors:      errorCodes(),
+	Errors:      openapi.ErrorCodes(),
 }
 
 type UpdateSystemComponentConstraintAttributes struct {
@@ -550,7 +551,7 @@ var ArchiveSystemComponentConstraint = huma.Operation{
 	Path:        "/system_component_constraints/{id}",
 	Summary:     "Archive a System Component Constraint",
 	Tags:        systemComponentsTags,
-	Errors:      errorCodes(),
+	Errors:      openapi.ErrorCodes(),
 }
 
 type ArchiveSystemComponentConstraintRequest ArchiveIdRequest
@@ -564,7 +565,7 @@ var CreateSystemComponentControl = huma.Operation{
 	Path:        "/system_components/{id}/controls",
 	Summary:     "Create a System Component Control",
 	Tags:        systemComponentsTags,
-	Errors:      errorCodes(),
+	Errors:      openapi.ErrorCodes(),
 }
 
 type CreateSystemComponentControlAttributes struct {
@@ -580,7 +581,7 @@ var GetSystemComponentControl = huma.Operation{
 	Path:        "/system_component_controls/{id}",
 	Summary:     "Get a System Component Control",
 	Tags:        systemComponentsTags,
-	Errors:      errorCodes(),
+	Errors:      openapi.ErrorCodes(),
 }
 
 type GetSystemComponentControlRequest GetIdRequest
@@ -592,7 +593,7 @@ var UpdateSystemComponentControl = huma.Operation{
 	Path:        "/system_component_controls/{id}",
 	Summary:     "Update a System Component Control",
 	Tags:        systemComponentsTags,
-	Errors:      errorCodes(),
+	Errors:      openapi.ErrorCodes(),
 }
 
 type UpdateSystemComponentControlAttributes struct {
@@ -608,7 +609,7 @@ var ArchiveSystemComponentControl = huma.Operation{
 	Path:        "/system_component_controls/{id}",
 	Summary:     "Archive a System Component Control",
 	Tags:        systemComponentsTags,
-	Errors:      errorCodes(),
+	Errors:      openapi.ErrorCodes(),
 }
 
 type ArchiveSystemComponentControlRequest ArchiveIdRequest
@@ -622,7 +623,7 @@ var CreateSystemComponentSignal = huma.Operation{
 	Path:        "/system_components/{id}/signals",
 	Summary:     "Create a System Component Signal",
 	Tags:        systemComponentsTags,
-	Errors:      errorCodes(),
+	Errors:      openapi.ErrorCodes(),
 }
 
 type CreateSystemComponentSignalAttributes struct {
@@ -638,7 +639,7 @@ var GetSystemComponentSignal = huma.Operation{
 	Path:        "/system_component_signals/{id}",
 	Summary:     "Get a System Component Signal",
 	Tags:        systemComponentsTags,
-	Errors:      errorCodes(),
+	Errors:      openapi.ErrorCodes(),
 }
 
 type GetSystemComponentSignalRequest GetIdRequest
@@ -650,7 +651,7 @@ var UpdateSystemComponentSignal = huma.Operation{
 	Path:        "/system_component_signals/{id}",
 	Summary:     "Update a System Component Signal",
 	Tags:        systemComponentsTags,
-	Errors:      errorCodes(),
+	Errors:      openapi.ErrorCodes(),
 }
 
 type UpdateSystemComponentSignalAttributes struct {
@@ -666,7 +667,7 @@ var ArchiveSystemComponentSignal = huma.Operation{
 	Path:        "/system_component_signals/{id}",
 	Summary:     "Archive a System Component Signal",
 	Tags:        systemComponentsTags,
-	Errors:      errorCodes(),
+	Errors:      openapi.ErrorCodes(),
 }
 
 type ArchiveSystemComponentSignalRequest ArchiveIdRequest

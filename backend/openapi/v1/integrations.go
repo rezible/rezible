@@ -8,6 +8,7 @@ import (
 
 	"github.com/danielgtaylor/huma/v2"
 	rez "github.com/rezible/rezible"
+	"github.com/rezible/rezible/openapi"
 )
 
 type IntegrationsHandler interface {
@@ -106,7 +107,7 @@ var ListSupportedIntegrations = huma.Operation{
 	Path:        "/integrations/supported",
 	Summary:     "List Supported Integrations",
 	Tags:        integrationsTags,
-	Errors:      errorCodes(),
+	Errors:      openapi.ErrorCodes(),
 }
 
 type ListSupportedIntegrationsRequest ListRequest
@@ -118,7 +119,7 @@ var ListConfiguredIntegrations = huma.Operation{
 	Path:        "/integrations/configured",
 	Summary:     "List Integrations",
 	Tags:        integrationsTags,
-	Errors:      errorCodes(),
+	Errors:      openapi.ErrorCodes(),
 }
 
 type ListConfiguredIntegrationsRequest ListRequest
@@ -130,7 +131,7 @@ var GetIntegration = huma.Operation{
 	Path:        "/integrations/configured/{name}",
 	Summary:     "Get an Integration",
 	Tags:        integrationsTags,
-	Errors:      errorCodes(),
+	Errors:      openapi.ErrorCodes(),
 }
 
 type GetIntegrationRequest NamedIntegrationRequest
@@ -142,7 +143,7 @@ var ConfigureIntegration = huma.Operation{
 	Path:        "/integrations/configured/{name}",
 	Summary:     "Create an Integration",
 	Tags:        integrationsTags,
-	Errors:      errorCodes(),
+	Errors:      openapi.ErrorCodes(),
 }
 
 type ConfigureIntegrationRequest NamedIntegrationRawConfigRequest
@@ -154,7 +155,7 @@ var DeleteIntegration = huma.Operation{
 	Path:        "/integrations/configured/{id}",
 	Summary:     "Delete an Integration",
 	Tags:        integrationsTags,
-	Errors:      errorCodes(),
+	Errors:      openapi.ErrorCodes(),
 }
 
 type DeleteIntegrationRequest NamedIntegrationRequest
@@ -166,7 +167,7 @@ var StartIntegrationOAuthFlow = huma.Operation{
 	Path:        "/integrations/oauth/{name}/start",
 	Summary:     "Start OAuth flow for an Integration",
 	Tags:        integrationsTags,
-	Errors:      errorCodes(),
+	Errors:      openapi.ErrorCodes(),
 }
 
 type StartIntegrationOAuthFlowRequest NamedIntegrationRequest
@@ -178,7 +179,7 @@ var CompleteIntegrationOAuthFlow = huma.Operation{
 	Path:        "/integrations/oauth/{name}/complete",
 	Summary:     "Complete OAuth flow for an Integration",
 	Tags:        integrationsTags,
-	Errors:      errorCodes(),
+	Errors:      openapi.ErrorCodes(),
 }
 
 type CompleteIntegrationOAuthFlowRequestAttributes struct {

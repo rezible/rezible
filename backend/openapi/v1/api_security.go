@@ -4,90 +4,23 @@ import (
 	"encoding/json"
 	"errors"
 	"net/http"
-	"strings"
 
 	"github.com/danielgtaylor/huma/v2"
 	"github.com/danielgtaylor/huma/v2/adapters/humago"
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/access"
+	"github.com/rezible/rezible/openapi"
 )
 
-type oapiSecurity = []map[string][]string
-
-func isExplicitNoSecurity(s oapiSecurity) bool {
-	return s != nil && len(s) == 0
-}
-
-const (
-	SecurityMethodSessionCookie = "session-cookie"
-	SecurityMethodApiToken      = "api-token"
-
-	SessionCookieName = "rezible_auth"
-)
-
-var (
-	ErrNoSession      = ErrorUnauthorized("no_session")
-	ErrSessionExpired = ErrorUnauthorized("session_expired")
-	ErrInvalidUser    = ErrorUnauthorized("invalid_user")
-	ErrInvalidTenant  = ErrorUnauthorized("invalid_tenant")
-	ErrUnauthorized   = ErrorUnauthorized("unauthorized")
-	ErrUnknown        = ErrorUnauthorized("unknown")
-)
-
-var (
-	DefaultSecuritySchemes = map[string]*huma.SecurityScheme{
-		SecurityMethodSessionCookie: {
-			Name: SessionCookieName,
-			Type: "apiKey",
-			In:   "cookie",
-		},
-		SecurityMethodApiToken: {
-			Type:         "http",
-			Scheme:       "bearer",
-			BearerFormat: "JWT",
-		},
-	}
-	DefaultSecurity = oapiSecurity{
-		{SecurityMethodSessionCookie: {}},
-		{SecurityMethodApiToken: {}},
-	}
-	ExplicitNoSecurity = oapiSecurity{}
-)
-
-func GetRequestSessionCookieToken(r *http.Request) string {
-	authCookie, cookieErr := r.Cookie(SessionCookieName)
-	if cookieErr != nil {
-		return ""
-	}
-	return authCookie.Value
-}
-
-func GetRequestBearerToken(r *http.Request) string {
-	authHeader := r.Header.Get("Authorization")
-	if authHeader == "" {
-		return ""
-	}
-	split := strings.Split(authHeader, " ")
-	if len(split) != 2 {
-		return ""
-	}
-	authType := split[0]
-	token := split[1]
-	if authType != "Bearer" {
-		return ""
-	}
-	return token
-}
-
-func extractRequestTokenAndScopes(r *http.Request, opSecurity oapiSecurity) (string, []string) {
-	apiToken := GetRequestBearerToken(r)
-	cookieToken := GetRequestSessionCookieToken(r)
+func extractRequestTokenAndScopes(r *http.Request, opSecurity openapi.SecurityMethods) (string, []string) {
+	apiToken := openapi.GetRequestBearerToken(r)
+	cookieToken := openapi.GetRequestSessionCookieToken(r)
 	for _, methodScopes := range opSecurity {
-		apiTokenScopes, apiTokenAllowed := methodScopes[SecurityMethodApiToken]
+		apiTokenScopes, apiTokenAllowed := methodScopes[openapi.SecurityMethodApiToken]
 		if apiTokenAllowed && apiToken != "" {
 			return apiToken, apiTokenScopes
 		}
-		cookieTokenScopes, cookieTokenAllowed := methodScopes[SecurityMethodSessionCookie]
+		cookieTokenScopes, cookieTokenAllowed := methodScopes[openapi.SecurityMethodSessionCookie]
 		if cookieTokenAllowed && cookieToken != "" {
 			return cookieToken, cookieTokenScopes
 		}
@@ -95,15 +28,15 @@ func extractRequestTokenAndScopes(r *http.Request, opSecurity oapiSecurity) (str
 	return "", nil
 }
 
-func MakeSecurityMiddleware(auth rez.AuthService) Middleware {
-	return func(c Context, next func(Context)) {
+func MakeSecurityMiddleware(auth rez.AuthService) openapi.Middleware {
+	return func(c openapi.Context, next func(openapi.Context)) {
 		r, w := humago.Unwrap(c)
 		opSecurity := c.Operation().Security
 
 		ctx := c.Context()
-		if !isExplicitNoSecurity(opSecurity) {
+		if !openapi.IsExplicitNoSecurity(opSecurity) {
 			if opSecurity == nil {
-				opSecurity = DefaultSecurity
+				opSecurity = openapi.DefaultSecurity
 			}
 			token, methodScopes := extractRequestTokenAndScopes(r, opSecurity)
 
@@ -134,19 +67,19 @@ func MakeSecurityMiddleware(auth rez.AuthService) Middleware {
 }
 
 func writeAuthStatusError(w http.ResponseWriter, err error) {
-	var resp StatusError
+	var resp openapi.StatusError
 	if errors.Is(err, rez.ErrNoAuthSession) {
-		resp = ErrNoSession
+		resp = openapi.ErrNoSession
 	} else if errors.Is(err, rez.ErrAuthSessionExpired) {
-		resp = ErrSessionExpired
+		resp = openapi.ErrSessionExpired
 	} else if errors.Is(err, rez.ErrInvalidUser) {
-		resp = ErrInvalidUser
+		resp = openapi.ErrInvalidUser
 	} else if errors.Is(err, rez.ErrInvalidTenant) {
-		resp = ErrInvalidTenant
+		resp = openapi.ErrInvalidTenant
 	} else if errors.Is(err, rez.ErrUnauthorized) {
-		resp = ErrUnauthorized
+		resp = openapi.ErrUnauthorized
 	} else {
-		resp = ErrUnknown
+		resp = openapi.ErrUnknown
 	}
 
 	respBody, jsonErr := json.Marshal(resp)

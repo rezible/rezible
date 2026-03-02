@@ -3,21 +3,14 @@ package v1
 import (
 	"net/http"
 
+	"github.com/rezible/rezible/openapi"
+
 	"github.com/danielgtaylor/huma/v2"
 	"github.com/danielgtaylor/huma/v2/adapters/humago"
 	"gopkg.in/yaml.v3"
 )
 
-const prefix = "v1"
-
-type (
-	API         = huma.API
-	Context     = huma.Context
-	ErrorModel  = huma.ErrorModel
-	StatusError = huma.StatusError
-	Adapter     = huma.Adapter
-	Middleware  = func(Context, func(Context))
-)
+const versionPrefix = "/v1"
 
 type Handler interface {
 	// GetMiddleware() []Middleware
@@ -59,25 +52,7 @@ type Handler interface {
 }
 type operations struct{ Handler }
 
-func MakeConfig() huma.Config {
-	cfg := huma.DefaultConfig("Rezible API", "0.0.1")
-	cfg.DocsPath = ""
-	cfg.Servers = []*huma.Server{
-		//{URL: rez.BackendUrl},
-	}
-	cfg.Info.Description = "Rezible API Specification"
-
-	cfg.Security = DefaultSecurity
-	cfg.Components.SecuritySchemes = DefaultSecuritySchemes
-
-	return cfg
-}
-
-func RegisterRoutes(api huma.API, handler Handler) {
-	huma.AutoRegister(api, operations{Handler: handler})
-}
-
-func MakeApi(s Handler, prefix string, mw ...Middleware) huma.API {
+func MakeApi(h Handler, prefix string, mw ...openapi.Middleware) openapi.API {
 	cfg := MakeConfig()
 
 	//tranformers := []huma.Transformer{
@@ -85,16 +60,34 @@ func MakeApi(s Handler, prefix string, mw ...Middleware) huma.API {
 	//}
 	//cfg.Transformers = append(cfg.Transformers, tranformers...)
 
-	adapter := humago.NewAdapter(http.NewServeMux(), prefix+"/v1")
+	adapter := humago.NewAdapter(http.NewServeMux(), prefix+versionPrefix)
 	api := huma.NewAPI(cfg, adapter)
 	api.UseMiddleware(mw...)
-	RegisterRoutes(api, s)
+	huma.AutoRegister(api, operations{Handler: h})
 
 	return api
 }
 
+func MakeConfig() openapi.Config {
+	cfg := huma.DefaultConfig("Rezible API", "0.0.1")
+	cfg.DocsPath = ""
+	cfg.OpenAPIPath = "/openapi"
+	cfg.Servers = []*huma.Server{
+		//{
+		//	URL:         "https://app.dev.rezible.com/api/v1",
+		//	Description: "Local Development",
+		//},
+	}
+	cfg.Info.Description = "Rezible API Specification"
+
+	cfg.Security = openapi.DefaultSecurity
+	cfg.Components.SecuritySchemes = openapi.DefaultSecuritySchemes
+
+	return cfg
+}
+
 func GetYamlSpec() (string, error) {
-	api := MakeApi(operations{}, "")
+	api := MakeApi(operations{}, versionPrefix)
 	spec, specErr := yaml.Marshal(api.OpenAPI())
 	if specErr != nil {
 		return "", specErr

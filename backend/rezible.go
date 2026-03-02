@@ -38,9 +38,9 @@ type ConfigLoader interface {
 	GetDuration(key string) time.Duration
 	GetDurationOr(key string, orDefault time.Duration) time.Duration
 
-	SingleTenantMode() bool
 	DebugMode() bool
 	DataSyncMode() bool
+	SingleTenantMode() bool
 
 	DatabaseUrl() string
 	DocumentsServerAddress() string

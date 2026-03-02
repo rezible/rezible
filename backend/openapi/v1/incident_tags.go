@@ -2,8 +2,11 @@ package v1
 
 import (
 	"context"
+
 	"github.com/danielgtaylor/huma/v2"
 	"github.com/google/uuid"
+	"github.com/rezible/rezible/openapi"
+
 	"net/http"
 
 	"github.com/rezible/rezible/ent"
@@ -55,7 +58,7 @@ var ListIncidentTags = huma.Operation{
 	Path:        "/incident_tags",
 	Summary:     "List Incident Tags",
 	Tags:        incidentTagsTags,
-	Errors:      errorCodes(),
+	Errors:      openapi.ErrorCodes(),
 }
 
 type ListIncidentTagsRequest ListRequest
@@ -67,7 +70,7 @@ var GetIncidentTag = huma.Operation{
 	Path:        "/incident_tags/{id}",
 	Summary:     "Get an Incident Tag",
 	Tags:        incidentTagsTags,
-	Errors:      errorCodes(),
+	Errors:      openapi.ErrorCodes(),
 }
 
 type GetIncidentTagRequest GetIdRequest
@@ -79,7 +82,7 @@ var CreateIncidentTag = huma.Operation{
 	Path:        "/incident_tags",
 	Summary:     "Create an Incident Tag",
 	Tags:        incidentTagsTags,
-	Errors:      errorCodes(),
+	Errors:      openapi.ErrorCodes(),
 }
 
 type CreateIncidentTagAttributes struct {
@@ -94,7 +97,7 @@ var UpdateIncidentTag = huma.Operation{
 	Path:        "/incident_tags/{id}",
 	Summary:     "Update an Incident Tag",
 	Tags:        incidentTagsTags,
-	Errors:      errorCodes(),
+	Errors:      openapi.ErrorCodes(),
 }
 
 type UpdateIncidentTagAttributes struct {
@@ -110,7 +113,7 @@ var ArchiveIncidentTag = huma.Operation{
 	Path:        "/incident_tags/{id}",
 	Summary:     "Archive an Incident Tag",
 	Tags:        incidentTagsTags,
-	Errors:      errorCodes(),
+	Errors:      openapi.ErrorCodes(),
 }
 
 type ArchiveIncidentTagRequest ArchiveIdRequest

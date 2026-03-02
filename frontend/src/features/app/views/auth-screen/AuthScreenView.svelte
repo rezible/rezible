@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { createQuery } from "@tanstack/svelte-query";
-	import { BACKEND_URL, getAuthSessionConfigOptions } from "$lib/api";
+	import { getAuthSessionConfigOptions } from "$lib/api";
 	import { useAuthSessionState, type SessionErrorCategory } from "$lib/auth.svelte";
 	import { mdiGoogle, mdiKey } from "@mdi/js";
 	import { Button } from "$components/ui/button";
@@ -46,7 +46,7 @@
 		{/if}
 
 		{#if errorCategory === "invalid_user"}
-			<Button href="{BACKEND_URL}/api/auth/logout" disabled={configQuery.isLoading} color="primary">Logout</Button>
+			<Button href={session.signoutUrl} disabled={configQuery.isLoading} color="primary">Logout</Button>
 		{:else if !!providers}
 			{#each providers as p}
 				{@const display = providerDisplay.get(p.name.toLowerCase())}

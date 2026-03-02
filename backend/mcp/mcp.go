@@ -16,13 +16,12 @@ type (
 	Client = client.Client
 )
 
-func NewClient(s *Server) (*Client, error) {
+func NewInProcessClient(s *Server) (*Client, error) {
 	return client.NewInProcessClient(s)
 }
 
 type Handler interface {
 	ResourcesHandler
-	// ToolsHandler
 }
 
 func NewHTTPServer(h Handler, path string) http.Handler {
@@ -47,17 +46,10 @@ func NewServer(h Handler) *server.MCPServer {
 		server.WithHooks(hooks))
 
 	addResources(s, h)
-	// addTools(s, h)
-	// addPrompts(s, h)
 
 	return s
 }
 
 func addResources(s *server.MCPServer, h ResourcesHandler) {
-	s.AddResourceTemplate(OncallShiftResource, makeOncallShiftResourceHandler(h))
 	s.AddResource(ActiveIncidentsResource, makeActiveIncidentsResourceHandler(h))
-}
-
-func addTools(s *server.MCPServer, h ToolsHandler) {
-	s.AddTool(CalculateTool, calculateToolHandler(h))
 }

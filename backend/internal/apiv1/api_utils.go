@@ -5,10 +5,11 @@ import (
 	"regexp"
 
 	"github.com/google/uuid"
+	"github.com/rs/zerolog/log"
+
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
-	oapi "github.com/rezible/rezible/openapi/v1"
-	"github.com/rs/zerolog/log"
+	"github.com/rezible/rezible/openapi"
 )
 
 func getRequestAuthSession(ctx context.Context, auth rez.AuthService) *rez.AuthSession {
@@ -34,12 +35,12 @@ var (
 )
 
 func apiError(msg string, err error) error {
-	if oapi.IsClientError(err) {
+	if openapi.IsClientError(err) {
 		return err
 	}
 
 	if ent.IsNotFound(err) {
-		return oapi.ErrorNotFound("Not found")
+		return openapi.ErrorNotFound("Not found")
 	}
 
 	if enumValidationErrFieldRe.MatchString(err.Error()) {
@@ -49,18 +50,18 @@ func apiError(msg string, err error) error {
 	if ent.IsConstraintError(err) {
 		match := uniqueErrFieldRe.FindStringSubmatch(err.Error())
 		if match == nil || len(match) < 2 {
-			return oapi.ErrorBadRequest("Constraint failed")
+			return openapi.ErrorBadRequest("Constraint failed")
 		}
 
 		field := match[1]
 		cstrMsg, found := commonConstraints[field]
 		if found {
-			detail := oapi.NewErrorDetail(cstrMsg, field, nil)
-			return oapi.ErrorBadRequest("Constraint Error", detail)
+			detail := openapi.NewErrorDetail(cstrMsg, field, nil)
+			return openapi.ErrorBadRequest("Constraint Error", detail)
 		}
-		return oapi.ErrorBadRequest("Value is not unique")
+		return openapi.ErrorBadRequest("Value is not unique")
 	}
 
 	log.Error().Err(err).Msg(msg)
-	return oapi.ErrorInternal(msg, err)
+	return openapi.ErrorInternal(msg, err)
 }

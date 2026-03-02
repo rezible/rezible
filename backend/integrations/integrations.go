@@ -156,10 +156,6 @@ func getDataProviders[DP any, I any](intgs ent.Integrations, fn func(I, *ent.Int
 	for _, intg := range intgs {
 		if p, valid := packageNameMap[intg.Name]; valid {
 			dpProv, hasSupport := p.(I)
-			log.Debug().
-				Str("integration", p.Name()).
-				Bool("supports", hasSupport).
-				Msg("getDataProviders")
 			if hasSupport {
 				prov, provErr := fn(dpProv, intg)
 				if provErr != nil {

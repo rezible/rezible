@@ -7,6 +7,7 @@ import (
 
 	"github.com/danielgtaylor/huma/v2"
 	"github.com/google/uuid"
+	"github.com/rezible/rezible/openapi"
 
 	"github.com/rezible/rezible/ent"
 )
@@ -68,7 +69,7 @@ var ListEvents = huma.Operation{
 	Path:        "/events",
 	Summary:     "List Events",
 	Tags:        EventsTags,
-	Errors:      errorCodes(),
+	Errors:      openapi.ErrorCodes(),
 }
 
 type ListEventsRequest struct {
@@ -84,7 +85,7 @@ var GetEvent = huma.Operation{
 	Path:        "/events/{id}",
 	Summary:     "Get Event",
 	Tags:        EventsTags,
-	Errors:      errorCodes(),
+	Errors:      openapi.ErrorCodes(),
 }
 
 type GetEventRequest struct {

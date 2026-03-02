@@ -79,7 +79,8 @@ func (s *Server) MountStaticFrontend(feFiles fs.FS) {
 }
 
 func (s *Server) MountOpenApiV1(h oapiv1.Handler) {
-	handler := oapiv1.MakeApi(h, rez.Config.ApiRouteBase(), oapiv1.MakeSecurityMiddleware(s.auth)).Adapter()
+	securityMw := oapiv1.MakeSecurityMiddleware(s.auth)
+	handler := oapiv1.MakeApi(h, rez.Config.ApiRouteBase(), securityMw).Adapter()
 	oapiV1Router := s.commonMiddleware().Handler(handler)
 	s.api.Mount("/v1", oapiV1Router)
 }

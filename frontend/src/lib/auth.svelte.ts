@@ -92,6 +92,8 @@ export class AuthSessionState {
 		console.log("auth session expiring soon", timeLeft);
 	}
 
+	signoutUrl = "";
+
 	constructor() {
 		onMount(() => {
 			const i = setInterval(() => {

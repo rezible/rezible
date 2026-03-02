@@ -14,14 +14,14 @@ import (
 	"github.com/failsafe-go/failsafe-go/retrypolicy"
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/google/uuid"
+	"github.com/rs/zerolog/log"
+
+	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/access"
 	"github.com/rezible/rezible/integrations"
 	"github.com/rezible/rezible/internal/http/oidc"
 	"github.com/rezible/rezible/internal/http/saml"
-	"github.com/rs/zerolog/log"
-
-	rez "github.com/rezible/rezible"
-	oapi "github.com/rezible/rezible/openapi/v1"
+	"github.com/rezible/rezible/openapi"
 )
 
 const (
@@ -147,7 +147,7 @@ func (s *AuthService) MCPServerMiddleware() func(http.Handler) http.Handler {
 }
 
 func (s *AuthService) getMCPUserSession(r *http.Request) (*rez.AuthSession, error) {
-	bearerToken := oapi.GetRequestBearerToken(r)
+	bearerToken := openapi.GetRequestBearerToken(r)
 	if bearerToken == "" {
 		return nil, rez.ErrNoAuthSession
 	}
@@ -179,7 +179,7 @@ func (s *AuthService) handleLogout(w http.ResponseWriter, r *http.Request) {
 			log.Error().Err(sessErr).Msg("failed to clear session")
 		}
 	}
-	http.SetCookie(w, s.makeSessionCookie(r, "", time.Now(), -1))
+	http.SetCookie(w, openapi.MakeRemoveSessionCookie())
 	http.Redirect(w, r, rez.Config.AppUrl(), http.StatusFound)
 }
 
@@ -230,30 +230,17 @@ func (s *AuthService) makeUserSessionCreatedCallback(w http.ResponseWriter, r *h
 			return
 		}
 
-		token, tokenErr := s.IssueAuthSessionToken(newUserAuthSession(usr.ID, ps.ExpiresAt))
+		sess := newUserAuthSession(usr.ID, ps.ExpiresAt)
+		token, tokenErr := s.IssueAuthSessionToken(sess)
 		if tokenErr != nil {
 			log.Error().Err(tokenErr).Msg("failed to issue session token")
 			http.Error(w, "session error", http.StatusInternalServerError)
 			return
 		}
 
-		http.SetCookie(w, s.makeSessionCookie(r, token, ps.ExpiresAt, 0))
+		http.SetCookie(w, openapi.MakeSessionCookie(token, ps.ExpiresAt, 0))
 		http.Redirect(w, r, redirect, http.StatusFound)
 	}
-}
-
-func (s *AuthService) makeSessionCookie(r *http.Request, token string, expires time.Time, maxAge int) *http.Cookie {
-	cookie := &http.Cookie{
-		Name:     oapi.SessionCookieName,
-		Value:    token,
-		Path:     "/",
-		Expires:  expires,
-		Secure:   true,
-		HttpOnly: true,
-		SameSite: http.SameSiteStrictMode,
-		MaxAge:   maxAge,
-	}
-	return cookie
 }
 
 type authSessionTokenClaims struct {

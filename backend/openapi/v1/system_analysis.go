@@ -7,6 +7,7 @@ import (
 	"github.com/danielgtaylor/huma/v2"
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent"
+	"github.com/rezible/rezible/openapi"
 )
 
 type SystemAnalysisHandler interface {
@@ -141,7 +142,7 @@ var GetSystemAnalysis = huma.Operation{
 	Path:        "/system_analysis/{id}",
 	Summary:     "Get System Analysis",
 	Tags:        systemAnalysisTags,
-	Errors:      errorCodes(),
+	Errors:      openapi.ErrorCodes(),
 }
 
 type GetSystemAnalysisRequest GetIdRequest
@@ -155,7 +156,7 @@ var AddSystemAnalysisComponent = huma.Operation{
 	Path:        "/system_analysis/{id}/components",
 	Summary:     "Add a Component to a System Analysis",
 	Tags:        systemAnalysisTags,
-	Errors:      errorCodes(),
+	Errors:      openapi.ErrorCodes(),
 }
 
 type AddSystemAnalysisComponentAttributes struct {
@@ -171,7 +172,7 @@ var ListSystemAnalysisComponents = huma.Operation{
 	Path:        "/system_analysis/{id}/components",
 	Summary:     "List components in a System analysis",
 	Tags:        systemAnalysisTags,
-	Errors:      errorCodes(),
+	Errors:      openapi.ErrorCodes(),
 }
 
 type ListSystemAnalysisComponentsRequest ListIdRequest
@@ -183,7 +184,7 @@ var GetSystemAnalysisComponent = huma.Operation{
 	Path:        "/system_analysis_components/{id}",
 	Summary:     "Get a component in a System analysis",
 	Tags:        systemAnalysisTags,
-	Errors:      errorCodes(),
+	Errors:      openapi.ErrorCodes(),
 }
 
 type GetSystemAnalysisComponentRequest GetIdRequest
@@ -195,7 +196,7 @@ var UpdateSystemAnalysisComponent = huma.Operation{
 	Path:        "/system_analysis_components/{id}",
 	Summary:     "Update a System Analysis Component",
 	Tags:        systemAnalysisTags,
-	Errors:      errorCodes(),
+	Errors:      openapi.ErrorCodes(),
 }
 
 type UpdateSystemAnalysisComponentAttributes struct {
@@ -210,7 +211,7 @@ var DeleteSystemAnalysisComponent = huma.Operation{
 	Path:        "/system_analysis_components/{id}",
 	Summary:     "Delete a Component from a System Analysis",
 	Tags:        systemAnalysisTags,
-	Errors:      errorCodes(),
+	Errors:      openapi.ErrorCodes(),
 }
 
 type DeleteSystemAnalysisComponentRequest DeleteIdRequest
@@ -224,7 +225,7 @@ var ListSystemAnalysisRelationships = huma.Operation{
 	Path:        "/system_analysis/{id}/relationships",
 	Summary:     "List relationships in a System analysis",
 	Tags:        systemAnalysisTags,
-	Errors:      errorCodes(),
+	Errors:      openapi.ErrorCodes(),
 }
 
 type ListSystemAnalysisRelationshipsRequest struct {
@@ -239,7 +240,7 @@ var GetSystemAnalysisRelationship = huma.Operation{
 	Path:        "/system_analysis_relationships/{id}",
 	Summary:     "Get a relationship in a System analysis",
 	Tags:        systemAnalysisTags,
-	Errors:      errorCodes(),
+	Errors:      openapi.ErrorCodes(),
 }
 
 type GetSystemAnalysisRelationshipRequest GetIdRequest
@@ -251,7 +252,7 @@ var CreateSystemAnalysisRelationship = huma.Operation{
 	Path:        "/system_analysis/{id}/relationships",
 	Summary:     "Create a Relationship in a System Analysis",
 	Tags:        systemAnalysisTags,
-	Errors:      errorCodes(),
+	Errors:      openapi.ErrorCodes(),
 }
 
 type CreateSystemAnalysisRelationshipAttributes struct {
@@ -270,7 +271,7 @@ var UpdateSystemAnalysisRelationship = huma.Operation{
 	Path:        "/system_analysis_relationships/{id}",
 	Summary:     "Update a System Analysis Relationship",
 	Tags:        systemAnalysisTags,
-	Errors:      errorCodes(),
+	Errors:      openapi.ErrorCodes(),
 }
 
 type UpdateSystemAnalysisRelationshipAttributes struct {
@@ -287,7 +288,7 @@ var DeleteSystemAnalysisRelationship = huma.Operation{
 	Path:        "/system_analysis_relationships/{id}",
 	Summary:     "Delete a Relationship from a System Analysis",
 	Tags:        systemAnalysisTags,
-	Errors:      errorCodes(),
+	Errors:      openapi.ErrorCodes(),
 }
 
 type DeleteSystemAnalysisRelationshipRequest DeleteIdRequest

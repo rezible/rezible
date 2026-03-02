@@ -9,6 +9,7 @@ import (
 	"github.com/danielgtaylor/huma/v2"
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent"
+	"github.com/rezible/rezible/openapi"
 	"github.com/rs/zerolog/log"
 )
 
@@ -181,7 +182,7 @@ var ListOncallShifts = huma.Operation{
 	Path:        "/oncall/shifts",
 	Summary:     "List Oncall Shifts",
 	Tags:        oncallShiftsTags,
-	Errors:      errorCodes(),
+	Errors:      openapi.ErrorCodes(),
 }
 
 type ListOncallShiftsRequest struct {
@@ -197,7 +198,7 @@ var GetOncallShift = huma.Operation{
 	Path:        "/oncall/shifts/{id}",
 	Summary:     "Get an Oncall Shift",
 	Tags:        oncallShiftsTags,
-	Errors:      errorCodes(),
+	Errors:      openapi.ErrorCodes(),
 }
 
 type GetOncallShiftRequest GetIdRequest
@@ -209,7 +210,7 @@ var GetAdjacentOncallShifts = huma.Operation{
 	Path:        "/oncall/shifts/{id}/adjacent",
 	Summary:     "Get shifts adjacent to a given shift",
 	Tags:        oncallShiftsTags,
-	Errors:      errorCodes(),
+	Errors:      openapi.ErrorCodes(),
 }
 
 type GetAdjacentOncallShiftsRequest GetIdRequest
@@ -221,7 +222,7 @@ var CreateOncallShiftHandoverTemplate = huma.Operation{
 	Path:        "/oncall/handover_templates",
 	Summary:     "Create an Oncall Handover Template",
 	Tags:        oncallShiftsTags,
-	Errors:      errorCodes(),
+	Errors:      openapi.ErrorCodes(),
 }
 
 type CreateOncallShiftHandoverTemplateRequestAttributes struct {
@@ -236,7 +237,7 @@ var GetOncallShiftHandoverTemplate = huma.Operation{
 	Path:        "/oncall/handover_templates/{id}",
 	Summary:     "Get handover for a shift",
 	Tags:        oncallShiftsTags,
-	Errors:      errorCodes(),
+	Errors:      openapi.ErrorCodes(),
 }
 
 type GetOncallShiftHandoverTemplateRequest GetIdRequest
@@ -248,7 +249,7 @@ var UpdateOncallShiftHandoverTemplate = huma.Operation{
 	Path:        "/oncall/handover_templates/{id}",
 	Summary:     "Update an Oncall Handover Template",
 	Tags:        oncallShiftsTags,
-	Errors:      errorCodes(),
+	Errors:      openapi.ErrorCodes(),
 }
 
 type UpdateOncallShiftHandoverTemplateRequestAttributes struct {
@@ -263,7 +264,7 @@ var ArchiveOncallShiftHandoverTemplate = huma.Operation{
 	Path:        "/oncall/handover_templates/{id}",
 	Summary:     "Archive an Oncall Handover Template",
 	Tags:        oncallShiftsTags,
-	Errors:      errorCodes(),
+	Errors:      openapi.ErrorCodes(),
 }
 
 type ArchiveOncallShiftHandoverTemplateRequest ArchiveIdRequest
@@ -275,7 +276,7 @@ var GetOncallShiftHandover = huma.Operation{
 	Path:        "/oncall/shifts/{id}/handover",
 	Summary:     "Get handover for a shift",
 	Tags:        oncallShiftsTags,
-	Errors:      errorCodes(),
+	Errors:      openapi.ErrorCodes(),
 }
 
 type GetOncallShiftHandoverRequest GetIdRequest
@@ -287,7 +288,7 @@ var UpdateOncallShiftHandover = huma.Operation{
 	Path:        "/oncall/handovers/{id}",
 	Summary:     "Update an Oncall Shift Handover",
 	Tags:        oncallShiftsTags,
-	Errors:      errorCodes(),
+	Errors:      openapi.ErrorCodes(),
 }
 
 type UpdateOncallShiftHandoverAttributes struct {
@@ -303,7 +304,7 @@ var SendOncallShiftHandover = huma.Operation{
 	Path:        "/oncall/handovers/{id}/send",
 	Summary:     "Send a Shift Handover",
 	Tags:        oncallShiftsTags,
-	Errors:      errorCodes(),
+	Errors:      openapi.ErrorCodes(),
 }
 
 type SendOncallShiftHandoverAttributes struct {

@@ -11,6 +11,7 @@ import (
 	"github.com/danielgtaylor/huma/v2"
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent"
+	"github.com/rezible/rezible/openapi"
 )
 
 const (
@@ -208,10 +209,10 @@ func (o OmittableNullable[T]) Schema(r huma.Registry) *huma.Schema {
 	return s
 }
 
-func WrapContext(ctx Context, sub context.Context) Context {
+func WrapContext(ctx openapi.Context, sub context.Context) openapi.Context {
 	return huma.WithContext(ctx, sub)
 }
 
-func WrapContextWithValue(ctx Context, key any, value any) Context {
+func WrapContextWithValue(ctx openapi.Context, key any, value any) openapi.Context {
 	return huma.WithValue(ctx, key, value)
 }

@@ -2,9 +2,12 @@ package v1
 
 import (
 	"context"
+
 	"github.com/danielgtaylor/huma/v2"
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent"
+	"github.com/rezible/rezible/openapi"
+
 	"net/http"
 	"time"
 )
@@ -194,7 +197,7 @@ var ListIncidentEvents = huma.Operation{
 	Path:        "/incidents/{id}/events",
 	Summary:     "List Events for Incident",
 	Tags:        append(incidentsTags, incidentEventsTags...),
-	Errors:      errorCodes(),
+	Errors:      openapi.ErrorCodes(),
 }
 
 type ListIncidentEventsRequest ListIdRequest
@@ -206,7 +209,7 @@ var CreateIncidentEvent = huma.Operation{
 	Path:        "/incidents/{id}/events",
 	Summary:     "Create an Incident Event",
 	Tags:        incidentEventsTags,
-	Errors:      errorCodes(),
+	Errors:      openapi.ErrorCodes(),
 }
 
 type CreateIncidentEventAttributes struct {
@@ -224,7 +227,7 @@ var UpdateIncidentEvent = huma.Operation{
 	Path:        "/incident_events/{id}",
 	Summary:     "Update an Incident Event",
 	Tags:        incidentEventsTags,
-	Errors:      errorCodes(),
+	Errors:      openapi.ErrorCodes(),
 }
 
 type UpdateIncidentEventAttributes struct {
@@ -241,7 +244,7 @@ var DeleteIncidentEvent = huma.Operation{
 	Path:        "/incident_events/{id}",
 	Summary:     "Delete an Incident Event",
 	Tags:        incidentEventsTags,
-	Errors:      errorCodes(),
+	Errors:      openapi.ErrorCodes(),
 }
 
 type DeleteIncidentEventRequest DeleteIdRequest
@@ -253,7 +256,7 @@ var ListIncidentEventContributingFactors = huma.Operation{
 	Path:        "/incident_event_contributing_factor_categories",
 	Summary:     "List Categories of Contributing Factors used in Incident Events",
 	Tags:        incidentEventsTags,
-	Errors:      errorCodes(),
+	Errors:      openapi.ErrorCodes(),
 }
 
 type ListIncidentEventContributingFactorsRequest ListRequest
