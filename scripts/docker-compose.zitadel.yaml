@@ -1,0 +1,66 @@
+volumes:
+  zitadel-bootstrap:
+
+services:
+  zitadel-api:
+    image: ghcr.io/zitadel/zitadel:v4.12.0
+    restart: unless-stopped
+    user: "0"
+    command: |
+      start-from-init 
+        --config /etc/zitadel/config.yaml 
+        --steps /etc/zitadel/steps.yaml 
+        --masterkeyFromEnv 
+        --tlsMode external
+    environment:
+      ZITADEL_MASTERKEY: "MasterkeyNeedsToHave32Characters"
+      ZITADEL_TLS_ENABLED: false # needed for health check to succeed
+      ZITADEL_EXTERNALDOMAIN: "auth.${LOCAL_DEV_HOST}"
+      ZITADEL_DATABASE_POSTGRES_ADMIN_USERNAME: postgres
+      ZITADEL_DATABASE_POSTGRES_ADMIN_PASSWORD: password
+      ZITADEL_DATABASE_POSTGRES_USER_PASSWORD: zitadel
+      ZITADEL_FIRSTINSTANCE_ORG_HUMAN_EMAIL_ADDRESS: "${REZ_DEBUG_DEFAULT_USER_EMAIL}"
+      ZITADEL_FIRSTINSTANCE_ORG_HUMAN_PASSWORD: "Password1!"
+      SSL_CERT_FILE: /certs/ca-bundle.crt
+    volumes:
+      - zitadel-bootstrap:/bootstrap:rw
+      - ./zitadel/config.yaml:/etc/zitadel/config.yaml:ro
+      - ./zitadel/init-steps.yaml:/etc/zitadel/steps.yaml:ro
+      - ./certs/ca-bundle.crt:/certs/ca-bundle.crt:ro
+    extra_hosts:
+      - "oidc-test.dev.rezible.com:host-gateway"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "/app/zitadel", "ready"]
+      interval: 5s
+      timeout: 5s
+      retries: 2
+      start_period: 10s
+
+  zitadel-login:
+    image: ghcr.io/zitadel/zitadel-login:v4.12.0
+    restart: unless-stopped
+    user: "0"
+    environment:
+      ZITADEL_API_URL: http://zitadel-api:8080
+      NEXT_PUBLIC_BASE_PATH: /ui/v2/login
+      CUSTOM_REQUEST_HEADERS: "Host:auth.${LOCAL_DEV_HOST},X-Forwarded-Proto:https"
+      ZITADEL_SERVICE_USER_TOKEN_FILE: "/bootstrap/login-client.pat"
+      SSL_CERT_FILE: /certs/ca-bundle.crt
+      NODE_EXTRA_CA_CERTS: /certs/ca-bundle.crt
+    volumes:
+      - zitadel-bootstrap:/bootstrap:ro
+      - ./certs/ca-bundle.crt:/certs/ca-bundle.crt:ro
+    extra_hosts:
+      - "oidc-test.dev.rezible.com:host-gateway"
+    depends_on:
+      zitadel-api:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "/bin/sh", "-c", "node /app/healthcheck.mjs http://localhost:3000/ui/v2/login/healthy"]
+      interval: 10s
+      timeout: 30s
+      retries: 12
+      start_period: 20s

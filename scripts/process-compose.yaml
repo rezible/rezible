@@ -17,8 +17,6 @@ processes:
         path: "/api/health"
       initial_delay_seconds: 3
     depends_on:
-      postgresql:
-        condition: process_healthy
       documents-server:
         condition: process_started
 
@@ -31,41 +29,8 @@ processes:
       backend:
         condition: process_started
 
-  localias:
-    command: localias reload
-    is_daemon: true
-    shutdown:
-      command: localias stop
-
-  postgresql:
-    command: just run-db
-    is_daemon: true
-    availability:
-      restart: always
-    shutdown:
-      command: just stop-db
-    readiness_probe:
-      exec:
-        command: pg_isready
-      initial_delay_seconds: 1
-
   documents-server:
     command: just dev-documents-server
     availability:
       restart: on_failure
       max_restarts: 1
-    depends_on:
-      postgresql:
-        condition: process_healthy
-
-  oidc-test-provider:
-    command: just run-oidc-test-provider
-    readiness_probe:
-      http_get:
-        scheme: http
-        host: localhost
-        port: 6432
-        path: "/"
-      initial_delay_seconds: 3
-      failure_threshold: 3
-      period_seconds: 1

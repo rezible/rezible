@@ -1,0 +1,21 @@
+{
+	auto_https off
+}
+
+auth.dev.rezible.com:80 {
+	reverse_proxy /ui/v2/login/* http://zitadel-login:3000
+
+    reverse_proxy h2c://zitadel-api:8080 {
+        header_up -TE
+        header_up X-Forwarded-Proto https
+        header_up X-Forwarded-Host {host}
+        header_up X-Forwarded-Port 443
+    }
+}
+
+oidc-test.dev.rezible.com:80 {
+    reverse_proxy http://dev-oidc:8080 {
+        header_up -TE
+        header_up X-Forwarded-Proto https
+    }
+}

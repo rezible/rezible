@@ -1,0 +1,69 @@
+name: "rezible-dev"
+
+include:
+  - docker-compose.zitadel.yaml
+
+volumes:
+  postgres-data:
+
+services:
+  proxy:
+    image: caddy:2
+    container_name: proxy
+    restart: unless-stopped
+    ports:
+      - "5482:80"
+    volumes: ["./Caddyfile:/etc/caddy/Caddyfile:ro"]
+
+  postgres:
+    image: postgres:17
+    container_name: rezible-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: postgres
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+      - ./postgres-init:/docker-entrypoint-initdb.d:ro
+    ports:
+      - "5432:5432"
+
+  dev-oidc:
+    image: ghcr.io/businesssimulations/dev-oidc-toolkit:0.6.0
+    container_name: dev-oidc-toolkit
+    restart: unless-stopped
+    environment:
+      DevOidcToolkit__Port: "8080"
+      DevOidcToolkit__Issuer: "https://oidc-test.dev.rezible.com/"
+      DevOidcToolkit__Users__0__Email: "${REZ_DEBUG_DEFAULT_USER_EMAIL}"
+      DevOidcToolkit__Users__0__FirstName: "Test"
+      DevOidcToolkit__Users__0__LastName: "User"
+      DevOidcToolkit__Clients__0__Id: "${TEST_OIDC_CLIENT_ID}"
+      DevOidcToolkit__Clients__0__Secret: "${TEST_OIDC_CLIENT_SECRET}"
+      DevOidcToolkit__Clients__0__RedirectUris__0: "https://app.${LOCAL_DEV_HOST}/api/auth/oidc/test-provider/callback"
+
+  telemetry:
+    scale: 0
+    image: grafana/otel-lgtm:latest
+    container_name: otel-lgtm
+    ports:
+      - "3000:3000"   # Grafana UI
+      - "4317:4317"   # OpenTelemetry gRPC collector
+      - "4318:4318"   # OpenTelemetry HTTP collector
+      - "4100:4100"   # Loki ingest
+      - "9090:9090"   # Prometheus UI
+    environment:
+      ENABLE_LOGS_ALL: "false"
+    healthcheck:
+      test: /opt/health-check.sh
+      interval: 1m
+      timeout: 10s
+      retries: 10
+      start_period: 1m
+      start_interval: 10s

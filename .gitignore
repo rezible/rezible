@@ -3,6 +3,7 @@ node_modules/
 .devbox/
 .idea/
 .vscode/
+scripts/certs/
 **/openapi-ts-error-*
 **/CLAUDE.md
 **/AGENTS.md

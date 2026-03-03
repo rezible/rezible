@@ -1,31 +1,21 @@
 {
   "$schema": "https://raw.githubusercontent.com/jetpack-io/devbox/0.10.1/.schema/devbox.schema.json",
   "packages": {
-    "reflex": "latest",
-    "glibcLocales": {
-      "version":   "latest",
-      "platforms": ["x86_64-linux", "aarch64-linux"]
-    },
+    "reflex":                      "latest",
     "bun":                         "latest",
     "just":                        "latest",
-    "postgresql":                  "latest",
     "go":                          "latest",
     "process-compose":             "latest",
     "github:peterldowns/localias": "",
     "go-migrate":                  "4.18.1",
     "go-mockery":                  "latest"
   },
-  "env": {
-    "OLD_DB_URL": "postgresql://localhost/rezible?sslmode=disable"
-  },
   "shell": {
-    "init_hook": ["unset DEVELOPER_DIR"],
-    "scripts": {
-      "dev":         ["just dev"],
-      "dev-backend": ["just dev-backend"],
-      "start-db":    ["just start-db"],
-      "setup-db":    ["just setup-db"],
-      "codegen":     ["just codegen"]
-    }
+    "init_hook": ["unset DEVELOPER_DIR"]
+  },
+  "env": {
+    "LOCAL_DEV_HOST": "dev.rezible.com",
+    "TEST_OIDC_CLIENT_ID": "client",
+    "TEST_OIDC_CLIENT_SECRET": "secret"
   }
 }

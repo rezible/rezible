@@ -3,7 +3,7 @@
   "private": true,
   "workspaces": ["frontend", "documents-server", "shared/*"],
   "scripts": {
-    "codegen:api": "openapi-ts"
+    "codegen:api": "openapi-ts -f ./scripts/openapi-ts.config.ts --no-log-file"
   },
   "devDependencies": {
     "@hey-api/openapi-ts": "0.88.0"

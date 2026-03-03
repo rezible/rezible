@@ -21,17 +21,31 @@ saml_cert_dir := "./backend/internal/http/saml/testdata"
     openssl req -x509 -newkey rsa:2048 -keyout "{{ saml_cert_dir }}/test.key" -out "{{ saml_cert_dir }}/test.cert" -days 365 -nodes -subj "/CN=test.rezible.com"
     just install-dependencies
     just codegen
-    just setup-db
-    localias reload
+    just localias-reload
+
+@localias-reload:
+    localias reload -c scripts/localias.yaml
+    mkdir -p scripts/certs && cat /etc/ssl/cert.pem "$(localias debug cert)" > ./scripts/certs/ca-bundle.crt
 
 @install-dependencies:
     cd backend && go mod tidy
     bun install
 
-@upgrade-everything:
+@upgrade-dependencies:
     devbox update
     cd backend && go get -u ./... && go mod tidy
     bun update
+
+@run-docker-compose *CMD:
+    docker compose \
+      --env-file .env \
+      -f ./scripts/docker-compose.yaml \
+      {{CMD}}
+
+@setup-dev-zitadel:
+    cd scripts/zitadel/setup-dev/ && \
+      ADMIN_SA_PAT="$(just run-docker-compose exec zitadel-login cat /bootstrap/admin-sa.pat)" \
+      go run .
 
 @run-backend *ARGS:
     cd backend && \
@@ -50,8 +64,10 @@ saml_cert_dir := "./backend/internal/http/saml/testdata"
         DB_URL='{{ dev_db_url }}' \
         bun run {{ARGS}}
 
-@run-backend-datasync: start-db
+@run-backend-datasync:
     DATASYNC_MODE="true" just run-backend integrations sync
+
+# [group('Testing')]
 
 @test-backend:
     cd backend && \
@@ -76,10 +92,13 @@ saml_cert_dir := "./backend/internal/http/saml/testdata"
     just run-backend openapi > /tmp/rezible-spec.yaml
     bun run codegen:api
 
+@codegen-migration NAME:
+    just run-backend db-migrations generate {{NAME}}
+
 # [group('Development Servers')]
 
-@dev: stop-db
-    process-compose --ordered-shutdown
+@dev:
+    process-compose --ordered-shutdown -f ./scripts/process-compose.yaml
 
 @format:
     cd backend && go fmt ./...
@@ -96,16 +115,9 @@ saml_cert_dir := "./backend/internal/http/saml/testdata"
 
 # [group('Database')]
 
-@create-db: stop-db
-    rm -rf ./.devbox/virtenv/postgresql/data
-    initdb -A trust > /dev/null
-    just start-db
-    psql -q -d postgres -c "CREATE ROLE {{dev_db_user}} WITH LOGIN SUPERUSER;"
-    createdb -U {{dev_db_user}} {{dev_db_name}}
-
 migrations_dir := "backend/migrations"
 
-@create-initial-migrations: create-db
+@create-initial-migrations:
     rm -f ./{{migrations_dir}}/*.{sql,sum}
     just run-backend db-migrations generate ent_init
     sleep 1
@@ -113,32 +125,8 @@ migrations_dir := "backend/migrations"
     cd backend && go tool river migrate-get --all --exclude-version 1 --up > "migrations/$(ls migrations | grep 'river_init.up')"
     cd backend && go tool river migrate-get --all --exclude-version 1 --down > "migrations/$(ls migrations | grep 'river_init.down')"
 
-@generate-migration NAME:
-    just run-backend db-migrations generate {{NAME}}
-
-@setup-db:
-    just create-db
-    migrate -source "file://backend/migrations" -database "{{dev_db_url}}" up
-
-@run-db:
-    -pg_isready -q || pg_ctl -o "-k $PGHOST" -l "$PGDATA/postgres.log" start
-
-@start-db:
-   just run-db > /dev/null
+@run-migrations:
+    migrate -source "file://{{migrations_dir}}" -database "{{dev_db_url}}" up
 
 @run-psql:
     psql -d {{dev_db_url}}
-
-@stop-db:
-    -pg_isready -q && pg_ctl stop > /dev/null
-
-# [group('Other')]
-@run-oidc-test-provider:
-    docker run -p 6432:8080 \
-        -e DevOidcToolkit__Users__0__Email="${REZ_DEBUG_DEFAULT_USER_EMAIL}" \
-        -e DevOidcToolkit__Users__0__FirstName=Test \
-        -e DevOidcToolkit__Users__0__LastName=User \
-        -e DevOidcToolkit__Clients__0__Id=client \
-        -e DevOidcToolkit__Clients__0__Secret=secret \
-        -e DevOidcToolkit__Clients__0__RedirectUris__INDEX=https://app.dev.rezible.com/api/auth/oidc/test-provider/callback \
-        ghcr.io/businesssimulations/dev-oidc-toolkit:0.2.0

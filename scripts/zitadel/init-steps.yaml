@@ -1,0 +1,36 @@
+FirstInstance:
+  InstanceName: default
+#  DomainPolicy:
+#    UserLoginMustBeDomain: true
+  Org:
+    Name: local-dev
+    Human:
+      UserName: admin
+      PasswordChangeRequired: false
+    Machine:
+      Machine:
+        Username: admin-sa
+        Name: "Admin Service Account"
+      Pat:
+        ExpirationDate: "2029-01-01T00:00:00Z"
+    LoginClient:
+      Machine:
+        Username: login-client
+        Name: Automatically Initialized IAM_LOGIN_CLIENT
+      Pat:
+        ExpirationDate: "2029-01-01T00:00:00Z"
+  PatPath: "/bootstrap/admin-sa.pat"
+  LoginClientPatPath: "/bootstrap/login-client.pat"
+
+CorrectCreationDate:
+  FailAfter: 5m
+
+AddEventCreatedAt:
+  BulkAmount: 100
+
+FillFields:
+  BatchSize: 1000
+
+Instrumentation:
+  Log:
+    Format: "text"

@@ -1,0 +1,56 @@
+Port: 8080
+ExternalPort: 443
+ExternalSecure: true
+TLS:
+  Enabled: false
+
+Database:
+  postgres:
+    Host: postgres
+    Port: 5432
+    Database: zitadel
+    User:
+      Username: zitadel
+
+OIDC:
+  DefaultLoginURLV2: "/ui/v2/login/login?authRequest="
+  DefaultLogoutURLV2: "/ui/v2/login/logout?post_logout_redirect="
+
+SAML:
+  DefaultLoginURLV2: "/ui/v2/login/login?samlRequest=" # ZITADEL_SAML_DEFAULTLOGINURLV2
+
+Instrumentation:
+  Log:
+    Format: "text"
+
+LogStore:
+  Access:
+    Stdout:
+      Enabled: true
+
+DefaultInstance:
+  InstanceName: ZITADEL
+  DomainPolicy:
+    UserLoginMustBeDomain: true
+    ValidateOrgDomains: false
+  LoginPolicy:
+    AllowUsernamePassword: true
+    AllowRegister: true
+    AllowExternalIDP: true
+    ForceMFA: false
+    HidePasswordReset: true
+    IgnoreUnknownUsernames: false
+    AllowDomainDiscovery: true
+
+  WebKeys:
+    Type: "ecdsa"
+    Config:
+      EllipticCurve: "P256" # ZITADEL_DEFAULTINSTANCE_WEBKEYS_CONFIG_CURVE
+
+  Features:
+    LoginV2:
+      Required: true
+      # BaseURI: # ZITADEL_DEFAULTINSTANCE_FEATURES_LOGINV2_BASEURI
+
+ServicePing:
+  Enabled: false
