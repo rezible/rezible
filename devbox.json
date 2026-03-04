@@ -15,7 +15,5 @@
   },
   "env": {
     "LOCAL_DEV_HOST": "dev.rezible.com",
-    "TEST_OIDC_CLIENT_ID": "client",
-    "TEST_OIDC_CLIENT_SECRET": "secret"
   }
 }

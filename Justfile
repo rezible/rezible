@@ -7,6 +7,8 @@ dev_db_url := "postgresql://"+dev_db_user+"@localhost"+"/"+dev_db_name+"?sslmode
 dev_db_url_docker := "postgresql://"+dev_db_user+"@host.docker.internal"+"/"+dev_db_name+"?sslmode=disable"
 test_db_url := "postgresql://"+dev_db_user+"@localhost"+"?sslmode=disable"
 
+import "scripts/Justfile"
+
 _default:
   @just --list
 
@@ -22,10 +24,7 @@ saml_cert_dir := "./backend/internal/http/saml/testdata"
     just install-dependencies
     just codegen
     just localias-reload
-
-@localias-reload:
-    localias reload -c scripts/localias.yaml
-    mkdir -p scripts/certs && cat /etc/ssl/cert.pem "$(localias debug cert)" > ./scripts/certs/ca-bundle.crt
+    just setup-dev-zitadel
 
 @install-dependencies:
     cd backend && go mod tidy
@@ -35,17 +34,6 @@ saml_cert_dir := "./backend/internal/http/saml/testdata"
     devbox update
     cd backend && go get -u ./... && go mod tidy
     bun update
-
-@run-docker-compose *CMD:
-    docker compose \
-      --env-file .env \
-      -f ./scripts/docker-compose.yaml \
-      {{CMD}}
-
-@setup-dev-zitadel:
-    cd scripts/zitadel/setup-dev/ && \
-      ADMIN_SA_PAT="$(just run-docker-compose exec zitadel-login cat /bootstrap/admin-sa.pat)" \
-      go run .
 
 @run-backend *ARGS:
     cd backend && \
@@ -97,7 +85,7 @@ saml_cert_dir := "./backend/internal/http/saml/testdata"
 
 # [group('Development Servers')]
 
-@dev:
+@dev: run-dev-services && stop-dev-services
     process-compose --ordered-shutdown -f ./scripts/process-compose.yaml
 
 @format:

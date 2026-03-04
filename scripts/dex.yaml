@@ -1,0 +1,33 @@
+issuer: https://dex.dev.rezible.com/
+
+storage:
+  type: sqlite3
+  config:
+    file: /var/dex/dex.db
+
+web:
+  http: 0.0.0.0:5556
+
+# This enables the built-in "local" user DB auth flow.
+enablePasswordDB: true
+
+staticClients:
+  - id: "client"
+    secret: "secret"
+    name: "Generic OIDC IdP client"
+    redirectURIs:
+      - "https://auth.dev.rezible.com/idps/callback"
+      - "https://auth.dev.rezible.com/ui/login/login/externalidp/callback"
+
+staticPasswords:
+  - email: test_user@dev.rezible.com
+    # bcrypt hash for "password"
+    hash: "$2a$10$2b2cU8CPhOTaGrs1HRQuAueS7JTT5ZHsHSzYiFPm1leZck7Mc8T4W"
+    username: "test_user"
+    preferredUsername: "test_user"
+    userID: "08a8684b-db88-4b73-90a9-3cd1661f5466"
+    name: "Test User"
+    emailVerified: true
+    claims:
+      given_name: "Test"
+      family_name: "User"

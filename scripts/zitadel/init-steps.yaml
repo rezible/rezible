@@ -1,7 +1,5 @@
 FirstInstance:
   InstanceName: default
-#  DomainPolicy:
-#    UserLoginMustBeDomain: true
   Org:
     Name: local-dev
     Human:

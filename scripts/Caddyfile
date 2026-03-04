@@ -13,9 +13,15 @@ auth.dev.rezible.com:80 {
     }
 }
 
-oidc-test.dev.rezible.com:80 {
-    reverse_proxy http://dev-oidc:8080 {
+dex.dev.rezible.com:80 {
+    reverse_proxy http://dex:5556 {
         header_up -TE
+        header_up X-Forwarded-Proto https
+    }
+}
+
+oidc.dev.rezible.com:80 {
+    reverse_proxy http://dev-oidc:8080 {
         header_up X-Forwarded-Proto https
     }
 }

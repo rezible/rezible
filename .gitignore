@@ -4,6 +4,7 @@ node_modules/
 .idea/
 .vscode/
 scripts/certs/
+scripts/data/
 **/openapi-ts-error-*
 **/CLAUDE.md
 **/AGENTS.md

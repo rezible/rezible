@@ -1,10 +1,10 @@
 name: "rezible-dev"
 
-include:
-  - docker-compose.zitadel.yaml
-
 volumes:
   postgres-data:
+  zitadel-bootstrap:
+  terraform-data:
+  dex-data:
 
 services:
   proxy:
@@ -25,28 +25,138 @@ services:
       POSTGRES_DB: postgres
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres"]
-      interval: 10s
-      timeout: 5s
-      retries: 10
+      interval: 1s
+      timeout: 1s
+      retries: 5
     volumes:
       - postgres-data:/var/lib/postgresql/data
       - ./postgres-init:/docker-entrypoint-initdb.d:ro
     ports:
       - "5432:5432"
 
+  zitadel-api:
+    image: ghcr.io/zitadel/zitadel:v4.12.0
+    restart: unless-stopped
+    user: "0"
+    command: |
+      start-from-init --masterkeyFromEnv --tlsMode external
+        --config /etc/zitadel/config.yaml 
+        --steps /etc/zitadel/steps.yaml
+    environment:
+      ZITADEL_MASTERKEY: "MasterkeyNeedsToHave32Characters"
+      ZITADEL_TLS_ENABLED: false # needed for health check to succeed
+      ZITADEL_EXTERNALDOMAIN: "auth.${LOCAL_DEV_HOST}"
+      ZITADEL_DATABASE_POSTGRES_ADMIN_USERNAME: postgres
+      ZITADEL_DATABASE_POSTGRES_ADMIN_PASSWORD: password
+      ZITADEL_DATABASE_POSTGRES_USER_PASSWORD: zitadel
+      ZITADEL_FIRSTINSTANCE_ORG_HUMAN_EMAIL_ADDRESS: "${REZ_DEBUG_DEFAULT_USER_EMAIL}"
+      ZITADEL_FIRSTINSTANCE_ORG_HUMAN_PASSWORD: "Password1!"
+      SSL_CERT_FILE: /certs/ca-bundle.crt
+    volumes:
+      - zitadel-bootstrap:/bootstrap:rw
+      - ./zitadel/config.yaml:/etc/zitadel/config.yaml:ro
+      - ./zitadel/init-steps.yaml:/etc/zitadel/steps.yaml:ro
+      - ./certs/ca-bundle.crt:/certs/ca-bundle.crt:ro
+    extra_hosts:
+      - "dex.dev.rezible.com:host-gateway"
+      - "oidc.dev.rezible.com:host-gateway"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      default:
+        aliases:
+          - auth.dev.rezible.com
+    healthcheck:
+      test: [ "CMD", "/app/zitadel", "ready" ]
+      interval: 5s
+      timeout: 1s
+      retries: 3
+      start_period: 5s
+
+#  zitadel-login:
+#    image: ghcr.io/zitadel/zitadel-login:v4.12.0
+#    restart: unless-stopped
+#    user: "0"
+#    environment:
+#      ZITADEL_API_URL: http://zitadel-api:8080
+#      NEXT_PUBLIC_BASE_PATH: /ui/v2/login
+#      CUSTOM_REQUEST_HEADERS: "Host:auth.${LOCAL_DEV_HOST},X-Forwarded-Proto:https"
+#      ZITADEL_SERVICE_USER_TOKEN_FILE: "/bootstrap/login-client.pat"
+#      SSL_CERT_FILE: /certs/ca-bundle.crt
+#      NODE_EXTRA_CA_CERTS: /certs/ca-bundle.crt
+#    volumes:
+#      - zitadel-bootstrap:/bootstrap:ro
+#      - ./certs/ca-bundle.crt:/certs/ca-bundle.crt:ro
+#    extra_hosts:
+#      - "dex.dev.rezible.com:host-gateway"
+#      - "oidc.dev.rezible.com:host-gateway"
+#    depends_on:
+#      zitadel-api:
+#        condition: service_healthy
+#    healthcheck:
+#      test: [ "CMD", "/bin/sh", "-c", "node /app/healthcheck.mjs http://localhost:3000/ui/v2/login/healthy" ]
+#      interval: 10s
+#      timeout: 30s
+#      retries: 12
+#      start_period: 20s
+
+  tf-provision:
+    image: hashicorp/terraform:1.14
+    restart: "no"
+    volumes:
+      - terraform-data:/terraform-data:rw
+      - zitadel-bootstrap:/zitadel-bootstrap:ro
+      - ./provision.tf:/provision/main.tf:ro
+    working_dir: /provision
+    environment:
+      TF_IN_AUTOMATION: true
+      TF_VAR_local_dev_host: "${LOCAL_DEV_HOST}"
+      TF_VAR_admin_sa_pat_path: "/zitadel-bootstrap/admin-sa.pat"
+    entrypoint:
+      - "/bin/sh"
+      - "-c"
+      - "terraform init -upgrade -input=false > /dev/null && terraform apply -auto-approve -input=false"
+    extra_hosts:
+      - "auth.dev.rezible.com:host-gateway"
+    depends_on:
+      zitadel-api:
+        condition: service_healthy
+
   dev-oidc:
     image: ghcr.io/businesssimulations/dev-oidc-toolkit:0.6.0
-    container_name: dev-oidc-toolkit
+    container_name: dev-oidc
     restart: unless-stopped
     environment:
       DevOidcToolkit__Port: "8080"
-      DevOidcToolkit__Issuer: "https://oidc-test.dev.rezible.com/"
+      DevOidcToolkit__Issuer: "https://oidc.dev.rezible.com/"
       DevOidcToolkit__Users__0__Email: "${REZ_DEBUG_DEFAULT_USER_EMAIL}"
-      DevOidcToolkit__Users__0__FirstName: "Test"
+      DevOidcToolkit__Users__0__FirstName: "Admin"
       DevOidcToolkit__Users__0__LastName: "User"
-      DevOidcToolkit__Clients__0__Id: "${TEST_OIDC_CLIENT_ID}"
-      DevOidcToolkit__Clients__0__Secret: "${TEST_OIDC_CLIENT_SECRET}"
-      DevOidcToolkit__Clients__0__RedirectUris__0: "https://app.${LOCAL_DEV_HOST}/api/auth/oidc/test-provider/callback"
+      DevOidcToolkit__Users__1__Email: "test_user@dev.rezible.com"
+      DevOidcToolkit__Users__1__FirstName: "Test"
+      DevOidcToolkit__Users__1__LastName: "User"
+      DevOidcToolkit__Clients__0__Id: "client"
+      DevOidcToolkit__Clients__0__Secret: "secret"
+      DevOidcToolkit__Clients__0__RedirectUris__0: "https://auth.${LOCAL_DEV_HOST}/idps/callback"
+      DevOidcToolkit__Clients__0__RedirectUris__1: "https://auth.${LOCAL_DEV_HOST}/ui/login/login/externalidp/callback"
+    networks:
+      default:
+        aliases:
+          - "oidc.${LOCAL_DEV_HOST}"
+
+  dex:
+    image: ghcr.io/dexidp/dex:latest
+    command: ["dex", "serve", "/etc/dex/config.yaml"]
+    volumes:
+      - ./dex.yaml:/etc/dex/config.yaml:ro
+      - dex-data:/var/dex
+    ports:
+      - "5556:5556"
+    networks:
+      default:
+        aliases:
+          - "dex.${LOCAL_DEV_HOST}"
 
   telemetry:
     scale: 0

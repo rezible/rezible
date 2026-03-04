@@ -13,7 +13,7 @@
         "yjs": "13.6.27",
       },
       "devDependencies": {
-        "@hey-api/openapi-ts": "^0.88.0",
+        "@hey-api/openapi-ts": "0.88.0",
       },
     },
     "documents-server": {

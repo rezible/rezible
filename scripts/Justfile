@@ -1,0 +1,21 @@
+#!/usr/bin/env just --justfile
+
+@localias-reload:
+    localias reload -c scripts/localias.yaml
+    mkdir -p scripts/certs && cat /etc/ssl/cert.pem "$(localias debug cert)" > ./scripts/certs/ca-bundle.crt
+
+@run-docker-compose *CMD:
+    docker compose \
+      --env-file .env \
+      -f ./scripts/docker-compose.yaml \
+      {{CMD}}
+
+@run-dev-services:
+    just run-docker-compose up -d
+
+@stop-dev-services:
+    just run-docker-compose down
+
+@provision-dev:
+    just run-docker-compose down tf-provision
+    just run-docker-compose up tf-provision
