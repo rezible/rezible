@@ -99,28 +99,10 @@ resource "zitadel_application_oidc" "rezible_frontend" {
   skip_native_app_success_page = false
 }
 
-resource "zitadel_org_idp_oidc" "dex" {
-  org_id = data.zitadel_org.local_dev.id
-
-  name          = "Dex"
-  issuer        = "https://dex.${var.local_dev_host}/"
-  client_id     = "client"
-  client_secret = "secret"
-  scopes        = ["openid", "profile", "email"]
-
-  is_creation_allowed = true
-  is_auto_creation    = true
-  is_auto_update      = true
-  is_linking_allowed  = true
-  auto_linking        = "AUTO_LINKING_OPTION_EMAIL"
-
-  is_id_token_mapping = true
-}
-
 resource "zitadel_org_idp_oidc" "test" {
   org_id = data.zitadel_org.local_dev.id
 
-  name          = "Test OIDC"
+  name          = "OIDC Test"
   issuer        = "https://oidc.${var.local_dev_host}/"
   client_id     = "client"
   client_secret = "secret"
@@ -144,12 +126,12 @@ resource "zitadel_action" "fix_dev_idp_attributes" {
     let logger = require("zitadel/log")
     function fixDevIDPAttributes(ctx, api) {
       logger.info("providerInfo: " + JSON.stringify(ctx.v1.providerInfo));
-      let nameParts = ctx.v1.providerInfo["name"].split(" ", 2);
-      api.setFirstName(nameParts[0]);
-      api.setLastName(nameParts[1]);
-      if (!ctx.v1.providerInfo["preferred_username"])
-        api.setPreferredUsername("test_user");
-      api.setEmailVerified(true);
+      let email = ctx.v1.providerInfo["email"];
+      if (email) {
+        if (!ctx.v1.providerInfo["preferred_username"])
+          api.setPreferredUsername(email.split("@", 2)[0]);
+        api.setEmailVerified(true);
+      }
     }
   EOT
   timeout         = "10s"
@@ -185,7 +167,7 @@ resource "zitadel_login_policy" "org_login" {
   mfa_init_skip_lifetime        = "720h0m0s"
   second_factor_check_lifetime  = "24h0m0s"
 
-  idps = [zitadel_org_idp_oidc.dex.id, zitadel_org_idp_oidc.test.id]
+  idps = [zitadel_org_idp_oidc.test.id]
 }
 
 output "org_id" {
@@ -198,8 +180,4 @@ output "project_id" {
 
 output "application_id" {
   value = zitadel_application_oidc.rezible_frontend.id
-}
-
-output "org_oidc_idp_id" {
-  value = zitadel_org_idp_oidc.dex.id
 }
