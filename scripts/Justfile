@@ -16,6 +16,11 @@
 @stop-dev-services:
     just run-docker-compose down
 
-@provision-dev:
-    just run-docker-compose down tf-provision
+@provision-dev: run-dev-services
     just run-docker-compose up tf-provision
+
+@get-provisioning-outputs:
+    docker run --rm -v rezible-dev_terraform-data:/data alpine cat /data/output.json
+
+@get-frontend-zitadel-client-id:
+    echo -n "$(just get-provisioning-outputs)" | jq -r .application_client_id.value

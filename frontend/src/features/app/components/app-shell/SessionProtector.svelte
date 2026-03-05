@@ -20,9 +20,9 @@
 	const redirectTo = $derived.by(() => {
 		if (!session.loaded) return;
         if (session.isAuthenticated && isAuthRoute) return "/";
-        if (session.isSetup && isSetupRoute) return "/";
+        // if (session.isSetup && isSetupRoute) return "/";
 		if (!session.isAuthenticated && !isAuthRoute) return AuthRouteId;
-        if (session.isAuthenticated && !session.isSetup && !isSetupRoute) return SetupRouteId;
+        // if (session.isAuthenticated && !session.isSetup && !isSetupRoute) return SetupRouteId;
 	});
 	const navigatingTo = $derived(navigating.to?.route.id);
 

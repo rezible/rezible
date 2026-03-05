@@ -1,34 +1,10 @@
 <script lang="ts">
-	import { createQuery } from "@tanstack/svelte-query";
-	import { getAuthSessionConfigOptions } from "$lib/api";
-	import { useAuthSessionState, type SessionErrorCategory } from "$lib/auth.svelte";
-	import { mdiGoogle, mdiKey } from "@mdi/js";
+	import { useAuthSessionState } from "$lib/auth.svelte";
 	import { Button } from "$components/ui/button";
 	import Header from "$components/header/Header.svelte";
-	import Icon from "$components/icon/Icon.svelte";
 
 	const session = useAuthSessionState();
 
-	const configQuery = createQuery(() => getAuthSessionConfigOptions());
-	const config = $derived(configQuery.data?.data);
-
-	const providers = $derived(config?.providers.filter(p => p.enabled));
-
-	const errorCategory = $derived(session.error?.category);
-
-	type ProviderDisplay = {label: string; icon: string};
-	const providerDisplay = new Map<string, ProviderDisplay>([
-		["saml", {label: "SSO", icon: mdiKey}],
-		["google", {label: "Google", icon: mdiGoogle}],
-	]);
-
-	const errorDisplayText: Record<SessionErrorCategory, string> = {
-		unknown: "An unknown error occurred",
-		invalid: "Auth session is invalid",
-		session_expired: "Your session has expired",
-		invalid_user: "You signed in successfully, but Rezible does not have your details.",
-		no_session: "",
-	};
 </script>
 
 <div class="grid h-full w-full place-items-center">
@@ -39,26 +15,10 @@
 			{/snippet}
 		</Header>
 
-		{#if session.error && errorCategory !== "no_session"}
-			<div class="bg-danger-900/50 border-danger/20 border rounded p-2">
-				<span class="">{errorDisplayText[errorCategory ?? "unknown"]}</span>
-			</div>
-		{/if}
-
-		{#if errorCategory === "invalid_user"}
-			<Button href={session.signoutUrl} disabled={configQuery.isLoading} color="primary">Logout</Button>
-		{:else if !!providers}
-			{#each providers as p}
-				{@const display = providerDisplay.get(p.name.toLowerCase())}
-				<Button href={p.startFlowEndpoint} color="primary">
-					<span class="flex items-center gap-2">
-					Continue with {display?.label ?? p.name}
-					{#if display?.icon}
-						<Icon data={display.icon} />
-					{/if}
-					</span>
-				</Button>
-			{/each}
+		{#if session.isAuthenticated}
+			<Button onclick={() => {session.signOut()}}>sign out</Button>
+		{:else}
+			<Button onclick={() => {session.signIn()}}>sign in</Button>
 		{/if}
 	</div>
 </div>

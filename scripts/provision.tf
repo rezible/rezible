@@ -23,7 +23,7 @@ variable "admin_sa_pat_path" {
 
 locals {
   auth_domain     = "auth.${var.local_dev_host}"
-  login_redirect   = "https://app.${var.local_dev_host}/auth/callback"
+  login_redirect   = "https://app.${var.local_dev_host}/auth/callback/login"
 }
 
 provider "zitadel" {
@@ -72,29 +72,30 @@ resource "zitadel_project" "rezible" {
   name = "rezible"
   project_role_assertion = true
   has_project_check = true
-  project_role_check = true
+  project_role_check = false
 }
 
 resource "zitadel_application_oidc" "rezible_frontend" {
   org_id = data.zitadel_org.local_dev.id
   project_id = zitadel_project.rezible.id
-  name       = "rezible-frontend"
+  name       = "frontend-web"
 
-  response_types             = ["OIDC_RESPONSE_TYPE_CODE"]
-  grant_types                = ["OIDC_GRANT_TYPE_AUTHORIZATION_CODE"]
-  redirect_uris              = [local.login_redirect]
-  post_logout_redirect_uris  = [local.login_redirect]
+  app_type         = "OIDC_APP_TYPE_USER_AGENT"
+  response_types   = ["OIDC_RESPONSE_TYPE_CODE"]
+  grant_types      = ["OIDC_GRANT_TYPE_AUTHORIZATION_CODE"]
+  auth_method_type = "OIDC_AUTH_METHOD_TYPE_NONE"
 
-  app_type         = "OIDC_APP_TYPE_WEB"
-  auth_method_type = "OIDC_AUTH_METHOD_TYPE_BASIC"
   version          = "OIDC_VERSION_1_0"
   clock_skew       = "0s"
   dev_mode         = true
 
-  access_token_type            = "OIDC_TOKEN_TYPE_BEARER"
-  access_token_role_assertion  = false
-  id_token_role_assertion      = false
-  id_token_userinfo_assertion  = false
+  redirect_uris              = [local.login_redirect]
+  post_logout_redirect_uris  = [local.login_redirect]
+
+  access_token_type            = "OIDC_TOKEN_TYPE_JWT"
+  access_token_role_assertion  = true
+  id_token_role_assertion      = true
+  id_token_userinfo_assertion  = true
   additional_origins           = []
   skip_native_app_success_page = false
 }
@@ -180,4 +181,9 @@ output "project_id" {
 
 output "application_id" {
   value = zitadel_application_oidc.rezible_frontend.id
+}
+
+output "application_client_id" {
+  value = zitadel_application_oidc.rezible_frontend.client_id
+  sensitive = true
 }

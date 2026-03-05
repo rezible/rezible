@@ -117,7 +117,9 @@ services:
     entrypoint:
       - "/bin/sh"
       - "-c"
-      - "terraform init -upgrade -input=false > /dev/null && terraform apply -auto-approve -input=false"
+      - "terraform init -upgrade -input=false > /dev/null \
+          && terraform apply -auto-approve -input=false \
+          && terraform output -json > /terraform-data/output.json"
     extra_hosts:
       - "auth.dev.rezible.com:host-gateway"
     depends_on:

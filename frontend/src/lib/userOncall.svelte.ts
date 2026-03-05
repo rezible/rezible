@@ -7,7 +7,7 @@ export class UserOncallInformationState {
 	private session = useAuthSessionState();
 	private queryClient = useQueryClient();
 
-	private userId = $derived(this.session.user?.id || "");
+	private userId = $derived(this.session.user?.profile.sub || "");
 	private infoQueryOptions = $derived(getUserOncallInformationOptions({
 		query: {
 			userId: this.userId,

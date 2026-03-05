@@ -1,13 +1,13 @@
 set shell := ["bash", "-uc"]
 set dotenv-load
 
+import "scripts/Justfile"
+
 dev_db_user := "rezible"
 dev_db_name := "rezible"
 dev_db_url := "postgresql://"+dev_db_user+"@localhost"+"/"+dev_db_name+"?sslmode=disable"
 dev_db_url_docker := "postgresql://"+dev_db_user+"@host.docker.internal"+"/"+dev_db_name+"?sslmode=disable"
 test_db_url := "postgresql://"+dev_db_user+"@localhost"+"?sslmode=disable"
-
-import "scripts/Justfile"
 
 _default:
   @just --list
@@ -43,8 +43,11 @@ saml_cert_dir := "./backend/internal/http/saml/testdata"
 
 @run-frontend *ARGS:
     cd frontend && \
-        PUBLIC_API_SERVER_URL="https://app.dev.rezible.com" \
+        PUBLIC_APP_URL="https://app.dev.rezible.com" \
+        PUBLIC_API_SERVER_URL="https://api.dev.rezible.com" \
         PUBLIC_API_BASE_PATH="/api/v1" \
+        PUBLIC_AUTH_SERVER_URL="https://auth.dev.rezible.com" \
+        PUBLIC_AUTH_APPLICATION_CLIENT_ID="$(just get-frontend-zitadel-client-id)" \
         bun run {{ARGS}}
 
 @run-documents-server *ARGS:
@@ -86,7 +89,7 @@ saml_cert_dir := "./backend/internal/http/saml/testdata"
 # [group('Development Servers')]
 
 @dev: run-dev-services && stop-dev-services
-    process-compose --ordered-shutdown -f ./scripts/process-compose.yaml
+    process-compose --ordered-shutdown -f ./process-compose.yaml
 
 @format:
     cd backend && go fmt ./...
