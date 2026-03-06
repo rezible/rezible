@@ -44,10 +44,19 @@ type ConfigLoader interface {
 
 	DatabaseUrl() string
 	DocumentsServerAddress() string
-	AppUrl() string
 
-	ApiRouteBase() string
-	AuthRouteBase() string
+	ListenHost() string
+	ListenPort() string
+
+	AppUrl() string
+	ServeFrontend() bool
+	BasePath() string
+	AppMountPath() string
+	AuthPath() string
+	WebhooksPath() string
+	GetMountedAppRoute(routes ...string) (string, error)
+
+	AuthSessionCookieName() string
 
 	AllowTenantCreation() bool
 	AllowUserCreation() bool
@@ -200,11 +209,13 @@ type (
 		RedirectUrl  string
 	}
 
-	AuthSessionProvider interface {
+	AuthSessionCreatedCallback func(http.ResponseWriter, *http.Request, *AuthProviderSession)
+	AuthSessionProvider        interface {
+		Id() string
 		DisplayName() string
 		UserMapping() *ent.User
-		AuthFlowPathPrefix() string
-		HandleAuthFlowRequest(w http.ResponseWriter, r *http.Request, onCreated func(AuthProviderSession))
+		FlowPath() string
+		MakeFlowPathHandler(AuthSessionCreatedCallback) http.Handler
 		SessionExists(r *http.Request) bool
 		ClearSession(w http.ResponseWriter, r *http.Request) error
 	}
@@ -227,7 +238,7 @@ type (
 	AuthService interface {
 		LoadSessionProviders(context.Context) error
 		Providers() []AuthSessionProvider
-		GetProviderStartFlowPath(prov AuthSessionProvider) string
+		GetProviderStartFlowPath(p AuthSessionProvider) (string, error)
 
 		AuthRouteHandler() http.Handler
 		MCPServerMiddleware() func(http.Handler) http.Handler

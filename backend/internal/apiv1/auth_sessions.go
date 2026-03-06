@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/google/uuid"
+	"github.com/rs/zerolog/log"
 
 	rez "github.com/rezible/rezible"
 	oapi "github.com/rezible/rezible/openapi/v1"
@@ -25,10 +26,14 @@ func (h *authSessionsHandler) GetAuthSessionsConfig(ctx context.Context, req *oa
 	providers := h.auth.Providers()
 	configs := make([]oapi.AuthSessionProviderConfig, len(providers))
 	for i, prov := range providers {
+		flowPath, flowErr := h.auth.GetProviderStartFlowPath(prov)
+		if flowErr != nil {
+			log.Error().Err(flowErr).Str("id", prov.Id()).Msg("invalid provider flow url")
+		}
 		configs[i] = oapi.AuthSessionProviderConfig{
-			Name:              prov.DisplayName(),
-			StartFlowEndpoint: h.auth.GetProviderStartFlowPath(prov),
-			Enabled:           true,
+			Id:            prov.Id(),
+			Name:          prov.DisplayName(),
+			StartFlowPath: flowPath,
 		}
 	}
 

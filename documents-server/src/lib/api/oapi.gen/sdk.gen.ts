@@ -26,7 +26,7 @@ export class Documents {
         return (options.client ?? client).get<VerifyDocumentSessionAuthResponses, VerifyDocumentSessionAuthErrors, ThrowOnError>({
             security: [{
                     in: 'cookie',
-                    name: 'rezible_auth',
+                    name: 'rez_auth_session',
                     type: 'apiKey'
                 }, { scheme: 'bearer', type: 'http' }],
             url: '/documents/{id}/auth',
@@ -41,7 +41,7 @@ export class Documents {
         return (options.client ?? client).get<LoadDocumentResponses, LoadDocumentErrors, ThrowOnError>({
             security: [{
                     in: 'cookie',
-                    name: 'rezible_auth',
+                    name: 'rez_auth_session',
                     type: 'apiKey'
                 }, { scheme: 'bearer', type: 'http' }],
             url: '/documents/{id}/load',
@@ -56,7 +56,7 @@ export class Documents {
         return (options.client ?? client).post<RequestDocumentEditorSessionResponses, RequestDocumentEditorSessionErrors, ThrowOnError>({
             security: [{
                     in: 'cookie',
-                    name: 'rezible_auth',
+                    name: 'rez_auth_session',
                     type: 'apiKey'
                 }, { scheme: 'bearer', type: 'http' }],
             url: '/documents/{id}/session',
@@ -71,7 +71,7 @@ export class Documents {
         return (options.client ?? client).post<UpdateDocumentResponses, UpdateDocumentErrors, ThrowOnError>({
             security: [{
                     in: 'cookie',
-                    name: 'rezible_auth',
+                    name: 'rez_auth_session',
                     type: 'apiKey'
                 }, { scheme: 'bearer', type: 'http' }],
             url: '/documents/{id}/update',

@@ -19,20 +19,17 @@ var (
 	frontendFiles embed.FS
 )
 
-func GetEmbeddedFrontendFiles() (fs.FS, error) {
+func makeEmbeddedFrontendFilesServer() (http.Handler, error) {
+	if rez.Config.DebugMode() {
+		// redirect to frontend vite dev server
+		return http.RedirectHandler(rez.Config.AppUrl(), http.StatusFound), nil
+	}
+
 	files, filesErr := fs.Sub(frontendFiles, frontendFilesDir)
 	if filesErr != nil {
 		return nil, fmt.Errorf("failed to open embedded frontend files: %w", filesErr)
 	}
 	// TODO: check frontend files dir is not empty
-	return files, nil
-}
-
-func makeEmbeddedFrontendFilesServer(files fs.FS) http.Handler {
-	if rez.Config.DebugMode() {
-		// redirect to frontend vite dev server
-		return http.RedirectHandler(rez.Config.AppUrl(), http.StatusFound)
-	}
 
 	fileServer := http.FileServer(http.FS(files))
 	handlerFunc := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -55,7 +52,7 @@ func makeEmbeddedFrontendFilesServer(files fs.FS) http.Handler {
 		fileServer.ServeHTTP(w, r)
 	})
 
-	return handlerFunc
+	return handlerFunc, nil
 }
 
 var (

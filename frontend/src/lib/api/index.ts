@@ -1,4 +1,4 @@
-import { API_URL, API_BASE_PATH } from "$lib/config";
+import { API_V1_PATH } from "$lib/config";
 
 import { createConfig, type ClientOptions } from "./oapi.gen/client";
 import { client } from "./oapi.gen/client.gen";
@@ -8,7 +8,7 @@ import { type Options } from "@hey-api/client-fetch";
 import type { CreateQueryOptions } from "@tanstack/svelte-query";
 
 const clientConfig = createConfig<ClientOptions>({ 
-	baseUrl: API_URL + API_BASE_PATH,
+	baseUrl: API_V1_PATH,
 	// credentials: "include",
 });
 client.setConfig(clientConfig);

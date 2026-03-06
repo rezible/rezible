@@ -163,18 +163,10 @@ func (s *Server) setup(ctx context.Context) error {
 		// TODO: this shouldn't need the db client
 		apiv1Handler := apiv1.NewHandler(svcs, s.dbClient)
 
-		srv := http.NewServer(svcs.Auth)
-		srv.MountOpenApiV1(apiv1Handler)
-		srv.MountMCP(eino.NewMCPHandler(svcs.Auth))
-		for prefix, h := range integrations.GetWebhookHandlers() {
-			srv.AddWebhookHandler(prefix, h)
+		srv, srvErr := http.NewServer(svcs.Auth, apiv1Handler)
+		if srvErr != nil {
+			return fmt.Errorf("http.NewServer: %w", srvErr)
 		}
-
-		frontendFS, feFSErr := http.GetEmbeddedFrontendFiles()
-		if feFSErr != nil {
-			return fmt.Errorf("failed to get embedded frontend files: %w", feFSErr)
-		}
-		srv.MountStaticFrontend(frontendFS)
 		s.addEventListener("http_server", srv)
 	}
 

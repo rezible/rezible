@@ -3,11 +3,14 @@ set dotenv-load
 
 import "scripts/Justfile"
 
+dev_db_host := "localhost"
+dev_db_port := "5432"
 dev_db_user := "rezible"
-dev_db_name := "rezible"
-dev_db_url := "postgresql://"+dev_db_user+"@localhost"+"/"+dev_db_name+"?sslmode=disable"
-dev_db_url_docker := "postgresql://"+dev_db_user+"@host.docker.internal"+"/"+dev_db_name+"?sslmode=disable"
-test_db_url := "postgresql://"+dev_db_user+"@localhost"+"?sslmode=disable"
+dev_db_password := "foobar1"
+dev_db_database := "rezible"
+db_url := "postgresql://"+dev_db_user+":"+dev_db_password+"@"+dev_db_host+":"+dev_db_port+"/"
+dev_db_url := db_url+dev_db_database+"?sslmode=disable"
+test_db_url := db_url+"?sslmode=disable"
 
 _default:
   @just --list
@@ -38,16 +41,15 @@ saml_cert_dir := "./backend/internal/http/saml/testdata"
 @run-backend *ARGS:
     cd backend && \
         DEBUG_MODE=true \
-        DB_URL='{{ dev_db_url }}' \
+        DB_URL="{{dev_db_url}}" \
         go run ./cmd/rezible {{ARGS}}
 
 @run-frontend *ARGS:
     cd frontend && \
         PUBLIC_APP_URL="https://app.dev.rezible.com" \
-        PUBLIC_API_SERVER_URL="https://api.dev.rezible.com" \
-        PUBLIC_API_BASE_PATH="/api/v1" \
-        PUBLIC_AUTH_SERVER_URL="https://auth.dev.rezible.com" \
-        PUBLIC_AUTH_APPLICATION_CLIENT_ID="$(just get-frontend-zitadel-client-id)" \
+        PUBLIC_API_BASE_PATH="/api" \
+        PUBLIC_API_V1_PATH="/v1" \
+        PUBLIC_API_AUTH_PATH="/auth" \
         bun run {{ARGS}}
 
 @run-documents-server *ARGS:
@@ -89,6 +91,7 @@ saml_cert_dir := "./backend/internal/http/saml/testdata"
 # [group('Development Servers')]
 
 @dev: run-dev-services && stop-dev-services
+    just run-migrations
     process-compose --ordered-shutdown -f ./process-compose.yaml
 
 @format:
@@ -118,6 +121,3 @@ migrations_dir := "backend/migrations"
 
 @run-migrations:
     migrate -source "file://{{migrations_dir}}" -database "{{dev_db_url}}" up
-
-@run-psql:
-    psql -d {{dev_db_url}}

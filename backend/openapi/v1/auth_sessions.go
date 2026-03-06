@@ -34,9 +34,9 @@ type (
 	}
 
 	AuthSessionProviderConfig struct {
-		Name              string `json:"name"`
-		Enabled           bool   `json:"enabled"`
-		StartFlowEndpoint string `json:"startFlowEndpoint"`
+		Id            string `json:"id"`
+		Name          string `json:"name"`
+		StartFlowPath string `json:"startFlowPath"`
 	}
 
 	AuthSession struct {
@@ -66,7 +66,7 @@ var GetAuthSessionsConfig = huma.Operation{
 	Summary:     "Get the Auth Session config",
 	Tags:        authSessionsTags,
 	Errors:      openapi.ErrorCodes(),
-	Security:    openapi.ExplicitNoSecurity,
+	Security:    ExplicitNoSecurity,
 }
 
 type GetAuthSessionsConfigRequest struct {

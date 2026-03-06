@@ -14,7 +14,7 @@ processes:
         scheme: http
         host: localhost
         port: 8888
-        path: "/api/health"
+        path: "/health"
       initial_delay_seconds: 3
     depends_on:
       documents-server:

@@ -10,7 +10,7 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-const versionPrefix = "/v1"
+const VersionPrefix = "/v1"
 
 type Handler interface {
 	// GetMiddleware() []Middleware
@@ -52,7 +52,7 @@ type Handler interface {
 }
 type operations struct{ Handler }
 
-func MakeApi(h Handler, prefix string, mw ...openapi.Middleware) openapi.API {
+func MakeApi(h Handler, mw ...openapi.Middleware) openapi.API {
 	cfg := MakeConfig()
 
 	//tranformers := []huma.Transformer{
@@ -60,7 +60,7 @@ func MakeApi(h Handler, prefix string, mw ...openapi.Middleware) openapi.API {
 	//}
 	//cfg.Transformers = append(cfg.Transformers, tranformers...)
 
-	adapter := humago.NewAdapter(http.NewServeMux(), prefix+versionPrefix)
+	adapter := humago.NewAdapter(http.NewServeMux(), VersionPrefix)
 	api := huma.NewAPI(cfg, adapter)
 	api.UseMiddleware(mw...)
 	huma.AutoRegister(api, operations{Handler: h})
@@ -80,14 +80,14 @@ func MakeConfig() openapi.Config {
 	}
 	cfg.Info.Description = "Rezible API Specification"
 
-	cfg.Security = openapi.DefaultSecurity
-	cfg.Components.SecuritySchemes = openapi.DefaultSecuritySchemes
+	cfg.Security = DefaultSecurity
+	cfg.Components.SecuritySchemes = GetDefaultSecuritySchemes()
 
 	return cfg
 }
 
 func GetYamlSpec() (string, error) {
-	api := MakeApi(operations{}, versionPrefix)
+	api := MakeApi(operations{})
 	spec, specErr := yaml.Marshal(api.OpenAPI())
 	if specErr != nil {
 		return "", specErr

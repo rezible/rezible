@@ -5,8 +5,6 @@ import {
 	type ErrorModel,
 	type Organization,
 } from "$lib/api";
-import { APP_URL, AUTH_URL, AUTH_APP_CLIENT_ID } from "$lib/config";
-import { UserManager, WebStorageStateStore, User as OidcUser } from "oidc-client-ts";
 import { parseAbsoluteToLocal } from "@internationalized/date";
 import { createQuery } from "@tanstack/svelte-query";
 import { Context } from "runed";
@@ -19,43 +17,90 @@ export type SessionError = {
 	code?: string;
 };
 
-const OIDC_CONFIG = {
-    authority: AUTH_URL,
-    client_id: AUTH_APP_CLIENT_ID,
-    redirect_uri: APP_URL + "/auth/callback/login",
-    post_logout_redirect_uri: APP_URL + "/auth/callback/logout",
-    response_type: 'code',
-    scope: 'openid profile email',
-    code_challenge_method: 'S256'
+const parseSessionError = (err: ErrorModel): SessionError => {
+	let errCategory: SessionErrorCategory = "unknown";
+	const status = err.status ?? 503;
+	const errCode = err.detail;
+	if (status === 401) {
+		if (errCode === "session_expired") {
+			errCategory = "session_expired";
+		} else if (errCode === "no_session") {
+			errCategory = "no_session";
+		} else if (errCode === "invalid_user") {
+			errCategory = "invalid_user";
+		}
+	} else if (status === 404) {
+		errCategory = "invalid_user";
+	} else if (status >= 500) {
+		// TODO
+		console.error("failed to get auth session", status, err);
+	}
+	return {category: errCategory, code: errCode} as SessionError;
+}
+
+type AuthSession = {
+	expiresAt: Date;
+	user: User;
+	organization: Organization;
 };
 
+const parseUserAuthSessionResponse = ({data}: GetCurrentAuthSessionResponse): AuthSession => {
+	return {
+		user: data.user,
+		organization: data.organization,
+		expiresAt: parseAbsoluteToLocal(data.expiresAt).toDate(),
+	};
+};
+
+const SessionExpiryCheckIntervalMs = 10_000;
+
 export class AuthSessionState {
-	private oidc: UserManager;
+	private query = createQuery(() => getCurrentAuthSessionOptions());
+
+	session = $derived(this.query.data ? parseUserAuthSessionResponse(this.query.data) : null);
+	loaded = $derived(this.query.isFetched);
+	user = $derived(this.session?.user);
+	org = $derived(this.session?.organization);
+	
+	error = $derived.by<SessionError | undefined>(() => {
+		if (this.session && this.session.expiresAt < new Date(Date.now())) {
+			return {category: "session_expired"};
+		}
+		if (this.query.error) {
+			return parseSessionError(this.query.error as ErrorModel);
+		}
+	});
+
+	isAuthenticated = $derived(!!this.session && !this.error);
+	isSetup = $derived(this.isAuthenticated && !this.org?.attributes.setupRequired);
+
+	refetch() {
+		this.query.refetch();
+	}
+
+	checkSessionExpiry() {
+		if (!this.session) return;
+		const timeLeft = this.session.expiresAt.valueOf() - new Date(Date.now()).valueOf();
+		if (timeLeft <= 0) {
+			this.error = {category: "session_expired"};
+		} else if (timeLeft <= SessionExpiryCheckIntervalMs * 100) {
+			this.refreshSession(timeLeft);
+		}
+	}
+
+	private refreshSession(timeLeft: number) {
+		console.log("auth session expiring soon", timeLeft);
+	}
+
 	constructor() {
-		this.oidc = new UserManager({
-			userStore: new WebStorageStateStore({ store: window.localStorage }),
-			...OIDC_CONFIG,
-		});
-	}
-
-	loaded = $derived(true);
-	user = $state<OidcUser | null>(null);
-	isAuthenticated = $derived(!!this.user);
-	isSetup = $derived(false);
-
-	async onSignInCallback(url?: string) {
-		const user = await this.oidc.signinCallback(url);
-		if (user) this.user = user;
-		else this.user = null;
-	}
-
-	async signIn() {
-		const state = "a2123a67ff11413fa19217a9ea0fbad5";
-		this.oidc.signinRedirect({state});
-	}
-
-	async signOut() {
-		this.oidc.signoutRedirect();
+		onMount(() => {
+			const i = setInterval(() => {
+				this.checkSessionExpiry();
+			}, SessionExpiryCheckIntervalMs);
+			return () => {
+				clearInterval(i);
+			}
+		})
 	}
 };
 

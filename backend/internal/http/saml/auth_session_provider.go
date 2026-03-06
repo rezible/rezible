@@ -15,6 +15,7 @@ import (
 
 	"github.com/crewjam/saml"
 	"github.com/crewjam/saml/samlsp"
+	"github.com/go-chi/chi/v5"
 	"github.com/rs/zerolog/log"
 
 	rez "github.com/rezible/rezible"
@@ -38,26 +39,21 @@ func ProviderEnabled() bool {
 
 type AuthSessionProviderConfig struct {
 	idpMetadata *saml.EntityDescriptor
-	appUrl      url.URL
-	pathBase    string
 	keyPair     *tls.Certificate
 	cert        *x509.Certificate
 	key         crypto.Signer
 }
 
-func (c *AuthSessionProviderConfig) resolveMountedPath(path string) (*url.URL, error) {
-	parsed, parseErr := url.Parse(c.pathBase + path)
-	if parseErr != nil {
-		return nil, fmt.Errorf("failed to parse: %w", parseErr)
+func loadProviderConfig(ctx context.Context) (*AuthSessionProviderConfig, error) {
+	idpMetadataUrl, idpUrlErr := url.Parse(rez.Config.GetString("auth.saml.idp_metadata_url"))
+	if idpUrlErr != nil {
+		return nil, fmt.Errorf("bad idp url: %w", idpUrlErr)
 	}
-	return c.appUrl.ResolveReference(parsed), nil
-}
 
-func loadEnvConfig(ctx context.Context) (*AuthSessionProviderConfig, error) {
-	idPMetadataUrl := rez.Config.GetString("auth.saml.idp_metadata_url")
-	idpMetadata, mdErr := fetchIdpMetadata(ctx, idPMetadataUrl)
-	if mdErr != nil {
-		return nil, fmt.Errorf("fetching idp metadata: %w", mdErr)
+	// TODO: use samlsp.ParseMetadata with a cache
+	idpMetadata, metadataErr := samlsp.FetchMetadata(ctx, http.DefaultClient, *idpMetadataUrl)
+	if metadataErr != nil {
+		return nil, fmt.Errorf("fetching idp metadata: %w", metadataErr)
 	}
 
 	certFile := rez.Config.GetString("auth.saml.cert_file")
@@ -79,19 +75,7 @@ func loadEnvConfig(ctx context.Context) (*AuthSessionProviderConfig, error) {
 		return nil, fmt.Errorf("failed to cast *rsa.PrivateKey")
 	}
 
-	appUrl, appUrlErr := url.Parse(rez.Config.AppUrl())
-	if appUrlErr != nil {
-		return nil, fmt.Errorf("failed to parse backend url: %w", appUrlErr)
-	}
-
-	pathBase, baseErr := url.JoinPath(rez.Config.ApiRouteBase(), rez.Config.AuthRouteBase(), "/saml/")
-	if baseErr != nil {
-		return nil, fmt.Errorf("failed to resolve path: %w", baseErr)
-	}
-
 	cfg := &AuthSessionProviderConfig{
-		appUrl:      *appUrl,
-		pathBase:    pathBase,
 		idpMetadata: idpMetadata,
 		keyPair:     &keyPair,
 		cert:        cert,
@@ -101,21 +85,6 @@ func loadEnvConfig(ctx context.Context) (*AuthSessionProviderConfig, error) {
 	return cfg, nil
 }
 
-func fetchIdpMetadata(ctx context.Context, metadataUrl string) (*saml.EntityDescriptor, error) {
-	idpMetadataURL, idpUrlErr := url.Parse(metadataUrl)
-	if idpUrlErr != nil {
-		return nil, fmt.Errorf("bad idp url: %w", idpUrlErr)
-	}
-
-	// TODO: use samlsp.ParseMetadata with a cache
-	idpMetadata, metadataErr := samlsp.FetchMetadata(ctx, http.DefaultClient, *idpMetadataURL)
-	if metadataErr != nil {
-		return nil, fmt.Errorf("fetching idp metadata: %w", metadataErr)
-	}
-
-	return idpMetadata, nil
-}
-
 type AuthSessionProvider struct {
 	displayName string
 	providerId  string
@@ -123,23 +92,19 @@ type AuthSessionProvider struct {
 	mw          *samlsp.Middleware
 }
 
-func NewAuthSessionProvider(ctx context.Context, authPath string) (*AuthSessionProvider, error) {
-	cfg, cfgErr := loadEnvConfig(ctx)
+func NewAuthSessionProvider(ctx context.Context) (*AuthSessionProvider, error) {
+	cfg, cfgErr := loadProviderConfig(ctx)
 	if cfgErr != nil {
 		return nil, fmt.Errorf("config error: %w", cfgErr)
 	}
 
+	log.Debug().Interface("idpMetadata", cfg.idpMetadata).Msg("saml config")
 	sp := &AuthSessionProvider{
 		// TODO: get these from config
 		displayName: "SAML",
-		providerId:  "saml",
+		providerId:  cfg.idpMetadata.EntityID,
+		flowPath:    "/saml/" + cfg.idpMetadata.ID,
 	}
-
-	flowPath, flowPathErr := url.JoinPath(authPath, sp.AuthFlowPathPrefix())
-	if flowPathErr != nil {
-		return nil, fmt.Errorf("flow path: %w", flowPathErr)
-	}
-	sp.flowPath = flowPath
 
 	mw, mwErr := sp.createSamlMiddleware(cfg)
 	if mwErr != nil {
@@ -150,12 +115,16 @@ func NewAuthSessionProvider(ctx context.Context, authPath string) (*AuthSessionP
 	return sp, nil
 }
 
+func (p *AuthSessionProvider) Id() string {
+	return p.providerId
+}
+
 func (p *AuthSessionProvider) DisplayName() string {
 	return p.displayName
 }
 
-func (p *AuthSessionProvider) AuthFlowPathPrefix() string {
-	return "saml/" + p.providerId
+func (p *AuthSessionProvider) FlowPath() string {
+	return p.flowPath
 }
 
 func (p *AuthSessionProvider) UserMapping() *ent.User {
@@ -163,8 +132,12 @@ func (p *AuthSessionProvider) UserMapping() *ent.User {
 }
 
 func (p *AuthSessionProvider) createSamlMiddleware(cfg *AuthSessionProviderConfig) (*samlsp.Middleware, error) {
+	appUrl, appUrlErr := url.Parse(rez.Config.AppUrl())
+	if appUrlErr != nil {
+		return nil, fmt.Errorf("failed to parse app url: %w", appUrlErr)
+	}
 	opts := samlsp.Options{
-		URL:                cfg.appUrl,
+		URL:                *appUrl,
 		Key:                cfg.key,
 		Certificate:        cfg.cert,
 		CookieName:         sessionCookieName,
@@ -180,28 +153,35 @@ func (p *AuthSessionProvider) createSamlMiddleware(cfg *AuthSessionProviderConfi
 	if mwErr != nil {
 		return nil, fmt.Errorf("samlsp.New: %w", mwErr)
 	}
-
 	mw.OnError = p.onError
 
-	sloUrl, sloUrlErr := cfg.resolveMountedPath("slo")
+	sloUrl, sloUrlErr := p.resolveMountedFlowRoute("slo")
 	if sloUrlErr != nil {
 		return nil, fmt.Errorf("slo path: %w", sloUrlErr)
 	}
 	mw.ServiceProvider.SloURL = *sloUrl
 
-	acsUrl, acsUrlErr := cfg.resolveMountedPath("acs")
+	acsUrl, acsUrlErr := p.resolveMountedFlowRoute("acs")
 	if acsUrlErr != nil {
 		return nil, fmt.Errorf("acs path: %w", acsUrlErr)
 	}
 	mw.ServiceProvider.AcsURL = *acsUrl
 
-	metadataUrl, metadataUrlErr := cfg.resolveMountedPath("metadata")
+	metadataUrl, metadataUrlErr := p.resolveMountedFlowRoute("metadata")
 	if metadataUrlErr != nil {
 		return nil, fmt.Errorf("metadata path: %w", metadataUrlErr)
 	}
 	mw.ServiceProvider.MetadataURL = *metadataUrl
 
 	return mw, nil
+}
+
+func (p *AuthSessionProvider) resolveMountedFlowRoute(route string) (*url.URL, error) {
+	urlStr, joinErr := rez.Config.GetMountedAppRoute(rez.Config.AuthPath(), "flow", p.flowPath, route)
+	if joinErr != nil {
+		return nil, fmt.Errorf("failed to resolve mounted flow route: %w", joinErr)
+	}
+	return url.Parse(urlStr)
 }
 
 func (p *AuthSessionProvider) onError(w http.ResponseWriter, r *http.Request, err error) {
@@ -216,17 +196,19 @@ func (p *AuthSessionProvider) onError(w http.ResponseWriter, r *http.Request, er
 	http.Error(w, http.StatusText(http.StatusForbidden), http.StatusForbidden)
 }
 
-func (p *AuthSessionProvider) HandleAuthFlowRequest(w http.ResponseWriter, r *http.Request, onCreated func(session rez.AuthProviderSession)) {
-	switch r.URL.Path {
-	case p.flowPath:
-		p.mw.HandleStartAuthFlow(w, r)
-	case p.mw.ServiceProvider.MetadataURL.Path:
-		p.mw.ServeMetadata(w, r)
-	case p.mw.ServiceProvider.AcsURL.Path:
-		p.handleServeACS(w, r, onCreated)
-	default:
-		http.NotFound(w, r)
-	}
+func (p *AuthSessionProvider) MakeFlowPathHandler(onCreated rez.AuthSessionCreatedCallback) http.Handler {
+	r := chi.NewRouter()
+	r.Get("/", p.mw.HandleStartAuthFlow)
+	r.HandleFunc("/metadata", p.mw.ServeMetadata)
+	r.HandleFunc("/acs", func(w http.ResponseWriter, r *http.Request) {
+		sess, sessErr := p.samlACSHandler(w, r)
+		if sessErr != nil || sess == nil {
+			p.onError(w, r, sessErr)
+		} else {
+			onCreated(w, r, sess)
+		}
+	})
+	return r
 }
 
 func (p *AuthSessionProvider) SessionExists(r *http.Request) bool {
@@ -236,15 +218,6 @@ func (p *AuthSessionProvider) SessionExists(r *http.Request) bool {
 
 func (p *AuthSessionProvider) ClearSession(w http.ResponseWriter, r *http.Request) error {
 	return p.mw.Session.DeleteSession(w, r)
-}
-
-// mostly taken from samlsp
-func (p *AuthSessionProvider) handleServeACS(w http.ResponseWriter, r *http.Request, onCreated func(session rez.AuthProviderSession)) {
-	sess, sessErr := p.samlACSHandler(w, r)
-	if sessErr != nil || sess == nil {
-		p.onError(w, r, sessErr)
-	}
-	onCreated(*sess)
 }
 
 func (p *AuthSessionProvider) samlACSHandler(w http.ResponseWriter, r *http.Request) (*rez.AuthProviderSession, error) {

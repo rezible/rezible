@@ -4,107 +4,141 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"io/fs"
 	"net"
 	"net/http"
-	"path"
+	"net/url"
 	"strings"
 
+	"github.com/rezible/rezible/integrations"
 	"github.com/rs/zerolog/log"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 
 	rez "github.com/rezible/rezible"
-	"github.com/rezible/rezible/mcp"
 	oapiv1 "github.com/rezible/rezible/openapi/v1"
 )
 
 type Server struct {
-	auth rez.AuthService
-
-	baseHandler http.Handler
-	api         *chi.Mux
-	webhooks    *chi.Mux
+	router *chi.Mux
 
 	httpServer *http.Server
 }
 
-func NewServer(auth rez.AuthService) *Server {
-	s := Server{
-		auth:        auth,
-		baseHandler: http.NotFoundHandler(),
+func NewServer(auth rez.AuthService, v1h oapiv1.Handler) (*Server, error) {
+	var s Server
+
+	rootHandler, rootErr := s.makeRootHandler()
+	if rootErr != nil {
+		return nil, fmt.Errorf("root handler: %w", rootErr)
 	}
 
-	s.api = chi.NewMux()
-	s.api.Mount(rez.Config.AuthRouteBase(), auth.AuthRouteHandler())
-	s.api.Get("/health", s.healthCheckHandler)
+	apiHandler, apiErr := s.makeApiHandler(auth, v1h)
+	if apiErr != nil {
+		return nil, fmt.Errorf("api handler: %w", apiErr)
+	}
 
-	s.webhooks = chi.NewMux()
-	s.webhooks.NotFound(func(w http.ResponseWriter, r *http.Request) {
-		log.Debug().Msg("webhook handler not found")
-		http.NotFound(w, r)
-	})
+	s.router = chi.NewRouter()
+	s.router.Use(middleware.Logger)
+	s.router.Use(middleware.Recoverer)
 
-	return &s
+	s.router.Mount(rez.Config.BasePath(), apiHandler)
+	s.router.NotFound(rootHandler.ServeHTTP)
+
+	printRoutes("/", s.router.Routes())
+
+	return &s, nil
+}
+
+func printRoutes(prefix string, routes []chi.Route) {
+	for _, r := range routes {
+		var handlers []string
+		for method := range r.Handlers {
+			handlers = append(handlers, method)
+		}
+		path, _ := strings.CutSuffix(r.Pattern, "*")
+		route, _ := url.JoinPath(prefix, path)
+		log.Debug().
+			Str("route", route).
+			Strs("handlers", handlers).
+			Msg("mounted")
+		if r.SubRoutes != nil {
+			printRoutes(route, r.SubRoutes.Routes())
+		}
+	}
+}
+
+func (s *Server) makeRootHandler() (http.Handler, error) {
+	if rez.Config.ServeFrontend() {
+		return makeEmbeddedFrontendFilesServer()
+	}
+	return s.makeNotFoundHandler(), nil
+}
+
+func (s *Server) makeApiHandler(auth rez.AuthService, v1h oapiv1.Handler) (http.Handler, error) {
+	whHandler, whErr := s.makeWebhooksHandler()
+	if whErr != nil {
+		return nil, fmt.Errorf("make webhooks handler: %w", whErr)
+	}
+
+	apiRouter := chi.NewRouter()
+	apiRouter.Mount(rez.Config.WebhooksPath(), whHandler)
+	apiRouter.Mount(oapiv1.VersionPrefix, s.makeV1ApiHandler(auth, v1h))
+	// if rez.Config.ServeFrontend() {
+	apiRouter.Mount(rez.Config.AuthPath(), auth.AuthRouteHandler())
+	apiRouter.Get("/health", s.makeHealthCheckHandler())
+
+	return apiRouter, nil
 }
 
 func (s *Server) commonMiddleware() chi.Middlewares {
 	return chi.Chain(middleware.Logger)
 }
 
-func ensureSlashPrefix(s string) string {
-	if strings.HasPrefix(s, "/") {
-		return s
+func (s *Server) makeWebhooksHandler() (http.Handler, error) {
+	r := chi.NewMux()
+	r.NotFound(func(w http.ResponseWriter, r *http.Request) {
+		log.Debug().Msg("webhook handler not found")
+		http.NotFound(w, r)
+	})
+	for route, wh := range integrations.GetWebhookHandlers() {
+		if !strings.HasPrefix(route, "/") {
+			route = "/" + route
+		}
+		log.Debug().
+			Str("route", route).
+			Msg("adding webhook handler")
+		r.Mount(route, wh)
 	}
-	return "/" + s
+	return r, nil
 }
 
-func (s *Server) AddWebhookHandler(prefix string, handler http.Handler) {
-	prefix = ensureSlashPrefix(prefix)
-	log.Debug().
-		Str("prefix", prefix).
-		Msg("adding webhook handler")
-	s.webhooks.Mount(prefix, http.StripPrefix(prefix, handler))
+func (s *Server) makeV1ApiHandler(auth rez.AuthService, h oapiv1.Handler) http.Handler {
+	securityMw := oapiv1.MakeSecurityMiddleware(auth)
+	handler := oapiv1.MakeApi(h, securityMw).Adapter()
+	return s.commonMiddleware().Handler(handler)
 }
 
-func (s *Server) MountMCP(h mcp.Handler) {
-	mcpRouter := chi.Chain(s.auth.MCPServerMiddleware()).
-		Handler(mcp.NewHTTPServer(h, "/mcp"))
-	s.api.Mount("/mcp", mcpRouter)
+func (s *Server) makeHealthCheckHandler() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusOK)
+	}
 }
 
-func (s *Server) MountStaticFrontend(feFiles fs.FS) {
-	s.baseHandler = makeEmbeddedFrontendFilesServer(feFiles)
-}
-
-func (s *Server) MountOpenApiV1(h oapiv1.Handler) {
-	securityMw := oapiv1.MakeSecurityMiddleware(s.auth)
-	handler := oapiv1.MakeApi(h, rez.Config.ApiRouteBase(), securityMw).Adapter()
-	oapiV1Router := s.commonMiddleware().Handler(handler)
-	s.api.Mount("/v1", oapiV1Router)
+func (s *Server) makeNotFoundHandler() http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusNotFound)
+	})
 }
 
 func (s *Server) Start(baseCtx context.Context) error {
-	r := chi.NewMux()
-	r.Use(middleware.Recoverer)
-
-	whPrefix := path.Join(rez.Config.ApiRouteBase(), "webhooks")
-	s.api.Mount("/webhooks", http.StripPrefix(whPrefix, s.webhooks))
-
-	r.Mount(rez.Config.ApiRouteBase(), s.api)
-	r.Handle("/*", s.baseHandler)
-
-	host := rez.Config.GetStringOr("listen_host", "0.0.0.0")
-	port := rez.Config.GetStringOr("listen_port", "8888")
-
+	addr := net.JoinHostPort(rez.Config.ListenHost(), rez.Config.ListenPort())
 	s.httpServer = &http.Server{
-		Addr:    net.JoinHostPort(host, port),
-		Handler: r,
-	}
-
-	s.httpServer.BaseContext = func(l net.Listener) context.Context {
-		return baseCtx
+		Addr:    addr,
+		Handler: s.router,
+		BaseContext: func(l net.Listener) context.Context {
+			return baseCtx
+		},
 	}
 
 	log.Info().Msgf("HTTP server listening on %s", s.httpServer.Addr)
@@ -120,8 +154,4 @@ func (s *Server) Stop(ctx context.Context) error {
 		return nil
 	}
 	return s.httpServer.Shutdown(ctx)
-}
-
-func (s *Server) healthCheckHandler(w http.ResponseWriter, r *http.Request) {
-	w.WriteHeader(http.StatusOK)
 }

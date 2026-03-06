@@ -6,12 +6,12 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
-	"strings"
 	"time"
 
 	mapset "github.com/deckarep/golang-set/v2"
 	"github.com/failsafe-go/failsafe-go"
 	"github.com/failsafe-go/failsafe-go/retrypolicy"
+	"github.com/go-chi/chi/v5"
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/google/uuid"
 	"github.com/rs/zerolog/log"
@@ -21,7 +21,6 @@ import (
 	"github.com/rezible/rezible/integrations"
 	"github.com/rezible/rezible/internal/http/oidc"
 	"github.com/rezible/rezible/internal/http/saml"
-	"github.com/rezible/rezible/openapi"
 )
 
 const (
@@ -33,7 +32,6 @@ type AuthService struct {
 	users         rez.UserService
 	providers     []rez.AuthSessionProvider
 	sessionSecret []byte
-	authPath      string
 }
 
 var _ rez.AuthService = (*AuthService)(nil)
@@ -44,15 +42,9 @@ func NewAuthSessionService(ctx context.Context, orgs rez.OrganizationService, us
 		return nil, errors.New("auth session secret key must be set")
 	}
 
-	authRoute, routeErr := url.JoinPath(rez.Config.ApiRouteBase(), rez.Config.AuthRouteBase())
-	if routeErr != nil {
-		return nil, fmt.Errorf("loading auth route: %w", routeErr)
-	}
-
 	oidc.SessionSecretKey = secretKey
 
 	return &AuthService{
-		authPath:      authRoute,
 		orgs:          orgs,
 		users:         users,
 		sessionSecret: secretKey,
@@ -64,7 +56,7 @@ func (s *AuthService) LoadSessionProviders(ctx context.Context) error {
 
 	if saml.ProviderEnabled() {
 		loadFuncs["saml"] = func() (rez.AuthSessionProvider, error) {
-			return saml.NewAuthSessionProvider(ctx, s.authPath)
+			return saml.NewAuthSessionProvider(ctx)
 		}
 	}
 
@@ -80,7 +72,7 @@ func (s *AuthService) LoadSessionProviders(ctx context.Context) error {
 	}
 	for _, idp := range oidcIdps {
 		loadFuncs["oidc."+idp.Id()] = func() (rez.AuthSessionProvider, error) {
-			return oidc.LoadAuthSessionProvider(ctx, idp, s.authPath)
+			return oidc.LoadAuthSessionProvider(ctx, idp)
 		}
 	}
 
@@ -108,6 +100,24 @@ type authUserSessionContextKey struct{}
 
 func newUserAuthSession(userId uuid.UUID, expiresAt time.Time) *rez.AuthSession {
 	return &rez.AuthSession{UserId: userId, ExpiresAt: expiresAt}
+}
+
+func makeSessionCookie(token string, expires time.Time, maxAge int) *http.Cookie {
+	cookie := &http.Cookie{
+		Name:     rez.Config.AuthSessionCookieName(),
+		Value:    token,
+		Path:     "/",
+		Secure:   true,
+		HttpOnly: true,
+		SameSite: http.SameSiteStrictMode,
+		Expires:  expires,
+		MaxAge:   maxAge,
+	}
+	return cookie
+}
+
+func makeRemoveSessionCookie() *http.Cookie {
+	return makeSessionCookie("", time.Now(), -1)
 }
 
 func (s *AuthService) CreateAuthContext(ctx context.Context, sess *rez.AuthSession) (context.Context, error) {
@@ -147,7 +157,7 @@ func (s *AuthService) MCPServerMiddleware() func(http.Handler) http.Handler {
 }
 
 func (s *AuthService) getMCPUserSession(r *http.Request) (*rez.AuthSession, error) {
-	bearerToken := openapi.GetRequestBearerToken(r)
+	bearerToken := r.Header.Get("Authorization") //openapi.GetRequestBearerToken(r)
 	if bearerToken == "" {
 		return nil, rez.ErrNoAuthSession
 	}
@@ -160,14 +170,25 @@ func (s *AuthService) getMCPUserSession(r *http.Request) (*rez.AuthSession, erro
 }
 
 func (s *AuthService) AuthRouteHandler() http.Handler {
-	logoutPath := s.authPath + "/logout"
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if r.URL.Path == logoutPath {
-			s.handleLogout(w, r)
-		} else if !s.delegateAuthFlowToProvider(w, r) {
-			http.Redirect(w, r, rez.Config.AppUrl(), http.StatusFound)
+	r := chi.NewRouter()
+	r.Use(func(next http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			log.Debug().Str("path", r.URL.Path).Msg("auth route")
+			next.ServeHTTP(w, r)
+		})
+	})
+	r.Post("/logout", s.handleLogout)
+	r.Route("/flow", func(fr chi.Router) {
+		for _, p := range s.providers {
+			fr.Mount(p.FlowPath(), p.MakeFlowPathHandler(s.authSessionCreatedCallback))
 		}
 	})
+	r.NotFound(http.RedirectHandler(rez.Config.AppUrl(), http.StatusFound).ServeHTTP)
+	return r
+}
+
+func (s *AuthService) GetProviderStartFlowPath(p rez.AuthSessionProvider) (string, error) {
+	return url.JoinPath(rez.Config.BasePath(), rez.Config.AuthPath(), "flow", p.FlowPath())
 }
 
 func (s *AuthService) handleLogout(w http.ResponseWriter, r *http.Request) {
@@ -179,68 +200,48 @@ func (s *AuthService) handleLogout(w http.ResponseWriter, r *http.Request) {
 			log.Error().Err(sessErr).Msg("failed to clear session")
 		}
 	}
-	http.SetCookie(w, openapi.MakeRemoveSessionCookie())
+	http.SetCookie(w, makeRemoveSessionCookie())
 	http.Redirect(w, r, rez.Config.AppUrl(), http.StatusFound)
 }
 
-func (s *AuthService) GetProviderStartFlowPath(prov rez.AuthSessionProvider) string {
-	return s.authPath + "/" + strings.ToLower(prov.AuthFlowPathPrefix())
-}
-
-func (s *AuthService) delegateAuthFlowToProvider(w http.ResponseWriter, r *http.Request) bool {
-	for _, prov := range s.providers {
-		provFlowPath := s.GetProviderStartFlowPath(prov)
-		log.Debug().
-			Str("path", r.URL.Path).
-			Str("prov flow route", provFlowPath).
-			Msg("auth flow")
-		if strings.HasPrefix(r.URL.Path, provFlowPath) {
-			prov.HandleAuthFlowRequest(w, r, s.makeUserSessionCreatedCallback(w, r, provFlowPath))
-			return true
-		}
-	}
-	return false
-}
-
-func (s *AuthService) makeUserSessionCreatedCallback(w http.ResponseWriter, r *http.Request, flowRoute string) func(ps rez.AuthProviderSession) {
+func (s *AuthService) authSessionCreatedCallback(w http.ResponseWriter, r *http.Request, ps *rez.AuthProviderSession) {
 	ctx := r.Context()
-	return func(ps rez.AuthProviderSession) {
-		redirect := ps.RedirectUrl
-		if redirect == "" || redirect == flowRoute {
-			redirect = rez.Config.AppUrl()
-		}
 
-		expiry := ps.ExpiresAt
-		if expiry.IsZero() {
-			expiry = time.Now().Add(defaultSessionDuration)
-		}
-
-		org, orgErr := s.orgs.FindOrCreateFromProvider(ctx, ps.Organization)
-		if orgErr != nil {
-			log.Error().Err(orgErr).Msg("FindOrCreateFromProvider")
-			http.Error(w, "session error", http.StatusInternalServerError)
-			return
-		}
-
-		findUserCtx := access.TenantContext(ctx, org.TenantID)
-		usr, usrErr := s.users.FindOrCreateAuthProviderUser(findUserCtx, ps.User)
-		if usrErr != nil {
-			log.Error().Err(usrErr).Msg("FindOrCreateAuthProviderUser")
-			http.Error(w, "session error", http.StatusInternalServerError)
-			return
-		}
-
-		sess := newUserAuthSession(usr.ID, ps.ExpiresAt)
-		token, tokenErr := s.IssueAuthSessionToken(sess)
-		if tokenErr != nil {
-			log.Error().Err(tokenErr).Msg("failed to issue session token")
-			http.Error(w, "session error", http.StatusInternalServerError)
-			return
-		}
-
-		http.SetCookie(w, openapi.MakeSessionCookie(token, ps.ExpiresAt, 0))
-		http.Redirect(w, r, redirect, http.StatusFound)
+	redirect := ps.RedirectUrl
+	if redirect == "" || redirect == r.URL.Path {
+		redirect = rez.Config.AppUrl()
 	}
+
+	expiry := ps.ExpiresAt
+	if expiry.IsZero() {
+		expiry = time.Now().Add(defaultSessionDuration)
+	}
+
+	org, orgErr := s.orgs.FindOrCreateFromProvider(ctx, ps.Organization)
+	if orgErr != nil {
+		log.Error().Err(orgErr).Msg("FindOrCreateFromProvider")
+		http.Error(w, "session error", http.StatusInternalServerError)
+		return
+	}
+
+	findUserCtx := access.TenantContext(ctx, org.TenantID)
+	usr, usrErr := s.users.FindOrCreateAuthProviderUser(findUserCtx, ps.User)
+	if usrErr != nil {
+		log.Error().Err(usrErr).Msg("FindOrCreateAuthProviderUser")
+		http.Error(w, "session error", http.StatusInternalServerError)
+		return
+	}
+
+	sess := newUserAuthSession(usr.ID, ps.ExpiresAt)
+	token, tokenErr := s.IssueAuthSessionToken(sess)
+	if tokenErr != nil {
+		log.Error().Err(tokenErr).Msg("failed to issue session token")
+		http.Error(w, "session error", http.StatusInternalServerError)
+		return
+	}
+
+	http.SetCookie(w, makeSessionCookie(token, ps.ExpiresAt, 0))
+	http.Redirect(w, r, redirect, http.StatusFound)
 }
 
 type authSessionTokenClaims struct {

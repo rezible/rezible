@@ -7,11 +7,9 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-	"net/url"
 	"strings"
 
 	"github.com/gorilla/sessions"
-	rez "github.com/rezible/rezible"
 )
 
 const (
@@ -27,15 +25,9 @@ func configureSessionStore() *sessions.CookieStore {
 	store.MaxAge(maxAge)
 	store.Options.Path = "/"
 	store.Options.HttpOnly = true
-	store.Options.SameSite = http.SameSiteStrictMode
 	store.Options.Secure = true
-
-	if rez.Config.DebugMode() {
-		store.Options.SameSite = http.SameSiteLaxMode
-		if appUrl, urlErr := url.Parse(rez.Config.AppUrl()); urlErr == nil {
-			store.Options.Domain = appUrl.Host
-		}
-	}
+	// store.Options.Domain = ""
+	store.Options.SameSite = http.SameSiteStrictMode
 
 	return store
 }

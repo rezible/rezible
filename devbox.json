@@ -14,6 +14,6 @@
     "init_hook": ["unset DEVELOPER_DIR"]
   },
   "env": {
-    "LOCAL_DEV_HOST": "dev.rezible.com",
+    "LOCAL_DEV_HOST": "dev.rezible.com"
   }
 }

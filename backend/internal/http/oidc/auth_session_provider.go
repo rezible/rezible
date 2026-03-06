@@ -8,9 +8,9 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-	"net/url"
 
 	"github.com/coreos/go-oidc/v3/oidc"
+	"github.com/go-chi/chi/v5"
 	"github.com/gorilla/sessions"
 	"github.com/rs/zerolog/log"
 	"golang.org/x/oauth2"
@@ -25,35 +25,24 @@ type AuthSessionProvider struct {
 	verifier     *oidc.IDTokenVerifier
 	idp          rez.OIDCAuthSessionIdentityProvider
 	flowPath     string
-	callbackPath string
+	flowHandler  http.Handler
 }
 
-func LoadAuthSessionProvider(ctx context.Context, idp rez.OIDCAuthSessionIdentityProvider, authPath string) (*AuthSessionProvider, error) {
+func LoadAuthSessionProvider(ctx context.Context, idp rez.OIDCAuthSessionIdentityProvider) (*AuthSessionProvider, error) {
 	sp := &AuthSessionProvider{
 		idp:          idp,
+		flowPath:     "/oidc/" + idp.Id(),
 		sessionStore: configureSessionStore(),
 	}
 
-	flowPath, flowPathErr := url.JoinPath(authPath, sp.AuthFlowPathPrefix())
-	if flowPathErr != nil {
-		return nil, fmt.Errorf("flow path: %w", flowPathErr)
-	}
-	sp.flowPath = flowPath
-
-	callbackPath, callbackPathErr := url.JoinPath(flowPath, "callback")
-	if callbackPathErr != nil {
-		return nil, fmt.Errorf("callback path: %w", callbackPathErr)
-	}
-	sp.callbackPath = callbackPath
-
-	redirectUrl, urlErr := url.JoinPath(rez.Config.AppUrl(), callbackPath)
+	redirectUrl, urlErr := rez.Config.GetMountedAppRoute(rez.Config.AuthPath(), "flow", sp.FlowPath(), "callback")
 	if urlErr != nil {
 		return nil, fmt.Errorf("creating redirect url: %w", urlErr)
 	}
 
 	v, ocfg, loadErr := idp.LoadConfig(ctx, redirectUrl)
 	if loadErr != nil {
-		return nil, loadErr
+		return nil, fmt.Errorf("failed to load oidc idp config: %w", loadErr)
 	}
 	sp.oauth2Config = *ocfg
 	sp.verifier = v
@@ -61,12 +50,10 @@ func LoadAuthSessionProvider(ctx context.Context, idp rez.OIDCAuthSessionIdentit
 	return sp, nil
 }
 
+func (s *AuthSessionProvider) Id() string { return s.idp.Id() }
+
 func (s *AuthSessionProvider) DisplayName() string {
 	return s.idp.DisplayName()
-}
-
-func (s *AuthSessionProvider) AuthFlowPathPrefix() string {
-	return "oidc/" + s.idp.Id()
 }
 
 var userMapping = &ent.User{
@@ -116,15 +103,23 @@ func generateRequestState() (string, error) {
 	return base64.URLEncoding.EncodeToString(nonceBytes), nil
 }
 
-func (s *AuthSessionProvider) HandleAuthFlowRequest(w http.ResponseWriter, r *http.Request, onCreated func(rez.AuthProviderSession)) {
-	switch r.URL.Path {
-	case s.flowPath:
-		s.handleStartAuthFlow(w, r)
-	case s.callbackPath:
-		s.handleFlowCallbackPath(w, r, onCreated)
-	default:
-		http.NotFound(w, r)
-	}
+func (s *AuthSessionProvider) FlowPath() string {
+	return s.flowPath
+}
+
+func (s *AuthSessionProvider) MakeFlowPathHandler(onCreated rez.AuthSessionCreatedCallback) http.Handler {
+	r := chi.NewRouter()
+	r.Get("/", s.handleStartAuthFlow)
+	r.Get("/callback", func(w http.ResponseWriter, r *http.Request) {
+		provSess, cbErr := s.handleFlowCallback(r)
+		if cbErr != nil {
+			log.Debug().Err(cbErr).Msg("oidc callback error")
+			http.Error(w, http.StatusText(http.StatusForbidden), http.StatusForbidden)
+		} else {
+			onCreated(w, r, provSess)
+		}
+	})
+	return r
 }
 
 func (s *AuthSessionProvider) handleStartAuthFlow(w http.ResponseWriter, r *http.Request) {
@@ -151,39 +146,30 @@ func (s *AuthSessionProvider) handleStartAuthFlow(w http.ResponseWriter, r *http
 	http.Redirect(w, r, authUrl, http.StatusFound)
 }
 
-func (s *AuthSessionProvider) handleFlowCallbackPath(w http.ResponseWriter, r *http.Request, onCreated func(rez.AuthProviderSession)) {
-	if cbErr := s.handleFlowCallback(r, onCreated); cbErr != nil {
-		log.Debug().Err(cbErr).Msg("oidc callback error")
-		http.Error(w, http.StatusText(http.StatusForbidden), http.StatusForbidden)
-	}
-}
-
-func (s *AuthSessionProvider) handleFlowCallback(r *http.Request, onCreated func(rez.AuthProviderSession)) error {
+func (s *AuthSessionProvider) handleFlowCallback(r *http.Request) (*rez.AuthProviderSession, error) {
 	sess, sessErr := s.getSession(r)
 	if sessErr != nil || sess == nil || sess.State == "" {
-		return fmt.Errorf("get session: %w", sessErr)
+		return nil, fmt.Errorf("get session: %w", sessErr)
 	}
 
 	if rs := getRequestState(r); rs != sess.State {
 		log.Warn().Msg("invalid request session state")
 		if !rez.Config.DebugMode() {
-			return errors.New("state mismatch")
+			return nil, errors.New("state mismatch")
 		}
 	}
 
 	token, tokenErr := s.exchangeAndVerifyIdToken(r)
 	if tokenErr != nil {
-		return fmt.Errorf("failed to get id token: %w", tokenErr)
+		return nil, fmt.Errorf("failed to get id token: %w", tokenErr)
 	}
 
 	provSess, psErr := s.idp.ExtractTokenSession(token)
 	if psErr != nil {
-		return fmt.Errorf("failed to extract token session: %w", psErr)
+		return nil, fmt.Errorf("failed to extract token session: %w", psErr)
 	}
 
-	onCreated(*provSess)
-
-	return nil
+	return provSess, nil
 }
 
 func (s *AuthSessionProvider) exchangeAndVerifyIdToken(r *http.Request) (*oidc.IDToken, error) {

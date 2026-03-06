@@ -1,6 +1,8 @@
 package viper
 
 import (
+	"net/url"
+	"strings"
 	"time"
 
 	"github.com/spf13/viper"
@@ -76,16 +78,52 @@ func (c *Config) DatabaseUrl() string {
 	return c.GetString("db_url")
 }
 
+func (c *Config) ServeFrontend() bool {
+	return c.GetBool("serve_frontend")
+}
+
 func (c *Config) AppUrl() string {
 	return c.GetString("app_url")
 }
 
-func (c *Config) ApiRouteBase() string {
-	return "/api"
+func (c *Config) AppMountPath() string {
+	return c.GetStringOr("app_mount_path", "/api")
 }
 
-func (c *Config) AuthRouteBase() string {
-	return "/auth"
+func (c *Config) ListenHost() string {
+	return c.GetStringOr("host", "0.0.0.0")
+}
+
+func (c *Config) ListenPort() string {
+	return c.GetStringOr("port", "8888")
+}
+
+func ensureSlashPrefix(s string) string {
+	if !strings.HasPrefix(s, "/") {
+		s = "/" + s
+	}
+	return s
+}
+
+func (c *Config) BasePath() string {
+	return ensureSlashPrefix(c.GetStringOr("base_path", ""))
+}
+
+func (c *Config) AuthPath() string {
+	return ensureSlashPrefix(c.GetStringOr("auth_path", "auth"))
+}
+
+func (c *Config) WebhooksPath() string {
+	return ensureSlashPrefix(c.GetStringOr("webhooks_path", "webhooks"))
+}
+
+func (c *Config) GetMountedAppRoute(routes ...string) (string, error) {
+	paths := append([]string{c.AppMountPath(), c.BasePath()}, routes...)
+	return url.JoinPath(c.AppUrl(), paths...)
+}
+
+func (c *Config) AuthSessionCookieName() string {
+	return c.GetStringOr("auth_session_cookie_name", "rez_auth_session")
 }
 
 func (c *Config) DocumentsServerAddress() string {

@@ -96,9 +96,9 @@ export type AuthSession = {
 };
 
 export type AuthSessionProviderConfig = {
-    enabled: boolean;
+    id: string;
     name: string;
-    startFlowEndpoint: string;
+    startFlowPath: string;
 };
 
 export type AuthSessionsConfig = {
