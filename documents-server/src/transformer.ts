@@ -36,10 +36,9 @@ export const transformSchemaSpec = (spec: SchemaSpec): transformedSpec => {
 		spec.nodes?.forEach((name, val) => nodes.set(name, val));
 	}
 	const topNode = spec.topNode ?? "doc";
-	const tsSpec: transformedSpec = {
+	return {
 		marks: Object.fromEntries(marks), 
 		nodes: Object.fromEntries(nodes), 
 		topNode,
 	};
-	return tsSpec;
 }

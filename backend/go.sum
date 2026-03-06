@@ -411,8 +411,6 @@ github.com/stretchr/testify v1.11.1 h1:7s2iGBzp5EwR7/aIZr8ao5+dra3wiQyKjjFuvgVKu
 github.com/stretchr/testify v1.11.1/go.mod h1:wZwfW3scLgRK+23gO65QZefKpKQRnfz6sD981Nm4B6U=
 github.com/subosito/gotenv v1.6.0 h1:9NlTDc1FTs4qu0DDq7AEtTPNw6SVm7uBMsUCUjABIf8=
 github.com/subosito/gotenv v1.6.0/go.mod h1:Dk4QP5c2W3ibzajGcXpNraDfq2IrhjMIvMSWPKKo0FU=
-github.com/supertokens/supertokens-golang v0.25.1 h1:97srN1Ucq+ArJ9mkBl+P4n5/LBn2uly1hmeUyP6Q0S8=
-github.com/supertokens/supertokens-golang v0.25.1/go.mod h1:/n6zQ9461RscnnWB4Y4bWwzhPivnj8w79j/doqkLOs8=
 github.com/texm/prosemirror-go v0.0.0-20241205030628-c6d58982acfd h1:TrBA2QCl5IdcxUlCYDYLRlq31w++HqUHSGj7Z2xd2XM=
 github.com/texm/prosemirror-go v0.0.0-20241205030628-c6d58982acfd/go.mod h1:qQYcSPHcIpEO4NK8rjU2hyfkkXNJ8YQGwZ8aORsECIs=
 github.com/tidwall/gjson v1.14.2/go.mod h1:/wbyibRr2FHMks5tjHJ5F8dMZh3AcwJEMf5vlfC0lxk=

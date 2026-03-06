@@ -27,7 +27,6 @@ saml_cert_dir := "./backend/internal/http/saml/testdata"
     just install-dependencies
     just codegen
     just localias-reload
-    just setup-dev-zitadel
 
 @install-dependencies:
     cd backend && go mod tidy
