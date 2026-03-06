@@ -43,8 +43,9 @@ func (s *UserService) CreateUserContext(ctx context.Context, userId uuid.UUID) (
 	return context.WithValue(access.TenantContext(ctx, usr.TenantID), userCtxKey{}, usr), nil
 }
 
-func (s *UserService) GetUserContext(ctx context.Context) *ent.User {
-	return ctx.Value(userCtxKey{}).(*ent.User)
+func (s *UserService) GetUserContext(ctx context.Context) (*ent.User, bool) {
+	u, ok := ctx.Value(userCtxKey{}).(*ent.User)
+	return u, ok
 }
 
 func nilEmptyString(s string) *string {

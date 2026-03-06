@@ -17,6 +17,7 @@ import (
 	"github.com/rezible/rezible/ent/incidentdebrief"
 	"github.com/rezible/rezible/ent/incidentmilestone"
 	"github.com/rezible/rezible/ent/incidentroleassignment"
+	"github.com/rezible/rezible/ent/integrationoauthstate"
 	"github.com/rezible/rezible/ent/oncallroster"
 	"github.com/rezible/rezible/ent/oncallscheduleparticipant"
 	"github.com/rezible/rezible/ent/oncallshift"
@@ -225,6 +226,21 @@ func (_c *UserCreate) AddEventAnnotations(v ...*EventAnnotation) *UserCreate {
 		ids[i] = v[i].ID
 	}
 	return _c.AddEventAnnotationIDs(ids...)
+}
+
+// AddIntegrationOauthStateIDs adds the "integration_oauth_states" edge to the IntegrationOAuthState entity by IDs.
+func (_c *UserCreate) AddIntegrationOauthStateIDs(ids ...uuid.UUID) *UserCreate {
+	_c.mutation.AddIntegrationOauthStateIDs(ids...)
+	return _c
+}
+
+// AddIntegrationOauthStates adds the "integration_oauth_states" edges to the IntegrationOAuthState entity.
+func (_c *UserCreate) AddIntegrationOauthStates(v ...*IntegrationOAuthState) *UserCreate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _c.AddIntegrationOauthStateIDs(ids...)
 }
 
 // AddIncidentIDs adds the "incidents" edge to the Incident entity by IDs.
@@ -614,6 +630,22 @@ func (_c *UserCreate) createSpec() (*User, *sqlgraph.CreateSpec) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(eventannotation.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := _c.mutation.IntegrationOauthStatesIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   user.IntegrationOauthStatesTable,
+			Columns: []string{user.IntegrationOauthStatesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(integrationoauthstate.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {

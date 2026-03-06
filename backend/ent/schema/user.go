@@ -46,6 +46,8 @@ func (User) Edges() []ent.Edge {
 
 		edge.From("event_annotations", EventAnnotation.Type).Ref("creator"),
 
+		edge.From("integration_oauth_states", IntegrationOAuthState.Type).Ref("user"),
+
 		edge.To("incidents", Incident.Type).
 			Through("role_assignments", IncidentRoleAssignment.Type),
 		edge.To("incident_milestones", IncidentMilestone.Type),

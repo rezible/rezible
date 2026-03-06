@@ -87,6 +87,9 @@ type IncidentType func(*sql.Selector)
 // Integration is the predicate function for integration builders.
 type Integration func(*sql.Selector)
 
+// IntegrationOAuthState is the predicate function for integrationoauthstate builders.
+type IntegrationOAuthState func(*sql.Selector)
+
 // MeetingSchedule is the predicate function for meetingschedule builders.
 type MeetingSchedule func(*sql.Selector)
 

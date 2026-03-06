@@ -100,6 +100,8 @@ ALTER TABLE "oncall_handover_templates" DROP CONSTRAINT "oncall_handover_templat
 ALTER TABLE "meeting_sessions" DROP CONSTRAINT "meeting_sessions_tenants_tenant", DROP CONSTRAINT "meeting_sessions_meeting_schedules_schedule";
 -- reverse: modify "meeting_schedules" table
 ALTER TABLE "meeting_schedules" DROP CONSTRAINT "meeting_schedules_tenants_tenant";
+-- reverse: modify "integration_oauth_states" table
+ALTER TABLE "integration_oauth_states" DROP CONSTRAINT "integration_oauth_states_users_user", DROP CONSTRAINT "integration_oauth_states_tenants_tenant";
 -- reverse: modify "integrations" table
 ALTER TABLE "integrations" DROP CONSTRAINT "integrations_tenants_tenant";
 -- reverse: modify "incident_types" table
@@ -356,6 +358,10 @@ DROP TABLE "meeting_sessions";
 DROP INDEX "meetingschedule_tenant_id";
 -- reverse: create "meeting_schedules" table
 DROP TABLE "meeting_schedules";
+-- reverse: create index "integrationoauthstate_tenant_id" to table: "integration_oauth_states"
+DROP INDEX "integrationoauthstate_tenant_id";
+-- reverse: create "integration_oauth_states" table
+DROP TABLE "integration_oauth_states";
 -- reverse: create index "integration_tenant_id_name" to table: "integrations"
 DROP INDEX "integration_tenant_id_name";
 -- reverse: create index "integration_tenant_id" to table: "integrations"

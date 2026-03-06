@@ -1011,6 +1011,42 @@ var (
 			},
 		},
 	}
+	// IntegrationOauthStatesColumns holds the columns for the "integration_oauth_states" table.
+	IntegrationOauthStatesColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUUID},
+		{Name: "state", Type: field.TypeString},
+		{Name: "integration_name", Type: field.TypeString},
+		{Name: "expires_at", Type: field.TypeTime},
+		{Name: "tenant_id", Type: field.TypeInt},
+		{Name: "user_id", Type: field.TypeUUID},
+	}
+	// IntegrationOauthStatesTable holds the schema information for the "integration_oauth_states" table.
+	IntegrationOauthStatesTable = &schema.Table{
+		Name:       "integration_oauth_states",
+		Columns:    IntegrationOauthStatesColumns,
+		PrimaryKey: []*schema.Column{IntegrationOauthStatesColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "integration_oauth_states_tenants_tenant",
+				Columns:    []*schema.Column{IntegrationOauthStatesColumns[4]},
+				RefColumns: []*schema.Column{TenantsColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+			{
+				Symbol:     "integration_oauth_states_users_user",
+				Columns:    []*schema.Column{IntegrationOauthStatesColumns[5]},
+				RefColumns: []*schema.Column{UsersColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+		},
+		Indexes: []*schema.Index{
+			{
+				Name:    "integrationoauthstate_tenant_id",
+				Unique:  false,
+				Columns: []*schema.Column{IntegrationOauthStatesColumns[4]},
+			},
+		},
+	}
 	// MeetingSchedulesColumns holds the columns for the "meeting_schedules" table.
 	MeetingSchedulesColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID},
@@ -2832,6 +2868,7 @@ var (
 		IncidentTagsTable,
 		IncidentTypesTable,
 		IntegrationsTable,
+		IntegrationOauthStatesTable,
 		MeetingSchedulesTable,
 		MeetingSessionsTable,
 		OncallHandoverTemplatesTable,
@@ -2944,6 +2981,8 @@ func init() {
 	IncidentTagsTable.ForeignKeys[0].RefTable = TenantsTable
 	IncidentTypesTable.ForeignKeys[0].RefTable = TenantsTable
 	IntegrationsTable.ForeignKeys[0].RefTable = TenantsTable
+	IntegrationOauthStatesTable.ForeignKeys[0].RefTable = TenantsTable
+	IntegrationOauthStatesTable.ForeignKeys[1].RefTable = UsersTable
 	MeetingSchedulesTable.ForeignKeys[0].RefTable = TenantsTable
 	MeetingSessionsTable.ForeignKeys[0].RefTable = TenantsTable
 	MeetingSessionsTable.ForeignKeys[1].RefTable = MeetingSchedulesTable

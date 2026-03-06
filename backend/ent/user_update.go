@@ -16,6 +16,7 @@ import (
 	"github.com/rezible/rezible/ent/incidentdebrief"
 	"github.com/rezible/rezible/ent/incidentmilestone"
 	"github.com/rezible/rezible/ent/incidentroleassignment"
+	"github.com/rezible/rezible/ent/integrationoauthstate"
 	"github.com/rezible/rezible/ent/oncallroster"
 	"github.com/rezible/rezible/ent/oncallscheduleparticipant"
 	"github.com/rezible/rezible/ent/oncallshift"
@@ -237,6 +238,21 @@ func (_u *UserUpdate) AddEventAnnotations(v ...*EventAnnotation) *UserUpdate {
 		ids[i] = v[i].ID
 	}
 	return _u.AddEventAnnotationIDs(ids...)
+}
+
+// AddIntegrationOauthStateIDs adds the "integration_oauth_states" edge to the IntegrationOAuthState entity by IDs.
+func (_u *UserUpdate) AddIntegrationOauthStateIDs(ids ...uuid.UUID) *UserUpdate {
+	_u.mutation.AddIntegrationOauthStateIDs(ids...)
+	return _u
+}
+
+// AddIntegrationOauthStates adds the "integration_oauth_states" edges to the IntegrationOAuthState entity.
+func (_u *UserUpdate) AddIntegrationOauthStates(v ...*IntegrationOAuthState) *UserUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddIntegrationOauthStateIDs(ids...)
 }
 
 // AddIncidentIDs adds the "incidents" edge to the Incident entity by IDs.
@@ -497,6 +513,27 @@ func (_u *UserUpdate) RemoveEventAnnotations(v ...*EventAnnotation) *UserUpdate 
 		ids[i] = v[i].ID
 	}
 	return _u.RemoveEventAnnotationIDs(ids...)
+}
+
+// ClearIntegrationOauthStates clears all "integration_oauth_states" edges to the IntegrationOAuthState entity.
+func (_u *UserUpdate) ClearIntegrationOauthStates() *UserUpdate {
+	_u.mutation.ClearIntegrationOauthStates()
+	return _u
+}
+
+// RemoveIntegrationOauthStateIDs removes the "integration_oauth_states" edge to IntegrationOAuthState entities by IDs.
+func (_u *UserUpdate) RemoveIntegrationOauthStateIDs(ids ...uuid.UUID) *UserUpdate {
+	_u.mutation.RemoveIntegrationOauthStateIDs(ids...)
+	return _u
+}
+
+// RemoveIntegrationOauthStates removes "integration_oauth_states" edges to IntegrationOAuthState entities.
+func (_u *UserUpdate) RemoveIntegrationOauthStates(v ...*IntegrationOAuthState) *UserUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveIntegrationOauthStateIDs(ids...)
 }
 
 // ClearIncidents clears all "incidents" edges to the Incident entity.
@@ -1034,6 +1071,51 @@ func (_u *UserUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(eventannotation.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.IntegrationOauthStatesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   user.IntegrationOauthStatesTable,
+			Columns: []string{user.IntegrationOauthStatesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(integrationoauthstate.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedIntegrationOauthStatesIDs(); len(nodes) > 0 && !_u.mutation.IntegrationOauthStatesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   user.IntegrationOauthStatesTable,
+			Columns: []string{user.IntegrationOauthStatesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(integrationoauthstate.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.IntegrationOauthStatesIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   user.IntegrationOauthStatesTable,
+			Columns: []string{user.IntegrationOauthStatesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(integrationoauthstate.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {
@@ -1731,6 +1813,21 @@ func (_u *UserUpdateOne) AddEventAnnotations(v ...*EventAnnotation) *UserUpdateO
 	return _u.AddEventAnnotationIDs(ids...)
 }
 
+// AddIntegrationOauthStateIDs adds the "integration_oauth_states" edge to the IntegrationOAuthState entity by IDs.
+func (_u *UserUpdateOne) AddIntegrationOauthStateIDs(ids ...uuid.UUID) *UserUpdateOne {
+	_u.mutation.AddIntegrationOauthStateIDs(ids...)
+	return _u
+}
+
+// AddIntegrationOauthStates adds the "integration_oauth_states" edges to the IntegrationOAuthState entity.
+func (_u *UserUpdateOne) AddIntegrationOauthStates(v ...*IntegrationOAuthState) *UserUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddIntegrationOauthStateIDs(ids...)
+}
+
 // AddIncidentIDs adds the "incidents" edge to the Incident entity by IDs.
 func (_u *UserUpdateOne) AddIncidentIDs(ids ...uuid.UUID) *UserUpdateOne {
 	_u.mutation.AddIncidentIDs(ids...)
@@ -1989,6 +2086,27 @@ func (_u *UserUpdateOne) RemoveEventAnnotations(v ...*EventAnnotation) *UserUpda
 		ids[i] = v[i].ID
 	}
 	return _u.RemoveEventAnnotationIDs(ids...)
+}
+
+// ClearIntegrationOauthStates clears all "integration_oauth_states" edges to the IntegrationOAuthState entity.
+func (_u *UserUpdateOne) ClearIntegrationOauthStates() *UserUpdateOne {
+	_u.mutation.ClearIntegrationOauthStates()
+	return _u
+}
+
+// RemoveIntegrationOauthStateIDs removes the "integration_oauth_states" edge to IntegrationOAuthState entities by IDs.
+func (_u *UserUpdateOne) RemoveIntegrationOauthStateIDs(ids ...uuid.UUID) *UserUpdateOne {
+	_u.mutation.RemoveIntegrationOauthStateIDs(ids...)
+	return _u
+}
+
+// RemoveIntegrationOauthStates removes "integration_oauth_states" edges to IntegrationOAuthState entities.
+func (_u *UserUpdateOne) RemoveIntegrationOauthStates(v ...*IntegrationOAuthState) *UserUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveIntegrationOauthStateIDs(ids...)
 }
 
 // ClearIncidents clears all "incidents" edges to the Incident entity.
@@ -2556,6 +2674,51 @@ func (_u *UserUpdateOne) sqlSave(ctx context.Context) (_node *User, err error) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(eventannotation.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.IntegrationOauthStatesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   user.IntegrationOauthStatesTable,
+			Columns: []string{user.IntegrationOauthStatesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(integrationoauthstate.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedIntegrationOauthStatesIDs(); len(nodes) > 0 && !_u.mutation.IntegrationOauthStatesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   user.IntegrationOauthStatesTable,
+			Columns: []string{user.IntegrationOauthStatesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(integrationoauthstate.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.IntegrationOauthStatesIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   user.IntegrationOauthStatesTable,
+			Columns: []string{user.IntegrationOauthStatesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(integrationoauthstate.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {

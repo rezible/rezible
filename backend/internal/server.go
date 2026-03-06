@@ -174,11 +174,6 @@ func (s *Server) setup(ctx context.Context) error {
 }
 
 func (s *Server) setupServices(ctx context.Context, dbc *ent.Client, jobSvc rez.JobsService, msgs rez.MessageService) (*rez.Services, error) {
-	intgs, intgsErr := db.NewIntegrationsService(dbc, jobSvc)
-	if intgsErr != nil {
-		return nil, fmt.Errorf("db.NewIntegrationsService: %w", intgsErr)
-	}
-
 	orgs, orgsErr := db.NewOrganizationsService(dbc, jobSvc)
 	if orgsErr != nil {
 		return nil, fmt.Errorf("postgres.NewOrganizationsService: %w", orgsErr)
@@ -187,6 +182,11 @@ func (s *Server) setupServices(ctx context.Context, dbc *ent.Client, jobSvc rez.
 	users, usersErr := db.NewUserService(dbc, orgs)
 	if usersErr != nil {
 		return nil, fmt.Errorf("postgres.NewUserService: %w", usersErr)
+	}
+
+	intgs, intgsErr := db.NewIntegrationsService(dbc, jobSvc, users)
+	if intgsErr != nil {
+		return nil, fmt.Errorf("db.NewIntegrationsService: %w", intgsErr)
 	}
 
 	events, eventsErr := db.NewEventsService(dbc, users)

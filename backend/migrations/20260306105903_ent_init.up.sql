@@ -118,6 +118,10 @@ CREATE TABLE "integrations" ("id" uuid NOT NULL, "created_at" timestamptz NOT NU
 CREATE INDEX "integration_tenant_id" ON "integrations" ("tenant_id");
 -- create index "integration_tenant_id_name" to table: "integrations"
 CREATE UNIQUE INDEX "integration_tenant_id_name" ON "integrations" ("tenant_id", "name");
+-- create "integration_oauth_states" table
+CREATE TABLE "integration_oauth_states" ("id" uuid NOT NULL, "state" character varying NOT NULL, "integration_name" character varying NOT NULL, "expires_at" timestamptz NOT NULL, "tenant_id" bigint NOT NULL, "user_id" uuid NOT NULL, PRIMARY KEY ("id"));
+-- create index "integrationoauthstate_tenant_id" to table: "integration_oauth_states"
+CREATE INDEX "integrationoauthstate_tenant_id" ON "integration_oauth_states" ("tenant_id");
 -- create "meeting_schedules" table
 CREATE TABLE "meeting_schedules" ("id" uuid NOT NULL, "archive_time" timestamptz NULL, "name" character varying NOT NULL, "description" character varying NULL, "begin_minute" bigint NOT NULL, "duration_minutes" bigint NOT NULL, "start_date" timestamptz NOT NULL, "repeats" character varying NOT NULL, "repetition_step" bigint NOT NULL DEFAULT 1, "week_days" jsonb NULL, "monthly_on" character varying NULL, "until_date" timestamptz NULL, "num_repetitions" bigint NULL, "tenant_id" bigint NOT NULL, PRIMARY KEY ("id"));
 -- create index "meetingschedule_tenant_id" to table: "meeting_schedules"
@@ -374,6 +378,8 @@ ALTER TABLE "incident_tags" ADD CONSTRAINT "incident_tags_tenants_tenant" FOREIG
 ALTER TABLE "incident_types" ADD CONSTRAINT "incident_types_tenants_tenant" FOREIGN KEY ("tenant_id") REFERENCES "tenants" ("id") ON UPDATE NO ACTION ON DELETE NO ACTION;
 -- modify "integrations" table
 ALTER TABLE "integrations" ADD CONSTRAINT "integrations_tenants_tenant" FOREIGN KEY ("tenant_id") REFERENCES "tenants" ("id") ON UPDATE NO ACTION ON DELETE NO ACTION;
+-- modify "integration_oauth_states" table
+ALTER TABLE "integration_oauth_states" ADD CONSTRAINT "integration_oauth_states_tenants_tenant" FOREIGN KEY ("tenant_id") REFERENCES "tenants" ("id") ON UPDATE NO ACTION ON DELETE NO ACTION, ADD CONSTRAINT "integration_oauth_states_users_user" FOREIGN KEY ("user_id") REFERENCES "users" ("id") ON UPDATE NO ACTION ON DELETE NO ACTION;
 -- modify "meeting_schedules" table
 ALTER TABLE "meeting_schedules" ADD CONSTRAINT "meeting_schedules_tenants_tenant" FOREIGN KEY ("tenant_id") REFERENCES "tenants" ("id") ON UPDATE NO ACTION ON DELETE NO ACTION;
 -- modify "meeting_sessions" table

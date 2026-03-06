@@ -33,6 +33,7 @@ import (
 	"github.com/rezible/rezible/ent/incidenttag"
 	"github.com/rezible/rezible/ent/incidenttype"
 	"github.com/rezible/rezible/ent/integration"
+	"github.com/rezible/rezible/ent/integrationoauthstate"
 	"github.com/rezible/rezible/ent/meetingschedule"
 	"github.com/rezible/rezible/ent/meetingsession"
 	"github.com/rezible/rezible/ent/oncallhandovertemplate"
@@ -612,6 +613,30 @@ func init() {
 	integrationDescID := integrationFields[0].Descriptor()
 	// integration.DefaultID holds the default value on creation for the id field.
 	integration.DefaultID = integrationDescID.Default.(func() uuid.UUID)
+	integrationoauthstateMixin := schema.IntegrationOAuthState{}.Mixin()
+	integrationoauthstate.Policy = privacy.NewPolicies(integrationoauthstateMixin[0], integrationoauthstateMixin[1], schema.IntegrationOAuthState{})
+	integrationoauthstate.Hooks[0] = func(next ent.Mutator) ent.Mutator {
+		return ent.MutateFunc(func(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+			if err := integrationoauthstate.Policy.EvalMutation(ctx, m); err != nil {
+				return nil, err
+			}
+			return next.Mutate(ctx, m)
+		})
+	}
+	integrationoauthstateFields := schema.IntegrationOAuthState{}.Fields()
+	_ = integrationoauthstateFields
+	// integrationoauthstateDescUserID is the schema descriptor for user_id field.
+	integrationoauthstateDescUserID := integrationoauthstateFields[1].Descriptor()
+	// integrationoauthstate.DefaultUserID holds the default value on creation for the user_id field.
+	integrationoauthstate.DefaultUserID = integrationoauthstateDescUserID.Default.(func() uuid.UUID)
+	// integrationoauthstateDescExpiresAt is the schema descriptor for expires_at field.
+	integrationoauthstateDescExpiresAt := integrationoauthstateFields[4].Descriptor()
+	// integrationoauthstate.DefaultExpiresAt holds the default value on creation for the expires_at field.
+	integrationoauthstate.DefaultExpiresAt = integrationoauthstateDescExpiresAt.Default.(func() time.Time)
+	// integrationoauthstateDescID is the schema descriptor for id field.
+	integrationoauthstateDescID := integrationoauthstateFields[0].Descriptor()
+	// integrationoauthstate.DefaultID holds the default value on creation for the id field.
+	integrationoauthstate.DefaultID = integrationoauthstateDescID.Default.(func() uuid.UUID)
 	meetingscheduleMixin := schema.MeetingSchedule{}.Mixin()
 	meetingschedule.Policy = privacy.NewPolicies(meetingscheduleMixin[0], meetingscheduleMixin[1], schema.MeetingSchedule{})
 	meetingschedule.Hooks[0] = func(next ent.Mutator) ent.Mutator {

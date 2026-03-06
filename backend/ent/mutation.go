@@ -39,6 +39,7 @@ import (
 	"github.com/rezible/rezible/ent/incidenttag"
 	"github.com/rezible/rezible/ent/incidenttype"
 	"github.com/rezible/rezible/ent/integration"
+	"github.com/rezible/rezible/ent/integrationoauthstate"
 	"github.com/rezible/rezible/ent/meetingschedule"
 	"github.com/rezible/rezible/ent/meetingsession"
 	"github.com/rezible/rezible/ent/oncallhandovertemplate"
@@ -112,6 +113,7 @@ const (
 	TypeIncidentTag                      = "IncidentTag"
 	TypeIncidentType                     = "IncidentType"
 	TypeIntegration                      = "Integration"
+	TypeIntegrationOAuthState            = "IntegrationOAuthState"
 	TypeMeetingSchedule                  = "MeetingSchedule"
 	TypeMeetingSession                   = "MeetingSession"
 	TypeOncallHandoverTemplate           = "OncallHandoverTemplate"
@@ -22517,6 +22519,657 @@ func (m *IntegrationMutation) ResetEdge(name string) error {
 		return nil
 	}
 	return fmt.Errorf("unknown Integration edge %s", name)
+}
+
+// IntegrationOAuthStateMutation represents an operation that mutates the IntegrationOAuthState nodes in the graph.
+type IntegrationOAuthStateMutation struct {
+	config
+	op               Op
+	typ              string
+	id               *uuid.UUID
+	state            *string
+	integration_name *string
+	expires_at       *time.Time
+	clearedFields    map[string]struct{}
+	tenant           *int
+	clearedtenant    bool
+	user             *uuid.UUID
+	cleareduser      bool
+	done             bool
+	oldValue         func(context.Context) (*IntegrationOAuthState, error)
+	predicates       []predicate.IntegrationOAuthState
+}
+
+var _ ent.Mutation = (*IntegrationOAuthStateMutation)(nil)
+
+// integrationoauthstateOption allows management of the mutation configuration using functional options.
+type integrationoauthstateOption func(*IntegrationOAuthStateMutation)
+
+// newIntegrationOAuthStateMutation creates new mutation for the IntegrationOAuthState entity.
+func newIntegrationOAuthStateMutation(c config, op Op, opts ...integrationoauthstateOption) *IntegrationOAuthStateMutation {
+	m := &IntegrationOAuthStateMutation{
+		config:        c,
+		op:            op,
+		typ:           TypeIntegrationOAuthState,
+		clearedFields: make(map[string]struct{}),
+	}
+	for _, opt := range opts {
+		opt(m)
+	}
+	return m
+}
+
+// withIntegrationOAuthStateID sets the ID field of the mutation.
+func withIntegrationOAuthStateID(id uuid.UUID) integrationoauthstateOption {
+	return func(m *IntegrationOAuthStateMutation) {
+		var (
+			err   error
+			once  sync.Once
+			value *IntegrationOAuthState
+		)
+		m.oldValue = func(ctx context.Context) (*IntegrationOAuthState, error) {
+			once.Do(func() {
+				if m.done {
+					err = errors.New("querying old values post mutation is not allowed")
+				} else {
+					value, err = m.Client().IntegrationOAuthState.Get(ctx, id)
+				}
+			})
+			return value, err
+		}
+		m.id = &id
+	}
+}
+
+// withIntegrationOAuthState sets the old IntegrationOAuthState of the mutation.
+func withIntegrationOAuthState(node *IntegrationOAuthState) integrationoauthstateOption {
+	return func(m *IntegrationOAuthStateMutation) {
+		m.oldValue = func(context.Context) (*IntegrationOAuthState, error) {
+			return node, nil
+		}
+		m.id = &node.ID
+	}
+}
+
+// Client returns a new `ent.Client` from the mutation. If the mutation was
+// executed in a transaction (ent.Tx), a transactional client is returned.
+func (m IntegrationOAuthStateMutation) Client() *Client {
+	client := &Client{config: m.config}
+	client.init()
+	return client
+}
+
+// Tx returns an `ent.Tx` for mutations that were executed in transactions;
+// it returns an error otherwise.
+func (m IntegrationOAuthStateMutation) Tx() (*Tx, error) {
+	if _, ok := m.driver.(*txDriver); !ok {
+		return nil, errors.New("ent: mutation is not running in a transaction")
+	}
+	tx := &Tx{config: m.config}
+	tx.init()
+	return tx, nil
+}
+
+// SetID sets the value of the id field. Note that this
+// operation is only accepted on creation of IntegrationOAuthState entities.
+func (m *IntegrationOAuthStateMutation) SetID(id uuid.UUID) {
+	m.id = &id
+}
+
+// ID returns the ID value in the mutation. Note that the ID is only available
+// if it was provided to the builder or after it was returned from the database.
+func (m *IntegrationOAuthStateMutation) ID() (id uuid.UUID, exists bool) {
+	if m.id == nil {
+		return
+	}
+	return *m.id, true
+}
+
+// IDs queries the database and returns the entity ids that match the mutation's predicate.
+// That means, if the mutation is applied within a transaction with an isolation level such
+// as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
+// or updated by the mutation.
+func (m *IntegrationOAuthStateMutation) IDs(ctx context.Context) ([]uuid.UUID, error) {
+	switch {
+	case m.op.Is(OpUpdateOne | OpDeleteOne):
+		id, exists := m.ID()
+		if exists {
+			return []uuid.UUID{id}, nil
+		}
+		fallthrough
+	case m.op.Is(OpUpdate | OpDelete):
+		return m.Client().IntegrationOAuthState.Query().Where(m.predicates...).IDs(ctx)
+	default:
+		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
+	}
+}
+
+// SetTenantID sets the "tenant_id" field.
+func (m *IntegrationOAuthStateMutation) SetTenantID(i int) {
+	m.tenant = &i
+}
+
+// TenantID returns the value of the "tenant_id" field in the mutation.
+func (m *IntegrationOAuthStateMutation) TenantID() (r int, exists bool) {
+	v := m.tenant
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldTenantID returns the old "tenant_id" field's value of the IntegrationOAuthState entity.
+// If the IntegrationOAuthState object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *IntegrationOAuthStateMutation) OldTenantID(ctx context.Context) (v int, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldTenantID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldTenantID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldTenantID: %w", err)
+	}
+	return oldValue.TenantID, nil
+}
+
+// ResetTenantID resets all changes to the "tenant_id" field.
+func (m *IntegrationOAuthStateMutation) ResetTenantID() {
+	m.tenant = nil
+}
+
+// SetUserID sets the "user_id" field.
+func (m *IntegrationOAuthStateMutation) SetUserID(u uuid.UUID) {
+	m.user = &u
+}
+
+// UserID returns the value of the "user_id" field in the mutation.
+func (m *IntegrationOAuthStateMutation) UserID() (r uuid.UUID, exists bool) {
+	v := m.user
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldUserID returns the old "user_id" field's value of the IntegrationOAuthState entity.
+// If the IntegrationOAuthState object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *IntegrationOAuthStateMutation) OldUserID(ctx context.Context) (v uuid.UUID, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldUserID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldUserID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldUserID: %w", err)
+	}
+	return oldValue.UserID, nil
+}
+
+// ResetUserID resets all changes to the "user_id" field.
+func (m *IntegrationOAuthStateMutation) ResetUserID() {
+	m.user = nil
+}
+
+// SetState sets the "state" field.
+func (m *IntegrationOAuthStateMutation) SetState(s string) {
+	m.state = &s
+}
+
+// State returns the value of the "state" field in the mutation.
+func (m *IntegrationOAuthStateMutation) State() (r string, exists bool) {
+	v := m.state
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldState returns the old "state" field's value of the IntegrationOAuthState entity.
+// If the IntegrationOAuthState object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *IntegrationOAuthStateMutation) OldState(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldState is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldState requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldState: %w", err)
+	}
+	return oldValue.State, nil
+}
+
+// ResetState resets all changes to the "state" field.
+func (m *IntegrationOAuthStateMutation) ResetState() {
+	m.state = nil
+}
+
+// SetIntegrationName sets the "integration_name" field.
+func (m *IntegrationOAuthStateMutation) SetIntegrationName(s string) {
+	m.integration_name = &s
+}
+
+// IntegrationName returns the value of the "integration_name" field in the mutation.
+func (m *IntegrationOAuthStateMutation) IntegrationName() (r string, exists bool) {
+	v := m.integration_name
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldIntegrationName returns the old "integration_name" field's value of the IntegrationOAuthState entity.
+// If the IntegrationOAuthState object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *IntegrationOAuthStateMutation) OldIntegrationName(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldIntegrationName is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldIntegrationName requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldIntegrationName: %w", err)
+	}
+	return oldValue.IntegrationName, nil
+}
+
+// ResetIntegrationName resets all changes to the "integration_name" field.
+func (m *IntegrationOAuthStateMutation) ResetIntegrationName() {
+	m.integration_name = nil
+}
+
+// SetExpiresAt sets the "expires_at" field.
+func (m *IntegrationOAuthStateMutation) SetExpiresAt(t time.Time) {
+	m.expires_at = &t
+}
+
+// ExpiresAt returns the value of the "expires_at" field in the mutation.
+func (m *IntegrationOAuthStateMutation) ExpiresAt() (r time.Time, exists bool) {
+	v := m.expires_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldExpiresAt returns the old "expires_at" field's value of the IntegrationOAuthState entity.
+// If the IntegrationOAuthState object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *IntegrationOAuthStateMutation) OldExpiresAt(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldExpiresAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldExpiresAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldExpiresAt: %w", err)
+	}
+	return oldValue.ExpiresAt, nil
+}
+
+// ResetExpiresAt resets all changes to the "expires_at" field.
+func (m *IntegrationOAuthStateMutation) ResetExpiresAt() {
+	m.expires_at = nil
+}
+
+// ClearTenant clears the "tenant" edge to the Tenant entity.
+func (m *IntegrationOAuthStateMutation) ClearTenant() {
+	m.clearedtenant = true
+	m.clearedFields[integrationoauthstate.FieldTenantID] = struct{}{}
+}
+
+// TenantCleared reports if the "tenant" edge to the Tenant entity was cleared.
+func (m *IntegrationOAuthStateMutation) TenantCleared() bool {
+	return m.clearedtenant
+}
+
+// TenantIDs returns the "tenant" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// TenantID instead. It exists only for internal usage by the builders.
+func (m *IntegrationOAuthStateMutation) TenantIDs() (ids []int) {
+	if id := m.tenant; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetTenant resets all changes to the "tenant" edge.
+func (m *IntegrationOAuthStateMutation) ResetTenant() {
+	m.tenant = nil
+	m.clearedtenant = false
+}
+
+// ClearUser clears the "user" edge to the User entity.
+func (m *IntegrationOAuthStateMutation) ClearUser() {
+	m.cleareduser = true
+	m.clearedFields[integrationoauthstate.FieldUserID] = struct{}{}
+}
+
+// UserCleared reports if the "user" edge to the User entity was cleared.
+func (m *IntegrationOAuthStateMutation) UserCleared() bool {
+	return m.cleareduser
+}
+
+// UserIDs returns the "user" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// UserID instead. It exists only for internal usage by the builders.
+func (m *IntegrationOAuthStateMutation) UserIDs() (ids []uuid.UUID) {
+	if id := m.user; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetUser resets all changes to the "user" edge.
+func (m *IntegrationOAuthStateMutation) ResetUser() {
+	m.user = nil
+	m.cleareduser = false
+}
+
+// Where appends a list predicates to the IntegrationOAuthStateMutation builder.
+func (m *IntegrationOAuthStateMutation) Where(ps ...predicate.IntegrationOAuthState) {
+	m.predicates = append(m.predicates, ps...)
+}
+
+// WhereP appends storage-level predicates to the IntegrationOAuthStateMutation builder. Using this method,
+// users can use type-assertion to append predicates that do not depend on any generated package.
+func (m *IntegrationOAuthStateMutation) WhereP(ps ...func(*sql.Selector)) {
+	p := make([]predicate.IntegrationOAuthState, len(ps))
+	for i := range ps {
+		p[i] = ps[i]
+	}
+	m.Where(p...)
+}
+
+// Op returns the operation name.
+func (m *IntegrationOAuthStateMutation) Op() Op {
+	return m.op
+}
+
+// SetOp allows setting the mutation operation.
+func (m *IntegrationOAuthStateMutation) SetOp(op Op) {
+	m.op = op
+}
+
+// Type returns the node type of this mutation (IntegrationOAuthState).
+func (m *IntegrationOAuthStateMutation) Type() string {
+	return m.typ
+}
+
+// Fields returns all fields that were changed during this mutation. Note that in
+// order to get all numeric fields that were incremented/decremented, call
+// AddedFields().
+func (m *IntegrationOAuthStateMutation) Fields() []string {
+	fields := make([]string, 0, 5)
+	if m.tenant != nil {
+		fields = append(fields, integrationoauthstate.FieldTenantID)
+	}
+	if m.user != nil {
+		fields = append(fields, integrationoauthstate.FieldUserID)
+	}
+	if m.state != nil {
+		fields = append(fields, integrationoauthstate.FieldState)
+	}
+	if m.integration_name != nil {
+		fields = append(fields, integrationoauthstate.FieldIntegrationName)
+	}
+	if m.expires_at != nil {
+		fields = append(fields, integrationoauthstate.FieldExpiresAt)
+	}
+	return fields
+}
+
+// Field returns the value of a field with the given name. The second boolean
+// return value indicates that this field was not set, or was not defined in the
+// schema.
+func (m *IntegrationOAuthStateMutation) Field(name string) (ent.Value, bool) {
+	switch name {
+	case integrationoauthstate.FieldTenantID:
+		return m.TenantID()
+	case integrationoauthstate.FieldUserID:
+		return m.UserID()
+	case integrationoauthstate.FieldState:
+		return m.State()
+	case integrationoauthstate.FieldIntegrationName:
+		return m.IntegrationName()
+	case integrationoauthstate.FieldExpiresAt:
+		return m.ExpiresAt()
+	}
+	return nil, false
+}
+
+// OldField returns the old value of the field from the database. An error is
+// returned if the mutation operation is not UpdateOne, or the query to the
+// database failed.
+func (m *IntegrationOAuthStateMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
+	switch name {
+	case integrationoauthstate.FieldTenantID:
+		return m.OldTenantID(ctx)
+	case integrationoauthstate.FieldUserID:
+		return m.OldUserID(ctx)
+	case integrationoauthstate.FieldState:
+		return m.OldState(ctx)
+	case integrationoauthstate.FieldIntegrationName:
+		return m.OldIntegrationName(ctx)
+	case integrationoauthstate.FieldExpiresAt:
+		return m.OldExpiresAt(ctx)
+	}
+	return nil, fmt.Errorf("unknown IntegrationOAuthState field %s", name)
+}
+
+// SetField sets the value of a field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *IntegrationOAuthStateMutation) SetField(name string, value ent.Value) error {
+	switch name {
+	case integrationoauthstate.FieldTenantID:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetTenantID(v)
+		return nil
+	case integrationoauthstate.FieldUserID:
+		v, ok := value.(uuid.UUID)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetUserID(v)
+		return nil
+	case integrationoauthstate.FieldState:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetState(v)
+		return nil
+	case integrationoauthstate.FieldIntegrationName:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetIntegrationName(v)
+		return nil
+	case integrationoauthstate.FieldExpiresAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetExpiresAt(v)
+		return nil
+	}
+	return fmt.Errorf("unknown IntegrationOAuthState field %s", name)
+}
+
+// AddedFields returns all numeric fields that were incremented/decremented during
+// this mutation.
+func (m *IntegrationOAuthStateMutation) AddedFields() []string {
+	var fields []string
+	return fields
+}
+
+// AddedField returns the numeric value that was incremented/decremented on a field
+// with the given name. The second boolean return value indicates that this field
+// was not set, or was not defined in the schema.
+func (m *IntegrationOAuthStateMutation) AddedField(name string) (ent.Value, bool) {
+	switch name {
+	}
+	return nil, false
+}
+
+// AddField adds the value to the field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *IntegrationOAuthStateMutation) AddField(name string, value ent.Value) error {
+	switch name {
+	}
+	return fmt.Errorf("unknown IntegrationOAuthState numeric field %s", name)
+}
+
+// ClearedFields returns all nullable fields that were cleared during this
+// mutation.
+func (m *IntegrationOAuthStateMutation) ClearedFields() []string {
+	return nil
+}
+
+// FieldCleared returns a boolean indicating if a field with the given name was
+// cleared in this mutation.
+func (m *IntegrationOAuthStateMutation) FieldCleared(name string) bool {
+	_, ok := m.clearedFields[name]
+	return ok
+}
+
+// ClearField clears the value of the field with the given name. It returns an
+// error if the field is not defined in the schema.
+func (m *IntegrationOAuthStateMutation) ClearField(name string) error {
+	return fmt.Errorf("unknown IntegrationOAuthState nullable field %s", name)
+}
+
+// ResetField resets all changes in the mutation for the field with the given name.
+// It returns an error if the field is not defined in the schema.
+func (m *IntegrationOAuthStateMutation) ResetField(name string) error {
+	switch name {
+	case integrationoauthstate.FieldTenantID:
+		m.ResetTenantID()
+		return nil
+	case integrationoauthstate.FieldUserID:
+		m.ResetUserID()
+		return nil
+	case integrationoauthstate.FieldState:
+		m.ResetState()
+		return nil
+	case integrationoauthstate.FieldIntegrationName:
+		m.ResetIntegrationName()
+		return nil
+	case integrationoauthstate.FieldExpiresAt:
+		m.ResetExpiresAt()
+		return nil
+	}
+	return fmt.Errorf("unknown IntegrationOAuthState field %s", name)
+}
+
+// AddedEdges returns all edge names that were set/added in this mutation.
+func (m *IntegrationOAuthStateMutation) AddedEdges() []string {
+	edges := make([]string, 0, 2)
+	if m.tenant != nil {
+		edges = append(edges, integrationoauthstate.EdgeTenant)
+	}
+	if m.user != nil {
+		edges = append(edges, integrationoauthstate.EdgeUser)
+	}
+	return edges
+}
+
+// AddedIDs returns all IDs (to other nodes) that were added for the given edge
+// name in this mutation.
+func (m *IntegrationOAuthStateMutation) AddedIDs(name string) []ent.Value {
+	switch name {
+	case integrationoauthstate.EdgeTenant:
+		if id := m.tenant; id != nil {
+			return []ent.Value{*id}
+		}
+	case integrationoauthstate.EdgeUser:
+		if id := m.user; id != nil {
+			return []ent.Value{*id}
+		}
+	}
+	return nil
+}
+
+// RemovedEdges returns all edge names that were removed in this mutation.
+func (m *IntegrationOAuthStateMutation) RemovedEdges() []string {
+	edges := make([]string, 0, 2)
+	return edges
+}
+
+// RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
+// the given name in this mutation.
+func (m *IntegrationOAuthStateMutation) RemovedIDs(name string) []ent.Value {
+	return nil
+}
+
+// ClearedEdges returns all edge names that were cleared in this mutation.
+func (m *IntegrationOAuthStateMutation) ClearedEdges() []string {
+	edges := make([]string, 0, 2)
+	if m.clearedtenant {
+		edges = append(edges, integrationoauthstate.EdgeTenant)
+	}
+	if m.cleareduser {
+		edges = append(edges, integrationoauthstate.EdgeUser)
+	}
+	return edges
+}
+
+// EdgeCleared returns a boolean which indicates if the edge with the given name
+// was cleared in this mutation.
+func (m *IntegrationOAuthStateMutation) EdgeCleared(name string) bool {
+	switch name {
+	case integrationoauthstate.EdgeTenant:
+		return m.clearedtenant
+	case integrationoauthstate.EdgeUser:
+		return m.cleareduser
+	}
+	return false
+}
+
+// ClearEdge clears the value of the edge with the given name. It returns an error
+// if that edge is not defined in the schema.
+func (m *IntegrationOAuthStateMutation) ClearEdge(name string) error {
+	switch name {
+	case integrationoauthstate.EdgeTenant:
+		m.ClearTenant()
+		return nil
+	case integrationoauthstate.EdgeUser:
+		m.ClearUser()
+		return nil
+	}
+	return fmt.Errorf("unknown IntegrationOAuthState unique edge %s", name)
+}
+
+// ResetEdge resets all changes to the edge with the given name in this mutation.
+// It returns an error if the edge is not defined in the schema.
+func (m *IntegrationOAuthStateMutation) ResetEdge(name string) error {
+	switch name {
+	case integrationoauthstate.EdgeTenant:
+		m.ResetTenant()
+		return nil
+	case integrationoauthstate.EdgeUser:
+		m.ResetUser()
+		return nil
+	}
+	return fmt.Errorf("unknown IntegrationOAuthState edge %s", name)
 }
 
 // MeetingScheduleMutation represents an operation that mutates the MeetingSchedule nodes in the graph.
@@ -51859,6 +52512,9 @@ type UserMutation struct {
 	event_annotations                     map[uuid.UUID]struct{}
 	removedevent_annotations              map[uuid.UUID]struct{}
 	clearedevent_annotations              bool
+	integration_oauth_states              map[uuid.UUID]struct{}
+	removedintegration_oauth_states       map[uuid.UUID]struct{}
+	clearedintegration_oauth_states       bool
 	incidents                             map[uuid.UUID]struct{}
 	removedincidents                      map[uuid.UUID]struct{}
 	clearedincidents                      bool
@@ -52633,6 +53289,60 @@ func (m *UserMutation) ResetEventAnnotations() {
 	m.event_annotations = nil
 	m.clearedevent_annotations = false
 	m.removedevent_annotations = nil
+}
+
+// AddIntegrationOauthStateIDs adds the "integration_oauth_states" edge to the IntegrationOAuthState entity by ids.
+func (m *UserMutation) AddIntegrationOauthStateIDs(ids ...uuid.UUID) {
+	if m.integration_oauth_states == nil {
+		m.integration_oauth_states = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		m.integration_oauth_states[ids[i]] = struct{}{}
+	}
+}
+
+// ClearIntegrationOauthStates clears the "integration_oauth_states" edge to the IntegrationOAuthState entity.
+func (m *UserMutation) ClearIntegrationOauthStates() {
+	m.clearedintegration_oauth_states = true
+}
+
+// IntegrationOauthStatesCleared reports if the "integration_oauth_states" edge to the IntegrationOAuthState entity was cleared.
+func (m *UserMutation) IntegrationOauthStatesCleared() bool {
+	return m.clearedintegration_oauth_states
+}
+
+// RemoveIntegrationOauthStateIDs removes the "integration_oauth_states" edge to the IntegrationOAuthState entity by IDs.
+func (m *UserMutation) RemoveIntegrationOauthStateIDs(ids ...uuid.UUID) {
+	if m.removedintegration_oauth_states == nil {
+		m.removedintegration_oauth_states = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		delete(m.integration_oauth_states, ids[i])
+		m.removedintegration_oauth_states[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedIntegrationOauthStates returns the removed IDs of the "integration_oauth_states" edge to the IntegrationOAuthState entity.
+func (m *UserMutation) RemovedIntegrationOauthStatesIDs() (ids []uuid.UUID) {
+	for id := range m.removedintegration_oauth_states {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// IntegrationOauthStatesIDs returns the "integration_oauth_states" edge IDs in the mutation.
+func (m *UserMutation) IntegrationOauthStatesIDs() (ids []uuid.UUID) {
+	for id := range m.integration_oauth_states {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetIntegrationOauthStates resets all changes to the "integration_oauth_states" edge.
+func (m *UserMutation) ResetIntegrationOauthStates() {
+	m.integration_oauth_states = nil
+	m.clearedintegration_oauth_states = false
+	m.removedintegration_oauth_states = nil
 }
 
 // AddIncidentIDs adds the "incidents" edge to the Incident entity by ids.
@@ -53457,7 +54167,7 @@ func (m *UserMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *UserMutation) AddedEdges() []string {
-	edges := make([]string, 0, 16)
+	edges := make([]string, 0, 17)
 	if m.tenant != nil {
 		edges = append(edges, user.EdgeTenant)
 	}
@@ -53475,6 +54185,9 @@ func (m *UserMutation) AddedEdges() []string {
 	}
 	if m.event_annotations != nil {
 		edges = append(edges, user.EdgeEventAnnotations)
+	}
+	if m.integration_oauth_states != nil {
+		edges = append(edges, user.EdgeIntegrationOauthStates)
 	}
 	if m.incidents != nil {
 		edges = append(edges, user.EdgeIncidents)
@@ -53547,6 +54260,12 @@ func (m *UserMutation) AddedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case user.EdgeIntegrationOauthStates:
+		ids := make([]ent.Value, 0, len(m.integration_oauth_states))
+		for id := range m.integration_oauth_states {
+			ids = append(ids, id)
+		}
+		return ids
 	case user.EdgeIncidents:
 		ids := make([]ent.Value, 0, len(m.incidents))
 		for id := range m.incidents {
@@ -53613,7 +54332,7 @@ func (m *UserMutation) AddedIDs(name string) []ent.Value {
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *UserMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 16)
+	edges := make([]string, 0, 17)
 	if m.removedteams != nil {
 		edges = append(edges, user.EdgeTeams)
 	}
@@ -53628,6 +54347,9 @@ func (m *UserMutation) RemovedEdges() []string {
 	}
 	if m.removedevent_annotations != nil {
 		edges = append(edges, user.EdgeEventAnnotations)
+	}
+	if m.removedintegration_oauth_states != nil {
+		edges = append(edges, user.EdgeIntegrationOauthStates)
 	}
 	if m.removedincidents != nil {
 		edges = append(edges, user.EdgeIncidents)
@@ -53693,6 +54415,12 @@ func (m *UserMutation) RemovedIDs(name string) []ent.Value {
 	case user.EdgeEventAnnotations:
 		ids := make([]ent.Value, 0, len(m.removedevent_annotations))
 		for id := range m.removedevent_annotations {
+			ids = append(ids, id)
+		}
+		return ids
+	case user.EdgeIntegrationOauthStates:
+		ids := make([]ent.Value, 0, len(m.removedintegration_oauth_states))
+		for id := range m.removedintegration_oauth_states {
 			ids = append(ids, id)
 		}
 		return ids
@@ -53762,7 +54490,7 @@ func (m *UserMutation) RemovedIDs(name string) []ent.Value {
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *UserMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 16)
+	edges := make([]string, 0, 17)
 	if m.clearedtenant {
 		edges = append(edges, user.EdgeTenant)
 	}
@@ -53780,6 +54508,9 @@ func (m *UserMutation) ClearedEdges() []string {
 	}
 	if m.clearedevent_annotations {
 		edges = append(edges, user.EdgeEventAnnotations)
+	}
+	if m.clearedintegration_oauth_states {
+		edges = append(edges, user.EdgeIntegrationOauthStates)
 	}
 	if m.clearedincidents {
 		edges = append(edges, user.EdgeIncidents)
@@ -53830,6 +54561,8 @@ func (m *UserMutation) EdgeCleared(name string) bool {
 		return m.clearedoncall_shifts
 	case user.EdgeEventAnnotations:
 		return m.clearedevent_annotations
+	case user.EdgeIntegrationOauthStates:
+		return m.clearedintegration_oauth_states
 	case user.EdgeIncidents:
 		return m.clearedincidents
 	case user.EdgeIncidentMilestones:
@@ -53886,6 +54619,9 @@ func (m *UserMutation) ResetEdge(name string) error {
 		return nil
 	case user.EdgeEventAnnotations:
 		m.ResetEventAnnotations()
+		return nil
+	case user.EdgeIntegrationOauthStates:
+		m.ResetIntegrationOauthStates()
 		return nil
 	case user.EdgeIncidents:
 		m.ResetIncidents()

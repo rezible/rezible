@@ -19,6 +19,7 @@ import (
 	"github.com/rezible/rezible/ent/incidentdebrief"
 	"github.com/rezible/rezible/ent/incidentmilestone"
 	"github.com/rezible/rezible/ent/incidentroleassignment"
+	"github.com/rezible/rezible/ent/integrationoauthstate"
 	"github.com/rezible/rezible/ent/oncallroster"
 	"github.com/rezible/rezible/ent/oncallscheduleparticipant"
 	"github.com/rezible/rezible/ent/oncallshift"
@@ -45,6 +46,7 @@ type UserQuery struct {
 	withOncallSchedules              *OncallScheduleParticipantQuery
 	withOncallShifts                 *OncallShiftQuery
 	withEventAnnotations             *EventAnnotationQuery
+	withIntegrationOauthStates       *IntegrationOAuthStateQuery
 	withIncidents                    *IncidentQuery
 	withIncidentMilestones           *IncidentMilestoneQuery
 	withIncidentDebriefs             *IncidentDebriefQuery
@@ -217,6 +219,28 @@ func (_q *UserQuery) QueryEventAnnotations() *EventAnnotationQuery {
 			sqlgraph.From(user.Table, user.FieldID, selector),
 			sqlgraph.To(eventannotation.Table, eventannotation.FieldID),
 			sqlgraph.Edge(sqlgraph.O2M, true, user.EventAnnotationsTable, user.EventAnnotationsColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryIntegrationOauthStates chains the current query on the "integration_oauth_states" edge.
+func (_q *UserQuery) QueryIntegrationOauthStates() *IntegrationOAuthStateQuery {
+	query := (&IntegrationOAuthStateClient{config: _q.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := _q.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := _q.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(user.Table, user.FieldID, selector),
+			sqlgraph.To(integrationoauthstate.Table, integrationoauthstate.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, true, user.IntegrationOauthStatesTable, user.IntegrationOauthStatesColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
@@ -642,6 +666,7 @@ func (_q *UserQuery) Clone() *UserQuery {
 		withOncallSchedules:              _q.withOncallSchedules.Clone(),
 		withOncallShifts:                 _q.withOncallShifts.Clone(),
 		withEventAnnotations:             _q.withEventAnnotations.Clone(),
+		withIntegrationOauthStates:       _q.withIntegrationOauthStates.Clone(),
 		withIncidents:                    _q.withIncidents.Clone(),
 		withIncidentMilestones:           _q.withIncidentMilestones.Clone(),
 		withIncidentDebriefs:             _q.withIncidentDebriefs.Clone(),
@@ -722,6 +747,17 @@ func (_q *UserQuery) WithEventAnnotations(opts ...func(*EventAnnotationQuery)) *
 		opt(query)
 	}
 	_q.withEventAnnotations = query
+	return _q
+}
+
+// WithIntegrationOauthStates tells the query-builder to eager-load the nodes that are connected to
+// the "integration_oauth_states" edge. The optional arguments are used to configure the query builder of the edge.
+func (_q *UserQuery) WithIntegrationOauthStates(opts ...func(*IntegrationOAuthStateQuery)) *UserQuery {
+	query := (&IntegrationOAuthStateClient{config: _q.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	_q.withIntegrationOauthStates = query
 	return _q
 }
 
@@ -919,13 +955,14 @@ func (_q *UserQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*User, e
 	var (
 		nodes       = []*User{}
 		_spec       = _q.querySpec()
-		loadedTypes = [16]bool{
+		loadedTypes = [17]bool{
 			_q.withTenant != nil,
 			_q.withTeams != nil,
 			_q.withWatchedOncallRosters != nil,
 			_q.withOncallSchedules != nil,
 			_q.withOncallShifts != nil,
 			_q.withEventAnnotations != nil,
+			_q.withIntegrationOauthStates != nil,
 			_q.withIncidents != nil,
 			_q.withIncidentMilestones != nil,
 			_q.withIncidentDebriefs != nil,
@@ -999,6 +1036,15 @@ func (_q *UserQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*User, e
 		if err := _q.loadEventAnnotations(ctx, query, nodes,
 			func(n *User) { n.Edges.EventAnnotations = []*EventAnnotation{} },
 			func(n *User, e *EventAnnotation) { n.Edges.EventAnnotations = append(n.Edges.EventAnnotations, e) }); err != nil {
+			return nil, err
+		}
+	}
+	if query := _q.withIntegrationOauthStates; query != nil {
+		if err := _q.loadIntegrationOauthStates(ctx, query, nodes,
+			func(n *User) { n.Edges.IntegrationOauthStates = []*IntegrationOAuthState{} },
+			func(n *User, e *IntegrationOAuthState) {
+				n.Edges.IntegrationOauthStates = append(n.Edges.IntegrationOauthStates, e)
+			}); err != nil {
 			return nil, err
 		}
 	}
@@ -1319,6 +1365,36 @@ func (_q *UserQuery) loadEventAnnotations(ctx context.Context, query *EventAnnot
 		node, ok := nodeids[fk]
 		if !ok {
 			return fmt.Errorf(`unexpected referenced foreign-key "creator_id" returned %v for node %v`, fk, n.ID)
+		}
+		assign(node, n)
+	}
+	return nil
+}
+func (_q *UserQuery) loadIntegrationOauthStates(ctx context.Context, query *IntegrationOAuthStateQuery, nodes []*User, init func(*User), assign func(*User, *IntegrationOAuthState)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[uuid.UUID]*User)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+		if init != nil {
+			init(nodes[i])
+		}
+	}
+	if len(query.ctx.Fields) > 0 {
+		query.ctx.AppendFieldOnce(integrationoauthstate.FieldUserID)
+	}
+	query.Where(predicate.IntegrationOAuthState(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(user.IntegrationOauthStatesColumn), fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.UserID
+		node, ok := nodeids[fk]
+		if !ok {
+			return fmt.Errorf(`unexpected referenced foreign-key "user_id" returned %v for node %v`, fk, n.ID)
 		}
 		assign(node, n)
 	}

@@ -747,6 +747,30 @@ func (f IntegrationMutationRuleFunc) EvalMutation(ctx context.Context, m ent.Mut
 	return Denyf("ent/privacy: unexpected mutation type %T, expect *ent.IntegrationMutation", m)
 }
 
+// The IntegrationOAuthStateQueryRuleFunc type is an adapter to allow the use of ordinary
+// functions as a query rule.
+type IntegrationOAuthStateQueryRuleFunc func(context.Context, *ent.IntegrationOAuthStateQuery) error
+
+// EvalQuery return f(ctx, q).
+func (f IntegrationOAuthStateQueryRuleFunc) EvalQuery(ctx context.Context, q ent.Query) error {
+	if q, ok := q.(*ent.IntegrationOAuthStateQuery); ok {
+		return f(ctx, q)
+	}
+	return Denyf("ent/privacy: unexpected query type %T, expect *ent.IntegrationOAuthStateQuery", q)
+}
+
+// The IntegrationOAuthStateMutationRuleFunc type is an adapter to allow the use of ordinary
+// functions as a mutation rule.
+type IntegrationOAuthStateMutationRuleFunc func(context.Context, *ent.IntegrationOAuthStateMutation) error
+
+// EvalMutation calls f(ctx, m).
+func (f IntegrationOAuthStateMutationRuleFunc) EvalMutation(ctx context.Context, m ent.Mutation) error {
+	if m, ok := m.(*ent.IntegrationOAuthStateMutation); ok {
+		return f(ctx, m)
+	}
+	return Denyf("ent/privacy: unexpected mutation type %T, expect *ent.IntegrationOAuthStateMutation", m)
+}
+
 // The MeetingScheduleQueryRuleFunc type is an adapter to allow the use of ordinary
 // functions as a query rule.
 type MeetingScheduleQueryRuleFunc func(context.Context, *ent.MeetingScheduleQuery) error
@@ -1676,6 +1700,8 @@ func queryFilter(q ent.Query) (Filter, error) {
 		return q.Filter(), nil
 	case *ent.IntegrationQuery:
 		return q.Filter(), nil
+	case *ent.IntegrationOAuthStateQuery:
+		return q.Filter(), nil
 	case *ent.MeetingScheduleQuery:
 		return q.Filter(), nil
 	case *ent.MeetingSessionQuery:
@@ -1804,6 +1830,8 @@ func mutationFilter(m ent.Mutation) (Filter, error) {
 	case *ent.IncidentTypeMutation:
 		return m.Filter(), nil
 	case *ent.IntegrationMutation:
+		return m.Filter(), nil
+	case *ent.IntegrationOAuthStateMutation:
 		return m.Filter(), nil
 	case *ent.MeetingScheduleMutation:
 		return m.Filter(), nil

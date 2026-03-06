@@ -189,7 +189,7 @@ type (
 
 	UserService interface {
 		CreateUserContext(ctx context.Context, userId uuid.UUID) (context.Context, error)
-		GetUserContext(ctx context.Context) *ent.User
+		GetUserContext(ctx context.Context) (*ent.User, bool)
 
 		FindOrCreateAuthProviderUser(context.Context, ent.User) (*ent.User, error)
 

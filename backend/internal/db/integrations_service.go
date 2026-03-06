@@ -3,8 +3,10 @@ package db
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"slices"
+	"time"
 
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqljson"
@@ -16,6 +18,7 @@ import (
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
 	"github.com/rezible/rezible/ent/integration"
+	ioas "github.com/rezible/rezible/ent/integrationoauthstate"
 	"github.com/rezible/rezible/integrations"
 	"github.com/rezible/rezible/internal/db/datasync"
 	"github.com/rezible/rezible/jobs"
@@ -24,10 +27,11 @@ import (
 type IntegrationsService struct {
 	db     *ent.Client
 	jobs   rez.JobsService
+	users  rez.UserService
 	syncer *datasync.Syncer
 }
 
-func NewIntegrationsService(db *ent.Client, jobSvc rez.JobsService) (*IntegrationsService, error) {
+func NewIntegrationsService(db *ent.Client, jobSvc rez.JobsService, users rez.UserService) (*IntegrationsService, error) {
 	syncer := datasync.NewSyncerService(db)
 	jobs.RegisterPeriodicJob(jobs.SyncAllTenantIntegrationsDataPeriodicJob)
 	jobs.RegisterWorkerFunc(syncer.SyncIntegrationsData)
@@ -35,6 +39,7 @@ func NewIntegrationsService(db *ent.Client, jobSvc rez.JobsService) (*Integratio
 	s := &IntegrationsService{
 		db:     db,
 		jobs:   jobSvc,
+		users:  users,
 		syncer: syncer,
 	}
 
@@ -50,12 +55,6 @@ func (s *IntegrationsService) listQuery(p rez.ListIntegrationsParams) *ent.Integ
 			query.Where(integration.NameIn(p.Names...))
 		}
 	}
-	//if len(p.DataKinds) > 0 {
-	//	hasDataKindPred := sqljson.ValueEQ(integration.FieldDataKinds, true, sqljson.DotPath(p.DataKind))
-	//	query.Where(func(s *sql.Selector) {
-	//		s.Where(hasDataKindPred)
-	//	})
-	//}
 	if p.ConfigValues != nil && len(p.ConfigValues) > 0 {
 		for path, value := range p.ConfigValues {
 			query.Where(func(s *sql.Selector) {
@@ -215,13 +214,40 @@ func (s *IntegrationsService) DeleteConfigured(ctx context.Context, name string)
 }
 
 func (s *IntegrationsService) makeOAuthState(ctx context.Context, name string) (string, error) {
-	// TODO
-	return "TODO", nil
+	u, exists := s.users.GetUserContext(ctx)
+	if !exists {
+		return "", errors.New("user context not found")
+	}
+	state := uuid.New().String()
+	create := s.db.IntegrationOAuthState.Create().
+		SetUser(u).
+		SetState(state).
+		SetIntegrationName(name)
+	return state, create.Exec(ctx)
 }
 
 func (s *IntegrationsService) verifyOAuthState(ctx context.Context, name string, state string) error {
-	// TODO
-	// clear after checking
+	u, exists := s.users.GetUserContext(ctx)
+	if !exists {
+		return fmt.Errorf("user context not found")
+	}
+	userIntegrationStates := ioas.And(ioas.UserIDEQ(u.ID), ioas.IntegrationNameEQ(name))
+	query := s.db.IntegrationOAuthState.Query().
+		Where(userIntegrationStates, ioas.ExpiresAtGT(time.Now()), ioas.StateEQ(state))
+	stateMatch, queryErr := query.Exist(ctx)
+	if queryErr != nil {
+		return fmt.Errorf("query failed: %w", queryErr)
+	}
+	cleanup := s.db.IntegrationOAuthState.Delete().Where(userIntegrationStates, ioas.ExpiresAtLT(time.Now()))
+	if _, cleanupErr := cleanup.Exec(ctx); cleanupErr != nil {
+		log.Error().Err(cleanupErr).
+			Str("name", name).
+			Str("userId", u.ID.String()).
+			Msg("failed to cleanup old integration user oauth states")
+	}
+	if !stateMatch {
+		return fmt.Errorf("no match found")
+	}
 	return nil
 }
 

@@ -42,6 +42,8 @@ const (
 	EdgeOncallShifts = "oncall_shifts"
 	// EdgeEventAnnotations holds the string denoting the event_annotations edge name in mutations.
 	EdgeEventAnnotations = "event_annotations"
+	// EdgeIntegrationOauthStates holds the string denoting the integration_oauth_states edge name in mutations.
+	EdgeIntegrationOauthStates = "integration_oauth_states"
 	// EdgeIncidents holds the string denoting the incidents edge name in mutations.
 	EdgeIncidents = "incidents"
 	// EdgeIncidentMilestones holds the string denoting the incident_milestones edge name in mutations.
@@ -102,6 +104,13 @@ const (
 	EventAnnotationsInverseTable = "event_annotations"
 	// EventAnnotationsColumn is the table column denoting the event_annotations relation/edge.
 	EventAnnotationsColumn = "creator_id"
+	// IntegrationOauthStatesTable is the table that holds the integration_oauth_states relation/edge.
+	IntegrationOauthStatesTable = "integration_oauth_states"
+	// IntegrationOauthStatesInverseTable is the table name for the IntegrationOAuthState entity.
+	// It exists in this package in order to avoid circular dependency with the "integrationoauthstate" package.
+	IntegrationOauthStatesInverseTable = "integration_oauth_states"
+	// IntegrationOauthStatesColumn is the table column denoting the integration_oauth_states relation/edge.
+	IntegrationOauthStatesColumn = "user_id"
 	// IncidentsTable is the table that holds the incidents relation/edge. The primary key declared below.
 	IncidentsTable = "incident_role_assignments"
 	// IncidentsInverseTable is the table name for the Incident entity.
@@ -350,6 +359,20 @@ func ByEventAnnotations(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption 
 	}
 }
 
+// ByIntegrationOauthStatesCount orders the results by integration_oauth_states count.
+func ByIntegrationOauthStatesCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newIntegrationOauthStatesStep(), opts...)
+	}
+}
+
+// ByIntegrationOauthStates orders the results by integration_oauth_states terms.
+func ByIntegrationOauthStates(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newIntegrationOauthStatesStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
+
 // ByIncidentsCount orders the results by incidents count.
 func ByIncidentsCount(opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
@@ -529,6 +552,13 @@ func newEventAnnotationsStep() *sqlgraph.Step {
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(EventAnnotationsInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.O2M, true, EventAnnotationsTable, EventAnnotationsColumn),
+	)
+}
+func newIntegrationOauthStatesStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(IntegrationOauthStatesInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, true, IntegrationOauthStatesTable, IntegrationOauthStatesColumn),
 	)
 }
 func newIncidentsStep() *sqlgraph.Step {

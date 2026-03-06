@@ -637,6 +637,29 @@ func HasEventAnnotationsWith(preds ...predicate.EventAnnotation) predicate.User 
 	})
 }
 
+// HasIntegrationOauthStates applies the HasEdge predicate on the "integration_oauth_states" edge.
+func HasIntegrationOauthStates() predicate.User {
+	return predicate.User(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, true, IntegrationOauthStatesTable, IntegrationOauthStatesColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasIntegrationOauthStatesWith applies the HasEdge predicate on the "integration_oauth_states" edge with a given conditions (other predicates).
+func HasIntegrationOauthStatesWith(preds ...predicate.IntegrationOAuthState) predicate.User {
+	return predicate.User(func(s *sql.Selector) {
+		step := newIntegrationOauthStatesStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
 // HasIncidents applies the HasEdge predicate on the "incidents" edge.
 func HasIncidents() predicate.User {
 	return predicate.User(func(s *sql.Selector) {

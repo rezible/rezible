@@ -66,6 +66,8 @@ type Tx struct {
 	IncidentType *IncidentTypeClient
 	// Integration is the client for interacting with the Integration builders.
 	Integration *IntegrationClient
+	// IntegrationOAuthState is the client for interacting with the IntegrationOAuthState builders.
+	IntegrationOAuthState *IntegrationOAuthStateClient
 	// MeetingSchedule is the client for interacting with the MeetingSchedule builders.
 	MeetingSchedule *MeetingScheduleClient
 	// MeetingSession is the client for interacting with the MeetingSession builders.
@@ -294,6 +296,7 @@ func (tx *Tx) init() {
 	tx.IncidentTag = NewIncidentTagClient(tx.config)
 	tx.IncidentType = NewIncidentTypeClient(tx.config)
 	tx.Integration = NewIntegrationClient(tx.config)
+	tx.IntegrationOAuthState = NewIntegrationOAuthStateClient(tx.config)
 	tx.MeetingSchedule = NewMeetingScheduleClient(tx.config)
 	tx.MeetingSession = NewMeetingSessionClient(tx.config)
 	tx.OncallHandoverTemplate = NewOncallHandoverTemplateClient(tx.config)

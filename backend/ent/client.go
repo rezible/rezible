@@ -42,6 +42,7 @@ import (
 	"github.com/rezible/rezible/ent/incidenttag"
 	"github.com/rezible/rezible/ent/incidenttype"
 	"github.com/rezible/rezible/ent/integration"
+	"github.com/rezible/rezible/ent/integrationoauthstate"
 	"github.com/rezible/rezible/ent/meetingschedule"
 	"github.com/rezible/rezible/ent/meetingsession"
 	"github.com/rezible/rezible/ent/oncallhandovertemplate"
@@ -138,6 +139,8 @@ type Client struct {
 	IncidentType *IncidentTypeClient
 	// Integration is the client for interacting with the Integration builders.
 	Integration *IntegrationClient
+	// IntegrationOAuthState is the client for interacting with the IntegrationOAuthState builders.
+	IntegrationOAuthState *IntegrationOAuthStateClient
 	// MeetingSchedule is the client for interacting with the MeetingSchedule builders.
 	MeetingSchedule *MeetingScheduleClient
 	// MeetingSession is the client for interacting with the MeetingSession builders.
@@ -246,6 +249,7 @@ func (c *Client) init() {
 	c.IncidentTag = NewIncidentTagClient(c.config)
 	c.IncidentType = NewIncidentTypeClient(c.config)
 	c.Integration = NewIntegrationClient(c.config)
+	c.IntegrationOAuthState = NewIntegrationOAuthStateClient(c.config)
 	c.MeetingSchedule = NewMeetingScheduleClient(c.config)
 	c.MeetingSession = NewMeetingSessionClient(c.config)
 	c.OncallHandoverTemplate = NewOncallHandoverTemplateClient(c.config)
@@ -400,6 +404,7 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 		IncidentTag:                      NewIncidentTagClient(cfg),
 		IncidentType:                     NewIncidentTypeClient(cfg),
 		Integration:                      NewIntegrationClient(cfg),
+		IntegrationOAuthState:            NewIntegrationOAuthStateClient(cfg),
 		MeetingSchedule:                  NewMeetingScheduleClient(cfg),
 		MeetingSession:                   NewMeetingSessionClient(cfg),
 		OncallHandoverTemplate:           NewOncallHandoverTemplateClient(cfg),
@@ -481,6 +486,7 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 		IncidentTag:                      NewIncidentTagClient(cfg),
 		IncidentType:                     NewIncidentTypeClient(cfg),
 		Integration:                      NewIntegrationClient(cfg),
+		IntegrationOAuthState:            NewIntegrationOAuthStateClient(cfg),
 		MeetingSchedule:                  NewMeetingScheduleClient(cfg),
 		MeetingSession:                   NewMeetingSessionClient(cfg),
 		OncallHandoverTemplate:           NewOncallHandoverTemplateClient(cfg),
@@ -552,15 +558,15 @@ func (c *Client) Use(hooks ...Hook) {
 		c.IncidentEventEvidence, c.IncidentEventSystemComponent, c.IncidentField,
 		c.IncidentFieldOption, c.IncidentLink, c.IncidentMilestone, c.IncidentRole,
 		c.IncidentRoleAssignment, c.IncidentSeverity, c.IncidentTag, c.IncidentType,
-		c.Integration, c.MeetingSchedule, c.MeetingSession, c.OncallHandoverTemplate,
-		c.OncallRoster, c.OncallRosterMetrics, c.OncallSchedule,
-		c.OncallScheduleParticipant, c.OncallShift, c.OncallShiftHandover,
-		c.OncallShiftMetrics, c.Organization, c.Playbook, c.ProviderSyncHistory,
-		c.Retrospective, c.RetrospectiveComment, c.RetrospectiveReview,
-		c.SystemAnalysis, c.SystemAnalysisComponent, c.SystemAnalysisRelationship,
-		c.SystemComponent, c.SystemComponentConstraint, c.SystemComponentControl,
-		c.SystemComponentKind, c.SystemComponentRelationship, c.SystemComponentSignal,
-		c.SystemHazard, c.SystemRelationshipControlAction,
+		c.Integration, c.IntegrationOAuthState, c.MeetingSchedule, c.MeetingSession,
+		c.OncallHandoverTemplate, c.OncallRoster, c.OncallRosterMetrics,
+		c.OncallSchedule, c.OncallScheduleParticipant, c.OncallShift,
+		c.OncallShiftHandover, c.OncallShiftMetrics, c.Organization, c.Playbook,
+		c.ProviderSyncHistory, c.Retrospective, c.RetrospectiveComment,
+		c.RetrospectiveReview, c.SystemAnalysis, c.SystemAnalysisComponent,
+		c.SystemAnalysisRelationship, c.SystemComponent, c.SystemComponentConstraint,
+		c.SystemComponentControl, c.SystemComponentKind, c.SystemComponentRelationship,
+		c.SystemComponentSignal, c.SystemHazard, c.SystemRelationshipControlAction,
 		c.SystemRelationshipFeedbackSignal, c.Task, c.Team, c.TeamMembership, c.Tenant,
 		c.Ticket, c.User, c.VideoConference,
 	} {
@@ -579,15 +585,15 @@ func (c *Client) Intercept(interceptors ...Interceptor) {
 		c.IncidentEventEvidence, c.IncidentEventSystemComponent, c.IncidentField,
 		c.IncidentFieldOption, c.IncidentLink, c.IncidentMilestone, c.IncidentRole,
 		c.IncidentRoleAssignment, c.IncidentSeverity, c.IncidentTag, c.IncidentType,
-		c.Integration, c.MeetingSchedule, c.MeetingSession, c.OncallHandoverTemplate,
-		c.OncallRoster, c.OncallRosterMetrics, c.OncallSchedule,
-		c.OncallScheduleParticipant, c.OncallShift, c.OncallShiftHandover,
-		c.OncallShiftMetrics, c.Organization, c.Playbook, c.ProviderSyncHistory,
-		c.Retrospective, c.RetrospectiveComment, c.RetrospectiveReview,
-		c.SystemAnalysis, c.SystemAnalysisComponent, c.SystemAnalysisRelationship,
-		c.SystemComponent, c.SystemComponentConstraint, c.SystemComponentControl,
-		c.SystemComponentKind, c.SystemComponentRelationship, c.SystemComponentSignal,
-		c.SystemHazard, c.SystemRelationshipControlAction,
+		c.Integration, c.IntegrationOAuthState, c.MeetingSchedule, c.MeetingSession,
+		c.OncallHandoverTemplate, c.OncallRoster, c.OncallRosterMetrics,
+		c.OncallSchedule, c.OncallScheduleParticipant, c.OncallShift,
+		c.OncallShiftHandover, c.OncallShiftMetrics, c.Organization, c.Playbook,
+		c.ProviderSyncHistory, c.Retrospective, c.RetrospectiveComment,
+		c.RetrospectiveReview, c.SystemAnalysis, c.SystemAnalysisComponent,
+		c.SystemAnalysisRelationship, c.SystemComponent, c.SystemComponentConstraint,
+		c.SystemComponentControl, c.SystemComponentKind, c.SystemComponentRelationship,
+		c.SystemComponentSignal, c.SystemHazard, c.SystemRelationshipControlAction,
 		c.SystemRelationshipFeedbackSignal, c.Task, c.Team, c.TeamMembership, c.Tenant,
 		c.Ticket, c.User, c.VideoConference,
 	} {
@@ -650,6 +656,8 @@ func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 		return c.IncidentType.mutate(ctx, m)
 	case *IntegrationMutation:
 		return c.Integration.mutate(ctx, m)
+	case *IntegrationOAuthStateMutation:
+		return c.IntegrationOAuthState.mutate(ctx, m)
 	case *MeetingScheduleMutation:
 		return c.MeetingSchedule.mutate(ctx, m)
 	case *MeetingSessionMutation:
@@ -5842,6 +5850,172 @@ func (c *IntegrationClient) mutate(ctx context.Context, m *IntegrationMutation) 
 		return (&IntegrationDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
 	default:
 		return nil, fmt.Errorf("ent: unknown Integration mutation op: %q", m.Op())
+	}
+}
+
+// IntegrationOAuthStateClient is a client for the IntegrationOAuthState schema.
+type IntegrationOAuthStateClient struct {
+	config
+}
+
+// NewIntegrationOAuthStateClient returns a client for the IntegrationOAuthState from the given config.
+func NewIntegrationOAuthStateClient(c config) *IntegrationOAuthStateClient {
+	return &IntegrationOAuthStateClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `integrationoauthstate.Hooks(f(g(h())))`.
+func (c *IntegrationOAuthStateClient) Use(hooks ...Hook) {
+	c.hooks.IntegrationOAuthState = append(c.hooks.IntegrationOAuthState, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `integrationoauthstate.Intercept(f(g(h())))`.
+func (c *IntegrationOAuthStateClient) Intercept(interceptors ...Interceptor) {
+	c.inters.IntegrationOAuthState = append(c.inters.IntegrationOAuthState, interceptors...)
+}
+
+// Create returns a builder for creating a IntegrationOAuthState entity.
+func (c *IntegrationOAuthStateClient) Create() *IntegrationOAuthStateCreate {
+	mutation := newIntegrationOAuthStateMutation(c.config, OpCreate)
+	return &IntegrationOAuthStateCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of IntegrationOAuthState entities.
+func (c *IntegrationOAuthStateClient) CreateBulk(builders ...*IntegrationOAuthStateCreate) *IntegrationOAuthStateCreateBulk {
+	return &IntegrationOAuthStateCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *IntegrationOAuthStateClient) MapCreateBulk(slice any, setFunc func(*IntegrationOAuthStateCreate, int)) *IntegrationOAuthStateCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &IntegrationOAuthStateCreateBulk{err: fmt.Errorf("calling to IntegrationOAuthStateClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*IntegrationOAuthStateCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &IntegrationOAuthStateCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for IntegrationOAuthState.
+func (c *IntegrationOAuthStateClient) Update() *IntegrationOAuthStateUpdate {
+	mutation := newIntegrationOAuthStateMutation(c.config, OpUpdate)
+	return &IntegrationOAuthStateUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *IntegrationOAuthStateClient) UpdateOne(_m *IntegrationOAuthState) *IntegrationOAuthStateUpdateOne {
+	mutation := newIntegrationOAuthStateMutation(c.config, OpUpdateOne, withIntegrationOAuthState(_m))
+	return &IntegrationOAuthStateUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *IntegrationOAuthStateClient) UpdateOneID(id uuid.UUID) *IntegrationOAuthStateUpdateOne {
+	mutation := newIntegrationOAuthStateMutation(c.config, OpUpdateOne, withIntegrationOAuthStateID(id))
+	return &IntegrationOAuthStateUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for IntegrationOAuthState.
+func (c *IntegrationOAuthStateClient) Delete() *IntegrationOAuthStateDelete {
+	mutation := newIntegrationOAuthStateMutation(c.config, OpDelete)
+	return &IntegrationOAuthStateDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *IntegrationOAuthStateClient) DeleteOne(_m *IntegrationOAuthState) *IntegrationOAuthStateDeleteOne {
+	return c.DeleteOneID(_m.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *IntegrationOAuthStateClient) DeleteOneID(id uuid.UUID) *IntegrationOAuthStateDeleteOne {
+	builder := c.Delete().Where(integrationoauthstate.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &IntegrationOAuthStateDeleteOne{builder}
+}
+
+// Query returns a query builder for IntegrationOAuthState.
+func (c *IntegrationOAuthStateClient) Query() *IntegrationOAuthStateQuery {
+	return &IntegrationOAuthStateQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeIntegrationOAuthState},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a IntegrationOAuthState entity by its id.
+func (c *IntegrationOAuthStateClient) Get(ctx context.Context, id uuid.UUID) (*IntegrationOAuthState, error) {
+	return c.Query().Where(integrationoauthstate.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *IntegrationOAuthStateClient) GetX(ctx context.Context, id uuid.UUID) *IntegrationOAuthState {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QueryTenant queries the tenant edge of a IntegrationOAuthState.
+func (c *IntegrationOAuthStateClient) QueryTenant(_m *IntegrationOAuthState) *TenantQuery {
+	query := (&TenantClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(integrationoauthstate.Table, integrationoauthstate.FieldID, id),
+			sqlgraph.To(tenant.Table, tenant.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, integrationoauthstate.TenantTable, integrationoauthstate.TenantColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryUser queries the user edge of a IntegrationOAuthState.
+func (c *IntegrationOAuthStateClient) QueryUser(_m *IntegrationOAuthState) *UserQuery {
+	query := (&UserClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(integrationoauthstate.Table, integrationoauthstate.FieldID, id),
+			sqlgraph.To(user.Table, user.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, integrationoauthstate.UserTable, integrationoauthstate.UserColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *IntegrationOAuthStateClient) Hooks() []Hook {
+	hooks := c.hooks.IntegrationOAuthState
+	return append(hooks[:len(hooks):len(hooks)], integrationoauthstate.Hooks[:]...)
+}
+
+// Interceptors returns the client interceptors.
+func (c *IntegrationOAuthStateClient) Interceptors() []Interceptor {
+	return c.inters.IntegrationOAuthState
+}
+
+func (c *IntegrationOAuthStateClient) mutate(ctx context.Context, m *IntegrationOAuthStateMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&IntegrationOAuthStateCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&IntegrationOAuthStateUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&IntegrationOAuthStateUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&IntegrationOAuthStateDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown IntegrationOAuthState mutation op: %q", m.Op())
 	}
 }
 
@@ -12490,6 +12664,22 @@ func (c *UserClient) QueryEventAnnotations(_m *User) *EventAnnotationQuery {
 	return query
 }
 
+// QueryIntegrationOauthStates queries the integration_oauth_states edge of a User.
+func (c *UserClient) QueryIntegrationOauthStates(_m *User) *IntegrationOAuthStateQuery {
+	query := (&IntegrationOAuthStateClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(user.Table, user.FieldID, id),
+			sqlgraph.To(integrationoauthstate.Table, integrationoauthstate.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, true, user.IntegrationOauthStatesTable, user.IntegrationOauthStatesColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
 // QueryIncidents queries the incidents edge of a User.
 func (c *UserClient) QueryIncidents(_m *User) *IncidentQuery {
 	query := (&IncidentClient{config: c.config}).Query()
@@ -12867,9 +13057,9 @@ type (
 		IncidentEventContributingFactor, IncidentEventEvidence,
 		IncidentEventSystemComponent, IncidentField, IncidentFieldOption, IncidentLink,
 		IncidentMilestone, IncidentRole, IncidentRoleAssignment, IncidentSeverity,
-		IncidentTag, IncidentType, Integration, MeetingSchedule, MeetingSession,
-		OncallHandoverTemplate, OncallRoster, OncallRosterMetrics, OncallSchedule,
-		OncallScheduleParticipant, OncallShift, OncallShiftHandover,
+		IncidentTag, IncidentType, Integration, IntegrationOAuthState, MeetingSchedule,
+		MeetingSession, OncallHandoverTemplate, OncallRoster, OncallRosterMetrics,
+		OncallSchedule, OncallScheduleParticipant, OncallShift, OncallShiftHandover,
 		OncallShiftMetrics, Organization, Playbook, ProviderSyncHistory, Retrospective,
 		RetrospectiveComment, RetrospectiveReview, SystemAnalysis,
 		SystemAnalysisComponent, SystemAnalysisRelationship, SystemComponent,
@@ -12885,9 +13075,9 @@ type (
 		IncidentEventContext, IncidentEventContributingFactor, IncidentEventEvidence,
 		IncidentEventSystemComponent, IncidentField, IncidentFieldOption, IncidentLink,
 		IncidentMilestone, IncidentRole, IncidentRoleAssignment, IncidentSeverity,
-		IncidentTag, IncidentType, Integration, MeetingSchedule, MeetingSession,
-		OncallHandoverTemplate, OncallRoster, OncallRosterMetrics, OncallSchedule,
-		OncallScheduleParticipant, OncallShift, OncallShiftHandover,
+		IncidentTag, IncidentType, Integration, IntegrationOAuthState, MeetingSchedule,
+		MeetingSession, OncallHandoverTemplate, OncallRoster, OncallRosterMetrics,
+		OncallSchedule, OncallScheduleParticipant, OncallShift, OncallShiftHandover,
 		OncallShiftMetrics, Organization, Playbook, ProviderSyncHistory, Retrospective,
 		RetrospectiveComment, RetrospectiveReview, SystemAnalysis,
 		SystemAnalysisComponent, SystemAnalysisRelationship, SystemComponent,

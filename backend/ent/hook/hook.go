@@ -321,6 +321,18 @@ func (f IntegrationFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value,
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.IntegrationMutation", m)
 }
 
+// The IntegrationOAuthStateFunc type is an adapter to allow the use of ordinary
+// function as IntegrationOAuthState mutator.
+type IntegrationOAuthStateFunc func(context.Context, *ent.IntegrationOAuthStateMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f IntegrationOAuthStateFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.IntegrationOAuthStateMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.IntegrationOAuthStateMutation", m)
+}
+
 // The MeetingScheduleFunc type is an adapter to allow the use of ordinary
 // function as MeetingSchedule mutator.
 type MeetingScheduleFunc func(context.Context, *ent.MeetingScheduleMutation) (ent.Value, error)

@@ -220,6 +220,14 @@ func (c *IntegrationClient) Debug() *IntegrationClient {
 	return &IntegrationClient{config: cfg}
 }
 
+func (c *IntegrationOAuthStateClient) Debug() *IntegrationOAuthStateClient {
+	if c.debug {
+		return c
+	}
+	cfg := config{driver: dialect.Debug(c.driver, c.log), log: c.log, debug: true, hooks: c.hooks, inters: c.inters}
+	return &IntegrationOAuthStateClient{config: cfg}
+}
+
 func (c *MeetingScheduleClient) Debug() *MeetingScheduleClient {
 	if c.debug {
 		return c

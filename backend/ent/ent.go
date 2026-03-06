@@ -39,6 +39,7 @@ import (
 	"github.com/rezible/rezible/ent/incidenttag"
 	"github.com/rezible/rezible/ent/incidenttype"
 	"github.com/rezible/rezible/ent/integration"
+	"github.com/rezible/rezible/ent/integrationoauthstate"
 	"github.com/rezible/rezible/ent/meetingschedule"
 	"github.com/rezible/rezible/ent/meetingsession"
 	"github.com/rezible/rezible/ent/oncallhandovertemplate"
@@ -161,6 +162,7 @@ func checkColumn(t, c string) error {
 			incidenttag.Table:                      incidenttag.ValidColumn,
 			incidenttype.Table:                     incidenttype.ValidColumn,
 			integration.Table:                      integration.ValidColumn,
+			integrationoauthstate.Table:            integrationoauthstate.ValidColumn,
 			meetingschedule.Table:                  meetingschedule.ValidColumn,
 			meetingsession.Table:                   meetingsession.ValidColumn,
 			oncallhandovertemplate.Table:           oncallhandovertemplate.ValidColumn,

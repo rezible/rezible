@@ -35,7 +35,9 @@ func (s *UserServiceSuite) TestCreateUserContextSetsTenantAndUserContext() {
 	s.Require().NoError(userCtxErr)
 
 	s.Equal(access.GetContext(tenantCtx).GetTenantId(), access.GetContext(userCtx).GetTenantId())
-	s.Equal(usr.ID, users.GetUserContext(userCtx).ID)
+	ctxUser, ok := users.GetUserContext(userCtx)
+	s.Require().True(ok)
+	s.Equal(usr.ID, ctxUser.ID)
 }
 
 func (s *UserServiceSuite) TestCreateUserContextReturnsInvalidUserForUnknownID() {
