@@ -12,7 +12,6 @@
 	type Props = {
 		integration: SupportedIntegration;
 		configured?: ConfiguredIntegration;
-		nextRequiredDataKind?: string;
 		startOAuthFlow?: () => void;
 		configureIntegration?: (attrs: ConfigureIntegrationRequestBody["attributes"]) => Promise<unknown> | unknown;
 		isSaving?: boolean;
@@ -21,16 +20,11 @@
 	const {
 		integration,
 		configured,
-		nextRequiredDataKind,
 		startOAuthFlow,
 		configureIntegration,
 		isSaving = false,
 		errorMessage = "",
 	}: Props = $props();
-
-	const supportsNextRequiredDataKind = $derived(
-		!!nextRequiredDataKind && integration.supportedDataKinds.includes(nextRequiredDataKind),
-	);
 
 	const configs: Record<string, IntegrationConfigComponent> = {
 		slack: SlackConfig,
@@ -68,7 +62,7 @@
 
 {#snippet oauthFlowButtonContent(name: string)}
 	{#if name === "slack"}
-	<img alt="Add to Slack" height="40" width="139" 
+	<img alt="Add to Slack" width="139px" height="40px"
 		src="https://platform.slack-edge.com/img/add_to_slack.png" 
 		srcSet="https://platform.slack-edge.com/img/add_to_slack.png 1x, https://platform.slack-edge.com/img/add_to_slack@2x.png 2x" />
 	{:else}
@@ -76,16 +70,11 @@
 	{/if}
 {/snippet}
 
-<Card.Root class="gap-4 p-4">
+<Card.Root class="gap-4 p-4 min-w-xs">
 	<Card.Header class="p-0">
-		<div class="flex items-start justify-between gap-4">
+		<div class="flex items-center justify-between gap-4 h-fit">
 			<div class="flex flex-col gap-2">
 				<Card.Title class="capitalize">{integration.name}</Card.Title>
-				<div class="flex flex-wrap gap-2">
-					{#each integration.supportedDataKinds as kind}
-						<Badge variant="outline">{kind}</Badge>
-					{/each}
-				</div>
 				{#if enabledDataKinds.length > 0}
 					<div class="flex items-center gap-2 text-sm text-muted-foreground">
 						<span>Enabled:</span>
@@ -99,37 +88,33 @@
 			</div>
 			<Badge variant={configured ? "secondary" : "outline"}>{configured ? "Configured" : "Not configured"}</Badge>
 		</div>
+		{#if requiresOAuthConnect}
+			<div class="place-self-center">
+				<Button onclick={() => startOAuthFlow?.()} class="w-fit h-fit cursor-pointer p-0">
+					{@render oauthFlowButtonContent(integration.name)}
+				</Button>
+			</div>
+		{/if}
 	</Card.Header>
 
-	<Card.Content class="p-0 flex flex-col gap-3">
-		{#if !!nextRequiredDataKind && supportsNextRequiredDataKind}
-			<Alert.Root>
-				<Alert.Title>Supports required data kind</Alert.Title>
-				<Alert.Description>
-					This integration can provide <span class="font-medium">{nextRequiredDataKind}</span> data.
-				</Alert.Description>
-			</Alert.Root>
-		{/if}
-
-		{#if !!errorMessage}
-			<Alert.Root variant="destructive">
-				<Alert.Title>Could not save integration</Alert.Title>
-				<Alert.Description>{errorMessage}</Alert.Description>
-			</Alert.Root>
-		{/if}
-
-		{#if requiresOAuthConnect}
-			<Button onclick={() => startOAuthFlow?.()}>
-				{@render oauthFlowButtonContent(integration.name)}
-			</Button>
-		{:else}
-			<ConfigComponent {integration} {configured} onChange={onConfigChange} />
-
-			{#if supportsManualSave}
-				<Button onclick={doConfigureIntegration} disabled={!hasConfigChanges || isSaving}>
-					{isSaving ? "Saving..." : "Save"}
-				</Button>
+	{#if !requiresOAuthConnect}
+		<Card.Content class="p-0 flex flex-col gap-3">
+			{#if !!errorMessage}
+				<Alert.Root variant="destructive">
+					<Alert.Title>Could not save integration</Alert.Title>
+					<Alert.Description>{errorMessage}</Alert.Description>
+				</Alert.Root>
 			{/if}
-		{/if}
-	</Card.Content>
+
+			{#if !requiresOAuthConnect}
+				<ConfigComponent {integration} {configured} onChange={onConfigChange} />
+
+				{#if supportsManualSave}
+					<Button onclick={doConfigureIntegration} disabled={!hasConfigChanges || isSaving}>
+						{isSaving ? "Saving..." : "Save"}
+					</Button>
+				{/if}
+			{/if}
+		</Card.Content>
+	{/if}
 </Card.Root>

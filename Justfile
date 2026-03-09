@@ -110,6 +110,11 @@ saml_cert_dir := "./backend/internal/http/saml/testdata"
 
 migrations_dir := "backend/migrations"
 
+@setup-db:
+    just run-docker-compose down postgres -v && just run-docker-compose up postgres --wait
+    just run-migrations
+
+
 @create-initial-migrations:
     rm -f ./{{migrations_dir}}/*.{sql,sum}
     just run-backend db-migrations generate ent_init

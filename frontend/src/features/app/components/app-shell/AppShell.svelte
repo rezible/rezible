@@ -32,7 +32,7 @@
 
 <div class="antialiased p-2 flex gap-2 w-dvw h-dvh min-h-dvh bg-surface-300 text-surface-content">
 	<SessionProtector>
-		{#if session.isAuthenticated}
+		{#if session.isSetup}
 			<Sidebar />
 		{/if}
 

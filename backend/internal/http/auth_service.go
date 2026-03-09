@@ -176,7 +176,7 @@ func (s *AuthService) AuthRouteHandler() http.Handler {
 			next.ServeHTTP(w, r)
 		})
 	})
-	r.Post("/logout", s.handleLogout)
+	r.HandleFunc("/logout", s.handleLogout)
 	r.Route("/flow", func(fr chi.Router) {
 		for _, p := range s.providers {
 			fr.Mount(p.FlowPath(), p.MakeFlowPathHandler(s.authSessionCreatedCallback))
