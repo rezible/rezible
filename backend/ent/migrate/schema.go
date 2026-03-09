@@ -142,6 +142,7 @@ var (
 	DocumentsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID},
 		{Name: "content", Type: field.TypeBytes},
+		{Name: "access_restricted", Type: field.TypeBool, Default: false},
 		{Name: "tenant_id", Type: field.TypeInt},
 	}
 	// DocumentsTable holds the schema information for the "documents" table.
@@ -152,7 +153,7 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "documents_tenants_tenant",
-				Columns:    []*schema.Column{DocumentsColumns[2]},
+				Columns:    []*schema.Column{DocumentsColumns[3]},
 				RefColumns: []*schema.Column{TenantsColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
@@ -161,7 +162,58 @@ var (
 			{
 				Name:    "document_tenant_id",
 				Unique:  false,
-				Columns: []*schema.Column{DocumentsColumns[2]},
+				Columns: []*schema.Column{DocumentsColumns[3]},
+			},
+		},
+	}
+	// DocumentAccessesColumns holds the columns for the "document_accesses" table.
+	DocumentAccessesColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUUID},
+		{Name: "created_at", Type: field.TypeTime},
+		{Name: "updated_at", Type: field.TypeTime},
+		{Name: "can_edit", Type: field.TypeBool, Default: false},
+		{Name: "can_manage", Type: field.TypeBool, Default: false},
+		{Name: "tenant_id", Type: field.TypeInt},
+		{Name: "document_id", Type: field.TypeUUID},
+		{Name: "user_id", Type: field.TypeUUID, Nullable: true},
+		{Name: "team_id", Type: field.TypeUUID, Nullable: true},
+	}
+	// DocumentAccessesTable holds the schema information for the "document_accesses" table.
+	DocumentAccessesTable = &schema.Table{
+		Name:       "document_accesses",
+		Columns:    DocumentAccessesColumns,
+		PrimaryKey: []*schema.Column{DocumentAccessesColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "document_accesses_tenants_tenant",
+				Columns:    []*schema.Column{DocumentAccessesColumns[5]},
+				RefColumns: []*schema.Column{TenantsColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+			{
+				Symbol:     "document_accesses_documents_document",
+				Columns:    []*schema.Column{DocumentAccessesColumns[6]},
+				RefColumns: []*schema.Column{DocumentsColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+			{
+				Symbol:     "document_accesses_users_user",
+				Columns:    []*schema.Column{DocumentAccessesColumns[7]},
+				RefColumns: []*schema.Column{UsersColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+			{
+				Symbol:     "document_accesses_teams_team",
+				Columns:    []*schema.Column{DocumentAccessesColumns[8]},
+				RefColumns: []*schema.Column{TeamsColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+		},
+		Indexes: []*schema.Index{
+			{
+				Name:    "documentaccess_tenant_id",
+				Unique:  false,
+				Columns: []*schema.Column{DocumentAccessesColumns[5]},
 			},
 		},
 	}
@@ -2846,6 +2898,7 @@ var (
 		AlertFeedbacksTable,
 		AlertInstancesTable,
 		DocumentsTable,
+		DocumentAccessesTable,
 		EventsTable,
 		EventAnnotationsTable,
 		IncidentsTable,
@@ -2935,6 +2988,10 @@ func init() {
 	AlertInstancesTable.ForeignKeys[3].RefTable = EventsTable
 	AlertInstancesTable.ForeignKeys[4].RefTable = AlertFeedbacksTable
 	DocumentsTable.ForeignKeys[0].RefTable = TenantsTable
+	DocumentAccessesTable.ForeignKeys[0].RefTable = TenantsTable
+	DocumentAccessesTable.ForeignKeys[1].RefTable = DocumentsTable
+	DocumentAccessesTable.ForeignKeys[2].RefTable = UsersTable
+	DocumentAccessesTable.ForeignKeys[3].RefTable = TeamsTable
 	EventsTable.ForeignKeys[0].RefTable = TenantsTable
 	EventAnnotationsTable.ForeignKeys[0].RefTable = TenantsTable
 	EventAnnotationsTable.ForeignKeys[1].RefTable = EventsTable

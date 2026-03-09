@@ -12,6 +12,7 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
+	"github.com/rezible/rezible/ent/documentaccess"
 	"github.com/rezible/rezible/ent/meetingschedule"
 	"github.com/rezible/rezible/ent/oncallroster"
 	"github.com/rezible/rezible/ent/team"
@@ -150,6 +151,21 @@ func (_c *TeamCreate) AddScheduledMeetings(v ...*MeetingSchedule) *TeamCreate {
 		ids[i] = v[i].ID
 	}
 	return _c.AddScheduledMeetingIDs(ids...)
+}
+
+// AddDocumentAccessIDs adds the "document_accesses" edge to the DocumentAccess entity by IDs.
+func (_c *TeamCreate) AddDocumentAccessIDs(ids ...uuid.UUID) *TeamCreate {
+	_c.mutation.AddDocumentAccessIDs(ids...)
+	return _c
+}
+
+// AddDocumentAccesses adds the "document_accesses" edges to the DocumentAccess entity.
+func (_c *TeamCreate) AddDocumentAccesses(v ...*DocumentAccess) *TeamCreate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _c.AddDocumentAccessIDs(ids...)
 }
 
 // AddTeamMembershipIDs adds the "team_memberships" edge to the TeamMembership entity by IDs.
@@ -349,6 +365,22 @@ func (_c *TeamCreate) createSpec() (*Team, *sqlgraph.CreateSpec) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(meetingschedule.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := _c.mutation.DocumentAccessesIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   team.DocumentAccessesTable,
+			Columns: []string{team.DocumentAccessesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(documentaccess.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {

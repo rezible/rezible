@@ -12,6 +12,7 @@ import (
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/document"
+	"github.com/rezible/rezible/ent/documentaccess"
 	"github.com/rezible/rezible/ent/predicate"
 	"github.com/rezible/rezible/ent/retrospective"
 )
@@ -36,6 +37,20 @@ func (_u *DocumentUpdate) SetContent(v []byte) *DocumentUpdate {
 	return _u
 }
 
+// SetAccessRestricted sets the "access_restricted" field.
+func (_u *DocumentUpdate) SetAccessRestricted(v bool) *DocumentUpdate {
+	_u.mutation.SetAccessRestricted(v)
+	return _u
+}
+
+// SetNillableAccessRestricted sets the "access_restricted" field if the given value is not nil.
+func (_u *DocumentUpdate) SetNillableAccessRestricted(v *bool) *DocumentUpdate {
+	if v != nil {
+		_u.SetAccessRestricted(*v)
+	}
+	return _u
+}
+
 // SetRetrospectiveID sets the "retrospective" edge to the Retrospective entity by ID.
 func (_u *DocumentUpdate) SetRetrospectiveID(id uuid.UUID) *DocumentUpdate {
 	_u.mutation.SetRetrospectiveID(id)
@@ -55,6 +70,21 @@ func (_u *DocumentUpdate) SetRetrospective(v *Retrospective) *DocumentUpdate {
 	return _u.SetRetrospectiveID(v.ID)
 }
 
+// AddAccessIDs adds the "accesses" edge to the DocumentAccess entity by IDs.
+func (_u *DocumentUpdate) AddAccessIDs(ids ...uuid.UUID) *DocumentUpdate {
+	_u.mutation.AddAccessIDs(ids...)
+	return _u
+}
+
+// AddAccesses adds the "accesses" edges to the DocumentAccess entity.
+func (_u *DocumentUpdate) AddAccesses(v ...*DocumentAccess) *DocumentUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddAccessIDs(ids...)
+}
+
 // Mutation returns the DocumentMutation object of the builder.
 func (_u *DocumentUpdate) Mutation() *DocumentMutation {
 	return _u.mutation
@@ -64,6 +94,27 @@ func (_u *DocumentUpdate) Mutation() *DocumentMutation {
 func (_u *DocumentUpdate) ClearRetrospective() *DocumentUpdate {
 	_u.mutation.ClearRetrospective()
 	return _u
+}
+
+// ClearAccesses clears all "accesses" edges to the DocumentAccess entity.
+func (_u *DocumentUpdate) ClearAccesses() *DocumentUpdate {
+	_u.mutation.ClearAccesses()
+	return _u
+}
+
+// RemoveAccessIDs removes the "accesses" edge to DocumentAccess entities by IDs.
+func (_u *DocumentUpdate) RemoveAccessIDs(ids ...uuid.UUID) *DocumentUpdate {
+	_u.mutation.RemoveAccessIDs(ids...)
+	return _u
+}
+
+// RemoveAccesses removes "accesses" edges to DocumentAccess entities.
+func (_u *DocumentUpdate) RemoveAccesses(v ...*DocumentAccess) *DocumentUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveAccessIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -122,6 +173,9 @@ func (_u *DocumentUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	if value, ok := _u.mutation.Content(); ok {
 		_spec.SetField(document.FieldContent, field.TypeBytes, value)
 	}
+	if value, ok := _u.mutation.AccessRestricted(); ok {
+		_spec.SetField(document.FieldAccessRestricted, field.TypeBool, value)
+	}
 	if _u.mutation.RetrospectiveCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2O,
@@ -144,6 +198,51 @@ func (_u *DocumentUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(retrospective.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.AccessesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   document.AccessesTable,
+			Columns: []string{document.AccessesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(documentaccess.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedAccessesIDs(); len(nodes) > 0 && !_u.mutation.AccessesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   document.AccessesTable,
+			Columns: []string{document.AccessesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(documentaccess.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.AccessesIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   document.AccessesTable,
+			Columns: []string{document.AccessesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(documentaccess.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {
@@ -179,6 +278,20 @@ func (_u *DocumentUpdateOne) SetContent(v []byte) *DocumentUpdateOne {
 	return _u
 }
 
+// SetAccessRestricted sets the "access_restricted" field.
+func (_u *DocumentUpdateOne) SetAccessRestricted(v bool) *DocumentUpdateOne {
+	_u.mutation.SetAccessRestricted(v)
+	return _u
+}
+
+// SetNillableAccessRestricted sets the "access_restricted" field if the given value is not nil.
+func (_u *DocumentUpdateOne) SetNillableAccessRestricted(v *bool) *DocumentUpdateOne {
+	if v != nil {
+		_u.SetAccessRestricted(*v)
+	}
+	return _u
+}
+
 // SetRetrospectiveID sets the "retrospective" edge to the Retrospective entity by ID.
 func (_u *DocumentUpdateOne) SetRetrospectiveID(id uuid.UUID) *DocumentUpdateOne {
 	_u.mutation.SetRetrospectiveID(id)
@@ -198,6 +311,21 @@ func (_u *DocumentUpdateOne) SetRetrospective(v *Retrospective) *DocumentUpdateO
 	return _u.SetRetrospectiveID(v.ID)
 }
 
+// AddAccessIDs adds the "accesses" edge to the DocumentAccess entity by IDs.
+func (_u *DocumentUpdateOne) AddAccessIDs(ids ...uuid.UUID) *DocumentUpdateOne {
+	_u.mutation.AddAccessIDs(ids...)
+	return _u
+}
+
+// AddAccesses adds the "accesses" edges to the DocumentAccess entity.
+func (_u *DocumentUpdateOne) AddAccesses(v ...*DocumentAccess) *DocumentUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddAccessIDs(ids...)
+}
+
 // Mutation returns the DocumentMutation object of the builder.
 func (_u *DocumentUpdateOne) Mutation() *DocumentMutation {
 	return _u.mutation
@@ -207,6 +335,27 @@ func (_u *DocumentUpdateOne) Mutation() *DocumentMutation {
 func (_u *DocumentUpdateOne) ClearRetrospective() *DocumentUpdateOne {
 	_u.mutation.ClearRetrospective()
 	return _u
+}
+
+// ClearAccesses clears all "accesses" edges to the DocumentAccess entity.
+func (_u *DocumentUpdateOne) ClearAccesses() *DocumentUpdateOne {
+	_u.mutation.ClearAccesses()
+	return _u
+}
+
+// RemoveAccessIDs removes the "accesses" edge to DocumentAccess entities by IDs.
+func (_u *DocumentUpdateOne) RemoveAccessIDs(ids ...uuid.UUID) *DocumentUpdateOne {
+	_u.mutation.RemoveAccessIDs(ids...)
+	return _u
+}
+
+// RemoveAccesses removes "accesses" edges to DocumentAccess entities.
+func (_u *DocumentUpdateOne) RemoveAccesses(v ...*DocumentAccess) *DocumentUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveAccessIDs(ids...)
 }
 
 // Where appends a list predicates to the DocumentUpdate builder.
@@ -295,6 +444,9 @@ func (_u *DocumentUpdateOne) sqlSave(ctx context.Context) (_node *Document, err 
 	if value, ok := _u.mutation.Content(); ok {
 		_spec.SetField(document.FieldContent, field.TypeBytes, value)
 	}
+	if value, ok := _u.mutation.AccessRestricted(); ok {
+		_spec.SetField(document.FieldAccessRestricted, field.TypeBool, value)
+	}
 	if _u.mutation.RetrospectiveCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2O,
@@ -317,6 +469,51 @@ func (_u *DocumentUpdateOne) sqlSave(ctx context.Context) (_node *Document, err 
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(retrospective.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.AccessesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   document.AccessesTable,
+			Columns: []string{document.AccessesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(documentaccess.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedAccessesIDs(); len(nodes) > 0 && !_u.mutation.AccessesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   document.AccessesTable,
+			Columns: []string{document.AccessesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(documentaccess.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.AccessesIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   document.AccessesTable,
+			Columns: []string{document.AccessesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(documentaccess.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {

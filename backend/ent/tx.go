@@ -22,6 +22,8 @@ type Tx struct {
 	AlertMetrics *AlertMetricsClient
 	// Document is the client for interacting with the Document builders.
 	Document *DocumentClient
+	// DocumentAccess is the client for interacting with the DocumentAccess builders.
+	DocumentAccess *DocumentAccessClient
 	// Event is the client for interacting with the Event builders.
 	Event *EventClient
 	// EventAnnotation is the client for interacting with the EventAnnotation builders.
@@ -274,6 +276,7 @@ func (tx *Tx) init() {
 	tx.AlertInstance = NewAlertInstanceClient(tx.config)
 	tx.AlertMetrics = NewAlertMetricsClient(tx.config)
 	tx.Document = NewDocumentClient(tx.config)
+	tx.DocumentAccess = NewDocumentAccessClient(tx.config)
 	tx.Event = NewEventClient(tx.config)
 	tx.EventAnnotation = NewEventAnnotationClient(tx.config)
 	tx.Incident = NewIncidentClient(tx.config)

@@ -551,6 +551,29 @@ func HasScheduledMeetingsWith(preds ...predicate.MeetingSchedule) predicate.Team
 	})
 }
 
+// HasDocumentAccesses applies the HasEdge predicate on the "document_accesses" edge.
+func HasDocumentAccesses() predicate.Team {
+	return predicate.Team(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, true, DocumentAccessesTable, DocumentAccessesColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasDocumentAccessesWith applies the HasEdge predicate on the "document_accesses" edge with a given conditions (other predicates).
+func HasDocumentAccessesWith(preds ...predicate.DocumentAccess) predicate.Team {
+	return predicate.Team(func(s *sql.Selector) {
+		step := newDocumentAccessesStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
 // HasTeamMemberships applies the HasEdge predicate on the "team_memberships" edge.
 func HasTeamMemberships() predicate.Team {
 	return predicate.Team(func(s *sql.Selector) {

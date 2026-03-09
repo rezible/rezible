@@ -844,6 +844,29 @@ func HasRetrospectiveCommentsWith(preds ...predicate.RetrospectiveComment) predi
 	})
 }
 
+// HasDocumentAccesses applies the HasEdge predicate on the "document_accesses" edge.
+func HasDocumentAccesses() predicate.User {
+	return predicate.User(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, true, DocumentAccessesTable, DocumentAccessesColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasDocumentAccessesWith applies the HasEdge predicate on the "document_accesses" edge with a given conditions (other predicates).
+func HasDocumentAccessesWith(preds ...predicate.DocumentAccess) predicate.User {
+	return predicate.User(func(s *sql.Selector) {
+		step := newDocumentAccessesStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
 // HasTeamMemberships applies the HasEdge predicate on the "team_memberships" edge.
 func HasTeamMemberships() predicate.User {
 	return predicate.User(func(s *sql.Selector) {

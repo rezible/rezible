@@ -20,6 +20,7 @@ import (
 	"github.com/rezible/rezible/ent/alertfeedback"
 	"github.com/rezible/rezible/ent/alertinstance"
 	"github.com/rezible/rezible/ent/document"
+	"github.com/rezible/rezible/ent/documentaccess"
 	"github.com/rezible/rezible/ent/event"
 	"github.com/rezible/rezible/ent/eventannotation"
 	"github.com/rezible/rezible/ent/incident"
@@ -95,6 +96,8 @@ type Client struct {
 	AlertMetrics *AlertMetricsClient
 	// Document is the client for interacting with the Document builders.
 	Document *DocumentClient
+	// DocumentAccess is the client for interacting with the DocumentAccess builders.
+	DocumentAccess *DocumentAccessClient
 	// Event is the client for interacting with the Event builders.
 	Event *EventClient
 	// EventAnnotation is the client for interacting with the EventAnnotation builders.
@@ -227,6 +230,7 @@ func (c *Client) init() {
 	c.AlertInstance = NewAlertInstanceClient(c.config)
 	c.AlertMetrics = NewAlertMetricsClient(c.config)
 	c.Document = NewDocumentClient(c.config)
+	c.DocumentAccess = NewDocumentAccessClient(c.config)
 	c.Event = NewEventClient(c.config)
 	c.EventAnnotation = NewEventAnnotationClient(c.config)
 	c.Incident = NewIncidentClient(c.config)
@@ -382,6 +386,7 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 		AlertInstance:                    NewAlertInstanceClient(cfg),
 		AlertMetrics:                     NewAlertMetricsClient(cfg),
 		Document:                         NewDocumentClient(cfg),
+		DocumentAccess:                   NewDocumentAccessClient(cfg),
 		Event:                            NewEventClient(cfg),
 		EventAnnotation:                  NewEventAnnotationClient(cfg),
 		Incident:                         NewIncidentClient(cfg),
@@ -464,6 +469,7 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 		AlertInstance:                    NewAlertInstanceClient(cfg),
 		AlertMetrics:                     NewAlertMetricsClient(cfg),
 		Document:                         NewDocumentClient(cfg),
+		DocumentAccess:                   NewDocumentAccessClient(cfg),
 		Event:                            NewEventClient(cfg),
 		EventAnnotation:                  NewEventAnnotationClient(cfg),
 		Incident:                         NewIncidentClient(cfg),
@@ -551,14 +557,15 @@ func (c *Client) Close() error {
 // In order to add hooks to a specific client, call: `client.Node.Use(...)`.
 func (c *Client) Use(hooks ...Hook) {
 	for _, n := range []interface{ Use(...Hook) }{
-		c.Alert, c.AlertFeedback, c.AlertInstance, c.Document, c.Event,
-		c.EventAnnotation, c.Incident, c.IncidentDebrief, c.IncidentDebriefMessage,
-		c.IncidentDebriefQuestion, c.IncidentDebriefSuggestion, c.IncidentEvent,
-		c.IncidentEventContext, c.IncidentEventContributingFactor,
-		c.IncidentEventEvidence, c.IncidentEventSystemComponent, c.IncidentField,
-		c.IncidentFieldOption, c.IncidentLink, c.IncidentMilestone, c.IncidentRole,
-		c.IncidentRoleAssignment, c.IncidentSeverity, c.IncidentTag, c.IncidentType,
-		c.Integration, c.IntegrationOAuthState, c.MeetingSchedule, c.MeetingSession,
+		c.Alert, c.AlertFeedback, c.AlertInstance, c.Document, c.DocumentAccess,
+		c.Event, c.EventAnnotation, c.Incident, c.IncidentDebrief,
+		c.IncidentDebriefMessage, c.IncidentDebriefQuestion,
+		c.IncidentDebriefSuggestion, c.IncidentEvent, c.IncidentEventContext,
+		c.IncidentEventContributingFactor, c.IncidentEventEvidence,
+		c.IncidentEventSystemComponent, c.IncidentField, c.IncidentFieldOption,
+		c.IncidentLink, c.IncidentMilestone, c.IncidentRole, c.IncidentRoleAssignment,
+		c.IncidentSeverity, c.IncidentTag, c.IncidentType, c.Integration,
+		c.IntegrationOAuthState, c.MeetingSchedule, c.MeetingSession,
 		c.OncallHandoverTemplate, c.OncallRoster, c.OncallRosterMetrics,
 		c.OncallSchedule, c.OncallScheduleParticipant, c.OncallShift,
 		c.OncallShiftHandover, c.OncallShiftMetrics, c.Organization, c.Playbook,
@@ -578,14 +585,15 @@ func (c *Client) Use(hooks ...Hook) {
 // In order to add interceptors to a specific client, call: `client.Node.Intercept(...)`.
 func (c *Client) Intercept(interceptors ...Interceptor) {
 	for _, n := range []interface{ Intercept(...Interceptor) }{
-		c.Alert, c.AlertFeedback, c.AlertInstance, c.AlertMetrics, c.Document, c.Event,
-		c.EventAnnotation, c.Incident, c.IncidentDebrief, c.IncidentDebriefMessage,
-		c.IncidentDebriefQuestion, c.IncidentDebriefSuggestion, c.IncidentEvent,
-		c.IncidentEventContext, c.IncidentEventContributingFactor,
-		c.IncidentEventEvidence, c.IncidentEventSystemComponent, c.IncidentField,
-		c.IncidentFieldOption, c.IncidentLink, c.IncidentMilestone, c.IncidentRole,
-		c.IncidentRoleAssignment, c.IncidentSeverity, c.IncidentTag, c.IncidentType,
-		c.Integration, c.IntegrationOAuthState, c.MeetingSchedule, c.MeetingSession,
+		c.Alert, c.AlertFeedback, c.AlertInstance, c.AlertMetrics, c.Document,
+		c.DocumentAccess, c.Event, c.EventAnnotation, c.Incident, c.IncidentDebrief,
+		c.IncidentDebriefMessage, c.IncidentDebriefQuestion,
+		c.IncidentDebriefSuggestion, c.IncidentEvent, c.IncidentEventContext,
+		c.IncidentEventContributingFactor, c.IncidentEventEvidence,
+		c.IncidentEventSystemComponent, c.IncidentField, c.IncidentFieldOption,
+		c.IncidentLink, c.IncidentMilestone, c.IncidentRole, c.IncidentRoleAssignment,
+		c.IncidentSeverity, c.IncidentTag, c.IncidentType, c.Integration,
+		c.IntegrationOAuthState, c.MeetingSchedule, c.MeetingSession,
 		c.OncallHandoverTemplate, c.OncallRoster, c.OncallRosterMetrics,
 		c.OncallSchedule, c.OncallScheduleParticipant, c.OncallShift,
 		c.OncallShiftHandover, c.OncallShiftMetrics, c.Organization, c.Playbook,
@@ -612,6 +620,8 @@ func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 		return c.AlertInstance.mutate(ctx, m)
 	case *DocumentMutation:
 		return c.Document.mutate(ctx, m)
+	case *DocumentAccessMutation:
+		return c.DocumentAccess.mutate(ctx, m)
 	case *EventMutation:
 		return c.Event.mutate(ctx, m)
 	case *EventAnnotationMutation:
@@ -1465,6 +1475,22 @@ func (c *DocumentClient) QueryRetrospective(_m *Document) *RetrospectiveQuery {
 	return query
 }
 
+// QueryAccesses queries the accesses edge of a Document.
+func (c *DocumentClient) QueryAccesses(_m *Document) *DocumentAccessQuery {
+	query := (&DocumentAccessClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(document.Table, document.FieldID, id),
+			sqlgraph.To(documentaccess.Table, documentaccess.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, true, document.AccessesTable, document.AccessesColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
 // Hooks returns the client hooks.
 func (c *DocumentClient) Hooks() []Hook {
 	hooks := c.hooks.Document
@@ -1488,6 +1514,204 @@ func (c *DocumentClient) mutate(ctx context.Context, m *DocumentMutation) (Value
 		return (&DocumentDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
 	default:
 		return nil, fmt.Errorf("ent: unknown Document mutation op: %q", m.Op())
+	}
+}
+
+// DocumentAccessClient is a client for the DocumentAccess schema.
+type DocumentAccessClient struct {
+	config
+}
+
+// NewDocumentAccessClient returns a client for the DocumentAccess from the given config.
+func NewDocumentAccessClient(c config) *DocumentAccessClient {
+	return &DocumentAccessClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `documentaccess.Hooks(f(g(h())))`.
+func (c *DocumentAccessClient) Use(hooks ...Hook) {
+	c.hooks.DocumentAccess = append(c.hooks.DocumentAccess, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `documentaccess.Intercept(f(g(h())))`.
+func (c *DocumentAccessClient) Intercept(interceptors ...Interceptor) {
+	c.inters.DocumentAccess = append(c.inters.DocumentAccess, interceptors...)
+}
+
+// Create returns a builder for creating a DocumentAccess entity.
+func (c *DocumentAccessClient) Create() *DocumentAccessCreate {
+	mutation := newDocumentAccessMutation(c.config, OpCreate)
+	return &DocumentAccessCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of DocumentAccess entities.
+func (c *DocumentAccessClient) CreateBulk(builders ...*DocumentAccessCreate) *DocumentAccessCreateBulk {
+	return &DocumentAccessCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *DocumentAccessClient) MapCreateBulk(slice any, setFunc func(*DocumentAccessCreate, int)) *DocumentAccessCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &DocumentAccessCreateBulk{err: fmt.Errorf("calling to DocumentAccessClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*DocumentAccessCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &DocumentAccessCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for DocumentAccess.
+func (c *DocumentAccessClient) Update() *DocumentAccessUpdate {
+	mutation := newDocumentAccessMutation(c.config, OpUpdate)
+	return &DocumentAccessUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *DocumentAccessClient) UpdateOne(_m *DocumentAccess) *DocumentAccessUpdateOne {
+	mutation := newDocumentAccessMutation(c.config, OpUpdateOne, withDocumentAccess(_m))
+	return &DocumentAccessUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *DocumentAccessClient) UpdateOneID(id uuid.UUID) *DocumentAccessUpdateOne {
+	mutation := newDocumentAccessMutation(c.config, OpUpdateOne, withDocumentAccessID(id))
+	return &DocumentAccessUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for DocumentAccess.
+func (c *DocumentAccessClient) Delete() *DocumentAccessDelete {
+	mutation := newDocumentAccessMutation(c.config, OpDelete)
+	return &DocumentAccessDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *DocumentAccessClient) DeleteOne(_m *DocumentAccess) *DocumentAccessDeleteOne {
+	return c.DeleteOneID(_m.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *DocumentAccessClient) DeleteOneID(id uuid.UUID) *DocumentAccessDeleteOne {
+	builder := c.Delete().Where(documentaccess.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &DocumentAccessDeleteOne{builder}
+}
+
+// Query returns a query builder for DocumentAccess.
+func (c *DocumentAccessClient) Query() *DocumentAccessQuery {
+	return &DocumentAccessQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeDocumentAccess},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a DocumentAccess entity by its id.
+func (c *DocumentAccessClient) Get(ctx context.Context, id uuid.UUID) (*DocumentAccess, error) {
+	return c.Query().Where(documentaccess.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *DocumentAccessClient) GetX(ctx context.Context, id uuid.UUID) *DocumentAccess {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QueryTenant queries the tenant edge of a DocumentAccess.
+func (c *DocumentAccessClient) QueryTenant(_m *DocumentAccess) *TenantQuery {
+	query := (&TenantClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(documentaccess.Table, documentaccess.FieldID, id),
+			sqlgraph.To(tenant.Table, tenant.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, documentaccess.TenantTable, documentaccess.TenantColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryDocument queries the document edge of a DocumentAccess.
+func (c *DocumentAccessClient) QueryDocument(_m *DocumentAccess) *DocumentQuery {
+	query := (&DocumentClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(documentaccess.Table, documentaccess.FieldID, id),
+			sqlgraph.To(document.Table, document.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, documentaccess.DocumentTable, documentaccess.DocumentColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryUser queries the user edge of a DocumentAccess.
+func (c *DocumentAccessClient) QueryUser(_m *DocumentAccess) *UserQuery {
+	query := (&UserClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(documentaccess.Table, documentaccess.FieldID, id),
+			sqlgraph.To(user.Table, user.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, documentaccess.UserTable, documentaccess.UserColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryTeam queries the team edge of a DocumentAccess.
+func (c *DocumentAccessClient) QueryTeam(_m *DocumentAccess) *TeamQuery {
+	query := (&TeamClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(documentaccess.Table, documentaccess.FieldID, id),
+			sqlgraph.To(team.Table, team.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, documentaccess.TeamTable, documentaccess.TeamColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *DocumentAccessClient) Hooks() []Hook {
+	hooks := c.hooks.DocumentAccess
+	return append(hooks[:len(hooks):len(hooks)], documentaccess.Hooks[:]...)
+}
+
+// Interceptors returns the client interceptors.
+func (c *DocumentAccessClient) Interceptors() []Interceptor {
+	return c.inters.DocumentAccess
+}
+
+func (c *DocumentAccessClient) mutate(ctx context.Context, m *DocumentAccessMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&DocumentAccessCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&DocumentAccessUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&DocumentAccessUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&DocumentAccessDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown DocumentAccess mutation op: %q", m.Op())
 	}
 }
 
@@ -11936,6 +12160,22 @@ func (c *TeamClient) QueryScheduledMeetings(_m *Team) *MeetingScheduleQuery {
 	return query
 }
 
+// QueryDocumentAccesses queries the document_accesses edge of a Team.
+func (c *TeamClient) QueryDocumentAccesses(_m *Team) *DocumentAccessQuery {
+	query := (&DocumentAccessClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(team.Table, team.FieldID, id),
+			sqlgraph.To(documentaccess.Table, documentaccess.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, true, team.DocumentAccessesTable, team.DocumentAccessesColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
 // QueryTeamMemberships queries the team_memberships edge of a Team.
 func (c *TeamClient) QueryTeamMemberships(_m *Team) *TeamMembershipQuery {
 	query := (&TeamMembershipClient{config: c.config}).Query()
@@ -12808,6 +13048,22 @@ func (c *UserClient) QueryRetrospectiveComments(_m *User) *RetrospectiveCommentQ
 	return query
 }
 
+// QueryDocumentAccesses queries the document_accesses edge of a User.
+func (c *UserClient) QueryDocumentAccesses(_m *User) *DocumentAccessQuery {
+	query := (&DocumentAccessClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(user.Table, user.FieldID, id),
+			sqlgraph.To(documentaccess.Table, documentaccess.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, true, user.DocumentAccessesTable, user.DocumentAccessesColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
 // QueryTeamMemberships queries the team_memberships edge of a User.
 func (c *UserClient) QueryTeamMemberships(_m *User) *TeamMembershipQuery {
 	query := (&TeamMembershipClient{config: c.config}).Query()
@@ -13051,10 +13307,10 @@ func (c *VideoConferenceClient) mutate(ctx context.Context, m *VideoConferenceMu
 // hooks and interceptors per client, for fast access.
 type (
 	hooks struct {
-		Alert, AlertFeedback, AlertInstance, Document, Event, EventAnnotation, Incident,
-		IncidentDebrief, IncidentDebriefMessage, IncidentDebriefQuestion,
-		IncidentDebriefSuggestion, IncidentEvent, IncidentEventContext,
-		IncidentEventContributingFactor, IncidentEventEvidence,
+		Alert, AlertFeedback, AlertInstance, Document, DocumentAccess, Event,
+		EventAnnotation, Incident, IncidentDebrief, IncidentDebriefMessage,
+		IncidentDebriefQuestion, IncidentDebriefSuggestion, IncidentEvent,
+		IncidentEventContext, IncidentEventContributingFactor, IncidentEventEvidence,
 		IncidentEventSystemComponent, IncidentField, IncidentFieldOption, IncidentLink,
 		IncidentMilestone, IncidentRole, IncidentRoleAssignment, IncidentSeverity,
 		IncidentTag, IncidentType, Integration, IntegrationOAuthState, MeetingSchedule,
@@ -13069,8 +13325,8 @@ type (
 		TeamMembership, Tenant, Ticket, User, VideoConference []ent.Hook
 	}
 	inters struct {
-		Alert, AlertFeedback, AlertInstance, AlertMetrics, Document, Event,
-		EventAnnotation, Incident, IncidentDebrief, IncidentDebriefMessage,
+		Alert, AlertFeedback, AlertInstance, AlertMetrics, Document, DocumentAccess,
+		Event, EventAnnotation, Incident, IncidentDebrief, IncidentDebriefMessage,
 		IncidentDebriefQuestion, IncidentDebriefSuggestion, IncidentEvent,
 		IncidentEventContext, IncidentEventContributingFactor, IncidentEventEvidence,
 		IncidentEventSystemComponent, IncidentField, IncidentFieldOption, IncidentLink,

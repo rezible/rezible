@@ -13,6 +13,7 @@ import (
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/document"
+	"github.com/rezible/rezible/ent/documentaccess"
 	"github.com/rezible/rezible/ent/retrospective"
 	"github.com/rezible/rezible/ent/tenant"
 )
@@ -34,6 +35,20 @@ func (_c *DocumentCreate) SetTenantID(v int) *DocumentCreate {
 // SetContent sets the "content" field.
 func (_c *DocumentCreate) SetContent(v []byte) *DocumentCreate {
 	_c.mutation.SetContent(v)
+	return _c
+}
+
+// SetAccessRestricted sets the "access_restricted" field.
+func (_c *DocumentCreate) SetAccessRestricted(v bool) *DocumentCreate {
+	_c.mutation.SetAccessRestricted(v)
+	return _c
+}
+
+// SetNillableAccessRestricted sets the "access_restricted" field if the given value is not nil.
+func (_c *DocumentCreate) SetNillableAccessRestricted(v *bool) *DocumentCreate {
+	if v != nil {
+		_c.SetAccessRestricted(*v)
+	}
 	return _c
 }
 
@@ -75,6 +90,21 @@ func (_c *DocumentCreate) SetRetrospective(v *Retrospective) *DocumentCreate {
 	return _c.SetRetrospectiveID(v.ID)
 }
 
+// AddAccessIDs adds the "accesses" edge to the DocumentAccess entity by IDs.
+func (_c *DocumentCreate) AddAccessIDs(ids ...uuid.UUID) *DocumentCreate {
+	_c.mutation.AddAccessIDs(ids...)
+	return _c
+}
+
+// AddAccesses adds the "accesses" edges to the DocumentAccess entity.
+func (_c *DocumentCreate) AddAccesses(v ...*DocumentAccess) *DocumentCreate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _c.AddAccessIDs(ids...)
+}
+
 // Mutation returns the DocumentMutation object of the builder.
 func (_c *DocumentCreate) Mutation() *DocumentMutation {
 	return _c.mutation
@@ -112,6 +142,10 @@ func (_c *DocumentCreate) ExecX(ctx context.Context) {
 
 // defaults sets the default values of the builder before save.
 func (_c *DocumentCreate) defaults() error {
+	if _, ok := _c.mutation.AccessRestricted(); !ok {
+		v := document.DefaultAccessRestricted
+		_c.mutation.SetAccessRestricted(v)
+	}
 	if _, ok := _c.mutation.ID(); !ok {
 		if document.DefaultID == nil {
 			return fmt.Errorf("ent: uninitialized document.DefaultID (forgotten import ent/runtime?)")
@@ -129,6 +163,9 @@ func (_c *DocumentCreate) check() error {
 	}
 	if _, ok := _c.mutation.Content(); !ok {
 		return &ValidationError{Name: "content", err: errors.New(`ent: missing required field "Document.content"`)}
+	}
+	if _, ok := _c.mutation.AccessRestricted(); !ok {
+		return &ValidationError{Name: "access_restricted", err: errors.New(`ent: missing required field "Document.access_restricted"`)}
 	}
 	if len(_c.mutation.TenantIDs()) == 0 {
 		return &ValidationError{Name: "tenant", err: errors.New(`ent: missing required edge "Document.tenant"`)}
@@ -173,6 +210,10 @@ func (_c *DocumentCreate) createSpec() (*Document, *sqlgraph.CreateSpec) {
 		_spec.SetField(document.FieldContent, field.TypeBytes, value)
 		_node.Content = value
 	}
+	if value, ok := _c.mutation.AccessRestricted(); ok {
+		_spec.SetField(document.FieldAccessRestricted, field.TypeBool, value)
+		_node.AccessRestricted = value
+	}
 	if nodes := _c.mutation.TenantIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
@@ -199,6 +240,22 @@ func (_c *DocumentCreate) createSpec() (*Document, *sqlgraph.CreateSpec) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(retrospective.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := _c.mutation.AccessesIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   document.AccessesTable,
+			Columns: []string{document.AccessesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(documentaccess.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {
@@ -270,6 +327,18 @@ func (u *DocumentUpsert) UpdateContent() *DocumentUpsert {
 	return u
 }
 
+// SetAccessRestricted sets the "access_restricted" field.
+func (u *DocumentUpsert) SetAccessRestricted(v bool) *DocumentUpsert {
+	u.Set(document.FieldAccessRestricted, v)
+	return u
+}
+
+// UpdateAccessRestricted sets the "access_restricted" field to the value that was provided on create.
+func (u *DocumentUpsert) UpdateAccessRestricted() *DocumentUpsert {
+	u.SetExcluded(document.FieldAccessRestricted)
+	return u
+}
+
 // UpdateNewValues updates the mutable fields using the new values that were set on create except the ID field.
 // Using this option is equivalent to using:
 //
@@ -332,6 +401,20 @@ func (u *DocumentUpsertOne) SetContent(v []byte) *DocumentUpsertOne {
 func (u *DocumentUpsertOne) UpdateContent() *DocumentUpsertOne {
 	return u.Update(func(s *DocumentUpsert) {
 		s.UpdateContent()
+	})
+}
+
+// SetAccessRestricted sets the "access_restricted" field.
+func (u *DocumentUpsertOne) SetAccessRestricted(v bool) *DocumentUpsertOne {
+	return u.Update(func(s *DocumentUpsert) {
+		s.SetAccessRestricted(v)
+	})
+}
+
+// UpdateAccessRestricted sets the "access_restricted" field to the value that was provided on create.
+func (u *DocumentUpsertOne) UpdateAccessRestricted() *DocumentUpsertOne {
+	return u.Update(func(s *DocumentUpsert) {
+		s.UpdateAccessRestricted()
 	})
 }
 
@@ -564,6 +647,20 @@ func (u *DocumentUpsertBulk) SetContent(v []byte) *DocumentUpsertBulk {
 func (u *DocumentUpsertBulk) UpdateContent() *DocumentUpsertBulk {
 	return u.Update(func(s *DocumentUpsert) {
 		s.UpdateContent()
+	})
+}
+
+// SetAccessRestricted sets the "access_restricted" field.
+func (u *DocumentUpsertBulk) SetAccessRestricted(v bool) *DocumentUpsertBulk {
+	return u.Update(func(s *DocumentUpsert) {
+		s.SetAccessRestricted(v)
+	})
+}
+
+// UpdateAccessRestricted sets the "access_restricted" field to the value that was provided on create.
+func (u *DocumentUpsertBulk) UpdateAccessRestricted() *DocumentUpsertBulk {
+	return u.Update(func(s *DocumentUpsert) {
+		s.UpdateAccessRestricted()
 	})
 }
 

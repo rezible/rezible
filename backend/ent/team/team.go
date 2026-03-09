@@ -34,6 +34,8 @@ const (
 	EdgeOncallRosters = "oncall_rosters"
 	// EdgeScheduledMeetings holds the string denoting the scheduled_meetings edge name in mutations.
 	EdgeScheduledMeetings = "scheduled_meetings"
+	// EdgeDocumentAccesses holds the string denoting the document_accesses edge name in mutations.
+	EdgeDocumentAccesses = "document_accesses"
 	// EdgeTeamMemberships holds the string denoting the team_memberships edge name in mutations.
 	EdgeTeamMemberships = "team_memberships"
 	// Table holds the table name of the team in the database.
@@ -60,6 +62,13 @@ const (
 	// ScheduledMeetingsInverseTable is the table name for the MeetingSchedule entity.
 	// It exists in this package in order to avoid circular dependency with the "meetingschedule" package.
 	ScheduledMeetingsInverseTable = "meeting_schedules"
+	// DocumentAccessesTable is the table that holds the document_accesses relation/edge.
+	DocumentAccessesTable = "document_accesses"
+	// DocumentAccessesInverseTable is the table name for the DocumentAccess entity.
+	// It exists in this package in order to avoid circular dependency with the "documentaccess" package.
+	DocumentAccessesInverseTable = "document_accesses"
+	// DocumentAccessesColumn is the table column denoting the document_accesses relation/edge.
+	DocumentAccessesColumn = "team_id"
 	// TeamMembershipsTable is the table that holds the team_memberships relation/edge.
 	TeamMembershipsTable = "team_memberships"
 	// TeamMembershipsInverseTable is the table name for the TeamMembership entity.
@@ -201,6 +210,20 @@ func ByScheduledMeetings(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption
 	}
 }
 
+// ByDocumentAccessesCount orders the results by document_accesses count.
+func ByDocumentAccessesCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newDocumentAccessesStep(), opts...)
+	}
+}
+
+// ByDocumentAccesses orders the results by document_accesses terms.
+func ByDocumentAccesses(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newDocumentAccessesStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
+
 // ByTeamMembershipsCount orders the results by team_memberships count.
 func ByTeamMembershipsCount(opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
@@ -240,6 +263,13 @@ func newScheduledMeetingsStep() *sqlgraph.Step {
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(ScheduledMeetingsInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.M2M, true, ScheduledMeetingsTable, ScheduledMeetingsPrimaryKey...),
+	)
+}
+func newDocumentAccessesStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(DocumentAccessesInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, true, DocumentAccessesTable, DocumentAccessesColumn),
 	)
 }
 func newTeamMembershipsStep() *sqlgraph.Step {

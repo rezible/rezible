@@ -23,6 +23,8 @@ type Document struct {
 	TenantID int `json:"tenant_id,omitempty"`
 	// Content holds the value of the "content" field.
 	Content []byte `json:"content,omitempty"`
+	// AccessRestricted holds the value of the "access_restricted" field.
+	AccessRestricted bool `json:"access_restricted,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the DocumentQuery when eager-loading is set.
 	Edges        DocumentEdges `json:"edges"`
@@ -35,9 +37,11 @@ type DocumentEdges struct {
 	Tenant *Tenant `json:"tenant,omitempty"`
 	// Retrospective holds the value of the retrospective edge.
 	Retrospective *Retrospective `json:"retrospective,omitempty"`
+	// Accesses holds the value of the accesses edge.
+	Accesses []*DocumentAccess `json:"accesses,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [2]bool
+	loadedTypes [3]bool
 }
 
 // TenantOrErr returns the Tenant value or an error if the edge
@@ -62,6 +66,15 @@ func (e DocumentEdges) RetrospectiveOrErr() (*Retrospective, error) {
 	return nil, &NotLoadedError{edge: "retrospective"}
 }
 
+// AccessesOrErr returns the Accesses value or an error if the edge
+// was not loaded in eager-loading.
+func (e DocumentEdges) AccessesOrErr() ([]*DocumentAccess, error) {
+	if e.loadedTypes[2] {
+		return e.Accesses, nil
+	}
+	return nil, &NotLoadedError{edge: "accesses"}
+}
+
 // scanValues returns the types for scanning values from sql.Rows.
 func (*Document) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
@@ -69,6 +82,8 @@ func (*Document) scanValues(columns []string) ([]any, error) {
 		switch columns[i] {
 		case document.FieldContent:
 			values[i] = new([]byte)
+		case document.FieldAccessRestricted:
+			values[i] = new(sql.NullBool)
 		case document.FieldTenantID:
 			values[i] = new(sql.NullInt64)
 		case document.FieldID:
@@ -106,6 +121,12 @@ func (_m *Document) assignValues(columns []string, values []any) error {
 			} else if value != nil {
 				_m.Content = *value
 			}
+		case document.FieldAccessRestricted:
+			if value, ok := values[i].(*sql.NullBool); !ok {
+				return fmt.Errorf("unexpected type %T for field access_restricted", values[i])
+			} else if value.Valid {
+				_m.AccessRestricted = value.Bool
+			}
 		default:
 			_m.selectValues.Set(columns[i], values[i])
 		}
@@ -127,6 +148,11 @@ func (_m *Document) QueryTenant() *TenantQuery {
 // QueryRetrospective queries the "retrospective" edge of the Document entity.
 func (_m *Document) QueryRetrospective() *RetrospectiveQuery {
 	return NewDocumentClient(_m.config).QueryRetrospective(_m)
+}
+
+// QueryAccesses queries the "accesses" edge of the Document entity.
+func (_m *Document) QueryAccesses() *DocumentAccessQuery {
+	return NewDocumentClient(_m.config).QueryAccesses(_m)
 }
 
 // Update returns a builder for updating this Document.
@@ -157,6 +183,9 @@ func (_m *Document) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("content=")
 	builder.WriteString(fmt.Sprintf("%v", _m.Content))
+	builder.WriteString(", ")
+	builder.WriteString("access_restricted=")
+	builder.WriteString(fmt.Sprintf("%v", _m.AccessRestricted))
 	builder.WriteByte(')')
 	return builder.String()
 }

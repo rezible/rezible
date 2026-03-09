@@ -11,6 +11,7 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
+	"github.com/rezible/rezible/ent/documentaccess"
 	"github.com/rezible/rezible/ent/meetingschedule"
 	"github.com/rezible/rezible/ent/oncallroster"
 	"github.com/rezible/rezible/ent/predicate"
@@ -166,6 +167,21 @@ func (_u *TeamUpdate) AddScheduledMeetings(v ...*MeetingSchedule) *TeamUpdate {
 	return _u.AddScheduledMeetingIDs(ids...)
 }
 
+// AddDocumentAccessIDs adds the "document_accesses" edge to the DocumentAccess entity by IDs.
+func (_u *TeamUpdate) AddDocumentAccessIDs(ids ...uuid.UUID) *TeamUpdate {
+	_u.mutation.AddDocumentAccessIDs(ids...)
+	return _u
+}
+
+// AddDocumentAccesses adds the "document_accesses" edges to the DocumentAccess entity.
+func (_u *TeamUpdate) AddDocumentAccesses(v ...*DocumentAccess) *TeamUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddDocumentAccessIDs(ids...)
+}
+
 // AddTeamMembershipIDs adds the "team_memberships" edge to the TeamMembership entity by IDs.
 func (_u *TeamUpdate) AddTeamMembershipIDs(ids ...uuid.UUID) *TeamUpdate {
 	_u.mutation.AddTeamMembershipIDs(ids...)
@@ -247,6 +263,27 @@ func (_u *TeamUpdate) RemoveScheduledMeetings(v ...*MeetingSchedule) *TeamUpdate
 		ids[i] = v[i].ID
 	}
 	return _u.RemoveScheduledMeetingIDs(ids...)
+}
+
+// ClearDocumentAccesses clears all "document_accesses" edges to the DocumentAccess entity.
+func (_u *TeamUpdate) ClearDocumentAccesses() *TeamUpdate {
+	_u.mutation.ClearDocumentAccesses()
+	return _u
+}
+
+// RemoveDocumentAccessIDs removes the "document_accesses" edge to DocumentAccess entities by IDs.
+func (_u *TeamUpdate) RemoveDocumentAccessIDs(ids ...uuid.UUID) *TeamUpdate {
+	_u.mutation.RemoveDocumentAccessIDs(ids...)
+	return _u
+}
+
+// RemoveDocumentAccesses removes "document_accesses" edges to DocumentAccess entities.
+func (_u *TeamUpdate) RemoveDocumentAccesses(v ...*DocumentAccess) *TeamUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveDocumentAccessIDs(ids...)
 }
 
 // ClearTeamMemberships clears all "team_memberships" edges to the TeamMembership entity.
@@ -503,6 +540,51 @@ func (_u *TeamUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	if _u.mutation.DocumentAccessesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   team.DocumentAccessesTable,
+			Columns: []string{team.DocumentAccessesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(documentaccess.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedDocumentAccessesIDs(); len(nodes) > 0 && !_u.mutation.DocumentAccessesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   team.DocumentAccessesTable,
+			Columns: []string{team.DocumentAccessesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(documentaccess.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.DocumentAccessesIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   team.DocumentAccessesTable,
+			Columns: []string{team.DocumentAccessesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(documentaccess.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
 	if _u.mutation.TeamMembershipsCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
@@ -703,6 +785,21 @@ func (_u *TeamUpdateOne) AddScheduledMeetings(v ...*MeetingSchedule) *TeamUpdate
 	return _u.AddScheduledMeetingIDs(ids...)
 }
 
+// AddDocumentAccessIDs adds the "document_accesses" edge to the DocumentAccess entity by IDs.
+func (_u *TeamUpdateOne) AddDocumentAccessIDs(ids ...uuid.UUID) *TeamUpdateOne {
+	_u.mutation.AddDocumentAccessIDs(ids...)
+	return _u
+}
+
+// AddDocumentAccesses adds the "document_accesses" edges to the DocumentAccess entity.
+func (_u *TeamUpdateOne) AddDocumentAccesses(v ...*DocumentAccess) *TeamUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddDocumentAccessIDs(ids...)
+}
+
 // AddTeamMembershipIDs adds the "team_memberships" edge to the TeamMembership entity by IDs.
 func (_u *TeamUpdateOne) AddTeamMembershipIDs(ids ...uuid.UUID) *TeamUpdateOne {
 	_u.mutation.AddTeamMembershipIDs(ids...)
@@ -784,6 +881,27 @@ func (_u *TeamUpdateOne) RemoveScheduledMeetings(v ...*MeetingSchedule) *TeamUpd
 		ids[i] = v[i].ID
 	}
 	return _u.RemoveScheduledMeetingIDs(ids...)
+}
+
+// ClearDocumentAccesses clears all "document_accesses" edges to the DocumentAccess entity.
+func (_u *TeamUpdateOne) ClearDocumentAccesses() *TeamUpdateOne {
+	_u.mutation.ClearDocumentAccesses()
+	return _u
+}
+
+// RemoveDocumentAccessIDs removes the "document_accesses" edge to DocumentAccess entities by IDs.
+func (_u *TeamUpdateOne) RemoveDocumentAccessIDs(ids ...uuid.UUID) *TeamUpdateOne {
+	_u.mutation.RemoveDocumentAccessIDs(ids...)
+	return _u
+}
+
+// RemoveDocumentAccesses removes "document_accesses" edges to DocumentAccess entities.
+func (_u *TeamUpdateOne) RemoveDocumentAccesses(v ...*DocumentAccess) *TeamUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveDocumentAccessIDs(ids...)
 }
 
 // ClearTeamMemberships clears all "team_memberships" edges to the TeamMembership entity.
@@ -1063,6 +1181,51 @@ func (_u *TeamUpdateOne) sqlSave(ctx context.Context) (_node *Team, err error) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(meetingschedule.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.DocumentAccessesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   team.DocumentAccessesTable,
+			Columns: []string{team.DocumentAccessesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(documentaccess.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedDocumentAccessesIDs(); len(nodes) > 0 && !_u.mutation.DocumentAccessesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   team.DocumentAccessesTable,
+			Columns: []string{team.DocumentAccessesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(documentaccess.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.DocumentAccessesIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   team.DocumentAccessesTable,
+			Columns: []string{team.DocumentAccessesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(documentaccess.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {

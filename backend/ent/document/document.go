@@ -18,10 +18,14 @@ const (
 	FieldTenantID = "tenant_id"
 	// FieldContent holds the string denoting the content field in the database.
 	FieldContent = "content"
+	// FieldAccessRestricted holds the string denoting the access_restricted field in the database.
+	FieldAccessRestricted = "access_restricted"
 	// EdgeTenant holds the string denoting the tenant edge name in mutations.
 	EdgeTenant = "tenant"
 	// EdgeRetrospective holds the string denoting the retrospective edge name in mutations.
 	EdgeRetrospective = "retrospective"
+	// EdgeAccesses holds the string denoting the accesses edge name in mutations.
+	EdgeAccesses = "accesses"
 	// Table holds the table name of the document in the database.
 	Table = "documents"
 	// TenantTable is the table that holds the tenant relation/edge.
@@ -38,6 +42,13 @@ const (
 	RetrospectiveInverseTable = "retrospectives"
 	// RetrospectiveColumn is the table column denoting the retrospective relation/edge.
 	RetrospectiveColumn = "document_id"
+	// AccessesTable is the table that holds the accesses relation/edge.
+	AccessesTable = "document_accesses"
+	// AccessesInverseTable is the table name for the DocumentAccess entity.
+	// It exists in this package in order to avoid circular dependency with the "documentaccess" package.
+	AccessesInverseTable = "document_accesses"
+	// AccessesColumn is the table column denoting the accesses relation/edge.
+	AccessesColumn = "document_id"
 )
 
 // Columns holds all SQL columns for document fields.
@@ -45,6 +56,7 @@ var Columns = []string{
 	FieldID,
 	FieldTenantID,
 	FieldContent,
+	FieldAccessRestricted,
 }
 
 // ValidColumn reports if the column name is valid (part of the table columns).
@@ -65,6 +77,8 @@ func ValidColumn(column string) bool {
 var (
 	Hooks  [1]ent.Hook
 	Policy ent.Policy
+	// DefaultAccessRestricted holds the default value on creation for the "access_restricted" field.
+	DefaultAccessRestricted bool
 	// DefaultID holds the default value on creation for the "id" field.
 	DefaultID func() uuid.UUID
 )
@@ -82,6 +96,11 @@ func ByTenantID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldTenantID, opts...).ToFunc()
 }
 
+// ByAccessRestricted orders the results by the access_restricted field.
+func ByAccessRestricted(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldAccessRestricted, opts...).ToFunc()
+}
+
 // ByTenantField orders the results by tenant field.
 func ByTenantField(field string, opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
@@ -93,6 +112,20 @@ func ByTenantField(field string, opts ...sql.OrderTermOption) OrderOption {
 func ByRetrospectiveField(field string, opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
 		sqlgraph.OrderByNeighborTerms(s, newRetrospectiveStep(), sql.OrderByField(field, opts...))
+	}
+}
+
+// ByAccessesCount orders the results by accesses count.
+func ByAccessesCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newAccessesStep(), opts...)
+	}
+}
+
+// ByAccesses orders the results by accesses terms.
+func ByAccesses(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newAccessesStep(), append([]sql.OrderTerm{term}, terms...)...)
 	}
 }
 func newTenantStep() *sqlgraph.Step {
@@ -107,5 +140,12 @@ func newRetrospectiveStep() *sqlgraph.Step {
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(RetrospectiveInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.O2O, false, RetrospectiveTable, RetrospectiveColumn),
+	)
+}
+func newAccessesStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(AccessesInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, true, AccessesTable, AccessesColumn),
 	)
 }

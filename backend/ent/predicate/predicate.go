@@ -21,6 +21,9 @@ type AlertMetrics func(*sql.Selector)
 // Document is the predicate function for document builders.
 type Document func(*sql.Selector)
 
+// DocumentAccess is the predicate function for documentaccess builders.
+type DocumentAccess func(*sql.Selector)
+
 // Event is the predicate function for event builders.
 type Event func(*sql.Selector)
 

@@ -12,6 +12,7 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
+	"github.com/rezible/rezible/ent/documentaccess"
 	"github.com/rezible/rezible/ent/eventannotation"
 	"github.com/rezible/rezible/ent/incident"
 	"github.com/rezible/rezible/ent/incidentdebrief"
@@ -361,6 +362,21 @@ func (_c *UserCreate) AddRetrospectiveComments(v ...*RetrospectiveComment) *User
 		ids[i] = v[i].ID
 	}
 	return _c.AddRetrospectiveCommentIDs(ids...)
+}
+
+// AddDocumentAccessIDs adds the "document_accesses" edge to the DocumentAccess entity by IDs.
+func (_c *UserCreate) AddDocumentAccessIDs(ids ...uuid.UUID) *UserCreate {
+	_c.mutation.AddDocumentAccessIDs(ids...)
+	return _c
+}
+
+// AddDocumentAccesses adds the "document_accesses" edges to the DocumentAccess entity.
+func (_c *UserCreate) AddDocumentAccesses(v ...*DocumentAccess) *UserCreate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _c.AddDocumentAccessIDs(ids...)
 }
 
 // AddTeamMembershipIDs adds the "team_memberships" edge to the TeamMembership entity by IDs.
@@ -781,6 +797,22 @@ func (_c *UserCreate) createSpec() (*User, *sqlgraph.CreateSpec) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(retrospectivecomment.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := _c.mutation.DocumentAccessesIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   user.DocumentAccessesTable,
+			Columns: []string{user.DocumentAccessesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(documentaccess.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {

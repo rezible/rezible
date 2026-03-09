@@ -17,6 +17,7 @@ import (
 	"github.com/rezible/rezible/ent/alertfeedback"
 	"github.com/rezible/rezible/ent/alertinstance"
 	"github.com/rezible/rezible/ent/document"
+	"github.com/rezible/rezible/ent/documentaccess"
 	"github.com/rezible/rezible/ent/event"
 	"github.com/rezible/rezible/ent/eventannotation"
 	"github.com/rezible/rezible/ent/incident"
@@ -91,6 +92,7 @@ const (
 	TypeAlertInstance                    = "AlertInstance"
 	TypeAlertMetrics                     = "AlertMetrics"
 	TypeDocument                         = "Document"
+	TypeDocumentAccess                   = "DocumentAccess"
 	TypeEvent                            = "Event"
 	TypeEventAnnotation                  = "EventAnnotation"
 	TypeIncident                         = "Incident"
@@ -2612,11 +2614,15 @@ type DocumentMutation struct {
 	typ                  string
 	id                   *uuid.UUID
 	content              *[]byte
+	access_restricted    *bool
 	clearedFields        map[string]struct{}
 	tenant               *int
 	clearedtenant        bool
 	retrospective        *uuid.UUID
 	clearedretrospective bool
+	accesses             map[uuid.UUID]struct{}
+	removedaccesses      map[uuid.UUID]struct{}
+	clearedaccesses      bool
 	done                 bool
 	oldValue             func(context.Context) (*Document, error)
 	predicates           []predicate.Document
@@ -2798,6 +2804,42 @@ func (m *DocumentMutation) ResetContent() {
 	m.content = nil
 }
 
+// SetAccessRestricted sets the "access_restricted" field.
+func (m *DocumentMutation) SetAccessRestricted(b bool) {
+	m.access_restricted = &b
+}
+
+// AccessRestricted returns the value of the "access_restricted" field in the mutation.
+func (m *DocumentMutation) AccessRestricted() (r bool, exists bool) {
+	v := m.access_restricted
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldAccessRestricted returns the old "access_restricted" field's value of the Document entity.
+// If the Document object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *DocumentMutation) OldAccessRestricted(ctx context.Context) (v bool, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldAccessRestricted is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldAccessRestricted requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldAccessRestricted: %w", err)
+	}
+	return oldValue.AccessRestricted, nil
+}
+
+// ResetAccessRestricted resets all changes to the "access_restricted" field.
+func (m *DocumentMutation) ResetAccessRestricted() {
+	m.access_restricted = nil
+}
+
 // ClearTenant clears the "tenant" edge to the Tenant entity.
 func (m *DocumentMutation) ClearTenant() {
 	m.clearedtenant = true
@@ -2864,6 +2906,60 @@ func (m *DocumentMutation) ResetRetrospective() {
 	m.clearedretrospective = false
 }
 
+// AddAccessIDs adds the "accesses" edge to the DocumentAccess entity by ids.
+func (m *DocumentMutation) AddAccessIDs(ids ...uuid.UUID) {
+	if m.accesses == nil {
+		m.accesses = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		m.accesses[ids[i]] = struct{}{}
+	}
+}
+
+// ClearAccesses clears the "accesses" edge to the DocumentAccess entity.
+func (m *DocumentMutation) ClearAccesses() {
+	m.clearedaccesses = true
+}
+
+// AccessesCleared reports if the "accesses" edge to the DocumentAccess entity was cleared.
+func (m *DocumentMutation) AccessesCleared() bool {
+	return m.clearedaccesses
+}
+
+// RemoveAccessIDs removes the "accesses" edge to the DocumentAccess entity by IDs.
+func (m *DocumentMutation) RemoveAccessIDs(ids ...uuid.UUID) {
+	if m.removedaccesses == nil {
+		m.removedaccesses = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		delete(m.accesses, ids[i])
+		m.removedaccesses[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedAccesses returns the removed IDs of the "accesses" edge to the DocumentAccess entity.
+func (m *DocumentMutation) RemovedAccessesIDs() (ids []uuid.UUID) {
+	for id := range m.removedaccesses {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// AccessesIDs returns the "accesses" edge IDs in the mutation.
+func (m *DocumentMutation) AccessesIDs() (ids []uuid.UUID) {
+	for id := range m.accesses {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetAccesses resets all changes to the "accesses" edge.
+func (m *DocumentMutation) ResetAccesses() {
+	m.accesses = nil
+	m.clearedaccesses = false
+	m.removedaccesses = nil
+}
+
 // Where appends a list predicates to the DocumentMutation builder.
 func (m *DocumentMutation) Where(ps ...predicate.Document) {
 	m.predicates = append(m.predicates, ps...)
@@ -2898,12 +2994,15 @@ func (m *DocumentMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *DocumentMutation) Fields() []string {
-	fields := make([]string, 0, 2)
+	fields := make([]string, 0, 3)
 	if m.tenant != nil {
 		fields = append(fields, document.FieldTenantID)
 	}
 	if m.content != nil {
 		fields = append(fields, document.FieldContent)
+	}
+	if m.access_restricted != nil {
+		fields = append(fields, document.FieldAccessRestricted)
 	}
 	return fields
 }
@@ -2917,6 +3016,8 @@ func (m *DocumentMutation) Field(name string) (ent.Value, bool) {
 		return m.TenantID()
 	case document.FieldContent:
 		return m.Content()
+	case document.FieldAccessRestricted:
+		return m.AccessRestricted()
 	}
 	return nil, false
 }
@@ -2930,6 +3031,8 @@ func (m *DocumentMutation) OldField(ctx context.Context, name string) (ent.Value
 		return m.OldTenantID(ctx)
 	case document.FieldContent:
 		return m.OldContent(ctx)
+	case document.FieldAccessRestricted:
+		return m.OldAccessRestricted(ctx)
 	}
 	return nil, fmt.Errorf("unknown Document field %s", name)
 }
@@ -2952,6 +3055,13 @@ func (m *DocumentMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetContent(v)
+		return nil
+	case document.FieldAccessRestricted:
+		v, ok := value.(bool)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetAccessRestricted(v)
 		return nil
 	}
 	return fmt.Errorf("unknown Document field %s", name)
@@ -3011,18 +3121,24 @@ func (m *DocumentMutation) ResetField(name string) error {
 	case document.FieldContent:
 		m.ResetContent()
 		return nil
+	case document.FieldAccessRestricted:
+		m.ResetAccessRestricted()
+		return nil
 	}
 	return fmt.Errorf("unknown Document field %s", name)
 }
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *DocumentMutation) AddedEdges() []string {
-	edges := make([]string, 0, 2)
+	edges := make([]string, 0, 3)
 	if m.tenant != nil {
 		edges = append(edges, document.EdgeTenant)
 	}
 	if m.retrospective != nil {
 		edges = append(edges, document.EdgeRetrospective)
+	}
+	if m.accesses != nil {
+		edges = append(edges, document.EdgeAccesses)
 	}
 	return edges
 }
@@ -3039,30 +3155,50 @@ func (m *DocumentMutation) AddedIDs(name string) []ent.Value {
 		if id := m.retrospective; id != nil {
 			return []ent.Value{*id}
 		}
+	case document.EdgeAccesses:
+		ids := make([]ent.Value, 0, len(m.accesses))
+		for id := range m.accesses {
+			ids = append(ids, id)
+		}
+		return ids
 	}
 	return nil
 }
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *DocumentMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 2)
+	edges := make([]string, 0, 3)
+	if m.removedaccesses != nil {
+		edges = append(edges, document.EdgeAccesses)
+	}
 	return edges
 }
 
 // RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
 // the given name in this mutation.
 func (m *DocumentMutation) RemovedIDs(name string) []ent.Value {
+	switch name {
+	case document.EdgeAccesses:
+		ids := make([]ent.Value, 0, len(m.removedaccesses))
+		for id := range m.removedaccesses {
+			ids = append(ids, id)
+		}
+		return ids
+	}
 	return nil
 }
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *DocumentMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 2)
+	edges := make([]string, 0, 3)
 	if m.clearedtenant {
 		edges = append(edges, document.EdgeTenant)
 	}
 	if m.clearedretrospective {
 		edges = append(edges, document.EdgeRetrospective)
+	}
+	if m.clearedaccesses {
+		edges = append(edges, document.EdgeAccesses)
 	}
 	return edges
 }
@@ -3075,6 +3211,8 @@ func (m *DocumentMutation) EdgeCleared(name string) bool {
 		return m.clearedtenant
 	case document.EdgeRetrospective:
 		return m.clearedretrospective
+	case document.EdgeAccesses:
+		return m.clearedaccesses
 	}
 	return false
 }
@@ -3103,8 +3241,957 @@ func (m *DocumentMutation) ResetEdge(name string) error {
 	case document.EdgeRetrospective:
 		m.ResetRetrospective()
 		return nil
+	case document.EdgeAccesses:
+		m.ResetAccesses()
+		return nil
 	}
 	return fmt.Errorf("unknown Document edge %s", name)
+}
+
+// DocumentAccessMutation represents an operation that mutates the DocumentAccess nodes in the graph.
+type DocumentAccessMutation struct {
+	config
+	op              Op
+	typ             string
+	id              *uuid.UUID
+	created_at      *time.Time
+	updated_at      *time.Time
+	can_edit        *bool
+	can_manage      *bool
+	clearedFields   map[string]struct{}
+	tenant          *int
+	clearedtenant   bool
+	document        *uuid.UUID
+	cleareddocument bool
+	user            *uuid.UUID
+	cleareduser     bool
+	team            *uuid.UUID
+	clearedteam     bool
+	done            bool
+	oldValue        func(context.Context) (*DocumentAccess, error)
+	predicates      []predicate.DocumentAccess
+}
+
+var _ ent.Mutation = (*DocumentAccessMutation)(nil)
+
+// documentaccessOption allows management of the mutation configuration using functional options.
+type documentaccessOption func(*DocumentAccessMutation)
+
+// newDocumentAccessMutation creates new mutation for the DocumentAccess entity.
+func newDocumentAccessMutation(c config, op Op, opts ...documentaccessOption) *DocumentAccessMutation {
+	m := &DocumentAccessMutation{
+		config:        c,
+		op:            op,
+		typ:           TypeDocumentAccess,
+		clearedFields: make(map[string]struct{}),
+	}
+	for _, opt := range opts {
+		opt(m)
+	}
+	return m
+}
+
+// withDocumentAccessID sets the ID field of the mutation.
+func withDocumentAccessID(id uuid.UUID) documentaccessOption {
+	return func(m *DocumentAccessMutation) {
+		var (
+			err   error
+			once  sync.Once
+			value *DocumentAccess
+		)
+		m.oldValue = func(ctx context.Context) (*DocumentAccess, error) {
+			once.Do(func() {
+				if m.done {
+					err = errors.New("querying old values post mutation is not allowed")
+				} else {
+					value, err = m.Client().DocumentAccess.Get(ctx, id)
+				}
+			})
+			return value, err
+		}
+		m.id = &id
+	}
+}
+
+// withDocumentAccess sets the old DocumentAccess of the mutation.
+func withDocumentAccess(node *DocumentAccess) documentaccessOption {
+	return func(m *DocumentAccessMutation) {
+		m.oldValue = func(context.Context) (*DocumentAccess, error) {
+			return node, nil
+		}
+		m.id = &node.ID
+	}
+}
+
+// Client returns a new `ent.Client` from the mutation. If the mutation was
+// executed in a transaction (ent.Tx), a transactional client is returned.
+func (m DocumentAccessMutation) Client() *Client {
+	client := &Client{config: m.config}
+	client.init()
+	return client
+}
+
+// Tx returns an `ent.Tx` for mutations that were executed in transactions;
+// it returns an error otherwise.
+func (m DocumentAccessMutation) Tx() (*Tx, error) {
+	if _, ok := m.driver.(*txDriver); !ok {
+		return nil, errors.New("ent: mutation is not running in a transaction")
+	}
+	tx := &Tx{config: m.config}
+	tx.init()
+	return tx, nil
+}
+
+// SetID sets the value of the id field. Note that this
+// operation is only accepted on creation of DocumentAccess entities.
+func (m *DocumentAccessMutation) SetID(id uuid.UUID) {
+	m.id = &id
+}
+
+// ID returns the ID value in the mutation. Note that the ID is only available
+// if it was provided to the builder or after it was returned from the database.
+func (m *DocumentAccessMutation) ID() (id uuid.UUID, exists bool) {
+	if m.id == nil {
+		return
+	}
+	return *m.id, true
+}
+
+// IDs queries the database and returns the entity ids that match the mutation's predicate.
+// That means, if the mutation is applied within a transaction with an isolation level such
+// as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
+// or updated by the mutation.
+func (m *DocumentAccessMutation) IDs(ctx context.Context) ([]uuid.UUID, error) {
+	switch {
+	case m.op.Is(OpUpdateOne | OpDeleteOne):
+		id, exists := m.ID()
+		if exists {
+			return []uuid.UUID{id}, nil
+		}
+		fallthrough
+	case m.op.Is(OpUpdate | OpDelete):
+		return m.Client().DocumentAccess.Query().Where(m.predicates...).IDs(ctx)
+	default:
+		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
+	}
+}
+
+// SetTenantID sets the "tenant_id" field.
+func (m *DocumentAccessMutation) SetTenantID(i int) {
+	m.tenant = &i
+}
+
+// TenantID returns the value of the "tenant_id" field in the mutation.
+func (m *DocumentAccessMutation) TenantID() (r int, exists bool) {
+	v := m.tenant
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldTenantID returns the old "tenant_id" field's value of the DocumentAccess entity.
+// If the DocumentAccess object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *DocumentAccessMutation) OldTenantID(ctx context.Context) (v int, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldTenantID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldTenantID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldTenantID: %w", err)
+	}
+	return oldValue.TenantID, nil
+}
+
+// ResetTenantID resets all changes to the "tenant_id" field.
+func (m *DocumentAccessMutation) ResetTenantID() {
+	m.tenant = nil
+}
+
+// SetCreatedAt sets the "created_at" field.
+func (m *DocumentAccessMutation) SetCreatedAt(t time.Time) {
+	m.created_at = &t
+}
+
+// CreatedAt returns the value of the "created_at" field in the mutation.
+func (m *DocumentAccessMutation) CreatedAt() (r time.Time, exists bool) {
+	v := m.created_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCreatedAt returns the old "created_at" field's value of the DocumentAccess entity.
+// If the DocumentAccess object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *DocumentAccessMutation) OldCreatedAt(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCreatedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCreatedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCreatedAt: %w", err)
+	}
+	return oldValue.CreatedAt, nil
+}
+
+// ResetCreatedAt resets all changes to the "created_at" field.
+func (m *DocumentAccessMutation) ResetCreatedAt() {
+	m.created_at = nil
+}
+
+// SetUpdatedAt sets the "updated_at" field.
+func (m *DocumentAccessMutation) SetUpdatedAt(t time.Time) {
+	m.updated_at = &t
+}
+
+// UpdatedAt returns the value of the "updated_at" field in the mutation.
+func (m *DocumentAccessMutation) UpdatedAt() (r time.Time, exists bool) {
+	v := m.updated_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldUpdatedAt returns the old "updated_at" field's value of the DocumentAccess entity.
+// If the DocumentAccess object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *DocumentAccessMutation) OldUpdatedAt(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldUpdatedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldUpdatedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldUpdatedAt: %w", err)
+	}
+	return oldValue.UpdatedAt, nil
+}
+
+// ResetUpdatedAt resets all changes to the "updated_at" field.
+func (m *DocumentAccessMutation) ResetUpdatedAt() {
+	m.updated_at = nil
+}
+
+// SetDocumentID sets the "document_id" field.
+func (m *DocumentAccessMutation) SetDocumentID(u uuid.UUID) {
+	m.document = &u
+}
+
+// DocumentID returns the value of the "document_id" field in the mutation.
+func (m *DocumentAccessMutation) DocumentID() (r uuid.UUID, exists bool) {
+	v := m.document
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldDocumentID returns the old "document_id" field's value of the DocumentAccess entity.
+// If the DocumentAccess object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *DocumentAccessMutation) OldDocumentID(ctx context.Context) (v uuid.UUID, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldDocumentID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldDocumentID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldDocumentID: %w", err)
+	}
+	return oldValue.DocumentID, nil
+}
+
+// ResetDocumentID resets all changes to the "document_id" field.
+func (m *DocumentAccessMutation) ResetDocumentID() {
+	m.document = nil
+}
+
+// SetUserID sets the "user_id" field.
+func (m *DocumentAccessMutation) SetUserID(u uuid.UUID) {
+	m.user = &u
+}
+
+// UserID returns the value of the "user_id" field in the mutation.
+func (m *DocumentAccessMutation) UserID() (r uuid.UUID, exists bool) {
+	v := m.user
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldUserID returns the old "user_id" field's value of the DocumentAccess entity.
+// If the DocumentAccess object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *DocumentAccessMutation) OldUserID(ctx context.Context) (v uuid.UUID, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldUserID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldUserID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldUserID: %w", err)
+	}
+	return oldValue.UserID, nil
+}
+
+// ClearUserID clears the value of the "user_id" field.
+func (m *DocumentAccessMutation) ClearUserID() {
+	m.user = nil
+	m.clearedFields[documentaccess.FieldUserID] = struct{}{}
+}
+
+// UserIDCleared returns if the "user_id" field was cleared in this mutation.
+func (m *DocumentAccessMutation) UserIDCleared() bool {
+	_, ok := m.clearedFields[documentaccess.FieldUserID]
+	return ok
+}
+
+// ResetUserID resets all changes to the "user_id" field.
+func (m *DocumentAccessMutation) ResetUserID() {
+	m.user = nil
+	delete(m.clearedFields, documentaccess.FieldUserID)
+}
+
+// SetTeamID sets the "team_id" field.
+func (m *DocumentAccessMutation) SetTeamID(u uuid.UUID) {
+	m.team = &u
+}
+
+// TeamID returns the value of the "team_id" field in the mutation.
+func (m *DocumentAccessMutation) TeamID() (r uuid.UUID, exists bool) {
+	v := m.team
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldTeamID returns the old "team_id" field's value of the DocumentAccess entity.
+// If the DocumentAccess object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *DocumentAccessMutation) OldTeamID(ctx context.Context) (v uuid.UUID, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldTeamID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldTeamID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldTeamID: %w", err)
+	}
+	return oldValue.TeamID, nil
+}
+
+// ClearTeamID clears the value of the "team_id" field.
+func (m *DocumentAccessMutation) ClearTeamID() {
+	m.team = nil
+	m.clearedFields[documentaccess.FieldTeamID] = struct{}{}
+}
+
+// TeamIDCleared returns if the "team_id" field was cleared in this mutation.
+func (m *DocumentAccessMutation) TeamIDCleared() bool {
+	_, ok := m.clearedFields[documentaccess.FieldTeamID]
+	return ok
+}
+
+// ResetTeamID resets all changes to the "team_id" field.
+func (m *DocumentAccessMutation) ResetTeamID() {
+	m.team = nil
+	delete(m.clearedFields, documentaccess.FieldTeamID)
+}
+
+// SetCanEdit sets the "can_edit" field.
+func (m *DocumentAccessMutation) SetCanEdit(b bool) {
+	m.can_edit = &b
+}
+
+// CanEdit returns the value of the "can_edit" field in the mutation.
+func (m *DocumentAccessMutation) CanEdit() (r bool, exists bool) {
+	v := m.can_edit
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCanEdit returns the old "can_edit" field's value of the DocumentAccess entity.
+// If the DocumentAccess object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *DocumentAccessMutation) OldCanEdit(ctx context.Context) (v bool, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCanEdit is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCanEdit requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCanEdit: %w", err)
+	}
+	return oldValue.CanEdit, nil
+}
+
+// ResetCanEdit resets all changes to the "can_edit" field.
+func (m *DocumentAccessMutation) ResetCanEdit() {
+	m.can_edit = nil
+}
+
+// SetCanManage sets the "can_manage" field.
+func (m *DocumentAccessMutation) SetCanManage(b bool) {
+	m.can_manage = &b
+}
+
+// CanManage returns the value of the "can_manage" field in the mutation.
+func (m *DocumentAccessMutation) CanManage() (r bool, exists bool) {
+	v := m.can_manage
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCanManage returns the old "can_manage" field's value of the DocumentAccess entity.
+// If the DocumentAccess object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *DocumentAccessMutation) OldCanManage(ctx context.Context) (v bool, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCanManage is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCanManage requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCanManage: %w", err)
+	}
+	return oldValue.CanManage, nil
+}
+
+// ResetCanManage resets all changes to the "can_manage" field.
+func (m *DocumentAccessMutation) ResetCanManage() {
+	m.can_manage = nil
+}
+
+// ClearTenant clears the "tenant" edge to the Tenant entity.
+func (m *DocumentAccessMutation) ClearTenant() {
+	m.clearedtenant = true
+	m.clearedFields[documentaccess.FieldTenantID] = struct{}{}
+}
+
+// TenantCleared reports if the "tenant" edge to the Tenant entity was cleared.
+func (m *DocumentAccessMutation) TenantCleared() bool {
+	return m.clearedtenant
+}
+
+// TenantIDs returns the "tenant" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// TenantID instead. It exists only for internal usage by the builders.
+func (m *DocumentAccessMutation) TenantIDs() (ids []int) {
+	if id := m.tenant; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetTenant resets all changes to the "tenant" edge.
+func (m *DocumentAccessMutation) ResetTenant() {
+	m.tenant = nil
+	m.clearedtenant = false
+}
+
+// ClearDocument clears the "document" edge to the Document entity.
+func (m *DocumentAccessMutation) ClearDocument() {
+	m.cleareddocument = true
+	m.clearedFields[documentaccess.FieldDocumentID] = struct{}{}
+}
+
+// DocumentCleared reports if the "document" edge to the Document entity was cleared.
+func (m *DocumentAccessMutation) DocumentCleared() bool {
+	return m.cleareddocument
+}
+
+// DocumentIDs returns the "document" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// DocumentID instead. It exists only for internal usage by the builders.
+func (m *DocumentAccessMutation) DocumentIDs() (ids []uuid.UUID) {
+	if id := m.document; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetDocument resets all changes to the "document" edge.
+func (m *DocumentAccessMutation) ResetDocument() {
+	m.document = nil
+	m.cleareddocument = false
+}
+
+// ClearUser clears the "user" edge to the User entity.
+func (m *DocumentAccessMutation) ClearUser() {
+	m.cleareduser = true
+	m.clearedFields[documentaccess.FieldUserID] = struct{}{}
+}
+
+// UserCleared reports if the "user" edge to the User entity was cleared.
+func (m *DocumentAccessMutation) UserCleared() bool {
+	return m.UserIDCleared() || m.cleareduser
+}
+
+// UserIDs returns the "user" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// UserID instead. It exists only for internal usage by the builders.
+func (m *DocumentAccessMutation) UserIDs() (ids []uuid.UUID) {
+	if id := m.user; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetUser resets all changes to the "user" edge.
+func (m *DocumentAccessMutation) ResetUser() {
+	m.user = nil
+	m.cleareduser = false
+}
+
+// ClearTeam clears the "team" edge to the Team entity.
+func (m *DocumentAccessMutation) ClearTeam() {
+	m.clearedteam = true
+	m.clearedFields[documentaccess.FieldTeamID] = struct{}{}
+}
+
+// TeamCleared reports if the "team" edge to the Team entity was cleared.
+func (m *DocumentAccessMutation) TeamCleared() bool {
+	return m.TeamIDCleared() || m.clearedteam
+}
+
+// TeamIDs returns the "team" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// TeamID instead. It exists only for internal usage by the builders.
+func (m *DocumentAccessMutation) TeamIDs() (ids []uuid.UUID) {
+	if id := m.team; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetTeam resets all changes to the "team" edge.
+func (m *DocumentAccessMutation) ResetTeam() {
+	m.team = nil
+	m.clearedteam = false
+}
+
+// Where appends a list predicates to the DocumentAccessMutation builder.
+func (m *DocumentAccessMutation) Where(ps ...predicate.DocumentAccess) {
+	m.predicates = append(m.predicates, ps...)
+}
+
+// WhereP appends storage-level predicates to the DocumentAccessMutation builder. Using this method,
+// users can use type-assertion to append predicates that do not depend on any generated package.
+func (m *DocumentAccessMutation) WhereP(ps ...func(*sql.Selector)) {
+	p := make([]predicate.DocumentAccess, len(ps))
+	for i := range ps {
+		p[i] = ps[i]
+	}
+	m.Where(p...)
+}
+
+// Op returns the operation name.
+func (m *DocumentAccessMutation) Op() Op {
+	return m.op
+}
+
+// SetOp allows setting the mutation operation.
+func (m *DocumentAccessMutation) SetOp(op Op) {
+	m.op = op
+}
+
+// Type returns the node type of this mutation (DocumentAccess).
+func (m *DocumentAccessMutation) Type() string {
+	return m.typ
+}
+
+// Fields returns all fields that were changed during this mutation. Note that in
+// order to get all numeric fields that were incremented/decremented, call
+// AddedFields().
+func (m *DocumentAccessMutation) Fields() []string {
+	fields := make([]string, 0, 8)
+	if m.tenant != nil {
+		fields = append(fields, documentaccess.FieldTenantID)
+	}
+	if m.created_at != nil {
+		fields = append(fields, documentaccess.FieldCreatedAt)
+	}
+	if m.updated_at != nil {
+		fields = append(fields, documentaccess.FieldUpdatedAt)
+	}
+	if m.document != nil {
+		fields = append(fields, documentaccess.FieldDocumentID)
+	}
+	if m.user != nil {
+		fields = append(fields, documentaccess.FieldUserID)
+	}
+	if m.team != nil {
+		fields = append(fields, documentaccess.FieldTeamID)
+	}
+	if m.can_edit != nil {
+		fields = append(fields, documentaccess.FieldCanEdit)
+	}
+	if m.can_manage != nil {
+		fields = append(fields, documentaccess.FieldCanManage)
+	}
+	return fields
+}
+
+// Field returns the value of a field with the given name. The second boolean
+// return value indicates that this field was not set, or was not defined in the
+// schema.
+func (m *DocumentAccessMutation) Field(name string) (ent.Value, bool) {
+	switch name {
+	case documentaccess.FieldTenantID:
+		return m.TenantID()
+	case documentaccess.FieldCreatedAt:
+		return m.CreatedAt()
+	case documentaccess.FieldUpdatedAt:
+		return m.UpdatedAt()
+	case documentaccess.FieldDocumentID:
+		return m.DocumentID()
+	case documentaccess.FieldUserID:
+		return m.UserID()
+	case documentaccess.FieldTeamID:
+		return m.TeamID()
+	case documentaccess.FieldCanEdit:
+		return m.CanEdit()
+	case documentaccess.FieldCanManage:
+		return m.CanManage()
+	}
+	return nil, false
+}
+
+// OldField returns the old value of the field from the database. An error is
+// returned if the mutation operation is not UpdateOne, or the query to the
+// database failed.
+func (m *DocumentAccessMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
+	switch name {
+	case documentaccess.FieldTenantID:
+		return m.OldTenantID(ctx)
+	case documentaccess.FieldCreatedAt:
+		return m.OldCreatedAt(ctx)
+	case documentaccess.FieldUpdatedAt:
+		return m.OldUpdatedAt(ctx)
+	case documentaccess.FieldDocumentID:
+		return m.OldDocumentID(ctx)
+	case documentaccess.FieldUserID:
+		return m.OldUserID(ctx)
+	case documentaccess.FieldTeamID:
+		return m.OldTeamID(ctx)
+	case documentaccess.FieldCanEdit:
+		return m.OldCanEdit(ctx)
+	case documentaccess.FieldCanManage:
+		return m.OldCanManage(ctx)
+	}
+	return nil, fmt.Errorf("unknown DocumentAccess field %s", name)
+}
+
+// SetField sets the value of a field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *DocumentAccessMutation) SetField(name string, value ent.Value) error {
+	switch name {
+	case documentaccess.FieldTenantID:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetTenantID(v)
+		return nil
+	case documentaccess.FieldCreatedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCreatedAt(v)
+		return nil
+	case documentaccess.FieldUpdatedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetUpdatedAt(v)
+		return nil
+	case documentaccess.FieldDocumentID:
+		v, ok := value.(uuid.UUID)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetDocumentID(v)
+		return nil
+	case documentaccess.FieldUserID:
+		v, ok := value.(uuid.UUID)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetUserID(v)
+		return nil
+	case documentaccess.FieldTeamID:
+		v, ok := value.(uuid.UUID)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetTeamID(v)
+		return nil
+	case documentaccess.FieldCanEdit:
+		v, ok := value.(bool)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCanEdit(v)
+		return nil
+	case documentaccess.FieldCanManage:
+		v, ok := value.(bool)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCanManage(v)
+		return nil
+	}
+	return fmt.Errorf("unknown DocumentAccess field %s", name)
+}
+
+// AddedFields returns all numeric fields that were incremented/decremented during
+// this mutation.
+func (m *DocumentAccessMutation) AddedFields() []string {
+	var fields []string
+	return fields
+}
+
+// AddedField returns the numeric value that was incremented/decremented on a field
+// with the given name. The second boolean return value indicates that this field
+// was not set, or was not defined in the schema.
+func (m *DocumentAccessMutation) AddedField(name string) (ent.Value, bool) {
+	switch name {
+	}
+	return nil, false
+}
+
+// AddField adds the value to the field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *DocumentAccessMutation) AddField(name string, value ent.Value) error {
+	switch name {
+	}
+	return fmt.Errorf("unknown DocumentAccess numeric field %s", name)
+}
+
+// ClearedFields returns all nullable fields that were cleared during this
+// mutation.
+func (m *DocumentAccessMutation) ClearedFields() []string {
+	var fields []string
+	if m.FieldCleared(documentaccess.FieldUserID) {
+		fields = append(fields, documentaccess.FieldUserID)
+	}
+	if m.FieldCleared(documentaccess.FieldTeamID) {
+		fields = append(fields, documentaccess.FieldTeamID)
+	}
+	return fields
+}
+
+// FieldCleared returns a boolean indicating if a field with the given name was
+// cleared in this mutation.
+func (m *DocumentAccessMutation) FieldCleared(name string) bool {
+	_, ok := m.clearedFields[name]
+	return ok
+}
+
+// ClearField clears the value of the field with the given name. It returns an
+// error if the field is not defined in the schema.
+func (m *DocumentAccessMutation) ClearField(name string) error {
+	switch name {
+	case documentaccess.FieldUserID:
+		m.ClearUserID()
+		return nil
+	case documentaccess.FieldTeamID:
+		m.ClearTeamID()
+		return nil
+	}
+	return fmt.Errorf("unknown DocumentAccess nullable field %s", name)
+}
+
+// ResetField resets all changes in the mutation for the field with the given name.
+// It returns an error if the field is not defined in the schema.
+func (m *DocumentAccessMutation) ResetField(name string) error {
+	switch name {
+	case documentaccess.FieldTenantID:
+		m.ResetTenantID()
+		return nil
+	case documentaccess.FieldCreatedAt:
+		m.ResetCreatedAt()
+		return nil
+	case documentaccess.FieldUpdatedAt:
+		m.ResetUpdatedAt()
+		return nil
+	case documentaccess.FieldDocumentID:
+		m.ResetDocumentID()
+		return nil
+	case documentaccess.FieldUserID:
+		m.ResetUserID()
+		return nil
+	case documentaccess.FieldTeamID:
+		m.ResetTeamID()
+		return nil
+	case documentaccess.FieldCanEdit:
+		m.ResetCanEdit()
+		return nil
+	case documentaccess.FieldCanManage:
+		m.ResetCanManage()
+		return nil
+	}
+	return fmt.Errorf("unknown DocumentAccess field %s", name)
+}
+
+// AddedEdges returns all edge names that were set/added in this mutation.
+func (m *DocumentAccessMutation) AddedEdges() []string {
+	edges := make([]string, 0, 4)
+	if m.tenant != nil {
+		edges = append(edges, documentaccess.EdgeTenant)
+	}
+	if m.document != nil {
+		edges = append(edges, documentaccess.EdgeDocument)
+	}
+	if m.user != nil {
+		edges = append(edges, documentaccess.EdgeUser)
+	}
+	if m.team != nil {
+		edges = append(edges, documentaccess.EdgeTeam)
+	}
+	return edges
+}
+
+// AddedIDs returns all IDs (to other nodes) that were added for the given edge
+// name in this mutation.
+func (m *DocumentAccessMutation) AddedIDs(name string) []ent.Value {
+	switch name {
+	case documentaccess.EdgeTenant:
+		if id := m.tenant; id != nil {
+			return []ent.Value{*id}
+		}
+	case documentaccess.EdgeDocument:
+		if id := m.document; id != nil {
+			return []ent.Value{*id}
+		}
+	case documentaccess.EdgeUser:
+		if id := m.user; id != nil {
+			return []ent.Value{*id}
+		}
+	case documentaccess.EdgeTeam:
+		if id := m.team; id != nil {
+			return []ent.Value{*id}
+		}
+	}
+	return nil
+}
+
+// RemovedEdges returns all edge names that were removed in this mutation.
+func (m *DocumentAccessMutation) RemovedEdges() []string {
+	edges := make([]string, 0, 4)
+	return edges
+}
+
+// RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
+// the given name in this mutation.
+func (m *DocumentAccessMutation) RemovedIDs(name string) []ent.Value {
+	return nil
+}
+
+// ClearedEdges returns all edge names that were cleared in this mutation.
+func (m *DocumentAccessMutation) ClearedEdges() []string {
+	edges := make([]string, 0, 4)
+	if m.clearedtenant {
+		edges = append(edges, documentaccess.EdgeTenant)
+	}
+	if m.cleareddocument {
+		edges = append(edges, documentaccess.EdgeDocument)
+	}
+	if m.cleareduser {
+		edges = append(edges, documentaccess.EdgeUser)
+	}
+	if m.clearedteam {
+		edges = append(edges, documentaccess.EdgeTeam)
+	}
+	return edges
+}
+
+// EdgeCleared returns a boolean which indicates if the edge with the given name
+// was cleared in this mutation.
+func (m *DocumentAccessMutation) EdgeCleared(name string) bool {
+	switch name {
+	case documentaccess.EdgeTenant:
+		return m.clearedtenant
+	case documentaccess.EdgeDocument:
+		return m.cleareddocument
+	case documentaccess.EdgeUser:
+		return m.cleareduser
+	case documentaccess.EdgeTeam:
+		return m.clearedteam
+	}
+	return false
+}
+
+// ClearEdge clears the value of the edge with the given name. It returns an error
+// if that edge is not defined in the schema.
+func (m *DocumentAccessMutation) ClearEdge(name string) error {
+	switch name {
+	case documentaccess.EdgeTenant:
+		m.ClearTenant()
+		return nil
+	case documentaccess.EdgeDocument:
+		m.ClearDocument()
+		return nil
+	case documentaccess.EdgeUser:
+		m.ClearUser()
+		return nil
+	case documentaccess.EdgeTeam:
+		m.ClearTeam()
+		return nil
+	}
+	return fmt.Errorf("unknown DocumentAccess unique edge %s", name)
+}
+
+// ResetEdge resets all changes to the edge with the given name in this mutation.
+// It returns an error if the edge is not defined in the schema.
+func (m *DocumentAccessMutation) ResetEdge(name string) error {
+	switch name {
+	case documentaccess.EdgeTenant:
+		m.ResetTenant()
+		return nil
+	case documentaccess.EdgeDocument:
+		m.ResetDocument()
+		return nil
+	case documentaccess.EdgeUser:
+		m.ResetUser()
+		return nil
+	case documentaccess.EdgeTeam:
+		m.ResetTeam()
+		return nil
+	}
+	return fmt.Errorf("unknown DocumentAccess edge %s", name)
 }
 
 // EventMutation represents an operation that mutates the Event nodes in the graph.
@@ -49940,6 +51027,9 @@ type TeamMutation struct {
 	scheduled_meetings        map[uuid.UUID]struct{}
 	removedscheduled_meetings map[uuid.UUID]struct{}
 	clearedscheduled_meetings bool
+	document_accesses         map[uuid.UUID]struct{}
+	removeddocument_accesses  map[uuid.UUID]struct{}
+	cleareddocument_accesses  bool
 	team_memberships          map[uuid.UUID]struct{}
 	removedteam_memberships   map[uuid.UUID]struct{}
 	clearedteam_memberships   bool
@@ -50496,6 +51586,60 @@ func (m *TeamMutation) ResetScheduledMeetings() {
 	m.removedscheduled_meetings = nil
 }
 
+// AddDocumentAccessIDs adds the "document_accesses" edge to the DocumentAccess entity by ids.
+func (m *TeamMutation) AddDocumentAccessIDs(ids ...uuid.UUID) {
+	if m.document_accesses == nil {
+		m.document_accesses = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		m.document_accesses[ids[i]] = struct{}{}
+	}
+}
+
+// ClearDocumentAccesses clears the "document_accesses" edge to the DocumentAccess entity.
+func (m *TeamMutation) ClearDocumentAccesses() {
+	m.cleareddocument_accesses = true
+}
+
+// DocumentAccessesCleared reports if the "document_accesses" edge to the DocumentAccess entity was cleared.
+func (m *TeamMutation) DocumentAccessesCleared() bool {
+	return m.cleareddocument_accesses
+}
+
+// RemoveDocumentAccessIDs removes the "document_accesses" edge to the DocumentAccess entity by IDs.
+func (m *TeamMutation) RemoveDocumentAccessIDs(ids ...uuid.UUID) {
+	if m.removeddocument_accesses == nil {
+		m.removeddocument_accesses = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		delete(m.document_accesses, ids[i])
+		m.removeddocument_accesses[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedDocumentAccesses returns the removed IDs of the "document_accesses" edge to the DocumentAccess entity.
+func (m *TeamMutation) RemovedDocumentAccessesIDs() (ids []uuid.UUID) {
+	for id := range m.removeddocument_accesses {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// DocumentAccessesIDs returns the "document_accesses" edge IDs in the mutation.
+func (m *TeamMutation) DocumentAccessesIDs() (ids []uuid.UUID) {
+	for id := range m.document_accesses {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetDocumentAccesses resets all changes to the "document_accesses" edge.
+func (m *TeamMutation) ResetDocumentAccesses() {
+	m.document_accesses = nil
+	m.cleareddocument_accesses = false
+	m.removeddocument_accesses = nil
+}
+
 // AddTeamMembershipIDs adds the "team_memberships" edge to the TeamMembership entity by ids.
 func (m *TeamMutation) AddTeamMembershipIDs(ids ...uuid.UUID) {
 	if m.team_memberships == nil {
@@ -50792,7 +51936,7 @@ func (m *TeamMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *TeamMutation) AddedEdges() []string {
-	edges := make([]string, 0, 5)
+	edges := make([]string, 0, 6)
 	if m.tenant != nil {
 		edges = append(edges, team.EdgeTenant)
 	}
@@ -50804,6 +51948,9 @@ func (m *TeamMutation) AddedEdges() []string {
 	}
 	if m.scheduled_meetings != nil {
 		edges = append(edges, team.EdgeScheduledMeetings)
+	}
+	if m.document_accesses != nil {
+		edges = append(edges, team.EdgeDocumentAccesses)
 	}
 	if m.team_memberships != nil {
 		edges = append(edges, team.EdgeTeamMemberships)
@@ -50837,6 +51984,12 @@ func (m *TeamMutation) AddedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case team.EdgeDocumentAccesses:
+		ids := make([]ent.Value, 0, len(m.document_accesses))
+		for id := range m.document_accesses {
+			ids = append(ids, id)
+		}
+		return ids
 	case team.EdgeTeamMemberships:
 		ids := make([]ent.Value, 0, len(m.team_memberships))
 		for id := range m.team_memberships {
@@ -50849,7 +52002,7 @@ func (m *TeamMutation) AddedIDs(name string) []ent.Value {
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *TeamMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 5)
+	edges := make([]string, 0, 6)
 	if m.removedusers != nil {
 		edges = append(edges, team.EdgeUsers)
 	}
@@ -50858,6 +52011,9 @@ func (m *TeamMutation) RemovedEdges() []string {
 	}
 	if m.removedscheduled_meetings != nil {
 		edges = append(edges, team.EdgeScheduledMeetings)
+	}
+	if m.removeddocument_accesses != nil {
+		edges = append(edges, team.EdgeDocumentAccesses)
 	}
 	if m.removedteam_memberships != nil {
 		edges = append(edges, team.EdgeTeamMemberships)
@@ -50887,6 +52043,12 @@ func (m *TeamMutation) RemovedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case team.EdgeDocumentAccesses:
+		ids := make([]ent.Value, 0, len(m.removeddocument_accesses))
+		for id := range m.removeddocument_accesses {
+			ids = append(ids, id)
+		}
+		return ids
 	case team.EdgeTeamMemberships:
 		ids := make([]ent.Value, 0, len(m.removedteam_memberships))
 		for id := range m.removedteam_memberships {
@@ -50899,7 +52061,7 @@ func (m *TeamMutation) RemovedIDs(name string) []ent.Value {
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *TeamMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 5)
+	edges := make([]string, 0, 6)
 	if m.clearedtenant {
 		edges = append(edges, team.EdgeTenant)
 	}
@@ -50911,6 +52073,9 @@ func (m *TeamMutation) ClearedEdges() []string {
 	}
 	if m.clearedscheduled_meetings {
 		edges = append(edges, team.EdgeScheduledMeetings)
+	}
+	if m.cleareddocument_accesses {
+		edges = append(edges, team.EdgeDocumentAccesses)
 	}
 	if m.clearedteam_memberships {
 		edges = append(edges, team.EdgeTeamMemberships)
@@ -50930,6 +52095,8 @@ func (m *TeamMutation) EdgeCleared(name string) bool {
 		return m.clearedoncall_rosters
 	case team.EdgeScheduledMeetings:
 		return m.clearedscheduled_meetings
+	case team.EdgeDocumentAccesses:
+		return m.cleareddocument_accesses
 	case team.EdgeTeamMemberships:
 		return m.clearedteam_memberships
 	}
@@ -50962,6 +52129,9 @@ func (m *TeamMutation) ResetEdge(name string) error {
 		return nil
 	case team.EdgeScheduledMeetings:
 		m.ResetScheduledMeetings()
+		return nil
+	case team.EdgeDocumentAccesses:
+		m.ResetDocumentAccesses()
 		return nil
 	case team.EdgeTeamMemberships:
 		m.ResetTeamMemberships()
@@ -52539,6 +53709,9 @@ type UserMutation struct {
 	retrospective_comments                map[uuid.UUID]struct{}
 	removedretrospective_comments         map[uuid.UUID]struct{}
 	clearedretrospective_comments         bool
+	document_accesses                     map[uuid.UUID]struct{}
+	removeddocument_accesses              map[uuid.UUID]struct{}
+	cleareddocument_accesses              bool
 	team_memberships                      map[uuid.UUID]struct{}
 	removedteam_memberships               map[uuid.UUID]struct{}
 	clearedteam_memberships               bool
@@ -53777,6 +54950,60 @@ func (m *UserMutation) ResetRetrospectiveComments() {
 	m.removedretrospective_comments = nil
 }
 
+// AddDocumentAccessIDs adds the "document_accesses" edge to the DocumentAccess entity by ids.
+func (m *UserMutation) AddDocumentAccessIDs(ids ...uuid.UUID) {
+	if m.document_accesses == nil {
+		m.document_accesses = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		m.document_accesses[ids[i]] = struct{}{}
+	}
+}
+
+// ClearDocumentAccesses clears the "document_accesses" edge to the DocumentAccess entity.
+func (m *UserMutation) ClearDocumentAccesses() {
+	m.cleareddocument_accesses = true
+}
+
+// DocumentAccessesCleared reports if the "document_accesses" edge to the DocumentAccess entity was cleared.
+func (m *UserMutation) DocumentAccessesCleared() bool {
+	return m.cleareddocument_accesses
+}
+
+// RemoveDocumentAccessIDs removes the "document_accesses" edge to the DocumentAccess entity by IDs.
+func (m *UserMutation) RemoveDocumentAccessIDs(ids ...uuid.UUID) {
+	if m.removeddocument_accesses == nil {
+		m.removeddocument_accesses = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		delete(m.document_accesses, ids[i])
+		m.removeddocument_accesses[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedDocumentAccesses returns the removed IDs of the "document_accesses" edge to the DocumentAccess entity.
+func (m *UserMutation) RemovedDocumentAccessesIDs() (ids []uuid.UUID) {
+	for id := range m.removeddocument_accesses {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// DocumentAccessesIDs returns the "document_accesses" edge IDs in the mutation.
+func (m *UserMutation) DocumentAccessesIDs() (ids []uuid.UUID) {
+	for id := range m.document_accesses {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetDocumentAccesses resets all changes to the "document_accesses" edge.
+func (m *UserMutation) ResetDocumentAccesses() {
+	m.document_accesses = nil
+	m.cleareddocument_accesses = false
+	m.removeddocument_accesses = nil
+}
+
 // AddTeamMembershipIDs adds the "team_memberships" edge to the TeamMembership entity by ids.
 func (m *UserMutation) AddTeamMembershipIDs(ids ...uuid.UUID) {
 	if m.team_memberships == nil {
@@ -54167,7 +55394,7 @@ func (m *UserMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *UserMutation) AddedEdges() []string {
-	edges := make([]string, 0, 17)
+	edges := make([]string, 0, 18)
 	if m.tenant != nil {
 		edges = append(edges, user.EdgeTenant)
 	}
@@ -54212,6 +55439,9 @@ func (m *UserMutation) AddedEdges() []string {
 	}
 	if m.retrospective_comments != nil {
 		edges = append(edges, user.EdgeRetrospectiveComments)
+	}
+	if m.document_accesses != nil {
+		edges = append(edges, user.EdgeDocumentAccesses)
 	}
 	if m.team_memberships != nil {
 		edges = append(edges, user.EdgeTeamMemberships)
@@ -54314,6 +55544,12 @@ func (m *UserMutation) AddedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case user.EdgeDocumentAccesses:
+		ids := make([]ent.Value, 0, len(m.document_accesses))
+		for id := range m.document_accesses {
+			ids = append(ids, id)
+		}
+		return ids
 	case user.EdgeTeamMemberships:
 		ids := make([]ent.Value, 0, len(m.team_memberships))
 		for id := range m.team_memberships {
@@ -54332,7 +55568,7 @@ func (m *UserMutation) AddedIDs(name string) []ent.Value {
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *UserMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 17)
+	edges := make([]string, 0, 18)
 	if m.removedteams != nil {
 		edges = append(edges, user.EdgeTeams)
 	}
@@ -54374,6 +55610,9 @@ func (m *UserMutation) RemovedEdges() []string {
 	}
 	if m.removedretrospective_comments != nil {
 		edges = append(edges, user.EdgeRetrospectiveComments)
+	}
+	if m.removeddocument_accesses != nil {
+		edges = append(edges, user.EdgeDocumentAccesses)
 	}
 	if m.removedteam_memberships != nil {
 		edges = append(edges, user.EdgeTeamMemberships)
@@ -54472,6 +55711,12 @@ func (m *UserMutation) RemovedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case user.EdgeDocumentAccesses:
+		ids := make([]ent.Value, 0, len(m.removeddocument_accesses))
+		for id := range m.removeddocument_accesses {
+			ids = append(ids, id)
+		}
+		return ids
 	case user.EdgeTeamMemberships:
 		ids := make([]ent.Value, 0, len(m.removedteam_memberships))
 		for id := range m.removedteam_memberships {
@@ -54490,7 +55735,7 @@ func (m *UserMutation) RemovedIDs(name string) []ent.Value {
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *UserMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 17)
+	edges := make([]string, 0, 18)
 	if m.clearedtenant {
 		edges = append(edges, user.EdgeTenant)
 	}
@@ -54536,6 +55781,9 @@ func (m *UserMutation) ClearedEdges() []string {
 	if m.clearedretrospective_comments {
 		edges = append(edges, user.EdgeRetrospectiveComments)
 	}
+	if m.cleareddocument_accesses {
+		edges = append(edges, user.EdgeDocumentAccesses)
+	}
 	if m.clearedteam_memberships {
 		edges = append(edges, user.EdgeTeamMemberships)
 	}
@@ -54579,6 +55827,8 @@ func (m *UserMutation) EdgeCleared(name string) bool {
 		return m.clearedretrospective_review_responses
 	case user.EdgeRetrospectiveComments:
 		return m.clearedretrospective_comments
+	case user.EdgeDocumentAccesses:
+		return m.cleareddocument_accesses
 	case user.EdgeTeamMemberships:
 		return m.clearedteam_memberships
 	case user.EdgeRoleAssignments:
@@ -54646,6 +55896,9 @@ func (m *UserMutation) ResetEdge(name string) error {
 		return nil
 	case user.EdgeRetrospectiveComments:
 		m.ResetRetrospectiveComments()
+		return nil
+	case user.EdgeDocumentAccesses:
+		m.ResetDocumentAccesses()
 		return nil
 	case user.EdgeTeamMemberships:
 		m.ResetTeamMemberships()

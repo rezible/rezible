@@ -44,6 +44,14 @@ func (c *DocumentClient) Debug() *DocumentClient {
 	return &DocumentClient{config: cfg}
 }
 
+func (c *DocumentAccessClient) Debug() *DocumentAccessClient {
+	if c.debug {
+		return c
+	}
+	cfg := config{driver: dialect.Debug(c.driver, c.log), log: c.log, debug: true, hooks: c.hooks, inters: c.inters}
+	return &DocumentAccessClient{config: cfg}
+}
+
 func (c *EventClient) Debug() *EventClient {
 	if c.debug {
 		return c

@@ -14,6 +14,7 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
+	"github.com/rezible/rezible/ent/documentaccess"
 	"github.com/rezible/rezible/ent/eventannotation"
 	"github.com/rezible/rezible/ent/incident"
 	"github.com/rezible/rezible/ent/incidentdebrief"
@@ -55,6 +56,7 @@ type UserQuery struct {
 	withRetrospectiveReviewRequests  *RetrospectiveReviewQuery
 	withRetrospectiveReviewResponses *RetrospectiveReviewQuery
 	withRetrospectiveComments        *RetrospectiveCommentQuery
+	withDocumentAccesses             *DocumentAccessQuery
 	withTeamMemberships              *TeamMembershipQuery
 	withRoleAssignments              *IncidentRoleAssignmentQuery
 	modifiers                        []func(*sql.Selector)
@@ -424,6 +426,28 @@ func (_q *UserQuery) QueryRetrospectiveComments() *RetrospectiveCommentQuery {
 	return query
 }
 
+// QueryDocumentAccesses chains the current query on the "document_accesses" edge.
+func (_q *UserQuery) QueryDocumentAccesses() *DocumentAccessQuery {
+	query := (&DocumentAccessClient{config: _q.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := _q.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := _q.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(user.Table, user.FieldID, selector),
+			sqlgraph.To(documentaccess.Table, documentaccess.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, true, user.DocumentAccessesTable, user.DocumentAccessesColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
 // QueryTeamMemberships chains the current query on the "team_memberships" edge.
 func (_q *UserQuery) QueryTeamMemberships() *TeamMembershipQuery {
 	query := (&TeamMembershipClient{config: _q.config}).Query()
@@ -675,6 +699,7 @@ func (_q *UserQuery) Clone() *UserQuery {
 		withRetrospectiveReviewRequests:  _q.withRetrospectiveReviewRequests.Clone(),
 		withRetrospectiveReviewResponses: _q.withRetrospectiveReviewResponses.Clone(),
 		withRetrospectiveComments:        _q.withRetrospectiveComments.Clone(),
+		withDocumentAccesses:             _q.withDocumentAccesses.Clone(),
 		withTeamMemberships:              _q.withTeamMemberships.Clone(),
 		withRoleAssignments:              _q.withRoleAssignments.Clone(),
 		// clone intermediate query.
@@ -849,6 +874,17 @@ func (_q *UserQuery) WithRetrospectiveComments(opts ...func(*RetrospectiveCommen
 	return _q
 }
 
+// WithDocumentAccesses tells the query-builder to eager-load the nodes that are connected to
+// the "document_accesses" edge. The optional arguments are used to configure the query builder of the edge.
+func (_q *UserQuery) WithDocumentAccesses(opts ...func(*DocumentAccessQuery)) *UserQuery {
+	query := (&DocumentAccessClient{config: _q.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	_q.withDocumentAccesses = query
+	return _q
+}
+
 // WithTeamMemberships tells the query-builder to eager-load the nodes that are connected to
 // the "team_memberships" edge. The optional arguments are used to configure the query builder of the edge.
 func (_q *UserQuery) WithTeamMemberships(opts ...func(*TeamMembershipQuery)) *UserQuery {
@@ -955,7 +991,7 @@ func (_q *UserQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*User, e
 	var (
 		nodes       = []*User{}
 		_spec       = _q.querySpec()
-		loadedTypes = [17]bool{
+		loadedTypes = [18]bool{
 			_q.withTenant != nil,
 			_q.withTeams != nil,
 			_q.withWatchedOncallRosters != nil,
@@ -971,6 +1007,7 @@ func (_q *UserQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*User, e
 			_q.withRetrospectiveReviewRequests != nil,
 			_q.withRetrospectiveReviewResponses != nil,
 			_q.withRetrospectiveComments != nil,
+			_q.withDocumentAccesses != nil,
 			_q.withTeamMemberships != nil,
 			_q.withRoleAssignments != nil,
 		}
@@ -1109,6 +1146,13 @@ func (_q *UserQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*User, e
 			func(n *User, e *RetrospectiveComment) {
 				n.Edges.RetrospectiveComments = append(n.Edges.RetrospectiveComments, e)
 			}); err != nil {
+			return nil, err
+		}
+	}
+	if query := _q.withDocumentAccesses; query != nil {
+		if err := _q.loadDocumentAccesses(ctx, query, nodes,
+			func(n *User) { n.Edges.DocumentAccesses = []*DocumentAccess{} },
+			func(n *User, e *DocumentAccess) { n.Edges.DocumentAccesses = append(n.Edges.DocumentAccesses, e) }); err != nil {
 			return nil, err
 		}
 	}
@@ -1656,6 +1700,36 @@ func (_q *UserQuery) loadRetrospectiveComments(ctx context.Context, query *Retro
 	}
 	query.Where(predicate.RetrospectiveComment(func(s *sql.Selector) {
 		s.Where(sql.InValues(s.C(user.RetrospectiveCommentsColumn), fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.UserID
+		node, ok := nodeids[fk]
+		if !ok {
+			return fmt.Errorf(`unexpected referenced foreign-key "user_id" returned %v for node %v`, fk, n.ID)
+		}
+		assign(node, n)
+	}
+	return nil
+}
+func (_q *UserQuery) loadDocumentAccesses(ctx context.Context, query *DocumentAccessQuery, nodes []*User, init func(*User), assign func(*User, *DocumentAccess)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[uuid.UUID]*User)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+		if init != nil {
+			init(nodes[i])
+		}
+	}
+	if len(query.ctx.Fields) > 0 {
+		query.ctx.AppendFieldOnce(documentaccess.FieldUserID)
+	}
+	query.Where(predicate.DocumentAccess(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(user.DocumentAccessesColumn), fks...))
 	}))
 	neighbors, err := query.All(ctx)
 	if err != nil {

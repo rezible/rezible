@@ -72,13 +72,15 @@ type UserEdges struct {
 	RetrospectiveReviewResponses []*RetrospectiveReview `json:"retrospective_review_responses,omitempty"`
 	// RetrospectiveComments holds the value of the retrospective_comments edge.
 	RetrospectiveComments []*RetrospectiveComment `json:"retrospective_comments,omitempty"`
+	// DocumentAccesses holds the value of the document_accesses edge.
+	DocumentAccesses []*DocumentAccess `json:"document_accesses,omitempty"`
 	// TeamMemberships holds the value of the team_memberships edge.
 	TeamMemberships []*TeamMembership `json:"team_memberships,omitempty"`
 	// RoleAssignments holds the value of the role_assignments edge.
 	RoleAssignments []*IncidentRoleAssignment `json:"role_assignments,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [17]bool
+	loadedTypes [18]bool
 }
 
 // TenantOrErr returns the Tenant value or an error if the edge
@@ -218,10 +220,19 @@ func (e UserEdges) RetrospectiveCommentsOrErr() ([]*RetrospectiveComment, error)
 	return nil, &NotLoadedError{edge: "retrospective_comments"}
 }
 
+// DocumentAccessesOrErr returns the DocumentAccesses value or an error if the edge
+// was not loaded in eager-loading.
+func (e UserEdges) DocumentAccessesOrErr() ([]*DocumentAccess, error) {
+	if e.loadedTypes[15] {
+		return e.DocumentAccesses, nil
+	}
+	return nil, &NotLoadedError{edge: "document_accesses"}
+}
+
 // TeamMembershipsOrErr returns the TeamMemberships value or an error if the edge
 // was not loaded in eager-loading.
 func (e UserEdges) TeamMembershipsOrErr() ([]*TeamMembership, error) {
-	if e.loadedTypes[15] {
+	if e.loadedTypes[16] {
 		return e.TeamMemberships, nil
 	}
 	return nil, &NotLoadedError{edge: "team_memberships"}
@@ -230,7 +241,7 @@ func (e UserEdges) TeamMembershipsOrErr() ([]*TeamMembership, error) {
 // RoleAssignmentsOrErr returns the RoleAssignments value or an error if the edge
 // was not loaded in eager-loading.
 func (e UserEdges) RoleAssignmentsOrErr() ([]*IncidentRoleAssignment, error) {
-	if e.loadedTypes[16] {
+	if e.loadedTypes[17] {
 		return e.RoleAssignments, nil
 	}
 	return nil, &NotLoadedError{edge: "role_assignments"}
@@ -404,6 +415,11 @@ func (_m *User) QueryRetrospectiveReviewResponses() *RetrospectiveReviewQuery {
 // QueryRetrospectiveComments queries the "retrospective_comments" edge of the User entity.
 func (_m *User) QueryRetrospectiveComments() *RetrospectiveCommentQuery {
 	return NewUserClient(_m.config).QueryRetrospectiveComments(_m)
+}
+
+// QueryDocumentAccesses queries the "document_accesses" edge of the User entity.
+func (_m *User) QueryDocumentAccesses() *DocumentAccessQuery {
+	return NewUserClient(_m.config).QueryDocumentAccesses(_m)
 }
 
 // QueryTeamMemberships queries the "team_memberships" edge of the User entity.

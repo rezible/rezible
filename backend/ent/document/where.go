@@ -64,6 +64,11 @@ func Content(v []byte) predicate.Document {
 	return predicate.Document(sql.FieldEQ(FieldContent, v))
 }
 
+// AccessRestricted applies equality check predicate on the "access_restricted" field. It's identical to AccessRestrictedEQ.
+func AccessRestricted(v bool) predicate.Document {
+	return predicate.Document(sql.FieldEQ(FieldAccessRestricted, v))
+}
+
 // TenantIDEQ applies the EQ predicate on the "tenant_id" field.
 func TenantIDEQ(v int) predicate.Document {
 	return predicate.Document(sql.FieldEQ(FieldTenantID, v))
@@ -124,6 +129,16 @@ func ContentLTE(v []byte) predicate.Document {
 	return predicate.Document(sql.FieldLTE(FieldContent, v))
 }
 
+// AccessRestrictedEQ applies the EQ predicate on the "access_restricted" field.
+func AccessRestrictedEQ(v bool) predicate.Document {
+	return predicate.Document(sql.FieldEQ(FieldAccessRestricted, v))
+}
+
+// AccessRestrictedNEQ applies the NEQ predicate on the "access_restricted" field.
+func AccessRestrictedNEQ(v bool) predicate.Document {
+	return predicate.Document(sql.FieldNEQ(FieldAccessRestricted, v))
+}
+
 // HasTenant applies the HasEdge predicate on the "tenant" edge.
 func HasTenant() predicate.Document {
 	return predicate.Document(func(s *sql.Selector) {
@@ -162,6 +177,29 @@ func HasRetrospective() predicate.Document {
 func HasRetrospectiveWith(preds ...predicate.Retrospective) predicate.Document {
 	return predicate.Document(func(s *sql.Selector) {
 		step := newRetrospectiveStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasAccesses applies the HasEdge predicate on the "accesses" edge.
+func HasAccesses() predicate.Document {
+	return predicate.Document(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, true, AccessesTable, AccessesColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasAccessesWith applies the HasEdge predicate on the "accesses" edge with a given conditions (other predicates).
+func HasAccessesWith(preds ...predicate.DocumentAccess) predicate.Document {
+	return predicate.Document(func(s *sql.Selector) {
+		step := newAccessesStep()
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)

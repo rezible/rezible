@@ -11,6 +11,7 @@ import (
 	"github.com/rezible/rezible/ent/alertfeedback"
 	"github.com/rezible/rezible/ent/alertinstance"
 	"github.com/rezible/rezible/ent/document"
+	"github.com/rezible/rezible/ent/documentaccess"
 	"github.com/rezible/rezible/ent/event"
 	"github.com/rezible/rezible/ent/eventannotation"
 	"github.com/rezible/rezible/ent/incident"
@@ -139,10 +140,50 @@ func init() {
 	}
 	documentFields := schema.Document{}.Fields()
 	_ = documentFields
+	// documentDescAccessRestricted is the schema descriptor for access_restricted field.
+	documentDescAccessRestricted := documentFields[2].Descriptor()
+	// document.DefaultAccessRestricted holds the default value on creation for the access_restricted field.
+	document.DefaultAccessRestricted = documentDescAccessRestricted.Default.(bool)
 	// documentDescID is the schema descriptor for id field.
 	documentDescID := documentFields[0].Descriptor()
 	// document.DefaultID holds the default value on creation for the id field.
 	document.DefaultID = documentDescID.Default.(func() uuid.UUID)
+	documentaccessMixin := schema.DocumentAccess{}.Mixin()
+	documentaccess.Policy = privacy.NewPolicies(documentaccessMixin[0], documentaccessMixin[1], schema.DocumentAccess{})
+	documentaccess.Hooks[0] = func(next ent.Mutator) ent.Mutator {
+		return ent.MutateFunc(func(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+			if err := documentaccess.Policy.EvalMutation(ctx, m); err != nil {
+				return nil, err
+			}
+			return next.Mutate(ctx, m)
+		})
+	}
+	documentaccessMixinFields2 := documentaccessMixin[2].Fields()
+	_ = documentaccessMixinFields2
+	documentaccessFields := schema.DocumentAccess{}.Fields()
+	_ = documentaccessFields
+	// documentaccessDescCreatedAt is the schema descriptor for created_at field.
+	documentaccessDescCreatedAt := documentaccessMixinFields2[0].Descriptor()
+	// documentaccess.DefaultCreatedAt holds the default value on creation for the created_at field.
+	documentaccess.DefaultCreatedAt = documentaccessDescCreatedAt.Default.(func() time.Time)
+	// documentaccessDescUpdatedAt is the schema descriptor for updated_at field.
+	documentaccessDescUpdatedAt := documentaccessMixinFields2[1].Descriptor()
+	// documentaccess.DefaultUpdatedAt holds the default value on creation for the updated_at field.
+	documentaccess.DefaultUpdatedAt = documentaccessDescUpdatedAt.Default.(func() time.Time)
+	// documentaccess.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
+	documentaccess.UpdateDefaultUpdatedAt = documentaccessDescUpdatedAt.UpdateDefault.(func() time.Time)
+	// documentaccessDescCanEdit is the schema descriptor for can_edit field.
+	documentaccessDescCanEdit := documentaccessFields[4].Descriptor()
+	// documentaccess.DefaultCanEdit holds the default value on creation for the can_edit field.
+	documentaccess.DefaultCanEdit = documentaccessDescCanEdit.Default.(bool)
+	// documentaccessDescCanManage is the schema descriptor for can_manage field.
+	documentaccessDescCanManage := documentaccessFields[5].Descriptor()
+	// documentaccess.DefaultCanManage holds the default value on creation for the can_manage field.
+	documentaccess.DefaultCanManage = documentaccessDescCanManage.Default.(bool)
+	// documentaccessDescID is the schema descriptor for id field.
+	documentaccessDescID := documentaccessFields[0].Descriptor()
+	// documentaccess.DefaultID holds the default value on creation for the id field.
+	documentaccess.DefaultID = documentaccessDescID.Default.(func() uuid.UUID)
 	eventMixin := schema.Event{}.Mixin()
 	event.Policy = privacy.NewPolicies(eventMixin[0], eventMixin[1], schema.Event{})
 	event.Hooks[0] = func(next ent.Mutator) ent.Mutator {

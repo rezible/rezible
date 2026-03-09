@@ -57,6 +57,18 @@ func (f DocumentFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, er
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.DocumentMutation", m)
 }
 
+// The DocumentAccessFunc type is an adapter to allow the use of ordinary
+// function as DocumentAccess mutator.
+type DocumentAccessFunc func(context.Context, *ent.DocumentAccessMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f DocumentAccessFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.DocumentAccessMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.DocumentAccessMutation", m)
+}
+
 // The EventFunc type is an adapter to allow the use of ordinary
 // function as Event mutator.
 type EventFunc func(context.Context, *ent.EventMutation) (ent.Value, error)

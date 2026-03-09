@@ -11,6 +11,7 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
+	"github.com/rezible/rezible/ent/documentaccess"
 	"github.com/rezible/rezible/ent/eventannotation"
 	"github.com/rezible/rezible/ent/incident"
 	"github.com/rezible/rezible/ent/incidentdebrief"
@@ -375,6 +376,21 @@ func (_u *UserUpdate) AddRetrospectiveComments(v ...*RetrospectiveComment) *User
 	return _u.AddRetrospectiveCommentIDs(ids...)
 }
 
+// AddDocumentAccessIDs adds the "document_accesses" edge to the DocumentAccess entity by IDs.
+func (_u *UserUpdate) AddDocumentAccessIDs(ids ...uuid.UUID) *UserUpdate {
+	_u.mutation.AddDocumentAccessIDs(ids...)
+	return _u
+}
+
+// AddDocumentAccesses adds the "document_accesses" edges to the DocumentAccess entity.
+func (_u *UserUpdate) AddDocumentAccesses(v ...*DocumentAccess) *UserUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddDocumentAccessIDs(ids...)
+}
+
 // AddTeamMembershipIDs adds the "team_memberships" edge to the TeamMembership entity by IDs.
 func (_u *UserUpdate) AddTeamMembershipIDs(ids ...uuid.UUID) *UserUpdate {
 	_u.mutation.AddTeamMembershipIDs(ids...)
@@ -702,6 +718,27 @@ func (_u *UserUpdate) RemoveRetrospectiveComments(v ...*RetrospectiveComment) *U
 		ids[i] = v[i].ID
 	}
 	return _u.RemoveRetrospectiveCommentIDs(ids...)
+}
+
+// ClearDocumentAccesses clears all "document_accesses" edges to the DocumentAccess entity.
+func (_u *UserUpdate) ClearDocumentAccesses() *UserUpdate {
+	_u.mutation.ClearDocumentAccesses()
+	return _u
+}
+
+// RemoveDocumentAccessIDs removes the "document_accesses" edge to DocumentAccess entities by IDs.
+func (_u *UserUpdate) RemoveDocumentAccessIDs(ids ...uuid.UUID) *UserUpdate {
+	_u.mutation.RemoveDocumentAccessIDs(ids...)
+	return _u
+}
+
+// RemoveDocumentAccesses removes "document_accesses" edges to DocumentAccess entities.
+func (_u *UserUpdate) RemoveDocumentAccesses(v ...*DocumentAccess) *UserUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveDocumentAccessIDs(ids...)
 }
 
 // ClearTeamMemberships clears all "team_memberships" edges to the TeamMembership entity.
@@ -1504,6 +1541,51 @@ func (_u *UserUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	if _u.mutation.DocumentAccessesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   user.DocumentAccessesTable,
+			Columns: []string{user.DocumentAccessesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(documentaccess.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedDocumentAccessesIDs(); len(nodes) > 0 && !_u.mutation.DocumentAccessesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   user.DocumentAccessesTable,
+			Columns: []string{user.DocumentAccessesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(documentaccess.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.DocumentAccessesIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   user.DocumentAccessesTable,
+			Columns: []string{user.DocumentAccessesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(documentaccess.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
 	if _u.mutation.TeamMembershipsCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
@@ -1948,6 +2030,21 @@ func (_u *UserUpdateOne) AddRetrospectiveComments(v ...*RetrospectiveComment) *U
 	return _u.AddRetrospectiveCommentIDs(ids...)
 }
 
+// AddDocumentAccessIDs adds the "document_accesses" edge to the DocumentAccess entity by IDs.
+func (_u *UserUpdateOne) AddDocumentAccessIDs(ids ...uuid.UUID) *UserUpdateOne {
+	_u.mutation.AddDocumentAccessIDs(ids...)
+	return _u
+}
+
+// AddDocumentAccesses adds the "document_accesses" edges to the DocumentAccess entity.
+func (_u *UserUpdateOne) AddDocumentAccesses(v ...*DocumentAccess) *UserUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddDocumentAccessIDs(ids...)
+}
+
 // AddTeamMembershipIDs adds the "team_memberships" edge to the TeamMembership entity by IDs.
 func (_u *UserUpdateOne) AddTeamMembershipIDs(ids ...uuid.UUID) *UserUpdateOne {
 	_u.mutation.AddTeamMembershipIDs(ids...)
@@ -2275,6 +2372,27 @@ func (_u *UserUpdateOne) RemoveRetrospectiveComments(v ...*RetrospectiveComment)
 		ids[i] = v[i].ID
 	}
 	return _u.RemoveRetrospectiveCommentIDs(ids...)
+}
+
+// ClearDocumentAccesses clears all "document_accesses" edges to the DocumentAccess entity.
+func (_u *UserUpdateOne) ClearDocumentAccesses() *UserUpdateOne {
+	_u.mutation.ClearDocumentAccesses()
+	return _u
+}
+
+// RemoveDocumentAccessIDs removes the "document_accesses" edge to DocumentAccess entities by IDs.
+func (_u *UserUpdateOne) RemoveDocumentAccessIDs(ids ...uuid.UUID) *UserUpdateOne {
+	_u.mutation.RemoveDocumentAccessIDs(ids...)
+	return _u
+}
+
+// RemoveDocumentAccesses removes "document_accesses" edges to DocumentAccess entities.
+func (_u *UserUpdateOne) RemoveDocumentAccesses(v ...*DocumentAccess) *UserUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveDocumentAccessIDs(ids...)
 }
 
 // ClearTeamMemberships clears all "team_memberships" edges to the TeamMembership entity.
@@ -3100,6 +3218,51 @@ func (_u *UserUpdateOne) sqlSave(ctx context.Context) (_node *User, err error) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(retrospectivecomment.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.DocumentAccessesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   user.DocumentAccessesTable,
+			Columns: []string{user.DocumentAccessesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(documentaccess.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedDocumentAccessesIDs(); len(nodes) > 0 && !_u.mutation.DocumentAccessesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   user.DocumentAccessesTable,
+			Columns: []string{user.DocumentAccessesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(documentaccess.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.DocumentAccessesIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   user.DocumentAccessesTable,
+			Columns: []string{user.DocumentAccessesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(documentaccess.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {

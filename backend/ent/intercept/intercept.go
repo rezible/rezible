@@ -13,6 +13,7 @@ import (
 	"github.com/rezible/rezible/ent/alertinstance"
 	"github.com/rezible/rezible/ent/alertmetrics"
 	"github.com/rezible/rezible/ent/document"
+	"github.com/rezible/rezible/ent/documentaccess"
 	"github.com/rezible/rezible/ent/event"
 	"github.com/rezible/rezible/ent/eventannotation"
 	"github.com/rezible/rezible/ent/incident"
@@ -263,6 +264,33 @@ func (f TraverseDocument) Traverse(ctx context.Context, q ent.Query) error {
 		return f(ctx, q)
 	}
 	return fmt.Errorf("unexpected query type %T. expect *ent.DocumentQuery", q)
+}
+
+// The DocumentAccessFunc type is an adapter to allow the use of ordinary function as a Querier.
+type DocumentAccessFunc func(context.Context, *ent.DocumentAccessQuery) (ent.Value, error)
+
+// Query calls f(ctx, q).
+func (f DocumentAccessFunc) Query(ctx context.Context, q ent.Query) (ent.Value, error) {
+	if q, ok := q.(*ent.DocumentAccessQuery); ok {
+		return f(ctx, q)
+	}
+	return nil, fmt.Errorf("unexpected query type %T. expect *ent.DocumentAccessQuery", q)
+}
+
+// The TraverseDocumentAccess type is an adapter to allow the use of ordinary function as Traverser.
+type TraverseDocumentAccess func(context.Context, *ent.DocumentAccessQuery) error
+
+// Intercept is a dummy implementation of Intercept that returns the next Querier in the pipeline.
+func (f TraverseDocumentAccess) Intercept(next ent.Querier) ent.Querier {
+	return next
+}
+
+// Traverse calls f(ctx, q).
+func (f TraverseDocumentAccess) Traverse(ctx context.Context, q ent.Query) error {
+	if q, ok := q.(*ent.DocumentAccessQuery); ok {
+		return f(ctx, q)
+	}
+	return fmt.Errorf("unexpected query type %T. expect *ent.DocumentAccessQuery", q)
 }
 
 // The EventFunc type is an adapter to allow the use of ordinary function as a Querier.
@@ -1844,6 +1872,8 @@ func NewQuery(q ent.Query) (Query, error) {
 		return &query[*ent.AlertMetricsQuery, predicate.AlertMetrics, alertmetrics.OrderOption]{typ: ent.TypeAlertMetrics, tq: q}, nil
 	case *ent.DocumentQuery:
 		return &query[*ent.DocumentQuery, predicate.Document, document.OrderOption]{typ: ent.TypeDocument, tq: q}, nil
+	case *ent.DocumentAccessQuery:
+		return &query[*ent.DocumentAccessQuery, predicate.DocumentAccess, documentaccess.OrderOption]{typ: ent.TypeDocumentAccess, tq: q}, nil
 	case *ent.EventQuery:
 		return &query[*ent.EventQuery, predicate.Event, event.OrderOption]{typ: ent.TypeEvent, tq: q}, nil
 	case *ent.EventAnnotationQuery:

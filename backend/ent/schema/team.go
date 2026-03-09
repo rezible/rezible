@@ -40,5 +40,7 @@ func (Team) Edges() []ent.Edge {
 		edge.To("oncall_rosters", OncallRoster.Type),
 
 		edge.From("scheduled_meetings", MeetingSchedule.Type).Ref("owning_team"),
+
+		edge.From("document_accesses", DocumentAccess.Type).Ref("team"),
 	}
 }

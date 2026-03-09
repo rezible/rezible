@@ -14,6 +14,7 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
+	"github.com/rezible/rezible/ent/documentaccess"
 	"github.com/rezible/rezible/ent/meetingschedule"
 	"github.com/rezible/rezible/ent/oncallroster"
 	"github.com/rezible/rezible/ent/predicate"
@@ -34,6 +35,7 @@ type TeamQuery struct {
 	withUsers             *UserQuery
 	withOncallRosters     *OncallRosterQuery
 	withScheduledMeetings *MeetingScheduleQuery
+	withDocumentAccesses  *DocumentAccessQuery
 	withTeamMemberships   *TeamMembershipQuery
 	modifiers             []func(*sql.Selector)
 	// intermediate query (i.e. traversal path).
@@ -153,6 +155,28 @@ func (_q *TeamQuery) QueryScheduledMeetings() *MeetingScheduleQuery {
 			sqlgraph.From(team.Table, team.FieldID, selector),
 			sqlgraph.To(meetingschedule.Table, meetingschedule.FieldID),
 			sqlgraph.Edge(sqlgraph.M2M, true, team.ScheduledMeetingsTable, team.ScheduledMeetingsPrimaryKey...),
+		)
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryDocumentAccesses chains the current query on the "document_accesses" edge.
+func (_q *TeamQuery) QueryDocumentAccesses() *DocumentAccessQuery {
+	query := (&DocumentAccessClient{config: _q.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := _q.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := _q.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(team.Table, team.FieldID, selector),
+			sqlgraph.To(documentaccess.Table, documentaccess.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, true, team.DocumentAccessesTable, team.DocumentAccessesColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
@@ -378,6 +402,7 @@ func (_q *TeamQuery) Clone() *TeamQuery {
 		withUsers:             _q.withUsers.Clone(),
 		withOncallRosters:     _q.withOncallRosters.Clone(),
 		withScheduledMeetings: _q.withScheduledMeetings.Clone(),
+		withDocumentAccesses:  _q.withDocumentAccesses.Clone(),
 		withTeamMemberships:   _q.withTeamMemberships.Clone(),
 		// clone intermediate query.
 		sql:       _q.sql.Clone(),
@@ -427,6 +452,17 @@ func (_q *TeamQuery) WithScheduledMeetings(opts ...func(*MeetingScheduleQuery)) 
 		opt(query)
 	}
 	_q.withScheduledMeetings = query
+	return _q
+}
+
+// WithDocumentAccesses tells the query-builder to eager-load the nodes that are connected to
+// the "document_accesses" edge. The optional arguments are used to configure the query builder of the edge.
+func (_q *TeamQuery) WithDocumentAccesses(opts ...func(*DocumentAccessQuery)) *TeamQuery {
+	query := (&DocumentAccessClient{config: _q.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	_q.withDocumentAccesses = query
 	return _q
 }
 
@@ -525,11 +561,12 @@ func (_q *TeamQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Team, e
 	var (
 		nodes       = []*Team{}
 		_spec       = _q.querySpec()
-		loadedTypes = [5]bool{
+		loadedTypes = [6]bool{
 			_q.withTenant != nil,
 			_q.withUsers != nil,
 			_q.withOncallRosters != nil,
 			_q.withScheduledMeetings != nil,
+			_q.withDocumentAccesses != nil,
 			_q.withTeamMemberships != nil,
 		}
 	)
@@ -578,6 +615,13 @@ func (_q *TeamQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Team, e
 		if err := _q.loadScheduledMeetings(ctx, query, nodes,
 			func(n *Team) { n.Edges.ScheduledMeetings = []*MeetingSchedule{} },
 			func(n *Team, e *MeetingSchedule) { n.Edges.ScheduledMeetings = append(n.Edges.ScheduledMeetings, e) }); err != nil {
+			return nil, err
+		}
+	}
+	if query := _q.withDocumentAccesses; query != nil {
+		if err := _q.loadDocumentAccesses(ctx, query, nodes,
+			func(n *Team) { n.Edges.DocumentAccesses = []*DocumentAccess{} },
+			func(n *Team, e *DocumentAccess) { n.Edges.DocumentAccesses = append(n.Edges.DocumentAccesses, e) }); err != nil {
 			return nil, err
 		}
 	}
@@ -800,6 +844,36 @@ func (_q *TeamQuery) loadScheduledMeetings(ctx context.Context, query *MeetingSc
 		for kn := range nodes {
 			assign(kn, n)
 		}
+	}
+	return nil
+}
+func (_q *TeamQuery) loadDocumentAccesses(ctx context.Context, query *DocumentAccessQuery, nodes []*Team, init func(*Team), assign func(*Team, *DocumentAccess)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[uuid.UUID]*Team)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+		if init != nil {
+			init(nodes[i])
+		}
+	}
+	if len(query.ctx.Fields) > 0 {
+		query.ctx.AppendFieldOnce(documentaccess.FieldTeamID)
+	}
+	query.Where(predicate.DocumentAccess(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(team.DocumentAccessesColumn), fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.TeamID
+		node, ok := nodeids[fk]
+		if !ok {
+			return fmt.Errorf(`unexpected referenced foreign-key "team_id" returned %v for node %v`, fk, n.ID)
+		}
+		assign(node, n)
 	}
 	return nil
 }

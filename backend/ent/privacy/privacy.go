@@ -219,6 +219,30 @@ func (f DocumentMutationRuleFunc) EvalMutation(ctx context.Context, m ent.Mutati
 	return Denyf("ent/privacy: unexpected mutation type %T, expect *ent.DocumentMutation", m)
 }
 
+// The DocumentAccessQueryRuleFunc type is an adapter to allow the use of ordinary
+// functions as a query rule.
+type DocumentAccessQueryRuleFunc func(context.Context, *ent.DocumentAccessQuery) error
+
+// EvalQuery return f(ctx, q).
+func (f DocumentAccessQueryRuleFunc) EvalQuery(ctx context.Context, q ent.Query) error {
+	if q, ok := q.(*ent.DocumentAccessQuery); ok {
+		return f(ctx, q)
+	}
+	return Denyf("ent/privacy: unexpected query type %T, expect *ent.DocumentAccessQuery", q)
+}
+
+// The DocumentAccessMutationRuleFunc type is an adapter to allow the use of ordinary
+// functions as a mutation rule.
+type DocumentAccessMutationRuleFunc func(context.Context, *ent.DocumentAccessMutation) error
+
+// EvalMutation calls f(ctx, m).
+func (f DocumentAccessMutationRuleFunc) EvalMutation(ctx context.Context, m ent.Mutation) error {
+	if m, ok := m.(*ent.DocumentAccessMutation); ok {
+		return f(ctx, m)
+	}
+	return Denyf("ent/privacy: unexpected mutation type %T, expect *ent.DocumentAccessMutation", m)
+}
+
 // The EventQueryRuleFunc type is an adapter to allow the use of ordinary
 // functions as a query rule.
 type EventQueryRuleFunc func(context.Context, *ent.EventQuery) error
@@ -1656,6 +1680,8 @@ func queryFilter(q ent.Query) (Filter, error) {
 		return q.Filter(), nil
 	case *ent.DocumentQuery:
 		return q.Filter(), nil
+	case *ent.DocumentAccessQuery:
+		return q.Filter(), nil
 	case *ent.EventQuery:
 		return q.Filter(), nil
 	case *ent.EventAnnotationQuery:
@@ -1786,6 +1812,8 @@ func mutationFilter(m ent.Mutation) (Filter, error) {
 	case *ent.AlertInstanceMutation:
 		return m.Filter(), nil
 	case *ent.DocumentMutation:
+		return m.Filter(), nil
+	case *ent.DocumentAccessMutation:
 		return m.Filter(), nil
 	case *ent.EventMutation:
 		return m.Filter(), nil

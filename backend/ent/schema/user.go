@@ -60,6 +60,8 @@ func (User) Edges() []ent.Edge {
 		edge.From("retrospective_review_requests", RetrospectiveReview.Type).Ref("requester"),
 		edge.From("retrospective_review_responses", RetrospectiveReview.Type).Ref("reviewer"),
 		edge.From("retrospective_comments", RetrospectiveComment.Type).Ref("user"),
+
+		edge.From("document_accesses", DocumentAccess.Type).Ref("user"),
 	}
 }
 func (User) Indexes() []ent.Index {
