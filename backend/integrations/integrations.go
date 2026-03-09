@@ -24,7 +24,7 @@ var (
 	packageNameMap     = map[string]rez.IntegrationPackage{}
 	availablePackages  []rez.IntegrationPackage
 	supportedDataKinds []string
-	packageSetupFuncs  = []rez.SetupPackageFunc{
+	setupFuncs         = []rez.PackageSetupFunc{
 		fakeprovider.SetupIntegration,
 		slack.SetupIntegration,
 		google.SetupIntegration,
@@ -35,7 +35,7 @@ func Setup(ctx context.Context, svcs *rez.Services) error {
 	availablePackages = make([]rez.IntegrationPackage, 0, len(availablePackages))
 	packageNameMap = make(map[string]rez.IntegrationPackage)
 	enabledSupportedDataKinds := mapset.NewSet[string]()
-	for _, setupFn := range packageSetupFuncs {
+	for _, setupFn := range setupFuncs {
 		pkg, pkgErr := setupFn(ctx, svcs)
 		if pkgErr != nil {
 			funcName := runtime.FuncForPC(reflect.ValueOf(setupFn).Pointer()).Name()

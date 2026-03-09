@@ -8,7 +8,6 @@ import (
 	"net/url"
 	"time"
 
-	mapset "github.com/deckarep/golang-set/v2"
 	"github.com/failsafe-go/failsafe-go"
 	"github.com/failsafe-go/failsafe-go/retrypolicy"
 	"github.com/go-chi/chi/v5"
@@ -233,7 +232,7 @@ func (s *AuthService) authSessionCreatedCallback(w http.ResponseWriter, r *http.
 	}
 
 	sess := newUserAuthSession(usr.ID, ps.ExpiresAt)
-	token, tokenErr := s.IssueAuthSessionToken(sess)
+	token, tokenErr := s.IssueAuthSessionToken(sess, nil)
 	if tokenErr != nil {
 		log.Error().Err(tokenErr).Msg("failed to issue session token")
 		http.Error(w, "session error", http.StatusInternalServerError)
@@ -246,21 +245,21 @@ func (s *AuthService) authSessionCreatedCallback(w http.ResponseWriter, r *http.
 
 type authSessionTokenClaims struct {
 	jwt.RegisteredClaims
-	Scopes rez.AuthSessionScopes `json:"scopes"`
-	UserId uuid.UUID             `json:"userId"`
+	UserId uuid.UUID `json:"userId"`
+	Scopes []string  `json:"scopes"`
 }
 
-func (s *AuthService) IssueAuthSessionToken(sess *rez.AuthSession) (string, error) {
+func (s *AuthService) IssueAuthSessionToken(sess *rez.AuthSession, scopes []string) (string, error) {
 	claims := jwt.MapClaims{
 		"userId": sess.UserId,
-		"scopes": sess.Scopes,
+		"scopes": scopes,
 		"exp":    jwt.NewNumericDate(sess.ExpiresAt),
 	}
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 	return token.SignedString(s.sessionSecret)
 }
 
-func (s *AuthService) VerifyAuthSessionToken(token string, scopes rez.AuthSessionScopes) (*rez.AuthSession, error) {
+func (s *AuthService) VerifyAuthSessionToken(token string, requiredScopes []string) (*rez.AuthSession, error) {
 	if token == "" {
 		return nil, rez.ErrNoAuthSession
 	}
@@ -291,15 +290,12 @@ func (s *AuthService) VerifyAuthSessionToken(token string, scopes rez.AuthSessio
 		return nil, rez.ErrAuthSessionExpired
 	}
 
-	for name, v := range claims.Scopes {
-		cv, ok := scopes[name]
-		if !ok {
-			return nil, rez.ErrAuthSessionInvalidScope
-		}
-		if !mapset.NewSet(v...).Equal(mapset.NewSet(cv...)) {
-			return nil, rez.ErrAuthSessionInvalidScope
-		}
-	}
+	//claimScopes := mapset.NewSet[string](claims.Scopes...)
+	//for _, scope := range requiredScopes {
+	//	if !claimScopes.Contains(scope) {
+	//		return nil, rez.ErrAuthSessionMissingScope
+	//	}
+	//}
 
 	return newUserAuthSession(claims.UserId, exp.Time), nil
 }

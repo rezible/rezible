@@ -3,30 +3,30 @@ package rez
 import (
 	"context"
 	"encoding/json"
-	"errors"
 	"iter"
 	"net/http"
 	"time"
 
+	"github.com/ThreeDotsLabs/watermill/components/cqrs"
 	"github.com/coreos/go-oidc/v3/oidc"
-	"github.com/rezible/rezible/ent"
-	"github.com/rezible/rezible/jobs"
+	"github.com/google/uuid"
+	"github.com/rotisserie/eris"
+	"github.com/texm/prosemirror-go"
 	"golang.org/x/oauth2"
 
-	"github.com/ThreeDotsLabs/watermill/components/cqrs"
-	"github.com/google/uuid"
-	"github.com/texm/prosemirror-go"
+	"github.com/rezible/rezible/ent"
+	"github.com/rezible/rezible/jobs"
 )
 
 var (
-	ErrNoAuthSession            = errors.New("no auth session")
-	ErrAuthSessionExpired       = errors.New("auth session expired")
-	ErrAuthSessionInvalidScope  = errors.New("invalid session token scope")
-	ErrInvalidUser              = errors.New("user does not exist")
-	ErrInvalidTenant            = errors.New("tenant does not exist")
-	ErrCannotCreateTenant       = errors.New("cannot create tenant")
-	ErrUnauthorized             = errors.New("unauthorized")
-	ErrNoConfiguredIntegrations = errors.New("no configured integrations")
+	ErrNoAuthSession            = eris.New("no auth session")
+	ErrInvalidUser              = eris.New("user does not exist")
+	ErrInvalidTenant            = eris.New("tenant does not exist")
+	ErrAuthSessionExpired       = eris.New("auth session expired")
+	ErrAuthSessionMissingScope  = eris.New("auth session missing scope")
+	ErrAuthSessionUnauthorized  = eris.New("auth session unauthorized")
+	ErrCannotCreateTenant       = eris.New("cannot create tenant")
+	ErrNoConfiguredIntegrations = eris.New("no configured integrations")
 )
 
 type ConfigLoader interface {
@@ -97,14 +97,13 @@ type Services struct {
 }
 
 type (
-	SetupPackageFunc = func(context.Context, *Services) (IntegrationPackage, error)
+	PackageSetupFunc = func(context.Context, *Services) (IntegrationPackage, error)
 
 	IntegrationPackage interface {
 		Name() string
 		IsAvailable() (bool, error)
 		SupportedDataKinds() []string
 		OAuthConfigRequired() bool
-
 		GetConfiguredIntegration(*ent.Integration) ConfiguredIntegration
 	}
 
@@ -231,9 +230,8 @@ type (
 	AuthSession struct {
 		UserId    uuid.UUID
 		ExpiresAt time.Time
-		Scopes    AuthSessionScopes
+		Scopes    []string
 	}
-	AuthSessionScopes map[string][]string
 
 	AuthService interface {
 		LoadSessionProviders(context.Context) error
@@ -243,8 +241,8 @@ type (
 		AuthRouteHandler() http.Handler
 		MCPServerMiddleware() func(http.Handler) http.Handler
 
-		IssueAuthSessionToken(sess *AuthSession) (string, error)
-		VerifyAuthSessionToken(token string, scopes AuthSessionScopes) (*AuthSession, error)
+		IssueAuthSessionToken(sess *AuthSession, scopes []string) (string, error)
+		VerifyAuthSessionToken(token string, scopes []string) (*AuthSession, error)
 
 		CreateAuthContext(context.Context, *AuthSession) (context.Context, error)
 		GetAuthSession(context.Context) (*AuthSession, error)
@@ -316,8 +314,14 @@ type (
 		PullTeams(context.Context) iter.Seq2[*ent.Team, error]
 	}
 
+	ListTeamsParams struct {
+		ent.ListParams
+		TeamIds []uuid.UUID
+		UserIds []uuid.UUID
+	}
 	TeamService interface {
 		GetById(context.Context, uuid.UUID) (*ent.Team, error)
+		List(context.Context, ListTeamsParams) (ent.Teams, error)
 	}
 )
 
@@ -325,10 +329,11 @@ type (
 	ContentNode = prosemirror.Node
 
 	DocumentsService interface {
-		GetUserDocumentAccess(ctx context.Context, userId uuid.UUID, documentId uuid.UUID) (bool, error)
-
 		GetDocument(context.Context, uuid.UUID) (*ent.Document, error)
 		SetDocument(context.Context, uuid.UUID, func(*ent.DocumentMutation)) (*ent.Document, error)
+
+		CreateDocumentAccessAuthSessionToken(context.Context, uuid.UUID, *AuthSession) (string, error)
+		GetDocumentAccess(context.Context, uuid.UUID, *AuthSession) (*ent.DocumentAccess, error)
 	}
 )
 

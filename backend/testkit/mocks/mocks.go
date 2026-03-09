@@ -1250,7 +1250,7 @@ func (_c *MockUserService_GetById_Call) RunAndReturn(run func(context1 context.C
 }
 
 // GetUserContext provides a mock function for the type MockUserService
-func (_mock *MockUserService) GetUserContext(ctx context.Context) *ent.User {
+func (_mock *MockUserService) GetUserContext(ctx context.Context) (*ent.User, bool) {
 	ret := _mock.Called(ctx)
 
 	if len(ret) == 0 {
@@ -1258,6 +1258,10 @@ func (_mock *MockUserService) GetUserContext(ctx context.Context) *ent.User {
 	}
 
 	var r0 *ent.User
+	var r1 bool
+	if returnFunc, ok := ret.Get(0).(func(context.Context) (*ent.User, bool)); ok {
+		return returnFunc(ctx)
+	}
 	if returnFunc, ok := ret.Get(0).(func(context.Context) *ent.User); ok {
 		r0 = returnFunc(ctx)
 	} else {
@@ -1265,7 +1269,12 @@ func (_mock *MockUserService) GetUserContext(ctx context.Context) *ent.User {
 			r0 = ret.Get(0).(*ent.User)
 		}
 	}
-	return r0
+	if returnFunc, ok := ret.Get(1).(func(context.Context) bool); ok {
+		r1 = returnFunc(ctx)
+	} else {
+		r1 = ret.Get(1).(bool)
+	}
+	return r0, r1
 }
 
 // MockUserService_GetUserContext_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'GetUserContext'
@@ -1292,12 +1301,12 @@ func (_c *MockUserService_GetUserContext_Call) Run(run func(ctx context.Context)
 	return _c
 }
 
-func (_c *MockUserService_GetUserContext_Call) Return(user *ent.User) *MockUserService_GetUserContext_Call {
-	_c.Call.Return(user)
+func (_c *MockUserService_GetUserContext_Call) Return(user *ent.User, b bool) *MockUserService_GetUserContext_Call {
+	_c.Call.Return(user, b)
 	return _c
 }
 
-func (_c *MockUserService_GetUserContext_Call) RunAndReturn(run func(ctx context.Context) *ent.User) *MockUserService_GetUserContext_Call {
+func (_c *MockUserService_GetUserContext_Call) RunAndReturn(run func(ctx context.Context) (*ent.User, bool)) *MockUserService_GetUserContext_Call {
 	_c.Call.Return(run)
 	return _c
 }

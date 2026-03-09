@@ -184,6 +184,11 @@ func (s *Server) setupServices(ctx context.Context, dbc *ent.Client, jobSvc rez.
 		return nil, fmt.Errorf("postgres.NewUserService: %w", usersErr)
 	}
 
+	auth, authErr := http.NewAuthSessionService(ctx, orgs, users)
+	if authErr != nil {
+		return nil, fmt.Errorf("http.NewAuthSessionService: %w", authErr)
+	}
+
 	intgs, intgsErr := db.NewIntegrationsService(dbc, jobSvc, users)
 	if intgsErr != nil {
 		return nil, fmt.Errorf("db.NewIntegrationsService: %w", intgsErr)
@@ -259,14 +264,9 @@ func (s *Server) setupServices(ctx context.Context, dbc *ent.Client, jobSvc rez.
 		return nil, fmt.Errorf("postgres.NewPlaybookService: %w", playbooksErr)
 	}
 
-	docs, docsErr := db.NewDocumentsService(dbc, users)
+	docs, docsErr := db.NewDocumentsService(dbc, auth, teams)
 	if docsErr != nil {
 		return nil, fmt.Errorf("db.NewDocumentsService: %w", docsErr)
-	}
-
-	auth, authErr := http.NewAuthSessionService(ctx, orgs, users)
-	if authErr != nil {
-		return nil, fmt.Errorf("http.NewAuthSessionService: %w", authErr)
 	}
 
 	return &rez.Services{

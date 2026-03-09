@@ -38,12 +38,13 @@ type (
 	DocumentEditorSession struct {
 		DocumentId    uuid.UUID `json:"documentId"`
 		ConnectionUrl string    `json:"connectionUrl"`
-		SessionToken  string    `json:"sessionToken"`
+		AccessToken   string    `json:"accessToken"`
 	}
 
 	DocumentEditorSessionAuth struct {
-		User     DocumentEditorSessionUser `json:"user"`
-		ReadOnly bool                      `json:"readOnly"`
+		UserId    uuid.UUID `json:"userId"`
+		CanEdit   bool      `json:"canEdit"`
+		CanManage bool      `json:"canManage"`
 	}
 
 	DocumentEditorSessionUser struct {
@@ -57,6 +58,15 @@ func DocumentFromEnt(doc *ent.Document) Document {
 		Content: string(doc.Content),
 	}
 	return Document{Id: doc.ID, Attributes: attrs}
+}
+
+func DocumentEditorSessionAuthFromEnt(access *ent.DocumentAccess) DocumentEditorSessionAuth {
+	sa := DocumentEditorSessionAuth{
+		UserId:    access.UserID,
+		CanEdit:   access.CanEdit,
+		CanManage: access.CanManage,
+	}
+	return sa
 }
 
 var documentsTags = []string{"documents"}
