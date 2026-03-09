@@ -116,8 +116,8 @@ func IncidentFromEnt(inc *ent.Incident) Incident {
 			attr.RoleAssignments[i] = IncidentRoleAssignmentFromEnt(assignment)
 		}
 	}
-	if conferences, confErr := inc.Edges.VideoConferencesOrErr(); confErr == nil {
-		primaryConf := VideoConferenceFromEnt(ent.VideoConferences(conferences).GetPrimary())
+	if primaryVc := inc.Edges.GetPrimaryVideoConference(); primaryVc != nil {
+		primaryConf := VideoConferenceFromEnt(primaryVc)
 		attr.PrimaryVideoConference = &primaryConf
 	}
 

@@ -27,6 +27,7 @@ saml_cert_dir := "./backend/internal/http/saml/testdata"
     just install-dependencies
     just codegen
     just localias-reload
+    just setup-db
 
 @install-dependencies:
     cd backend && go mod tidy
@@ -112,6 +113,7 @@ migrations_dir := "backend/migrations"
 
 @setup-db:
     just run-docker-compose down postgres -v && just run-docker-compose up postgres --wait
+    just create-initial-migrations
     just run-migrations
 
 

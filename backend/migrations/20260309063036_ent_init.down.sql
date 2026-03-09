@@ -146,6 +146,8 @@ ALTER TABLE "incidents" DROP CONSTRAINT "incidents_tenants_tenant", DROP CONSTRA
 ALTER TABLE "event_annotations" DROP CONSTRAINT "event_annotations_users_creator", DROP CONSTRAINT "event_annotations_tenants_tenant", DROP CONSTRAINT "event_annotations_events_event";
 -- reverse: modify "events" table
 ALTER TABLE "events" DROP CONSTRAINT "events_tenants_tenant";
+-- reverse: modify "document_accesses" table
+ALTER TABLE "document_accesses" DROP CONSTRAINT "document_accesses_users_user", DROP CONSTRAINT "document_accesses_tenants_tenant", DROP CONSTRAINT "document_accesses_teams_team", DROP CONSTRAINT "document_accesses_documents_document";
 -- reverse: modify "documents" table
 ALTER TABLE "documents" DROP CONSTRAINT "documents_tenants_tenant";
 -- reverse: modify "alert_instances" table
@@ -466,6 +468,10 @@ DROP TABLE "event_annotations";
 DROP INDEX "event_tenant_id";
 -- reverse: create "events" table
 DROP TABLE "events";
+-- reverse: create index "documentaccess_tenant_id" to table: "document_accesses"
+DROP INDEX "documentaccess_tenant_id";
+-- reverse: create "document_accesses" table
+DROP TABLE "document_accesses";
 -- reverse: create index "document_tenant_id" to table: "documents"
 DROP INDEX "document_tenant_id";
 -- reverse: create "documents" table

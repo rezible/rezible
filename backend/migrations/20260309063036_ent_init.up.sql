@@ -11,9 +11,13 @@ CREATE TABLE "alert_instances" ("id" uuid NOT NULL, "external_id" character vary
 -- create index "alertinstance_tenant_id" to table: "alert_instances"
 CREATE INDEX "alertinstance_tenant_id" ON "alert_instances" ("tenant_id");
 -- create "documents" table
-CREATE TABLE "documents" ("id" uuid NOT NULL, "content" bytea NOT NULL, "tenant_id" bigint NOT NULL, PRIMARY KEY ("id"));
+CREATE TABLE "documents" ("id" uuid NOT NULL, "content" bytea NOT NULL, "access_restricted" boolean NOT NULL DEFAULT false, "tenant_id" bigint NOT NULL, PRIMARY KEY ("id"));
 -- create index "document_tenant_id" to table: "documents"
 CREATE INDEX "document_tenant_id" ON "documents" ("tenant_id");
+-- create "document_accesses" table
+CREATE TABLE "document_accesses" ("id" uuid NOT NULL, "created_at" timestamptz NOT NULL, "updated_at" timestamptz NOT NULL, "can_edit" boolean NOT NULL DEFAULT false, "can_manage" boolean NOT NULL DEFAULT false, "tenant_id" bigint NOT NULL, "document_id" uuid NOT NULL, "user_id" uuid NULL, "team_id" uuid NULL, PRIMARY KEY ("id"));
+-- create index "documentaccess_tenant_id" to table: "document_accesses"
+CREATE INDEX "documentaccess_tenant_id" ON "document_accesses" ("tenant_id");
 -- create "events" table
 CREATE TABLE "events" ("id" uuid NOT NULL, "external_id" character varying NULL, "timestamp" timestamptz NOT NULL, "kind" character varying NOT NULL, "title" character varying NOT NULL, "description" character varying NOT NULL, "source" character varying NOT NULL, "tenant_id" bigint NOT NULL, PRIMARY KEY ("id"));
 -- create index "event_tenant_id" to table: "events"
@@ -334,6 +338,8 @@ ALTER TABLE "alert_feedbacks" ADD CONSTRAINT "alert_feedbacks_alert_instances_al
 ALTER TABLE "alert_instances" ADD CONSTRAINT "alert_instances_alert_feedbacks_feedback" FOREIGN KEY ("alert_instance_feedback") REFERENCES "alert_feedbacks" ("id") ON UPDATE NO ACTION ON DELETE SET NULL, ADD CONSTRAINT "alert_instances_alerts_alert" FOREIGN KEY ("alert_id") REFERENCES "alerts" ("id") ON UPDATE NO ACTION ON DELETE NO ACTION, ADD CONSTRAINT "alert_instances_alerts_instances" FOREIGN KEY ("alert_instances") REFERENCES "alerts" ("id") ON UPDATE NO ACTION ON DELETE SET NULL, ADD CONSTRAINT "alert_instances_events_event" FOREIGN KEY ("event_id") REFERENCES "events" ("id") ON UPDATE NO ACTION ON DELETE NO ACTION, ADD CONSTRAINT "alert_instances_tenants_tenant" FOREIGN KEY ("tenant_id") REFERENCES "tenants" ("id") ON UPDATE NO ACTION ON DELETE NO ACTION;
 -- modify "documents" table
 ALTER TABLE "documents" ADD CONSTRAINT "documents_tenants_tenant" FOREIGN KEY ("tenant_id") REFERENCES "tenants" ("id") ON UPDATE NO ACTION ON DELETE NO ACTION;
+-- modify "document_accesses" table
+ALTER TABLE "document_accesses" ADD CONSTRAINT "document_accesses_documents_document" FOREIGN KEY ("document_id") REFERENCES "documents" ("id") ON UPDATE NO ACTION ON DELETE NO ACTION, ADD CONSTRAINT "document_accesses_teams_team" FOREIGN KEY ("team_id") REFERENCES "teams" ("id") ON UPDATE NO ACTION ON DELETE SET NULL, ADD CONSTRAINT "document_accesses_tenants_tenant" FOREIGN KEY ("tenant_id") REFERENCES "tenants" ("id") ON UPDATE NO ACTION ON DELETE NO ACTION, ADD CONSTRAINT "document_accesses_users_user" FOREIGN KEY ("user_id") REFERENCES "users" ("id") ON UPDATE NO ACTION ON DELETE SET NULL;
 -- modify "events" table
 ALTER TABLE "events" ADD CONSTRAINT "events_tenants_tenant" FOREIGN KEY ("tenant_id") REFERENCES "tenants" ("id") ON UPDATE NO ACTION ON DELETE NO ACTION;
 -- modify "event_annotations" table

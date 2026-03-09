@@ -88,6 +88,16 @@
 			</div>
 			<Badge variant={configured ? "secondary" : "outline"}>{configured ? "Configured" : "Not configured"}</Badge>
 		</div>
+	</Card.Header>
+
+	<Card.Content class="p-0 flex flex-col gap-3">
+		{#if !!errorMessage}
+			<Alert.Root variant="destructive">
+				<Alert.Title>Could not save integration</Alert.Title>
+				<Alert.Description>{errorMessage}</Alert.Description>
+			</Alert.Root>
+		{/if}
+
 		{#if requiresOAuthConnect}
 			<div class="place-self-center">
 				<Button onclick={() => startOAuthFlow?.()} class="w-fit h-fit cursor-pointer p-0">
@@ -95,26 +105,14 @@
 				</Button>
 			</div>
 		{/if}
-	</Card.Header>
+		{#if !requiresOAuthConnect}
+			<ConfigComponent {integration} {configured} onChange={onConfigChange} />
 
-	{#if !requiresOAuthConnect}
-		<Card.Content class="p-0 flex flex-col gap-3">
-			{#if !!errorMessage}
-				<Alert.Root variant="destructive">
-					<Alert.Title>Could not save integration</Alert.Title>
-					<Alert.Description>{errorMessage}</Alert.Description>
-				</Alert.Root>
+			{#if supportsManualSave}
+				<Button onclick={doConfigureIntegration} disabled={!hasConfigChanges || isSaving}>
+					{isSaving ? "Saving..." : "Save"}
+				</Button>
 			{/if}
-
-			{#if !requiresOAuthConnect}
-				<ConfigComponent {integration} {configured} onChange={onConfigChange} />
-
-				{#if supportsManualSave}
-					<Button onclick={doConfigureIntegration} disabled={!hasConfigChanges || isSaving}>
-						{isSaving ? "Saving..." : "Save"}
-					</Button>
-				{/if}
-			{/if}
-		</Card.Content>
-	{/if}
+		{/if}
+	</Card.Content>
 </Card.Root>
