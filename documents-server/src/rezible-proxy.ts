@@ -27,16 +27,16 @@ export class RezibleServerProxy implements Extension {
 		});
 	}
 
-	async onAuthenticate(data: onAuthenticatePayload): Promise<AuthContext> {
-		const token = data.token;
-		const res = await Documents.verifyDocumentSessionAuth({
+	async onAuthenticate(payload: onAuthenticatePayload): Promise<AuthContext> {
+		const token = payload.token;
+		const {data: resp, error: verifyErr} = await Documents.verifyDocumentSessionAuth({
 			auth: token,
-			path: { id: data.documentName },
+			path: { id: payload.documentName },
 		});
-        if (res.error) throw new Error("Authentication Failed");
+        if (verifyErr) throw new Error("Authentication Failed");
 		
-		const sessionAuth = res.data.data;
-		data.connectionConfig.readOnly = sessionAuth.readOnly;
+		const sessionAuth = resp.data;
+		payload.connectionConfig.readOnly = !(sessionAuth.canEdit || sessionAuth.canManage);
 
 		return {token, sessionAuth};
 	}

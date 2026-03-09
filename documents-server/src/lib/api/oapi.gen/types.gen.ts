@@ -12,14 +12,10 @@ export type VerifyDocumentSessionAuthResponseBody = {
     data: DocumentEditorSessionAuth;
 };
 
-export type DocumentEditorSessionUser = {
-    id: string;
-    username: string;
-};
-
 export type DocumentEditorSessionAuth = {
-    readOnly: boolean;
-    user: DocumentEditorSessionUser;
+    canEdit: boolean;
+    canManage: boolean;
+    userId: string;
 };
 
 export type UpdateDocumentResponseBody = {
@@ -60,9 +56,9 @@ export type RequestDocumentEditorSessionResponseBody = {
 };
 
 export type DocumentEditorSession = {
+    accessToken: string;
     connectionUrl: string;
     documentId: string;
-    sessionToken: string;
 };
 
 export type LoadDocumentResponseBody = {
