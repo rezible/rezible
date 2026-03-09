@@ -33,7 +33,8 @@ func NewServer(auth rez.AuthService, v1h oapiv1.Handler) (*Server, error) {
 		return nil, fmt.Errorf("root handler: %w", rootErr)
 	}
 
-	apiHandler, apiErr := s.makeApiHandler(auth, v1h)
+	apiBasePath := rez.Config.BasePath()
+	apiHandler, apiErr := s.makeApiHandler(auth, v1h, apiBasePath)
 	if apiErr != nil {
 		return nil, fmt.Errorf("api handler: %w", apiErr)
 	}
@@ -42,7 +43,7 @@ func NewServer(auth rez.AuthService, v1h oapiv1.Handler) (*Server, error) {
 	s.router.Use(middleware.Logger)
 	s.router.Use(middleware.Recoverer)
 
-	s.router.Mount(rez.Config.BasePath(), apiHandler)
+	s.router.Mount(apiBasePath, apiHandler)
 	s.router.NotFound(rootHandler.ServeHTTP)
 
 	printRoutes("/", s.router.Routes())
@@ -58,10 +59,6 @@ func printRoutes(prefix string, routes []chi.Route) {
 		}
 		path, _ := strings.CutSuffix(r.Pattern, "*")
 		route, _ := url.JoinPath(prefix, path)
-		log.Debug().
-			Str("route", route).
-			Strs("handlers", handlers).
-			Msg("mounted")
 		if r.SubRoutes != nil {
 			printRoutes(route, r.SubRoutes.Routes())
 		}
@@ -75,7 +72,7 @@ func (s *Server) makeRootHandler() (http.Handler, error) {
 	return s.makeNotFoundHandler(), nil
 }
 
-func (s *Server) makeApiHandler(auth rez.AuthService, v1h oapiv1.Handler) (http.Handler, error) {
+func (s *Server) makeApiHandler(auth rez.AuthService, v1h oapiv1.Handler, prefix string) (http.Handler, error) {
 	whHandler, whErr := s.makeWebhooksHandler()
 	if whErr != nil {
 		return nil, fmt.Errorf("make webhooks handler: %w", whErr)
@@ -83,7 +80,7 @@ func (s *Server) makeApiHandler(auth rez.AuthService, v1h oapiv1.Handler) (http.
 
 	apiRouter := chi.NewRouter()
 	apiRouter.Mount(rez.Config.WebhooksPath(), whHandler)
-	apiRouter.Mount(oapiv1.VersionPrefix, s.makeV1ApiHandler(auth, v1h))
+	apiRouter.Mount(oapiv1.VersionPrefix, s.makeV1ApiHandler(auth, v1h, prefix))
 	// if rez.Config.ServeFrontend() {
 	apiRouter.Mount(rez.Config.AuthPath(), auth.AuthRouteHandler())
 	apiRouter.Get("/health", s.makeHealthCheckHandler())
@@ -113,10 +110,9 @@ func (s *Server) makeWebhooksHandler() (http.Handler, error) {
 	return r, nil
 }
 
-func (s *Server) makeV1ApiHandler(auth rez.AuthService, h oapiv1.Handler) http.Handler {
-	securityMw := oapiv1.MakeSecurityMiddleware(auth)
-	handler := oapiv1.MakeApi(h, securityMw).Adapter()
-	return s.commonMiddleware().Handler(handler)
+func (s *Server) makeV1ApiHandler(auth rez.AuthService, h oapiv1.Handler, prefix string) http.Handler {
+	apiHandler := oapiv1.MakeApi(h, prefix, oapiv1.MakeSecurityMiddleware(auth))
+	return s.commonMiddleware().Handler(apiHandler.Adapter())
 }
 
 func (s *Server) makeHealthCheckHandler() http.HandlerFunc {

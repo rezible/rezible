@@ -86,10 +86,6 @@ func (c *Config) AppUrl() string {
 	return c.GetString("app_url")
 }
 
-func (c *Config) AppMountPath() string {
-	return c.GetStringOr("app_mount_path", "/api")
-}
-
 func (c *Config) ListenHost() string {
 	return c.GetStringOr("host", "0.0.0.0")
 }
@@ -106,7 +102,7 @@ func ensureSlashPrefix(s string) string {
 }
 
 func (c *Config) BasePath() string {
-	return ensureSlashPrefix(c.GetStringOr("base_path", ""))
+	return ensureSlashPrefix(c.GetStringOr("base_path", "/api"))
 }
 
 func (c *Config) AuthPath() string {
@@ -118,8 +114,7 @@ func (c *Config) WebhooksPath() string {
 }
 
 func (c *Config) GetMountedAppRoute(routes ...string) (string, error) {
-	paths := append([]string{c.AppMountPath(), c.BasePath()}, routes...)
-	return url.JoinPath(c.AppUrl(), paths...)
+	return url.JoinPath(c.AppUrl(), append([]string{c.BasePath()}, routes...)...)
 }
 
 func (c *Config) AuthSessionCookieName() string {

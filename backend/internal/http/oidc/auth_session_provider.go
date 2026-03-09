@@ -116,6 +116,9 @@ func (s *AuthSessionProvider) MakeFlowPathHandler(onCreated rez.AuthSessionCreat
 			log.Debug().Err(cbErr).Msg("oidc callback error")
 			http.Error(w, http.StatusText(http.StatusForbidden), http.StatusForbidden)
 		} else {
+			if clearErr := s.clearSession(w, r); clearErr != nil {
+				log.Error().Err(clearErr).Msg("oidc clearSession error")
+			}
 			onCreated(w, r, provSess)
 		}
 	})

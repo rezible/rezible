@@ -6,13 +6,14 @@ app.dev.rezible.com:80 {
     log {
 		output stdout
 		level DEBUG
+        format console
 	}
-	handle_path /api/* {
-		reverse_proxy http://host.docker.internal:8888 {
-			header_up Host api.dev.rezible.com
-		}
-	}
-	handle {
+    handle /api/* {
+        reverse_proxy http://host.docker.internal:8888 {
+            header_up Host api.dev.rezible.com
+        }
+    }
+	handle /* {
 		reverse_proxy http://host.docker.internal:5173 {
 			header_up Host {host}
 		}

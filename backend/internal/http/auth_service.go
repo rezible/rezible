@@ -187,7 +187,7 @@ func (s *AuthService) AuthRouteHandler() http.Handler {
 }
 
 func (s *AuthService) GetProviderStartFlowPath(p rez.AuthSessionProvider) (string, error) {
-	return url.JoinPath(rez.Config.BasePath(), rez.Config.AuthPath(), "flow", p.FlowPath())
+	return url.JoinPath(rez.Config.AuthPath(), "flow", p.FlowPath())
 }
 
 func (s *AuthService) handleLogout(w http.ResponseWriter, r *http.Request) {

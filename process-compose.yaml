@@ -7,14 +7,13 @@ processes:
   backend:
     command: just dev-backend
     availability:
-      restart: on_failure
-      max_restarts: 3
+      restart: always
     readiness_probe:
       http_get:
         scheme: http
         host: localhost
         port: 8888
-        path: "/health"
+        path: "/api/health"
       initial_delay_seconds: 3
     depends_on:
       documents-server:

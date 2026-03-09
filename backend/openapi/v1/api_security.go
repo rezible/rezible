@@ -69,14 +69,15 @@ func MakeSecurityMiddleware(auth rez.AuthService) openapi.Middleware {
 			if opSecurity == nil {
 				opSecurity = DefaultSecurity
 			}
-			sess, verifyErr := auth.VerifyAuthSessionToken(extractRequestTokenAndMethodScopes(c, opSecurity))
+			r, w := humago.Unwrap(c)
+			sess, verifyErr := auth.VerifyAuthSessionToken(extractRequestTokenAndMethodScopes(r, opSecurity))
 			if verifyErr != nil {
-				writeAuthStatusError(c, verifyErr)
+				writeAuthStatusError(w, verifyErr)
 				return
 			}
 			authCtx, authCtxErr := auth.CreateAuthContext(ctx, sess)
 			if authCtxErr != nil {
-				writeAuthStatusError(c, authCtxErr)
+				writeAuthStatusError(w, authCtxErr)
 				return
 			}
 			ctx = authCtx
@@ -86,13 +87,12 @@ func MakeSecurityMiddleware(auth rez.AuthService) openapi.Middleware {
 	}
 }
 
-func extractRequestTokenAndMethodScopes(c openapi.Context, opSecurity SecurityMethods) (string, []string) {
+func extractRequestTokenAndMethodScopes(r *http.Request, opSecurity SecurityMethods) (string, []string) {
 	var bearerToken string
-	if split := strings.Split(c.Header("Authorization"), " "); len(split) == 2 && split[0] == "Bearer" {
+	if split := strings.Split(r.Header.Get("Authorization"), " "); len(split) == 2 && split[0] == "Bearer" {
 		bearerToken = split[1]
 	}
 	var cookieToken string
-	r, _ := humago.Unwrap(c)
 	if authCookie, cookieErr := r.Cookie(rez.Config.AuthSessionCookieName()); cookieErr == nil {
 		cookieToken = authCookie.Value
 	}
@@ -109,7 +109,7 @@ func extractRequestTokenAndMethodScopes(c openapi.Context, opSecurity SecurityMe
 	return "", nil
 }
 
-func writeAuthStatusError(c openapi.Context, err error) {
+func writeAuthStatusError(w http.ResponseWriter, err error) {
 	var resp openapi.StatusError
 	if errors.Is(err, rez.ErrNoAuthSession) {
 		resp = ErrNoSession
@@ -123,10 +123,8 @@ func writeAuthStatusError(c openapi.Context, err error) {
 		resp = ErrUnknown
 	}
 
-	status := resp.GetStatus()
-	if jsonErr := json.NewEncoder(c.BodyWriter()).Encode(resp); jsonErr != nil {
+	w.WriteHeader(resp.GetStatus())
+	if jsonErr := json.NewEncoder(w).Encode(resp); jsonErr != nil {
 		log.Error().Err(jsonErr).Msg("failed to write error body")
-		status = http.StatusInternalServerError
 	}
-	c.SetStatus(status)
 }

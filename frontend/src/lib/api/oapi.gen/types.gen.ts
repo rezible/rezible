@@ -755,19 +755,15 @@ export type DocumentAttributes = {
 };
 
 export type DocumentEditorSession = {
+    accessToken: string;
     connectionUrl: string;
     documentId: string;
-    sessionToken: string;
 };
 
 export type DocumentEditorSessionAuth = {
-    readOnly: boolean;
-    user: DocumentEditorSessionUser;
-};
-
-export type DocumentEditorSessionUser = {
-    id: string;
-    username: string;
+    canEdit: boolean;
+    canManage: boolean;
+    userId: string;
 };
 
 export type ErrorDetail = {

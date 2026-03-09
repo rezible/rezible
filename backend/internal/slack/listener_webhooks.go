@@ -60,6 +60,22 @@ func (wh *WebhookEventHandler) addMessageHandlers() error {
 	return nil
 }
 
+func (wh *WebhookEventHandler) Handler() *chi.Mux {
+	r := chi.NewMux()
+	r.Use(middleware.Timeout(3 * time.Second))
+	r.HandleFunc("/commands", wh.handleCommands)
+	r.HandleFunc("/interaction", wh.handleInteraction)
+	r.HandleFunc("/options", wh.handleOptions)
+	r.HandleFunc("/events", wh.handleEvents)
+	r.NotFound(func(w http.ResponseWriter, r *http.Request) {
+		log.Debug().
+			Str("path", r.URL.Path).
+			Msg("slack webhook handler not found")
+		w.WriteHeader(http.StatusOK)
+	})
+	return r
+}
+
 var (
 	maxWebhookPayloadBytes = int64(4<<20 + 1) // 4 MB
 )
@@ -75,7 +91,7 @@ func makeWebhookVerifier() (webhookVerifierFunc, error) {
 		sv, svErr := slack.NewSecretsVerifier(r.Header, signingSecret)
 		if svErr != nil {
 			w.WriteHeader(http.StatusBadRequest)
-			return nil, false, fmt.Errorf("making secrets verifier: %w", svErr)
+			return nil, false, fmt.Errorf("secrets verifier: %w", svErr)
 		}
 
 		body, bodyErr := io.ReadAll(http.MaxBytesReader(w, r.Body, maxWebhookPayloadBytes))
@@ -103,22 +119,6 @@ func makeWebhookVerifier() (webhookVerifierFunc, error) {
 		return body, true, nil
 	}
 	return verifyFn, nil
-}
-
-func (wh *WebhookEventHandler) Handler() *chi.Mux {
-	mux := chi.NewMux()
-	mux.Use(middleware.Timeout(3 * time.Second))
-	mux.HandleFunc("/commands", wh.handleCommands)
-	mux.HandleFunc("/interaction", wh.handleInteraction)
-	mux.HandleFunc("/options", wh.handleOptions)
-	mux.HandleFunc("/events", wh.handleEvents)
-	mux.NotFound(func(w http.ResponseWriter, r *http.Request) {
-		log.Debug().
-			Str("path", r.URL.Path).
-			Msg("slack webhook handler not found")
-		w.WriteHeader(http.StatusOK)
-	})
-	return mux
 }
 
 func (wh *WebhookEventHandler) handleCommands(w http.ResponseWriter, r *http.Request) {

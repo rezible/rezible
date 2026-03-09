@@ -51,7 +51,6 @@ type ConfigLoader interface {
 	AppUrl() string
 	ServeFrontend() bool
 	BasePath() string
-	AppMountPath() string
 	AuthPath() string
 	WebhooksPath() string
 	GetMountedAppRoute(routes ...string) (string, error)

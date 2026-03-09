@@ -18,24 +18,24 @@ export type SessionError = {
 };
 
 const parseSessionError = (err: ErrorModel): SessionError => {
-	let errCategory: SessionErrorCategory = "unknown";
 	const status = err.status ?? 503;
-	const errCode = err.detail;
+	const detail = err.detail;
+	let category: SessionErrorCategory = "unknown";
 	if (status === 401) {
-		if (errCode === "session_expired") {
-			errCategory = "session_expired";
-		} else if (errCode === "no_session") {
-			errCategory = "no_session";
-		} else if (errCode === "invalid_user") {
-			errCategory = "invalid_user";
+		if (detail === "session_expired") {
+			category = "session_expired";
+		} else if (detail === "no_session") {
+			category = "no_session";
+		} else if (detail === "invalid_user") {
+			category = "invalid_user";
 		}
 	} else if (status === 404) {
-		errCategory = "invalid_user";
+		category = "invalid_user";
 	} else if (status >= 500) {
 		// TODO
 		console.error("failed to get auth session", status, err);
 	}
-	return {category: errCategory, code: errCode} as SessionError;
+	return {category: category, code: detail} as SessionError;
 }
 
 type AuthSession = {
@@ -45,6 +45,7 @@ type AuthSession = {
 };
 
 const parseUserAuthSessionResponse = ({data}: GetCurrentAuthSessionResponse): AuthSession => {
+	console.log("parse", data);
 	return {
 		user: data.user,
 		organization: data.organization,
@@ -56,8 +57,9 @@ const SessionExpiryCheckIntervalMs = 10_000;
 
 export class AuthSessionState {
 	private query = createQuery(() => getCurrentAuthSessionOptions());
+	private queryData = $derived(this.query.data);
 
-	session = $derived(this.query.data ? parseUserAuthSessionResponse(this.query.data) : null);
+	session = $derived(!!this.queryData ? parseUserAuthSessionResponse(this.queryData) : null);
 	loaded = $derived(this.query.isFetched);
 	user = $derived(this.session?.user);
 	org = $derived(this.session?.organization);

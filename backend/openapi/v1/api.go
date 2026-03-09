@@ -3,10 +3,9 @@ package v1
 import (
 	"net/http"
 
-	"github.com/rezible/rezible/openapi"
-
 	"github.com/danielgtaylor/huma/v2"
 	"github.com/danielgtaylor/huma/v2/adapters/humago"
+	"github.com/rezible/rezible/openapi"
 	"gopkg.in/yaml.v3"
 )
 
@@ -52,7 +51,7 @@ type Handler interface {
 }
 type operations struct{ Handler }
 
-func MakeApi(h Handler, mw ...openapi.Middleware) openapi.API {
+func MakeApi(h Handler, prefix string, mw ...openapi.Middleware) openapi.API {
 	cfg := MakeConfig()
 
 	//tranformers := []huma.Transformer{
@@ -60,7 +59,7 @@ func MakeApi(h Handler, mw ...openapi.Middleware) openapi.API {
 	//}
 	//cfg.Transformers = append(cfg.Transformers, tranformers...)
 
-	adapter := humago.NewAdapter(http.NewServeMux(), VersionPrefix)
+	adapter := humago.NewAdapter(http.NewServeMux(), prefix+VersionPrefix)
 	api := huma.NewAPI(cfg, adapter)
 	api.UseMiddleware(mw...)
 	huma.AutoRegister(api, operations{Handler: h})
@@ -87,7 +86,7 @@ func MakeConfig() openapi.Config {
 }
 
 func GetYamlSpec() (string, error) {
-	api := MakeApi(operations{})
+	api := MakeApi(operations{}, "")
 	spec, specErr := yaml.Marshal(api.OpenAPI())
 	if specErr != nil {
 		return "", specErr
