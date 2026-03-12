@@ -145,11 +145,7 @@ func (l *SocketModeListener) onSlashCommand(ctx context.Context, e *socketmode.E
 }
 
 func (l *SocketModeListener) onInteraction(ctx context.Context, e *socketmode.Event) error {
-	ic, ok := e.Data.(slack.InteractionCallback)
-	if !ok {
-		return fmt.Errorf("parsing InteractionCallback data")
-	}
-	if handlerErr := l.handler.InteractionCallback(ctx, &ic); handlerErr != nil {
+	if handlerErr := l.handler.InteractionCallback(ctx, e.Request.Payload); handlerErr != nil {
 		return fmt.Errorf("handling InteractionCallback: %w", handlerErr)
 	}
 	return nil
@@ -162,7 +158,7 @@ func (l *SocketModeListener) onEventsApi(ctx context.Context, e *socketmode.Even
 	}
 
 	if evt.Type == slackevents.CallbackEvent {
-		if handlerErr := l.handler.CallbackEvent(ctx, &evt); handlerErr != nil {
+		if handlerErr := l.handler.CallbackEvent(ctx, e.Request.Payload); handlerErr != nil {
 			return fmt.Errorf("handling EventsAPIEvent: %w", handlerErr)
 		}
 	} else if evt.Type == slackevents.AppRateLimited {

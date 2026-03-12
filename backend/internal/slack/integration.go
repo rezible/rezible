@@ -218,6 +218,14 @@ func (i *integration) ExtractIntegrationConfigFromToken(t *oauth2.Token) (json.R
 		Enterprise:  enterprise,
 	}
 
+	if wh, whOk := t.Extra("incoming_webhook").(map[string]any); whOk {
+		if channelId, ok := wh["channel_id"]; ok {
+			if cidStr, strOk := channelId.(string); strOk {
+				cfg.WebhookChannelId = cidStr
+			}
+		}
+	}
+
 	return json.Marshal(cfg)
 }
 
@@ -392,12 +400,13 @@ func (ci *ConfiguredIntegration) ChatService(ctx context.Context) (rez.ChatServi
 }
 
 type IntegrationConfig struct {
-	AccessToken string
-	TokenType   string
-	Scope       string
-	BotUserID   string
-	Team        teamInfo
-	Enterprise  *teamInfo
+	AccessToken      string
+	TokenType        string
+	Scope            string
+	BotUserID        string
+	WebhookChannelId string
+	Team             teamInfo
+	Enterprise       *teamInfo
 }
 
 type teamInfo struct {

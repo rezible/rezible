@@ -122,14 +122,7 @@ func (l *WebhookListener) onInteraction(w http.ResponseWriter, r *http.Request) 
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
-
-	ic, icErr := slack.InteractionCallbackParse(r)
-	if icErr != nil {
-		log.Debug().Err(icErr).Msg("failed to parse interaction callback")
-		w.WriteHeader(http.StatusInternalServerError)
-		return
-	}
-	if handlerErr := l.handler.InteractionCallback(r.Context(), &ic); handlerErr != nil {
+	if handlerErr := l.handler.InteractionCallback(r.Context(), []byte(payload)); handlerErr != nil {
 		log.Error().Err(handlerErr).Msg("failed to handle interaction event message")
 		w.WriteHeader(http.StatusInternalServerError)
 		return
@@ -170,7 +163,7 @@ func (l *WebhookListener) onEventsApi(w http.ResponseWriter, r *http.Request) {
 		log.Warn().Msg("slack app rate limited")
 		w.WriteHeader(http.StatusOK)
 	} else if ev.Type == slackevents.CallbackEvent {
-		if handleErr := l.handler.CallbackEvent(r.Context(), &ev); handleErr != nil {
+		if handleErr := l.handler.CallbackEvent(r.Context(), body); handleErr != nil {
 			log.Error().Err(handleErr).Msg("failed to handle callback event")
 			w.WriteHeader(http.StatusInternalServerError)
 			return

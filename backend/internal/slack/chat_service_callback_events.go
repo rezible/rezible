@@ -10,8 +10,8 @@ import (
 )
 
 func (s *ChatService) handleCallbackEvent(ctx context.Context, ev *slackevents.EventsAPIEvent) error {
-	ctx = s.getTenantContext(ctx)
-	
+	ctx = s.ci.tenantContext(ctx)
+
 	switch data := ev.InnerEvent.Data.(type) {
 	case *slackevents.AppHomeOpenedEvent:
 		return s.onUserHomeOpenedEvent(ctx, data)
@@ -41,6 +41,7 @@ func (s *ChatService) onMentionEvent(ctx context.Context, data *slackevents.AppM
 }
 
 func (s *ChatService) onMessageEvent(ctx context.Context, data *slackevents.MessageEvent) error {
+	//log.Debug().Interface("message", data).Msg("message event")
 	/*
 		threadTs := data.ThreadTimeStamp
 		// TODO check if thread is 'monitored'

@@ -2,7 +2,6 @@ package slack
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 
 	"github.com/google/uuid"
@@ -28,6 +27,22 @@ func (i *integration) makeEventHandler() (*eventHandler, error) {
 	return h, nil
 }
 
+func (h *eventHandler) SlashCommand(ctx context.Context, sc slack.SlashCommand) error {
+	return h.services.Messages.SendCommand(ctx, processSlashCommand{Command: sc})
+}
+
+func (h *eventHandler) InteractionCallback(ctx context.Context, data []byte) error {
+	return h.services.Messages.SendCommand(ctx, processInteraction{Data: data})
+}
+
+func (h *eventHandler) CallbackEvent(ctx context.Context, data []byte) error {
+	return h.services.Messages.PublishEvent(ctx, callbackEvent{Data: data})
+}
+
+func (h *eventHandler) Options(ctx context.Context, body []byte) error {
+	return nil
+}
+
 func (h *eventHandler) registerSlackHandlers() error {
 	evsErr := h.services.Messages.AddEventHandlers(
 		rez.NewEventHandler("slack.events.callback", h.processCallbackEvent))
@@ -36,7 +51,7 @@ func (h *eventHandler) registerSlackHandlers() error {
 	}
 	cmdsErr := h.services.Messages.AddCommandHandlers(
 		rez.NewCommandHandler("slack.events.command", h.processSlashCommand),
-		rez.NewCommandHandler("slack.events.interaction", h.processInteractionCallback))
+		rez.NewCommandHandler("slack.events.interaction", h.processInteraction))
 	if cmdsErr != nil {
 		return fmt.Errorf("command handlers: %w", cmdsErr)
 	}
@@ -57,14 +72,6 @@ func (h *eventHandler) registerIncidentHandlers() error {
 		return fmt.Errorf("commands: %w", cmdsErr)
 	}
 	return nil
-}
-
-func (h *eventHandler) lookupTenantChatService(ctx context.Context, teamId string, enterpriseId string) (*ChatService, error) {
-	intg, lookupErr := lookupTenantIntegration(ctx, h.services.Integrations, teamId, enterpriseId)
-	if lookupErr != nil {
-		return nil, lookupErr
-	}
-	return newChatService(newConfiguredIntegration(h.services, intg))
 }
 
 func (h *eventHandler) makeIncidentUpdateProcessor(ctx context.Context, incidentId uuid.UUID) (*incidentUpdateProcessor, error) {
@@ -127,8 +134,15 @@ func (h *eventHandler) sendIncidentMilestoneMessage(ctx context.Context, ev *cmd
 	return p.sendIncidentMilestoneMessage(ctx, ev.MilestoneId)
 }
 
-func (h *eventHandler) SlashCommand(ctx context.Context, sc slack.SlashCommand) error {
-	return h.services.Messages.SendCommand(ctx, processSlashCommand{Command: sc})
+func (h *eventHandler) lookupTenantChatService(ctx context.Context, teamId string, enterpriseId string) (*ChatService, error) {
+	intg, lookupErr := lookupTenantIntegration(ctx, h.services.Integrations, teamId, enterpriseId)
+	if lookupErr != nil {
+		return nil, lookupErr
+	}
+	if intg == nil {
+		return nil, fmt.Errorf("integration not found")
+	}
+	return newChatService(newConfiguredIntegration(h.services, intg))
 }
 
 type processSlashCommand struct {
@@ -139,7 +153,7 @@ func (h *eventHandler) processSlashCommand(ctx context.Context, cmd *processSlas
 	sc := cmd.Command
 	chat, chatErr := h.lookupTenantChatService(ctx, sc.TeamID, sc.EnterpriseID)
 	if chatErr != nil {
-		return fmt.Errorf("get user client: %w", chatErr)
+		return fmt.Errorf("lookupTenantChatService: %w", chatErr)
 	}
 	handleErr := chat.handleSlashCommand(ctx, &sc)
 	if handleErr != nil {
@@ -149,52 +163,40 @@ func (h *eventHandler) processSlashCommand(ctx context.Context, cmd *processSlas
 	return nil
 }
 
-func (h *eventHandler) InteractionCallback(ctx context.Context, ic *slack.InteractionCallback) error {
-	return h.services.Messages.PublishEvent(ctx, interactionCallbackEvent{Data: ic})
+type processInteraction struct {
+	Data []byte
 }
 
-type interactionCallbackEvent struct {
-	Data *slack.InteractionCallback
-}
-
-func (h *eventHandler) processInteractionCallback(ctx context.Context, e *interactionCallbackEvent) error {
-	chat, chatErr := h.lookupTenantChatService(ctx, e.Data.Team.ID, e.Data.Enterprise.ID)
-	if chatErr != nil {
-		return fmt.Errorf("get user client: %w", chatErr)
+func (h *eventHandler) processInteraction(ctx context.Context, ev *processInteraction) error {
+	var ic slack.InteractionCallback
+	if err := ic.UnmarshalJSON(ev.Data); err != nil {
+		return fmt.Errorf("invalid interaction payload: %w", err)
 	}
-	if handlerErr := chat.handleInteractionCallback(ctx, e.Data); handlerErr != nil {
-		log.Error().Err(handlerErr).Str("type", string(e.Data.Type)).Msg("failed to handle interaction")
+	chat, chatErr := h.lookupTenantChatService(ctx, ic.Team.ID, ic.Enterprise.ID)
+	if chatErr != nil {
+		return fmt.Errorf("lookupTenantChatService: %w", chatErr)
+	}
+	if handlerErr := chat.handleInteractionCallback(ctx, &ic); handlerErr != nil {
+		log.Error().Err(handlerErr).Str("type", string(ic.Type)).Msg("failed to handle interaction")
 		return handlerErr
 	}
 	return nil
 }
 
-func (h *eventHandler) Options(ctx context.Context, body []byte) error {
-	return nil
-}
-
-func (h *eventHandler) CallbackEvent(ctx context.Context, evt *slackevents.EventsAPIEvent) error {
-	raw, jsonErr := json.Marshal(evt)
-	if jsonErr != nil {
-		return fmt.Errorf("marshal callback event: %w", jsonErr)
-	}
-	return h.services.Messages.PublishEvent(ctx, callbackEvent{RawEvent: raw})
-}
-
 type callbackEvent struct {
-	RawEvent json.RawMessage
+	Data []byte
 }
 
 func (h *eventHandler) processCallbackEvent(ctx context.Context, ev *callbackEvent) error {
-	cbe, parseErr := slackevents.ParseEvent(ev.RawEvent)
+	cb, parseErr := slackevents.ParseEvent(ev.Data, slackevents.OptionNoVerifyToken())
 	if parseErr != nil {
 		return fmt.Errorf("parse event: %w", parseErr)
 	}
-	chat, chatErr := h.lookupTenantChatService(ctx, cbe.TeamID, cbe.EnterpriseID)
+	chat, chatErr := h.lookupTenantChatService(ctx, cb.TeamID, cb.EnterpriseID)
 	if chatErr != nil {
-		return fmt.Errorf("get user client: %w", chatErr)
+		return fmt.Errorf("lookupTenantChatService: %w", chatErr)
 	}
-	if handleErr := chat.handleCallbackEvent(ctx, &cbe); handleErr != nil {
+	if handleErr := chat.handleCallbackEvent(ctx, &cb); handleErr != nil {
 		return fmt.Errorf("processing callback event: %w", handleErr)
 	}
 	return nil

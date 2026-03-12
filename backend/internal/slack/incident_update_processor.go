@@ -250,10 +250,13 @@ func (p *incidentUpdateProcessor) sendUserCreatedChannelMessage(ctx context.Cont
 
 func (p *incidentUpdateProcessor) getIncidentAnnouncementChannelId() (string, error) {
 	announcementChannelID := p.chat.ci.IncidentDefaults().AnnouncementChannelID
-	if announcementChannelID == "" {
-		return "", errors.New("slack incidentDefaults.announcementChannelId not configured")
+	if announcementChannelID != "" {
+		return announcementChannelID, nil
 	}
-	return announcementChannelID, nil
+	if cfg, cfgErr := decodeConfig(p.chat.ci.RawConfig()); cfgErr == nil && cfg.WebhookChannelId != "" {
+		return cfg.WebhookChannelId, nil
+	}
+	return "", errors.New("no announcementChannelId configured")
 }
 
 func (p *incidentUpdateProcessor) postIncidentAnnouncement(ctx context.Context) error {

@@ -5,15 +5,14 @@ import (
 	"fmt"
 
 	rez "github.com/rezible/rezible"
-	"github.com/rezible/rezible/access"
 	"github.com/rezible/rezible/ent"
 	"github.com/rs/zerolog/log"
 	"github.com/slack-go/slack"
 )
 
 type ChatService struct {
-	client *slack.Client
 	ci     *ConfiguredIntegration
+	client *slack.Client
 
 	integrations rez.IntegrationsService
 	users        rez.UserService
@@ -27,16 +26,13 @@ func newChatService(ci *ConfiguredIntegration) (*ChatService, error) {
 		return nil, fmt.Errorf("unable to decode config: %w", cfgErr)
 	}
 	return &ChatService{
+		ci:           ci,
 		client:       slack.New(cfg.AccessToken),
 		users:        ci.svcs.Users,
 		integrations: ci.svcs.Integrations,
 		incidents:    ci.svcs.Incidents,
 		annos:        ci.svcs.EventAnnotations,
 	}, nil
-}
-
-func (s *ChatService) getTenantContext(ctx context.Context) context.Context {
-	return access.TenantContext(ctx, s.ci.intg.TenantID)
 }
 
 func (s *ChatService) getUserContext(ctx context.Context, userChatId string) (context.Context, error) {
