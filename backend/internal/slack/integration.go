@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"strings"
 
+	mapset "github.com/deckarep/golang-set/v2"
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/access"
 	"github.com/rezible/rezible/ent"
@@ -191,6 +192,12 @@ func (i *integration) ExtractIntegrationConfigFromToken(t *oauth2.Token) (json.R
 	if !scopeOk {
 		return nil, fmt.Errorf("missing or invalid scope")
 	}
+	tokenScopes := mapset.NewSet(strings.Split(scope, ",")...)
+	for _, s := range oAuthScopes {
+		if !tokenScopes.Contains(s) {
+			return nil, fmt.Errorf("missing token scope: %s", s)
+		}
+	}
 
 	botUserId, botUserIdOk := t.Extra("bot_user_id").(string)
 	if !botUserIdOk {
@@ -212,7 +219,6 @@ func (i *integration) ExtractIntegrationConfigFromToken(t *oauth2.Token) (json.R
 	cfg := IntegrationConfig{
 		AccessToken: t.AccessToken,
 		TokenType:   t.Type(),
-		Scope:       scope,
 		BotUserID:   botUserId,
 		Team:        *team,
 		Enterprise:  enterprise,
@@ -402,7 +408,6 @@ func (ci *ConfiguredIntegration) ChatService(ctx context.Context) (rez.ChatServi
 type IntegrationConfig struct {
 	AccessToken      string
 	TokenType        string
-	Scope            string
 	BotUserID        string
 	WebhookChannelId string
 	Team             teamInfo
