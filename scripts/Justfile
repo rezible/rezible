@@ -19,9 +19,3 @@
 
 @run-psql *ARGS:
     just run-docker-compose exec -it postgres psql -U rezible {{ARGS}}
-
-@provision-dev: run-dev-services
-    just run-docker-compose up tf-provision
-
-@get-provisioning-outputs:
-    docker run --rm -v rezible-dev_terraform-data:/data alpine cat /data/output.json

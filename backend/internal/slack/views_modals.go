@@ -19,7 +19,7 @@ const (
 
 func makeUserHomeView(ctx context.Context, user *ent.User) (*slack.HomeTabViewRequest, error) {
 	var blocks []slack.Block
-	blocks = append(blocks, slack.NewSectionBlock(plainTextBlock("Home Tab"), nil, nil))
+	blocks = append(blocks, slack.NewSectionBlock(plainText("Home Tab"), nil, nil))
 	homeView := slack.HomeTabViewRequest{
 		Type:            slack.VTHomeTab,
 		CallbackID:      viewCallbackIdUserHome,
@@ -72,9 +72,9 @@ func (s *ChatService) makeAnnotationModalView(ctx context.Context, meta *annotat
 	return &slack.ModalViewRequest{
 		Type:            "modal",
 		CallbackID:      viewCallbackIdAnnotationModal,
-		Title:           plainTextBlock(titleText),
-		Submit:          plainTextBlock(submitText),
-		Close:           plainTextBlock("Cancel"),
+		Title:           plainText(titleText),
+		Submit:          plainText(submitText),
+		Close:           plainText("Cancel"),
 		Blocks:          blockSet,
 		PrivateMetadata: string(jsonMetadata),
 	}, nil
@@ -142,7 +142,7 @@ func (s *ChatService) makeIncidentDetailsModalView(ctx context.Context, meta *in
 		return nil, fmt.Errorf("failed to get incident metadata: %w", incMetaErr)
 	}
 
-	builder := newIncidentModalViewBuilder(curr, meta)
+	builder := newIncidentModalViewBuilder(curr, meta, s.getSlackIncidentDefaults())
 	blockSet := builder.build(incMeta)
 
 	jsonMetadata, jsonErr := json.Marshal(meta)
@@ -160,9 +160,9 @@ func (s *ChatService) makeIncidentDetailsModalView(ctx context.Context, meta *in
 	view := &slack.ModalViewRequest{
 		Type:            "modal",
 		CallbackID:      viewCallbackIdIncidentDetailsModal,
-		Title:           plainTextBlock(titleText),
-		Submit:          plainTextBlock(submitText),
-		Close:           plainTextBlock("Cancel"),
+		Title:           plainText(titleText),
+		Submit:          plainText(submitText),
+		Close:           plainText("Cancel"),
 		PrivateMetadata: string(jsonMetadata),
 		Blocks:          blockSet,
 	}
@@ -192,9 +192,9 @@ func (s *ChatService) makeIncidentMilestoneModalView(ctx context.Context, meta *
 	view := &slack.ModalViewRequest{
 		Type:            "modal",
 		CallbackID:      viewCallbackIdIncidentMilestoneModal,
-		Title:           plainTextBlock("Update Incident Status"),
-		Submit:          plainTextBlock("Save"),
-		Close:           plainTextBlock("Cancel"),
+		Title:           plainText("Update Incident Status"),
+		Submit:          plainText("Save"),
+		Close:           plainText("Cancel"),
 		PrivateMetadata: string(jsonMetadata),
 		Blocks:          blockSet,
 	}

@@ -6,6 +6,8 @@ import (
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
 	"github.com/rezible/rezible/integrations"
+	"github.com/rezible/rezible/internal/slack"
+	"github.com/rezible/rezible/openapi"
 	oapi "github.com/rezible/rezible/openapi/v1"
 )
 
@@ -73,6 +75,11 @@ func (h *integrationsHandler) ConfigureIntegration(ctx context.Context, req *oap
 	var resp oapi.ConfigureIntegrationResponse
 
 	attr := req.Body.Attributes
+	if req.Name == "slack" && attr.UserPreferences != nil {
+		if err := slack.ValidateIncidentDefaultsPreferences(attr.UserPreferences); err != nil {
+			return nil, openapi.ErrorBadRequest("invalid slack incident defaults", err)
+		}
+	}
 	setFn := func(m *ent.IntegrationMutation) {
 		if attr.Config != nil {
 			m.SetConfig(attr.Config)

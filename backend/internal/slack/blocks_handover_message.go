@@ -121,7 +121,7 @@ func (b *handoverMessageBuilder) build(content []rez.OncallShiftHandoverSection)
 }
 
 func (b *handoverMessageBuilder) addSection(id string, header, kind string, content *rez.ContentNode) error {
-	b.addBlocks(slack.NewHeaderBlock(plainTextBlock(header)))
+	b.addBlocks(slack.NewHeaderBlock(plainText(header)))
 
 	if kind == "annotations" {
 		annoBlocks, annosErr := b.createPinnedAnnotationsBlocks()
@@ -140,7 +140,7 @@ func (b *handoverMessageBuilder) addSection(id string, header, kind string, cont
 
 func (b *handoverMessageBuilder) createPinnedAnnotationsBlocks() ([]slack.Block, error) {
 	if len(b.pinnedAnnotations) == 0 {
-		sectionBlock := slack.NewSectionBlock(plainTextBlock("No Pinned Annotations"), nil, nil)
+		sectionBlock := slack.NewSectionBlock(plainText("No Pinned Annotations"), nil, nil)
 		return []slack.Block{sectionBlock}, nil
 	}
 

@@ -9,25 +9,23 @@ import (
 	"github.com/slack-go/slack/slackevents"
 )
 
-func (s *ChatService) handleCallbackEvent(baseCtx context.Context, ev *slackevents.EventsAPIEvent) (bool, error) {
-	ctx, ctxErr := s.makeTenantContext(baseCtx, ev.TeamID, ev.EnterpriseID)
-	if ctxErr != nil {
-		return false, ctxErr
-	}
+func (s *ChatService) handleCallbackEvent(ctx context.Context, ev *slackevents.EventsAPIEvent) error {
+	ctx = s.getTenantContext(ctx)
+	
 	switch data := ev.InnerEvent.Data.(type) {
 	case *slackevents.AppHomeOpenedEvent:
-		return true, s.onUserHomeOpenedEvent(ctx, data)
+		return s.onUserHomeOpenedEvent(ctx, data)
 	case *slackevents.AppMentionEvent:
-		return true, s.onMentionEvent(ctx, data)
+		return s.onMentionEvent(ctx, data)
 	case *slackevents.AssistantThreadStartedEvent:
-		return true, s.onAssistantThreadStartedEvent(ctx, data)
+		return s.onAssistantThreadStartedEvent(ctx, data)
 	case *slackevents.MessageEvent:
-		return true, s.onMessageEvent(ctx, data)
+		return s.onMessageEvent(ctx, data)
 	default:
 		log.Debug().
 			Str("innerEventType", ev.InnerEvent.Type).
 			Msg("unhandled slack callback event")
-		return false, nil
+		return nil
 	}
 }
 

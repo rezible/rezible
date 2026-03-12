@@ -11,42 +11,56 @@ import (
 	"github.com/slack-go/slack"
 )
 
-func (s *ChatService) handleSlashCommand(baseCtx context.Context, ev *slack.SlashCommand) (bool, *slack.Msg, error) {
-	_, ctx, usrErr := s.lookupUser(baseCtx, ev.UserID)
+var (
+	supportedIncidentSubcommands = []string{"new", "update", "status", "help"}
+	incidentCommandsFormatted    = strings.Join(supportedIncidentSubcommands, ", ")
+)
+
+func (s *ChatService) handleSlashCommand(ctx context.Context, cmd *slack.SlashCommand) error {
+	userCtx, usrErr := s.getUserContext(ctx, cmd.UserID)
 	if usrErr != nil {
-		return false, nil, fmt.Errorf("failed to lookup user: %w", usrErr)
+		return fmt.Errorf("failed to lookup user: %w", usrErr)
 	}
 
-	switch ev.Command {
+	var handled bool
+	var response *slack.Blocks
+	var handlerErr error
+	switch cmd.Command {
 	case "/incident":
-		payload, handlerErr := s.handleIncidentCommand(ctx, ev)
-		return true, payload, handlerErr
-	default:
-		return false, nil, nil
+		handled = true
+		response, handlerErr = s.handleIncidentCommand(userCtx, cmd)
 	}
+
+	if handlerErr != nil {
+		return fmt.Errorf("handling command: %w", handlerErr)
+	}
+	if !handled {
+		log.Debug().Str("command", cmd.Command).Msg("unknown slack command, ignoring")
+	}
+	if response != nil {
+		_, msgErr := s.postEphemeralMessage(ctx, cmd.ChannelID, cmd.UserID, slack.MsgOptionBlocks(response.BlockSet...))
+		if msgErr != nil {
+			return fmt.Errorf("failed to post ephemeral message: %w", msgErr)
+		}
+	}
+	return nil
 }
 
-func commandErrorResponse(message string) *slack.Msg {
-	return &slack.Msg{
-		Text: message,
-		Blocks: slack.Blocks{
-			BlockSet: []slack.Block{
-				&slack.SectionBlock{
-					Type: slack.MBTSection,
-					Text: &slack.TextBlockObject{
-						Type: slack.PlainTextType,
-						Text: fmt.Sprintf("❌ %s", message),
-					},
-				},
+func commandErrorResponse(message string) *slack.Blocks {
+	return &slack.Blocks{
+		BlockSet: []slack.Block{
+			&slack.SectionBlock{
+				Type: slack.MBTSection,
+				Text: plainText(fmt.Sprintf("❌ %s", message)),
 			},
 		},
 	}
 }
 
-func (s *ChatService) handleIncidentCommand(ctx context.Context, ev *slack.SlashCommand) (*slack.Msg, error) {
+func (s *ChatService) handleIncidentCommand(ctx context.Context, cmd *slack.SlashCommand) (*slack.Blocks, error) {
 	// are we currently in an incident channel?
 	var channelIncidentId uuid.UUID
-	inc, incErr := s.incidents.GetByChatChannelID(ctx, ev.ChannelID)
+	inc, incErr := s.incidents.GetByChatChannelID(ctx, cmd.ChannelID)
 	if incErr != nil && !ent.IsNotFound(incErr) {
 		log.Error().Err(incErr).Msg("unable to get incident by channel")
 		return commandErrorResponse(incErr.Error()), nil
@@ -55,15 +69,15 @@ func (s *ChatService) handleIncidentCommand(ctx context.Context, ev *slack.Slash
 	}
 
 	subcmd := ""
-	if args := strings.Split(ev.Text, " "); len(args) > 0 {
+	if args := strings.Split(cmd.Text, " "); len(args) > 0 {
 		subcmd = args[0]
-		log.Debug().Str("text", ev.Text).Str("subcmd", subcmd).Msg("incident command")
+		log.Debug().Str("text", cmd.Text).Str("subcmd", subcmd).Msg("incident command")
 	}
 
 	if subcmd == "" || subcmd == "update" || subcmd == "new" {
 		meta := incidentDetailsModalViewMetadata{
-			CommandChannelId: ev.ChannelID,
-			UserId:           ev.UserID,
+			CommandChannelId: cmd.ChannelID,
+			UserId:           cmd.UserID,
 			IncidentId:       channelIncidentId,
 		}
 		if subcmd == "new" {
@@ -77,12 +91,15 @@ func (s *ChatService) handleIncidentCommand(ctx context.Context, ev *slack.Slash
 			log.Error().Err(viewErr).Msg("failed creating incident details view")
 			return commandErrorResponse("Failed to create incident details modal"), viewErr
 		}
-		if openModalErr := s.openModalView(ctx, ev.TriggerID, *view); openModalErr != nil {
+		if openModalErr := s.openModalView(ctx, cmd.TriggerID, *view); openModalErr != nil {
 			return commandErrorResponse("Failed to open incident details modal"), openModalErr
 		}
 	} else if subcmd == "status" {
+		if inc == nil {
+			return commandErrorResponse("Not in an incident channel. Supported subcommands: " + incidentCommandsFormatted), nil
+		}
 		meta := incidentMilestoneModalViewMetadata{
-			UserId:     ev.UserID,
+			UserId:     cmd.UserID,
 			IncidentId: channelIncidentId,
 		}
 		view, viewErr := s.makeIncidentMilestoneModalView(ctx, &meta)
@@ -90,11 +107,15 @@ func (s *ChatService) handleIncidentCommand(ctx context.Context, ev *slack.Slash
 			log.Error().Err(viewErr).Msg("failed creating incident milestone view")
 			return commandErrorResponse("Failed to create incident milestone view"), viewErr
 		}
-		if openModalErr := s.openModalView(ctx, ev.TriggerID, *view); openModalErr != nil {
+		if openModalErr := s.openModalView(ctx, cmd.TriggerID, *view); openModalErr != nil {
 			return commandErrorResponse("Failed to open incident milestone view"), openModalErr
 		}
+	} else if subcmd == "help" {
+		// TODO
 	} else {
-		return commandErrorResponse(fmt.Sprintf("Invalid incident command '%s'", subcmd)), nil
+		return commandErrorResponse(
+			fmt.Sprintf("Invalid incident command '%s'. Supported subcommands: %s", subcmd, incidentCommandsFormatted),
+		), nil
 	}
 
 	return nil, nil

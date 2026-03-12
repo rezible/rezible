@@ -9,11 +9,18 @@ import (
 	rez "github.com/rezible/rezible"
 )
 
-func plainTextBlock(text string) *slack.TextBlockObject {
+func plainText(text string) *slack.TextBlockObject {
 	if text == "" {
 		return nil
 	}
-	return slack.NewTextBlockObject("plain_text", text, false, false)
+	return slack.NewTextBlockObject(slack.PlainTextType, text, true, false)
+}
+
+func markdownText(text string) *slack.TextBlockObject {
+	if text == "" {
+		return nil
+	}
+	return slack.NewTextBlockObject(slack.MarkdownType, text, false, false)
 }
 
 func getViewStateBlockAction(state *slack.ViewState, ids blockActionIds) *slack.BlockAction {

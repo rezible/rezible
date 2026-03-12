@@ -39,7 +39,7 @@ func (b *annotationModalBuilder) makeMessageDetailsBlocks() {
 func (b *annotationModalBuilder) makeNotesInputBlocks() {
 	inputBlock := slack.NewPlainTextInputBlockElement(nil, "notes_input_text")
 	//inputBlock.WithMinLength(1)
-	inputHint := plainTextBlock("You can edit this later")
+	inputHint := plainText("You can edit this later")
 	if b.currAnnotation != nil {
 		inputBlock.WithInitialValue(b.currAnnotation.Notes)
 		inputHint = nil
@@ -47,5 +47,5 @@ func (b *annotationModalBuilder) makeNotesInputBlocks() {
 
 	b.blocks = append(b.blocks,
 		slack.NewDividerBlock(),
-		slack.NewInputBlock("notes_input", plainTextBlock("Notes"), inputHint, inputBlock))
+		slack.NewInputBlock("notes_input", plainText("Notes"), inputHint, inputBlock))
 }

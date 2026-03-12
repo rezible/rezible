@@ -108,7 +108,7 @@ func (ci *ConfiguredIntegration) isVideoConferenceEnabled() bool {
 	if !ci.isServiceAccountConfigured() {
 		return false
 	}
-	return ci.getBoolUserPreference(PreferenceEnableIncidentVideoConferences, true)
+	return ci.getBoolUserPreference(PreferenceEnableIncidentVideoConferences, false)
 }
 
 func (ci *ConfiguredIntegration) Name() string {

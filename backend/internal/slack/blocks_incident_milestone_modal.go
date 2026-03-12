@@ -46,30 +46,22 @@ func setIncidentMilestoneModalInputMutationFields(m *ent.IncidentMilestoneMutati
 
 func (b *incidentMilestoneModalViewBuilder) makeMilestoneSelect() {
 	kindsOptions := []*slack.OptionBlockObject{
-		slack.NewOptionBlockObject(im.KindImpact.String(), plainTextBlock("Impact"), nil),
-		slack.NewOptionBlockObject(im.KindMitigation.String(), plainTextBlock("Mitigated"), nil),
-		slack.NewOptionBlockObject(im.KindResolution.String(), plainTextBlock("Resolved"), nil),
+		slack.NewOptionBlockObject(im.KindImpact.String(), plainText("Impact"), nil),
+		slack.NewOptionBlockObject(im.KindMitigation.String(), plainText("Mitigated"), nil),
+		slack.NewOptionBlockObject(im.KindResolution.String(), plainText("Resolved"), nil),
 	}
 
 	kindsSelect := slack.NewOptionsSelectBlockElement(slack.OptTypeStatic, nil, incidentMilestoneModalKindIds.Input, kindsOptions...)
 
 	initialOpt := kindsOptions[0]
-	if b.incident != nil {
-		for _, opt := range kindsOptions {
-			if opt.Value == b.incident.TypeID.String() {
-				initialOpt = opt
-				break
-			}
-		}
-	}
 	kindsSelect.WithInitialOption(initialOpt)
 
 	b.blocks = append(b.blocks,
-		slack.NewInputBlock(incidentMilestoneModalKindIds.Block, plainTextBlock("Incident Status"), nil, kindsSelect))
+		slack.NewInputBlock(incidentMilestoneModalKindIds.Block, plainText("Incident Status"), nil, kindsSelect))
 }
 
 func (b *incidentMilestoneModalViewBuilder) makeNotesInput() {
 	notesInput := slack.NewPlainTextInputBlockElement(nil, incidentMilestoneModalNotesIds.Input)
 	b.blocks = append(b.blocks,
-		slack.NewInputBlock(incidentMilestoneModalNotesIds.Block, plainTextBlock("Notes"), nil, notesInput))
+		slack.NewInputBlock(incidentMilestoneModalNotesIds.Block, plainText("Notes"), nil, notesInput))
 }

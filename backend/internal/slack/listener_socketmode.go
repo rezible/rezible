@@ -13,24 +13,24 @@ import (
 	"github.com/sourcegraph/conc/pool"
 )
 
-func UseSocketMode() bool {
-	return rez.Config.GetBool("slack.socketmode.enabled")
-}
-
 type SocketModeListener struct {
-	client    *socketmode.Client
-	chat      *ChatService
-	eventPool *pool.ContextPool
-	cancelFn  context.CancelFunc
+	client  *socketmode.Client
+	handler *eventHandler
+	stopFn  func() error
 }
 
-func newSocketModeEventListener(svcs *rez.Services) (*SocketModeListener, error) {
+type socketModeListenerConfig struct {
+	AppToken string
+	BotToken string
+}
+
+func getSocketModeListenerConfig() (*socketModeListenerConfig, error) {
 	if !rez.Config.SingleTenantMode() {
 		return nil, errors.New("can't use socket mode in multi-tenant mode")
 	}
 
 	appToken := rez.Config.GetString("slack.app_token")
-	if appToken != "" {
+	if appToken == "" {
 		return nil, errors.New("slack.app_token not set")
 	}
 
@@ -39,43 +39,54 @@ func newSocketModeEventListener(svcs *rez.Services) (*SocketModeListener, error)
 		return nil, errors.New("slack.bot_token not set")
 	}
 
-	client := slack.New(botToken, slack.OptionAppLevelToken(appToken))
-
-	sml := &SocketModeListener{
-		chat:     newChatService(client, svcs),
-		client:   socketmode.New(client),
-		cancelFn: func() {},
-	}
-	return sml, nil
+	return &socketModeListenerConfig{
+		AppToken: appToken,
+		BotToken: botToken,
+	}, nil
 }
 
-func (sml *SocketModeListener) Start(ctx context.Context) error {
-	cancelCtx, cancel := context.WithCancel(ctx)
-	p := pool.New().
-		WithErrors().
-		WithContext(cancelCtx)
+func newSocketModeEventListener(handler *eventHandler) (*SocketModeListener, error) {
+	cfg, cfgErr := getSocketModeListenerConfig()
+	if cfgErr != nil {
+		return nil, cfgErr
+	}
+	return &SocketModeListener{
+		client:  socketmode.New(slack.New(cfg.BotToken, slack.OptionAppLevelToken(cfg.AppToken))),
+		handler: handler,
+		stopFn:  func() error { return nil },
+	}, nil
+}
+
+func (l *SocketModeListener) Start(baseCtx context.Context) error {
+	cancelCtx, cancel := context.WithCancel(baseCtx)
+
+	p := pool.New().WithErrors().WithContext(cancelCtx)
+
+	l.stopFn = func() error {
+		cancel()
+		if p == nil {
+			return nil
+		}
+		if poolErr := p.Wait(); poolErr != nil && !errors.Is(poolErr, context.Canceled) {
+			return fmt.Errorf("slack socket mode handler: %w", poolErr)
+		}
+		return nil
+	}
+
+	p.Go(l.client.RunContext)
+	p.Go(l.runEventConsumerLoop)
 
 	log.Info().Msg("Listening for slack events in socket mode")
 
-	p.Go(sml.runEventConsumerLoop)
-	p.Go(sml.client.RunContext)
-
-	sml.eventPool = p
-	sml.cancelFn = cancel
-
 	return nil
 }
 
-func (sml *SocketModeListener) Stop(ctx context.Context) error {
-	sml.cancelFn()
-	if poolErr := sml.eventPool.Wait(); poolErr != nil && !errors.Is(poolErr, context.Canceled) {
-		return fmt.Errorf("slack socket mode handler: %w", poolErr)
-	}
-	log.Info().Msg("Stopped Slack socket mode listener")
-	return nil
+func (l *SocketModeListener) Stop(ctx context.Context) error {
+	log.Info().Msg("Stopping Slack socket mode listener")
+	return l.stopFn()
 }
 
-func (sml *SocketModeListener) runEventConsumerLoop(ctx context.Context) error {
+func (l *SocketModeListener) runEventConsumerLoop(ctx context.Context) error {
 	defer func() {
 		if err := recover(); err != nil {
 			log.Error().Interface("panic", err).Msg("panic while handling socket mode event")
@@ -83,9 +94,9 @@ func (sml *SocketModeListener) runEventConsumerLoop(ctx context.Context) error {
 	}()
 	for {
 		select {
-		case evt, ok := <-sml.client.Events:
-			if ok && !sml.shouldIgnoreEvent(&evt) {
-				sml.onEvent(ctx, &evt)
+		case evt, ok := <-l.client.Events:
+			if ok {
+				l.onEvent(ctx, &evt)
 			}
 		case <-ctx.Done():
 			return nil
@@ -93,62 +104,71 @@ func (sml *SocketModeListener) runEventConsumerLoop(ctx context.Context) error {
 	}
 }
 
-func (sml *SocketModeListener) shouldIgnoreEvent(e *socketmode.Event) bool {
+func (l *SocketModeListener) shouldIgnoreEvent(e *socketmode.Event) bool {
 	return e.Request == nil || e.Type == socketmode.EventTypeHello
 }
 
-func (sml *SocketModeListener) onEvent(ctx context.Context, evt *socketmode.Event) {
-	var payload any
-	var handled bool
-	var handlerErr error
+func (l *SocketModeListener) onEvent(ctx context.Context, evt *socketmode.Event) {
+	if !l.shouldIgnoreEvent(evt) {
+		return
+	}
+
+	var handleErr error
 	switch evt.Type {
 	case socketmode.EventTypeSlashCommand:
-		handled, payload, handlerErr = sml.onSlashCommand(ctx, evt)
+		handleErr = l.onSlashCommand(ctx, evt)
 	case socketmode.EventTypeInteractive:
-		handled, payload, handlerErr = sml.onInteraction(ctx, evt)
+		handleErr = l.onInteraction(ctx, evt)
 	case socketmode.EventTypeEventsAPI:
-		handled, payload, handlerErr = sml.onEventsApi(ctx, evt)
+		handleErr = l.onEventsApi(ctx, evt)
 	default:
 		log.Warn().Str("type", string(evt.Type)).Msg("skipped socketmode event")
 	}
-	if handlerErr != nil {
-		log.Error().Err(handlerErr).Msgf("Error handling socket mode event")
-	} else if !handled {
-		log.Warn().Str("type", string(evt.Type)).Msgf("unhandled socket mode event")
+	if handleErr != nil {
+		log.Error().Str("event_type", string(evt.Type)).Err(handleErr).Msg("socketmode handler error")
+		// return
 	}
-	if ackErr := sml.client.AckCtx(ctx, evt.Request.EnvelopeID, payload); ackErr != nil {
+	if ackErr := l.client.AckCtx(ctx, evt.Request.EnvelopeID, nil); ackErr != nil {
 		log.Error().Err(ackErr).Msgf("Error acking socket mode event")
 	}
 }
 
-func (sml *SocketModeListener) onSlashCommand(ctx context.Context, e *socketmode.Event) (bool, any, error) {
-	if cmd, ok := e.Data.(slack.SlashCommand); ok {
-		return sml.chat.handleSlashCommand(ctx, &cmd)
+func (l *SocketModeListener) onSlashCommand(ctx context.Context, e *socketmode.Event) error {
+	cmd, ok := e.Data.(slack.SlashCommand)
+	if !ok {
+		return fmt.Errorf("parsing SlashCommand data")
 	}
-	return false, nil, fmt.Errorf("invalid slash command data")
+	if handlerErr := l.handler.SlashCommand(ctx, cmd); handlerErr != nil {
+		return fmt.Errorf("handling SlashCommand: %w", handlerErr)
+	}
+	return nil
 }
 
-func (sml *SocketModeListener) onInteraction(ctx context.Context, e *socketmode.Event) (bool, any, error) {
-	if ic, ok := e.Data.(slack.InteractionCallback); ok {
-		return sml.chat.handleInteractionEvent(ctx, &ic)
+func (l *SocketModeListener) onInteraction(ctx context.Context, e *socketmode.Event) error {
+	ic, ok := e.Data.(slack.InteractionCallback)
+	if !ok {
+		return fmt.Errorf("parsing InteractionCallback data")
 	}
-	return false, nil, fmt.Errorf("invalid interaction callback data")
+	if handlerErr := l.handler.InteractionCallback(ctx, &ic); handlerErr != nil {
+		return fmt.Errorf("handling InteractionCallback: %w", handlerErr)
+	}
+	return nil
 }
 
-func (sml *SocketModeListener) onEventsApi(ctx context.Context, e *socketmode.Event) (bool, any, error) {
+func (l *SocketModeListener) onEventsApi(ctx context.Context, e *socketmode.Event) error {
 	evt, ok := e.Data.(slackevents.EventsAPIEvent)
 	if !ok {
-		return false, nil, fmt.Errorf("invalid events api event data")
+		return fmt.Errorf("invalid events api event data")
 	}
-	handled := false
-	var handlerErr error
+
 	if evt.Type == slackevents.CallbackEvent {
-		handled, handlerErr = sml.chat.handleCallbackEvent(ctx, &evt)
+		if handlerErr := l.handler.CallbackEvent(ctx, &evt); handlerErr != nil {
+			return fmt.Errorf("handling EventsAPIEvent: %w", handlerErr)
+		}
 	} else if evt.Type == slackevents.AppRateLimited {
-		handled = true
 		log.Warn().Msg("slack app rate limited")
 	} else {
 		log.Warn().Str("type", evt.Type).Msg("unknown slack callback event type")
 	}
-	return handled, nil, handlerErr
+	return nil
 }

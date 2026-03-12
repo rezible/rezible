@@ -14,6 +14,7 @@ import (
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
 	"github.com/rezible/rezible/ent/incident"
+	imodel "github.com/rezible/rezible/ent/incidentmilestone"
 	ira "github.com/rezible/rezible/ent/incidentroleassignment"
 	"github.com/rezible/rezible/ent/predicate"
 	"github.com/rezible/rezible/ent/retrospective"
@@ -53,6 +54,10 @@ func (s *IncidentService) incidentQuery(pred predicate.Incident, edges bool) *en
 		q.WithFieldSelections()
 		q.WithRoleAssignments(func(raq *ent.IncidentRoleAssignmentQuery) {
 			raq.WithRole().WithUser()
+		})
+		q.WithMilestones(func(mq *ent.IncidentMilestoneQuery) {
+			mq.Order(ent.Desc(imodel.FieldTimestamp))
+			mq.WithUser()
 		})
 		q.WithVideoConferences()
 	}

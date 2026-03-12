@@ -13,44 +13,45 @@ import (
 
 type ChatService struct {
 	client *slack.Client
+	ci     *ConfiguredIntegration
 
-	jobs         rez.JobsService
-	messages     rez.MessageService
 	integrations rez.IntegrationsService
 	users        rez.UserService
 	incidents    rez.IncidentService
 	annos        rez.EventAnnotationsService
-	components   rez.SystemComponentsService
 }
 
-func newChatService(client *slack.Client, svcs *rez.Services) *ChatService {
+func newChatService(ci *ConfiguredIntegration) (*ChatService, error) {
+	cfg, cfgErr := decodeConfig(ci.intg.Config)
+	if cfgErr != nil {
+		return nil, fmt.Errorf("unable to decode config: %w", cfgErr)
+	}
 	return &ChatService{
-		client:       client,
-		jobs:         svcs.Jobs,
-		messages:     svcs.Messages,
-		users:        svcs.Users,
-		integrations: svcs.Integrations,
-		incidents:    svcs.Incidents,
-		annos:        svcs.EventAnnotations,
-		components:   svcs.Components,
-	}
+		client:       slack.New(cfg.AccessToken),
+		users:        ci.svcs.Users,
+		integrations: ci.svcs.Integrations,
+		incidents:    ci.svcs.Incidents,
+		annos:        ci.svcs.EventAnnotations,
+	}, nil
 }
 
-func (s *ChatService) makeTenantContext(ctx context.Context, teamId, enterpriseId string) (context.Context, error) {
-	intg, intgErr := lookupIntegration(ctx, s.integrations, teamId, enterpriseId)
-	if intgErr != nil {
-		return nil, fmt.Errorf("failed to lookup integration: %w", intgErr)
-	}
-	return access.TenantContext(ctx, intg.TenantID), nil
+func (s *ChatService) getTenantContext(ctx context.Context) context.Context {
+	return access.TenantContext(ctx, s.ci.intg.TenantID)
+}
+
+func (s *ChatService) getUserContext(ctx context.Context, userChatId string) (context.Context, error) {
+	_, userCtx, lookupErr := s.lookupUser(ctx, userChatId)
+	return userCtx, lookupErr
 }
 
 func (s *ChatService) lookupUser(ctx context.Context, userChatId string) (*ent.User, context.Context, error) {
-	usr, usrErr := s.users.GetByChatId(ctx, userChatId)
+	tenantCtx := s.ci.tenantContext(ctx)
+	usr, usrErr := s.users.GetByChatId(tenantCtx, userChatId)
 	if usrErr != nil {
 		log.Error().Err(usrErr).Str("chat_id", userChatId).Msg("failed to lookup chat user")
 		return nil, nil, fmt.Errorf("lookup user: %w", usrErr)
 	}
-	userCtx, ctxErr := s.users.CreateUserContext(ctx, usr.ID)
+	userCtx, ctxErr := s.users.CreateUserContext(tenantCtx, usr.ID)
 	if ctxErr != nil {
 		return nil, nil, fmt.Errorf("creating user context: %w", ctxErr)
 	}

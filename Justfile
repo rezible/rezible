@@ -62,7 +62,7 @@ saml_cert_dir := "./backend/internal/http/saml/testdata"
 
 # [group('Testing')]
 
-@test-backend:
+@test-backend: run-dev-services
     cd backend && \
         DB_URL='{{ test_db_url }}' \
         go test $(go list ./... | grep -v /ent/)

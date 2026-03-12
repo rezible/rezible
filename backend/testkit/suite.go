@@ -105,7 +105,7 @@ func (s *Suite) setupTestDatabase() {
 	if pw, exists := dbUrl.User.Password(); exists {
 		pgxConf.Password = pw
 	}
-	mg := golangmigrator.New("migrations", golangmigrator.WithFS(migrations.FS))
+	mg := golangmigrator.New(".", golangmigrator.WithFS(migrations.FS))
 	tdb := pgtestdb.New(s.T(), pgxConf, mg)
 	s.dbClient = postgres.ClientFromSql(tdb)
 }

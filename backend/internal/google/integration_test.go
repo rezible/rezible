@@ -17,9 +17,9 @@ func TestConfiguredIntegrationIsVideoConferenceEnabled(t *testing.T) {
 		expected bool
 	}{
 		{
-			name:     "default enabled with service account",
+			name:     "default disabled with service account",
 			cfg:      baseCfg,
-			expected: true,
+			expected: false,
 		},
 		{
 			name:     "boolean false preference",

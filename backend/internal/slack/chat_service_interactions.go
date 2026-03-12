@@ -3,7 +3,6 @@ package slack
 import (
 	"context"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"time"
 
@@ -18,43 +17,34 @@ const (
 	createAnnotationActionCallbackID = "create_annotation"
 )
 
-func (s *ChatService) onInteractionEventReceived(ctx context.Context, ic *slack.InteractionCallback) (bool, error) {
-	handled, _, err := s.handleInteractionEvent(ctx, ic)
-	return handled, err
-}
-
-func (s *ChatService) handleInteractionEvent(ctx context.Context, ic *slack.InteractionCallback) (bool, any, error) {
-	_, usrCtx, usrErr := s.lookupUser(ctx, ic.User.ID)
+func (s *ChatService) handleInteractionCallback(baseCtx context.Context, ic *slack.InteractionCallback) error {
+	ctx, usrErr := s.getUserContext(baseCtx, ic.User.ID)
 	if usrErr != nil {
-		return false, nil, fmt.Errorf("failed to lookup user: %w", usrErr)
+		return fmt.Errorf("failed to lookup user: %w", usrErr)
 	}
-	ctx = usrCtx
 
-	handled := true
-	var payload any
-	var handlerErr error
 	switch ic.Type {
 	case slack.InteractionTypeMessageAction:
-		payload, handlerErr = s.handleMessageActionInteraction(ctx, ic)
+		return s.handleMessageActionInteraction(ctx, ic)
 	case slack.InteractionTypeBlockActions:
-		payload, handlerErr = s.handleBlockActionsInteraction(ctx, ic)
+		return s.handleBlockActionsInteraction(ctx, ic)
 	case slack.InteractionTypeViewSubmission:
-		payload, handlerErr = s.handleViewSubmissionInteraction(ctx, ic)
+		return s.handleViewSubmissionInteraction(ctx, ic)
 	default:
-		handled = false
+		log.Warn().Msg("unknown interaction type")
 	}
-	return handled, payload, handlerErr
+	return nil
 }
 
-func (s *ChatService) handleMessageActionInteraction(ctx context.Context, ic *slack.InteractionCallback) (any, error) {
+func (s *ChatService) handleMessageActionInteraction(ctx context.Context, ic *slack.InteractionCallback) error {
 	switch ic.CallbackID {
 	case createAnnotationActionCallbackID:
 		return s.handleAnnotationModalInteraction(ctx, ic)
 	}
-	return nil, fmt.Errorf("unknown message actions: %s", ic.CallbackID)
+	return fmt.Errorf("unknown message actions: %s", ic.CallbackID)
 }
 
-func (s *ChatService) handleBlockActionsInteraction(ctx context.Context, ic *slack.InteractionCallback) (any, error) {
+func (s *ChatService) handleBlockActionsInteraction(ctx context.Context, ic *slack.InteractionCallback) error {
 	for _, action := range ic.ActionCallback.BlockActions {
 		switch action.ActionID {
 		case actionCallbackIdIncidentDetailsModalButton:
@@ -62,7 +52,7 @@ func (s *ChatService) handleBlockActionsInteraction(ctx context.Context, ic *sla
 		case actionCallbackIdIncidentMilestoneModalButton:
 			return s.handleIncidentMilestoneModalInteraction(ctx, ic)
 		default:
-			return nil, fmt.Errorf("unknown block action id: %s", action.ActionID)
+			return fmt.Errorf("unknown block action id: %s", action.ActionID)
 		}
 	}
 	//switch ic.View.CallbackID {
@@ -73,10 +63,10 @@ func (s *ChatService) handleBlockActionsInteraction(ctx context.Context, ic *sla
 	//}
 	log.Debug().Interface("ic", ic).Msg("interaction callback")
 
-	return nil, fmt.Errorf("unknown block actions: %s", ic.CallbackID)
+	return fmt.Errorf("unknown block actions: %s", ic.CallbackID)
 }
 
-func (s *ChatService) handleViewSubmissionInteraction(ctx context.Context, ic *slack.InteractionCallback) (any, error) {
+func (s *ChatService) handleViewSubmissionInteraction(ctx context.Context, ic *slack.InteractionCallback) error {
 	switch ic.View.CallbackID {
 	case viewCallbackIdAnnotationModal:
 		return s.handleAnnotationModalSubmission(ctx, ic)
@@ -85,10 +75,10 @@ func (s *ChatService) handleViewSubmissionInteraction(ctx context.Context, ic *s
 	case viewCallbackIdIncidentMilestoneModal:
 		return s.handleIncidentMilestoneModalSubmission(ctx, ic)
 	}
-	return nil, fmt.Errorf("unknown view submission: %s", ic.View.CallbackID)
+	return fmt.Errorf("unknown view submission: %s", ic.View.CallbackID)
 }
 
-func getInteractionAnnoationModalViewMetadata(ic *slack.InteractionCallback) (*annotationModalMetadata, error) {
+func getInteractionAnnotationModalViewMetadata(ic *slack.InteractionCallback) (*annotationModalMetadata, error) {
 	if ic.View.PrivateMetadata != "" {
 		var meta annotationModalMetadata
 		if jsonErr := json.Unmarshal([]byte(ic.View.PrivateMetadata), &meta); jsonErr != nil {
@@ -103,28 +93,28 @@ func getInteractionAnnoationModalViewMetadata(ic *slack.InteractionCallback) (*a
 	}, nil
 }
 
-func (s *ChatService) handleAnnotationModalInteraction(ctx context.Context, ic *slack.InteractionCallback) (any, error) {
-	meta, metaErr := getInteractionAnnoationModalViewMetadata(ic)
+func (s *ChatService) handleAnnotationModalInteraction(ctx context.Context, ic *slack.InteractionCallback) error {
+	meta, metaErr := getInteractionAnnotationModalViewMetadata(ic)
 	if metaErr != nil {
-		return nil, fmt.Errorf("failed to get interaction metadata: %w", metaErr)
+		return fmt.Errorf("failed to get interaction metadata: %w", metaErr)
 	}
 	view, viewErr := s.makeAnnotationModalView(ctx, meta)
 	if viewErr != nil || view == nil {
-		return nil, fmt.Errorf("failed to create annotation view: %w", viewErr)
+		return fmt.Errorf("failed to create annotation view: %w", viewErr)
 	}
-	return nil, s.openOrUpdateModal(ctx, ic, view)
+	return s.openOrUpdateModal(ctx, ic, view)
 }
 
-func (s *ChatService) handleAnnotationModalSubmission(ctx context.Context, ic *slack.InteractionCallback) (any, error) {
+func (s *ChatService) handleAnnotationModalSubmission(ctx context.Context, ic *slack.InteractionCallback) error {
 	anno, annoErr := s.getAnnotationModalAnnotation(ctx, ic.View)
 	if annoErr != nil {
-		return nil, fmt.Errorf("failed to get view annotation: %w", annoErr)
+		return fmt.Errorf("failed to get view annotation: %w", annoErr)
 	}
 	_, createErr := s.annos.SetAnnotation(ctx, anno)
 	if createErr != nil {
-		return nil, fmt.Errorf("failed to create annotation: %w", createErr)
+		return fmt.Errorf("failed to create annotation: %w", createErr)
 	}
-	return nil, nil
+	return nil
 }
 
 func (s *ChatService) getIncidentModalViewMetadata(ctx context.Context, ic *slack.InteractionCallback) (*incidentDetailsModalViewMetadata, error) {
@@ -149,42 +139,58 @@ func (s *ChatService) getIncidentModalViewMetadata(ctx context.Context, ic *slac
 	return &meta, nil
 }
 
-func (s *ChatService) handleIncidentDetailsModalInteraction(ctx context.Context, ic *slack.InteractionCallback) (any, error) {
+func (s *ChatService) getSlackIncidentDefaults() IncidentDefaults {
+	return s.ci.IncidentDefaults()
+}
+
+func (s *ChatService) handleIncidentDetailsModalInteraction(ctx context.Context, ic *slack.InteractionCallback) error {
 	meta, metaErr := s.getIncidentModalViewMetadata(ctx, ic)
 	if metaErr != nil {
-		return nil, metaErr
+		return fmt.Errorf("getting modal view metadata: %w", metaErr)
 	}
 	view, viewErr := s.makeIncidentDetailsModalView(ctx, meta)
 	if viewErr != nil || view == nil {
-		return nil, fmt.Errorf("failed to create incident view: %w", viewErr)
+		return fmt.Errorf("failed to create incident view: %w", viewErr)
 	}
 	openErr := s.openOrUpdateModal(ctx, ic, view)
 	if openErr != nil {
-		return nil, fmt.Errorf("failed to open view: %w", openErr)
+		return fmt.Errorf("failed to open view: %w", openErr)
 	}
-
-	return nil, nil
+	return nil
 }
 
-func (s *ChatService) handleIncidentDetailsModalSubmission(ctx context.Context, ic *slack.InteractionCallback) (any, error) {
+func (s *ChatService) handleIncidentDetailsModalSubmission(ctx context.Context, ic *slack.InteractionCallback) error {
 	meta, metaErr := s.getIncidentModalViewMetadata(ctx, ic)
 	if metaErr != nil {
-		return nil, metaErr
+		return fmt.Errorf("getting modal view metadata: %w", metaErr)
 	}
 
 	creating := meta.IncidentId == uuid.Nil
 	state := ic.View.State
 	if state == nil {
-		return nil, errors.New("invalid view state")
+		return fmt.Errorf("missing incident details modal view state")
 	}
 
 	usr, userErr := s.users.GetByChatId(ctx, meta.UserId)
 	if userErr != nil {
-		return nil, fmt.Errorf("failed to get user: %w", userErr)
+		return fmt.Errorf("failed to get user: %w", userErr)
 	}
 
 	setFn := func(m *ent.IncidentMutation) []ent.Mutation {
 		setIncidentDetailsModalInputMutationFields(m, state)
+		if creating {
+			defaults := s.ci.IncidentDefaults()
+			if _, sevSet := m.SeverityID(); !sevSet && defaults.DefaultSeverityID != "" {
+				if id, err := uuid.Parse(defaults.DefaultSeverityID); err == nil {
+					m.SetSeverityID(id)
+				}
+			}
+			if _, typeSet := m.TypeID(); !typeSet && defaults.DefaultTypeID != "" {
+				if id, err := uuid.Parse(defaults.DefaultTypeID); err == nil {
+					m.SetTypeID(id)
+				}
+			}
+		}
 
 		incidentId, exists := m.ID()
 		if !exists || !creating {
@@ -208,9 +214,9 @@ func (s *ChatService) handleIncidentDetailsModalSubmission(ctx context.Context, 
 	}
 	_, incErr := s.incidents.Set(ctx, meta.IncidentId, setFn)
 	if incErr != nil {
-		return nil, fmt.Errorf("upsert incident from modal data: %w", incErr)
+		return fmt.Errorf("upsert incident from modal data: %w", incErr)
 	}
-	return nil, nil
+	return nil
 }
 
 func (s *ChatService) getIncidentMilestoneModalViewMetadata(ctx context.Context, ic *slack.InteractionCallback) (*incidentMilestoneModalViewMetadata, error) {
@@ -232,37 +238,37 @@ func (s *ChatService) getIncidentMilestoneModalViewMetadata(ctx context.Context,
 	return &meta, nil
 }
 
-func (s *ChatService) handleIncidentMilestoneModalInteraction(ctx context.Context, ic *slack.InteractionCallback) (any, error) {
+func (s *ChatService) handleIncidentMilestoneModalInteraction(ctx context.Context, ic *slack.InteractionCallback) error {
 	meta, metaErr := s.getIncidentMilestoneModalViewMetadata(ctx, ic)
 	if metaErr != nil {
-		return nil, fmt.Errorf("failed to get view metadata: %w", metaErr)
+		return fmt.Errorf("getting modal view metadata: %w", metaErr)
 	}
 	view, viewErr := s.makeIncidentMilestoneModalView(ctx, meta)
 	if viewErr != nil || view == nil {
-		return nil, fmt.Errorf("failed to create incident view: %w", viewErr)
+		return fmt.Errorf("failed to create incident view: %w", viewErr)
 	}
 	openErr := s.openOrUpdateModal(ctx, ic, view)
 	if openErr != nil {
-		return nil, fmt.Errorf("failed to open view: %w", openErr)
+		return fmt.Errorf("failed to open view: %w", openErr)
 	}
 
-	return nil, nil
+	return nil
 }
 
-func (s *ChatService) handleIncidentMilestoneModalSubmission(ctx context.Context, ic *slack.InteractionCallback) (any, error) {
+func (s *ChatService) handleIncidentMilestoneModalSubmission(ctx context.Context, ic *slack.InteractionCallback) error {
 	meta, metaErr := s.getIncidentModalViewMetadata(ctx, ic)
 	if metaErr != nil {
-		return nil, metaErr
+		return fmt.Errorf("getting modal view metadata: %w", metaErr)
 	}
 
 	usr, userErr := s.users.GetByChatId(ctx, meta.UserId)
 	if userErr != nil {
-		return nil, fmt.Errorf("failed to get user: %w", userErr)
+		return fmt.Errorf("failed to get user: %w", userErr)
 	}
 
 	state := ic.View.State
 	if state == nil {
-		return nil, errors.New("invalid view state")
+		return fmt.Errorf("invalid incident milestone modal view state")
 	}
 
 	setFn := func(m *ent.IncidentMilestoneMutation) {
@@ -274,7 +280,7 @@ func (s *ChatService) handleIncidentMilestoneModalSubmission(ctx context.Context
 	}
 	_, incErr := s.incidents.SetIncidentMilestone(ctx, uuid.Nil, setFn)
 	if incErr != nil {
-		return nil, fmt.Errorf("set milestone from modal data: %w", incErr)
+		return fmt.Errorf("set milestone from modal data: %w", incErr)
 	}
-	return nil, nil
+	return nil
 }
