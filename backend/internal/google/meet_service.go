@@ -5,12 +5,10 @@ import (
 	"encoding/json"
 	"fmt"
 
-	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
 	"github.com/rezible/rezible/ent/videoconference"
 	"github.com/rs/zerolog/log"
 	"google.golang.org/api/meet/v2"
-	"google.golang.org/api/option"
 )
 
 var meetScopes = []string{
@@ -20,22 +18,22 @@ var meetScopes = []string{
 	"https://www.googleapis.com/auth/drive.meet.readonly",
 }
 
-const PreferenceEnableIncidentVideoConferences = "incident_video_conferences"
-
 type meetService struct {
-	incidents rez.IncidentService
-	credsOpt  option.ClientOption
+	ci *ConfiguredIntegration
 }
 
-func newMeetService(ctx context.Context, incidents rez.IncidentService, credsOpt option.ClientOption) (*meetService, error) {
+func newMeetService(ci *ConfiguredIntegration) (*meetService, error) {
 	return &meetService{
-		incidents: incidents,
-		credsOpt:  credsOpt,
+		ci: ci,
 	}, nil
 }
 
 func (s *meetService) makeClient(ctx context.Context) (*meet.Service, error) {
-	svc, meetErr := meet.NewService(ctx, s.credsOpt)
+	creds, credsErr := s.ci.getAuthCredentials()
+	if credsErr != nil {
+		return nil, fmt.Errorf("failed to get auth credentials: %w", credsErr)
+	}
+	svc, meetErr := meet.NewService(ctx, creds)
 	if meetErr != nil {
 		return nil, fmt.Errorf("failed to create meet service: %w", meetErr)
 	}
@@ -61,7 +59,8 @@ func (s *meetService) CreateVideoConference(ctx context.Context, inc *ent.Incide
 }
 
 func (s *meetService) CreateIncidentVideoConference(ctx context.Context, inc *ent.Incident) error {
-	curr, currErr := s.incidents.Get(ctx, inc.ID)
+	incs := s.ci.svcs.Incidents
+	curr, currErr := incs.Get(ctx, inc.ID)
 	if currErr != nil {
 		return fmt.Errorf("get incident: %w", currErr)
 	}
@@ -106,7 +105,7 @@ func (s *meetService) CreateIncidentVideoConference(ctx context.Context, inc *en
 			SetCreatedByIntegration(integrationName)
 		return []ent.Mutation{conferenceCreate.Mutation()}
 	}
-	if _, setErr := s.incidents.Set(ctx, curr.ID, setFn); setErr != nil {
+	if _, setErr := incs.Set(ctx, curr.ID, setFn); setErr != nil {
 		return fmt.Errorf("set incident conference: %w", setErr)
 	}
 	log.Debug().Str("incident_id", curr.ID.String()).Str("join_url", url).Msg("created incident conference")

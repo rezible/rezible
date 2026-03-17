@@ -2,12 +2,10 @@ package apiv1
 
 import (
 	"context"
+	"net/url"
 
 	rez "github.com/rezible/rezible"
-	"github.com/rezible/rezible/ent"
 	"github.com/rezible/rezible/integrations"
-	"github.com/rezible/rezible/internal/slack"
-	"github.com/rezible/rezible/openapi"
 	oapi "github.com/rezible/rezible/openapi/v1"
 )
 
@@ -19,19 +17,19 @@ func newIntegrationsHandler(integrations rez.IntegrationsService) *integrationsH
 	return &integrationsHandler{integrations: integrations}
 }
 
-func (h *integrationsHandler) ListSupported(ctx context.Context, req *oapi.ListSupportedIntegrationsRequest) (*oapi.ListSupportedIntegrationsResponse, error) {
-	var resp oapi.ListSupportedIntegrationsResponse
+func (h *integrationsHandler) ListAvailableIntegrations(ctx context.Context, req *oapi.ListAvailableIntegrationsRequest) (*oapi.ListAvailableIntegrationsResponse, error) {
+	var resp oapi.ListAvailableIntegrationsResponse
 
-	supportedIntegrations := integrations.GetAvailable()
-	resp.Body.Data = make([]oapi.SupportedIntegration, len(supportedIntegrations))
-	for i, p := range supportedIntegrations {
-		resp.Body.Data[i] = oapi.SupportedIntegrationFromPackage(p)
+	available := integrations.GetAvailable()
+	resp.Body.Data = make([]oapi.AvailableIntegration, len(available))
+	for i, intg := range available {
+		resp.Body.Data[i] = oapi.AvailableIntegrationFromPackage(intg)
 	}
 
 	return &resp, nil
 }
 
-func (h *integrationsHandler) ListConfigured(ctx context.Context, req *oapi.ListConfiguredIntegrationsRequest) (*oapi.ListConfiguredIntegrationsResponse, error) {
+func (h *integrationsHandler) ListConfiguredIntegrations(ctx context.Context, req *oapi.ListConfiguredIntegrationsRequest) (*oapi.ListConfiguredIntegrationsResponse, error) {
 	var resp oapi.ListConfiguredIntegrationsResponse
 
 	params := rez.ListIntegrationsParams{}
@@ -41,12 +39,8 @@ func (h *integrationsHandler) ListConfigured(ctx context.Context, req *oapi.List
 	}
 
 	resp.Body.Data = make([]oapi.ConfiguredIntegration, len(results))
-	for i, intg := range results {
-		oapiIntg, intgErr := oapi.ConfiguredIntegrationFromConfig(intg)
-		if intgErr != nil {
-			return nil, apiError("failed to convert integration", intgErr)
-		}
-		resp.Body.Data[i] = *oapiIntg
+	for i, ci := range results {
+		resp.Body.Data[i] = oapi.ConfiguredIntegrationFromConfig(ci)
 	}
 	resp.Body.Pagination = oapi.ResponsePagination{
 		Total: len(results),
@@ -55,18 +49,14 @@ func (h *integrationsHandler) ListConfigured(ctx context.Context, req *oapi.List
 	return &resp, nil
 }
 
-func (h *integrationsHandler) GetIntegration(ctx context.Context, req *oapi.GetIntegrationRequest) (*oapi.GetIntegrationResponse, error) {
-	var resp oapi.GetIntegrationResponse
+func (h *integrationsHandler) GetConfiguredIntegration(ctx context.Context, req *oapi.GetConfiguredIntegrationRequest) (*oapi.GetConfiguredIntegrationResponse, error) {
+	var resp oapi.GetConfiguredIntegrationResponse
 
 	ci, getErr := h.integrations.GetConfigured(ctx, req.Name)
 	if getErr != nil {
 		return nil, apiError("failed to get integration", getErr)
 	}
-	oapiIntg, intgErr := oapi.ConfiguredIntegrationFromConfig(ci)
-	if intgErr != nil {
-		return nil, apiError("failed to convert integration", intgErr)
-	}
-	resp.Body.Data = *oapiIntg
+	resp.Body.Data = oapi.ConfiguredIntegrationFromConfig(ci)
 
 	return &resp, nil
 }
@@ -74,35 +64,29 @@ func (h *integrationsHandler) GetIntegration(ctx context.Context, req *oapi.GetI
 func (h *integrationsHandler) ConfigureIntegration(ctx context.Context, req *oapi.ConfigureIntegrationRequest) (*oapi.ConfigureIntegrationResponse, error) {
 	var resp oapi.ConfigureIntegrationResponse
 
-	attr := req.Body.Attributes
-	if req.Name == "slack" && attr.UserPreferences != nil {
-		if err := slack.ValidateIncidentDefaultsPreferences(attr.UserPreferences); err != nil {
-			return nil, openapi.ErrorBadRequest("invalid slack incident defaults", err)
-		}
-	}
-	setFn := func(m *ent.IntegrationMutation) {
-		if attr.Config != nil {
-			m.SetConfig(attr.Config)
-		}
-		if attr.UserPreferences != nil {
-			m.SetUserPreferences(attr.UserPreferences)
-		}
-	}
-	ci, setErr := h.integrations.SetIntegration(ctx, req.Name, setFn)
+	ci, setErr := h.integrations.Configure(ctx, req.Name, req.Body.Attributes.Config)
 	if setErr != nil {
 		return nil, apiError("failed to configure integration", setErr)
 	}
-	oapiIntg, intgErr := oapi.ConfiguredIntegrationFromConfig(ci)
-	if intgErr != nil {
-		return nil, apiError("failed to convert integration", intgErr)
-	}
-	resp.Body.Data = *oapiIntg
+	resp.Body.Data = oapi.ConfiguredIntegrationFromConfig(ci)
 
 	return &resp, nil
 }
 
-func (h *integrationsHandler) DeleteIntegration(ctx context.Context, req *oapi.DeleteIntegrationRequest) (*oapi.DeleteIntegrationResponse, error) {
-	var resp oapi.DeleteIntegrationResponse
+func (h *integrationsHandler) UpdateConfiguredIntegrationPreferences(ctx context.Context, req *oapi.UpdateConfiguredIntegrationPreferencesRequest) (*oapi.UpdateConfiguredIntegrationPreferencesResponse, error) {
+	var resp oapi.UpdateConfiguredIntegrationPreferencesResponse
+
+	ci, setErr := h.integrations.UpdateConfiguredPreferences(ctx, req.Name, req.Body.Attributes.Preferences)
+	if setErr != nil {
+		return nil, apiError("failed to configure integration", setErr)
+	}
+	resp.Body.Data = oapi.ConfiguredIntegrationFromConfig(ci)
+
+	return &resp, nil
+}
+
+func (h *integrationsHandler) DeleteConfiguredIntegration(ctx context.Context, req *oapi.DeleteConfiguredIntegrationRequest) (*oapi.DeleteConfiguredIntegrationResponse, error) {
+	var resp oapi.DeleteConfiguredIntegrationResponse
 
 	if delErr := h.integrations.DeleteConfigured(ctx, req.Name); delErr != nil {
 		return nil, apiError("failed to delete integration", delErr)
@@ -114,7 +98,16 @@ func (h *integrationsHandler) DeleteIntegration(ctx context.Context, req *oapi.D
 func (h *integrationsHandler) StartIntegrationOAuthFlow(ctx context.Context, req *oapi.StartIntegrationOAuthFlowRequest) (*oapi.StartIntegrationOAuthFlowResponse, error) {
 	var resp oapi.StartIntegrationOAuthFlowResponse
 
-	startFlowUrl, flowErr := h.integrations.StartOAuth2Flow(ctx, req.Name)
+	callbackUrl, pathErr := url.JoinPath(rez.Config.AppUrl(), req.Body.Attributes.CallbackPath)
+	if pathErr != nil {
+		return nil, apiError("invalid callback path", pathErr)
+	}
+	redirectUrl, urlErr := url.Parse(callbackUrl)
+	if urlErr != nil {
+		return nil, apiError("invalid callback url", urlErr)
+	}
+
+	startFlowUrl, flowErr := h.integrations.StartOAuth2Flow(ctx, req.Name, redirectUrl)
 	if flowErr != nil {
 		return nil, apiError("failed to start flow", flowErr)
 	}
@@ -132,11 +125,7 @@ func (h *integrationsHandler) CompleteIntegrationOAuthFlow(ctx context.Context, 
 	if completeErr != nil {
 		return nil, apiError("failed to complete integration", completeErr)
 	}
-	oapiIntg, intgErr := oapi.ConfiguredIntegrationFromConfig(ci)
-	if intgErr != nil {
-		return nil, apiError("failed to convert integration", intgErr)
-	}
-	resp.Body.Data = *oapiIntg
+	resp.Body.Data = oapi.ConfiguredIntegrationFromConfig(ci)
 
 	return &resp, nil
 }

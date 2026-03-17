@@ -4,18 +4,8 @@
 	import { Badge } from "$components/ui/badge";
 
 	const { configured }: ConfigComponentProps = $props();
-	const parsedConfig = $derived.by(() => {
-		const raw = configured?.attributes.config;
-		if (!raw || typeof raw !== "object") return null;
-		return raw as Record<string, unknown>;
-	});
-	const team = $derived.by(() => {
-		const candidate = parsedConfig?.Team;
-		if (!candidate || typeof candidate !== "object") return null;
-		const name = (candidate as Record<string, unknown>).Name;
-		if (typeof name !== "string" || name.length === 0) return null;
-		return name;
-	});
+	const parsedConfig = $derived<Record<string, any>>(configured?.attributes.config || {});
+	const team = $derived(parsedConfig?.team?.name);
 </script>
 
 {#if configured}

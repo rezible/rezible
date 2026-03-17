@@ -4,9 +4,9 @@ import { z } from "zod";
 import { SvelteMap } from "svelte/reactivity";
 import { createQuery, createMutation } from "@tanstack/svelte-query";
 import {
+    listAvailableIntegrationsOptions,
     startIntegrationOauthFlowMutation, 
     completeIntegrationOauthFlowMutation,
-    listSupportedIntegrationsOptions,
     listConfiguredIntegrationsOptions,
     configureIntegrationMutation,
     type ConfigureIntegrationRequestBody,
@@ -36,7 +36,8 @@ class IntegrationOAuthSetupController {
 
     async startFlow(name: string) {
         try {
-            const resp = await this.startFlowMut.mutateAsync({ path: { name } });
+			const callbackPath = `/setup/callback/${name}`;
+			const resp = await this.startFlowMut.mutateAsync({ path: { name }, body: { attributes: { callbackPath } } });
             window.location.assign(new URL(resp.data.flow_url));
         } catch (e) {
             console.error("failed to complete", e);
@@ -50,7 +51,7 @@ class IntegrationOAuthSetupController {
     private async onCallbackSet(name?: string) {
         if (!name || this.completingFlow) return;
 
-        const { state, code } = $state.snapshot(this.callbackParams);
+        const { state, code } = this.callbackParams;
         this.callbackParams.reset();
 
         if (!state || !code) return;
@@ -65,10 +66,15 @@ class IntegrationOAuthSetupController {
     }
 };
 
-const dataKinds = [
-    {name: "Chat", kind: "chat", required: true},
-    {name: "Users", kind: "users", required: true},
+const requiredDataKinds = [
+    {name: "Chat", kind: "chat"},
+    {name: "Users", kind: "users"},
 ];
+const requiredKinds = new Set(requiredDataKinds.map(k => k.kind));
+
+const getEnabledDataKinds = (s: {[name: string]: boolean}) => {
+    return Object.entries(s).filter(([_, enabled]) => (enabled)).map(([name, _]) => (name));
+}
 
 export class InitialIntegrationsSetupController {
     constructor() {
@@ -78,31 +84,21 @@ export class InitialIntegrationsSetupController {
     }
     oauth: IntegrationOAuthSetupController;
 
-    private listSupportedQuery = createQuery(() => listSupportedIntegrationsOptions());
-    supported = $derived(this.listSupportedQuery.data?.data || []);
-    supportedMap = $derived(new SvelteMap(this.supported.map(intg => ([intg.name, intg]))));
+    private listAvailableQuery = createQuery(() => listAvailableIntegrationsOptions());
+    available = $derived(this.listAvailableQuery.data?.data || []);
+    availableMap = $derived(new SvelteMap(this.available.map(intg => ([intg.name, intg]))));
 
     private listConfiguredQuery = createQuery(() => listConfiguredIntegrationsOptions());
     configured = $derived(this.listConfiguredQuery.data?.data || []);
 	configuredMap = $derived(new SvelteMap(this.configured.map(intg => ([intg.name, intg]))));
+	configuredDataKinds = $derived(new Set(this.configured.flatMap(intg => getEnabledDataKinds(intg.attributes.dataKinds))));
 
-    requiredDataKinds = new Set(dataKinds.filter(k => k.required).map(k => k.kind));
-	configuredEnabledDataKinds = $derived(new Set(this.configured.flatMap(intg => intg.attributes.enabledDataKinds)));
-    remainingRequiredDataKinds = $derived(this.requiredDataKinds.difference(this.configuredEnabledDataKinds).values().toArray());
+    remainingRequiredDataKinds = $derived(requiredKinds.difference(this.configuredDataKinds).values().toArray());
     nextRequiredDataKind = $derived(this.remainingRequiredDataKinds.at(0));
-    nextRequiredSupportedIntegrations = $derived.by(() => {
+    availableDataKindIntegrations = $derived.by(() => {
         const reqKind = this.nextRequiredDataKind;
         if (!reqKind) return [];
-        const intgSupport = this.supported.filter(intg => 
-            intg.supportedDataKinds.includes(reqKind));
-        if (!intgSupport) return []; // this shouldn't happen - we don't have any supported integrations for this (required) data kind?
-        return intgSupport;
-    });
-    // are there configured integrations that support this data kind?
-    nextRequiredSupportedConfiguredIntegrations = $derived.by(() => {
-        const reqKind = $state.snapshot(this.nextRequiredDataKind);
-        if (!reqKind) return;
-        return this.configured.filter(intg => intg.attributes.enabledDataKinds.includes(reqKind));
+        return this.available.filter(intg => intg.dataKinds.includes(reqKind));
     });
 
     private configureMut = createMutation(() => ({
@@ -118,6 +114,6 @@ export class InitialIntegrationsSetupController {
         })
     }
 
-    isLoading = $derived(this.listSupportedQuery.isPending || this.listConfiguredQuery.isPending);
+    isLoading = $derived(this.listAvailableQuery.isPending || this.listConfiguredQuery.isPending);
     isConfiguring = $derived(this.configureMut.isPending);
 };

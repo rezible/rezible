@@ -4,7 +4,6 @@ package ent
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"time"
@@ -67,7 +66,7 @@ func (_c *IntegrationCreate) SetName(v string) *IntegrationCreate {
 }
 
 // SetConfig sets the "config" field.
-func (_c *IntegrationCreate) SetConfig(v json.RawMessage) *IntegrationCreate {
+func (_c *IntegrationCreate) SetConfig(v map[string]interface{}) *IntegrationCreate {
 	_c.mutation.SetConfig(v)
 	return _c
 }
@@ -344,7 +343,7 @@ func (u *IntegrationUpsert) UpdateName() *IntegrationUpsert {
 }
 
 // SetConfig sets the "config" field.
-func (u *IntegrationUpsert) SetConfig(v json.RawMessage) *IntegrationUpsert {
+func (u *IntegrationUpsert) SetConfig(v map[string]interface{}) *IntegrationUpsert {
 	u.Set(integration.FieldConfig, v)
 	return u
 }
@@ -467,7 +466,7 @@ func (u *IntegrationUpsertOne) UpdateName() *IntegrationUpsertOne {
 }
 
 // SetConfig sets the "config" field.
-func (u *IntegrationUpsertOne) SetConfig(v json.RawMessage) *IntegrationUpsertOne {
+func (u *IntegrationUpsertOne) SetConfig(v map[string]interface{}) *IntegrationUpsertOne {
 	return u.Update(func(s *IntegrationUpsert) {
 		s.SetConfig(v)
 	})
@@ -762,7 +761,7 @@ func (u *IntegrationUpsertBulk) UpdateName() *IntegrationUpsertBulk {
 }
 
 // SetConfig sets the "config" field.
-func (u *IntegrationUpsertBulk) SetConfig(v json.RawMessage) *IntegrationUpsertBulk {
+func (u *IntegrationUpsertBulk) SetConfig(v map[string]interface{}) *IntegrationUpsertBulk {
 	return u.Update(func(s *IntegrationUpsert) {
 		s.SetConfig(v)
 	})

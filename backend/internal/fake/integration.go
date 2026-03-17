@@ -2,7 +2,6 @@ package fakeprovider
 
 import (
 	"context"
-	"encoding/json"
 
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
@@ -19,24 +18,32 @@ func SetupIntegration(ctx context.Context, svcs *rez.Services) (rez.IntegrationP
 	return intg, nil
 }
 
-func (d *integration) Name() string {
+func (i *integration) Name() string {
 	return integrationName
 }
 
-func (d *integration) IsAvailable() (bool, error) {
+func (i *integration) IsAvailable() (bool, error) {
 	return rez.Config.DebugMode(), nil
 }
 
-func (d *integration) SupportedDataKinds() []string {
+func (i *integration) SupportedDataKinds() []string {
 	return supportedDataKinds
 }
 
-func (d *integration) OAuthConfigRequired() bool {
+func (i *integration) OAuthConfigRequired() bool {
 	return false
 }
 
-func (d *integration) GetConfiguredIntegration(i *ent.Integration) rez.ConfiguredIntegration {
-	return &ConfiguredIntegration{intg: i}
+func (i *integration) ValidateConfig(cfg map[string]any) error {
+	return nil
+}
+
+func (i *integration) ValidateUserPreferences(prefs map[string]any) error {
+	return nil
+}
+
+func (i *integration) GetConfiguredIntegration(intg *ent.Integration) rez.ConfiguredIntegration {
+	return &ConfiguredIntegration{intg: intg}
 }
 
 type ConfiguredIntegration struct {
@@ -47,20 +54,16 @@ func (ci *ConfiguredIntegration) Name() string {
 	return integrationName
 }
 
-func (ci *ConfiguredIntegration) RawConfig() json.RawMessage {
+func (ci *ConfiguredIntegration) GetSanitizedConfig() map[string]any {
 	return ci.intg.Config
 }
 
-func (ci *ConfiguredIntegration) UserPreferences() map[string]any {
+func (ci *ConfiguredIntegration) GetUserPreferences() map[string]any {
 	return ci.intg.UserPreferences
 }
 
-func (ci *ConfiguredIntegration) EnabledDataKinds() []string {
-	return supportedDataKinds
-}
-
-func (ci *ConfiguredIntegration) GetSanitizedConfig() (json.RawMessage, error) {
-	return json.Marshal(ci.RawConfig())
+func (ci *ConfiguredIntegration) GetDataKinds() map[string]bool {
+	return map[string]bool{}
 }
 
 type IntegrationConfig struct{}

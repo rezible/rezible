@@ -2,9 +2,9 @@ package rez
 
 import (
 	"context"
-	"encoding/json"
 	"iter"
 	"net/http"
+	"net/url"
 	"time"
 
 	"github.com/ThreeDotsLabs/watermill/components/cqrs"
@@ -102,34 +102,32 @@ type (
 		Name() string
 		IsAvailable() (bool, error)
 		SupportedDataKinds() []string
+		ValidateConfig(map[string]any) error
+		ValidateUserPreferences(map[string]any) error
 		OAuthConfigRequired() bool
 		GetConfiguredIntegration(*ent.Integration) ConfiguredIntegration
 	}
 
 	ConfiguredIntegration interface {
 		Name() string
-		RawConfig() json.RawMessage
-		UserPreferences() map[string]any
-		EnabledDataKinds() []string
-		GetSanitizedConfig() (json.RawMessage, error)
+		GetSanitizedConfig() map[string]any
+		GetUserPreferences() map[string]any
+		GetDataKinds() map[string]bool
 	}
 
 	ListIntegrationsParams struct {
 		Names        []string
 		ConfigValues map[string]any
-		Filter       func(*ent.IntegrationQuery)
 	}
 
 	IntegrationsService interface {
-		LookupByConfigValues(ctx context.Context, name string, configValues map[string]any) (*ent.Integration, error)
-
+		Configure(ctx context.Context, name string, cfg map[string]any) (ConfiguredIntegration, error)
 		ListConfigured(ctx context.Context, params ListIntegrationsParams) ([]ConfiguredIntegration, error)
-		Get(ctx context.Context, name string) (*ent.Integration, error)
 		GetConfigured(ctx context.Context, name string) (ConfiguredIntegration, error)
-		SetIntegration(ctx context.Context, name string, setFn func(*ent.IntegrationMutation)) (ConfiguredIntegration, error)
+		UpdateConfiguredPreferences(ctx context.Context, name string, prefs map[string]any) (ConfiguredIntegration, error)
 		DeleteConfigured(ctx context.Context, name string) error
 
-		StartOAuth2Flow(ctx context.Context, name string) (string, error)
+		StartOAuth2Flow(ctx context.Context, name string, redirect *url.URL) (string, error)
 		CompleteOAuth2Flow(ctx context.Context, name, state, code string) (ConfiguredIntegration, error)
 
 		GetChatIntegration(ctx context.Context) (ChatService, error)

@@ -142,7 +142,7 @@ func (s *ChatService) makeIncidentDetailsModalView(ctx context.Context, meta *in
 		return nil, fmt.Errorf("failed to get incident metadata: %w", incMetaErr)
 	}
 
-	builder := newIncidentModalViewBuilder(curr, meta, s.getSlackIncidentDefaults())
+	builder := newIncidentModalViewBuilder(curr, meta, s.ci.getIncidentPreferences())
 	blockSet := builder.build(incMeta)
 
 	jsonMetadata, jsonErr := json.Marshal(meta)

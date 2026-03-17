@@ -6,6 +6,7 @@ import (
 
 	"github.com/google/uuid"
 	rez "github.com/rezible/rezible"
+	"github.com/rezible/rezible/access"
 	"github.com/rezible/rezible/ent"
 	"github.com/rs/zerolog/log"
 	"github.com/slack-go/slack"
@@ -74,15 +75,27 @@ func (h *eventHandler) registerIncidentHandlers() error {
 	return nil
 }
 
+func (h *eventHandler) lookupConfiguredIntegration(ctx context.Context) (*ConfiguredIntegration, error) {
+	intg, lookupErr := h.services.Integrations.GetConfigured(ctx, integrationName)
+	if lookupErr != nil {
+		return nil, lookupErr
+	}
+	ci, ok := intg.(*ConfiguredIntegration)
+	if !ok {
+		return nil, fmt.Errorf("invalid configured integration: %w", lookupErr)
+	}
+	return ci, nil
+}
+
 func (h *eventHandler) makeIncidentUpdateProcessor(ctx context.Context, incidentId uuid.UUID) (*incidentUpdateProcessor, error) {
-	intg, lookupErr := h.services.Integrations.Get(ctx, integrationName)
+	ci, lookupErr := h.lookupConfiguredIntegration(ctx)
 	if lookupErr != nil {
 		if ent.IsNotFound(lookupErr) {
 			return nil, nil
 		}
 		return nil, lookupErr
 	}
-	chat, chatErr := newChatService(newConfiguredIntegration(h.services, intg))
+	chat, chatErr := newChatService(ci)
 	if chatErr != nil {
 		return nil, fmt.Errorf("make chat service: %w", chatErr)
 	}
@@ -134,15 +147,33 @@ func (h *eventHandler) sendIncidentMilestoneMessage(ctx context.Context, ev *cmd
 	return p.sendIncidentMilestoneMessage(ctx, ev.MilestoneId)
 }
 
+func (h *eventHandler) lookupTenantIntegration(ctx context.Context, teamId string, enterpriseId string) (*ConfiguredIntegration, error) {
+	vals := make(map[string]any)
+	if teamId != "" {
+		vals["team.id"] = teamId
+	}
+	if enterpriseId != "" {
+		vals["enterprise.id"] = enterpriseId
+	}
+	params := rez.ListIntegrationsParams{Names: []string{integrationName}, ConfigValues: vals}
+	intgs, listErr := h.services.Integrations.ListConfigured(access.SystemContext(ctx), params)
+	if listErr != nil {
+		return nil, listErr
+	}
+	for _, intg := range intgs {
+		if ci, ok := intg.(*ConfiguredIntegration); ok {
+			return ci, nil
+		}
+	}
+	return nil, fmt.Errorf("integration not found")
+}
+
 func (h *eventHandler) lookupTenantChatService(ctx context.Context, teamId string, enterpriseId string) (*ChatService, error) {
-	intg, lookupErr := lookupTenantIntegration(ctx, h.services.Integrations, teamId, enterpriseId)
+	ci, lookupErr := h.lookupTenantIntegration(ctx, teamId, enterpriseId)
 	if lookupErr != nil {
 		return nil, lookupErr
 	}
-	if intg == nil {
-		return nil, fmt.Errorf("integration not found")
-	}
-	return newChatService(newConfiguredIntegration(h.services, intg))
+	return newChatService(ci)
 }
 
 type processSlashCommand struct {

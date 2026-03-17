@@ -22920,8 +22920,7 @@ type IntegrationMutation struct {
 	created_at       *time.Time
 	updated_at       *time.Time
 	name             *string
-	_config          *json.RawMessage
-	append_config    json.RawMessage
+	_config          *map[string]interface{}
 	user_preferences *map[string]interface{}
 	clearedFields    map[string]struct{}
 	tenant           *int
@@ -23180,13 +23179,12 @@ func (m *IntegrationMutation) ResetName() {
 }
 
 // SetConfig sets the "config" field.
-func (m *IntegrationMutation) SetConfig(jm json.RawMessage) {
-	m._config = &jm
-	m.append_config = nil
+func (m *IntegrationMutation) SetConfig(value map[string]interface{}) {
+	m._config = &value
 }
 
 // Config returns the value of the "config" field in the mutation.
-func (m *IntegrationMutation) Config() (r json.RawMessage, exists bool) {
+func (m *IntegrationMutation) Config() (r map[string]interface{}, exists bool) {
 	v := m._config
 	if v == nil {
 		return
@@ -23197,7 +23195,7 @@ func (m *IntegrationMutation) Config() (r json.RawMessage, exists bool) {
 // OldConfig returns the old "config" field's value of the Integration entity.
 // If the Integration object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *IntegrationMutation) OldConfig(ctx context.Context) (v json.RawMessage, err error) {
+func (m *IntegrationMutation) OldConfig(ctx context.Context) (v map[string]interface{}, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldConfig is only allowed on UpdateOne operations")
 	}
@@ -23211,23 +23209,9 @@ func (m *IntegrationMutation) OldConfig(ctx context.Context) (v json.RawMessage,
 	return oldValue.Config, nil
 }
 
-// AppendConfig adds jm to the "config" field.
-func (m *IntegrationMutation) AppendConfig(jm json.RawMessage) {
-	m.append_config = append(m.append_config, jm...)
-}
-
-// AppendedConfig returns the list of values that were appended to the "config" field in this mutation.
-func (m *IntegrationMutation) AppendedConfig() (json.RawMessage, bool) {
-	if len(m.append_config) == 0 {
-		return nil, false
-	}
-	return m.append_config, true
-}
-
 // ResetConfig resets all changes to the "config" field.
 func (m *IntegrationMutation) ResetConfig() {
 	m._config = nil
-	m.append_config = nil
 }
 
 // SetUserPreferences sets the "user_preferences" field.
@@ -23438,7 +23422,7 @@ func (m *IntegrationMutation) SetField(name string, value ent.Value) error {
 		m.SetName(v)
 		return nil
 	case integration.FieldConfig:
-		v, ok := value.(json.RawMessage)
+		v, ok := value.(map[string]interface{})
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}

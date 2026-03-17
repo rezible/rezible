@@ -70,6 +70,14 @@ type (
 	ArchiveIdRequest struct {
 		Id uuid.UUID `path:"id"`
 	}
+
+	NameRequest struct {
+		Name string `path:"name"`
+	}
+	NameRequestWithAttributes[A any] struct {
+		NameRequest
+		RequestWithBodyAttributes[A]
+	}
 )
 
 func (l ListRequest) ListParams() ent.ListParams {

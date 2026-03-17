@@ -2,17 +2,16 @@ package slack
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"net/http"
 	"strings"
 
 	mapset "github.com/deckarep/golang-set/v2"
-	"github.com/google/uuid"
 	"github.com/rezible/rezible/access"
 	"github.com/rezible/rezible/ent"
 	"github.com/rs/zerolog/log"
+	"github.com/stretchr/objx"
 	"golang.org/x/oauth2"
 
 	rez "github.com/rezible/rezible"
@@ -162,96 +161,87 @@ func loadOAuthConfig() *oauth2.Config {
 	return &oauth2.Config{
 		ClientID:     clientId,
 		ClientSecret: clientSecret,
-		Scopes:       []string{strings.Join(oAuthScopes, ",")},
 		Endpoint: oauth2.Endpoint{
 			AuthURL:  "https://slack.com/oauth/v2/authorize",
 			TokenURL: "https://slack.com/api/oauth.v2.access",
 		},
+		Scopes: oAuthScopes,
 	}
 }
 
-func (i *integration) ExtractIntegrationConfigFromToken(t *oauth2.Token) (json.RawMessage, error) {
-	getTeamInfoFromTokenExtra := func(extraKey string) (*teamInfo, error) {
-		e, eOk := t.Extra(extraKey).(map[string]interface{})
-		if !eOk {
-			return nil, fmt.Errorf("missing or invalid extra field: %s", extraKey)
-		}
-
-		id, idOk := e["id"].(string)
-		if !idOk {
-			return nil, fmt.Errorf("missing or invalid id")
-		}
-		name, nameOk := e["name"].(string)
-		if !nameOk {
-			return nil, fmt.Errorf("missing or invalid name")
-		}
-		return &teamInfo{ID: id, Name: name}, nil
-	}
-
-	scope, scopeOk := t.Extra("scope").(string)
+func validateOauthTokenScopes(t *oauth2.Token) error {
+	tokenScope, scopeOk := t.Extra("scope").(string)
 	if !scopeOk {
-		return nil, fmt.Errorf("missing or invalid scope")
+		return fmt.Errorf("missing or invalid scope")
 	}
-	tokenScopes := mapset.NewSet(strings.Split(scope, ",")...)
-	for _, s := range oAuthScopes {
-		if !tokenScopes.Contains(s) {
-			return nil, fmt.Errorf("missing token scope: %s", s)
+	tokenScopes := mapset.NewSet(strings.Split(tokenScope, ",")...)
+	for _, scope := range oAuthScopes {
+		if !tokenScopes.Contains(scope) {
+			return fmt.Errorf("missing token scope: %s", scope)
 		}
 	}
+	return nil
+}
+
+func getTeamInfoFromTokenData(tokenData any) (map[string]any, error) {
+	info := objx.New(tokenData)
+	id := info.Get("id")
+	name := info.Get("name")
+	if !id.IsStr() || !name.IsStr() {
+		return nil, fmt.Errorf("missing or invalid team info")
+	}
+	data := map[string]any{
+		"id":   id.String(),
+		"name": name.String(),
+	}
+	return data, nil
+}
+
+func (i *integration) ExtractIntegrationConfigFromToken(t *oauth2.Token) (map[string]any, error) {
+	if scopesErr := validateOauthTokenScopes(t); scopesErr != nil {
+		return nil, scopesErr
+	}
+
+	cfg := objx.Map{}
+	cfg.Set(configAccessToken, t.AccessToken)
 
 	botUserId, botUserIdOk := t.Extra("bot_user_id").(string)
 	if !botUserIdOk {
 		return nil, fmt.Errorf("missing or invalid bot_user_id")
 	}
+	cfg.Set(configBotUserID, botUserId)
 
-	team, teamErr := getTeamInfoFromTokenExtra("team")
+	team, teamErr := getTeamInfoFromTokenData(t.Extra("team"))
 	if teamErr != nil {
 		return nil, fmt.Errorf("invalid team info")
 	}
+	cfg.Set(configTeam, team)
 
-	// isEnterprise, isEntOk := t.Extra("is_enterprise_install").(string)
-
-	enterprise, entErr := getTeamInfoFromTokenExtra("enterprise")
-	if entErr != nil {
-		log.Warn().Err(entErr).Msgf("get enterprise info from token")
+	enterprise, enterpriseErr := getTeamInfoFromTokenData(t.Extra("enterprise"))
+	if enterpriseErr != nil {
+		log.Warn().Err(enterpriseErr).Msgf("get enterprise info from token")
+	} else {
+		cfg.Set(configEnterprise, enterprise)
 	}
 
-	cfg := IntegrationConfig{
-		AccessToken: t.AccessToken,
-		TokenType:   t.Type(),
-		BotUserID:   botUserId,
-		Team:        *team,
-		Enterprise:  enterprise,
+	wh := objx.New(t.Extra("incoming_webhook"))
+	if channelId := wh.Get("channel_id"); channelId.IsStr() {
+		cfg.Set(configWebhookChannelId, channelId.String())
 	}
 
-	if wh, whOk := t.Extra("incoming_webhook").(map[string]any); whOk {
-		if channelId, ok := wh["channel_id"]; ok {
-			if cidStr, strOk := channelId.(string); strOk {
-				cfg.WebhookChannelId = cidStr
-			}
-		}
-	}
-
-	return json.Marshal(cfg)
-}
-
-func lookupTenantIntegration(ctx context.Context, is rez.IntegrationsService, teamId string, enterpriseId string) (*ent.Integration, error) {
-	vals := make(map[string]any)
-	if teamId != "" {
-		vals["Team.ID"] = teamId
-	}
-	if enterpriseId != "" {
-		vals["Enterprise.ID"] = enterpriseId
-	}
-	return is.LookupByConfigValues(access.SystemContext(ctx), integrationName, vals)
+	return cfg, nil
 }
 
 func (i *integration) GetConfiguredIntegration(intg *ent.Integration) rez.ConfiguredIntegration {
 	return newConfiguredIntegration(i.services, intg)
 }
 
-func (i *integration) getSingleTenantConfiguredIntegration(ctx context.Context) (*ConfiguredIntegration, error) {
-	return nil, fmt.Errorf("not implemented")
+func (i *integration) ValidateConfig(cfg map[string]any) error {
+	return nil
+}
+
+func (i *integration) ValidateUserPreferences(prefs map[string]any) error {
+	return nil
 }
 
 type ConfiguredIntegration struct {
@@ -267,162 +257,74 @@ func (ci *ConfiguredIntegration) tenantContext(ctx context.Context) context.Cont
 	return access.TenantContext(ctx, ci.intg.TenantID)
 }
 
-type IncidentDefaults struct {
-	AnnouncementChannelID     string
-	ChannelNamePattern        string
-	DefaultSeverityID         string
-	DefaultTypeID             string
-	AutoCreateVideoConference bool
-	InviteMode                string
+func (ci *ConfiguredIntegration) config() objx.Map {
+	return objx.New(ci.intg.Config)
 }
 
-func ValidateIncidentDefaultsPreferences(pref map[string]any) error {
-	defaults := getNestedPreferenceMap(pref, "incidentDefaults")
-	if defaults == nil {
-		return nil
-	}
+const (
+	configAccessToken      = "access_token"
+	configBotUserID        = "bot_user_id"
+	configWebhookChannelId = "webhook_channel_id"
+	configTeam             = "team"
+	configEnterprise       = "enterprise"
+)
 
-	announcementChannelID := getStringPreference(defaults, "announcementChannelId", "")
-	if announcementChannelID == "" {
-		return errors.New("incidentDefaults.announcementChannelId is required")
-	}
+func (ci *ConfiguredIntegration) accessToken() string {
+	return ci.config().Get(configAccessToken).String()
+}
 
-	channelNamePattern := getStringPreference(defaults, "channelNamePattern", "")
-	if channelNamePattern == "" {
-		return errors.New("incidentDefaults.channelNamePattern is required")
-	}
-	if !strings.Contains(channelNamePattern, "{slug}") && !strings.Contains(channelNamePattern, "{id}") {
-		return errors.New("incidentDefaults.channelNamePattern must include {slug} or {id}")
-	}
+func (ci *ConfiguredIntegration) teamId() string {
+	return ci.config().Get(configTeam).ObjxMap().Get("id").String()
+}
 
-	for _, value := range []struct {
-		field string
-		raw   string
-	}{
-		{field: "incidentDefaults.defaultSeverityId", raw: getStringPreference(defaults, "defaultSeverityId", "")},
-		{field: "incidentDefaults.defaultTypeId", raw: getStringPreference(defaults, "defaultTypeId", "")},
-	} {
-		if value.raw == "" {
-			continue
-		}
-		if _, err := uuid.Parse(value.raw); err != nil {
-			return fmt.Errorf("%s must be a valid UUID", value.field)
-		}
-	}
+const (
+	userPreferencesIncidentAnnouncementChannelId = "incidents.announcement_channel_id"
+	userPreferencesIncidentChannelNamePattern    = "incidents.channel_name_pattern"
+	userPreferencesIncidentCreateVideoConference = "incidents.create_video_conference"
+	userPreferencesIncidentInviteMode            = "incidents.invite_mode"
+)
 
-	inviteMode := getStringPreference(defaults, "inviteMode", "assigned_users")
-	switch inviteMode {
-	case "", "assigned_users":
-		return nil
-	default:
-		return fmt.Errorf("incidentDefaults.inviteMode %q is not supported for launch", inviteMode)
-	}
+func (ci *ConfiguredIntegration) userPreferences() objx.Map {
+	return objx.New(ci.intg.UserPreferences)
+}
+
+type incidentPreferences struct {
+	AnnouncementChannelID     string
+	ChannelNamePattern        string
+	AutoCreateVideoConference bool
+	InviteMode                string
 }
 
 func (ci *ConfiguredIntegration) Name() string {
 	return integrationName
 }
 
-func (ci *ConfiguredIntegration) RawConfig() json.RawMessage {
-	return ci.intg.Config
+func (ci *ConfiguredIntegration) GetSanitizedConfig() map[string]any {
+	return ci.config().Exclude([]string{})
 }
 
-func (ci *ConfiguredIntegration) GetSanitizedConfig() (json.RawMessage, error) {
-	return json.Marshal(ci.RawConfig())
-}
-
-func (ci *ConfiguredIntegration) UserPreferences() map[string]any {
+func (ci *ConfiguredIntegration) GetUserPreferences() map[string]any {
 	return ci.intg.UserPreferences
 }
 
-func (ci *ConfiguredIntegration) getUserPreference(key string, defaultVal any) any {
-	if pref, ok := ci.intg.UserPreferences[key]; ok {
-		return pref
-	}
-	return defaultVal
-}
-
-func getNestedPreferenceMap(pref map[string]any, key string) map[string]any {
-	raw, ok := pref[key]
-	if !ok {
-		return nil
-	}
-	if nested, ok := raw.(map[string]any); ok {
-		return nested
-	}
-	return nil
-}
-
-func getStringPreference(pref map[string]any, key string, defaultVal string) string {
-	if pref == nil {
-		return defaultVal
-	}
-	raw, ok := pref[key]
-	if !ok {
-		return defaultVal
-	}
-	if value, ok := raw.(string); ok && value != "" {
-		return value
-	}
-	return defaultVal
-}
-
-func getBoolPreference(pref map[string]any, key string, defaultVal bool) bool {
-	if pref == nil {
-		return defaultVal
-	}
-	raw, ok := pref[key]
-	if !ok {
-		return defaultVal
-	}
-	switch value := raw.(type) {
-	case bool:
-		return value
-	case string:
-		return value != "" && value != "false"
-	default:
-		return defaultVal
+func (ci *ConfiguredIntegration) getIncidentPreferences() incidentPreferences {
+	prefs := ci.userPreferences()
+	defaultAnnouncementChannelId := ci.config().Get(configWebhookChannelId).String()
+	return incidentPreferences{
+		AnnouncementChannelID:     prefs.Get(userPreferencesIncidentAnnouncementChannelId).Str(defaultAnnouncementChannelId),
+		ChannelNamePattern:        prefs.Get(userPreferencesIncidentChannelNamePattern).Str("incident-{slug}"),
+		AutoCreateVideoConference: prefs.Get(userPreferencesIncidentCreateVideoConference).Bool(),
+		InviteMode:                prefs.Get(userPreferencesIncidentInviteMode).Str("assigned_users"),
 	}
 }
 
-func (ci *ConfiguredIntegration) IncidentDefaults() IncidentDefaults {
-	defaults := getNestedPreferenceMap(ci.intg.UserPreferences, "incidentDefaults")
-	return IncidentDefaults{
-		AnnouncementChannelID:     getStringPreference(defaults, "announcementChannelId", ""),
-		ChannelNamePattern:        getStringPreference(defaults, "channelNamePattern", "incident-{slug}"),
-		DefaultSeverityID:         getStringPreference(defaults, "defaultSeverityId", ""),
-		DefaultTypeID:             getStringPreference(defaults, "defaultTypeId", ""),
-		AutoCreateVideoConference: getBoolPreference(defaults, "autoCreateVideoConference", false),
-		InviteMode:                getStringPreference(defaults, "inviteMode", "assigned_users"),
+func (ci *ConfiguredIntegration) GetDataKinds() map[string]bool {
+	return map[string]bool{
+		"chat":  true,
+		"users": true,
 	}
-}
-
-func (ci *ConfiguredIntegration) EnabledDataKinds() []string {
-	return supportedDataKinds
 }
 
 func (ci *ConfiguredIntegration) ChatService(ctx context.Context) (rez.ChatService, error) {
 	return newChatService(ci)
-}
-
-type IntegrationConfig struct {
-	AccessToken      string
-	TokenType        string
-	BotUserID        string
-	WebhookChannelId string
-	Team             teamInfo
-	Enterprise       *teamInfo
-}
-
-type teamInfo struct {
-	ID   string
-	Name string
-}
-
-func decodeConfig(raw json.RawMessage) (*IntegrationConfig, error) {
-	var cfg IntegrationConfig
-	if cfgErr := json.Unmarshal(raw, &cfg); cfgErr != nil {
-		return nil, fmt.Errorf("failed to decode integration config: %w", cfgErr)
-	}
-	return &cfg, nil
 }

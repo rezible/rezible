@@ -5,8 +5,6 @@
 	import InlineAlert from "$src/components/inline-alert/InlineAlert.svelte";
 
 	const view = useInitialSetupViewController();
-
-    const nextRequiredDataKind = $derived(view.integrations.nextRequiredDataKind);
 </script>
 
 <div class="flex gap-2">
@@ -18,8 +16,8 @@
 		<InlineAlert error={view.integrations.oauth.completeFlowErr} />
 	{:else}
 	<div class="flex flex-col gap-2">
-        {#if !!nextRequiredDataKind}
-			{#each view.integrations.nextRequiredSupportedIntegrations as integration}
+        {#if !!view.integrations.nextRequiredDataKind}
+			{#each view.integrations.availableDataKindIntegrations as integration}
                 {@const name = integration.name}
 				{#key name}
 				    {@const configured = view.integrations.configuredMap.get(name)}
@@ -30,7 +28,7 @@
 				{/key}
 			{:else}
 				<div class="p-2 border-error-300 border-2">
-					<span>No supported integrations available for this data</span>
+					<span>No integrations available for this data</span>
 				</div>
 			{/each}
 		{/if}

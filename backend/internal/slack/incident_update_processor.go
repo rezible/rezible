@@ -2,7 +2,6 @@ package slack
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"strings"
 
@@ -84,10 +83,12 @@ func (p *incidentUpdateProcessor) sendIncidentMilestoneMessage(ctx context.Conte
 			slack.NewTextBlockObject("mrkdwn", fmt.Sprintf("Note: %s", ms.Description), false, false),
 		))
 	}
-
 	msgTs, msgErr := p.chat.postMessage(ctx, p.inc.ChatChannelID, slack.MsgOptionBlocks(blocks...))
 	if msgErr != nil {
 		return fmt.Errorf("failed to post announcement message: %w", msgErr)
+	}
+	if ms.Metadata == nil {
+		ms.Metadata = map[string]string{}
 	}
 	ms.Metadata["msg_ts"] = msgTs
 	if updateErr := ms.Update().SetMetadata(ms.Metadata).Exec(ctx); updateErr != nil {
@@ -112,7 +113,8 @@ func isSlackChannelNameTakenError(err error) bool {
 }
 
 func (p *incidentUpdateProcessor) getIncidentChannelName() (string, error) {
-	return formatIncidentChannelName(p.chat.ci.IncidentDefaults().ChannelNamePattern, p.inc), nil
+	namePattern := p.chat.ci.getIncidentPreferences().ChannelNamePattern
+	return formatIncidentChannelName(namePattern, p.inc), nil
 }
 
 func (p *incidentUpdateProcessor) findConversationByName(ctx context.Context, client *slack.Client, channelName string) (*slack.Channel, error) {
@@ -249,14 +251,11 @@ func (p *incidentUpdateProcessor) sendUserCreatedChannelMessage(ctx context.Cont
 }
 
 func (p *incidentUpdateProcessor) getIncidentAnnouncementChannelId() (string, error) {
-	announcementChannelID := p.chat.ci.IncidentDefaults().AnnouncementChannelID
-	if announcementChannelID != "" {
-		return announcementChannelID, nil
+	channelId := p.chat.ci.getIncidentPreferences().AnnouncementChannelID
+	if channelId != "" {
+		return channelId, nil
 	}
-	if cfg, cfgErr := decodeConfig(p.chat.ci.RawConfig()); cfgErr == nil && cfg.WebhookChannelId != "" {
-		return cfg.WebhookChannelId, nil
-	}
-	return "", errors.New("no announcementChannelId configured")
+	return "", fmt.Errorf("no announcementChannelId configured")
 }
 
 func (p *incidentUpdateProcessor) postIncidentAnnouncement(ctx context.Context) error {

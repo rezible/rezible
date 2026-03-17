@@ -2,11 +2,11 @@ package google
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
+	"github.com/stretchr/objx"
 	"google.golang.org/api/option"
 )
 
@@ -45,23 +45,20 @@ func (i *integration) OAuthConfigRequired() bool {
 	return false
 }
 
-func (i *integration) lookupConfiguredIntegration(ctx context.Context) (*ConfiguredIntegration, error) {
-	intg, intgErr := i.services.Integrations.Get(ctx, integrationName)
-	if intgErr != nil {
-		if ent.IsNotFound(intgErr) {
-			return nil, nil
-		}
-		return nil, fmt.Errorf("error looking up integration: %w", intgErr)
-	}
-	return i.newConfiguredIntegration(intg), nil
+func (i *integration) ValidateConfig(cfg map[string]any) error {
+	return nil
+}
+
+func (i *integration) ValidateUserPreferences(prefs map[string]any) error {
+	return nil
 }
 
 func (i *integration) GetConfiguredIntegration(intg *ent.Integration) rez.ConfiguredIntegration {
-	return i.newConfiguredIntegration(intg)
+	return newConfiguredIntegration(intg, i.services)
 }
 
-func (i *integration) newConfiguredIntegration(intg *ent.Integration) *ConfiguredIntegration {
-	return &ConfiguredIntegration{svcs: i.services, intg: intg}
+func newConfiguredIntegration(intg *ent.Integration, svcs *rez.Services) *ConfiguredIntegration {
+	return &ConfiguredIntegration{intg: intg, svcs: svcs}
 }
 
 type ConfiguredIntegration struct {
@@ -69,97 +66,65 @@ type ConfiguredIntegration struct {
 	intg *ent.Integration
 }
 
-type integrationConfig struct {
-	UserConfig integrationUserConfig
-}
-
-type integrationUserConfig struct {
-	ServiceAccountCredentials json.RawMessage
-}
-
-func (ci *ConfiguredIntegration) isServiceAccountConfigured() bool {
-	var cfg integrationConfig
-	if jsonErr := json.Unmarshal(ci.intg.Config, &cfg); jsonErr != nil {
-		return false
-	}
-	return cfg.UserConfig.ServiceAccountCredentials != nil
-}
-
-func (ci *ConfiguredIntegration) getUserPreference(key string, defaultVal any) any {
-	if pref, ok := ci.intg.UserPreferences[key]; ok {
-		return pref
-	}
-	return defaultVal
-}
-
-func (ci *ConfiguredIntegration) getBoolUserPreference(key string, defaultVal bool) bool {
-	pref := ci.getUserPreference(key, defaultVal)
-	switch v := pref.(type) {
-	case bool:
-		return v
-	case string:
-		return v != "false"
-	default:
-		return defaultVal
-	}
-}
-
-func (ci *ConfiguredIntegration) isVideoConferenceEnabled() bool {
-	if !ci.isServiceAccountConfigured() {
-		return false
-	}
-	return ci.getBoolUserPreference(PreferenceEnableIncidentVideoConferences, false)
-}
-
 func (ci *ConfiguredIntegration) Name() string {
 	return integrationName
 }
 
-func (ci *ConfiguredIntegration) EnabledDataKinds() []string {
-	return supportedDataKinds
+func (ci *ConfiguredIntegration) GetSanitizedConfig() map[string]any {
+	return ci.config().Exclude([]string{})
 }
 
-func (ci *ConfiguredIntegration) RawConfig() json.RawMessage {
-	return ci.intg.Config
+func (ci *ConfiguredIntegration) GetUserPreferences() map[string]any {
+	return ci.userPreferences()
 }
 
-func (ci *ConfiguredIntegration) UserPreferences() map[string]any {
-	return ci.intg.UserPreferences
-}
-
-func (ci *ConfiguredIntegration) unmarshalConfig() (*integrationConfig, error) {
-	var cfg integrationConfig
-	if err := json.Unmarshal(ci.RawConfig(), &cfg); err != nil {
-		return nil, fmt.Errorf("error unmarshalling config: %w", err)
+func (ci *ConfiguredIntegration) GetDataKinds() map[string]bool {
+	return map[string]bool{
+		"video_conference": ci.isVideoConferenceEnabled(),
 	}
-	return &cfg, nil
 }
 
-func (ci *ConfiguredIntegration) GetSanitizedConfig() (json.RawMessage, error) {
-	cfg, cfgErr := ci.unmarshalConfig()
-	if cfgErr != nil {
-		return nil, cfgErr
-	}
-	cfg.UserConfig.ServiceAccountCredentials = nil
-	return json.Marshal(cfg)
+const (
+	configServiceAccountCredentials = "service_account_credentials"
+)
+
+func (ci *ConfiguredIntegration) config() objx.Map {
+	return objx.New(ci.intg.Config)
 }
 
-func (ci *ConfiguredIntegration) getServiceAccountAuthCredentials() (option.ClientOption, error) {
-	cfg, cfgErr := ci.unmarshalConfig()
-	if cfgErr != nil {
-		return nil, cfgErr
+const (
+	userPreferenceEnableVideoConferencing = "video_conferencing"
+)
+
+func (ci *ConfiguredIntegration) userPreferences() objx.Map {
+	return objx.New(ci.intg.UserPreferences)
+}
+
+func (ci *ConfiguredIntegration) getServiceAccountCredentials() []byte {
+	cfg := objx.New(ci.intg.Config)
+	if v := cfg.Get(configServiceAccountCredentials); !v.IsNil() {
+		if data, ok := v.Data().([]byte); ok {
+			return data
+		}
 	}
-	if cfg.UserConfig.ServiceAccountCredentials == nil {
+	return nil
+}
+
+func (ci *ConfiguredIntegration) isVideoConferenceEnabled() bool {
+	if creds := ci.getServiceAccountCredentials(); creds == nil {
+		return false
+	}
+	return ci.userPreferences().Get(userPreferenceEnableVideoConferencing).Bool()
+}
+
+func (ci *ConfiguredIntegration) getAuthCredentials() (option.ClientOption, error) {
+	creds := ci.getServiceAccountCredentials()
+	if creds == nil {
 		return nil, fmt.Errorf("missing service account credentials")
 	}
-	authOpt := option.WithAuthCredentialsJSON(option.ServiceAccount, cfg.UserConfig.ServiceAccountCredentials)
-	return authOpt, nil
+	return option.WithAuthCredentialsJSON(option.ServiceAccount, creds), nil
 }
 
 func (ci *ConfiguredIntegration) VideoConferenceIntegration(ctx context.Context) (rez.VideoConferenceIntegration, error) {
-	svcAuthOpt, authErr := ci.getServiceAccountAuthCredentials()
-	if authErr != nil {
-		return nil, authErr
-	}
-	return newMeetService(ctx, ci.svcs.Incidents, svcAuthOpt)
+	return newMeetService(ci)
 }

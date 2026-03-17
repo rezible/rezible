@@ -2,7 +2,6 @@ package integrations
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"net/http"
 	"path"
@@ -112,7 +111,7 @@ func GetWebhookHandlers() map[string]http.Handler {
 
 type IntegrationWithOAuth2SetupFlow interface {
 	OAuth2Config() *oauth2.Config
-	ExtractIntegrationConfigFromToken(*oauth2.Token) (json.RawMessage, error)
+	ExtractIntegrationConfigFromToken(*oauth2.Token) (map[string]any, error)
 }
 
 func GetOAuthIntegration(name string) (IntegrationWithOAuth2SetupFlow, error) {

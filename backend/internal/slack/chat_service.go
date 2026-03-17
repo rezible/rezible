@@ -21,13 +21,9 @@ type ChatService struct {
 }
 
 func newChatService(ci *ConfiguredIntegration) (*ChatService, error) {
-	cfg, cfgErr := decodeConfig(ci.intg.Config)
-	if cfgErr != nil {
-		return nil, fmt.Errorf("unable to decode config: %w", cfgErr)
-	}
 	return &ChatService{
 		ci:           ci,
-		client:       slack.New(cfg.AccessToken),
+		client:       slack.New(ci.accessToken()),
 		users:        ci.svcs.Users,
 		integrations: ci.svcs.Integrations,
 		incidents:    ci.svcs.Incidents,

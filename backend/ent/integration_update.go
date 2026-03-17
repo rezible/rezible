@@ -4,14 +4,12 @@ package ent
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"time"
 
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
-	"entgo.io/ent/dialect/sql/sqljson"
 	"entgo.io/ent/schema/field"
 	"github.com/rezible/rezible/ent/integration"
 	"github.com/rezible/rezible/ent/predicate"
@@ -66,14 +64,8 @@ func (_u *IntegrationUpdate) SetNillableName(v *string) *IntegrationUpdate {
 }
 
 // SetConfig sets the "config" field.
-func (_u *IntegrationUpdate) SetConfig(v json.RawMessage) *IntegrationUpdate {
+func (_u *IntegrationUpdate) SetConfig(v map[string]interface{}) *IntegrationUpdate {
 	_u.mutation.SetConfig(v)
-	return _u
-}
-
-// AppendConfig appends value to the "config" field.
-func (_u *IntegrationUpdate) AppendConfig(v json.RawMessage) *IntegrationUpdate {
-	_u.mutation.AppendConfig(v)
 	return _u
 }
 
@@ -174,11 +166,6 @@ func (_u *IntegrationUpdate) sqlSave(ctx context.Context) (_node int, err error)
 	if value, ok := _u.mutation.Config(); ok {
 		_spec.SetField(integration.FieldConfig, field.TypeJSON, value)
 	}
-	if value, ok := _u.mutation.AppendedConfig(); ok {
-		_spec.AddModifier(func(u *sql.UpdateBuilder) {
-			sqljson.Append(u, integration.FieldConfig, value)
-		})
-	}
 	if value, ok := _u.mutation.UserPreferences(); ok {
 		_spec.SetField(integration.FieldUserPreferences, field.TypeJSON, value)
 	}
@@ -242,14 +229,8 @@ func (_u *IntegrationUpdateOne) SetNillableName(v *string) *IntegrationUpdateOne
 }
 
 // SetConfig sets the "config" field.
-func (_u *IntegrationUpdateOne) SetConfig(v json.RawMessage) *IntegrationUpdateOne {
+func (_u *IntegrationUpdateOne) SetConfig(v map[string]interface{}) *IntegrationUpdateOne {
 	_u.mutation.SetConfig(v)
-	return _u
-}
-
-// AppendConfig appends value to the "config" field.
-func (_u *IntegrationUpdateOne) AppendConfig(v json.RawMessage) *IntegrationUpdateOne {
-	_u.mutation.AppendConfig(v)
 	return _u
 }
 
@@ -379,11 +360,6 @@ func (_u *IntegrationUpdateOne) sqlSave(ctx context.Context) (_node *Integration
 	}
 	if value, ok := _u.mutation.Config(); ok {
 		_spec.SetField(integration.FieldConfig, field.TypeJSON, value)
-	}
-	if value, ok := _u.mutation.AppendedConfig(); ok {
-		_spec.AddModifier(func(u *sql.UpdateBuilder) {
-			sqljson.Append(u, integration.FieldConfig, value)
-		})
 	}
 	if value, ok := _u.mutation.UserPreferences(); ok {
 		_spec.SetField(integration.FieldUserPreferences, field.TypeJSON, value)

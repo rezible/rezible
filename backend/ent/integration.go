@@ -29,7 +29,7 @@ type Integration struct {
 	// Name holds the value of the "name" field.
 	Name string `json:"name,omitempty"`
 	// Config holds the value of the "config" field.
-	Config json.RawMessage `json:"config,omitempty"`
+	Config map[string]interface{} `json:"config,omitempty"`
 	// UserPreferences holds the value of the "user_preferences" field.
 	UserPreferences map[string]interface{} `json:"user_preferences,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.

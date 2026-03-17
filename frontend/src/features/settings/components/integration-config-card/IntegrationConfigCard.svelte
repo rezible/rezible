@@ -1,16 +1,16 @@
 <script lang="ts">
-	import type { ConfiguredIntegration, ConfigureIntegrationRequestBody, SupportedIntegration } from '$lib/api';
+	import type { ConfiguredIntegration, ConfigureIntegrationRequestBody, AvailableIntegration } from '$lib/api';
 	import * as Card from "$components/ui/card";
 	import { Badge } from "$components/ui/badge";
 	import { Button } from "$components/ui/button";
 	import * as Alert from "$components/ui/alert";
-	import type { IntegrationConfigComponent, IntegrationConfigPayload } from './types';
+	import type { IntegrationConfigComponent } from './types';
 	import SlackConfig from './config-components/SlackConfig.svelte';
 	import PlaceholderConfig from './config-components/PlaceholderConfig.svelte';
 	import GoogleConfig from './config-components/GoogleConfig.svelte';
 
 	type Props = {
-		integration: SupportedIntegration;
+		integration: AvailableIntegration;
 		configured?: ConfiguredIntegration;
 		startOAuthFlow?: () => void;
 		configureIntegration?: (attrs: ConfigureIntegrationRequestBody["attributes"]) => Promise<unknown> | unknown;
@@ -31,32 +31,17 @@
 		google: GoogleConfig,
 	};
 	const ConfigComponent = $derived((integration.name in configs) ? configs[integration.name] : PlaceholderConfig);
-	const enabledDataKinds = $derived(configured?.attributes.enabledDataKinds ?? []);
-	const requiresOAuthConnect = $derived(integration.oauthRequired && !configured);
-	const supportsManualSave = $derived(integration.name === "google");
 
-	let configPayload = $state<IntegrationConfigPayload>({});
+	const dataKinds = $derived<Record<string, boolean>>(configured?.attributes.dataKinds ?? {});
+	const enabledDataKinds = $derived(Object.entries(dataKinds).filter(([_, enabled]) => (!!enabled)).map(([name, _]) => name) ?? []);
+
 	let hasConfigChanges = $state(false);
+	const onConfigChange = (cfg: {[key: string]: unknown}) => {
 
-	const onConfigChange = (payload: IntegrationConfigPayload) => {
-		if (payload.config !== undefined) {
-			configPayload.config = payload.config;
-		}
-		if (payload.preferences !== undefined) {
-			configPayload.preferences = payload.preferences;
-		}
-		hasConfigChanges = true;
 	};
 
-	const doConfigureIntegration = async () => {
-		if (!configureIntegration) return;
-		if (!hasConfigChanges) return;
+	const onPreferencesChange = (prefs: {[key: string]: unknown}) => {
 
-		await configureIntegration({
-			config: configPayload.config,
-			preferences: configPayload.preferences,
-		});
-		hasConfigChanges = false;
 	};
 </script>
 
@@ -98,21 +83,18 @@
 			</Alert.Root>
 		{/if}
 
-		{#if requiresOAuthConnect}
+		{#if !configured && integration.oauthRequired}
 			<div class="place-self-center">
 				<Button onclick={() => startOAuthFlow?.()} class="w-fit h-fit cursor-pointer p-0">
 					{@render oauthFlowButtonContent(integration.name)}
 				</Button>
 			</div>
-		{/if}
-		{#if !requiresOAuthConnect}
-			<ConfigComponent {integration} {configured} onChange={onConfigChange} />
+		{:else}
+			<ConfigComponent {integration} {configured} {onConfigChange} {onPreferencesChange} />
 
-			{#if supportsManualSave}
-				<Button onclick={doConfigureIntegration} disabled={!hasConfigChanges || isSaving}>
-					{isSaving ? "Saving..." : "Save"}
-				</Button>
-			{/if}
+			<Button disabled={!hasConfigChanges || isSaving}>
+				{isSaving ? "Saving..." : "Save"}
+			</Button>
 		{/if}
 	</Card.Content>
 </Card.Root>

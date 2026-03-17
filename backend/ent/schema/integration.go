@@ -1,7 +1,6 @@
 package schema
 
 import (
-	"encoding/json"
 	"time"
 
 	"entgo.io/ent"
@@ -30,7 +29,7 @@ func (Integration) Fields() []ent.Field {
 	return []ent.Field{
 		field.UUID("id", uuid.New()).Default(uuid.New),
 		field.String("name"),
-		field.JSON("config", json.RawMessage{}).
+		field.JSON("config", map[string]any{}).
 			SchemaType(map[string]string{dialect.Postgres: "jsonb"}),
 		field.JSON("user_preferences", map[string]any{}).
 			Optional().Default(map[string]any{}).

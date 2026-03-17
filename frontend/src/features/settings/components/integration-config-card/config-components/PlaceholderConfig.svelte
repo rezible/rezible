@@ -8,6 +8,6 @@
 <Alert.Root>
 	<Alert.Title>No custom settings UI yet</Alert.Title>
 	<Alert.Description>
-		Configuration controls for <span class="font-medium capitalize">{integration.name}</span> will be added later.
+		<span>Configuration controls for <span class="font-medium capitalize">{integration.name}</span> will be added later.</span>
 	</Alert.Description>
 </Alert.Root>

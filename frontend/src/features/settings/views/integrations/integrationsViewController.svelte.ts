@@ -1,4 +1,4 @@
-import { configureIntegrationMutation, type ConfigureIntegrationRequestBody, type ErrorModel, listConfiguredIntegrationsOptions, listSupportedIntegrationsOptions, completeIntegrationOauthFlowMutation, startIntegrationOauthFlowMutation } from "$lib/api";
+import { configureIntegrationMutation, type ConfigureIntegrationRequestBody, type ErrorModel, listConfiguredIntegrationsOptions, listAvailableIntegrationsOptions, completeIntegrationOauthFlowMutation, startIntegrationOauthFlowMutation } from "$lib/api";
 import { useAuthSessionState } from "$lib/auth.svelte";
 import { createMutation, createQuery } from "@tanstack/svelte-query";
 import { Context } from "runed";
@@ -31,7 +31,8 @@ class IntegrationOAuthController {
 
 	async startFlow(name: string) {
 		try {
-			const resp = await this.startFlowMut.mutateAsync({ path: { name } });
+			const callbackPath = `/settings/integrations/callback/${name}`
+			const resp = await this.startFlowMut.mutateAsync({ path: { name }, body: { attributes: { callbackPath } } });
 			window.location.assign(new URL(resp.data.flow_url));
 		} catch {
 			// surfaced via startFlowErr
@@ -45,7 +46,7 @@ class IntegrationOAuthController {
 	private async onCallbackSet(name?: string) {
 		if (!name || this.completingFlow) return;
 
-		const { state, code } = $state.snapshot(this.callbackParams);
+		const { state, code } = this.callbackParams;
 		this.callbackParams.reset();
 
 		if (!state || !code) return;
@@ -72,8 +73,8 @@ export class IntegrationsViewController {
 		});
 	}
 
-	private listSupportedQuery = createQuery(() => listSupportedIntegrationsOptions());
-	supported = $derived(this.listSupportedQuery.data?.data || []);
+	private listAvailableQuery = createQuery(() => listAvailableIntegrationsOptions());
+	available = $derived(this.listAvailableQuery.data?.data || []);
 
 	private listConfiguredQuery = createQuery(() => listConfiguredIntegrationsOptions());
 	configured = $derived(this.listConfiguredQuery.data?.data || []);
@@ -107,8 +108,8 @@ export class IntegrationsViewController {
 		return this.configuringName === name;
 	}
 
-	loading = $derived(this.listSupportedQuery.isPending || this.listConfiguredQuery.isPending);
-	queryErr = $derived((this.listSupportedQuery.error ?? this.listConfiguredQuery.error) as ErrorModel | null);
+	loading = $derived(this.listAvailableQuery.isPending || this.listConfiguredQuery.isPending);
+	queryErr = $derived((this.listAvailableQuery.error ?? this.listConfiguredQuery.error) as ErrorModel | null);
 	queryErrorMessage = $derived(this.queryErr?.detail || this.queryErr?.title || "");
 }
 

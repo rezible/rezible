@@ -11,15 +11,15 @@ type incidentModalViewBuilder struct {
 	blocks   []slack.Block
 	incident *ent.Incident
 	metadata *incidentDetailsModalViewMetadata
-	defaults IncidentDefaults
+	prefs    incidentPreferences
 }
 
-func newIncidentModalViewBuilder(curr *ent.Incident, meta *incidentDetailsModalViewMetadata, defaults IncidentDefaults) *incidentModalViewBuilder {
+func newIncidentModalViewBuilder(curr *ent.Incident, meta *incidentDetailsModalViewMetadata, prefs incidentPreferences) *incidentModalViewBuilder {
 	return &incidentModalViewBuilder{
 		blocks:   []slack.Block{},
 		incident: curr,
 		metadata: meta,
-		defaults: defaults,
+		prefs:    prefs,
 	}
 }
 
@@ -94,7 +94,7 @@ func (b *incidentModalViewBuilder) makeSeveritySelect(sevs ent.IncidentSeveritie
 	initialOptIdx := 0
 	for i, sev := range sevs {
 		options[i] = slack.NewOptionBlockObject(sev.ID.String(), plainText(sev.Name), plainText(sev.Description))
-		if (b.incident != nil && b.incident.SeverityID == sev.ID) || sev.ID.String() == b.defaults.DefaultSeverityID {
+		if b.incident != nil && b.incident.SeverityID == sev.ID {
 			initialOptIdx = i
 		}
 	}
@@ -112,7 +112,7 @@ func (b *incidentModalViewBuilder) makeTypeSelect(types ent.IncidentTypes) {
 	initialOptIdx := 0
 	for i, t := range types {
 		options[i] = slack.NewOptionBlockObject(t.ID.String(), plainText(t.Name), nil)
-		if (b.incident != nil && b.incident.TypeID == t.ID) || t.ID.String() == b.defaults.DefaultTypeID {
+		if b.incident != nil && b.incident.TypeID == t.ID {
 			initialOptIdx = i
 		}
 	}

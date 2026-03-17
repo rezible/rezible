@@ -19,30 +19,22 @@
 			<LoadingIndicator />
 			<span>Starting OAuth flow...</span>
 		</div>
-	{/if}
-
-	{#if view.oauth.completingFlow}
+	{:else if view.oauth.completingFlow}
 		<div class="flex items-center gap-2 text-sm text-muted-foreground">
 			<LoadingIndicator />
 			<span>Completing OAuth flow...</span>
 		</div>
-	{/if}
-
-	{#if view.oauth.startFlowErr}
+	{:else if view.oauth.startFlowErr}
 		<Alert.Root variant="destructive">
 			<Alert.Title>OAuth flow could not start</Alert.Title>
 			<Alert.Description>{view.oauth.startFlowErr}</Alert.Description>
 		</Alert.Root>
-	{/if}
-
-	{#if view.oauth.completeFlowErr}
+	{:else if view.oauth.completeFlowErr}
 		<Alert.Root variant="destructive">
 			<Alert.Title>OAuth flow could not complete</Alert.Title>
 			<Alert.Description>{view.oauth.completeFlowErr}</Alert.Description>
 		</Alert.Root>
-	{/if}
-
-	{#if view.loading}
+	{:else if view.loading}
 		<div class="flex items-center gap-2">
 			<LoadingIndicator />
 			<span>Loading integrations...</span>
@@ -54,7 +46,7 @@
 		</Alert.Root>
 	{:else}
 		<div class="grid gap-3 md:grid-cols-2">
-			{#each view.supported as integration}
+			{#each view.available as integration}
 				{@const name = integration.name}
 				{@const configured = view.configuredMap.get(name)}
 				{#key name}

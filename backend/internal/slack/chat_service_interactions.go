@@ -139,10 +139,6 @@ func (s *ChatService) getIncidentModalViewMetadata(ctx context.Context, ic *slac
 	return &meta, nil
 }
 
-func (s *ChatService) getSlackIncidentDefaults() IncidentDefaults {
-	return s.ci.IncidentDefaults()
-}
-
 func (s *ChatService) handleIncidentDetailsModalInteraction(ctx context.Context, ic *slack.InteractionCallback) error {
 	meta, metaErr := s.getIncidentModalViewMetadata(ctx, ic)
 	if metaErr != nil {
@@ -152,11 +148,19 @@ func (s *ChatService) handleIncidentDetailsModalInteraction(ctx context.Context,
 	if viewErr != nil || view == nil {
 		return fmt.Errorf("failed to create incident view: %w", viewErr)
 	}
-	openErr := s.openOrUpdateModal(ctx, ic, view)
-	if openErr != nil {
-		return fmt.Errorf("failed to open view: %w", openErr)
+	return s.openOrUpdateModal(ctx, ic, view)
+}
+
+func (s *ChatService) handleIncidentMilestoneModalInteraction(ctx context.Context, ic *slack.InteractionCallback) error {
+	meta, metaErr := s.getIncidentMilestoneModalViewMetadata(ctx, ic)
+	if metaErr != nil {
+		return fmt.Errorf("getting modal view metadata: %w", metaErr)
 	}
-	return nil
+	view, viewErr := s.makeIncidentMilestoneModalView(ctx, meta)
+	if viewErr != nil || view == nil {
+		return fmt.Errorf("failed to create incident view: %w", viewErr)
+	}
+	return s.openOrUpdateModal(ctx, ic, view)
 }
 
 func (s *ChatService) handleIncidentDetailsModalSubmission(ctx context.Context, ic *slack.InteractionCallback) error {
@@ -178,19 +182,6 @@ func (s *ChatService) handleIncidentDetailsModalSubmission(ctx context.Context, 
 
 	setFn := func(m *ent.IncidentMutation) []ent.Mutation {
 		setIncidentDetailsModalInputMutationFields(m, state)
-		if creating {
-			defaults := s.ci.IncidentDefaults()
-			if _, sevSet := m.SeverityID(); !sevSet && defaults.DefaultSeverityID != "" {
-				if id, err := uuid.Parse(defaults.DefaultSeverityID); err == nil {
-					m.SetSeverityID(id)
-				}
-			}
-			if _, typeSet := m.TypeID(); !typeSet && defaults.DefaultTypeID != "" {
-				if id, err := uuid.Parse(defaults.DefaultTypeID); err == nil {
-					m.SetTypeID(id)
-				}
-			}
-		}
 
 		incidentId, exists := m.ID()
 		if !exists || !creating {
@@ -236,23 +227,6 @@ func (s *ChatService) getIncidentMilestoneModalViewMetadata(ctx context.Context,
 		}
 	}
 	return &meta, nil
-}
-
-func (s *ChatService) handleIncidentMilestoneModalInteraction(ctx context.Context, ic *slack.InteractionCallback) error {
-	meta, metaErr := s.getIncidentMilestoneModalViewMetadata(ctx, ic)
-	if metaErr != nil {
-		return fmt.Errorf("getting modal view metadata: %w", metaErr)
-	}
-	view, viewErr := s.makeIncidentMilestoneModalView(ctx, meta)
-	if viewErr != nil || view == nil {
-		return fmt.Errorf("failed to create incident view: %w", viewErr)
-	}
-	openErr := s.openOrUpdateModal(ctx, ic, view)
-	if openErr != nil {
-		return fmt.Errorf("failed to open view: %w", openErr)
-	}
-
-	return nil
 }
 
 func (s *ChatService) handleIncidentMilestoneModalSubmission(ctx context.Context, ic *slack.InteractionCallback) error {

@@ -21,24 +21,24 @@ var (
 	_ rez.UserDataProvider = (*dataProvider)(nil)
 )
 
-func newDataProvider(intg *ent.Integration) (*dataProvider, error) {
-	// TODO: handle nil integration (single tenant mode)
-	cfg, cfgErr := decodeConfig(intg.Config)
-	if cfgErr != nil {
-		return nil, cfgErr
-	}
-	return &dataProvider{
-		client:  slack.New(cfg.AccessToken),
-		teamIds: []string{cfg.Team.ID},
-	}, nil
-}
-
 func (i *integration) MakeUserDataProvider(ctx context.Context, intg *ent.Integration) (rez.UserDataProvider, error) {
-	return newDataProvider(intg)
+	return i.newDataProvider(intg)
 }
 
 func (i *integration) MakeTeamDataProvider(ctx context.Context, intg *ent.Integration) (rez.TeamDataProvider, error) {
-	return newDataProvider(intg)
+	return i.newDataProvider(intg)
+}
+
+func (i *integration) newDataProvider(intg *ent.Integration) (*dataProvider, error) {
+	if intg == nil {
+		// TODO: handle nil integration (single tenant mode)
+		return nil, fmt.Errorf("single tenant data provider not implemented")
+	}
+	ci := newConfiguredIntegration(i.services, intg)
+	return &dataProvider{
+		client:  slack.New(ci.accessToken()),
+		teamIds: []string{ci.teamId()},
+	}, nil
 }
 
 var userDataMapping = &ent.User{

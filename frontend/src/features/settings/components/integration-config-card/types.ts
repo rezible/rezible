@@ -1,15 +1,11 @@
-import type { ConfiguredIntegration, SupportedIntegration } from "$lib/api";
+import type { ConfiguredIntegration, AvailableIntegration } from "$lib/api";
 import type { Component } from "svelte";
 
-export type IntegrationConfigPayload = {
-	config?: Record<string, unknown>;
-	preferences?: Record<string, unknown>;
-};
-
 export type ConfigComponentProps = {
-	integration: SupportedIntegration;
+	integration: AvailableIntegration;
 	configured?: ConfiguredIntegration;
-	onChange: (payload: IntegrationConfigPayload) => void;
+	onConfigChange: (cfg: {[key: string]: unknown}) => void;
+	onPreferencesChange: (prefs: {[key: string]: unknown}) => void;
 };
 
 export type IntegrationConfigComponent = Component<ConfigComponentProps, {}>;

@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"net/url"
 	"slices"
 	"time"
 
@@ -46,6 +47,66 @@ func NewIntegrationsService(db *ent.Client, jobSvc rez.JobsService, users rez.Us
 	return s, nil
 }
 
+func (s *IntegrationsService) ListConfigured(ctx context.Context, params rez.ListIntegrationsParams) ([]rez.ConfiguredIntegration, error) {
+	intgs, listErr := s.listIntegrations(ctx, params)
+	if listErr != nil {
+		return nil, fmt.Errorf("failed to list integrations: %w", listErr)
+	}
+	cfgIs := make([]rez.ConfiguredIntegration, len(intgs))
+	for i, intg := range intgs {
+		ci, ciErr := s.asConfigured(intg)
+		if ciErr != nil {
+			return nil, fmt.Errorf("failed to list integrations: %w", ciErr)
+		}
+		cfgIs[i] = ci
+	}
+	return cfgIs, nil
+}
+
+func (s *IntegrationsService) GetConfigured(ctx context.Context, name string) (rez.ConfiguredIntegration, error) {
+	intg, getErr := s.Get(ctx, name)
+	if getErr != nil {
+		return nil, fmt.Errorf("failed to get integration: %w", getErr)
+	}
+	return s.asConfigured(intg)
+}
+
+func (s *IntegrationsService) Configure(ctx context.Context, name string, cfg map[string]any) (rez.ConfiguredIntegration, error) {
+	p, pErr := integrations.GetPackage(name)
+	if pErr != nil {
+		return nil, fmt.Errorf("failed to get package for integration %s: %w", name, pErr)
+	}
+	if prefsErr := p.ValidateConfig(cfg); prefsErr != nil {
+		return nil, fmt.Errorf("invalid config: %w", prefsErr)
+	}
+	intg, setErr := s.set(ctx, name, func(m *ent.IntegrationMutation) { m.SetConfig(cfg) })
+	if setErr != nil {
+		return nil, fmt.Errorf("failed to set integration: %w", setErr)
+	}
+	return p.GetConfiguredIntegration(intg), nil
+}
+
+func (s *IntegrationsService) UpdateConfiguredPreferences(ctx context.Context, name string, prefs map[string]any) (rez.ConfiguredIntegration, error) {
+	p, pErr := integrations.GetPackage(name)
+	if pErr != nil {
+		return nil, fmt.Errorf("failed to get package for integration %s: %w", name, pErr)
+	}
+	if prefsErr := p.ValidateUserPreferences(prefs); prefsErr != nil {
+		return nil, fmt.Errorf("invalid user preferences: %w", prefsErr)
+	}
+	intg, setErr := s.set(ctx, name, func(m *ent.IntegrationMutation) { m.SetUserPreferences(prefs) })
+	if setErr != nil {
+		return nil, fmt.Errorf("failed to set integration: %w", setErr)
+	}
+	return p.GetConfiguredIntegration(intg), nil
+}
+
+func (s *IntegrationsService) DeleteConfigured(ctx context.Context, name string) error {
+	q := s.db.Integration.Delete().Where(integration.Name(name))
+	_, deleteErr := q.Exec(ctx)
+	return deleteErr
+}
+
 func (s *IntegrationsService) listQuery(p rez.ListIntegrationsParams) *ent.IntegrationQuery {
 	query := s.db.Integration.Query()
 	if len(p.Names) > 0 {
@@ -62,9 +123,6 @@ func (s *IntegrationsService) listQuery(p rez.ListIntegrationsParams) *ent.Integ
 			})
 		}
 	}
-	if p.Filter != nil {
-		p.Filter(query)
-	}
 	return query
 }
 
@@ -77,6 +135,9 @@ func (s *IntegrationsService) asConfigured(i *ent.Integration) (rez.ConfiguredIn
 }
 
 func (s *IntegrationsService) listIntegrations(ctx context.Context, params rez.ListIntegrationsParams) ([]*ent.Integration, error) {
+	if len(params.Names) == 1 && params.ConfigValues != nil {
+		// s.lookupByConfigValues(ctx, params.Names[0], params.ConfigValues)
+	}
 	q := s.listQuery(params)
 	intgs, listErr := q.All(ctx)
 	if listErr != nil {
@@ -89,7 +150,7 @@ var integrationLookupTenantIdCache = make(map[string]uuid.UUID)
 
 var lookupTenantGroup singleflight.Group
 
-func (s *IntegrationsService) LookupByConfigValues(ctx context.Context, name string, configValues map[string]any) (*ent.Integration, error) {
+func (s *IntegrationsService) lookupByConfigValues(ctx context.Context, name string, configValues map[string]any) (*ent.Integration, error) {
 	valsJson, jsonErr := json.Marshal(configValues)
 	if jsonErr != nil {
 		return nil, fmt.Errorf("failed to marshal cfg values: %w", jsonErr)
@@ -125,22 +186,6 @@ func (s *IntegrationsService) LookupByConfigValues(ctx context.Context, name str
 	return nil, fmt.Errorf("invalid tenant id from lookup: %v", v)
 }
 
-func (s *IntegrationsService) ListConfigured(ctx context.Context, params rez.ListIntegrationsParams) ([]rez.ConfiguredIntegration, error) {
-	intgs, listErr := s.listIntegrations(ctx, params)
-	if listErr != nil {
-		return nil, fmt.Errorf("failed to list integrations: %w", listErr)
-	}
-	cfgIs := make([]rez.ConfiguredIntegration, len(intgs))
-	for i, intg := range intgs {
-		ci, ciErr := s.asConfigured(intg)
-		if ciErr != nil {
-			return nil, fmt.Errorf("failed to list integrations: %w", ciErr)
-		}
-		cfgIs[i] = ci
-	}
-	return cfgIs, nil
-}
-
 func (s *IntegrationsService) getById(ctx context.Context, id uuid.UUID) (*ent.Integration, error) {
 	return s.db.Integration.Get(ctx, id)
 }
@@ -154,27 +199,7 @@ func (s *IntegrationsService) Get(ctx context.Context, name string) (*ent.Integr
 	return intg, nil
 }
 
-func (s *IntegrationsService) GetConfigured(ctx context.Context, name string) (rez.ConfiguredIntegration, error) {
-	intg, getErr := s.Get(ctx, name)
-	if getErr != nil {
-		return nil, fmt.Errorf("failed to get integration: %w", getErr)
-	}
-	return s.asConfigured(intg)
-}
-
-func (s *IntegrationsService) SetIntegration(ctx context.Context, name string, setFn func(*ent.IntegrationMutation)) (rez.ConfiguredIntegration, error) {
-	p, pErr := integrations.GetPackage(name)
-	if pErr != nil {
-		return nil, fmt.Errorf("failed to get package for integration %s: %w", name, pErr)
-	}
-	intg, setErr := s.setIntegration(ctx, name, setFn)
-	if setErr != nil {
-		return nil, fmt.Errorf("failed to set integration: %w", setErr)
-	}
-	return p.GetConfiguredIntegration(intg), nil
-}
-
-func (s *IntegrationsService) setIntegration(ctx context.Context, name string, setFn func(*ent.IntegrationMutation)) (*ent.Integration, error) {
+func (s *IntegrationsService) set(ctx context.Context, name string, setFn func(*ent.IntegrationMutation)) (*ent.Integration, error) {
 	curr, getCurrErr := s.Get(ctx, name)
 	if getCurrErr != nil && !ent.IsNotFound(getCurrErr) {
 		return nil, fmt.Errorf("failed to get integration %s: %w", name, getCurrErr)
@@ -205,12 +230,6 @@ func (s *IntegrationsService) setIntegration(ctx context.Context, name string, s
 	}
 
 	return intg, nil
-}
-
-func (s *IntegrationsService) DeleteConfigured(ctx context.Context, name string) error {
-	q := s.db.Integration.Delete().Where(integration.Name(name))
-	_, deleteErr := q.Exec(ctx)
-	return deleteErr
 }
 
 func (s *IntegrationsService) makeOAuthState(ctx context.Context, name string) (string, error) {
@@ -251,7 +270,7 @@ func (s *IntegrationsService) verifyOAuthState(ctx context.Context, name string,
 	return nil
 }
 
-func (s *IntegrationsService) StartOAuth2Flow(ctx context.Context, name string) (string, error) {
+func (s *IntegrationsService) StartOAuth2Flow(ctx context.Context, name string, redirect *url.URL) (string, error) {
 	oi, oiErr := integrations.GetOAuthIntegration(name)
 	if oiErr != nil {
 		return "", fmt.Errorf("invalid oauth2 integration: %w", oiErr)
@@ -260,7 +279,11 @@ func (s *IntegrationsService) StartOAuth2Flow(ctx context.Context, name string) 
 	if stateErr != nil {
 		return "", fmt.Errorf("failed to make oauth state: %w", stateErr)
 	}
-	return oi.OAuth2Config().AuthCodeURL(state), nil
+	cfg := oi.OAuth2Config()
+	if redirect != nil {
+		cfg.RedirectURL = redirect.String()
+	}
+	return cfg.AuthCodeURL(state), nil
 }
 
 func (s *IntegrationsService) CompleteOAuth2Flow(ctx context.Context, name, state, code string) (rez.ConfiguredIntegration, error) {
@@ -279,9 +302,7 @@ func (s *IntegrationsService) CompleteOAuth2Flow(ctx context.Context, name, stat
 	if cfgErr != nil {
 		return nil, fmt.Errorf("extract integration config: %w", cfgErr)
 	}
-	intg, setErr := s.SetIntegration(ctx, name, func(m *ent.IntegrationMutation) {
-		m.SetConfig(cfg)
-	})
+	intg, setErr := s.Configure(ctx, name, cfg)
 	if setErr != nil {
 		return nil, fmt.Errorf("set integration: %w", setErr)
 	}
@@ -305,7 +326,7 @@ func (s *IntegrationsService) getConfiguredIntegrationForDataKind(ctx context.Co
 			return nil, fmt.Errorf("get package %s: %w", intg.Name, pErr)
 		}
 		ci := p.GetConfiguredIntegration(intg)
-		if slices.Contains(ci.EnabledDataKinds(), dataKind) {
+		if ci.GetDataKinds()[dataKind] {
 			// TODO: return multiple?
 			return ci, nil
 		}
