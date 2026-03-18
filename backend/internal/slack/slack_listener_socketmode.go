@@ -88,8 +88,10 @@ func (l *SocketModeListener) Stop(ctx context.Context) error {
 
 func (l *SocketModeListener) runEventConsumerLoop(ctx context.Context) error {
 	defer func() {
-		if err := recover(); err != nil {
-			log.Error().Interface("panic", err).Msg("panic while handling socket mode event")
+		if panicErr := recover(); panicErr != nil {
+			log.Error().
+				Interface("panic", panicErr).
+				Msg("panic while handling socket mode event")
 		}
 	}()
 	for {
@@ -104,67 +106,49 @@ func (l *SocketModeListener) runEventConsumerLoop(ctx context.Context) error {
 	}
 }
 
-func (l *SocketModeListener) shouldIgnoreEvent(e *socketmode.Event) bool {
-	return e.Request == nil || e.Type == socketmode.EventTypeHello
-}
-
 func (l *SocketModeListener) onEvent(ctx context.Context, evt *socketmode.Event) {
-	if !l.shouldIgnoreEvent(evt) {
+	if evt.Request == nil || evt.Type == socketmode.EventTypeHello {
+		log.Debug().Str("type", string(evt.Type)).Msg("ignoring socketmode event")
 		return
 	}
 
-	var handleErr error
-	switch evt.Type {
-	case socketmode.EventTypeSlashCommand:
-		handleErr = l.onSlashCommand(ctx, evt)
-	case socketmode.EventTypeInteractive:
-		handleErr = l.onInteraction(ctx, evt)
-	case socketmode.EventTypeEventsAPI:
+	handleErr := fmt.Errorf("unknown event type")
+	if evt.Type == socketmode.EventTypeEventsAPI {
 		handleErr = l.onEventsApi(ctx, evt)
-	default:
-		log.Warn().Str("type", string(evt.Type)).Msg("skipped socketmode event")
+	} else if evt.Type == socketmode.EventTypeSlashCommand {
+		handleErr = l.onSlashCommand(ctx, evt)
+	} else if evt.Type == socketmode.EventTypeInteractive {
+		handleErr = l.onInteractionCallback(ctx, evt)
 	}
 	if handleErr != nil {
-		log.Error().Str("event_type", string(evt.Type)).Err(handleErr).Msg("socketmode handler error")
-		// return
+		log.Error().Err(handleErr).
+			Str("event_type", string(evt.Type)).
+			Msg("socketmode handler error")
 	}
 	if ackErr := l.client.AckCtx(ctx, evt.Request.EnvelopeID, nil); ackErr != nil {
 		log.Error().Err(ackErr).Msgf("Error acking socket mode event")
 	}
 }
 
-func (l *SocketModeListener) onSlashCommand(ctx context.Context, e *socketmode.Event) error {
-	cmd, ok := e.Data.(slack.SlashCommand)
-	if !ok {
-		return fmt.Errorf("parsing SlashCommand data")
-	}
-	if handlerErr := l.handler.SlashCommand(ctx, cmd); handlerErr != nil {
-		return fmt.Errorf("handling SlashCommand: %w", handlerErr)
-	}
-	return nil
-}
-
-func (l *SocketModeListener) onInteraction(ctx context.Context, e *socketmode.Event) error {
-	if handlerErr := l.handler.InteractionCallback(ctx, e.Request.Payload); handlerErr != nil {
-		return fmt.Errorf("handling InteractionCallback: %w", handlerErr)
-	}
-	return nil
-}
-
 func (l *SocketModeListener) onEventsApi(ctx context.Context, e *socketmode.Event) error {
-	evt, ok := e.Data.(slackevents.EventsAPIEvent)
-	if !ok {
-		return fmt.Errorf("invalid events api event data")
-	}
-
-	if evt.Type == slackevents.CallbackEvent {
-		if handlerErr := l.handler.CallbackEvent(ctx, e.Request.Payload); handlerErr != nil {
-			return fmt.Errorf("handling EventsAPIEvent: %w", handlerErr)
+	if evt, ok := e.Data.(slackevents.EventsAPIEvent); ok {
+		if evt.Type == slackevents.CallbackEvent {
+			return l.handler.OnCallbackEvent(ctx, e.Request.Payload)
+		} else if evt.Type == slackevents.AppRateLimited {
+			return l.handler.OnAppRateLimitedEvent(ctx)
 		}
-	} else if evt.Type == slackevents.AppRateLimited {
-		log.Warn().Msg("slack app rate limited")
-	} else {
-		log.Warn().Str("type", evt.Type).Msg("unknown slack callback event type")
+		return fmt.Errorf("unknown slack callback event type: %s", evt.Type)
 	}
-	return nil
+	return fmt.Errorf("invalid events api event data")
+}
+
+func (l *SocketModeListener) onSlashCommand(ctx context.Context, e *socketmode.Event) error {
+	if cmd, ok := e.Data.(slack.SlashCommand); ok {
+		return l.handler.OnSlashCommand(ctx, cmd)
+	}
+	return fmt.Errorf("invalid SlashCommand data")
+}
+
+func (l *SocketModeListener) onInteractionCallback(ctx context.Context, e *socketmode.Event) error {
+	return l.handler.OnInteractionCallback(ctx, e.Request.Payload)
 }

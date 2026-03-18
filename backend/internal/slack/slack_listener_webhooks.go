@@ -107,7 +107,7 @@ func (l *WebhookListener) onCommands(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
-	if handlerErr := l.handler.SlashCommand(r.Context(), cmd); handlerErr != nil {
+	if handlerErr := l.handler.OnSlashCommand(r.Context(), cmd); handlerErr != nil {
 		log.Error().Err(handlerErr).Msg("failed to handle command event")
 		w.WriteHeader(http.StatusInternalServerError)
 		return
@@ -118,11 +118,11 @@ func (l *WebhookListener) onCommands(w http.ResponseWriter, r *http.Request) {
 func (l *WebhookListener) onInteraction(w http.ResponseWriter, r *http.Request) {
 	payload := r.PostFormValue("payload")
 	if payload == "" {
-		log.Debug().Msg("empty interaction payload")
+		log.Warn().Msg("empty interaction payload")
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
-	if handlerErr := l.handler.InteractionCallback(r.Context(), []byte(payload)); handlerErr != nil {
+	if handlerErr := l.handler.OnInteractionCallback(r.Context(), []byte(payload)); handlerErr != nil {
 		log.Error().Err(handlerErr).Msg("failed to handle interaction event message")
 		w.WriteHeader(http.StatusInternalServerError)
 		return
@@ -133,7 +133,7 @@ func (l *WebhookListener) onInteraction(w http.ResponseWriter, r *http.Request) 
 func (l *WebhookListener) onOptions(w http.ResponseWriter, r *http.Request) {
 	// TODO, not currently used
 	body := []byte("")
-	if handlerErr := l.handler.Options(r.Context(), body); handlerErr != nil {
+	if handlerErr := l.handler.OnOptions(r.Context(), body); handlerErr != nil {
 		log.Error().Err(handlerErr).Msg("failed to handle options event")
 		w.WriteHeader(http.StatusInternalServerError)
 		return
@@ -158,32 +158,34 @@ func (l *WebhookListener) onEventsApi(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if ev.Type == slackevents.URLVerification {
-		l.handleUrlVerificationEvent(w, body)
-	} else if ev.Type == slackevents.AppRateLimited {
-		log.Warn().Msg("slack app rate limited")
-		w.WriteHeader(http.StatusOK)
-	} else if ev.Type == slackevents.CallbackEvent {
-		if handleErr := l.handler.CallbackEvent(r.Context(), body); handleErr != nil {
-			log.Error().Err(handleErr).Msg("failed to handle callback event")
-			w.WriteHeader(http.StatusInternalServerError)
-			return
+		if verifyErr := l.handleUrlVerificationEvent(w, body); verifyErr != nil {
+			log.Error().Err(verifyErr).Msg("failed to handle url verification event")
 		}
-		w.WriteHeader(http.StatusOK)
-	} else {
-		log.Warn().Str("type", ev.Type).Msg("didnt handle webhook event")
-		w.WriteHeader(http.StatusBadRequest)
+		return
 	}
-}
 
-func (l *WebhookListener) handleUrlVerificationEvent(w http.ResponseWriter, body []byte) {
-	var res *slackevents.ChallengeResponse
-	if jsonErr := json.Unmarshal(body, &res); jsonErr != nil {
+	handleErr := fmt.Errorf("unhandled event type: %s", ev.Type)
+	if ev.Type == slackevents.AppRateLimited {
+		handleErr = l.handler.OnAppRateLimitedEvent(r.Context())
+	} else if ev.Type == slackevents.CallbackEvent {
+		handleErr = l.handler.OnCallbackEvent(r.Context(), body)
+	}
+	if handleErr != nil {
+		log.Error().Err(handleErr).Msg("failed to handle eventsAPI event")
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
-	w.Header().Set("Content-Type", "text")
-	_, writeErr := w.Write([]byte(res.Challenge))
-	if writeErr != nil {
-		log.Error().Err(writeErr).Msg("failed to write url verification challenge response")
+	w.WriteHeader(http.StatusOK)
+}
+
+func (l *WebhookListener) handleUrlVerificationEvent(w http.ResponseWriter, body []byte) error {
+	var res *slackevents.ChallengeResponse
+	if jsonErr := json.Unmarshal(body, &res); jsonErr != nil {
+		return fmt.Errorf("unmarshal body: %w", jsonErr)
 	}
+	w.Header().Set("Content-Type", "text")
+	if _, writeErr := w.Write([]byte(res.Challenge)); writeErr != nil {
+		return fmt.Errorf("write challenge response body: %w", writeErr)
+	}
+	return nil
 }

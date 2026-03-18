@@ -7,6 +7,7 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent"
+	"github.com/rezible/rezible/ent/incident"
 	"github.com/slack-go/slack"
 )
 
@@ -130,7 +131,7 @@ type incidentDetailsModalViewMetadata struct {
 func (s *ChatService) makeIncidentDetailsModalView(ctx context.Context, meta *incidentDetailsModalViewMetadata) (*slack.ModalViewRequest, error) {
 	var curr *ent.Incident
 	if meta.IncidentId != uuid.Nil {
-		inc, incErr := s.incidents.Get(ctx, meta.IncidentId)
+		inc, incErr := s.incidents.Get(ctx, incident.ID(meta.IncidentId))
 		if incErr != nil && !ent.IsNotFound(incErr) {
 			return nil, incErr
 		}
@@ -176,7 +177,7 @@ type incidentMilestoneModalViewMetadata struct {
 }
 
 func (s *ChatService) makeIncidentMilestoneModalView(ctx context.Context, meta *incidentMilestoneModalViewMetadata) (*slack.ModalViewRequest, error) {
-	inc, incErr := s.incidents.Get(ctx, meta.IncidentId)
+	inc, incErr := s.incidents.Get(ctx, incident.ID(meta.IncidentId))
 	if incErr != nil && !ent.IsNotFound(incErr) {
 		return nil, incErr
 	}

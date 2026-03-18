@@ -367,7 +367,7 @@ func (s *OncallShiftsService) sendShiftHandover(ctx context.Context, ho *ent.Onc
 		return nil, fmt.Errorf("get pinned annotations: %w", annosErr)
 	}
 
-	chat, csErr := s.integrations.GetChatIntegration(ctx)
+	chat, csErr := s.integrations.GetChatService(ctx)
 	if csErr != nil {
 		return nil, fmt.Errorf("failed to get chat service: %w", csErr)
 	}

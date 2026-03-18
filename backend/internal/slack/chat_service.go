@@ -20,7 +20,7 @@ type ChatService struct {
 	annos        rez.EventAnnotationsService
 }
 
-func newChatService(ci *ConfiguredIntegration) (*ChatService, error) {
+func newChatService(ci *ConfiguredIntegration) *ChatService {
 	return &ChatService{
 		ci:           ci,
 		client:       slack.New(ci.accessToken()),
@@ -28,7 +28,7 @@ func newChatService(ci *ConfiguredIntegration) (*ChatService, error) {
 		integrations: ci.svcs.Integrations,
 		incidents:    ci.svcs.Incidents,
 		annos:        ci.svcs.EventAnnotations,
-	}, nil
+	}
 }
 
 func (s *ChatService) getUserContext(ctx context.Context, userChatId string) (context.Context, error) {

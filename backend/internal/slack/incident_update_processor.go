@@ -8,6 +8,7 @@ import (
 	mapset "github.com/deckarep/golang-set/v2"
 	"github.com/google/uuid"
 	"github.com/gosimple/slug"
+	"github.com/rezible/rezible/ent/incident"
 	"github.com/rs/zerolog/log"
 	"github.com/slack-go/slack"
 
@@ -20,27 +21,33 @@ type incidentUpdateProcessor struct {
 	chat      *ChatService
 	incidents rez.IncidentService
 	messages  rez.MessageService
-	inc       *ent.Incident
+
+	inc *ent.Incident
 }
 
-func newIncidentUpdateProcessor(chat *ChatService, services *rez.Services, inc *ent.Incident) *incidentUpdateProcessor {
+func newIncidentUpdateProcessor(chat *ChatService, services *rez.Services) *incidentUpdateProcessor {
 	return &incidentUpdateProcessor{
 		chat:      chat,
 		incidents: services.Incidents,
 		messages:  services.Messages,
-		inc:       inc,
 	}
 }
 
-func (p *incidentUpdateProcessor) processUpdate(ctx context.Context) error {
+func (p *incidentUpdateProcessor) processIncidentUpdate(ctx context.Context, incidentId uuid.UUID) error {
+	inc, incErr := p.incidents.Get(ctx, incident.ID(incidentId))
+	if incErr != nil {
+		return fmt.Errorf("get incident: %w", incErr)
+	}
+	p.inc = inc
 	if p.inc.ChatChannelID == "" {
-		createCmdErr := p.messages.SendCommand(ctx, &cmdCreateIncidentChannel{IncidentId: p.inc.ID})
-		if createCmdErr != nil {
-			return fmt.Errorf("failed to send create incident channel command: %w", createCmdErr)
-		}
-		return nil
+		return p.messages.SendCommand(ctx, &cmdCreateIncidentChannel{IncidentId: p.inc.ID})
 	}
 	return p.updateIncidentChannel(ctx)
+}
+
+func (p *incidentUpdateProcessor) processIncidentMilestoneUpdate(ctx context.Context, msId uuid.UUID) error {
+	// TODO: check if we care about this milestone kind
+	return p.messages.SendCommand(ctx, &cmdSendIncidentMilestoneMessage{MilestoneId: msId})
 }
 
 func (p *incidentUpdateProcessor) sendIncidentMilestoneMessage(ctx context.Context, milestoneId uuid.UUID) error {
@@ -98,23 +105,15 @@ func (p *incidentUpdateProcessor) sendIncidentMilestoneMessage(ctx context.Conte
 	return nil
 }
 
-func formatIncidentChannelName(pattern string, inc *ent.Incident) string {
-	if pattern == "" {
-		pattern = "incident-{slug}"
-	}
-	name := strings.ReplaceAll(pattern, "{slug}", inc.Slug)
-	name = strings.ReplaceAll(name, "{id}", inc.ID.String())
-	name = strings.ReplaceAll(name, "{title}", slug.Make(inc.Title))
-	return name
-}
-
-func isSlackChannelNameTakenError(err error) bool {
-	return err != nil && strings.Contains(err.Error(), "name_taken")
-}
-
-func (p *incidentUpdateProcessor) getIncidentChannelName() (string, error) {
+func (p *incidentUpdateProcessor) getIncidentChannelName() string {
 	namePattern := p.chat.ci.getIncidentPreferences().ChannelNamePattern
-	return formatIncidentChannelName(namePattern, p.inc), nil
+	if namePattern == "" {
+		namePattern = "incident-{slug}"
+	}
+	name := strings.ReplaceAll(namePattern, "{id}", p.inc.ID.String())
+	name = strings.ReplaceAll(name, "{slug}", p.inc.Slug)
+	name = strings.ReplaceAll(name, "{title}", slug.Make(p.inc.Title))
+	return name
 }
 
 func (p *incidentUpdateProcessor) findConversationByName(ctx context.Context, client *slack.Client, channelName string) (*slack.Channel, error) {
@@ -153,10 +152,7 @@ func (p *incidentUpdateProcessor) linkIncidentChannel(ctx context.Context, chann
 }
 
 func (p *incidentUpdateProcessor) createIncidentChannel(ctx context.Context) error {
-	channelName, nameErr := p.getIncidentChannelName()
-	if nameErr != nil {
-		return fmt.Errorf("resolve incident channel name: %w", nameErr)
-	}
+	channelName := p.getIncidentChannelName()
 
 	createParams := slack.CreateConversationParams{
 		ChannelName: channelName,
@@ -166,29 +162,28 @@ func (p *incidentUpdateProcessor) createIncidentChannel(ctx context.Context) err
 
 	channel, createErr := p.chat.client.CreateConversationContext(ctx, createParams)
 	if createErr != nil {
-		if isSlackChannelNameTakenError(createErr) {
-			log.Warn().
-				Err(createErr).
-				Str("incident_id", p.inc.ID.String()).
-				Str("channel_name", channelName).
-				Msg("slack incident channel already exists, attempting relink")
-
-			existingChannel, lookupErr := p.findConversationByName(ctx, p.chat.client, channelName)
-			if lookupErr != nil {
-				return fmt.Errorf("lookup existing channel after name_taken: %w", lookupErr)
-			}
-			if existingChannel == nil {
-				return fmt.Errorf("slack reported name_taken but no conversation named %q was found", channelName)
-			}
-			channel = existingChannel
-		} else {
-			return fmt.Errorf("create channel: %w", createErr)
+		nameAlreadyTaken := strings.Contains(createErr.Error(), "name_taken")
+		if !nameAlreadyTaken {
+			return fmt.Errorf("creating channel: %w", createErr)
 		}
+		log.Warn().
+			Err(createErr).
+			Str("incident_id", p.inc.ID.String()).
+			Str("channel_name", channelName).
+			Msg("slack incident channel already exists, attempting relink")
+
+		existingChannel, lookupErr := p.findConversationByName(ctx, p.chat.client, channelName)
+		if lookupErr != nil {
+			return fmt.Errorf("lookup existing channel after name_taken: %w", lookupErr)
+		}
+		if existingChannel == nil {
+			return fmt.Errorf("slack reported name_taken but no conversation named %q was found", channelName)
+		}
+		channel = existingChannel
 	}
 
 	if linkErr := p.linkIncidentChannel(ctx, channel.ID); linkErr != nil {
-		log.Error().
-			Err(linkErr).
+		log.Error().Err(linkErr).
 			Str("incident_id", p.inc.ID.String()).
 			Str("channel_id", channel.ID).
 			Str("channel_name", channelName).
@@ -197,16 +192,14 @@ func (p *incidentUpdateProcessor) createIncidentChannel(ctx context.Context) err
 	}
 
 	if msgErr := p.sendUserCreatedChannelMessage(ctx); msgErr != nil {
-		log.Warn().
-			Err(msgErr).
+		log.Warn().Err(msgErr).
 			Str("incident_id", p.inc.ID.String()).
 			Str("channel_id", p.inc.ChatChannelID).
 			Msg("failed to send user incident creation message")
 	}
 
 	if annoErr := p.postIncidentAnnouncement(ctx); annoErr != nil {
-		log.Warn().
-			Err(annoErr).
+		log.Warn().Err(annoErr).
 			Str("incident_id", p.inc.ID.String()).
 			Str("channel_id", p.inc.ChatChannelID).
 			Msg("failed to post incident announcement")
@@ -242,7 +235,6 @@ func (p *incidentUpdateProcessor) sendUserCreatedChannelMessage(ctx context.Cont
 	}
 	// send message to user that created incident
 	msgText := fmt.Sprintf("Incident created: <#%s>", p.inc.ChatChannelID)
-
 	_, sendErr := p.chat.postEphemeralMessage(ctx, channelId, userId, slack.MsgOptionText(msgText, false))
 	if sendErr != nil {
 		return fmt.Errorf("failed to send confirmation message: %w", sendErr)

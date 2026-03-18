@@ -125,6 +125,6 @@ func (ci *ConfiguredIntegration) getAuthCredentials() (option.ClientOption, erro
 	return option.WithAuthCredentialsJSON(option.ServiceAccount, creds), nil
 }
 
-func (ci *ConfiguredIntegration) VideoConferenceIntegration(ctx context.Context) (rez.VideoConferenceIntegration, error) {
-	return newMeetService(ci)
+func (ci *ConfiguredIntegration) MakeVideoConferenceService(ctx context.Context) (rez.VideoConferenceService, error) {
+	return newMeetService(ci), nil
 }

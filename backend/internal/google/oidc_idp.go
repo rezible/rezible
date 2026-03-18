@@ -13,8 +13,7 @@ import (
 )
 
 const (
-	googleProviderId = "google"
-	googleIssuerUrl  = "https://accounts.google.com"
+	googleIssuerUrl = "https://accounts.google.com"
 )
 
 type oidcIdp struct {

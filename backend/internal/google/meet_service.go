@@ -22,10 +22,8 @@ type meetService struct {
 	ci *ConfiguredIntegration
 }
 
-func newMeetService(ci *ConfiguredIntegration) (*meetService, error) {
-	return &meetService{
-		ci: ci,
-	}, nil
+func newMeetService(ci *ConfiguredIntegration) *meetService {
+	return &meetService{ci: ci}
 }
 
 func (s *meetService) makeClient(ctx context.Context) (*meet.Service, error) {
@@ -40,14 +38,14 @@ func (s *meetService) makeClient(ctx context.Context) (*meet.Service, error) {
 	return svc, nil
 }
 
-func (s *meetService) CreateVideoConference(ctx context.Context, inc *ent.Incident) (string, error) {
+func (s *meetService) CreateVideoConference(ctx context.Context, name string) (string, error) {
 	client, clientErr := s.makeClient(ctx)
 	if clientErr != nil {
 		return "", clientErr
 	}
 
 	createSpace := client.Spaces.Create(&meet.Space{
-		Name: "",
+		Name: name,
 	})
 
 	space, reqErr := createSpace.Context(ctx).Do()
@@ -59,13 +57,10 @@ func (s *meetService) CreateVideoConference(ctx context.Context, inc *ent.Incide
 }
 
 func (s *meetService) CreateIncidentVideoConference(ctx context.Context, inc *ent.Incident) error {
-	incs := s.ci.svcs.Incidents
-	curr, currErr := incs.Get(ctx, inc.ID)
-	if currErr != nil {
-		return fmt.Errorf("get incident: %w", currErr)
+	if inc == nil {
+		return fmt.Errorf("incident is nil")
 	}
-
-	exists, existsErr := curr.QueryVideoConferences().
+	exists, existsErr := inc.QueryVideoConferences().
 		Where(videoconference.ProviderEQ(integrationName)).
 		Where(videoconference.StatusIn(
 			videoconference.StatusCreating,
@@ -79,7 +74,9 @@ func (s *meetService) CreateIncidentVideoConference(ctx context.Context, inc *en
 		return nil
 	}
 
-	url, confErr := s.CreateVideoConference(ctx, curr)
+	// TODO
+	confName := inc.Title
+	url, confErr := s.CreateVideoConference(ctx, confName)
 	if confErr != nil {
 		return confErr
 	}
@@ -92,12 +89,8 @@ func (s *meetService) CreateIncidentVideoConference(ctx context.Context, inc *en
 	}
 
 	setFn := func(m *ent.IncidentMutation) []ent.Mutation {
-		incidentId, exists := m.ID()
-		if !exists {
-			return nil
-		}
 		conferenceCreate := m.Client().VideoConference.Create().
-			SetIncidentID(incidentId).
+			SetIncidentID(inc.ID).
 			SetProvider(integrationName).
 			SetJoinURL(url).
 			SetStatus(videoconference.StatusActive).
@@ -105,9 +98,12 @@ func (s *meetService) CreateIncidentVideoConference(ctx context.Context, inc *en
 			SetCreatedByIntegration(integrationName)
 		return []ent.Mutation{conferenceCreate.Mutation()}
 	}
-	if _, setErr := incs.Set(ctx, curr.ID, setFn); setErr != nil {
+	if _, setErr := s.ci.svcs.Incidents.Set(ctx, inc.ID, setFn); setErr != nil {
 		return fmt.Errorf("set incident conference: %w", setErr)
 	}
-	log.Debug().Str("incident_id", curr.ID.String()).Str("join_url", url).Msg("created incident conference")
+	log.Debug().
+		Str("incident_id", inc.ID.String()).
+		Str("join_url", url).
+		Msg("created incident conference")
 	return nil
 }

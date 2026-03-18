@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/google/uuid"
+	"github.com/rezible/rezible/ent/predicate"
 
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
@@ -22,6 +23,10 @@ func NewRetrospectiveService(db *ent.Client) (*RetrospectiveService, error) {
 	}
 
 	return svc, nil
+}
+
+func (s *RetrospectiveService) Get(ctx context.Context, p predicate.Retrospective) (*ent.Retrospective, error) {
+	return s.db.Retrospective.Query().Where(p).Only(ctx)
 }
 
 func (s *RetrospectiveService) GetById(ctx context.Context, id uuid.UUID) (*ent.Retrospective, error) {

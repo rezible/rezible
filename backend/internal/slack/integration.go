@@ -274,7 +274,7 @@ func (ci *ConfiguredIntegration) accessToken() string {
 }
 
 func (ci *ConfiguredIntegration) teamId() string {
-	return ci.config().Get(configTeam).ObjxMap().Get("id").String()
+	return ci.config().Get(configTeam + ".id").String()
 }
 
 const (
@@ -325,6 +325,42 @@ func (ci *ConfiguredIntegration) GetDataKinds() map[string]bool {
 	}
 }
 
-func (ci *ConfiguredIntegration) ChatService(ctx context.Context) (rez.ChatService, error) {
-	return newChatService(ci)
+func (ci *ConfiguredIntegration) MakeChatService(ctx context.Context) (rez.ChatService, error) {
+	return newChatService(ci), nil
+}
+
+type installIds struct {
+	TeamId       string
+	EnterpriseId string
+}
+
+func (i installIds) configValues() map[string]any {
+	m := map[string]any{}
+	if i.TeamId != "" {
+		m["team.id"] = i.TeamId
+	}
+	if i.EnterpriseId != "" {
+		m["enterprise.id"] = i.EnterpriseId
+	}
+	return m
+}
+
+func lookupTenantIntegration(ctx context.Context, integrations rez.IntegrationsService, ids installIds) (*ConfiguredIntegration, error) {
+	params := rez.ListIntegrationsParams{
+		Names:        []string{integrationName},
+		ConfigValues: ids.configValues(),
+	}
+	intgs, listErr := integrations.ListConfigured(access.SystemContext(ctx), params)
+	if listErr != nil {
+		if ent.IsNotFound(listErr) {
+			return nil, nil
+		}
+		return nil, fmt.Errorf("listing configured integrations: %w", listErr)
+	}
+	for _, intg := range intgs {
+		if ci, ok := intg.(*ConfiguredIntegration); ok {
+			return ci, nil
+		}
+	}
+	return nil, fmt.Errorf("integration not found")
 }

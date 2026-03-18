@@ -7,20 +7,25 @@ import (
 	"github.com/google/uuid"
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
+	"github.com/rezible/rezible/ent/incident"
 	im "github.com/rezible/rezible/ent/incidentmilestone"
+	"github.com/rezible/rezible/ent/predicate"
 	oapi "github.com/rezible/rezible/openapi/v1"
 )
 
 type incidentsHandler struct {
-	db        *ent.Client
 	incidents rez.IncidentService
 }
 
-func newIncidentsHandler(db *ent.Client, incidents rez.IncidentService) *incidentsHandler {
-	return &incidentsHandler{
-		db:        db,
-		incidents: incidents,
+func newIncidentsHandler(incidents rez.IncidentService) *incidentsHandler {
+	return &incidentsHandler{incidents: incidents}
+}
+
+func incidentIdPredicate(id oapi.FlexibleId) predicate.Incident {
+	if id.IsSlug {
+		return incident.Slug(id.Slug)
 	}
+	return incident.ID(id.UUID)
 }
 
 func (h *incidentsHandler) ListIncidents(ctx context.Context, req *oapi.ListIncidentsRequest) (*oapi.ListIncidentsResponse, error) {
@@ -29,17 +34,16 @@ func (h *incidentsHandler) ListIncidents(ctx context.Context, req *oapi.ListInci
 	params := rez.ListIncidentsParams{
 		ListParams: req.ListParams(),
 	}
-	listRes, listErr := h.incidents.ListIncidents(ctx, params)
-	// etc
+	incs, listErr := h.incidents.ListIncidents(ctx, params)
 	if listErr != nil {
-		return nil, apiError("failed to list incidents", listErr)
+		return nil, apiError("list incidents", listErr)
 	}
-	resp.Body.Data = make([]oapi.Incident, len(listRes.Data))
-	for i, inc := range listRes.Data {
+	resp.Body.Data = make([]oapi.Incident, len(incs.Data))
+	for i, inc := range incs.Data {
 		resp.Body.Data[i] = oapi.IncidentFromEnt(inc)
 	}
 	resp.Body.Pagination = oapi.ResponsePagination{
-		Total: listRes.Count,
+		Total: incs.Count,
 	}
 
 	return &resp, nil
@@ -48,17 +52,10 @@ func (h *incidentsHandler) ListIncidents(ctx context.Context, req *oapi.ListInci
 func (h *incidentsHandler) GetIncident(ctx context.Context, input *oapi.GetIncidentRequest) (*oapi.GetIncidentResponse, error) {
 	var resp oapi.GetIncidentResponse
 
-	var inc *ent.Incident
-	var incErr error
-	if input.Id.IsSlug {
-		inc, incErr = h.incidents.GetBySlug(ctx, input.Id.Slug)
-	} else {
-		inc, incErr = h.incidents.Get(ctx, input.Id.UUID)
-	}
+	inc, incErr := h.incidents.Get(ctx, incidentIdPredicate(input.Id))
 	if incErr != nil {
-		return nil, apiError("failed to get incident", incErr)
+		return nil, apiError("get incident", incErr)
 	}
-
 	resp.Body.Data = oapi.IncidentFromEnt(inc)
 
 	return &resp, nil
@@ -68,7 +65,6 @@ func (h *incidentsHandler) CreateIncident(ctx context.Context, input *oapi.Creat
 	var resp oapi.CreateIncidentResponse
 
 	attr := input.Body.Attributes
-
 	setFn := func(m *ent.IncidentMutation) []ent.Mutation {
 		m.SetTitle(attr.Title)
 		m.SetSummary(attr.Summary)
@@ -90,7 +86,7 @@ func (h *incidentsHandler) CreateIncident(ctx context.Context, input *oapi.Creat
 
 	created, createErr := h.incidents.Set(ctx, uuid.Nil, setFn)
 	if createErr != nil {
-		return nil, apiError("failed to create incident", createErr)
+		return nil, apiError("create incident", createErr)
 	}
 	resp.Body.Data = oapi.IncidentFromEnt(created)
 
@@ -100,21 +96,7 @@ func (h *incidentsHandler) CreateIncident(ctx context.Context, input *oapi.Creat
 func (h *incidentsHandler) UpdateIncident(ctx context.Context, request *oapi.UpdateIncidentRequest) (*oapi.UpdateIncidentResponse, error) {
 	var resp oapi.UpdateIncidentResponse
 
-	inc, getErr := h.incidents.Get(ctx, request.Id)
-	if getErr != nil {
-		return nil, apiError("failed to get incident", getErr)
-	}
-
 	attr := request.Body.Attributes
-	//var updateSeverityId uuid.UUID
-	//if attr.SeverityId != nil {
-	//	sevId, sevErr := uuid.Parse(*attr.SeverityId)
-	//	if sevErr != nil {
-	//		return nil, oapi.ErrorBadRequest("invalid severity id", sevErr)
-	//	}
-	//	updateSeverityId = sevId
-	//}
-
 	setFn := func(m *ent.IncidentMutation) []ent.Mutation {
 		if attr.Title != nil {
 			m.SetTitle(*attr.Title)
@@ -128,13 +110,12 @@ func (h *incidentsHandler) UpdateIncident(ctx context.Context, request *oapi.Upd
 		if attr.TypeId != uuid.Nil {
 			m.SetTypeID(attr.TypeId)
 		}
-
 		return nil
 	}
 
-	updated, updateErr := h.incidents.Set(ctx, inc.ID, setFn)
+	updated, updateErr := h.incidents.Set(ctx, request.Id, setFn)
 	if updateErr != nil {
-		return nil, apiError("failed to update incident", updateErr)
+		return nil, apiError("update incident", updateErr)
 	}
 	resp.Body.Data = oapi.IncidentFromEnt(updated)
 
@@ -144,9 +125,8 @@ func (h *incidentsHandler) UpdateIncident(ctx context.Context, request *oapi.Upd
 func (h *incidentsHandler) ArchiveIncident(ctx context.Context, input *oapi.ArchiveIncidentRequest) (*oapi.ArchiveIncidentResponse, error) {
 	var resp oapi.ArchiveIncidentResponse
 
-	err := h.db.Incident.DeleteOneID(input.Id).Exec(ctx)
-	if err != nil {
-		return nil, apiError("failed to archive incident", err)
+	if archiveErr := h.incidents.Archive(ctx, input.Id); archiveErr != nil {
+		return nil, apiError("archive incident", archiveErr)
 	}
 
 	return &resp, nil

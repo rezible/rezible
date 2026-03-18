@@ -334,24 +334,32 @@ func (s *IntegrationsService) getConfiguredIntegrationForDataKind(ctx context.Co
 	return nil, rez.ErrNoConfiguredIntegrations
 }
 
-func (s *IntegrationsService) GetChatIntegration(ctx context.Context) (rez.ChatService, error) {
+type IntegrationWithChatService interface {
+	MakeChatService(context.Context) (rez.ChatService, error)
+}
+
+func (s *IntegrationsService) GetChatService(ctx context.Context) (rez.ChatService, error) {
 	p, pErr := s.getConfiguredIntegrationForDataKind(ctx, "chat")
 	if pErr != nil {
 		return nil, pErr
 	}
-	if chatPackage, ok := p.(rez.IntegrationWithChatService); ok {
-		return chatPackage.ChatService(ctx)
+	if chatPackage, ok := p.(IntegrationWithChatService); ok {
+		return chatPackage.MakeChatService(ctx)
 	}
 	return nil, rez.ErrNoConfiguredIntegrations
 }
 
-func (s *IntegrationsService) GetVideoConferenceIntegration(ctx context.Context) (rez.VideoConferenceIntegration, error) {
+type IntegrationWithVideoConference interface {
+	MakeVideoConferenceService(ctx context.Context) (rez.VideoConferenceService, error)
+}
+
+func (s *IntegrationsService) GetVideoConferenceService(ctx context.Context) (rez.VideoConferenceService, error) {
 	p, pErr := s.getConfiguredIntegrationForDataKind(ctx, "video_conference")
 	if pErr != nil {
 		return nil, pErr
 	}
-	if vcPackage, ok := p.(rez.IntegrationWithVideoConference); ok {
-		return vcPackage.VideoConferenceIntegration(ctx)
+	if vci, ok := p.(IntegrationWithVideoConference); ok {
+		return vci.MakeVideoConferenceService(ctx)
 	}
 	return nil, rez.ErrNoConfiguredIntegrations
 }

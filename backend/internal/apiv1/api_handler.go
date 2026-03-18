@@ -52,7 +52,7 @@ func NewHandler(svcs *rez.Services, db *ent.Client) *Handler {
 		incidentTagsHandler:       newIncidentTagsHandler(db.IncidentTag),
 		tasksHandler:              newTasksHandler(db),
 		incidentTypesHandler:      newIncidentTypesHandler(db.IncidentType),
-		incidentsHandler:          newIncidentsHandler(db, svcs.Incidents),
+		incidentsHandler:          newIncidentsHandler(svcs.Incidents),
 		integrationsHandler:       newIntegrationsHandler(svcs.Integrations),
 		meetingsHandler:           newMeetingsHandler(),
 		eventsHandler:             newEventsHandler(svcs.Auth, svcs.Events),

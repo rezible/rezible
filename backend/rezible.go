@@ -10,6 +10,7 @@ import (
 	"github.com/ThreeDotsLabs/watermill/components/cqrs"
 	"github.com/coreos/go-oidc/v3/oidc"
 	"github.com/google/uuid"
+	"github.com/rezible/rezible/ent/predicate"
 	"github.com/rotisserie/eris"
 	"github.com/texm/prosemirror-go"
 	"golang.org/x/oauth2"
@@ -130,8 +131,8 @@ type (
 		StartOAuth2Flow(ctx context.Context, name string, redirect *url.URL) (string, error)
 		CompleteOAuth2Flow(ctx context.Context, name, state, code string) (ConfiguredIntegration, error)
 
-		GetChatIntegration(ctx context.Context) (ChatService, error)
-		GetVideoConferenceIntegration(ctx context.Context) (VideoConferenceIntegration, error)
+		GetChatService(ctx context.Context) (ChatService, error)
+		GetVideoConferenceService(ctx context.Context) (VideoConferenceService, error)
 	}
 )
 
@@ -252,19 +253,11 @@ type (
 		SendReply(ctx context.Context, channelId string, threadId string, text string) (string, error)
 		SendTextMessage(ctx context.Context, id string, text string) (string, error)
 	}
-
-	IntegrationWithChatService interface {
-		ChatService(context.Context) (ChatService, error)
-	}
 )
 
 type (
-	VideoConferenceIntegration interface {
+	VideoConferenceService interface {
 		CreateIncidentVideoConference(context.Context, *ent.Incident) error
-	}
-
-	IntegrationWithVideoConference interface {
-		VideoConferenceIntegration(ctx context.Context) (VideoConferenceIntegration, error)
 	}
 )
 
@@ -413,22 +406,20 @@ type (
 
 	IncidentService interface {
 		ListIncidents(context.Context, ListIncidentsParams) (*ent.ListResult[*ent.Incident], error)
-		Get(context.Context, uuid.UUID) (*ent.Incident, error)
+		Query(context.Context, predicate.Incident, func(*ent.IncidentQuery)) (*ent.Incident, error)
+		Get(context.Context, predicate.Incident) (*ent.Incident, error)
 		Set(context.Context, uuid.UUID, func(*ent.IncidentMutation) []ent.Mutation) (*ent.Incident, error)
-		GetBySlug(context.Context, string) (*ent.Incident, error)
-		GetByChatChannelID(context.Context, string) (*ent.Incident, error)
-
-		ListIncidentRoles(context.Context) ([]*ent.IncidentRole, error)
+		Archive(context.Context, uuid.UUID) error
 
 		GetIncidentMilestone(context.Context, uuid.UUID) (*ent.IncidentMilestone, error)
 		SetIncidentMilestone(context.Context, uuid.UUID, func(*ent.IncidentMilestoneMutation)) (*ent.IncidentMilestone, error)
 
+		ListIncidentRoles(context.Context) ([]*ent.IncidentRole, error)
 		ListIncidentSeverities(context.Context) ([]*ent.IncidentSeverity, error)
-		GetIncidentSeverity(context.Context, uuid.UUID) (*ent.IncidentSeverity, error)
-
 		ListIncidentTypes(context.Context) ([]*ent.IncidentType, error)
-
 		GetIncidentMetadata(context.Context) (*IncidentMetadata, error)
+
+		GetIncidentSeverity(context.Context, uuid.UUID) (*ent.IncidentSeverity, error)
 	}
 
 	EventOnIncidentUpdated struct {
@@ -470,8 +461,7 @@ type (
 
 	RetrospectiveService interface {
 		Create(context.Context, ent.Retrospective) (*ent.Retrospective, error)
-		GetById(context.Context, uuid.UUID) (*ent.Retrospective, error)
-		GetForIncident(context.Context, *ent.Incident) (*ent.Retrospective, error)
+		Get(context.Context, predicate.Retrospective) (*ent.Retrospective, error)
 
 		//ListReviews(context.Context, ListRetrospectiveReviewsParams) ([]*ent.RetrospectiveReview, error)
 		//GetReview(context.Context, uuid.UUID) (*ent.RetrospectiveReview, error)

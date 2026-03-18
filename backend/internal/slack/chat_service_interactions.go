@@ -8,6 +8,7 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent"
+	"github.com/rezible/rezible/ent/incident"
 	"github.com/rezible/rezible/ent/incidentmilestone"
 	"github.com/rs/zerolog/log"
 	"github.com/slack-go/slack"
@@ -120,7 +121,7 @@ func (s *ChatService) handleAnnotationModalSubmission(ctx context.Context, ic *s
 func (s *ChatService) getIncidentModalViewMetadata(ctx context.Context, ic *slack.InteractionCallback) (*incidentDetailsModalViewMetadata, error) {
 	var meta incidentDetailsModalViewMetadata
 	if ic.Type == slack.InteractionTypeBlockActions {
-		inc, incErr := s.incidents.GetByChatChannelID(ctx, ic.Channel.ID)
+		inc, incErr := s.incidents.Get(ctx, incident.ChatChannelID(ic.Channel.ID))
 		if incErr != nil {
 			return nil, fmt.Errorf("unable to get incident by channel: %w", incErr)
 		}
@@ -217,7 +218,7 @@ func (s *ChatService) getIncidentMilestoneModalViewMetadata(ctx context.Context,
 			return nil, fmt.Errorf("failed to unmarshal incident modal metadata: %w", jsonErr)
 		}
 	} else {
-		inc, incErr := s.incidents.GetByChatChannelID(ctx, ic.Channel.ID)
+		inc, incErr := s.incidents.Get(ctx, incident.ChatChannelID(ic.Channel.ID))
 		if incErr != nil {
 			return nil, fmt.Errorf("unable to get incident by channel: %w", incErr)
 		}

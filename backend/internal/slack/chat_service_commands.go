@@ -7,6 +7,7 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent"
+	"github.com/rezible/rezible/ent/incident"
 	"github.com/rs/zerolog/log"
 	"github.com/slack-go/slack"
 )
@@ -60,7 +61,7 @@ func commandErrorResponse(message string) *slack.Blocks {
 func (s *ChatService) handleIncidentCommand(ctx context.Context, cmd *slack.SlashCommand) (*slack.Blocks, error) {
 	// are we currently in an incident channel?
 	var channelIncidentId uuid.UUID
-	inc, incErr := s.incidents.GetByChatChannelID(ctx, cmd.ChannelID)
+	inc, incErr := s.incidents.Get(ctx, incident.ChatChannelID(cmd.ChannelID))
 	if incErr != nil && !ent.IsNotFound(incErr) {
 		log.Error().Err(incErr).Msg("unable to get incident by channel")
 		return commandErrorResponse(incErr.Error()), nil

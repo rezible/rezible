@@ -42,25 +42,27 @@ func NewIncidentService(db *ent.Client, jobs rez.JobsService, msgs rez.MessageSe
 	return svc, nil
 }
 
-func (s *IncidentService) incidentQuery(pred predicate.Incident, edges bool) *ent.IncidentQuery {
+func (s *IncidentService) allQueryEdges(q *ent.IncidentQuery) {
+	q.WithRetrospective(func(rq *ent.RetrospectiveQuery) {
+		rq.Select(retrospective.FieldID)
+	})
+	q.WithSeverity()
+	q.WithType()
+	q.WithFieldSelections()
+	q.WithRoleAssignments(func(raq *ent.IncidentRoleAssignmentQuery) {
+		raq.WithRole().WithUser()
+	})
+	q.WithMilestones(func(mq *ent.IncidentMilestoneQuery) {
+		mq.Order(ent.Desc(imodel.FieldTimestamp))
+		mq.WithUser()
+	})
+	q.WithVideoConferences()
+}
+
+func (s *IncidentService) incidentQuery(pred predicate.Incident, edgesFn func(*ent.IncidentQuery)) *ent.IncidentQuery {
 	// TODO: use a view for this
 	q := s.db.Incident.Query().Where(pred)
-	if edges {
-		q.WithRetrospective(func(rq *ent.RetrospectiveQuery) {
-			rq.Select(retrospective.FieldID)
-		})
-		q.WithSeverity()
-		q.WithType()
-		q.WithFieldSelections()
-		q.WithRoleAssignments(func(raq *ent.IncidentRoleAssignmentQuery) {
-			raq.WithRole().WithUser()
-		})
-		q.WithMilestones(func(mq *ent.IncidentMilestoneQuery) {
-			mq.Order(ent.Desc(imodel.FieldTimestamp))
-			mq.WithUser()
-		})
-		q.WithVideoConferences()
-	}
+	edgesFn(q)
 	return q
 }
 
@@ -84,16 +86,12 @@ func (s *IncidentService) ListIncidents(ctx context.Context, params rez.ListInci
 	return ent.DoListQuery[*ent.Incident, *ent.IncidentQuery](ctx, query, params.ListParams)
 }
 
-func (s *IncidentService) Get(ctx context.Context, id uuid.UUID) (*ent.Incident, error) {
-	return s.incidentQuery(incident.ID(id), true).Only(ctx)
+func (s *IncidentService) Query(ctx context.Context, p predicate.Incident, withFn func(*ent.IncidentQuery)) (*ent.Incident, error) {
+	return s.incidentQuery(p, withFn).Only(ctx)
 }
 
-func (s *IncidentService) GetByChatChannelID(ctx context.Context, id string) (*ent.Incident, error) {
-	return s.incidentQuery(incident.ChatChannelID(id), false).Only(ctx)
-}
-
-func (s *IncidentService) GetBySlug(ctx context.Context, slug string) (*ent.Incident, error) {
-	return s.incidentQuery(incident.Slug(slug), true).Only(ctx)
+func (s *IncidentService) Get(ctx context.Context, p predicate.Incident) (*ent.Incident, error) {
+	return s.incidentQuery(p, s.allQueryEdges).Only(ctx)
 }
 
 func (s *IncidentService) getIncidentEdgeMutationUpdateEvent(incidentId uuid.UUID, m ent.Mutation, v ent.Value) any {
@@ -196,6 +194,10 @@ func (s *IncidentService) Set(ctx context.Context, id uuid.UUID, setFn func(*ent
 	}
 
 	return updated, nil
+}
+
+func (s *IncidentService) Archive(ctx context.Context, id uuid.UUID) error {
+	return s.db.Incident.DeleteOneID(id).Exec(ctx)
 }
 
 // TODO: load these from somewhere
