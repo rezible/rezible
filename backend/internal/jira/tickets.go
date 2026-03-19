@@ -2,7 +2,6 @@ package jira
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"iter"
 
@@ -16,9 +15,6 @@ type TicketDataProvider struct {
 
 func NewTicketDataProvider(ctx context.Context, intg *ent.Integration) (*TicketDataProvider, error) {
 	var cfg IntegrationConfig
-	if cfgErr := json.Unmarshal(intg.Config, &cfg); cfgErr != nil {
-		return nil, cfgErr
-	}
 	tp := jira.BasicAuthTransport{
 		Username: cfg.ApiUsername,
 		Password: cfg.ApiToken,

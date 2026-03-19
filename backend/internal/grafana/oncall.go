@@ -27,9 +27,20 @@ type OncallDataProviderConfig struct {
 	ApiToken    string `json:"api_token"`
 }
 
+func (c OncallDataProviderConfig) fromConfigMap(m map[string]any) error {
+	asJson, jsonErr := json.Marshal(m)
+	if jsonErr != nil {
+		return jsonErr
+	}
+	if jsonErr = json.Unmarshal(asJson, &c); jsonErr != nil {
+		return jsonErr
+	}
+	return nil
+}
+
 func NewOncallDataProvider(intg *ent.Integration) (*OncallDataProvider, error) {
 	var cfg OncallDataProviderConfig
-	if cfgErr := json.Unmarshal(intg.Config, &cfg); cfgErr != nil {
+	if cfgErr := cfg.fromConfigMap(intg.Config); cfgErr != nil {
 		return nil, cfgErr
 	}
 	p := &OncallDataProvider{

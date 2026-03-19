@@ -36,9 +36,20 @@ type IncidentDataProviderConfig struct {
 	WebhookSecret       string `json:"webhook_secret"`
 }
 
+func (c IncidentDataProviderConfig) fromConfigMap(m map[string]any) error {
+	asJson, jsonErr := json.Marshal(m)
+	if jsonErr != nil {
+		return jsonErr
+	}
+	if jsonErr = json.Unmarshal(asJson, &c); jsonErr != nil {
+		return jsonErr
+	}
+	return nil
+}
+
 func NewIncidentDataProvider(intg *ent.Integration) (*IncidentDataProvider, error) {
 	var cfg IncidentDataProviderConfig
-	if cfgErr := json.Unmarshal(intg.Config, &cfg); cfgErr != nil {
+	if cfgErr := cfg.fromConfigMap(intg.Config); cfgErr != nil {
 		return nil, cfgErr
 	}
 	if cfg.WebhookSecret == "" {
