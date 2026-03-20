@@ -2,7 +2,7 @@
 
 import type { Client, Options as Options2, TDataShape } from './client';
 import { client } from './client.gen';
-import type { AddIncidentDebriefUserMessageData, AddIncidentDebriefUserMessageErrors, AddIncidentDebriefUserMessageResponses, AddSystemAnalysisComponentData, AddSystemAnalysisComponentErrors, AddSystemAnalysisComponentResponses, AddWatchedOncallRosterData, AddWatchedOncallRosterErrors, AddWatchedOncallRosterResponses, ArchiveDebriefQuestionData, ArchiveDebriefQuestionErrors, ArchiveDebriefQuestionResponses, ArchiveIncidentData, ArchiveIncidentErrors, ArchiveIncidentFieldData, ArchiveIncidentFieldErrors, ArchiveIncidentFieldResponses, ArchiveIncidentResponses, ArchiveIncidentRoleData, ArchiveIncidentRoleErrors, ArchiveIncidentRoleResponses, ArchiveIncidentSeverityData, ArchiveIncidentSeverityErrors, ArchiveIncidentSeverityResponses, ArchiveIncidentTagData, ArchiveIncidentTagErrors, ArchiveIncidentTagResponses, ArchiveIncidentTypeData, ArchiveIncidentTypeErrors, ArchiveIncidentTypeResponses, ArchiveMeetingScheduleData, ArchiveMeetingScheduleErrors, ArchiveMeetingScheduleResponses, ArchiveMeetingSessionData, ArchiveMeetingSessionErrors, ArchiveMeetingSessionResponses, ArchiveOncallHandoverTemplateData, ArchiveOncallHandoverTemplateErrors, ArchiveOncallHandoverTemplateResponses, ArchivePlaybookData, ArchivePlaybookErrors, ArchivePlaybookResponses, ArchiveRetrospectiveReviewData, ArchiveRetrospectiveReviewErrors, ArchiveRetrospectiveReviewResponses, ArchiveSystemComponentConstraintData, ArchiveSystemComponentConstraintErrors, ArchiveSystemComponentConstraintResponses, ArchiveSystemComponentControlData, ArchiveSystemComponentControlErrors, ArchiveSystemComponentControlResponses, ArchiveSystemComponentData, ArchiveSystemComponentErrors, ArchiveSystemComponentKindData, ArchiveSystemComponentKindErrors, ArchiveSystemComponentKindResponses, ArchiveSystemComponentRelationshipData, ArchiveSystemComponentRelationshipErrors, ArchiveSystemComponentRelationshipResponses, ArchiveSystemComponentResponses, ArchiveSystemComponentSignalData, ArchiveSystemComponentSignalErrors, ArchiveSystemComponentSignalResponses, ArchiveTaskData, ArchiveTaskErrors, ArchiveTaskResponses, ArchiveTeamData, ArchiveTeamErrors, ArchiveTeamMembershipData, ArchiveTeamMembershipErrors, ArchiveTeamMembershipResponses, ArchiveTeamResponses, CompleteIntegrationOauthFlowData, CompleteIntegrationOauthFlowErrors, CompleteIntegrationOauthFlowResponses, ConfigureIntegrationData, ConfigureIntegrationErrors, ConfigureIntegrationResponses, CreateDebriefQuestionData, CreateDebriefQuestionErrors, CreateDebriefQuestionResponses, CreateEventAnnotationData, CreateEventAnnotationErrors, CreateEventAnnotationResponses, CreateIncidentData, CreateIncidentErrors, CreateIncidentEventData, CreateIncidentEventErrors, CreateIncidentEventResponses, CreateIncidentFieldData, CreateIncidentFieldErrors, CreateIncidentFieldResponses, CreateIncidentMilestoneData, CreateIncidentMilestoneErrors, CreateIncidentMilestoneResponses, CreateIncidentResponses, CreateIncidentRoleData, CreateIncidentRoleErrors, CreateIncidentRoleResponses, CreateIncidentSeverityData, CreateIncidentSeverityErrors, CreateIncidentSeverityResponses, CreateIncidentTagData, CreateIncidentTagErrors, CreateIncidentTagResponses, CreateIncidentTypeData, CreateIncidentTypeErrors, CreateIncidentTypeResponses, CreateMeetingScheduleData, CreateMeetingScheduleErrors, CreateMeetingScheduleResponses, CreateMeetingSessionData, CreateMeetingSessionErrors, CreateMeetingSessionResponses, CreateOncallHandoverTemplateData, CreateOncallHandoverTemplateErrors, CreateOncallHandoverTemplateResponses, CreatePlaybookData, CreatePlaybookErrors, CreatePlaybookResponses, CreateRetrospectiveCommentData, CreateRetrospectiveCommentErrors, CreateRetrospectiveCommentResponses, CreateRetrospectiveData, CreateRetrospectiveErrors, CreateRetrospectiveResponses, CreateRetrospectiveReviewData, CreateRetrospectiveReviewErrors, CreateRetrospectiveReviewResponses, CreateSystemAnalysisRelationshipData, CreateSystemAnalysisRelationshipErrors, CreateSystemAnalysisRelationshipResponses, CreateSystemComponentConstraintData, CreateSystemComponentConstraintErrors, CreateSystemComponentConstraintResponses, CreateSystemComponentControlData, CreateSystemComponentControlErrors, CreateSystemComponentControlResponses, CreateSystemComponentData, CreateSystemComponentErrors, CreateSystemComponentKindData, CreateSystemComponentKindErrors, CreateSystemComponentKindResponses, CreateSystemComponentRelationshipData, CreateSystemComponentRelationshipErrors, CreateSystemComponentRelationshipResponses, CreateSystemComponentResponses, CreateSystemComponentSignalData, CreateSystemComponentSignalErrors, CreateSystemComponentSignalResponses, CreateTaskData, CreateTaskErrors, CreateTaskResponses, CreateTeamData, CreateTeamErrors, CreateTeamMembershipData, CreateTeamMembershipErrors, CreateTeamMembershipResponses, CreateTeamResponses, DeleteEventAnnotationData, DeleteEventAnnotationErrors, DeleteEventAnnotationResponses, DeleteIncidentEventData, DeleteIncidentEventErrors, DeleteIncidentEventResponses, DeleteIncidentMilestoneData, DeleteIncidentMilestoneErrors, DeleteIncidentMilestoneResponses, DeleteIntegrationData, DeleteIntegrationErrors, DeleteIntegrationResponses, DeleteSystemAnalysisComponentData, DeleteSystemAnalysisComponentErrors, DeleteSystemAnalysisComponentResponses, DeleteSystemAnalysisRelationshipData, DeleteSystemAnalysisRelationshipErrors, DeleteSystemAnalysisRelationshipResponses, DeleteUserNotificationData, DeleteUserNotificationErrors, DeleteUserNotificationResponses, FinishOrganizationSetupData, FinishOrganizationSetupErrors, FinishOrganizationSetupResponses, GetAdjacentOncallShiftsData, GetAdjacentOncallShiftsErrors, GetAdjacentOncallShiftsResponses, GetAlertData, GetAlertErrors, GetAlertMetricsData, GetAlertMetricsErrors, GetAlertMetricsResponses, GetAlertResponses, GetAuthSessionConfigData, GetAuthSessionConfigErrors, GetAuthSessionConfigResponses, GetConfiguredIntegrationData, GetConfiguredIntegrationErrors, GetConfiguredIntegrationResponses, GetCurrentAuthSessionData, GetCurrentAuthSessionErrors, GetCurrentAuthSessionResponses, GetDebriefQuestionData, GetDebriefQuestionErrors, GetDebriefQuestionResponses, GetEventData, GetEventErrors, GetEventResponses, GetIncidentData, GetIncidentDebriefData, GetIncidentDebriefErrors, GetIncidentDebriefResponses, GetIncidentErrors, GetIncidentFieldData, GetIncidentFieldErrors, GetIncidentFieldResponses, GetIncidentResponses, GetIncidentRoleData, GetIncidentRoleErrors, GetIncidentRoleResponses, GetIncidentSeverityData, GetIncidentSeverityErrors, GetIncidentSeverityResponses, GetIncidentTagData, GetIncidentTagErrors, GetIncidentTagResponses, GetIncidentTypeData, GetIncidentTypeErrors, GetIncidentTypeResponses, GetIncidentUserDebriefData, GetIncidentUserDebriefErrors, GetIncidentUserDebriefResponses, GetMeetingScheduleData, GetMeetingScheduleErrors, GetMeetingScheduleResponses, GetMeetingSessionData, GetMeetingSessionErrors, GetMeetingSessionResponses, GetOncallRosterData, GetOncallRosterErrors, GetOncallRosterMetricsData, GetOncallRosterMetricsErrors, GetOncallRosterMetricsResponses, GetOncallRosterResponses, GetOncallShiftBurdenMetricWeightsData, GetOncallShiftBurdenMetricWeightsErrors, GetOncallShiftBurdenMetricWeightsResponses, GetOncallShiftData, GetOncallShiftErrors, GetOncallShiftHandoverData, GetOncallShiftHandoverErrors, GetOncallShiftHandoverResponses, GetOncallShiftHandoverTemplateData, GetOncallShiftHandoverTemplateErrors, GetOncallShiftHandoverTemplateResponses, GetOncallShiftMetricsData, GetOncallShiftMetricsErrors, GetOncallShiftMetricsResponses, GetOncallShiftResponses, GetOrganizationData, GetOrganizationErrors, GetOrganizationResponses, GetPlaybookData, GetPlaybookErrors, GetPlaybookResponses, GetRetrospectiveCommentData, GetRetrospectiveCommentErrors, GetRetrospectiveCommentResponses, GetRetrospectiveData, GetRetrospectiveErrors, GetRetrospectiveForIncidentData, GetRetrospectiveForIncidentErrors, GetRetrospectiveForIncidentResponses, GetRetrospectiveResponses, GetSystemAnalysisComponentData, GetSystemAnalysisComponentErrors, GetSystemAnalysisComponentResponses, GetSystemAnalysisData, GetSystemAnalysisErrors, GetSystemAnalysisRelationshipData, GetSystemAnalysisRelationshipErrors, GetSystemAnalysisRelationshipResponses, GetSystemAnalysisResponses, GetSystemComponentConstraintData, GetSystemComponentConstraintErrors, GetSystemComponentConstraintResponses, GetSystemComponentControlData, GetSystemComponentControlErrors, GetSystemComponentControlResponses, GetSystemComponentData, GetSystemComponentErrors, GetSystemComponentKindData, GetSystemComponentKindErrors, GetSystemComponentKindResponses, GetSystemComponentRelationshipData, GetSystemComponentRelationshipErrors, GetSystemComponentRelationshipResponses, GetSystemComponentResponses, GetSystemComponentSignalData, GetSystemComponentSignalErrors, GetSystemComponentSignalResponses, GetTaskData, GetTaskErrors, GetTaskResponses, GetTeamData, GetTeamErrors, GetTeamResponses, GetUserData, GetUserErrors, GetUserOncallInformationData, GetUserOncallInformationErrors, GetUserOncallInformationResponses, GetUserResponses, ListAlertIncidentLinksData, ListAlertIncidentLinksErrors, ListAlertIncidentLinksResponses, ListAlertsData, ListAlertsErrors, ListAlertsResponses, ListAvailableIntegrationsData, ListAvailableIntegrationsErrors, ListAvailableIntegrationsResponses, ListConfiguredIntegrationsData, ListConfiguredIntegrationsErrors, ListConfiguredIntegrationsResponses, ListDebriefMessagesData, ListDebriefMessagesErrors, ListDebriefMessagesResponses, ListDebriefQuestionsData, ListDebriefQuestionsErrors, ListDebriefQuestionsResponses, ListDebriefSuggestionsData, ListDebriefSuggestionsErrors, ListDebriefSuggestionsResponses, ListEventAnnotationsData, ListEventAnnotationsErrors, ListEventAnnotationsResponses, ListEventsData, ListEventsErrors, ListEventsResponses, ListIncidentEventContributingFactorCategoriesData, ListIncidentEventContributingFactorCategoriesErrors, ListIncidentEventContributingFactorCategoriesResponses, ListIncidentEventsData, ListIncidentEventsErrors, ListIncidentEventsResponses, ListIncidentFieldsData, ListIncidentFieldsErrors, ListIncidentFieldsResponses, ListIncidentMilestonesData, ListIncidentMilestonesErrors, ListIncidentMilestonesResponses, ListIncidentRolesData, ListIncidentRolesErrors, ListIncidentRolesResponses, ListIncidentsData, ListIncidentsErrors, ListIncidentSeveritiesData, ListIncidentSeveritiesErrors, ListIncidentSeveritiesResponses, ListIncidentsResponses, ListIncidentTagsData, ListIncidentTagsErrors, ListIncidentTagsResponses, ListIncidentTypesData, ListIncidentTypesErrors, ListIncidentTypesResponses, ListMeetingSchedulesData, ListMeetingSchedulesErrors, ListMeetingSchedulesResponses, ListMeetingSessionsData, ListMeetingSessionsErrors, ListMeetingSessionsResponses, ListOncallRostersData, ListOncallRostersErrors, ListOncallRostersResponses, ListOncallShiftsData, ListOncallShiftsErrors, ListOncallShiftsResponses, ListPlaybooksData, ListPlaybooksErrors, ListPlaybooksResponses, ListRetrospectiveCommentsData, ListRetrospectiveCommentsErrors, ListRetrospectiveCommentsResponses, ListRetrospectiveReviewsData, ListRetrospectiveReviewsErrors, ListRetrospectiveReviewsResponses, ListRetrospectivesData, ListRetrospectivesErrors, ListRetrospectivesResponses, ListSystemAnalysisComponentsData, ListSystemAnalysisComponentsErrors, ListSystemAnalysisComponentsResponses, ListSystemAnalysisRelationshipsData, ListSystemAnalysisRelationshipsErrors, ListSystemAnalysisRelationshipsResponses, ListSystemComponentKindsData, ListSystemComponentKindsErrors, ListSystemComponentKindsResponses, ListSystemComponentRelationshipsData, ListSystemComponentRelationshipsErrors, ListSystemComponentRelationshipsResponses, ListSystemComponentsData, ListSystemComponentsErrors, ListSystemComponentsResponses, ListTasksData, ListTasksErrors, ListTasksResponses, ListTeamMembershipsData, ListTeamMembershipsErrors, ListTeamMembershipsResponses, ListTeamsData, ListTeamsErrors, ListTeamsResponses, ListUserNotificationsData, ListUserNotificationsErrors, ListUserNotificationsResponses, ListUsersData, ListUsersErrors, ListUsersResponses, ListWatchedOncallRostersData, ListWatchedOncallRostersErrors, ListWatchedOncallRostersResponses, LoadDocumentData, LoadDocumentErrors, LoadDocumentResponses, RemoveWatchedOncallRosterData, RemoveWatchedOncallRosterErrors, RemoveWatchedOncallRosterResponses, RequestDocumentEditorSessionData, RequestDocumentEditorSessionErrors, RequestDocumentEditorSessionResponses, SendOncallShiftHandoverData, SendOncallShiftHandoverErrors, SendOncallShiftHandoverResponses, StartIntegrationOauthFlowData, StartIntegrationOauthFlowErrors, StartIntegrationOauthFlowResponses, UpdateConfiguredIntegrationPreferencesData, UpdateConfiguredIntegrationPreferencesErrors, UpdateConfiguredIntegrationPreferencesResponses, UpdateDebriefQuestionData, UpdateDebriefQuestionErrors, UpdateDebriefQuestionResponses, UpdateDocumentData, UpdateDocumentErrors, UpdateDocumentResponses, UpdateEventAnnotationData, UpdateEventAnnotationErrors, UpdateEventAnnotationResponses, UpdateIncidentData, UpdateIncidentDebriefData, UpdateIncidentDebriefErrors, UpdateIncidentDebriefResponses, UpdateIncidentErrors, UpdateIncidentEventData, UpdateIncidentEventErrors, UpdateIncidentEventResponses, UpdateIncidentFieldData, UpdateIncidentFieldErrors, UpdateIncidentFieldResponses, UpdateIncidentMilestoneData, UpdateIncidentMilestoneErrors, UpdateIncidentMilestoneResponses, UpdateIncidentResponses, UpdateIncidentRoleData, UpdateIncidentRoleErrors, UpdateIncidentRoleResponses, UpdateIncidentSeverityData, UpdateIncidentSeverityErrors, UpdateIncidentSeverityResponses, UpdateIncidentTagData, UpdateIncidentTagErrors, UpdateIncidentTagResponses, UpdateIncidentTypeData, UpdateIncidentTypeErrors, UpdateIncidentTypeResponses, UpdateMeetingScheduleData, UpdateMeetingScheduleErrors, UpdateMeetingScheduleResponses, UpdateMeetingSessionData, UpdateMeetingSessionErrors, UpdateMeetingSessionResponses, UpdateOncallHandoverTemplateData, UpdateOncallHandoverTemplateErrors, UpdateOncallHandoverTemplateResponses, UpdateOncallShiftHandoverData, UpdateOncallShiftHandoverErrors, UpdateOncallShiftHandoverResponses, UpdatePlaybookData, UpdatePlaybookErrors, UpdatePlaybookResponses, UpdateRetrospectiveCommentData, UpdateRetrospectiveCommentErrors, UpdateRetrospectiveCommentResponses, UpdateRetrospectiveReviewData, UpdateRetrospectiveReviewErrors, UpdateRetrospectiveReviewResponses, UpdateSystemAnalysisComponentData, UpdateSystemAnalysisComponentErrors, UpdateSystemAnalysisComponentResponses, UpdateSystemAnalysisRelationshipData, UpdateSystemAnalysisRelationshipErrors, UpdateSystemAnalysisRelationshipResponses, UpdateSystemComponentConstraintData, UpdateSystemComponentConstraintErrors, UpdateSystemComponentConstraintResponses, UpdateSystemComponentControlData, UpdateSystemComponentControlErrors, UpdateSystemComponentControlResponses, UpdateSystemComponentData, UpdateSystemComponentErrors, UpdateSystemComponentKindData, UpdateSystemComponentKindErrors, UpdateSystemComponentKindResponses, UpdateSystemComponentRelationshipData, UpdateSystemComponentRelationshipErrors, UpdateSystemComponentRelationshipResponses, UpdateSystemComponentResponses, UpdateSystemComponentSignalData, UpdateSystemComponentSignalErrors, UpdateSystemComponentSignalResponses, UpdateTaskData, UpdateTaskErrors, UpdateTaskResponses, UpdateTeamMembershipData, UpdateTeamMembershipErrors, UpdateTeamMembershipResponses, UpdateTeamsData, UpdateTeamsErrors, UpdateTeamsResponses, VerifyDocumentSessionAuthData, VerifyDocumentSessionAuthErrors, VerifyDocumentSessionAuthResponses } from './types.gen';
+import type { AddIncidentDebriefUserMessageData, AddIncidentDebriefUserMessageErrors, AddIncidentDebriefUserMessageResponses, AddSystemAnalysisComponentData, AddSystemAnalysisComponentErrors, AddSystemAnalysisComponentResponses, AddWatchedOncallRosterData, AddWatchedOncallRosterErrors, AddWatchedOncallRosterResponses, ArchiveDebriefQuestionData, ArchiveDebriefQuestionErrors, ArchiveDebriefQuestionResponses, ArchiveIncidentData, ArchiveIncidentErrors, ArchiveIncidentFieldData, ArchiveIncidentFieldErrors, ArchiveIncidentFieldResponses, ArchiveIncidentResponses, ArchiveIncidentRoleData, ArchiveIncidentRoleErrors, ArchiveIncidentRoleResponses, ArchiveIncidentSeverityData, ArchiveIncidentSeverityErrors, ArchiveIncidentSeverityResponses, ArchiveIncidentTagData, ArchiveIncidentTagErrors, ArchiveIncidentTagResponses, ArchiveIncidentTypeData, ArchiveIncidentTypeErrors, ArchiveIncidentTypeResponses, ArchiveMeetingScheduleData, ArchiveMeetingScheduleErrors, ArchiveMeetingScheduleResponses, ArchiveMeetingSessionData, ArchiveMeetingSessionErrors, ArchiveMeetingSessionResponses, ArchiveOncallHandoverTemplateData, ArchiveOncallHandoverTemplateErrors, ArchiveOncallHandoverTemplateResponses, ArchivePlaybookData, ArchivePlaybookErrors, ArchivePlaybookResponses, ArchiveRetrospectiveReviewData, ArchiveRetrospectiveReviewErrors, ArchiveRetrospectiveReviewResponses, ArchiveSystemComponentConstraintData, ArchiveSystemComponentConstraintErrors, ArchiveSystemComponentConstraintResponses, ArchiveSystemComponentControlData, ArchiveSystemComponentControlErrors, ArchiveSystemComponentControlResponses, ArchiveSystemComponentData, ArchiveSystemComponentErrors, ArchiveSystemComponentKindData, ArchiveSystemComponentKindErrors, ArchiveSystemComponentKindResponses, ArchiveSystemComponentRelationshipData, ArchiveSystemComponentRelationshipErrors, ArchiveSystemComponentRelationshipResponses, ArchiveSystemComponentResponses, ArchiveSystemComponentSignalData, ArchiveSystemComponentSignalErrors, ArchiveSystemComponentSignalResponses, ArchiveTaskData, ArchiveTaskErrors, ArchiveTaskResponses, ArchiveTeamData, ArchiveTeamErrors, ArchiveTeamMembershipData, ArchiveTeamMembershipErrors, ArchiveTeamMembershipResponses, ArchiveTeamResponses, ClearAuthSessionData, ClearAuthSessionErrors, ClearAuthSessionResponses, CompleteAuthSessionFlowData, CompleteAuthSessionFlowErrors, CompleteAuthSessionFlowResponses, CompleteIntegrationOauthFlowData, CompleteIntegrationOauthFlowErrors, CompleteIntegrationOauthFlowResponses, ConfigureIntegrationData, ConfigureIntegrationErrors, ConfigureIntegrationResponses, CreateDebriefQuestionData, CreateDebriefQuestionErrors, CreateDebriefQuestionResponses, CreateEventAnnotationData, CreateEventAnnotationErrors, CreateEventAnnotationResponses, CreateIncidentData, CreateIncidentErrors, CreateIncidentEventData, CreateIncidentEventErrors, CreateIncidentEventResponses, CreateIncidentFieldData, CreateIncidentFieldErrors, CreateIncidentFieldResponses, CreateIncidentMilestoneData, CreateIncidentMilestoneErrors, CreateIncidentMilestoneResponses, CreateIncidentResponses, CreateIncidentRoleData, CreateIncidentRoleErrors, CreateIncidentRoleResponses, CreateIncidentSeverityData, CreateIncidentSeverityErrors, CreateIncidentSeverityResponses, CreateIncidentTagData, CreateIncidentTagErrors, CreateIncidentTagResponses, CreateIncidentTypeData, CreateIncidentTypeErrors, CreateIncidentTypeResponses, CreateMeetingScheduleData, CreateMeetingScheduleErrors, CreateMeetingScheduleResponses, CreateMeetingSessionData, CreateMeetingSessionErrors, CreateMeetingSessionResponses, CreateOncallHandoverTemplateData, CreateOncallHandoverTemplateErrors, CreateOncallHandoverTemplateResponses, CreatePlaybookData, CreatePlaybookErrors, CreatePlaybookResponses, CreateRetrospectiveCommentData, CreateRetrospectiveCommentErrors, CreateRetrospectiveCommentResponses, CreateRetrospectiveData, CreateRetrospectiveErrors, CreateRetrospectiveResponses, CreateRetrospectiveReviewData, CreateRetrospectiveReviewErrors, CreateRetrospectiveReviewResponses, CreateSystemAnalysisRelationshipData, CreateSystemAnalysisRelationshipErrors, CreateSystemAnalysisRelationshipResponses, CreateSystemComponentConstraintData, CreateSystemComponentConstraintErrors, CreateSystemComponentConstraintResponses, CreateSystemComponentControlData, CreateSystemComponentControlErrors, CreateSystemComponentControlResponses, CreateSystemComponentData, CreateSystemComponentErrors, CreateSystemComponentKindData, CreateSystemComponentKindErrors, CreateSystemComponentKindResponses, CreateSystemComponentRelationshipData, CreateSystemComponentRelationshipErrors, CreateSystemComponentRelationshipResponses, CreateSystemComponentResponses, CreateSystemComponentSignalData, CreateSystemComponentSignalErrors, CreateSystemComponentSignalResponses, CreateTaskData, CreateTaskErrors, CreateTaskResponses, CreateTeamData, CreateTeamErrors, CreateTeamMembershipData, CreateTeamMembershipErrors, CreateTeamMembershipResponses, CreateTeamResponses, DeleteEventAnnotationData, DeleteEventAnnotationErrors, DeleteEventAnnotationResponses, DeleteIncidentEventData, DeleteIncidentEventErrors, DeleteIncidentEventResponses, DeleteIncidentMilestoneData, DeleteIncidentMilestoneErrors, DeleteIncidentMilestoneResponses, DeleteIntegrationData, DeleteIntegrationErrors, DeleteIntegrationResponses, DeleteSystemAnalysisComponentData, DeleteSystemAnalysisComponentErrors, DeleteSystemAnalysisComponentResponses, DeleteSystemAnalysisRelationshipData, DeleteSystemAnalysisRelationshipErrors, DeleteSystemAnalysisRelationshipResponses, DeleteUserNotificationData, DeleteUserNotificationErrors, DeleteUserNotificationResponses, FinishOrganizationSetupData, FinishOrganizationSetupErrors, FinishOrganizationSetupResponses, GetAdjacentOncallShiftsData, GetAdjacentOncallShiftsErrors, GetAdjacentOncallShiftsResponses, GetAlertData, GetAlertErrors, GetAlertMetricsData, GetAlertMetricsErrors, GetAlertMetricsResponses, GetAlertResponses, GetConfiguredIntegrationData, GetConfiguredIntegrationErrors, GetConfiguredIntegrationResponses, GetCurrentAuthSessionData, GetCurrentAuthSessionErrors, GetCurrentAuthSessionResponses, GetDebriefQuestionData, GetDebriefQuestionErrors, GetDebriefQuestionResponses, GetEventData, GetEventErrors, GetEventResponses, GetIncidentData, GetIncidentDebriefData, GetIncidentDebriefErrors, GetIncidentDebriefResponses, GetIncidentErrors, GetIncidentFieldData, GetIncidentFieldErrors, GetIncidentFieldResponses, GetIncidentResponses, GetIncidentRoleData, GetIncidentRoleErrors, GetIncidentRoleResponses, GetIncidentSeverityData, GetIncidentSeverityErrors, GetIncidentSeverityResponses, GetIncidentTagData, GetIncidentTagErrors, GetIncidentTagResponses, GetIncidentTypeData, GetIncidentTypeErrors, GetIncidentTypeResponses, GetIncidentUserDebriefData, GetIncidentUserDebriefErrors, GetIncidentUserDebriefResponses, GetMeetingScheduleData, GetMeetingScheduleErrors, GetMeetingScheduleResponses, GetMeetingSessionData, GetMeetingSessionErrors, GetMeetingSessionResponses, GetOncallRosterData, GetOncallRosterErrors, GetOncallRosterMetricsData, GetOncallRosterMetricsErrors, GetOncallRosterMetricsResponses, GetOncallRosterResponses, GetOncallShiftBurdenMetricWeightsData, GetOncallShiftBurdenMetricWeightsErrors, GetOncallShiftBurdenMetricWeightsResponses, GetOncallShiftData, GetOncallShiftErrors, GetOncallShiftHandoverData, GetOncallShiftHandoverErrors, GetOncallShiftHandoverResponses, GetOncallShiftHandoverTemplateData, GetOncallShiftHandoverTemplateErrors, GetOncallShiftHandoverTemplateResponses, GetOncallShiftMetricsData, GetOncallShiftMetricsErrors, GetOncallShiftMetricsResponses, GetOncallShiftResponses, GetOrganizationData, GetOrganizationErrors, GetOrganizationResponses, GetPlaybookData, GetPlaybookErrors, GetPlaybookResponses, GetRetrospectiveCommentData, GetRetrospectiveCommentErrors, GetRetrospectiveCommentResponses, GetRetrospectiveData, GetRetrospectiveErrors, GetRetrospectiveForIncidentData, GetRetrospectiveForIncidentErrors, GetRetrospectiveForIncidentResponses, GetRetrospectiveResponses, GetSystemAnalysisComponentData, GetSystemAnalysisComponentErrors, GetSystemAnalysisComponentResponses, GetSystemAnalysisData, GetSystemAnalysisErrors, GetSystemAnalysisRelationshipData, GetSystemAnalysisRelationshipErrors, GetSystemAnalysisRelationshipResponses, GetSystemAnalysisResponses, GetSystemComponentConstraintData, GetSystemComponentConstraintErrors, GetSystemComponentConstraintResponses, GetSystemComponentControlData, GetSystemComponentControlErrors, GetSystemComponentControlResponses, GetSystemComponentData, GetSystemComponentErrors, GetSystemComponentKindData, GetSystemComponentKindErrors, GetSystemComponentKindResponses, GetSystemComponentRelationshipData, GetSystemComponentRelationshipErrors, GetSystemComponentRelationshipResponses, GetSystemComponentResponses, GetSystemComponentSignalData, GetSystemComponentSignalErrors, GetSystemComponentSignalResponses, GetTaskData, GetTaskErrors, GetTaskResponses, GetTeamData, GetTeamErrors, GetTeamResponses, GetUserData, GetUserErrors, GetUserOncallInformationData, GetUserOncallInformationErrors, GetUserOncallInformationResponses, GetUserResponses, ListAlertIncidentLinksData, ListAlertIncidentLinksErrors, ListAlertIncidentLinksResponses, ListAlertsData, ListAlertsErrors, ListAlertsResponses, ListAvailableIntegrationsData, ListAvailableIntegrationsErrors, ListAvailableIntegrationsResponses, ListConfiguredIntegrationsData, ListConfiguredIntegrationsErrors, ListConfiguredIntegrationsResponses, ListDebriefMessagesData, ListDebriefMessagesErrors, ListDebriefMessagesResponses, ListDebriefQuestionsData, ListDebriefQuestionsErrors, ListDebriefQuestionsResponses, ListDebriefSuggestionsData, ListDebriefSuggestionsErrors, ListDebriefSuggestionsResponses, ListEventAnnotationsData, ListEventAnnotationsErrors, ListEventAnnotationsResponses, ListEventsData, ListEventsErrors, ListEventsResponses, ListIncidentEventContributingFactorCategoriesData, ListIncidentEventContributingFactorCategoriesErrors, ListIncidentEventContributingFactorCategoriesResponses, ListIncidentEventsData, ListIncidentEventsErrors, ListIncidentEventsResponses, ListIncidentFieldsData, ListIncidentFieldsErrors, ListIncidentFieldsResponses, ListIncidentMilestonesData, ListIncidentMilestonesErrors, ListIncidentMilestonesResponses, ListIncidentRolesData, ListIncidentRolesErrors, ListIncidentRolesResponses, ListIncidentsData, ListIncidentsErrors, ListIncidentSeveritiesData, ListIncidentSeveritiesErrors, ListIncidentSeveritiesResponses, ListIncidentsResponses, ListIncidentTagsData, ListIncidentTagsErrors, ListIncidentTagsResponses, ListIncidentTypesData, ListIncidentTypesErrors, ListIncidentTypesResponses, ListMeetingSchedulesData, ListMeetingSchedulesErrors, ListMeetingSchedulesResponses, ListMeetingSessionsData, ListMeetingSessionsErrors, ListMeetingSessionsResponses, ListOncallRostersData, ListOncallRostersErrors, ListOncallRostersResponses, ListOncallShiftsData, ListOncallShiftsErrors, ListOncallShiftsResponses, ListPlaybooksData, ListPlaybooksErrors, ListPlaybooksResponses, ListRetrospectiveCommentsData, ListRetrospectiveCommentsErrors, ListRetrospectiveCommentsResponses, ListRetrospectiveReviewsData, ListRetrospectiveReviewsErrors, ListRetrospectiveReviewsResponses, ListRetrospectivesData, ListRetrospectivesErrors, ListRetrospectivesResponses, ListSystemAnalysisComponentsData, ListSystemAnalysisComponentsErrors, ListSystemAnalysisComponentsResponses, ListSystemAnalysisRelationshipsData, ListSystemAnalysisRelationshipsErrors, ListSystemAnalysisRelationshipsResponses, ListSystemComponentKindsData, ListSystemComponentKindsErrors, ListSystemComponentKindsResponses, ListSystemComponentRelationshipsData, ListSystemComponentRelationshipsErrors, ListSystemComponentRelationshipsResponses, ListSystemComponentsData, ListSystemComponentsErrors, ListSystemComponentsResponses, ListTasksData, ListTasksErrors, ListTasksResponses, ListTeamMembershipsData, ListTeamMembershipsErrors, ListTeamMembershipsResponses, ListTeamsData, ListTeamsErrors, ListTeamsResponses, ListUserNotificationsData, ListUserNotificationsErrors, ListUserNotificationsResponses, ListUsersData, ListUsersErrors, ListUsersResponses, ListWatchedOncallRostersData, ListWatchedOncallRostersErrors, ListWatchedOncallRostersResponses, LoadDocumentData, LoadDocumentErrors, LoadDocumentResponses, RefreshAuthSessionData, RefreshAuthSessionErrors, RefreshAuthSessionResponses, RemoveWatchedOncallRosterData, RemoveWatchedOncallRosterErrors, RemoveWatchedOncallRosterResponses, RequestDocumentEditorSessionData, RequestDocumentEditorSessionErrors, RequestDocumentEditorSessionResponses, SendOncallShiftHandoverData, SendOncallShiftHandoverErrors, SendOncallShiftHandoverResponses, StartIntegrationOauthFlowData, StartIntegrationOauthFlowErrors, StartIntegrationOauthFlowResponses, UpdateConfiguredIntegrationPreferencesData, UpdateConfiguredIntegrationPreferencesErrors, UpdateConfiguredIntegrationPreferencesResponses, UpdateDebriefQuestionData, UpdateDebriefQuestionErrors, UpdateDebriefQuestionResponses, UpdateDocumentData, UpdateDocumentErrors, UpdateDocumentResponses, UpdateEventAnnotationData, UpdateEventAnnotationErrors, UpdateEventAnnotationResponses, UpdateIncidentData, UpdateIncidentDebriefData, UpdateIncidentDebriefErrors, UpdateIncidentDebriefResponses, UpdateIncidentErrors, UpdateIncidentEventData, UpdateIncidentEventErrors, UpdateIncidentEventResponses, UpdateIncidentFieldData, UpdateIncidentFieldErrors, UpdateIncidentFieldResponses, UpdateIncidentMilestoneData, UpdateIncidentMilestoneErrors, UpdateIncidentMilestoneResponses, UpdateIncidentResponses, UpdateIncidentRoleData, UpdateIncidentRoleErrors, UpdateIncidentRoleResponses, UpdateIncidentSeverityData, UpdateIncidentSeverityErrors, UpdateIncidentSeverityResponses, UpdateIncidentTagData, UpdateIncidentTagErrors, UpdateIncidentTagResponses, UpdateIncidentTypeData, UpdateIncidentTypeErrors, UpdateIncidentTypeResponses, UpdateMeetingScheduleData, UpdateMeetingScheduleErrors, UpdateMeetingScheduleResponses, UpdateMeetingSessionData, UpdateMeetingSessionErrors, UpdateMeetingSessionResponses, UpdateOncallHandoverTemplateData, UpdateOncallHandoverTemplateErrors, UpdateOncallHandoverTemplateResponses, UpdateOncallShiftHandoverData, UpdateOncallShiftHandoverErrors, UpdateOncallShiftHandoverResponses, UpdatePlaybookData, UpdatePlaybookErrors, UpdatePlaybookResponses, UpdateRetrospectiveCommentData, UpdateRetrospectiveCommentErrors, UpdateRetrospectiveCommentResponses, UpdateRetrospectiveReviewData, UpdateRetrospectiveReviewErrors, UpdateRetrospectiveReviewResponses, UpdateSystemAnalysisComponentData, UpdateSystemAnalysisComponentErrors, UpdateSystemAnalysisComponentResponses, UpdateSystemAnalysisRelationshipData, UpdateSystemAnalysisRelationshipErrors, UpdateSystemAnalysisRelationshipResponses, UpdateSystemComponentConstraintData, UpdateSystemComponentConstraintErrors, UpdateSystemComponentConstraintResponses, UpdateSystemComponentControlData, UpdateSystemComponentControlErrors, UpdateSystemComponentControlResponses, UpdateSystemComponentData, UpdateSystemComponentErrors, UpdateSystemComponentKindData, UpdateSystemComponentKindErrors, UpdateSystemComponentKindResponses, UpdateSystemComponentRelationshipData, UpdateSystemComponentRelationshipErrors, UpdateSystemComponentRelationshipResponses, UpdateSystemComponentResponses, UpdateSystemComponentSignalData, UpdateSystemComponentSignalErrors, UpdateSystemComponentSignalResponses, UpdateTaskData, UpdateTaskErrors, UpdateTaskResponses, UpdateTeamMembershipData, UpdateTeamMembershipErrors, UpdateTeamMembershipResponses, UpdateTeamsData, UpdateTeamsErrors, UpdateTeamsResponses } from './types.gen';
 
 export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends boolean = boolean> = Options2<TData, ThrowOnError> & {
     /**
@@ -24,7 +24,7 @@ export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends 
 export const listAlerts = <ThrowOnError extends boolean = false>(options?: Options<ListAlertsData, ThrowOnError>) => (options?.client ?? client).get<ListAlertsResponses, ListAlertsErrors, ThrowOnError>({
     security: [{
             in: 'cookie',
-            name: 'rez_auth_session',
+            name: 'rez_access_token',
             type: 'apiKey'
         }, { scheme: 'bearer', type: 'http' }],
     url: '/alerts',
@@ -37,7 +37,7 @@ export const listAlerts = <ThrowOnError extends boolean = false>(options?: Optio
 export const getAlert = <ThrowOnError extends boolean = false>(options: Options<GetAlertData, ThrowOnError>) => (options.client ?? client).get<GetAlertResponses, GetAlertErrors, ThrowOnError>({
     security: [{
             in: 'cookie',
-            name: 'rez_auth_session',
+            name: 'rez_access_token',
             type: 'apiKey'
         }, { scheme: 'bearer', type: 'http' }],
     url: '/alerts/{id}',
@@ -50,7 +50,7 @@ export const getAlert = <ThrowOnError extends boolean = false>(options: Options<
 export const listAlertIncidentLinks = <ThrowOnError extends boolean = false>(options: Options<ListAlertIncidentLinksData, ThrowOnError>) => (options.client ?? client).get<ListAlertIncidentLinksResponses, ListAlertIncidentLinksErrors, ThrowOnError>({
     security: [{
             in: 'cookie',
-            name: 'rez_auth_session',
+            name: 'rez_access_token',
             type: 'apiKey'
         }, { scheme: 'bearer', type: 'http' }],
     url: '/alerts/{id}/incident_links',
@@ -63,7 +63,7 @@ export const listAlertIncidentLinks = <ThrowOnError extends boolean = false>(opt
 export const getAlertMetrics = <ThrowOnError extends boolean = false>(options: Options<GetAlertMetricsData, ThrowOnError>) => (options.client ?? client).get<GetAlertMetricsResponses, GetAlertMetricsErrors, ThrowOnError>({
     security: [{
             in: 'cookie',
-            name: 'rez_auth_session',
+            name: 'rez_access_token',
             type: 'apiKey'
         }, { scheme: 'bearer', type: 'http' }],
     url: '/alerts/{id}/metrics',
@@ -71,12 +71,12 @@ export const getAlertMetrics = <ThrowOnError extends boolean = false>(options: O
 });
 
 /**
- * Get the Auth Session for the Current User
+ * Get the current Auth Session
  */
 export const getCurrentAuthSession = <ThrowOnError extends boolean = false>(options?: Options<GetCurrentAuthSessionData, ThrowOnError>) => (options?.client ?? client).get<GetCurrentAuthSessionResponses, GetCurrentAuthSessionErrors, ThrowOnError>({
     security: [{
             in: 'cookie',
-            name: 'rez_auth_session',
+            name: 'rez_access_token',
             type: 'apiKey'
         }, { scheme: 'bearer', type: 'http' }],
     url: '/auth_session',
@@ -84,15 +84,32 @@ export const getCurrentAuthSession = <ThrowOnError extends boolean = false>(opti
 });
 
 /**
- * Get the Auth Session config
+ * Complete an Auth Session flow
  */
-export const getAuthSessionConfig = <ThrowOnError extends boolean = false>(options?: Options<GetAuthSessionConfigData, ThrowOnError>) => (options?.client ?? client).get<GetAuthSessionConfigResponses, GetAuthSessionConfigErrors, ThrowOnError>({
+export const completeAuthSessionFlow = <ThrowOnError extends boolean = false>(options: Options<CompleteAuthSessionFlowData, ThrowOnError>) => (options.client ?? client).post<CompleteAuthSessionFlowResponses, CompleteAuthSessionFlowErrors, ThrowOnError>({
     security: [{
             in: 'cookie',
-            name: 'rez_auth_session',
+            name: 'rez_access_token',
             type: 'apiKey'
         }, { scheme: 'bearer', type: 'http' }],
-    url: '/auth_session/config',
+    url: '/auth_session',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Clear an active Auth Session
+ */
+export const clearAuthSession = <ThrowOnError extends boolean = false>(options?: Options<ClearAuthSessionData, ThrowOnError>) => (options?.client ?? client).post<ClearAuthSessionResponses, ClearAuthSessionErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'rez_access_token',
+            type: 'apiKey'
+        }],
+    url: '/auth_session/clear',
     ...options
 });
 
@@ -102,10 +119,23 @@ export const getAuthSessionConfig = <ThrowOnError extends boolean = false>(optio
 export const listUserNotifications = <ThrowOnError extends boolean = false>(options?: Options<ListUserNotificationsData, ThrowOnError>) => (options?.client ?? client).get<ListUserNotificationsResponses, ListUserNotificationsErrors, ThrowOnError>({
     security: [{
             in: 'cookie',
-            name: 'rez_auth_session',
+            name: 'rez_access_token',
             type: 'apiKey'
         }, { scheme: 'bearer', type: 'http' }],
-    url: '/auth_session/user/notifications',
+    url: '/auth_session/notifications',
+    ...options
+});
+
+/**
+ * Refresh an active Auth Session
+ */
+export const refreshAuthSession = <ThrowOnError extends boolean = false>(options?: Options<RefreshAuthSessionData, ThrowOnError>) => (options?.client ?? client).post<RefreshAuthSessionResponses, RefreshAuthSessionErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'rez_access_token',
+            type: 'apiKey'
+        }],
+    url: '/auth_session/refresh',
     ...options
 });
 
@@ -115,7 +145,7 @@ export const listUserNotifications = <ThrowOnError extends boolean = false>(opti
 export const listDebriefQuestions = <ThrowOnError extends boolean = false>(options?: Options<ListDebriefQuestionsData, ThrowOnError>) => (options?.client ?? client).get<ListDebriefQuestionsResponses, ListDebriefQuestionsErrors, ThrowOnError>({
     security: [{
             in: 'cookie',
-            name: 'rez_auth_session',
+            name: 'rez_access_token',
             type: 'apiKey'
         }, { scheme: 'bearer', type: 'http' }],
     url: '/debrief_questions',
@@ -128,7 +158,7 @@ export const listDebriefQuestions = <ThrowOnError extends boolean = false>(optio
 export const createDebriefQuestion = <ThrowOnError extends boolean = false>(options: Options<CreateDebriefQuestionData, ThrowOnError>) => (options.client ?? client).post<CreateDebriefQuestionResponses, CreateDebriefQuestionErrors, ThrowOnError>({
     security: [{
             in: 'cookie',
-            name: 'rez_auth_session',
+            name: 'rez_access_token',
             type: 'apiKey'
         }, { scheme: 'bearer', type: 'http' }],
     url: '/debrief_questions',
@@ -145,7 +175,7 @@ export const createDebriefQuestion = <ThrowOnError extends boolean = false>(opti
 export const archiveDebriefQuestion = <ThrowOnError extends boolean = false>(options: Options<ArchiveDebriefQuestionData, ThrowOnError>) => (options.client ?? client).delete<ArchiveDebriefQuestionResponses, ArchiveDebriefQuestionErrors, ThrowOnError>({
     security: [{
             in: 'cookie',
-            name: 'rez_auth_session',
+            name: 'rez_access_token',
             type: 'apiKey'
         }, { scheme: 'bearer', type: 'http' }],
     url: '/debrief_questions/{id}',
@@ -158,7 +188,7 @@ export const archiveDebriefQuestion = <ThrowOnError extends boolean = false>(opt
 export const getDebriefQuestion = <ThrowOnError extends boolean = false>(options: Options<GetDebriefQuestionData, ThrowOnError>) => (options.client ?? client).get<GetDebriefQuestionResponses, GetDebriefQuestionErrors, ThrowOnError>({
     security: [{
             in: 'cookie',
-            name: 'rez_auth_session',
+            name: 'rez_access_token',
             type: 'apiKey'
         }, { scheme: 'bearer', type: 'http' }],
     url: '/debrief_questions/{id}',
@@ -171,7 +201,7 @@ export const getDebriefQuestion = <ThrowOnError extends boolean = false>(options
 export const updateDebriefQuestion = <ThrowOnError extends boolean = false>(options: Options<UpdateDebriefQuestionData, ThrowOnError>) => (options.client ?? client).patch<UpdateDebriefQuestionResponses, UpdateDebriefQuestionErrors, ThrowOnError>({
     security: [{
             in: 'cookie',
-            name: 'rez_auth_session',
+            name: 'rez_access_token',
             type: 'apiKey'
         }, { scheme: 'bearer', type: 'http' }],
     url: '/debrief_questions/{id}',
@@ -183,25 +213,12 @@ export const updateDebriefQuestion = <ThrowOnError extends boolean = false>(opti
 });
 
 /**
- * Verify document session auth
- */
-export const verifyDocumentSessionAuth = <ThrowOnError extends boolean = false>(options: Options<VerifyDocumentSessionAuthData, ThrowOnError>) => (options.client ?? client).get<VerifyDocumentSessionAuthResponses, VerifyDocumentSessionAuthErrors, ThrowOnError>({
-    security: [{
-            in: 'cookie',
-            name: 'rez_auth_session',
-            type: 'apiKey'
-        }, { scheme: 'bearer', type: 'http' }],
-    url: '/documents/{id}/auth',
-    ...options
-});
-
-/**
  * Load document
  */
 export const loadDocument = <ThrowOnError extends boolean = false>(options: Options<LoadDocumentData, ThrowOnError>) => (options.client ?? client).get<LoadDocumentResponses, LoadDocumentErrors, ThrowOnError>({
     security: [{
             in: 'cookie',
-            name: 'rez_auth_session',
+            name: 'rez_access_token',
             type: 'apiKey'
         }, { scheme: 'bearer', type: 'http' }],
     url: '/documents/{id}/load',
@@ -214,7 +231,7 @@ export const loadDocument = <ThrowOnError extends boolean = false>(options: Opti
 export const requestDocumentEditorSession = <ThrowOnError extends boolean = false>(options: Options<RequestDocumentEditorSessionData, ThrowOnError>) => (options.client ?? client).post<RequestDocumentEditorSessionResponses, RequestDocumentEditorSessionErrors, ThrowOnError>({
     security: [{
             in: 'cookie',
-            name: 'rez_auth_session',
+            name: 'rez_access_token',
             type: 'apiKey'
         }, { scheme: 'bearer', type: 'http' }],
     url: '/documents/{id}/session',
@@ -227,7 +244,7 @@ export const requestDocumentEditorSession = <ThrowOnError extends boolean = fals
 export const updateDocument = <ThrowOnError extends boolean = false>(options: Options<UpdateDocumentData, ThrowOnError>) => (options.client ?? client).post<UpdateDocumentResponses, UpdateDocumentErrors, ThrowOnError>({
     security: [{
             in: 'cookie',
-            name: 'rez_auth_session',
+            name: 'rez_access_token',
             type: 'apiKey'
         }, { scheme: 'bearer', type: 'http' }],
     url: '/documents/{id}/update',
@@ -244,7 +261,7 @@ export const updateDocument = <ThrowOnError extends boolean = false>(options: Op
 export const listEventAnnotations = <ThrowOnError extends boolean = false>(options?: Options<ListEventAnnotationsData, ThrowOnError>) => (options?.client ?? client).get<ListEventAnnotationsResponses, ListEventAnnotationsErrors, ThrowOnError>({
     security: [{
             in: 'cookie',
-            name: 'rez_auth_session',
+            name: 'rez_access_token',
             type: 'apiKey'
         }, { scheme: 'bearer', type: 'http' }],
     url: '/event_annotations',
@@ -257,7 +274,7 @@ export const listEventAnnotations = <ThrowOnError extends boolean = false>(optio
 export const createEventAnnotation = <ThrowOnError extends boolean = false>(options: Options<CreateEventAnnotationData, ThrowOnError>) => (options.client ?? client).post<CreateEventAnnotationResponses, CreateEventAnnotationErrors, ThrowOnError>({
     security: [{
             in: 'cookie',
-            name: 'rez_auth_session',
+            name: 'rez_access_token',
             type: 'apiKey'
         }, { scheme: 'bearer', type: 'http' }],
     url: '/event_annotations',
@@ -274,7 +291,7 @@ export const createEventAnnotation = <ThrowOnError extends boolean = false>(opti
 export const deleteEventAnnotation = <ThrowOnError extends boolean = false>(options: Options<DeleteEventAnnotationData, ThrowOnError>) => (options.client ?? client).delete<DeleteEventAnnotationResponses, DeleteEventAnnotationErrors, ThrowOnError>({
     security: [{
             in: 'cookie',
-            name: 'rez_auth_session',
+            name: 'rez_access_token',
             type: 'apiKey'
         }, { scheme: 'bearer', type: 'http' }],
     url: '/event_annotations/{id}',
@@ -287,7 +304,7 @@ export const deleteEventAnnotation = <ThrowOnError extends boolean = false>(opti
 export const updateEventAnnotation = <ThrowOnError extends boolean = false>(options: Options<UpdateEventAnnotationData, ThrowOnError>) => (options.client ?? client).patch<UpdateEventAnnotationResponses, UpdateEventAnnotationErrors, ThrowOnError>({
     security: [{
             in: 'cookie',
-            name: 'rez_auth_session',
+            name: 'rez_access_token',
             type: 'apiKey'
         }, { scheme: 'bearer', type: 'http' }],
     url: '/event_annotations/{id}',
@@ -304,7 +321,7 @@ export const updateEventAnnotation = <ThrowOnError extends boolean = false>(opti
 export const listEvents = <ThrowOnError extends boolean = false>(options?: Options<ListEventsData, ThrowOnError>) => (options?.client ?? client).get<ListEventsResponses, ListEventsErrors, ThrowOnError>({
     security: [{
             in: 'cookie',
-            name: 'rez_auth_session',
+            name: 'rez_access_token',
             type: 'apiKey'
         }, { scheme: 'bearer', type: 'http' }],
     url: '/events',
@@ -317,7 +334,7 @@ export const listEvents = <ThrowOnError extends boolean = false>(options?: Optio
 export const getEvent = <ThrowOnError extends boolean = false>(options: Options<GetEventData, ThrowOnError>) => (options.client ?? client).get<GetEventResponses, GetEventErrors, ThrowOnError>({
     security: [{
             in: 'cookie',
-            name: 'rez_auth_session',
+            name: 'rez_access_token',
             type: 'apiKey'
         }, { scheme: 'bearer', type: 'http' }],
     url: '/events/{id}',
@@ -330,7 +347,7 @@ export const getEvent = <ThrowOnError extends boolean = false>(options: Options<
 export const getIncidentDebrief = <ThrowOnError extends boolean = false>(options: Options<GetIncidentDebriefData, ThrowOnError>) => (options.client ?? client).get<GetIncidentDebriefResponses, GetIncidentDebriefErrors, ThrowOnError>({
     security: [{
             in: 'cookie',
-            name: 'rez_auth_session',
+            name: 'rez_access_token',
             type: 'apiKey'
         }, { scheme: 'bearer', type: 'http' }],
     url: '/incident_debriefs/{id}',
@@ -343,7 +360,7 @@ export const getIncidentDebrief = <ThrowOnError extends boolean = false>(options
 export const updateIncidentDebrief = <ThrowOnError extends boolean = false>(options: Options<UpdateIncidentDebriefData, ThrowOnError>) => (options.client ?? client).patch<UpdateIncidentDebriefResponses, UpdateIncidentDebriefErrors, ThrowOnError>({
     security: [{
             in: 'cookie',
-            name: 'rez_auth_session',
+            name: 'rez_access_token',
             type: 'apiKey'
         }, { scheme: 'bearer', type: 'http' }],
     url: '/incident_debriefs/{id}',
@@ -360,7 +377,7 @@ export const updateIncidentDebrief = <ThrowOnError extends boolean = false>(opti
 export const listDebriefMessages = <ThrowOnError extends boolean = false>(options: Options<ListDebriefMessagesData, ThrowOnError>) => (options.client ?? client).get<ListDebriefMessagesResponses, ListDebriefMessagesErrors, ThrowOnError>({
     security: [{
             in: 'cookie',
-            name: 'rez_auth_session',
+            name: 'rez_access_token',
             type: 'apiKey'
         }, { scheme: 'bearer', type: 'http' }],
     url: '/incident_debriefs/{id}/messages',
@@ -373,7 +390,7 @@ export const listDebriefMessages = <ThrowOnError extends boolean = false>(option
 export const addIncidentDebriefUserMessage = <ThrowOnError extends boolean = false>(options: Options<AddIncidentDebriefUserMessageData, ThrowOnError>) => (options.client ?? client).post<AddIncidentDebriefUserMessageResponses, AddIncidentDebriefUserMessageErrors, ThrowOnError>({
     security: [{
             in: 'cookie',
-            name: 'rez_auth_session',
+            name: 'rez_access_token',
             type: 'apiKey'
         }, { scheme: 'bearer', type: 'http' }],
     url: '/incident_debriefs/{id}/messages',
@@ -390,7 +407,7 @@ export const addIncidentDebriefUserMessage = <ThrowOnError extends boolean = fal
 export const listDebriefSuggestions = <ThrowOnError extends boolean = false>(options: Options<ListDebriefSuggestionsData, ThrowOnError>) => (options.client ?? client).get<ListDebriefSuggestionsResponses, ListDebriefSuggestionsErrors, ThrowOnError>({
     security: [{
             in: 'cookie',
-            name: 'rez_auth_session',
+            name: 'rez_access_token',
             type: 'apiKey'
         }, { scheme: 'bearer', type: 'http' }],
     url: '/incident_debriefs/{id}/suggestions',
@@ -403,7 +420,7 @@ export const listDebriefSuggestions = <ThrowOnError extends boolean = false>(opt
 export const listIncidentEventContributingFactorCategories = <ThrowOnError extends boolean = false>(options?: Options<ListIncidentEventContributingFactorCategoriesData, ThrowOnError>) => (options?.client ?? client).get<ListIncidentEventContributingFactorCategoriesResponses, ListIncidentEventContributingFactorCategoriesErrors, ThrowOnError>({
     security: [{
             in: 'cookie',
-            name: 'rez_auth_session',
+            name: 'rez_access_token',
             type: 'apiKey'
         }, { scheme: 'bearer', type: 'http' }],
     url: '/incident_event_contributing_factor_categories',
@@ -416,7 +433,7 @@ export const listIncidentEventContributingFactorCategories = <ThrowOnError exten
 export const deleteIncidentEvent = <ThrowOnError extends boolean = false>(options: Options<DeleteIncidentEventData, ThrowOnError>) => (options.client ?? client).delete<DeleteIncidentEventResponses, DeleteIncidentEventErrors, ThrowOnError>({
     security: [{
             in: 'cookie',
-            name: 'rez_auth_session',
+            name: 'rez_access_token',
             type: 'apiKey'
         }, { scheme: 'bearer', type: 'http' }],
     url: '/incident_events/{id}',
@@ -429,7 +446,7 @@ export const deleteIncidentEvent = <ThrowOnError extends boolean = false>(option
 export const updateIncidentEvent = <ThrowOnError extends boolean = false>(options: Options<UpdateIncidentEventData, ThrowOnError>) => (options.client ?? client).patch<UpdateIncidentEventResponses, UpdateIncidentEventErrors, ThrowOnError>({
     security: [{
             in: 'cookie',
-            name: 'rez_auth_session',
+            name: 'rez_access_token',
             type: 'apiKey'
         }, { scheme: 'bearer', type: 'http' }],
     url: '/incident_events/{id}',
@@ -446,7 +463,7 @@ export const updateIncidentEvent = <ThrowOnError extends boolean = false>(option
 export const listIncidentFields = <ThrowOnError extends boolean = false>(options?: Options<ListIncidentFieldsData, ThrowOnError>) => (options?.client ?? client).get<ListIncidentFieldsResponses, ListIncidentFieldsErrors, ThrowOnError>({
     security: [{
             in: 'cookie',
-            name: 'rez_auth_session',
+            name: 'rez_access_token',
             type: 'apiKey'
         }, { scheme: 'bearer', type: 'http' }],
     url: '/incident_fields',
@@ -459,7 +476,7 @@ export const listIncidentFields = <ThrowOnError extends boolean = false>(options
 export const createIncidentField = <ThrowOnError extends boolean = false>(options: Options<CreateIncidentFieldData, ThrowOnError>) => (options.client ?? client).post<CreateIncidentFieldResponses, CreateIncidentFieldErrors, ThrowOnError>({
     security: [{
             in: 'cookie',
-            name: 'rez_auth_session',
+            name: 'rez_access_token',
             type: 'apiKey'
         }, { scheme: 'bearer', type: 'http' }],
     url: '/incident_fields',
@@ -476,7 +493,7 @@ export const createIncidentField = <ThrowOnError extends boolean = false>(option
 export const archiveIncidentField = <ThrowOnError extends boolean = false>(options: Options<ArchiveIncidentFieldData, ThrowOnError>) => (options.client ?? client).delete<ArchiveIncidentFieldResponses, ArchiveIncidentFieldErrors, ThrowOnError>({
     security: [{
             in: 'cookie',
-            name: 'rez_auth_session',
+            name: 'rez_access_token',
             type: 'apiKey'
         }, { scheme: 'bearer', type: 'http' }],
     url: '/incident_fields/{id}',
@@ -489,7 +506,7 @@ export const archiveIncidentField = <ThrowOnError extends boolean = false>(optio
 export const getIncidentField = <ThrowOnError extends boolean = false>(options: Options<GetIncidentFieldData, ThrowOnError>) => (options.client ?? client).get<GetIncidentFieldResponses, GetIncidentFieldErrors, ThrowOnError>({
     security: [{
             in: 'cookie',
-            name: 'rez_auth_session',
+            name: 'rez_access_token',
             type: 'apiKey'
         }, { scheme: 'bearer', type: 'http' }],
     url: '/incident_fields/{id}',
@@ -502,7 +519,7 @@ export const getIncidentField = <ThrowOnError extends boolean = false>(options: 
 export const updateIncidentField = <ThrowOnError extends boolean = false>(options: Options<UpdateIncidentFieldData, ThrowOnError>) => (options.client ?? client).patch<UpdateIncidentFieldResponses, UpdateIncidentFieldErrors, ThrowOnError>({
     security: [{
             in: 'cookie',
-            name: 'rez_auth_session',
+            name: 'rez_access_token',
             type: 'apiKey'
         }, { scheme: 'bearer', type: 'http' }],
     url: '/incident_fields/{id}',
@@ -519,7 +536,7 @@ export const updateIncidentField = <ThrowOnError extends boolean = false>(option
 export const deleteIncidentMilestone = <ThrowOnError extends boolean = false>(options: Options<DeleteIncidentMilestoneData, ThrowOnError>) => (options.client ?? client).delete<DeleteIncidentMilestoneResponses, DeleteIncidentMilestoneErrors, ThrowOnError>({
     security: [{
             in: 'cookie',
-            name: 'rez_auth_session',
+            name: 'rez_access_token',
             type: 'apiKey'
         }, { scheme: 'bearer', type: 'http' }],
     url: '/incident_milestones/{id}',
@@ -532,7 +549,7 @@ export const deleteIncidentMilestone = <ThrowOnError extends boolean = false>(op
 export const updateIncidentMilestone = <ThrowOnError extends boolean = false>(options: Options<UpdateIncidentMilestoneData, ThrowOnError>) => (options.client ?? client).patch<UpdateIncidentMilestoneResponses, UpdateIncidentMilestoneErrors, ThrowOnError>({
     security: [{
             in: 'cookie',
-            name: 'rez_auth_session',
+            name: 'rez_access_token',
             type: 'apiKey'
         }, { scheme: 'bearer', type: 'http' }],
     url: '/incident_milestones/{id}',
@@ -549,7 +566,7 @@ export const updateIncidentMilestone = <ThrowOnError extends boolean = false>(op
 export const listIncidentRoles = <ThrowOnError extends boolean = false>(options?: Options<ListIncidentRolesData, ThrowOnError>) => (options?.client ?? client).get<ListIncidentRolesResponses, ListIncidentRolesErrors, ThrowOnError>({
     security: [{
             in: 'cookie',
-            name: 'rez_auth_session',
+            name: 'rez_access_token',
             type: 'apiKey'
         }, { scheme: 'bearer', type: 'http' }],
     url: '/incident_roles',
@@ -562,7 +579,7 @@ export const listIncidentRoles = <ThrowOnError extends boolean = false>(options?
 export const createIncidentRole = <ThrowOnError extends boolean = false>(options: Options<CreateIncidentRoleData, ThrowOnError>) => (options.client ?? client).post<CreateIncidentRoleResponses, CreateIncidentRoleErrors, ThrowOnError>({
     security: [{
             in: 'cookie',
-            name: 'rez_auth_session',
+            name: 'rez_access_token',
             type: 'apiKey'
         }, { scheme: 'bearer', type: 'http' }],
     url: '/incident_roles',
@@ -579,7 +596,7 @@ export const createIncidentRole = <ThrowOnError extends boolean = false>(options
 export const archiveIncidentRole = <ThrowOnError extends boolean = false>(options: Options<ArchiveIncidentRoleData, ThrowOnError>) => (options.client ?? client).delete<ArchiveIncidentRoleResponses, ArchiveIncidentRoleErrors, ThrowOnError>({
     security: [{
             in: 'cookie',
-            name: 'rez_auth_session',
+            name: 'rez_access_token',
             type: 'apiKey'
         }, { scheme: 'bearer', type: 'http' }],
     url: '/incident_roles/{id}',
@@ -592,7 +609,7 @@ export const archiveIncidentRole = <ThrowOnError extends boolean = false>(option
 export const getIncidentRole = <ThrowOnError extends boolean = false>(options: Options<GetIncidentRoleData, ThrowOnError>) => (options.client ?? client).get<GetIncidentRoleResponses, GetIncidentRoleErrors, ThrowOnError>({
     security: [{
             in: 'cookie',
-            name: 'rez_auth_session',
+            name: 'rez_access_token',
             type: 'apiKey'
         }, { scheme: 'bearer', type: 'http' }],
     url: '/incident_roles/{id}',
@@ -605,7 +622,7 @@ export const getIncidentRole = <ThrowOnError extends boolean = false>(options: O
 export const updateIncidentRole = <ThrowOnError extends boolean = false>(options: Options<UpdateIncidentRoleData, ThrowOnError>) => (options.client ?? client).patch<UpdateIncidentRoleResponses, UpdateIncidentRoleErrors, ThrowOnError>({
     security: [{
             in: 'cookie',
-            name: 'rez_auth_session',
+            name: 'rez_access_token',
             type: 'apiKey'
         }, { scheme: 'bearer', type: 'http' }],
     url: '/incident_roles/{id}',
@@ -622,7 +639,7 @@ export const updateIncidentRole = <ThrowOnError extends boolean = false>(options
 export const listIncidentSeverities = <ThrowOnError extends boolean = false>(options?: Options<ListIncidentSeveritiesData, ThrowOnError>) => (options?.client ?? client).get<ListIncidentSeveritiesResponses, ListIncidentSeveritiesErrors, ThrowOnError>({
     security: [{
             in: 'cookie',
-            name: 'rez_auth_session',
+            name: 'rez_access_token',
             type: 'apiKey'
         }, { scheme: 'bearer', type: 'http' }],
     url: '/incident_severities',
@@ -635,7 +652,7 @@ export const listIncidentSeverities = <ThrowOnError extends boolean = false>(opt
 export const createIncidentSeverity = <ThrowOnError extends boolean = false>(options: Options<CreateIncidentSeverityData, ThrowOnError>) => (options.client ?? client).post<CreateIncidentSeverityResponses, CreateIncidentSeverityErrors, ThrowOnError>({
     security: [{
             in: 'cookie',
-            name: 'rez_auth_session',
+            name: 'rez_access_token',
             type: 'apiKey'
         }, { scheme: 'bearer', type: 'http' }],
     url: '/incident_severities',
@@ -652,7 +669,7 @@ export const createIncidentSeverity = <ThrowOnError extends boolean = false>(opt
 export const archiveIncidentSeverity = <ThrowOnError extends boolean = false>(options: Options<ArchiveIncidentSeverityData, ThrowOnError>) => (options.client ?? client).delete<ArchiveIncidentSeverityResponses, ArchiveIncidentSeverityErrors, ThrowOnError>({
     security: [{
             in: 'cookie',
-            name: 'rez_auth_session',
+            name: 'rez_access_token',
             type: 'apiKey'
         }, { scheme: 'bearer', type: 'http' }],
     url: '/incident_severities/{id}',
@@ -665,7 +682,7 @@ export const archiveIncidentSeverity = <ThrowOnError extends boolean = false>(op
 export const getIncidentSeverity = <ThrowOnError extends boolean = false>(options: Options<GetIncidentSeverityData, ThrowOnError>) => (options.client ?? client).get<GetIncidentSeverityResponses, GetIncidentSeverityErrors, ThrowOnError>({
     security: [{
             in: 'cookie',
-            name: 'rez_auth_session',
+            name: 'rez_access_token',
             type: 'apiKey'
         }, { scheme: 'bearer', type: 'http' }],
     url: '/incident_severities/{id}',
@@ -678,7 +695,7 @@ export const getIncidentSeverity = <ThrowOnError extends boolean = false>(option
 export const updateIncidentSeverity = <ThrowOnError extends boolean = false>(options: Options<UpdateIncidentSeverityData, ThrowOnError>) => (options.client ?? client).patch<UpdateIncidentSeverityResponses, UpdateIncidentSeverityErrors, ThrowOnError>({
     security: [{
             in: 'cookie',
-            name: 'rez_auth_session',
+            name: 'rez_access_token',
             type: 'apiKey'
         }, { scheme: 'bearer', type: 'http' }],
     url: '/incident_severities/{id}',
@@ -695,7 +712,7 @@ export const updateIncidentSeverity = <ThrowOnError extends boolean = false>(opt
 export const listIncidentTags = <ThrowOnError extends boolean = false>(options?: Options<ListIncidentTagsData, ThrowOnError>) => (options?.client ?? client).get<ListIncidentTagsResponses, ListIncidentTagsErrors, ThrowOnError>({
     security: [{
             in: 'cookie',
-            name: 'rez_auth_session',
+            name: 'rez_access_token',
             type: 'apiKey'
         }, { scheme: 'bearer', type: 'http' }],
     url: '/incident_tags',
@@ -708,7 +725,7 @@ export const listIncidentTags = <ThrowOnError extends boolean = false>(options?:
 export const createIncidentTag = <ThrowOnError extends boolean = false>(options: Options<CreateIncidentTagData, ThrowOnError>) => (options.client ?? client).post<CreateIncidentTagResponses, CreateIncidentTagErrors, ThrowOnError>({
     security: [{
             in: 'cookie',
-            name: 'rez_auth_session',
+            name: 'rez_access_token',
             type: 'apiKey'
         }, { scheme: 'bearer', type: 'http' }],
     url: '/incident_tags',
@@ -725,7 +742,7 @@ export const createIncidentTag = <ThrowOnError extends boolean = false>(options:
 export const archiveIncidentTag = <ThrowOnError extends boolean = false>(options: Options<ArchiveIncidentTagData, ThrowOnError>) => (options.client ?? client).delete<ArchiveIncidentTagResponses, ArchiveIncidentTagErrors, ThrowOnError>({
     security: [{
             in: 'cookie',
-            name: 'rez_auth_session',
+            name: 'rez_access_token',
             type: 'apiKey'
         }, { scheme: 'bearer', type: 'http' }],
     url: '/incident_tags/{id}',
@@ -738,7 +755,7 @@ export const archiveIncidentTag = <ThrowOnError extends boolean = false>(options
 export const getIncidentTag = <ThrowOnError extends boolean = false>(options: Options<GetIncidentTagData, ThrowOnError>) => (options.client ?? client).get<GetIncidentTagResponses, GetIncidentTagErrors, ThrowOnError>({
     security: [{
             in: 'cookie',
-            name: 'rez_auth_session',
+            name: 'rez_access_token',
             type: 'apiKey'
         }, { scheme: 'bearer', type: 'http' }],
     url: '/incident_tags/{id}',
@@ -751,7 +768,7 @@ export const getIncidentTag = <ThrowOnError extends boolean = false>(options: Op
 export const updateIncidentTag = <ThrowOnError extends boolean = false>(options: Options<UpdateIncidentTagData, ThrowOnError>) => (options.client ?? client).patch<UpdateIncidentTagResponses, UpdateIncidentTagErrors, ThrowOnError>({
     security: [{
             in: 'cookie',
-            name: 'rez_auth_session',
+            name: 'rez_access_token',
             type: 'apiKey'
         }, { scheme: 'bearer', type: 'http' }],
     url: '/incident_tags/{id}',
@@ -768,7 +785,7 @@ export const updateIncidentTag = <ThrowOnError extends boolean = false>(options:
 export const listIncidentTypes = <ThrowOnError extends boolean = false>(options?: Options<ListIncidentTypesData, ThrowOnError>) => (options?.client ?? client).get<ListIncidentTypesResponses, ListIncidentTypesErrors, ThrowOnError>({
     security: [{
             in: 'cookie',
-            name: 'rez_auth_session',
+            name: 'rez_access_token',
             type: 'apiKey'
         }, { scheme: 'bearer', type: 'http' }],
     url: '/incident_types',
@@ -781,7 +798,7 @@ export const listIncidentTypes = <ThrowOnError extends boolean = false>(options?
 export const createIncidentType = <ThrowOnError extends boolean = false>(options: Options<CreateIncidentTypeData, ThrowOnError>) => (options.client ?? client).post<CreateIncidentTypeResponses, CreateIncidentTypeErrors, ThrowOnError>({
     security: [{
             in: 'cookie',
-            name: 'rez_auth_session',
+            name: 'rez_access_token',
             type: 'apiKey'
         }, { scheme: 'bearer', type: 'http' }],
     url: '/incident_types',
@@ -798,7 +815,7 @@ export const createIncidentType = <ThrowOnError extends boolean = false>(options
 export const archiveIncidentType = <ThrowOnError extends boolean = false>(options: Options<ArchiveIncidentTypeData, ThrowOnError>) => (options.client ?? client).delete<ArchiveIncidentTypeResponses, ArchiveIncidentTypeErrors, ThrowOnError>({
     security: [{
             in: 'cookie',
-            name: 'rez_auth_session',
+            name: 'rez_access_token',
             type: 'apiKey'
         }, { scheme: 'bearer', type: 'http' }],
     url: '/incident_types/{id}',
@@ -811,7 +828,7 @@ export const archiveIncidentType = <ThrowOnError extends boolean = false>(option
 export const getIncidentType = <ThrowOnError extends boolean = false>(options: Options<GetIncidentTypeData, ThrowOnError>) => (options.client ?? client).get<GetIncidentTypeResponses, GetIncidentTypeErrors, ThrowOnError>({
     security: [{
             in: 'cookie',
-            name: 'rez_auth_session',
+            name: 'rez_access_token',
             type: 'apiKey'
         }, { scheme: 'bearer', type: 'http' }],
     url: '/incident_types/{id}',
@@ -824,7 +841,7 @@ export const getIncidentType = <ThrowOnError extends boolean = false>(options: O
 export const updateIncidentType = <ThrowOnError extends boolean = false>(options: Options<UpdateIncidentTypeData, ThrowOnError>) => (options.client ?? client).patch<UpdateIncidentTypeResponses, UpdateIncidentTypeErrors, ThrowOnError>({
     security: [{
             in: 'cookie',
-            name: 'rez_auth_session',
+            name: 'rez_access_token',
             type: 'apiKey'
         }, { scheme: 'bearer', type: 'http' }],
     url: '/incident_types/{id}',
@@ -841,7 +858,7 @@ export const updateIncidentType = <ThrowOnError extends boolean = false>(options
 export const listIncidents = <ThrowOnError extends boolean = false>(options?: Options<ListIncidentsData, ThrowOnError>) => (options?.client ?? client).get<ListIncidentsResponses, ListIncidentsErrors, ThrowOnError>({
     security: [{
             in: 'cookie',
-            name: 'rez_auth_session',
+            name: 'rez_access_token',
             type: 'apiKey'
         }, { scheme: 'bearer', type: 'http' }],
     url: '/incidents',
@@ -854,7 +871,7 @@ export const listIncidents = <ThrowOnError extends boolean = false>(options?: Op
 export const createIncident = <ThrowOnError extends boolean = false>(options: Options<CreateIncidentData, ThrowOnError>) => (options.client ?? client).post<CreateIncidentResponses, CreateIncidentErrors, ThrowOnError>({
     security: [{
             in: 'cookie',
-            name: 'rez_auth_session',
+            name: 'rez_access_token',
             type: 'apiKey'
         }, { scheme: 'bearer', type: 'http' }],
     url: '/incidents',
@@ -871,7 +888,7 @@ export const createIncident = <ThrowOnError extends boolean = false>(options: Op
 export const archiveIncident = <ThrowOnError extends boolean = false>(options: Options<ArchiveIncidentData, ThrowOnError>) => (options.client ?? client).delete<ArchiveIncidentResponses, ArchiveIncidentErrors, ThrowOnError>({
     security: [{
             in: 'cookie',
-            name: 'rez_auth_session',
+            name: 'rez_access_token',
             type: 'apiKey'
         }, { scheme: 'bearer', type: 'http' }],
     url: '/incidents/{id}',
@@ -884,7 +901,7 @@ export const archiveIncident = <ThrowOnError extends boolean = false>(options: O
 export const getIncident = <ThrowOnError extends boolean = false>(options: Options<GetIncidentData, ThrowOnError>) => (options.client ?? client).get<GetIncidentResponses, GetIncidentErrors, ThrowOnError>({
     security: [{
             in: 'cookie',
-            name: 'rez_auth_session',
+            name: 'rez_access_token',
             type: 'apiKey'
         }, { scheme: 'bearer', type: 'http' }],
     url: '/incidents/{id}',
@@ -897,7 +914,7 @@ export const getIncident = <ThrowOnError extends boolean = false>(options: Optio
 export const updateIncident = <ThrowOnError extends boolean = false>(options: Options<UpdateIncidentData, ThrowOnError>) => (options.client ?? client).patch<UpdateIncidentResponses, UpdateIncidentErrors, ThrowOnError>({
     security: [{
             in: 'cookie',
-            name: 'rez_auth_session',
+            name: 'rez_access_token',
             type: 'apiKey'
         }, { scheme: 'bearer', type: 'http' }],
     url: '/incidents/{id}',
@@ -914,7 +931,7 @@ export const updateIncident = <ThrowOnError extends boolean = false>(options: Op
 export const getIncidentUserDebrief = <ThrowOnError extends boolean = false>(options: Options<GetIncidentUserDebriefData, ThrowOnError>) => (options.client ?? client).get<GetIncidentUserDebriefResponses, GetIncidentUserDebriefErrors, ThrowOnError>({
     security: [{
             in: 'cookie',
-            name: 'rez_auth_session',
+            name: 'rez_access_token',
             type: 'apiKey'
         }, { scheme: 'bearer', type: 'http' }],
     url: '/incidents/{id}/debrief',
@@ -927,7 +944,7 @@ export const getIncidentUserDebrief = <ThrowOnError extends boolean = false>(opt
 export const listIncidentEvents = <ThrowOnError extends boolean = false>(options: Options<ListIncidentEventsData, ThrowOnError>) => (options.client ?? client).get<ListIncidentEventsResponses, ListIncidentEventsErrors, ThrowOnError>({
     security: [{
             in: 'cookie',
-            name: 'rez_auth_session',
+            name: 'rez_access_token',
             type: 'apiKey'
         }, { scheme: 'bearer', type: 'http' }],
     url: '/incidents/{id}/events',
@@ -940,7 +957,7 @@ export const listIncidentEvents = <ThrowOnError extends boolean = false>(options
 export const createIncidentEvent = <ThrowOnError extends boolean = false>(options: Options<CreateIncidentEventData, ThrowOnError>) => (options.client ?? client).post<CreateIncidentEventResponses, CreateIncidentEventErrors, ThrowOnError>({
     security: [{
             in: 'cookie',
-            name: 'rez_auth_session',
+            name: 'rez_access_token',
             type: 'apiKey'
         }, { scheme: 'bearer', type: 'http' }],
     url: '/incidents/{id}/events',
@@ -957,7 +974,7 @@ export const createIncidentEvent = <ThrowOnError extends boolean = false>(option
 export const listIncidentMilestones = <ThrowOnError extends boolean = false>(options: Options<ListIncidentMilestonesData, ThrowOnError>) => (options.client ?? client).get<ListIncidentMilestonesResponses, ListIncidentMilestonesErrors, ThrowOnError>({
     security: [{
             in: 'cookie',
-            name: 'rez_auth_session',
+            name: 'rez_access_token',
             type: 'apiKey'
         }, { scheme: 'bearer', type: 'http' }],
     url: '/incidents/{id}/milestones',
@@ -970,7 +987,7 @@ export const listIncidentMilestones = <ThrowOnError extends boolean = false>(opt
 export const createIncidentMilestone = <ThrowOnError extends boolean = false>(options: Options<CreateIncidentMilestoneData, ThrowOnError>) => (options.client ?? client).post<CreateIncidentMilestoneResponses, CreateIncidentMilestoneErrors, ThrowOnError>({
     security: [{
             in: 'cookie',
-            name: 'rez_auth_session',
+            name: 'rez_access_token',
             type: 'apiKey'
         }, { scheme: 'bearer', type: 'http' }],
     url: '/incidents/{id}/milestones',
@@ -987,7 +1004,7 @@ export const createIncidentMilestone = <ThrowOnError extends boolean = false>(op
 export const getRetrospectiveForIncident = <ThrowOnError extends boolean = false>(options: Options<GetRetrospectiveForIncidentData, ThrowOnError>) => (options.client ?? client).get<GetRetrospectiveForIncidentResponses, GetRetrospectiveForIncidentErrors, ThrowOnError>({
     security: [{
             in: 'cookie',
-            name: 'rez_auth_session',
+            name: 'rez_access_token',
             type: 'apiKey'
         }, { scheme: 'bearer', type: 'http' }],
     url: '/incidents/{id}/retrospective',
@@ -1000,7 +1017,7 @@ export const getRetrospectiveForIncident = <ThrowOnError extends boolean = false
 export const listAvailableIntegrations = <ThrowOnError extends boolean = false>(options?: Options<ListAvailableIntegrationsData, ThrowOnError>) => (options?.client ?? client).get<ListAvailableIntegrationsResponses, ListAvailableIntegrationsErrors, ThrowOnError>({
     security: [{
             in: 'cookie',
-            name: 'rez_auth_session',
+            name: 'rez_access_token',
             type: 'apiKey'
         }, { scheme: 'bearer', type: 'http' }],
     url: '/integrations',
@@ -1013,7 +1030,7 @@ export const listAvailableIntegrations = <ThrowOnError extends boolean = false>(
 export const configureIntegration = <ThrowOnError extends boolean = false>(options: Options<ConfigureIntegrationData, ThrowOnError>) => (options.client ?? client).post<ConfigureIntegrationResponses, ConfigureIntegrationErrors, ThrowOnError>({
     security: [{
             in: 'cookie',
-            name: 'rez_auth_session',
+            name: 'rez_access_token',
             type: 'apiKey'
         }, { scheme: 'bearer', type: 'http' }],
     url: '/integrations/{name}',
@@ -1030,7 +1047,7 @@ export const configureIntegration = <ThrowOnError extends boolean = false>(optio
 export const listConfiguredIntegrations = <ThrowOnError extends boolean = false>(options?: Options<ListConfiguredIntegrationsData, ThrowOnError>) => (options?.client ?? client).get<ListConfiguredIntegrationsResponses, ListConfiguredIntegrationsErrors, ThrowOnError>({
     security: [{
             in: 'cookie',
-            name: 'rez_auth_session',
+            name: 'rez_access_token',
             type: 'apiKey'
         }, { scheme: 'bearer', type: 'http' }],
     url: '/integrations/configured',
@@ -1043,7 +1060,7 @@ export const listConfiguredIntegrations = <ThrowOnError extends boolean = false>
 export const deleteIntegration = <ThrowOnError extends boolean = false>(options: Options<DeleteIntegrationData, ThrowOnError>) => (options.client ?? client).delete<DeleteIntegrationResponses, DeleteIntegrationErrors, ThrowOnError>({
     security: [{
             in: 'cookie',
-            name: 'rez_auth_session',
+            name: 'rez_access_token',
             type: 'apiKey'
         }, { scheme: 'bearer', type: 'http' }],
     url: '/integrations/configured/{id}',
@@ -1056,7 +1073,7 @@ export const deleteIntegration = <ThrowOnError extends boolean = false>(options:
 export const getConfiguredIntegration = <ThrowOnError extends boolean = false>(options: Options<GetConfiguredIntegrationData, ThrowOnError>) => (options.client ?? client).get<GetConfiguredIntegrationResponses, GetConfiguredIntegrationErrors, ThrowOnError>({
     security: [{
             in: 'cookie',
-            name: 'rez_auth_session',
+            name: 'rez_access_token',
             type: 'apiKey'
         }, { scheme: 'bearer', type: 'http' }],
     url: '/integrations/configured/{name}',
@@ -1069,7 +1086,7 @@ export const getConfiguredIntegration = <ThrowOnError extends boolean = false>(o
 export const completeIntegrationOauthFlow = <ThrowOnError extends boolean = false>(options: Options<CompleteIntegrationOauthFlowData, ThrowOnError>) => (options.client ?? client).post<CompleteIntegrationOauthFlowResponses, CompleteIntegrationOauthFlowErrors, ThrowOnError>({
     security: [{
             in: 'cookie',
-            name: 'rez_auth_session',
+            name: 'rez_access_token',
             type: 'apiKey'
         }, { scheme: 'bearer', type: 'http' }],
     url: '/integrations/configured/{name}/complete_oauth_flow',
@@ -1086,7 +1103,7 @@ export const completeIntegrationOauthFlow = <ThrowOnError extends boolean = fals
 export const updateConfiguredIntegrationPreferences = <ThrowOnError extends boolean = false>(options: Options<UpdateConfiguredIntegrationPreferencesData, ThrowOnError>) => (options.client ?? client).post<UpdateConfiguredIntegrationPreferencesResponses, UpdateConfiguredIntegrationPreferencesErrors, ThrowOnError>({
     security: [{
             in: 'cookie',
-            name: 'rez_auth_session',
+            name: 'rez_access_token',
             type: 'apiKey'
         }, { scheme: 'bearer', type: 'http' }],
     url: '/integrations/configured/{name}/preferences',
@@ -1103,7 +1120,7 @@ export const updateConfiguredIntegrationPreferences = <ThrowOnError extends bool
 export const startIntegrationOauthFlow = <ThrowOnError extends boolean = false>(options: Options<StartIntegrationOauthFlowData, ThrowOnError>) => (options.client ?? client).post<StartIntegrationOauthFlowResponses, StartIntegrationOauthFlowErrors, ThrowOnError>({
     security: [{
             in: 'cookie',
-            name: 'rez_auth_session',
+            name: 'rez_access_token',
             type: 'apiKey'
         }, { scheme: 'bearer', type: 'http' }],
     url: '/integrations/configured/{name}/start_oauth_flow',
@@ -1120,7 +1137,7 @@ export const startIntegrationOauthFlow = <ThrowOnError extends boolean = false>(
 export const listMeetingSchedules = <ThrowOnError extends boolean = false>(options?: Options<ListMeetingSchedulesData, ThrowOnError>) => (options?.client ?? client).get<ListMeetingSchedulesResponses, ListMeetingSchedulesErrors, ThrowOnError>({
     security: [{
             in: 'cookie',
-            name: 'rez_auth_session',
+            name: 'rez_access_token',
             type: 'apiKey'
         }, { scheme: 'bearer', type: 'http' }],
     url: '/meeting_schedules',
@@ -1133,7 +1150,7 @@ export const listMeetingSchedules = <ThrowOnError extends boolean = false>(optio
 export const createMeetingSchedule = <ThrowOnError extends boolean = false>(options: Options<CreateMeetingScheduleData, ThrowOnError>) => (options.client ?? client).post<CreateMeetingScheduleResponses, CreateMeetingScheduleErrors, ThrowOnError>({
     security: [{
             in: 'cookie',
-            name: 'rez_auth_session',
+            name: 'rez_access_token',
             type: 'apiKey'
         }, { scheme: 'bearer', type: 'http' }],
     url: '/meeting_schedules',
@@ -1150,7 +1167,7 @@ export const createMeetingSchedule = <ThrowOnError extends boolean = false>(opti
 export const archiveMeetingSchedule = <ThrowOnError extends boolean = false>(options: Options<ArchiveMeetingScheduleData, ThrowOnError>) => (options.client ?? client).delete<ArchiveMeetingScheduleResponses, ArchiveMeetingScheduleErrors, ThrowOnError>({
     security: [{
             in: 'cookie',
-            name: 'rez_auth_session',
+            name: 'rez_access_token',
             type: 'apiKey'
         }, { scheme: 'bearer', type: 'http' }],
     url: '/meeting_schedules/{id}',
@@ -1163,7 +1180,7 @@ export const archiveMeetingSchedule = <ThrowOnError extends boolean = false>(opt
 export const getMeetingSchedule = <ThrowOnError extends boolean = false>(options: Options<GetMeetingScheduleData, ThrowOnError>) => (options.client ?? client).get<GetMeetingScheduleResponses, GetMeetingScheduleErrors, ThrowOnError>({
     security: [{
             in: 'cookie',
-            name: 'rez_auth_session',
+            name: 'rez_access_token',
             type: 'apiKey'
         }, { scheme: 'bearer', type: 'http' }],
     url: '/meeting_schedules/{id}',
@@ -1176,7 +1193,7 @@ export const getMeetingSchedule = <ThrowOnError extends boolean = false>(options
 export const updateMeetingSchedule = <ThrowOnError extends boolean = false>(options: Options<UpdateMeetingScheduleData, ThrowOnError>) => (options.client ?? client).patch<UpdateMeetingScheduleResponses, UpdateMeetingScheduleErrors, ThrowOnError>({
     security: [{
             in: 'cookie',
-            name: 'rez_auth_session',
+            name: 'rez_access_token',
             type: 'apiKey'
         }, { scheme: 'bearer', type: 'http' }],
     url: '/meeting_schedules/{id}',
@@ -1193,7 +1210,7 @@ export const updateMeetingSchedule = <ThrowOnError extends boolean = false>(opti
 export const listMeetingSessions = <ThrowOnError extends boolean = false>(options?: Options<ListMeetingSessionsData, ThrowOnError>) => (options?.client ?? client).get<ListMeetingSessionsResponses, ListMeetingSessionsErrors, ThrowOnError>({
     security: [{
             in: 'cookie',
-            name: 'rez_auth_session',
+            name: 'rez_access_token',
             type: 'apiKey'
         }, { scheme: 'bearer', type: 'http' }],
     url: '/meeting_sessions',
@@ -1206,7 +1223,7 @@ export const listMeetingSessions = <ThrowOnError extends boolean = false>(option
 export const createMeetingSession = <ThrowOnError extends boolean = false>(options: Options<CreateMeetingSessionData, ThrowOnError>) => (options.client ?? client).post<CreateMeetingSessionResponses, CreateMeetingSessionErrors, ThrowOnError>({
     security: [{
             in: 'cookie',
-            name: 'rez_auth_session',
+            name: 'rez_access_token',
             type: 'apiKey'
         }, { scheme: 'bearer', type: 'http' }],
     url: '/meeting_sessions',
@@ -1223,7 +1240,7 @@ export const createMeetingSession = <ThrowOnError extends boolean = false>(optio
 export const archiveMeetingSession = <ThrowOnError extends boolean = false>(options: Options<ArchiveMeetingSessionData, ThrowOnError>) => (options.client ?? client).delete<ArchiveMeetingSessionResponses, ArchiveMeetingSessionErrors, ThrowOnError>({
     security: [{
             in: 'cookie',
-            name: 'rez_auth_session',
+            name: 'rez_access_token',
             type: 'apiKey'
         }, { scheme: 'bearer', type: 'http' }],
     url: '/meeting_sessions/{id}',
@@ -1236,7 +1253,7 @@ export const archiveMeetingSession = <ThrowOnError extends boolean = false>(opti
 export const getMeetingSession = <ThrowOnError extends boolean = false>(options: Options<GetMeetingSessionData, ThrowOnError>) => (options.client ?? client).get<GetMeetingSessionResponses, GetMeetingSessionErrors, ThrowOnError>({
     security: [{
             in: 'cookie',
-            name: 'rez_auth_session',
+            name: 'rez_access_token',
             type: 'apiKey'
         }, { scheme: 'bearer', type: 'http' }],
     url: '/meeting_sessions/{id}',
@@ -1249,7 +1266,7 @@ export const getMeetingSession = <ThrowOnError extends boolean = false>(options:
 export const updateMeetingSession = <ThrowOnError extends boolean = false>(options: Options<UpdateMeetingSessionData, ThrowOnError>) => (options.client ?? client).patch<UpdateMeetingSessionResponses, UpdateMeetingSessionErrors, ThrowOnError>({
     security: [{
             in: 'cookie',
-            name: 'rez_auth_session',
+            name: 'rez_access_token',
             type: 'apiKey'
         }, { scheme: 'bearer', type: 'http' }],
     url: '/meeting_sessions/{id}',
@@ -1266,7 +1283,7 @@ export const updateMeetingSession = <ThrowOnError extends boolean = false>(optio
 export const createOncallHandoverTemplate = <ThrowOnError extends boolean = false>(options: Options<CreateOncallHandoverTemplateData, ThrowOnError>) => (options.client ?? client).post<CreateOncallHandoverTemplateResponses, CreateOncallHandoverTemplateErrors, ThrowOnError>({
     security: [{
             in: 'cookie',
-            name: 'rez_auth_session',
+            name: 'rez_access_token',
             type: 'apiKey'
         }, { scheme: 'bearer', type: 'http' }],
     url: '/oncall/handover_templates',
@@ -1283,7 +1300,7 @@ export const createOncallHandoverTemplate = <ThrowOnError extends boolean = fals
 export const archiveOncallHandoverTemplate = <ThrowOnError extends boolean = false>(options: Options<ArchiveOncallHandoverTemplateData, ThrowOnError>) => (options.client ?? client).delete<ArchiveOncallHandoverTemplateResponses, ArchiveOncallHandoverTemplateErrors, ThrowOnError>({
     security: [{
             in: 'cookie',
-            name: 'rez_auth_session',
+            name: 'rez_access_token',
             type: 'apiKey'
         }, { scheme: 'bearer', type: 'http' }],
     url: '/oncall/handover_templates/{id}',
@@ -1296,7 +1313,7 @@ export const archiveOncallHandoverTemplate = <ThrowOnError extends boolean = fal
 export const getOncallShiftHandoverTemplate = <ThrowOnError extends boolean = false>(options: Options<GetOncallShiftHandoverTemplateData, ThrowOnError>) => (options.client ?? client).get<GetOncallShiftHandoverTemplateResponses, GetOncallShiftHandoverTemplateErrors, ThrowOnError>({
     security: [{
             in: 'cookie',
-            name: 'rez_auth_session',
+            name: 'rez_access_token',
             type: 'apiKey'
         }, { scheme: 'bearer', type: 'http' }],
     url: '/oncall/handover_templates/{id}',
@@ -1309,7 +1326,7 @@ export const getOncallShiftHandoverTemplate = <ThrowOnError extends boolean = fa
 export const updateOncallHandoverTemplate = <ThrowOnError extends boolean = false>(options: Options<UpdateOncallHandoverTemplateData, ThrowOnError>) => (options.client ?? client).patch<UpdateOncallHandoverTemplateResponses, UpdateOncallHandoverTemplateErrors, ThrowOnError>({
     security: [{
             in: 'cookie',
-            name: 'rez_auth_session',
+            name: 'rez_access_token',
             type: 'apiKey'
         }, { scheme: 'bearer', type: 'http' }],
     url: '/oncall/handover_templates/{id}',
@@ -1326,7 +1343,7 @@ export const updateOncallHandoverTemplate = <ThrowOnError extends boolean = fals
 export const updateOncallShiftHandover = <ThrowOnError extends boolean = false>(options: Options<UpdateOncallShiftHandoverData, ThrowOnError>) => (options.client ?? client).patch<UpdateOncallShiftHandoverResponses, UpdateOncallShiftHandoverErrors, ThrowOnError>({
     security: [{
             in: 'cookie',
-            name: 'rez_auth_session',
+            name: 'rez_access_token',
             type: 'apiKey'
         }, { scheme: 'bearer', type: 'http' }],
     url: '/oncall/handovers/{id}',
@@ -1343,7 +1360,7 @@ export const updateOncallShiftHandover = <ThrowOnError extends boolean = false>(
 export const sendOncallShiftHandover = <ThrowOnError extends boolean = false>(options: Options<SendOncallShiftHandoverData, ThrowOnError>) => (options.client ?? client).post<SendOncallShiftHandoverResponses, SendOncallShiftHandoverErrors, ThrowOnError>({
     security: [{
             in: 'cookie',
-            name: 'rez_auth_session',
+            name: 'rez_access_token',
             type: 'apiKey'
         }, { scheme: 'bearer', type: 'http' }],
     url: '/oncall/handovers/{id}/send',
@@ -1360,7 +1377,7 @@ export const sendOncallShiftHandover = <ThrowOnError extends boolean = false>(op
 export const listOncallRosters = <ThrowOnError extends boolean = false>(options?: Options<ListOncallRostersData, ThrowOnError>) => (options?.client ?? client).get<ListOncallRostersResponses, ListOncallRostersErrors, ThrowOnError>({
     security: [{
             in: 'cookie',
-            name: 'rez_auth_session',
+            name: 'rez_access_token',
             type: 'apiKey'
         }, { scheme: 'bearer', type: 'http' }],
     url: '/oncall/rosters',
@@ -1373,7 +1390,7 @@ export const listOncallRosters = <ThrowOnError extends boolean = false>(options?
 export const getOncallRoster = <ThrowOnError extends boolean = false>(options: Options<GetOncallRosterData, ThrowOnError>) => (options.client ?? client).get<GetOncallRosterResponses, GetOncallRosterErrors, ThrowOnError>({
     security: [{
             in: 'cookie',
-            name: 'rez_auth_session',
+            name: 'rez_access_token',
             type: 'apiKey'
         }, { scheme: 'bearer', type: 'http' }],
     url: '/oncall/rosters/{id}',
@@ -1386,7 +1403,7 @@ export const getOncallRoster = <ThrowOnError extends boolean = false>(options: O
 export const listOncallShifts = <ThrowOnError extends boolean = false>(options?: Options<ListOncallShiftsData, ThrowOnError>) => (options?.client ?? client).get<ListOncallShiftsResponses, ListOncallShiftsErrors, ThrowOnError>({
     security: [{
             in: 'cookie',
-            name: 'rez_auth_session',
+            name: 'rez_access_token',
             type: 'apiKey'
         }, { scheme: 'bearer', type: 'http' }],
     url: '/oncall/shifts',
@@ -1399,7 +1416,7 @@ export const listOncallShifts = <ThrowOnError extends boolean = false>(options?:
 export const getOncallShift = <ThrowOnError extends boolean = false>(options: Options<GetOncallShiftData, ThrowOnError>) => (options.client ?? client).get<GetOncallShiftResponses, GetOncallShiftErrors, ThrowOnError>({
     security: [{
             in: 'cookie',
-            name: 'rez_auth_session',
+            name: 'rez_access_token',
             type: 'apiKey'
         }, { scheme: 'bearer', type: 'http' }],
     url: '/oncall/shifts/{id}',
@@ -1412,7 +1429,7 @@ export const getOncallShift = <ThrowOnError extends boolean = false>(options: Op
 export const getAdjacentOncallShifts = <ThrowOnError extends boolean = false>(options: Options<GetAdjacentOncallShiftsData, ThrowOnError>) => (options.client ?? client).get<GetAdjacentOncallShiftsResponses, GetAdjacentOncallShiftsErrors, ThrowOnError>({
     security: [{
             in: 'cookie',
-            name: 'rez_auth_session',
+            name: 'rez_access_token',
             type: 'apiKey'
         }, { scheme: 'bearer', type: 'http' }],
     url: '/oncall/shifts/{id}/adjacent',
@@ -1425,7 +1442,7 @@ export const getAdjacentOncallShifts = <ThrowOnError extends boolean = false>(op
 export const getOncallShiftHandover = <ThrowOnError extends boolean = false>(options: Options<GetOncallShiftHandoverData, ThrowOnError>) => (options.client ?? client).get<GetOncallShiftHandoverResponses, GetOncallShiftHandoverErrors, ThrowOnError>({
     security: [{
             in: 'cookie',
-            name: 'rez_auth_session',
+            name: 'rez_access_token',
             type: 'apiKey'
         }, { scheme: 'bearer', type: 'http' }],
     url: '/oncall/shifts/{id}/handover',
@@ -1438,7 +1455,7 @@ export const getOncallShiftHandover = <ThrowOnError extends boolean = false>(opt
 export const getUserOncallInformation = <ThrowOnError extends boolean = false>(options: Options<GetUserOncallInformationData, ThrowOnError>) => (options.client ?? client).get<GetUserOncallInformationResponses, GetUserOncallInformationErrors, ThrowOnError>({
     security: [{
             in: 'cookie',
-            name: 'rez_auth_session',
+            name: 'rez_access_token',
             type: 'apiKey'
         }, { scheme: 'bearer', type: 'http' }],
     url: '/oncall/user',
@@ -1451,7 +1468,7 @@ export const getUserOncallInformation = <ThrowOnError extends boolean = false>(o
 export const listWatchedOncallRosters = <ThrowOnError extends boolean = false>(options?: Options<ListWatchedOncallRostersData, ThrowOnError>) => (options?.client ?? client).get<ListWatchedOncallRostersResponses, ListWatchedOncallRostersErrors, ThrowOnError>({
     security: [{
             in: 'cookie',
-            name: 'rez_auth_session',
+            name: 'rez_access_token',
             type: 'apiKey'
         }, { scheme: 'bearer', type: 'http' }],
     url: '/oncall/watched_rosters',
@@ -1464,7 +1481,7 @@ export const listWatchedOncallRosters = <ThrowOnError extends boolean = false>(o
 export const removeWatchedOncallRoster = <ThrowOnError extends boolean = false>(options: Options<RemoveWatchedOncallRosterData, ThrowOnError>) => (options.client ?? client).delete<RemoveWatchedOncallRosterResponses, RemoveWatchedOncallRosterErrors, ThrowOnError>({
     security: [{
             in: 'cookie',
-            name: 'rez_auth_session',
+            name: 'rez_access_token',
             type: 'apiKey'
         }, { scheme: 'bearer', type: 'http' }],
     url: '/oncall/watched_rosters/{id}',
@@ -1477,7 +1494,7 @@ export const removeWatchedOncallRoster = <ThrowOnError extends boolean = false>(
 export const addWatchedOncallRoster = <ThrowOnError extends boolean = false>(options: Options<AddWatchedOncallRosterData, ThrowOnError>) => (options.client ?? client).post<AddWatchedOncallRosterResponses, AddWatchedOncallRosterErrors, ThrowOnError>({
     security: [{
             in: 'cookie',
-            name: 'rez_auth_session',
+            name: 'rez_access_token',
             type: 'apiKey'
         }, { scheme: 'bearer', type: 'http' }],
     url: '/oncall/watched_rosters/{id}',
@@ -1490,7 +1507,7 @@ export const addWatchedOncallRoster = <ThrowOnError extends boolean = false>(opt
 export const getOncallShiftBurdenMetricWeights = <ThrowOnError extends boolean = false>(options?: Options<GetOncallShiftBurdenMetricWeightsData, ThrowOnError>) => (options?.client ?? client).get<GetOncallShiftBurdenMetricWeightsResponses, GetOncallShiftBurdenMetricWeightsErrors, ThrowOnError>({
     security: [{
             in: 'cookie',
-            name: 'rez_auth_session',
+            name: 'rez_access_token',
             type: 'apiKey'
         }, { scheme: 'bearer', type: 'http' }],
     url: '/oncall_metrics/burden_weights',
@@ -1503,7 +1520,7 @@ export const getOncallShiftBurdenMetricWeights = <ThrowOnError extends boolean =
 export const getOncallRosterMetrics = <ThrowOnError extends boolean = false>(options?: Options<GetOncallRosterMetricsData, ThrowOnError>) => (options?.client ?? client).get<GetOncallRosterMetricsResponses, GetOncallRosterMetricsErrors, ThrowOnError>({
     security: [{
             in: 'cookie',
-            name: 'rez_auth_session',
+            name: 'rez_access_token',
             type: 'apiKey'
         }, { scheme: 'bearer', type: 'http' }],
     url: '/oncall_metrics/rosters',
@@ -1516,7 +1533,7 @@ export const getOncallRosterMetrics = <ThrowOnError extends boolean = false>(opt
 export const getOncallShiftMetrics = <ThrowOnError extends boolean = false>(options?: Options<GetOncallShiftMetricsData, ThrowOnError>) => (options?.client ?? client).get<GetOncallShiftMetricsResponses, GetOncallShiftMetricsErrors, ThrowOnError>({
     security: [{
             in: 'cookie',
-            name: 'rez_auth_session',
+            name: 'rez_access_token',
             type: 'apiKey'
         }, { scheme: 'bearer', type: 'http' }],
     url: '/oncall_metrics/shifts',
@@ -1529,7 +1546,7 @@ export const getOncallShiftMetrics = <ThrowOnError extends boolean = false>(opti
 export const getOrganization = <ThrowOnError extends boolean = false>(options: Options<GetOrganizationData, ThrowOnError>) => (options.client ?? client).get<GetOrganizationResponses, GetOrganizationErrors, ThrowOnError>({
     security: [{
             in: 'cookie',
-            name: 'rez_auth_session',
+            name: 'rez_access_token',
             type: 'apiKey'
         }, { scheme: 'bearer', type: 'http' }],
     url: '/organizations/{id}',
@@ -1542,7 +1559,7 @@ export const getOrganization = <ThrowOnError extends boolean = false>(options: O
 export const finishOrganizationSetup = <ThrowOnError extends boolean = false>(options: Options<FinishOrganizationSetupData, ThrowOnError>) => (options.client ?? client).post<FinishOrganizationSetupResponses, FinishOrganizationSetupErrors, ThrowOnError>({
     security: [{
             in: 'cookie',
-            name: 'rez_auth_session',
+            name: 'rez_access_token',
             type: 'apiKey'
         }, { scheme: 'bearer', type: 'http' }],
     url: '/organizations/{id}/setup',
@@ -1555,7 +1572,7 @@ export const finishOrganizationSetup = <ThrowOnError extends boolean = false>(op
 export const listPlaybooks = <ThrowOnError extends boolean = false>(options?: Options<ListPlaybooksData, ThrowOnError>) => (options?.client ?? client).get<ListPlaybooksResponses, ListPlaybooksErrors, ThrowOnError>({
     security: [{
             in: 'cookie',
-            name: 'rez_auth_session',
+            name: 'rez_access_token',
             type: 'apiKey'
         }, { scheme: 'bearer', type: 'http' }],
     url: '/playbooks',
@@ -1568,7 +1585,7 @@ export const listPlaybooks = <ThrowOnError extends boolean = false>(options?: Op
 export const createPlaybook = <ThrowOnError extends boolean = false>(options: Options<CreatePlaybookData, ThrowOnError>) => (options.client ?? client).post<CreatePlaybookResponses, CreatePlaybookErrors, ThrowOnError>({
     security: [{
             in: 'cookie',
-            name: 'rez_auth_session',
+            name: 'rez_access_token',
             type: 'apiKey'
         }, { scheme: 'bearer', type: 'http' }],
     url: '/playbooks',
@@ -1585,7 +1602,7 @@ export const createPlaybook = <ThrowOnError extends boolean = false>(options: Op
 export const archivePlaybook = <ThrowOnError extends boolean = false>(options: Options<ArchivePlaybookData, ThrowOnError>) => (options.client ?? client).delete<ArchivePlaybookResponses, ArchivePlaybookErrors, ThrowOnError>({
     security: [{
             in: 'cookie',
-            name: 'rez_auth_session',
+            name: 'rez_access_token',
             type: 'apiKey'
         }, { scheme: 'bearer', type: 'http' }],
     url: '/playbooks/{id}',
@@ -1598,7 +1615,7 @@ export const archivePlaybook = <ThrowOnError extends boolean = false>(options: O
 export const getPlaybook = <ThrowOnError extends boolean = false>(options: Options<GetPlaybookData, ThrowOnError>) => (options.client ?? client).get<GetPlaybookResponses, GetPlaybookErrors, ThrowOnError>({
     security: [{
             in: 'cookie',
-            name: 'rez_auth_session',
+            name: 'rez_access_token',
             type: 'apiKey'
         }, { scheme: 'bearer', type: 'http' }],
     url: '/playbooks/{id}',
@@ -1611,7 +1628,7 @@ export const getPlaybook = <ThrowOnError extends boolean = false>(options: Optio
 export const updatePlaybook = <ThrowOnError extends boolean = false>(options: Options<UpdatePlaybookData, ThrowOnError>) => (options.client ?? client).patch<UpdatePlaybookResponses, UpdatePlaybookErrors, ThrowOnError>({
     security: [{
             in: 'cookie',
-            name: 'rez_auth_session',
+            name: 'rez_access_token',
             type: 'apiKey'
         }, { scheme: 'bearer', type: 'http' }],
     url: '/playbooks/{id}',
@@ -1628,7 +1645,7 @@ export const updatePlaybook = <ThrowOnError extends boolean = false>(options: Op
 export const getRetrospectiveComment = <ThrowOnError extends boolean = false>(options: Options<GetRetrospectiveCommentData, ThrowOnError>) => (options.client ?? client).get<GetRetrospectiveCommentResponses, GetRetrospectiveCommentErrors, ThrowOnError>({
     security: [{
             in: 'cookie',
-            name: 'rez_auth_session',
+            name: 'rez_access_token',
             type: 'apiKey'
         }, { scheme: 'bearer', type: 'http' }],
     url: '/retrospective_comments/{id}',
@@ -1641,7 +1658,7 @@ export const getRetrospectiveComment = <ThrowOnError extends boolean = false>(op
 export const updateRetrospectiveComment = <ThrowOnError extends boolean = false>(options: Options<UpdateRetrospectiveCommentData, ThrowOnError>) => (options.client ?? client).patch<UpdateRetrospectiveCommentResponses, UpdateRetrospectiveCommentErrors, ThrowOnError>({
     security: [{
             in: 'cookie',
-            name: 'rez_auth_session',
+            name: 'rez_access_token',
             type: 'apiKey'
         }, { scheme: 'bearer', type: 'http' }],
     url: '/retrospective_comments/{id}',
@@ -1658,7 +1675,7 @@ export const updateRetrospectiveComment = <ThrowOnError extends boolean = false>
 export const archiveRetrospectiveReview = <ThrowOnError extends boolean = false>(options: Options<ArchiveRetrospectiveReviewData, ThrowOnError>) => (options.client ?? client).delete<ArchiveRetrospectiveReviewResponses, ArchiveRetrospectiveReviewErrors, ThrowOnError>({
     security: [{
             in: 'cookie',
-            name: 'rez_auth_session',
+            name: 'rez_access_token',
             type: 'apiKey'
         }, { scheme: 'bearer', type: 'http' }],
     url: '/retrospective_reviews/{id}',
@@ -1671,7 +1688,7 @@ export const archiveRetrospectiveReview = <ThrowOnError extends boolean = false>
 export const updateRetrospectiveReview = <ThrowOnError extends boolean = false>(options: Options<UpdateRetrospectiveReviewData, ThrowOnError>) => (options.client ?? client).patch<UpdateRetrospectiveReviewResponses, UpdateRetrospectiveReviewErrors, ThrowOnError>({
     security: [{
             in: 'cookie',
-            name: 'rez_auth_session',
+            name: 'rez_access_token',
             type: 'apiKey'
         }, { scheme: 'bearer', type: 'http' }],
     url: '/retrospective_reviews/{id}',
@@ -1688,7 +1705,7 @@ export const updateRetrospectiveReview = <ThrowOnError extends boolean = false>(
 export const listRetrospectives = <ThrowOnError extends boolean = false>(options?: Options<ListRetrospectivesData, ThrowOnError>) => (options?.client ?? client).get<ListRetrospectivesResponses, ListRetrospectivesErrors, ThrowOnError>({
     security: [{
             in: 'cookie',
-            name: 'rez_auth_session',
+            name: 'rez_access_token',
             type: 'apiKey'
         }, { scheme: 'bearer', type: 'http' }],
     url: '/retrospectives',
@@ -1701,7 +1718,7 @@ export const listRetrospectives = <ThrowOnError extends boolean = false>(options
 export const createRetrospective = <ThrowOnError extends boolean = false>(options: Options<CreateRetrospectiveData, ThrowOnError>) => (options.client ?? client).post<CreateRetrospectiveResponses, CreateRetrospectiveErrors, ThrowOnError>({
     security: [{
             in: 'cookie',
-            name: 'rez_auth_session',
+            name: 'rez_access_token',
             type: 'apiKey'
         }, { scheme: 'bearer', type: 'http' }],
     url: '/retrospectives',
@@ -1718,7 +1735,7 @@ export const createRetrospective = <ThrowOnError extends boolean = false>(option
 export const getRetrospective = <ThrowOnError extends boolean = false>(options: Options<GetRetrospectiveData, ThrowOnError>) => (options.client ?? client).get<GetRetrospectiveResponses, GetRetrospectiveErrors, ThrowOnError>({
     security: [{
             in: 'cookie',
-            name: 'rez_auth_session',
+            name: 'rez_access_token',
             type: 'apiKey'
         }, { scheme: 'bearer', type: 'http' }],
     url: '/retrospectives/{id}',
@@ -1731,7 +1748,7 @@ export const getRetrospective = <ThrowOnError extends boolean = false>(options: 
 export const listRetrospectiveComments = <ThrowOnError extends boolean = false>(options: Options<ListRetrospectiveCommentsData, ThrowOnError>) => (options.client ?? client).get<ListRetrospectiveCommentsResponses, ListRetrospectiveCommentsErrors, ThrowOnError>({
     security: [{
             in: 'cookie',
-            name: 'rez_auth_session',
+            name: 'rez_access_token',
             type: 'apiKey'
         }, { scheme: 'bearer', type: 'http' }],
     url: '/retrospectives/{id}/comments',
@@ -1744,7 +1761,7 @@ export const listRetrospectiveComments = <ThrowOnError extends boolean = false>(
 export const createRetrospectiveComment = <ThrowOnError extends boolean = false>(options: Options<CreateRetrospectiveCommentData, ThrowOnError>) => (options.client ?? client).post<CreateRetrospectiveCommentResponses, CreateRetrospectiveCommentErrors, ThrowOnError>({
     security: [{
             in: 'cookie',
-            name: 'rez_auth_session',
+            name: 'rez_access_token',
             type: 'apiKey'
         }, { scheme: 'bearer', type: 'http' }],
     url: '/retrospectives/{id}/comments',
@@ -1761,7 +1778,7 @@ export const createRetrospectiveComment = <ThrowOnError extends boolean = false>
 export const listRetrospectiveReviews = <ThrowOnError extends boolean = false>(options?: Options<ListRetrospectiveReviewsData, ThrowOnError>) => (options?.client ?? client).get<ListRetrospectiveReviewsResponses, ListRetrospectiveReviewsErrors, ThrowOnError>({
     security: [{
             in: 'cookie',
-            name: 'rez_auth_session',
+            name: 'rez_access_token',
             type: 'apiKey'
         }, { scheme: 'bearer', type: 'http' }],
     url: '/retrospectives/{id}/reviews',
@@ -1774,7 +1791,7 @@ export const listRetrospectiveReviews = <ThrowOnError extends boolean = false>(o
 export const createRetrospectiveReview = <ThrowOnError extends boolean = false>(options: Options<CreateRetrospectiveReviewData, ThrowOnError>) => (options.client ?? client).post<CreateRetrospectiveReviewResponses, CreateRetrospectiveReviewErrors, ThrowOnError>({
     security: [{
             in: 'cookie',
-            name: 'rez_auth_session',
+            name: 'rez_access_token',
             type: 'apiKey'
         }, { scheme: 'bearer', type: 'http' }],
     url: '/retrospectives/{id}/reviews',
@@ -1791,7 +1808,7 @@ export const createRetrospectiveReview = <ThrowOnError extends boolean = false>(
 export const getSystemAnalysis = <ThrowOnError extends boolean = false>(options: Options<GetSystemAnalysisData, ThrowOnError>) => (options.client ?? client).get<GetSystemAnalysisResponses, GetSystemAnalysisErrors, ThrowOnError>({
     security: [{
             in: 'cookie',
-            name: 'rez_auth_session',
+            name: 'rez_access_token',
             type: 'apiKey'
         }, { scheme: 'bearer', type: 'http' }],
     url: '/system_analysis/{id}',
@@ -1804,7 +1821,7 @@ export const getSystemAnalysis = <ThrowOnError extends boolean = false>(options:
 export const listSystemAnalysisComponents = <ThrowOnError extends boolean = false>(options: Options<ListSystemAnalysisComponentsData, ThrowOnError>) => (options.client ?? client).get<ListSystemAnalysisComponentsResponses, ListSystemAnalysisComponentsErrors, ThrowOnError>({
     security: [{
             in: 'cookie',
-            name: 'rez_auth_session',
+            name: 'rez_access_token',
             type: 'apiKey'
         }, { scheme: 'bearer', type: 'http' }],
     url: '/system_analysis/{id}/components',
@@ -1817,7 +1834,7 @@ export const listSystemAnalysisComponents = <ThrowOnError extends boolean = fals
 export const addSystemAnalysisComponent = <ThrowOnError extends boolean = false>(options: Options<AddSystemAnalysisComponentData, ThrowOnError>) => (options.client ?? client).post<AddSystemAnalysisComponentResponses, AddSystemAnalysisComponentErrors, ThrowOnError>({
     security: [{
             in: 'cookie',
-            name: 'rez_auth_session',
+            name: 'rez_access_token',
             type: 'apiKey'
         }, { scheme: 'bearer', type: 'http' }],
     url: '/system_analysis/{id}/components',
@@ -1834,7 +1851,7 @@ export const addSystemAnalysisComponent = <ThrowOnError extends boolean = false>
 export const listSystemAnalysisRelationships = <ThrowOnError extends boolean = false>(options: Options<ListSystemAnalysisRelationshipsData, ThrowOnError>) => (options.client ?? client).get<ListSystemAnalysisRelationshipsResponses, ListSystemAnalysisRelationshipsErrors, ThrowOnError>({
     security: [{
             in: 'cookie',
-            name: 'rez_auth_session',
+            name: 'rez_access_token',
             type: 'apiKey'
         }, { scheme: 'bearer', type: 'http' }],
     url: '/system_analysis/{id}/relationships',
@@ -1847,7 +1864,7 @@ export const listSystemAnalysisRelationships = <ThrowOnError extends boolean = f
 export const createSystemAnalysisRelationship = <ThrowOnError extends boolean = false>(options: Options<CreateSystemAnalysisRelationshipData, ThrowOnError>) => (options.client ?? client).post<CreateSystemAnalysisRelationshipResponses, CreateSystemAnalysisRelationshipErrors, ThrowOnError>({
     security: [{
             in: 'cookie',
-            name: 'rez_auth_session',
+            name: 'rez_access_token',
             type: 'apiKey'
         }, { scheme: 'bearer', type: 'http' }],
     url: '/system_analysis/{id}/relationships',
@@ -1864,7 +1881,7 @@ export const createSystemAnalysisRelationship = <ThrowOnError extends boolean = 
 export const deleteSystemAnalysisComponent = <ThrowOnError extends boolean = false>(options: Options<DeleteSystemAnalysisComponentData, ThrowOnError>) => (options.client ?? client).delete<DeleteSystemAnalysisComponentResponses, DeleteSystemAnalysisComponentErrors, ThrowOnError>({
     security: [{
             in: 'cookie',
-            name: 'rez_auth_session',
+            name: 'rez_access_token',
             type: 'apiKey'
         }, { scheme: 'bearer', type: 'http' }],
     url: '/system_analysis_components/{id}',
@@ -1877,7 +1894,7 @@ export const deleteSystemAnalysisComponent = <ThrowOnError extends boolean = fal
 export const getSystemAnalysisComponent = <ThrowOnError extends boolean = false>(options: Options<GetSystemAnalysisComponentData, ThrowOnError>) => (options.client ?? client).get<GetSystemAnalysisComponentResponses, GetSystemAnalysisComponentErrors, ThrowOnError>({
     security: [{
             in: 'cookie',
-            name: 'rez_auth_session',
+            name: 'rez_access_token',
             type: 'apiKey'
         }, { scheme: 'bearer', type: 'http' }],
     url: '/system_analysis_components/{id}',
@@ -1890,7 +1907,7 @@ export const getSystemAnalysisComponent = <ThrowOnError extends boolean = false>
 export const updateSystemAnalysisComponent = <ThrowOnError extends boolean = false>(options: Options<UpdateSystemAnalysisComponentData, ThrowOnError>) => (options.client ?? client).patch<UpdateSystemAnalysisComponentResponses, UpdateSystemAnalysisComponentErrors, ThrowOnError>({
     security: [{
             in: 'cookie',
-            name: 'rez_auth_session',
+            name: 'rez_access_token',
             type: 'apiKey'
         }, { scheme: 'bearer', type: 'http' }],
     url: '/system_analysis_components/{id}',
@@ -1907,7 +1924,7 @@ export const updateSystemAnalysisComponent = <ThrowOnError extends boolean = fal
 export const deleteSystemAnalysisRelationship = <ThrowOnError extends boolean = false>(options: Options<DeleteSystemAnalysisRelationshipData, ThrowOnError>) => (options.client ?? client).delete<DeleteSystemAnalysisRelationshipResponses, DeleteSystemAnalysisRelationshipErrors, ThrowOnError>({
     security: [{
             in: 'cookie',
-            name: 'rez_auth_session',
+            name: 'rez_access_token',
             type: 'apiKey'
         }, { scheme: 'bearer', type: 'http' }],
     url: '/system_analysis_relationships/{id}',
@@ -1920,7 +1937,7 @@ export const deleteSystemAnalysisRelationship = <ThrowOnError extends boolean = 
 export const getSystemAnalysisRelationship = <ThrowOnError extends boolean = false>(options: Options<GetSystemAnalysisRelationshipData, ThrowOnError>) => (options.client ?? client).get<GetSystemAnalysisRelationshipResponses, GetSystemAnalysisRelationshipErrors, ThrowOnError>({
     security: [{
             in: 'cookie',
-            name: 'rez_auth_session',
+            name: 'rez_access_token',
             type: 'apiKey'
         }, { scheme: 'bearer', type: 'http' }],
     url: '/system_analysis_relationships/{id}',
@@ -1933,7 +1950,7 @@ export const getSystemAnalysisRelationship = <ThrowOnError extends boolean = fal
 export const updateSystemAnalysisRelationship = <ThrowOnError extends boolean = false>(options: Options<UpdateSystemAnalysisRelationshipData, ThrowOnError>) => (options.client ?? client).patch<UpdateSystemAnalysisRelationshipResponses, UpdateSystemAnalysisRelationshipErrors, ThrowOnError>({
     security: [{
             in: 'cookie',
-            name: 'rez_auth_session',
+            name: 'rez_access_token',
             type: 'apiKey'
         }, { scheme: 'bearer', type: 'http' }],
     url: '/system_analysis_relationships/{id}',
@@ -1950,7 +1967,7 @@ export const updateSystemAnalysisRelationship = <ThrowOnError extends boolean = 
 export const archiveSystemComponentConstraint = <ThrowOnError extends boolean = false>(options: Options<ArchiveSystemComponentConstraintData, ThrowOnError>) => (options.client ?? client).delete<ArchiveSystemComponentConstraintResponses, ArchiveSystemComponentConstraintErrors, ThrowOnError>({
     security: [{
             in: 'cookie',
-            name: 'rez_auth_session',
+            name: 'rez_access_token',
             type: 'apiKey'
         }, { scheme: 'bearer', type: 'http' }],
     url: '/system_component_constraints/{id}',
@@ -1963,7 +1980,7 @@ export const archiveSystemComponentConstraint = <ThrowOnError extends boolean = 
 export const getSystemComponentConstraint = <ThrowOnError extends boolean = false>(options: Options<GetSystemComponentConstraintData, ThrowOnError>) => (options.client ?? client).get<GetSystemComponentConstraintResponses, GetSystemComponentConstraintErrors, ThrowOnError>({
     security: [{
             in: 'cookie',
-            name: 'rez_auth_session',
+            name: 'rez_access_token',
             type: 'apiKey'
         }, { scheme: 'bearer', type: 'http' }],
     url: '/system_component_constraints/{id}',
@@ -1976,7 +1993,7 @@ export const getSystemComponentConstraint = <ThrowOnError extends boolean = fals
 export const updateSystemComponentConstraint = <ThrowOnError extends boolean = false>(options: Options<UpdateSystemComponentConstraintData, ThrowOnError>) => (options.client ?? client).patch<UpdateSystemComponentConstraintResponses, UpdateSystemComponentConstraintErrors, ThrowOnError>({
     security: [{
             in: 'cookie',
-            name: 'rez_auth_session',
+            name: 'rez_access_token',
             type: 'apiKey'
         }, { scheme: 'bearer', type: 'http' }],
     url: '/system_component_constraints/{id}',
@@ -1993,7 +2010,7 @@ export const updateSystemComponentConstraint = <ThrowOnError extends boolean = f
 export const archiveSystemComponentControl = <ThrowOnError extends boolean = false>(options: Options<ArchiveSystemComponentControlData, ThrowOnError>) => (options.client ?? client).delete<ArchiveSystemComponentControlResponses, ArchiveSystemComponentControlErrors, ThrowOnError>({
     security: [{
             in: 'cookie',
-            name: 'rez_auth_session',
+            name: 'rez_access_token',
             type: 'apiKey'
         }, { scheme: 'bearer', type: 'http' }],
     url: '/system_component_controls/{id}',
@@ -2006,7 +2023,7 @@ export const archiveSystemComponentControl = <ThrowOnError extends boolean = fal
 export const getSystemComponentControl = <ThrowOnError extends boolean = false>(options: Options<GetSystemComponentControlData, ThrowOnError>) => (options.client ?? client).get<GetSystemComponentControlResponses, GetSystemComponentControlErrors, ThrowOnError>({
     security: [{
             in: 'cookie',
-            name: 'rez_auth_session',
+            name: 'rez_access_token',
             type: 'apiKey'
         }, { scheme: 'bearer', type: 'http' }],
     url: '/system_component_controls/{id}',
@@ -2019,7 +2036,7 @@ export const getSystemComponentControl = <ThrowOnError extends boolean = false>(
 export const updateSystemComponentControl = <ThrowOnError extends boolean = false>(options: Options<UpdateSystemComponentControlData, ThrowOnError>) => (options.client ?? client).patch<UpdateSystemComponentControlResponses, UpdateSystemComponentControlErrors, ThrowOnError>({
     security: [{
             in: 'cookie',
-            name: 'rez_auth_session',
+            name: 'rez_access_token',
             type: 'apiKey'
         }, { scheme: 'bearer', type: 'http' }],
     url: '/system_component_controls/{id}',
@@ -2036,7 +2053,7 @@ export const updateSystemComponentControl = <ThrowOnError extends boolean = fals
 export const listSystemComponentKinds = <ThrowOnError extends boolean = false>(options?: Options<ListSystemComponentKindsData, ThrowOnError>) => (options?.client ?? client).get<ListSystemComponentKindsResponses, ListSystemComponentKindsErrors, ThrowOnError>({
     security: [{
             in: 'cookie',
-            name: 'rez_auth_session',
+            name: 'rez_access_token',
             type: 'apiKey'
         }, { scheme: 'bearer', type: 'http' }],
     url: '/system_component_kinds',
@@ -2049,7 +2066,7 @@ export const listSystemComponentKinds = <ThrowOnError extends boolean = false>(o
 export const createSystemComponentKind = <ThrowOnError extends boolean = false>(options: Options<CreateSystemComponentKindData, ThrowOnError>) => (options.client ?? client).post<CreateSystemComponentKindResponses, CreateSystemComponentKindErrors, ThrowOnError>({
     security: [{
             in: 'cookie',
-            name: 'rez_auth_session',
+            name: 'rez_access_token',
             type: 'apiKey'
         }, { scheme: 'bearer', type: 'http' }],
     url: '/system_component_kinds',
@@ -2066,7 +2083,7 @@ export const createSystemComponentKind = <ThrowOnError extends boolean = false>(
 export const archiveSystemComponentKind = <ThrowOnError extends boolean = false>(options: Options<ArchiveSystemComponentKindData, ThrowOnError>) => (options.client ?? client).delete<ArchiveSystemComponentKindResponses, ArchiveSystemComponentKindErrors, ThrowOnError>({
     security: [{
             in: 'cookie',
-            name: 'rez_auth_session',
+            name: 'rez_access_token',
             type: 'apiKey'
         }, { scheme: 'bearer', type: 'http' }],
     url: '/system_component_kinds/{id}',
@@ -2079,7 +2096,7 @@ export const archiveSystemComponentKind = <ThrowOnError extends boolean = false>
 export const getSystemComponentKind = <ThrowOnError extends boolean = false>(options: Options<GetSystemComponentKindData, ThrowOnError>) => (options.client ?? client).get<GetSystemComponentKindResponses, GetSystemComponentKindErrors, ThrowOnError>({
     security: [{
             in: 'cookie',
-            name: 'rez_auth_session',
+            name: 'rez_access_token',
             type: 'apiKey'
         }, { scheme: 'bearer', type: 'http' }],
     url: '/system_component_kinds/{id}',
@@ -2092,7 +2109,7 @@ export const getSystemComponentKind = <ThrowOnError extends boolean = false>(opt
 export const updateSystemComponentKind = <ThrowOnError extends boolean = false>(options: Options<UpdateSystemComponentKindData, ThrowOnError>) => (options.client ?? client).patch<UpdateSystemComponentKindResponses, UpdateSystemComponentKindErrors, ThrowOnError>({
     security: [{
             in: 'cookie',
-            name: 'rez_auth_session',
+            name: 'rez_access_token',
             type: 'apiKey'
         }, { scheme: 'bearer', type: 'http' }],
     url: '/system_component_kinds/{id}',
@@ -2109,7 +2126,7 @@ export const updateSystemComponentKind = <ThrowOnError extends boolean = false>(
 export const listSystemComponentRelationships = <ThrowOnError extends boolean = false>(options?: Options<ListSystemComponentRelationshipsData, ThrowOnError>) => (options?.client ?? client).get<ListSystemComponentRelationshipsResponses, ListSystemComponentRelationshipsErrors, ThrowOnError>({
     security: [{
             in: 'cookie',
-            name: 'rez_auth_session',
+            name: 'rez_access_token',
             type: 'apiKey'
         }, { scheme: 'bearer', type: 'http' }],
     url: '/system_component_relationships',
@@ -2122,7 +2139,7 @@ export const listSystemComponentRelationships = <ThrowOnError extends boolean = 
 export const createSystemComponentRelationship = <ThrowOnError extends boolean = false>(options: Options<CreateSystemComponentRelationshipData, ThrowOnError>) => (options.client ?? client).post<CreateSystemComponentRelationshipResponses, CreateSystemComponentRelationshipErrors, ThrowOnError>({
     security: [{
             in: 'cookie',
-            name: 'rez_auth_session',
+            name: 'rez_access_token',
             type: 'apiKey'
         }, { scheme: 'bearer', type: 'http' }],
     url: '/system_component_relationships',
@@ -2139,7 +2156,7 @@ export const createSystemComponentRelationship = <ThrowOnError extends boolean =
 export const archiveSystemComponentRelationship = <ThrowOnError extends boolean = false>(options: Options<ArchiveSystemComponentRelationshipData, ThrowOnError>) => (options.client ?? client).delete<ArchiveSystemComponentRelationshipResponses, ArchiveSystemComponentRelationshipErrors, ThrowOnError>({
     security: [{
             in: 'cookie',
-            name: 'rez_auth_session',
+            name: 'rez_access_token',
             type: 'apiKey'
         }, { scheme: 'bearer', type: 'http' }],
     url: '/system_component_relationships/{id}',
@@ -2152,7 +2169,7 @@ export const archiveSystemComponentRelationship = <ThrowOnError extends boolean 
 export const getSystemComponentRelationship = <ThrowOnError extends boolean = false>(options: Options<GetSystemComponentRelationshipData, ThrowOnError>) => (options.client ?? client).get<GetSystemComponentRelationshipResponses, GetSystemComponentRelationshipErrors, ThrowOnError>({
     security: [{
             in: 'cookie',
-            name: 'rez_auth_session',
+            name: 'rez_access_token',
             type: 'apiKey'
         }, { scheme: 'bearer', type: 'http' }],
     url: '/system_component_relationships/{id}',
@@ -2165,7 +2182,7 @@ export const getSystemComponentRelationship = <ThrowOnError extends boolean = fa
 export const updateSystemComponentRelationship = <ThrowOnError extends boolean = false>(options: Options<UpdateSystemComponentRelationshipData, ThrowOnError>) => (options.client ?? client).patch<UpdateSystemComponentRelationshipResponses, UpdateSystemComponentRelationshipErrors, ThrowOnError>({
     security: [{
             in: 'cookie',
-            name: 'rez_auth_session',
+            name: 'rez_access_token',
             type: 'apiKey'
         }, { scheme: 'bearer', type: 'http' }],
     url: '/system_component_relationships/{id}',
@@ -2182,7 +2199,7 @@ export const updateSystemComponentRelationship = <ThrowOnError extends boolean =
 export const archiveSystemComponentSignal = <ThrowOnError extends boolean = false>(options: Options<ArchiveSystemComponentSignalData, ThrowOnError>) => (options.client ?? client).delete<ArchiveSystemComponentSignalResponses, ArchiveSystemComponentSignalErrors, ThrowOnError>({
     security: [{
             in: 'cookie',
-            name: 'rez_auth_session',
+            name: 'rez_access_token',
             type: 'apiKey'
         }, { scheme: 'bearer', type: 'http' }],
     url: '/system_component_signals/{id}',
@@ -2195,7 +2212,7 @@ export const archiveSystemComponentSignal = <ThrowOnError extends boolean = fals
 export const getSystemComponentSignal = <ThrowOnError extends boolean = false>(options: Options<GetSystemComponentSignalData, ThrowOnError>) => (options.client ?? client).get<GetSystemComponentSignalResponses, GetSystemComponentSignalErrors, ThrowOnError>({
     security: [{
             in: 'cookie',
-            name: 'rez_auth_session',
+            name: 'rez_access_token',
             type: 'apiKey'
         }, { scheme: 'bearer', type: 'http' }],
     url: '/system_component_signals/{id}',
@@ -2208,7 +2225,7 @@ export const getSystemComponentSignal = <ThrowOnError extends boolean = false>(o
 export const updateSystemComponentSignal = <ThrowOnError extends boolean = false>(options: Options<UpdateSystemComponentSignalData, ThrowOnError>) => (options.client ?? client).patch<UpdateSystemComponentSignalResponses, UpdateSystemComponentSignalErrors, ThrowOnError>({
     security: [{
             in: 'cookie',
-            name: 'rez_auth_session',
+            name: 'rez_access_token',
             type: 'apiKey'
         }, { scheme: 'bearer', type: 'http' }],
     url: '/system_component_signals/{id}',
@@ -2225,7 +2242,7 @@ export const updateSystemComponentSignal = <ThrowOnError extends boolean = false
 export const listSystemComponents = <ThrowOnError extends boolean = false>(options?: Options<ListSystemComponentsData, ThrowOnError>) => (options?.client ?? client).get<ListSystemComponentsResponses, ListSystemComponentsErrors, ThrowOnError>({
     security: [{
             in: 'cookie',
-            name: 'rez_auth_session',
+            name: 'rez_access_token',
             type: 'apiKey'
         }, { scheme: 'bearer', type: 'http' }],
     url: '/system_components',
@@ -2238,7 +2255,7 @@ export const listSystemComponents = <ThrowOnError extends boolean = false>(optio
 export const createSystemComponent = <ThrowOnError extends boolean = false>(options: Options<CreateSystemComponentData, ThrowOnError>) => (options.client ?? client).post<CreateSystemComponentResponses, CreateSystemComponentErrors, ThrowOnError>({
     security: [{
             in: 'cookie',
-            name: 'rez_auth_session',
+            name: 'rez_access_token',
             type: 'apiKey'
         }, { scheme: 'bearer', type: 'http' }],
     url: '/system_components',
@@ -2255,7 +2272,7 @@ export const createSystemComponent = <ThrowOnError extends boolean = false>(opti
 export const archiveSystemComponent = <ThrowOnError extends boolean = false>(options: Options<ArchiveSystemComponentData, ThrowOnError>) => (options.client ?? client).delete<ArchiveSystemComponentResponses, ArchiveSystemComponentErrors, ThrowOnError>({
     security: [{
             in: 'cookie',
-            name: 'rez_auth_session',
+            name: 'rez_access_token',
             type: 'apiKey'
         }, { scheme: 'bearer', type: 'http' }],
     url: '/system_components/{id}',
@@ -2268,7 +2285,7 @@ export const archiveSystemComponent = <ThrowOnError extends boolean = false>(opt
 export const getSystemComponent = <ThrowOnError extends boolean = false>(options: Options<GetSystemComponentData, ThrowOnError>) => (options.client ?? client).get<GetSystemComponentResponses, GetSystemComponentErrors, ThrowOnError>({
     security: [{
             in: 'cookie',
-            name: 'rez_auth_session',
+            name: 'rez_access_token',
             type: 'apiKey'
         }, { scheme: 'bearer', type: 'http' }],
     url: '/system_components/{id}',
@@ -2281,7 +2298,7 @@ export const getSystemComponent = <ThrowOnError extends boolean = false>(options
 export const updateSystemComponent = <ThrowOnError extends boolean = false>(options: Options<UpdateSystemComponentData, ThrowOnError>) => (options.client ?? client).patch<UpdateSystemComponentResponses, UpdateSystemComponentErrors, ThrowOnError>({
     security: [{
             in: 'cookie',
-            name: 'rez_auth_session',
+            name: 'rez_access_token',
             type: 'apiKey'
         }, { scheme: 'bearer', type: 'http' }],
     url: '/system_components/{id}',
@@ -2298,7 +2315,7 @@ export const updateSystemComponent = <ThrowOnError extends boolean = false>(opti
 export const createSystemComponentConstraint = <ThrowOnError extends boolean = false>(options: Options<CreateSystemComponentConstraintData, ThrowOnError>) => (options.client ?? client).post<CreateSystemComponentConstraintResponses, CreateSystemComponentConstraintErrors, ThrowOnError>({
     security: [{
             in: 'cookie',
-            name: 'rez_auth_session',
+            name: 'rez_access_token',
             type: 'apiKey'
         }, { scheme: 'bearer', type: 'http' }],
     url: '/system_components/{id}/constraints',
@@ -2315,7 +2332,7 @@ export const createSystemComponentConstraint = <ThrowOnError extends boolean = f
 export const createSystemComponentControl = <ThrowOnError extends boolean = false>(options: Options<CreateSystemComponentControlData, ThrowOnError>) => (options.client ?? client).post<CreateSystemComponentControlResponses, CreateSystemComponentControlErrors, ThrowOnError>({
     security: [{
             in: 'cookie',
-            name: 'rez_auth_session',
+            name: 'rez_access_token',
             type: 'apiKey'
         }, { scheme: 'bearer', type: 'http' }],
     url: '/system_components/{id}/controls',
@@ -2332,7 +2349,7 @@ export const createSystemComponentControl = <ThrowOnError extends boolean = fals
 export const createSystemComponentSignal = <ThrowOnError extends boolean = false>(options: Options<CreateSystemComponentSignalData, ThrowOnError>) => (options.client ?? client).post<CreateSystemComponentSignalResponses, CreateSystemComponentSignalErrors, ThrowOnError>({
     security: [{
             in: 'cookie',
-            name: 'rez_auth_session',
+            name: 'rez_access_token',
             type: 'apiKey'
         }, { scheme: 'bearer', type: 'http' }],
     url: '/system_components/{id}/signals',
@@ -2349,7 +2366,7 @@ export const createSystemComponentSignal = <ThrowOnError extends boolean = false
 export const listTasks = <ThrowOnError extends boolean = false>(options?: Options<ListTasksData, ThrowOnError>) => (options?.client ?? client).get<ListTasksResponses, ListTasksErrors, ThrowOnError>({
     security: [{
             in: 'cookie',
-            name: 'rez_auth_session',
+            name: 'rez_access_token',
             type: 'apiKey'
         }, { scheme: 'bearer', type: 'http' }],
     url: '/tasks',
@@ -2362,7 +2379,7 @@ export const listTasks = <ThrowOnError extends boolean = false>(options?: Option
 export const createTask = <ThrowOnError extends boolean = false>(options: Options<CreateTaskData, ThrowOnError>) => (options.client ?? client).post<CreateTaskResponses, CreateTaskErrors, ThrowOnError>({
     security: [{
             in: 'cookie',
-            name: 'rez_auth_session',
+            name: 'rez_access_token',
             type: 'apiKey'
         }, { scheme: 'bearer', type: 'http' }],
     url: '/tasks',
@@ -2379,7 +2396,7 @@ export const createTask = <ThrowOnError extends boolean = false>(options: Option
 export const archiveTask = <ThrowOnError extends boolean = false>(options: Options<ArchiveTaskData, ThrowOnError>) => (options.client ?? client).delete<ArchiveTaskResponses, ArchiveTaskErrors, ThrowOnError>({
     security: [{
             in: 'cookie',
-            name: 'rez_auth_session',
+            name: 'rez_access_token',
             type: 'apiKey'
         }, { scheme: 'bearer', type: 'http' }],
     url: '/tasks/{id}',
@@ -2392,7 +2409,7 @@ export const archiveTask = <ThrowOnError extends boolean = false>(options: Optio
 export const getTask = <ThrowOnError extends boolean = false>(options: Options<GetTaskData, ThrowOnError>) => (options.client ?? client).get<GetTaskResponses, GetTaskErrors, ThrowOnError>({
     security: [{
             in: 'cookie',
-            name: 'rez_auth_session',
+            name: 'rez_access_token',
             type: 'apiKey'
         }, { scheme: 'bearer', type: 'http' }],
     url: '/tasks/{id}',
@@ -2405,7 +2422,7 @@ export const getTask = <ThrowOnError extends boolean = false>(options: Options<G
 export const updateTask = <ThrowOnError extends boolean = false>(options: Options<UpdateTaskData, ThrowOnError>) => (options.client ?? client).patch<UpdateTaskResponses, UpdateTaskErrors, ThrowOnError>({
     security: [{
             in: 'cookie',
-            name: 'rez_auth_session',
+            name: 'rez_access_token',
             type: 'apiKey'
         }, { scheme: 'bearer', type: 'http' }],
     url: '/tasks/{id}',
@@ -2422,7 +2439,7 @@ export const updateTask = <ThrowOnError extends boolean = false>(options: Option
 export const listTeamMemberships = <ThrowOnError extends boolean = false>(options?: Options<ListTeamMembershipsData, ThrowOnError>) => (options?.client ?? client).get<ListTeamMembershipsResponses, ListTeamMembershipsErrors, ThrowOnError>({
     security: [{
             in: 'cookie',
-            name: 'rez_auth_session',
+            name: 'rez_access_token',
             type: 'apiKey'
         }, { scheme: 'bearer', type: 'http' }],
     url: '/team_memberships',
@@ -2435,7 +2452,7 @@ export const listTeamMemberships = <ThrowOnError extends boolean = false>(option
 export const createTeamMembership = <ThrowOnError extends boolean = false>(options: Options<CreateTeamMembershipData, ThrowOnError>) => (options.client ?? client).post<CreateTeamMembershipResponses, CreateTeamMembershipErrors, ThrowOnError>({
     security: [{
             in: 'cookie',
-            name: 'rez_auth_session',
+            name: 'rez_access_token',
             type: 'apiKey'
         }, { scheme: 'bearer', type: 'http' }],
     url: '/team_memberships',
@@ -2452,7 +2469,7 @@ export const createTeamMembership = <ThrowOnError extends boolean = false>(optio
 export const archiveTeamMembership = <ThrowOnError extends boolean = false>(options: Options<ArchiveTeamMembershipData, ThrowOnError>) => (options.client ?? client).delete<ArchiveTeamMembershipResponses, ArchiveTeamMembershipErrors, ThrowOnError>({
     security: [{
             in: 'cookie',
-            name: 'rez_auth_session',
+            name: 'rez_access_token',
             type: 'apiKey'
         }, { scheme: 'bearer', type: 'http' }],
     url: '/team_memberships/{id}',
@@ -2465,7 +2482,7 @@ export const archiveTeamMembership = <ThrowOnError extends boolean = false>(opti
 export const updateTeamMembership = <ThrowOnError extends boolean = false>(options: Options<UpdateTeamMembershipData, ThrowOnError>) => (options.client ?? client).patch<UpdateTeamMembershipResponses, UpdateTeamMembershipErrors, ThrowOnError>({
     security: [{
             in: 'cookie',
-            name: 'rez_auth_session',
+            name: 'rez_access_token',
             type: 'apiKey'
         }, { scheme: 'bearer', type: 'http' }],
     url: '/team_memberships/{id}',
@@ -2482,7 +2499,7 @@ export const updateTeamMembership = <ThrowOnError extends boolean = false>(optio
 export const listTeams = <ThrowOnError extends boolean = false>(options?: Options<ListTeamsData, ThrowOnError>) => (options?.client ?? client).get<ListTeamsResponses, ListTeamsErrors, ThrowOnError>({
     security: [{
             in: 'cookie',
-            name: 'rez_auth_session',
+            name: 'rez_access_token',
             type: 'apiKey'
         }, { scheme: 'bearer', type: 'http' }],
     url: '/teams',
@@ -2495,7 +2512,7 @@ export const listTeams = <ThrowOnError extends boolean = false>(options?: Option
 export const createTeam = <ThrowOnError extends boolean = false>(options: Options<CreateTeamData, ThrowOnError>) => (options.client ?? client).post<CreateTeamResponses, CreateTeamErrors, ThrowOnError>({
     security: [{
             in: 'cookie',
-            name: 'rez_auth_session',
+            name: 'rez_access_token',
             type: 'apiKey'
         }, { scheme: 'bearer', type: 'http' }],
     url: '/teams',
@@ -2512,7 +2529,7 @@ export const createTeam = <ThrowOnError extends boolean = false>(options: Option
 export const archiveTeam = <ThrowOnError extends boolean = false>(options: Options<ArchiveTeamData, ThrowOnError>) => (options.client ?? client).delete<ArchiveTeamResponses, ArchiveTeamErrors, ThrowOnError>({
     security: [{
             in: 'cookie',
-            name: 'rez_auth_session',
+            name: 'rez_access_token',
             type: 'apiKey'
         }, { scheme: 'bearer', type: 'http' }],
     url: '/teams/{id}',
@@ -2525,7 +2542,7 @@ export const archiveTeam = <ThrowOnError extends boolean = false>(options: Optio
 export const getTeam = <ThrowOnError extends boolean = false>(options: Options<GetTeamData, ThrowOnError>) => (options.client ?? client).get<GetTeamResponses, GetTeamErrors, ThrowOnError>({
     security: [{
             in: 'cookie',
-            name: 'rez_auth_session',
+            name: 'rez_access_token',
             type: 'apiKey'
         }, { scheme: 'bearer', type: 'http' }],
     url: '/teams/{id}',
@@ -2538,7 +2555,7 @@ export const getTeam = <ThrowOnError extends boolean = false>(options: Options<G
 export const updateTeams = <ThrowOnError extends boolean = false>(options: Options<UpdateTeamsData, ThrowOnError>) => (options.client ?? client).patch<UpdateTeamsResponses, UpdateTeamsErrors, ThrowOnError>({
     security: [{
             in: 'cookie',
-            name: 'rez_auth_session',
+            name: 'rez_access_token',
             type: 'apiKey'
         }, { scheme: 'bearer', type: 'http' }],
     url: '/teams/{id}',
@@ -2555,7 +2572,7 @@ export const updateTeams = <ThrowOnError extends boolean = false>(options: Optio
 export const deleteUserNotification = <ThrowOnError extends boolean = false>(options: Options<DeleteUserNotificationData, ThrowOnError>) => (options.client ?? client).delete<DeleteUserNotificationResponses, DeleteUserNotificationErrors, ThrowOnError>({
     security: [{
             in: 'cookie',
-            name: 'rez_auth_session',
+            name: 'rez_access_token',
             type: 'apiKey'
         }, { scheme: 'bearer', type: 'http' }],
     url: '/user_session/notifications/{id}',
@@ -2568,7 +2585,7 @@ export const deleteUserNotification = <ThrowOnError extends boolean = false>(opt
 export const listUsers = <ThrowOnError extends boolean = false>(options?: Options<ListUsersData, ThrowOnError>) => (options?.client ?? client).get<ListUsersResponses, ListUsersErrors, ThrowOnError>({
     security: [{
             in: 'cookie',
-            name: 'rez_auth_session',
+            name: 'rez_access_token',
             type: 'apiKey'
         }, { scheme: 'bearer', type: 'http' }],
     url: '/users',
@@ -2581,7 +2598,7 @@ export const listUsers = <ThrowOnError extends boolean = false>(options?: Option
 export const getUser = <ThrowOnError extends boolean = false>(options: Options<GetUserData, ThrowOnError>) => (options.client ?? client).get<GetUserResponses, GetUserErrors, ThrowOnError>({
     security: [{
             in: 'cookie',
-            name: 'rez_auth_session',
+            name: 'rez_access_token',
             type: 'apiKey'
         }, { scheme: 'bearer', type: 'http' }],
     url: '/users/{id}',

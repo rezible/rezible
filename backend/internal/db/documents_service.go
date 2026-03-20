@@ -110,22 +110,6 @@ func (s *DocumentsService) getDocumentAccessScope(ctx context.Context, doc *ent.
 	return fmt.Sprintf("document:%s:%s", doc.ID, highestAccess.ID), nil
 }
 
-func (s *DocumentsService) CreateDocumentAccessAuthSessionToken(ctx context.Context, docId uuid.UUID, sess *rez.AuthSession) (string, error) {
-	doc, docErr := s.GetDocument(ctx, docId)
-	if docErr != nil {
-		return "", docErr
-	}
-	accessScope, scopeErr := s.getDocumentAccessScope(ctx, doc, sess)
-	if scopeErr != nil {
-		return "", scopeErr
-	}
-	token, tokenErr := s.auth.IssueAuthSessionToken(sess, []string{accessScope})
-	if tokenErr != nil {
-		return "", fmt.Errorf("failed to create scoped session token: %w", tokenErr)
-	}
-	return token, nil
-}
-
 func (s *DocumentsService) GetDocumentAccess(ctx context.Context, docId uuid.UUID, sess *rez.AuthSession) (*ent.DocumentAccess, error) {
 	for _, scope := range sess.Scopes {
 		parts := strings.Split(scope, ":")

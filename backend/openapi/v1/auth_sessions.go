@@ -11,7 +11,9 @@ import (
 )
 
 type AuthSessionsHandler interface {
-	GetAuthSessionsConfig(context.Context, *GetAuthSessionsConfigRequest) (*GetAuthSessionsConfigResponse, error)
+	CompleteAuthSessionFlow(context.Context, *CompleteAuthSessionFlowRequest) (*CompleteAuthSessionFlowResponse, error)
+	RefreshAuthSession(context.Context, *RefreshAuthSessionRequest) (*RefreshAuthSessionResponse, error)
+	ClearAuthSession(context.Context, *ClearAuthSessionRequest) (*ClearAuthSessionResponse, error)
 
 	GetCurrentAuthSession(context.Context, *GetCurrentAuthSessionRequest) (*GetCurrentAuthSessionResponse, error)
 
@@ -20,8 +22,9 @@ type AuthSessionsHandler interface {
 }
 
 func (o operations) RegisterAuthSessions(api huma.API) {
-	huma.Register(api, GetAuthSessionsConfig, o.GetAuthSessionsConfig)
-
+	huma.Register(api, CompleteAuthSessionFlow, o.CompleteAuthSessionFlow)
+	huma.Register(api, RefreshAuthSession, o.RefreshAuthSession)
+	huma.Register(api, ClearAuthSession, o.ClearAuthSession)
 	huma.Register(api, GetCurrentAuthSession, o.GetCurrentAuthSession)
 
 	huma.Register(api, ListNotifications, o.ListNotifications)
@@ -29,16 +32,6 @@ func (o operations) RegisterAuthSessions(api huma.API) {
 }
 
 type (
-	AuthSessionsConfig struct {
-		Providers []AuthSessionProviderConfig `json:"providers"`
-	}
-
-	AuthSessionProviderConfig struct {
-		Id            string `json:"id"`
-		Name          string `json:"name"`
-		StartFlowPath string `json:"startFlowPath"`
-	}
-
 	AuthSession struct {
 		ExpiresAt    time.Time    `json:"expiresAt"`
 		Organization Organization `json:"organization"`
@@ -59,26 +52,54 @@ type (
 
 var authSessionsTags = []string{"Auth Sessions"}
 
-var GetAuthSessionsConfig = huma.Operation{
-	OperationID: "get-auth-session-config",
-	Method:      http.MethodGet,
-	Path:        "/auth_session/config",
-	Summary:     "Get the Auth Session config",
+var CompleteAuthSessionFlow = huma.Operation{
+	OperationID: "complete-auth-session-flow",
+	Method:      http.MethodPost,
+	Path:        "/auth_session",
+	Summary:     "Complete an Auth Session flow",
 	Tags:        authSessionsTags,
 	Errors:      openapi.ErrorCodes(),
 	Security:    ExplicitNoSecurity,
 }
 
-type GetAuthSessionsConfigRequest struct {
-	Email string `query:"email" required:"false"`
+type CompleteAuthSessionFlowRequestAttributes struct {
+	Code     string `json:"code"`
+	Verifier string `json:"verifier"`
 }
-type GetAuthSessionsConfigResponse ItemResponse[AuthSessionsConfig]
+type CompleteAuthSessionFlowRequest RequestWithBodyAttributes[CompleteAuthSessionFlowRequestAttributes]
+type CompleteAuthSessionFlowResponse SetCookieResponse
+
+var RefreshAuthSession = huma.Operation{
+	OperationID: "refresh-auth-session",
+	Method:      http.MethodPost,
+	Path:        "/auth_session/refresh",
+	Summary:     "Refresh an active Auth Session",
+	Tags:        authSessionsTags,
+	Errors:      openapi.ErrorCodes(),
+	Security:    SecurityMethodCookieOnly,
+}
+
+type RefreshAuthSessionRequest RequestWithRefreshTokenCookie
+type RefreshAuthSessionResponse SetCookieResponse
+
+var ClearAuthSession = huma.Operation{
+	OperationID: "clear-auth-session",
+	Method:      http.MethodPost,
+	Path:        "/auth_session/clear",
+	Summary:     "Clear an active Auth Session",
+	Tags:        authSessionsTags,
+	Errors:      openapi.ErrorCodes(),
+	Security:    SecurityMethodCookieOnly,
+}
+
+type ClearAuthSessionRequest EmptyRequest
+type ClearAuthSessionResponse SetCookieResponse
 
 var GetCurrentAuthSession = huma.Operation{
 	OperationID: "get-current-auth-session",
 	Method:      http.MethodGet,
 	Path:        "/auth_session",
-	Summary:     "Get the Auth Session for the Current User",
+	Summary:     "Get the current Auth Session",
 	Tags:        authSessionsTags,
 	Errors:      openapi.ErrorCodes(),
 }
@@ -89,7 +110,7 @@ type GetCurrentAuthSessionResponse ItemResponse[AuthSession]
 var ListNotifications = huma.Operation{
 	OperationID: "list-user-notifications",
 	Method:      http.MethodGet,
-	Path:        "/auth_session/user/notifications",
+	Path:        "/auth_session/notifications",
 	Summary:     "List Notifications for the Current User",
 	Tags:        authSessionsTags,
 	Errors:      openapi.ErrorCodes(),

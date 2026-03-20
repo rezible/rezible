@@ -91,7 +91,7 @@ func (c *Config) ListenHost() string {
 }
 
 func (c *Config) ListenPort() string {
-	return c.GetStringOr("port", "8888")
+	return c.GetStringOr("port", "7002")
 }
 
 func ensureSlashPrefix(s string) string {
@@ -121,19 +121,19 @@ func (c *Config) AuthSessionCookieName() string {
 	return c.GetStringOr("auth_session_cookie_name", "rez_auth_session")
 }
 
-func (c *Config) DocumentsServerAddress() string {
-	return c.GetString("documents_server_address")
-}
-
 func (c *Config) AuthSessionSecret() string {
 	return c.GetString("auth.session_secret")
 }
 
-func (c *Config) SingleTenantMode() bool {
-	return c.GetBool("single_tenant_mode")
+func (c *Config) DocumentsServerAddress() string {
+	return c.GetString("documents_server_address")
 }
 
 // TODO: tighten these up
+
+func (c *Config) SingleTenantMode() bool {
+	return c.GetBool("single_tenant_mode")
+}
 
 func (c *Config) AllowUserCreation() bool {
 	return !c.SingleTenantMode()

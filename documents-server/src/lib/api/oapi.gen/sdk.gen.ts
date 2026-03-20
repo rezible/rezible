@@ -2,7 +2,7 @@
 
 import type { Client, Options as Options2, TDataShape } from './client';
 import { client } from './client.gen';
-import type { LoadDocumentData, LoadDocumentErrors, LoadDocumentResponses, RequestDocumentEditorSessionData, RequestDocumentEditorSessionErrors, RequestDocumentEditorSessionResponses, UpdateDocumentData, UpdateDocumentErrors, UpdateDocumentResponses, VerifyDocumentSessionAuthData, VerifyDocumentSessionAuthErrors, VerifyDocumentSessionAuthResponses } from './types.gen';
+import type { LoadDocumentData, LoadDocumentErrors, LoadDocumentResponses, RequestDocumentEditorSessionData, RequestDocumentEditorSessionErrors, RequestDocumentEditorSessionResponses, UpdateDocumentData, UpdateDocumentErrors, UpdateDocumentResponses } from './types.gen';
 
 export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends boolean = boolean> = Options2<TData, ThrowOnError> & {
     /**
@@ -20,28 +20,13 @@ export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends 
 
 export class Documents {
     /**
-     * Verify document session auth
-     */
-    public static verifyDocumentSessionAuth<ThrowOnError extends boolean = false>(options: Options<VerifyDocumentSessionAuthData, ThrowOnError>) {
-        return (options.client ?? client).get<VerifyDocumentSessionAuthResponses, VerifyDocumentSessionAuthErrors, ThrowOnError>({
-            security: [{
-                    in: 'cookie',
-                    name: 'rez_auth_session',
-                    type: 'apiKey'
-                }, { scheme: 'bearer', type: 'http' }],
-            url: '/documents/{id}/auth',
-            ...options
-        });
-    }
-    
-    /**
      * Load document
      */
     public static loadDocument<ThrowOnError extends boolean = false>(options: Options<LoadDocumentData, ThrowOnError>) {
         return (options.client ?? client).get<LoadDocumentResponses, LoadDocumentErrors, ThrowOnError>({
             security: [{
                     in: 'cookie',
-                    name: 'rez_auth_session',
+                    name: 'rez_access_token',
                     type: 'apiKey'
                 }, { scheme: 'bearer', type: 'http' }],
             url: '/documents/{id}/load',
@@ -56,7 +41,7 @@ export class Documents {
         return (options.client ?? client).post<RequestDocumentEditorSessionResponses, RequestDocumentEditorSessionErrors, ThrowOnError>({
             security: [{
                     in: 'cookie',
-                    name: 'rez_auth_session',
+                    name: 'rez_access_token',
                     type: 'apiKey'
                 }, { scheme: 'bearer', type: 'http' }],
             url: '/documents/{id}/session',
@@ -71,7 +56,7 @@ export class Documents {
         return (options.client ?? client).post<UpdateDocumentResponses, UpdateDocumentErrors, ThrowOnError>({
             security: [{
                     in: 'cookie',
-                    name: 'rez_auth_session',
+                    name: 'rez_access_token',
                     type: 'apiKey'
                 }, { scheme: 'bearer', type: 'http' }],
             url: '/documents/{id}/update',

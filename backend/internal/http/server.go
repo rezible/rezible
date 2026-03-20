@@ -81,8 +81,6 @@ func (s *Server) makeApiHandler(auth rez.AuthService, v1h oapiv1.Handler, prefix
 	apiRouter := chi.NewRouter()
 	apiRouter.Mount(rez.Config.WebhooksPath(), whHandler)
 	apiRouter.Mount(oapiv1.VersionPrefix, s.makeV1ApiHandler(auth, v1h, prefix))
-	// if rez.Config.ServeFrontend() {
-	apiRouter.Mount(rez.Config.AuthPath(), auth.AuthRouteHandler())
 	apiRouter.Get("/health", s.makeHealthCheckHandler())
 
 	return apiRouter, nil
@@ -111,7 +109,7 @@ func (s *Server) makeWebhooksHandler() (http.Handler, error) {
 }
 
 func (s *Server) makeV1ApiHandler(auth rez.AuthService, h oapiv1.Handler, prefix string) http.Handler {
-	apiHandler := oapiv1.MakeApi(h, prefix, oapiv1.MakeSecurityMiddleware(auth))
+	apiHandler := oapiv1.MakeApi(h, prefix, auth)
 	return s.commonMiddleware().Handler(apiHandler.Adapter())
 }
 

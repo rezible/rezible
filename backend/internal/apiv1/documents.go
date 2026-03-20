@@ -21,34 +21,13 @@ func (h *documentsHandler) RequestDocumentEditorSession(ctx context.Context, req
 	var resp oapi.RequestDocumentEditorSessionResponse
 
 	docId := request.Id
-	accessToken, accessErr := h.documents.CreateDocumentAccessAuthSessionToken(ctx, docId, getRequestAuthSession(ctx, h.auth))
-	if accessErr != nil {
-		return nil, apiError("no document access", accessErr)
-	}
 
 	wsUrl := "ws://" + rez.Config.DocumentsServerAddress()
 	resp.Body.Data = oapi.DocumentEditorSession{
 		DocumentId:    docId,
-		AccessToken:   accessToken,
 		ConnectionUrl: wsUrl,
 	}
 
-	return &resp, nil
-}
-
-func (h *documentsHandler) VerifyDocumentSessionAuth(ctx context.Context, req *oapi.VerifyDocumentSessionAuthRequest) (*oapi.VerifyDocumentSessionAuthResponse, error) {
-	var resp oapi.VerifyDocumentSessionAuthResponse
-
-	sess := getRequestAuthSession(ctx, h.auth)
-	access, accessErr := h.documents.GetDocumentAccess(ctx, req.Id, sess)
-	if accessErr != nil {
-		return nil, apiError("no document access", accessErr)
-	}
-	if access == nil {
-		return nil, apiError("no document access", rez.ErrAuthSessionUnauthorized)
-	}
-	access.UserID = sess.UserId
-	resp.Body.Data = oapi.DocumentEditorSessionAuthFromEnt(access)
 	return &resp, nil
 }
 

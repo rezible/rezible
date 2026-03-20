@@ -5,6 +5,7 @@ import (
 
 	"github.com/danielgtaylor/huma/v2"
 	"github.com/danielgtaylor/huma/v2/adapters/humago"
+	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/openapi"
 	"gopkg.in/yaml.v3"
 )
@@ -51,7 +52,7 @@ type Handler interface {
 }
 type operations struct{ Handler }
 
-func MakeApi(h Handler, prefix string, mw ...openapi.Middleware) openapi.API {
+func MakeApi(h Handler, prefix string, auth rez.AuthService) openapi.API {
 	cfg := MakeConfig()
 
 	//tranformers := []huma.Transformer{
@@ -61,7 +62,7 @@ func MakeApi(h Handler, prefix string, mw ...openapi.Middleware) openapi.API {
 
 	adapter := humago.NewAdapter(http.NewServeMux(), prefix+VersionPrefix)
 	api := huma.NewAPI(cfg, adapter)
-	api.UseMiddleware(mw...)
+	api.UseMiddleware(MakeSecurityMiddleware(api, auth))
 	huma.AutoRegister(api, operations{Handler: h})
 
 	return api
@@ -78,15 +79,14 @@ func MakeConfig() openapi.Config {
 		//},
 	}
 	cfg.Info.Description = "Rezible API Specification"
-
-	cfg.Security = DefaultSecurity
+	cfg.Security = ApiSecurityMethods
 	cfg.Components.SecuritySchemes = GetDefaultSecuritySchemes()
 
 	return cfg
 }
 
 func GetYamlSpec() (string, error) {
-	api := MakeApi(operations{}, "")
+	api := MakeApi(operations{}, "", nil)
 	spec, specErr := yaml.Marshal(api.OpenAPI())
 	if specErr != nil {
 		return "", specErr

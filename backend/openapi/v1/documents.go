@@ -13,14 +13,12 @@ import (
 
 type DocumentsHandler interface {
 	RequestDocumentEditorSession(context.Context, *RequestDocumentEditorSessionRequest) (*RequestDocumentEditorSessionResponse, error)
-	VerifyDocumentSessionAuth(context.Context, *VerifyDocumentSessionAuthRequest) (*VerifyDocumentSessionAuthResponse, error)
 	LoadDocument(context.Context, *LoadDocumentRequest) (*LoadDocumentResponse, error)
 	UpdateDocument(context.Context, *UpdateDocumentRequest) (*UpdateDocumentResponse, error)
 }
 
 func (o operations) RegisterDocuments(api huma.API) {
 	huma.Register(api, RequestDocumentEditorSession, o.RequestDocumentEditorSession)
-	huma.Register(api, VerifyDocumentSessionAuth, o.VerifyDocumentSessionAuth)
 	huma.Register(api, LoadDocument, o.LoadDocument)
 	huma.Register(api, UpdateDocument, o.UpdateDocument)
 }
@@ -82,18 +80,6 @@ var RequestDocumentEditorSession = huma.Operation{
 
 type RequestDocumentEditorSessionRequest PostIdEmptyRequest
 type RequestDocumentEditorSessionResponse ItemResponse[DocumentEditorSession]
-
-var VerifyDocumentSessionAuth = huma.Operation{
-	OperationID: "verify-document-session-auth",
-	Method:      http.MethodGet,
-	Path:        "/documents/{id}/auth",
-	Summary:     "Verify document session auth",
-	Tags:        documentsTags,
-	Errors:      openapi.ErrorCodes(),
-}
-
-type VerifyDocumentSessionAuthRequest GetIdRequest
-type VerifyDocumentSessionAuthResponse ItemResponse[DocumentEditorSessionAuth]
 
 var LoadDocument = huma.Operation{
 	OperationID: "load-document",

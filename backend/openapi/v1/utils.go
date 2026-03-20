@@ -5,6 +5,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"net/http"
 	"reflect"
 	"time"
 
@@ -92,7 +93,10 @@ func (l ListRequest) ListParams() ent.ListParams {
 
 // Responses
 type (
-	EmptyResponse       struct{}
+	EmptyResponse     struct{}
+	SetCookieResponse struct {
+		SetCookie []http.Cookie `header:"Set-Cookie"`
+	}
 	ItemResponse[T any] struct {
 		Body struct {
 			Data T `json:"data"`

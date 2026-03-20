@@ -909,12 +909,12 @@ func (_m *MockUserService) EXPECT() *MockUserService_Expecter {
 	return &MockUserService_Expecter{mock: &_m.Mock}
 }
 
-// CreateUserContext provides a mock function for the type MockUserService
-func (_mock *MockUserService) CreateUserContext(ctx context.Context, userId uuid.UUID) (context.Context, error) {
+// CreateUserAccessContext provides a mock function for the type MockUserService
+func (_mock *MockUserService) CreateUserAccessContext(ctx context.Context, userId uuid.UUID) (context.Context, error) {
 	ret := _mock.Called(ctx, userId)
 
 	if len(ret) == 0 {
-		panic("no return value specified for CreateUserContext")
+		panic("no return value specified for CreateUserAccessContext")
 	}
 
 	var r0 context.Context
@@ -937,19 +937,19 @@ func (_mock *MockUserService) CreateUserContext(ctx context.Context, userId uuid
 	return r0, r1
 }
 
-// MockUserService_CreateUserContext_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'CreateUserContext'
-type MockUserService_CreateUserContext_Call struct {
+// MockUserService_CreateUserAccessContext_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'CreateUserAccessContext'
+type MockUserService_CreateUserAccessContext_Call struct {
 	*mock.Call
 }
 
-// CreateUserContext is a helper method to define mock.On call
+// CreateUserAccessContext is a helper method to define mock.On call
 //   - ctx context.Context
 //   - userId uuid.UUID
-func (_e *MockUserService_Expecter) CreateUserContext(ctx interface{}, userId interface{}) *MockUserService_CreateUserContext_Call {
-	return &MockUserService_CreateUserContext_Call{Call: _e.mock.On("CreateUserContext", ctx, userId)}
+func (_e *MockUserService_Expecter) CreateUserAccessContext(ctx interface{}, userId interface{}) *MockUserService_CreateUserAccessContext_Call {
+	return &MockUserService_CreateUserAccessContext_Call{Call: _e.mock.On("CreateUserAccessContext", ctx, userId)}
 }
 
-func (_c *MockUserService_CreateUserContext_Call) Run(run func(ctx context.Context, userId uuid.UUID)) *MockUserService_CreateUserContext_Call {
+func (_c *MockUserService_CreateUserAccessContext_Call) Run(run func(ctx context.Context, userId uuid.UUID)) *MockUserService_CreateUserAccessContext_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		var arg0 context.Context
 		if args[0] != nil {
@@ -967,12 +967,12 @@ func (_c *MockUserService_CreateUserContext_Call) Run(run func(ctx context.Conte
 	return _c
 }
 
-func (_c *MockUserService_CreateUserContext_Call) Return(context1 context.Context, err error) *MockUserService_CreateUserContext_Call {
+func (_c *MockUserService_CreateUserAccessContext_Call) Return(context1 context.Context, err error) *MockUserService_CreateUserAccessContext_Call {
 	_c.Call.Return(context1, err)
 	return _c
 }
 
-func (_c *MockUserService_CreateUserContext_Call) RunAndReturn(run func(ctx context.Context, userId uuid.UUID) (context.Context, error)) *MockUserService_CreateUserContext_Call {
+func (_c *MockUserService_CreateUserAccessContext_Call) RunAndReturn(run func(ctx context.Context, userId uuid.UUID) (context.Context, error)) *MockUserService_CreateUserAccessContext_Call {
 	_c.Call.Return(run)
 	return _c
 }
@@ -1245,68 +1245,6 @@ func (_c *MockUserService_GetById_Call) Return(user *ent.User, err error) *MockU
 }
 
 func (_c *MockUserService_GetById_Call) RunAndReturn(run func(context1 context.Context, uUID uuid.UUID) (*ent.User, error)) *MockUserService_GetById_Call {
-	_c.Call.Return(run)
-	return _c
-}
-
-// GetUserContext provides a mock function for the type MockUserService
-func (_mock *MockUserService) GetUserContext(ctx context.Context) (*ent.User, bool) {
-	ret := _mock.Called(ctx)
-
-	if len(ret) == 0 {
-		panic("no return value specified for GetUserContext")
-	}
-
-	var r0 *ent.User
-	var r1 bool
-	if returnFunc, ok := ret.Get(0).(func(context.Context) (*ent.User, bool)); ok {
-		return returnFunc(ctx)
-	}
-	if returnFunc, ok := ret.Get(0).(func(context.Context) *ent.User); ok {
-		r0 = returnFunc(ctx)
-	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(*ent.User)
-		}
-	}
-	if returnFunc, ok := ret.Get(1).(func(context.Context) bool); ok {
-		r1 = returnFunc(ctx)
-	} else {
-		r1 = ret.Get(1).(bool)
-	}
-	return r0, r1
-}
-
-// MockUserService_GetUserContext_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'GetUserContext'
-type MockUserService_GetUserContext_Call struct {
-	*mock.Call
-}
-
-// GetUserContext is a helper method to define mock.On call
-//   - ctx context.Context
-func (_e *MockUserService_Expecter) GetUserContext(ctx interface{}) *MockUserService_GetUserContext_Call {
-	return &MockUserService_GetUserContext_Call{Call: _e.mock.On("GetUserContext", ctx)}
-}
-
-func (_c *MockUserService_GetUserContext_Call) Run(run func(ctx context.Context)) *MockUserService_GetUserContext_Call {
-	_c.Call.Run(func(args mock.Arguments) {
-		var arg0 context.Context
-		if args[0] != nil {
-			arg0 = args[0].(context.Context)
-		}
-		run(
-			arg0,
-		)
-	})
-	return _c
-}
-
-func (_c *MockUserService_GetUserContext_Call) Return(user *ent.User, b bool) *MockUserService_GetUserContext_Call {
-	_c.Call.Return(user, b)
-	return _c
-}
-
-func (_c *MockUserService_GetUserContext_Call) RunAndReturn(run func(ctx context.Context) (*ent.User, bool)) *MockUserService_GetUserContext_Call {
 	_c.Call.Return(run)
 	return _c
 }

@@ -6,6 +6,7 @@ node_modules/
 .vscode/
 scripts/certs/
 scripts/data/
+scripts/localias.local.yaml
 **/openapi-ts-error-*
 **/CLAUDE.md
 **/AGENTS.md

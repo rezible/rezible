@@ -18,6 +18,7 @@ import (
 	"github.com/rezible/rezible/internal/db/datasync"
 	"github.com/rezible/rezible/internal/eino"
 	"github.com/rezible/rezible/internal/http"
+	"github.com/rezible/rezible/internal/oidc"
 	"github.com/rezible/rezible/internal/postgres"
 	"github.com/rezible/rezible/internal/postgres/river"
 	"github.com/rezible/rezible/internal/prosemirror"
@@ -157,9 +158,6 @@ func (s *Server) setup(ctx context.Context) error {
 	}
 
 	if !rez.Config.DataSyncMode() {
-		if provsErr := svcs.Auth.LoadSessionProviders(ctx); provsErr != nil {
-			return fmt.Errorf("loading auth session providers: %w", provsErr)
-		}
 		// TODO: this shouldn't need the db client
 		apiv1Handler := apiv1.NewHandler(svcs, s.dbClient)
 
@@ -184,12 +182,12 @@ func (s *Server) setupServices(ctx context.Context, dbc *ent.Client, jobSvc rez.
 		return nil, fmt.Errorf("postgres.NewUserService: %w", usersErr)
 	}
 
-	auth, authErr := http.NewAuthSessionService(ctx, orgs, users)
+	auth, authErr := oidc.NewAuthService(ctx, orgs, users)
 	if authErr != nil {
-		return nil, fmt.Errorf("http.NewAuthSessionService: %w", authErr)
+		return nil, fmt.Errorf("dex.NewAuthService: %w", authErr)
 	}
 
-	intgs, intgsErr := db.NewIntegrationsService(dbc, jobSvc, users)
+	intgs, intgsErr := db.NewIntegrationsService(dbc, jobSvc, auth)
 	if intgsErr != nil {
 		return nil, fmt.Errorf("db.NewIntegrationsService: %w", intgsErr)
 	}

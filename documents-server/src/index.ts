@@ -15,8 +15,8 @@ const loadConfig = (): Config => {
 	const name = process.env.NAME ?? "document-server";
 
 	let host = process.env.HOST ?? "localhost";
-	let port = Number.parseInt(process.env.PORT ?? "8889", 10);
-	if (port < 1024) port = 8889;
+	let port = Number.parseInt(process.env.PORT ?? "7003", 10);
+	if (port < 1024) port = 7003;
 
 	const apiUrl = process.env.DOCUMENTS_API_URL ?? "http://localhost:8888/api/documents";
 	const apiSecret = process.env.DOCUMENTS_API_SECRET ?? "foo";

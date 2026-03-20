@@ -2,14 +2,13 @@ name: "rezible-dev"
 
 volumes:
   postgres-data:
-  terraform-data:
 
 services:
   proxy:
     image: caddy:2
     container_name: proxy
     restart: unless-stopped
-    ports: ["5482:80"]
+    ports: ["5482:80", "5483:2019"]
     volumes: ["./Caddyfile:/etc/caddy/Caddyfile:ro"]
     extra_hosts:
       - "host.docker.internal:host-gateway"
@@ -30,47 +29,50 @@ services:
     volumes:
       - postgres-data:/var/lib/postgresql/data
       - ./postgres-init:/docker-entrypoint-initdb.d:ro
+    ports: ["7010:5432"]
+
+  dex:
+    image: dexidp/dex:v2.41.1
+    container_name: dex
+    restart: unless-stopped
     ports:
-      - "5432:5432"
+      - "5556:5556"   # OIDC / HTTP
+      - "5557:5557"   # gRPC (optional, for admin API)
+    volumes:
+      - ./dev/dex/config.yaml:/etc/dex/config.yaml:ro
+      - dex_data:/var/dex              # sqlite storage in dev
+    environment:
+      DEX_FRONTEND_ISSUER: http://localhost:5556/dex
+    command: [ "dex", "serve", "/etc/dex/config.yaml" ]
+    networks:
+      - app
+    healthcheck:
+      test: [ "CMD", "wget", "--quiet", "--tries=1", "--spider",
+              "http://localhost:5556/dex/.well-known/openid-configuration" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
 
   dev-oidc:
     image: ghcr.io/businesssimulations/dev-oidc-toolkit:0.6.0
-    container_name: dev-oidc
     restart: unless-stopped
     environment:
-      DevOidcToolkit__Port: "8080"
-      DevOidcToolkit__Issuer: "https://oidc.dev.rezible.com/"
+      DevOidcToolkit__Port: "6432"
+      DevOidcToolkit__Issuer: "https://dev-oidc.${LOCAL_DEV_HOST}/"
+      DevOidcToolkit__Clients__0__Id: "client"
+      DevOidcToolkit__Clients__0__Secret: "secret"
+      DevOidcToolkit__Clients__0__RedirectUris__0: "https://app.${LOCAL_DEV_HOST}/auth/callback"
       DevOidcToolkit__Users__0__Email: "${REZ_DEBUG_DEFAULT_USER_EMAIL}"
       DevOidcToolkit__Users__0__FirstName: "Firstname"
       DevOidcToolkit__Users__0__LastName: "Lastname"
       DevOidcToolkit__Users__1__Email: "user@example.com"
       DevOidcToolkit__Users__1__FirstName: "Test"
       DevOidcToolkit__Users__1__LastName: "User"
-      DevOidcToolkit__Clients__0__Id: "client"
-      DevOidcToolkit__Clients__0__Secret: "secret"
-      DevOidcToolkit__Clients__0__RedirectUris__0: "https://app.${LOCAL_DEV_HOST}/api/auth/flow/oidc/test-provider/callback"
     networks:
       default:
-        aliases:
-          - "oidc.${LOCAL_DEV_HOST}"
-
-  tf-provision:
-    scale: 0
-    image: hashicorp/terraform:1.14
-    restart: "no"
-    volumes:
-      - terraform-data:/terraform-data:rw
-      - ./provision.tf:/provision/main.tf:ro
-    working_dir: /provision
-    environment:
-      TF_IN_AUTOMATION: true
-      TF_VAR_local_dev_host: "${LOCAL_DEV_HOST}"
-    entrypoint:
-      - "/bin/sh"
-      - "-c"
-      - "terraform init -upgrade -input=false > /dev/null \
-          && terraform apply -auto-approve -input=false \
-          && terraform output -json > /terraform-data/output.json"
+        aliases: ["dev-oidc.${LOCAL_DEV_HOST}"]
+    ports: ["7011:6432"]
 
   telemetry:
     scale: 0

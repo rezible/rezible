@@ -4,7 +4,7 @@ set dotenv-load
 import "scripts/Justfile"
 
 dev_db_host := "localhost"
-dev_db_port := "5432"
+dev_db_port := "7010"
 dev_db_user := "rezible"
 dev_db_password := "foobar1"
 dev_db_database := "rezible"

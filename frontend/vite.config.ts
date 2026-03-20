@@ -6,8 +6,8 @@ export default defineConfig({
 	plugins: [sveltekit(), tailwindcss()],
 	server: {
 		host: "0.0.0.0",
-		port: 5173,
+		port: 7001,
 		strictPort: true,
-		allowedHosts: ["app.dev.rezible.com", "frontend.dev.rezible.com"],
+		allowedHosts: ["app.dev.rezible.com"],
 	},
 });

@@ -95,20 +95,23 @@ export type AuthSession = {
     user: User;
 };
 
-export type AuthSessionProviderConfig = {
-    id: string;
-    name: string;
-    startFlowPath: string;
-};
-
-export type AuthSessionsConfig = {
-    providers: Array<AuthSessionProviderConfig>;
-};
-
 export type AvailableIntegration = {
     dataKinds: Array<string>;
     name: string;
     oauthRequired: boolean;
+};
+
+export type CompleteAuthSessionFlowRequestAttributes = {
+    code: string;
+    verifier: string;
+};
+
+export type CompleteAuthSessionFlowRequestBody = {
+    /**
+     * A URL to the JSON Schema for this object.
+     */
+    readonly $schema?: string;
+    attributes: CompleteAuthSessionFlowRequestAttributes;
 };
 
 export type CompleteIntegrationOAuthFlowRequestAttributes = {
@@ -776,12 +779,6 @@ export type DocumentEditorSession = {
     documentId: string;
 };
 
-export type DocumentEditorSessionAuth = {
-    canEdit: boolean;
-    canManage: boolean;
-    userId: string;
-};
-
 export type ErrorDetail = {
     /**
      * Where the error occurred, e.g. 'body.items[3].tags' or 'path.thing-id'
@@ -906,14 +903,6 @@ export type GetAlertResponseBody = {
      */
     readonly $schema?: string;
     data: Alert;
-};
-
-export type GetAuthSessionsConfigResponseBody = {
-    /**
-     * A URL to the JSON Schema for this object.
-     */
-    readonly $schema?: string;
-    data: AuthSessionsConfig;
 };
 
 export type GetConfiguredIntegrationResponseBody = {
@@ -2942,14 +2931,6 @@ export type UserOncallInformation = {
     watchingRosters: Array<OncallRoster>;
 };
 
-export type VerifyDocumentSessionAuthResponseBody = {
-    /**
-     * A URL to the JSON Schema for this object.
-     */
-    readonly $schema?: string;
-    data: DocumentEditorSessionAuth;
-};
-
 export type VideoConference = {
     attributes: VideoConferenceAttributes;
     id: string;
@@ -3215,16 +3196,14 @@ export type GetCurrentAuthSessionResponses = {
 
 export type GetCurrentAuthSessionResponse = GetCurrentAuthSessionResponses[keyof GetCurrentAuthSessionResponses];
 
-export type GetAuthSessionConfigData = {
-    body?: never;
+export type CompleteAuthSessionFlowData = {
+    body: CompleteAuthSessionFlowRequestBody;
     path?: never;
-    query?: {
-        email?: string;
-    };
-    url: '/auth_session/config';
+    query?: never;
+    url: '/auth_session';
 };
 
-export type GetAuthSessionConfigErrors = {
+export type CompleteAuthSessionFlowErrors = {
     /**
      * Bad Request
      */
@@ -3251,16 +3230,61 @@ export type GetAuthSessionConfigErrors = {
     500: ErrorModel;
 };
 
-export type GetAuthSessionConfigError = GetAuthSessionConfigErrors[keyof GetAuthSessionConfigErrors];
+export type CompleteAuthSessionFlowError = CompleteAuthSessionFlowErrors[keyof CompleteAuthSessionFlowErrors];
 
-export type GetAuthSessionConfigResponses = {
+export type CompleteAuthSessionFlowResponses = {
     /**
-     * OK
+     * No Content
      */
-    200: GetAuthSessionsConfigResponseBody;
+    204: void;
 };
 
-export type GetAuthSessionConfigResponse = GetAuthSessionConfigResponses[keyof GetAuthSessionConfigResponses];
+export type CompleteAuthSessionFlowResponse = CompleteAuthSessionFlowResponses[keyof CompleteAuthSessionFlowResponses];
+
+export type ClearAuthSessionData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/auth_session/clear';
+};
+
+export type ClearAuthSessionErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
+
+export type ClearAuthSessionError = ClearAuthSessionErrors[keyof ClearAuthSessionErrors];
+
+export type ClearAuthSessionResponses = {
+    /**
+     * No Content
+     */
+    204: void;
+};
+
+export type ClearAuthSessionResponse = ClearAuthSessionResponses[keyof ClearAuthSessionResponses];
 
 export type ListUserNotificationsData = {
     body?: never;
@@ -3271,7 +3295,7 @@ export type ListUserNotificationsData = {
         search?: string;
         archived?: boolean;
     };
-    url: '/auth_session/user/notifications';
+    url: '/auth_session/notifications';
 };
 
 export type ListUserNotificationsErrors = {
@@ -3311,6 +3335,51 @@ export type ListUserNotificationsResponses = {
 };
 
 export type ListUserNotificationsResponse = ListUserNotificationsResponses[keyof ListUserNotificationsResponses];
+
+export type RefreshAuthSessionData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/auth_session/refresh';
+};
+
+export type RefreshAuthSessionErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
+
+export type RefreshAuthSessionError = RefreshAuthSessionErrors[keyof RefreshAuthSessionErrors];
+
+export type RefreshAuthSessionResponses = {
+    /**
+     * No Content
+     */
+    204: void;
+};
+
+export type RefreshAuthSessionResponse = RefreshAuthSessionResponses[keyof RefreshAuthSessionResponses];
 
 export type ListDebriefQuestionsData = {
     body?: never;
@@ -3547,53 +3616,6 @@ export type UpdateDebriefQuestionResponses = {
 };
 
 export type UpdateDebriefQuestionResponse = UpdateDebriefQuestionResponses[keyof UpdateDebriefQuestionResponses];
-
-export type VerifyDocumentSessionAuthData = {
-    body?: never;
-    path: {
-        id: string;
-    };
-    query?: never;
-    url: '/documents/{id}/auth';
-};
-
-export type VerifyDocumentSessionAuthErrors = {
-    /**
-     * Bad Request
-     */
-    400: ErrorModel;
-    /**
-     * Unauthorized
-     */
-    401: ErrorModel;
-    /**
-     * Forbidden
-     */
-    403: ErrorModel;
-    /**
-     * Not Found
-     */
-    404: ErrorModel;
-    /**
-     * Unprocessable Entity
-     */
-    422: ErrorModel;
-    /**
-     * Internal Server Error
-     */
-    500: ErrorModel;
-};
-
-export type VerifyDocumentSessionAuthError = VerifyDocumentSessionAuthErrors[keyof VerifyDocumentSessionAuthErrors];
-
-export type VerifyDocumentSessionAuthResponses = {
-    /**
-     * OK
-     */
-    200: VerifyDocumentSessionAuthResponseBody;
-};
-
-export type VerifyDocumentSessionAuthResponse = VerifyDocumentSessionAuthResponses[keyof VerifyDocumentSessionAuthResponses];
 
 export type LoadDocumentData = {
     body?: never;

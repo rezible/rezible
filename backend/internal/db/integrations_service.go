@@ -3,7 +3,6 @@ package db
 import (
 	"context"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"net/url"
 	"slices"
@@ -28,11 +27,11 @@ import (
 type IntegrationsService struct {
 	db     *ent.Client
 	jobs   rez.JobsService
-	users  rez.UserService
+	auth   rez.AuthService
 	syncer *datasync.Syncer
 }
 
-func NewIntegrationsService(db *ent.Client, jobSvc rez.JobsService, users rez.UserService) (*IntegrationsService, error) {
+func NewIntegrationsService(db *ent.Client, jobSvc rez.JobsService, auth rez.AuthService) (*IntegrationsService, error) {
 	syncer := datasync.NewSyncerService(db)
 	jobs.RegisterPeriodicJob(jobs.SyncAllTenantIntegrationsDataPeriodicJob)
 	jobs.RegisterWorkerFunc(syncer.SyncIntegrationsData)
@@ -40,7 +39,7 @@ func NewIntegrationsService(db *ent.Client, jobSvc rez.JobsService, users rez.Us
 	s := &IntegrationsService{
 		db:     db,
 		jobs:   jobSvc,
-		users:  users,
+		auth:   auth,
 		syncer: syncer,
 	}
 
@@ -233,24 +232,24 @@ func (s *IntegrationsService) set(ctx context.Context, name string, setFn func(*
 }
 
 func (s *IntegrationsService) makeOAuthState(ctx context.Context, name string) (string, error) {
-	u, exists := s.users.GetUserContext(ctx)
-	if !exists {
-		return "", errors.New("user context not found")
+	sess, sessErr := s.auth.GetAuthSession(ctx)
+	if sessErr != nil {
+		return "", fmt.Errorf("auth session error: %w", sessErr)
 	}
 	state := uuid.New().String()
 	create := s.db.IntegrationOAuthState.Create().
-		SetUser(u).
+		SetUserID(sess.UserId).
 		SetState(state).
 		SetIntegrationName(name)
 	return state, create.Exec(ctx)
 }
 
 func (s *IntegrationsService) verifyOAuthState(ctx context.Context, name string, state string) error {
-	u, exists := s.users.GetUserContext(ctx)
-	if !exists {
-		return fmt.Errorf("user context not found")
+	sess, sessErr := s.auth.GetAuthSession(ctx)
+	if sessErr != nil {
+		return fmt.Errorf("auth session error: %w", sessErr)
 	}
-	userIntegrationStates := ioas.And(ioas.UserIDEQ(u.ID), ioas.IntegrationNameEQ(name))
+	userIntegrationStates := ioas.And(ioas.UserIDEQ(sess.UserId), ioas.IntegrationNameEQ(name))
 	query := s.db.IntegrationOAuthState.Query().
 		Where(userIntegrationStates, ioas.ExpiresAtGT(time.Now()), ioas.StateEQ(state))
 	stateMatch, queryErr := query.Exist(ctx)
@@ -261,7 +260,7 @@ func (s *IntegrationsService) verifyOAuthState(ctx context.Context, name string,
 	if _, cleanupErr := cleanup.Exec(ctx); cleanupErr != nil {
 		log.Error().Err(cleanupErr).
 			Str("name", name).
-			Str("userId", u.ID.String()).
+			Str("userId", sess.UserId.String()).
 			Msg("failed to cleanup old integration user oauth states")
 	}
 	if !stateMatch {

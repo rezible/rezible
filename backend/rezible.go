@@ -8,15 +8,12 @@ import (
 	"time"
 
 	"github.com/ThreeDotsLabs/watermill/components/cqrs"
-	"github.com/coreos/go-oidc/v3/oidc"
 	"github.com/google/uuid"
+	"github.com/rezible/rezible/ent"
 	"github.com/rezible/rezible/ent/predicate"
+	"github.com/rezible/rezible/jobs"
 	"github.com/rotisserie/eris"
 	"github.com/texm/prosemirror-go"
-	"golang.org/x/oauth2"
-
-	"github.com/rezible/rezible/ent"
-	"github.com/rezible/rezible/jobs"
 )
 
 var (
@@ -55,8 +52,6 @@ type ConfigLoader interface {
 	AuthPath() string
 	WebhooksPath() string
 	GetMountedAppRoute(routes ...string) (string, error)
-
-	AuthSessionCookieName() string
 
 	AllowTenantCreation() bool
 	AllowUserCreation() bool
@@ -185,9 +180,7 @@ type (
 	}
 
 	UserService interface {
-		CreateUserContext(ctx context.Context, userId uuid.UUID) (context.Context, error)
-		GetUserContext(ctx context.Context) (*ent.User, bool)
-
+		CreateUserAccessContext(ctx context.Context, userId uuid.UUID) (context.Context, error)
 		FindOrCreateAuthProviderUser(context.Context, ent.User) (*ent.User, error)
 
 		ListUsers(context.Context, ListUsersParams) ([]*ent.User, error)
@@ -199,51 +192,20 @@ type (
 )
 
 type (
-	AuthProviderSession struct {
-		Organization ent.Organization
-		User         ent.User
-		ExpiresAt    time.Time
-		RedirectUrl  string
-	}
-
-	AuthSessionCreatedCallback func(http.ResponseWriter, *http.Request, *AuthProviderSession)
-	AuthSessionProvider        interface {
-		Id() string
-		DisplayName() string
-		UserMapping() *ent.User
-		FlowPath() string
-		MakeFlowPathHandler(AuthSessionCreatedCallback) http.Handler
-		SessionExists(r *http.Request) bool
-		ClearSession(w http.ResponseWriter, r *http.Request) error
-	}
-
-	OIDCAuthSessionIdentityProvider interface {
-		Id() string
-		DisplayName() string
-		LoadConfig(ctx context.Context, redirectUrl string) (*oidc.IDTokenVerifier, *oauth2.Config, error)
-		GetAuthCodeOptions(r *http.Request) []oauth2.AuthCodeOption
-		ExtractTokenSession(token *oidc.IDToken) (*AuthProviderSession, error)
-	}
-
 	AuthSession struct {
 		UserId    uuid.UUID
-		ExpiresAt time.Time
 		Scopes    []string
+		ExpiresAt time.Time
 	}
 
 	AuthService interface {
-		LoadSessionProviders(context.Context) error
-		Providers() []AuthSessionProvider
-		GetProviderStartFlowPath(p AuthSessionProvider) (string, error)
+		CreateClientAuthSession(ctx context.Context, token string, verifier string) ([]http.Cookie, error)
+		RefreshClientAuthSession(ctx context.Context, refreshCookie http.Cookie) ([]http.Cookie, error)
+		ClearClientAuthSession(ctx context.Context) ([]http.Cookie, error)
 
-		AuthRouteHandler() http.Handler
-		MCPServerMiddleware() func(http.Handler) http.Handler
-
-		IssueAuthSessionToken(sess *AuthSession, scopes []string) (string, error)
-		VerifyAuthSessionToken(token string, scopes []string) (*AuthSession, error)
-
-		CreateAuthContext(context.Context, *AuthSession) (context.Context, error)
+		CreateVerifiedAuthSessionContext(ctx context.Context, token string) (context.Context, error)
 		GetAuthSession(context.Context) (*AuthSession, error)
+		// CreateAuthContext(context.Context, *AuthSession) (context.Context, error)
 	}
 )
 
@@ -321,8 +283,6 @@ type (
 	DocumentsService interface {
 		GetDocument(context.Context, uuid.UUID) (*ent.Document, error)
 		SetDocument(context.Context, uuid.UUID, func(*ent.DocumentMutation)) (*ent.Document, error)
-
-		CreateDocumentAccessAuthSessionToken(context.Context, uuid.UUID, *AuthSession) (string, error)
 		GetDocumentAccess(context.Context, uuid.UUID, *AuthSession) (*ent.DocumentAccess, error)
 	}
 )

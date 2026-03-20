@@ -30,7 +30,7 @@ func NewUserService(db *ent.Client, orgs rez.OrganizationService) (*UserService,
 
 type userCtxKey struct{}
 
-func (s *UserService) CreateUserContext(ctx context.Context, userId uuid.UUID) (context.Context, error) {
+func (s *UserService) CreateUserAccessContext(ctx context.Context, userId uuid.UUID) (context.Context, error) {
 	// TODO: revise usage of this
 	userLookupCtx := privacy.DecisionContext(ctx, privacy.Allow)
 	usr, userErr := s.GetById(userLookupCtx, userId)
@@ -43,7 +43,7 @@ func (s *UserService) CreateUserContext(ctx context.Context, userId uuid.UUID) (
 	return context.WithValue(access.TenantContext(ctx, usr.TenantID), userCtxKey{}, usr), nil
 }
 
-func (s *UserService) GetUserContext(ctx context.Context) (*ent.User, bool) {
+func (s *UserService) GetContextUser(ctx context.Context) (*ent.User, bool) {
 	u, ok := ctx.Value(userCtxKey{}).(*ent.User)
 	return u, ok
 }

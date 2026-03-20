@@ -1,5 +1,3 @@
-app.dev.rezible.com: 5482 # caddy
-frontend.dev.rezible.com: 5173
-api.dev.rezible.com: 8888
-documents-api.dev.rezible.com: 8889
-oidc.dev.rezible.com: 5482
+app.dev.rezible.com: 5482
+api.dev.rezible.com: 5482
+auth.dev.rezible.com: 5482

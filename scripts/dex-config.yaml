@@ -1,0 +1,34 @@
+# dex/config.yaml
+issuer: https://auth.dev.rezible.com/
+
+storage:
+  type: postgres
+  config:
+    database: dex
+
+oauth2:
+  skipApprovalScreen: true
+  responseTypes: ["code"]
+
+staticClients:
+  # Public SPA client — no secret, PKCE only
+  - id: spa
+    name: "My App"
+    redirectURIs:
+      - https://app.yourdomain.com/auth/callback
+    public: true          # ← tells Dex this is a PKCE client, no secret needed
+
+  # Admin app — confidential client, has a secret
+  - id: admin
+    name: "Admin App"
+    secret: $ADMIN_CLIENT_SECRET
+    redirectURIs:
+      - https://admin.yourdomain.com/auth/callback
+
+connectors:
+  - type: google          # or github, LDAP, local passwords, etc.
+    id: google
+    name: Google
+    config:
+      clientID: $GOOGLE_CLIENT_ID
+      clientSecret: $GOOGLE_CLIENT_SECRET

@@ -2,10 +2,9 @@ package apiv1
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/google/uuid"
-	"github.com/rs/zerolog/log"
-
 	rez "github.com/rezible/rezible"
 	oapi "github.com/rezible/rezible/openapi/v1"
 )
@@ -20,26 +19,39 @@ func newAuthSessionsHandler(auth rez.AuthService, orgs rez.OrganizationService, 
 	return &authSessionsHandler{auth: auth, orgs: orgs, users: users}
 }
 
-func (h *authSessionsHandler) GetAuthSessionsConfig(ctx context.Context, req *oapi.GetAuthSessionsConfigRequest) (*oapi.GetAuthSessionsConfigResponse, error) {
-	var resp oapi.GetAuthSessionsConfigResponse
+func (h *authSessionsHandler) CompleteAuthSessionFlow(ctx context.Context, req *oapi.CompleteAuthSessionFlowRequest) (*oapi.CompleteAuthSessionFlowResponse, error) {
+	var resp oapi.CompleteAuthSessionFlowResponse
 
-	providers := h.auth.Providers()
-	configs := make([]oapi.AuthSessionProviderConfig, len(providers))
-	for i, prov := range providers {
-		flowPath, flowErr := h.auth.GetProviderStartFlowPath(prov)
-		if flowErr != nil {
-			log.Error().Err(flowErr).Str("id", prov.Id()).Msg("invalid provider flow url")
-		}
-		configs[i] = oapi.AuthSessionProviderConfig{
-			Id:            prov.Id(),
-			Name:          prov.DisplayName(),
-			StartFlowPath: flowPath,
-		}
+	attr := req.Body.Attributes
+	cookies, flowErr := h.auth.CreateClientAuthSession(ctx, attr.Code, attr.Verifier)
+	if flowErr != nil {
+		return nil, fmt.Errorf("failed to complete auth session flow: %w", flowErr)
 	}
+	resp.SetCookie = cookies
 
-	resp.Body.Data = oapi.AuthSessionsConfig{
-		Providers: configs,
+	return &resp, nil
+}
+
+func (h *authSessionsHandler) RefreshAuthSession(ctx context.Context, req *oapi.RefreshAuthSessionRequest) (*oapi.RefreshAuthSessionResponse, error) {
+	var resp oapi.RefreshAuthSessionResponse
+
+	cookies, cookiesErr := h.auth.RefreshClientAuthSession(ctx, req.Cookie)
+	if cookiesErr != nil {
+		return nil, fmt.Errorf("refresh session cookies: %w", cookiesErr)
 	}
+	resp.SetCookie = cookies
+
+	return &resp, nil
+}
+
+func (h *authSessionsHandler) ClearAuthSession(ctx context.Context, req *oapi.ClearAuthSessionRequest) (*oapi.ClearAuthSessionResponse, error) {
+	var resp oapi.ClearAuthSessionResponse
+
+	cookies, cookiesErr := h.auth.ClearClientAuthSession(ctx)
+	if cookiesErr != nil {
+		return nil, fmt.Errorf("clear auth session: %w", cookiesErr)
+	}
+	resp.SetCookie = cookies
 
 	return &resp, nil
 }
