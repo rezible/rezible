@@ -18,6 +18,7 @@ export type PageActions<PComponent extends Component<any>> = {
 }
 
 export class AppShellState {
+	pageTitle = $state("Rezible")
 	breadcrumbs = $state<PageBreadcrumb[]>([]);
 	pageActions = $state<PageActions<any>>();
 

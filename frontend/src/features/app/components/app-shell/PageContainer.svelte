@@ -35,18 +35,20 @@
 	</span>
 {/snippet}
 
-<div class="flex justify-between items-center h-11 rounded-md bg-surface-200/80" class:hidden={!session.isSetup}>
-	<div class="flex items-center gap-2 px-2">
-		{@render breadcrumbs()}
+<main class="flex flex-col flex-1 min-w-0 min-h-0 p-2">
+	<div class="flex w-full justify-between items-center h-11 rounded-md border bg-surface-200" class:hidden={!session.isSetup}>
+		<div class="flex items-center gap-2 px-2">
+			{@render breadcrumbs()}
+		</div>
+
+		{#if pageActions}
+			<div class="flex items-center">
+				<pageActions.component {...pageActionsProps} />
+			</div>
+		{/if}
 	</div>
 
-	{#if pageActions}
-		<div class="flex items-center">
-			<pageActions.component {...pageActionsProps} />
-		</div>
-	{/if}
-</div>
-
-<div class="flex flex-col flex-1 min-h-0 overflow-auto pt-1">
-	{@render children()}
-</div>
+	<div id="scroll-body" class="flex-1 min-h-0 overflow-y-auto">
+		{@render children()}
+	</div>
+</main>

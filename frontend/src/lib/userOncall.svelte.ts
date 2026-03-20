@@ -30,5 +30,5 @@ export class UserOncallInformationState {
 }
 
 const ctx = new Context<UserOncallInformationState>("userOncallInformation");
-export const setUserOncallInformationState = () => ctx.set(new UserOncallInformationState());
+export const initUserOncallInformationState = () => ctx.set(new UserOncallInformationState());
 export const useUserOncallInformation = () => ctx.get();

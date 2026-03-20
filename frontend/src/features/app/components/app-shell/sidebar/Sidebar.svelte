@@ -5,6 +5,7 @@
 		mdiAccountGroup,
 		mdiAlarmLight,
 		mdiBookshelf,
+		mdiDockLeft,
 		mdiFire,
 		mdiHome,
 		mdiShape,
@@ -14,8 +15,7 @@
 	} from "@mdi/js";
 	import { cn } from '$lib/utils';
 	import Icon from "$components/icon/Icon.svelte";
-	import UserProfileMenu from "./UserProfileMenu.svelte";
-	import LogoHeader from "./LogoHeader.svelte";
+	import { Button } from "$components/ui/button";
 
 	type SidebarRoute = {
 		path: string;
@@ -65,12 +65,10 @@
 
 <aside
 	class={cn(
-		"h-full group flex flex-col overflow-hidden bg-surface-300",
+		"h-full p-2 pr-0 group flex flex-col overflow-hidden bg-surface-300",
 		expanded ? "w-60" : "w-fit"
 	)}
 >
-	<LogoHeader showText={expanded} />
-
 	<div class="overflow-y-auto flex flex-col flex-1 min-h-0 justify-between">
 		<div class="flex flex-col overflow-y-auto gap-1 overflow-x-hidden">
 			{#each items as item}
@@ -83,13 +81,9 @@
 		</div>
 	</div>
 
-	{#if expanded}
-		<div class="my-2">
-			<span>search</span>
-		</div>
-
-		<div class="">
-			<UserProfileMenu />
-		</div>
-	{/if}
+	<div class="grid pt-2 place-items-start">
+		<Button onclick={() => {expanded = !expanded}} size="sm" class="w-full" variant="ghost">
+			<Icon data={mdiDockLeft}></Icon>
+		</Button>
+	</div>
 </aside>

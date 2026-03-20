@@ -9,7 +9,7 @@
 	appShell.setPageBreadcrumbs(() => [{ label: "Home" }]);
 </script>
 
-<div class="h-full w-full flex flex-col gap-2">
+<div class="flex flex-col gap-2">
 	<ShiftsHeader />
 
 	<div class="flex-1 flex min-h-0 gap-2">

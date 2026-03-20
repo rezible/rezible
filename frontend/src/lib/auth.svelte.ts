@@ -47,7 +47,6 @@ type AuthSession = {
 };
 
 const parseUserAuthSessionResponse = ({data}: GetCurrentAuthSessionResponse): AuthSession => {
-	console.log("parse", data);
 	return {
 		user: data.user,
 		organization: data.organization,
@@ -123,5 +122,5 @@ export class AuthSessionState {
 };
 
 const sessionCtx = new Context<AuthSessionState>("authSession");
-export const setAuthSessionState = (s: AuthSessionState) => sessionCtx.set(s);
+export const initAuthSessionState = () => sessionCtx.set(new AuthSessionState());
 export const useAuthSessionState = () => sessionCtx.get();

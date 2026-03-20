@@ -1,6 +1,4 @@
 import { Time, ZonedDateTime } from "@internationalized/date";
-import { settings } from "$lib/settings.svelte";
-import { hour12 } from "$lib/format.svelte";
 
 export type Period = "AM" | "PM";
 type InternalValue = {

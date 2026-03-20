@@ -17,8 +17,6 @@
 	import "@xyflow/svelte/dist/style.css";
 	import "./diagram-styles.css";
 
-	import { settings } from "$lib/settings.svelte";
-
 	import { useSystemDiagram } from "./diagramState.svelte";
 
 	import SystemDiagramContextMenu from "./SystemDiagramContextMenu.svelte";
