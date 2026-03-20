@@ -165,11 +165,7 @@ func (s *AuthService) CreateVerifiedAuthSessionContext(ctx context.Context, idTo
 	if usrErr != nil {
 		return nil, fmt.Errorf("find user: %w", usrErr)
 	}
-
-	ctx, usrErr = s.users.CreateUserAccessContext(ctx, usr)
-	if usrErr != nil {
-		return nil, fmt.Errorf("create user access context: %w", usrErr)
-	}
+	ctx = s.users.CreateUserAccessContext(ctx, usr)
 
 	sess := &rez.AuthSession{
 		UserId:    usr.ID,

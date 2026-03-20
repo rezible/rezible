@@ -179,7 +179,7 @@ type (
 
 	UserService interface {
 		FindOrCreateAuthProviderUser(context.Context, ent.User) (*ent.User, error)
-		CreateUserAccessContext(context.Context, *ent.User) (context.Context, error)
+		CreateUserAccessContext(context.Context, *ent.User) context.Context
 
 		ListUsers(context.Context, ListUsersParams) ([]*ent.User, error)
 

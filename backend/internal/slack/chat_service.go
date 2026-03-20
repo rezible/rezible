@@ -37,17 +37,13 @@ func (s *ChatService) getUserContext(ctx context.Context, userChatId string) (co
 }
 
 func (s *ChatService) lookupUser(ctx context.Context, userChatId string) (*ent.User, context.Context, error) {
-	tenantCtx := s.ci.tenantContext(ctx)
-	usr, usrErr := s.users.GetByChatId(tenantCtx, userChatId)
+	ctx = s.ci.tenantContext(ctx)
+	usr, usrErr := s.users.GetByChatId(ctx, userChatId)
 	if usrErr != nil {
 		log.Error().Err(usrErr).Str("chat_id", userChatId).Msg("failed to lookup chat user")
 		return nil, nil, fmt.Errorf("lookup user: %w", usrErr)
 	}
-	userCtx, ctxErr := s.users.CreateUserAccessContext(tenantCtx, usr)
-	if ctxErr != nil {
-		return nil, nil, fmt.Errorf("creating user context: %w", ctxErr)
-	}
-	return usr, userCtx, nil
+	return usr, s.users.CreateUserAccessContext(ctx, usr), nil
 }
 
 func (s *ChatService) postMessage(ctx context.Context, channelId string, msgOpts ...slack.MsgOption) (string, error) {

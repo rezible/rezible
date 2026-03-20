@@ -29,8 +29,8 @@ func NewUserService(db *ent.Client, orgs rez.OrganizationService) (*UserService,
 
 type userCtxKey struct{}
 
-func (s *UserService) CreateUserAccessContext(ctx context.Context, u *ent.User) (context.Context, error) {
-	return context.WithValue(access.TenantContext(ctx, u.TenantID), userCtxKey{}, u), nil
+func (s *UserService) CreateUserAccessContext(ctx context.Context, u *ent.User) context.Context {
+	return context.WithValue(access.TenantContext(ctx, u.TenantID), userCtxKey{}, u)
 }
 
 func (s *UserService) GetContextUser(ctx context.Context) (*ent.User, bool) {
