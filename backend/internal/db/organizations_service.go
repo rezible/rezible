@@ -32,22 +32,26 @@ func (s *OrganizationsService) GetCurrent(ctx context.Context) (*ent.Organizatio
 	return s.db.Organization.Query().First(ctx)
 }
 
-func (s *OrganizationsService) FindOrCreateFromProvider(ctx context.Context, o ent.Organization) (*ent.Organization, error) {
+func (s *OrganizationsService) FindOrCreateFromProviderDomain(ctx context.Context, domain string) (*ent.Organization, error) {
+	if domain == "" {
+		return nil, fmt.Errorf("provider domain empty")
+	}
 	// Required to query without a tenant id set
 	ctx = access.SystemContext(ctx)
 
 	orgQuery := s.db.Organization.Query().
-		Where(organization.ExternalID(o.ExternalID))
+		Where(organization.ExternalID(domain))
 
 	org, orgErr := orgQuery.Only(ctx)
 	if orgErr != nil && !ent.IsNotFound(orgErr) {
 		return nil, fmt.Errorf("failed to query organization: %w", orgErr)
 	}
+	log.Debug().Interface("org", org).AnErr("orgErr", orgErr).Msg("find or create from provider")
 	if org != nil {
 		return org, nil
 	}
 	if !rez.Config.AllowTenantCreation() {
-		return nil, rez.ErrCannotCreateTenant
+		return nil, rez.ErrInvalidTenant
 	}
 
 	var createdTenant *ent.Tenant
@@ -60,13 +64,12 @@ func (s *OrganizationsService) FindOrCreateFromProvider(ctx context.Context, o e
 		if createErr != nil {
 			return fmt.Errorf("create tenant: %w", createErr)
 		}
-		ctx = access.TenantContext(ctx, createdTenant.ID)
 
 		createOrg := tx.Organization.Create().
 			SetTenant(createdTenant).
-			SetExternalID(o.ExternalID).
-			SetName(o.Name)
-		org, orgErr = createOrg.Save(ctx)
+			SetExternalID(domain).
+			SetName(domain)
+		org, orgErr = createOrg.Save(access.TenantContext(ctx, createdTenant.ID))
 		if orgErr != nil {
 			return fmt.Errorf("create organization: %w", orgErr)
 		}
@@ -75,7 +78,7 @@ func (s *OrganizationsService) FindOrCreateFromProvider(ctx context.Context, o e
 		return nil
 	}
 	if txErr := ent.WithTx(ctx, s.db, createTenantOrgFn); txErr != nil {
-		return nil, txErr
+		return nil, fmt.Errorf("tx error: %w", txErr)
 	}
 
 	return createdOrg, nil

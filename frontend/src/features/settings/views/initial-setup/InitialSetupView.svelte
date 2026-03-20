@@ -26,25 +26,13 @@
 			{/snippet}
 		</Header>
 
-		{#if view.integrations.isLoading}
-			<span>loading integrations</span>
-			<LoadingIndicator />
-		{:else if view.integrations.isConfiguring}
-			<span>configuring integration</span>
-			<LoadingIndicator />
-		{:else}
-			{#if step === "integrations"}
+		{#if step === "integrations"}
+			{#if view.integrations.isLoading}
+				<LoadingIndicator />
+			{:else if view.integrations.isConfiguring}
+				<LoadingIndicator />
+			{:else}
 				<RequiredIntegrationsSetup />
-			{/if}
-
-			{#if view.canFinish}
-				<Button
-					color="secondary" 
-					onclick={() => view.doFinishOrganizationSetup()} 
-					disabled={view.finishingOrgSetup}
-				>
-					Finish setup
-				</Button>
 			{/if}
 		{/if}
 	</div>

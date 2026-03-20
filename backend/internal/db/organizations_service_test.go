@@ -7,7 +7,6 @@ import (
 	"github.com/stretchr/testify/suite"
 
 	rez "github.com/rezible/rezible"
-	"github.com/rezible/rezible/ent"
 	"github.com/rezible/rezible/testkit"
 	"github.com/rezible/rezible/testkit/mocks"
 )
@@ -34,17 +33,13 @@ func (s *OrganizationsServiceSuite) TestFindOrCreateFromProviderCreatesTenantAnd
 	beforeCount, beforeCountErr := dbc.Tenant.Query().Count(systemCtx)
 	s.Require().NoError(beforeCountErr)
 
-	externalId := "provider-org-1"
-	providerOrg := ent.Organization{
-		ExternalID: externalId,
-		Name:       "Acme",
-	}
+	domain := "example.com"
 
-	created, createErr := orgs.FindOrCreateFromProvider(systemCtx, providerOrg)
+	created, createErr := orgs.FindOrCreateFromProviderDomain(systemCtx, domain)
 	s.Require().NoError(createErr)
-	s.Equal(externalId, created.ExternalID)
+	s.Equal(domain, created.ExternalID)
 
-	found, findErr := orgs.FindOrCreateFromProvider(systemCtx, providerOrg)
+	found, findErr := orgs.FindOrCreateFromProviderDomain(systemCtx, domain)
 	s.Require().NoError(findErr)
 	s.Equal(created.ID, found.ID)
 
@@ -57,12 +52,10 @@ func (s *OrganizationsServiceSuite) TestFindOrCreateFromProviderDisallowsTenantC
 	orgs, orgsErr := NewOrganizationsService(s.Client(), mocks.NewMockJobsService(s.T()))
 	s.Require().NoError(orgsErr)
 
-	providerOrg := ent.Organization{ExternalID: "provider-org-2", Name: "Nope"}
-
 	s.SetConfigOverrides(map[string]any{"disable_tenant_creation": true})
-	_, createErr := orgs.FindOrCreateFromProvider(s.GetSystemContext(), providerOrg)
+	_, createErr := orgs.FindOrCreateFromProviderDomain(s.GetSystemContext(), "example.com")
 	s.Require().Error(createErr)
-	s.ErrorIs(createErr, rez.ErrCannotCreateTenant)
+	s.ErrorIs(createErr, rez.ErrInvalidTenant)
 	s.SetConfigOverrides(nil)
 }
 

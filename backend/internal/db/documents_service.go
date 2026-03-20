@@ -105,7 +105,7 @@ func (s *DocumentsService) getDocumentAccessScope(ctx context.Context, doc *ent.
 	}
 	highestAccess := s.getBestDocumentAccess(sessAccesses)
 	if highestAccess == nil {
-		return "", rez.ErrAuthSessionUnauthorized
+		return "", fmt.Errorf("no document access found")
 	}
 	return fmt.Sprintf("document:%s:%s", doc.ID, highestAccess.ID), nil
 }

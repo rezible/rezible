@@ -47,6 +47,8 @@ saml_cert_dir := "./backend/internal/http/saml/testdata"
 @run-frontend *ARGS:
     cd frontend && \
         PUBLIC_APP_URL="https://app.dev.rezible.com" \
+        PUBLIC_AUTH_URL="https://auth.dev.rezible.com" \
+        PUBLIC_AUTH_CLIENT_ID="rezible-app" \
         PUBLIC_API_BASE_PATH="/api" \
         PUBLIC_API_V1_PATH="/v1" \
         PUBLIC_API_AUTH_PATH="/auth" \

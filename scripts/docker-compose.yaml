@@ -6,7 +6,6 @@ volumes:
 services:
   proxy:
     image: caddy:2
-    container_name: proxy
     restart: unless-stopped
     ports: ["5482:80", "5483:2019"]
     volumes: ["./Caddyfile:/etc/caddy/Caddyfile:ro"]
@@ -15,7 +14,6 @@ services:
 
   postgres:
     image: postgres:17
-    container_name: rezible-db
     restart: unless-stopped
     environment:
       POSTGRES_USER: postgres
@@ -33,46 +31,21 @@ services:
 
   dex:
     image: dexidp/dex:v2.41.1
-    container_name: dex
     restart: unless-stopped
-    ports:
-      - "5556:5556"   # OIDC / HTTP
-      - "5557:5557"   # gRPC (optional, for admin API)
+    ports: ["7011:7011"]
     volumes:
-      - ./dev/dex/config.yaml:/etc/dex/config.yaml:ro
-      - dex_data:/var/dex              # sqlite storage in dev
-    environment:
-      DEX_FRONTEND_ISSUER: http://localhost:5556/dex
+      - "./dex-config.yaml:/etc/dex/config.yaml:ro"
     command: [ "dex", "serve", "/etc/dex/config.yaml" ]
-    networks:
-      - app
+    depends_on:
+      postgres:
+        condition: service_healthy
     healthcheck:
-      test: [ "CMD", "wget", "--quiet", "--tries=1", "--spider",
-              "http://localhost:5556/dex/.well-known/openid-configuration" ]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-      start_period: 10s
-
-  dev-oidc:
-    image: ghcr.io/businesssimulations/dev-oidc-toolkit:0.6.0
-    restart: unless-stopped
-    environment:
-      DevOidcToolkit__Port: "6432"
-      DevOidcToolkit__Issuer: "https://dev-oidc.${LOCAL_DEV_HOST}/"
-      DevOidcToolkit__Clients__0__Id: "client"
-      DevOidcToolkit__Clients__0__Secret: "secret"
-      DevOidcToolkit__Clients__0__RedirectUris__0: "https://app.${LOCAL_DEV_HOST}/auth/callback"
-      DevOidcToolkit__Users__0__Email: "${REZ_DEBUG_DEFAULT_USER_EMAIL}"
-      DevOidcToolkit__Users__0__FirstName: "Firstname"
-      DevOidcToolkit__Users__0__LastName: "Lastname"
-      DevOidcToolkit__Users__1__Email: "user@example.com"
-      DevOidcToolkit__Users__1__FirstName: "Test"
-      DevOidcToolkit__Users__1__LastName: "User"
-    networks:
-      default:
-        aliases: ["dev-oidc.${LOCAL_DEV_HOST}"]
-    ports: ["7011:6432"]
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider",
+             "http://localhost:7011/.well-known/openid-configuration"]
+      interval: 3s
+      timeout: 1s
+      retries: 1
+      start_period: 1s
 
   telemetry:
     scale: 0

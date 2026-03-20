@@ -43,7 +43,7 @@ func (s *ChatService) lookupUser(ctx context.Context, userChatId string) (*ent.U
 		log.Error().Err(usrErr).Str("chat_id", userChatId).Msg("failed to lookup chat user")
 		return nil, nil, fmt.Errorf("lookup user: %w", usrErr)
 	}
-	userCtx, ctxErr := s.users.CreateUserAccessContext(tenantCtx, usr.ID)
+	userCtx, ctxErr := s.users.CreateUserAccessContext(tenantCtx, usr)
 	if ctxErr != nil {
 		return nil, nil, fmt.Errorf("creating user context: %w", ctxErr)
 	}

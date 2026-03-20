@@ -1,34 +1,37 @@
-# dex/config.yaml
-issuer: https://auth.dev.rezible.com/
+issuer: https://auth.dev.rezible.com
+
+web:
+  http: 0.0.0.0:7011
+  allowedOrigins:
+    - https://app.dev.rezible.com
 
 storage:
   type: postgres
   config:
-    database: dex
+    host: postgres
+    port: 5432
+    database: dex_db
+    user: dex
+    password: foobar2
+    ssl:
+      mode: disable
 
 oauth2:
   skipApprovalScreen: true
   responseTypes: ["code"]
+  passwordConnector: local
+
+enablePasswordDB: true
+staticPasswords:
+  - email: "admin@example.com"
+    username: "admin"
+    userID: "08a8684b-db88-4b73-90a9-3cd1661f5466"
+    # echo "foobar1" | htpasswd -BinC 10 admin | cut -d: -f2
+    hash: "$2y$10$NI22AXHCKIordm2Y3pf0RuNVEUHvktOYruQ6/hli8UcvTEBhpX2KG"
 
 staticClients:
-  # Public SPA client — no secret, PKCE only
-  - id: spa
-    name: "My App"
+  - id: rezible-app
+    name: "Rezible"
+    public: true
     redirectURIs:
-      - https://app.yourdomain.com/auth/callback
-    public: true          # ← tells Dex this is a PKCE client, no secret needed
-
-  # Admin app — confidential client, has a secret
-  - id: admin
-    name: "Admin App"
-    secret: $ADMIN_CLIENT_SECRET
-    redirectURIs:
-      - https://admin.yourdomain.com/auth/callback
-
-connectors:
-  - type: google          # or github, LDAP, local passwords, etc.
-    id: google
-    name: Google
-    config:
-      clientID: $GOOGLE_CLIENT_ID
-      clientSecret: $GOOGLE_CLIENT_SECRET
+      - https://app.dev.rezible.com/auth/callback

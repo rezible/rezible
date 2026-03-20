@@ -4,9 +4,11 @@ import {
 	getCurrentAuthSessionOptions,
 	type ErrorModel,
 	type Organization,
+	refreshAuthSessionMutation,
+	clearAuthSessionMutation,
 } from "$lib/api";
 import { parseAbsoluteToLocal } from "@internationalized/date";
-import { createQuery } from "@tanstack/svelte-query";
+import { createMutation, createQuery } from "@tanstack/svelte-query";
 import { Context } from "runed";
 import { onMount } from "svelte";
 
@@ -56,6 +58,15 @@ const parseUserAuthSessionResponse = ({data}: GetCurrentAuthSessionResponse): Au
 const SessionExpiryCheckIntervalMs = 10_000;
 
 export class AuthSessionState {
+	constructor() {
+		onMount(() => {
+			const i = setInterval(() => {
+				this.checkSessionExpiry();
+			}, SessionExpiryCheckIntervalMs);
+			return () => {clearInterval(i)}
+		})
+	}
+	
 	private query = createQuery(() => getCurrentAuthSessionOptions());
 	private queryData = $derived(this.query.data);
 
@@ -80,7 +91,15 @@ export class AuthSessionState {
 		this.query.refetch();
 	}
 
-	checkSessionExpiry() {
+	private logoutMut = createMutation(() => ({
+		...clearAuthSessionMutation(),
+		onSuccess: () => {this.refetch()}
+	}));
+	async logout() {
+		this.logoutMut.mutate({});
+	}
+
+	private checkSessionExpiry() {
 		if (!this.session) return;
 		const timeLeft = this.session.expiresAt.valueOf() - new Date(Date.now()).valueOf();
 		if (timeLeft <= 0) {
@@ -90,19 +109,16 @@ export class AuthSessionState {
 		}
 	}
 
-	private refreshSession(timeLeft: number) {
+	private refreshSessionMut = createMutation(() => ({
+		...refreshAuthSessionMutation(),
+		onSuccess: () => {
+			console.log("auth session refreshed");
+		}
+	}));
+	private async refreshSession(timeLeft: number) {
 		console.log("auth session expiring soon", timeLeft);
-	}
-
-	constructor() {
-		onMount(() => {
-			const i = setInterval(() => {
-				this.checkSessionExpiry();
-			}, SessionExpiryCheckIntervalMs);
-			return () => {
-				clearInterval(i);
-			}
-		})
+		await this.refreshSessionMut.mutateAsync({});
+		this.refetch();
 	}
 };
 

@@ -7,6 +7,7 @@ import (
 	"github.com/google/uuid"
 	rez "github.com/rezible/rezible"
 	oapi "github.com/rezible/rezible/openapi/v1"
+	"github.com/rs/zerolog/log"
 )
 
 type authSessionsHandler struct {
@@ -23,8 +24,9 @@ func (h *authSessionsHandler) CompleteAuthSessionFlow(ctx context.Context, req *
 	var resp oapi.CompleteAuthSessionFlowResponse
 
 	attr := req.Body.Attributes
-	cookies, flowErr := h.auth.CreateClientAuthSession(ctx, attr.Code, attr.Verifier)
+	cookies, flowErr := h.auth.CompleteClientAuthSessionFlow(ctx, attr.Code, attr.Verifier)
 	if flowErr != nil {
+		log.Debug().Err(flowErr).Msg("CompleteClientAuthSessionFlow")
 		return nil, fmt.Errorf("failed to complete auth session flow: %w", flowErr)
 	}
 	resp.SetCookie = cookies

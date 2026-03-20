@@ -77,12 +77,12 @@ const getEnabledDataKinds = (s: {[name: string]: boolean}) => {
 }
 
 export class InitialIntegrationsSetupController {
+    oauth: IntegrationOAuthSetupController;
     constructor() {
         this.oauth = new IntegrationOAuthSetupController(() => { 
             this.listConfiguredQuery.refetch();
         });
     }
-    oauth: IntegrationOAuthSetupController;
 
     private listAvailableQuery = createQuery(() => listAvailableIntegrationsOptions());
     available = $derived(this.listAvailableQuery.data?.data || []);

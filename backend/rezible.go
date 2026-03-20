@@ -17,13 +17,11 @@ import (
 )
 
 var (
-	ErrNoAuthSession            = eris.New("no auth session")
 	ErrInvalidUser              = eris.New("user does not exist")
 	ErrInvalidTenant            = eris.New("tenant does not exist")
+	ErrAuthSessionMissing       = eris.New("no auth session")
 	ErrAuthSessionExpired       = eris.New("auth session expired")
-	ErrAuthSessionMissingScope  = eris.New("auth session missing scope")
-	ErrAuthSessionUnauthorized  = eris.New("auth session unauthorized")
-	ErrCannotCreateTenant       = eris.New("cannot create tenant")
+	ErrAuthSessionInvalid       = eris.New("auth session invalid")
 	ErrNoConfiguredIntegrations = eris.New("no configured integrations")
 )
 
@@ -165,7 +163,7 @@ type (
 		GetById(context.Context, uuid.UUID) (*ent.Organization, error)
 		GetCurrent(context.Context) (*ent.Organization, error)
 		CompleteSetup(context.Context, *ent.Organization) error
-		FindOrCreateFromProvider(context.Context, ent.Organization) (*ent.Organization, error)
+		FindOrCreateFromProviderDomain(context.Context, string) (*ent.Organization, error)
 	}
 )
 
@@ -180,10 +178,12 @@ type (
 	}
 
 	UserService interface {
-		CreateUserAccessContext(ctx context.Context, userId uuid.UUID) (context.Context, error)
 		FindOrCreateAuthProviderUser(context.Context, ent.User) (*ent.User, error)
+		CreateUserAccessContext(context.Context, *ent.User) (context.Context, error)
 
 		ListUsers(context.Context, ListUsersParams) ([]*ent.User, error)
+
+		GetUserByAuthProviderId(context.Context, string) (*ent.User, error)
 
 		GetById(context.Context, uuid.UUID) (*ent.User, error)
 		GetByEmail(context.Context, string) (*ent.User, error)
@@ -199,7 +199,7 @@ type (
 	}
 
 	AuthService interface {
-		CreateClientAuthSession(ctx context.Context, token string, verifier string) ([]http.Cookie, error)
+		CompleteClientAuthSessionFlow(ctx context.Context, code string, verifier string) ([]http.Cookie, error)
 		RefreshClientAuthSession(ctx context.Context, refreshCookie http.Cookie) ([]http.Cookie, error)
 		ClearClientAuthSession(ctx context.Context) ([]http.Cookie, error)
 

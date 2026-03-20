@@ -1,7 +1,7 @@
 import { finishOrganizationSetupMutation } from "$lib/api";
 import { useAuthSessionState } from "$lib/auth.svelte";
 import { createMutation } from "@tanstack/svelte-query";
-import { Context } from "runed";
+import { Context, watch } from "runed";
 import { InitialIntegrationsSetupController } from "./initialIntegrationsSetupController.svelte";
 
 export class InitialSetupViewController {
@@ -9,18 +9,22 @@ export class InitialSetupViewController {
 
     integrations: InitialIntegrationsSetupController;
 
-    constructor() {
-        this.integrations = new InitialIntegrationsSetupController();
-    }
-
     canFinish = $derived.by(() => {
         if (!this.integrations) return false;
         if (this.integrations.remainingRequiredDataKinds.length === 0) return true;
         return false;
     });
 
+    constructor() {
+        this.integrations = new InitialIntegrationsSetupController();
+        watch(() => this.canFinish, ok => {
+            if (ok) this.doFinishOrganizationSetup();
+        })
+    }
+
     private finishOrgSetupMut = createMutation(() => finishOrganizationSetupMutation());
     async doFinishOrganizationSetup() {
+        if (this.finishOrgSetupMut.isPending) return;
         const id = this.session.org?.id;
         if (!id) return;
         await this.finishOrgSetupMut.mutateAsync({ path: { id } });

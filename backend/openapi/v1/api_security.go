@@ -1,11 +1,13 @@
 package v1
 
 import (
+	"context"
 	"errors"
 	"net/http"
 	"strings"
 
 	"github.com/danielgtaylor/huma/v2"
+	"github.com/danielgtaylor/huma/v2/adapters/humago"
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/access"
 	"github.com/rezible/rezible/openapi"
@@ -66,19 +68,17 @@ func GetDefaultSecuritySchemes() map[string]*SecurityScheme {
 	}
 }
 
-func MakeAuthSessionCookies(token oauth2.Token) []http.Cookie {
-	log.Debug().Interface("token", token).Msg("MakeAuthSessionCookies")
+func MakeAuthSessionCookies(ctx context.Context, token oauth2.Token) []http.Cookie {
 	return []http.Cookie{
 		{
 			Name:     accessTokenCookieName,
 			Value:    token.AccessToken,
 			HttpOnly: true,
 			Secure:   true,
-			SameSite: http.SameSiteLaxMode, // Lax allows top-level nav redirects from Dex
+			SameSite: http.SameSiteLaxMode,
 			Path:     "/",
 			MaxAge:   int(token.ExpiresIn),
 		},
-		// Refresh token in a separate, tighter cookie
 		{
 			Name:     refreshTokenCookieName,
 			Value:    token.RefreshToken,
@@ -87,6 +87,29 @@ func MakeAuthSessionCookies(token oauth2.Token) []http.Cookie {
 			SameSite: http.SameSiteStrictMode,
 			Path:     RefreshAuthSession.Path,
 			MaxAge:   60 * 60 * 24 * 30,
+		},
+	}
+}
+
+func MakeLogoutAuthSessionCookies() []http.Cookie {
+	return []http.Cookie{
+		{
+			Name:     accessTokenCookieName,
+			Value:    "",
+			HttpOnly: true,
+			Secure:   true,
+			SameSite: http.SameSiteLaxMode,
+			Path:     "/",
+			MaxAge:   -1,
+		},
+		{
+			Name:     refreshTokenCookieName,
+			Value:    "",
+			HttpOnly: true,
+			Secure:   true,
+			SameSite: http.SameSiteStrictMode,
+			Path:     RefreshAuthSession.Path,
+			MaxAge:   -1,
 		},
 	}
 }
@@ -117,12 +140,12 @@ func CreateAuthContext(c huma.Context, auth rez.AuthService) (huma.Context, erro
 
 	cookieToken, bearerToken := getRequestTokens(c)
 	token, methodScopes := extractRequestTokenAndMethodScopes(opSecurity, cookieToken, bearerToken)
-	log.Debug().
-		Strs("scopes", methodScopes).
-		Msg("skipping method scopes")
 	authCtx, authCtxErr := auth.CreateVerifiedAuthSessionContext(ctx, token)
 	if authCtxErr != nil {
 		return nil, authCtxErr
+	}
+	if len(methodScopes) > 0 {
+		log.Debug().Strs("scopes", methodScopes).Msg("TODO: verify scopes")
 	}
 	return huma.WithContext(c, authCtx), nil
 }
@@ -153,10 +176,12 @@ func extractRequestTokenAndMethodScopes(opSecurity SecurityMethods, cookieToken,
 
 func writeAuthStatusError(api openapi.API, c huma.Context, err error) {
 	var resp openapi.StatusError
-	if errors.Is(err, rez.ErrNoAuthSession) {
+	if errors.Is(err, rez.ErrAuthSessionMissing) {
 		resp = ErrNoSession
 	} else if errors.Is(err, rez.ErrAuthSessionExpired) {
 		resp = ErrSessionExpired
+	} else if errors.Is(err, rez.ErrAuthSessionInvalid) {
+		resp = ErrInvalidUser
 	} else if errors.Is(err, rez.ErrInvalidUser) {
 		resp = ErrInvalidUser
 	} else if errors.Is(err, rez.ErrInvalidTenant) {
@@ -165,12 +190,12 @@ func writeAuthStatusError(api openapi.API, c huma.Context, err error) {
 		resp = ErrUnknown
 	}
 
+	_, w := humago.Unwrap(c)
+	for _, cookie := range MakeLogoutAuthSessionCookies() {
+		http.SetCookie(w, &cookie)
+	}
+
 	if respErr := huma.WriteErr(api, c, resp.GetStatus(), resp.Error()); respErr != nil {
 		log.Error().Err(respErr).Msg("failed to write api error response")
 	}
-	//_, w := humago.Unwrap(c)
-	//w.WriteHeader(resp.GetStatus())
-	//if jsonErr := json.NewEncoder(w).Encode(resp); jsonErr != nil {
-	//	log.Error().Err(jsonErr).Msg("failed to write error body")
-	//}
 }

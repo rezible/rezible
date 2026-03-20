@@ -9,7 +9,6 @@ import (
 	"github.com/rezible/rezible/access"
 	"github.com/rezible/rezible/ent"
 	"github.com/rezible/rezible/ent/predicate"
-	"github.com/rezible/rezible/ent/privacy"
 	"github.com/rezible/rezible/ent/team"
 	"github.com/rezible/rezible/ent/user"
 )
@@ -30,17 +29,8 @@ func NewUserService(db *ent.Client, orgs rez.OrganizationService) (*UserService,
 
 type userCtxKey struct{}
 
-func (s *UserService) CreateUserAccessContext(ctx context.Context, userId uuid.UUID) (context.Context, error) {
-	// TODO: revise usage of this
-	userLookupCtx := privacy.DecisionContext(ctx, privacy.Allow)
-	usr, userErr := s.GetById(userLookupCtx, userId)
-	if userErr != nil {
-		if ent.IsNotFound(userErr) {
-			return nil, rez.ErrInvalidUser
-		}
-		return nil, fmt.Errorf("get user by id: %w", userErr)
-	}
-	return context.WithValue(access.TenantContext(ctx, usr.TenantID), userCtxKey{}, usr), nil
+func (s *UserService) CreateUserAccessContext(ctx context.Context, u *ent.User) (context.Context, error) {
+	return context.WithValue(access.TenantContext(ctx, u.TenantID), userCtxKey{}, u), nil
 }
 
 func (s *UserService) GetContextUser(ctx context.Context) (*ent.User, bool) {
@@ -55,14 +45,13 @@ func nilEmptyString(s string) *string {
 	return &s
 }
 
-func (s *UserService) getUserByAuthProviderID(ctx context.Context, authProviderID string) (*ent.User, error) {
-	userQuery := s.db.User.Query().
-		Where(user.AuthProviderID(authProviderID))
+func (s *UserService) GetUserByAuthProviderId(ctx context.Context, authProviderID string) (*ent.User, error) {
+	userQuery := s.db.User.Query().Where(user.AuthProviderID(authProviderID))
 	return userQuery.Only(ctx)
 }
 
 func (s *UserService) FindOrCreateAuthProviderUser(ctx context.Context, pu ent.User) (*ent.User, error) {
-	usr, usrErr := s.getUserByAuthProviderID(ctx, pu.AuthProviderID)
+	usr, usrErr := s.GetUserByAuthProviderId(ctx, pu.AuthProviderID)
 	if usrErr != nil && !ent.IsNotFound(usrErr) {
 		return nil, fmt.Errorf("failed to query user: %w", usrErr)
 	}

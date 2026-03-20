@@ -30,10 +30,14 @@ api.dev.rezible.com:80 {
     reverse_proxy http://host.docker.internal:7002
 }
 
-auth.dev.rezible.com:80 {
+postgres.dev.rezible.com:80 {
     reverse_proxy http://host.docker.internal:7010
 }
 
-dev-oidc.dev.rezible.com:80 {
+auth.dev.rezible.com:80 {
     reverse_proxy http://host.docker.internal:7011
+}
+
+dev-oidc.dev.rezible.com:80 {
+    reverse_proxy http://host.docker.internal:7012
 }
