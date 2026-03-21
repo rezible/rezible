@@ -7,7 +7,6 @@ import (
 	"github.com/danielgtaylor/huma/v2"
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent"
-	"github.com/rezible/rezible/openapi"
 )
 
 type UsersHandler interface {
@@ -56,7 +55,7 @@ var ListUsers = huma.Operation{
 	Path:        "/users",
 	Summary:     "List Users",
 	Tags:        usersTags,
-	Errors:      openapi.ErrorCodes(),
+	Errors:      ErrorCodes(),
 }
 
 type ListUsersRequest struct {
@@ -71,7 +70,7 @@ var GetUser = huma.Operation{
 	Path:        "/users/{id}",
 	Summary:     "Get a User",
 	Tags:        usersTags,
-	Errors:      openapi.ErrorCodes(),
+	Errors:      ErrorCodes(),
 }
 
 type GetUserRequest GetIdRequest

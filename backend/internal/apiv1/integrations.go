@@ -35,7 +35,7 @@ func (h *integrationsHandler) ListConfiguredIntegrations(ctx context.Context, re
 	params := rez.ListIntegrationsParams{}
 	results, listErr := h.integrations.ListConfigured(ctx, params)
 	if listErr != nil {
-		return nil, apiError("failed to list integrations", listErr)
+		return nil, oapi.Error("failed to list integrations", listErr)
 	}
 
 	resp.Body.Data = make([]oapi.ConfiguredIntegration, len(results))
@@ -54,7 +54,7 @@ func (h *integrationsHandler) GetConfiguredIntegration(ctx context.Context, req 
 
 	ci, getErr := h.integrations.GetConfigured(ctx, req.Name)
 	if getErr != nil {
-		return nil, apiError("failed to get integration", getErr)
+		return nil, oapi.Error("failed to get integration", getErr)
 	}
 	resp.Body.Data = oapi.ConfiguredIntegrationFromConfig(ci)
 
@@ -66,7 +66,7 @@ func (h *integrationsHandler) ConfigureIntegration(ctx context.Context, req *oap
 
 	ci, setErr := h.integrations.Configure(ctx, req.Name, req.Body.Attributes.Config)
 	if setErr != nil {
-		return nil, apiError("failed to configure integration", setErr)
+		return nil, oapi.Error("failed to configure integration", setErr)
 	}
 	resp.Body.Data = oapi.ConfiguredIntegrationFromConfig(ci)
 
@@ -78,7 +78,7 @@ func (h *integrationsHandler) UpdateConfiguredIntegrationPreferences(ctx context
 
 	ci, setErr := h.integrations.UpdateConfiguredPreferences(ctx, req.Name, req.Body.Attributes.Preferences)
 	if setErr != nil {
-		return nil, apiError("failed to configure integration", setErr)
+		return nil, oapi.Error("failed to configure integration", setErr)
 	}
 	resp.Body.Data = oapi.ConfiguredIntegrationFromConfig(ci)
 
@@ -89,7 +89,7 @@ func (h *integrationsHandler) DeleteConfiguredIntegration(ctx context.Context, r
 	var resp oapi.DeleteConfiguredIntegrationResponse
 
 	if delErr := h.integrations.DeleteConfigured(ctx, req.Name); delErr != nil {
-		return nil, apiError("failed to delete integration", delErr)
+		return nil, oapi.Error("failed to delete integration", delErr)
 	}
 
 	return &resp, nil
@@ -100,16 +100,16 @@ func (h *integrationsHandler) StartIntegrationOAuthFlow(ctx context.Context, req
 
 	callbackUrl, pathErr := url.JoinPath(rez.Config.AppUrl(), req.Body.Attributes.CallbackPath)
 	if pathErr != nil {
-		return nil, apiError("invalid callback path", pathErr)
+		return nil, oapi.Error("invalid callback path", pathErr)
 	}
 	redirectUrl, urlErr := url.Parse(callbackUrl)
 	if urlErr != nil {
-		return nil, apiError("invalid callback url", urlErr)
+		return nil, oapi.Error("invalid callback url", urlErr)
 	}
 
 	startFlowUrl, flowErr := h.integrations.StartOAuth2Flow(ctx, req.Name, redirectUrl)
 	if flowErr != nil {
-		return nil, apiError("failed to start flow", flowErr)
+		return nil, oapi.Error("failed to start flow", flowErr)
 	}
 	resp.Body.Data = oapi.IntegrationOAuthFlow{FlowUrl: startFlowUrl}
 
@@ -123,7 +123,7 @@ func (h *integrationsHandler) CompleteIntegrationOAuthFlow(ctx context.Context, 
 
 	ci, completeErr := h.integrations.CompleteOAuth2Flow(ctx, req.Name, attr.State, attr.Code)
 	if completeErr != nil {
-		return nil, apiError("failed to complete integration", completeErr)
+		return nil, oapi.Error("failed to complete integration", completeErr)
 	}
 	resp.Body.Data = oapi.ConfiguredIntegrationFromConfig(ci)
 

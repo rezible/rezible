@@ -6,7 +6,6 @@ import (
 
 	"github.com/danielgtaylor/huma/v2"
 	rez "github.com/rezible/rezible"
-	"github.com/rezible/rezible/openapi"
 )
 
 type IntegrationsHandler interface {
@@ -84,7 +83,7 @@ var ListAvailableIntegrations = huma.Operation{
 	Path:        "/integrations",
 	Summary:     "List Available Integrations",
 	Tags:        integrationsTags,
-	Errors:      openapi.ErrorCodes(),
+	Errors:      ErrorCodes(),
 }
 
 type ListAvailableIntegrationsRequest ListRequest
@@ -96,7 +95,7 @@ var ListConfiguredIntegrations = huma.Operation{
 	Path:        "/integrations/configured",
 	Summary:     "List Integrations",
 	Tags:        integrationsTags,
-	Errors:      openapi.ErrorCodes(),
+	Errors:      ErrorCodes(),
 }
 
 type ListConfiguredIntegrationsRequest ListRequest
@@ -108,7 +107,7 @@ var ConfigureIntegration = huma.Operation{
 	Path:        "/integrations/{name}",
 	Summary:     "Create an Integration",
 	Tags:        integrationsTags,
-	Errors:      openapi.ErrorCodes(),
+	Errors:      ErrorCodes(),
 }
 
 type ConfigureIntegrationRequestAttributes struct {
@@ -123,7 +122,7 @@ var GetConfiguredIntegration = huma.Operation{
 	Path:        "/integrations/configured/{name}",
 	Summary:     "Get an Integration",
 	Tags:        integrationsTags,
-	Errors:      openapi.ErrorCodes(),
+	Errors:      ErrorCodes(),
 }
 
 type GetConfiguredIntegrationRequest NameRequest
@@ -135,7 +134,7 @@ var UpdateConfiguredIntegrationPreferences = huma.Operation{
 	Path:        "/integrations/configured/{name}/preferences",
 	Summary:     "Update Preferences for a Configured Integration",
 	Tags:        integrationsTags,
-	Errors:      openapi.ErrorCodes(),
+	Errors:      ErrorCodes(),
 }
 
 type UpdateConfiguredIntegrationPreferencesRequestAttributes struct {
@@ -150,7 +149,7 @@ var DeleteConfiguredIntegration = huma.Operation{
 	Path:        "/integrations/configured/{id}",
 	Summary:     "Delete an Integration",
 	Tags:        integrationsTags,
-	Errors:      openapi.ErrorCodes(),
+	Errors:      ErrorCodes(),
 }
 
 type DeleteConfiguredIntegrationRequest NameRequest
@@ -162,7 +161,7 @@ var StartIntegrationOAuthFlow = huma.Operation{
 	Path:        "/integrations/configured/{name}/start_oauth_flow",
 	Summary:     "Start OAuth flow for an Integration",
 	Tags:        integrationsTags,
-	Errors:      openapi.ErrorCodes(),
+	Errors:      ErrorCodes(),
 }
 
 type StartOAuthFlowRequestAttributes struct {
@@ -177,7 +176,7 @@ var CompleteIntegrationOAuthFlow = huma.Operation{
 	Path:        "/integrations/configured/{name}/complete_oauth_flow",
 	Summary:     "Complete OAuth flow for an Integration",
 	Tags:        integrationsTags,
-	Errors:      openapi.ErrorCodes(),
+	Errors:      ErrorCodes(),
 }
 
 type CompleteIntegrationOAuthFlowRequestAttributes struct {

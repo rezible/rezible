@@ -17,7 +17,7 @@ func (SystemHazard) Mixin() []ent.Mixin {
 	return []ent.Mixin{
 		BaseMixin{},
 		TenantMixin{},
-		IntegrationMixin{},
+		IntegrationDataMixin{},
 	}
 }
 

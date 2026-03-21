@@ -15,7 +15,7 @@ import (
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/access"
 	"github.com/rezible/rezible/internal"
-	"github.com/rezible/rezible/internal/viper"
+	"github.com/rezible/rezible/internal/koanf"
 	"github.com/rezible/rezible/jobs"
 	oapiv1 "github.com/rezible/rezible/openapi/v1"
 )
@@ -80,7 +80,12 @@ var dbMigrationsGenerateCmd = &cobra.Command{
 }
 
 func init() {
-	rez.Config = viper.NewConfigLoader(viper.ConfigLoaderOptions{LoadEnvironment: true})
+	cfg, cfgErr := koanf.NewConfigLoader(koanf.ConfigLoaderOptions{LoadEnvironment: true})
+	if cfgErr != nil {
+		log.Fatal().Err(cfgErr).Msg("failed to load config file")
+		os.Exit(1)
+	}
+	rez.Config = cfg
 
 	// TODO: logger package?
 	if rez.Config.DebugMode() {

@@ -16,12 +16,12 @@ import (
 )
 
 var (
-	ErrNoSession      = openapi.ErrorUnauthorized("no_session")
-	ErrSessionExpired = openapi.ErrorUnauthorized("session_expired")
-	ErrMissingScopes  = openapi.ErrorUnauthorized("missing_scopes")
-	ErrInvalidUser    = openapi.ErrorUnauthorized("invalid_user")
-	ErrInvalidTenant  = openapi.ErrorUnauthorized("invalid_tenant")
-	ErrUnknown        = openapi.ErrorUnauthorized("unknown")
+	ErrNoSession      = huma.Error401Unauthorized("no_session")
+	ErrSessionExpired = huma.Error401Unauthorized("session_expired")
+	ErrMissingScopes  = huma.Error401Unauthorized("missing_scopes")
+	ErrInvalidUser    = huma.Error401Unauthorized("invalid_user")
+	ErrInvalidTenant  = huma.Error401Unauthorized("invalid_tenant")
+	ErrUnknown        = huma.Error401Unauthorized("unknown")
 )
 
 type SecurityScheme = huma.SecurityScheme
@@ -140,7 +140,7 @@ func CreateAuthContext(c huma.Context, auth rez.AuthService) (huma.Context, erro
 
 	cookieToken, bearerToken := getRequestTokens(c)
 	token, methodScopes := extractRequestTokenAndMethodScopes(opSecurity, cookieToken, bearerToken)
-	authCtx, authCtxErr := auth.CreateVerifiedAuthSessionContext(ctx, token)
+	authCtx, authCtxErr := auth.CreateAuthSessionContext(ctx, token)
 	if authCtxErr != nil {
 		return nil, authCtxErr
 	}
@@ -174,8 +174,8 @@ func extractRequestTokenAndMethodScopes(opSecurity SecurityMethods, cookieToken,
 	return "", nil
 }
 
-func writeAuthStatusError(api openapi.API, c huma.Context, err error) {
-	var resp openapi.StatusError
+func writeAuthStatusError(api huma.API, c huma.Context, err error) {
+	var resp huma.StatusError
 	if errors.Is(err, rez.ErrAuthSessionMissing) {
 		resp = ErrNoSession
 	} else if errors.Is(err, rez.ErrAuthSessionExpired) {

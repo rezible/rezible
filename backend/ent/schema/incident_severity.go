@@ -17,7 +17,7 @@ func (IncidentSeverity) Mixin() []ent.Mixin {
 		BaseMixin{},
 		TenantMixin{},
 		ArchiveMixin{},
-		IntegrationMixin{},
+		IntegrationDataMixin{},
 	}
 }
 

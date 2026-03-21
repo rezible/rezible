@@ -9,7 +9,6 @@ import (
 	"github.com/danielgtaylor/huma/v2"
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent"
-	"github.com/rezible/rezible/openapi"
 )
 
 type MeetingsHandler interface {
@@ -144,7 +143,7 @@ var ListMeetingSchedules = huma.Operation{
 	Path:        "/meeting_schedules",
 	Summary:     "List Meeting Schedules",
 	Tags:        meetingsTags,
-	Errors:      openapi.ErrorCodes(),
+	Errors:      ErrorCodes(),
 }
 
 type ListMeetingSchedulesRequest struct {
@@ -158,7 +157,7 @@ var GetMeetingSchedule = huma.Operation{
 	Path:        "/meeting_schedules/{id}",
 	Summary:     "Get a Meeting Schedule",
 	Tags:        meetingsTags,
-	Errors:      openapi.ErrorCodes(),
+	Errors:      ErrorCodes(),
 }
 
 type GetMeetingScheduleRequest GetIdRequest
@@ -170,7 +169,7 @@ var CreateMeetingSchedule = huma.Operation{
 	Path:        "/meeting_schedules",
 	Summary:     "Create a Meeting Schedule",
 	Tags:        meetingsTags,
-	Errors:      openapi.ErrorCodes(),
+	Errors:      ErrorCodes(),
 }
 
 type CreateMeetingScheduleAttributes struct {
@@ -196,7 +195,7 @@ var UpdateMeetingSchedule = huma.Operation{
 	Path:        "/meeting_schedules/{id}",
 	Summary:     "Update a Meeting Schedule",
 	Tags:        meetingsTags,
-	Errors:      openapi.ErrorCodes(),
+	Errors:      ErrorCodes(),
 }
 
 type UpdateMeetingScheduleAttributes struct {
@@ -210,7 +209,7 @@ var ArchiveMeetingSchedule = huma.Operation{
 	Path:        "/meeting_schedules/{id}",
 	Summary:     "Archive a Meeting Schedule",
 	Tags:        meetingsTags,
-	Errors:      openapi.ErrorCodes(),
+	Errors:      ErrorCodes(),
 }
 
 type ArchiveMeetingScheduleRequest ArchiveIdRequest
@@ -222,7 +221,7 @@ var ListMeetingSessions = huma.Operation{
 	Path:        "/meeting_sessions",
 	Summary:     "List Sessions",
 	Tags:        meetingsTags,
-	Errors:      openapi.ErrorCodes(),
+	Errors:      ErrorCodes(),
 }
 
 type ListMeetingSessionsRequest struct {
@@ -241,7 +240,7 @@ var GetMeetingSession = huma.Operation{
 	Path:        "/meeting_sessions/{id}",
 	Summary:     "Get a Meeting Session",
 	Tags:        meetingsTags,
-	Errors:      openapi.ErrorCodes(),
+	Errors:      ErrorCodes(),
 }
 
 type GetMeetingSessionRequest GetIdRequest
@@ -253,7 +252,7 @@ var CreateMeetingSession = huma.Operation{
 	Path:        "/meeting_sessions",
 	Summary:     "Create a Meeting Session",
 	Tags:        meetingsTags,
-	Errors:      openapi.ErrorCodes(),
+	Errors:      ErrorCodes(),
 }
 
 type CreateMeetingSessionAttributes struct {
@@ -273,7 +272,7 @@ var UpdateMeetingSession = huma.Operation{
 	Path:        "/meeting_sessions/{id}",
 	Summary:     "Update a Meeting Session",
 	Tags:        meetingsTags,
-	Errors:      openapi.ErrorCodes(),
+	Errors:      ErrorCodes(),
 }
 
 type UpdateMeetingSessionAttributes struct {
@@ -287,7 +286,7 @@ var ArchiveMeetingSession = huma.Operation{
 	Path:        "/meeting_sessions/{id}",
 	Summary:     "Archive a Meeting Session",
 	Tags:        meetingsTags,
-	Errors:      openapi.ErrorCodes(),
+	Errors:      ErrorCodes(),
 }
 
 type ArchiveMeetingSessionRequest ArchiveIdRequest

@@ -33,7 +33,7 @@ func NewServer(auth rez.AuthService, v1h oapiv1.Handler) (*Server, error) {
 		return nil, fmt.Errorf("root handler: %w", rootErr)
 	}
 
-	apiBasePath := rez.Config.BasePath()
+	apiBasePath := rez.Config.ApiPath()
 	apiHandler, apiErr := s.makeApiHandler(auth, v1h, apiBasePath)
 	if apiErr != nil {
 		return nil, fmt.Errorf("api handler: %w", apiErr)

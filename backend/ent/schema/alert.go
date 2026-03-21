@@ -15,7 +15,7 @@ func (Alert) Mixin() []ent.Mixin {
 	return []ent.Mixin{
 		BaseMixin{},
 		TenantMixin{},
-		IntegrationMixin{},
+		IntegrationDataMixin{},
 	}
 }
 
@@ -47,7 +47,7 @@ func (AlertInstance) Mixin() []ent.Mixin {
 	return []ent.Mixin{
 		BaseMixin{},
 		TenantMixin{},
-		IntegrationMixin{},
+		IntegrationDataMixin{},
 	}
 }
 

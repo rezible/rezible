@@ -2,9 +2,9 @@ package v1
 
 import (
 	"bytes"
-	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"net/http"
 	"reflect"
 	"time"
@@ -12,7 +12,6 @@ import (
 	"github.com/danielgtaylor/huma/v2"
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent"
-	"github.com/rezible/rezible/openapi"
 )
 
 const (
@@ -152,32 +151,17 @@ type FlexibleId struct {
 	Slug   string
 }
 
-func GetEntPredicate[P any](id FlexibleId, idFn func(uuid.UUID) P, slugFn func(string) P) P {
-	if id.IsUUID {
-		return idFn(id.UUID)
-	} else {
-		return slugFn(id.Slug)
-	}
-}
-
-func resolveFlexibleId(idParam string) (*FlexibleId, error) {
-	uid, parseErr := uuid.Parse(idParam)
-	if parseErr == nil {
-		return &FlexibleId{IsUUID: true, UUID: uid}, nil
-	} else if len(idParam) > 1 { // TODO: min slug length
-		return &FlexibleId{IsSlug: true, Slug: idParam}, nil
-	} else {
-		return nil, errors.New("invalid id")
-	}
-}
-
 func (i *GetFlexibleIdRequest) Resolve(ctx huma.Context) []error {
 	idParam := ctx.Param("id")
-	id, parseErr := resolveFlexibleId(idParam)
-	if parseErr != nil {
-		return []error{parseErr}
+	uid, parseErr := uuid.Parse(idParam)
+	if parseErr == nil {
+		i.Id = FlexibleId{IsUUID: true, UUID: uid}
+	} else if len(idParam) > 1 {
+		// TODO: min slug length
+		i.Id = FlexibleId{IsSlug: true, Slug: idParam}
+	} else {
+		return []error{fmt.Errorf("invalid id param")}
 	}
-	i.Id = *id
 	return nil
 }
 
@@ -219,12 +203,4 @@ func (o OmittableNullable[T]) Schema(r huma.Registry) *huma.Schema {
 		"nullable": true,
 	}
 	return s
-}
-
-func WrapContext(ctx openapi.Context, sub context.Context) openapi.Context {
-	return huma.WithContext(ctx, sub)
-}
-
-func WrapContextWithValue(ctx openapi.Context, key any, value any) openapi.Context {
-	return huma.WithValue(ctx, key, value)
 }

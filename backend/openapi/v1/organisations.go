@@ -7,7 +7,6 @@ import (
 	"github.com/danielgtaylor/huma/v2"
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent"
-	"github.com/rezible/rezible/openapi"
 )
 
 type OrganizationsHandler interface {
@@ -52,7 +51,7 @@ var GetOrganization = huma.Operation{
 	Path:        "/organizations/{id}",
 	Summary:     "Get Organization",
 	Tags:        organizationsTags,
-	Errors:      openapi.ErrorCodes(),
+	Errors:      ErrorCodes(),
 }
 
 type GetOrganizationRequest GetIdRequest
@@ -64,7 +63,7 @@ var FinishOrganizationSetup = huma.Operation{
 	Path:        "/organizations/{id}/setup",
 	Summary:     "Finish initial org setup",
 	Tags:        organizationsTags,
-	Errors:      openapi.ErrorCodes(),
+	Errors:      ErrorCodes(),
 }
 
 type FinishOrganizationSetupRequest PostIdEmptyRequest

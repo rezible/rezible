@@ -36,7 +36,7 @@ func (h *incidentsHandler) ListIncidents(ctx context.Context, req *oapi.ListInci
 	}
 	incs, listErr := h.incidents.ListIncidents(ctx, params)
 	if listErr != nil {
-		return nil, apiError("list incidents", listErr)
+		return nil, oapi.Error("list incidents", listErr)
 	}
 	resp.Body.Data = make([]oapi.Incident, len(incs.Data))
 	for i, inc := range incs.Data {
@@ -54,7 +54,7 @@ func (h *incidentsHandler) GetIncident(ctx context.Context, input *oapi.GetIncid
 
 	inc, incErr := h.incidents.Get(ctx, incidentIdPredicate(input.Id))
 	if incErr != nil {
-		return nil, apiError("get incident", incErr)
+		return nil, oapi.Error("get incident", incErr)
 	}
 	resp.Body.Data = oapi.IncidentFromEnt(inc)
 
@@ -86,7 +86,7 @@ func (h *incidentsHandler) CreateIncident(ctx context.Context, input *oapi.Creat
 
 	created, createErr := h.incidents.Set(ctx, uuid.Nil, setFn)
 	if createErr != nil {
-		return nil, apiError("create incident", createErr)
+		return nil, oapi.Error("create incident", createErr)
 	}
 	resp.Body.Data = oapi.IncidentFromEnt(created)
 
@@ -115,7 +115,7 @@ func (h *incidentsHandler) UpdateIncident(ctx context.Context, request *oapi.Upd
 
 	updated, updateErr := h.incidents.Set(ctx, request.Id, setFn)
 	if updateErr != nil {
-		return nil, apiError("update incident", updateErr)
+		return nil, oapi.Error("update incident", updateErr)
 	}
 	resp.Body.Data = oapi.IncidentFromEnt(updated)
 
@@ -126,7 +126,7 @@ func (h *incidentsHandler) ArchiveIncident(ctx context.Context, input *oapi.Arch
 	var resp oapi.ArchiveIncidentResponse
 
 	if archiveErr := h.incidents.Archive(ctx, input.Id); archiveErr != nil {
-		return nil, apiError("archive incident", archiveErr)
+		return nil, oapi.Error("archive incident", archiveErr)
 	}
 
 	return &resp, nil

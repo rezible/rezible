@@ -29,20 +29,6 @@ func (_u *OrganizationUpdate) Where(ps ...predicate.Organization) *OrganizationU
 	return _u
 }
 
-// SetExternalID sets the "external_id" field.
-func (_u *OrganizationUpdate) SetExternalID(v string) *OrganizationUpdate {
-	_u.mutation.SetExternalID(v)
-	return _u
-}
-
-// SetNillableExternalID sets the "external_id" field if the given value is not nil.
-func (_u *OrganizationUpdate) SetNillableExternalID(v *string) *OrganizationUpdate {
-	if v != nil {
-		_u.SetExternalID(*v)
-	}
-	return _u
-}
-
 // SetName sets the "name" field.
 func (_u *OrganizationUpdate) SetName(v string) *OrganizationUpdate {
 	_u.mutation.SetName(v)
@@ -53,6 +39,20 @@ func (_u *OrganizationUpdate) SetName(v string) *OrganizationUpdate {
 func (_u *OrganizationUpdate) SetNillableName(v *string) *OrganizationUpdate {
 	if v != nil {
 		_u.SetName(*v)
+	}
+	return _u
+}
+
+// SetDomain sets the "domain" field.
+func (_u *OrganizationUpdate) SetDomain(v string) *OrganizationUpdate {
+	_u.mutation.SetDomain(v)
+	return _u
+}
+
+// SetNillableDomain sets the "domain" field if the given value is not nil.
+func (_u *OrganizationUpdate) SetNillableDomain(v *string) *OrganizationUpdate {
+	if v != nil {
+		_u.SetDomain(*v)
 	}
 	return _u
 }
@@ -111,11 +111,6 @@ func (_u *OrganizationUpdate) ExecX(ctx context.Context) {
 
 // check runs all checks and user-defined validators on the builder.
 func (_u *OrganizationUpdate) check() error {
-	if v, ok := _u.mutation.ExternalID(); ok {
-		if err := organization.ExternalIDValidator(v); err != nil {
-			return &ValidationError{Name: "external_id", err: fmt.Errorf(`ent: validator failed for field "Organization.external_id": %w`, err)}
-		}
-	}
 	if _u.mutation.TenantCleared() && len(_u.mutation.TenantIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "Organization.tenant"`)
 	}
@@ -140,11 +135,11 @@ func (_u *OrganizationUpdate) sqlSave(ctx context.Context) (_node int, err error
 			}
 		}
 	}
-	if value, ok := _u.mutation.ExternalID(); ok {
-		_spec.SetField(organization.FieldExternalID, field.TypeString, value)
-	}
 	if value, ok := _u.mutation.Name(); ok {
 		_spec.SetField(organization.FieldName, field.TypeString, value)
+	}
+	if value, ok := _u.mutation.Domain(); ok {
+		_spec.SetField(organization.FieldDomain, field.TypeString, value)
 	}
 	if value, ok := _u.mutation.InitialSetupAt(); ok {
 		_spec.SetField(organization.FieldInitialSetupAt, field.TypeTime, value)
@@ -174,20 +169,6 @@ type OrganizationUpdateOne struct {
 	modifiers []func(*sql.UpdateBuilder)
 }
 
-// SetExternalID sets the "external_id" field.
-func (_u *OrganizationUpdateOne) SetExternalID(v string) *OrganizationUpdateOne {
-	_u.mutation.SetExternalID(v)
-	return _u
-}
-
-// SetNillableExternalID sets the "external_id" field if the given value is not nil.
-func (_u *OrganizationUpdateOne) SetNillableExternalID(v *string) *OrganizationUpdateOne {
-	if v != nil {
-		_u.SetExternalID(*v)
-	}
-	return _u
-}
-
 // SetName sets the "name" field.
 func (_u *OrganizationUpdateOne) SetName(v string) *OrganizationUpdateOne {
 	_u.mutation.SetName(v)
@@ -198,6 +179,20 @@ func (_u *OrganizationUpdateOne) SetName(v string) *OrganizationUpdateOne {
 func (_u *OrganizationUpdateOne) SetNillableName(v *string) *OrganizationUpdateOne {
 	if v != nil {
 		_u.SetName(*v)
+	}
+	return _u
+}
+
+// SetDomain sets the "domain" field.
+func (_u *OrganizationUpdateOne) SetDomain(v string) *OrganizationUpdateOne {
+	_u.mutation.SetDomain(v)
+	return _u
+}
+
+// SetNillableDomain sets the "domain" field if the given value is not nil.
+func (_u *OrganizationUpdateOne) SetNillableDomain(v *string) *OrganizationUpdateOne {
+	if v != nil {
+		_u.SetDomain(*v)
 	}
 	return _u
 }
@@ -269,11 +264,6 @@ func (_u *OrganizationUpdateOne) ExecX(ctx context.Context) {
 
 // check runs all checks and user-defined validators on the builder.
 func (_u *OrganizationUpdateOne) check() error {
-	if v, ok := _u.mutation.ExternalID(); ok {
-		if err := organization.ExternalIDValidator(v); err != nil {
-			return &ValidationError{Name: "external_id", err: fmt.Errorf(`ent: validator failed for field "Organization.external_id": %w`, err)}
-		}
-	}
 	if _u.mutation.TenantCleared() && len(_u.mutation.TenantIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "Organization.tenant"`)
 	}
@@ -315,11 +305,11 @@ func (_u *OrganizationUpdateOne) sqlSave(ctx context.Context) (_node *Organizati
 			}
 		}
 	}
-	if value, ok := _u.mutation.ExternalID(); ok {
-		_spec.SetField(organization.FieldExternalID, field.TypeString, value)
-	}
 	if value, ok := _u.mutation.Name(); ok {
 		_spec.SetField(organization.FieldName, field.TypeString, value)
+	}
+	if value, ok := _u.mutation.Domain(); ok {
+		_spec.SetField(organization.FieldDomain, field.TypeString, value)
 	}
 	if value, ok := _u.mutation.InitialSetupAt(); ok {
 		_spec.SetField(organization.FieldInitialSetupAt, field.TypeTime, value)

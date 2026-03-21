@@ -34363,8 +34363,8 @@ type OrganizationMutation struct {
 	op               Op
 	typ              string
 	id               *uuid.UUID
-	external_id      *string
 	name             *string
+	domain           *string
 	initial_setup_at *time.Time
 	clearedFields    map[string]struct{}
 	tenant           *int
@@ -34514,42 +34514,6 @@ func (m *OrganizationMutation) ResetTenantID() {
 	m.tenant = nil
 }
 
-// SetExternalID sets the "external_id" field.
-func (m *OrganizationMutation) SetExternalID(s string) {
-	m.external_id = &s
-}
-
-// ExternalID returns the value of the "external_id" field in the mutation.
-func (m *OrganizationMutation) ExternalID() (r string, exists bool) {
-	v := m.external_id
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldExternalID returns the old "external_id" field's value of the Organization entity.
-// If the Organization object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *OrganizationMutation) OldExternalID(ctx context.Context) (v string, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldExternalID is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldExternalID requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldExternalID: %w", err)
-	}
-	return oldValue.ExternalID, nil
-}
-
-// ResetExternalID resets all changes to the "external_id" field.
-func (m *OrganizationMutation) ResetExternalID() {
-	m.external_id = nil
-}
-
 // SetName sets the "name" field.
 func (m *OrganizationMutation) SetName(s string) {
 	m.name = &s
@@ -34584,6 +34548,42 @@ func (m *OrganizationMutation) OldName(ctx context.Context) (v string, err error
 // ResetName resets all changes to the "name" field.
 func (m *OrganizationMutation) ResetName() {
 	m.name = nil
+}
+
+// SetDomain sets the "domain" field.
+func (m *OrganizationMutation) SetDomain(s string) {
+	m.domain = &s
+}
+
+// Domain returns the value of the "domain" field in the mutation.
+func (m *OrganizationMutation) Domain() (r string, exists bool) {
+	v := m.domain
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldDomain returns the old "domain" field's value of the Organization entity.
+// If the Organization object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *OrganizationMutation) OldDomain(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldDomain is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldDomain requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldDomain: %w", err)
+	}
+	return oldValue.Domain, nil
+}
+
+// ResetDomain resets all changes to the "domain" field.
+func (m *OrganizationMutation) ResetDomain() {
+	m.domain = nil
 }
 
 // SetInitialSetupAt sets the "initial_setup_at" field.
@@ -34700,11 +34700,11 @@ func (m *OrganizationMutation) Fields() []string {
 	if m.tenant != nil {
 		fields = append(fields, organization.FieldTenantID)
 	}
-	if m.external_id != nil {
-		fields = append(fields, organization.FieldExternalID)
-	}
 	if m.name != nil {
 		fields = append(fields, organization.FieldName)
+	}
+	if m.domain != nil {
+		fields = append(fields, organization.FieldDomain)
 	}
 	if m.initial_setup_at != nil {
 		fields = append(fields, organization.FieldInitialSetupAt)
@@ -34719,10 +34719,10 @@ func (m *OrganizationMutation) Field(name string) (ent.Value, bool) {
 	switch name {
 	case organization.FieldTenantID:
 		return m.TenantID()
-	case organization.FieldExternalID:
-		return m.ExternalID()
 	case organization.FieldName:
 		return m.Name()
+	case organization.FieldDomain:
+		return m.Domain()
 	case organization.FieldInitialSetupAt:
 		return m.InitialSetupAt()
 	}
@@ -34736,10 +34736,10 @@ func (m *OrganizationMutation) OldField(ctx context.Context, name string) (ent.V
 	switch name {
 	case organization.FieldTenantID:
 		return m.OldTenantID(ctx)
-	case organization.FieldExternalID:
-		return m.OldExternalID(ctx)
 	case organization.FieldName:
 		return m.OldName(ctx)
+	case organization.FieldDomain:
+		return m.OldDomain(ctx)
 	case organization.FieldInitialSetupAt:
 		return m.OldInitialSetupAt(ctx)
 	}
@@ -34758,19 +34758,19 @@ func (m *OrganizationMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetTenantID(v)
 		return nil
-	case organization.FieldExternalID:
-		v, ok := value.(string)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetExternalID(v)
-		return nil
 	case organization.FieldName:
 		v, ok := value.(string)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetName(v)
+		return nil
+	case organization.FieldDomain:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetDomain(v)
 		return nil
 	case organization.FieldInitialSetupAt:
 		v, ok := value.(time.Time)
@@ -34843,11 +34843,11 @@ func (m *OrganizationMutation) ResetField(name string) error {
 	case organization.FieldTenantID:
 		m.ResetTenantID()
 		return nil
-	case organization.FieldExternalID:
-		m.ResetExternalID()
-		return nil
 	case organization.FieldName:
 		m.ResetName()
+		return nil
+	case organization.FieldDomain:
+		m.ResetDomain()
 		return nil
 	case organization.FieldInitialSetupAt:
 		m.ResetInitialSetupAt()

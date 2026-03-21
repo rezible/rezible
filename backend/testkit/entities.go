@@ -6,9 +6,16 @@ import (
 	"sync/atomic"
 
 	"github.com/google/uuid"
-	"github.com/rezible/rezible/access"
 	"github.com/rezible/rezible/ent"
 )
+
+func WithSkipSeedOrganization() Option {
+	return func(o *options) { o.skipSeedOrganization = true }
+}
+
+func WithSkipSeedUser() Option {
+	return func(o *options) { o.skipSeedUser = true }
+}
 
 var seq atomic.Int64
 
@@ -16,34 +23,32 @@ func next(prefix string) string {
 	return fmt.Sprintf("%s_%d", prefix, seq.Add(1))
 }
 
-func (s *Suite) seedTestEntities() {
-	if !s.opts.seedTenant {
-		return
-	}
-	sysCtx := access.SystemContext(s.T().Context())
+func (s *Suite) SeedTestEntities() {
+	ctx := s.SystemContext()
 
-	tenant, tenantErr := s.Client().Tenant.Create().Save(sysCtx)
+	tenant, tenantErr := s.Client().Tenant.Create().Save(ctx)
 	s.Require().NoError(tenantErr, "failed to create tenant")
 	s.SeedTenant = tenant
+	ctx = s.SeedTenantContext()
 
-	tenantCtx := access.TenantContext(sysCtx, tenant.ID)
-	if s.opts.seedOrganization {
-		id := uuid.NewString()
-		org, orgErr := s.Client().Organization.Create().
-			SetName("Test Organization" + id[:4]).
-			SetExternalID("org-" + id).
-			Save(tenantCtx)
-		s.Require().NoError(orgErr, "failed to create organization")
-		s.SeedOrganization = org
+	if s.opts.skipSeedOrganization {
+		return
 	}
+	org, orgErr := s.Client().Organization.Create().
+		SetName("Test Organization").
+		SetDomain("example.com").
+		Save(ctx)
+	s.Require().NoError(orgErr, "failed to create organization")
+	s.SeedOrganization = org
 
-	if s.opts.seedUser {
-		_, usrCtx := s.Client().User.Create().
-			SetEmail("owner+" + uuid.NewString() + "@example.com").
-			SetName("Owner").
-			Save(tenantCtx)
-		s.Require().NoError(usrCtx, "failed to create user")
+	if s.opts.skipSeedUser {
+		return
 	}
+	_, usrErr := s.Client().User.Create().
+		SetEmail("owner+" + uuid.NewString() + "@example.com").
+		SetName("Owner").
+		Save(ctx)
+	s.Require().NoError(usrErr, "failed to create user")
 }
 
 func (s *Suite) CreateTestUser(ctx context.Context, name string) *ent.User {

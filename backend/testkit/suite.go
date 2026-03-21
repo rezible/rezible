@@ -2,8 +2,10 @@ package testkit
 
 import (
 	"context"
+	"fmt"
 	"net/url"
 
+	entsql "entgo.io/ent/dialect/sql"
 	"github.com/rezible/rezible/migrations"
 	"github.com/stretchr/testify/suite"
 
@@ -14,24 +16,15 @@ import (
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/access"
 	"github.com/rezible/rezible/ent"
+	"github.com/rezible/rezible/internal/koanf"
 	"github.com/rezible/rezible/internal/postgres"
-	"github.com/rezible/rezible/internal/viper"
 )
 
 type Option func(*options)
 
 type options struct {
-	seedTenant       bool
-	seedOrganization bool
-	seedUser         bool
-}
-
-func WithSeedTenant(seed bool) Option {
-	return func(o *options) { o.seedTenant = seed }
-}
-
-func WithSeedTestOrganization(seed bool) Option {
-	return func(o *options) { o.seedOrganization = seed }
+	skipSeedOrganization bool
+	skipSeedUser         bool
 }
 
 type Suite struct {
@@ -43,10 +36,11 @@ type Suite struct {
 
 	SeedTenant       *ent.Tenant
 	SeedOrganization *ent.Organization
+	SeedUser         *ent.User
 }
 
 func NewSuite(opts ...Option) Suite {
-	cfg := options{seedTenant: true, seedOrganization: true, seedUser: true}
+	cfg := options{}
 	for _, opt := range opts {
 		opt(&cfg)
 	}
@@ -54,33 +48,35 @@ func NewSuite(opts ...Option) Suite {
 }
 
 func (s *Suite) SetupSuite() {
-	rez.Config = viper.NewConfigLoader(viper.ConfigLoaderOptions{
-		LoadEnvironment: true,
-	})
+	s.SetConfigOverrides(nil)
 	s.setupTestDatabase()
-	s.seedTestEntities()
-}
-
-func (s *Suite) SetConfigOverrides(overrides map[string]any) {
-	rez.Config = viper.NewConfigLoader(viper.ConfigLoaderOptions{
-		LoadEnvironment: true,
-		Overrides:       overrides,
-	})
+	s.SeedTestEntities()
 }
 
 func (s *Suite) TearDownSuite() {
-	if closeErr := s.dbClient.Close(); closeErr != nil {
-		s.T().Logf("failed to close database client: %v", closeErr)
-	}
+	s.closeTestDatabase()
+}
+
+func (s *Suite) BeforeTest(suiteName, testName string) {
+	s.SetConfigOverrides(nil)
+}
+
+func (s *Suite) SetConfigOverrides(overrides map[string]any) {
+	cfg, cfgErr := koanf.NewConfigLoader(koanf.ConfigLoaderOptions{
+		LoadEnvironment: true,
+		Overrides:       overrides,
+	})
+	s.Require().NoError(cfgErr)
+	rez.Config = cfg
 }
 
 func (s *Suite) Client() *ent.Client { return s.dbClient }
 
-func (s *Suite) GetSystemContext() context.Context {
+func (s *Suite) SystemContext() context.Context {
 	return access.SystemContext(s.T().Context())
 }
 
-func (s *Suite) GetSeedTenantContext() context.Context {
+func (s *Suite) SeedTenantContext() context.Context {
 	return access.TenantContext(s.T().Context(), s.SeedTenant.ID)
 }
 
@@ -89,23 +85,27 @@ func (s *Suite) GetAnonymousContext() context.Context {
 }
 
 func (s *Suite) setupTestDatabase() {
-	dbConnUrl := rez.Config.DatabaseUrl()
-	s.Require().NotEmpty(dbConnUrl, "database url is empty")
+	pgConnCfg, connCfgErr := postgres.GetPgxConfig()
+	s.Require().NoError(connCfgErr, "failed to get database config")
 
-	dbUrl, dbUrlParseErr := url.Parse(dbConnUrl)
-	s.Require().NoError(dbUrlParseErr, "failed to parse database url")
+	connUrl, urlErr := url.Parse(pgConnCfg.ConnString())
+	s.Require().NoError(urlErr, "failed to parse conn string")
 
 	pgxConf := pgtestdb.Config{
 		DriverName: "pgx",
-		User:       dbUrl.User.Username(),
-		Host:       dbUrl.Hostname(),
-		Port:       dbUrl.Port(),
-		Options:    dbUrl.RawQuery,
-	}
-	if pw, exists := dbUrl.User.Password(); exists {
-		pgxConf.Password = pw
+		User:       pgConnCfg.User,
+		Host:       pgConnCfg.Host,
+		Password:   pgConnCfg.Password,
+		Port:       fmt.Sprintf("%d", pgConnCfg.Port),
+		Options:    connUrl.RawQuery,
 	}
 	mg := golangmigrator.New(".", golangmigrator.WithFS(migrations.FS))
-	tdb := pgtestdb.New(s.T(), pgxConf, mg)
-	s.dbClient = postgres.ClientFromSql(tdb)
+	testDb := pgtestdb.New(s.T(), pgxConf, mg)
+	s.dbClient = postgres.MakeClient(entsql.OpenDB("postgres", testDb))
+}
+
+func (s *Suite) closeTestDatabase() {
+	if closeErr := s.dbClient.Close(); closeErr != nil {
+		s.T().Logf("failed to close database client: %v", closeErr)
+	}
 }

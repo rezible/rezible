@@ -16,10 +16,10 @@ const (
 	FieldID = "id"
 	// FieldTenantID holds the string denoting the tenant_id field in the database.
 	FieldTenantID = "tenant_id"
-	// FieldExternalID holds the string denoting the external_id field in the database.
-	FieldExternalID = "external_id"
 	// FieldName holds the string denoting the name field in the database.
 	FieldName = "name"
+	// FieldDomain holds the string denoting the domain field in the database.
+	FieldDomain = "domain"
 	// FieldInitialSetupAt holds the string denoting the initial_setup_at field in the database.
 	FieldInitialSetupAt = "initial_setup_at"
 	// EdgeTenant holds the string denoting the tenant edge name in mutations.
@@ -39,8 +39,8 @@ const (
 var Columns = []string{
 	FieldID,
 	FieldTenantID,
-	FieldExternalID,
 	FieldName,
+	FieldDomain,
 	FieldInitialSetupAt,
 }
 
@@ -62,8 +62,6 @@ func ValidColumn(column string) bool {
 var (
 	Hooks  [1]ent.Hook
 	Policy ent.Policy
-	// ExternalIDValidator is a validator for the "external_id" field. It is called by the builders before save.
-	ExternalIDValidator func(string) error
 	// DefaultID holds the default value on creation for the "id" field.
 	DefaultID func() uuid.UUID
 )
@@ -81,14 +79,14 @@ func ByTenantID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldTenantID, opts...).ToFunc()
 }
 
-// ByExternalID orders the results by the external_id field.
-func ByExternalID(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldExternalID, opts...).ToFunc()
-}
-
 // ByName orders the results by the name field.
 func ByName(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldName, opts...).ToFunc()
+}
+
+// ByDomain orders the results by the domain field.
+func ByDomain(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldDomain, opts...).ToFunc()
 }
 
 // ByInitialSetupAt orders the results by the initial_setup_at field.

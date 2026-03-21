@@ -8,7 +8,6 @@ import (
 	"github.com/danielgtaylor/huma/v2"
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent"
-	"github.com/rezible/rezible/openapi"
 )
 
 type RetrospectivesHandler interface {
@@ -146,7 +145,7 @@ var ListRetrospectives = huma.Operation{
 	Path:        "/retrospectives",
 	Summary:     "List Retrospectives",
 	Tags:        retrospectivesTags,
-	Errors:      openapi.ErrorCodes(),
+	Errors:      ErrorCodes(),
 }
 
 type ListRetrospectivesRequest ListRequest
@@ -158,7 +157,7 @@ var GetRetrospective = huma.Operation{
 	Path:        "/retrospectives/{id}",
 	Summary:     "Get a Retrospective",
 	Tags:        retrospectivesTags,
-	Errors:      openapi.ErrorCodes(),
+	Errors:      ErrorCodes(),
 }
 
 type GetRetrospectiveRequest GetIdRequest
@@ -170,7 +169,7 @@ var GetRetrospectiveForIncident = huma.Operation{
 	Path:        "/incidents/{id}/retrospective",
 	Summary:     "Get a Retrospective for an Incident",
 	Tags:        retrospectivesTags,
-	Errors:      openapi.ErrorCodes(),
+	Errors:      ErrorCodes(),
 }
 
 type GetRetrospectiveForIncidentRequest = GetFlexibleIdRequest
@@ -182,7 +181,7 @@ var CreateRetrospective = huma.Operation{
 	Path:        "/retrospectives",
 	Summary:     "Create an Incident Retrospective",
 	Tags:        retrospectivesTags,
-	Errors:      openapi.ErrorCodes(),
+	Errors:      ErrorCodes(),
 }
 
 type CreateRetrospectiveAttributes struct {
@@ -200,7 +199,7 @@ var ListRetrospectiveReviews = huma.Operation{
 	Path:        "/retrospectives/{id}/reviews",
 	Summary:     "List Retrospective Reviews",
 	Tags:        retrospectivesTags,
-	Errors:      openapi.ErrorCodes(),
+	Errors:      ErrorCodes(),
 }
 
 type ListRetrospectiveReviewsRequest ListRequest
@@ -212,7 +211,7 @@ var CreateRetrospectiveReview = huma.Operation{
 	Path:        "/retrospectives/{id}/reviews",
 	Summary:     "Create a Retrospective Review",
 	Tags:        retrospectivesTags,
-	Errors:      openapi.ErrorCodes(),
+	Errors:      ErrorCodes(),
 }
 
 type CreateRetrospectiveReviewRequest CreateIdRequest[RetrospectiveReviewAttributes]
@@ -224,7 +223,7 @@ var UpdateRetrospectiveReview = huma.Operation{
 	Path:        "/retrospective_reviews/{id}",
 	Summary:     "Update a Retrospective Review",
 	Tags:        retrospectivesTags,
-	Errors:      openapi.ErrorCodes(),
+	Errors:      ErrorCodes(),
 }
 
 type UpdateRetrospectiveReviewRequestAttributes struct {
@@ -238,7 +237,7 @@ var ArchiveRetrospectiveReview = huma.Operation{
 	Path:        "/retrospective_reviews/{id}",
 	Summary:     "Archive a Retrospective Review",
 	Tags:        retrospectivesTags,
-	Errors:      openapi.ErrorCodes(),
+	Errors:      ErrorCodes(),
 }
 
 type ArchiveRetrospectiveReviewRequest ArchiveIdRequest
@@ -250,7 +249,7 @@ var ListRetrospectiveComments = huma.Operation{
 	Path:        "/retrospectives/{id}/comments",
 	Summary:     "List Comments For a Retrospective",
 	Tags:        retrospectivesTags,
-	Errors:      openapi.ErrorCodes(),
+	Errors:      ErrorCodes(),
 }
 
 type ListRetrospectiveCommentsRequest ListIdRequest
@@ -262,7 +261,7 @@ var CreateRetrospectiveComment = huma.Operation{
 	Path:        "/retrospectives/{id}/comments",
 	Summary:     "Create a Retrospective Comment",
 	Tags:        retrospectivesTags,
-	Errors:      openapi.ErrorCodes(),
+	Errors:      ErrorCodes(),
 }
 
 type CreateRetrospectiveCommentAttributes struct {
@@ -277,7 +276,7 @@ var GetRetrospectiveComment = huma.Operation{
 	Path:        "/retrospective_comments/{id}",
 	Summary:     "Get a Retrospective Comment",
 	Tags:        retrospectivesTags,
-	Errors:      openapi.ErrorCodes(),
+	Errors:      ErrorCodes(),
 }
 
 type GetRetrospectiveCommentRequest ListIdRequest
@@ -289,7 +288,7 @@ var UpdateRetrospectiveComment = huma.Operation{
 	Path:        "/retrospective_comments/{id}",
 	Summary:     "Update a Retrospective Comment",
 	Tags:        retrospectivesTags,
-	Errors:      openapi.ErrorCodes(),
+	Errors:      ErrorCodes(),
 }
 
 type UpdateRetrospectiveCommentAttributes struct {

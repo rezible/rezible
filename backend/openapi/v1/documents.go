@@ -8,17 +8,16 @@ import (
 	"github.com/danielgtaylor/huma/v2"
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent"
-	"github.com/rezible/rezible/openapi"
 )
 
 type DocumentsHandler interface {
-	RequestDocumentEditorSession(context.Context, *RequestDocumentEditorSessionRequest) (*RequestDocumentEditorSessionResponse, error)
+	GetDocumentAccess(context.Context, *GetDocumentAccessRequest) (*GetDocumentAccessResponse, error)
 	LoadDocument(context.Context, *LoadDocumentRequest) (*LoadDocumentResponse, error)
 	UpdateDocument(context.Context, *UpdateDocumentRequest) (*UpdateDocumentResponse, error)
 }
 
 func (o operations) RegisterDocuments(api huma.API) {
-	huma.Register(api, RequestDocumentEditorSession, o.RequestDocumentEditorSession)
+	huma.Register(api, GetDocumentAccess, o.GetDocumentAccess)
 	huma.Register(api, LoadDocument, o.LoadDocument)
 	huma.Register(api, UpdateDocument, o.UpdateDocument)
 }
@@ -33,21 +32,10 @@ type (
 		Content string `json:"content"`
 	}
 
-	DocumentEditorSession struct {
-		DocumentId    uuid.UUID `json:"documentId"`
-		ConnectionUrl string    `json:"connectionUrl"`
-		AccessToken   string    `json:"accessToken"`
-	}
-
-	DocumentEditorSessionAuth struct {
-		UserId    uuid.UUID `json:"userId"`
-		CanEdit   bool      `json:"canEdit"`
-		CanManage bool      `json:"canManage"`
-	}
-
-	DocumentEditorSessionUser struct {
-		Id       uuid.UUID `json:"id"`
-		Username string    `json:"username"`
+	DocumentAccess struct {
+		User      User `json:"user"`
+		CanEdit   bool `json:"canEdit"`
+		CanManage bool `json:"canManage"`
 	}
 )
 
@@ -58,28 +46,31 @@ func DocumentFromEnt(doc *ent.Document) Document {
 	return Document{Id: doc.ID, Attributes: attrs}
 }
 
-func DocumentEditorSessionAuthFromEnt(access *ent.DocumentAccess) DocumentEditorSessionAuth {
-	sa := DocumentEditorSessionAuth{
-		UserId:    access.UserID,
-		CanEdit:   access.CanEdit,
-		CanManage: access.CanManage,
+func DocumentAccessFromEnt(acc *ent.DocumentAccess) DocumentAccess {
+	da := DocumentAccess{
+		User:      User{Id: acc.UserID},
+		CanEdit:   acc.CanEdit,
+		CanManage: acc.CanManage,
 	}
-	return sa
+	if acc.Edges.User != nil {
+		da.User = UserFromEnt(acc.Edges.User)
+	}
+	return da
 }
 
 var documentsTags = []string{"documents"}
 
-var RequestDocumentEditorSession = huma.Operation{
-	OperationID: "request-document-editor-session",
+var GetDocumentAccess = huma.Operation{
+	OperationID: "get-document-access",
 	Method:      http.MethodPost,
-	Path:        "/documents/{id}/session",
-	Summary:     "Request a Document Editor Session",
+	Path:        "/documents/{id}/access",
+	Summary:     "Get user access for a document",
 	Tags:        documentsTags,
-	Errors:      openapi.ErrorCodes(),
+	Errors:      ErrorCodes(),
 }
 
-type RequestDocumentEditorSessionRequest PostIdEmptyRequest
-type RequestDocumentEditorSessionResponse ItemResponse[DocumentEditorSession]
+type GetDocumentAccessRequest GetIdRequest
+type GetDocumentAccessResponse ItemResponse[DocumentAccess]
 
 var LoadDocument = huma.Operation{
 	OperationID: "load-document",
@@ -87,7 +78,7 @@ var LoadDocument = huma.Operation{
 	Path:        "/documents/{id}/load",
 	Summary:     "Load document",
 	Tags:        documentsTags,
-	Errors:      openapi.ErrorCodes(),
+	Errors:      ErrorCodes(),
 }
 
 type LoadDocumentRequest GetIdRequest
@@ -99,7 +90,7 @@ var UpdateDocument = huma.Operation{
 	Path:        "/documents/{id}/update",
 	Summary:     "Update document",
 	Tags:        documentsTags,
-	Errors:      openapi.ErrorCodes(),
+	Errors:      ErrorCodes(),
 }
 
 type UpdateDocumentRequestAttributes struct {

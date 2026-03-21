@@ -25,7 +25,7 @@ func (s *systemAnalysisHandler) GetSystemAnalysis(ctx context.Context, request *
 
 	analysis, queryErr := s.components.GetSystemAnalysis(ctx, request.Id)
 	if queryErr != nil {
-		return nil, apiError("failed to get system analysis", queryErr)
+		return nil, oapi.Error("failed to get system analysis", queryErr)
 	}
 	resp.Body.Data = oapi.SystemAnalysisFromEnt(analysis)
 
@@ -40,7 +40,7 @@ func (s *systemAnalysisHandler) ListSystemAnalysisComponents(ctx context.Context
 		WithComponent()
 	cmps, queryErr := query.All(ctx)
 	if queryErr != nil {
-		return nil, apiError("failed to query system analysis components", queryErr)
+		return nil, oapi.Error("failed to query system analysis components", queryErr)
 	}
 	resp.Body.Data = make([]oapi.SystemAnalysisComponent, len(cmps))
 	for i, cmp := range cmps {
@@ -62,7 +62,7 @@ func (s *systemAnalysisHandler) AddSystemAnalysisComponent(ctx context.Context, 
 
 	added, addErr := create.Save(ctx)
 	if addErr != nil {
-		return nil, apiError("failed to add system analysis component", addErr)
+		return nil, oapi.Error("failed to add system analysis component", addErr)
 	}
 	resp.Body.Data = oapi.SystemAnalysisComponentFromEnt(added)
 
@@ -74,7 +74,7 @@ func (s *systemAnalysisHandler) GetSystemAnalysisComponent(ctx context.Context, 
 
 	cmp, getErr := s.db.SystemAnalysisComponent.Get(ctx, request.Id)
 	if getErr != nil {
-		return nil, apiError("failed to get system analysis component", getErr)
+		return nil, oapi.Error("failed to get system analysis component", getErr)
 	}
 	resp.Body.Data = oapi.SystemAnalysisComponentFromEnt(cmp)
 
@@ -94,7 +94,7 @@ func (s *systemAnalysisHandler) UpdateSystemAnalysisComponent(ctx context.Contex
 
 	updated, updateErr := update.Save(ctx)
 	if updateErr != nil {
-		return nil, apiError("failed to update system analysis component", updateErr)
+		return nil, oapi.Error("failed to update system analysis component", updateErr)
 	}
 	resp.Body.Data = oapi.SystemAnalysisComponentFromEnt(updated)
 
@@ -105,7 +105,7 @@ func (s *systemAnalysisHandler) DeleteSystemAnalysisComponent(ctx context.Contex
 	var resp oapi.DeleteSystemAnalysisComponentResponse
 
 	if delErr := s.db.SystemAnalysisComponent.DeleteOneID(request.Id).Exec(ctx); delErr != nil {
-		return nil, apiError("failed to delete system analysis component", delErr)
+		return nil, oapi.Error("failed to delete system analysis component", delErr)
 	}
 
 	return &resp, nil
@@ -119,7 +119,7 @@ func (s *systemAnalysisHandler) ListSystemAnalysisRelationships(ctx context.Cont
 
 	rels, queryErr := query.All(ctx)
 	if queryErr != nil {
-		return nil, apiError("failed to query system analysis relationships", queryErr)
+		return nil, oapi.Error("failed to query system analysis relationships", queryErr)
 	}
 	resp.Body.Data = make([]oapi.SystemAnalysisRelationship, len(rels))
 	for i, rel := range rels {
@@ -157,7 +157,7 @@ func (s *systemAnalysisHandler) CreateSystemAnalysisRelationship(ctx context.Con
 
 	created, createErr := s.components.CreateSystemAnalysisRelationship(ctx, params)
 	if createErr != nil {
-		return nil, apiError("failed to create system analysis relationship", createErr)
+		return nil, oapi.Error("failed to create system analysis relationship", createErr)
 	}
 	resp.Body.Data = oapi.SystemAnalysisRelationshipFromEnt(created)
 
@@ -169,7 +169,7 @@ func (s *systemAnalysisHandler) GetSystemAnalysisRelationship(ctx context.Contex
 
 	rel, getErr := s.db.SystemAnalysisRelationship.Get(ctx, request.Id)
 	if getErr != nil {
-		return nil, apiError("failed to get system analysis relationship", getErr)
+		return nil, oapi.Error("failed to get system analysis relationship", getErr)
 	}
 	resp.Body.Data = oapi.SystemAnalysisRelationshipFromEnt(rel)
 
@@ -185,7 +185,7 @@ func (s *systemAnalysisHandler) UpdateSystemAnalysisRelationship(ctx context.Con
 
 	current, getErr := s.db.SystemAnalysisRelationship.Get(ctx, request.Id)
 	if getErr != nil {
-		return nil, apiError("failed to update system analysis relationship", getErr)
+		return nil, oapi.Error("failed to update system analysis relationship", getErr)
 	}
 
 	updateRelationshipTx := func(tx *ent.Tx) error {
@@ -204,7 +204,7 @@ func (s *systemAnalysisHandler) UpdateSystemAnalysisRelationship(ctx context.Con
 	}
 
 	if updateErr := ent.WithTx(ctx, s.db, updateRelationshipTx); updateErr != nil {
-		return nil, apiError("failed to update system analysis relationship", updateErr)
+		return nil, oapi.Error("failed to update system analysis relationship", updateErr)
 	}
 	resp.Body.Data = oapi.SystemAnalysisRelationshipFromEnt(updated)
 
@@ -215,7 +215,7 @@ func (s *systemAnalysisHandler) DeleteSystemAnalysisRelationship(ctx context.Con
 	var resp oapi.DeleteSystemAnalysisRelationshipResponse
 
 	if delErr := s.db.SystemAnalysisRelationship.DeleteOneID(request.Id).Exec(ctx); delErr != nil {
-		return nil, apiError("failed to delete system analysis relationship", delErr)
+		return nil, oapi.Error("failed to delete system analysis relationship", delErr)
 	}
 
 	return &resp, nil

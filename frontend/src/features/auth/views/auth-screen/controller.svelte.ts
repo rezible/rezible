@@ -1,11 +1,10 @@
 import { Context, watch } from "runed";
 import { useAuthSessionState, type SessionErrorCategory } from "$lib/auth.svelte";
-import { OidcClient, UserManager, WebStorageStateStore, type CreateSigninRequestArgs } from "oidc-client-ts";
-import { APP_URL, AUTH_URL, AUTH_CLIENT_ID } from "$lib/config";
+import { OidcClient, WebStorageStateStore, type CreateSigninRequestArgs } from "oidc-client-ts";
+import { APP_URL, AUTH_ISSUER_URL, AUTH_CLIENT_ID } from "$lib/config";
 import { page } from "$app/state";
-import { goto } from "$app/navigation";
 import { createMutation } from "@tanstack/svelte-query";
-import { completeAuthSessionFlowMutation, type CompleteAuthSessionFlowRequestAttributes } from "$src/lib/api";
+import { completeAuthSessionFlowMutation } from "$src/lib/api";
 import { z } from "zod";
 import { useSearchParams } from "runed/kit";
 
@@ -36,7 +35,7 @@ export class AuthScreenController {
     private callbackCode = $derived(this.callbackParams.code);
 
     oidc = new OidcClient({
-        authority: AUTH_URL,
+        authority: AUTH_ISSUER_URL,
         client_id: AUTH_CLIENT_ID,
         redirect_uri: `${APP_URL}/auth/callback`,
         response_type: "code",

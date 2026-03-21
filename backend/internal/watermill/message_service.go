@@ -55,16 +55,16 @@ func NewMessageService() (*MessageService, error) {
 	}
 	gcPubSub := gochannel.NewGoChannel(gcCfg, ms.logger)
 
-	pubWithMetadata := message.MessageTransformPublisherDecorator(ms.setMessageMetadataPublisherTransform)
-	mdPub, pubErr := pubWithMetadata(gcPubSub)
-	if pubErr != nil {
-		return nil, fmt.Errorf("failed to decorate publisher: %w", pubErr)
-	}
-
 	retry := middleware.Retry{
 		MaxRetries:      1,
 		InitialInterval: time.Second,
 		Logger:          ms.logger,
+	}
+
+	pubWithMetadata := message.MessageTransformPublisherDecorator(setMessageAccessScope)
+	mdPub, pubErr := pubWithMetadata(gcPubSub)
+	if pubErr != nil {
+		return nil, fmt.Errorf("failed to decorate publisher: %w", pubErr)
 	}
 
 	poison, poisonErr := ms.setupPoisonQueue(mdPub, gcPubSub)
@@ -77,7 +77,7 @@ func NewMessageService() (*MessageService, error) {
 	ms.router.AddMiddleware(
 		middleware.CorrelationID,
 		throttle.Middleware,
-		setMessageAccessContextMiddleware,
+		restoreMessageAccessScope,
 		// send errors to different queue
 		poison,
 		// catch errors & retry up to 1 time, then bubble up

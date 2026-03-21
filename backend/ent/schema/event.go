@@ -15,7 +15,7 @@ func (Event) Mixin() []ent.Mixin {
 	return []ent.Mixin{
 		BaseMixin{},
 		TenantMixin{},
-		IntegrationMixin{},
+		IntegrationDataMixin{},
 	}
 }
 

@@ -2,6 +2,7 @@ package apiv1
 
 import (
 	"context"
+
 	rez "github.com/rezible/rezible"
 	oapi "github.com/rezible/rezible/openapi/v1"
 )
@@ -21,7 +22,7 @@ func (h *usersHandler) ListUsers(ctx context.Context, request *oapi.ListUsersReq
 		ListParams: request.ListParams(),
 	})
 	if usersErr != nil {
-		return nil, apiError("failed to list users", usersErr)
+		return nil, oapi.Error("failed to list users", usersErr)
 	}
 
 	resp.Body.Data = make([]oapi.User, len(users))
@@ -37,7 +38,7 @@ func (h *usersHandler) GetUser(ctx context.Context, input *oapi.GetUserRequest) 
 
 	user, getErr := h.users.GetById(ctx, input.Id)
 	if getErr != nil {
-		return nil, apiError("Failed to get user", getErr)
+		return nil, oapi.Error("Failed to get user", getErr)
 	}
 	resp.Body.Data = oapi.UserFromEnt(user)
 

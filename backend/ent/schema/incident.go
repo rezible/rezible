@@ -18,7 +18,7 @@ func (Incident) Mixin() []ent.Mixin {
 	return []ent.Mixin{
 		BaseMixin{},
 		TenantMixin{},
-		IntegrationMixin{},
+		IntegrationDataMixin{},
 		TimestampsMixin{},
 	}
 }

@@ -10,17 +10,23 @@ import (
 	"entgo.io/ent/dialect/sql/schema"
 	_ "github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/stdlib"
+	"github.com/rs/zerolog/log"
 
-	rez "github.com/rezible/rezible"
 	entmigrate "github.com/rezible/rezible/ent/migrate"
 )
 
 func GenerateEntMigrations(ctx context.Context, name string) error {
-	pool, poolErr := openPgxPool(ctx, rez.Config.DatabaseUrl())
+	pool, poolErr := openPgxPool(ctx)
 	if poolErr != nil {
 		return poolErr
 	}
-	defer pool.Close()
+	conn := stdlib.OpenDBFromPool(pool)
+	defer func() {
+		pool.Close()
+		if err := conn.Close(); err != nil {
+			log.Error().Err(err).Str("name", name).Msg("failed to close database connection")
+		}
+	}()
 
 	dir, err := sqltool.NewGolangMigrateDir("./migrations")
 	if err != nil {
@@ -32,9 +38,7 @@ func GenerateEntMigrations(ctx context.Context, name string) error {
 		schema.WithMigrationMode(schema.ModeReplay),
 		schema.WithDialect(dialect.Postgres),
 	}
-
-	driver := entsql.OpenDB(dialect.Postgres, stdlib.OpenDBFromPool(pool))
-	m, mErr := schema.NewMigrate(driver, opts...)
+	m, mErr := schema.NewMigrate(entsql.OpenDB(dialect.Postgres, conn), opts...)
 	if mErr != nil {
 		return fmt.Errorf("failed creating migrate: %v", mErr)
 	}

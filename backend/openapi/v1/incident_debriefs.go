@@ -3,13 +3,12 @@ package v1
 import (
 	"context"
 
+	"net/http"
+	"time"
+
 	"github.com/danielgtaylor/huma/v2"
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent"
-	"github.com/rezible/rezible/openapi"
-
-	"net/http"
-	"time"
 )
 
 type IncidentDebriefsHandler interface {
@@ -141,7 +140,7 @@ var GetIncidentUserDebrief = huma.Operation{
 	Path:        "/incidents/{id}/debrief",
 	Summary:     "Get Debrief For Incident",
 	Tags:        incidentDebriefsTags,
-	Errors:      openapi.ErrorCodes(),
+	Errors:      ErrorCodes(),
 }
 
 type GetIncidentUserDebriefRequest = GetIdRequest
@@ -153,7 +152,7 @@ var GetIncidentDebrief = huma.Operation{
 	Path:        "/incident_debriefs/{id}",
 	Summary:     "Get Incident Debrief",
 	Tags:        incidentDebriefsTags,
-	Errors:      openapi.ErrorCodes(),
+	Errors:      ErrorCodes(),
 }
 
 type GetIncidentDebriefRequest = GetIdRequest
@@ -165,7 +164,7 @@ var UpdateIncidentDebrief = huma.Operation{
 	Path:        "/incident_debriefs/{id}",
 	Summary:     "Update Incident Debrief",
 	Tags:        incidentDebriefsTags,
-	Errors:      openapi.ErrorCodes(),
+	Errors:      ErrorCodes(),
 }
 
 type UpdateIncidentDebriefAttributes struct {
@@ -180,7 +179,7 @@ var ListIncidentDebriefMessages = huma.Operation{
 	Path:        "/incident_debriefs/{id}/messages",
 	Summary:     "List Incident Debrief Messages",
 	Tags:        incidentDebriefsTags,
-	Errors:      openapi.ErrorCodes(),
+	Errors:      ErrorCodes(),
 }
 
 type ListIncidentDebriefMessagesRequest ListIdRequest
@@ -192,7 +191,7 @@ var AddIncidentDebriefUserMessage = huma.Operation{
 	Path:        "/incident_debriefs/{id}/messages",
 	Summary:     "Add an Incident Debrief message",
 	Tags:        incidentDebriefsTags,
-	Errors:      openapi.ErrorCodes(),
+	Errors:      ErrorCodes(),
 }
 
 type AddIncidentDebriefUserMessageAttributes struct {
@@ -207,7 +206,7 @@ var ListIncidentDebriefSuggestions = huma.Operation{
 	Path:        "/incident_debriefs/{id}/suggestions",
 	Summary:     "List Incident Debrief Suggestions",
 	Tags:        incidentDebriefsTags,
-	Errors:      openapi.ErrorCodes(),
+	Errors:      ErrorCodes(),
 }
 
 type ListIncidentDebriefSuggestionsRequest ListIdRequest
@@ -219,7 +218,7 @@ var ListIncidentDebriefQuestions = huma.Operation{
 	Path:        "/debrief_questions",
 	Summary:     "List Incident Debrief Questions",
 	Tags:        incidentDebriefsTags,
-	Errors:      openapi.ErrorCodes(),
+	Errors:      ErrorCodes(),
 }
 
 type ListIncidentDebriefQuestionsRequest ListRequest
@@ -231,7 +230,7 @@ var GetIncidentDebriefQuestion = huma.Operation{
 	Path:        "/debrief_questions/{id}",
 	Summary:     "Get an Incident Debrief Question",
 	Tags:        incidentDebriefsTags,
-	Errors:      openapi.ErrorCodes(),
+	Errors:      ErrorCodes(),
 }
 
 type GetIncidentDebriefQuestionRequest GetIdRequest
@@ -243,7 +242,7 @@ var CreateIncidentDebriefQuestion = huma.Operation{
 	Path:        "/debrief_questions",
 	Summary:     "Create an Incident Debrief Question",
 	Tags:        incidentDebriefsTags,
-	Errors:      openapi.ErrorCodes(),
+	Errors:      ErrorCodes(),
 }
 
 type CreateIncidentDebriefQuestionAttributes struct {
@@ -258,7 +257,7 @@ var UpdateIncidentDebriefQuestion = huma.Operation{
 	Path:        "/debrief_questions/{id}",
 	Summary:     "Update an Incident Debrief Question",
 	Tags:        incidentDebriefsTags,
-	Errors:      openapi.ErrorCodes(),
+	Errors:      ErrorCodes(),
 }
 
 type UpdateIncidentDebriefQuestionAttributes struct {
@@ -273,7 +272,7 @@ var ArchiveIncidentDebriefQuestion = huma.Operation{
 	Path:        "/debrief_questions/{id}",
 	Summary:     "Archive an Incident Debrief Question",
 	Tags:        incidentDebriefsTags,
-	Errors:      openapi.ErrorCodes(),
+	Errors:      ErrorCodes(),
 }
 
 type ArchiveIncidentDebriefQuestionRequest ArchiveIdRequest

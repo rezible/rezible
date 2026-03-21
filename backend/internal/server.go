@@ -29,23 +29,22 @@ import (
 func RunIntegrationsDataSync(ctx context.Context, args jobs.SyncIntegrationsData) error {
 	ctx = access.SystemContext(ctx)
 	srv := newServer()
-	setupErr := srv.setup(ctx)
-	if setupErr != nil {
-		return fmt.Errorf("server: %s", setupErr)
+	if setupErr := srv.setup(ctx); setupErr != nil {
+		return fmt.Errorf("setup server: %s", setupErr)
 	}
-	return datasync.NewSyncerService(srv.dbClient).SyncIntegrationsData(ctx, args)
+	syncer := datasync.NewSyncerService(srv.database.Client())
+	return syncer.SyncIntegrationsData(ctx, args)
 }
 
 func makeJobService(dbc rez.Database) (rez.JobsService, error) {
-	pgDb, ok := dbc.(*postgres.DatabaseClient)
-	if !ok {
-		return nil, errors.New("non-postgres db client with river job service")
+	if pgDb, ok := dbc.(*postgres.DatabaseClient); ok {
+		jobSvc, jobSvcErr := river.NewJobService(pgDb.Pool())
+		if jobSvcErr != nil {
+			return nil, fmt.Errorf("river.NewJobService: %w", jobSvcErr)
+		}
+		return jobSvc, nil
 	}
-	jobSvc, jobSvcErr := river.NewJobService(pgDb.Pool())
-	if jobSvcErr != nil {
-		return nil, fmt.Errorf("river.NewJobService: %w", jobSvcErr)
-	}
-	return jobSvc, nil
+	return nil, fmt.Errorf("unable to create job service")
 }
 
 func makeMessageService() (*watermill.MessageService, error) {
@@ -80,7 +79,7 @@ func RunServer(ctx context.Context) error {
 
 type Server struct {
 	listeners map[string]rez.EventListener
-	dbClient  *ent.Client
+	database  rez.Database
 }
 
 func newServer() *Server {
@@ -123,15 +122,19 @@ func (s *Server) stop() error {
 		}
 	}
 
+	if s.database != nil {
+		s.database.Close()
+	}
+
 	return err
 }
 
 func (s *Server) setup(ctx context.Context) error {
-	dbc, dbcErr := postgres.NewDatabasePoolClient(ctx, rez.Config.DatabaseUrl())
+	dbc, dbcErr := postgres.NewDatabasePoolClient(ctx)
 	if dbcErr != nil {
 		return fmt.Errorf("postgres.NewDatabasePoolClient: %w", dbcErr)
 	}
-	s.addEventListener("database", db.NewListener(dbc))
+	s.database = dbc
 
 	jobSvc, jobSvcErr := makeJobService(dbc)
 	if jobSvcErr != nil {
@@ -145,12 +148,12 @@ func (s *Server) setup(ctx context.Context) error {
 	}
 	s.addEventListener("message_service", msgs)
 
-	s.dbClient = dbc.Client()
-	svcs, svcsErr := s.setupServices(ctx, s.dbClient, jobSvc, msgs)
-	if svcsErr != nil {
-		return fmt.Errorf("services: %w", svcsErr)
+	dbClient := dbc.Client()
+	services, servicesErr := s.setupServices(ctx, dbClient, jobSvc, msgs)
+	if servicesErr != nil {
+		return fmt.Errorf("setup services: %w", servicesErr)
 	}
-	if integrationsErr := integrations.Setup(ctx, svcs); integrationsErr != nil {
+	if integrationsErr := integrations.Setup(ctx, services); integrationsErr != nil {
 		return fmt.Errorf("integrations.Setup: %w", integrationsErr)
 	}
 	for name, el := range integrations.GetEventListeners() {
@@ -159,9 +162,9 @@ func (s *Server) setup(ctx context.Context) error {
 
 	if !rez.Config.DataSyncMode() {
 		// TODO: this shouldn't need the db client
-		apiv1Handler := apiv1.NewHandler(svcs, s.dbClient)
+		apiv1Handler := apiv1.NewHandler(services, dbClient)
 
-		srv, srvErr := http.NewServer(svcs.Auth, apiv1Handler)
+		srv, srvErr := http.NewServer(services.Auth, apiv1Handler)
 		if srvErr != nil {
 			return fmt.Errorf("http.NewServer: %w", srvErr)
 		}

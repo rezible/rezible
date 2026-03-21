@@ -26,11 +26,11 @@ type BaseMixin struct {
 func (BaseMixin) Policy() ent.Policy {
 	return privacy.Policy{
 		Query: privacy.QueryPolicy{
-			rules.DenyIfNoAccessContext(),
+			rules.DenyIfNoAccessScope(),
 			rules.AllowIfSystemRole(),
 		},
 		Mutation: privacy.MutationPolicy{
-			rules.DenyIfNoAccessContext(),
+			rules.DenyIfNoAccessScope(),
 			rules.DenyIfAnonymous(),
 		},
 	}
@@ -143,17 +143,12 @@ func (d ArchiveMixin) P(w interface{ WhereP(...func(*sql.Selector)) }) {
 	)
 }
 
-type IntegrationMixin struct {
+type IntegrationDataMixin struct {
 	mixin.Schema
-	Required bool
 }
 
-func (i IntegrationMixin) Fields() []ent.Field {
+func (i IntegrationDataMixin) Fields() []ent.Field {
 	idField := field.String("external_id")
-	if !i.Required {
-		idField.Optional()
-	} else {
-		idField.NotEmpty()
-	}
+	idField.Optional()
 	return []ent.Field{idField}
 }

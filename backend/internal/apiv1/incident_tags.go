@@ -35,7 +35,7 @@ func (h *incidentTagsHandler) ListIncidentTags(ctx context.Context, request *oap
 
 	res, queryErr := limitedQuery.All(ctx)
 	if queryErr != nil {
-		return nil, apiError("Failed to query incident tags", queryErr)
+		return nil, oapi.Error("Failed to query incident tags", queryErr)
 	}
 
 	resp.Body.Data = make([]oapi.IncidentTag, len(res))
@@ -45,7 +45,7 @@ func (h *incidentTagsHandler) ListIncidentTags(ctx context.Context, request *oap
 
 	count, countErr := query.Count(ctx)
 	if countErr != nil {
-		return nil, apiError("Failed to query incident tag count", countErr)
+		return nil, oapi.Error("Failed to query incident tag count", countErr)
 	}
 	resp.Body.Pagination.Total = count
 
@@ -59,7 +59,7 @@ func (h *incidentTagsHandler) CreateIncidentTag(ctx context.Context, request *oa
 	query := h.tags.Create().SetValue(attr.Value)
 	tag, createErr := query.Save(ctx)
 	if createErr != nil {
-		return nil, apiError("Failed to create incident tag", createErr)
+		return nil, oapi.Error("Failed to create incident tag", createErr)
 	}
 	resp.Body.Data = oapi.IncidentTagFromEnt(tag)
 
@@ -71,7 +71,7 @@ func (h *incidentTagsHandler) GetIncidentTag(ctx context.Context, request *oapi.
 
 	tag, queryErr := h.tags.Get(ctx, request.Id)
 	if queryErr != nil {
-		return nil, apiError("Failed to get incident tag", queryErr)
+		return nil, oapi.Error("Failed to get incident tag", queryErr)
 	}
 	resp.Body.Data = oapi.IncidentTagFromEnt(tag)
 
@@ -91,7 +91,7 @@ func (h *incidentTagsHandler) UpdateIncidentTag(ctx context.Context, request *oa
 
 	tag, updateErr := query.Save(ctx)
 	if updateErr != nil {
-		return nil, apiError("Failed to update incident tag", updateErr)
+		return nil, oapi.Error("Failed to update incident tag", updateErr)
 	}
 	resp.Body.Data = oapi.IncidentTagFromEnt(tag)
 
@@ -103,7 +103,7 @@ func (h *incidentTagsHandler) ArchiveIncidentTag(ctx context.Context, request *o
 
 	delErr := h.tags.DeleteOneID(request.Id).Exec(ctx)
 	if delErr != nil {
-		return nil, apiError("Failed to archive incident tag", delErr)
+		return nil, oapi.Error("Failed to archive incident tag", delErr)
 	}
 
 	return &resp, nil

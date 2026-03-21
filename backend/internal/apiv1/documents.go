@@ -2,6 +2,7 @@ package apiv1
 
 import (
 	"context"
+	"fmt"
 
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
@@ -17,16 +18,14 @@ func newDocumentsHandler(documents rez.DocumentsService, auth rez.AuthService) *
 	return &documentsHandler{documents, auth}
 }
 
-func (h *documentsHandler) RequestDocumentEditorSession(ctx context.Context, request *oapi.RequestDocumentEditorSessionRequest) (*oapi.RequestDocumentEditorSessionResponse, error) {
-	var resp oapi.RequestDocumentEditorSessionResponse
+func (h *documentsHandler) GetDocumentAccess(ctx context.Context, request *oapi.GetDocumentAccessRequest) (*oapi.GetDocumentAccessResponse, error) {
+	var resp oapi.GetDocumentAccessResponse
 
-	docId := request.Id
-
-	wsUrl := "ws://" + rez.Config.DocumentsServerAddress()
-	resp.Body.Data = oapi.DocumentEditorSession{
-		DocumentId:    docId,
-		ConnectionUrl: wsUrl,
+	docAccess, docErr := h.documents.GetDocumentAccess(ctx, request.Id)
+	if docErr != nil {
+		return nil, fmt.Errorf("get access: %w", docErr)
 	}
+	resp.Body.Data = oapi.DocumentAccessFromEnt(docAccess)
 
 	return &resp, nil
 }
@@ -36,7 +35,7 @@ func (h *documentsHandler) LoadDocument(ctx context.Context, req *oapi.LoadDocum
 
 	doc, docErr := h.documents.GetDocument(ctx, req.Id)
 	if docErr != nil {
-		return nil, apiError("failed to load document", docErr)
+		return nil, oapi.Error("failed to load document", docErr)
 	}
 	resp.Body.Data = oapi.DocumentFromEnt(doc)
 
@@ -52,7 +51,7 @@ func (h *documentsHandler) UpdateDocument(ctx context.Context, req *oapi.UpdateD
 	}
 	doc, docErr := h.documents.SetDocument(ctx, req.Id, updateFn)
 	if docErr != nil {
-		return nil, apiError("failed to update document", docErr)
+		return nil, oapi.Error("failed to update document", docErr)
 	}
 	resp.Body.Data = oapi.DocumentFromEnt(doc)
 

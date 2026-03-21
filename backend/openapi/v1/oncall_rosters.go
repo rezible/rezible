@@ -6,8 +6,6 @@ import (
 
 	"github.com/danielgtaylor/huma/v2"
 	"github.com/google/uuid"
-	"github.com/rezible/rezible/openapi"
-
 	"github.com/rezible/rezible/ent"
 )
 
@@ -123,7 +121,7 @@ var GetUserOncallInformation = huma.Operation{
 	Path:        "/oncall/user",
 	Summary:     "Get oncall information for a user",
 	Tags:        oncallRostersTags,
-	Errors:      openapi.ErrorCodes(),
+	Errors:      ErrorCodes(),
 }
 
 type GetUserOncallInformationRequest struct {
@@ -140,7 +138,7 @@ var ListOncallRosters = huma.Operation{
 	Path:        "/oncall/rosters",
 	Summary:     "List Oncall Rosters",
 	Tags:        oncallRostersTags,
-	Errors:      openapi.ErrorCodes(),
+	Errors:      ErrorCodes(),
 }
 
 type ListOncallRostersRequest struct {
@@ -157,7 +155,7 @@ var GetOncallRoster = huma.Operation{
 	Path:        "/oncall/rosters/{id}",
 	Summary:     "Get oncall roster",
 	Tags:        oncallRostersTags,
-	Errors:      openapi.ErrorCodes(),
+	Errors:      ErrorCodes(),
 }
 
 type GetOncallRosterRequest = GetFlexibleIdRequest
@@ -169,7 +167,7 @@ var AddWatchedOncallRoster = huma.Operation{
 	Path:        "/oncall/watched_rosters/{id}",
 	Summary:     "Add a watched oncall roster",
 	Tags:        oncallRostersTags,
-	Errors:      openapi.ErrorCodes(),
+	Errors:      ErrorCodes(),
 }
 
 type AddWatchedOncallRosterRequest PostIdEmptyRequest
@@ -181,7 +179,7 @@ var ListWatchedOncallRosters = huma.Operation{
 	Path:        "/oncall/watched_rosters",
 	Summary:     "List watched oncall rosters",
 	Tags:        oncallRostersTags,
-	Errors:      openapi.ErrorCodes(),
+	Errors:      ErrorCodes(),
 }
 
 type ListWatchedOncallRostersRequest EmptyRequest
@@ -193,7 +191,7 @@ var RemoveWatchedOncallRoster = huma.Operation{
 	Path:        "/oncall/watched_rosters/{id}",
 	Summary:     "Remove a watched oncall roster",
 	Tags:        oncallRostersTags,
-	Errors:      openapi.ErrorCodes(),
+	Errors:      ErrorCodes(),
 }
 
 type RemoveWatchedOncallRosterRequest DeleteIdRequest

@@ -31,15 +31,15 @@ func (_c *OrganizationCreate) SetTenantID(v int) *OrganizationCreate {
 	return _c
 }
 
-// SetExternalID sets the "external_id" field.
-func (_c *OrganizationCreate) SetExternalID(v string) *OrganizationCreate {
-	_c.mutation.SetExternalID(v)
-	return _c
-}
-
 // SetName sets the "name" field.
 func (_c *OrganizationCreate) SetName(v string) *OrganizationCreate {
 	_c.mutation.SetName(v)
+	return _c
+}
+
+// SetDomain sets the "domain" field.
+func (_c *OrganizationCreate) SetDomain(v string) *OrganizationCreate {
+	_c.mutation.SetDomain(v)
 	return _c
 }
 
@@ -128,16 +128,11 @@ func (_c *OrganizationCreate) check() error {
 	if _, ok := _c.mutation.TenantID(); !ok {
 		return &ValidationError{Name: "tenant_id", err: errors.New(`ent: missing required field "Organization.tenant_id"`)}
 	}
-	if _, ok := _c.mutation.ExternalID(); !ok {
-		return &ValidationError{Name: "external_id", err: errors.New(`ent: missing required field "Organization.external_id"`)}
-	}
-	if v, ok := _c.mutation.ExternalID(); ok {
-		if err := organization.ExternalIDValidator(v); err != nil {
-			return &ValidationError{Name: "external_id", err: fmt.Errorf(`ent: validator failed for field "Organization.external_id": %w`, err)}
-		}
-	}
 	if _, ok := _c.mutation.Name(); !ok {
 		return &ValidationError{Name: "name", err: errors.New(`ent: missing required field "Organization.name"`)}
+	}
+	if _, ok := _c.mutation.Domain(); !ok {
+		return &ValidationError{Name: "domain", err: errors.New(`ent: missing required field "Organization.domain"`)}
 	}
 	if len(_c.mutation.TenantIDs()) == 0 {
 		return &ValidationError{Name: "tenant", err: errors.New(`ent: missing required edge "Organization.tenant"`)}
@@ -178,13 +173,13 @@ func (_c *OrganizationCreate) createSpec() (*Organization, *sqlgraph.CreateSpec)
 		_node.ID = id
 		_spec.ID.Value = &id
 	}
-	if value, ok := _c.mutation.ExternalID(); ok {
-		_spec.SetField(organization.FieldExternalID, field.TypeString, value)
-		_node.ExternalID = value
-	}
 	if value, ok := _c.mutation.Name(); ok {
 		_spec.SetField(organization.FieldName, field.TypeString, value)
 		_node.Name = value
+	}
+	if value, ok := _c.mutation.Domain(); ok {
+		_spec.SetField(organization.FieldDomain, field.TypeString, value)
+		_node.Domain = value
 	}
 	if value, ok := _c.mutation.InitialSetupAt(); ok {
 		_spec.SetField(organization.FieldInitialSetupAt, field.TypeTime, value)
@@ -259,18 +254,6 @@ type (
 	}
 )
 
-// SetExternalID sets the "external_id" field.
-func (u *OrganizationUpsert) SetExternalID(v string) *OrganizationUpsert {
-	u.Set(organization.FieldExternalID, v)
-	return u
-}
-
-// UpdateExternalID sets the "external_id" field to the value that was provided on create.
-func (u *OrganizationUpsert) UpdateExternalID() *OrganizationUpsert {
-	u.SetExcluded(organization.FieldExternalID)
-	return u
-}
-
 // SetName sets the "name" field.
 func (u *OrganizationUpsert) SetName(v string) *OrganizationUpsert {
 	u.Set(organization.FieldName, v)
@@ -280,6 +263,18 @@ func (u *OrganizationUpsert) SetName(v string) *OrganizationUpsert {
 // UpdateName sets the "name" field to the value that was provided on create.
 func (u *OrganizationUpsert) UpdateName() *OrganizationUpsert {
 	u.SetExcluded(organization.FieldName)
+	return u
+}
+
+// SetDomain sets the "domain" field.
+func (u *OrganizationUpsert) SetDomain(v string) *OrganizationUpsert {
+	u.Set(organization.FieldDomain, v)
+	return u
+}
+
+// UpdateDomain sets the "domain" field to the value that was provided on create.
+func (u *OrganizationUpsert) UpdateDomain() *OrganizationUpsert {
+	u.SetExcluded(organization.FieldDomain)
 	return u
 }
 
@@ -352,20 +347,6 @@ func (u *OrganizationUpsertOne) Update(set func(*OrganizationUpsert)) *Organizat
 	return u
 }
 
-// SetExternalID sets the "external_id" field.
-func (u *OrganizationUpsertOne) SetExternalID(v string) *OrganizationUpsertOne {
-	return u.Update(func(s *OrganizationUpsert) {
-		s.SetExternalID(v)
-	})
-}
-
-// UpdateExternalID sets the "external_id" field to the value that was provided on create.
-func (u *OrganizationUpsertOne) UpdateExternalID() *OrganizationUpsertOne {
-	return u.Update(func(s *OrganizationUpsert) {
-		s.UpdateExternalID()
-	})
-}
-
 // SetName sets the "name" field.
 func (u *OrganizationUpsertOne) SetName(v string) *OrganizationUpsertOne {
 	return u.Update(func(s *OrganizationUpsert) {
@@ -377,6 +358,20 @@ func (u *OrganizationUpsertOne) SetName(v string) *OrganizationUpsertOne {
 func (u *OrganizationUpsertOne) UpdateName() *OrganizationUpsertOne {
 	return u.Update(func(s *OrganizationUpsert) {
 		s.UpdateName()
+	})
+}
+
+// SetDomain sets the "domain" field.
+func (u *OrganizationUpsertOne) SetDomain(v string) *OrganizationUpsertOne {
+	return u.Update(func(s *OrganizationUpsert) {
+		s.SetDomain(v)
+	})
+}
+
+// UpdateDomain sets the "domain" field to the value that was provided on create.
+func (u *OrganizationUpsertOne) UpdateDomain() *OrganizationUpsertOne {
+	return u.Update(func(s *OrganizationUpsert) {
+		s.UpdateDomain()
 	})
 }
 
@@ -619,20 +614,6 @@ func (u *OrganizationUpsertBulk) Update(set func(*OrganizationUpsert)) *Organiza
 	return u
 }
 
-// SetExternalID sets the "external_id" field.
-func (u *OrganizationUpsertBulk) SetExternalID(v string) *OrganizationUpsertBulk {
-	return u.Update(func(s *OrganizationUpsert) {
-		s.SetExternalID(v)
-	})
-}
-
-// UpdateExternalID sets the "external_id" field to the value that was provided on create.
-func (u *OrganizationUpsertBulk) UpdateExternalID() *OrganizationUpsertBulk {
-	return u.Update(func(s *OrganizationUpsert) {
-		s.UpdateExternalID()
-	})
-}
-
 // SetName sets the "name" field.
 func (u *OrganizationUpsertBulk) SetName(v string) *OrganizationUpsertBulk {
 	return u.Update(func(s *OrganizationUpsert) {
@@ -644,6 +625,20 @@ func (u *OrganizationUpsertBulk) SetName(v string) *OrganizationUpsertBulk {
 func (u *OrganizationUpsertBulk) UpdateName() *OrganizationUpsertBulk {
 	return u.Update(func(s *OrganizationUpsert) {
 		s.UpdateName()
+	})
+}
+
+// SetDomain sets the "domain" field.
+func (u *OrganizationUpsertBulk) SetDomain(v string) *OrganizationUpsertBulk {
+	return u.Update(func(s *OrganizationUpsert) {
+		s.SetDomain(v)
+	})
+}
+
+// UpdateDomain sets the "domain" field to the value that was provided on create.
+func (u *OrganizationUpsertBulk) UpdateDomain() *OrganizationUpsertBulk {
+	return u.Update(func(s *OrganizationUpsert) {
+		s.UpdateDomain()
 	})
 }
 

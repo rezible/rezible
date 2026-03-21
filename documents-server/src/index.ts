@@ -8,20 +8,16 @@ type Config = {
 	port: number;
 
 	apiUrl: string;
-	apiSecret: string;
 }
 
 const loadConfig = (): Config => {
 	const name = process.env.NAME ?? "document-server";
 
-	let host = process.env.HOST ?? "localhost";
+	let host = process.env.HOST ?? "0.0.0.0";
 	let port = Number.parseInt(process.env.PORT ?? "7003", 10);
 	if (port < 1024) port = 7003;
 
-	const apiUrl = process.env.DOCUMENTS_API_URL ?? "http://localhost:8888/api/documents";
-	const apiSecret = process.env.DOCUMENTS_API_SECRET ?? "foo";
-
-	return { name, host, port, apiUrl, apiSecret };
+	return { name, host, port };
 }
 
 const createServer = async (cfg: Config) => {

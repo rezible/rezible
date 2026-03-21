@@ -4,11 +4,9 @@ import (
 	"context"
 	"net/http"
 
-	"github.com/rezible/rezible/ent"
-	"github.com/rezible/rezible/openapi"
-
 	"github.com/danielgtaylor/huma/v2"
 	"github.com/google/uuid"
+	"github.com/rezible/rezible/ent"
 )
 
 type TeamsHandler interface {
@@ -103,7 +101,7 @@ var ListTeams = huma.Operation{
 	Path:        "/teams",
 	Summary:     "List Teams",
 	Tags:        teamsTags,
-	Errors:      openapi.ErrorCodes(),
+	Errors:      ErrorCodes(),
 }
 
 type ListTeamsRequest ListRequest
@@ -115,7 +113,7 @@ var CreateTeam = huma.Operation{
 	Path:        "/teams",
 	Summary:     "Create a Team",
 	Tags:        teamsTags,
-	Errors:      openapi.ErrorCodes(),
+	Errors:      ErrorCodes(),
 }
 
 type CreateTeamAttributes struct {
@@ -130,7 +128,7 @@ var GetTeam = huma.Operation{
 	Path:        "/teams/{id}",
 	Summary:     "Get a Team",
 	Tags:        teamsTags,
-	Errors:      openapi.ErrorCodes(),
+	Errors:      ErrorCodes(),
 }
 
 type GetTeamRequest = GetFlexibleIdRequest
@@ -142,7 +140,7 @@ var UpdateTeam = huma.Operation{
 	Path:        "/teams/{id}",
 	Summary:     "Update a Team",
 	Tags:        teamsTags,
-	Errors:      openapi.ErrorCodes(),
+	Errors:      ErrorCodes(),
 }
 
 type UpdateTeamAttributes struct {
@@ -157,7 +155,7 @@ var ArchiveTeam = huma.Operation{
 	Path:        "/teams/{id}",
 	Summary:     "Archive a Team",
 	Tags:        teamsTags,
-	Errors:      openapi.ErrorCodes(),
+	Errors:      ErrorCodes(),
 }
 
 type ArchiveTeamRequest ArchiveIdRequest
@@ -169,7 +167,7 @@ var ListTeamMemberships = huma.Operation{
 	Path:        "/team_memberships",
 	Summary:     "List Team Memberships",
 	Tags:        teamMembershipsTags,
-	Errors:      openapi.ErrorCodes(),
+	Errors:      ErrorCodes(),
 }
 
 type ListTeamMembershipsRequest struct {
@@ -185,7 +183,7 @@ var CreateTeamMembership = huma.Operation{
 	Path:        "/team_memberships",
 	Summary:     "Create Team Membership",
 	Tags:        teamMembershipsTags,
-	Errors:      openapi.ErrorCodes(),
+	Errors:      ErrorCodes(),
 }
 
 type CreateTeamMembershipAttributes struct {
@@ -202,7 +200,7 @@ var UpdateTeamMembership = huma.Operation{
 	Path:        "/team_memberships/{id}",
 	Summary:     "Update Team Membership",
 	Tags:        teamMembershipsTags,
-	Errors:      openapi.ErrorCodes(),
+	Errors:      ErrorCodes(),
 }
 
 type UpdateTeamMembershipAttributes struct {
@@ -217,7 +215,7 @@ var ArchiveTeamMembership = huma.Operation{
 	Path:        "/team_memberships/{id}",
 	Summary:     "Archive Team Membership",
 	Tags:        teamMembershipsTags,
-	Errors:      openapi.ErrorCodes(),
+	Errors:      ErrorCodes(),
 }
 
 type ArchiveTeamMembershipRequest ArchiveIdRequest

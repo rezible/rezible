@@ -4,6 +4,17 @@ export type ClientOptions = {
     baseUrl: `${string}://${string}` | (string & {});
 };
 
+export type UserAttributes = {
+    email: string;
+    isOrgAdmin?: boolean;
+    name: string;
+};
+
+export type User = {
+    attributes: UserAttributes;
+    id: string;
+};
+
 export type UpdateDocumentResponseBody = {
     /**
      * A URL to the JSON Schema for this object.
@@ -33,26 +44,26 @@ export type UpdateDocumentRequestAttributes = {
     content: unknown;
 };
 
-export type RequestDocumentEditorSessionResponseBody = {
-    /**
-     * A URL to the JSON Schema for this object.
-     */
-    readonly $schema?: string;
-    data: DocumentEditorSession;
-};
-
-export type DocumentEditorSession = {
-    accessToken: string;
-    connectionUrl: string;
-    documentId: string;
-};
-
 export type LoadDocumentResponseBody = {
     /**
      * A URL to the JSON Schema for this object.
      */
     readonly $schema?: string;
     data: Document;
+};
+
+export type GetDocumentAccessResponseBody = {
+    /**
+     * A URL to the JSON Schema for this object.
+     */
+    readonly $schema?: string;
+    data: DocumentAccess;
+};
+
+export type DocumentAccess = {
+    canEdit: boolean;
+    canManage: boolean;
+    user: User;
 };
 
 export type ErrorModel = {
@@ -101,6 +112,53 @@ export type ErrorDetail = {
     value?: unknown;
 };
 
+export type GetDocumentAccessData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/documents/{id}/access';
+};
+
+export type GetDocumentAccessErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
+
+export type GetDocumentAccessError = GetDocumentAccessErrors[keyof GetDocumentAccessErrors];
+
+export type GetDocumentAccessResponses = {
+    /**
+     * OK
+     */
+    200: GetDocumentAccessResponseBody;
+};
+
+export type GetDocumentAccessResponse = GetDocumentAccessResponses[keyof GetDocumentAccessResponses];
+
 export type LoadDocumentData = {
     body?: never;
     path: {
@@ -147,53 +205,6 @@ export type LoadDocumentResponses = {
 };
 
 export type LoadDocumentResponse = LoadDocumentResponses[keyof LoadDocumentResponses];
-
-export type RequestDocumentEditorSessionData = {
-    body?: never;
-    path: {
-        id: string;
-    };
-    query?: never;
-    url: '/documents/{id}/session';
-};
-
-export type RequestDocumentEditorSessionErrors = {
-    /**
-     * Bad Request
-     */
-    400: ErrorModel;
-    /**
-     * Unauthorized
-     */
-    401: ErrorModel;
-    /**
-     * Forbidden
-     */
-    403: ErrorModel;
-    /**
-     * Not Found
-     */
-    404: ErrorModel;
-    /**
-     * Unprocessable Entity
-     */
-    422: ErrorModel;
-    /**
-     * Internal Server Error
-     */
-    500: ErrorModel;
-};
-
-export type RequestDocumentEditorSessionError = RequestDocumentEditorSessionErrors[keyof RequestDocumentEditorSessionErrors];
-
-export type RequestDocumentEditorSessionResponses = {
-    /**
-     * OK
-     */
-    200: RequestDocumentEditorSessionResponseBody;
-};
-
-export type RequestDocumentEditorSessionResponse = RequestDocumentEditorSessionResponses[keyof RequestDocumentEditorSessionResponses];
 
 export type UpdateDocumentData = {
     body: UpdateDocumentRequestBody;

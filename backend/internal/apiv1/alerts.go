@@ -20,7 +20,7 @@ func (h *alertsHandler) ListAlerts(ctx context.Context, req *oapi.ListAlertsRequ
 
 	alerts, count, alertsErr := h.alerts.ListAlerts(ctx, rez.ListAlertsParams{})
 	if alertsErr != nil {
-		return nil, apiError("failed to list alerts", alertsErr)
+		return nil, oapi.Error("failed to list alerts", alertsErr)
 	}
 
 	resp.Body.Data = make([]oapi.Alert, len(alerts))
@@ -39,7 +39,7 @@ func (h *alertsHandler) GetAlert(ctx context.Context, req *oapi.GetAlertRequest)
 
 	alert, getErr := h.alerts.GetAlert(ctx, req.Id)
 	if getErr != nil {
-		return nil, apiError("get alert", getErr)
+		return nil, oapi.Error("get alert", getErr)
 	}
 	resp.Body.Data = oapi.AlertFromEnt(alert)
 
@@ -51,7 +51,7 @@ func (h *alertsHandler) GetAlertMetrics(ctx context.Context, req *oapi.GetAlertM
 
 	dateFrom, dateTo, windowErr := oapi.GetCalendarDateWindow(req.From, req.To)
 	if windowErr != nil {
-		return nil, apiError("invalid date window", windowErr)
+		return nil, oapi.Error("invalid date window", windowErr)
 	}
 
 	params := rez.GetAlertMetricsParams{
@@ -62,7 +62,7 @@ func (h *alertsHandler) GetAlertMetrics(ctx context.Context, req *oapi.GetAlertM
 	}
 	metrics, getErr := h.alerts.GetAlertMetrics(ctx, params)
 	if getErr != nil {
-		return nil, apiError("get alert metrics", getErr)
+		return nil, oapi.Error("get alert metrics", getErr)
 	}
 	resp.Body.Data = oapi.AlertMetricsFromEnt(metrics)
 

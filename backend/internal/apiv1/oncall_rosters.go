@@ -31,7 +31,7 @@ func (h *oncallRostersHandler) ListOncallRosters(ctx context.Context, request *o
 		UserID:     request.UserId,
 	})
 	if rostersErr != nil {
-		return nil, apiError("failed to list rosters", rostersErr)
+		return nil, oapi.Error("failed to list rosters", rostersErr)
 	}
 
 	resp.Body.Data = make([]oapi.OncallRoster, len(listRes.Data))
@@ -56,12 +56,12 @@ func (h *oncallRostersHandler) GetOncallRoster(ctx context.Context, request *oap
 		roster, rosterErr = h.rosters.GetRosterByID(ctx, request.Id.UUID)
 	}
 	if rosterErr != nil {
-		return nil, apiError("failed to get oncall roster", rosterErr)
+		return nil, oapi.Error("failed to get oncall roster", rosterErr)
 	}
 
 	schedules, schedulesErr := roster.QuerySchedules().All(ctx)
 	if schedulesErr != nil {
-		return nil, apiError("failed to query schedules", schedulesErr)
+		return nil, oapi.Error("failed to query schedules", schedulesErr)
 	}
 	roster.Edges.Schedules = schedules
 
@@ -73,7 +73,7 @@ func (h *oncallRostersHandler) GetOncallRoster(ctx context.Context, request *oap
 func (h *oncallRostersHandler) getUserWatchedOncallRosters(ctx context.Context, user *ent.User) ([]oapi.OncallRoster, error) {
 	rosters, queryErr := user.QueryWatchedOncallRosters().All(ctx)
 	if queryErr != nil {
-		return nil, apiError("failed to query watched oncall rosters", queryErr)
+		return nil, oapi.Error("failed to query watched oncall rosters", queryErr)
 	}
 	watched := make([]oapi.OncallRoster, len(rosters))
 	for i, r := range rosters {
@@ -84,19 +84,19 @@ func (h *oncallRostersHandler) getUserWatchedOncallRosters(ctx context.Context, 
 
 func (h *oncallRostersHandler) AddWatchedOncallRoster(ctx context.Context, request *oapi.AddWatchedOncallRosterRequest) (*oapi.AddWatchedOncallRosterResponse, error) {
 	var resp oapi.AddWatchedOncallRosterResponse
-
-	user, userErr := h.users.GetById(ctx, requestUserId(ctx, h.auth))
+	userId := h.auth.GetAuthSession(ctx).UserId()
+	user, userErr := h.users.GetById(ctx, userId)
 	if userErr != nil {
-		return nil, apiError("failed to get user", userErr)
+		return nil, oapi.Error("failed to get user", userErr)
 	}
 
 	if addErr := user.Update().AddWatchedOncallRosterIDs(request.Id).Exec(ctx); addErr != nil {
-		return nil, apiError("failed to add watched oncall roster", addErr)
+		return nil, oapi.Error("failed to add watched oncall roster", addErr)
 	}
 
 	watched, queryErr := h.getUserWatchedOncallRosters(ctx, user)
 	if queryErr != nil {
-		return nil, apiError("failed to query watched oncall rosters", queryErr)
+		return nil, oapi.Error("failed to query watched oncall rosters", queryErr)
 	}
 	resp.Body.Data = watched
 
@@ -106,13 +106,14 @@ func (h *oncallRostersHandler) AddWatchedOncallRoster(ctx context.Context, reque
 func (h *oncallRostersHandler) ListWatchedOncallRosters(ctx context.Context, request *oapi.ListWatchedOncallRostersRequest) (*oapi.ListWatchedOncallRostersResponse, error) {
 	var resp oapi.ListWatchedOncallRostersResponse
 
-	user, userErr := h.users.GetById(ctx, requestUserId(ctx, h.auth))
+	userId := h.auth.GetAuthSession(ctx).UserId()
+	user, userErr := h.users.GetById(ctx, userId)
 	if userErr != nil {
-		return nil, apiError("failed to get user", userErr)
+		return nil, oapi.Error("failed to get user", userErr)
 	}
 	watched, queryErr := h.getUserWatchedOncallRosters(ctx, user)
 	if queryErr != nil {
-		return nil, apiError("failed to query watched oncall rosters", queryErr)
+		return nil, oapi.Error("failed to query watched oncall rosters", queryErr)
 	}
 	resp.Body.Data = watched
 
@@ -122,18 +123,19 @@ func (h *oncallRostersHandler) ListWatchedOncallRosters(ctx context.Context, req
 func (h *oncallRostersHandler) RemoveWatchedOncallRoster(ctx context.Context, request *oapi.RemoveWatchedOncallRosterRequest) (*oapi.RemoveWatchedOncallRosterResponse, error) {
 	var resp oapi.RemoveWatchedOncallRosterResponse
 
-	user, userErr := h.users.GetById(ctx, requestUserId(ctx, h.auth))
+	userId := h.auth.GetAuthSession(ctx).UserId()
+	user, userErr := h.users.GetById(ctx, userId)
 	if userErr != nil {
-		return nil, apiError("failed to get user", userErr)
+		return nil, oapi.Error("failed to get user", userErr)
 	}
 
 	if addErr := user.Update().RemoveWatchedOncallRosterIDs(request.Id).Exec(ctx); addErr != nil {
-		return nil, apiError("failed to add watched oncall roster", addErr)
+		return nil, oapi.Error("failed to add watched oncall roster", addErr)
 	}
 
 	watched, queryErr := h.getUserWatchedOncallRosters(ctx, user)
 	if queryErr != nil {
-		return nil, apiError("failed to query watched oncall rosters", queryErr)
+		return nil, oapi.Error("failed to query watched oncall rosters", queryErr)
 	}
 	resp.Body.Data = watched
 
@@ -143,26 +145,26 @@ func (h *oncallRostersHandler) RemoveWatchedOncallRoster(ctx context.Context, re
 func (h *oncallRostersHandler) GetUserOncallInformation(ctx context.Context, request *oapi.GetUserOncallInformationRequest) (*oapi.GetUserOncallInformationResponse, error) {
 	var resp oapi.GetUserOncallInformationResponse
 
-	userId := requestUserId(ctx, h.auth)
+	userId := h.auth.GetAuthSession(ctx).UserId()
 	if request.UserId != uuid.Nil {
 		userId = request.UserId
 	}
 
 	user, userErr := h.users.GetById(ctx, userId)
 	if userErr != nil {
-		return nil, apiError("failed to get user", userErr)
+		return nil, oapi.Error("failed to get user", userErr)
 	}
 
 	memberRosters, rostersErr := h.rosters.ListRosters(ctx, rez.ListOncallRostersParams{
 		UserID: userId,
 	})
 	if rostersErr != nil {
-		return nil, apiError("failed to list rosters", rostersErr)
+		return nil, oapi.Error("failed to list rosters", rostersErr)
 	}
 
 	watchedRosters, watchedErr := user.QueryWatchedOncallRosters().All(ctx)
 	if watchedErr != nil {
-		return nil, apiError("failed to query watched oncall rosters", watchedErr)
+		return nil, oapi.Error("failed to query watched oncall rosters", watchedErr)
 	}
 
 	oneWeek := time.Hour * 24 * 7
@@ -175,7 +177,7 @@ func (h *oncallRostersHandler) GetUserOncallInformation(ctx context.Context, req
 		},
 	})
 	if shiftsErr != nil {
-		return nil, apiError("failed to query user oncall shifts", shiftsErr)
+		return nil, oapi.Error("failed to query user oncall shifts", shiftsErr)
 	}
 
 	details := oapi.UserOncallInformation{

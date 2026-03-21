@@ -17,7 +17,7 @@ func (OncallSchedule) Mixin() []ent.Mixin {
 		BaseMixin{},
 		TenantMixin{},
 		ArchiveMixin{},
-		IntegrationMixin{},
+		IntegrationDataMixin{},
 	}
 }
 

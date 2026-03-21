@@ -61,14 +61,14 @@ func TenantID(v int) predicate.Organization {
 	return predicate.Organization(sql.FieldEQ(FieldTenantID, v))
 }
 
-// ExternalID applies equality check predicate on the "external_id" field. It's identical to ExternalIDEQ.
-func ExternalID(v string) predicate.Organization {
-	return predicate.Organization(sql.FieldEQ(FieldExternalID, v))
-}
-
 // Name applies equality check predicate on the "name" field. It's identical to NameEQ.
 func Name(v string) predicate.Organization {
 	return predicate.Organization(sql.FieldEQ(FieldName, v))
+}
+
+// Domain applies equality check predicate on the "domain" field. It's identical to DomainEQ.
+func Domain(v string) predicate.Organization {
+	return predicate.Organization(sql.FieldEQ(FieldDomain, v))
 }
 
 // InitialSetupAt applies equality check predicate on the "initial_setup_at" field. It's identical to InitialSetupAtEQ.
@@ -94,71 +94,6 @@ func TenantIDIn(vs ...int) predicate.Organization {
 // TenantIDNotIn applies the NotIn predicate on the "tenant_id" field.
 func TenantIDNotIn(vs ...int) predicate.Organization {
 	return predicate.Organization(sql.FieldNotIn(FieldTenantID, vs...))
-}
-
-// ExternalIDEQ applies the EQ predicate on the "external_id" field.
-func ExternalIDEQ(v string) predicate.Organization {
-	return predicate.Organization(sql.FieldEQ(FieldExternalID, v))
-}
-
-// ExternalIDNEQ applies the NEQ predicate on the "external_id" field.
-func ExternalIDNEQ(v string) predicate.Organization {
-	return predicate.Organization(sql.FieldNEQ(FieldExternalID, v))
-}
-
-// ExternalIDIn applies the In predicate on the "external_id" field.
-func ExternalIDIn(vs ...string) predicate.Organization {
-	return predicate.Organization(sql.FieldIn(FieldExternalID, vs...))
-}
-
-// ExternalIDNotIn applies the NotIn predicate on the "external_id" field.
-func ExternalIDNotIn(vs ...string) predicate.Organization {
-	return predicate.Organization(sql.FieldNotIn(FieldExternalID, vs...))
-}
-
-// ExternalIDGT applies the GT predicate on the "external_id" field.
-func ExternalIDGT(v string) predicate.Organization {
-	return predicate.Organization(sql.FieldGT(FieldExternalID, v))
-}
-
-// ExternalIDGTE applies the GTE predicate on the "external_id" field.
-func ExternalIDGTE(v string) predicate.Organization {
-	return predicate.Organization(sql.FieldGTE(FieldExternalID, v))
-}
-
-// ExternalIDLT applies the LT predicate on the "external_id" field.
-func ExternalIDLT(v string) predicate.Organization {
-	return predicate.Organization(sql.FieldLT(FieldExternalID, v))
-}
-
-// ExternalIDLTE applies the LTE predicate on the "external_id" field.
-func ExternalIDLTE(v string) predicate.Organization {
-	return predicate.Organization(sql.FieldLTE(FieldExternalID, v))
-}
-
-// ExternalIDContains applies the Contains predicate on the "external_id" field.
-func ExternalIDContains(v string) predicate.Organization {
-	return predicate.Organization(sql.FieldContains(FieldExternalID, v))
-}
-
-// ExternalIDHasPrefix applies the HasPrefix predicate on the "external_id" field.
-func ExternalIDHasPrefix(v string) predicate.Organization {
-	return predicate.Organization(sql.FieldHasPrefix(FieldExternalID, v))
-}
-
-// ExternalIDHasSuffix applies the HasSuffix predicate on the "external_id" field.
-func ExternalIDHasSuffix(v string) predicate.Organization {
-	return predicate.Organization(sql.FieldHasSuffix(FieldExternalID, v))
-}
-
-// ExternalIDEqualFold applies the EqualFold predicate on the "external_id" field.
-func ExternalIDEqualFold(v string) predicate.Organization {
-	return predicate.Organization(sql.FieldEqualFold(FieldExternalID, v))
-}
-
-// ExternalIDContainsFold applies the ContainsFold predicate on the "external_id" field.
-func ExternalIDContainsFold(v string) predicate.Organization {
-	return predicate.Organization(sql.FieldContainsFold(FieldExternalID, v))
 }
 
 // NameEQ applies the EQ predicate on the "name" field.
@@ -224,6 +159,71 @@ func NameEqualFold(v string) predicate.Organization {
 // NameContainsFold applies the ContainsFold predicate on the "name" field.
 func NameContainsFold(v string) predicate.Organization {
 	return predicate.Organization(sql.FieldContainsFold(FieldName, v))
+}
+
+// DomainEQ applies the EQ predicate on the "domain" field.
+func DomainEQ(v string) predicate.Organization {
+	return predicate.Organization(sql.FieldEQ(FieldDomain, v))
+}
+
+// DomainNEQ applies the NEQ predicate on the "domain" field.
+func DomainNEQ(v string) predicate.Organization {
+	return predicate.Organization(sql.FieldNEQ(FieldDomain, v))
+}
+
+// DomainIn applies the In predicate on the "domain" field.
+func DomainIn(vs ...string) predicate.Organization {
+	return predicate.Organization(sql.FieldIn(FieldDomain, vs...))
+}
+
+// DomainNotIn applies the NotIn predicate on the "domain" field.
+func DomainNotIn(vs ...string) predicate.Organization {
+	return predicate.Organization(sql.FieldNotIn(FieldDomain, vs...))
+}
+
+// DomainGT applies the GT predicate on the "domain" field.
+func DomainGT(v string) predicate.Organization {
+	return predicate.Organization(sql.FieldGT(FieldDomain, v))
+}
+
+// DomainGTE applies the GTE predicate on the "domain" field.
+func DomainGTE(v string) predicate.Organization {
+	return predicate.Organization(sql.FieldGTE(FieldDomain, v))
+}
+
+// DomainLT applies the LT predicate on the "domain" field.
+func DomainLT(v string) predicate.Organization {
+	return predicate.Organization(sql.FieldLT(FieldDomain, v))
+}
+
+// DomainLTE applies the LTE predicate on the "domain" field.
+func DomainLTE(v string) predicate.Organization {
+	return predicate.Organization(sql.FieldLTE(FieldDomain, v))
+}
+
+// DomainContains applies the Contains predicate on the "domain" field.
+func DomainContains(v string) predicate.Organization {
+	return predicate.Organization(sql.FieldContains(FieldDomain, v))
+}
+
+// DomainHasPrefix applies the HasPrefix predicate on the "domain" field.
+func DomainHasPrefix(v string) predicate.Organization {
+	return predicate.Organization(sql.FieldHasPrefix(FieldDomain, v))
+}
+
+// DomainHasSuffix applies the HasSuffix predicate on the "domain" field.
+func DomainHasSuffix(v string) predicate.Organization {
+	return predicate.Organization(sql.FieldHasSuffix(FieldDomain, v))
+}
+
+// DomainEqualFold applies the EqualFold predicate on the "domain" field.
+func DomainEqualFold(v string) predicate.Organization {
+	return predicate.Organization(sql.FieldEqualFold(FieldDomain, v))
+}
+
+// DomainContainsFold applies the ContainsFold predicate on the "domain" field.
+func DomainContainsFold(v string) predicate.Organization {
+	return predicate.Organization(sql.FieldContainsFold(FieldDomain, v))
 }
 
 // InitialSetupAtEQ applies the EQ predicate on the "initial_setup_at" field.

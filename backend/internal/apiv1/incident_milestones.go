@@ -26,7 +26,7 @@ func (h *incidentMilestonesHandler) ListIncidentMilestones(ctx context.Context, 
 
 	results, queryErr := query.All(ctx)
 	if queryErr != nil {
-		return nil, apiError("failed to query incident events", queryErr)
+		return nil, oapi.Error("failed to query incident events", queryErr)
 	}
 
 	resp.Body.Data = make([]oapi.IncidentMilestone, len(results))
@@ -48,7 +48,7 @@ func (h *incidentMilestonesHandler) CreateIncidentMilestone(ctx context.Context,
 
 	ev, createErr := query.Save(ctx)
 	if createErr != nil {
-		return nil, apiError("failed to create incident event", createErr)
+		return nil, oapi.Error("failed to create incident event", createErr)
 	}
 	resp.Body.Data = oapi.IncidentMilestoneFromEnt(ev)
 
@@ -70,7 +70,7 @@ func (h *incidentMilestonesHandler) UpdateIncidentMilestone(ctx context.Context,
 
 	ev, createErr := query.Save(ctx)
 	if createErr != nil {
-		return nil, apiError("failed to update incident event", createErr)
+		return nil, oapi.Error("failed to update incident event", createErr)
 	}
 	resp.Body.Data = oapi.IncidentMilestoneFromEnt(ev)
 
@@ -82,7 +82,7 @@ func (h *incidentMilestonesHandler) DeleteIncidentMilestone(ctx context.Context,
 
 	deleteErr := h.db.IncidentMilestone.DeleteOneID(input.Id).Exec(ctx)
 	if deleteErr != nil {
-		return nil, apiError("failed to archive incident event", deleteErr)
+		return nil, oapi.Error("failed to archive incident event", deleteErr)
 	}
 
 	return &resp, nil

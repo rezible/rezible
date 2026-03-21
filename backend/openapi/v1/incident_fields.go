@@ -3,11 +3,10 @@ package v1
 import (
 	"context"
 
+	"net/http"
+
 	"github.com/danielgtaylor/huma/v2"
 	"github.com/google/uuid"
-	"github.com/rezible/rezible/openapi"
-
-	"net/http"
 
 	"github.com/rezible/rezible/ent"
 )
@@ -95,7 +94,7 @@ var ListIncidentFields = huma.Operation{
 	Path:        "/incident_fields",
 	Summary:     "List Incident Fields",
 	Tags:        incidentFieldsTags,
-	Errors:      openapi.ErrorCodes(),
+	Errors:      ErrorCodes(),
 }
 
 type ListIncidentFieldsRequest ListRequest
@@ -107,7 +106,7 @@ var GetIncidentField = huma.Operation{
 	Path:        "/incident_fields/{id}",
 	Summary:     "Get an Incident Field",
 	Tags:        incidentFieldsTags,
-	Errors:      openapi.ErrorCodes(),
+	Errors:      ErrorCodes(),
 }
 
 type GetIncidentFieldRequest GetIdRequest
@@ -119,7 +118,7 @@ var CreateIncidentField = huma.Operation{
 	Path:        "/incident_fields",
 	Summary:     "Create an Incident Field",
 	Tags:        incidentFieldsTags,
-	Errors:      openapi.ErrorCodes(),
+	Errors:      ErrorCodes(),
 }
 
 type CreateIncidentFieldAttributes struct {
@@ -141,7 +140,7 @@ var UpdateIncidentField = huma.Operation{
 	Path:        "/incident_fields/{id}",
 	Summary:     "Update an Incident Field",
 	Tags:        incidentFieldsTags,
-	Errors:      openapi.ErrorCodes(),
+	Errors:      ErrorCodes(),
 }
 
 type UpdateIncidentFieldAttributes struct {
@@ -166,7 +165,7 @@ var ArchiveIncidentField = huma.Operation{
 	Path:        "/incident_fields/{id}",
 	Summary:     "Archive an Incident Field",
 	Tags:        incidentFieldsTags,
-	Errors:      openapi.ErrorCodes(),
+	Errors:      ErrorCodes(),
 }
 
 type ArchiveIncidentFieldRequest ArchiveIdRequest

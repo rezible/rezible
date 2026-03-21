@@ -17,6 +17,8 @@ import (
 )
 
 var (
+	ErrTenantContextMissing     = eris.New("tenant access context not set")
+	ErrUserContextMissing       = eris.New("user access context not set")
 	ErrInvalidUser              = eris.New("user does not exist")
 	ErrInvalidTenant            = eris.New("tenant does not exist")
 	ErrAuthSessionMissing       = eris.New("no auth session")
@@ -26,6 +28,8 @@ var (
 )
 
 type ConfigLoader interface {
+	Unmarshal(key string, v any) error
+
 	GetString(key string) string
 	GetStringOr(key string, orDefault string) string
 	GetStrings(key string) []string
@@ -36,21 +40,16 @@ type ConfigLoader interface {
 
 	DebugMode() bool
 	DataSyncMode() bool
-	SingleTenantMode() bool
-
-	DatabaseUrl() string
-	DocumentsServerAddress() string
 
 	ListenHost() string
 	ListenPort() string
 
+	ApiPath() string
+	WebhooksPath() string
 	AppUrl() string
 	ServeFrontend() bool
-	BasePath() string
-	AuthPath() string
-	WebhooksPath() string
-	GetMountedAppRoute(routes ...string) (string, error)
 
+	SingleTenantMode() bool
 	AllowTenantCreation() bool
 	AllowUserCreation() bool
 }
@@ -64,7 +63,7 @@ type EventListener interface {
 
 type Database interface {
 	Client() *ent.Client
-	Close() error
+	Close()
 }
 
 type Services struct {
@@ -160,26 +159,22 @@ type (
 
 type (
 	OrganizationService interface {
+		FindOrCreateFromDomain(context.Context, string) (*ent.Organization, error)
+
 		GetById(context.Context, uuid.UUID) (*ent.Organization, error)
 		GetCurrent(context.Context) (*ent.Organization, error)
 		CompleteSetup(context.Context, *ent.Organization) error
-		FindOrCreateFromProviderDomain(context.Context, string) (*ent.Organization, error)
 	}
 )
 
 type (
-	UserDataProvider interface {
-		UserDataMapping() *ent.User
-		PullUsers(ctx context.Context) iter.Seq2[*ent.User, error]
-	}
 	ListUsersParams = struct {
 		ent.ListParams
 		TeamID uuid.UUID
 	}
 
 	UserService interface {
-		FindOrCreateAuthProviderUser(context.Context, ent.User) (*ent.User, error)
-		CreateUserAccessContext(context.Context, *ent.User) context.Context
+		FindOrCreateFromAuth(context.Context, ent.User) (*ent.User, error)
 
 		ListUsers(context.Context, ListUsersParams) ([]*ent.User, error)
 
@@ -189,23 +184,27 @@ type (
 		GetByEmail(context.Context, string) (*ent.User, error)
 		GetByChatId(context.Context, string) (*ent.User, error)
 	}
+
+	UserDataProvider interface {
+		UserDataMapping() *ent.User
+		PullUsers(ctx context.Context) iter.Seq2[*ent.User, error]
+	}
 )
 
 type (
-	AuthSession struct {
-		UserId    uuid.UUID
-		Scopes    []string
-		ExpiresAt time.Time
+	AuthSession interface {
+		UserId() uuid.UUID
+		Scopes() []string
+		ExpiresAt() time.Time
 	}
 
 	AuthService interface {
 		CompleteClientAuthSessionFlow(ctx context.Context, code string, verifier string) ([]http.Cookie, error)
-		RefreshClientAuthSession(ctx context.Context, refreshCookie http.Cookie) ([]http.Cookie, error)
-		ClearClientAuthSession(ctx context.Context) ([]http.Cookie, error)
+		RefreshClientAuthSession(ctx context.Context, refreshToken string) ([]http.Cookie, error)
+		ClearClientAuthSession() ([]http.Cookie, error)
 
-		CreateVerifiedAuthSessionContext(ctx context.Context, token string) (context.Context, error)
-		GetAuthSession(context.Context) (*AuthSession, error)
-		// CreateAuthContext(context.Context, *AuthSession) (context.Context, error)
+		CreateAuthSessionContext(ctx context.Context, token string) (context.Context, error)
+		GetAuthSession(context.Context) AuthSession
 	}
 )
 
@@ -283,7 +282,7 @@ type (
 	DocumentsService interface {
 		GetDocument(context.Context, uuid.UUID) (*ent.Document, error)
 		SetDocument(context.Context, uuid.UUID, func(*ent.DocumentMutation)) (*ent.Document, error)
-		GetDocumentAccess(context.Context, uuid.UUID, *AuthSession) (*ent.DocumentAccess, error)
+		GetDocumentAccess(context.Context, uuid.UUID) (*ent.DocumentAccess, error)
 	}
 )
 

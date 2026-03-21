@@ -6,7 +6,6 @@ import (
 
 	"github.com/google/uuid"
 	rez "github.com/rezible/rezible"
-	"github.com/rezible/rezible/access"
 	"github.com/rezible/rezible/ent"
 	"github.com/rezible/rezible/ent/predicate"
 	"github.com/rezible/rezible/ent/team"
@@ -27,17 +26,6 @@ func NewUserService(db *ent.Client, orgs rez.OrganizationService) (*UserService,
 	return s, nil
 }
 
-type userCtxKey struct{}
-
-func (s *UserService) CreateUserAccessContext(ctx context.Context, u *ent.User) context.Context {
-	return context.WithValue(access.TenantContext(ctx, u.TenantID), userCtxKey{}, u)
-}
-
-func (s *UserService) GetContextUser(ctx context.Context) (*ent.User, bool) {
-	u, ok := ctx.Value(userCtxKey{}).(*ent.User)
-	return u, ok
-}
-
 func nilEmptyString(s string) *string {
 	if s == "" {
 		return nil
@@ -50,7 +38,7 @@ func (s *UserService) GetUserByAuthProviderId(ctx context.Context, authProviderI
 	return userQuery.Only(ctx)
 }
 
-func (s *UserService) FindOrCreateAuthProviderUser(ctx context.Context, pu ent.User) (*ent.User, error) {
+func (s *UserService) FindOrCreateFromAuth(ctx context.Context, pu ent.User) (*ent.User, error) {
 	usr, usrErr := s.GetUserByAuthProviderId(ctx, pu.AuthProviderID)
 	if usrErr != nil && !ent.IsNotFound(usrErr) {
 		return nil, fmt.Errorf("failed to query user: %w", usrErr)

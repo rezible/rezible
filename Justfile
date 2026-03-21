@@ -1,14 +1,9 @@
 set shell := ["bash", "-uc"]
+set dotenv-filename := ".env.dev"
 set dotenv-load
 
-import "scripts/Justfile"
-
-dev_db_host := "localhost"
-dev_db_port := "7010"
-dev_db_user := "rezible"
-dev_db_password := "foobar1"
 dev_db_database := "rezible"
-db_url := "postgresql://"+dev_db_user+":"+dev_db_password+"@"+dev_db_host+":"+dev_db_port+"/"
+db_url := "postgresql://rezible:foobar1@localhost:7010/"
 dev_db_url := db_url+dev_db_database+"?sslmode=disable"
 test_db_url := db_url+"?sslmode=disable"
 
@@ -18,12 +13,9 @@ _default:
 # [group('Setup')]
 
 frontend_dist_dir := "./backend/internal/http/frontend-dist"
-saml_cert_dir := "./backend/internal/http/saml/testdata"
 
 @setup:
     mkdir -p "{{ frontend_dist_dir }}" && echo "<p>this will be replaced by the frontend build</p>" > "{{ frontend_dist_dir }}/index.html"
-    mkdir -p "{{ saml_cert_dir }}"
-    openssl req -x509 -newkey rsa:2048 -keyout "{{ saml_cert_dir }}/test.key" -out "{{ saml_cert_dir }}/test.cert" -days 365 -nodes -subj "/CN=test.rezible.com"
     just install-dependencies
     just codegen
     just localias-reload
@@ -46,21 +38,24 @@ saml_cert_dir := "./backend/internal/http/saml/testdata"
 
 @run-frontend *ARGS:
     cd frontend && \
-        PUBLIC_APP_URL="https://app.dev.rezible.com" \
-        PUBLIC_AUTH_URL="https://auth.dev.rezible.com" \
-        PUBLIC_AUTH_CLIENT_ID="rezible-app" \
-        PUBLIC_API_BASE_PATH="/api" \
-        PUBLIC_API_V1_PATH="/v1" \
-        PUBLIC_API_AUTH_PATH="/auth" \
+        PUBLIC_APP_URL="${APP_URL}" \
+        PUBLIC_API_URL="/api/v1" \
+        PUBLIC_AUTH_ISSUER_URL="${AUTH__OIDC__ISSUER_URL}" \
+        PUBLIC_AUTH_CLIENT_ID="${AUTH__OIDC__CLIENT_ID}" \
         bun run {{ARGS}}
 
 @run-documents-server *ARGS:
-    cd documents-server && \
-        DB_URL='{{ dev_db_url }}' \
-        bun run {{ARGS}}
+    cd documents-server && bun run {{ARGS}}
 
-@run-backend-datasync:
-    DATASYNC_MODE="true" just run-backend integrations sync
+@localias-reload:
+    localias reload -c scripts/localias.yaml
+
+@run-docker-compose *CMD:
+    docker compose \
+      --env-file .env \
+      --env-file .env.dev \
+      -f ./scripts/docker-compose.yaml \
+      {{CMD}}
 
 # [group('Testing')]
 
@@ -69,6 +64,8 @@ saml_cert_dir := "./backend/internal/http/saml/testdata"
         DB_URL='{{ test_db_url }}' \
         go test $(go list ./... | grep -v /ent/)
 
+@run-backend-datasync:
+    DATASYNC_MODE="true" just run-backend integrations sync
 
 # [group('Code Generation')]
 
@@ -91,6 +88,12 @@ saml_cert_dir := "./backend/internal/http/saml/testdata"
     just run-backend db-migrations generate {{NAME}}
 
 # [group('Development Servers')]
+
+@run-dev-services:
+    just run-docker-compose up -d --wait
+
+@stop-dev-services:
+    just run-docker-compose down
 
 @dev: run-dev-services && stop-dev-services
     just run-migrations
@@ -129,3 +132,6 @@ migrations_dir := "backend/migrations"
 
 @run-migrations:
     migrate -source "file://{{migrations_dir}}" -database "{{dev_db_url}}" up
+
+@run-psql *ARGS:
+    just run-docker-compose exec -it postgres psql -U rezible {{ARGS}}

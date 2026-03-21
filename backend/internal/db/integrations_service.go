@@ -232,24 +232,18 @@ func (s *IntegrationsService) set(ctx context.Context, name string, setFn func(*
 }
 
 func (s *IntegrationsService) makeOAuthState(ctx context.Context, name string) (string, error) {
-	sess, sessErr := s.auth.GetAuthSession(ctx)
-	if sessErr != nil {
-		return "", fmt.Errorf("auth session error: %w", sessErr)
-	}
+	userId := s.auth.GetAuthSession(ctx).UserId()
 	state := uuid.New().String()
 	create := s.db.IntegrationOAuthState.Create().
-		SetUserID(sess.UserId).
+		SetUserID(userId).
 		SetState(state).
 		SetIntegrationName(name)
 	return state, create.Exec(ctx)
 }
 
 func (s *IntegrationsService) verifyOAuthState(ctx context.Context, name string, state string) error {
-	sess, sessErr := s.auth.GetAuthSession(ctx)
-	if sessErr != nil {
-		return fmt.Errorf("auth session error: %w", sessErr)
-	}
-	userIntegrationStates := ioas.And(ioas.UserIDEQ(sess.UserId), ioas.IntegrationNameEQ(name))
+	userId := s.auth.GetAuthSession(ctx).UserId()
+	userIntegrationStates := ioas.And(ioas.UserIDEQ(userId), ioas.IntegrationNameEQ(name))
 	query := s.db.IntegrationOAuthState.Query().
 		Where(userIntegrationStates, ioas.ExpiresAtGT(time.Now()), ioas.StateEQ(state))
 	stateMatch, queryErr := query.Exist(ctx)
@@ -260,7 +254,7 @@ func (s *IntegrationsService) verifyOAuthState(ctx context.Context, name string,
 	if _, cleanupErr := cleanup.Exec(ctx); cleanupErr != nil {
 		log.Error().Err(cleanupErr).
 			Str("name", name).
-			Str("userId", sess.UserId.String()).
+			Str("userId", userId.String()).
 			Msg("failed to cleanup old integration user oauth states")
 	}
 	if !stateMatch {

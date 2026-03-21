@@ -2,12 +2,11 @@ package v1
 
 import (
 	"context"
+	"net/http"
+
 	"github.com/danielgtaylor/huma/v2"
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent"
-	"github.com/rezible/rezible/openapi"
-
-	"net/http"
 )
 
 type IncidentRolesHandler interface {
@@ -62,7 +61,7 @@ var ListIncidentRoles = huma.Operation{
 	Path:        "/incident_roles",
 	Summary:     "List Incident Roles",
 	Tags:        incidentRolesTags,
-	Errors:      openapi.ErrorCodes(),
+	Errors:      ErrorCodes(),
 }
 
 type ListIncidentRolesRequest ListRequest
@@ -74,7 +73,7 @@ var GetIncidentRole = huma.Operation{
 	Path:        "/incident_roles/{id}",
 	Summary:     "Get an Incident Role",
 	Tags:        incidentRolesTags,
-	Errors:      openapi.ErrorCodes(),
+	Errors:      ErrorCodes(),
 }
 
 type GetIncidentRoleRequest GetIdRequest
@@ -86,7 +85,7 @@ var CreateIncidentRole = huma.Operation{
 	Path:        "/incident_roles",
 	Summary:     "Create an Incident Role",
 	Tags:        incidentRolesTags,
-	Errors:      openapi.ErrorCodes(),
+	Errors:      ErrorCodes(),
 }
 
 type CreateIncidentRoleAttributes struct {
@@ -102,7 +101,7 @@ var UpdateIncidentRole = huma.Operation{
 	Path:        "/incident_roles/{id}",
 	Summary:     "Update an Incident Role",
 	Tags:        incidentRolesTags,
-	Errors:      openapi.ErrorCodes(),
+	Errors:      ErrorCodes(),
 }
 
 type UpdateIncidentRoleAttributes struct {
@@ -120,7 +119,7 @@ var ArchiveIncidentRole = huma.Operation{
 	Path:        "/incident_roles/{id}",
 	Summary:     "Archive an Incident Role",
 	Tags:        incidentRolesTags,
-	Errors:      openapi.ErrorCodes(),
+	Errors:      ErrorCodes(),
 }
 
 type ArchiveIncidentRoleRequest ArchiveIdRequest

@@ -175,7 +175,7 @@ CREATE UNIQUE INDEX "oncall_shift_metrics_shift_id_key" ON "oncall_shift_metrics
 -- create index "oncallshiftmetrics_tenant_id" to table: "oncall_shift_metrics"
 CREATE INDEX "oncallshiftmetrics_tenant_id" ON "oncall_shift_metrics" ("tenant_id");
 -- create "organizations" table
-CREATE TABLE "organizations" ("id" uuid NOT NULL, "external_id" character varying NOT NULL, "name" character varying NOT NULL, "initial_setup_at" timestamptz NULL, "tenant_id" bigint NOT NULL, PRIMARY KEY ("id"));
+CREATE TABLE "organizations" ("id" uuid NOT NULL, "name" character varying NOT NULL, "domain" character varying NOT NULL, "initial_setup_at" timestamptz NULL, "tenant_id" bigint NOT NULL, PRIMARY KEY ("id"));
 -- create index "organization_tenant_id" to table: "organizations"
 CREATE INDEX "organization_tenant_id" ON "organizations" ("tenant_id");
 -- create "playbooks" table

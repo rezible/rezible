@@ -1,9 +1,8 @@
-issuer: https://auth.dev.rezible.com
+issuer: "{{ .Env.ISSUER_URL }}"
 
 web:
   http: 0.0.0.0:7011
-  allowedOrigins:
-    - https://app.dev.rezible.com
+  allowedOrigins: ["{{ .Env.APP_URL }}"]
 
 storage:
   type: postgres
@@ -23,15 +22,18 @@ oauth2:
 
 enablePasswordDB: true
 staticPasswords:
-  - email: "admin@example.com"
+  # password: $(echo "foobar1" | htpasswd -BinC 10 admin | cut -d: -f2)
+  - email: "admin@dev.rezible.com"
     username: "admin"
-    userID: "08a8684b-db88-4b73-90a9-3cd1661f5466"
-    # echo "foobar1" | htpasswd -BinC 10 admin | cut -d: -f2
+    userID: "cd8cc83f-de81-4f05-a64d-5e4105a35142"
+    hash: "$2y$10$NI22AXHCKIordm2Y3pf0RuNVEUHvktOYruQ6/hli8UcvTEBhpX2KG"
+  - email: "user@dev.rezible.com"
+    username: "user"
+    userID: "00cb6dd1-6be0-4b2a-83ad-4f16468f9055"
     hash: "$2y$10$NI22AXHCKIordm2Y3pf0RuNVEUHvktOYruQ6/hli8UcvTEBhpX2KG"
 
 staticClients:
-  - id: rezible-app
+  - id: "{{ .Env.CLIENT_ID }}"
     name: "Rezible"
     public: true
-    redirectURIs:
-      - https://app.dev.rezible.com/auth/callback
+    redirectURIs: ["{{ .Env.APP_URL }}/auth/callback"]

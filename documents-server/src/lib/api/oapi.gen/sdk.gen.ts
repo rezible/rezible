@@ -2,7 +2,7 @@
 
 import type { Client, Options as Options2, TDataShape } from './client';
 import { client } from './client.gen';
-import type { LoadDocumentData, LoadDocumentErrors, LoadDocumentResponses, RequestDocumentEditorSessionData, RequestDocumentEditorSessionErrors, RequestDocumentEditorSessionResponses, UpdateDocumentData, UpdateDocumentErrors, UpdateDocumentResponses } from './types.gen';
+import type { GetDocumentAccessData, GetDocumentAccessErrors, GetDocumentAccessResponses, LoadDocumentData, LoadDocumentErrors, LoadDocumentResponses, UpdateDocumentData, UpdateDocumentErrors, UpdateDocumentResponses } from './types.gen';
 
 export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends boolean = boolean> = Options2<TData, ThrowOnError> & {
     /**
@@ -20,6 +20,21 @@ export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends 
 
 export class Documents {
     /**
+     * Get user access for a document
+     */
+    public static getDocumentAccess<ThrowOnError extends boolean = false>(options: Options<GetDocumentAccessData, ThrowOnError>) {
+        return (options.client ?? client).post<GetDocumentAccessResponses, GetDocumentAccessErrors, ThrowOnError>({
+            security: [{
+                    in: 'cookie',
+                    name: 'rez_access_token',
+                    type: 'apiKey'
+                }, { scheme: 'bearer', type: 'http' }],
+            url: '/documents/{id}/access',
+            ...options
+        });
+    }
+    
+    /**
      * Load document
      */
     public static loadDocument<ThrowOnError extends boolean = false>(options: Options<LoadDocumentData, ThrowOnError>) {
@@ -30,21 +45,6 @@ export class Documents {
                     type: 'apiKey'
                 }, { scheme: 'bearer', type: 'http' }],
             url: '/documents/{id}/load',
-            ...options
-        });
-    }
-    
-    /**
-     * Request a Document Editor Session
-     */
-    public static requestDocumentEditorSession<ThrowOnError extends boolean = false>(options: Options<RequestDocumentEditorSessionData, ThrowOnError>) {
-        return (options.client ?? client).post<RequestDocumentEditorSessionResponses, RequestDocumentEditorSessionErrors, ThrowOnError>({
-            security: [{
-                    in: 'cookie',
-                    name: 'rez_access_token',
-                    type: 'apiKey'
-                }, { scheme: 'bearer', type: 'http' }],
-            url: '/documents/{id}/session',
             ...options
         });
     }

@@ -17,7 +17,7 @@ func (SystemComponent) Mixin() []ent.Mixin {
 	return []ent.Mixin{
 		BaseMixin{},
 		TenantMixin{},
-		IntegrationMixin{},
+		IntegrationDataMixin{},
 	}
 }
 
@@ -80,7 +80,7 @@ func (SystemComponentKind) Mixin() []ent.Mixin {
 	return []ent.Mixin{
 		BaseMixin{},
 		TenantMixin{},
-		IntegrationMixin{},
+		IntegrationDataMixin{},
 	}
 }
 

@@ -835,8 +835,8 @@ var schemaGraph = func() *sqlgraph.Schema {
 		Type: "Organization",
 		Fields: map[string]*sqlgraph.FieldSpec{
 			organization.FieldTenantID:       {Type: field.TypeInt, Column: organization.FieldTenantID},
-			organization.FieldExternalID:     {Type: field.TypeString, Column: organization.FieldExternalID},
 			organization.FieldName:           {Type: field.TypeString, Column: organization.FieldName},
+			organization.FieldDomain:         {Type: field.TypeString, Column: organization.FieldDomain},
 			organization.FieldInitialSetupAt: {Type: field.TypeTime, Column: organization.FieldInitialSetupAt},
 		},
 	}
@@ -9152,14 +9152,14 @@ func (f *OrganizationFilter) WhereTenantID(p entql.IntP) {
 	f.Where(p.Field(organization.FieldTenantID))
 }
 
-// WhereExternalID applies the entql string predicate on the external_id field.
-func (f *OrganizationFilter) WhereExternalID(p entql.StringP) {
-	f.Where(p.Field(organization.FieldExternalID))
-}
-
 // WhereName applies the entql string predicate on the name field.
 func (f *OrganizationFilter) WhereName(p entql.StringP) {
 	f.Where(p.Field(organization.FieldName))
+}
+
+// WhereDomain applies the entql string predicate on the domain field.
+func (f *OrganizationFilter) WhereDomain(p entql.StringP) {
+	f.Where(p.Field(organization.FieldDomain))
 }
 
 // WhereInitialSetupAt applies the entql time.Time predicate on the initial_setup_at field.

@@ -8,11 +8,10 @@ import (
 	"github.com/rezible/rezible/access"
 	"github.com/riverqueue/river"
 	"github.com/riverqueue/river/rivertype"
-	"github.com/rs/zerolog/log"
 )
 
 type jobMetadata struct {
-	AccessContext access.Context `json:"ac"`
+	EncodedAccessScope []byte `json:"ac"`
 }
 
 type accessContextMiddleware struct {
@@ -20,7 +19,10 @@ type accessContextMiddleware struct {
 }
 
 func (m *accessContextMiddleware) InsertMany(ctx context.Context, params []*rivertype.JobInsertParams, doInner func(context.Context) ([]*rivertype.JobInsertResult, error)) ([]*rivertype.JobInsertResult, error) {
-	ac := access.GetContext(ctx)
+	encodedScope, scopeErr := access.EncodeScope(ctx)
+	if scopeErr != nil {
+		return nil, fmt.Errorf("failed to encode scope: %w", scopeErr)
+	}
 	for _, p := range params {
 		var meta jobMetadata
 		var jsonErr error
@@ -28,7 +30,7 @@ func (m *accessContextMiddleware) InsertMany(ctx context.Context, params []*rive
 			return nil, fmt.Errorf("failed to unmarshal job metadata: %w", jsonErr)
 		}
 
-		meta.AccessContext = ac
+		meta.EncodedAccessScope = encodedScope
 
 		p.Metadata, jsonErr = json.Marshal(meta)
 		if jsonErr != nil {
@@ -44,8 +46,9 @@ func (m *accessContextMiddleware) Work(ctx context.Context, job *rivertype.JobRo
 	if jsonErr := json.Unmarshal(job.Metadata, &meta); jsonErr != nil {
 		return fmt.Errorf("failed to unmarshal job metadata: %w", jsonErr)
 	}
-	if meta.AccessContext.IsAnonymous() {
-		log.Debug().Msg("job access context is anonymous")
+	restoredCtx, restoreErr := access.RestoreScope(ctx, meta.EncodedAccessScope)
+	if restoreErr != nil {
+		return fmt.Errorf("invalid (anonymous) access context for job")
 	}
-	return doInner(access.SetContext(ctx, meta.AccessContext))
+	return doInner(restoredCtx)
 }

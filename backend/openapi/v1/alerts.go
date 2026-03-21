@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/danielgtaylor/huma/v2"
 	"github.com/google/uuid"
 
 	"github.com/rezible/rezible/ent"
@@ -18,11 +19,11 @@ type AlertsHandler interface {
 	ListAlertIncidentLinks(context.Context, *ListAlertIncidentLinksRequest) (*ListAlertIncidentLinksResponse, error)
 }
 
-func (o operations) RegisterAlerts(api openapi.API) {
-	openapi.Register(api, ListAlerts, o.ListAlerts)
-	openapi.Register(api, GetAlert, o.GetAlert)
-	openapi.Register(api, GetAlertMetrics, o.GetAlertMetrics)
-	openapi.Register(api, ListAlertIncidentLinks, o.ListAlertIncidentLinks)
+func (o operations) RegisterAlerts(api huma.API) {
+	huma.Register(api, ListAlerts, o.ListAlerts)
+	huma.Register(api, GetAlert, o.GetAlert)
+	huma.Register(api, GetAlertMetrics, o.GetAlertMetrics)
+	huma.Register(api, ListAlertIncidentLinks, o.ListAlertIncidentLinks)
 }
 
 type (
@@ -127,7 +128,7 @@ var ListAlerts = openapi.Operation{
 	Path:        "/alerts",
 	Summary:     "List Alerts",
 	Tags:        alertsTags,
-	Errors:      openapi.ErrorCodes(),
+	Errors:      ErrorCodes(),
 }
 
 type ListAlertsRequest struct {
@@ -142,7 +143,7 @@ var GetAlert = openapi.Operation{
 	Path:        "/alerts/{id}",
 	Summary:     "Get Alert",
 	Tags:        alertsTags,
-	Errors:      openapi.ErrorCodes(),
+	Errors:      ErrorCodes(),
 }
 
 type GetAlertRequest struct {
@@ -156,7 +157,7 @@ var GetAlertMetrics = openapi.Operation{
 	Path:        "/alerts/{id}/metrics",
 	Summary:     "Get Alert Metrics",
 	Tags:        alertsTags,
-	Errors:      openapi.ErrorCodes(),
+	Errors:      ErrorCodes(),
 }
 
 type GetAlertMetricsRequest struct {
@@ -173,7 +174,7 @@ var ListAlertIncidentLinks = openapi.Operation{
 	Path:        "/alerts/{id}/incident_links",
 	Summary:     "List Incident Links for an Alert",
 	Tags:        alertsTags,
-	Errors:      openapi.ErrorCodes(),
+	Errors:      ErrorCodes(),
 }
 
 type ListAlertIncidentLinksRequest struct {

@@ -899,14 +899,8 @@ func init() {
 			return next.Mutate(ctx, m)
 		})
 	}
-	organizationMixinFields2 := organizationMixin[2].Fields()
-	_ = organizationMixinFields2
 	organizationFields := schema.Organization{}.Fields()
 	_ = organizationFields
-	// organizationDescExternalID is the schema descriptor for external_id field.
-	organizationDescExternalID := organizationMixinFields2[0].Descriptor()
-	// organization.ExternalIDValidator is a validator for the "external_id" field. It is called by the builders before save.
-	organization.ExternalIDValidator = organizationDescExternalID.Validators[0].(func(string) error)
 	// organizationDescID is the schema descriptor for id field.
 	organizationDescID := organizationFields[0].Descriptor()
 	// organization.DefaultID holds the default value on creation for the id field.

@@ -7,7 +7,6 @@ import (
 	"github.com/google/uuid"
 	rez "github.com/rezible/rezible"
 	oapi "github.com/rezible/rezible/openapi/v1"
-	"github.com/rs/zerolog/log"
 )
 
 type authSessionsHandler struct {
@@ -26,7 +25,6 @@ func (h *authSessionsHandler) CompleteAuthSessionFlow(ctx context.Context, req *
 	attr := req.Body.Attributes
 	cookies, flowErr := h.auth.CompleteClientAuthSessionFlow(ctx, attr.Code, attr.Verifier)
 	if flowErr != nil {
-		log.Debug().Err(flowErr).Msg("CompleteClientAuthSessionFlow")
 		return nil, fmt.Errorf("failed to complete auth session flow: %w", flowErr)
 	}
 	resp.SetCookie = cookies
@@ -37,7 +35,7 @@ func (h *authSessionsHandler) CompleteAuthSessionFlow(ctx context.Context, req *
 func (h *authSessionsHandler) RefreshAuthSession(ctx context.Context, req *oapi.RefreshAuthSessionRequest) (*oapi.RefreshAuthSessionResponse, error) {
 	var resp oapi.RefreshAuthSessionResponse
 
-	cookies, cookiesErr := h.auth.RefreshClientAuthSession(ctx, req.Cookie)
+	cookies, cookiesErr := h.auth.RefreshClientAuthSession(ctx, req.Cookie.Value)
 	if cookiesErr != nil {
 		return nil, fmt.Errorf("refresh session cookies: %w", cookiesErr)
 	}
@@ -49,7 +47,7 @@ func (h *authSessionsHandler) RefreshAuthSession(ctx context.Context, req *oapi.
 func (h *authSessionsHandler) ClearAuthSession(ctx context.Context, req *oapi.ClearAuthSessionRequest) (*oapi.ClearAuthSessionResponse, error) {
 	var resp oapi.ClearAuthSessionResponse
 
-	cookies, cookiesErr := h.auth.ClearClientAuthSession(ctx)
+	cookies, cookiesErr := h.auth.ClearClientAuthSession()
 	if cookiesErr != nil {
 		return nil, fmt.Errorf("clear auth session: %w", cookiesErr)
 	}
@@ -61,20 +59,20 @@ func (h *authSessionsHandler) ClearAuthSession(ctx context.Context, req *oapi.Cl
 func (h *authSessionsHandler) GetCurrentAuthSession(ctx context.Context, input *oapi.GetCurrentAuthSessionRequest) (*oapi.GetCurrentAuthSessionResponse, error) {
 	var resp oapi.GetCurrentAuthSessionResponse
 
-	sess := getRequestAuthSession(ctx, h.auth)
+	sess := h.auth.GetAuthSession(ctx)
 
-	user, userErr := h.users.GetById(ctx, sess.UserId)
+	user, userErr := h.users.GetById(ctx, sess.UserId())
 	if userErr != nil {
-		return nil, apiError("failed to get user", userErr)
+		return nil, oapi.Error("failed to get user", userErr)
 	}
 
 	org, orgErr := h.orgs.GetCurrent(ctx)
 	if orgErr != nil {
-		return nil, apiError("failed to get organization", orgErr)
+		return nil, oapi.Error("failed to get organization", orgErr)
 	}
 
 	resp.Body.Data = oapi.AuthSession{
-		ExpiresAt:    sess.ExpiresAt,
+		ExpiresAt:    sess.ExpiresAt(),
 		User:         oapi.UserFromEnt(user),
 		Organization: oapi.OrganizationFromEnt(org),
 	}

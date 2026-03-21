@@ -1494,8 +1494,8 @@ var (
 	// OrganizationsColumns holds the columns for the "organizations" table.
 	OrganizationsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID},
-		{Name: "external_id", Type: field.TypeString},
 		{Name: "name", Type: field.TypeString},
+		{Name: "domain", Type: field.TypeString},
 		{Name: "initial_setup_at", Type: field.TypeTime, Nullable: true},
 		{Name: "tenant_id", Type: field.TypeInt},
 	}

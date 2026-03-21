@@ -3,26 +3,25 @@ package entpgx
 import (
 	"context"
 	stdsql "database/sql"
+	"fmt"
+
 	"entgo.io/ent/dialect"
 	"entgo.io/ent/dialect/sql"
-	"fmt"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
 // https://github.com/ent/ent/discussions/1797#discussioncomment-5111111
 
-func NewPgxPoolDriver(pool *pgxpool.Pool) dialect.Driver {
-	return &EntPgxpoolDriver{
-		pool: pool,
-	}
-}
-
-type EntPgxpoolDriver struct {
+type PgxpoolDriver struct {
 	pool *pgxpool.Pool
 }
 
-func (e *EntPgxpoolDriver) Exec(ctx context.Context, query string, args, result any) error {
+func NewPgxPoolDriver(pool *pgxpool.Pool) dialect.Driver {
+	return &PgxpoolDriver{pool: pool}
+}
+
+func (e *PgxpoolDriver) Exec(ctx context.Context, query string, args, result any) error {
 	var _ stdsql.Result
 	argv, ok := args.([]any)
 	if !ok {
@@ -45,7 +44,7 @@ func (e *EntPgxpoolDriver) Exec(ctx context.Context, query string, args, result 
 	return nil
 }
 
-func (e *EntPgxpoolDriver) Query(ctx context.Context, query string, args, v any) error {
+func (e *PgxpoolDriver) Query(ctx context.Context, query string, args, v any) error {
 	vr, ok := v.(*sql.Rows)
 	if !ok {
 		return fmt.Errorf("dialect/sql: invalid type %T. expect *sql.Rows", v)
@@ -65,7 +64,7 @@ func (e *EntPgxpoolDriver) Query(ctx context.Context, query string, args, v any)
 	return nil
 }
 
-func (e *EntPgxpoolDriver) ExecContext(ctx context.Context, query string, args ...any) (stdsql.Result, error) {
+func (e *PgxpoolDriver) ExecContext(ctx context.Context, query string, args ...any) (stdsql.Result, error) {
 	commandTag, err := e.pool.Exec(ctx, query, args...)
 	if err != nil {
 		return nil, err
@@ -73,11 +72,11 @@ func (e *EntPgxpoolDriver) ExecContext(ctx context.Context, query string, args .
 	return &execResult{rowsAffected: commandTag.RowsAffected()}, nil
 }
 
-func (e *EntPgxpoolDriver) Tx(ctx context.Context) (dialect.Tx, error) {
+func (e *PgxpoolDriver) Tx(ctx context.Context) (dialect.Tx, error) {
 	return e.BeginTx(ctx, nil)
 }
 
-func (e *EntPgxpoolDriver) BeginTx(ctx context.Context, opts *sql.TxOptions) (dialect.Tx, error) {
+func (e *PgxpoolDriver) BeginTx(ctx context.Context, opts *sql.TxOptions) (dialect.Tx, error) {
 	pgxOpts, err := getPgxTxOptions(opts)
 	if err != nil {
 		return nil, err
@@ -86,7 +85,7 @@ func (e *EntPgxpoolDriver) BeginTx(ctx context.Context, opts *sql.TxOptions) (di
 	if err != nil {
 		return nil, err
 	}
-	return &EntPgxPoolTx{
+	return &PgxPoolTx{
 		tx: tx,
 	}, nil
 }
@@ -116,20 +115,20 @@ func getPgxTxOptions(opts *sql.TxOptions) (*pgx.TxOptions, error) {
 	return &pgxOpts, nil
 }
 
-func (e *EntPgxpoolDriver) Close() error {
+func (e *PgxpoolDriver) Close() error {
 	e.pool.Close()
 	return nil
 }
 
-func (e *EntPgxpoolDriver) Dialect() string {
+func (e *PgxpoolDriver) Dialect() string {
 	return dialect.Postgres
 }
 
-type EntPgxPoolTx struct {
+type PgxPoolTx struct {
 	tx pgx.Tx
 }
 
-func (e *EntPgxPoolTx) Exec(ctx context.Context, query string, args, result any) error {
+func (e *PgxPoolTx) Exec(ctx context.Context, query string, args, result any) error {
 	var _ stdsql.Result
 
 	argv, ok := args.([]any)
@@ -153,7 +152,7 @@ func (e *EntPgxPoolTx) Exec(ctx context.Context, query string, args, result any)
 	return nil
 }
 
-func (e *EntPgxPoolTx) ExecContext(ctx context.Context, query string, args ...any) (stdsql.Result, error) {
+func (e *PgxPoolTx) ExecContext(ctx context.Context, query string, args ...any) (stdsql.Result, error) {
 	commandTag, err := e.tx.Exec(ctx, query, args...)
 	if err != nil {
 		return nil, err
@@ -161,7 +160,7 @@ func (e *EntPgxPoolTx) ExecContext(ctx context.Context, query string, args ...an
 	return &execResult{rowsAffected: commandTag.RowsAffected()}, nil
 }
 
-func (e *EntPgxPoolTx) Query(ctx context.Context, query string, args, v any) error {
+func (e *PgxPoolTx) Query(ctx context.Context, query string, args, v any) error {
 	vr, ok := v.(*sql.Rows)
 	if !ok {
 		return fmt.Errorf("dialect/sql: invalid type %T. expect *sql.Rows", v)
@@ -181,15 +180,15 @@ func (e *EntPgxPoolTx) Query(ctx context.Context, query string, args, v any) err
 	return nil
 }
 
-func (e *EntPgxPoolTx) Commit() error {
+func (e *PgxPoolTx) Commit() error {
 	return e.tx.Commit(context.TODO())
 }
 
-func (e *EntPgxPoolTx) Rollback() error {
+func (e *PgxPoolTx) Rollback() error {
 	return e.tx.Rollback(context.TODO())
 }
 
-func (e *EntPgxPoolTx) PGXTransaction() pgx.Tx {
+func (e *PgxPoolTx) PGXTransaction() pgx.Tx {
 	return e.tx
 }
 

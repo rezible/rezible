@@ -14,7 +14,6 @@ func (Organization) Mixin() []ent.Mixin {
 	return []ent.Mixin{
 		BaseMixin{},
 		TenantMixin{},
-		IntegrationMixin{Required: true},
 	}
 }
 
@@ -22,6 +21,7 @@ func (Organization) Fields() []ent.Field {
 	return []ent.Field{
 		field.UUID("id", uuid.New()).Default(uuid.New),
 		field.String("name"),
+		field.String("domain"),
 		field.Time("initial_setup_at").Optional(),
 	}
 }

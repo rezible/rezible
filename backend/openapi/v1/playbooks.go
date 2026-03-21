@@ -6,7 +6,6 @@ import (
 
 	"github.com/danielgtaylor/huma/v2"
 	"github.com/google/uuid"
-	"github.com/rezible/rezible/openapi"
 
 	"github.com/rezible/rezible/ent"
 )
@@ -60,7 +59,7 @@ var ListPlaybooks = huma.Operation{
 	Path:        "/playbooks",
 	Summary:     "List Playbooks",
 	Tags:        playbooksTags,
-	Errors:      openapi.ErrorCodes(),
+	Errors:      ErrorCodes(),
 }
 
 type ListPlaybooksRequest struct {
@@ -76,7 +75,7 @@ var GetPlaybook = huma.Operation{
 	Path:        "/playbooks/{id}",
 	Summary:     "Get Playbook",
 	Tags:        playbooksTags,
-	Errors:      openapi.ErrorCodes(),
+	Errors:      ErrorCodes(),
 }
 
 type GetPlaybookRequest GetIdRequest
@@ -88,7 +87,7 @@ var CreatePlaybook = huma.Operation{
 	Path:        "/playbooks",
 	Summary:     "Create a Playbook",
 	Tags:        playbooksTags,
-	Errors:      openapi.ErrorCodes(),
+	Errors:      ErrorCodes(),
 }
 
 type CreatePlaybookAttributes struct {
@@ -104,7 +103,7 @@ var UpdatePlaybook = huma.Operation{
 	Path:        "/playbooks/{id}",
 	Summary:     "Update a Playbook",
 	Tags:        playbooksTags,
-	Errors:      openapi.ErrorCodes(),
+	Errors:      ErrorCodes(),
 }
 
 type UpdatePlaybookAttributes struct {
@@ -120,7 +119,7 @@ var ArchivePlaybook = huma.Operation{
 	Path:        "/playbooks/{id}",
 	Summary:     "Archive a Playbook",
 	Tags:        playbooksTags,
-	Errors:      openapi.ErrorCodes(),
+	Errors:      ErrorCodes(),
 }
 
 type ArchivePlaybookRequest ArchiveIdRequest

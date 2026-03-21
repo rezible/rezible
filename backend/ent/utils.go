@@ -77,7 +77,7 @@ func ExtractPgxTx(txClient *Tx) (pgx.Tx, error) {
 	if !drvOk {
 		return nil, errors.New("ent: pgx.Tx does not support driver")
 	}
-	pgxDrvTx, pgOk := txDrv.tx.(*entpgx.EntPgxPoolTx)
+	pgxDrvTx, pgOk := txDrv.tx.(*entpgx.PgxPoolTx)
 	if !pgOk {
 		return nil, errors.New("ent: pgx.Tx does not support driver")
 	}

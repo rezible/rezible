@@ -33,9 +33,12 @@ services:
     image: dexidp/dex:v2.41.1
     restart: unless-stopped
     ports: ["7011:7011"]
-    volumes:
-      - "./dex-config.yaml:/etc/dex/config.yaml:ro"
-    command: [ "dex", "serve", "/etc/dex/config.yaml" ]
+    volumes: ["./dex-config.yaml:/etc/dex/config.yaml:ro"]
+    command: ["dex", "serve", "/etc/dex/config.yaml"]
+    environment:
+      - ISSUER_URL=${AUTH__OIDC__ISSUER_URL}
+      - CLIENT_ID=${AUTH__OIDC__CLIENT_ID}
+      - APP_URL=${APP_URL}
     depends_on:
       postgres:
         condition: service_healthy

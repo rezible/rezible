@@ -2,18 +2,19 @@ package postgres
 
 import (
 	"context"
-	"database/sql"
 	_ "embed"
-	"errors"
 	"fmt"
 
-	"github.com/rs/zerolog/log"
+	_ "github.com/rezible/rezible/ent/runtime"
 
 	"entgo.io/ent/dialect"
 	entsql "entgo.io/ent/dialect/sql"
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 	_ "github.com/jackc/pgx/v5/stdlib"
+	"github.com/rs/zerolog/log"
 
+	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/access"
 	"github.com/rezible/rezible/ent"
 	"github.com/rezible/rezible/ent/entpgx"
@@ -21,15 +22,38 @@ import (
 
 type DatabaseClient struct {
 	pool   *pgxpool.Pool
+	driver dialect.Driver
 	client *ent.Client
 }
 
-func openPgxPool(ctx context.Context, connUrl string) (*pgxpool.Pool, error) {
-	cfg, cfgErr := pgxpool.ParseConfig(connUrl)
-	if cfgErr != nil {
-		return nil, fmt.Errorf("parse config: %w", cfgErr)
+func NewDatabasePoolClient(ctx context.Context) (*DatabaseClient, error) {
+	pool, poolErr := openPgxPool(ctx)
+	if poolErr != nil {
+		return nil, poolErr
 	}
-	pool, poolErr := pgxpool.NewWithConfig(ctx, cfg)
+
+	driver := entpgx.NewPgxPoolDriver(pool)
+
+	return &DatabaseClient{pool: pool, driver: driver, client: MakeClient(driver)}, nil
+}
+
+func MakeClient(driver dialect.Driver) *ent.Client {
+	client := ent.NewClient(ent.Driver(driver))
+	client.Use(ensureTenantIdSetHook)
+	client.Intercept(setTenantContextInterceptor())
+	return client
+}
+
+func openPgxPool(ctx context.Context) (*pgxpool.Pool, error) {
+	connCfg, cfgErr := GetPgxConfig()
+	if cfgErr != nil {
+		return nil, fmt.Errorf("config: %w", cfgErr)
+	}
+	parsedCfg, parseErr := pgxpool.ParseConfig(connCfg.ConnString())
+	if parseErr != nil {
+		return nil, fmt.Errorf("parse: %w", parseErr)
+	}
+	pool, poolErr := pgxpool.NewWithConfig(ctx, parsedCfg)
 	if poolErr != nil {
 		return nil, fmt.Errorf("create: %w", poolErr)
 	}
@@ -42,29 +66,14 @@ func openPgxPool(ctx context.Context, connUrl string) (*pgxpool.Pool, error) {
 	return pool, nil
 }
 
-func NewDatabasePoolClient(ctx context.Context, connUrl string) (*DatabaseClient, error) {
-	pool, poolErr := openPgxPool(ctx, connUrl)
-	if poolErr != nil {
-		return nil, poolErr
+func GetPgxConfig() (*pgx.ConnConfig, error) {
+	if connStr := rez.Config.GetString("db_url"); connStr != "" {
+		return pgx.ParseConfig(connStr)
 	}
-	return &DatabaseClient{pool: pool}, nil
-}
-
-func MakeClient(driver dialect.Driver) *ent.Client {
-	client := ent.NewClient(ent.Driver(driver))
-	client.Use(ensureTenantIdSetHook)
-	client.Intercept(setTenantContextInterceptor())
-	return client
-}
-
-func ClientFromSql(db *sql.DB) *ent.Client {
-	return MakeClient(entsql.OpenDB("postgres", db))
+	return nil, fmt.Errorf("DB_URL not set")
 }
 
 func (dbc *DatabaseClient) Client() *ent.Client {
-	if dbc.client == nil {
-		dbc.client = MakeClient(entpgx.NewPgxPoolDriver(dbc.pool))
-	}
 	return dbc.client
 }
 
@@ -72,22 +81,27 @@ func (dbc *DatabaseClient) Pool() *pgxpool.Pool {
 	return dbc.pool
 }
 
-func (dbc *DatabaseClient) Close() error {
-	dbc.pool.Close()
+func (dbc *DatabaseClient) Close() {
 	if dbc.client != nil {
 		if clientErr := dbc.client.Close(); clientErr != nil {
-			return fmt.Errorf("closing ent client: %w", clientErr)
+			log.Error().Err(clientErr).Msg("failed to close client")
 		}
 	}
-	return nil
+	if dbc.driver != nil {
+		if driverErr := dbc.driver.Close(); driverErr != nil {
+			log.Error().Err(driverErr).Msg("failed to close pool driver")
+		}
+	}
+	if dbc.pool != nil {
+		dbc.pool.Close()
+	}
 }
 
 func setTenantContextInterceptor() ent.Interceptor {
 	return ent.InterceptFunc(func(q ent.Querier) ent.Querier {
 		return ent.QuerierFunc(func(ctx context.Context, query ent.Query) (ent.Value, error) {
-			ac := access.GetContext(ctx)
-			if ac.HasTenant() {
-				ctx = entsql.WithIntVar(ctx, "app.current_tenant", ac.GetTenantId())
+			if tenantId, tenantIdSet := access.GetTenantId(ctx); tenantIdSet {
+				ctx = entsql.WithIntVar(ctx, "app.current_tenant", tenantId)
 			}
 			return q.Query(ctx, query)
 		})
@@ -101,23 +115,13 @@ func ensureTenantIdSetHook(next ent.Mutator) ent.Mutator {
 	return ent.MutateFunc(func(ctx context.Context, m ent.Mutation) (ent.Value, error) {
 		if tm, ok := m.(tenantedMutation); ok {
 			if _, alreadySet := m.Field("tenant_id"); !alreadySet {
-				ac := access.GetContext(ctx)
-				if !ac.HasTenant() {
-					return nil, errors.New("tenant not found in auth context")
+				tenantId, tenantIdSet := access.GetTenantId(ctx)
+				if !tenantIdSet {
+					return nil, rez.ErrTenantContextMissing
 				}
-				tm.SetTenantID(ac.GetTenantId())
+				tm.SetTenantID(tenantId)
 			}
 		}
 		return next.Mutate(ctx, m)
-	})
-}
-
-func debugLogQueryAccessAuthContext() ent.Interceptor {
-	return ent.InterceptFunc(func(q ent.Querier) ent.Querier {
-		return ent.QuerierFunc(func(ctx context.Context, query ent.Query) (ent.Value, error) {
-			ac := access.GetContext(ctx)
-			log.Debug().Bool("isSystem", ac.IsSystem()).Msg("query")
-			return q.Query(ctx, query)
-		})
 	})
 }

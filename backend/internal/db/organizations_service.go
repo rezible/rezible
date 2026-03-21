@@ -32,55 +32,54 @@ func (s *OrganizationsService) GetCurrent(ctx context.Context) (*ent.Organizatio
 	return s.db.Organization.Query().First(ctx)
 }
 
-func (s *OrganizationsService) FindOrCreateFromProviderDomain(ctx context.Context, domain string) (*ent.Organization, error) {
-	if domain == "" {
-		return nil, fmt.Errorf("provider domain empty")
-	}
-	// Required to query without a tenant id set
-	ctx = access.SystemContext(ctx)
-
-	orgQuery := s.db.Organization.Query().
-		Where(organization.ExternalID(domain))
-
-	org, orgErr := orgQuery.Only(ctx)
-	if orgErr != nil && !ent.IsNotFound(orgErr) {
-		return nil, fmt.Errorf("failed to query organization: %w", orgErr)
-	}
-	log.Debug().Interface("org", org).AnErr("orgErr", orgErr).Msg("find or create from provider")
-	if org != nil {
-		return org, nil
-	}
+func (s *OrganizationsService) createForDomain(ctx context.Context, domain string) (*ent.Organization, error) {
 	if !rez.Config.AllowTenantCreation() {
 		return nil, rez.ErrInvalidTenant
 	}
 
-	var createdTenant *ent.Tenant
 	var createdOrg *ent.Organization
-	createTenantOrgFn := func(tx *ent.Tx) error {
-		var createErr error
-
-		createTenant := tx.Tenant.Create()
-		createdTenant, createErr = createTenant.Save(ctx)
-		if createErr != nil {
-			return fmt.Errorf("create tenant: %w", createErr)
+	createFn := func(tx *ent.Tx) error {
+		tenantCreate := tx.Tenant.Create()
+		createdTenant, tenantErr := tenantCreate.Save(access.SystemContext(ctx))
+		if tenantErr != nil {
+			return fmt.Errorf("save tenant: %w", tenantErr)
 		}
+		ctx = access.TenantContext(ctx, createdTenant.ID)
 
-		createOrg := tx.Organization.Create().
+		orgCreate := tx.Organization.Create().
 			SetTenant(createdTenant).
-			SetExternalID(domain).
+			SetDomain(domain).
 			SetName(domain)
-		org, orgErr = createOrg.Save(access.TenantContext(ctx, createdTenant.ID))
-		if orgErr != nil {
-			return fmt.Errorf("create organization: %w", orgErr)
+
+		var createErr error
+		createdOrg, createErr = orgCreate.Save(ctx)
+		if createErr != nil {
+			return fmt.Errorf("save organization: %w", createErr)
 		}
-		createdOrg = org
 
 		return nil
 	}
-	if txErr := ent.WithTx(ctx, s.db, createTenantOrgFn); txErr != nil {
-		return nil, fmt.Errorf("tx error: %w", txErr)
+	return createdOrg, ent.WithTx(ctx, s.db, createFn)
+}
+
+func (s *OrganizationsService) FindOrCreateFromDomain(ctx context.Context, domain string) (*ent.Organization, error) {
+	if domain == "" {
+		return nil, fmt.Errorf("domain empty")
 	}
 
+	orgQuery := s.db.Organization.Query().Where(organization.Domain(domain))
+
+	org, orgErr := orgQuery.Only(access.SystemContext(ctx))
+	if org != nil {
+		return org, nil
+	} else if orgErr != nil && !ent.IsNotFound(orgErr) {
+		return nil, fmt.Errorf("query organization: %w", orgErr)
+	}
+
+	createdOrg, createErr := s.createForDomain(ctx, domain)
+	if createErr != nil {
+		return nil, fmt.Errorf("create organization: %w", createErr)
+	}
 	return createdOrg, nil
 }
 

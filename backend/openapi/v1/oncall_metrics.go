@@ -7,7 +7,6 @@ import (
 	"github.com/danielgtaylor/huma/v2"
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent"
-	"github.com/rezible/rezible/openapi"
 )
 
 type OncallMetricsHandler interface {
@@ -102,7 +101,7 @@ var GetOncallRosterMetrics = huma.Operation{
 	Path:        "/oncall_metrics/rosters",
 	Summary:     "Get Metrics for an Oncall Roster",
 	Tags:        oncallMetricsTags,
-	Errors:      openapi.ErrorCodes(),
+	Errors:      ErrorCodes(),
 }
 
 type GetOncallRosterMetricsRequest struct {
@@ -116,7 +115,7 @@ var GetOncallShiftMetrics = huma.Operation{
 	Path:        "/oncall_metrics/shifts",
 	Summary:     "Get Metrics for an Oncall Shift",
 	Tags:        oncallMetricsTags,
-	Errors:      openapi.ErrorCodes(),
+	Errors:      ErrorCodes(),
 }
 
 type GetOncallShiftMetricsRequest struct {
@@ -130,7 +129,7 @@ var GetOncallShiftBurdenMetricWeights = huma.Operation{
 	Path:        "/oncall_metrics/burden_weights",
 	Summary:     "Get Weights for Calculating Burden",
 	Tags:        oncallMetricsTags,
-	Errors:      openapi.ErrorCodes(),
+	Errors:      ErrorCodes(),
 }
 
 type GetOncallShiftBurdenMetricWeightsRequest EmptyRequest

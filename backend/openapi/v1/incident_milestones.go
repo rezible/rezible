@@ -7,8 +7,6 @@ import (
 
 	"github.com/danielgtaylor/huma/v2"
 	"github.com/google/uuid"
-	"github.com/rezible/rezible/openapi"
-
 	"github.com/rezible/rezible/ent"
 )
 
@@ -58,7 +56,7 @@ var ListIncidentMilestones = huma.Operation{
 	Path:        "/incidents/{id}/milestones",
 	Summary:     "List Milestones for Incident",
 	Tags:        append(incidentsTags, incidentMilestonesTags...),
-	Errors:      openapi.ErrorCodes(),
+	Errors:      ErrorCodes(),
 }
 
 type ListIncidentMilestonesRequest GetIdRequest
@@ -70,7 +68,7 @@ var CreateIncidentMilestone = huma.Operation{
 	Path:        "/incidents/{id}/milestones",
 	Summary:     "Create an Incident Milestone",
 	Tags:        incidentMilestonesTags,
-	Errors:      openapi.ErrorCodes(),
+	Errors:      ErrorCodes(),
 }
 
 type CreateIncidentMilestoneAttributes struct {
@@ -87,7 +85,7 @@ var UpdateIncidentMilestone = huma.Operation{
 	Path:        "/incident_milestones/{id}",
 	Summary:     "Update an Incident Milestone",
 	Tags:        incidentMilestonesTags,
-	Errors:      openapi.ErrorCodes(),
+	Errors:      ErrorCodes(),
 }
 
 type UpdateIncidentMilestoneAttributes struct {
@@ -104,7 +102,7 @@ var DeleteIncidentMilestone = huma.Operation{
 	Path:        "/incident_milestones/{id}",
 	Summary:     "Delete an Incident Milestone",
 	Tags:        incidentMilestonesTags,
-	Errors:      openapi.ErrorCodes(),
+	Errors:      ErrorCodes(),
 }
 
 type DeleteIncidentMilestoneRequest DeleteIdRequest

@@ -5,11 +5,9 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/rezible/rezible/ent"
-	"github.com/rezible/rezible/openapi"
-
 	"github.com/danielgtaylor/huma/v2"
 	"github.com/google/uuid"
+	"github.com/rezible/rezible/ent"
 )
 
 type IncidentsHandler interface {
@@ -146,7 +144,7 @@ var ListIncidents = huma.Operation{
 	Path:        "/incidents",
 	Summary:     "List Incidents",
 	Tags:        incidentsTags,
-	Errors:      openapi.ErrorCodes(),
+	Errors:      ErrorCodes(),
 }
 
 type ListIncidentsRequest struct {
@@ -161,7 +159,7 @@ var CreateIncident = huma.Operation{
 	Path:        "/incidents",
 	Summary:     "Create an Incident",
 	Tags:        incidentsTags,
-	Errors:      openapi.ErrorCodes(),
+	Errors:      ErrorCodes(),
 }
 
 type CreateIncidentAttributes struct {
@@ -177,7 +175,7 @@ var GetIncident = huma.Operation{
 	Path:        "/incidents/{id}",
 	Summary:     "Get Incident",
 	Tags:        incidentsTags,
-	Errors:      openapi.ErrorCodes(),
+	Errors:      ErrorCodes(),
 }
 
 type GetIncidentRequest = GetFlexibleIdRequest
@@ -189,7 +187,7 @@ var UpdateIncident = huma.Operation{
 	Path:        "/incidents/{id}",
 	Summary:     "Update an Incident",
 	Tags:        incidentsTags,
-	Errors:      openapi.ErrorCodes(),
+	Errors:      ErrorCodes(),
 }
 
 type UpdateIncidentAttributes struct {
@@ -207,7 +205,7 @@ var ArchiveIncident = huma.Operation{
 	Path:        "/incidents/{id}",
 	Summary:     "Archive an Incident",
 	Tags:        incidentsTags,
-	Errors:      openapi.ErrorCodes(),
+	Errors:      ErrorCodes(),
 }
 
 type ArchiveIncidentRequest ArchiveIdRequest

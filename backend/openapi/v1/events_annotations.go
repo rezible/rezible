@@ -7,8 +7,6 @@ import (
 
 	"github.com/danielgtaylor/huma/v2"
 	"github.com/google/uuid"
-	"github.com/rezible/rezible/openapi"
-
 	"github.com/rezible/rezible/ent"
 )
 
@@ -90,7 +88,7 @@ var ListEventAnnotations = huma.Operation{
 	Path:        "/event_annotations",
 	Summary:     "List Event Annotations",
 	Tags:        EventAnnotationsTags,
-	Errors:      openapi.ErrorCodes(),
+	Errors:      ErrorCodes(),
 }
 
 type ListEventAnnotationsRequest struct {
@@ -109,7 +107,7 @@ var CreateEventAnnotation = huma.Operation{
 	Path:        "/event_annotations",
 	Summary:     "Create an Event Annotation",
 	Tags:        EventAnnotationsTags,
-	Errors:      openapi.ErrorCodes(),
+	Errors:      ErrorCodes(),
 }
 
 type CreateEventAnnotationRequestAttributes struct {
@@ -127,7 +125,7 @@ var UpdateEventAnnotation = huma.Operation{
 	Path:        "/event_annotations/{id}",
 	Summary:     "Update an Event Annotation",
 	Tags:        EventAnnotationsTags,
-	Errors:      openapi.ErrorCodes(),
+	Errors:      ErrorCodes(),
 }
 
 type UpdateEventAnnotationRequestAttributes struct {
@@ -144,7 +142,7 @@ var DeleteEventAnnotation = huma.Operation{
 	Path:        "/event_annotations/{id}",
 	Summary:     "Delete an Event Annotation",
 	Tags:        EventAnnotationsTags,
-	Errors:      openapi.ErrorCodes(),
+	Errors:      ErrorCodes(),
 }
 
 type DeleteEventAnnotationRequest DeleteIdRequest

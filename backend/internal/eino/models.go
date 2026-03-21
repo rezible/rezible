@@ -11,7 +11,7 @@ import (
 )
 
 func newClaudeLanguageModelProvider(ctx context.Context) (model.ToolCallingChatModel, error) {
-	apiKey := rez.Config.GetString("AI.ANTHROPIC_API_KEY")
+	apiKey := rez.Config.GetString("anthropic.api_key")
 	if apiKey == "" {
 		return nil, errors.New("anthropic api key not set")
 	}

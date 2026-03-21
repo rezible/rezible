@@ -6,8 +6,6 @@ import (
 
 	"github.com/danielgtaylor/huma/v2"
 	"github.com/google/uuid"
-	"github.com/rezible/rezible/openapi"
-
 	"github.com/rezible/rezible/ent"
 )
 
@@ -66,7 +64,7 @@ var ListTasks = huma.Operation{
 	Path:        "/tasks",
 	Summary:     "List Tasks",
 	Tags:        tasksTags,
-	Errors:      openapi.ErrorCodes(),
+	Errors:      ErrorCodes(),
 }
 
 type ListTasksRequest struct {
@@ -81,7 +79,7 @@ var GetTask = huma.Operation{
 	Path:        "/tasks/{id}",
 	Summary:     "Get Task",
 	Tags:        tasksTags,
-	Errors:      openapi.ErrorCodes(),
+	Errors:      ErrorCodes(),
 }
 
 type GetTaskRequest GetIdRequest
@@ -93,7 +91,7 @@ var CreateTask = huma.Operation{
 	Path:        "/tasks",
 	Summary:     "Create a Task",
 	Tags:        tasksTags,
-	Errors:      openapi.ErrorCodes(),
+	Errors:      ErrorCodes(),
 }
 
 type CreateTaskAttributes struct {
@@ -108,7 +106,7 @@ var UpdateTask = huma.Operation{
 	Path:        "/tasks/{id}",
 	Summary:     "Update a Task",
 	Tags:        tasksTags,
-	Errors:      openapi.ErrorCodes(),
+	Errors:      ErrorCodes(),
 }
 
 type UpdateTaskAttributes struct {
@@ -123,7 +121,7 @@ var ArchiveTask = huma.Operation{
 	Path:        "/tasks/{id}",
 	Summary:     "Archive a Task",
 	Tags:        tasksTags,
-	Errors:      openapi.ErrorCodes(),
+	Errors:      ErrorCodes(),
 }
 
 type ArchiveTaskRequest ArchiveIdRequest
